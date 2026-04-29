@@ -1,0 +1,792 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="盖世游戏, GameHub, Android游戏, PC游戏, Steam, EPIC, 云游戏, 游戏串流">
+    <meta name="description" content="盖世游戏 — 你的全能游戏宇宙。支持Android畅玩PC大作、Steam/EPIC接入、云游戏串流，打破界限，游戏无界。">
+    <title>盖世游戏 — 你的全能游戏宇宙</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* ===== 变量 ===== */
+        :root {
+            --bg:      #000000;
+            --surf:    #111111;
+            --surf2:   #000000;
+            --surf3:   #0A0A0A;
+            --txt1:    #E8E8F0;
+            --txt2:    #8A8AA8;
+            --border:  rgba(255,255,255,0.09);
+            --pill:    100px;
+            --card-r:  14px;
+            --media-r: 18px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--txt1);
+            font-family: 'Roboto', 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        /* 英文隐藏云游戏 */
+        html[lang="en"] .zh-only { display: none !important; }
+
+        /* ===== 滚动出场动画（双向：上滑消失再出现也播放） ===== */
+        .anim {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1),
+                        transform 0.7s cubic-bezier(0.22,1,0.36,1);
+        }
+        .anim.d1 { transition-delay: 0.08s; }
+        .anim.d2 { transition-delay: 0.16s; }
+        .anim.d3 { transition-delay: 0.24s; }
+        .anim.in {
+            opacity: 1;
+            transform: none;
+        }
+
+        /* ===== 导航栏 ===== */
+        nav {
+            position: fixed;
+            top: 0; width: 100%;
+            height: 80px;
+            background: #000000;
+            border-bottom: none;
+            display: flex;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .nav-inner {
+            width: 100%; max-width: 1600px;
+            padding: 0 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Logo */
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .nav-logo svg {
+            width: 34px; height: 34px;
+            flex-shrink: 0;
+        }
+        .nav-logo-text {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        /* 右侧导航 */
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 导航尝鲜版按钮（普通样式，与 nav-link 一致） */
+        .nav-beta {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 22px;
+            border-radius: var(--pill);
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--txt2);
+            border: 1px solid rgba(255,255,255,0.22);
+            background: transparent;
+            white-space: nowrap;
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .nav-beta:hover { color: #fff; border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.07); }
+
+        /* 主页文字链接 */
+        .nav-link {
+            font-size: 15px;
+            color: var(--txt2);
+            padding: 10px 16px;
+            border-radius: var(--pill);
+            white-space: nowrap;
+            transition: color 0.2s, background 0.2s;
+        }
+        .nav-link:hover { color: #fff; background: rgba(255,255,255,0.07); }
+
+        /* 语言切换 */
+        .lang-btn {
+            background: transparent;
+            color: var(--txt2);
+            border: 1px solid rgba(255,255,255,0.22);
+            padding: 10px 22px;
+            border-radius: var(--pill);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .lang-btn:hover { color: #fff; border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.07); }
+
+        /* ===== 首屏 ===== */
+        .hero {
+            padding: 140px 20px 0;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--bg);
+        }
+
+        .hero h1 {
+            font-size: clamp(40px, 6vw, 72px);
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 18px;
+            line-height: 1.15;
+            color: #fff;
+        }
+
+        /* 仅"打破界限"变色，无紫色 */
+        .grad-text {
+            background: linear-gradient(
+                90deg,
+                #fff      0%,
+                #40E0D0  30%,
+                #5B8EFF  60%,
+                #40E0D0  80%,
+                #fff     100%
+            );
+            background-size: 250% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: hero-gradient 5s linear infinite;
+        }
+
+        @keyframes hero-gradient {
+            0%   { background-position: 100% 0%; }
+            100% { background-position: -150% 0%; }
+        }
+
+        .hero p {
+            font-size: clamp(18px, 2.5vw, 32px);
+            color: var(--txt2);
+            margin-bottom: 40px;
+            max-width: 800px;
+            font-weight: 400;
+        }
+
+        .hero-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            justify-content: center;
+            margin-bottom: 56px;
+        }
+
+        /* 首屏内嵌视频（更大，无上下留白） */
+        .hero-video {
+            width: 100%;
+            max-width: 1100px;
+            aspect-ratio: 16/9;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            margin-bottom: 120px;
+        }
+        .hero-video video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* ===== 按钮系统（仿旧官网样式） ===== */
+        /* 基础 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 13px 28px;
+            border-radius: var(--pill);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+            transition: opacity 0.18s, transform 0.15s;
+        }
+        .btn:active { transform: scale(0.96); }
+
+        /* 下载按钮：旧官网风格，彩虹渐变动态边框 */
+        .btn-dl {
+            /* padding-box 填充深色背景，border-box 用渐变当边框 */
+            background:
+                linear-gradient(#1a1a26, #1a1a26) padding-box,
+                linear-gradient(115deg,
+                    #FF5F40 0%,
+                    #FFCC00 22%,
+                    #40E0C0 44%,
+                    #5B8EFF 66%,
+                    #C060FF 88%,
+                    #FF5F40 100%
+                ) border-box;
+            background-size: 100% 100%, 300% 100%;
+            border: 1.5px solid transparent;
+            color: #fff;
+            animation: dl-border 5s linear infinite;
+        }
+        .btn-dl:hover { opacity: 0.85; }
+
+        @keyframes dl-border {
+            from { background-position: 0 0, 0% 0%; }
+            to   { background-position: 0 0, 300% 0%; }
+        }
+
+        /* 管家按钮：旧官网 manager-btn 风格 */
+        .btn-mgr {
+            background: rgba(255,255,255,0.05);
+            color: #c8c8d8;
+            border: 1px solid rgba(255,255,255,0.18);
+        }
+        .btn-mgr:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+        /* ===== 功能区块 ===== */
+        .feature-section {
+            padding: 88px 20px 72px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .feature-section:nth-child(odd) { background: var(--bg); }
+
+        .fh { /* feature header */
+            max-width: 900px;
+            margin-bottom: 48px;
+        }
+        .fh h2 {
+            font-size: clamp(32px, 5vw, 64px);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+        .fh p {
+            font-size: 20px;
+            color: var(--txt2);
+            line-height: 1.8;
+        }
+
+        /* 英文模式：标题适度缩小防换行（不改变描述字号） */
+        html[lang="en"] .fh h2 {
+            font-size: clamp(28px, 4vw, 56px);
+        }
+
+        .media-box {
+            width: 100%;
+            max-width: 900px;
+            aspect-ratio: 16/9;
+            background: var(--surf);
+            border-radius: var(--media-r);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.55);
+            overflow: hidden;
+        }
+
+        /* Steam 图片区：无背景无框，直接透明图，最大1020px自适应 */
+        .steam-media {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .media-label {
+            color: var(--txt2);
+            font-size: 13px;
+            background: rgba(255,255,255,0.05);
+            padding: 10px 20px;
+            border-radius: 8px;
+        }
+
+        /* ===== FAQ ===== */
+        .faq-section {
+            padding: 88px 20px 80px;
+            background: var(--bg);
+            border-top: none;
+        }
+        .faq-inner { max-width: 900px; margin: 0 auto; }
+        .faq-inner h2 {
+            text-align: center;
+            font-size: clamp(36px, 5vw, 64px);
+            font-weight: 700;
+            margin-bottom: 52px;
+            color: #fff;
+        }
+        .faq-item { border-bottom: 1px solid var(--border); }
+        .faq-item summary {
+            font-size: 22px;
+            color: var(--txt1);
+            padding: 22px 4px;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            outline: none;
+            user-select: none;
+        }
+        .faq-item summary::-webkit-details-marker { display: none; }
+        /* 关闭=+，展开=− （不旋转） */
+        .faq-item summary::after {
+            content: '+';
+            font-size: 26px;
+            font-weight: 300;
+            color: var(--txt2);
+            flex-shrink: 0;
+            margin-left: 20px;
+            line-height: 1;
+        }
+        .faq-item[open] summary::after { content: '−'; }
+        .faq-item p {
+            padding: 2px 4px 22px;
+            color: var(--txt2);
+            line-height: 1.75;
+            font-size: 20px;
+        }
+
+
+        /* ===== Footer ===== */
+        footer {
+            background: #000000;
+            border-top: none;
+        }
+
+        /* 中文底部 — 1:1还原原图排版 */
+        .footer-zh {
+            padding: 28px 20px 24px;
+            text-align: center;
+        }
+        .footer-zh-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0;
+            font-size: 12px;
+            color: var(--txt2);
+            font-weight: 400;
+            line-height: 2;
+        }
+        .footer-zh-row a {
+            color: var(--txt2);
+            font-weight: 400;
+            transition: color 0.2s;
+        }
+        .footer-zh-row a:hover { color: var(--txt1); }
+        .fsep {
+            margin: 0 10px;
+            color: rgba(255,255,255,0.2);
+            font-weight: 400;
+        }
+        .footer-zh-row img.whjy {
+            width: 18px; height: 18px;
+            vertical-align: middle;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+        .footer-zh .copy {
+            font-size: 12px;
+            color: var(--txt2);
+            font-weight: 400;
+            margin-bottom: 4px;
+        }
+
+        /* 英文底部：不显示任何内容 */
+        .footer-en {
+            display: none;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 768px) {
+            .hero { padding: 110px 20px 0; }
+            .hero-video { border-radius: 14px; margin-bottom: 80px; }
+            .feature-section { padding: 64px 20px 56px; }
+        }
+
+        /* 手机：按钮竖排，每行一个 */
+        @media (max-width: 540px) {
+            .nav-inner { padding: 0 16px; }
+            .hero { padding: 96px 16px 0; }
+            .hero-video { border-radius: 10px; margin-bottom: 60px; }
+            .hero-btns {
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+            .hero-btns .btn {
+                width: 100%;
+                max-width: 320px;
+            }
+            .nav-link { font-size: 13px; padding: 8px 12px; }
+            .nav-beta { font-size: 13px; padding: 8px 14px; }
+            .lang-btn  { font-size: 13px; padding: 8px 14px; }
+            .fh h2 { font-size: clamp(22px, 6vw, 32px); }
+        }
+        @media (max-width: 420px) {
+            .nav-beta { display: none; }
+            .nav-logo-text { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== 导航栏 ===== -->
+<nav>
+    <div class="nav-inner">
+        <a href="https://hub.xiaoji.com/" class="nav-logo">
+            <!-- 盖世游戏官方 Logo SVG（来自 Mac 版 logoo.svg） -->
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M39.2204 7.85195C52.5724 -3.20678 72.8455 2.22493 78.8795 18.4779L80.9128 23.9535C81.073 24.385 81.3712 24.7519 81.7604 24.9975L86.609 28.057C101.312 37.3347 102.409 58.3699 88.7506 69.1264L84.2965 72.6332C83.9341 72.9187 83.6762 73.316 83.5622 73.7631L82.1461 79.3207C77.8614 96.1391 58.2436 103.679 43.7975 94.06L38.9362 90.8236C38.5539 90.5692 38.0986 90.4467 37.6403 90.476L31.8122 90.849C14.4919 91.9564 1.2729 75.6171 5.97134 58.9096L7.52408 53.3891C7.64897 52.9448 7.62298 52.4709 7.45181 52.0424L5.34927 46.7787C-1.10132 30.6339 10.3657 12.9656 27.7379 12.2826L33.4674 12.058C33.927 12.0398 34.368 11.8708 34.7223 11.5775L39.2204 7.85195ZM29.2536 40.9096C28.4813 40.9098 27.8551 41.5357 27.8551 42.308V46.0375C27.8551 46.8099 27.2291 47.4359 26.4567 47.4359H22.7272C21.955 47.436 21.3289 48.0621 21.3288 48.8344V52.5639C21.3288 53.3362 21.9548 53.9632 22.7272 53.9633H26.4567C27.2291 53.9633 27.8551 54.5893 27.8551 55.3617V59.0912C27.8551 59.8635 28.4813 60.4894 29.2536 60.4896H32.9831C33.7555 60.4896 34.3825 59.8636 34.3825 59.0912V55.3617C34.3825 54.5893 35.0085 53.9633 35.7809 53.9633H39.5104C40.2828 53.9633 40.9088 53.3363 40.9088 52.5639V48.8344C40.9087 48.0621 40.2827 47.4359 39.5104 47.4359H35.7809C35.0085 47.4359 34.3825 46.8099 34.3825 46.0375V42.308C34.3825 41.5356 33.7555 40.9096 32.9831 40.9096H29.2536ZM56.6432 45.1049C53.5536 45.105 51.0485 47.6099 51.0485 50.6996C51.0486 53.7892 53.5537 56.2933 56.6432 56.2934C59.7328 56.2934 62.2378 53.7892 62.2379 50.6996C62.2379 47.6099 59.7329 45.1049 56.6432 45.1049ZM73.4264 45.1049C70.3368 45.105 67.8317 47.6099 67.8317 50.6996C67.8318 53.7892 70.3369 56.2933 73.4264 56.2934C76.5161 56.2934 79.021 53.7892 79.0211 50.6996C79.0211 47.6099 76.5161 45.1049 73.4264 45.1049Z" fill="white"/>
+            </svg>
+            <span class="nav-logo-text" data-i18n="logo">盖世游戏</span>
+        </a>
+
+        <div class="nav-right">
+            <a href="https://hub.xiaoji.com/download/" class="nav-beta" data-i18n="nav_beta">安卓下载(6.0尝鲜版)</a>
+            <a href="https://www.xiaoji.com/" class="nav-link" data-i18n="nav_home">主页</a>
+            <button class="lang-btn" onclick="toggleLang()" data-i18n="lang_btn">EN</button>
+        </div>
+    </div>
+</nav>
+
+<!-- ===== 首屏（含视频） ===== -->
+<section class="hero">
+    <h1 class="anim" data-i18n="hero_h1"><span class="grad-text">打破界限</span>，游戏无界</h1>
+    <p class="anim d1" data-i18n="hero_sub">全新界面，竖屏探索 3A 大作，横屏秒变游戏掌机</p>
+    <div class="hero-btns anim d2">
+        <a href="https://hub.xiaoji.com/download/"   class="btn btn-mgr" data-i18n="btn_android">安卓下载（5.3.5）</a>
+        <a href="https://hub.xiaoji.com/download/"   class="btn btn-dl"  data-i18n="btn_beta">安卓下载(6.0尝鲜版)</a>
+        <a href="https://play.google.com/store/apps/details?id=com.xiaoji.egggame&pcampaignid=web_share"
+           class="btn btn-mgr en-only" style="display:none;" data-i18n="btn_gplay">Google Play</a>
+        <a href="https://hub.xiaoji.com/manager"     class="btn btn-mgr" data-i18n="btn_mgr">盖世游戏管家</a>
+    </div>
+    <div class="hero-video anim d3">
+        <video id="hero-vid"
+            src="assets/CN/hero（CN）.mp4"
+            autoplay muted loop playsinline
+        ></video>
+    </div>
+</section>
+
+
+<!-- ===== 功能2 ===== -->
+<section class="feature-section">
+    <div class="fh anim">
+        <h2 data-i18n="f2_h2">全面接入 Steam、EPIC 平台</h2>
+        <p  class="f2-desc" data-i18n="f2_desc">你的游戏库理应包罗万象。两大顶级平台数据互通，海量大作应有尽有。</p>
+    </div>
+    <div class="steam-media anim d1" id="steam-media">
+        <!-- 中文：显示真实截图；英文：暂无图，不显示 -->
+        <img id="steam-img"
+             src="assets/CN/Steam&amp;EPIC（CN）.png"
+             alt="Steam &amp; EPIC"
+             style="width:100%;max-width:1020px;display:block;">
+        <span class="media-label en-only" id="steam-placeholder" style="display:none;" data-i18n="ph_i1">🖼️ Screenshot Placeholder</span>
+    </div>
+</section>
+
+<!-- ===== 功能3 ===== -->
+<section class="feature-section">
+    <div class="fh anim">
+        <h2 data-i18n="f3_h2">PC游戏 &amp; 复古自主一键导入</h2>
+        <p  data-i18n="f3_desc">无论 PC 巨作，还是复古经典，让你的热爱随身携带。</p>
+    </div>
+    <div class="steam-media anim d1">
+        <img src="assets/CN/导入游戏（CN）.png"
+             alt="导入游戏"
+             style="width:100%;max-width:1020px;display:block;">
+    </div>
+</section>
+
+<!-- ===== 功能4：云游戏（仅中文） ===== -->
+<section class="feature-section zh-only">
+    <div class="fh anim">
+        <h2 data-i18n="f4_h2">无需下载，海量游戏乐享云端</h2>
+        <p  data-i18n="f4_desc">免去漫长等待与内存焦虑，点击即刻畅玩。</p>
+    </div>
+    <div class="steam-media anim d1">
+        <img src="assets/CN/云游戏（CN）.png"
+             alt="云游戏"
+             style="width:100%;max-width:1020px;display:block;">
+    </div>
+</section>
+
+<!-- ===== 功能5 ===== -->
+<section class="feature-section en-only">
+    <div class="fh anim">
+        <h2 data-i18n="f5_h2">全新榜单，热门好游即点即享</h2>
+        <p  data-i18n="f5_desc">好游戏一目了然。助你快速定位心仪之作，告别游戏荒。</p>
+    </div>
+    <div class="media-box anim d1">
+        <span class="media-label" data-i18n="ph_i3">🖼️ 榜单界面截图占位区</span>
+    </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="faq-section">
+    <div class="faq-inner">
+        <h2 class="anim" data-i18n="faq_title">常见问题</h2>
+
+        <details class="faq-item anim" open>
+            <summary data-i18n="q1">Q1: 什么是盖世游戏？</summary>
+            <p data-i18n="a1">答：盖世游戏是一款多功能游戏平台，支持PC模拟器、云游戏和游戏串流，并全面接入 Steam 与 EPIC 两大平台。它允许用户使用手柄或触摸操作进行游戏，满足各种游戏需求。</p>
+        </details>
+        <details class="faq-item anim d1">
+            <summary data-i18n="q2">Q2: 盖世游戏是免费的吗？</summary>
+            <p data-i18n="a2">答：是的，盖世游戏目前免费提供，您可以免费享受高质量的游戏功能。</p>
+        </details>
+        <details class="faq-item anim d1">
+            <summary data-i18n="q3">Q3: 盖世游戏支持哪些设备？</summary>
+            <p data-i18n="a3">答：盖世游戏兼容多种设备，包括智能手机、平板电脑和PC。</p>
+        </details>
+        <details class="faq-item anim d1">
+            <summary data-i18n="q4">Q4: 盖世游戏支持手柄和触摸操作吗？</summary>
+            <p data-i18n="a4">答：支持的，盖世游戏支持手柄和触摸操作，为玩家提供多种操作方式。</p>
+        </details>
+        <details class="faq-item anim d1">
+            <summary data-i18n="q5">Q5: 我可以在盖世游戏上玩PC游戏吗？</summary>
+            <p data-i18n="a5">答：可以，盖世游戏支持 PC 模拟器功能，并可接入 Steam / EPIC 游戏库，畅玩你喜爱的 PC 游戏。</p>
+        </details>
+        <details class="faq-item anim d1">
+            <summary data-i18n="q6">Q6: 盖世游戏需要联网吗？</summary>
+            <p data-i18n="a6">答：PC模拟器功能可以离线运行，但云游戏和串流功能需要稳定的网络连接。</p>
+        </details>
+        <details class="faq-item anim d1">
+            <summary data-i18n="q7">Q7: 如何开始使用盖世游戏？</summary>
+            <p data-i18n="a7">答：只需从官网或应用商店下载盖世游戏，安装后即可开始畅玩！</p>
+        </details>
+    </div>
+</section>
+
+<!-- ===== Footer ===== -->
+<footer>
+    <!-- 中文底部：1:1 还原图3样式 -->
+    <div class="footer-zh zh-only anim">
+        <p class="copy">Copyright 2025 All Rights Reserved.</p>
+        <div class="footer-zh-row">
+            <!-- 文化经营许可证图标：优先用 Mac 版，备用原站，最后降级为文字 -->
+            <img class="whjy"
+                 src="assets/CN/wenhuajingying.png"
+                 onerror="this.onerror=null;this.style.display='none';"
+                 alt="粤网文">
+            <span>粤网文[2016]6575-1561号</span>
+            <span class="fsep">|</span>
+            <span>粤ICP备10217906号-14</span>
+            <span class="fsep">|</span>
+            <span>公安备案号44010602003042</span>
+        </div>
+        <div class="footer-zh-row">
+            <span>增值电信业务经营许可证：粤B2-20100521</span>
+        </div>
+        <div class="footer-zh-row">
+            <span>广州小鸡快跑网络科技有限公司</span>
+            <span class="fsep">|</span>
+            <span>地址：广州市天河区员村西街2号大院19号1001、1003房</span>
+        </div>
+    </div>
+
+    <!-- 英文底部：无内容（备案信息仅中文显示） -->
+</footer>
+
+<!-- ===== 多语言 + 动画 ===== -->
+<script>
+/* ---------- 字典 ---------- */
+const dict = {
+    zh: {
+        logo:       '盖世游戏',
+        lang_btn:   'EN',
+        nav_beta:   '安卓下载(6.0尝鲜版)',
+        nav_home:   '主页',
+        hero_h1:    '<span class="grad-text">打破界限</span>，游戏无界',
+        hero_sub:   '全新界面，竖屏探索 3A 大作，横屏秒变游戏掌机',
+        btn_android:'安卓下载（5.3.5）',
+        btn_beta:   '安卓下载(6.0尝鲜版)',
+        btn_gplay:  'Google Play',
+        btn_mgr:    '盖世游戏管家',
+        f1_h2:      '竖屏探索 3A 大作，横屏秒变游戏掌机',
+        f1_desc:    '全新无缝界面，模式随心切换。指尖轻转，发现你的下一个游戏热爱。',
+        f2_h2:      '全面接入 Steam 与 EPIC 平台',
+        f2_desc:    '你的游戏库理应包罗万象。两大顶级平台数据互通，海量顶尖大作，现在应有尽有。',
+        f3_h2:      'PC游戏 & 复古自主一键导入',
+        f3_desc:    '无论 PC 巨作，还是复古经典，让你的热爱随身携带。',
+        f4_h2:      '无需下载，海量游戏乐享云端',
+        f4_desc:    '免去漫长等待与内存焦虑，点击即刻畅玩。',
+        f5_h2:      '全新榜单，热门好游即点即享',
+        f5_desc:    '好游戏一目了然。助你快速定位心仪之作，告别游戏荒。',
+        ph_v1:  '▶ 演示视频占位区',
+        ph_i1:  '🖼️ 界面截图占位区',
+        ph_i2:  '🖼️ 图文展示占位区',
+        ph_v2:  '▶ 云游演示视频占位区',
+        ph_i3:  '🖼️ 榜单截图占位区',
+        faq_title: '常见问题',
+        q1:'Q1: 什么是盖世游戏？',
+        a1:'答：盖世游戏是一款多功能游戏平台，支持PC模拟器、云游戏和游戏串流，并全面接入 Steam 与 EPIC 两大平台。它允许用户使用手柄或触摸操作进行游戏，满足各种游戏需求。',
+        q2:'Q2: 盖世游戏是免费的吗？',
+        a2:'答：是的，盖世游戏目前免费提供，您可以免费享受高质量的游戏功能。',
+        q3:'Q3: 盖世游戏支持哪些设备？',
+        a3:'答：盖世游戏兼容多种设备，包括智能手机、平板电脑和PC。',
+        q4:'Q4: 盖世游戏支持手柄和触摸操作吗？',
+        a4:'答：支持的，盖世游戏支持手柄和触摸操作，为玩家提供多种操作方式。',
+        q5:'Q5: 我可以在盖世游戏上玩PC游戏吗？',
+        a5:'答：可以，盖世游戏支持 PC 模拟器功能，并可接入 Steam / EPIC 游戏库，畅玩你喜爱的 PC 游戏。',
+        q6:'Q6: 盖世游戏需要联网吗？',
+        a6:'答：PC模拟器功能可以离线运行，但云游戏和串流功能需要稳定的网络连接。',
+        q7:'Q7: 如何开始使用盖世游戏？',
+        a7:'答：只需从官网或应用商店下载盖世游戏，安装后即可开始畅玩！'
+    },
+    en: {
+        logo:       'GameHub',
+        lang_btn:   '中文',
+        nav_beta:   'Android 6.0 Beta',
+        nav_home:   'Home',
+        hero_h1:    '<span class="grad-text">Break Boundaries.</span> Play Without Limits.',
+        hero_sub:   'New UI，Browse in portrait, Play in landscape.',
+        btn_android:'Android Download (5.3.5)',
+        btn_beta:   'Android Download (6.0 Beta)',
+        btn_gplay:  'Google Play',
+        btn_mgr:    'GameHub Manager',
+        f1_h2:      'Explore in Portrait, Go Console in Landscape',
+        f1_desc:    'An all-new seamless interface. Switch modes freely and discover your next gaming passion.',
+        f2_h2:      'Steam & EPIC, Fully Integrated',
+        f2_desc:    'Your game library, all in one place. Top-tier titles, seamlessly synced.',
+        f3_h2:      '1-Click Import: PC & Retro',
+        f3_desc:    "PC blockbusters or retro classics — take your passion everywhere.",
+        f4_h2:      'No Download — Stream PC Games via Cloud',
+        f4_desc:    'Skip the wait and storage worries. Start playing instantly via cloud streaming.',
+        f5_h2:      'New Charts: Hot Games, Tap & Play',
+        f5_desc:    'Great games at a glance. Find your next favorite and say goodbye to gaming droughts.',
+        ph_v1:  '▶ Video Placeholder',
+        ph_i1:  '🖼️ Screenshot Placeholder',
+        ph_i2:  '🖼️ Media Placeholder',
+        ph_v2:  '▶ Cloud Gaming Video Placeholder',
+        ph_i3:  '🖼️ Rankings Screenshot Placeholder',
+        faq_title: 'FAQ',
+        q1:'Q1: What is GameHub?',
+        a1:'A: GameHub is a multi-functional gaming platform supporting PC emulators, cloud gaming, and game streaming, with full integration of Steam and EPIC. It supports both controller and touch controls to meet various gaming needs.',
+        q2:'Q2: Is GameHub free?',
+        a2:'A: Yes, GameHub is currently free. Enjoy high-quality gaming features at no cost.',
+        q3:'Q3: What devices does GameHub support?',
+        a3:'A: GameHub is compatible with smartphones, tablets, and PCs.',
+        q4:'Q4: Does GameHub support controllers and touch controls?',
+        a4:'A: Yes, GameHub supports both controller and touch inputs, giving players multiple control options.',
+        q5:'Q5: Can I play PC games on GameHub?',
+        a5:"A: Yes, GameHub's PC emulator and Steam/EPIC integration let you enjoy your favorite PC titles.",
+        q6:'Q6: Does GameHub require an internet connection?',
+        a6:'A: The PC emulator can run offline, but cloud gaming and streaming features require a stable internet connection.',
+        q7:'Q7: How do I get started with GameHub?',
+        a7:'A: Simply download GameHub from our website or app store, install it, and start playing!'
+    }
+};
+
+let lang = 'zh';
+
+/* ---------- 语言切换 ---------- */
+function applyLang() {
+    const d = dict[lang];
+    const isEn = lang === 'en';
+    document.documentElement.lang = isEn ? 'en' : 'zh-CN';
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (d[key] !== undefined) {
+            el.style.transition = 'opacity 0.2s';
+            el.style.opacity = '0';
+            setTimeout(() => {
+                el.innerHTML = d[key];
+                el.style.opacity = '1';
+            }, 160);
+        }
+    });
+
+    // Google Play 按钮
+    document.querySelectorAll('.en-only').forEach(el => {
+        el.style.display = isEn ? '' : 'none';
+    });
+
+    // 根据语言切换首屏视频
+    const heroVid = document.getElementById('hero-vid');
+    if (heroVid) {
+        const newSrc = isEn ? 'assets/EN/hero（EN）.mp4' : 'assets/CN/hero（CN）.mp4';
+        if (heroVid.getAttribute('src') !== newSrc) {
+            heroVid.src = newSrc;
+            heroVid.load();
+            heroVid.play().catch(() => {});
+        }
+    }
+
+    // Steam 图片：中文显示图，英文留空占位
+    const steamImg = document.getElementById('steam-img');
+    const steamPh  = document.getElementById('steam-placeholder');
+    if (steamImg) {
+        steamImg.style.display = isEn ? 'none' : 'block';
+    }
+    if (steamPh) {
+        steamPh.style.display = isEn ? 'flex' : 'none';
+    }
+
+    // Footer 切换（英文下隐藏中文备案信息，英文底部始终为空不显示）
+    const fzh = document.querySelector('.footer-zh');
+    if (fzh) fzh.style.display = isEn ? 'none' : 'block';
+}
+
+function toggleLang() {
+    lang = lang === 'zh' ? 'en' : 'zh';
+    applyLang();
+}
+
+applyLang();
+
+/* ---------- 双向滚动出场动画 ----------
+   元素进入视口 → 加 .in（动画入场）
+   元素离开视口 → 移除 .in（复位，再次进入时重新播放）
+*/
+const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+        if (e.isIntersecting) {
+            e.target.classList.add('in');
+        } else {
+            e.target.classList.remove('in');
+        }
+    });
+}, {
+    threshold: 0.1,
+    rootMargin: '0px 0px -30px 0px'
+});
+
+document.querySelectorAll('.anim').forEach(el => io.observe(el));
+
+</script>
+</body>
+</html>
+
+
+
