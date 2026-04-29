@@ -323,14 +323,20 @@
             position: relative;
             width: 100%;
             max-width: 1200px;
+            /* 锁定宽高比 1817/3600=50.47%，确保绝对定位百分比基准与图片一致 */
+            padding-bottom: 50.47%;
+            height: 0;
         }
         .steam-img-wrap img {
-            width: 100%;
-            display: block;
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: contain;
         }
         .steam-label {
             position: absolute;
-            font-size: 20px;
+            /* 随容器宽度缩放：20px对应1200px容器宽 */
+            font-size: clamp(8px, 1.67vw, 20px);
             color: #ffffff;
             transform: translateX(-50%);
             white-space: nowrap;
@@ -527,10 +533,10 @@
                  src="assets/CN/Steam&amp;EPIC（CN）.png"
                  alt="Steam &amp; EPIC">
             <!-- 文字标签，按原图比例定位 -->
-            <span class="steam-label" style="left:72%;top:31.5%;">游戏价值</span>
-            <span class="steam-label" style="left:69.5%;top:51%;">游戏时长</span>
-            <span class="steam-label" style="left:7.5%;top:65.5%;">游戏数量</span>
-            <span class="steam-label" style="left:65.5%;top:85.5%;">游戏云存档</span>
+            <span class="steam-label" style="left:70.5%;top:31.7%;">游戏价值</span>
+            <span class="steam-label" style="left:69%;top:50.8%;">游戏时长</span>
+            <span class="steam-label" style="left:7.7%;top:66%;">游戏数量</span>
+            <span class="steam-label" style="left:65%;top:86.5%;">游戏云存档</span>
         </div>
         <span class="media-label en-only" id="steam-placeholder" style="display:none;" data-i18n="ph_i1">🖼️ Screenshot Placeholder</span>
     </div>
