@@ -532,8 +532,10 @@
         <h2 data-i18n="f4_h2">无需下载，PC游戏乐享云端</h2>
         <p  data-i18n="f4_desc">免去漫长等待与内存焦虑，点击即刻畅玩。</p>
     </div>
-    <div class="media-box anim d1">
-        <span class="media-label" data-i18n="ph_v2">▶ 云游演示视频占位区</span>
+    <div class="steam-media anim d1">
+        <img src="assets/CN/云游戏（CN）.png"
+             alt="云游戏"
+             style="width:100%;max-width:1200px;display:block;">
     </div>
 </section>
 
@@ -781,87 +783,6 @@ const io = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.anim').forEach(el => io.observe(el));
 
-</script>
-</body>
-</html>
-
-        const pulse = Math.sin(frame * 0.016) * 0.08 + 0.92;
-
-        // 所有环共享同一圆心（正确的水平圆盘投影）
-        const baseY   = H * 0.70;
-        const flatness = 0.115;          // ry/rx，极扁
-        const numRings = 12;
-        const outerRx  = W * 0.54;      // 外圈超出画布边缘
-        const innerRx  = W * 0.025;     // 最内圈
-
-        // -- 光束宽面光晕 --
-        const gW = 70 * pulse;
-        const bg = ctx.createLinearGradient(cx - gW, 0, cx + gW, 0);
-        bg.addColorStop(0,   'rgba(90,200,255,0)');
-        bg.addColorStop(0.5, 'rgba(120,215,255,0.08)');
-        bg.addColorStop(1,   'rgba(90,200,255,0)');
-        ctx.fillStyle = bg;
-        ctx.fillRect(cx - gW, 0, gW * 2, baseY);
-
-        // -- 光束核心线 --
-        const beamGrad = ctx.createLinearGradient(cx, 0, cx, baseY);
-        beamGrad.addColorStop(0,    'rgba(180,238,255,0)');
-        beamGrad.addColorStop(0.5,  'rgba(210,244,255,0.5)');
-        beamGrad.addColorStop(0.9,  'rgba(230,248,255,0.9)');
-        beamGrad.addColorStop(1,    'rgba(245,252,255,1)');
-        ctx.save();
-        ctx.shadowColor = 'rgba(160,232,255,0.75)';
-        ctx.shadowBlur  = 18;
-        ctx.strokeStyle = beamGrad;
-        ctx.lineWidth   = 1.5 * pulse;
-        ctx.beginPath();
-        ctx.moveTo(cx, 0);
-        ctx.lineTo(cx, baseY);
-        ctx.stroke();
-        ctx.restore();
-
-        // -- 同心椭圆环（所有环圆心相同，均匀间距）--
-        for (let i = 0; i < numRings; i++) {
-            const t  = i / (numRings - 1);          // 0=最内, 1=最外
-            const rx = innerRx + (outerRx - innerRx) * t;
-            const ry = rx * flatness;
-            // 外圈稍亮，内圈稍暗，整体均匀
-            const alpha = (0.35 + t * 0.45) * pulse;
-            const glow  = 6 + t * 12;
-
-            ctx.save();
-            ctx.shadowColor = `rgba(140,228,255,${alpha * 0.9})`;
-            ctx.shadowBlur  = glow;
-            ctx.strokeStyle = `rgba(185,240,255,${alpha})`;
-            ctx.lineWidth   = i === numRings - 1 ? 1.4 : 1;
-            ctx.beginPath();
-            ctx.ellipse(cx, baseY, rx, ry, 0, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.restore();
-        }
-
-        // -- 圆心亮点 --
-        ctx.save();
-        ctx.shadowColor = 'rgba(200,245,255,0.9)';
-        ctx.shadowBlur  = 24;
-        ctx.fillStyle   = `rgba(220,248,255,${0.6 * pulse})`;
-        ctx.beginPath();
-        ctx.ellipse(cx, baseY, 3, 2, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-
-        frame++;
-        raf = requestAnimationFrame(draw);
-    }
-
-    const vis = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-            if (e.isIntersecting) { if (!raf) draw(); }
-            else { cancelAnimationFrame(raf); raf = null; }
-        });
-    });
-    vis.observe(canvas);
-})();
 </script>
 </body>
 </html>
