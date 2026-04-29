@@ -122,14 +122,7 @@
                 0 3px 10px 0 rgba(0,0,0,0.35);
             transition: color 0.2s, box-shadow 0.3s;
         }
-        .nav-beta:hover {
-            color: #fff;
-            box-shadow:
-                inset 0 0 0 1px rgba(170,202,255,0.32),
-                inset 0 0 18px 0 rgba(170,202,255,0.12),
-                0 1px 3px 0 rgba(0,0,0,0.50),
-                0 4px 14px 0 rgba(0,0,0,0.42);
-        }
+        .nav-beta:hover { color: var(--txt2); }
 
         /* 主页文字链接 */
         .nav-link {
@@ -162,14 +155,7 @@
                 0 3px 10px 0 rgba(0,0,0,0.35);
             transition: color 0.2s, box-shadow 0.3s;
         }
-        .lang-btn:hover {
-            color: #fff;
-            box-shadow:
-                inset 0 0 0 1px rgba(170,202,255,0.32),
-                inset 0 0 18px 0 rgba(170,202,255,0.12),
-                0 1px 3px 0 rgba(0,0,0,0.50),
-                0 4px 14px 0 rgba(0,0,0,0.42);
-        }
+        .lang-btn:hover { color: var(--txt2); }
 
         /* ===== 首屏 ===== */
         .hero {
@@ -257,31 +243,51 @@
             cursor: pointer;
             white-space: nowrap;
             letter-spacing: 0.2px;
-            transition: transform 0.5s ease-out, box-shadow 0.5s ease-out, opacity 0.18s;
             position: relative;
             overflow: hidden;
         }
 
-        /* 突出按钮：ShinyButton 蓝青渐变胶囊 */
+        /* 突出按钮：StarButton 巡游光晕 */
         .btn-dl {
-            border: none;
-            background: linear-gradient(325deg, #0044ff 0%, #2ccfff 55%, #0044ff 90%);
-            background-size: 280% auto;
-            background-position: left center;
+            border: 1px solid transparent;
+            background:
+                linear-gradient(#000000, #000000) padding-box,
+                linear-gradient(90deg, #00C9FF 0%, #7CE7FF 100%) border-box;
             color: #fff;
-            box-shadow:
-                0px 0px 20px rgba(71,184,255,0.5),
-                0px 5px 5px -1px rgba(58,125,233,0.25),
-                inset 4px 4px 8px rgba(175,230,255,0.5),
-                inset -4px -4px 8px rgba(19,95,216,0.35);
-            transition: background 0.7s, transform 0.15s;
-        }
-        .btn-dl:hover {
-            background-position: right top;
+            transition: transform 0.15s;
+            isolation: isolate;
         }
         .btn-dl:active { transform: scale(0.96); }
 
-        /* 不突出按钮：玻璃态 */
+        /* 巡游光晕 */
+        .star-light {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: radial-gradient(ellipse at center, rgba(250,250,250,0.88) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 1;
+            offset-path: var(--btn-path, none);
+            offset-distance: 0%;
+            animation: star-orbit calc(var(--star-dur, 3) * 1s) linear infinite;
+            transform: translate(-50%, -50%);
+        }
+        @keyframes star-orbit {
+            to { offset-distance: 100%; }
+        }
+
+        /* 突出按钮文字渐变 */
+        .btn-dl .btn-text {
+            position: relative;
+            z-index: 10;
+            background: linear-gradient(to top, #ffffff 0%, #a8d8e8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 不突出按钮：玻璃态，无 hover 回馈 */
         .btn-mgr {
             background: rgba(43, 55, 80, 0.12);
             backdrop-filter: blur(12px);
@@ -294,18 +300,7 @@
                 inset 0 -3px 12px 0 rgba(170,202,255,0.12),
                 0 1px 3px 0 rgba(0,0,0,0.50),
                 0 4px 12px 0 rgba(0,0,0,0.40);
-            transition: color 0.2s, box-shadow 0.3s, transform 0.15s;
         }
-        .btn-mgr:hover {
-            color: #fff;
-            box-shadow:
-                inset 0 0 0 1px rgba(170,202,255,0.35),
-                inset 0 0 20px 0 rgba(170,202,255,0.14),
-                inset 0 -3px 14px 0 rgba(170,202,255,0.18),
-                0 1px 3px 0 rgba(0,0,0,0.55),
-                0 6px 18px 0 rgba(0,0,0,0.45);
-        }
-        .btn-mgr:active { transform: scale(0.975); }
 
         /* ===== 功能区块 ===== */
         .feature-section {
@@ -523,7 +518,10 @@
     <p class="anim d1" data-i18n="hero_sub">全新界面，竖屏探索 3A 大作，横屏秒变游戏掌机</p>
     <div class="hero-btns anim d2">
         <a href="https://hub.xiaoji.com/download/"   class="btn btn-mgr" data-i18n="btn_android">安卓下载（5.3.5）</a>
-        <a href="https://hub.xiaoji.com/download/"   class="btn btn-dl"  data-i18n="btn_beta">安卓下载(6.0尝鲜版)</a>
+        <a href="https://hub.xiaoji.com/download/" class="btn btn-dl">
+            <div class="star-light"></div>
+            <span class="btn-text" data-i18n="btn_beta">安卓下载(6.0尝鲜版)</span>
+        </a>
         <a href="https://play.google.com/store/apps/details?id=com.xiaoji.egggame&pcampaignid=web_share"
            class="btn btn-mgr en-only" style="display:none;" data-i18n="btn_gplay">Google Play</a>
         <a href="https://hub.xiaoji.com/manager"     class="btn btn-mgr" data-i18n="btn_mgr">盖世游戏管家</a>
@@ -808,51 +806,17 @@ function toggleLang() {
 
 applyLang();
 
-/* ---------- 玻璃按钮粒子效果（HoverButton） ---------- */
-(function() {
-    function initHoverParticles(btn) {
-        let listening = false;
-        let lastTime = 0;
-
-        btn.addEventListener('pointerenter', () => { listening = true; });
-        btn.addEventListener('pointerleave', () => { listening = false; });
-        btn.addEventListener('pointermove', (e) => {
-            if (!listening) return;
-            const now = Date.now();
-            if (now - lastTime < 100) return;
-            lastTime = now;
-
-            const rect = btn.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const xRatio = x / btn.offsetWidth;
-
-            const dot = document.createElement('div');
-            dot.style.cssText = `
-                position:absolute;
-                width:12px;height:12px;
-                left:${x}px;top:${y}px;
-                transform:translate(-50%,-50%);
-                border-radius:50%;
-                filter:blur(8px);
-                pointer-events:none;
-                z-index:0;
-                opacity:0;
-                transition:opacity 0.3s;
-                background:linear-gradient(to right,
-                    rgba(170,202,255,0.9) ${xRatio*100}%,
-                    rgba(100,160,255,0.9) ${xRatio*100}%);
-            `;
-            btn.appendChild(dot);
-
-            requestAnimationFrame(() => { dot.style.opacity = '0.7'; });
-            setTimeout(() => { dot.style.transition = 'opacity 1.2s'; dot.style.opacity = '0'; }, 1000);
-            setTimeout(() => { if (dot.parentNode) dot.parentNode.removeChild(dot); }, 2200);
-        });
-    }
-
-    document.querySelectorAll('.btn-mgr, .nav-beta, .lang-btn').forEach(initHoverParticles);
-})();
+/* ---------- StarButton 巡游光晕路径初始化 ---------- */
+function initStarButtons() {
+    document.querySelectorAll('.btn-dl').forEach(btn => {
+        const w = btn.offsetWidth;
+        const h = btn.offsetHeight;
+        btn.style.setProperty('--btn-path',
+            `path('M 0 0 H ${w} V ${h} H 0 Z')`);
+    });
+}
+initStarButtons();
+window.addEventListener('resize', initStarButtons);
 
 /* ---------- 双向滚动出场动画 ----------
    元素进入视口 → 加 .in（动画入场）
