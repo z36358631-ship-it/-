@@ -446,7 +446,7 @@
                 width: 100%;
                 max-width: 320px;
             }
-            .nav-link { display: none; }
+            .nav-link { font-size: 13px; padding: 8px 12px; }
             .nav-beta { font-size: 13px; padding: 8px 14px; }
             .lang-btn  { font-size: 13px; padding: 8px 14px; }
             .fh h2 { font-size: clamp(22px, 6vw, 32px); }
@@ -505,12 +505,10 @@
         <p  class="f2-desc" data-i18n="f2_desc">你的游戏库理应包罗万象。两大顶级平台数据互通，海量大作应有尽有。</p>
     </div>
     <div class="steam-media anim d1" id="steam-media">
-        <!-- 中文：显示真实截图；英文：暂无图，不显示 -->
         <img id="steam-img"
              src="assets/CN/Steam&amp;EPIC（CN）.png"
              alt="Steam &amp; EPIC"
              style="width:100%;max-width:1020px;display:block;">
-        <span class="media-label en-only" id="steam-placeholder" style="display:none;" data-i18n="ph_i1">🖼️ Screenshot Placeholder</span>
     </div>
 </section>
 
@@ -521,7 +519,8 @@
         <p  data-i18n="f3_desc">无论 PC 巨作，还是复古经典，让你的热爱随身携带。</p>
     </div>
     <div class="steam-media anim d1">
-        <img src="assets/CN/导入游戏（CN）.png"
+        <img id="import-img"
+             src="assets/CN/导入游戏（CN）.png"
              alt="导入游戏"
              style="width:100%;max-width:1020px;display:block;">
     </div>
@@ -635,7 +634,7 @@ const dict = {
         f1_h2:      '竖屏探索 3A 大作，横屏秒变游戏掌机',
         f1_desc:    '全新无缝界面，模式随心切换。指尖轻转，发现你的下一个游戏热爱。',
         f2_h2:      '全面接入 Steam 与 EPIC 平台',
-        f2_desc:    '你的游戏库理应包罗万象。两大顶级平台数据互通，海量顶尖大作，现在应有尽有。',
+        f2_desc:    '你的游戏库理应包罗万象。两大顶级平台数据互通，海量大作应有尽有。',
         f3_h2:      'PC游戏 & 复古自主一键导入',
         f3_desc:    '无论 PC 巨作，还是复古经典，让你的热爱随身携带。',
         f4_h2:      '无需下载，海量游戏乐享云端',
@@ -729,7 +728,7 @@ function applyLang() {
 
     // Google Play 按钮
     document.querySelectorAll('.en-only').forEach(el => {
-        el.style.display = isEn ? 'inline-flex' : 'none';
+        el.style.display = isEn ? '' : 'none';
     });
 
     // 根据语言切换首屏视频
@@ -743,14 +742,16 @@ function applyLang() {
         }
     }
 
-    // Steam 图片：中文显示图，英文留空占位
+    // Steam 图片：中英文切换
     const steamImg = document.getElementById('steam-img');
-    const steamPh  = document.getElementById('steam-placeholder');
     if (steamImg) {
-        steamImg.style.display = isEn ? 'none' : 'block';
+        steamImg.src = isEn ? 'assets/EN/Steam&EPIC（EN）.png' : 'assets/CN/Steam&EPIC（CN）.png';
     }
-    if (steamPh) {
-        steamPh.style.display = isEn ? 'flex' : 'none';
+
+    // 导入游戏图片：中英文切换
+    const importImg = document.getElementById('import-img');
+    if (importImg) {
+        importImg.src = isEn ? 'assets/EN/导入游戏（EN）.png' : 'assets/CN/导入游戏（CN）.png';
     }
 
     // Footer 切换（英文下隐藏中文备案信息，英文底部始终为空不显示）
