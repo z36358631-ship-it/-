@@ -261,36 +261,76 @@
             overflow: hidden;
         }
 
-        /* 突出按钮：ButtonColorful 模糊渐变光晕 */
+        /* 突出按钮：RealismButton */
         .btn-dl {
-            background: #111827;
-            color: #fff;
+            padding: 2px;
+            border-radius: 16px;
             border: none;
+            cursor: pointer;
+            background: radial-gradient(circle 80px at 80% -10%, #ffffff, #181b1b);
             transition: transform 0.15s;
             isolation: isolate;
+            overflow: visible;
         }
         .btn-dl:active { transform: scale(0.96); }
 
-        /* 模糊渐变层 */
-        .btn-dl .btn-glow {
+        /* 右上白光晕 */
+        .btn-tr-glow {
             position: absolute;
-            inset: 0;
-            background: linear-gradient(to right, #0e7490, #1d4ed8, #7e22ce);
-            opacity: 0.8;
-            filter: blur(8px);
-            transition: opacity 0.5s;
-            z-index: 0;
+            top: 0; right: 0;
+            width: 65%; height: 60%;
+            border-radius: 120px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.22);
+            z-index: -1;
             pointer-events: none;
+            transition: box-shadow 0.3s ease-out;
         }
-        .btn-dl:hover .btn-glow { opacity: 1; }
+        .btn-dl:hover .btn-tr-glow {
+            box-shadow: 0 0 40px rgba(255,255,255,0.38);
+        }
 
-        /* 文字层 */
-        .btn-dl .btn-text {
+        /* 左下绿色光斑 */
+        .btn-green-blob {
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 50px; height: 50%;
+            border-radius: 17px;
+            background: radial-gradient(circle 60px at 0% 100%, #3fff75, rgba(0,255,128,0.31), transparent);
+            box-shadow: -2px 9px 40px rgba(0,255,45,0.25);
+            pointer-events: none;
+            transition: width 0.3s ease-out, box-shadow 0.3s ease-out;
+        }
+        .btn-dl:hover .btn-green-blob {
+            width: 90px;
+            box-shadow: -4px 1px 45px rgba(0,255,45,0.38);
+        }
+
+        /* 内容层 */
+        .btn-inner {
             position: relative;
+            padding: 13px 28px;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 500;
+            background: radial-gradient(circle 80px at 80% -50%, #777777, #0f1111);
             z-index: 10;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            transition: transform 0.3s;
+            white-space: nowrap;
+        }
+        .btn-dl:hover .btn-inner { transform: scale(1.06); }
+
+        /* 内层青蓝光晕 */
+        .btn-inner-glow {
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            background: radial-gradient(circle 60px at 0% 100%, rgba(0,225,255,0.10), rgba(0,0,255,0.07), transparent);
+            z-index: -1;
+            pointer-events: none;
         }
 
         /* 不突出按钮：玻璃态 + hover 回馈 */
@@ -536,8 +576,12 @@
     <div class="hero-btns anim d2">
         <a href="https://hub.xiaoji.com/download/"   class="btn btn-mgr" data-i18n="btn_android">安卓下载（5.3.5）</a>
         <a href="https://hub.xiaoji.com/download/" class="btn btn-dl">
-            <div class="btn-glow"></div>
-            <span class="btn-text" data-i18n="btn_beta">安卓下载(6.0尝鲜版)</span>
+            <div class="btn-tr-glow"></div>
+            <div class="btn-green-blob"></div>
+            <div class="btn-inner">
+                <div class="btn-inner-glow"></div>
+                <span data-i18n="btn_beta">安卓下载(6.0尝鲜版)</span>
+            </div>
         </a>
         <a href="https://play.google.com/store/apps/details?id=com.xiaoji.egggame&pcampaignid=web_share"
            class="btn btn-mgr en-only" style="display:none;" data-i18n="btn_gplay">Google Play</a>
