@@ -312,13 +312,12 @@
             overflow: hidden;
         }
 
-        /* Steam 图片区：无背景无框，直接透明图，固定1200px */
+        /* Steam 图片区：无背景无框，直接透明图，最大1200px自适应 */
         .steam-media {
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow-x: auto;
         }
         .media-label {
             color: var(--txt2);
@@ -508,7 +507,7 @@
         <img id="steam-img"
              src="assets/CN/Steam&amp;EPIC（CN）.png"
              alt="Steam &amp; EPIC"
-             style="width:1200px;max-width:none;display:block;">
+             style="width:100%;max-width:1200px;display:block;">
         <span class="media-label en-only" id="steam-placeholder" style="display:none;" data-i18n="ph_i1">🖼️ Screenshot Placeholder</span>
     </div>
 </section>
