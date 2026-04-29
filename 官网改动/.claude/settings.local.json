@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($path = 'c:\\\\Users\\\\z3635\\\\Downloads\\\\盖世游戏 GameHub - 在Mac上畅玩Windows游戏.html'; $content = Get-Content -LiteralPath $path -Raw; $len = $content.Length; $lines = \\(Get-Content -LiteralPath $path\\).Count; \"LENGTH=$len`nLINES=$lines`nSTART=`n$\\($content.Substring\\(0,[Math]::Min\\(1200,$len\\)\\)\\)\")",
+      "PowerShell($path = 'c:\\\\Users\\\\z3635\\\\Downloads\\\\盖世游戏 GameHub - 在Mac上畅玩Windows游戏.html'; $content = [System.IO.File]::ReadAllText\\($path,[System.Text.Encoding]::UTF8\\); \"START=`n$\\($content.Substring\\(0,[Math]::Min\\(1500,$content.Length\\)\\)\\)\")",
+      "PowerShell($path = 'c:\\\\Users\\\\z3635\\\\Downloads\\\\盖世游戏 GameHub - 在Mac上畅玩Windows游戏.html'; $bytes = [System.IO.File]::ReadAllBytes\\($path\\); $bom = \\($bytes[0..2] -join ' '\\); \"BOM=$bom\")",
+      "PowerShell($path='c:\\\\Users\\\\z3635\\\\Downloads\\\\盖世游戏 GameHub - 在Mac上畅玩Windows游戏.html'; $html=[System.IO.File]::ReadAllText\\($path,[System.Text.Encoding]::UTF8\\); $labels=[regex]::Matches\\($html,'>\\([^<>]{1,40}\\)</a>','IgnoreCase,Singleline'\\); $seen = New-Object System.Collections.Generic.HashSet[string]; foreach\\($m in $labels\\){ $t=[System.Net.WebUtility]::HtmlDecode\\($m.Groups[1].Value\\).Trim\\(\\); if\\($t -and $seen.Add\\($t\\)\\){ if\\($t -match '游戏|Steam|FAQ|问题|下载|语言|登录|注册|首页|功能|方案|兼容|Mac|Windows|关注|联系我们'\\){ $t } } })",
+      "PowerShell(Get-Content \"c:\\\\Users\\\\z3635\\\\官网改动\\\\index.html\" | Select-Object -Skip 624 -First 5 | ForEach-Object { [System.Text.Encoding]::Unicode.GetBytes\\($_\\) | ForEach-Object { $_.ToString\\(\"X2\"\\) } })",
+      "PowerShell(\\(Get-Item \"c:\\\\Users\\\\z3635\\\\Downloads\\\\APP宣传动画_7_1.mp4\"\\).Length / 1MB)",
+      "Bash(git --version)"
+    ]
+  }
+}

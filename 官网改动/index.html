@@ -162,6 +162,28 @@
             color: #fff;
         }
 
+        /* 仅"打破界限"变色，无紫色 */
+        .grad-text {
+            background: linear-gradient(
+                90deg,
+                #fff      0%,
+                #40E0D0  30%,
+                #5B8EFF  60%,
+                #40E0D0  80%,
+                #fff     100%
+            );
+            background-size: 250% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: hero-gradient 5s linear infinite;
+        }
+
+        @keyframes hero-gradient {
+            0%   { background-position: 100% 0%; }
+            100% { background-position: -150% 0%; }
+        }
+
         .hero p {
             font-size: clamp(18px, 2.5vw, 32px);
             color: var(--txt2);
@@ -288,6 +310,15 @@
             justify-content: center;
             box-shadow: 0 12px 40px rgba(0,0,0,0.55);
             overflow: hidden;
+        }
+
+        /* Steam 图片区：无背景无框，直接透明图 */
+        .steam-media {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .media-label {
             color: var(--txt2);
@@ -448,7 +479,7 @@
 
 <!-- ===== 首屏（含视频） ===== -->
 <section class="hero">
-    <h1 class="anim" data-i18n="hero_h1">打破界限，游戏无界</h1>
+    <h1 class="anim" data-i18n="hero_h1"><span class="grad-text">打破界限</span>，游戏无界</h1>
     <p class="anim d1" data-i18n="hero_sub">全新界面，竖屏探索 3A 大作，横屏秒变游戏掌机</p>
     <div class="hero-btns anim d2">
         <a href="https://hub.xiaoji.com/download/"   class="btn btn-mgr" data-i18n="btn_android">安卓下载（5.3.5）</a>
@@ -458,8 +489,8 @@
         <a href="https://hub.xiaoji.com/manager"     class="btn btn-mgr" data-i18n="btn_mgr">盖世游戏管家</a>
     </div>
     <div class="hero-video anim d3">
-        <video
-            src="assets/hero.mp4"
+        <video id="hero-vid"
+            src="assets/CN/hero（CN）.mp4"
             autoplay muted loop playsinline
         ></video>
     </div>
@@ -472,8 +503,13 @@
         <h2 data-i18n="f2_h2">全面接入 Steam、EPIC 平台</h2>
         <p  class="f2-desc" data-i18n="f2_desc">你的游戏库理应包罗万象。两大顶级平台数据互通，海量大作应有尽有。</p>
     </div>
-    <div class="media-box anim d1">
-        <span class="media-label" data-i18n="ph_i1">🖼️ 界面截图占位区</span>
+    <div class="steam-media anim d1" id="steam-media">
+        <!-- 中文：显示真实截图；英文：暂无图，不显示 -->
+        <img id="steam-img"
+             src="assets/CN/Steam&amp;EPIC（CN）.png"
+             alt="Steam &amp; EPIC"
+             style="width:100%;display:block;">
+        <span class="media-label en-only" id="steam-placeholder" style="display:none;" data-i18n="ph_i1">🖼️ Screenshot Placeholder</span>
     </div>
 </section>
 
@@ -554,7 +590,7 @@
         <div class="footer-zh-row">
             <!-- 文化经营许可证图标：优先用 Mac 版，备用原站，最后降级为文字 -->
             <img class="whjy"
-                 src="assets/wenhuajingying.png"
+                 src="assets/CN/wenhuajingying.png"
                  onerror="this.onerror=null;this.style.display='none';"
                  alt="粤网文">
             <span>粤网文[2016]6575-1561号</span>
@@ -585,7 +621,7 @@ const dict = {
         lang_btn:   'EN',
         nav_beta:   '安卓下载(6.0尝鲜版)',
         nav_home:   '主页',
-        hero_h1:    '打破界限，游戏无界',
+        hero_h1:    '<span class="grad-text">打破界限</span>，游戏无界',
         hero_sub:   '全新界面，竖屏探索 3A 大作，横屏秒变游戏掌机',
         btn_android:'安卓下载（5.3.5）',
         btn_beta:   '安卓下载(6.0尝鲜版)',
@@ -627,7 +663,7 @@ const dict = {
         lang_btn:   '中文',
         nav_beta:   'Android 6.0 Beta',
         nav_home:   'Home',
-        hero_h1:    'Break Boundaries. Play Without Limits.',
+        hero_h1:    '<span class="grad-text">Break Boundaries.</span> Play Without Limits.',
         hero_sub:   'New UI，Browse in portrait, Play in landscape.',
         btn_android:'Android Download (5.3.5)',
         btn_beta:   'Android Download (6.0 Beta)',
@@ -690,6 +726,27 @@ function applyLang() {
     document.querySelectorAll('.en-only').forEach(el => {
         el.style.display = isEn ? 'inline-flex' : 'none';
     });
+
+    // 根据语言切换首屏视频
+    const heroVid = document.getElementById('hero-vid');
+    if (heroVid) {
+        const newSrc = isEn ? 'assets/EN/hero（EN）.mp4' : 'assets/CN/hero（CN）.mp4';
+        if (heroVid.getAttribute('src') !== newSrc) {
+            heroVid.src = newSrc;
+            heroVid.load();
+            heroVid.play().catch(() => {});
+        }
+    }
+
+    // Steam 图片：中文显示图，英文留空占位
+    const steamImg = document.getElementById('steam-img');
+    const steamPh  = document.getElementById('steam-placeholder');
+    if (steamImg) {
+        steamImg.style.display = isEn ? 'none' : 'block';
+    }
+    if (steamPh) {
+        steamPh.style.display = isEn ? 'flex' : 'none';
+    }
 
     // Footer 切换（英文下隐藏中文备案信息，英文底部始终为空不显示）
     const fzh = document.querySelector('.footer-zh');
