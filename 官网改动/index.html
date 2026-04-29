@@ -373,21 +373,6 @@
             font-size: 20px;
         }
 
-        /* ===== FAQ 底部光效 ===== */
-        .faq-fx-wrap {
-            position: relative;
-            width: 100%;
-            height: 420px;
-            overflow: hidden;
-            pointer-events: none;
-            background: transparent;
-            margin-top: -40px;
-        }
-        #faq-portal {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
 
         /* ===== Footer ===== */
         footer {
@@ -599,11 +584,6 @@
     </div>
 </section>
 
-<!-- ===== FAQ 底部光效 ===== -->
-<div class="faq-fx-wrap">
-    <canvas id="faq-portal"></canvas>
-</div>
-
 <!-- ===== Footer ===== -->
 <footer>
     <!-- 中文底部：1:1 还原图3样式 -->
@@ -801,18 +781,9 @@ const io = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.anim').forEach(el => io.observe(el));
 
-/* ---------- FAQ 底部光束 + 透视隧道特效 ---------- */
-(function initPortalFX() {
-    const canvas = document.getElementById('faq-portal');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let frame = 0, raf = null;
-
-    function draw() {
-        const W = canvas.width  = canvas.offsetWidth;
-        const H = canvas.height = canvas.offsetHeight;
-        const cx = W / 2;
-        ctx.clearRect(0, 0, W, H);
+</script>
+</body>
+</html>
 
         const pulse = Math.sin(frame * 0.016) * 0.08 + 0.92;
 
