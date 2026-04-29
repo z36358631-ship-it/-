@@ -373,6 +373,22 @@
             font-size: 20px;
         }
 
+        /* ===== FAQ 底部光效 ===== */
+        .faq-fx-wrap {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            overflow: hidden;
+            pointer-events: none;
+            background: transparent;
+            margin-top: -40px;
+        }
+        #faq-portal {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
         /* ===== Footer ===== */
         footer {
             background: #000000;
@@ -581,6 +597,11 @@
     </div>
 </section>
 
+<!-- ===== FAQ 底部光效 ===== -->
+<div class="faq-fx-wrap">
+    <canvas id="faq-portal"></canvas>
+</div>
+
 <!-- ===== Footer ===== -->
 <footer>
     <!-- 中文底部：1:1 还原图3样式 -->
@@ -777,6 +798,110 @@ const io = new IntersectionObserver((entries) => {
 });
 
 document.querySelectorAll('.anim').forEach(el => io.observe(el));
+
+/* ---------- FAQ 底部光束 + 隧道特效 ---------- */
+(function initPortalFX() {
+    const canvas = document.getElementById('faq-portal');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let frame = 0, raf = null;
+
+    function draw() {
+        const W = canvas.width  = canvas.offsetWidth;
+        const H = canvas.height = canvas.offsetHeight;
+        const cx = W / 2;
+        ctx.clearRect(0, 0, W, H);
+
+        const pulse = Math.sin(frame * 0.018) * 0.12 + 0.88;
+
+        // 隧道椭圆圆心
+        const portalY = H * 0.80;
+        const portalRx = Math.min(W * 0.21, 260);
+        const portalRy = portalRx * 0.27;
+
+        // -- 光束宽面光晕 --
+        const gW = 80 * pulse;
+        const glowGrad = ctx.createLinearGradient(cx - gW, 0, cx + gW, 0);
+        glowGrad.addColorStop(0,   'rgba(100,210,255,0)');
+        glowGrad.addColorStop(0.5, 'rgba(130,220,255,0.10)');
+        glowGrad.addColorStop(1,   'rgba(100,210,255,0)');
+        ctx.fillStyle = glowGrad;
+        ctx.fillRect(cx - gW, 0, gW * 2, portalY);
+
+        // -- 光束核心线 --
+        const beamGrad = ctx.createLinearGradient(cx, 0, cx, portalY);
+        beamGrad.addColorStop(0,    'rgba(180,238,255,0)');
+        beamGrad.addColorStop(0.45, 'rgba(200,240,255,0.45)');
+        beamGrad.addColorStop(0.88, 'rgba(220,245,255,0.9)');
+        beamGrad.addColorStop(1,    'rgba(240,250,255,1)');
+        ctx.save();
+        ctx.shadowColor = 'rgba(160,232,255,0.85)';
+        ctx.shadowBlur  = 20;
+        ctx.strokeStyle = beamGrad;
+        ctx.lineWidth   = 2 * pulse;
+        ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, portalY); ctx.stroke();
+        ctx.restore();
+
+        // -- 收束漏斗线（左右各一） --
+        ctx.save();
+        ctx.shadowColor = 'rgba(160,232,255,0.5)';
+        ctx.shadowBlur  = 14;
+        ctx.strokeStyle = `rgba(200,242,255,${0.55 * pulse})`;
+        ctx.lineWidth   = 1;
+        // 左侧
+        ctx.beginPath();
+        ctx.moveTo(cx, portalY - portalRy * 0.25);
+        ctx.quadraticCurveTo(cx - portalRx * 0.48, portalY + portalRy * 0.2,
+                             cx - portalRx * 0.88,  portalY);
+        ctx.stroke();
+        // 右侧
+        ctx.beginPath();
+        ctx.moveTo(cx, portalY - portalRy * 0.25);
+        ctx.quadraticCurveTo(cx + portalRx * 0.48, portalY + portalRy * 0.2,
+                             cx + portalRx * 0.88,  portalY);
+        ctx.stroke();
+        ctx.restore();
+
+        // -- 隧道同心椭圆（透视收缩向上偏移） --
+        const numRings = 9;
+        for (let i = 0; i < numRings; i++) {
+            const r  = i / (numRings - 1);        // 0=最外, 1=最内
+            const sc = 1 - r * 0.87;
+            const dy = -portalRy * r * 1.15;
+            const a  = (1 - r * 0.68) * 0.72 * pulse;
+            const bl = (1 - r * 0.55) * 14;
+            ctx.save();
+            ctx.shadowColor = `rgba(150,228,255,${a})`;
+            ctx.shadowBlur  = bl;
+            ctx.strokeStyle = `rgba(190,240,255,${a})`;
+            ctx.lineWidth   = i === 0 ? 1.6 : 1;
+            ctx.beginPath();
+            ctx.ellipse(cx, portalY + dy, portalRx * sc, portalRy * sc, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // -- 底部环形外发光 --
+        const og = ctx.createRadialGradient(cx, portalY, portalRy * 0.4, cx, portalY, portalRx * 1.9);
+        og.addColorStop(0,   `rgba(80,190,255,${0.09 * pulse})`);
+        og.addColorStop(0.55,`rgba(80,190,255,${0.04 * pulse})`);
+        og.addColorStop(1,   'rgba(80,190,255,0)');
+        ctx.fillStyle = og;
+        ctx.fillRect(0, portalY - portalRx, W, portalRx * 2.6);
+
+        frame++;
+        raf = requestAnimationFrame(draw);
+    }
+
+    // 可见时播放，离开视口时暂停
+    const vis = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) { if (!raf) draw(); }
+            else { cancelAnimationFrame(raf); raf = null; }
+        });
+    });
+    vis.observe(canvas);
+})();
 </script>
 </body>
 </html>
