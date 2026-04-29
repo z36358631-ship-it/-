@@ -312,7 +312,7 @@
             overflow: hidden;
         }
 
-        /* Steam 图片区：无背景无框，直接透明图，最大1200px自适应 */
+        /* Steam 图片区：无背景无框，直接透明图，最大1020px自适应 */
         .steam-media {
             width: 100%;
             display: flex;
@@ -377,7 +377,7 @@
         .faq-fx-wrap {
             position: relative;
             width: 100%;
-            height: 320px;
+            height: 420px;
             overflow: hidden;
             pointer-events: none;
             background: transparent;
@@ -523,7 +523,7 @@
         <img id="steam-img"
              src="assets/CN/Steam&amp;EPIC（CN）.png"
              alt="Steam &amp; EPIC"
-             style="width:100%;max-width:1200px;display:block;">
+             style="width:100%;max-width:1020px;display:block;">
         <span class="media-label en-only" id="steam-placeholder" style="display:none;" data-i18n="ph_i1">🖼️ Screenshot Placeholder</span>
     </div>
 </section>
@@ -537,7 +537,7 @@
     <div class="steam-media anim d1">
         <img src="assets/CN/导入游戏（CN）.png"
              alt="导入游戏"
-             style="width:100%;max-width:1200px;display:block;">
+             style="width:100%;max-width:1020px;display:block;">
     </div>
 </section>
 
@@ -801,7 +801,7 @@ const io = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.anim').forEach(el => io.observe(el));
 
-/* ---------- FAQ 底部光束 + 隧道特效 ---------- */
+/* ---------- FAQ 底部光束 + 透视隧道特效 ---------- */
 (function initPortalFX() {
     const canvas = document.getElementById('faq-portal');
     if (!canvas) return;
@@ -814,88 +814,75 @@ document.querySelectorAll('.anim').forEach(el => io.observe(el));
         const cx = W / 2;
         ctx.clearRect(0, 0, W, H);
 
-        const pulse = Math.sin(frame * 0.018) * 0.12 + 0.88;
+        const pulse = Math.sin(frame * 0.016) * 0.10 + 0.90;
 
-        // 隧道椭圆圆心
-        const portalY = H * 0.80;
-        const portalRx = Math.min(W * 0.21, 260);
-        const portalRy = portalRx * 0.27;
+        // 透视消失点 & 外圈基准
+        const vanishY  = H * 0.18;          // 消失点（顶部）
+        const baseY    = H * 0.82;          // 外圈中心 y
+        const baseRx   = W  * 0.44;         // 外圈半宽（接近 Mac 版宽度）
+        const flatness = 0.13;              // ry/rx 比例（极扁）
+        const numRings = 16;
 
         // -- 光束宽面光晕 --
-        const gW = 80 * pulse;
-        const glowGrad = ctx.createLinearGradient(cx - gW, 0, cx + gW, 0);
-        glowGrad.addColorStop(0,   'rgba(100,210,255,0)');
-        glowGrad.addColorStop(0.5, 'rgba(130,220,255,0.10)');
-        glowGrad.addColorStop(1,   'rgba(100,210,255,0)');
-        ctx.fillStyle = glowGrad;
-        ctx.fillRect(cx - gW, 0, gW * 2, portalY);
+        const gW = 90 * pulse;
+        const bg = ctx.createLinearGradient(cx - gW, 0, cx + gW, 0);
+        bg.addColorStop(0,   'rgba(90,200,255,0)');
+        bg.addColorStop(0.5, 'rgba(120,215,255,0.09)');
+        bg.addColorStop(1,   'rgba(90,200,255,0)');
+        ctx.fillStyle = bg;
+        ctx.fillRect(cx - gW, 0, gW * 2, baseY);
 
         // -- 光束核心线 --
-        const beamGrad = ctx.createLinearGradient(cx, 0, cx, portalY);
+        const beamGrad = ctx.createLinearGradient(cx, 0, cx, baseY);
         beamGrad.addColorStop(0,    'rgba(180,238,255,0)');
-        beamGrad.addColorStop(0.45, 'rgba(200,240,255,0.45)');
-        beamGrad.addColorStop(0.88, 'rgba(220,245,255,0.9)');
+        beamGrad.addColorStop(0.4,  'rgba(200,242,255,0.35)');
+        beamGrad.addColorStop(0.85, 'rgba(220,246,255,0.88)');
         beamGrad.addColorStop(1,    'rgba(240,250,255,1)');
         ctx.save();
-        ctx.shadowColor = 'rgba(160,232,255,0.85)';
-        ctx.shadowBlur  = 20;
+        ctx.shadowColor = 'rgba(160,232,255,0.8)';
+        ctx.shadowBlur  = 22;
         ctx.strokeStyle = beamGrad;
-        ctx.lineWidth   = 2 * pulse;
-        ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, portalY); ctx.stroke();
+        ctx.lineWidth   = 1.8 * pulse;
+        ctx.beginPath(); ctx.moveTo(cx, vanishY); ctx.lineTo(cx, baseY); ctx.stroke();
         ctx.restore();
 
-        // -- 收束漏斗线（左右各一） --
-        ctx.save();
-        ctx.shadowColor = 'rgba(160,232,255,0.5)';
-        ctx.shadowBlur  = 14;
-        ctx.strokeStyle = `rgba(200,242,255,${0.55 * pulse})`;
-        ctx.lineWidth   = 1;
-        // 左侧
-        ctx.beginPath();
-        ctx.moveTo(cx, portalY - portalRy * 0.25);
-        ctx.quadraticCurveTo(cx - portalRx * 0.48, portalY + portalRy * 0.2,
-                             cx - portalRx * 0.88,  portalY);
-        ctx.stroke();
-        // 右侧
-        ctx.beginPath();
-        ctx.moveTo(cx, portalY - portalRy * 0.25);
-        ctx.quadraticCurveTo(cx + portalRx * 0.48, portalY + portalRy * 0.2,
-                             cx + portalRx * 0.88,  portalY);
-        ctx.stroke();
-        ctx.restore();
-
-        // -- 隧道同心椭圆（透视收缩向上偏移） --
-        const numRings = 9;
+        // -- 透视同心椭圆 --
+        // 用透视深度模型：ring i 的深度 d = 1 + i*(D-1)/(N-1)
+        // rx_i = baseRx / d, cy_i 随 d 线性上移到 vanishY
+        const D = 9.0; // 最大深度倍数（越大内环越小、越高）
         for (let i = 0; i < numRings; i++) {
-            const r  = i / (numRings - 1);        // 0=最外, 1=最内
-            const sc = 1 - r * 0.87;
-            const dy = -portalRy * r * 1.15;
-            const a  = (1 - r * 0.68) * 0.72 * pulse;
-            const bl = (1 - r * 0.55) * 14;
+            const t  = i / (numRings - 1);       // 0=外, 1=内
+            const d  = 1 + t * (D - 1);           // 透视深度
+            const rx = baseRx / d;
+            const ry = rx * flatness;
+            // y 随深度从 baseY 线性移向 vanishY
+            const cy = baseY + (vanishY - baseY) * t;
+            const alpha = (1 - t * 0.55) * 0.75 * pulse;
+            const glow  = (1 - t * 0.5) * 16;
+
             ctx.save();
-            ctx.shadowColor = `rgba(150,228,255,${a})`;
-            ctx.shadowBlur  = bl;
-            ctx.strokeStyle = `rgba(190,240,255,${a})`;
-            ctx.lineWidth   = i === 0 ? 1.6 : 1;
+            ctx.shadowColor = `rgba(140,228,255,${alpha})`;
+            ctx.shadowBlur  = glow;
+            ctx.strokeStyle = `rgba(185,240,255,${alpha})`;
+            ctx.lineWidth   = i === 0 ? 1.5 : 1;
             ctx.beginPath();
-            ctx.ellipse(cx, portalY + dy, portalRx * sc, portalRy * sc, 0, 0, Math.PI * 2);
+            ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
             ctx.stroke();
             ctx.restore();
         }
 
-        // -- 底部环形外发光 --
-        const og = ctx.createRadialGradient(cx, portalY, portalRy * 0.4, cx, portalY, portalRx * 1.9);
-        og.addColorStop(0,   `rgba(80,190,255,${0.09 * pulse})`);
-        og.addColorStop(0.55,`rgba(80,190,255,${0.04 * pulse})`);
-        og.addColorStop(1,   'rgba(80,190,255,0)');
+        // -- 外圈底部环形大光晕 --
+        const og = ctx.createRadialGradient(cx, baseY, baseRx * 0.05, cx, baseY, baseRx * 1.25);
+        og.addColorStop(0,   `rgba(80,190,255,${0.12 * pulse})`);
+        og.addColorStop(0.5, `rgba(80,190,255,${0.05 * pulse})`);
+        og.addColorStop(1,    'rgba(80,190,255,0)');
         ctx.fillStyle = og;
-        ctx.fillRect(0, portalY - portalRx, W, portalRx * 2.6);
+        ctx.fillRect(0, baseY - baseRx * 0.5, W, baseRx);
 
         frame++;
         raf = requestAnimationFrame(draw);
     }
 
-    // 可见时播放，离开视口时暂停
     const vis = new IntersectionObserver(entries => {
         entries.forEach(e => {
             if (e.isIntersecting) { if (!raf) draw(); }
