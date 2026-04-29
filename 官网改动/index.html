@@ -814,20 +814,20 @@ document.querySelectorAll('.anim').forEach(el => io.observe(el));
         const cx = W / 2;
         ctx.clearRect(0, 0, W, H);
 
-        const pulse = Math.sin(frame * 0.016) * 0.10 + 0.90;
+        const pulse = Math.sin(frame * 0.016) * 0.08 + 0.92;
 
-        // 透视消失点 & 外圈基准
-        const vanishY  = H * 0.18;          // 消失点（顶部）
-        const baseY    = H * 0.82;          // 外圈中心 y
-        const baseRx   = W  * 0.44;         // 外圈半宽（接近 Mac 版宽度）
-        const flatness = 0.13;              // ry/rx 比例（极扁）
-        const numRings = 16;
+        // 所有环共享同一圆心（正确的水平圆盘投影）
+        const baseY   = H * 0.70;
+        const flatness = 0.115;          // ry/rx，极扁
+        const numRings = 12;
+        const outerRx  = W * 0.54;      // 外圈超出画布边缘
+        const innerRx  = W * 0.025;     // 最内圈
 
         // -- 光束宽面光晕 --
-        const gW = 90 * pulse;
+        const gW = 70 * pulse;
         const bg = ctx.createLinearGradient(cx - gW, 0, cx + gW, 0);
         bg.addColorStop(0,   'rgba(90,200,255,0)');
-        bg.addColorStop(0.5, 'rgba(120,215,255,0.09)');
+        bg.addColorStop(0.5, 'rgba(120,215,255,0.08)');
         bg.addColorStop(1,   'rgba(90,200,255,0)');
         ctx.fillStyle = bg;
         ctx.fillRect(cx - gW, 0, gW * 2, baseY);
@@ -835,49 +835,49 @@ document.querySelectorAll('.anim').forEach(el => io.observe(el));
         // -- 光束核心线 --
         const beamGrad = ctx.createLinearGradient(cx, 0, cx, baseY);
         beamGrad.addColorStop(0,    'rgba(180,238,255,0)');
-        beamGrad.addColorStop(0.4,  'rgba(200,242,255,0.35)');
-        beamGrad.addColorStop(0.85, 'rgba(220,246,255,0.88)');
-        beamGrad.addColorStop(1,    'rgba(240,250,255,1)');
+        beamGrad.addColorStop(0.5,  'rgba(210,244,255,0.5)');
+        beamGrad.addColorStop(0.9,  'rgba(230,248,255,0.9)');
+        beamGrad.addColorStop(1,    'rgba(245,252,255,1)');
         ctx.save();
-        ctx.shadowColor = 'rgba(160,232,255,0.8)';
-        ctx.shadowBlur  = 22;
+        ctx.shadowColor = 'rgba(160,232,255,0.75)';
+        ctx.shadowBlur  = 18;
         ctx.strokeStyle = beamGrad;
-        ctx.lineWidth   = 1.8 * pulse;
-        ctx.beginPath(); ctx.moveTo(cx, vanishY); ctx.lineTo(cx, baseY); ctx.stroke();
+        ctx.lineWidth   = 1.5 * pulse;
+        ctx.beginPath();
+        ctx.moveTo(cx, 0);
+        ctx.lineTo(cx, baseY);
+        ctx.stroke();
         ctx.restore();
 
-        // -- 透视同心椭圆 --
-        // 用透视深度模型：ring i 的深度 d = 1 + i*(D-1)/(N-1)
-        // rx_i = baseRx / d, cy_i 随 d 线性上移到 vanishY
-        const D = 9.0; // 最大深度倍数（越大内环越小、越高）
+        // -- 同心椭圆环（所有环圆心相同，均匀间距）--
         for (let i = 0; i < numRings; i++) {
-            const t  = i / (numRings - 1);       // 0=外, 1=内
-            const d  = 1 + t * (D - 1);           // 透视深度
-            const rx = baseRx / d;
+            const t  = i / (numRings - 1);          // 0=最内, 1=最外
+            const rx = innerRx + (outerRx - innerRx) * t;
             const ry = rx * flatness;
-            // y 随深度从 baseY 线性移向 vanishY
-            const cy = baseY + (vanishY - baseY) * t;
-            const alpha = (1 - t * 0.55) * 0.75 * pulse;
-            const glow  = (1 - t * 0.5) * 16;
+            // 外圈稍亮，内圈稍暗，整体均匀
+            const alpha = (0.35 + t * 0.45) * pulse;
+            const glow  = 6 + t * 12;
 
             ctx.save();
-            ctx.shadowColor = `rgba(140,228,255,${alpha})`;
+            ctx.shadowColor = `rgba(140,228,255,${alpha * 0.9})`;
             ctx.shadowBlur  = glow;
             ctx.strokeStyle = `rgba(185,240,255,${alpha})`;
-            ctx.lineWidth   = i === 0 ? 1.5 : 1;
+            ctx.lineWidth   = i === numRings - 1 ? 1.4 : 1;
             ctx.beginPath();
-            ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+            ctx.ellipse(cx, baseY, rx, ry, 0, 0, Math.PI * 2);
             ctx.stroke();
             ctx.restore();
         }
 
-        // -- 外圈底部环形大光晕 --
-        const og = ctx.createRadialGradient(cx, baseY, baseRx * 0.05, cx, baseY, baseRx * 1.25);
-        og.addColorStop(0,   `rgba(80,190,255,${0.12 * pulse})`);
-        og.addColorStop(0.5, `rgba(80,190,255,${0.05 * pulse})`);
-        og.addColorStop(1,    'rgba(80,190,255,0)');
-        ctx.fillStyle = og;
-        ctx.fillRect(0, baseY - baseRx * 0.5, W, baseRx);
+        // -- 圆心亮点 --
+        ctx.save();
+        ctx.shadowColor = 'rgba(200,245,255,0.9)';
+        ctx.shadowBlur  = 24;
+        ctx.fillStyle   = `rgba(220,248,255,${0.6 * pulse})`;
+        ctx.beginPath();
+        ctx.ellipse(cx, baseY, 3, 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
 
         frame++;
         raf = requestAnimationFrame(draw);
