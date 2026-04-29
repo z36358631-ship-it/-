@@ -101,7 +101,7 @@
             gap: 10px;
         }
 
-        /* 导航尝鲜版按钮（普通样式，与 nav-link 一致） */
+        /* 导航尝鲜版按钮 */
         .nav-beta {
             display: inline-flex;
             align-items: center;
@@ -110,12 +110,26 @@
             font-size: 15px;
             font-weight: 500;
             color: var(--txt2);
-            border: 1px solid rgba(255,255,255,0.22);
-            background: transparent;
+            background: rgba(43, 55, 80, 0.10);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             white-space: nowrap;
-            transition: color 0.2s, border-color 0.2s, background 0.2s;
+            border: none;
+            box-shadow:
+                inset 0 0 0 1px rgba(170,202,255,0.18),
+                inset 0 0 14px 0 rgba(170,202,255,0.07),
+                0 1px 3px 0 rgba(0,0,0,0.45),
+                0 3px 10px 0 rgba(0,0,0,0.35);
+            transition: color 0.2s, box-shadow 0.3s;
         }
-        .nav-beta:hover { color: #fff; border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.07); }
+        .nav-beta:hover {
+            color: #fff;
+            box-shadow:
+                inset 0 0 0 1px rgba(170,202,255,0.32),
+                inset 0 0 18px 0 rgba(170,202,255,0.12),
+                0 1px 3px 0 rgba(0,0,0,0.50),
+                0 4px 14px 0 rgba(0,0,0,0.42);
+        }
 
         /* 主页文字链接 */
         .nav-link {
@@ -130,18 +144,32 @@
 
         /* 语言切换 */
         .lang-btn {
-            background: transparent;
+            background: rgba(43, 55, 80, 0.10);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             color: var(--txt2);
-            border: 1px solid rgba(255,255,255,0.22);
+            border: none;
             padding: 10px 22px;
             border-radius: var(--pill);
             font-size: 15px;
             font-weight: 500;
             cursor: pointer;
             white-space: nowrap;
-            transition: color 0.2s, border-color 0.2s, background 0.2s;
+            box-shadow:
+                inset 0 0 0 1px rgba(170,202,255,0.18),
+                inset 0 0 14px 0 rgba(170,202,255,0.07),
+                0 1px 3px 0 rgba(0,0,0,0.45),
+                0 3px 10px 0 rgba(0,0,0,0.35);
+            transition: color 0.2s, box-shadow 0.3s;
         }
-        .lang-btn:hover { color: #fff; border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.07); }
+        .lang-btn:hover {
+            color: #fff;
+            box-shadow:
+                inset 0 0 0 1px rgba(170,202,255,0.32),
+                inset 0 0 18px 0 rgba(170,202,255,0.12),
+                0 1px 3px 0 rgba(0,0,0,0.50),
+                0 4px 14px 0 rgba(0,0,0,0.42);
+        }
 
         /* ===== 首屏 ===== */
         .hero {
@@ -217,8 +245,7 @@
             display: block;
         }
 
-        /* ===== 按钮系统（仿旧官网样式） ===== */
-        /* 基础 */
+        /* ===== 按钮系统 ===== */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -230,42 +257,86 @@
             cursor: pointer;
             white-space: nowrap;
             letter-spacing: 0.2px;
-            transition: opacity 0.18s, transform 0.15s;
+            transition: transform 0.5s ease-out, box-shadow 0.5s ease-out, opacity 0.18s;
+            position: relative;
+            overflow: hidden;
         }
-        .btn:active { transform: scale(0.96); }
 
-        /* 下载按钮：旧官网风格，彩虹渐变动态边框 */
+        /* 突出按钮：蓝青渐变 */
         .btn-dl {
-            /* padding-box 填充深色背景，border-box 用渐变当边框 */
-            background:
-                linear-gradient(#1a1a26, #1a1a26) padding-box,
-                linear-gradient(115deg,
-                    #FF5F40 0%,
-                    #FFCC00 22%,
-                    #40E0C0 44%,
-                    #5B8EFF 66%,
-                    #C060FF 88%,
-                    #FF5F40 100%
-                ) border-box;
-            background-size: 100% 100%, 300% 100%;
-            border: 1.5px solid transparent;
+            border: 2px solid rgba(32, 186, 224, 0.45);
+            background: linear-gradient(135deg,
+                rgba(32,186,224,0.38),
+                rgba(32,186,224,0.28),
+                rgba(32,186,224,0.55));
             color: #fff;
-            animation: dl-border 5s linear infinite;
+            box-shadow: 0 8px 32px rgba(32,186,224,0.18), 0 2px 8px rgba(0,0,0,0.4);
+            gap: 10px;
         }
-        .btn-dl:hover { opacity: 0.85; }
+        .btn-dl::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(32,186,224,0.38), transparent);
+            transform: translateX(-100%);
+            transition: transform 1s ease-out;
+            pointer-events: none;
+        }
+        .btn-dl::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(90deg, rgba(32,186,224,0.18), rgba(32,186,224,0.08), rgba(32,186,224,0.18));
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+        .btn-dl:hover {
+            transform: scale(1.02) translateY(-3px);
+            box-shadow: 0 16px 48px rgba(32,186,224,0.32), 0 4px 16px rgba(0,0,0,0.5);
+        }
+        .btn-dl:hover::before { transform: translateX(100%); }
+        .btn-dl:hover::after  { opacity: 1; }
+        .btn-dl:active { transform: scale(0.96); }
 
-        @keyframes dl-border {
-            from { background-position: 0 0, 0% 0%; }
-            to   { background-position: 0 0, 300% 0%; }
+        /* 突出按钮右侧箭头 */
+        .btn-dl .btn-arrow {
+            display: inline-flex;
+            align-items: center;
+            opacity: 0.45;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .btn-dl:hover .btn-arrow {
+            opacity: 1;
+            transform: translateX(3px);
         }
 
-        /* 管家按钮：旧官网 manager-btn 风格 */
+        /* 不突出按钮：玻璃态 */
         .btn-mgr {
-            background: rgba(255,255,255,0.05);
-            color: #c8c8d8;
-            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(43, 55, 80, 0.12);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: var(--txt2);
+            border: none;
+            box-shadow:
+                inset 0 0 0 1px rgba(170,202,255,0.20),
+                inset 0 0 16px 0 rgba(170,202,255,0.08),
+                inset 0 -3px 12px 0 rgba(170,202,255,0.12),
+                0 1px 3px 0 rgba(0,0,0,0.50),
+                0 4px 12px 0 rgba(0,0,0,0.40);
+            transition: color 0.2s, box-shadow 0.3s, transform 0.15s;
         }
-        .btn-mgr:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .btn-mgr:hover {
+            color: #fff;
+            box-shadow:
+                inset 0 0 0 1px rgba(170,202,255,0.35),
+                inset 0 0 20px 0 rgba(170,202,255,0.14),
+                inset 0 -3px 14px 0 rgba(170,202,255,0.18),
+                0 1px 3px 0 rgba(0,0,0,0.55),
+                0 6px 18px 0 rgba(0,0,0,0.45);
+        }
+        .btn-mgr:active { transform: scale(0.975); }
 
         /* ===== 功能区块 ===== */
         .feature-section {
@@ -484,7 +555,7 @@
     <p class="anim d1" data-i18n="hero_sub">全新界面，竖屏探索 3A 大作，横屏秒变游戏掌机</p>
     <div class="hero-btns anim d2">
         <a href="https://hub.xiaoji.com/download/"   class="btn btn-mgr" data-i18n="btn_android">安卓下载（5.3.5）</a>
-        <a href="https://hub.xiaoji.com/download/"   class="btn btn-dl"  data-i18n="btn_beta">安卓下载(6.0尝鲜版)</a>
+        <a href="https://hub.xiaoji.com/download/"   class="btn btn-dl"  data-i18n="btn_beta">安卓下载(6.0尝鲜版)<span class="btn-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span></a>
         <a href="https://play.google.com/store/apps/details?id=com.xiaoji.egggame&pcampaignid=web_share"
            class="btn btn-mgr en-only" style="display:none;" data-i18n="btn_gplay">Google Play</a>
         <a href="https://hub.xiaoji.com/manager"     class="btn btn-mgr" data-i18n="btn_mgr">盖世游戏管家</a>
@@ -768,6 +839,52 @@ function toggleLang() {
 }
 
 applyLang();
+
+/* ---------- 玻璃按钮粒子效果（HoverButton） ---------- */
+(function() {
+    function initHoverParticles(btn) {
+        let listening = false;
+        let lastTime = 0;
+
+        btn.addEventListener('pointerenter', () => { listening = true; });
+        btn.addEventListener('pointerleave', () => { listening = false; });
+        btn.addEventListener('pointermove', (e) => {
+            if (!listening) return;
+            const now = Date.now();
+            if (now - lastTime < 100) return;
+            lastTime = now;
+
+            const rect = btn.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const xRatio = x / btn.offsetWidth;
+
+            const dot = document.createElement('div');
+            dot.style.cssText = `
+                position:absolute;
+                width:12px;height:12px;
+                left:${x}px;top:${y}px;
+                transform:translate(-50%,-50%);
+                border-radius:50%;
+                filter:blur(8px);
+                pointer-events:none;
+                z-index:0;
+                opacity:0;
+                transition:opacity 0.3s;
+                background:linear-gradient(to right,
+                    rgba(170,202,255,0.9) ${xRatio*100}%,
+                    rgba(100,160,255,0.9) ${xRatio*100}%);
+            `;
+            btn.appendChild(dot);
+
+            requestAnimationFrame(() => { dot.style.opacity = '0.7'; });
+            setTimeout(() => { dot.style.transition = 'opacity 1.2s'; dot.style.opacity = '0'; }, 1000);
+            setTimeout(() => { if (dot.parentNode) dot.parentNode.removeChild(dot); }, 2200);
+        });
+    }
+
+    document.querySelectorAll('.btn-mgr, .nav-beta, .lang-btn').forEach(initHoverParticles);
+})();
 
 /* ---------- 双向滚动出场动画 ----------
    元素进入视口 → 加 .in（动画入场）
