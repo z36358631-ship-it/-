@@ -261,30 +261,26 @@
             overflow: hidden;
         }
 
-        /* 突出按钮：ShiningButton */
+        /* 突出按钮：ButtonColorful */
         .btn-dl {
-            background: linear-gradient(to bottom, #3b82f6, #2563eb, #1e40af);
+            background: #18181b;
             color: #fff;
             border: none;
             overflow: hidden;
-            transition: transform 0.15s, filter 0.2s;
+            transition: transform 0.15s;
+            gap: 6px;
         }
         .btn-dl::before {
             content: '';
             position: absolute;
-            width: 6px;
-            height: 320px;
-            top: 50%;
-            left: 0;
-            transform: translate(-100px, -50%) skewX(-10deg);
-            background: #fff;
+            inset: 0;
+            background: linear-gradient(to right, #6366f1, #a855f7, #ec4899);
+            opacity: 0.4;
             filter: blur(8px);
-            transition: transform 0.8s;
+            transition: opacity 0.5s;
             pointer-events: none;
         }
-        .btn-dl:hover::before {
-            transform: translate(320px, -50%) skewX(-10deg);
-        }
+        .btn-dl:hover::before { opacity: 0.8; }
         .btn-dl:active { transform: scale(0.96); }
 
         /* 不突出按钮：玻璃态 + hover 回馈 */
@@ -529,7 +525,10 @@
     <p class="anim d1" data-i18n="hero_sub">全新界面，竖屏探索 3A 大作，横屏秒变游戏掌机</p>
     <div class="hero-btns anim d2">
         <a href="https://hub.xiaoji.com/download/"   class="btn btn-mgr" data-i18n="btn_android">安卓下载（5.3.5）</a>
-        <a href="https://hub.xiaoji.com/download/" class="btn btn-dl" data-i18n="btn_beta">安卓下载(6.0尝鲜版)</a>
+        <a href="https://hub.xiaoji.com/download/" class="btn btn-dl">
+            <span data-i18n="btn_beta">安卓下载(6.0尝鲜版)</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.9;flex-shrink:0"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+        </a>
         <a href="https://play.google.com/store/apps/details?id=com.xiaoji.egggame&pcampaignid=web_share"
            class="btn btn-mgr en-only" style="display:none;" data-i18n="btn_gplay">Google Play</a>
         <a href="https://hub.xiaoji.com/manager"     class="btn btn-mgr" data-i18n="btn_mgr">盖世游戏管家</a>
