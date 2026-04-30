@@ -282,6 +282,7 @@
         }
         .btn-dl:hover::before { opacity: 0.8; }
         .btn-dl:active { transform: scale(0.96); }
+        .btn-dl span { position: relative; z-index: 1; }
 
         /* 不突出按钮：玻璃态 + hover 回馈 */
         .btn-mgr {
@@ -591,8 +592,12 @@
         <h2 data-i18n="f5_h2">全新榜单，热门好游即点即享</h2>
         <p  data-i18n="f5_desc">好游戏一目了然。助你快速定位心仪之作，告别游戏荒。</p>
     </div>
-    <div class="media-box anim d1">
-        <span class="media-label" data-i18n="ph_i3">🖼️ 榜单界面截图占位区</span>
+    <div class="steam-media anim d1">
+        <img id="chart-img"
+             src="assets/EN/排行榜（EN）.webp"
+             alt="New Charts"
+             loading="lazy" decoding="async"
+             style="width:100%;max-width:1020px;display:block;">
     </div>
 </section>
 
