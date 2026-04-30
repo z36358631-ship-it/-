@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>存储管理 Demo — 盖世游戏</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+:root{
+  --blue:#4A9EFF;--yellow:#F5C842;--red:#FF4D4F;
+  --t1:#FFFFFF;--t2:rgba(255,255,255,0.65);--t3:rgba(255,255,255,0.38);
+  --card:rgba(255,255,255,0.07);--cardh:rgba(255,255,255,0.11);
+  --cb:rgba(255,255,255,0.10);--div:rgba(255,255,255,0.08);
+  --nav:rgba(6,16,28,0.88);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif;background:linear-gradient(145deg,#0c2535 0%,#091525 40%,#060c18 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 20px 60px;-webkit-font-smoothing:antialiased;}
+.top-bar{width:100%;max-width:1160px;display:flex;justify-content:flex-end;margin-bottom:20px;}
+.ori-toggle{display:flex;background:rgba(255,255,255,0.06);border:1px solid var(--cb);border-radius:10px;padding:3px;gap:3px;}
+.ori-btn{padding:7px 22px;border-radius:8px;font-size:13px;font-weight:500;color:var(--t3);transition:all .22s;}
+.ori-btn.active{background:rgba(74,158,255,0.22);color:var(--blue);box-shadow:0 0 0 1px rgba(74,158,255,0.35);}
+.ori-btn:not(.active):hover{color:var(--t2);}
+.view{width:100%;max-width:1160px;opacity:0;pointer-events:none;position:absolute;transition:opacity .28s;}
+.view.active{opacity:1;pointer-events:all;position:relative;}
+
+/* LANDSCAPE */
+#ls-wrap{display:flex;border-radius:18px;overflow:hidden;border:1px solid var(--cb);min-height:680px;background:linear-gradient(145deg,#0c2535 0%,#091525 40%,#060c18 100%);}
+.ls-nav{width:340px;flex-shrink:0;background:var(--nav);border-right:1px solid var(--div);display:flex;flex-direction:column;padding:0 0 24px;}
+.ls-nav-hd{display:flex;align-items:center;gap:8px;padding:28px 24px 24px;font-size:20px;font-weight:600;color:var(--t1);}
+.ls-nav-hd svg{opacity:.7;}
+.nav-item{display:flex;align-items:center;gap:14px;padding:0 24px;height:56px;font-size:15px;color:var(--t2);cursor:pointer;position:relative;transition:background .15s,color .15s;border-bottom:1px solid var(--div);}
+.nav-item:last-child{border-bottom:none;}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:var(--t1);}
+.nav-item.active{background:rgba(74,158,255,0.08);color:var(--t1);}
+.nav-item.active::before{content:'';position:absolute;left:0;top:8px;bottom:8px;width:3px;background:var(--blue);border-radius:0 2px 2px 0;}
+.nav-item .ni{width:20px;height:20px;flex-shrink:0;opacity:.75;}
+.nav-item.active .ni{opacity:1;}
+.nav-item .nl{flex:1;font-weight:500;}
+.nav-item .na{font-size:13px;color:var(--t3);}
+.ls-body{flex:1;overflow-y:auto;overflow-x:hidden;padding:28px 32px 40px;scrollbar-width:none;position:relative;}
+.ls-body::-webkit-scrollbar{display:none;}
+
+/* PORTRAIT */
+#pt-wrap{display:flex;justify-content:center;}
+.phone{width:390px;background:linear-gradient(175deg,#0c2535 0%,#091525 45%,#060c18 100%);border-radius:44px;overflow:hidden;border:1.5px solid rgba(255,255,255,0.14);box-shadow:0 24px 80px rgba(0,0,0,0.6);}
+.pt-sb{display:flex;justify-content:space-between;align-items:center;padding:14px 24px 6px;}
+.pt-sb .tm{font-size:15px;font-weight:700;color:var(--t1);letter-spacing:.3px;}
+.pt-sb .ic{display:flex;gap:6px;align-items:center;}
+.pt-nb{display:flex;align-items:center;padding:4px 20px 14px;gap:6px;}
+.pt-back{display:flex;align-items:center;gap:4px;font-size:15px;color:var(--t1);padding:4px 8px 4px 0;opacity:.85;}
+.pt-ttl{font-size:17px;font-weight:600;color:var(--t1);}
+.pt-sc{overflow-y:auto;max-height:740px;padding:0 0 32px;scrollbar-width:none;position:relative;overflow-x:hidden;}
+.pt-sc::-webkit-scrollbar{display:none;}
+
+/* SHARED CONTENT */
+.content-wrap{padding:16px 20px 0;}
+.sc{background:var(--card);border:1px solid var(--cb);border-radius:14px;padding:22px 24px;display:flex;align-items:center;gap:24px;margin-bottom:12px;backdrop-filter:blur(12px);}
+.rw{position:relative;width:110px;height:110px;flex-shrink:0;}
+.rw svg{transform:rotate(-90deg);}
+.rc{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;line-height:1.25;}
+.rc .rn{font-size:17px;font-weight:700;color:var(--t1);}
+.rc .rl{font-size:11px;color:var(--t3);margin-top:1px;}
+.si{flex:1;}
+.si .sl{font-size:12px;color:var(--t3);margin-bottom:4px;letter-spacing:.3px;}
+.si .sv{font-size:28px;font-weight:700;color:var(--t1);margin-bottom:14px;letter-spacing:-.5px;}
+.si .sg{display:flex;flex-direction:column;gap:7px;}
+.leg{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t2);}
+.ld{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.lv{margin-left:auto;color:var(--t3);font-size:12px;}
+.cr{background:var(--card);border:1px solid var(--cb);border-radius:14px;margin-bottom:12px;overflow:hidden;backdrop-filter:blur(12px);}
+.ri{display:flex;align-items:center;padding:0 20px;height:56px;cursor:pointer;transition:background .15s;position:relative;}
+.ri:hover{background:var(--cardh);}
+.ri+.ri::before{content:'';position:absolute;top:0;left:20px;right:20px;height:1px;background:var(--div);}
+.rl2{flex:1;font-size:15px;font-weight:500;color:var(--t1);}
+.rr{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--t2);}
+.ra{font-size:16px;color:var(--t3);}
+.sh{display:flex;align-items:center;padding:0 20px;height:64px;cursor:pointer;transition:background .15s;}
+.sh:hover{background:var(--cardh);}
+.shi{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-right:14px;flex-shrink:0;}
+.sht{flex:1;}
+.sht .st{font-size:15px;font-weight:500;color:var(--t1);}
+.sht .sd{font-size:12px;color:var(--t3);margin-top:2px;}
+.sh-right{display:flex;align-items:center;gap:10px;}
+.sh-total{font-size:13px;font-weight:500;color:var(--t2);}
+.sc2{font-size:13px;color:var(--t3);transition:transform .25s;margin-left:4px;}
+.tr{display:flex;align-items:center;padding:16px 20px;gap:16px;}
+.tr+.tr{border-top:1px solid var(--div);}
+.tri{flex:1;}
+.tri .tt{font-size:15px;font-weight:500;color:var(--t1);}
+.tri .td{font-size:12px;color:var(--t3);margin-top:4px;line-height:1.5;}
+.sw{width:52px;height:30px;border-radius:15px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.12);position:relative;cursor:pointer;flex-shrink:0;transition:background .25s,border-color .25s;}
+.sw.on{background:rgba(74,158,255,0.5);border-color:rgba(74,158,255,0.6);}
+.sw::after{content:'';position:absolute;width:24px;height:24px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 4px rgba(0,0,0,0.3);}
+.sw.on::after{transform:translateX(22px);}
+.rsr{display:flex;align-items:center;padding:0 20px;height:64px;cursor:pointer;transition:background .15s;}
+.rsr:hover{background:var(--cardh);}
+.rsi{flex:1;}
+.rsi .rt{font-size:15px;font-weight:500;color:var(--t1);}
+.rsi .rd{font-size:12px;color:var(--t3);margin-top:3px;line-height:1.4;}
+
+/* SUB-PAGE */
+.subpage{
+  position:absolute;inset:0;
+  background:linear-gradient(175deg,#0c2535 0%,#091525 45%,#060c18 100%);
+  z-index:200;
+  display:flex;flex-direction:column;
+  transform:translateX(100%);
+  transition:transform .32s cubic-bezier(.4,0,.2,1);
+  overflow:hidden;
+}
+/* landscape: sub-page lives inside ls-body (content area only) */
+.ls-body{position:relative;}
+/* portrait: sub-page covers the full phone */
+.phone{position:relative;}
+.subpage.open{transform:translateX(0);}
+.sp-hd{display:flex;align-items:center;padding:16px 20px 12px;gap:12px;border-bottom:1px solid var(--div);flex-shrink:0;}
+.sp-back{display:flex;align-items:center;gap:6px;font-size:15px;color:var(--t1);cursor:pointer;padding:4px 8px 4px 0;opacity:.85;transition:opacity .15s;}
+.sp-back:hover{opacity:1;}
+.sp-title{flex:1;font-size:17px;font-weight:600;color:var(--t1);}
+.sp-selall{font-size:14px;color:var(--blue);cursor:pointer;padding:4px 0;}
+.sp-list{flex:1;overflow-y:auto;scrollbar-width:none;}
+.sp-list::-webkit-scrollbar{display:none;}
+.sp-bar{display:flex;align-items:center;padding:14px 20px;border-top:1px solid var(--div);gap:12px;flex-shrink:0;background:rgba(6,16,28,0.7);}
+.sp-count{flex:1;font-size:14px;color:var(--t2);}
+.sp-uninstall{padding:11px 28px;border-radius:12px;font-size:15px;font-weight:600;background:rgba(255,77,79,0.85);color:#fff;transition:opacity .15s;}
+.sp-uninstall:disabled{opacity:.35;cursor:not-allowed;}
+.sp-uninstall:not(:disabled):hover{opacity:.82;}
+
+/* Checkbox game row */
+.cgr{display:flex;align-items:center;padding:12px 20px;gap:14px;transition:background .15s;border-top:1px solid var(--div);cursor:pointer;}
+.cgr:hover{background:rgba(255,255,255,0.04);}
+.cgr:first-child{border-top:none;}
+.ck{width:22px;height:22px;border-radius:6px;border:1.5px solid rgba(255,255,255,0.25);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .18s;}
+.ck.checked{background:var(--blue);border-color:var(--blue);}
+.ck.checked::after{content:'';display:block;width:6px;height:10px;border:2px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translate(-1px,-1px);}
+.tg-label{padding:8px 20px 4px;font-size:11px;font-weight:600;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;border-top:1px solid var(--div);}
+.tg-label:first-child{border-top:none;}
+
+/* Game row (main list) */
+.gr{display:flex;align-items:center;padding:12px 20px;gap:14px;transition:background .15s;border-top:1px solid var(--div);}
+.gr:hover{background:rgba(255,255,255,0.04);}
+.gc{width:60px;height:60px;border-radius:10px;flex-shrink:0;overflow:hidden;}
+.gcp{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:rgba(255,255,255,0.85);letter-spacing:.5px;}
+.gi{flex:1;min-width:0;}
+.gn{font-size:14px;font-weight:500;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gd{font-size:12px;color:var(--t3);margin-top:3px;}
+.grr{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;}
+.gsz{font-size:13px;font-weight:500;color:var(--t2);}
+.ub{font-size:12px;font-weight:500;color:var(--red);padding:3px 10px;border-radius:5px;border:1px solid rgba(255,77,79,0.35);background:rgba(255,77,79,0.08);transition:all .15s;white-space:nowrap;}
+.ub:hover{background:rgba(255,77,79,0.18);}
+
+/* Modals */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.ov.show{display:flex;}
+.md{background:rgba(14,24,40,0.97);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:28px 24px 22px;width:320px;box-shadow:0 20px 60px rgba(0,0,0,0.6);backdrop-filter:blur(20px);}
+.mi{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;}
+.md h3{font-size:17px;font-weight:600;color:var(--t1);text-align:center;margin-bottom:10px;}
+.md p{font-size:13px;color:var(--t2);text-align:center;line-height:1.6;margin-bottom:22px;}
+.ma{display:flex;gap:10px;}
+.mb{flex:1;padding:12px;border-radius:12px;font-size:15px;font-weight:500;transition:opacity .15s;}
+.mb:hover:not(:disabled){opacity:.82;}
+.mb.cn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--t2);}
+.mb.dg{background:rgba(255,77,79,0.85);color:#fff;}
+.mb.pr{background:rgba(74,158,255,0.85);color:#fff;}
+.mb:disabled{opacity:.35;cursor:not-allowed;}
+.toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%) translateY(12px);background:rgba(14,24,40,0.95);border:1px solid rgba(255,255,255,0.12);color:var(--t1);padding:10px 20px;border-radius:24px;font-size:14px;opacity:0;transition:all .28s;z-index:2000;pointer-events:none;white-space:nowrap;backdrop-filter:blur(12px);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* App exit overlay */
+.exit-overlay{display:none;position:fixed;inset:0;background:#000;z-index:9000;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.exit-overlay.show{display:flex;}
+.exit-overlay p{font-size:16px;color:rgba(255,255,255,0.7);}
+.exit-spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,0.15);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ══ ANNOTATION SYSTEM (demo-design skill) ══ */
+.anno-badge{
+  display:inline-block;vertical-align:top;
+  background:rgb(250,173,20);color:#fff;
+  font-size:10px;font-weight:bold;line-height:14px;
+  padding:0 4px;border-radius:2px;
+  cursor:pointer;
+  position:absolute;top:-8px;right:-4px;
+  z-index:500;
+  user-select:none;
+}
+.anno-tooltip{
+  position:fixed;
+  width:450px;
+  background:#f0efef;
+  border-radius:4px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.18),0 1px 4px rgba(0,0,0,0.1);
+  z-index:9999;
+  font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif;
+  font-size:13px;
+  color:#222;
+  display:none;
+  cursor:default;
+  user-select:none;
+}
+.anno-tooltip.visible{display:block;}
+.anno-tt-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px 8px;
+  border-bottom:1px solid #ddd;
+}
+.anno-tt-num{
+  display:inline-block;
+  background:rgb(250,173,20);color:#fff;
+  font-size:10px;font-weight:bold;line-height:14px;
+  padding:0 4px;border-radius:2px;
+  margin-right:8px;
+}
+.anno-tt-title{font-size:13px;font-weight:600;color:#333;}
+.anno-tt-close{
+  width:20px;height:20px;border-radius:50%;
+  background:#ccc;color:#555;
+  font-size:13px;line-height:20px;text-align:center;
+  cursor:pointer;flex-shrink:0;
+  transition:background .15s;
+}
+.anno-tt-close:hover{background:#bbb;}
+.anno-tt-body{
+  padding:12px 14px 14px;
+  line-height:1.6;
+  max-height:420px;
+  overflow-y:auto;
+}
+.anno-tt-body h4{font-size:12px;font-weight:700;color:#444;margin:10px 0 4px;text-transform:uppercase;letter-spacing:.5px;}
+.anno-tt-body h4:first-child{margin-top:0;}
+.anno-tt-body p{margin-bottom:10px;color:#333;font-size:13px;}
+.anno-tt-body ul{padding-left:16px;margin-bottom:10px;}
+.anno-tt-body ul li{margin-bottom:4px;color:#333;font-size:13px;}
+.anno-tt-body ul ul{margin-top:4px;margin-bottom:4px;}
+.anno-tt-body strong{font-weight:700;color:#111;}
+.anno-tt-body em{font-style:italic;color:#555;}
+.anno-tt-body blockquote{border-left:3px solid #ccc;padding:6px 10px;margin:8px 0;background:#e8e8e8;border-radius:0 3px 3px 0;color:#555;font-size:12px;}
+.anno-tt-body .dot-green{display:inline-block;width:8px;height:8px;border-radius:50%;background:#52c41a;margin-right:5px;}
+.anno-tt-body .dot-red{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff4d4f;margin-right:5px;}
+.anno-tt-body .dot-yellow{display:inline-block;width:8px;height:8px;border-radius:50%;background:#faad14;margin-right:5px;}
+.anno-tt-body .dot-blue{display:inline-block;width:8px;height:8px;border-radius:50%;background:#1890ff;margin-right:5px;}
+.anno-anchor{position:relative;display:inline-block;}
+</style>
+</head>
+<body>
+
+<!-- Toggle -->
+<div class="top-bar">
+  <div class="ori-toggle">
+    <button class="ori-btn active" data-mode="landscape" onclick="switchView('landscape')">横版</button>
+    <button class="ori-btn" data-mode="portrait" onclick="switchView('portrait')">竖版</button>
+  </div>
+</div>
+
+<!-- LANDSCAPE -->
+<div id="landscape-view" class="view active">
+<div id="ls-wrap">
+  <nav class="ls-nav">
+    <div class="ls-nav-hd">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 3L5 9l6 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      设置
+    </div>
+    <div class="nav-item"><svg class="ni" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="8.5"/><path d="M1.5 10h17M10 1.5a13 13 0 0 1 3.5 8.5 13 13 0 0 1-3.5 8.5 13 13 0 0 1-3.5-8.5A13 13 0 0 1 10 1.5z"/></svg><span class="nl">多语言</span><span class="na">›</span></div>
+    <div class="nav-item"><svg class="ni" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="16" height="12" rx="2"/><path d="M13 6V4.5a3 3 0 0 0-6 0V6"/></svg><span class="nl">兑换中心</span><span class="na">›</span></div>
+    <div class="nav-item"><svg class="ni" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 7A5 5 0 0 0 5 7c0 5.5-2.5 7-2.5 7h15S15 12.5 15 7z"/><path d="M11.4 17.5a1.7 1.7 0 0 1-2.8 0"/></svg><span class="nl">通知</span><span class="na">›</span></div>
+    <div class="nav-item active"><svg class="ni" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1.5" y="3.5" width="17" height="13" rx="2"/><path d="M6.5 3.5v13M1.5 8h5M1.5 12.5h5"/></svg><span class="nl">存储管理</span><span class="na">›</span></div>
+    <div class="nav-item"><svg class="ni" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="8.5"/><path d="M10 9v5M10 6.5h.01"/></svg><span class="nl">帮助</span><span class="na">›</span></div>
+    <div class="nav-item"><svg class="ni" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="8.5"/><circle cx="10" cy="10" r="3"/></svg><span class="nl">关于</span><span class="na">›</span></div>
+  </nav>
+  <div class="ls-body" id="ls-content">
+    <!-- sub-page injected here by JS -->
+  </div>
+</div>
+</div>
+
+<!-- PORTRAIT -->
+<div id="portrait-view" class="view">
+<div id="pt-wrap">
+  <div class="phone">
+    <div class="pt-sb">
+      <span class="tm">9:41</span>
+      <div class="ic">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="white"><rect x="0" y="7" width="3" height="4" rx=".5"/><rect x="4.5" y="4.5" width="3" height="6.5" rx=".5"/><rect x="9" y="2" width="3" height="9" rx=".5"/><rect x="13.5" y="0" width="3" height="11" rx=".5"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z" fill="white"/><path d="M3.5 6.5C4.9 5.1 6.4 4.3 8 4.3s3.1.8 4.5 2.2" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M1 4C3 2 5.4 1 8 1s5 1 7 3" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="2.5" stroke="rgba(255,255,255,0.5)"/><rect x="1.5" y="1.5" width="17" height="9" rx="1.5" fill="white"/><path d="M23 4v4" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    <div class="pt-nb">
+      <div class="pt-back"><svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5L1.5 7.5l6 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="pt-ttl">存储管理</div>
+    </div>
+    <div class="pt-sc" id="pt-content">
+      <!-- sub-page injected here by JS -->
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODALS -->
+<div class="ov" id="modal-uninstall">
+  <div class="md">
+    <div class="mi" style="background:rgba(255,77,79,0.12);">&#x1F5D1;</div>
+    <h3>卸载游戏</h3>
+    <p>确认卸载 <strong id="modal-game-name" style="color:var(--t1);">游戏名称</strong>？<br>含 PC 模拟器容器数据，删除后不可恢复。</p>
+    <div class="ma">
+      <button class="mb cn" onclick="closeModal('modal-uninstall')">取消</button>
+      <button class="mb dg" onclick="confirmUninstall()">确认卸载</button>
+    </div>
+  </div>
+</div>
+<div class="ov" id="modal-batch-uninstall">
+  <div class="md">
+    <div class="mi" style="background:rgba(255,77,79,0.12);">&#x1F5D1;</div>
+    <h3>批量卸载</h3>
+    <p>确认卸载选中的 <strong id="modal-batch-count" style="color:var(--t1);">0</strong> 款游戏？<br>含 PC 模拟器容器数据，删除后不可恢复。</p>
+    <div class="ma">
+      <button class="mb cn" onclick="closeModal('modal-batch-uninstall')">取消</button>
+      <button class="mb dg" onclick="confirmBatchUninstall()">确认卸载</button>
+    </div>
+  </div>
+</div>
+<div class="ov" id="modal-restore">
+  <div class="md">
+    <div class="mi" style="background:rgba(245,200,66,0.12);">&#x267B;</div>
+    <h3>恢复盖世游戏安装大小</h3>
+    <p>将清除所有游戏、缓存及 PC 模拟器容器数据，<strong style="color:var(--t1);">不可恢复</strong>。<br>完成后应用将自动退出。</p>
+    <div class="ma">
+      <button class="mb cn" id="restore-cancel" onclick="closeRestoreModal()">取消</button>
+      <button class="mb pr" id="restore-confirm" disabled onclick="confirmRestore()">请稍候 (3)</button>
+    </div>
+  </div>
+</div>
+<div class="ov" id="modal-auto">
+  <div class="md">
+    <div class="mi" style="background:rgba(74,158,255,0.12);">&#x26A1;</div>
+    <h3>开启自动清理</h3>
+    <p>可用空间低于 <strong style="color:var(--blue);">20%</strong> 时，自动清理 30 天以上未启动游戏的缓存。<br><strong style="color:var(--t1);">游戏本体不受影响。</strong></p>
+    <div class="ma">
+      <button class="mb cn" onclick="cancelAutoToggle()">取消</button>
+      <button class="mb pr" onclick="confirmAutoToggle()">确认开启</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="exit-overlay" id="exit-overlay">
+  <div class="exit-spinner"></div>
+  <p>正在退出盖世游戏...</p>
+</div>
+
+<script>
+/* ══ DATA ══ */
+const GAMES = [
+  {id:1, name:'无畏契约：源能行动', daysAgo:1,  size:'11.5 GB', grad:'linear-gradient(135deg,#c0392b,#8e44ad)', abbr:'ARC'},
+  {id:2, name:'战地风云 6',         daysAgo:10, size:'58.2 GB', grad:'linear-gradient(135deg,#1a3a5c,#2980b9)', abbr:'BF6'},
+  {id:3, name:'香蕉游戏',           daysAgo:3,  size:'11.5 GB', grad:'linear-gradient(135deg,#134e5e,#71b280)', abbr:'BNG'},
+  {id:4, name:'Bongo Cat',          daysAgo:20, size:'11.5 GB', grad:'linear-gradient(135deg,#f7971e,#ffd200)', abbr:'BC'},
+  {id:5, name:'三角洲行动',         daysAgo:2,  size:'11.5 GB', grad:'linear-gradient(135deg,#0f2027,#2c5364)', abbr:'DF'},
+  {id:6, name:'Wallpaper Engine',   daysAgo:65, size:'2.8 GB',  grad:'linear-gradient(135deg,#e96c1a,#c0392b)', abbr:'WE'},
+  {id:7, name:'Rivals',             daysAgo:95, size:'34.1 GB', grad:'linear-gradient(135deg,#6a3093,#a044ff)', abbr:'RV'},
+];
+
+const TIME_GROUPS = [
+  {label:'>1周',  min:7,   max:13},
+  {label:'>2周',  min:14,  max:29},
+  {label:'>1个月',min:30,  max:59},
+  {label:'>2个月',min:60,  max:89},
+  {label:'>3个月',min:90,  max:9999},
+];
+
+let pendingUninstallId = null;
+let autoToggleState = false;
+let selectedIds = new Set();
+let currentSubpageType = null;
+let restoreCountdownTimer = null;
+
+function dateLabel(d) {
+  if (d === 1) return '昨天 10:04';
+  if (d < 7)  return d + '天前';
+  if (d < 30) return Math.floor(d/7) + '周前';
+  return Math.floor(d/30) + '个月前';
+}
+
+function mk(tag, cls) {
+  const el = document.createElement(tag);
+  if (cls) el.className = cls;
+  return el;
+}
+
+/* ══ BUILD MAIN CONTENT ══ */
+function buildContent(cid) {
+  const el = document.getElementById(cid);
+  el.innerHTML = '';
+  const wrap = mk('div','content-wrap');
+
+  /* 1. Storage overview */
+  const sc = mk('div','sc');
+  const rw = mk('div','rw');
+  rw.innerHTML = `<svg width="110" height="110" viewBox="0 0 110 110">
+    <circle cx="55" cy="55" r="44" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="11"/>
+    <circle cx="55" cy="55" r="44" fill="none" stroke="rgba(255,255,255,0.13)" stroke-width="11" stroke-dasharray="264 13" stroke-dashoffset="0" stroke-linecap="round"/>
+    <circle cx="55" cy="55" r="44" fill="none" stroke="#F5C842" stroke-width="11" stroke-dasharray="9 268" stroke-dashoffset="-264" stroke-linecap="round"/>
+    <circle cx="55" cy="55" r="44" fill="none" stroke="#4A9EFF" stroke-width="11" stroke-dasharray="103 174" stroke-dashoffset="-273" stroke-linecap="round"/>
+  </svg><div class="rc"><div class="rn">112 GB</div><div class="rl">可用</div></div>`;
+  const si = mk('div','si');
+  si.innerHTML = `<div class="sl">已使用空间</div><div class="sv">50.5 GB</div>
+    <div class="sg">
+      <div class="leg"><div class="ld" style="background:#4A9EFF"></div>已安装游戏<span class="lv">38.5 GB</span></div>
+      <div class="leg"><div class="ld" style="background:#F5C842"></div>必要档案<span class="lv">2.3 GB</span></div>
+      <div class="leg"><div class="ld" style="background:rgba(255,255,255,0.25)"></div>可用<span class="lv">123.3 GB</span></div>
+    </div>`;
+  sc.append(rw, si);
+  wrap.append(sc);
+
+  /* 2. Cache clear — annotation only, no interaction */
+  const cacheCard = mk('div','cr');
+  const cacheRow = mk('div','ri');
+  const cacheLabel = mk('span','rl2'); cacheLabel.textContent = '清理缓存';
+  const cacheRight = mk('div','rr');
+  const cacheVal = mk('span'); cacheVal.textContent = '124.67 MB';
+  const cacheArrow = mk('span','ra'); cacheArrow.textContent = '›';
+  cacheRight.append(cacheVal, cacheArrow);
+  cacheRow.append(cacheLabel, cacheRight);
+  cacheCard.append(cacheRow);
+  wrap.append(cacheCard);
+
+  /* 3. Unused games — navigate to sub-page */
+  const unusedGames = GAMES.filter(g => g.daysAgo >= 7);
+  const unusedTotal = unusedGames.reduce((s,g) => s + parseFloat(g.size), 0).toFixed(1) + ' GB';
+  const unusedCard = mk('div','cr');
+  unusedCard.setAttribute('data-anno','1');
+  const unusedHdr = mk('div','sh');
+  unusedHdr.onclick = () => openGameListPage('unused', cid);
+  unusedHdr.innerHTML = `
+    <div class="shi" style="background:rgba(245,200,66,0.12)">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#F5C842" stroke-width="1.6"><circle cx="9" cy="9" r="7.5"/><path d="M9 5.5v4l2.5 2.5"/></svg>
+    </div>
+    <div class="sht"><div class="st">不常用游戏</div><div class="sd">发现 ${unusedGames.length} 款超过7天未体验的游戏</div></div>
+    <div class="sh-right"><span class="sh-total">${unusedTotal}</span><span class="sc2">›</span></div>`;
+  unusedCard.append(unusedHdr);
+  wrap.append(unusedCard);
+
+  /* 4. All games — navigate to sub-page */
+  const allCard = mk('div','cr');
+  allCard.setAttribute('data-anno','2');
+  const allHdr = mk('div','sh');
+  allHdr.onclick = () => openGameListPage('all', cid);
+  allHdr.innerHTML = `
+    <div class="shi" style="background:rgba(74,158,255,0.12)">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#4A9EFF" stroke-width="1.6"><rect x="1.5" y="1.5" width="6" height="6" rx="1.5"/><rect x="10.5" y="1.5" width="6" height="6" rx="1.5"/><rect x="1.5" y="10.5" width="6" height="6" rx="1.5"/><rect x="10.5" y="10.5" width="6" height="6" rx="1.5"/></svg>
+    </div>
+    <div class="sht"><div class="st">全部游戏</div><div class="sd">共 ${GAMES.length} 款已安装游戏</div></div>
+    <div class="sh-right"><span class="sc2">›</span></div>`;
+  allCard.append(allHdr);
+  wrap.append(allCard);
+
+  /* 5. Auto clear toggle */
+  const autoCard = mk('div','cr');
+  autoCard.setAttribute('data-anno','3');
+  const autoRow = mk('div','tr');
+  const autoInfo = mk('div','tri');
+  autoInfo.innerHTML = `<div class="tt">储存不足游戏自动清理</div><div class="td">当设备可用存储空间低于 <strong style="color:var(--blue)">20%</strong> 时，自动清理超过 30 天未启动的游戏缓存，游戏本体不会被卸载。</div>`;
+  const autoSw = mk('div','sw');
+  autoSw.id = 'sw-auto-' + cid;
+  if (autoToggleState) autoSw.classList.add('on');
+  autoSw.onclick = () => handleAutoToggle(cid);
+  autoRow.append(autoInfo, autoSw);
+  autoCard.append(autoRow);
+  wrap.append(autoCard);
+
+  /* 6. Restore size */
+  const restoreCard = mk('div','cr');
+  restoreCard.setAttribute('data-anno','4');
+  restoreCard.style.marginBottom = '0';
+  const restoreRow = mk('div','rsr');
+  restoreRow.onclick = () => openRestoreModal();
+  const restoreInfo = mk('div','rsi');
+  restoreInfo.innerHTML = `<div class="rt">恢复盖世游戏安装大小</div><div class="rd">清空所有游戏缓存及PC模拟器容器相关数据，游戏下次启动时将重新下载必要资源。</div>`;
+  const restoreArrow = mk('span','ra'); restoreArrow.textContent = '›';
+  restoreRow.append(restoreInfo, restoreArrow);
+  restoreCard.append(restoreRow);
+  wrap.append(restoreCard);
+
+  el.append(wrap);
+  attachBadges(wrap);
+}
+
+/* ══ SUB-PAGE ══ */
+function openGameListPage(type, cid) {
+  currentSubpageType = type;
+  selectedIds = new Set();
+
+  /* Close all open tooltips when navigating */
+  closeAllTooltips();
+
+  const games = type === 'unused' ? GAMES.filter(g => g.daysAgo >= 7) : [...GAMES];
+  const title = type === 'unused' ? '不常用游戏' : '全部游戏';
+
+  const isPortrait = cid === 'pt-content';
+  /* Portrait: cover whole phone. Landscape: cover ls-body (content area). */
+  const mountEl = isPortrait
+    ? document.querySelector('.phone')
+    : document.getElementById('ls-content');
+
+  const existing = mountEl.querySelector('.subpage');
+  if (existing) existing.remove();
+
+  const sp = mk('div','subpage');
+  sp.id = 'subpage-' + cid;
+
+  /* Portrait only: fake status bar so it looks like a full new page */
+  if (isPortrait) {
+    const fakeSb = mk('div','pt-sb');
+    fakeSb.innerHTML = `<span class="tm">9:41</span><div class="ic">
+      <svg width="17" height="11" viewBox="0 0 17 11" fill="white"><rect x="0" y="7" width="3" height="4" rx=".5"/><rect x="4.5" y="4.5" width="3" height="6.5" rx=".5"/><rect x="9" y="2" width="3" height="9" rx=".5"/><rect x="13.5" y="0" width="3" height="11" rx=".5"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z" fill="white"/><path d="M3.5 6.5C4.9 5.1 6.4 4.3 8 4.3s3.1.8 4.5 2.2" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M1 4C3 2 5.4 1 8 1s5 1 7 3" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="2.5" stroke="rgba(255,255,255,0.5)"/><rect x="1.5" y="1.5" width="17" height="9" rx="1.5" fill="white"/><path d="M23 4v4" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>`;
+    sp.append(fakeSb);
+  }
+
+  /* Header */
+  const hd = mk('div','sp-hd');
+  const back = mk('div','sp-back');
+  /* Portrait: arrow only. Landscape: arrow + "返回" text */
+  back.innerHTML = isPortrait
+    ? `<svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5L1.5 7.5l6 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+    : `<svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5L1.5 7.5l6 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> 返回`;
+  back.onclick = () => closeGameListPage(cid);
+  const titleEl = mk('div','sp-title'); titleEl.textContent = title;
+  const selAll = mk('div','sp-selall'); selAll.textContent = '全选';
+  selAll.id = 'selall-' + cid;
+  selAll.onclick = () => toggleSelectAll(cid, games);
+  hd.append(back, titleEl, selAll);
+
+  /* List */
+  const list = mk('div','sp-list');
+
+  if (type === 'unused') {
+    TIME_GROUPS.forEach(tg => {
+      const group = games.filter(g => g.daysAgo >= tg.min && g.daysAgo <= tg.max);
+      if (!group.length) return;
+      const lbl = mk('div','tg-label'); lbl.textContent = tg.label;
+      list.append(lbl);
+      group.forEach(g => list.append(buildCheckRow(g, cid)));
+    });
+  } else {
+    games.forEach(g => list.append(buildCheckRow(g, cid)));
+  }
+
+  /* Bottom bar */
+  const bar = mk('div','sp-bar');
+  const count = mk('div','sp-count');
+  count.id = 'sp-count-' + cid;
+  count.textContent = '已选 0 款';
+  const ubtn = mk('button','sp-uninstall');
+  ubtn.id = 'sp-ubtn-' + cid;
+  ubtn.textContent = '卸载选中';
+  ubtn.disabled = true;
+  ubtn.onclick = () => openBatchUninstall(cid);
+  bar.append(count, ubtn);
+
+  sp.append(hd, list, bar);
+  mountEl.append(sp);
+
+  attachSubpageBadges(sp, type);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => sp.classList.add('open'));
+  });
+}
+
+function closeGameListPage(cid) {
+  closeAllTooltips();
+  const isPortrait = cid === 'pt-content';
+  const mountEl = isPortrait
+    ? document.querySelector('.phone')
+    : document.getElementById('ls-content');
+  const sp = mountEl ? mountEl.querySelector('.subpage') : null;
+  if (!sp) return;
+  sp.classList.remove('open');
+  setTimeout(() => sp.remove(), 340);
+}
+
+function buildCheckRow(g, cid) {
+  const row = mk('div','cgr');
+  row.id = 'crow-' + g.id + '-' + cid;
+  row.onclick = () => toggleSelect(g.id, cid);
+
+  const ck = mk('div','ck');
+  ck.id = 'ck-' + g.id + '-' + cid;
+
+  const cover = mk('div','gc');
+  const ph = mk('div','gcp');
+  ph.style.background = g.grad;
+  ph.textContent = g.abbr;
+  cover.append(ph);
+
+  const info = mk('div','gi');
+  const name = mk('div','gn'); name.textContent = g.name;
+  const date = mk('div','gd'); date.textContent = '最后启动日期 ' + dateLabel(g.daysAgo);
+  info.append(name, date);
+
+  const right = mk('div','grr');
+  const size = mk('span','gsz'); size.textContent = g.size;
+  right.append(size);
+
+  row.append(ck, cover, info, right);
+  return row;
+}
+
+function toggleSelect(id, cid) {
+  if (selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  updateSelectionUI(cid);
+}
+
+function toggleSelectAll(cid, games) {
+  const allSelected = games.every(g => selectedIds.has(g.id));
+  if (allSelected) {
+    games.forEach(g => selectedIds.delete(g.id));
+  } else {
+    games.forEach(g => selectedIds.add(g.id));
+  }
+  updateSelectionUI(cid);
+}
+
+function updateSelectionUI(cid) {
+  const games = currentSubpageType === 'unused' ? GAMES.filter(g => g.daysAgo >= 7) : [...GAMES];
+  const n = selectedIds.size;
+  const allSelected = games.every(g => selectedIds.has(g.id));
+
+  games.forEach(g => {
+    const ck = document.getElementById('ck-' + g.id + '-' + cid);
+    if (ck) ck.classList.toggle('checked', selectedIds.has(g.id));
+  });
+
+  const countEl = document.getElementById('sp-count-' + cid);
+  if (countEl) countEl.textContent = '已选 ' + n + ' 款';
+
+  const ubtn = document.getElementById('sp-ubtn-' + cid);
+  if (ubtn) {
+    ubtn.disabled = n === 0;
+    ubtn.textContent = n > 0 ? '卸载选中 (' + n + ')' : '卸载选中';
+  }
+
+  const selAll = document.getElementById('selall-' + cid);
+  if (selAll) selAll.textContent = allSelected ? '取消全选' : '全选';
+}
+
+function openBatchUninstall(cid) {
+  document.getElementById('modal-batch-count').textContent = selectedIds.size;
+  document.getElementById('modal-batch-uninstall').dataset.cid = cid;
+  openModal('modal-batch-uninstall');
+}
+
+function confirmBatchUninstall() {
+  const cid = document.getElementById('modal-batch-uninstall').dataset.cid;
+  closeModal('modal-batch-uninstall');
+  const ids = [...selectedIds];
+  ids.forEach(id => {
+    const idx = GAMES.findIndex(g => g.id === id);
+    if (idx !== -1) GAMES.splice(idx, 1);
+  });
+  selectedIds = new Set();
+  closeGameListPage(cid);
+  /* Rebuild both views */
+  buildContent('ls-content');
+  buildContent('pt-content');
+  showToast('✓ 已卸载 ' + ids.length + ' 款游戏');
+}
+
+/* ══ ANNOTATION SYSTEM ══ */
+const ANNO_DATA = {
+  1: {
+    title: '不常用游戏',
+    content: `<h4>触发条件</h4>
+<p>展示所有 <strong>超过7天未启动</strong> 的已安装游戏。</p>
+<h4>进入方式</h4>
+<p>点击整行进入子页面，子页面默认进入<strong>多选模式</strong>，支持逐个勾选或全选。</p>
+<h4>子页面显示样式</h4>
+<ul>
+  <li>顶部：返回按钮 + 标题 + 全选/取消全选</li>
+  <li>游戏按时间段分组显示：</li>
+  <ul>
+    <li><strong>&gt;1周</strong>（7–13天）</li>
+    <li><strong>&gt;2周</strong>（14–29天）</li>
+    <li><strong>&gt;1个月</strong>（30–59天）</li>
+    <li><strong>&gt;2个月</strong>（60–89天）</li>
+    <li><strong>&gt;3个月</strong>（90天以上）</li>
+  </ul>
+  <li>每款游戏显示：勾选框、封面图、游戏名、最后启动日期、占用大小</li>
+  <li>底部操作栏：已选数量 + "卸载选中 (N)" 按钮</li>
+</ul>
+<h4>卸载交互</h4>
+<p>点击"卸载选中"弹出批量卸载确认弹窗，确认后游戏从列表移除并显示 Toast。</p>
+<blockquote>卸载包括游戏本体及盖世游戏PC模拟器容器相关数据，操作不可撤销。</blockquote>`
+  },
+  2: {
+    title: '全部游戏',
+    content: `<h4>显示样式</h4>
+<p>展示所有已安装游戏，标题行显示游戏总数量。</p>
+<h4>进入方式</h4>
+<p>点击整行进入子页面，子页面默认进入<strong>多选模式</strong>，支持逐个勾选或全选。</p>
+<h4>子页面显示样式</h4>
+<ul>
+  <li>顶部：返回按钮 + 标题 + 全选/取消全选</li>
+  <li>每款游戏显示：勾选框、封面图、游戏名、最后启动日期、占用大小</li>
+  <li>底部操作栏：已选数量 + "卸载选中 (N)" 按钮</li>
+</ul>
+<h4>排序规则</h4>
+<p>默认按 <strong>最近启动时间</strong> 降序排列（最近玩的在最前面）。</p>
+<h4>卸载交互</h4>
+<p>点击"卸载选中"弹出批量卸载确认弹窗，确认后游戏从列表移除并显示 Toast。</p>
+<blockquote>卸载包括游戏本体及盖世游戏PC模拟器容器相关数据，操作不可撤销。</blockquote>`
+  },
+  3: {
+    title: '储存不足游戏自动清理',
+    content: `<h4>功能说明</h4>
+<p>当设备可用存储空间低于 <strong>总容量的 20%</strong> 时，系统自动触发清理逻辑。</p>
+<h4>清理规则</h4>
+<ul>
+  <li>清理对象：超过 <strong>30天</strong> 未启动的游戏缓存</li>
+  <li>清理顺序：按最后启动时间升序（最久未玩的优先清理）</li>
+  <li><span class="dot-green"></span>游戏本体不会被卸载，仅清理缓存文件</li>
+  <li><span class="dot-red"></span>必要档案（存档、配置）不在清理范围内</li>
+</ul>
+<h4>开关交互</h4>
+<p>默认关闭。点击开关时弹出确认弹窗，说明清理规则，用户确认后开启。</p>
+<p>再次点击可直接关闭，无需确认。</p>
+<blockquote>20% 阈值适配不同容量设备：128GB 设备约 25.6GB，256GB 设备约 51.2GB。</blockquote>`
+  },
+  4: {
+    title: '恢复盖世游戏安装大小',
+    content: `<h4>功能说明</h4>
+<p>清空盖世游戏所有数据，将应用恢复至初始安装大小。</p>
+<h4>清理范围</h4>
+<ul>
+  <li>所有已安装游戏本体</li>
+  <li>游戏缓存、临时文件</li>
+  <li><strong>盖世游戏PC模拟器容器相关数据</strong>（含容器配置、运行时数据）</li>
+</ul>
+<h4>交互行为</h4>
+<p>点击整行弹出确认弹窗，弹窗包含 <strong>3秒倒计时</strong>，倒计时结束后"确认恢复"按钮才可点击，防止误操作。</p>
+<p>确认后模拟应用退出（全屏退出动画）。</p>
+<h4>与清理缓存的区别</h4>
+<ul>
+  <li><strong>清理缓存</strong>：仅清理临时文件，范围较小，不影响游戏运行</li>
+  <li><strong>恢复安装大小</strong>：清空所有数据含PC模拟器容器，操作更彻底，需重新下载游戏</li>
+</ul>
+<blockquote>此操作不可撤销，执行后应用将退出，重新打开需重新下载游戏资源。</blockquote>`
+  }
+};
+
+let openTooltips = {};
+
+function closeAllTooltips() {
+  Object.keys(openTooltips).forEach(k => {
+    if (openTooltips[k]) { openTooltips[k].remove(); }
+  });
+  openTooltips = {};
+}
+
+function attachBadges(container) {
+  container.querySelectorAll('[data-anno]').forEach(el => {
+    const num = el.getAttribute('data-anno');
+    if (!ANNO_DATA[num]) return;
+    el.style.position = 'relative';
+    const badge = mk('span','anno-badge');
+    badge.textContent = num;
+    badge.setAttribute('data-num', num);
+    badge.addEventListener('mouseenter', () => showTooltip(num, badge));
+    el.appendChild(badge);
+  });
+}
+
+/* Sub-page annotations: numbered 1 and 2 matching main list badges */
+const SUBPAGE_ANNO = {
+  unused: {
+    list: { num:'1', title:'不常用游戏 — 子页面列表', content:`<h4>分组显示</h4><p>游戏按最后启动时间分组，每组显示组标签（如 &gt;1周、&gt;2周…）。</p><p>每行：勾选框 + 封面 + 游戏名 + 最后启动日期 + 占用大小。</p><h4>多选逻辑</h4><p>点击任意行切换勾选状态；顶部"全选"一键全选/取消全选。</p><blockquote>卸载包括游戏本体及盖世游戏PC模拟器容器相关数据，不可撤销。</blockquote>` },
+    bar:  { num:'1', title:'不常用游戏 — 底部操作栏', content:`<h4>操作栏</h4><p>左侧实时显示"已选 N 款"；右侧"卸载选中 (N)"按钮，未选中时禁用。</p><p>点击按钮弹出批量卸载确认弹窗，确认后游戏从列表移除并 Toast 提示。</p>` }
+  },
+  all: {
+    list: { num:'2', title:'全部游戏 — 子页面列表', content:`<h4>显示样式</h4><p>按最近启动时间降序排列，每行：勾选框 + 封面 + 游戏名 + 最后启动日期 + 占用大小。</p><h4>多选逻辑</h4><p>点击任意行切换勾选状态；顶部"全选"一键全选/取消全选。</p><blockquote>卸载包括游戏本体及盖世游戏PC模拟器容器相关数据，不可撤销。</blockquote>` },
+    bar:  { num:'2', title:'全部游戏 — 底部操作栏', content:`<h4>操作栏</h4><p>左侧实时显示"已选 N 款"；右侧"卸载选中 (N)"按钮，未选中时禁用。</p><p>点击按钮弹出批量卸载确认弹窗，确认后游戏从列表移除并 Toast 提示。</p>` }
+  }
+};
+
+function attachSubpageBadges(sp, type) {
+  const cfg = SUBPAGE_ANNO[type];
+  if (!cfg) return;
+  const list = sp.querySelector('.sp-list');
+  const bar  = sp.querySelector('.sp-bar');
+  if (list) attachInlineBadge(list, cfg.list);
+  if (bar)  attachInlineBadge(bar,  cfg.bar);
+}
+
+function attachInlineBadge(el, cfg) {
+  el.style.position = 'relative';
+  const badge = mk('span','anno-badge');
+  badge.textContent = cfg.num;
+  badge.style.top = '6px';
+  badge.style.right = '6px';
+  badge.addEventListener('mouseenter', () => showInlineTooltip(cfg, badge));
+  el.appendChild(badge);
+}
+
+function showInlineTooltip(cfg, badge) {
+  const key = 'sp-' + cfg.num + '-' + cfg.title;
+  if (openTooltips[key]) return;
+  const tt = mk('div','anno-tooltip');
+  tt.innerHTML = `
+    <div class="anno-tt-header">
+      <div style="display:flex;align-items:center;">
+        <span class="anno-tt-num">${cfg.num}</span>
+        <span class="anno-tt-title">需求描述：${cfg.title}</span>
+      </div>
+      <div class="anno-tt-close">✕</div>
+    </div>
+    <div class="anno-tt-body">${cfg.content}</div>`;
+  tt.addEventListener('click', e => e.stopPropagation());
+  tt.querySelector('.anno-tt-close').addEventListener('click', () => {
+    tt.remove(); delete openTooltips[key];
+  });
+  let dragging=false,ox=0,oy=0;
+  tt.addEventListener('mousedown',(e)=>{
+    if(e.target.classList.contains('anno-tt-close'))return;
+    dragging=true;ox=e.clientX-tt.getBoundingClientRect().left;oy=e.clientY-tt.getBoundingClientRect().top;e.preventDefault();
+  });
+  document.addEventListener('mousemove',(e)=>{if(!dragging)return;tt.style.left=(e.clientX-ox)+'px';tt.style.top=(e.clientY-oy)+'px';});
+  document.addEventListener('mouseup',()=>{dragging=false;});
+  document.body.appendChild(tt);
+  openTooltips[key] = tt;
+  const br = badge.getBoundingClientRect();
+  let left = br.left - 450 + 20, top = br.bottom + 8;
+  if (left < 8) left = br.right + 8;
+  if (left + 450 > window.innerWidth - 8) left = window.innerWidth - 458;
+  if (top + 300 > window.innerHeight - 8) top = br.top - 320;
+  tt.style.left = Math.max(8,left)+'px'; tt.style.top = Math.max(8,top)+'px';
+  tt.classList.add('visible');
+}
+
+function showTooltip(num, badge) {
+  if (openTooltips[num]) return;
+  const data = ANNO_DATA[num];
+  if (!data) return;
+
+  const tt = mk('div','anno-tooltip');
+  tt.innerHTML = `
+    <div class="anno-tt-header">
+      <div style="display:flex;align-items:center;">
+        <span class="anno-tt-num">${num}</span>
+        <span class="anno-tt-title">需求描述：${data.title}</span>
+      </div>
+      <div class="anno-tt-close" data-num="${num}">✕</div>
+    </div>
+    <div class="anno-tt-body">${data.content}</div>`;
+
+  tt.addEventListener('click', e => e.stopPropagation());
+  tt.addEventListener('mousedown', e => e.stopPropagation());
+
+  tt.querySelector('.anno-tt-close').addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeTooltip(num);
+  });
+
+  let dragging = false, ox = 0, oy = 0;
+  tt.addEventListener('mousedown', (e) => {
+    if (e.target.classList.contains('anno-tt-close')) return;
+    dragging = true;
+    ox = e.clientX - tt.getBoundingClientRect().left;
+    oy = e.clientY - tt.getBoundingClientRect().top;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    tt.style.left = (e.clientX - ox) + 'px';
+    tt.style.top  = (e.clientY - oy) + 'px';
+  });
+  document.addEventListener('mouseup', () => { dragging = false; });
+
+  document.body.appendChild(tt);
+  openTooltips[num] = tt;
+
+  const br = badge.getBoundingClientRect();
+  let left = br.left - 450 + 20;
+  let top  = br.bottom + 8;
+  if (left < 8) left = br.right + 8;
+  if (left + 450 > window.innerWidth - 8) left = window.innerWidth - 458;
+  if (top + 300 > window.innerHeight - 8) top = br.top - 320;
+  tt.style.left = Math.max(8, left) + 'px';
+  tt.style.top  = Math.max(8, top)  + 'px';
+  tt.classList.add('visible');
+}
+
+function closeTooltip(num) {
+  if (openTooltips[num]) {
+    openTooltips[num].remove();
+    delete openTooltips[num];
+  }
+}
+
+/* ══ INIT ══ */
+buildContent('ls-content');
+buildContent('pt-content');
+
+/* ══ VIEW SWITCH ══ */
+function switchView(mode) {
+  closeAllTooltips();
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.ori-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(mode + '-view').classList.add('active');
+  document.querySelector('[data-mode="' + mode + '"]').classList.add('active');
+}
+
+/* ══ MODALS ══ */
+function openModal(id)  { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.ov').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+});
+
+function openUninstall(id, name) {
+  pendingUninstallId = id;
+  document.getElementById('modal-game-name').textContent = name;
+  openModal('modal-uninstall');
+}
+function confirmUninstall() {
+  closeModal('modal-uninstall');
+  if (!pendingUninstallId) return;
+  const idx = GAMES.findIndex(g => g.id === pendingUninstallId);
+  if (idx !== -1) GAMES.splice(idx, 1);
+  buildContent('ls-content');
+  buildContent('pt-content');
+  showToast('✓ 游戏已卸载');
+  pendingUninstallId = null;
+}
+
+/* Restore modal with countdown on button */
+function openRestoreModal() {
+  clearInterval(restoreCountdownTimer);
+  const btn = document.getElementById('restore-confirm');
+  let remaining = 3;
+  btn.disabled = true;
+  btn.textContent = '请稍候 (' + remaining + ')';
+  openModal('modal-restore');
+  restoreCountdownTimer = setInterval(() => {
+    remaining--;
+    if (remaining > 0) {
+      btn.textContent = '请稍候 (' + remaining + ')';
+    } else {
+      clearInterval(restoreCountdownTimer);
+      btn.disabled = false;
+      btn.textContent = '确认恢复';
+    }
+  }, 1000);
+}
+
+function closeRestoreModal() {
+  clearInterval(restoreCountdownTimer);
+  closeModal('modal-restore');
+}
+
+document.getElementById('modal-restore').addEventListener('click', function(e) {
+  if (e.target === this) closeRestoreModal();
+});
+
+function confirmRestore() {
+  clearInterval(restoreCountdownTimer);
+  closeModal('modal-restore');
+  const overlay = document.getElementById('exit-overlay');
+  overlay.classList.add('show');
+  setTimeout(() => {
+    overlay.innerHTML = '<p style="font-size:15px;color:rgba(255,255,255,0.5);">（Demo 模式：应用已退出）</p><button onclick="document.getElementById(\'exit-overlay\').classList.remove(\'show\')" style="margin-top:16px;padding:10px 28px;border-radius:12px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;cursor:pointer;">返回 Demo</button>';
+  }, 2200);
+}
+
+function handleAutoToggle(cid) {
+  if (!autoToggleState) openModal('modal-auto');
+  else { autoToggleState = false; syncToggles(); }
+}
+function cancelAutoToggle() { closeModal('modal-auto'); }
+function confirmAutoToggle() { closeModal('modal-auto'); autoToggleState = true; syncToggles(); }
+function syncToggles() {
+  document.querySelectorAll('[id^="sw-auto-"]').forEach(el => el.classList.toggle('on', autoToggleState));
+}
+
+/* ══ TOAST ══ */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+</script>
+</body>
+</html>
+
+
