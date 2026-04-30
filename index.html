@@ -263,11 +263,11 @@
 
         /* 突出按钮：ButtonColorful */
         .btn-dl {
-            background: #18181b;
-            color: #fff;
+            background: #f4f4f5;
+            color: #18181b;
             border: none;
             overflow: hidden;
-            transition: transform 0.15s;
+            transition: transform 0.15s, all 0.2s;
             gap: 6px;
         }
         .btn-dl::before {
@@ -275,12 +275,12 @@
             position: absolute;
             inset: 0;
             background: linear-gradient(to right, #6366f1, #a855f7, #ec4899);
-            opacity: 0.75;
-            filter: blur(4px);
+            opacity: 0.4;
+            filter: blur(8px);
             transition: opacity 0.5s;
             pointer-events: none;
         }
-        .btn-dl:hover::before { opacity: 1; }
+        .btn-dl:hover::before { opacity: 0.8; }
         .btn-dl:active { transform: scale(0.96); }
 
         /* 不突出按钮：玻璃态 + hover 回馈 */
