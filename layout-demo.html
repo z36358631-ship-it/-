@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>布局编辑器 Demo</title>
-<!-- Demo 版本 - 盖世游戏布局编辑器 -->
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{
@@ -40,16 +39,6 @@ html,body{
 }
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
 
-.prd-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;background:#ffa800;color:#111;font-size:11px;font-weight:700;border-radius:10px;cursor:pointer;margin-left:8px;user-select:none;}
-.prd-tooltip{position:fixed;width:380px;background:#fff;color:#111;border:1px solid rgba(0,0,0,.12);border-radius:12px;box-shadow:0 16px 48px rgba(0,0,0,.18);z-index:9999;font-size:13px;line-height:1.5;}
-.prd-tooltip-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 8px;border-bottom:1px solid rgba(0,0,0,.08);}
-.prd-tooltip-badge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:18px;background:#ffa800;color:#111;font-size:11px;font-weight:700;border-radius:4px;margin-right:8px;}
-.prd-tooltip-title{flex:1;font-weight:700;}
-.prd-tooltip-close{font-size:16px;color:#666;cursor:pointer;}
-.prd-tooltip-body{padding:10px 12px 14px;}
-.prd-tooltip-body p{margin:0 0 10px;}
-.prd-tooltip-body ul{margin:0 0 10px 12px;padding-left:16px;}
-
 /* ═══════════ EDITOR ═══════════ */
 #ed{background:#080808;}
 .ed-border{position:absolute;inset:5px;border:1.5px dashed rgba(255,255,255,.11);border-radius:4px;pointer-events:none;z-index:40;}
@@ -57,7 +46,7 @@ html,body{
 .ed-topdot{position:absolute;right:calc(12% - 9px);top:-2px;width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.38);background:#080808;z-index:41;pointer-events:none;}
 .ed-thumb{position:absolute;right:calc(12% - 15px);top:38%;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 36% 34%,#282828,#0d0d0d);box-shadow:0 2px 7px rgba(0,0,0,.75);z-index:41;}
 
-/* Toolbar — width-controlled so it never squishes */
+/* Toolbar */
 .ed-bar{
   position:absolute;top:14px;left:50%;transform:translateX(-50%);
   display:inline-flex;align-items:center;
@@ -69,16 +58,30 @@ html,body{
 .tb{
   background:none;border:none;color:rgba(255,255,255,.78);
   padding:5px 6px;cursor:pointer;border-radius:8px;flex-shrink:0;
-  transition:background .13s;display:flex;align-items:center;justify-content:center;
+  transition:background .13s;display:flex;align-items:center;justify-content:center;gap:4px;
 }
 .tb:hover{background:rgba(255,255,255,.1);}
 .tb svg{display:block;pointer-events:none;}
 .tb-d{width:1px;height:18px;background:rgba(255,255,255,.13);margin:0 4px;flex-shrink:0;}
 .tb-name{
   color:#fff;font-size:13px;font-weight:700;
-  padding:0 8px;min-width:64px;max-width:88px;text-align:center;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  padding:0 8px;min-width:48px;text-align:center;
+  white-space:nowrap;
 }
+
+/* 新建子布局按钮 */
+.tb-create{
+  border:1px dashed rgba(255,255,255,.28);border-radius:8px;
+  color:rgba(255,255,255,.55);font-size:11px;font-weight:600;
+  padding:4px 10px;gap:4px;transition:all .15s;
+}
+.tb-create:hover{border-color:rgba(255,255,255,.5);color:rgba(255,255,255,.85);background:rgba(255,255,255,.07);}
+
+/* 删除布局按钮 */
+.tb-del-layout{
+  color:rgba(220,80,80,.8);padding:5px 6px;
+}
+.tb-del-layout:hover{background:rgba(200,50,50,.15);color:#f77;}
 
 /* Add panel */
 .add-panel{
@@ -99,7 +102,7 @@ html,body{
 .add-item:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.3);}
 .add-item em{font-style:normal;font-size:9px;color:rgba(255,255,255,.34);}
 
-/* Virtual buttons on canvas */
+/* Virtual buttons */
 #ed-canvas{position:absolute;inset:0;z-index:10;}
 .vb{position:absolute;cursor:grab;touch-action:none;}
 .vb:active{cursor:grabbing;}
@@ -136,17 +139,16 @@ html,body{
 }
 .vb-r.sel{border-color:rgba(255,255,255,.65);}
 
-/* Switcher widget — circle, icon top + label bottom */
+/* 切换布局圆圈控件 */
 .vb-sw{
   border-radius:50%;background:rgba(255,255,255,.09);
   border:2px solid rgba(255,255,255,.28);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   width:100%;height:100%;
-  color:rgba(255,255,255,.72);cursor:grab;
+  cursor:grab;gap:3px;padding:8px;
   transition:border-color .12s,background .12s;
-  gap:3px;padding:8px;
 }
-.vb-sw .sw-label{font-size:10px;font-weight:700;line-height:1;color:rgba(255,255,255,.65);}
+.vb-sw .sw-label{font-size:10px;font-weight:700;line-height:1;color:rgba(255,255,255,.6);}
 .vb-sw.sel{border-color:rgba(255,255,255,.72);background:rgba(255,255,255,.16);}
 .vb-sw.sel .sw-label{color:rgba(255,255,255,.9);}
 
@@ -193,8 +195,6 @@ html,body{
 .g-star{margin-left:auto;color:#FFD700;font-size:11px;letter-spacing:1px;}
 
 #gm-ctrl{position:absolute;inset:0;z-index:30;pointer-events:none;}
-
-/* game controls */
 .gc-c{
   position:absolute;border-radius:50%;
   background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.3);
@@ -210,8 +210,6 @@ html,body{
   background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.23);
   display:flex;align-items:center;justify-content:center;
 }
-
-/* gc-sw removed — switcher now uses .gc-c */
 
 #layout-flash{
   position:absolute;top:50%;left:50%;
@@ -239,39 +237,30 @@ html,body{
       <div class="ed-topdot"></div>
       <div class="ed-thumb"></div>
 
-      <div class="ed-bar">
-        <!-- back to game preview -->
+      <div class="ed-bar" id="ed-bar">
         <button class="tb" onclick="goGame()" title="游戏预览">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div class="tb-d"></div>
-        <span class="tb-name" id="ed-name">阿呵</span>
+        <span class="tb-name">阿呵</span>
         <div class="tb-d"></div>
-        <!-- add -->
         <button class="tb" onclick="toggleAdd()" title="添加按键">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2.3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
-        <!-- undo -->
         <button class="tb" onclick="doUndo()" title="撤销">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
         </button>
-        <!-- redo -->
         <button class="tb" onclick="doRedo()" title="重做">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>
         </button>
-        <!-- switch layout -->
-        <button class="tb" onclick="edCycleLayout()" title="切换布局">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-        </button>
-        <span class="prd-badge" data-prd="switch" title="点击查看切换功能说明">1</span>
+        <div class="tb-d" id="tb-sw-div"></div>
+        <!-- 动态区域：新建子布局 或 切换+删除 -->
+        <div id="tb-sw-area" style="display:inline-flex;align-items:center;gap:2px;"></div>
       </div>
 
       <div id="ed-canvas"></div>
-
-      <!-- selection popover (shared, moved by JS) -->
       <div id="sel-pop"></div>
 
-      <!-- add panel -->
       <div class="add-panel" id="add-panel">
         <h4>添加按键</h4>
         <div class="add-grid" id="add-grid"></div>
@@ -310,100 +299,107 @@ html,body{
 
 <script>
 /* ══════════════════════════
-   SVG icon library
+   SVG icons
 ══════════════════════════ */
 const IC = {
-  aim:    `<circle cx="12" cy="12" r="7"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><circle cx="12" cy="12" r="2.2" fill="rgba(255,255,255,.5)" stroke="none"/>`,
-  horn:   `<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/>`,
-  cover:  `<circle cx="12" cy="5.5" r="2.5" fill="rgba(255,255,255,.45)" stroke="none"/><path d="M9 9c0 0-2 3-2 5.5h10C17 12 15 9 15 9l-3-.8L9 9z"/><line x1="4" y1="20" x2="20" y2="20" stroke-width="2.4" stroke-linecap="round"/>`,
-  gyro:   `<circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="9.5" ry="4"/><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(90 12 12)"/>`,
-  enter:  `<path d="M20 6v6a2 2 0 0 1-2 2H4"/><path d="M7 11l-3 3 3 3"/>`,
-  screen: `<rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="22" x2="16" y2="22"/><line x1="12" y1="18" x2="12" y2="22"/>`,
-  gun:    `<path d="M3 13h10v-2h3V9h3v6H3z"/><path d="M3 13v3h7v-3"/><circle cx="6.5" cy="18.5" r="1.5" fill="rgba(255,255,255,.6)" stroke="none"/>`,
-  tablet: `<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="10" x2="13" y2="10"/><circle cx="12" cy="18.5" r="1.2" fill="rgba(255,255,255,.6)" stroke="none"/>`,
-  melee:  `<path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="M13 19l6-6 2 5-3 3-5-2z"/>`,
-  car:    `<path d="M5 17H3v-4l2-6h14l2 6v4h-2"/><circle cx="7.5" cy="17.5" r="1.5" fill="rgba(255,255,255,.6)" stroke="none"/><circle cx="16.5" cy="17.5" r="1.5" fill="rgba(255,255,255,.6)" stroke="none"/><path d="M5 13h14"/>`,
-  sprint: `<path d="M13.5 4.5h2.5L13 9h4l-5 9 1.5-6h-3z" fill="rgba(255,255,255,.5)" stroke="none"/>`,
-  npc:    `<circle cx="12" cy="5.5" r="2.8" fill="rgba(255,255,255,.4)" stroke="none"/><path d="M8 10a4 4 0 0 0-1 5.5h10A4 4 0 0 0 16 10l-3.5-1L8 10z"/><line x1="9.5" y1="21" x2="10" y2="15.5"/><line x1="14.5" y1="21" x2="14" y2="15.5"/>`,
-  fire:   `<polygon points="5,4 19,12 5,21" fill="rgba(255,255,255,.55)" stroke="rgba(255,255,255,.8)" stroke-width="1.4"/>`,
-  jump:   `<line x1="12" y1="20" x2="12" y2="6"/><polyline points="5 13 12 6 19 13"/>`,
-  reload: `<path d="M12 3a9 9 0 1 1-9 9"/><path d="M3 3v6h6"/>`,
-  bomb:   `<circle cx="10" cy="13" r="6"/><path d="M14.5 8l2.5-2.5"/><path d="M17.5 5.5l1.5-1.5"/>`,
-  menu:   `<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>`,
-  grid:   `<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>`,
-  menu2:  `<line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>`,
-  cycle:  `<path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>`,
+  aim:   `<circle cx="12" cy="12" r="7"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><circle cx="12" cy="12" r="2.2" fill="rgba(255,255,255,.5)" stroke="none"/>`,
+  horn:  `<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/>`,
+  cover: `<circle cx="12" cy="5.5" r="2.5" fill="rgba(255,255,255,.45)" stroke="none"/><path d="M9 9c0 0-2 3-2 5.5h10C17 12 15 9 15 9l-3-.8L9 9z"/><line x1="4" y1="20" x2="20" y2="20" stroke-width="2.4" stroke-linecap="round"/>`,
+  gyro:  `<circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="9.5" ry="4"/><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(90 12 12)"/>`,
+  enter: `<path d="M20 6v6a2 2 0 0 1-2 2H4"/><path d="M7 11l-3 3 3 3"/>`,
+  screen:`<rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="22" x2="16" y2="22"/><line x1="12" y1="18" x2="12" y2="22"/>`,
+  gun:   `<path d="M3 13h10v-2h3V9h3v6H3z"/><path d="M3 13v3h7v-3"/><circle cx="6.5" cy="18.5" r="1.5" fill="rgba(255,255,255,.6)" stroke="none"/>`,
+  tablet:`<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="10" x2="13" y2="10"/><circle cx="12" cy="18.5" r="1.2" fill="rgba(255,255,255,.6)" stroke="none"/>`,
+  melee: `<path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="M13 19l6-6 2 5-3 3-5-2z"/>`,
+  car:   `<path d="M5 17H3v-4l2-6h14l2 6v4h-2"/><circle cx="7.5" cy="17.5" r="1.5" fill="rgba(255,255,255,.6)" stroke="none"/><circle cx="16.5" cy="17.5" r="1.5" fill="rgba(255,255,255,.6)" stroke="none"/><path d="M5 13h14"/>`,
+  sprint:`<path d="M13.5 4.5h2.5L13 9h4l-5 9 1.5-6h-3z" fill="rgba(255,255,255,.5)" stroke="none"/>`,
+  npc:   `<circle cx="12" cy="5.5" r="2.8" fill="rgba(255,255,255,.4)" stroke="none"/><path d="M8 10a4 4 0 0 0-1 5.5h10A4 4 0 0 0 16 10l-3.5-1L8 10z"/><line x1="9.5" y1="21" x2="10" y2="15.5"/><line x1="14.5" y1="21" x2="14" y2="15.5"/>`,
+  fire:  `<polygon points="5,4 19,12 5,21" fill="rgba(255,255,255,.55)" stroke="rgba(255,255,255,.8)" stroke-width="1.4"/>`,
+  jump:  `<line x1="12" y1="20" x2="12" y2="6"/><polyline points="5 13 12 6 19 13"/>`,
+  reload:`<path d="M12 3a9 9 0 1 1-9 9"/><path d="M3 3v6h6"/>`,
+  bomb:  `<circle cx="10" cy="13" r="6"/><path d="M14.5 8l2.5-2.5"/><path d="M17.5 5.5l1.5-1.5"/>`,
+  menu:  `<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>`,
+  grid:  `<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>`,
+  menu2: `<line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>`,
+  cycle: `<path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>`,
+  trash: `<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>`,
 };
 
-function mkIcon(key, sz) {
+function mkIcon(key, sz, stroke) {
   sz = sz || 20;
-  return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.78)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${IC[key]||''}</svg>`;
+  stroke = stroke || 'rgba(255,255,255,.78)';
+  return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${IC[key]||''}</svg>`;
 }
 
 /* ══════════════════════════
    LAYOUT DATA
 ══════════════════════════ */
-const LAYOUT_DEFS = {
-  1: {
-    name: '阿呵',
-    btns: [
-      {id:'joy', t:'joy', x:3.5, y:28, s:120},
-      {id:'horn',t:'c',  x:1.5, y:8,  s:62, ic:'horn'},
-      {id:'aim', t:'c',  x:9.5, y:8,  s:62, ic:'aim'},
-      {id:'cov', t:'c',  x:5.2, y:23, s:62, ic:'cover'},
-      {id:'gyro',t:'c',  x:1,   y:57, s:46, ic:'gyro'},
-      {id:'ent', t:'c',  x:83,  y:5,  s:60, ic:'enter'},
-      {id:'scr', t:'c',  x:90.5,y:5,  s:60, ic:'screen'},
-      {id:'gun', t:'c',  x:83,  y:21, s:60, ic:'gun'},
-      {id:'tab', t:'c',  x:90.5,y:21, s:60, ic:'tablet'},
-      {id:'mel', t:'c',  x:83,  y:37, s:60, ic:'melee'},
-      {id:'car', t:'c',  x:90.5,y:37, s:60, ic:'car'},
-      {id:'spr', t:'c',  x:78,  y:46, s:62, ic:'sprint'},
-      {id:'npc', t:'c',  x:88.5,y:50, s:60, ic:'npc'},
-      {id:'m1',  t:'r',  x:70,  y:81, s:68, ic:'menu'},
-      {id:'m2',  t:'r',  x:79,  y:81, s:68, ic:'grid'},
-      {id:'m3',  t:'r',  x:88.5,y:81, s:68, ic:'menu2'},
-    ]
-  },
-  2: {
-    name: '阿呵',
-    btns: [
-      {id:'joy', t:'joy', x:4,   y:30, s:115},
-      {id:'aim', t:'c',   x:15,  y:18, s:68, ic:'aim'},
-      {id:'fire',t:'c',   x:71,  y:42, s:80, ic:'fire'},
-      {id:'jump',t:'c',   x:85.5,y:20, s:64, ic:'jump'},
-      {id:'rel', t:'c',   x:85.5,y:51, s:58, ic:'reload'},
-      {id:'cov', t:'c',   x:72.5,y:67, s:58, ic:'cover'},
-      {id:'spr', t:'c',   x:12.5,y:65, s:58, ic:'sprint'},
-      {id:'ent', t:'c',   x:91,  y:5,  s:50, ic:'enter'},
-      {id:'m1',  t:'r',   x:83,  y:82, s:60, ic:'menu'},
-    ]
-  }
+const LAYOUT_1_DEF = {
+  name: '阿呵',
+  btns: [
+    {id:'joy', t:'joy', x:3.5, y:28,  s:120},
+    {id:'horn',t:'c',   x:1.5, y:8,   s:62, ic:'horn'},
+    {id:'aim', t:'c',   x:9.5, y:8,   s:62, ic:'aim'},
+    {id:'cov', t:'c',   x:5.2, y:23,  s:62, ic:'cover'},
+    {id:'gyro',t:'c',   x:1,   y:57,  s:46, ic:'gyro'},
+    {id:'ent', t:'c',   x:83,  y:5,   s:60, ic:'enter'},
+    {id:'scr', t:'c',   x:90.5,y:5,   s:60, ic:'screen'},
+    {id:'gun', t:'c',   x:83,  y:21,  s:60, ic:'gun'},
+    {id:'tab', t:'c',   x:90.5,y:21,  s:60, ic:'tablet'},
+    {id:'mel', t:'c',   x:83,  y:37,  s:60, ic:'melee'},
+    {id:'car', t:'c',   x:90.5,y:37,  s:60, ic:'car'},
+    {id:'spr', t:'c',   x:78,  y:46,  s:62, ic:'sprint'},
+    {id:'npc', t:'c',   x:88.5,y:50,  s:60, ic:'npc'},
+    {id:'m1',  t:'r',   x:70,  y:81,  s:68, ic:'menu'},
+    {id:'m2',  t:'r',   x:79,  y:81,  s:68, ic:'grid'},
+    {id:'m3',  t:'r',   x:88.5,y:81,  s:68, ic:'menu2'},
+  ]
 };
 
-/* switcher widget — shared, circle, same size as regular btn */
-let swWidget = { x: 42, y: 80, s: 62, alive: true };
+const LAYOUT_2_DEF = {
+  name: '原名布局2',
+  btns: [
+    {id:'joy', t:'joy', x:4,    y:30,  s:115},
+    {id:'aim', t:'c',   x:15,   y:18,  s:68, ic:'aim'},
+    {id:'fire',t:'c',   x:71,   y:42,  s:80, ic:'fire'},
+    {id:'jump',t:'c',   x:85.5, y:20,  s:64, ic:'jump'},
+    {id:'rel', t:'c',   x:85.5, y:51,  s:58, ic:'reload'},
+    {id:'cov', t:'c',   x:72.5, y:67,  s:58, ic:'cover'},
+    {id:'spr', t:'c',   x:12.5, y:65,  s:58, ic:'sprint'},
+    {id:'ent', t:'c',   x:91,   y:5,   s:50, ic:'enter'},
+    {id:'m1',  t:'r',   x:83,   y:82,  s:60, ic:'menu'},
+  ]
+};
+
+/* 切换控件默认位置 */
+const SW_DEFAULT = { x: 42, y: 80, s: 62 };
 
 /* ══════════════════════════
    STATE
 ══════════════════════════ */
-let curLayout  = 1;
-let curView    = 'ed';
-let editState  = JSON.parse(JSON.stringify(LAYOUT_DEFS));
-let undoStack  = [];
-let redoStack  = [];
-let selData    = null;  // {el, btn, type:'btn'|'sw'|'joy'}
+let hasSubLayout = false;   // 是否已创建子布局
+let curLayout    = 1;       // 当前编辑/预览的布局 (1 or 2)
+let curView      = 'ed';
 
-const SIZES = { sm: .7, md: 1, lg: 1.35 };  // multiplier vs base
-const SIZE_LABEL = ['S','M','L'];
+// 可编辑的布局数据（深拷贝）
+let editState = {
+  1: JSON.parse(JSON.stringify(LAYOUT_1_DEF))
+};
+
+// 切换控件状态（独立于布局）
+let swWidget = null; // null 表示未创建
+
+let undoStack = [];
+let redoStack = [];
+let selData   = null;
 
 /* ══════════════════════════
    BOOT
 ══════════════════════════ */
 window.addEventListener('load', () => {
   buildAddGrid();
+  updateToolbar();
   renderEditor();
-  initPrd();
 });
 
 /* ══════════════════════════
@@ -426,16 +422,73 @@ function goEditor() {
 }
 
 /* ══════════════════════════
-   LAYOUT CYCLE
+   TOOLBAR 动态区域
+══════════════════════════ */
+function updateToolbar() {
+  const area = document.getElementById('tb-sw-area');
+  if (!hasSubLayout) {
+    // 显示"新建子布局"按钮
+    area.innerHTML = `
+      <button class="tb tb-create" onclick="createSubLayout()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        新建子布局
+      </button>`;
+  } else {
+    // 显示"切换"按钮 + "删除布局"按钮
+    area.innerHTML = `
+      <button class="tb" onclick="edCycleLayout()" title="切换布局">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">${IC.cycle}</svg>
+      </button>
+      <button class="tb tb-del-layout" onclick="deleteSubLayout()" title="删除子布局">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">${IC.trash}</svg>
+      </button>`;
+  }
+}
+
+/* ══════════════════════════
+   子布局 创建 / 删除
+══════════════════════════ */
+function createSubLayout() {
+  hasSubLayout = true;
+  // 初始化子布局为预设数据（或可以克隆布局1）
+  editState[2] = JSON.parse(JSON.stringify(LAYOUT_2_DEF));
+  // 自动在画布上放置切换控件
+  swWidget = { ...SW_DEFAULT };
+  undoStack = []; redoStack = [];
+  updateToolbar();
+  renderEditor();
+  toast('已创建子布局，切换控件已添加到画布');
+}
+
+function deleteSubLayout() {
+  // 删除子布局，回到初始状态
+  hasSubLayout = false;
+  curLayout    = 1;
+  delete editState[2];
+  swWidget     = null;
+  undoStack    = []; redoStack = [];
+  updateToolbar();
+  renderEditor();
+  toast('子布局已删除，已回到初始布局');
+}
+
+/* ══════════════════════════
+   布局切换 (editor)
 ══════════════════════════ */
 function edCycleLayout() {
-  // Demo: 切换布局功能 - 在两种布局之间切换
+  if (!hasSubLayout) return;
   curLayout = curLayout === 1 ? 2 : 1;
   undoStack = []; redoStack = [];
   closePopover();
   renderEditor();
+  toast('切换到 · ' + editState[curLayout].name);
 }
+
+/* ══════════════════════════
+   布局切换 (game)
+══════════════════════════ */
 function gmCycleLayout() {
+  if (!hasSubLayout) return;
   curLayout = curLayout === 1 ? 2 : 1;
   const ctrl = document.getElementById('gm-ctrl');
   ctrl.style.opacity = '0';
@@ -455,66 +508,6 @@ function flashLabel(name) {
   setTimeout(() => el.classList.remove('on'), 1100);
 }
 
-/* PRD 标注内容 */
-const PRD_DATA = {
-  switch: {
-    title: '切换布局功能',
-    content: `
-      <p>点击此按钮可在两种布局之间切换。</p>
-      <p>切换后会重新渲染编辑器画布，并清除当前的撤销 / 重做栈，以保持布局状态一致。</p>
-      <ul>
-        <li>当前布局：<strong>编辑器内可视化布局</strong></li>
-        <li>动作类型：<strong>即时切换</strong></li>
-        <li>不再显示切换提示 Toast（已移除）</li>
-      </ul>
-    `
-  }
-};
-
-let activePrdTooltip = null;
-
-function setupPrdAnnotations() {
-  document.querySelectorAll('.prd-badge').forEach(el => {
-    el.addEventListener('mouseenter', () => showPrdTooltip(el.dataset.prd, el));
-    el.addEventListener('mouseleave', () => setTimeout(closePrdTooltip, 120));
-    el.addEventListener('click', () => showPrdTooltip(el.dataset.prd, el));
-  });
-}
-
-function showPrdTooltip(id, anchor) {
-  const data = PRD_DATA[id];
-  if (!data) return;
-  closePrdTooltip();
-  const tip = document.createElement('div');
-  tip.className = 'prd-tooltip';
-  tip.innerHTML = `
-    <div class="prd-tooltip-header">
-      <span class="prd-tooltip-badge">PRD</span>
-      <span class="prd-tooltip-title">${data.title}</span>
-      <span class="prd-tooltip-close" onclick="closePrdTooltip()">×</span>
-    </div>
-    <div class="prd-tooltip-body">${data.content}</div>
-  `;
-  document.body.appendChild(tip);
-  const rect = anchor.getBoundingClientRect();
-  const left = Math.min(window.innerWidth - tip.offsetWidth - 12, Math.max(12, rect.left + rect.width / 2 - tip.offsetWidth / 2));
-  const top = rect.bottom + 10;
-  tip.style.left = `${left}px`;
-  tip.style.top = `${top}px`;
-  activePrdTooltip = tip;
-}
-
-function closePrdTooltip() {
-  if (activePrdTooltip) {
-    activePrdTooltip.remove();
-    activePrdTooltip = null;
-  }
-}
-
-function initPrd() {
-  setupPrdAnnotations();
-}
-
 /* ══════════════════════════
    EDITOR RENDER
 ══════════════════════════ */
@@ -524,7 +517,6 @@ function renderEditor() {
   closePopover();
 
   const L = editState[curLayout];
-  document.getElementById('ed-name').textContent = L.name;
   const W = canvas.offsetWidth, H = canvas.offsetHeight;
 
   L.btns.forEach(b => {
@@ -533,15 +525,15 @@ function renderEditor() {
     bindDrag(el, b, 'btn');
   });
 
-  // render switcher widget
-  if (swWidget.alive) {
+  // 只有创建了子布局，才渲染切换控件
+  if (swWidget) {
     const sw = mkSwEl(W, H);
     canvas.appendChild(sw);
     bindDrag(sw, swWidget, 'sw');
   }
 }
 
-/* Build a regular button element */
+/* ─── 普通按键元素 ─── */
 function mkVBtnEl(b, W, H) {
   const el = document.createElement('div');
   el.className = 'vb';
@@ -572,16 +564,19 @@ function mkVBtnEl(b, W, H) {
   return el;
 }
 
-/* Build switcher widget element — circle: cycle icon + "切换" label */
+/* ─── 切换控件元素（圆圈：上icon + 下文字） ─── */
 function mkSwEl(W, H) {
   const el = document.createElement('div');
   el.className = 'vb';
   el.id = 'vb__sw';
   const px = swWidget.x / 100 * W, py = swWidget.y / 100 * H;
-  const s = swWidget.s;
+  const s  = swWidget.s;
   el.style.cssText = `left:${px}px;top:${py}px;width:${s}px;height:${s}px;`;
-  const iconSz = Math.round(s * 0.38);
-  el.innerHTML = `<div class="vb-sw">${mkIcon('cycle', iconSz)}<span class="sw-label">切换</span></div>`;
+  const iconSz = Math.round(s * 0.36);
+  el.innerHTML = `<div class="vb-sw">
+    ${mkIcon('cycle', iconSz)}
+    <span class="sw-label">切换</span>
+  </div>`;
   el.addEventListener('pointerdown', e => { e.stopPropagation(); onSelectBtn(el, swWidget, 'sw'); });
   return el;
 }
@@ -625,14 +620,10 @@ function bindDrag(el, data, type) {
    SELECTION & POPOVER
 ══════════════════════════ */
 function onSelectBtn(el, data, type) {
-  // deselect previous
   clearSelection();
   selData = { el, data, type };
-
-  // highlight
   const inner = el.querySelector('.vb-c,.vb-joy,.vb-r,.vb-sw');
   if (inner) inner.classList.add('sel');
-
   showPopover(el, data, type);
 }
 
@@ -648,30 +639,23 @@ function clearSelection() {
 function showPopover(el, data, type) {
   const pop = document.getElementById('sel-pop');
   const canvas = document.getElementById('ed-canvas');
-  const W = canvas.offsetWidth, H = canvas.offsetHeight;
+  const W = canvas.offsetWidth;
 
-  // Build popover content
   let html = '';
-
   if (type !== 'sw') {
-    // size buttons
-    const bases = { btn: [44,58,72], joy: [88,115,140], r: [52,68,84] };
+    const bases = { btn:[44,58,72], joy:[88,115,140], r:[52,68,84] };
     const key = type === 'joy' ? 'joy' : (data.t === 'r' ? 'r' : 'btn');
-    const szArr = bases[key];
-    szArr.forEach((sz, i) => {
+    bases[key].forEach((sz, i) => {
       const on = Math.round(data.s) === sz ? ' on' : '';
-      html += `<button class="sp-btn${on}" onclick="resizeBtn(${sz})">${SIZE_LABEL[i]}</button>`;
+      html += `<button class="sp-btn${on}" onclick="resizeBtn(${sz})">${['S','M','L'][i]}</button>`;
     });
     html += `<div class="sp-div"></div>`;
   }
-
-  // delete button
-  html += `<button class="sp-btn sp-del" onclick="deleteSelected()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> 删除</button>`;
+  html += `<button class="sp-btn sp-del" onclick="deleteSelected()">${mkIcon('trash',12,'currentColor')} 删除</button>`;
 
   pop.innerHTML = html;
   pop.classList.add('show');
 
-  // position above button, clamped within canvas
   const elL = parseFloat(el.style.left), elT = parseFloat(el.style.top);
   const elW = parseFloat(el.style.width), elH = parseFloat(el.style.height);
 
@@ -679,30 +663,28 @@ function showPopover(el, data, type) {
     const pw = pop.offsetWidth, ph = pop.offsetHeight;
     let px = elL + elW / 2 - pw / 2;
     let py = elT - ph - 8;
-    if (py < 8) py = elT + elH + 8;           // flip below
-    px = Math.max(6, Math.min(W - pw - 6, px)); // clamp horizontal
+    if (py < 8) py = elT + elH + 8;
+    px = Math.max(6, Math.min(W - pw - 6, px));
     pop.style.left = px + 'px';
     pop.style.top  = py + 'px';
   });
 }
 
 function closePopover() {
-  const pop = document.getElementById('sel-pop');
-  pop.classList.remove('show');
+  document.getElementById('sel-pop').classList.remove('show');
 }
 
 function resizeBtn(sz) {
   if (!selData || selData.type === 'sw') return;
   const b = selData.data;
-  undoStack.push({ type: 'size', lid: curLayout, id: b.id, s: b.s });
+  undoStack.push({ type:'size', lid:curLayout, id:b.id, s:b.s });
   redoStack = [];
   b.s = sz;
-  // re-render just that button
   const canvas = document.getElementById('ed-canvas');
   const W = canvas.offsetWidth, H = canvas.offsetHeight;
   const old = document.getElementById('vb_' + b.id);
   const newEl = mkVBtnEl(b, W, H);
-  if (old) { canvas.replaceChild(newEl, old); }
+  if (old) canvas.replaceChild(newEl, old);
   bindDrag(newEl, b, b.t === 'joy' ? 'joy' : 'btn');
   onSelectBtn(newEl, b, b.t === 'joy' ? 'joy' : 'btn');
 }
@@ -710,33 +692,29 @@ function resizeBtn(sz) {
 function deleteSelected() {
   if (!selData) return;
   const { type, data, el } = selData;
-
   if (type === 'sw') {
-    swWidget.alive = false;
+    // 只删除画布上的切换控件，不删除子布局数据
+    swWidget = null;
     el.remove();
-    closePopover();
-    selData = null;
-    toast('已删除切换布局按键');
+    closePopover(); selData = null;
+    toast('切换控件已移除（子布局仍保留）');
   } else {
     const L = editState[curLayout];
     const idx = L.btns.findIndex(b => b.id === data.id);
     if (idx !== -1) {
-      undoStack.push({ type: 'delete', lid: curLayout, btn: JSON.parse(JSON.stringify(data)), idx });
+      undoStack.push({ type:'delete', lid:curLayout, btn:JSON.parse(JSON.stringify(data)), idx });
       redoStack = [];
       L.btns.splice(idx, 1);
     }
     el.remove();
-    closePopover();
-    selData = null;
+    closePopover(); selData = null;
     toast('已删除按键');
   }
 }
 
-// Deselect on canvas background click
 document.getElementById('ed').addEventListener('pointerdown', e => {
-  if (!e.target.closest('.vb') && !e.target.closest('#sel-pop') && !e.target.closest('.add-panel') && !e.target.closest('.ed-bar')) {
+  if (!e.target.closest('.vb') && !e.target.closest('#sel-pop') && !e.target.closest('.add-panel') && !e.target.closest('.ed-bar'))
     clearSelection();
-  }
 });
 
 /* ══════════════════════════
@@ -745,70 +723,57 @@ document.getElementById('ed').addEventListener('pointerdown', e => {
 function doUndo() {
   if (!undoStack.length) { toast('没有可撤销的操作'); return; }
   const a = undoStack.pop();
-  if (a.type === 'size') {
-    const btn = editState[a.lid].btns.find(b => b.id === a.id);
-    if (btn) { redoStack.push({ type:'size', lid:a.lid, id:a.id, s:btn.s }); btn.s = a.s; renderEditor(); }
-  } else if (a.type === 'delete') {
-    redoStack.push({ type:'undelete', lid:a.lid, btn:a.btn, idx:a.idx });
-    editState[a.lid].btns.splice(a.idx, 0, JSON.parse(JSON.stringify(a.btn)));
-    renderEditor();
-  } else {
-    // position undo
-    const isSw = a.id === '__sw';
-    const target = isSw ? swWidget : editState[a.lid]?.btns.find(b => b.id === a.id);
-    if (target) {
-      redoStack.push({ ...a, x: target.x, y: target.y });
-      target.x = a.x; target.y = a.y;
-      const canvas = document.getElementById('ed-canvas');
-      const elId = isSw ? 'vb__sw' : 'vb_' + a.id;
-      const el = document.getElementById(elId);
-      if (el) {
-        el.style.left = target.x / 100 * canvas.offsetWidth + 'px';
-        el.style.top  = target.y / 100 * canvas.offsetHeight + 'px';
-      }
-    }
-  }
+  applyHistoryStep(a, redoStack);
   toast('已撤销');
 }
-
 function doRedo() {
   if (!redoStack.length) { toast('没有可重做的操作'); return; }
   const a = redoStack.pop();
+  applyHistoryStep(a, undoStack);
+  toast('已重做');
+}
+
+function applyHistoryStep(a, oppositeStack) {
   if (a.type === 'size') {
-    const btn = editState[a.lid].btns.find(b => b.id === a.id);
-    if (btn) { undoStack.push({ type:'size', lid:a.lid, id:a.id, s:btn.s }); btn.s = a.s; renderEditor(); }
+    const btn = editState[a.lid]?.btns.find(b => b.id === a.id);
+    if (btn) {
+      oppositeStack.push({ type:'size', lid:a.lid, id:a.id, s:btn.s });
+      btn.s = a.s; renderEditor();
+    }
+  } else if (a.type === 'delete') {
+    oppositeStack.push({ type:'undelete', lid:a.lid, btn:a.btn, idx:a.idx });
+    editState[a.lid]?.btns.splice(a.idx, 0, JSON.parse(JSON.stringify(a.btn)));
+    renderEditor();
   } else if (a.type === 'undelete') {
-    undoStack.push({ type:'delete', lid:a.lid, btn:a.btn, idx:a.idx });
-    editState[a.lid].btns.splice(a.idx, 1);
+    oppositeStack.push({ type:'delete', lid:a.lid, btn:a.btn, idx:a.idx });
+    editState[a.lid]?.btns.splice(a.idx, 1);
     renderEditor();
   } else {
+    // position
     const isSw = a.id === '__sw';
     const target = isSw ? swWidget : editState[a.lid]?.btns.find(b => b.id === a.id);
     if (target) {
-      undoStack.push({ ...a, x: target.x, y: target.y });
+      oppositeStack.push({ ...a, x:target.x, y:target.y });
       target.x = a.x; target.y = a.y;
       const canvas = document.getElementById('ed-canvas');
-      const elId = isSw ? 'vb__sw' : 'vb_' + a.id;
-      const el = document.getElementById(elId);
+      const el = document.getElementById(isSw ? 'vb__sw' : 'vb_' + a.id);
       if (el) {
         el.style.left = target.x / 100 * canvas.offsetWidth + 'px';
         el.style.top  = target.y / 100 * canvas.offsetHeight + 'px';
       }
     }
   }
-  toast('已重做');
 }
 
 /* ══════════════════════════
    ADD PANEL
 ══════════════════════════ */
 const ADD_ITEMS = [
-  {ic:'aim',  label:'瞄准'}, {ic:'fire', label:'射击'},
-  {ic:'jump', label:'跳跃'}, {ic:'reload',label:'换弹'},
-  {ic:'sprint',label:'冲刺'},{ic:'car',  label:'载具'},
-  {ic:'bomb', label:'投弹'}, {ic:'menu', label:'菜单'},
+  {ic:'aim',label:'瞄准'},{ic:'fire',label:'射击'},
+  {ic:'jump',label:'跳跃'},{ic:'reload',label:'换弹'},
+  {ic:'sprint',label:'冲刺'},{ic:'car',label:'载具'},
+  {ic:'bomb',label:'投弹'},{ic:'menu',label:'菜单'},
 ];
-
 function buildAddGrid() {
   const grid = document.getElementById('add-grid');
   ADD_ITEMS.forEach(item => {
@@ -819,16 +784,10 @@ function buildAddGrid() {
     grid.appendChild(d);
   });
 }
-
-function toggleAdd() {
-  const p = document.getElementById('add-panel');
-  p.classList.toggle('open');
-}
-function closeAdd() {
-  document.getElementById('add-panel').classList.remove('open');
-}
+function toggleAdd() { document.getElementById('add-panel').classList.toggle('open'); }
+function closeAdd()  { document.getElementById('add-panel').classList.remove('open'); }
 function addCustomBtn(icKey, label) {
-  const btn = { id: 'u' + Date.now(), t: 'c', x: 35 + Math.random() * 30, y: 28 + Math.random() * 38, s: 58, ic: icKey };
+  const btn = { id:'u'+Date.now(), t:'c', x:35+Math.random()*30, y:28+Math.random()*38, s:58, ic:icKey };
   editState[curLayout].btns.push(btn);
   const canvas = document.getElementById('ed-canvas');
   const el = mkVBtnEl(btn, canvas.offsetWidth, canvas.offsetHeight);
@@ -850,7 +809,7 @@ function renderGame(animate) {
   L.btns.forEach((b, i) => {
     const x = b.x / 100 * W, y = b.y / 100 * H;
     const delay = animate ? (i * .028).toFixed(3) + 's' : '0s';
-    const anim = animate ? `animation:ctrlIn .28s ease ${delay} both` : '';
+    const anim  = animate ? `animation:ctrlIn .28s ease ${delay} both` : '';
     const el = document.createElement('div');
 
     if (b.t === 'joy') {
@@ -871,17 +830,17 @@ function renderGame(animate) {
     ctrl.appendChild(el);
   });
 
-  // render switcher as single cycle button (circle)
-  if (swWidget.alive) {
+  // 切换控件（仅在有子布局且控件存在时渲染）
+  if (hasSubLayout && swWidget) {
     const sx = swWidget.x / 100 * W, sy = swWidget.y / 100 * H;
-    const s = swWidget.s;
+    const s  = swWidget.s;
     const delay = animate ? (L.btns.length * .028).toFixed(3) + 's' : '0s';
-    const anim = animate ? `animation:ctrlIn .28s ease ${delay} both` : '';
+    const anim  = animate ? `animation:ctrlIn .28s ease ${delay} both` : '';
+    const iconSz = Math.round(s * 0.36);
     const swEl = document.createElement('div');
     swEl.className = 'gc-c';
     swEl.style.cssText = `left:${sx}px;top:${sy}px;width:${s}px;height:${s}px;${anim};cursor:pointer;pointer-events:all;flex-direction:column;gap:3px;padding:8px;`;
-    const iconSz = Math.round(s * 0.38);
-    swEl.innerHTML = mkIcon('cycle', iconSz) + `<span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.65);line-height:1">切换</span>`;
+    swEl.innerHTML = mkIcon('cycle', iconSz) + `<span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.62);line-height:1">切换</span>`;
     swEl.onclick = gmCycleLayout;
     ctrl.appendChild(swEl);
   }
@@ -895,8 +854,339 @@ function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg; el.classList.add('on');
   clearTimeout(_tt);
-  _tt = setTimeout(() => el.classList.remove('on'), 1700);
+  _tt = setTimeout(() => el.classList.remove('on'), 1800);
 }
+
+/* ══════════════════════════
+   PRD ANNOTATIONS
+══════════════════════════ */
+const PRD = [
+  {
+    id: 1,
+    anchor: 'ann-toolbar',
+    title: '编辑器工具栏',
+    md: `**触发方式：** 默认进入编辑页时显示，点击游戏预览页左上角「进入编辑页」按钮也可进入。
+
+**布局名称区（阿呵）**
+- 固定显示当前编辑布局的名称，不随切换操作改变（始终反映当前编辑对象）
+- 名称超长时省略显示（max-width: 88px + text-overflow: ellipsis）
+
+**添加按键（＋）**
+- 点击展开添加面板，支持 8 种按键类型：瞄准、射击、跳跃、换弹、冲刺、载具、投弹、菜单
+- 添加后新按键随机落在画布中央区域，立即可拖动
+
+**撤销 ↩ / 重做 ↪**
+- 支持：按键位置移动、按键尺寸调整、按键删除 的撤销与重做
+- 切换布局或新建/删除子布局时清空历史栈
+- 无可操作时 Toast 提示「没有可撤销/重做的操作」
+
+**动态区（工具栏末尾）**
+- 初始状态（无子布局）：显示 **「＋ 新建子布局」** 虚线按钮
+- 创建子布局后：变为 **「⇄ 切换」** + **「🗑 删除布局」** 两个按钮
+- 「⇄ 切换」：在布局一（阿呵）与布局二（原名布局2）之间循环切换编辑对象，清空历史栈
+- 「🗑 删除布局」：删除子布局，回到初始状态，画布切换控件一并移除`
+  },
+  {
+    id: 2,
+    anchor: 'ann-canvas',
+    title: '编辑器画布 & 虚拟按键',
+    md: `**画布区域**
+- 纯黑背景，四周虚线边框（inset: 5px），右侧竖向辅助线（right: 12%）
+- 右侧竖线顶部圆圈 + 中部可视滑块（纯装饰，表示滚动区域）
+
+**虚拟按键类型**
+| 类型 | 形态 | 用途 |
+|---|---|---|
+| \`joy\` | 大圆 + 方向箭头 + 内芯 | 摇杆 |
+| \`c\` | 圆形 + SVG 图标 | 功能按键 |
+| \`r\` | 矩形（高度 = s × 0.52）+ SVG 图标 | 菜单/功能条 |
+| \`sw\`（切换控件）| 圆形 + 切换图标 + 「切换」文字 | 游戏内布局切换 |
+
+**拖拽交互**
+- 所有按键支持 Pointer Events 拖拽，位置以百分比（%）存储，适配任意容器尺寸
+- 拖拽时自动关闭选中气泡
+
+**选中 & 操作气泡**
+- 点击任意按键选中（高亮边框），弹出气泡
+- 气泡内容：
+  - 普通/矩形按键：**S / M / L** 三档尺寸切换 + **删除**
+  - 摇杆：S(88px) / M(115px) / L(140px) 三档 + **删除**
+  - 切换控件：仅 **删除**（删除后子布局数据保留，仅移除画布控件）
+- 气泡自动避让：默认显示在按键上方，空间不足时翻转到下方；水平方向夹持在画布内
+- 点击画布空白处取消选中`
+  },
+  {
+    id: 3,
+    anchor: 'ann-sublayout',
+    title: '子布局创建与切换控件',
+    md: `**子布局生命周期**
+
+1. **创建**：点击「＋ 新建子布局」
+   - 初始化布局二数据（预设按键配置）
+   - 画布自动在默认位置（x:42%, y:80%）生成切换控件
+   - 工具栏切换到「切换 + 删除」模式
+   - Toast：「已创建子布局，切换控件已添加到画布」
+
+2. **切换编辑对象**：点击工具栏「⇄ 切换」
+   - 在布局一（阿呵）↔ 布局二（原名布局2）之间切换
+   - 工具栏名称同步更新为当前编辑布局名
+   - Toast：「切换到 · [布局名]」
+
+3. **删除子布局**：点击工具栏「🗑」
+   - 删除 editState[2]，curLayout 归 1
+   - swWidget 置 null，画布切换控件消失
+   - 工具栏恢复「＋ 新建子布局」
+   - Toast：「子布局已删除，已回到初始布局」
+
+**切换控件（圆形）**
+- 样式：与其他虚拟按键一致（圆形 + 边框），内容为切换图标（上）+ 「切换」文字（下）
+- 可拖拽到画布任意位置
+- 选中后气泡仅显示「删除」（删除控件但不删布局）
+- 游戏预览时，控件在同位置渲染为可点击按钮，点击循环切换布局`
+  },
+  {
+    id: 4,
+    anchor: 'ann-gamepreview',
+    title: '游戏预览视图',
+    md: `**进入方式**
+- 编辑器工具栏点击「←（返回）」进入游戏预览
+- 容器外「进入编辑页」按钮可从游戏预览返回编辑器
+
+**顶部状态栏**
+- 显示：DXVK / GPU% / CPU% / RAM% / TMP°C / FPS / PWR（纯静态展示，数值固定）
+- 右侧显示星级评分（★★★★☆）
+
+**游戏背景**
+- 深色渐变占位背景 + 半透明游戏图标 + 「游戏画面」文字（整体 opacity: 0.05）
+- 作为游戏内容占位，不承载真实游戏画面
+
+**虚拟按键渲染**
+- 按 editState[curLayout].btns 数据，以绝对像素（基于 900×400 容器）渲染
+- 首次进入带入场动画（stagger 0.028s/btn，scale 0.72→1）
+- 切换布局时淡出（0.15s）→ 重渲染 → 淡入
+
+**布局切换（游戏内）**
+- 仅在 hasSubLayout && swWidget 时渲染切换控件
+- 切换控件样式与编辑器一致（圆形 + 切换图标 + 「切换」）
+- 点击后中央闪出布局名（fade + scale 动画，持续 1.1s）`
+  },
+];
+
+/* Badge & tooltip system */
+const prdState = { open: {} };
+
+function initPRD() {
+  // Badge styles injected once
+  const style = document.createElement('style');
+  style.textContent = `
+    .prd-badge{
+      position:absolute;display:inline-block;vertical-align:top;
+      background:rgb(250,173,20);color:#fff;font-size:10px;font-weight:700;
+      line-height:14px;padding:0 4px;border-radius:2px;cursor:pointer;
+      z-index:10000;user-select:none;white-space:nowrap;
+    }
+    .prd-badge:hover{filter:brightness(1.1);}
+    .prd-tip{
+      position:fixed;width:450px;background:#f0efef;border-radius:4px;
+      box-shadow:0 4px 24px rgba(0,0,0,.18);z-index:9999;font-size:13px;
+      line-height:1.6;user-select:none;
+    }
+    .prd-tip-header{
+      display:flex;align-items:center;padding:10px 12px 8px;
+      border-bottom:1px solid rgba(0,0,0,.1);gap:8px;
+    }
+    .prd-tip-num{
+      background:rgb(250,173,20);color:#fff;font-size:10px;font-weight:700;
+      line-height:14px;padding:0 4px;border-radius:2px;flex-shrink:0;
+    }
+    .prd-tip-title{flex:1;font-weight:700;color:#111;font-size:13px;}
+    .prd-tip-close{
+      font-size:18px;color:#888;cursor:pointer;line-height:1;padding:0 2px;
+      flex-shrink:0;
+    }
+    .prd-tip-close:hover{color:#333;}
+    .prd-tip-body{
+      padding:12px 14px 14px;color:#222;overflow-y:auto;max-height:400px;
+    }
+    .prd-tip-body p{margin:0 0 10px;}
+    .prd-tip-body strong{font-weight:700;}
+    .prd-tip-body em{font-style:italic;}
+    .prd-tip-body ul,.prd-tip-body ol{margin:0 0 10px 0;padding-left:20px;}
+    .prd-tip-body li{margin-bottom:4px;}
+    .prd-tip-body table{border-collapse:collapse;width:100%;margin-bottom:10px;font-size:12px;}
+    .prd-tip-body th,.prd-tip-body td{border:1px solid rgba(0,0,0,.15);padding:5px 8px;text-align:left;}
+    .prd-tip-body th{background:rgba(0,0,0,.06);font-weight:700;}
+    .prd-tip-body blockquote{margin:0 0 10px;padding:6px 12px;border-left:3px solid #ccc;color:#555;background:rgba(0,0,0,.03);}
+    .prd-tip-body code{background:rgba(0,0,0,.07);padding:1px 4px;border-radius:3px;font-family:monospace;font-size:12px;}
+    .prd-anchor{position:relative;display:inline-block;}
+  `;
+  document.head.appendChild(style);
+
+  // Place anchors near annotated elements
+  placeAnchor('ann-toolbar', document.querySelector('.ed-bar'));
+  placeAnchor('ann-canvas',  document.getElementById('ed-canvas'));
+  placeAnchor('ann-sublayout', document.getElementById('tb-sw-area'));
+  placeAnchor('ann-gamepreview', document.getElementById('gm'));
+
+  PRD.forEach(item => {
+    const anchor = document.getElementById('prd-anchor-' + item.anchor);
+    if (!anchor) return;
+    anchor.addEventListener('mouseenter', () => openTip(item.id));
+  });
+}
+
+function placeAnchor(anchorId, targetEl) {
+  if (!targetEl) return;
+  const badge = document.createElement('div');
+  badge.id = 'prd-anchor-' + anchorId;
+  badge.className = 'prd-badge';
+  badge.textContent = PRD.find(p => p.anchor === anchorId)?.id || '?';
+  badge.style.cssText = 'top:-8px;right:-4px;';
+  badge.dataset.anchor = anchorId;
+
+  // Mount to body with absolute positioning relative to viewport
+  document.body.appendChild(badge);
+
+  function reposition() {
+    const r = targetEl.getBoundingClientRect();
+    badge.style.position = 'fixed';
+    badge.style.top  = (r.top  - 8) + 'px';
+    badge.style.left = (r.right - 4) + 'px';
+  }
+  reposition();
+  window.addEventListener('resize', reposition);
+  // Reposition on view switches
+  badge._reposition = reposition;
+
+  badge.addEventListener('mouseenter', () => {
+    const item = PRD.find(p => p.anchor === anchorId);
+    if (item) openTip(item.id, badge);
+  });
+}
+
+function openTip(id, badgeEl) {
+  if (prdState.open[id]) return; // already open
+  const item = PRD.find(p => p.id === id);
+  if (!item) return;
+
+  const tip = document.createElement('div');
+  tip.className = 'prd-tip';
+  tip.dataset.tipId = id;
+  tip.innerHTML = `
+    <div class="prd-tip-header" style="cursor:move;">
+      <span class="prd-tip-num">${id}</span>
+      <span class="prd-tip-title">需求描述：${item.title}</span>
+      <span class="prd-tip-close" onclick="closeTip(${id})">×</span>
+    </div>
+    <div class="prd-tip-body">${mdToHtml(item.md)}</div>
+  `;
+  document.body.appendChild(tip);
+  prdState.open[id] = tip;
+
+  // Position: bottom-left of badge, auto-avoid edges
+  positionTip(tip, badgeEl);
+
+  // Drag
+  makeTipDraggable(tip);
+
+  // Isolate clicks
+  tip.addEventListener('pointerdown', e => e.stopPropagation());
+  tip.addEventListener('click', e => e.stopPropagation());
+}
+
+function closeTip(id) {
+  const tip = prdState.open[id];
+  if (tip) { tip.remove(); delete prdState.open[id]; }
+}
+
+function positionTip(tip, badgeEl) {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const tw = 450, th = Math.min(440, vh - 20);
+  let left = 0, top = 0;
+
+  if (badgeEl) {
+    const r = badgeEl.getBoundingClientRect();
+    left = r.left - tw - 8;
+    top  = r.bottom + 8;
+  } else {
+    left = vw / 2 - tw / 2;
+    top  = 80;
+  }
+
+  if (left < 8) left = 8;
+  if (left + tw > vw - 8) left = vw - tw - 8;
+  if (top + th > vh - 8) top = vh - th - 8;
+  if (top < 8) top = 8;
+
+  tip.style.left = left + 'px';
+  tip.style.top  = top  + 'px';
+}
+
+function makeTipDraggable(tip) {
+  const header = tip.querySelector('.prd-tip-header');
+  let sx, sy, sl, st, dragging = false;
+
+  header.addEventListener('pointerdown', e => {
+    if (e.target.classList.contains('prd-tip-close')) return;
+    e.stopPropagation();
+    header.setPointerCapture(e.pointerId);
+    sx = e.clientX; sy = e.clientY;
+    sl = parseFloat(tip.style.left) || 0;
+    st = parseFloat(tip.style.top)  || 0;
+    dragging = true;
+  });
+  header.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    tip.style.left = (sl + e.clientX - sx) + 'px';
+    tip.style.top  = (st + e.clientY - sy) + 'px';
+  });
+  header.addEventListener('pointerup', () => { dragging = false; });
+}
+
+/* Minimal Markdown → HTML */
+function mdToHtml(md) {
+  return md
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    // restore intentional HTML-like table syntax after escaping
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code>$1</code>')
+    // table: header row
+    .replace(/\|(.+)\|\n\|[-| :]+\|\n/g, (_, row) => {
+      const cells = row.split('|').filter(c=>c.trim()).map(c=>`<th>${c.trim()}</th>`).join('');
+      return `<table><thead><tr>${cells}</tr></thead><tbody>`;
+    })
+    // table: data rows (simple: line starting with |)
+    .replace(/^\|(.+)\|$/gm, (_, row) => {
+      const cells = row.split('|').filter(c=>c.trim()).map(c=>`<td>${c.trim()}</td>`).join('');
+      return `<tr>${cells}</tr>`;
+    })
+    .replace(/<\/tbody>(?![\s\S]*<tbody>)/,'')
+    .replace(/<tr>/,'</tbody></table><tr>') // close open tables — handled inline
+    // blockquote
+    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
+    // h3 headings (### only)
+    .replace(/^### (.+)$/gm,'<p><strong>$1</strong></p>')
+    // unordered list items
+    .replace(/^[\s]*[-*] (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>')
+    // collapse consecutive </ul><ul>
+    .replace(/<\/ul>\s*<ul>/g,'')
+    // paragraphs: blank-line separated blocks
+    .split(/\n{2,}/)
+    .map(block => {
+      block = block.trim();
+      if (!block) return '';
+      if (/^<(ul|ol|table|blockquote|tr|thead|tbody|p|h[1-6])/.test(block)) return block;
+      if (/<li>/.test(block)) return `<ul>${block}</ul>`;
+      return `<p>${block.replace(/\n/g,'<br>')}</p>`;
+    })
+    .join('\n');
+}
+
+window.addEventListener('load', () => {
+  setTimeout(initPRD, 150); // slight delay so layout is painted
+});
 </script>
 </body>
 </html>
