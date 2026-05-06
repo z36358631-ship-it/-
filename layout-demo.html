@@ -238,8 +238,9 @@ html,body{
       <div class="ed-thumb"></div>
 
       <div class="ed-bar" id="ed-bar">
-        <button class="tb" onclick="goGame()" title="游戏预览">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        <button class="tb" onclick="doSave()" title="保存" style="gap:5px;padding:5px 8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,.8)">保存</span>
         </button>
         <div class="tb-d"></div>
         <span class="tb-name">阿呵</span>
@@ -294,6 +295,7 @@ html,body{
 
   <div class="ext-row">
     <button class="ext-btn" onclick="goEditor()">进入编辑页</button>
+    <button class="ext-btn" onclick="goGame()">进入游戏预览</button>
   </div>
 </div>
 
@@ -414,6 +416,10 @@ function goGame() {
   closeAdd(); closePopover();
   showView('gm');
   requestAnimationFrame(() => renderGame(true));
+}
+function doSave() {
+  closeAdd(); closePopover();
+  toast('布局已保存');
 }
 function goEditor() {
   closeAdd(); closePopover();
@@ -863,112 +869,43 @@ function toast(msg) {
 const PRD = [
   {
     id: 1,
-    anchor: 'ann-toolbar',
-    title: '编辑器工具栏',
-    md: `**触发方式：** 默认进入编辑页时显示，点击游戏预览页左上角「进入编辑页」按钮也可进入。
+    anchor: 'ann-create',
+    title: '新建子布局',
+    md: `**触发条件：** 当前仅有一套布局（无子布局）时，工具栏末尾显示「＋ 新建子布局」虚线按钮。
 
-**布局名称区（阿呵）**
-- 固定显示当前编辑布局的名称，不随切换操作改变（始终反映当前编辑对象）
-- 名称超长时省略显示（max-width: 88px + text-overflow: ellipsis）
+**点击后的变化**
+- 初始化布局二数据（预设按键配置，名称：原名布局2）
+- 画布自动在默认位置（x:42%, y:80%）生成**切换控件**（圆形，可拖动）
+- 工具栏动态区替换为「⇄ 切换」+「🗑 删除布局」
+- Toast 提示：「已创建子布局，切换控件已添加到画布」
 
-**添加按键（＋）**
-- 点击展开添加面板，支持 8 种按键类型：瞄准、射击、跳跃、换弹、冲刺、载具、投弹、菜单
-- 添加后新按键随机落在画布中央区域，立即可拖动
-
-**撤销 ↩ / 重做 ↪**
-- 支持：按键位置移动、按键尺寸调整、按键删除 的撤销与重做
-- 切换布局或新建/删除子布局时清空历史栈
-- 无可操作时 Toast 提示「没有可撤销/重做的操作」
-
-**动态区（工具栏末尾）**
-- 初始状态（无子布局）：显示 **「＋ 新建子布局」** 虚线按钮
-- 创建子布局后：变为 **「⇄ 切换」** + **「🗑 删除布局」** 两个按钮
-- 「⇄ 切换」：在布局一（阿呵）与布局二（原名布局2）之间循环切换编辑对象，清空历史栈
-- 「🗑 删除布局」：删除子布局，回到初始状态，画布切换控件一并移除`
+**删除子布局**
+- 点击工具栏「🗑」删除图标
+- 删除布局二数据，curLayout 归 1，画布切换控件消失
+- 工具栏恢复「＋ 新建子布局」按钮
+- Toast：「子布局已删除，已回到初始布局」`
   },
   {
     id: 2,
-    anchor: 'ann-canvas',
-    title: '编辑器画布 & 虚拟按键',
-    md: `**画布区域**
-- 纯黑背景，四周虚线边框（inset: 5px），右侧竖向辅助线（right: 12%）
-- 右侧竖线顶部圆圈 + 中部可视滑块（纯装饰，表示滚动区域）
+    anchor: 'ann-cycle',
+    title: '切换布局',
+    md: `**触发条件：** 已创建子布局后，工具栏末尾显示「⇄ 切换」按钮。
 
-**虚拟按键类型**
-| 类型 | 形态 | 用途 |
-|---|---|---|
-| \`joy\` | 大圆 + 方向箭头 + 内芯 | 摇杆 |
-| \`c\` | 圆形 + SVG 图标 | 功能按键 |
-| \`r\` | 矩形（高度 = s × 0.52）+ SVG 图标 | 菜单/功能条 |
-| \`sw\`（切换控件）| 圆形 + 切换图标 + 「切换」文字 | 游戏内布局切换 |
+**编辑器内切换**
+- 点击「⇄」在布局一（阿呵）↔ 布局二（原名布局2）之间循环切换编辑对象
+- 工具栏布局名同步更新为当前编辑布局的名称
+- 清空撤销/重做历史栈
+- Toast：「切换到 · [布局名]」
 
-**拖拽交互**
-- 所有按键支持 Pointer Events 拖拽，位置以百分比（%）存储，适配任意容器尺寸
-- 拖拽时自动关闭选中气泡
+**画布切换控件（圆形按钮）**
+- 样式：圆形 + 切换图标（上）+ 「切换」文字（下），与其他虚拟按键外观一致
+- 可自由拖拽到画布任意位置
+- 选中后气泡仅显示「删除」（删除控件但不删除子布局数据）
 
-**选中 & 操作气泡**
-- 点击任意按键选中（高亮边框），弹出气泡
-- 气泡内容：
-  - 普通/矩形按键：**S / M / L** 三档尺寸切换 + **删除**
-  - 摇杆：S(88px) / M(115px) / L(140px) 三档 + **删除**
-  - 切换控件：仅 **删除**（删除后子布局数据保留，仅移除画布控件）
-- 气泡自动避让：默认显示在按键上方，空间不足时翻转到下方；水平方向夹持在画布内
-- 点击画布空白处取消选中`
-  },
-  {
-    id: 3,
-    anchor: 'ann-sublayout',
-    title: '子布局创建与切换控件',
-    md: `**子布局生命周期**
-
-1. **创建**：点击「＋ 新建子布局」
-   - 初始化布局二数据（预设按键配置）
-   - 画布自动在默认位置（x:42%, y:80%）生成切换控件
-   - 工具栏切换到「切换 + 删除」模式
-   - Toast：「已创建子布局，切换控件已添加到画布」
-
-2. **切换编辑对象**：点击工具栏「⇄ 切换」
-   - 在布局一（阿呵）↔ 布局二（原名布局2）之间切换
-   - 工具栏名称同步更新为当前编辑布局名
-   - Toast：「切换到 · [布局名]」
-
-3. **删除子布局**：点击工具栏「🗑」
-   - 删除 editState[2]，curLayout 归 1
-   - swWidget 置 null，画布切换控件消失
-   - 工具栏恢复「＋ 新建子布局」
-   - Toast：「子布局已删除，已回到初始布局」
-
-**切换控件（圆形）**
-- 样式：与其他虚拟按键一致（圆形 + 边框），内容为切换图标（上）+ 「切换」文字（下）
-- 可拖拽到画布任意位置
-- 选中后气泡仅显示「删除」（删除控件但不删布局）
-- 游戏预览时，控件在同位置渲染为可点击按钮，点击循环切换布局`
-  },
-  {
-    id: 4,
-    anchor: 'ann-gamepreview',
-    title: '游戏预览视图',
-    md: `**进入方式**
-- 编辑器工具栏点击「←（返回）」进入游戏预览
-- 容器外「进入编辑页」按钮可从游戏预览返回编辑器
-
-**顶部状态栏**
-- 显示：DXVK / GPU% / CPU% / RAM% / TMP°C / FPS / PWR（纯静态展示，数值固定）
-- 右侧显示星级评分（★★★★☆）
-
-**游戏背景**
-- 深色渐变占位背景 + 半透明游戏图标 + 「游戏画面」文字（整体 opacity: 0.05）
-- 作为游戏内容占位，不承载真实游戏画面
-
-**虚拟按键渲染**
-- 按 editState[curLayout].btns 数据，以绝对像素（基于 900×400 容器）渲染
-- 首次进入带入场动画（stagger 0.028s/btn，scale 0.72→1）
-- 切换布局时淡出（0.15s）→ 重渲染 → 淡入
-
-**布局切换（游戏内）**
-- 仅在 hasSubLayout && swWidget 时渲染切换控件
-- 切换控件样式与编辑器一致（圆形 + 切换图标 + 「切换」）
-- 点击后中央闪出布局名（fade + scale 动画，持续 1.1s）`
+**游戏预览内切换**
+- 切换控件在游戏预览同位置渲染为可点击圆形按钮
+- 点击循环切换两套布局，控件淡出（0.15s）→ 重渲染 → 淡入
+- 中央闪出当前布局名（fade + scale 动画，持续 1.1s）`
   },
 ];
 
@@ -1021,10 +958,8 @@ function initPRD() {
   `;
   document.head.appendChild(style);
 
-  placeAnchor('ann-toolbar',     document.querySelector('.ed-bar'));
-  placeAnchor('ann-canvas',      document.getElementById('ed-canvas'));
-  placeAnchor('ann-sublayout',   document.getElementById('tb-sw-area'));
-  placeAnchor('ann-gamepreview', document.getElementById('gm'));
+  placeAnchor('ann-create',  document.getElementById('tb-sw-area'));
+  placeAnchor('ann-cycle',   document.getElementById('tb-sw-area'));
 }
 
 function placeAnchor(anchorId, targetEl) {
