@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>盖世游戏 - PC模拟器高级设置方案</title>
+    <title>盖世游戏 - PC引擎设置</title>
     <style>
         :root {
             --primary: #4e73ff;      
@@ -155,6 +155,18 @@
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes slideUpBottom { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* 文档标注 */
+        .doc-badge { position: absolute; z-index: 800; background: #f5a623; color: #000; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; pointer-events: none; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+        .doc-badge::before { content: '📌 '; }
+
+        /* 横版本机设置：左右布局 */
+        .landscape-layout { display: flex; flex: 1; overflow: hidden; }
+        .landscape-nav { width: 140px; flex-shrink: 0; border-right: 1px solid var(--border); overflow-y: auto; padding: 12px 0; background: rgba(255,255,255,0.01); }
+        .landscape-nav-item { padding: 11px 18px; font-size: 13px; font-weight: 500; color: var(--sub); cursor: pointer; transition: 0.15s; border-left: 3px solid transparent; }
+        .landscape-nav-item:hover { color: #d0d5e0; background: rgba(255,255,255,0.03); }
+        .landscape-nav-item.active { color: #fff; font-weight: 600; border-left-color: var(--primary); background: rgba(78,115,255,0.08); }
+        .landscape-content { flex: 1; overflow-y: auto; padding: 16px 20px 24px; }
     </style>
 </head>
 <body>
@@ -176,15 +188,24 @@
     </div>
 
     <!-- 顶部 -->
-    <header class="header">
-        <div class="back-btn"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> PC配置方案</div>
+    <header class="header" style="position:relative;">
+        <div class="back-btn"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> PC引擎设置</div>
+        <div class="doc-badge" style="top:8px; right:90px;">本机设置页</div>
         <div style="display:flex; gap:8px; align-items:center;">
             <div class="icon-btn" onclick="openRecommendPage()" style="background:rgba(78,115,255,0.15); color:#4e73ff; border:1px solid rgba(78,115,255,0.3);">推荐</div>
         </div>
     </header>
 
-    <!-- 主容器 -->
-    <div class="content-scroll" id="main-content-area"></div>
+    <!-- 主容器（竖版单列滚动 / 横版左右布局） -->
+    <div id="main-content-wrapper" style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
+        <!-- 竖版：单列滚动区 -->
+        <div class="content-scroll" id="main-content-area" style="display:block; padding-top:12px;"></div>
+        <!-- 横版：左右分栏 -->
+        <div class="landscape-layout" id="landscape-layout" style="display:none;">
+            <nav class="landscape-nav" id="landscape-nav"></nav>
+            <div class="landscape-content" id="landscape-content"></div>
+        </div>
+    </div>
 
     <!-- 更多操作菜单弹窗 (竖版贴底) -->
     <div class="modal-overlay" id="action-modal" onclick="closeActionModal(event)">
@@ -244,9 +265,9 @@
 
     <!-- 全屏页面 0：推荐方案页 -->
     <div class="full-page" id="recommend-page" style="z-index: 550;">
-        <header class="header" style="position:relative; justify-content: center;">
-            <span style="font-size: 15px; font-weight: 600;">推荐方案</span>
-            <div style="position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:20px; color:var(--sub); cursor:pointer; line-height:1;" onclick="closeFullPage('recommend-page')">✕</div>
+        <header class="header" style="position:relative;">
+            <div class="back-btn" onclick="closeFullPage('recommend-page')"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> 推荐方案</div>
+            <div class="doc-badge" style="top:8px; right:16px;">推荐方案页</div>
         </header>
         <nav class="tabs" id="rec-sub-tabs" style="padding: 8px 24px 12px;">
             <div class="tab active" onclick="switchRecTab('recommend', this)">推荐</div>
@@ -412,7 +433,10 @@
     let currentInUseScheme = '系统智能设置方案';
     let currentContextScheme = '';
 
-    function toggleLayout() { document.getElementById('device').classList.toggle('portrait'); }
+    function toggleLayout() {
+        document.getElementById('device').classList.toggle('portrait');
+        renderMainContent();
+    }
     function closeFullPage(id) { document.getElementById(id).style.display = 'none'; }
     function formatDl(num) { return num >= 10000 ? (num / 10000).toFixed(1) + 'w' : num; }
 
@@ -438,13 +462,27 @@
     // ==========================================
     // 本机设置渲染（主页面）
     // ==========================================
+    // 横版左侧只显示这几个分类
+    const landscapeNavCats = ['通用', 'Steam', '开发者选项', '触屏按键'];
+    let currentLandscapeCat = '通用';
+
     function renderMainContent() {
+        const isPortrait = document.getElementById('device').classList.contains('portrait');
+        document.getElementById('main-content-area').style.display = isPortrait ? 'block' : 'none';
+        document.getElementById('landscape-layout').style.display = isPortrait ? 'none' : 'flex';
+
+        if (isPortrait) {
+            renderPortraitContent();
+        } else {
+            renderLandscapeNav();
+            renderLandscapeContent(currentLandscapeCat);
+        }
+    }
+
+    function renderPortraitContent() {
         const area = document.getElementById('main-content-area');
         area.innerHTML = '';
-        area.style.display = 'block';
-
-        let html = `<div style="font-size:12px; color:var(--sub); margin:10px 0 16px;">💡 以下配置专属于您的设备，不会受他人分享方案影响</div>`;
-
+        let html = '';
         configData.forEach(cat => {
             if (cat.category === '兼容性') return;
             const localItems = cat.items.filter(i => !i.share);
@@ -456,6 +494,38 @@
             html += `</div>`;
         });
         area.innerHTML = html;
+    }
+
+    function renderLandscapeNav() {
+        const nav = document.getElementById('landscape-nav');
+        nav.innerHTML = '';
+        landscapeNavCats.forEach(catName => {
+            const el = document.createElement('div');
+            el.className = 'landscape-nav-item' + (catName === currentLandscapeCat ? ' active' : '');
+            el.textContent = catName;
+            el.onclick = () => {
+                currentLandscapeCat = catName;
+                document.querySelectorAll('.landscape-nav-item').forEach(i => i.classList.remove('active'));
+                el.classList.add('active');
+                renderLandscapeContent(catName);
+            };
+            nav.appendChild(el);
+        });
+    }
+
+    function renderLandscapeContent(catName) {
+        const content = document.getElementById('landscape-content');
+        content.innerHTML = '';
+        const cat = configData.find(c => c.category === catName);
+        if (!cat) return;
+        const localItems = cat.items.filter(i => !i.share);
+        if (localItems.length === 0) { content.innerHTML = `<div style="color:var(--sub);font-size:13px;padding:20px 0;">暂无本机设置项</div>`; return; }
+        let html = `<div class="cat-group">`;
+        localItems.forEach(item => {
+            html += `<div class="setting-row" onclick="handleRowClick('${item.id}')"><div class="setting-info"><div class="setting-name">${item.name}</div>${item.desc ? `<div class="setting-desc">${item.desc}</div>` : ''}</div><div style="flex-shrink:0;">${buildControl(item)}</div></div>`;
+        });
+        html += `</div>`;
+        content.innerHTML = html;
     }
 
     // ==========================================
