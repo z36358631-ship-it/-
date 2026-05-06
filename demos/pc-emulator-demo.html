@@ -156,9 +156,25 @@
         @keyframes slideUpBottom { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* 文档标注 */
-        .doc-badge { position: absolute; z-index: 800; background: #f5a623; color: #000; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; pointer-events: none; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
-        .doc-badge::before { content: '📌 '; }
+        /* 文档标注系统 */
+        .prd-badge { display: inline-block; vertical-align: top; background: rgb(250,173,20); color: #fff; font-size: 10px; font-weight: bold; line-height: 14px; padding: 0px 4px; border-radius: 2px; cursor: pointer; position: absolute; top: -8px; right: -4px; z-index: 8000; white-space: nowrap; }
+        .prd-tooltip { position: fixed; width: 450px; background: #f0efef; border-radius: 4px; box-shadow: 0 4px 24px rgba(0,0,0,0.18); z-index: 9999; font-size: 13px; color: #1a1a1a; user-select: none; }
+        .prd-tooltip-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px 8px; border-bottom: 1px solid #d8d8d8; cursor: grab; }
+        .prd-tooltip-header:active { cursor: grabbing; }
+        .prd-tooltip-badge { display: inline-block; background: rgb(250,173,20); color: #fff; font-size: 10px; font-weight: bold; line-height: 14px; padding: 0 4px; border-radius: 2px; margin-right: 8px; }
+        .prd-tooltip-title { font-size: 13px; font-weight: 600; color: #1a1a1a; flex: 1; }
+        .prd-tooltip-close { font-size: 16px; color: #888; cursor: pointer; padding: 0 4px; line-height: 1; flex-shrink: 0; }
+        .prd-tooltip-close:hover { color: #333; }
+        .prd-tooltip-body { padding: 12px 14px 14px; max-height: 460px; overflow-y: auto; line-height: 1.6; }
+        .prd-tooltip-body p { margin-bottom: 12px; }
+        .prd-tooltip-body strong { font-weight: 700; }
+        .prd-tooltip-body em { font-style: italic; }
+        .prd-tooltip-body ul, .prd-tooltip-body ol { margin: 0 0 12px 18px; padding: 0; }
+        .prd-tooltip-body li { margin-bottom: 4px; }
+        .prd-tooltip-body ul ul, .prd-tooltip-body ol ol, .prd-tooltip-body ul ol { margin-top: 4px; margin-bottom: 4px; }
+        .prd-tooltip-body blockquote { border-left: 3px solid #ccc; margin: 0 0 12px 0; padding: 4px 10px; color: #666; background: rgba(0,0,0,0.03); border-radius: 0 3px 3px 0; }
+        .prd-tooltip-body del { text-decoration: line-through; color: #999; }
+        .prd-badge-wrap { position: relative; display: inline-block; }
 
         /* 横版本机设置：左右布局 */
         .landscape-layout { display: flex; flex: 1; overflow: hidden; }
@@ -172,8 +188,9 @@
 <body>
 
 <!-- 容器外：切换布局按钮，顶部居中 -->
-<div class="layout-toggle-bar">
+<div class="layout-toggle-bar" style="position:relative; display:inline-block;">
     <div class="icon-btn" onclick="toggleLayout()" title="横竖屏切换">📱 切换布局</div>
+    <span class="prd-badge" data-prd="2" style="position:absolute;top:-8px;right:-4px;">2</span>
 </div>
 
 <div class="device-frame portrait" id="device">
@@ -190,14 +207,15 @@
     <!-- 顶部 -->
     <header class="header" style="position:relative;">
         <div class="back-btn"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> PC引擎设置</div>
-        <div class="doc-badge" style="top:8px; right:90px;">本机设置页</div>
+        <span class="prd-badge" data-prd="1" style="position:absolute;top:6px;right:66px;">1</span>
         <div style="display:flex; gap:8px; align-items:center;">
             <div class="icon-btn" onclick="openRecommendPage()" style="background:rgba(78,115,255,0.15); color:#4e73ff; border:1px solid rgba(78,115,255,0.3);">推荐</div>
         </div>
     </header>
 
     <!-- 主容器（竖版单列滚动 / 横版左右布局） -->
-    <div id="main-content-wrapper" style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
+    <div id="main-content-wrapper" style="flex:1; overflow:hidden; display:flex; flex-direction:column; position:relative;">
+        <span class="prd-badge" data-prd="5" style="position:absolute;top:2px;right:4px;z-index:8000;">5</span>
         <!-- 竖版：单列滚动区 -->
         <div class="content-scroll" id="main-content-area" style="display:block; padding-top:12px;"></div>
         <!-- 横版：左右分栏 -->
@@ -267,12 +285,13 @@
     <div class="full-page" id="recommend-page" style="z-index: 550;">
         <header class="header" style="position:relative;">
             <div class="back-btn" onclick="closeFullPage('recommend-page')"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> 推荐方案</div>
-            <div class="doc-badge" style="top:8px; right:16px;">推荐方案页</div>
+            <span class="prd-badge" data-prd="3" style="position:absolute;top:6px;right:16px;">3</span>
         </header>
-        <nav class="tabs" id="rec-sub-tabs" style="padding: 8px 24px 12px;">
+        <nav class="tabs" id="rec-sub-tabs" style="padding: 8px 24px 12px; position:relative;">
             <div class="tab active" onclick="switchRecTab('recommend', this)">推荐</div>
             <div class="tab" onclick="switchRecTab('mine', this)">我的方案</div>
             <div class="tab" onclick="switchRecTab('cloud', this)">我的云分享</div>
+            <span class="prd-badge" data-prd="4" style="position:absolute;top:-4px;right:8px;">4</span>
         </nav>
         <div class="search-area" id="rec-search-area">
             <div class="search-box">
@@ -437,7 +456,7 @@
         document.getElementById('device').classList.toggle('portrait');
         renderMainContent();
     }
-    function closeFullPage(id) { document.getElementById(id).style.display = 'none'; }
+    function closeFullPage(id) { closeAllTooltips(); document.getElementById(id).style.display = 'none'; }
     function formatDl(num) { return num >= 10000 ? (num / 10000).toFixed(1) + 'w' : num; }
 
     function buildControl(item, isReadOnly = false) {
@@ -532,6 +551,7 @@
     // 推荐方案页
     // ==========================================
     function openRecommendPage() {
+        closeAllTooltips();
         renderRecContent();
         document.getElementById('recommend-page').style.display = 'flex';
     }
@@ -854,6 +874,198 @@
     }
 
     renderMainContent();
+
+    // ==========================================
+    // PRD 标注系统
+    // ==========================================
+    const PRD_DATA = {
+        1: {
+            title: '需求描述：页面标题与进入状态（主页面 Header）',
+            content: `
+<p><strong>页面标题</strong></p>
+<p>修改为 <strong>「PC引擎设置」</strong>（原为「PC配置方案」）。</p>
+<p><strong>默认进入状态</strong></p>
+<ul>
+  <li>打开页面时<strong>默认直接展示本机设置内容</strong></li>
+  <li><del>移除</del>顶部「云端方案库 / 本机设置」Segmented Control，不再需要两步才能找到本机设置</li>
+</ul>
+<p><strong>「推荐」按钮</strong></p>
+<ul>
+  <li>位于 Header <strong>右上角</strong>，样式：蓝色半透明背景 <code>rgba(78,115,255,0.15)</code>，<code>#4e73ff</code> 文字色，蓝色描边</li>
+  <li>点击调用 <code>openRecommendPage()</code>，以 <code>z-index: 550</code> 全屏覆盖层形式打开推荐方案页</li>
+  <li>按钮与「切换布局」按钮分离——切换布局按钮已移至容器外</li>
+</ul>
+<blockquote>背景：用户反馈改动过大，不知道在哪里找到本机设置，因此调整为默认直接展示本机设置。</blockquote>`
+        },
+        2: {
+            title: '需求描述：切换布局按钮（容器外定位）',
+            content: `
+<p><strong>定位变更</strong></p>
+<ul>
+  <li><del>原位置：</del> Header 内右侧 icon-btn</li>
+  <li><strong>新位置：</strong> <code>.device-frame</code> 容器<strong>外部</strong>，<code>&lt;body&gt;</code> 层级，<code>position: fixed</code></li>
+</ul>
+<p><strong>CSS 定位</strong></p>
+<p><code>position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 9999</code></p>
+<p>始终悬浮在设备模拟框顶部居中，不随页面内容滚动。</p>
+<p><strong>交互</strong></p>
+<ul>
+  <li>点击触发 <code>toggleLayout()</code></li>
+  <li>切换 <code>.device-frame</code> 的 <code>.portrait</code> class（横 <strong>896×414px</strong> ↔ 竖 <strong>414×850px</strong>）</li>
+  <li>切换后立即调用 <code>renderMainContent()</code> 重新渲染内容区（横竖版分别走不同渲染路径）</li>
+</ul>`
+        },
+        3: {
+            title: '需求描述：推荐方案页 Header（全屏页头部导航）',
+            content: `
+<p><strong>布局调整（左对齐）</strong></p>
+<ul>
+  <li><del>原设计：标题居中 + 右上角 ✕ 关闭按钮</del></li>
+  <li><strong>新设计：</strong> 左侧箭头返回按钮 + 标题「推荐方案」左对齐，与 App 内其他全屏页保持一致</li>
+</ul>
+<blockquote>背景：用户反馈居中标题 + ✕ 关闭的方案与 App 内其他全屏页交互不一致，统一改为左对齐箭头返回。</blockquote>
+<p><strong>返回按钮</strong></p>
+<ul>
+  <li>样式使用 <code>.back-btn</code> class，含 SVG 左箭头图标</li>
+  <li>按钮文字即为页面标题 <strong>「推荐方案」</strong>（图标 + 文字一体，左对齐）</li>
+  <li>点击调用 <code>closeFullPage('recommend-page')</code>，关闭全屏层，回到本机设置主页</li>
+</ul>
+<p><strong>状态保留</strong></p>
+<p>关闭后不重置 <code>currentRecTab</code> 状态，重新打开时恢复上次 Tab 位置（保持连续性）。</p>`
+        },
+        4: {
+            title: '需求描述：推荐方案页 Tabs 与卡片内容',
+            content: `
+<p><strong>Tab 列表（共 3 项，按顺序）</strong></p>
+<ol>
+  <li><strong>推荐</strong>（<code>currentRecTab = 'recommend'</code>）— 默认激活，<code>#rec-search-area</code> 搜索框显示</li>
+  <li><strong>我的方案</strong>（<code>currentRecTab = 'mine'</code>）— 搜索框隐藏</li>
+  <li><strong>我的云分享</strong>（<code>currentRecTab = 'cloud'</code>）— 搜索框隐藏</li>
+</ol>
+<p><del>官方推荐 Tab 已移除</del>（<code>listData.official</code> 数据保留但不在任何 Tab 中展示）</p>
+<p><strong>搜索框显示逻辑</strong></p>
+<p><code>switchRecTab()</code> 执行时：<code>tab === 'recommend'</code> → <code>display: block</code>，否则 <code>display: none</code></p>
+<blockquote>当前为 UI 展示，搜索输入无过滤效果，功能未实现。</blockquote>
+<p><strong>卡片操作菜单（••• 按钮触发 <code>openActionModal()</code>）</strong></p>
+<ul>
+  <li>推荐 Tab：<code>['应用', '编辑', '复制', '分享']</code></li>
+  <li>我的方案 / 我的云分享 Tab：<code>['应用', '编辑', '复制', '云分享', '删除']</code></li>
+</ul>
+<p><strong>底部悬浮操作栏（<code>#fab-rec-create</code>）</strong></p>
+<ul>
+  <li>「📥 导入配置」→ <code>openImportDialog()</code></li>
+  <li>「➕ 创建方案」→ <code>openInputDialog('create', '')</code></li>
+</ul>
+<p><strong>异常与边界</strong></p>
+<ul>
+  <li>删除后过滤 <code>listData[cat]</code> 并调用 <code>renderRecContent()</code> 刷新列表</li>
+  <li>复制后新增至 <code>listData.mine</code>，自动切换至「我的方案」Tab 并刷新</li>
+</ul>`
+        },
+        5: {
+            title: '需求描述：本机设置内容区（竖版与横版布局）',
+            content: `
+<p><del>「💡 以下配置专属于您的设备，不会受他人分享方案影响」</del> 顶部提示文案已移除。</p>
+<p><strong>竖版（portrait）布局</strong></p>
+<ul>
+  <li>渲染容器：<code>#main-content-area</code>（<code>display: block</code>）</li>
+  <li>遍历 <code>configData</code>，<strong>跳过「兼容性」分类</strong></li>
+  <li>每分类只渲染 <code>share: false</code> 的本机设置项</li>
+  <li>若某分类下无本机项，该分类整体不渲染（不留空组）</li>
+</ul>
+<p><strong>横版（landscape）布局</strong></p>
+<p>渲染容器：<code>#landscape-layout</code>（<code>display: flex</code>），左右分栏</p>
+<p>左侧导航 <code>#landscape-nav</code>（宽 <strong>140px</strong>）固定展示 4 个分类：</p>
+<ul>
+  <li><strong>通用 / Steam / 开发者选项 / 触屏按键</strong></li>
+  <li>激活样式：左侧 3px 蓝色竖条 + <code>rgba(78,115,255,0.08)</code> 背景</li>
+  <li>状态变量：<code>currentLandscapeCat</code>（默认 <code>'通用'</code>）</li>
+</ul>
+<p>右侧内容区 <code>#landscape-content</code>：</p>
+<ul>
+  <li>根据 <code>currentLandscapeCat</code> 从 <code>configData.find()</code> 匹配对应分类</li>
+  <li>渲染该分类下 <code>share: false</code> 的设置项</li>
+  <li>若无本机设置项，显示「暂无本机设置项」</li>
+</ul>
+<p><strong>异常处理</strong></p>
+<ul>
+  <li><code>configData.find()</code> 未命中 → 右侧内容区静默不渲染，无报错</li>
+  <li><code>toggleLayout()</code> 切换时重新调用 <code>renderMainContent()</code> 完整刷新双区域</li>
+</ul>`
+        }
+    };
+
+    /* ── 标注弹窗：hover 显示，离开关闭，同时只显示 1 个 ── */
+    let activeTooltipEl = null;   // 当前显示的弹窗 DOM
+    let activeTooltipId = null;   // 当前显示的 id
+    let hideTimer = null;         // mouseleave 延迟关闭 timer
+
+    function closeAllTooltips() {
+        clearTimeout(hideTimer);
+        if (activeTooltipEl) {
+            activeTooltipEl.remove();
+            activeTooltipEl = null;
+            activeTooltipId = null;
+        }
+    }
+
+    function openTooltip(id, badgeEl) {
+        clearTimeout(hideTimer);
+
+        // 同一个 badge 已经在显示 → 不重建
+        if (activeTooltipId === id && activeTooltipEl) return;
+
+        // 关掉当前弹窗
+        closeAllTooltips();
+
+        const data = PRD_DATA[id];
+        if (!data) return;
+
+        const el = document.createElement('div');
+        el.className = 'prd-tooltip';
+        el.dataset.prdId = id;
+
+        const rect = badgeEl.getBoundingClientRect();
+        let left = rect.left - 460;
+        let top = rect.bottom + 8;
+        if (left < 8) left = rect.right + 8;
+        if (top + 500 > window.innerHeight) top = Math.max(8, window.innerHeight - 520);
+
+        el.style.left = left + 'px';
+        el.style.top = top + 'px';
+
+        el.innerHTML = `
+            <div class="prd-tooltip-header">
+                <span class="prd-tooltip-badge">${id}</span>
+                <span class="prd-tooltip-title">${data.title}</span>
+            </div>
+            <div class="prd-tooltip-body">${data.content}</div>`;
+
+        el.addEventListener('mousedown', e => e.stopPropagation());
+        el.addEventListener('click', e => e.stopPropagation());
+        // 鼠标移入弹窗：取消关闭计时
+        el.addEventListener('mouseenter', () => clearTimeout(hideTimer));
+        // 鼠标移出弹窗：触发关闭
+        el.addEventListener('mouseleave', scheduleHideTooltip);
+
+        document.body.appendChild(el);
+        activeTooltipEl = el;
+        activeTooltipId = id;
+    }
+
+    function scheduleHideTooltip() {
+        hideTimer = setTimeout(() => closeAllTooltips(), 150);
+    }
+
+    // 绑定 hover 事件（等 DOM 就绪后执行）
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.prd-badge').forEach(badge => {
+            const id = parseInt(badge.dataset.prd);
+            badge.removeAttribute('onmouseenter');
+            badge.addEventListener('mouseenter', () => openTooltip(id, badge));
+            badge.addEventListener('mouseleave', scheduleHideTooltip);
+        });
+    });
 </script>
 </body>
 </html>
