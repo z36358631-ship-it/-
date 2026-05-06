@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>盖世游戏 - PC模拟器高级设置方案</title>
+    <style>
+        :root {
+            --primary: #4e73ff;      
+            --primary-hover: #6b8cff;
+            --bg: #0b0d14;           
+            --card: #151923;         
+            --card-hover: #1c212d;
+            --text: #ffffff;
+            --sub: #848c9c;
+            --border: rgba(255, 255, 255, 0.08);
+            --danger: #ff453a;
+            --success: #32d74b;
+            --modal-bg: #131720;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #000; color: var(--text); display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+
+        /* 容器外切换布局按钮 */
+        .layout-toggle-bar { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 9999; }
+        .layout-toggle-bar .icon-btn { font-size: 12px; padding: 6px 14px; }
+
+        /* 外框：支持横竖屏动态切换 */
+        .device-frame {
+            position: relative; width: 896px; height: 414px; background-color: var(--bg);
+            border-radius: 32px; border: 8px solid #1a1c23; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            overflow: hidden; display: flex; flex-direction: column;
+            transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        
+        /* 竖屏状态 */
+        .device-frame.portrait { width: 414px; height: 850px; }
+        .device-frame.portrait .content-scroll { grid-template-columns: 1fr; }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+        /* 顶部导航 */
+        .header { padding: 16px 24px 8px; display: flex; align-items: center; justify-content: space-between; background: rgba(11, 13, 20, 0.95); z-index: 10; }
+        .back-btn { cursor: pointer; display: flex; align-items: center; font-size: 15px; font-weight: 500; }
+        .back-btn svg { width: 18px; height: 18px; margin-right: 4px; }
+        .icon-btn { cursor: pointer; padding: 6px 10px; background: #1c212d; border-radius: 8px; display: flex; align-items: center; transition: 0.2s; color: var(--sub); font-size: 12px; font-weight: bold; }
+        .icon-btn:hover { background: #262c3d; color: #fff; }
+
+        /* 选项卡 (二级分类) */
+        .tabs { padding: 8px 24px 12px; display: flex; gap: 24px; border-bottom: 1px solid var(--border); overflow-x: auto; flex-shrink: 0; scrollbar-width: none; }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab { font-size: 14px; color: var(--sub); cursor: pointer; position: relative; padding-bottom: 8px; font-weight: 500; transition: 0.3s; white-space: nowrap; }
+        .tab:hover { color: #d0d5e0; }
+        .tab.active { color: #fff; font-weight: 600; }
+        .tab.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 20px; height: 3px; background: var(--primary); border-radius: 3px; box-shadow: 0 0 8px var(--primary); }
+
+        .search-area { padding: 12px 24px; flex-shrink: 0; }
+        .search-box { display: flex; align-items: center; background: #11141c; border-radius: 12px; padding: 8px 16px; border: 1px solid var(--border); width: 100%; max-width: 360px; }
+        .search-box input { background: transparent; border: none; color: #fff; flex: 1; font-size: 13px; outline: none; margin-left: 8px; }
+
+        /* 列表区域 */
+        .content-scroll { flex: 1; overflow-y: auto; padding: 0 24px 100px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-content: start; }
+        
+        /* 卡片设计 (精简版) */
+        .card { background: var(--card); border-radius: 16px; padding: 18px 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); transition: 0.2s; cursor: pointer; position: relative; }
+        .card:hover { border-color: rgba(78, 115, 255, 0.3); transform: translateY(-2px); }
+        .card-left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+        .card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+        .card-title { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; }
+        
+        .recommend-tag { background: rgba(255, 149, 0, 0.15); color: #ff9500; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: normal; margin-left: 8px; flex-shrink: 0; }
+        .in-use-tag { position: absolute; top: 0; right: 0; background: var(--success); color: #fff; font-size: 10px; font-weight: bold; padding: 3px 10px; border-radius: 0 16px 0 12px; box-shadow: -2px 2px 10px rgba(50,215,75,0.2); }
+        
+        .card-meta { font-size: 12px; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; }
+        .card-more { color: var(--sub); font-size: 18px; padding: 8px 4px; margin-left: 8px; transition: 0.2s; border-radius: 8px; letter-spacing: 2px; flex-shrink: 0;}
+        .card-more:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+        /* 通用控件 */
+        .btn { border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; outline: none; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-blue { background: var(--primary); color: #fff; }
+        .btn-blue:active { transform: scale(0.96); }
+        .btn-gray { background: #242936; color: #fff; border: 1px solid rgba(255,255,255,0.05); }
+        .btn-gray:hover { background: #2d3342; }
+        .btn-danger { background: rgba(255,69,58,0.1); color: var(--danger); border: 1px solid rgba(255,69,58,0.2); }
+        .btn-danger:hover { background: rgba(255,69,58,0.2); }
+
+        .toggle { width: 42px; height: 22px; background: #2a2e39; border-radius: 11px; position: relative; transition: 0.3s; cursor: pointer; flex-shrink: 0; }
+        .toggle::after { content: ''; position: absolute; left: 2px; top: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: 0.3s; }
+        .toggle.active { background: var(--primary); }
+        .toggle.active::after { left: 22px; }
+
+        .setting-select { background: #1a1e29; color: #fff; border: 1px solid var(--border); padding: 6px 10px; border-radius: 6px; font-size: 13px; outline: none; cursor: pointer; max-width: 150px; text-overflow: ellipsis; }
+        .setting-input { background: #11141c; border: 1px solid var(--border); color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 13px; width: 150px; outline: none; }
+        .setting-link { color: #fff; font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        .setting-link span { color: var(--sub); font-family: serif; font-size: 16px; margin-top: -2px; }
+
+        /* 分组列表布局 */
+        .cat-group { background: var(--card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 20px; }
+        .cat-header { padding: 14px 16px; font-size: 13px; font-weight: bold; color: var(--primary); background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); }
+        .setting-row { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 16px; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; transition: background 0.2s;}
+        .setting-row:hover { background: rgba(255,255,255,0.02); }
+        .setting-row:last-child { border-bottom: none; }
+        .setting-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+        .setting-name { font-size: 13px; color: #fff; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .setting-desc { font-size: 11px; color: var(--sub); line-height: 1.4; }
+
+        /* 全屏配置/详情页结构 */
+        .full-page { position: absolute; inset: 0; background: var(--bg); z-index: 600; display: none; flex-direction: column; animation: slideUp 0.3s ease forwards; }
+        .full-content { flex: 1; overflow-y: auto; padding: 16px 24px 100px; display: block; }
+        .full-footer { padding: 16px 24px; background: rgba(11, 13, 20, 0.95); border-top: 1px solid var(--border); display: flex; gap: 12px; }
+        .full-footer .btn { flex: 1; padding: 12px 0; font-size: 14px; }
+
+        /* 悬浮操作栏 */
+        .floating-pill { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(26, 30, 41, 0.95); backdrop-filter: blur(16px); border-radius: 30px; padding: 6px; display: flex; align-items: center; border: 1px solid var(--border); z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .pill-btn { padding: 8px 20px; color: #fff; cursor: pointer; border-radius: 24px; font-size: 14px; font-weight: 500; display:flex; align-items:center; gap:6px; transition: 0.2s; white-space: nowrap; }
+        .pill-btn:hover { background: rgba(255,255,255,0.1); }
+        .pill-btn.primary { background: var(--primary); }
+
+        /* 操作弹窗 (更多) */
+        .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); z-index: 500; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-overlay.active { display: flex; }
+        .action-modal { background: var(--modal-bg); width: 420px; border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.8); overflow: hidden; }
+        .action-modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); text-align: center; }
+        .action-modal-title { font-size: 16px; font-weight: bold; color: #fff; }
+        
+        /* 动作弹窗横竖屏适配 */
+        .action-modal-body { display: flex; gap: 12px; padding: 16px 24px; }
+        .device-frame:not(.portrait) .action-modal-body { flex-direction: row; flex-wrap: nowrap; }
+        .device-frame:not(.portrait) .action-modal-body .btn { flex: 1; padding: 12px 0; font-size: 13px; white-space: nowrap; }
+        
+        /* 竖版从底部滑出并贴边 */
+        .device-frame.portrait #action-modal { align-items: flex-end; }
+        .device-frame.portrait .action-modal { width: 100%; border-radius: 24px 24px 0 0; border-bottom: none; border-left: none; border-right: none; margin: 0; animation: slideUpBottom 0.3s ease forwards; }
+        .device-frame.portrait .action-modal-body { flex-direction: column; }
+        .device-frame.portrait .action-modal-body .btn { padding: 14px 0; font-size: 14px; }
+
+        /* 输入对话框 (创建/复制复用) */
+        .dialog-box { background: var(--card); width: 380px; padding: 24px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 20px 60px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 16px; }
+        .dialog-input { background: #0b0d14; border: 1px solid var(--border); color: #fff; padding: 12px 14px; border-radius: 8px; font-size: 14px; outline: none; width: 100%; transition: 0.2s; }
+        .dialog-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(78, 115, 255, 0.3); }
+        .dialog-btns { display: flex; gap: 12px; margin-top: 8px; }
+        .dialog-btns .btn { flex: 1; padding: 12px 0; font-size: 14px; border-radius: 8px; }
+
+        .readonly-val { font-size: 12px; color: #fff; background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); }
+        .toast { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 600; display: none; z-index: 3000; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+
+        /* 真实的加载进度遮罩 */
+        .loading-overlay { position: absolute; inset: 0; background: rgba(11, 13, 20, 0.95); z-index: 2500; display: none; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .spinner { width: 44px; height: 44px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 24px; }
+        .loader-track { width: 240px; height: 6px; background: #1c212d; border-radius: 3px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5); }
+        .loader-fill { height: 100%; background: linear-gradient(90deg, #4e73ff, #00d2ff); width: 0%; transition: width 0.2s linear; box-shadow: 0 0 10px rgba(78, 115, 255, 0.5); }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes slideUpBottom { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<!-- 容器外：切换布局按钮，顶部居中 -->
+<div class="layout-toggle-bar">
+    <div class="icon-btn" onclick="toggleLayout()" title="横竖屏切换">📱 切换布局</div>
+</div>
+
+<div class="device-frame portrait" id="device">
+    <div id="toast" class="toast">操作成功</div>
+
+    <!-- 下载进度条 -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loader-text" style="font-size: 15px; font-weight: bold; color:#fff; margin-bottom: 16px;">正在获取兼容组件...</div>
+        <div class="loader-track"><div class="loader-fill" id="loader-fill"></div></div>
+        <div style="font-size: 12px; color: var(--sub); margin-top: 12px; font-family: monospace;" id="loader-percent">0%</div>
+    </div>
+
+    <!-- 顶部 -->
+    <header class="header">
+        <div class="back-btn"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> PC配置方案</div>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <div class="icon-btn" onclick="openRecommendPage()" style="background:rgba(78,115,255,0.15); color:#4e73ff; border:1px solid rgba(78,115,255,0.3);">推荐</div>
+        </div>
+    </header>
+
+    <!-- 主容器 -->
+    <div class="content-scroll" id="main-content-area"></div>
+
+    <!-- 更多操作菜单弹窗 (竖版贴底) -->
+    <div class="modal-overlay" id="action-modal" onclick="closeActionModal(event)">
+        <div class="action-modal" onclick="event.stopPropagation()">
+            <div class="action-modal-header">
+                <div class="action-modal-title">更多操作</div>
+                <span id="action-title" style="display:none;"></span>
+            </div>
+            <div class="action-modal-body" id="action-btn-group">
+                <!-- JS动态注入按钮 -->
+            </div>
+            <div style="padding: 16px 24px; border-top: 1px solid var(--border); text-align: center; cursor: pointer; color: var(--sub); font-size: 14px; font-weight:bold;" onclick="closeActionModal({target:{id:'action-modal'}})">取消</div>
+        </div>
+    </div>
+
+    <!-- 统一输入弹窗 (创建/复制复用) -->
+    <div class="modal-overlay" id="input-dialog" style="z-index: 2000;">
+        <div class="dialog-box">
+            <div style="font-size:16px; font-weight:bold; color:#fff;" id="dialog-title">创建新方案</div>
+            <div style="font-size:12px; color:var(--sub); margin-top:-8px; line-height:1.4;" id="dialog-desc"></div>
+            <input type="text" id="dialog-input" class="dialog-input" placeholder="请输入...">
+            <div class="dialog-btns">
+                <button class="btn btn-gray" onclick="document.getElementById('input-dialog').style.display='none'">取消</button>
+                <button class="btn btn-blue" id="dialog-confirm-btn">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导入布局弹窗 -->
+    <div class="modal-overlay" id="import-dialog" style="z-index: 2000;">
+        <div class="dialog-box" style="position:relative;">
+            <div style="position:absolute; right:20px; top:20px; font-size:20px; color:var(--sub); cursor:pointer;" onclick="document.getElementById('import-dialog').style.display='none'">✕</div>
+            <div style="font-size:16px; font-weight:bold; color:#fff; text-align:center; margin-bottom: 16px;">导入布局</div>
+            <input type="text" id="import-input" class="dialog-input" placeholder="请输入布局分享码" style="background:#1a1e29; border:none; padding:14px; text-align:center;">
+            <div class="dialog-btns" style="margin-top:16px;">
+                <button class="btn btn-gray" onclick="document.getElementById('import-dialog').style.display='none'">取消</button>
+                <button class="btn btn-blue" onclick="submitImport()">导入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发布到云端弹窗 -->
+    <div class="modal-overlay" id="publish-dialog" style="z-index: 2000;">
+        <div class="dialog-box" style="position:relative;">
+            <div style="position:absolute; right:20px; top:20px; font-size:20px; color:var(--sub); cursor:pointer;" onclick="document.getElementById('publish-dialog').style.display='none'">✕</div>
+            <div style="font-size:16px; font-weight:bold; color:#fff; text-align:center; margin-bottom: 16px;">发布到云端</div>
+            <div style="position:relative;">
+                <input type="text" id="publish-input" class="dialog-input" style="background:#1a1e29; border:none; padding:14px; padding-right:50px;" value="" oninput="updatePublishCount()">
+                <span style="position:absolute; right:14px; top:14px; color:var(--sub); font-size:12px;" id="publish-count">0/10</span>
+            </div>
+            <div class="dialog-btns" style="margin-top:16px;">
+                <button class="btn btn-gray" onclick="document.getElementById('publish-dialog').style.display='none'">取消</button>
+                <button class="btn btn-blue" onclick="submitPublish()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 全屏页面 0：推荐方案页 -->
+    <div class="full-page" id="recommend-page" style="z-index: 550;">
+        <header class="header" style="position:relative; justify-content: center;">
+            <span style="font-size: 15px; font-weight: 600;">推荐方案</span>
+            <div style="position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:20px; color:var(--sub); cursor:pointer; line-height:1;" onclick="closeFullPage('recommend-page')">✕</div>
+        </header>
+        <nav class="tabs" id="rec-sub-tabs" style="padding: 8px 24px 12px;">
+            <div class="tab active" onclick="switchRecTab('recommend', this)">推荐</div>
+            <div class="tab" onclick="switchRecTab('mine', this)">我的方案</div>
+            <div class="tab" onclick="switchRecTab('cloud', this)">我的云分享</div>
+        </nav>
+        <div class="search-area" id="rec-search-area">
+            <div class="search-box">
+                <svg viewBox="0 0 24 24" style="fill:var(--sub); width:16px;"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <input type="text" placeholder="搜索配置方案...">
+            </div>
+        </div>
+        <div class="content-scroll" id="rec-content-area" style="display:grid;"></div>
+        <div class="floating-pill" id="fab-rec-create" style="position:absolute; bottom:24px; left:50%; transform:translateX(-50%);">
+            <div class="pill-btn" onclick="openImportDialog()">📥 导入配置</div>
+            <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.2); margin: 0 8px;"></div>
+            <div class="pill-btn primary" onclick="openInputDialog('create', '')">➕ 创建方案</div>
+        </div>
+    </div>
+
+    <!-- 全屏页面 1：方案详情页 -->
+    <div class="full-page" id="detail-page" style="z-index: 600;">
+        <header class="header">
+            <div class="back-btn" onclick="closeFullPage('detail-page')"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> 返回</div>
+            <div style="display:flex; flex-direction:column; align-items:center;">
+                <span style="font-size: 15px; font-weight: 600;" id="detail-page-title">方案详情</span>
+                <span style="font-size: 11px; color: var(--sub); margin-top: 2px;" id="detail-page-dl">分享人：XX GPU：XX 下载次数: 0</span>
+            </div>
+            <div style="width: 60px;"></div> <!-- 占位平衡 -->
+        </header>
+        <div class="full-content" id="detail-content-list">
+            <!-- JS 动态生成 -->
+        </div>
+        <div class="full-footer" id="detail-footer-actions">
+            <!-- JS 动态注入对应 Tab 的操作按钮 -->
+        </div>
+    </div>
+
+    <!-- 全屏页面 2：编辑/创建方案页 -->
+    <div class="full-page" id="edit-page" style="z-index: 610;">
+        <header class="header" style="border-bottom: 1px solid var(--border);">
+            <div class="back-btn" onclick="closeFullPage('edit-page')"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> 返回</div>
+            <span style="font-size: 15px; font-weight: 600;" id="edit-page-title">方案编辑</span>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-gray" style="padding:6px 12px;" onclick="showToast('已暂存')">暂存</button>
+                <button class="btn btn-blue" style="padding:6px 12px;" onclick="saveEdit()">保存</button>
+            </div>
+        </header>
+        <div class="full-content" id="edit-content-list">
+            <!-- JS 动态生成共享的选项 -->
+        </div>
+    </div>
+
+    <!-- 全屏页面 3：转译参数专属高级页 -->
+    <div class="full-page" id="trans-args-page" style="z-index: 700;">
+        <header class="header" style="border-bottom: 1px solid var(--border);">
+            <div class="back-btn" onclick="closeFullPage('trans-args-page')"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> 返回</div>
+            <span style="font-size: 15px; font-weight: 600;">转译参数</span>
+            <div style="width: 60px;"></div>
+        </header>
+        <div class="full-content" id="trans-args-list">
+            <!-- JS 动态生成转译细分项 -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // 转译参数专项数据
+    // ==========================================
+    const transArgsData =[
+        { id: "tso", name: "TSOEnabled (TSO内存模型)", desc: "控制TSO内存一致性，多线程程序必需", type: "toggle", val: true },
+        { id: "x87", name: "X87ReducedPrecision (X87降精度)", desc: "降低X87精度提升性能", type: "toggle", val: true },
+        { id: "multiblock", name: "Multiblock (多块编译)", desc: "控制多块代码编译优化", type: "toggle", val: false },
+        { id: "maxinst", name: "MaxInst (最大指令数)", desc: "限制最大指令数，0为无限制", type: "input", val: "5000" },
+        { id: "smalltsc", name: "SmallTSCScale (小时间戳缩放)", desc: "低频系统时间戳缩放", type: "toggle", val: true },
+        { id: "vectortso", name: "VectorTSOEnabled (向量TSO)", desc: "向量操作TSO原子性", type: "toggle", val: false },
+        { id: "memcpytso", name: "MemcpySetTSOEnabled (内存拷贝TSO)", desc: "内存拷贝操作TSO原子性", type: "toggle", val: false },
+        { id: "halftso", name: "HalfBarrierTSOEnabled (半屏障TSO)", desc: "半屏障TSO", type: "toggle", val: true },
+    ];
+
+    // ==========================================
+    // 方案全量基础数据
+    // ==========================================
+    const configData =[
+        {
+            category: "通用",
+            items:[
+                { id: "desktop", name: "进入容器桌面", desc: "启动Wine容器桌面环境", type: "toggle", val: false, share: false },
+                { id: "lang", name: "游戏语言", desc: "设置容器系统语言和区域", type: "select", options:["跟随系统", "简体中文", "English"], val: "跟随系统", share: false },
+                { id: "res", name: "游戏分辨率", desc: "设置程序运行时的屏幕分辨率", type: "select", options:["1280x720", "1920x1080", "800x600"], val: "1280x720", share: false },
+                { id: "hud", name: "MangoHUD覆盖层", desc: "启用性能显示仪表盘", type: "toggle", val: false, share: false },
+                { id: "dx_panel", name: "DirectX性能面板", desc: "控制性能监控HUD显示", type: "toggle", val: false, share: false },
+                { id: "wm", name: "停用窗口管理器", desc: "停用后窗口不再被修饰", type: "toggle", val: true, share: false },
+                { id: "env", name: "环境变量", desc: "配置容器环境变量", type: "input", val: "WINEDLLOVERRIDES=...", share: true },
+                { id: "args", name: "启动参数", desc: "添加程序启动参数", type: "input", val: "-dx11 -windowed", share: true },
+                { id: "keyboard", name: "需要输入时自动弹出软键盘", desc: "", type: "toggle", val: true, share: false },
+                { id: "disable_enh", name: "禁用画质增强插件", desc: "若游戏遇到问题可尝试禁用", type: "toggle", val: false, share: false },
+                { id: "exe_path", name: "可执行文件路径", desc: "入口启动文件", type: "input", val: "Binaries/Win64/Pal.exe", share: true },
+                { id: "reset_data", name: "重置游戏数据", desc: "清空容器所有数据", type: "action", val: "执行重置", share: false }
+            ]
+        },
+        {
+            category: "兼容性",
+            items:[
+                { id: "update_cloud", name: "更新为最新云端配置", desc: "兼容性设置会被云端覆盖", type: "action", val: "立即更新", share: false },
+                { id: "wine_ver", name: "兼容层", desc: "选择Wine版本", type: "select", options:["Proton-GE 10.0", "Proton 9.0"], val: "Proton-GE 10.0", share: true },
+                { id: "trans_args", name: "转译参数", desc: "配置x86到ARM64指令转译参数", type: "link", val: "TSO: 已开启...", share: true },
+                { id: "dinput", name: "Dinput函数库", desc: "决定dinput.dll优先使用", type: "select", options:["Wine内置", "游戏自带"], val: "Wine内置", share: true },
+                { id: "skip_video", name: "跳过音视频解码", desc: "缓解兼容性问题", type: "toggle", val: true, share: true },
+                { id: "gpu_drv", name: "GPU 驱动", desc: "影响游戏渲染性能", type: "select", options:["Turnip+Zink", "DXVK原生"], val: "Turnip+Zink", share: true },
+                { id: "surface", name: "表面格式", desc: "影响图形兼容性", type: "select", options:["R8G8B8A8", "B8G8R8A8"], val: "R8G8B8A8", share: true },
+                { id: "audio_drv", name: "音频驱动", desc: "确保音频正常工作", type: "select", options:["PulseAudio", "ALSA"], val: "PulseAudio", share: true },
+                { id: "dxvk", name: "DXVK版本", desc: "DX转Vulkan API", type: "select", options:["2.3 (异步编译)", "1.10.3"], val: "2.3 (异步编译)", share: true },
+                { id: "vkd3d", name: "VKD3D版本", desc: "DX12转Vulkan API", type: "select", options:["2.11.1", "2.10"], val: "2.11.1", share: true },
+                { id: "cpu_trans", name: "CPU转译器", desc: "x86转ARM指令", type: "select", options:["FEX-Emu", "Box64"], val: "FEX-Emu", share: true },
+                { id: "cpu_core", name: "CPU核心限制", desc: "控制资源占用", type: "select", options:["不限制", "4核", "8核"], val: "不限制", share: true },
+                { id: "vram", name: "显存限制", desc: "设置容器显存上限", type: "select", options:["4096 MB", "8192 MB"], val: "4096 MB", share: true }
+            ]
+        },
+        { category: "组件依赖", items:[{ id: "cjkonts", name: "cjkonts", desc: "环境组件库", type: "toggle", val: true, share: true }] },
+        {
+            category: "Steam",
+            items:[
+                { id: "steam_input_exp", name: "Steaminput (实验性)", desc: "", type: "toggle", val: true, share: true },
+                { id: "steam_client", name: "Steam客户端版本", desc: "", type: "select", options:["精简版", "完整版"], val: "精简版", share: false },
+                { id: "offline", name: "离线模式", desc: "允许在无网络的情况下运行", type: "toggle", val: false, share: false },
+                { id: "cloud_sync", name: "自动同步云存档", desc: "", type: "toggle", val: true, share: false },
+                { id: "steam_input", name: "Steam Input(实验性)", desc: "通过Steam官方层运行", type: "toggle", val: false, share: false },
+                { id: "steam_net", name: "Steam网络加速", desc: "为网络受限地区提供缓解措施", type: "toggle", val: false, share: false }
+            ]
+        },
+        {
+            category: "开发者选项",
+            items:[
+                { id: "log_srv", name: "启用日志服务器", desc: "将日志转发给HTTP服务器调试", type: "toggle", val: false, share: false },
+                { id: "wine_debug", name: "Wine调试参数", desc: "调试参数可能影响性能", type: "input", val: "-all", share: false }
+            ]
+        },
+        {
+            category: "触屏按键",
+            items:[
+                { id: "touch_layout", name: "切换触屏按键布局", desc: "适配移动端的屏幕按键排布", type: "link", val: "Xbox手柄标准布局", share: false }
+            ]
+        }
+    ];
+
+    let listData = {
+        recommend:[
+            {t: '幻兽帕鲁 60帧满血版', dl: 85200}, 
+            {t: '极限省电模式', dl: 42100}
+        ],
+        official:[{t: '系统智能设置方案', dl: 125000}],
+        mine:[{t: '我的帕鲁修改版', dl: 0}],
+        cloud:[
+            {t: '赛博朋克2077 V1.5', dl: 12400}, 
+            {t: '原神完美触屏版', dl: 9800}
+        ]
+    };
+
+    // 状态控制
+    let currentRecTab = 'recommend'; // 推荐方案页当前tab
+    let currentInUseScheme = '系统智能设置方案';
+    let currentContextScheme = '';
+
+    function toggleLayout() { document.getElementById('device').classList.toggle('portrait'); }
+    function closeFullPage(id) { document.getElementById(id).style.display = 'none'; }
+    function formatDl(num) { return num >= 10000 ? (num / 10000).toFixed(1) + 'w' : num; }
+
+    function buildControl(item, isReadOnly = false) {
+        if (item.type === 'link') return `<div class="setting-link">${item.val} <span>〉</span></div>`;
+
+        if(isReadOnly) {
+            let text = item.val;
+            if(item.type === 'toggle') text = item.val ? '已开启' : '已关闭';
+            if(item.type === 'action') text = '系统项';
+            return `<div class="readonly-val">${text}</div>`;
+        }
+        if (item.type === 'toggle') return `<div class="toggle ${item.val ? 'active' : ''}" onclick="event.stopPropagation(); this.classList.toggle('active')"></div>`;
+        if (item.type === 'action') return `<button class="btn btn-gray" style="padding:4px 12px;" onclick="event.stopPropagation(); showToast('正在执行...')">${item.val}</button>`;
+        if (item.type === 'select') {
+            const opts = item.options.map(o => `<option value="${o}" ${item.val === o ? 'selected' : ''}>${o}</option>`).join('');
+            return `<select class="setting-select" onclick="event.stopPropagation()">${opts}</select>`;
+        }
+        if (item.type === 'input') return `<input type="text" class="setting-input" value="${item.val}" onclick="event.stopPropagation()">`;
+        return '';
+    }
+
+    // ==========================================
+    // 本机设置渲染（主页面）
+    // ==========================================
+    function renderMainContent() {
+        const area = document.getElementById('main-content-area');
+        area.innerHTML = '';
+        area.style.display = 'block';
+
+        let html = `<div style="font-size:12px; color:var(--sub); margin:10px 0 16px;">💡 以下配置专属于您的设备，不会受他人分享方案影响</div>`;
+
+        configData.forEach(cat => {
+            if (cat.category === '兼容性') return;
+            const localItems = cat.items.filter(i => !i.share);
+            if (localItems.length === 0) return;
+            html += `<div class="cat-group"><div class="cat-header">${cat.category}</div>`;
+            localItems.forEach(item => {
+                html += `<div class="setting-row" onclick="handleRowClick('${item.id}')"><div class="setting-info"><div class="setting-name">${item.name}</div>${item.desc ? `<div class="setting-desc">${item.desc}</div>` : ''}</div><div style="flex-shrink:0;">${buildControl(item)}</div></div>`;
+            });
+            html += `</div>`;
+        });
+        area.innerHTML = html;
+    }
+
+    // ==========================================
+    // 推荐方案页
+    // ==========================================
+    function openRecommendPage() {
+        renderRecContent();
+        document.getElementById('recommend-page').style.display = 'flex';
+    }
+
+    function switchRecTab(tab, el) {
+        currentRecTab = tab;
+        document.querySelectorAll('#rec-sub-tabs .tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('rec-search-area').style.display = (tab === 'recommend') ? 'block' : 'none';
+        renderRecContent();
+    }
+
+    function renderRecContent() {
+        const area = document.getElementById('rec-content-area');
+        area.innerHTML = '';
+
+        let items = listData[currentRecTab] || [];
+        items.sort((a, b) => b.dl - a.dl);
+
+        items.forEach(item => {
+            const isUsed = (item.t === currentInUseScheme);
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                ${isUsed ? `<div class="in-use-tag">应用中</div>` : ''}
+                <div class="card-left" onclick="openSchemeDetail('${item.t}')">
+                    <div class="card-info">
+                        <div class="card-title">${item.t}</div>
+                        <div class="card-meta">⬇️ ${formatDl(item.dl)} 次下载</div>
+                    </div>
+                </div>
+                <div class="card-more" onclick="openActionModal('${item.t}', event)">•••</div>
+            `;
+            area.appendChild(card);
+        });
+    }
+
+    // ==========================================
+    // 更多操作弹窗
+    // ==========================================
+    function getActionsForCurrentTab() {
+        if(currentRecTab === 'recommend') {
+            return['应用', '编辑', '复制', '分享'];
+        } else {
+            return['应用', '编辑', '复制', '云分享', '删除'];
+        }
+    }
+
+    function renderActionButtons(containerId, title, btnFlex = false) {
+        const btnGroup = document.getElementById(containerId);
+        btnGroup.innerHTML = '';
+        const actions = getActionsForCurrentTab();
+        
+        actions.forEach(act => {
+            const btn = document.createElement('button');
+            if (act === '应用') btn.className = 'action-btn btn btn-blue';
+            else if (act === '删除') btn.className = 'action-btn btn btn-danger';
+            else btn.className = 'action-btn btn btn-gray';
+            
+            if(btnFlex) {
+                btn.style.flex = "1";
+                btn.style.padding = "12px 0";
+            }
+            btn.innerText = act;
+            btn.onclick = () => handleAction(act, title);
+            btnGroup.appendChild(btn);
+        });
+    }
+
+    function openActionModal(title, e) {
+        if(e) e.stopPropagation();
+        document.getElementById('action-title').innerText = title; 
+        renderActionButtons('action-btn-group', title);
+        document.getElementById('action-modal').classList.add('active');
+    }
+
+    function closeActionModal(e) {
+        if(e.target.id === 'action-modal') document.getElementById('action-modal').classList.remove('active');
+    }
+
+    // ==========================================
+    // 包含 Loading 的真实感应用逻辑
+    // ==========================================
+    function handleAction(act, title) {
+        document.getElementById('action-modal').classList.remove('active');
+        if(act === '应用') {
+            const overlay = document.getElementById('loading-overlay');
+            const fill = document.getElementById('loader-fill');
+            const percent = document.getElementById('loader-percent');
+            overlay.style.display = 'flex';
+            fill.style.width = '0%';
+            let p = 0;
+
+            const iv = setInterval(() => {
+                p += Math.floor(Math.random() * 15 + 5);
+                if(p >= 100) {
+                    p = 100;
+                    clearInterval(iv);
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        currentInUseScheme = title;
+                        showToast('✅ 配置已应用且环境部署完毕');
+                        renderRecContent();
+                        closeFullPage('detail-page');
+                        fill.style.width = '0%';
+                    }, 500);
+                }
+                fill.style.width = p + '%';
+                percent.innerText = `兼容组件配置写入中... ${p}%`;
+            }, 120);
+        } else if(act === '编辑') {
+            openEditPage(title);
+        } else if(act === '复制') {
+            openInputDialog('copy', title);
+        } else if(act === '云分享') {
+            openPublishDialog(title);
+        } else if(act === '删除') {
+            ['recommend', 'mine', 'cloud'].forEach(cat => {
+                if(listData[cat]) {
+                    listData[cat] = listData[cat].filter(i => i.t !== title);
+                }
+            });
+            showToast('🗑️ 已删除');
+            renderRecContent();
+            closeFullPage('detail-page');
+        } else {
+            showToast('🔗 [' + act + '] 操作执行成功');
+        }
+    }
+
+    // ==========================================
+    // 导入与发布相关弹窗逻辑
+    // ==========================================
+    function openImportDialog() {
+        document.getElementById('import-input').value = '';
+        document.getElementById('import-dialog').style.display = 'flex';
+    }
+
+    function submitImport() {
+        document.getElementById('import-dialog').style.display = 'none';
+        showToast('✅ 布局导入成功');
+    }
+
+    function openPublishDialog(title) {
+        const input = document.getElementById('publish-input');
+        input.value = title || '';
+        updatePublishCount();
+        document.getElementById('publish-dialog').style.display = 'flex';
+    }
+
+    function updatePublishCount() {
+        const input = document.getElementById('publish-input');
+        const count = document.getElementById('publish-count');
+        const len = input.value.length;
+        count.innerText = `${len}/10`;
+    }
+
+    function submitPublish() {
+        document.getElementById('publish-dialog').style.display = 'none';
+        closeFullPage('edit-page');
+        showToast('🚀 已成功发布到云端！');
+    }
+
+    // ==========================================
+    // 输入弹窗 (创建 / 复制 复用)
+    // ==========================================
+    let currentInputType = '';
+    function openInputDialog(type, schemeName) {
+        currentInputType = type;
+        currentContextScheme = schemeName;
+        const box = document.getElementById('input-dialog');
+        const input = document.getElementById('dialog-input');
+        const desc = document.getElementById('dialog-desc');
+        
+        if(type === 'create') {
+            document.getElementById('dialog-title').innerText = '创建新方案';
+            desc.style.display = 'none';
+            input.value = '';
+            input.placeholder = '请输入新的方案名称';
+            document.getElementById('dialog-confirm-btn').innerText = '确认';
+        } else {
+            document.getElementById('dialog-title').innerText = '复制并保存方案';
+            desc.style.display = 'block';
+            desc.innerText = '方案将保存到【我的方案】中，是否使用以下命名：';
+            input.value = schemeName + ' - 副本';
+            input.placeholder = '请输入方案名称';
+            document.getElementById('dialog-confirm-btn').innerText = '确认复制';
+        }
+        
+        document.getElementById('dialog-confirm-btn').onclick = submitInputDialog;
+        box.style.display = 'flex';
+    }
+
+    function submitInputDialog() {
+        const val = document.getElementById('dialog-input').value.trim() || '未命名方案';
+        document.getElementById('input-dialog').style.display = 'none';
+
+        if (currentInputType === 'create') {
+            openEditPage(val);
+        } else {
+            listData.mine.push({ t: val, dl: 0 });
+            // 切到推荐页的我的方案tab展示结果
+            document.querySelectorAll('#rec-sub-tabs .tab').forEach(t => {
+                if(t.innerText.includes('我的方案')) switchRecTab('mine', t);
+            });
+            renderRecContent();
+            showToast('✅ 创建成功');
+        }
+    }
+
+    // ==========================================
+    // 详情页 (只读态，支持点击Link)
+    // ==========================================
+    function openSchemeDetail(title) {
+        // 提取下载次数
+        let dlCount = 0;
+        Object.values(listData).flat().forEach(item => {
+            if(item.t === title) dlCount = item.dl;
+        });
+
+        document.getElementById('detail-page-title').innerText = title;
+        document.getElementById('detail-page-dl').innerText = dlCount > 0 ? `分享人：XX GPU：XX 下载次数: ${formatDl(dlCount)}` : '本地创建方案';
+        
+        const content = document.getElementById('detail-content-list');
+        let html = '';
+
+        configData.forEach(cat => {
+            const sharedItems = cat.items.filter(i => i.share);
+            if(sharedItems.length > 0) {
+                html += `<div class="cat-group"><div class="cat-header">${cat.category}</div>`;
+                sharedItems.forEach(item => {
+                    const isClickable = item.type === 'link';
+                    html += `
+                        <div class="setting-row" ${isClickable ? `onclick="handleRowClick('${item.id}')"` : ''}>
+                            <div class="setting-info">
+                                <div class="setting-name">${item.name}</div>
+                            </div>
+                            <div style="flex-shrink:0;">${buildControl(item, true)}</div>
+                        </div>`;
+                });
+                html += `</div>`;
+            }
+        });
+
+        content.innerHTML = html;
+        renderActionButtons('detail-footer-actions', title, true);
+        document.getElementById('detail-page').style.display = 'flex';
+    }
+
+    // ==========================================
+    // 编辑页
+    // ==========================================
+    function openEditPage(title) {
+        document.getElementById('edit-page-title').innerText = title;
+        const content = document.getElementById('edit-content-list');
+        let html = `<div style="color:var(--sub); font-size:12px; margin-bottom:16px;"> </div>`;
+
+        configData.forEach(cat => {
+            const sharedItems = cat.items.filter(i => i.share);
+            if(sharedItems.length > 0) {
+                html += `<div class="cat-group"><div class="cat-header">${cat.category}</div>`;
+                sharedItems.forEach(item => {
+                    html += `
+                        <div class="setting-row" onclick="handleRowClick('${item.id}')">
+                            <div class="setting-info">
+                                <div class="setting-name">${item.name}</div>
+                                ${item.desc ? `<div class="setting-desc">${item.desc}</div>` : ''}
+                            </div>
+                            <div style="flex-shrink:0;">${buildControl(item)}</div>
+                        </div>`;
+                });
+                html += `</div>`;
+            }
+        });
+
+        content.innerHTML = html;
+        closeFullPage('detail-page'); 
+        document.getElementById('edit-page').style.display = 'flex';
+    }
+
+    function saveEdit() {
+        closeFullPage('edit-page');
+        showToast('✅ 配置已保存');
+    }
+
+    // ==========================================
+    // 跳转专属配置层级 (转译参数等)
+    // ==========================================
+    function handleRowClick(id) {
+        if(id === 'trans_args') {
+            openTransArgsPage();
+        } else if (id === 'touch_layout') {
+            showToast('即将打开布局选择器...');
+        }
+    }
+
+    function openTransArgsPage() {
+        const list = document.getElementById('trans-args-list');
+        let html = `<div class="cat-group">`;
+        transArgsData.forEach(item => {
+            html += `
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-name">${item.name}</div>
+                        <div class="setting-desc">${item.desc}</div>
+                    </div>
+                    <div style="flex-shrink:0;">${buildControl(item)}</div>
+                </div>`;
+        });
+        html += `</div>`;
+        list.innerHTML = html;
+        document.getElementById('trans-args-page').style.display = 'flex';
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 2000);
+    }
+
+    renderMainContent();
+</script>
+</body>
+</html>
