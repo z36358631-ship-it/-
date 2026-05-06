@@ -976,24 +976,24 @@ const PRD = [
 const prdState = { open: {} };
 
 function initPRD() {
-  // Badge styles injected once
   const style = document.createElement('style');
   style.textContent = `
     .prd-badge{
-      position:absolute;display:inline-block;vertical-align:top;
+      position:fixed;display:inline-block;
       background:rgb(250,173,20);color:#fff;font-size:10px;font-weight:700;
       line-height:14px;padding:0 4px;border-radius:2px;cursor:pointer;
       z-index:10000;user-select:none;white-space:nowrap;
+      /* NO right/bottom — only top+left set by JS */
     }
-    .prd-badge:hover{filter:brightness(1.1);}
+    .prd-badge:hover{filter:brightness(1.12);}
     .prd-tip{
       position:fixed;width:450px;background:#f0efef;border-radius:4px;
-      box-shadow:0 4px 24px rgba(0,0,0,.18);z-index:9999;font-size:13px;
-      line-height:1.6;user-select:none;
+      box-shadow:0 4px 24px rgba(0,0,0,.22);z-index:10001;font-size:13px;
+      line-height:1.6;
     }
     .prd-tip-header{
       display:flex;align-items:center;padding:10px 12px 8px;
-      border-bottom:1px solid rgba(0,0,0,.1);gap:8px;
+      border-bottom:1px solid rgba(0,0,0,.1);gap:8px;cursor:move;
     }
     .prd-tip-num{
       background:rgb(250,173,20);color:#fff;font-size:10px;font-weight:700;
@@ -1001,12 +1001,12 @@ function initPRD() {
     }
     .prd-tip-title{flex:1;font-weight:700;color:#111;font-size:13px;}
     .prd-tip-close{
-      font-size:18px;color:#888;cursor:pointer;line-height:1;padding:0 2px;
-      flex-shrink:0;
+      font-size:18px;color:#888;cursor:pointer;line-height:1;padding:0 4px;
+      flex-shrink:0;border-radius:4px;
     }
-    .prd-tip-close:hover{color:#333;}
+    .prd-tip-close:hover{color:#111;background:rgba(0,0,0,.08);}
     .prd-tip-body{
-      padding:12px 14px 14px;color:#222;overflow-y:auto;max-height:400px;
+      padding:12px 14px 14px;color:#222;overflow-y:auto;max-height:420px;
     }
     .prd-tip-body p{margin:0 0 10px;}
     .prd-tip-body strong{font-weight:700;}
@@ -1018,80 +1018,82 @@ function initPRD() {
     .prd-tip-body th{background:rgba(0,0,0,.06);font-weight:700;}
     .prd-tip-body blockquote{margin:0 0 10px;padding:6px 12px;border-left:3px solid #ccc;color:#555;background:rgba(0,0,0,.03);}
     .prd-tip-body code{background:rgba(0,0,0,.07);padding:1px 4px;border-radius:3px;font-family:monospace;font-size:12px;}
-    .prd-anchor{position:relative;display:inline-block;}
   `;
   document.head.appendChild(style);
 
-  // Place anchors near annotated elements
-  placeAnchor('ann-toolbar', document.querySelector('.ed-bar'));
-  placeAnchor('ann-canvas',  document.getElementById('ed-canvas'));
-  placeAnchor('ann-sublayout', document.getElementById('tb-sw-area'));
+  placeAnchor('ann-toolbar',     document.querySelector('.ed-bar'));
+  placeAnchor('ann-canvas',      document.getElementById('ed-canvas'));
+  placeAnchor('ann-sublayout',   document.getElementById('tb-sw-area'));
   placeAnchor('ann-gamepreview', document.getElementById('gm'));
-
-  PRD.forEach(item => {
-    const anchor = document.getElementById('prd-anchor-' + item.anchor);
-    if (!anchor) return;
-    anchor.addEventListener('mouseenter', () => openTip(item.id));
-  });
 }
 
 function placeAnchor(anchorId, targetEl) {
   if (!targetEl) return;
-  const badge = document.createElement('div');
-  badge.id = 'prd-anchor-' + anchorId;
-  badge.className = 'prd-badge';
-  badge.textContent = PRD.find(p => p.anchor === anchorId)?.id || '?';
-  badge.style.cssText = 'top:-8px;right:-4px;';
-  badge.dataset.anchor = anchorId;
+  const item = PRD.find(p => p.anchor === anchorId);
+  if (!item) return;
 
-  // Mount to body with absolute positioning relative to viewport
+  const badge = document.createElement('div');
+  badge.id = 'prd-badge-' + anchorId;
+  badge.className = 'prd-badge';
+  badge.textContent = item.id;
+
   document.body.appendChild(badge);
 
   function reposition() {
     const r = targetEl.getBoundingClientRect();
-    badge.style.position = 'fixed';
-    badge.style.top  = (r.top  - 8) + 'px';
+    // place badge at top-right corner of target, 8px above, 4px to the right
+    badge.style.top  = Math.max(2, r.top - 8) + 'px';
     badge.style.left = (r.right - 4) + 'px';
+    // clear any inherited right/bottom
+    badge.style.right  = 'auto';
+    badge.style.bottom = 'auto';
   }
   reposition();
   window.addEventListener('resize', reposition);
-  // Reposition on view switches
-  badge._reposition = reposition;
 
-  badge.addEventListener('mouseenter', () => {
-    const item = PRD.find(p => p.anchor === anchorId);
-    if (item) openTip(item.id, badge);
+  // Click to toggle — only X can close
+  badge.addEventListener('click', e => {
+    e.stopPropagation();
+    if (prdState.open[item.id]) {
+      closeTip(item.id);
+    } else {
+      openTip(item.id, badge);
+    }
   });
 }
 
 function openTip(id, badgeEl) {
-  if (prdState.open[id]) return; // already open
+  if (prdState.open[id]) return;
   const item = PRD.find(p => p.id === id);
   if (!item) return;
 
   const tip = document.createElement('div');
   tip.className = 'prd-tip';
-  tip.dataset.tipId = id;
   tip.innerHTML = `
-    <div class="prd-tip-header" style="cursor:move;">
+    <div class="prd-tip-header">
       <span class="prd-tip-num">${id}</span>
       <span class="prd-tip-title">需求描述：${item.title}</span>
-      <span class="prd-tip-close" onclick="closeTip(${id})">×</span>
+      <span class="prd-tip-close" id="prd-close-${id}">×</span>
     </div>
     <div class="prd-tip-body">${mdToHtml(item.md)}</div>
   `;
   document.body.appendChild(tip);
   prdState.open[id] = tip;
 
-  // Position: bottom-left of badge, auto-avoid edges
-  positionTip(tip, badgeEl);
+  // Must attach close after DOM insert so element exists
+  tip.querySelector('#prd-close-' + id).addEventListener('click', e => {
+    e.stopPropagation();
+    closeTip(id);
+  });
 
-  // Drag
+  positionTip(tip, badgeEl);
   makeTipDraggable(tip);
 
-  // Isolate clicks
+  // Block ALL events from reaching page underneath
+  tip.addEventListener('mousedown',   e => e.stopPropagation());
   tip.addEventListener('pointerdown', e => e.stopPropagation());
-  tip.addEventListener('click', e => e.stopPropagation());
+  tip.addEventListener('click',       e => e.stopPropagation());
+  tip.addEventListener('wheel',       e => e.stopPropagation());
 }
 
 function closeTip(id) {
