@@ -146,10 +146,10 @@
         .readonly-val { font-size: 12px; color: #fff; background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); }
         .toast { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 600; display: none; z-index: 3000; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
 
-        /* 分辨率行内 scope 胶囊 */
-        .res-scope-pill { display: inline-flex; background: #1a1e29; border-radius: 6px; padding: 2px; gap: 1px; margin-top: 6px; }
-        .res-scope-opt { padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; color: var(--sub); transition: 0.2s; white-space: nowrap; }
-        .res-scope-opt.active { background: var(--primary); color: #fff; }
+        /* 分辨率确认弹窗 scope 选项 */
+        .res-scope-row { display: flex; gap: 10px; margin-top: 4px; }
+        .res-scope-btn { flex: 1; padding: 10px 0; border-radius: 8px; border: 1.5px solid var(--border); background: transparent; color: var(--sub); font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: center; }
+        .res-scope-btn.active { border-color: var(--primary); background: rgba(78,115,255,0.12); color: var(--primary); }
 
         /* 真实的加载进度遮罩 */
         .loading-overlay { position: absolute; inset: 0; background: rgba(11, 13, 20, 0.95); z-index: 2500; display: none; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
@@ -266,6 +266,24 @@
             <div class="dialog-btns" style="margin-top:16px;">
                 <button class="btn btn-gray" onclick="document.getElementById('import-dialog').style.display='none'">取消</button>
                 <button class="btn btn-blue" onclick="submitImport()">导入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分辨率确认弹窗 -->
+    <div class="modal-overlay" id="res-confirm-dialog" style="z-index: 2000;" onclick="cancelResConfirm()">
+        <div class="dialog-box" style="min-width:300px; position:relative;" onclick="event.stopPropagation()">
+            <div style="position:absolute; right:16px; top:16px; font-size:20px; color:var(--sub); cursor:pointer; line-height:1;" onclick="cancelResConfirm()">✕</div>
+            <div style="font-size:15px; font-weight:bold; color:#fff; text-align:center;">确认修改分辨率</div>
+            <div style="font-size:13px; color:var(--sub); margin-top:-8px; text-align:center;">将分辨率设置为 <span id="res-confirm-val" style="color:#fff;font-weight:600;"></span></div>
+            <div style="font-size:12px; color:var(--sub); margin-top:4px;">生效范围</div>
+            <div class="res-scope-row">
+                <div class="res-scope-btn active" id="res-scope-game" onclick="toggleResScope('game')">仅本游戏</div>
+                <div class="res-scope-btn" id="res-scope-all" onclick="toggleResScope('all')">全部游戏</div>
+            </div>
+            <div class="dialog-btns">
+                <button class="btn btn-gray" onclick="cancelResConfirm()">取消</button>
+                <button class="btn btn-blue" onclick="confirmRes()">确认</button>
             </div>
         </div>
     </div>
@@ -462,7 +480,6 @@
     let currentRecTab = 'recommend'; // 推荐方案页当前tab
     let currentInUseScheme = '系统智能设置方案';
     let currentContextScheme = '';
-    let resScope = 'game'; // 'game' = 仅本游戏, 'all' = 全部游戏
 
     function toggleLayout() {
         document.getElementById('device').classList.toggle('portrait');
@@ -484,7 +501,8 @@
         if (item.type === 'action') return `<button class="btn btn-gray" style="padding:4px 12px;" onclick="event.stopPropagation(); showToast('正在执行...')">${item.val}</button>`;
         if (item.type === 'select') {
             const opts = item.options.map(o => `<option value="${o}" ${item.val === o ? 'selected' : ''}>${o}</option>`).join('');
-            return `<select class="setting-select" onclick="event.stopPropagation()">${opts}</select>`;
+            const onChange = item.id === 'res' ? `onchange="openResConfirm(this.value, this)" ` : '';
+            return `<select class="setting-select" onclick="event.stopPropagation()" ${onChange}>${opts}</select>`;
         }
         if (item.type === 'input') return `<input type="text" class="setting-input" value="${item.val}" onclick="event.stopPropagation()">`;
         return '';
@@ -520,8 +538,7 @@
             if (localItems.length === 0) return;
             html += `<div class="cat-group"><div class="cat-header">${cat.category}</div>`;
             localItems.forEach(item => {
-                const scopePill = item.id === 'res' ? `<div class="res-scope-pill" onclick="event.stopPropagation()"><div class="res-scope-opt${resScope==='game'?' active':''}" onclick="setResScope('game')">仅本游戏</div><div class="res-scope-opt${resScope==='all'?' active':''}" onclick="setResScope('all')">全部游戏</div></div>` : '';
-                html += `<div class="setting-row" onclick="handleRowClick('${item.id}')"><div class="setting-info"><div class="setting-name">${item.name}</div>${item.desc ? `<div class="setting-desc">${item.desc}</div>` : ''}${scopePill}</div><div style="flex-shrink:0;">${buildControl(item)}</div></div>`;
+                html += `<div class="setting-row" onclick="handleRowClick('${item.id}')"><div class="setting-info"><div class="setting-name">${item.name}</div>${item.desc ? `<div class="setting-desc">${item.desc}</div>` : ''}</div><div style="flex-shrink:0;">${buildControl(item)}</div></div>`;
             });
             html += `</div>`;
         });
@@ -554,9 +571,8 @@
         if (localItems.length === 0) { content.innerHTML = `<div style="color:var(--sub);font-size:13px;padding:20px 0;">暂无本机设置项</div>`; return; }
         let html = `<div class="cat-group">`;
         localItems.forEach(item => {
-                const scopePill = item.id === 'res' ? `<div class="res-scope-pill" onclick="event.stopPropagation()"><div class="res-scope-opt${resScope==='game'?' active':''}" onclick="setResScope('game')">仅本游戏</div><div class="res-scope-opt${resScope==='all'?' active':''}" onclick="setResScope('all')">全部游戏</div></div>` : '';
-                html += `<div class="setting-row" onclick="handleRowClick('${item.id}')"><div class="setting-info"><div class="setting-name">${item.name}</div>${item.desc ? `<div class="setting-desc">${item.desc}</div>` : ''}${scopePill}</div><div style="flex-shrink:0;">${buildControl(item)}</div></div>`;
-            });
+            html += `<div class="setting-row" onclick="handleRowClick('${item.id}')"><div class="setting-info"><div class="setting-name">${item.name}</div>${item.desc ? `<div class="setting-desc">${item.desc}</div>` : ''}</div><div style="flex-shrink:0;">${buildControl(item)}</div></div>`;
+        });
         html += `</div>`;
         content.innerHTML = html;
     }
@@ -875,9 +891,38 @@
         }
     }
 
-    function setResScope(scope) {
+    let resScope = 'game';
+    let _pendingResVal = '';
+    let _pendingResSelect = null;
+
+    function openResConfirm(val, selectEl) {
+        _pendingResVal = val;
+        _pendingResSelect = selectEl;
+        document.getElementById('res-confirm-val').textContent = val;
+        toggleResScope(resScope);
+        document.getElementById('res-confirm-dialog').style.display = 'flex';
+    }
+
+    function toggleResScope(scope) {
         resScope = scope;
-        renderMainContent();
+        document.getElementById('res-scope-game').className = 'res-scope-btn' + (scope === 'game' ? ' active' : '');
+        document.getElementById('res-scope-all').className = 'res-scope-btn' + (scope === 'all' ? ' active' : '');
+    }
+
+    function confirmRes() {
+        const resItem = configData.flatMap(c => c.items).find(i => i.id === 'res');
+        resItem.val = _pendingResVal;
+        document.getElementById('res-confirm-dialog').style.display = 'none';
+        showToast(`分辨率已设置：${_pendingResVal}（${resScope === 'all' ? '全部游戏' : '仅本游戏'}）`);
+    }
+
+    function cancelResConfirm() {
+        // 回滚 select 到原值
+        if (_pendingResSelect) {
+            const resItem = configData.flatMap(c => c.items).find(i => i.id === 'res');
+            _pendingResSelect.value = resItem.val;
+        }
+        document.getElementById('res-confirm-dialog').style.display = 'none';
     }
 
     function openTransArgsPage() {
