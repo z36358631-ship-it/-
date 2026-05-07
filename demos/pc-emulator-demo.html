@@ -315,7 +315,7 @@
             <div class="back-btn" onclick="closeFullPage('detail-page')"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> 返回</div>
             <div style="display:flex; flex-direction:column; align-items:center;">
                 <span style="font-size: 15px; font-weight: 600;" id="detail-page-title">方案详情</span>
-                <span style="font-size: 11px; color: var(--sub); margin-top: 2px;" id="detail-page-dl">分享人：XX 处理器：XX 下载次数: 0</span>
+                <span style="font-size: 11px; color: var(--sub); margin-top: 2px;" id="detail-page-dl">分享人：XX GPU：XX 下载次数: 0</span>
             </div>
             <div style="width: 60px;"></div>
             <span class="prd-badge" data-prd="6" style="position:absolute;top:6px;right:16px;">6</span>
@@ -791,7 +791,7 @@
 
         document.getElementById('detail-page-title').innerText = title;
         document.getElementById('detail-page-dl').innerText = dlCount > 0
-            ? `分享人：XX ${cpuModel ? '处理器：' + cpuModel : ''} 下载次数: ${formatDl(dlCount)}`
+            ? `分享人：XX ${cpuModel ? 'GPU：' + cpuModel : ''} 下载次数: ${formatDl(dlCount)}`
             : '本地创建方案';
         
         const content = document.getElementById('detail-content-list');
@@ -1021,15 +1021,15 @@
   <li>该项<strong>不再出现</strong>在方案详情页（只读态）和方案编辑页的可编辑字段中</li>
   <li>GPU 驱动属于本机硬件相关配置，不同设备驱动差异大，不适合跨设备共享</li>
 </ul>
-<p><strong>方案详情页：副标题显示处理器型号</strong></p>
+<p><strong>方案详情页：副标题显示 GPU（处理器型号）</strong></p>
 <ul>
-  <li><del>原格式：<code>分享人：XX GPU：XX 下载次数: N</code></del></li>
-  <li><strong>新格式：<code>分享人：XX 处理器：[cpu字段] 下载次数: N</code></strong></li>
-  <li>处理器型号动态读取 <code>listData</code> 对应方案的 <code>cpu</code> 字段</li>
-  <li>若 <code>cpu</code> 字段为空，则不显示「处理器：」部分，直接显示下载次数</li>
-  <li>本地创建方案（<code>dl === 0</code>）显示「本地创建方案」，不显示分享人/处理器信息</li>
+  <li><del>原格式：<code>分享人：XX GPU：XX 下载次数: N</code>（GPU 显示固定文字 XX）</del></li>
+  <li><strong>新格式：<code>分享人：XX GPU：[cpu字段] 下载次数: N</code></strong></li>
+  <li>GPU 即处理器型号，动态读取 <code>listData</code> 对应方案的 <code>cpu</code> 字段（如 Snapdragon 8 Gen 3）</li>
+  <li>若 <code>cpu</code> 字段为空，则不显示「GPU：」部分，直接显示下载次数</li>
+  <li>本地创建方案（<code>dl === 0</code>）显示「本地创建方案」，不显示分享人/GPU 信息</li>
 </ul>
-<blockquote>背景：GPU 型号不能代表设备兼容性的核心差异，处理器架构（如 Snapdragon / Dimensity / Kirin）才是影响转译兼容性的关键维度。</blockquote>
+<blockquote>GPU 与处理器是同一概念（移动端 SoC），如 Snapdragon 8 Gen 3 既是 CPU 也是 GPU。</blockquote>
 <p><strong>推荐方案显示条件变更</strong></p>
 <ul>
   <li><del>原条件：同游戏 + 同 GPU 型号</del></li>
