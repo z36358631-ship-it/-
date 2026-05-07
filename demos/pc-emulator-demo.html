@@ -146,11 +146,6 @@
         .readonly-val { font-size: 12px; color: #fff; background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); }
         .toast { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 600; display: none; z-index: 3000; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
 
-        /* 分辨率确认弹窗 scope 选项 */
-        .res-scope-row { display: flex; gap: 10px; margin-top: 4px; }
-        .res-scope-btn { flex: 1; padding: 10px 0; border-radius: 8px; border: 1.5px solid var(--border); background: transparent; color: var(--sub); font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: center; }
-        .res-scope-btn.active { border-color: var(--primary); background: rgba(78,115,255,0.12); color: var(--primary); }
-
         /* 真实的加载进度遮罩 */
         .loading-overlay { position: absolute; inset: 0; background: rgba(11, 13, 20, 0.95); z-index: 2500; display: none; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .spinner { width: 44px; height: 44px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 24px; }
@@ -275,15 +270,11 @@
         <div class="dialog-box" style="min-width:300px; position:relative;" onclick="event.stopPropagation()">
             <div style="position:absolute; right:16px; top:16px; font-size:20px; color:var(--sub); cursor:pointer; line-height:1;" onclick="cancelResConfirm()">✕</div>
             <div style="font-size:15px; font-weight:bold; color:#fff; text-align:center;">确认修改分辨率</div>
-            <div style="font-size:13px; color:var(--sub); margin-top:-8px; text-align:center;">将分辨率设置为 <span id="res-confirm-val" style="color:#fff;font-weight:600;"></span></div>
-            <div style="font-size:12px; color:var(--sub); margin-top:4px;">生效范围</div>
-            <div class="res-scope-row">
-                <div class="res-scope-btn active" id="res-scope-game" onclick="toggleResScope('game')">仅本游戏</div>
-                <div class="res-scope-btn" id="res-scope-all" onclick="toggleResScope('all')">全部游戏</div>
-            </div>
-            <div class="dialog-btns">
-                <button class="btn btn-gray" onclick="cancelResConfirm()">取消</button>
-                <button class="btn btn-blue" onclick="confirmRes()">确认</button>
+            <div style="font-size:13px; color:var(--sub); margin-top:-8px; text-align:center;">将 <span id="res-confirm-val" style="color:#fff;font-weight:600;"></span> 设置为哪些游戏生效？</div>
+            <div class="dialog-btns" style="flex-direction:column;">
+                <button class="btn btn-blue" style="padding:12px 0;" onclick="confirmRes('game')">仅本游戏</button>
+                <button class="btn btn-blue" style="padding:12px 0;" onclick="confirmRes('all')">全部游戏</button>
+                <button class="btn btn-gray" style="padding:12px 0;" onclick="cancelResConfirm()">取消</button>
             </div>
         </div>
     </div>
@@ -891,7 +882,6 @@
         }
     }
 
-    let resScope = 'game';
     let _pendingResVal = '';
     let _pendingResSelect = null;
 
@@ -899,21 +889,14 @@
         _pendingResVal = val;
         _pendingResSelect = selectEl;
         document.getElementById('res-confirm-val').textContent = val;
-        toggleResScope(resScope);
         document.getElementById('res-confirm-dialog').style.display = 'flex';
     }
 
-    function toggleResScope(scope) {
-        resScope = scope;
-        document.getElementById('res-scope-game').className = 'res-scope-btn' + (scope === 'game' ? ' active' : '');
-        document.getElementById('res-scope-all').className = 'res-scope-btn' + (scope === 'all' ? ' active' : '');
-    }
-
-    function confirmRes() {
+    function confirmRes(scope) {
         const resItem = configData.flatMap(c => c.items).find(i => i.id === 'res');
         resItem.val = _pendingResVal;
         document.getElementById('res-confirm-dialog').style.display = 'none';
-        showToast(`分辨率已设置：${_pendingResVal}（${resScope === 'all' ? '全部游戏' : '仅本游戏'}）`);
+        showToast(`分辨率已设置：${_pendingResVal}（${scope === 'all' ? '全部游戏' : '仅本游戏'}）`);
     }
 
     function cancelResConfirm() {
