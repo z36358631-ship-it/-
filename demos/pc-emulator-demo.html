@@ -299,7 +299,9 @@
                 <input type="text" placeholder="搜索配置方案...">
             </div>
         </div>
-        <div class="content-scroll" id="rec-content-area" style="display:grid;"></div>
+        <div class="content-scroll" id="rec-content-area" style="display:grid; position:relative;">
+            <span class="prd-badge" data-prd="6" style="position:absolute;top:2px;right:4px;z-index:8000;">6</span>
+        </div>
         <div class="floating-pill" id="fab-rec-create" style="position:absolute; bottom:24px; left:50%; transform:translateX(-50%);">
             <div class="pill-btn" onclick="openImportDialog()">📥 导入配置</div>
             <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.2); margin: 0 8px;"></div>
@@ -309,13 +311,14 @@
 
     <!-- 全屏页面 1：方案详情页 -->
     <div class="full-page" id="detail-page" style="z-index: 600;">
-        <header class="header">
+        <header class="header" style="position:relative;">
             <div class="back-btn" onclick="closeFullPage('detail-page')"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> 返回</div>
             <div style="display:flex; flex-direction:column; align-items:center;">
                 <span style="font-size: 15px; font-weight: 600;" id="detail-page-title">方案详情</span>
                 <span style="font-size: 11px; color: var(--sub); margin-top: 2px;" id="detail-page-dl">分享人：XX 处理器：XX 下载次数: 0</span>
             </div>
-            <div style="width: 60px;"></div> <!-- 占位平衡 -->
+            <div style="width: 60px;"></div>
+            <span class="prd-badge" data-prd="6" style="position:absolute;top:6px;right:16px;">6</span>
         </header>
         <div class="full-content" id="detail-content-list">
             <!-- JS 动态生成 -->
@@ -1007,6 +1010,42 @@
 <ul>
   <li><code>configData.find()</code> 未命中 → 右侧内容区静默不渲染，无报错</li>
   <li><code>toggleLayout()</code> 切换时重新调用 <code>renderMainContent()</code> 完整刷新双区域</li>
+</ul>`
+        },
+        6: {
+            title: '需求描述：方案共享内容定义与推荐显示条件',
+            content: `
+<p><strong>GPU 驱动移出分享配置</strong></p>
+<ul>
+  <li><code>gpu_drv</code>（GPU 驱动）的 <code>share</code> 字段由 <code>true</code> 改为 <strong><code>false</code></strong></li>
+  <li>该项<strong>不再出现</strong>在方案详情页（只读态）和方案编辑页的可编辑字段中</li>
+  <li>GPU 驱动属于本机硬件相关配置，不同设备驱动差异大，不适合跨设备共享</li>
+</ul>
+<p><strong>方案详情页：副标题显示处理器型号</strong></p>
+<ul>
+  <li><del>原格式：<code>分享人：XX GPU：XX 下载次数: N</code></del></li>
+  <li><strong>新格式：<code>分享人：XX 处理器：[cpu字段] 下载次数: N</code></strong></li>
+  <li>处理器型号动态读取 <code>listData</code> 对应方案的 <code>cpu</code> 字段</li>
+  <li>若 <code>cpu</code> 字段为空，则不显示「处理器：」部分，直接显示下载次数</li>
+  <li>本地创建方案（<code>dl === 0</code>）显示「本地创建方案」，不显示分享人/处理器信息</li>
+</ul>
+<blockquote>背景：GPU 型号不能代表设备兼容性的核心差异，处理器架构（如 Snapdragon / Dimensity / Kirin）才是影响转译兼容性的关键维度。</blockquote>
+<p><strong>推荐方案显示条件变更</strong></p>
+<ul>
+  <li><del>原条件：同游戏 + 同 GPU 型号</del></li>
+  <li><strong>新条件：仅同游戏（<code>item.game === currentGame</code>）</strong></li>
+  <li>过滤逻辑位于 <code>renderRecContent()</code>，仅作用于 <code>currentRecTab === 'recommend'</code> 时</li>
+  <li>我的方案 / 我的云分享 Tab <strong>不受此过滤影响</strong>，展示全量数据</li>
+</ul>
+<p><strong>空态处理</strong></p>
+<ul>
+  <li>过滤后 <code>items.length === 0</code> → 显示「暂无该游戏的配置方案」</li>
+  <li>其他 Tab 无数据 → 显示「暂无配置方案」</li>
+</ul>
+<p><strong>数据结构变更（<code>listData</code> 条目新增字段）</strong></p>
+<ul>
+  <li><code>game</code>：string，方案所属游戏名称（用于推荐过滤）</li>
+  <li><code>cpu</code>：string，分享者处理器型号（用于详情页展示）</li>
 </ul>`
         }
     };
