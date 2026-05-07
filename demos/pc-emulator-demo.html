@@ -271,10 +271,10 @@
             <div style="position:absolute; right:16px; top:16px; font-size:20px; color:var(--sub); cursor:pointer; line-height:1;" onclick="cancelResConfirm()">✕</div>
             <div style="font-size:15px; font-weight:bold; color:#fff; text-align:center;">确认修改分辨率</div>
             <div style="font-size:13px; color:var(--sub); margin-top:-8px; text-align:center;">将 <span id="res-confirm-val" style="color:#fff;font-weight:600;"></span> 设置为哪些游戏生效？</div>
-            <div class="dialog-btns" style="flex-direction:column;">
-                <button class="btn btn-blue" style="padding:12px 0;" onclick="confirmRes('game')">仅本游戏</button>
-                <button class="btn btn-blue" style="padding:12px 0;" onclick="confirmRes('all')">全部游戏</button>
-                <button class="btn btn-gray" style="padding:12px 0;" onclick="cancelResConfirm()">取消</button>
+            <div class="dialog-btns" style="flex-direction:column; gap:8px;">
+                <button class="btn" style="padding:9px 0; font-size:13px; border:1.5px solid var(--primary); background:transparent; color:var(--primary);" onclick="confirmRes('game')">仅本游戏</button>
+                <button class="btn" style="padding:9px 0; font-size:13px; border:1.5px solid var(--primary); background:transparent; color:var(--primary);" onclick="confirmRes('all')">全部游戏</button>
+                <div style="text-align:center; padding-top:2px; font-size:13px; color:var(--sub); cursor:pointer;" onclick="cancelResConfirm()">取消</div>
             </div>
         </div>
     </div>
