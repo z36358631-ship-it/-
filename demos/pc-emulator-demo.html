@@ -146,6 +146,28 @@
         .readonly-val { font-size: 12px; color: #fff; background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); }
         .toast { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 600; display: none; z-index: 3000; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
 
+        /* 分辨率选择器弹窗 */
+        .res-picker-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); z-index: 2100; display: none; justify-content: flex-end; flex-direction: column; backdrop-filter: blur(5px); }
+        .res-picker-overlay.active { display: flex; }
+        .res-picker-sheet { background: var(--modal-bg); border-radius: 24px 24px 0 0; border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom, 0); max-height: 80%; display: flex; flex-direction: column; }
+        .res-picker-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .res-picker-title { font-size: 16px; font-weight: bold; color: #fff; }
+        /* 生效范围切换胶囊 */
+        .scope-pill { display: flex; background: #1a1e29; border-radius: 10px; padding: 3px; gap: 2px; flex-shrink: 0; }
+        .scope-option { padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--sub); transition: 0.2s; white-space: nowrap; }
+        .scope-option.active { background: var(--primary); color: #fff; }
+        /* 分辨率列表 */
+        .res-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+        .res-item { padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: background 0.15s; font-size: 14px; color: #fff; }
+        .res-item:hover { background: rgba(255,255,255,0.04); }
+        .res-item.selected { color: var(--primary); }
+        .res-item-check { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .res-item.selected .res-item-check { background: var(--primary); border-color: var(--primary); }
+        .res-item.selected .res-item-check::after { content: ''; display: block; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
+        /* 横版时改为居中弹窗 */
+        .device-frame:not(.portrait) .res-picker-overlay { align-items: center; justify-content: center; }
+        .device-frame:not(.portrait) .res-picker-sheet { border-radius: 20px; border: 1px solid var(--border); max-width: 360px; width: 360px; max-height: 85%; }
+
         /* 真实的加载进度遮罩 */
         .loading-overlay { position: absolute; inset: 0; background: rgba(11, 13, 20, 0.95); z-index: 2500; display: none; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .spinner { width: 44px; height: 44px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 24px; }
@@ -265,6 +287,21 @@
         </div>
     </div>
 
+    <!-- 分辨率选择器底部弹窗 -->
+    <div class="res-picker-overlay" id="res-picker" onclick="closeResPicker(event)">
+        <div class="res-picker-sheet" onclick="event.stopPropagation()">
+            <div class="res-picker-header">
+                <div class="res-picker-title">游戏分辨率</div>
+                <div class="scope-pill" id="res-scope-pill">
+                    <div class="scope-option active" id="scope-game" onclick="setResScope('game')">仅本游戏</div>
+                    <div class="scope-option" id="scope-all" onclick="setResScope('all')">全部游戏</div>
+                </div>
+            </div>
+            <div class="res-list" id="res-list"><!-- JS渲染 --></div>
+            <div style="padding: 16px 24px; border-top: 1px solid var(--border); text-align: center; cursor: pointer; color: var(--sub); font-size: 14px; font-weight:bold;" onclick="closeResPicker({target:{id:'res-picker'}})">取消</div>
+        </div>
+    </div>
+
     <!-- 发布到云端弹窗 -->
     <div class="modal-overlay" id="publish-dialog" style="z-index: 2000;">
         <div class="dialog-box" style="position:relative;">
@@ -380,7 +417,7 @@
             items:[
                 { id: "desktop", name: "进入容器桌面", desc: "启动Wine容器桌面环境", type: "toggle", val: false, share: false },
                 { id: "lang", name: "游戏语言", desc: "设置容器系统语言和区域", type: "select", options:["跟随系统", "简体中文", "English"], val: "跟随系统", share: false },
-                { id: "res", name: "游戏分辨率", desc: "设置程序运行时的屏幕分辨率", type: "select", options:["1280x720", "1920x1080", "800x600"], val: "1280x720", share: false },
+                { id: "res", name: "游戏分辨率", desc: "设置程序运行时的屏幕分辨率", type: "res", options:["960x544","1024x768","1280x720","1280x800","1280x1024","1366x768","1380x600","1440x900","1600x720","1600x900","1920x1080","原生分辨率"], val: "1280x720", share: false },
                 { id: "hud", name: "MangoHUD覆盖层", desc: "启用性能显示仪表盘", type: "toggle", val: false, share: false },
                 { id: "dx_panel", name: "DirectX性能面板", desc: "控制性能监控HUD显示", type: "toggle", val: false, share: false },
                 { id: "wm", name: "停用窗口管理器", desc: "停用后窗口不再被修饰", type: "toggle", val: true, share: false },
@@ -457,6 +494,7 @@
     let currentRecTab = 'recommend'; // 推荐方案页当前tab
     let currentInUseScheme = '系统智能设置方案';
     let currentContextScheme = '';
+    let resScope = 'game'; // 'game' = 仅本游戏, 'all' = 全部游戏
 
     function toggleLayout() {
         document.getElementById('device').classList.toggle('portrait');
@@ -476,6 +514,10 @@
         }
         if (item.type === 'toggle') return `<div class="toggle ${item.val ? 'active' : ''}" onclick="event.stopPropagation(); this.classList.toggle('active')"></div>`;
         if (item.type === 'action') return `<button class="btn btn-gray" style="padding:4px 12px;" onclick="event.stopPropagation(); showToast('正在执行...')">${item.val}</button>`;
+        if (item.type === 'res') {
+            const scopeLabel = resScope === 'all' ? '全部游戏' : '仅本游戏';
+            return `<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;cursor:pointer;" onclick="event.stopPropagation();openResPicker()"><div style="font-size:13px;color:#fff;font-weight:500;">${item.val}</div><div style="font-size:11px;color:var(--primary);">${scopeLabel}</div></div>`;
+        }
         if (item.type === 'select') {
             const opts = item.options.map(o => `<option value="${o}" ${item.val === o ? 'selected' : ''}>${o}</option>`).join('');
             return `<select class="setting-select" onclick="event.stopPropagation()">${opts}</select>`;
@@ -864,7 +906,45 @@
             openTransArgsPage();
         } else if (id === 'touch_layout') {
             showToast('即将打开布局选择器...');
+        } else if (id === 'res') {
+            openResPicker();
         }
+    }
+
+    // ==========================================
+    // 分辨率选择器
+    // ==========================================
+    function openResPicker() {
+        const resItem = configData.flatMap(c => c.items).find(i => i.id === 'res');
+        const list = document.getElementById('res-list');
+        list.innerHTML = resItem.options.map(o => `
+            <div class="res-item ${o === resItem.val ? 'selected' : ''}" onclick="selectRes('${o}')">
+                <span>${o}</span>
+                <div class="res-item-check"></div>
+            </div>`).join('');
+        document.getElementById('scope-game').className = 'scope-option' + (resScope === 'game' ? ' active' : '');
+        document.getElementById('scope-all').className = 'scope-option' + (resScope === 'all' ? ' active' : '');
+        document.getElementById('res-picker').classList.add('active');
+    }
+
+    function closeResPicker(e) {
+        if (e.target.id === 'res-picker' || e.target.closest('[onclick*="closeResPicker"]')) {
+            document.getElementById('res-picker').classList.remove('active');
+        }
+    }
+
+    function selectRes(val) {
+        const resItem = configData.flatMap(c => c.items).find(i => i.id === 'res');
+        resItem.val = val;
+        document.getElementById('res-picker').classList.remove('active');
+        renderMainContent();
+        showToast(`分辨率已设置：${val}（${resScope === 'all' ? '全部游戏' : '仅本游戏'}）`);
+    }
+
+    function setResScope(scope) {
+        resScope = scope;
+        document.getElementById('scope-game').className = 'scope-option' + (scope === 'game' ? ' active' : '');
+        document.getElementById('scope-all').className = 'scope-option' + (scope === 'all' ? ' active' : '');
     }
 
     function openTransArgsPage() {
