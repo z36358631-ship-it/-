@@ -305,7 +305,7 @@
 .prd-tt-body {
   padding: 12px 14px 14px;
   line-height: 1.6;
-  max-height: 420px;
+  max-height: calc(100vh - 40px);
   overflow-y: auto;
 }
 .prd-tt-body::-webkit-scrollbar { width: 4px; }
@@ -442,7 +442,7 @@
     </ul>
     <div class="sec-title">纠错完成后</div>
     <ul>
-      <li>选中参考游戏后：自动返回主视图，启动文件更新为所选游戏在 steam_db 中对应的 exe。</li>
+      <li>选中参考游戏后：自动返回主视图，启动文件更新为所选游戏对应的 exe。</li>
       <li>同步更新弹窗内的<strong>封面图、游戏名称、游戏简介</strong>为所选游戏信息。</li>
       <li>底部 Toast 提示「✓ 已选择 xxx，启动文件更新为 xxx.exe」，2.4s 后消失。</li>
     </ul>
@@ -487,21 +487,21 @@
   <div class="prd-tt-body">
     <div class="sec-title">推荐匹配逻辑</div>
     <ul>
-      <li>数据来源：<strong>steam_db</strong>，以本地检测到的 exe 文件名为 key 查询。</li>
-      <li>匹配规则：exe 文件名<strong>去扩展名后完全相等</strong>（大小写不敏感），精确匹配。</li>
+      <li>系统根据本地检测到的 exe 文件名，在游戏库中精确匹配同名启动文件。</li>
+      <li>匹配规则：exe 文件名<strong>去扩展名后完全相等</strong>（大小写不敏感）。</li>
       <li>排序规则：
         <ol>
-          <li>① <strong>steam 玩家数（owners）降序</strong> — 同名 exe 最热门游戏排首位</li>
-          <li>② 玩家数相同时，<strong>steam_appid 升序</strong>（发行越早越靠前）</li>
+          <li>① <strong>游戏热度降序</strong> — 同名 exe 中最热门的游戏排首位</li>
+          <li>② 热度相同时，<strong>发行时间升序</strong>（越早发行越靠前）</li>
         </ol>
       </li>
       <li>命中多条全部展示，列表区域可滚动。</li>
     </ul>
     <div class="sec-title">列表项展示</div>
     <ul>
-      <li>左侧：游戏封面缩略图（demo 用 emoji 占位，实际取 steam 缩略图）。</li>
+      <li>左侧：游戏封面缩略图（demo 用 emoji 占位，实际取游戏封面图）。</li>
       <li>主文本：游戏名称（搜索时高亮关键词）。</li>
-      <li>副文本：<strong>固定展示当前检测到的 exe</strong>（非该游戏官方 exe），表示"此游戏在 steam_db 中与你的文件同名"。</li>
+      <li>副文本：<strong>固定展示当前检测到的 exe</strong>，表示"该游戏与你本地文件同名"。</li>
     </ul>
     <div class="sec-title">选择交互</div>
     <ul>
@@ -511,7 +511,7 @@
     <div class="sec-title">异常场景</div>
     <ul>
       <li><span class="prd-dot-red"></span><strong>精确匹配无结果：</strong>显示"暂无推荐"空状态，引导使用搜索框。</li>
-      <li><span class="prd-dot-orange"></span><strong>steam_db 请求失败：</strong>显示「加载失败，请重试」，提供重试按钮（后续迭代）。</li>
+      <li><span class="prd-dot-orange"></span><strong>接口请求失败：</strong>显示「加载失败，请重试」，提供重试按钮（后续迭代）。</li>
       <li><span class="prd-dot-blue"></span><strong>列表过长：</strong>容器固定高度内部滚动，不撑开弹窗。</li>
     </ul>
     <blockquote>副文本展示用户本地 exe，目的是让用户确认"这个游戏就是用这个文件启动的"。</blockquote>
@@ -576,8 +576,8 @@ function renderDefault() {
 
   const hint = document.getElementById('sHint');
   hint.innerHTML = matched.length
-    ? `在 steam_db 中找到与 <code style="color:#3db5ff;font-size:11px;">${currentExe}</code> 同名的游戏，选择后将同步封面与信息`
-    : `steam_db 中未找到与 <code style="color:#3db5ff;font-size:11px;">${currentExe}</code> 同名的启动文件，请通过搜索框手动查找`;
+    ? `根据启动文件 <code style="color:#3db5ff;font-size:11px;">${currentExe}</code> 找到以下匹配游戏，选择后将同步封面与信息`
+    : `未找到与 <code style="color:#3db5ff;font-size:11px;">${currentExe}</code> 同名的游戏，请通过搜索框手动查找`;
 
   const list = document.getElementById('rList');
   list.innerHTML = '';
@@ -684,18 +684,27 @@ function showToast(msg) {
   const dragging = {};
 
   function openTT(e, id) {
-    // 取消同 id 的关闭计时
     clearTimeout(closeTimers[id]);
     const tt = document.getElementById('tt-' + id);
     if (!tt) return;
     const badge = e.currentTarget;
-    const rect = badge.getBoundingClientRect();
-    // 优先放左侧，不够则放右侧
-    let left = rect.left - 458;
-    let top  = rect.bottom + 8;
-    if (left < 8) left = rect.right + 8;
-    if (top + 460 > window.innerHeight) top = rect.top - 460;
+    const br = badge.getBoundingClientRect();
+    const ttW = 450, ttH = tt.offsetHeight || 480;
+    const vw = window.innerWidth, vh = window.innerHeight;
+
+    // 优先弹窗左侧；若左侧空间不足则右侧；再不够则叠在弹窗上方
+    let left, top;
+    if (br.left - ttW - 12 >= 8) {
+      left = br.left - ttW - 12;
+    } else if (br.right + 12 + ttW <= vw - 8) {
+      left = br.right + 12;
+    } else {
+      left = Math.max(8, (vw - ttW) / 2);
+    }
+    top = br.top;
+    if (top + ttH > vh - 8) top = vh - ttH - 8;
     if (top < 8) top = 8;
+
     tt.style.left = left + 'px';
     tt.style.top  = top  + 'px';
     tt.classList.add('open');
