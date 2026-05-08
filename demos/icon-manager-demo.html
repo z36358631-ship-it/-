@@ -324,8 +324,6 @@
                 <div class="stats" id="stats-row"></div>
 
                 <!-- ④⑤ 文件列表表格 -->
-                <span class="prd-anchor-wrap" id="anc-4" style="display:block; position:relative;">
-                <span class="prd-anchor-wrap" id="anc-5" style="position:absolute; top:0; left:120px; width:1px; height:1px; display:block;"></span>
                 <div class="table-wrap">
                     <table id="main-table">
                         <thead>
@@ -335,12 +333,12 @@
                                 </th>
                                 <th style="width:80px">ID</th>
                                 <th style="width:60px">内容</th>
-                                <th>名称</th>
+                                <th><span class="prd-anchor-wrap" id="anc-5">名称</span></th>
                                 <th style="width:90px">格式</th>
                                 <th style="width:88px">大小</th>
                                 <th style="width:130px">上传时间</th>
                                 <th style="width:90px">上传人</th>
-                                <th style="width:110px">操作</th>
+                                <th style="width:110px; position:relative;"><span class="prd-anchor-wrap" id="anc-4">操作</span></th>
                             </tr>
                         </thead>
                         <tbody id="tbody"></tbody>
@@ -350,7 +348,6 @@
                         <p>当前目录暂无内容</p>
                     </div>
                 </div>
-                </span><!-- /anc-4 -->
 
                 <!-- 分页 -->
                 <div class="pager" id="pager">
