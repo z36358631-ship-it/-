@@ -910,22 +910,30 @@ render();
      PRD 标注系统
 ════════════════════════════════════════════════ -->
 <style>
+/* 角标：贴在锚点右上角，不遮挡内容主体 */
 .prd-badge {
-    position: fixed;
+    position: absolute;        /* 相对于锚点父容器定位 */
+    top: -9px;
+    right: -9px;
     background: rgb(250,173,20);
     color: #fff;
     font-size: 10px;
     font-weight: bold;
-    padding: 0 4px;
+    padding: 0 5px;
     border-radius: 2px;
     cursor: pointer;
-    z-index: 3000;
+    z-index: 200;
     line-height: 18px;
     height: 18px;
     user-select: none;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    white-space: nowrap;
 }
-.prd-badge:hover { background: rgb(230,150,0); }
+.prd-badge:hover { background: rgb(220,145,0); }
+
+/* 锚点容器需要 relative，方便角标定位 */
+.prd-anchor { position: relative; }
+
 .prd-tooltip {
     position: fixed;
     width: 380px;
@@ -951,10 +959,11 @@ render();
     justify-content: space-between;
     align-items: center;
     cursor: move;
+    user-select: none;
 }
 .prd-tt-hd .prd-tt-close {
     cursor: pointer;
-    font-size: 16px;
+    font-size: 18px;
     line-height: 1;
     opacity: 0.85;
 }
@@ -966,11 +975,13 @@ render();
 
 <script>
 /* ── PRD 标注数据 ─────────────────────────────────── */
+// anchor: 锚点元素 id（角标贴其右上角）
+// ⑥ 批量删除锚定到工具栏静态容器，而非动态显示的 batch-zone
 const PRD_ANNOTATIONS = [
     {
         id: 1,
         anchor: 'prd-filter-row',
-        label: '① 筛选行',
+        label: '① 筛选',
         title: '① 筛选条件区',
         content: `<b>功能说明：</b>支持多维度筛选图标列表<ul>
             <li><b>搜索框：</b>按文件夹名或图标名关键词实时过滤</li>
@@ -978,19 +989,17 @@ const PRD_ANNOTATIONS = [
             <li><b>类型筛选：</b>区分「文件夹」与「图标文件」两种展示模式</li>
             <li><b>重置按钮：</b>一键清空所有筛选条件</li>
         </ul>`,
-        offset: { x: 4, y: 4 }
     },
     {
         id: 2,
         anchor: 'prd-toolbar',
-        label: '② 上传操作',
+        label: '② 上传',
         title: '② 上传工具栏',
         content: `<b>功能说明：</b>两种上传方式，按需选择<ul>
-            <li><b>上传图标：</b>选择单张或多张图片文件（PNG/SVG/WEBP/JPG），上传到当前所在目录</li>
+            <li><b>上传图标：</b>选择单张或多张图片（PNG/SVG/WEBP/JPG），上传到当前所在目录</li>
             <li><b>上传文件夹：</b>选择整个文件夹，自动保留内部多层级目录结构</li>
-            <li>两种方式均支持拖拽上传，并有进度条实时反馈</li>
+            <li>两种方式均支持拖拽上传，上传后有进度条实时反馈</li>
         </ul>`,
-        offset: { x: 4, y: 4 }
     },
     {
         id: 3,
@@ -1000,9 +1009,8 @@ const PRD_ANNOTATIONS = [
         content: `<b>功能说明：</b>展示当前所在目录层级，支持快速跳转<ul>
             <li>点击任意路径段可跳回对应层级目录</li>
             <li>最右侧为当前目录（不可点击）</li>
-            <li>进入文件夹时自动更新；配合「进入」操作使用</li>
+            <li>进入文件夹时自动追加层级；配合「进入」操作使用</li>
         </ul>`,
-        offset: { x: 4, y: 4 }
     },
     {
         id: 4,
@@ -1010,59 +1018,65 @@ const PRD_ANNOTATIONS = [
         label: '④ 文件列表',
         title: '④ 文件列表表格',
         content: `<b>功能说明：</b>统一展示当前目录下的文件夹与图标文件<ul>
-            <li><b>ID：</b>系统自动生成的唯一标识，不代表序号</li>
+            <li><b>ID：</b>系统自动生成的唯一标识</li>
             <li><b>内容：</b>图标缩略图，点击可放大预览</li>
-            <li><b>名称：</b>显示文件名（含扩展名）；文件夹显示子内容统计</li>
-            <li><b>格式：</b>彩色标签标识图片格式</li>
+            <li><b>名称：</b>文件夹显示子内容数量摘要；图标显示文件名+扩展名</li>
+            <li><b>格式：</b>彩色标签标识图片格式（PNG/SVG/WEBP/JPG）</li>
             <li><b>上传时间 / 上传人：</b>记录上传来源，便于追溯</li>
             <li><b>操作：</b>预览 / 删除</li>
         </ul>`,
-        offset: { x: 4, y: 4 }
     },
     {
         id: 5,
         anchor: 'main-table',
         label: '⑤ 文件夹行',
         title: '⑤ 文件夹行交互',
-        content: `<b>功能说明：</b>文件夹作为普通列表项与图标文件混排<ul>
+        content: `<b>功能说明：</b>文件夹与图标文件混排在同一列表中<ul>
             <li>点击文件夹行任意位置 → 进入该文件夹目录</li>
             <li>「进入」按钮与行点击效果相同</li>
-            <li>名称后显示「X个图标，X个子文件夹」的内容摘要</li>
+            <li>名称后显示「X个图标，X个子文件夹」内容摘要</li>
             <li>文件夹始终排在图标文件前面</li>
         </ul>`,
-        offset: { x: 120, y: 4 }
+        /* ⑤ 贴在表格右上角、但向左偏移，避免与 ④ 重叠 */
+        offsetRight: 80,
     },
     {
         id: 6,
-        anchor: 'batch-zone',
+        anchor: 'prd-toolbar',   /* 锚定到工具栏容器（静态元素），而非动态 batch-zone */
         label: '⑥ 批量删除',
         title: '⑥ 批量删除操作',
-        content: `<b>功能说明：</b>勾选后出现批量操作栏<ul>
+        content: `<b>功能说明：</b>勾选列表项后工具栏出现批量操作区<ul>
             <li>列头复选框可全选当前页所有条目</li>
-            <li>勾选任意项后，工具栏区域显示「已选 N 项」及「批量删除」按钮</li>
+            <li>勾选任意项后，上传按钮右侧显示「已选 N 项」及「批量删除」</li>
             <li>删除文件夹时会递归清除其内部全部内容</li>
             <li>点击「取消」清空所有选中状态</li>
         </ul>`,
-        offset: { x: 4, y: 4 }
+        offsetRight: 80,   /* 与 ② 错开 */
     },
 ];
 
 /* ── 标注渲染 ─────────────────────────────────────── */
 (function initAnnotations(){
-    const badges = {};
     const tooltips = {};
     let dragging = null, dragOffX = 0, dragOffY = 0;
 
     PRD_ANNOTATIONS.forEach(ann => {
-        // 徽章
+        const anchor = document.getElementById(ann.anchor);
+        if (!anchor) return;
+
+        // 确保锚点 relative 定位
+        anchor.classList.add('prd-anchor');
+
+        // 角标插入锚点内部（右上角）
         const badge = document.createElement('div');
         badge.className = 'prd-badge';
         badge.id = `prd-badge-${ann.id}`;
         badge.textContent = ann.label;
-        document.body.appendChild(badge);
-        badges[ann.id] = badge;
+        // 多个角标贴同一锚点时向左错开
+        if (ann.offsetRight) badge.style.right = ann.offsetRight + 'px';
+        anchor.appendChild(badge);
 
-        // tooltip
+        // tooltip 挂 body
         const tt = document.createElement('div');
         tt.className = 'prd-tooltip';
         tt.id = `prd-tt-${ann.id}`;
@@ -1075,7 +1089,7 @@ const PRD_ANNOTATIONS = [
         document.body.appendChild(tt);
         tooltips[ann.id] = tt;
 
-        // 拖拽 tooltip
+        // tooltip 拖拽
         tt.querySelector('.prd-tt-hd').addEventListener('mousedown', e => {
             dragging = tt;
             dragOffX = e.clientX - tt.getBoundingClientRect().left;
@@ -1083,58 +1097,32 @@ const PRD_ANNOTATIONS = [
             e.preventDefault();
         });
 
-        // 点击徽章切换 tooltip
+        // 点击角标弹出 tooltip（定位到角标正下方）
         badge.addEventListener('click', e => {
             e.stopPropagation();
             const isOpen = tt.classList.contains('show');
-            // 关闭其他
             Object.values(tooltips).forEach(t => t.classList.remove('show'));
             if (!isOpen) {
                 const br = badge.getBoundingClientRect();
-                tt.style.left = Math.min(br.left, window.innerWidth - 395) + 'px';
+                const left = Math.min(Math.max(br.left, 8), window.innerWidth - 392);
+                tt.style.left = left + 'px';
                 tt.style.top  = (br.bottom + 6) + 'px';
                 tt.classList.add('show');
             }
         });
-
-        ann._badge = badge;
-        ann._tt = tt;
     });
 
-    // 拖拽移动
     document.addEventListener('mousemove', e => {
         if (!dragging) return;
         dragging.style.left = (e.clientX - dragOffX) + 'px';
         dragging.style.top  = (e.clientY - dragOffY) + 'px';
     });
     document.addEventListener('mouseup', () => { dragging = null; });
-
-    // 点击空白关闭
     document.addEventListener('click', () => {
         Object.values(tooltips).forEach(t => t.classList.remove('show'));
     });
 
-    // 定位徽章到锚点
-    function positionBadges(){
-        PRD_ANNOTATIONS.forEach(ann => {
-            const el = document.getElementById(ann.anchor);
-            if (!el) return;
-            const r = el.getBoundingClientRect();
-            ann._badge.style.left = (r.left + (ann.offset?.x || 0)) + 'px';
-            ann._badge.style.top  = (r.top  + (ann.offset?.y || 0)) + 'px';
-        });
-    }
-
-    window.closeTT = id => {
-        document.getElementById(`prd-tt-${id}`)?.classList.remove('show');
-    };
-
-    // 初始定位 + 滚动/resize 时更新
-    positionBadges();
-    window.addEventListener('resize', positionBadges);
-    document.querySelector('.content')?.addEventListener('scroll', positionBadges);
-    // 内容渲染后重新定位（等 JS render() 完成）
-    setTimeout(positionBadges, 300);
+    window.closeTT = id => document.getElementById(`prd-tt-${id}`)?.classList.remove('show');
 })();
 </script>
 
