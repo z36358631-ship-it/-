@@ -442,8 +442,7 @@
     </ul>
     <div class="sec-title">纠错完成后</div>
     <ul>
-      <li>选中参考游戏后：自动返回主视图，启动文件更新为所选游戏对应的 exe。</li>
-      <li>同步更新弹窗内的<strong>封面图、游戏名称、游戏简介</strong>为所选游戏信息。</li>
+      <li>选中参考游戏后：自动返回主视图，同步更新<strong>封面图、游戏名称、游戏简介</strong>；启动文件 exe <strong>保持不变</strong>（该游戏本就与本地文件同名）。</li>
       <li>底部 Toast 提示「✓ 已选择 xxx，启动文件更新为 xxx.exe」，2.4s 后消失。</li>
     </ul>
     <div class="sec-title">异常场景</div>
@@ -642,23 +641,19 @@ function makeItem(g, q) {
   return el;
 }
 
-// 选中游戏：同步封面、名称、简介、exe，返回主视图
+// 选中游戏：同步封面、名称、简介，exe 保持不变（本就是同名文件）
 function pick(g) {
-  // 更新封面
   const img = document.getElementById('coverImgEl');
   img.style.display = 'block';
   img.src = g.cover || '';
   img.onerror = () => { img.style.display = 'none'; };
-  // 更新名称
   const nameInput = document.getElementById('nameInput');
   nameInput.value = g.name;
   document.getElementById('charCount').textContent = `${g.name.length}/10`;
-  // 更新简介
   document.getElementById('descInput').value = g.desc || '';
-  // 更新 exe
-  document.getElementById('exeFilename').textContent = g.exe;
+  // exe 不变，关闭搜索视图
   closeFix();
-  showToast(`✓ 已选择「${g.name}」，启动文件更新为 ${g.exe}`);
+  showToast(`✓ 已选择「${g.name}」`);
 }
 
 function clearS() {
