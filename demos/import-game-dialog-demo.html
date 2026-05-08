@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>导入游戏弹窗</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #1a1f2e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── 弹窗容器，固定宽度，高度随内容 ── */
+  .dialog {
+    background: #252c3d;
+    border-radius: 24px;
+    width: 480px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ── 两个视图面板 ── */
+  .view {
+    width: 100%;
+    padding: 32px 28px 28px;
+  }
+  .view-fix {
+    display: none;
+    width: 100%;
+    /* 搜索视图固定高度，列表可滚动 */
+    height: 560px;
+    flex-direction: column;
+  }
+  .view-fix.active { display: flex; }
+  .view-main.hidden { display: none; }
+
+  /* 关闭/返回按钮 */
+  .top-btn {
+    position: absolute;
+    top: 18px; right: 22px;
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px;
+    z-index: 1;
+  }
+  .top-btn:hover { color: #fff; }
+  .back-btn {
+    position: absolute;
+    top: 18px; left: 22px;
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px;
+    display: none;
+    z-index: 1;
+  }
+  .back-btn.show { display: block; }
+  .back-btn:hover { color: #fff; }
+
+  /* 标题 */
+  .dialog-title {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 24px;
+  }
+
+  /* 封面图 */
+  .cover-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .cover-img {
+    width: 200px; height: 130px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #1a1f2e;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cover-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* 输入框 */
+  .input-wrap {
+    background: #1e2336;
+    border-radius: 14px;
+    padding: 0 20px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    height: 64px;
+  }
+  .input-wrap.desc { height: 64px; }
+  .input-field {
+    flex: 1;
+    background: none; border: none; outline: none;
+    font-size: 20px; font-weight: 500;
+    color: #fff; font-family: inherit;
+    min-width: 0;
+  }
+  .input-field.sm { font-size: 18px; }
+  .input-field::placeholder { color: #555; }
+  .char-count { font-size: 18px; color: #555; flex-shrink: 0; margin-left: 12px; }
+
+  /* 启动文件行 */
+  .exe-wrap {
+    background: #1e2336;
+    border-radius: 14px;
+    padding: 0 20px;
+    margin-bottom: 12px;
+    height: 64px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .exe-label { font-size: 12px; color: #556; white-space: nowrap; }
+  .fix-btn {
+    font-size: 13px; color: #4dabff;
+    background: none; border: none; cursor: pointer;
+    padding: 2px 8px; border-radius: 6px;
+    display: flex; align-items: center; gap: 4px;
+    transition: background 0.15s; white-space: nowrap; flex-shrink: 0;
+  }
+  .fix-btn:hover { background: rgba(77,171,255,0.12); }
+  .exe-filename {
+    font-size: 17px; font-weight: 500;
+    color: #ddd; font-family: 'Consolas', monospace; flex: 1;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* 底部按钮 */
+  .footer { display: flex; gap: 14px; margin-top: 24px; }
+  .btn {
+    flex: 1; height: 60px; border-radius: 16px; border: none;
+    font-size: 20px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s; font-family: inherit;
+  }
+  .btn-cancel { background: #2e3650; color: #bbb; }
+  .btn-cancel:hover { background: #38425e; }
+  .btn-confirm { background: linear-gradient(135deg, #3db5ff, #1a8ee0); color: #fff; }
+  .btn-confirm:hover { opacity: 0.88; }
+
+  /* ══ 搜索视图 ══ */
+  .fix-head {
+    padding: 0 0 16px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .fix-head-title { font-size: 20px; font-weight: 600; color: #fff; }
+
+  .search-row { padding: 0 0 10px; flex-shrink: 0; }
+  .search-inner {
+    display: flex; align-items: center;
+    background: #1e2336;
+    border-radius: 12px; padding: 0 14px;
+    border: 1.5px solid transparent;
+    transition: border-color 0.15s;
+  }
+  .search-inner:focus-within { border-color: #3db5ff; }
+  .s-icon { color: #555; font-size: 16px; margin-right: 8px; flex-shrink: 0; }
+  .s-input {
+    flex: 1; height: 44px;
+    background: none; border: none; outline: none;
+    color: #fff; font-size: 15px; font-family: inherit;
+  }
+  .s-input::placeholder { color: #555; }
+  .s-clear {
+    display: none; width: 20px; height: 20px;
+    border-radius: 50%; background: rgba(255,255,255,0.1);
+    border: none; color: #aaa; font-size: 12px;
+    cursor: pointer; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .s-clear.on { display: flex; }
+  .search-hint { padding: 0 0 8px; font-size: 12px; color: #556; flex-shrink: 0; }
+
+  /* 结果列表 */
+  .rlist {
+    flex: 1;
+    overflow-y: auto;
+    margin: 0 -4px;
+    padding: 0 4px;
+  }
+  .rlist::-webkit-scrollbar { width: 4px; }
+  .rlist::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  .section-lbl {
+    font-size: 11px; color: #556;
+    padding: 6px 4px 4px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .r-empty { padding: 40px; text-align: center; color: #556; font-size: 14px; }
+  .r-loading {
+    padding: 24px; display: flex;
+    align-items: center; justify-content: center;
+    gap: 8px; color: #556; font-size: 13px;
+  }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.12);
+    border-top-color: #3db5ff; border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .r-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 8px; border-radius: 10px;
+    cursor: pointer; transition: background 0.12s; margin-bottom: 2px;
+  }
+  .r-item:hover { background: rgba(255,255,255,0.05); }
+
+  .r-cover {
+    width: 54px; height: 36px; border-radius: 6px;
+    background: #1a1f2e; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  .r-info { flex: 1; min-width: 0; }
+  .r-name {
+    font-size: 14px; color: #e0e0e0; margin-bottom: 3px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .r-name em { font-style: normal; color: #3db5ff; }
+  .r-exe {
+    font-size: 12px; color: #556;
+    font-family: 'Consolas', monospace;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 36px; left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    background: rgba(52,199,89,0.15);
+    border: 1px solid rgba(52,199,89,0.3);
+    color: #34c759; padding: 10px 22px;
+    border-radius: 20px; font-size: 14px;
+    opacity: 0; transition: all 0.3s ease;
+    z-index: 999; pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="overlay">
+  <div class="dialog">
+
+    <!-- 返回按钮（搜索视图时显示） -->
+    <button class="back-btn" id="backBtn" onclick="closeFix()">‹</button>
+    <!-- 关闭按钮 -->
+    <button class="top-btn" onclick="closeDialog()">✕</button>
+
+    <!-- ══ 主视图 ══ -->
+    <div class="view view-main" id="viewMain">
+      <div class="dialog-title">导入游戏</div>
+
+      <div class="cover-wrap">
+        <div class="cover-img">
+          <img
+            src="https://cdn.cloudflare.steamstatic.com/steam/apps/524220/header.jpg"
+            alt="封面"
+            onerror="this.style.display='none'"
+          />
+        </div>
+      </div>
+
+      <div class="input-wrap">
+        <input class="input-field" id="nameInput" type="text"
+          value="尼尔：机械纪元" maxlength="10" placeholder="游戏名称"
+          oninput="updateCharCount()" />
+        <span class="char-count" id="charCount">7/10</span>
+      </div>
+
+      <div class="input-wrap desc">
+        <input class="input-field sm" id="descInput" type="text"
+          value="重新归来，机器之王" placeholder="游戏简介（选填）" />
+      </div>
+
+      <div class="exe-wrap">
+          <span class="exe-label">启动文件</span>
+          <span style="font-size:15px;">⚙️</span>
+          <span class="exe-filename" id="exeFilename">Game.exe</span>
+          <button class="fix-btn" onclick="openFix()">✎ 修改</button>
+      </div>
+
+      <div class="footer">
+        <button class="btn btn-cancel" onclick="closeDialog()">取消</button>
+        <button class="btn btn-confirm" onclick="confirmImport()">确定</button>
+      </div>
+    </div>
+
+    <!-- ══ 搜索纠错视图 ══ -->
+    <div class="view view-fix" id="viewFix">
+      <div class="fix-head">
+        <span class="fix-head-title">选择参考游戏</span>
+      </div>
+
+      <div class="search-row">
+        <div class="search-inner">
+          <span class="s-icon">🔍</span>
+          <input class="s-input" id="sInput"
+            placeholder="搜索游戏名称，如"黑暗之魂""
+            autocomplete="off" oninput="onSearch(this.value)" />
+          <button class="s-clear" id="sClear" onclick="clearS()">✕</button>
+        </div>
+      </div>
+      <div class="search-hint" id="sHint"></div>
+
+      <div class="rlist" id="rList"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const GAMES = [
+  { id:1,  name:'尼尔：机械纪元', nameEn:'NieR: Automata',         exe:'NieRAutomata.exe',      icon:'⚔️' },
+  { id:2,  name:'黑暗之魂 III',   nameEn:'Dark Souls III',          exe:'DarkSoulsIII.exe',      icon:'🔥' },
+  { id:3,  name:'赛博朋克 2077',  nameEn:'Cyberpunk 2077',          exe:'Cyberpunk2077.exe',     icon:'🌆' },
+  { id:4,  name:'艾尔登法环',     nameEn:'Elden Ring',              exe:'eldenring.exe',         icon:'🏔️' },
+  { id:5,  name:'空洞骑士',       nameEn:'Hollow Knight',           exe:'hollow_knight.exe',     icon:'🦋' },
+  { id:6,  name:'死亡搁浅',       nameEn:'Death Stranding',         exe:'ds.exe',                icon:'🌊' },
+  { id:7,  name:'怪物猎人：世界', nameEn:'Monster Hunter: World',   exe:'MonsterHunterWorld.exe',icon:'🐉' },
+  { id:8,  name:'只狼：影逝二度', nameEn:'Sekiro',                  exe:'sekiro.exe',            icon:'⛩️' },
+  { id:9,  name:'鬼泣 5',        nameEn:'Devil May Cry 5',         exe:'DevilMayCry5.exe',      icon:'😈' },
+  { id:10, name:'巫师 3：狂猎',   nameEn:'The Witcher 3',           exe:'witcher3.exe',          icon:'🐺' },
+];
+
+let searchTimer = null;
+
+function updateCharCount() {
+  const v = document.getElementById('nameInput').value;
+  document.getElementById('charCount').textContent = `${v.length}/10`;
+}
+
+function closeDialog() {
+  document.querySelector('.overlay').style.display = 'none';
+}
+
+function confirmImport() {
+  showToast('✓ 游戏导入成功');
+}
+
+function openFix() {
+  document.getElementById('viewMain').classList.add('hidden');
+  document.getElementById('viewFix').classList.add('active');
+  document.getElementById('backBtn').classList.add('show');
+  renderDefault();
+  setTimeout(() => document.getElementById('sInput').focus(), 80);
+}
+
+function closeFix() {
+  document.getElementById('viewFix').classList.remove('active');
+  document.getElementById('viewMain').classList.remove('hidden');
+  document.getElementById('backBtn').classList.remove('show');
+  // 重置搜索框
+  document.getElementById('sInput').value = '';
+  document.getElementById('sClear').classList.remove('on');
+}
+
+function renderDefault() {
+  const currentExe = document.getElementById('exeFilename').textContent.trim();
+  // 推荐逻辑：严格按 exe 文件名（去扩展名）做精确匹配，匹配不到就展示空列表
+  const keyword = currentExe.replace(/\.exe$/i, '').toLowerCase();
+  const matched = keyword
+    ? GAMES.filter(g => g.exe.replace(/\.exe$/i, '').toLowerCase() === keyword)
+    : [];
+
+  const hint = document.getElementById('sHint');
+  hint.innerHTML = matched.length
+    ? `根据启动文件 <code style="color:#3db5ff;font-size:11px;">${currentExe}</code> 匹配到以下游戏，选择后将以该游戏作为参考`
+    : `启动文件 <code style="color:#3db5ff;font-size:11px;">${currentExe}</code> 未匹配到已知游戏，请通过搜索框手动查找`;
+
+  const list = document.getElementById('rList');
+  list.innerHTML = '';
+  const lbl = document.createElement('div');
+  lbl.className = 'section-lbl';
+  lbl.textContent = matched.length ? `推荐匹配（${matched.length} 个）` : '暂无推荐';
+  list.appendChild(lbl);
+  if (!matched.length) {
+    list.innerHTML += `<div class="r-empty">未找到与 ${currentExe} 同名的游戏<br><span style="font-size:12px;color:#445;">请在上方搜索框中输入游戏名称</span></div>`;
+  } else {
+    matched.forEach(g => list.appendChild(makeItem(g, '')));
+  }
+}
+
+function onSearch(val) {
+  document.getElementById('sClear').classList.toggle('on', val.length > 0);
+  clearTimeout(searchTimer);
+  if (!val.trim()) {
+    renderDefault();
+    return;
+  }
+  document.getElementById('rList').innerHTML =
+    '<div class="r-loading"><div class="spinner"></div>搜索中…</div>';
+  document.getElementById('sHint').textContent = '';
+  searchTimer = setTimeout(() => doSearch(val.trim()), 300);
+}
+
+function doSearch(q) {
+  const lo = q.toLowerCase();
+  const hits = GAMES.filter(g =>
+    g.name.toLowerCase().includes(lo) ||
+    g.nameEn.toLowerCase().includes(lo) ||
+    g.exe.toLowerCase().includes(lo)
+  );
+  const list = document.getElementById('rList');
+  list.innerHTML = '';
+  document.getElementById('sHint').textContent = hits.length ? `找到 ${hits.length} 个结果` : '';
+  if (!hits.length) {
+    list.innerHTML = `<div class="r-empty">没有找到"${q}"相关游戏</div>`;
+    return;
+  }
+  const lbl = document.createElement('div');
+  lbl.className = 'section-lbl';
+  lbl.textContent = '搜索结果';
+  list.appendChild(lbl);
+  hits.forEach(g => list.appendChild(makeItem(g, q)));
+}
+
+function makeItem(g, q) {
+  const el = document.createElement('div');
+  el.className = 'r-item';
+  const hl = q
+    ? g.name.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<em>$1</em>')
+    : g.name;
+  el.innerHTML = `
+    <div class="r-cover">${g.icon}</div>
+    <div class="r-info">
+      <div class="r-name">${hl}</div>
+      <div class="r-exe">📁 ${document.getElementById('exeFilename').textContent.trim()}</div>
+    </div>`;
+  el.onclick = () => pick(g);
+  return el;
+}
+
+function pick(g) {
+  document.getElementById('exeFilename').textContent = g.exe;
+  closeFix();
+  showToast(`✓ 启动文件已更新为 ${g.exe}`);
+}
+
+function clearS() {
+  const inp = document.getElementById('sInput');
+  inp.value = '';
+  document.getElementById('sClear').classList.remove('on');
+  document.getElementById('sHint').textContent = '输入游戏名称进行搜索';
+  renderDefault();
+  inp.focus();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+</script>
+</body>
+</html>
