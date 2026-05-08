@@ -393,7 +393,7 @@
       </div>
 
       <!-- [⑤] 搜索框 -->
-      <div class="prd-anchor">
+      <div class="prd-anchor" id="anchor5">
         <div class="search-row">
           <div class="search-inner">
             <span class="s-icon">🔍</span>
@@ -403,14 +403,12 @@
             <button class="s-clear" id="sClear" onclick="clearS()">✕</button>
           </div>
         </div>
-        <span class="prd-badge" id="badge5" onmouseenter="openTT(event,5)" onmouseleave="scheduleTTClose(5)">5</span>
       </div>
       <div class="search-hint" id="sHint"></div>
 
       <!-- [⑥] 结果列表 -->
-      <div class="prd-anchor" style="flex:1;overflow:hidden;">
+      <div id="anchor6" style="flex:1;overflow:hidden;">
         <div class="rlist" id="rList"></div>
-        <span class="prd-badge" id="badge6" onmouseenter="openTT(event,6)" onmouseleave="scheduleTTClose(6)">6</span>
       </div>
     </div>
 
@@ -678,17 +676,63 @@ function showToast(msg) {
   const closeTimers = {};
   const dragging = {};
 
+  // ── 在 body 上创建 ⑤⑥ 角标（避免被 overflow:hidden 裁剪）──
+  function createBodyBadge(id, anchor) {
+    const badge = document.createElement('span');
+    badge.className = 'prd-badge-body';
+    badge.id = 'badge' + id;
+    badge.textContent = id;
+    badge.style.display = 'none';
+    badge.addEventListener('mouseenter', e => openTT(e, id));
+    badge.addEventListener('mouseleave', () => scheduleTTClose(id));
+    document.body.appendChild(badge);
+
+    function reposition() {
+      const r = anchor.getBoundingClientRect();
+      badge.style.top  = (r.top  - 8) + 'px';
+      badge.style.left = (r.right - 4) + 'px';
+    }
+    badge._reposition = reposition;
+    return badge;
+  }
+
+  const badge5 = createBodyBadge(5, document.getElementById('anchor5'));
+  const badge6 = createBodyBadge(6, document.getElementById('anchor6'));
+
+  // openFix / closeFix 完成后同步角标显隐和位置
+  const _origOpenFix  = window.openFix;
+  const _origCloseFix = window.closeFix;
+  window.openFix = function () {
+    _origOpenFix();
+    requestAnimationFrame(() => {
+      badge5._reposition(); badge5.style.display = 'inline-block';
+      badge6._reposition(); badge6.style.display = 'inline-block';
+    });
+  };
+  window.closeFix = function () {
+    _origCloseFix();
+    badge5.style.display = 'none';
+    badge6.style.display = 'none';
+    closeTT(5); closeTT(6);
+  };
+
+  // 窗口 resize 时重新定位
+  window.addEventListener('resize', () => {
+    if (badge5.style.display !== 'none') { badge5._reposition(); badge6._reposition(); }
+  });
+
+  // ── 浮窗定位 ──
   function openTT(e, id) {
     clearTimeout(closeTimers[id]);
     const tt = document.getElementById('tt-' + id);
     if (!tt) return;
     const badge = e.currentTarget;
     const br = badge.getBoundingClientRect();
-    const ttW = 450, ttH = tt.offsetHeight || 480;
+    const ttW = 450;
     const vw = window.innerWidth, vh = window.innerHeight;
 
-    // 优先弹窗左侧；若左侧空间不足则右侧；再不够则叠在弹窗上方
-    let left, top;
+    // 优先弹窗左侧，空间不足则右侧，再不足则居中
+    let left;
     if (br.left - ttW - 12 >= 8) {
       left = br.left - ttW - 12;
     } else if (br.right + 12 + ttW <= vw - 8) {
@@ -696,16 +740,17 @@ function showToast(msg) {
     } else {
       left = Math.max(8, (vw - ttW) / 2);
     }
-    top = br.top;
+    // 顶部对齐角标，超出底部则上移
+    let top = br.top;
+    tt.style.left = left + 'px';
+    tt.style.top  = '8px'; // 先放顶部让浏览器算高度
+    tt.classList.add('open');
+    const ttH = tt.offsetHeight;
     if (top + ttH > vh - 8) top = vh - ttH - 8;
     if (top < 8) top = 8;
-
-    tt.style.left = left + 'px';
-    tt.style.top  = top  + 'px';
-    tt.classList.add('open');
+    tt.style.top = top + 'px';
   }
 
-  // 鼠标离开角标时，延迟 120ms 关闭，给鼠标移入浮窗的时间
   function scheduleTTClose(id) {
     closeTimers[id] = setTimeout(() => closeTT(id), 120);
   }
@@ -719,7 +764,7 @@ function showToast(msg) {
     if (tt) tt.classList.remove('open');
   }
 
-  // 拖拽（仅拖 header 区域）
+  // ── 拖拽（仅 header 区域）──
   document.addEventListener('mousedown', function (e) {
     const tt = e.target.closest('.prd-tooltip');
     if (!tt) return;
@@ -742,14 +787,14 @@ function showToast(msg) {
     document.addEventListener('mouseup', onUp);
   });
 
-  // 阻止浮窗内事件冒泡到页面
+  // 阻止浮窗内事件冒泡
   document.querySelectorAll('.prd-tooltip').forEach(tt => {
     tt.addEventListener('click',     e => e.stopPropagation());
     tt.addEventListener('mousedown', e => e.stopPropagation());
   });
 
-  window.openTT        = openTT;
-  window.closeTT       = closeTT;
+  window.openTT          = openTT;
+  window.closeTT         = closeTT;
   window.scheduleTTClose = scheduleTTClose;
   window.cancelTTClose   = cancelTTClose;
 })();
