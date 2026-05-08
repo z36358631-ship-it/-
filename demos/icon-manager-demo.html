@@ -255,11 +255,12 @@
             <div class="card-body">
 
                 <!-- ① 筛选行 -->
-                <!-- [PRD-1] 筛选行 -->
                 <div class="filter-row" id="prd-filter-row">
                     <div class="fi">
                         <label>搜索</label>
-                        <input type="text" id="inp-search" placeholder="文件夹名 / 图标名" oninput="onFilter()">
+                        <span class="prd-anchor-wrap" id="anc-1">
+                            <input type="text" id="inp-search" placeholder="文件夹名 / 图标名" oninput="onFilter()">
+                        </span>
                     </div>
                     <div class="fi">
                         <label>格式</label>
@@ -285,16 +286,18 @@
                 <div style="height:12px;"></div>
 
                 <!-- ② 工具栏 -->
-                <!-- [PRD-2] 上传工具栏 -->
                 <div class="toolbar" id="prd-toolbar">
                     <div class="toolbar-left">
-                        <!-- 上传按钮 -->
-                        <button class="btn btn-primary" onclick="openUpload('file')">
-                            <i class="fas fa-upload"></i> 上传图标
-                        </button>
-                        <button class="btn btn-default" onclick="openUpload('folder')">
-                            <i class="fas fa-folder-open"></i> 上传文件夹
-                        </button>
+                        <span class="prd-anchor-wrap" id="anc-2">
+                            <button class="btn btn-primary" onclick="openUpload('file')">
+                                <i class="fas fa-upload"></i> 上传图标
+                            </button>
+                        </span>
+                        <span class="prd-anchor-wrap" id="anc-6">
+                            <button class="btn btn-default" onclick="openUpload('folder')">
+                                <i class="fas fa-folder-open"></i> 上传文件夹
+                            </button>
+                        </span>
                         <!-- 批量操作（有选中才显示） -->
                         <div class="batch-zone" id="batch-zone">
                             <span class="batch-info">已选 <span id="batch-n">0</span> 项</span>
@@ -313,15 +316,17 @@
                 <div style="height:14px;"></div>
 
                 <!-- ③ 路径导航 -->
-                <!-- [PRD-3] 路径面包屑导航 -->
-                <div class="path-nav" id="path-nav"></div>
+                <span class="prd-anchor-wrap" id="anc-3" style="display:block;">
+                    <div class="path-nav" id="path-nav"></div>
+                </span>
 
                 <!-- 统计行 -->
                 <div class="stats" id="stats-row"></div>
 
-                <!-- ④ 文件列表表格 -->
-                <!-- [PRD-4] 文件列表表格  [PRD-5] 文件夹行  [PRD-6] 批量删除 -->
+                <!-- ④⑤ 文件列表表格 -->
                 <div class="table-wrap">
+                    <span class="prd-anchor-wrap" id="anc-4" style="display:block; position:relative;">
+                    <span class="prd-anchor-wrap" id="anc-5" style="position:absolute; top:0; left:120px; width:1px; height:1px; display:block;"></span>
                     <table id="main-table">
                         <thead>
                             <tr>
@@ -340,6 +345,7 @@
                         </thead>
                         <tbody id="tbody"></tbody>
                     </table>
+                    </span><!-- /anc-4 -->
                     <div class="empty" id="empty" style="display:none">
                         <i class="fas fa-folder-open"></i>
                         <p>当前目录暂无内容</p>
@@ -910,11 +916,15 @@ render();
      PRD 标注系统
 ════════════════════════════════════════════════ -->
 <style>
-/* 角标：贴在锚点右上角，不遮挡内容主体 */
+/* wrapper：inline-block 使其包裹内容宽度，relative 让角标定位 */
+.prd-anchor-wrap {
+    position: relative;
+    display: inline-block;
+}
 .prd-badge {
-    position: absolute;        /* 相对于锚点父容器定位 */
-    top: -9px;
-    right: -9px;
+    position: absolute;
+    top: -8px;
+    right: -8px;
     background: rgb(250,173,20);
     color: #fff;
     font-size: 10px;
@@ -928,11 +938,9 @@ render();
     user-select: none;
     box-shadow: 0 1px 4px rgba(0,0,0,0.25);
     white-space: nowrap;
+    pointer-events: auto;
 }
 .prd-badge:hover { background: rgb(220,145,0); }
-
-/* 锚点容器需要 relative，方便角标定位 */
-.prd-anchor { position: relative; }
 
 .prd-tooltip {
     position: fixed;
@@ -961,168 +969,131 @@ render();
     cursor: move;
     user-select: none;
 }
-.prd-tt-hd .prd-tt-close {
-    cursor: pointer;
-    font-size: 18px;
-    line-height: 1;
-    opacity: 0.85;
-}
-.prd-tt-hd .prd-tt-close:hover { opacity: 1; }
+.prd-tt-close { cursor: pointer; font-size: 18px; line-height: 1; opacity:.85; }
+.prd-tt-close:hover { opacity: 1; }
 .prd-tt-bd { padding: 12px 14px; line-height: 1.8; }
 .prd-tt-bd ul { padding-left: 16px; margin: 6px 0 0; }
 .prd-tt-bd li { margin-bottom: 4px; }
 </style>
 
 <script>
-/* ── PRD 标注数据 ─────────────────────────────────── */
-// anchor: 锚点元素 id（角标贴其右上角）
-// ⑥ 批量删除锚定到工具栏静态容器，而非动态显示的 batch-zone
 const PRD_ANNOTATIONS = [
     {
-        id: 1,
-        anchor: 'prd-filter-row',
+        id: 1, anchor: 'anc-1',
         label: '① 筛选',
-        title: '① 筛选条件区',
+        title: '① 筛选条件',
         content: `<b>功能说明：</b>支持多维度筛选图标列表<ul>
             <li><b>搜索框：</b>按文件夹名或图标名关键词实时过滤</li>
             <li><b>格式筛选：</b>下拉选择 PNG / SVG / WEBP / JPG，仅对图标文件生效</li>
             <li><b>类型筛选：</b>区分「文件夹」与「图标文件」两种展示模式</li>
-            <li><b>重置按钮：</b>一键清空所有筛选条件</li>
+            <li><b>重置：</b>一键清空所有筛选条件</li>
         </ul>`,
     },
     {
-        id: 2,
-        anchor: 'prd-toolbar',
-        label: '② 上传',
-        title: '② 上传工具栏',
-        content: `<b>功能说明：</b>两种上传方式，按需选择<ul>
-            <li><b>上传图标：</b>选择单张或多张图片（PNG/SVG/WEBP/JPG），上传到当前所在目录</li>
-            <li><b>上传文件夹：</b>选择整个文件夹，自动保留内部多层级目录结构</li>
-            <li>两种方式均支持拖拽上传，上传后有进度条实时反馈</li>
+        id: 2, anchor: 'anc-2',
+        label: '② 上传图标',
+        title: '② 上传图标',
+        content: `<b>功能说明：</b>上传单张或多张图标文件<ul>
+            <li>支持 PNG、SVG、WEBP、JPG，单文件 ≤ 2MB</li>
+            <li>上传到当前所在目录层级</li>
+            <li>支持点击选择或直接拖拽文件到弹窗区域</li>
+            <li>上传后有进度条实时反馈，完成后自动刷新列表</li>
         </ul>`,
     },
     {
-        id: 3,
-        anchor: 'path-nav',
+        id: 3, anchor: 'anc-3',
         label: '③ 路径导航',
         title: '③ 面包屑路径导航',
         content: `<b>功能说明：</b>展示当前所在目录层级，支持快速跳转<ul>
             <li>点击任意路径段可跳回对应层级目录</li>
             <li>最右侧为当前目录（不可点击）</li>
-            <li>进入文件夹时自动追加层级；配合「进入」操作使用</li>
+            <li>进入文件夹时自动追加层级</li>
         </ul>`,
     },
     {
-        id: 4,
-        anchor: 'main-table',
+        id: 4, anchor: 'anc-4',
         label: '④ 文件列表',
         title: '④ 文件列表表格',
         content: `<b>功能说明：</b>统一展示当前目录下的文件夹与图标文件<ul>
             <li><b>ID：</b>系统自动生成的唯一标识</li>
             <li><b>内容：</b>图标缩略图，点击可放大预览</li>
-            <li><b>名称：</b>文件夹显示子内容数量摘要；图标显示文件名+扩展名</li>
-            <li><b>格式：</b>彩色标签标识图片格式（PNG/SVG/WEBP/JPG）</li>
-            <li><b>上传时间 / 上传人：</b>记录上传来源，便于追溯</li>
+            <li><b>名称：</b>文件夹显示子内容数量；图标显示文件名+扩展名</li>
+            <li><b>格式：</b>彩色标签标识 PNG/SVG/WEBP/JPG</li>
+            <li><b>上传时间 / 上传人：</b>记录来源，便于追溯</li>
             <li><b>操作：</b>预览 / 删除</li>
         </ul>`,
     },
     {
-        id: 5,
-        anchor: 'main-table',
+        id: 5, anchor: 'anc-5',
         label: '⑤ 文件夹行',
         title: '⑤ 文件夹行交互',
-        content: `<b>功能说明：</b>文件夹与图标文件混排在同一列表中<ul>
-            <li>点击文件夹行任意位置 → 进入该文件夹目录</li>
+        content: `<b>功能说明：</b>文件夹与图标文件在同一列表中混排<ul>
+            <li>点击文件夹行任意位置 → 进入该子目录</li>
             <li>「进入」按钮与行点击效果相同</li>
             <li>名称后显示「X个图标，X个子文件夹」内容摘要</li>
-            <li>文件夹始终排在图标文件前面</li>
+            <li>文件夹始终置于图标文件前面</li>
         </ul>`,
-        /* ⑤ 贴在表格右上角、但向左偏移，避免与 ④ 重叠 */
-        offsetRight: 80,
     },
     {
-        id: 6,
-        anchor: 'prd-toolbar',   /* 锚定到工具栏容器（静态元素），而非动态 batch-zone */
+        id: 6, anchor: 'anc-6',
         label: '⑥ 批量删除',
         title: '⑥ 批量删除操作',
         content: `<b>功能说明：</b>勾选列表项后工具栏出现批量操作区<ul>
             <li>列头复选框可全选当前页所有条目</li>
-            <li>勾选任意项后，上传按钮右侧显示「已选 N 项」及「批量删除」</li>
-            <li>删除文件夹时会递归清除其内部全部内容</li>
+            <li>勾选任意项后，工具栏显示「已选 N 项」及「批量删除」按钮</li>
+            <li>删除文件夹时递归清除其内部全部内容</li>
             <li>点击「取消」清空所有选中状态</li>
         </ul>`,
-        offsetRight: 80,   /* 与 ② 错开 */
     },
 ];
 
-/* ── 标注渲染 ─────────────────────────────────────── */
-(function initAnnotations(){
-    const tooltips = {};
-    let dragging = null, dragOffX = 0, dragOffY = 0;
+(function initPRD(){
+    const tips = {};
+    let drag = null, dx = 0, dy = 0;
 
     PRD_ANNOTATIONS.forEach(ann => {
-        const anchor = document.getElementById(ann.anchor);
-        if (!anchor) return;
+        const wrap = document.getElementById(ann.anchor);
+        if (!wrap) return;
 
-        // 确保锚点 relative 定位
-        anchor.classList.add('prd-anchor');
-
-        // 角标插入锚点内部（右上角）
         const badge = document.createElement('div');
         badge.className = 'prd-badge';
-        badge.id = `prd-badge-${ann.id}`;
         badge.textContent = ann.label;
-        // 多个角标贴同一锚点时向左错开
-        if (ann.offsetRight) badge.style.right = ann.offsetRight + 'px';
-        anchor.appendChild(badge);
+        wrap.appendChild(badge);
 
-        // tooltip 挂 body
         const tt = document.createElement('div');
         tt.className = 'prd-tooltip';
-        tt.id = `prd-tt-${ann.id}`;
-        tt.innerHTML = `
-            <div class="prd-tt-hd">
-                <span>${ann.title}</span>
-                <span class="prd-tt-close" onclick="closeTT(${ann.id})">×</span>
-            </div>
-            <div class="prd-tt-bd">${ann.content}</div>`;
+        tt.innerHTML = `<div class="prd-tt-hd"><span>${ann.title}</span><span class="prd-tt-close" data-id="${ann.id}">×</span></div><div class="prd-tt-bd">${ann.content}</div>`;
         document.body.appendChild(tt);
-        tooltips[ann.id] = tt;
+        tips[ann.id] = tt;
 
-        // tooltip 拖拽
         tt.querySelector('.prd-tt-hd').addEventListener('mousedown', e => {
-            dragging = tt;
-            dragOffX = e.clientX - tt.getBoundingClientRect().left;
-            dragOffY = e.clientY - tt.getBoundingClientRect().top;
-            e.preventDefault();
+            drag = tt; dx = e.clientX - tt.getBoundingClientRect().left;
+            dy = e.clientY - tt.getBoundingClientRect().top; e.preventDefault();
+        });
+        tt.querySelector('.prd-tt-close').addEventListener('click', e => {
+            e.stopPropagation(); tt.classList.remove('show');
         });
 
-        // 点击角标弹出 tooltip（定位到角标正下方）
         badge.addEventListener('click', e => {
             e.stopPropagation();
-            const isOpen = tt.classList.contains('show');
-            Object.values(tooltips).forEach(t => t.classList.remove('show'));
-            if (!isOpen) {
-                const br = badge.getBoundingClientRect();
-                const left = Math.min(Math.max(br.left, 8), window.innerWidth - 392);
-                tt.style.left = left + 'px';
-                tt.style.top  = (br.bottom + 6) + 'px';
+            const open = tt.classList.contains('show');
+            Object.values(tips).forEach(t => t.classList.remove('show'));
+            if (!open) {
+                const r = badge.getBoundingClientRect();
+                tt.style.left = Math.min(Math.max(r.left - 8, 8), window.innerWidth - 392) + 'px';
+                tt.style.top  = (r.bottom + 6) + 'px';
                 tt.classList.add('show');
             }
         });
     });
 
     document.addEventListener('mousemove', e => {
-        if (!dragging) return;
-        dragging.style.left = (e.clientX - dragOffX) + 'px';
-        dragging.style.top  = (e.clientY - dragOffY) + 'px';
+        if (!drag) return;
+        drag.style.left = (e.clientX - dx) + 'px';
+        drag.style.top  = (e.clientY - dy) + 'px';
     });
-    document.addEventListener('mouseup', () => { dragging = null; });
-    document.addEventListener('click', () => {
-        Object.values(tooltips).forEach(t => t.classList.remove('show'));
-    });
-
-    window.closeTT = id => document.getElementById(`prd-tt-${id}`)?.classList.remove('show');
+    document.addEventListener('mouseup', () => { drag = null; });
+    document.addEventListener('click', () => Object.values(tips).forEach(t => t.classList.remove('show')));
 })();
 </script>
 
