@@ -336,6 +336,28 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// =============================================================
+// Demo: 导入游戏弹窗 — 启动文件纠错流程
+//
+// 【数据来源】
+//   GAMES 模拟 steam_db 中的游戏记录。
+//   实际接入时，由后端查询 steam_db，以用户本地扫描到的
+//   exe 文件名为 key，返回同名启动文件对应的游戏列表。
+//
+// 【推荐匹配规则】（renderDefault）
+//   1. 取当前检测到的 exe 文件名（如 Game.exe），去掉扩展名得到 keyword
+//   2. 在 steam_db 中查找 exe 字段与 keyword 完全相同（大小写不敏感）的记录
+//   3. 多条命中时排序规则：
+//      ① steam 玩家数（owners）降序 —— 同名 exe 中最热门的游戏排前
+//      ② 若玩家数相同，按 steam_appid 升序（发行越早越靠前）
+//   4. 无命中时列表为空，引导用户通过搜索框手动输入
+//
+// 【搜索规则】（doSearch）
+//   用户输入关键词后，在游戏名（中/英）及 exe 字段做模糊匹配，
+//   结果按名称与关键词的字符重合度降序排列（实际可接 Algolia/ES）
+// =============================================================
+
+// Demo: GAMES 模拟 steam_db 数据，字段对应 steam_db.exe / name / appid
 const GAMES = [
   { id:1,  name:'尼尔：机械纪元', nameEn:'NieR: Automata',         exe:'NieRAutomata.exe',      icon:'⚔️' },
   { id:2,  name:'黑暗之魂 III',   nameEn:'Dark Souls III',          exe:'DarkSoulsIII.exe',      icon:'🔥' },
@@ -351,6 +373,7 @@ const GAMES = [
 
 let searchTimer = null;
 
+// Demo: 游戏名称字数统计（上限10字）
 function updateCharCount() {
   const v = document.getElementById('nameInput').value;
   document.getElementById('charCount').textContent = `${v.length}/10`;
@@ -360,10 +383,12 @@ function closeDialog() {
   document.querySelector('.overlay').style.display = 'none';
 }
 
+// Demo: 确认导入 — 实际触发写入游戏库接口
 function confirmImport() {
   showToast('✓ 游戏导入成功');
 }
 
+// Demo: 点击「修改」→ 切换到搜索纠错视图（同弹窗内切换，不叠层）
 function openFix() {
   document.getElementById('viewMain').classList.add('hidden');
   document.getElementById('viewFix').classList.add('active');
@@ -372,27 +397,32 @@ function openFix() {
   setTimeout(() => document.getElementById('sInput').focus(), 80);
 }
 
+// Demo: 返回主视图，重置搜索框状态
 function closeFix() {
   document.getElementById('viewFix').classList.remove('active');
   document.getElementById('viewMain').classList.remove('hidden');
   document.getElementById('backBtn').classList.remove('show');
-  // 重置搜索框
   document.getElementById('sInput').value = '';
   document.getElementById('sClear').classList.remove('on');
 }
 
+// Demo: 推荐列表渲染
+// 匹配逻辑：以当前检测到的 exe 文件名在 steam_db 中做同名精确匹配
+// 排序规则：① steam 玩家数降序  ② appid 升序（demo 中按数组原始顺序模拟）
 function renderDefault() {
   const currentExe = document.getElementById('exeFilename').textContent.trim();
-  // 推荐逻辑：严格按 exe 文件名（去扩展名）做精确匹配，匹配不到就展示空列表
   const keyword = currentExe.replace(/\.exe$/i, '').toLowerCase();
+
+  // 精确匹配：exe 去扩展名后完全相等（大小写不敏感）
   const matched = keyword
     ? GAMES.filter(g => g.exe.replace(/\.exe$/i, '').toLowerCase() === keyword)
     : [];
+  // Demo: 实际排序由后端按 steam owners 降序 + appid 升序返回，前端直接渲染
 
   const hint = document.getElementById('sHint');
   hint.innerHTML = matched.length
-    ? `根据启动文件 <code style="color:#3db5ff;font-size:11px;">${currentExe}</code> 匹配到以下游戏，选择后将以该游戏作为参考`
-    : `启动文件 <code style="color:#3db5ff;font-size:11px;">${currentExe}</code> 未匹配到已知游戏，请通过搜索框手动查找`;
+    ? `在 steam_db 中找到与 <code style="color:#3db5ff;font-size:11px;">${currentExe}</code> 同名的游戏，选择后将以该游戏作为参考`
+    : `steam_db 中未找到与 <code style="color:#3db5ff;font-size:11px;">${currentExe}</code> 同名的启动文件，请通过搜索框手动查找`;
 
   const list = document.getElementById('rList');
   list.innerHTML = '';
@@ -407,6 +437,7 @@ function renderDefault() {
   }
 }
 
+// Demo: 搜索输入防抖 300ms
 function onSearch(val) {
   document.getElementById('sClear').classList.toggle('on', val.length > 0);
   clearTimeout(searchTimer);
@@ -420,6 +451,8 @@ function onSearch(val) {
   searchTimer = setTimeout(() => doSearch(val.trim()), 300);
 }
 
+// Demo: 搜索逻辑 — 对游戏名（中/英）及 exe 字段做模糊包含匹配
+// 实际按字符重合度降序排列（demo 中按匹配顺序模拟）
 function doSearch(q) {
   const lo = q.toLowerCase();
   const hits = GAMES.filter(g =>
@@ -441,6 +474,7 @@ function doSearch(q) {
   hits.forEach(g => list.appendChild(makeItem(g, q)));
 }
 
+// Demo: 列表项渲染，启动文件固定展示当前检测到的 exe（非游戏自身的 exe）
 function makeItem(g, q) {
   const el = document.createElement('div');
   el.className = 'r-item';
@@ -457,6 +491,7 @@ function makeItem(g, q) {
   return el;
 }
 
+// Demo: 勾选即应用 — 选中游戏后同步其 exe 到主视图，自动返回
 function pick(g) {
   document.getElementById('exeFilename').textContent = g.exe;
   closeFix();
@@ -467,7 +502,6 @@ function clearS() {
   const inp = document.getElementById('sInput');
   inp.value = '';
   document.getElementById('sClear').classList.remove('on');
-  document.getElementById('sHint').textContent = '输入游戏名称进行搜索';
   renderDefault();
   inp.focus();
 }
