@@ -286,6 +286,7 @@
                 <div style="height:12px;"></div>
 
                 <!-- ② 工具栏 -->
+                <span class="prd-anchor-wrap" id="anc-6" style="display:block;">
                 <div class="toolbar" id="prd-toolbar">
                     <div class="toolbar-left">
                         <span class="prd-anchor-wrap" id="anc-2">
@@ -293,11 +294,9 @@
                                 <i class="fas fa-upload"></i> 上传图标
                             </button>
                         </span>
-                        <span class="prd-anchor-wrap" id="anc-6">
-                            <button class="btn btn-default" onclick="openUpload('folder')">
-                                <i class="fas fa-folder-open"></i> 上传文件夹
-                            </button>
-                        </span>
+                        <button class="btn btn-default" onclick="openUpload('folder')">
+                            <i class="fas fa-folder-open"></i> 上传文件夹
+                        </button>
                         <!-- 批量操作（有选中才显示） -->
                         <div class="batch-zone" id="batch-zone">
                             <span class="batch-info">已选 <span id="batch-n">0</span> 项</span>
@@ -309,6 +308,7 @@
                     </div>
                     <div class="toolbar-right"></div>
                 </div>
+                </span><!-- /anc-6 -->
 
                 <!-- 上传进度（展开在工具栏下） -->
                 <div class="upload-progress" id="up-progress"></div>
@@ -324,9 +324,9 @@
                 <div class="stats" id="stats-row"></div>
 
                 <!-- ④⑤ 文件列表表格 -->
+                <span class="prd-anchor-wrap" id="anc-4" style="display:block; position:relative;">
+                <span class="prd-anchor-wrap" id="anc-5" style="position:absolute; top:0; left:120px; width:1px; height:1px; display:block;"></span>
                 <div class="table-wrap">
-                    <span class="prd-anchor-wrap" id="anc-4" style="display:block; position:relative;">
-                    <span class="prd-anchor-wrap" id="anc-5" style="position:absolute; top:0; left:120px; width:1px; height:1px; display:block;"></span>
                     <table id="main-table">
                         <thead>
                             <tr>
@@ -345,12 +345,12 @@
                         </thead>
                         <tbody id="tbody"></tbody>
                     </table>
-                    </span><!-- /anc-4 -->
                     <div class="empty" id="empty" style="display:none">
                         <i class="fas fa-folder-open"></i>
                         <p>当前目录暂无内容</p>
                     </div>
                 </div>
+                </span><!-- /anc-4 -->
 
                 <!-- 分页 -->
                 <div class="pager" id="pager">
@@ -920,6 +920,7 @@ render();
 .prd-anchor-wrap {
     position: relative;
     display: inline-block;
+    overflow: visible;
 }
 .prd-badge {
     position: absolute;
