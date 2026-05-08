@@ -25,7 +25,6 @@
     justify-content: center;
   }
 
-  /* ── 弹窗容器，固定宽度，高度随内容 ── */
   .dialog {
     background: #252c3d;
     border-radius: 24px;
@@ -34,7 +33,6 @@
     overflow: hidden;
   }
 
-  /* ── 两个视图面板 ── */
   .view {
     width: 100%;
     padding: 32px 28px 28px;
@@ -42,53 +40,37 @@
   .view-fix {
     display: none;
     width: 100%;
-    /* 搜索视图固定高度，列表可滚动 */
     height: 560px;
     flex-direction: column;
   }
   .view-fix.active { display: flex; }
   .view-main.hidden { display: none; }
 
-  /* 关闭/返回按钮 */
   .top-btn {
     position: absolute;
     top: 18px; right: 22px;
-    background: none;
-    border: none;
-    color: #ccc;
-    font-size: 22px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 2px;
-    z-index: 1;
+    background: none; border: none;
+    color: #ccc; font-size: 22px;
+    cursor: pointer; line-height: 1; padding: 2px; z-index: 1;
   }
   .top-btn:hover { color: #fff; }
   .back-btn {
     position: absolute;
     top: 18px; left: 22px;
-    background: none;
-    border: none;
-    color: #aaa;
-    font-size: 20px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 2px;
-    display: none;
-    z-index: 1;
+    background: none; border: none;
+    color: #aaa; font-size: 20px;
+    cursor: pointer; line-height: 1; padding: 2px;
+    display: none; z-index: 1;
   }
   .back-btn.show { display: block; }
   .back-btn:hover { color: #fff; }
 
-  /* 标题 */
   .dialog-title {
     text-align: center;
-    font-size: 20px;
-    font-weight: 600;
-    color: #fff;
+    font-size: 20px; font-weight: 600; color: #fff;
     margin-bottom: 24px;
   }
 
-  /* 封面图 */
   .cover-wrap {
     display: flex;
     justify-content: center;
@@ -96,30 +78,25 @@
   }
   .cover-img {
     width: 200px; height: 130px;
-    border-radius: 12px;
-    overflow: hidden;
+    border-radius: 12px; overflow: hidden;
     background: #1a1f2e;
     display: flex; align-items: center; justify-content: center;
   }
   .cover-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-  /* 输入框 */
   .input-wrap {
     background: #1e2336;
     border-radius: 14px;
     padding: 0 20px;
     margin-bottom: 12px;
-    display: flex;
-    align-items: center;
+    display: flex; align-items: center;
     height: 64px;
   }
-  .input-wrap.desc { height: 64px; }
   .input-field {
     flex: 1;
     background: none; border: none; outline: none;
     font-size: 20px; font-weight: 500;
-    color: #fff; font-family: inherit;
-    min-width: 0;
+    color: #fff; font-family: inherit; min-width: 0;
   }
   .input-field.sm { font-size: 18px; }
   .input-field::placeholder { color: #555; }
@@ -149,7 +126,6 @@
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
 
-  /* 底部按钮 */
   .footer { display: flex; gap: 14px; margin-top: 24px; }
   .btn {
     flex: 1; height: 60px; border-radius: 16px; border: none;
@@ -161,7 +137,7 @@
   .btn-confirm { background: linear-gradient(135deg, #3db5ff, #1a8ee0); color: #fff; }
   .btn-confirm:hover { opacity: 0.88; }
 
-  /* ══ 搜索视图 ══ */
+  /* 搜索视图 */
   .fix-head {
     padding: 0 0 16px;
     display: flex; align-items: center; justify-content: center;
@@ -194,12 +170,9 @@
   .s-clear.on { display: flex; }
   .search-hint { padding: 0 0 8px; font-size: 12px; color: #556; flex-shrink: 0; }
 
-  /* 结果列表 */
   .rlist {
-    flex: 1;
-    overflow-y: auto;
-    margin: 0 -4px;
-    padding: 0 4px;
+    flex: 1; overflow-y: auto;
+    margin: 0 -4px; padding: 0 4px;
   }
   .rlist::-webkit-scrollbar { width: 4px; }
   .rlist::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
@@ -247,7 +220,6 @@
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
 
-  /* Toast */
   .toast {
     position: fixed; bottom: 36px; left: 50%;
     transform: translateX(-50%) translateY(16px);
@@ -261,9 +233,7 @@
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 
-<!-- ══════════════════════════════════════════
-     PRD 标注系统样式
-══════════════════════════════════════════ -->
+<!-- PRD 标注系统样式 -->
 <style>
 .prd-badge {
   display: inline-block;
@@ -276,14 +246,27 @@
   border-radius: 2px;
   cursor: pointer;
   position: absolute;
-  top: -8px;
-  right: -4px;
+  top: -8px; right: -4px;
+  z-index: 8000;
+  user-select: none;
+}
+/* ④ 角标挂在 body 上，通过 JS 定位，避免被 overflow:hidden 裁剪 */
+.prd-badge-body {
+  display: inline-block;
+  background: rgb(250,173,20);
+  color: #fff;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 14px;
+  padding: 0 4px;
+  border-radius: 2px;
+  cursor: pointer;
+  position: fixed;
   z-index: 8000;
   user-select: none;
 }
 .prd-anchor {
   position: relative;
-  display: inline-block;
 }
 .prd-tooltip {
   position: fixed;
@@ -300,38 +283,23 @@
 }
 .prd-tooltip.open { display: block; }
 .prd-tt-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between;
   padding: 10px 14px 8px;
   border-bottom: 1px solid #ddd;
 }
 .prd-tt-title {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #222;
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13px; font-weight: 600; color: #222;
 }
 .prd-tt-num {
   display: inline-block;
   background: rgb(250,173,20);
-  color: #fff;
-  font-size: 10px;
-  font-weight: bold;
-  line-height: 14px;
-  padding: 0 4px;
-  border-radius: 2px;
+  color: #fff; font-size: 10px; font-weight: bold;
+  line-height: 14px; padding: 0 4px; border-radius: 2px;
 }
 .prd-tt-close {
-  background: none;
-  border: none;
-  font-size: 16px;
-  color: #888;
-  cursor: pointer;
-  line-height: 1;
-  padding: 0 2px;
+  background: none; border: none;
+  font-size: 16px; color: #888; cursor: pointer; line-height: 1; padding: 0 2px;
 }
 .prd-tt-close:hover { color: #333; }
 .prd-tt-body {
@@ -347,86 +315,69 @@
 .prd-tt-body ol { margin: 0 0 10px 18px; }
 .prd-tt-body li { margin-bottom: 4px; }
 .prd-tt-body strong { font-weight: 600; }
-.prd-tt-body em    { font-style: italic; }
+.prd-tt-body em { font-style: italic; }
 .prd-tt-body blockquote {
-  border-left: 3px solid #bbb;
-  background: #e8e8e8;
-  margin: 0 0 10px 0;
-  padding: 6px 10px;
-  color: #555;
-  border-radius: 0 3px 3px 0;
+  border-left: 3px solid #bbb; background: #e8e8e8;
+  margin: 0 0 10px 0; padding: 6px 10px;
+  color: #555; border-radius: 0 3px 3px 0;
 }
 .prd-tt-body .sec-title {
-  font-weight: 600;
-  color: #444;
-  margin: 10px 0 4px;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  font-weight: 600; color: #444;
+  margin: 10px 0 4px; font-size: 12px;
+  text-transform: uppercase; letter-spacing: 0.4px;
 }
-.prd-dot-green  { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #52c41a; margin-right: 4px; vertical-align: middle; }
-.prd-dot-red    { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ff4d4f; margin-right: 4px; vertical-align: middle; }
-.prd-dot-orange { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: rgb(250,173,20); margin-right: 4px; vertical-align: middle; }
-.prd-dot-blue   { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #1890ff; margin-right: 4px; vertical-align: middle; }
+.prd-dot-green  { display:inline-block;width:8px;height:8px;border-radius:50%;background:#52c41a;margin-right:4px;vertical-align:middle; }
+.prd-dot-red    { display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff4d4f;margin-right:4px;vertical-align:middle; }
+.prd-dot-orange { display:inline-block;width:8px;height:8px;border-radius:50%;background:rgb(250,173,20);margin-right:4px;vertical-align:middle; }
+.prd-dot-blue   { display:inline-block;width:8px;height:8px;border-radius:50%;background:#1890ff;margin-right:4px;vertical-align:middle; }
 </style>
 </head>
 <body>
 
 <div class="overlay">
-  <div class="dialog">
+  <div class="dialog" id="mainDialog">
 
-    <!-- 返回按钮（搜索视图时显示） -->
     <button class="back-btn" id="backBtn" onclick="closeFix()">‹</button>
-    <!-- 关闭按钮 -->
     <button class="top-btn" onclick="closeDialog()">✕</button>
 
     <!-- ══ 主视图 ══ -->
     <div class="view view-main" id="viewMain">
       <div class="dialog-title">导入游戏</div>
 
-      <!-- [1] 游戏封面 -->
+      <!-- 封面（无标注） -->
       <div class="cover-wrap">
-        <div class="prd-anchor">
-          <div class="cover-img">
-            <img
-              src="https://cdn.cloudflare.steamstatic.com/steam/apps/524220/header.jpg"
-              alt="封面"
-              onerror="this.style.display='none'"
-            />
-          </div>
-          <span class="prd-badge" onmouseenter="openTT(event,1)">1</span>
+        <div class="cover-img" id="coverImg">
+          <img id="coverImgEl"
+            src="https://cdn.cloudflare.steamstatic.com/steam/apps/524220/header.jpg"
+            alt="封面"
+            onerror="this.style.display='none'"
+          />
         </div>
       </div>
 
-      <!-- [2] 游戏名称 -->
-      <div class="prd-anchor" style="display:block;">
-        <div class="input-wrap">
-          <input class="input-field" id="nameInput" type="text"
-            value="尼尔：机械纪元" maxlength="10" placeholder="游戏名称"
-            oninput="updateCharCount()" />
-          <span class="char-count" id="charCount">7/10</span>
-        </div>
-        <span class="prd-badge" onmouseenter="openTT(event,2)">2</span>
+      <!-- 游戏名称（无标注） -->
+      <div class="input-wrap">
+        <input class="input-field" id="nameInput" type="text"
+          value="尼尔：机械纪元" maxlength="10" placeholder="游戏名称"
+          oninput="updateCharCount()" />
+        <span class="char-count" id="charCount">7/10</span>
       </div>
 
-      <!-- [3] 游戏简介 -->
-      <div class="prd-anchor" style="display:block;">
-        <div class="input-wrap desc">
-          <input class="input-field sm" id="descInput" type="text"
-            value="重新归来，机器之王" placeholder="游戏简介（选填）" />
-        </div>
-        <span class="prd-badge" onmouseenter="openTT(event,3)">3</span>
+      <!-- 游戏简介（无标注） -->
+      <div class="input-wrap">
+        <input class="input-field sm" id="descInput" type="text"
+          value="重新归来，机器之王" placeholder="游戏简介（选填）" />
       </div>
 
-      <!-- [4] 启动文件行 -->
-      <div class="prd-anchor" style="display:block;">
+      <!-- [④] 启动文件行 — anchor 挂在这里 -->
+      <div class="prd-anchor" id="exeAnchor">
         <div class="exe-wrap">
-            <span class="exe-label">启动文件</span>
-            <span style="font-size:15px;">⚙️</span>
-            <span class="exe-filename" id="exeFilename">Game.exe</span>
-            <button class="fix-btn" onclick="openFix()">✎ 修改</button>
+          <span class="exe-label">启动文件</span>
+          <span style="font-size:15px;">⚙️</span>
+          <span class="exe-filename" id="exeFilename">Game.exe</span>
+          <button class="fix-btn" onclick="openFix()">✎ 修改</button>
         </div>
-        <span class="prd-badge" onmouseenter="openTT(event,4)">4</span>
+        <span class="prd-badge" id="badge4" onmouseenter="openTT(event,4)" onmouseleave="scheduleTTClose(4)">4</span>
       </div>
 
       <div class="footer">
@@ -437,12 +388,12 @@
 
     <!-- ══ 搜索纠错视图 ══ -->
     <div class="view view-fix" id="viewFix">
-      <!-- [5] 搜索框 -->
       <div class="fix-head">
         <span class="fix-head-title">选择参考游戏</span>
       </div>
 
-      <div class="prd-anchor" style="display:block;">
+      <!-- [⑤] 搜索框 -->
+      <div class="prd-anchor">
         <div class="search-row">
           <div class="search-inner">
             <span class="s-icon">🔍</span>
@@ -452,14 +403,14 @@
             <button class="s-clear" id="sClear" onclick="clearS()">✕</button>
           </div>
         </div>
-        <span class="prd-badge" onmouseenter="openTT(event,5)">5</span>
+        <span class="prd-badge" id="badge5" onmouseenter="openTT(event,5)" onmouseleave="scheduleTTClose(5)">5</span>
       </div>
       <div class="search-hint" id="sHint"></div>
 
-      <!-- [6] 推荐/搜索结果列表 -->
-      <div class="prd-anchor" style="display:block;flex:1;overflow:hidden;">
+      <!-- [⑥] 结果列表 -->
+      <div class="prd-anchor" style="flex:1;overflow:hidden;">
         <div class="rlist" id="rList"></div>
-        <span class="prd-badge" onmouseenter="openTT(event,6)">6</span>
+        <span class="prd-badge" id="badge6" onmouseenter="openTT(event,6)" onmouseleave="scheduleTTClose(6)">6</span>
       </div>
     </div>
 
@@ -468,110 +419,43 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- ══════════════════════════════════════════
-     PRD 标注浮窗（共6个）
-══════════════════════════════════════════ -->
+<!-- ══ PRD 浮窗 ④⑤⑥ ══ -->
 
-<!-- 浮窗 1：游戏封面 -->
-<div class="prd-tooltip" id="tt-1">
-  <div class="prd-tt-header">
-    <div class="prd-tt-title"><span class="prd-tt-num">1</span>需求说明：游戏封面</div>
-    <button class="prd-tt-close" onclick="closeTT(1)">✕</button>
-  </div>
-  <div class="prd-tt-body">
-    <div class="sec-title">显示规则</div>
-    <ul>
-      <li>封面图由系统根据用户导入的游戏路径<strong>自动抓取</strong>，优先取 steam 封面（横版 460×215px）。</li>
-      <li>若抓取失败或无网络，展示<strong>灰色占位图</strong>，不影响后续填写与提交。</li>
-      <li>封面为<strong>只读展示</strong>，用户不可手动上传或替换（当前版本）。</li>
-    </ul>
-    <div class="sec-title">异常场景</div>
-    <ul>
-      <li><span class="prd-dot-red"></span><strong>图片加载失败：</strong>隐藏 img 标签，容器保持原尺寸显示灰色背景，不报错。</li>
-      <li><span class="prd-dot-orange"></span><strong>非 Steam 游戏：</strong>无封面来源，直接展示占位图。</li>
-    </ul>
-    <blockquote>封面仅用于视觉确认，不影响导入逻辑，后续版本可考虑支持手动上传。</blockquote>
-  </div>
-</div>
-
-<!-- 浮窗 2：游戏名称 -->
-<div class="prd-tooltip" id="tt-2">
-  <div class="prd-tt-header">
-    <div class="prd-tt-title"><span class="prd-tt-num">2</span>需求说明：游戏名称</div>
-    <button class="prd-tt-close" onclick="closeTT(2)">✕</button>
-  </div>
-  <div class="prd-tt-body">
-    <div class="sec-title">交互规则</div>
-    <ul>
-      <li>用户<strong>手动输入</strong>游戏名称，默认预填系统识别结果（如有）。</li>
-      <li>字数上限 <strong>10 字</strong>，右侧实时展示 <strong>已输入/10</strong> 计数。</li>
-      <li>超出 10 字时输入框自动截断，不允许继续输入。</li>
-    </ul>
-    <div class="sec-title">校验规则</div>
-    <ul>
-      <li><span class="prd-dot-red"></span><strong>为空时点击确定：</strong>输入框高亮红色边框，提示"游戏名称不能为空"，阻止提交。</li>
-      <li><span class="prd-dot-orange"></span><strong>全空格：</strong>视为空，触发同上校验。</li>
-      <li><span class="prd-dot-green"></span><strong>合法输入：</strong>1–10 字，允许中英文、数字、符号。</li>
-    </ul>
-    <div class="sec-title">备注</div>
-    <p>该名称将作为游戏库中的展示名称，与 exe 关联存储。</p>
-  </div>
-</div>
-
-<!-- 浮窗 3：游戏简介 -->
-<div class="prd-tooltip" id="tt-3">
-  <div class="prd-tt-header">
-    <div class="prd-tt-title"><span class="prd-tt-num">3</span>需求说明：游戏简介</div>
-    <button class="prd-tt-close" onclick="closeTT(3)">✕</button>
-  </div>
-  <div class="prd-tt-body">
-    <div class="sec-title">交互规则</div>
-    <ul>
-      <li><strong>选填项</strong>，用户可留空直接提交。</li>
-      <li>无字数硬限制，建议控制在 30 字以内（产品引导语）。</li>
-      <li>默认预填系统识别到的游戏描述（如有），用户可自由修改。</li>
-    </ul>
-    <div class="sec-title">异常场景</div>
-    <ul>
-      <li><span class="prd-dot-blue"></span><strong>留空：</strong>游戏库中该字段显示为空，不影响功能。</li>
-    </ul>
-  </div>
-</div>
-
-<!-- 浮窗 4：启动文件 + 修改按钮 -->
-<div class="prd-tooltip" id="tt-4">
+<!-- 浮窗 ④：启动文件 & 修改按钮 -->
+<div class="prd-tooltip" id="tt-4" onmouseenter="cancelTTClose(4)" onmouseleave="closeTT(4)">
   <div class="prd-tt-header">
     <div class="prd-tt-title"><span class="prd-tt-num">4</span>需求说明：启动文件 &amp; 纠错入口</div>
     <button class="prd-tt-close" onclick="closeTT(4)">✕</button>
   </div>
   <div class="prd-tt-body">
     <div class="sec-title">背景</div>
-    <p>用户通过导入 PC 游戏路径进入弹窗时，系统自动扫描目录下的可执行文件。当目录存在多个 exe 时，系统取<strong>文件最大的 exe</strong> 作为默认启动文件，但可能导致关联错误（如取到了 launcher.exe 而非 game.exe）。</p>
+    <p>用户导入 PC 游戏路径时，系统自动扫描目录下所有可执行文件，取<strong>文件体积最大的 exe</strong> 作为默认启动文件。当目录存在多个 exe（如 launcher.exe、game.exe）时，可能关联到错误的文件。</p>
     <div class="sec-title">显示规则</div>
     <ul>
-      <li>展示系统检测到的启动文件名，格式：<strong>⚙️ xxx.exe</strong>。</li>
-      <li>文件名过长时截断显示（text-overflow: ellipsis），hover 可查看完整路径（tooltip，后续迭代）。</li>
+      <li>展示系统检测到的 exe 文件名，格式：<strong>⚙️ xxx.exe</strong>。</li>
+      <li>文件名过长时 text-overflow: ellipsis 截断，后续迭代支持 hover 显示完整路径。</li>
     </ul>
     <div class="sec-title">「修改」按钮交互</div>
     <ul>
       <li>点击后<strong>在同一弹窗内</strong>切换至「选择参考游戏」视图，不新开弹窗。</li>
-      <li>左上角出现「‹ 返回」按钮，点击返回主视图，<strong>不保存</strong>本次搜索状态。</li>
+      <li>左上角显示「‹」返回按钮，点击返回主视图，<strong>搜索状态不保留</strong>。</li>
     </ul>
     <div class="sec-title">纠错完成后</div>
     <ul>
-      <li>从参考游戏视图选中游戏后，自动返回主视图，启动文件更新为所选游戏在 steam_db 中对应的 exe。</li>
-      <li>底部 Toast 提示「✓ 启动文件已更新为 xxx.exe」，2.4 秒后消失。</li>
+      <li>选中参考游戏后：自动返回主视图，启动文件更新为所选游戏在 steam_db 中对应的 exe。</li>
+      <li>同步更新弹窗内的<strong>封面图、游戏名称、游戏简介</strong>为所选游戏信息。</li>
+      <li>底部 Toast 提示「✓ 已选择 xxx，启动文件更新为 xxx.exe」，2.4s 后消失。</li>
     </ul>
     <div class="sec-title">异常场景</div>
     <ul>
-      <li><span class="prd-dot-red"></span><strong>目录下无 exe：</strong>该字段显示"未检测到启动文件"，修改按钮仍可用，用户可通过搜索手动指定。</li>
-      <li><span class="prd-dot-orange"></span><strong>exe 被占用/删除：</strong>导入后实际启动时报错，属于运行时错误，非弹窗层面处理。</li>
+      <li><span class="prd-dot-red"></span><strong>目录下无 exe：</strong>显示"未检测到启动文件"，修改按钮仍可用，用户可通过搜索手动指定。</li>
+      <li><span class="prd-dot-orange"></span><strong>exe 被占用/删除：</strong>属于运行时错误，弹窗层面不处理。</li>
     </ul>
   </div>
 </div>
 
-<!-- 浮窗 5：搜索框 -->
-<div class="prd-tooltip" id="tt-5">
+<!-- 浮窗 ⑤：搜索框 -->
+<div class="prd-tooltip" id="tt-5" onmouseenter="cancelTTClose(5)" onmouseleave="closeTT(5)">
   <div class="prd-tt-header">
     <div class="prd-tt-title"><span class="prd-tt-num">5</span>需求说明：搜索框</div>
     <button class="prd-tt-close" onclick="closeTT(5)">✕</button>
@@ -582,20 +466,20 @@
       <li>进入视图后<strong>自动聚焦</strong>搜索框。</li>
       <li>输入防抖 <strong>300ms</strong>，避免频繁请求。</li>
       <li>搜索范围：游戏中文名、英文名、exe 文件名，<strong>模糊包含匹配</strong>。</li>
-      <li>有输入内容时右侧出现 ✕ 清空按钮；点击清空后回到推荐列表状态。</li>
-      <li>搜索结果中<strong>高亮匹配关键词</strong>（蓝色 em 标签）。</li>
+      <li>有输入内容时右侧显示 ✕ 清空按钮；点击清空后回到推荐列表状态。</li>
+      <li>搜索结果中<strong>高亮匹配关键词</strong>（蓝色）。</li>
     </ul>
     <div class="sec-title">异常场景</div>
     <ul>
-      <li><span class="prd-dot-red"></span><strong>无匹配结果：</strong>列表区显示「没有找到"xxx"相关游戏」空状态。</li>
-      <li><span class="prd-dot-orange"></span><strong>搜索中（网络延迟）：</strong>展示 loading 转圈动画，300ms 后展示结果。</li>
-      <li><span class="prd-dot-blue"></span><strong>清空输入：</strong>恢复推荐列表，hint 说明重新渲染。</li>
+      <li><span class="prd-dot-red"></span><strong>无匹配结果：</strong>列表显示「没有找到"xxx"相关游戏」空状态文案。</li>
+      <li><span class="prd-dot-orange"></span><strong>接口延迟：</strong>展示 loading 转圈动画，300ms 防抖后发起请求。</li>
+      <li><span class="prd-dot-blue"></span><strong>清空输入：</strong>恢复推荐列表，hint 文案重新渲染。</li>
     </ul>
   </div>
 </div>
 
-<!-- 浮窗 6：推荐/结果列表 -->
-<div class="prd-tooltip" id="tt-6">
+<!-- 浮窗 ⑥：游戏匹配列表 -->
+<div class="prd-tooltip" id="tt-6" onmouseenter="cancelTTClose(6)" onmouseleave="closeTT(6)">
   <div class="prd-tt-header">
     <div class="prd-tt-title"><span class="prd-tt-num">6</span>需求说明：游戏匹配列表</div>
     <button class="prd-tt-close" onclick="closeTT(6)">✕</button>
@@ -603,76 +487,54 @@
   <div class="prd-tt-body">
     <div class="sec-title">推荐匹配逻辑</div>
     <ul>
-      <li>数据来源：<strong>steam_db</strong>，以用户本地检测到的 exe 文件名为 key 查询。</li>
-      <li>匹配规则：exe 文件名<strong>去扩展名后完全相等</strong>（大小写不敏感），即精确匹配，非模糊。</li>
+      <li>数据来源：<strong>steam_db</strong>，以本地检测到的 exe 文件名为 key 查询。</li>
+      <li>匹配规则：exe 文件名<strong>去扩展名后完全相等</strong>（大小写不敏感），精确匹配。</li>
       <li>排序规则：
         <ol>
-          <li>① <strong>steam 玩家数（owners）降序</strong>——同名 exe 中最热门的游戏排最前</li>
-          <li>② 玩家数相同时，按 <strong>steam_appid 升序</strong>（发行越早越靠前）</li>
+          <li>① <strong>steam 玩家数（owners）降序</strong> — 同名 exe 最热门游戏排首位</li>
+          <li>② 玩家数相同时，<strong>steam_appid 升序</strong>（发行越早越靠前）</li>
         </ol>
       </li>
-      <li>命中多条时全部展示，列表可滚动。</li>
+      <li>命中多条全部展示，列表区域可滚动。</li>
     </ul>
     <div class="sec-title">列表项展示</div>
     <ul>
-      <li>左侧：游戏封面缩略图（emoji 占位，实际取 steam 缩略图）。</li>
+      <li>左侧：游戏封面缩略图（demo 用 emoji 占位，实际取 steam 缩略图）。</li>
       <li>主文本：游戏名称（搜索时高亮关键词）。</li>
-      <li>副文本：启动文件名——<strong>固定展示当前检测到的 exe</strong>（非该游戏自身的 exe），含义是"此游戏在 steam_db 中记录的启动文件与你的文件同名"。</li>
+      <li>副文本：<strong>固定展示当前检测到的 exe</strong>（非该游戏官方 exe），表示"此游戏在 steam_db 中与你的文件同名"。</li>
     </ul>
     <div class="sec-title">选择交互</div>
     <ul>
-      <li><strong>点击即确认</strong>，无需二次确认按钮。</li>
-      <li>选中后：① 主视图启动文件更新为该游戏 steam_db 中的 exe；② 自动返回主视图；③ Toast 提示。</li>
+      <li><strong>点击即确认</strong>，无需二次确认。</li>
+      <li>选中后同步更新主视图：封面图、游戏名称、简介、启动文件 exe，并自动返回。</li>
     </ul>
     <div class="sec-title">异常场景</div>
     <ul>
-      <li><span class="prd-dot-red"></span><strong>精确匹配无结果：</strong>显示"暂无推荐"+ 空状态提示，引导用户使用搜索框手动查找。</li>
-      <li><span class="prd-dot-orange"></span><strong>steam_db 请求失败：</strong>展示错误提示「加载失败，请重试」，提供重试按钮（后续迭代）。</li>
-      <li><span class="prd-dot-blue"></span><strong>列表过长：</strong>容器固定高度，内部滚动，不撑开弹窗。</li>
+      <li><span class="prd-dot-red"></span><strong>精确匹配无结果：</strong>显示"暂无推荐"空状态，引导使用搜索框。</li>
+      <li><span class="prd-dot-orange"></span><strong>steam_db 请求失败：</strong>显示「加载失败，请重试」，提供重试按钮（后续迭代）。</li>
+      <li><span class="prd-dot-blue"></span><strong>列表过长：</strong>容器固定高度内部滚动，不撑开弹窗。</li>
     </ul>
-    <blockquote>副文本展示的是用户本地 exe，而非游戏官方 exe，目的是让用户直观确认"这个游戏就是用这个 exe 启动的"。</blockquote>
+    <blockquote>副文本展示用户本地 exe，目的是让用户确认"这个游戏就是用这个文件启动的"。</blockquote>
   </div>
 </div>
 
 <script>
-// =============================================================
-// Demo: 导入游戏弹窗 — 启动文件纠错流程
-//
-// 【数据来源】
-//   GAMES 模拟 steam_db 中的游戏记录。
-//   实际接入时，由后端查询 steam_db，以用户本地扫描到的
-//   exe 文件名为 key，返回同名启动文件对应的游戏列表。
-//
-// 【推荐匹配规则】（renderDefault）
-//   1. 取当前检测到的 exe 文件名（如 Game.exe），去掉扩展名得到 keyword
-//   2. 在 steam_db 中查找 exe 字段与 keyword 完全相同（大小写不敏感）的记录
-//   3. 多条命中时排序规则：
-//      ① steam 玩家数（owners）降序 —— 同名 exe 中最热门的游戏排前
-//      ② 若玩家数相同，按 steam_appid 升序（发行越早越靠前）
-//   4. 无命中时列表为空，引导用户通过搜索框手动输入
-//
-// 【搜索规则】（doSearch）
-//   用户输入关键词后，在游戏名（中/英）及 exe 字段做模糊匹配，
-//   结果按名称与关键词的字符重合度降序排列（实际可接 Algolia/ES）
-// =============================================================
-
-// Demo: GAMES 模拟 steam_db 数据，字段对应 steam_db.exe / name / appid
+// steam_db 模拟数据，字段：exe / name / nameEn / steamCover（steam header图）
 const GAMES = [
-  { id:1,  name:'尼尔：机械纪元', nameEn:'NieR: Automata',         exe:'NieRAutomata.exe',      icon:'⚔️' },
-  { id:2,  name:'黑暗之魂 III',   nameEn:'Dark Souls III',          exe:'DarkSoulsIII.exe',      icon:'🔥' },
-  { id:3,  name:'赛博朋克 2077',  nameEn:'Cyberpunk 2077',          exe:'Cyberpunk2077.exe',     icon:'🌆' },
-  { id:4,  name:'艾尔登法环',     nameEn:'Elden Ring',              exe:'eldenring.exe',         icon:'🏔️' },
-  { id:5,  name:'空洞骑士',       nameEn:'Hollow Knight',           exe:'hollow_knight.exe',     icon:'🦋' },
-  { id:6,  name:'死亡搁浅',       nameEn:'Death Stranding',         exe:'ds.exe',                icon:'🌊' },
-  { id:7,  name:'怪物猎人：世界', nameEn:'Monster Hunter: World',   exe:'MonsterHunterWorld.exe',icon:'🐉' },
-  { id:8,  name:'只狼：影逝二度', nameEn:'Sekiro',                  exe:'sekiro.exe',            icon:'⛩️' },
-  { id:9,  name:'鬼泣 5',        nameEn:'Devil May Cry 5',         exe:'DevilMayCry5.exe',      icon:'😈' },
-  { id:10, name:'巫师 3：狂猎',   nameEn:'The Witcher 3',           exe:'witcher3.exe',          icon:'🐺' },
+  { id:1,  name:'尼尔：机械纪元', nameEn:'NieR: Automata',         exe:'NieRAutomata.exe',       icon:'⚔️', desc:'重新归来，机器之王',      cover:'https://cdn.cloudflare.steamstatic.com/steam/apps/524220/header.jpg' },
+  { id:2,  name:'黑暗之魂 III',   nameEn:'Dark Souls III',          exe:'DarkSoulsIII.exe',       icon:'🔥', desc:'以黑暗为代价换取光明',     cover:'https://cdn.cloudflare.steamstatic.com/steam/apps/374320/header.jpg' },
+  { id:3,  name:'赛博朋克 2077',  nameEn:'Cyberpunk 2077',          exe:'Cyberpunk2077.exe',      icon:'🌆', desc:'夜之城，欲望与霓虹',        cover:'https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg' },
+  { id:4,  name:'艾尔登法环',     nameEn:'Elden Ring',              exe:'eldenring.exe',          icon:'🏔️', desc:'黄金树荣光，召唤褪色者',    cover:'https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg' },
+  { id:5,  name:'空洞骑士',       nameEn:'Hollow Knight',           exe:'hollow_knight.exe',      icon:'🦋', desc:'虫族王国的黑暗探险',        cover:'https://cdn.cloudflare.steamstatic.com/steam/apps/367520/header.jpg' },
+  { id:6,  name:'死亡搁浅',       nameEn:'Death Stranding',         exe:'ds.exe',                 icon:'🌊', desc:'连接，是唯一的答案',         cover:'https://cdn.cloudflare.steamstatic.com/steam/apps/1190460/header.jpg' },
+  { id:7,  name:'怪物猎人：世界', nameEn:'Monster Hunter: World',   exe:'MonsterHunterWorld.exe', icon:'🐉', desc:'踏入新大陆，猎尽巨兽',       cover:'https://cdn.cloudflare.steamstatic.com/steam/apps/582010/header.jpg' },
+  { id:8,  name:'只狼：影逝二度', nameEn:'Sekiro',                  exe:'sekiro.exe',             icon:'⛩️', desc:'义父之仇，誓死雪恨',         cover:'https://cdn.cloudflare.steamstatic.com/steam/apps/814380/header.jpg' },
+  { id:9,  name:'鬼泣 5',        nameEn:'Devil May Cry 5',         exe:'DevilMayCry5.exe',       icon:'😈', desc:'Jackpot！恶魔猎人归来',     cover:'https://cdn.cloudflare.steamstatic.com/steam/apps/601150/header.jpg' },
+  { id:10, name:'巫师 3：狂猎',   nameEn:'The Witcher 3',           exe:'witcher3.exe',           icon:'🐺', desc:'命运之子，白狼寻女',          cover:'https://cdn.cloudflare.steamstatic.com/steam/apps/292030/header.jpg' },
 ];
 
 let searchTimer = null;
 
-// Demo: 游戏名称字数统计（上限10字）
 function updateCharCount() {
   const v = document.getElementById('nameInput').value;
   document.getElementById('charCount').textContent = `${v.length}/10`;
@@ -682,12 +544,10 @@ function closeDialog() {
   document.querySelector('.overlay').style.display = 'none';
 }
 
-// Demo: 确认导入 — 实际触发写入游戏库接口
 function confirmImport() {
   showToast('✓ 游戏导入成功');
 }
 
-// Demo: 点击「修改」→ 切换到搜索纠错视图（同弹窗内切换，不叠层）
 function openFix() {
   document.getElementById('viewMain').classList.add('hidden');
   document.getElementById('viewFix').classList.add('active');
@@ -696,7 +556,6 @@ function openFix() {
   setTimeout(() => document.getElementById('sInput').focus(), 80);
 }
 
-// Demo: 返回主视图，重置搜索框状态
 function closeFix() {
   document.getElementById('viewFix').classList.remove('active');
   document.getElementById('viewMain').classList.remove('hidden');
@@ -705,22 +564,19 @@ function closeFix() {
   document.getElementById('sClear').classList.remove('on');
 }
 
-// Demo: 推荐列表渲染
-// 匹配逻辑：以当前检测到的 exe 文件名在 steam_db 中做同名精确匹配
-// 排序规则：① steam 玩家数降序  ② appid 升序（demo 中按数组原始顺序模拟）
+// 推荐列表：以当前 exe 在 steam_db 精确匹配
 function renderDefault() {
   const currentExe = document.getElementById('exeFilename').textContent.trim();
   const keyword = currentExe.replace(/\.exe$/i, '').toLowerCase();
-
-  // 精确匹配：exe 去扩展名后完全相等（大小写不敏感）
+  // 精确匹配：去扩展名后完全相等（大小写不敏感）
   const matched = keyword
     ? GAMES.filter(g => g.exe.replace(/\.exe$/i, '').toLowerCase() === keyword)
     : [];
-  // Demo: 实际排序由后端按 steam owners 降序 + appid 升序返回，前端直接渲染
+  // 实际排序由后端按 steam owners 降序 + appid 升序返回
 
   const hint = document.getElementById('sHint');
   hint.innerHTML = matched.length
-    ? `在 steam_db 中找到与 <code style="color:#3db5ff;font-size:11px;">${currentExe}</code> 同名的游戏，选择后将以该游戏作为参考`
+    ? `在 steam_db 中找到与 <code style="color:#3db5ff;font-size:11px;">${currentExe}</code> 同名的游戏，选择后将同步封面与信息`
     : `steam_db 中未找到与 <code style="color:#3db5ff;font-size:11px;">${currentExe}</code> 同名的启动文件，请通过搜索框手动查找`;
 
   const list = document.getElementById('rList');
@@ -736,7 +592,6 @@ function renderDefault() {
   }
 }
 
-// Demo: 搜索输入防抖 300ms
 function onSearch(val) {
   document.getElementById('sClear').classList.toggle('on', val.length > 0);
   clearTimeout(searchTimer);
@@ -750,8 +605,6 @@ function onSearch(val) {
   searchTimer = setTimeout(() => doSearch(val.trim()), 300);
 }
 
-// Demo: 搜索逻辑 — 对游戏名（中/英）及 exe 字段做模糊包含匹配
-// 实际按字符重合度降序排列（demo 中按匹配顺序模拟）
 function doSearch(q) {
   const lo = q.toLowerCase();
   const hits = GAMES.filter(g =>
@@ -773,7 +626,6 @@ function doSearch(q) {
   hits.forEach(g => list.appendChild(makeItem(g, q)));
 }
 
-// Demo: 列表项渲染，启动文件固定展示当前检测到的 exe（非游戏自身的 exe）
 function makeItem(g, q) {
   const el = document.createElement('div');
   el.className = 'r-item';
@@ -790,11 +642,23 @@ function makeItem(g, q) {
   return el;
 }
 
-// Demo: 勾选即应用 — 选中游戏后同步其 exe 到主视图，自动返回
+// 选中游戏：同步封面、名称、简介、exe，返回主视图
 function pick(g) {
+  // 更新封面
+  const img = document.getElementById('coverImgEl');
+  img.style.display = 'block';
+  img.src = g.cover || '';
+  img.onerror = () => { img.style.display = 'none'; };
+  // 更新名称
+  const nameInput = document.getElementById('nameInput');
+  nameInput.value = g.name;
+  document.getElementById('charCount').textContent = `${g.name.length}/10`;
+  // 更新简介
+  document.getElementById('descInput').value = g.desc || '';
+  // 更新 exe
   document.getElementById('exeFilename').textContent = g.exe;
   closeFix();
-  showToast(`✓ 启动文件已更新为 ${g.exe}`);
+  showToast(`✓ 已选择「${g.name}」，启动文件更新为 ${g.exe}`);
 }
 
 function clearS() {
@@ -812,21 +676,23 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2400);
 }
 </script>
+
 <!-- PRD 标注系统 JS -->
 <script>
-(function() {
+(function () {
+  const closeTimers = {};
   const dragging = {};
 
   function openTT(e, id) {
+    // 取消同 id 的关闭计时
+    clearTimeout(closeTimers[id]);
     const tt = document.getElementById('tt-' + id);
     if (!tt) return;
-    if (tt.classList.contains('open')) return;
-    // 计算位置：默认在角标左下方
     const badge = e.currentTarget;
     const rect = badge.getBoundingClientRect();
+    // 优先放左侧，不够则放右侧
     let left = rect.left - 458;
     let top  = rect.bottom + 8;
-    // 边界修正
     if (left < 8) left = rect.right + 8;
     if (top + 460 > window.innerHeight) top = rect.top - 460;
     if (top < 8) top = 8;
@@ -835,13 +701,22 @@ function showToast(msg) {
     tt.classList.add('open');
   }
 
+  // 鼠标离开角标时，延迟 120ms 关闭，给鼠标移入浮窗的时间
+  function scheduleTTClose(id) {
+    closeTimers[id] = setTimeout(() => closeTT(id), 120);
+  }
+
+  function cancelTTClose(id) {
+    clearTimeout(closeTimers[id]);
+  }
+
   function closeTT(id) {
     const tt = document.getElementById('tt-' + id);
     if (tt) tt.classList.remove('open');
   }
 
-  // 拖拽
-  document.addEventListener('mousedown', function(e) {
+  // 拖拽（仅拖 header 区域）
+  document.addEventListener('mousedown', function (e) {
     const tt = e.target.closest('.prd-tooltip');
     if (!tt) return;
     if (e.target.closest('.prd-tt-close, .prd-tt-body')) return;
@@ -865,12 +740,14 @@ function showToast(msg) {
 
   // 阻止浮窗内事件冒泡到页面
   document.querySelectorAll('.prd-tooltip').forEach(tt => {
-    tt.addEventListener('click', e => e.stopPropagation());
+    tt.addEventListener('click',     e => e.stopPropagation());
     tt.addEventListener('mousedown', e => e.stopPropagation());
   });
 
-  window.openTT  = openTT;
-  window.closeTT = closeTT;
+  window.openTT        = openTT;
+  window.closeTT       = closeTT;
+  window.scheduleTTClose = scheduleTTClose;
+  window.cancelTTClose   = cancelTTClose;
 })();
 </script>
 </body>
