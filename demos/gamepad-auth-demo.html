@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>游戏列表 - 授权手柄 Demo</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Microsoft YaHei', sans-serif; font-size: 13px; background: #f0f2f5; color: #333; display: flex; height: 100vh; overflow: hidden; }
+
+/* Sidebar */
+.sidebar { width: 200px; background: #001529; color: #fff; display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar-logo { padding: 16px; border-bottom: 1px solid #002140; display: flex; align-items: center; gap: 8px; }
+.sidebar-logo .avatar { width: 32px; height: 32px; border-radius: 50%; background: #1890ff; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.sidebar-logo .user-info { line-height: 1.3; }
+.sidebar-logo .user-name { font-size: 13px; }
+.sidebar-logo .user-status { font-size: 11px; color: #52c41a; }
+.sidebar-search { padding: 10px 12px; }
+.sidebar-search input { width: 100%; background: rgba(255,255,255,0.1); border: none; border-radius: 4px; padding: 5px 8px; color: #fff; font-size: 12px; outline: none; }
+.sidebar-search input::placeholder { color: rgba(255,255,255,0.4); }
+.menu-group { padding: 0; }
+.menu-item { padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.65); transition: all 0.2s; font-size: 13px; }
+.menu-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.menu-item.active { background: #1890ff; color: #fff; }
+.menu-item .icon { font-size: 14px; width: 16px; text-align: center; }
+.menu-sub { background: rgba(0,0,0,0.2); }
+.menu-sub .menu-item { padding-left: 32px; font-size: 12px; }
+
+/* Main */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.main-header { background: #fff; padding: 0 20px; height: 48px; display: flex; align-items: center; border-bottom: 1px solid #e8e8e8; font-size: 14px; color: #666; }
+
+.main-content { flex: 1; overflow-y: auto; padding: 16px; }
+
+/* Filter Panel */
+.filter-panel { background: #fff; border-radius: 4px; padding: 16px; margin-bottom: 12px; }
+.filter-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 16px; }
+.filter-item { display: flex; align-items: center; gap: 6px; }
+.filter-item label { white-space: nowrap; color: #666; font-size: 12px; min-width: 64px; text-align: right; }
+.filter-item input, .filter-item select { flex: 1; height: 30px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 0 8px; font-size: 12px; outline: none; background: #fff; color: #333; }
+.filter-item input:focus, .filter-item select:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.1); }
+.filter-actions { margin-top: 12px; display: flex; gap: 8px; }
+.btn { height: 30px; padding: 0 14px; border-radius: 4px; border: 1px solid transparent; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s; }
+.btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+.btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
+.btn-default { background: #fff; color: #333; border-color: #d9d9d9; }
+.btn-default:hover { color: #1890ff; border-color: #1890ff; }
+.btn-danger { background: #ff4d4f; color: #fff; border-color: #ff4d4f; }
+.btn-danger:hover { background: #ff7875; }
+.btn-warning { background: #faad14; color: #fff; border-color: #faad14; }
+.btn-warning:hover { background: #ffc53d; }
+.btn-success { background: #52c41a; color: #fff; border-color: #52c41a; }
+.btn-success:hover { background: #73d13d; }
+.btn-purple { background: #722ed1; color: #fff; border-color: #722ed1; }
+.btn-purple:hover { background: #9254de; }
+
+/* Toolbar */
+.toolbar { background: #fff; border-radius: 4px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* Table */
+.table-wrap { background: #fff; border-radius: 4px; overflow: hidden; }
+.table-container { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead { background: #fafafa; }
+th { padding: 10px 8px; text-align: left; border-bottom: 1px solid #e8e8e8; white-space: nowrap; color: #555; font-weight: 500; }
+td { padding: 8px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+tr:hover td { background: #fafafa; }
+.th-sort { cursor: pointer; user-select: none; }
+.th-sort::after { content: ' ↕'; font-size: 10px; color: #bbb; }
+
+/* Status badge */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 10px; font-size: 11px; white-space: nowrap; }
+.badge-green { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+.badge-orange { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; }
+.badge::before { content: '●'; font-size: 8px; }
+
+/* Op buttons */
+.op-btns { display: flex; gap: 3px; flex-wrap: wrap; align-items: center; }
+.op-btn { height: 22px; padding: 0 6px; border-radius: 3px; font-size: 11px; border: none; cursor: pointer; color: #fff; white-space: nowrap; transition: opacity 0.2s; }
+.op-btn:hover { opacity: 0.85; }
+.op-btn-blue { background: #1890ff; }
+.op-btn-cyan { background: #13c2c2; }
+.op-btn-purple { background: #722ed1; }
+.op-btn-gold { background: #faad14; }
+.op-btn-geek { background: #eb2f96; }
+.op-btn-gamepad { background: #52c41a; }
+.op-btn-edit { background: none; color: #1890ff; font-size: 14px; padding: 0 3px; }
+.op-btn-del { background: none; color: #ff4d4f; font-size: 14px; padding: 0 3px; }
+
+/* Thumb images */
+.img-thumb { width: 36px; height: 36px; object-fit: cover; border-radius: 3px; background: #222; display: inline-block; vertical-align: middle; }
+
+/* Gamepad chips in table cell */
+.gp-chip { display: inline-flex; align-items: center; gap: 3px; background: #f0f5ff; border: 1px solid #adc6ff; color: #2f54eb; border-radius: 10px; padding: 1px 7px; font-size: 11px; margin: 1px; }
+.gp-chip-empty { color: #bbb; font-size: 11px; }
+
+/* Pagination */
+.pagination { display: flex; align-items: center; justify-content: flex-end; padding: 12px 16px; gap: 6px; border-top: 1px solid #f0f0f0; }
+.pg-btn { width: 30px; height: 28px; border: 1px solid #d9d9d9; border-radius: 4px; background: #fff; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
+.pg-btn.active { background: #1890ff; color: #fff; border-color: #1890ff; }
+.pg-btn:hover:not(.active) { color: #1890ff; border-color: #1890ff; }
+.pg-total { color: #666; font-size: 12px; margin-right: 8px; }
+
+/* ===== Modal ===== */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+.modal-overlay.show { opacity: 1; pointer-events: all; }
+.modal { background: #fff; border-radius: 8px; width: 700px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,0.2); transform: scale(0.96); transition: transform 0.2s; }
+.modal-overlay.show .modal { transform: scale(1); }
+.modal-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 15px; font-weight: 600; }
+.modal-subtitle { font-size: 12px; color: #888; margin-top: 2px; }
+.modal-close { width: 28px; height: 28px; border: none; background: none; cursor: pointer; font-size: 18px; color: #999; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+.modal-close:hover { background: #f5f5f5; color: #333; }
+.modal-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.modal-footer { padding: 12px 20px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 8px; }
+
+/* Auth gamepad modal content */
+.modal-section-title { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.modal-section-title::before { content: ''; display: inline-block; width: 3px; height: 14px; background: #1890ff; border-radius: 2px; }
+
+/* Shared mini-table for both authorized list and picker */
+.gp-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 4px; }
+.gp-table thead th { background: #fafafa; padding: 7px 10px; text-align: left; border-bottom: 1px solid #e8e8e8; color: #555; font-weight: 500; white-space: nowrap; }
+.gp-table tbody tr { border-bottom: 1px solid #f0f0f0; }
+.gp-table tbody tr:hover { background: #f0f5ff; }
+.gp-table td { padding: 7px 10px; vertical-align: middle; }
+.gp-img { width: 40px; height: 40px; object-fit: contain; border-radius: 4px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.gp-type-tag { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 11px; background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
+.gp-dir-tag { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 11px; background: #f0f5ff; color: #2f54eb; border: 1px solid #adc6ff; }
+.btn-remove { height: 24px; padding: 0 10px; border: 1px solid #ff4d4f; border-radius: 4px; background: #fff; color: #ff4d4f; cursor: pointer; font-size: 11px; }
+.btn-remove:hover { background: #fff1f0; }
+.empty-auth { text-align: center; padding: 24px; color: #bbb; font-size: 13px; }
+.empty-auth .empty-icon { font-size: 32px; margin-bottom: 8px; }
+
+/* Add gamepad search area */
+.add-gamepad-area { border: 1px solid #e8e8e8; border-radius: 6px; padding: 12px; background: #fff; }
+.add-search-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.add-search-row input { flex: 1; height: 30px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 0 10px; font-size: 12px; outline: none; }
+.add-search-row input:focus { border-color: #1890ff; }
+.picker-scroll { max-height: 220px; overflow-y: auto; border: 1px solid #f0f0f0; border-radius: 4px; }
+.picker-row { cursor: pointer; }
+.picker-row:hover td { background: #f0f5ff; }
+.picker-row.selected td { background: #e6f7ff; }
+.picker-check { color: #1890ff; font-size: 14px; text-align: center; }
+
+/* Checkbox col */
+.cb-col { width: 36px; }
+input[type=checkbox] { cursor: pointer; }
+
+/* Filter tag for gamepad */
+.filter-tag { display: inline-flex; align-items: center; gap: 4px; background: #e6f7ff; border: 1px solid #91d5ff; color: #1890ff; border-radius: 3px; padding: 1px 7px; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="avatar">郑</div>
+    <div class="user-info">
+      <div class="user-name">郑群超</div>
+      <div class="user-status">● 在线</div>
+    </div>
+  </div>
+  <div class="sidebar-search"><input placeholder="搜索菜单" /></div>
+  <div class="menu-group">
+    <div class="menu-item"><span class="icon">🎮</span> 游戏</div>
+    <div class="menu-sub">
+      <div class="menu-item active"><span class="icon"></span> 游戏列表</div>
+      <div class="menu-item"><span class="icon"></span> 启动方式</div>
+    </div>
+    <div class="menu-item"><span class="icon">🖥</span> 游戏平台</div>
+    <div class="menu-item"><span class="icon">🔀</span> 游戏平台→归类</div>
+    <div class="menu-item"><span class="icon">🏷</span> 新版运营标签管理</div>
+    <div class="menu-item"><span class="icon">📂</span> 游戏类型→归类</div>
+    <div class="menu-item"><span class="icon">🗂</span> 游戏类型</div>
+    <div class="menu-item"><span class="icon">📝</span> 资讯文章管理</div>
+    <div class="menu-item"><span class="icon">🏷</span> 应用运营标签管理</div>
+    <div class="menu-item"><span class="icon">🏷</span> 应用标签管理</div>
+    <div class="menu-item"><span class="icon">⭐</span> 首页专题管理管理</div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <div class="main-header">游戏 / 游戏列表</div>
+  <div class="main-content">
+
+    <!-- Filter Panel -->
+    <div class="filter-panel">
+      <div class="filter-grid">
+        <div class="filter-item"><label>id</label><input placeholder="id" /></div>
+        <div class="filter-item"><label>名称</label><input placeholder="名称" /></div>
+        <div class="filter-item"><label>APP协议</label><select><option value="">选择</option><option>盖世游戏安卓</option><option>安卓官方包</option></select></div>
+        <div class="filter-item"><label>系统语言</label><select><option value="">选择</option><option>中文</option><option>英文</option><option>日文</option></select></div>
+
+        <div class="filter-item"><label>一级分类</label><select><option value="">选择</option><option>RPG</option><option>策略</option><option>射击</option></select></div>
+        <div class="filter-item"><label>平台类型</label><select><option value="">复古游戏(中文)</option><option>PC</option><option>主机</option></select></div>
+        <div class="filter-item"><label>状态</label><select><option value="">选择</option><option>正常</option><option>隐藏</option></select></div>
+        <div class="filter-item"><label>来源平台ID</label><input placeholder="来源平台ID" /></div>
+
+        <div class="filter-item"><label>来源平台类型</label><select><option value="">选择</option><option>Steam</option><option>Epic</option></select></div>
+        <div class="filter-item"><label>年龄评级</label><select><option value="">选择</option><option>全年龄</option><option>12+</option><option>18+</option></select></div>
+        <div class="filter-item"><label>是否游戏</label><select><option value="1">是</option><option value="0">否</option></select></div>
+        <div class="filter-item"><label>是否付费</label><select><option value="">选择</option><option>免费</option><option>付费</option></select></div>
+
+        <div class="filter-item"><label>复古游戏平台</label><select><option value="">选择</option><option>FC</option><option>SFC</option><option>GBA</option></select></div>
+        <div class="filter-item"><label>创建者</label><input placeholder="创建者" /></div>
+        <div class="filter-item"><label>创建时间</label><input placeholder="创建时间" /></div>
+        <div class="filter-item"><label>更新时间</label><input placeholder="更新时间" /></div>
+
+        <div class="filter-item"><label>其他搜索</label><select><option value="">选择</option></select></div>
+        <div class="filter-item"><label>兼容性等级</label><select><option value="">选择</option><option>优</option><option>良</option><option>差</option></select></div>
+        <div class="filter-item"><label>GPU归类</label><select><option value="">选择</option></select></div>
+        <div class="filter-item"><label>GPU型号</label><select><option value="">选择</option></select></div>
+
+        <!-- 新增：授权手柄筛选 -->
+        <div class="filter-item"><label style="color:#52c41a;font-weight:600">授权手柄</label>
+          <select id="filter-gamepad" style="border-color:#b7eb8f;">
+            <option value="">全部</option>
+            <option value="any">已授权（任意）</option>
+            <option value="none">未授权</option>
+            <option value="GP-X001">盖世游戏 Pro X</option>
+            <option value="GP-X002">盖世游戏 Mini</option>
+            <option value="GP-X003">盖世游戏 Lite</option>
+            <option value="GP-X004">GameHub 精英版</option>
+            <option value="GP-X005">GameHub 标准版</option>
+          </select>
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn btn-primary" onclick="doSearch()">提交</button>
+        <button class="btn btn-default" onclick="doReset()">重置</button>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <button class="btn btn-default" title="刷新">🔄</button>
+      <button class="btn btn-primary">+ 添加</button>
+      <div style="margin-left:auto;display:flex;gap:6px;">
+        <button class="btn btn-default">⊞</button>
+        <button class="btn btn-default">☰</button>
+        <button class="btn btn-default">👤</button>
+        <button class="btn btn-default">🔍</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <div class="table-container">
+        <table id="game-table">
+          <thead>
+            <tr>
+              <th class="cb-col"><input type="checkbox" /></th>
+              <th class="th-sort">id</th>
+              <th>名称</th>
+              <th>APP协议</th>
+              <th>系统语言</th>
+              <th>一级分类</th>
+              <th>标签</th>
+              <th>平台类型</th>
+              <th>状态</th>
+              <th>logo</th>
+              <th>封面图</th>
+              <th>方形图</th>
+              <th>背景图</th>
+              <th>渠道</th>
+              <th>来源平台ID</th>
+              <th>来源游戏类型</th>
+              <th>来源平台类型</th>
+              <th>年龄评级</th>
+              <th>是否游戏</th>
+              <!-- 新增列 -->
+              <th style="color:#52c41a;white-space:nowrap;">授权手柄</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <span class="pg-total">共 <b>7</b> 条</span>
+        <button class="pg-btn">‹</button>
+        <button class="pg-btn active">1</button>
+        <button class="pg-btn">›</button>
+        <span style="font-size:12px;color:#666;">每页 <select style="border:1px solid #d9d9d9;border-radius:3px;padding:0 3px;font-size:12px;"><option>20</option><option>50</option><option>100</option></select> 条</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== 授权手柄弹窗 ===== -->
+<div class="modal-overlay" id="gamepad-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">授权手柄管理</div>
+        <div class="modal-subtitle" id="modal-game-name">游戏：—</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- 已授权列表 -->
+      <div class="modal-section-title">已授权手柄</div>
+      <div id="auth-list">
+        <!-- 动态渲染 -->
+      </div>
+
+      <!-- 添加手柄 -->
+      <div class="modal-section-title" style="margin-top:16px;">添加授权手柄</div>
+      <div class="add-gamepad-area">
+        <div class="add-search-row">
+          <input type="text" id="gp-search" placeholder="搜索手柄名称…" oninput="filterGamepads()" />
+          <button class="btn btn-primary" onclick="addSelected()">+ 添加所选</button>
+        </div>
+        <div class="picker-scroll">
+          <table class="gp-table">
+            <thead>
+              <tr><th style="width:28px;"></th><th>设备图片</th><th>设备名称</th><th>手柄类型</th><th>设备方向</th></tr>
+            </thead>
+            <tbody id="gp-options"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveAuth()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- Data ----
+const ALL_GAMEPADS = [
+  { id:'GP-X001', name:'塔可无线手柄',     padType:'竖版手柄', direction:'竖屏', img:'🎮' },
+  { id:'GP-X002', name:'G3',               padType:'拉伸手柄', direction:'横屏', img:'🕹' },
+  { id:'GP-X003', name:'G9 2026',          padType:'拉伸手柄', direction:'横屏', img:'🕹' },
+  { id:'GP-X004', name:'X5Lite',           padType:'拉伸手柄', direction:'横屏', img:'🎮' },
+  { id:'GP-X005', name:'X5s蓝牙无线拉伸手柄', padType:'拉伸手柄', direction:'横屏', img:'🎮' },
+  { id:'GP-X006', name:'X5s',              padType:'拉伸手柄', direction:'横屏', img:'🕹' },
+  { id:'GP-X007', name:'G9',              padType:'拉伸手柄', direction:'横屏', img:'🕹' },
+];
+
+const GAMES = [
+  { id:135798, name:'Blowhole',        app:'盖世游戏安卓', lang:'中文,英文,日文…', cat:'', tag:'', plat:'Retro games(英文),复古…', status:'hidden', authPads:['GP-X001','GP-X002'] },
+  { id:135796, name:'The Axe',         app:'安卓官方包,盖世掌安…', lang:'中文,英文,日文…', cat:'', tag:'', plat:'Retro games(英文),复古…', status:'normal', authPads:[] },
+  { id:135795, name:'The Purple Night', app:'盖世游戏安卓', lang:'中文,英文,日文…', cat:'', tag:'', plat:'Retro games(英文),复古…', status:'hidden', authPads:['GP-X001'] },
+  { id:135794, name:'Tigermoth',       app:'安卓官方包,盖世掌安…', lang:'中文,英文,日文…', cat:'', tag:'', plat:'Retro games(英文),复古…', status:'normal', authPads:['GP-X003','GP-X004','GP-X005'] },
+  { id:135793, name:'Titei Senki',     app:'盖世游戏安卓', lang:'中文,英文,日文…', cat:'', tag:'', plat:'Retro games(英文),复古…', status:'hidden', authPads:[] },
+  { id:135792, name:'Arcade Mania',    app:'安卓官方包,盖世掌安…', lang:'中文,英文,日文…', cat:'', tag:'', plat:'Retro games(英文),复古…', status:'normal', authPads:['GP-X002'] },
+  { id:135791, name:'Super Tilt Bro',  app:'盖世游戏安卓', lang:'中文,英文,日文…', cat:'', tag:'', plat:'Retro games(英文),复古…', status:'hidden', authPads:[] },
+];
+
+// per-game auth state (mutable)
+const authState = {};
+GAMES.forEach(g => { authState[g.id] = [...g.authPads]; });
+
+let currentGameId = null;
+let pendingAuth = [];      // working copy while modal open
+let selectedToAdd = [];    // newly selected in picker
+
+// ---- Render Table ----
+function renderTable(games) {
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = '';
+  games.forEach(g => {
+    const pads = authState[g.id] || [];
+    const padCells = pads.length
+      ? pads.map(pid => {
+          const gp = ALL_GAMEPADS.find(x => x.id === pid);
+          return `<span class="gp-chip">${gp ? gp.name : pid}</span>`;
+        }).join('')
+      : '<span class="gp-chip-empty">—</span>';
+
+    const statusBadge = g.status === 'normal'
+      ? '<span class="badge badge-green">正常</span>'
+      : '<span class="badge badge-orange">隐藏</span>';
+
+    const imgColor = ['#1a1a2e','#16213e','#0f3460','#533483','#2d132c','#1b262c','#162447'][g.id % 7];
+    const img = `<span style="display:inline-block;width:36px;height:36px;border-radius:3px;background:${imgColor};"></span>`;
+
+    tbody.innerHTML += `
+    <tr>
+      <td class="cb-col"><input type="checkbox" /></td>
+      <td>${g.id}</td>
+      <td style="max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${g.name}</td>
+      <td style="max-width:100px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${g.app}</td>
+      <td style="font-size:11px;">${g.lang}</td>
+      <td>-</td>
+      <td>-</td>
+      <td style="font-size:11px;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${g.plat}</td>
+      <td>${statusBadge}</td>
+      <td>${img}</td>
+      <td>${img}</td>
+      <td>${img}</td>
+      <td>${img}</td>
+      <td>-</td>
+      <td>-</td>
+      <td style="font-size:11px;">game</td>
+      <td style="font-size:11px;">未设置</td>
+      <td>-</td>
+      <td>是</td>
+      <!-- 授权手柄列 -->
+      <td style="max-width:160px;">${padCells}</td>
+      <td>
+        <div class="op-btns">
+          <button class="op-btn op-btn-blue">CDKEY</button>
+          <button class="op-btn op-btn-cyan">兼容性</button>
+          <button class="op-btn op-btn-purple">启动方式</button>
+          <button class="op-btn op-btn-gold">DLC</button>
+          <button class="op-btn op-btn-blue">复制</button>
+          <button class="op-btn op-btn-geek">多语言</button>
+          <button class="op-btn op-btn-gamepad" onclick="openModal(${g.id})">授权手柄</button>
+          <button class="op-btn op-btn-edit">✏</button>
+          <button class="op-btn op-btn-del">🗑</button>
+        </div>
+      </td>
+    </tr>`;
+  });
+}
+
+// ---- Filter / Search ----
+function doSearch() {
+  const filterVal = document.getElementById('filter-gamepad').value;
+  let result = GAMES;
+  if (filterVal === 'none') {
+    result = GAMES.filter(g => (authState[g.id] || []).length === 0);
+  } else if (filterVal === 'any') {
+    result = GAMES.filter(g => (authState[g.id] || []).length > 0);
+  } else if (filterVal) {
+    result = GAMES.filter(g => (authState[g.id] || []).includes(filterVal));
+  }
+  renderTable(result);
+}
+
+function doReset() {
+  document.getElementById('filter-gamepad').value = '';
+  renderTable(GAMES);
+}
+
+// ---- Modal ----
+function openModal(gameId) {
+  currentGameId = gameId;
+  const game = GAMES.find(g => g.id === gameId);
+  document.getElementById('modal-game-name').textContent = `游戏：${game.name}（ID: ${gameId}）`;
+  pendingAuth = [...(authState[gameId] || [])];
+  selectedToAdd = [];
+  document.getElementById('gp-search').value = '';
+  renderAuthList();
+  renderGamepadOptions('');
+  document.getElementById('gamepad-modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('gamepad-modal').classList.remove('show');
+  currentGameId = null;
+}
+
+function renderAuthList() {
+  const el = document.getElementById('auth-list');
+  if (pendingAuth.length === 0) {
+    el.innerHTML = `<div class="empty-auth"><div class="empty-icon">🎮</div>暂无授权手柄，请从下方添加</div>`;
+    return;
+  }
+  el.innerHTML = `
+  <table class="gp-table" style="margin-bottom:16px;">
+    <thead><tr><th>设备图片</th><th>设备名称</th><th>手柄类型</th><th>设备方向</th><th>操作</th></tr></thead>
+    <tbody>
+    ${pendingAuth.map(pid => {
+      const gp = ALL_GAMEPADS.find(x => x.id === pid);
+      if (!gp) return '';
+      return `<tr>
+        <td><div class="gp-img">${gp.img}</div></td>
+        <td style="font-weight:500;">${gp.name}</td>
+        <td><span class="gp-type-tag">${gp.padType}</span></td>
+        <td><span class="gp-dir-tag">${gp.direction}</span></td>
+        <td><button class="btn-remove" onclick="removeAuth('${pid}')">移除</button></td>
+      </tr>`;
+    }).join('')}
+    </tbody>
+  </table>`;
+}
+
+function renderGamepadOptions(query) {
+  const q = query.toLowerCase();
+  const available = ALL_GAMEPADS.filter(gp =>
+    !pendingAuth.includes(gp.id) &&
+    (gp.name.toLowerCase().includes(q) || !q)
+  );
+  const el = document.getElementById('gp-options');
+  if (available.length === 0) {
+    el.innerHTML = '<tr><td colspan="5" style="color:#bbb;font-size:12px;padding:16px;text-align:center;">无可添加的手柄</td></tr>';
+    return;
+  }
+  el.innerHTML = available.map(gp => {
+    const isSel = selectedToAdd.includes(gp.id);
+    return `
+    <tr class="picker-row${isSel ? ' selected' : ''}" onclick="toggleSelect('${gp.id}')">
+      <td class="picker-check">${isSel ? '✓' : ''}</td>
+      <td><div class="gp-img">${gp.img}</div></td>
+      <td style="font-weight:500;">${gp.name}</td>
+      <td><span class="gp-type-tag">${gp.padType}</span></td>
+      <td><span class="gp-dir-tag">${gp.direction}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function removeAuth(padId) {
+  pendingAuth = pendingAuth.filter(p => p !== padId);
+  renderAuthList();
+  renderGamepadOptions(document.getElementById('gp-search').value);
+}
+
+function filterGamepads() {
+  renderGamepadOptions(document.getElementById('gp-search').value);
+}
+
+function toggleSelect(padId) {
+  if (selectedToAdd.includes(padId)) {
+    selectedToAdd = selectedToAdd.filter(p => p !== padId);
+  } else {
+    selectedToAdd.push(padId);
+  }
+  renderGamepadOptions(document.getElementById('gp-search').value);
+}
+
+function addSelected() {
+  if (selectedToAdd.length === 0) {
+    showToast('请先在下方勾选手柄', 'warn');
+    return;
+  }
+  selectedToAdd.forEach(pid => {
+    if (!pendingAuth.includes(pid)) pendingAuth.push(pid);
+  });
+  selectedToAdd = [];
+  renderAuthList();
+  renderGamepadOptions(document.getElementById('gp-search').value);
+}
+
+function saveAuth() {
+  authState[currentGameId] = [...pendingAuth];
+  closeModal();
+  renderTable(GAMES);
+  showToast('授权手柄已保存');
+}
+
+// ---- Toast ----
+function showToast(msg, type) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  Object.assign(t.style, {
+    position:'fixed', bottom:'32px', left:'50%', transform:'translateX(-50%)',
+    background: type === 'warn' ? '#faad14' : '#52c41a',
+    color:'#fff', padding:'8px 20px', borderRadius:'4px', fontSize:'13px',
+    zIndex:'9999', boxShadow:'0 4px 12px rgba(0,0,0,0.15)',
+    transition:'opacity 0.3s',
+  });
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; setTimeout(() => t.remove(), 300); }, 2000);
+}
+
+// Close on overlay click
+document.getElementById('gamepad-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Init
+renderTable(GAMES);
+</script>
+</body>
+</html>
