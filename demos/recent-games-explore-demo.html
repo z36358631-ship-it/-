@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>探索页 - 继续游戏 Demo</title>
+<style>
+:root {
+  --bg: #0e1118;
+  --bg2: #141922;
+  --card: #161d28;
+  --border: rgba(255,255,255,0.07);
+  --t1: #fff;
+  --t2: #8a9ba8;
+  --accent: #287dfa;
+  --tag-bg: linear-gradient(90deg,#ffa500,#ff6000);
+  --tag-inner: linear-gradient(90deg,#e08000,#cc4400);
+  --score: #ff9500;
+  --nav-h-p: 64px;   /* portrait bottom nav */
+  --status-h-p: 44px;
+  --top-h-l: 48px;   /* landscape top nav */
+}
+
+/* ─── reset ─── */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;
+  font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;}
+*{scrollbar-width:none;-ms-overflow-style:none;}
+*::-webkit-scrollbar{display:none;}
+
+body{
+  background:#000;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  min-height:100vh;padding:24px 0 40px;gap:20px;
+}
+
+/* ─── toggle button ─── */
+.toggle-btn{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);
+  color:#fff;font-size:13px;padding:8px 20px;border-radius:20px;cursor:pointer;
+  transition:background .2s;user-select:none;
+}
+.toggle-btn:hover{background:rgba(255,255,255,0.18);}
+.toggle-btn svg{width:17px;height:17px;fill:#fff;flex-shrink:0;}
+
+/* ─────────────────────────────────────────
+   DEVICE WRAPPER — transitions between two sizes
+   ───────────────────────────────────────── */
+.device{
+  background:var(--bg);
+  overflow:hidden;
+  transition:width .45s cubic-bezier(.4,0,.2,1),
+             height .45s cubic-bezier(.4,0,.2,1),
+             border-radius .45s;
+  box-shadow:0 0 0 8px #1c1c1e, 0 32px 80px rgba(0,0,0,.9);
+  position:relative;
+  /* portrait default */
+  width:390px; height:844px; border-radius:44px;
+}
+.device.landscape{
+  width:900px; height:416px; border-radius:20px;
+}
+
+/* ─── views ─── */
+.view{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  transition:opacity .3s, transform .3s;
+}
+.view.hidden{
+  opacity:0;pointer-events:none;
+  transform:scale(.97);
+}
+
+/* ════════════════════════════════════════
+   PORTRAIT VIEW
+   ════════════════════════════════════════ */
+#vPortrait{ background:var(--bg); }
+
+/* status bar */
+.p-status{
+  height:var(--status-h-p);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;flex-shrink:0;
+  background:transparent;
+}
+.p-status .time{font-size:17px;font-weight:700;color:#fff;letter-spacing:.3px;}
+.p-status .right{display:flex;align-items:center;gap:6px;}
+
+/* scroll area */
+.p-scroll{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+}
+
+/* search */
+.p-search{
+  display:flex;align-items:center;gap:10px;padding:6px 14px 10px;
+}
+.p-search-bar{
+  flex:1;display:flex;align-items:center;gap:9px;
+  background:rgba(255,255,255,.09);border-radius:24px;
+  padding:10px 16px;
+}
+.p-search-bar svg{width:16px;height:16px;fill:var(--t2);flex-shrink:0;}
+.p-search-bar span{font-size:15px;color:var(--t2);}
+.p-scan{
+  width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.09);border-radius:10px;flex-shrink:0;
+}
+.p-scan svg{width:20px;height:20px;fill:var(--t2);}
+
+/* ── PORTRAIT BANNER ── */
+.p-banner{
+  margin:0 14px;border-radius:18px;overflow:hidden;
+  position:relative;
+  /* real app shows game screenshot; here we recreate Brotato's dark top-down arena feel */
+  background:#1a1a1a;
+  cursor:pointer;
+}
+/* game art area */
+.p-banner-art{
+  width:100%;height:220px;overflow:hidden;position:relative;
+  background:radial-gradient(ellipse at 50% 50%,#2a2420 0%,#181510 40%,#0e0c09 100%);
+}
+/* brotato-ish scattered items visual */
+.brotato-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 25% 70%, rgba(80,60,30,.4) 0%,transparent 35%),
+    radial-gradient(circle at 75% 30%, rgba(60,80,30,.3) 0%,transparent 30%),
+    radial-gradient(circle at 50% 50%, rgba(100,80,40,.15) 0%,transparent 60%);
+}
+/* alien blobs */
+.alien{
+  position:absolute;border-radius:50%;opacity:.7;
+  background:radial-gradient(circle,#6a5acd,#3a2a8a);
+}
+.a1{width:38px;height:44px;left:10%;top:42%;transform:scaleY(1.2);}
+.a2{width:34px;height:40px;right:8%;top:35%;transform:scaleY(1.1);}
+.a3{width:28px;height:34px;right:20%;bottom:25%;opacity:.5;}
+/* player */
+.player-dot{
+  position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
+  width:16px;height:16px;border-radius:50%;
+  background:radial-gradient(circle,#fff 0%,#ccc 60%,#999 100%);
+  box-shadow:0 0 12px rgba(255,255,255,.5);
+}
+/* damage numbers */
+.dmg{
+  position:absolute;color:#ff4444;font-size:13px;font-weight:700;
+  text-shadow:0 1px 3px rgba(0,0,0,.8);
+}
+.d1{left:46%;top:55%;}
+.d2{left:54%;top:48%;}
+.d3{left:56%;top:55%;}
+/* mute */
+.p-mute{
+  position:absolute;bottom:12px;right:12px;
+  width:30px;height:30px;background:rgba(0,0,0,.55);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+}
+.p-mute svg{width:15px;height:15px;fill:rgba(255,255,255,.75);}
+
+/* banner info below art */
+.p-banner-info{
+  background:var(--card);
+  padding:12px 16px 14px;
+}
+.p-banner-row1{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px;}
+.p-banner-title{font-size:17px;font-weight:700;color:#fff;line-height:1.3;flex:1;}
+.p-banner-score-box{text-align:right;flex-shrink:0;}
+.p-banner-score{font-size:28px;font-weight:800;color:var(--score);line-height:1;}
+.p-banner-score-label{font-size:11px;color:var(--t2);margin-top:2px;}
+.p-banner-sub{font-size:13px;color:var(--t2);margin-bottom:10px;}
+.p-banner-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--tag-bg);color:#fff;
+  font-size:12px;font-weight:700;padding:4px 10px;border-radius:6px;
+}
+.p-banner-tag svg{width:12px;height:12px;fill:#fff;}
+
+/* dots */
+.p-dots{
+  display:flex;justify-content:center;gap:5px;padding:8px 0 4px;
+}
+.p-dot{
+  width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.22);
+  transition:all .25s;
+}
+.p-dot.on{width:16px;border-radius:3px;background:rgba(255,255,255,.75);}
+
+/* ── section header ── */
+.sec-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px 8px;
+}
+.sec-title{font-size:18px;font-weight:700;color:var(--t1);}
+.sec-more{font-size:13px;color:var(--t2);cursor:pointer;}
+.sec-more:hover{color:var(--accent);}
+
+/* ── portrait recent games ── */
+.p-recent{
+  display:flex;gap:10px;overflow-x:auto;
+  padding:0 16px 2px;
+}
+.p-rcard{
+  flex-shrink:0;width:72px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.p-rcover{
+  width:72px;height:96px;border-radius:12px;overflow:hidden;
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+}
+.p-rname{
+  font-size:11px;color:var(--t1);text-align:center;
+  width:72px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  line-height:1.3;
+}
+
+/* ── portrait recommend ── */
+.p-rec{
+  display:flex;gap:12px;overflow-x:auto;
+  padding:0 16px 6px;
+}
+.p-reccard{
+  flex-shrink:0;width:120px;cursor:pointer;
+}
+.p-reccov{
+  width:120px;height:120px;border-radius:14px;overflow:hidden;
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:36px;
+  margin-bottom:7px;
+}
+.p-recname{font-size:13px;color:var(--t1);text-align:center;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.p-recsub{font-size:11px;color:var(--t2);text-align:center;margin-top:2px;}
+
+/* ── latest news ── */
+.p-news{
+  margin:0 16px 16px;border-radius:14px;overflow:hidden;
+  background:var(--card);border:1px solid var(--border);cursor:pointer;
+}
+.p-news-img{
+  width:100%;height:150px;overflow:hidden;
+  display:flex;align-items:flex-end;
+  background:linear-gradient(135deg,#1a2535,#2d1b3a,#0a0f1a);
+  padding:0;
+}
+.p-news-gradient{
+  width:100%;height:100%;
+  background:linear-gradient(135deg,#1a2535 0%,#2d1b3a 60%,#0a0f1a 100%);
+  display:flex;align-items:flex-start;padding:16px;
+}
+.p-news-headline{font-size:14px;font-weight:700;color:#fff;line-height:1.4;}
+
+/* ── portrait bottom nav ── */
+.p-nav{
+  height:var(--nav-h-p);display:flex;align-items:center;justify-content:space-around;
+  background:var(--bg);border-top:1px solid var(--border);
+  flex-shrink:0;
+}
+.p-navitem{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;cursor:pointer;padding-bottom:6px;
+}
+.p-navitem svg{width:24px;height:24px;fill:var(--t2);}
+.p-navitem span{font-size:10px;color:var(--t2);}
+.p-navitem.on svg{fill:var(--accent);}
+.p-navitem.on span{color:var(--accent);}
+
+
+/* ════════════════════════════════════════
+   LANDSCAPE VIEW
+   ════════════════════════════════════════ */
+#vLandscape{background:var(--bg);}
+
+/* landscape top nav — matches screenshot exactly */
+.l-topnav{
+  height:var(--top-h-l);display:flex;align-items:center;
+  background:rgba(12,16,22,.95);border-bottom:1px solid var(--border);
+  padding:0 16px;gap:0;flex-shrink:0;
+}
+.l-navitems{display:flex;align-items:center;gap:2px;}
+.l-navitem{
+  display:flex;align-items:center;gap:5px;padding:7px 12px;
+  border-radius:8px;cursor:pointer;color:var(--t2);font-size:13px;transition:.15s;
+}
+.l-navitem svg{width:16px;height:16px;fill:currentColor;}
+.l-navitem.on{color:#fff;}
+.l-navitem.on svg{fill:var(--accent);}
+/* 探索 active indicator */
+.l-navitem.on .l-nav-label{
+  display:flex;align-items:center;gap:4px;
+}
+.l-topnav-right{
+  margin-left:auto;display:flex;align-items:center;gap:14px;
+}
+.l-icon-btn{
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.l-icon-btn svg{width:18px;height:18px;fill:var(--t2);}
+.l-sep{width:1px;height:22px;background:var(--border);margin:0 2px;}
+.l-time{font-size:13px;font-weight:700;color:#fff;letter-spacing:.3px;}
+.l-wifi svg{width:16px;height:16px;fill:#fff;}
+.l-bat{display:flex;align-items:center;gap:2px;}
+.l-bat-body{width:22px;height:11px;border:1.5px solid rgba(255,255,255,.6);border-radius:2px;padding:1px 1px;}
+.l-bat-fill{height:100%;width:96%;background:#fff;border-radius:1px;}
+.l-bat-tip{width:2px;height:5px;background:rgba(255,255,255,.6);border-radius:0 1px 1px 0;}
+.l-pct{font-size:12px;font-weight:700;color:#fff;}
+
+/* landscape body */
+.l-body{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.l-scroll{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:14px 20px 10px;
+  display:flex;flex-direction:column;gap:0;
+}
+
+/* ── landscape banner — two cards ── */
+.l-banner-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:14px;
+  flex-shrink:0;
+}
+.l-bcard{
+  border-radius:14px;overflow:hidden;position:relative;
+  height:124px;cursor:pointer;
+  background:var(--card);
+  border:1px solid var(--border);
+}
+/* card 1: 杀戮尖塔2 — dark teal/green */
+.l-bcard.c1{background:linear-gradient(135deg,#0c1f18 0%,#1a3a25 50%,#0e1f12 100%);}
+/* card 2: 吸血鬼爬行者 — dark purple */
+.l-bcard.c2{background:linear-gradient(135deg,#140a1e 0%,#281242 50%,#0e0818 100%);}
+
+.l-bcard-inner{position:absolute;inset:0;padding:14px 16px;}
+.l-bcard-title{font-size:16px;font-weight:800;color:#fff;margin-bottom:4px;line-height:1.3;}
+.l-bcard-sub{font-size:12px;color:rgba(255,255,255,.6);margin-bottom:10px;}
+.l-bcard-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--tag-bg);
+  color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px;
+}
+.l-bcard-tag svg{width:11px;height:11px;fill:#fff;}
+.l-bcard-score{
+  position:absolute;top:14px;right:16px;text-align:right;
+}
+.l-bcard-scoreval{font-size:24px;font-weight:800;color:var(--score);}
+.l-bcard-scorelab{font-size:10px;color:var(--t2);margin-top:1px;}
+
+/* ── landscape section header ── */
+.l-sechd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0 7px;
+}
+.l-sectitle{font-size:15px;font-weight:700;color:var(--t1);}
+.l-secmore{font-size:12px;color:var(--t2);cursor:pointer;}
+.l-secmore:hover{color:var(--accent);}
+
+/* ── landscape recent games ── */
+.l-recent{
+  display:flex;gap:10px;overflow-x:auto;padding-bottom:2px;
+}
+.l-rcard{
+  flex-shrink:0;width:54px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+}
+.l-rcover{
+  width:54px;height:72px;border-radius:10px;overflow:hidden;
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.l-rname{
+  font-size:10px;color:var(--t1);text-align:center;
+  width:54px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+
+/* ── landscape recommend ── */
+.l-rec{
+  display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;
+}
+.l-reccard{
+  flex-shrink:0;width:72px;cursor:pointer;
+}
+.l-reccov{
+  width:72px;height:96px;border-radius:10px;overflow:hidden;
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:5px;
+}
+.l-recname{font-size:11px;color:var(--t1);text-align:center;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.l-recsub{font-size:9px;color:var(--t2);text-align:center;margin-top:1px;}
+
+/* ── image placeholder ── */
+.img-ph{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:5px;background:#1e2530;
+}
+.img-ph svg{opacity:.35;}
+.img-ph span{font-size:9px;color:rgba(255,255,255,.3);}
+
+/* ─── toast ─── */
+.toast{
+  position:fixed;top:22px;left:50%;transform:translateX(-50%) translateY(-8px);
+  background:var(--accent);color:#fff;font-size:13px;font-weight:600;
+  padding:9px 20px;border-radius:22px;z-index:9999;
+  opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;
+  white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ─── game covers — per-game gradient bg ─── */
+.g1{background:linear-gradient(135deg,#0c0824,#3a1a7a);}
+.g2{background:linear-gradient(135deg,#1a0505,#600a0a);}
+.g3{background:linear-gradient(135deg,#0a180a,#1e4a1e);}
+.g4{background:linear-gradient(135deg,#1a0510,#4a1030);}
+.g5{background:linear-gradient(135deg,#0a1a2a,#1a3a5a);}
+.g6{background:linear-gradient(135deg,#0a0a20,#202070);}
+.g7{background:linear-gradient(135deg,#101020,#282860);}
+.g8{background:linear-gradient(135deg,#0f1a0a,#2a4a1a);}
+</style>
+</head>
+<body>
+
+<!-- toggle -->
+<button class="toggle-btn" id="toggleBtn" onclick="toggleOrientation()">
+  <svg viewBox="0 0 24 24"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.25-.77c-.59-.59-1.54-.59-2.12 0L1.75 8.11c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.36-6.36c.59-.59.59-1.54 0-2.12L10.23 1.75zm4.6 19.44L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zm-7.57.29C4.01 19.93 1.67 16.76 1.31 13H-.19C.21 19.16 5.36 24 11.65 24l.66-.03-3.81-3.81-1.24 1.32z"/></svg>
+  切换横竖屏
+</button>
+
+<!-- DEVICE FRAME -->
+<div class="device" id="device">
+
+  <!-- ══ PORTRAIT VIEW ══ -->
+  <div class="view" id="vPortrait">
+    <!-- status bar -->
+    <div class="p-status">
+      <span class="time">11:47</span>
+      <div class="right">
+        <!-- BT -->
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,.8)"><path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/></svg>
+        <!-- signal bars -->
+        <svg width="16" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,.8)"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+        <!-- battery -->
+        <svg width="22" height="13" viewBox="0 0 26 13" fill="none">
+          <rect x=".5" y=".5" width="22" height="12" rx="2" stroke="rgba(255,255,255,.6)" stroke-width="1"/>
+          <rect x="1.5" y="1.5" width="19" height="10" rx="1.5" fill="rgba(255,255,255,.85)"/>
+          <rect x="23" y="4" width="2.5" height="5" rx="1" fill="rgba(255,255,255,.5)"/>
+        </svg>
+        <span style="font-size:13px;font-weight:700;color:#fff;">98</span>
+      </div>
+    </div>
+
+    <!-- scroll -->
+    <div class="p-scroll">
+      <!-- search -->
+      <div class="p-search">
+        <div class="p-search-bar">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <span>侠盗猎车手5</span>
+        </div>
+        <div class="p-scan">
+          <svg viewBox="0 0 24 24"><path d="M4 4h4V2H2v6h2V4zm16 0v4h2V2h-6v2h4zM4 20H2v6h6v-2H4v-4zm16 4v-4h2v6h-6v-2h4zM5 7h14v10H5z" opacity=".9"/></svg>
+        </div>
+      </div>
+
+      <!-- banner: Brotato -->
+      <div class="p-banner">
+        <div class="p-banner-art">
+          <div class="brotato-bg"></div>
+          <!-- aliens -->
+          <div class="alien a1"></div>
+          <div class="alien a2"></div>
+          <div class="alien a3"></div>
+          <!-- player -->
+          <div class="player-dot"></div>
+          <!-- damage numbers -->
+          <div class="dmg d1">13</div>
+          <div class="dmg d2">82</div>
+          <div class="dmg d3">13</div>
+          <!-- mute -->
+          <div class="p-mute">
+            <svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+          </div>
+        </div>
+        <!-- info below art -->
+        <div class="p-banner-info">
+          <div class="p-banner-row1">
+            <div class="p-banner-title">土豆兄弟(Brotato)</div>
+            <div class="p-banner-score-box">
+              <div class="p-banner-score">9.6</div>
+              <div class="p-banner-score-label">玩家评价</div>
+            </div>
+          </div>
+          <div class="p-banner-sub">击退外星人，选择武器，生存竞争！</div>
+          <span class="p-banner-tag">
+            <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            编辑精选
+          </span>
+        </div>
+      </div>
+      <!-- dots -->
+      <div class="p-dots">
+        <div class="p-dot"></div>
+        <div class="p-dot on"></div>
+        <div class="p-dot"></div>
+      </div>
+
+      <!-- 继续游戏 -->
+      <div class="sec-hd">
+        <span class="sec-title">继续游戏</span>
+      </div>
+      <div class="p-recent" id="pRecentRow"></div>
+
+      <!-- 为你推荐 -->
+      <div class="sec-hd" style="padding-top:18px;">
+        <span class="sec-title">为你推荐</span>
+      </div>
+      <div class="p-rec">
+        <div class="p-reccard" onclick="toast('生化危机9安魂曲')">
+          <div class="p-reccov" style="background:linear-gradient(135deg,#0a0505,#2a0808);"><div class="img-ph"><svg width="28" height="28" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-8.5-5.5l2.5 3.01L18 12l4 5H6l3.5-4.51z"/></svg><span>封面图</span></div></div>
+          <div class="p-recname">生化危机9安魂曲</div>
+          <div class="p-recsub">动作 / 恐怖</div>
+        </div>
+        <div class="p-reccard" onclick="toast('生化危机8')">
+          <div class="p-reccov" style="background:linear-gradient(135deg,#1a0a0a,#3d1010);"><div class="img-ph"><svg width="28" height="28" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-8.5-5.5l2.5 3.01L18 12l4 5H6l3.5-4.51z"/></svg><span>封面图</span></div></div>
+          <div class="p-recname">生化危机8</div>
+          <div class="p-recsub">动作 / 恐怖</div>
+        </div>
+        <div class="p-reccard" onclick="toast('Wallpaper Engine')">
+          <div class="p-reccov" style="background:linear-gradient(135deg,#0a1a2a,#1a3a5a);"><div class="img-ph"><svg width="28" height="28" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-8.5-5.5l2.5 3.01L18 12l4 5H6l3.5-4.51z"/></svg><span>封面图</span></div></div>
+          <div class="p-recname">Wallpaper Engine: 壁纸引擎</div>
+          <div class="p-recsub">工具</div>
+        </div>
+        <div class="p-reccard" onclick="toast('古墓丽影9')">
+          <div class="p-reccov" style="background:linear-gradient(135deg,#1a0510,#3a0f20);"><div class="img-ph"><svg width="28" height="28" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-8.5-5.5l2.5 3.01L18 12l4 5H6l3.5-4.51z"/></svg><span>封面图</span></div></div>
+          <div class="p-recname">古墓丽影9</div>
+          <div class="p-recsub">动作冒险</div>
+        </div>
+        <div class="p-reccard" onclick="toast('星露谷物语')">
+          <div class="p-reccov" style="background:linear-gradient(135deg,#0a150a,#1a3a1a);"><div class="img-ph"><svg width="28" height="28" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-8.5-5.5l2.5 3.01L18 12l4 5H6l3.5-4.51z"/></svg><span>封面图</span></div></div>
+          <div class="p-recname">星露谷物语</div>
+          <div class="p-recsub">模拟经营</div>
+        </div>
+      </div>
+
+      <!-- 最新资讯 -->
+      <div class="sec-hd" style="padding-top:18px;">
+        <span class="sec-title">最新资讯</span>
+        <span class="sec-more">查看全部 ›</span>
+      </div>
+      <div class="p-news" onclick="toast('资讯')">
+        <div class="p-news-gradient">
+          <div class="p-news-headline">夏日游戏节2026预告片公布 《生化危机9》D...</div>
+        </div>
+      </div>
+
+    </div><!-- /p-scroll -->
+
+    <!-- bottom nav -->
+    <div class="p-nav">
+      <div class="p-navitem on">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        <span>探索</span>
+      </div>
+      <div class="p-navitem">
+        <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5S16.33 15 15.5 15zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5S19.33 12 18.5 12z"/></svg>
+        <span>游戏</span>
+      </div>
+      <div class="p-navitem">
+        <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+        <span>排行</span>
+      </div>
+      <div class="p-navitem">
+        <svg viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
+        <span>库</span>
+      </div>
+      <div class="p-navitem">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <span>我的</span>
+      </div>
+    </div>
+  </div><!-- /vPortrait -->
+
+
+  <!-- ══ LANDSCAPE VIEW ══ -->
+  <div class="view hidden" id="vLandscape">
+    <!-- top nav -->
+    <div class="l-topnav">
+      <div class="l-navitems">
+        <div class="l-navitem">
+          <svg viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
+          <span class="l-nav-label">库</span>
+        </div>
+        <div class="l-navitem">
+          <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5S16.33 15 15.5 15zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5S19.33 12 18.5 12z"/></svg>
+          <span class="l-nav-label">游戏</span>
+        </div>
+        <div class="l-navitem on">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+          <span class="l-nav-label">探索</span>
+        </div>
+        <div class="l-navitem">
+          <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+          <span class="l-nav-label">排行</span>
+        </div>
+        <div class="l-navitem">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <span class="l-nav-label">我的</span>
+        </div>
+      </div>
+      <div class="l-topnav-right">
+        <!-- search icon -->
+        <div class="l-icon-btn">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </div>
+        <!-- scan icon -->
+        <div class="l-icon-btn">
+          <svg viewBox="0 0 24 24"><path d="M4 4h4V2H2v6h2V4zm16 0v4h2V2h-6v2h4zM4 20H2v6h6v-2H4v-4zm16 4v-4h2v6h-6v-2h4zM5 7h14v10H5z"/></svg>
+        </div>
+        <!-- gamepad icon -->
+        <div class="l-icon-btn">
+          <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5S16.33 15 15.5 15zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5S19.33 12 18.5 12z"/></svg>
+        </div>
+        <div class="l-sep"></div>
+        <span class="l-time">11:36</span>
+        <div class="l-wifi">
+          <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+        </div>
+        <div class="l-bat">
+          <div class="l-bat-body"><div class="l-bat-fill"></div></div>
+          <div class="l-bat-tip"></div>
+        </div>
+        <span class="l-pct">100%</span>
+      </div>
+    </div>
+
+    <!-- landscape body -->
+    <div class="l-body">
+      <div class="l-scroll">
+        <!-- banner row -->
+        <div class="l-banner-row">
+          <!-- card 1: 杀戮尖塔2 -->
+          <div class="l-bcard c1" onclick="toast('杀戮尖塔2')">
+            <div class="l-bcard-inner">
+              <div class="l-bcard-title">杀戮尖塔2</div>
+              <div class="l-bcard-sub">塔2造，遇异谋强</div>
+              <span class="l-bcard-tag">
+                <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                编辑精选
+              </span>
+            </div>
+            <div class="l-bcard-score">
+              <div class="l-bcard-scoreval">6.7</div>
+              <div class="l-bcard-scorelab">玩家评价</div>
+            </div>
+          </div>
+          <!-- card 2: 吸血鬼 -->
+          <div class="l-bcard c2" onclick="toast('吸血鬼爬行者')">
+            <div class="l-bcard-inner">
+              <div class="l-bcard-title">吸血鬼爬行者: 屠戮地牢的吸血鬼幸存者</div>
+              <div class="l-bcard-sub">吸血鬼幸存者新作！</div>
+              <span class="l-bcard-tag">
+                <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                编辑精选
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 继续游戏 (landscape) -->
+        <div class="l-sechd">
+          <span class="l-sectitle">继续游戏</span>
+        </div>
+        <div class="l-recent" id="lRecentRow"></div>
+
+        <!-- 为你推荐 -->
+        <div class="l-sechd" style="padding-top:10px;">
+          <span class="l-sectitle">为你推荐</span>
+        </div>
+        <div class="l-rec">
+          <div class="l-reccard" onclick="toast('生化危机9安魂曲')">
+            <div class="l-reccov" style="background:linear-gradient(135deg,#0a0505,#2a0808);"><div class="img-ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-8.5-5.5l2.5 3.01L18 12l4 5H6l3.5-4.51z"/></svg></div></div>
+            <div class="l-recname">生化危机9安魂曲</div><div class="l-recsub">动作/恐怖</div>
+          </div>
+          <div class="l-reccard" onclick="toast('生化危机8')">
+            <div class="l-reccov" style="background:linear-gradient(135deg,#1a0a0a,#3d1010);"><div class="img-ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-8.5-5.5l2.5 3.01L18 12l4 5H6l3.5-4.51z"/></svg></div></div>
+            <div class="l-recname">生化危机8</div><div class="l-recsub">动作/恐怖</div>
+          </div>
+          <div class="l-reccard" onclick="toast('Wallpaper Engine')">
+            <div class="l-reccov" style="background:linear-gradient(135deg,#0a1a2a,#1a3a5a);"><div class="img-ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-8.5-5.5l2.5 3.01L18 12l4 5H6l3.5-4.51z"/></svg></div></div>
+            <div class="l-recname">Wallpaper Engine</div><div class="l-recsub">壁纸引擎</div>
+          </div>
+          <div class="l-reccard" onclick="toast('古墓丽影9')">
+            <div class="l-reccov" style="background:linear-gradient(135deg,#1a0510,#3a0f20);"><div class="img-ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-8.5-5.5l2.5 3.01L18 12l4 5H6l3.5-4.51z"/></svg></div></div>
+            <div class="l-recname">古墓丽影9</div><div class="l-recsub">动作冒险</div>
+          </div>
+          <div class="l-reccard" onclick="toast('Resident Evil 4')">
+            <div class="l-reccov" style="background:linear-gradient(135deg,#100a0a,#300808);"><div class="img-ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-8.5-5.5l2.5 3.01L18 12l4 5H6l3.5-4.51z"/></svg></div></div>
+            <div class="l-recname">Resident Evil 4</div><div class="l-recsub">动作/恐怖</div>
+          </div>
+          <div class="l-reccard" onclick="toast('星露谷物语')">
+            <div class="l-reccov" style="background:linear-gradient(135deg,#0a150a,#1a3a1a);"><div class="img-ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-8.5-5.5l2.5 3.01L18 12l4 5H6l3.5-4.51z"/></svg></div></div>
+            <div class="l-recname">星露谷物语</div><div class="l-recsub">模拟经营</div>
+          </div>
+          <div class="l-reccard" onclick="toast('土豆兄弟')">
+            <div class="l-reccov" style="background:linear-gradient(135deg,#0a0a20,#202070);"><div class="img-ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-8.5-5.5l2.5 3.01L18 12l4 5H6l3.5-4.51z"/></svg></div></div>
+            <div class="l-recname">土豆兄弟(Brotato)</div><div class="l-recsub">动作/射击</div>
+          </div>
+        </div>
+
+      </div><!-- /l-scroll -->
+    </div><!-- /l-body -->
+  </div><!-- /vLandscape -->
+
+</div><!-- /device -->
+
+<!-- toast -->
+<div class="toast" id="toastEl"></div>
+
+<script>
+/* ── game data (scheme A: show downloaded only) ── */
+const GAMES = [
+  { name:'土豆兄弟(Brotato)', emoji:'👾', bg:'linear-gradient(135deg,#0a0a20,#282870)', downloaded:true  },
+  { name:'杀戮尖塔2',          emoji:'🗡️', bg:'linear-gradient(135deg,#0c0824,#3a1a7a)', downloaded:true  },
+  { name:'吸血鬼幸存者',       emoji:'🧛', bg:'linear-gradient(135deg,#1a0505,#600a0a)', downloaded:true  },
+  { name:'星露谷物语',         emoji:'🌿', bg:'linear-gradient(135deg,#0a150a,#1a3a1a)', downloaded:true  },
+  { name:'古墓丽影9',          emoji:'🏹', bg:'linear-gradient(135deg,#1a0510,#4a1030)', downloaded:true  },
+  { name:'Wallpaper Engine',   emoji:'🚗', bg:'linear-gradient(135deg,#0a1a2a,#1a3a5a)', downloaded:true  },
+  { name:'生化危机8',          emoji:'🏚️', bg:'linear-gradient(135deg,#1a0a0a,#3d1010)', downloaded:true  },
+  { name:'Resident Evil 4',    emoji:'🎭', bg:'linear-gradient(135deg,#100a0a,#300808)', downloaded:true  },
+];
+
+const PH = `<div class="img-ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-8.5-5.5l2.5 3.01L18 12l4 5H6l3.5-4.51z"/></svg></div>`;
+
+/* ── render recent rows ── */
+function renderPortrait(){
+  document.getElementById('pRecentRow').innerHTML = GAMES.map(g=>`
+    <div class="p-rcard" onclick="toast('▶ ${g.name}')">
+      <div class="p-rcover" style="background:${g.bg};">${PH}</div>
+      <div class="p-rname">${g.name}</div>
+    </div>
+  `).join('');
+}
+function renderLandscape(){
+  document.getElementById('lRecentRow').innerHTML = GAMES.map(g=>`
+    <div class="l-rcard" onclick="toast('▶ ${g.name}')">
+      <div class="l-rcover" style="background:${g.bg};">${PH}</div>
+      <div class="l-rname">${g.name}</div>
+    </div>
+  `).join('');
+}
+
+/* ── orientation toggle ── */
+let isLandscape = false;
+function toggleOrientation(){
+  isLandscape = !isLandscape;
+  const dev = document.getElementById('device');
+  const vP  = document.getElementById('vPortrait');
+  const vL  = document.getElementById('vLandscape');
+  if(isLandscape){
+    dev.classList.add('landscape');
+    vP.classList.add('hidden');
+    vL.classList.remove('hidden');
+  } else {
+    dev.classList.remove('landscape');
+    vL.classList.add('hidden');
+    vP.classList.remove('hidden');
+  }
+}
+
+/* ── toast ── */
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById('toastEl');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 1600);
+}
+
+renderPortrait();
+renderLandscape();
+</script>
+</body>
+</html>
