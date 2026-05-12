@@ -1,0 +1,1663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>盖世游戏 - 侠盗猎车手5 (兼容性评价Demo)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0f1115;
+            --panel-bg: #13161a;
+            --primary-blue: #009dff;
+            --blue-gradient: linear-gradient(90deg, #00bfff, #0080ff);
+            --btn-dark: #2a2d33;
+            --text-main: #ffffff;
+            --text-sub: #8a9ba8;
+            --divider: rgba(255,255,255,0.08);
+            --radius-box: 16px;
+            --radius-btn: 12px;
+            --popup-bg: #252830;
+            --star-yellow: #f5c518;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; user-select: none; }
+        body {
+            background: #1a1a2e; height: 100vh; width: 100vw;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            overflow: hidden; color: var(--text-main); gap: 16px;
+        }
+
+        /* ---- 横竖屏切换按钮 ---- */
+        .orient-bar { display: flex; gap: 8px; z-index: 9999; flex-shrink: 0; }
+        .orient-btn {
+            padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+            cursor: pointer; border: 1px solid rgba(255,255,255,0.2);
+            color: #ccc; background: rgba(255,255,255,0.07); transition: 0.2s;
+        }
+        .orient-btn.active { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
+
+        /* ---- 手机壳 ---- */
+        .phone-frame {
+            position: relative;
+            border-radius: 44px;
+            background: #1c1c1e;
+            box-shadow:
+                0 0 0 2px #3a3a3c,
+                0 0 0 6px #1c1c1e,
+                0 0 0 8px #3a3a3c,
+                0 30px 80px rgba(0,0,0,0.9),
+                inset 0 0 20px rgba(0,0,0,0.4);
+            padding: 14px;
+            transition: width 0.4s ease, height 0.4s ease;
+            flex-shrink: 0;
+        }
+        /* 横版手机壳：860+28 x 400+28 */
+        .phone-frame.ls { width: 916px; height: 456px; }
+        /* 竖版手机壳：400+28 x 860+28 */
+        .phone-frame.pt { width: 456px; height: 916px; }
+        /* 横版侧边按钮装饰 */
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            right: -10px; top: 80px;
+            width: 4px; height: 60px;
+            background: #3a3a3c;
+            border-radius: 2px;
+            box-shadow: 0 80px 0 #3a3a3c;
+        }
+        .phone-frame.pt::before {
+            right: auto; top: auto;
+            left: -10px; bottom: 120px;
+            width: 4px; height: 40px;
+            box-shadow: 0 -50px 0 #3a3a3c, 0 60px 0 #3a3a3c;
+        }
+
+        /* ---- APP 外壳 ---- */
+        .shell {
+            position: relative; border-radius: 30px; overflow: hidden;
+            background: var(--bg-dark);
+            width: 100%; height: 100%;
+        }
+
+        /* 横屏：860×400 */
+        .shell.ls .inner {
+            width: 100%; height: 100%;
+            display: grid; grid-template-columns: 1fr 280px; overflow: hidden;
+        }
+        .shell.ls .col-left { height: 100%; overflow-y: auto; overflow-x: hidden; background: linear-gradient(to bottom, #1a1d24 0%, var(--bg-dark) 40%); }
+        .shell.ls .col-right { height: 100%; overflow-y: auto; background: var(--panel-bg); border-left: 1px solid var(--divider); display: flex; flex-direction: column; }
+        .shell.ls .bottom-bar { display: none !important; }
+
+        /* 竖屏：400×860 */
+        .shell.pt .inner { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+        .shell.pt .col-left { flex: 1; overflow-y: auto; overflow-x: hidden; background: var(--bg-dark); }
+        .shell.pt .col-right { display: none; }
+        .shell.pt .bottom-bar { display: flex !important; }
+
+        /* 滚动条隐藏 */
+        .col-left::-webkit-scrollbar, .col-right::-webkit-scrollbar { display: none; }
+
+        /* ---- 媒体区 ---- */
+        .media-container { width: 100%; position: relative; background: #000; overflow: hidden; flex-shrink: 0; }
+        .shell.ls .media-container { aspect-ratio: 21/9; }
+        .shell.pt .media-container { aspect-ratio: 16/9; }
+        .media-content { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .hidden { display: none !important; }
+        .back-btn {
+            position: absolute; top: 14px; left: 14px; z-index: 50;
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.45); border-radius: 50%; color: white; font-size: 15px; cursor: pointer; transition: 0.2s;
+        }
+        .back-btn:hover { background: rgba(0,0,0,0.7); }
+        .video-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 40%);
+            display: flex; flex-direction: column; justify-content: flex-end;
+            padding: 16px; pointer-events: none;
+        }
+        .video-controls-layer { pointer-events: auto; }
+        .play-pause-center {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            font-size: 44px; color: rgba(255,255,255,0.85); cursor: pointer;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); opacity: 0; transition: 0.3s; pointer-events: auto;
+        }
+        .media-container:hover .play-pause-center { opacity: 1; }
+        .progress-track {
+            width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px;
+            margin-bottom: 12px; cursor: pointer; pointer-events: auto;
+        }
+        .progress-fill { height: 100%; background: var(--primary-blue); width: 0%; border-radius: 2px; }
+        .controls-row { display: flex; justify-content: space-between; align-items: center; pointer-events: auto; }
+        .toggle-capsule {
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); border-radius: 20px;
+            padding: 3px; display: flex; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .tc-btn { padding: 4px 14px; font-size: 12px; color: #aaa; border-radius: 16px; cursor: pointer; transition: 0.2s; font-weight: 600; }
+        .tc-btn.active { background: #fff; color: #000; }
+        .right-icons { color: white; font-size: 15px; display: flex; gap: 14px; opacity: 0.8; cursor: pointer; }
+
+        /* ---- 左列内容区 ---- */
+        .content-pad { padding: 16px 20px 60px; }
+        .shell.ls .content-pad { padding: 20px 30px 80px; }
+
+        /* ---- 三合一信息卡：兼容性评价 + 游玩时长 + 云存档 ---- */
+        .info-card {
+            background: linear-gradient(135deg, #1c2535 0%, #111620 100%);
+            border-radius: var(--radius-box); margin-bottom: 28px;
+            border: 1px solid rgba(255,255,255,0.07); overflow: hidden;
+        }
+        /* 卡片顶部 header 行（参考原PC引擎卡样式） */
+        .info-card-hdr {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 20px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            cursor: pointer; transition: background 0.2s;
+        }
+        .info-card-hdr:hover { background: rgba(255,255,255,0.02); }
+        .ic-hdr-left { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #fff; }
+        .ic-hdr-left i { font-size: 16px; color: #b0bec5; }
+        .ic-hdr-right { display: flex; align-items: center; gap: 4px; font-size: 12px; color: rgba(255,255,255,0.5); }
+        .ic-hdr-right i { font-size: 10px; }
+        /* 主体区域 */
+        .info-card-body { display: flex; align-items: stretch; }
+        /* 横屏：三项并排一行 */
+        .shell.ls .info-card-body { flex-direction: row; }
+        .shell.ls .info-compat {
+            flex: 1.3; padding: 14px 20px 16px; cursor: pointer; transition: background 0.2s;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; justify-content: center;
+            position: relative;
+        }
+        .shell.ls .info-compat:hover { background: rgba(255,255,255,0.03); }
+        .shell.ls .ic-chevron { display: flex; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); }
+        .shell.ls .info-sub-row { flex: 1; display: flex; flex-direction: row; }
+        .shell.ls .info-time {
+            flex: 1; padding: 14px 14px;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        .shell.ls .info-cloud {
+            flex: 1; padding: 14px 14px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        /* 竖屏：三列并排一行（图标+标签+描述格式） */
+        .shell.pt .info-card-body { flex-direction: row; }
+        .shell.pt .info-compat {
+            flex: 1; padding: 12px 10px; cursor: pointer; transition: background 0.2s;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 4px; min-width: 0; text-align: center; position: relative;
+        }
+        .shell.pt .info-compat:hover { background: rgba(255,255,255,0.03); }
+        .shell.pt .ic-main { display: flex; flex-direction: column; align-items: center; min-width: 0; width: 100%; }
+        /* 竖版隐藏右侧箭头（仅显示在 info-compat 中） */
+        .shell.pt .ic-chevron { display: none; }
+        .shell.pt .info-compat .ic-chevron { display: flex; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); }
+        /* 竖版：info-sub-row 两列 */
+        .shell.pt .info-sub-row { flex: 2; display: flex; flex-direction: row; }
+        .shell.pt .info-time {
+            flex: 1; padding: 10px 8px;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        .shell.pt .info-cloud {
+            flex: 1; padding: 10px 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        /* 竖版 兼容性：大图标圆圈；横版隐藏 */
+        .shell.ls .info-compat .ic-icon-wrap { display: none; }
+        .shell.pt .info-compat .ic-icon-wrap {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(80,200,120,0.15);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 4px; flex-shrink: 0;
+        }
+        .shell.pt .info-compat .ic-icon-wrap span { font-size: 13px; font-weight: 800; color: #6fffa8; }
+        /* 标签文字 */
+        .shell.pt .ic-compat-label { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 2px; white-space: nowrap; }
+        /* 描述：最多1行，无渐隐效果 */
+        .shell.pt .ic-compat-desc {
+            font-size: 11px; color: var(--text-sub); line-height: 1.45;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;
+        }
+        /* 末尾渐隐遮罩 — 已移除 */
+        .shell.pt .ic-compat-desc-wrap {
+            position: relative; width: 100%; overflow: hidden;
+        }
+        /* 竖版：隐藏绿圈、ic-sub 文字、专用描述块；显示评分行 */
+        .shell.pt .info-compat .ic-icon-wrap { display: none; }
+        .shell.pt .info-compat .ic-score-row { display: flex; }
+        .shell.pt .info-compat .ic-score { font-size: 18px; }
+        .shell.pt .info-compat .ic-sub { display: none; }
+        .shell.pt .info-compat .ic-empty { font-size: 10px; }
+        /* 竖版描述专用 */
+        .pt-compat-desc { display: none; }
+        .shell.pt .pt-compat-desc { display: block; }
+        /* 兼容性标签 */
+        .ic-compat-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+        /* 共용 텍스트 */
+        .ic-score-row { display: flex; align-items: baseline; gap: 8px; margin: 4px 0 3px; }
+        .ic-score { font-size: 26px; font-weight: 800; color: #fff; }
+        .ic-stars { display: flex; gap: 2px; align-items: center; }
+        .ic-sub { font-size: 11px; color: var(--text-sub); }
+        .ic-empty { font-size: 12px; color: var(--text-sub); line-height: 1.5; }
+        .ic-icon { font-size: 18px; color: #b0bec5; }
+        .ic-val-label { font-size: 11px; color: var(--text-sub); }
+        .ic-val { font-size: 13px; font-weight: 600; color: #fff; }
+
+        /* 横版右列 PC游戏引擎卡（横铺满底部） */
+        .shell.ls #detailPanel { flex: none; }
+        .ls-engine-card {
+            background: linear-gradient(135deg, #1c2535 0%, #111620 100%);
+            border-top: 1px solid rgba(255,255,255,0.07);
+            margin-top: auto;
+        }
+        .ls-engine-hdr {
+            padding: 12px 20px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex; align-items: center;
+        }
+        .ls-engine-card .info-card-body { flex-direction: row; }
+        .ls-engine-card .info-compat {
+            flex: 1.3; padding: 14px 20px 16px; cursor: pointer; transition: background 0.2s;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .ls-engine-card .info-compat:hover { background: rgba(255,255,255,0.03); }
+        .ls-engine-card .info-sub-row { flex: 1; display: flex; flex-direction: row; }
+        .ls-engine-card .info-time {
+            flex: 1; padding: 14px 14px;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        .ls-engine-card .info-cloud {
+            flex: 1; padding: 14px 14px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        /* 横版时隐藏右列的 ls-engine-card（PC游戏引擎在左列显示），竖版时显示 */
+        .shell.ls .col-right .ls-engine-card { display: none; }
+        .shell.pt .col-right .ls-engine-card { display: none; }
+        /* 横版左列 info-card：水平布局与 ls-engine-card 相同 */
+        .shell.ls .col-left .info-card .info-card-body { flex-direction: row; }
+        .shell.ls .col-left .info-compat {
+            flex: 1.3; padding: 14px 20px 16px; cursor: pointer; transition: background 0.2s;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; justify-content: center;
+            position: relative;
+        }
+        .shell.ls .col-left .info-compat:hover { background: rgba(255,255,255,0.03); }
+        .shell.ls .col-left .info-sub-row { flex: 1; display: flex; flex-direction: row; }
+        .shell.ls .col-left .info-time {
+            flex: 1; padding: 14px 14px;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        .shell.ls .col-left .info-cloud {
+            flex: 1; padding: 14px 14px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+
+        /* 横版：左列视频下方开发商信息横排 */
+        .ls-dev-bar {
+            display: none;
+            padding: 10px 30px;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            flex-wrap: wrap; gap: 0 24px; align-items: center;
+        }
+        .shell.ls .ls-dev-bar { display: flex; }
+        .ls-dev-item { display: flex; align-items: center; gap: 6px; }
+        .ls-dev-item .dev-label { font-size: 11px; color: var(--text-sub); white-space: nowrap; }
+        .ls-dev-item .dev-val { font-size: 11px; color: #ddd; font-weight: 500; white-space: nowrap; }
+        /* 横版右列 dev-info-list 隐藏 */
+        .shell.ls .col-right .dev-info-list { display: none; }
+
+        /* ---- 游戏介绍 ---- */
+        .section-header { margin-bottom: 16px; font-size: 17px; font-weight: 700; color: white; display: flex; align-items: center; gap: 8px; }
+        .section-header::before { content: ''; width: 4px; height: 17px; background: var(--primary-blue); border-radius: 2px; }
+        .intro-lead { font-size: 13px; color: #ccc; line-height: 1.7; background: rgba(255,255,255,0.04); padding: 14px; border-radius: 10px; margin-bottom: 20px; }
+        .rich-img { width: 100%; border-radius: 8px; margin-bottom: 10px; display: block; border: 1px solid rgba(255,255,255,0.06); }
+
+        /* ---- 右列状态栏 & 游戏信息 ---- */
+        .status-bar { height: 40px; display: flex; align-items: center; justify-content: flex-end; padding: 0 18px; gap: 10px; font-size: 12px; flex-shrink: 0; }
+        .game-meta { padding: 8px 20px 20px; display: flex; flex-direction: column; }
+        .title-block { margin-bottom: 14px; }
+        .title-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
+        .game-title { font-size: 26px; font-weight: 800; color: white; line-height: 1.2; }
+        .btn-share-icon {
+            width: 32px; height: 32px; border-radius: 50%; background: var(--btn-dark);
+            display: flex; align-items: center; justify-content: center;
+            color: #aaa; cursor: pointer; transition: 0.2s; border: 1px solid rgba(255,255,255,0.05); flex-shrink: 0;
+        }
+        .btn-share-icon:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .game-subtitle { font-size: 12px; color: var(--text-sub); }
+        .rating-capsule { display: flex; height: 30px; border-radius: 6px; overflow: hidden; margin-bottom: 18px; width: fit-content; cursor: pointer; }
+        .rc-left { background: linear-gradient(90deg, #2c3e50, #34495e); padding: 0 10px; display: flex; align-items: center; gap: 5px; color: #d1d5db; font-size: 12px; font-weight: 600; }
+        .rc-right { background: #181b21; padding: 0 10px; display: flex; align-items: center; color: #6fffa8; font-size: 15px; font-weight: 700; }
+        .tags-group { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 20px; }
+        .tag-hot { background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 3px; }
+        .tag-normal { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); padding: 3px 9px; border-radius: 4px; font-size: 11px; }
+        .action-buttons-group { display: flex; gap: 9px; align-items: stretch; margin-bottom: 20px; position: relative; }
+        .btn-menu { width: 46px; height: 46px; flex-shrink: 0; background: var(--btn-dark); border-radius: var(--radius-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; position: relative; }
+        .btn-cloud { flex: 1; background: var(--btn-dark); border-radius: var(--radius-btn); display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; height: 46px; transition: 0.2s; }
+        .btn-get { flex: 1.5; background: var(--blue-gradient); border-radius: var(--radius-btn); display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(0,157,255,0.3); height: 46px; transition: 0.2s; }
+        .btn-menu:active, .btn-cloud:active, .btn-get:active { transform: scale(0.96); }
+        .menu-popup { position: absolute; top: 55px; left: 0; width: 180px; background: var(--popup-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: none; flex-direction: column; overflow: hidden; z-index: 100; }
+        .menu-item { padding: 11px 15px; font-size: 13px; color: #ccc; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 9px; }
+        .menu-item:last-child { border-bottom: none; }
+        .menu-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .text-danger { color: #ff4d4f; }
+        .dev-info-list { display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); padding: 8px 0; }
+        .dev-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .dev-row:last-child { border-bottom: none; }
+        .dev-label { font-size: 12px; color: var(--text-sub); }
+        .dev-val { font-size: 12px; color: #fff; font-weight: 500; text-align: right; }
+
+        /* ---- 竖屏底部栏 ---- */
+        .bottom-bar {
+            display: none; height: 76px; flex-shrink: 0;
+            background: var(--panel-bg); border-top: 1px solid var(--divider);
+            padding: 12px 16px; align-items: center; gap: 10px;
+        }
+        .btn-cloud-pt { flex: 1; height: 48px; background: var(--btn-dark); border-radius: var(--radius-btn); display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .btn-get-pt { flex: 2; height: 48px; background: var(--blue-gradient); border-radius: var(--radius-btn); display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(0,157,255,0.3); }
+
+        /* ---- 分享弹窗 ---- */
+        .share-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            z-index: 999; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .share-overlay.show { opacity: 1; pointer-events: auto; }
+        .share-modal {
+            background: #17191e; border-radius: 24px; width: 400px; padding: 24px 28px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            transform: translateY(20px) scale(0.95); transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275); position: relative;
+        }
+        .share-overlay.show .share-modal { transform: translateY(0) scale(1); }
+        .share-header { text-align: center; margin-bottom: 24px; position: relative; }
+        .share-title { font-size: 16px; font-weight: 700; color: #fff; }
+        .share-close { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 20px; color: #777; cursor: pointer; transition: 0.2s; }
+        .share-close:hover { color: #fff; }
+        .share-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px 8px; }
+        .share-option { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; }
+        .share-icon-circle { width: 52px; height: 52px; border-radius: 50%; background: #25282e; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; transition: 0.2s; }
+        .share-option:hover .share-icon-circle { background: #32363e; transform: scale(1.08) translateY(-2px); }
+        .share-option span { font-size: 12px; color: #9aa0a6; transition: 0.2s; }
+        .share-option:hover span { color: #fff; }
+        .share-icon-circle svg { width: 28px; height: 28px; stroke: #fff; }
+
+        /* =========================================
+           兼容性评价面板（旧：已废弃）
+           ========================================= */
+        .compat-panel { display: none !important; }
+        .compat-panel-pt { display: none !important; }
+
+        /* =========================================
+           兼容性评价全屏页面（从右侧滑入）
+           ========================================= */
+        .compat-page {
+            position: absolute; inset: 0;
+            background: var(--bg-dark);
+            z-index: 80;
+            display: flex; flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+            will-change: transform;
+        }
+        .compat-page.show { transform: translateX(0); }
+
+        .compat-page-hdr {
+            padding: 12px 16px 10px; display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid var(--divider); flex-shrink: 0;
+            background: var(--panel-bg);
+        }
+        .compat-page-back {
+            width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.08);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: rgba(255,255,255,0.7); transition: 0.2s; flex-shrink: 0;
+        }
+        .compat-page-back:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .compat-page-title { font-size: 15px; font-weight: 700; color: #fff; }
+        .compat-page-body { flex: 1; overflow-y: auto; }
+        .compat-page-body::-webkit-scrollbar { display: none; }
+        /* 横版页面：评价2列；概览卡限半宽 */
+        .shell.ls .compat-page .compat-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+        .shell.ls .compat-page .compat-item:nth-last-child(-n+2) { border-bottom: none; }
+        .shell.ls .compat-overview { max-width: 50%; }
+
+        /* 概览卡 */
+        .compat-overview { padding: 18px 20px; display: flex; gap: 18px; align-items: flex-start; }
+        .ov-score-big { font-size: 50px; font-weight: 900; color: #fff; line-height: 1; min-width: 70px; }
+        .ov-right { flex: 1; }
+        .ov-stars { display: flex; gap: 4px; margin-bottom: 6px; align-items: center; }
+        .ov-count { font-size: 12px; color: var(--text-sub); }
+        .dist-bars { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+        .dist-row { display: flex; align-items: center; gap: 8px; }
+        .dist-lbl { font-size: 11px; color: var(--text-sub); width: 26px; text-align: right; flex-shrink: 0; }
+        .dist-track { flex: 1; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+        .dist-fill { height: 100%; background: var(--star-yellow); border-radius: 3px; transition: width 0.4s; }
+        .dist-cnt { font-size: 11px; color: var(--text-sub); width: 20px; flex-shrink: 0; }
+
+        /* 工具栏 */
+        .compat-toolbar {
+            padding: 0 20px 14px; display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+        }
+        .compat-chips { display: flex; gap: 6px; flex: 1; }
+        .chip {
+            padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+            background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5);
+            cursor: pointer; border: 1px solid transparent; transition: 0.2s;
+        }
+        .chip.active { background: rgba(0,157,255,0.15); color: var(--primary-blue); border-color: rgba(0,157,255,0.4); }
+        .btn-feedback {
+            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+            background: var(--blue-gradient); color: #fff; cursor: pointer; white-space: nowrap;
+            box-shadow: 0 2px 10px rgba(0,157,255,0.3); transition: 0.2s;
+        }
+        .btn-feedback:hover { opacity: 0.9; }
+
+        /* 评价列表 */
+        .compat-list { padding: 0 20px; }
+        /* 横版一行2列 */
+        .shell.ls .compat-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+        .compat-item { border-bottom: 1px solid var(--divider); padding: 14px 0; }
+        .compat-item:last-child { border-bottom: none; }
+        .shell.ls .compat-item:nth-last-child(-n+2) { border-bottom: none; }
+        .ci-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .ci-avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; flex-shrink: 0; object-fit: cover; }
+        .ci-meta { flex: 1; }
+        .ci-name { font-size: 13px; font-weight: 600; color: #ddd; }
+        .ci-device { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
+        .ci-flag { font-size: 12px; color: var(--text-sub); cursor: pointer; padding: 3px; transition: 0.2s; }
+        .ci-flag:hover { color: #ff7875; }
+        .ci-stars { display: flex; gap: 3px; margin-bottom: 6px; }
+        .ci-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+        .ci-tag { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.55); padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+        .ci-text { font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.6; }
+        .ci-date { font-size: 11px; color: var(--text-sub); margin-top: 6px; }
+
+        /* 加载更多 */
+        .load-more {
+            margin: 14px 20px 24px; height: 40px; border-radius: 10px;
+            background: rgba(255,255,255,0.05); color: #aaa;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.08); transition: 0.2s;
+        }
+        .load-more:hover { background: rgba(255,255,255,0.09); color: #fff; }
+
+        /* 空状态 */
+        .compat-empty { padding: 40px 20px; text-align: center; color: var(--text-sub); font-size: 14px; }
+
+        /* =========================================
+           通用弹窗
+           ========================================= */
+        .modal-mask {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(4px);
+            z-index: 1000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.25s;
+        }
+        .modal-mask.show { opacity: 1; pointer-events: auto; }
+        .modal-box {
+            background: #1e2124; border-radius: 20px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            width: 380px; max-width: 95%;
+            transform: translateY(20px) scale(0.97);
+            transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        .modal-mask.show .modal-box { transform: translateY(0) scale(1); }
+        .modal-hdr {
+            padding: 18px 20px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .modal-hdr-title { font-size: 17px; font-weight: 800; color: #fff; }
+        .modal-x { cursor: pointer; color: rgba(255,255,255,0.4); transition: 0.2s; }
+        .modal-x:hover { color: #fff; }
+        .modal-body { padding: 18px 20px; }
+        .modal-footer {
+            padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.04);
+            background: rgba(0,0,0,0.15); display: flex; justify-content: flex-end; gap: 10px;
+        }
+
+        /* 表单 */
+        .fb-row { margin-bottom: 14px; }
+        .fb-lbl { font-size: 12px; color: var(--text-sub); margin-bottom: 8px; }
+        .fb-stars-wrap { display: flex; gap: 8px; }
+        .fb-star-svg { cursor: pointer; transition: transform 0.15s; flex-shrink: 0; }
+        .fb-star-svg:hover { transform: scale(1.15); }
+        .fb-device-box { font-size: 13px; color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 14px; }
+        .fb-tags-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+        .fb-tag {
+            padding: 5px 12px; border-radius: 6px; font-size: 12px;
+            background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.55);
+            border: 1px solid rgba(255,255,255,0.08); cursor: pointer; transition: 0.2s;
+        }
+        .fb-tag.active { background: rgba(0,157,255,0.15); color: var(--primary-blue); border-color: rgba(0,157,255,0.4); }
+        .fb-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 14px 0; }
+        .fb-textarea {
+            width: 100%; height: 70px; background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+            padding: 10px 12px; color: #fff; font-size: 13px; resize: none; outline: none;
+            box-sizing: border-box; font-family: inherit;
+        }
+        .fb-textarea:focus { border-color: rgba(0,157,255,0.4); }
+        .btn-cancel {
+            padding: 8px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.7); transition: 0.2s;
+        }
+        .btn-cancel:hover { background: rgba(255,255,255,0.1); }
+        .btn-submit {
+            padding: 8px 20px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer;
+            background: var(--blue-gradient); color: #fff; border: none;
+            box-shadow: 0 3px 12px rgba(0,157,255,0.3); transition: 0.2s;
+        }
+        .btn-submit:hover { opacity: 0.9; }
+
+        /* ---- Toast ---- */
+        #toast {
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(10px);
+            background: rgba(30,30,40,0.96); color: #fff; padding: 10px 20px;
+            border-radius: 20px; font-size: 13px; font-weight: 600;
+            opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 9999;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="orient-bar">
+    <div class="orient-btn active" id="btn-ls" onclick="setOrient('ls')">
+        <i class="fas fa-mobile-alt" style="transform:rotate(90deg); display:inline-block;"></i> 横屏
+    </div>
+    <div class="orient-btn" id="btn-pt" onclick="setOrient('pt')">
+        <i class="fas fa-mobile-alt"></i> 竖屏
+    </div>
+</div>
+
+<div class="phone-frame ls" id="phoneFrame">
+<div class="shell ls" id="shell" onclick="closeMenu()">
+    <div class="inner">
+
+        <!-- ===== 左列（滚动内容） ===== -->
+        <div class="col-left" id="colLeft">
+
+            <div class="media-container" onclick="togglePlay()">
+                <video id="gameVideo" class="media-content" autoplay muted loop
+                    poster="https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg">
+                    <source src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/movie480_vp9.webm" type="video/webm">
+                </video>
+                <div id="gameGallery" class="media-content hidden"
+                    style="background-image:url('https://cdn.cloudflare.steamstatic.com/steam/apps/271590/ss_4fbcf6a7302a1e6b0b47b89f25e47ed0a0bb6e39.600x338.jpg'); background-size:cover; background-position:center;">
+                </div>
+                <div class="back-btn" onclick="event.stopPropagation(); alert('返回')">
+                    <i class="fas fa-chevron-left"></i>
+                </div>
+                <div class="video-overlay">
+                    <i id="playPauseBtn" class="fas fa-pause play-pause-center"></i>
+                    <div class="video-controls-layer">
+                        <div class="progress-track" onclick="seekVideo(event); event.stopPropagation();">
+                            <div id="progressBar" class="progress-fill"></div>
+                        </div>
+                        <div class="controls-row">
+                            <div class="toggle-capsule" onclick="event.stopPropagation()">
+                                <div id="tabVideo" class="tc-btn active" onclick="switchMedia('video')">视频</div>
+                                <div id="tabGallery" class="tc-btn" onclick="switchMedia('gallery')">图集</div>
+                            </div>
+                            <div class="right-icons" onclick="event.stopPropagation()">
+                                <i id="muteBtn" class="fas fa-volume-mute" onclick="toggleMute()"></i>
+                                <i class="fas fa-expand-alt" onclick="alert('全屏')"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 横版：视频下方开发商信息横排一行 -->
+            <div class="ls-dev-bar">
+                <div class="ls-dev-item"><span class="dev-label">开发商</span><span class="dev-val">Rockstar Games</span></div>
+                <div class="ls-dev-item"><span class="dev-label">发行日期</span><span class="dev-val">2015 年 4 月 14 日</span></div>
+                <div class="ls-dev-item"><span class="dev-label">年龄评级</span><span class="dev-val">18+</span></div>
+                <div class="ls-dev-item"><span class="dev-label">语言</span><span class="dev-val">中文、英文</span></div>
+            </div>
+
+            <div class="content-pad">
+
+                <!-- 三合一信息卡：兼容性评价 + 游玩时长 + 云存档 -->
+                <div class="info-card">
+                    <!-- 顶部 header：PC游戏引擎（无右侧文字，点击区域在下方兼容性评价处） -->
+                    <div class="info-card-hdr">
+                        <div class="ic-hdr-left">
+                            <i class="fas fa-desktop"></i>
+                            PC游戏引擎
+                        </div>
+                    </div>
+                    <!-- 主体：兼容性评分 + 游玩时长 + 云存档 -->
+                    <div class="info-card-body">
+                        <!-- 兼容性评分区（点击跳转页面） -->
+                        <div class="info-compat" onclick="openCompatPage()">
+                            <div class="ic-main">
+                                <!-- 竖版：图标圆圈 -->
+                                <div class="ic-icon-wrap">
+                                    <span id="entryScorePt" style="font-size:13px;font-weight:800;color:#6fffa8;">4.0</span>
+                                </div>
+                                <!-- 标签 -->
+                                <div class="ic-compat-label">兼容性评价</div>
+                                <!-- 横版有数据态：评分+星级+描述 -->
+                                <div id="entryHasData">
+                                    <div class="ic-score-row">
+                                        <div class="ic-score" id="entryScore">4.0</div>
+                                        <div class="ic-stars" id="entryStars">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.15)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        </div>
+                                    </div>
+                                    <div class="ic-sub" id="entrySub">整体可玩，但不同设备表现存在差异</div>
+                                    <!-- 竖版专用：2行描述+渐隐 -->
+                                    <div class="pt-compat-desc ic-compat-desc-wrap">
+                                        <div class="ic-compat-desc" id="entryDescPt">整体可玩，但不同设备表现存在差异</div>
+                                    </div>
+                                </div>
+                                <!-- 无数据态（隐藏） -->
+                                <div id="entryNoData" class="ic-empty" style="display:none;">暂无玩家兼容性反馈</div>
+                            </div>
+                            <!-- 横版显示箭头，竖版CSS隐藏 -->
+                            <div class="ic-chevron"><i class="fas fa-chevron-right" style="color:rgba(255,255,255,0.3); font-size:14px;"></i></div>
+                        </div>
+                        <!-- 游玩时长 + 云存档 -->
+                        <div class="info-sub-row">
+                            <div class="info-time">
+                                <div class="ic-val-label">游玩时长</div>
+                                <i class="far fa-clock ic-icon"></i>
+                                <div class="ic-val">139.3 小时</div>
+                            </div>
+                            <div class="info-cloud">
+                                <div class="ic-val-label">云存档</div>
+                                <i class="fas fa-cloud ic-icon" style="color:#6fffa8;"></i>
+                                <div class="ic-val">已是最新</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 游戏介绍 -->
+                <div class="section-header">游戏介绍</div>
+                <div class="intro-lead">
+                    洛圣都，一座充满活力与罪恶的城市。三位不同背景的罪犯——迈克尔、特雷弗和富兰克林，将联手策划一系列精密抢劫行动，挑战洛圣都乃至整个圣安地列斯的权贵与黑帮。超过60小时的主线剧情，以及几乎无尽的开放世界探索内容。
+                </div>
+                <img class="rich-img"
+                    src="https://cdn.cloudflare.steamstatic.com/steam/apps/271590/ss_4fbcf6a7302a1e6b0b47b89f25e47ed0a0bb6e39.600x338.jpg"
+                    alt="GTA5截图">
+                <img class="rich-img"
+                    src="https://cdn.cloudflare.steamstatic.com/steam/apps/271590/ss_901afe9c0cedeabd7fdc50e8046c4c93e41d42e7.600x338.jpg"
+                    alt="GTA5截图">
+
+                <div style="text-align:center; color:#444; font-size:12px; margin-top:40px;">- 到底了 -</div>
+            </div>
+        </div>
+
+        <!-- ===== 右列（横屏信息区） ===== -->
+        <div class="col-right" id="colRight">
+
+            <!-- 详情子面板 -->
+            <div id="detailPanel">
+                <div class="status-bar">
+                    <i class="fas fa-signal"></i>
+                    <i class="fas fa-wifi"></i>
+                    <i class="fas fa-battery-full"></i>
+                    <span>9:41</span>
+                </div>
+                <div class="game-meta">
+                    <div class="title-block">
+                        <div class="game-title">侠盗猎车手5</div>
+                        <div class="game-subtitle">Grand Theft Auto V</div>
+                    </div>
+                    <div class="rating-capsule">
+                        <div class="rc-left"><i class="fas fa-star" style="color:#6fffa8; font-size:10px;"></i>&nbsp;玩家评价: 特别好评</div>
+                        <div class="rc-right">97%</div>
+                    </div>
+                    <div class="tags-group">
+                        <div class="tag-hot"><i class="fas fa-fire"></i> 热门榜 TOP 3</div>
+                        <div class="tag-normal">开放世界</div>
+                        <div class="tag-normal">动作冒险</div>
+                        <div class="tag-normal">多人联机</div>
+                    </div>
+                    <div class="action-buttons-group">
+                        <div class="btn-menu" id="menuBtn" onclick="toggleMenu(event)">
+                            <i class="fas fa-th-large" style="color:#aaa; font-size:17px;"></i>
+                            <div class="menu-popup" id="menuPopup">
+                                <div class="menu-item" onclick="handleMenuClick('PC游戏设置')"><i class="fas fa-gamepad"></i> PC游戏设置</div>
+                                <div class="menu-item" onclick="handleMenuClick('添加到桌面')"><i class="fas fa-desktop"></i> 添加到桌面</div>
+                                <div class="menu-item" onclick="handleMenuClick('卸载游戏')">
+                                    <i class="fas fa-trash-alt text-danger"></i>
+                                    <span class="text-danger">卸载游戏</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="btn-cloud" onclick="alert('秒玩启动')"><i class="fas fa-cloud"></i> 秒玩</div>
+                        <div class="btn-get" onclick="alert('获取游戏')"><i class="fas fa-desktop"></i> 获取游戏</div>
+                    </div>
+                    <div class="dev-info-list">
+                        <div class="dev-row"><span class="dev-label">开发商</span><span class="dev-val">Rockstar Games</span></div>
+                        <div class="dev-row"><span class="dev-label">发行日期</span><span class="dev-val">2015 年 4 月 14 日</span></div>
+                        <div class="dev-row"><span class="dev-label">年龄评级</span><span class="dev-val">18+</span></div>
+                        <div class="dev-row"><span class="dev-label">语言</span><span class="dev-val">中文、英文</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 横版 PC游戏引擎卡（横铺满底部） -->
+            <div class="ls-engine-card">
+                <div class="info-card-hdr ls-engine-hdr">
+                    <div class="ic-hdr-left">
+                        <i class="fas fa-desktop"></i>
+                        PC游戏引擎
+                    </div>
+                </div>
+                <div class="info-card-body">
+                    <div class="info-compat" onclick="openCompatPage()">
+                        <div class="ic-main">
+                            <div class="ic-compat-label">兼容性评价</div>
+                            <div id="entryHasDataLs">
+                                <div class="ic-score-row">
+                                    <div class="ic-score" id="entryScoreLs">4.0</div>
+                                    <div class="ic-stars" id="entryStarsLs">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.15)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                    </div>
+                                </div>
+                                <div class="ic-sub" id="entrySubLs">整体可玩，但不同设备表现存在差异</div>
+                            </div>
+                            <div id="entryNoDataLs" class="ic-empty" style="display:none;">暂无玩家兼容性反馈</div>
+                        </div>
+                        <div class="ic-chevron"><i class="fas fa-chevron-right" style="color:rgba(255,255,255,0.3); font-size:14px;"></i></div>
+                    </div>
+                    <div class="info-sub-row">
+                        <div class="info-time">
+                            <div class="ic-val-label">游玩时长</div>
+                            <i class="far fa-clock ic-icon"></i>
+                            <div class="ic-val">139.3 小时</div>
+                        </div>
+                        <div class="info-cloud">
+                            <div class="ic-val-label">云存档</div>
+                            <i class="fas fa-cloud ic-icon" style="color:#6fffa8;"></i>
+                            <div class="ic-val">已是最新</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 横屏兼容性面板（已废弃，改用统一弹窗，保留空壳） -->
+            <div class="compat-panel" id="compatPanelLs"></div>
+        </div>
+
+        <!-- 竖屏底部栏 -->
+        <div class="bottom-bar" id="bottomBar">
+            <div class="btn-cloud-pt" onclick="alert('秒玩启动')"><i class="fas fa-cloud"></i> 秒玩</div>
+            <div class="btn-get-pt" onclick="alert('获取游戏')"><i class="fas fa-desktop"></i> 获取游戏</div>
+        </div>
+
+    </div><!-- /inner -->
+
+    <!-- 竖屏兼容性全屏面板（已废弃） -->
+    <div class="compat-panel-pt" id="compatPanelPt"></div>
+
+    <!-- ===== 兼容性评价全屏页面（从右滑入） ===== -->
+    <div class="compat-page" id="compatPage" style="display:none;">
+        <div class="compat-page-hdr">
+            <div class="compat-page-back" onclick="closeCompatPage()">
+                <i class="fas fa-chevron-left" style="font-size:13px;"></i>
+            </div>
+            <div class="compat-page-title">玩家兼容性评价</div>
+        </div>
+        <div class="compat-page-body">
+            <div class="compat-overview">
+                <div class="ov-score-big" id="ovScoreLs">4.0</div>
+                <div class="ov-right">
+                    <div class="ov-stars" id="ovStarsLs">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="rgba(255,255,255,0.15)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    </div>
+                    <div class="ov-count" id="ovCountLs">10 条玩家评价</div>
+                    <div class="dist-bars" id="distBarsLs"></div>
+                </div>
+            </div>
+            <div class="compat-toolbar">
+                <div class="compat-chips" id="chipsLs">
+                    <div class="chip active" onclick="setView('all',this,'ls')">全部</div>
+                    <div class="chip" onclick="setView('support',this,'ls')">支持最多</div>
+                    <div class="chip" onclick="setView('mine',this,'ls')">我的</div>
+                </div>
+                <div class="btn-feedback" onclick="openFeedbackModal()">我要反馈</div>
+            </div>
+            <div class="compat-list" id="listLs"></div>
+            <div class="load-more" id="loadMoreLs" style="display:none;" onclick="loadMore('ls')">加载更多</div>
+            <div class="compat-empty" id="emptyLs" style="display:none;">暂无兼容性反馈</div>
+        </div>
+    </div>
+
+    <!-- 分享弹窗 -->
+    <div id="shareOverlay" class="share-overlay" onclick="closeShareModal(event)">
+        <div class="share-modal" onclick="event.stopPropagation()">
+            <div class="share-header">
+                <div class="share-title">分享至</div>
+                <i class="fas fa-times share-close" onclick="closeShareModal(event)"></i>
+            </div>
+            <div class="share-grid">
+                <div class="share-option" onclick="handleShare('微信')"><div class="share-icon-circle"><i class="fab fa-weixin"></i></div><span>微信</span></div>
+                <div class="share-option" onclick="handleShare('朋友圈')">
+                    <div class="share-icon-circle">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+                            <path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83m13.79-4l-5.74 9.94" stroke-width="2"></path>
+                        </svg>
+                    </div>
+                    <span>朋友圈</span>
+                </div>
+                <div class="share-option" onclick="handleShare('QQ')"><div class="share-icon-circle"><i class="fab fa-qq"></i></div><span>QQ</span></div>
+                <div class="share-option" onclick="handleShare('微博')"><div class="share-icon-circle"><i class="fab fa-weibo"></i></div><span>微博</span></div>
+                <div class="share-option" onclick="handleShare('X')"><div class="share-icon-circle"><i class="fab fa-x-twitter"></i></div><span>X</span></div>
+                <div class="share-option" onclick="handleShare('Facebook')"><div class="share-icon-circle"><i class="fab fa-facebook-f"></i></div><span>Facebook</span></div>
+                <div class="share-option" onclick="handleShare('Discord')"><div class="share-icon-circle"><i class="fab fa-discord"></i></div><span>Discord</span></div>
+                <div class="share-option" onclick="handleShare('复制链接')"><div class="share-icon-circle"><i class="fas fa-link"></i></div><span>复制链接</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 反馈弹窗 -->
+    <div id="modalFeedback" class="modal-mask" onclick="closeFeedbackOnMask(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-hdr">
+                <div class="modal-hdr-title">兼容性评价</div>
+                <div class="modal-x" onclick="closeFeedbackModal()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="fb-row">
+                    <div class="fb-lbl">兼容性评分</div>
+                    <div class="fb-stars-wrap" id="fbStarsWrap">
+                        <svg class="fb-star-svg" data-val="1" viewBox="0 0 24 24" width="34" height="34" fill="rgba(255,255,255,0.12)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg class="fb-star-svg" data-val="2" viewBox="0 0 24 24" width="34" height="34" fill="rgba(255,255,255,0.12)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg class="fb-star-svg" data-val="3" viewBox="0 0 24 24" width="34" height="34" fill="rgba(255,255,255,0.12)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg class="fb-star-svg" data-val="4" viewBox="0 0 24 24" width="34" height="34" fill="rgba(255,255,255,0.12)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg class="fb-star-svg" data-val="5" viewBox="0 0 24 24" width="34" height="34" fill="rgba(255,255,255,0.12)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    </div>
+                </div>
+                <div class="fb-divider"></div>
+                <div class="fb-row">
+                    <div class="fb-lbl">设备信息</div>
+                    <div class="fb-device-box" id="fbDeviceBox">当前设备：Pixel 9 Pro · Android 15</div>
+                </div>
+                <div class="fb-divider"></div>
+                <div class="fb-row">
+                    <div class="fb-lbl">问题标签</div>
+                    <div class="fb-tags-wrap" id="fbTagsWrap">
+                        <span class="fb-tag" onclick="this.classList.toggle('active')">完美兼容</span>
+                        <span class="fb-tag" onclick="this.classList.toggle('active')">画面卡顿</span>
+                        <span class="fb-tag" onclick="this.classList.toggle('active')">意外闪退</span>
+                        <span class="fb-tag" onclick="this.classList.toggle('active')">手柄无响应</span>
+                        <span class="fb-tag" onclick="this.classList.toggle('active')">按键映射错误</span>
+                        <span class="fb-tag" onclick="this.classList.toggle('active')">声音异常</span>
+                    </div>
+                </div>
+                <div class="fb-divider"></div>
+                <div class="fb-row" style="margin-bottom:0;">
+                    <div class="fb-lbl">补充说明</div>
+                    <textarea class="fb-textarea" id="fbTextarea" placeholder="补充说明（选填）"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeFeedbackModal()">取消</button>
+                <button class="btn-submit" onclick="submitFeedback()">提交反馈</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 举报弹窗 -->
+    <div id="modalReport" class="modal-mask" onclick="closeReportOnMask(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-hdr">
+                <div class="modal-hdr-title">举报内容</div>
+                <div class="modal-x" onclick="closeReportModal()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">被举报内容</div>
+                <div id="reportSnippet" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;color:rgba(255,255,255,0.8);font-size:13px;line-height:1.6;margin-bottom:16px;"></div>
+                <div style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">选择原因</div>
+                <div class="fb-tags-wrap" style="margin-bottom:14px;">
+                    <span class="fb-tag rr" onclick="selectReason(this)">辱骂攻击</span>
+                    <span class="fb-tag rr" onclick="selectReason(this)">广告引流</span>
+                    <span class="fb-tag rr" onclick="selectReason(this)">恶意刷分</span>
+                    <span class="fb-tag rr" onclick="selectReason(this)">与游戏无关</span>
+                    <span class="fb-tag rr" onclick="selectReason(this)">其他</span>
+                </div>
+                <textarea class="fb-textarea" id="reportNote" placeholder="补充说明（选填）" style="height:80px;"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeReportModal()">取消</button>
+                <button class="btn-submit" onclick="submitReport()">提交举报</button>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /shell -->
+</div><!-- /phone-frame -->
+
+<div id="toast"></div>
+
+<script>
+// ============================================================
+//  数据层 — localStorage
+// ============================================================
+const LS_KEY = 'gh_compat_feedbacks_gta5_v1';
+const MY_UID = 'me_demo_user';
+
+const AVATARS = [
+    'https://i.pravatar.cc/64?img=11',
+    'https://i.pravatar.cc/64?img=22',
+    'https://i.pravatar.cc/64?img=33',
+    'https://i.pravatar.cc/64?img=44',
+    'https://i.pravatar.cc/64?img=55',
+    'https://i.pravatar.cc/64?img=7',
+    'https://i.pravatar.cc/64?img=13',
+];
+
+const SEEDS = [
+    { id:'s1', uid:'u1', name:'Pixel用户_洛圣都', avatar:AVATARS[0], device:'Pixel 9 Pro · Android 15', stars:5, tags:['完美兼容'], text:'画面超级流畅，GTA线上也没有任何问题，手柄支持完美。', date:'2025-04-28' },
+    { id:'s2', uid:'u2', name:'三星玩家_富兰克林', avatar:AVATARS[1], device:'Samsung Galaxy S25 Ultra', stars:4, tags:['完美兼容','声音异常'], text:'整体体验非常好，主线剧情流畅，偶尔有轻微音效延迟但不影响游玩。', date:'2025-04-25' },
+    { id:'s3', uid:'u3', name:'小米用户_迈克尔', avatar:AVATARS[2], device:'Xiaomi 15 Pro · Android 15', stars:5, tags:['完美兼容'], text:'秒玩功能直接起飞，不需要下载就能玩，网络好的话体验和本地基本一致。', date:'2025-04-22' },
+    { id:'s4', uid:'u4', name:'OnePlus_Trevor', avatar:AVATARS[3], device:'OnePlus 13 · Android 15', stars:3, tags:['画面卡顿','手柄无响应'], text:'网络波动时会明显卡顿，手柄偶尔失灵需要重连，希望后续优化。', date:'2025-04-20' },
+    { id:'s5', uid:'u5', name:'OPPO用户_洛圣都警察', avatar:AVATARS[4], device:'OPPO Find X8 Pro', stars:4, tags:['完美兼容'], text:'剧情向玩家强烈推荐，云游戏方式省了100多G的存储空间，赞！', date:'2025-04-18' },
+    { id:'s6', uid:'u6', name:'华为用户_特雷弗', avatar:AVATARS[5], device:'Huawei Mate 70 Pro', stars:2, tags:['意外闪退','画面卡顿'], text:'GTA在线模式进服务器时容易闪退，已经发生三次了，希望能修复。', date:'2025-04-15' },
+    { id:'s7', uid:'u7', name:'vivo用户_市民', avatar:AVATARS[6], device:'vivo X200 Ultra', stars:5, tags:['完美兼容'], text:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！强烈推荐。', date:'2025-04-12' },
+];
+
+function getFeedbacks() {
+    try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (raw) return JSON.parse(raw);
+    } catch(e) {}
+    localStorage.setItem(LS_KEY, JSON.stringify(SEEDS));
+    return [...SEEDS];
+}
+
+function saveFeedbacks(list) {
+    localStorage.setItem(LS_KEY, JSON.stringify(list));
+}
+
+// ============================================================
+//  统计计算
+// ============================================================
+function calcStats(list) {
+    if (!list.length) return { avg: '—', count: 0, dist: {5:0,4:0,3:0,2:0,1:0} };
+    const dist = {5:0,4:0,3:0,2:0,1:0};
+    let total = 0;
+    list.forEach(f => { dist[f.stars] = (dist[f.stars]||0)+1; total += f.stars; });
+    return { avg: (total/list.length).toFixed(1), count: list.length, dist };
+}
+
+function starsSVG(score, size) {
+    return [1,2,3,4,5].map(i => {
+        const fill = i <= Math.round(score) ? '#f5c518' : 'rgba(255,255,255,0.15)';
+        return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${fill}" style="display:inline-block;flex-shrink:0;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+    }).join('');
+}
+
+// ============================================================
+//  入口卡片
+// ============================================================
+function compatSubText(avg) {
+    if (avg >= 4.2) return '大多数玩家可正常游玩，点击查看完整评价';
+    if (avg >= 3.2) return '整体可玩，但不同设备表现存在差异';
+    return '兼容问题偏多，建议先查看详细评价';
+}
+
+function refreshEntryCard() {
+    const list = getFeedbacks();
+    const s = calcStats(list);
+    // 竖版入口卡
+    const hasData = document.getElementById('entryHasData');
+    const noData  = document.getElementById('entryNoData');
+    // 横版入口卡（右列）
+    const hasDataLs = document.getElementById('entryHasDataLs');
+    const noDataLs  = document.getElementById('entryNoDataLs');
+    const scorePt   = document.getElementById('entryScorePt');
+    if (s.count) {
+        hasData.style.display = 'block';
+        noData.style.display  = 'none';
+        document.getElementById('entryScore').textContent = s.avg;
+        document.getElementById('entryStars').innerHTML   = starsSVG(parseFloat(s.avg), 14);
+        document.getElementById('entrySub').textContent   = compatSubText(parseFloat(s.avg));
+        const descPt = document.getElementById('entryDescPt');
+        if (descPt) descPt.textContent = compatSubText(parseFloat(s.avg));
+        if (scorePt) scorePt.textContent = s.avg;
+        if (hasDataLs) {
+            hasDataLs.style.display = 'block';
+            noDataLs.style.display  = 'none';
+            document.getElementById('entryScoreLs').textContent = s.avg;
+            document.getElementById('entryStarsLs').innerHTML   = starsSVG(parseFloat(s.avg), 14);
+            document.getElementById('entrySubLs').textContent   = compatSubText(parseFloat(s.avg));
+        }
+    } else {
+        hasData.style.display = 'none';
+        noData.style.display  = 'block';
+        if (scorePt) scorePt.textContent = '–';
+        if (hasDataLs) {
+            hasDataLs.style.display = 'none';
+            noDataLs.style.display  = 'block';
+        }
+    }
+}
+
+// ============================================================
+//  面板渲染
+// ============================================================
+let viewMode = 'all';
+const PAGE = 5;
+const pages = { ls: 1, pt: 1 };
+
+function refreshPanel(side) {
+    const list = getFeedbacks();
+    const s = calcStats(list);
+
+    // 概览
+    document.getElementById(side === 'ls' ? 'ovScoreLs' : 'ovScorePt').textContent = s.count ? s.avg : '—';
+    document.getElementById(side === 'ls' ? 'ovStarsLs' : 'ovStarsPt').innerHTML = s.count ? starsSVG(parseFloat(s.avg), 18) : '';
+    document.getElementById(side === 'ls' ? 'ovCountLs' : 'ovCountPt').textContent = s.count ? `${s.count} 条玩家评价` : '暂无评价';
+
+    const distEl = document.getElementById(side === 'ls' ? 'distBarsLs' : 'distBarsPt');
+    if (s.count) {
+        const mx = Math.max(...Object.values(s.dist), 1);
+        distEl.innerHTML = [5,4,3,2,1].map(n => {
+            const cnt = s.dist[n] || 0;
+            const pct = Math.round(cnt / mx * 100);
+            return `<div class="dist-row"><div class="dist-lbl">${n}星</div><div class="dist-track"><div class="dist-fill" style="width:${pct}%"></div></div><div class="dist-cnt">${cnt}</div></div>`;
+        }).join('');
+    } else {
+        distEl.innerHTML = '';
+    }
+
+    // 筛选
+    let filtered = list;
+    if (viewMode === 'support') filtered = list.filter(f => f.tags && f.tags.includes('完美兼容'));
+    else if (viewMode === 'mine') filtered = list.filter(f => f.uid === MY_UID);
+
+    const shown = filtered.slice(0, pages[side] * PAGE);
+    const listEl = document.getElementById(side === 'ls' ? 'listLs' : 'listPt');
+    const loadEl = document.getElementById(side === 'ls' ? 'loadMoreLs' : 'loadMorePt');
+    const emptyEl = document.getElementById(side === 'ls' ? 'emptyLs' : 'emptyPt');
+
+    if (!filtered.length) {
+        listEl.innerHTML = '';
+        emptyEl.style.display = 'block';
+        loadEl.style.display = 'none';
+    } else {
+        emptyEl.style.display = 'none';
+        listEl.innerHTML = shown.map(renderItem).join('');
+        loadEl.style.display = shown.length < filtered.length ? 'flex' : 'none';
+    }
+}
+
+function renderItem(f) {
+    const stars = [1,2,3,4,5].map(i =>
+        `<svg viewBox="0 0 24 24" width="13" height="13" fill="${i<=f.stars?'#f5c518':'rgba(255,255,255,0.15)'}"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`
+    ).join('');
+    const tags = (f.tags||[]).map(t => `<span class="ci-tag">${t}</span>`).join('');
+    const snippet = (f.text||'').slice(0,40) + ((f.text||'').length>40?'…':'');
+    const esc = s => s.replace(/'/g,"\\'");
+    return `<div class="compat-item">
+        <div class="ci-hdr">
+            <img class="ci-avatar" src="${f.avatar}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22%3E%3Crect width=%2240%22 height=%2240%22 rx=%2220%22 fill=%22%23333%22/%3E%3C/svg%3E'">
+            <div class="ci-meta">
+                <div class="ci-name">${f.name}</div>
+                <div class="ci-device">${f.device}</div>
+            </div>
+            <div class="ci-flag" onclick="openReportModal('${f.id}','${esc(snippet)}')"><i class="fas fa-flag"></i></div>
+        </div>
+        <div class="ci-stars">${stars}</div>
+        ${tags ? `<div class="ci-tags">${tags}</div>` : ''}
+        ${f.text ? `<div class="ci-text">${f.text}</div>` : ''}
+        <div class="ci-date">${f.date}</div>
+    </div>`;
+}
+
+function loadMore(side) {
+    pages[side]++;
+    refreshPanel(side);
+}
+
+function setView(mode, el, side) {
+    viewMode = mode;
+    pages[side] = 1;
+    el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    refreshPanel(side);
+}
+
+// ============================================================
+//  面板开关
+// ============================================================
+function openCompatPanel() {
+    const isLs = document.getElementById('shell').classList.contains('ls');
+    if (isLs) {
+        refreshPanel('ls');
+        document.getElementById('compatPanelLs').classList.add('active');
+    } else {
+        refreshPanel('pt');
+        document.getElementById('compatPanelPt').classList.add('active');
+    }
+}
+
+function closeCompatPanel() {
+    document.getElementById('compatPanelLs').classList.remove('active');
+    document.getElementById('compatPanelPt').classList.remove('active');
+    viewMode = 'all';
+    pages.ls = 1; pages.pt = 1;
+    // reset chips
+    document.querySelectorAll('.compat-chips .chip').forEach((c,i) => c.classList.toggle('active', i===0));
+}
+
+function openCompatPage() {
+    const page = document.getElementById('compatPage');
+    if (!page) return;
+    page.style.display = 'flex';
+    requestAnimationFrame(() => page.classList.add('show'));
+    refreshPanel('ls');
+}
+
+function closeCompatPage() {
+    const page = document.getElementById('compatPage');
+    if (!page) return;
+    page.classList.remove('show');
+    setTimeout(() => { page.style.display = 'none'; }, 350);
+    viewMode = 'all';
+    pages.ls = 1;
+    document.querySelectorAll('#chipsLs .chip').forEach((c, i) => c.classList.toggle('active', i === 0));
+}
+
+// ============================================================
+//  反馈弹窗
+// ============================================================
+let fbStarVal = 0;
+
+function openFeedbackModal() {
+    fbStarVal = 0;
+    paintFbStars(0);
+    document.getElementById('fbTextarea').value = '';
+    document.querySelectorAll('#fbTagsWrap .fb-tag').forEach(t => t.classList.remove('active'));
+    document.getElementById('modalFeedback').classList.add('show');
+}
+
+function closeFeedbackModal() {
+    document.getElementById('modalFeedback').classList.remove('show');
+}
+function closeFeedbackOnMask(e) {
+    if (e.target === document.getElementById('modalFeedback')) closeFeedbackModal();
+}
+
+function paintFbStars(val) {
+    document.querySelectorAll('#fbStarsWrap .fb-star-svg').forEach(s => {
+        s.setAttribute('fill', parseInt(s.dataset.val) <= val ? '#f5c518' : 'rgba(255,255,255,0.12)');
+    });
+}
+
+document.querySelectorAll('#fbStarsWrap .fb-star-svg').forEach(s => {
+    s.addEventListener('click',    () => { fbStarVal = parseInt(s.dataset.val); paintFbStars(fbStarVal); });
+    s.addEventListener('mouseover',() => paintFbStars(parseInt(s.dataset.val)));
+    s.addEventListener('mouseleave',() => paintFbStars(fbStarVal));
+});
+
+function submitFeedback() {
+    if (!fbStarVal) { showToast('请先选择兼容性评分'); return; }
+    const tags = [...document.querySelectorAll('#fbTagsWrap .fb-tag.active')].map(t => t.textContent);
+    const text = document.getElementById('fbTextarea').value.trim();
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const item = {
+        id: 'u_' + Date.now(), uid: MY_UID,
+        name: '我', avatar: AVATARS[0],
+        device: 'Pixel 9 Pro · Android 15',
+        stars: fbStarVal, tags, text, date: dateStr,
+    };
+    const list = getFeedbacks();
+    list.unshift(item);
+    saveFeedbacks(list);
+    closeFeedbackModal();
+    refreshEntryCard();
+    if (document.getElementById('compatPage').classList.contains('show')) refreshPanel('ls');
+    showToast('反馈提交成功，感谢你的评价！');
+}
+
+// ============================================================
+//  举报弹窗
+// ============================================================
+function openReportModal(id, snippet) {
+    document.getElementById('reportSnippet').textContent = snippet;
+    document.getElementById('reportNote').value = '';
+    document.querySelectorAll('.rr').forEach(t => t.classList.remove('active'));
+    document.getElementById('modalReport').classList.add('show');
+}
+function closeReportModal() { document.getElementById('modalReport').classList.remove('show'); }
+function closeReportOnMask(e) { if (e.target === document.getElementById('modalReport')) closeReportModal(); }
+function selectReason(el) { document.querySelectorAll('.rr').forEach(t => t.classList.remove('active')); el.classList.add('active'); }
+function submitReport() { closeReportModal(); showToast('举报已提交，感谢反馈'); }
+
+// ============================================================
+//  Toast
+// ============================================================
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ============================================================
+//  横竖屏切换
+// ============================================================
+function setOrient(mode) {
+    const shell = document.getElementById('shell');
+    shell.className = 'shell ' + mode;
+    document.getElementById('phoneFrame').className = 'phone-frame ' + mode;
+    document.getElementById('btn-ls').classList.toggle('active', mode === 'ls');
+    document.getElementById('btn-pt').classList.toggle('active', mode === 'pt');
+    closeCompatPage();
+}
+
+// ============================================================
+//  视频控制
+// ============================================================
+const video = document.getElementById('gameVideo');
+const gallery = document.getElementById('gameGallery');
+const playBtn = document.getElementById('playPauseBtn');
+const progressBar = document.getElementById('progressBar');
+
+function switchMedia(type) {
+    if (type === 'video') {
+        video.classList.remove('hidden'); gallery.classList.add('hidden');
+        document.getElementById('tabVideo').classList.add('active');
+        document.getElementById('tabGallery').classList.remove('active');
+        video.play(); updatePlayIcon(true);
+    } else {
+        video.classList.add('hidden'); gallery.classList.remove('hidden');
+        document.getElementById('tabVideo').classList.remove('active');
+        document.getElementById('tabGallery').classList.add('active');
+        video.pause(); updatePlayIcon(false);
+    }
+}
+
+function togglePlay() {
+    if (video.paused) { video.play(); updatePlayIcon(true); }
+    else { video.pause(); updatePlayIcon(false); }
+}
+
+function updatePlayIcon(p) {
+    playBtn.className = p ? 'fas fa-pause play-pause-center' : 'fas fa-play play-pause-center';
+    playBtn.style.opacity = p ? '' : '1';
+}
+
+video.addEventListener('timeupdate', () => {
+    if (video.duration) progressBar.style.width = (video.currentTime / video.duration * 100) + '%';
+});
+
+function seekVideo(e) {
+    const r = e.currentTarget.getBoundingClientRect();
+    video.currentTime = (e.clientX - r.left) / r.width * video.duration;
+}
+
+function toggleMute() {
+    video.muted = !video.muted;
+    document.getElementById('muteBtn').className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+}
+
+// ============================================================
+//  菜单 & 分享
+// ============================================================
+function toggleMenu(event) {
+    event.stopPropagation();
+    const popup = document.getElementById('menuPopup');
+    const visible = popup.style.display === 'flex';
+    document.querySelectorAll('.menu-popup').forEach(p => p.style.display = 'none');
+    if (!visible) popup.style.display = 'flex';
+}
+function closeMenu() { document.getElementById('menuPopup').style.display = 'none'; }
+function handleMenuClick(action) { alert('执行操作：' + action); closeMenu(); }
+
+function openShareModal(event) {
+    if (event) event.stopPropagation();
+    closeMenu();
+    document.getElementById('shareOverlay').classList.add('show');
+}
+function closeShareModal(event) {
+    if (event) event.stopPropagation();
+    document.getElementById('shareOverlay').classList.remove('show');
+}
+function handleShare(platform) {
+    if (platform === '复制链接') {
+        const url = window.location.href;
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url).then(() => alert('链接已复制：' + url)).catch(() => fallbackCopy(url));
+        } else { fallbackCopy(url); }
+    } else { alert('正在跳转至：' + platform); }
+    closeShareModal();
+}
+function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try { document.execCommand('copy'); alert('链接已复制'); } catch(e) { alert('复制失败，请手动复制'); }
+    document.body.removeChild(ta);
+}
+
+// ============================================================
+//  初始化
+// ============================================================
+refreshEntryCard();
+</script>
+
+<!-- ============================================================
+     PRD 标注系统
+     ============================================================ -->
+<style>
+.prd-badge {
+  display: inline-block; vertical-align: top;
+  background: rgb(250,173,20); color: #fff;
+  font-size: 10px; font-weight: bold; line-height: 14px;
+  padding: 0 4px; border-radius: 2px; cursor: pointer;
+  position: absolute; z-index: 8000;
+  top: -8px; right: -4px;
+  pointer-events: auto;
+}
+.prd-tooltip {
+  position: fixed; z-index: 9999;
+  width: 450px; background: #f0efef;
+  border-radius: 4px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.22);
+  font-size: 13px; color: #222;
+  display: none; flex-direction: column;
+  cursor: default; user-select: text;
+}
+.prd-tooltip.open { display: flex; }
+.prd-tt-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px 8px; border-bottom: 1px solid #d8d8d8;
+  cursor: move;
+}
+.prd-tt-num {
+  display: inline-block; background: rgb(250,173,20); color: #fff;
+  font-size: 10px; font-weight: bold; line-height: 14px;
+  padding: 0 4px; border-radius: 2px; margin-right: 7px; flex-shrink: 0;
+}
+.prd-tt-hdr-title { font-size: 13px; font-weight: 700; color: #333; flex: 1; }
+.prd-tt-close {
+  font-size: 16px; color: #888; cursor: pointer; margin-left: 10px; flex-shrink: 0;
+  line-height: 1; padding: 0 2px;
+}
+.prd-tt-close:hover { color: #333; }
+.prd-tt-body {
+  padding: 12px 14px 14px; overflow-y: auto; max-height: 480px;
+  line-height: 1.6;
+}
+.prd-tt-body h4 { font-size: 12px; font-weight: 700; color: #555; margin: 10px 0 4px; text-transform: uppercase; letter-spacing: .5px; }
+.prd-tt-body p { margin-bottom: 12px; }
+.prd-tt-body ul, .prd-tt-body ol { padding-left: 18px; margin-bottom: 12px; }
+.prd-tt-body li { margin-bottom: 5px; }
+.prd-tt-body strong { font-weight: 700; }
+.prd-tt-body em { font-style: italic; color: #555; }
+.prd-tt-body blockquote {
+  border-left: 3px solid #bbb; padding-left: 10px;
+  color: #666; margin: 8px 0 12px; font-size: 12px;
+}
+.prd-dot-green { display:inline-block; width:8px; height:8px; border-radius:50%; background:#52c41a; margin-right:4px; vertical-align:middle; }
+.prd-dot-red   { display:inline-block; width:8px; height:8px; border-radius:50%; background:#ff4d4f; margin-right:4px; vertical-align:middle; }
+.prd-dot-blue  { display:inline-block; width:8px; height:8px; border-radius:50%; background:#1890ff; margin-right:4px; vertical-align:middle; }
+.prd-dot-gold  { display:inline-block; width:8px; height:8px; border-radius:50%; background:rgb(250,173,20); margin-right:4px; vertical-align:middle; }
+</style>
+
+<script>
+(function(){
+  /* ---- 浮窗唯一性 + 拖拽 ---- */
+  const openMap = {};
+  function closeTt(id){ const el=document.getElementById('prd-tt-'+id); if(el){ el.classList.remove('open'); delete openMap[id]; } }
+  function openTt(id, badgeEl){
+    const el=document.getElementById('prd-tt-'+id);
+    if(!el) return;
+    if(el.classList.contains('open')){ return; }
+    // 定位：默认 badge 左下方
+    const r=badgeEl.getBoundingClientRect();
+    let left=r.left, top=r.bottom+8;
+    const W=window.innerWidth, H=window.innerHeight, TW=450, TH=Math.min(520,H*0.7);
+    if(left+TW>W-8) left=Math.max(8,W-TW-8);
+    if(top+TH>H-8) top=Math.max(8,r.top-TH-8);
+    el.style.left=left+'px'; el.style.top=top+'px';
+    el.classList.add('open');
+    openMap[id]=true;
+  }
+  window._prdOpen=openTt; window._prdClose=closeTt;
+
+  // 拖拽
+  document.addEventListener('mousedown',function(e){
+    const hdr=e.target.closest('.prd-tt-hdr');
+    if(!hdr) return;
+    const tt=hdr.closest('.prd-tooltip');
+    if(!tt) return;
+    e.preventDefault(); e.stopPropagation();
+    const ox=e.clientX-tt.offsetLeft, oy=e.clientY-tt.offsetTop;
+    function mv(e){ tt.style.left=(e.clientX-ox)+'px'; tt.style.top=(e.clientY-oy)+'px'; }
+    function up(){ document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); }
+    document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
+  },true);
+
+  /* ---- badge 定位（挂 body，避开 overflow:hidden） ---- */
+  const defs=[
+    { id:1, selector:'#colRight .action-buttons-group', desc:'启动区' },
+    { id:2, selector:'.col-left .info-compat',          desc:'兼容性评价入口（横竖屏）' },
+    { id:3, selector:'.compat-overview',                desc:'兼容性评价全屏概览卡' },
+    { id:4, selector:'.compat-toolbar',                 desc:'筛选工具栏 + 我要反馈' },
+    { id:5, selector:'.bottom-bar',                     desc:'竖屏底部操作栏' },
+    { id:6, selector:'#modalFeedback .modal-box',       desc:'反馈弹窗表单' },
+  ];
+  function placeBadges(){
+    defs.forEach(function(d){
+      const old=document.getElementById('prd-badge-'+d.id);
+      if(old) old.remove();
+      const anchor=document.querySelector(d.selector);
+      if(!anchor) return;
+      const r=anchor.getBoundingClientRect();
+      if(r.width===0&&r.height===0) return;
+      const b=document.createElement('span');
+      b.className='prd-badge'; b.id='prd-badge-'+d.id;
+      b.textContent=d.id;
+      b.style.position='fixed';
+      b.style.top=(r.top-8)+'px';
+      b.style.left=(r.right-4)+'px';
+      b.style.right='auto';
+      b.addEventListener('mouseenter',function(e){ e.stopPropagation(); _prdOpen(d.id,b); });
+      b.addEventListener('click',function(e){ e.stopPropagation(); _prdOpen(d.id,b); });
+      document.body.appendChild(b);
+    });
+  }
+  window.addEventListener('load', placeBadges);
+  window.addEventListener('resize', placeBadges);
+
+  // 重新定位：横竖屏切换时
+  const origSetOrient=window.setOrient;
+  if(origSetOrient){
+    window.setOrient=function(o){
+      origSetOrient(o);
+      setTimeout(placeBadges,450);
+    };
+  }
+})();
+</script>
+
+<!-- ============================================================
+     PRD 浮窗内容
+     ============================================================ -->
+
+<!-- 1. 启动区（横屏右列） -->
+<div class="prd-tooltip" id="prd-tt-1">
+  <div class="prd-tt-hdr">
+    <span class="prd-tt-num">1</span>
+    <span class="prd-tt-hdr-title">需求描述：启动区（横屏右列）</span>
+    <span class="prd-tt-close" onclick="_prdClose(1)">×</span>
+  </div>
+  <div class="prd-tt-body">
+    <h4>显示样式</h4>
+    <p>横屏右列顶部依次展示：<strong>状态栏</strong>（信号/WiFi/电量/时间）→ <strong>游戏 Meta</strong>（标题、副标题、评价胶囊、标签组）→ <strong>操作按钮组</strong>（菜单·秒玩·获取游戏）→ <strong>开发商信息列表</strong>。</p>
+    <h4>交互</h4>
+    <ul>
+      <li><strong>秒玩</strong>：点击触发云游戏启动流程（alert 占位）。</li>
+      <li><strong>获取游戏</strong>：跳转下载/购买页（alert 占位）。</li>
+      <li><strong>菜单（⊞）</strong>：点击展开浮层菜单，包含「PC游戏设置 / 添加到桌面 / 卸载游戏」；点击菜单外任意区域收起。</li>
+    </ul>
+    <h4>滚动行为</h4>
+    <p>右列整体可跟随内容<strong>向下滚动</strong>，不固定在视口顶部（移除了原有 flex:1 拉伸）。</p>
+  </div>
+</div>
+
+<!-- 2. 兼容性评价入口 -->
+<div class="prd-tooltip" id="prd-tt-2">
+  <div class="prd-tt-hdr">
+    <span class="prd-tt-num">2</span>
+    <span class="prd-tt-hdr-title">需求描述：兼容性评价入口（横竖屏统一）</span>
+    <span class="prd-tt-close" onclick="_prdClose(2)">×</span>
+  </div>
+  <div class="prd-tt-body">
+    <h4>横屏布局</h4>
+    <p>PC游戏引擎卡片内，三列并排：<strong>兼容性评价</strong>（宽1.3份）｜ 游玩时长 ｜ 云存档。</p>
+    <ul>
+      <li>兼容性评价列：标签「兼容性评价」→ 分数（26px）+ 星级（12px） → 一行描述文字。</li>
+      <li>右侧绝对定位 <strong>›</strong> 箭头（rgba白色0.3），表示可点击进入详情。</li>
+    </ul>
+    <h4>竖屏布局</h4>
+    <p>同卡片三列并排，兼容性列展示：标签 → 分数（18px）+ 星级 → 单行描述（超出省略号截断）。</p>
+    <ul>
+      <li>右侧同样显示绝对定位 <strong>›</strong> 箭头。</li>
+      <li><strong>不再显示绿色圆圈</strong>（已移除 ic-icon-wrap）。</li>
+    </ul>
+    <h4>数据同步</h4>
+    <p>横竖屏分数、星级、描述文案通过 <code>refreshEntryCard()</code> 统一写入，保证双端一致。</p>
+    <h4>点击</h4>
+    <p>整个兼容性列（info-compat）点击 → 打开兼容性评价全屏页面（从右侧滑入）。</p>
+    <blockquote>有数据态 / 无数据态由同一函数控制，无数据时显示「暂无玩家兼容性反馈」。</blockquote>
+  </div>
+</div>
+
+<!-- 3. 全屏页概览卡 -->
+<div class="prd-tooltip" id="prd-tt-3">
+  <div class="prd-tt-hdr">
+    <span class="prd-tt-num">3</span>
+    <span class="prd-tt-hdr-title">需求描述：兼容性评价全屏页 — 概览卡</span>
+    <span class="prd-tt-close" onclick="_prdClose(3)">×</span>
+  </div>
+  <div class="prd-tt-body">
+    <h4>页面入场</h4>
+    <p>页面以 <strong>translateX(100%) → 0</strong> 动画从右侧滑入，覆盖整个 shell 容器（z-index: 80）。顶部导航栏含返回按钮（← 返回上一页）和标题「玩家兼容性评价」。</p>
+    <h4>概览卡布局</h4>
+    <ul>
+      <li>左：大号分数（50px 粗体）。</li>
+      <li>右：星级行 + 评价条数 + 五星分布柱状图（5星→1星从上至下）。</li>
+    </ul>
+    <h4>横屏限宽</h4>
+    <p>横屏下概览卡 <strong>max-width: 50%</strong>，不强制拉伸至整行，避免视觉过于空旷。</p>
+    <h4>分布柱状图</h4>
+    <ul>
+      <li>每行：星级标签 + 进度条（背景 rgba白10%，填充 <span class="prd-dot-gold"></span> 金黄色）+ 数量。</li>
+      <li>进度条宽度 = 该星级数 / 总评价数 × 100%，初始动画延迟 0.4s 过渡。</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 4. 筛选工具栏 -->
+<div class="prd-tooltip" id="prd-tt-4">
+  <div class="prd-tt-hdr">
+    <span class="prd-tt-num">4</span>
+    <span class="prd-tt-hdr-title">需求描述：筛选工具栏 + 我要反馈</span>
+    <span class="prd-tt-close" onclick="_prdClose(4)">×</span>
+  </div>
+  <div class="prd-tt-body">
+    <h4>筛选 Chips</h4>
+    <ul>
+      <li><span class="prd-dot-blue"></span><strong>全部</strong>：显示全部评价列表，默认选中。</li>
+      <li><span class="prd-dot-blue"></span><strong>支持最多</strong>：按标签热度排序（预留，当前数据模拟）。</li>
+      <li><span class="prd-dot-blue"></span><strong>我的</strong>：仅显示当前用户的评价（当前展示第一条）。</li>
+    </ul>
+    <p>选中态：<code>background: rgba(0,157,255,0.15)</code>，蓝色边框 + 文字；未选中：半透明白色。</p>
+    <h4>我要反馈</h4>
+    <p>蓝色渐变按钮，点击打开反馈弹窗（见标注 6）。固定在工具栏右端。</p>
+    <h4>评价列表</h4>
+    <ul>
+      <li>每条评价：头像 + 用户名 + 设备型号/系统 + 星级 + 标签组 + 文字 + 日期 + 举报图标。</li>
+      <li>横屏：2列网格，最后2条无底部分割线。</li>
+      <li>竖屏：单列。</li>
+      <li>底部「加载更多」按钮（当前 demo 中无更多数据则隐藏）。</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 5. 竖屏底部操作栏 -->
+<div class="prd-tooltip" id="prd-tt-5">
+  <div class="prd-tt-hdr">
+    <span class="prd-tt-num">5</span>
+    <span class="prd-tt-hdr-title">需求描述：竖屏底部操作栏</span>
+    <span class="prd-tt-close" onclick="_prdClose(5)">×</span>
+  </div>
+  <div class="prd-tt-body">
+    <h4>显示条件</h4>
+    <p><strong>仅竖屏显示</strong>（横屏强制 <code>display:none!important</code>）。固定吸底，高度 76px，背景同右列面板色。</p>
+    <h4>按钮组成</h4>
+    <ul>
+      <li><strong>秒玩</strong>（flex:1）：深色背景，云图标，触发云游戏启动。</li>
+      <li><strong>获取游戏</strong>（flex:2）：蓝色渐变，桌面图标，跳转下载/购买页。</li>
+    </ul>
+    <h4>交互</h4>
+    <p>两个按钮均为 <code>height: 48px</code>，圆角 12px，点击 <code>scale(0.96)</code> 反馈。</p>
+  </div>
+</div>
+
+<!-- 6. 反馈弹窗表单 -->
+<div class="prd-tooltip" id="prd-tt-6">
+  <div class="prd-tt-hdr">
+    <span class="prd-tt-num">6</span>
+    <span class="prd-tt-hdr-title">需求描述：反馈弹窗表单</span>
+    <span class="prd-tt-close" onclick="_prdClose(6)">×</span>
+  </div>
+  <div class="prd-tt-body">
+    <h4>触发方式</h4>
+    <p>点击兼容性全屏页「我要反馈」按钮弹出，蒙层 + 弹窗从下方缩放淡入。</p>
+    <h4>表单字段</h4>
+    <ol>
+      <li><strong>评分</strong>：5颗可点击星星，hover 放大反馈，点击确认选中分值（1-5）。</li>
+      <li><strong>设备信息</strong>：只读展示当前设备型号（「Pixel 9 Pro · Android 15」）。</li>
+      <li><strong>兼容性标签（多选）</strong>：
+        <ul>
+          <li><span class="prd-dot-green"></span>完美兼容 / 画面卡顿 / 意外闪退 / 手柄无响应 / 按键映射错误 / 声音异常</li>
+          <li>选中态蓝色边框填充，未选中半透明灰。</li>
+        </ul>
+      </li>
+      <li><strong>补充说明</strong>：多行文本框，70px 高，聚焦时蓝色边框高亮。</li>
+    </ol>
+    <h4>底部操作</h4>
+    <p>「取消」（灰色，关闭弹窗）+ 「提交」（蓝色渐变，<strong>需验证：至少选择1个星级</strong>，否则 alert 提示）。</p>
+    <h4>关闭方式</h4>
+    <p>点击蒙层或点击弹窗内「取消」/「×」均可关闭。</p>
+    <blockquote>提交后展示 Toast「感谢您的反馈！」，持续 2.5s 后自动消失。</blockquote>
+  </div>
+</div>
+</body>
+</html>
