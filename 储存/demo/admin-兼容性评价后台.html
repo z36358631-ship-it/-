@@ -2060,8 +2060,7 @@
                     <li class="submenu-item">应用分类</li>
                     <li class="submenu-item">卡片标签管理</li>
                     <li class="submenu-item">同步任务</li>
-                    <li class="submenu-item" data-target="page-compat-report">APP兼容性评价管理</li>
-                    <li class="submenu-item" data-target="page-compat">Mac兼容性反馈管理</li>
+                    <li class="submenu-item" data-target="page-compat-report">玩家兼容性评价管理</li>
                 </ul>
             </div>
 
@@ -2241,11 +2240,7 @@
                     </div>
                     <div class="tool-item" onclick="window.openAdminSection && window.openAdminSection('page-compat-report')">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
-                        <span>APP兼容性评价管理</span>
-                    </div>
-                    <div class="tool-item" onclick="window.openAdminSection && window.openAdminSection('page-compat')">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
-                        <span>Mac兼容性反馈管理</span>
+                        <span>玩家兼容性评价管理</span>
                     </div>
                     <div class="tool-item">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l-5.5 9h11L12 2zm0 3.8l2.2 3.6h-4.4L12 5.8zM5.5 13C4.12 13 3 14.12 3 15.5S4.12 18 5.5 18 8 16.88 8 15.5 6.88 13 5.5 13zm0 3c-.83 0-1.5-.67-1.5-1.5S4.67 14 5.5 14 7 14.67 7 15.5 6.33 16 5.5 16zm13-3h-4c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h4c1.1 0 2-.9 2-2v-4c0-1.1-.9-2-2-2zm0 6h-4v-4h4v4z"/></svg>
@@ -2879,20 +2874,27 @@
                                 <input id="compat-fb-q" type="text" class="filter-input" placeholder="游戏名 / 内容关键字" style="width: 220px;">
                             </div>
                             <div class="filter-item">
-                                <span class="filter-label">平台:</span>
-                                <select id="compat-fb-platform" class="filter-select">
-                                    <option value="all">全部</option>
-                                    <option value="steam">Steam</option>
-                                    <option value="epic">Epic</option>
-                                    <option value="local">本地</option>
-                                </select>
-                            </div>
-                            <div class="filter-item">
                                 <span class="filter-label">端:</span>
                                 <select id="compat-fb-client" class="filter-select">
                                     <option value="all">全部</option>
                                     <option value="mac">Mac端</option>
                                     <option value="mobile">移动端</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">区服:</span>
+                                <select id="compat-fb-region" class="filter-select">
+                                    <option value="all">全部</option>
+                                    <option value="domestic">国内</option>
+                                    <option value="overseas">海外</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">语言:</span>
+                                <select id="compat-fb-lang" class="filter-select">
+                                    <option value="all">全部</option>
+                                    <option value="zh">中文</option>
+                                    <option value="en">英文</option>
                                 </select>
                             </div>
                             <div class="filter-item">
@@ -2949,20 +2951,27 @@
                                 <input id="compat-rp-q" type="text" class="filter-input" placeholder="游戏名 / 内容关键字" style="width: 220px;">
                             </div>
                             <div class="filter-item">
-                                <span class="filter-label">平台:</span>
-                                <select id="compat-rp-platform" class="filter-select">
-                                    <option value="all">全部</option>
-                                    <option value="steam">Steam</option>
-                                    <option value="epic">Epic</option>
-                                    <option value="local">本地</option>
-                                </select>
-                            </div>
-                            <div class="filter-item">
                                 <span class="filter-label">端:</span>
                                 <select id="compat-rp-client" class="filter-select">
                                     <option value="all">全部</option>
                                     <option value="mac">Mac端</option>
                                     <option value="mobile">移动端</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">区服:</span>
+                                <select id="compat-rp-region" class="filter-select">
+                                    <option value="all">全部</option>
+                                    <option value="domestic">国内</option>
+                                    <option value="overseas">海外</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">语言:</span>
+                                <select id="compat-rp-lang" class="filter-select">
+                                    <option value="all">全部</option>
+                                    <option value="zh">中文</option>
+                                    <option value="en">英文</option>
                                 </select>
                             </div>
                             <div class="filter-item">
@@ -5942,8 +5951,8 @@
     // =========================================================
     // Compatibility Report Moderation (localStorage demo)
     // =========================================================
-    const COMPAT_FEEDBACK_KEY = 'gh_compat_feedbacks_v1';
-    const COMPAT_REPORT_KEY = 'gh_compat_reports_v1';
+    const COMPAT_FEEDBACK_KEY = 'gh_compat_feedbacks_v2';
+    const COMPAT_REPORT_KEY = 'gh_compat_reports_v2';
     const SETTINGS_FEEDBACK_KEY = 'gh_settings_feedbacks_v1';
     const SETTINGS_LOG_RATE_LIMIT_KEY = 'gh_settings_log_rate_limit_v1';
     const SETTINGS_LOG_RETENTION_DAYS = 30;
@@ -6556,8 +6565,9 @@
     function getFeedbackFilters() {
         return {
             q: readText('compat-fb-q'),
-            platform: readVal('compat-fb-platform', 'all'),
             client: readVal('compat-fb-client', 'all'),
+            region: readVal('compat-fb-region', 'all'),
+            lang: readVal('compat-fb-lang', 'all'),
             stars: readVal('compat-fb-stars', 'all'),
             status: readVal('compat-fb-status', 'all')
         };
@@ -6566,8 +6576,9 @@
     function getReportFilters() {
         return {
             q: readText('compat-rp-q'),
-            platform: readVal('compat-rp-platform', 'all'),
             client: readVal('compat-rp-client', 'all'),
+            region: readVal('compat-rp-region', 'all'),
+            lang: readVal('compat-rp-lang', 'all'),
             reason: readVal('compat-rp-reason', 'all'),
             status: readVal('compat-rp-status', 'unresolved')
         };
@@ -6578,8 +6589,9 @@
         return (list || []).filter(f => {
             if (!f) return false;
             if (f.deleted) return false;
-            if (filters.platform !== 'all' && f.platform !== filters.platform) return false;
             if (filters.client !== 'all' && (f.clientType || 'mobile') !== filters.client) return false;
+            if (filters.region !== 'all' && (f.region || 'domestic') !== filters.region) return false;
+            if (filters.lang !== 'all' && (f.lang || 'zh') !== filters.lang) return false;
             if (filters.stars !== 'all' && String(f.stars) !== String(filters.stars)) return false;
             if (filters.status === 'live' && f.hidden) return false;
             if (filters.status === 'hidden' && !f.hidden) return false;
@@ -6597,13 +6609,15 @@
             if (!r) return false;
             if (filters.status === 'unresolved' && r.resolved) return false;
             if (filters.status === 'resolved' && !r.resolved) return false;
-            if (filters.platform !== 'all' && r.platform !== filters.platform) return false;
             const fb = feedbackMap.get(r.feedbackId) || null;
             const rClient = r.clientType || fb?.clientType || 'mobile';
             if (filters.client !== 'all' && rClient !== filters.client) return false;
+            const rRegion = r.region || fb?.region || 'domestic';
+            if (filters.region !== 'all' && rRegion !== filters.region) return false;
+            const rLang = r.lang || fb?.lang || 'zh';
+            if (filters.lang !== 'all' && rLang !== filters.lang) return false;
             if (filters.reason !== 'all' && String(r.reason || '') !== String(filters.reason)) return false;
             if (q) {
-                const fb = feedbackMap.get(r.feedbackId) || null;
                 const hay = (
                     (fb?.gameName || '') + ' ' +
                     (fb?.content || '') + ' ' +
@@ -6845,16 +6859,18 @@
     };
     window.resetCompatAdminFeedbackFilters = function() {
         const q = document.getElementById('compat-fb-q');
-        const p = document.getElementById('compat-fb-platform');
         const s = document.getElementById('compat-fb-stars');
         const st = document.getElementById('compat-fb-status');
+        const region = document.getElementById('compat-fb-region');
+        const lang = document.getElementById('compat-fb-lang');
         if (q) q.value = '';
-        if (p) p.value = 'all';
         if (s) s.value = 'all';
         if (st) st.value = 'all';
+        if (region) region.value = 'all';
+        if (lang) lang.value = 'all';
         // Restore platform-tab locked client value
         const fbClient = document.getElementById('compat-fb-client');
-        if (fbClient && compatActivePlatformTab !== 'all') fbClient.value = compatActivePlatformTab;
+        if (fbClient) fbClient.value = compatActivePlatformTab !== 'all' ? compatActivePlatformTab : 'all';
         compatFbPage = 1;
         window.refreshCompatReportAdmin && window.refreshCompatReportAdmin();
     };
@@ -6866,16 +6882,18 @@
     };
     window.resetCompatAdminReportFilters = function() {
         const q = document.getElementById('compat-rp-q');
-        const p = document.getElementById('compat-rp-platform');
         const r = document.getElementById('compat-rp-reason');
         const st = document.getElementById('compat-rp-status');
+        const region = document.getElementById('compat-rp-region');
+        const lang = document.getElementById('compat-rp-lang');
         if (q) q.value = '';
-        if (p) p.value = 'all';
         if (r) r.value = 'all';
         if (st) st.value = 'unresolved';
+        if (region) region.value = 'all';
+        if (lang) lang.value = 'all';
         // Restore platform-tab locked client value
         const rpClient = document.getElementById('compat-rp-client');
-        if (rpClient && compatActivePlatformTab !== 'all') rpClient.value = compatActivePlatformTab;
+        if (rpClient) rpClient.value = compatActivePlatformTab !== 'all' ? compatActivePlatformTab : 'all';
         compatRpPage = 1;
         window.refreshCompatReportAdmin && window.refreshCompatReportAdmin();
     };
@@ -7008,12 +7026,12 @@
         if (loadJson(COMPAT_FEEDBACK_KEY, []).length > 0) return;
         const now = Date.now();
         const demos = [
-            { id:'f1', gameId:'gta5', gameName:'侠盗猎车手5', clientType:'mobile', platform:'steam', deviceModel:'Pixel 9 Pro', osVersion:'Android 15', stars:4, tags:['意外闪退','画面卡顿'], content:'整体游戏体验不错，但偶尔会闪退，希望能优化。', supportCount:12, hidden:false, deleted:false, createdAt: new Date(now - 3600000*2).toISOString() },
-            { id:'f2', gameId:'gta5', gameName:'侠盗猎车手5', clientType:'mac', platform:'steam', cpuModel:'Apple M2 Pro', memoryGB:16, stars:5, tags:['完美兼容'], content:'Mac上运行非常流畅，帧率稳定，完全没有问题。', supportCount:8, hidden:false, deleted:false, createdAt: new Date(now - 3600000*5).toISOString() },
-            { id:'f3', gameId:'cyberpunk', gameName:'赛博朋克2077', clientType:'mobile', platform:'epic', deviceModel:'iPhone 15 Pro', osVersion:'iOS 17', stars:3, tags:['手柄无响应','按键映射错误'], content:'手柄映射有问题，很多按键对不上，需要手动调整才能玩。', supportCount:23, hidden:false, deleted:false, createdAt: new Date(now - 3600000*24).toISOString() },
-            { id:'f4', gameId:'cyberpunk', gameName:'赛博朋克2077', clientType:'mac', platform:'epic', cpuModel:'Intel Core i9', memoryGB:32, stars:2, tags:['画面卡顿','声音异常'], content:'Mac端性能损耗很大，画质调低才能流畅，声音偶尔有杂音。', supportCount:5, hidden:false, deleted:false, createdAt: new Date(now - 3600000*30).toISOString() },
-            { id:'f5', gameId:'elden', gameName:'艾尔登法环', clientType:'mobile', platform:'steam', deviceModel:'Samsung S24 Ultra', osVersion:'Android 14', stars:5, tags:['完美兼容'], content:'完美运行，触屏操作也很自然，大屏玩着很爽！', supportCount:31, hidden:false, deleted:false, createdAt: new Date(now - 3600000*48).toISOString() },
-            { id:'f6', gameId:'elden', gameName:'艾尔登法环', clientType:'mac', platform:'steam', cpuModel:'Apple M3 Max', memoryGB:36, stars:4, tags:['完美兼容'], content:'M3芯片跑得很好，偶尔有轻微延迟但基本不影响体验。', supportCount:17, hidden:false, deleted:false, createdAt: new Date(now - 3600000*72).toISOString() },
+            { id:'f1', gameId:'gta5', gameName:'侠盗猎车手5', clientType:'mobile', region:'domestic', lang:'zh', deviceModel:'Pixel 9 Pro', osVersion:'Android 15', stars:4, tags:['意外闪退','画面卡顿'], content:'整体游戏体验不错，但偶尔会闪退，希望能优化。', supportCount:12, hidden:false, deleted:false, createdAt: new Date(now - 3600000*2).toISOString() },
+            { id:'f2', gameId:'gta5', gameName:'侠盗猎车手5', clientType:'mac', region:'domestic', lang:'zh', cpuModel:'Apple M2 Pro', memoryGB:16, stars:5, tags:['完美兼容'], content:'Mac上运行非常流畅，帧率稳定，完全没有问题。', supportCount:8, hidden:false, deleted:false, createdAt: new Date(now - 3600000*5).toISOString() },
+            { id:'f3', gameId:'cyberpunk', gameName:'赛博朋克2077', clientType:'mobile', region:'overseas', lang:'en', deviceModel:'iPhone 15 Pro', osVersion:'iOS 17', stars:3, tags:['手柄无响应','按键映射错误'], content:'Controller mapping is broken, many buttons don\'t work correctly.', supportCount:23, hidden:false, deleted:false, createdAt: new Date(now - 3600000*24).toISOString() },
+            { id:'f4', gameId:'cyberpunk', gameName:'赛博朋克2077', clientType:'mac', region:'overseas', lang:'en', cpuModel:'Intel Core i9', memoryGB:32, stars:2, tags:['画面卡顿','声音异常'], content:'Heavy performance loss on Mac, had to lower quality settings. Audio glitches too.', supportCount:5, hidden:false, deleted:false, createdAt: new Date(now - 3600000*30).toISOString() },
+            { id:'f5', gameId:'elden', gameName:'艾尔登法环', clientType:'mobile', region:'domestic', lang:'zh', deviceModel:'Samsung S24 Ultra', osVersion:'Android 14', stars:5, tags:['完美兼容'], content:'完美运行，触屏操作也很自然，大屏玩着很爽！', supportCount:31, hidden:false, deleted:false, createdAt: new Date(now - 3600000*48).toISOString() },
+            { id:'f6', gameId:'elden', gameName:'艾尔登法环', clientType:'mac', region:'domestic', lang:'zh', cpuModel:'Apple M3 Max', memoryGB:36, stars:4, tags:['完美兼容'], content:'M3芯片跑得很好，偶尔有轻微延迟但基本不影响体验。', supportCount:17, hidden:false, deleted:false, createdAt: new Date(now - 3600000*72).toISOString() },
         ];
         saveJson(COMPAT_FEEDBACK_KEY, demos);
         const demoReports = [
