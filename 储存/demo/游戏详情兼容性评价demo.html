@@ -223,9 +223,10 @@
         }
         /* 竖版：隐藏绿圈、ic-sub 文字、专用描述块；显示评分行 */
         .shell.pt .info-compat .ic-icon-wrap { display: none; }
-        .shell.pt .info-compat .ic-score-row { display: flex; }
-        .shell.pt .info-compat .ic-score { font-size: 18px; }
-        .shell.pt .info-compat .ic-sub { display: none; }
+        .shell.pt .info-compat .ic-score-row { display: flex; flex-wrap: nowrap; }
+        .shell.pt .info-compat .ic-score { font-size: 15px; }
+        .shell.pt .info-compat .ic-stars svg { width: 9px; height: 9px; }
+        .shell.pt .info-compat .ic-sub { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
         .shell.pt .info-compat .ic-empty { font-size: 10px; }
         /* 竖版描述专用 */
         .pt-compat-desc { display: none; }
@@ -654,10 +655,10 @@
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.15)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                                         </div>
                                     </div>
-                                    <div class="ic-sub" id="entrySub">整体可玩，但不同设备表现存在差异</div>
-                                    <!-- 竖版专用：2行描述+渐隐 -->
+                                    <div class="ic-sub" id="entrySub">整体可玩</div>
+                                    <!-- 竖版专用：描述 -->
                                     <div class="pt-compat-desc ic-compat-desc-wrap">
-                                        <div class="ic-compat-desc" id="entryDescPt">整体可玩，但不同设备表现存在差异</div>
+                                        <div class="ic-compat-desc" id="entryDescPt">整体可玩</div>
                                     </div>
                                 </div>
                                 <!-- 无数据态（隐藏） -->
@@ -769,7 +770,7 @@
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.15)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                                     </div>
                                 </div>
-                                <div class="ic-sub" id="entrySubLs">整体可玩，但不同设备表现存在差异</div>
+                                <div class="ic-sub" id="entrySubLs">整体可玩</div>
                             </div>
                             <div id="entryNoDataLs" class="ic-empty" style="display:none;">暂无评价</div>
                         </div>
@@ -1015,9 +1016,9 @@ function starsSVG(score, size) {
 //  入口卡片
 // ============================================================
 function compatSubText(avg) {
-    if (avg >= 4.2) return '大多数玩家可正常游玩，点击查看完整评价';
-    if (avg >= 3.2) return '整体可玩，但不同设备表现存在差异';
-    return '兼容问题偏多，建议先查看详细评价';
+    if (avg >= 4.2) return '大多数玩家可正常游玩';
+    if (avg >= 3.2) return '整体可玩';
+    return '兼容问题偏多';
 }
 
 function refreshEntryCard() {
@@ -1423,14 +1424,19 @@ refreshEntryCard();
 
 <script>
 (function(){
-  /* ---- 浮窗唯一性 + 拖拽 ---- */
+  /* ---- 浮窗管理 ---- */
   const openMap = {};
-  function closeTt(id){ const el=document.getElementById('prd-tt-'+id); if(el){ el.classList.remove('open'); delete openMap[id]; } }
+  function closeTt(id){
+    const el=document.getElementById('prd-tt-'+id);
+    if(el){ el.classList.remove('open'); delete openMap[id]; }
+  }
+  function closeAllTt(){
+    Object.keys(openMap).forEach(function(id){ closeTt(Number(id)); });
+  }
   function openTt(id, badgeEl){
     const el=document.getElementById('prd-tt-'+id);
     if(!el) return;
-    if(el.classList.contains('open')){ return; }
-    // 定位：默认 badge 左下方
+    if(el.classList.contains('open')) return;
     const r=badgeEl.getBoundingClientRect();
     let left=r.left, top=r.bottom+8;
     const W=window.innerWidth, H=window.innerHeight, TW=450, TH=Math.min(520,H*0.7);
@@ -1440,9 +1446,9 @@ refreshEntryCard();
     el.classList.add('open');
     openMap[id]=true;
   }
-  window._prdOpen=openTt; window._prdClose=closeTt;
+  window._prdOpen=openTt; window._prdClose=closeTt; window._prdCloseAll=closeAllTt;
 
-  // 拖拽
+  /* ---- 拖拽 ---- */
   document.addEventListener('mousedown',function(e){
     const hdr=e.target.closest('.prd-tt-hdr');
     if(!hdr) return;
@@ -1455,46 +1461,114 @@ refreshEntryCard();
     document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
   },true);
 
-  /* ---- badge 定位（挂 body，避开 overflow:hidden） ---- */
-  const defs=[
-    { id:1, selector:'#colRight .action-buttons-group', desc:'启动区' },
-    { id:2, selector:'.col-left .info-compat',          desc:'兼容性评价入口（横竖屏）' },
-    { id:3, selector:'.compat-overview',                desc:'兼容性评价全屏概览卡' },
-    { id:4, selector:'.compat-toolbar',                 desc:'筛选工具栏 + 我要反馈' },
-    { id:5, selector:'.bottom-bar',                     desc:'竖屏底部操作栏' },
-    { id:6, selector:'#modalFeedback .modal-box',       desc:'反馈弹窗表单' },
-  ];
-  function placeBadges(){
-    defs.forEach(function(d){
-      const old=document.getElementById('prd-badge-'+d.id);
-      if(old) old.remove();
-      const anchor=document.querySelector(d.selector);
-      if(!anchor) return;
-      const r=anchor.getBoundingClientRect();
-      if(r.width===0&&r.height===0) return;
-      const b=document.createElement('span');
-      b.className='prd-badge'; b.id='prd-badge-'+d.id;
-      b.textContent=d.id;
-      b.style.position='fixed';
-      b.style.top=(r.top-8)+'px';
-      b.style.left=(r.right-4)+'px';
-      b.style.right='auto';
-      b.addEventListener('mouseenter',function(e){ e.stopPropagation(); _prdOpen(d.id,b); });
-      b.addEventListener('click',function(e){ e.stopPropagation(); _prdOpen(d.id,b); });
-      document.body.appendChild(b);
+  /* ---- mouseleave 关闭（离开浮窗区域时） ---- */
+  document.addEventListener('mouseleave',function(e){
+    if(!e.target.closest('.prd-tooltip') && !e.target.closest('.prd-badge')) return;
+  });
+  document.addEventListener('mouseover',function(){});
+  // 为每个浮窗绑定 mouseleave
+  function bindTtLeave(){
+    document.querySelectorAll('.prd-tooltip').forEach(function(tt){
+      tt.addEventListener('mouseleave',function(){
+        const id=parseInt(tt.id.replace('prd-tt-',''));
+        closeTt(id);
+      });
     });
   }
-  window.addEventListener('load', placeBadges);
-  window.addEventListener('resize', placeBadges);
 
-  // 重新定位：横竖屏切换时
-  const origSetOrient=window.setOrient;
-  if(origSetOrient){
-    window.setOrient=function(o){
-      origSetOrient(o);
-      setTimeout(placeBadges,450);
-    };
+  /* ---- badge 定义 ---- */
+  // 主页面 badges（固定位置）
+  const mainDefs=[
+    { id:1, selector:'.col-left .info-compat',   desc:'兼容性评价入口' },
+    { id:2, selector:'#colRight .game-meta',      desc:'游戏信息 + 启动按钮区' },
+    { id:5, selector:'.bottom-bar',               desc:'竖屏底部操作栏' },
+  ];
+  // 兼容性评价全屏页 badges（页面打开时才挂）
+  const compatDefs=[
+    { id:3, selector:'.compat-overview',  desc:'概览卡' },
+    { id:4, selector:'.compat-toolbar',   desc:'筛选栏 + 我要反馈' },
+  ];
+  // 反馈弹窗
+  const modalDefs=[
+    { id:6, selector:'#modalFeedback .modal-box', desc:'反馈表单' },
+  ];
+
+  function makeBadge(d, anchorEl){
+    const old=document.getElementById('prd-badge-'+d.id);
+    if(old) old.remove();
+    const r=anchorEl.getBoundingClientRect();
+    if(r.width===0&&r.height===0) return;
+    const b=document.createElement('span');
+    b.className='prd-badge'; b.id='prd-badge-'+d.id;
+    b.textContent=d.id;
+    b.style.position='fixed';
+    b.style.top=(r.top-8)+'px';
+    b.style.left=(r.right-4)+'px';
+    b.style.right='auto';
+    b.addEventListener('mouseenter',function(e){ e.stopPropagation(); openTt(d.id,b); });
+    b.addEventListener('click',function(e){ e.stopPropagation(); openTt(d.id,b); });
+    // mouseleave badge → 不立即关闭（用户可移入浮窗）
+    document.body.appendChild(b);
+    return b;
   }
+
+  function placeBadges(defs){
+    defs.forEach(function(d){
+      const anchor=document.querySelector(d.selector);
+      if(anchor) makeBadge(d, anchor);
+    });
+  }
+
+  function removeCompatBadges(){
+    [3,4].forEach(function(id){
+      const b=document.getElementById('prd-badge-'+id);
+      if(b) b.remove();
+    });
+  }
+
+  function placeCompatBadges(){
+    setTimeout(function(){
+      placeBadges(compatDefs);
+    },400);
+  }
+
+  // 初始放置主页 badges
+  window.addEventListener('load',function(){
+    placeBadges(mainDefs);
+    placeBadges(modalDefs);
+    bindTtLeave();
+  });
+  window.addEventListener('resize',function(){
+    placeBadges(mainDefs);
+    placeBadges(compatDefs);
+    placeBadges(modalDefs);
+  });
+
+  /* ---- 拦截页面跳转，关闭所有浮窗 + 重置badges ---- */
+  const _origOpen=window.openCompatPage;
+  window.openCompatPage=function(){
+    closeAllTt();
+    removeCompatBadges();
+    if(_origOpen) _origOpen.apply(this,arguments);
+    placeCompatBadges();
+  };
+  const _origClose=window.closeCompatPage;
+  window.closeCompatPage=function(){
+    closeAllTt();
+    removeCompatBadges();
+    if(_origClose) _origClose.apply(this,arguments);
+  };
+  const _origSetOrient=window.setOrient;
+  window.setOrient=function(o){
+    closeAllTt();
+    if(_origSetOrient) _origSetOrient.apply(this,arguments);
+    setTimeout(function(){ placeBadges(mainDefs); },450);
+  };
+  const _origOpenFb=window.openFeedbackModal;
+  window.openFeedbackModal=function(){
+    if(_origOpenFb) _origOpenFb.apply(this,arguments);
+    setTimeout(function(){ placeBadges(modalDefs); },100);
+  };
 })();
 </script>
 
@@ -1502,103 +1576,98 @@ refreshEntryCard();
      PRD 浮窗内容
      ============================================================ -->
 
-<!-- 1. 启动区（横屏右列） -->
+<!-- 1. 兼容性评价入口 -->
 <div class="prd-tooltip" id="prd-tt-1">
   <div class="prd-tt-hdr">
     <span class="prd-tt-num">1</span>
-    <span class="prd-tt-hdr-title">需求描述：启动区（横屏右列）</span>
+    <span class="prd-tt-hdr-title">需求描述：兼容性评价入口</span>
     <span class="prd-tt-close" onclick="_prdClose(1)">×</span>
   </div>
   <div class="prd-tt-body">
-    <h4>显示样式</h4>
-    <p>横屏右列顶部依次展示：<strong>状态栏</strong>（信号/WiFi/电量/时间）→ <strong>游戏 Meta</strong>（标题、副标题、评价胶囊、标签组）→ <strong>操作按钮组</strong>（菜单·秒玩·获取游戏）→ <strong>开发商信息列表</strong>。</p>
-    <h4>交互</h4>
+    <h4>横屏布局</h4>
+    <p>PC游戏引擎卡片内三列并排：<strong>兼容评价</strong>（宽1.3份）｜ 游玩时长 ｜ 云存档。</p>
     <ul>
-      <li><strong>秒玩</strong>：点击触发云游戏启动流程（alert 占位）。</li>
-      <li><strong>获取游戏</strong>：跳转下载/购买页（alert 占位）。</li>
-      <li><strong>菜单（⊞）</strong>：点击展开浮层菜单，包含「PC游戏设置 / 添加到桌面 / 卸载游戏」；点击菜单外任意区域收起。</li>
+      <li>标签「兼容评价 ›」→ 分数（26px）+ 星级 → 一行描述文字。</li>
     </ul>
-    <h4>滚动行为</h4>
-    <p>右列整体可跟随内容<strong>向下滚动</strong>，不固定在视口顶部（移除了原有 flex:1 拉伸）。</p>
+    <h4>竖屏布局</h4>
+    <p>同卡片三列并排，兼容评价列展示：标签「兼容评价 ›」→ 分数（15px）+ 星级（9px）→ 描述（单行省略）。</p>
+    <ul>
+      <li><strong>不显示绿色圆圈</strong>，横竖屏样式统一。</li>
+    </ul>
+    <h4>数据同步</h4>
+    <p>分数、星级、描述文案由 <code>refreshEntryCard()</code> 统一写入，横竖屏保持一致。</p>
+    <h4>点击</h4>
+    <p>整个兼容性列点击 → 打开兼容性评价全屏页（从右侧滑入）。</p>
+    <blockquote>无数据时显示「暂无评价」。</blockquote>
   </div>
 </div>
 
-<!-- 2. 兼容性评价入口 -->
+<!-- 2. 游戏信息 + 启动按钮区 -->
 <div class="prd-tooltip" id="prd-tt-2">
   <div class="prd-tt-hdr">
     <span class="prd-tt-num">2</span>
-    <span class="prd-tt-hdr-title">需求描述：兼容性评价入口（横竖屏统一）</span>
+    <span class="prd-tt-hdr-title">需求描述：游戏信息 + 启动按钮区（横屏右列）</span>
     <span class="prd-tt-close" onclick="_prdClose(2)">×</span>
   </div>
   <div class="prd-tt-body">
-    <h4>横屏布局</h4>
-    <p>PC游戏引擎卡片内，三列并排：<strong>兼容性评价</strong>（宽1.3份）｜ 游玩时长 ｜ 云存档。</p>
+    <h4>显示样式</h4>
+    <p>横屏右列依次：<strong>状态栏</strong>（信号/WiFi/电量/时间）→ <strong>游戏标题</strong> + 副标题 → <strong>评价胶囊</strong> → <strong>标签组</strong> → <strong>操作按钮组</strong>（菜单·秒玩·获取游戏）→ <strong>开发商信息列表</strong>。</p>
+    <h4>按钮交互</h4>
     <ul>
-      <li>兼容性评价列：标签「兼容性评价」→ 分数（26px）+ 星级（12px） → 一行描述文字。</li>
-      <li>右侧绝对定位 <strong>›</strong> 箭头（rgba白色0.3），表示可点击进入详情。</li>
+      <li><strong>秒玩</strong>：触发云游戏启动流程。</li>
+      <li><strong>获取游戏</strong>：跳转下载/购买页。</li>
+      <li><strong>菜单（⊞）</strong>：展开浮层「PC游戏设置 / 添加到桌面 / 卸载游戏」，点击外部收起。</li>
     </ul>
-    <h4>竖屏布局</h4>
-    <p>同卡片三列并排，兼容性列展示：标签 → 分数（18px）+ 星级 → 单行描述（超出省略号截断）。</p>
-    <ul>
-      <li>右侧同样显示绝对定位 <strong>›</strong> 箭头。</li>
-      <li><strong>不再显示绿色圆圈</strong>（已移除 ic-icon-wrap）。</li>
-    </ul>
-    <h4>数据同步</h4>
-    <p>横竖屏分数、星级、描述文案通过 <code>refreshEntryCard()</code> 统一写入，保证双端一致。</p>
-    <h4>点击</h4>
-    <p>整个兼容性列（info-compat）点击 → 打开兼容性评价全屏页面（从右侧滑入）。</p>
-    <blockquote>有数据态 / 无数据态由同一函数控制，无数据时显示「暂无玩家兼容性反馈」。</blockquote>
+    <h4>滚动行为</h4>
+    <p>右列跟随内容自然向下滚动，不固定在视口顶部。</p>
   </div>
 </div>
 
-<!-- 3. 全屏页概览卡 -->
+<!-- 3. 兼容性全屏页概览卡（进入页面后显示） -->
 <div class="prd-tooltip" id="prd-tt-3">
   <div class="prd-tt-hdr">
     <span class="prd-tt-num">3</span>
-    <span class="prd-tt-hdr-title">需求描述：兼容性评价全屏页 — 概览卡</span>
+    <span class="prd-tt-hdr-title">需求描述：兼容性全屏页 — 概览卡</span>
     <span class="prd-tt-close" onclick="_prdClose(3)">×</span>
   </div>
   <div class="prd-tt-body">
     <h4>页面入场</h4>
-    <p>页面以 <strong>translateX(100%) → 0</strong> 动画从右侧滑入，覆盖整个 shell 容器（z-index: 80）。顶部导航栏含返回按钮（← 返回上一页）和标题「玩家兼容性评价」。</p>
-    <h4>概览卡布局</h4>
+    <p><strong>translateX(100%) → 0</strong> 从右侧滑入，覆盖整个 shell（z-index: 80）。顶部含返回按钮 + 标题「玩家兼容性评价」。</p>
+    <h4>概览卡</h4>
     <ul>
       <li>左：大号分数（50px 粗体）。</li>
-      <li>右：星级行 + 评价条数 + 五星分布柱状图（5星→1星从上至下）。</li>
+      <li>右：星级行 + 评价条数 + 五星分布柱状图（5→1星）。</li>
     </ul>
     <h4>横屏限宽</h4>
-    <p>横屏下概览卡 <strong>max-width: 50%</strong>，不强制拉伸至整行，避免视觉过于空旷。</p>
-    <h4>分布柱状图</h4>
+    <p>横屏概览卡 <strong>max-width: 50%</strong>，不拉伸满行。</p>
+    <h4>柱状图</h4>
     <ul>
-      <li>每行：星级标签 + 进度条（背景 rgba白10%，填充 <span class="prd-dot-gold"></span> 金黄色）+ 数量。</li>
-      <li>进度条宽度 = 该星级数 / 总评价数 × 100%，初始动画延迟 0.4s 过渡。</li>
+      <li>进度条宽度 = 该星级数 / 总数 × 100%，填充色 <span class="prd-dot-gold"></span> 金黄色，动画过渡 0.4s。</li>
     </ul>
   </div>
 </div>
 
-<!-- 4. 筛选工具栏 -->
+<!-- 4. 筛选工具栏 + 我要反馈（进入页面后显示） -->
 <div class="prd-tooltip" id="prd-tt-4">
   <div class="prd-tt-hdr">
     <span class="prd-tt-num">4</span>
-    <span class="prd-tt-hdr-title">需求描述：筛选工具栏 + 我要反馈</span>
+    <span class="prd-tt-hdr-title">需求描述：筛选工具栏 + 评价列表</span>
     <span class="prd-tt-close" onclick="_prdClose(4)">×</span>
   </div>
   <div class="prd-tt-body">
     <h4>筛选 Chips</h4>
     <ul>
-      <li><span class="prd-dot-blue"></span><strong>全部</strong>：显示全部评价列表，默认选中。</li>
-      <li><span class="prd-dot-blue"></span><strong>支持最多</strong>：按标签热度排序（预留，当前数据模拟）。</li>
-      <li><span class="prd-dot-blue"></span><strong>我的</strong>：仅显示当前用户的评价（当前展示第一条）。</li>
+      <li><strong>全部</strong>：默认选中，显示全部评价。</li>
+      <li><strong>支持最多</strong>：按标签热度排序（预留）。</li>
+      <li><strong>我的</strong>：仅显示当前用户评价。</li>
     </ul>
-    <p>选中态：<code>background: rgba(0,157,255,0.15)</code>，蓝色边框 + 文字；未选中：半透明白色。</p>
+    <p>选中态蓝色 <code>rgba(0,157,255,0.15)</code> 填充，未选中半透明白色。</p>
     <h4>我要反馈</h4>
-    <p>蓝色渐变按钮，点击打开反馈弹窗（见标注 6）。固定在工具栏右端。</p>
+    <p>蓝色渐变按钮，固定工具栏右端，点击打开反馈弹窗（见标注 6）。</p>
     <h4>评价列表</h4>
     <ul>
-      <li>每条评价：头像 + 用户名 + 设备型号/系统 + 星级 + 标签组 + 文字 + 日期 + 举报图标。</li>
-      <li>横屏：2列网格，最后2条无底部分割线。</li>
-      <li>竖屏：单列。</li>
-      <li>底部「加载更多」按钮（当前 demo 中无更多数据则隐藏）。</li>
+      <li>每条：头像 + 用户名 + 设备/系统 + 星级 + 标签组 + 文字 + 日期 + 举报。</li>
+      <li>横屏：2列网格；竖屏：单列。</li>
     </ul>
   </div>
 </div>
@@ -1612,14 +1681,13 @@ refreshEntryCard();
   </div>
   <div class="prd-tt-body">
     <h4>显示条件</h4>
-    <p><strong>仅竖屏显示</strong>（横屏强制 <code>display:none!important</code>）。固定吸底，高度 76px，背景同右列面板色。</p>
-    <h4>按钮组成</h4>
+    <p><strong>仅竖屏显示</strong>（横屏 <code>display:none!important</code>）。吸底固定，高度 76px。</p>
+    <h4>按钮</h4>
     <ul>
-      <li><strong>秒玩</strong>（flex:1）：深色背景，云图标，触发云游戏启动。</li>
-      <li><strong>获取游戏</strong>（flex:2）：蓝色渐变，桌面图标，跳转下载/购买页。</li>
+      <li><strong>秒玩</strong>（flex:1）：深色背景，触发云游戏启动。</li>
+      <li><strong>获取游戏</strong>（flex:2）：蓝色渐变，跳转下载/购买。</li>
     </ul>
-    <h4>交互</h4>
-    <p>两个按钮均为 <code>height: 48px</code>，圆角 12px，点击 <code>scale(0.96)</code> 反馈。</p>
+    <p>按钮高度 48px，圆角 12px，点击 <code>scale(0.96)</code> 反馈。</p>
   </div>
 </div>
 
@@ -1631,25 +1699,18 @@ refreshEntryCard();
     <span class="prd-tt-close" onclick="_prdClose(6)">×</span>
   </div>
   <div class="prd-tt-body">
-    <h4>触发方式</h4>
-    <p>点击兼容性全屏页「我要反馈」按钮弹出，蒙层 + 弹窗从下方缩放淡入。</p>
+    <h4>触发</h4>
+    <p>点击「我要反馈」，蒙层 + 弹窗从下方缩放淡入。</p>
     <h4>表单字段</h4>
     <ol>
-      <li><strong>评分</strong>：5颗可点击星星，hover 放大反馈，点击确认选中分值（1-5）。</li>
-      <li><strong>设备信息</strong>：只读展示当前设备型号（「Pixel 9 Pro · Android 15」）。</li>
-      <li><strong>兼容性标签（多选）</strong>：
-        <ul>
-          <li><span class="prd-dot-green"></span>完美兼容 / 画面卡顿 / 意外闪退 / 手柄无响应 / 按键映射错误 / 声音异常</li>
-          <li>选中态蓝色边框填充，未选中半透明灰。</li>
-        </ul>
-      </li>
-      <li><strong>补充说明</strong>：多行文本框，70px 高，聚焦时蓝色边框高亮。</li>
+      <li><strong>评分</strong>：5颗可点击星星，hover 放大，点击确认。</li>
+      <li><strong>设备信息</strong>：只读，显示当前设备型号。</li>
+      <li><strong>兼容性标签（多选）</strong>：<span class="prd-dot-green"></span>完美兼容 / 画面卡顿 / 意外闪退 / 手柄无响应 / 按键映射错误 / 声音异常。选中蓝色，未选半透明灰。</li>
+      <li><strong>补充说明</strong>：70px 多行文本框，聚焦蓝色边框。</li>
     </ol>
-    <h4>底部操作</h4>
-    <p>「取消」（灰色，关闭弹窗）+ 「提交」（蓝色渐变，<strong>需验证：至少选择1个星级</strong>，否则 alert 提示）。</p>
-    <h4>关闭方式</h4>
-    <p>点击蒙层或点击弹窗内「取消」/「×」均可关闭。</p>
-    <blockquote>提交后展示 Toast「感谢您的反馈！」，持续 2.5s 后自动消失。</blockquote>
+    <h4>操作</h4>
+    <p>「取消」关闭 ｜「提交」需验证至少选1个星级，否则 alert 提示。</p>
+    <blockquote>提交后 Toast「反馈提交成功，感谢你的评价！」，2.5s 消失。</blockquote>
   </div>
 </div>
 </body>
