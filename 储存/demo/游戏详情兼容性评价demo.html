@@ -170,7 +170,6 @@
             position: relative;
         }
         .shell.ls .info-compat:hover { background: rgba(255,255,255,0.03); }
-        .shell.ls .ic-chevron { display: flex; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); }
         .shell.ls .info-sub-row { flex: 1; display: flex; flex-direction: row; }
         .shell.ls .info-time {
             flex: 1; padding: 14px 14px;
@@ -191,9 +190,6 @@
         }
         .shell.pt .info-compat:hover { background: rgba(255,255,255,0.03); }
         .shell.pt .ic-main { display: flex; flex-direction: column; align-items: center; min-width: 0; width: 100%; }
-        /* 竖版隐藏右侧箭头（仅显示在 info-compat 中） */
-        .shell.pt .ic-chevron { display: none; }
-        .shell.pt .info-compat .ic-chevron { display: flex; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); }
         /* 竖版：info-sub-row 两列 */
         .shell.pt .info-sub-row { flex: 2; display: flex; flex-direction: row; }
         .shell.pt .info-time {
@@ -644,8 +640,8 @@
                                 <div class="ic-icon-wrap">
                                     <span id="entryScorePt" style="font-size:13px;font-weight:800;color:#6fffa8;">4.0</span>
                                 </div>
-                                <!-- 标签 -->
-                                <div class="ic-compat-label">兼容性评价</div>
+                                <!-- 标签 + 箭头 -->
+                                <div class="ic-compat-label">兼容评价&nbsp;<i class="fas fa-chevron-right" style="font-size:8px;color:rgba(255,255,255,0.35);vertical-align:middle;"></i></div>
                                 <!-- 横版有数据态：评分+星级+描述 -->
                                 <div id="entryHasData">
                                     <div class="ic-score-row">
@@ -665,10 +661,8 @@
                                     </div>
                                 </div>
                                 <!-- 无数据态（隐藏） -->
-                                <div id="entryNoData" class="ic-empty" style="display:none;">暂无玩家兼容性反馈</div>
+                                <div id="entryNoData" class="ic-empty" style="display:none;">暂无评价</div>
                             </div>
-                            <!-- 横版显示箭头，竖版CSS隐藏 -->
-                            <div class="ic-chevron"><i class="fas fa-chevron-right" style="color:rgba(255,255,255,0.3); font-size:14px;"></i></div>
                         </div>
                         <!-- 游玩时长 + 云存档 -->
                         <div class="info-sub-row">
@@ -763,7 +757,7 @@
                 <div class="info-card-body">
                     <div class="info-compat" onclick="openCompatPage()">
                         <div class="ic-main">
-                            <div class="ic-compat-label">兼容性评价</div>
+                            <div class="ic-compat-label">兼容评价&nbsp;<i class="fas fa-chevron-right" style="font-size:8px;color:rgba(255,255,255,0.35);vertical-align:middle;"></i></div>
                             <div id="entryHasDataLs">
                                 <div class="ic-score-row">
                                     <div class="ic-score" id="entryScoreLs">4.0</div>
@@ -777,9 +771,8 @@
                                 </div>
                                 <div class="ic-sub" id="entrySubLs">整体可玩，但不同设备表现存在差异</div>
                             </div>
-                            <div id="entryNoDataLs" class="ic-empty" style="display:none;">暂无玩家兼容性反馈</div>
+                            <div id="entryNoDataLs" class="ic-empty" style="display:none;">暂无评价</div>
                         </div>
-                        <div class="ic-chevron"><i class="fas fa-chevron-right" style="color:rgba(255,255,255,0.3); font-size:14px;"></i></div>
                     </div>
                     <div class="info-sub-row">
                         <div class="info-time">
