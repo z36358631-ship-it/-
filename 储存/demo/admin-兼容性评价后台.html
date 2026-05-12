@@ -2060,7 +2060,16 @@
                     <li class="submenu-item">应用分类</li>
                     <li class="submenu-item">卡片标签管理</li>
                     <li class="submenu-item">同步任务</li>
-                    <li class="submenu-item" data-target="page-compat-report">玩家兼容性评价管理</li>
+                    <div class="sub-group">
+                        <li class="submenu-item sub-parent" style="justify-content: space-between; padding-right:16px;">
+                            <span>玩家兼容性评价管理</span>
+                            <svg class="chevron" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                        </li>
+                        <div class="sub-submenu">
+                            <li class="submenu-item" data-target="page-compat-domestic" style="padding-left:64px;">国内兼容性评价管理</li>
+                            <li class="submenu-item" data-target="page-compat-overseas" style="padding-left:64px;">海外兼容性评价管理</li>
+                        </div>
+                    </div>
                 </ul>
             </div>
 
@@ -2176,7 +2185,7 @@
 
         
         <div class="content-scroll">
-            <div class="page-section active" id="page-overview">
+            <div class="page-section" id="page-overview">
 
             <div class="page-header">
                 <div class="page-desc">GameHub 管理后台</div>
@@ -2817,29 +2826,31 @@
                 </div>
             </div>
 
-            <!-- COMPATIBILITY REPORT MODERATION (client-visible) -->
-            <div class="page-section" id="page-compat-report">
+            <!-- COMPAT REPORT - DOMESTIC -->
+            <div class="page-section active" id="page-compat-domestic">
                 <div class="db-header">
                     <div>
-                        <div class="page-desc">玩家兼容性评价管理</div>
-                        <div class="page-subdesc">统一处理玩家兼容性评价内容及举报工单，支持修正误处理结果。</div>
+                        <div class="page-desc">国内兼容性评价管理</div>
+                        <div class="page-subdesc">处理国内玩家兼容性评价内容及举报工单，支持修正误处理结果。</div>
                     </div>
                 </div>
 
                 <!-- Platform top-level tab: Mac端 / 移动端 -->
                 <div style="display:flex; gap:0; border-bottom:1px solid var(--border-color); margin-bottom:20px;">
-                    <button id="compat-platform-tab-all" onclick="window.switchCompatPlatformTab('all')"
+                    <button id="dom-platform-tab-all" onclick="window.switchCompatPlatformTab('all','domestic')"
                         style="padding:10px 20px; background:none; border:none; border-bottom:2px solid var(--accent-blue); color:var(--accent-blue); font-size:14px; cursor:pointer; font-weight:600;">全部</button>
-                    <button id="compat-platform-tab-mac" onclick="window.switchCompatPlatformTab('mac')"
+                    <button id="dom-platform-tab-mac" onclick="window.switchCompatPlatformTab('mac','domestic')"
                         style="padding:10px 20px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text-secondary); font-size:14px; cursor:pointer;">Mac端</button>
-                    <button id="compat-platform-tab-mobile" onclick="window.switchCompatPlatformTab('mobile')"
-                        style="padding:10px 20px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text-secondary); font-size:14px; cursor:pointer;">移动端</button>
+                    <button id="dom-platform-tab-mobile" onclick="window.switchCompatPlatformTab('mobile','domestic')"
+                        style="padding:10px 20px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text-secondary); font-size:14px; cursor:pointer;">移动端（国内）</button>
+                    <button id="dom-platform-tab-mobile" onclick="window.switchCompatPlatformTab('mobile','domestic')"
+                        style="padding:10px 20px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text-secondary); font-size:14px; cursor:pointer;">移动端（海外）</button>
                 </div>
 
                 <div class="metric-cards">
                     <div class="metric-card accent-blue">
                         <div class="metric-title">玩家点评总数</div>
-                        <div class="metric-val" id="compat-metric-total">0</div>
+                        <div class="metric-val" id="dom-metric-total">0</div>
                         <div class="metric-sub" style="color: var(--text-secondary);">
                             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
                             本地演示数据（localStorage）
@@ -2847,13 +2858,13 @@
                     </div>
                     <div class="metric-card accent-red">
                         <div class="metric-title">已隐藏点评</div>
-                        <div class="metric-val" id="compat-metric-hidden" style="color:#ff4d4f">0</div>
-                        <div class="metric-sub negative" id="compat-metric-hidden-sub">-</div>
+                        <div class="metric-val" id="dom-metric-hidden" style="color:#ff4d4f">0</div>
+                        <div class="metric-sub negative" id="dom-metric-hidden-sub">-</div>
                     </div>
                     <div class="metric-card accent-purple">
                         <div class="metric-title">未处理举报</div>
-                        <div class="metric-val" id="compat-metric-reports" style="color:#722ed1">0</div>
-                        <div class="metric-sub" id="compat-metric-reports-sub" style="color: var(--text-secondary);">-</div>
+                        <div class="metric-val" id="dom-metric-reports" style="color:#722ed1">0</div>
+                        <div class="metric-sub" id="dom-metric-reports-sub" style="color: var(--text-secondary);">-</div>
                     </div>
                 </div>
 
@@ -2861,37 +2872,29 @@
                     <div class="dash-panel-header">
                         <div class="dash-panel-title" style="margin:0;">内容审核</div>
                         <div class="page-tabs">
-                            <button class="page-tab active" data-tab="feedbacks" onclick="window.switchCompatReportAdminTab('feedbacks')">点评管理</button>
-                            <button class="page-tab" data-tab="reports" onclick="window.switchCompatReportAdminTab('reports')">举报处理</button>
+                            <button class="page-tab active" data-tab="feedbacks" onclick="window.switchCompatTab('feedbacks','domestic')">点评管理</button>
+                            <button class="page-tab" data-tab="reports" onclick="window.switchCompatTab('reports','domestic')">举报处理</button>
                         </div>
                     </div>
 
                     <!-- Tab 1: Feedbacks -->
-                    <div id="compat-admin-tab-feedbacks" class="compat-admin-tab active">
+                    <div id="dom-admin-tab-feedbacks" class="compat-admin-tab active">
                         <div class="filter-bar">
                             <div class="filter-item">
                                 <span class="filter-label">搜索:</span>
-                                <input id="compat-fb-q" type="text" class="filter-input" placeholder="游戏名 / 内容关键字" style="width: 220px;">
+                                <input id="dom-fb-q" type="text" class="filter-input" placeholder="游戏名 / 内容关键字" style="width: 220px;">
                             </div>
                             <div class="filter-item">
                                 <span class="filter-label">端:</span>
-                                <select id="compat-fb-client" class="filter-select">
+                                <select id="dom-fb-client" class="filter-select">
                                     <option value="all">全部</option>
                                     <option value="mac">Mac端</option>
                                     <option value="mobile">移动端</option>
                                 </select>
                             </div>
                             <div class="filter-item">
-                                <span class="filter-label">区服:</span>
-                                <select id="compat-fb-region" class="filter-select">
-                                    <option value="all">全部</option>
-                                    <option value="domestic">国内</option>
-                                    <option value="overseas">海外</option>
-                                </select>
-                            </div>
-                            <div class="filter-item">
                                 <span class="filter-label">语言:</span>
-                                <select id="compat-fb-lang" class="filter-select">
+                                <select id="dom-fb-lang" class="filter-select">
                                     <option value="all">全部</option>
                                     <option value="zh">中文</option>
                                     <option value="en">英文</option>
@@ -2899,7 +2902,7 @@
                             </div>
                             <div class="filter-item">
                                 <span class="filter-label">星级:</span>
-                                <select id="compat-fb-stars" class="filter-select">
+                                <select id="dom-fb-stars" class="filter-select">
                                     <option value="all">全部</option>
                                     <option value="5">★★★★★</option>
                                     <option value="4">★★★★☆</option>
@@ -2910,18 +2913,18 @@
                             </div>
                             <div class="filter-item">
                                 <span class="filter-label">状态:</span>
-                                <select id="compat-fb-status" class="filter-select">
+                                <select id="dom-fb-status" class="filter-select">
                                     <option value="all">全部</option>
                                     <option value="live">显示中</option>
                                     <option value="hidden">已隐藏</option>
                                 </select>
                             </div>
                             <div style="flex:1"></div>
-                            <button class="filter-btn" onclick="window.queryCompatAdminFeedbacks()">查询</button>
-                            <button class="filter-btn reset" onclick="window.resetCompatAdminFeedbackFilters()">重置</button>
+                            <button class="filter-btn" onclick="window.queryCompatFeedbacks('domestic')">查询</button>
+                            <button class="filter-btn reset" onclick="window.resetCompatFeedbackFilters('domestic')">重置</button>
                         </div>
 
-                        <table class="data-table" id="compat-fb-table">
+                        <table class="data-table" id="dom-fb-table">
                             <thead>
                                 <tr>
                                     <th>游戏</th>
@@ -2937,38 +2940,30 @@
                                     <th>操作</th>
                                 </tr>
                             </thead>
-                            <tbody id="compat-fb-tbody"></tbody>
+                            <tbody id="dom-fb-tbody"></tbody>
                         </table>
-                        <div class="empty-hint" id="compat-fb-empty" style="display:none;">暂无点评数据（请先在客户端发布兼容性反馈）</div>
-                        <div class="pager-bar" id="compat-fb-pager"></div>
+                        <div class="empty-hint" id="dom-fb-empty" style="display:none;">暂无国内点评数据</div>
+                        <div class="pager-bar" id="dom-fb-pager"></div>
                     </div>
 
                     <!-- Tab 2: Reports -->
-                    <div id="compat-admin-tab-reports" class="compat-admin-tab">
+                    <div id="dom-admin-tab-reports" class="compat-admin-tab">
                         <div class="filter-bar">
                             <div class="filter-item">
                                 <span class="filter-label">搜索:</span>
-                                <input id="compat-rp-q" type="text" class="filter-input" placeholder="游戏名 / 内容关键字" style="width: 220px;">
+                                <input id="dom-rp-q" type="text" class="filter-input" placeholder="游戏名 / 内容关键字" style="width: 220px;">
                             </div>
                             <div class="filter-item">
                                 <span class="filter-label">端:</span>
-                                <select id="compat-rp-client" class="filter-select">
+                                <select id="dom-rp-client" class="filter-select">
                                     <option value="all">全部</option>
                                     <option value="mac">Mac端</option>
                                     <option value="mobile">移动端</option>
                                 </select>
                             </div>
                             <div class="filter-item">
-                                <span class="filter-label">区服:</span>
-                                <select id="compat-rp-region" class="filter-select">
-                                    <option value="all">全部</option>
-                                    <option value="domestic">国内</option>
-                                    <option value="overseas">海外</option>
-                                </select>
-                            </div>
-                            <div class="filter-item">
                                 <span class="filter-label">语言:</span>
-                                <select id="compat-rp-lang" class="filter-select">
+                                <select id="dom-rp-lang" class="filter-select">
                                     <option value="all">全部</option>
                                     <option value="zh">中文</option>
                                     <option value="en">英文</option>
@@ -2976,7 +2971,7 @@
                             </div>
                             <div class="filter-item">
                                 <span class="filter-label">原因:</span>
-                                <select id="compat-rp-reason" class="filter-select">
+                                <select id="dom-rp-reason" class="filter-select">
                                     <option value="all">全部</option>
                                     <option value="辱骂攻击">辱骂攻击</option>
                                     <option value="广告引流">广告引流</option>
@@ -2987,18 +2982,18 @@
                             </div>
                             <div class="filter-item">
                                 <span class="filter-label">状态:</span>
-                                <select id="compat-rp-status" class="filter-select">
+                                <select id="dom-rp-status" class="filter-select">
                                     <option value="unresolved">未处理</option>
                                     <option value="resolved">已处理</option>
                                     <option value="all">全部</option>
                                 </select>
                             </div>
                             <div style="flex:1"></div>
-                            <button class="filter-btn" onclick="window.queryCompatAdminReports()">查询</button>
-                            <button class="filter-btn reset" onclick="window.resetCompatAdminReportFilters()">重置</button>
+                            <button class="filter-btn" onclick="window.queryCompatReports('domestic')">查询</button>
+                            <button class="filter-btn reset" onclick="window.resetCompatReportFilters('domestic')">重置</button>
                         </div>
 
-                        <table class="data-table" id="compat-rp-table">
+                        <table class="data-table" id="dom-rp-table">
                             <thead>
                                 <tr>
                                     <th>举报原因</th>
@@ -3013,10 +3008,199 @@
                                     <th>操作</th>
                                 </tr>
                             </thead>
-                            <tbody id="compat-rp-tbody"></tbody>
+                            <tbody id="dom-rp-tbody"></tbody>
                         </table>
-                        <div class="empty-hint" id="compat-rp-empty" style="display:none;">暂无举报数据</div>
-                        <div class="pager-bar" id="compat-rp-pager"></div>
+                        <div class="empty-hint" id="dom-rp-empty" style="display:none;">暂无国内举报数据</div>
+                        <div class="pager-bar" id="dom-rp-pager"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COMPAT REPORT - OVERSEAS -->
+            <div class="page-section" id="page-compat-overseas">
+                <div class="db-header">
+                    <div>
+                        <div class="page-desc">海外兼容性评价管理</div>
+                        <div class="page-subdesc">处理海外玩家兼容性评价内容及举报工单，支持修正误处理结果。</div>
+                    </div>
+                </div>
+
+                <!-- Platform top-level tab: Mac端 / 移动端 -->
+                <div style="display:flex; gap:0; border-bottom:1px solid var(--border-color); margin-bottom:20px;">
+                    <button id="ovs-platform-tab-all" onclick="window.switchCompatPlatformTab('all','overseas')"
+                        style="padding:10px 20px; background:none; border:none; border-bottom:2px solid var(--accent-blue); color:var(--accent-blue); font-size:14px; cursor:pointer; font-weight:600;">全部</button>
+                    <button id="ovs-platform-tab-mac" onclick="window.switchCompatPlatformTab('mac','overseas')"
+                        style="padding:10px 20px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text-secondary); font-size:14px; cursor:pointer;">Mac端</button>
+                    <button id="ovs-platform-tab-mobile" onclick="window.switchCompatPlatformTab('mobile','overseas')"
+                        style="padding:10px 20px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text-secondary); font-size:14px; cursor:pointer;">移动端</button>
+                </div>
+
+                <div class="metric-cards">
+                    <div class="metric-card accent-blue">
+                        <div class="metric-title">玩家点评总数</div>
+                        <div class="metric-val" id="ovs-metric-total">0</div>
+                        <div class="metric-sub" style="color: var(--text-secondary);">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                            本地演示数据（localStorage）
+                        </div>
+                    </div>
+                    <div class="metric-card accent-red">
+                        <div class="metric-title">已隐藏点评</div>
+                        <div class="metric-val" id="ovs-metric-hidden" style="color:#ff4d4f">0</div>
+                        <div class="metric-sub negative" id="ovs-metric-hidden-sub">-</div>
+                    </div>
+                    <div class="metric-card accent-purple">
+                        <div class="metric-title">未处理举报</div>
+                        <div class="metric-val" id="ovs-metric-reports" style="color:#722ed1">0</div>
+                        <div class="metric-sub" id="ovs-metric-reports-sub" style="color: var(--text-secondary);">-</div>
+                    </div>
+                </div>
+
+                <div class="dash-panel">
+                    <div class="dash-panel-header">
+                        <div class="dash-panel-title" style="margin:0;">内容审核</div>
+                        <div class="page-tabs">
+                            <button class="page-tab active" data-tab="feedbacks" onclick="window.switchCompatTab('feedbacks','overseas')">点评管理</button>
+                            <button class="page-tab" data-tab="reports" onclick="window.switchCompatTab('reports','overseas')">举报处理</button>
+                        </div>
+                    </div>
+
+                    <!-- Tab 1: Feedbacks -->
+                    <div id="ovs-admin-tab-feedbacks" class="compat-admin-tab active">
+                        <div class="filter-bar">
+                            <div class="filter-item">
+                                <span class="filter-label">搜索:</span>
+                                <input id="ovs-fb-q" type="text" class="filter-input" placeholder="游戏名 / 内容关键字" style="width: 220px;">
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">端:</span>
+                                <select id="ovs-fb-client" class="filter-select">
+                                    <option value="all">全部</option>
+                                    <option value="mac">Mac端</option>
+                                    <option value="mobile">移动端</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">语言:</span>
+                                <select id="ovs-fb-lang" class="filter-select">
+                                    <option value="all">全部</option>
+                                    <option value="zh">中文</option>
+                                    <option value="en">英文</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">星级:</span>
+                                <select id="ovs-fb-stars" class="filter-select">
+                                    <option value="all">全部</option>
+                                    <option value="5">★★★★★</option>
+                                    <option value="4">★★★★☆</option>
+                                    <option value="3">★★★☆☆</option>
+                                    <option value="2">★★☆☆☆</option>
+                                    <option value="1">★☆☆☆☆</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">状态:</span>
+                                <select id="ovs-fb-status" class="filter-select">
+                                    <option value="all">全部</option>
+                                    <option value="live">显示中</option>
+                                    <option value="hidden">已隐藏</option>
+                                </select>
+                            </div>
+                            <div style="flex:1"></div>
+                            <button class="filter-btn" onclick="window.queryCompatFeedbacks('overseas')">查询</button>
+                            <button class="filter-btn reset" onclick="window.resetCompatFeedbackFilters('overseas')">重置</button>
+                        </div>
+
+                        <table class="data-table" id="ovs-fb-table">
+                            <thead>
+                                <tr>
+                                    <th>游戏</th>
+                                    <th>端</th>
+                                    <th>平台</th>
+                                    <th>设备</th>
+                                    <th>星级</th>
+                                    <th>标签</th>
+                                    <th>反馈内容</th>
+                                    <th>支持</th>
+                                    <th>状态</th>
+                                    <th>时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ovs-fb-tbody"></tbody>
+                        </table>
+                        <div class="empty-hint" id="ovs-fb-empty" style="display:none;">暂无海外点评数据</div>
+                        <div class="pager-bar" id="ovs-fb-pager"></div>
+                    </div>
+
+                    <!-- Tab 2: Reports -->
+                    <div id="ovs-admin-tab-reports" class="compat-admin-tab">
+                        <div class="filter-bar">
+                            <div class="filter-item">
+                                <span class="filter-label">搜索:</span>
+                                <input id="ovs-rp-q" type="text" class="filter-input" placeholder="游戏名 / 内容关键字" style="width: 220px;">
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">端:</span>
+                                <select id="ovs-rp-client" class="filter-select">
+                                    <option value="all">全部</option>
+                                    <option value="mac">Mac端</option>
+                                    <option value="mobile">移动端（国内）</option>
+                                    <option value="mobile">移动端（海外）</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">语言:</span>
+                                <select id="ovs-rp-lang" class="filter-select">
+                                    <option value="all">全部</option>
+                                    <option value="zh">中文</option>
+                                    <option value="en">英文</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">原因:</span>
+                                <select id="ovs-rp-reason" class="filter-select">
+                                    <option value="all">全部</option>
+                                    <option value="辱骂攻击">辱骂攻击</option>
+                                    <option value="广告引流">广告引流</option>
+                                    <option value="恶意刷分">恶意刷分</option>
+                                    <option value="与游戏无关">与游戏无关</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">状态:</span>
+                                <select id="ovs-rp-status" class="filter-select">
+                                    <option value="unresolved">未处理</option>
+                                    <option value="resolved">已处理</option>
+                                    <option value="all">全部</option>
+                                </select>
+                            </div>
+                            <div style="flex:1"></div>
+                            <button class="filter-btn" onclick="window.queryCompatReports('overseas')">查询</button>
+                            <button class="filter-btn reset" onclick="window.resetCompatReportFilters('overseas')">重置</button>
+                        </div>
+
+                        <table class="data-table" id="ovs-rp-table">
+                            <thead>
+                                <tr>
+                                    <th>举报原因</th>
+                                    <th>补充说明</th>
+                                    <th>关联点评</th>
+                                    <th>游戏</th>
+                                    <th>端</th>
+                                    <th>平台</th>
+                                    <th>状态</th>
+                                    <th>处理结果</th>
+                                    <th>时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ovs-rp-tbody"></tbody>
+                        </table>
+                        <div class="empty-hint" id="ovs-rp-empty" style="display:none;">暂无海外举报数据</div>
+                        <div class="pager-bar" id="ovs-rp-pager"></div>
                     </div>
                 </div>
             </div>
@@ -3675,7 +3859,7 @@
     const menuItems = document.querySelectorAll('.submenu-item');
     const sections = document.querySelectorAll('.page-section');
     
-    let previousSectionId = 'page-overview';
+    let previousSectionId = 'page-compat-report';
 
     window.openAdminSection = function(targetId) {
         const target = document.getElementById(targetId);
@@ -6000,31 +6184,25 @@
 
     function formatDeviceInfo(f) {
         if (!f) return '-';
-        // 移动端：显示设备型号+系统
+        // 移动端：显示设备型号+系统+内存
         if (f.clientType === 'mobile') {
             const parts = [];
             if (f.deviceModel) parts.push(String(f.deviceModel));
             if (f.osVersion) parts.push(String(f.osVersion));
+            const mem = Number(f.memoryGB);
+            if (Number.isFinite(mem) && mem > 0) parts.push(String(mem) + 'GB');
             return parts.length ? parts.join(' · ') : '-';
         }
-        // Mac端/默认：显示CPU+内存
+        // Mac端/默认：显示CPU+内存+GPU
         const parts = [];
         if (f.cpuModel) parts.push(String(f.cpuModel));
         const mem = Number(f.memoryGB);
         if (Number.isFinite(mem) && mem > 0) parts.push(String(mem) + 'GB');
+        if (f.gpu) parts.push(String(f.gpu));
         return parts.length ? parts.join(' · ') : '-';
     }
         const n = clampInt(stars, 1, 5);
         return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n);
-    }
-
-    function formatDeviceInfo(f) {
-        if (!f) return '-';
-        const parts = [];
-        if (f.cpuModel) parts.push(String(f.cpuModel));
-        const mem = Number(f.memoryGB);
-        if (Number.isFinite(mem) && mem > 0) parts.push(String(mem) + 'GB');
-        return parts.length ? parts.join(' · ') : '-';
     }
 
     function timeAgo(iso) {
@@ -7026,12 +7204,12 @@
         if (loadJson(COMPAT_FEEDBACK_KEY, []).length > 0) return;
         const now = Date.now();
         const demos = [
-            { id:'f1', gameId:'gta5', gameName:'侠盗猎车手5', clientType:'mobile', region:'domestic', lang:'zh', deviceModel:'Pixel 9 Pro', osVersion:'Android 15', stars:4, tags:['意外闪退','画面卡顿'], content:'整体游戏体验不错，但偶尔会闪退，希望能优化。', supportCount:12, hidden:false, deleted:false, createdAt: new Date(now - 3600000*2).toISOString() },
-            { id:'f2', gameId:'gta5', gameName:'侠盗猎车手5', clientType:'mac', region:'domestic', lang:'zh', cpuModel:'Apple M2 Pro', memoryGB:16, stars:5, tags:['完美兼容'], content:'Mac上运行非常流畅，帧率稳定，完全没有问题。', supportCount:8, hidden:false, deleted:false, createdAt: new Date(now - 3600000*5).toISOString() },
-            { id:'f3', gameId:'cyberpunk', gameName:'赛博朋克2077', clientType:'mobile', region:'overseas', lang:'en', deviceModel:'iPhone 15 Pro', osVersion:'iOS 17', stars:3, tags:['手柄无响应','按键映射错误'], content:'Controller mapping is broken, many buttons don\'t work correctly.', supportCount:23, hidden:false, deleted:false, createdAt: new Date(now - 3600000*24).toISOString() },
-            { id:'f4', gameId:'cyberpunk', gameName:'赛博朋克2077', clientType:'mac', region:'overseas', lang:'en', cpuModel:'Intel Core i9', memoryGB:32, stars:2, tags:['画面卡顿','声音异常'], content:'Heavy performance loss on Mac, had to lower quality settings. Audio glitches too.', supportCount:5, hidden:false, deleted:false, createdAt: new Date(now - 3600000*30).toISOString() },
-            { id:'f5', gameId:'elden', gameName:'艾尔登法环', clientType:'mobile', region:'domestic', lang:'zh', deviceModel:'Samsung S24 Ultra', osVersion:'Android 14', stars:5, tags:['完美兼容'], content:'完美运行，触屏操作也很自然，大屏玩着很爽！', supportCount:31, hidden:false, deleted:false, createdAt: new Date(now - 3600000*48).toISOString() },
-            { id:'f6', gameId:'elden', gameName:'艾尔登法环', clientType:'mac', region:'domestic', lang:'zh', cpuModel:'Apple M3 Max', memoryGB:36, stars:4, tags:['完美兼容'], content:'M3芯片跑得很好，偶尔有轻微延迟但基本不影响体验。', supportCount:17, hidden:false, deleted:false, createdAt: new Date(now - 3600000*72).toISOString() },
+            { id:'f1', gameId:'gta5', gameName:'侠盗猎车手5', clientType:'mobile', region:'domestic', lang:'zh', deviceModel:'Pixel 9 Pro', osVersion:'Android 15', memoryGB:12, gpu:'Adreno 750', stars:4, tags:['意外闪退','画面卡顿'], content:'整体游戏体验不错，但偶尔会闪退，希望能优化。', supportCount:12, hidden:false, deleted:false, createdAt: new Date(now - 3600000*2).toISOString() },
+            { id:'f2', gameId:'gta5', gameName:'侠盗猎车手5', clientType:'mac', region:'domestic', lang:'zh', cpuModel:'Apple M2 Pro', memoryGB:16, gpu:'Apple M2 Pro 19-core GPU', stars:5, tags:['完美兼容'], content:'Mac上运行非常流畅，帧率稳定，完全没有问题。', supportCount:8, hidden:false, deleted:false, createdAt: new Date(now - 3600000*5).toISOString() },
+            { id:'f3', gameId:'cyberpunk', gameName:'赛博朋克2077', clientType:'mobile', region:'overseas', lang:'en', deviceModel:'iPhone 15 Pro', osVersion:'iOS 17', memoryGB:8, gpu:'Apple A17 Pro GPU', stars:3, tags:['手柄无响应','按键映射错误'], content:'Controller mapping is broken, many buttons don\'t work correctly.', supportCount:23, hidden:false, deleted:false, createdAt: new Date(now - 3600000*24).toISOString() },
+            { id:'f4', gameId:'cyberpunk', gameName:'赛博朋克2077', clientType:'mac', region:'overseas', lang:'en', cpuModel:'Intel Core i9', memoryGB:32, gpu:'AMD Radeon Pro 5500M', stars:2, tags:['画面卡顿','声音异常'], content:'Heavy performance loss on Mac, had to lower quality settings. Audio glitches too.', supportCount:5, hidden:false, deleted:false, createdAt: new Date(now - 3600000*30).toISOString() },
+            { id:'f5', gameId:'elden', gameName:'艾尔登法环', clientType:'mobile', region:'domestic', lang:'zh', deviceModel:'Samsung S24 Ultra', osVersion:'Android 14', memoryGB:12, gpu:'Adreno 750', stars:5, tags:['完美兼容'], content:'完美运行，触屏操作也很自然，大屏玩着很爽！', supportCount:31, hidden:false, deleted:false, createdAt: new Date(now - 3600000*48).toISOString() },
+            { id:'f6', gameId:'elden', gameName:'艾尔登法环', clientType:'mac', region:'domestic', lang:'zh', cpuModel:'Apple M3 Max', memoryGB:36, gpu:'Apple M3 Max 40-core GPU', stars:4, tags:['完美兼容'], content:'M3芯片跑得很好，偶尔有轻微延迟但基本不影响体验。', supportCount:17, hidden:false, deleted:false, createdAt: new Date(now - 3600000*72).toISOString() },
         ];
         saveJson(COMPAT_FEEDBACK_KEY, demos);
         const demoReports = [
@@ -7039,6 +7217,16 @@
             { id:'r2', feedbackId:'f4', gameId:'cyberpunk', clientType:'mac', platform:'epic', reason:'广告引流', details:'内容中含有第三方引导链接', resolved:false, resolvedAction:null, createdAt: new Date(now - 3600000*20).toISOString() },
         ];
         saveJson(COMPAT_REPORT_KEY, demoReports);
+    })();
+
+    // Default open: expand sidebar to compat report and mark it active
+    (function() {
+        const defaultItem = document.querySelector('.submenu-item[data-target="page-compat-report"]');
+        if (defaultItem) {
+            defaultItem.classList.add('active');
+            const group = defaultItem.closest('.menu-group');
+            if (group) group.classList.remove('collapsed');
+        }
     })();
 
     window.refreshAgreementAdmin && window.refreshAgreementAdmin();

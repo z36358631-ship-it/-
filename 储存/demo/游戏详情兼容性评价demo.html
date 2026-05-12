@@ -457,11 +457,10 @@
 
         /* 评价列表 */
         .compat-list { padding: 0 20px; }
-        /* 横版一行2列 */
-        .shell.ls .compat-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+        /* 横版单列 */
+        .shell.ls .compat-list { display: block; }
         .compat-item { border-bottom: 1px solid var(--divider); padding: 14px 0; }
         .compat-item:last-child { border-bottom: none; }
-        .shell.ls .compat-item:nth-last-child(-n+2) { border-bottom: none; }
         .ci-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .ci-avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; flex-shrink: 0; object-fit: cover; }
         .ci-meta { flex: 1; }
@@ -551,12 +550,56 @@
         .fb-tag.active { background: rgba(0,157,255,0.15); color: var(--primary-blue); border-color: rgba(0,157,255,0.4); }
         .fb-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 14px 0; }
         .fb-textarea {
-            width: 100%; height: 70px; background: rgba(255,255,255,0.03);
+            width: 100%; min-height: 70px; background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
             padding: 10px 12px; color: #fff; font-size: 13px; resize: none; outline: none;
             box-sizing: border-box; font-family: inherit;
         }
         .fb-textarea:focus { border-color: rgba(0,157,255,0.4); }
+        .fb-editor-toolbar {
+            display: flex; gap: 4px; padding: 6px 8px; background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.1); border-bottom: none;
+            border-radius: 10px 10px 0 0;
+        }
+        .fb-editor-btn {
+            width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px; cursor: pointer; transition: 0.2s;
+        }
+        .fb-editor-btn:hover { background: rgba(255,255,255,0.1); }
+        .fb-editor-btn.active { background: rgba(0,157,255,0.15); border-color: rgba(0,157,255,0.4); }
+        .fb-editor-btn svg { width: 14px; height: 14px; fill: rgba(255,255,255,0.7); }
+        .fb-editor-content {
+            width: 100%; min-height: 70px; max-height: 150px; overflow-y: auto;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0 0 10px 10px; padding: 10px 12px; color: #fff; font-size: 13px;
+            outline: none; box-sizing: border-box;
+        }
+        .fb-editor-content:focus { border-color: rgba(0,157,255,0.4); }
+        .fb-editor-content:empty:before { content: attr(data-placeholder); color: rgba(255,255,255,0.3); }
+        .fb-media-upload {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px;
+        }
+        .fb-media-item {
+            position: relative; width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .fb-media-item img, .fb-media-item video {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .fb-media-remove {
+            position: absolute; top: 4px; right: 4px; width: 20px; height: 20px;
+            background: rgba(0,0,0,0.7); border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; cursor: pointer;
+        }
+        .fb-media-remove svg { width: 12px; height: 12px; stroke: #fff; }
+        .fb-media-add {
+            aspect-ratio: 1; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.03); display: flex; align-items: center;
+            justify-content: center; cursor: pointer; transition: 0.2s;
+        }
+        .fb-media-add:hover { background: rgba(255,255,255,0.08); border-color: rgba(0,157,255,0.4); }
+        .fb-media-add svg { width: 24px; height: 24px; fill: rgba(255,255,255,0.4); }
         .btn-cancel {
             padding: 8px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer;
             background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
@@ -927,7 +970,24 @@
                 <div class="fb-divider"></div>
                 <div class="fb-row" style="margin-bottom:0;">
                     <div class="fb-lbl">补充说明</div>
-                    <textarea class="fb-textarea" id="fbTextarea" placeholder="补充说明（选填）"></textarea>
+                    <div>
+                        <div class="fb-editor-toolbar">
+                            <div class="fb-editor-btn" onclick="execCmd('bold')" title="加粗">
+                                <svg viewBox="0 0 24 24"><path d="M15.6 10.79c.97-.67 1.65-1.77 1.65-2.79 0-2.26-1.75-4-4-4H7v14h7.04c2.09 0 3.71-1.7 3.71-3.79 0-1.52-.86-2.82-2.15-3.42zM10 6.5h3c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-3v-3zm3.5 9H10v-3h3.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z"/></svg>
+                            </div>
+                            <div class="fb-editor-btn" onclick="execCmd('italic')" title="斜体">
+                                <svg viewBox="0 0 24 24"><path d="M10 4v3h2.21l-3.42 8H6v3h8v-3h-2.21l3.42-8H18V4z"/></svg>
+                            </div>
+                            <div class="fb-editor-btn" onclick="execCmd('underline')" title="下划线">
+                                <svg viewBox="0 0 24 24"><path d="M12 17c3.31 0 6-2.69 6-6V3h-2.5v8c0 1.93-1.57 3.5-3.5 3.5S8.5 12.93 8.5 11V3H6v8c0 3.31 2.69 6 6 6zm-7 2v2h14v-2H5z"/></svg>
+                            </div>
+                            <div class="fb-editor-btn" onclick="execCmd('createLink')" title="插入链接">
+                                <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+                            </div>
+                        </div>
+                        <div class="fb-editor-content" id="fbEditor" contenteditable="true" data-placeholder="详细描述遇到的问题或体验（选填，支持加粗、斜体、链接）"></div>
+                        <div class="fb-media-upload" id="fbMediaList"></div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1001,13 +1061,13 @@ const AVATARS = [
 ];
 
 const SEEDS = [
-    { id:'s1', uid:'u1', name:'Pixel用户_洛圣都', avatar:AVATARS[0], device:'Pixel 9 Pro · Android 15', stars:5, tags:['完美兼容'], text:'画面超级流畅，GTA线上也没有任何问题，手柄支持完美。', date:'2025-04-28', likes:24 },
-    { id:'s2', uid:'u2', name:'三星玩家_富兰克林', avatar:AVATARS[1], device:'Samsung Galaxy S25 Ultra', stars:4, tags:['完美兼容','声音异常'], text:'整体体验非常好，主线剧情流畅，偶尔有轻微音效延迟但不影响游玩。', date:'2025-04-25', likes:17 },
-    { id:'s3', uid:'u3', name:'小米用户_迈克尔', avatar:AVATARS[2], device:'Xiaomi 15 Pro · Android 15', stars:5, tags:['完美兼容'], text:'秒玩功能直接起飞，不需要下载就能玩，网络好的话体验和本地基本一致。', date:'2025-04-22', likes:31 },
-    { id:'s4', uid:'u4', name:'OnePlus_Trevor', avatar:AVATARS[3], device:'OnePlus 13 · Android 15', stars:3, tags:['画面卡顿','手柄无响应'], text:'网络波动时会明显卡顿，手柄偶尔失灵需要重连，希望后续优化。', date:'2025-04-20', likes:8 },
-    { id:'s5', uid:'u5', name:'OPPO用户_洛圣都警察', avatar:AVATARS[4], device:'OPPO Find X8 Pro', stars:4, tags:['完美兼容'], text:'剧情向玩家强烈推荐，云游戏方式省了100多G的存储空间，赞！', date:'2025-04-18', likes:12 },
-    { id:'s6', uid:'u6', name:'华为用户_特雷弗', avatar:AVATARS[5], device:'Huawei Mate 70 Pro', stars:2, tags:['意外闪退','画面卡顿'], text:'GTA在线模式进服务器时容易闪退，已经发生三次了，希望能修复。', date:'2025-04-15', likes:5 },
-    { id:'s7', uid:'u7', name:'vivo用户_市民', avatar:AVATARS[6], device:'vivo X200 Ultra', stars:5, tags:['完美兼容'], text:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！强烈推荐。', date:'2025-04-12', likes:43 },
+    { id:'s1', uid:'u1', name:'Pixel用户_洛圣都', avatar:AVATARS[0], device:'Pixel 9 Pro · Android 15', gpu:'Adreno 750', memoryGB:12, stars:5, tags:['完美兼容'], text:'画面超级流畅，GTA线上也没有任何问题，手柄支持完美。', html:'画面<b>超级流畅</b>，GTA线上也没有任何问题，手柄支持完美。', date:'2025-04-28', likes:24, media:[{type:'image',url:'https://picsum.photos/200/200?random=1'}] },
+    { id:'s2', uid:'u2', name:'三星玩家_富兰克林', avatar:AVATARS[1], device:'Samsung Galaxy S25 Ultra · Android 15', gpu:'Adreno 830', memoryGB:16, stars:4, tags:['完美兼容','声音异常'], text:'整体体验非常好，主线剧情流畅，偶尔有轻微音效延迟但不影响游玩。', html:'整体体验非常好，主线剧情流畅，偶尔有<i>轻微音效延迟</i>但不影响游玩。', date:'2025-04-25', likes:17 },
+    { id:'s3', uid:'u3', name:'小米用户_迈克尔', avatar:AVATARS[2], device:'Xiaomi 15 Pro · Android 15', gpu:'Adreno 750', memoryGB:16, stars:5, tags:['完美兼容'], text:'秒玩功能直接起飞，不需要下载就能玩，网络好的话体验和本地基本一致。', date:'2025-04-22', likes:31, media:[{type:'image',url:'https://picsum.photos/200/200?random=2'},{type:'image',url:'https://picsum.photos/200/200?random=3'}] },
+    { id:'s4', uid:'u4', name:'OnePlus_Trevor', avatar:AVATARS[3], device:'OnePlus 13 · Android 15', gpu:'Adreno 750', memoryGB:12, stars:3, tags:['画面卡顿','手柄无响应'], text:'网络波动时会明显卡顿，手柄偶尔失灵需要重连，希望后续优化。', date:'2025-04-20', likes:8 },
+    { id:'s5', uid:'u5', name:'OPPO用户_洛圣都警察', avatar:AVATARS[4], device:'OPPO Find X8 Pro · Android 15', gpu:'Dimensity 9400', memoryGB:16, stars:4, tags:['完美兼容'], text:'剧情向玩家强烈推荐，云游戏方式省了100多G的存储空间，赞！', html:'剧情向玩家<b>强烈推荐</b>，云游戏方式省了100多G的存储空间，赞！', date:'2025-04-18', likes:12 },
+    { id:'s6', uid:'u6', name:'华为用户_特雷弗', avatar:AVATARS[5], device:'Huawei Mate 70 Pro · HarmonyOS 5', gpu:'Maleoon 920', memoryGB:12, stars:2, tags:['意外闪退','画面卡顿'], text:'GTA在线模式进服务器时容易闪退，已经发生三次了，希望能修复。', date:'2025-04-15', likes:5 },
+    { id:'s7', uid:'u7', name:'vivo用户_市民', avatar:AVATARS[6], device:'vivo X200 Ultra · Android 15', gpu:'Dimensity 9400', memoryGB:16, stars:5, tags:['完美兼容'], text:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！强烈推荐。', html:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！<u>强烈推荐</u>。', date:'2025-04-12', likes:43, media:[{type:'video',url:'https://www.w3schools.com/html/mov_bbb.mp4'}] },
 ];
 
 function getFeedbacks() {
@@ -1148,17 +1208,31 @@ function renderItem(f) {
     const isReported = reportedSet.has(f.id);
     const isLiked = likedSet.has(f.id);
     const likeCount = (f.likes || 0) + (isLiked ? 1 : 0);
+
+    // 富文本内容
+    const content = f.html ? f.html : (f.text ? f.text : '');
+
+    // 媒体展示（最多9张，3列宫格）
+    const mediaHtml = (f.media && f.media.length) ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px;">
+        ${f.media.slice(0,9).map(m => m.type === 'video'
+            ? `<video src="${m.url}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;background:rgba(0,0,0,0.3);" controls></video>`
+            : `<img src="${m.url}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;background:rgba(0,0,0,0.3);cursor:pointer;" onclick="previewMedia('${esc(m.url)}')">`
+        ).join('')}
+    </div>` : '';
+
     return `<div class="compat-item" id="ci-${f.id}">
         <div class="ci-hdr">
             <img class="ci-avatar" src="${f.avatar}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22%3E%3Crect width=%2240%22 height=%2240%22 rx=%2220%22 fill=%22%23333%22/%3E%3C/svg%3E'">
             <div class="ci-meta">
                 <div class="ci-name">${f.name}</div>
                 <div class="ci-device">${f.device}</div>
+                ${f.gpu ? `<div class="ci-device">GPU：${f.gpu}${f.memoryGB ? ' · 运行内存：' + f.memoryGB + 'GB' : ''}</div>` : ''}
             </div>
         </div>
         <div class="ci-stars">${stars}</div>
         ${tags ? `<div class="ci-tags">${tags}</div>` : ''}
-        ${f.text ? `<div class="ci-text">${f.text}</div>` : ''}
+        ${content ? `<div class="ci-text">${content}</div>` : ''}
+        ${mediaHtml}
         <div class="ci-date">${f.date}</div>
         <div class="ci-footer">
             <div class="ci-like-btn${isLiked?' liked':''}" id="like-${f.id}" onclick="toggleLike('${f.id}',${f.likes||0})">
@@ -1168,6 +1242,11 @@ function renderItem(f) {
             <button class="ci-report-btn${isReported?' reported':''}" onclick="openReportModal('${f.id}','${esc(snippet)}')">${isReported?'已举报':'举报'}</button>
         </div>
     </div>`;
+}
+
+function previewMedia(url) {
+    // 简单的图片预览，实际可以做成全屏弹窗
+    window.open(url, '_blank');
 }
 
 function loadMore(side) {
@@ -1228,11 +1307,64 @@ function closeCompatPage() {
 //  反馈弹窗
 // ============================================================
 let fbStarVal = 0;
+let fbMediaFiles = [];
+
+function execCmd(cmd) {
+    if (cmd === 'createLink') {
+        const url = prompt('请输入链接地址:', 'https://');
+        if (url) document.execCommand(cmd, false, url);
+    } else {
+        document.execCommand(cmd, false, null);
+    }
+}
+
+function addMedia() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*,video/*';
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (fbMediaFiles.length >= 9) { showToast('最多上传9个图片或视频'); return; }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            fbMediaFiles.push({ type: file.type.startsWith('video') ? 'video' : 'image', url: ev.target.result });
+            renderMediaList();
+        };
+        reader.readAsDataURL(file);
+    };
+    input.click();
+}
+
+function removeMedia(idx) {
+    fbMediaFiles.splice(idx, 1);
+    renderMediaList();
+}
+
+function renderMediaList() {
+    const list = document.getElementById('fbMediaList');
+    const items = fbMediaFiles.map((m, i) => `
+        <div class="fb-media-item">
+            ${m.type === 'video' ? `<video src="${m.url}"></video>` : `<img src="${m.url}">`}
+            <div class="fb-media-remove" onclick="removeMedia(${i})">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+        </div>
+    `).join('');
+    const addBtn = fbMediaFiles.length < 9 ? `
+        <div class="fb-media-add" onclick="addMedia()">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        </div>
+    ` : '';
+    list.innerHTML = items + addBtn;
+}
 
 function openFeedbackModal() {
     fbStarVal = 0;
+    fbMediaFiles = [];
     paintFbStars(0);
-    document.getElementById('fbTextarea').value = '';
+    document.getElementById('fbEditor').innerHTML = '';
+    renderMediaList();
     document.querySelectorAll('#fbTagsWrap .fb-tag').forEach(t => t.classList.remove('active'));
     document.getElementById('modalFeedback').classList.add('show');
 }
@@ -1259,15 +1391,20 @@ document.querySelectorAll('#fbStarsWrap .fb-star-svg').forEach(s => {
 function submitFeedback() {
     if (!fbStarVal) { showToast('请先选择兼容性评分'); return; }
     const tags = [...document.querySelectorAll('#fbTagsWrap .fb-tag.active')].map(t => t.textContent);
-    const text = document.getElementById('fbTextarea').value.trim();
+    const html = document.getElementById('fbEditor').innerHTML.trim();
+    const text = document.getElementById('fbEditor').innerText.trim();
     const now = new Date();
     const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     const item = {
         id: 'u_' + Date.now(), uid: MY_UID,
         name: '我', avatar: AVATARS[0],
         device: 'Pixel 9 Pro · Android 15',
-        stars: fbStarVal, tags, text, date: dateStr,
+        gpu: 'Adreno 750',
+        memoryGB: 12,
+        stars: fbStarVal, tags, text, html, media: fbMediaFiles,
+        likes: 0
     };
+    item.date = dateStr;
     const list = getFeedbacks();
     list.unshift(item);
     saveFeedbacks(list);
