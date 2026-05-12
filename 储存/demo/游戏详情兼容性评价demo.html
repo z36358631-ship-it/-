@@ -467,8 +467,25 @@
         .ci-meta { flex: 1; }
         .ci-name { font-size: 13px; font-weight: 600; color: #ddd; }
         .ci-device { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
-        .ci-flag { font-size: 12px; color: var(--text-sub); cursor: pointer; padding: 3px; transition: 0.2s; }
-        .ci-flag:hover { color: #ff7875; }
+        .ci-footer { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+        .ci-like-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 12px; color: var(--text-sub); cursor: pointer;
+            padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);
+            background: transparent; transition: 0.2s; white-space: nowrap; flex-shrink: 0; user-select: none;
+        }
+        .ci-like-btn:hover { color: #f5c518; border-color: rgba(245,197,24,0.4); }
+        .ci-like-btn.liked { color: #f5c518; border-color: rgba(245,197,24,0.5); background: rgba(245,197,24,0.08); }
+        .ci-like-btn.liked svg { fill: #f5c518; }
+        .ci-like-btn svg { transition: 0.2s; fill: rgba(255,255,255,0.35); }
+        .ci-report-btn {
+            display: inline-flex; align-items: center;
+            font-size: 12px; color: var(--text-sub); cursor: pointer;
+            padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);
+            background: transparent; transition: 0.2s; white-space: nowrap; flex-shrink: 0;
+        }
+        .ci-report-btn:hover { color: #ff7875; border-color: rgba(255,120,117,0.4); }
+        .ci-report-btn.reported { color: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.06); cursor: default; pointer-events: none; }
         .ci-stars { display: flex; gap: 3px; margin-bottom: 6px; }
         .ci-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
         .ci-tag { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.55); padding: 2px 8px; border-radius: 4px; font-size: 11px; }
@@ -642,7 +659,7 @@
                                     <span id="entryScorePt" style="font-size:13px;font-weight:800;color:#6fffa8;">4.0</span>
                                 </div>
                                 <!-- 标签 + 箭头 -->
-                                <div class="ic-compat-label">兼容评价&nbsp;<i class="fas fa-chevron-right" style="font-size:8px;color:rgba(255,255,255,0.35);vertical-align:middle;"></i></div>
+                                <div class="ic-compat-label">兼容性评价&nbsp;<i class="fas fa-chevron-right" style="font-size:8px;color:rgba(255,255,255,0.35);vertical-align:middle;"></i></div>
                                 <!-- 横版有数据态：评分+星级+描述 -->
                                 <div id="entryHasData">
                                     <div class="ic-score-row">
@@ -959,6 +976,18 @@
 //  数据层 — localStorage
 // ============================================================
 const LS_KEY = 'gh_compat_feedbacks_gta5_v1';
+const LS_REPORTED = 'gh_compat_reported_gta5_v1';
+const LS_LIKED = 'gh_compat_liked_gta5_v1';
+
+function getReportedSet() {
+    try { return new Set(JSON.parse(localStorage.getItem(LS_REPORTED) || '[]')); } catch(e) { return new Set(); }
+}
+function saveReportedSet(s) { localStorage.setItem(LS_REPORTED, JSON.stringify([...s])); }
+
+function getLikedSet() {
+    try { return new Set(JSON.parse(localStorage.getItem(LS_LIKED) || '[]')); } catch(e) { return new Set(); }
+}
+function saveLikedSet(s) { localStorage.setItem(LS_LIKED, JSON.stringify([...s])); }
 const MY_UID = 'me_demo_user';
 
 const AVATARS = [
@@ -972,13 +1001,13 @@ const AVATARS = [
 ];
 
 const SEEDS = [
-    { id:'s1', uid:'u1', name:'Pixel用户_洛圣都', avatar:AVATARS[0], device:'Pixel 9 Pro · Android 15', stars:5, tags:['完美兼容'], text:'画面超级流畅，GTA线上也没有任何问题，手柄支持完美。', date:'2025-04-28' },
-    { id:'s2', uid:'u2', name:'三星玩家_富兰克林', avatar:AVATARS[1], device:'Samsung Galaxy S25 Ultra', stars:4, tags:['完美兼容','声音异常'], text:'整体体验非常好，主线剧情流畅，偶尔有轻微音效延迟但不影响游玩。', date:'2025-04-25' },
-    { id:'s3', uid:'u3', name:'小米用户_迈克尔', avatar:AVATARS[2], device:'Xiaomi 15 Pro · Android 15', stars:5, tags:['完美兼容'], text:'秒玩功能直接起飞，不需要下载就能玩，网络好的话体验和本地基本一致。', date:'2025-04-22' },
-    { id:'s4', uid:'u4', name:'OnePlus_Trevor', avatar:AVATARS[3], device:'OnePlus 13 · Android 15', stars:3, tags:['画面卡顿','手柄无响应'], text:'网络波动时会明显卡顿，手柄偶尔失灵需要重连，希望后续优化。', date:'2025-04-20' },
-    { id:'s5', uid:'u5', name:'OPPO用户_洛圣都警察', avatar:AVATARS[4], device:'OPPO Find X8 Pro', stars:4, tags:['完美兼容'], text:'剧情向玩家强烈推荐，云游戏方式省了100多G的存储空间，赞！', date:'2025-04-18' },
-    { id:'s6', uid:'u6', name:'华为用户_特雷弗', avatar:AVATARS[5], device:'Huawei Mate 70 Pro', stars:2, tags:['意外闪退','画面卡顿'], text:'GTA在线模式进服务器时容易闪退，已经发生三次了，希望能修复。', date:'2025-04-15' },
-    { id:'s7', uid:'u7', name:'vivo用户_市民', avatar:AVATARS[6], device:'vivo X200 Ultra', stars:5, tags:['完美兼容'], text:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！强烈推荐。', date:'2025-04-12' },
+    { id:'s1', uid:'u1', name:'Pixel用户_洛圣都', avatar:AVATARS[0], device:'Pixel 9 Pro · Android 15', stars:5, tags:['完美兼容'], text:'画面超级流畅，GTA线上也没有任何问题，手柄支持完美。', date:'2025-04-28', likes:24 },
+    { id:'s2', uid:'u2', name:'三星玩家_富兰克林', avatar:AVATARS[1], device:'Samsung Galaxy S25 Ultra', stars:4, tags:['完美兼容','声音异常'], text:'整体体验非常好，主线剧情流畅，偶尔有轻微音效延迟但不影响游玩。', date:'2025-04-25', likes:17 },
+    { id:'s3', uid:'u3', name:'小米用户_迈克尔', avatar:AVATARS[2], device:'Xiaomi 15 Pro · Android 15', stars:5, tags:['完美兼容'], text:'秒玩功能直接起飞，不需要下载就能玩，网络好的话体验和本地基本一致。', date:'2025-04-22', likes:31 },
+    { id:'s4', uid:'u4', name:'OnePlus_Trevor', avatar:AVATARS[3], device:'OnePlus 13 · Android 15', stars:3, tags:['画面卡顿','手柄无响应'], text:'网络波动时会明显卡顿，手柄偶尔失灵需要重连，希望后续优化。', date:'2025-04-20', likes:8 },
+    { id:'s5', uid:'u5', name:'OPPO用户_洛圣都警察', avatar:AVATARS[4], device:'OPPO Find X8 Pro', stars:4, tags:['完美兼容'], text:'剧情向玩家强烈推荐，云游戏方式省了100多G的存储空间，赞！', date:'2025-04-18', likes:12 },
+    { id:'s6', uid:'u6', name:'华为用户_特雷弗', avatar:AVATARS[5], device:'Huawei Mate 70 Pro', stars:2, tags:['意外闪退','画面卡顿'], text:'GTA在线模式进服务器时容易闪退，已经发生三次了，希望能修复。', date:'2025-04-15', likes:5 },
+    { id:'s7', uid:'u7', name:'vivo用户_市民', avatar:AVATARS[6], device:'vivo X200 Ultra', stars:5, tags:['完美兼容'], text:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！强烈推荐。', date:'2025-04-12', likes:43 },
 ];
 
 function getFeedbacks() {
@@ -1114,19 +1143,30 @@ function renderItem(f) {
     const tags = (f.tags||[]).map(t => `<span class="ci-tag">${t}</span>`).join('');
     const snippet = (f.text||'').slice(0,40) + ((f.text||'').length>40?'…':'');
     const esc = s => s.replace(/'/g,"\\'");
-    return `<div class="compat-item">
+    const reportedSet = getReportedSet();
+    const likedSet = getLikedSet();
+    const isReported = reportedSet.has(f.id);
+    const isLiked = likedSet.has(f.id);
+    const likeCount = (f.likes || 0) + (isLiked ? 1 : 0);
+    return `<div class="compat-item" id="ci-${f.id}">
         <div class="ci-hdr">
             <img class="ci-avatar" src="${f.avatar}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22%3E%3Crect width=%2240%22 height=%2240%22 rx=%2220%22 fill=%22%23333%22/%3E%3C/svg%3E'">
             <div class="ci-meta">
                 <div class="ci-name">${f.name}</div>
                 <div class="ci-device">${f.device}</div>
             </div>
-            <div class="ci-flag" onclick="openReportModal('${f.id}','${esc(snippet)}')"><i class="fas fa-flag"></i></div>
         </div>
         <div class="ci-stars">${stars}</div>
         ${tags ? `<div class="ci-tags">${tags}</div>` : ''}
         ${f.text ? `<div class="ci-text">${f.text}</div>` : ''}
         <div class="ci-date">${f.date}</div>
+        <div class="ci-footer">
+            <div class="ci-like-btn${isLiked?' liked':''}" id="like-${f.id}" onclick="toggleLike('${f.id}',${f.likes||0})">
+                <svg viewBox="0 0 24 24" width="13" height="13"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+                支持&nbsp;<span id="like-count-${f.id}">${likeCount}</span>
+            </div>
+            <button class="ci-report-btn${isReported?' reported':''}" onclick="openReportModal('${f.id}','${esc(snippet)}')">${isReported?'已举报':'举报'}</button>
+        </div>
     </div>`;
 }
 
@@ -1241,15 +1281,44 @@ function submitFeedback() {
 //  举报弹窗
 // ============================================================
 function openReportModal(id, snippet) {
+    const reportedSet = getReportedSet();
+    if (reportedSet.has(id)) { showToast('您已举报过该评价'); return; }
     document.getElementById('reportSnippet').textContent = snippet;
     document.getElementById('reportNote').value = '';
     document.querySelectorAll('.rr').forEach(t => t.classList.remove('active'));
+    document.getElementById('modalReport')._targetId = id;
     document.getElementById('modalReport').classList.add('show');
 }
 function closeReportModal() { document.getElementById('modalReport').classList.remove('show'); }
 function closeReportOnMask(e) { if (e.target === document.getElementById('modalReport')) closeReportModal(); }
 function selectReason(el) { document.querySelectorAll('.rr').forEach(t => t.classList.remove('active')); el.classList.add('active'); }
-function submitReport() { closeReportModal(); showToast('举报已提交，感谢反馈'); }
+function submitReport() {
+    const modal = document.getElementById('modalReport');
+    const id = modal._targetId;
+    if (id) {
+        const s = getReportedSet();
+        s.add(id);
+        saveReportedSet(s);
+        const btn = document.querySelector(`#ci-${id} .ci-report-btn`);
+        if (btn) { btn.textContent = '已举报'; btn.classList.add('reported'); }
+    }
+    closeReportModal();
+    showToast('举报已提交，感谢反馈');
+}
+
+function toggleLike(id, baseLikes) {
+    const s = getLikedSet();
+    const isLiked = s.has(id);
+    if (isLiked) { s.delete(id); } else { s.add(id); }
+    saveLikedSet(s);
+    const el = document.getElementById(`like-${id}`);
+    const countEl = document.getElementById(`like-count-${id}`);
+    if (!el || !countEl) return;
+    const newLiked = !isLiked;
+    el.classList.toggle('liked', newLiked);
+    const newCount = baseLikes + (newLiked ? 1 : 0);
+    countEl.textContent = newCount;
+}
 
 // ============================================================
 //  Toast
