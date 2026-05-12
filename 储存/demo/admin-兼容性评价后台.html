@@ -2826,6 +2826,16 @@
                     </div>
                 </div>
 
+                <!-- Platform top-level tab: Mac端 / 移动端 -->
+                <div style="display:flex; gap:0; border-bottom:1px solid var(--border-color); margin-bottom:20px;">
+                    <button id="compat-platform-tab-all" onclick="window.switchCompatPlatformTab('all')"
+                        style="padding:10px 20px; background:none; border:none; border-bottom:2px solid var(--accent-blue); color:var(--accent-blue); font-size:14px; cursor:pointer; font-weight:600;">全部</button>
+                    <button id="compat-platform-tab-mac" onclick="window.switchCompatPlatformTab('mac')"
+                        style="padding:10px 20px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text-secondary); font-size:14px; cursor:pointer;">Mac端</button>
+                    <button id="compat-platform-tab-mobile" onclick="window.switchCompatPlatformTab('mobile')"
+                        style="padding:10px 20px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text-secondary); font-size:14px; cursor:pointer;">移动端</button>
+                </div>
+
                 <div class="metric-cards">
                     <div class="metric-card accent-blue">
                         <div class="metric-title">玩家点评总数</div>
@@ -6789,6 +6799,33 @@
         window.refreshCompatReportAdmin && window.refreshCompatReportAdmin();
     };
 
+    // Platform top-level tab: all | mac | mobile
+    let compatActivePlatformTab = 'all';
+    window.switchCompatPlatformTab = function(platform) {
+        compatActivePlatformTab = platform;
+
+        // Update tab button styles
+        ['all', 'mac', 'mobile'].forEach(p => {
+            const btn = document.getElementById('compat-platform-tab-' + p);
+            if (!btn) return;
+            const active = p === platform;
+            btn.style.borderBottomColor = active ? 'var(--accent-blue)' : 'transparent';
+            btn.style.color = active ? 'var(--accent-blue)' : 'var(--text-secondary)';
+            btn.style.fontWeight = active ? '600' : 'normal';
+        });
+
+        // Lock/unlock the client filter selects
+        const fbClient = document.getElementById('compat-fb-client');
+        const rpClient = document.getElementById('compat-rp-client');
+        const val = platform === 'all' ? 'all' : platform;
+        if (fbClient) { fbClient.value = val; fbClient.disabled = platform !== 'all'; }
+        if (rpClient) { rpClient.value = val; rpClient.disabled = platform !== 'all'; }
+
+        compatFbPage = 1;
+        compatRpPage = 1;
+        window.refreshCompatReportAdmin && window.refreshCompatReportAdmin();
+    };
+
     // Feedback filters
     window.queryCompatAdminFeedbacks = function() {
         compatFbPage = 1;
@@ -6803,6 +6840,9 @@
         if (p) p.value = 'all';
         if (s) s.value = 'all';
         if (st) st.value = 'all';
+        // Restore platform-tab locked client value
+        const fbClient = document.getElementById('compat-fb-client');
+        if (fbClient && compatActivePlatformTab !== 'all') fbClient.value = compatActivePlatformTab;
         compatFbPage = 1;
         window.refreshCompatReportAdmin && window.refreshCompatReportAdmin();
     };
@@ -6821,6 +6861,9 @@
         if (p) p.value = 'all';
         if (r) r.value = 'all';
         if (st) st.value = 'unresolved';
+        // Restore platform-tab locked client value
+        const rpClient = document.getElementById('compat-rp-client');
+        if (rpClient && compatActivePlatformTab !== 'all') rpClient.value = compatActivePlatformTab;
         compatRpPage = 1;
         window.refreshCompatReportAdmin && window.refreshCompatReportAdmin();
     };
