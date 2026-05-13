@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>按键与布局 Demo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-start;padding:30px 16px;font-family:-apple-system,'PingFang SC','Helvetica Neue',sans-serif;min-height:100vh}
+
+/* 手机外壳 */
+.phone-shell{
+  width:390px;height:844px;background:#0d1e2c;border-radius:48px;
+  box-shadow:0 0 0 2px #2a2a3e,0 32px 80px rgba(0,0,0,.7);
+  overflow:hidden;position:relative;flex-shrink:0;transition:width .3s,height .3s,border-radius .3s;
+}
+.phone-shell.landscape{width:844px;height:390px;border-radius:40px;}
+.phone-shell.landscape .list{grid-template-columns:repeat(4,1fr)}
+.phone-shell.landscape .search-row{display:none}
+.search-icon-btn{display:none}
+.phone-shell.landscape .search-icon-btn{display:flex}
+/* 页面容器 */
+.page{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;transition:transform .32s cubic-bezier(.32,1,.32,1),opacity .25s;background:#0d1e2c}
+.page.hidden-right{transform:translateX(100%);opacity:0;pointer-events:none}
+
+/* 状态栏 */
+.status-bar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;color:rgba(255,255,255,.8);font-size:13px;font-weight:600;flex-shrink:0}
+
+/* 页头 */
+.page-header{padding:2px 20px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.page-title{font-size:20px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+.back-btn{display:flex;align-items:center;gap:4px;color:rgba(255,255,255,.7);font-size:15px;cursor:pointer;padding:4px 0}
+.back-btn svg{width:18px;height:18px}
+/* Tabs */
+.tabs{display:flex;align-items:center;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.08);overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:10px 10px;font-size:14px;color:rgba(255,255,255,.45);cursor:pointer;white-space:nowrap;position:relative;flex-shrink:0}
+.tab.active{color:#fff}
+.tab.active::after{content:'';position:absolute;bottom:0;left:10px;right:10px;height:2px;background:#00c896;border-radius:1px}
+.tab-actions{margin-left:auto;display:flex;gap:10px;padding:8px 0 8px 8px;flex-shrink:0}
+.tab-icon-btn{width:28px;height:28px;border:1.5px solid rgba(255,255,255,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);cursor:pointer}
+
+/* 搜索栏 */
+.search-row{padding:12px 16px;flex-shrink:0}
+.search-bar{background:rgba(255,255,255,.07);border-radius:22px;padding:10px 16px;display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.35);font-size:14px}
+.home-search-overlay{position:absolute;inset:0;z-index:150;background:#0d1e2c;display:flex;flex-direction:column;transform:translateY(-100%);transition:transform .28s cubic-bezier(.32,1,.32,1);pointer-events:none}
+.home-search-overlay.show{transform:translateY(0);pointer-events:all}
+.home-search-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
+.home-search-bar input{flex:1;background:none;border:none;outline:none;color:#fff;font-size:15px}
+.home-search-cancel{font-size:14px;color:rgba(0,200,150,.9);cursor:pointer;white-space:nowrap;padding:4px 0}
+.home-search-results{flex:1;overflow-y:auto;scrollbar-width:none}
+.home-search-results .list{padding:0 16px}
+.home-search-empty{text-align:center;padding:60px 0;color:rgba(255,255,255,.3);font-size:14px}
+
+/* 排序栏 */
+.sort-bar{display:flex;align-items:center;gap:8px;padding:0 16px 10px;flex-shrink:0}
+.sort-label{font-size:13px;color:rgba(255,255,255,.4)}
+.sort-btn{padding:4px 12px;border-radius:12px;font-size:13px;color:rgba(255,255,255,.45);cursor:pointer;border:1px solid rgba(255,255,255,.12);background:transparent;transition:all .15s}
+.sort-btn.active{color:#00c896;border-color:rgba(0,200,150,.4);background:rgba(0,200,150,.08)}
+.list-section-title{font-size:12px;font-weight:600;color:rgba(255,255,255,.35);padding:12px 0 6px;letter-spacing:.5px;grid-column:1/-1}
+
+/* 分类宫格 */
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px}
+.cat-card{border-radius:12px;overflow:hidden;cursor:pointer;background:rgba(255,255,255,.05);transition:opacity .15s}
+.cat-card:active{opacity:.7}
+.cat-cover{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;position:relative}
+.cat-cover-icon{opacity:.85}
+.cat-count{position:absolute;bottom:5px;right:7px;font-size:10px;color:rgba(255,255,255,.55)}
+.cat-name{font-size:12px;font-weight:500;color:#fff;padding:7px 8px 9px;text-align:center}
+.diamond-zone{display:grid;grid-template-columns:repeat(3,1fr);padding:14px 16px 10px;gap:4px;flex-shrink:0}
+.diamond-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:8px 4px;border-radius:12px;transition:background .15s}
+.diamond-item:active{background:rgba(255,255,255,.06)}
+.diamond-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center}
+.diamond-label{font-size:12px;color:rgba(255,255,255,.65)}
+
+/* 推荐横滑 */
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px;flex-shrink:0}
+.section-title{font-size:15px;font-weight:600;color:#fff}
+.section-more{font-size:13px;color:rgba(0,200,150,.8);cursor:pointer}
+.hscroll-wrap{overflow-x:auto;padding:0 16px 12px;flex-shrink:0;scrollbar-width:none}
+.hscroll-wrap::-webkit-scrollbar{display:none}
+.hscroll{display:flex;gap:10px}
+.hcard{width:140px;flex-shrink:0;background:rgba(255,255,255,.055);border-radius:12px;overflow:hidden;cursor:pointer}
+.hcard-thumb{width:140px;height:88px;overflow:hidden;background:#0a1520}
+.hcard-thumb svg{width:100%;height:100%;display:block}
+.hcard-info{padding:7px 10px 9px}
+.hcard-name{font-size:12px;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.hcard-uses{font-size:11px;color:rgba(255,255,255,.38)}
+
+/* 列表 */
+.list-wrap{flex:1;overflow-y:auto;padding:0 16px 24px}
+.list-wrap::-webkit-scrollbar{width:0}
+.list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.list-item{background:rgba(255,255,255,.055);border-radius:14px;overflow:hidden;cursor:pointer;transition:background .15s;display:flex;flex-direction:column}
+.list-item:active{background:rgba(255,255,255,.1)}
+.thumb{width:100%;aspect-ratio:16/10;overflow:hidden;background:#0a1520}
+.thumb svg{width:100%;height:100%;display:block}
+.item-info{padding:8px 10px 10px}
+.item-name{font-size:13px;font-weight:500;color:#fff;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tag{padding:2px 6px;border-radius:4px;font-size:11px;font-weight:500}
+.tag-general{background:rgba(0,200,150,.12);color:#00c896;border:1px solid rgba(0,200,150,.25)}
+.tag-special{background:rgba(255,165,60,.12);color:#ffa040;border:1px solid rgba(255,165,60,.3)}
+.uses{font-size:11px;color:rgba(255,255,255,.38);display:flex;align-items:center;gap:3px}
+.author{font-size:11px;color:rgba(255,255,255,.38)}
+.empty{text-align:center;padding:60px 0;color:rgba(255,255,255,.3);font-size:14px}
+
+/* 游戏布局页头 */
+.special-page-banner{
+  margin:12px 16px 4px;padding:16px;border-radius:14px;
+  background:linear-gradient(135deg,rgba(255,140,0,.18) 0%,rgba(255,80,0,.1) 100%);
+  border:1px solid rgba(255,140,0,.25);
+}
+.banner-title{font-size:16px;font-weight:700;color:#ffc060;margin-bottom:4px}
+.banner-desc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.5}
+
+/* 弹出详情 */
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;z-index:200;opacity:0;pointer-events:none;transition:opacity .22s}
+.overlay.show{opacity:1;pointer-events:all}
+.popup{background:#162535;border-radius:20px 20px 0 0;width:100%;padding:20px 20px 36px;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,1,.32,1);position:relative}
+.overlay.show .popup{transform:translateY(0)}
+.popup-close{position:absolute;top:16px;right:16px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);cursor:pointer;font-size:22px}
+.popup-thumb{width:100%;height:190px;border-radius:12px;overflow:hidden;background:#0a1520;margin-bottom:16px}
+.popup-thumb svg{width:100%;height:100%;display:block}
+.popup-name{font-size:18px;font-weight:700;color:#fff;margin-bottom:8px}
+.popup-actions{display:flex;justify-content:space-around;margin-top:24px}
+.act-btn{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer}
+.act-icon{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:#fff}
+.act-label{font-size:13px;color:rgba(255,255,255,.65)}
+
+/* 图标管理器 */
+.icon-section-title{font-size:13px;font-weight:600;color:rgba(255,255,255,.5);padding:14px 16px 8px;letter-spacing:.5px}
+.pkg-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px}
+.pkg-card{background:rgba(255,255,255,.055);border-radius:14px;overflow:hidden;cursor:pointer;transition:background .15s}
+.pkg-card:active{background:rgba(255,255,255,.1)}
+.pkg-thumb{width:100%;aspect-ratio:1;background:#0a1520;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:10px}
+.pkg-thumb-icon{border-radius:6px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pkg-thumb-icon img{width:100%;height:100%;object-fit:contain}
+.pkg-thumb-icon svg{opacity:.4}
+.pkg-name{font-size:13px;font-weight:500;color:#fff;padding:8px 10px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pkg-count{font-size:11px;color:rgba(255,255,255,.35);padding:0 10px 10px}
+.icon-sub-tabs{display:flex;gap:0;padding:10px 16px 0;flex-shrink:0}
+.icon-sub-tab{padding:6px 18px;font-size:13px;color:rgba(255,255,255,.45);cursor:pointer;border-radius:16px;transition:all .15s}
+.icon-sub-tab.active{color:#fff;background:rgba(255,255,255,.1)}
+.icon-tab-content{display:none;flex:1;overflow-y:auto}
+.icon-tab-content.active{display:block}
+.import-row{padding:10px 16px 4px;display:flex;gap:8px}
+.import-btn{flex:1;background:rgba(0,200,150,.12);border:1px solid rgba(0,200,150,.3);color:#00c896;border-radius:22px;padding:9px 0;font-size:14px;text-align:center;cursor:pointer}
+
+/* 图标包详情页 */
+.icon-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 16px 24px}
+.icon-cell{aspect-ratio:1;background:rgba(255,255,255,.06);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:background .15s}
+.icon-cell:active{background:rgba(255,255,255,.14)}
+.icon-cell img{width:72%;height:72%;object-fit:contain}
+.icon-cell svg{opacity:.35}
+
+/* icon 大图预览弹层 */
+.icon-overlay{position:absolute;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:300;opacity:0;pointer-events:none;transition:opacity .2s}
+.icon-overlay.show{opacity:1;pointer-events:all}
+.icon-preview-box{background:#162535;border-radius:20px;padding:28px;display:flex;flex-direction:column;align-items:center;gap:16px;width:220px}
+
+/* Toast */
+.toast{position:absolute;bottom:72px;left:50%;transform:translateX(-50%);background:rgba(10,20,30,.92);color:#fff;font-size:13px;padding:8px 18px;border-radius:20px;white-space:nowrap;z-index:500;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* 导入结果弹层 */
+.import-modal{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;z-index:400;opacity:0;pointer-events:none;transition:opacity .22s}
+.import-modal.show{opacity:1;pointer-events:all}
+.import-modal-box{background:#162535;border-radius:20px 20px 0 0;width:100%;max-height:78%;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,1,.32,1)}
+.import-modal.show .import-modal-box{transform:translateY(0)}
+.import-modal-header{padding:16px 20px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.07)}
+.import-modal-title{font-size:15px;font-weight:600;color:#fff}
+.import-modal-done{font-size:14px;color:#00c896;cursor:pointer;padding:4px 0}
+.import-modal-scroll{overflow-y:auto;padding:8px 16px 28px}
+.import-pkg-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.import-pkg-row:last-child{border-bottom:none}
+.import-pkg-cover{width:54px;height:54px;border-radius:10px;background:#0a1520;display:grid;grid-template-columns:1fr 1fr;gap:1px;overflow:hidden;flex-shrink:0;cursor:pointer;position:relative}
+.import-pkg-cover-cell{display:flex;align-items:center;justify-content:center;overflow:hidden;background:rgba(255,255,255,.06)}
+.import-pkg-cover-cell img{width:100%;height:100%;object-fit:contain}
+.import-pkg-cover-edit{position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;border-radius:10px}
+.import-pkg-cover:hover .import-pkg-cover-edit,.import-pkg-cover:active .import-pkg-cover-edit{opacity:1}
+.import-pkg-info{flex:1;min-width:0}
+.import-pkg-name{font-size:14px;font-weight:500;color:#fff;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.import-pkg-meta{font-size:12px;color:rgba(255,255,255,.38)}
+.import-modal-hint{font-size:12px;color:rgba(255,255,255,.3);padding:10px 0 4px;text-align:center}
+.icon-preview-img{width:100px;height:100px;display:flex;align-items:center;justify-content:center}
+.icon-preview-img img{width:100%;height:100%;object-fit:contain}
+.icon-preview-name{font-size:13px;color:rgba(255,255,255,.6);text-align:center;word-break:break-all}
+.icon-preview-close{font-size:13px;color:rgba(255,255,255,.4);cursor:pointer;padding:4px 16px;border:1px solid rgba(255,255,255,.15);border-radius:12px}
+</style>
+</head>
+<body>
+<div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+<button onclick="toggleOrientation()" style="background:rgba(255,255,255,.12);color:#fff;border:none;border-radius:20px;padding:7px 22px;font-size:14px;cursor:pointer;letter-spacing:.5px;">⇄ 横竖屏</button>
+<div class="phone-shell">
+
+  <!-- =========== 主页 =========== -->
+  <div class="page" id="page-main">
+    <div class="status-bar">
+      <span>17:40</span>
+      <span style="display:flex;gap:5px;align-items:center;font-size:12px">
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="3" width="2.5" height="8" rx="1" opacity=".4"/><rect x="4" y="2" width="2.5" height="9" rx="1" opacity=".6"/><rect x="8" y="0" width="2.5" height="11" rx="1"/><rect x="12" y="1" width="2.5" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+        38%
+      </span>
+    </div>
+    <div class="page-header">
+      <div class="page-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2.5" style="cursor:pointer"><path d="M15 18l-6-6 6-6"/></svg>
+        按键与布局
+      </div>
+      <div class="tab-icon-btn" onclick="openHomeSearch()" style="width:32px;height:32px;border:none;background:rgba(255,255,255,.08);border-radius:50%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.65);cursor:pointer;flex-shrink:0">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </div>
+    </div>
+    <!-- 金刚区 -->
+    <div class="diamond-zone">
+      <div class="diamond-item" onclick="goPage('page-rank')">
+        <div class="diamond-icon" style="background:linear-gradient(135deg,#3a1a10,#2a1008)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffa040" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        </div>
+        <span class="diamond-label">排行</span>
+      </div>
+      <div class="diamond-item" onclick="goPage('page-custom')">
+        <div class="diamond-icon" style="background:linear-gradient(135deg,#1a3a1a,#0f280f)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4z"/></svg>
+        </div>
+        <span class="diamond-label">自定义</span>
+      </div>
+      <div class="diamond-item" onclick="goPage('page-icon-mgr')">
+        <div class="diamond-icon" style="background:linear-gradient(135deg,#2a1a3a,#1a0f2a)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c87aff" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="4" cy="6" r="2"/><circle cx="20" cy="6" r="2"/><circle cx="4" cy="18" r="2"/><circle cx="20" cy="18" r="2"/></svg>
+        </div>
+        <span class="diamond-label">图标管理器</span>
+      </div>
+    </div>
+    <!-- 探索内容 -->
+    <div style="flex:1;overflow-y:auto;scrollbar-width:none">
+      <!-- 推荐横滑 -->
+      <div class="section-header">
+        <span class="section-title">适合「空洞骑士」的推荐布局</span>
+        <span class="section-more" onclick="goPage('page-category')">查看全部 ›</span>
+      </div>
+      <div class="hscroll-wrap">
+        <div class="hscroll" id="home-hot-scroll"></div>
+      </div>
+      <!-- 全部布局 -->
+      <div class="section-header">
+        <span class="section-title">全部布局</span>
+      </div>
+      <div class="list-wrap" style="padding-top:0;padding-bottom:32px">
+        <div class="list" id="home-all-list"></div>
+      </div>
+    <!-- 主页搜索覆盖层 -->
+    <div class="home-search-overlay" id="home-search-overlay">
+      <div class="status-bar">
+        <span>17:40</span>
+        <span style="display:flex;gap:5px;align-items:center;font-size:12px">
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="3" width="2.5" height="8" rx="1" opacity=".4"/><rect x="4" y="2" width="2.5" height="9" rx="1" opacity=".6"/><rect x="8" y="0" width="2.5" height="11" rx="1"/><rect x="12" y="1" width="2.5" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+          38%
+        </span>
+      </div>
+      <div class="home-search-bar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="home-search-input" placeholder="搜索布局" oninput="onHomeSearch(this.value)" autofocus>
+        <span class="home-search-cancel" onclick="closeHomeSearch()">取消</span>
+      </div>
+      <div class="home-search-results" id="home-search-results">
+        <div class="home-search-empty">输入关键词搜索布局</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========== 分类页 =========== -->
+  <div class="page hidden-right" id="page-category">
+    <div class="status-bar">
+      <span>17:40</span>
+      <span style="display:flex;gap:5px;align-items:center;font-size:12px">
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="3" width="2.5" height="8" rx="1" opacity=".4"/><rect x="4" y="2" width="2.5" height="9" rx="1" opacity=".6"/><rect x="8" y="0" width="2.5" height="11" rx="1"/><rect x="12" y="1" width="2.5" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+        38%
+      </span>
+    </div>
+    <div class="page-header">
+      <div class="back-btn" onclick="goBack('page-category')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        游戏布局
+      </div>
+    </div>
+    <div class="search-row">
+      <div class="search-bar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="category-search" placeholder="搜索布局" oninput="filterCategoryList(this.value)" style="background:none;border:none;outline:none;color:#fff;font-size:14px;flex:1;min-width:0">
+      </div>
+    </div>
+    <div class="list-wrap">
+      <div class="list" id="cat-special-list"></div>
+    </div>
+  </div>
+
+  <!-- =========== 作者列表页 =========== -->
+  <div class="page hidden-right" id="page-cat-author">
+    <div class="status-bar">
+      <span>17:40</span>
+      <span style="display:flex;gap:5px;align-items:center;font-size:12px">
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="3" width="2.5" height="8" rx="1" opacity=".4"/><rect x="4" y="2" width="2.5" height="9" rx="1" opacity=".6"/><rect x="8" y="0" width="2.5" height="11" rx="1"/><rect x="12" y="1" width="2.5" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+        38%
+      </span>
+    </div>
+    <div class="page-header">
+      <div class="back-btn" onclick="goBack('page-cat-author')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        作者
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto;scrollbar-width:none;padding:12px 16px 24px" id="author-list"></div>
+  </div>
+
+  <!-- =========== 作者详情页 =========== -->
+  <div class="page hidden-right" id="page-author-detail">
+    <div class="status-bar">
+      <span>17:40</span>
+      <span style="display:flex;gap:5px;align-items:center;font-size:12px">
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="3" width="2.5" height="8" rx="1" opacity=".4"/><rect x="4" y="2" width="2.5" height="9" rx="1" opacity=".6"/><rect x="8" y="0" width="2.5" height="11" rx="1"/><rect x="12" y="1" width="2.5" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+        38%
+      </span>
+    </div>
+    <div class="page-header">
+      <div class="back-btn" onclick="goBack('page-author-detail')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        <span id="author-detail-name"></span>
+      </div>
+    </div>
+    <div class="list-wrap">
+      <div class="list" id="author-detail-list"></div>
+    </div>
+  </div>
+
+  <!-- =========== 排行页 =========== -->
+  <div class="page hidden-right" id="page-rank">
+    <div class="status-bar">
+      <span>17:40</span>
+      <span style="display:flex;gap:5px;align-items:center;font-size:12px">
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="3" width="2.5" height="8" rx="1" opacity=".4"/><rect x="4" y="2" width="2.5" height="9" rx="1" opacity=".6"/><rect x="8" y="0" width="2.5" height="11" rx="1"/><rect x="12" y="1" width="2.5" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+        38%
+      </span>
+    </div>
+    <div class="page-header">
+      <div class="back-btn" onclick="goBack('page-rank')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        排行
+      </div>
+    </div>
+    <div class="search-row">
+      <div class="search-bar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="rank-search" placeholder="搜索排行" oninput="filterList('rank',this)" style="background:none;border:none;outline:none;color:#fff;font-size:14px;flex:1;min-width:0">
+      </div>
+    </div>
+    <div class="list-wrap">
+      <div class="list" id="rank-list"></div>
+    </div>
+  </div>
+
+  <!-- =========== 自定义页 =========== -->
+  <div class="page hidden-right" id="page-custom">
+    <div class="status-bar">
+      <span>17:40</span>
+      <span style="display:flex;gap:5px;align-items:center;font-size:12px">
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="3" width="2.5" height="8" rx="1" opacity=".4"/><rect x="4" y="2" width="2.5" height="9" rx="1" opacity=".6"/><rect x="8" y="0" width="2.5" height="11" rx="1"/><rect x="12" y="1" width="2.5" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+        38%
+      </span>
+    </div>
+    <div class="page-header">
+      <div class="back-btn" onclick="goBack('page-custom')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        自定义
+      </div>
+    </div>
+    <div class="icon-sub-tabs">
+      <div class="icon-sub-tab active" onclick="switchCustomTab('mine',this)">我的方案</div>
+      <div class="icon-sub-tab" onclick="switchCustomTab('cloud',this)">我的云分享</div>
+    </div>
+    <div class="icon-tab-content active" id="custom-tab-mine">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 0;gap:8px;opacity:.4">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <span style="font-size:13px;color:rgba(255,255,255,.6)">暂无保存的方案</span>
+      </div>
+    </div>
+    <div class="icon-tab-content" id="custom-tab-cloud">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 0;gap:8px;opacity:.4">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg>
+        <span style="font-size:13px;color:rgba(255,255,255,.6)">暂无云分享内容</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========== 图标管理器页 =========== -->
+  <div class="page hidden-right" id="page-icon-mgr">
+    <div class="status-bar">
+      <span>17:40</span>
+      <span style="display:flex;gap:5px;align-items:center;font-size:12px">
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="3" width="2.5" height="8" rx="1" opacity=".4"/><rect x="4" y="2" width="2.5" height="9" rx="1" opacity=".6"/><rect x="8" y="0" width="2.5" height="11" rx="1"/><rect x="12" y="1" width="2.5" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+        38%
+      </span>
+    </div>
+    <div class="page-header">
+      <div class="back-btn" onclick="goBack('page-icon-mgr')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        图标管理器
+      </div>
+      <div class="tab-icon-btn" onclick="document.getElementById('icon-file-input').click()" style="width:28px;height:28px;border:1.5px solid rgba(255,255,255,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);cursor:pointer">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+    </div>
+    <div class="icon-sub-tabs">
+      <div class="icon-sub-tab active" onclick="switchIconTab('official',this)">官方</div>
+      <div class="icon-sub-tab" onclick="switchIconTab('mine',this)">我的</div>
+    </div>
+    <div class="icon-tab-content active" id="icon-tab-official">
+      <div class="pkg-grid" id="official-pkg-grid" style="padding-top:12px"></div>
+    </div>
+    <div class="icon-tab-content" id="icon-tab-mine">
+      <input type="file" id="icon-file-input" webkitdirectory multiple style="display:none" onchange="importIconsToMy(event)">
+      <div class="pkg-grid" id="my-pkg-grid" style="padding-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- 详情弹层（全局，两页共用） -->
+  <div class="overlay" id="overlay">
+    <div class="popup">
+      <div class="popup-close" id="popupClose">×</div>
+      <div class="popup-thumb" id="popupThumb"></div>
+      <div class="popup-name" id="popupName"></div>
+      <div id="popupTag"></div>
+  <div id="popupAuthor" style="font-size:13px;color:rgba(255,255,255,.45);margin-top:6px"></div>
+      <div class="popup-actions">
+        <div class="act-btn">
+          <div class="act-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div>
+          <span class="act-label">应用</span>
+        </div>
+        <div class="act-btn">
+          <div class="act-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z"/></svg></div>
+          <span class="act-label">编辑</span>
+        </div>
+        <div class="act-btn">
+          <div class="act-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></div>
+          <span class="act-label">复制</span>
+        </div>
+        <div class="act-btn">
+          <div class="act-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg></div>
+          <span class="act-label">分享码</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========== 图标包详情页 =========== -->
+  <div class="page hidden-right" id="page-icon-pkg">
+    <div class="status-bar">
+      <span>17:40</span>
+      <span style="display:flex;gap:5px;align-items:center;font-size:12px">
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="3" width="2.5" height="8" rx="1" opacity=".4"/><rect x="4" y="2" width="2.5" height="9" rx="1" opacity=".6"/><rect x="8" y="0" width="2.5" height="11" rx="1"/><rect x="12" y="1" width="2.5" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+        38%
+      </span>
+    </div>
+    <div class="page-header">
+      <div class="back-btn" onclick="goIconPkgBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        <span id="icon-pkg-back-label">图标管理器</span>
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto">
+      <div class="icon-grid" id="icon-pkg-grid"></div>
+    </div>
+  </div>
+
+  <!-- icon 大图预览弹层 -->
+  <div class="icon-overlay" id="icon-overlay" onclick="closeIconPreview()">
+    <div class="icon-preview-box" onclick="event.stopPropagation()">
+      <div class="icon-preview-img" id="icon-preview-img"></div>
+      <div class="icon-preview-name" id="icon-preview-name"></div>
+      <div class="icon-preview-close" onclick="closeIconPreview()">关闭</div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- 导入结果弹层 -->
+  <div class="import-modal" id="import-modal">
+    <div class="import-modal-box">
+      <div class="import-modal-header">
+        <div class="import-modal-title" id="import-modal-title">导入完成</div>
+        <div class="import-modal-done" onclick="closeImportModal()">完成</div>
+      </div>
+      <div class="import-modal-scroll" id="import-modal-scroll"></div>
+    </div>
+  </div>
+
+  <!-- 封面选择 input（隐藏） -->
+  <input type="file" id="cover-file-input" accept="image/*" style="display:none" onchange="applyCoverImage(event)">
+
+</div><!-- /phone-shell -->
+</div><!-- /wrapper -->
+
+<script>
+const SVG_TMPL = {
+  gamepad: `<svg viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg">
+    <rect width="220" height="130" fill="#0a1520"/>
+    <circle cx="55" cy="88" r="22" fill="none" stroke="#1e3a52" stroke-width="2.5"/>
+    <circle cx="55" cy="88" r="10" fill="#1e3a52"/>
+    <rect x="22" y="44" width="9" height="26" rx="2.5" fill="#1e3a52"/>
+    <rect x="13" y="53" width="26" height="9" rx="2.5" fill="#1e3a52"/>
+    <circle cx="178" cy="58" r="11" fill="#1e3a52"/><circle cx="160" cy="76" r="11" fill="#1e3a52"/>
+    <circle cx="196" cy="76" r="11" fill="#1e3a52"/><circle cx="178" cy="94" r="11" fill="#1e3a52"/>
+    <circle cx="138" cy="100" r="18" fill="none" stroke="#1e3a52" stroke-width="2.5"/>
+    <circle cx="138" cy="100" r="8" fill="#1e3a52"/>
+    <rect x="6" y="8" width="42" height="14" rx="5" fill="#1e3a52"/>
+    <rect x="172" y="8" width="42" height="14" rx="5" fill="#1e3a52"/>
+    <circle cx="96" cy="62" r="7" fill="#1e3a52"/><circle cx="116" cy="62" r="7" fill="#1e3a52"/>
+  </svg>`,
+  keyboard: `<svg viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg">
+    <rect width="220" height="130" fill="#0a1520"/>
+    <circle cx="48" cy="88" r="22" fill="none" stroke="#1e3a52" stroke-width="2.5"/>
+    <circle cx="48" cy="88" r="10" fill="#1e3a52"/>
+    <rect x="90" y="12" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="114" y="12" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="138" y="12" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="162" y="12" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="186" y="12" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="96" y="34" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="120" y="34" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="144" y="34" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="168" y="34" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="90" y="56" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="114" y="56" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="138" y="56" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="162" y="56" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="110" y="78" width="60" height="15" rx="4" fill="#1e3a52"/>
+    <rect x="8" y="12" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="8" y="34" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="8" y="56" width="18" height="15" rx="3" fill="#1e3a52"/>
+    <rect x="8" y="78" width="18" height="15" rx="3" fill="#1e3a52"/>
+  </svg>`,
+  gamepad2: `<svg viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg">
+    <rect width="220" height="130" fill="#0a1520"/>
+    <circle cx="60" cy="90" r="24" fill="none" stroke="#1e3a52" stroke-width="2.5"/>
+    <circle cx="60" cy="90" r="11" fill="#1e3a52"/>
+    <circle cx="30" cy="52" r="9" fill="#1e3a52"/><circle cx="30" cy="34" r="9" fill="#1e3a52"/>
+    <circle cx="48" cy="43" r="9" fill="#1e3a52"/><circle cx="12" cy="43" r="9" fill="#1e3a52"/>
+    <circle cx="175" cy="55" r="12" fill="#1e3a52"/><circle cx="156" cy="74" r="12" fill="#1e3a52"/>
+    <circle cx="194" cy="74" r="12" fill="#1e3a52"/><circle cx="175" cy="93" r="12" fill="#1e3a52"/>
+    <circle cx="136" cy="102" r="19" fill="none" stroke="#1e3a52" stroke-width="2.5"/>
+    <circle cx="136" cy="102" r="9" fill="#1e3a52"/>
+    <rect x="6" y="6" width="44" height="15" rx="5" fill="#1e3a52"/>
+    <rect x="170" y="6" width="44" height="15" rx="5" fill="#1e3a52"/>
+  </svg>`,
+  gamepad3: `<svg viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg">
+    <rect width="220" height="130" fill="#0a1520"/>
+    <circle cx="52" cy="82" r="20" fill="none" stroke="#1e3a52" stroke-width="2.5"/>
+    <circle cx="52" cy="82" r="9" fill="#1e3a52"/>
+    <rect x="20" y="40" width="8" height="22" rx="2" fill="#1e3a52"/>
+    <rect x="12" y="48" width="22" height="8" rx="2" fill="#1e3a52"/>
+    <rect x="90" y="20" width="16" height="13" rx="3" fill="#1e3a52"/>
+    <rect x="112" y="20" width="16" height="13" rx="3" fill="#1e3a52"/>
+    <rect x="134" y="20" width="16" height="13" rx="3" fill="#1e3a52"/>
+    <rect x="156" y="20" width="16" height="13" rx="3" fill="#1e3a52"/>
+    <rect x="178" y="20" width="16" height="13" rx="3" fill="#1e3a52"/>
+    <circle cx="172" cy="62" r="11" fill="#1e3a52"/><circle cx="155" cy="79" r="11" fill="#1e3a52"/>
+    <circle cx="189" cy="79" r="11" fill="#1e3a52"/><circle cx="172" cy="96" r="11" fill="#1e3a52"/>
+    <circle cx="130" cy="100" r="17" fill="none" stroke="#1e3a52" stroke-width="2.5"/>
+    <circle cx="130" cy="100" r="8" fill="#1e3a52"/>
+    <rect x="6" y="6" width="38" height="13" rx="4" fill="#1e3a52"/>
+    <rect x="176" y="6" width="38" height="13" rx="4" fill="#1e3a52"/>
+  </svg>`
+};
+
+const ALL_LAYOUTS = [
+  {id:1,  name:'手柄默认布局',          tag:null,      uses:0,     thumb:'gamepad',  special:false, author:'官方'},
+  {id:2,  name:'键盘默认布局',          tag:null,      uses:0,     thumb:'keyboard', special:false, author:'官方'},
+  {id:3,  name:'电脑 💻',              tag:'游戏布局', uses:17000, thumb:'gamepad2', special:false, author:'极客玩家'},
+  {id:4,  name:'Gamehub 2',           tag:'游戏布局', uses:9620,  thumb:'gamepad',  special:false, author:'GameMaster'},
+  {id:5,  name:'PC键盘',              tag:'游戏布局', uses:4580,  thumb:'keyboard', special:false, author:'键盘侠'},
+  {id:6,  name:'手柄默认布局',          tag:'游戏布局', uses:4200,  thumb:'gamepad3', special:false, author:'极客玩家'},
+  {id:7,  name:'测试',                tag:'游戏布局', uses:2549,  thumb:'gamepad2', special:false, author:'开发者小王'},
+  {id:8,  name:'Default Keyboard Layout', tag:'游戏布局', uses:2408, thumb:'keyboard', special:false, author:'GameMaster'},
+  {id:9,  name:'原神专用布局',          tag:'游戏布局', uses:32000, thumb:'gamepad2', special:true,  author:'原神玩家联盟'},
+  {id:10, name:'王者荣耀专用',          tag:'游戏布局', uses:28000, thumb:'gamepad3', special:true,  author:'荣耀战队'},
+  {id:11, name:'和平精英专用',          tag:'游戏布局', uses:19000, thumb:'gamepad',  special:true,  author:'吃鸡达人'},
+  {id:12, name:'原神键盘布局',          tag:'游戏布局', uses:15000, thumb:'keyboard', special:true,  author:'原神玩家联盟'},
+  {id:13, name:'明日方舟专用',          tag:'游戏布局', uses:9800,  thumb:'gamepad2', special:true,  author:'方舟指挥官'},
+];
+
+const SPECIAL = ALL_LAYOUTS.filter(l => l.special);
+
+
+function fmtUses(n) {
+  if (!n) return null;
+  return n >= 10000 ? (n / 10000).toFixed(1).replace(/\.0$/, '') + '万次' : n + '次';
+}
+
+function itemHTML(l) {
+  const tagCls = l.special ? 'tag-special' : 'tag-general';
+  const usesStr = fmtUses(l.uses);
+  return `
+    <div class="list-item" onclick="openPopup(${l.id})">
+      <div class="thumb">${SVG_TMPL[l.thumb]}</div>
+      <div class="item-info">
+        <div class="item-name">${l.name}</div>
+        <div class="item-meta">
+          ${usesStr ? `<span class="uses">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            ${usesStr}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function sectionTitle(text) {
+  return `<div class="list-section-title">${text}</div>`;
+}
+
+/* 页面切换 */
+function goPage(pageId) {
+  document.getElementById(pageId).classList.remove('hidden-right');
+  if (pageId === 'page-category') {
+    const inp = document.getElementById('category-search');
+    if (inp) inp.value = '';
+    renderCatSpecialList();
+  }
+  if (pageId === 'page-cat-author') renderAuthorList();
+  if (pageId === 'page-rank') {
+    const inp = document.getElementById('rank-search');
+    if (inp) inp.value = '';
+    renderRankList();
+  }
+  if (pageId === 'page-icon-mgr') renderIconMgr();
+}
+function goBack(pageId) {
+  document.getElementById(pageId).classList.add('hidden-right');
+}
+
+function renderHomeHot() {
+  const hot = ALL_LAYOUTS.filter(l => l.special).sort((a,b) => b.uses - a.uses).slice(0, 6);
+  document.getElementById('home-hot-scroll').innerHTML = hot.map(l => `
+    <div class="hcard" onclick="openPopup(${l.id})">
+      <div class="hcard-thumb">${SVG_TMPL[l.thumb]}</div>
+      <div class="hcard-info">
+        <div class="hcard-name">${l.name}</div>
+        <div class="hcard-uses">${fmtUses(l.uses)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderHomeAll() {
+  document.getElementById('home-all-list').innerHTML =
+    [...ALL_LAYOUTS].sort((a,b) => b.id - a.id).map(itemHTML).join('');
+}
+
+function renderCatSpecialList() {
+  document.getElementById('cat-special-list').innerHTML =
+    ALL_LAYOUTS.filter(l => l.special).map(itemHTML).join('');
+}
+
+function renderAuthorList() {
+  const authors = [...new Set(ALL_LAYOUTS.map(l => l.author))];
+  document.getElementById('author-list').innerHTML = authors.map(a => {
+    const count = ALL_LAYOUTS.filter(l => l.author === a).length;
+    return `<div onclick="goAuthorDetail('${a}')" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer">
+      <div style="width:40px;height:40px;border-radius:50%;background:rgba(200,122,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c87aff" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:500;color:#fff;margin-bottom:2px">${a}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.38)">${count} 个布局</div>
+      </div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+    </div>`;
+  }).join('');
+}
+
+function goAuthorDetail(author) {
+  document.getElementById('author-detail-name').textContent = author;
+  const layouts = ALL_LAYOUTS.filter(l => l.author === author);
+  document.getElementById('author-detail-list').innerHTML = layouts.map(itemHTML).join('');
+  document.getElementById('page-author-detail').classList.remove('hidden-right');
+}
+
+function filterCategoryList(val) {
+  const q = val.trim().toLowerCase();
+  const res = ALL_LAYOUTS.filter(l => l.special && (!q || l.name.toLowerCase().includes(q)));
+  document.getElementById('cat-special-list').innerHTML = res.length ? res.map(itemHTML).join('') : '<div class="empty">暂无结果</div>';
+}
+
+function filterList(page, el) {
+  const q = (el.value || '').trim().toLowerCase();
+  const res = [...ALL_LAYOUTS]
+    .sort((a,b) => b.uses - a.uses)
+    .filter(l => !q || l.name.toLowerCase().includes(q));
+  document.getElementById('rank-list').innerHTML = res.length ? res.map(itemHTML).join('') : '<div class="empty">暂无结果</div>';
+}
+
+function openHomeSearch() {
+  const overlay = document.getElementById('home-search-overlay');
+  overlay.classList.add('show');
+  setTimeout(() => document.getElementById('home-search-input').focus(), 100);
+}
+
+function closeHomeSearch() {
+  document.getElementById('home-search-overlay').classList.remove('show');
+  document.getElementById('home-search-input').value = '';
+  document.getElementById('home-search-results').innerHTML = '<div class="home-search-empty">输入关键词搜索布局</div>';
+}
+
+function onHomeSearch(val) {
+  const q = val.trim().toLowerCase();
+  const el = document.getElementById('home-search-results');
+  if (!q) {
+    el.innerHTML = '<div class="home-search-empty">输入关键词搜索布局</div>';
+    return;
+  }
+  const res = ALL_LAYOUTS.filter(l => l.name.toLowerCase().includes(q));
+  el.innerHTML = res.length
+    ? `<div class="list" style="padding:10px 16px 24px;display:grid;grid-template-columns:1fr 1fr;gap:10px">${res.map(itemHTML).join('')}</div>`
+    : '<div class="home-search-empty">没有找到相关布局</div>';
+}
+
+function renderRankList() {
+  document.getElementById('rank-list').innerHTML =
+    [...ALL_LAYOUTS].sort((a,b) => b.uses - a.uses).map(itemHTML).join('');
+}
+
+function switchCustomTab(tab, el) {
+  document.querySelectorAll('#page-custom .icon-sub-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('custom-tab-mine').classList.toggle('active', tab === 'mine');
+  document.getElementById('custom-tab-cloud').classList.toggle('active', tab === 'cloud');
+}
+
+function switchIconTab(tab, el) {
+  document.querySelectorAll('#page-icon-mgr .icon-sub-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#page-icon-mgr .icon-tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('icon-tab-' + tab).classList.add('active');
+}
+/* 详情弹层 */
+function openPopup(id) {
+  const l = ALL_LAYOUTS.find(x => x.id === id);
+  document.getElementById('popupThumb').innerHTML = SVG_TMPL[l.thumb];
+  document.getElementById('popupName').textContent = l.name;
+  const tagCls = l.special ? 'tag-special' : 'tag-general';
+  document.getElementById('popupTag').innerHTML = l.special
+    ? `<span class="tag tag-special" style="display:inline-block">游戏布局</span>` : '';
+  document.getElementById('popupAuthor').textContent = '作者：' + l.author;
+  document.getElementById('overlay').classList.add('show');
+}
+document.getElementById('overlay').addEventListener('click', function(e){
+  if (e.target === this) this.classList.remove('show');
+});
+document.getElementById('popupClose').addEventListener('click', () => {
+  document.getElementById('overlay').classList.remove('show');
+});
+
+function toggleOrientation(){
+  document.querySelector('.phone-shell').classList.toggle('landscape');
+}
+
+/* ===== 图标管理器 ===== */
+const ICON_PKGS = [
+  {id:'official-press', name:'Press', icons:[
+    {name:'A',svg:'<circle cx="12" cy="12" r="9" fill="rgba(0,200,150,.15)" stroke="#00c896" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#00c896">A</text>'},
+    {name:'B',svg:'<circle cx="12" cy="12" r="9" fill="rgba(255,165,60,.15)" stroke="#ffa040" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffa040">B</text>'},
+    {name:'X',svg:'<circle cx="12" cy="12" r="9" fill="rgba(100,160,255,.15)" stroke="#64a0ff" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#64a0ff">X</text>'},
+    {name:'Y',svg:'<circle cx="12" cy="12" r="9" fill="rgba(255,80,120,.15)" stroke="#ff5078" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#ff5078">Y</text>'},
+    {name:'LB',svg:'<rect x="3" y="7" width="18" height="10" rx="5" fill="rgba(0,200,150,.12)" stroke="#00c896" stroke-width="1.5"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold" fill="#00c896">LB</text>'},
+    {name:'RB',svg:'<rect x="3" y="7" width="18" height="10" rx="5" fill="rgba(255,165,60,.12)" stroke="#ffa040" stroke-width="1.5"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold" fill="#ffa040">RB</text>'},
+    {name:'L3',svg:'<circle cx="12" cy="12" r="8" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.3)" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="rgba(255,255,255,.4)"/>'},
+    {name:'Menu',svg:'<rect x="4" y="9" width="16" height="2" rx="1" fill="rgba(255,255,255,.5)"/><rect x="4" y="13" width="12" height="2" rx="1" fill="rgba(255,255,255,.35)"/>'},
+  ]},
+  {id:'official-default', name:'Default', icons:[
+    {name:'up',svg:'<path d="M12 5l7 9H5z" fill="rgba(255,255,255,.5)"/>'},
+    {name:'down',svg:'<path d="M12 19l7-9H5z" fill="rgba(255,255,255,.5)"/>'},
+    {name:'left',svg:'<path d="M5 12l9-7v14z" fill="rgba(255,255,255,.5)"/>'},
+    {name:'right',svg:'<path d="M19 12l-9 7V5z" fill="rgba(255,255,255,.5)"/>'},
+    {name:'circle',svg:'<circle cx="12" cy="12" r="8" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>'},
+    {name:'square',svg:'<rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>'},
+    {name:'cross',svg:'<path d="M5 12h14M12 5v14" stroke="rgba(255,255,255,.5)" stroke-width="2.5" stroke-linecap="round"/>'},
+    {name:'dot',svg:'<circle cx="12" cy="12" r="4" fill="rgba(255,255,255,.6)"/>'},
+  ]},
+];
+
+let myPkg = {id:'my-1', name:'我的图标包', icons:[]};
+let mySubPkgs = [];
+let currentPkgId = null;
+
+function svgIcon(inner) {
+  return `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">${inner}</svg>`;
+}
+
+function pkgCardHTML(pkg, isSubPkg) {
+  let thumbContent = '';
+  if (pkg.coverUrl) {
+    thumbContent = `<div class="pkg-thumb-icon" style="grid-column:1/-1;grid-row:1/-1"><img src="${pkg.coverUrl}" style="width:100%;height:100%;object-fit:cover"></div>`;
+  } else {
+    for (let i = 0; i < 4; i++) {
+      const ic = pkg.icons[i];
+      thumbContent += `<div class="pkg-thumb-icon">${ic
+        ? (ic.dataUrl ? `<img src="${ic.dataUrl}">` : svgIcon(ic.svg))
+        : svgIcon('<rect x="4" y="4" width="16" height="16" rx="3" fill="rgba(255,255,255,.04)"/>')
+      }</div>`;
+    }
+  }
+  return `
+    <div class="pkg-card" onclick="openIconPkg('${pkg.id}')">
+      <div class="pkg-thumb">${thumbContent}</div>
+      <div class="pkg-name">${pkg.name}</div>
+      <div class="pkg-count">${pkg.icons.length} 个图标</div>
+    </div>`;
+}
+
+
+function renderIconMgr() {
+  document.getElementById('official-pkg-grid').innerHTML = ICON_PKGS.map(p => pkgCardHTML(p)).join('');
+  // 我的：默认包 + 子包（从文件夹导入的）
+  const myCards = [pkgCardHTML(myPkg), ...mySubPkgs.map(p => pkgCardHTML(p, true))].join('');
+  document.getElementById('my-pkg-grid').innerHTML = myCards;
+}
+
+function openIconPkg(pkgId) {
+  currentPkgId = pkgId;
+  const pkg = pkgId === 'my-1' ? myPkg
+    : (ICON_PKGS.find(p => p.id === pkgId) || mySubPkgs.find(p => p.id === pkgId));
+  document.getElementById('icon-pkg-back-label').textContent = pkg.name;
+  renderIconPkgGrid(pkg);
+  document.getElementById('page-icon-pkg').classList.remove('hidden-right');
+}
+
+function renderIconPkgGrid(pkg) {
+  const grid = document.getElementById('icon-pkg-grid');
+  if (!pkg.icons.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">暂无图标</div>';
+    return;
+  }
+  grid.innerHTML = pkg.icons.map((ic, i) => `
+    <div class="icon-cell" onclick="previewIcon(${i})">
+      ${ic.dataUrl ? `<img src="${ic.dataUrl}">` : svgIcon(ic.svg)}
+    </div>`).join('');
+}
+
+function previewIcon(idx) {
+  const pkg = currentPkgId === 'my-1' ? myPkg
+    : (ICON_PKGS.find(p => p.id === currentPkgId) || mySubPkgs.find(p => p.id === currentPkgId));
+  const ic = pkg.icons[idx];
+  const imgEl = document.getElementById('icon-preview-img');
+  imgEl.innerHTML = ic.dataUrl
+    ? `<img src="${ic.dataUrl}" style="width:100%;height:100%;object-fit:contain">`
+    : svgIcon(ic.svg);
+  document.getElementById('icon-preview-name').textContent = ic.name;
+  document.getElementById('icon-overlay').classList.add('show');
+}
+
+function closeIconPreview() {
+  document.getElementById('icon-overlay').classList.remove('show');
+}
+
+let coverEditPkgId = null;
+
+function showToast(msg, duration) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration || 2200);
+}
+
+function importIconsToMy(e) {
+  const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
+  if (!files.length) { e.target.value = ''; return; }
+
+  // 按文件夹路径分组（webkitRelativePath = "folder/sub/file.png"）
+  const groups = {};
+  files.forEach(file => {
+    const parts = file.webkitRelativePath ? file.webkitRelativePath.split('/') : [];
+    // 有子文件夹结构：parts[0]=根目录, parts[1]=子文件夹 or 文件名
+    const groupKey = parts.length >= 3 ? parts[1] : (parts.length === 2 ? parts[0] : '我的图标包');
+    if (!groups[groupKey]) groups[groupKey] = [];
+    groups[groupKey].push(file);
+  });
+
+  const groupKeys = Object.keys(groups);
+  let totalLoaded = 0;
+  const totalFiles = files.length;
+  const newPkgs = [];
+
+  groupKeys.forEach(key => {
+    const grpFiles = groups[key];
+    const pkg = {id: 'my-' + Date.now() + '-' + key, name: key, icons: [], coverUrl: null};
+    newPkgs.push(pkg);
+    grpFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        pkg.icons.push({name: file.name.replace(/\.[^.]+$/, ''), dataUrl: ev.target.result});
+        // 自动用第一张图作为封面
+        if (!pkg.coverUrl) pkg.coverUrl = ev.target.result;
+        totalLoaded++;
+        if (totalLoaded === totalFiles) {
+          // 如果只有一个分组且key是默认名，直接合并到myPkg
+          if (groupKeys.length === 1 && groupKeys[0] === '我的图标包') {
+            newPkgs[0].icons.forEach(ic => myPkg.icons.push(ic));
+            renderIconMgr();
+            showToast(`成功导入 ${totalFiles} 个图标`);
+          } else {
+            // 多个子文件夹 → 每个变成独立包
+            newPkgs.forEach(p => {
+              const exists = mySubPkgs.find(x => x.name === p.name);
+              if (exists) {
+                p.icons.forEach(ic => exists.icons.push(ic));
+              } else {
+                mySubPkgs.push(p);
+              }
+            });
+            renderIconMgr();
+            showToast(`成功导入 ${groupKeys.length} 个图标包，共 ${totalFiles} 个图标`);
+            showImportModal(newPkgs);
+          }
+          e.target.value = '';
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+}
+
+function showImportModal(pkgs) {
+  const scroll = document.getElementById('import-modal-scroll');
+  const title = document.getElementById('import-modal-title');
+  title.textContent = `导入了 ${pkgs.length} 个图标包`;
+
+  scroll.innerHTML = pkgs.map((pkg, i) => {
+    const cells = pkg.icons.slice(0, 4).map(ic =>
+      `<div class="import-pkg-cover-cell"><img src="${ic.dataUrl}"></div>`
+    ).join('') + (pkg.icons.length < 4
+      ? Array(4 - pkg.icons.length).fill('<div class="import-pkg-cover-cell"></div>').join('')
+      : '');
+    return `
+      <div class="import-pkg-row">
+        <div class="import-pkg-cover" onclick="editPkgCover('${pkg.id}')">
+          ${cells}
+          <div class="import-pkg-cover-edit">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z"/></svg>
+          </div>
+        </div>
+        <div class="import-pkg-info">
+          <div class="import-pkg-name">${pkg.name}</div>
+          <div class="import-pkg-meta">${pkg.icons.length} 个图标 · 点击封面可自定义</div>
+        </div>
+      </div>`;
+  }).join('') + `<div class="import-modal-hint">点击封面图可自定义，或自动使用图标拼贴</div>`;
+
+  document.getElementById('import-modal').classList.add('show');
+}
+
+function editPkgCover(pkgId) {
+  coverEditPkgId = pkgId;
+  document.getElementById('cover-file-input').click();
+}
+
+function applyCoverImage(e) {
+  const file = e.target.files[0];
+  if (!file || !coverEditPkgId) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const pkg = mySubPkgs.find(p => p.id === coverEditPkgId);
+    if (pkg) {
+      pkg.coverUrl = ev.target.result;
+      showImportModal(mySubPkgs);
+      renderIconMgr();
+    }
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function closeImportModal() {
+  document.getElementById('import-modal').classList.remove('show');
+}
+
+
+
+function goIconPkgBack() {
+  document.getElementById('page-icon-pkg').classList.add('hidden-right');
+}
+
+renderHomeHot();
+renderHomeAll();
+</script>
+</body>
+</html>
