@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图标管理器后台 — 盖世运营后台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary:#1890ff; --success:#52c41a; --danger:#ff4d4f; --warning:#faad14;
+            --bg-dark:#001529; --bg-page:#f0f2f5; --border:#d9d9d9; --border-light:#f0f0f0;
+            --text-main:#333; --text-sub:#888; --white:#fff;
+        }
+        *{ margin:0; padding:0; box-sizing:border-box;
+           font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+        body{ background:var(--bg-page); color:var(--text-main); display:flex; height:100vh; overflow:hidden; }
+
+        /* ── 侧边栏 */
+        .sidebar{ width:200px; background:var(--bg-dark); color:rgba(255,255,255,.65);
+                  display:flex; flex-direction:column; flex-shrink:0; }
+        .logo{ height:64px; display:flex; align-items:center; justify-content:center;
+               font-size:16px; font-weight:700; color:#fff; background:#002140;
+               gap:8px; letter-spacing:.5px; flex-shrink:0; }
+        .logo i{ color:var(--primary); font-size:18px; }
+        .menu{ flex:1; padding-top:6px; }
+        .menu-item{ padding:13px 20px 13px 24px; cursor:pointer; display:flex;
+                    align-items:center; gap:10px; font-size:13px; transition:.2s; }
+        .menu-item:hover{ color:#fff; background:rgba(255,255,255,.05); }
+        .menu-item.active{ background:var(--primary); color:#fff; }
+        .menu-item i{ width:16px; text-align:center; }
+
+        /* ── 主区域 */
+        .main{ flex:1; display:flex; flex-direction:column; overflow:hidden; }
+        .topbar{ height:56px; background:#fff; box-shadow:0 1px 4px rgba(0,21,41,.08);
+                 display:flex; align-items:center; justify-content:space-between;
+                 padding:0 24px; flex-shrink:0; }
+        .topbar-bc{ font-size:13px; color:var(--text-sub); }
+        .topbar-bc span{ color:var(--text-main); font-weight:600; }
+        .topbar-user{ display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;
+                      padding:4px 8px; border-radius:4px; }
+        .topbar-user:hover{ background:var(--bg-page); }
+        .avatar{ width:28px; height:28px; border-radius:50%; background:var(--primary);
+                 color:#fff; display:flex; align-items:center; justify-content:center;
+                 font-size:12px; font-weight:700; }
+        .content{ flex:1; overflow-y:auto; padding:20px 24px; display:flex; flex-direction:column; gap:12px; }
+
+        /* ── 工具栏行 */
+        .toolbar-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+        .path-nav{ display:flex; align-items:center; gap:3px; font-size:13px; flex:1; }
+        .pseg{ cursor:pointer; color:var(--primary); padding:2px 5px; border-radius:3px; }
+        .pseg:hover{ background:#e6f7ff; }
+        .pseg.cur{ color:var(--text-main); font-weight:600; cursor:default; }
+        .pseg.cur:hover{ background:none; }
+        .psep{ color:#ccc; font-size:10px; margin:0 2px; }
+
+        /* ── 卡片 */
+        .card{ background:#fff; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+        .card-body{ padding:16px 20px; }
+
+        /* ── 按钮 */
+        .btn{ padding:0 14px; height:32px; border-radius:4px; font-size:13px; cursor:pointer;
+              border:1px solid transparent; transition:.2s;
+              display:inline-flex; align-items:center; gap:5px; white-space:nowrap; }
+        .btn-primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
+        .btn-primary:hover{ background:#40a9ff; }
+        .btn-default{ border:1px solid var(--border); background:#fff; color:var(--text-main); }
+        .btn-default:hover{ border-color:var(--primary); color:var(--primary); }
+        .btn-danger{ background:var(--danger); color:#fff; border-color:var(--danger); }
+        .btn-success{ background:var(--success); color:#fff; border-color:var(--success); }
+        .btn-warning-o{ border:1px solid var(--warning); color:var(--warning); background:#fff; }
+        .btn-warning-o:hover{ background:#fffbe6; }
+        .btn[disabled]{ opacity:.45; cursor:not-allowed; pointer-events:none; }
+        .btn-sm{ height:26px; padding:0 10px; font-size:12px; }
+
+        /* ── 筛选行 */
+        .filter-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+        .fi{ display:flex; align-items:center; gap:6px; font-size:13px; }
+        .fi label{ color:var(--text-sub); white-space:nowrap; }
+        .fi input, .fi select{ padding:5px 10px; border:1px solid var(--border); border-radius:4px;
+                               font-size:13px; height:32px; outline:none; color:var(--text-main); background:#fff; }
+        .fi input:focus, .fi select:focus{ border-color:var(--primary); }
+        .fi input[type=text]{ width:180px; }
+        .fi select{ width:130px; }
+        .ml-auto{ margin-left:auto; display:flex; gap:8px; }
+
+        /* ── 批量操作条 */
+        .batch-bar{ display:none; align-items:center; gap:8px; padding:8px 14px;
+                    background:#e6f7ff; border:1px solid #91d5ff; border-radius:4px;
+                    font-size:13px; margin-bottom:4px; }
+        .batch-bar.show{ display:flex; }
+        .batch-info{ color:var(--primary); font-weight:600; flex:1; }
+        .batch-cancel{ color:var(--text-sub); cursor:pointer; text-decoration:underline; font-size:12px; }
+
+        /* ── 表格 */
+        .table-wrap{ overflow-x:auto; }
+        table{ width:100%; border-collapse:collapse; font-size:13px; }
+        th,td{ padding:10px 12px; border-bottom:1px solid var(--border-light); text-align:left; white-space:nowrap; }
+        th{ background:#fafafa; font-weight:600; color:#555; font-size:12px; }
+        tr.data-row:hover td{ background:#fafafa; }
+        td{ vertical-align:middle; }
+        .checkbox{ width:15px; height:15px; cursor:pointer; accent-color:var(--primary); }
+
+        /* ── 标签 */
+        .tag{ padding:2px 8px; border-radius:3px; font-size:11px; font-weight:600; display:inline-block; }
+        .tag-online { background:#f6ffed; color:#389e0d; border:1px solid #b7eb8f; }
+        .tag-offline{ background:#f5f5f5; color:#888;    border:1px solid #d9d9d9; }
+        .tag-button  { background:#e6f7ff; color:#096dd9; border:1px solid #91d5ff; }
+        .tag-joystick{ background:#fff0f6; color:#c41d7f; border:1px solid #ffadd2; }
+        .tag-touch   { background:#f9f0ff; color:#531dab; border:1px solid #d3adf7; }
+        .tag-dpad    { background:#fff7e6; color:#d46b08; border:1px solid #ffd591; }
+        .tag-combo   { background:#e6fffb; color:#08979c; border:1px solid #87e8de; }
+        .tag-other   { background:#fafafa; color:#888;    border:1px solid #d9d9d9; }
+        .tag-PNG { background:#e6f7ff; color:#096dd9; border:1px solid #91d5ff; }
+        .tag-SVG { background:#f9f0ff; color:#531dab; border:1px solid #d3adf7; }
+        .tag-WEBP{ background:#f6ffed; color:#389e0d; border:1px solid #b7eb8f; }
+        .tag-JPG { background:#fff7e6; color:#d46b08; border:1px solid #ffd591; }
+
+        /* ── 操作链接 */
+        .ops{ display:flex; gap:10px; align-items:center; }
+        .ops a{ color:var(--primary); text-decoration:none; cursor:pointer; font-size:12px; }
+        .ops a.del{ color:var(--danger); }
+        .ops a.warn{ color:var(--warning); }
+        .ops a:hover{ opacity:.75; }
+
+        /* ── 图标包缩略图组 (2×2) */
+        .pkg-thumb{ width:48px; height:48px; display:grid; grid-template-columns:1fr 1fr;
+                    gap:2px; border-radius:6px; overflow:hidden; flex-shrink:0;
+                    border:1px solid var(--border-light); background:#f5f5f5; cursor:pointer; }
+        .pkg-thumb-cell{ display:flex; align-items:center; justify-content:center;
+                         background:#fafafa; overflow:hidden; }
+        .pkg-thumb-cell img{ width:100%; height:100%; object-fit:contain; }
+
+        /* ── 图标包卡片网格 */
+        .pkg-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
+        .pkg-card{ background:#fff; border:1px solid var(--border-light); border-radius:6px;
+                   padding:14px; transition:.2s; display:flex; gap:12px; align-items:flex-start;
+                   position:relative; }
+        .pkg-card:hover{ border-color:var(--primary); box-shadow:0 2px 8px rgba(24,144,255,.12); }
+        .pkg-card-sel{ position:absolute; top:8px; left:8px; }
+        .pkg-card-info{ flex:1; min-width:0; }
+        .pkg-card-name{ font-size:13px; font-weight:600; color:var(--text-main);
+                        white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:4px; }
+        .pkg-card-meta{ font-size:11px; color:var(--text-sub); display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+        .pkg-card-ops{ display:flex; gap:5px; flex-wrap:wrap; }
+
+        /* ── 图标网格（图标包内容页） */
+        .icon-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(88px,1fr)); gap:10px; }
+        .icon-cell{ display:flex; flex-direction:column; align-items:center; gap:4px;
+                    padding:8px 4px; border:1px solid var(--border-light); border-radius:6px;
+                    background:#fafafa; cursor:pointer; transition:.2s; position:relative; }
+        .icon-cell:hover{ border-color:var(--primary); background:#e6f7ff; }
+        .icon-cell img{ width:44px; height:44px; object-fit:contain; }
+        .icon-cell-name{ font-size:10px; color:var(--text-sub); text-align:center;
+                         max-width:82px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .icon-cell-del{ position:absolute; top:3px; right:3px; width:16px; height:16px;
+                        background:var(--danger); color:#fff; border-radius:50%;
+                        font-size:9px; display:none; align-items:center;
+                        justify-content:center; cursor:pointer; z-index:2; }
+        .icon-cell:hover .icon-cell-del{ display:flex; }
+
+        /* ── 统计行 */
+        .stats-row{ display:flex; gap:16px; font-size:12px; color:var(--text-sub);
+                    padding-bottom:10px; border-bottom:1px solid var(--border-light); margin-bottom:12px; }
+        .stats-row b{ color:var(--text-main); }
+
+        /* ── 分页 */
+        .pager{ display:flex; justify-content:space-between; align-items:center;
+                margin-top:14px; font-size:13px; color:var(--text-sub); }
+        .pager-nums{ display:flex; gap:5px; }
+        .pn{ min-width:30px; height:28px; padding:0 6px; display:flex; align-items:center;
+             justify-content:center; border:1px solid var(--border); border-radius:4px;
+             cursor:pointer; transition:.2s; font-size:12px; }
+        .pn.active{ background:var(--primary); color:#fff; border-color:var(--primary); }
+        .pn:hover:not(.active):not(.disabled){ border-color:var(--primary); color:var(--primary); }
+        .pn.disabled{ opacity:.4; cursor:not-allowed; }
+
+        /* ── 空状态 */
+        .empty{ text-align:center; padding:52px 0; color:var(--text-sub); }
+        .empty i{ font-size:42px; color:#ddd; display:block; margin-bottom:10px; }
+        .empty p{ font-size:14px; }
+
+        /* ── 弹窗 */
+        .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1500;
+                  display:none; align-items:center; justify-content:center; }
+        .overlay.show{ display:flex; }
+        .modal{ background:#fff; border-radius:6px; box-shadow:0 4px 24px rgba(0,0,0,.16);
+                display:flex; flex-direction:column; overflow:hidden; }
+        .mhd{ padding:14px 20px; border-bottom:1px solid var(--border-light);
+              display:flex; justify-content:space-between; align-items:center;
+              font-size:15px; font-weight:700; flex-shrink:0; }
+        .mhd .x{ cursor:pointer; color:var(--text-sub); font-size:20px; line-height:1; }
+        .mhd .x:hover{ color:var(--danger); }
+        .mbd{ padding:20px; overflow-y:auto; }
+        .mft{ padding:12px 20px; border-top:1px solid var(--border-light);
+              display:flex; justify-content:flex-end; gap:8px; background:#fafafa; flex-shrink:0; }
+
+        /* 表单行 */
+        .form-row{ display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
+        .form-row label{ font-size:13px; color:var(--text-sub); }
+        .form-row label .req{ color:var(--danger); margin-left:2px; }
+        .form-row input, .form-row select, .form-row textarea{
+            padding:7px 10px; border:1px solid var(--border); border-radius:4px;
+            font-size:13px; outline:none; color:var(--text-main); }
+        .form-row input:focus,.form-row select:focus,.form-row textarea:focus{ border-color:var(--primary); }
+        .form-row textarea{ resize:vertical; min-height:60px; }
+        .form-hint{ font-size:11px; color:var(--text-sub); margin-top:3px; }
+
+        /* 预览弹窗 */
+        .prev-img-box{ background:#f5f5f5; border-radius:4px; padding:20px;
+                       display:flex; align-items:center; justify-content:center; min-height:160px; }
+        .prev-img-box img{ max-width:100%; max-height:300px; object-fit:contain; border-radius:4px; }
+        .prev-meta{ display:grid; grid-template-columns:72px 1fr; gap:7px 0; margin-top:14px; font-size:13px; }
+        .prev-meta dt{ color:var(--text-sub); }
+        .prev-meta dd{ font-weight:600; color:var(--text-main); word-break:break-all; white-space:normal; }
+
+        /* 拖拽上传区 */
+        .drop-zone{ border:2px dashed var(--border); border-radius:6px; padding:28px 20px;
+                    text-align:center; cursor:pointer; background:#fafafa; transition:.2s; }
+        .drop-zone:hover,.drop-zone.over{ border-color:var(--primary); background:#e6f7ff; }
+        .drop-zone i{ font-size:32px; color:#bbb; display:block; margin-bottom:8px; }
+        .drop-zone:hover i,.drop-zone.over i{ color:var(--primary); }
+        .drop-zone p{ font-size:14px; font-weight:500; margin-bottom:4px; }
+        .drop-zone small{ font-size:12px; color:var(--text-sub); }
+        .up-row{ display:flex; align-items:center; gap:8px; padding:6px 10px;
+                 background:#fafafa; border:1px solid var(--border-light); border-radius:4px; margin-top:6px; }
+        .up-row-name{ flex:1; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .up-row-bar{ width:100px; height:4px; background:var(--border-light); border-radius:2px; overflow:hidden; flex-shrink:0; }
+        .up-row-fill{ height:100%; background:var(--primary); border-radius:2px; transition:width .25s; }
+        .up-row-state{ font-size:11px; color:var(--text-sub); flex-shrink:0; width:40px; text-align:right; }
+        .up-row-state.done{ color:var(--success); }
+
+        /* Toast */
+        #toast{ position:fixed; top:-60px; left:50%; transform:translateX(-50%);
+                background:#333; color:#fff; padding:9px 18px; border-radius:4px;
+                font-size:13px; z-index:3000; transition:top .28s;
+                display:flex; align-items:center; gap:7px;
+                box-shadow:0 4px 14px rgba(0,0,0,.2); white-space:nowrap; }
+        #toast.show{ top:18px; }
+        #toast .ico.ok  { color:#73d13d; }
+        #toast .ico.err { color:#ff7875; }
+        #toast .ico.warn{ color:#ffc53d; }
+
+        /* ─── C端预览 手机容器 ───────────────── */
+        .c-phone{ width:360px; background:#0d0d1a; border-radius:12px; overflow:hidden;
+                  display:flex; flex-direction:column; margin:0 auto; box-shadow:0 4px 24px rgba(0,0,0,.4); }
+        .c-topbar{ padding:12px 14px 8px; display:flex; align-items:center;
+                   justify-content:space-between; flex-shrink:0; }
+        .c-title{ font-size:15px; font-weight:700; color:#fff; }
+        .c-view-btns{ display:flex; gap:4px; }
+        .c-view-btn{ font-size:11px; color:rgba(255,255,255,.5); padding:3px 9px;
+                     border:1px solid rgba(255,255,255,.15); border-radius:12px;
+                     cursor:pointer; background:none; transition:.2s; }
+        .c-view-btn.active{ background:var(--primary); color:#fff; border-color:var(--primary); }
+        .c-tabs{ display:flex; padding:0 14px;
+                 border-bottom:1px solid rgba(255,255,255,.08); flex-shrink:0; }
+        .c-tab{ padding:8px 14px; font-size:13px; color:rgba(255,255,255,.4); cursor:pointer;
+                border-bottom:2px solid transparent; margin-bottom:-1px; transition:.2s; }
+        .c-tab.active{ color:var(--primary); border-bottom-color:var(--primary); font-weight:600; }
+        .c-body{ height:380px; overflow-y:auto; padding:10px 12px; }
+        .c-body::-webkit-scrollbar{ width:4px; }
+        .c-body::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.1); border-radius:2px; }
+
+        /* C端 文件夹视图卡片 */
+        .c-pkg-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+        .c-pkg-card{ background:rgba(255,255,255,.07); border-radius:8px; padding:10px;
+                     display:flex; gap:8px; align-items:center; cursor:pointer; transition:.15s; }
+        .c-pkg-card:hover{ background:rgba(255,255,255,.12); }
+        .c-pkg-thumb{ width:44px; height:44px; display:grid; grid-template-columns:1fr 1fr;
+                      gap:1px; border-radius:5px; overflow:hidden; flex-shrink:0; }
+        .c-pkg-thumb-cell{ background:rgba(255,255,255,.08); display:flex; align-items:center;
+                           justify-content:center; overflow:hidden; }
+        .c-pkg-thumb-cell img{ width:100%; height:100%; object-fit:contain; }
+        .c-pkg-name{ font-size:12px; color:#fff; font-weight:600; overflow:hidden;
+                     text-overflow:ellipsis; white-space:nowrap; }
+        .c-pkg-count{ font-size:10px; color:rgba(255,255,255,.4); margin-top:2px; }
+
+        /* C端 图标视图 */
+        .c-group{ margin-bottom:12px; }
+        .c-group-label{ font-size:10px; color:rgba(255,255,255,.35); margin-bottom:6px;
+                        letter-spacing:.5px; text-transform:uppercase; }
+        .c-icon-row{ display:grid; grid-template-columns:repeat(5,1fr); gap:4px; }
+        .c-icon-cell{ display:flex; flex-direction:column; align-items:center; gap:3px; padding:5px 2px; }
+        .c-icon-cell img{ width:34px; height:34px; object-fit:contain; }
+        .c-icon-cell span{ font-size:9px; color:rgba(255,255,255,.35); overflow:hidden;
+                           text-overflow:ellipsis; white-space:nowrap; max-width:100%; text-align:center; }
+        .c-empty{ text-align:center; padding:40px 0; color:rgba(255,255,255,.3); font-size:13px; }
+    </style>
+</head>
+<body>
+
+<!-- 侧边栏 -->
+<aside class="sidebar">
+    <div class="logo"><i class="fas fa-gamepad"></i> 盖世运营后台</div>
+    <div class="menu">
+        <div class="menu-item" onclick="navTo('sku')"><i class="fas fa-box-open"></i> 商品 SKU 管理</div>
+        <div class="menu-item" onclick="navTo('cdkey')"><i class="fas fa-key"></i> 库存管理</div>
+        <div class="menu-item active" onclick="navTo('icon')"><i class="fas fa-icons"></i> 图标管理</div>
+        <div class="menu-item" onclick="navTo('log')"><i class="fas fa-clipboard-list"></i> 操作记录</div>
+    </div>
+</aside>
+
+<!-- 主区域 -->
+<main class="main">
+    <div class="topbar">
+        <div class="topbar-bc" id="topbar-bc">首页 / 资源管理 / <span>图标管理</span></div>
+        <div class="topbar-user">
+            <div class="avatar">管</div>
+            <span>运营管理员</span>
+            <i class="fas fa-caret-down" style="color:var(--text-sub);font-size:11px;"></i>
+        </div>
+    </div>
+
+    <div class="content" id="page-root">
+        <!-- 动态渲染：包列表页 or 包图标详情页 -->
+    </div>
+</main>
+
+<!-- ══ 弹窗：新建/编辑图标包 ══ -->
+<div class="overlay" id="modal-pkg">
+    <div class="modal" style="width:500px;">
+        <div class="mhd">
+            <span id="pkg-dlg-title">新建图标包</span>
+            <span class="x" onclick="closeModal('modal-pkg')">×</span>
+        </div>
+        <div class="mbd" style="max-height:60vh;">
+            <div class="form-row">
+                <label>图标包名称 <span class="req">*</span></label>
+                <input type="text" id="pkg-f-name" placeholder="例如：像素风格按键包">
+            </div>
+            <div class="form-row">
+                <label>控件类型 <span class="req">*</span></label>
+                <select id="pkg-f-type">
+                    <option value="">请选择</option>
+                    <option value="button">按钮</option>
+                    <option value="joystick">摇杆</option>
+                    <option value="touch">触控板</option>
+                    <option value="dpad">方向键</option>
+                    <option value="combo">组合键</option>
+                    <option value="other">其他</option>
+                </select>
+                <span class="form-hint">用于在客户端图标选择器中分组展示</span>
+            </div>
+            <div class="form-row">
+                <label>图标来源 <span class="req">*</span></label>
+                <div style="display:flex;gap:20px;align-items:center;padding:6px 0;">
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--text-main);">
+                        <input type="radio" name="pkg-source-type" value="file" id="src-file" onchange="onSourceTypeChange()" checked>
+                        <span>单文件（批量上传图标文件）</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--text-main);">
+                        <input type="radio" name="pkg-source-type" value="folder" id="src-folder" onchange="onSourceTypeChange()">
+                        <span>文件夹（整个目录导入）</span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>描述</label>
+                <textarea id="pkg-f-desc" placeholder="可选，简要描述该图标包的风格或用途"></textarea>
+            </div>
+            <div class="form-row" id="pkg-cover-row" style="display:none;">
+                <label>封面图</label>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div id="pkg-cover-preview" style="width:64px;height:64px;border:1px solid var(--border-light);
+                         border-radius:6px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;
+                         overflow:hidden;flex-shrink:0;">
+                        <i class="fas fa-image" style="color:#ccc;font-size:22px;" id="pkg-cover-icon"></i>
+                        <img id="pkg-cover-img" src="" style="display:none;width:100%;height:100%;object-fit:cover;">
+                    </div>
+                    <div>
+                        <button class="btn btn-default btn-sm" onclick="document.getElementById('inp-cover').click()">
+                            <i class="fas fa-upload"></i> 上传封面
+                        </button>
+                        <input type="file" id="inp-cover" accept="image/*" style="display:none" onchange="onCoverPick(event)">
+                        <div class="form-hint" style="margin-top:4px;">建议 120×120，PNG/SVG；不上传则自动取第一张图标作封面</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mft">
+            <button class="btn btn-default" onclick="closeModal('modal-pkg')">取消</button>
+            <button class="btn btn-primary" onclick="savePkg()">确认保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ 弹窗：图标大图预览 ══ -->
+<div class="overlay" id="modal-preview">
+    <div class="modal" style="width:460px;">
+        <div class="mhd">
+            <span>图标预览</span>
+            <span class="x" onclick="closeModal('modal-preview')">×</span>
+        </div>
+        <div class="mbd">
+            <div class="prev-img-box"><img id="prev-img" src="" alt=""></div>
+            <dl class="prev-meta">
+                <dt>名称</dt><dd id="pm-name">-</dd>
+                <dt>格式</dt><dd id="pm-fmt">-</dd>
+                <dt>大小</dt><dd id="pm-size">-</dd>
+                <dt>路径</dt><dd id="pm-path">-</dd>
+                <dt>上传时间</dt><dd id="pm-time">-</dd>
+                <dt>上传人</dt><dd id="pm-uploader">-</dd>
+            </dl>
+        </div>
+        <div class="mft">
+            <button class="btn btn-default" onclick="closeModal('modal-preview')">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ 弹窗：上传图标 ══ -->
+<div class="overlay" id="modal-upload">
+    <div class="modal" style="width:480px;">
+        <div class="mhd">
+            <span>添加图标到包</span>
+            <span class="x" onclick="closeModal('modal-upload')">×</span>
+        </div>
+        <div class="mbd">
+            <div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;">
+                当前图标包：<b id="upload-pkg-name" style="color:var(--text-main);"></b>
+            </div>
+            <div class="drop-zone" id="drop-zone"
+                 ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event)"
+                 onclick="document.getElementById('inp-file-hidden').click()">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>点击或拖拽图标文件到此处</p>
+                <small>支持 PNG、SVG、WEBP、JPG，可多选</small>
+            </div>
+            <input type="file" id="inp-file-hidden" multiple accept="image/*" style="display:none" onchange="onPickFiles(event)">
+            <div id="modal-progress" style="max-height:200px;overflow-y:auto;"></div>
+        </div>
+        <div class="mft">
+            <button class="btn btn-default" onclick="closeModal('modal-upload')">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ 弹窗：C端预览 ══ -->
+<div class="overlay" id="modal-c-preview">
+    <div class="modal" style="background:transparent;box-shadow:none;">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+            <span style="cursor:pointer;color:#fff;font-size:22px;line-height:1;" onclick="closeModal('modal-c-preview')">×</span>
+        </div>
+        <!-- C端手机 -->
+        <div class="c-phone">
+            <div class="c-topbar">
+                <div class="c-title">图标管理器</div>
+                <div class="c-view-btns">
+                    <button class="c-view-btn" id="cbtn-icon" onclick="setCView('icon')">图标视图</button>
+                    <button class="c-view-btn active" id="cbtn-folder" onclick="setCView('folder')">文件夹视图</button>
+                </div>
+            </div>
+            <div class="c-tabs">
+                <div class="c-tab active" id="ctab-official" onclick="setCTab('official')">官方</div>
+                <div class="c-tab" id="ctab-mine" onclick="setCTab('mine')">我的</div>
+            </div>
+            <div class="c-body" id="c-body"></div>
+        </div>
+        <div style="text-align:center;margin-top:10px;font-size:12px;color:rgba(255,255,255,.4);">
+            以上为 C 端用户视角预览（仅展示已上架包）
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"><i class="fas fa-check-circle ico ok" id="t-ico"></i><span id="t-msg"></span></div>
+
+<script>
+/* ── 工具 ─────────────────────────────────── */
+function p2(n){ return String(n).padStart(2,'0'); }
+function now(){ const d=new Date(); return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}`; }
+function mockTime(dAgo,h,m){ const d=new Date(); d.setDate(d.getDate()-dAgo); return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())} ${p2(h)}:${p2(m)}`; }
+function enc(s){ return encodeURIComponent(s); }
+
+let toastTimer;
+function toast(msg,type='ok'){
+    const el=document.getElementById('toast');
+    document.getElementById('t-ico').className=`fas ico ${type==='ok'?'fa-check-circle':type==='err'?'fa-times-circle':'fa-exclamation-circle'} ${type}`;
+    document.getElementById('t-msg').textContent=msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>el.classList.remove('show'),2200);
+}
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function navTo(p){
+    document.querySelectorAll('.menu-item').forEach((el,i)=>{
+        el.classList.toggle('active',['sku','cdkey','icon','log'][i]===p);
+    });
+    if(p!=='icon') toast('其他模块暂未在本 Demo 中实现','warn');
+}
+
+/* ══ 数据层 ══════════════════════════════════ */
+const MC=['#f97316','#3b82f6','#10b981','#8b5cf6','#ef4444','#f59e0b','#14b8a6','#6366f1','#ec4899','#0ea5e9'];
+function mockSvgIcon(c,char='◈'){
+    return `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' rx='10' fill='${enc(c)}22'/><text x='40' y='52' text-anchor='middle' font-size='30' fill='${enc(c)}' font-family='sans-serif'>${char}</text></svg>`;
+}
+const ICON_CHARS={button:'◉',joystick:'◎',touch:'▣',dpad:'◈',combo:'⬡',other:'◇'};
+const TYPE_LABEL={button:'按钮',joystick:'摇杆',touch:'触控板',dpad:'方向键',combo:'组合键',other:'其他'};
+const UPLOADERS=['运营管理员','设计师小王','运营小李','产品小张'];
+const ICON_NAMES={
+    button:['A键','B键','X键','Y键','L1','R1','L2','R2','Start','Select','Menu','Home'],
+    joystick:['摇杆中心','摇杆上','摇杆下','摇杆左','摇杆右','点击确认'],
+    touch:['滑动区','点击区','长按区','双击区','缩放区'],
+    dpad:['上','下','左','右','斜上左','斜上右'],
+    combo:['连击','蓄力','瞬发','保护','闪避','终结技'],
+    other:['自定义1','自定义2','自定义3','自定义4','自定义5'],
+};
+
+let iconSeq=1;
+let pkgIdSeq=1;
+function makePkg(name,type,count,dAgo,uploader,status='online',sourceType='folder'){
+    const id='PKG_'+String(pkgIdSeq++).padStart(4,'0');
+    const color=MC[(pkgIdSeq-1)%MC.length];
+    const char=ICON_CHARS[type]||'◇';
+    const names=ICON_NAMES[type]||ICON_NAMES.other;
+    const icons=Array.from({length:count},(_,i)=>({
+        id:'IC_'+String(iconSeq++).padStart(5,'0'),
+        name:(names[i%names.length]||'图标'+(i+1)),
+        pkgId:id, format:['PNG','SVG','WEBP','PNG'][i%4],
+        size:['12.4 KB','3.2 KB','8.7 KB','5.0 KB'][i%4],
+        uploadTime:mockTime(dAgo-i*0.3,9+i%8,i*7%60),
+        uploader:UPLOADERS[i%UPLOADERS.length],
+        dataUrl:mockSvgIcon(color,char),
+    }));
+    return{id,name,type,sourceType,status,count,desc:'',uploader,
+           createTime:mockTime(dAgo,10,0),icons,
+           coverDataUrl:mockSvgIcon(color,char)};
+}
+
+let pkgs=[
+    makePkg('官方默认按键包','button',10,60,'运营管理员','online','folder'),
+    makePkg('官方摇杆图标包','joystick',6,55,'设计师小王','online','folder'),
+    makePkg('方向键精品包','dpad',8,50,'设计师小王','online','folder'),
+    makePkg('触控板交互包','touch',5,45,'产品小张','online','file'),
+    makePkg('组合键高级包','combo',4,40,'运营管理员','online','file'),
+    makePkg('霓虹按键包','button',12,30,'设计师小王','online','folder'),
+    makePkg('像素风格包','button',9,25,'运营小李','online','folder'),
+    makePkg('简约线条包','other',7,20,'运营管理员','online','file'),
+    makePkg('复古游戏按键包','button',6,15,'设计师小王','offline','folder'),
+    makePkg('赛博朋克触控包','touch',4,10,'产品小张','offline','folder'),
+];
+
+/* ══ 页面状态 ══════════════════════════════════ */
+let drillPkgId=null;          // null=列表页, id=包详情页
+let viewMode='table';         // 'table' | 'cards'
+let selectedPkgs=new Set();   // 批量选中的包 id
+
+let pkgPage=1;
+const PKG_PAGE=10;
+let activeFilter={q:'',type:'',status:''};
+
+let editingPkgId=null;
+let coverDataUrl=null;
+let uploadTargetPkgId=null;
+
+/* ══ 主页面渲染入口 ══════════════════════════ */
+function renderPage(){
+    const root=document.getElementById('page-root');
+    root.innerHTML='';
+    if(drillPkgId){
+        renderDetailPage(root);
+    } else {
+        renderListPage(root);
+    }
+}
+
+/* ── 列表页 ─────────────────────────────────── */
+function renderListPage(root){
+    // 工具栏
+    const toolbar=document.createElement('div');
+    toolbar.className='toolbar-row';
+    toolbar.innerHTML=`
+        <div class="path-nav">
+            <span class="pseg cur">图标包管理</span>
+        </div>
+        <button class="btn btn-default btn-sm" onclick="toggleViewMode()">
+            <i class="fas ${viewMode==='table'?'fa-th-large':'fa-list'}"></i>
+            ${viewMode==='table'?'卡片视图':'列表视图'}
+        </button>
+        <button class="btn btn-default btn-sm" onclick="openCPreview()">
+            <i class="fas fa-mobile-alt"></i> 预览C端效果
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="openPkgDialog()" style="background:#52c41a;border-color:#52c41a;">
+            <i class="fas fa-plus"></i> 新建图标包
+        </button>`;
+    root.appendChild(toolbar);
+
+    // 批量操作条
+    const batch=document.createElement('div');
+    batch.className='batch-bar'+(selectedPkgs.size>0?' show':'');
+    batch.id='batch-bar';
+    batch.innerHTML=`<span class="batch-info">已选 <span id="batch-n">${selectedPkgs.size}</span> 项</span>
+        <button class="btn btn-success btn-sm" onclick="batchOnline()"><i class="fas fa-arrow-up"></i> 批量上架</button>
+        <button class="btn btn-warning-o btn-sm" onclick="batchOffline()"><i class="fas fa-arrow-down"></i> 批量下架</button>
+        <button class="btn btn-danger btn-sm" onclick="batchDelete()"><i class="fas fa-trash"></i> 批量删除</button>
+        <span class="batch-cancel" onclick="clearSel()">取消选择</span>`;
+    root.appendChild(batch);
+
+    // 筛选 + 内容卡片
+    const card=document.createElement('div');
+    card.className='card';
+    card.innerHTML=`<div class="card-body">
+        <div class="filter-row">
+            <div class="fi"><label>包名</label><input type="text" id="pkg-q" placeholder="模糊搜索" value="${activeFilter.q}"></div>
+            <div class="fi"><label>控件类型</label>
+                <select id="pkg-type">
+                    <option value="">全部类型</option>
+                    <option value="button"${activeFilter.type==='button'?' selected':''}>按钮</option>
+                    <option value="joystick"${activeFilter.type==='joystick'?' selected':''}>摇杆</option>
+                    <option value="touch"${activeFilter.type==='touch'?' selected':''}>触控板</option>
+                    <option value="dpad"${activeFilter.type==='dpad'?' selected':''}>方向键</option>
+                    <option value="combo"${activeFilter.type==='combo'?' selected':''}>组合键</option>
+                    <option value="other"${activeFilter.type==='other'?' selected':''}>其他</option>
+                </select>
+            </div>
+            <div class="fi"><label>状态</label>
+                <select id="pkg-status">
+                    <option value="">全部状态</option>
+                    <option value="online"${activeFilter.status==='online'?' selected':''}>已上架</option>
+                    <option value="offline"${activeFilter.status==='offline'?' selected':''}>已下架</option>
+                </select>
+            </div>
+            <div class="ml-auto">
+                <button class="btn btn-primary" onclick="doSearch()"><i class="fas fa-search"></i> 查询</button>
+                <button class="btn btn-default" onclick="resetPkgFilter()"><i class="fas fa-undo"></i> 重置</button>
+            </div>
+        </div>
+        <div id="pkg-content"></div>
+        <div class="pager">
+            <span>共 <b id="pkg-total-n">0</b> 项，每页 ${PKG_PAGE} 条</span>
+            <div class="pager-nums" id="pkg-pager-nums"></div>
+        </div>
+    </div>`;
+    root.appendChild(card);
+
+    renderPkgContent();
+}
+
+function getPkgFiltered(){
+    return pkgs.filter(p=>
+        (!activeFilter.q     || p.name.toLowerCase().includes(activeFilter.q)) &&
+        (!activeFilter.type  || p.type===activeFilter.type) &&
+        (!activeFilter.status|| p.status===activeFilter.status)
+    );
+}
+
+function renderPkgContent(){
+    const list=getPkgFiltered();
+    const total=list.length;
+    const pages=Math.max(1,Math.ceil(total/PKG_PAGE));
+    if(pkgPage>pages) pkgPage=1;
+    const slice=list.slice((pkgPage-1)*PKG_PAGE,pkgPage*PKG_PAGE);
+
+    const tn=document.getElementById('pkg-total-n');
+    if(tn) tn.textContent=total;
+
+    const cont=document.getElementById('pkg-content');
+    if(!cont) return;
+
+    if(!slice.length){
+        cont.innerHTML=`<div class="empty"><i class="fas fa-box-open"></i><p>暂无图标包，点击右上角新建</p></div>`;
+    } else if(viewMode==='table'){
+        cont.innerHTML=renderPkgTable(slice);
+    } else {
+        cont.innerHTML=renderPkgCards(slice);
+    }
+
+    renderPager(total,pages);
+}
+
+function renderPkgTable(slice){
+    const allSel=slice.length>0 && slice.every(p=>selectedPkgs.has(p.id));
+    let rows=slice.map(p=>{
+        const stag=p.status==='online'
+            ? '<span class="tag tag-online">已上架</span>'
+            : '<span class="tag tag-offline">已下架</span>';
+        const ttag=`<span class="tag tag-${p.type}">${TYPE_LABEL[p.type]||'其他'}</span>`;
+        const srcTag=p.sourceType==='folder'
+            ? '<span class="tag" style="background:#fff7e6;color:#d46b08;border:1px solid #ffd591;">文件夹</span>'
+            : '<span class="tag" style="background:#f0f5ff;color:#2f54eb;border:1px solid #adc6ff;">文件</span>';
+        const cells=Array.from({length:4},(_,i)=>p.icons[i]
+            ? `<div class="pkg-thumb-cell"><img src="${p.icons[i].dataUrl}" alt=""></div>`
+            : `<div class="pkg-thumb-cell" style="background:#eee;"></div>`).join('');
+        const thumb=`<div class="pkg-thumb" onclick="enterPkg('${p.id}')" title="进入图标管理">${cells}</div>`;
+        const upBtn=p.status==='offline'
+            ? `<a onclick="togglePkgStatus('${p.id}','online')" style="color:var(--success)"><i class="fas fa-arrow-up"></i> 上架</a>`
+            : `<a class="warn" onclick="confirmOffline('${p.id}')"><i class="fas fa-arrow-down"></i> 下架</a>`;
+        const sel=selectedPkgs.has(p.id);
+        return `<tr class="data-row">
+            <td onclick="event.stopPropagation()"><input type="checkbox" class="checkbox" ${sel?'checked':''} onchange="toggleSel('${p.id}',this)"></td>
+            <td style="font-size:11px;color:var(--text-sub);font-family:monospace;">${p.id}</td>
+            <td>${thumb}</td>
+            <td style="font-weight:600;">${p.name}${p.desc?`<span style="font-size:11px;color:var(--text-sub);font-weight:400;margin-left:6px;">${p.desc}</span>`:''}</td>
+            <td>${ttag}</td>
+            <td>${srcTag}</td>
+            <td style="text-align:center;">${p.count}</td>
+            <td>${stag}</td>
+            <td style="font-size:12px;color:var(--text-sub);">${p.createTime}</td>
+            <td style="font-size:12px;color:var(--text-sub);">${p.uploader}</td>
+            <td><div class="ops">
+                <a onclick="enterPkg('${p.id}')"><i class="fas fa-folder-open"></i> 图标</a>
+                <a onclick="openPkgDialog('${p.id}')"><i class="fas fa-edit"></i> 编辑</a>
+                ${upBtn}
+                <a class="del" onclick="confirmDeletePkg('${p.id}')"><i class="fas fa-trash"></i> 删除</a>
+            </div></td>
+        </tr>`;
+    }).join('');
+    return `<div class="table-wrap"><table>
+        <thead><tr>
+            <th style="width:34px"><input type="checkbox" class="checkbox" ${allSel?'checked':''} onchange="toggleAllSel(this,${JSON.stringify(slice.map(p=>p.id))})"></th>
+            <th style="width:120px">图标包 ID</th>
+            <th style="width:52px">封面</th>
+            <th>包名</th>
+            <th style="width:90px">控件类型</th>
+            <th style="width:90px">图标来源</th>
+            <th style="width:70px">图标数</th>
+            <th style="width:80px">状态</th>
+            <th style="width:130px">创建时间</th>
+            <th style="width:90px">创建人</th>
+            <th style="width:200px">操作</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+    </table></div>`;
+}
+
+function renderPkgCards(slice){
+    const cards=slice.map(p=>{
+        const cells=Array.from({length:4},(_,i)=>p.icons[i]
+            ? `<div class="pkg-thumb-cell"><img src="${p.icons[i].dataUrl}" alt=""></div>`
+            : `<div class="pkg-thumb-cell" style="background:#eee;"></div>`).join('');
+        const stag=p.status==='online'
+            ? '<span class="tag tag-online">已上架</span>'
+            : '<span class="tag tag-offline">已下架</span>';
+        const sel=selectedPkgs.has(p.id);
+        const upBtn=p.status==='offline'
+            ? `<button class="btn btn-success btn-xs" onclick="event.stopPropagation();togglePkgStatus('${p.id}','online')"><i class="fas fa-arrow-up"></i> 上架</button>`
+            : `<button class="btn btn-warning-o btn-xs" onclick="event.stopPropagation();confirmOffline('${p.id}')"><i class="fas fa-arrow-down"></i> 下架</button>`;
+        return `<div class="pkg-card">
+            <input type="checkbox" class="checkbox pkg-card-sel" ${sel?'checked':''} onchange="toggleSel('${p.id}',this)" onclick="event.stopPropagation()" style="position:absolute;top:8px;left:8px;">
+            <div class="pkg-thumb" onclick="enterPkg('${p.id}')" style="width:60px;height:60px;">${cells}</div>
+            <div class="pkg-card-info" style="padding-left:4px;">
+                <div class="pkg-card-name">${p.name}</div>
+                <div class="pkg-card-meta">
+                    <span class="tag tag-${p.type}" style="font-size:10px;">${TYPE_LABEL[p.type]||'其他'}</span>
+                    ${stag}
+                    <span style="font-size:11px;color:var(--text-sub);">${p.count} 个图标</span>
+                </div>
+                <div class="pkg-card-ops">
+                    <button class="btn btn-primary btn-xs" onclick="enterPkg('${p.id}')"><i class="fas fa-folder-open"></i> 管理图标</button>
+                    <div style="display:flex;gap:5px;">
+                        <button class="btn btn-default btn-xs" onclick="openPkgDialog('${p.id}')"><i class="fas fa-edit"></i> 编辑</button>
+                        ${upBtn}
+                        <button class="btn btn-danger btn-xs" onclick="confirmDeletePkg('${p.id}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+    return `<div class="pkg-grid">${cards}</div>`;
+}
+
+function renderPager(total,pages){
+    const pn=document.getElementById('pkg-pager-nums'); if(!pn) return;
+    let h='';
+    h+=`<span class="pn${pkgPage===1?' disabled':''}" onclick="pkgGoPage(${pkgPage-1})"><i class="fas fa-chevron-left" style="font-size:10px;"></i></span>`;
+    for(let i=1;i<=pages;i++) h+=`<span class="pn${i===pkgPage?' active':''}" onclick="pkgGoPage(${i})">${i}</span>`;
+    h+=`<span class="pn${pkgPage===pages?' disabled':''}" onclick="pkgGoPage(${pkgPage+1})"><i class="fas fa-chevron-right" style="font-size:10px;"></i></span>`;
+    pn.innerHTML=h;
+}
+function pkgGoPage(p){ const pages=Math.max(1,Math.ceil(getPkgFiltered().length/PKG_PAGE)); if(p<1||p>pages) return; pkgPage=p; renderPkgContent(); }
+
+/* ── 包详情页（图标管理） ───────────────────── */
+function enterPkg(id){ drillPkgId=id; selectedPkgs.clear(); renderPage(); }
+function exitPkg(){ drillPkgId=null; renderPage(); }
+
+let iconDetailQ='';
+function renderDetailPage(root){
+    const p=pkgs.find(x=>x.id===drillPkgId); if(!p) return;
+
+    // 工具栏
+    const toolbar=document.createElement('div');
+    toolbar.className='toolbar-row';
+    toolbar.innerHTML=`
+        <div class="path-nav">
+            <span class="pseg" onclick="exitPkg()"><i class="fas fa-home" style="font-size:12px;"></i> 图标包管理</span>
+            <span class="psep"><i class="fas fa-chevron-right"></i></span>
+            <span class="pseg cur">${p.name}</span>
+        </div>
+        <button class="btn btn-default btn-sm" onclick="exitPkg()"><i class="fas fa-arrow-left"></i> 返回列表</button>
+        <button class="btn btn-primary btn-sm" onclick="openUploadToPkg('${p.id}')"><i class="fas fa-plus"></i> 添加图标</button>`;
+    root.appendChild(toolbar);
+
+    // 内容卡片
+    const card=document.createElement('div');
+    card.className='card';
+    const stag=p.status==='online'
+        ? '<span class="tag tag-online">已上架</span>'
+        : '<span class="tag tag-offline">已下架</span>';
+    card.innerHTML=`<div class="card-body">
+        <div class="stats-row">
+            <span><b>${p.name}</b></span>
+            <span>控件类型：<b>${TYPE_LABEL[p.type]||'其他'}</b></span>
+            <span>图标数量：<b>${p.count}</b></span>
+            <span>状态：${stag}</span>
+            <span>创建人：<b>${p.uploader}</b></span>
+        </div>
+        <div class="filter-row" style="margin-bottom:12px;">
+            <div class="fi"><label>搜索图标</label>
+                <input type="text" id="detail-q" placeholder="图标名称" value="${iconDetailQ}" oninput="iconDetailQ=this.value;renderDetailGrid()">
+            </div>
+            <div class="ml-auto">
+                <button class="btn btn-default btn-sm" onclick="openUploadToPkg('${p.id}')"><i class="fas fa-upload"></i> 批量上传</button>
+            </div>
+        </div>
+        <div id="detail-icon-grid"></div>
+        <div class="empty" id="detail-empty" style="display:none;padding:32px 0;"><i class="fas fa-image"></i><p>该图标包暂无图标</p></div>
+    </div>`;
+    root.appendChild(card);
+
+    renderDetailGrid();
+}
+
+function renderDetailGrid(){
+    const p=pkgs.find(x=>x.id===drillPkgId); if(!p) return;
+    const q=iconDetailQ.toLowerCase();
+    const list=q ? p.icons.filter(ic=>ic.name.toLowerCase().includes(q)) : p.icons;
+    const grid=document.getElementById('detail-icon-grid');
+    const empty=document.getElementById('detail-empty');
+    if(!grid) return;
+    if(!list.length){ grid.innerHTML=''; empty.style.display=''; return; }
+    empty.style.display='none';
+    grid.innerHTML=`<div class="icon-grid">${list.map(ic=>`
+        <div class="icon-cell" onclick="previewIcon('${ic.id}','${ic.pkgId}')">
+            <div class="icon-cell-del" onclick="event.stopPropagation();deleteIcon('${ic.id}','${ic.pkgId}')">×</div>
+            <img src="${ic.dataUrl}" alt="${ic.name}">
+            <div class="icon-cell-name">${ic.name}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function deleteIcon(icId,pkgId){
+    if(!confirm('确定删除该图标？')) return;
+    const p=pkgs.find(x=>x.id===pkgId); if(!p) return;
+    p.icons=p.icons.filter(ic=>ic.id!==icId);
+    p.count=p.icons.length;
+    toast('图标已删除');
+    renderDetailGrid();
+    // 同步更新详情页stats
+    const statsRow=document.querySelector('.stats-row');
+    if(statsRow){
+        const spans=statsRow.querySelectorAll('span');
+        if(spans[2]) spans[2].innerHTML=`图标数量：<b>${p.count}</b>`;
+    }
+}
+
+function previewIcon(icId,pkgId){
+    const p=pkgs.find(x=>x.id===pkgId); if(!p) return;
+    const ic=p.icons.find(x=>x.id===icId); if(!ic) return;
+    document.getElementById('prev-img').src=ic.dataUrl;
+    document.getElementById('pm-name').textContent=ic.name;
+    document.getElementById('pm-fmt').textContent=ic.format;
+    document.getElementById('pm-size').textContent=ic.size;
+    document.getElementById('pm-path').textContent=p.name+'/'+ic.name+'.'+ic.format.toLowerCase();
+    document.getElementById('pm-time').textContent=ic.uploadTime;
+    document.getElementById('pm-uploader').textContent=ic.uploader;
+    openModal('modal-preview');
+}
+
+/* ── 视图切换 ────────────────────────────── */
+function toggleViewMode(){
+    viewMode=viewMode==='table'?'cards':'table';
+    selectedPkgs.clear();
+    renderPage();
+}
+
+/* ── 批量操作 ────────────────────────────── */
+function toggleSel(id,el){
+    if(el.checked) selectedPkgs.add(id); else selectedPkgs.delete(id);
+    updateBatchBar();
+}
+function toggleAllSel(el,ids){
+    ids.forEach(id=>{ if(el.checked) selectedPkgs.add(id); else selectedPkgs.delete(id); });
+    updateBatchBar();
+    renderPkgContent();
+}
+function clearSel(){ selectedPkgs.clear(); renderPage(); }
+function updateBatchBar(){
+    const bar=document.getElementById('batch-bar'); if(!bar) return;
+    bar.classList.toggle('show',selectedPkgs.size>0);
+    const bn=document.getElementById('batch-n'); if(bn) bn.textContent=selectedPkgs.size;
+}
+function batchOnline(){
+    if(!selectedPkgs.size) return;
+    selectedPkgs.forEach(id=>{ const p=pkgs.find(x=>x.id===id); if(p) p.status='online'; });
+    toast(`已上架 ${selectedPkgs.size} 个图标包`);
+    selectedPkgs.clear(); renderPage();
+}
+function batchOffline(){
+    if(!selectedPkgs.size) return;
+    if(!confirm(`确定批量下架已选 ${selectedPkgs.size} 个图标包？`)) return;
+    selectedPkgs.forEach(id=>{ const p=pkgs.find(x=>x.id===id); if(p) p.status='offline'; });
+    toast(`已下架 ${selectedPkgs.size} 个图标包`);
+    selectedPkgs.clear(); renderPage();
+}
+function batchDelete(){
+    if(!selectedPkgs.size) return;
+    const onlineIds=[...selectedPkgs].filter(id=>{ const p=pkgs.find(x=>x.id===id); return p&&p.status==='online'; });
+    if(onlineIds.length){ toast(`批量删除失败：有 ${onlineIds.length} 个包仍为上架状态，请先下架`,'err'); return; }
+    if(!confirm(`确定批量删除已选 ${selectedPkgs.size} 个图标包？此操作不可恢复。`)) return;
+    pkgs=pkgs.filter(p=>!selectedPkgs.has(p.id));
+    toast(`已删除 ${selectedPkgs.size} 个图标包`);
+    selectedPkgs.clear(); renderPage();
+}
+
+/* ── 搜索/重置 ──────────────────────────── */
+function doSearch(){
+    activeFilter.q     =(document.getElementById('pkg-q')?.value||'').toLowerCase();
+    activeFilter.type  =document.getElementById('pkg-type')?.value||'';
+    activeFilter.status=document.getElementById('pkg-status')?.value||'';
+    pkgPage=1; selectedPkgs.clear();
+    renderPkgContent();
+    toast('查询成功');
+}
+function resetPkgFilter(){
+    document.getElementById('pkg-q').value='';
+    document.getElementById('pkg-type').value='';
+    document.getElementById('pkg-status').value='';
+    activeFilter={q:'',type:'',status:''};
+    pkgPage=1; selectedPkgs.clear();
+    renderPkgContent();
+}
+
+/* ── 新建/编辑弹窗 ──────────────────────── */
+function onSourceTypeChange(){
+    document.getElementById('pkg-cover-row').style.display=
+        document.getElementById('src-folder').checked?'':'none';
+}
+function openPkgDialog(id){
+    editingPkgId=id||null; coverDataUrl=null;
+    document.getElementById('pkg-dlg-title').textContent=id?'编辑图标包':'新建图标包';
+    document.getElementById('pkg-f-name').value='';
+    document.getElementById('pkg-f-type').value='';
+    document.getElementById('pkg-f-desc').value='';
+    document.getElementById('pkg-cover-img').style.display='none';
+    document.getElementById('pkg-cover-icon').style.display='';
+    document.getElementById('src-file').checked=true;
+    document.getElementById('pkg-cover-row').style.display='none';
+    if(id){
+        const p=pkgs.find(x=>x.id===id); if(!p) return;
+        document.getElementById('pkg-f-name').value=p.name;
+        document.getElementById('pkg-f-type').value=p.type;
+        document.getElementById('pkg-f-desc').value=p.desc||'';
+        const isF=p.sourceType==='folder';
+        document.getElementById(isF?'src-folder':'src-file').checked=true;
+        document.getElementById('pkg-cover-row').style.display=isF?'':'none';
+        if(isF&&p.coverDataUrl){
+            document.getElementById('pkg-cover-img').src=p.coverDataUrl;
+            document.getElementById('pkg-cover-img').style.display='';
+            document.getElementById('pkg-cover-icon').style.display='none';
+            coverDataUrl=p.coverDataUrl;
+        }
+    }
+    openModal('modal-pkg');
+}
+function onCoverPick(e){
+    const file=e.target.files[0]; if(!file) return;
+    const r=new FileReader();
+    r.onload=ev=>{
+        coverDataUrl=ev.target.result;
+        document.getElementById('pkg-cover-img').src=coverDataUrl;
+        document.getElementById('pkg-cover-img').style.display='';
+        document.getElementById('pkg-cover-icon').style.display='none';
+    };
+    r.readAsDataURL(file); e.target.value='';
+}
+function savePkg(){
+    const name=document.getElementById('pkg-f-name').value.trim();
+    const type=document.getElementById('pkg-f-type').value;
+    const desc=document.getElementById('pkg-f-desc').value.trim();
+    const sourceType=document.getElementById('src-folder').checked?'folder':'file';
+    if(!name){ toast('图标包名称不能为空','err'); return; }
+    if(!type){ toast('请选择控件类型','err'); return; }
+    const dup=pkgs.find(p=>p.name===name&&p.id!==editingPkgId);
+    if(dup){ toast('已存在同名图标包','err'); return; }
+    if(editingPkgId){
+        const p=pkgs.find(x=>x.id===editingPkgId);
+        if(p){ p.name=name; p.type=type; p.desc=desc; p.sourceType=sourceType;
+               if(sourceType==='folder'&&coverDataUrl) p.coverDataUrl=coverDataUrl; }
+        toast('图标包信息已更新');
+    } else {
+        const color=MC[pkgs.length%MC.length];
+        const char=ICON_CHARS[type]||'◇';
+        pkgs.unshift({
+            id:'PKG_'+String(pkgIdSeq++).padStart(4,'0'),
+            name,type,sourceType,status:'offline',count:0,desc,
+            uploader:'运营管理员',createTime:now(),icons:[],
+            coverDataUrl:(sourceType==='folder'&&coverDataUrl)?coverDataUrl:mockSvgIcon(color,char)
+        });
+        toast('图标包已创建（默认下架）');
+    }
+    closeModal('modal-pkg'); renderPkgContent();
+}
+
+/* ── 上下架 ────────────────────────────── */
+function togglePkgStatus(id,status){
+    const p=pkgs.find(x=>x.id===id); if(!p) return;
+    p.status=status; toast(status==='online'?'图标包已上架':'图标包已下架');
+    renderPkgContent();
+}
+function confirmOffline(id){
+    const p=pkgs.find(x=>x.id===id); if(!p) return;
+    if(confirm(`确定要下架「${p.name}」吗？`)) togglePkgStatus(id,'offline');
+}
+
+/* ── 删除 ──────────────────────────────── */
+function confirmDeletePkg(id){
+    const p=pkgs.find(x=>x.id===id); if(!p) return;
+    if(p.status==='online'){ toast('请先下架再删除','err'); return; }
+    if(confirm(`确定删除「${p.name}」？不可恢复。`)){
+        pkgs=pkgs.filter(x=>x.id!==id); toast('图标包已删除'); renderPage();
+    }
+}
+
+/* ── 上传图标到包 ──────────────────────── */
+function openUploadToPkg(id){
+    uploadTargetPkgId=id||drillPkgId;
+    const p=pkgs.find(x=>x.id===uploadTargetPkgId); if(!p) return;
+    document.getElementById('upload-pkg-name').textContent=p.name;
+    document.getElementById('modal-progress').innerHTML='';
+    openModal('modal-upload');
+}
+function dzOver(e){ e.preventDefault(); document.getElementById('drop-zone').classList.add('over'); }
+function dzLeave(){ document.getElementById('drop-zone').classList.remove('over'); }
+function dzDrop(e){
+    e.preventDefault(); document.getElementById('drop-zone').classList.remove('over');
+    const files=[...e.dataTransfer.files].filter(f=>f.type.startsWith('image/'));
+    if(!files.length){ toast('未发现图片文件','warn'); return; }
+    simulateUpload(files);
+}
+function onPickFiles(e){ const files=[...e.target.files].filter(f=>f.type.startsWith('image/')); simulateUpload(files); e.target.value=''; }
+
+let iconIdSeq=10000;
+function simulateUpload(files){
+    const p=pkgs.find(x=>x.id===uploadTargetPkgId); if(!p) return;
+    const prog=document.getElementById('modal-progress'); prog.innerHTML='';
+    const color=MC[pkgs.indexOf(p)%MC.length];
+    const char=ICON_CHARS[p.type]||'◇';
+    files.forEach((f,i)=>{
+        const rid='up'+Date.now()+i;
+        prog.innerHTML+=`<div class="up-row" id="${rid}">
+            <span class="up-row-name">${f.name}</span>
+            <div class="up-row-bar"><div class="up-row-fill" id="${rid}f" style="width:0%"></div></div>
+            <span class="up-row-state" id="${rid}s">等待中</span></div>`;
+        setTimeout(()=>{
+            const fill=document.getElementById(rid+'f');
+            const state=document.getElementById(rid+'s');
+            if(fill) fill.style.width='100%';
+            if(state){ state.textContent='完成'; state.className='up-row-state done'; }
+            const nm=f.name.replace(/\.[^.]+$/,'');
+            const ext=(f.name.split('.').pop()||'PNG').toUpperCase();
+            const newIc={
+                id:'IC_'+String(iconIdSeq++).padStart(5,'0'),
+                pkgId:p.id, name:nm, format:ext,
+                size:(f.size/1024).toFixed(1)+' KB',
+                uploadTime:now(), uploader:'运营管理员',
+                dataUrl:mockSvgIcon(color,char)
+            };
+            p.icons.unshift(newIc); p.count=p.icons.length;
+            if(i===files.length-1){ setTimeout(()=>{ toast('上传完成，共'+files.length+'个图标'); if(drillPkgId) renderDetailGrid(); },300); }
+        }, i*300+200);
+    });
+}
+
+/* ══ C端预览 ══════════════════════════════════ */
+let cTab='official'; // 'official' | 'mine'
+let cView='folder';  // 'icon' | 'folder'
+
+function openCPreview(){
+    cTab='official'; cView='folder';
+    document.getElementById('ctab-official').className='c-tab active';
+    document.getElementById('ctab-mine').className='c-tab';
+    document.getElementById('cbtn-icon').className='c-view-btn';
+    document.getElementById('cbtn-folder').className='c-view-btn active';
+    renderCBody();
+    openModal('modal-c-preview');
+}
+function setCTab(t){
+    cTab=t;
+    document.getElementById('ctab-official').className='c-tab'+(t==='official'?' active':'');
+    document.getElementById('ctab-mine').className='c-tab'+(t==='mine'?' active':'');
+    renderCBody();
+}
+function setCView(v){
+    cView=v;
+    document.getElementById('cbtn-icon').className='c-view-btn'+(v==='icon'?' active':'');
+    document.getElementById('cbtn-folder').className='c-view-btn'+(v==='folder'?' active':'');
+    renderCBody();
+}
+
+function renderCBody(){
+    const body=document.getElementById('c-body');
+    const onlinePkgs=pkgs.filter(p=>p.status==='online');
+    // 官方/我的区分：Demo 中前5个视为官方，后面为我的
+    const officialPkgs=onlinePkgs.slice(0,5);
+    const minePkgs=onlinePkgs.slice(5);
+    const list=cTab==='official'?officialPkgs:minePkgs;
+
+    if(!list.length){ body.innerHTML=`<div class="c-empty">暂无${cTab==='official'?'官方':'我的'}图标包</div>`; return; }
+
+    if(cView==='folder'){
+        body.innerHTML=`<div class="c-pkg-grid">${list.map(p=>{
+            const cells=Array.from({length:4},(_,i)=>p.icons[i]
+                ? `<div class="c-pkg-thumb-cell"><img src="${p.icons[i].dataUrl}" alt=""></div>`
+                : `<div class="c-pkg-thumb-cell"></div>`).join('');
+            return `<div class="c-pkg-card">
+                <div class="c-pkg-thumb">${cells}</div>
+                <div><div class="c-pkg-name">${p.name}</div><div class="c-pkg-count">${p.count} 个图标</div></div>
+            </div>`;
+        }).join('')}</div>`;
+    } else {
+        // 图标视图：按控件类型分组
+        const groups={};
+        list.forEach(p=>{ if(!groups[p.type]) groups[p.type]=[]; groups[p.type].push(...p.icons); });
+        body.innerHTML=Object.keys(groups).map(type=>{
+            const icons=groups[type];
+            const rows=icons.map(ic=>`<div class="c-icon-cell">
+                <img src="${ic.dataUrl}" alt="${ic.name}">
+                <span>${ic.name}</span>
+            </div>`).join('');
+            return `<div class="c-group">
+                <div class="c-group-label">${TYPE_LABEL[type]||type}</div>
+                <div class="c-icon-row">${rows}</div>
+            </div>`;
+        }).join('');
+    }
+}
+
+/* ── 初始化 ──────────────────────────────── */
+window.onload=function(){ renderPage(); };
+</script>
+</body>
+</html>
