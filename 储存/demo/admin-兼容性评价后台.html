@@ -2072,6 +2072,10 @@
                         <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="margin-right:8px;flex-shrink:0;"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                         身份管理
                     </li>
+                    <li class="submenu-item" data-target="page-tag-config" style="padding-left:20px;">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="margin-right:8px;flex-shrink:0;"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg>
+                        问题标签管理
+                    </li>
                 </ul>
             </div>
         </div>
@@ -3241,6 +3245,51 @@
                         <tbody id="identity-detail-tbody"></tbody>
                     </table>
                     <div class="empty-hint" id="identity-detail-empty" style="display:none;">当前标签暂无关联用户</div>
+                </div>
+            </div>
+
+            <!-- TAG CONFIG -->
+            <div class="page-section" id="page-tag-config">
+                <div class="db-header">
+                    <div>
+                        <div class="page-desc">问题标签管理</div>
+                        <div class="page-subdesc">配置兼容性评价的问题标签，标签采用中性描述，运营可自由新增、编辑、排序与下架。</div>
+                    </div>
+                    <button class="filter-btn" onclick="window.openTagModal()">+ 新增标签</button>
+                </div>
+                <div class="dash-panel">
+                    <div class="filter-bar">
+                        <div class="filter-item">
+                            <span class="filter-label">标签名称:</span>
+                            <input id="tag-q-name" type="text" class="filter-input" placeholder="输入名称搜索" style="width:160px;">
+                        </div>
+                        <div class="filter-item">
+                            <span class="filter-label">状态:</span>
+                            <select id="tag-q-status" class="filter-select">
+                                <option value="all">全部</option>
+                                <option value="1">正常</option>
+                                <option value="0">已下架</option>
+                            </select>
+                        </div>
+                        <div style="flex:1"></div>
+                        <button class="filter-btn" onclick="window.renderTags()">查询</button>
+                        <button class="filter-btn reset" onclick="document.getElementById('tag-q-name').value='';document.getElementById('tag-q-status').value='all';window.renderTags()">重置</button>
+                    </div>
+                    <table class="data-table" id="tag-table">
+                        <thead>
+                            <tr>
+                                <th>排序</th>
+                                <th>标签名称</th>
+                                <th>标签预览</th>
+                                <th>使用次数</th>
+                                <th>创建时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tag-table-body"></tbody>
+                    </table>
+                    <div class="empty-hint" id="tag-empty" style="display:none;">暂无标签数据</div>
                 </div>
             </div>
 
@@ -7815,6 +7864,168 @@
         window.openAdminSection = function(id) {
             origOpen2 && origOpen2(id);
             if (id === 'page-identity') window.renderIdentities();
+        };
+    })();
+
+    // ===================== 问题标签管理 =====================
+    let mockTags = [
+        { id: 1, name: '完美兼容', status: 'active', usageCount: 128, createTime: '2026-05-01 10:00', sortOrder: 1, textColor: '#1a7f37', bgColor: '#d1f0db' },
+        { id: 2, name: '基本可玩', status: 'active', usageCount: 95,  createTime: '2026-05-01 10:01', sortOrder: 2, textColor: '#0070cc', bgColor: '#ddeeff' },
+        { id: 3, name: '操作流畅', status: 'active', usageCount: 74,  createTime: '2026-05-02 09:00', sortOrder: 3, textColor: '#6b40c4', bgColor: '#ede8fb' },
+        { id: 4, name: '偶尔卡顿', status: 'active', usageCount: 61,  createTime: '2026-05-02 09:05', sortOrder: 4, textColor: '#b45309', bgColor: '#fef3c7' },
+        { id: 5, name: '有部分问题', status: 'active', usageCount: 43, createTime: '2026-05-03 14:00', sortOrder: 5, textColor: '#c05621', bgColor: '#feece0' },
+        { id: 6, name: '不可玩',   status: 'offline', usageCount: 22,  createTime: '2026-05-03 14:10', sortOrder: 6, textColor: '#9b1c1c', bgColor: '#fde8e8' },
+        { id: 7, name: '画面异常', status: 'offline', usageCount: 11,  createTime: '2026-05-04 11:00', sortOrder: 7, textColor: '#5c5c5c', bgColor: '#eeeeee' },
+    ];
+
+    window.renderTags = function() {
+        const tbody = document.getElementById('tag-table-body');
+        if (!tbody) return;
+        const sorted = [...mockTags].sort((a, b) => a.sortOrder - b.sortOrder);
+        if (sorted.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;padding:32px;">暂无标签</td></tr>';
+            return;
+        }
+        tbody.innerHTML = sorted.map((tag, idx) => {
+            const isFirst = idx === 0, isLast = idx === sorted.length - 1;
+            const statusBadge = tag.status === 'active'
+                ? '<span style="color:#52c41a;background:#f6ffed;border:1px solid #b7eb8f;padding:1px 8px;border-radius:4px;font-size:12px;">正常</span>'
+                : '<span style="color:#999;background:#fafafa;border:1px solid #d9d9d9;padding:1px 8px;border-radius:4px;font-size:12px;">已下架</span>';
+            const preview = `<span style="color:${escapeHtml(tag.textColor)};background:${escapeHtml(tag.bgColor)};padding:2px 10px;border-radius:4px;font-size:13px;">${escapeHtml(tag.name)}</span>`;
+            return `<tr>
+                <td style="text-align:center;">
+                    <button onclick="window.moveTag(${tag.id},'up')" ${isFirst ? 'disabled' : ''} style="background:none;border:none;cursor:${isFirst?'not-allowed':'pointer'};color:${isFirst?'#ccc':'#1677ff'};font-size:16px;" title="上移">↑</button>
+                    <button onclick="window.moveTag(${tag.id},'down')" ${isLast ? 'disabled' : ''} style="background:none;border:none;cursor:${isLast?'not-allowed':'pointer'};color:${isLast?'#ccc':'#1677ff'};font-size:16px;" title="下移">↓</button>
+                </td>
+                <td>${escapeHtml(tag.name)}</td>
+                <td>${preview}</td>
+                <td style="text-align:center;">${tag.usageCount}</td>
+                <td>${tag.createTime}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    <a href="#" onclick="window.openTagModal(${tag.id});return false;" style="color:#1677ff;margin-right:8px;">编辑</a>
+                    <a href="#" onclick="window.toggleTagStatus(${tag.id});return false;" style="color:#1677ff;margin-right:8px;">${tag.status === 'active' ? '下架' : '上架'}</a>
+                    <a href="#" onclick="window.deleteTag(${tag.id},'${escapeHtml(tag.name)}');return false;" style="color:#ff4d4f;">删除</a>
+                </td>
+            </tr>`;
+        }).join('');
+
+        // 绑定新增按钮（防重复绑定）
+        const addBtn = document.getElementById('btn-add-tag');
+        if (addBtn && !addBtn._bound) {
+            addBtn._bound = true;
+            addBtn.addEventListener('click', () => window.openTagModal(null));
+        }
+    };
+
+    window.moveTag = function(id, dir) {
+        const sorted = [...mockTags].sort((a, b) => a.sortOrder - b.sortOrder);
+        const idx = sorted.findIndex(t => t.id === id);
+        if (idx === -1) return;
+        const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
+        if (swapIdx < 0 || swapIdx >= sorted.length) return;
+        const tmp = sorted[idx].sortOrder;
+        sorted[idx].sortOrder = sorted[swapIdx].sortOrder;
+        sorted[swapIdx].sortOrder = tmp;
+        window.renderTags();
+    };
+
+    window.toggleTagStatus = function(id) {
+        const tag = mockTags.find(t => t.id === id);
+        if (!tag) return;
+        tag.status = tag.status === 'active' ? 'offline' : 'active';
+        window.renderTags();
+    };
+
+    window.deleteTag = function(id, name) {
+        showAdminModal('删除确认',
+            `<p>确定要删除标签「<b>${escapeHtml(name)}</b>」吗？此操作不可恢复。</p>`,
+            function() {
+                mockTags = mockTags.filter(t => t.id !== id);
+                window.renderTags();
+            }
+        );
+    };
+
+    window.openTagModal = function(id) {
+        const tag = id ? mockTags.find(t => t.id === id) : null;
+        const isNew = !tag;
+        const title = isNew ? '新增标签' : '编辑标签';
+        const bodyHtml = `
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <label style="width:80px;text-align:right;flex-shrink:0;">标签名称<span style="color:red;">*</span></label>
+                    <input id="modal-tag-name" value="${escapeHtml(tag ? tag.name : '')}" placeholder="请输入标签名称" style="flex:1;padding:6px 10px;border:1px solid #d9d9d9;border-radius:4px;" maxlength="20" />
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <label style="width:80px;text-align:right;flex-shrink:0;">状态</label>
+                    <select id="modal-tag-status" style="flex:1;padding:6px 10px;border:1px solid #d9d9d9;border-radius:4px;">
+                        <option value="active" ${(!tag || tag.status === 'active') ? 'selected' : ''}>正常</option>
+                        <option value="offline" ${tag && tag.status === 'offline' ? 'selected' : ''}>已下架</option>
+                    </select>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <label style="width:80px;text-align:right;flex-shrink:0;">文字颜色</label>
+                    <input id="modal-tag-text-color" type="color" value="${tag ? tag.textColor : '#1a7f37'}" style="width:48px;height:32px;border:none;cursor:pointer;" />
+                    <span id="modal-tag-text-color-val" style="font-size:12px;color:#666;">${tag ? tag.textColor : '#1a7f37'}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <label style="width:80px;text-align:right;flex-shrink:0;">背景颜色</label>
+                    <input id="modal-tag-bg-color" type="color" value="${tag ? tag.bgColor : '#d1f0db'}" style="width:48px;height:32px;border:none;cursor:pointer;" />
+                    <span id="modal-tag-bg-color-val" style="font-size:12px;color:#666;">${tag ? tag.bgColor : '#d1f0db'}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <label style="width:80px;text-align:right;flex-shrink:0;">标签预览</label>
+                    <span id="modal-tag-preview" style="color:${tag ? tag.textColor : '#1a7f37'};background:${tag ? tag.bgColor : '#d1f0db'};padding:3px 12px;border-radius:4px;font-size:13px;">${escapeHtml(tag ? tag.name : '预览')}</span>
+                </div>
+            </div>`;
+        showAdminModal(title, bodyHtml, function() {
+            const nameEl = document.getElementById('modal-tag-name');
+            const name = nameEl ? nameEl.value.trim() : '';
+            if (!name) { alert('标签名称不可为空'); return false; }
+            const status = document.getElementById('modal-tag-status').value;
+            const textColor = document.getElementById('modal-tag-text-color').value;
+            const bgColor = document.getElementById('modal-tag-bg-color').value;
+            if (isNew) {
+                const maxOrder = mockTags.length > 0 ? Math.max(...mockTags.map(t => t.sortOrder)) : 0;
+                mockTags.push({
+                    id: Date.now(), name, status, usageCount: 0,
+                    createTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-').replace(',', ''),
+                    sortOrder: maxOrder + 1, textColor, bgColor
+                });
+            } else {
+                Object.assign(tag, { name, status, textColor, bgColor });
+            }
+            window.renderTags();
+        });
+        // 实时预览
+        setTimeout(() => {
+            const nameInput = document.getElementById('modal-tag-name');
+            const textColorInput = document.getElementById('modal-tag-text-color');
+            const bgColorInput = document.getElementById('modal-tag-bg-color');
+            const preview = document.getElementById('modal-tag-preview');
+            const textColorVal = document.getElementById('modal-tag-text-color-val');
+            const bgColorVal = document.getElementById('modal-tag-bg-color-val');
+            function updatePreview() {
+                if (!preview) return;
+                preview.textContent = nameInput.value.trim() || '预览';
+                preview.style.color = textColorInput.value;
+                preview.style.background = bgColorInput.value;
+                if (textColorVal) textColorVal.textContent = textColorInput.value;
+                if (bgColorVal) bgColorVal.textContent = bgColorInput.value;
+            }
+            if (nameInput) nameInput.addEventListener('input', updatePreview);
+            if (textColorInput) textColorInput.addEventListener('input', updatePreview);
+            if (bgColorInput) bgColorInput.addEventListener('input', updatePreview);
+        }, 50);
+    };
+
+    // 页面切换时渲染标签列表
+    (function() {
+        const origOpen3 = window.openAdminSection;
+        window.openAdminSection = function(id) {
+            origOpen3 && origOpen3(id);
+            if (id === 'page-tag-config') window.renderTags();
         };
     })();
 
