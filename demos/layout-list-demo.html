@@ -130,7 +130,8 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
 
 /* 图标管理器 */
 .icon-section-title{font-size:13px;font-weight:600;color:rgba(255,255,255,.5);padding:14px 16px 8px;letter-spacing:.5px}
-.pkg-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px}
+.pkg-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 16px}
+.phone-shell.landscape .pkg-grid{grid-template-columns:repeat(4,1fr)}
 .pkg-card{background:rgba(255,255,255,.055);border-radius:14px;overflow:hidden;cursor:pointer;transition:background .15s}
 .pkg-card:active{background:rgba(255,255,255,.1)}
 .pkg-thumb{width:100%;aspect-ratio:1;background:#0a1520;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:10px}
@@ -191,6 +192,7 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
 <body>
 <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
 <button onclick="toggleOrientation()" style="background:rgba(255,255,255,.12);color:#fff;border:none;border-radius:20px;padding:7px 22px;font-size:14px;cursor:pointer;letter-spacing:.5px;">⇄ 横竖屏</button>
+<button onclick="openIconPicker()" style="background:rgba(0,200,150,.18);color:#00c896;border:1px solid rgba(0,200,150,.4);border-radius:20px;padding:7px 22px;font-size:14px;cursor:pointer;letter-spacing:.5px;">编辑预览</button>
 <div class="phone-shell">
 
   <!-- =========== 主页 =========== -->
@@ -410,16 +412,28 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
       </div>
     </div>
-    <div class="icon-sub-tabs">
-      <div class="icon-sub-tab active" onclick="switchIconTab('official',this)">官方</div>
-      <div class="icon-sub-tab" onclick="switchIconTab('mine',this)">我的</div>
+    <div style="display:flex;align-items:center;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0">
+      <div class="icon-sub-tabs" style="padding:0;border:none;flex:1">
+        <div class="icon-sub-tab active" onclick="switchIconTab('official',this)">官方</div>
+        <div class="icon-sub-tab" onclick="switchIconTab('mine',this)">我的</div>
+      </div>
+      <div id="view-toggle-btn" onclick="toggleCurrentView()" style="display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:14px;background:rgba(255,255,255,.07);cursor:pointer;flex-shrink:0">
+        <svg id="view-toggle-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span id="view-toggle-label" style="font-size:12px;color:rgba(255,255,255,.55)">图标视图</span>
+      </div>
     </div>
-    <div class="icon-tab-content active" id="icon-tab-official">
-      <div class="pkg-grid" id="official-pkg-grid" style="padding-top:12px"></div>
+    <div class="icon-tab-content active" id="icon-tab-official" style="flex:1;overflow-y:auto;scrollbar-width:none">
+      <div id="official-icon-view" style="padding:4px 0 24px"></div>
+      <div id="official-folder-view" style="display:none">
+        <div id="official-pkg-grid" style="padding-bottom:24px"></div>
+      </div>
     </div>
-    <div class="icon-tab-content" id="icon-tab-mine">
+    <div class="icon-tab-content" id="icon-tab-mine" style="flex:1;overflow-y:auto;scrollbar-width:none">
       <input type="file" id="icon-file-input" webkitdirectory multiple style="display:none" onchange="importIconsToMy(event)">
-      <div class="pkg-grid" id="my-pkg-grid" style="padding-top:12px"></div>
+      <div id="mine-icon-view" style="padding:4px 0 24px"></div>
+      <div id="mine-folder-view" style="display:none">
+        <div class="pkg-grid" id="my-pkg-grid" style="padding-top:12px"></div>
+      </div>
     </div>
   </div>
 
@@ -499,6 +513,63 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
   <input type="file" id="cover-file-input" accept="image/*" style="display:none" onchange="applyCoverImage(event)">
 
 </div><!-- /phone-shell -->
+
+<!-- =========== 编辑预览手机壳（横屏） =========== -->
+<div class="phone-shell landscape" id="picker-shell" style="display:none;position:relative">
+  <!-- 左侧：编辑器背景 -->
+  <div style="position:absolute;inset:0;background:#111;display:flex;align-items:center;justify-content:center">
+    <div style="color:rgba(255,255,255,.12);font-size:13px;letter-spacing:1px">编辑器画布</div>
+    <!-- 模拟几个按键 -->
+    <div style="position:absolute;left:40px;top:50px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:12px">A</div>
+    <div style="position:absolute;left:100px;top:80px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:12px">B</div>
+    <div style="position:absolute;left:60px;top:130px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)"></div>
+    <div style="position:absolute;left:200px;top:60px;width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:11px">LB</div>
+  </div>
+  <!-- 右侧：选择图标面板 -->
+  <div style="position:absolute;right:0;top:0;bottom:0;width:320px;background:#1c1c1e;border-left:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;border-radius:0 40px 40px 0">
+    <!-- 顶部栏 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 16px 8px;flex-shrink:0">
+      <div style="font-size:16px;font-weight:600;color:#fff">选择图标</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div onclick="togglePickerView()" style="display:flex;align-items:center;gap:4px;padding:5px 10px;border-radius:12px;background:rgba(255,255,255,.08);cursor:pointer">
+          <svg id="picker-view-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span id="picker-view-label" style="font-size:11px;color:rgba(255,255,255,.55)">图标视图</span>
+        </div>
+        <div onclick="triggerPickerImport()" style="width:26px;height:26px;border-radius:50%;background:rgba(0,200,150,.15);display:flex;align-items:center;justify-content:center;cursor:pointer" title="导入图标">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+        <div onclick="closeIconPicker()" style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;cursor:pointer">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </div>
+      </div>
+    </div>
+    <input type="file" id="picker-file-input" webkitdirectory multiple style="display:none" onchange="importIconsToMy(event)">
+    <!-- 搜索框 -->
+    <div style="padding:0 12px 8px;flex-shrink:0">
+      <div style="background:rgba(255,255,255,.07);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:8px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="picker-search" placeholder="搜索..." oninput="filterPickerIcons(this.value)" style="background:none;border:none;outline:none;color:#fff;font-size:13px;flex:1;min-width:0">
+      </div>
+    </div>
+    <!-- 内容区 -->
+    <div style="flex:1;overflow-y:auto;scrollbar-width:none" id="picker-scroll">
+      <!-- 图标视图 -->
+      <div id="picker-icon-view">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px 4px">
+          <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.5px">适合按键的推荐图标</span>
+          <span id="picker-recommend-more" onclick="expandPickerRecommend()" style="font-size:11px;color:rgba(0,200,150,.8);cursor:pointer;display:none">查看全部</span>
+        </div>
+        <div id="picker-recommend" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:0 12px 12px"></div>
+        <div style="padding:4px 12px 4px;font-size:11px;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.5px">全部图标</div>
+        <div id="picker-all-icons" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:0 12px 24px"></div>
+      </div>
+      <!-- 文件夹视图 -->
+      <div id="picker-folder-view" style="display:none;padding:8px 12px 24px">
+        <div id="picker-folder-grid"></div>
+      </div>
+    </div>
+  </div>
+</div>
 </div><!-- /wrapper -->
 
 <script>
@@ -736,10 +807,13 @@ function switchCustomTab(tab, el) {
 }
 
 function switchIconTab(tab, el) {
+  currentIconTab = tab;
   document.querySelectorAll('#page-icon-mgr .icon-sub-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   document.querySelectorAll('#page-icon-mgr .icon-tab-content').forEach(c => c.classList.remove('active'));
   document.getElementById('icon-tab-' + tab).classList.add('active');
+  applyViewMode();
+  updateViewToggleBtn();
 }
 /* 详情弹层 */
 function openPopup(id) {
@@ -766,24 +840,26 @@ function toggleOrientation(){
 /* ===== 图标管理器 ===== */
 const ICON_PKGS = [
   {id:'official-press', name:'Press', icons:[
-    {name:'A',svg:'<circle cx="12" cy="12" r="9" fill="rgba(0,200,150,.15)" stroke="#00c896" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#00c896">A</text>'},
-    {name:'B',svg:'<circle cx="12" cy="12" r="9" fill="rgba(255,165,60,.15)" stroke="#ffa040" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffa040">B</text>'},
-    {name:'X',svg:'<circle cx="12" cy="12" r="9" fill="rgba(100,160,255,.15)" stroke="#64a0ff" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#64a0ff">X</text>'},
-    {name:'Y',svg:'<circle cx="12" cy="12" r="9" fill="rgba(255,80,120,.15)" stroke="#ff5078" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#ff5078">Y</text>'},
-    {name:'LB',svg:'<rect x="3" y="7" width="18" height="10" rx="5" fill="rgba(0,200,150,.12)" stroke="#00c896" stroke-width="1.5"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold" fill="#00c896">LB</text>'},
-    {name:'RB',svg:'<rect x="3" y="7" width="18" height="10" rx="5" fill="rgba(255,165,60,.12)" stroke="#ffa040" stroke-width="1.5"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold" fill="#ffa040">RB</text>'},
-    {name:'L3',svg:'<circle cx="12" cy="12" r="8" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.3)" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="rgba(255,255,255,.4)"/>'},
-    {name:'Menu',svg:'<rect x="4" y="9" width="16" height="2" rx="1" fill="rgba(255,255,255,.5)"/><rect x="4" y="13" width="12" height="2" rx="1" fill="rgba(255,255,255,.35)"/>'},
+    {name:'A',    type:'button',  svg:'<circle cx="12" cy="12" r="9" fill="rgba(0,200,150,.15)" stroke="#00c896" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#00c896">A</text>'},
+    {name:'B',    type:'button',  svg:'<circle cx="12" cy="12" r="9" fill="rgba(255,165,60,.15)" stroke="#ffa040" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffa040">B</text>'},
+    {name:'X',    type:'button',  svg:'<circle cx="12" cy="12" r="9" fill="rgba(100,160,255,.15)" stroke="#64a0ff" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#64a0ff">X</text>'},
+    {name:'Y',    type:'button',  svg:'<circle cx="12" cy="12" r="9" fill="rgba(255,80,120,.15)" stroke="#ff5078" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#ff5078">Y</text>'},
+    {name:'LB',   type:'combo',   svg:'<rect x="3" y="7" width="18" height="10" rx="5" fill="rgba(0,200,150,.12)" stroke="#00c896" stroke-width="1.5"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold" fill="#00c896">LB</text>'},
+    {name:'RB',   type:'combo',   svg:'<rect x="3" y="7" width="18" height="10" rx="5" fill="rgba(255,165,60,.12)" stroke="#ffa040" stroke-width="1.5"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold" fill="#ffa040">RB</text>'},
+    {name:'L3',   type:'joystick',svg:'<circle cx="12" cy="12" r="8" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.3)" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="rgba(255,255,255,.4)"/>'},
+    {name:'Menu', type:'button',  svg:'<rect x="4" y="9" width="16" height="2" rx="1" fill="rgba(255,255,255,.5)"/><rect x="4" y="13" width="12" height="2" rx="1" fill="rgba(255,255,255,.35)"/>'},
+    {name:'Touch',type:'touch',   svg:'<rect x="3" y="3" width="18" height="18" rx="4" fill="rgba(255,200,80,.1)" stroke="rgba(255,200,80,.5)" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="rgba(255,200,80,.6)"/>'},
+    {name:'Swipe',type:'touch',   svg:'<rect x="3" y="3" width="18" height="18" rx="4" fill="rgba(255,200,80,.1)" stroke="rgba(255,200,80,.5)" stroke-width="1.5"/><path d="M7 12h10M14 9l3 3-3 3" stroke="rgba(255,200,80,.7)" stroke-width="1.5" stroke-linecap="round"/>'},
   ]},
   {id:'official-default', name:'Default', icons:[
-    {name:'up',svg:'<path d="M12 5l7 9H5z" fill="rgba(255,255,255,.5)"/>'},
-    {name:'down',svg:'<path d="M12 19l7-9H5z" fill="rgba(255,255,255,.5)"/>'},
-    {name:'left',svg:'<path d="M5 12l9-7v14z" fill="rgba(255,255,255,.5)"/>'},
-    {name:'right',svg:'<path d="M19 12l-9 7V5z" fill="rgba(255,255,255,.5)"/>'},
-    {name:'circle',svg:'<circle cx="12" cy="12" r="8" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>'},
-    {name:'square',svg:'<rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>'},
-    {name:'cross',svg:'<path d="M5 12h14M12 5v14" stroke="rgba(255,255,255,.5)" stroke-width="2.5" stroke-linecap="round"/>'},
-    {name:'dot',svg:'<circle cx="12" cy="12" r="4" fill="rgba(255,255,255,.6)"/>'},
+    {name:'up',   type:'dpad',  svg:'<path d="M12 5l7 9H5z" fill="rgba(255,255,255,.5)"/>'},
+    {name:'down', type:'dpad',  svg:'<path d="M12 19l7-9H5z" fill="rgba(255,255,255,.5)"/>'},
+    {name:'left', type:'dpad',  svg:'<path d="M5 12l9-7v14z" fill="rgba(255,255,255,.5)"/>'},
+    {name:'right',type:'dpad',  svg:'<path d="M19 12l-9 7V5z" fill="rgba(255,255,255,.5)"/>'},
+    {name:'circle',type:'button',svg:'<circle cx="12" cy="12" r="8" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>'},
+    {name:'square',type:'button',svg:'<rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>'},
+    {name:'cross', type:'button',svg:'<path d="M5 12h14M12 5v14" stroke="rgba(255,255,255,.5)" stroke-width="2.5" stroke-linecap="round"/>'},
+    {name:'dot',   type:'button',svg:'<circle cx="12" cy="12" r="4" fill="rgba(255,255,255,.6)"/>'},
   ]},
 ];
 
@@ -817,11 +893,136 @@ function pkgCardHTML(pkg, isSubPkg) {
 }
 
 
+let currentIconTab = 'official';
+let viewMode = {official: 'icon', mine: 'icon'};
+
+const CTRL_GROUPS = [
+  {key:'button',   label:'按钮'},
+  {key:'joystick', label:'摇杆'},
+  {key:'touch',    label:'触控板'},
+  {key:'dpad',     label:'方向键'},
+  {key:'combo',    label:'组合键'},
+];
+
+// 给我的图标包补充示例数据
+const MY_DEMO_PKGS = [
+  {id:'my-demo-1', name:'像素风格包', icons:[
+    {name:'A',type:'button',svg:'<rect x="4" y="4" width="16" height="16" rx="2" fill="rgba(0,200,150,.2)" stroke="#00c896" stroke-width="1.5"/><text x="12" y="16" text-anchor="middle" font-size="9" font-weight="bold" fill="#00c896">A</text>'},
+    {name:'B',type:'button',svg:'<rect x="4" y="4" width="16" height="16" rx="2" fill="rgba(255,165,60,.2)" stroke="#ffa040" stroke-width="1.5"/><text x="12" y="16" text-anchor="middle" font-size="9" font-weight="bold" fill="#ffa040">B</text>'},
+    {name:'↑',type:'dpad',svg:'<polygon points="12,4 18,14 6,14" fill="rgba(255,255,255,.5)"/>'},
+    {name:'↓',type:'dpad',svg:'<polygon points="12,20 18,10 6,10" fill="rgba(255,255,255,.5)"/>'},
+  ]},
+  {id:'my-demo-2', name:'霓虹按键包', icons:[
+    {name:'X',type:'button',svg:'<circle cx="12" cy="12" r="8" fill="none" stroke="#64a0ff" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="#64a0ff" stroke-width="2"/>'},
+    {name:'Y',type:'button',svg:'<circle cx="12" cy="12" r="8" fill="none" stroke="#ff5078" stroke-width="2"/><path d="M12 4v8M8 16l4-4 4 4" stroke="#ff5078" stroke-width="2"/>'},
+    {name:'LT',type:'combo',svg:'<path d="M4 8h16v8a4 4 0 01-4 4H8a4 4 0 01-4-4V8z" fill="rgba(200,122,255,.2)" stroke="#c87aff" stroke-width="1.5"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold" fill="#c87aff">LT</text>'},
+  ]},
+  {id:'my-demo-3', name:'简约线条包', icons:[
+    {name:'circle',type:'button',svg:'<circle cx="12" cy="12" r="7" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2"/>'},
+    {name:'square',type:'button',svg:'<rect x="5" y="5" width="14" height="14" rx="2" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2"/>'},
+    {name:'joy',type:'joystick',svg:'<circle cx="12" cy="12" r="7" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="rgba(255,255,255,.5)"/>'},
+  ]},
+];
+
+function iconCellHTML(ic) {
+  const inner = ic.dataUrl
+    ? '<img src="' + ic.dataUrl + '" style="width:72%;height:72%;object-fit:contain">'
+    : svgIcon(ic.svg);
+  return '<div style="aspect-ratio:1;background:rgba(255,255,255,.06);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:4px">'
+    + '<div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center">' + inner + '</div>'
+    + '<div style="font-size:9px;color:rgba(255,255,255,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center">' + ic.name + '</div>'
+    + '</div>';
+}
+
+function renderIconViewByGroups(icons, containerId, grouped) {
+  const GRID = 'display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:0 16px';
+  let html = '';
+  if (grouped) {
+    CTRL_GROUPS.forEach(g => {
+      const group = icons.filter(ic => ic.type === g.key);
+      if (!group.length) return;
+      html += '<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.4);padding:14px 16px 8px;letter-spacing:.5px">' + g.label + '</div>';
+      html += '<div style="' + GRID + '">';
+      group.forEach(ic => { html += iconCellHTML(ic); });
+      html += '</div>';
+    });
+    const other = icons.filter(ic => !ic.type || !CTRL_GROUPS.find(g => g.key === ic.type));
+    if (other.length) {
+      html += '<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.4);padding:14px 16px 8px;letter-spacing:.5px">其他</div>';
+      html += '<div style="' + GRID + '">';
+      other.forEach(ic => { html += iconCellHTML(ic); });
+      html += '</div>';
+    }
+  } else {
+    html += '<div style="' + GRID + ';padding:12px 16px 24px">';
+    icons.forEach(ic => { html += iconCellHTML(ic); });
+    html += '</div>';
+  }
+  document.getElementById(containerId).innerHTML = html || '<div class="empty">暂无图标</div>';
+}
+
+function applyViewMode() {
+  if (currentIconTab === 'official') {
+    const iv = document.getElementById('official-icon-view');
+    const fv = document.getElementById('official-folder-view');
+    if (viewMode.official === 'icon') {
+      iv.style.display = ''; fv.style.display = 'none';
+      const allIcons = [];
+      ICON_PKGS.forEach(pkg => pkg.icons.forEach(ic => allIcons.push(ic)));
+      renderIconViewByGroups(allIcons, 'official-icon-view', true);
+    } else {
+      iv.style.display = 'none'; fv.style.display = '';
+      // 文件夹视图按控件分组
+      let folderHtml = '';
+      CTRL_GROUPS.forEach(g => {
+        const pkgs = ICON_PKGS.filter(pkg => pkg.icons.some(ic => ic.type === g.key));
+        if (!pkgs.length) return;
+        folderHtml += '<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.4);padding:14px 16px 8px;letter-spacing:.5px">' + g.label + '</div>';
+        folderHtml += '<div class="pkg-grid" style="padding-top:0">' + pkgs.map(p => pkgCardHTML(p)).join('') + '</div>';
+      });
+      document.getElementById('official-pkg-grid').innerHTML = folderHtml || ICON_PKGS.map(p => pkgCardHTML(p)).join('');
+    }
+  } else {
+    const iv = document.getElementById('mine-icon-view');
+    const fv = document.getElementById('mine-folder-view');
+    if (viewMode.mine === 'icon') {
+      iv.style.display = ''; fv.style.display = 'none';
+      const allIcons = [];
+      [...MY_DEMO_PKGS, myPkg, ...mySubPkgs].forEach(pkg => pkg.icons.forEach(ic => allIcons.push(ic)));
+      renderIconViewByGroups(allIcons, 'mine-icon-view', false);
+    } else {
+      iv.style.display = 'none'; fv.style.display = '';
+      document.getElementById('my-pkg-grid').innerHTML =
+        [...MY_DEMO_PKGS, myPkg, ...mySubPkgs].map(p => pkgCardHTML(p)).join('');
+    }
+  }
+}
+
+function updateViewToggleBtn() {
+  const mode = viewMode[currentIconTab];
+  const label = document.getElementById('view-toggle-label');
+  const icon = document.getElementById('view-toggle-icon');
+  if (!label) return;
+  if (mode === 'icon') {
+    label.textContent = '图标视图';
+    icon.innerHTML = '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>';
+  } else {
+    label.textContent = '文件夹视图';
+    icon.innerHTML = '<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>';
+  }
+}
+
+function toggleCurrentView() {
+  viewMode[currentIconTab] = viewMode[currentIconTab] === 'icon' ? 'folder' : 'icon';
+  applyViewMode();
+  updateViewToggleBtn();
+}
+
 function renderIconMgr() {
-  document.getElementById('official-pkg-grid').innerHTML = ICON_PKGS.map(p => pkgCardHTML(p)).join('');
-  // 我的：默认包 + 子包（从文件夹导入的）
-  const myCards = [pkgCardHTML(myPkg), ...mySubPkgs.map(p => pkgCardHTML(p, true))].join('');
-  document.getElementById('my-pkg-grid').innerHTML = myCards;
+  currentIconTab = 'official';
+  viewMode = {official: 'icon', mine: 'folder'};
+  applyViewMode();
+  updateViewToggleBtn();
 }
 
 function openIconPkg(pkgId) {
@@ -914,7 +1115,6 @@ function importIconsToMy(e) {
           showImportModal(newPkgs);
           e.target.value = '';
         }
-        }
       };
       reader.readAsDataURL(file);
     });
@@ -980,6 +1180,148 @@ function goIconPkgBack() {
 
 renderHomeHot();
 renderHomeAll();
+
+/* ===== 图标选择器（编辑预览） ===== */
+let pickerViewMode = 'icon';
+let pickerAllExpanded = false;
+let pickerRecommendExpanded = false;
+
+function getAllPickerIcons() {
+  const all = [];
+  // 无
+  all.push({name:'无', type:'none', svg:'<path d="M18 6L6 18M6 6l12 12" stroke="rgba(255,255,255,.4)" stroke-width="2"/>'});
+  // 官方
+  ICON_PKGS.forEach(pkg => pkg.icons.forEach(ic => all.push(Object.assign({}, ic, {pkgId: pkg.id, pkgName: pkg.name}))));
+  // 我的（demo包 + 真实导入）
+  MY_DEMO_PKGS.forEach(pkg => pkg.icons.forEach(ic => all.push(Object.assign({}, ic, {pkgId: pkg.id, pkgName: pkg.name}))));
+  mySubPkgs.forEach(pkg => pkg.icons.forEach(ic => all.push(Object.assign({}, ic, {pkgId: pkg.id, pkgName: pkg.name}))));
+  myPkg.icons.forEach(ic => all.push(Object.assign({}, ic, {pkgId: 'my-1', pkgName: '我的图标包'})));
+  return all;
+}
+
+function pickerIconCell(ic) {
+  const content = ic.dataUrl
+    ? '<img src="' + ic.dataUrl + '" style="width:72%;height:72%;object-fit:contain">'
+    : svgIcon(ic.svg);
+  return '<div style="aspect-ratio:1;background:rgba(255,255,255,.06);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:4px">'
+    + '<div style="width:30px;height:30px;display:flex;align-items:center;justify-content:center">' + content + '</div>'
+    + '<div style="font-size:9px;color:rgba(255,255,255,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center">' + ic.name + '</div>'
+    + '</div>';
+}
+
+function renderPickerIconView(q) {
+  const allIcons = getAllPickerIcons();
+  const filtered = q ? allIcons.filter(ic => ic.name.toLowerCase().includes(q.toLowerCase())) : allIcons;
+  // 推荐：当前控件类型（按钮），默认2行(8个)
+  const recommended = filtered.filter(ic => ic.type === 'button' || ic.type === 'none');
+  const REC_LIMIT = 8;
+  const recToShow = pickerRecommendExpanded ? recommended : recommended.slice(0, REC_LIMIT);
+  document.getElementById('picker-recommend').innerHTML = recToShow.length
+    ? recToShow.map(pickerIconCell).join('')
+    : '<div style="grid-column:1/-1;text-align:center;padding:12px 0;color:rgba(255,255,255,.3);font-size:12px">暂无推荐</div>';
+  const moreBtn = document.getElementById('picker-recommend-more');
+  if (moreBtn) moreBtn.style.display = (!pickerRecommendExpanded && recommended.length > REC_LIMIT) ? '' : 'none';
+  // 全部图标：默认2行(8个)，可展开/收起
+  const LIMIT = 8;
+  const toShow = pickerAllExpanded ? filtered : filtered.slice(0, LIMIT);
+  let allHtml = toShow.map(pickerIconCell).join('');
+  if (!pickerAllExpanded && filtered.length > LIMIT) {
+    allHtml += '<div onclick="expandPickerAll()" style="grid-column:1/-1;text-align:center;padding:10px 0;cursor:pointer">'
+      + '<span style="font-size:12px;color:rgba(0,200,150,.85)">查看全部 (' + filtered.length + ')</span>'
+      + '</div>';
+  } else if (pickerAllExpanded && filtered.length > LIMIT) {
+    allHtml += '<div onclick="collapsePickerAll()" style="grid-column:1/-1;text-align:center;padding:10px 0;cursor:pointer">'
+      + '<span style="font-size:12px;color:rgba(255,255,255,.4)">收起</span>'
+      + '</div>';
+  }
+  document.getElementById('picker-all-icons').innerHTML = allHtml
+    || '<div style="grid-column:1/-1;text-align:center;padding:24px 0;color:rgba(255,255,255,.3);font-size:12px">没有找到相关图标</div>';
+}
+
+function expandPickerRecommend() {
+  pickerRecommendExpanded = true;
+  renderPickerIconView(document.getElementById('picker-search').value.trim());
+}
+
+function expandPickerAll() {
+  pickerAllExpanded = true;
+  renderPickerIconView(document.getElementById('picker-search').value.trim());
+}
+
+function collapsePickerAll() {
+  pickerAllExpanded = false;
+  renderPickerIconView(document.getElementById('picker-search').value.trim());
+}
+
+function renderPickerFolderView() {
+  const allPkgs = [...ICON_PKGS, ...MY_DEMO_PKGS, ...(myPkg.icons.length ? [myPkg] : []), ...mySubPkgs];
+  // 文件夹卡片
+  const folderCards = allPkgs.map(function(pkg) {
+    const cells = pkg.icons.slice(0, 4).map(function(ic) {
+      const inner = ic.dataUrl
+        ? '<img src="' + ic.dataUrl + '" style="width:100%;height:100%;object-fit:contain">'
+        : svgIcon(ic.svg);
+      return '<div style="display:flex;align-items:center;justify-content:center;overflow:hidden;background:rgba(255,255,255,.06)">' + inner + '</div>';
+    }).join('') + Array(Math.max(0, 4 - pkg.icons.length)).fill('<div style="background:rgba(255,255,255,.04)"></div>').join('');
+    return '<div style="cursor:pointer;background:rgba(255,255,255,.05);border-radius:10px;overflow:hidden">'
+      + '<div style="width:100%;aspect-ratio:1;background:#0a1520;display:grid;grid-template-columns:1fr 1fr;gap:1px">' + cells + '</div>'
+      + '<div style="padding:6px 8px 8px">'
+      + '<div style="font-size:12px;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + pkg.name + '</div>'
+      + '<div style="font-size:10px;color:rgba(255,255,255,.35)">' + pkg.icons.length + ' 个图标</div>'
+      + '</div></div>';
+  }).join('');
+  // 单个图标（排除"无"）
+  const allIcons = getAllPickerIcons().filter(ic => ic.type !== 'none');
+  const iconCells = allIcons.map(pickerIconCell).join('');
+  document.getElementById('picker-folder-grid').innerHTML =
+    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px">' + folderCards + '</div>'
+    + '<div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.5px;padding:4px 0 8px">全部图标</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px">' + iconCells + '</div>';
+}
+
+function togglePickerView() {
+  pickerViewMode = pickerViewMode === 'icon' ? 'folder' : 'icon';
+  const iv = document.getElementById('picker-icon-view');
+  const fv = document.getElementById('picker-folder-view');
+  const label = document.getElementById('picker-view-label');
+  const icon = document.getElementById('picker-view-icon');
+  if (pickerViewMode === 'folder') {
+    iv.style.display = 'none'; fv.style.display = '';
+    label.textContent = '文件夹视图';
+    icon.innerHTML = '<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>';
+    renderPickerFolderView();
+  } else {
+    iv.style.display = ''; fv.style.display = 'none';
+    label.textContent = '图标视图';
+    icon.innerHTML = '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>';
+    renderPickerIconView(document.getElementById('picker-search').value.trim());
+  }
+}
+
+function filterPickerIcons(val) {
+  if (pickerViewMode === 'icon') renderPickerIconView(val.trim());
+}
+
+function triggerPickerImport() {
+  document.getElementById('picker-file-input').click();
+}
+
+function openIconPicker() {
+  pickerViewMode = 'icon';
+  pickerAllExpanded = false;
+  pickerRecommendExpanded = false;
+  document.getElementById('picker-shell').style.display = '';
+  document.getElementById('picker-search').value = '';
+  document.getElementById('picker-icon-view').style.display = '';
+  document.getElementById('picker-folder-view').style.display = 'none';
+  document.getElementById('picker-view-label').textContent = '图标视图';
+  document.getElementById('picker-view-icon').innerHTML = '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>';
+  renderPickerIconView('');
+}
+
+function closeIconPicker() {
+  document.getElementById('picker-shell').style.display = 'none';
+}
 </script>
 </body>
 </html>
