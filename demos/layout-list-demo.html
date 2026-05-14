@@ -531,10 +531,6 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
     <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 16px 8px;flex-shrink:0">
       <div style="font-size:16px;font-weight:600;color:#fff">选择图标</div>
       <div style="display:flex;align-items:center;gap:8px">
-        <div onclick="togglePickerView()" style="display:flex;align-items:center;gap:4px;padding:5px 10px;border-radius:12px;background:rgba(255,255,255,.08);cursor:pointer">
-          <svg id="picker-view-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-          <span id="picker-view-label" style="font-size:11px;color:rgba(255,255,255,.55)">图标视图</span>
-        </div>
         <div onclick="triggerPickerImport()" style="width:26px;height:26px;border-radius:50%;background:rgba(0,200,150,.15);display:flex;align-items:center;justify-content:center;cursor:pointer" title="导入图标">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
         </div>
@@ -553,20 +549,15 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
     </div>
     <!-- 内容区 -->
     <div style="flex:1;overflow-y:auto;scrollbar-width:none" id="picker-scroll">
-      <!-- 图标视图 -->
-      <div id="picker-icon-view">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px 4px">
-          <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.5px">适合按键的推荐图标</span>
-          <span id="picker-recommend-more" onclick="expandPickerRecommend()" style="font-size:11px;color:rgba(0,200,150,.8);cursor:pointer;display:none">查看全部</span>
-        </div>
-        <div id="picker-recommend" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:0 12px 12px"></div>
-        <div style="padding:4px 12px 4px;font-size:11px;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.5px">全部图标</div>
-        <div id="picker-all-icons" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:0 12px 24px"></div>
+      <!-- 推荐图标（小图） -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px 4px">
+        <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.5px">适合按键的推荐图标</span>
+        <span id="picker-recommend-more" onclick="togglePickerRecommend()" style="font-size:11px;color:rgba(0,200,150,.8);cursor:pointer;display:none"></span>
       </div>
-      <!-- 文件夹视图 -->
-      <div id="picker-folder-view" style="display:none;padding:8px 12px 24px">
-        <div id="picker-folder-grid"></div>
-      </div>
+      <div id="picker-recommend" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:0 12px 12px"></div>
+      <!-- 全部图标（文件夹视图） -->
+      <div style="padding:4px 12px 4px;font-size:11px;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.5px">全部图标</div>
+      <div id="picker-folder-grid" style="padding:4px 12px 24px"></div>
     </div>
   </div>
 </div>
@@ -1182,17 +1173,11 @@ renderHomeHot();
 renderHomeAll();
 
 /* ===== 图标选择器（编辑预览） ===== */
-let pickerViewMode = 'icon';
-let pickerAllExpanded = false;
 let pickerRecommendExpanded = false;
 
 function getAllPickerIcons() {
   const all = [];
-  // 无
-  all.push({name:'无', type:'none', svg:'<path d="M18 6L6 18M6 6l12 12" stroke="rgba(255,255,255,.4)" stroke-width="2"/>'});
-  // 官方
   ICON_PKGS.forEach(pkg => pkg.icons.forEach(ic => all.push(Object.assign({}, ic, {pkgId: pkg.id, pkgName: pkg.name}))));
-  // 我的（demo包 + 真实导入）
   MY_DEMO_PKGS.forEach(pkg => pkg.icons.forEach(ic => all.push(Object.assign({}, ic, {pkgId: pkg.id, pkgName: pkg.name}))));
   mySubPkgs.forEach(pkg => pkg.icons.forEach(ic => all.push(Object.assign({}, ic, {pkgId: pkg.id, pkgName: pkg.name}))));
   myPkg.icons.forEach(ic => all.push(Object.assign({}, ic, {pkgId: 'my-1', pkgName: '我的图标包'})));
@@ -1209,53 +1194,28 @@ function pickerIconCell(ic) {
     + '</div>';
 }
 
-function renderPickerIconView(q) {
+function renderPickerRecommend(q) {
   const allIcons = getAllPickerIcons();
   const filtered = q ? allIcons.filter(ic => ic.name.toLowerCase().includes(q.toLowerCase())) : allIcons;
-  // 推荐：当前控件类型（按钮），默认2行(8个)
-  const recommended = filtered.filter(ic => ic.type === 'button' || ic.type === 'none');
+  const recommended = filtered.filter(ic => ic.type === 'button');
   const REC_LIMIT = 8;
   const recToShow = pickerRecommendExpanded ? recommended : recommended.slice(0, REC_LIMIT);
   document.getElementById('picker-recommend').innerHTML = recToShow.length
     ? recToShow.map(pickerIconCell).join('')
     : '<div style="grid-column:1/-1;text-align:center;padding:12px 0;color:rgba(255,255,255,.3);font-size:12px">暂无推荐</div>';
   const moreBtn = document.getElementById('picker-recommend-more');
-  if (moreBtn) moreBtn.style.display = (!pickerRecommendExpanded && recommended.length > REC_LIMIT) ? '' : 'none';
-  // 全部图标：默认2行(8个)，可展开/收起
-  const LIMIT = 8;
-  const toShow = pickerAllExpanded ? filtered : filtered.slice(0, LIMIT);
-  let allHtml = toShow.map(pickerIconCell).join('');
-  if (!pickerAllExpanded && filtered.length > LIMIT) {
-    allHtml += '<div onclick="expandPickerAll()" style="grid-column:1/-1;text-align:center;padding:10px 0;cursor:pointer">'
-      + '<span style="font-size:12px;color:rgba(0,200,150,.85)">查看全部 (' + filtered.length + ')</span>'
-      + '</div>';
-  } else if (pickerAllExpanded && filtered.length > LIMIT) {
-    allHtml += '<div onclick="collapsePickerAll()" style="grid-column:1/-1;text-align:center;padding:10px 0;cursor:pointer">'
-      + '<span style="font-size:12px;color:rgba(255,255,255,.4)">收起</span>'
-      + '</div>';
+  if (moreBtn) {
+    if (recommended.length > REC_LIMIT) {
+      moreBtn.style.display = '';
+      moreBtn.textContent = pickerRecommendExpanded ? '收起' : '展开全部';
+    } else {
+      moreBtn.style.display = 'none';
+    }
   }
-  document.getElementById('picker-all-icons').innerHTML = allHtml
-    || '<div style="grid-column:1/-1;text-align:center;padding:24px 0;color:rgba(255,255,255,.3);font-size:12px">没有找到相关图标</div>';
 }
 
-function expandPickerRecommend() {
-  pickerRecommendExpanded = true;
-  renderPickerIconView(document.getElementById('picker-search').value.trim());
-}
-
-function expandPickerAll() {
-  pickerAllExpanded = true;
-  renderPickerIconView(document.getElementById('picker-search').value.trim());
-}
-
-function collapsePickerAll() {
-  pickerAllExpanded = false;
-  renderPickerIconView(document.getElementById('picker-search').value.trim());
-}
-
-function renderPickerFolderView() {
+function renderPickerFolderGrid() {
   const allPkgs = [...ICON_PKGS, ...MY_DEMO_PKGS, ...(myPkg.icons.length ? [myPkg] : []), ...mySubPkgs];
-  // 文件夹卡片
   const folderCards = allPkgs.map(function(pkg) {
     const cells = pkg.icons.slice(0, 4).map(function(ic) {
       const inner = ic.dataUrl
@@ -1270,36 +1230,17 @@ function renderPickerFolderView() {
       + '<div style="font-size:10px;color:rgba(255,255,255,.35)">' + pkg.icons.length + ' 个图标</div>'
       + '</div></div>';
   }).join('');
-  // 单个图标（排除"无"）
-  const allIcons = getAllPickerIcons().filter(ic => ic.type !== 'none');
-  const iconCells = allIcons.map(pickerIconCell).join('');
   document.getElementById('picker-folder-grid').innerHTML =
-    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px">' + folderCards + '</div>'
-    + '<div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.5px;padding:4px 0 8px">全部图标</div>'
-    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px">' + iconCells + '</div>';
+    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">' + folderCards + '</div>';
 }
 
-function togglePickerView() {
-  pickerViewMode = pickerViewMode === 'icon' ? 'folder' : 'icon';
-  const iv = document.getElementById('picker-icon-view');
-  const fv = document.getElementById('picker-folder-view');
-  const label = document.getElementById('picker-view-label');
-  const icon = document.getElementById('picker-view-icon');
-  if (pickerViewMode === 'folder') {
-    iv.style.display = 'none'; fv.style.display = '';
-    label.textContent = '文件夹视图';
-    icon.innerHTML = '<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>';
-    renderPickerFolderView();
-  } else {
-    iv.style.display = ''; fv.style.display = 'none';
-    label.textContent = '图标视图';
-    icon.innerHTML = '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>';
-    renderPickerIconView(document.getElementById('picker-search').value.trim());
-  }
+function togglePickerRecommend() {
+  pickerRecommendExpanded = !pickerRecommendExpanded;
+  renderPickerRecommend(document.getElementById('picker-search').value.trim());
 }
 
 function filterPickerIcons(val) {
-  if (pickerViewMode === 'icon') renderPickerIconView(val.trim());
+  renderPickerRecommend(val.trim());
 }
 
 function triggerPickerImport() {
@@ -1307,16 +1248,11 @@ function triggerPickerImport() {
 }
 
 function openIconPicker() {
-  pickerViewMode = 'icon';
-  pickerAllExpanded = false;
   pickerRecommendExpanded = false;
   document.getElementById('picker-shell').style.display = '';
   document.getElementById('picker-search').value = '';
-  document.getElementById('picker-icon-view').style.display = '';
-  document.getElementById('picker-folder-view').style.display = 'none';
-  document.getElementById('picker-view-label').textContent = '图标视图';
-  document.getElementById('picker-view-icon').innerHTML = '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>';
-  renderPickerIconView('');
+  renderPickerRecommend('');
+  renderPickerFolderGrid();
 }
 
 function closeIconPicker() {
