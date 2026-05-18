@@ -714,106 +714,61 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 /* ══ 游戏内状态覆盖层 ══ */
 #gameOverlay{
   position:absolute;inset:0;z-index:100;display:none;
-  background:#000;flex-direction:column;overflow:hidden
+  background:#0a0a0a;overflow:hidden
 }
-#gameOverlay.active{display:flex}
+#gameOverlay.active{display:block}
 .go-bg{
   position:absolute;inset:0;
-  background-image:url('https://cdn.cloudflare.steamstatic.com/steam/apps/582010/header.jpg');
+  background-image:url('https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/582010/header.jpg');
   background-size:cover;background-position:center;
-  filter:brightness(.55)
+  opacity:.15
 }
-.go-content{position:relative;z-index:1;display:flex;flex-direction:column;height:100%}
-.go-hud{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 20px 10px;flex-shrink:0
-}
-.go-hud-left{
-  display:flex;align-items:center;gap:8px;
-  font-size:13px;font-weight:700;color:#fff;
-  text-shadow:0 1px 4px rgba(0,0,0,.7)
-}
-.go-hud-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0;box-shadow:0 0 6px #4ade80}
-.go-hud-right{
-  display:flex;align-items:center;gap:6px
-}
-.go-session-tag{
-  font-size:11px;font-weight:700;color:#fff;
-  background:rgba(76,110,245,.5);border:1px solid rgba(76,110,245,.6);
-  border-radius:20px;padding:4px 12px;
-  backdrop-filter:blur(6px)
-}
-.go-mid{flex:1}
-/* ══ 游戏内底部横栏 ══ */
-.game-bar{
-  position:absolute;bottom:0;left:0;right:0;
-  display:flex;align-items:center;gap:16px;
-  padding:12px 20px;
-  background:rgba(8,12,18,.9);
-  border-top:1px solid rgba(255,255,255,.1);
-  border-radius:14px 14px 0 0;
-  backdrop-filter:blur(12px);
-  z-index:2
-}
-.game-bar-label{
-  font-size:13px;font-weight:900;color:rgba(255,255,255,.7);
-  white-space:nowrap;flex-shrink:0
-}
-.game-members{
-  display:grid;grid-template-columns:repeat(4,1fr);
-  gap:10px;flex:1;min-width:0
-}
-.gm-item{
-  display:flex;align-items:center;gap:6px;
-  font-size:12px;color:#e2e8f0;min-width:0
-}
-.gm-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:#38d37a;flex-shrink:0
-}
-.gm-dot.offline{background:rgba(255,255,255,.25)}
-.gm-pos{
-  font-size:11px;font-weight:800;
-  color:#818cf8;flex-shrink:0
-}
-.gm-pos.p1{color:#60d8ff}
-.gm-name{
-  font-size:12px;font-weight:600;color:#e2e8f0;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0
-}
-.gm-status{
-  font-size:11px;color:#38d37a;font-weight:600;
-  white-space:nowrap;flex-shrink:0
-}
-.gm-status.offline{color:rgba(255,255,255,.3)}
-.gm-divider{
-  width:1px;height:32px;
-  background:rgba(255,255,255,.1);flex-shrink:0
-}
-.game-bar-btns{
-  display:flex;align-items:center;gap:8px;flex-shrink:0
-}
+/* 左上角菜单 */
+.go-menu{position:absolute;left:16px;top:16px;width:44px;height:44px;border-radius:50%;background:rgba(60,60,60,.6);border:2px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;z-index:5;cursor:pointer;color:#fff;font-size:18px}
+.go-menu-panel{position:absolute;left:16px;top:68px;min-width:140px;display:none;flex-direction:column;background:rgba(10,14,20,.9);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:5px;z-index:6;backdrop-filter:blur(10px)}
+.go-menu-panel.open{display:flex}
+.go-menu-panel button{border:0;background:transparent;color:#e8edf2;border-radius:8px;padding:9px 12px;text-align:left;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.go-menu-panel button:hover{background:rgba(255,255,255,.1)}
+/* 左侧锁 */
+.go-lock{position:absolute;left:16px;top:78px;width:40px;height:40px;border-radius:50%;background:rgba(60,60,60,.5);border:2px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;z-index:5;color:#fff;font-size:16px}
+/* 左下摇杆 */
+.go-joystick{position:absolute;left:30px;bottom:30px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;z-index:5}
+.go-joystick-inner{width:52px;height:52px;border-radius:50%;background:rgba(200,200,200,.45);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+/* 右侧操作按钮组 */
+.go-actions{position:absolute;right:16px;bottom:24px;display:flex;flex-direction:column;align-items:flex-end;gap:10px;z-index:5}
+.go-action-btn{width:56px;height:56px;border-radius:50%;background:rgba(60,60,60,.45);border:2px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;color:#fff;font-size:19px}
+.go-action-btn.lg{width:68px;height:68px;font-size:22px}
+.go-action-row{display:flex;gap:12px;align-items:center}
+/* ══ 右上角整体区域 ══ */
+.go-top-right{position:absolute;right:16px;top:14px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;z-index:5;max-width:260px}
+.go-team{display:flex;gap:7px}
+.go-team-member{display:flex;flex-direction:column;align-items:center;gap:2px}
+.go-team-av{width:34px;height:34px;border-radius:50%;border:2.5px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;position:relative}
+.go-team-av.online{border-color:#38d37a}
+.go-team-av.offline{border-color:#ff6b6b;opacity:.55}
+.go-team-dot{position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-radius:50%;border:2px solid #0a0a0a}
+.go-team-av.online .go-team-dot{background:#38d37a}
+.go-team-av.offline .go-team-dot{background:#ff6b6b}
+.go-team-label{font-size:9px;color:rgba(255,255,255,.6);font-weight:700}
+.go-ctrl-row{display:flex;gap:8px}
 .go-ctrl-btn{
-  width:36px;height:36px;border-radius:50%;
-  background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);
-  color:#fff;font-size:14px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:.15s;backdrop-filter:blur(6px)
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(40,40,40,.7);border:1.5px solid rgba(255,255,255,.15);
+  color:#fff;font-size:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:.15s
 }
-.go-ctrl-btn:hover{background:rgba(255,255,255,.15)}
+.go-ctrl-btn:hover{background:rgba(60,60,60,.8)}
 .go-ctrl-btn.muted{color:#f87171;border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.1)}
-.go-event-btn{
-  height:32px;border-radius:16px;padding:0 14px;
-  background:rgba(251,146,60,.15);border:1px solid rgba(251,146,60,.35);
-  color:#fb923c;font-size:12px;font-weight:700;cursor:pointer;transition:.15s
-}
-.go-event-btn:hover{background:rgba(251,146,60,.28)}
-.go-end-btn{
-  height:32px;border-radius:16px;padding:0 14px;
-  background:rgba(239,68,68,.18);border:1px solid rgba(239,68,68,.35);
-  color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:.15s
-}
-.go-end-btn:hover{background:rgba(239,68,68,.32)}
+/* 右上角浮动消息（无框） */
+.go-chat-float{display:flex;flex-direction:column;gap:4px;align-items:flex-end;min-height:10px}
+.go-float-msg{font-size:12px;color:rgba(255,255,255,.88);text-align:right;text-shadow:0 1px 4px rgba(0,0,0,.85);line-height:1.45;transition:opacity .5s}
+.go-float-msg.fading{opacity:0}
+/* 底部输入框 */
+.go-chat-input-bar{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);width:320px;display:none;align-items:center;gap:8px;z-index:6;background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.15);border-radius:22px;padding:5px 10px 5px 16px;backdrop-filter:blur(8px)}
+.go-chat-input-bar.show{display:flex}
+.go-chat-input-bar input{flex:1;min-width:0;height:28px;border:0;background:transparent;color:#fff;font-size:13px;outline:none}
+.go-chat-input-bar input::placeholder{color:rgba(255,255,255,.4)}
+.go-chat-input-bar button{width:28px;height:28px;border-radius:50%;border:0;background:rgba(129,93,242,.5);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;flex-shrink:0}
 
 /* ══ 重连弹窗 ══ */
 #reconnectModal{
@@ -861,6 +816,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 <!-- Demo 控制按钮（容器外，固定顶部） -->
 <div class="demo-btns">
   <button onclick="demoGameView()">游戏内状态</button>
+  <button onclick="demoGameChat()">游戏内文字聊天</button>
   <button onclick="demoReconnect()">重连弹窗</button>
   <button onclick="demoFloating()">房间悬浮条</button>
 </div>
@@ -1160,56 +1116,40 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
   <!-- 游戏内状态覆盖层 -->
   <div id="gameOverlay">
     <div class="go-bg"></div>
-    <div class="go-content">
-      <!-- HUD 顶部 -->
-      <div class="go-hud">
-        <div class="go-hud-left">
-          <div class="go-hud-dot"></div>
-          云游戏中 · 1080P
-        </div>
-        <div class="go-hud-right">
-          <div class="go-session-tag">4人同屏 Session</div>
-        </div>
+    <!-- 左上角菜单 -->
+    <div class="go-menu" onclick="toggleGoMenu()"><i class="fas fa-bars"></i></div>
+    <div class="go-menu-panel" id="goMenuPanel">
+      <button onclick="toggleGoMenu();triggerDropEvent()"><i class="fas fa-bolt"></i> 掉线事件</button>
+      <button onclick="toggleGoMenu();endGame()"><i class="fas fa-right-from-bracket"></i> 结束游戏</button>
+    </div>
+    <!-- 左侧锁 -->
+    <div class="go-lock"><i class="fas fa-lock"></i></div>
+    <!-- 左下摇杆 -->
+    <div class="go-joystick"><div class="go-joystick-inner"></div></div>
+    <!-- 右上角：头像+控制按钮+消息 -->
+    <div class="go-top-right">
+      <div class="go-team" id="goTeam"></div>
+      <div class="go-ctrl-row">
+        <div class="go-ctrl-btn" id="goMicBtn" onclick="toggleGoMic()" title="麦克风"><i class="fas fa-microphone"></i></div>
+        <div class="go-ctrl-btn" id="goSpkBtn" onclick="toggleGoSpk()" title="听筒"><i class="fas fa-headphones"></i></div>
+        <div class="go-ctrl-btn" onclick="toggleGoChat()" title="文字聊天"><i class="fas fa-comment"></i></div>
       </div>
-      <!-- 中间空区（游戏画面） -->
-      <div class="go-mid"></div>
-      <!-- 底部横栏 -->
-      <div class="game-bar">
-        <span class="game-bar-label">当前队伍</span>
-        <div class="gm-divider"></div>
-        <div class="game-members">
-          <div class="gm-item">
-            <span class="gm-dot"></span>
-            <span class="gm-pos p1">P1</span>
-            <span class="gm-name">你</span>
-            <span class="gm-status">在线</span>
-          </div>
-          <div class="gm-item">
-            <span class="gm-dot" id="gm-dot-p2"></span>
-            <span class="gm-pos">P2</span>
-            <span class="gm-name">阿澈</span>
-            <span class="gm-status" id="gm-status-p2">在线</span>
-          </div>
-          <div class="gm-item">
-            <span class="gm-dot"></span>
-            <span class="gm-pos">P3</span>
-            <span class="gm-name">Mika</span>
-            <span class="gm-status">在线</span>
-          </div>
-          <div class="gm-item">
-            <span class="gm-dot offline"></span>
-            <span class="gm-pos" style="color:rgba(255,255,255,.25)">P4</span>
-            <span class="gm-name" style="color:rgba(255,255,255,.25)">空位</span>
-            <span class="gm-status offline">—</span>
-          </div>
-        </div>
-        <div class="gm-divider"></div>
-        <div class="game-bar-btns">
-          <button class="go-ctrl-btn" id="goMicBtn" onclick="toggleGoMic()" title="麦克风"><i class="fas fa-microphone"></i></button>
-          <button class="go-ctrl-btn" id="goSpkBtn" onclick="toggleGoSpk()" title="听筒"><i class="fas fa-headphones"></i></button>
-          <button class="go-event-btn" onclick="triggerDropEvent()"><i class="fas fa-wifi" style="margin-right:5px;font-size:11px"></i>掉线事件</button>
-        </div>
+      <div class="go-chat-float" id="goChatFloat"></div>
+    </div>
+    <!-- 右侧操作按钮 -->
+    <div class="go-actions">
+      <div class="go-action-btn" style="font-size:17px"><i class="fas fa-khanda"></i></div>
+      <div class="go-action-btn"><i class="fas fa-person-running"></i></div>
+      <div class="go-action-row">
+        <div class="go-action-btn" style="width:46px;height:46px;font-size:16px"><i class="fas fa-rotate-right"></i></div>
+        <div class="go-action-btn" style="width:46px;height:46px;font-size:16px"><i class="fas fa-shield-halved"></i></div>
+        <div class="go-action-btn lg"><i class="fas fa-person-skating"></i></div>
       </div>
+    </div>
+    <!-- 底部输入框 -->
+    <div class="go-chat-input-bar" id="goChatInputBar">
+      <input type="text" placeholder="输入消息..." id="goChatInput" onkeydown="if(event.key==='Enter'&&this.value.trim()){sendGoChat(this.value.trim());this.value=''}">
+      <button onclick="const i=document.getElementById('goChatInput');if(i.value.trim()){sendGoChat(i.value.trim());i.value=''}"><i class="fas fa-paper-plane"></i></button>
     </div>
   </div>
 
@@ -2031,15 +1971,90 @@ function confirmEditRoom(){
 }
 
 // ══ Demo 功能：游戏内状态 ══
+const goTeamData=[
+  {name:"我",color:"#4c6ef5",online:true},
+  {name:"阿澈",color:"#22d3ee",online:true},
+  {name:"Mika",color:"#f59e0b",online:true},
+  {name:"P4",color:"#666",online:false}
+];
+function renderGoTeam(){
+  const container=document.getElementById('goTeam');
+  if(!container)return;
+  container.innerHTML=goTeamData.map((t,i)=>`
+    <div class="go-team-member">
+      <div class="go-team-av ${t.online?"online":"offline"}" style="background:${t.color}"><div class="go-team-dot"></div>${t.name.charAt(0)}</div>
+      <span class="go-team-label">P${i+1}</span>
+    </div>
+  `).join("");
+}
 function demoGameView(){
-  // 切换到秒玩/组队玩页面确保容器在
   switchPage('miao');
   switchMiaoTab('team');
+  renderGoTeam();
   document.getElementById('gameOverlay').classList.add('active');
+}
+function demoGameChat(){
+  demoGameView();
+  document.getElementById('goChatFloat').innerHTML="";
+  const msgs=[
+    {name:"阿澈",text:"开怪了注意走位",delay:400,self:false},
+    {name:"Mika",text:"收到，我来奶",delay:1800,self:false},
+    {text:"我先输出，注意闪避",delay:3500,self:true},
+    {name:"阿澈",text:"BOSS转火了小心！",delay:5500,self:false},
+    {text:"了解",delay:7500,self:true}
+  ];
+  msgs.forEach(m=>{
+    setTimeout(()=>{
+      const container=document.getElementById('goChatFloat');
+      if(!container)return;
+      const name=m.self?"我":m.name;
+      const color=m.self?"#b8a0ff":"#7dd3fc";
+      const el=document.createElement("div");
+      el.className="go-float-msg";
+      el.innerHTML=`<span style="color:${color};font-weight:700">${name}：</span>${m.text}`;
+      container.appendChild(el);
+      const visible=container.querySelectorAll(".go-float-msg:not(.fading)");
+      if(visible.length>3){visible[0].classList.add("fading");setTimeout(()=>visible[0].remove(),500)}
+      setTimeout(()=>{if(el.parentNode){el.classList.add("fading");setTimeout(()=>el.remove(),500)}},10000);
+    },m.delay);
+  });
+  showToast("游戏内文字聊天演示 — 消息10秒后自动消失");
 }
 function endGame(){
   document.getElementById('gameOverlay').classList.remove('active');
   showToast('云游戏已结束');
+}
+function toggleGoMenu(){
+  const panel=document.getElementById('goMenuPanel');
+  if(panel)panel.classList.toggle('open');
+}
+function toggleGoChat(){
+  const bar=document.getElementById('goChatInputBar');
+  if(!bar)return;
+  bar.classList.toggle('show');
+  if(bar.classList.contains('show'))document.getElementById('goChatInput').focus();
+}
+function sendGoChat(text){
+  const bar=document.getElementById('goChatInputBar');
+  if(bar)bar.classList.remove('show');
+  addGoFloatMsg(text,true);
+  setTimeout(()=>{
+    const replies=["收到","好的","冲！","等等我","了解","注意走位"];
+    addGoFloatMsg(replies[Math.floor(Math.random()*replies.length)],false);
+  },1200);
+}
+function addGoFloatMsg(text,isSelf){
+  const container=document.getElementById('goChatFloat');
+  if(!container)return;
+  const name=isSelf?"我":["阿澈","Mika"][Math.floor(Math.random()*2)];
+  const color=isSelf?"#b8a0ff":"#7dd3fc";
+  const el=document.createElement("div");
+  el.className="go-float-msg";
+  el.innerHTML=`<span style="color:${color};font-weight:700">${name}：</span>${text}`;
+  container.appendChild(el);
+  const visible=container.querySelectorAll(".go-float-msg:not(.fading)");
+  if(visible.length>3){visible[0].classList.add("fading");setTimeout(()=>visible[0].remove(),500)}
+  setTimeout(()=>{if(el.parentNode){el.classList.add("fading");setTimeout(()=>el.remove(),500)}},10000);
 }
 let goMicMuted=false;
 function toggleGoMic(){
@@ -2058,17 +2073,8 @@ function toggleGoSpk(){
   showToast(goSpkMuted?'听筒已静音':'听筒已开启');
 }
 function triggerDropEvent(){
-  const dot=document.getElementById('gm-dot-p2');
-  const status=document.getElementById('gm-status-p2');
-  if(dot){
-    dot.classList.add('offline');
-    dot.style.background='#748093';
-  }
-  if(status){
-    status.textContent='已断开';
-    status.style.color='#ff6b6b';
-    status.classList.remove('offline');
-  }
+  goTeamData[1].online=false;
+  renderGoTeam();
   showToast('模拟掉线：P2 阿澈 已断开连接...');
 }
 
