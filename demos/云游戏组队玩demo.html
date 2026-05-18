@@ -40,9 +40,9 @@ button{font:inherit}
 }
 .app.portrait{width:400px;height:860px;max-height:96vh;border-radius:28px;--app-h:860px}
 .app.in-game .sidebar,.app.in-game .top-bar,.app.in-game .tabs{display:none}
-.app.in-game .main{padding:0;height:100%}
-.app.in-game .content{padding:0;height:100%;overflow:hidden}
-.app.in-game .view,.app.in-game #view-team,.app.in-game #screen-play{height:100%}
+.app.in-game #screen-play{
+  display:block!important;position:absolute;inset:0;z-index:60;
+}
 #screen-room.room-active{
   display:flex!important;flex-direction:column;
   position:absolute;inset:0;z-index:50;
@@ -1453,7 +1453,6 @@ function demoEnterGame(){
   dropped=false;
   micOn=true;
   speakerOn=true;
-  document.getElementById("view-team").classList.add("active");
   renderFloat();
   renderGpTeam();
   showScreen("play");
