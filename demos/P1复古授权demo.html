@@ -83,13 +83,7 @@
         /* 授权游戏专属样式 */
         .auth-item .cover { border: 1.5px solid var(--auth-gold); box-shadow: 0 4px 15px rgba(255, 223, 0, 0.15); }
         .auth-item .name { color: var(--auth-gold); font-weight: bold; }
-        .auth-tag {
-            position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.85); border: 1px solid var(--auth-gold);
-            padding: 2px 4px; border-radius: 4px; display: flex; flex-direction: column; align-items: center;
-        }
-        .auth-tag span:first-child { font-size: 8px; color: var(--auth-gold); font-weight: 900; }
-        .auth-tag span:last-child { background: var(--auth-gold); color: #000; font-size: 8px; padding: 1px 3px; border-radius: 2px; font-weight: bold; }
+
 
         /* 底部导航 */
         .bottom-nav { height: 50px; background: var(--bg-panel); display: flex; align-items: center; justify-content: space-around; border-top: 1px solid #222; padding-bottom: env(safe-area-inset-bottom); }
@@ -350,9 +344,7 @@
             const img = coverLang === 'cn' ? g.imgCn : g.imgEn;
             const name = coverLang === 'cn' ? g.nameCn : g.nameEn;
             el.innerHTML = `
-                <div class="cover" style="background-image:url('${img}')">
-                    <div class="auth-tag"><span>TECHNOS</span><span>正版授权</span></div>
-                </div>
+                <div class="cover" style="background-image:url('${img}')"></div>
                 <div class="name">${name}</div>
                 <div class="btn-dl" style="color:#ffdf00">下载</div>
             `;
@@ -431,9 +423,7 @@
                 const img = coverLang === 'cn' ? g.imgCn : g.imgEn;
                 const name = coverLang === 'cn' ? g.nameCn : g.nameEn;
                 el.innerHTML = `
-                    <div class="cover" style="background-image:url('${img}')">
-                        <div class="auth-tag"><span>TECHNOS</span><span>正版授权</span></div>
-                    </div>
+                    <div class="cover" style="background-image:url('${img}')"></div>
                     <div class="name">${name}</div>
                     <div class="btn-dl" style="color:#ffdf00">下载</div>
                 `;
