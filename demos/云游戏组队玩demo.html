@@ -397,10 +397,13 @@ button{font:inherit}
 @keyframes spin{to{transform:rotate(360deg)}}
 .play-screen{
   background:
-    linear-gradient(to top,rgba(0,0,0,.82),rgba(0,0,0,.08) 45%),
-    url("https://cdn.cloudflare.steamstatic.com/steam/apps/582010/ss_2ef2962d7a5997f95a6d92db5f4e83c50c9cc395.1920x1080.jpg") center/cover;
+    linear-gradient(to top,rgba(0,0,0,.55),rgba(0,0,0,.1) 45%),
+    url("https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/582010/header.jpg") center/cover,
+    linear-gradient(135deg,#1a2744 0%,#0c1a2e 40%,#162036 100%);
   min-height:450px
 }
+.gc-msg.gc-fading{animation:gcFade .5s ease forwards}
+@keyframes gcFade{to{opacity:0;max-height:0;margin:0;padding:0;overflow:hidden}}
 .app.in-game .play-screen{height:100%;min-height:0;border:0;border-radius:0}
 .hud{position:absolute;left:16px;right:16px;top:14px;display:flex;justify-content:space-between;align-items:center}
 .hud-pill{background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:7px 12px;font-size:12px;display:flex;gap:8px;align-items:center;backdrop-filter:blur(8px)}
@@ -1645,14 +1648,29 @@ function toggleGameMenu(){
 function sendGameChat(text){
   const list=document.getElementById("gameChatList");
   if(!list)return;
-  list.insertAdjacentHTML("beforeend",`<div class="gc-msg gc-self"><div class="gc-av" style="background-image:url('${avatars[0]}')"></div><div class="gc-body"><div class="gc-bubble">${text}</div></div></div>`);
-  list.scrollTop=list.scrollHeight;
+  addGameMsg(list,`<div class="gc-msg gc-self"><div class="gc-av" style="background-image:url('${avatars[0]}')"></div><div class="gc-body"><div class="gc-bubble">${text}</div></div></div>`);
   setTimeout(()=>{
     const replies=["收到","好的","冲！","等等我","了解"];
     const reply=replies[Math.floor(Math.random()*replies.length)];
-    list.insertAdjacentHTML("beforeend",`<div class="gc-msg"><div class="gc-av" style="background-image:url('${avatars[1]}')"></div><div class="gc-body"><div class="gc-name">阿澈</div><div class="gc-bubble">${reply}</div></div></div>`);
-    list.scrollTop=list.scrollHeight;
+    addGameMsg(list,`<div class="gc-msg"><div class="gc-av" style="background-image:url('${avatars[1]}')"></div><div class="gc-body"><div class="gc-name">阿澈</div><div class="gc-bubble">${reply}</div></div></div>`);
   },1200);
+}
+function addGameMsg(list,html){
+  list.insertAdjacentHTML("beforeend",html);
+  list.scrollTop=list.scrollHeight;
+  let msgs=list.querySelectorAll(".gc-msg:not(.gc-fading)");
+  while(msgs.length>3){
+    const old=msgs[0];
+    old.classList.add("gc-fading");
+    old.addEventListener("animationend",()=>old.remove(),{once:true});
+    msgs=list.querySelectorAll(".gc-msg:not(.gc-fading)");
+  }
+  const added=list.lastElementChild;
+  setTimeout(()=>{
+    if(!added||!added.parentNode)return;
+    added.classList.add("gc-fading");
+    added.addEventListener("animationend",()=>added.remove(),{once:true});
+  },10000);
 }
 function renderFloatingRoom(){
   const el=document.getElementById("floatingRoom");
