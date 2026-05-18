@@ -238,6 +238,35 @@ tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
 #gameSelectWrap{margin-top:10px;display:none}
 #gameSelectWrap.show{display:block}
 
+/* ── 游戏多选列表 */
+.game-checkbox-list{
+  display:flex;flex-wrap:wrap;gap:8px;
+  padding:10px 12px;border:1px solid var(--border-2);border-radius:var(--radius);
+  background:#fff;
+}
+.game-checkbox-item{
+  display:flex;align-items:center;gap:6px;cursor:pointer;
+  padding:4px 10px;border-radius:20px;border:1px solid var(--border-2);
+  font-size:13px;color:var(--text-1);transition:background .15s,border-color .15s,color .15s;
+  user-select:none;
+}
+.game-checkbox-item input[type=checkbox]{display:none}
+.game-checkbox-item:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-bg)}
+.game-checkbox-item.checked{background:var(--primary);border-color:var(--primary);color:#fff}
+
+/* ── 筛选下拉 */
+.filter-select{
+  height:32px;border:1px solid var(--border-2);border-radius:var(--radius);
+  padding:0 28px 0 10px;font-size:13px;color:var(--text-1);outline:none;background:#fff;
+  cursor:pointer;transition:border-color .15s,box-shadow .15s;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2386909c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;
+}
+.filter-select:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(22,119,255,.12)}
+
+/* ── 多游戏标签容器 */
+.game-tags{display:flex;flex-wrap:wrap;gap:4px}
+
 /* ── 确认弹窗 */
 .confirm-modal{min-width:340px;max-width:400px}
 .confirm-body{padding:20px;display:flex;gap:14px;align-items:flex-start}
@@ -340,6 +369,16 @@ tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
           </button>
         </div>
         <div class="toolbar-right">
+          <select class="filter-select" id="filterScene" onchange="doFilter()">
+            <option value="">全部场景</option>
+            <option value="general">通用</option>
+            <option value="game">指定游戏</option>
+          </select>
+          <select class="filter-select" id="filterStatus" onchange="doFilter()">
+            <option value="">全部状态</option>
+            <option value="enabled">启用</option>
+            <option value="disabled">停用</option>
+          </select>
           <div class="search-box">
             <i class="fas fa-search search-icon"></i>
             <input type="text" id="searchInput" placeholder="搜索短语内容" oninput="doSearch(this.value)">
@@ -400,16 +439,27 @@ tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
           </label>
         </div>
         <div id="gameSelectWrap">
-          <select class="form-select" id="fieldGame">
-            <option value="">请选择游戏</option>
-            <option value="怪物猎人：世界">怪物猎人：世界</option>
-            <option value="茶杯头">茶杯头</option>
-            <option value="人类一败涂地">人类一败涂地</option>
-            <option value="幻兽帕鲁">幻兽帕鲁</option>
-            <option value="双人成行">双人成行</option>
-            <option value="博德之门3">博德之门3</option>
-          </select>
-          <div class="form-error" id="gameError">请选择游戏</div>
+          <div class="game-checkbox-list" id="gameCheckboxList">
+            <label class="game-checkbox-item" onclick="toggleGameItem(this)">
+              <input type="checkbox" value="怪物猎人：世界">怪物猎人：世界
+            </label>
+            <label class="game-checkbox-item" onclick="toggleGameItem(this)">
+              <input type="checkbox" value="茶杯头">茶杯头
+            </label>
+            <label class="game-checkbox-item" onclick="toggleGameItem(this)">
+              <input type="checkbox" value="人类一败涂地">人类一败涂地
+            </label>
+            <label class="game-checkbox-item" onclick="toggleGameItem(this)">
+              <input type="checkbox" value="幻兽帕鲁">幻兽帕鲁
+            </label>
+            <label class="game-checkbox-item" onclick="toggleGameItem(this)">
+              <input type="checkbox" value="双人成行">双人成行
+            </label>
+            <label class="game-checkbox-item" onclick="toggleGameItem(this)">
+              <input type="checkbox" value="博德之门3">博德之门3
+            </label>
+          </div>
+          <div class="form-error" id="gameError">请至少选择一个游戏</div>
         </div>
         <div class="form-error" id="sceneError">请选择适用场景</div>
       </div>
@@ -454,19 +504,21 @@ tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
 <script>
 /* ── 数据 ── */
 let phrases = [
-  { id:1001, content:'有人组队吗',    sceneType:'general', gameName:'',           enabled:true,  sort:1,  createdAt:'2026/5/15 14:30', updatedAt:'2026/5/15 14:30' },
-  { id:1002, content:'缺一个输出',    sceneType:'game',    gameName:'怪物猎人：世界', enabled:true,  sort:2,  createdAt:'2026/5/15 14:32', updatedAt:'2026/5/18 10:15' },
-  { id:1003, content:'新手友好来一个', sceneType:'general', gameName:'',           enabled:true,  sort:3,  createdAt:'2026/5/15 14:35', updatedAt:'2026/5/15 14:35' },
-  { id:1004, content:'茶杯头双人',    sceneType:'game',    gameName:'茶杯头',      enabled:true,  sort:4,  createdAt:'2026/5/15 15:00', updatedAt:'2026/5/15 15:00' },
-  { id:1005, content:'休闲局来吗',    sceneType:'game',    gameName:'人类一败涂地', enabled:true,  sort:5,  createdAt:'2026/5/15 15:10', updatedAt:'2026/5/16 09:20' },
-  { id:1006, content:'再来一局',      sceneType:'general', gameName:'',           enabled:true,  sort:6,  createdAt:'2026/5/16 10:00', updatedAt:'2026/5/16 10:00' },
-  { id:1007, content:'我来开怪',      sceneType:'game',    gameName:'怪物猎人：世界', enabled:true,  sort:7,  createdAt:'2026/5/16 11:00', updatedAt:'2026/5/16 11:00' },
-  { id:1008, content:'等我重连',      sceneType:'general', gameName:'',           enabled:true,  sort:8,  createdAt:'2026/5/16 11:05', updatedAt:'2026/5/17 16:40' },
-  { id:1009, content:'语音已开',      sceneType:'general', gameName:'',           enabled:false, sort:9,  createdAt:'2026/5/17 09:00', updatedAt:'2026/5/17 09:00' },
-  { id:1010, content:'准备好了',      sceneType:'general', gameName:'',           enabled:true,  sort:10, createdAt:'2026/5/17 14:00', updatedAt:'2026/5/17 14:00' },
+  { id:1001, content:'有人组队吗',    sceneType:'general', games:[],                                      enabled:true,  sort:1,  createdAt:'2026/5/15 14:30', updatedAt:'2026/5/15 14:30' },
+  { id:1002, content:'缺一个输出',    sceneType:'game',    games:['怪物猎人：世界','人类一败涂地'],          enabled:true,  sort:2,  createdAt:'2026/5/15 14:32', updatedAt:'2026/5/18 10:15' },
+  { id:1003, content:'新手友好来一个', sceneType:'general', games:[],                                      enabled:true,  sort:3,  createdAt:'2026/5/15 14:35', updatedAt:'2026/5/15 14:35' },
+  { id:1004, content:'茶杯头双人',    sceneType:'game',    games:['茶杯头'],                               enabled:true,  sort:4,  createdAt:'2026/5/15 15:00', updatedAt:'2026/5/15 15:00' },
+  { id:1005, content:'休闲局来吗',    sceneType:'game',    games:['人类一败涂地','双人成行'],               enabled:true,  sort:5,  createdAt:'2026/5/15 15:10', updatedAt:'2026/5/16 09:20' },
+  { id:1006, content:'再来一局',      sceneType:'general', games:[],                                      enabled:true,  sort:6,  createdAt:'2026/5/16 10:00', updatedAt:'2026/5/16 10:00' },
+  { id:1007, content:'我来开怪',      sceneType:'game',    games:['怪物猎人：世界'],                       enabled:true,  sort:7,  createdAt:'2026/5/16 11:00', updatedAt:'2026/5/16 11:00' },
+  { id:1008, content:'等我重连',      sceneType:'general', games:[],                                      enabled:true,  sort:8,  createdAt:'2026/5/16 11:05', updatedAt:'2026/5/17 16:40' },
+  { id:1009, content:'语音已开',      sceneType:'general', games:[],                                      enabled:false, sort:9,  createdAt:'2026/5/17 09:00', updatedAt:'2026/5/17 09:00' },
+  { id:1010, content:'准备好了',      sceneType:'general', games:[],                                      enabled:true,  sort:10, createdAt:'2026/5/17 14:00', updatedAt:'2026/5/17 14:00' },
 ];
 
 let searchKeyword = '';
+let filterScene = '';
+let filterStatus = '';
 let editingId = null;
 let deletingId = null;
 
@@ -494,8 +546,13 @@ function maxId(){
 /* ── 筛选 + 排序渲染 ── */
 function getFiltered(){
   const kw = searchKeyword.trim();
-  const src = kw ? phrases.filter(p => p.content.includes(kw)) : phrases.slice();
-  return src.slice().sort((a,b) => a.sort - b.sort);
+  let src = phrases.slice();
+  if(kw) src = src.filter(p => p.content.includes(kw));
+  if(filterScene === 'general') src = src.filter(p => p.sceneType === 'general');
+  if(filterScene === 'game')    src = src.filter(p => p.sceneType === 'game');
+  if(filterStatus === 'enabled')  src = src.filter(p => p.enabled);
+  if(filterStatus === 'disabled') src = src.filter(p => !p.enabled);
+  return src.sort((a,b) => a.sort - b.sort);
 }
 
 function render(){
@@ -509,9 +566,15 @@ function render(){
     return;
   }
   tbody.innerHTML = list.map(p => {
-    const sceneHtml = p.sceneType === 'general'
-      ? `<span class="tag tag-general">通用</span>`
-      : `<span class="tag tag-game">${escHtml(p.gameName)}</span>`;
+    let sceneHtml;
+    if(p.sceneType === 'general'){
+      sceneHtml = `<span class="tag tag-general">通用</span>`;
+    } else {
+      const tags = (p.games && p.games.length)
+        ? p.games.map(g => `<span class="tag tag-game">${escHtml(g)}</span>`).join('')
+        : `<span class="tag tag-game">指定游戏</span>`;
+      sceneHtml = `<div class="game-tags">${tags}</div>`;
+    }
     return `<tr data-id="${p.id}">
       <td class="td-id">${p.id}</td>
       <td class="td-phrase">${escHtml(p.content)}</td>
@@ -542,6 +605,13 @@ function render(){
 /* ── 搜索 ── */
 function doSearch(val){
   searchKeyword = val;
+  render();
+}
+
+/* ── 筛选 ── */
+function doFilter(){
+  filterScene  = document.getElementById('filterScene').value;
+  filterStatus = document.getElementById('filterStatus').value;
   render();
 }
 
@@ -628,7 +698,7 @@ function onSceneChange(val){
     wrap.classList.add('show');
   } else {
     wrap.classList.remove('show');
-    document.getElementById('fieldGame').value = '';
+    clearGameCheckboxes();
   }
   document.getElementById('sceneError').classList.remove('show');
 }
@@ -636,6 +706,33 @@ function onSceneChange(val){
 function setSceneRadio(val){
   document.querySelectorAll('input[name=sceneRadio]').forEach(r => { r.checked = (r.value === val); });
   onSceneChange(val);
+}
+
+/* ── 游戏多选工具函数 ── */
+function toggleGameItem(label){
+  const cb = label.querySelector('input[type=checkbox]');
+  cb.checked = !cb.checked;
+  label.classList.toggle('checked', cb.checked);
+  if(cb.checked) document.getElementById('gameError').classList.remove('show');
+}
+
+function clearGameCheckboxes(){
+  document.querySelectorAll('#gameCheckboxList input[type=checkbox]').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.game-checkbox-item').classList.remove('checked');
+  });
+}
+
+function getSelectedGames(){
+  return Array.from(document.querySelectorAll('#gameCheckboxList input[type=checkbox]:checked')).map(cb => cb.value);
+}
+
+function setSelectedGames(games){
+  clearGameCheckboxes();
+  (games || []).forEach(g => {
+    const cb = document.querySelector(`#gameCheckboxList input[value="${g}"]`);
+    if(cb){ cb.checked = true; cb.closest('.game-checkbox-item').classList.add('checked'); }
+  });
 }
 
 /* ── 新增 ── */
@@ -647,7 +744,7 @@ function openAddModal(){
   document.getElementById('charCount').textContent = '0/20';
   document.querySelectorAll('input[name=sceneRadio]').forEach(r => r.checked = false);
   document.getElementById('gameSelectWrap').classList.remove('show');
-  document.getElementById('fieldGame').value = '';
+  clearGameCheckboxes();
   document.getElementById('fieldSort').value = maxSort() + 1;
   hideErrors();
   openModal('editOverlay');
@@ -664,7 +761,7 @@ function openEditModal(id){
   document.getElementById('fieldContent').value = p.content;
   document.getElementById('charCount').textContent = `${p.content.length}/20`;
   setSceneRadio(p.sceneType);
-  if(p.sceneType === 'game') document.getElementById('fieldGame').value = p.gameName;
+  if(p.sceneType === 'game') setSelectedGames(p.games);
   document.getElementById('fieldSort').value = p.sort;
   hideErrors();
   openModal('editOverlay');
@@ -688,8 +785,8 @@ function submitForm(){
   const content   = document.getElementById('fieldContent').value.trim();
   const sceneRadio = document.querySelector('input[name=sceneRadio]:checked');
   const sceneType  = sceneRadio ? sceneRadio.value : '';
-  const gameName  = document.getElementById('fieldGame').value;
-  const sortVal   = parseInt(document.getElementById('fieldSort').value);
+  const games      = getSelectedGames();
+  const sortVal    = parseInt(document.getElementById('fieldSort').value);
   let valid = true;
 
   if(!content){
@@ -702,7 +799,7 @@ function submitForm(){
   } else {
     document.getElementById('sceneError').classList.remove('show');
   }
-  if(sceneType === 'game' && !gameName){
+  if(sceneType === 'game' && !games.length){
     document.getElementById('gameError').classList.add('show'); valid = false;
   } else {
     document.getElementById('gameError').classList.remove('show');
@@ -720,7 +817,7 @@ function submitForm(){
       id: maxId() + 1,
       content,
       sceneType,
-      gameName: sceneType === 'game' ? gameName : '',
+      games: sceneType === 'game' ? games : [],
       enabled: true,
       sort: sortVal,
       createdAt: now,
@@ -732,7 +829,7 @@ function submitForm(){
     if(p){
       p.content   = content;
       p.sceneType = sceneType;
-      p.gameName  = sceneType === 'game' ? gameName : '';
+      p.games     = sceneType === 'game' ? games : [];
       p.sort      = sortVal;
       p.updatedAt = now;
     }
