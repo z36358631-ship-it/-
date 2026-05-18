@@ -26,7 +26,7 @@
 body{width:100vw;height:100vh;background:#000;color:var(--text);display:flex;align-items:center;justify-content:center;overflow:hidden}
 button{font:inherit}
 .demo-controls{
-  position:fixed;left:18px;top:18px;display:grid;gap:10px;z-index:9999
+  position:fixed;left:50%;top:12px;transform:translateX(-50%);display:flex;gap:10px;z-index:9999
 }
 .demo-controls button{
   border:1px solid rgba(255,255,255,.16);background:rgba(18,24,34,.94);color:#fff;border-radius:14px;
@@ -38,16 +38,17 @@ button{font:inherit}
   border-radius:var(--radius);overflow:hidden;position:relative;display:flex;
   box-shadow:0 0 54px rgba(0,0,0,.82)
 }
-.app.portrait{width:400px;height:860px;max-height:96vh;border-radius:28px}
+.app.portrait{width:400px;height:860px;max-height:96vh;border-radius:28px;--app-h:860px}
 .app.in-game .sidebar,.app.in-game .top-bar,.app.in-game .tabs{display:none}
 .app.in-game .main{padding:0;height:100%}
 .app.in-game .content{padding:0;height:100%;overflow:hidden}
 .app.in-game .view,.app.in-game #view-team,.app.in-game #screen-play{height:100%}
-.app.room-page .top-bar,.app.room-page .tabs{display:none}
-.app.room-page .main{padding:20px 32px}
-.app.room-page .content{position:relative;inset:auto;padding:0;height:100%;overflow:auto}
-.app.room-page #view-team,.app.room-page #screen-room{height:100%}
-.app.room-page #screen-room{flex-direction:column}
+#screen-room.room-active{
+  display:flex!important;flex-direction:column;
+  position:absolute;inset:0;z-index:50;
+  background:linear-gradient(135deg,#0f1419 0%,#111720 100%);
+  overflow:hidden;padding:0
+}
 .game-status-layer{
   position:absolute;left:22px;right:22px;bottom:14px;z-index:40;display:none;
   align-items:center;gap:10px;padding:10px 12px;border-radius:14px;
@@ -111,7 +112,7 @@ button{font:inherit}
   width:24px;height:3px;border-radius:3px;background:var(--violet)
 }
 .tab.team-tab.active:after{background:linear-gradient(90deg,var(--violet),var(--cyan));width:34px}
-.content{flex:1;overflow:auto;padding-top:20px;padding-bottom:34px}
+.content{flex:1;overflow:auto;padding-top:16px;padding-bottom:8px}
 .view{display:none}.view.active{display:block;animation:fade .24s ease}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .hero{
@@ -167,7 +168,7 @@ button{font:inherit}
 }
 .game-info{padding:12px}.game-title{font-size:15px;font-weight:800;margin-bottom:7px}
 .game-meta{display:flex;gap:6px;flex-wrap:wrap}
-.game-card-actions{display:flex;justify-content:flex-end;margin-top:10px}
+.game-card-actions{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-top:10px}
 .pill{font-size:11px;color:#aab6c2;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:3px 7px}
 .pill.good{color:#bdf8d3;background:rgba(56,211,122,.11);border-color:rgba(56,211,122,.2)}
 .sub-tabs{display:flex;gap:10px;margin:0 0 16px;align-items:center;width:100%}
@@ -181,6 +182,7 @@ button{font:inherit}
 }
 .refresh-btn:hover{background:rgba(255,255,255,.12);color:#fff}
 .lobby-view{display:none}.lobby-view.active{display:block}
+#screen-team[style*="block"]{display:block!important}
 .team-page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .team-page-head h2{font-size:20px}.team-page-head p{font-size:12px;color:var(--muted);margin-top:5px}
 .help-link{border:1px solid var(--line);background:rgba(255,255,255,.06);color:#dbeafe;border-radius:17px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer}
@@ -231,23 +233,24 @@ button{font:inherit}
 }
 .slot.filled{background:rgba(56,211,122,.11);border-color:rgba(56,211,122,.28);color:#dfffea}
 .avatar{
-  width:28px;height:28px;border-radius:50%;background-size:cover;background-position:center;border:2px solid rgba(255,255,255,.12)
+  width:24px;height:24px;border-radius:50%;background-size:cover;background-position:center;border:2px solid rgba(255,255,255,.12)
 }
-.room-layout{display:grid;grid-template-columns:1fr;gap:16px}
-.room-main{min-height:0;display:flex;flex-direction:column}
-.app.room-page .room-layout{height:calc(100% - 48px)}
-.app.room-page .room-main{height:100%;overflow:auto}
-.app.room-page #screen-room[style*="block"]{display:flex!important}
-.room-page-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.room-info-bar{display:flex;align-items:center;gap:8px;padding:0 14px 6px;flex-shrink:0;position:relative}
+.room-info-bar .room-title{flex:1;min-width:0}
+.room-chat-container{display:flex;flex-direction:column;flex:1;min-height:0;margin:0 14px;border-radius:10px;background:rgba(21,26,34,.88);border:1px solid var(--line);overflow:hidden}
+.room-chat-container .chat-flow{padding:10px 12px}
+.room-chat-container .room-messages-head{padding:6px 12px;border-bottom:1px solid var(--line);flex-shrink:0}
+#screen-room .members{margin:0 14px 6px;flex-shrink:0}
+#screen-room .room-actions{padding:6px 14px;flex-shrink:0}
+.room-page-head{display:flex;align-items:center;gap:8px;padding:8px 14px 4px;flex-shrink:0}
 .room-back{
-  width:34px;height:34px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);
+  width:30px;height:30px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.06);
   color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer
 }
-.room-page-head h1{font-size:18px;line-height:1;font-weight:900}
-.room-top{position:relative;margin-bottom:16px;padding-right:46px}
+.room-page-head h1{font-size:16px;line-height:1;font-weight:900}
 .room-title{min-width:0;padding-top:2px}
 .room-title-line{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.room-title h2{font-size:18px;line-height:1.3;margin-bottom:0;white-space:normal;word-break:break-word;min-width:0;max-width:100%}
+.room-title h2{font-size:16px;line-height:1.3;margin-bottom:0;white-space:normal;word-break:break-word;min-width:0;max-width:100%}
 .room-code{
   height:auto;font-size:12px;color:#c7d0dc;background:transparent;
   border:0;padding:0;display:flex;align-items:baseline;gap:5px;flex:0 0 auto;cursor:pointer
@@ -255,7 +258,7 @@ button{font:inherit}
 .room-code span{font-size:11px;color:var(--muted);line-height:1}
 .room-code b{font-size:13px;color:#dfe7f1;line-height:1;letter-spacing:.5px}
 .room-code:hover b{color:#fff}
-.room-more-wrap{position:absolute;right:0;top:0}
+.room-more-wrap{position:relative;flex-shrink:0}
 .room-more-btn{
   width:34px;height:34px;border-radius:11px;padding:0;justify-content:center;font-size:13px;font-weight:900;letter-spacing:1px
 }
@@ -270,10 +273,10 @@ button{font:inherit}
   display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap
 }
 .room-more-menu button:hover{background:rgba(255,255,255,.08)}
-.members{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.members{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-bottom:5px;flex-shrink:0}
 .member{
-  min-height:62px;border-radius:12px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);
-  padding:9px 32px 9px 9px;display:flex;gap:8px;align-items:center;position:relative
+  min-height:44px;border-radius:8px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);
+  padding:5px 24px 5px 6px;display:flex;gap:6px;align-items:center;position:relative
 }
 .member.ready{border-color:rgba(56,211,122,.32);background:rgba(56,211,122,.08)}
 .member.empty{border-style:dashed;color:var(--muted)}
@@ -282,58 +285,94 @@ button{font:inherit}
   color:#d8cbff;font-size:11px;font-weight:900;padding:3px 7px
 }
 .m-name{font-size:13px;font-weight:800;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.m-sub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ready-text{color:#bdf8d3}
-.role-note{
-  display:grid;gap:7px;margin-bottom:14px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid var(--line)
-}
-.note{border:0;background:transparent;padding:0;display:flex;gap:8px;align-items:flex-start}
 .note b{font-size:12px;line-height:1.42;white-space:nowrap}.note span{font-size:12px;color:#b9c5d2;line-height:1.42}
-.room-voice{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08)}
-.room-voice-title{font-size:12px;font-weight:900}.room-voice-title span{display:block;font-size:11px;color:var(--muted);font-weight:700;margin-top:2px}
-.room-voice-actions{display:flex;gap:8px;align-items:center}
-.room-messages{margin-bottom:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid var(--line)}
-.room-messages-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.room-messages-head b{font-size:12px}.room-messages-head span{font-size:11px;color:var(--muted)}
-.room-msg-list{display:grid;gap:6px;max-height:74px;overflow:auto;margin-bottom:8px}
-.room-msg{font-size:11px;color:#dbe6f2;background:rgba(255,255,255,.06);border-radius:9px;padding:6px 8px}
-.room-msg-quick{display:flex;gap:6px;flex-wrap:wrap}
-.room-actions{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:auto;padding-top:14px}
+.room-messages-head{display:flex;align-items:center;justify-content:space-between}
+.room-messages-head b{font-size:11px}.room-messages-head span{font-size:10px;color:var(--muted)}
+.chat-flow{flex:1;min-height:0;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:10px}
+.chat-flow-item{display:flex;gap:8px;align-items:flex-start}
+.chat-flow-item .cf-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;background:rgba(129,93,242,.22);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#d8cbff;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.08)}
+.chat-flow-item .cf-body{flex:1;min-width:0}
+.chat-flow-item .cf-name{font-size:10px;color:var(--muted);margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.chat-flow-item .cf-name b{color:#c5cfda;font-weight:800}
+.chat-flow-item .cf-bubble{font-size:12px;color:#dbe6f2;background:rgba(255,255,255,.06);border-radius:2px 10px 10px 10px;padding:8px 10px;line-height:1.45;max-width:80%;display:inline-block}
+.chat-flow-item .cf-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:2px 10px 10px 10px;padding:10px;position:relative;max-width:80%}
+.cf-card-top{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.chat-flow-item .cf-card-cover{width:44px;height:44px;border-radius:8px;background-size:cover;background-position:center;flex-shrink:0}
+.chat-flow-item .cf-card-info{flex:1;min-width:0}
+.chat-flow-item .cf-card h4{font-size:13px;font-weight:800;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-flow-item .cf-card p{font-size:11px;color:var(--muted);line-height:1.3}
+.cf-card-status{position:absolute;right:10px;top:10px;font-size:10px;font-weight:800;padding:2px 6px;border-radius:6px}
+.cf-card-status.ready{background:rgba(56,211,122,.15);color:#6ee89e;border:1px solid rgba(56,211,122,.25)}
+.cf-card-status.playing{background:rgba(34,211,238,.12);color:#5dd8ee;border:1px solid rgba(34,211,238,.22)}
+.cf-card-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cf-card-bottom .cf-room-name{font-size:11px;color:#b5c0cc;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-flow-item .cf-card .cf-join{border:0;border-radius:14px;padding:6px 14px;background:linear-gradient(135deg,var(--violet),#5b8cff);color:#fff;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.cf-time{text-align:center;padding:6px 0;font-size:10px;color:var(--muted)}
+.chat-flow-item.cf-system{justify-content:center}
+.chat-flow-item.cf-system .cf-bubble{background:transparent;color:var(--muted);font-size:10px;text-align:center;padding:4px 8px}
+.chat-flow-item.cf-self{flex-direction:row-reverse}
+.chat-flow-item.cf-self .cf-name{flex-direction:row-reverse}
+.chat-flow-item.cf-self .cf-body{display:flex;flex-direction:column;align-items:flex-end}
+.chat-flow-item.cf-self .cf-bubble{border-radius:10px 2px 10px 10px;background:rgba(129,93,242,.18)}
+.chat-flow-item.cf-self .cf-card{border-radius:10px 2px 10px 10px;background:rgba(129,93,242,.1);border-color:rgba(129,93,242,.2)}
+.chat-flow-bottom{flex-shrink:0;padding:6px 10px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.chat-flow-quick{display:flex;gap:6px;flex-wrap:wrap}
+.chat-flow-quick .cq-btn{font-size:10px;color:#bcc7d4;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);border-radius:10px;padding:4px 8px;cursor:pointer;transition:.15s}
+.chat-flow-quick .cq-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+.chat-flow-input{display:flex;gap:6px;align-items:center}
+.chat-flow-input input{flex:1;min-width:0;height:30px;border-radius:15px;background:rgba(255,255,255,.07);border:1px solid var(--line);padding:0 12px;color:#fff;font-size:11px;outline:none}
+.chat-flow-input input::placeholder{color:var(--muted)}
+.chat-flow-input button{width:30px;height:30px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--violet),#5b8cff);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;flex-shrink:0}
+.chat-flow-input button:hover{filter:brightness(1.1)}
+.chat-flow-input .cf-recruit-btn{width:auto;height:28px;min-width:80px;border-radius:14px;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.07);color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-size:11px;font-weight:700;flex-shrink:0;padding:0 14px;white-space:nowrap}
+.chat-flow-input .cf-recruit-btn:hover{background:rgba(255,255,255,.14);filter:none}
+.chat-flow-input .cf-recruit-btn:disabled{opacity:.5;cursor:not-allowed}
+.room-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-shrink:0;padding-top:4px}
 .chat{height:100%;display:flex;flex-direction:column}
 .chat-list{flex:1;overflow:auto;display:flex;flex-direction:column;gap:9px;margin:12px 0}
-.msg{font-size:12px;line-height:1.45;color:#c5cfda;background:rgba(255,255,255,.045);border-radius:10px;padding:9px 10px}
-.msg b{color:#fff;margin-right:5px}
+.msg{display:flex;gap:8px;align-items:flex-start}
+.msg .msg-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.1)}
+.msg .msg-body{flex:1;min-width:0}
+.msg .msg-name{font-size:10px;color:var(--muted);margin-bottom:2px;display:flex;align-items:center;gap:6px}
+.msg .msg-bubble{font-size:12px;line-height:1.45;color:#c5cfda;background:rgba(255,255,255,.06);border-radius:0 10px 10px 10px;padding:8px 10px;display:inline-block}
+.msg.system-msg{gap:0}
+.msg.system-msg .msg-bubble{font-size:11px;color:var(--muted);background:transparent;padding:4px 0;border-radius:0}
 .quick-say{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .say{font-size:11px;color:#dfe7f1;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);border-radius:12px;padding:5px 8px;cursor:pointer}
 .chat-input{height:34px;border-radius:17px;background:rgba(255,255,255,.07);border:1px solid var(--line);display:flex;align-items:center;padding:0 11px;color:var(--muted);font-size:12px}
-.world-layout{display:grid;grid-template-columns:1fr 320px;gap:16px}
-.lobby-room-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
-.lobby-world{max-height:450px;overflow:hidden}
-.lobby-world .world-feed{max-height:250px}
-.lobby-world .chat-list{max-height:86px;min-height:64px}
-.lobby-world .quick-say{margin-bottom:8px}
+.world-chat-container{display:flex;flex-direction:column;height:196px;border-radius:12px;background:rgba(21,26,34,.88);border:1px solid var(--line);overflow:hidden}
+.world-chat-container .chat-flow{padding:10px 12px}
+.world-chat-full{display:flex;flex-direction:column;height:230px;border-radius:12px;background:rgba(21,26,34,.88);border:1px solid var(--line);overflow:hidden}
+.world-chat-full .chat-flow{padding:10px 14px}
+.world-chat-header{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line);flex-shrink:0}
+.world-chat-header b{font-size:14px;font-weight:900;flex-shrink:0}
+.world-chat-header .channel-filter{margin-bottom:0}
 .channel-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .channel{border:1px solid var(--line);background:rgba(255,255,255,.055);color:#dfe7f1;border-radius:16px;padding:7px 11px;font-size:12px;cursor:pointer}
 .channel.active{background:rgba(129,93,242,.22);border-color:rgba(129,93,242,.42);color:#fff}
-.world-feed{display:grid;grid-template-columns:1fr;gap:10px;max-height:448px;overflow:auto}
-.room-lobby-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.feed-card{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.045);border-radius:13px;padding:12px}
-.feed-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
-.feed-user{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800}
-.feed-time{font-size:11px;color:var(--muted)}
-.room-card{display:grid;grid-template-columns:86px 1fr auto;gap:12px;align-items:center;border-radius:12px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07);padding:10px;margin-top:10px}
-.room-cover{height:58px;border-radius:9px;background-size:cover;background-position:center}
-.room-card h3{font-size:14px;margin-bottom:5px}.room-card p{font-size:11px;color:var(--muted);line-height:1.4}
+.room-lobby-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.lobby-card{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.045);border-radius:13px;padding:12px}
+.lobby-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.lobby-card-user{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800}
+.lobby-card-tag{font-size:11px;color:var(--muted)}
+.lobby-card-body{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;border-radius:10px;background:rgba(0,0,0,.16);border:1px solid rgba(255,255,255,.06);padding:10px}
+.lobby-card-cover{height:52px;border-radius:8px;background-size:cover;background-position:center}
+.lobby-card-body h3{font-size:13px;font-weight:800;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lobby-card-body p{font-size:11px;color:var(--muted);line-height:1.35}
+.app.portrait .room-lobby-grid{grid-template-columns:1fr}
 .copy-inline{cursor:pointer;color:#dfe7f1}
 .copy-inline:hover{color:#fff}
 .floating-room{
-  position:fixed;left:50%;bottom:calc((100vh - 400px)/2 + 18px);transform:translateX(calc(-50% + 40px));
-  width:732px;z-index:18;display:none;align-items:center;gap:10px;min-width:0;
-  background:rgba(15,20,28,.94);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 12px;
-  box-shadow:0 12px 30px rgba(0,0,0,.38);backdrop-filter:blur(14px)
+  position:absolute;left:90px;right:10px;bottom:10px;transform:none;
+  width:auto;max-width:none;z-index:18;display:none;align-items:center;gap:8px;min-width:0;
+  background:rgba(15,20,28,.94);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:8px 10px;
+  box-shadow:0 8px 24px rgba(0,0,0,.38);backdrop-filter:blur(14px);font-size:12px
 }
 .floating-room.show{display:flex}
-.floating-room .all-cover{width:42px;height:42px;border-radius:10px}
-.float-room-copy{min-width:0;flex:1}.float-room-copy b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.float-room-copy span{font-size:11px;color:var(--muted)}
-.float-room-actions{display:flex;gap:8px;flex-shrink:0}
+.floating-room .all-cover{width:36px;height:36px;border-radius:8px;flex-shrink:0}
+.float-room-copy{min-width:0;flex:1}.float-room-copy b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.float-room-copy span{font-size:10px;color:var(--muted)}
+.float-room-actions{display:flex;gap:6px;flex-shrink:0}
+.float-room-actions .secondary{padding:6px 10px;font-size:11px}
 .float-room-actions .secondary{padding:8px 12px}
 .login-flow{display:grid;gap:10px;margin:12px 0}
 .flow-step{display:flex;align-items:center;gap:10px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.045);padding:10px}
@@ -394,37 +433,37 @@ button{font:inherit}
 }
 .toast.on{opacity:1;transform:translateX(-50%)}
 .modal-mask{
-  position:fixed;left:50%;top:50%;width:860px;height:400px;transform:translate(-50%,-50%);
+  position:absolute;inset:0;
   background:rgba(0,0,0,.58);display:none;align-items:center;justify-content:center;z-index:20;padding:18px;overflow:hidden
 }
 .modal-mask.show{display:flex}
-.modal{width:430px;max-width:100%;max-height:calc(100% - 8px);overflow:auto;background:#151b24;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:18px;box-shadow:0 18px 50px rgba(0,0,0,.45)}
-.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.modal-head h3{font-size:17px}.close{cursor:pointer;color:var(--muted)}
-.duration-dialog{width:300px;height:370px;display:flex;flex-direction:column;align-items:center;text-align:center;padding:22px 18px}
-.duration-dialog .modal-head{width:100%;margin-bottom:28px}.duration-dialog .modal-head h3{flex:1;text-align:center}
-.duration-dialog .empty-hint{font-size:13px;line-height:1.65;margin:auto 0;color:#b9c4d0}
-.dialog-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:auto}
+.modal{width:300px;max-width:calc(100% - 32px);max-height:calc(100% - 32px);overflow:auto;background:#151b24;border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:20px;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.modal-head h3{font-size:15px;flex:1;text-align:center}.close{cursor:pointer;color:var(--muted);flex-shrink:0}
+.duration-dialog{width:300px;height:auto;display:flex;flex-direction:column;align-items:center;text-align:center;padding:22px 18px}
+.duration-dialog .modal-head{width:100%;margin-bottom:16px}.duration-dialog .modal-head h3{flex:1;text-align:center}
+.duration-dialog .empty-hint{font-size:13px;line-height:1.65;margin-bottom:20px;color:#b9c4d0}
+.dialog-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:0}
 .dialog-actions button{height:42px;justify-content:center}
 .share-box{border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--line);padding:12px;font-size:12px;color:#c6d0db;line-height:1.5;margin-bottom:12px;word-break:break-all}
 .share-options{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .share-option{height:64px;border-radius:12px;background:rgba(255,255,255,.055);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:12px;cursor:pointer}
 .share-option i{font-size:18px}
 .share-option:hover{background:rgba(255,255,255,.1)}
-.form-grid{display:grid;gap:12px;margin:12px 0}
-.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px}
+.form-grid{display:grid;gap:8px;margin:8px 0}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
 .field input,.field select{
-  width:100%;height:40px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.07);
-  color:#fff;padding:0 12px;outline:none
+  width:100%;height:34px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.07);
+  color:#fff;padding:0 10px;outline:none;font-size:12px
 }
 .field select option{background:#151b24;color:#fff}
-.game-option-preview{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.05);padding:10px;margin-bottom:10px}
+.game-option-preview{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.05);padding:6px;margin-bottom:6px}
 .game-option-preview .all-cover{width:48px;height:48px;border-radius:10px}.game-option-preview b{font-size:14px}.game-option-preview span{font-size:12px;color:var(--muted)}
 .password-field{display:none}.password-field.show{display:block}
 .empty-hint{font-size:12px;color:var(--muted);line-height:1.5}
 .cloud-home{display:block}
 .mobile-cloud-home{display:none}
 .mobile-status,.bottom-nav{display:none}
-.mobile-section{margin:24px 0 0}.mobile-section h2{font-size:20px;margin-bottom:14px}
+.mobile-section{margin:16px 0 0}.mobile-section h2{font-size:15px;margin-bottom:10px}
 .benefit-card{
   border-radius:22px;background:linear-gradient(135deg,rgba(126,45,116,.62),rgba(28,18,26,.92));
   border:1px solid rgba(255,255,255,.1);padding:20px 18px;box-shadow:0 18px 48px rgba(0,0,0,.36);
@@ -433,7 +472,7 @@ button{font:inherit}
 .benefit-card:before{content:"";position:absolute;inset:-80px auto auto -80px;width:220px;height:220px;background:radial-gradient(circle,rgba(255,126,214,.35),transparent 70%);filter:blur(18px)}
 .benefit-top{position:relative;display:flex;align-items:center;gap:14px;margin-bottom:18px}
 .emoji-face{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.12);font-size:34px}
-.benefit-name{font-size:14px;color:#bcaeb8;margin-bottom:8px}.benefit-time{font-size:24px;font-weight:900}
+.benefit-name{font-size:12px;color:#bcaeb8;margin-bottom:6px}.benefit-time{font-size:16px;font-weight:900}
 .benefit-body{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .benefit-body b{font-size:17px}.benefit-tags{font-size:12px;color:#dfa9d4;margin-top:8px;display:flex;gap:10px;flex-wrap:wrap}
 .charge-btn{border:0;border-radius:24px;background:rgba(255,166,210,.15);color:#ffb7dc;font-weight:900;padding:12px 18px;font-size:16px;white-space:nowrap}
@@ -442,9 +481,9 @@ button{font:inherit}
 .recent-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.recent-icon{aspect-ratio:1;border-radius:14px;background-size:cover;background-position:center;box-shadow:0 8px 22px rgba(0,0,0,.35)}
 .hot-scroll{display:grid;grid-auto-flow:column;grid-auto-columns:72%;gap:16px;overflow-x:auto;margin-left:-16px;margin-right:-16px;padding:0 16px 3px}
 .hot-card{border:1px solid rgba(255,255,255,.09);border-radius:20px;overflow:hidden;background:rgba(255,255,255,.045)}
-.hot-img{height:150px;background-size:cover;background-position:center}.hot-info{display:flex;align-items:center;justify-content:space-between;padding:13px 14px}.hot-info b{font-size:17px}
-.play-pill{border:0;border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.08));color:#fff;padding:8px 16px;font-weight:800;white-space:nowrap}
-.all-list{display:grid;gap:14px}.all-item{display:grid;grid-template-columns:72px 1fr auto;gap:14px;align-items:center}.all-cover{width:72px;height:72px;border-radius:16px;background-size:cover;background-position:center}.all-copy b{font-size:18px}.all-copy p{font-size:12px;color:#b1aab1;margin-top:7px;line-height:1.35}
+.hot-img{height:100px;background-size:cover;background-position:center}.hot-info{display:flex;align-items:center;justify-content:space-between;padding:10px 12px}.hot-info b{font-size:13px}
+.play-pill{border:0;border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.08));color:#fff;padding:6px 12px;font-size:12px;font-weight:800;white-space:nowrap}
+.all-list{display:grid;gap:10px}.all-item{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center}.all-cover{width:52px;height:52px;border-radius:12px;background-size:cover;background-position:center}.all-copy b{font-size:13px}.all-copy p{font-size:11px;color:#b1aab1;margin-top:4px;line-height:1.35}
 .team-entry{
   margin-top:18px;border-radius:22px;padding:16px;background:linear-gradient(135deg,rgba(129,93,242,.24),rgba(34,211,238,.08));
   border:1px solid rgba(255,255,255,.1)
@@ -493,19 +532,20 @@ button{font:inherit}
 .app.portrait .top-bar{gap:12px;align-items:flex-end;margin-top:38px}
 .app.portrait .top-bar:before{content:"11:47:41  120Hz";position:absolute;top:28px;left:18px;font-size:15px;font-weight:800;color:rgba(255,255,255,.86)}
 .app.portrait .top-bar:after{content:"Bluetooth  Wi-Fi  31%";position:absolute;top:28px;right:18px;font-size:12px;font-weight:800;color:rgba(255,255,255,.78)}
-.app.portrait .search{width:auto;flex:1;height:58px;border-radius:30px;background:rgba(255,255,255,.08);font-size:18px;color:#9e8f9a}
-.app.portrait .search i{font-size:27px}.app.portrait .search input{font-size:17px}
+.app.portrait .search{width:auto;flex:1;height:40px;border-radius:20px;background:rgba(255,255,255,.08);font-size:13px;color:#9e8f9a}
+.app.portrait .search i{font-size:16px}.app.portrait .search input{font-size:13px}
 .app.portrait .top-actions{gap:0}.app.portrait .top-actions i{display:none}
-.app.portrait .top-actions .ghost-btn{width:48px;height:58px;border:0;background:transparent;padding:0;font-size:27px;color:#fff}
+.app.portrait .top-actions .ghost-btn{width:36px;height:40px;border:0;background:transparent;padding:0;font-size:18px;color:#fff}
 .app.portrait .top-actions .ghost-btn span{display:none}
 .app.portrait .portrait-orientation-btn{
-  display:flex;position:absolute;right:18px;top:72px;width:44px;height:44px;border-radius:50%;
-  border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;
-  align-items:center;justify-content:center;z-index:12;font-size:20px
+  display:flex;position:absolute;right:18px;top:72px;width:38px;height:38px;border-radius:50%;
+  border:1px solid var(--line);background:rgba(255,255,255,.06);color:#dbeafe;
+  align-items:center;justify-content:center;z-index:12;font-size:16px;cursor:pointer
 }
-.app.portrait .tabs{gap:34px;overflow-x:auto;border-bottom:0;margin-top:24px}
-.app.portrait .tab{white-space:nowrap;font-size:20px;color:rgba(255,255,255,.46);padding-bottom:14px}
-.app.portrait .tab.active{font-size:20px;color:#fff}.app.portrait .tab.active:after{left:12px;transform:none;width:22px;height:4px;background:#fff}
+.app.portrait .portrait-orientation-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.app.portrait .tabs{gap:24px;overflow-x:auto;border-bottom:0;margin-top:16px}
+.app.portrait .tab{white-space:nowrap;font-size:15px;color:rgba(255,255,255,.46);padding-bottom:10px}
+.app.portrait .tab.active{font-size:15px;color:#fff}.app.portrait .tab.active:after{left:12px;transform:none;width:18px;height:3px;background:#fff}
 .app.portrait .tab.team-tab{color:#d9caff}
 .app.portrait .tab.team-tab.active{
   color:#fff;background:linear-gradient(135deg,#fff,#bda9ff 55%,#79d8ff);
@@ -516,38 +556,33 @@ button{font:inherit}
 .app.portrait .mobile-cloud-home{display:block}
 .app.portrait .desktop-home{display:none}
 .app.portrait .desktop-cloud-grid{display:block}
-.app.portrait .content{padding-top:18px}
+.app.portrait .content{padding-top:12px;padding-bottom:0}
 .app.portrait .hero-side{padding:0 18px 18px}
 .app.portrait .hero-body{padding:22px 20px 12px}
 .app.portrait .hero h1{font-size:25px}
 .app.portrait .game-grid{grid-template-columns:1fr}
-.app.portrait .split,.app.portrait .room-layout,.app.portrait .confirm-layout,.app.portrait .excluded-grid{grid-template-columns:1fr}
-.app.portrait #screen-room{height:100%}
-.app.portrait .room-layout{height:100%;align-items:stretch}
-.app.portrait .room-main{width:100%;max-width:460px;min-height:100%;margin:0 auto;padding:20px 20px 24px}
-.app.portrait.room-page .main{padding:22px 16px 96px}
-.app.portrait.room-page .content{inset:auto;height:100%;padding-top:0}
-.app.portrait .room-page-head{margin-bottom:12px}
+.app.portrait .split,.app.portrait .confirm-layout,.app.portrait .excluded-grid{grid-template-columns:1fr}
+.app.portrait .room-page-head{padding:8px 10px 4px}
+.app.portrait .room-chat-container{margin:0 10px}
+.app.portrait .room-info-bar{padding:0 10px 4px}
+.app.portrait .room-title h2{font-size:15px}
+.app.portrait .room-actions{justify-content:center;flex-wrap:nowrap;flex-shrink:0;padding:6px 10px}
 .app.portrait .confirm-cover{min-height:260px}
-.app.portrait .world-layout{grid-template-columns:1fr}
-.app.portrait .lobby-room-layout{grid-template-columns:1fr}
 .app.portrait .room-lobby-grid{grid-template-columns:1fr}
-.app.portrait .sub-tabs{position:relative}.app.portrait .sub-tabs .help-link{margin-left:auto}
-.app.portrait .room-card{grid-template-columns:70px 1fr}
-.app.portrait .room-card .secondary{grid-column:1/-1;justify-content:center}
+.app.portrait .world-chat-container,.app.portrait .world-chat-full{height:calc(var(--app-h,860px) - 350px)}
+.app.portrait .cf-card,.app.portrait .cf-bubble{max-width:95%!important}
+.app.portrait .sub-tabs{position:relative;flex-shrink:0;gap:6px;flex-wrap:nowrap;overflow-x:auto}
+.app.portrait .sub-tabs .help-link{margin-left:auto;font-size:11px;padding:6px 8px}
+.app.portrait .sub-tab{font-size:11px;padding:6px 10px;border-radius:14px}
+.app.portrait .refresh-btn{width:28px;height:28px;font-size:12px}
 .app.portrait .world-tab{margin-left:0}
 .app.portrait .members{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.app.portrait .role-note{grid-template-columns:1fr}
-.app.portrait .room-top{padding-right:44px}
-.app.portrait .room-title h2{font-size:19px}
-.app.portrait .room-actions{justify-content:center;flex-wrap:nowrap;margin-top:auto;padding-top:16px}
 .app.portrait .chat{min-height:280px}
 .app.portrait .team-float{top:62px;align-items:stretch;flex-direction:column}
 .app.portrait.in-game .team-float{top:auto;bottom:18px;left:12px;right:12px}
 .app.portrait .float-members{grid-template-columns:repeat(2,minmax(0,1fr))}
-.app.portrait .modal{width:100%}
-.app.portrait .modal-mask{width:400px;height:min(860px,96vh);padding:12px}
-.app.portrait .modal{width:100%;max-width:calc(400px - 24px);max-height:calc(100% - 24px);padding:16px}
+.app.portrait .modal-mask{inset:0;width:auto;height:auto;padding:12px}
+.app.portrait .modal{width:300px;max-width:calc(100% - 24px);max-height:calc(100% - 24px);padding:18px}
 .app.portrait .share-options{gap:8px}
 .app.portrait .share-option{height:58px}
 .app.portrait .form-grid{gap:10px;margin:10px 0}
@@ -555,8 +590,7 @@ button{font:inherit}
 .app.portrait .game-option-preview{padding:8px}
 .app.portrait .game-option-preview .all-cover{width:42px;height:42px}
 .app.portrait .floating-room{
-  left:50%;right:auto;bottom:calc((100vh - min(860px,96vh))/2 + 98px);
-  transform:translateX(-50%);width:372px;max-width:calc(400px - 28px)
+  left:10px;right:10px;bottom:94px
 }
 .app.portrait .game-status-layer{left:12px;right:12px;bottom:18px;align-items:stretch;flex-direction:column}
 .app.portrait .game-status-members{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -748,28 +782,29 @@ button{font:inherit}
             <button class="sub-tab" id="subRoom" onclick="switchLobby('room')">组队大厅</button>
             <button class="sub-tab world-tab" id="subWorld" onclick="switchLobby('world')">世界频道</button>
             <span class="sub-tabs-spacer"></span>
-            <button class="refresh-btn" onclick="refreshLobby()" title="刷新"><i class="fas fa-rotate-right"></i></button>
+            <button class="refresh-btn" id="refreshBtn" onclick="refreshLobby()" title="刷新"><i class="fas fa-rotate-right"></i></button>
+            <button class="refresh-btn" id="reportBtn" onclick="toast('不良信息举报请截图发送至gamehub@gamesir.com')" title="举报" style="display:none"><i class="fas fa-flag"></i></button>
             <button class="plain-help" id="lobbyHelp" onclick="showScreen('rules')">玩法说明</button>
           </div>
           <div class="lobby-view active" id="lobby-game">
             <div class="game-grid" id="gameGrid"></div>
           </div>
           <div class="lobby-view" id="lobby-room">
-            <div class="world-feed room-lobby-grid" id="roomLobby"></div>
+            <div class="room-lobby-grid" id="roomLobby"></div>
           </div>
           <div class="lobby-view" id="lobby-world">
-            <div class="panel lobby-world">
-              <div class="section-header"><b>世界频道</b><span style="color:var(--muted);font-size:12px">快捷发言</span></div>
-              <div class="quick-say">
-                <button class="say" onclick="postWorldQuick('怪猎缺一位输出')">怪猎缺输出</button>
-                <button class="say" onclick="postWorldQuick('茶杯头双人来一个')">茶杯头双人</button>
-                <button class="say" onclick="postWorldQuick('休闲局，边聊边玩')">休闲局</button>
+            <div class="world-chat-container">
+              <div class="chat-flow" id="worldChatFlow"></div>
+              <div class="chat-flow-bottom">
+                <div class="chat-flow-quick" id="worldQuick">
+                  <button class="cq-btn" onclick="postWorldMsg('有人组队吗',this)">有人组队吗</button>
+                  <button class="cq-btn" onclick="postWorldMsg('缺一个输出',this)">缺一个输出</button>
+                </div>
+                <div class="chat-flow-input">
+                  <input type="text" placeholder="输入世界频道消息..." id="worldMsgInput" onkeydown="if(event.key==='Enter'&&this.value.trim()){postWorldMsg(this.value.trim());this.value=''}">
+                  <button onclick="const i=document.getElementById('worldMsgInput');if(i.value.trim()){postWorldMsg(i.value.trim());i.value=''}"><i class="fas fa-paper-plane"></i></button>
+                </div>
               </div>
-              <div class="chat-list" id="worldChat">
-                <div class="msg"><b>系统</b>世界频道仅展示组队邀约和快捷发言。</div>
-                <div class="msg"><b>阿澈</b>怪猎缺 P4，能语音优先。</div>
-              </div>
-              <div class="world-feed" id="worldFeed"></div>
             </div>
           </div>
           <button class="team-create-fab" id="teamCreateFab" onclick="openCreateRoom()" title="创建房间"><i class="fas fa-plus"></i></button>
@@ -786,6 +821,7 @@ button{font:inherit}
               <div class="rule-card"><b>2. 游戏大厅</b><p>游戏卡片展示当前房间数。房间数大于 0 时显示「快速加入」，优先加入该游戏下剩余 1 个席位的房间；没有房间时显示「创建房间」。</p></div>
               <div class="rule-card"><b>3. 组队大厅与房间</b><p>组队大厅支持查看和加入公开房间，创建房间通过右下角悬浮入口发起。创建房间后自己成为 P1 房主，可修改房间信息、分享房间、开始游戏或解散房间。</p></div>
               <div class="rule-card"><b>4. 时长与异常</b><p>加入、快速加入或创建房间前会校验云游戏时长，时长不足时引导充值。房间有有效期；游戏中支持麦克风和听筒开关，掉线后重启 APP 可选择重连或退出。</p></div>
+              <div class="rule-card"><b>5. 队伍须知</b><p>以房主云游戏进度为准，房主退出则云游戏结束。房主或成员掉线，可通过重启 APP 回到游戏。游戏内支持语音，请确保麦克风和听筒已打开。</p></div>
             </div>
           </div>
         </div>
@@ -826,54 +862,44 @@ button{font:inherit}
             <button class="room-back" onclick="openTeamPlay('room')" title="返回"><i class="fas fa-chevron-left"></i></button>
             <h1>组队房间</h1>
           </div>
-          <div class="room-layout">
-            <div class="panel room-main">
-              <div class="room-top">
-                <div class="room-title">
-                  <div class="room-title-line">
-                    <h2 id="roomName">怪物猎人：世界 组队房间</h2>
-                    <div class="room-code" onclick="copyRoomId()" title="复制房间ID"><span>房间 ID</span><b id="roomCode">582010</b></div>
-                  </div>
-                </div>
-                <div class="room-more-wrap">
-                  <button class="secondary room-more-btn" onclick="toggleRoomMore()" title="更多操作">···</button>
-                  <div class="room-more-menu" id="roomMoreMenu">
-                    <button onclick="openShareFromMore()"><i class="fas fa-share-nodes"></i> 分享房间</button>
-                    <button onclick="openEditFromMore()"><i class="fas fa-pen"></i> 修改信息</button>
-                  </div>
-                </div>
-              </div>
-              <div class="members" id="members"></div>
-              <div class="room-voice">
-                <div class="room-voice-title">房间语聊<span>进入房间默认开启麦克风和听筒</span></div>
-                <div class="room-voice-actions">
-                  <button class="voice-btn" id="roomMicBtn" onclick="toggleVoice('mic')" title="麦克风"><i class="fas fa-microphone"></i></button>
-                  <button class="voice-btn" id="roomSpeakerBtn" onclick="toggleVoice('speaker')" title="听筒"><i class="fas fa-volume-high"></i></button>
-                </div>
-              </div>
-              <div class="room-messages">
-                <div class="room-messages-head"><b>房间消息</b><span>队伍可见</span></div>
-                <div class="room-msg-list" id="roomMsgs">
-                  <div class="room-msg"><b>P1</b> 准备开怪，语音保持开启</div>
-                  <div class="room-msg"><b>P2</b> 收到，我走左侧</div>
-                </div>
-                <div class="room-msg-quick">
-                  <button class="say" onclick="postRoomMsg('我来开怪')">我来开怪</button>
-                  <button class="say" onclick="postRoomMsg('等我重连')">等我重连</button>
-                  <button class="say" onclick="postRoomMsg('语音已开')">语音已开</button>
-                </div>
-              </div>
-              <div class="role-note">
-                <div class="note"><b>1.</b><span>以房主云游戏进度为准，房主退出则云游戏结束。</span></div>
-                <div class="note"><b>2.</b><span>房主或成员游戏时掉线，可通过启动 APP 重新回到游戏。</span></div>
-                <div class="note"><b>3.</b><span>支持游戏内语音，请检查游戏内麦克风和听筒是否已打开。</span></div>
-              </div>
-              <div class="room-actions">
-                <button class="secondary" onclick="simulateHostLeave()"><i class="fas fa-trash"></i> 解散房间</button>
-                <button class="secondary" id="hostShareBtn" onclick="hostShareRoom()"><i class="fas fa-bullhorn"></i> 分享房间</button>
-                <button class="primary" id="startGameBtn" onclick="launchGame()"><i class="fas fa-play"></i> 开始游戏</button>
+          <div class="room-info-bar">
+            <div class="room-title">
+              <div class="room-title-line">
+                <h2 id="roomName">怪物猎人：世界 组队房间</h2>
+                <div class="room-code" onclick="copyRoomId()" title="复制房间ID"><span>ID</span><b id="roomCode">582010</b></div>
               </div>
             </div>
+            <div class="room-more-wrap">
+              <button class="secondary room-more-btn" onclick="toggleRoomMore()" title="更多操作">···</button>
+              <div class="room-more-menu" id="roomMoreMenu">
+                <button onclick="openShareFromMore()"><i class="fas fa-share-nodes"></i> 分享房间</button>
+                <button onclick="openEditFromMore()"><i class="fas fa-pen"></i> 修改信息</button>
+              </div>
+            </div>
+          </div>
+          <div class="members" id="members"></div>
+          <div class="room-chat-container">
+            <div class="room-messages-head"><b>房间消息</b><span>队伍可见</span></div>
+            <div class="chat-flow" id="roomMsgs">
+              <div class="chat-flow-item cf-self"><div class="cf-avatar" id="roomAvP1"></div><div class="cf-body"><div class="cf-name"><b>你（房主）</b></div><div class="cf-bubble">准备开怪，语音保持开启</div></div></div>
+              <div class="chat-flow-item"><div class="cf-avatar" id="roomAvP2"></div><div class="cf-body"><div class="cf-name"><b>阿澈</b></div><div class="cf-bubble">收到，我走左侧</div></div></div>
+            </div>
+            <div class="chat-flow-bottom">
+              <div class="chat-flow-quick" id="roomQuick">
+                <button class="cq-btn" onclick="postRoomMsg('我来开怪',this)">我来开怪</button>
+                <button class="cq-btn" onclick="postRoomMsg('等我重连',this)">等我重连</button>
+              </div>
+              <div class="chat-flow-input">
+                <input type="text" placeholder="输入房间消息..." id="roomMsgInput" onkeydown="if(event.key==='Enter'&&this.value.trim()){postRoomMsg(this.value.trim());this.value=''}">
+                <button onclick="const i=document.getElementById('roomMsgInput');if(i.value.trim()){postRoomMsg(i.value.trim());i.value=''}"><i class="fas fa-paper-plane"></i></button>
+                <button class="cf-recruit-btn" id="hostShareBtn" onclick="hostShareRoom()"><i class="fas fa-bullhorn"></i> 世界招募</button>
+              </div>
+            </div>
+          </div>
+          <div class="room-actions" id="roomActions">
+            <button class="secondary host-only" onclick="simulateHostLeave()"><i class="fas fa-trash"></i> 解散房间</button>
+            <button class="secondary member-only" onclick="openLeaveRoom()" style="display:none"><i class="fas fa-right-from-bracket"></i> 退出房间</button>
+            <button class="primary host-only" id="startGameBtn" onclick="launchGame()"><i class="fas fa-play"></i> 开始游戏</button>
           </div>
         </div>
 
@@ -928,30 +954,25 @@ button{font:inherit}
       </div>
 
       <div class="view" id="view-instant">
-        <div class="world-layout">
-          <div class="panel">
-            <div class="section-header"><b>世界频道</b><span style="color:var(--muted);font-size:12px">房间卡片 + 快捷发言 + 举报入口</span></div>
+        <div class="world-chat-full">
+          <div class="world-chat-header">
+            <b>世界频道</b>
             <div class="channel-filter">
               <button class="channel active" onclick="switchChannel(this,'all')">全部</button>
               <button class="channel" onclick="switchChannel(this,'coop')">合作闯关</button>
               <button class="channel" onclick="switchChannel(this,'casual')">休闲合作</button>
-              <button class="channel" onclick="switchChannel(this,'mine')">我关注的</button>
             </div>
-            <div class="world-feed" id="worldFeed"></div>
           </div>
-          <div class="panel chat">
-            <div class="section-header"><b>快捷发言配置</b><span style="color:var(--muted);font-size:12px">运营后台下发</span></div>
-            <div class="quick-say">
-              <button class="say" onclick="postWorldQuick('来个猎人，缺 P4')">来个猎人，缺 P4</button>
-              <button class="say" onclick="postWorldQuick('新手友好，一起过关')">新手友好</button>
-              <button class="say" onclick="postWorldQuick('茶杯头双人速通')">茶杯头双人</button>
-              <button class="say" onclick="postWorldQuick('有人再来一局吗')">再来一局</button>
+          <div class="chat-flow" id="worldFeedFlow"></div>
+          <div class="chat-flow-bottom">
+            <div class="chat-flow-quick" id="worldFeedQuick">
+              <button class="cq-btn" onclick="postWorldMsg('有人组队吗',this)">有人组队吗</button>
+              <button class="cq-btn" onclick="postWorldMsg('新手友好来一个',this)">新手友好来一个</button>
             </div>
-            <div class="chat-list" id="worldChat">
-              <div class="msg"><b>系统</b>频道内容按关键词基础过滤，单条消息可举报。</div>
-              <div class="msg"><b>阿澈</b>怪猎缺一个输出，直接点卡片进。</div>
+            <div class="chat-flow-input">
+              <input type="text" placeholder="输入世界频道消息..." id="worldFeedMsgInput" onkeydown="if(event.key==='Enter'&&this.value.trim()){postWorldMsg(this.value.trim());this.value=''}">
+              <button onclick="const i=document.getElementById('worldFeedMsgInput');if(i.value.trim()){postWorldMsg(i.value.trim());i.value=''}"><i class="fas fa-paper-plane"></i></button>
             </div>
-            <div class="chat-input"><i class="far fa-comment" style="margin-right:8px"></i> 输入世界频道消息...</div>
           </div>
         </div>
       </div>
@@ -999,7 +1020,7 @@ button{font:inherit}
         </div>
         <div class="field">
           <label>房间名称</label>
-          <input id="createName" value="一起打两局，缺输出">
+          <input id="createName" value="来不及解释了，快加入房间！" maxlength="20">
         </div>
         <div class="field">
           <label>房间权限</label>
@@ -1024,7 +1045,7 @@ button{font:inherit}
       <div class="form-grid">
         <div class="field">
           <label>房间名称</label>
-          <input id="editRoomName" value="怪物猎人：世界 组队房间">
+          <input id="editRoomName" value="怪物猎人：世界 组队房间" maxlength="20">
         </div>
         <div class="field">
           <label>房间权限</label>
@@ -1094,8 +1115,10 @@ button{font:inherit}
 </div>
 
 <div class="demo-controls">
-  <button onclick="demoEnterGame()">查看游戏内状态</button>
-  <button onclick="demoReconnect()">查看重连弹窗</button>
+  <button onclick="demoEnterGame()">游戏内状态</button>
+  <button onclick="demoReconnect()">重连弹窗</button>
+  <button onclick="demoFloatingRoom()">房间悬浮条</button>
+  <button onclick="window.open('云游戏组队玩Mac端demo.html','_blank')">Mac端demo</button>
 </div>
 
 <script>
@@ -1131,12 +1154,12 @@ function initGames(query=""){
   const keyword=query.trim().toLowerCase();
   const visible=games.map((g,i)=>({g,i})).filter(({g})=>!keyword||g.name.toLowerCase().includes(keyword)||g.mode.toLowerCase().includes(keyword));
   document.getElementById("gameGrid").innerHTML=visible.map(({g,i})=>`
-    <div class="game-card" onclick="startMatch(${i})">
+    <div class="game-card" onclick="${g.rooms>0?`quickJoinGame(${i})`:`openCreateRoom(${i})`}">
       <div class="cover" style="background-image:url('${coverUrl(g)}')"></div>
       <div class="game-info">
         <div class="game-title">${g.name}</div>
         <div class="game-meta"><span class="pill good">${g.max} 人 · ${g.mode}</span><span class="pill">${g.rooms} 个房间</span></div>
-        <div class="game-card-actions"><button class="play-pill" onclick="event.stopPropagation();${g.rooms>0?`quickJoinGame(${i})`:`openCreateRoom(${i})`}">${g.rooms>0?"快速加入":"创建房间"}</button></div>
+        <div class="game-card-actions">${g.rooms>0?`<button class="play-pill" onclick="event.stopPropagation();quickJoinGame(${i})">快速加入</button>`:""}<button class="secondary" style="padding:4px 10px;font-size:11px;white-space:nowrap;width:auto" onclick="event.stopPropagation();openCreateRoom(${i})">创建房间</button></div>
       </div>
     </div>`).join("")||`<div class="empty-hint">没有找到相关游戏</div>`;
   document.getElementById("createGame").innerHTML=games.map((g,i)=>`<option value="${i}">${g.name} · ${g.max}人 · ${g.mode}</option>`).join("");
@@ -1168,8 +1191,11 @@ function switchLobby(type){
   document.getElementById("lobby-world").classList.toggle("active",type==="world");
   document.getElementById("teamCreateFab")?.classList.toggle("show",type==="room");
   document.getElementById("lobbyHelp")?.style.setProperty("display",type==="game"?"block":"none");
+  document.getElementById("reportBtn")?.style.setProperty("display",type==="world"?"flex":"none");
+  document.getElementById("refreshBtn")?.style.setProperty("display",type==="world"?"none":"flex");
   const input=document.getElementById("searchInput");
-  input.placeholder=type==="game"?"搜索游戏":type==="room"?"搜索房间名、房间ID或游戏名":"搜索世界频道内容";
+  input.placeholder=type==="game"?"搜索游戏名":type==="room"?"搜索游戏名、房主昵称、房间ID":"";
+  input.parentElement.style.display=type==="world"?"none":"";
   handleSearch();
 }
 function refreshLobby(){
@@ -1178,9 +1204,11 @@ function refreshLobby(){
 }
 function showScreen(id){
   document.getElementById("app").classList.toggle("in-game",id==="play");
-  document.getElementById("app").classList.toggle("room-page",id==="room");
+  document.getElementById("screen-room").classList.toggle("room-active",id==="room");
   ["home","team","rules","match","room","launch","play","result"].forEach(s=>{
-    document.getElementById("screen-"+s).style.display=s===id?"block":"none";
+    const el=document.getElementById("screen-"+s);
+    if(s==="room") el.style.display=id===s?"flex":"none";
+    else el.style.display=s===id?"block":"none";
   });
   const content=document.querySelector(".content");
   if(content)content.scrollTop=0;
@@ -1251,14 +1279,19 @@ function tickMatch(){
   if(matchStep>=6) forceRoom();
 }
 function forceRoom(){
+  if(ownedRoom){toast("您已在房间中，无法加入其他房间");return}
   clearInterval(matchTimer);
   ready=false;dropped=false;
   currentRoomId=makeRoomId();
-  resetMembers();
-  members[0].ready=false;
+  currentRoomName=selected.name+" 组队房间";
+  members=[
+    {name:"阿澈",role:"P1",ready:false,host:true,avatar:avatars[1],state:"房主"},
+    {name:"你",role:"P2",ready:true,host:false,avatar:avatars[0],state:"等待开始"},
+    {name:"Mika",role:"P3",ready:true,host:false,avatar:avatars[2],state:"等待开始"}
+  ];
   renderRoom();
   showScreen("room");
-  toast("匹配成功，已进入准备房间");
+  toast("已加入房间");
 }
 function cancelMatch(){clearInterval(matchTimer);showScreen("home");toast("已取消匹配")}
 function renderRoom(){
@@ -1275,8 +1308,15 @@ function renderRoom(){
       <span class="p-tag">${m.role}</span>
     </div>`;
   }).join("");
+  const p1av=document.getElementById("roomAvP1");if(p1av)p1av.style.backgroundImage=`url('${members[0]?.avatar||avatars[0]}')`;
+  const p2av=document.getElementById("roomAvP2");if(p2av)p2av.style.backgroundImage=`url('${members[1]?.avatar||avatars[1]}')`;
   const startBtn=document.getElementById("startGameBtn");
   if(startBtn)startBtn.disabled=members.length<max;
+  const isHost=members[0]?.host===true;
+  document.querySelectorAll(".host-only").forEach(el=>el.style.display=isHost?"":"none");
+  document.querySelectorAll(".member-only").forEach(el=>el.style.display=isHost?"none":"");
+  const recruitBtn=document.getElementById("hostShareBtn");
+  if(recruitBtn)recruitBtn.style.display=isHost?"":"none";
   updateHostShareCd();
 }
 function launchGame(){
@@ -1328,6 +1368,31 @@ function demoReconnect(){
   renderFloat();
   document.getElementById("reconnectModal").classList.add("show");
 }
+function demoFloatingRoom(){
+  selected=games[0];
+  currentRoomName=`${selected.name} 组队房间`;
+  currentRoomId=currentRoomId||makeRoomId();
+  ownedRoom={game:selected,name:currentRoomName,ttl:1799};
+  document.getElementById("screen-room").classList.remove("room-active");
+  showScreen("home");
+  renderFloatingRoom();
+  toast("已离开房间页，悬浮条显示中");
+}
+function demoJoinOther(){
+  selected=games[0];
+  currentRoomName="历战王来个输出";
+  currentRoomId=makeRoomId();
+  members=[
+    {name:"阿澈",role:"P1",ready:false,host:true,avatar:avatars[1],state:"房主"},
+    {name:"你",role:"P2",ready:true,host:false,avatar:avatars[0],state:"等待开始"},
+    {name:"Mika",role:"P3",ready:true,host:false,avatar:avatars[2],state:"等待开始"}
+  ];
+  ownedRoom={game:selected,name:currentRoomName,ttl:1799};
+  renderRoom();
+  showScreen("room");
+  document.getElementById("screen-room").classList.add("room-active");
+  toast("已加入阿澈的房间（你是成员，非房主）");
+}
 function closeReconnectModal(){document.getElementById("reconnectModal").classList.remove("show")}
 function confirmReconnectGame(){
   closeReconnectModal();
@@ -1358,16 +1423,22 @@ function updateHostShareCd(){
   if(!btn)return;
   const left=Math.max(0,Math.ceil((shareCdUntil-Date.now())/1000));
   btn.disabled=left>0;
-  btn.innerHTML=left>0?`<i class="fas fa-clock"></i> ${left}s 后分享`:`<i class="fas fa-bullhorn"></i> 分享房间`;
+  btn.innerHTML=left>0?`<i class="fas fa-clock"></i> ${left}s`:`<i class="fas fa-bullhorn"></i> 世界招募`;
   if(left<=0&&shareCdTimer){clearInterval(shareCdTimer);shareCdTimer=null}
 }
 function hostShareRoom(){
   const left=Math.ceil((shareCdUntil-Date.now())/1000);
-  if(left>0){toast(`分享冷却中，${left}s 后可再次分享`);return}
+  if(left>0){toast(`招募冷却中，${left}s 后可再次招募`);return}
   shareCdUntil=Date.now()+10000;
-  openShare();
-  postWorldQuick(`${selected.name} 房间 ${roomId()} 缺队友，欢迎加入`);
-  toast("已分享到世界频道");
+  postWorldMsg(`${selected.name} 房间 ${roomId()} 缺队友，欢迎加入`);
+  const box=document.getElementById("roomMsgs");
+  if(box){
+    const ts=maybeTimeStamp(lastRoomMsgTime);
+    if(ts.html)lastRoomMsgTime=Date.now();
+    box.insertAdjacentHTML("beforeend",ts.html+`<div class="chat-flow-item cf-self"><div class="cf-avatar" style="background-image:url('${avatars[0]}')"></div><div class="cf-body"><div class="cf-name"><b>你（房主）</b></div><div class="cf-bubble">招募信息已发送到世界频道</div></div></div>`);
+    box.scrollTop=box.scrollHeight;
+  }
+  toast("招募信息已发送到世界频道");
   updateHostShareCd();
   shareCdTimer=setInterval(updateHostShareCd,300);
 }
@@ -1421,7 +1492,7 @@ function saveRoomInfo(){
 }
 function createPersonalRoom(){
   selected=games[Number(document.getElementById("createGame").value)];
-  const name=document.getElementById("createName").value.trim()||"我的组队房间";
+  const name=document.getElementById("createName").value.trim()||"来不及解释了，快加入房间！";
   const privateRoom=document.getElementById("createPrivacy").value==="private";
   currentRoomName=`${selected.name} 组队房间`;
   requireDuration(()=>{
@@ -1472,7 +1543,7 @@ function renderFloatingRoom(){
   const sec=String(ownedRoom.ttl%60).padStart(2,"0");
   document.getElementById("floatingRoomTtl").textContent=`${min}:${sec}`;
   const app=document.getElementById("app");
-  const isRoom=document.getElementById("screen-room").style.display==="block";
+  const isRoom=document.getElementById("screen-room").classList.contains("room-active");
   const isPlay=app.classList.contains("in-game");
   el.classList.toggle("show",!isRoom&&!isPlay);
 }
@@ -1514,22 +1585,49 @@ function switchChannel(el,type){
   el.classList.add("active");
   renderWorld(type);
 }
+function formatChatTime(date){
+  const d=new Date(date);
+  const pad=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 function renderWorld(type="all"){
+  const now=Date.now();
+  const statuses=["ready","playing","ready","playing"];
+  const statusText=["准备中","游戏中","准备中","游戏中"];
+  const roomNames=["历战王来个输出","茶杯头双人过关","休闲局随便玩","帕鲁开荒缺人"];
+  const roomIds=["744161","288379","451188","930217"];
   const items=[
-    {user:"阿澈",text:"怪猎缺 P4，能语音外开。",game:games[0],need:"3/4",type:"coop"},
-    {user:"Mika",text:"茶杯头双人，过第一岛。",game:games[1],need:"1/2",type:"casual"},
-    {user:"北海",text:"人类一败涂地休闲局，不急。",game:games[2],need:"2/4",type:"casual"}
+    {user:"阿澈",avatar:avatars[0],text:"怪猎缺 P4，能语音外开。",game:games[0],need:"3/4",type:"coop",time:now-120000,si:0},
+    {user:"Mika",avatar:avatars[1],text:"茶杯头双人，过第一岛。",game:games[1],need:"1/2",type:"casual",time:now-60000,si:1},
+    {user:"北海",avatar:avatars[2],text:"人类一败涂地休闲局，不急。",game:games[2],need:"2/4",type:"casual",time:now-30000,si:2},
+    {user:"小橘",avatar:avatars[3],text:"帕鲁开荒缺人，有存档",game:games[3],need:"2/4",type:"coop",time:now-5000,si:3}
   ].filter(x=>type==="all"||x.type===type||type==="mine");
-  document.getElementById("worldFeed").innerHTML=items.map((item,i)=>`
-    <div class="feed-card">
-      <div class="feed-head"><div class="feed-user"><div class="avatar" style="background-image:url('${avatars[i%avatars.length]}')"></div>${item.user}</div><span class="feed-time">刚刚 · 举报</span></div>
-      <div class="empty-hint">${item.text}</div>
-      <div class="room-card">
-        <div class="room-cover" style="background-image:url('${coverUrl(item.game)}')"></div>
-        <div><h3>${item.game.name}</h3><p>${item.need} · ${item.game.mode} · 点击加入房间</p></div>
-        <button class="secondary" onclick="selected=games[${games.indexOf(item.game)}];forceRoom()">加入</button>
+  let html="";let lastTime=0;
+  items.forEach((item,i)=>{
+    if(item.time-lastTime>=180000||i===0){
+      html+=`<div class="cf-time">${formatChatTime(item.time)}</div>`;
+      lastTime=item.time;
+    }
+    html+=`<div class="chat-flow-item">
+      <div class="cf-avatar" style="background-image:url('${item.avatar}')"></div>
+      <div class="cf-body">
+        <div class="cf-name"><b>${item.user}</b></div>
+        <div class="cf-card">
+          <span class="cf-card-status ${statuses[item.si]}">${statusText[item.si]}</span>
+          <div class="cf-card-top">
+            <div class="cf-card-cover" style="background-image:url('${coverUrl(item.game)}')"></div>
+            <div class="cf-card-info"><h4>${item.game.name}</h4><p>${item.need} · ${item.game.mode}</p></div>
+          </div>
+          <div class="cf-card-bottom">
+            <span class="cf-room-name">${roomNames[item.si]} · ID ${roomIds[item.si]}</span>
+            <button class="cf-join" onclick="selected=games[${games.indexOf(item.game)}];forceRoom()">立即加入</button>
+          </div>
+        </div>
       </div>
-    </div>`).join("");
+    </div>`;
+  });
+  document.querySelectorAll("#worldChatFlow,#worldFeedFlow").forEach(el=>{el.innerHTML=html;el.scrollTop=el.scrollHeight});
+  lastWorldMsgTime=Date.now();
 }
 function renderRoomLobby(){
   const rooms=[
@@ -1540,10 +1638,10 @@ function renderRoomLobby(){
   const keyword=(document.getElementById("searchInput")?.value||"").trim().toLowerCase();
   const visible=rooms.filter(room=>!keyword||room.title.toLowerCase().includes(keyword)||room.id.includes(keyword)||room.game.name.toLowerCase().includes(keyword)||room.host.toLowerCase().includes(keyword));
   document.getElementById("roomLobby").innerHTML=visible.map((room,i)=>`
-    <div class="feed-card">
-      <div class="feed-head"><div class="feed-user"><div class="avatar" style="background-image:url('${avatars[(i+1)%avatars.length]}')"></div>${room.host}</div><span class="feed-time">公开房间</span></div>
-      <div class="room-card">
-        <div class="room-cover" style="background-image:url('${coverUrl(room.game)}')"></div>
+    <div class="lobby-card" onclick="selected=games[${games.indexOf(room.game)}];forceRoom()">
+      <div class="lobby-card-head"><div class="lobby-card-user"><div class="avatar" style="background-image:url('${avatars[(i+1)%avatars.length]}')"></div>${room.host}</div><span class="lobby-card-tag">公开房间</span></div>
+      <div class="lobby-card-body">
+        <div class="lobby-card-cover" style="background-image:url('${coverUrl(room.game)}')"></div>
         <div><h3>${room.title}</h3><p><span class="copy-inline" onclick="event.stopPropagation();copyText('${room.id}','房间ID已复制')">房间ID ${room.id}</span> · ${room.game.name} · ${room.need} · ${room.game.mode}</p></div>
         <button class="secondary" onclick="selected=games[${games.indexOf(room.game)}];forceRoom()">加入</button>
       </div>
@@ -1559,19 +1657,40 @@ function handleSearch(){
   else if(teamVisible&&worldLobby)renderWorld();
   else initGames(query);
 }
-function postWorldQuick(text){
-  const box=document.getElementById("worldChat");
-  if(box){
-    box.insertAdjacentHTML("beforeend",`<div class="msg"><b>你</b>${text}</div>`);
-    box.scrollTop=box.scrollHeight;
-  }
+const quickPhrases=["有人组队吗","缺一个输出","新手友好来一个","茶杯头双人","休闲局来吗","再来一局"];
+function rotateQuick(btn){
+  const next=quickPhrases[Math.floor(Math.random()*quickPhrases.length)];
+  btn.textContent=next;
+  btn.setAttribute("onclick",`postWorldMsg('${next}',this)`);
+}
+let lastWorldMsgTime=0,lastRoomMsgTime=0;
+function maybeTimeStamp(lastTime){
+  const now=Date.now();
+  if(now-lastTime>=180000){return {html:`<div class="cf-time">${formatChatTime(now)}</div>`,time:now}}
+  return {html:"",time:lastTime};
+}
+function postWorldMsg(text,btn){
+  const ts=maybeTimeStamp(lastWorldMsgTime);
+  lastWorldMsgTime=ts.time||lastWorldMsgTime;
+  if(ts.html)lastWorldMsgTime=Date.now();
+  const html=ts.html+`<div class="chat-flow-item cf-self"><div class="cf-avatar" style="background-image:url('${avatars[0]}')"></div><div class="cf-body"><div class="cf-name"><b>你</b></div><div class="cf-bubble">${text}</div></div></div>`;
+  document.querySelectorAll("#worldChatFlow,#worldFeedFlow").forEach(el=>{el.insertAdjacentHTML("beforeend",html);el.scrollTop=el.scrollHeight});
+  if(btn)rotateQuick(btn);
   toast("已发送到世界频道");
 }
-function postRoomMsg(text){
+const roomQuickPhrases=["我来开怪","等我重连","语音已开","换个打法","准备好了","先走了"];
+function postRoomMsg(text,btn){
   const box=document.getElementById("roomMsgs");
   if(!box)return;
-  box.insertAdjacentHTML("beforeend",`<div class="room-msg"><b>P1</b> ${text}</div>`);
+  const ts=maybeTimeStamp(lastRoomMsgTime);
+  if(ts.html)lastRoomMsgTime=Date.now();
+  box.insertAdjacentHTML("beforeend",ts.html+`<div class="chat-flow-item cf-self"><div class="cf-avatar" style="background-image:url('${avatars[0]}')"></div><div class="cf-body"><div class="cf-name"><b>你（房主）</b></div><div class="cf-bubble">${text}</div></div></div>`);
   box.scrollTop=box.scrollHeight;
+  if(btn){
+    const next=roomQuickPhrases[Math.floor(Math.random()*roomQuickPhrases.length)];
+    btn.textContent=next;
+    btn.setAttribute("onclick",`postRoomMsg('${next}',this)`);
+  }
   toast("房间消息已发送");
 }
 function toggleOrientation(){

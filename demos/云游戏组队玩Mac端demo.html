@@ -1,0 +1,2086 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>盖世游戏 GameHub - Mac端 Demo</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;user-select:none}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
+body{width:100vw;height:100vh;background:#0d0d12;display:flex;align-items:center;justify-content:center;overflow:hidden}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+/* ══ Mac 窗口 ══ */
+.mac-win{
+  width:min(1440px,96vw);height:min(900px,96vh);
+  border-radius:14px;background:#1e1e2a;
+  overflow:hidden;position:relative;
+  display:flex;flex-direction:row;
+  box-shadow:0 0 0 1px rgba(255,255,255,.05),0 40px 120px rgba(0,0,0,.96)
+}
+
+/* ══ 左侧 Icon 导航栏 ══ */
+.sidebar{
+  width:72px;flex-shrink:0;
+  background:#16161f;
+  border-right:1px solid rgba(255,255,255,.05);
+  display:flex;flex-direction:column;
+  align-items:center;
+  padding:16px 0 16px;
+  position:relative;z-index:10
+}
+.win-dots{
+  display:flex;gap:6px;margin-bottom:22px;align-self:flex-start;padding-left:14px
+}
+.win-dots span{width:11px;height:11px;border-radius:50%;display:inline-block}
+.wd-r{background:#ff5f57}.wd-y{background:#febc2e}.wd-g{background:#28c840}
+
+.nav-icon-btn{
+  width:46px;height:46px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.3);font-size:19px;
+  cursor:pointer;transition:background .15s,color .15s;
+  position:relative;margin-bottom:4px
+}
+.nav-icon-btn:hover{color:rgba(255,255,255,.65);background:rgba(255,255,255,.06)}
+.nav-icon-btn.active{color:#fff;background:rgba(255,255,255,.1);border-radius:14px}
+.nav-icon-btn.active .nav-active-dot{display:block}
+.nav-active-dot{
+  display:none;position:absolute;left:-10px;top:50%;transform:translateY(-50%);
+  width:3px;height:22px;border-radius:0 2px 2px 0;
+  background:linear-gradient(180deg,#a78bfa,#60d8ff)
+}
+
+.sidebar-mid{flex:1;display:flex;flex-direction:column;align-items:center;gap:0}
+.sidebar-bot{display:flex;flex-direction:column;align-items:center;gap:4px}
+
+/* ══ 右侧内容区 ══ */
+.main-area{
+  flex:1;min-width:0;
+  display:flex;flex-direction:column;
+  background:#1e1e2a;
+  overflow:hidden;
+  position:relative
+}
+
+/* ══ 顶部搜索栏 ══ */
+.top-bar{
+  height:52px;flex-shrink:0;
+  display:flex;align-items:center;gap:12px;
+  padding:0 28px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  background:#1e1e2a
+}
+.top-title{font-size:17px;font-weight:700;color:#fff;letter-spacing:.1px}
+.top-search{
+  flex:1;max-width:360px;height:32px;
+  border-radius:8px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;gap:8px;
+  padding:0 12px;margin-left:auto
+}
+.top-search input{flex:1;min-width:0;background:none;border:none;outline:none;font-size:13px;color:#e2e8f0}
+.top-search input::placeholder{color:rgba(255,255,255,.25)}
+.top-search i{font-size:12px;color:rgba(255,255,255,.25)}
+
+/* ══ 内容主体 ══ */
+.page{display:none;flex:1;min-height:0;overflow-y:auto;padding:28px 32px}
+.page.active{display:block}
+
+/* ══ 探索页 ══ */
+
+/* Banner 轮播 */
+.banner-wrap{position:relative;margin-bottom:28px}
+.banner-scroll{
+  display:flex;gap:0;overflow:hidden;
+  border-radius:14px;height:220px
+}
+.banner-item{
+  min-width:100%;height:220px;border-radius:14px;
+  background-size:cover;background-position:center;
+  position:relative;overflow:hidden;cursor:pointer;transition:opacity .3s
+}
+.banner-item::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(0,0,0,.72) 0%,rgba(0,0,0,.36) 55%,transparent 100%)
+}
+.banner-info{position:absolute;left:28px;bottom:26px;z-index:1}
+.banner-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.banner-tags{display:flex;gap:8px;flex-wrap:wrap}
+.banner-tag{font-size:11px;font-weight:600;color:rgba(255,255,255,.7);background:rgba(255,255,255,.12);border-radius:4px;padding:2px 8px}
+.banner-score{
+  position:absolute;right:20px;bottom:20px;z-index:1;
+  font-size:26px;font-weight:900;color:#72f0d2;text-shadow:0 0 20px rgba(114,240,210,.4)
+}
+.banner-dots{
+  display:flex;gap:6px;justify-content:center;margin-top:10px
+}
+.banner-dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.2);cursor:pointer;transition:.2s}
+.banner-dot.active{width:18px;background:#72f0d2}
+.banner-arrow{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:5;
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(0,0,0,.5);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:.15s;font-size:13px;
+  border:1px solid rgba(255,255,255,.1)
+}
+.banner-arrow:hover{background:rgba(0,0,0,.75)}
+.banner-prev{left:10px}.banner-next{right:10px}
+
+/* 区块标题 */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sec-title{font-size:20px;font-weight:800;color:#fff}
+.sec-more{font-size:12px;color:rgba(255,255,255,.35);cursor:pointer;transition:.15s}
+.sec-more:hover{color:rgba(255,255,255,.7)}
+
+/* 游戏卡片网格 3列（游戏大厅） */
+.game-grid-4{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:28px}
+.game-grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:28px}
+
+/* 游戏卡片 */
+.gcard{
+  border-radius:12px;overflow:hidden;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06);
+  cursor:pointer;transition:.18s
+}
+.gcard:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.05)}
+.gcard-cover{
+  width:100%;height:150px;
+  background-size:cover;background-position:center;
+  position:relative
+}
+.gcard-cover-icons{
+  position:absolute;right:8px;bottom:8px;
+  display:flex;gap:4px
+}
+.gcard-platform-icon{
+  width:22px;height:22px;border-radius:4px;
+  background:rgba(0,0,0,.6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:rgba(255,255,255,.8)
+}
+.gcard-body{padding:10px 12px 12px}
+.gcard-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:4px}
+.gcard-name{font-size:14px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gcard-score{font-size:15px;font-weight:900;color:#72f0d2;flex-shrink:0}
+.gcard-tags{font-size:11px;color:rgba(255,255,255,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 新闻卡片 */
+.ncard{
+  border-radius:14px;overflow:hidden;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06);
+  cursor:pointer;transition:.18s;
+  position:relative
+}
+.ncard:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.14)}
+.ncard-cover{width:100%;height:220px;background-size:cover;background-position:center;position:relative}
+.ncard-cover::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 55%)}
+.ncard-info{position:absolute;left:16px;right:16px;bottom:14px;z-index:1}
+.ncard-cat{font-size:10px;font-weight:700;color:#72f0d2;margin-bottom:5px;letter-spacing:.5px;text-transform:uppercase}
+.ncard-title{font-size:15px;font-weight:800;color:#fff;line-height:1.35}
+.ncard-meta{font-size:11px;color:rgba(255,255,255,.45);margin-top:5px}
+
+/* ══ 秒玩页 ══ */
+.miao-head{
+  display:flex;align-items:baseline;gap:10px;margin-bottom:20px
+}
+.miao-title{font-size:34px;font-weight:900;color:#fff}
+.miao-sub{font-size:13px;color:rgba(255,255,255,.35)}
+
+/* 秒玩子tab */
+.miao-tabs{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:20px;flex-shrink:0
+}
+.miao-tab{
+  padding:7px 18px;border-radius:20px;
+  font-size:13px;font-weight:700;
+  color:rgba(255,255,255,.45);
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  transition:.15s
+}
+.miao-tab:hover{color:rgba(255,255,255,.75);background:rgba(255,255,255,.09)}
+.miao-tab.active{
+  color:#fff;
+  background:rgba(255,255,255,.1);
+  border-color:rgba(255,255,255,.18)
+}
+.miao-tab.team-tab.active{
+  background:linear-gradient(135deg,rgba(167,139,250,.22),rgba(96,216,255,.12));
+  border-color:rgba(167,139,250,.4);
+  color:#d4b8ff
+}
+.miao-tab.team-tab{color:#c4abff}
+
+/* 游戏卡片（秒玩页 4列，封面图只有名字，无评分行） */
+.miao-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.mcard{
+  border-radius:12px;overflow:hidden;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06);
+  cursor:pointer;transition:.18s
+}
+.mcard:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.05)}
+.mcard-cover{
+  width:100%;height:150px;
+  background-size:cover;background-position:center;
+  position:relative
+}
+.mcard-cover-icons{position:absolute;left:8px;bottom:8px;display:flex;gap:4px}
+.mcard-body{padding:9px 10px 11px}
+.mcard-name{font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mcard-rooms{font-size:11px;color:#4ade80;margin-top:3px;font-weight:600}
+
+/* ══ 组队玩内层 ══ */
+.team-layout{
+  display:flex;flex-direction:row;flex:1;min-height:0;gap:0;
+}
+
+/* 左侧主区 */
+.team-main{flex:1;min-width:0;display:flex;flex-direction:column}
+
+/* 子tab 胶囊 */
+.sub-pill-row{
+  display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-shrink:0
+}
+.sub-pill-spacer{flex:1}
+.sub-action-refresh{
+  width:30px;height:30px;border-radius:50%;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.09);
+  color:rgba(255,255,255,.45);font-size:12px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:.15s;flex-shrink:0
+}
+.sub-action-refresh:hover{background:rgba(255,255,255,.12);color:#fff}
+.rules-link{
+  font-size:12px;font-weight:800;color:#9fd8ff;
+  background:none;border:none;padding:0 4px;
+  cursor:pointer;transition:color .15s;flex-shrink:0
+}
+.rules-link:hover{color:#fff}
+.sub-search{
+  height:32px;width:200px;border-radius:16px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.09);
+  padding:0 14px;font-size:12px;color:#e2e8f0;outline:none;
+  transition:.15s;flex-shrink:0
+}
+.sub-search::placeholder{color:rgba(255,255,255,.25)}
+.sub-search:focus{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.18)}
+.lobby-empty{
+  grid-column:1/-1;padding:48px 0;
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.25);font-size:13px
+}
+.sub-action-create{
+  height:30px;border-radius:15px;padding:0 12px;
+  background:#4c6ef5;color:#fff;
+  font-size:12px;font-weight:700;
+  display:flex;align-items:center;gap:5px;
+  cursor:pointer;transition:.15s;flex-shrink:0;border:none
+}
+.sub-action-create:hover{background:#3b5bdb}
+.sub-pill{
+  padding:6px 16px;border-radius:20px;
+  font-size:13px;font-weight:700;
+  color:rgba(255,255,255,.4);
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  transition:.15s
+}
+.sub-pill:hover{color:rgba(255,255,255,.7);background:rgba(255,255,255,.09)}
+.sub-pill.active{background:#4c6ef5;color:#fff;border-color:#4c6ef5}
+
+/* 游戏大厅 grid 3列 */
+.lobby-game-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;overflow-y:auto;flex:1;min-height:0;padding-bottom:4px}
+.lgcard{
+  border-radius:12px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06);
+  cursor:pointer;transition:.18s
+}
+.lgcard:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.05)}
+.lgcard-cover{width:100%;height:150px;background-size:cover;background-position:center;position:relative;border-radius:12px 12px 0 0;overflow:hidden}
+.lgcard-rooms-badge{
+  position:absolute;top:7px;left:7px;
+  font-size:10px;font-weight:800;color:#fff;
+  background:#16a34a;border-radius:4px;padding:2px 6px
+}
+.lgcard-body{padding:9px 10px 11px}
+.lgcard-name{font-size:13px;font-weight:700;color:#fff;margin-top:10px;margin-bottom:8px}
+.lgcard-btns{display:flex;gap:8px;margin-top:8px}
+.lgcard-btn{
+  padding:6px 14px;border-radius:14px;
+  font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  transition:.15s;border:none
+}
+.lgcard-join{background:#4c6ef5;color:#fff;width:auto}
+.lgcard-join:hover{background:#3b5bdb}
+.lgcard-create{background:transparent;color:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.2)!important;width:auto}
+.lgcard-create:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85);border-color:rgba(255,255,255,.35)!important}
+
+/* 组队大厅 3列 */
+.lobby-room-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;overflow-y:auto;flex:1;min-height:0;padding-bottom:4px;align-content:start}
+
+/* 组队大厅房间卡片 */
+.rcard{
+  border-radius:12px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06);
+  padding:12px;cursor:pointer;transition:.18s;
+  display:flex;flex-direction:column;gap:8px
+}
+.rcard:hover{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.05)}
+.rcard-header{display:flex;align-items:center;gap:7px}
+.rcard-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.rcard-uname{font-size:12px;font-weight:700;color:#e2e8f0;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rcard-public-tag{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(76,110,245,.15);color:#818cf8;border:1px solid rgba(76,110,245,.25);flex-shrink:0}
+.rcard-body{display:flex;align-items:flex-start;gap:9px}
+.rcard-game-cover{width:70px;height:52px;border-radius:7px;background-size:cover;background-position:center;flex-shrink:0}
+.rcard-info{flex:1;min-width:0}
+.rcard-title{font-size:13px;font-weight:700;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}
+.rcard-meta{font-size:10px;color:rgba(255,255,255,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
+.rcard-join-btn{height:30px;border-radius:7px;padding:0 14px;font-size:12px;font-weight:700;background:#4c6ef5;color:#fff;flex-shrink:0;transition:.15s}
+.rcard-join-btn:hover{background:#3b5bdb}
+.rcard-footer{display:flex;justify-content:flex-end;width:100%}
+
+/* 右侧固定世界频道面板 */
+.world-side-panel{
+  width:320px;flex-shrink:0;
+  display:flex;flex-direction:column;
+  border-left:1px solid rgba(255,255,255,.07);
+  background:rgba(255,255,255,.015);
+  overflow:hidden;
+  margin-left:20px
+}
+.world-side-title{
+  padding:12px 14px 10px;
+  font-size:13px;font-weight:700;color:rgba(255,255,255,.7);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  flex-shrink:0;
+  display:flex;align-items:center;gap:6px
+}
+.world-report-btn{
+  margin-left:auto;width:26px;height:26px;border-radius:6px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  color:rgba(255,255,255,.3);font-size:11px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:.15s;flex-shrink:0
+}
+.world-report-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.25);color:#f87171}
+.world-chat-panel{
+  flex:1;min-width:0;
+  display:flex;flex-direction:column;
+  overflow:hidden
+}
+.chat-flow{
+  flex:1;min-height:0;overflow-y:auto;
+  padding:14px 14px 8px;
+  display:flex;flex-direction:column;gap:10px
+}
+.cf-time{text-align:center;font-size:10px;color:rgba(255,255,255,.2);padding:4px 0;flex-shrink:0}
+.cf-msg{display:flex;gap:8px;align-items:flex-start}
+.cf-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff}
+.cf-body{flex:1;min-width:0}
+.cf-name{font-size:10px;color:rgba(255,255,255,.3);margin-bottom:3px}
+.cf-bubble{display:inline-block;font-size:12px;color:#cbd5e1;background:rgba(255,255,255,.06);border-radius:3px 8px 8px 8px;padding:7px 10px;line-height:1.45;max-width:85%}
+.cf-card{display:inline-block;max-width:95%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:3px 8px 8px 8px;padding:10px;cursor:pointer;transition:.15s}
+.cf-card:hover{border-color:rgba(255,255,255,.16)}
+.cf-card-top{display:flex;gap:9px;align-items:center;margin-bottom:7px}
+.cf-card-cover{width:42px;height:42px;border-radius:7px;background-size:cover;background-position:center;flex-shrink:0}
+.cf-card-info h4{font-size:12px;font-weight:800;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cf-card-info p{font-size:10px;color:rgba(255,255,255,.35);line-height:1.3}
+.cf-card-bot{display:flex;align-items:center;gap:8px}
+.cf-room-label{flex:1;min-width:0;font-size:10px;color:rgba(255,255,255,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cf-join-btn{border-radius:12px;padding:5px 12px;background:linear-gradient(135deg,#a78bfa,#60d8ff);color:#fff;font-size:10px;font-weight:800;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.cf-msg.cf-self{flex-direction:row-reverse}
+.cf-msg.cf-self .cf-body{display:flex;flex-direction:column;align-items:flex-end}
+.cf-msg.cf-self .cf-bubble{border-radius:8px 3px 8px 8px;background:rgba(76,110,245,.2)}
+/* 紫色自己气泡（房间内聊天） */
+.cf-bubble-self{display:inline-block;font-size:12px;color:#fff;background:linear-gradient(135deg,rgba(167,139,250,.5),rgba(96,216,255,.3));border-radius:8px 3px 8px 8px;padding:7px 10px;line-height:1.45;max-width:85%}
+
+/* 聊天底部 */
+.chat-bottom{
+  flex-shrink:0;padding:8px 12px 10px;
+  border-top:1px solid rgba(255,255,255,.06);
+  display:flex;flex-direction:column;gap:7px
+}
+.chat-quick{display:flex;gap:6px;flex-wrap:wrap}
+.cq-btn{font-size:10px;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);border-radius:10px;padding:4px 9px;cursor:pointer;transition:.15s}
+.cq-btn:hover{color:#fff;background:rgba(255,255,255,.1)}
+.chat-input-row{display:flex;gap:6px;align-items:center}
+.chat-text{
+  flex:1;min-width:0;height:32px;border-radius:16px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);
+  padding:0 12px;font-size:12px;color:#e2e8f0;outline:none
+}
+.chat-text::placeholder{color:rgba(255,255,255,.22)}
+.chat-send{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,#a78bfa,#60d8ff);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:11px;flex-shrink:0;transition:.15s
+}
+.chat-send:hover{filter:brightness(1.12)}
+
+/* ══ Toast ══ */
+.mac-toast{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%) translateY(-6px);
+  background:rgba(12,12,20,.96);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;padding:8px 18px;
+  font-size:13px;color:#fff;font-weight:600;
+  opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .2s;
+  z-index:9999;white-space:nowrap
+}
+.mac-toast.show{opacity:1;transform:translate(-50%,-50%)}
+
+/* 秒玩页面 padding 特殊处理——包含组队玩时需要flex */
+#page-miao{padding:28px 32px;display:none;flex-direction:column;flex:1;min-height:0}
+#page-miao.active{display:flex}
+
+/* 秒玩页内容区 flex:1 可滚动 */
+.miao-content{flex:1;min-height:0;overflow-y:auto}
+.team-page{display:none;flex-direction:column;flex:1;min-height:0}
+.team-page.active{display:flex}
+
+/* ══ 创建房间弹窗 ══ */
+.modal-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,.65);
+  display:flex;align-items:center;justify-content:center;
+  z-index:200;backdrop-filter:blur(4px)
+}
+.modal-box{
+  width:420px;background:#252535;border-radius:16px;
+  border:1px solid rgba(255,255,255,.1);
+  padding:24px 28px;position:relative
+}
+.modal-title{font-size:17px;font-weight:800;color:#fff;margin-bottom:22px}
+.modal-close{
+  position:absolute;top:16px;right:16px;
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(255,255,255,.07);
+  color:rgba(255,255,255,.5);font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:.15s
+}
+.modal-close:hover{background:rgba(255,255,255,.14);color:#fff}
+.modal-field{margin-bottom:16px}
+.modal-label{font-size:12px;color:rgba(255,255,255,.45);margin-bottom:7px;font-weight:600;letter-spacing:.2px}
+.modal-input{
+  width:100%;height:38px;border-radius:8px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  padding:0 12px;font-size:13px;color:#e2e8f0;outline:none;
+  transition:.15s
+}
+.modal-input:focus{border-color:rgba(167,139,250,.5);background:rgba(255,255,255,.09)}
+.modal-input::placeholder{color:rgba(255,255,255,.25)}
+.modal-select{
+  width:100%;height:38px;border-radius:8px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  padding:0 12px;font-size:13px;color:#e2e8f0;outline:none;
+  appearance:none;cursor:pointer
+}
+.modal-select option{background:#252535}
+.modal-radio-row{display:flex;gap:10px}
+.modal-radio-btn{
+  flex:1;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);
+  font-size:12px;font-weight:700;cursor:pointer;transition:.15s;
+  display:flex;align-items:center;justify-content:center;gap:6px
+}
+.modal-radio-btn.active{background:rgba(167,139,250,.2);border-color:rgba(167,139,250,.4);color:#d4b8ff}
+.modal-footer{margin-top:22px;display:flex;gap:10px}
+.modal-btn-cancel{
+  flex:1;height:40px;border-radius:10px;
+  background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);
+  font-size:14px;font-weight:700;cursor:pointer;transition:.15s
+}
+.modal-btn-cancel:hover{background:rgba(255,255,255,.12)}
+.modal-btn-confirm{
+  flex:2;height:40px;border-radius:10px;
+  background:linear-gradient(135deg,#a78bfa,#4c6ef5);color:#fff;
+  font-size:14px;font-weight:800;cursor:pointer;transition:.15s
+}
+.modal-btn-confirm:hover{filter:brightness(1.1)}
+.modal-char-count{font-size:10px;color:rgba(255,255,255,.3);text-align:right;margin-top:4px}
+/* 私密密码输入框 */
+.modal-password-field{margin-top:10px;transition:.15s}
+
+/* 房间页"更多设置"下拉菜单 */
+.room-more-wrap{position:relative;margin-left:auto}
+.room-more-dropdown{
+  position:absolute;top:calc(100% + 6px);right:0;
+  width:148px;background:#2a2a3d;border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;padding:6px;z-index:300;
+  box-shadow:0 8px 32px rgba(0,0,0,.6);
+  display:none
+}
+.room-more-dropdown.open{display:block}
+.rmd-item{
+  height:36px;border-radius:7px;padding:0 12px;
+  font-size:13px;color:rgba(255,255,255,.8);
+  display:flex;align-items:center;gap:8px;
+  cursor:pointer;transition:.12s;width:100%
+}
+.rmd-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.rmd-item i{font-size:12px;color:rgba(255,255,255,.4);width:14px}
+
+/* ══ 房间页 ══ */
+.room-page{
+  display:none;flex-direction:row;flex:1;min-height:0;
+  position:absolute;inset:0;background:#1e1e2a;z-index:100;
+  padding:20px 24px;gap:20px
+}
+.room-page.active{display:flex}
+
+/* 左侧面板 */
+.room-left{
+  flex:1;min-width:0;display:flex;flex-direction:column
+}
+/* 右侧面板（与世界频道同宽） */
+.room-right{
+  width:320px;flex-shrink:0;
+  display:flex;flex-direction:column;
+  border-left:1px solid rgba(255,255,255,.07);
+  background:rgba(255,255,255,.015);
+  border-radius:12px;overflow:hidden
+}
+
+.room-top-bar{
+  display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-shrink:0
+}
+.room-back-btn{
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;cursor:pointer;transition:.15s;flex-shrink:0
+}
+.room-back-btn:hover{background:rgba(255,255,255,.14);color:#fff}
+.room-top-title{font-size:16px;font-weight:800;color:#fff}
+.room-top-more{margin-left:auto;width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+.room-top-more:hover{background:rgba(255,255,255,.12);color:#fff}
+/* 房间信息行 */
+.room-info-row{
+  display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-shrink:0;
+  padding:12px 16px;background:rgba(255,255,255,.03);border-radius:12px;
+  border:1px solid rgba(255,255,255,.06)
+}
+.room-name{font-size:14px;font-weight:800;color:#fff;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.room-id-tag{
+  font-size:11px;color:rgba(255,255,255,.4);
+  background:rgba(255,255,255,.06);border-radius:6px;padding:3px 8px;
+  cursor:pointer;transition:.15s;white-space:nowrap;flex-shrink:0
+}
+.room-id-tag:hover{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+/* 成员网格 */
+.room-members{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+  margin-bottom:12px;flex-shrink:0
+}
+.member-slot{
+  border-radius:12px;padding:10px 8px 8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;gap:4px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  min-height:80px;position:relative
+}
+.member-slot.empty{
+  border:1px dashed rgba(255,255,255,.1);background:transparent;
+  color:rgba(255,255,255,.2);font-size:22px;
+  display:flex;align-items:center;justify-content:center
+}
+.member-crown-top{
+  font-size:12px;line-height:1;margin-bottom:1px
+}
+.member-av{
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:800;color:#fff;flex-shrink:0
+}
+.member-av.small{width:36px;height:36px;font-size:13px}
+.member-name{font-size:11px;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.member-pos{font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;background:rgba(167,139,250,.2);color:#c4abff;border:1px solid rgba(167,139,250,.25)}
+.member-pos.p1{background:rgba(76,110,245,.2);color:#818cf8;border-color:rgba(76,110,245,.3)}
+/* 右侧房间消息面板标题栏 */
+.room-chat-panel-title{
+  padding:12px 14px 10px;
+  font-size:13px;font-weight:700;color:rgba(255,255,255,.7);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  flex-shrink:0;
+  display:flex;align-items:center;gap:6px
+}
+.room-chat-panel-title .room-visible-tag{
+  margin-left:auto;font-size:11px;font-weight:400;color:rgba(255,255,255,.3)
+}
+/* 右侧房间聊天滚动区（复用 chat-flow 样式） */
+.room-chat-flow{
+  flex:1;min-height:0;overflow-y:auto;
+  padding:12px 14px 8px;
+  display:flex;flex-direction:column;gap:8px
+}
+.room-chat-bottom{
+  flex-shrink:0;padding:8px 12px 10px;
+  border-top:1px solid rgba(255,255,255,.06);
+  display:flex;flex-direction:column;gap:7px
+}
+.room-chat-input-row{display:flex;gap:6px;align-items:center}
+/* 底部操作栏 */
+.room-action-bar{
+  display:flex;gap:10px;flex-shrink:0;margin-top:auto;padding-top:12px
+}
+.room-btn{
+  height:42px;border-radius:11px;
+  font-size:14px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  cursor:pointer;transition:.15s;padding:0 24px
+}
+.room-btn-danger{
+  background:rgba(239,68,68,.12);color:#f87171;
+  border:1px solid rgba(239,68,68,.2)
+}
+.room-btn-danger:hover{background:rgba(239,68,68,.22);border-color:rgba(239,68,68,.4)}
+.room-btn-primary{
+  flex:1;
+  background:linear-gradient(135deg,#a78bfa,#4c6ef5);color:#fff
+}
+.room-btn-primary:hover{filter:brightness(1.1)}
+.room-btn-exit{
+  flex:1;
+  background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);
+  border:1px solid rgba(255,255,255,.1)
+}
+.room-btn-exit:hover{background:rgba(255,255,255,.12)}
+/* ══ 探索页：组队热玩专题 ══ */
+.mac-section{margin-bottom:28px}
+.mac-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.mac-section-head h2{font-size:20px;font-weight:800;color:#fff}
+.mac-section-head button{font-size:12px;color:rgba(255,255,255,.35);cursor:pointer;transition:.15s;background:none;border:none}
+.mac-section-head button:hover{color:rgba(255,255,255,.7)}
+.team-hot-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+
+/* 世界招募按钮 */
+.recruit-btn{
+  height:32px;border-radius:16px;padding:0 12px;
+  background:linear-gradient(135deg,rgba(167,139,250,.25),rgba(96,216,255,.15));
+  border:1px solid rgba(167,139,250,.35);
+  color:#d4b8ff;font-size:11px;font-weight:700;
+  cursor:pointer;transition:.15s;white-space:nowrap;flex-shrink:0
+}
+.recruit-btn:hover{background:linear-gradient(135deg,rgba(167,139,250,.4),rgba(96,216,255,.25))}
+.recruit-btn:disabled{opacity:.4;cursor:not-allowed}
+.recruit-cd{font-size:10px;color:rgba(255,255,255,.3);margin-left:2px}
+/* ══ P标签（成员位置） ══ */
+.member-p-label{font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;background:rgba(167,139,250,.2);color:#c4abff;border:1px solid rgba(167,139,250,.25)}
+.member-p-label.p1{background:rgba(76,110,245,.2);color:#818cf8;border-color:rgba(76,110,245,.3)}
+
+/* ══ Demo按钮 ══ */
+.demo-btns{
+  position:fixed;top:12px;left:50%;transform:translateX(-50%);
+  display:flex;gap:10px;z-index:9999
+}
+.demo-btns button{
+  background:rgba(20,20,32,.92);color:#e2e8f0;
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:14px;padding:6px 14px;
+  font-size:12px;font-weight:600;cursor:pointer;
+  transition:.15s;white-space:nowrap;
+  backdrop-filter:blur(8px)
+}
+.demo-btns button:hover{background:rgba(76,110,245,.55);border-color:rgba(76,110,245,.6);color:#fff}
+
+/* ══ 游戏内状态覆盖层 ══ */
+#gameOverlay{
+  position:absolute;inset:0;z-index:100;display:none;
+  background:#000;flex-direction:column;overflow:hidden
+}
+#gameOverlay.active{display:flex}
+.go-bg{
+  position:absolute;inset:0;
+  background-image:url('https://cdn.cloudflare.steamstatic.com/steam/apps/582010/header.jpg');
+  background-size:cover;background-position:center;
+  filter:brightness(.55)
+}
+.go-content{position:relative;z-index:1;display:flex;flex-direction:column;height:100%}
+.go-hud{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px 10px;flex-shrink:0
+}
+.go-hud-left{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:700;color:#fff;
+  text-shadow:0 1px 4px rgba(0,0,0,.7)
+}
+.go-hud-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0;box-shadow:0 0 6px #4ade80}
+.go-hud-right{
+  display:flex;align-items:center;gap:6px
+}
+.go-session-tag{
+  font-size:11px;font-weight:700;color:#fff;
+  background:rgba(76,110,245,.5);border:1px solid rgba(76,110,245,.6);
+  border-radius:20px;padding:4px 12px;
+  backdrop-filter:blur(6px)
+}
+.go-mid{flex:1}
+/* ══ 游戏内底部横栏 ══ */
+.game-bar{
+  position:absolute;bottom:0;left:0;right:0;
+  display:flex;align-items:center;gap:16px;
+  padding:12px 20px;
+  background:rgba(8,12,18,.9);
+  border-top:1px solid rgba(255,255,255,.1);
+  border-radius:14px 14px 0 0;
+  backdrop-filter:blur(12px);
+  z-index:2
+}
+.game-bar-label{
+  font-size:13px;font-weight:900;color:rgba(255,255,255,.7);
+  white-space:nowrap;flex-shrink:0
+}
+.game-members{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:10px;flex:1;min-width:0
+}
+.gm-item{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;color:#e2e8f0;min-width:0
+}
+.gm-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#38d37a;flex-shrink:0
+}
+.gm-dot.offline{background:rgba(255,255,255,.25)}
+.gm-pos{
+  font-size:11px;font-weight:800;
+  color:#818cf8;flex-shrink:0
+}
+.gm-pos.p1{color:#60d8ff}
+.gm-name{
+  font-size:12px;font-weight:600;color:#e2e8f0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0
+}
+.gm-status{
+  font-size:11px;color:#38d37a;font-weight:600;
+  white-space:nowrap;flex-shrink:0
+}
+.gm-status.offline{color:rgba(255,255,255,.3)}
+.gm-divider{
+  width:1px;height:32px;
+  background:rgba(255,255,255,.1);flex-shrink:0
+}
+.game-bar-btns{
+  display:flex;align-items:center;gap:8px;flex-shrink:0
+}
+.go-ctrl-btn{
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);
+  color:#fff;font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:.15s;backdrop-filter:blur(6px)
+}
+.go-ctrl-btn:hover{background:rgba(255,255,255,.15)}
+.go-ctrl-btn.muted{color:#f87171;border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.1)}
+.go-event-btn{
+  height:32px;border-radius:16px;padding:0 14px;
+  background:rgba(251,146,60,.15);border:1px solid rgba(251,146,60,.35);
+  color:#fb923c;font-size:12px;font-weight:700;cursor:pointer;transition:.15s
+}
+.go-event-btn:hover{background:rgba(251,146,60,.28)}
+.go-end-btn{
+  height:32px;border-radius:16px;padding:0 14px;
+  background:rgba(239,68,68,.18);border:1px solid rgba(239,68,68,.35);
+  color:#f87171;font-size:12px;font-weight:700;cursor:pointer;transition:.15s
+}
+.go-end-btn:hover{background:rgba(239,68,68,.32)}
+
+/* ══ 重连弹窗 ══ */
+#reconnectModal{
+  position:absolute;inset:0;background:rgba(0,0,0,.65);
+  display:none;align-items:center;justify-content:center;
+  z-index:200;backdrop-filter:blur(4px)
+}
+#reconnectModal.active{display:flex}
+
+/* ══ 房间悬浮条 ══ */
+#floatingBar{
+  position:absolute;bottom:12px;left:200px;right:20px;
+  background:rgba(14,14,22,.92);border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:10px 14px;
+  display:none;align-items:center;gap:12px;
+  z-index:150;backdrop-filter:blur(12px);
+  box-shadow:0 4px 24px rgba(0,0,0,.6)
+}
+#floatingBar.active{display:flex}
+.fb-cover{
+  width:44px;height:32px;border-radius:6px;
+  background-image:url('https://cdn.cloudflare.steamstatic.com/steam/apps/582010/header.jpg');
+  background-size:cover;background-position:center;
+  flex-shrink:0
+}
+.fb-info{flex:1;min-width:0}
+.fb-game{font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fb-status{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}
+.fb-enter-btn{
+  height:30px;border-radius:8px;padding:0 14px;
+  background:#4c6ef5;color:#fff;font-size:12px;font-weight:700;
+  cursor:pointer;transition:.15s;flex-shrink:0
+}
+.fb-enter-btn:hover{background:#3b5bdb}
+.fb-exit-btn{
+  height:30px;border-radius:8px;padding:0 14px;
+  background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);
+  border:1px solid rgba(255,255,255,.1);font-size:12px;font-weight:600;
+  cursor:pointer;transition:.15s;flex-shrink:0
+}
+.fb-exit-btn:hover{background:rgba(255,255,255,.13)}
+</style>
+</head>
+<body>
+<!-- Demo 控制按钮（容器外，固定顶部） -->
+<div class="demo-btns">
+  <button onclick="demoGameView()">游戏内状态</button>
+  <button onclick="demoReconnect()">重连弹窗</button>
+  <button onclick="demoFloating()">房间悬浮条</button>
+</div>
+
+<div class="mac-win">
+  <div class="mac-toast" id="toast"></div>
+
+  <!-- 左侧 Icon 导航（只保留探索和秒玩） -->
+  <aside class="sidebar">
+    <div class="win-dots">
+      <span class="wd-r"></span><span class="wd-y"></span><span class="wd-g"></span>
+    </div>
+
+    <div class="sidebar-mid">
+      <!-- 探索（compass图标） -->
+      <div class="nav-icon-btn active" id="nav-explore" onclick="switchPage('explore')" title="探索">
+        <div class="nav-active-dot"></div>
+        <i class="fas fa-compass"></i>
+      </div>
+      <!-- 秒玩/云游戏（cloud图标） -->
+      <div class="nav-icon-btn" id="nav-miao" onclick="switchPage('miao')" title="秒玩">
+        <i class="fas fa-cloud"></i>
+      </div>
+    </div>
+
+    <div class="sidebar-bot"></div>
+  </aside>
+
+  <!-- 右侧 -->
+  <div class="main-area">
+
+    <!-- 顶部搜索栏 -->
+    <div class="top-bar">
+      <span class="top-title" id="topTitle">探索</span>
+    </div>
+
+    <!-- 探索页 -->
+    <div class="page active" id="page-explore">
+
+      <!-- Banner 轮播 -->
+      <div class="banner-wrap" style="position:relative">
+        <div class="banner-scroll" id="bannerScroll"></div>
+        <button class="banner-arrow banner-prev" onclick="moveBanner(-1)"><i class="fas fa-chevron-left"></i></button>
+        <button class="banner-arrow banner-next" onclick="moveBanner(1)"><i class="fas fa-chevron-right"></i></button>
+        <div class="banner-dots" id="bannerDots"></div>
+      </div>
+
+      <!-- 本周热门 -->
+      <div class="sec-head">
+        <span class="sec-title">本周热门</span>
+        <span class="sec-more" onclick="showToast('查看更多热门游戏')">查看全部 <i class="fas fa-chevron-right" style="font-size:10px"></i></span>
+      </div>
+      <div class="game-grid-4" id="hotGrid"></div>
+
+      <!-- 组队热玩 -->
+      <div class="mac-section">
+        <div class="mac-section-head">
+          <h2>组队热玩</h2>
+          <button onclick="switchPage('miao');switchMiaoTab('team');switchSubTab('game')">查看全部 →</button>
+        </div>
+        <div class="team-hot-grid" id="teamHotGrid"></div>
+      </div>
+
+      <!-- 游戏资讯 -->
+      <div class="sec-head">
+        <span class="sec-title">游戏资讯</span>
+        <span class="sec-more" onclick="showToast('查看更多资讯')">查看全部 <i class="fas fa-chevron-right" style="font-size:10px"></i></span>
+      </div>
+      <div class="game-grid-2" id="newsGrid"></div>
+    </div>
+
+    <!-- 秒玩页 -->
+    <div id="page-miao">
+      <!-- 子tab -->
+      <div class="miao-tabs" id="miaoTabs">
+        <button class="miao-tab active" id="miao-tab-all" onclick="switchMiaoTab('all')">全部游戏 (101)</button>
+        <button class="miao-tab team-tab" id="miao-tab-team" onclick="switchMiaoTab('team')">组队玩 (6)</button>
+      </div>
+
+      <!-- 全部游戏面板 -->
+      <div class="miao-content" id="miao-panel-all">
+        <div class="miao-grid" id="miaoGrid"></div>
+      </div>
+
+      <!-- 组队玩面板 -->
+      <div class="team-page" id="miao-panel-team">
+        <!-- 左右分栏布局：左侧主内容 + 右侧世界频道 -->
+        <div style="display:flex;flex:1;min-height:0;overflow:hidden">
+
+          <!-- 左侧主内容区 -->
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
+            <!-- 子tab行 -->
+            <div class="sub-pill-row">
+              <button class="sub-pill active" id="sub-game" onclick="switchSubTab('game')">游戏大厅</button>
+              <button class="sub-pill" id="sub-room" onclick="switchSubTab('room')">组队大厅</button>
+              <div class="sub-pill-spacer"></div>
+              <!-- 游戏大厅搜索框（默认显示） -->
+              <input class="sub-search" id="gameSearchInput" type="text" placeholder="搜索游戏名" oninput="filterGames(this.value)">
+              <!-- 组队大厅搜索框（默认隐藏） -->
+              <input class="sub-search" id="roomSearchInput" type="text" placeholder="搜索游戏名/房间ID/房主" style="display:none" oninput="filterRooms(this.value)">
+              <!-- 游戏大厅刷新按钮 -->
+              <button class="sub-action-refresh" id="btn-game-refresh" onclick="showToast('已刷新')" title="刷新"><i class="fas fa-rotate-right"></i></button>
+              <!-- 玩法说明按钮 -->
+              <button id="rulesLink" class="rules-link" onclick="openRulesModal()">玩法说明</button>
+              <!-- 组队大厅操作按钮（默认隐藏） -->
+              <button class="sub-action-refresh" id="btn-room-refresh" onclick="showToast('已刷新')" title="刷新" style="display:none"><i class="fas fa-rotate-right"></i></button>
+              <button class="sub-action-create" id="btn-room-create" onclick="openCreateModal()" style="display:none"><i class="fas fa-plus" style="font-size:10px"></i>创建房间</button>
+            </div>
+
+            <!-- 游戏大厅 -->
+            <div id="team-panel-game" style="flex:1;min-height:0;display:flex;flex-direction:column">
+              <div class="lobby-game-grid" id="lobbyGameGrid"></div>
+            </div>
+
+            <!-- 组队大厅 -->
+            <div id="team-panel-room" style="flex:1;min-height:0;display:none;flex-direction:column">
+              <div class="lobby-room-grid" id="lobbyRoomGrid"></div>
+            </div>
+          </div>
+
+          <!-- 右侧固定世界频道面板 -->
+          <div class="world-side-panel" id="worldSidePanel">
+            <div class="world-side-title"><i class="fas fa-globe-asia" style="margin-right:6px;color:#818cf8"></i>世界频道<button class="world-report-btn" onclick="showToast('不良信息举报请截图发送至gamehub@gamesir.com')" title="举报不良信息"><i class="fas fa-flag"></i></button></div>
+            <div class="world-chat-panel">
+              <div class="chat-flow" id="worldChatFlow"></div>
+              <div class="chat-bottom">
+                <div class="chat-quick">
+                  <button class="cq-btn" onclick="sendWorldMsg('有人组队吗',this)">有人组队吗</button>
+                  <button class="cq-btn" onclick="sendWorldMsg('缺一个输出',this)">缺一个输出</button>
+                  <button class="cq-btn" onclick="sendWorldMsg('新手友好来一个',this)">新手友好</button>
+                  <button class="cq-btn" onclick="sendWorldMsg('茶杯头双人',this)">茶杯头双人</button>
+                </div>
+                <div class="chat-input-row">
+                  <input class="chat-text" id="worldInput" type="text" placeholder="发消息..." onkeydown="if(event.key==='Enter'&&this.value.trim()){sendWorldMsg(this.value.trim());this.value=''}">
+                  <button class="chat-send" onclick="const i=document.getElementById('worldInput');if(i.value.trim()){sendWorldMsg(i.value.trim());i.value=''}"><i class="fas fa-paper-plane"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /flex row -->
+
+        <!-- 房间页（覆盖在组队玩面板上） -->
+        <div class="room-page" id="roomPage">
+
+          <!-- 左侧面板 -->
+          <div class="room-left">
+            <!-- 顶部导航 -->
+            <div class="room-top-bar">
+              <div class="room-back-btn" onclick="leaveRoom()"><i class="fas fa-arrow-left"></i></div>
+              <span class="room-top-title">组队房间</span>
+              <div class="room-more-wrap" id="roomMoreWrap">
+                <button class="room-top-more" id="roomMoreBtn" onclick="toggleRoomMore(event)"><i class="fas fa-ellipsis-h"></i></button>
+                <div class="room-more-dropdown" id="roomMoreDropdown">
+                  <button class="rmd-item" onclick="openEditRoomModal()"><i class="fas fa-pen"></i>修改房间信息</button>
+                  <button class="rmd-item" onclick="shareRoom()"><i class="fas fa-share-alt"></i>分享房间</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 房间信息行 -->
+            <div class="room-info-row">
+              <span class="room-name" id="roomName"></span>
+              <span class="room-id-tag" id="roomIdTag" onclick="copyRoomId()"></span>
+            </div>
+
+            <!-- 成员格子 -->
+            <div class="room-members" id="roomMembers"></div>
+
+            <!-- 底部操作栏 -->
+            <div class="room-action-bar" id="roomActionBar"></div>
+          </div>
+
+          <!-- 右侧房间消息面板 -->
+          <div class="room-right">
+            <div class="room-chat-panel-title">
+              <i class="fas fa-comments" style="color:#818cf8"></i>房间消息
+              <span class="room-visible-tag">队伍可见</span>
+            </div>
+            <div class="world-chat-panel">
+              <div class="room-chat-flow chat-flow" id="roomChatFlow"></div>
+              <div class="room-chat-bottom">
+                <div class="chat-quick" id="roomQuickPhrases">
+                  <button class="cq-btn" onclick="sendRoomMsg('准备好了')">准备好了</button>
+                  <button class="cq-btn" onclick="sendRoomMsg('稍等一下')">稍等一下</button>
+                  <button class="cq-btn" onclick="sendRoomMsg('加油！')">加油！</button>
+                  <button class="cq-btn" onclick="sendRoomMsg('一起加油')">一起加油</button>
+                </div>
+                <div class="room-chat-input-row">
+                  <input class="chat-text" id="roomChatInput" type="text" placeholder="说点什么..." onkeydown="if(event.key==='Enter'&&this.value.trim()){sendRoomMsg(this.value.trim());this.value=''}">
+                  <button class="chat-send" onclick="const i=document.getElementById('roomChatInput');if(i.value.trim()){sendRoomMsg(i.value.trim());i.value=''}"><i class="fas fa-paper-plane"></i></button>
+                  <!-- 世界招募按钮（仅房主可见） -->
+                  <button class="recruit-btn" id="recruitBtn" onclick="doRecruit()" style="display:none">
+                    <i class="fas fa-bullhorn" style="font-size:10px;margin-right:4px"></i>世界招募
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-area -->
+
+  <!-- 创建房间弹窗 -->
+  <div class="modal-overlay" id="createRoomModal" style="display:none" onclick="if(event.target===this)closeCreateModal()">
+    <div class="modal-box">
+      <div class="modal-title">创建房间</div>
+      <button class="modal-close" onclick="closeCreateModal()"><i class="fas fa-times"></i></button>
+
+      <div class="modal-field">
+        <div class="modal-label">选择游戏</div>
+        <select class="modal-select" id="modalGameSelect"></select>
+      </div>
+
+      <div class="modal-field">
+        <div class="modal-label">房间名称</div>
+        <input class="modal-input" id="modalRoomName" type="text" maxlength="20" value="来不及解释了，快加入房间！" oninput="updateCharCount()">
+        <div class="modal-char-count"><span id="charCount">14</span>/20</div>
+      </div>
+
+      <div class="modal-field">
+        <div class="modal-label">房间权限</div>
+        <div class="modal-radio-row">
+          <button class="modal-radio-btn active" id="radio-public" onclick="selectPermission('public')">
+            <i class="fas fa-globe" style="font-size:11px"></i>公开
+          </button>
+          <button class="modal-radio-btn" id="radio-private" onclick="selectPermission('private')">
+            <i class="fas fa-lock" style="font-size:11px"></i>私密
+          </button>
+        </div>
+        <div class="modal-password-field" id="modalPasswordField" style="display:none;margin-top:10px">
+          <input class="modal-input" id="modalRoomPassword" type="text" maxlength="12" placeholder="设置房间密码">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="modal-btn-cancel" onclick="closeCreateModal()">取消</button>
+        <button class="modal-btn-confirm" onclick="confirmCreateRoom()">创建并进入</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 玩法说明弹窗 -->
+  <div class="modal-overlay" id="rulesModal" style="display:none" onclick="if(event.target===this)closeRulesModal()">
+    <div class="modal-box" style="width:480px">
+      <div class="modal-title">组队玩 · 玩法说明</div>
+      <button class="modal-close" onclick="closeRulesModal()"><i class="fas fa-times"></i></button>
+      <ol style="padding-left:18px;display:flex;flex-direction:column;gap:12px">
+        <li style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.6"><strong style="color:#fff">进入方式</strong>：在云游戏 Tab 查看「组队热玩」专题，或点击「组队玩」进入组队页。</li>
+        <li style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.6"><strong style="color:#fff">游戏大厅</strong>：游戏卡片展示当前房间数。房间数大于 0 时显示「快速加入」。</li>
+        <li style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.6"><strong style="color:#fff">组队大厅与房间</strong>：组队大厅支持查看和加入公开房间，创建房间后自己成为 P1 房主。</li>
+        <li style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.6"><strong style="color:#fff">时长与异常</strong>：加入或创建房间前会校验云游戏时长，时长不足时引导充值。</li>
+        <li style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.6"><strong style="color:#fff">队伍须知</strong>：以房主云游戏进度为准，房主退出则云游戏结束。支持游戏内语音。</li>
+      </ol>
+      <div class="modal-footer" style="margin-top:24px">
+        <button class="modal-btn-confirm" onclick="closeRulesModal()">我知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 修改房间信息弹窗 -->
+  <div class="modal-overlay" id="editRoomModal" style="display:none" onclick="if(event.target===this)closeEditRoomModal()">    <div class="modal-box">
+      <div class="modal-title">修改房间信息</div>
+      <button class="modal-close" onclick="closeEditRoomModal()"><i class="fas fa-times"></i></button>
+
+      <div class="modal-field">
+        <div class="modal-label">房间名称</div>
+        <input class="modal-input" id="editRoomName" type="text" maxlength="20" oninput="updateEditCharCount()">
+        <div class="modal-char-count"><span id="editCharCount">0</span>/20</div>
+      </div>
+
+      <div class="modal-field">
+        <div class="modal-label">房间权限</div>
+        <div class="modal-radio-row">
+          <button class="modal-radio-btn active" id="edit-radio-public" onclick="selectEditPermission('public')">
+            <i class="fas fa-globe" style="font-size:11px"></i>公开
+          </button>
+          <button class="modal-radio-btn" id="edit-radio-private" onclick="selectEditPermission('private')">
+            <i class="fas fa-lock" style="font-size:11px"></i>私密
+          </button>
+        </div>
+        <div class="modal-password-field" id="editPasswordField" style="display:none;margin-top:10px">
+          <input class="modal-input" id="editRoomPassword" type="text" maxlength="12" placeholder="设置房间密码">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="modal-btn-cancel" onclick="closeEditRoomModal()">取消</button>
+        <button class="modal-btn-confirm" onclick="confirmEditRoom()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 游戏内状态覆盖层 -->
+  <div id="gameOverlay">
+    <div class="go-bg"></div>
+    <div class="go-content">
+      <!-- HUD 顶部 -->
+      <div class="go-hud">
+        <div class="go-hud-left">
+          <div class="go-hud-dot"></div>
+          云游戏中 · 1080P
+        </div>
+        <div class="go-hud-right">
+          <div class="go-session-tag">4人同屏 Session</div>
+        </div>
+      </div>
+      <!-- 中间空区（游戏画面） -->
+      <div class="go-mid"></div>
+      <!-- 底部横栏 -->
+      <div class="game-bar">
+        <span class="game-bar-label">当前队伍</span>
+        <div class="gm-divider"></div>
+        <div class="game-members">
+          <div class="gm-item">
+            <span class="gm-dot"></span>
+            <span class="gm-pos p1">P1</span>
+            <span class="gm-name">你</span>
+            <span class="gm-status">在线</span>
+          </div>
+          <div class="gm-item">
+            <span class="gm-dot" id="gm-dot-p2"></span>
+            <span class="gm-pos">P2</span>
+            <span class="gm-name">阿澈</span>
+            <span class="gm-status" id="gm-status-p2">在线</span>
+          </div>
+          <div class="gm-item">
+            <span class="gm-dot"></span>
+            <span class="gm-pos">P3</span>
+            <span class="gm-name">Mika</span>
+            <span class="gm-status">在线</span>
+          </div>
+          <div class="gm-item">
+            <span class="gm-dot offline"></span>
+            <span class="gm-pos" style="color:rgba(255,255,255,.25)">P4</span>
+            <span class="gm-name" style="color:rgba(255,255,255,.25)">空位</span>
+            <span class="gm-status offline">—</span>
+          </div>
+        </div>
+        <div class="gm-divider"></div>
+        <div class="game-bar-btns">
+          <button class="go-ctrl-btn" id="goMicBtn" onclick="toggleGoMic()" title="麦克风"><i class="fas fa-microphone"></i></button>
+          <button class="go-ctrl-btn" id="goSpkBtn" onclick="toggleGoSpk()" title="听筒"><i class="fas fa-headphones"></i></button>
+          <button class="go-event-btn" onclick="triggerDropEvent()"><i class="fas fa-wifi" style="margin-right:5px;font-size:11px"></i>掉线事件</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 重连弹窗 -->
+  <div id="reconnectModal" onclick="if(event.target===this)closeReconnectModal()">
+    <div class="modal-box">
+      <div class="modal-title">检测到未结束的组队云游戏</div>
+      <button class="modal-close" onclick="closeReconnectModal()"><i class="fas fa-times"></i></button>
+      <div style="font-size:14px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:4px">
+        是否重连继续玩「怪物猎人：世界」云游戏组队？
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn-cancel" onclick="closeReconnectModal()">稍后再说</button>
+        <button class="modal-btn-confirm" onclick="confirmReconnect()">重连继续</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 房间悬浮条 -->
+  <div id="floatingBar">
+    <div class="fb-cover"></div>
+    <div class="fb-info">
+      <div class="fb-game">怪物猎人：世界</div>
+      <div class="fb-status" id="fbStatus">准备中 · 房间有效期 29:59</div>
+    </div>
+    <button class="fb-enter-btn" onclick="enterFromFloating()">进入</button>
+    <button class="fb-exit-btn" onclick="exitFromFloating()">退出</button>
+  </div>
+
+</div><!-- /mac-win -->
+
+<script>
+// ══ 数据 ══
+const games=[
+  {name:"怪物猎人：世界",  id:"582010", max:4, mode:"合作狩猎",  tags:"动作·冒险·合作",   rooms:3, score:"9.4", teamPlay:true},
+  {name:"茶杯头",          id:"268910", max:2, mode:"双人合作",  tags:"动作·独立·难度",   rooms:0, score:"9.6", teamPlay:true},
+  {name:"人类一败涂地",    id:"477160", max:4, mode:"休闲合作",  tags:"休闲·物理·合作",   rooms:2, score:"8.8", teamPlay:true},
+  {name:"幻兽帕鲁",        id:"1623730",max:4, mode:"合作生存",  tags:"生存·开放世界",     rooms:1, score:"8.5", teamPlay:true},
+  {name:"双人成行",        id:"1426210",max:2, mode:"剧情合作",  tags:"合作·冒险·剧情",   rooms:1, score:"9.5", teamPlay:true},
+  {name:"博德之门3",       id:"1086940",max:4, mode:"合作RPG",   tags:"角色扮演·策略·合作",rooms:0, score:"9.4", teamPlay:true},
+  {name:"黑神话：悟空",    id:"2358720",max:1, mode:"单人",      tags:"动作·冒险·角色扮演",rooms:0, score:"9.6", teamPlay:false},
+  {name:"艾尔登法环",      id:"1245620",max:1, mode:"单人",      tags:"冒险·角色扮演·探索",rooms:0, score:"9.4", teamPlay:false},
+  {name:"空洞骑士",        id:"367520", max:1, mode:"单人",      tags:"动作·冒险·独立",   rooms:0, score:"9.3", teamPlay:false},
+  {name:"赛博朋克2077",    id:"1091500",max:1, mode:"单人",      tags:"开放世界·RPG·科幻", rooms:0, score:"9.1", teamPlay:false},
+  {name:"消逝的光芒",      id:"239140", max:4, mode:"合作冒险",  tags:"开放世界·动作·合作",rooms:1, score:"8.9", teamPlay:false},
+  {name:"无主之地3",       id:"397540", max:4, mode:"合作射击",  tags:"射击·RPG·合作",    rooms:0, score:"8.7", teamPlay:false}
+];
+
+function cover(id){return`https://cdn.cloudflare.steamstatic.com/steam/apps/${id}/header.jpg`}
+
+// Banner 数据
+const banners=[
+  {id:"211420",name:"黑暗之魂3",score:"9.2",tags:["动作","RPG","高难度"]},
+  {id:"1057090",name:"火影忍者：究极忍者风暴4",score:"8.9",tags:["格斗","动漫","合作"]},
+  {id:"239140",name:"消逝的光芒",score:"9.0",tags:["开放世界","动作","生存"]},
+  {id:"582010",name:"怪物猎人：世界",score:"9.4",tags:["动作","冒险","合作"]},
+  {id:"1245620",name:"艾尔登法环",score:"9.4",tags:["冒险","角色扮演","探索"]}
+];
+
+// 房间数据
+const roomsData=[
+  {roomId:"744161",user:"阿澈",  res:"1920×1080",title:"来不及解释了，快加入房间！",joined:2,game:games[0],color:"#4c6ef5",init:"澈"},
+  {roomId:"288379",user:"Mika",  res:"2560×1440",title:"茶杯头双人通关，要求有耐心",  joined:1,game:games[1],color:"#22d3ee",init:"M"},
+  {roomId:"451188",user:"北海",  res:"1920×1080",title:"人类一败涂地，休闲局来玩",   joined:3,game:games[2],color:"#f59e0b",init:"海"},
+  {roomId:"930217",user:"小橘",  res:"1920×1080",title:"帕鲁开荒，缺一个资源采集",   joined:2,game:games[3],color:"#10b981",init:"橘"},
+  {roomId:"671540",user:"游侠X", res:"2560×1440",title:"双人成行剧情通关，第三章",    joined:1,game:games[4],color:"#8b5cf6",init:"X"},
+  {roomId:"382955",user:"兔兔",  res:"1920×1080",title:"博德之门3合作RPG，缺一个",   joined:2,game:games[5],color:"#ec4899",init:"兔"}
+];
+
+// 新闻数据
+const news=[
+  {id:"2358720",cat:"新闻",title:"《黑神话：悟空》DLC「北海之眼」首曝，探索西海龙宫全新区域",date:"2026-05-15"},
+  {id:"582010", cat:"活动",title:"盖世游戏秒玩周年庆：充值享双倍时长，怪物猎人世界等8款大作限免",date:"2026-05-16"}
+];
+
+// 世界频道聊天数据
+const worldMsgs=[
+  {user:"阿澈",  text:"怪猎缺P4，能语音外开",       game:games[0], need:"3/4", roomId:"744161", color:"#4c6ef5",  init:"澈", time:Date.now()-7*60000},
+  {user:"Mika",  text:"茶杯头双人，过第一岛",         game:games[1], need:"1/2", roomId:"288379", color:"#22d3ee", init:"M",  time:Date.now()-5*60000},
+  {user:"北海",  text:"人类一败涂地休闲局，不急",     game:games[2], need:"2/4", roomId:"451188", color:"#f59e0b", init:"海", time:Date.now()-2*60000},
+  {user:"小橘",  text:"帕鲁开荒缺人，有存档",         game:games[3], need:"2/4", roomId:"930217", color:"#10b981", init:"橘", time:Date.now()-60000}
+];
+const quickPhrases=["有人组队吗","缺一个输出","新手友好","茶杯头双人","帕鲁开荒","怪猎语音局","来一局","双人成行"];
+let worldLastTime=0;
+let replyIdx=0;
+const replyUsers=[{u:"阿澈",c:"#4c6ef5",i:"澈"},{u:"Mika",c:"#22d3ee",i:"M"},{u:"北海",c:"#f59e0b",i:"海"},{u:"小橘",c:"#10b981",i:"橘"}];
+const replyTexts=["哈哈在","等我！","我也要","组队！","好的来了","缺一个来","马上好"];
+
+// ══ 房间状态 ══
+let curRoomData=null;   // 当前房间数据
+let isRoomOwner=false;  // 是否是房主
+let recruitCd=false;    // 世界招募冷却
+
+// 房主模式成员（你=P1，阿澈=P2，Mika=P3，空位=P4）
+const ownerMembers=[
+  {name:"我",    pos:"P1",color:"linear-gradient(135deg,#4c6ef5,#22d3ee)",init:"我", isMe:true,  isOwner:true},
+  {name:"阿澈",  pos:"P2",color:"#4c6ef5",                                  init:"澈",isMe:false, isOwner:false},
+  {name:"Mika",  pos:"P3",color:"#22d3ee",                                  init:"M", isMe:false, isOwner:false},
+  null
+];
+// 加入模式成员（阿澈=P1房主，你=P2，Mika=P3，空位=P4）
+const joinMembers=[
+  {name:"阿澈",  pos:"P1",color:"#4c6ef5",                                  init:"澈",isMe:false, isOwner:true},
+  {name:"我",    pos:"P2",color:"linear-gradient(135deg,#4c6ef5,#22d3ee)",init:"我", isMe:true,  isOwner:false},
+  {name:"Mika",  pos:"P3",color:"#22d3ee",                                  init:"M", isMe:false, isOwner:false},
+  null
+];
+
+// 房间内初始聊天消息
+function roomInitMsgs(isOwner){
+  return isOwner
+    ? [
+        {from:"阿澈",init:"澈",color:"#4c6ef5",text:"收到！准备好了",time:Date.now()-90000},
+        {from:"Mika",init:"M", color:"#22d3ee",text:"等我一分钟~",  time:Date.now()-60000},
+        {from:"阿澈",init:"澈",color:"#4c6ef5",text:"ok没事",        time:Date.now()-30000}
+      ]
+    : [
+        {from:"我",  init:"我",color:"linear-gradient(135deg,#4c6ef5,#22d3ee)",text:"进来了！",isMe:true,time:Date.now()-60000},
+        {from:"阿澈",init:"澈",color:"#4c6ef5",text:"欢迎欢迎！",    time:Date.now()-45000},
+        {from:"Mika",init:"M", color:"#22d3ee",text:"一起打吧！",    time:Date.now()-20000}
+      ];
+}
+
+// ══ Banner 轮播 ══
+let bannerIdx=0;
+let bannerTimer;
+function renderBanner(){
+  const scroll=document.getElementById("bannerScroll");
+  const dots=document.getElementById("bannerDots");
+  scroll.innerHTML=banners.map((b,i)=>`
+    <div class="banner-item" style="background-image:url('${cover(b.id)}');${i===0?'':'display:none'}">
+      <div class="banner-info">
+        <div class="banner-title">${b.name}</div>
+        <div class="banner-tags">${b.tags.map(t=>`<span class="banner-tag">${t}</span>`).join("")}</div>
+      </div>
+      <div class="banner-score">${b.score}</div>
+    </div>`).join("");
+  dots.innerHTML=banners.map((_,i)=>`<div class="banner-dot ${i===0?'active':''}" onclick="goBanner(${i})"></div>`).join("");
+  startBannerAuto();
+}
+function goBanner(i){
+  bannerIdx=i;
+  document.querySelectorAll(".banner-item").forEach((el,j)=>el.style.display=j===i?"block":"none");
+  document.querySelectorAll(".banner-dot").forEach((el,j)=>el.classList.toggle("active",j===i));
+  restartBannerAuto();
+}
+function moveBanner(dir){goBanner((bannerIdx+dir+banners.length)%banners.length)}
+function startBannerAuto(){clearInterval(bannerTimer);bannerTimer=setInterval(()=>moveBanner(1),4000)}
+function restartBannerAuto(){clearInterval(bannerTimer);bannerTimer=setInterval(()=>moveBanner(1),4000)}
+
+// ══ 探索页：组队热玩 ══
+function renderTeamHot(){
+  const list=games.filter(g=>g.rooms>0).slice(0,3);
+  document.getElementById("teamHotGrid").innerHTML=list.map((g,idx)=>{
+    const realIdx=games.indexOf(g);
+    return`<div class="lgcard">
+      <div class="lgcard-cover" style="background-image:url('${cover(g.id)}')">
+        <span class="lgcard-rooms-badge">${g.rooms}个房间</span>
+      </div>
+      <div class="lgcard-body">
+        <div class="lgcard-name">${g.name}</div>
+        <div class="lgcard-btns">
+          <button class="lgcard-btn lgcard-join" onclick="event.stopPropagation();switchPage('miao');switchMiaoTab('team');switchSubTab('game');quickJoin(${realIdx})"><i class="fas fa-sign-in-alt" style="margin-right:4px;font-size:9px"></i>快速加入</button>
+          <button class="lgcard-btn lgcard-create" onclick="event.stopPropagation();switchPage('miao');switchMiaoTab('team');switchSubTab('game');openCreateModal(${realIdx})"><i class="fas fa-plus" style="margin-right:4px;font-size:9px"></i>创建房间</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ══ 探索页：本周热门 ══
+function renderHotGrid(){
+  document.getElementById("hotGrid").innerHTML=games.map(g=>`
+    <div class="gcard" onclick="showToast('启动 ${g.name}')">
+      <div class="gcard-cover" style="background-image:url('${cover(g.id)}')">
+        <div class="gcard-cover-icons">
+          <div class="gcard-platform-icon"><i class="fas fa-gamepad" style="font-size:9px"></i></div>
+          <div class="gcard-platform-icon"><i class="fab fa-steam" style="font-size:9px"></i></div>
+        </div>
+      </div>
+      <div class="gcard-body">
+        <div class="gcard-row">
+          <div class="gcard-name">${g.name}</div>
+          <div class="gcard-score">${g.score}</div>
+        </div>
+        <div class="gcard-tags">${g.tags}</div>
+      </div>
+    </div>`).join("");
+}
+
+// ══ 探索页：游戏资讯 ══
+function renderNews(){
+  document.getElementById("newsGrid").innerHTML=news.map(n=>`
+    <div class="ncard" onclick="showToast('查看资讯详情')">
+      <div class="ncard-cover" style="background-image:url('${cover(n.id)}')">
+        <div class="ncard-info">
+          <div class="ncard-cat">${n.cat}</div>
+          <div class="ncard-title">${n.title}</div>
+          <div class="ncard-meta">${n.date}</div>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+// ══ 秒玩页：全部游戏 ══
+function renderMiaoGrid(){
+  const list=[...games,...games.slice(0,4)];
+  document.getElementById("miaoGrid").innerHTML=list.map(g=>`
+    <div class="mcard" onclick="showToast('秒玩 ${g.name}')">
+      <div class="mcard-cover" style="background-image:url('${cover(g.id)}')">
+        <div class="mcard-cover-icons">
+          <div class="gcard-platform-icon"><i class="fas fa-gamepad" style="font-size:9px"></i></div>
+          <div class="gcard-platform-icon"><i class="fab fa-steam" style="font-size:9px"></i></div>
+        </div>
+      </div>
+      <div class="mcard-body">
+        <div class="mcard-name">${g.name}</div>
+      </div>
+    </div>`).join("");
+}
+
+// ══ 组队玩：游戏大厅 ══
+function renderLobbyGame(list){
+  if(!list) list=games;
+  const grid=document.getElementById("lobbyGameGrid");
+  if(!list.length){
+    grid.innerHTML='<div class="lobby-empty">没有找到相关游戏</div>';
+    return;
+  }
+  grid.innerHTML=list.map(g=>{
+    const idx=games.indexOf(g);
+    return`
+    <div class="lgcard" onclick="${g.rooms>0?`quickJoin(${idx})`:`openCreateModal(${idx})`}">
+      <div class="lgcard-cover" style="background-image:url('${cover(g.id)}')">
+        ${g.rooms>0?`<span class="lgcard-rooms-badge">${g.rooms}个房间</span>`:""}
+      </div>
+      <div class="lgcard-body">
+        <div class="lgcard-name">${g.name}</div>
+        <div class="lgcard-btns">
+          ${g.rooms>0?`<button class="lgcard-btn lgcard-join" onclick="event.stopPropagation();quickJoin(${idx})"><i class="fas fa-sign-in-alt" style="margin-right:4px;font-size:9px"></i>快速加入</button>`:""}
+          <button class="lgcard-btn lgcard-create" onclick="event.stopPropagation();openCreateModal(${idx})"><i class="fas fa-plus" style="margin-right:4px;font-size:9px"></i>创建房间</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ══ 组队玩：组队大厅 ══
+function renderLobbyRoom(list){
+  if(!list) list=roomsData;
+  const avColors=["#4c6ef5","#22d3ee","#f59e0b","#10b981","#8b5cf6","#ec4899"];
+  const grid=document.getElementById("lobbyRoomGrid");
+  if(!list.length){
+    grid.innerHTML='<div class="lobby-empty">没有找到相关房间</div>';
+    return;
+  }
+  grid.innerHTML=list.map((r,i)=>{
+    const origIdx=roomsData.indexOf(r);
+    return`<div class="rcard" onclick="joinRoom(${origIdx})">
+      <div class="rcard-header">
+        <div class="rcard-av" style="background:linear-gradient(135deg,${r.color},${avColors[(origIdx+2)%avColors.length]})">${r.init}</div>
+        <span class="rcard-uname">${r.user}</span>
+        <span class="rcard-public-tag">公开房间</span>
+      </div>
+      <div class="rcard-body">
+        <div class="rcard-game-cover" style="background-image:url('${cover(r.game.id)}')"></div>
+        <div class="rcard-info">
+          <div class="rcard-title">${r.title}</div>
+          <div class="rcard-meta">房间ID ${r.roomId} · ${r.game.name} · ${r.joined}/${r.game.max}人 · ${r.game.mode}</div>
+        </div>
+      </div>
+      <div class="rcard-footer">
+        <button class="rcard-join-btn" onclick="event.stopPropagation();joinRoom(${origIdx})">加入</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function filterRooms(keyword){
+  const kw=keyword.trim().toLowerCase();
+  if(!kw){renderLobbyRoom();return;}
+  const filtered=roomsData.filter(r=>
+    r.title.toLowerCase().includes(kw)||
+    r.roomId.toLowerCase().includes(kw)||
+    r.user.toLowerCase().includes(kw)||
+    r.game.name.toLowerCase().includes(kw)
+  );
+  renderLobbyRoom(filtered);
+}
+
+function filterGames(keyword){
+  const kw=keyword.trim().toLowerCase();
+  if(!kw){renderLobbyGame();return;}
+  const filtered=games.filter(g=>g.name.toLowerCase().includes(kw));
+  renderLobbyGame(filtered);
+}
+
+// ══ 世界频道 ══
+function renderWorldChat(){
+  const flow=document.getElementById("worldChatFlow");
+  let html="";
+  let lastTime=0;
+  worldMsgs.forEach(m=>{
+    if(m.time-lastTime>180000||lastTime===0){
+      html+=`<div class="cf-time">${fmtTime(m.time)}</div>`;
+      lastTime=m.time;
+    }
+    html+=`<div class="cf-msg">
+      <div class="cf-av" style="background:${m.color}">${m.init}</div>
+      <div class="cf-body">
+        <div class="cf-name">${m.user}</div>
+        <div class="cf-card" onclick="joinRoomFromWorld('${m.roomId}')">
+          <div class="cf-card-top">
+            <div class="cf-card-cover" style="background-image:url('${cover(m.game.id)}')"></div>
+            <div class="cf-card-info"><h4>${m.game.name}</h4><p>${m.need} · ${m.game.mode}</p></div>
+          </div>
+          <div class="cf-card-bot">
+            <span class="cf-room-label">${m.text} · ID ${m.roomId}</span>
+            <button class="cf-join-btn" onclick="event.stopPropagation();joinRoomFromWorld('${m.roomId}')">立即加入</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+  flow.innerHTML=html;
+  worldLastTime=worldMsgs[worldMsgs.length-1].time;
+  flow.scrollTop=flow.scrollHeight;
+}
+
+function sendWorldMsg(text, btn){
+  const flow=document.getElementById("worldChatFlow");
+  const now=Date.now();
+  if(now-worldLastTime>180000){
+    flow.insertAdjacentHTML("beforeend",`<div class="cf-time">${fmtTime(now)}</div>`);
+  }
+  worldLastTime=now;
+  flow.insertAdjacentHTML("beforeend",`
+    <div class="cf-msg cf-self">
+      <div class="cf-av" style="background:linear-gradient(135deg,#4c6ef5,#22d3ee)">我</div>
+      <div class="cf-body">
+        <div class="cf-name">你</div>
+        <div class="cf-bubble">${escHtml(text)}</div>
+      </div>
+    </div>`);
+  flow.scrollTop=flow.scrollHeight;
+  if(btn){
+    const next=quickPhrases[Math.floor(Math.random()*quickPhrases.length)];
+    btn.textContent=next;
+    btn.setAttribute("onclick",`sendWorldMsg('${next}',this)`);
+  }
+  showToast("已发送到世界频道");
+  // 模拟回复
+  setTimeout(()=>{
+    const r=replyUsers[replyIdx%replyUsers.length];
+    const msg=replyTexts[replyIdx%replyTexts.length];
+    replyIdx++;
+    const now2=Date.now();
+    if(now2-worldLastTime>180000)flow.insertAdjacentHTML("beforeend",`<div class="cf-time">${fmtTime(now2)}</div>`);
+    worldLastTime=now2;
+    flow.insertAdjacentHTML("beforeend",`
+      <div class="cf-msg">
+        <div class="cf-av" style="background:${r.c}">${r.i}</div>
+        <div class="cf-body">
+          <div class="cf-name">${r.u}</div>
+          <div class="cf-bubble">${msg}</div>
+        </div>
+      </div>`);
+    flow.scrollTop=flow.scrollHeight;
+  },700+Math.random()*500);
+}
+
+// ══ 加入世界频道房间（找对应房间加入为成员） ══
+function joinRoomFromWorld(roomId){
+  if(curRoomData){showToast("您已在房间中，无法加入其他房间");return}
+  const idx=roomsData.findIndex(r=>r.roomId===roomId);
+  if(idx>=0) joinRoom(idx);
+  else showToast("房间已解散");
+}
+
+// ══ 创建房间弹窗 ══
+let modalSelectedGameIdx=0;
+let modalPermission="public";
+
+function openCreateModal(gameIdx){
+  modalSelectedGameIdx=gameIdx!=null?gameIdx:0;
+  modalPermission="public";
+  // 填充游戏下拉
+  const sel=document.getElementById("modalGameSelect");
+  sel.innerHTML=games.filter(g=>g.teamPlay).map((g,i)=>{
+    const realIdx=games.indexOf(g);
+    return`<option value="${realIdx}" ${realIdx===modalSelectedGameIdx?"selected":""}>${g.name}</option>`;
+  }).join("");
+  // 重置
+  document.getElementById("modalRoomName").value="来不及解释了，快加入房间！";
+  document.getElementById("charCount").textContent="14";
+  document.getElementById("radio-public").classList.add("active");
+  document.getElementById("radio-private").classList.remove("active");
+  document.getElementById("modalPasswordField").style.display="none";
+  document.getElementById("modalRoomPassword").value="";
+  document.getElementById("createRoomModal").style.display="flex";
+}
+
+function closeCreateModal(){
+  document.getElementById("createRoomModal").style.display="none";
+}
+
+function updateCharCount(){
+  const v=document.getElementById("modalRoomName").value;
+  document.getElementById("charCount").textContent=v.length;
+}
+
+function selectPermission(type){
+  modalPermission=type;
+  document.getElementById("radio-public").classList.toggle("active",type==="public");
+  document.getElementById("radio-private").classList.toggle("active",type==="private");
+  document.getElementById("modalPasswordField").style.display=type==="private"?"block":"none";
+  if(type==="public") document.getElementById("modalRoomPassword").value="";
+}
+
+function confirmCreateRoom(){
+  if(curRoomData){showToast("您已在房间中，无法加入其他房间");return}
+  const gameIdx=parseInt(document.getElementById("modalGameSelect").value);
+  const roomName=document.getElementById("modalRoomName").value.trim()||"来不及解释了，快加入房间！";
+  closeCreateModal();
+  // 生成房间ID
+  const roomId=String(Math.floor(100000+Math.random()*900000));
+  const rd={roomId,title:roomName,game:games[gameIdx],user:"我",color:"linear-gradient(135deg,#4c6ef5,#22d3ee)",init:"我"};
+  openRoom(rd, true);
+}
+
+// ══ 快速加入（房主的游戏大厅，找到该游戏已有的房间之一加入，作为成员） ══
+function quickJoin(gameIdx){
+  if(curRoomData){showToast("您已在房间中，无法加入其他房间");return}
+  const room=roomsData.find(r=>r.game===games[gameIdx]);
+  if(room){
+    openRoom(room, false);
+  } else {
+    showToast("暂无可加入的房间");
+  }
+}
+
+// ══ 组队大厅"加入"（成员身份） ══
+function joinRoom(roomIdx){
+  if(curRoomData){showToast("您已在房间中，无法加入其他房间");return}
+  openRoom(roomsData[roomIdx], false);
+}
+
+// ══ 打开房间页 ══
+function openRoom(rd, asOwner){
+  curRoomData=rd;
+  isRoomOwner=asOwner;
+  // 填充房间信息
+  document.getElementById("roomName").textContent=rd.title;
+  document.getElementById("roomIdTag").textContent=`房间ID ${rd.roomId}  📋`;
+  // 渲染成员
+  renderRoomMembers(asOwner);
+  // 渲染聊天
+  renderRoomChat(asOwner);
+  // 底部按钮
+  renderRoomActions(asOwner);
+  // 世界招募按钮
+  const recruitBtn=document.getElementById("recruitBtn");
+  recruitBtn.style.display=asOwner?"flex":"none";
+  recruitBtn.disabled=false;
+  recruitBtn.innerHTML='<i class="fas fa-bullhorn" style="font-size:10px;margin-right:4px"></i>世界招募';
+  recruitCd=false;
+  // 显示房间页
+  document.getElementById("roomPage").classList.add("active");
+}
+
+function renderRoomMembers(asOwner){
+  const members=asOwner?ownerMembers:joinMembers;
+  document.getElementById("roomMembers").innerHTML=members.map(m=>{
+    if(!m) return`<div class="member-slot empty"><i class="fas fa-plus"></i></div>`;
+    const isOwner=m.isOwner;
+    const avSize=isOwner?"member-av":"member-av small";
+    return`<div class="member-slot">
+      ${isOwner?'<div class="member-crown-top">👑</div>':''}
+      <div class="${avSize}" style="background:${m.color}">${m.init}</div>
+      <div class="member-name">${m.name}${m.isMe?'（我）':''}</div>
+      <div class="member-pos ${m.pos==='P1'?'p1':''}">${m.pos}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderRoomChat(asOwner){
+  const flow=document.getElementById("roomChatFlow");
+  const msgs=roomInitMsgs(asOwner);
+  let html="";
+  let lastT=0;
+  msgs.forEach(m=>{
+    if(m.time-lastT>180000||lastT===0){
+      html+=`<div class="cf-time">${fmtTime(m.time)}</div>`;
+      lastT=m.time;
+    }
+    const displayName=m.isMe?(isRoomOwner?"你（房主）":"你"):m.from;
+    if(m.isMe){
+      html+=`<div class="cf-msg cf-self">
+        <div class="cf-av" style="background:${m.color}">${m.init}</div>
+        <div class="cf-body">
+          <div class="cf-name">${displayName}</div>
+          <div class="cf-bubble-self">${escHtml(m.text)}</div>
+        </div>
+      </div>`;
+    } else {
+      html+=`<div class="cf-msg">
+        <div class="cf-av" style="background:${m.color}">${m.init}</div>
+        <div class="cf-body">
+          <div class="cf-name">${m.from}</div>
+          <div class="cf-bubble">${escHtml(m.text)}</div>
+        </div>
+      </div>`;
+    }
+  });
+  flow.innerHTML=html;
+  flow.scrollTop=flow.scrollHeight;
+}
+
+function renderRoomActions(asOwner){
+  const bar=document.getElementById("roomActionBar");
+  if(asOwner){
+    bar.innerHTML=`
+      <button class="room-btn room-btn-danger" onclick="dissolveRoom()">
+        <i class="fas fa-times"></i>解散房间
+      </button>
+      <button class="room-btn room-btn-primary" onclick="startGame()">
+        <i class="fas fa-play" style="font-size:12px"></i>开始游戏
+      </button>`;
+  } else {
+    bar.innerHTML=`
+      <button class="room-btn room-btn-exit" onclick="leaveRoom()">
+        <i class="fas fa-sign-out-alt"></i>退出房间
+      </button>`;
+  }
+}
+
+// ══ 房间内发消息 ══
+function sendRoomMsg(text){
+  const flow=document.getElementById("roomChatFlow");
+  const selfName=isRoomOwner?"你（房主）":"你";
+  flow.insertAdjacentHTML("beforeend",`
+    <div class="cf-msg cf-self">
+      <div class="cf-av" style="background:linear-gradient(135deg,#4c6ef5,#22d3ee)">我</div>
+      <div class="cf-body">
+        <div class="cf-name">${selfName}</div>
+        <div class="cf-bubble-self">${escHtml(text)}</div>
+      </div>
+    </div>`);
+  flow.scrollTop=flow.scrollHeight;
+  // 模拟队友回复
+  setTimeout(()=>{
+    const members=(isRoomOwner?ownerMembers:joinMembers).filter(m=>m&&!m.isMe);
+    if(!members.length)return;
+    const m=members[replyIdx%members.length];
+    replyIdx++;
+    const reply=replyTexts[replyIdx%replyTexts.length];
+    flow.insertAdjacentHTML("beforeend",`
+      <div class="cf-msg">
+        <div class="cf-av" style="background:${m.color}">${m.init}</div>
+        <div class="cf-body">
+          <div class="cf-name">${m.name}</div>
+          <div class="cf-bubble">${reply}</div>
+        </div>
+      </div>`);
+    flow.scrollTop=flow.scrollHeight;
+  },600+Math.random()*600);
+}
+
+// ══ 复制房间ID ══
+function copyRoomId(){
+  if(curRoomData) showToast(`已复制房间ID：${curRoomData.roomId}`);
+}
+
+// ══ 世界招募 ══
+function doRecruit(){
+  if(recruitCd) return;
+  recruitCd=true;
+  const btn=document.getElementById("recruitBtn");
+  // 在房间聊天流里发一条
+  const flow=document.getElementById("roomChatFlow");
+  flow.insertAdjacentHTML("beforeend",`
+    <div class="cf-msg cf-self">
+      <div class="cf-av" style="background:linear-gradient(135deg,#a78bfa,#60d8ff)">我</div>
+      <div class="cf-body">
+        <div class="cf-name">你（房主）</div>
+        <div class="cf-bubble" style="color:#d4b8ff;background:rgba(167,139,250,.1)">招募信息已发送到世界频道</div>
+      </div>
+    </div>`);
+  flow.scrollTop=flow.scrollHeight;
+  // 同时在世界频道发一条招募卡片
+  const wflow=document.getElementById("worldChatFlow");
+  const rd=curRoomData;
+  const now=Date.now();
+  if(now-worldLastTime>180000) wflow.insertAdjacentHTML("beforeend",`<div class="cf-time">${fmtTime(now)}</div>`);
+  worldLastTime=now;
+  wflow.insertAdjacentHTML("beforeend",`
+    <div class="cf-msg cf-self">
+      <div class="cf-av" style="background:linear-gradient(135deg,#a78bfa,#60d8ff)">我</div>
+      <div class="cf-body">
+        <div class="cf-name">你（招募）</div>
+        <div class="cf-card" onclick="showToast('加入房间 ${rd.roomId}')">
+          <div class="cf-card-top">
+            <div class="cf-card-cover" style="background-image:url('${cover(rd.game.id)}')"></div>
+            <div class="cf-card-info"><h4>${rd.game.name}</h4><p>${rd.game.mode} · 求队友</p></div>
+          </div>
+          <div class="cf-card-bot">
+            <span class="cf-room-label">${escHtml(rd.title)} · ID ${rd.roomId}</span>
+            <button class="cf-join-btn" onclick="event.stopPropagation();showToast('加入房间 ${rd.roomId}')">立即加入</button>
+          </div>
+        </div>
+      </div>
+    </div>`);
+  wflow.scrollTop=wflow.scrollHeight;
+  showToast("已招募到世界频道");
+  // 10秒CD
+  let cd=10;
+  btn.disabled=true;
+  btn.innerHTML=`<i class="fas fa-bullhorn" style="font-size:10px;margin-right:4px"></i>世界招募 <span class="recruit-cd">(${cd}s)</span>`;
+  const timer=setInterval(()=>{
+    cd--;
+    if(cd<=0){
+      clearInterval(timer);
+      recruitCd=false;
+      btn.disabled=false;
+      btn.innerHTML='<i class="fas fa-bullhorn" style="font-size:10px;margin-right:4px"></i>世界招募';
+    } else {
+      btn.innerHTML=`<i class="fas fa-bullhorn" style="font-size:10px;margin-right:4px"></i>世界招募 <span class="recruit-cd">(${cd}s)</span>`;
+    }
+  },1000);
+}
+
+// ══ 退出/返回房间 ══
+function leaveRoom(){
+  document.getElementById("roomPage").classList.remove("active");
+  curRoomData=null;
+}
+
+function dissolveRoom(){
+  document.getElementById("roomPage").classList.remove("active");
+  curRoomData=null;
+  showToast("房间已解散");
+}
+
+function startGame(){
+  showToast("游戏启动中...");
+}
+
+// ══ 页面切换 ══
+let curPage="explore";
+function switchPage(page){
+  curPage=page;
+  document.querySelectorAll(".nav-icon-btn").forEach(b=>b.classList.remove("active"));
+  const nb=document.getElementById("nav-"+page);
+  if(nb)nb.classList.add("active");
+  const titles={explore:"探索",miao:"秒玩"};
+  document.getElementById("topTitle").textContent=titles[page]||"探索";
+  document.getElementById("page-explore").style.display=page==="explore"?"block":"none";
+  document.getElementById("page-explore").classList.toggle("active",page==="explore");
+  document.getElementById("page-miao").style.display=page==="miao"?"flex":"none";
+  document.getElementById("page-miao").classList.toggle("active",page==="miao");
+}
+
+// ══ 秒玩子tab ══
+let curMiaoTab="all";
+function switchMiaoTab(tab){
+  curMiaoTab=tab;
+  document.getElementById("miao-tab-all").classList.toggle("active",tab==="all");
+  document.getElementById("miao-tab-team").classList.toggle("active",tab==="team");
+  document.getElementById("miao-panel-all").style.display=tab==="all"?"block":"none";
+  document.getElementById("miao-panel-team").style.display=tab==="team"?"flex":"none";
+  document.getElementById("miao-panel-team").classList.toggle("active",tab==="team");
+}
+
+// ══ 组队玩子tab ══
+let curSubTab="game";
+function switchSubTab(tab){
+  curSubTab=tab;
+  ["game","room"].forEach(t=>{
+    document.getElementById("sub-"+t).classList.toggle("active",t===tab);
+    const panel=document.getElementById("team-panel-"+t);
+    if(panel){
+      panel.style.display=t===tab?"flex":"none";
+    }
+  });
+  // 切换操作按钮显隐
+  document.getElementById("btn-game-refresh").style.display=tab==="game"?"flex":"none";
+  document.getElementById("btn-room-refresh").style.display=tab==="room"?"flex":"none";
+  document.getElementById("btn-room-create").style.display=tab==="room"?"flex":"none";
+  // 玩法说明按钮显隐
+  document.getElementById("rulesLink").style.display=tab==="game"?"":"none";
+  // 搜索框显隐
+  const roomSearchEl=document.getElementById("roomSearchInput");
+  const gameSearchEl=document.getElementById("gameSearchInput");
+  roomSearchEl.style.display=tab==="room"?"block":"none";
+  gameSearchEl.style.display=tab==="game"?"block":"none";
+  if(tab!=="room"){roomSearchEl.value="";renderLobbyRoom();}
+  if(tab!=="game"){gameSearchEl.value="";renderLobbyGame();}
+}
+
+// ══ 工具 ══
+let toastTm;
+function showToast(msg){
+  const el=document.getElementById("toast");
+  el.textContent=msg;el.classList.add("show");
+  clearTimeout(toastTm);
+  toastTm=setTimeout(()=>el.classList.remove("show"),2000);
+}
+function fmtTime(ts){
+  const d=new Date(ts),p=n=>String(n).padStart(2,"0");
+  return`${d.getHours()}:${p(d.getMinutes())}`
+}
+function escHtml(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+
+// ══ 房间更多设置下拉 ══
+function toggleRoomMore(e){
+  e.stopPropagation();
+  const dd=document.getElementById("roomMoreDropdown");
+  dd.classList.toggle("open");
+}
+// 点击其他地方关闭下拉
+document.addEventListener("click",function(e){
+  const wrap=document.getElementById("roomMoreWrap");
+  if(wrap&&!wrap.contains(e.target)){
+    document.getElementById("roomMoreDropdown").classList.remove("open");
+  }
+});
+
+function shareRoom(){
+  document.getElementById("roomMoreDropdown").classList.remove("open");
+  if(curRoomData) showToast(`房间链接已复制：ID ${curRoomData.roomId}`);
+}
+
+// ══ 修改房间信息弹窗 ══
+let editPermission="public";
+function openEditRoomModal(){
+  document.getElementById("roomMoreDropdown").classList.remove("open");
+  if(!curRoomData) return;
+  const nameEl=document.getElementById("editRoomName");
+  nameEl.value=curRoomData.title||"";
+  document.getElementById("editCharCount").textContent=nameEl.value.length;
+  editPermission="public";
+  document.getElementById("edit-radio-public").classList.add("active");
+  document.getElementById("edit-radio-private").classList.remove("active");
+  document.getElementById("editPasswordField").style.display="none";
+  document.getElementById("editRoomPassword").value="";
+  document.getElementById("editRoomModal").style.display="flex";
+}
+function closeEditRoomModal(){
+  document.getElementById("editRoomModal").style.display="none";
+}
+function updateEditCharCount(){
+  const v=document.getElementById("editRoomName").value;
+  document.getElementById("editCharCount").textContent=v.length;
+}
+function selectEditPermission(type){
+  editPermission=type;
+  document.getElementById("edit-radio-public").classList.toggle("active",type==="public");
+  document.getElementById("edit-radio-private").classList.toggle("active",type==="private");
+  document.getElementById("editPasswordField").style.display=type==="private"?"block":"none";
+  if(type==="public") document.getElementById("editRoomPassword").value="";
+}
+function confirmEditRoom(){
+  const newName=document.getElementById("editRoomName").value.trim();
+  if(!newName){showToast("房间名称不能为空");return;}
+  if(curRoomData) curRoomData.title=newName;
+  document.getElementById("roomName").textContent=newName;
+  closeEditRoomModal();
+  showToast("房间信息已更新");
+}
+
+// ══ Demo 功能：游戏内状态 ══
+function demoGameView(){
+  // 切换到秒玩/组队玩页面确保容器在
+  switchPage('miao');
+  switchMiaoTab('team');
+  document.getElementById('gameOverlay').classList.add('active');
+}
+function endGame(){
+  document.getElementById('gameOverlay').classList.remove('active');
+  showToast('云游戏已结束');
+}
+let goMicMuted=false;
+function toggleGoMic(){
+  goMicMuted=!goMicMuted;
+  const btn=document.getElementById('goMicBtn');
+  btn.classList.toggle('muted',goMicMuted);
+  btn.innerHTML=goMicMuted?'<i class="fas fa-microphone-slash"></i>':'<i class="fas fa-microphone"></i>';
+  showToast(goMicMuted?'麦克风已静音':'麦克风已开启');
+}
+let goSpkMuted=false;
+function toggleGoSpk(){
+  goSpkMuted=!goSpkMuted;
+  const btn=document.getElementById('goSpkBtn');
+  btn.classList.toggle('muted',goSpkMuted);
+  btn.innerHTML=goSpkMuted?'<i class="fas fa-volume-mute"></i>':'<i class="fas fa-headphones"></i>';
+  showToast(goSpkMuted?'听筒已静音':'听筒已开启');
+}
+function triggerDropEvent(){
+  const dot=document.getElementById('gm-dot-p2');
+  const status=document.getElementById('gm-status-p2');
+  if(dot){
+    dot.classList.add('offline');
+    dot.style.background='#748093';
+  }
+  if(status){
+    status.textContent='已断开';
+    status.style.color='#ff6b6b';
+    status.classList.remove('offline');
+  }
+  showToast('模拟掉线：P2 阿澈 已断开连接...');
+}
+
+// ══ Demo 功能：重连弹窗 ══
+function demoReconnect(){
+  document.getElementById('reconnectModal').classList.add('active');
+}
+function closeReconnectModal(){
+  document.getElementById('reconnectModal').classList.remove('active');
+}
+function confirmReconnect(){
+  closeReconnectModal();
+  showToast('正在重连云游戏...');
+}
+
+// ══ Demo 功能：房间悬浮条 ══
+let fbTimer=null;
+let fbSeconds=29*60+59;
+function demoFloating(){
+  // 若当前在房间页，先退出
+  const rp=document.getElementById('roomPage');
+  if(rp.classList.contains('active')){
+    leaveRoom();
+  }
+  // 切换到组队玩页面
+  switchPage('miao');
+  switchMiaoTab('team');
+  // 显示悬浮条，启动倒计时
+  fbSeconds=29*60+59;
+  updateFbStatus();
+  document.getElementById('floatingBar').classList.add('active');
+  if(fbTimer) clearInterval(fbTimer);
+  fbTimer=setInterval(()=>{
+    fbSeconds--;
+    if(fbSeconds<=0){fbSeconds=0;clearInterval(fbTimer);}
+    updateFbStatus();
+  },1000);
+}
+function updateFbStatus(){
+  const m=Math.floor(fbSeconds/60);
+  const s=fbSeconds%60;
+  document.getElementById('fbStatus').textContent=`准备中 · 房间有效期 ${m}:${String(s).padStart(2,'0')}`;
+}
+function enterFromFloating(){
+  document.getElementById('floatingBar').classList.remove('active');
+  if(fbTimer){clearInterval(fbTimer);fbTimer=null;}
+  // 进入默认房间（怪猎·房主身份）
+  const rd={roomId:'744161',title:'来不及解释了，快加入房间！',game:games[0],user:'我',color:'linear-gradient(135deg,#4c6ef5,#22d3ee)',init:'我'};
+  openRoom(rd, true);
+}
+function exitFromFloating(){
+  document.getElementById('floatingBar').classList.remove('active');
+  if(fbTimer){clearInterval(fbTimer);fbTimer=null;}
+  showToast('已退出房间');
+}
+
+// ══ 玩法说明弹窗 ══
+function openRulesModal(){
+  document.getElementById('rulesModal').style.display='flex';
+}
+function closeRulesModal(){
+  document.getElementById('rulesModal').style.display='none';
+}
+
+// ══ 初始化 ══
+renderBanner();
+renderHotGrid();
+renderTeamHot();
+renderNews();
+renderMiaoGrid();
+renderLobbyGame();
+renderLobbyRoom();
+renderWorldChat();
+</script>
+</body>
+</html>
