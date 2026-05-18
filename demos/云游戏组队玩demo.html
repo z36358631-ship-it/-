@@ -452,6 +452,10 @@ button{font:inherit}
 .dialog-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:0}
 .dialog-actions button{height:42px;justify-content:center}
 .share-box{border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--line);padding:12px;font-size:12px;color:#c6d0db;line-height:1.5;margin-bottom:12px;word-break:break-all}
+.share-preview{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.04);padding:12px;margin-bottom:14px}
+.share-preview-title{font-size:13px;font-weight:800;margin-bottom:8px;color:#fff}
+.share-preview-info{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--muted)}
+.share-preview-info b{color:#dfe7f1}
 .share-options{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .share-option{height:64px;border-radius:12px;background:rgba(255,255,255,.055);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:12px;cursor:pointer}
 .share-option i{font-size:18px}
@@ -995,6 +999,14 @@ button{font:inherit}
   <div class="modal-mask" id="shareModal">
     <div class="modal">
       <div class="modal-head"><h3>分享到</h3><i class="fas fa-xmark close" onclick="closeShare()"></i></div>
+      <div class="share-preview">
+        <div class="share-preview-title">好友邀请你一起云游戏组队玩<span id="shareGameName">怪物猎人：世界</span></div>
+        <div class="share-preview-info">
+          <span>游戏：<b id="shareGameTitle">怪物猎人：世界</b></span>
+          <span>房间人数：<b id="shareRoomCount">3/4</b></span>
+          <span>房间ID：<b id="shareRoomId">582010</b></span>
+        </div>
+      </div>
       <div class="share-options">
         <div class="share-option" onclick="toast('已调起微信分享')"><i class="fab fa-weixin"></i><span>微信</span></div>
         <div class="share-option" onclick="toast('已调起QQ分享')"><i class="fab fa-qq"></i><span>QQ</span></div>
@@ -1246,8 +1258,22 @@ function quickJoinGame(index){
   const g=games[index];
   selected=g;
   requireDuration(()=>{
-    if(g.rooms>1){forceRoom();toast(`已快速加入 ${g.name} 缺 1 人房间`)}
-    else {openCreateRoom(index);toast("当前暂无可加入房间，可以创建房间等队友")}
+    if(g.rooms>0){
+      toast("正在为你寻找合适房间...");
+      setTimeout(()=>{
+        const success=Math.random()<0.8;
+        if(success){
+          forceRoom();
+          toast("已加入房间");
+        }else{
+          const errors=["房间已满员，请尝试其他房间","该游戏当前无可加入房间","房间已解散，请重试"];
+          toast(errors[Math.floor(Math.random()*errors.length)]);
+        }
+      },3000);
+    }else{
+      openCreateRoom(index);
+      toast("当前暂无可加入房间，可以创建房间等队友");
+    }
   });
 }
 function quickJoinRoom(){
@@ -1287,6 +1313,11 @@ function tickMatch(){
 }
 function forceRoom(){
   if(ownedRoom){toast("您已在房间中，无法加入其他房间");return}
+  if(Math.random()<0.1){
+    const errors=["房间已满员，请尝试其他房间","房间已解散，请重试","游戏已开始，无法加入","房间不存在或已过期"];
+    toast(errors[Math.floor(Math.random()*errors.length)]);
+    return;
+  }
   clearInterval(matchTimer);
   ready=false;dropped=false;
   currentRoomId=makeRoomId();
@@ -1430,6 +1461,10 @@ function againRoom(){
 function backHome(){showScreen("home")}
 function openShare(){
   window.currentShareLink=`gamehub://cloud-team/room?roomId=${roomId()}&gameId=${selected.id}&from=share`;
+  document.getElementById("shareGameName").textContent=selected.name;
+  document.getElementById("shareGameTitle").textContent=selected.name;
+  document.getElementById("shareRoomCount").textContent=`${members.length}/${selected.max}`;
+  document.getElementById("shareRoomId").textContent=roomId();
   document.getElementById("shareModal").classList.add("show");
 }
 function closeShare(){document.getElementById("shareModal").classList.remove("show")}
@@ -1646,15 +1681,21 @@ function renderWorld(type="all"){
 }
 function renderRoomLobby(){
   const rooms=[
-    {id:"744161",host:"阿澈",game:games[0],need:"3/4",title:"历战王来个输出"},
-    {id:"288379",host:"Mika",game:games[1],need:"1/2",title:"茶杯头双人过关"},
-    {id:"451188",host:"北海",game:games[2],need:"2/4",title:"休闲局，随便玩"}
+    {id:"744161",host:"阿澈",game:games[0],need:"3/4",current:3,max:4,title:"历战王来个输出",privacy:"public"},
+    {id:"288379",host:"Mika",game:games[1],need:"1/2",current:1,max:2,title:"茶杯头双人过关",privacy:"public"},
+    {id:"451188",host:"北海",game:games[2],need:"2/4",current:2,max:4,title:"休闲局，随便玩",privacy:"public"},
+    {id:"662041",host:"小橘",game:games[3],need:"3/4",current:3,max:4,title:"帕鲁要满了快来",privacy:"public"},
+    {id:"119283",host:"阿泽",game:games[4],need:"1/2",current:1,max:2,title:"双人成行第二章",privacy:"private"}
   ];
   const keyword=(document.getElementById("searchInput")?.value||"").trim().toLowerCase();
   const visible=rooms.filter(room=>!keyword||room.title.toLowerCase().includes(keyword)||room.id.includes(keyword)||room.game.name.toLowerCase().includes(keyword)||room.host.toLowerCase().includes(keyword));
+  visible.sort((a,b)=>{
+    if(a.privacy!==b.privacy)return a.privacy==="public"?-1:1;
+    return (a.max-a.current)-(b.max-b.current);
+  });
   document.getElementById("roomLobby").innerHTML=visible.map((room,i)=>`
     <div class="lobby-card" onclick="selected=games[${games.indexOf(room.game)}];forceRoom()">
-      <div class="lobby-card-head"><div class="lobby-card-user"><div class="avatar" style="background-image:url('${avatars[(i+1)%avatars.length]}')"></div>${room.host}</div><span class="lobby-card-tag">公开房间</span></div>
+      <div class="lobby-card-head"><div class="lobby-card-user"><div class="avatar" style="background-image:url('${avatars[(i+1)%avatars.length]}')"></div>${room.host}</div><span class="lobby-card-tag">${room.privacy==="private"?'<i class="fas fa-lock" style="margin-right:4px;font-size:10px"></i>私密房间':'公开房间'}</span></div>
       <div class="lobby-card-body">
         <div class="lobby-card-cover" style="background-image:url('${coverUrl(room.game)}')"></div>
         <div><h3>${room.title}</h3><p><span class="copy-inline" onclick="event.stopPropagation();copyText('${room.id}','房间ID已复制')">房间ID ${room.id}</span> · ${room.game.name} · ${room.need} · ${room.game.mode}</p></div>
