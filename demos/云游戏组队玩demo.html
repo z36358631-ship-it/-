@@ -402,6 +402,41 @@ button{font:inherit}
   min-height:450px
 }
 .app.in-game .play-screen{height:100%;min-height:0;border:0;border-radius:0}
+.game-chat{
+  position:absolute;left:12px;bottom:58px;
+  width:220px;z-index:45;
+  display:flex;flex-direction:column;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.1);border-radius:10px;
+  overflow:hidden
+}
+.game-chat-list{
+  max-height:80px;overflow-y:auto;padding:6px 8px;
+  display:flex;flex-direction:column;gap:4px
+}
+.game-chat-list .gc-msg{display:flex;gap:4px;align-items:flex-start}
+.game-chat-list .gc-av{width:16px;height:16px;border-radius:50%;flex-shrink:0;background-size:cover;background-position:center}
+.game-chat-list .gc-text{font-size:10px;color:#e0e8f0;line-height:1.3}
+.game-chat-list .gc-name{font-size:9px;color:rgba(255,255,255,.5);font-weight:700}
+.game-chat-list .gc-bubble{font-size:10px;color:#dbe6f2;background:rgba(255,255,255,.08);border-radius:2px 6px 6px 6px;padding:3px 6px;display:inline-block}
+.game-chat-list .gc-msg.gc-self{flex-direction:row-reverse}
+.game-chat-list .gc-msg.gc-self .gc-body{display:flex;flex-direction:column;align-items:flex-end}
+.game-chat-list .gc-msg.gc-self .gc-bubble{background:rgba(129,93,242,.2);border-radius:6px 2px 6px 6px}
+.game-chat-input{
+  display:flex;gap:4px;padding:4px 6px;border-top:1px solid rgba(255,255,255,.08)
+}
+.game-chat-input input{
+  flex:1;min-width:0;height:22px;border-radius:11px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);
+  padding:0 8px;color:#fff;font-size:10px;outline:none
+}
+.game-chat-input input::placeholder{color:rgba(255,255,255,.35)}
+.game-chat-input button{
+  width:22px;height:22px;border-radius:50%;border:0;
+  background:rgba(129,93,242,.4);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:9px;flex-shrink:0
+}
 .hud{position:absolute;left:16px;right:16px;top:14px;display:flex;justify-content:space-between;align-items:center}
 .hud-pill{background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:7px 12px;font-size:12px;display:flex;gap:8px;align-items:center;backdrop-filter:blur(8px)}
 .team-float{
@@ -944,6 +979,16 @@ button{font:inherit}
                 </div>
                 <button class="secondary" onclick="simulateGameDrop()">掉线事件</button>
                 <button class="primary" onclick="showResult()">结束游戏</button>
+              </div>
+            </div>
+            <div class="game-chat">
+              <div class="game-chat-list" id="gameChatList">
+                <div class="gc-msg"><div class="gc-av" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=Mia')"></div><div class="gc-body"><div class="gc-name">阿澈</div><div class="gc-bubble">开怪了注意走位</div></div></div>
+                <div class="gc-msg"><div class="gc-av" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=Leo')"></div><div class="gc-body"><div class="gc-name">Mika</div><div class="gc-bubble">收到</div></div></div>
+              </div>
+              <div class="game-chat-input">
+                <input type="text" placeholder="发消息..." id="gameChatInput" onkeydown="if(event.key==='Enter'&&this.value.trim()){sendGameChat(this.value.trim());this.value=''}">
+                <button onclick="const i=document.getElementById('gameChatInput');if(i.value.trim()){sendGameChat(i.value.trim());i.value=''}"><i class="fas fa-paper-plane"></i></button>
               </div>
             </div>
           </div>
@@ -1575,6 +1620,18 @@ function toggleVoice(type){
     });
     toast(speakerOn?"听筒已开启":"听筒已关闭");
   }
+}
+function sendGameChat(text){
+  const list=document.getElementById("gameChatList");
+  if(!list)return;
+  list.insertAdjacentHTML("beforeend",`<div class="gc-msg gc-self"><div class="gc-av" style="background-image:url('${avatars[0]}')"></div><div class="gc-body"><div class="gc-bubble">${text}</div></div></div>`);
+  list.scrollTop=list.scrollHeight;
+  setTimeout(()=>{
+    const replies=["收到","好的","冲！","等等我","了解"];
+    const reply=replies[Math.floor(Math.random()*replies.length)];
+    list.insertAdjacentHTML("beforeend",`<div class="gc-msg"><div class="gc-av" style="background-image:url('${avatars[1]}')"></div><div class="gc-body"><div class="gc-name">阿澈</div><div class="gc-bubble">${reply}</div></div></div>`);
+    list.scrollTop=list.scrollHeight;
+  },1200);
 }
 function renderFloatingRoom(){
   const el=document.getElementById("floatingRoom");
