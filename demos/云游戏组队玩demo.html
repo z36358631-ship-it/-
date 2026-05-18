@@ -1181,6 +1181,7 @@ button{font:inherit}
 
 <div class="demo-controls">
   <button onclick="demoEnterGame()">游戏内状态</button>
+  <button onclick="demoGameChat()">游戏内文字聊天</button>
   <button onclick="demoReconnect()">重连弹窗</button>
   <button onclick="demoFloatingRoom()">房间悬浮条</button>
   <button onclick="window.open('云游戏组队玩Mac端demo.html','_blank')">Mac端demo</button>
@@ -1448,9 +1449,35 @@ function demoEnterGame(){
   dropped=false;
   micOn=true;
   speakerOn=true;
+  document.getElementById("view-team").classList.add("active");
   renderFloat();
   showScreen("play");
   toast("已进入游戏内状态演示");
+}
+function demoGameChat(){
+  demoEnterGame();
+  const panel=document.getElementById("gameChatPanel");
+  if(panel)panel.style.display="flex";
+  const list=document.getElementById("gameChatList");
+  if(list)list.innerHTML="";
+  const demoMsgs=[
+    {name:"阿澈",av:avatars[1],text:"开怪了注意走位",delay:300},
+    {name:"Mika",av:avatars[2]||avatars[1],text:"收到，我来奶",delay:1500},
+    {self:true,text:"我先输出，注意闪避",delay:3000},
+    {name:"阿澈",av:avatars[1],text:"BOSS转火了小心！",delay:5000},
+    {self:true,text:"了解",delay:7000}
+  ];
+  demoMsgs.forEach(m=>{
+    setTimeout(()=>{
+      if(!list.parentNode)return;
+      if(m.self){
+        addGameMsg(list,`<div class="gc-msg gc-self"><div class="gc-av" style="background-image:url('${avatars[0]}')"></div><div class="gc-body"><div class="gc-bubble">${m.text}</div></div></div>`);
+      }else{
+        addGameMsg(list,`<div class="gc-msg"><div class="gc-av" style="background-image:url('${m.av}')"></div><div class="gc-body"><div class="gc-name">${m.name}</div><div class="gc-bubble">${m.text}</div></div></div>`);
+      }
+    },m.delay);
+  });
+  toast("游戏内文字聊天演示 — 消息10秒后自动消失，最多显示3条");
 }
 function demoReconnect(){
   selected=games[0];
