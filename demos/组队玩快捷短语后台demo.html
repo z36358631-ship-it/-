@@ -46,11 +46,9 @@ body{background:var(--bg-page);color:var(--text-1);display:flex;height:100vh;ove
 .menu-item .sub-arrow{margin-left:auto;font-size:11px;transition:transform .2s}
 .menu-item.open .sub-arrow{transform:rotate(90deg)}
 
-/* 二级缩进 */
 .sub-menu{display:none;padding-left:0}
 .sub-menu.open{display:block}
 .sub-menu .menu-item{padding-left:30px;font-size:12.5px}
-/* 三级缩进 */
 .sub-sub-menu{display:none;padding-left:0}
 .sub-sub-menu.open{display:block}
 .sub-sub-menu .menu-item{padding-left:44px;font-size:12.5px}
@@ -79,7 +77,7 @@ body{background:var(--bg-page);color:var(--text-1);display:flex;height:100vh;ove
 .page-header{display:flex;align-items:center;justify-content:space-between}
 .page-title{font-size:18px;font-weight:700;color:var(--text-1)}
 
-/* ── 卡片/表格容器 */
+/* ── 卡片 */
 .card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
 
 /* ── 操作栏 */
@@ -123,15 +121,14 @@ tbody tr:nth-child(odd){background:#fff}
 tbody tr:nth-child(even){background:#fafafa}
 tbody tr:hover{background:#f0f5ff}
 tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
-.td-num{color:var(--text-3);font-variant-numeric:tabular-nums}
+.td-id{color:var(--text-3);font-variant-numeric:tabular-nums;font-size:12px}
 .td-phrase{font-weight:500}
 
 /* ── 场景标签 */
 .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;
      font-size:12px;font-weight:500;white-space:nowrap}
-.tag-world{background:#e6f4ff;color:#1677ff;border:1px solid #91caff}
-.tag-room{background:#f6ffed;color:#389e0d;border:1px solid #b7eb8f}
 .tag-general{background:#f5f5f5;color:#595959;border:1px solid #d9d9d9}
+.tag-game{background:#e6f4ff;color:#1677ff;border:1px solid #91caff}
 
 /* ── 开关 */
 .toggle{position:relative;display:inline-block;width:36px;height:20px;cursor:pointer;flex-shrink:0}
@@ -148,15 +145,27 @@ tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
 }
 .toggle input:checked ~ .toggle-thumb{left:18px}
 
-/* ── 排序按钮 */
-.sort-btns{display:flex;align-items:center;gap:4px}
-.sort-btn{
-  width:24px;height:24px;border:1px solid var(--border-2);border-radius:4px;
-  background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  color:var(--text-2);font-size:11px;transition:background .15s,color .15s,border-color .15s;
+/* ── 排序 inline edit */
+.sort-cell{display:flex;align-items:center;gap:0}
+.sort-display{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:36px;height:28px;padding:0 8px;
+  border:1px solid transparent;border-radius:var(--radius);
+  font-size:13px;color:var(--text-1);cursor:text;
+  transition:border-color .15s,background .15s;
+  font-variant-numeric:tabular-nums;
 }
-.sort-btn:hover{background:var(--primary-bg);color:var(--primary);border-color:var(--primary)}
-.sort-btn:disabled{opacity:.3;cursor:default;pointer-events:none}
+.sort-display:hover{border-color:var(--border-2);background:var(--fill-2)}
+.sort-input{
+  width:56px;height:28px;padding:0 6px;text-align:center;
+  border:1px solid var(--primary);border-radius:var(--radius);
+  font-size:13px;color:var(--text-1);outline:none;
+  box-shadow:0 0 0 2px rgba(22,119,255,.12);
+  font-variant-numeric:tabular-nums;
+}
+
+/* ── 时间列 */
+.td-time{font-size:12px;color:var(--text-2);white-space:nowrap}
 
 /* ── 操作列文字按钮 */
 .link-btn{background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;border-radius:3px;transition:opacity .15s}
@@ -220,6 +229,15 @@ tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
 .form-error{font-size:12px;color:var(--danger);margin-top:4px;display:none}
 .form-error.show{display:block}
 
+/* ── 场景单选组 */
+.radio-group{display:flex;gap:16px;align-items:center;height:36px}
+.radio-item{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--text-1)}
+.radio-item input[type=radio]{accent-color:var(--primary);width:14px;height:14px;cursor:pointer}
+
+/* ── 游戏选择（条件显示） */
+#gameSelectWrap{margin-top:10px;display:none}
+#gameSelectWrap.show{display:block}
+
 /* ── 确认弹窗 */
 .confirm-modal{min-width:340px;max-width:400px}
 .confirm-body{padding:20px;display:flex;gap:14px;align-items:flex-start}
@@ -254,7 +272,6 @@ tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
     盖世游戏后台
   </div>
   <nav class="menu">
-    <!-- 云游戏管理（展开） -->
     <div class="menu-group">
       <div class="menu-item open" onclick="toggleMenu(this)">
         <i class="fas fa-cloud"></i>
@@ -262,7 +279,6 @@ tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
         <i class="fas fa-chevron-right sub-arrow"></i>
       </div>
       <div class="sub-menu open">
-        <!-- 组队玩配置（展开） -->
         <div class="menu-item open" onclick="toggleMenu(this)">
           <i class="fas fa-users"></i>
           <span>组队玩配置</span>
@@ -276,7 +292,6 @@ tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
         </div>
       </div>
     </div>
-    <!-- 其他菜单项 -->
     <div class="menu-group" style="margin-top:4px;border-top:1px solid rgba(255,255,255,.06);padding-top:6px">
       <div class="menu-item disabled">
         <i class="fas fa-dice"></i>
@@ -296,7 +311,6 @@ tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
 
 <!-- ══ 主区域 ══ -->
 <div class="main">
-  <!-- 顶栏 -->
   <header class="topbar">
     <nav class="breadcrumb">
       <a>云游戏管理</a>
@@ -313,14 +327,12 @@ tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
     </div>
   </header>
 
-  <!-- 内容区 -->
   <div class="content">
     <div class="page-header">
       <h1 class="page-title">快捷短语管理</h1>
     </div>
 
     <div class="card">
-      <!-- 操作栏 -->
       <div class="toolbar">
         <div class="toolbar-left">
           <button class="btn btn-primary" onclick="openAddModal()">
@@ -335,18 +347,18 @@ tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
         </div>
       </div>
 
-      <!-- 表格 -->
       <div class="table-wrap">
         <table id="phraseTable">
           <thead>
             <tr>
-              <th style="width:60px">序号</th>
+              <th style="width:70px">ID</th>
               <th>短语内容</th>
-              <th style="width:120px">适用场景</th>
-              <th style="width:90px">状态</th>
+              <th style="width:160px">适用场景</th>
+              <th style="width:80px">状态</th>
+              <th style="width:90px">排序</th>
               <th style="width:140px">创建时间</th>
-              <th style="width:90px;text-align:center">排序</th>
-              <th style="width:110px">操作</th>
+              <th style="width:140px">更新时间</th>
+              <th style="width:100px">操作</th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
@@ -364,6 +376,7 @@ tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
       <button class="modal-close" onclick="closeModal('editOverlay')"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
+      <!-- 短语内容 -->
       <div class="form-item">
         <label class="form-label">短语内容<span class="required">*</span></label>
         <div class="input-wrap">
@@ -373,15 +386,38 @@ tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
         </div>
         <div class="form-error" id="contentError">请输入短语内容</div>
       </div>
+      <!-- 适用场景 -->
       <div class="form-item">
         <label class="form-label">适用场景<span class="required">*</span></label>
-        <select class="form-select" id="fieldScene">
-          <option value="">请选择适用场景</option>
-          <option value="world">世界频道</option>
-          <option value="room">房间消息</option>
-          <option value="general">通用</option>
-        </select>
+        <div class="radio-group">
+          <label class="radio-item">
+            <input type="radio" name="sceneRadio" value="general" onchange="onSceneChange(this.value)">
+            通用
+          </label>
+          <label class="radio-item">
+            <input type="radio" name="sceneRadio" value="game" onchange="onSceneChange(this.value)">
+            指定游戏
+          </label>
+        </div>
+        <div id="gameSelectWrap">
+          <select class="form-select" id="fieldGame">
+            <option value="">请选择游戏</option>
+            <option value="怪物猎人：世界">怪物猎人：世界</option>
+            <option value="茶杯头">茶杯头</option>
+            <option value="人类一败涂地">人类一败涂地</option>
+            <option value="幻兽帕鲁">幻兽帕鲁</option>
+            <option value="双人成行">双人成行</option>
+            <option value="博德之门3">博德之门3</option>
+          </select>
+          <div class="form-error" id="gameError">请选择游戏</div>
+        </div>
         <div class="form-error" id="sceneError">请选择适用场景</div>
+      </div>
+      <!-- 排序 -->
+      <div class="form-item">
+        <label class="form-label">排序<span class="required">*</span></label>
+        <input class="form-input" id="fieldSort" type="number" min="1" placeholder="数字越小越靠前">
+        <div class="form-error" id="sortError">请输入排序数字</div>
       </div>
     </div>
     <div class="modal-footer">
@@ -418,56 +454,68 @@ tbody td{padding:11px 14px;color:var(--text-1);vertical-align:middle}
 <script>
 /* ── 数据 ── */
 let phrases = [
-  { id:1,  content:'有人组队吗',   scene:'general', enabled:true,  createdAt:'2026/5/18' },
-  { id:2,  content:'缺一个输出',   scene:'world',   enabled:true,  createdAt:'2026/5/18' },
-  { id:3,  content:'新手友好来一个', scene:'world',  enabled:true,  createdAt:'2026/5/18' },
-  { id:4,  content:'茶杯头双人',   scene:'world',   enabled:true,  createdAt:'2026/5/18' },
-  { id:5,  content:'休闲局来吗',   scene:'world',   enabled:true,  createdAt:'2026/5/18' },
-  { id:6,  content:'再来一局',     scene:'general', enabled:true,  createdAt:'2026/5/18' },
-  { id:7,  content:'我来开怪',     scene:'room',    enabled:true,  createdAt:'2026/5/18' },
-  { id:8,  content:'等我重连',     scene:'room',    enabled:true,  createdAt:'2026/5/18' },
-  { id:9,  content:'语音已开',     scene:'room',    enabled:false, createdAt:'2026/5/18' },
-  { id:10, content:'准备好了',     scene:'room',    enabled:true,  createdAt:'2026/5/18' },
+  { id:1001, content:'有人组队吗',    sceneType:'general', gameName:'',           enabled:true,  sort:1,  createdAt:'2026/5/15 14:30', updatedAt:'2026/5/15 14:30' },
+  { id:1002, content:'缺一个输出',    sceneType:'game',    gameName:'怪物猎人：世界', enabled:true,  sort:2,  createdAt:'2026/5/15 14:32', updatedAt:'2026/5/18 10:15' },
+  { id:1003, content:'新手友好来一个', sceneType:'general', gameName:'',           enabled:true,  sort:3,  createdAt:'2026/5/15 14:35', updatedAt:'2026/5/15 14:35' },
+  { id:1004, content:'茶杯头双人',    sceneType:'game',    gameName:'茶杯头',      enabled:true,  sort:4,  createdAt:'2026/5/15 15:00', updatedAt:'2026/5/15 15:00' },
+  { id:1005, content:'休闲局来吗',    sceneType:'game',    gameName:'人类一败涂地', enabled:true,  sort:5,  createdAt:'2026/5/15 15:10', updatedAt:'2026/5/16 09:20' },
+  { id:1006, content:'再来一局',      sceneType:'general', gameName:'',           enabled:true,  sort:6,  createdAt:'2026/5/16 10:00', updatedAt:'2026/5/16 10:00' },
+  { id:1007, content:'我来开怪',      sceneType:'game',    gameName:'怪物猎人：世界', enabled:true,  sort:7,  createdAt:'2026/5/16 11:00', updatedAt:'2026/5/16 11:00' },
+  { id:1008, content:'等我重连',      sceneType:'general', gameName:'',           enabled:true,  sort:8,  createdAt:'2026/5/16 11:05', updatedAt:'2026/5/17 16:40' },
+  { id:1009, content:'语音已开',      sceneType:'general', gameName:'',           enabled:false, sort:9,  createdAt:'2026/5/17 09:00', updatedAt:'2026/5/17 09:00' },
+  { id:1010, content:'准备好了',      sceneType:'general', gameName:'',           enabled:true,  sort:10, createdAt:'2026/5/17 14:00', updatedAt:'2026/5/17 14:00' },
 ];
-let nextId = 11;
+
 let searchKeyword = '';
-let editingId = null;   // null = 新增模式，number = 编辑模式
+let editingId = null;
 let deletingId = null;
 
-/* ── 场景映射 ── */
-const SCENE_MAP = {
-  world:   { label:'世界频道', cls:'tag-world'   },
-  room:    { label:'房间消息', cls:'tag-room'    },
-  general: { label:'通用',     cls:'tag-general' },
-};
+/* ── 工具函数 ── */
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-/* ── 渲染 ── */
+function nowStr(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function maxSort(){
+  if(!phrases.length) return 0;
+  return Math.max(...phrases.map(p => p.sort));
+}
+
+function maxId(){
+  if(!phrases.length) return 1000;
+  return Math.max(...phrases.map(p => p.id));
+}
+
+/* ── 筛选 + 排序渲染 ── */
 function getFiltered(){
   const kw = searchKeyword.trim();
-  if(!kw) return phrases;
-  return phrases.filter(p => p.content.includes(kw));
+  const src = kw ? phrases.filter(p => p.content.includes(kw)) : phrases.slice();
+  return src.slice().sort((a,b) => a.sort - b.sort);
 }
 
 function render(){
   const tbody = document.getElementById('tableBody');
   const list = getFiltered();
-  if(list.length === 0){
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">
+  if(!list.length){
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="8">
       <div class="empty-icon"><i class="fas fa-inbox"></i></div>
       <div>暂无数据</div>
     </td></tr>`;
     return;
   }
-  tbody.innerHTML = list.map((p, idx) => {
-    const scene = SCENE_MAP[p.scene] || {label:p.scene, cls:'tag-general'};
-    // 确定在原数组中的真实索引（搜索时上下移基于真实索引）
-    const realIdx = phrases.indexOf(p);
-    const isFirst = realIdx === 0;
-    const isLast  = realIdx === phrases.length - 1;
+  tbody.innerHTML = list.map(p => {
+    const sceneHtml = p.sceneType === 'general'
+      ? `<span class="tag tag-general">通用</span>`
+      : `<span class="tag tag-game">${escHtml(p.gameName)}</span>`;
     return `<tr data-id="${p.id}">
-      <td class="td-num">${idx + 1}</td>
+      <td class="td-id">${p.id}</td>
       <td class="td-phrase">${escHtml(p.content)}</td>
-      <td><span class="tag ${scene.cls}">${scene.label}</span></td>
+      <td>${sceneHtml}</td>
       <td>
         <label class="toggle" title="${p.enabled ? '点击停用' : '点击启用'}">
           <input type="checkbox" ${p.enabled ? 'checked' : ''} onchange="toggleStatus(${p.id})">
@@ -475,17 +523,13 @@ function render(){
           <div class="toggle-thumb"></div>
         </label>
       </td>
-      <td>${p.createdAt}</td>
-      <td style="text-align:center">
-        <div class="sort-btns" style="justify-content:center">
-          <button class="sort-btn" onclick="moveUp(${p.id})" ${isFirst?'disabled':''} title="上移">
-            <i class="fas fa-chevron-up"></i>
-          </button>
-          <button class="sort-btn" onclick="moveDown(${p.id})" ${isLast?'disabled':''} title="下移">
-            <i class="fas fa-chevron-down"></i>
-          </button>
+      <td>
+        <div class="sort-cell">
+          <span class="sort-display" title="点击编辑排序" onclick="startSortEdit(this, ${p.id})">${p.sort}</span>
         </div>
       </td>
+      <td class="td-time">${p.createdAt}</td>
+      <td class="td-time">${p.updatedAt}</td>
       <td>
         <button class="link-btn link-edit" onclick="openEditModal(${p.id})">编辑</button>
         <span style="color:var(--border-2);margin:0 2px">|</span>
@@ -493,10 +537,6 @@ function render(){
       </td>
     </tr>`;
   }).join('');
-}
-
-function escHtml(s){
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 /* ── 搜索 ── */
@@ -510,33 +550,92 @@ function toggleStatus(id){
   const p = phrases.find(x => x.id === id);
   if(!p) return;
   p.enabled = !p.enabled;
+  p.updatedAt = nowStr();
   render();
   showToast(p.enabled ? '已启用' : '已停用', 'success');
 }
 
-/* ── 排序 ── */
-function moveUp(id){
-  const idx = phrases.findIndex(x => x.id === id);
-  if(idx <= 0) return;
-  [phrases[idx-1], phrases[idx]] = [phrases[idx], phrases[idx-1]];
-  render();
+/* ── 排序 inline edit ── */
+function startSortEdit(spanEl, id){
+  // 若已有输入框在编辑中则先提交
+  const existingInput = document.querySelector('.sort-input');
+  if(existingInput) commitSortEdit(existingInput);
+
+  const cell = spanEl.parentElement;
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.min = '1';
+  input.className = 'sort-input';
+  input.value = spanEl.textContent;
+  input.dataset.id = id;
+  input.dataset.oldVal = spanEl.textContent;
+
+  cell.innerHTML = '';
+  cell.appendChild(input);
+  input.focus();
+  input.select();
+
+  input.addEventListener('keydown', e => {
+    if(e.key === 'Enter'){ e.preventDefault(); commitSortEdit(input); }
+    if(e.key === 'Escape'){ cancelSortEdit(input, id); }
+  });
+  input.addEventListener('blur', () => commitSortEdit(input));
 }
-function moveDown(id){
-  const idx = phrases.findIndex(x => x.id === id);
-  if(idx < 0 || idx >= phrases.length - 1) return;
-  [phrases[idx], phrases[idx+1]] = [phrases[idx+1], phrases[idx]];
-  render();
+
+function commitSortEdit(input){
+  const id = parseInt(input.dataset.id);
+  const oldVal = parseInt(input.dataset.oldVal);
+  const newVal = parseInt(input.value);
+  const p = phrases.find(x => x.id === id);
+
+  if(!p){ restoreSortSpan(input, id, oldVal); return; }
+
+  if(isNaN(newVal) || newVal < 1){
+    restoreSortSpan(input, id, oldVal);
+    return;
+  }
+
+  if(newVal !== oldVal){
+    p.sort = newVal;
+    p.updatedAt = nowStr();
+    render();
+    showToast('排序已更新', 'success');
+  } else {
+    restoreSortSpan(input, id, oldVal);
+  }
+}
+
+function cancelSortEdit(input, id){
+  const oldVal = parseInt(input.dataset.oldVal);
+  restoreSortSpan(input, id, oldVal);
+}
+
+function restoreSortSpan(input, id, val){
+  const cell = input.parentElement;
+  if(!cell) return;
+  cell.innerHTML = `<span class="sort-display" title="点击编辑排序" onclick="startSortEdit(this,${id})">${val}</span>`;
 }
 
 /* ── 弹窗工具 ── */
-function openModal(id){
-  document.getElementById(id).classList.add('show');
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function onOverlayClick(e, id){ if(e.target === document.getElementById(id)) closeModal(id); }
+
+/* ── 场景单选联动 ── */
+function onSceneChange(val){
+  const wrap = document.getElementById('gameSelectWrap');
+  if(val === 'game'){
+    wrap.classList.add('show');
+  } else {
+    wrap.classList.remove('show');
+    document.getElementById('fieldGame').value = '';
+  }
+  document.getElementById('sceneError').classList.remove('show');
 }
-function closeModal(id){
-  document.getElementById(id).classList.remove('show');
-}
-function onOverlayClick(e, id){
-  if(e.target === document.getElementById(id)) closeModal(id);
+
+function setSceneRadio(val){
+  document.querySelectorAll('input[name=sceneRadio]').forEach(r => { r.checked = (r.value === val); });
+  onSceneChange(val);
 }
 
 /* ── 新增 ── */
@@ -545,8 +644,11 @@ function openAddModal(){
   document.getElementById('modalTitle').textContent = '新增短语';
   document.getElementById('submitBtn').textContent = '确认新增';
   document.getElementById('fieldContent').value = '';
-  document.getElementById('fieldScene').value = '';
   document.getElementById('charCount').textContent = '0/20';
+  document.querySelectorAll('input[name=sceneRadio]').forEach(r => r.checked = false);
+  document.getElementById('gameSelectWrap').classList.remove('show');
+  document.getElementById('fieldGame').value = '';
+  document.getElementById('fieldSort').value = maxSort() + 1;
   hideErrors();
   openModal('editOverlay');
   setTimeout(() => document.getElementById('fieldContent').focus(), 50);
@@ -560,8 +662,10 @@ function openEditModal(id){
   document.getElementById('modalTitle').textContent = '编辑短语';
   document.getElementById('submitBtn').textContent = '保存修改';
   document.getElementById('fieldContent').value = p.content;
-  document.getElementById('fieldScene').value = p.scene;
   document.getElementById('charCount').textContent = `${p.content.length}/20`;
+  setSceneRadio(p.sceneType);
+  if(p.sceneType === 'game') document.getElementById('fieldGame').value = p.gameName;
+  document.getElementById('fieldSort').value = p.sort;
   hideErrors();
   openModal('editOverlay');
   setTimeout(() => document.getElementById('fieldContent').focus(), 50);
@@ -575,36 +679,63 @@ function updateCharCount(){
 }
 
 function hideErrors(){
-  document.getElementById('contentError').classList.remove('show');
-  document.getElementById('sceneError').classList.remove('show');
+  ['contentError','sceneError','gameError','sortError'].forEach(id => {
+    document.getElementById(id).classList.remove('show');
+  });
 }
 
 function submitForm(){
-  const content = document.getElementById('fieldContent').value.trim();
-  const scene   = document.getElementById('fieldScene').value;
+  const content   = document.getElementById('fieldContent').value.trim();
+  const sceneRadio = document.querySelector('input[name=sceneRadio]:checked');
+  const sceneType  = sceneRadio ? sceneRadio.value : '';
+  const gameName  = document.getElementById('fieldGame').value;
+  const sortVal   = parseInt(document.getElementById('fieldSort').value);
   let valid = true;
+
   if(!content){
-    document.getElementById('contentError').classList.add('show');
-    valid = false;
+    document.getElementById('contentError').classList.add('show'); valid = false;
   } else {
     document.getElementById('contentError').classList.remove('show');
   }
-  if(!scene){
-    document.getElementById('sceneError').classList.add('show');
-    valid = false;
+  if(!sceneType){
+    document.getElementById('sceneError').classList.add('show'); valid = false;
   } else {
     document.getElementById('sceneError').classList.remove('show');
   }
+  if(sceneType === 'game' && !gameName){
+    document.getElementById('gameError').classList.add('show'); valid = false;
+  } else {
+    document.getElementById('gameError').classList.remove('show');
+  }
+  if(isNaN(sortVal) || sortVal < 1){
+    document.getElementById('sortError').classList.add('show'); valid = false;
+  } else {
+    document.getElementById('sortError').classList.remove('show');
+  }
   if(!valid) return;
 
+  const now = nowStr();
   if(editingId === null){
-    // 新增
-    phrases.push({ id: nextId++, content, scene, enabled: true, createdAt: '2026/5/18' });
+    phrases.push({
+      id: maxId() + 1,
+      content,
+      sceneType,
+      gameName: sceneType === 'game' ? gameName : '',
+      enabled: true,
+      sort: sortVal,
+      createdAt: now,
+      updatedAt: now,
+    });
     showToast('新增成功', 'success');
   } else {
-    // 编辑
     const p = phrases.find(x => x.id === editingId);
-    if(p){ p.content = content; p.scene = scene; }
+    if(p){
+      p.content   = content;
+      p.sceneType = sceneType;
+      p.gameName  = sceneType === 'game' ? gameName : '';
+      p.sort      = sortVal;
+      p.updatedAt = now;
+    }
     showToast('修改成功', 'success');
   }
   closeModal('editOverlay');
