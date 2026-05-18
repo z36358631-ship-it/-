@@ -284,6 +284,13 @@ button{font:inherit}
   position:absolute;right:9px;top:9px;border-radius:9px;background:rgba(129,93,242,.18);border:1px solid rgba(129,93,242,.3);
   color:#d8cbff;font-size:11px;font-weight:900;padding:3px 7px
 }
+.kick-btn{
+  position:absolute;right:4px;top:4px;width:18px;height:18px;border-radius:50%;
+  background:rgba(255,107,107,.2);border:1px solid rgba(255,107,107,.3);
+  color:#ff6b6b;font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;line-height:1;padding:0
+}
+.kick-btn:hover{background:rgba(255,107,107,.4)}
 .m-name{font-size:13px;font-weight:800;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.m-sub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ready-text{color:#bdf8d3}
 .note b{font-size:12px;line-height:1.42;white-space:nowrap}.note span{font-size:12px;color:#b9c5d2;line-height:1.42}
 .room-messages-head{display:flex;align-items:center;justify-content:space-between}
@@ -1299,10 +1306,13 @@ function renderRoom(){
   const list=members.slice(0,max);
   document.getElementById("roomName").textContent=currentRoomName||selected.name+" 组队房间";
   document.getElementById("roomCode").textContent=roomId();
+  const iAmHost=members[0]?.host===true&&members[0]?.name==="你";
   document.getElementById("members").innerHTML=Array.from({length:max}).map((_,i)=>{
     const m=list[i];
     if(!m)return `<div class="member empty"><div><div class="m-name">等待队友</div><div class="m-sub">系统自动补入同游戏匹配用户</div></div><span class="p-tag">P${i+1}</span></div>`;
+    const kickBtn=iAmHost&&!m.host?`<button class="kick-btn" onclick="event.stopPropagation();kickMember(${i})" title="移出房间">×</button>`:'';
     return `<div class="member">
+      ${kickBtn}
       <div class="avatar" style="background-image:url('${m.avatar}')"></div>
       <div><div class="m-name">${m.name}${m.host?' · 房主':''}</div><div class="m-sub">${m.host?'房主':m.state||'等待开始'}</div></div>
       <span class="p-tag">${m.role}</span>
@@ -1318,6 +1328,12 @@ function renderRoom(){
   const recruitBtn=document.getElementById("hostShareBtn");
   if(recruitBtn)recruitBtn.style.display=isHost?"":"none";
   updateHostShareCd();
+}
+function kickMember(index){
+  const name=members[index]?.name||'该成员';
+  members.splice(index,1);
+  renderRoom();
+  toast(`已将${name}请出房间`);
 }
 function launchGame(){
   if(members.length<selected.max){toast("人数不足，等待队友加入后才能开始游戏");return}

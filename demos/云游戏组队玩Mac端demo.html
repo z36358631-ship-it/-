@@ -685,6 +685,17 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .member-p-label{font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;background:rgba(167,139,250,.2);color:#c4abff;border:1px solid rgba(167,139,250,.25)}
 .member-p-label.p1{background:rgba(76,110,245,.2);color:#818cf8;border-color:rgba(76,110,245,.3)}
 
+/* ══ 踢人按钮 ══ */
+.kick-btn{
+  position:absolute;right:6px;top:6px;
+  width:20px;height:20px;border-radius:50%;
+  background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.25);
+  color:#ff6b6b;font-size:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  line-height:1;transition:background .15s
+}
+.kick-btn:hover{background:rgba(255,107,107,.35)}
+
 /* ══ Demo按钮 ══ */
 .demo-btns{
   position:fixed;top:12px;left:50%;transform:translateX(-50%);
@@ -1671,12 +1682,17 @@ function openRoom(rd, asOwner){
 
 function renderRoomMembers(asOwner){
   const members=asOwner?ownerMembers:joinMembers;
-  document.getElementById("roomMembers").innerHTML=members.map(m=>{
+  document.getElementById("roomMembers").innerHTML=members.map((m,idx)=>{
     if(!m) return`<div class="member-slot empty"><i class="fas fa-plus"></i></div>`;
-    const isOwner=m.isOwner;
-    const avSize=isOwner?"member-av":"member-av small";
+    const isMemberOwner=m.isOwner;
+    const avSize=isMemberOwner?"member-av":"member-av small";
+    // 仅房主可见，且只对非房主成员显示踢人按钮
+    const kickBtn=(asOwner&&!isMemberOwner)
+      ?`<span class="kick-btn" onclick="event.stopPropagation();kickMember(${idx})">×</span>`
+      :'';
     return`<div class="member-slot">
-      ${isOwner?'<div class="member-crown-top">👑</div>':''}
+      ${kickBtn}
+      ${isMemberOwner?'<div class="member-crown-top">👑</div>':''}
       <div class="${avSize}" style="background:${m.color}">${m.init}</div>
       <div class="member-name">${m.name}${m.isMe?'（我）':''}</div>
       <div class="member-pos ${m.pos==='P1'?'p1':''}">${m.pos}</div>
@@ -1733,6 +1749,18 @@ function renderRoomActions(asOwner){
         <i class="fas fa-sign-out-alt"></i>退出房间
       </button>`;
   }
+}
+
+// ══ 踢人 ══
+function kickMember(idx){
+  const members=isRoomOwner?ownerMembers:joinMembers;
+  const m=members[idx];
+  if(!m||m.isOwner||m.isMe) return;
+  const name=m.name;
+  members.splice(idx,1);
+  members.push(null);
+  renderRoomMembers(isRoomOwner);
+  showToast(`已将${name}请出房间`);
 }
 
 // ══ 房间内发消息 ══
