@@ -1270,14 +1270,28 @@ const banners=[
 ];
 
 // 房间数据
+// privacy: "public"=公开, "private"=私密
+// 排序规则：公开优先，公开内按剩余席位从少到多，私密置底
 const roomsData=[
-  {roomId:"744161",user:"阿澈",  res:"1920×1080",title:"来不及解释了，快加入房间！",joined:2,game:games[0],color:"#4c6ef5",init:"澈"},
-  {roomId:"288379",user:"Mika",  res:"2560×1440",title:"茶杯头双人通关，要求有耐心",  joined:1,game:games[1],color:"#22d3ee",init:"M"},
-  {roomId:"451188",user:"北海",  res:"1920×1080",title:"人类一败涂地，休闲局来玩",   joined:3,game:games[2],color:"#f59e0b",init:"海"},
-  {roomId:"930217",user:"小橘",  res:"1920×1080",title:"帕鲁开荒，缺一个资源采集",   joined:2,game:games[3],color:"#10b981",init:"橘"},
-  {roomId:"671540",user:"游侠X", res:"2560×1440",title:"双人成行剧情通关，第三章",    joined:1,game:games[4],color:"#8b5cf6",init:"X"},
-  {roomId:"382955",user:"兔兔",  res:"1920×1080",title:"博德之门3合作RPG，缺一个",   joined:2,game:games[5],color:"#ec4899",init:"兔"}
+  {roomId:"744161",user:"阿澈",  res:"1920×1080",title:"来不及解释了，快加入房间！",current:2,max:4,game:games[0],color:"#4c6ef5",init:"澈",privacy:"public"},
+  {roomId:"288379",user:"Mika",  res:"2560×1440",title:"茶杯头双人通关，要求有耐心",  current:1,max:2,game:games[1],color:"#22d3ee",init:"M",  privacy:"public"},
+  {roomId:"451188",user:"北海",  res:"1920×1080",title:"人类一败涂地，休闲局来玩",   current:3,max:4,game:games[2],color:"#f59e0b",init:"海", privacy:"public"},
+  {roomId:"930217",user:"小橘",  res:"1920×1080",title:"帕鲁开荒，缺一个资源采集",   current:2,max:4,game:games[3],color:"#10b981",init:"橘", privacy:"public"},
+  {roomId:"671540",user:"游侠X", res:"2560×1440",title:"双人成行剧情通关，第三章",    current:1,max:2,game:games[4],color:"#8b5cf6",init:"X",  privacy:"public"},
+  {roomId:"382955",user:"兔兔",  res:"1920×1080",title:"博德之门3合作RPG，缺一个",   current:2,max:4,game:games[5],color:"#ec4899",init:"兔", privacy:"public"},
+  {roomId:"119283",user:"阿泽",  res:"1920×1080",title:"双人成行第二章",               current:1,max:2,game:games[4],color:"#f97316",init:"泽", privacy:"private"}
 ];
+
+// 组队大厅排序：公开优先（按剩余席位从少到多），私密置底
+function sortedRooms(list){
+  const pub=list.filter(r=>r.privacy!=="private").sort((a,b)=>{
+    const remA=(a.max-(a.current||a.joined||1));
+    const remB=(b.max-(b.current||b.joined||1));
+    return remA-remB;
+  });
+  const priv=list.filter(r=>r.privacy==="private");
+  return [...pub,...priv];
+}
 
 // 新闻数据
 const news=[
@@ -1460,25 +1474,31 @@ function renderLobbyGame(list){
 // ══ 组队玩：组队大厅 ══
 function renderLobbyRoom(list){
   if(!list) list=roomsData;
+  const sorted=sortedRooms(list);
   const avColors=["#4c6ef5","#22d3ee","#f59e0b","#10b981","#8b5cf6","#ec4899"];
   const grid=document.getElementById("lobbyRoomGrid");
-  if(!list.length){
+  if(!sorted.length){
     grid.innerHTML='<div class="lobby-empty">没有找到相关房间</div>';
     return;
   }
-  grid.innerHTML=list.map((r,i)=>{
+  grid.innerHTML=sorted.map((r,i)=>{
     const origIdx=roomsData.indexOf(r);
+    const cur=r.current!==undefined?r.current:(r.joined||1);
+    const isPrivate=r.privacy==="private";
+    const privacyTag=isPrivate
+      ?`<span class="rcard-public-tag" style="background:rgba(251,146,60,.12);color:#fb923c;border-color:rgba(251,146,60,.3)"><i class="fas fa-lock" style="font-size:8px;margin-right:2px"></i>私密房间</span>`
+      :`<span class="rcard-public-tag">公开房间</span>`;
     return`<div class="rcard" onclick="joinRoom(${origIdx})">
       <div class="rcard-header">
         <div class="rcard-av" style="background:linear-gradient(135deg,${r.color},${avColors[(origIdx+2)%avColors.length]})">${r.init}</div>
         <span class="rcard-uname">${r.user}</span>
-        <span class="rcard-public-tag">公开房间</span>
+        ${privacyTag}
       </div>
       <div class="rcard-body">
         <div class="rcard-game-cover" style="background-image:url('${cover(r.game.id)}')"></div>
         <div class="rcard-info">
           <div class="rcard-title">${r.title}</div>
-          <div class="rcard-meta">房间ID ${r.roomId} · ${r.game.name} · ${r.joined}/${r.game.max}人 · ${r.game.mode}</div>
+          <div class="rcard-meta">房间ID ${r.roomId} · ${r.game.name} · ${cur}/${r.max}人 · ${r.game.mode}</div>
         </div>
       </div>
       <div class="rcard-footer">
@@ -1643,17 +1663,30 @@ function confirmCreateRoom(){
 // ══ 快速加入（房主的游戏大厅，找到该游戏已有的房间之一加入，作为成员） ══
 function quickJoin(gameIdx){
   if(curRoomData){showToast("您已在房间中，无法加入其他房间");return}
-  const room=roomsData.find(r=>r.game===games[gameIdx]);
-  if(room){
-    openRoom(room, false);
-  } else {
-    showToast("暂无可加入的房间");
-  }
+  const room=roomsData.find(r=>r.game===games[gameIdx]&&r.privacy!=="private");
+  if(!room){showToast("暂无可加入的房间");return;}
+  // 先显示匹配中提示，3秒后决定结果
+  showToast("正在为你寻找合适房间...");
+  setTimeout(()=>{
+    const success=Math.random()<0.8;
+    if(success){
+      openRoom(room, false);
+    } else {
+      const failMsgs=["房间已满员，请尝试其他房间","该游戏当前无可加入房间","房间已解散，请重试"];
+      showToast(failMsgs[Math.floor(Math.random()*failMsgs.length)]);
+    }
+  },3000);
 }
 
 // ══ 组队大厅"加入"（成员身份） ══
 function joinRoom(roomIdx){
   if(curRoomData){showToast("您已在房间中，无法加入其他房间");return}
+  // 10%概率异常拦截
+  if(Math.random()<0.1){
+    const errors=["房间已满员","房间已解散","游戏已开始，无法加入","房间不存在或已过期"];
+    showToast(errors[Math.floor(Math.random()*errors.length)]);
+    return;
+  }
   openRoom(roomsData[roomIdx], false);
 }
 

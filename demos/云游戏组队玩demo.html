@@ -999,14 +999,6 @@ button{font:inherit}
   <div class="modal-mask" id="shareModal">
     <div class="modal">
       <div class="modal-head"><h3>分享到</h3><i class="fas fa-xmark close" onclick="closeShare()"></i></div>
-      <div class="share-preview">
-        <div class="share-preview-title">好友邀请你一起云游戏组队玩<span id="shareGameName">怪物猎人：世界</span></div>
-        <div class="share-preview-info">
-          <span>游戏：<b id="shareGameTitle">怪物猎人：世界</b></span>
-          <span>房间人数：<b id="shareRoomCount">3/4</b></span>
-          <span>房间ID：<b id="shareRoomId">582010</b></span>
-        </div>
-      </div>
       <div class="share-options">
         <div class="share-option" onclick="toast('已调起微信分享')"><i class="fab fa-weixin"></i><span>微信</span></div>
         <div class="share-option" onclick="toast('已调起QQ分享')"><i class="fab fa-qq"></i><span>QQ</span></div>
@@ -1264,7 +1256,6 @@ function quickJoinGame(index){
         const success=Math.random()<0.8;
         if(success){
           forceRoom();
-          toast("已加入房间");
         }else{
           const errors=["房间已满员，请尝试其他房间","该游戏当前无可加入房间","房间已解散，请重试"];
           toast(errors[Math.floor(Math.random()*errors.length)]);
@@ -1279,7 +1270,7 @@ function quickJoinGame(index){
 function quickJoinRoom(){
   requireDuration(()=>{
     selected=games.find(g=>g.rooms>1)||games[0];
-    forceRoom();
+    if(!forceRoom()) return;
     toast("已快速加入剩余 1 人的房间");
   });
 }
@@ -1309,14 +1300,14 @@ function tickMatch(){
     document.getElementById("matchTitle").textContent="已找到 3 名队友";
     document.getElementById("matchDesc").textContent="正在确认可用云游戏实例与输入通道。";
   }
-  if(matchStep>=6) forceRoom();
+  if(matchStep>=6){clearInterval(matchTimer);if(!forceRoom()){matchStep=0;matchTimer=setInterval(tickMatch,900);}}
 }
 function forceRoom(){
-  if(ownedRoom){toast("您已在房间中，无法加入其他房间");return}
+  if(ownedRoom){toast("您已在房间中，无法加入其他房间");return false}
   if(Math.random()<0.1){
     const errors=["房间已满员，请尝试其他房间","房间已解散，请重试","游戏已开始，无法加入","房间不存在或已过期"];
     toast(errors[Math.floor(Math.random()*errors.length)]);
-    return;
+    return false;
   }
   clearInterval(matchTimer);
   ready=false;dropped=false;
@@ -1330,6 +1321,7 @@ function forceRoom(){
   renderRoom();
   showScreen("room");
   toast("已加入房间");
+  return true;
 }
 function cancelMatch(){clearInterval(matchTimer);showScreen("home");toast("已取消匹配")}
 function renderRoom(){
