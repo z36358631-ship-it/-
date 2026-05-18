@@ -160,7 +160,9 @@
 ## 4.2 详细设计
 
 功能 Demo：云游戏组队玩 Demo
-预览地址：https://z36358631-ship-it.github.io/-/demos/云游戏组队玩demo.html
+- APP端预览：https://z36358631-ship-it.github.io/-/demos/%E4%BA%91%E6%B8%B8%E6%88%8F%E7%BB%84%E9%98%9F%E7%8E%A9demo.html
+- <font color="#4e73ff">**Mac端预览：https://z36358631-ship-it.github.io/-/demos/%E4%BA%91%E6%B8%B8%E6%88%8F%E7%BB%84%E9%98%9F%E7%8E%A9Mac%E7%AB%AFdemo.html**</font> //2026.5.18修改
+- <font color="#4e73ff">**快捷短语后台预览：https://z36358631-ship-it.github.io/-/demos/%E7%BB%84%E9%98%9F%E7%8E%A9%E5%BF%AB%E6%8D%B7%E7%9F%AD%E8%AF%AD%E5%90%8E%E5%8F%B0demo.html**</font> //2026.5.18修改
 
 ### 4.2.1 各模块展示和交互说明（C端）
 
