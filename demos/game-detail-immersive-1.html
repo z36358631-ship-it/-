@@ -16,14 +16,12 @@
         * { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,"Microsoft YaHei",sans-serif; user-select:none; }
         body { background:#12121f; height:100vh; width:100vw; display:flex; align-items:center; justify-content:center; overflow:hidden; color:#fff; }
 
-        /* 手机外壳 — 内部可滚动 */
         .phone-shell {
             width:860px; height:400px;
             border-radius:24px; overflow:hidden; position:relative;
             box-shadow:0 0 0 7px #222, 0 0 0 9px #2e2e2e, 0 32px 80px rgba(0,0,0,0.9);
         }
 
-        /* 滚动容器，撑满外壳 */
         .scroll-wrap {
             width:100%; height:100%;
             overflow-y:scroll; overflow-x:hidden;
@@ -51,19 +49,17 @@
         .overlay {
             position:absolute; inset:0; z-index:1; pointer-events:none;
             background:
-                linear-gradient(to right,  rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.70) 32%, rgba(0,0,0,0.20) 58%, transparent 100%),
-                linear-gradient(to top,    rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.55) 30%, transparent 52%),
-                linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 20%);
+                linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.60) 35%, rgba(0,0,0,0.15) 60%, transparent 100%),
+                linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.45) 28%, transparent 50%),
+                linear-gradient(to bottom, rgba(0,0,0,0.40) 0%, transparent 18%);
         }
 
-        /* 状态栏 */
         .status-bar {
             position:absolute; top:0; right:0; z-index:10;
             height:36px; display:flex; align-items:center;
             padding:0 18px; gap:10px; font-size:11px; color:#fff;
         }
 
-        /* 返回 */
         .back-btn {
             position:absolute; top:11px; left:16px; z-index:10;
             color:#fff; font-size:17px; cursor:pointer;
@@ -71,69 +67,29 @@
         }
         .back-btn:hover { transform:scale(1.12); }
 
-        /* 主内容区 */
         .main-content {
             position:absolute; z-index:10;
-            top:36px; bottom:108px;
-            left:28px; width:440px;
+            top:36px; bottom:56px;
+            left:28px; width:460px;
             display:flex; flex-direction:column; justify-content:center; gap:8px;
         }
 
         .game-title {
-            font-size:36px; font-weight:900; color:#fff; line-height:1.05;
+            font-size:28px; font-weight:900; color:#fff; line-height:1.1;
             letter-spacing:0.5px; text-shadow:0 2px 16px rgba(0,0,0,0.9);
         }
         .game-subtitle {
-            font-size:13px; color:rgba(255,255,255,0.55); line-height:1.5;
+            font-size:13px; color:rgba(255,255,255,0.6); line-height:1.5;
         }
 
-        /* 标签行 */
-        .tags-row { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+        .tags-row { display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-top:4px; }
         .tag-hot { background:rgba(255,215,0,0.12); border:1px solid rgba(255,215,0,0.35); color:#ffd700; padding:3px 9px; border-radius:4px; font-size:11px; font-weight:700; display:flex; align-items:center; gap:4px; }
         .tag-normal { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.65); padding:3px 9px; border-radius:4px; font-size:11px; }
 
-        /* 平台切换胶囊 */
-        .platform-capsule {
-            display:flex; align-items:center;
-            background:rgba(0,0,0,0.35); backdrop-filter:blur(8px);
-            border:1px solid rgba(255,255,255,0.12); border-radius:20px;
-            padding:3px; gap:2px;
-        }
-        .platform-btn {
-            width:32px; height:32px; border-radius:16px;
-            display:flex; align-items:center; justify-content:center;
-            cursor:pointer; transition:0.2s; flex-shrink:0;
-        }
-        .platform-btn.active { background:rgba(255,255,255,0.15); }
-        .platform-btn:hover:not(.active) { background:rgba(255,255,255,0.08); }
-        .platform-btn svg { width:18px; height:18px; }
-        /* Steam 图标色 */
-        .platform-btn.steam svg { fill:rgba(255,255,255,0.9); }
-        .platform-btn.steam.active svg { fill:#fff; }
-        /* Epic 图标色 */
-        .platform-btn.epic svg { fill:rgba(255,255,255,0.5); }
-        .platform-btn.epic.active svg { fill:#fff; }
-
-        .game-desc {
-            font-size:12px; color:rgba(255,255,255,0.55); line-height:1.65;
-            display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-            max-width:400px;
-        }
-
-        /* 按钮组 */
-        .action-group { display:flex; gap:8px; align-items:center; position:relative; }
-
-        .btn-menu {
-            width:40px; height:40px; border-radius:10px;
-            background:rgba(255,255,255,0.11); backdrop-filter:blur(8px);
-            border:1px solid rgba(255,255,255,0.16);
-            display:flex; align-items:center; justify-content:center;
-            cursor:pointer; transition:0.2s; position:relative; flex-shrink:0;
-        }
-        .btn-menu:hover { background:rgba(255,255,255,0.20); }
+        .action-group { display:flex; gap:8px; align-items:center; position:relative; margin-top:6px; }
 
         .btn-cloud {
-            height:40px; padding:0 16px;
+            height:38px; padding:0 18px;
             background:rgba(255,255,255,0.11); backdrop-filter:blur(8px);
             border:1px solid rgba(255,255,255,0.18); border-radius:10px;
             display:flex; align-items:center; gap:6px;
@@ -142,7 +98,7 @@
         .btn-cloud:hover { background:rgba(255,255,255,0.20); }
 
         .btn-get {
-            height:40px; padding:0 22px;
+            height:38px; padding:0 22px;
             background:var(--blue-gradient); border-radius:10px;
             display:flex; align-items:center; gap:6px;
             color:#fff; font-size:13px; font-weight:700; cursor:pointer;
@@ -150,9 +106,17 @@
         }
         .btn-get:hover { box-shadow:0 6px 22px rgba(0,157,255,0.60); transform:translateY(-1px); }
 
-        /* 菜单弹窗 */
+        .btn-menu {
+            width:38px; height:38px; border-radius:10px;
+            background:rgba(255,255,255,0.11); backdrop-filter:blur(8px);
+            border:1px solid rgba(255,255,255,0.16);
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; transition:0.2s; position:relative; flex-shrink:0;
+        }
+        .btn-menu:hover { background:rgba(255,255,255,0.20); }
+
         .menu-popup {
-            position:absolute; top:48px; left:0; width:170px;
+            position:absolute; top:46px; left:0; width:170px;
             background:var(--popup-bg); border:1px solid rgba(255,255,255,0.1);
             border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.8);
             display:none; flex-direction:column; overflow:hidden; z-index:100;
@@ -161,39 +125,35 @@
         .menu-item:last-child { border-bottom:none; }
         .menu-item:hover { background:rgba(255,255,255,0.1); color:#fff; }
         .text-danger { color:#ff4d4f; }
-        .menu-item:hover .text-danger { color:#ff7875; }
 
-        /* 底部 2行×4列 数据栏 */
+        /* 底部数据栏 — 一行4项 */
         .bottom-stats {
             position:absolute; bottom:0; left:0; right:0; z-index:10;
-            height:108px;
-            display:grid;
-            grid-template-rows:1fr 1fr;
-            grid-template-columns:repeat(4, 1fr);
-            padding:8px 24px 14px;
+            display:flex; align-items:center;
+            padding:10px 20px 14px;
+            background:linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
         }
         .stat-item {
-            display:flex; flex-direction:column;
-            align-items:flex-start; justify-content:center;
-            padding:0 0 0 20px; position:relative;
+            display:flex; align-items:center; gap:8px;
+            padding:0 14px; position:relative; flex:1;
         }
-        .stat-item + .stat-item::before,
-        .stat-item.row2 + .stat-item.row2::before {
+        .stat-item + .stat-item::before {
             content:''; position:absolute; left:0; top:50%; transform:translateY(-50%);
-            width:1px; height:24px; background:rgba(255,255,255,0.14);
+            width:1px; height:24px; background:rgba(255,255,255,0.12);
         }
-        .stat-label { font-size:10px; color:rgba(255,255,255,0.42); white-space:nowrap; margin-bottom:5px; }
-        .stat-val { font-size:16px; font-weight:700; color:#fff; white-space:nowrap; line-height:1; }
+        .stat-icon {
+            font-size:15px; color:rgba(255,255,255,0.45); flex-shrink:0;
+        }
+        .stat-info { display:flex; flex-direction:column; gap:2px; }
+        .stat-label { font-size:10px; color:rgba(255,255,255,0.42); white-space:nowrap; }
+        .stat-val { font-size:13px; font-weight:700; color:#fff; white-space:nowrap; line-height:1; }
         .stat-val.green { color:var(--green); }
-        .stat-val.sm { font-size:13px; }
-
-        /* 星级评分 */
-        .star-row { display:flex; align-items:center; gap:2px; }
-        .star-row i { font-size:12px; }
+        .star-row { display:flex; align-items:center; gap:1px; margin-top:2px; }
+        .star-row i { font-size:10px; }
         .star-row .fa-star { color:#ffd700; }
         .star-row .fa-star.dim { color:rgba(255,255,255,0.2); }
-        .compat-val { display:flex; align-items:center; gap:6px; cursor:pointer; }
-        .compat-val i.fa-chevron-right { font-size:10px; color:rgba(255,255,255,0.4); }
+        .compat-link { cursor:pointer; display:flex; align-items:center; gap:4px; }
+        .compat-link i.fa-chevron-right { font-size:9px; color:rgba(255,255,255,0.4); }
 
         /* ══════════════════════════════
            次屏
@@ -202,64 +162,91 @@
             width:100%; min-height:400px;
             background:var(--bg-dark);
             scroll-snap-align:start;
-            padding:20px 28px 32px;
-            display:flex; flex-direction:column; gap:20px;
+            padding:20px 24px 28px;
+            display:flex; flex-direction:column; gap:18px;
         }
 
-        /* 次屏标题行 */
-        .detail-header {
+        /* Steam 成就 */
+        .achievement-section { display:flex; flex-direction:column; gap:10px; }
+        .section-header {
             display:flex; align-items:center; justify-content:space-between;
         }
-        .detail-game-name { font-size:16px; font-weight:700; color:#fff; }
-        .detail-tags { display:flex; gap:6px; }
-
-        /* 视频/图集区 */
-        .media-block { position:relative; width:100%; border-radius:12px; overflow:hidden; background:#000; aspect-ratio:21/9; }
-        .media-block video { width:100%; height:100%; object-fit:cover; display:block; }
-        .media-block .media-gallery { width:100%; height:100%; object-fit:cover; display:none; }
-
-        /* 视频控制层 */
-        .video-overlay {
-            position:absolute; inset:0;
-            background:linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 40%);
-            display:flex; flex-direction:column; justify-content:flex-end;
-            padding:12px 16px;
+        .section-header-left {
+            display:flex; align-items:center; gap:8px;
+            font-size:14px; font-weight:700; color:#fff;
         }
-        .progress-track {
-            width:100%; height:3px; background:rgba(255,255,255,0.2);
-            border-radius:2px; margin-bottom:10px; cursor:pointer;
+        .section-header-left i { color:rgba(255,255,255,0.5); }
+        .section-header-right {
+            font-size:12px; color:rgba(255,255,255,0.5); cursor:pointer;
+            display:flex; align-items:center; gap:4px;
         }
-        .progress-fill { height:100%; background:#009dff; width:0%; border-radius:2px; }
-        .ctrl-row { display:flex; justify-content:space-between; align-items:center; }
-        .toggle-capsule {
-            background:rgba(0,0,0,0.4); backdrop-filter:blur(5px);
-            border-radius:20px; padding:3px; display:flex;
-            border:1px solid rgba(255,255,255,0.12);
-        }
-        .tc-btn { padding:3px 12px; font-size:11px; color:#aaa; border-radius:16px; cursor:pointer; font-weight:600; }
-        .tc-btn.active { background:#fff; color:#000; }
-        .ctrl-icons { color:#fff; font-size:14px; display:flex; gap:12px; opacity:0.8; cursor:pointer; }
+        .section-header-right:hover { color:#fff; }
 
-        /* 游戏介绍区 */
-        .intro-section { display:flex; flex-direction:column; gap:12px; }
+        .achievement-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fill, 36px);
+            gap:6px;
+        }
+        .ach-item {
+            width:36px; height:36px; border-radius:6px;
+            background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12);
+            display:flex; align-items:center; justify-content:center;
+            font-size:14px; color:rgba(255,255,255,0.3);
+        }
+        .ach-item.unlocked {
+            background:rgba(255,215,0,0.12); border-color:rgba(255,215,0,0.3);
+            color:#ffd700;
+        }
+
+        .ach-progress {
+            display:flex; align-items:center; gap:10px; margin-top:4px;
+        }
+        .ach-bar {
+            flex:1; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;
+        }
+        .ach-bar-fill { height:100%; background:var(--blue-gradient); border-radius:2px; }
+        .ach-percent {
+            font-size:12px; color:rgba(255,255,255,0.5); display:flex; align-items:center; gap:4px;
+        }
+        .ach-percent i { color:#ffd700; font-size:14px; }
+
+        /* 视频图集 */
+        .media-section { display:flex; flex-direction:column; gap:10px; }
+        .media-scroll {
+            display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;
+        }
+        .media-scroll::-webkit-scrollbar { display:none; }
+        .media-thumb {
+            flex-shrink:0; width:140px; height:80px; border-radius:8px;
+            background:#1a1d24; overflow:hidden; position:relative; cursor:pointer;
+            border:1px solid rgba(255,255,255,0.08);
+        }
+        .media-thumb img {
+            width:100%; height:100%; object-fit:cover;
+        }
+        .media-thumb .play-icon {
+            position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+            background:rgba(0,0,0,0.3);
+        }
+        .media-thumb .play-icon i { font-size:20px; color:rgba(255,255,255,0.8); }
+
+        /* 游戏介绍 */
+        .intro-section { display:flex; flex-direction:column; gap:10px; }
         .section-title {
             font-size:14px; font-weight:700; color:#fff;
-            display:flex; align-items:center; gap:8px;
         }
-        .section-title::before { content:''; width:3px; height:14px; background:#009dff; border-radius:2px; }
         .intro-text {
-            font-size:12px; color:rgba(255,255,255,0.6); line-height:1.75;
-            background:rgba(255,255,255,0.04); padding:12px 14px;
-            border-radius:8px; border-left:2px solid rgba(255,255,255,0.12);
+            font-size:12px; color:rgba(255,255,255,0.6); line-height:1.8;
         }
-        .rich-video {
-            width:100%; border-radius:8px; display:block;
-            border:1px solid rgba(255,255,255,0.08); background:#000;
-            aspect-ratio:16/9;
-        }
-        .end-line { text-align:center; color:rgba(255,255,255,0.2); font-size:12px; padding:8px 0; }
 
-        /* ── 分享弹窗 ── */
+        /* 底部声明 */
+        .disclaimer {
+            text-align:center; color:rgba(255,255,255,0.25); font-size:11px;
+            padding:16px 0 8px;
+            border-top:1px solid rgba(255,255,255,0.06);
+        }
+
+        /* 分享弹窗 */
         .share-overlay {
             position:absolute; inset:0;
             background:rgba(0,0,0,0.7); backdrop-filter:blur(5px);
@@ -313,32 +300,18 @@
 
         <div class="main-content">
             <div class="game-title">逃离鸭科夫</div>
-            <div class="game-subtitle">生存、建造、射击，只不过你是只鸭子</div>
+            <div class="game-subtitle">风靡全球的多人动作竞技大作，限时优惠！</div>
             <div class="tags-row">
-                <!-- 平台切换：Steam / Epic，在热门榜左侧 -->
-                <div class="platform-capsule">
-                    <div class="platform-btn steam active" id="btnSteam" onclick="switchPlatform('steam')">
-                        <!-- Steam logo -->
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.606 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.455 1.012H7.54zm11.415-9.303c0-1.662-1.353-3.015-3.015-3.015-1.665 0-3.015 1.353-3.015 3.015 0 1.665 1.35 3.015 3.015 3.015 1.663 0 3.015-1.35 3.015-3.015zm-5.273.005c0-1.252 1.013-2.266 2.265-2.266 1.249 0 2.266 1.014 2.266 2.266 0 1.251-1.017 2.265-2.266 2.265-1.252 0-2.265-1.014-2.265-2.265z"/>
-                        </svg>
-                    </div>
-                    <div class="platform-btn epic" id="btnEpic" onclick="switchPlatform('epic')">
-                        <!-- Epic Games logo -->
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3.047 0v18.539l2.121 1.225V2.449h13.665v14.694l-6.82 3.938-4.377-2.527v2.45l4.377 2.527L24 18.539V0H3.047zm7.314 6.104v2.449h7.119V6.104h-7.12zm0 4.062v2.449h7.119v-2.449h-7.12z"/>
-                        </svg>
-                    </div>
-                </div>
                 <span class="tag-hot"><i class="fas fa-fire"></i> 热门榜 TOP 1</span>
-                <span class="tag-normal">生存开放世界</span>
-                <span class="tag-normal">多人联机</span>
+                <span class="tag-normal">撤离射击</span>
+                <span class="tag-normal">玩家对战</span>
+                <span class="tag-normal">第三人称射击</span>
             </div>
             <div class="action-group">
                 <div class="btn-cloud" onclick="alert('秒玩启动')"><i class="fas fa-cloud"></i> 秒玩</div>
-                <div class="btn-get" onclick="alert('获取游戏')"><i class="fas fa-desktop"></i> 获取游戏</div>
+                <div class="btn-get" onclick="alert('获取游戏')"><i class="fas fa-gamepad"></i> 获取游戏</div>
                 <div class="btn-menu" id="menuBtn" onclick="toggleMenu(event)">
-                    <i class="fas fa-th-large" style="color:#aaa;font-size:15px;"></i>
+                    <i class="fas fa-th-large" style="color:#aaa;font-size:14px;"></i>
                     <div class="menu-popup" id="menuPopup">
                         <div class="menu-item" onclick="handleMenuClick('PC游戏设置')"><i class="fas fa-gamepad"></i> PC游戏设置</div>
                         <div class="menu-item" onclick="handleMenuClick('添加到桌面')"><i class="fas fa-desktop"></i> 添加到桌面</div>
@@ -348,47 +321,40 @@
             </div>
         </div>
 
+        <!-- 底部数据栏：一行4项，兼容性评价+云存档+游玩时长+玩家评分 -->
         <div class="bottom-stats">
             <div class="stat-item">
-                <div class="stat-label">兼容性评价</div>
-                <div class="compat-val" onclick="alert('查看兼容性详情')">
-                    <div class="star-row">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star dim"></i>
+                <div class="stat-icon"><span style="color:#ffd700;font-weight:900;font-size:14px;">4.8</span></div>
+                <div class="stat-info">
+                    <div class="stat-label">兼容性评价</div>
+                    <div class="compat-link" onclick="alert('查看兼容性详情')">
+                        <div class="star-row">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star dim"></i>
+                        </div>
+                        <i class="fas fa-chevron-right"></i>
                     </div>
-                    <i class="fas fa-chevron-right"></i>
                 </div>
             </div>
             <div class="stat-item">
-                <div class="stat-label">总游戏时长</div>
-                <div class="stat-val">139.3h</div>
+                <div class="stat-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+                <div class="stat-info">
+                    <div class="stat-label">云存档</div>
+                    <div class="stat-val">已是最新</div>
+                </div>
             </div>
             <div class="stat-item">
-                <div class="stat-label">云存档</div>
-                <div class="stat-val sm">已是最新</div>
+                <div class="stat-icon"><i class="far fa-clock"></i></div>
+                <div class="stat-info">
+                    <div class="stat-label">游玩时长</div>
+                    <div class="stat-val">139.3 小时</div>
+                </div>
             </div>
             <div class="stat-item">
-                <div class="stat-label">玩家评价</div>
-                <div class="stat-val green">9.5</div>
-            </div>
-            <div class="stat-item row2">
-                <div class="stat-label">年龄评级</div>
-                <div class="stat-val">6+</div>
-            </div>
-            <div class="stat-item row2">
-                <div class="stat-label">游戏语言</div>
-                <div class="stat-val sm">中文 8+</div>
-            </div>
-            <div class="stat-item row2">
-                <div class="stat-label">开发商</div>
-                <div class="stat-val sm">Team Soda</div>
-            </div>
-            <div class="stat-item row2">
-                <div class="stat-label">发布日期</div>
-                <div class="stat-val sm">Oct 16, 2025</div>
+                <div class="stat-icon"><i class="fas fa-thumbs-up"></i></div>
+                <div class="stat-info">
+                    <div class="stat-label">玩家评分 · 多数好评</div>
+                    <div class="stat-val green">8.8</div>
+                </div>
             </div>
         </div>
     </div>
@@ -396,24 +362,69 @@
     <!-- ══ 次屏 ══ -->
     <div class="screen-detail">
 
-        <!-- 视频/图集 -->
-        <div class="media-block">
-            <video id="gameVideo" autoplay muted loop>
-                <source src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3167020/extras/da8cca86303450161c6bc95f74b880a7.webm?t=1764328964" type="video/webm">
-            </video>
-            <div class="video-overlay">
-                <div class="progress-track" id="pgTrack">
-                    <div class="progress-fill" id="pgFill"></div>
+        <!-- Steam 成就 -->
+        <div class="achievement-section">
+            <div class="section-header">
+                <div class="section-header-left">
+                    <i class="fas fa-trophy"></i> Steam成就
                 </div>
-                <div class="ctrl-row">
-                    <div class="toggle-capsule">
-                        <div class="tc-btn active" id="tcV" onclick="swMedia('video')">视频</div>
-                        <div class="tc-btn" id="tcG" onclick="swMedia('gallery')">图集</div>
-                    </div>
-                    <div class="ctrl-icons">
-                        <i class="fas fa-volume-mute" id="muteIcon" onclick="toggleMute()"></i>
-                        <i class="fas fa-expand-alt"></i>
-                    </div>
+                <div class="section-header-right" onclick="alert('查看全部成就')">
+                    查看全部 <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            <div class="achievement-grid">
+                <div class="ach-item unlocked"><i class="fas fa-trophy"></i></div>
+                <div class="ach-item unlocked"><i class="fas fa-trophy"></i></div>
+                <div class="ach-item unlocked"><i class="fas fa-trophy"></i></div>
+                <div class="ach-item unlocked"><i class="fas fa-trophy"></i></div>
+                <div class="ach-item unlocked"><i class="fas fa-trophy"></i></div>
+                <div class="ach-item"><i class="fas fa-lock"></i></div>
+                <div class="ach-item"><i class="fas fa-lock"></i></div>
+                <div class="ach-item"><i class="fas fa-lock"></i></div>
+                <div class="ach-item"><i class="fas fa-lock"></i></div>
+                <div class="ach-item"><i class="fas fa-lock"></i></div>
+                <div class="ach-item"><i class="fas fa-lock"></i></div>
+                <div class="ach-item"><i class="fas fa-lock"></i></div>
+                <div class="ach-item"><i class="fas fa-lock"></i></div>
+                <div class="ach-item"><i class="fas fa-lock"></i></div>
+                <div class="ach-item"><i class="fas fa-lock"></i></div>
+                <div class="ach-item"><i class="fas fa-lock"></i></div>
+                <div class="ach-item"><i class="fas fa-lock"></i></div>
+                <div class="ach-item"><i class="fas fa-lock"></i></div>
+                <div class="ach-item"><i class="fas fa-lock"></i></div>
+                <div class="ach-item"><i class="fas fa-lock"></i></div>
+            </div>
+            <div class="ach-progress">
+                <div class="ach-bar"><div class="ach-bar-fill" style="width:25%"></div></div>
+                <div class="ach-percent"><i class="fas fa-trophy"></i> 25%</div>
+            </div>
+        </div>
+
+        <!-- 视频图集 -->
+        <div class="media-section">
+            <div class="section-header">
+                <div class="section-header-left">视频图集</div>
+            </div>
+            <div class="media-scroll">
+                <div class="media-thumb">
+                    <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/3167020/ss_1.jpg" onerror="this.style.display='none'" alt="">
+                    <div class="play-icon"><i class="fas fa-play"></i></div>
+                </div>
+                <div class="media-thumb">
+                    <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/3167020/ss_2.jpg" onerror="this.style.display='none'" alt="">
+                    <div class="play-icon"><i class="fas fa-play"></i></div>
+                </div>
+                <div class="media-thumb">
+                    <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/3167020/header.jpg" alt="">
+                </div>
+                <div class="media-thumb">
+                    <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/3167020/capsule_616x353.jpg" onerror="this.src='https://cdn.cloudflare.steamstatic.com/steam/apps/3167020/header.jpg'" alt="">
+                </div>
+                <div class="media-thumb">
+                    <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/3167020/library_hero.jpg" alt="">
+                </div>
+                <div class="media-thumb">
+                    <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/3167020/header.jpg" alt="">
                 </div>
             </div>
         </div>
@@ -424,11 +435,13 @@
             <div class="intro-text">欢迎来到《DUCKSIDE》！这是一款持久世界生存游戏，结合了PVP、PVE、制作、基地建设等元素。在奇异的梦境中醒来后，你发现自己身处于鸭科夫的世界中，只有一件事是确定的——你是一只鸭子。</div>
             <div class="section-title">关于游戏</div>
             <div class="intro-text">在鸭科夫的世界里，你需要收集资源、建造基地、与其他玩家战斗或合作。游戏融合了生存、建造、射击等多种玩法，每一局都充满未知与挑战。</div>
-            <video class="rich-video"
+            <video style="width:100%;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:#000;aspect-ratio:16/9;"
                    src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3167020/extras/6ec3a0080c077df54f013df597f8216f.webm?t=1764328964"
-                   controls autoplay muted loop playsinline></video>
-            <div class="end-line">— 到底了 —</div>
+                   controls muted loop playsinline></video>
         </div>
+
+        <!-- 声明 -->
+        <div class="disclaimer">以上内容由玩家 DuckMaster 分享，仅供学习交流使用</div>
 
     </div>
 
@@ -457,36 +470,7 @@
 </div><!-- /phone-shell -->
 
 <script>
-    const vid = document.getElementById('gameVideo');
-
-    document.getElementById('pgTrack').addEventListener('click', e => {
-        const r = e.currentTarget.getBoundingClientRect();
-        if (vid.duration) vid.currentTime = (e.clientX - r.left) / r.width * vid.duration;
-    });
-    vid.addEventListener('timeupdate', () => {
-        if (vid.duration) document.getElementById('pgFill').style.width = (vid.currentTime / vid.duration * 100) + '%';
-    });
-    function toggleMute() {
-        vid.muted = !vid.muted;
-        document.getElementById('muteIcon').className = vid.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
-    }
-    function swMedia(t) {
-        if (t === 'video') {
-            vid.style.display = 'block';
-            document.getElementById('tcV').classList.add('active');
-            document.getElementById('tcG').classList.remove('active');
-        } else {
-            vid.style.display = 'none';
-            document.getElementById('tcV').classList.remove('active');
-            document.getElementById('tcG').classList.add('active');
-        }
-    }
-
-    function switchPlatform(p) {
-        document.getElementById('btnSteam').classList.toggle('active', p === 'steam');
-        document.getElementById('btnEpic').classList.toggle('active', p === 'epic');
-    }
-
+    function toggleMenu(event) {
         event.stopPropagation();
         const popup = document.getElementById('menuPopup');
         const isVisible = popup.style.display === 'flex';
