@@ -69,27 +69,46 @@
 
         .main-content {
             position:absolute; z-index:10;
-            top:36px; bottom:56px;
-            left:28px; width:460px;
+            top:36px; bottom:68px;
+            left:28px; width:440px;
             display:flex; flex-direction:column; justify-content:center; gap:8px;
         }
 
         .game-title {
-            font-size:28px; font-weight:900; color:#fff; line-height:1.1;
+            font-size:36px; font-weight:900; color:#fff; line-height:1.05;
             letter-spacing:0.5px; text-shadow:0 2px 16px rgba(0,0,0,0.9);
         }
         .game-subtitle {
-            font-size:13px; color:rgba(255,255,255,0.6); line-height:1.5;
+            font-size:13px; color:rgba(255,255,255,0.55); line-height:1.5;
         }
 
-        .tags-row { display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-top:4px; }
+        .tags-row { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
         .tag-hot { background:rgba(255,215,0,0.12); border:1px solid rgba(255,215,0,0.35); color:#ffd700; padding:3px 9px; border-radius:4px; font-size:11px; font-weight:700; display:flex; align-items:center; gap:4px; }
         .tag-normal { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.65); padding:3px 9px; border-radius:4px; font-size:11px; }
 
-        .action-group { display:flex; gap:8px; align-items:center; position:relative; margin-top:6px; }
+        .platform-capsule {
+            display:flex; align-items:center;
+            background:rgba(0,0,0,0.35); backdrop-filter:blur(8px);
+            border:1px solid rgba(255,255,255,0.12); border-radius:20px;
+            padding:3px; gap:2px;
+        }
+        .platform-btn {
+            width:32px; height:32px; border-radius:16px;
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; transition:0.2s; flex-shrink:0;
+        }
+        .platform-btn.active { background:rgba(255,255,255,0.15); }
+        .platform-btn:hover:not(.active) { background:rgba(255,255,255,0.08); }
+        .platform-btn svg { width:18px; height:18px; }
+        .platform-btn.steam svg { fill:rgba(255,255,255,0.9); }
+        .platform-btn.steam.active svg { fill:#fff; }
+        .platform-btn.epic svg { fill:rgba(255,255,255,0.5); }
+        .platform-btn.epic.active svg { fill:#fff; }
+
+        .action-group { display:flex; gap:8px; align-items:center; position:relative; }
 
         .btn-cloud {
-            height:38px; padding:0 18px;
+            height:40px; padding:0 16px;
             background:rgba(255,255,255,0.11); backdrop-filter:blur(8px);
             border:1px solid rgba(255,255,255,0.18); border-radius:10px;
             display:flex; align-items:center; gap:6px;
@@ -98,7 +117,7 @@
         .btn-cloud:hover { background:rgba(255,255,255,0.20); }
 
         .btn-get {
-            height:38px; padding:0 22px;
+            height:40px; padding:0 22px;
             background:var(--blue-gradient); border-radius:10px;
             display:flex; align-items:center; gap:6px;
             color:#fff; font-size:13px; font-weight:700; cursor:pointer;
@@ -107,7 +126,7 @@
         .btn-get:hover { box-shadow:0 6px 22px rgba(0,157,255,0.60); transform:translateY(-1px); }
 
         .btn-menu {
-            width:38px; height:38px; border-radius:10px;
+            width:40px; height:40px; border-radius:10px;
             background:rgba(255,255,255,0.11); backdrop-filter:blur(8px);
             border:1px solid rgba(255,255,255,0.16);
             display:flex; align-items:center; justify-content:center;
@@ -300,18 +319,29 @@
 
         <div class="main-content">
             <div class="game-title">逃离鸭科夫</div>
-            <div class="game-subtitle">风靡全球的多人动作竞技大作，限时优惠！</div>
+            <div class="game-subtitle">生存、建造、射击，只不过你是只鸭子</div>
             <div class="tags-row">
+                <div class="platform-capsule">
+                    <div class="platform-btn steam active" id="btnSteam" onclick="switchPlatform('steam')">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.606 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.455 1.012H7.54zm11.415-9.303c0-1.662-1.353-3.015-3.015-3.015-1.665 0-3.015 1.353-3.015 3.015 0 1.665 1.35 3.015 3.015 3.015 1.663 0 3.015-1.35 3.015-3.015zm-5.273.005c0-1.252 1.013-2.266 2.265-2.266 1.249 0 2.266 1.014 2.266 2.266 0 1.251-1.017 2.265-2.266 2.265-1.252 0-2.265-1.014-2.265-2.265z"/>
+                        </svg>
+                    </div>
+                    <div class="platform-btn epic" id="btnEpic" onclick="switchPlatform('epic')">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3.047 0v18.539l2.121 1.225V2.449h13.665v14.694l-6.82 3.938-4.377-2.527v2.45l4.377 2.527L24 18.539V0H3.047zm7.314 6.104v2.449h7.119V6.104h-7.12zm0 4.062v2.449h7.119v-2.449h-7.12z"/>
+                        </svg>
+                    </div>
+                </div>
                 <span class="tag-hot"><i class="fas fa-fire"></i> 热门榜 TOP 1</span>
-                <span class="tag-normal">撤离射击</span>
-                <span class="tag-normal">玩家对战</span>
-                <span class="tag-normal">第三人称射击</span>
+                <span class="tag-normal">生存开放世界</span>
+                <span class="tag-normal">多人联机</span>
             </div>
             <div class="action-group">
                 <div class="btn-cloud" onclick="alert('秒玩启动')"><i class="fas fa-cloud"></i> 秒玩</div>
-                <div class="btn-get" onclick="alert('获取游戏')"><i class="fas fa-gamepad"></i> 获取游戏</div>
+                <div class="btn-get" onclick="alert('获取游戏')"><i class="fas fa-desktop"></i> 获取游戏</div>
                 <div class="btn-menu" id="menuBtn" onclick="toggleMenu(event)">
-                    <i class="fas fa-th-large" style="color:#aaa;font-size:14px;"></i>
+                    <i class="fas fa-th-large" style="color:#aaa;font-size:15px;"></i>
                     <div class="menu-popup" id="menuPopup">
                         <div class="menu-item" onclick="handleMenuClick('PC游戏设置')"><i class="fas fa-gamepad"></i> PC游戏设置</div>
                         <div class="menu-item" onclick="handleMenuClick('添加到桌面')"><i class="fas fa-desktop"></i> 添加到桌面</div>
@@ -470,6 +500,10 @@
 </div><!-- /phone-shell -->
 
 <script>
+    function switchPlatform(p) {
+        document.getElementById('btnSteam').classList.toggle('active', p === 'steam');
+        document.getElementById('btnEpic').classList.toggle('active', p === 'epic');
+    }
     function toggleMenu(event) {
         event.stopPropagation();
         const popup = document.getElementById('menuPopup');
