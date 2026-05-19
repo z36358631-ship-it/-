@@ -755,7 +755,8 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
   width:34px;height:34px;border-radius:50%;
   background:rgba(40,40,40,.7);border:1.5px solid rgba(255,255,255,.15);
   color:#fff;font-size:13px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:.15s
+  display:flex;align-items:center;justify-content:center;transition:.15s;
+  position:relative
 }
 .go-ctrl-btn:hover{background:rgba(60,60,60,.8)}
 .go-ctrl-btn.muted{color:#f87171;border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.1)}
@@ -1130,9 +1131,9 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
     <div class="go-top-right">
       <div class="go-team" id="goTeam"></div>
       <div class="go-ctrl-row">
-        <div class="go-ctrl-btn" id="goMicBtn" onclick="toggleGoMic()" title="麦克风"><i class="fas fa-microphone"></i></div>
-        <div class="go-ctrl-btn" id="goSpkBtn" onclick="toggleGoSpk()" title="听筒"><i class="fas fa-headphones"></i></div>
-        <div class="go-ctrl-btn" onclick="toggleGoChat()" title="文字聊天"><i class="fas fa-comment"></i></div>
+        <div class="go-ctrl-btn" id="goMicBtn" onclick="toggleGoMic()" title="麦克风 (F10)"><i class="fas fa-microphone"></i><span style="position:absolute;bottom:-14px;font-size:9px;color:rgba(255,255,255,.5);font-weight:700">F10</span></div>
+        <div class="go-ctrl-btn" id="goSpkBtn" onclick="toggleGoSpk()" title="听筒 (F11)"><i class="fas fa-headphones"></i><span style="position:absolute;bottom:-14px;font-size:9px;color:rgba(255,255,255,.5);font-weight:700">F11</span></div>
+        <div class="go-ctrl-btn" onclick="toggleGoChat()" title="文字聊天 (F9)"><i class="fas fa-comment"></i><span style="position:absolute;bottom:-14px;font-size:9px;color:rgba(255,255,255,.5);font-weight:700">F9</span></div>
       </div>
       <div class="go-chat-float" id="goChatFloat"></div>
     </div>
@@ -1182,6 +1183,9 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 </div><!-- /mac-win -->
 
 <script>
+// ══ 云游戏时长（模拟，单位：分钟） ══
+let cloudGameRemainMin = 120; // 默认120分钟；设为<10可测试时长不足拦截
+
 // ══ 数据 ══
 const games=[
   {name:"怪物猎人：世界",  id:"582010", max:4, mode:"合作狩猎",  tags:"动作·冒险·合作",   rooms:3, score:"9.4", teamPlay:true},
@@ -1844,7 +1848,19 @@ function dissolveRoom(){
 }
 
 function startGame(){
-  showToast("游戏启动中...");
+  // 时长校验：剩余时长≥10分钟
+  if(cloudGameRemainMin < 10){
+    showToast('云游戏时长不足10分钟，请先充值');
+    return;
+  }
+  // ≥2人即可开始游戏
+  const members = isRoomOwner ? ownerMembers : joinMembers;
+  const memberCount = members.filter(m => m !== null).length;
+  if(memberCount < 2){
+    showToast('至少需要2人才能开始游戏');
+    return;
+  }
+  showToast('系统已通知所有队员，正在拉起游戏...');
 }
 
 // ══ 页面切换 ══
@@ -2138,6 +2154,22 @@ function openRulesModal(){
 function closeRulesModal(){
   document.getElementById('rulesModal').style.display='none';
 }
+
+// ══ 游戏内快捷键 F9/F10/F11 ══
+document.addEventListener('keydown', function(e){
+  const overlay = document.getElementById('gameOverlay');
+  if(!overlay || !overlay.classList.contains('active')) return;
+  if(e.key === 'F9'){
+    e.preventDefault();
+    toggleGoChat();
+  } else if(e.key === 'F10'){
+    e.preventDefault();
+    toggleGoMic();
+  } else if(e.key === 'F11'){
+    e.preventDefault();
+    toggleGoSpk();
+  }
+});
 
 // ══ 初始化 ══
 renderBanner();
