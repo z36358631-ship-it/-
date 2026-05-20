@@ -347,6 +347,13 @@ button{font:inherit}
 .quick-say{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .say{font-size:11px;color:#dfe7f1;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);border-radius:12px;padding:5px 8px;cursor:pointer}
 .chat-input{height:34px;border-radius:17px;background:rgba(255,255,255,.07);border:1px solid var(--line);display:flex;align-items:center;padding:0 11px;color:var(--muted);font-size:12px}
+.world-guide{display:flex;flex-direction:column;align-items:center;justify-content:center;height:196px;border-radius:12px;background:rgba(21,26,34,.88);border:1px solid var(--line);gap:12px}
+.world-guide-icon{width:48px;height:48px;border-radius:50%;background:rgba(129,93,242,.18);display:flex;align-items:center;justify-content:center;color:var(--violet);font-size:22px}
+.world-guide-text{font-size:13px;color:var(--muted);text-align:center}
+.world-guide-btn{padding:8px 20px;border-radius:18px;background:var(--violet);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:.16s}
+.world-guide-btn:hover{background:#6a4bd4}
+.world-send-btn{transition:.16s}
+.world-send-btn:disabled{opacity:.5;cursor:not-allowed;pointer-events:none}
 .world-chat-container{display:flex;flex-direction:column;height:196px;border-radius:12px;background:rgba(21,26,34,.88);border:1px solid var(--line);overflow:hidden}
 .world-chat-container .chat-flow{padding:10px 12px}
 .world-chat-full{display:flex;flex-direction:column;height:230px;border-radius:12px;background:rgba(21,26,34,.88);border:1px solid var(--line);overflow:hidden}
@@ -620,7 +627,7 @@ button{font:inherit}
 .app.portrait .room-actions{justify-content:center;flex-wrap:nowrap;flex-shrink:0;padding:6px 10px}
 .app.portrait .confirm-cover{min-height:260px}
 .app.portrait .room-lobby-grid{grid-template-columns:1fr}
-.app.portrait .world-chat-container,.app.portrait .world-chat-full{height:calc(var(--app-h,860px) - 350px)}
+.app.portrait .world-chat-container,.app.portrait .world-chat-full,.app.portrait .world-guide{height:calc(var(--app-h,860px) - 350px)}
 .app.portrait .cf-card,.app.portrait .cf-bubble{max-width:95%!important}
 .app.portrait .sub-tabs{position:relative;flex-shrink:0;gap:6px;flex-wrap:nowrap;overflow-x:auto}
 .app.portrait .sub-tabs .help-link{margin-left:auto;font-size:11px;padding:6px 8px}
@@ -844,7 +851,12 @@ button{font:inherit}
             <div class="room-lobby-grid" id="roomLobby"></div>
           </div>
           <div class="lobby-view" id="lobby-world">
-            <div class="world-chat-container">
+            <div class="world-guide" id="worldGuide">
+              <div class="world-guide-icon"><i class="fas fa-earth-americas"></i></div>
+              <div class="world-guide-text">公开聊天频道，与其他玩家交流</div>
+              <button class="world-guide-btn" onclick="enterWorldChannel()">进入世界频道</button>
+            </div>
+            <div class="world-chat-container" id="worldChatBox" style="display:none">
               <div class="chat-flow" id="worldChatFlow"></div>
               <div class="chat-flow-bottom">
                 <div class="chat-flow-quick" id="worldQuick">
@@ -852,8 +864,8 @@ button{font:inherit}
                   <button class="cq-btn" onclick="postWorldMsg('缺一个输出',this)">缺一个输出</button>
                 </div>
                 <div class="chat-flow-input">
-                  <input type="text" placeholder="输入世界频道消息..." id="worldMsgInput" onkeydown="if(event.key==='Enter'&&this.value.trim()){postWorldMsg(this.value.trim());this.value=''}">
-                  <button onclick="const i=document.getElementById('worldMsgInput');if(i.value.trim()){postWorldMsg(i.value.trim());i.value=''}"><i class="fas fa-paper-plane"></i></button>
+                  <input type="text" placeholder="输入世界频道消息..." id="worldMsgInput" onkeydown="if(event.key==='Enter'&&this.value.trim()&&!worldCooldownRemain){postWorldMsg(this.value.trim());this.value=''}">
+                  <button class="world-send-btn" id="worldSendBtn" onclick="const i=document.getElementById('worldMsgInput');if(i.value.trim()){postWorldMsg(i.value.trim());i.value=''}"><i class="fas fa-paper-plane"></i></button>
                 </div>
               </div>
             </div>
@@ -1023,7 +1035,12 @@ button{font:inherit}
       </div>
 
       <div class="view" id="view-instant">
-        <div class="world-chat-full">
+        <div class="world-guide" id="worldFeedGuide" style="height:230px">
+          <div class="world-guide-icon"><i class="fas fa-earth-americas"></i></div>
+          <div class="world-guide-text">公开聊天频道，与其他玩家交流</div>
+          <button class="world-guide-btn" onclick="enterWorldFeedChannel()">进入世界频道</button>
+        </div>
+        <div class="world-chat-full" id="worldFeedBox" style="display:none">
           <div class="world-chat-header">
             <b>世界频道</b>
             <div class="channel-filter">
@@ -1039,8 +1056,8 @@ button{font:inherit}
               <button class="cq-btn" onclick="postWorldMsg('新手友好来一个',this)">新手友好来一个</button>
             </div>
             <div class="chat-flow-input">
-              <input type="text" placeholder="输入世界频道消息..." id="worldFeedMsgInput" onkeydown="if(event.key==='Enter'&&this.value.trim()){postWorldMsg(this.value.trim());this.value=''}">
-              <button onclick="const i=document.getElementById('worldFeedMsgInput');if(i.value.trim()){postWorldMsg(i.value.trim());i.value=''}"><i class="fas fa-paper-plane"></i></button>
+              <input type="text" placeholder="输入世界频道消息..." id="worldFeedMsgInput" onkeydown="if(event.key==='Enter'&&this.value.trim()&&!worldCooldownRemain){postWorldMsg(this.value.trim());this.value=''}">
+              <button class="world-send-btn" id="worldFeedSendBtn" onclick="const i=document.getElementById('worldFeedMsgInput');if(i.value.trim()){postWorldMsg(i.value.trim());i.value=''}"><i class="fas fa-paper-plane"></i></button>
             </div>
           </div>
         </div>
@@ -1266,6 +1283,10 @@ function switchLobby(type){
   const input=document.getElementById("searchInput");
   input.placeholder=type==="game"?"搜索游戏名":type==="room"?"搜索游戏名、房主昵称、房间ID":"";
   input.parentElement.style.display=type==="world"?"none":"";
+  if(type==="world"){
+    document.getElementById("worldGuide").style.display="flex";
+    document.getElementById("worldChatBox").style.display="none";
+  }
   handleSearch();
 }
 function refreshLobby(){
@@ -1879,12 +1900,44 @@ function rotateQuick(btn){
   btn.setAttribute("onclick",`postWorldMsg('${next}',this)`);
 }
 let lastWorldMsgTime=0,lastRoomMsgTime=0;
+let worldCooldownTimer=null;
+let worldCooldownRemain=0;
+function enterWorldChannel(){
+  document.getElementById("worldGuide").style.display="none";
+  document.getElementById("worldChatBox").style.display="flex";
+  renderWorld();
+}
+function enterWorldFeedChannel(){
+  document.getElementById("worldFeedGuide").style.display="none";
+  document.getElementById("worldFeedBox").style.display="flex";
+  renderWorld();
+}
+function startWorldCooldown(){
+  worldCooldownRemain=10;
+  const sendBtns=document.querySelectorAll("#worldSendBtn,#worldFeedSendBtn");
+  const quickBtns=document.querySelectorAll("#worldQuick .cq-btn, #worldFeedQuick .cq-btn");
+  sendBtns.forEach(b=>{b.disabled=true;b.innerHTML=worldCooldownRemain+"s"});
+  quickBtns.forEach(b=>{b.disabled=true;b.style.opacity=".5";b.style.cursor="not-allowed"});
+  clearInterval(worldCooldownTimer);
+  worldCooldownTimer=setInterval(()=>{
+    worldCooldownRemain--;
+    if(worldCooldownRemain<=0){
+      clearInterval(worldCooldownTimer);
+      worldCooldownTimer=null;
+      sendBtns.forEach(b=>{b.disabled=false;b.innerHTML='<i class="fas fa-paper-plane"></i>'});
+      quickBtns.forEach(b=>{b.disabled=false;b.style.opacity="";b.style.cursor=""});
+    } else {
+      sendBtns.forEach(b=>{b.innerHTML=worldCooldownRemain+"s"});
+    }
+  },1000);
+}
 function maybeTimeStamp(lastTime){
   const now=Date.now();
   if(now-lastTime>=180000){return {html:`<div class="cf-time">${formatChatTime(now)}</div>`,time:now}}
   return {html:"",time:lastTime};
 }
 function postWorldMsg(text,btn){
+  if(worldCooldownRemain>0){toast("发送冷却中，请稍后再试");return;}
   const ts=maybeTimeStamp(lastWorldMsgTime);
   lastWorldMsgTime=ts.time||lastWorldMsgTime;
   if(ts.html)lastWorldMsgTime=Date.now();
@@ -1892,6 +1945,7 @@ function postWorldMsg(text,btn){
   document.querySelectorAll("#worldChatFlow,#worldFeedFlow").forEach(el=>{el.insertAdjacentHTML("beforeend",html);el.scrollTop=el.scrollHeight});
   if(btn)rotateQuick(btn);
   toast("已发送到世界频道");
+  startWorldCooldown();
 }
 const roomQuickPhrases=["我来开怪","等我重连","语音已开","换个打法","准备好了","先走了"];
 function postRoomMsg(text,btn){

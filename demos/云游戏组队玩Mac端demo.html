@@ -377,6 +377,39 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
   cursor:pointer;transition:.15s;flex-shrink:0
 }
 .world-report-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.25);color:#f87171}
+
+/* 世界频道引导页 */
+.world-guide-page{
+  flex:1;min-height:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;padding:32px 24px;text-align:center
+}
+.world-guide-icon{
+  width:56px;height:56px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(129,140,248,.18),rgba(96,216,255,.12));
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;color:#818cf8
+}
+.world-guide-desc{font-size:12px;color:rgba(255,255,255,.4);line-height:1.6}
+.world-guide-enter{
+  margin-top:6px;padding:8px 22px;border-radius:18px;
+  background:linear-gradient(135deg,#a78bfa,#60d8ff);
+  color:#fff;font-size:12px;font-weight:700;
+  border:none;cursor:pointer;transition:.15s
+}
+.world-guide-enter:hover{filter:brightness(1.12);transform:scale(1.03)}
+
+/* 发送按钮冷却态 */
+.chat-send.cd-disabled{
+  background:rgba(255,255,255,.08)!important;
+  color:rgba(255,255,255,.3)!important;
+  cursor:not-allowed;pointer-events:none;
+  font-size:10px;font-weight:700
+}
+.cq-btn.cd-disabled{
+  opacity:.35;cursor:not-allowed;pointer-events:none
+}
+
 .world-chat-panel{
   flex:1;min-width:0;
   display:flex;flex-direction:column;
@@ -941,18 +974,25 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
           <!-- 右侧固定世界频道面板 -->
           <div class="world-side-panel" id="worldSidePanel">
             <div class="world-side-title"><i class="fas fa-globe-asia" style="margin-right:6px;color:#818cf8"></i>世界频道<button class="world-report-btn" onclick="showToast('不良信息举报请截图发送至gamehub@gamesir.com')" title="举报不良信息"><i class="fas fa-flag"></i></button></div>
-            <div class="world-chat-panel">
+            <!-- 引导页（默认显示） -->
+            <div class="world-guide-page" id="worldGuidePage">
+              <div class="world-guide-icon"><i class="fas fa-globe-asia"></i></div>
+              <div class="world-guide-desc">公开聊天频道，与其他玩家交流</div>
+              <button class="world-guide-enter" onclick="enterWorldChannel()">进入世界频道</button>
+            </div>
+            <!-- 聊天内容（默认隐藏） -->
+            <div class="world-chat-panel" id="worldChatPanel" style="display:none">
               <div class="chat-flow" id="worldChatFlow"></div>
               <div class="chat-bottom">
-                <div class="chat-quick">
+                <div class="chat-quick" id="worldQuickBtns">
                   <button class="cq-btn" onclick="sendWorldMsg('有人组队吗',this)">有人组队吗</button>
                   <button class="cq-btn" onclick="sendWorldMsg('缺一个输出',this)">缺一个输出</button>
                   <button class="cq-btn" onclick="sendWorldMsg('新手友好来一个',this)">新手友好</button>
                   <button class="cq-btn" onclick="sendWorldMsg('茶杯头双人',this)">茶杯头双人</button>
                 </div>
                 <div class="chat-input-row">
-                  <input class="chat-text" id="worldInput" type="text" placeholder="发消息..." onkeydown="if(event.key==='Enter'&&this.value.trim()){sendWorldMsg(this.value.trim());this.value=''}">
-                  <button class="chat-send" onclick="const i=document.getElementById('worldInput');if(i.value.trim()){sendWorldMsg(i.value.trim());i.value=''}"><i class="fas fa-paper-plane"></i></button>
+                  <input class="chat-text" id="worldInput" type="text" placeholder="发消息..." onkeydown="if(event.key==='Enter'&&this.value.trim()&&worldSendCdEnd<=Date.now()){sendWorldMsg(this.value.trim());this.value=''}">
+                  <button class="chat-send" id="worldSendBtn" onclick="const i=document.getElementById('worldInput');if(i.value.trim()&&worldSendCdEnd<=Date.now()){sendWorldMsg(i.value.trim());i.value=''}"><i class="fas fa-paper-plane"></i></button>
                 </div>
               </div>
             </div>
@@ -1472,6 +1512,31 @@ function filterGames(keyword){
 }
 
 // ══ 世界频道 ══
+let worldChannelEntered=false; // 是否已进入世界频道
+let worldSendCdTimer=null;     // 发送冷却计时器
+let worldSendCdEnd=0;          // 冷却结束时间戳
+
+function enterWorldChannel(){
+  worldChannelEntered=true;
+  document.getElementById("worldGuidePage").style.display="none";
+  document.getElementById("worldChatPanel").style.display="flex";
+  renderWorldChat();
+}
+
+function resetWorldGuide(){
+  worldChannelEntered=false;
+  document.getElementById("worldGuidePage").style.display="flex";
+  document.getElementById("worldChatPanel").style.display="none";
+  // 重置冷却状态
+  clearInterval(worldSendCdTimer);
+  worldSendCdTimer=null;
+  worldSendCdEnd=0;
+  const sendBtn=document.getElementById("worldSendBtn");
+  sendBtn.classList.remove("cd-disabled");
+  sendBtn.innerHTML='<i class="fas fa-paper-plane"></i>';
+  document.querySelectorAll("#worldQuickBtns .cq-btn").forEach(b=>b.classList.remove("cd-disabled"));
+}
+
 function renderWorldChat(){
   const flow=document.getElementById("worldChatFlow");
   let html="";
@@ -1503,7 +1568,33 @@ function renderWorldChat(){
   flow.scrollTop=flow.scrollHeight;
 }
 
+function startWorldSendCd(){
+  const sendBtn=document.getElementById("worldSendBtn");
+  const quickBtns=document.querySelectorAll("#worldQuickBtns .cq-btn");
+  worldSendCdEnd=Date.now()+10000;
+  // 立即置灰
+  sendBtn.classList.add("cd-disabled");
+  quickBtns.forEach(b=>b.classList.add("cd-disabled"));
+  const updateCd=()=>{
+    const remain=Math.ceil((worldSendCdEnd-Date.now())/1000);
+    if(remain<=0){
+      clearInterval(worldSendCdTimer);
+      worldSendCdTimer=null;
+      sendBtn.classList.remove("cd-disabled");
+      sendBtn.innerHTML='<i class="fas fa-paper-plane"></i>';
+      quickBtns.forEach(b=>b.classList.remove("cd-disabled"));
+    } else {
+      sendBtn.innerHTML=remain+"s";
+    }
+  };
+  updateCd();
+  clearInterval(worldSendCdTimer);
+  worldSendCdTimer=setInterval(updateCd,1000);
+}
+
 function sendWorldMsg(text, btn){
+  // 冷却中不发送
+  if(worldSendCdEnd>Date.now()) return;
   const flow=document.getElementById("worldChatFlow");
   const now=Date.now();
   if(now-worldLastTime>180000){
@@ -1525,6 +1616,8 @@ function sendWorldMsg(text, btn){
     btn.setAttribute("onclick",`sendWorldMsg('${next}',this)`);
   }
   showToast("已发送到世界频道");
+  // 启动10秒冷却
+  startWorldSendCd();
   // 模拟回复
   setTimeout(()=>{
     const r=replyUsers[replyIdx%replyUsers.length];
@@ -1876,6 +1969,8 @@ function switchPage(page){
   document.getElementById("page-explore").classList.toggle("active",page==="explore");
   document.getElementById("page-miao").style.display=page==="miao"?"flex":"none";
   document.getElementById("page-miao").classList.toggle("active",page==="miao");
+  // 离开秒玩页时重置世界频道引导页
+  if(page!=="miao"&&worldChannelEntered) resetWorldGuide();
 }
 
 // ══ 秒玩子tab ══
@@ -1887,6 +1982,8 @@ function switchMiaoTab(tab){
   document.getElementById("miao-panel-all").style.display=tab==="all"?"block":"none";
   document.getElementById("miao-panel-team").style.display=tab==="team"?"flex":"none";
   document.getElementById("miao-panel-team").classList.toggle("active",tab==="team");
+  // 切换到组队玩时重置世界频道引导页
+  if(tab==="team") resetWorldGuide();
 }
 
 // ══ 组队玩子tab ══
@@ -2179,7 +2276,7 @@ renderNews();
 renderMiaoGrid();
 renderLobbyGame();
 renderLobbyRoom();
-renderWorldChat();
+// renderWorldChat() — 延迟到用户点击"进入世界频道"时调用
 </script>
 </body>
 </html>
