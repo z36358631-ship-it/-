@@ -135,16 +135,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
 .lib-ad .la-title{font-size:14px;font-weight:600;margin-bottom:4px;}
 .lib-ad .la-desc{font-size:12px;color:#ffffff70;}
 
-.lib-platform{background:#1e1e3a;border-radius:12px;padding:20px;margin-bottom:16px;flex:1;}
-.lib-platform .lp-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-.lib-platform .lp-head img{width:28px;height:28px;}
-.lib-platform .lp-head .lp-name{font-size:15px;font-weight:600;flex:1;}
-.lib-platform .lp-head .lp-status{font-size:12px;color:#4ade80;display:flex;align-items:center;gap:4px;}
-.lib-platform .lp-head .lp-status::before{content:"";width:6px;height:6px;border-radius:50%;background:#4ade80;}
-.lib-platform .lp-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.lib-platform .lp-stat{text-align:center;}
-.lib-platform .lp-stat .ls-label{font-size:11px;color:#ffffff60;display:block;}
-.lib-platform .lp-stat .ls-val{font-size:16px;font-weight:600;display:block;margin-top:2px;}
+.lib-platform{background:#1e1e3a;border-radius:16px;padding:0;margin-bottom:16px;flex:1;overflow:hidden;}
+.steam-header{display:flex;align-items:center;gap:10px;padding:16px 18px 14px;}
+.steam-logo{width:32px;height:32px;border-radius:50%;background:#1b2838;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.steam-logo svg{width:18px;height:18px;fill:#fff;}
+.steam-name{font-size:16px;font-weight:600;flex:1;}
+.steam-online{display:flex;align-items:center;gap:5px;background:#16a34a20;border:1px solid #16a34a50;border-radius:20px;padding:3px 12px;font-size:12px;color:#4ade80;font-weight:500;}
+.steam-online::before{content:"";width:6px;height:6px;border-radius:50%;background:#4ade80;}
+.steam-switch{width:28px;height:28px;border-radius:6px;border:1px solid #ffffff20;background:transparent;color:#ffffff70;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;}
+.steam-user{display:flex;align-items:center;gap:12px;padding:0 18px 16px;}
+.steam-level{width:36px;height:36px;border-radius:50%;border:2px solid #a78bfa;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;}
+.steam-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.steam-uid{flex:1;min-width:0;}
+.steam-uid .su-name{font-size:15px;font-weight:600;}
+.steam-uid .su-id{font-size:11px;color:#ffffff50;display:flex;align-items:center;gap:4px;}
+.steam-uid .su-id .copy-btn{background:none;border:none;color:#ffffff40;cursor:pointer;font-size:11px;padding:0;}
+.steam-uid .su-id .copy-btn:hover{color:#fff;}
+.steam-stats{background:#15152a;border-radius:12px;margin:0 14px 14px;padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.steam-stats .ss-item{text-align:center;}
+.steam-stats .ss-item .ss-label{font-size:11px;color:#ffffff50;display:block;margin-bottom:3px;}
+.steam-stats .ss-item .ss-val{font-size:17px;font-weight:700;display:block;}
 
 /* P0: 启动弹窗 */
 .popup-mask{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeIn .3s ease;}
@@ -329,16 +339,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
             </div>
           </div>
           <div class="lib-platform">
-            <div class="lp-head">
-              <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E" alt="">
-              <span class="lp-name">Steam</span>
-              <span class="lp-status">在线</span>
+            <div class="steam-header">
+              <div class="steam-logo"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-9.95 9.12l5.37 2.22a2.84 2.84 0 0 1 1.6-.49c.05 0 .1 0 .16.01l2.4-3.47v-.05a3.78 3.78 0 1 1 3.78 3.78h-.09l-3.41 2.44c0 .04.01.09.01.13a2.84 2.84 0 0 1-5.66.27L2.1 14.55A10 10 0 1 0 12 2z"/></svg></div>
+              <span class="steam-name">Steam</span>
+              <span class="steam-online">在线</span>
+              <button class="steam-switch">⇄</button>
             </div>
-            <div class="lp-stats">
-              <div class="lp-stat"><span class="ls-label">地区</span><span class="ls-val">CN</span></div>
-              <div class="lp-stat"><span class="ls-label">年限</span><span class="ls-val">8.6 年</span></div>
-              <div class="lp-stat"><span class="ls-label">游戏数量</span><span class="ls-val">384</span></div>
-              <div class="lp-stat"><span class="ls-label">游戏时长</span><span class="ls-val">236.3h</span></div>
+            <div class="steam-user">
+              <div class="steam-level">5</div>
+              <img class="steam-avatar" src="https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_medium.jpg" alt="">
+              <div class="steam-uid">
+                <div class="su-name">zhangzppz</div>
+                <div class="su-id">76561198429183367 <button class="copy-btn" onclick="navigator.clipboard.writeText('76561198429183367')">⧉</button></div>
+              </div>
+            </div>
+            <div class="steam-stats">
+              <div class="ss-item"><span class="ss-label">地区</span><span class="ss-val">CN</span></div>
+              <div class="ss-item"><span class="ss-label">年限</span><span class="ss-val">8.6 年</span></div>
+              <div class="ss-item"><span class="ss-label">游戏数量</span><span class="ss-val">384</span></div>
+              <div class="ss-item"><span class="ss-label">游戏时长</span><span class="ss-val">236.3h</span></div>
             </div>
           </div>
         </div>
