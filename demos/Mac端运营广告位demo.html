@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Mac端运营广告位Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;background:#0a0a14;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;overflow:auto;padding:20px;}
+
+.mac-window{width:1440px;height:900px;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 20px 80px rgba(0,0,0,.8);background:#1b1b2f;flex-shrink:0;position:relative;}
+.mac-titlebar{height:36px;background:#0e0e1c;display:flex;align-items:center;padding:0 16px;flex-shrink:0;}
+.mac-dots{display:flex;gap:8px;}
+.mac-dots span{width:12px;height:12px;border-radius:50%;}
+.dot-r{background:#ff5f57;}.dot-y{background:#febc2e;}.dot-g{background:#28c840;}
+
+.app-body{flex:1;display:flex;overflow:hidden;}
+
+/* 左侧导航 */
+.sidebar{width:72px;background:#101026;display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:4px;flex-shrink:0;border-right:1px solid #ffffff08;}
+.sidebar .logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#5b5fc7,#8b5cf6);display:flex;align-items:center;justify-content:center;margin-bottom:12px;cursor:pointer;}
+.sidebar .logo svg{width:22px;height:22px;fill:#fff;}
+.nav-item{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#555577;transition:all .2s;position:relative;}
+.nav-item:hover{background:#ffffff12;color:#999;}
+.nav-item.active{background:#ffffff18;color:#fff;}
+.nav-item svg{width:20px;height:20px;fill:currentColor;}
+.nav-spacer{flex:1;}
+.nav-badge{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#ef4444;border:2px solid #101026;}
+
+/* 页面容器（多页面切换） */
+.page{display:none;flex:1;overflow-y:auto;overflow-x:hidden;}
+.page.visible{display:block;}
+.page::-webkit-scrollbar{width:6px;}
+.page::-webkit-scrollbar-thumb{background:#ffffff20;border-radius:3px;}
+.page::-webkit-scrollbar-track{background:transparent;}
+
+/* ===== 首页 ===== */
+.top-row{display:flex;height:520px;flex-shrink:0;}
+
+/* Banner */
+.banner-area{flex:1;position:relative;overflow:hidden;background:#000;min-width:0;}
+.banner-track{display:flex;height:100%;transition:transform .6s ease;}
+.banner-slide{min-width:100%;height:100%;position:relative;}
+.banner-slide img{width:100%;height:100%;object-fit:cover;}
+.banner-arrow{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:#00000060;color:#fff;font-size:22px;cursor:pointer;z-index:5;backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;transition:all .2s;opacity:.7;}
+.banner-arrow:hover{background:#000000bb;opacity:1;}
+.banner-arrow.left{left:16px;}
+.banner-arrow.right{right:16px;}
+.banner-dots{position:absolute;bottom:20px;left:28px;display:flex;gap:8px;z-index:5;}
+.banner-dots span{width:28px;height:4px;border-radius:2px;background:#ffffff40;cursor:pointer;transition:all .3s;}
+.banner-dots span.active{background:#fff;width:36px;}
+
+/* 右侧游戏详情 */
+.game-detail{width:350px;flex-shrink:0;padding:20px 22px;display:flex;flex-direction:column;border-left:1px solid #ffffff08;overflow-y:auto;}
+.game-detail::-webkit-scrollbar{width:3px;}
+.game-detail::-webkit-scrollbar-thumb{background:#ffffff15;border-radius:2px;}
+.game-thumbs{display:flex;gap:8px;margin-bottom:16px;}
+.game-thumbs img{flex:1;height:64px;border-radius:6px;object-fit:cover;cursor:pointer;transition:opacity .2s;}
+.game-thumbs img:hover{opacity:.8;}
+.gd-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.game-title{font-size:21px;font-weight:700;}
+.gd-title-row .arr{width:28px;height:28px;border-radius:50%;border:1px solid #ffffff25;display:flex;align-items:center;justify-content:center;color:#ffffff80;cursor:pointer;font-size:16px;transition:all .2s;flex-shrink:0;}
+.gd-title-row .arr:hover{background:#ffffff15;color:#fff;}
+.tags-wrap{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;}
+.score-box{border:1px solid #0d9488;border-radius:8px;padding:6px 12px;text-align:center;flex-shrink:0;}
+.score-box .s-label{font-size:10px;color:#5eead4;display:block;margin-bottom:1px;}
+.score-box .s-num{font-size:18px;font-weight:700;color:#5eead4;}
+.tag-list{display:flex;flex-wrap:wrap;gap:6px;}
+.tag-list .tag{padding:4px 11px;border:1px solid #ffffff22;border-radius:6px;font-size:12px;color:#ffffffcc;white-space:nowrap;}
+.game-desc{font-size:13px;color:#ffffff80;line-height:1.7;margin-bottom:auto;padding-bottom:16px;}
+.game-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid #ffffff08;}
+.game-icons{display:flex;gap:10px;}
+.game-icons span{width:32px;height:32px;border-radius:50%;border:1px solid #ffffff20;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:background .2s;}
+.game-icons span:hover{background:#ffffff15;}
+.daily-btn{display:flex;align-items:center;gap:6px;background:#ffffff0a;border:1px solid #ffffff20;border-radius:10px;padding:8px 16px;cursor:pointer;color:#fff;font-size:13px;font-weight:500;transition:all .2s;}
+.daily-btn:hover{background:#ffffff18;}
+
+/* 卡片区 */
+.bottom-section{padding:22px 28px 28px;}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.section-head h2{font-size:18px;font-weight:600;}
+.section-head .nav-arrows{display:flex;gap:8px;}
+.section-head .nav-arrows button{width:32px;height:32px;border-radius:50%;border:1px solid #ffffff25;background:transparent;color:#fff;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.section-head .nav-arrows button:hover{background:#ffffff15;border-color:#ffffff50;}
+.cards-row{display:flex;gap:18px;}
+.g-card{flex:1;min-width:0;cursor:pointer;transition:transform .2s;}
+.g-card:hover{transform:translateY(-3px);}
+.g-card .card-img{width:100%;aspect-ratio:16/9;border-radius:10px;object-fit:cover;display:block;}
+.g-card .card-name{font-size:14px;font-weight:500;margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cards-dots{display:flex;gap:6px;justify-content:center;margin-top:14px;}
+.cards-dots span{width:8px;height:8px;border-radius:50%;background:#ffffff25;cursor:pointer;transition:background .2s;}
+.cards-dots span.active{background:#fff;}
+
+/* P1: 运营插卡 */
+.g-card.promo{position:relative;}
+.g-card.promo .card-img{border:2px solid rgba(99,102,241,.7);border-radius:10px;box-shadow:0 0 12px rgba(99,102,241,.25);}
+.promo-tag{position:absolute;top:8px;left:8px;background:#6366f1;color:#fff;font-size:10px;padding:3px 9px;border-radius:4px;font-weight:600;z-index:2;letter-spacing:.3px;}
+.g-card.promo .card-name{color:#a78bfa;}
+
+/* ===== 活动中心页 ===== */
+.activity-page{padding:32px;}
+.activity-page h1{font-size:24px;font-weight:700;margin-bottom:24px;}
+.act-list{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.act-item{display:flex;gap:16px;background:#1e1e3a;border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;}
+.act-item:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+.act-item img{width:180px;height:100px;object-fit:cover;flex-shrink:0;}
+.act-item .act-info{padding:12px 14px 12px 0;display:flex;flex-direction:column;justify-content:center;flex:1;min-width:0;}
+.act-item .act-tag{display:inline-block;background:#6366f120;color:#a78bfa;font-size:11px;padding:2px 8px;border-radius:4px;width:fit-content;margin-bottom:6px;font-weight:500;}
+.act-item .act-title{font-size:14px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.act-item .act-desc{font-size:12px;color:#ffffff80;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.act-item .act-time{font-size:11px;color:#ffffff50;margin-top:4px;}
+
+/* ===== 游戏库页 ===== */
+.lib-page{padding:32px;display:flex;gap:28px;}
+.lib-main{flex:1;min-width:0;}
+.lib-main h1{font-size:24px;font-weight:700;margin-bottom:8px;}
+.lib-filters{display:flex;gap:10px;margin-bottom:20px;}
+.lib-filters span{padding:6px 16px;border:1px solid #ffffff20;border-radius:8px;font-size:13px;color:#ffffffcc;cursor:pointer;transition:all .2s;}
+.lib-filters span:hover{background:#ffffff12;}
+.lib-filters span.active{background:#ffffff18;border-color:#ffffff40;color:#fff;}
+.lib-section-title{font-size:14px;color:#ffffff60;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.lib-section-title span{color:#ffffff40;}
+.lib-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.lib-card{cursor:pointer;transition:transform .2s;}
+.lib-card:hover{transform:translateY(-2px);}
+.lib-card img{width:100%;aspect-ratio:3/4;border-radius:8px;object-fit:cover;display:block;}
+.lib-card .lc-name{font-size:13px;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* 游戏库右侧面板 */
+.lib-sidebar{width:300px;flex-shrink:0;display:flex;flex-direction:column;}
+.lib-ad{width:100%;border-radius:12px;overflow:hidden;cursor:pointer;margin-bottom:20px;transition:transform .2s;border:1px solid #ffffff10;}
+.lib-ad:hover{transform:translateY(-2px);}
+.lib-ad img{width:100%;aspect-ratio:3/1;object-fit:cover;display:block;}
+.lib-ad .la-body{padding:12px 14px;background:#1e1e3a;}
+.lib-ad .la-tag{display:inline-block;background:#6366f1;color:#fff;font-size:10px;padding:2px 8px;border-radius:3px;margin-bottom:6px;font-weight:500;}
+.lib-ad .la-title{font-size:14px;font-weight:600;margin-bottom:4px;}
+.lib-ad .la-desc{font-size:12px;color:#ffffff70;}
+
+.lib-platform{background:#1e1e3a;border-radius:12px;padding:20px;margin-bottom:16px;flex:1;}
+.lib-platform .lp-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.lib-platform .lp-head img{width:28px;height:28px;}
+.lib-platform .lp-head .lp-name{font-size:15px;font-weight:600;flex:1;}
+.lib-platform .lp-head .lp-status{font-size:12px;color:#4ade80;display:flex;align-items:center;gap:4px;}
+.lib-platform .lp-head .lp-status::before{content:"";width:6px;height:6px;border-radius:50%;background:#4ade80;}
+.lib-platform .lp-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.lib-platform .lp-stat{text-align:center;}
+.lib-platform .lp-stat .ls-label{font-size:11px;color:#ffffff60;display:block;}
+.lib-platform .lp-stat .ls-val{font-size:16px;font-weight:600;display:block;margin-top:2px;}
+
+/* P0: 启动弹窗 */
+.popup-mask{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeIn .3s ease;}
+.popup-mask.hidden{display:none;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.popup-wrap{position:relative;animation:popIn .35s ease;}
+.popup-close{position:absolute;top:-44px;right:-44px;width:34px;height:34px;border-radius:50%;border:2px solid #ffffff80;background:transparent;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.popup-close:hover{background:#ffffff20;border-color:#fff;transform:rotate(90deg);}
+.popup-card{width:520px;background:#1e1e3a;border-radius:16px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.6);}
+.popup-card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;}
+.popup-body{padding:22px 26px;text-align:center;}
+.popup-body h3{font-size:19px;font-weight:700;margin-bottom:8px;}
+.popup-body p{font-size:13px;color:#ffffffaa;line-height:1.6;margin-bottom:18px;}
+.popup-btns{display:flex;justify-content:center;}
+.pbtn{padding:10px 36px;border-radius:8px;border:none;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;background:#6366f1;color:#fff;}
+.pbtn:hover{background:#7c7ff7;transform:translateY(-1px);}
+.popup-foot{padding:8px 26px 14px;text-align:center;}
+.popup-foot label{font-size:11px;color:#ffffff50;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
+.popup-foot input[type=checkbox]{accent-color:#6366f1;}
+</style>
+</head>
+<body>
+
+<!-- P0: 启动弹窗 -->
+<div class="popup-mask" id="popupMask">
+  <div class="popup-wrap">
+    <button class="popup-close" onclick="closePopup()">✕</button>
+    <div class="popup-card">
+      <img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/header.jpg" alt="">
+      <div class="popup-body">
+        <h3>夏日狂欢节 · 限时特惠</h3>
+        <p>精选50+热门云游戏限时免费畅玩，邀请好友组队再享额外时长奖励！<br>活动时间：5月20日 - 6月3日</p>
+        <div class="popup-btns"><button class="pbtn" onclick="closePopup()">立即参与</button></div>
+      </div>
+      <div class="popup-foot"><label><input type="checkbox" id="noShowToday"> 今日不再显示</label></div>
+    </div>
+  </div>
+</div>
+
+<!-- Mac窗口 -->
+<div class="mac-window">
+  <div class="mac-titlebar">
+    <div class="mac-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+  </div>
+  <div class="app-body">
+    <!-- 左侧导航 -->
+    <div class="sidebar">
+      <div class="logo"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></div>
+      <div class="nav-item active" data-page="home" onclick="switchPage('home')"><svg viewBox="0 0 24 24"><path d="M3 13h1v7c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7h1a1 1 0 0 0 .7-1.7l-9-9a1 1 0 0 0-1.4 0l-9 9A1 1 0 0 0 3 13z"/></svg></div>
+      <div class="nav-item" data-page="cloud" onclick="switchPage('cloud')"><svg viewBox="0 0 24 24"><path d="M19.4 10a6.2 6.2 0 0 0-11.8 0A5 5 0 0 0 7 20h12a4 4 0 0 0 .4-10z"/></svg></div>
+      <div class="nav-item" data-page="activity" onclick="switchPage('activity')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span class="nav-badge"></span></div>
+      <div class="nav-item" data-page="library" onclick="switchPage('library')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
+      <div class="nav-item"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+      <div class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="8.5" r="1.5"/><circle cx="8.5" cy="15.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/></svg></div>
+      <div class="nav-spacer"></div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div>
+    </div>
+
+    <!-- ===== 首页 ===== -->
+    <div class="page visible" id="page-home">
+      <div class="top-row">
+        <div class="banner-area">
+          <div class="banner-track" id="bannerTrack">
+            <div class="banner-slide"><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/601150/header.jpg" alt=""></div>
+            <div class="banner-slide"><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/header.jpg" alt=""></div>
+            <div class="banner-slide"><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/header.jpg" alt=""></div>
+            <div class="banner-slide"><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/header.jpg" alt=""></div>
+            <div class="banner-slide"><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/header.jpg" alt=""></div>
+          </div>
+          <button class="banner-arrow left" onclick="slideBanner(-1)">‹</button>
+          <button class="banner-arrow right" onclick="slideBanner(1)">›</button>
+          <div class="banner-dots" id="bannerDots">
+            <span class="active" onclick="goSlide(0)"></span>
+            <span onclick="goSlide(1)"></span>
+            <span onclick="goSlide(2)"></span>
+            <span onclick="goSlide(3)"></span>
+            <span onclick="goSlide(4)"></span>
+          </div>
+        </div>
+        <div class="game-detail">
+          <div class="game-thumbs">
+            <img src="https://cdn.akamai.steamstatic.com/steam/apps/601150/capsule_616x353.jpg" alt="">
+            <img src="https://cdn.akamai.steamstatic.com/steam/apps/1245620/capsule_616x353.jpg" alt="">
+            <img src="https://cdn.akamai.steamstatic.com/steam/apps/292030/capsule_616x353.jpg" alt="">
+          </div>
+          <div class="gd-title-row"><div class="game-title">鬼泣5</div><div class="arr">›</div></div>
+          <div class="tags-wrap">
+            <div class="score-box"><span class="s-label">好评如潮</span><span class="s-num">9.6</span></div>
+            <div class="tag-list"><span class="tag">动作</span><span class="tag">剧情丰富</span><span class="tag">砍杀</span><span class="tag">单人</span><span class="tag">第三人称</span><span class="tag">风格化</span></div>
+          </div>
+          <div class="game-desc">最强的恶魔猎人强势回归！动作游戏迷翘首以待，传说中的Stylish Action《Devil May Cry》终于复活！</div>
+          <div class="game-bottom">
+            <div class="game-icons"><span>🎮</span><span>🔗</span></div>
+            <button class="daily-btn">✨ 每日推荐</button>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-section">
+        <div class="section-head"><h2>编辑推荐</h2><div class="nav-arrows"><button onclick="shiftCards(-1)">‹</button><button onclick="shiftCards(1)">›</button></div></div>
+        <div class="cards-row" id="cardsRow">
+          <div class="g-card"><img class="card-img" src="https://cdn.akamai.steamstatic.com/steam/apps/374320/capsule_616x353.jpg" alt=""><div class="card-name">黑暗之魂3</div></div>
+          <div class="g-card"><img class="card-img" src="https://cdn.akamai.steamstatic.com/steam/apps/349040/capsule_616x353.jpg" alt=""><div class="card-name">火影忍者 究极风暴4</div></div>
+          <div class="g-card promo"><span class="promo-tag">限时活动</span><img class="card-img" src="https://cdn.akamai.steamstatic.com/steam/apps/1091500/capsule_616x353.jpg" alt=""><div class="card-name">新用户专享 · 3天免费畅玩</div></div>
+        </div>
+        <div class="cards-dots"><span class="active"></span><span></span></div>
+      </div>
+    </div>
+
+    <!-- ===== 活动中心页 ===== -->
+    <div class="page" id="page-activity">
+      <div class="activity-page">
+        <h1>活动中心</h1>
+        <div class="act-list">
+          <div class="act-item">
+            <img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/header.jpg" alt="">
+            <div class="act-info">
+              <span class="act-tag">进行中</span>
+              <div class="act-title">夏日狂欢节 · 限时特惠</div>
+              <div class="act-desc">精选50+热门云游戏限时免费畅玩，邀请好友组队再享额外时长奖励！</div>
+              <div class="act-time">5月20日 - 6月3日</div>
+            </div>
+          </div>
+          <div class="act-item">
+            <img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/header.jpg" alt="">
+            <div class="act-info">
+              <span class="act-tag">进行中</span>
+              <div class="act-title">邀友组队 · 双人免单</div>
+              <div class="act-desc">邀请好友一起云游戏，双人组队即享免费时长奖励</div>
+              <div class="act-time">5月15日 - 5月31日</div>
+            </div>
+          </div>
+          <div class="act-item">
+            <img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/header.jpg" alt="">
+            <div class="act-info">
+              <span class="act-tag">公告</span>
+              <div class="act-title">V3.2版本更新公告</div>
+              <div class="act-desc">新增Mac原生手柄适配、画质增强模式、好友在线状态同步</div>
+              <div class="act-time">5月18日</div>
+            </div>
+          </div>
+          <div class="act-item">
+            <img src="https://cdn.akamai.steamstatic.com/steam/apps/1086940/capsule_616x353.jpg" alt="">
+            <div class="act-info">
+              <span class="act-tag">新功能</span>
+              <div class="act-title">组队玩功能已上线</div>
+              <div class="act-desc">邀请好友语音开黑，支持多人协作/对战</div>
+              <div class="act-time">5月10日</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 游戏库页 ===== -->
+    <div class="page" id="page-library">
+      <div class="lib-page">
+        <div class="lib-main">
+          <h1>我的游戏</h1>
+          <div class="lib-filters">
+            <span class="active">全部</span>
+            <span>最近发行 ▾</span>
+            <span>⊕ 添加游戏</span>
+          </div>
+          <div class="lib-section-title">已安装 <span>(3)</span></div>
+          <div class="lib-grid">
+            <div class="lib-card"><img src="https://cdn.akamai.steamstatic.com/steam/apps/1145350/library_600x900.jpg" alt=""><div class="lc-name">哈迪斯2</div></div>
+            <div class="lib-card"><img src="https://cdn.akamai.steamstatic.com/steam/apps/374320/library_600x900.jpg" alt=""><div class="lc-name">黑暗之魂3</div></div>
+            <div class="lib-card"><img src="https://cdn.akamai.steamstatic.com/steam/apps/1245620/library_600x900.jpg" alt=""><div class="lc-name">艾尔登法环</div></div>
+          </div>
+          <div class="lib-section-title">未安装 <span>(128)</span></div>
+          <div class="lib-grid">
+            <div class="lib-card"><img src="https://cdn.akamai.steamstatic.com/steam/apps/2379780/library_600x900.jpg" alt=""><div class="lc-name">Balatro</div></div>
+            <div class="lib-card"><img src="https://cdn.akamai.steamstatic.com/steam/apps/1091500/library_600x900.jpg" alt=""><div class="lc-name">赛博朋克2077</div></div>
+            <div class="lib-card"><img src="https://cdn.akamai.steamstatic.com/steam/apps/292030/library_600x900.jpg" alt=""><div class="lc-name">巫师3</div></div>
+            <div class="lib-card"><img src="https://cdn.akamai.steamstatic.com/steam/apps/1222670/library_600x900.jpg" alt=""><div class="lc-name">只狼</div></div>
+          </div>
+        </div>
+        <!-- 游戏库右侧：常驻运营位 -->
+        <div class="lib-sidebar">
+          <div class="lib-ad">
+            <img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/header.jpg" alt="">
+            <div class="la-body">
+              <span class="la-tag">限时活动</span>
+              <div class="la-title">夏日狂欢节 · 限时特惠</div>
+              <div class="la-desc">50+热门云游戏免费畅玩</div>
+            </div>
+          </div>
+          <div class="lib-platform">
+            <div class="lp-head">
+              <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E" alt="">
+              <span class="lp-name">Steam</span>
+              <span class="lp-status">在线</span>
+            </div>
+            <div class="lp-stats">
+              <div class="lp-stat"><span class="ls-label">地区</span><span class="ls-val">CN</span></div>
+              <div class="lp-stat"><span class="ls-label">年限</span><span class="ls-val">8.6 年</span></div>
+              <div class="lp-stat"><span class="ls-label">游戏数量</span><span class="ls-val">384</span></div>
+              <div class="lp-stat"><span class="ls-label">游戏时长</span><span class="ls-val">236.3h</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var cur=0,total=5,timer;
+function slideBanner(d){cur=(cur+d+total)%total;upd();resetAuto();}
+function goSlide(i){cur=i;upd();resetAuto();}
+function upd(){
+  document.getElementById('bannerTrack').style.transform='translateX(-'+cur*100+'%)';
+  var dots=document.querySelectorAll('#bannerDots span');
+  for(var i=0;i<dots.length;i++) dots[i].className=i===cur?'active':'';
+}
+function resetAuto(){clearInterval(timer);timer=setInterval(function(){cur=(cur+1)%total;upd();},6000);}
+resetAuto();
+
+function closePopup(){
+  var m=document.getElementById('popupMask');
+  m.style.opacity='0';m.style.transition='opacity .25s';
+  setTimeout(function(){m.classList.add('hidden');},250);
+}
+
+function shiftCards(d){
+  var row=document.getElementById('cardsRow');
+  row.scrollBy({left:d*340,behavior:'smooth'});
+}
+
+function switchPage(name){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('visible');});
+  document.getElementById('page-'+name).classList.add('visible');
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  var target=document.querySelector('[data-page="'+name+'"]');
+  if(target) target.classList.add('active');
+}
+</script>
+</body>
+</html>
