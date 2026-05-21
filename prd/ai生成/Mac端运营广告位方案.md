@@ -197,7 +197,55 @@ sequenceDiagram
 
 ---
 
-## 6. Demo预览
+## 6. 交付设计（数据分析与埋点设计）
+
+### 6.1 核心业务指标
+
+- **漏斗监控：** 启动弹窗曝光UV/PV → 弹窗点击率 → 落地页到达率；Banner曝光UV/PV → Banner点击率 → 落地页到达率；活动中心入口点击UV → 活动卡片点击率 → 落地页到达率
+- **运营效率指标：** 各资源位CTR（点击率）、各活动参与率、红点消除率、弹窗关闭率（含今日不再显示比例）
+
+### 6.2 埋点事件表
+
+| 事件ID | 事件名称 | 触发时机 | 关键参数 |
+|--------|---------|---------|---------|
+| popup_view | 启动弹窗曝光 | 冷启动弹窗成功展示时 | uid, activity_id, activity_name |
+| popup_click | 启动弹窗点击 | 用户点击「立即参与」按钮时 | uid, activity_id, target_url |
+| popup_close | 启动弹窗关闭 | 用户点击右上角X关闭弹窗时 | uid, activity_id, close_type (x_button/no_more_today) |
+| banner_view | Banner曝光 | Banner轮播项进入可视区域时 | uid, banner_id, position_index, content_type |
+| banner_click | Banner点击 | 用户点击Banner大图时 | uid, banner_id, position_index, target_url |
+| banner_switch | Banner切换 | Banner发生切换时（自动/手动） | uid, from_index, to_index, switch_type (auto/manual_arrow/manual_dot) |
+| rec_card_view | 编辑推荐插卡曝光 | 运营插卡进入可视区域时 | uid, card_id, card_label, position_index |
+| rec_card_click | 编辑推荐插卡点击 | 用户点击运营插卡时 | uid, card_id, target_url |
+| activity_center_view | 活动中心页曝光 | 成功进入活动中心页时 | uid, source (nav_click/red_dot_click) |
+| activity_card_click | 活动卡片点击 | 用户点击活动中心内活动卡片时 | uid, activity_id, activity_status (ongoing/upcoming/ended), position_index |
+| activity_red_dot_clear | 活动红点消除 | 用户进入活动中心页红点消除时 | uid, unread_count |
+| gamelib_ad_view | 游戏库运营位曝光 | 游戏库页面右侧运营位进入可视区域时 | uid, ad_id, content_type |
+| gamelib_ad_click | 游戏库运营位点击 | 用户点击游戏库运营位时 | uid, ad_id, target_url |
+
+### 6.3 埋点参数表
+
+| 参数名 (Parameter) | 类型 | 是否必填 | 参数说明 | 枚举值 / 示例 |
+|---|---|---|---|---|
+| uid | string | 是 | 当前登录用户的唯一标识ID | u882910 |
+| activity_id | string | 否 | 运营活动的唯一标识ID | act_20260521_001 |
+| activity_name | string | 否 | 运营活动标题名称 | 新用户限时福利 |
+| banner_id | string | 否 | Banner轮播项的唯一标识ID | banner_20260521_003 |
+| card_id | string | 否 | 编辑推荐运营插卡的唯一标识ID | card_20260521_002 |
+| ad_id | string | 否 | 游戏库运营位素材的唯一标识ID | ad_20260521_005 |
+| position_index | int | 否 | 元素在列表/轮播中的位置索引 | 1, 2, 3 |
+| target_url | string | 否 | 点击后跳转的目标落地页URL | https://activity.geekgame.com/xxx |
+| content_type | string | 否 | 运营内容的类型分类 | activity (运营活动), game_rec (游戏推荐), announcement (公告), feature (新功能) |
+| close_type | string | 否 | 弹窗关闭方式 | x_button (点击X), no_more_today (勾选今日不再显示) |
+| switch_type | string | 否 | Banner切换触发方式 | auto (自动轮播), manual_arrow (箭头点击), manual_dot (导航圆点点击) |
+| from_index / to_index | int | 否 | Banner切换前后的位置索引 | 1, 2, 3 |
+| source | string | 否 | 页面进入来源 | nav_click (导航点击), red_dot_click (红点引导点击) |
+| activity_status | string | 否 | 活动当前的状态标识 | ongoing (进行中), upcoming (即将开始), ended (已结束) |
+| unread_count | int | 否 | 红点消除时未读活动的数量 | 3 |
+| card_label | string | 否 | 编辑推荐插卡左上角标签文案 | 限时活动, 新用户福利, 新功能推广 |
+
+---
+
+## 7. Demo预览
 
 在线预览：https://z36358631-ship-it.github.io/-/demos/Mac端运营广告位demo.html
 

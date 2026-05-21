@@ -156,6 +156,41 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
 .steam-stats .ss-item .ss-label{font-size:11px;color:#ffffff50;display:block;margin-bottom:3px;}
 .steam-stats .ss-item .ss-val{font-size:17px;font-weight:700;display:block;}
 
+/* 个人中心弹窗 */
+.profile-popup{position:absolute;bottom:60px;left:80px;width:320px;background:#1e1e3a;border-radius:16px;box-shadow:0 12px 48px rgba(0,0,0,.6);z-index:900;overflow:hidden;display:none;animation:popIn .25s ease;}
+.profile-popup.show{display:block;}
+.pp-header{padding:20px 22px 16px;display:flex;align-items:center;gap:12px;}
+.pp-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.pp-info{flex:1;min-width:0;}
+.pp-name{font-size:16px;font-weight:600;display:flex;align-items:center;gap:6px;}
+.pp-name .edit-icon{color:#ffffff50;font-size:13px;cursor:pointer;}
+.pp-id{font-size:12px;color:#ffffff50;display:flex;align-items:center;gap:5px;margin-top:2px;}
+.pp-id .copy-btn2{background:none;border:none;color:#ffffff40;cursor:pointer;font-size:11px;padding:0;}
+.pp-id .copy-btn2:hover{color:#fff;}
+
+.pp-cloud-banner{margin:0 14px 14px;background:#252545;border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;}
+.pp-cloud-banner .cb-text{flex:1;min-width:0;}
+.pp-cloud-banner .cb-text h4{font-size:14px;font-weight:600;margin-bottom:3px;}
+.pp-cloud-banner .cb-text p{font-size:11px;color:#ffffff60;}
+.pp-cloud-banner .cb-btn{padding:6px 16px;border-radius:6px;border:1px solid #ffffff30;background:transparent;color:#fff;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0;}
+.pp-cloud-banner .cb-btn:hover{background:#ffffff15;border-color:#ffffff50;}
+
+.pp-checkin{margin:0 14px 14px;background:linear-gradient(90deg,#2a2340,#1e1e3a);border:1px solid #ffffff10;border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
+.pp-checkin .ci-text{flex:1;min-width:0;}
+.pp-checkin .ci-text h4{font-size:14px;font-weight:600;margin-bottom:2px;display:flex;align-items:center;gap:6px;}
+.pp-checkin .ci-text h4::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#f59e0b;}
+.pp-checkin .ci-text p{font-size:11px;color:#ffffff60;}
+.pp-checkin .ci-btn{padding:6px 18px;border-radius:6px;border:none;background:#f59e0b;color:#000;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0;}
+.pp-checkin .ci-btn:hover{background:#fbbf24;transform:translateY(-1px);}
+.pp-checkin .ci-btn.done{background:#ffffff15;color:#ffffff60;cursor:default;}
+.pp-checkin .ci-btn.done:hover{transform:none;}
+
+.pp-menu{padding:0 14px 14px;}
+.pp-menu-item{padding:12px 14px;font-size:14px;color:#ffffffcc;cursor:pointer;border-radius:8px;transition:background .15s;display:flex;align-items:center;gap:8px;}
+.pp-menu-item:hover{background:#ffffff0a;}
+.pp-menu-item .mi-icon{font-size:15px;color:#ffffff60;}
+.pp-menu-item.logout{color:#ef4444cc;}
+
 /* P0: 启动弹窗 */
 .popup-mask{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeIn .3s ease;}
 .popup-mask.hidden{display:none;}
@@ -207,6 +242,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
       <div class="nav-item active" data-page="home" onclick="switchPage('home')"><svg viewBox="0 0 24 24"><path d="M3 13h1v7c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7h1a1 1 0 0 0 .7-1.7l-9-9a1 1 0 0 0-1.4 0l-9 9A1 1 0 0 0 3 13z"/></svg></div>
       <div class="nav-item" data-page="activity" onclick="switchPage('activity')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span class="nav-badge"></span></div>
       <div class="nav-item" data-page="library" onclick="switchPage('library')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+      <div class="nav-spacer"></div>
+      <div class="nav-item" id="profileNav" onclick="toggleProfile(event)"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v2h20v-2c0-3.3-6.7-5-10-5z"/></svg><span class="nav-badge" id="profileBadge"></span></div>
     </div>
 
     <!-- ===== 首页 ===== -->
@@ -363,6 +400,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
         </div>
       </div>
     </div>
+
+    <!-- ===== 个人中心弹窗 ===== -->
+    <div class="profile-popup" id="profilePopup">
+      <div class="pp-header">
+        <img class="pp-avatar" src="https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_medium.jpg" alt="">
+        <div class="pp-info">
+          <div class="pp-name">nj <span class="edit-icon">✎</span></div>
+          <div class="pp-id">用户ID: 2190004 <button class="copy-btn2" onclick="navigator.clipboard.writeText('2190004')">⧉</button></div>
+        </div>
+      </div>
+      <div class="pp-cloud-banner">
+        <div class="cb-text"><h4>云游戏秒玩 3A 大作</h4><p>新用户注册即送 15 分钟体验时长</p></div>
+        <button class="cb-btn">去充值</button>
+      </div>
+      <div class="pp-checkin" id="checkinBar">
+        <div class="ci-text"><h4>每日签到</h4><p>推广期间，每天送1小时免费时长</p></div>
+        <button class="ci-btn" id="checkinBtn" onclick="doCheckin()">签到</button>
+      </div>
+      <div class="pp-menu">
+        <div class="pp-menu-item"><span class="mi-icon">⚙</span> 设置</div>
+        <div class="pp-menu-item"><span class="mi-icon">👥</span> 官方社群</div>
+        <div class="pp-menu-item logout"><span class="mi-icon">⏻</span> 退出登录</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -395,7 +456,30 @@ function switchPage(name){
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
   var target=document.querySelector('[data-page="'+name+'"]');
   if(target) target.classList.add('active');
+  document.getElementById('profilePopup').classList.remove('show');
 }
+
+function toggleProfile(e){
+  e.stopPropagation();
+  var popup=document.getElementById('profilePopup');
+  popup.classList.toggle('show');
+}
+
+function doCheckin(){
+  var btn=document.getElementById('checkinBtn');
+  if(btn.classList.contains('done')) return;
+  btn.textContent='已签到';
+  btn.classList.add('done');
+  document.getElementById('profileBadge').style.display='none';
+}
+
+document.addEventListener('click',function(e){
+  var popup=document.getElementById('profilePopup');
+  var nav=document.getElementById('profileNav');
+  if(!popup.contains(e.target)&&!nav.contains(e.target)){
+    popup.classList.remove('show');
+  }
+});
 </script>
 </body>
 </html>
