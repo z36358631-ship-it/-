@@ -83,10 +83,42 @@ button{font:inherit}
 .top-bar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-shrink:0}
 .search{
   width:300px;height:38px;border-radius:20px;background:rgba(255,255,255,.08);border:1px solid var(--line);
-  display:flex;align-items:center;gap:10px;padding:0 16px;color:var(--muted);font-size:13px
+  display:flex;align-items:center;gap:10px;padding:0 16px;color:var(--muted);font-size:13px;cursor:pointer
 }
 .search input{flex:1;min-width:0;border:0;background:transparent;color:#fff;outline:none;font:inherit}
 .search input::placeholder{color:var(--muted)}
+.search-results-overlay{
+  position:absolute;inset:0;z-index:200;background:linear-gradient(135deg,#0f1419 0%,#111720 100%);
+  display:none;flex-direction:column;overflow:hidden
+}
+.search-results-overlay.show{display:flex}
+.search-results-header{
+  display:flex;align-items:center;gap:12px;padding:16px 24px 0;flex-shrink:0
+}
+.search-results-header .back-btn{
+  width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.06);
+  color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;flex-shrink:0
+}
+.search-results-header .search-active{
+  flex:1;height:38px;border-radius:20px;background:rgba(255,255,255,.08);border:1px solid rgba(129,93,242,.4);
+  display:flex;align-items:center;gap:10px;padding:0 16px;color:var(--muted);font-size:13px
+}
+.search-results-header .search-active input{flex:1;min-width:0;border:0;background:transparent;color:#fff;outline:none;font:inherit}
+.search-results-header .search-active .clear-btn{cursor:pointer;color:var(--muted);font-size:14px}
+.search-results-tabs{
+  display:flex;gap:0;border-bottom:1px solid var(--line);padding:14px 24px 0;flex-shrink:0
+}
+.search-results-tabs .sr-tab{
+  color:var(--muted);font-size:13px;font-weight:700;padding:0 14px 10px;position:relative;cursor:pointer;white-space:nowrap
+}
+.search-results-tabs .sr-tab.active{color:#fff}
+.search-results-tabs .sr-tab.active:after{
+  content:"";position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+  width:20px;height:3px;border-radius:3px;background:var(--violet)
+}
+.search-results-body{flex:1;overflow:auto;padding:16px 24px}
+.sr-section-title{font-size:12px;color:var(--muted);font-weight:700;margin:12px 0 8px;padding-left:2px}
+.sr-empty{color:var(--muted);font-size:13px;text-align:center;padding:40px 0}
 .top-actions{display:flex;align-items:center;gap:14px;color:var(--muted);font-size:13px}
 .ghost-btn{
   border:1px solid var(--line);background:rgba(255,255,255,.06);color:#fff;border-radius:18px;
@@ -376,6 +408,83 @@ button{font:inherit}
 .app.portrait .room-lobby-grid{grid-template-columns:1fr}
 .copy-inline{cursor:pointer;color:#dfe7f1}
 .copy-inline:hover{color:#fff}
+/* 首次引导遮罩 */
+.guide-overlay{
+  position:absolute;inset:0;z-index:100;background:rgba(0,0,0,.72);
+  display:flex;align-items:flex-start;justify-content:flex-end;backdrop-filter:blur(2px)
+}
+.guide-overlay .gp-top-right{position:relative;z-index:101}
+.guide-overlay-content{
+  position:absolute;right:12px;top:0;
+  display:flex;flex-direction:column;align-items:flex-end;gap:12px;
+  padding-top:12px;max-width:260px;text-align:right
+}
+.guide-overlay-text{font-size:13px;color:#fff;line-height:1.65;font-weight:500;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.guide-overlay-btn{
+  padding:8px 24px;border-radius:22px;background:linear-gradient(135deg,var(--violet),#5b8cff);
+  color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(91,140,255,.28)
+}
+.guide-overlay-btn:hover{filter:brightness(1.08)}
+.guide-highlight{position:relative;z-index:101}
+/* 侧边栏设置面板 */
+.sidebar-setting-mask{
+  position:absolute;inset:0;z-index:90;background:rgba(0,0,0,.42);display:flex;justify-content:flex-start
+}
+.sidebar-setting-panel{
+  width:300px;height:100%;background:linear-gradient(160deg,#0d1117 0%,#131a24 100%);
+  border-right:1px solid rgba(255,255,255,.08);
+  padding:24px 20px;display:flex;flex-direction:column;gap:0;
+  box-shadow:8px 0 32px rgba(0,0,0,.5);animation:slideInLeft .22s ease;overflow-y:auto
+}
+@keyframes slideInLeft{from{transform:translateX(-100%)}to{transform:none}}
+.sidebar-setting-icon{
+  width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;font-size:20px;color:#8a98a7;margin-bottom:16px
+}
+.sidebar-setting-title{font-size:20px;font-weight:800;margin-bottom:28px;color:#fff}
+.sidebar-setting-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 0;border-bottom:1px solid rgba(255,255,255,.06)
+}
+.sidebar-setting-item:last-child{border-bottom:none}
+.sidebar-setting-label{font-size:15px;font-weight:700;color:#fff}
+.sidebar-setting-arrow{color:var(--muted);font-size:16px}
+.toggle-switch{
+  width:52px;height:28px;border-radius:14px;background:rgba(255,255,255,.12);
+  position:relative;cursor:pointer;transition:.2s;flex-shrink:0
+}
+.toggle-switch.on{background:#2196f3}
+.toggle-knob{
+  position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;
+  transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,.3)
+}
+.toggle-switch.on .toggle-knob{left:27px}
+.toggle-switch.off{background:rgba(255,255,255,.12)}
+.sidebar-setting-slider{display:flex;align-items:center;gap:12px;width:100%}
+.sidebar-setting-slider-label{font-size:15px;font-weight:700;color:#fff;white-space:nowrap}
+.sidebar-setting-slider-value{font-size:15px;font-weight:700;color:#fff;min-width:32px;text-align:right}
+.slider-track{
+  flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.12);position:relative
+}
+.slider-fill{height:100%;border-radius:2px;background:#2196f3;width:100%}
+.slider-thumb{
+  position:absolute;right:0;top:50%;transform:translate(50%,-50%);
+  width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3)
+}
+.sidebar-setting-exit{
+  margin-top:auto;padding:14px 0;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(255,255,255,.12);border-radius:12px;
+  font-size:15px;font-weight:700;color:#fff;cursor:pointer;transition:.16s
+}
+.sidebar-setting-exit:hover{background:rgba(255,255,255,.06)}
+/* 游戏内锁定位置按钮 */
+.gp-lock-position-btn{
+  display:none;margin-top:4px;padding:4px 10px;border-radius:12px;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);
+  color:#fff;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap
+}
+.gp-lock-position-btn:hover{background:rgba(255,255,255,.22)}
 .floating-room{
   position:absolute;left:90px;right:10px;bottom:10px;transform:none;
   width:auto;max-width:none;z-index:18;display:none;align-items:center;gap:8px;min-width:0;
@@ -592,6 +701,9 @@ button{font:inherit}
 .app.portrait .top-bar:after{content:"Bluetooth  Wi-Fi  31%";position:absolute;top:28px;right:18px;font-size:12px;font-weight:800;color:rgba(255,255,255,.78)}
 .app.portrait .search{width:auto;flex:1;height:40px;border-radius:20px;background:rgba(255,255,255,.08);font-size:13px;color:#9e8f9a}
 .app.portrait .search i{font-size:16px}.app.portrait .search input{font-size:13px}
+.app.portrait .search-results-header{padding:52px 16px 0}
+.app.portrait .search-results-tabs{padding:10px 16px 0}
+.app.portrait .search-results-body{padding:12px 16px}
 .app.portrait .top-actions{gap:0}.app.portrait .top-actions i{display:none}
 .app.portrait .top-actions .ghost-btn{width:36px;height:40px;border:0;background:transparent;padding:0;font-size:18px;color:#fff}
 .app.portrait .top-actions .ghost-btn span{display:none}
@@ -667,6 +779,26 @@ button{font:inherit}
 <div class="app" id="app">
   <div class="glow"></div>
   <div class="toast" id="toast"></div>
+
+  <!-- 全局搜索结果覆盖层 -->
+  <div class="search-results-overlay" id="searchOverlay">
+    <div class="search-results-header">
+      <button class="back-btn" onclick="closeGlobalSearch()"><i class="fas fa-chevron-left"></i></button>
+      <div class="search-active">
+        <i class="fas fa-search" style="color:var(--muted)"></i>
+        <input id="globalSearchInput" placeholder="搜索游戏、房间..." oninput="doGlobalSearch()">
+        <i class="fas fa-times clear-btn" onclick="clearGlobalSearch()"></i>
+      </div>
+    </div>
+    <div class="search-results-tabs" id="searchTabs">
+      <div class="sr-tab active" onclick="switchSearchTab('all',this)">全部</div>
+      <div class="sr-tab" onclick="switchSearchTab('pc',this)">PC游戏</div>
+      <div class="sr-tab" onclick="switchSearchTab('team',this)">云游组队玩</div>
+      <div class="sr-tab" onclick="switchSearchTab('retro',this)">复古游戏</div>
+    </div>
+    <div class="search-results-body" id="searchResultsBody"></div>
+  </div>
+
   <div class="game-status-layer" id="gameStatusLayer">
     <div class="game-status-title">当前队伍</div>
     <div class="game-status-members" id="gameStatusMembers">
@@ -694,7 +826,7 @@ button{font:inherit}
 
   <main class="main">
     <div class="top-bar">
-      <div class="search"><i class="fas fa-search"></i><input id="searchInput" placeholder="搜索支持组队的游戏..." oninput="handleSearch()"></div>
+      <div class="search" onclick="openGlobalSearch()"><i class="fas fa-search"></i><input id="searchInput" placeholder="三角洲行动" readonly onclick="openGlobalSearch()"></div>
       <div class="top-actions">
         <button class="ghost-btn" onclick="toggleOrientation()"><i class="fas fa-mobile-alt"></i><span id="oriText">横版切竖版</span></button>
         <i class="fas fa-signal"></i><i class="fas fa-wifi"></i><i class="fas fa-battery-half"></i>
@@ -851,7 +983,7 @@ button{font:inherit}
             <div class="room-lobby-grid" id="roomLobby"></div>
           </div>
           <div class="lobby-view" id="lobby-world">
-            <div class="world-guide" id="worldGuide">
+            <div class="world-guide" id="worldGuide" style="display:none">
               <div class="world-guide-icon"><i class="fas fa-earth-americas"></i></div>
               <div class="world-guide-text">公开聊天频道，与其他玩家交流</div>
               <button class="world-guide-btn" onclick="enterWorldChannel()">进入世界频道</button>
@@ -1000,6 +1132,7 @@ button{font:inherit}
                 <div class="gp-ctrl-btn" onclick="toggleGpChat()" title="文字聊天"><i class="fas fa-comment"></i></div>
               </div>
               <div class="gp-chat-float" id="gpChatFloat"></div>
+              <button class="gp-lock-position-btn" id="gpLockBtn" onclick="lockPositionFromGame()"><i class="fas fa-lock"></i> 锁定位置</button>
             </div>
             <!-- 右侧操作按钮 -->
             <div class="gp-actions">
@@ -1035,7 +1168,7 @@ button{font:inherit}
       </div>
 
       <div class="view" id="view-instant">
-        <div class="world-guide" id="worldFeedGuide" style="height:230px">
+        <div class="world-guide" id="worldFeedGuide" style="display:none;height:230px">
           <div class="world-guide-icon"><i class="fas fa-earth-americas"></i></div>
           <div class="world-guide-text">公开聊天频道，与其他玩家交流</div>
           <button class="world-guide-btn" onclick="enterWorldFeedChannel()">进入世界频道</button>
@@ -1182,6 +1315,58 @@ button{font:inherit}
     </div>
   </div>
 
+  <!-- 进入世界频道弹窗 -->
+  <div class="modal-mask" id="worldChannelModal">
+    <div class="modal">
+      <div class="modal-head"><h3>进入世界频道</h3></div>
+      <div class="empty-hint" style="margin-bottom:16px;line-height:1.7">世界频道是玩家实时寻找队友、加入组队房间的公共交流区。如果您正缺个游戏搭子，欢迎进入寻找默契队友！</div>
+      <div class="dialog-actions">
+        <button class="secondary" onclick="closeWorldChannelModal(false)">我再逛逛</button>
+        <button class="primary" onclick="closeWorldChannelModal(true)">寻找队友</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 首次引导遮罩 -->
+  <div class="guide-overlay" id="guideOverlay" style="display:none" onclick="closeGuideOverlay(event)">
+    <div class="guide-overlay-content" id="guideContent">
+      <div class="guide-overlay-text">队伍和对话框位置已锁定，如需调整可左滑打开侧边栏解锁拖动</div>
+      <button class="guide-overlay-btn" onclick="closeGuideOverlay()">我知道了</button>
+    </div>
+  </div>
+
+  <!-- 侧边栏设置面板 -->
+  <div class="sidebar-setting-mask" id="sidebarSettingMask" style="display:none" onclick="closeSidebarSetting()">
+    <div class="sidebar-setting-panel" onclick="event.stopPropagation()">
+      <div class="sidebar-setting-icon"><i class="fas fa-gear"></i></div>
+      <div class="sidebar-setting-title">秒玩设置</div>
+      <div class="sidebar-setting-item">
+        <span class="sidebar-setting-label">启用虚拟手柄</span>
+        <div class="toggle-switch on"><div class="toggle-knob"></div></div>
+      </div>
+      <div class="sidebar-setting-item">
+        <span class="sidebar-setting-label">切换触屏按键布局</span>
+        <span class="sidebar-setting-arrow"><i class="fas fa-chevron-right"></i></span>
+      </div>
+      <div class="sidebar-setting-item">
+        <span class="sidebar-setting-label">触屏鼠标模式</span>
+        <div class="toggle-switch off"><div class="toggle-knob"></div></div>
+      </div>
+      <div class="sidebar-setting-item" style="flex-direction:column;align-items:stretch;gap:10px">
+        <div class="sidebar-setting-slider">
+          <span class="sidebar-setting-slider-label">触屏按键透明度</span>
+          <span class="sidebar-setting-slider-value">100</span>
+        </div>
+        <div class="slider-track"><div class="slider-fill"></div><div class="slider-thumb"></div></div>
+      </div>
+      <div class="sidebar-setting-item">
+        <span class="sidebar-setting-label">队伍&对话框固定</span>
+        <div class="toggle-switch" id="lockToggle" onclick="toggleLockSetting()"><div class="toggle-knob"></div></div>
+      </div>
+      <div class="sidebar-setting-exit" onclick="closeSidebarSetting();showResult()">退出云游戏</div>
+    </div>
+  </div>
+
   <div class="floating-room" id="floatingRoom">
     <div class="all-cover" id="floatingRoomIcon"></div>
     <div class="float-room-copy"><b id="floatingRoomName">怪物猎人：世界</b><span>准备中 · 房间有效期 <em id="floatingRoomTtl">29:59</em></span></div>
@@ -1201,7 +1386,8 @@ button{font:inherit}
 </div>
 
 <div class="demo-controls">
-  <button onclick="demoEnterGame()">游戏内状态</button>
+  <button onclick="demoGuideOverlay()">首次引导遮罩</button>
+  <button onclick="demoSidebarSetting()">侧边栏设置</button>
   <button onclick="demoGameChat()">游戏内文字聊天</button>
   <button onclick="demoReconnect()">重连弹窗</button>
   <button onclick="demoFloatingRoom()">房间悬浮条</button>
@@ -1280,12 +1466,9 @@ function switchLobby(type){
   document.getElementById("lobbyHelp")?.style.setProperty("display",type==="game"?"block":"none");
   document.getElementById("reportBtn")?.style.setProperty("display",type==="world"?"flex":"none");
   document.getElementById("refreshBtn")?.style.setProperty("display",type==="world"?"none":"flex");
-  const input=document.getElementById("searchInput");
-  input.placeholder=type==="game"?"搜索游戏名":type==="room"?"搜索游戏名、房主昵称、房间ID":"";
-  input.parentElement.style.display=type==="world"?"none":"";
   if(type==="world"){
-    document.getElementById("worldGuide").style.display="flex";
     document.getElementById("worldChatBox").style.display="none";
+    enterWorldChannel();
   }
   handleSearch();
 }
@@ -1507,6 +1690,59 @@ function demoGameChat(){
     },m.delay);
   });
   toast("游戏内文字聊天演示 — 消息10秒后自动消失，最多3条");
+}
+let lockSetting=true;
+function demoGuideOverlay(){
+  demoEnterGame();
+  const topRight=document.querySelector(".gp-top-right");
+  if(topRight)topRight.classList.add("guide-highlight");
+  const overlay=document.getElementById("guideOverlay");
+  overlay.style.display="flex";
+  setTimeout(()=>{
+    const tr=document.querySelector(".gp-top-right");
+    const gc=document.getElementById("guideContent");
+    if(tr&&gc){
+      const rect=tr.getBoundingClientRect();
+      const appRect=document.getElementById("app").getBoundingClientRect();
+      gc.style.top=(rect.bottom-appRect.top+8)+"px";
+      gc.style.right=(appRect.right-rect.right)+"px";
+    }
+  },50);
+}
+function closeGuideOverlay(e){
+  if(e&&e.target!==document.getElementById("guideOverlay"))return;
+  document.getElementById("guideOverlay").style.display="none";
+  const topRight=document.querySelector(".gp-top-right");
+  if(topRight)topRight.classList.remove("guide-highlight");
+}
+function demoSidebarSetting(){
+  demoEnterGame();
+  const toggle=document.getElementById("lockToggle");
+  toggle.classList.toggle("on",lockSetting);
+  toggle.classList.toggle("off",!lockSetting);
+  document.getElementById("sidebarSettingMask").style.display="flex";
+}
+function closeSidebarSetting(){
+  document.getElementById("sidebarSettingMask").style.display="none";
+}
+function toggleLockSetting(){
+  lockSetting=!lockSetting;
+  const toggle=document.getElementById("lockToggle");
+  const lockBtn=document.getElementById("gpLockBtn");
+  toggle.classList.toggle("on",lockSetting);
+  toggle.classList.toggle("off",!lockSetting);
+  if(lockSetting){
+    lockBtn.style.display="none";
+    toast("队伍&对话框已锁定");
+  }else{
+    lockBtn.style.display="inline-flex";
+    toast("队伍&对话框已解锁，可拖动调整位置");
+  }
+}
+function lockPositionFromGame(){
+  lockSetting=true;
+  document.getElementById("gpLockBtn").style.display="none";
+  toast("位置已锁定");
 }
 function demoReconnect(){
   selected=games[0];
@@ -1867,7 +2103,7 @@ function renderRoomLobby(){
     {id:"662041",host:"小橘",game:games[3],need:"3/4",current:3,max:4,title:"帕鲁要满了快来",privacy:"public"},
     {id:"119283",host:"阿泽",game:games[4],need:"1/2",current:1,max:2,title:"双人成行第二章",privacy:"private"}
   ];
-  const keyword=(document.getElementById("searchInput")?.value||"").trim().toLowerCase();
+  const keyword="";
   const visible=rooms.filter(room=>!keyword||room.title.toLowerCase().includes(keyword)||room.id.includes(keyword)||room.game.name.toLowerCase().includes(keyword)||room.host.toLowerCase().includes(keyword));
   visible.sort((a,b)=>{
     if(a.privacy!==b.privacy)return a.privacy==="public"?-1:1;
@@ -1884,14 +2120,114 @@ function renderRoomLobby(){
     </div>`).join("")||`<div class="empty-hint">没有找到相关房间</div>`;
 }
 function handleSearch(){
-  const input=document.getElementById("searchInput");
-  const query=input?input.value:"";
   const teamVisible=document.getElementById("screen-team")?.style.display!=="none"&&document.getElementById("view-team")?.classList.contains("active");
   const roomLobby=document.getElementById("lobby-room")?.classList.contains("active");
   const worldLobby=document.getElementById("lobby-world")?.classList.contains("active");
   if(teamVisible&&roomLobby)renderRoomLobby();
   else if(teamVisible&&worldLobby)renderWorld();
-  else initGames(query);
+  else initGames("");
+}
+
+/* 全局搜索 */
+let currentSearchTab="all";
+function openGlobalSearch(){
+  document.getElementById("searchOverlay").classList.add("show");
+  const input=document.getElementById("globalSearchInput");
+  input.value="";
+  input.focus();
+  doGlobalSearch();
+}
+function closeGlobalSearch(){
+  document.getElementById("searchOverlay").classList.remove("show");
+}
+function clearGlobalSearch(){
+  const input=document.getElementById("globalSearchInput");
+  input.value="";
+  input.focus();
+  doGlobalSearch();
+}
+function switchSearchTab(tab,el){
+  currentSearchTab=tab;
+  document.querySelectorAll("#searchTabs .sr-tab").forEach(t=>t.classList.remove("active"));
+  el.classList.add("active");
+  doGlobalSearch();
+}
+function doGlobalSearch(){
+  const keyword=(document.getElementById("globalSearchInput")?.value||"").trim().toLowerCase();
+  const body=document.getElementById("searchResultsBody");
+  if(!keyword){
+    body.innerHTML=`<div class="sr-empty">输入关键词搜索游戏、房间、房主...</div>`;
+    return;
+  }
+  const matchedGames=games.filter(g=>g.name.toLowerCase().includes(keyword)||g.mode.toLowerCase().includes(keyword));
+  const allRooms=[
+    {id:"744161",host:"阿澈",game:games[0],need:"3/4",current:3,max:4,title:"历战王来个输出",status:"准备中"},
+    {id:"288379",host:"Mika",game:games[1],need:"1/2",current:1,max:2,title:"茶杯头双人过关",status:"准备中"},
+    {id:"451188",host:"北海",game:games[2],need:"2/4",current:2,max:4,title:"休闲局，随便玩",status:"游戏中"},
+    {id:"662041",host:"小橘",game:games[3],need:"3/4",current:3,max:4,title:"帕鲁要满了快来",status:"准备中"},
+    {id:"119283",host:"阿泽",game:games[4],need:"1/2",current:1,max:2,title:"双人成行第二章",status:"准备中"}
+  ];
+  const matchedRooms=allRooms.filter(r=>r.game.name.toLowerCase().includes(keyword)||r.host.toLowerCase().includes(keyword)||r.id.includes(keyword)||r.title.toLowerCase().includes(keyword));
+
+  let html="";
+  if(currentSearchTab==="all"){
+    if(matchedGames.length){
+      html+=`<div class="sr-section-title">游戏大厅</div>`;
+      html+=renderSearchGames(matchedGames);
+    }
+    if(matchedRooms.length){
+      html+=`<div class="sr-section-title">组队房间</div>`;
+      html+=renderSearchRooms(matchedRooms);
+    }
+    if(!matchedGames.length&&!matchedRooms.length) html=`<div class="sr-empty">暂无相关结果</div>`;
+  }else if(currentSearchTab==="pc"){
+    if(matchedGames.length){
+      html+=renderSearchGames(matchedGames);
+    }else html=`<div class="sr-empty">暂无相关PC游戏</div>`;
+  }else if(currentSearchTab==="team"){
+    const teamGames=matchedGames.filter(g=>g.rooms!==undefined);
+    if(teamGames.length){
+      html+=`<div class="sr-section-title">游戏大厅</div>`;
+      html+=renderSearchGames(teamGames);
+    }
+    if(matchedRooms.length){
+      html+=`<div class="sr-section-title">组队大厅</div>`;
+      html+=renderSearchRooms(matchedRooms);
+    }
+    if(!teamGames.length&&!matchedRooms.length) html=`<div class="sr-empty">暂无相关组队内容</div>`;
+  }else if(currentSearchTab==="retro"){
+    html=`<div class="sr-empty">暂无相关复古游戏</div>`;
+  }
+  body.innerHTML=html;
+}
+function renderSearchGames(list){
+  return list.map((g,idx)=>{
+    const i=games.indexOf(g);
+    return `<div class="game-card" style="margin-bottom:10px" onclick="closeGlobalSearch();${g.rooms>0?`quickJoinGame(${i})`:`openCreateRoom(${i})`}">
+      <div class="cover" style="background-image:url('${coverUrl(g)}')"></div>
+      <div class="game-info">
+        <div class="game-title">${g.name}</div>
+        <div class="game-meta"><span class="pill good">${g.max} 人 · ${g.mode}</span><span class="pill">${g.rooms} 个房间</span></div>
+        <div class="game-card-actions">${g.rooms>0?`<button class="play-pill" onclick="event.stopPropagation();closeGlobalSearch();quickJoinGame(${i})">快速加入</button>`:""}<button class="secondary" style="padding:4px 10px;font-size:11px;white-space:nowrap;width:auto" onclick="event.stopPropagation();closeGlobalSearch();openCreateRoom(${i})">创建房间</button></div>
+      </div>
+    </div>`;
+  }).join("");
+}
+function renderSearchRooms(list){
+  return list.map(room=>{
+    const i=games.indexOf(room.game);
+    return `<div class="lobby-card" style="margin-bottom:10px" onclick="closeGlobalSearch();selected=games[${i}];forceRoom()">
+      <div class="lobby-card-body">
+        <div class="lobby-card-cover" style="background-image:url('${coverUrl(room.game)}');width:52px;height:52px;border-radius:8px;flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <h3 style="font-size:13px;margin:0">${room.title}</h3>
+          <p style="font-size:11px;color:var(--muted);margin:2px 0 0">房间ID ${room.id} · ${room.game.name} · ${room.host} · ${room.need}</p>
+          <span class="pill" style="font-size:10px;margin-top:4px;display:inline-block">${room.status}</span>
+        </div>
+        <button class="secondary" style="padding:4px 10px;font-size:11px;white-space:nowrap;flex-shrink:0" onclick="event.stopPropagation();closeGlobalSearch();selected=games[${i}];forceRoom()">加入</button>
+      </div>
+    </div>`;
+  }).join("");
 }
 const quickPhrases=["有人组队吗","缺一个输出","新手友好来一个","茶杯头双人","休闲局来吗","再来一局"];
 function rotateQuick(btn){
@@ -1902,15 +2238,32 @@ function rotateQuick(btn){
 let lastWorldMsgTime=0,lastRoomMsgTime=0;
 let worldCooldownTimer=null;
 let worldCooldownRemain=0;
+let worldChannelTarget=null;
 function enterWorldChannel(){
-  document.getElementById("worldGuide").style.display="none";
-  document.getElementById("worldChatBox").style.display="flex";
-  renderWorld();
+  worldChannelTarget="lobby";
+  document.getElementById("worldChannelModal").classList.add("show");
 }
 function enterWorldFeedChannel(){
-  document.getElementById("worldFeedGuide").style.display="none";
-  document.getElementById("worldFeedBox").style.display="flex";
-  renderWorld();
+  worldChannelTarget="feed";
+  document.getElementById("worldChannelModal").classList.add("show");
+}
+function closeWorldChannelModal(enter){
+  document.getElementById("worldChannelModal").classList.remove("show");
+  if(enter){
+    if(worldChannelTarget==="lobby"){
+      document.getElementById("worldChatBox").style.display="flex";
+      renderWorld();
+    }else{
+      document.getElementById("worldFeedBox").style.display="flex";
+      renderWorld();
+    }
+  }else{
+    const lobbyWorld=document.getElementById("lobby-world");
+    if(lobbyWorld&&lobbyWorld.classList.contains("active")){
+      switchLobby("game");
+    }
+  }
+  worldChannelTarget=null;
 }
 function startWorldCooldown(){
   worldCooldownRemain=10;
