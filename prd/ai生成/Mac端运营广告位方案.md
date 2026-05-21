@@ -41,6 +41,7 @@
 | 3 | 编辑推荐运营插卡 | P1 | 自然融入（内容流） |
 | 4 | 活动中心页 | P1 | 主动回访（导航入口） |
 | 5 | 游戏库常驻运营位 | P2 | 场景伴随（游戏库） |
+| 6 | 每日签到活动 | P1 | 主动参与（个人中心） |
 
 ---
 
@@ -72,6 +73,11 @@ mindmap
       - 常驻展示
       - 与Banner同源
       - 跟随后台实时更新
+    6.每日签到活动P1
+      - 个人中心入口
+      - 红点提醒未签到
+      - 签到送云游时长
+      - 推广期限时活动
 ```
 
 ---
@@ -129,6 +135,18 @@ mindmap
 | 内容类型 | 与首页Banner同源，展示当前优先级最高的运营内容 |
 | 点击行为 | 点击跳转对应活动页 |
 | 更新频率 | 跟随后台配置实时更新 |
+
+### 3.6 每日签到活动
+
+| 维度 | 说明 |
+|------|------|
+| 入口位置 | 个人中心弹窗内，位于「云游戏充值引导」下方、「设置」上方 |
+| 展示形态 | 横条卡片：左侧黄色圆点 + 标题「每日签到」+ 描述文案，右侧「签到」按钮 |
+| 文案内容 | 推广期间，每天送1小时免费时长 |
+| 红点规则 | 当日未签到时，左侧导航栏个人中心icon显示红点；签到后红点消失 |
+| 签到逻辑 | 点击「签到」按钮 → 按钮变为灰色「已签到」（不可重复点击）→ 后台记录签到并发放1小时云游戏时长 |
+| 活动周期 | 推广期限时活动，后台可配置活动起止时间 |
+| 异常处理 | 活动未开始/已结束时，签到栏整体隐藏不展示 |
 
 ---
 
@@ -221,6 +239,10 @@ sequenceDiagram
 | activity_red_dot_clear | 活动红点消除 | 用户进入活动中心页红点消除时 | uid, unread_count |
 | gamelib_ad_view | 游戏库运营位曝光 | 游戏库页面右侧运营位进入可视区域时 | uid, ad_id, content_type |
 | gamelib_ad_click | 游戏库运营位点击 | 用户点击游戏库运营位时 | uid, ad_id, target_url |
+| profile_popup_view | 个人中心弹窗曝光 | 用户点击个人中心icon展开弹窗时 | uid |
+| checkin_bar_view | 签到栏曝光 | 个人中心弹窗展开且签到栏可见时 | uid, checkin_status (unchecked/checked) |
+| checkin_click | 签到点击 | 用户点击「签到」按钮时 | uid |
+| checkin_success | 签到成功 | 后端确认签到成功并发放时长后 | uid, reward_minutes, consecutive_days |
 
 ### 6.3 埋点参数表
 
@@ -242,6 +264,9 @@ sequenceDiagram
 | activity_status | string | 否 | 活动当前的状态标识 | ongoing (进行中), upcoming (即将开始), ended (已结束) |
 | unread_count | int | 否 | 红点消除时未读活动的数量 | 3 |
 | card_label | string | 否 | 编辑推荐插卡左上角标签文案 | 限时活动, 新用户福利, 新功能推广 |
+| checkin_status | string | 否 | 当日签到状态 | unchecked (未签到), checked (已签到) |
+| reward_minutes | int | 否 | 签到成功后发放的云游戏免费时长（分钟） | 60 |
+| consecutive_days | int | 否 | 用户连续签到天数 | 3 |
 
 ---
 
