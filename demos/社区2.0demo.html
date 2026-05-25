@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>盖世游戏 - 社区2.0（关注/游戏圈/探索 + 5tab导航）</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #287dfa;
+            --primary-green: #0ec4a3;
+            --bg-dark: #0a0d14;
+            --bg-panel: #151a24;
+            --text-main: #ffffff;
+            --text-sub: #8a9ba8;
+            --border-color: rgba(255,255,255,0.08);
+            --glass-bg: rgba(10, 13, 20, 0.95);
+            --score-color: #ff9500;
+            --rose-red: #e91e63;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        ::-webkit-scrollbar { display: none; }
+        body { background-color: #222; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 13px; color: var(--text-main); }
+
+        /* 外壳加上过渡动画，响应横竖屏旋转 */
+        .device-mockup {
+            width: 400px; height: 864px;
+            background: linear-gradient(135deg, #0f1419 0%, #0a0d14 100%);
+            border-radius: 40px; border: 12px solid #000;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            position: relative; overflow: hidden; display: flex; flex-direction: column;
+            transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .device-mockup.landscape {
+            width: 864px; height: 400px;
+        }
+
+        .status-bar { height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 0 24px; color: white; font-size: 13px; font-weight: bold; z-index: 50; flex-shrink: 0; background: #0f1419; }
+
+        /* ================= 顶部与Tab ================= */
+        #top-header-group { display: flex; flex-direction: column; z-index: 10; transition: margin-top 0.3s; }
+        
+        .header-area { padding: 5px 16px 0; background: var(--glass-bg); backdrop-filter: blur(20px); flex-shrink: 0; }
+        
+        .header-top-row { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+        .search-box { display: flex; align-items: center; background: rgba(255,255,255,0.06); border-radius: 20px; padding: 8px 16px; color: var(--text-sub); gap: 10px; flex: 1; }
+        .msg-icon-wrap { position: relative; font-size: 20px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .msg-red-dot { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: #ff3b30; border-radius: 50%; border: 2px solid var(--bg-dark); }
+        
+        .top-main-tabs { display: flex; gap: 24px; padding-bottom: 12px; }
+        .t-tab { font-size: 16px; color: var(--text-sub); font-weight: bold; cursor: pointer; transition: 0.3s; position: relative; }
+        .t-tab.active { color: white; font-size: 18px; }
+        .t-tab.active::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 16px; height: 3px; background: var(--primary); border-radius: 2px; }
+
+        .tabs-toolbar { display: flex; align-items: center; border-bottom: 1px solid var(--border-color); background: var(--bg-dark); }
+        .community-sub-tabs { display: flex; overflow-x: auto; gap: 20px; padding: 12px 16px; flex: 1; align-items: center; }
+        .c-tab { font-size: 14px; color: var(--text-sub); white-space: nowrap; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 4px;}
+        .c-tab.active { color: white; font-weight: bold; }
+
+        .layout-toggle { padding: 0 16px; color: var(--text-sub); font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: bold; border-left: 1px solid var(--border-color); height: 44px; }
+        .layout-toggle:hover { color: white; }
+
+        /* ================= 专区介绍 ================= */
+        .partition-header { padding: 16px 16px 0; border-bottom: 1px solid var(--border-color); background: transparent; }
+        .p-h-top { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .p-h-icon { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; }
+        .p-h-info { flex: 1; }
+        .p-h-name { font-size: 16px; font-weight: bold; color: white; margin-bottom: 4px; }
+        .p-h-desc { font-size: 12px; color: var(--text-sub); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .p-h-follow-btn { background: rgba(40,125,250,0.1); color: var(--primary); border: 1px solid var(--primary); padding: 6px 16px; border-radius: 16px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .p-h-tabs { display: flex; gap: 20px; }
+        .p-h-tab { font-size: 14px; color: var(--text-sub); padding-bottom: 10px; cursor: pointer; position: relative; font-weight: 500; }
+        .p-h-tab.active { color: white; font-weight: bold; }
+        .p-h-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%); width: 20px; height: 3px; background: var(--primary); border-radius: 2px; }
+
+        /* ================= 关注作者按钮 ================= */
+        .author-follow-btn { margin-left: auto; padding: 4px 14px; border-radius: 14px; font-size: 12px; font-weight: bold; background: var(--primary); color: white; cursor: pointer; transition: 0.2s; }
+        .author-follow-btn.followed { background: rgba(255,255,255,0.1); color: #aaa; }
+
+        /* ================= 专区/频道 药丸标签 ================= */
+        .wf-partition-tag { order: 3; display: inline-flex; align-items: center; gap: 4px; background: rgba(40,125,250,0.1); color: var(--primary); padding: 4px 8px; border-radius: 6px; font-weight: bold; width: fit-content; margin: 0 0 10px 0; font-size: 12px;}
+        .d-partition-link { display: inline-flex; align-items: center; gap: 6px; background: rgba(40,125,250,0.1); color: var(--primary); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+
+        /* ================= 信息流视图 ================= */
+        .views-container { flex: 1; position: relative; overflow: hidden; z-index: 5; }
+        .view-content { position: absolute; inset: 0; overflow-y: auto; display: none; padding-bottom: 80px; scroll-behavior: smooth; }
+        .view-content.active { display: block; }
+
+        .video-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); z-index: 2; pointer-events: none; }
+        .play-btn { width: 44px; height: 44px; border-radius: 50%; background: rgba(0,0,0,0.6); color: white; display: flex; align-items: center; justify-content: center; font-size: 16px; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); padding-left: 4px; }
+
+        .feed-container { display: flex; flex-direction: column; gap: 12px; padding: 0; background: var(--bg-dark); }
+        .wf-card { padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; cursor: pointer; background: transparent; }
+        
+        .landscape .feed-container { display: flex; flex-direction: column; gap: 12px; padding: 12px; align-items: stretch; }
+        .landscape .partition-header { border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-panel); border-bottom: 1px solid var(--border-color); margin-bottom: 0;}
+        .landscape .wf-card { padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-panel); margin-bottom: 0; border-bottom: 1px solid var(--border-color);}
+
+        .wf-header-top { display: flex; order: 1; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .wf-avatar-large { width: 40px; height: 40px; border-radius: 50%; background-size: cover; }
+        .name-col { display: flex; flex-direction: column; justify-content: center; }
+        .name-bold { font-weight: bold; font-size: 15px; color: white; margin-bottom: 2px;}
+        .time-ip { color: var(--text-sub); font-size: 12px; }
+        
+        /* 更多操作按钮 (替代关注) */
+        .feed-more-btn { margin-left: auto; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; cursor: pointer; border-radius: 50%; transition: background 0.2s; color: var(--text-sub); font-size: 16px; }
+        .feed-more-btn:hover { background: rgba(255,255,255,0.05); }
+        
+        .wf-content-text { order: 2; padding: 0; font-size: 15px; display: block; margin-bottom: 10px; line-height: 1.4;}
+        
+        .wf-img-box { order: 4; width: 100%; border-radius: 12px; border: 1px solid var(--border-color); max-height: 400px; background: #222; overflow: hidden; position: relative; }
+        .wf-img { width: 100%; object-fit: cover; max-height: 400px; display: block; position: relative;}
+        
+        .wf-footer-single { order: 5; display: flex; justify-content: space-between; align-items: center; margin-top: 16px; color: var(--text-sub); font-size: 14px; padding: 0 10px;}
+        .action-btn { display: flex; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s; }
+        .action-btn:hover { color: var(--primary); }
+
+        .empty-state { padding: 40px; text-align: center; color: var(--text-sub); font-size: 14px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .landscape .empty-state { grid-column: 1 / -1; }
+
+        /* ================= 动态详情页 ================= */
+        .overlay-page { position: absolute; inset: 0; background: var(--bg-dark); z-index: 200; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .overlay-page.show { transform: translateX(0); }
+        .nav-bar { height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--border-color); background: var(--glass-bg); z-index: 10; flex-shrink: 0; }
+        
+        .detail-content-wrapper { display: flex; flex-direction: column; flex: 1; overflow-y: auto; padding-bottom: 60px; }
+        .detail-left-panel { flex-shrink: 0; }
+        .detail-right-panel { flex-shrink: 0; display: block; }
+        .detail-comments-scroll { overflow: visible; }
+        
+        .landscape .detail-content-wrapper { flex-direction: row; padding-bottom: 0; overflow: hidden; }
+        .landscape .detail-left-panel { flex: 1; overflow-y: auto; border-right: 1px solid var(--border-color); padding-bottom: 20px;}
+        .landscape .detail-right-panel { width: 380px; position: relative; display: flex; flex-direction: column; }
+        .landscape .detail-comments-scroll { flex: 1; overflow-y: auto; padding-bottom: 60px; }
+
+        .detail-bottom-bar { position: absolute; bottom: 0; width: 100%; height: 60px; background: var(--glass-bg); backdrop-filter: blur(20px); border-top: 1px solid var(--border-color); display: flex; align-items: center; padding: 0 16px; gap: 16px; z-index: 20;}
+        .fake-input { flex: 1; height: 36px; border-radius: 18px; background: rgba(255,255,255,0.08); padding: 0 16px; color: var(--text-sub); display: flex; align-items: center; cursor: pointer;}
+        .act-icon { display: flex; align-items: center; gap: 4px; color: white; font-size: 13px; cursor: pointer;}
+
+        .d-media-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-bottom: 1px solid var(--border-color);}
+        .d-media-carousel { width: 100%; height: 100%; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+        .d-media-item { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: center; }
+
+        .detail-body { padding: 16px; border-bottom: 6px solid #000; }
+        .d-author-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+        .d-avatar { width: 40px; height: 40px; border-radius: 50%; background-size: cover; background-color: #333;}
+        .d-title { font-size: 18px; font-weight: bold; margin-bottom: 12px; line-height: 1.4; color: white;}
+        .d-text { font-size: 15px; color: #cbd5e1; line-height: 1.6; margin-bottom: 16px; }
+        
+        .share-code-box { background: linear-gradient(135deg, rgba(40,125,250,0.1), rgba(40,125,250,0.05)); border: 1px dashed var(--primary); border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #4dabf7; }
+        
+        .d-game-card { display: flex; align-items: center; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; margin-top: 16px; border: 1px solid var(--border-color); cursor: pointer;}
+        .d-gc-icon { width: 48px; height: 64px; border-radius: 6px; object-fit: cover; margin-right: 12px; }
+        .d-gc-info { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+
+        /* ================= 评论区恢复的样式 ================= */
+        .comment-item { display: flex; gap: 12px; margin-bottom: 24px; }
+        .c-avatar { width: 36px; height: 36px; border-radius: 50%; background-size: cover; }
+        .c-content { flex: 1; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
+        
+        .sub-replies-box { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px 10px 4px; margin-top: 10px; }
+        .sub-reply-item { display: none; margin-bottom: 12px; }
+        .sub-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .sub-avatar { width: 20px; height: 20px; border-radius: 50%; background-size: cover; }
+        .sub-user { color: var(--text-sub); font-size: 12px; font-weight: bold; display: flex; align-items: center; }
+        .sub-text { font-size: 13px; color: #ccc; padding-left: 28px; line-height: 1.4; }
+        .sub-meta-row { display: flex; justify-content: space-between; font-size: 11px; color: #666; padding-left: 28px; margin-top: 4px; }
+        .more-btn { font-size: 12px; color: var(--primary); font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; margin-bottom: 6px; margin-left: 28px;}
+        .empty-section { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; color: #666; font-size: 13px; }
+        .empty-section i { font-size: 36px; margin-bottom: 12px; opacity: 0.5; }
+        .user-tag { font-size: 9px; padding: 2px 4px; border-radius: 4px; font-weight: bold; margin-left: 6px; color: white; }
+        .tag-author { background: var(--rose-red); } 
+        .tag-me { background: #555; color: #eee; } 
+        .tag-mutual { background: #555; color: #eee; } 
+
+        /* ================= 全局更多下拉菜单与举报弹窗 ================= */
+        .more-menu { position: fixed; background: #2a2c33; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.08); z-index: 4000; display: none; flex-direction: column; min-width: 140px; overflow: hidden; }
+        .more-menu.show { display: flex; animation: fadeIn 0.15s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .more-menu-item { padding: 14px 18px; font-size: 14px; color: #ddd; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 10px; }
+        .more-menu-item:hover { background: rgba(255,255,255,0.05); }
+        .more-menu-item:active { background: rgba(255,255,255,0.1); }
+        .more-menu-item.danger { color: #f5222d; }
+
+        .report-modal { z-index: 3500; }
+        .report-modal .modal-container { background: var(--bg-panel); width: 90%; max-width: 360px; padding: 20px 24px 24px; border-radius: 20px; flex-direction: column; display: flex; transform: translateY(20px); transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 10px 30px rgba(0,0,0,0.8); max-height: 90%;}
+        .report-modal.show .modal-container { transform: translateY(0); }
+        .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .report-title { font-size: 16px; font-weight: bold; color: #fff; margin-bottom: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .btn-close-modal { color: #888; font-size: 24px; cursor: pointer; line-height: 1; padding: 0 5px; margin-right: -5px; transition: 0.2s;}
+        .btn-close-modal:hover { color: #fff; }
+        
+        .report-body { overflow-y: auto; overflow-x: hidden; padding-right: 5px; }
+        .report-body::-webkit-scrollbar { width: 4px; }
+        .report-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        
+        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .report-tag { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 8px; font-size: 13px; color: #ccc; text-align: center; cursor: pointer; transition: 0.2s; user-select: none; }
+        .report-tag:active { transform: scale(0.97); }
+        .report-tag.active { background: rgba(40,125,250, 0.15); border-color: var(--primary); color: var(--primary); font-weight: bold; }
+        
+        .report-textarea { width: 100%; height: 85px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; color: #fff; font-size: 13px; resize: none; outline: none; transition: 0.2s; }
+        .report-textarea:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); }
+        .report-textarea::placeholder { color: #666; }
+        
+        .upload-section { margin-top: 15px; }
+        .upload-title { font-size: 13px; color: var(--text-sub); margin-bottom: 8px; }
+        .upload-box { width: 65px; height: 65px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .upload-box:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.4); }
+
+        /* ================= 动作底板与全屏弹窗 ================= */
+        .action-sheet-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 700; display: none; flex-direction: column; justify-content: flex-end; }
+        .action-sheet { background: #1a1a24; border-radius: 16px 16px 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.3s; display: flex; flex-direction: column; }
+        .action-sheet.show { transform: translateY(0); }
+        .sheet-header { color: white; font-size: 16px; font-weight: bold; text-align: center; position: relative; margin-bottom: 20px; }
+        .sheet-close { position: absolute; right: 0; top: 0; color: #888; cursor: pointer; font-size: 18px;}
+        .share-grid { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 16px;}
+        .share-item { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; cursor: pointer; }
+        .share-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; }
+        .share-item span { color: #aaa; font-size: 11px; }
+        .action-list { display: flex; flex-direction: column; gap: 4px; }
+        .action-btn-list { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 14px; color: white; text-align: center; font-size: 14px; font-weight: bold; cursor: pointer;}
+
+        .pref-group { padding: 16px; }
+        .pref-title { font-size: 14px; color: white; font-weight: bold; margin-bottom: 12px; display: flex; justify-content: space-between;}
+        .pref-tags { display: flex; flex-wrap: wrap; gap: 12px; }
+        .pref-tag { background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 20px; font-size: 13px; color: white; display: flex; align-items: center; cursor: pointer;}
+        .pref-tag .del { color: #ff4757; font-size: 10px;}
+        .pref-tag .add { color: var(--primary); font-size: 10px;}
+
+        .bottom-nav { position: absolute; bottom: 0; width: 100%; height: 60px; background: var(--glass-bg); backdrop-filter: blur(20px); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 50; }
+        .b-nav-item { display: flex; align-items: center; gap: 6px; color: var(--text-sub); font-size: 12px; font-weight: bold; cursor: pointer; padding: 8px; }
+        .b-nav-item.active { color: white; }
+        .fab-btn { position: absolute; bottom: 80px; right: 20px; width: 56px; height: 56px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 4px 15px rgba(40,125,250,0.4); cursor: pointer; z-index: 100;}
+
+        /* 发帖页 / 转发页 */
+        .pub-page { position: absolute; inset: 0; background: var(--bg-dark); z-index: 300; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .pub-page.show { transform: translateX(0); }
+        .pub-header { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; height: 50px; padding: 0 16px; background: var(--glass-bg); border-bottom: 1px solid var(--border-color); z-index: 10;}
+        .pub-submit-btn { background: var(--primary); color: white; border: none; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;}
+        .pub-content-area { flex: 1; padding: 16px; display: flex; flex-direction: column; overflow-y: auto;}
+        .pub-title-input { width: 100%; background: transparent; border: none; font-size: 18px; font-weight: bold; color: white; margin-bottom: 16px; outline: none; }
+        .pub-title-input::placeholder { color: #666; font-weight: normal; }
+        .pub-content-input { width: 100%; background: transparent; border: none; font-size: 16px; line-height: 1.5; color: #ddd; min-height: 120px; outline: none; resize: none; overflow-y: auto;}
+        .pub-content-input:empty:before { content: attr(placeholder); color: #666; pointer-events: none; display: block; }
+        .pub-bottom-group { flex-shrink: 0; display: flex; flex-direction: column; background: var(--bg-panel); border-top: 1px solid var(--border-color); z-index: 210;}
+        .linked-cards-wrapper { display: flex; flex-direction: column; gap: 8px; padding: 0 16px; max-height: 160px; overflow-y: auto;}
+        .linked-cards-wrapper:not(:empty) { padding-top: 10px; padding-bottom: 10px; }
+        .l-card { display: flex; align-items: center; background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border-color); justify-content: space-between;}
+        .l-card-info { display: flex; align-items: center; gap: 10px; }
+        .l-card-icon { width: 36px; height: 36px; border-radius: 6px; object-fit: cover;}
+        .l-card-text { display: flex; flex-direction: column; gap: 2px;}
+        .l-card-title { font-size: 14px; font-weight: bold; color: white;}
+        .l-card-sub { font-size: 11px; color: #aaa;}
+        .l-card-remove { color: #888; padding: 4px; cursor: pointer; background: rgba(255,255,255,0.1); border-radius: 50%; width: 20px; height: 20px; font-size: 10px; display: flex; align-items: center; justify-content: center;}
+        .ai-checkbox-wrap { padding: 8px 16px; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #888; cursor: pointer; border-top: 1px dashed rgba(255,255,255,0.05);}
+        .ai-checkbox-wrap input { accent-color: var(--primary); width: 16px; height: 16px; pointer-events: none;}
+        .pub-toolbar { height: 50px; display: flex; align-items: center; padding: 0 16px; gap: 12px; border-top: 1px solid var(--border-color);}
+        .tb-circle { width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ccc; cursor: pointer;}
+        .tb-pill { border: 1px solid rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 16px; font-size: 12px; color: #ccc; font-weight: bold; cursor: pointer; white-space: nowrap;}
+        .publish-to-opt.active { background: rgba(212,180,115,0.15); font-weight: bold; }
+
+        /* Emoji与键盘 */
+        .mock-keyboard, .emoji-panel { display: flex; flex-direction: column; background: #111; height: 0; overflow: hidden; transition: height 0.3s;}
+        .mock-keyboard.show, .emoji-panel.show { height: 260px; }
+        .landscape .mock-keyboard.show { height: 200px; }
+        .landscape .emoji-panel.show { height: 160px; }
+        .emoji-panel { flex-direction: row; flex-wrap: wrap; align-content: flex-start; gap: 12px; background: #151a24; padding: 0 16px; overflow-y: auto;}
+        .emoji-panel.show { padding: 12px 16px; }
+        .emoji-item { font-size: 28px; cursor: pointer; padding: 4px;}
+        .kb-candidate-row { height: 40px; background: #222; display: flex; align-items: center; padding: 0 16px; gap: 18px; font-size: 16px; color: white; overflow-x: auto; border-bottom: 1px solid #333; flex-shrink: 0;}
+        .kb-grid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr) 1.2fr; grid-template-rows: repeat(4, 1fr); gap: 6px; padding: 8px; background: #151a24; }
+        .kb-key { background: #2a303c; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 18px; color: white; cursor: pointer;}
+        .kb-key:active { background: #3d4658; }
+        .kb-key.gray { background: #1e232d; font-size: 20px;}
+        .kb-enter { grid-column: 5; grid-row: 3 / span 2; background: var(--primary); color: white;}
+        .kb-space { grid-column: 2 / span 3; font-size: 16px; }
+
+        .full-modal { position: absolute; inset: 0; background: var(--bg-dark); z-index: 400; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s; }
+        .full-modal.show { transform: translateX(0); }
+        .fm-header { height: 50px; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;}
+        .fm-cancel { color: #888; font-size: 15px; cursor: pointer;}
+        .fm-title { font-size: 17px; font-weight: bold; color: white;}
+        .fm-search-wrap { padding: 10px 16px; }
+        .fm-search-box { background: rgba(255,255,255,0.06); border-radius: 20px; height: 36px; display: flex; align-items: center; padding: 0 14px; gap: 8px;}
+        .fm-search-box input { flex: 1; border: none; background: transparent; outline: none; font-size: 14px; color: white;}
+        .fm-body { flex: 1; overflow-y: auto; padding-bottom: 40px;}
+        .g-section-title { font-size: 14px; font-weight: bold; color: white; padding: 12px 16px 8px;}
+        .g-index-title { background: #151a24; padding: 4px 16px; font-size: 12px; color: #888; font-weight: bold;}
+        .g-list-item { display: flex; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid var(--border-color); cursor: pointer;}
+        .g-item-img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover;}
+        .g-item-info { display: flex; flex-direction: column; gap: 4px;}
+        .g-item-name { font-size: 15px; font-weight: bold; color: white;}
+        .g-item-tags { font-size: 12px; color: #888;}
+
+        .action-sheet-mask { position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 500; display: none; flex-direction: column; justify-content: flex-end; opacity: 0; transition: opacity 0.3s; }
+        .action-sheet-mask.show { opacity: 1; }
+        .config-sheet-body { background: #151a24; border-radius: 20px 20px 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.3s; display: flex; flex-direction: column; gap: 16px;}
+        .config-sheet-body.show { transform: translateY(0); }
+        .cfg-title { font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 6px; color: white;}
+        .cfg-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 14px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);}
+
+        .dialog-mask { position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 600; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px);}
+        .dialog-mask.show { display: flex; }
+        .dialog-box { background: var(--bg-panel); width: 280px; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; text-align: center; border: 1px solid var(--border-color);}
+        .dialog-title { font-size: 16px; font-weight: bold; margin: 24px 16px 8px; color: white;}
+        .dialog-msg { font-size: 14px; color: #aaa; margin: 0 16px 24px; line-height: 1.5; }
+        .dialog-btns { display: flex; border-top: 1px solid var(--border-color); }
+        .dialog-btn { flex: 1; padding: 14px 0; font-size: 15px; cursor: pointer; background: transparent; border: none; color: #aaa; }
+        .dialog-btn:first-child { border-right: 1px solid var(--border-color); }
+        .dialog-btn.confirm { color: var(--primary); font-weight: bold; }
+
+        .toast { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 12px 24px; border-radius: 24px; font-size: 14px; opacity: 0; transition: 0.3s; z-index: 5000; pointer-events: none; font-weight: bold;}
+        .toast.show { opacity: 1; bottom: 120px; }
+    </style>
+</head>
+<body>
+
+<!-- 全局悬浮下拉菜单（···） -->
+<div id="more-menu" class="more-menu">
+    <div class="more-menu-item" onclick="handleNotInterested(event)">
+        <i class="fas fa-eye-slash" style="width:20px; text-align:center;"></i> 不感兴趣
+    </div>
+    <div class="more-menu-item danger" onclick="handleReportClick(event)">
+        <i class="far fa-flag" style="width:20px; text-align:center;"></i> 举报内容
+    </div>
+</div>
+
+<div class="device-mockup" id="deviceMockup">
+    <!-- 状态栏 -->
+    <div class="status-bar"><span>15:30</span><div><i class="fas fa-signal"></i> <i class="fas fa-wifi"></i> <i class="fas fa-battery-full"></i></div></div>
+
+    <!-- 视图区 -->
+    <div class="views-container">
+        <div class="view-content active" id="community-view">
+            
+            <div id="top-header-group">
+                <div class="header-area">
+                    <div class="header-top-row">
+                        <div class="search-box"><i class="fas fa-search"></i> <span style="flex:1;">这是轮播的游戏名...</span></div>
+                        <div class="msg-icon-wrap" onclick="toggleOrientation()" title="横竖屏切换">
+                            <i id="ori-icon" class="fas fa-tablet-alt"></i>
+                        </div>
+                        <div class="msg-icon-wrap" onclick="showToast('进入消息中心')">
+                            <i class="far fa-bell"></i>
+                            <div class="msg-red-dot"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="top-main-tabs">
+                        <div class="t-tab" onclick="switchTopTab('follow')">关注</div>
+                        <div class="t-tab active" onclick="switchTopTab('circles')">游戏圈</div>
+                    </div>
+                </div>
+                
+                <div class="tabs-toolbar">
+                    <div class="community-sub-tabs" id="part-tabs">
+                        <!-- JS动态渲染 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 纯单列信息流容器 -->
+            <div class="feed-container" id="main-feed"></div>
+        </div>
+    </div>
+
+    <!-- 底部导航 -->
+    <div class="bottom-nav">
+        <div class="b-nav-item"><i class="fas fa-home" style="font-size:18px;"></i> 首页</div>
+        <div class="b-nav-item active"><i class="fas fa-comments" style="font-size:18px;"></i> 社区</div>
+        <div class="b-nav-item"><i class="fas fa-play" style="font-size:18px;"></i> 玩游戏</div>
+        <div class="b-nav-item"><i class="fas fa-trophy" style="font-size:18px;"></i> 排行榜</div>
+        <div class="b-nav-item"><i class="far fa-user" style="font-size:18px;"></i> 我的</div>
+    </div>
+
+    <!-- 悬浮发帖按钮 -->
+    <div class="fab-btn" onclick="openPublishPage(false)">
+        <i class="fas fa-plus"></i>
+    </div>
+
+    <!-- ================= 详情页底部动作面板 (分享、转发、编辑、举报) ================= -->
+    <div class="action-sheet-overlay" id="actionMenu" onclick="closeActionMenu()">
+        <div class="action-sheet" id="actionSheetInner" onclick="event.stopPropagation()">
+            <div class="sheet-header">
+                操作
+                <i class="fas fa-times sheet-close" onclick="closeActionMenu()"></i>
+            </div>
+            <div class="share-grid">
+                <div class="share-item"><div class="share-icon" style="background:#07C160;"><i class="fab fa-weixin"></i></div><span>微信</span></div>
+                <div class="share-item"><div class="share-icon" style="background:#12B7F5;"><i class="fab fa-qq"></i></div><span>QQ</span></div>
+                <div class="share-item" onclick="showToast('已复制链接')"><div class="share-icon" style="background:#444;"><i class="fas fa-link"></i></div><span>复制链接</span></div>
+            </div>
+            <div class="action-list">
+                <div class="action-btn-list" onclick="handleRepostDetail()">转发动态</div>
+                <div class="action-btn-list" onclick="showToast('正在为您拉起编辑页')">编辑内容</div>
+                <!-- 详情页新增举报入口 -->
+                <div class="action-btn-list" style="color:#f5222d;" onclick="handleReportDetailClick()">举报内容</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 举报填写弹窗 ================= -->
+    <div id="report-modal" class="dialog-mask report-modal">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <div class="report-header">
+                <div class="report-title" id="report-modal-title">举报动态</div>
+                <div class="btn-close-modal" onclick="closeReportModal()">&times;</div>
+            </div>
+            
+            <div class="report-body">
+                <!-- 优化后的精简文案 -->
+                <div class="report-grid">
+                    <div class="report-tag" onclick="selectReportReason(this)">社区无关</div>
+                    <div class="report-tag" onclick="selectReportReason(this)">色情低俗</div>
+                    <div class="report-tag" onclick="selectReportReason(this)">辱骂/引战</div>
+                    <div class="report-tag" onclick="selectReportReason(this)">盗版/作弊</div>
+                    <div class="report-tag" onclick="selectReportReason(this)">违规交易</div>
+                    <div class="report-tag" onclick="selectReportReason(this)">侵权/抄袭</div>
+                    <div class="report-tag" onclick="selectReportReason(this)">涉嫌诈骗</div>
+                    <div class="report-tag" onclick="selectReportReason(this, true)">其他</div>
+                </div>
+
+                <div id="report-other-wrap" style="display: none;">
+                    <textarea id="report-textarea" class="report-textarea" placeholder="补充详细说明（选填）..."></textarea>
+                </div>
+                
+                <div class="upload-section">
+                    <div class="upload-title">上传图片证据 (可选)</div>
+                    <div class="upload-box" onclick="showToast('拉起相册')">
+                        <i class="fas fa-camera" style="color:#666; font-size:24px;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <button class="dialog-btn confirm" style="background:#f5222d; color:white; border-radius:24px; margin-top:20px; font-weight:bold; border:none; padding:12px;" onclick="submitReport()">提交</button>
+        </div>
+    </div>
+
+    <!-- ================= 分区管理弹窗 ================= -->
+    <div id="page-preference" class="overlay-page" style="z-index: 400;">
+        <div class="nav-bar">
+            <i class="fas fa-arrow-left" style="font-size:18px; cursor:pointer;" onclick="closeOverlay('page-preference')"></i>
+            <span style="font-weight:bold; color:white;">分区管理</span>
+            <div style="width:18px;"></div>
+        </div>
+        
+        <div class="detail-content-wrapper" style="padding-bottom:20px;">
+            <div class="pref-group">
+                <div class="pref-title">
+                    <span>首页展示</span><span style="font-size:11px; color:var(--text-sub); font-weight:normal;">(点击取消固定)</span>
+                </div>
+                <div class="pref-tags" id="pinned-partitions"></div>
+            </div>
+            <div class="pref-group" style="margin-top:10px;">
+                <div class="pref-title">
+                    <span>我加入的分区</span><span style="font-size:11px; color:var(--text-sub); font-weight:normal;">(点击固定至首页)</span>
+                </div>
+                <div class="pref-tags" id="joined-partitions"></div>
+            </div>
+            <div class="pref-group" style="margin-top:10px;">
+                <div class="pref-title" style="margin-bottom: 4px;"><span>全部分区</span></div>
+                <div id="all-partitions-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 发帖页 / 转发页 ================= -->
+    <div id="publishPage" class="pub-page">
+        <div class="pub-header">
+            <div style="font-size: 16px; cursor: pointer; color: #888;" onclick="checkBack()">
+                <i class="fas fa-chevron-left"></i> 返回
+            </div>
+            <div style="font-weight:bold; color:white;" id="pubTitleBox">发布动态</div>
+            <button class="pub-submit-btn" onclick="submitPost()">发布</button>
+        </div>
+
+        <div class="pub-content-area" id="pubScrollArea" onclick="hideKeyboardAndEmoji()">
+            <input type="text" id="postTitle" class="pub-title-input" placeholder="加个吸引人的标题" onclick="event.stopPropagation()" onfocus="showKeyboard()">
+            <div id="postContent" class="pub-content-input" contenteditable="true" placeholder="分享你的游戏见解..." onclick="event.stopPropagation()" onfocus="showKeyboard()"></div>
+            <div id="repostCardWrapperInner"></div>
+        </div>
+
+        <div class="pub-bottom-group" id="pubBottomGroup">
+            <div class="linked-cards-wrapper" id="linkedWrapper"></div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 16px; border-bottom:1px solid var(--border-color);">
+                <div class="ai-checkbox-wrap" id="aiCheckWrap" onclick="toggleAI()" style="margin:0;"><input type="checkbox" id="aiCheck"> 包含AI合成内容</div>
+                <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-sub);">
+                    <span>发布到：</span>
+                    <div class="tb-pill publish-to-opt active" onclick="selectPublishTo(this,'全部')" style="padding:4px 10px; font-size:11px;">全部</div>
+                    <div class="tb-pill publish-to-opt" onclick="selectPublishTo(this,'求助')" style="padding:4px 10px; font-size:11px; border-color:rgba(245,34,45,0.4); color:#f5222d;">求助</div>
+                    <div class="tb-pill publish-to-opt" onclick="selectPublishTo(this,'攻略')" style="padding:4px 10px; font-size:11px; border-color:rgba(82,196,26,0.4); color:#52c41a;">攻略</div>
+                </div>
+            </div>
+
+            <div class="pub-toolbar">
+                <div class="tb-circle" onclick="showToast('拉起相册选择图片/视频')"><i class="far fa-image"></i></div>
+                <div class="tb-circle" onclick="toggleEmoji()"><i class="far fa-smile"></i></div>
+                <div class="tb-circle" onclick="openModal('topicModal')">#</div>
+                <div class="tb-pill" id="btnPartition" onclick="openModal('partitionSelectModal')" style="margin-left:auto;">选择分区</div>
+                <div class="tb-pill" id="btnGame" onclick="openModal('gameModal')">关联游戏</div>
+                <div class="tb-pill" id="btnConfig" onclick="openActionSheet('configSheet')">配置方案</div>
+            </div>
+
+            <!-- Emoji 面板 -->
+            <div class="emoji-panel" id="mockEmojiPanel">
+                <span class="emoji-item" onclick="insertText('😀')">😀</span><span class="emoji-item" onclick="insertText('😂')">😂</span><span class="emoji-item" onclick="insertText('😍')">😍</span>
+                <span class="emoji-item" onclick="insertText('😎')">😎</span><span class="emoji-item" onclick="insertText('😭')">😭</span><span class="emoji-item" onclick="insertText('👍')">👍</span>
+                <span class="emoji-item" onclick="insertText('🔥')">🔥</span><span class="emoji-item" onclick="insertText('🎮')">🎮</span><span class="emoji-item" onclick="insertText('🏆')">🏆</span>
+            </div>
+
+            <!-- T9 键盘 -->
+            <div class="mock-keyboard" id="mockKeyboard">
+                <div class="kb-candidate-row">
+                    <span onclick="insertText('我')">我</span><span onclick="insertText('好')">好</span><span onclick="insertText('你')">你</span>
+                    <span onclick="insertText('今天')">今天</span><span onclick="insertText('哈哈')">哈哈</span>
+                    <i class="fas fa-chevron-down" style="margin-left: auto; color: #888;"></i>
+                </div>
+                <div class="kb-grid">
+                    <div class="kb-key" onclick="insertText('123')">123</div>
+                    <div class="kb-key" onclick="insertText('。')">, . ?</div>
+                    <div class="kb-key">ABC</div>
+                    <div class="kb-key">DEF</div>
+                    <div class="kb-key gray" onclick="deleteText()"><i class="fas fa-backspace"></i></div>
+                    <div class="kb-key"># @</div>
+                    <div class="kb-key">GHI</div>
+                    <div class="kb-key">JKL</div>
+                    <div class="kb-key">MNO</div>
+                    <div class="kb-key gray" onclick="insertText('^^')">^ ^</div>
+                    <div class="kb-key">PQRS</div>
+                    <div class="kb-key">TUV</div>
+                    <div class="kb-key">WXYZ</div>
+                    <div class="kb-key kb-enter" onclick="insertText('<br>')"><i class="fas fa-level-down-alt" style="transform: rotate(90deg);"></i></div>
+                    <div class="kb-key gray" style="grid-column: 1;"><i class="fas fa-globe"></i></div>
+                    <div class="kb-key gray" onclick="toggleEmoji()"><i class="far fa-smile"></i></div>
+                    <div class="kb-key gray" style="font-size:14px;">拼音</div>
+                    <div class="kb-key kb-space" onclick="insertText('&nbsp;')">空 格</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 草稿弹窗 -->
+    <div class="dialog-mask" id="draftModal">
+        <div class="dialog-box">
+            <div class="dialog-title">退出编辑</div>
+            <div class="dialog-msg">是否保存当前编辑内容为草稿？</div>
+            <div class="dialog-btns">
+                <button class="dialog-btn" onclick="discardDraft()">不保存</button>
+                <button class="dialog-btn confirm" onclick="saveDraft()">保存草稿</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 话题、分区选择、关联游戏弹窗... -->
+    <div id="topicModal" class="full-modal">
+        <div class="fm-header"><span class="fm-cancel" onclick="closeModal('topicModal')">取消</span><span class="fm-title">添加话题</span><span style="width: 28px;"></span></div>
+        <div class="fm-search-wrap"><div class="fm-search-box"><i class="fas fa-search" style="color:#888;"></i><input type="text" placeholder="搜索关键词"></div></div>
+        <div class="fm-body" style="padding: 0 16px;">
+            <div class="g-section-title" style="padding-left:0; margin-top:10px;">推荐话题</div>
+            <div style="display:flex; justify-content:space-between; padding: 14px 0; border-bottom:1px solid var(--border-color); cursor:pointer;" onclick="insertTopic('发现好游戏')"><span style="font-weight:bold; color:white; font-size:15px;"># 发现好游戏</span><span style="color:#aaa; font-size:12px;">2.7亿 浏览</span></div>
+            <div style="display:flex; justify-content:space-between; padding: 14px 0; border-bottom:1px solid var(--border-color); cursor:pointer;" onclick="insertTopic('通关打卡')"><span style="font-weight:bold; color:white; font-size:15px;"># 通关打卡</span><span style="color:#aaa; font-size:12px;">1636万 浏览</span></div>
+        </div>
+    </div>
+
+    <div id="partitionSelectModal" class="full-modal">
+        <div class="fm-header"><span class="fm-cancel" onclick="closeModal('partitionSelectModal')">取消</span><span class="fm-title">选择所属分区</span><span style="width: 28px;"></span></div>
+        <div class="fm-body" id="psm-list"></div>
+    </div>
+
+    <div id="gameModal" class="full-modal">
+        <div class="fm-header"><span class="fm-cancel" onclick="closeModal('gameModal')">取消</span><span class="fm-title">关联游戏</span><span style="width: 28px;"></span></div>
+        <div class="fm-search-wrap"><div class="fm-search-box"><i class="fas fa-search" style="color:#888;"></i><input type="text" placeholder="搜索全部游戏"></div></div>
+        <div class="fm-body">
+            <div class="g-index-title">G</div>
+            <div class="g-list-item" onclick="linkSingleGame('GTA 5', 'https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg', '9.5', '动作·开放世界')">
+                <img class="g-item-img" src="https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg">
+                <div class="g-item-info"><span class="g-item-name">侠盗猎车手5 (GTA5)</span><span class="g-item-tags">★ 9.5 · 开放世界</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-sheet-mask" id="configSheet" onclick="closeActionSheet('configSheet')">
+        <div class="action-sheet-body config-sheet-body" id="configSheetBody" onclick="event.stopPropagation()">
+            <div class="cfg-title">选择配置方案</div>
+            <div style="font-size: 13px; color: #888;">启动配置</div>
+            <div class="cfg-card" onclick="addConfigCard('GTA5 稳60帧低配福音', '启动配置方案', 'fas fa-rocket', '#0ec4a3', 'startup')">
+                <div style="width:40px;height:40px;border-radius:8px;background:rgba(14,196,163,0.1);display:flex;align-items:center;justify-content:center;color:#0ec4a3;font-size:20px;"><i class="fas fa-rocket"></i></div>
+                <div style="display:flex;flex-direction:column;gap:4px;"><span style="font-weight:bold; font-size:15px; color:white;">GTA5 稳60帧低配福音</span><span style="color:#aaa; font-size:12px;">游戏：侠盗猎车手5</span></div>
+            </div>
+            <div style="font-size: 13px; color: #888; margin-top: 10px;">按键布局</div>
+            <div class="cfg-card" onclick="addConfigCard('大镖客完美手柄映射', '按键布局方案', 'fas fa-gamepad', '#287dfa', 'keymap')">
+                <div style="width:40px;height:40px;border-radius:8px;background:rgba(40,125,250,0.1);display:flex;align-items:center;justify-content:center;color:#287dfa;font-size:20px;"><i class="fas fa-gamepad"></i></div>
+                <div style="display:flex;flex-direction:column;gap:4px;"><span style="font-weight:bold; font-size:15px; color:white;">大镖客完美手柄映射</span><span style="color:#aaa; font-size:12px;">游戏：荒野大镖客2</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 动态详情页 ================= -->
+    <div id="page-detail" class="overlay-page">
+        <div class="nav-bar">
+            <i class="fas fa-arrow-left" style="font-size:18px; cursor:pointer;" onclick="closeOverlay('page-detail')"></i>
+            <span style="font-weight:bold; color:white;">动态详情</span>
+            <i class="fas fa-ellipsis-h" style="cursor:pointer;" onclick="openActionMenu()"></i>
+        </div>
+        
+        <div class="detail-content-wrapper" id="d-scroll-box">
+            <div class="detail-left-panel" id="d-left-panel">
+                <div style="position: relative; width: 100%; display:none;" id="d-media-wrapper">
+                    <div id="d-media-carousel" class="d-media-carousel"></div>
+                    <div id="d-media-counter" class="d-media-counter"></div>
+                </div>
+
+                <div class="detail-body">
+                    <div class="d-author-row" id="d-author-row-container"></div>
+                    <div class="d-title" id="d-title">标题</div>
+                    <div class="d-text" id="d-content">正文</div>
+                    <div id="d-sharecode-container"></div>
+                    <div id="d-game-card-container"></div>
+                    <div id="d-partition-link-box" style="margin-top: 16px;"></div>
+                </div>
+            </div>
+            
+            <div class="detail-right-panel" id="d-right-panel">
+                <div class="detail-comments-scroll" id="d-comments-scroll">
+                    <div style="padding: 16px;">
+                        <div style="color:white; font-size:15px; font-weight:bold; margin-bottom:20px;" id="d-comment-count">评论区</div>
+                        <div id="comment-list"></div>
+                    </div>
+                </div>
+                
+                <div class="detail-bottom-bar" id="detail-bottom-default">
+                    <div class="fake-input" onclick="showToast('拉起键盘评论')">参与讨论...</div>
+                    <span class="act-icon" onclick="showToast('点赞成功')"><i class="far fa-heart"></i> <span id="d-bot-likes">0</span></span>
+                    <span class="act-icon" onclick="showToast('收藏成功')"><i class="far fa-star"></i> <span id="d-bot-favs">0</span></span>
+                    <span class="act-icon"><i class="far fa-comment"></i> <span id="d-bot-comments">0</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toastBox">提示</div>
+</div>
+
+<script>
+    function showToast(msg) { 
+        const t = document.getElementById('toastBox'); 
+        t.innerText = msg; 
+        t.classList.add('show'); 
+        setTimeout(()=>t.classList.remove('show'), 2000); 
+    }
+    function closeOverlay(id) { document.getElementById(id).classList.remove('show'); }
+
+    // ================= 举报菜单相关逻辑 =================
+    let currentTargetUser = '';
+    let isReasonOther = false;
+    let currentDetailAuthor = '';
+    let currentPostElement = null;
+
+    function openMoreMenu(e, userName) {
+        e.stopPropagation();
+        currentTargetUser = userName;
+        currentPostElement = e.currentTarget.closest('.wf-card');
+        const menu = document.getElementById('more-menu');
+        
+        // 获取点击元素相对于视口的位置
+        const rect = e.currentTarget.getBoundingClientRect();
+        let x = rect.left - 100;
+        let y = rect.bottom + 5;
+        
+        if(x < 10) x = 10;
+        if(y + 100 > window.innerHeight) {
+            y = rect.top - 100;
+        }
+
+        menu.style.left = x + 'px';
+        menu.style.top = y + 'px';
+        menu.classList.add('show');
+        
+        setTimeout(() => { document.addEventListener('click', closeMoreMenuOutside); }, 0);
+    }
+
+    function closeMoreMenuOutside(e) {
+        if (!e.target.closest('#more-menu') && !e.target.closest('.feed-more-btn')) {
+            closeMoreMenu();
+        }
+    }
+
+    function closeMoreMenu() {
+        document.getElementById('more-menu').classList.remove('show');
+        document.removeEventListener('click', closeMoreMenuOutside);
+    }
+
+    function handleNotInterested(e) {
+        e.stopPropagation();
+        closeMoreMenu();
+        if (currentPostElement) {
+            currentPostElement.remove();
+            currentPostElement = null;
+        }
+        showToast('操作成功，系统将减少为您推荐此类内容');
+    }
+
+    function handleReportClick(e) {
+        e.stopPropagation();
+        closeMoreMenu();
+        openReportModal(currentTargetUser);
+    }
+
+    function handleReportDetailClick() {
+        closeActionMenu();
+        setTimeout(() => openReportModal(currentDetailAuthor), 300);
+    }
+
+    function openReportModal(userName) {
+        document.getElementById('report-modal-title').innerText = `举报 @${userName} 的动态`;
+        document.getElementById('report-modal').classList.add('show');
+        
+        document.querySelectorAll('.report-tag').forEach(t => t.classList.remove('active'));
+        document.getElementById('report-textarea').value = '';
+        document.getElementById('report-other-wrap').style.display = 'none';
+        isReasonOther = false;
+    }
+
+    function closeReportModal() {
+        document.getElementById('report-modal').classList.remove('show');
+    }
+
+    function selectReportReason(el, isOther = false) {
+        document.querySelectorAll('.report-tag').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        isReasonOther = isOther;
+        
+        const wrap = document.getElementById('report-other-wrap');
+        const textarea = document.getElementById('report-textarea');
+        if (isOther) {
+            wrap.style.display = 'block';
+            textarea.placeholder = '请输入详细说明（必填项）...';
+        } else {
+            wrap.style.display = 'none';
+            textarea.placeholder = '补充详细说明（选填）...';
+        }
+    }
+
+    function submitReport() {
+        const activeTag = document.querySelector('.report-tag.active');
+        if (!activeTag) {
+            showToast('请先选择一个举报类型！');
+            return;
+        }
+        
+        const txt = document.getElementById('report-textarea').value.trim();
+        if (isReasonOther && !txt) {
+            showToast('选择“其他”类型时，必须填写详细说明！');
+            return;
+        }
+        
+        showToast('✅ 举报提交成功！感谢您协助维护社区环境');
+        closeReportModal();
+    }
+
+
+    // ================= 横竖屏切换核心逻辑 =================
+    let isLandscape = false;
+    function toggleOrientation() {
+        isLandscape = !isLandscape;
+        const mockup = document.getElementById('deviceMockup');
+        const text = document.getElementById('ori-text');
+        const icon = document.getElementById('ori-icon');
+        if (isLandscape) {
+            mockup.classList.add('landscape');
+            text.innerText = '竖屏模式';
+            icon.className = 'fas fa-mobile-alt';
+            showToast('已切换至横屏，沉浸体验更佳');
+        } else {
+            mockup.classList.remove('landscape');
+            text.innerText = '横屏模式';
+            icon.className = 'fas fa-tablet-alt';
+            showToast('已切换回竖屏');
+        }
+    }
+
+    // ================= 动作菜单弹窗 =================
+    function openActionMenu() {
+        document.getElementById('actionMenu').style.display = 'flex';
+        setTimeout(() => document.getElementById('actionSheetInner').classList.add('show'), 10);
+    }
+    function closeActionMenu() {
+        document.getElementById('actionSheetInner').classList.remove('show');
+        setTimeout(() => document.getElementById('actionMenu').style.display = 'none', 300);
+    }
+
+    // ================= 分区管理 =================
+    let pinnedPartitions = ['Steam', 'GTA 5', '配置分享'];
+    let joinedPartitions = new Set();
+    const allPartitionsList =['Steam', 'Epic', 'GTA 5', '配置分享'];
+    let currentPartition = '全部';
+
+    function openPreference() {
+        renderPreferences();
+        document.getElementById('page-preference').classList.add('show');
+    }
+
+    function renderPreferences() {
+        document.getElementById('pinned-partitions').innerHTML = pinnedPartitions.map(p => `
+            <div class="pref-tag" style="padding: 4px 12px;">
+                <span style="flex:1; padding:4px 0;" onclick="jumpToPartition('${p}')">${p}</span>
+                <div style="width:1px; height:12px; background:rgba(255,255,255,0.2); margin:0 4px;"></div>
+                <i class="fas fa-times del" style="padding:4px;" onclick="unpinPartition('${p}')"></i>
+            </div>
+        `).join('');
+
+        const joinedArr = Array.from(joinedPartitions);
+        if (joinedArr.length === 0) {
+            document.getElementById('joined-partitions').innerHTML = `<div style="color:var(--text-sub); font-size:12px; padding:4px 0;">暂无加入分区，赶紧加入吧</div>`;
+        } else {
+            document.getElementById('joined-partitions').innerHTML = joinedArr.map(p => {
+                const isPinned = pinnedPartitions.includes(p);
+                const actionHtml = isPinned 
+                    ? `<i class="fas fa-check" style="padding:4px; color:#666; font-size:10px;"></i>` 
+                    : `<i class="fas fa-plus add" style="padding:4px;" onclick="pinPartition('${p}')"></i>`;
+                
+                return `
+                    <div class="pref-tag" style="padding: 4px 12px; ${isPinned ? 'border-color:rgba(255,255,255,0.03); opacity:0.6;' : ''}">
+                        ${actionHtml}
+                        <div style="width:1px; height:12px; background:rgba(255,255,255,0.2); margin:0 4px;"></div>
+                        <span style="flex:1; padding:4px 0;" onclick="jumpToPartition('${p}')">${p}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('all-partitions-list').innerHTML = allPartitionsList.map(p => {
+            const hasJoined = joinedPartitions.has(p);
+            const btnStyle = hasJoined ? 'background:rgba(255,255,255,0.05); color:#888;' : 'background:rgba(40,125,250,0.1); color:var(--primary);';
+            const btnText = hasJoined ? '已加入' : '+ 加入';
+            const clickAction = hasJoined ? '' : `onclick="joinPartition('${p}')"`;
+            return `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <span style="font-size:15px; color:white; font-weight:bold; cursor:pointer;" onclick="jumpToPartition('${p}')">${p}</span>
+                    <div style="${btnStyle} padding:6px 14px; border-radius:16px; font-size:12px; font-weight:bold; cursor:pointer; transition:0.2s;" ${clickAction}>${btnText}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function jumpToPartition(p) {
+        closeOverlay('page-preference');
+        currentPartition = p;
+        document.getElementById('community-view').scrollTo(0, 0);
+        renderCommunityTabs();
+    }
+
+    function unpinPartition(p) {
+        if(pinnedPartitions.length <= 1) { showToast('首页至少保留 1 个展示'); return; }
+        pinnedPartitions = pinnedPartitions.filter(x => x !== p);
+        renderPreferences(); 
+        renderCommunityTabs();
+    }
+
+    function pinPartition(p) {
+        if (pinnedPartitions.includes(p)) return;
+        if (pinnedPartitions.length >= 5) { showToast('首页最多只能固定 5 个专区'); return; }
+        pinnedPartitions.push(p);
+        renderPreferences(); 
+        renderCommunityTabs();
+        showToast('已固定至首页');
+    }
+
+    function joinPartition(p) {
+        joinedPartitions.add(p);
+        renderPreferences();
+        renderCommunityTabs();
+        showToast('已成功加入');
+    }
+
+    function renderCommunityTabs() {
+        const tabsBox = document.getElementById('part-tabs');
+        let html = `
+            <div class="c-tab ${currentPartition === '全部' ? 'active' : ''}" onclick="switchPartition('全部', this)">
+                全部 <i class="fas fa-sliders-h" style="font-size:11px; margin-left:4px;" onclick="event.stopPropagation(); openPreference();"></i>
+            </div>
+        `;
+        pinnedPartitions.forEach(p => {
+            const pm = partitionsMap.find(x => x.p === p);
+            const icon = pm ? pm.icon + ' ' : '';
+            html += `<div class="c-tab ${currentPartition === p ? 'active' : ''}" onclick="switchPartition('${p}', this)">${icon}${p}</div>`;
+        });
+
+        if (currentPartition !== '全部' && !pinnedPartitions.includes(currentPartition)) {
+            const pm = partitionsMap.find(x => x.p === currentPartition);
+            const icon = pm ? pm.icon + ' ' : '';
+            html += `<div class="c-tab active" onclick="switchPartition('${currentPartition}', this)">${icon}${currentPartition}</div>`;
+        }
+
+        tabsBox.innerHTML = html;
+        renderFeed();
+    }
+
+    function switchPartition(name, el) {
+        document.querySelectorAll('.c-tab').forEach(t => t.classList.remove('active'));
+        if (el) el.classList.add('active');
+        currentPartition = name;
+        document.getElementById('community-view').scrollTo(0, 0);
+        renderFeed();
+    }
+
+    // 顶部一级tab切换：关注 / 游戏圈
+    function switchTopTab(tab) {
+        document.querySelectorAll('.t-tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        const toolbar = document.querySelector('.tabs-toolbar');
+        const feed = document.getElementById('main-feed');
+        if (tab === 'follow') {
+            toolbar.style.display = 'none';
+            feed.innerHTML = '<div class="empty-state"><i class="far fa-heart" style="font-size:36px; margin-bottom:12px; opacity:0.5;"></i><p>还没有关注内容</p><p style="color:var(--primary); cursor:pointer; margin-top:10px;" onclick="switchTopTab(\'circles\')">去游戏圈看看 →</p></div>';
+        } else if (tab === 'circles') {
+            toolbar.style.display = 'flex';
+            currentPartition = '全部';
+            renderCommunityTabs();
+        }
+    }
+
+    // 发帖时选择发布到哪个分类（平铺单选）
+    let publishTarget = '全部';
+    function selectPublishTo(el, target) {
+        document.querySelectorAll('.publish-to-opt').forEach(o => {
+            o.classList.remove('active');
+            o.style.background = 'transparent';
+        });
+        el.classList.add('active');
+        el.style.background = target === '求助' ? 'rgba(245,34,45,0.15)' : target === '攻略' ? 'rgba(82,196,26,0.15)' : 'rgba(212,180,115,0.15)';
+        publishTarget = target;
+        showToast('将发布到「' + target + '」');
+    }
+
+    const topHeader = document.getElementById('top-header-group');
+    let lastScrollY = 0;
+    document.getElementById('community-view').addEventListener('scroll', function() {
+        if (currentPartition === '全部') {
+            let currentScroll = this.scrollTop;
+            if (currentScroll > 50 && currentScroll > lastScrollY) {
+                topHeader.style.marginTop = `-${topHeader.offsetHeight}px`;
+            } else if (currentScroll < lastScrollY - 5) {
+                topHeader.style.marginTop = '0';
+            }
+            lastScrollY = currentScroll;
+        } else {
+            topHeader.style.marginTop = '0';
+        }
+    });
+
+    let globalFollowedAuthors = new Set();
+    function toggleAuthorFollow(event, authorName) {
+        event.stopPropagation();
+        if (globalFollowedAuthors.has(authorName)) {
+            globalFollowedAuthors.delete(authorName);
+            showToast('已取消关注');
+        } else {
+            globalFollowedAuthors.add(authorName);
+            showToast('已关注该作者');
+        }
+        updateAllAuthorFollowButtons();
+    }
+
+    function updateAllAuthorFollowButtons() {
+        const btns = document.querySelectorAll('.author-follow-btn');
+        btns.forEach(btn => {
+            const author = btn.getAttribute('data-author');
+            if (globalFollowedAuthors.has(author)) {
+                btn.classList.add('followed');
+                btn.innerText = '已关注';
+            } else {
+                btn.classList.remove('followed');
+                btn.innerText = '关注';
+            }
+        });
+    }
+
+    function togglePartitionJoin(btn, partitionName) {
+        event.stopPropagation();
+        if (joinedPartitions.has(partitionName)) {
+            btn.innerText = '加入';
+            btn.style.background = 'rgba(40,125,250,0.1)';
+            btn.style.color = 'var(--primary)';
+            btn.style.borderColor = 'var(--primary)';
+            showToast('已退出 ' + partitionName);
+            
+            joinedPartitions.delete(partitionName);
+            pinnedPartitions = pinnedPartitions.filter(x => x !== partitionName);
+            
+            renderPreferences();
+            renderCommunityTabs();
+        } else {
+            btn.innerText = '已加入';
+            btn.style.background = 'rgba(255,255,255,0.1)';
+            btn.style.color = '#ccc';
+            btn.style.borderColor = 'transparent';
+            
+            joinedPartitions.add(partitionName);
+            showToast('已加入该专区');
+            
+            renderPreferences();
+            renderCommunityTabs();
+        }
+    }
+
+    // ================= 数据渲染 =================
+    function formatExactTime(dateStr) {
+        const now = new Date(); const date = new Date(dateStr);
+        const diffHours = Math.floor((now - date) / 3600000);
+        if (diffHours < 24) return diffHours < 1 ? '刚刚' : `${diffHours}小时前`;
+        return `${date.getMonth() + 1}-${date.getDate()}`;
+    }
+
+    let mockPosts =[];
+    const partitionsMap =[{ p: 'Steam', icon: '🎮' }, { p: 'GTA 5', icon: '🚗' }, { p: '配置分享', icon: '⚙️' }, { p: 'Epic', icon: '🏪' }, { p: '求助', icon: '❓' }, { p: '攻略', icon: '📖' }];
+    const provinces =['广东', '北京', '浙江', '上海', '海外'];
+    
+    mockPosts.push({ id: 1, title: '【官方】盖世模拟器V2.0重大更新说明', tags:['官方公告'], isOfficial: true, isPinned: true, content: '新增诸多手柄支持，优化云端画质。', images:['https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/header.jpg'], partition: 'Steam', user: '盖世小秘书', avatar: 'Admin', likes: 165, comments: 14, reposts: 350, timestamp: new Date(Date.now() - 3600000).toISOString(), ip: '广东' });
+    mockPosts.push({ id: 2, title: 'GTA5 稳60帧启动设置', tags:['干货分享'], isPinned: true, content: '彻底告别卡顿，丝滑享受洛圣都。', images:['https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg'], partition: 'GTA 5', user: '老麦', avatar: 'Mike', likes: 999, comments: 34, reposts: 55, timestamp: new Date(Date.now() - 86400000).toISOString(), ip: '北京', shareCode: { type: '启动设置', name: 'GTA5低配救星', code: 'CFG-992' }, gameCard: { name: '侠盗猎车手5', icon: 'https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg', category: '动作·开放世界', rating: '9.5' }});
+    mockPosts.push({ id: 3, title: '老头环 DLC 黄金树之影实机分析（视频）', isGuide: true, content: '故事没完，看我深度拆解。', isVideo: true, images:['https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg'], partition: 'Steam', user: '老兵', avatar: 'Soul', likes: 2100, comments: 50, reposts: 110, timestamp: new Date(Date.now() - 180000000).toISOString(), ip: '上海' });
+    mockPosts.push({ id: 4, title: '天玑9200启动巫师3黑屏怎么办', isHelp: true, content: '试了Wine9.5和9.8两个版本都黑屏，8G内存，有人遇到过吗？求大佬指点。', images:[], partition: 'Steam', user: '小白求助', avatar: 'Help1', likes: 12, comments: 8, reposts: 0, timestamp: new Date(Date.now() - 3600000).toISOString(), ip: '浙江' });
+    mockPosts.push({ id: 5, title: '求一个大镖客完美手柄映射', isHelp: true, content: '之前用的配置太反人类了，求大神分享一个舒服点的键位配置。', images:[], partition: '配置分享', user: '神枪手', avatar: 'Pistol', likes: 45, comments: 12, reposts: 2, timestamp: new Date(Date.now() - 10000000).toISOString(), ip: '江苏' });
+    mockPosts.push({ id: 6, title: '骁龙870能跑赛博朋克吗', isHelp: true, content: '6G内存，不知道能不能跑起来，有同配置的兄弟吗？', images:['https://picsum.photos/seed/help3/800/600'], partition: 'Steam', user: '萌新', avatar: 'Help3', likes: 23, comments: 15, reposts: 1, timestamp: new Date(Date.now() - 7200000).toISOString(), ip: '广东' });
+
+    for(let i=6; i<=120; i++) {
+        const pm = partitionsMap[i % partitionsMap.length];
+        const isVid = Math.random() > 0.8; 
+        mockPosts.push({
+            id: i, title: `玩家日常评测：第 #${i} 期分享`, content: `这是在 ${pm.p} 分区下的深度评测和日常吐槽，希望大家喜欢。`,
+            images:[`https://picsum.photos/seed/${i*10}/800/600`], partition: pm.p, isVideo: isVid,
+            likes: Math.floor(Math.random()*100), comments: Math.floor(Math.random()*20), reposts: Math.floor(Math.random()*30),
+            user: `玩家_${i}`, avatar: `u${i}`, 
+            timestamp: new Date(Date.now() - Math.random()*1000000000).toISOString(), ip: provinces[i % provinces.length]
+        });
+    }
+
+    function handleLike(id, el) {
+        if (el.dataset.liked === 'true') return;
+        showToast('点赞成功');
+        const span = el.querySelector('span');
+        span.innerText = parseInt(span.innerText || 0) + 1;
+        const i = el.querySelector('i');
+        i.classList.replace('far', 'fas');
+        i.style.color = 'var(--rose-red)';
+        el.dataset.liked = 'true';
+    }
+
+    function handleFav(id, el) {
+        if (el.dataset.faved === 'true') return;
+        showToast('收藏成功');
+        const span = el.querySelector('span');
+        span.innerText = parseInt(span.innerText || 0) + 1;
+        const i = el.querySelector('i');
+        i.classList.replace('far', 'fas');
+        i.style.color = 'var(--score-color)';
+        el.dataset.faved = 'true';
+    }
+
+    function handleReply(id) {
+        openPostDetail(id);
+        setTimeout(() => {
+            const commentSection = document.getElementById('d-comment-count');
+            if (isLandscape) {
+                const rightScroll = document.getElementById('d-comments-scroll');
+                rightScroll.scrollTo({ top: commentSection.offsetTop - 16, behavior: 'smooth' });
+            } else {
+                const scrollBox = document.getElementById('d-scroll-box');
+                scrollBox.scrollTo({ top: commentSection.offsetTop - 50, behavior: 'smooth' });
+            }
+        }, 400); 
+    }
+
+    function handleRepost(id) { openPublishPage(true, id); }
+    function handleRepostDetail() { closeActionMenu(); setTimeout(() => openPublishPage(true, currentDetailPostId), 300); }
+    function switchSubTab(el) {
+        const tabs = el.parentElement.querySelectorAll('.p-h-tab');
+        tabs.forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        const tabName = el.innerText;
+        const container = document.getElementById('main-feed');
+        // 保留header，只重新渲染帖子部分
+        const header = container.querySelector('.partition-header');
+        let filtered = mockPosts.filter(p => p.partition === currentPartition);
+        if (tabName === '求助') { filtered = filtered.filter(p => p.isHelp); }
+        else if (tabName === '攻略') { filtered = filtered.filter(p => p.isGuide); }
+        else if (tabName === '官方') { filtered = filtered.filter(p => p.isOfficial); }
+        // 移除旧帖子卡片，保留header
+        container.querySelectorAll('.wf-card').forEach(c => c.remove());
+        container.querySelectorAll('.empty-state').forEach(c => c.remove());
+        if (filtered.length === 0) {
+            container.innerHTML += `<div class="empty-state"><i class="fas fa-ghost" style="font-size:32px; margin-bottom:12px;"></i><p>当前分类暂无内容</p></div>`;
+            return;
+        }
+        filtered.forEach(p => {
+            const tagsHtml = p.tags ? p.tags.map(t => `<span style="color:var(--primary);margin-right:4px;">#${t}</span>`).join('') : '';
+            const timeStr = formatExactTime(p.timestamp);
+            const videoOverlay = p.isVideo ? `<div class="video-overlay"><div class="play-btn"><i class="fas fa-play"></i></div></div>` : '';
+            container.innerHTML += `
+                <div class="wf-card" onclick="openPostDetail(${p.id})">
+                    <div class="wf-header-top">
+                        <img class="wf-avatar-large" src="https://api.dicebear.com/7.x/avataaars/svg?seed=${p.avatar}">
+                        <div class="name-col">
+                            <span class="name-bold">${p.user}${p.isOfficial ? ' <span style="background:var(--primary);color:#000;font-size:9px;padding:1px 4px;border-radius:3px;">官方</span>' : ''}</span>
+                            <span class="time-ip">${timeStr} · ${p.ip}</span>
+                        </div>
+                        <div class="feed-more-btn" onclick="openMoreMenu(event, '${p.user}')"><i class="fas fa-ellipsis-h"></i></div>
+                    </div>
+                    <div class="wf-content-text">
+                        <div style="font-weight:bold; margin-bottom:4px;">${p.isHelp ? '<span style="background:#f5222d;color:white;font-size:11px;padding:2px 6px;border-radius:4px;margin-right:6px;">求助</span>' : ''}${p.isGuide ? '<span style="background:#52c41a;color:white;font-size:11px;padding:2px 6px;border-radius:4px;margin-right:6px;">攻略</span>' : ''}${p.title}</div>
+                        <div>${tagsHtml}</div>
+                        <div style="margin-top:6px; color:#ddd;">${p.content}</div>
+                    </div>
+                    <div class="wf-partition-tag" onclick="event.stopPropagation(); jumpToPartition('${p.partition}')"><i class="fas fa-hashtag"></i> ${p.partition}</div>
+                    ${p.images && p.images.length > 0 ? `<div class="wf-img-box"><img class="wf-img" src="${p.images[0]}">${videoOverlay}</div>` : ''}
+                    <div class="wf-footer-single" onclick="event.stopPropagation()">
+                        <div class="action-btn" onclick="handleLike(${p.id}, this)"><i class="far fa-heart"></i> <span>${p.likes}</span></div>
+                        <div class="action-btn" onclick="handleFav(${p.id}, this)"><i class="far fa-star"></i> <span>0</span></div>
+                        <div class="action-btn" onclick="handleReply(${p.id})"><i class="far fa-comment"></i> <span>${p.comments}</span></div>
+                        <div class="action-btn" onclick="handleRepost(${p.id})"><i class="fas fa-retweet"></i> <span>${p.reposts}</span></div>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function renderFeed() {
+        const container = document.getElementById('main-feed');
+        container.innerHTML = '';
+        
+        let filtered = mockPosts;
+        if (currentPartition !== '全部') { filtered = mockPosts.filter(p => p.partition === currentPartition); }
+
+        if (currentPartition !== '全部' && currentPartition !== '关注') {
+            const isJoined = joinedPartitions.has(currentPartition);
+            const joinBtnText = isJoined ? '已加入' : '加入';
+            const joinBtnStyle = isJoined ? 'background:rgba(255,255,255,0.1);color:#ccc;border-color:transparent;' : '';
+
+            // 生成置顶区HTML
+            const pinnedPosts = filtered.filter(p => p.isPinned);
+            let pinHtml = '';
+            if (pinnedPosts.length > 0) {
+                pinHtml = '<div style="padding:8px 0; margin:0 0 4px 0;">';
+                pinnedPosts.forEach(pp => {
+                    pinHtml += `<div onclick="openPostDetail(${pp.id})" style="display:flex; align-items:center; gap:8px; padding:8px 0; cursor:pointer;">
+                        <span style="font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(255,149,0,0.15); color:var(--score-color); font-weight:bold; flex-shrink:0;">置顶</span>
+                        <span style="font-size:13px; color:var(--text-main); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${pp.title}</span>
+                        <i class="fas fa-chevron-right" style="font-size:10px; color:var(--text-sub);"></i>
+                    </div>`;
+                });
+                pinHtml += '</div>';
+            }
+
+            const headerHtml = `
+                <div class="partition-header">
+                    <div class="p-h-top">
+                        <img class="p-h-icon" src="https://picsum.photos/seed/${currentPartition}/100/100">
+                        <div class="p-h-info">
+                            <div class="p-h-name">${currentPartition}</div>
+                            <div class="p-h-desc">欢迎来到 ${currentPartition} 专区！这里有最新最热的游戏资讯、深度评测和同好交流。</div>
+                        </div>
+                        <div class="p-h-follow-btn" style="${joinBtnStyle}" onclick="togglePartitionJoin(this, '${currentPartition}')">${joinBtnText}</div>
+                    </div>
+                    ${pinHtml}
+                    <div class="p-h-tabs">
+                        <div class="p-h-tab active" onclick="switchSubTab(this)">综合</div>
+                        <div class="p-h-tab" onclick="switchSubTab(this)">官方</div>
+                        <div class="p-h-tab" onclick="switchSubTab(this)">求助</div>
+                        <div class="p-h-tab" onclick="switchSubTab(this)">攻略</div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += headerHtml;
+        }
+
+        if(filtered.length === 0) {
+            container.innerHTML += `<div class="empty-state"><i class="fas fa-ghost" style="font-size:32px; margin-bottom:12px;"></i><p>当前分区暂无动态</p></div>`; return;
+        }
+
+        filtered.forEach(p => {
+            const tagsHtml = p.tags ? p.tags.map(t => `<span style="color:var(--primary);margin-right:4px;">#${t}</span>`).join('') : '';
+            const timeStr = formatExactTime(p.timestamp);
+            const videoOverlay = p.isVideo ? `<div class="video-overlay"><div class="play-btn"><i class="fas fa-play"></i></div></div>` : '';
+            
+            container.innerHTML += `
+                <div class="wf-card" onclick="openPostDetail(${p.id})">
+                    <div class="wf-header-top">
+                        <img class="wf-avatar-large" src="https://api.dicebear.com/7.x/avataaars/svg?seed=${p.avatar}">
+                        <div class="name-col">
+                            <span class="name-bold">${p.user}</span>
+                            <span class="time-ip">${timeStr} · ${p.ip}</span>
+                        </div>
+                        <!-- 替换原先的关注按钮，改为操作菜单触发器 -->
+                        <div class="feed-more-btn" onclick="openMoreMenu(event, '${p.user}')"><i class="fas fa-ellipsis-h"></i></div>
+                    </div>
+
+                    <div class="wf-content-text">
+                        <div style="font-weight:bold; margin-bottom:4px;">${p.isHelp ? '<span style="background:#f5222d;color:white;font-size:11px;padding:2px 6px;border-radius:4px;margin-right:6px;">求助</span>' : ''}${p.isGuide ? '<span style="background:#52c41a;color:white;font-size:11px;padding:2px 6px;border-radius:4px;margin-right:6px;">攻略</span>' : ''}${p.title}</div>
+                        <div>${tagsHtml}</div>
+                        <div style="margin-top:6px; color:#ddd;">${p.content}</div>
+                    </div>
+
+                    <div class="wf-partition-tag" onclick="event.stopPropagation(); jumpToPartition('${p.partition}')"><i class="fas fa-hashtag"></i> ${p.partition}</div>
+
+                    <div class="wf-img-box">
+                        <img class="wf-img" src="${p.images[0]}">
+                        ${videoOverlay}
+                    </div>
+
+                    <div class="wf-footer-single" onclick="event.stopPropagation()">
+                        <div class="action-btn" onclick="handleLike(${p.id}, this)"><i class="far fa-heart"></i> <span>${p.likes}</span></div>
+                        <div class="action-btn" onclick="handleFav(${p.id}, this)"><i class="far fa-star"></i> <span>0</span></div>
+                        <div class="action-btn" onclick="handleReply(${p.id})"><i class="far fa-comment"></i> <span>${p.comments}</span></div>
+                        <div class="action-btn" onclick="handleRepost(${p.id})"><i class="fas fa-retweet"></i> <span>${p.reposts}</span></div>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function getUserTagHtml(role) {
+        if (role === 'author') return `<span class="user-tag tag-author">作者</span>`;
+        if (role === 'me') return `<span class="user-tag tag-me">我</span>`;
+        if (role === 'mutual') return `<span class="user-tag tag-mutual"><i class="fas fa-exchange-alt"></i> 互相关注</span>`;
+        return '';
+    }
+
+    function renderComments(post) {
+        const list = document.getElementById('comment-list');
+        list.innerHTML = '';
+        
+        if (!post.comments || post.comments === 0) {
+            document.getElementById('d-comment-count').innerText = `评论区（共 0 条评论）`;
+            list.innerHTML = `
+                <div class="empty-section">
+                    <i class="far fa-comment-dots"></i>
+                    <div>暂无评论，快来抢沙发吧~</div>
+                </div>`;
+            return;
+        }
+
+        let rawComments = Array.from({length: Math.min(8, post.comments)}).map((_, i) => {
+            const hoursAgo =[0.5, 5, 20, 26, 40, 60, 100, 800][i % 8]; 
+            const testDate = new Date(Date.now() - hoursAgo * 3600000).toISOString();
+            const subCount = Math.floor(Math.random() * 4) + 1;
+            return {
+                id: i, user: `玩家_${i}`, avatar: `c${i}`, content: `非常赞同！学到了。`, likes: Math.floor(Math.random()*50),
+                timestamp: testDate, ip: provinces[i % provinces.length],
+                replies: Array.from({length: subCount}).map((_, j) => ({
+                    id: `sub_${i}_${j}`, user: `吃瓜_${j}`, avatar: `sub${i}_${j}`, content: `确实好用。`, 
+                    likes: Math.floor(Math.random()*10), timestamp: testDate, ip: provinces[(i+j) % provinces.length]
+                }))
+            };
+        });
+
+        if(rawComments.length > 2) rawComments[0].user = post.user; 
+
+        document.getElementById('d-comment-count').innerText = `评论区（共 ${post.comments} 条评论）`;
+        const sorted =[...rawComments].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        sorted.forEach((c, idx) => {
+            const timeIpStr = `${formatExactTime(c.timestamp)} · ${c.ip}`;
+            let cRole = '';
+            if (c.user === post.user) cRole = 'author';
+            else if (idx === 1) cRole = 'me';
+            else if (idx === 2) cRole = 'mutual';
+            
+            const repliesHtml = c.replies.map((r, rIdx) => {
+                let rRole = '';
+                if (r.user === post.user) rRole = 'author';
+                else if (rIdx === 0 && idx === 0) rRole = 'me';
+                else if (rIdx === 1) rRole = 'mutual';
+
+                return `
+                <div class="sub-reply-item" id="sub_item_${c.id}_${rIdx}">
+                    <div class="sub-header">
+                        <div class="sub-avatar" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=${r.avatar}')"></div>
+                        <span class="sub-user">${r.user} ${getUserTagHtml(rRole)}</span>
+                    </div>
+                    <div class="sub-text">${r.content}</div>
+                    <div class="sub-meta-row">
+                        <span>${formatExactTime(r.timestamp)} · ${r.ip}</span>
+                        <span style="display:flex; gap:16px;">
+                            <span onclick="showToast('点赞成功')"><i class="far fa-heart"></i> ${r.likes}</span>
+                            <span onclick="showToast('回复')">回复</span>
+                        </span>
+                    </div>
+                </div>`;
+            }).join('');
+
+            list.innerHTML += `
+                <div class="comment-item">
+                    <div class="c-avatar" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=${c.avatar}')"></div>
+                    <div class="c-content">
+                        <div style="font-size:13px; color:var(--text-sub); font-weight:bold; margin-bottom:6px; display:flex; align-items:center;">${c.user} ${getUserTagHtml(cRole)}</div>
+                        <div style="font-size:14px; color:white; line-height:1.5; margin-bottom:8px;">${c.content}</div>
+                        <div style="display:flex; justify-content:space-between; font-size:11px; color:#666; align-items:center;">
+                            <span>${timeIpStr}</span>
+                            <span style="display:flex; gap:16px;">
+                                <span onclick="showToast('点赞成功')"><i class="far fa-heart"></i> ${c.likes}</span>
+                                <span onclick="showToast('回复')">回复</span>
+                            </span>
+                        </div>
+                        <div class="sub-replies-box" style="${c.replies.length > 0 ? 'display:block;' : 'display:none;'}">
+                            ${repliesHtml}
+                            <div class="more-btn" id="more_btn_${c.id}" onclick="expandReplies(${c.id}, ${c.replies.length})">
+                                展开 ${c.replies.length} 条回复 <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        });
+    }
+
+    const replyState = {};
+    function expandReplies(cId, total) {
+        if(!replyState[cId]) replyState[cId] = 0;
+        let cur = replyState[cId]; let target = cur + 3;
+        for(let i=cur; i<target && i<total; i++) { document.getElementById(`sub_item_${cId}_${i}`).style.display = 'block'; }
+        replyState[cId] = target;
+        const btn = document.getElementById(`more_btn_${cId}`);
+        const left = total - target;
+        if(left <= 0) btn.style.display = 'none';
+        else btn.innerHTML = `继续展开 ${left} 条回复 <i class="fas fa-chevron-down"></i>`;
+    }
+
+    // ================= 动态详情页 =================
+    let currentDetailPostId = null;
+    function openPostDetail(id) {
+        currentDetailPostId = id;
+        const p = mockPosts.find(x => x.id === id);
+        if(!p) return;
+        
+        currentDetailAuthor = p.user; // 保存全局变量给举报功能使用
+        document.getElementById('d-title').innerText = p.title;
+        document.getElementById('d-content').innerHTML = p.content;
+
+        document.getElementById('d-author-row-container').innerHTML = `
+            <div class="d-avatar" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=${p.avatar}')"></div>
+            <div style="flex:1;">
+                <div style="font-weight:bold; color:white; font-size:14px;">${p.user}</div>
+                <div style="color:var(--text-sub); font-size:11px; margin-top:2px;">${formatExactTime(p.timestamp)} · ${p.ip}</div>
+            </div>
+            <!-- 详情内也去掉关注按钮以维持设计统一性，依赖右上角更多菜单 -->
+        `;
+        
+        document.getElementById('d-partition-link-box').innerHTML = `
+            <div class="d-partition-link" onclick="jumpToPartition('${p.partition}')">
+                <i class="fas fa-hashtag"></i> <span id="d-partition-name">${p.partition}</span>
+            </div>
+        `;
+
+        const wrapper = document.getElementById('d-media-wrapper');
+        const carousel = document.getElementById('d-media-carousel');
+        if (p.images && p.images.length > 0) {
+            wrapper.style.display = 'block';
+            carousel.innerHTML = p.images.map(src => `<img class="d-media-item" src="${src}">`).join('');
+            if(p.isVideo) {
+                wrapper.innerHTML += `<div class="video-overlay" style="pointer-events:auto;cursor:pointer;" onclick="showToast('播放视频')"><div class="play-btn" style="width:60px;height:60px;font-size:24px;"><i class="fas fa-play"></i></div></div>`;
+            }
+        } else { wrapper.style.display = 'none'; }
+
+        const scContainer = document.getElementById('d-sharecode-container');
+        if(p.shareCode) {
+            scContainer.innerHTML = `<div class="share-code-box"><span><i class="fas fa-bolt"></i> ${p.shareCode.type}: ${p.shareCode.name}</span> <button style="background:var(--primary);color:white;border:none;padding:4px 8px;border-radius:4px;font-weight:bold;cursor:pointer;" onclick="showToast('已复制分享码')">复制</button></div>`;
+        } else { scContainer.innerHTML = ''; }
+
+        const gcContainer = document.getElementById('d-game-card-container');
+        if(p.gameCard) {
+            gcContainer.innerHTML = `
+                <div class="d-game-card" onclick="showToast('进入游戏详情')">
+                    <img src="${p.gameCard.icon}" class="d-gc-icon">
+                    <div class="d-gc-info">
+                        <div style="color:white; font-size:15px; font-weight:bold;">${p.gameCard.name}</div>
+                        <div style="font-size:12px; color:#888;">★ ${p.gameCard.rating} · ${p.gameCard.category}</div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color:var(--text-sub); font-size:14px;"></i>
+                </div>`;
+        } else { gcContainer.innerHTML = ''; }
+
+        document.getElementById('d-bot-likes').innerText = p.likes;
+        document.getElementById('d-bot-favs').innerText = p.reposts; 
+        document.getElementById('d-bot-comments').innerText = p.comments;
+
+        renderComments(p);
+        document.getElementById('page-detail').classList.add('show');
+    }
+
+    // ================= 发帖与转发 =================
+    let draftData = null; 
+    let selectedGameHtml = ''; 
+    let selectedConfigs = { startup: '', keymap: '' };
+    let selectedPostPartition = 'Steam'; 
+    let isRepostMode = false;
+    let repostTargetId = null;
+
+    function renderPartitionSelect() {
+        const list = document.getElementById('psm-list');
+        list.innerHTML = allPartitionsList.map(p => `
+            <div class="g-list-item" onclick="selectPostPartition('${p}')">
+                <div class="g-item-info">
+                    <span class="g-item-name">${p}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function selectPostPartition(p) {
+        selectedPostPartition = p;
+        document.getElementById('btnPartition').innerText = p;
+        closeModal('partitionSelectModal');
+    }
+
+    function openPublishPage(isRepost = false, targetId = null) {
+        isRepostMode = isRepost;
+        repostTargetId = targetId;
+
+        const pubPage = document.getElementById('publishPage');
+        const pubTitleBox = document.getElementById('pubTitleBox');
+        const pubTitleInput = document.getElementById('postTitle');
+        const postContent = document.getElementById('postContent');
+        const btnGame = document.getElementById('btnGame');
+        const btnConfig = document.getElementById('btnConfig');
+        const aiCheckWrap = document.getElementById('aiCheckWrap');
+        const btnPartition = document.getElementById('btnPartition');
+        const linkedWrapper = document.getElementById('linkedWrapper');
+        const repostInner = document.getElementById('repostCardWrapperInner');
+
+        if (isRepost) {
+            pubTitleBox.innerText = '转发动态';
+            pubTitleInput.style.display = 'none';
+            btnGame.style.display = 'none';
+            btnConfig.style.display = 'none';
+            aiCheckWrap.style.display = 'none';
+            btnPartition.style.display = 'none';
+            
+            selectedGameHtml = '';
+            selectedConfigs = { startup: '', keymap: '' };
+            postContent.innerHTML = '';
+            postContent.setAttribute('placeholder', '分享此时的感受...');
+            
+            linkedWrapper.innerHTML = ''; 
+            
+            const target = mockPosts.find(x => x.id === targetId);
+            if (target) {
+                repostInner.innerHTML = `
+                    <div class="l-card" style="background: rgba(255,255,255,0.02); border-left: 3px solid var(--primary); padding: 10px 12px; margin-top: 12px; border-radius: 8px; display: flex; gap: 10px; align-items: flex-start; justify-content: flex-start;">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${target.avatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #333; flex-shrink: 0;">
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div style="font-size: 13px; color: var(--text-sub); font-weight: bold;">@${target.user}</div>
+                            <div style="font-size: 14px; color: white; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4;">${target.title || target.content}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                repostInner.innerHTML = '';
+            }
+        } else {
+            pubTitleBox.innerText = '发布动态';
+            pubTitleInput.style.display = 'block';
+            btnGame.style.display = 'block';
+            btnConfig.style.display = 'block';
+            aiCheckWrap.style.display = 'flex';
+            btnPartition.style.display = 'block';
+
+            postContent.setAttribute('placeholder', '分享你的游戏见解...');
+            renderPartitionSelect();
+            btnPartition.innerText = selectedPostPartition || '选择分区';
+            repostInner.innerHTML = '';
+
+            if (draftData) {
+                pubTitleInput.value = draftData.title;
+                postContent.innerHTML = draftData.content;
+                selectedGameHtml = draftData.gameHtml;
+                selectedConfigs = { ...draftData.configs };
+                renderPublishCards();
+                showToast('已恢复草稿');
+            } else {
+                pubTitleInput.value = '';
+                postContent.innerHTML = '';
+                linkedWrapper.innerHTML = '';
+            }
+        }
+        pubPage.classList.add('show');
+    }
+    
+    function closePublishPage() {
+        document.getElementById('publishPage').classList.remove('show');
+        hideKeyboardAndEmoji();
+    }
+
+    function checkBack() {
+        if (isRepostMode) {
+            closePublishPage();
+            return;
+        }
+        if (document.getElementById('postTitle').value || document.getElementById('postContent').innerHTML || selectedGameHtml || selectedConfigs.startup || selectedConfigs.keymap) {
+            document.getElementById('draftModal').classList.add('show');
+            hideKeyboardAndEmoji();
+        } else { closePublishPage(); }
+    }
+
+    function saveDraft() {
+        draftData = {
+            title: document.getElementById('postTitle').value,
+            content: document.getElementById('postContent').innerHTML,
+            gameHtml: selectedGameHtml,
+            configs: { ...selectedConfigs }
+        };
+        document.getElementById('draftModal').classList.remove('show');
+        closePublishPage();
+        showToast('草稿已保存');
+    }
+
+    function discardDraft() {
+        draftData = null;
+        document.getElementById('postTitle').value = '';
+        document.getElementById('postContent').innerHTML = '';
+        selectedGameHtml = ''; selectedConfigs = { startup: '', keymap: '' };
+        renderPublishCards();
+        document.getElementById('draftModal').classList.remove('show');
+        closePublishPage();
+    }
+
+    function openActionSheet(id) {
+        document.getElementById(id).style.display = 'flex';
+        setTimeout(() => { document.getElementById(id).classList.add('show'); document.getElementById(id + 'Body').classList.add('show'); }, 10);
+    }
+    function closeActionSheet(id) {
+        document.getElementById(id + 'Body').classList.remove('show');
+        document.getElementById(id).classList.remove('show');
+        setTimeout(() => { document.getElementById(id).style.display = 'none'; }, 300);
+    }
+    function openModal(id) { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    function showKeyboard() {
+        document.getElementById('mockEmojiPanel').classList.remove('show');
+        document.getElementById('mockKeyboard').classList.add('show');
+        document.getElementById('pubScrollArea').style.paddingBottom = '300px'; 
+    }
+    function toggleEmoji() {
+        const panel = document.getElementById('mockEmojiPanel');
+        const keyboard = document.getElementById('mockKeyboard');
+        if (panel.classList.contains('show')) { hideKeyboardAndEmoji(); } 
+        else { keyboard.classList.remove('show'); panel.classList.add('show'); document.getElementById('pubScrollArea').style.paddingBottom = '300px'; }
+    }
+    function hideKeyboardAndEmoji() {
+        document.getElementById('mockKeyboard').classList.remove('show');
+        document.getElementById('mockEmojiPanel').classList.remove('show');
+        document.getElementById('pubScrollArea').style.paddingBottom = '16px';
+        document.getElementById('postTitle').blur(); document.getElementById('postContent').blur();
+    }
+
+    function insertText(text) { 
+        const ta = document.getElementById('postContent'); 
+        ta.innerHTML += text; 
+        ta.focus(); 
+    }
+    function deleteText() { 
+        const ta = document.getElementById('postContent'); 
+        ta.innerHTML = ta.innerHTML.slice(0, -1); 
+        ta.focus(); 
+    }
+    
+    function insertTopic(topic) { 
+        const ta = document.getElementById('postContent');
+        ta.innerHTML += `<span contenteditable="false" style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="showToast('话题可点击')">#${topic}</span>&nbsp;`;
+        closeModal('topicModal'); 
+        ta.focus();
+    }
+    
+    function toggleAI() { const cb = document.getElementById('aiCheck'); cb.checked = !cb.checked; }
+
+    function renderPublishCards() {
+        if(isRepostMode) return; 
+        const wrapper = document.getElementById('linkedWrapper');
+        wrapper.innerHTML = selectedGameHtml + selectedConfigs.startup + selectedConfigs.keymap;
+        wrapper.scrollTop = wrapper.scrollHeight;
+    }
+
+    function linkSingleGame(name, img, score, tags) {
+        selectedGameHtml = `
+            <div class="l-card">
+                <div class="l-card-info">
+                    <img class="l-card-icon" src="${img}">
+                    <div class="l-card-text"><span class="l-card-title">${name}</span><span class="l-card-sub">${tags}</span></div>
+                </div>
+                <div class="l-card-remove" onclick="removeLinkedGame()"><i class="fas fa-times"></i></div>
+            </div>`;
+        renderPublishCards(); closeModal('gameModal'); showToast('已关联游戏');
+    }
+    function removeLinkedGame() { selectedGameHtml = ''; renderPublishCards(); }
+
+    function addConfigCard(name, type, iconClass, color, configType) {
+        selectedConfigs[configType] = `
+            <div class="l-card" style="border:1px dashed ${color};">
+                <div class="l-card-info">
+                    <div style="width:36px; height:36px; border-radius:6px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; color:${color}; font-size:18px;"><i class="${iconClass}"></i></div>
+                    <div class="l-card-text"><span class="l-card-title">${name}</span><span class="l-card-sub">${type}</span></div>
+                </div>
+                <div class="l-card-remove" onclick="removeConfigCard('${configType}')"><i class="fas fa-times"></i></div>
+            </div>`;
+        renderPublishCards(); closeActionSheet('configSheet'); showToast(`已插入${type}`);
+    }
+    function removeConfigCard(configType) { selectedConfigs[configType] = ''; renderPublishCards(); }
+
+    function submitPost() {
+        const title = document.getElementById('postTitle').value.trim();
+        const content = document.getElementById('postContent').innerHTML.trim(); 
+        
+        if (isRepostMode) {
+            if(!content) { showToast('请输入转发理由'); return; }
+            mockPosts.unshift({
+                id: Date.now(), title: '', tags:[], content: `【转发】${content}`, images:[], 
+                partition: '分享', user: '极客探索者', avatar: 'Admin', timestamp: new Date().toISOString(), ip: '当前位置',
+                comments: 0, reposts: 0, likes: 0
+            });
+            showToast('转发成功！');
+        } else {
+            if(!title && !content) { showToast('请输入内容后再发布'); return; }
+            mockPosts.unshift({
+                id: Date.now(), title: title || '新发布动态', tags:[], content: content, 
+                images:['https://picsum.photos/seed/newpost/800/600'], 
+                partition: selectedPostPartition || '分享',
+                user: '极客探索者', avatar: 'Admin', timestamp: new Date().toISOString(), ip: '当前位置',
+                comments: 0, reposts: 0, likes: 0
+            });
+            showToast('发布成功！');
+            draftData = null; 
+        }
+        
+        renderFeed(); 
+        document.getElementById('postTitle').value = ''; 
+        document.getElementById('postContent').innerHTML = ''; 
+        removeLinkedGame();
+        selectedConfigs = { startup: '', keymap: '' };
+        
+        setTimeout(() => { closePublishPage(); document.getElementById('community-view').scrollTo(0,0); }, 500);
+    }
+
+    // 初始化渲染
+    renderCommunityTabs();
+</script>
+</body>
+</html>
