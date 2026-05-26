@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>盖世游戏 - 任务与兑换后台管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1890ff;
+            --success: #52c41a;
+            --warning: #faad14;
+            --danger: #ff4d4f;
+            --coin: #fadb14;
+            --bg-dark: #001529;
+            --bg-light: #f0f2f5;
+            --border: #d9d9d9;
+            --border-light: #f0f0f0;
+            --text-main: #333;
+            --text-sub: #888;
+            --white: #fff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-light); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        /* ====== 侧边栏 ====== */
+        .sidebar { width: 220px; background-color: var(--bg-dark); color: rgba(255,255,255,0.65); display: flex; flex-direction: column; transition: 0.3s; z-index: 100; flex-shrink: 0;}
+        .logo { height: 64px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: var(--white); background: #002140; letter-spacing: 1px;}
+        .logo i { color: var(--coin); margin-right: 8px; font-size: 22px;}
+        .menu { flex: 1; padding-top: 10px; }
+        .menu-item { padding: 16px 24px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
+        .menu-item:hover { color: var(--white); background: rgba(255,255,255,0.05); }
+        .menu-item.active { background-color: var(--primary); color: var(--white); }
+
+        /* ====== 主体内容区 ====== */
+        .main-layout { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 1100px;}
+        .header { height: 64px; background: var(--white); box-shadow: 0 1px 4px rgba(0,21,41,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 10; flex-shrink: 0;}
+        .breadcrumb { font-size: 14px; color: var(--text-sub); }
+        .user-info { display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s; padding: 4px 8px; border-radius: 4px; }
+        .user-info:hover { background: var(--bg-light); }
+        .user-info img { width: 32px; height: 32px; border-radius: 50%; }
+
+        .content-scroll { flex: 1; overflow-y: auto; padding: 24px; }
+        .page { display: none; flex-direction: column; gap: 20px; }
+        .page.active { display: flex; }
+
+        /* ====== 卡片 & 表单通用样式 ====== */
+        .card { background: var(--white); border-radius: 4px; padding: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .filter-bar { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; align-items: center;}
+        .filter-item { display: flex; align-items: center; gap: 8px; font-size: 14px; position: relative;}
+        .filter-item input[type="text"], .filter-item input[type="number"], .filter-item select { padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px; outline: none; font-size: 13px; height: 32px; box-sizing: border-box;}
+        .filter-item input:focus, .filter-item select:focus { border-color: var(--primary); }
+        
+        .btn { padding: 0 16px; height: 32px; border-radius: 4px; font-size: 14px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box;}
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-primary:hover:not([disabled]) { background: #40a9ff; }
+        .btn-default { border-color: var(--border); background: var(--white); color: var(--text-main); }
+        .btn-default:hover:not([disabled]) { border-color: var(--primary); color: var(--primary); }
+        .btn-danger { background: var(--danger); color: var(--white); border-color: var(--danger);}
+        .btn-danger:hover:not([disabled]) { background: #ff7875; border-color: #ff7875; }
+        .btn-warning { background: var(--warning); color: var(--white); border-color: var(--warning);}
+        .btn-warning:hover:not([disabled]) { background: #ffc53d; border-color: #ffc53d; }
+        .btn-success { background: var(--success); color: var(--white); border-color: var(--success);}
+        .btn-success:hover:not([disabled]) { background: #73d13d; border-color: #73d13d; }
+        .btn[disabled] { background: #f5f5f5 !important; color: #b8b8b8 !important; border-color: #d9d9d9 !important; cursor: not-allowed; }
+
+        /* ================= 复杂组件：时间段范围选择器 ================= */
+        .date-picker-container { position: relative; }
+        .range-picker-input { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 4px; height: 32px; padding: 0 12px; font-size: 13px; cursor: pointer; width: 300px; justify-content: space-between; background: #fff;}
+        .range-picker-input:hover { border-color: var(--primary); }
+        .range-picker-input.active { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.2); }
+        .range-picker-input span { color: #ccc; padding: 0 8px; }
+        .date-dropdown { position: absolute; top: 38px; left: 0; background: #fff; box-shadow: 0 3px 6px -4px rgba(0,0,0,0.12), 0 6px 16px 0 rgba(0,0,0,0.08), 0 9px 28px 8px rgba(0,0,0,0.05); border-radius: 4px; z-index: 1000; display: none; width: 600px; cursor: default; }
+        .date-dropdown.show { display: block; }
+        .dd-inputs { display: flex; padding: 12px; border-bottom: 1px solid var(--border-light); align-items: center; gap: 8px;}
+        .dd-input-box { display: flex; gap: 6px; flex: 1; }
+        .dd-input-box input { flex: 1; height: 28px; border: 1px solid var(--border); border-radius: 2px; padding: 0 8px; font-size: 13px; outline: none; text-align: center; color: #555;}
+        .dd-body { display: flex; }
+        .dd-pane { flex: 1; padding: 12px; }
+        .dd-pane:first-child { border-right: 1px solid var(--border-light); }
+        .dd-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: bold; color: #333; font-size: 14px;}
+        .dd-header i { color: #999; cursor: pointer; font-size: 12px; padding: 4px;}
+        .dd-header i:hover { color: var(--primary); }
+        .dd-table { width: 100%; text-align: center; border-collapse: collapse; font-size: 13px; }
+        .dd-table th { font-weight: normal; color: #333; padding-bottom: 8px; }
+        .dd-table td { padding: 4px 0; cursor: pointer; color: #666;}
+        .dd-table td .cell { width: 24px; height: 24px; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 2px; transition: 0.2s;}
+        .dd-table td:hover .cell:not(.disabled) { background: #f5f5f5; }
+        .dd-table td .cell.active { background: var(--primary); color: #fff; }
+        .dd-table td .cell.disabled { color: #ccc; cursor: not-allowed; }
+        .dd-table td .cell.in-range { background: #e6f7ff; }
+        .dd-footer { padding: 10px 12px; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end; gap: 8px; }
+
+        /* ====== 数据表格 ====== */
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+        th, td { padding: 12px 10px; border-bottom: 1px solid var(--border-light); }
+        th { background: #fafafa; font-weight: bold; color: #333; }
+        tr:hover { background: #fafafa; }
+        td { vertical-align: middle; }
+        
+        .td-icon { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; background: #f5f5f5; border: 1px solid #eee;}
+        
+        .tag { padding: 2px 6px; border-radius: 4px; font-size: 12px; border: 1px solid transparent; display: inline-block;}
+        .tag-success { background: #f6ffed; border-color: #b7eb8f; color: var(--success); }
+        .tag-error { background: #fff2f0; border-color: #ffccc7; color: var(--danger); }
+        .tag-warning { background: #fffbe6; border-color: #ffe58f; color: var(--warning); }
+        .tag-blue { background: #e6f7ff; border-color: #91d5ff; color: var(--primary); }
+        .tag-gray { background: #fafafa; border-color: #d9d9d9; color: var(--text-sub); }
+        .tag-orange { background: #fff7e6; border-color: #ffd591; color: #fa8c16; }
+
+        .action-links a { color: var(--primary); text-decoration: none; margin-right: 10px; cursor: pointer; }
+        .action-links a.danger { color: var(--danger); }
+        .action-links a.success { color: var(--success); }
+        .action-links a:hover { opacity: 0.8; text-decoration: underline; }
+
+        .pagination { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 20px; font-size: 13px; color: var(--text-sub);}
+        .page-num { min-width: 28px; height: 28px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; transition: 0.2s;}
+        .page-num.active { background: var(--primary); color: var(--white); border-color: var(--primary); }
+        .page-num:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 10px 20px; border-radius: 4px; font-size: 14px; z-index: 2000; display: flex; align-items: center; gap: 8px; opacity: 0; pointer-events: none; transition: 0.3s; top: -50px; }
+        #toast.show { opacity: 1; top: 20px; }
+
+        /* ====== 全局模态框样式 ====== */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1500; display: none; align-items: center; justify-content: center; opacity: 0; transition: 0.3s; }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal { background: var(--white); width: 600px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; overflow: hidden; transform: translateY(-20px); transition: 0.3s; }
+        .modal-overlay.show .modal { transform: translateY(0); }
+        .modal-header { padding: 16px 24px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: bold; }
+        .modal-header i { cursor: pointer; color: var(--text-sub); transition: 0.2s;}
+        .modal-header i:hover { color: var(--danger); }
+        .modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; font-size: 14px;}
+        .modal-footer { padding: 12px 24px; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end; gap: 12px; }
+
+        .form-group { display: flex; align-items: flex-start; margin-bottom: 16px; }
+        .form-group label { width: 100px; text-align: right; margin-right: 16px; margin-top: 6px; color: var(--text-main); font-size: 14px;}
+        .form-group label.required::before { content: '*'; color: var(--danger); margin-right: 4px; font-family: SimSun, sans-serif;}
+        .form-control { flex: 1; padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; outline: none; transition: 0.2s;}
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.2); }
+        textarea.form-control { resize: vertical; min-height: 60px; }
+        
+        .coin-text { color: var(--warning); font-weight: bold; font-family: monospace;}
+        
+        .address-box { background: #fafafa; border: 1px solid #e8e8e8; padding: 15px; border-radius: 4px; line-height: 1.6; margin-bottom: 15px;}
+        .address-box strong { display: inline-block; width: 70px; color: #666; }
+    </style>
+</head>
+<body>
+
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fas fa-coins"></i> 盖世运营后台
+        </div>
+        <div class="menu">
+            <div class="menu-item active" onclick="switchMenu('task', this)">
+                <i class="fas fa-tasks"></i> 任务配置
+            </div>
+            <div class="menu-item" onclick="switchMenu('reward', this)">
+                <i class="fas fa-gift"></i> 奖品配置
+            </div>
+            <div class="menu-item" onclick="switchMenu('order', this)">
+                <i class="fas fa-shipping-fast"></i> 兑换与发货
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-layout">
+        <!-- 顶部导航 -->
+        <header class="header">
+            <div class="breadcrumb" id="breadcrumb">首页 / 任务配置</div>
+            <div class="user-info">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="avatar">
+                <span>运营管理员 <i class="fas fa-caret-down" style="color:var(--text-sub); margin-left:4px; font-size:12px;"></i></span>
+            </div>
+        </header>
+
+        <div class="content-scroll">
+            
+            <!-- ====== 1. 任务管理 ====== -->
+            <div class="page active" id="page-task">
+                <div class="card">
+                    <div class="filter-bar" id="task-filter">
+                        <div class="filter-item">任务名称: <input type="text" placeholder="输入名称关键词"></div>
+                        <div class="filter-item">任务类型: 
+                            <select>
+                                <option value="">全部</option>
+                                <option value="once">成长任务</option>
+                                <option value="daily">每日任务</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">状态: 
+                            <select>
+                                <option value="">全部</option>
+                                <option value="1">生效中</option>
+                                <option value="0">已停用</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            <button class="btn btn-default" onclick="simulateReset('task-filter')"><i class="fas fa-redo"></i> 重置</button>
+                        </div>
+                        <div class="filter-item" style="margin-left: auto;">
+                            <button class="btn btn-primary" onclick="openTaskModal()"><i class="fas fa-plus"></i> 新增任务</button>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>任务ID</th>
+                                <th>任务名称</th>
+                                <th>任务类型</th>
+                                <th>单次奖励(盖世币)</th>
+                                <th>频率上限</th>
+                                <th>当前状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="task-table-body">
+                            <!-- JS 渲染 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ====== 2. 奖品配置 ====== -->
+            <div class="page" id="page-reward">
+                <div class="card">
+                    <div class="filter-bar" id="reward-filter">
+                        <div class="filter-item">奖品ID: <input type="text" placeholder="输入ID"></div>
+                        <div class="filter-item">奖品名称: <input type="text" placeholder="输入名称"></div>
+                        <div class="filter-item">奖品类型: 
+                            <select>
+                                <option value="">全部</option>
+                                <option value="virtual">虚拟商品</option>
+                                <option value="physical">实物商品</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">状态: 
+                            <select>
+                                <option value="">全部</option>
+                                <option value="1">已上架</option>
+                                <option value="0">已下架</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            <button class="btn btn-default" onclick="simulateReset('reward-filter')"><i class="fas fa-redo"></i> 重置</button>
+                        </div>
+                        <div class="filter-item" style="margin-left: auto;">
+                            <button class="btn btn-primary" onclick="openRewardModal()"><i class="fas fa-plus"></i> 新增奖品</button>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>奖品ID</th>
+                                <th>主图</th>
+                                <th style="width: 20%;">奖品名称</th>
+                                <th>奖品类型</th>
+                                <th>兑换价格</th>
+                                <th>剩余库存</th>
+                                <th>单人限购</th>
+                                <th>已兑换数</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reward-table-body">
+                            <!-- JS 渲染 -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination">
+                        共 12 条记录，当前显示 1-12 条 
+                        <div class="page-num active">1</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 3. 兑奖发货 (兑换记录) ====== -->
+            <div class="page" id="page-order">
+                <div class="card">
+                    <div class="filter-bar" id="order-filter">
+                        <div class="filter-item">订单号: <input type="text" placeholder="输入兑换订单号"></div>
+                        <div class="filter-item">用户UID: <input type="text" placeholder="输入用户UID"></div>
+                        <div class="filter-item">奖品名称: <input type="text" placeholder="输入奖品名称模糊搜索" style="width: 150px;"></div>
+                        <div class="filter-item">商品类型: 
+                            <select>
+                                <option value="">全部</option>
+                                <option value="virtual">虚拟商品</option>
+                                <option value="physical">实物商品</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">订单状态: 
+                            <select>
+                                <option value="">全部</option>
+                                <option value="3">已发放(虚拟)</option>
+                                <option value="0">待填地址(实物)</option>
+                                <option value="1">待发货(实物)</option>
+                                <option value="2">已发货(实物)</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            兑换时间: 
+                            <div class="date-picker-container" data-picker="order"></div>
+                        </div>
+                        <div class="filter-item" style="margin-left: auto;">
+                            <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            <button class="btn btn-default" onclick="simulateReset('order-filter')"><i class="fas fa-redo"></i> 重置</button>
+                            <button class="btn btn-default" onclick="exportData()"><i class="fas fa-file-export"></i> 导出流水</button>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>订单号</th>
+                                <th>兑换时间</th>
+                                <th>用户信息</th>
+                                <th>兑换内容 (奖品)</th>
+                                <th>类型</th>
+                                <th>消耗积分</th>
+                                <th>订单状态</th>
+                                <th>物流信息</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="order-table-body">
+                            <!-- JS 渲染 -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination">
+                        共 458 条记录，当前显示 1-10 条 
+                        <div class="page-num active">1</div>
+                        <div class="page-num">2</div>
+                        <div class="page-num">3</div>
+                        ...
+                        <div class="page-num">46</div>
+                        <i class="fas fa-chevron-right" style="cursor:pointer; padding-left:8px;"></i>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 全局 Toast -->
+    <div id="toast"><i class="fas fa-info-circle" id="toast-icon"></i> <span id="toast-msg">操作成功</span></div>
+
+    <!-- 全局模态框 (Modal) -->
+    <div class="modal-overlay" id="global-modal" onmousedown="handleModalOverlayClick(event)">
+        <div class="modal" id="modal-container" onmousedown="event.stopPropagation()">
+            <div class="modal-header">
+                <span id="modal-title">标题</span>
+                <i class="fas fa-times" onclick="closeModal()"></i>
+            </div>
+            <div class="modal-body" id="modal-body-content"></div>
+            <div class="modal-footer" id="modal-footer-area">
+                <button class="btn btn-default" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" id="modal-confirm-btn" onclick="executeModalConfirm()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================= 数据 Mock =================
+        let mockTasks =[
+            { id: 'T_001', name: '每日签到', type: 'daily', reward: 2, limit: '2积分/日', status: 1 },
+            { id: 'T_002', name: '浏览帖子', type: 'daily', reward: 2, limit: '5次/日', status: 1 },
+            { id: 'T_003', name: '完善个人资料', type: 'once', reward: 20, limit: '限1次', status: 1 },
+            { id: 'T_004', name: '首次社区发帖', type: 'once', reward: 10, limit: '限1次', status: 1 },
+            { id: 'T_005', name: '测试停用任务', type: 'daily', reward: 5, limit: '1次/日', status: 0 },
+        ];
+
+        let mockRewards =[
+            { id: 'R_9901', img: 'https://api.dicebear.com/7.x/shapes/svg?seed=Game', name: 'X5Lite手柄 (包邮)', type: 'physical', price: 50000, stock: 15, limit: 1, redeemed: 12, status: 1 },
+            { id: 'R_9902', img: 'https://api.dicebear.com/7.x/shapes/svg?seed=Clock3', name: '3小时秒玩时长卡', type: 'virtual', price: 1200, stock: 99999, limit: 1, redeemed: 4580, status: 1 },
+            { id: 'R_9903', img: 'https://api.dicebear.com/7.x/shapes/svg?seed=A', name: '大冒险家社区头像框', type: 'virtual', price: 2000, stock: 1956, limit: 1, redeemed: 54, status: 1 },
+            { id: 'R_9904', img: 'https://api.dicebear.com/7.x/shapes/svg?seed=Pad', name: '官方定制超大鼠标垫', type: 'physical', price: 10000, stock: 0, limit: 2, redeemed: 50, status: 0 },
+        ];
+
+        // 状态: 0=待填地址, 1=待发货, 2=已发货, 3=已发放(虚拟)
+        let mockOrders =[
+            { id: 'ORD_20260318001', time: '2026-03-18 14:32:00', uid: 'UID_882910', uname: '盖世小秘书', rewardId: 'R_9901', rewardName: 'X5Lite手柄 (包邮)', type: 'physical', cost: 50000, status: 1, address: {name:'李四', phone:'13800138000', detail:'广东省深圳市南山区科技园南区'}, trackingCompany: '', trackingNo: '' },
+            { id: 'ORD_20260318002', time: '2026-03-18 10:15:22', uid: 'UID_993214', uname: '资深玩家A', rewardId: 'R_9902', rewardName: '3小时秒玩时长卡', type: 'virtual', cost: 1200, status: 3, address: null, trackingCompany: '-', trackingNo: '-' },
+            { id: 'ORD_20260317099', time: '2026-03-17 18:45:00', uid: 'UID_112233', uname: '暴躁老哥', rewardId: 'R_9904', rewardName: '官方定制超大鼠标垫', type: 'physical', cost: 10000, status: 0, address: null, trackingCompany: '', trackingNo: '' },
+            { id: 'ORD_20260316055', time: '2026-03-16 09:30:11', uid: 'UID_882910', uname: '盖世小秘书', rewardId: 'R_9901', rewardName: 'X5Lite手柄 (包邮)', type: 'physical', cost: 50000, status: 2, address: {name:'李四', phone:'13800138000', detail:'广东省深圳市南山区科技园南区'}, trackingCompany: '顺丰速运', trackingNo: 'SF1357924680' },
+        ];
+
+        // ================= JS 组件：渲染通用日期选择器 =================
+        function initDatePickers() {
+            const template = (key) => `
+                <div class="range-picker-input" id="rp-btn-${key}" onclick="toggleDP('${key}')">
+                    <div style="display:flex; align-items:center; gap:8px; color:#333;"><i class="far fa-clock"></i><span id="rp-start-${key}">开始时间</span></div>
+                    <span style="color:#ccc;">至</span>
+                    <span style="color:#666;" id="rp-end-${key}">结束时间</span>
+                </div>
+                <div class="date-dropdown" id="dd-${key}" onclick="event.stopPropagation()">
+                    <div class="dd-inputs">
+                        <div class="dd-input-box"><input type="text" value="2026-03-12"><input type="text" value="00:00:00"></div>
+                        <span style="color:#ccc;">></span>
+                        <div class="dd-input-box"><input type="text" value="2026-03-18"><input type="text" value="23:59:59"></div>
+                    </div>
+                    <div class="dd-body">
+                        <div class="dd-pane">
+                            <div class="dd-header"><div><i class="fas fa-angle-double-left"></i> <i class="fas fa-angle-left"></i></div><span>2026 年 3 月</span><div><i class="fas fa-angle-right"></i></div></div>
+                            <table class="dd-table">
+                                <tr><th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr>
+                                <tr><td><div class="cell">8</div></td><td><div class="cell">9</div></td><td><div class="cell">10</div></td><td><div class="cell">11</div></td><td><div class="cell active">12</div></td><td><div class="cell in-range">13</div></td><td><div class="cell in-range">14</div></td></tr>
+                                <tr><td><div class="cell in-range">15</div></td><td><div class="cell in-range">16</div></td><td><div class="cell in-range">17</div></td><td><div class="cell active">18</div></td><td><div class="cell">19</div></td><td><div class="cell">20</div></td><td><div class="cell">21</div></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="dd-footer">
+                        <button class="btn btn-default" onclick="clearDP('${key}', event)">清空</button>
+                        <button class="btn btn-primary" onclick="confirmDP('${key}', event)">确定</button>
+                    </div>
+                </div>
+            `;
+            document.querySelectorAll('.date-picker-container').forEach(el => { el.innerHTML = template(el.getAttribute('data-picker')); });
+        }
+        
+        function toggleDP(key) {
+            const dp = document.getElementById(`dd-${key}`);
+            const btn = document.getElementById(`rp-btn-${key}`);
+            if (dp.classList.contains('show')) { dp.classList.remove('show'); btn.classList.remove('active'); } 
+            else { dp.classList.add('show'); btn.classList.add('active'); }
+        }
+        function clearDP(key, e) {
+            e.stopPropagation();
+            document.getElementById(`rp-start-${key}`).innerText = '开始时间'; document.getElementById(`rp-end-${key}`).innerText = '结束时间';
+            document.getElementById(`rp-start-${key}`).style.color = '#666'; toggleDP(key);
+        }
+        function confirmDP(key, e) {
+            e.stopPropagation();
+            document.getElementById(`rp-start-${key}`).innerText = '2026-03-12'; document.getElementById(`rp-end-${key}`).innerText = '2026-03-18';
+            document.getElementById(`rp-start-${key}`).style.color = '#333'; toggleDP(key); showToast('时间段已应用');
+        }
+
+        // ================= 全局基础交互 =================
+        let currentModalCallback = null;
+        function openModal(title, bodyHtml, onConfirm, hideFooter = false) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-body-content').innerHTML = bodyHtml;
+            document.getElementById('modal-footer-area').style.display = hideFooter ? 'none' : 'flex';
+            currentModalCallback = onConfirm;
+            document.getElementById('global-modal').classList.add('show');
+        }
+        function closeModal() { document.getElementById('global-modal').classList.remove('show'); currentModalCallback = null; }
+        function handleModalOverlayClick(e) { if(e.target.id === 'global-modal') closeModal(); }
+        function executeModalConfirm() { if (currentModalCallback) currentModalCallback(); }
+
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            const icon = document.getElementById('toast-icon');
+            icon.className = type === 'error' ? 'fas fa-times-circle' : 'fas fa-check-circle';
+            icon.style.color = type === 'error' ? 'var(--danger)' : 'var(--success)';
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function simulateSearch() { showToast('正在查询数据...'); }
+        function simulateReset(filterId) {
+            const wrap = document.getElementById(filterId);
+            if(wrap) { wrap.querySelectorAll('input[type="text"]').forEach(i => i.value = ''); wrap.querySelectorAll('select').forEach(s => s.selectedIndex = 0); }
+            showToast('筛选项已重置');
+        }
+        function exportData() { showToast('流水数据导出成功', 'success'); }
+
+        function switchMenu(pageId, el) {
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            if(el) el.classList.add('active');
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+            
+            const titles = { 'task': '任务配置', 'reward': '奖品配置', 'order': '兑换与发货' };
+            document.getElementById('breadcrumb').innerText = `首页 / ${titles[pageId]}`;
+
+            if(pageId === 'task') renderTasks();
+            if(pageId === 'reward') renderRewards();
+            if(pageId === 'order') renderOrders();
+        }
+
+        // ================= 1. 任务管理业务逻辑 =================
+        function renderTasks() {
+            const typeMap = { 'once': '<span class="tag tag-warning">成长任务</span>', 'daily': '<span class="tag tag-blue">每日任务</span>' };
+            document.getElementById('task-table-body').innerHTML = mockTasks.map(t => {
+                const statusTag = t.status === 1 ? `<span class="tag tag-success">生效中</span>` : `<span class="tag tag-gray">已停用</span>`;
+                return `
+                <tr>
+                    <td style="font-family:monospace; color:var(--text-sub);">${t.id}</td>
+                    <td style="font-weight:bold;">${t.name}</td>
+                    <td>${typeMap[t.type]}</td>
+                    <td class="coin-text">+${t.reward}</td>
+                    <td>${t.limit}</td>
+                    <td>${statusTag}</td>
+                    <td class="action-links">
+                        <a onclick="openTaskModal('${t.id}')">编辑配置</a>
+                        <a class="${t.status===1?'danger':'success'}" onclick="toggleTaskStatus('${t.id}')">${t.status===1?'停用':'启用'}</a>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function toggleTaskStatus(id) {
+            const task = mockTasks.find(t => t.id === id);
+            task.status = task.status === 1 ? 0 : 1;
+            showToast(`任务 [${task.name}] 已${task.status === 1 ? '启用' : '停用'}`);
+            renderTasks();
+        }
+
+        function openTaskModal(id = null) {
+            const task = id ? mockTasks.find(t => t.id === id) : {};
+            const html = `
+                <div class="form-group"><label class="required">任务名称</label><input type="text" class="form-control" id="m-t-name" value="${task.name||''}" placeholder="如：每日签到"></div>
+                <div class="form-group"><label class="required">任务类型</label>
+                    <select class="form-control" id="m-t-type">
+                        <option value="once" ${task.type==='once'?'selected':''}>成长任务</option>
+                        <option value="daily" ${task.type==='daily'?'selected':''}>每日任务</option>
+                    </select>
+                </div>
+                <div class="form-group"><label class="required">奖励分值</label><input type="number" class="form-control" id="m-t-reward" value="${task.reward||''}" placeholder="请输入大于0的整数"></div>
+                <div class="form-group"><label class="required">频率上限</label><input type="text" class="form-control" id="m-t-limit" value="${task.limit||''}" placeholder="如：5次/日"></div>
+            `;
+            openModal(id ? '编辑任务配置' : '新增盖世币任务', html, () => {
+                if(!document.getElementById('m-t-name').value) return showToast('请填写完整必填项', 'error');
+                showToast('任务配置保存成功！');
+                closeModal();
+            });
+        }
+
+        // ================= 2. 奖品配置业务逻辑 =================
+        function renderRewards() {
+            document.getElementById('reward-table-body').innerHTML = mockRewards.map(r => {
+                const typeTag = r.type === 'virtual' ? `<span class="tag tag-blue">虚拟商品</span>` : `<span class="tag tag-orange">实物商品</span>`;
+                const statusTag = r.status === 1 ? `<span class="tag tag-success">已上架</span>` : `<span class="tag tag-gray">已下架</span>`;
+                const stockText = r.stock === 0 ? `<span style="color:var(--danger);font-weight:bold;">售罄 (0)</span>` : (r.stock > 9999 ? '9999+' : r.stock);
+                
+                return `
+                <tr>
+                    <td style="font-family:monospace; color:var(--text-sub);">${r.id}</td>
+                    <td><img src="${r.img}" class="td-icon"></td>
+                    <td style="font-weight:bold;">${r.name}</td>
+                    <td>${typeTag}</td>
+                    <td class="coin-text">${r.price}</td>
+                    <td>${stockText}</td>
+                    <td>${r.limit} 次</td>
+                    <td>${r.redeemed}</td>
+                    <td>${statusTag}</td>
+                    <td class="action-links">
+                        <a onclick="openRewardModal('${r.id}')">编辑</a>
+                        <a onclick="promptAddStock('${r.id}', '${r.name}')">补库存</a>
+                        <a class="${r.status===1?'danger':'success'}" onclick="toggleRewardStatus('${r.id}')">${r.status===1?'下架':'上架'}</a>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function toggleRewardStatus(id) {
+            const r = mockRewards.find(x => x.id === id);
+            r.status = r.status === 1 ? 0 : 1;
+            showToast(`商品 [${r.name}] 已${r.status === 1 ? '上架' : '下架'}`);
+            renderRewards();
+        }
+
+        function promptAddStock(id, name) {
+            const num = prompt(`请输入为【${name}】补充的库存数量：`, "10");
+            if(num && !isNaN(parseInt(num))) {
+                const r = mockRewards.find(x => x.id === id);
+                r.stock += parseInt(num);
+                showToast(`已成功为 [${name}] 补充 ${num} 个库存`);
+                renderRewards();
+            }
+        }
+
+        function openRewardModal(id = null) {
+            const r = id ? mockRewards.find(x => x.id === id) : {};
+            const html = `
+                <div class="form-group"><label class="required">奖品名称</label><input type="text" class="form-control" id="m-r-name" value="${r.name||''}"></div>
+                <div class="form-group"><label class="required">奖品类型</label>
+                    <select class="form-control" id="m-r-type">
+                        <option value="virtual" ${r.type==='virtual'?'selected':''}>虚拟商品 (自动发放)</option>
+                        <option value="physical" ${r.type==='physical'?'selected':''}>实物商品 (需填地址)</option>
+                    </select>
+                </div>
+                <div class="form-group"><label class="required">主图 URL</label><input type="text" class="form-control" id="m-r-img" value="${r.img||'https://api.dicebear.com/7.x/shapes/svg?seed='}"></div>
+                <div class="form-group"><label class="required">兑换价格</label><input type="number" class="form-control" id="m-r-price" value="${r.price||''}" placeholder="消耗的盖世币数量"></div>
+                <div class="form-group"><label class="required">库存数量</label><input type="number" class="form-control" id="m-r-stock" value="${r.stock||0}"></div>
+                <div class="form-group"><label class="required">单人限兑</label><input type="number" class="form-control" id="m-r-limit" value="${r.limit||1}" placeholder="0表示不限"></div>
+            `;
+            openModal(id ? '编辑奖品信息' : '新增商场奖品', html, () => {
+                const name = document.getElementById('m-r-name').value;
+                if(!name || !document.getElementById('m-r-price').value) return showToast('核心字段不可为空', 'error');
+                
+                if(!id) {
+                    mockRewards.unshift({
+                        id: 'R_' + Math.floor(Math.random()*9000+1000), img: document.getElementById('m-r-img').value,
+                        name: name, type: document.getElementById('m-r-type').value,
+                        price: parseInt(document.getElementById('m-r-price').value), stock: parseInt(document.getElementById('m-r-stock').value),
+                        limit: parseInt(document.getElementById('m-r-limit').value), redeemed: 0, status: 1
+                    });
+                } else {
+                    r.name = name; r.type = document.getElementById('m-r-type').value;
+                    r.img = document.getElementById('m-r-img').value; r.price = parseInt(document.getElementById('m-r-price').value);
+                    r.stock = parseInt(document.getElementById('m-r-stock').value); r.limit = parseInt(document.getElementById('m-r-limit').value);
+                }
+                showToast('奖品配置已保存'); renderRewards(); closeModal();
+            });
+        }
+
+        // ================= 3. 兑换订单 / 发货记录业务逻辑 =================
+        function renderOrders() {
+            document.getElementById('order-table-body').innerHTML = mockOrders.map(o => {
+                const typeTag = o.type === 'virtual' ? `<span class="tag tag-blue">虚拟</span>` : `<span class="tag tag-orange">实物</span>`;
+                
+                let statusTag, actionHtml = '', logisticsStr = '-';
+                if(o.status === 0) {
+                    statusTag = `<span class="tag tag-error">待填地址</span>`;
+                    actionHtml = `<a onclick="viewOrderDetails('${o.id}')">订单详情</a>`;
+                    logisticsStr = `<span style="color:var(--danger)">用户未提交收货信息</span>`;
+                } else if(o.status === 1) {
+                    statusTag = `<span class="tag tag-warning">待发货</span>`;
+                    actionHtml = `<a class="success" style="font-weight:bold;" onclick="openShipModal('${o.id}')">立即发货</a><a onclick="viewOrderDetails('${o.id}')">详情</a>`;
+                    logisticsStr = `<span style="color:var(--warning)">等待后台发货</span>`;
+                } else if(o.status === 2) {
+                    statusTag = `<span class="tag tag-success">已发货</span>`;
+                    actionHtml = `<a onclick="viewOrderDetails('${o.id}')">查看物流</a>`;
+                    logisticsStr = `${o.trackingCompany}<br><span style="font-family:monospace;font-size:12px;">${o.trackingNo}</span>`;
+                } else if(o.status === 3) {
+                    statusTag = `<span class="tag tag-gray">已发放</span>`;
+                    actionHtml = `<a onclick="viewOrderDetails('${o.id}')">详情</a>`;
+                    logisticsStr = `系统直发`;
+                }
+
+                return `
+                <tr>
+                    <td style="font-family:monospace; font-size:12px; color:var(--text-sub);">${o.id}</td>
+                    <td style="font-size:12px;">${o.time.replace(' ', '<br>')}</td>
+                    <td>
+                        <div style="font-weight:bold; color:var(--primary);">${o.uname}</div>
+                        <div style="font-size:12px; color:var(--text-sub);">UID: ${o.uid}</div>
+                    </td>
+                    <td style="font-weight:bold;">${o.rewardName}</td>
+                    <td>${typeTag}</td>
+                    <td class="coin-text">${o.cost}</td>
+                    <td>${statusTag}</td>
+                    <td style="font-size:12px;">${logisticsStr}</td>
+                    <td class="action-links">${actionHtml}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function viewOrderDetails(id) {
+            const o = mockOrders.find(x => x.id === id);
+            let addrHtml = '';
+            if(o.type === 'physical') {
+                if(o.address) {
+                    addrHtml = `
+                        <h4 style="margin: 15px 0 10px;">收件人信息</h4>
+                        <div class="address-box">
+                            <div><strong>收件人:</strong> ${o.address.name}</div>
+                            <div><strong>联系电话:</strong> ${o.address.phone}</div>
+                            <div><strong>收货地址:</strong> ${o.address.detail}</div>
+                        </div>
+                    `;
+                } else {
+                    addrHtml = `<div class="address-box" style="color:var(--danger);"><i class="fas fa-exclamation-circle"></i> 该用户尚未在前台填写收货地址，暂时无法发货。</div>`;
+                }
+            }
+
+            let trackHtml = '';
+            if(o.status === 2) {
+                trackHtml = `
+                    <h4 style="margin: 15px 0 10px;">物流信息</h4>
+                    <div class="address-box">
+                        <div><strong>承运快递:</strong> ${o.trackingCompany}</div>
+                        <div><strong>运单编号:</strong> <span style="font-family:monospace; color:var(--primary);">${o.trackingNo}</span></div>
+                    </div>
+                `;
+            }
+
+            const html = `
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:15px;">
+                    <div><span style="color:#888;">订单号:</span> ${o.id}</div>
+                    <div><span style="color:#888;">兑换时间:</span> ${o.time}</div>
+                </div>
+                <div style="display:flex; gap:15px; margin-bottom: 15px; align-items:center;">
+                    <img src="${mockRewards.find(r=>r.name===o.rewardName)?.img || 'https://api.dicebear.com/7.x/shapes/svg'}" style="width:60px;height:60px; border-radius:4px; border:1px solid #eee;">
+                    <div>
+                        <div style="font-weight:bold; font-size:15px; margin-bottom:6px;">${o.rewardName}</div>
+                        <div>消耗: <span class="coin-text">${o.cost}</span> 盖世币</div>
+                    </div>
+                </div>
+                ${addrHtml}
+                ${trackHtml}
+            `;
+            openModal('兑换订单详情', html, null, true);
+        }
+
+        function openShipModal(id) {
+            const o = mockOrders.find(x => x.id === id);
+            const html = `
+                <div class="address-box" style="margin-bottom: 20px;">
+                    <div><strong>收件人:</strong> ${o.address.name}</div>
+                    <div><strong>联系电话:</strong> ${o.address.phone}</div>
+                    <div><strong>收货地址:</strong> ${o.address.detail}</div>
+                </div>
+                <div class="form-group"><label class="required">承运快递</label>
+                    <select class="form-control" id="m-s-company">
+                        <option>顺丰速运</option>
+                        <option>京东物流</option>
+                        <option>中通快递</option>
+                        <option>圆通速递</option>
+                        <option>虚拟发货(无需单号)</option>
+                    </select>
+                </div>
+                <div class="form-group"><label class="required">运单编号</label><input type="text" class="form-control" id="m-s-track" placeholder="请输入快递单号"></div>
+            `;
+            openModal('订单发货', html, () => {
+                const company = document.getElementById('m-s-company').value;
+                const no = document.getElementById('m-s-track').value;
+                if(!no && company !== '虚拟发货(无需单号)') return showToast('请输入运单编号', 'error');
+
+                o.status = 2; // 已发货
+                o.trackingCompany = company;
+                o.trackingNo = no || '-';
+                
+                showToast('订单已标记为发货');
+                renderOrders();
+                closeModal();
+            });
+        }
+
+        // 启动初始化
+        window.onload = () => {
+            initDatePickers();
+            switchMenu('task', document.querySelectorAll('.menu-item')[0]);
+        };
+    </script>
+</body>
+</html>
