@@ -1772,8 +1772,7 @@
         }
 
         function openOfficialPostModal() {
-            document.getElementById('modal-title').innerText = '新建官方动态';
-            document.getElementById('modal-body-content').innerHTML = '<div style="display:flex;flex-direction:column;gap:14px;padding:10px 0">' +
+            var html = '<div style="display:flex;flex-direction:column;gap:14px;padding:10px 0">' +
                 '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 发布人昵称</label><input type="text" value="盖世游戏官方" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-nickname"></div>' +
                 '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 身份标签名称</label><input type="text" value="盖世游戏大使" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-tag"></div>' +
                 '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 发布到分区</label><select style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-partition"><option>Steam</option><option>GTA 5</option><option>配置分享</option><option>Epic</option></select></div>' +
@@ -1781,13 +1780,13 @@
                 '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 正文内容</label><textarea placeholder="输入正文" style="width:100%;height:100px;padding:8px;border:1px solid #d9d9d9;border-radius:4px;resize:vertical" id="m-content"></textarea></div>' +
                 '<div><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" checked id="m-pin"> 发布后自动置顶</label></div>' +
                 '</div>';
-            currentModalCallback = function() {
+            openModal('新建官方动态', html, function() {
                 var title = document.getElementById('m-title').value;
                 if (!title) { showToast('请填写标题'); return; }
                 officialPosts.unshift({
                     id: 'OP' + String(officialPosts.length + 1).padStart(3, '0'),
-                    nickname: document.getElementById('m-nickname').value,
-                    tag: document.getElementById('m-tag').value,
+                    nickname: document.getElementById('m-nickname').value || '盖世游戏官方',
+                    tag: document.getElementById('m-tag').value || '盖世游戏大使',
                     title: title,
                     partition: document.getElementById('m-partition').value,
                     status: document.getElementById('m-pin').checked ? '已置顶' : '已发布',
@@ -1797,8 +1796,7 @@
                 renderOfficialPost();
                 closeModal();
                 showToast('官方动态发布成功');
-            };
-            openModal();
+            });
         }
 
         // 初始化（等DOM加载完成）
