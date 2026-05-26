@@ -1785,7 +1785,8 @@
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 发布人昵称</label><input type="text" value="' + (data ? data.nickname : '盖世游戏官方') + '" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-nickname"></div>';
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 身份标签（来源：身份管理）</label><select style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-tag">' + tagOpts + '</select></div>';
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 发布到分区</label><select style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-partition"><option' + (data && data.partition==='Steam' ? ' selected' : '') + '>Steam</option><option' + (data && data.partition==='GTA 5' ? ' selected' : '') + '>GTA 5</option><option' + (data && data.partition==='配置分享' ? ' selected' : '') + '>配置分享</option><option' + (data && data.partition==='Epic' ? ' selected' : '') + '>Epic</option></select></div>';
-            h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 动态标题</label><input type="text" value="' + (data ? data.title : '') + '" placeholder="输入标题" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-title"></div>';
+            h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">关联文章ID（选填）</label><div style="display:flex;gap:8px"><input type="text" value="' + (data && data.articleId ? data.articleId : '') + '" placeholder="输入文章ID，如1007668" style="flex:1;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-article-id"><button type="button" class="btn btn-sm" onclick="fetchArticleTitle()">读取</button></div><div id="m-article-hint" style="font-size:11px;color:#999;margin-top:4px">' + (data && data.articleId ? '已关联：' + data.title : '输入ID后点击读取，将自动填充标题') + '</div></div>';
+            h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 动态标题</label><input type="text" value="' + (data ? data.title : '') + '" placeholder="输入标题或通过文章ID读取" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-title"></div>';
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 正文内容（富文本）</label>';
             h += '<div style="display:flex;gap:6px;margin-bottom:6px;padding:6px;background:#f5f5f5;border-radius:4px 4px 0 0;border:1px solid #d9d9d9;border-bottom:none"><button type="button" class="btn btn-sm" onclick="document.execCommand(\'bold\')"><b>B</b></button><button type="button" class="btn btn-sm" onclick="document.execCommand(\'italic\')"><i>I</i></button><button type="button" class="btn btn-sm" onclick="document.execCommand(\'underline\')"><u>U</u></button><button type="button" class="btn btn-sm" onclick="document.execCommand(\'insertUnorderedList\')">列表</button><button type="button" class="btn btn-sm" onclick="var u=prompt(\'输入图片URL\');if(u)document.execCommand(\'insertImage\',false,u)">插图</button><button type="button" class="btn btn-sm" onclick="var u=prompt(\'输入链接URL\');if(u)document.execCommand(\'createLink\',false,u)">链接</button></div>';
             h += '<div id="m-content" contenteditable="true" style="width:100%;min-height:120px;padding:12px;border:1px solid #d9d9d9;border-radius:0 0 4px 4px;background:#fff;line-height:1.6;outline:none">' + (data ? data.content : '') + '</div></div>';
@@ -1855,6 +1856,28 @@
                 officialPosts.splice(idx, 1);
                 renderOfficialPost();
                 showToast('已删除');
+            }
+        }
+
+        // 模拟通过文章ID读取标题
+        var articleDB = {
+            '1007668': '全新英雄，海量更新，黑爪之治一一来袭',
+            '1007645': '《洛奇英雄传》实用性改善今日更新',
+            '1007626': '【游·见】专访《绿色再临》（Green Again）',
+            '1007625': 'Createjoy光合计划西安站暨GameJam',
+            '1007624': '《漫威争锋》新制服与活动齐上线',
+        };
+        function fetchArticleTitle() {
+            var id = document.getElementById('m-article-id').value.trim();
+            if (!id) { showToast('请输入文章ID'); return; }
+            var title = articleDB[id];
+            if (title) {
+                document.getElementById('m-title').value = title;
+                document.getElementById('m-article-hint').innerHTML = '<span style="color:#52c41a">✓ 已读取：' + title + '</span>';
+                showToast('标题已自动填充');
+            } else {
+                document.getElementById('m-article-hint').innerHTML = '<span style="color:#ff4d4f">未找到ID为 ' + id + ' 的文章</span>';
+                showToast('未找到该文章ID');
             }
         }
 
