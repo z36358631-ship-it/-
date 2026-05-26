@@ -1,0 +1,1452 @@
+--- START OF FILE 社区游戏详情页改动demo.html ---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>游戏详情与社区完美融合 Demo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-base: #0b1117;
+            --bg-panel: #16202c;
+            --bg-card: #1f2d3d;
+            --text-main: #f1f5f9;
+            --text-sub: #94a3b8;
+            --accent-blue: #0ea5e9;
+            --accent-cyan: #06b6d4;
+            --primary-green: #0ec4a3;
+            --btn-gradient: linear-gradient(90deg, #0284c7, #0ea5e9);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary: #287dfa;
+            --score-color: #facc15;
+            --rose-red: #e91e63;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+        ::-webkit-scrollbar { display: none; }
+        
+        body { background-color: #111; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; color: var(--text-main); overflow: hidden; font-size: 13px;}
+
+        /* 顶部控制栏 */
+        .demo-controls { margin-bottom: 20px; display: flex; gap: 15px; z-index: 1000; }
+        .demo-btn { background: #333; color: #fff; border: 1px solid #555; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px; transition: 0.3s; font-weight: bold; }
+        .demo-btn:hover { background: var(--accent-blue); border-color: var(--accent-blue); }
+
+        /* 模拟设备外壳 */
+        .device-wrapper { display: flex; align-items: center; justify-content: center; flex: 1; width: 100%; }
+        .device { background: var(--bg-base); border-radius: 36px; box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 0 10px #222; overflow: hidden; position: relative; display: flex; flex-direction: column; transform-origin: center center; transition: width 0.4s, height 0.4s; }
+        .device.portrait { width: 390px; height: 844px; }
+        .device.landscape { width: 844px; height: 390px; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 0 8px #222;}
+
+        .status-bar { height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 0 24px; font-size: 13px; font-weight: bold; z-index: 50; flex-shrink: 0; background: rgba(11, 17, 23, 0.95); }
+
+        /* ================= 核心：顶部全局 Tab 导航栏 ================= */
+        .top-app-bar { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: rgba(11, 17, 23, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); z-index: 50; flex-shrink: 0; }
+        .top-app-bar i { font-size: 18px; cursor: pointer; color: #fff; width: 30px; text-align: center; transition: 0.2s;}
+        .top-app-bar i:hover { color: var(--accent-cyan); }
+        .nav-tabs { display: flex; gap: 30px; height: 100%; align-items: center; }
+        .nav-tab { font-size: 15px; color: var(--text-sub); font-weight: bold; position: relative; cursor: pointer; transition: 0.3s; }
+        .nav-tab.active { color: #fff; font-size: 17px; }
+        .nav-tab.active::after { content: ''; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); width: 16px; height: 3px; background: var(--primary); border-radius: 2px; }
+
+        /* ================= 主体内容布局 ================= */
+        .main-wrapper { display: flex; flex: 1; overflow: hidden; position: relative; }
+        .left-col { display: flex; flex-direction: column; flex-shrink: 0; }
+        .right-col { display: flex; flex-direction: column; flex: 1; overflow-y: auto; scroll-behavior: smooth; }
+        
+        .detail-pane { display: none; flex-direction: column; padding-bottom: 80px; }
+        .community-pane { display: none; flex-direction: column; }
+
+        /* 竖屏模式逻辑 */
+        .portrait .main-wrapper { flex-direction: column; overflow-y: auto; }
+        .portrait .right-col { overflow: visible; }
+        .portrait[data-tab="detail"] .left-col { display: flex; }
+        .portrait[data-tab="detail"] .detail-pane { display: flex; }
+        .portrait[data-tab="community"] .left-col { display: none; }
+        .portrait[data-tab="community"] .community-pane { display: flex; }
+
+        /* 横屏模式逻辑 - 横版游戏详情对半分50% */
+        .landscape .main-wrapper { flex-direction: row; padding: 16px; gap: 16px; background: var(--bg-base); overflow: hidden;}
+        .landscape .left-col { width: 50%; border-radius: 16px; overflow: hidden; background: var(--bg-panel); border: 1px solid var(--border-color); }
+        .landscape .right-col { width: 50%; border-radius: 16px; overflow-y: auto; background: var(--bg-panel); border: 1px solid var(--border-color); position: relative;}
+        .landscape[data-tab="detail"] .detail-pane { display: flex; }
+        .landscape[data-tab="community"] .community-pane { display: flex; }
+
+        /* === 横版社区 Tab 不与详情融合，独立展示 === */
+        .landscape[data-tab="community"] .main-wrapper { padding: 0; gap: 0; }
+        .landscape[data-tab="community"] .left-col { display: none; }
+        .landscape[data-tab="community"] .right-col { width: 100%; border-radius: 0; border: none; background: transparent; }
+        .landscape[data-tab="community"] .comm-search-bar { background: transparent; padding: 16px 16px 8px;}
+
+        /* --- 媒体区与基础信息 (Left Col) --- */
+        .media-section { position: relative; background: #000; background-image: url('https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg'); background-size: cover; background-position: center; flex-shrink: 0;}
+        .portrait .media-section { width: 100%; height: 240px; }
+        .landscape .media-section { width: 100%; height: 200px; }
+        .play-btn-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); }
+        .play-btn-overlay i { font-size: 44px; color: rgba(255,255,255,0.8); cursor: pointer; transition: 0.2s;}
+        .play-btn-overlay i:hover { color: #fff; transform: scale(1.1); }
+        
+        .meta-section { padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px; color: var(--text-sub); background: var(--bg-panel); }
+        .landscape .meta-section { flex: 1; border-top: 1px solid var(--border-color); margin-top: auto;}
+        .meta-item span:first-child { display: inline-block; width: 60px; }
+        .meta-item span:last-child { color: #fff; }
+
+        /* --- 详情 Tab 内容 (Detail Pane) --- */
+        .info-section { padding: 16px 16px 0; }
+        .title-row { display: flex; justify-content: space-between; align-items: flex-start; }
+        .title-box h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; color: white;}
+        .title-box p { font-size: 13px; color: var(--text-sub); }
+        .score-box { text-align: center; cursor: pointer;}
+        .score-box .num { font-size: 28px; font-weight: 900; color: var(--primary-green); line-height: 1; }
+        .score-box .desc { font-size: 10px; color: var(--text-sub); }
+        .tags-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .tag { background: var(--bg-card); padding: 4px 10px; border-radius: 6px; font-size: 11px; color: #cbd5e1; }
+        .tag.highlight { background: rgba(234, 179, 8, 0.15); color: #facc15; font-weight: bold; }
+        .tag-icons { background: var(--bg-card); padding: 4px 8px; border-radius: 6px; color: #fff; display: flex; gap: 6px;}
+
+        .engine-card { background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid rgba(14,165,233,0.3); border-radius: 12px; padding: 16px; margin: 20px; }
+        .engine-card-title { display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; margin-bottom: 16px; align-items: center; color: white;}
+        .engine-card-title span { color: var(--accent-blue); font-size: 12px; cursor: pointer;}
+        .engine-features { display: flex; justify-content: space-between; }
+        .feature { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; color: var(--text-sub); }
+        .feature i { font-size: 20px; color: #fff; }
+        .feature .fa-check-circle { color: #22c55e; }
+        
+        .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: #fff; padding: 0 20px;}
+        .intro-text { font-size: 13px; color: var(--text-sub); line-height: 1.6; padding: 0 20px;}
+
+        /* --- 社区 Tab 内容 (Community Pane) --- */
+        .comm-search-bar { padding: 12px 16px; background: var(--bg-base); position: sticky; top:0; z-index: 10;}
+        .landscape .comm-search-bar { background: var(--bg-panel); padding: 16px 20px 8px; }
+        .search-box-btn { display: flex; align-items: center; background: rgba(255,255,255,0.06); border-radius: 20px; padding: 8px 16px; color: var(--text-sub); gap: 10px; cursor: pointer; border: 1px solid transparent; transition: 0.2s;}
+        .search-box-btn:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white;}
+        
+        .partition-header { padding: 16px 20px 0; border-bottom: 1px solid var(--border-color); background: var(--bg-panel); margin-bottom: 0; }
+        .landscape .partition-header { margin: 0 16px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .p-h-top { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .p-h-icon { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; }
+        .p-h-info { flex: 1; }
+        .p-h-name { font-size: 16px; font-weight: bold; color: white; margin-bottom: 4px; }
+        .p-h-desc { font-size: 12px; color: var(--text-sub); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .p-h-follow-btn { background: rgba(40,125,250,0.1); color: var(--primary); border: 1px solid var(--primary); padding: 6px 16px; border-radius: 16px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .p-h-tabs { display: flex; gap: 20px; }
+        .p-h-tab { font-size: 14px; color: var(--text-sub); padding-bottom: 10px; cursor: pointer; position: relative; font-weight: 500; }
+        .p-h-tab.active { color: white; font-weight: bold; }
+        .p-h-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%); width: 20px; height: 3px; background: var(--primary); border-radius: 2px; }
+
+        /* 单列信息流 */
+        .feed-container { display: flex; flex-direction: column; padding: 0; }
+        .landscape .feed-container { padding: 16px; gap: 16px;}
+        .wf-card { padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; cursor: pointer; background: var(--bg-base); }
+        .landscape .wf-card { border-radius: 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border-color); padding: 16px;}
+
+        .wf-header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .wf-avatar-large { width: 38px; height: 38px; border-radius: 50%; background-size: cover; background-color: #333; }
+        .name-col { display: flex; flex-direction: column; justify-content: center; }
+        .name-bold { font-weight: bold; font-size: 14px; color: white; margin-bottom: 2px;}
+        .time-ip { color: var(--text-sub); font-size: 11px; }
+        
+        /* 更多操作按钮 (替代关注) */
+        .feed-more-btn { margin-left: auto; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; cursor: pointer; border-radius: 50%; transition: background 0.2s; color: var(--text-sub); font-size: 16px; }
+        .feed-more-btn:hover { background: rgba(255,255,255,0.05); }
+        
+        .wf-content-text { padding: 0; font-size: 14px; display: block; margin-bottom: 10px; line-height: 1.5; color: #e2e8f0;}
+        
+        /* 话题标签重置样式 */
+        .topic-tags-wrapper { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+        .tag-pill { background: rgba(40, 125, 250, 0.1); color: var(--primary); padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight:bold; width: fit-content; cursor: pointer; transition: 0.2s; }
+        .tag-pill:hover { background: rgba(40, 125, 250, 0.2); }
+        .tag-pill-partition { color: var(--text-sub); background: rgba(255,255,255,0.05); } /* 专区特化 */
+
+        .wf-img-box { width: 100%; border-radius: 8px; border: 1px solid var(--border-color); max-height: 300px; background: #222; overflow: hidden; position: relative; }
+        .wf-img { width: 100%; object-fit: cover; max-height: 300px; display: block; }
+        
+        .wf-footer-single { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; color: var(--text-sub); font-size: 13px; padding: 0 5px;}
+        .action-btn { display: flex; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s; }
+        .action-btn:hover { color: var(--accent-cyan); }
+        .action-btn i { font-size: 16px; }
+
+        /* 发帖悬浮按钮 (仅社区Tab显示) */
+        .fab-post { position: absolute; bottom: 40px; right: 20px; width: 56px; height: 56px; background: var(--primary); border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 24px; color: #fff; box-shadow: 0 4px 15px rgba(40,125,250,0.5); cursor: pointer; z-index: 100; transition: transform 0.2s;}
+        .fab-post:active { transform: scale(0.9); }
+
+        /* 底部操作栏 (仅详情Tab显示) */
+        .bottom-action-bar { position: absolute; bottom: 0; width: 100%; padding: 16px 20px 24px; background: rgba(11, 17, 23, 0.95); border-top: 1px solid var(--border-color); display: flex; gap: 12px; z-index: 80; }
+        .landscape .bottom-action-bar { padding: 16px 24px; background: var(--bg-panel); border-top: 1px solid rgba(255,255,255,0.05); border-radius: 0 0 16px 16px; position: absolute; bottom: 0; width: 100%;}
+        .btn-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; cursor: pointer; flex-shrink: 0; transition: 0.2s;}
+        .btn-icon:hover { background: rgba(255,255,255,0.1); }
+        .btn-cloud { flex: 1; background: var(--bg-card); color: #fff; border: none; border-radius: 24px; font-size: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: 0.2s;}
+        .btn-cloud:hover { background: rgba(255,255,255,0.1); }
+        .btn-primary-action { flex: 1.2; background: var(--btn-gradient); color: #fff; border: none; border-radius: 24px; font-size: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(2,132,199,0.3);}
+
+        /* ================= 强定制发帖页 (强制不可修改游戏与专区) ================= */
+        .pub-page { position: absolute; inset: 0; background: var(--bg-base); z-index: 300; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .pub-page.show { transform: translateX(0); }
+        .pub-header { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; height: 50px; padding: 0 16px; background: rgba(11,17,23,0.95); border-bottom: 1px solid var(--border-color); z-index: 10;}
+        .pub-submit-btn { background: var(--primary); color: white; border: none; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;}
+        .pub-content-area { flex: 1; padding: 16px; display: flex; flex-direction: column; overflow-y: auto;}
+        .pub-title-input { width: 100%; background: transparent; border: none; font-size: 18px; font-weight: bold; color: white; margin-bottom: 16px; outline: none; }
+        .pub-title-input::placeholder { color: #666; font-weight: normal; }
+        .pub-content-input { width: 100%; background: transparent; border: none; font-size: 16px; line-height: 1.5; color: #ddd; min-height: 120px; outline: none; resize: none; overflow-y: auto;}
+        .pub-content-input:empty:before { content: attr(placeholder); color: #666; pointer-events: none; display: block; }
+        .pub-bottom-group { flex-shrink: 0; display: flex; flex-direction: column; background: var(--bg-panel); border-top: 1px solid var(--border-color); z-index: 210;}
+        
+        /* 锁定的关联卡片区 */
+        .locked-wrapper { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px;}
+        .l-card { display: flex; align-items: center; background: rgba(255,255,255,0.02); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(40,125,250,0.2); justify-content: space-between;}
+        .l-card-info { display: flex; align-items: center; gap: 10px; }
+        .l-card-icon { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; background: #333;}
+        .l-card-text { display: flex; flex-direction: column; gap: 2px;}
+        .l-card-title { font-size: 14px; font-weight: bold; color: white;}
+        .l-card-sub { font-size: 11px; color: var(--primary);}
+        
+        .pub-toolbar { height: 50px; display: flex; align-items: center; padding: 0 16px; gap: 12px; border-top: 1px solid var(--border-color);}
+        .tb-circle { width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ccc; cursor: pointer;}
+        .tb-pill { border: 1px solid rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 16px; font-size: 12px; color: #ccc; font-weight: bold; cursor: pointer; white-space: nowrap;}
+        .tb-pill.disabled { opacity: 0.5; background: rgba(255,255,255,0.05); cursor: not-allowed;}
+
+        /* ================= 各种侧滑页通用覆盖 ================= */
+        .overlay-page { position: absolute; inset: 0; background: var(--bg-base); z-index: 200; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .overlay-page.show { transform: translateX(0); }
+        .nav-bar { height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--border-color); background: rgba(11,17,23,0.95); z-index: 10; flex-shrink: 0; }
+        
+        /* 动态详情页特殊布局 */
+        .detail-content-wrapper { display: flex; flex-direction: column; flex: 1; overflow-y: auto; padding-bottom: 60px; }
+        .detail-left-panel { flex-shrink: 0; padding: 16px; border-bottom: 6px solid #000; }
+        .detail-right-panel { flex-shrink: 0; padding: 16px;}
+        
+        /* 详情页横竖排兼容控制 (修复前: 仅根据全局 .landscape/.portrait 匹配) */
+        #appDevice.landscape .detail-content-wrapper { flex-direction: row; padding-bottom: 0; overflow: hidden; }
+        #appDevice.landscape .detail-left-panel { flex: 1; overflow-y: auto; border-right: 1px solid var(--border-color); padding-bottom: 20px;}
+        #appDevice.landscape .detail-right-panel { width: 380px; position: relative; display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 60px; border-left: 1px solid var(--border-color);}
+
+        #appDevice.portrait .detail-container-box { flex-direction: column !important; }
+        #appDevice.landscape .detail-container-box { flex-direction: row !important; }
+        #appDevice.portrait .detail-left-col { border-right: none; border-bottom: 6px solid #000 !important; }
+        #appDevice.landscape .detail-left-col { border-right: 1px solid var(--border-color); border-bottom: none !important; }
+
+        .detail-bottom-bar { position: absolute; bottom: 0; width: 100%; height: 60px; background: rgba(11,17,23,0.95); border-top: 1px solid var(--border-color); display: flex; align-items: center; padding: 0 16px; gap: 16px; z-index: 20;}
+        .fake-input { flex: 1; height: 36px; border-radius: 18px; background: rgba(255,255,255,0.08); padding: 0 16px; color: var(--text-sub); display: flex; align-items: center; cursor: pointer;}
+        .act-icon { display: flex; align-items: center; gap: 4px; color: white; font-size: 13px; cursor: pointer;}
+
+        .d-title { font-size: 18px; font-weight: bold; margin-bottom: 12px; line-height: 1.4; color: white;}
+        .d-text { font-size: 15px; color: #cbd5e1; line-height: 1.6; margin-bottom: 16px; }
+        .d-media-wrapper { width: 100%; background: #000; border-radius: 8px; overflow: hidden; margin-bottom: 16px;}
+        .d-media-item { width: 100%; max-height: 300px; object-fit: cover; display: block;}
+        
+        .d-game-card { display: flex; align-items: center; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; margin-top: 16px; border: 1px solid var(--border-color); cursor: pointer; transition: 0.2s;}
+        .d-game-card:hover { background: rgba(255,255,255,0.1); }
+        .d-gc-icon { width: 48px; height: 64px; border-radius: 6px; object-fit: cover; margin-right: 12px; }
+        .d-gc-info { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+        .d-partition-link { display: inline-flex; align-items: center; gap: 6px; background: rgba(40,125,250,0.1); color: var(--primary); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 16px; transition: 0.2s;}
+        .d-partition-link:hover { background: rgba(40,125,250,0.2); }
+
+        .comment-item { display: flex; gap: 12px; margin-bottom: 24px; }
+        .c-avatar { width: 36px; height: 36px; border-radius: 50%; background-size: cover; background-color:#333; }
+        .c-content { flex: 1; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
+        .empty-section { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; color: #666; font-size: 13px; }
+
+        /* ================= 全局搜索结果页 ================= */
+        .search-page { position: absolute; inset: 0; background: var(--bg-base); z-index: 500; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .search-page.show { transform: translateX(0); }
+        
+        .search-header { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: rgba(11, 17, 23, 0.95); z-index: 10; flex-shrink: 0;}
+        .search-input-wrap { flex: 1; display: flex; align-items: center; background: rgba(255,255,255,0.08); border-radius: 20px; height: 36px; padding: 0 12px; gap: 8px; }
+        .search-input-wrap input { flex: 1; background: transparent; border: none; color: white; font-size: 14px; outline: none; }
+        .clear-btn { color: #888; cursor: pointer; padding: 4px; }
+        .search-btn { background: var(--primary-green); color: white; padding: 6px 16px; border-radius: 16px; font-size: 14px; font-weight: bold; cursor: pointer; }
+
+        .search-tabs { display: flex; justify-content: space-around; background: rgba(11, 17, 23, 0.95); border-bottom: 1px solid var(--border-color); z-index: 10; flex-shrink: 0;}
+        .s-tab { padding: 12px 0; font-size: 15px; color: var(--text-sub); cursor: pointer; position: relative; font-weight: 500;}
+        .s-tab.active { color: white; font-weight: bold; }
+        .s-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%); width: 20px; height: 3px; background: var(--primary-green); border-radius: 2px; }
+
+        .search-content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        .s-pane { display: none; flex-direction: column; padding-bottom: 40px; }
+        .s-pane.active { display: flex; }
+
+        .s-block { border-bottom: 8px solid #000; }
+        .s-block:last-child { border-bottom: none; }
+        .s-block-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 16px 8px; }
+        .s-block-title { font-size: 16px; font-weight: bold; color: white; }
+        .s-block-more { font-size: 13px; color: var(--text-sub); cursor: pointer; display: flex; align-items: center; gap: 4px; transition: 0.2s;}
+        .s-block-more:hover { color: white; }
+
+        .s-list-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03); transition: 0.2s;}
+        .s-list-item:hover { background: rgba(255,255,255,0.05); }
+        .s-item-icon { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; background: #333; flex-shrink: 0; }
+        .s-item-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: #333; flex-shrink: 0; }
+        .s-item-info { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 4px; overflow: hidden; }
+        .s-item-title { font-size: 16px; font-weight: bold; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .s-item-meta { font-size: 12px; color: var(--text-sub); display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .s-item-rating { color: var(--primary-green); font-weight: bold; }
+        .s-item-desc { font-size: 12px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .s-btn-follow { background: transparent; border: 1px solid var(--primary-green); color: var(--primary-green); padding: 5px 16px; border-radius: 16px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap;}
+        .s-btn-follow.followed { background: rgba(255,255,255,0.1); border-color: transparent; color: var(--text-sub); }
+
+        .s-sub-tabs { display: flex; gap: 20px; padding: 12px 16px; overflow-x: auto; border-bottom: 1px solid var(--border-color); }
+        .s-sub-tab { font-size: 14px; color: var(--text-sub); cursor: pointer; white-space: nowrap; font-weight: 500; }
+        .s-sub-tab.active { color: white; font-weight: bold; position: relative; }
+        .s-sub-tab.active::after { content: ''; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); width: 16px; height: 3px; background: white; border-radius: 2px; }
+
+        .game-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 16px; }
+        .g-card { background: #161a22; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; border: 1px solid var(--border-color); }
+        .g-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+        .g-cover-box { position: relative; width: 100%; aspect-ratio: 16/9; background: #222; }
+        .g-cover { width: 100%; height: 100%; object-fit: cover; }
+        .g-tags-abs { position: absolute; bottom: 8px; left: 8px; display: flex; gap: 4px; }
+        .g-tag-abs { background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); font-weight: bold;}
+        .g-info { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+        .g-title { font-size: 14px; font-weight: bold; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .g-meta { font-size: 11px; color: var(--text-sub); display: flex; align-items: center; gap: 4px; }
+
+        .landscape .s-list-layout { display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 16px; padding: 0 16px; }
+        .landscape .s-list-item { padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .landscape .game-grid { grid-template-columns: repeat(4, 1fr); }
+        
+        /* 动作面板 */
+        .action-sheet-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 700; display: none; flex-direction: column; justify-content: flex-end; }
+        .action-sheet { background: #1a1a24; border-radius: 16px 16px 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.3s; display: flex; flex-direction: column; }
+        .action-sheet.show { transform: translateY(0); }
+        .share-grid { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 16px;}
+        .share-item { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; cursor: pointer; }
+        .share-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; }
+        .action-btn-list { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 14px; color: white; text-align: center; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 4px;}
+
+        /* Toast */
+        .toast { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 12px 24px; border-radius: 24px; font-size: 14px; opacity: 0; transition: 0.3s; z-index: 5000; pointer-events: none; font-weight: bold; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.2);}
+        .toast.show { opacity: 1; top: 120px; }
+        
+        /* ================= 话题弹窗蒙层与面板 ================= */
+        .topic-modal-mask { position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 800; display: none; flex-direction: column; justify-content: flex-end; opacity: 0; transition: opacity 0.3s; }
+        .topic-modal-mask.show { opacity: 1; display: flex; }
+        .topic-modal-sheet { background: var(--bg-base); border-radius: 20px 20px 0 0; height: 90%; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s; }
+        .topic-modal-sheet.show { transform: translateY(0); }
+        
+        .fm-header { height: 50px; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;}
+        .fm-cancel { color: #888; font-size: 15px; cursor: pointer;}
+        .fm-title { font-size: 17px; font-weight: bold; color: white;}
+        .g-section-title { font-size: 14px; font-weight: bold; color: white; padding: 12px 16px 8px;}
+
+        /* ================= 全局更多下拉菜单与举报弹窗 ================= */
+        .more-menu { position: fixed; background: #2a2c33; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.08); z-index: 4000; display: none; flex-direction: column; min-width: 140px; overflow: hidden; }
+        .more-menu.show { display: flex; animation: fadeIn 0.15s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .more-menu-item { padding: 14px 18px; font-size: 14px; color: #ddd; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 10px; }
+        .more-menu-item:hover { background: rgba(255,255,255,0.05); }
+        .more-menu-item:active { background: rgba(255,255,255,0.1); }
+        .more-menu-item.danger { color: #f5222d; }
+
+        .report-modal { z-index: 3500; }
+        .report-modal .modal-container { background: var(--bg-panel); width: 90%; max-width: 360px; padding: 20px 24px 24px; border-radius: 20px; flex-direction: column; display: flex; transform: translateY(20px); transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 10px 30px rgba(0,0,0,0.8); max-height: 90%;}
+        .report-modal.show .modal-container { transform: translateY(0); }
+        .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .report-title { font-size: 16px; font-weight: bold; color: #fff; margin-bottom: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .btn-close-modal { color: #888; font-size: 24px; cursor: pointer; line-height: 1; padding: 0 5px; margin-right: -5px; transition: 0.2s;}
+        .btn-close-modal:hover { color: #fff; }
+        
+        .report-body { overflow-y: auto; overflow-x: hidden; padding-right: 5px; }
+        .report-body::-webkit-scrollbar { width: 4px; }
+        .report-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        
+        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .report-tag { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 8px; font-size: 13px; color: #ccc; text-align: center; cursor: pointer; transition: 0.2s; user-select: none; }
+        .report-tag:active { transform: scale(0.97); }
+        .report-tag.active { background: rgba(40,125,250, 0.15); border-color: var(--primary); color: var(--primary); font-weight: bold; }
+        
+        .report-textarea { width: 100%; height: 85px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; color: #fff; font-size: 13px; resize: none; outline: none; transition: 0.2s; }
+        .report-textarea:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); }
+        .report-textarea::placeholder { color: #666; }
+        
+        .upload-section { margin-top: 15px; }
+        .upload-title { font-size: 13px; color: var(--text-sub); margin-bottom: 8px; }
+        .upload-box { width: 65px; height: 65px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .upload-box:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.4); }
+
+        .dialog-mask { position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 3400; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px);}
+        .dialog-mask.show { display: flex; }
+        .dialog-box { background: var(--bg-panel); width: 280px; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; text-align: center; border: 1px solid var(--border-color);}
+        .dialog-title { font-size: 16px; font-weight: bold; margin: 24px 16px 8px; color: white;}
+        .dialog-msg { font-size: 14px; color: #aaa; margin: 0 16px 24px; line-height: 1.5; }
+        .dialog-btns { display: flex; border-top: 1px solid var(--border-color); }
+        .dialog-btn { flex: 1; padding: 14px 0; font-size: 15px; cursor: pointer; background: transparent; border: none; color: #aaa; }
+        .dialog-btn:first-child { border-right: 1px solid var(--border-color); }
+        .dialog-btn.confirm { color: var(--primary); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="demo-controls">
+        <button class="demo-btn" onclick="toggleOrientation()"><i class="fas fa-sync-alt"></i> 切换横竖屏测试</button>
+    </div>
+
+    <!-- 全局悬浮下拉菜单（···） -->
+    <div id="more-menu" class="more-menu">
+        <div class="more-menu-item" onclick="handleNotInterested(event)">
+            <i class="fas fa-eye-slash" style="width:20px; text-align:center;"></i> 不感兴趣
+        </div>
+        <div class="more-menu-item danger" onclick="handleReportClick(event)">
+            <i class="far fa-flag" style="width:20px; text-align:center;"></i> 举报内容
+        </div>
+    </div>
+
+    <div class="device-wrapper">
+        <div class="device portrait" id="appDevice" data-tab="detail">
+            
+            <div class="status-bar">
+                <span>15:30</span>
+                <div class="status-icons"><i class="fas fa-signal"></i> <i class="fas fa-wifi"></i> <i class="fas fa-battery-full"></i></div>
+            </div>
+
+            <!-- ================= 核心：顶部全局 Tab 导航 ================= -->
+            <div class="top-app-bar">
+                <i class="fas fa-chevron-left" onclick="showToast('返回上一页')"></i>
+                <div class="nav-tabs">
+                    <span id="tab-btn-detail" class="nav-tab active" onclick="switchTab('detail', this)">详情</span>
+                    <span id="tab-btn-community" class="nav-tab" onclick="switchTab('community', this)">社区</span>
+                </div>
+                <i class="fas fa-share-square" id="topShareBtn" style="visibility: visible;" onclick="openActionMenu()"></i>
+            </div>
+
+            <div class="main-wrapper">
+                <!-- 左半部 -->
+                <div class="left-col">
+                    <div class="media-section">
+                        <div class="play-btn-overlay"><i class="far fa-play-circle" onclick="showToast('播放宣传视频')"></i></div>
+                    </div>
+                    
+                    <div class="info-section">
+                        <div class="title-row">
+                            <div class="title-box">
+                                <h1>侠盗猎车手5 (GTA 5)</h1>
+                                <p>洛圣都欢迎你</p>
+                            </div>
+                            <div class="score-box" onclick="showToast('查看评价')">
+                                <div class="num">9.5</div>
+                                <div class="desc">玩家评价</div>
+                            </div>
+                        </div>
+                        <div class="tags-row">
+                            <div class="tag-icons"><i class="fab fa-steam"></i><i class="fab fa-xbox"></i></div>
+                            <div class="tag highlight"><i class="fas fa-fire"></i> 热门榜 TOP 1</div>
+                            <div class="tag">开放世界</div>
+                            <div class="tag">动作冒险</div>
+                            <div class="tag">角色扮演</div>
+                        </div>
+                    </div>
+
+                    <div class="meta-section">
+                        <div class="meta-item"><span>开发商：</span><span>Rockstar Games</span></div>
+                        <div class="meta-item"><span>发行日期：</span><span>2015 年 4 月 14 日</span></div>
+                        <div class="meta-item"><span>年龄评级：</span><span>18+</span></div>
+                        <div class="meta-item"><span>语言：</span><span>中文 8+</span></div>
+                    </div>
+                </div>
+
+                <!-- 右半部 (内容滚动区) -->
+                <div class="right-col scroll-content" id="scrollContent">
+                    
+                    <!-- ====== 详情 Pane ====== -->
+                    <div class="detail-pane tab-pane active" id="tab-detail">
+                        <div class="engine-card">
+                            <div class="engine-card-title">
+                                <div><i class="fas fa-desktop"></i> PC游戏引擎</div>
+                                <span onclick="showToast('查看兼容性')">查看兼容性 <i class="fas fa-chevron-right"></i></span>
+                            </div>
+                            <div class="engine-features">
+                                <div class="feature"><i class="fas fa-check-circle"></i><span>完美兼容</span></div>
+                                <div class="feature"><i class="fas fa-cloud-upload-alt"></i><span>云存档已最新</span></div>
+                                <div class="feature"><i class="far fa-clock"></i><span>839.3小时</span></div>
+                            </div>
+                        </div>
+
+                        <div class="section-title">游戏介绍</div>
+                        <div class="intro-text">
+                            当一个年轻的街头古惑仔、一个退休的银行抢劫犯和一个可怕的精神病患者发现自己与犯罪黑社会、美国政府和娱乐业中一些最可怕和最疯狂的元素纠缠在一起时，他们必须进行一系列危险的抢劫才能在一个无情的城市中生存下来...
+                        </div>
+                    </div>
+
+                    <!-- ====== 社区 Pane ====== -->
+                    <div class="community-pane tab-pane" id="tab-community">
+                        <div class="comm-search-bar">
+                            <div class="search-box-btn" onclick="openSearchPage()">
+                                <i class="fas fa-search"></i> 社区内搜索
+                            </div>
+                        </div>
+
+                        <div class="partition-header">
+                            <div class="p-h-top">
+                                <img class="p-h-icon" src="https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg">
+                                <div class="p-h-info">
+                                    <div class="p-h-name">GTA 5 官方专区</div>
+                                    <div class="p-h-desc">欢迎来到洛圣都！这里有最新最热的游戏资讯、深度评测和同好交流。</div>
+                                </div>
+                                <div class="p-h-follow-btn" id="joinPartitionBtn" onclick="togglePartitionJoin(this)">加入</div>
+                            </div>
+                            <!-- 置顶区 -->
+                            <div style="padding:8px 20px; border-bottom:1px solid var(--border-color);">
+                                <div onclick="openPostDetail(1)" style="display:flex; align-items:center; gap:8px; padding:8px 0; cursor:pointer;">
+                                    <span style="font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(255,149,0,0.15); color:#facc15; font-weight:bold; flex-shrink:0;">置顶</span>
+                                    <span style="font-size:13px; color:var(--text-main); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">【官方】盖世模拟器V2.0重大更新说明</span>
+                                    <i class="fas fa-chevron-right" style="font-size:10px; color:var(--text-sub);"></i>
+                                </div>
+                                <div onclick="showToast('跳转帖子详情')" style="display:flex; align-items:center; gap:8px; padding:8px 0; cursor:pointer;">
+                                    <span style="font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(255,149,0,0.15); color:#facc15; font-weight:bold; flex-shrink:0;">置顶</span>
+                                    <span style="font-size:13px; color:var(--text-main); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">GTA5 新手配置入门指南（必看）</span>
+                                    <i class="fas fa-chevron-right" style="font-size:10px; color:var(--text-sub);"></i>
+                                </div>
+                            </div>
+                            <div class="p-h-tabs">
+                                <div class="p-h-tab active" onclick="filterFeed('all', this)">综合</div>
+                                <div class="p-h-tab" onclick="filterFeed('official', this)">官方</div>
+                                <div class="p-h-tab" onclick="filterFeed('help', this)">求助</div>
+                                <div class="p-h-tab" onclick="filterFeed('guide', this)">攻略</div>
+                            </div>
+                        </div>
+
+                        <!-- 单列信息流 -->
+                        <div class="feed-container" id="main-feed"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 全局发帖悬浮按钮 (仅在社区Tab显示) -->
+            <div class="fab-post" id="fabPost" onclick="openPublishPage()">
+                <i class="fas fa-plus"></i>
+            </div>
+
+            <!-- 底部操作栏 (仅在详情Tab显示) -->
+            <div class="bottom-action-bar" id="bottomActionBar">
+                <div class="btn-icon" onclick="showToast('更多工具')"><i class="fas fa-th-large"></i></div>
+                <button class="btn-cloud" onclick="showToast('正在启动云游戏...')"><i class="fas fa-cloud"></i> 秒玩</button>
+                <button class="btn-primary-action" onclick="showToast('已获取游戏')"><i class="fas fa-desktop"></i> 获取游戏</button>
+            </div>
+
+            <!-- ================= 全局搜索结果页 (嵌套在设备内) ================= -->
+            <div id="searchPage" class="search-page">
+                <div class="search-header">
+                    <i class="fas fa-chevron-left" style="font-size:18px; cursor:pointer;" onclick="closeOverlay('searchPage')"></i>
+                    <div class="search-input-wrap">
+                        <i class="fas fa-search" style="color:#888;"></i>
+                        <input type="text" id="searchInput" value="荒野大镖客系列" onfocus="this.select()">
+                        <i class="fas fa-times-circle clear-btn" onclick="document.getElementById('searchInput').value=''"></i>
+                    </div>
+                </div>
+                
+                <div class="search-tabs">
+                    <div class="s-tab active" onclick="switchSearchTab('all', this)">综合</div>
+                    <div class="s-tab" onclick="switchSearchTab('games', this)">游戏</div>
+                    <div class="s-tab" onclick="switchSearchTab('community', this)">社区</div>
+                    <div class="s-tab" onclick="switchSearchTab('users', this)">用户</div>
+                </div>
+                
+                <div class="search-content" id="searchContent">
+                    
+                    <!-- 综合 Tab -->
+                    <div class="s-pane active" id="s-tab-all">
+                        <div class="s-block">
+                            <div class="s-block-header">
+                                <span class="s-block-title">游戏</span>
+                                <span class="s-block-more" onclick="switchSearchTab('games', document.querySelectorAll('.s-tab')[1])">查看更多 <i class="fas fa-chevron-right"></i></span>
+                            </div>
+                            <div class="s-list s-list-layout" id="s-all-games"></div>
+                        </div>
+                        
+                        <div class="s-block">
+                            <div class="s-block-header">
+                                <span class="s-block-title">社区</span>
+                                <span class="s-block-more" onclick="switchSearchTab('community', document.querySelectorAll('.s-tab')[2])">查看更多 <i class="fas fa-chevron-right"></i></span>
+                            </div>
+                            <div class="s-list s-list-layout" id="s-all-forums"></div>
+                        </div>
+                        
+                        <div class="s-block">
+                            <div class="s-block-header">
+                                <span class="s-block-title">用户</span>
+                                <span class="s-block-more" onclick="switchSearchTab('users', document.querySelectorAll('.s-tab')[3])">查看更多 <i class="fas fa-chevron-right"></i></span>
+                            </div>
+                            <div class="s-list s-list-layout" id="s-all-users"></div>
+                        </div>
+                        
+                        <div class="s-block">
+                            <div class="s-block-header">
+                                <span class="s-block-title">相关动态</span>
+                            </div>
+                            <div class="feed-container" id="s-all-feeds" style="background:var(--bg-base);"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 游戏 Tab -->
+                    <div class="s-pane" id="s-tab-games">
+                        <div class="s-sub-tabs">
+                            <div class="s-sub-tab active" onclick="showToast('展示全部 175 款')">全部 175</div>
+                            <div class="s-sub-tab" onclick="showToast('展示 PC游戏 2 款')">PC游戏 2</div>
+                            <div class="s-sub-tab" onclick="showToast('展示 复古游戏 123 款')">复古游戏 123</div>
+                        </div>
+                        <div class="game-grid" id="s-games-grid"></div>
+                    </div>
+                    
+                    <!-- 社区 Tab -->
+                    <div class="s-pane" id="s-tab-community">
+                        <div class="s-block">
+                            <div class="s-list s-list-layout" id="s-comm-only-forums"></div>
+                            <div style="text-align:center; padding: 12px; color: var(--accent-blue); font-size: 13px; cursor: pointer;" id="s-comm-more-btn" onclick="toggleCommunitiesExpand()">查看更多 <i class="fas fa-chevron-down"></i></div>
+                        </div>
+                        <div class="s-block">
+                            <div class="s-block-header">
+                                <span class="s-block-title">相关动态</span>
+                            </div>
+                            <div class="feed-container" id="s-comm-feeds" style="background:var(--bg-base);"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 用户 Tab -->
+                    <div class="s-pane" id="s-tab-users">
+                        <div class="s-list s-list-layout" id="s-users-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= 定制发帖页 (嵌套在设备内) ================= -->
+            <div id="publishPage" class="overlay-page" style="z-index: 600;">
+                <div class="top-app-bar" style="background: var(--bg-base); justify-content: space-between;">
+                    <span style="font-size: 15px; cursor: pointer; color: #888;" onclick="closeOverlay('publishPage')"><i class="fas fa-chevron-left"></i> 取消</span>
+                    <div style="font-weight:bold; color:white; font-size:16px;">发布动态</div>
+                    <button style="background: var(--primary); color: white; border: none; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer;" onclick="submitPost()">发布</button>
+                </div>
+
+                <div style="flex: 1; padding: 16px; display: flex; flex-direction: column; overflow-y: auto;" onclick="document.getElementById('postContent').focus()">
+                    <input type="text" id="postTitle" placeholder="加个吸引人的标题" style="width: 100%; background: transparent; border: none; font-size: 18px; font-weight: bold; color: white; margin-bottom: 16px; outline: none;">
+                    <div id="postContent" contenteditable="true" placeholder="分享你在《GTA 5》的游戏见解..." style="width: 100%; background: transparent; border: none; font-size: 16px; line-height: 1.5; color: #ddd; min-height: 120px; outline: none; resize: none; overflow-y: auto;"></div>
+                </div>
+
+                <div style="flex-shrink: 0; display: flex; flex-direction: column; background: var(--bg-panel); border-top: 1px solid var(--border-color);">
+                    <div style="padding: 12px 16px; display: flex; flex-direction: column; gap: 8px;">
+                        </div>
+                        <div style="display: flex; align-items: center; background: rgba(255,255,255,0.02); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(40,125,250,0.2);">
+                            <div style="width: 36px; height: 36px; border-radius: 6px; background:#287dfa;color:white;display:flex;align-items:center;justify-content:center;font-size:16px; margin-right:10px;"><i class="fas fa-hashtag"></i></div>
+                            <div style="display: flex; flex-direction: column; gap: 2px;">
+                                <span style="font-size: 14px; font-weight: bold; color: white;">GTA 5 官方专区</span>
+                                <span style="font-size: 11px; color: var(--primary);"><i class="fas fa-lock"></i> 自动发布至该分区</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 发布到 + AI声明 -->
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 16px; border-top:1px solid var(--border-color);">
+                        <label style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-sub); cursor:pointer;"><input type="checkbox" style="accent-color:var(--primary);"> 包含AI合成内容</label>
+                        <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-sub);">
+                            <span>发布到：</span>
+                            <span id="pto-all" onclick="selectPublishTo('all')" style="padding:3px 10px; border-radius:12px; cursor:pointer; border:1px solid var(--score-color); color:var(--score-color); background:rgba(250,204,21,0.15); font-weight:bold;">全部</span>
+                            <span id="pto-help" onclick="selectPublishTo('help')" style="padding:3px 10px; border-radius:12px; cursor:pointer; border:1px solid rgba(245,34,45,0.4); color:#f5222d;">求助</span>
+                            <span id="pto-guide" onclick="selectPublishTo('guide')" style="padding:3px 10px; border-radius:12px; cursor:pointer; border:1px solid rgba(82,196,26,0.4); color:#52c41a;">攻略</span>
+                        </div>
+                    </div>
+
+                    <div style="height: 50px; display: flex; align-items: center; padding: 0 16px; gap: 8px; border-top: 1px solid var(--border-color); overflow-x: auto; white-space: nowrap;">
+                        <div style="flex-shrink:0; width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ccc; cursor: pointer;" onclick="showToast('拉起相册')"><i class="far fa-image"></i></div>
+                        <div style="flex-shrink:0; width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ccc; cursor: pointer;" onclick="showToast('拉起表情')"><i class="far fa-smile"></i></div>
+                        <div style="flex-shrink:0; width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 15px; color: #ccc; cursor: pointer;" onclick="openTopicModal()">#</div>
+                        
+                        <div style="margin-left:auto; flex-shrink:0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 16px; font-size: 12px; color: #ccc; font-weight: bold; cursor: not-allowed;" onclick="showRestrictedToast()">选择分区</div>
+                        <div style="flex-shrink:0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 16px; font-size: 12px; color: #ccc; font-weight: bold; cursor: not-allowed;" onclick="showRestrictedToast()">关联游戏</div>
+                        <div style="flex-shrink:0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 16px; font-size: 12px; color: #ccc; font-weight: bold; cursor: pointer;" onclick="showToast('拉起分享配置')">配置分享</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= 动态详情页 ================= -->
+            <div id="page-detail" class="overlay-page" style="z-index: 400;">
+                <div class="top-app-bar">
+                    <i class="fas fa-arrow-left" onclick="closeOverlay('page-detail')"></i>
+                    <span style="font-weight:bold; color:white; font-size:16px;">动态详情</span>
+                    <i class="fas fa-share-square" onclick="openActionMenu()"></i>
+                </div>
+                
+                <div class="main-wrapper" style="flex-direction: column;">
+                    <div style="display:flex; flex:1; overflow:hidden;" class="detail-container-box">
+                        <div class="detail-left-col" style="flex:1; padding: 16px; overflow-y:auto;">
+                            <div id="d-author-row-container" style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;"></div>
+                            <div id="d-title" style="font-size: 18px; font-weight: bold; margin-bottom: 12px; line-height: 1.4; color: white;">标题</div>
+                            
+                            <div id="d-media-wrapper" style="display:none; width: 100%; background: #000; border-radius: 8px; overflow: hidden; margin-bottom: 16px;">
+                                <img id="d-media-img" style="width: 100%; max-height: 300px; object-fit: cover; display: block;" src="">
+                            </div>
+                            
+                            <div id="d-content" style="font-size: 15px; color: #cbd5e1; line-height: 1.6; margin-bottom: 16px;">正文</div>
+                            
+                            <div class="topic-tags-wrapper" id="d-topics-wrapper" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;"></div>
+
+                            <div style="display: flex; align-items: center; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; margin-top: 16px; border: 1px solid var(--border-color); cursor: pointer; transition: 0.2s;" onclick="jumpToGameDetailFromPost()">
+                                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg" style="width: 48px; height: 64px; border-radius: 6px; object-fit: cover; margin-right: 12px;">
+                                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+                                    <div style="color:white; font-size:15px; font-weight:bold;">侠盗猎车手5 (GTA 5)</div>
+                                    <div style="font-size:12px; color:#888;">★ 9.5 · 开放世界</div>
+                                </div>
+                                <i class="fas fa-chevron-right" style="color:var(--text-sub); font-size:14px;"></i>
+                            </div>
+
+                            <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(40,125,250,0.1); color: var(--primary); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 16px; transition: 0.2s;" onclick="jumpToPartitionFromPost()">
+                                <i class="fas fa-hashtag"></i> GTA 5 官方专区
+                            </div>
+                        </div>
+                        
+                        <div class="detail-right-col" style="flex:1; overflow-y:auto; padding:16px;">
+                            <div style="color:white; font-size:15px; font-weight:bold; margin-bottom:20px;" id="d-comment-count">评论区</div>
+                            <div id="comment-list"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="height: 60px; background: rgba(11,17,23,0.95); border-top: 1px solid var(--border-color); display: flex; align-items: center; padding: 0 16px; gap: 16px; flex-shrink:0;">
+                        <div style="flex: 1; height: 36px; border-radius: 18px; background: rgba(255,255,255,0.08); padding: 0 16px; color: var(--text-sub); display: flex; align-items: center; cursor: pointer;" onclick="showToast('写评论...')">参与讨论...</div>
+                        <span style="display: flex; align-items: center; gap: 4px; color: white; font-size: 13px; cursor: pointer;" onclick="showToast('点赞成功')"><i class="far fa-heart"></i> <span id="d-bot-likes">0</span></span>
+                        <span style="display: flex; align-items: center; gap: 4px; color: white; font-size: 13px; cursor: pointer;" onclick="showToast('收藏成功')"><i class="far fa-star"></i> <span id="d-bot-favs">0</span></span>
+                        <span style="display: flex; align-items: center; gap: 4px; color: white; font-size: 13px; cursor: pointer;"><i class="far fa-comment"></i> <span id="d-bot-comments">0</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= 话题聚合页 (嵌套在设备内) ================= -->
+            <div id="topicPage" class="overlay-page" style="z-index: 450;">
+                <div class="top-app-bar" style="justify-content: center; position: relative;">
+                    <i class="fas fa-arrow-left" style="position: absolute; left: 16px; font-size:18px; cursor:pointer;" onclick="closeOverlay('topicPage')"></i>
+                    <span style="font-weight:bold; color:white; font-size:16px;">话题</span>
+                </div>
+                
+                <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
+                    <div style="padding: 20px 16px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border-color); display: flex; gap: 16px; align-items: center; flex-shrink: 0;">
+                        <div id="tp-icon" style="width: 60px; height: 60px; border-radius: 12px; background: linear-gradient(135deg, #0284c7, #0ea5e9); display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; color: white; flex-shrink: 0;">话</div>
+                        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                            <div id="tp-title" style="font-size: 18px; font-weight: bold; color: white;">#发现好游戏</div>
+                            <div style="display: flex; gap: 16px; font-size: 12px; color: var(--text-sub);">
+                                <span><strong id="tp-views" style="color: white; font-size:13px;">12.5万</strong> 浏览</span>
+                                <span><strong id="tp-users" style="color: white; font-size:13px;">1.2万</strong> 参与</span>
+                            </div>
+                        </div>
+                        <button style="background: var(--primary); color: white; border: none; padding: 6px 16px; border-radius: 16px; font-weight: bold; font-size: 13px; cursor: pointer;" onclick="openPublishPageWithTopic()">参与讨论</button>
+                    </div>
+                    <div class="feed-container" id="tp-feed" style="background: var(--bg-base); flex: 1;"></div>
+                </div>
+            </div>
+
+            <!-- ================= 插入话题弹窗 (带蒙层) ================= -->
+            <div class="topic-modal-mask" id="topicModalMask" onclick="closeTopicModal()">
+                <div class="topic-modal-sheet" id="topicModalSheet" onclick="event.stopPropagation()">
+                    <div class="fm-header" style="border-radius: 20px 20px 0 0; background: var(--bg-panel);">
+                        <span class="fm-cancel" onclick="closeTopicModal()">取消</span>
+                        <span class="fm-title" style="font-weight: bold; font-size: 16px; color: white; position: absolute; left: 50%; transform: translateX(-50%);">添加话题</span>
+                    </div>
+                    <div class="fm-search-wrap" style="padding: 10px 16px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color);">
+                        <div class="fm-search-box" style="background: rgba(255,255,255,0.06); border-radius: 20px; height: 36px; display: flex; align-items: center; padding: 0 14px; gap: 8px;">
+                            <i class="fas fa-search" style="color:#888;"></i>
+                            <input type="text" placeholder="搜索关键词" style="flex: 1; border: none; background: transparent; outline: none; font-size: 14px; color: white;">
+                        </div>
+                    </div>
+                    <div class="fm-body" style="flex: 1; overflow-y: auto; padding: 0 16px 40px; background: var(--bg-base);">
+                        <!-- 推荐话题 -->
+                        <div class="g-section-title" style="padding: 12px 0 8px; font-size: 14px; font-weight: bold; color: white; margin-top:10px;">
+                            推荐话题 <span style="font-size:11px; color:var(--text-sub); font-weight:normal; margin-left:4px;"></span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; padding: 14px 0; border-bottom:1px solid var(--border-color); cursor:pointer;" onclick="insertTopic('GTA5神仙打架')">
+                            <span style="font-weight:bold; color:white; font-size:15px;"># GTA5神仙打架</span><span style="color:#aaa; font-size:12px;">889万 浏览</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; padding: 14px 0; border-bottom:1px solid var(--border-color); cursor:pointer;" onclick="insertTopic('洛圣都老司机')">
+                            <span style="font-weight:bold; color:white; font-size:15px;"># 洛圣都老司机</span><span style="color:#aaa; font-size:12px;">542万 浏览</span>
+                        </div>
+
+                        <!-- 热门话题 -->
+                        <div class="g-section-title" style="padding: 12px 0 8px; font-size: 14px; font-weight: bold; color: white; margin-top:20px;">
+                            热门话题
+                        </div>
+                        <div style="display:flex; justify-content:space-between; padding: 14px 0; border-bottom:1px solid var(--border-color); cursor:pointer;" onclick="insertTopic('发现好游戏')">
+                            <span style="font-weight:bold; color:white; font-size:15px;"># 发现好游戏</span><span style="color:#aaa; font-size:12px;">2.7亿 浏览</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; padding: 14px 0; border-bottom:1px solid var(--border-color); cursor:pointer;" onclick="insertTopic('通关打卡')">
+                            <span style="font-weight:bold; color:white; font-size:15px;"># 通关打卡</span><span style="color:#aaa; font-size:12px;">1636万 浏览</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; padding: 14px 0; border-bottom:1px solid var(--border-color); cursor:pointer;" onclick="insertTopic('萌新求助')">
+                            <span style="font-weight:bold; color:white; font-size:15px;"># 萌新求助</span><span style="color:#aaa; font-size:12px;">890万 浏览</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分享动作面板 -->
+            <div class="action-sheet-overlay" id="actionMenu" onclick="closeActionMenu()" style="z-index: 900;">
+                <div class="action-sheet" id="actionSheetInner" onclick="event.stopPropagation()">
+                    <div style="color: white; font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 20px;">分享至</div>
+                    <div class="share-grid" style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 16px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;"><div style="width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; background:#07C160;"><i class="fab fa-weixin"></i></div><span style="color:#aaa; font-size:11px;">微信</span></div>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;"><div style="width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; background:#12B7F5;"><i class="fab fa-qq"></i></div><span style="color:#aaa; font-size:11px;">QQ</span></div>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;" onclick="showToast('已复制链接')"><div style="width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; background:#444;"><i class="fas fa-link"></i></div><span style="color:#aaa; font-size:11px;">复制链接</span></div>
+                    </div>
+                    <div class="action-btn-list" onclick="showToast('拉起转发面板'); closeActionMenu();">转发动态</div>
+                    <div class="action-btn-list" style="color:#f5222d;" onclick="handleReportDetailClick()">举报内容</div>
+                </div>
+            </div>
+
+            <!-- ================= 举报填写弹窗 ================= -->
+            <div id="report-modal" class="dialog-mask report-modal">
+                <div class="modal-container" onclick="event.stopPropagation()">
+                    <div class="report-header">
+                        <div class="report-title" id="report-modal-title">举报动态</div>
+                        <div class="btn-close-modal" onclick="closeReportModal()">&times;</div>
+                    </div>
+                    
+                    <div class="report-body">
+                        <div class="report-grid">
+                            <div class="report-tag" onclick="selectReportReason(this)">社区无关</div>
+                            <div class="report-tag" onclick="selectReportReason(this)">色情低俗</div>
+                            <div class="report-tag" onclick="selectReportReason(this)">辱骂/引战</div>
+                            <div class="report-tag" onclick="selectReportReason(this)">盗版/作弊</div>
+                            <div class="report-tag" onclick="selectReportReason(this)">违规交易</div>
+                            <div class="report-tag" onclick="selectReportReason(this)">侵权/抄袭</div>
+                            <div class="report-tag" onclick="selectReportReason(this)">涉嫌诈骗</div>
+                            <div class="report-tag" onclick="selectReportReason(this, true)">其他</div>
+                        </div>
+
+                        <div id="report-other-wrap" style="display: none;">
+                            <textarea id="report-textarea" class="report-textarea" placeholder="补充详细说明（选填）..."></textarea>
+                        </div>
+                        
+                        <div class="upload-section">
+                            <div class="upload-title">上传图片证据 (可选)</div>
+                            <div class="upload-box" onclick="showToast('拉起相册')">
+                                <i class="fas fa-camera" style="color:#666; font-size:24px;"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="dialog-btn confirm" style="background:#f5222d; color:white; border-radius:24px; margin-top:20px; font-weight:bold; border:none; padding:12px;" onclick="submitReport()">提交</button>
+                </div>
+            </div>
+
+            <!-- Toast -->
+            <div class="toast" id="toastBox">提示</div>
+
+        </div>
+    </div>
+
+    <script>
+        // ================= 基础工具 =================
+        function showToast(msg) { 
+            const t = document.getElementById('toastBox'); 
+            t.innerText = msg; t.classList.add('show'); 
+            setTimeout(()=>t.classList.remove('show'), 2000); 
+        }
+        function closeOverlay(id) { document.getElementById(id).classList.remove('show'); }
+        function openActionMenu() {
+            document.getElementById('actionMenu').style.display = 'flex';
+            setTimeout(() => document.getElementById('actionSheetInner').classList.add('show'), 10);
+        }
+        function closeActionMenu() {
+            document.getElementById('actionSheetInner').classList.remove('show');
+            setTimeout(() => document.getElementById('actionMenu').style.display = 'none', 300);
+        }
+        function showRestrictedToast() {
+            showToast('当前处于专属游戏社区，已自动绑定该分区和游戏，不可修改');
+        }
+
+        // ================= 举报菜单相关逻辑 =================
+        let currentTargetUser = '';
+        let isReasonOther = false;
+        let currentDetailAuthor = '';
+        let currentPostElement = null;
+
+        function openMoreMenu(e, userName) {
+            e.stopPropagation();
+            currentTargetUser = userName;
+            currentPostElement = e.currentTarget.closest('.wf-card');
+            const menu = document.getElementById('more-menu');
+            
+            const rect = e.currentTarget.getBoundingClientRect();
+            let x = rect.left - 100;
+            let y = rect.bottom + 5;
+            
+            if(x < 10) x = 10;
+            if(y + 100 > window.innerHeight) {
+                y = rect.top - 100;
+            }
+
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            menu.classList.add('show');
+            
+            setTimeout(() => { document.addEventListener('click', closeMoreMenuOutside); }, 0);
+        }
+
+        function closeMoreMenuOutside(e) {
+            if (!e.target.closest('#more-menu') && !e.target.closest('.feed-more-btn')) {
+                closeMoreMenu();
+            }
+        }
+
+        function closeMoreMenu() {
+            document.getElementById('more-menu').classList.remove('show');
+            document.removeEventListener('click', closeMoreMenuOutside);
+        }
+
+        function handleNotInterested(e) {
+            e.stopPropagation();
+            closeMoreMenu();
+            if (currentPostElement) {
+                currentPostElement.remove();
+                currentPostElement = null;
+            }
+            showToast('操作成功，系统将减少为您推荐此类内容');
+        }
+
+        function handleReportClick(e) {
+            e.stopPropagation();
+            closeMoreMenu();
+            openReportModal(currentTargetUser);
+        }
+
+        function handleReportDetailClick() {
+            closeActionMenu();
+            setTimeout(() => openReportModal(currentDetailAuthor), 300);
+        }
+
+        function openReportModal(userName) {
+            document.getElementById('report-modal-title').innerText = `举报 @${userName} 的动态`;
+            document.getElementById('report-modal').classList.add('show');
+            
+            document.querySelectorAll('.report-tag').forEach(t => t.classList.remove('active'));
+            document.getElementById('report-textarea').value = '';
+            document.getElementById('report-other-wrap').style.display = 'none';
+            isReasonOther = false;
+        }
+
+        function closeReportModal() {
+            document.getElementById('report-modal').classList.remove('show');
+        }
+
+        function selectReportReason(el, isOther = false) {
+            document.querySelectorAll('.report-tag').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            isReasonOther = isOther;
+            
+            const wrap = document.getElementById('report-other-wrap');
+            const textarea = document.getElementById('report-textarea');
+            if (isOther) {
+                wrap.style.display = 'block';
+                textarea.placeholder = '请输入详细说明（必填项）...';
+            } else {
+                wrap.style.display = 'none';
+                textarea.placeholder = '补充详细说明（选填）...';
+            }
+        }
+
+        function submitReport() {
+            const activeTag = document.querySelector('.report-tag.active');
+            if (!activeTag) {
+                showToast('请先选择一个举报类型！');
+                return;
+            }
+            const txt = document.getElementById('report-textarea').value.trim();
+            if (isReasonOther && !txt) {
+                showToast('选择“其他”类型时，必须填写详细说明！');
+                return;
+            }
+            showToast('✅ 举报提交成功！感谢您协助维护社区环境');
+            closeReportModal();
+        }
+
+        // ================= 插入话题面板交互 (Bottom Sheet 蒙层效果) =================
+        function openTopicModal() {
+            const mask = document.getElementById('topicModalMask');
+            const sheet = document.getElementById('topicModalSheet');
+            mask.style.display = 'flex';
+            void mask.offsetWidth; // force reflow
+            mask.classList.add('show');
+            sheet.classList.add('show');
+        }
+
+        function closeTopicModal() {
+            const mask = document.getElementById('topicModalMask');
+            const sheet = document.getElementById('topicModalSheet');
+            sheet.classList.remove('show');
+            mask.classList.remove('show');
+            setTimeout(() => mask.style.display = 'none', 300);
+        }
+
+        function insertTopic(topic) {
+            const content = document.getElementById('postContent');
+            const span = document.createElement('span');
+            span.style.color = 'var(--primary)';
+            span.style.fontWeight = 'bold';
+            span.style.cursor = 'pointer';
+            span.contentEditable = 'false';
+            span.innerText = '#' + topic;
+            span.onclick = function(e) { e.stopPropagation(); showToast('话题可点击'); };
+            content.appendChild(span);
+            content.appendChild(document.createTextNode(' ')); // append a space
+            closeTopicModal();
+        }
+
+        // ================= 横竖屏自适应核心 (Auto-Scale) =================
+        let isLandscape = false;
+        function updateScale() {
+            const device = document.getElementById('appDevice');
+            const targetW = isLandscape ? 844 : 390;
+            const targetH = isLandscape ? 390 : 844;
+            const availableW = window.innerWidth * 0.95;
+            const availableH = window.innerHeight * 0.90;
+            let scale = Math.min(availableW / targetW, availableH / targetH);
+            if(scale > 1) scale = 1;
+            device.style.transform = `scale(${scale})`;
+        }
+        function toggleOrientation() {
+            isLandscape = !isLandscape;
+            const device = document.getElementById('appDevice');
+            if (isLandscape) {
+                device.classList.remove('portrait'); device.classList.add('landscape');
+                showToast('已切换至横屏体验');
+            } else {
+                device.classList.remove('landscape'); device.classList.add('portrait');
+                showToast('已切换回竖屏');
+            }
+            updateScale();
+            document.getElementById('scrollContent').scrollTop = 0;
+            // 横屏下强制触发布局更新确保样式应用
+            if (document.getElementById('searchPage').classList.contains('show')) {
+                renderSearchAll();
+                renderSearchGamesGrid();
+            }
+        }
+        window.addEventListener('resize', updateScale);
+
+        // ================= Tab 切换与底部分发逻辑 =================
+        let currentTab = 'detail';
+        function switchTab(tabId, el) {
+            currentTab = tabId;
+            document.querySelectorAll('.nav-tab').forEach(item => item.classList.remove('active'));
+            if(el) el.classList.add('active');
+            
+            const device = document.getElementById('appDevice');
+            device.setAttribute('data-tab', tabId);
+            
+            document.getElementById('scrollContent').scrollTop = 0;
+            updateFabAndBottomBar();
+            if(tabId === 'community') renderFeed();
+        }
+
+        function updateFabAndBottomBar() {
+            const fab = document.getElementById('fabPost');
+            const shareBtn = document.getElementById('topShareBtn');
+            const bottomBar = document.getElementById('bottomActionBar');
+            
+            if (currentTab === 'community') {
+                fab.style.display = 'flex';
+                shareBtn.style.visibility = 'hidden'; 
+                bottomBar.style.display = 'none';
+            } else {
+                fab.style.display = 'none';
+                shareBtn.style.visibility = 'visible';
+                bottomBar.style.display = 'flex';
+            }
+        }
+
+        // ================= 关注与加入逻辑 =================
+        let isJoined = false;
+        function togglePartitionJoin(btn) {
+            isJoined = !isJoined;
+            if(isJoined) {
+                btn.innerText = '已加入'; btn.style.background = 'rgba(255,255,255,0.1)'; btn.style.color = '#ccc'; btn.style.borderColor = 'transparent';
+                showToast('已加入该专区');
+            } else {
+                btn.innerText = '加入'; btn.style.background = 'rgba(40,125,250,0.1)'; btn.style.color = 'var(--primary)'; btn.style.borderColor = 'var(--primary)';
+                showToast('已退出该专区');
+            }
+        }
+
+        let followedSet = new Set();
+        function toggleFollowBtn(event, btn) {
+            event.stopPropagation();
+            if (btn.classList.contains('followed')) {
+                btn.classList.remove('followed');
+                btn.innerText = btn.innerText.replace('已关注', '关注');
+                showToast('已取消关注');
+            } else {
+                btn.classList.add('followed');
+                btn.innerText = '已关注';
+                showToast('已关注成功');
+            }
+        }
+        function toggleAuthorFollow(event, author) {
+            event.stopPropagation();
+            if(followedSet.has(author)) { followedSet.delete(author); showToast('已取消关注'); } 
+            else { followedSet.add(author); showToast('已关注'); }
+            document.querySelectorAll('.author-follow-btn').forEach(btn => {
+                if(btn.dataset.author === author) {
+                    if(followedSet.has(author)) { btn.classList.add('followed'); btn.innerText = '已关注'; }
+                    else { btn.classList.remove('followed'); btn.innerText = '关注'; }
+                }
+            });
+        }
+
+        // ================= 话题聚合页及搜索逻辑 =================
+        function openTopicPage(topicName, event) {
+            if(event) event.stopPropagation();
+            const cleanName = topicName.replace(/^#/, ''); 
+            const firstChar = cleanName.charAt(0).toUpperCase();
+            
+            document.getElementById('tp-icon').innerText = firstChar;
+            document.getElementById('tp-title').innerText = '#' + cleanName;
+            document.getElementById('tp-views').innerText = (Math.random() * 100 + 10).toFixed(1) + '万';
+            document.getElementById('tp-users').innerText = (Math.random() * 5 + 1).toFixed(1) + '万';
+            document.getElementById('tp-feed').innerHTML = document.getElementById('main-feed').innerHTML;
+            
+            document.getElementById('topicPage').classList.add('show');
+        }
+
+        // ================= 发帖页 (强制受限版) =================
+        function openPublishPage() {
+            document.getElementById('postTitle').value = '';
+            document.getElementById('postContent').innerHTML = '';
+            document.getElementById('publishPage').classList.add('show');
+            setTimeout(() => document.getElementById('postContent').focus(), 300);
+        }
+
+        function openPublishPageWithTopic() {
+            const topicName = document.getElementById('tp-title').innerText.replace('#', '');
+            openPublishPage();
+            
+            // 自动插入当前话题
+            const content = document.getElementById('postContent');
+            const span = document.createElement('span');
+            span.style.color = 'var(--primary)';
+            span.style.fontWeight = 'bold';
+            span.style.cursor = 'pointer';
+            span.contentEditable = 'false';
+            span.innerText = '#' + topicName;
+            span.onclick = function(e) { e.stopPropagation(); showToast('话题可点击'); };
+            content.appendChild(span);
+            content.appendChild(document.createTextNode(' '));
+        }
+
+        function submitPost() {
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').innerText.trim();
+            if(!title && !content) { showToast('请输入内容后再发布'); return; }
+
+            mockPosts.unshift({
+                id: Date.now(), user: '我(测试账号)', avatar: 'Me', time: '刚刚',
+                type: currentPublishTo,
+                content: title ? `【${title}】\n${content}` : content,
+                img: '', likes: 0, comments: 0, reposts: 0, topics: ['日常打卡']
+            });
+
+            showToast('动态发布成功！');
+            renderFeed();
+            closeOverlay('publishPage');
+            if(currentTab === 'community') document.getElementById('scrollContent').scrollTop = 0;
+            if(document.getElementById('searchPage').classList.contains('show')) renderSearchAll();
+        }
+
+        // ================= 数据Mock与渲染 =================
+        let mockPosts =[
+            { id: 101, user: '硬核老王', avatar: 'Felix', time: '昨天 14:30', type: 'normal', content: '刚打完抢劫任务，这作的手感真的比预期好太多了！特别是那把突击步枪，后坐力反馈绝了。', img: '', likes: 342, comments: 89, reposts: 12, topics:['发现好游戏', 'GTA5神仙打架'] },
+            { id: 102, user: '迷路的咸鱼', avatar: 'Aneka', time: '2小时前', type: 'help', content: '萌新求助😭，洛圣都第二个改车王怎么解锁啊？我找了半天都在原地打转。', img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600&auto=format&fit=crop', likes: 12, comments: 34, reposts: 2, topics:['萌新求助', '洛圣都老司机'] },
+            { id: 103, user: '高玩情报局', avatar: 'Jack', time: '10-25 09:00', type: 'guide', content: '【全网首发】外星人碎片位置全收集攻略！整理了整整三天，绝对干货，建议收藏备用！', img: '', likes: 2100, comments: 456, reposts: 180, topics:['通关打卡'] },
+            { id: 104, user: '小白求助', avatar: 'Help1', time: '1小时前', type: 'help', content: '骁龙870能跑GTA5吗？6G内存，Wine9.8试了黑屏，有同配置的兄弟吗？', img: '', likes: 23, comments: 15, reposts: 1, topics:['配置求助'] },
+            { id: 105, user: '攻略达人', avatar: 'Guide1', time: '3小时前', type: 'guide', content: '线上模式快速赚钱攻略：佩里科岛单人速刷路线，每小时稳定200万。附详细路线图。', img: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?q=80&w=600', likes: 567, comments: 89, reposts: 45, topics:['赚钱攻略'] }
+        ];
+
+        let currentFilter = 'all';
+
+        function filterFeed(type, el) {
+            document.querySelectorAll('.p-h-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            currentFilter = type;
+            renderFeed();
+        }
+
+        let currentPublishTo = 'all';
+
+        function selectPublishTo(type) {
+            currentPublishTo = type;
+            const all = document.getElementById('pto-all');
+            const help = document.getElementById('pto-help');
+            const guide = document.getElementById('pto-guide');
+            all.style.background = type==='all' ? 'rgba(250,204,21,0.15)' : 'transparent';
+            all.style.borderColor = type==='all' ? 'var(--score-color)' : 'rgba(255,255,255,0.2)';
+            all.style.fontWeight = type==='all' ? 'bold' : 'normal';
+            help.style.background = type==='help' ? 'rgba(245,34,45,0.15)' : 'transparent';
+            help.style.borderColor = type==='help' ? '#f5222d' : 'rgba(245,34,45,0.4)';
+            help.style.fontWeight = type==='help' ? 'bold' : 'normal';
+            guide.style.background = type==='guide' ? 'rgba(82,196,26,0.15)' : 'transparent';
+            guide.style.borderColor = type==='guide' ? '#52c41a' : 'rgba(82,196,26,0.4)';
+            guide.style.fontWeight = type==='guide' ? 'bold' : 'normal';
+            const label = type==='help' ? '求助' : type==='guide' ? '攻略' : '全部';
+            showToast('将发布到「' + label + '」');
+        }
+
+        function renderFeed() {
+            const container = document.getElementById('main-feed');
+            let posts = mockPosts;
+            if (currentFilter === 'official') posts = mockPosts.filter(p => p.type === 'official');
+            else if (currentFilter === 'help') posts = mockPosts.filter(p => p.type === 'help');
+            else if (currentFilter === 'guide') posts = mockPosts.filter(p => p.type === 'guide');
+
+            if (posts.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:60px 20px; color:var(--text-sub);">当前分类暂无内容</div>';
+                return;
+            }
+
+            container.innerHTML = posts.map(p => {
+                const imgHtml = p.img ? `<div class="wf-img-box" style="margin-top:10px;"><img class="wf-img" src="${p.img}"></div>` : '';
+                const topicsHtml = (p.topics ||[]).map(t => `<div class="tag-pill" style="background: rgba(40, 125, 250, 0.1); color: var(--primary); padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight:bold; width: fit-content; margin-bottom: 10px; margin-right: 8px;" onclick="openTopicPage('${t}', event)"><i class="fas fa-hashtag"></i> ${t}</div>`).join('');
+                const typeLabel = p.type === 'help' ? '<span style="background:#f5222d;color:white;font-size:11px;padding:2px 6px;border-radius:4px;margin-right:6px;font-weight:bold;">求助</span>' : p.type === 'guide' ? '<span style="background:#52c41a;color:white;font-size:11px;padding:2px 6px;border-radius:4px;margin-right:6px;font-weight:bold;">攻略</span>' : p.type === 'official' ? '<span style="background:var(--primary);color:white;font-size:11px;padding:2px 6px;border-radius:4px;margin-right:6px;font-weight:bold;">官方</span>' : '';
+
+                return `
+                <div class="wf-card" onclick="openPostDetail(${p.id})" style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; cursor: pointer; background: var(--bg-base);">
+                    <div class="wf-header-top" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                        <img class="wf-avatar-large" style="width: 38px; height: 38px; border-radius: 50%; object-fit:cover;" src="https://api.dicebear.com/7.x/avataaars/svg?seed=${p.avatar}">
+                        <div class="name-col" style="display: flex; flex-direction: column; justify-content: center;"><span class="name-bold" style="font-weight: bold; font-size: 14px; color: white; margin-bottom: 2px;">${p.user}</span><span class="time-ip" style="color: var(--text-sub); font-size: 11px;">${p.time} · 广东</span></div>
+                        <div class="feed-more-btn" onclick="openMoreMenu(event, '${p.user}')"><i class="fas fa-ellipsis-h"></i></div>
+                    </div>
+                    <div class="wf-content-text" style="padding: 0; font-size: 14px; display: block; margin-bottom: 10px; line-height: 1.5; color: #e2e8f0;">${typeLabel}${p.content}</div>
+                    <div class="topic-tags-wrapper">
+                        ${topicsHtml}
+                    </div>
+                    ${imgHtml}
+                    <div class="wf-footer-single" style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; color: var(--text-sub); font-size: 13px; padding: 0 5px;" onclick="event.stopPropagation()">
+                        <div class="action-btn" style="display: flex; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s;" onclick="handleInteraction('点赞', this)"><i class="far fa-heart" style="font-size: 16px;"></i> <span>${p.likes}</span></div>
+                        <div class="action-btn" style="display: flex; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s;" onclick="handleInteraction('收藏', this)"><i class="far fa-star" style="font-size: 16px;"></i> <span>0</span></div>
+                        <div class="action-btn" style="display: flex; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s;" onclick="openPostDetail(${p.id})"><i class="far fa-comment" style="font-size: 16px;"></i> <span>${p.comments}</span></div>
+                        <div class="action-btn" style="display: flex; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s;" onclick="showToast('拉起转发面板')"><i class="fas fa-retweet" style="font-size: 16px;"></i> <span>${p.reposts}</span></div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function handleInteraction(action, el) {
+            if(el.dataset.done === 'true') return;
+            showToast(`${action}成功`);
+            const span = el.querySelector('span'); span.innerText = parseInt(span.innerText) + 1;
+            const i = el.querySelector('i'); i.classList.replace('far', 'fas');
+            if(action === '点赞') i.style.color = 'var(--rose-red)';
+            if(action === '收藏') i.style.color = 'var(--score-color)';
+            el.dataset.done = 'true';
+        }
+
+        // ================= 详情页与跳转联动 =================
+        function openPostDetail(id) {
+            const p = mockPosts.find(x => x.id === id);
+            if(!p) return;
+            
+            currentDetailAuthor = p.user; // 增加供详情页举报用
+            
+            document.getElementById('d-title').innerText = p.content.substring(0,10) + '...';
+            document.getElementById('d-content').innerText = p.content;
+            
+            const followClass = followedSet.has(p.user) ? 'followed' : '';
+            const followText = followedSet.has(p.user) ? '已关注' : '关注';
+            document.getElementById('d-author-row-container').innerHTML = `
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${p.avatar}" style="width:40px;height:40px;border-radius:50%;background:#333;">
+                <div style="flex:1;"><div style="font-weight:bold; color:white; font-size:14px;">${p.user}</div><div style="color:var(--text-sub); font-size:11px; margin-top:2px;">${p.time} · 广东</div></div>
+                <div class="author-follow-btn ${followClass}" style="margin-left: auto; padding: 4px 14px; border-radius: 14px; font-size: 12px; font-weight: bold; background: var(--primary); color: white; cursor: pointer; transition: 0.2s;" data-author="${p.user}" onclick="toggleAuthorFollow(event, '${p.user}')">${followText}</div>
+            `;
+
+            const dTopicsHtml = (p.topics ||[]).map(t => `<div style="background: rgba(40, 125, 250, 0.1); color: var(--primary); padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight:bold; width: fit-content; cursor: pointer; transition: 0.2s;" onclick="openTopicPage('${t}')"><i class="fas fa-hashtag"></i> ${t}</div>`).join('');
+            document.getElementById('d-topics-wrapper').innerHTML = dTopicsHtml;
+
+            const mWrap = document.getElementById('d-media-wrapper');
+            if(p.img) { mWrap.style.display = 'block'; document.getElementById('d-media-img').src = p.img; } 
+            else { mWrap.style.display = 'none'; }
+
+            document.getElementById('d-bot-likes').innerText = p.likes; document.getElementById('d-bot-favs').innerText = 0; document.getElementById('d-bot-comments').innerText = p.comments;
+
+            document.getElementById('d-comment-count').innerText = `评论区（共 ${p.comments} 条）`;
+            document.getElementById('comment-list').innerHTML = `
+                <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background-size: cover; background-color:#333; background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=ccc1')"></div>
+                    <div style="flex: 1; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
+                        <div style="font-size:13px; color:var(--text-sub); font-weight:bold; margin-bottom:6px;">路人甲</div>
+                        <div style="font-size:14px; color:white; line-height:1.5; margin-bottom:8px;">确实好玩，不接受反驳。</div>
+                        <div style="display:flex; justify-content:space-between; font-size:11px; color:#666;">
+                            <span>刚刚 · 浙江</span><span style="cursor:pointer;" onclick="showToast('点赞成功')"><i class="far fa-heart"></i> 12</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('page-detail').classList.add('show');
+        }
+
+        function jumpToGameDetailFromPost() {
+            closeOverlay('page-detail');
+            switchTab('detail', document.getElementById('tab-btn-detail'));
+            showToast('已跳转至 游戏详情');
+        }
+
+        function jumpToPartitionFromPost() {
+            closeOverlay('page-detail');
+            switchTab('community', document.getElementById('tab-btn-community'));
+            showToast('已跳转至 游戏专属社区');
+        }
+
+        // ================= 全局搜索结果页 =================
+        const searchGamesMock =[
+            { name: '荒野大镖客2', rating: '9.4', tags: '拟真 · 单人 · 剧情丰富', desc: '西部荒野，抉择冒险自由体验', img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/library_600x900.jpg' },
+            { name: '黑神话：悟空', rating: '9.8', tags: '单人 · 动作 · 剧情丰富', desc: '重走西游之路', img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/library_600x900.jpg' },
+            { name: '赛博朋克 2077', rating: '9.0', tags: '开放世界 · 单人 · 动作', desc: '夜之城传奇', img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/library_600x900.jpg' },
+            { name: '艾尔登法环', rating: '9.5', tags: '魂类 · 开放世界 · 动作冒险', desc: '褪色者的受苦之旅', img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/library_600x900.jpg' }
+        ];
+
+        const searchForumsMock =[
+            { name: '荒野大镖客2 官方专区', desc: '欢迎来到西部世界！分享你的救赎之旅。', img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/library_600x900.jpg' },
+            { name: '黑神话悟空 交流', desc: '大圣归来，直面天命！', img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/library_600x900.jpg' },
+            { name: '夜之城 居民区', desc: '赛博朋克2077玩家交流基地。', img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/library_600x900.jpg' },
+            { name: '交界地 传火祭祀场', desc: '艾尔登法环逃课与攻略指南。', img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/library_600x900.jpg' },
+            { name: 'Red Dead Online 组队', desc: '在线模式约战、组队、交易。', img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/library_600x900.jpg' },
+            { name: '荒野大镖客 摄影专区', desc: '游戏内绝美风景摄影分享。', img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/library_600x900.jpg' },
+            { name: '荒野大镖客 剧情讨论', desc: '深度解析剧情与彩蛋。', img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/library_600x900.jpg' }
+        ];
+
+        const searchUsersMock =[
+            { name: '荒野大镖客官方', desc: '官方认证账号', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=RDR' },
+            { name: '亚瑟摩根', desc: '知名游戏博主', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Arthur' },
+            { name: '达奇的信徒', desc: '西部文化爱好者', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Dutch' },
+            { name: '约翰·马斯顿', desc: '前亡命徒', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John' },
+            { name: '西部快枪手', desc: '速通达人', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Gun' },
+            { name: '洛圣都老崔', desc: '串台玩家', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Trevor' }
+        ];
+
+        const gridGamesMock =[
+            { name: '黑神话：悟空', tags:['热门'], library: true, img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/library_600x900.jpg' },
+            { name: '赛博朋克 2077', tags:['RPG'], library: false, img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/library_600x900.jpg' },
+            { name: '王者荣耀', tags:['MOBA'], library: false, img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1203220/library_600x900.jpg' },
+            { name: '荒野大镖客2', tags:['经典'], library: true, img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/library_600x900.jpg' },
+            { name: '艾尔登法环', tags:['魂系'], library: true, img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/library_600x900.jpg' },
+            { name: '极限竞速', tags:['竞速'], library: false, img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1551360/library_600x900.jpg' },
+            { name: '无畏契约', tags:['FPS'], library: false, img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1172470/library_600x900.jpg' },
+            { name: '我的世界', tags:['沙盒'], library: true, img: 'https://cdn.cloudflare.steamstatic.com/steam/apps/105600/library_600x900.jpg' }
+        ];
+
+        function openSearchPage() {
+            document.getElementById('searchPage').classList.add('show');
+            renderSearchAll();
+            renderSearchGamesGrid();
+        }
+
+        function switchSearchTab(tabId, el) {
+            document.querySelectorAll('.s-tab').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+            document.querySelectorAll('.s-pane').forEach(pane => pane.classList.remove('active'));
+            document.getElementById('s-tab-' + tabId).classList.add('active');
+            
+            if(tabId === 'community') {
+                renderSearchCommunities();
+            }
+            if(tabId === 'users') {
+                document.getElementById('s-users-list').innerHTML = searchUsersMock.map(u => `
+                    <div class="s-list-item" onclick="showToast('进入用户主页')">
+                        <img src="${u.img}" class="s-item-avatar">
+                        <div class="s-item-info">
+                            <div class="s-item-title">${u.name}</div>
+                            <div class="s-item-desc">${u.desc}</div>
+                        </div>
+                        <button class="s-btn-follow" onclick="toggleFollowBtn(event, this)">关注</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function renderSearchAll() {
+            document.getElementById('s-all-games').innerHTML = searchGamesMock.map(g => `
+                <div class="s-list-item" onclick="jumpToGameDetailFromPost(); closeOverlay('searchPage');">
+                    <img src="${g.img}" class="s-item-icon">
+                    <div class="s-item-info">
+                        <div class="s-item-title">${g.name}</div>
+                        <div class="s-item-meta"><span class="s-item-rating">★ ${g.rating}</span> ${g.tags}</div>
+                        <div class="s-item-desc">${g.desc}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('s-all-forums').innerHTML = searchForumsMock.slice(0, 2).map(f => `
+                <div class="s-list-item" onclick="jumpToPartitionFromPost(); closeOverlay('searchPage');">
+                    <img src="${f.img}" class="s-item-icon">
+                    <div class="s-item-info">
+                        <div class="s-item-title">${f.name}</div>
+                        <div class="s-item-desc" style="margin-top:8px;">${f.desc}</div>
+                    </div>
+                    <button class="s-btn-follow" onclick="toggleFollowBtn(event, this)">+ 关注</button>
+                </div>
+            `).join('');
+
+            document.getElementById('s-all-users').innerHTML = searchUsersMock.slice(0, 1).map(u => `
+                <div class="s-list-item" onclick="showToast('进入用户主页')">
+                    <img src="${u.img}" class="s-item-avatar">
+                    <div class="s-item-info">
+                        <div class="s-item-title">${u.name}</div>
+                        <div class="s-item-desc">${u.desc}</div>
+                    </div>
+                    <button class="s-btn-follow" onclick="toggleFollowBtn(event, this)">关注</button>
+                </div>
+            `).join('');
+            
+            document.getElementById('s-all-feeds').innerHTML = document.getElementById('main-feed').innerHTML;
+        }
+
+        let communitiesExpanded = false;
+        function toggleCommunitiesExpand() {
+            communitiesExpanded = !communitiesExpanded;
+            renderSearchCommunities();
+        }
+
+        function renderSearchCommunities() {
+            const limit = communitiesExpanded ? searchForumsMock.length : 3;
+            document.getElementById('s-comm-only-forums').innerHTML = searchForumsMock.slice(0, limit).map(f => `
+                <div class="s-list-item" onclick="jumpToPartitionFromPost(); closeOverlay('searchPage');">
+                    <img src="${f.img}" class="s-item-icon">
+                    <div class="s-item-info">
+                        <div class="s-item-title">${f.name}</div>
+                        <div class="s-item-desc" style="margin-top:8px;">${f.desc}</div>
+                    </div>
+                    <button class="s-btn-follow" onclick="toggleFollowBtn(event, this)">+ 关注</button>
+                </div>
+            `).join('');
+            
+            const btn = document.getElementById('s-comm-more-btn');
+            if (searchForumsMock.length <= 3) {
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = 'block';
+                if (communitiesExpanded) {
+                    btn.innerHTML = '收起 <i class="fas fa-chevron-up"></i>';
+                } else {
+                    btn.innerHTML = '查看更多 <i class="fas fa-chevron-down"></i>';
+                }
+            }
+            
+            document.getElementById('s-comm-feeds').innerHTML = document.getElementById('main-feed').innerHTML;
+        }
+
+        function renderSearchGamesGrid() {
+            let html = gridGamesMock.map(g => `
+                <div class="g-card" onclick="jumpToGameDetailFromPost(); closeOverlay('searchPage');">
+                    <div class="g-cover-box">
+                        <img src="${g.img}" class="g-cover">
+                        <div class="g-tags-abs">${g.tags.map(t => `<div class="g-tag-abs">${t}</div>`).join('')}</div>
+                    </div>
+                    <div class="g-info">
+                        <div class="g-title" style="font-size: 14px; font-weight: bold; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${g.name}</div>
+                        ${g.library ? `<div class="g-meta" style="font-size: 11px; color: var(--text-sub); display: flex; align-items: center; gap: 4px;"><i class="fab fa-steam"></i> 在游戏库中</div>` : '<div style="height:16px;"></div>'}
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('s-games-grid').innerHTML = html; 
+        }
+
+        // 初始化
+        updateScale(); 
+        document.getElementById('appDevice').setAttribute('data-tab', 'detail');
+        updateFabAndBottomBar();
+        renderFeed();
+    </script>
+</body>
+</html>
