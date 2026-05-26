@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>发行人计划 Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f5f5;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.phone{width:375px;height:812px;background:#fff;border-radius:40px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.status-bar{height:44px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;color:#333}
+.header{height:48px;display:flex;align-items:center;justify-content:center;padding:0 16px;position:relative;background:#fff;border-bottom:1px solid #f0f0f0}
+.header .back{position:absolute;left:16px;font-size:20px;cursor:pointer;color:#333}
+.header .title{font-size:17px;font-weight:600;color:#333}
+.header .right-btn{position:absolute;right:16px;font-size:13px;color:#ff8c00;cursor:pointer;font-weight:500}
+.content{height:calc(812px - 44px - 48px - 56px);overflow-y:auto;background:#f5f5f5}
+.content::-webkit-scrollbar{display:none}
+.bottom-nav{height:56px;background:#fff;border-top:1px solid #eee;display:flex;align-items:center;justify-content:space-around;position:absolute;bottom:0;left:0;right:0}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;font-size:10px;color:#999}
+.nav-item.active{color:#ff8c00}
+.nav-item .icon{font-size:20px}
+.view{display:none}.view.active{display:block}
+.btn-primary{width:100%;height:44px;background:linear-gradient(135deg,#ff8c00,#ffaa00);border:none;border-radius:22px;color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+.btn-primary:active{opacity:.8}
+.btn-primary.disabled{background:#ccc;pointer-events:none}
+.toast{position:absolute;top:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.75);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.modal-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;width:300px;text-align:center}
+.modal .modal-title{font-size:16px;font-weight:600;color:#333;margin-bottom:12px}
+.modal .modal-content{font-size:14px;color:#666;line-height:1.6;margin-bottom:20px;white-space:pre-line}
+.modal .modal-btns{display:flex;gap:12px}
+.modal .modal-btn{flex:1;height:40px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;border:none}
+.modal .modal-btn.cancel{background:#f5f5f5;color:#666}
+.modal .modal-btn.confirm{background:#ff8c00;color:#fff}
+.section{background:#fff;margin:12px 16px;border-radius:12px;padding:16px}
+.section-title{font-size:15px;font-weight:600;color:#333;margin-bottom:12px}
+.coin-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:#ffb800;border-radius:50%;font-size:9px;color:#fff;font-weight:bold;vertical-align:middle;margin-right:2px}
+.filter-tag{padding:4px 12px;border-radius:14px;font-size:12px;background:#f5f5f5;color:#666;cursor:pointer;display:inline-block}
+.filter-tag.active{background:#fff5e6;color:#ff8c00}
+.task-list{padding:12px 16px}
+.task-card{background:#fff;border-radius:12px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.04);cursor:pointer}
+.task-card-img{height:100px;position:relative;display:flex;align-items:center;justify-content:center}
+.task-card-img .badge{position:absolute;top:8px;left:8px;background:#ff8c00;color:#fff;font-size:10px;padding:2px 8px;border-radius:10px}
+.task-card-body{padding:12px}
+.task-card-title{font-size:15px;font-weight:600;color:#333;margin-bottom:6px}
+.task-card-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.task-card-meta{font-size:12px;color:#999}
+.task-card-reward{font-size:14px;font-weight:700;color:#ff8c00;display:flex;align-items:center;gap:3px}
+.task-card-footer{display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid #f5f5f5;font-size:12px;color:#666}
+.task-card-footer .pool{color:#ff8c00;font-weight:600;font-size:13px}
+.detail-banner{height:150px;display:flex;align-items:center;justify-content:center;position:relative}
+.detail-banner .game-name{position:absolute;bottom:14px;left:16px;color:#fff;font-size:16px;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.3)}
+.detail-stats{display:flex;justify-content:space-around;text-align:center}
+.detail-stat-item .num{font-size:18px;font-weight:600;color:#333}
+.detail-stat-item .label{font-size:11px;color:#999;margin-top:2px}
+.detail-bottom{position:absolute;bottom:56px;left:0;right:0;padding:12px 16px;background:#fff;border-top:1px solid #f0f0f0}
+.reward-table{width:100%;border-collapse:collapse}
+.reward-table th{background:#fff5e6;padding:8px 12px;font-size:12px;color:#ff8c00;text-align:left}
+.reward-table td{padding:8px 12px;font-size:13px;color:#333;border-bottom:1px solid #f5f5f5}
+.requirement-list{font-size:13px;color:#666;line-height:2;padding-left:8px;border-left:3px solid #ff8c00}
+.requirement-list li{list-style:none;padding-left:12px;position:relative}
+.requirement-list li::before{content:"•";position:absolute;left:0;color:#ff8c00}
+.my-tabs{display:flex;padding:0 16px;background:#fff;border-bottom:1px solid #f0f0f0}
+.my-tab{padding:12px 16px;font-size:14px;color:#666;cursor:pointer;border-bottom:2px solid transparent}
+.my-tab.active{color:#333;font-weight:600;border-bottom-color:#ff8c00}
+.my-task-item{background:#fff;margin:8px 16px;border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center;cursor:pointer}
+.my-task-item .thumb{width:44px;height:44px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px}
+.my-task-item .info{flex:1;min-width:0}
+.my-task-item .info .name{font-size:14px;font-weight:500;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.my-task-item .info .meta{font-size:12px;color:#999;margin-top:4px}
+.my-task-item .actions{display:flex;gap:6px;flex-shrink:0}
+.act-btn{padding:4px 10px;border-radius:12px;font-size:11px;cursor:pointer}
+.act-btn.edit{background:#fff5e6;color:#ff8c00}
+.act-btn.cancel{background:#fff1f0;color:#ff4d4f}
+.act-btn.view{background:#f0f5ff;color:#1890ff}
+/* 收益 */
+.earn-header{background:#fff;padding:20px 16px;text-align:center}
+.earn-header .eh-amount{font-size:36px;font-weight:700;color:#333;margin:4px 0}
+.earn-header .eh-label{font-size:12px;color:#999}
+.earn-header .eh-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px}
+.earn-header .eh-btn{padding:8px 24px;background:#ff8c00;color:#fff;border-radius:16px;font-size:13px;cursor:pointer}
+.earn-header .eh-sub{display:flex;justify-content:space-around;margin-top:16px;padding-top:16px;border-top:1px solid #f5f5f5}
+.earn-header .eh-sub-item{text-align:center}
+.earn-header .eh-sub-item .sn{font-size:16px;font-weight:600;color:#333}
+.earn-header .eh-sub-item .sl{font-size:11px;color:#999;margin-top:2px}
+.earn-tabs{display:flex;background:#fff;border-bottom:1px solid #f0f0f0;padding:0 16px}
+.earn-tab{padding:10px 12px;font-size:13px;color:#666;cursor:pointer;border-bottom:2px solid transparent}
+.earn-tab.active{color:#ff8c00;font-weight:600;border-bottom-color:#ff8c00}
+.earn-item{background:#fff;margin:0 16px 1px;padding:14px;display:flex;justify-content:space-between;align-items:center}
+.earn-item:first-child{border-radius:10px 10px 0 0;margin-top:8px}
+.earn-item:last-child{border-radius:0 0 10px 10px;margin-bottom:12px}
+.earn-item .left .name{font-size:13px;color:#333}
+.earn-item .left .time{font-size:11px;color:#999;margin-top:3px}
+.earn-item .right{font-size:15px;font-weight:600}
+.earn-item .right.pos{color:#52c41a}
+.earn-item .right.neg{color:#ff4d4f}
+/* 充值 */
+.recharge-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:12px 0}
+.ra-item{padding:14px 8px;text-align:center;border-radius:10px;border:2px solid #f0f0f0;cursor:pointer}
+.ra-item.selected{border-color:#ff8c00;background:#fff5e6}
+.ra-item .ra-coin{font-size:16px;font-weight:700;color:#333}
+.ra-item .ra-price{font-size:12px;color:#999;margin-top:4px}
+.pay-method{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.pay-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:10px;border:2px solid #f0f0f0;cursor:pointer}
+.pay-item.selected{border-color:#ff8c00}
+.pay-item .pay-icon{font-size:20px}
+.pay-item .pay-name{font-size:14px;color:#333;flex:1}
+.pay-item .pay-check{width:18px;height:18px;border-radius:50%;border:2px solid #ddd;display:flex;align-items:center;justify-content:center}
+.pay-item.selected .pay-check{border-color:#ff8c00;background:#ff8c00;color:#fff;font-size:10px}
+.agree-row{display:flex;align-items:center;gap:8px;margin:16px 0;font-size:12px;color:#666}
+.agree-row input[type=checkbox]{width:16px;height:16px;accent-color:#ff8c00}
+.agree-row a{color:#ff8c00;text-decoration:none}
+/* 创建/编辑任务 */
+.form-group{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px}
+.form-label{font-size:13px;color:#999;margin-bottom:8px}
+.form-input{width:100%;padding:10px 12px;border:1px solid #e8e8e8;border-radius:10px;font-size:14px;outline:none;color:#333}
+.form-input:focus{border-color:#ff8c00}
+.form-input::placeholder{color:#ccc}
+.form-row{display:flex;gap:12px}
+.form-row .form-group{flex:1}
+.form-tip{font-size:11px;color:#999;margin-top:6px}
+.game-search{position:relative}
+.game-results{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 10px 10px;max-height:180px;overflow-y:auto;z-index:10;display:none}
+.game-results.show{display:block}
+.game-result-item{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer}
+.game-result-item:hover{background:#f9f9f9}
+.game-result-item .gi{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.game-result-item .gn{font-size:13px;color:#333}
+.selected-game{display:flex;align-items:center;gap:10px;padding:10px;background:#f9f9f9;border-radius:10px;margin-top:8px}
+.selected-game .gi{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.selected-game .gn{font-size:14px;color:#333;font-weight:500}
+.selected-game .remove{margin-left:auto;color:#999;cursor:pointer;font-size:16px}
+.platform-multi{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.pm-item{padding:6px 12px;border-radius:16px;border:1.5px solid #e8e8e8;cursor:pointer;font-size:13px;color:#666}
+.pm-item.selected{border-color:#ff8c00;background:#fff5e6;color:#ff8c00}
+.rank-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f8f8f8}
+.rank-item:last-child{border-bottom:none}
+.rank-num{width:18px;font-size:13px;font-weight:700;color:#999}
+.rank-num.t1{color:#ff8c00}.rank-num.t2{color:#aaa}.rank-num.t3{color:#cd7f32}
+.rank-avatar{width:28px;height:28px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:12px}
+.rank-info{flex:1}.rank-info .rn{font-size:13px;color:#333}.rank-info .rr{font-size:11px;color:#999;margin-top:2px}
+.rank-view{font-size:11px;color:#ff8c00;cursor:pointer}
+.fab{position:absolute;bottom:72px;right:16px;background:linear-gradient(135deg,#ff8c00,#ffaa00);color:#fff;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;box-shadow:0 4px 12px rgba(255,140,0,.4);cursor:pointer;z-index:10}
+.fab:active{transform:scale(.9)}
+</style>
+</head>
+<body>
+<div class="phone" id="app">
+<div class="status-bar"><span>17:10</span></div>
+<!-- 找任务 -->
+<div class="view active" id="view-plaza">
+<div class="header"><span class="title">发行人计划</span><span class="right-btn" onclick="showRules()">玩法说明</span></div>
+<div class="content"><div class="task-list" id="task-list"></div></div>
+<div class="fab" onclick="showView('create')">+ 发布</div>
+</div>
+<!-- 玩法说明 -->
+<div class="view" id="view-rules">
+<div class="header"><span class="back" onclick="showView('plaza')">‹</span><span class="title">玩法说明</span></div>
+<div class="content">
+<div class="section"><div class="section-title">什么是发行人计划？</div><div style="font-size:13px;color:#666;line-height:2">发行人计划是盖世游戏的推广任务平台。你可以领取任务，去抖音/B站/快手/小红书发布游戏推广视频，根据视频点赞量获得盖世币奖励。</div></div>
+<div class="section"><div class="section-title">如何参与？</div><div style="font-size:13px;color:#666;line-height:2">1. 在「找任务」浏览并领取感兴趣的任务<br>2. 按照任务要求拍摄游戏视频并发布到指定平台<br>3. 回到APP粘贴视频链接提交<br>4. 等待审核通过后，系统自动按点赞量结算盖世币<br>5. 盖世币可提现或兑换平台权益</div></div>
+<div class="section"><div class="section-title">结算规则</div><div style="font-size:13px;color:#666;line-height:2">· 任务到期后第3天系统自动抓取视频数据<br>· 按任务设定的阶梯规则计算奖励<br>· 后续每隔固定周期补发新增点赞奖励<br>· 单条视频奖金不超过任务设定的上限<br>· 汇率：100盖世币 = 1元人民币</div></div>
+<div class="section"><div class="section-title">如何发布任务？</div><div style="font-size:13px;color:#666;line-height:2">在「做任务」页面点击"+ 发布任务"，填写任务信息并充值预算即可。个人发布的任务需24小时内审核通过后上架。</div></div>
+</div>
+</div>
+<!-- 详情 -->
+<div class="view" id="view-detail">
+<div class="header"><span class="back" onclick="showView('plaza')">‹</span><span class="title">任务详情</span></div>
+<div class="content" id="detail-content"></div>
+<div class="detail-bottom"><button class="btn-primary" id="btn-claim">上传参与作品</button></div>
+</div>
+<!-- 做任务（我的任务） -->
+<div class="view" id="view-mytask">
+<div class="header"><span class="title">做任务</span><span class="right-btn" onclick="showView('create')">+ 发布任务</span></div>
+<div class="content">
+<div class="my-tabs"><div class="my-tab active" data-t="joined">我参与的</div><div class="my-tab" data-t="published">我发布的</div></div>
+<div id="my-task-content"></div>
+</div>
+</div>
+<!-- 提交投稿 -->
+<div class="view" id="view-submit">
+<div class="header"><span class="back" onclick="showView('mytask')">‹</span><span class="title">提交投稿</span></div>
+<div class="content">
+<div class="section"><div class="section-title">选择投稿平台</div><div class="platform-multi" id="submit-platforms"><div class="pm-item selected" data-p="douyin">抖音</div><div class="pm-item" data-p="bilibili">B站</div><div class="pm-item" data-p="kuaishou">快手</div><div class="pm-item" data-p="xiaohongshu">小红书</div></div></div>
+<div class="section"><div class="section-title">粘贴视频链接</div><textarea id="video-link" style="width:100%;padding:12px;border:1px solid #e8e8e8;border-radius:10px;font-size:14px;resize:none;height:80px;outline:none" placeholder="请粘贴已发布的视频链接"></textarea><div class="form-tip">· 视频时长≥15秒 · 需包含游戏画面 · 同一视频仅可关联一个任务</div></div>
+<div style="padding:0 16px 16px"><button class="btn-primary" onclick="submitVideo()">提交投稿</button></div>
+</div>
+</div>
+<!-- 收益 -->
+<div class="view" id="view-earnings">
+<div class="header"><span class="title">我的钱包</span><span class="right-btn" onclick="showView('recharge')">充值</span></div>
+<div class="content">
+<div class="earn-header">
+<div class="eh-label">可提现金额(元)</div>
+<div class="eh-row"><div class="eh-amount">¥36.50</div><div class="eh-btn" onclick="handleWithdraw()">提现</div></div>
+<div class="eh-sub">
+<div class="eh-sub-item"><div class="sn">3,650</div><div class="sl">盖世币余额</div></div>
+<div class="eh-sub-item"><div class="sn">¥150</div><div class="sl">累计收益</div></div>
+<div class="eh-sub-item"><div class="sn">¥113.50</div><div class="sl">已提现</div></div>
+</div>
+</div>
+<div class="earn-tabs"><div class="earn-tab active" data-et="all">全部</div><div class="earn-tab" data-et="income">收入</div><div class="earn-tab" data-et="expense">消耗</div><div class="earn-tab" data-et="withdraw">提现</div><div class="earn-tab" data-et="recharge">充值</div></div>
+<div id="earn-list"></div>
+</div>
+</div>
+<!-- 充值 -->
+<div class="view" id="view-recharge">
+<div class="header"><span class="back" onclick="showView('earnings')">‹</span><span class="title">充值盖世币</span></div>
+<div class="content" id="recharge-content"></div>
+</div>
+<!-- 创建/编辑任务 -->
+<div class="view" id="view-create">
+<div class="header"><span class="back" onclick="showView('plaza')">‹</span><span class="title" id="create-title">创建发行任务</span></div>
+<div class="content" id="create-content"></div>
+</div>
+<div class="bottom-nav">
+<div class="nav-item active" onclick="switchNav(this,'plaza')"><span class="icon">🔍</span><span>找任务</span></div>
+<div class="nav-item" onclick="switchNav(this,'mytask')"><span class="icon">📋</span><span>做任务</span></div>
+<div class="nav-item" onclick="switchNav(this,'earnings')"><span class="icon">💰</span><span>钱包</span></div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="modal-overlay" id="modal"><div class="modal"><div class="modal-title" id="modal-title"></div><div class="modal-content" id="modal-content"></div><div class="modal-btns"><div class="modal-btn cancel" onclick="closeModal()">取消</div><div class="modal-btn confirm" id="modal-confirm">确认</div></div></div></div>
+</div>
+<script src="发行人计划demo.js"></script>
+</body>
+</html>
