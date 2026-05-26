@@ -712,110 +712,48 @@
             </div>
 
             <!-- 官方发布页面 -->
+            <!-- 官方发布页面 -->
             <div class="page" id="page-official-post">
                 <div class="card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                        <h3 style="margin:0;">官方马甲号发布</h3>
-                        <div style="font-size:13px; color:#999;">使用官方马甲号在指定分区发布动态，将带"盖世游戏大使"标签并展示在官方Tab下</div>
-                    </div>
-
-                    <div style="background:#f8f9fa; border-radius:8px; padding:20px; border:1px solid #e8e8e8;">
-                        <h4 style="margin:0 0 16px;">发布设置</h4>
-
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
-                            <div>
-                                <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">发布人头像 <span style="color:#ff4d4f;">*</span></label>
-                                <div style="display:flex; align-items:center; gap:12px;">
-                                    <div id="official-avatar-preview" style="width:48px; height:48px; border-radius:50%; background:#ddd url('https://api.dicebear.com/7.x/avataaars/svg?seed=Official') center/cover; border:2px solid #1890ff;"></div>
-                                    <button class="btn" onclick="showToast('拉起头像上传')"><i class="fas fa-upload"></i> 上传头像</button>
-                                </div>
-                            </div>
-                            <div>
-                                <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">发布人昵称 <span style="color:#ff4d4f;">*</span></label>
-                                <input type="text" value="盖世游戏官方" style="width:100%; padding:8px 12px; border:1px solid #d9d9d9; border-radius:4px; font-size:14px;" id="official-nickname">
-                            </div>
+                    <div class="filter-bar">
+                        <div class="filter-item">动态标题: <input type="text" placeholder="输入标题关键词"></div>
+                        <div class="filter-item">分区:
+                            <select>
+                                <option>全部</option>
+                                <option>Steam</option>
+                                <option>GTA 5</option>
+                                <option>配置分享</option>
+                                <option>Epic</option>
+                            </select>
                         </div>
-
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
-                            <div>
-                                <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">身份标签名称 <span style="color:#ff4d4f;">*</span></label>
-                                <input type="text" value="盖世游戏大使" style="width:100%; padding:8px 12px; border:1px solid #d9d9d9; border-radius:4px; font-size:14px;" id="official-tag-name">
-                            </div>
-                            <div>
-                                <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">发布到分区 <span style="color:#ff4d4f;">*</span></label>
-                                <select style="width:100%; padding:8px 12px; border:1px solid #d9d9d9; border-radius:4px; font-size:14px;" id="official-partition">
-                                    <option>Steam</option>
-                                    <option>GTA 5</option>
-                                    <option>配置分享</option>
-                                    <option>Epic</option>
-                                </select>
-                            </div>
+                        <div class="filter-item">状态:
+                            <select>
+                                <option>全部</option>
+                                <option>已发布</option>
+                                <option>已置顶</option>
+                                <option>已隐藏</option>
+                            </select>
                         </div>
-
-                        <div style="margin-bottom:16px;">
-                            <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">是否置顶</label>
-                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                                <input type="checkbox" id="official-pin" checked style="accent-color:#1890ff; width:16px; height:16px;">
-                                <span style="font-size:13px;">发布后自动置顶到该分区</span>
-                            </label>
+                        <div class="filter-item">
+                            <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            <button class="btn btn-default" onclick="showToast('已重置')"><i class="fas fa-redo"></i> 重置</button>
+                        </div>
+                        <div class="filter-item" style="margin-left:auto;">
+                            <button class="btn btn-primary" onclick="openOfficialPostModal()"><i class="fas fa-plus"></i> 新建官方动态</button>
                         </div>
                     </div>
 
-                    <div style="background:#f8f9fa; border-radius:8px; padding:20px; border:1px solid #e8e8e8; margin-top:16px;">
-                        <h4 style="margin:0 0 16px;">动态内容</h4>
-                        <div style="margin-bottom:12px;">
-                            <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">标题 <span style="color:#ff4d4f;">*</span></label>
-                            <input type="text" placeholder="输入动态标题" style="width:100%; padding:8px 12px; border:1px solid #d9d9d9; border-radius:4px; font-size:14px;" id="official-title">
-                        </div>
-                        <div style="margin-bottom:12px;">
-                            <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">正文内容 <span style="color:#ff4d4f;">*</span></label>
-                            <textarea placeholder="输入动态正文..." style="width:100%; height:120px; padding:12px; border:1px solid #d9d9d9; border-radius:4px; font-size:14px; resize:vertical;" id="official-content"></textarea>
-                        </div>
-                        <div style="margin-bottom:12px;">
-                            <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">配图（选填）</label>
-                            <div style="display:flex; gap:8px;">
-                                <div style="width:80px; height:80px; border:1px dashed #d9d9d9; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#bbb; font-size:24px;" onclick="showToast('拉起图片上传')">+</div>
-                            </div>
-                        </div>
-                        <div>
-                            <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">关联话题（选填）</label>
-                            <input type="text" placeholder="输入话题名称，如：#官方公告" style="width:100%; padding:8px 12px; border:1px solid #d9d9d9; border-radius:4px; font-size:14px;">
-                        </div>
-                    </div>
-
-                    <!-- 预览 -->
-                    <div style="background:#f8f9fa; border-radius:8px; padding:20px; border:1px solid #e8e8e8; margin-top:16px;">
-                        <h4 style="margin:0 0 16px;">发布预览</h4>
-                        <div style="background:#1a1a24; border-radius:12px; padding:16px; color:#fff;">
-                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Official" style="width:38px; height:38px; border-radius:50%;">
-                                <div>
-                                    <div style="display:flex; align-items:center; gap:6px;">
-                                        <span style="font-weight:bold; font-size:14px;">盖世游戏官方</span>
-                                        <span style="background:rgba(250,173,20,0.2); color:#faad14; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold;">盖世游戏大使</span>
-                                    </div>
-                                    <div style="font-size:11px; color:#8a99a8; margin-top:2px;">刚刚 · 官方</div>
-                                </div>
-                            </div>
-                            <div style="font-size:14px; color:#e2e8f0;">预览区域：填写上方内容后，将以此样式在社区"官方"Tab下展示</div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top:20px; display:flex; gap:12px; justify-content:flex-end;">
-                        <button class="btn btn-default" onclick="showToast('已保存草稿')"><i class="fas fa-save"></i> 保存草稿</button>
-                        <button class="btn btn-primary" onclick="publishOfficialPost()"><i class="fas fa-paper-plane"></i> 立即发布</button>
-                    </div>
-                </div>
-
-                <!-- 已发布列表 -->
-                <div class="card" style="margin-top:16px;">
-                    <h3 style="margin:0 0 16px;">已发布列表</h3>
                     <table>
-                        <thead><tr><th>ID</th><th>发布人</th><th>标签</th><th>标题</th><th>分区</th><th>置顶</th><th>发布时间</th><th>操作</th></tr></thead>
+                        <thead><tr><th><input type="checkbox"></th><th>ID</th><th>封面</th><th>动态标题</th><th>分区</th><th>发布人</th><th>身份标签</th><th>状态</th><th>发布时间</th><th>操作</th></tr></thead>
                         <tbody id="official-post-list"></tbody>
                     </table>
+
+                    <div class="pagination">
+                        共 3 条记录
+                    </div>
                 </div>
             </div>
+
 
         </div>
     </main>
@@ -1817,48 +1755,66 @@
         window.onload = () => {
             // ================= 官方发布 =================
             const officialPosts = [
-                { id: 'OP001', nickname: '盖世游戏官方', tag: '盖世游戏大使', title: '【公告】V6.0.5版本更新说明', partition: 'Steam', pinned: true, time: '2026-05-25 10:00' },
-                { id: 'OP002', nickname: '盖世评测官', tag: '盖世游戏大使', title: '本周新游推荐TOP5', partition: 'Steam', pinned: true, time: '2026-05-24 14:30' },
-                { id: 'OP003', nickname: '盖世游戏官方', tag: '盖世游戏大使', title: 'GTA5 官方推荐配置方案', partition: 'GTA 5', pinned: false, time: '2026-05-23 09:15' },
+                { id: 'OP001', nickname: '盖世游戏官方', tag: '盖世游戏大使', title: '【公告】V6.0.5版本更新说明', partition: 'Steam', status: '已置顶', time: '2026-05-25 10:00', img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=60&h=60&fit=crop' },
+                { id: 'OP002', nickname: '盖世评测官', tag: '盖世游戏大使', title: '本周新游推荐TOP5', partition: 'Steam', status: '已发布', time: '2026-05-24 14:30', img: '' },
+                { id: 'OP003', nickname: '盖世游戏官方', tag: '盖世游戏大使', title: 'GTA5 官方推荐配置方案', partition: 'GTA 5', status: '已发布', time: '2026-05-23 09:15', img: '' },
             ];
 
             function renderOfficialPost() {
                 const tbody = document.getElementById('official-post-list');
                 if (!tbody) return;
-                tbody.innerHTML = officialPosts.map(p => `<tr>
-                    <td>${p.id}</td>
-                    <td>${p.nickname}</td>
-                    <td><span style="background:rgba(250,173,20,0.1); color:#fa8c16; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:bold;">${p.tag}</span></td>
-                    <td>${p.title}</td>
-                    <td>${p.partition}</td>
-                    <td>${p.pinned ? '<span style="color:#52c41a;">是</span>' : '否'}</td>
-                    <td style="font-size:12px;">${p.time}</td>
-                    <td>
-                        <button class="btn btn-sm" onclick="showToast('编辑 ${p.id}')">编辑</button>
-                        <button class="btn btn-sm" onclick="showToast('${p.pinned ? '取消置顶' : '置顶'} ${p.id}')">${p.pinned ? '取消置顶' : '置顶'}</button>
-                        <button class="btn btn-sm btn-danger" onclick="showToast('删除 ${p.id}')">删除</button>
-                    </td>
-                </tr>`).join('');
+                tbody.innerHTML = officialPosts.map(p => {
+                    const statusTag = p.status === '已置顶' ? 'tag-green' : p.status === '已隐藏' ? 'tag-gray' : 'tag-blue';
+                    const imgHtml = p.img ? '<img src="' + p.img + '" style="width:40px;height:40px;border-radius:4px;object-fit:cover;">' : '<span style="color:#ccc;">-</span>';
+                    return '<tr>' +
+                        '<td><input type="checkbox"></td>' +
+                        '<td>' + p.id + '</td>' +
+                        '<td>' + imgHtml + '</td>' +
+                        '<td>' + p.title + '</td>' +
+                        '<td>' + p.partition + '</td>' +
+                        '<td>' + p.nickname + '</td>' +
+                        '<td><span class="tag ' + statusTag + '">' + p.tag + '</span></td>' +
+                        '<td><span class="tag ' + statusTag + '">' + p.status + '</span></td>' +
+                        '<td style="font-size:12px;">' + p.time + '</td>' +
+                        '<td>' +
+                            '<button class="btn btn-sm" onclick="showToast('编辑 ' + p.id + '')">编辑</button> ' +
+                            '<button class="btn btn-sm" onclick="showToast('预览 ' + p.id + '')">预览</button> ' +
+                            '<button class="btn btn-sm btn-danger" onclick="showToast('删除 ' + p.id + '')">删除</button>' +
+                        '</td></tr>';
+                }).join('');
+            }
+
+            function openOfficialPostModal() {
+                document.getElementById('modal-title').innerText = '新建官方动态';
+                document.getElementById('modal-body-content').innerHTML = ;
+                window._modalConfirmAction = 'publishOfficialPost';
+                openModal();
             }
 
             function publishOfficialPost() {
-                const title = document.getElementById('official-title').value;
-                const content = document.getElementById('official-content').value;
-                if (!title || !content) { showToast('请填写标题和正文'); return; }
-                const nickname = document.getElementById('official-nickname').value || '盖世游戏官方';
-                const tag = document.getElementById('official-tag-name').value || '盖世游戏大使';
-                const partition = document.getElementById('official-partition').value;
-                const pinned = document.getElementById('official-pin').checked;
+                const title = document.getElementById('m-title').value;
+                const content = document.getElementById('m-content').value;
+                if (!title) { showToast('请填写标题'); return; }
                 officialPosts.unshift({
                     id: 'OP' + String(officialPosts.length + 1).padStart(3, '0'),
-                    nickname, tag, title, partition, pinned,
-                    time: new Date().toLocaleString('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/\//g, '-')
+                    nickname: document.getElementById('m-nickname').value || '盖世游戏官方',
+                    tag: document.getElementById('m-tag').value || '盖世游戏大使',
+                    title: title,
+                    partition: document.getElementById('m-partition').value,
+                    status: document.getElementById('m-pin').checked ? '已置顶' : '已发布',
+                    time: new Date().toLocaleString('zh-CN').replace(/\//g, '-'),
+                    img: document.getElementById('m-img').value || ''
                 });
                 renderOfficialPost();
-                document.getElementById('official-title').value = '';
-                document.getElementById('official-content').value = '';
-                showToast('✅ 官方动态发布成功！' + (pinned ? '已自动置顶到「' + partition + '」分区' : ''));
+                closeModal();
+                showToast('✅ 官方动态发布成功');
             }
+
+            function executeModalConfirm() {
+                if (window._modalConfirmAction === 'publishOfficialPost') publishOfficialPost();
+                else closeModal();
+            }
+
 
             initDatePickers();
             // 默认选中 国内 -> 分区管理
