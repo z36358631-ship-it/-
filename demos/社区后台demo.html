@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>盖世游戏 - 社区后台管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1890ff;
+            --success: #52c41a;
+            --warning: #faad14;
+            --danger: #ff4d4f;
+            --bg-dark: #001529;
+            --bg-light: #f0f2f5;
+            --border: #d9d9d9;
+            --border-light: #f0f0f0;
+            --text-main: #333;
+            --text-sub: #888;
+            --white: #fff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-light); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        /* ====== 侧边栏 ====== */
+        .sidebar { width: 220px; background-color: var(--bg-dark); color: rgba(255,255,255,0.65); display: flex; flex-direction: column; transition: 0.3s; z-index: 100; flex-shrink: 0;}
+        .logo { height: 64px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: var(--white); background: #002140; letter-spacing: 1px; flex-shrink: 0;}
+        .logo i { color: var(--primary); margin-right: 8px; font-size: 22px;}
+        .menu { flex: 1; padding-bottom: 20px; overflow-y: auto; }
+        .menu::-webkit-scrollbar { width: 6px; }
+        .menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+        
+        .sidebar-group-title { padding: 16px 20px 8px; font-size: 12px; color: rgba(255,255,255,0.45); font-weight: bold; letter-spacing: 1px;}
+        .menu-item { padding: 12px 24px 12px 30px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px;}
+        .menu-item:hover { color: var(--white); background: rgba(255,255,255,0.05); }
+        .menu-item.active { background-color: var(--primary); color: var(--white); }
+
+        /* ====== 主体内容区 ====== */
+        .main-layout { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 1100px;}
+        .header { height: 64px; background: var(--white); box-shadow: 0 1px 4px rgba(0,21,41,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 10; flex-shrink: 0;}
+        .breadcrumb { font-size: 14px; color: var(--text-sub); }
+        .user-info { display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s; padding: 4px 8px; border-radius: 4px; }
+        .user-info:hover { background: var(--bg-light); }
+        .user-info img { width: 32px; height: 32px; border-radius: 50%; }
+
+        .content-scroll { flex: 1; overflow-y: auto; padding: 24px; }
+        .page { display: none; flex-direction: column; gap: 20px; }
+        .page.active { display: flex; }
+
+        /* ====== 卡片 & 表单通用样式 ====== */
+        .card { background: var(--white); border-radius: 4px; padding: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .filter-bar { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; align-items: center;}
+        .filter-item { display: flex; align-items: center; gap: 8px; font-size: 14px; position: relative;}
+        .filter-item input[type="text"], .filter-item input[type="datetime-local"], .filter-item select { padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px; outline: none; font-size: 13px; height: 32px; box-sizing: border-box;}
+        .filter-item input:focus, .filter-item select:focus { border-color: var(--primary); }
+        
+        .btn { padding: 0 16px; height: 32px; border-radius: 4px; font-size: 14px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; box-sizing: border-box;}
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-primary:hover:not([disabled]) { background: #40a9ff; }
+        .btn-default { border-color: var(--border); background: var(--white); color: var(--text-main); }
+        .btn-default:hover:not([disabled]) { border-color: var(--primary); color: var(--primary); }
+        .btn-danger { background: var(--danger); color: var(--white); border-color: var(--danger);}
+        .btn-danger:hover:not([disabled]) { background: #ff7875; border-color: #ff7875; }
+        .btn-warning { background: var(--warning); color: var(--white); border-color: var(--warning);}
+        .btn-warning:hover:not([disabled]) { background: #ffc53d; border-color: #ffc53d; }
+        .btn[disabled] { background: #f5f5f5 !important; color: #b8b8b8 !important; border-color: #d9d9d9 !important; cursor: not-allowed; }
+
+        /* ================= 复杂组件：时间段范围选择器 ================= */
+        .date-picker-container { position: relative; }
+        .range-picker-input { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 4px; height: 32px; padding: 0 12px; font-size: 13px; cursor: pointer; width: 300px; justify-content: space-between; background: #fff;}
+        .range-picker-input:hover { border-color: var(--primary); }
+        .range-picker-input.active { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.2); }
+        .range-picker-input span { color: #ccc; padding: 0 8px; }
+        .date-dropdown { position: absolute; top: 38px; left: 0; background: #fff; box-shadow: 0 3px 6px -4px rgba(0,0,0,0.12), 0 6px 16px 0 rgba(0,0,0,0.08), 0 9px 28px 8px rgba(0,0,0,0.05); border-radius: 4px; z-index: 1000; display: none; width: 600px; cursor: default; }
+        .date-dropdown.show { display: block; }
+        .dd-inputs { display: flex; padding: 12px; border-bottom: 1px solid var(--border-light); align-items: center; gap: 8px;}
+        .dd-input-box { display: flex; gap: 6px; flex: 1; }
+        .dd-input-box input { flex: 1; height: 28px; border: 1px solid var(--border); border-radius: 2px; padding: 0 8px; font-size: 13px; outline: none; text-align: center; color: #555;}
+        .dd-body { display: flex; }
+        .dd-pane { flex: 1; padding: 12px; }
+        .dd-pane:first-child { border-right: 1px solid var(--border-light); }
+        .dd-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: bold; color: #333; font-size: 14px;}
+        .dd-header i { color: #999; cursor: pointer; font-size: 12px; padding: 4px;}
+        .dd-header i:hover { color: var(--primary); }
+        .dd-table { width: 100%; text-align: center; border-collapse: collapse; font-size: 13px; }
+        .dd-table th { font-weight: normal; color: #333; padding-bottom: 8px; }
+        .dd-table td { padding: 4px 0; cursor: pointer; color: #666;}
+        .dd-table td .cell { width: 24px; height: 24px; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 2px; transition: 0.2s;}
+        .dd-table td:hover .cell:not(.disabled) { background: #f5f5f5; }
+        .dd-table td .cell.active { background: var(--primary); color: #fff; }
+        .dd-table td .cell.disabled { color: #ccc; cursor: not-allowed; }
+        .dd-table td .cell.in-range { background: #e6f7ff; }
+        .dd-footer { padding: 10px 12px; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end; gap: 8px; }
+
+        /* ====== 数据表格 ====== */
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+        th, td { padding: 12px 10px; border-bottom: 1px solid var(--border-light); }
+        th { background: #fafafa; font-weight: bold; color: #333; }
+        tr:hover { background: #fafafa; }
+        td { vertical-align: middle; }
+        
+        input[type="checkbox"] { width: 14px; height: 14px; cursor: pointer; accent-color: var(--primary); vertical-align: middle;}
+        
+        .td-icon { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; }
+        .td-author { display: flex; flex-direction: column; gap: 2px; }
+        
+        .tag { padding: 2px 6px; border-radius: 4px; font-size: 12px; border: 1px solid transparent; display: inline-block;}
+        .tag-success { background: #f6ffed; border-color: #b7eb8f; color: var(--success); }
+        .tag-error { background: #fff2f0; border-color: #ffccc7; color: var(--danger); }
+        .tag-warning { background: #fffbe6; border-color: #ffe58f; color: var(--warning); }
+        .tag-blue { background: #e6f7ff; border-color: #91d5ff; color: var(--primary); }
+        .tag-gray { background: #fafafa; border-color: #d9d9d9; color: var(--text-sub); }
+        .tag-orange { background: #fff7e6; border-color: #ffd591; color: #fa8c16; }
+
+        .action-links a { color: var(--primary); text-decoration: none; margin-right: 12px; cursor: pointer; }
+        .action-links a.danger { color: var(--danger); }
+        .action-links a.warning { color: var(--warning); }
+        .action-links a:hover { opacity: 0.8; text-decoration: underline; }
+
+        .pagination { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 20px; font-size: 13px; color: var(--text-sub);}
+        .page-num { min-width: 28px; height: 28px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; transition: 0.2s;}
+        .page-num.active { background: var(--primary); color: var(--white); border-color: var(--primary); }
+        .page-num:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 10px 20px; border-radius: 4px; font-size: 14px; z-index: 2000; display: flex; align-items: center; gap: 8px; opacity: 0; pointer-events: none; transition: 0.3s; top: -50px; }
+        #toast.show { opacity: 1; top: 20px; }
+
+        .identity-badge { padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 6px; display: inline-block; white-space: nowrap; line-height: 1.2; border: 1px solid transparent;}
+
+        /* ====== 全局模态框样式 ====== */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1500; display: none; align-items: center; justify-content: center; opacity: 0; transition: 0.3s; }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal { background: var(--white); width: 580px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; overflow: hidden; transform: translateY(-20px); transition: 0.3s; }
+        .modal-overlay.show .modal { transform: translateY(0); }
+        .modal-header { padding: 16px 24px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: bold; }
+        .modal-header i { cursor: pointer; color: var(--text-sub); transition: 0.2s;}
+        .modal-header i:hover { color: var(--danger); }
+        .modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; font-size: 14px;}
+        .modal-footer { padding: 12px 24px; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end; gap: 12px; }
+
+        .form-group { display: flex; align-items: flex-start; margin-bottom: 16px; }
+        .form-group label { width: 90px; text-align: right; margin-right: 16px; margin-top: 6px; color: var(--text-main); font-size: 14px;}
+        .form-group label.required::before { content: '*'; color: var(--danger); margin-right: 4px; font-family: SimSun, sans-serif;}
+        .form-control { flex: 1; padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; outline: none; transition: 0.2s;}
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.2); }
+        textarea.form-control { resize: vertical; min-height: 60px; }
+        
+        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 10px; }
+        .stat-box { background: var(--bg-light); padding: 16px; border-radius: 4px; text-align: center; border: 1px solid var(--border-light); }
+        .stat-box .title { font-size: 13px; color: var(--text-sub); margin-bottom: 8px;}
+        .stat-box .val { font-size: 20px; font-weight: bold; color: var(--primary); }
+
+        .perm-checkboxes { flex: 1; display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+        .perm-checkboxes label { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text-main); width: auto; text-align: left; margin: 0; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fas fa-gamepad"></i> 盖世 Admin
+        </div>
+        <div class="menu">
+            <!-- 国内区域 -->
+            <div class="sidebar-group-title">社区后台（国内）</div>
+            <div class="menu-item active" onclick="switchMenu('partition', this, '国内')">
+                <i class="fas fa-th-large"></i> 分区管理
+            </div>
+            <div class="menu-item" onclick="switchMenu('identity', this, '国内')">
+                <i class="fas fa-id-card"></i> 身份管理
+            </div>
+            <div class="menu-item" onclick="switchMenu('topic', this, '国内')">
+                <i class="fas fa-fire"></i> 热门话题管理
+            </div>
+            <div class="menu-item" onclick="switchMenu('post', this, '国内')">
+                <i class="fas fa-comment-alt"></i> 动态管理
+            </div>
+            <div class="menu-item" onclick="switchMenu('report', this, '国内')">
+                <i class="fas fa-flag"></i> 举报管理
+            </div>
+            <div class="menu-item" onclick="switchMenu('log', this, '国内')">
+                <i class="fas fa-history"></i> 操作记录
+            </div>
+            <div class="menu-item" onclick="switchMenu('official-post', this, '国内')">
+                <i class="fas fa-bullhorn"></i> 官方发布
+            </div>
+
+            <!-- 海外区域 -->
+            <div class="sidebar-group-title" style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">社区后台（海外）</div>
+            <div class="menu-item" onclick="switchMenu('partition', this, '海外')">
+                <i class="fas fa-th-large"></i> 分区管理
+            </div>
+            <div class="menu-item" onclick="switchMenu('identity', this, '海外')">
+                <i class="fas fa-id-card"></i> 身份管理
+            </div>
+            <div class="menu-item" onclick="switchMenu('topic', this, '海外')">
+                <i class="fas fa-fire"></i> 热门话题管理
+            </div>
+            <div class="menu-item" onclick="switchMenu('post', this, '海外')">
+                <i class="fas fa-comment-alt"></i> 动态管理
+            </div>
+            <div class="menu-item" onclick="switchMenu('report', this, '海外')">
+                <i class="fas fa-flag"></i> 举报管理
+            </div>
+            <div class="menu-item" onclick="switchMenu('log', this, '海外')">
+                <i class="fas fa-history"></i> 操作记录
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-layout">
+        <!-- 顶部导航 -->
+        <header class="header">
+            <div class="breadcrumb" id="breadcrumb">首页 / 社区后台（国内） / 分区管理</div>
+            <div class="user-info" onclick="openProfileModal()">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="avatar">
+                <span>SuperAdmin <i class="fas fa-caret-down" style="color:var(--text-sub); margin-left:4px; font-size:12px;"></i></span>
+            </div>
+        </header>
+
+        <div class="content-scroll">
+            
+            <!-- ====== 分区管理 ====== -->
+            <div class="page active" id="page-partition">
+                <div class="card">
+                    <div class="filter-bar" id="partition-filter">
+                        <div class="filter-item">分区ID: <input type="text" placeholder="输入ID"></div>
+                        <div class="filter-item">分区名称: <input type="text" placeholder="输入名称"></div>
+                        <div class="filter-item">APP协议: <select><option>全部</option><option>Android</option><option>iOS</option></select></div>
+                        <div class="filter-item">分区类型: <select><option>全部</option><option>游戏</option><option>平台</option></select></div>
+                        <div class="filter-item">
+                            <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            <button class="btn btn-default" onclick="simulateReset('partition-filter')"><i class="fas fa-redo"></i> 重置</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary" onclick="openPartitionModal()"><i class="fas fa-plus"></i> 新增分区</button>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>排序值</th>
+                                <th>分区ID</th>
+                                <th>Icon</th>
+                                <th>分区名称</th>
+                                <th>APP协议</th>
+                                <th>分区类型</th>
+                                <th>关联平台(ID)</th>
+                                <th>关联游戏(ID)</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="partition-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ====== 分区管理 -> 二级页面: 分区数据详情 ====== -->
+            <div class="page" id="page-partition-detail">
+                <div class="card">
+                    <div style="margin-bottom: 20px; display:flex; align-items:center;">
+                        <button class="btn btn-default" onclick="backToPartition()"><i class="fas fa-arrow-left"></i> 返回列表</button>
+                        <div style="margin-left: 16px; font-size: 15px; font-weight: bold;">
+                            当前分区: <span id="detail-partition-name"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-bar" style="background: #fafafa; padding: 12px; border-radius: 4px; border: 1px solid var(--border-light); margin-bottom: 20px;">
+                        <div class="filter-item">
+                            查询时间: 
+                            <div class="date-picker-container" data-picker="part"></div>
+                        </div>
+                        <div class="filter-item" style="margin-left: auto;">
+                            <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            <button class="btn btn-default" onclick="exportData()"><i class="fas fa-file-export"></i> 导出数据</button>
+                        </div>
+                    </div>
+
+                    <h4 style="margin-top:20px; margin-bottom:10px; border-bottom:1px solid var(--border-light); padding-bottom:8px;">分区数据指标</h4>
+                    <div class="stat-grid" id="partition-detail-stats">
+                        <!-- JS 动态渲染区 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 身份管理 ====== -->
+            <div class="page" id="page-identity">
+                <div class="card">
+                    <div class="filter-bar" id="identity-filter">
+                        <div class="filter-item">身份ID: <input type="text" placeholder="输入ID"></div>
+                        <div class="filter-item">身份名称: <input type="text" placeholder="输入名称"></div>
+                        <div class="filter-item">状态: <select><option>全部</option><option>正常</option><option>下架</option></select></div>
+                        <div class="filter-item">
+                            <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            <button class="btn btn-default" onclick="simulateReset('identity-filter')"><i class="fas fa-redo"></i> 重置</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary" onclick="openIdentityModal()"><i class="fas fa-plus"></i> 新增身份标签</button>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>身份ID</th>
+                                <th>标签预览</th>
+                                <th>拥有权限</th>
+                                <th>当前关联用户数</th>
+                                <th>创建时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="identity-table-body">
+                            <!-- JS 渲染区 -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination">
+                        共 <span id="identity-total">0</span> 条记录，当前显示全量 
+                        <div class="page-num active" onclick="simulatePagination(this)">1</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 身份管理 -> 二级页面: 人员详情 ====== -->
+            <div class="page" id="page-identity-detail">
+                <div class="card">
+                    <div style="margin-bottom: 20px; display:flex; align-items:center;">
+                        <button class="btn btn-default" onclick="backToIdentity()"><i class="fas fa-arrow-left"></i> 返回列表</button>
+                        <div style="margin-left: 16px; font-size: 15px; font-weight: bold;">
+                            当前身份: <span id="detail-role-name" class="identity-badge"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-bar" style="background: #fafafa; padding: 12px; border-radius: 4px; border: 1px solid var(--border-light); margin-bottom: 20px;">
+                        <div class="filter-item">
+                            用户UID: <input type="text" placeholder="输入UID精确查询" style="width:160px;">
+                        </div>
+                        <div class="filter-item" style="margin-left: 20px;">
+                            查询时间: 
+                            <div class="date-picker-container" data-picker="ident"></div>
+                        </div>
+                        <div class="filter-item" style="margin-left: auto;">
+                            <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            <button class="btn btn-default" onclick="exportData()"><i class="fas fa-file-export"></i> 导出数据</button>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>用户UID</th>
+                                <th>账号昵称</th>
+                                <th>手机号</th>
+                                <th>发布动态数</th>
+                                <th>浏览量</th>
+                                <th>点赞量</th>
+                                <th>收藏量</th>
+                                <th>回复量</th>
+                                <th>转发量</th>
+                                <th>首次绑定时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="identity-detail-tbody">
+                            <!-- JS 动态渲染区 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ====== 热门话题管理 ====== -->
+            <div class="page" id="page-topic">
+                <div class="card">
+                    <div class="filter-bar" id="topic-filter">
+                        <div class="filter-item">话题内容: <input type="text" placeholder="输入内容关键词"></div>
+                        <div class="filter-item">APP协议: <select><option>全部</option><option>Android</option><option>iOS</option><option>双端互通</option></select></div>
+                        <div class="filter-item">
+                            创建时间: 
+                            <div class="date-picker-container" data-picker="topic"></div>
+                        </div>
+                        <div class="filter-item">状态: 
+                            <select>
+                                <option>全部</option>
+                                <option>上架</option>
+                                <option>隐藏</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            <button class="btn btn-default" onclick="simulateReset('topic-filter')"><i class="fas fa-redo"></i> 重置</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary" onclick="openTopicModal()"><i class="fas fa-plus"></i> 新增话题</button>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>话题ID</th>
+                                <th>话题内容</th>
+                                <th>APP协议</th>
+                                <th>关联动态数</th>
+                                <th>浏览量</th>
+                                <th>参与人数</th>
+                                <th>有效时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topic-table-body">
+                            <!-- JS 渲染区 -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination">
+                        共 4 条记录，当前显示全量 
+                        <div class="page-num active" onclick="simulatePagination(this)">1</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 热门话题管理 -> 二级页面: 话题动态详情 ====== -->
+            <div class="page" id="page-topic-detail">
+                <div class="card">
+                    <div style="margin-bottom: 20px; display:flex; align-items:center;">
+                        <button class="btn btn-default" onclick="backToTopic()"><i class="fas fa-arrow-left"></i> 返回列表</button>
+                        <div style="margin-left: 16px; font-size: 15px; font-weight: bold;">
+                            当前话题: <span id="detail-topic-name" style="color:var(--primary);"></span>
+                        </div>
+                    </div>
+
+                    <div class="filter-bar" id="topic-post-filter">
+                        <div class="filter-item">所属分区: <select><option>全部</option><option>Steam</option><option>GTA 5</option></select></div>
+                        <div class="filter-item">动态ID: <input type="text" placeholder="输入动态ID"></div>
+                        <div class="filter-item">作者账号/UID: <input type="text" placeholder="输入作者名或UID"></div>
+                        <div class="filter-item">动态内容: <input type="text" placeholder="输入关键词" style="width: 140px;"></div>
+                        
+                        <div class="filter-item">
+                            发布时间: 
+                            <div class="date-picker-container" data-picker="topic-post"></div>
+                        </div>
+
+                        <div class="filter-item">状态: 
+                            <select>
+                                <option>全部</option>
+                                <option>通过已外显</option>
+                                <option>疑似待审核</option>
+                                <option>违规已拦截</option>
+                                <option>已静默</option>
+                                <option>已删除</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            <button class="btn btn-default" onclick="simulateReset('topic-post-filter')"><i class="fas fa-redo"></i> 重置</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px; display:flex; gap:10px; align-items: center; justify-content: space-between;">
+                        <div>
+                            <button class="btn btn-warning topic-batch-btn" onclick="batchActionTopicPost(2)" disabled><i class="fas fa-eye-slash"></i> 批量静默</button>
+                            <button class="btn btn-danger topic-batch-btn" onclick="batchActionTopicPost(0)" disabled><i class="fas fa-trash"></i> 批量删除</button>
+                            <span style="font-size: 13px; color: var(--text-sub); line-height: 32px; margin-left: 10px;">(勾选左侧多选框以激活操作按钮)</span>
+                        </div>
+                        <div>
+                            <button class="btn btn-default" onclick="exportData()"><i class="fas fa-file-export"></i> 导出文件</button>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"><input type="checkbox" id="selectAllTopic" onclick="toggleSelectAllTopic(this)"></th>
+                                <th>动态ID</th>
+                                <th>所属分区</th>
+                                <th>作者信息</th>
+                                <th>发布时间</th>
+                                <th style="width: 25%;">内容摘要</th>
+                                <th>数据表现</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topic-post-table-body">
+                            <!-- JS 渲染区 -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination">
+                        共 842 条记录，当前显示 1-20 条 
+                        <div class="page-num active" onclick="simulatePagination(this)">1</div>
+                        <div class="page-num" onclick="simulatePagination(this)">2</div>
+                        <div class="page-num" onclick="simulatePagination(this)">3</div>
+                        ...
+                        <div class="page-num" onclick="simulatePagination(this)">43</div>
+                        <i class="fas fa-chevron-right" style="cursor:pointer; padding-left:8px;" onclick="showToast('跳转下一页...')"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 动态管理 ====== -->
+            <div class="page" id="page-post">
+                <div class="card">
+                    <div class="filter-bar" id="post-filter">
+                        <div class="filter-item">所属分区: <select><option>全部</option><option>Steam</option><option>GTA 5</option></select></div>
+                        <div class="filter-item">动态ID: <input type="text" placeholder="输入动态ID"></div>
+                        <div class="filter-item">作者账号/UID: <input type="text" placeholder="输入作者名或UID"></div>
+                        <div class="filter-item">动态内容: <input type="text" placeholder="输入关键词" style="width: 140px;"></div>
+                        
+                        <div class="filter-item">
+                            发布时间: 
+                            <div class="date-picker-container" data-picker="post"></div>
+                        </div>
+
+                        <div class="filter-item">状态: 
+                            <select>
+                                <option>全部</option>
+                                <option>通过已外显</option>
+                                <option>疑似待审核</option>
+                                <option>违规已拦截</option>
+                                <option>已静默</option>
+                                <option>已删除</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            <button class="btn btn-default" onclick="simulateReset('post-filter')"><i class="fas fa-redo"></i> 重置</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px; display:flex; gap:10px; align-items: center; justify-content: space-between;">
+                        <div>
+                            <button class="btn btn-warning batch-btn" onclick="batchAction(2)" disabled><i class="fas fa-eye-slash"></i> 批量静默</button>
+                            <button class="btn btn-danger batch-btn" onclick="batchAction(0)" disabled><i class="fas fa-trash"></i> 批量删除</button>
+                            <span style="font-size: 13px; color: var(--text-sub); line-height: 32px; margin-left: 10px;">(勾选左侧多选框以激活操作按钮)</span>
+                        </div>
+                        <div>
+                            <button class="btn btn-default" onclick="exportData()"><i class="fas fa-file-export"></i> 导出文件</button>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
+                                <th>动态ID</th>
+                                <th>所属分区</th>
+                                <th>作者信息</th>
+                                <th>发布时间</th>
+                                <th style="width: 25%;">内容摘要</th>
+                                <th>数据表现</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="post-table-body">
+                            <!-- JS 渲染区 -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination">
+                        共 842 条记录，当前显示 1-20 条 
+                        <div class="page-num active" onclick="simulatePagination(this)">1</div>
+                        <div class="page-num" onclick="simulatePagination(this)">2</div>
+                        <div class="page-num" onclick="simulatePagination(this)">3</div>
+                        ...
+                        <div class="page-num" onclick="simulatePagination(this)">43</div>
+                        <i class="fas fa-chevron-right" style="cursor:pointer; padding-left:8px;" onclick="showToast('跳转下一页...')"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 举报管理 ====== -->
+            <div class="page" id="page-report">
+                <div class="card">
+                    <div class="filter-bar" id="report-filter">
+                        <div class="filter-item">举报原因: 
+                            <select>
+                                <option>全部</option>
+                                <option>社区无关</option>
+                                <option>色情低俗</option>
+                                <option>辱骂/引战</option>
+                                <option>盗版/作弊</option>
+                                <option>违规交易</option>
+                                <option>侵权/抄袭</option>
+                                <option>涉嫌诈骗</option>
+                                <option>其他</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">处理状态: 
+                            <select>
+                                <option>全部</option>
+                                <option>待处理</option>
+                                <option>已处理(违规)</option>
+                                <option>已处理(忽略)</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            举报时间: 
+                            <div class="date-picker-container" data-picker="report"></div>
+                        </div>
+                        <div class="filter-item">发布人(账号/UID): <input type="text" placeholder="输入发布人"></div>
+                        <div class="filter-item">内容摘要: <input type="text" placeholder="输入摘要关键词"></div>
+                        <div class="filter-item">举报人(账号/UID): <input type="text" placeholder="输入举报人"></div>
+                        <div class="filter-item">
+                            <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            <button class="btn btn-default" onclick="simulateReset('report-filter')"><i class="fas fa-redo"></i> 重置</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px; display:flex; gap:10px; align-items: center; justify-content: space-between;">
+                        <div>
+                            <button class="btn btn-warning report-batch-btn" onclick="batchActionReport('mute')" disabled><i class="fas fa-eye-slash"></i> 批量静默</button>
+                            <button class="btn btn-danger report-batch-btn" onclick="batchActionReport('delete')" disabled><i class="fas fa-trash"></i> 批量删除</button>
+                            <span style="font-size: 13px; color: var(--text-sub); line-height: 32px; margin-left: 10px;">(勾选左侧多选框以激活操作按钮)</span>
+                        </div>
+                        <div>
+                            <button class="btn btn-default" onclick="exportData()"><i class="fas fa-file-export"></i> 导出数据</button>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"><input type="checkbox" id="selectAllReport" onclick="toggleSelectAllReport(this)"></th>
+                                <th>举报ID</th>
+                                <th>举报原因</th>
+                                <th>补充说明</th>
+                                <th>发布时间</th>
+                                <th>发布人</th>
+                                <th style="width: 20%;">内容摘要</th>
+                                <th>举报人</th>
+                                <th>举报时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-table-body">
+                            <!-- JS 渲染区 -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination">
+                        共 <span id="report-total">0</span> 条记录，当前显示 1-20 条 
+                        <div class="page-num active" onclick="simulatePagination(this)">1</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 操作记录 ====== -->
+            <div class="page" id="page-log">
+                <div class="card">
+                    <div class="filter-bar" id="log-filter">
+                        <div class="filter-item">操作人: <input type="text" placeholder="输入姓名/账号"></div>
+                        <div class="filter-item">操作模块: 
+                            <select>
+                                <option>全部</option>
+                                <option>分区管理</option>
+                                <option>身份管理</option>
+                                <option>热门话题管理</option>
+                                <option>动态管理</option>
+                                <option>举报管理</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            操作时间: 
+                            <div class="date-picker-container" data-picker="log"></div>
+                        </div>
+                        <div class="filter-item">
+                            <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            <button class="btn btn-default" onclick="simulateReset('log-filter')"><i class="fas fa-redo"></i> 重置</button>
+                        </div>
+                        <div class="filter-item" style="margin-left: auto;">
+                            <button class="btn btn-default" onclick="exportData()"><i class="fas fa-file-export"></i> 导出数据</button>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>操作时间</th>
+                                <th>操作人</th>
+                                <th>操作模块</th>
+                                <th>操作类型</th>
+                                <th style="width:40%;">操作详情</th>
+                            </tr>
+                        </thead>
+                        <tbody id="log-table-body">
+                            <!-- JS 动态渲染区 -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination">
+                        共 120 条记录，当前显示 1-10 条 
+                        <div class="page-num active" onclick="simulatePagination(this)">1</div>
+                        <div class="page-num" onclick="simulatePagination(this)">2</div>
+                        ...
+                        <div class="page-num" onclick="simulatePagination(this)">12</div>
+                        <i class="fas fa-chevron-right" style="cursor:pointer; padding-left:8px;" onclick="showToast('跳转下一页...')"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 官方发布页面 -->
+            <div class="page" id="page-official-post">
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <h3 style="margin:0;">官方马甲号发布</h3>
+                        <div style="font-size:13px; color:#999;">使用官方马甲号在指定分区发布动态，将带"盖世游戏大使"标签并展示在官方Tab下</div>
+                    </div>
+
+                    <div style="background:#f8f9fa; border-radius:8px; padding:20px; border:1px solid #e8e8e8;">
+                        <h4 style="margin:0 0 16px;">发布设置</h4>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                            <div>
+                                <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">发布人头像 <span style="color:#ff4d4f;">*</span></label>
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <div id="official-avatar-preview" style="width:48px; height:48px; border-radius:50%; background:#ddd url('https://api.dicebear.com/7.x/avataaars/svg?seed=Official') center/cover; border:2px solid #1890ff;"></div>
+                                    <button class="btn" onclick="showToast('拉起头像上传')"><i class="fas fa-upload"></i> 上传头像</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">发布人昵称 <span style="color:#ff4d4f;">*</span></label>
+                                <input type="text" value="盖世游戏官方" style="width:100%; padding:8px 12px; border:1px solid #d9d9d9; border-radius:4px; font-size:14px;" id="official-nickname">
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                            <div>
+                                <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">身份标签名称 <span style="color:#ff4d4f;">*</span></label>
+                                <input type="text" value="盖世游戏大使" style="width:100%; padding:8px 12px; border:1px solid #d9d9d9; border-radius:4px; font-size:14px;" id="official-tag-name">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">发布到分区 <span style="color:#ff4d4f;">*</span></label>
+                                <select style="width:100%; padding:8px 12px; border:1px solid #d9d9d9; border-radius:4px; font-size:14px;" id="official-partition">
+                                    <option>Steam</option>
+                                    <option>GTA 5</option>
+                                    <option>配置分享</option>
+                                    <option>Epic</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">是否置顶</label>
+                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                                <input type="checkbox" id="official-pin" checked style="accent-color:#1890ff; width:16px; height:16px;">
+                                <span style="font-size:13px;">发布后自动置顶到该分区</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="background:#f8f9fa; border-radius:8px; padding:20px; border:1px solid #e8e8e8; margin-top:16px;">
+                        <h4 style="margin:0 0 16px;">动态内容</h4>
+                        <div style="margin-bottom:12px;">
+                            <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">标题 <span style="color:#ff4d4f;">*</span></label>
+                            <input type="text" placeholder="输入动态标题" style="width:100%; padding:8px 12px; border:1px solid #d9d9d9; border-radius:4px; font-size:14px;" id="official-title">
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">正文内容 <span style="color:#ff4d4f;">*</span></label>
+                            <textarea placeholder="输入动态正文..." style="width:100%; height:120px; padding:12px; border:1px solid #d9d9d9; border-radius:4px; font-size:14px; resize:vertical;" id="official-content"></textarea>
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">配图（选填）</label>
+                            <div style="display:flex; gap:8px;">
+                                <div style="width:80px; height:80px; border:1px dashed #d9d9d9; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#bbb; font-size:24px;" onclick="showToast('拉起图片上传')">+</div>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:13px; color:#666; margin-bottom:6px;">关联话题（选填）</label>
+                            <input type="text" placeholder="输入话题名称，如：#官方公告" style="width:100%; padding:8px 12px; border:1px solid #d9d9d9; border-radius:4px; font-size:14px;">
+                        </div>
+                    </div>
+
+                    <!-- 预览 -->
+                    <div style="background:#f8f9fa; border-radius:8px; padding:20px; border:1px solid #e8e8e8; margin-top:16px;">
+                        <h4 style="margin:0 0 16px;">发布预览</h4>
+                        <div style="background:#1a1a24; border-radius:12px; padding:16px; color:#fff;">
+                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Official" style="width:38px; height:38px; border-radius:50%;">
+                                <div>
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <span style="font-weight:bold; font-size:14px;">盖世游戏官方</span>
+                                        <span style="background:rgba(250,173,20,0.2); color:#faad14; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold;">盖世游戏大使</span>
+                                    </div>
+                                    <div style="font-size:11px; color:#8a99a8; margin-top:2px;">刚刚 · 官方</div>
+                                </div>
+                            </div>
+                            <div style="font-size:14px; color:#e2e8f0;">预览区域：填写上方内容后，将以此样式在社区"官方"Tab下展示</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:20px; display:flex; gap:12px; justify-content:flex-end;">
+                        <button class="btn btn-default" onclick="showToast('已保存草稿')"><i class="fas fa-save"></i> 保存草稿</button>
+                        <button class="btn btn-primary" onclick="publishOfficialPost()"><i class="fas fa-paper-plane"></i> 立即发布</button>
+                    </div>
+                </div>
+
+                <!-- 已发布列表 -->
+                <div class="card" style="margin-top:16px;">
+                    <h3 style="margin:0 0 16px;">已发布列表</h3>
+                    <table>
+                        <thead><tr><th>ID</th><th>发布人</th><th>标签</th><th>标题</th><th>分区</th><th>置顶</th><th>发布时间</th><th>操作</th></tr></thead>
+                        <tbody id="official-post-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 全局 Toast -->
+    <div id="toast"><i class="fas fa-info-circle" id="toast-icon"></i> <span id="toast-msg">操作成功</span></div>
+
+    <!-- 全局模态框 (Modal) -->
+    <div class="modal-overlay" id="global-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <span id="modal-title">标题</span>
+                <i class="fas fa-times" onclick="closeModal()"></i>
+            </div>
+            <div class="modal-body" id="modal-body-content"></div>
+            <div class="modal-footer" id="modal-footer-area">
+                <button class="btn btn-default" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="executeModalConfirm()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================= 数据 Mock =================
+        const mockPartitions =[
+            { id: 'PT10001', sort: 1, createTime: '2023-01-10 10:00', icon: 'https://picsum.photos/seed/steam/100/100', name: 'Steam', desc: '综合数字发行平台', app: '双端互通', type: '平台', platforms: 'P_1001', games: '-', status: 1 },
+            { id: 'PT10002', sort: 2, createTime: '2023-02-15 14:30', icon: 'https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg', name: 'GTA 5', desc: '洛圣都欢迎你', app: '双端互通', type: '游戏', platforms: 'P_1001', games: 'G_9901', status: 1 },
+            { id: 'PT10003', sort: 3, createTime: '2023-08-20 09:15', icon: 'https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/header.jpg', name: '黑神话：悟空', desc: '直面天命', app: '双端互通', type: '游戏', platforms: 'P_1001', games: 'G_9902', status: 1 },
+            { id: 'PT10004', sort: 4, createTime: '2024-01-05 16:45', icon: 'https://picsum.photos/seed/epic/100/100', name: 'Global Hub', desc: 'English Hub', app: '仅Android', type: '其他', platforms: '无', games: '-', status: 2 } 
+        ];
+
+        const mockIdentities =[
+            { id: 'ROLE_001', name: '官方认证', perms:['身份标识','置顶','删动态','静默动态'], color: '#ff4d4f', bgColor: '#fff1f0', count: 2, desc: '官方运营客服', createTime: '2023-01-01 10:00', status: 1 },
+            { id: 'ROLE_002', name: '知名创作者', perms: ['身份标识'], color: '#722ed1', bgColor: '#f9f0ff', count: 2, desc: 'KOL玩家', createTime: '2023-05-12 14:20', status: 1 },
+            { id: 'ROLE_003', name: 'Hardcore', perms: ['身份标识'], color: '#13c2c2', bgColor: '#e6fffb', count: 1250, desc: 'Pro gamers', createTime: '2023-08-20 09:15', status: 1 },
+            { id: 'ROLE_004', name: '废弃旧标签', perms:[], color: '#8c8c8c', bgColor: '#f5f5f5', count: 0, desc: '过往活动的测试标签', createTime: '2024-01-05 16:45', status: 2 } 
+        ];
+        
+        let mockIdentityUsersMap = {
+            'ROLE_001':[
+                {uid: 'UID_10001', name: '盖世小秘书', phone: '13988888888', posts: 120, views: 560000, likes: 23000, favs: 8500, replies: 4500, reposts: 1200, time: '2023-01-01'},
+                {uid: 'UID_10002', name: '系统管理员', phone: '13800000000', posts: 15, views: 24000, likes: 800, favs: 120, replies: 350, reposts: 50, time: '2023-02-15'}
+            ],
+            'ROLE_002':[
+                {uid: 'UID_44512', name: '暴躁老哥', phone: '13566667777', posts: 45, views: 18000, likes: 3400, favs: 1500, replies: 980, reposts: 200, time: '2024-05-12'},
+                {uid: 'UID_99214', name: '老麦', phone: '13812345678', posts: 88, views: 98000, likes: 12000, favs: 4300, replies: 2100, reposts: 600, time: '2023-11-20'}
+            ]
+        };
+
+        // ====== 热门话题 Mock 数据 ======
+        const mockTopics =[
+            { id: 'TOPIC_1001', content: '#GTA6预告解析#', app: '双端互通', postCount: 1250, views: 8890000, participants: 542000, startTime: '2026-03-01 00:00', endTime: '2026-12-31 23:59', createTime: '2026-03-01 10:00:00', status: 1 },
+            { id: 'TOPIC_1002', content: '#黑神话悟空速通#', app: '双端互通', postCount: 843, views: 16360000, participants: 1200000, startTime: '2026-03-05 00:00', endTime: '2026-05-01 23:59', createTime: '2026-03-05 14:30:00', status: 1 },
+            { id: 'TOPIC_1003', content: '#Steam春季特卖#', app: '双端互通', postCount: 3200, views: 270000000, participants: 12000000, startTime: '2026-03-10 00:00', endTime: '2026-03-24 23:59', createTime: '2026-03-10 09:15:00', status: 2 },
+            { id: 'TOPIC_1004', content: '#日常打卡#', app: '双端互通', postCount: 56, views: 8900000, participants: 300000, startTime: '2026-01-01 00:00', endTime: '2099-12-31 23:59', createTime: '2026-03-12 16:45:00', status: 1 }
+        ];
+
+        // status映射：1 = 通过已外显, 2 = 已静默, 3 = 疑似待审核, 4 = 违规已拦截, 0 = 已删除
+        // 新增 isFeatured 控制是否为精选动态
+        let mockPosts =[
+            { id: 'D88201', p_id: 'PT10002', p_name: 'GTA 5', p_icon: 'https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg', author: '老麦', accountId: 'UID_99214', phone: '13812345678', content: '【干货】GTA5 稳60帧启动设置，彻底告别卡顿...', views: 45020, likes: 999, favs: 450, replies: 34, reposts: 55, time: '2026-03-13 10:30:00', status: 1, isPinned: true, isFeatured: true },
+            { id: 'D88202', p_id: 'PT10001', p_name: 'Steam', p_icon: 'https://picsum.photos/seed/steam/100/100', author: '盖世小秘书', accountId: 'UID_10001', phone: '13988888888', content: '【官方】盖世模拟器V2.0重大更新说明！新增诸多...', views: 120500, likes: 8520, favs: 1200, replies: 654, reposts: 1200, time: '2026-03-13 09:00:15', status: 3, isPinned: false, isFeatured: false }, 
+            { id: 'D88203', p_id: 'PT10003', p_name: '黑神话：悟空', p_icon: 'https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/header.jpg', author: '暴躁老哥', accountId: 'UID_44512', phone: '13566667777', content: 'Here is how to defeat the first boss...', views: 840, likes: 12, favs: 5, replies: 8, reposts: 0, time: '2026-03-12 14:22:00', status: 4, isPinned: false, isFeatured: false } 
+        ];
+        for(let i=4; i<=15; i++) {
+            let st = 1;
+            if (i === 5) st = 3;
+            if (i === 6) st = 4;
+            if (i === 7) st = 2; // 已静默
+            mockPosts.push({
+                id: `D8820${i < 10 ? '0'+i : i}`, p_id: 'PT10001', p_name: 'Steam', p_icon: 'https://picsum.photos/seed/steam/100/100', 
+                author: `路人玩家${i}`, accountId: `UID_77${i}0`, phone: '138' + Math.floor(Math.random()*80000000 + 10000000), 
+                content: `这是第${i}条测试动态，为了占满一页显示列表。`, 
+                views: Math.floor(Math.random()*10000 + 500), likes: Math.floor(Math.random()*1000), favs: Math.floor(Math.random()*200), replies: Math.floor(Math.random()*200), reposts: Math.floor(Math.random()*50), 
+                time: `2026-03-0${Math.floor(i/3)+1} 10:00:00`, status: st, isPinned: false, isFeatured: false
+            });
+        }
+
+        // ====== 举报管理 Mock 数据 ======
+        // status映射：0 = 待处理, 1 = 已处理(违规), 2 = 已处理(忽略)
+        let mockReports =[
+            { id: 'R99001', reason: '涉嫌诈骗', detail: '这个人发钓鱼链接，骗人买外挂。', postId: 'D88201', postContent: '【干货】GTA5 稳60帧...', postTime: '2026-03-13 10:30:00', targetUser: '老麦', targetUid: 'UID_99214', reporter: '正义使者', reporterUid: 'UID_11223', time: '2026-03-13 11:20:00', status: 0 },
+            { id: 'R99002', reason: '辱骂/引战', detail: '在评论区一直骂人，阴阳怪气', postId: 'D88203', postContent: 'Here is how to defeat...', postTime: '2026-03-12 14:22:00', targetUser: '暴躁老哥', targetUid: 'UID_44512', reporter: '路人甲', reporterUid: 'UID_33445', time: '2026-03-12 15:30:00', status: 1 },
+            { id: 'R99003', reason: '其他', detail: '发的图片引人不适，令人作呕', postId: 'D88205', postContent: '这是第5条测试动态...', postTime: '2026-03-02 10:00:00', targetUser: '路人玩家5', targetUid: 'UID_7750', reporter: '吃瓜群众', reporterUid: 'UID_55667', time: '2026-03-12 09:10:00', status: 2 },
+            { id: 'R99004', reason: '社区无关', detail: '跑错区了吧，全是水贴。', postId: 'D88206', postContent: '这是第6条测试动态...', postTime: '2026-03-03 10:00:00', targetUser: '路人玩家6', targetUid: 'UID_7760', reporter: '版面巡逻队', reporterUid: 'UID_88990', time: '2026-03-11 18:45:00', status: 0 }
+        ];
+
+        const mockLogs =[
+            { time: '2026-03-13 15:42:11', op: 'SuperAdmin', module: '动态管理', type: '修改', detail: '将动态[D88201] 设置为置顶' },
+            { time: '2026-03-13 14:20:05', op: '运营小赵', module: '身份管理', type: '新增人员', detail: '为用户[UID_99214] 下发身份[知名创作者]' },
+            { time: '2026-03-12 09:15:33', op: 'SuperAdmin', module: '分区管理', type: '修改', detail: '修改了分区[PT10004] 的基础配置，状态由正常变更为隐藏' },
+            { time: '2026-03-11 16:50:00', op: '运营小赵', module: '分区管理', type: '新增', detail: '新建了游戏分区[黑神话：悟空]' }
+        ];
+
+        // ================= JS 组件：渲染通用日期选择器 =================
+        function initDatePickers() {
+            const template = (key) => `
+                <div class="range-picker-input" id="rp-btn-${key}" onclick="toggleDP('${key}')">
+                    <div style="display:flex; align-items:center; gap:8px; color:#333;">
+                        <i class="far fa-clock"></i>
+                        <span id="rp-start-${key}">2026-03-12 00:00:00</span>
+                    </div>
+                    <span style="color:#ccc;">至</span>
+                    <span style="color:#333;" id="rp-end-${key}">2026-03-12 23:59:59</span>
+                </div>
+                <div class="date-dropdown" id="dd-${key}" onclick="event.stopPropagation()">
+                    <div class="dd-inputs">
+                        <div class="dd-input-box"><input type="text" value="2026-03-12"><input type="text" value="00:00:00"></div>
+                        <span style="color:#ccc;">></span>
+                        <div class="dd-input-box"><input type="text" value="2026-03-12"><input type="text" value="23:59:59"></div>
+                    </div>
+                    <div class="dd-body">
+                        <div class="dd-pane">
+                            <div class="dd-header"><div><i class="fas fa-angle-double-left"></i> <i class="fas fa-angle-left"></i></div><span>2026 年 3 月</span><div style="visibility:hidden;"><i class="fas fa-angle-right"></i></div></div>
+                            <table class="dd-table">
+                                <tr><th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr>
+                                <tr><td><div class="cell disabled">22</div></td><td><div class="cell disabled">23</div></td><td><div class="cell disabled">24</div></td><td><div class="cell disabled">25</div></td><td><div class="cell disabled">26</div></td><td><div class="cell disabled">27</div></td><td><div class="cell disabled">28</div></td></tr>
+                                <tr><td><div class="cell">1</div></td><td><div class="cell">2</div></td><td><div class="cell">3</div></td><td><div class="cell">4</div></td><td><div class="cell">5</div></td><td><div class="cell">6</div></td><td><div class="cell">7</div></td></tr>
+                                <tr><td><div class="cell">8</div></td><td><div class="cell">9</div></td><td><div class="cell">10</div></td><td><div class="cell">11</div></td><td><div class="cell active">12</div></td><td><div class="cell">13</div></td><td><div class="cell">14</div></td></tr>
+                            </table>
+                        </div>
+                        <div class="dd-pane">
+                            <div class="dd-header"><div style="visibility:hidden;"><i class="fas fa-angle-left"></i></div><span>2026 年 4 月</span><div><i class="fas fa-angle-right"></i> <i class="fas fa-angle-double-right"></i></div></div>
+                            <table class="dd-table">
+                                <tr><th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr>
+                                <tr><td><div class="cell disabled">29</div></td><td><div class="cell disabled">30</div></td><td><div class="cell disabled">31</div></td><td><div class="cell">1</div></td><td><div class="cell">2</div></td><td><div class="cell">3</div></td><td><div class="cell">4</div></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="dd-footer">
+                        <button class="btn btn-default" onclick="clearDP('${key}', event)">清空</button>
+                        <button class="btn btn-primary" onclick="confirmDP('${key}', event)">确定</button>
+                    </div>
+                </div>
+            `;
+            document.querySelectorAll('.date-picker-container').forEach(el => {
+                const key = el.getAttribute('data-picker');
+                el.innerHTML = template(key);
+            });
+        }
+        
+        function toggleDP(key) {
+            const dp = document.getElementById(`dd-${key}`);
+            const btn = document.getElementById(`rp-btn-${key}`);
+            if (dp.classList.contains('show')) { dp.classList.remove('show'); btn.classList.remove('active'); } 
+            else { dp.classList.add('show'); btn.classList.add('active'); }
+        }
+
+        function clearDP(key, e) {
+            e.stopPropagation();
+            document.getElementById(`rp-start-${key}`).innerText = '开始时间'; document.getElementById(`rp-end-${key}`).innerText = '结束时间';
+            document.getElementById(`rp-start-${key}`).style.color = '#666'; document.getElementById(`rp-end-${key}`).style.color = '#666';
+            toggleDP(key);
+        }
+
+        function confirmDP(key, e) {
+            e.stopPropagation();
+            document.getElementById(`rp-start-${key}`).innerText = '2026-03-12 00:00:00'; document.getElementById(`rp-end-${key}`).innerText = '2026-03-12 23:59:59';
+            document.getElementById(`rp-start-${key}`).style.color = '#333'; document.getElementById(`rp-end-${key}`).style.color = '#333';
+            toggleDP(key); showToast('时间段已应用');
+        }
+
+        document.addEventListener('click', (e) => {
+            document.querySelectorAll('.date-dropdown').forEach(dp => {
+                const key = dp.id.replace('dd-', '');
+                const btn = document.getElementById(`rp-btn-${key}`);
+                if(dp.classList.contains('show') && !dp.contains(e.target) && !btn.contains(e.target)) {
+                    dp.classList.remove('show'); btn.classList.remove('active');
+                }
+            });
+        });
+
+        // ================= 全局弹窗与基础设施 =================
+        let currentModalCallback = null;
+        function openModal(title, bodyHtml, onConfirm, hideFooter = false) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-body-content').innerHTML = bodyHtml;
+            document.getElementById('modal-footer-area').style.display = hideFooter ? 'none' : 'flex';
+            currentModalCallback = onConfirm;
+            document.getElementById('global-modal').classList.add('show');
+        }
+        function closeModal() { document.getElementById('global-modal').classList.remove('show'); currentModalCallback = null; }
+        function executeModalConfirm() { if (currentModalCallback) currentModalCallback(); }
+
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            const icon = document.getElementById('toast-icon');
+            icon.className = type === 'error' ? 'fas fa-times-circle' : 'fas fa-check-circle';
+            icon.style.color = type === 'error' ? 'var(--danger)' : 'var(--success)';
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function simulateSearch() { showToast('正在查询数据...'); }
+        function simulateReset(filterId) {
+            const wrap = document.getElementById(filterId);
+            if(wrap) { wrap.querySelectorAll('input[type="text"]').forEach(i => i.value = ''); wrap.querySelectorAll('select').forEach(s => s.selectedIndex = 0); }
+            showToast('筛选项已重置');
+        }
+        function simulatePagination(el) {
+            if(el.classList.contains('active')) return;
+            const siblings = el.parentElement.querySelectorAll('.page-num');
+            siblings.forEach(s => s.classList.remove('active'));
+            el.classList.add('active');
+            showToast('加载第 ' + el.innerText + ' 页数据...');
+        }
+        function exportData() {
+            showToast('正在为您打包数据，请稍候...', 'success');
+            setTimeout(() => { showToast('数据导出成功 (Demo已拦截文件下载)', 'success'); }, 1500);
+        }
+
+        function openProfileModal() {
+            const html = `
+                <div style="text-align:center; padding: 20px;">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" style="width:80px; height:80px; border-radius:50%; margin-bottom:12px;">
+                    <h3>SuperAdmin</h3>
+                    <p style="color:var(--text-sub); font-size:13px; margin-top:6px;">超级管理员 / 系统维护组</p>
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-default" onclick="closeModal()">修改密码</button>
+                        <button class="btn btn-danger" onclick="closeModal();showToast('已退出登录');">退出系统</button>
+                    </div>
+                </div>
+            `;
+            openModal('个人信息', html, null, true);
+        }
+
+        let currentRegion = '国内';
+        let currentMainMenu = null;
+
+        function switchMenu(pageId, el, region) {
+            if (region) currentRegion = region;
+            if (el) currentMainMenu = el;
+
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            if(currentMainMenu) currentMainMenu.classList.add('active');
+            
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const pageEl = document.getElementById('page-' + pageId);
+            if(pageEl) pageEl.classList.add('active');
+            
+            const titles = {
+                'partition': '分区管理', 'partition-detail': '分区管理 / 分区数据详情',
+                'identity': '身份管理', 'identity-detail': '身份管理 / 人员详情',
+                'topic': '热门话题管理', 'topic-detail': '热门话题管理 / 话题动态详情',
+                'post': '动态管理', 'report': '举报管理', 'log': '操作记录',
+                'official-post': '官方发布'
+            };
+            document.getElementById('breadcrumb').innerText = `首页 / 社区后台（${currentRegion}） / ${titles[pageId]}`;
+
+            if(pageId === 'partition') renderPartitions();
+            if(pageId === 'identity') renderIdentities();
+            if(pageId === 'topic') renderTopics();
+            if(pageId === 'post') renderPosts();
+            if(pageId === 'report') renderReports();
+            if(pageId === 'log') renderLogs();
+            if(pageId === 'official-post') renderOfficialPost();
+        }
+
+        // ================= 分区管理业务逻辑 =================
+        function renderPartitions() {
+            const tbody = document.getElementById('partition-table-body');
+            tbody.innerHTML = mockPartitions.map(p => {
+                const statusTag = p.status === 1 ? `<span class="tag tag-success">正常</span>` : `<span class="tag tag-gray">已隐藏</span>`;
+                return `
+                <tr>
+                    <td style="font-weight:bold; color:var(--primary); text-align:center;">${p.sort}</td>
+                    <td style="font-family:monospace; color:var(--text-sub);">${p.id}</td>
+                    <td><img src="${p.icon}" class="td-icon"></td>
+                    <td style="font-weight:bold;">${p.name}</td>
+                    <td><span class="tag tag-blue">${p.app}</span></td>
+                    <td>${p.type}</td>
+                    <td style="font-family:monospace; font-size:12px; color:var(--text-sub);">${p.platforms}</td>
+                    <td style="font-family:monospace; font-size:12px; color:var(--text-sub);">${p.games}</td>
+                    <td>${statusTag}</td>
+                    <td class="action-links" style="white-space:nowrap;">
+                        <a onclick="openPartitionDetail('${p.id}')">详情</a>
+                        <a onclick="openPartitionModal('${p.id}')">编辑</a>
+                        <a onclick="copyPartition('${p.id}')">复制</a>
+                        <a class="danger" onclick="deletePartition('${p.id}', '${p.name}')">删除</a>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        function openPartitionModal(id = null, isCopy = false) {
+            if (typeof id !== 'string') id = null;
+            const target = id ? mockPartitions.find(p => p.id === id) : {};
+            const isEdit = !!id && !isCopy;
+            
+            const html = `
+                <div class="form-group"><label class="required">分区名称</label><input type="text" class="form-control" id="m-p-name" value="${target.name ? (isCopy ? target.name+'_Copy' : target.name) : ''}" placeholder="请输入名称"></div>
+                <div class="form-group"><label>上传 Icon</label><input type="file" class="form-control" id="m-p-icon" accept="image/*" style="padding: 4px;"></div>
+                <div class="form-group"><label>分区描述</label><textarea class="form-control" id="m-p-desc" placeholder="输入分区功能或背景描述">${target.desc || ''}</textarea></div>
+                <div class="form-group"><label class="required">分区类型</label>
+                    <select class="form-control" id="m-p-type">
+                        <option ${target.type==='游戏'?'selected':''}>游戏</option>
+                        <option ${target.type==='平台'?'selected':''}>平台</option>
+                        <option ${target.type==='其他'?'selected':''}>其他</option>
+                    </select>
+                </div>
+                <div class="form-group"><label class="required">APP协议</label>
+                    <select class="form-control" id="m-p-app">
+                        <option ${target.app==='双端互通'?'selected':''}>双端互通</option>
+                        <option ${target.app==='仅Android'?'selected':''}>仅Android</option>
+                        <option ${target.app==='仅iOS'?'selected':''}>仅iOS</option>
+                    </select>
+                </div>
+                <div class="form-group"><label class="required">状态</label>
+                    <select class="form-control" id="m-p-status">
+                        <option value="1" ${target.status===1?'selected':''}>正常</option>
+                        <option value="2" ${target.status===2?'selected':''}>隐藏</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>关联平台 ID</label><input type="text" class="form-control" id="m-p-platforms" value="${target.platforms || ''}" placeholder="多个ID用逗号分隔"></div>
+                <div class="form-group"><label>关联游戏 ID</label><input type="text" class="form-control" id="m-p-game" value="${target.games || ''}" placeholder="多个ID用逗号分隔"></div>
+                <div class="form-group"><label>排序值</label><input type="number" class="form-control" id="m-p-sort" value="${target.sort || mockPartitions.length+1}"></div>
+            `;
+            
+            openModal(isEdit ? '编辑分区配置' : (isCopy ? '复制并新增分区' : '新增游戏分区'), html, () => {
+                const name = document.getElementById('m-p-name').value;
+                if(!name) return showToast('分区名称不可为空', 'error');
+
+                let iconUrl = target.icon || 'https://picsum.photos/100';
+                if(document.getElementById('m-p-icon').files[0]) iconUrl = URL.createObjectURL(document.getElementById('m-p-icon').files[0]);
+
+                if (isEdit) {
+                    target.name = name;
+                    target.icon = iconUrl; target.desc = document.getElementById('m-p-desc').value;
+                    target.type = document.getElementById('m-p-type').value; target.app = document.getElementById('m-p-app').value;
+                    target.status = parseInt(document.getElementById('m-p-status').value);
+                    target.platforms = document.getElementById('m-p-platforms').value || '-';
+                    target.games = document.getElementById('m-p-game').value || '-';
+                    target.sort = document.getElementById('m-p-sort').value;
+                    showToast('保存成功');
+                } else {
+                    mockPartitions.unshift({
+                        id: 'PT' + Math.floor(Math.random()*90000 + 10000), sort: document.getElementById('m-p-sort').value,
+                        createTime: '2026-03-13 15:00', icon: iconUrl, name: name, 
+                        desc: document.getElementById('m-p-desc').value, type: document.getElementById('m-p-type').value,
+                        app: document.getElementById('m-p-app').value, status: parseInt(document.getElementById('m-p-status').value),
+                        platforms: document.getElementById('m-p-platforms').value || '-', games: document.getElementById('m-p-game').value || '-', 
+                    });
+                    showToast('新增分区成功');
+                }
+                renderPartitions();
+                closeModal();
+            });
+        }
+        function copyPartition(id) { openPartitionModal(id, true); }
+
+        let currentDetailPartitionId = null;
+        function openPartitionDetail(id) {
+            if (typeof id !== 'string') return;
+            currentDetailPartitionId = id;
+            switchMenu('partition-detail', null);
+
+            const p = mockPartitions.find(x => x.id === id);
+            const nameSpan = document.getElementById('detail-partition-name');
+            nameSpan.innerHTML = `<img src="${p.icon}" style="width:24px;height:24px;border-radius:4px;vertical-align:middle;margin-right:6px;"> ${p.name} <span style="font-size:12px; font-weight:normal; color:var(--text-sub); margin-left:8px;">(分区ID: ${p.id})</span>`;
+
+            // 模拟计算分区各项指标
+            const relatedPosts = mockPosts.filter(x => x.p_id === id);
+            let totalViews = 0, totalLikes = 0, totalFavs = 0, totalReplies = 0, totalReposts = 0;
+            relatedPosts.forEach(post => {
+                totalViews += post.views; totalLikes += post.likes; totalFavs += (post.favs || 0);
+                totalReplies += post.replies; totalReposts += post.reposts;
+            });
+            
+            const dailyPosts = relatedPosts.length;
+            const dau = Math.floor(dailyPosts * 1.5) + 10; // Mock DAU
+            let engagementRate = '0.00%';
+            if(totalViews > 0) {
+                const totalEngage = totalLikes + totalReplies + totalReposts + totalFavs;
+                engagementRate = ((totalEngage / totalViews) * 100).toFixed(2) + '%';
+            }
+
+            const statsHtml = `
+                <div class="stat-box"><div class="title">日发帖量</div><div class="val">${dailyPosts}</div></div>
+                <div class="stat-box"><div class="title">日活跃用户数</div><div class="val">${dau}</div></div>
+                <div class="stat-box"><div class="title">帖子浏览量</div><div class="val">${totalViews.toLocaleString()}</div></div>
+                <div class="stat-box"><div class="title">帖子互动率</div><div class="val">${engagementRate}</div></div>
+                <div class="stat-box"><div class="title">点赞量</div><div class="val">${totalLikes.toLocaleString()}</div></div>
+                <div class="stat-box"><div class="title">收藏量</div><div class="val">${totalFavs.toLocaleString()}</div></div>
+                <div class="stat-box"><div class="title">回复量</div><div class="val">${totalReplies.toLocaleString()}</div></div>
+                <div class="stat-box"><div class="title">转发量</div><div class="val">${totalReposts.toLocaleString()}</div></div>
+            `;
+            document.getElementById('partition-detail-stats').innerHTML = statsHtml;
+        }
+
+        function backToPartition() { currentDetailPartitionId = null; switchMenu('partition'); }
+        function deletePartition(id, name) {
+            if(mockPosts.some(post => post.p_id === id)) return alert(`【${name}】分区下存在关联内容，禁止直接删除。建议使用「隐藏」功能`);
+            if(confirm(`确定要删除空分区【${name}】吗？`)) {
+                mockPartitions.splice(mockPartitions.findIndex(x => x.id === id), 1);
+                showToast(`分区 ${name} 删除成功`); renderPartitions();
+            }
+        }
+
+        // ================= 身份管理业务逻辑 =================
+        function renderIdentities() {
+            const tbody = document.getElementById('identity-table-body');
+            const totalEl = document.getElementById('identity-total');
+            if (totalEl) totalEl.innerText = mockIdentities.length;
+            
+            tbody.innerHTML = mockIdentities.map(i => {
+                const statusTag = i.status === 1 ? `<span class="tag tag-success">正常</span>` : `<span class="tag tag-gray">已下架</span>`;
+                const previewTag = `<span class="identity-badge" style="color:${i.color}; background-color:${i.bgColor}; border-color:${i.color};">${i.name}</span>`;
+                
+                let permsHtml = i.perms.map(p => `<span class="tag tag-gray" style="margin:2px;">${p}</span>`).join('');
+                if(i.perms.length === 0) permsHtml = '<span style="color:#ccc;">无特权</span>';
+
+                return `
+                <tr>
+                    <td style="font-family:monospace; color:var(--text-sub);">${i.id}</td>
+                    <td>${previewTag}</td>
+                    <td><div style="max-width:200px; display:flex; flex-wrap:wrap;">${permsHtml}</div></td>
+                    <td style="font-weight:bold; color: ${i.count > 0 ? 'var(--text-main)' : 'var(--text-sub)'}">${i.count}</td>
+                    <td style="font-size:12px; color:var(--text-sub);">${i.createTime}</td>
+                    <td>${statusTag}</td>
+                    <td class="action-links" style="white-space:nowrap;">
+                        <a onclick="openIdentityModal('${i.id}')">编辑</a>
+                        <a onclick="openIdentityUsersPage('${i.id}')">人员详情</a>
+                        <a onclick="openAddUserModal('${i.id}', '${i.name}')">新增</a>
+                        <a onclick="copyIdentity('${i.id}')">复制</a>
+                        <a class="danger" onclick="deleteIdentity('${i.id}', '${i.name}')">删除</a>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        function openIdentityModal(id = null, isCopy = false) {
+            if (typeof id !== 'string') id = null;
+            const target = id ? mockIdentities.find(i => i.id === id) : { perms:['身份标识'] };
+            const isEdit = !!id && !isCopy;
+            
+            const isChecked = (val) => target.perms.includes(val) ? 'checked' : '';
+
+            const html = `
+                <div class="form-group"><label class="required">标签名称</label><input type="text" class="form-control" id="m-i-name" value="${target.name ? (isCopy ? target.name+'_Copy' : target.name) : ''}" placeholder="如: 优质创作者"></div>
+                <div class="form-group" style="align-items:center;">
+                    <label class="required">权限内容</label>
+                    <div class="perm-checkboxes" id="m-i-perms">
+                        <label><input type="checkbox" value="身份标识" ${isChecked('身份标识')}> 身份标识</label>
+                        <label><input type="checkbox" value="置顶" ${isChecked('置顶')}> 置顶</label>
+                        <label><input type="checkbox" value="删动态" ${isChecked('删动态')}> 删动态</label>
+                        <label><input type="checkbox" value="静默动态" ${isChecked('静默动态')}> 静默动态</label>
+                    </div>
+                </div>
+                <div class="form-group"><label class="required">状态</label>
+                    <select class="form-control" id="m-i-status">
+                        <option value="1" ${target.status===1?'selected':''}>正常</option>
+                        <option value="2" ${target.status===2?'selected':''}>下架</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>文字颜色</label><input type="color" class="form-control" id="m-i-color" value="${target.color || '#1890ff'}" style="padding: 2px;"></div>
+                <div class="form-group"><label>背景颜色</label><input type="color" class="form-control" id="m-i-bg" value="${target.bgColor || '#e6f7ff'}" style="padding: 2px;"></div>
+                <div class="form-group"><label>功能描述</label><textarea class="form-control" id="m-i-desc" placeholder="填写此标签下放的规则说明...">${target.desc || ''}</textarea></div>
+            `;
+            
+            openModal(isEdit ? '编辑身份配置' : (isCopy ? '复制并新增身份' : '新增身份标签'), html, () => {
+                const name = document.getElementById('m-i-name').value;
+                if(!name) return showToast('标签名称不可为空', 'error');
+
+                const checkedPerms = Array.from(document.querySelectorAll('#m-i-perms input:checked')).map(cb => cb.value);
+
+                if (isEdit) {
+                    target.name = name;
+                    target.perms = checkedPerms; target.status = parseInt(document.getElementById('m-i-status').value);
+                    target.color = document.getElementById('m-i-color').value; target.bgColor = document.getElementById('m-i-bg').value; 
+                    target.desc = document.getElementById('m-i-desc').value;
+                    showToast('保存标签成功');
+                } else {
+                    mockIdentities.unshift({
+                        id: 'ROLE_' + Math.floor(Math.random()*900 + 100), name: name,
+                        perms: checkedPerms, count: 0, status: parseInt(document.getElementById('m-i-status').value),
+                        color: document.getElementById('m-i-color').value, bgColor: document.getElementById('m-i-bg').value,
+                        desc: document.getElementById('m-i-desc').value, createTime: '2026-03-13 15:00'
+                    });
+                    showToast('新增标签成功');
+                }
+                renderIdentities();
+                closeModal();
+            });
+        }
+        function copyIdentity(id) { openIdentityModal(id, true); }
+
+        let currentDetailRoleId = null;
+        function openIdentityUsersPage(id) {
+            if (typeof id !== 'string') return;
+            currentDetailRoleId = id; switchMenu('identity-detail', null);
+            
+            const role = mockIdentities.find(r => r.id === id);
+            const badgeSpan = document.getElementById('detail-role-name');
+            badgeSpan.innerText = role.name; badgeSpan.style.color = role.color;
+            badgeSpan.style.backgroundColor = role.bgColor; badgeSpan.style.borderColor = role.color;
+            renderIdentityUsersTable();
+        }
+
+        function renderIdentityUsersTable() {
+            const tbody = document.getElementById('identity-detail-tbody');
+            let users = mockIdentityUsersMap[currentDetailRoleId] ||[];
+            if (users.length === 0) return tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 40px; color:#999;">当前标签暂无关联用户</td></tr>`;
+
+            tbody.innerHTML = users.map(u => {
+                return `<tr>
+                    <td style="font-family:monospace; color:var(--text-sub);">${u.uid}</td>
+                    <td style="font-weight:bold; color:var(--primary);">${u.name}</td>
+                    <td>${u.phone}</td>
+                    <td>${u.posts}</td>
+                    <td>${u.views.toLocaleString()}</td>
+                    <td>${u.likes.toLocaleString()}</td>
+                    <td>${u.favs.toLocaleString()}</td>
+                    <td>${u.replies.toLocaleString()}</td>
+                    <td>${u.reposts.toLocaleString()}</td>
+                    <td style="font-size:12px; color:var(--text-sub);">${u.time}</td>
+                    <td class="action-links"><a class="danger" onclick="revokeIdentity('${u.uid}', '${u.name}')">撤销身份</a></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function revokeIdentity(uid, uName) {
+            if(confirm(`确定要撤销玩家【${uName}】的该身份标签吗？`)) {
+                const users = mockIdentityUsersMap[currentDetailRoleId];
+                users.splice(users.findIndex(u => u.uid === uid), 1);
+                mockIdentities.find(r => r.id === currentDetailRoleId).count = Math.max(0, users.length);
+                showToast(`已撤销 ${uName} 的身份`); renderIdentityUsersTable();
+            }
+        }
+
+        function backToIdentity() { currentDetailRoleId = null; switchMenu('identity'); }
+
+        function openAddUserModal(roleId, roleName) {
+            if (typeof roleId !== 'string') return;
+            const html = `
+                <p style="margin-bottom:16px; font-size:13px; color:var(--text-sub);">您正在为指定玩家手动下发 <strong>${roleName}</strong> 身份：</p>
+                <div class="form-group"><label class="required">玩家 UID</label><input type="text" class="form-control" id="m-u-id" placeholder="输入玩家 UID"></div>
+                <div class="form-group"><label>有效期至</label><input type="date" class="form-control" value="2099-12-31"></div>
+            `;
+            openModal('新增人员', html, () => {
+                const uid = document.getElementById('m-u-id').value;
+                if(!uid) return showToast('请输入玩家UID', 'error');
+
+                if(!mockIdentityUsersMap[roleId]) mockIdentityUsersMap[roleId] =[];
+                if(mockIdentityUsersMap[roleId].find(u => u.uid === uid)) return showToast('该用户已拥有此身份', 'warning');
+                
+                // 向指定的身份分组注入一个新的例子人员数据
+                mockIdentityUsersMap[roleId].unshift({
+                    uid: uid, name: '新增玩家_' + uid.slice(-4), phone: '138' + Math.floor(Math.random()*8000000 + 10000000), 
+                    posts: 0, views: 0, likes: 0, favs: 0, replies: 0, reposts: 0, time: '2026-03-13'
+                });
+                
+                // 自动同步列表外部的关联人数
+                const role = mockIdentities.find(r => r.id === roleId);
+                if(role) role.count = mockIdentityUsersMap[roleId].length;
+                
+                showToast('已成功新增人员并下发标签');
+                renderIdentities();
+                closeModal();
+            });
+        }
+
+        function deleteIdentity(id, name) {
+            if(mockIdentities.find(x => x.id === id).count > 0) return alert(`删除失败拦截！\n\n【${name}】标签下存在关联用户！建议使用「下架」功能`);
+            if(confirm(`确定要删除未使用的身份标签【${name}】吗？`)) {
+                mockIdentities.splice(mockIdentities.findIndex(x => x.id === id), 1);
+                showToast(`身份标签 ${name} 删除成功`); renderIdentities();
+            }
+        }
+
+        // ================= 热门话题管理业务逻辑 =================
+        function renderTopics() {
+            const tbody = document.getElementById('topic-table-body');
+            tbody.innerHTML = mockTopics.map(t => {
+                const statusTag = t.status === 1 ? `<span class="tag tag-success">上架中</span>` : `<span class="tag tag-gray">已隐藏</span>`;
+                const actionHtml = t.status === 1 
+                    ? `<a onclick="openTopicDetail('${t.id}')">详情</a><a onclick="openTopicModal('${t.id}')">编辑</a><a class="warning" onclick="toggleTopicStatus('${t.id}', 2)">隐藏</a><a class="danger" onclick="deleteTopic('${t.id}')">删除</a>`
+                    : `<a onclick="openTopicDetail('${t.id}')">详情</a><a onclick="openTopicModal('${t.id}')">编辑</a><a style="color:var(--success)" onclick="toggleTopicStatus('${t.id}', 1)">重新上架</a><a class="danger" onclick="deleteTopic('${t.id}')">删除</a>`;
+
+                return `
+                <tr style="${t.status === 2 ? 'background:#fafafa; opacity:0.8;' : ''}">
+                    <td style="font-family:monospace; color:var(--text-sub);">${t.id}</td>
+                    <td style="font-weight:bold; color:var(--primary);">${t.content}</td>
+                    <td><span class="tag tag-blue">${t.app}</span></td>
+                    <td>${t.postCount.toLocaleString()}</td>
+                    <td>${(t.views / 10000).toFixed(1)}万</td>
+                    <td>${(t.participants / 10000).toFixed(1)}万</td>
+                    <td style="font-size:12px; color:var(--text-sub);">${t.startTime}<br>至 ${t.endTime}</td>
+                    <td>${statusTag}</td>
+                    <td class="action-links" style="white-space:nowrap;">${actionHtml}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function openTopicModal(id = null) {
+            if (typeof id !== 'string') id = null;
+            const target = id ? mockTopics.find(t => t.id === id) : {};
+            const isEdit = !!id;
+
+            const html = `
+                <div class="form-group"><label class="required">话题内容</label><input type="text" class="form-control" id="m-t-content" value="${target.content || ''}" placeholder="如: #黑神话悟空攻略#"></div>
+                <div class="form-group"><label class="required">APP协议</label>
+                    <select class="form-control" id="m-t-app">
+                        <option ${target.app==='双端互通'?'selected':''}>双端互通</option>
+                        <option ${target.app==='Android'?'selected':''}>Android</option>
+                        <option ${target.app==='iOS'?'selected':''}>iOS</option>
+                    </select>
+                </div>
+                <div class="form-group"><label class="required">开始时间</label><input type="datetime-local" class="form-control" id="m-t-start" value="${target.startTime ? target.startTime.replace(' ', 'T') : ''}"></div>
+                <div class="form-group"><label class="required">结束时间</label><input type="datetime-local" class="form-control" id="m-t-end" value="${target.endTime ? target.endTime.replace(' ', 'T') : ''}"></div>
+                <div class="form-group"><label class="required">状态</label>
+                    <select class="form-control" id="m-t-status">
+                        <option value="1" ${target.status===1?'selected':''}>上架</option>
+                        <option value="2" ${target.status===2?'selected':''}>隐藏</option>
+                    </select>
+                </div>
+            `;
+
+            openModal(isEdit ? '编辑话题' : '新增热门话题', html, () => {
+                const content = document.getElementById('m-t-content').value;
+                if(!content) return showToast('话题内容不可为空', 'error');
+
+                if (isEdit) {
+                    target.content = content;
+                    target.app = document.getElementById('m-t-app').value;
+                    target.startTime = document.getElementById('m-t-start').value.replace('T', ' ');
+                    target.endTime = document.getElementById('m-t-end').value.replace('T', ' ');
+                    target.status = parseInt(document.getElementById('m-t-status').value);
+                    showToast('话题编辑成功');
+                } else {
+                    mockTopics.unshift({
+                        id: 'TOPIC_' + Math.floor(Math.random()*9000 + 1000),
+                        content: content,
+                        app: document.getElementById('m-t-app').value,
+                        postCount: 0,
+                        views: 0,
+                        participants: 0,
+                        startTime: document.getElementById('m-t-start').value.replace('T', ' ') || '2026-03-13 00:00',
+                        endTime: document.getElementById('m-t-end').value.replace('T', ' ') || '2099-12-31 23:59',
+                        createTime: '2026-03-13 15:30:00',
+                        status: parseInt(document.getElementById('m-t-status').value)
+                    });
+                    showToast('新增话题成功');
+                }
+                renderTopics();
+                closeModal();
+            });
+        }
+
+        function toggleTopicStatus(id, newStatus) {
+            const t = mockTopics.find(x => x.id === id);
+            t.status = newStatus;
+            showToast(newStatus === 1 ? '话题已上架' : '话题已隐藏');
+            renderTopics();
+        }
+
+        function deleteTopic(id) {
+            if(confirm(`确定要删除话题 [${id}] 吗？删除后不可恢复！`)) {
+                mockTopics.splice(mockTopics.findIndex(x => x.id === id), 1);
+                showToast(`话题删除成功`);
+                renderTopics();
+            }
+        }
+
+        let currentDetailTopicId = null;
+        function openTopicDetail(id) {
+            if (typeof id !== 'string') return;
+            currentDetailTopicId = id;
+            switchMenu('topic-detail', null);
+            
+            const t = mockTopics.find(x => x.id === id);
+            document.getElementById('detail-topic-name').innerText = t.content;
+            renderTopicPosts();
+        }
+
+        function backToTopic() { 
+            currentDetailTopicId = null; 
+            switchMenu('topic'); 
+        }
+
+        function renderTopicPosts() {
+            const tbody = document.getElementById('topic-post-table-body');
+            document.getElementById('selectAllTopic').checked = false; updateBatchBtnStateTopic();
+            
+            const sortedPosts =[...mockPosts].sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
+            tbody.innerHTML = sortedPosts.map(p => {
+                let statusTag = '';
+                let actionHtml = `<a onclick="viewPostDetail('${p.id}')">查看</a>`;
+                
+                let pinBtn = p.isPinned ? `<a onclick="togglePin('${p.id}', true)">取消置顶</a>` : `<a onclick="togglePin('${p.id}', true)">置顶</a>`;
+                let pinBadge = p.isPinned ? `<span class="tag tag-error" style="margin-left:8px;font-size:10px;">置顶</span>` : '';
+                
+                let featuredBtn = '';
+                let featuredBadge = p.isFeatured ? `<span class="tag tag-orange" style="margin-left:4px;font-size:10px;">精选</span>` : '';
+
+                if(p.status === 1) { 
+                    statusTag = `<span class="tag tag-success">通过已外显</span>`; 
+                    featuredBtn = p.isFeatured ? `<a onclick="toggleFeatured('${p.id}', true)">取消精选</a>` : `<a onclick="toggleFeatured('${p.id}', true)">加入精选</a>`;
+                    actionHtml += `${pinBtn}${featuredBtn}<a class="warning" onclick="changePostStatus('${p.id}', 2, true)">静默</a><a class="danger" onclick="changePostStatus('${p.id}', 0, true)">删除</a>`;
+                } else if(p.status === 3) {
+                    statusTag = `<span class="tag tag-warning">疑似待审核</span>`;
+                    actionHtml += `<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1, true)">通过</a><a class="danger" onclick="changePostStatus('${p.id}', 4, true)">不通过</a><a class="danger" onclick="changePostStatus('${p.id}', 0, true)">删除</a>`;
+                } else if(p.status === 4) {
+                    statusTag = `<span class="tag tag-error">违规已拦截</span>`;
+                    actionHtml += `<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1, true)">审核通过</a><a class="danger" onclick="changePostStatus('${p.id}', 0, true)">删除</a>`;
+                } else if(p.status === 2) { 
+                    statusTag = `<span class="tag tag-warning">已静默</span>`; 
+                    actionHtml += `${pinBtn}<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1, true)">解除静默</a><a class="danger" onclick="changePostStatus('${p.id}', 0, true)">删除</a>`;
+                } else { 
+                    statusTag = `<span class="tag tag-gray">已删除</span>`; 
+                    actionHtml += `<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1, true)">恢复</a>`;
+                }
+
+                return `
+                <tr style="${p.status === 0 ? 'background:#fafafa; opacity:0.6;' : (p.isPinned ? 'background:#fffbf0;' : '')}">
+                    <td><input type="checkbox" class="topic-row-checkbox" value="${p.id}" onclick="checkSelectAllStatusTopic()"></td>
+                    <td style="font-family:monospace; color:var(--text-sub);">${p.id} ${pinBadge}${featuredBadge}</td>
+                    <td><div style="display:flex; align-items:center; gap:6px; font-size:12px;"><img src="${p.p_icon}" style="width:20px;height:20px;border-radius:4px;">${p.p_name}</div></td>
+                    <td><div class="td-author"><div style="font-weight:bold; color:var(--primary); font-size:13px;">${p.author}</div><div style="font-size:12px; color:var(--text-sub);">UID: ${p.accountId}</div></div></td>
+                    <td style="font-size:12px; color:var(--text-sub); white-space:nowrap;">${p.time.replace(' ', '<br>')}</td>
+                    <td><span title="${p.content}">${p.content.substring(0, 25)}${p.content.length > 25 ? '...' : ''}</span></td>
+                    <td style="font-size:12px; color:var(--text-sub); white-space:nowrap;"><i class="fas fa-eye"></i> ${p.views} &nbsp; <i class="fas fa-heart"></i> ${p.likes} <br>评 ${p.replies} &brvbar; 转 ${p.reposts}</td>
+                    <td>${statusTag}</td>
+                    <td class="action-links" style="white-space:nowrap;">${actionHtml}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function toggleSelectAllTopic(el) { document.querySelectorAll('.topic-row-checkbox').forEach(box => box.checked = el.checked); updateBatchBtnStateTopic(); }
+        function checkSelectAllStatusTopic() { const boxes = document.querySelectorAll('.topic-row-checkbox'); document.getElementById('selectAllTopic').checked = boxes.length > 0 && Array.from(boxes).every(b => b.checked); updateBatchBtnStateTopic(); }
+        function updateBatchBtnStateTopic() { document.querySelectorAll('.topic-batch-btn').forEach(btn => { if (document.querySelectorAll('.topic-row-checkbox:checked').length > 0) btn.removeAttribute('disabled'); else btn.setAttribute('disabled', 'true'); }); }
+        function batchActionTopicPost(targetStatus) {
+            const boxes = document.querySelectorAll('.topic-row-checkbox:checked');
+            if(boxes.length === 0) return; 
+            const ids = Array.from(boxes).map(b => b.value);
+            const actionName = targetStatus === 2 ? '静默' : '删除';
+            if(confirm(`确定要批量【${actionName}】该话题下选中的 ${ids.length} 条动态吗？`)) {
+                mockPosts.forEach(p => { if(ids.includes(p.id)) p.status = targetStatus; });
+                showToast(`成功批量${actionName} ${ids.length} 条动态`); renderTopicPosts();
+            }
+        }
+
+
+        // ================= 动态管理业务逻辑 =================
+        function renderPosts() {
+            const tbody = document.getElementById('post-table-body');
+            document.getElementById('selectAll').checked = false; updateBatchBtnState();
+            
+            const sortedPosts =[...mockPosts].sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
+            tbody.innerHTML = sortedPosts.map(p => {
+                let statusTag = '';
+                let actionHtml = `<a onclick="viewPostDetail('${p.id}')">查看</a>`;
+                
+                let pinBtn = p.isPinned ? `<a onclick="togglePin('${p.id}')">取消置顶</a>` : `<a onclick="togglePin('${p.id}')">置顶</a>`;
+                let pinBadge = p.isPinned ? `<span class="tag tag-error" style="margin-left:8px;font-size:10px;">置顶</span>` : '';
+                
+                let featuredBtn = '';
+                let featuredBadge = p.isFeatured ? `<span class="tag tag-orange" style="margin-left:4px;font-size:10px;">精选</span>` : '';
+
+                if(p.status === 1) { 
+                    statusTag = `<span class="tag tag-success">通过已外显</span>`; 
+                    featuredBtn = p.isFeatured ? `<a onclick="toggleFeatured('${p.id}')">取消精选</a>` : `<a onclick="toggleFeatured('${p.id}')">加入精选</a>`;
+                    actionHtml += `${pinBtn}${featuredBtn}<a class="warning" onclick="changePostStatus('${p.id}', 2)">静默</a><a class="danger" onclick="changePostStatus('${p.id}', 0)">删除</a>`;
+                } else if(p.status === 3) {
+                    statusTag = `<span class="tag tag-warning">疑似待审核</span>`;
+                    actionHtml += `<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1)">通过</a><a class="danger" onclick="changePostStatus('${p.id}', 4)">不通过</a><a class="danger" onclick="changePostStatus('${p.id}', 0)">删除</a>`;
+                } else if(p.status === 4) {
+                    statusTag = `<span class="tag tag-error">违规已拦截</span>`;
+                    actionHtml += `<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1)">审核通过</a><a class="danger" onclick="changePostStatus('${p.id}', 0)">删除</a>`;
+                } else if(p.status === 2) { 
+                    statusTag = `<span class="tag tag-warning">已静默</span>`; 
+                    actionHtml += `${pinBtn}<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1)">解除静默</a><a class="danger" onclick="changePostStatus('${p.id}', 0)">删除</a>`;
+                } else { 
+                    statusTag = `<span class="tag tag-gray">已删除</span>`; 
+                    actionHtml += `<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1)">恢复</a>`;
+                }
+
+                return `
+                <tr style="${p.status === 0 ? 'background:#fafafa; opacity:0.6;' : (p.isPinned ? 'background:#fffbf0;' : '')}">
+                    <td><input type="checkbox" class="row-checkbox" value="${p.id}" onclick="checkSelectAllStatus()"></td>
+                    <td style="font-family:monospace; color:var(--text-sub);">${p.id} ${pinBadge}${featuredBadge}</td>
+                    <td><div style="display:flex; align-items:center; gap:6px; font-size:12px;"><img src="${p.p_icon}" style="width:20px;height:20px;border-radius:4px;">${p.p_name}</div></td>
+                    <td><div class="td-author"><div style="font-weight:bold; color:var(--primary); font-size:13px;">${p.author}</div><div style="font-size:12px; color:var(--text-sub);">UID: ${p.accountId}</div></div></td>
+                    <td style="font-size:12px; color:var(--text-sub); white-space:nowrap;">${p.time.replace(' ', '<br>')}</td>
+                    <td><span title="${p.content}">${p.content.substring(0, 25)}${p.content.length > 25 ? '...' : ''}</span></td>
+                    <td style="font-size:12px; color:var(--text-sub); white-space:nowrap;"><i class="fas fa-eye"></i> ${p.views} &nbsp; <i class="fas fa-heart"></i> ${p.likes} <br>评 ${p.replies} &brvbar; 转 ${p.reposts}</td>
+                    <td>${statusTag}</td>
+                    <td class="action-links" style="white-space:nowrap;">${actionHtml}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function viewPostDetail(id) { alert('即将跳转至H5动态详情页，动态ID: ' + id); }
+        function togglePin(id, isTopicView = false) { 
+            const p = mockPosts.find(x => x.id === id); 
+            p.isPinned = !p.isPinned; 
+            showToast(p.isPinned ? '已置顶' : '已取消置顶'); 
+            isTopicView ? renderTopicPosts() : renderPosts(); 
+        }
+        
+        function toggleFeatured(id, isTopicView = false) { 
+            const p = mockPosts.find(x => x.id === id); 
+            p.isFeatured = !p.isFeatured; 
+            showToast(p.isFeatured ? '已加入精选' : '已取消精选'); 
+            isTopicView ? renderTopicPosts() : renderPosts(); 
+        }
+
+        function changePostStatus(id, newStatus, isTopicView = false) { 
+            const p = mockPosts.find(x => x.id === id); 
+            p.status = newStatus; 
+            let msg = '操作成功';
+            if (newStatus === 1) msg = '已审核通过，外显正常';
+            else if (newStatus === 2) msg = '已转为静默';
+            else if (newStatus === 4) msg = '违规已拦截';
+            else if (newStatus === 0) msg = '已删除';
+            showToast(msg); 
+            isTopicView ? renderTopicPosts() : renderPosts(); 
+        }
+        
+        function toggleSelectAll(el) { document.querySelectorAll('.row-checkbox').forEach(box => box.checked = el.checked); updateBatchBtnState(); }
+        function checkSelectAllStatus() { const boxes = document.querySelectorAll('.row-checkbox'); document.getElementById('selectAll').checked = boxes.length > 0 && Array.from(boxes).every(b => b.checked); updateBatchBtnState(); }
+        function updateBatchBtnState() { document.querySelectorAll('.batch-btn').forEach(btn => { if (document.querySelectorAll('.row-checkbox:checked').length > 0) btn.removeAttribute('disabled'); else btn.setAttribute('disabled', 'true'); }); }
+        function batchAction(targetStatus) {
+            const boxes = document.querySelectorAll('.row-checkbox:checked');
+            if(boxes.length === 0) return; 
+            const ids = Array.from(boxes).map(b => b.value);
+            const actionName = targetStatus === 2 ? '静默' : '删除';
+            if(confirm(`确定要批量【${actionName}】选中的 ${ids.length} 条动态吗？`)) {
+                mockPosts.forEach(p => { if(ids.includes(p.id)) p.status = targetStatus; });
+                showToast(`成功批量${actionName} ${ids.length} 条动态`); renderPosts();
+            }
+        }
+
+        // ================= 举报管理业务逻辑 =================
+        function renderReports() {
+            const tbody = document.getElementById('report-table-body');
+            document.getElementById('report-total').innerText = mockReports.length;
+            
+            document.getElementById('selectAllReport').checked = false;
+            updateBatchBtnStateReport();
+
+            tbody.innerHTML = mockReports.map(r => {
+                let statusTag = '';
+                let actionHtml = `<a onclick="viewPostDetail('${r.postId}')">查看动态</a>`;
+
+                if(r.status === 0) { 
+                    statusTag = `<span class="tag tag-warning">待处理</span>`; 
+                    actionHtml += `<a class="danger" onclick="handleReport('${r.id}', '违规')">判定违规</a><a class="warning" onclick="handleReport('${r.id}', '忽略')">忽略</a>`;
+                } else if(r.status === 1) {
+                    statusTag = `<span class="tag tag-success">已处理(违规)</span>`;
+                } else {
+                    statusTag = `<span class="tag tag-gray">已处理(忽略)</span>`;
+                }
+
+                const displayDetail = r.reason === '其他' ? r.detail : '-';
+
+                return `
+                <tr>
+                    <td><input type="checkbox" class="report-row-checkbox" value="${r.id}" onclick="checkSelectAllStatusReport()"></td>
+                    <td style="font-family:monospace; color:var(--text-sub);">${r.id}</td>
+                    <td><span class="tag tag-blue">${r.reason}</span></td>
+                    <td><div style="max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${displayDetail}">${displayDetail}</div></td>
+                    <td style="font-size:12px; color:var(--text-sub); white-space:nowrap;">${r.postTime.replace(' ', '<br>')}</td>
+                    <td><div class="td-author"><div style="font-weight:bold; color:var(--text-main); font-size:13px;">${r.targetUser}</div><div style="font-size:12px; color:var(--text-sub);">UID: ${r.targetUid}</div></div></td>
+                    <td><a href="#" onclick="viewPostDetail('${r.postId}'); return false;" style="color:var(--primary); text-decoration:none;">${r.postId}</a><br><span style="font-size:12px;color:var(--text-sub);">${r.postContent}</span></td>
+                    <td><div class="td-author"><div style="font-weight:bold; color:var(--text-main); font-size:13px;">${r.reporter}</div><div style="font-size:12px; color:var(--text-sub);">UID: ${r.reporterUid}</div></div></td>
+                    <td style="font-size:12px; color:var(--text-sub); white-space:nowrap;">${r.time.replace(' ', '<br>')}</td>
+                    <td>${statusTag}</td>
+                    <td class="action-links" style="white-space:nowrap;">${actionHtml}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function toggleSelectAllReport(el) { document.querySelectorAll('.report-row-checkbox').forEach(box => box.checked = el.checked); updateBatchBtnStateReport(); }
+        function checkSelectAllStatusReport() { const boxes = document.querySelectorAll('.report-row-checkbox'); document.getElementById('selectAllReport').checked = boxes.length > 0 && Array.from(boxes).every(b => b.checked); updateBatchBtnStateReport(); }
+        function updateBatchBtnStateReport() { document.querySelectorAll('.report-batch-btn').forEach(btn => { if (document.querySelectorAll('.report-row-checkbox:checked').length > 0) btn.removeAttribute('disabled'); else btn.setAttribute('disabled', 'true'); }); }
+        
+        function batchActionReport(actionType) {
+            const boxes = document.querySelectorAll('.report-row-checkbox:checked');
+            if(boxes.length === 0) return; 
+            const ids = Array.from(boxes).map(b => b.value);
+            const actionName = actionType === 'mute' ? '静默' : '删除';
+            if(confirm(`确定要批量【${actionName}】选中的 ${ids.length} 个举报对应的动态吗？`)) {
+                mockReports.forEach(r => { 
+                    if(ids.includes(r.id)) {
+                        r.status = 1; // 标记举报为已处理(违规)
+                        let p = mockPosts.find(x => x.id === r.postId);
+                        if(p) p.status = actionType === 'mute' ? 2 : 0;
+                    }
+                });
+                showToast(`成功批量处理 ${ids.length} 条举报`); 
+                renderReports();
+                renderPosts();
+            }
+        }
+
+        function handleReport(id, action) {
+            const r = mockReports.find(x => x.id === id);
+            if (action === '违规') {
+                const html = `
+                    <div class="form-group" style="align-items:center;">
+                        <label>处理对象</label>
+                        <div style="display:flex; gap:16px;">
+                            <label style="width:auto;text-align:left;display:flex;align-items:center;cursor:pointer;"><input type="checkbox" id="cb-handle-post" onchange="toggleReportOptions()" checked style="margin-right:4px;"> 针对动态</label>
+                            <label style="width:auto;text-align:left;display:flex;align-items:center;cursor:pointer;"><input type="checkbox" id="cb-handle-user" onchange="toggleReportOptions()" style="margin-right:4px;"> 针对用户</label>
+                        </div>
+                    </div>
+                    <div id="m-report-post-options" style="display:block; background:#fafafa; padding:12px; border-radius:4px; margin-bottom:12px; border:1px solid var(--border-light);">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="width:70px;">动态处理</label>
+                            <select class="form-control" id="m-report-post-action">
+                                <option value="delete">删除违规动态</option>
+                                <option value="mute">仅静默动态 (仅自己可见)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="m-report-user-options" style="display:none; background:#fafafa; padding:12px; border-radius:4px; margin-bottom:12px; border:1px solid var(--border-light);">
+                        <div class="form-group">
+                            <label style="width:70px;">禁发时长</label>
+                            <select class="form-control" id="m-report-user-ban" onchange="toggleCustomBan()">
+                                <option value="1">1天</option>
+                                <option value="7">7天</option>
+                                <option value="30">30天</option>
+                                <option value="365">365天</option>
+                                <option value="custom">自定义输入(天)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="m-report-custom-ban-wrap" style="display:none; margin-bottom:0;">
+                            <label style="width:70px;">自定义时长</label>
+                            <input type="number" class="form-control" id="m-report-custom-ban" placeholder="请输入天数" min="1">
+                        </div>
+                    </div>
+                `;
+                openModal('处理违规举报', html, () => {
+                    const handlePost = document.getElementById('cb-handle-post').checked;
+                    const handleUser = document.getElementById('cb-handle-user').checked;
+                    
+                    if(!handlePost && !handleUser) return showToast('请至少选择一项处理对象', 'error');
+
+                    let actions =[];
+                    if (handlePost) {
+                        const postAction = document.getElementById('m-report-post-action').value;
+                        actions.push(postAction === 'delete' ? '删除动态' : '静默动态');
+                        let p = mockPosts.find(x => x.id === r.postId);
+                        if(p) p.status = postAction === 'mute' ? 2 : 0;
+                    }
+                    if (handleUser) {
+                        let days = document.getElementById('m-report-user-ban').value;
+                        if (days === 'custom') {
+                            days = document.getElementById('m-report-custom-ban').value;
+                            if (!days) return showToast('请输入自定义天数', 'error');
+                        }
+                        actions.push(`禁发用户 ${days} 天`);
+                    }
+
+                    r.status = 1;
+                    showToast(`已判定违规，执行操作: ` + actions.join('，'));
+                    renderReports();
+                    renderPosts(); // 刷新动态列表
+                    closeModal();
+                });
+            } else {
+                if(confirm(`确定要忽略举报单 ${id} 吗？`)) {
+                    r.status = 2;
+                    showToast(`举报单 ${id} 已标记为忽略`);
+                    renderReports();
+                }
+            }
+        }
+
+        window.toggleReportOptions = function() {
+            const handlePost = document.getElementById('cb-handle-post').checked;
+            const handleUser = document.getElementById('cb-handle-user').checked;
+            document.getElementById('m-report-post-options').style.display = handlePost ? 'block' : 'none';
+            document.getElementById('m-report-user-options').style.display = handleUser ? 'block' : 'none';
+        };
+
+        window.toggleCustomBan = function() {
+            const val = document.getElementById('m-report-user-ban').value;
+            document.getElementById('m-report-custom-ban-wrap').style.display = val === 'custom' ? 'flex' : 'none';
+        };
+
+        // ================= 操作记录逻辑 =================
+        function renderLogs() {
+            document.getElementById('log-table-body').innerHTML = mockLogs.map(log => `
+                <tr>
+                    <td style="font-size:12px; color:var(--text-sub);">${log.time}</td>
+                    <td style="font-weight:bold;">${log.op}</td>
+                    <td><span class="tag tag-gray">${log.module}</span></td>
+                    <td style="color:var(--primary);">${log.type}</td>
+                    <td>${log.detail}</td>
+                </tr>
+            `).join('');
+        }
+
+        // 初始化
+        window.onload = () => {
+            // ================= 官方发布 =================
+            const officialPosts = [
+                { id: 'OP001', nickname: '盖世游戏官方', tag: '盖世游戏大使', title: '【公告】V6.0.5版本更新说明', partition: 'Steam', pinned: true, time: '2026-05-25 10:00' },
+                { id: 'OP002', nickname: '盖世评测官', tag: '盖世游戏大使', title: '本周新游推荐TOP5', partition: 'Steam', pinned: true, time: '2026-05-24 14:30' },
+                { id: 'OP003', nickname: '盖世游戏官方', tag: '盖世游戏大使', title: 'GTA5 官方推荐配置方案', partition: 'GTA 5', pinned: false, time: '2026-05-23 09:15' },
+            ];
+
+            function renderOfficialPost() {
+                const tbody = document.getElementById('official-post-list');
+                if (!tbody) return;
+                tbody.innerHTML = officialPosts.map(p => `<tr>
+                    <td>${p.id}</td>
+                    <td>${p.nickname}</td>
+                    <td><span style="background:rgba(250,173,20,0.1); color:#fa8c16; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:bold;">${p.tag}</span></td>
+                    <td>${p.title}</td>
+                    <td>${p.partition}</td>
+                    <td>${p.pinned ? '<span style="color:#52c41a;">是</span>' : '否'}</td>
+                    <td style="font-size:12px;">${p.time}</td>
+                    <td>
+                        <button class="btn btn-sm" onclick="showToast('编辑 ${p.id}')">编辑</button>
+                        <button class="btn btn-sm" onclick="showToast('${p.pinned ? '取消置顶' : '置顶'} ${p.id}')">${p.pinned ? '取消置顶' : '置顶'}</button>
+                        <button class="btn btn-sm btn-danger" onclick="showToast('删除 ${p.id}')">删除</button>
+                    </td>
+                </tr>`).join('');
+            }
+
+            function publishOfficialPost() {
+                const title = document.getElementById('official-title').value;
+                const content = document.getElementById('official-content').value;
+                if (!title || !content) { showToast('请填写标题和正文'); return; }
+                const nickname = document.getElementById('official-nickname').value || '盖世游戏官方';
+                const tag = document.getElementById('official-tag-name').value || '盖世游戏大使';
+                const partition = document.getElementById('official-partition').value;
+                const pinned = document.getElementById('official-pin').checked;
+                officialPosts.unshift({
+                    id: 'OP' + String(officialPosts.length + 1).padStart(3, '0'),
+                    nickname, tag, title, partition, pinned,
+                    time: new Date().toLocaleString('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/\//g, '-')
+                });
+                renderOfficialPost();
+                document.getElementById('official-title').value = '';
+                document.getElementById('official-content').value = '';
+                showToast('✅ 官方动态发布成功！' + (pinned ? '已自动置顶到「' + partition + '」分区' : ''));
+            }
+
+            initDatePickers();
+            // 默认选中 国内 -> 分区管理
+            switchMenu('partition', document.querySelectorAll('.menu-item')[0], '国内');
+        };
+    </script>
+</body>
+</html>
