@@ -1801,9 +1801,11 @@
             openModal();
         }
 
-        // 初始化
-        initDatePickers();
-        switchMenu('partition', document.querySelectorAll('.menu-item')[0], '国内');
+        // 初始化（等DOM加载完成）
+        document.addEventListener('DOMContentLoaded', function() {
+            initDatePickers();
+            switchMenu('partition', document.querySelectorAll('.menu-item')[0], '国内');
+        });
 
     </script>
 </body>
