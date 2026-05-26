@@ -300,23 +300,32 @@
                             <div class="op-banner-dots"><span class="dot active"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
                         </div>
 
-                        <!-- 发行人计划入口 -->
-                        <div style="margin:15px 20px 5px; background:linear-gradient(135deg, #1a2940 0%, #0d1b2a 100%); border-radius:12px; padding:16px; border:1px solid rgba(40,125,250,0.2); cursor:pointer; position:relative; overflow:hidden;" onclick="openPublisherPanel()">
-                            <div style="position:absolute; top:-20px; right:-20px; width:80px; height:80px; background:radial-gradient(circle, rgba(40,125,250,0.15) 0%, transparent 70%); border-radius:50%;"></div>
-                            <div style="display:flex; align-items:center; gap:14px;">
-                                <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, #287dfa 0%, #6c5ce7 100%); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                                    <svg width="22" height="22" fill="white" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+                        <!-- 发行人计划入口（跳转独立页面） -->
+                        <div style="margin:15px 20px 0; background:linear-gradient(135deg, #1a2940 0%, #0d1b2a 100%); border-radius:12px; padding:14px 16px; border:1px solid rgba(40,125,250,0.15); cursor:pointer;" onclick="window.open('发行人计划demo.html','_blank')">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg, #287dfa 0%, #6c5ce7 100%); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                    <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
                                 </div>
                                 <div style="flex:1;">
-                                    <div style="font-size:15px; font-weight:bold; color:#fff; margin-bottom:4px;">发行人计划</div>
-                                    <div style="font-size:12px; color:var(--text-s);">成为创作者，获取流量扶持与收益分成</div>
+                                    <div style="font-size:14px; font-weight:bold; color:#fff;">发行人计划</div>
+                                    <div style="font-size:11px; color:var(--text-s); margin-top:2px;">推广游戏赚取佣金</div>
                                 </div>
-                                <div style="color:var(--text-s); font-size:18px;">›</div>
+                                <div style="color:var(--text-s); font-size:16px;">›</div>
                             </div>
-                            <div style="display:flex; gap:16px; margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.05);">
-                                <div style="text-align:center; flex:1;"><div style="font-size:14px; font-weight:bold; color:#fff;">1.2w</div><div style="font-size:11px; color:var(--text-s); margin-top:2px;">累计播放</div></div>
-                                <div style="text-align:center; flex:1;"><div style="font-size:14px; font-weight:bold; color:#fff;">¥328</div><div style="font-size:11px; color:var(--text-s); margin-top:2px;">本月收益</div></div>
-                                <div style="text-align:center; flex:1;"><div style="font-size:14px; font-weight:bold; color:#fff;">Lv.3</div><div style="font-size:11px; color:var(--text-s); margin-top:2px;">创作者等级</div></div>
+                        </div>
+
+                        <!-- 创作者中心入口 -->
+                        <div style="margin:10px 20px 5px; background:var(--bg-card); border-radius:12px; padding:14px 16px; border:1px solid var(--border); cursor:pointer;" onclick="openCreatorPanel()">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg, #faad14 0%, #fa541c 100%); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                    <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="font-size:14px; font-weight:bold; color:#fff;">创作者中心</div>
+                                    <div style="font-size:11px; color:var(--text-s); margin-top:2px;">申请认证，获取专属身份标签</div>
+                                </div>
+                                <div id="creator-status-badge" style="padding:3px 10px; border-radius:10px; font-size:11px; font-weight:bold; background:rgba(82,196,26,0.15); color:#52c41a;">已认证</div>
+                                <div style="color:var(--text-s); font-size:16px;">›</div>
                             </div>
                         </div>
                     </div>
@@ -332,34 +341,37 @@
                 </div>
             </div>
 
-            <!-- 发行人计划面板 -->
-            <div id="publisher-panel" class="panel z-110" style="background:var(--bg-dark);">
-                <div class="panel-back-abs" onclick="closePublisherPanel()">‹</div>
+            <!-- 创作者中心面板 -->
+            <div id="creator-panel" class="panel z-110" style="background:var(--bg-dark);">
+                <div class="panel-back-abs" onclick="closeCreatorPanel()">‹</div>
                 <div class="scroller" style="padding-top:50px;">
-                    <!-- 顶部卡片 -->
-                    <div style="margin:0 20px 20px; background:linear-gradient(135deg, #1a2940 0%, #0d1b2a 100%); border-radius:16px; padding:24px; border:1px solid rgba(40,125,250,0.15); position:relative; overflow:hidden;">
-                        <div style="position:absolute; top:-30px; right:-30px; width:120px; height:120px; background:radial-gradient(circle, rgba(40,125,250,0.1) 0%, transparent 70%); border-radius:50%;"></div>
-                        <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px;">
-                            <div style="width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg, #287dfa 0%, #6c5ce7 100%); display:flex; align-items:center; justify-content:center;">
-                                <svg width="26" height="26" fill="white" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+
+                    <!-- 当前身份状态 -->
+                    <div style="margin:0 20px 20px; background:linear-gradient(135deg, #1a2940 0%, #0d1b2a 100%); border-radius:16px; padding:24px; border:1px solid rgba(250,173,20,0.2); position:relative; overflow:hidden;">
+                        <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
+                            <div class="avatar-container-new" style="width:50px; height:50px; border-color:#faad14;">
+                                <div class="avatar-img" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=GS')"></div>
                             </div>
                             <div>
-                                <div style="font-size:18px; font-weight:bold; color:#fff;">盖世发行人计划</div>
-                                <div style="font-size:12px; color:var(--text-s); margin-top:4px;">创作优质内容，获取平台收益</div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:16px; font-weight:bold; color:#fff;">盖世小秘书</span>
+                                    <span style="padding:2px 8px; border-radius:4px; background:rgba(250,173,20,0.15); color:#faad14; font-size:10px; font-weight:bold;">认证创作者</span>
+                                </div>
+                                <div style="font-size:12px; color:var(--text-s); margin-top:4px;">创作者ID: CRT-20260301</div>
                             </div>
                         </div>
-                        <div style="display:flex; gap:12px;">
-                            <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:12px; padding:14px; text-align:center;">
-                                <div style="font-size:20px; font-weight:bold; color:#fff;">1.2w</div>
-                                <div style="font-size:11px; color:var(--text-s); margin-top:4px;">累计播放</div>
+                        <div style="display:flex; gap:10px;">
+                            <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:10px; padding:12px; text-align:center;">
+                                <div style="font-size:18px; font-weight:bold; color:#fff;">56</div>
+                                <div style="font-size:11px; color:var(--text-s); margin-top:2px;">发布作品</div>
                             </div>
-                            <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:12px; padding:14px; text-align:center;">
-                                <div style="font-size:20px; font-weight:bold; color:#fff;">¥328</div>
-                                <div style="font-size:11px; color:var(--text-s); margin-top:4px;">本月收益</div>
+                            <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:10px; padding:12px; text-align:center;">
+                                <div style="font-size:18px; font-weight:bold; color:#fff;">1.2w</div>
+                                <div style="font-size:11px; color:var(--text-s); margin-top:2px;">总曝光</div>
                             </div>
-                            <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:12px; padding:14px; text-align:center;">
-                                <div style="font-size:20px; font-weight:bold; color:#fff;">Lv.3</div>
-                                <div style="font-size:11px; color:var(--text-s); margin-top:4px;">创作者等级</div>
+                            <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:10px; padding:12px; text-align:center;">
+                                <div style="font-size:18px; font-weight:bold; color:#fff;">2.4k</div>
+                                <div style="font-size:11px; color:var(--text-s); margin-top:2px;">总互动</div>
                             </div>
                         </div>
                     </div>
@@ -367,55 +379,50 @@
                     <!-- 创作者权益 -->
                     <div style="margin:0 20px 20px;">
                         <div style="font-size:16px; font-weight:bold; color:#fff; margin-bottom:14px;">创作者权益</div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                            <div style="background:var(--bg-card); border-radius:12px; padding:16px; border:1px solid var(--border);">
-                                <div style="font-size:24px; margin-bottom:8px;">💰</div>
-                                <div style="font-size:14px; font-weight:bold; color:#fff; margin-bottom:4px;">收益分成</div>
-                                <div style="font-size:11px; color:var(--text-s); line-height:1.4;">优质内容获取平台广告收益分成</div>
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            <div style="display:flex; align-items:center; gap:12px; background:var(--bg-card); border-radius:12px; padding:14px; border:1px solid var(--border);">
+                                <div style="font-size:22px;">🏷️</div>
+                                <div style="flex:1;"><div style="font-size:14px; font-weight:bold; color:#fff;">专属身份标签</div><div style="font-size:11px; color:var(--text-s); margin-top:2px;">昵称旁展示"认证创作者"标签</div></div>
+                                <div style="font-size:11px; color:#52c41a; font-weight:bold;">已生效</div>
                             </div>
-                            <div style="background:var(--bg-card); border-radius:12px; padding:16px; border:1px solid var(--border);">
-                                <div style="font-size:24px; margin-bottom:8px;">🔥</div>
-                                <div style="font-size:14px; font-weight:bold; color:#fff; margin-bottom:4px;">流量扶持</div>
-                                <div style="font-size:11px; color:var(--text-s); line-height:1.4;">创作者内容优先推荐，获取更多曝光</div>
+                            <div style="display:flex; align-items:center; gap:12px; background:var(--bg-card); border-radius:12px; padding:14px; border:1px solid var(--border);">
+                                <div style="font-size:22px;">💰</div>
+                                <div style="flex:1;"><div style="font-size:14px; font-weight:bold; color:#fff;">现金收益分成</div><div style="font-size:11px; color:var(--text-s); margin-top:2px;">通过发行人计划提交作品获取收益</div></div>
+                                <div style="font-size:11px; color:#52c41a; font-weight:bold;">已解锁</div>
                             </div>
-                            <div style="background:var(--bg-card); border-radius:12px; padding:16px; border:1px solid var(--border);">
-                                <div style="font-size:24px; margin-bottom:8px;">🏷️</div>
-                                <div style="font-size:14px; font-weight:bold; color:#fff; margin-bottom:4px;">专属标识</div>
-                                <div style="font-size:11px; color:var(--text-s); line-height:1.4;">昵称旁展示创作者认证标签</div>
+                            <div style="display:flex; align-items:center; gap:12px; background:var(--bg-card); border-radius:12px; padding:14px; border:1px solid var(--border);">
+                                <div style="font-size:22px;">🔥</div>
+                                <div style="flex:1;"><div style="font-size:14px; font-weight:bold; color:#fff;">流量扶持</div><div style="font-size:11px; color:var(--text-s); margin-top:2px;">创作者内容优先推荐</div></div>
+                                <div style="font-size:11px; color:#52c41a; font-weight:bold;">已生效</div>
                             </div>
-                            <div style="background:var(--bg-card); border-radius:12px; padding:16px; border:1px solid var(--border);">
-                                <div style="font-size:24px; margin-bottom:8px;">📊</div>
-                                <div style="font-size:14px; font-weight:bold; color:#fff; margin-bottom:4px;">数据看板</div>
-                                <div style="font-size:11px; color:var(--text-s); line-height:1.4;">查看内容播放、互动、收益明细</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 收益明细 -->
-                    <div style="margin:0 20px 20px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                            <div style="font-size:16px; font-weight:bold; color:#fff;">收益明细</div>
-                            <div style="font-size:12px; color:var(--primary); cursor:pointer;">全部记录 ›</div>
-                        </div>
-                        <div style="background:var(--bg-card); border-radius:12px; border:1px solid var(--border); overflow:hidden;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid var(--border);">
-                                <div><div style="font-size:14px; color:#fff; font-weight:500;">内容收益</div><div style="font-size:11px; color:var(--text-s); margin-top:2px;">2026-05-25</div></div>
-                                <div style="font-size:15px; font-weight:bold; color:#52c41a;">+¥12.50</div>
-                            </div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid var(--border);">
-                                <div><div style="font-size:14px; color:#fff; font-weight:500;">内容收益</div><div style="font-size:11px; color:var(--text-s); margin-top:2px;">2026-05-24</div></div>
-                                <div style="font-size:15px; font-weight:bold; color:#52c41a;">+¥8.80</div>
-                            </div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px;">
-                                <div><div style="font-size:14px; color:#fff; font-weight:500;">提现</div><div style="font-size:11px; color:var(--text-s); margin-top:2px;">2026-05-20</div></div>
-                                <div style="font-size:15px; font-weight:bold; color:#f5222d;">-¥200.00</div>
+                            <div style="display:flex; align-items:center; gap:12px; background:var(--bg-card); border-radius:12px; padding:14px; border:1px solid var(--border);">
+                                <div style="font-size:22px;">📊</div>
+                                <div style="flex:1;"><div style="font-size:14px; font-weight:bold; color:#fff;">数据看板</div><div style="font-size:11px; color:var(--text-s); margin-top:2px;">查看内容曝光、互动数据</div></div>
+                                <div style="font-size:11px; color:#52c41a; font-weight:bold;">已解锁</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 申请条件 -->
+                    <!-- 发行人计划入口 -->
                     <div style="margin:0 20px 20px;">
-                        <div style="font-size:16px; font-weight:bold; color:#fff; margin-bottom:14px;">申请条件</div>
+                        <div style="font-size:16px; font-weight:bold; color:#fff; margin-bottom:14px;">创作者专区</div>
+                        <div style="background:linear-gradient(135deg, #1a2940 0%, #0d1b2a 100%); border-radius:12px; padding:16px; border:1px solid rgba(40,125,250,0.15); cursor:pointer;" onclick="window.open('发行人计划demo.html','_blank')">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg, #287dfa 0%, #6c5ce7 100%); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                    <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="font-size:14px; font-weight:bold; color:#fff;">发行人计划</div>
+                                    <div style="font-size:11px; color:var(--text-s); margin-top:2px;">提交作品，赚取推广佣金</div>
+                                </div>
+                                <div style="color:var(--text-s); font-size:16px;">›</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 申请条件（已通过状态） -->
+                    <div style="margin:0 20px 20px;">
+                        <div style="font-size:16px; font-weight:bold; color:#fff; margin-bottom:14px;">认证条件</div>
                         <div style="background:var(--bg-card); border-radius:12px; padding:16px; border:1px solid var(--border);">
                             <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
                                 <div style="width:20px; height:20px; border-radius:50%; background:#52c41a; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><svg width="12" height="12" fill="white" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
@@ -435,36 +442,7 @@
                         </div>
                     </div>
 
-                    <!-- 底部按钮 -->
-                    <div style="margin:0 20px 40px;">
-                        <div id="publisher-status-area">
-                            <div style="width:100%; padding:14px; border-radius:24px; background:var(--primary); color:#fff; text-align:center; font-size:16px; font-weight:bold; cursor:pointer; margin-bottom:10px;" onclick="showApplyForm()">申请成为创作者</div>
-                            <div style="text-align:center; font-size:12px; color:var(--text-s);">满足以上条件即可申请，审核周期约1-3个工作日</div>
-                        </div>
-                        <!-- 申请表单（默认隐藏）-->
-                        <div id="apply-form" style="display:none;">
-                            <div style="font-size:16px; font-weight:bold; color:#fff; margin-bottom:14px;">申请信息</div>
-                            <div style="margin-bottom:12px;">
-                                <div style="font-size:13px; color:var(--text-s); margin-bottom:6px;">创作方向 <span style="color:#f5222d;">*</span></div>
-                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                    <span class="apply-tag" onclick="selectApplyTag(this)" style="padding:6px 14px; border-radius:16px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text-s); font-size:13px; cursor:pointer;">游戏攻略</span>
-                                    <span class="apply-tag" onclick="selectApplyTag(this)" style="padding:6px 14px; border-radius:16px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text-s); font-size:13px; cursor:pointer;">配置分享</span>
-                                    <span class="apply-tag" onclick="selectApplyTag(this)" style="padding:6px 14px; border-radius:16px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text-s); font-size:13px; cursor:pointer;">游戏评测</span>
-                                    <span class="apply-tag" onclick="selectApplyTag(this)" style="padding:6px 14px; border-radius:16px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text-s); font-size:13px; cursor:pointer;">视频实况</span>
-                                    <span class="apply-tag" onclick="selectApplyTag(this)" style="padding:6px 14px; border-radius:16px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text-s); font-size:13px; cursor:pointer;">MOD制作</span>
-                                </div>
-                            </div>
-                            <div style="margin-bottom:12px;">
-                                <div style="font-size:13px; color:var(--text-s); margin-bottom:6px;">个人简介 <span style="color:#f5222d;">*</span></div>
-                                <textarea placeholder="简要介绍你的创作经历和擅长方向..." style="width:100%; height:80px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; padding:12px; color:#fff; font-size:14px; resize:none; outline:none;"></textarea>
-                            </div>
-                            <div style="margin-bottom:12px;">
-                                <div style="font-size:13px; color:var(--text-s); margin-bottom:6px;">其他平台主页（选填）</div>
-                                <input type="text" placeholder="如B站/抖音/小红书主页链接" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; padding:12px; color:#fff; font-size:14px; outline:none;">
-                            </div>
-                            <div style="width:100%; padding:14px; border-radius:24px; background:var(--primary); color:#fff; text-align:center; font-size:16px; font-weight:bold; cursor:pointer; margin-top:16px;" onclick="submitApply()">提交申请</div>
-                        </div>
-                    </div>
+                    <div style="margin:0 20px 40px; text-align:center; font-size:12px; color:var(--text-s);">认证通过于 2026-03-05 · 如有问题请联系客服</div>
                 </div>
             </div>
 
@@ -818,11 +796,11 @@
             document.getElementById('main-msg-dot').style.display = total > 0 ? 'block' : 'none';
         }
 
-        function openPublisherPanel() {
-            document.getElementById('publisher-panel').classList.add('show');
+        function openCreatorPanel() {
+            document.getElementById('creator-panel').classList.add('show');
         }
-        function closePublisherPanel() {
-            document.getElementById('publisher-panel').classList.remove('show');
+        function closeCreatorPanel() {
+            document.getElementById('creator-panel').classList.remove('show');
         }
         function showApplyForm() {
             document.getElementById('publisher-status-area').style.display = 'none';
