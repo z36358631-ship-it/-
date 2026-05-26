@@ -1752,74 +1752,59 @@
         }
 
         // 初始化
-        window.onload = () => {
-            // ================= 官方发布 =================
-            const officialPosts = [
-                { id: 'OP001', nickname: '盖世游戏官方', tag: '盖世游戏大使', title: '【公告】V6.0.5版本更新说明', partition: 'Steam', status: '已置顶', time: '2026-05-25 10:00', img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=60&h=60&fit=crop' },
-                { id: 'OP002', nickname: '盖世评测官', tag: '盖世游戏大使', title: '本周新游推荐TOP5', partition: 'Steam', status: '已发布', time: '2026-05-24 14:30', img: '' },
-                { id: 'OP003', nickname: '盖世游戏官方', tag: '盖世游戏大使', title: 'GTA5 官方推荐配置方案', partition: 'GTA 5', status: '已发布', time: '2026-05-23 09:15', img: '' },
-            ];
 
-            function renderOfficialPost() {
-                const tbody = document.getElementById('official-post-list');
-                if (!tbody) return;
-                tbody.innerHTML = officialPosts.map(p => {
-                    const statusTag = p.status === '已置顶' ? 'tag-green' : p.status === '已隐藏' ? 'tag-gray' : 'tag-blue';
-                    const imgHtml = p.img ? '<img src="' + p.img + '" style="width:40px;height:40px;border-radius:4px;object-fit:cover;">' : '<span style="color:#ccc;">-</span>';
-                    return '<tr>' +
-                        '<td><input type="checkbox"></td>' +
-                        '<td>' + p.id + '</td>' +
-                        '<td>' + imgHtml + '</td>' +
-                        '<td>' + p.title + '</td>' +
-                        '<td>' + p.partition + '</td>' +
-                        '<td>' + p.nickname + '</td>' +
-                        '<td><span class="tag ' + statusTag + '">' + p.tag + '</span></td>' +
-                        '<td><span class="tag ' + statusTag + '">' + p.status + '</span></td>' +
-                        '<td style="font-size:12px;">' + p.time + '</td>' +
-                        '<td>' +
-                            '<button class="btn btn-sm" onclick="showToast('编辑 ' + p.id + '')">编辑</button> ' +
-                            '<button class="btn btn-sm" onclick="showToast('预览 ' + p.id + '')">预览</button> ' +
-                            '<button class="btn btn-sm btn-danger" onclick="showToast('删除 ' + p.id + '')">删除</button>' +
-                        '</td></tr>';
-                }).join('');
-            }
+        // ================= 官方发布 =================
+        var officialPosts = [
+            { id: 'OP001', nickname: '盖世游戏官方', tag: '盖世游戏大使', title: '【公告】V6.0.5版本更新说明', partition: 'Steam', status: '已置顶', time: '2026-05-25 10:00', img: '' },
+            { id: 'OP002', nickname: '盖世评测官', tag: '盖世游戏大使', title: '本周新游推荐TOP5', partition: 'Steam', status: '已发布', time: '2026-05-24 14:30', img: '' },
+            { id: 'OP003', nickname: '盖世游戏官方', tag: '盖世游戏大使', title: 'GTA5 官方推荐配置方案', partition: 'GTA 5', status: '已发布', time: '2026-05-23 09:15', img: '' },
+        ];
 
-            function openOfficialPostModal() {
-                document.getElementById('modal-title').innerText = '新建官方动态';
-                document.getElementById('modal-body-content').innerHTML = ;
-                window._modalConfirmAction = 'publishOfficialPost';
-                openModal();
-            }
+        function renderOfficialPost() {
+            var tbody = document.getElementById('official-post-list');
+            if (!tbody) return;
+            var html = '';
+            officialPosts.forEach(function(p) {
+                var statusTag = p.status === '已置顶' ? 'tag-green' : p.status === '已隐藏' ? 'tag-gray' : 'tag-blue';
+                html += '<tr><td><input type=checkbox></td><td>' + p.id + '</td><td>-</td><td>' + p.title + '</td><td>' + p.partition + '</td><td>' + p.nickname + '</td><td><span class='tag tag-orange'>' + p.tag + '</span></td><td><span class='tag ' + statusTag + ''>' + p.status + '</span></td><td style=font-size:12px>' + p.time + '</td><td><button class='btn btn-sm' onclick='showToast("编辑")'>编辑</button> <button class='btn btn-sm' onclick='showToast("预览")'>预览</button> <button class='btn btn-sm btn-danger' onclick='showToast("删除")'>删除</button></td></tr>';
+            });
+            tbody.innerHTML = html;
+        }
 
-            function publishOfficialPost() {
-                const title = document.getElementById('m-title').value;
-                const content = document.getElementById('m-content').value;
+        function openOfficialPostModal() {
+            document.getElementById('modal-title').innerText = '新建官方动态';
+            document.getElementById('modal-body-content').innerHTML = '<div style='display:flex;flex-direction:column;gap:14px;padding:10px 0'>' +
+                '<div><label style='display:block;margin-bottom:4px;font-weight:500'>* 发布人昵称</label><input type=text value=盖世游戏官方 style='width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px' id=m-nickname></div>' +
+                '<div><label style='display:block;margin-bottom:4px;font-weight:500'>* 身份标签名称</label><input type=text value=盖世游戏大使 style='width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px' id=m-tag></div>' +
+                '<div><label style='display:block;margin-bottom:4px;font-weight:500'>* 发布到分区</label><select style='width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px' id=m-partition><option>Steam</option><option>GTA 5</option><option>配置分享</option><option>Epic</option></select></div>' +
+                '<div><label style='display:block;margin-bottom:4px;font-weight:500'>* 动态标题</label><input type=text placeholder=输入标题 style='width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px' id=m-title></div>' +
+                '<div><label style='display:block;margin-bottom:4px;font-weight:500'>* 正文内容</label><textarea placeholder=输入正文 style='width:100%;height:100px;padding:8px;border:1px solid #d9d9d9;border-radius:4px;resize:vertical' id=m-content></textarea></div>' +
+                '<div><label style='display:flex;align-items:center;gap:8px;cursor:pointer'><input type=checkbox checked id=m-pin> 发布后自动置顶</label></div>' +
+                '</div>';
+            currentModalCallback = function() {
+                var title = document.getElementById('m-title').value;
                 if (!title) { showToast('请填写标题'); return; }
                 officialPosts.unshift({
                     id: 'OP' + String(officialPosts.length + 1).padStart(3, '0'),
-                    nickname: document.getElementById('m-nickname').value || '盖世游戏官方',
-                    tag: document.getElementById('m-tag').value || '盖世游戏大使',
+                    nickname: document.getElementById('m-nickname').value,
+                    tag: document.getElementById('m-tag').value,
                     title: title,
                     partition: document.getElementById('m-partition').value,
                     status: document.getElementById('m-pin').checked ? '已置顶' : '已发布',
-                    time: new Date().toLocaleString('zh-CN').replace(/\//g, '-'),
-                    img: document.getElementById('m-img').value || ''
+                    time: new Date().toLocaleString('zh-CN'),
+                    img: ''
                 });
                 renderOfficialPost();
                 closeModal();
-                showToast('✅ 官方动态发布成功');
-            }
+                showToast('官方动态发布成功');
+            };
+            openModal();
+        }
 
-            function executeModalConfirm() {
-                if (window._modalConfirmAction === 'publishOfficialPost') publishOfficialPost();
-                else closeModal();
-            }
+        // 初始化
+        initDatePickers();
+        switchMenu('partition', document.querySelectorAll('.menu-item')[0], '国内');
 
-
-            initDatePickers();
-            // 默认选中 国内 -> 分区管理
-            switchMenu('partition', document.querySelectorAll('.menu-item')[0], '国内');
-        };
     </script>
 </body>
 </html>
