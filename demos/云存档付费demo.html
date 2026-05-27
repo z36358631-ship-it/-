@@ -289,7 +289,7 @@ showToast('存档已加载！重启游戏生效');
 
 function openConsign(){
 var fl=document.getElementById('consignFiles');
-fl.innerHTML=autoSaves.map(function(s,i){return '<label><input type="radio" name="cf" value="'+i+'"'+(i===0?' checked':'')+'><span>💾 '+s.name+' ('+s.size+')</span></label>';}).join('');
+fl.innerHTML=autoSaves.map(function(s,i){return '<label><input type="radio" name="cf" value="'+i+'"'+(i===0?' checked':'')+'><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#fff">💾 '+s.name+'</span><span style="font-size:10px;color:var(--sub)">'+s.size+' · '+s.time+'</span></div></label>';}).join('');
 document.getElementById('consignPage').classList.add('show');
 }
 function closeConsign(){document.getElementById('consignPage').classList.remove('show')}
