@@ -155,7 +155,7 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 <div class="ingame" id="ingame">
 <div class="ig-bg"></div>
 <div class="ig-panel" id="igPanel">
-<div class="ig-head"><h4>存档管理</h4><span class="guide" onclick="showGuide()">❓说明</span></div>
+<div class="ig-head"><h4>存档管理</h4><span style="font-size:10px;color:var(--sub);cursor:pointer;padding:2px 6px;border:1px solid var(--border);border-radius:6px" onclick="showGuide()">❓说明</span></div>
 <div class="ig-tabs"><div class="ig-tab active" onclick="switchIg('market',this)">存档广场</div><div class="ig-tab" onclick="switchIg('my',this)">我的存档</div></div>
 <div class="ig-body" id="igBody"></div>
 </div>
@@ -192,8 +192,8 @@ function renderPlaza(){
 var h='';
 saves.forEach(function(s,i){
 var cls=s.type==='BOSS存档'?'boss':'full';
-var isA=activeIdx===i;var b=bought.has(i);
-var btn=isA?'<button class="sc-btn using">使用中</button>':b?'<button class="sc-btn bought">¥6 已购</button>':'<button class="sc-btn buy">¥6.00 购买</button>';
+var isA=activeIdx===i;
+var btn=isA?'<button class="sc-btn using">使用中</button>':'<button class="sc-btn buy">¥6.00 购买</button>';
 h+='<div class="save-card" onclick="openDetail('+i+')"><img src="'+s.cover+'"><div class="sc-body"><div class="sc-title"><span class="type-tag '+cls+'">'+s.type+'</span>'+s.title+'</div><div class="sc-meta">'+s.buyers+'人已购买</div>'+btn+'</div></div>';
 });
 document.getElementById('sec-plaza').innerHTML=h;
@@ -245,13 +245,8 @@ info+='<div class="d-inline-buy" style="margin-top:auto;padding-top:12px"><div s
 document.getElementById('dInfo').innerHTML=info;
 var btn=document.getElementById('dBuy');
 var btnInline=document.getElementById('dBuyInline');
-if(bought.has(idx)){
-btn.textContent='已购买 - 去我的存档使用';btn.className='d-buy bought';btn.onclick=function(){closeDetail();switchSub('mine',document.querySelectorAll('.stab')[1])};
-if(btnInline){btnInline.textContent='已购买 - 去我的存档使用';btnInline.className='d-buy bought';btnInline.style.display='block';btnInline.onclick=btn.onclick;}
-}else{
 btn.textContent='¥6.00 购买';btn.className='d-buy';btn.onclick=function(){doBuy()};
 if(btnInline){btnInline.textContent='¥6.00 购买';btnInline.className='d-buy';btnInline.style.display='block';btnInline.onclick=btn.onclick;}
-}
 document.getElementById('detailPage').classList.add('show');
 }
 function closeDetail(){document.getElementById('detailPage').classList.remove('show')}
@@ -278,9 +273,11 @@ function closeModal(){document.getElementById('modal').classList.remove('show')}
 function modalConfirm(){
 closeModal();
 if(pendingAction==='buy'){
-bought.add(curIdx);saves[curIdx].buyers++;renderPlaza();
-var btn=document.getElementById('dBuy');if(btn){btn.textContent='已购买 - 去我的存档使用';btn.className='d-buy bought';btn.onclick=function(){closeDetail();switchSub('mine',document.querySelectorAll('.stab')[1])};}
-showToast('购买成功！');
+bought.add(curIdx);saves[curIdx].buyers++;
+closeDetail();
+switchSub('mine',document.querySelectorAll('.stab')[1]);
+renderMine();
+showToast('购买成功！已加入我的存档');
 }else if(pendingAction==='use'){
 activeIdx=curIdx;renderMine();renderPlaza();
 showToast('存档已加载！重启游戏生效');
@@ -289,7 +286,7 @@ showToast('存档已加载！重启游戏生效');
 
 function openConsign(){
 var fl=document.getElementById('consignFiles');
-fl.innerHTML=autoSaves.map(function(s,i){return '<label><input type="radio" name="cf" value="'+i+'"'+(i===0?' checked':'')+'><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#fff">💾 '+s.name+'</span><span style="font-size:10px;color:var(--sub)">'+s.size+' · '+s.time+'</span></div></label>';}).join('');
+fl.innerHTML=autoSaves.map(function(s,i){return '<label style="justify-content:space-between"><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#fff">💾 '+s.name+'</span><span style="font-size:10px;color:var(--sub)">'+s.size+' · '+s.time+'</span></div><input type="radio" name="cf" value="'+i+'"'+(i===0?' checked':'')+'></label>';}).join('');
 document.getElementById('consignPage').classList.add('show');
 }
 function closeConsign(){document.getElementById('consignPage').classList.remove('show')}
