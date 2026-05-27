@@ -54,7 +54,8 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 .landscape .detail-scroll{display:flex;flex-direction:row}
 .landscape .d-media{width:50%;height:100%;flex-shrink:0;flex-direction:column;overflow-y:auto;overflow-x:hidden}
 .landscape .d-media img{min-width:100%;min-height:100%;width:100%}
-.landscape .d-info{flex:1;overflow-y:auto;padding:16px}
+.landscape .d-info{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column}
+.landscape .d-footer{display:none}
 .d-info{padding:16px}
 .d-title{font-size:16px;font-weight:bold;margin-bottom:8px}
 .d-desc{font-size:13px;color:#ccc;line-height:1.6;margin-bottom:12px}
@@ -98,7 +99,7 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 .modal.show{display:flex}
 .modal-box{background:#1e1e24;width:80%;max-width:300px;border-radius:14px;padding:18px;position:relative}
 .modal-box h3{font-size:14px;margin-bottom:8px;padding-right:24px}
-.modal-box p{font-size:12px;color:var(--sub);line-height:1.6;white-space:pre-line;margin-bottom:14px}
+.modal-box p{font-size:11px;color:var(--sub);line-height:1.6;white-space:pre-line;margin-bottom:14px}
 .modal-close{position:absolute;top:12px;right:14px;cursor:pointer;color:var(--sub);font-size:16px}
 .modal-btns{display:flex;gap:8px}
 .modal-btns button{flex:1;padding:9px;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;border:none}
@@ -240,10 +241,17 @@ function openDetail(idx){
 curIdx=idx;var s=saves[idx];
 document.getElementById('dMedia').innerHTML=s.imgs.map(function(u){return '<img src="'+u+'">';}).join('');
 var info='<div class="d-title">'+s.title+'</div><div class="d-desc">'+s.desc+'</div><div class="d-meta"><div class="dm-row"><span class="l">类型</span><span>'+s.type+'</span></div><div class="dm-row"><span class="l">大小</span><span>'+s.size+'</span></div><div class="dm-row"><span class="l">已购买</span><span>'+s.buyers+'人</span></div></div>';
+info+='<div class="d-inline-buy" style="margin-top:auto;padding-top:12px"><div style="font-size:10px;color:var(--sub);text-align:center;margin-bottom:4px">存档为虚拟商品，购买后不支持退款</div><button class="d-buy" id="dBuyInline" style="display:none"></button></div>';
 document.getElementById('dInfo').innerHTML=info;
 var btn=document.getElementById('dBuy');
-if(bought.has(idx)){btn.textContent='已购买 - 去我的存档使用';btn.className='d-buy bought';btn.onclick=function(){closeDetail();switchSub('mine',document.querySelectorAll('.stab')[1])};}
-else{btn.textContent='¥6.00 购买';btn.className='d-buy';btn.onclick=function(){doBuy()};}
+var btnInline=document.getElementById('dBuyInline');
+if(bought.has(idx)){
+btn.textContent='已购买 - 去我的存档使用';btn.className='d-buy bought';btn.onclick=function(){closeDetail();switchSub('mine',document.querySelectorAll('.stab')[1])};
+if(btnInline){btnInline.textContent='已购买 - 去我的存档使用';btnInline.className='d-buy bought';btnInline.style.display='block';btnInline.onclick=btn.onclick;}
+}else{
+btn.textContent='¥6.00 购买';btn.className='d-buy';btn.onclick=function(){doBuy()};
+if(btnInline){btnInline.textContent='¥6.00 购买';btnInline.className='d-buy';btnInline.style.display='block';btnInline.onclick=btn.onclick;}
+}
 document.getElementById('detailPage').classList.add('show');
 }
 function closeDetail(){document.getElementById('detailPage').classList.remove('show')}
@@ -316,11 +324,25 @@ document.getElementById('igBody').innerHTML=h;
 }
 
 function renderIgMine(){
-var h='<div style="padding:6px 8px;font-size:10px;color:var(--sub);border-bottom:1px solid var(--border)">我的存档</div>';
-autoSaves.forEach(function(s){h+='<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03)"><span style="font-size:12px">💾</span><div style="flex:1"><div style="font-size:10px;color:#fff">'+s.name+'</div><div style="font-size:9px;color:var(--sub)">'+s.time+'</div></div></div>';});
-h+='<div style="padding:6px 8px;font-size:10px;color:var(--sub);border-bottom:1px solid var(--border);margin-top:4px">已购存档</div>';
-if(bought.size>0){bought.forEach(function(idx){var s=saves[idx];var isA=activeIdx===idx;h+='<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer" onclick="igDetail('+idx+')"><img src="'+s.cover+'" style="width:36px;height:26px;border-radius:4px;object-fit:cover"><div style="flex:1"><div style="font-size:10px;color:#fff">'+s.title+'</div></div>'+(isA?'<span style="color:var(--green);font-size:9px">使用中</span>':'<button style="padding:2px 8px;border-radius:6px;background:rgba(255,255,255,0.08);color:#fff;font-size:9px;border:none;cursor:pointer" onclick="event.stopPropagation();igUse('+idx+')">使用</button>')+'</div>';});}
-else{h+='<div style="padding:14px;text-align:center;color:var(--sub);font-size:10px">暂无</div>';}
+var h='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 8px">';
+// 自动存档
+autoSaves.forEach(function(s){
+h+='<div style="background:var(--card);border-radius:6px;overflow:hidden;border:1px solid var(--border)"><div style="height:40px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;font-size:14px">💾</div><div style="padding:6px"><div style="font-size:10px;color:#fff;margin-bottom:2px">'+s.name+'</div><div style="font-size:9px;color:var(--sub)">'+s.time+'</div></div></div>';
+});
+h+='</div>';
+// 已购存档
+h+='<div style="padding:4px 8px;font-size:10px;color:var(--sub);border-bottom:1px solid var(--border)">已购存档</div>';
+h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 8px">';
+if(bought.size>0){
+bought.forEach(function(idx){
+var s=saves[idx];var isA=activeIdx===idx;
+var btn=isA?'<div style="text-align:center;padding:3px;font-size:9px;color:var(--green);font-weight:bold">使用中</div>':'<div style="text-align:center;padding:3px;font-size:9px;color:#fff;background:rgba(255,255,255,0.08);border-radius:4px;cursor:pointer" onclick="event.stopPropagation();igUse('+idx+')">使用</div>';
+h+='<div style="background:var(--card);border-radius:6px;overflow:hidden;border:1px solid var(--border);cursor:pointer" onclick="igDetail('+idx+')"><img src="'+s.cover+'" style="width:100%;height:40px;object-fit:cover;display:block"><div style="padding:6px"><div style="font-size:10px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px">'+s.title+'</div>'+btn+'</div></div>';
+});
+}else{h+='<div style="grid-column:1/-1;padding:12px;text-align:center;color:var(--sub);font-size:10px">暂无</div>';}
+h+='</div>';
+// 寄售入口
+h+='<div style="padding:6px 8px"><button style="width:100%;padding:6px;border-radius:6px;background:transparent;border:1px dashed var(--border);color:var(--sub);font-size:10px;cursor:pointer" onclick="showToast(\'请在主界面我的存档中寄售\')">🏷️ 寄售存档</button></div>';
 document.getElementById('igBody').innerHTML=h;
 }
 
