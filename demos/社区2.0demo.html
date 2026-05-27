@@ -643,12 +643,75 @@
     <div class="toast" id="toastBox">提示</div>
 </div>
 
+<!-- ================= 手机号绑定弹窗 ================= -->
+<div id="phoneBindOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#1a1f2e; border-radius:16px; width:340px; padding:24px; position:relative;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <span style="font-size:16px; font-weight:bold; color:#fff;">绑定手机号</span>
+            <i class="fas fa-times" style="color:#888; cursor:pointer; font-size:18px;" onclick="closePhoneBind()"></i>
+        </div>
+        <p style="font-size:13px; color:#8a99a8; margin-bottom:20px;">发帖前请先绑定手机号</p>
+        <div style="display:flex; align-items:center; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:10px 12px; margin-bottom:14px; background:rgba(255,255,255,0.03);">
+            <span style="color:#8a99a8; margin-right:8px; font-size:14px; white-space:nowrap;">+86</span>
+            <span style="color:rgba(255,255,255,0.15); margin-right:10px;">|</span>
+            <input type="tel" id="phoneBindInput" placeholder="请输入手机号码" style="flex:1; background:transparent; border:none; outline:none; color:#fff; font-size:14px;">
+        </div>
+        <div style="display:flex; align-items:center; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:10px 12px; margin-bottom:24px; background:rgba(255,255,255,0.03);">
+            <input type="text" id="phoneBindCode" placeholder="输入手机验证码" style="flex:1; background:transparent; border:none; outline:none; color:#fff; font-size:14px;">
+            <span style="color:var(--primary); font-size:13px; cursor:pointer; white-space:nowrap; font-weight:bold;" onclick="sendPhoneCode()">获取验证码</span>
+        </div>
+        <button onclick="confirmPhoneBind()" style="width:100%; padding:12px; border:none; border-radius:24px; background:linear-gradient(135deg, #1e90ff, #00bfff); color:#fff; font-size:15px; font-weight:bold; cursor:pointer;">绑定</button>
+    </div>
+</div>
+
 <script>
-    function showToast(msg) { 
-        const t = document.getElementById('toastBox'); 
-        t.innerText = msg; 
-        t.classList.add('show'); 
-        setTimeout(()=>t.classList.remove('show'), 2000); 
+    function showToast(msg) {
+        const t = document.getElementById('toastBox');
+        t.innerText = msg;
+        t.classList.add('show');
+        setTimeout(()=>t.classList.remove('show'), 2000);
+    }
+
+    // ================= 手机号绑定 & 防刷屏 =================
+    let userPhoneBound = false;
+    const userRegisterDate = new Date('2026-05-26');
+    let todayPostCount = 0;
+
+    function isNewUser() {
+        return (new Date() - userRegisterDate) / (1000 * 60 * 60 * 24) < 3;
+    }
+
+    function checkPostPermission() {
+        if (!userPhoneBound) {
+            openPhoneBind();
+            return false;
+        }
+        if (isNewUser() && todayPostCount >= 5) {
+            showToast('新用户每天最多发布5条动态');
+            return false;
+        }
+        return true;
+    }
+
+    function openPhoneBind() {
+        document.getElementById('phoneBindOverlay').style.display = 'flex';
+    }
+    function closePhoneBind() {
+        document.getElementById('phoneBindOverlay').style.display = 'none';
+    }
+    function sendPhoneCode() {
+        const phone = document.getElementById('phoneBindInput').value.trim();
+        if (!phone || phone.length < 11) { showToast('请输入正确的手机号'); return; }
+        showToast('验证码已发送');
+    }
+    function confirmPhoneBind() {
+        const phone = document.getElementById('phoneBindInput').value.trim();
+        const code = document.getElementById('phoneBindCode').value.trim();
+        if (!phone || phone.length < 11) { showToast('请输入正确的手机号'); return; }
+        if (!code) { showToast('请输入验证码'); return; }
+        userPhoneBound = true;
+        closePhoneBind();
+        showToast('手机号绑定成功');
     }
     function closeOverlay(id) { document.getElementById(id).classList.remove('show'); }
 
@@ -1412,6 +1475,8 @@
     }
 
     function openPublishPage(isRepost = false, targetId = null) {
+        if (!checkPostPermission()) return;
+
         isRepostMode = isRepost;
         repostTargetId = targetId;
 
@@ -1607,27 +1672,29 @@
 
     function submitPost() {
         const title = document.getElementById('postTitle').value.trim();
-        const content = document.getElementById('postContent').innerHTML.trim(); 
-        
+        const content = document.getElementById('postContent').innerHTML.trim();
+
         if (isRepostMode) {
             if(!content) { showToast('请输入转发理由'); return; }
             mockPosts.unshift({
-                id: Date.now(), title: '', tags:[], content: `【转发】${content}`, images:[], 
+                id: Date.now(), title: '', tags:[], content: `【转发】${content}`, images:[],
                 partition: '分享', user: '极客探索者', avatar: 'Admin', timestamp: new Date().toISOString(), ip: '当前位置',
                 comments: 0, reposts: 0, likes: 0
             });
+            todayPostCount++;
             showToast('转发成功！');
         } else {
             if(!title && !content) { showToast('请输入内容后再发布'); return; }
             mockPosts.unshift({
-                id: Date.now(), title: title || '新发布动态', tags:[], content: content, 
-                images:['https://picsum.photos/seed/newpost/800/600'], 
+                id: Date.now(), title: title || '新发布动态', tags:[], content: content,
+                images:['https://picsum.photos/seed/newpost/800/600'],
                 partition: selectedPostPartition || '分享',
                 user: '极客探索者', avatar: 'Admin', timestamp: new Date().toISOString(), ip: '当前位置',
                 comments: 0, reposts: 0, likes: 0
             });
+            todayPostCount++;
             showToast('发布成功！');
-            draftData = null; 
+            draftData = null;
         }
         
         renderFeed(); 
