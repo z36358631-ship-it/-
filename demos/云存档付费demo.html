@@ -26,11 +26,13 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 .s-tab.active{background:#fff;color:#000;font-weight:bold}
 .scroll{flex:1;overflow-y:auto;padding-bottom:20px}
 .scroll::-webkit-scrollbar{display:none}
-.save-card{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer}
-.save-card:active{background:rgba(255,255,255,0.02)}
-.save-cover{width:90px;height:64px;border-radius:8px;background:#222;object-fit:cover;flex-shrink:0}
-.save-info{flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
-.save-title{font-size:13px;color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.save-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 16px}
+.landscape .save-list{grid-template-columns:1fr 1fr 1fr}
+.save-card{background:var(--card);border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid var(--border)}
+.save-card:active{opacity:0.9}
+.save-cover{width:100%;height:90px;object-fit:cover;background:#222;display:block}
+.save-info{padding:10px;display:flex;flex-direction:column;gap:4px}
+.save-title{font-size:12px;color:#fff;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3}
 .save-meta{font-size:11px;color:var(--sub);display:flex;align-items:center;gap:6px}
 .save-price{margin-top:4px}
 .price-tag{background:var(--primary);color:#000;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold}
@@ -52,7 +54,7 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 .import-bar button{width:100%;padding:10px;border-radius:10px;background:transparent;border:1px dashed var(--border);color:var(--sub);font-size:12px;cursor:pointer}
 .import-bar button:hover{border-color:var(--primary);color:var(--primary)}
 /* 详情页 */
-.detail-page{position:absolute;inset:0;background:var(--bg);z-index:100;display:none;flex-direction:column}
+.detail-page{position:absolute;inset:0;background:var(--bg);z-index:350;display:none;flex-direction:column}
 .detail-page.show{display:flex}
 .detail-cover{width:100%;height:180px;object-fit:cover;background:#222;flex-shrink:0}
 .detail-body{flex:1;overflow-y:auto;padding:16px;padding-bottom:90px}
@@ -129,7 +131,7 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 <div class="s-tab" onclick="switchSub('mine',this)">我的存档</div>
 </div>
 <div class="scroll">
-<div id="sec-rec"></div>
+<div id="sec-rec" class="save-list"></div>
 <div id="sec-mine" style="display:none"></div>
 </div>
 
@@ -176,14 +178,14 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 
 <!-- 弹窗 -->
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
-<div class="modal-box">
+<div class="modal-box" style="position:relative">
+<span id="mCloseX" style="display:none;position:absolute;top:12px;right:14px;cursor:pointer;color:var(--sub);font-size:18px" onclick="closeModal()">×</span>
 <h3 id="mTitle"></h3>
 <p id="mDesc"></p>
 <div class="modal-btns" id="mBtns">
 <button class="cancel" onclick="closeModal()">取消</button>
 <button class="confirm" onclick="modalConfirm()">确认</button>
 </div>
-<div id="mCloseBtn" style="display:none;margin-top:12px"><button class="cancel" style="width:100%;padding:10px;border-radius:12px;border:none;background:rgba(255,255,255,0.1);color:#fff;font-size:13px;cursor:pointer" onclick="closeModal()">关闭</button></div>
 </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -211,7 +213,7 @@ function renderRec(){
 var h='';
 saves.forEach(function(s,i){
 var cls=s.type==='BOSS存档'?'boss':'full';
-var st=bought.has(i)?(activeIdx===i?'<span class="status-applied">✓ 应用中</span>':'<span class="status-bought">已购买</span>'):'<span class="price-tag">¥'+s.price.toFixed(2)+' 购买</span>';
+var st=activeIdx===i?'<span class="status-applied">✓ 应用中</span>':'<span class="price-tag">¥'+s.price.toFixed(2)+(bought.has(i)?' 已购':' 购买')+'</span>';
 h+='<div class="save-card" onclick="openDetail('+i+')"><img class="save-cover" src="'+s.cover+'"><div class="save-info"><div class="save-title">'+s.title+'</div><div class="save-meta"><span class="type-tag '+cls+'">'+s.type+'</span> '+s.buyers+'人已购买</div><div class="save-price">'+st+'</div></div></div>';
 });
 document.getElementById('sec-rec').innerHTML=h;
@@ -219,7 +221,7 @@ document.getElementById('sec-rec').innerHTML=h;
 
 function renderMine(){
 var h='';
-h+='<div class="section-label">自动存档</div>';
+h+='<div class="section-label">我的存档</div>';
 localSaves.forEach(function(s){
 h+='<div class="my-card"><div class="t">💾 '+s.name+'</div><div class="d">'+s.size+' · '+s.time+'</div><div class="actions"><button class="mc-btn outline" onclick="showToast(\'已云备份\')">云备份</button><button class="mc-btn outline" onclick="showToast(\'已导出\')">导出</button></div></div>';
 });
@@ -282,7 +284,7 @@ function showModal(title,desc,action){
 document.getElementById('mTitle').textContent=title;
 document.getElementById('mDesc').textContent=desc;
 document.getElementById('mBtns').style.display='flex';
-document.getElementById('mCloseBtn').style.display='none';
+document.getElementById('mCloseX').style.display='none';
 pendingAction=action;
 document.getElementById('modal').classList.add('show');
 }
@@ -306,7 +308,7 @@ function showGuide(){
 document.getElementById('mTitle').textContent='存档说明';
 document.getElementById('mDesc').textContent='• 购买的存档可在"我的存档"中切换使用\n• 切换存档会覆盖当前游戏进度，请注意备份\n• 存档为虚拟商品，购买后不支持退款\n• 自动存档每次退出游戏时自动保存\n• 如遇存档不兼容，请确认游戏版本一致';
 document.getElementById('mBtns').style.display='none';
-document.getElementById('mCloseBtn').style.display='block';
+document.getElementById('mCloseX').style.display='block';
 document.getElementById('modal').classList.add('show');
 }
 
