@@ -208,6 +208,7 @@ var bought=new Set();
 var activeIdx=-1;
 var curIdx=0;
 var pendingAction='';
+var consignments=[];
 
 function renderRec(){
 var h='';
@@ -243,6 +244,16 @@ h+='<button class="mc-btn outline" onclick="openDetail('+idx+')">详情</button>
 h+='<div style="padding:30px 16px;text-align:center;color:var(--sub);font-size:12px">暂无已购存档</div>';
 }
 h+='<div class="import-bar"><button onclick="doImportFile()">📁 导入存档文件</button></div>';
+// 我的寄售
+h+='<div class="section-label">我的寄售</div>';
+if(consignments.length>0){
+consignments.forEach(function(c){
+h+='<div class="my-card"><div class="t">🏷️ '+c.title+'</div><div class="d">¥'+c.price.toFixed(2)+' · 已售'+c.sold+'份 · 获得'+c.sold*30+'分钟云游时长</div><div class="actions"><button class="mc-btn outline" onclick="showToast(\'查看详情\')">详情</button><button class="mc-btn outline" onclick="showToast(\'已下架\')">下架</button></div></div>';
+});
+}else{
+h+='<div style="padding:16px;text-align:center;color:var(--sub);font-size:12px">暂无寄售存档</div>';
+}
+h+='<div class="import-bar"><button onclick="openConsign()">🏷️ 寄售存档</button></div>';
 document.getElementById('sec-mine').innerHTML=h;
 }
 
@@ -375,6 +386,17 @@ if(confirm('切换存档将覆盖当前进度，继续？')){
 activeIdx=idx;renderIgMy();renderRec();
 showToast('存档已切换');
 }
+}
+
+function openConsign(){
+var title=prompt('输入存档标题（如：全BOSS击杀存档）');
+if(!title)return;
+var price=prompt('设置价格（¥1-20）','6');
+if(!price)return;
+price=Math.min(20,Math.max(1,parseFloat(price)||6));
+consignments.push({title:title,price:price,sold:0});
+renderMine();
+showToast('寄售提交成功！审核通过后上架。每成交1次赠送30分钟云游时长');
 }
 
 function toggleOrient(){
