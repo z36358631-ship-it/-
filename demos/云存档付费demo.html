@@ -140,7 +140,7 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 </div>
 <div class="sub-tabs" id="sub-tabs">
 <div class="s-tab active" onclick="switchSub('recommend',this)">推荐存档(5)</div>
-<div class="s-tab" onclick="switchSub('mine',this)">我的存档(2)</div>
+<div class="s-tab" onclick="switchSub('mine',this)">我的存档</div>
 </div>
 <div class="scroll" id="main-scroll">
 <!-- 推荐存档 -->
@@ -171,34 +171,6 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 </div>
 </div>
 
-<!-- 上传面板 -->
-<div class="upload-panel" id="upload-panel">
-<div class="top-bar"><span class="back" onclick="closeUpload()">‹</span><span class="title">上传存档</span></div>
-<div class="upload-body">
-<div class="form-group"><label>* 关联游戏</label><select><option>GTA V</option><option>艾尔登法环</option><option>赛博朋克2077</option><option>空洞骑士</option></select></div>
-<div class="form-group"><label>* 存档类型</label><select id="up-type"><option value="通关存档">通关存档</option><option value="修改存档">修改存档</option><option value="导入存档">导入存档（从其他平台搬过来）</option></select></div>
-<div class="form-group">
-<label>* 存档文件</label>
-<div class="file-pick">
-<div class="file-pick-btn" onclick="pickFile('game')">📂 从当前游戏读取</div>
-<div class="file-pick-btn" onclick="pickFile('local')">📁 从手机存储选择</div>
-</div>
-<div id="file-status" style="font-size:11px;color:var(--green);margin-top:6px;display:none">✓ 已选择: save_slot1.dat (12.3MB)</div>
-</div>
-<div class="form-group"><label>* 标题</label><input type="text" placeholder="如：500万CR+440辆车全收集" id="up-title"></div>
-<div class="form-group"><label>* 描述</label><textarea placeholder="描述存档内容、适用版本等信息..." id="up-desc"></textarea></div>
-<div class="form-group"><label>截图（最多4张）</label><div class="file-pick"><div class="file-pick-btn" onclick="showToast('选择截图')">+ 添加截图</div></div></div>
-<div class="form-group">
-<label>* 定价</label>
-<div class="price-input">
-<span>¥</span><input type="number" min="1" max="20" value="6" style="width:80px" id="up-price">
-<span>（平台抽成30%，你实得 ¥<span id="up-earn">4.20</span>）</span>
-</div>
-</div>
-<button class="submit-btn" onclick="submitUpload()">提交审核</button>
-<div style="text-align:center;font-size:11px;color:var(--sub);margin-top:10px">审核通过后自动上架，审核周期约1-3个工作日</div>
-</div>
-</div>
 
 <!-- 弹窗 -->
 <div class="modal-mask" id="modal">
@@ -236,15 +208,16 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 
 <script>
 var saves=[
-{id:1,title:'500多万CR，440辆车全收集',author:'咪儿',type:'通关存档',price:6,buyers:877,desc:'CR不多，决赛已到团队。包含440辆改装车辆，全部调校完毕。',size:'12.3 MB',cover:'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400'},
-{id:2,title:'线上模式满级+全武器解锁+1000万',author:'盖世游戏官方',type:'修改存档',price:8,buyers:1200,desc:'线上模式等级200+，全武器MK2改装，现金1000万。',size:'8.7 MB',cover:'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400'},
-{id:3,title:'430辆车200万CR，大人时代变了',author:'老王',type:'通关存档',price:6,buyers:644,desc:'430辆车全部精心改装，200万CR余额。',size:'15.1 MB',cover:'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400'},
-{id:4,title:'96辆车3000U+变装全改装',author:'神枪手',type:'修改存档',price:3,buyers:234,desc:'精选96辆热门车辆，全部改装到位。',size:'6.2 MB',cover:'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400'},
-{id:5,title:'单人模式100%通关全收集',author:'大表哥',type:'通关存档',price:5,buyers:156,desc:'单人模式100%完成度，三个角色全满技能。',size:'9.8 MB',cover:'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400'}
+{id:1,title:'500多万CR，440辆车全收集',type:'通关存档',price:6,buyers:877,desc:'CR不多，决赛已到团队。包含440辆改装车辆，全部调校完毕。',size:'12.3 MB',cover:'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400'},
+{id:2,title:'线上模式满级+全武器解锁+1000万',type:'通关存档',price:8,buyers:1200,desc:'线上模式等级200+，全武器MK2改装，现金1000万。',size:'8.7 MB',cover:'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400'},
+{id:3,title:'全BOSS击杀存档（含DLC）',type:'BOSS存档',price:6,buyers:644,desc:'全部BOSS击杀完成，含DLC新增BOSS。适合想直接体验后期剧情的玩家。',size:'15.1 MB',cover:'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400'},
+{id:4,title:'96辆车3000U+变装全改装',type:'通关存档',price:3,buyers:234,desc:'精选96辆热门车辆，全部改装到位。',size:'6.2 MB',cover:'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400'},
+{id:5,title:'单人模式100%通关全收集',type:'通关存档',price:5,buyers:156,desc:'单人模式100%完成度，三个角色全满技能。',size:'9.8 MB',cover:'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400'}
 ];
 var mySaves=[
-{id:101,title:'我的GTA5线上存档',type:'本地备份',time:'2026-05-25',size:'8.1 MB',status:'已备份'},
-{id:102,title:'全收集通关存档（已上传）',type:'通关存档',time:'2026-05-20',size:'12.3 MB',status:'已上架',sold:23,earn:96.6}
+{id:101,title:'GTA5_save_slot1.dat',type:'本地存档',time:'2026-05-25 14:30',size:'8.1 MB'},
+{id:102,title:'GTA5_save_slot2.dat',type:'本地存档',time:'2026-05-23 09:15',size:'7.8 MB'},
+{id:103,title:'GTA5_autosave.dat',type:'自动存档',time:'2026-05-25 16:00',size:'8.0 MB'}
 ];
 var boughtSet=new Set();
 var currentIdx=0;
@@ -253,26 +226,26 @@ var pendingAction=null;
 function renderRecommend(){
 var h='';
 saves.forEach(function(s,i){
-var typeCls=s.type==='修改存档'?'mod':s.type==='通关存档'?'full':'pass';
-h+='<div class="save-card" onclick="openDetail('+i+')"><img class="save-cover" src="'+s.cover+'" onerror="this.style.background=\'#333\'"><div class="save-info"><div class="save-title">'+s.title+'</div><div class="save-meta"><span class="type-tag '+typeCls+'">'+s.type+'</span> by '+s.author+' · '+s.buyers+'人已购买</div><div class="save-price"><span class="price-tag">¥'+s.price.toFixed(2)+'购买</span></div></div></div>';
+var typeCls=s.type==='BOSS存档'?'mod':'full';
+h+='<div class="save-card" onclick="openDetail('+i+')"><img class="save-cover" src="'+s.cover+'" onerror="this.style.background=\'#333\'"><div class="save-info"><div class="save-title">'+s.title+'</div><div class="save-meta"><span class="type-tag '+typeCls+'">'+s.type+'</span> '+s.buyers+'人已购买</div><div class="save-price"><span class="price-tag">¥'+s.price.toFixed(2)+'购买</span></div></div></div>';
 });
 document.getElementById('sec-recommend').innerHTML=h;
 }
 
 function renderMine(){
 var h='<div class="my-section">';
-h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-size:15px;font-weight:bold;color:#fff">我的存档</div><button class="mc-btn upload" onclick="openUpload()">+ 上传存档</button></div>';
+h+='<div style="font-size:14px;font-weight:bold;color:#fff;margin-bottom:12px">本地存档（当前游戏）</div>';
 mySaves.forEach(function(s){
-h+='<div class="my-card"><div class="mc-title">'+s.title+'</div><div class="mc-meta">'+s.type+' · '+s.size+' · '+s.time+(s.sold?' · 已售'+s.sold+'份':'')+'</div><div class="mc-actions">';
-if(s.status==='已备份') h+='<button class="mc-btn import" onclick="handleImport()">一键导入</button><button class="mc-btn outline" onclick="showToast(\'下载到本地\')">导出</button>';
-else h+='<button class="mc-btn outline" onclick="showToast(\'查看详情\')">查看</button><button class="mc-btn outline" onclick="showToast(\'编辑存档信息\')">编辑</button><button class="mc-btn outline" style="color:var(--red);border-color:rgba(245,34,45,0.3)" onclick="showToast(\'已下架\')">下架</button>';
-h+='</div></div>';
+h+='<div class="my-card"><div class="mc-title">'+s.title+'</div><div class="mc-meta">'+s.type+' · '+s.size+' · '+s.time+'</div><div class="mc-actions"><button class="mc-btn outline" onclick="showToast(\'已备份到云端\')">云备份</button><button class="mc-btn outline" onclick="showToast(\'已导出到本地\')">导出</button></div></div>';
 });
 // 已购买的
+if(boughtSet.size>0){
+h+='<div style="font-size:14px;font-weight:bold;color:#fff;margin:20px 0 12px">已购买存档</div>';
 boughtSet.forEach(function(idx){
 var s=saves[idx];
-h+='<div class="my-card"><div class="mc-title">'+s.title+'</div><div class="mc-meta">已购买 · '+s.size+'</div><div class="mc-actions"><button class="mc-btn import" onclick="handleImport()">一键导入</button></div></div>';
+h+='<div class="my-card"><div class="mc-title">'+s.title+'</div><div class="mc-meta">'+s.type+' · '+s.size+'</div><div class="mc-actions"><button class="mc-btn import" onclick="handleImport()">一键导入</button></div></div>';
 });
+}
 h+='</div>';
 document.getElementById('sec-mine').innerHTML=h;
 }
@@ -325,29 +298,6 @@ showToast('购买成功！已加入"我的存档"');
 }
 function closeModal(){document.getElementById('modal').classList.remove('show')}
 
-function openUpload(){document.getElementById('upload-panel').classList.add('show')}
-function closeUpload(){document.getElementById('upload-panel').classList.remove('show')}
-function pickFile(from){
-document.getElementById('file-status').style.display='block';
-showToast(from==='game'?'已读取当前游戏存档':'已选择本地文件');
-}
-function submitUpload(){
-var t=document.getElementById('up-title').value;
-if(!t){showToast('请填写标题');return}
-mySaves.unshift({id:Date.now(),title:t,type:document.getElementById('up-type').value,time:new Date().toLocaleDateString('zh-CN'),size:'12.3 MB',status:'审核中'});
-closeUpload();showToast('提交成功，审核通过后自动上架');
-}
-function toggleOrient(){
-var app=document.getElementById('app');
-app.classList.toggle('portrait');app.classList.toggle('landscape');
-}
-function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2000)}
-
-// 价格联动
-document.getElementById('up-price')&&document.getElementById('up-price').addEventListener('input',function(){
-var v=parseFloat(this.value)||0;
-document.getElementById('up-earn').textContent=(v*0.7).toFixed(2);
-});
 
 renderRecommend();
 
