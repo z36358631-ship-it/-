@@ -59,36 +59,36 @@
         .community-pane { display: none; flex-direction: column; }
 
         /* 竖屏模式逻辑 */
-        .portrait .main-wrapper { flex-direction: column; overflow-y: auto; }
-        .portrait .right-col { overflow: visible; }
-        .portrait[data-tab="detail"] .left-col { display: flex; }
+        .portrait > .main-wrapper { flex-direction: column; overflow-y: auto; }
+        .portrait > .main-wrapper .right-col { overflow: visible; }
+        .portrait[data-tab="detail"] > .main-wrapper > .left-col { display: flex; }
         .portrait[data-tab="detail"] .detail-pane { display: flex; }
-        .portrait[data-tab="community"] .left-col { display: none; }
+        .portrait[data-tab="community"] > .main-wrapper > .left-col { display: none; }
         .portrait[data-tab="community"] .community-pane { display: flex; }
 
         /* 横屏模式逻辑 - 横版游戏详情对半分50% */
-        .landscape .main-wrapper { flex-direction: row; padding: 16px; gap: 16px; background: var(--bg-base); overflow: hidden;}
-        .landscape .left-col { width: 50%; border-radius: 16px; overflow: hidden; background: var(--bg-panel); border: 1px solid var(--border-color); }
-        .landscape .right-col { width: 50%; border-radius: 16px; overflow-y: auto; background: var(--bg-panel); border: 1px solid var(--border-color); position: relative;}
+        .landscape > .main-wrapper { flex-direction: row; padding: 16px; gap: 16px; background: var(--bg-base); overflow: hidden;}
+        .landscape > .main-wrapper > .left-col { width: 50%; border-radius: 16px; overflow: hidden; background: var(--bg-panel); border: 1px solid var(--border-color); }
+        .landscape > .main-wrapper > .right-col { width: 50%; border-radius: 16px; overflow-y: auto; background: var(--bg-panel); border: 1px solid var(--border-color); position: relative;}
         .landscape[data-tab="detail"] .detail-pane { display: flex; }
         .landscape[data-tab="community"] .community-pane { display: flex; }
 
         /* === 横版社区 Tab 不与详情融合，独立展示 === */
-        .landscape[data-tab="community"] .main-wrapper { padding: 0; gap: 0; }
-        .landscape[data-tab="community"] .left-col { display: none; }
-        .landscape[data-tab="community"] .right-col { width: 100%; border-radius: 0; border: none; background: transparent; }
+        .landscape[data-tab="community"] > .main-wrapper { padding: 0; gap: 0; }
+        .landscape[data-tab="community"] > .main-wrapper > .left-col { display: none; }
+        .landscape[data-tab="community"] > .main-wrapper > .right-col { width: 100%; border-radius: 0; border: none; background: transparent; }
         .landscape[data-tab="community"] .comm-search-bar { background: transparent; padding: 16px 16px 8px;}
 
         /* --- 媒体区与基础信息 (Left Col) --- */
         .media-section { position: relative; background: #000; background-image: url('https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg'); background-size: cover; background-position: center; flex-shrink: 0;}
         .portrait .media-section { width: 100%; height: 240px; }
-        .landscape .media-section { width: 100%; height: 200px; }
+        .landscape > .main-wrapper > .left-col > .media-section { width: 100%; height: 200px; }
         .play-btn-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); }
         .play-btn-overlay i { font-size: 44px; color: rgba(255,255,255,0.8); cursor: pointer; transition: 0.2s;}
         .play-btn-overlay i:hover { color: #fff; transform: scale(1.1); }
         
         .meta-section { padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px; color: var(--text-sub); background: var(--bg-panel); }
-        .landscape .meta-section { flex: 1; border-top: 1px solid var(--border-color); margin-top: auto;}
+        .landscape > .main-wrapper > .left-col > .meta-section { flex: 1; border-top: 1px solid var(--border-color); margin-top: auto;}
         .meta-item span:first-child { display: inline-block; width: 60px; }
         .meta-item span:last-child { color: #fff; }
 
@@ -118,12 +118,12 @@
 
         /* --- 社区 Tab 内容 (Community Pane) --- */
         .comm-search-bar { padding: 12px 16px; background: var(--bg-base); position: sticky; top:0; z-index: 10;}
-        .landscape .comm-search-bar { background: var(--bg-panel); padding: 16px 20px 8px; }
+        .landscape .community-pane > .comm-search-bar { background: var(--bg-panel); padding: 16px 20px 8px; }
         .search-box-btn { display: flex; align-items: center; background: rgba(255,255,255,0.06); border-radius: 20px; padding: 8px 16px; color: var(--text-sub); gap: 10px; cursor: pointer; border: 1px solid transparent; transition: 0.2s;}
         .search-box-btn:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white;}
         
         .partition-header { padding: 16px 20px 0; border-bottom: 1px solid var(--border-color); background: var(--bg-panel); margin-bottom: 0; }
-        .landscape .partition-header { margin: 0 16px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .landscape .community-pane > .partition-header { margin: 0 16px; border-radius: 12px; border: 1px solid var(--border-color); }
         .p-h-top { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
         .p-h-icon { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; }
         .p-h-info { flex: 1; }
@@ -137,9 +137,9 @@
 
         /* 单列信息流 */
         .feed-container { display: flex; flex-direction: column; padding: 0; }
-        .landscape .feed-container { padding: 16px; gap: 16px;}
+        .landscape .community-pane > .feed-container { padding: 16px; gap: 16px;}
         .wf-card { padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; cursor: pointer; background: var(--bg-base); }
-        .landscape .wf-card { border-radius: 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border-color); padding: 16px;}
+        .landscape .community-pane > .feed-container > .wf-card { border-radius: 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border-color); padding: 16px;}
 
         .wf-header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .wf-avatar-large { width: 38px; height: 38px; border-radius: 50%; background-size: cover; background-color: #333; }
@@ -624,7 +624,6 @@
 
                 <div style="flex-shrink: 0; display: flex; flex-direction: column; background: var(--bg-panel); border-top: 1px solid var(--border-color);">
                     <div style="padding: 12px 16px; display: flex; flex-direction: column; gap: 8px;">
-                        </div>
                         <div style="display: flex; align-items: center; background: rgba(255,255,255,0.02); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(40,125,250,0.2);">
                             <div style="width: 36px; height: 36px; border-radius: 6px; background:#287dfa;color:white;display:flex;align-items:center;justify-content:center;font-size:16px; margin-right:10px;"><i class="fas fa-hashtag"></i></div>
                             <div style="display: flex; flex-direction: column; gap: 2px;">
