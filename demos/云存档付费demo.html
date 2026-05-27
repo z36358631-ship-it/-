@@ -110,6 +110,7 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 </style>
 </head>
 <body>
+<button class="orient-btn" onclick="toggleOrient()">🔄 切换横竖屏</button>
 <button class="orient-btn" onclick="enterIngame()">🎮 进入游戏中模式</button>
 <div id="app" class="portrait">
 <div class="status-bar"><span>15:30</span><span>📶 📡 🔋</span></div>
@@ -134,7 +135,7 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 
 <!-- 详情页 -->
 <div class="detail-page" id="detailPage">
-<div class="top-bar"><span class="back" onclick="closeDetail()">‹</span><span class="title">存档详情</span><span class="guide-btn" onclick="showGuide()">❓说明</span></div>
+<div class="top-bar"><span class="back" onclick="closeDetail()">‹</span><span class="title">存档详情</span></div>
 <img class="detail-cover" id="dCover">
 <div class="detail-body">
 <div class="detail-author"><img id="dAvatar"><div style="font-size:13px;font-weight:bold;color:#fff" id="dAuthor"></div></div>
@@ -157,7 +158,7 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 <div class="ingame" id="ingame">
 <div class="ingame-bg"></div>
 <div class="ingame-panel" id="igPanel">
-<div class="ip-head"><h4>存档管理</h4><span class="guide-btn" onclick="showGuide()">❓说明</span><span style="cursor:pointer;color:var(--sub);font-size:16px" onclick="togglePanel()">×</span></div>
+<div class="ip-head"><h4>存档管理</h4><span class="guide-btn" onclick="showGuide()">❓说明</span></div>
 <div class="ip-tabs">
 <div class="ip-tab active" onclick="switchIgTab('market',this)">存档商城</div>
 <div class="ip-tab" onclick="switchIgTab('my',this)">我的存档</div>
@@ -174,7 +175,7 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 </div>
 
 <!-- 弹窗 -->
-<div class="modal" id="modal">
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
 <div class="modal-box">
 <h3 id="mTitle"></h3>
 <p id="mDesc"></p>
@@ -182,6 +183,7 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 <button class="cancel" onclick="closeModal()">取消</button>
 <button class="confirm" onclick="modalConfirm()">确认</button>
 </div>
+<div id="mCloseBtn" style="display:none;margin-top:12px"><button class="cancel" style="width:100%;padding:10px;border-radius:12px;border:none;background:rgba(255,255,255,0.1);color:#fff;font-size:13px;cursor:pointer" onclick="closeModal()">关闭</button></div>
 </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -221,6 +223,12 @@ h+='<div class="section-label">自动存档</div>';
 localSaves.forEach(function(s){
 h+='<div class="my-card"><div class="t">💾 '+s.name+'</div><div class="d">'+s.size+' · '+s.time+'</div><div class="actions"><button class="mc-btn outline" onclick="showToast(\'已云备份\')">云备份</button><button class="mc-btn outline" onclick="showToast(\'已导出\')">导出</button></div></div>';
 });
+if(importedSaves.length>0){
+h+='<div class="section-label">已导入存档</div>';
+importedSaves.forEach(function(s){
+h+='<div class="my-card"><div class="t">📁 '+s.name+'</div><div class="d">'+s.size+' · '+s.time+'</div><div class="actions"><button class="mc-btn green" onclick="showToast(\'已应用此存档\')">应用</button><button class="mc-btn outline" onclick="showToast(\'已删除\')">删除</button></div></div>';
+});
+}
 h+='<div class="section-label">已购存档</div>';
 if(bought.size>0){
 bought.forEach(function(idx){
@@ -232,7 +240,7 @@ h+='<button class="mc-btn outline" onclick="openDetail('+idx+')">详情</button>
 }else{
 h+='<div style="padding:30px 16px;text-align:center;color:var(--sub);font-size:12px">暂无已购存档</div>';
 }
-h+='<div class="import-bar"><button onclick="showToast(\'选择本地存档文件导入\')">📁 导入存档文件</button></div>';
+h+='<div class="import-bar"><button onclick="doImportFile()">📁 导入存档文件</button></div>';
 document.getElementById('sec-mine').innerHTML=h;
 }
 
@@ -274,6 +282,7 @@ function showModal(title,desc,action){
 document.getElementById('mTitle').textContent=title;
 document.getElementById('mDesc').textContent=desc;
 document.getElementById('mBtns').style.display='flex';
+document.getElementById('mCloseBtn').style.display='none';
 pendingAction=action;
 document.getElementById('modal').classList.add('show');
 }
@@ -297,6 +306,7 @@ function showGuide(){
 document.getElementById('mTitle').textContent='存档说明';
 document.getElementById('mDesc').textContent='• 购买的存档可在"我的存档"中切换使用\n• 切换存档会覆盖当前游戏进度，请注意备份\n• 存档为虚拟商品，购买后不支持退款\n• 自动存档每次退出游戏时自动保存\n• 如遇存档不兼容，请确认游戏版本一致';
 document.getElementById('mBtns').style.display='none';
+document.getElementById('mCloseBtn').style.display='block';
 document.getElementById('modal').classList.add('show');
 }
 
@@ -348,7 +358,7 @@ h+=isA?'<span style="color:var(--green);font-size:10px">应用中</span>':'<butt
 h+='</div>';
 });
 if(!any)h+='<div style="padding:16px;text-align:center;color:var(--sub);font-size:11px">暂无</div>';
-h+='<div style="padding:8px 14px"><button style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px dashed var(--border);color:var(--sub);font-size:11px;cursor:pointer" onclick="showToast(\'导入本地存档文件\')">📁 导入存档</button></div>';
+h+='<div style="padding:8px 14px"><button style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px dashed var(--border);color:var(--sub);font-size:11px;cursor:pointer" onclick="doImportFile()">📁 导入存档</button></div>';
 document.getElementById('igBody').innerHTML=h;
 }
 function igBuy(idx){
@@ -363,6 +373,19 @@ if(confirm('切换存档将覆盖当前进度，继续？')){
 activeIdx=idx;renderIgMy();renderRec();
 showToast('存档已切换');
 }
+}
+
+function toggleOrient(){
+document.getElementById('app').classList.toggle('portrait');
+document.getElementById('app').classList.toggle('landscape');
+}
+
+var importedSaves=[];
+function doImportFile(){
+var name='imported_save_'+Date.now()+'.dat';
+importedSaves.push({name:name,size:'9.5 MB',time:new Date().toLocaleString('zh-CN')});
+renderMine();renderIgMy();
+showToast('导入成功：'+name);
 }
 
 renderRec();
