@@ -128,11 +128,10 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 </style>
 </head>
 <body>
-<button class="orient-btn" onclick="toggleOrient()">🔄 切换横竖屏</button>
 <button class="orient-btn" onclick="enterIngame()">🎮 进入游戏中模式（侧边栏存档）</button>
 <div id="app" class="portrait">
 <div class="status-bar"><span>15:30</span><span>📶 📡 🔋</span></div>
-<div class="top-bar"><span class="back" onclick="showToast('返回')">‹</span><span class="title">GTA V</span></div>
+<div class="top-bar"><span class="back" onclick="showToast('返回')">‹</span><span class="title">GTA V</span><span style="cursor:pointer;font-size:13px;color:var(--sub)" onclick="showSaveGuide()">❓说明</span></div>
 <div class="main-tabs">
 <div class="m-tab" onclick="showToast('详情Tab')">详情</div>
 <div class="m-tab" onclick="showToast('社区Tab')">社区</div>
@@ -159,7 +158,6 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 <div class="detail-desc" id="d-desc"></div>
 <div class="detail-screenshots" id="d-shots"></div>
 <div class="detail-meta">
-<div class="detail-meta-row"><span class="label">适用游戏</span><span class="value">GTA V (Steam版)</span></div>
 <div class="detail-meta-row"><span class="label">存档类型</span><span class="value" id="d-type"></span></div>
 <div class="detail-meta-row"><span class="label">存档大小</span><span class="value" id="d-size"></span></div>
 <div class="detail-meta-row"><span class="label">已购买</span><span class="value" id="d-buyers"></span></div>
@@ -187,7 +185,7 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 <div class="ingame-mode" id="ingame-mode">
 <div class="ingame-bg"></div>
 <div class="ingame-panel" id="ingame-panel">
-<div class="ingame-panel-head"><h3>存档管理</h3><span class="close" onclick="toggleIngamePanel()">×</span></div>
+<div class="ingame-panel-head"><h3>存档管理</h3><span style="cursor:pointer;font-size:12px;color:var(--sub)" onclick="showSaveGuide()">❓说明</span><span class="close" onclick="toggleIngamePanel()">×</span></div>
 <div class="ingame-panel-tabs">
 <div class="ip-tab active" onclick="switchIngameTab('market',this)">存档商城</div>
 <div class="ip-tab" onclick="switchIngameTab('my',this)">我的存档</div>
@@ -227,28 +225,49 @@ function renderRecommend(){
 var h='';
 saves.forEach(function(s,i){
 var typeCls=s.type==='BOSS存档'?'mod':'full';
-h+='<div class="save-card" onclick="openDetail('+i+')"><img class="save-cover" src="'+s.cover+'" onerror="this.style.background=\'#333\'"><div class="save-info"><div class="save-title">'+s.title+'</div><div class="save-meta"><span class="type-tag '+typeCls+'">'+s.type+'</span> '+s.buyers+'人已购买</div><div class="save-price"><span class="price-tag">¥'+s.price.toFixed(2)+'购买</span></div></div></div>';
+var bought=boughtSet.has(i);
+var isActive=activeIdx===i;
+var priceHtml=bought?(isActive?'<span style="color:var(--green);font-size:12px;font-weight:bold">✓ 应用中</span>':'<span style="color:var(--sub);font-size:12px">已购买</span>'):'<span class="price-tag">¥'+s.price.toFixed(2)+'购买</span>';
+h+='<div class="save-card" onclick="openDetail('+i+')"><img class="save-cover" src="'+s.cover+'" onerror="this.style.background=\'#333\'"><div class="save-info"><div class="save-title">'+s.title+'</div><div class="save-meta"><span class="type-tag '+typeCls+'">'+s.type+'</span> '+s.buyers+'人已购买</div><div class="save-price">'+priceHtml+'</div></div></div>';
 });
 document.getElementById('sec-recommend').innerHTML=h;
 }
 
 function renderMine(){
 var h='<div class="my-section">';
-h+='<div style="font-size:14px;font-weight:bold;color:#fff;margin-bottom:12px">本地存档（当前游戏）</div>';
+// 自动存档区
+h+='<div style="font-size:14px;font-weight:bold;color:#fff;margin-bottom:12px">自动存档</div>';
 mySaves.forEach(function(s){
 h+='<div class="my-card"><div class="mc-title">'+s.title+'</div><div class="mc-meta">'+s.type+' · '+s.size+' · '+s.time+'</div><div class="mc-actions"><button class="mc-btn outline" onclick="showToast(\'已备份到云端\')">云备份</button><button class="mc-btn outline" onclick="showToast(\'已导出到本地\')">导出</button></div></div>';
 });
-// 已购买的
+// 已购存档区
 if(boughtSet.size>0){
-h+='<div style="font-size:14px;font-weight:bold;color:#fff;margin:20px 0 12px">已购买存档</div>';
+h+='<div style="font-size:14px;font-weight:bold;color:#fff;margin:20px 0 12px">已购存档</div>';
 boughtSet.forEach(function(idx){
 var s=saves[idx];
-h+='<div class="my-card"><div class="mc-title">'+s.title+'</div><div class="mc-meta">'+s.type+' · '+s.size+'</div><div class="mc-actions"><button class="mc-btn import" onclick="handleImport()">一键导入</button></div></div>';
+var isActive=activeIdx===idx;
+h+='<div class="my-card"><div class="mc-title">'+s.title+(isActive?' <span style="color:var(--green);font-size:11px">✓ 应用中</span>':'')+'</div><div class="mc-meta">'+s.type+' · '+s.size+'</div><div class="mc-actions">';
+if(isActive) h+='<button class="mc-btn outline" style="color:var(--green);border-color:rgba(82,196,26,0.3)">当前使用中</button>';
+else h+='<button class="mc-btn import" onclick="applySave('+idx+')">应用此存档</button>';
+h+='</div></div>';
 });
+} else {
+h+='<div style="font-size:14px;font-weight:bold;color:#fff;margin:20px 0 12px">已购存档</div>';
+h+='<div style="padding:20px;text-align:center;color:var(--sub);font-size:13px">暂无已购存档，去推荐存档看看</div>';
 }
+h+='<div style="padding:14px 0"><button class="mc-btn outline" style="width:100%;padding:12px;text-align:center;border-radius:12px" onclick="showToast(\'选择本地存档文件导入\')">📁 导入存档文件</button></div>';
 h+='</div>';
 document.getElementById('sec-mine').innerHTML=h;
 }
+
+function applySave(idx){
+document.getElementById('modal-title').textContent='确认应用';
+document.getElementById('modal-desc').textContent='应用此存档将覆盖当前游戏进度，是否继续？\n建议先备份当前存档。';
+pendingAction='apply';
+pendingApplyIdx=idx;
+document.getElementById('modal').classList.add('show');
+}
+var pendingApplyIdx=-1;
 
 function switchSub(type,el){
 document.querySelectorAll('.s-tab').forEach(function(t){t.classList.remove('active')});
@@ -292,12 +311,28 @@ function confirmAction(){
 closeModal();
 if(pendingAction==='buy'){
 boughtSet.add(currentIdx);saves[currentIdx].buyers++;
-var btn=document.getElementById('d-buy');btn.textContent='已购买 - 一键导入';btn.className='buy-btn bought';btn.onclick=handleImport;
-showToast('购买成功！已加入"我的存档"');
-}else{showToast('导入成功！启动游戏即可体验')}
+var btn=document.getElementById('d-buy');btn.textContent='已购买 - 去我的存档应用';btn.className='buy-btn bought';btn.onclick=function(){closeDetail();switchSub('mine',document.querySelectorAll('.s-tab')[1])};
+renderRecommend();
+showToast('购买成功！可在"我的存档"中应用');
+}else if(pendingAction==='import'){
+showToast('导入成功！启动游戏即可体验');
+}else if(pendingAction==='apply'){
+activeIdx=pendingApplyIdx;
+renderMine();renderRecommend();
+showToast('存档已应用！重启游戏生效');
+}
 }
 function closeModal(){document.getElementById('modal').classList.remove('show')}
 
+
+var activeIdx=-1; // 当前应用中的存档idx，-1表示无
+
+function showSaveGuide(){
+document.getElementById('modal-title').textContent='存档说明';
+document.getElementById('modal-desc').textContent='• 购买的存档可在"我的存档"中切换使用\n• 切换存档会覆盖当前游戏进度，请注意备份\n• 存档为虚拟商品，购买后不支持退款\n• 自动存档每次退出游戏时自动保存\n• 如遇存档不兼容，请确认游戏版本一致';
+pendingAction=null;
+document.getElementById('modal').classList.add('show');
+}
 
 renderRecommend();
 
@@ -323,40 +358,8 @@ if(type==='market') renderIngameMarket();
 else renderIngameMy();
 }
 function renderIngameMarket(){
-var h='';
+var h="";
 saves.forEach(function(s,i){
 var bought=boughtSet.has(i);
-h+='<div class="ingame-save-item"><img src="'+s.cover+'" onerror="this.style.background=\'#333\'"><div class="isi-info"><div class="isi-title">'+s.title+'</div><div class="isi-meta">'+s.type+' · '+s.buyers+'人购买</div></div>';
-if(bought) h+='<button class="isi-btn use" onclick="event.stopPropagation();ingameImport()">导入</button>';
-else h+='<button class="isi-btn buy" onclick="event.stopPropagation();ingameBuy('+i+')">¥'+s.price+'</button>';
-h+='</div>';
-});
-document.getElementById('ingame-body').innerHTML=h;
-}
-function renderIngameMy(){
-var h='';
-mySaves.forEach(function(s){
-h+='<div class="ingame-save-item"><div style="width:50px;height:36px;border-radius:6px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:16px">💾</div><div class="isi-info"><div class="isi-title">'+s.title+'</div><div class="isi-meta">'+s.type+' · '+s.size+'</div></div><button class="isi-btn use" onclick="event.stopPropagation();ingameImport()">切换</button></div>';
-});
-boughtSet.forEach(function(idx){
-var s=saves[idx];
-h+='<div class="ingame-save-item"><img src="'+s.cover+'"><div class="isi-info"><div class="isi-title">'+s.title+'</div><div class="isi-meta">已购买 · '+s.size+'</div></div><button class="isi-btn use" onclick="event.stopPropagation();ingameImport()">切换</button></div>';
-});
-if(!h) h='<div style="padding:30px;text-align:center;color:var(--sub)">暂无存档</div>';
-document.getElementById('ingame-body').innerHTML=h;
-}
-function ingameBuy(idx){
-if(confirm('确认支付 ¥'+saves[idx].price.toFixed(2)+' 购买此存档？')){
-boughtSet.add(idx);saves[idx].buyers++;
-renderIngameMarket();
-showToast('购买成功！可在"我的存档"中切换使用');
-}
-}
-function ingameImport(){
-if(confirm('切换存档将覆盖当前进度，是否继续？')){
-showToast('存档切换成功！');
-}
-}
-</script>
-</body>
-</html>
+var isActive=activeIdx===i;
+h+='<div class="ingame-save-item" onclick="openDetail('+i+')"><img src="'+s.cover+'" onerror="this.style.background=\
