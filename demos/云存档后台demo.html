@@ -129,16 +129,6 @@ var games={};
 saves.forEach(function(s){if(!games[s.game])games[s.game]={count:0,buyers:0};games[s.game].count++;games[s.game].buyers+=s.buyers;});
 Object.keys(games).forEach(function(g){var d=games[g];h+='<tr><td>'+g+'</td><td>'+d.count+'</td><td>'+d.buyers+'</td><td>¥'+(d.buyers*6)+'</td><td>'+(d.buyers*30)+'分钟</td></tr>';});
 h+='</tbody></table></div>';
-// 订单明细
-h+='<div class="card"><h3 style="font-size:14px;margin-bottom:14px">订单明细</h3>';
-h+='<div class="filter-bar"><input placeholder="买家UID" style="width:100px"><input placeholder="存档ID" style="width:100px"><input type="date" style="width:130px"><span style="color:#999">~</span><input type="date" style="width:130px"><button class="btn" onclick="showToast(\'查询成功\')">查询</button></div>';
-h+='<table><thead><tr><th>订单号</th><th>买家UID</th><th>存档标题</th><th>游戏</th><th>金额</th><th>卖家</th><th>赠送时长</th><th>购买时间</th><th>状态</th></tr></thead><tbody>';
-h+='<tr><td>ORD20260527001</td><td>u50001</td><td>500多万CR全收集</td><td>GTA V</td><td>¥6.00</td><td>官方</td><td>-</td><td>2026-05-27 14:30</td><td><span class="tag tag-green">已完成</span></td></tr>';
-h+='<tr><td>ORD20260527002</td><td>u50023</td><td>全BOSS击杀存档</td><td>GTA V</td><td>¥6.00</td><td>官方</td><td>-</td><td>2026-05-27 15:10</td><td><span class="tag tag-green">已完成</span></td></tr>';
-h+='<tr><td>ORD20260526001</td><td>u50045</td><td>全成就通关存档</td><td>艾尔登法环</td><td>¥6.00</td><td>u10086</td><td>+30分钟</td><td>2026-05-26 09:20</td><td><span class="tag tag-green">已完成</span></td></tr>';
-h+='<tr><td>ORD20260525001</td><td>u50067</td><td>96辆车全改装</td><td>GTA V</td><td>¥6.00</td><td>u30055</td><td>+30分钟</td><td>2026-05-25 18:45</td><td><span class="tag tag-green">已完成</span></td></tr>';
-h+='<tr><td>ORD20260525002</td><td>u50089</td><td>线上模式满级</td><td>GTA V</td><td>¥6.00</td><td>官方</td><td>-</td><td>2026-05-25 20:00</td><td><span class="tag tag-green">已完成</span></td></tr>';
-h+='</tbody></table></div>';
 document.getElementById('pageContent').innerHTML=h;
 }
 
