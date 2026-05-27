@@ -184,7 +184,10 @@
                 <i class="fas fa-history"></i> 操作记录
             </div>
             <div class="menu-item" onclick="switchMenu('official-post', this, '国内')">
-                <i class="fas fa-bullhorn"></i> 官方发布
+                <i class="fas fa-bullhorn"></i> 内容发布
+            </div>
+            <div class="menu-item" onclick="switchMenu('blacklist', this, '国内')">
+                <i class="fas fa-ban"></i> 黑名单管理
             </div>
 
             <!-- 海外区域 -->
@@ -206,6 +209,12 @@
             </div>
             <div class="menu-item" onclick="switchMenu('log', this, '海外')">
                 <i class="fas fa-history"></i> 操作记录
+            </div>
+            <div class="menu-item" onclick="switchMenu('official-post', this, '海外')">
+                <i class="fas fa-bullhorn"></i> 内容发布
+            </div>
+            <div class="menu-item" onclick="switchMenu('blacklist', this, '海外')">
+                <i class="fas fa-ban"></i> 黑名单管理
             </div>
         </div>
     </aside>
@@ -739,7 +748,7 @@
                             <button class="btn btn-default" onclick="showToast('已重置')"><i class="fas fa-redo"></i> 重置</button>
                         </div>
                         <div class="filter-item" style="margin-left:auto;">
-                            <button class="btn btn-primary" onclick="openOfficialPostModal()"><i class="fas fa-plus"></i> 新建官方动态</button>
+                            <button class="btn btn-primary" onclick="openOfficialPostModal()"><i class="fas fa-plus"></i> 新建动态</button>
                         </div>
                     </div>
 
@@ -750,6 +759,72 @@
 
                     <div class="pagination">
                         共 3 条记录
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 黑名单管理 ====== -->
+            <div class="page" id="page-blacklist">
+                <div class="card">
+                    <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid var(--border-light)">
+                        <div class="bl-tab active" data-tab="ip" onclick="switchBlTab('ip')" style="padding:10px 20px;cursor:pointer;font-weight:bold;border-bottom:2px solid var(--primary);margin-bottom:-2px;color:var(--primary)">IP封禁</div>
+                        <div class="bl-tab" data-tab="keyword" onclick="switchBlTab('keyword')" style="padding:10px 20px;cursor:pointer;color:var(--text-sub)">关键词过滤</div>
+                        <div class="bl-tab" data-tab="punish" onclick="switchBlTab('punish')" style="padding:10px 20px;cursor:pointer;color:var(--text-sub)">处罚记录</div>
+                    </div>
+
+                    <!-- IP封禁 -->
+                    <div class="bl-panel" id="bl-ip">
+                        <div class="filter-bar">
+                            <div class="filter-item">IP地址: <input type="text" placeholder="输入IP" id="bl-ip-search"></div>
+                            <div class="filter-item">状态: <select id="bl-ip-status"><option>全部</option><option>生效中</option><option>已过期</option></select></div>
+                            <div class="filter-item">
+                                <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            </div>
+                            <div class="filter-item" style="margin-left:auto;">
+                                <button class="btn btn-primary" onclick="openBlIpModal()"><i class="fas fa-plus"></i> 新增IP封禁</button>
+                            </div>
+                        </div>
+                        <table>
+                            <thead><tr><th>ID</th><th>IP地址/段</th><th>封禁原因</th><th>处罚对象</th><th>触发动作</th><th>封禁时间</th><th>状态</th><th>操作人</th><th>操作</th></tr></thead>
+                            <tbody id="bl-ip-list"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- 关键词过滤 -->
+                    <div class="bl-panel" id="bl-keyword" style="display:none">
+                        <div class="filter-bar">
+                            <div class="filter-item">关键词: <input type="text" placeholder="输入关键词" id="bl-kw-search"></div>
+                            <div class="filter-item">触发动作: <select id="bl-kw-action"><option>全部</option><option>静默</option><option>删帖</option><option>禁止发帖</option></select></div>
+                            <div class="filter-item">
+                                <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            </div>
+                            <div class="filter-item" style="margin-left:auto;">
+                                <button class="btn btn-primary" onclick="openBlKwModal()"><i class="fas fa-plus"></i> 新增关键词</button>
+                            </div>
+                        </div>
+                        <table>
+                            <thead><tr><th>ID</th><th>关键词</th><th>匹配模式</th><th>处罚对象</th><th>触发动作</th><th>触发次数</th><th>添加时间</th><th>状态</th><th>操作</th></tr></thead>
+                            <tbody id="bl-kw-list"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- 处罚记录 -->
+                    <div class="bl-panel" id="bl-punish" style="display:none">
+                        <div class="filter-bar">
+                            <div class="filter-item">用户ID: <input type="text" placeholder="输入UID" id="bl-punish-uid"></div>
+                            <div class="filter-item">处罚类型: <select id="bl-punish-type"><option>全部</option><option>静默</option><option>禁言(周期)</option><option>禁言(永久)</option></select></div>
+                            <div class="filter-item">状态: <select><option>全部</option><option>生效中</option><option>已解除</option><option>已过期</option></select></div>
+                            <div class="filter-item">
+                                <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
+                            </div>
+                            <div class="filter-item" style="margin-left:auto;">
+                                <button class="btn btn-warning" onclick="openBlPunishModal()"><i class="fas fa-gavel"></i> 手动处罚</button>
+                            </div>
+                        </div>
+                        <table>
+                            <thead><tr><th>ID</th><th>用户</th><th>处罚类型</th><th>处罚原因</th><th>触发规则</th><th>开始时间</th><th>结束时间</th><th>状态</th><th>操作</th></tr></thead>
+                            <tbody id="bl-punish-list"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -1000,7 +1075,8 @@
                 'identity': '身份管理', 'identity-detail': '身份管理 / 人员详情',
                 'topic': '热门话题管理', 'topic-detail': '热门话题管理 / 话题动态详情',
                 'post': '动态管理', 'report': '举报管理', 'log': '操作记录',
-                'official-post': '官方发布'
+                'official-post': '内容发布',
+                'blacklist': '黑名单管理'
             };
             document.getElementById('breadcrumb').innerText = `首页 / 社区后台（${currentRegion}） / ${titles[pageId]}`;
 
@@ -1011,6 +1087,7 @@
             if(pageId === 'report') renderReports();
             if(pageId === 'log') renderLogs();
             if(pageId === 'official-post') renderOfficialPost();
+            if(pageId === 'blacklist') renderBlacklist();
         }
 
         // ================= 分区管理业务逻辑 =================
@@ -1772,7 +1849,8 @@
             var html = '';
             officialPosts.forEach(function(p, idx) {
                 var statusCls = p.status === '已发布' ? 'tag-green' : p.status === '已下架' ? 'tag-gray' : p.status === '已置顶' ? 'tag-blue' : 'tag-orange';
-                html += '<tr><td><input type="checkbox"></td><td>' + p.id + '</td><td>-</td><td>' + p.title + '</td><td>' + p.partition + '</td><td>' + p.nickname + '</td><td><span class="tag tag-orange">' + p.tag + '</span></td><td><span class="tag ' + statusCls + '">' + p.status + '</span></td><td style="font-size:12px">' + p.time + '</td><td><button class="btn btn-sm" onclick="editOfficialPost(' + idx + ')">编辑</button> <button class="btn btn-sm" onclick="previewOfficialPost(' + idx + ')">预览</button> <button class="btn btn-sm btn-danger" onclick="deleteOfficialPost(' + idx + ')">删除</button></td></tr>';
+                var tagCell = p.tag ? '<span class="tag tag-orange">' + p.tag + '</span>' : '<span style="color:#ccc">-</span>';
+                html += '<tr><td><input type="checkbox"></td><td>' + p.id + '</td><td>-</td><td>' + p.title + '</td><td>' + p.partition + '</td><td>' + p.nickname + '</td><td>' + tagCell + '</td><td><span class="tag ' + statusCls + '">' + p.status + '</span></td><td style="font-size:12px">' + p.time + '</td><td><button class="btn btn-sm" onclick="editOfficialPost(' + idx + ')">编辑</button> <button class="btn btn-sm" onclick="previewOfficialPost(' + idx + ')">预览</button> <button class="btn btn-sm btn-danger" onclick="deleteOfficialPost(' + idx + ')">删除</button></td></tr>';
             });
             tbody.innerHTML = html;
         }
@@ -1783,7 +1861,7 @@
             var isEdit = !!data;
             var h = '<div style="display:flex;flex-direction:column;gap:14px;padding:4px 0">';
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 发布人昵称</label><input type="text" value="' + (data ? data.nickname : '盖世游戏官方') + '" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-nickname"></div>';
-            h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 身份标签（来源：身份管理）</label><select style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-tag">' + tagOpts + '</select></div>';
+            h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">身份标签（选填，来源：身份管理）</label><select style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-tag"><option value="">不使用身份标签</option>' + tagOpts + '</select></div>';
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 发布到分区</label><select style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-partition"><option' + (data && data.partition==='Steam' ? ' selected' : '') + '>Steam</option><option' + (data && data.partition==='GTA 5' ? ' selected' : '') + '>GTA 5</option><option' + (data && data.partition==='配置分享' ? ' selected' : '') + '>配置分享</option><option' + (data && data.partition==='Epic' ? ' selected' : '') + '>Epic</option></select></div>';
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">关联文章ID（选填）</label><div style="display:flex;gap:8px"><input type="text" value="' + (data && data.articleId ? data.articleId : '') + '" placeholder="输入文章ID，如1007668" style="flex:1;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-article-id"><button type="button" class="btn btn-sm" onclick="fetchArticleTitle()">读取</button></div><div id="m-article-hint" style="font-size:11px;color:#999;margin-top:4px">' + (data && data.articleId ? '已关联：' + data.title : '输入ID后点击读取，将自动填充标题') + '</div></div>';
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 动态标题</label><input type="text" value="' + (data ? data.title : '') + '" placeholder="输入标题或通过文章ID读取" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-title"></div>';
@@ -1802,7 +1880,7 @@
         }
 
         function openOfficialPostModal() {
-            openModal('新建官方动态', buildOfficialForm(null), function() {
+            openModal('新建动态', buildOfficialForm(null), function() {
                 var title = document.getElementById('m-title').value;
                 var content = document.getElementById('m-content').innerHTML;
                 if (!title) { showToast('请填写标题'); return; }
@@ -1820,13 +1898,13 @@
                 });
                 renderOfficialPost();
                 closeModal();
-                showToast('官方动态发布成功');
+                showToast('动态发布成功');
             });
         }
 
         function editOfficialPost(idx) {
             var p = officialPosts[idx];
-            openModal('编辑官方动态 - ' + p.id, buildOfficialForm(p), function() {
+            openModal('编辑动态 - ' + p.id, buildOfficialForm(p), function() {
                 p.nickname = document.getElementById('m-nickname').value;
                 p.tag = document.getElementById('m-tag').value;
                 p.partition = document.getElementById('m-partition').value;
@@ -1842,8 +1920,9 @@
 
         function previewOfficialPost(idx) {
             var p = officialPosts[idx];
+            var tagHtml = p.tag ? '<span style="background:rgba(250,173,20,0.2);color:#faad14;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:bold">' + p.tag + '</span>' : '';
             var html = '<div style="background:#1a1a24;border-radius:12px;padding:20px;color:#fff">' +
-                '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="width:40px;height:40px;border-radius:50%;background:#333"></div><div><div style="display:flex;align-items:center;gap:6px"><span style="font-weight:bold;font-size:15px">' + p.nickname + '</span><span style="background:rgba(250,173,20,0.2);color:#faad14;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:bold">' + p.tag + '</span></div><div style="font-size:11px;color:#8a99a8;margin-top:3px">' + p.time + ' · ' + p.partition + ' · 官方</div></div></div>' +
+                '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="width:40px;height:40px;border-radius:50%;background:#333"></div><div><div style="display:flex;align-items:center;gap:6px"><span style="font-weight:bold;font-size:15px">' + p.nickname + '</span>' + tagHtml + '</div><div style="font-size:11px;color:#8a99a8;margin-top:3px">' + p.time + ' · ' + p.partition + '</div></div></div>' +
                 '<div style="font-size:17px;font-weight:bold;margin-bottom:10px">' + p.title + '</div>' +
                 '<div style="font-size:14px;color:#e2e8f0;line-height:1.7">' + p.content + '</div>' +
                 '<div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1);display:flex;gap:20px;color:#666;font-size:13px"><span>❤ 0</span><span>⭐ 0</span><span>💬 0</span><span>↗ 0</span></div>' +
@@ -1879,6 +1958,196 @@
                 document.getElementById('m-article-hint').innerHTML = '<span style="color:#ff4d4f">未找到ID为 ' + id + ' 的文章</span>';
                 showToast('未找到该文章ID');
             }
+        }
+
+
+        // ================= 黑名单管理 =================
+        var mockBlIp = [
+            { id: 'BL_IP001', ip: '192.168.1.100', reason: '恶意刷屏', target: '针对人', action: '禁止发帖-7天', banTime: '2026-05-20 10:00', status: '生效中', operator: 'SuperAdmin' },
+            { id: 'BL_IP002', ip: '10.0.0.0/24', reason: '批量注册垃圾账号', target: '针对人', action: '禁止发帖-永久', banTime: '2026-05-18 14:30', status: '生效中', operator: 'SuperAdmin' },
+            { id: 'BL_IP003', ip: '172.16.5.88', reason: '发布违规内容', target: '针对动态', action: '静默（仅自己可见）', banTime: '2026-04-01 09:00', status: '生效中', operator: '运营A' },
+            { id: 'BL_IP004', ip: '203.0.113.55', reason: '广告灌水', target: '针对动态', action: '删帖', banTime: '2026-05-10 11:00', status: '已过期', operator: '运营A' },
+        ];
+        var mockBlKw = [
+            { id: 'BL_KW001', keyword: '代练', matchMode: '精确匹配', target: '针对动态', action: '静默', triggerCount: 128, addTime: '2026-03-10 10:00', status: '启用' },
+            { id: 'BL_KW002', keyword: '外挂|辅助|透视', matchMode: '正则匹配', target: '针对动态', action: '删帖', triggerCount: 456, addTime: '2026-03-05 14:00', status: '启用' },
+            { id: 'BL_KW003', keyword: '加微信', matchMode: '模糊匹配', target: '针对人', action: '禁止发帖-3天', triggerCount: 89, addTime: '2026-04-12 09:00', status: '启用' },
+            { id: 'BL_KW004', keyword: '测试关键词', matchMode: '精确匹配', target: '针对动态', action: '静默', triggerCount: 0, addTime: '2026-05-20 16:00', status: '已禁用' },
+        ];
+        var mockBlPunish = [
+            { id: 'PUN001', uid: 'UID_77100', name: '垃圾广告号', type: '禁言(永久)', reason: '多次发布广告', rule: '关键词触发: 加微信', startTime: '2026-05-25 10:00', endTime: '永久', status: '生效中' },
+            { id: 'PUN002', uid: 'UID_44512', name: '暴躁老哥', type: '静默', reason: '发布不当言论', rule: '人工处罚', startTime: '2026-05-24 14:30', endTime: '2026-05-25 14:30', status: '已过期' },
+            { id: 'PUN003', uid: 'UID_88301', name: '刷屏机器人', type: '禁言(周期)', reason: '短时间大量发帖', rule: 'IP封禁触发', startTime: '2026-05-22 09:00', endTime: '2026-06-22 09:00', status: '生效中' },
+        ];
+
+        function switchBlTab(tab) {
+            document.querySelectorAll('.bl-tab').forEach(function(el) {
+                el.style.borderBottom = 'none';
+                el.style.color = 'var(--text-sub)';
+                el.style.fontWeight = 'normal';
+            });
+            document.querySelectorAll('.bl-panel').forEach(function(el) { el.style.display = 'none'; });
+            var activeTab = document.querySelector('.bl-tab[data-tab="' + tab + '"]');
+            if (activeTab) { activeTab.style.borderBottom = '2px solid var(--primary)'; activeTab.style.color = 'var(--primary)'; activeTab.style.fontWeight = 'bold'; }
+            var panel = document.getElementById('bl-' + tab);
+            if (panel) panel.style.display = 'block';
+        }
+
+        function renderBlacklist() {
+            renderBlIp();
+            renderBlKw();
+            renderBlPunish();
+        }
+
+        function renderBlIp() {
+            var tbody = document.getElementById('bl-ip-list');
+            if (!tbody) return;
+            tbody.innerHTML = mockBlIp.map(function(r) {
+                var sCls = r.status === '生效中' ? 'tag-error' : 'tag-gray';
+                var tCls = r.target === '针对人' ? 'tag-warning' : 'tag-blue';
+                return '<tr><td>' + r.id + '</td><td style="font-family:monospace">' + r.ip + '</td><td>' + r.reason + '</td><td><span class="tag ' + tCls + '">' + r.target + '</span></td><td>' + r.action + '</td><td style="font-size:12px">' + r.banTime + '</td><td><span class="tag ' + sCls + '">' + r.status + '</span></td><td>' + r.operator + '</td><td class="action-links"><a onclick="showToast(\'已解封\')">解封</a><a class="danger" onclick="showToast(\'已删除\')">删除</a></td></tr>';
+            }).join('');
+        }
+
+        function renderBlKw() {
+            var tbody = document.getElementById('bl-kw-list');
+            if (!tbody) return;
+            tbody.innerHTML = mockBlKw.map(function(r) {
+                var sCls = r.status === '启用' ? 'tag-success' : 'tag-gray';
+                var tCls = r.target === '针对人' ? 'tag-warning' : 'tag-blue';
+                var actionCls = r.action.indexOf('拦截') > -1 ? 'tag-error' : r.action.indexOf('静默') > -1 ? 'tag-orange' : r.action.indexOf('禁止发帖') > -1 ? 'tag-warning' : 'tag-blue';
+                return '<tr><td>' + r.id + '</td><td style="font-weight:bold">' + r.keyword + '</td><td>' + r.matchMode + '</td><td><span class="tag ' + tCls + '">' + r.target + '</span></td><td><span class="tag ' + actionCls + '">' + r.action + '</span></td><td>' + r.triggerCount + '</td><td style="font-size:12px">' + r.addTime + '</td><td><span class="tag ' + sCls + '">' + r.status + '</span></td><td class="action-links"><a onclick="showToast(\'已切换状态\')">' + (r.status === '启用' ? '禁用' : '启用') + '</a><a onclick="showToast(\'已编辑\')">编辑</a><a class="danger" onclick="showToast(\'已删除\')">删除</a></td></tr>';
+            }).join('');
+        }
+
+        function renderBlPunish() {
+            var tbody = document.getElementById('bl-punish-list');
+            if (!tbody) return;
+            tbody.innerHTML = mockBlPunish.map(function(r) {
+                var sCls = r.status === '生效中' ? 'tag-error' : r.status === '已解除' ? 'tag-success' : 'tag-gray';
+                var tCls = r.type === '禁言(永久)' ? 'tag-error' : r.type === '禁言(周期)' ? 'tag-warning' : 'tag-orange';
+                return '<tr><td>' + r.id + '</td><td><div class="td-author"><span style="font-weight:bold">' + r.name + '</span><span style="font-size:11px;color:#999">' + r.uid + '</span></div></td><td><span class="tag ' + tCls + '">' + r.type + '</span></td><td>' + r.reason + '</td><td style="font-size:12px;color:#999">' + r.rule + '</td><td style="font-size:12px">' + r.startTime + '</td><td style="font-size:12px">' + r.endTime + '</td><td><span class="tag ' + sCls + '">' + r.status + '</span></td><td class="action-links">' + (r.status === '生效中' ? '<a onclick="showToast(\'已解除处罚\')">解除</a>' : '-') + '</td></tr>';
+            }).join('');
+        }
+
+        var radioStyle = 'display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border:1px solid #d9d9d9;border-radius:4px;cursor:pointer;font-size:13px;transition:0.2s;';
+        var radioActiveStyle = 'border-color:var(--primary);color:var(--primary);background:#e6f7ff;';
+        function blRadio(name, value, label, checked) {
+            return '<label style="' + radioStyle + (checked ? radioActiveStyle : '') + '" onclick="blSelectRadio(this,\'' + name + '\',\'' + value + '\')"><input type="radio" name="' + name + '" value="' + value + '"' + (checked ? ' checked' : '') + ' style="display:none">' + label + '</label>';
+        }
+        function blSelectRadio(el, name, value) {
+            var labels = el.parentElement.querySelectorAll('label');
+            labels.forEach(function(l) { l.style.borderColor = '#d9d9d9'; l.style.color = ''; l.style.background = ''; });
+            el.style.borderColor = 'var(--primary)'; el.style.color = 'var(--primary)'; el.style.background = '#e6f7ff';
+            if (name === 'bl-ip-target') toggleIpTargetDetail();
+            if (name === 'bl-kw-target') toggleKwTargetDetail();
+            if (name === 'bl-pun-target') togglePunTargetDetail();
+            if (name === 'bl-pun-type') togglePunDur();
+            if (name === 'bl-ip-dur' || name === 'bl-kw-dur' || name === 'bl-pun-dur') {
+                var customId = name === 'bl-ip-dur' ? 'm-bl-ip-custom-dur' : name === 'bl-kw-dur' ? 'm-bl-kw-custom-dur' : 'm-bl-pun-custom-dur';
+                document.getElementById(customId).style.display = value === 'custom' ? 'inline-block' : 'none';
+            }
+        }
+        function getRadioVal(name) { var r = document.querySelector('input[name="' + name + '"]:checked'); return r ? r.value : ''; }
+
+        function openBlIpModal() {
+            var h = '<div style="display:flex;flex-direction:column;gap:16px">';
+            h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* IP地址/段</label><input type="text" placeholder="如 192.168.1.100 或 10.0.0.0/24" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-bl-ip"></div>';
+            h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 封禁原因</label><input type="text" placeholder="输入封禁原因" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-bl-ip-reason"></div>';
+            h += '<div><label style="display:block;margin-bottom:6px;font-weight:500">* 处罚对象</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-ip-target','post','针对动态',true) + blRadio('bl-ip-target','user','针对人',false) + '</div></div>';
+            h += '<div id="m-bl-ip-post-detail"><label style="display:block;margin-bottom:6px;font-weight:500">动态处罚方式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-ip-post-action','删帖','删帖',true) + blRadio('bl-ip-post-action','静默','静默（仅自己可见）',false) + '</div></div>';
+            h += '<div id="m-bl-ip-user-detail" style="display:none"><label style="display:block;margin-bottom:6px;font-weight:500">禁止发帖时长</label><div style="display:flex;gap:8px;flex-wrap:wrap">' + blRadio('bl-ip-dur','1','1天',true) + blRadio('bl-ip-dur','3','3天',false) + blRadio('bl-ip-dur','7','7天',false) + blRadio('bl-ip-dur','30','30天',false) + blRadio('bl-ip-dur','forever','永久',false) + blRadio('bl-ip-dur','custom','自定义',false) + '</div><input type="number" min="1" placeholder="输入天数" style="margin-top:8px;width:120px;padding:8px;border:1px solid #d9d9d9;border-radius:4px;display:none" id="m-bl-ip-custom-dur"></div>';
+            h += '</div>';
+            openModal('新增IP封禁规则', h, function() {
+                var ip = document.getElementById('m-bl-ip').value;
+                if (!ip) { showToast('请输入IP地址'); return; }
+                var target = getRadioVal('bl-ip-target');
+                var actionDesc = '';
+                if (target === 'post') { actionDesc = '动态-' + getRadioVal('bl-ip-post-action'); }
+                else { var dur = getRadioVal('bl-ip-dur'); if (dur === 'custom') dur = (document.getElementById('m-bl-ip-custom-dur').value || '?') + '天'; else if (dur === 'forever') dur = '永久'; else dur = dur + '天'; actionDesc = '禁止发帖-' + dur; }
+                mockBlIp.unshift({ id: 'BL_IP' + String(mockBlIp.length + 1).padStart(3, '0'), ip: ip, reason: document.getElementById('m-bl-ip-reason').value || '手动封禁', target: target === 'post' ? '针对动态' : '针对人', action: actionDesc, banTime: new Date().toLocaleString('zh-CN'), status: '生效中', operator: 'SuperAdmin' });
+                renderBlIp();
+                closeModal();
+                showToast('IP封禁规则已添加');
+            });
+        }
+        function toggleIpTargetDetail() {
+            var v = getRadioVal('bl-ip-target');
+            document.getElementById('m-bl-ip-post-detail').style.display = v === 'post' ? 'block' : 'none';
+            document.getElementById('m-bl-ip-user-detail').style.display = v === 'user' ? 'block' : 'none';
+        }
+
+        function openBlKwModal() {
+            var h = '<div style="display:flex;flex-direction:column;gap:16px">';
+            h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 关键词</label><input type="text" placeholder="多个关键词用|分隔" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-bl-kw"></div>';
+            h += '<div><label style="display:block;margin-bottom:6px;font-weight:500">匹配模式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-kw-mode','精确匹配','精确匹配',true) + blRadio('bl-kw-mode','模糊匹配','模糊匹配',false) + blRadio('bl-kw-mode','正则匹配','正则匹配',false) + '</div></div>';
+            h += '<div><label style="display:block;margin-bottom:6px;font-weight:500">* 处罚对象</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-kw-target','post','针对动态',true) + blRadio('bl-kw-target','user','针对人',false) + '</div></div>';
+            h += '<div id="m-bl-kw-post-detail"><label style="display:block;margin-bottom:6px;font-weight:500">动态处罚方式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-kw-post-action','删帖','删帖',true) + blRadio('bl-kw-post-action','静默','静默（仅自己可见）',false) + '</div></div>';
+            h += '<div id="m-bl-kw-user-detail" style="display:none"><label style="display:block;margin-bottom:6px;font-weight:500">禁止发帖时长</label><div style="display:flex;gap:8px;flex-wrap:wrap">' + blRadio('bl-kw-dur','1','1天',true) + blRadio('bl-kw-dur','3','3天',false) + blRadio('bl-kw-dur','7','7天',false) + blRadio('bl-kw-dur','30','30天',false) + blRadio('bl-kw-dur','forever','永久',false) + blRadio('bl-kw-dur','custom','自定义',false) + '</div><input type="number" min="1" placeholder="输入天数" style="margin-top:8px;width:120px;padding:8px;border:1px solid #d9d9d9;border-radius:4px;display:none" id="m-bl-kw-custom-dur"></div>';
+            h += '<div style="background:#fffbe6;padding:10px;border-radius:4px;font-size:12px;color:#8c6e00"><i class="fas fa-info-circle"></i> 针对动态：命中关键词的帖子被删帖或静默；针对人：发布者被禁止发帖指定天数</div>';
+            h += '</div>';
+            openModal('新增关键词规则', h, function() {
+                var kw = document.getElementById('m-bl-kw').value;
+                if (!kw) { showToast('请输入关键词'); return; }
+                var target = getRadioVal('bl-kw-target');
+                var actionDesc = '';
+                if (target === 'post') { actionDesc = getRadioVal('bl-kw-post-action'); }
+                else { var dur = getRadioVal('bl-kw-dur'); if (dur === 'custom') dur = (document.getElementById('m-bl-kw-custom-dur').value || '?') + '天'; else if (dur === 'forever') dur = '永久'; else dur = dur + '天'; actionDesc = '禁止发帖-' + dur; }
+                mockBlKw.unshift({ id: 'BL_KW' + String(mockBlKw.length + 1).padStart(3, '0'), keyword: kw, matchMode: getRadioVal('bl-kw-mode'), target: target === 'post' ? '针对动态' : '针对人', action: actionDesc, triggerCount: 0, addTime: new Date().toLocaleString('zh-CN'), status: '启用' });
+                renderBlKw();
+                closeModal();
+                showToast('关键词规则已添加');
+            });
+        }
+        function toggleKwTargetDetail() {
+            var v = getRadioVal('bl-kw-target');
+            document.getElementById('m-bl-kw-post-detail').style.display = v === 'post' ? 'block' : 'none';
+            document.getElementById('m-bl-kw-user-detail').style.display = v === 'user' ? 'block' : 'none';
+        }
+
+        function openBlPunishModal() {
+            var h = '<div style="display:flex;flex-direction:column;gap:16px">';
+            h += '<div><label style="display:block;margin-bottom:6px;font-weight:500">* 处罚对象</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-pun-target','user','针对人',true) + blRadio('bl-pun-target','post','针对动态',false) + '</div></div>';
+            h += '<div id="m-bl-pun-user-section"><label style="display:block;margin-bottom:4px;font-weight:500">* 用户ID</label><input type="text" placeholder="输入UID" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-bl-pun-uid"></div>';
+            h += '<div id="m-bl-pun-post-section" style="display:none"><label style="display:block;margin-bottom:4px;font-weight:500">* 动态ID</label><input type="text" placeholder="输入动态ID" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-bl-pun-postid"></div>';
+            h += '<div id="m-bl-pun-type-user"><label style="display:block;margin-bottom:6px;font-weight:500">* 处罚类型</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-pun-type','禁止发帖(周期)','禁止发帖(周期)',true) + blRadio('bl-pun-type','禁止发帖(永久)','禁止发帖(永久)',false) + '</div></div>';
+            h += '<div id="m-bl-pun-dur-section"><label style="display:block;margin-bottom:6px;font-weight:500">禁止发帖天数</label><div style="display:flex;gap:8px;flex-wrap:wrap">' + blRadio('bl-pun-dur','1','1天',true) + blRadio('bl-pun-dur','3','3天',false) + blRadio('bl-pun-dur','7','7天',false) + blRadio('bl-pun-dur','30','30天',false) + blRadio('bl-pun-dur','custom','自定义',false) + '</div><input type="number" min="1" placeholder="输入天数" style="margin-top:8px;width:120px;padding:8px;border:1px solid #d9d9d9;border-radius:4px;display:none" id="m-bl-pun-custom-dur"></div>';
+            h += '<div id="m-bl-pun-type-post" style="display:none"><label style="display:block;margin-bottom:6px;font-weight:500">* 动态处罚方式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-pun-post-action','删帖','删帖',true) + blRadio('bl-pun-post-action','静默','静默（仅自己可见）',false) + '</div></div>';
+            h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 处罚原因</label><textarea placeholder="输入处罚原因" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px;min-height:60px" id="m-bl-pun-reason"></textarea></div>';
+            h += '</div>';
+            openModal('手动处罚', h, function() {
+                var target = getRadioVal('bl-pun-target');
+                var reason = document.getElementById('m-bl-pun-reason').value;
+                if (!reason) { showToast('请输入处罚原因'); return; }
+                if (target === 'user') {
+                    var uid = document.getElementById('m-bl-pun-uid').value;
+                    if (!uid) { showToast('请输入用户ID'); return; }
+                    var type = getRadioVal('bl-pun-type');
+                    var endTime = '永久';
+                    if (type === '禁止发帖(周期)') { var dur = getRadioVal('bl-pun-dur'); if (dur === 'custom') dur = (document.getElementById('m-bl-pun-custom-dur').value || '?'); endTime = dur + '天后'; }
+                    mockBlPunish.unshift({ id: 'PUN' + String(mockBlPunish.length + 1).padStart(3, '0'), uid: uid, name: '用户' + uid.slice(-4), type: type, reason: reason, rule: '人工处罚', startTime: new Date().toLocaleString('zh-CN'), endTime: endTime, status: '生效中' });
+                } else {
+                    var postid = document.getElementById('m-bl-pun-postid').value;
+                    if (!postid) { showToast('请输入动态ID'); return; }
+                    var postAction = getRadioVal('bl-pun-post-action');
+                    mockBlPunish.unshift({ id: 'PUN' + String(mockBlPunish.length + 1).padStart(3, '0'), uid: postid, name: '动态' + postid, type: '动态-' + postAction, reason: reason, rule: '人工处罚', startTime: new Date().toLocaleString('zh-CN'), endTime: '-', status: '已执行' });
+                }
+                renderBlPunish();
+                closeModal();
+                showToast('处罚已生效');
+            });
+        }
+        function togglePunTargetDetail() {
+            var v = getRadioVal('bl-pun-target');
+            document.getElementById('m-bl-pun-user-section').style.display = v === 'user' ? 'block' : 'none';
+            document.getElementById('m-bl-pun-type-user').style.display = v === 'user' ? 'block' : 'none';
+            document.getElementById('m-bl-pun-dur-section').style.display = v === 'user' ? 'block' : 'none';
+            document.getElementById('m-bl-pun-post-section').style.display = v === 'post' ? 'block' : 'none';
+            document.getElementById('m-bl-pun-type-post').style.display = v === 'post' ? 'block' : 'none';
+        }
+        function togglePunDur() {
+            var v = getRadioVal('bl-pun-type');
+            document.getElementById('m-bl-pun-dur-section').style.display = v === '禁止发帖(周期)' ? 'block' : 'none';
         }
 
 
