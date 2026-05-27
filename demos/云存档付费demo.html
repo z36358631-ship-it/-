@@ -194,10 +194,10 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 <script>
 var saves=[
 {id:1,title:'500多万CR，440辆车全收集',type:'通关存档',price:6,buyers:877,desc:'包含440辆改装车辆全部调校完毕，CR余额500万+。',size:'12.3 MB',cover:'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400'},
-{id:2,title:'线上模式满级+全武器+1000万',type:'通关存档',price:8,buyers:1200,desc:'线上模式等级200+，全武器MK2改装，现金1000万。',size:'8.7 MB',cover:'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400'},
+{id:2,title:'线上模式满级+全武器+1000万',type:'通关存档',price:6,buyers:1200,desc:'线上模式等级200+，全武器MK2改装，现金1000万。',size:'8.7 MB',cover:'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400'},
 {id:3,title:'全BOSS击杀存档（含DLC）',type:'BOSS存档',price:6,buyers:644,desc:'全部BOSS击杀完成含DLC，适合想直接体验后期的玩家。',size:'15.1 MB',cover:'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400'},
-{id:4,title:'96辆车3000U全改装',type:'通关存档',price:3,buyers:234,desc:'精选96辆热门车辆全部改装到位。',size:'6.2 MB',cover:'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400'},
-{id:5,title:'单人模式100%全收集',type:'通关存档',price:5,buyers:156,desc:'单人模式100%完成度，三角色全满技能。',size:'9.8 MB',cover:'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400'}
+{id:4,title:'96辆车3000U全改装',type:'通关存档',price:6,buyers:234,desc:'精选96辆热门车辆全部改装到位。',size:'6.2 MB',cover:'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400'},
+{id:5,title:'单人模式100%全收集',type:'通关存档',price:6,buyers:156,desc:'单人模式100%完成度，三角色全满技能。',size:'9.8 MB',cover:'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400'}
 ];
 var localSaves=[
 {name:'GTA5_autosave.dat',size:'8.0 MB',time:'2026-05-27 16:00'},
@@ -346,15 +346,13 @@ el.classList.add('active');
 if(type==='market')renderIgMarket();else renderIgMy();
 }
 function renderIgMarket(){
-var h='';
+var h='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 10px">';
 saves.forEach(function(s,i){
 var isA=activeIdx===i;var b=bought.has(i);
-h+='<div class="ip-item" onclick="openDetail('+i+')"><img src="'+s.cover+'"><div class="info"><div class="t">'+s.title+'</div><div class="m">'+s.type+' · '+s.buyers+'人</div></div>';
-if(isA)h+='<span style="color:var(--green);font-size:10px">✓应用中</span>';
-else if(b)h+='<span style="color:var(--sub);font-size:10px">已购</span>';
-else h+='<button class="ip-btn buy" onclick="event.stopPropagation();igBuy('+i+')">¥'+s.price+'</button>';
-h+='</div>';
+var st=isA?'<span style="color:var(--green);font-size:10px">✓ 应用中</span>':b?'<span style="color:var(--sub);font-size:10px">¥6 已购</span>':'<span style="color:var(--primary);font-size:10px;font-weight:bold">¥6 购买</span>';
+h+='<div style="background:var(--card);border-radius:8px;overflow:hidden;border:1px solid var(--border);cursor:pointer" onclick="igShowDetail('+i+')"><img src="'+s.cover+'" style="width:100%;height:60px;object-fit:cover;display:block"><div style="padding:8px"><div style="font-size:11px;color:#fff;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:4px">'+s.title+'</div><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:9px;color:var(--sub)">'+s.buyers+'人</span>'+st+'</div></div></div>';
 });
+h+='</div>';
 document.getElementById('igBody').innerHTML=h;
 }
 function renderIgMy(){
@@ -389,14 +387,40 @@ showToast('存档已切换');
 }
 
 function openConsign(){
-var title=prompt('输入存档标题（如：全BOSS击杀存档）');
-if(!title)return;
-var price=prompt('设置价格（¥1-20）','6');
-if(!price)return;
-price=Math.min(20,Math.max(1,parseFloat(price)||6));
-consignments.push({title:title,price:price,sold:0});
+// 打开寄售页面
+var h='<div style="position:absolute;inset:0;background:var(--bg);z-index:350;display:flex;flex-direction:column" id="consignPage">';
+h+='<div class="top-bar"><span class="back" onclick="document.getElementById(\'consignPage\').remove()">‹</span><span class="title">寄售存档</span></div>';
+h+='<div style="flex:1;overflow-y:auto;padding:16px">';
+// 选择存档
+h+='<div style="margin-bottom:16px"><div style="font-size:13px;color:var(--sub);margin-bottom:8px;font-weight:500">* 选择存档文件</div>';
+localSaves.forEach(function(s,i){
+h+='<label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--card);border-radius:8px;margin-bottom:6px;border:1px solid var(--border);cursor:pointer"><input type="radio" name="consign-file" value="'+i+'" style="accent-color:var(--primary)"'+(i===0?' checked':'')+'/><span style="font-size:13px;color:#fff">💾 '+s.name+'</span><span style="font-size:11px;color:var(--sub);margin-left:auto">'+s.size+'</span></label>';
+});
+h+='</div>';
+// 关联游戏
+h+='<div style="margin-bottom:16px"><div style="font-size:13px;color:var(--sub);margin-bottom:8px;font-weight:500">关联游戏</div><div style="padding:10px;background:var(--card);border-radius:8px;border:1px solid var(--border);color:#fff;font-size:13px">GTA V（自动关联当前游戏）</div></div>';
+// 标题
+h+='<div style="margin-bottom:16px"><div style="font-size:13px;color:var(--sub);margin-bottom:8px;font-weight:500">* 标题</div><input type="text" id="consign-title" placeholder="如：全BOSS击杀存档" style="width:100%;padding:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:14px;outline:none"></div>';
+// 内容
+h+='<div style="margin-bottom:16px"><div style="font-size:13px;color:var(--sub);margin-bottom:8px;font-weight:500">* 内容描述</div><textarea id="consign-desc" placeholder="描述存档内容、适用版本等..." style="width:100%;height:80px;padding:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:13px;outline:none;resize:vertical"></textarea></div>';
+// 图片
+h+='<div style="margin-bottom:16px"><div style="font-size:13px;color:var(--sub);margin-bottom:8px;font-weight:500">上传图片（首张作为封面）</div><div style="display:flex;gap:8px"><div style="width:70px;height:70px;border-radius:8px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--sub);font-size:20px" onclick="showToast(\'选择图片\')">+</div></div></div>';
+// 价格
+h+='<div style="margin-bottom:16px"><div style="font-size:13px;color:var(--sub);margin-bottom:8px;font-weight:500">价格</div><div style="padding:10px;background:var(--card);border-radius:8px;border:1px solid var(--border);color:var(--primary);font-size:15px;font-weight:bold">¥6.00（固定价格）</div><div style="font-size:11px;color:var(--sub);margin-top:6px">每成交1次，赠送30分钟云游时长</div></div>';
+// 提交
+h+='<button style="width:100%;padding:14px;border-radius:20px;background:var(--primary);color:#000;font-size:15px;font-weight:bold;border:none;cursor:pointer" onclick="submitConsign()">提交寄售</button>';
+h+='<div style="text-align:center;font-size:11px;color:var(--sub);margin-top:10px"></div>';
+h+='</div></div>';
+document.getElementById('app').insertAdjacentHTML('beforeend',h);
+}
+
+function submitConsign(){
+var title=document.getElementById('consign-title').value;
+if(!title){showToast('请填写标题');return;}
+consignments.push({title:title,price:6,sold:0});
+document.getElementById('consignPage').remove();
 renderMine();
-showToast('寄售提交成功！审核通过后上架。每成交1次赠送30分钟云游时长');
+showToast('寄售成功！已上架');
 }
 
 function toggleOrient(){
