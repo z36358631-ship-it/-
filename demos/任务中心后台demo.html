@@ -214,6 +214,8 @@
                                 <th>任务类型</th>
                                 <th>单次奖励(盖世币)</th>
                                 <th>频率上限</th>
+                                <th>指定话题</th>
+                                <th>指定专区</th>
                                 <th>当前状态</th>
                                 <th>操作</th>
                             </tr>
@@ -370,12 +372,17 @@
     <script>
         // ================= 数据 Mock =================
         let mockTasks =[
-            { id: 'T_001', name: '每日签到', type: 'daily', reward: 2, limit: '2积分/日', status: 1 },
-            { id: 'T_002', name: '浏览帖子', type: 'daily', reward: 2, limit: '5次/日', status: 1 },
-            { id: 'T_003', name: '完善个人资料', type: 'once', reward: 20, limit: '限1次', status: 1 },
-            { id: 'T_004', name: '首次社区发帖', type: 'once', reward: 10, limit: '限1次', status: 1 },
-            { id: 'T_005', name: '测试停用任务', type: 'daily', reward: 5, limit: '1次/日', status: 0 },
+            { id: 'T_001', name: '每日签到', type: 'daily', reward: 2, limit: '2积分/日', status: 1, topic: '', zone: '' },
+            { id: 'T_002', name: '浏览帖子', type: 'daily', reward: 2, limit: '5次/日', status: 1, topic: '', zone: '' },
+            { id: 'T_003', name: '完善个人资料', type: 'once', reward: 20, limit: '限1次', status: 1, topic: '', zone: '' },
+            { id: 'T_004', name: '首次社区发帖', type: 'once', reward: 10, limit: '限1次', status: 1, topic: '', zone: '' },
+            { id: 'T_005', name: '测试停用任务', type: 'daily', reward: 5, limit: '1次/日', status: 0, topic: '', zone: '' },
+            { id: 'T_006', name: '每日发帖（指定话题+专区）', type: 'daily', reward: 5, limit: '10积分/日', status: 1, topic: '黑神话悟空', zone: '单机游戏区' },
+            { id: 'T_007', name: '每日发帖（全部专区）', type: 'daily', reward: 2, limit: '10积分/日', status: 1, topic: '', zone: '' },
         ];
+
+        const mockTopics = ['黑神话悟空', '盖世新版体验', '手柄评测', '游戏攻略分享', '我的游戏时刻', '社区建议'];
+        const mockZones = ['单机游戏区', '多人联机区', '手柄外设区', '云游戏区', '新游速递区', '社区杂谈区'];
 
         let mockRewards =[
             { id: 'R_9901', img: 'https://api.dicebear.com/7.x/shapes/svg?seed=Game', name: 'X5Lite手柄 (包邮)', type: 'physical', price: 50000, stock: 15, limit: 1, redeemed: 12, status: 1 },
@@ -492,6 +499,8 @@
             const typeMap = { 'once': '<span class="tag tag-warning">成长任务</span>', 'daily': '<span class="tag tag-blue">每日任务</span>' };
             document.getElementById('task-table-body').innerHTML = mockTasks.map(t => {
                 const statusTag = t.status === 1 ? `<span class="tag tag-success">生效中</span>` : `<span class="tag tag-gray">已停用</span>`;
+                const topicText = t.topic ? `<span class="tag tag-blue">${t.topic}</span>` : '<span style="color:#999">不限</span>';
+                const zoneText = t.zone ? `<span class="tag tag-orange">${t.zone}</span>` : '<span style="color:#999">全部专区</span>';
                 return `
                 <tr>
                     <td style="font-family:monospace; color:var(--text-sub);">${t.id}</td>
@@ -499,6 +508,8 @@
                     <td>${typeMap[t.type]}</td>
                     <td class="coin-text">+${t.reward}</td>
                     <td>${t.limit}</td>
+                    <td>${topicText}</td>
+                    <td>${zoneText}</td>
                     <td>${statusTag}</td>
                     <td class="action-links">
                         <a onclick="openTaskModal('${t.id}')">编辑配置</a>
@@ -517,22 +528,54 @@
 
         function openTaskModal(id = null) {
             const task = id ? mockTasks.find(t => t.id === id) : {};
+            const topicTags = mockTopics.map(tp => `<span class="chip ${task.topic===tp?'active':''}" data-val="${tp}" onclick="toggleChip(this,'topic')">${tp}</span>`).join('');
+            const zoneTags = mockZones.map(z => `<span class="chip ${task.zone===z?'active':''}" data-val="${z}" onclick="toggleChip(this,'zone')">${z}</span>`).join('');
+            const typeTags = `<span class="chip ${(task.type||'daily')==='daily'?'active':''}" data-val="daily" onclick="toggleChip(this,'type')">每日任务</span><span class="chip ${task.type==='once'?'active':''}" data-val="once" onclick="toggleChip(this,'type')">成长任务</span>`;
             const html = `
+                <style>.chip{display:inline-block;padding:5px 14px;border-radius:16px;font-size:13px;border:1px solid #d9d9d9;color:#666;cursor:pointer;margin:0 6px 8px 0;transition:0.2s;}.chip:hover{border-color:var(--primary);color:var(--primary);}.chip.active{background:var(--primary);color:#fff;border-color:var(--primary);}</style>
                 <div class="form-group"><label class="required">任务名称</label><input type="text" class="form-control" id="m-t-name" value="${task.name||''}" placeholder="如：每日签到"></div>
-                <div class="form-group"><label class="required">任务类型</label>
-                    <select class="form-control" id="m-t-type">
-                        <option value="once" ${task.type==='once'?'selected':''}>成长任务</option>
-                        <option value="daily" ${task.type==='daily'?'selected':''}>每日任务</option>
-                    </select>
-                </div>
+                <div class="form-group"><label class="required">任务类型</label><div id="chip-type" style="flex:1;padding-top:4px;">${typeTags}</div></div>
                 <div class="form-group"><label class="required">奖励分值</label><input type="number" class="form-control" id="m-t-reward" value="${task.reward||''}" placeholder="请输入大于0的整数"></div>
                 <div class="form-group"><label class="required">频率上限</label><input type="text" class="form-control" id="m-t-limit" value="${task.limit||''}" placeholder="如：5次/日"></div>
+                <div class="form-group" style="flex-wrap:wrap;"><label>指定话题</label>
+                    <div style="flex:1;">
+                        <div id="chip-topic" style="margin-bottom:8px;">
+                            <span class="chip ${!task.topic?'active':''}" data-val="" onclick="toggleChip(this,'topic')">不限</span>
+                            ${topicTags}
+                            <span class="chip" data-val="__custom__" onclick="toggleChip(this,'topic')">+ 自定义</span>
+                        </div>
+                        <div id="custom-topic-row" style="display:${task.topic&&!mockTopics.includes(task.topic)?'block':'none'};">
+                            <input type="text" class="form-control" id="m-t-topic-custom" value="${task.topic&&!mockTopics.includes(task.topic)?task.topic:''}" placeholder="输入自定义话题名称" style="width:200px;">
+                        </div>
+                        <div style="font-size:12px;color:#999;margin-top:4px;">可选。不选代表无论是否参与话题均可完成任务</div>
+                    </div>
+                </div>
+                <div class="form-group" style="flex-wrap:wrap;"><label>指定专区</label>
+                    <div style="flex:1;">
+                        <div id="chip-zone">
+                            <span class="chip ${!task.zone?'active':''}" data-val="" onclick="toggleChip(this,'zone')">全部专区</span>
+                            ${zoneTags}
+                        </div>
+                        <div style="font-size:12px;color:#999;margin-top:8px;">可选。不选代表在任意专区发帖均可完成任务</div>
+                    </div>
+                </div>
             `;
             openModal(id ? '编辑任务配置' : '新增盖世币任务', html, () => {
                 if(!document.getElementById('m-t-name').value) return showToast('请填写完整必填项', 'error');
                 showToast('任务配置保存成功！');
                 closeModal();
+                renderTasks();
             });
+        }
+
+        function toggleChip(el, group) {
+            const container = document.getElementById('chip-' + group);
+            container.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            if (group === 'topic') {
+                const customRow = document.getElementById('custom-topic-row');
+                customRow.style.display = el.dataset.val === '__custom__' ? 'block' : 'none';
+            }
         }
 
         // ================= 2. 奖品配置业务逻辑 =================
