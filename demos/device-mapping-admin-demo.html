@@ -90,6 +90,9 @@ tr:hover { background:#f8f9ff; }
                 <button class="btn btn-outline" onclick="filterDevices()">查询</button>
                 <button class="btn btn-outline" onclick="resetDeviceFilter()">重置</button>
                 <div style="flex:1;"></div>
+                <button class="btn btn-outline" onclick="exportData('device')">导出</button>
+                <button class="btn btn-outline" onclick="document.getElementById('import-device').click()">导入</button>
+                <input type="file" id="import-device" accept=".csv,.json" style="display:none;" onchange="importData('device',this)" />
                 <button class="btn btn-primary" onclick="openModal('device')">+ 新增映射</button>
             </div>
             <table>
@@ -110,6 +113,9 @@ tr:hover { background:#f8f9ff; }
                 <button class="btn btn-outline" onclick="filterCPUs()">查询</button>
                 <button class="btn btn-outline" onclick="resetCPUFilter()">重置</button>
                 <div style="flex:1;"></div>
+                <button class="btn btn-outline" onclick="exportData('cpu')">导出</button>
+                <button class="btn btn-outline" onclick="document.getElementById('import-cpu').click()">导入</button>
+                <input type="file" id="import-cpu" accept=".csv,.json" style="display:none;" onchange="importData('cpu',this)" />
                 <button class="btn btn-primary" onclick="openModal('cpu')">+ 新增映射</button>
             </div>
             <table>
@@ -300,6 +306,78 @@ function deleteMapping(type, id) {
 function renderAll() { renderDevices(); renderCPUs(); updateStats(); }
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function exportData(type) {
+    const list = type === 'device' ? deviceData : cpuData;
+    const brandLabel = type === 'device' ? '品牌' : '厂商';
+    const header = `原始型号,映射名称,${brandLabel},状态`;
+    const rows = list.map(d => `${d.raw},${d.name},${d.brand},${d.status === 'active' ? '已映射' : '待补充'}`);
+    const csv = '﻿' + [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${type === 'device' ? '设备型号映射' : 'CPU型号映射'}_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importData(type, input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const text = e.target.result;
+        let imported = [];
+        if (file.name.endsWith('.json')) {
+            try {
+                const arr = JSON.parse(text);
+                if (!Array.isArray(arr)) { alert('JSON 格式错误，需为数组'); return; }
+                imported = arr.map(item => ({
+                    id: Date.now() + Math.random(),
+                    raw: String(item['原始型号'] || item.raw || '').trim(),
+                    name: String(item['映射名称'] || item.name || '').trim(),
+                    brand: String(item['品牌'] || item['厂商'] || item.brand || '').trim(),
+                    status: (item['状态'] === '待补充' || item.status === 'pending') ? 'pending' : 'active',
+                    time: new Date().toLocaleString('zh-CN',{hour12:false}).replace(/\//g,'-')
+                }));
+            } catch(err) { alert('JSON 解析失败：' + err.message); return; }
+        } else {
+            const lines = text.replace(/^﻿/, '').split('\n').filter(l => l.trim());
+            if (lines.length < 2) { alert('CSV 文件为空或格式不正确'); return; }
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(',');
+                if (cols.length < 2) continue;
+                imported.push({
+                    id: Date.now() + Math.random() + i,
+                    raw: (cols[0] || '').trim(),
+                    name: (cols[1] || '').trim(),
+                    brand: (cols[2] || '').trim(),
+                    status: (cols[3] || '').trim() === '待补充' ? 'pending' : 'active',
+                    time: new Date().toLocaleString('zh-CN',{hour12:false}).replace(/\//g,'-')
+                });
+            }
+        }
+        imported = imported.filter(x => x.raw);
+        if (imported.length === 0) { alert('未解析到有效数据'); return; }
+        const list = type === 'device' ? deviceData : cpuData;
+        let addCount = 0, updateCount = 0;
+        imported.forEach(item => {
+            const existing = list.find(x => x.raw === item.raw);
+            if (existing) {
+                Object.assign(existing, { name: item.name, brand: item.brand, status: item.status, time: item.time });
+                updateCount++;
+            } else {
+                list.push(item);
+                addCount++;
+            }
+        });
+        renderAll();
+        alert(`导入完成：新增 ${addCount} 条，更新 ${updateCount} 条`);
+    };
+    reader.readAsText(file, 'utf-8');
+    input.value = '';
+}
 
 renderAll();
 </script>
