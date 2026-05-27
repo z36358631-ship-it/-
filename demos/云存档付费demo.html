@@ -8,358 +8,364 @@
 :root{--bg:#0b0d12;--card:#151820;--border:rgba(255,255,255,0.08);--text:#f4f4f5;--sub:#8e8e93;--primary:#d4b473;--green:#52c41a;--red:#f5222d;--blue:#1890ff}
 *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,"PingFang SC",sans-serif}
 body{background:#000;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:20px}
-.orient-btn{margin-bottom:15px;padding:8px 20px;border-radius:20px;background:#222;color:#fff;border:1px solid #444;cursor:pointer;font-size:14px}
-#app{background:var(--bg);border-radius:40px;box-shadow:0 0 0 10px #222;overflow:hidden;display:flex;flex-direction:column;position:relative;transition:width 0.4s,height 0.4s}
-#app.portrait{width:390px;height:844px}
+.orient-btn{margin-bottom:12px;padding:8px 18px;border-radius:16px;background:#222;color:#fff;border:1px solid #444;cursor:pointer;font-size:13px}
+#app{width:390px;height:844px;background:var(--bg);border-radius:40px;box-shadow:0 0 0 10px #222;overflow:hidden;display:flex;flex-direction:column;position:relative;transition:0.4s}
 #app.landscape{width:844px;height:390px;border-radius:20px}
 .status-bar{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 24px;font-size:13px;font-weight:bold;color:#fff;flex-shrink:0}
-.landscape .status-bar{height:30px;padding:0 16px;font-size:12px}
-.top-bar{display:flex;align-items:center;padding:10px 16px;gap:12px}
+.landscape .status-bar{height:28px;font-size:11px}
+.top-bar{display:flex;align-items:center;padding:10px 16px;gap:10px}
 .top-bar .back{font-size:20px;cursor:pointer;color:#fff}
 .top-bar .title{font-size:16px;font-weight:bold;color:#fff;flex:1}
+.top-bar .guide-btn{font-size:12px;color:var(--sub);cursor:pointer;padding:4px 8px;border:1px solid var(--border);border-radius:10px}
 .main-tabs{display:flex;gap:20px;padding:0 16px;border-bottom:1px solid var(--border)}
 .m-tab{padding:10px 0;font-size:14px;color:var(--sub);cursor:pointer;position:relative}
 .m-tab.active{color:#fff;font-weight:bold}
 .m-tab.active::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);width:20px;height:3px;background:var(--primary);border-radius:2px}
-.sub-tabs{display:flex;gap:16px;padding:8px 16px;font-size:13px}
+.sub-tabs{display:flex;gap:12px;padding:8px 16px;font-size:13px}
 .s-tab{color:var(--sub);cursor:pointer;padding:4px 12px;border-radius:14px;background:rgba(255,255,255,0.05)}
 .s-tab.active{background:#fff;color:#000;font-weight:bold}
 .scroll{flex:1;overflow-y:auto;padding-bottom:20px}
 .scroll::-webkit-scrollbar{display:none}
 .save-card{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer}
 .save-card:active{background:rgba(255,255,255,0.02)}
-.save-cover{width:100px;height:70px;border-radius:8px;background:#222;object-fit:cover;flex-shrink:0}
-.landscape .save-cover{width:80px;height:56px}
+.save-cover{width:90px;height:64px;border-radius:8px;background:#222;object-fit:cover;flex-shrink:0}
 .save-info{flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
-.save-title{font-size:13px;color:#fff;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.save-meta{font-size:11px;color:var(--sub);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.save-price{display:flex;align-items:center;gap:8px;margin-top:4px}
+.save-title{font-size:13px;color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.save-meta{font-size:11px;color:var(--sub);display:flex;align-items:center;gap:6px}
+.save-price{margin-top:4px}
 .price-tag{background:var(--primary);color:#000;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold}
+.status-applied{color:var(--green);font-size:11px;font-weight:bold}
+.status-bought{color:var(--sub);font-size:11px}
 .type-tag{padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold}
-.type-tag.pass{background:rgba(82,196,26,0.15);color:var(--green)}
-.type-tag.mod{background:rgba(24,144,255,0.15);color:var(--blue)}
 .type-tag.full{background:rgba(250,173,20,0.15);color:var(--primary)}
+.type-tag.boss{background:rgba(245,34,45,0.15);color:var(--red)}
+.section-label{padding:12px 16px 6px;font-size:12px;color:var(--sub);font-weight:bold;border-bottom:1px solid var(--border)}
+.my-card{background:var(--card);border-radius:10px;padding:12px;margin:8px 16px;border:1px solid var(--border)}
+.my-card .t{font-size:13px;color:#fff;font-weight:500;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.my-card .d{font-size:11px;color:var(--sub);margin-bottom:8px}
+.my-card .actions{display:flex;gap:8px}
+.mc-btn{padding:5px 12px;border-radius:10px;font-size:11px;font-weight:bold;cursor:pointer;border:none}
+.mc-btn.green{background:var(--green);color:#fff}
+.mc-btn.outline{background:transparent;border:1px solid var(--border);color:var(--sub)}
+.mc-btn.gold{background:var(--primary);color:#000}
+.import-bar{padding:12px 16px}
+.import-bar button{width:100%;padding:10px;border-radius:10px;background:transparent;border:1px dashed var(--border);color:var(--sub);font-size:12px;cursor:pointer}
+.import-bar button:hover{border-color:var(--primary);color:var(--primary)}
 /* 详情页 */
 .detail-page{position:absolute;inset:0;background:var(--bg);z-index:100;display:none;flex-direction:column}
 .detail-page.show{display:flex}
 .detail-cover{width:100%;height:180px;object-fit:cover;background:#222;flex-shrink:0}
-.landscape .detail-cover{height:120px}
 .detail-body{flex:1;overflow-y:auto;padding:16px;padding-bottom:90px}
-.detail-author{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.detail-author{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .detail-author img{width:32px;height:32px;border-radius:50%}
-.detail-author .name{font-size:14px;font-weight:bold;color:#fff}
 .detail-title{font-size:16px;font-weight:bold;color:#fff;margin-bottom:8px}
-.detail-desc{font-size:13px;color:#ccc;line-height:1.6;margin-bottom:14px}
-.detail-screenshots{display:flex;gap:8px;overflow-x:auto;margin-bottom:14px}
-.detail-screenshots img{width:120px;height:80px;border-radius:8px;object-fit:cover;flex-shrink:0}
+.detail-desc{font-size:13px;color:#ccc;line-height:1.6;margin-bottom:12px}
+.detail-shots{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px}
+.detail-shots img{width:120px;height:80px;border-radius:8px;object-fit:cover;flex-shrink:0}
 .detail-meta{background:var(--card);border-radius:10px;padding:12px}
-.detail-meta-row{display:flex;justify-content:space-between;padding:5px 0;font-size:12px}
-.detail-meta-row .label{color:var(--sub)}
-.detail-meta-row .value{color:#fff}
+.dm-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12px}
+.dm-row .l{color:var(--sub)}
+.dm-row .v{color:#fff}
 .detail-footer{position:absolute;bottom:0;left:0;right:0;padding:10px 16px 24px;background:var(--bg);border-top:1px solid var(--border)}
 .detail-footer .tip{font-size:10px;color:var(--sub);text-align:center;margin-bottom:6px}
 .buy-btn{width:100%;padding:12px;border-radius:20px;background:var(--primary);color:#000;text-align:center;font-size:15px;font-weight:bold;cursor:pointer}
 .buy-btn.bought{background:rgba(82,196,26,0.15);color:var(--green)}
-/* 我的存档 */
-.my-section{padding:16px}
-.my-card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)}
-.my-card .mc-title{font-size:14px;color:#fff;font-weight:500;margin-bottom:6px}
-.my-card .mc-meta{font-size:11px;color:var(--sub);margin-bottom:10px}
-.my-card .mc-actions{display:flex;gap:8px}
-.mc-btn{padding:6px 14px;border-radius:12px;font-size:12px;font-weight:bold;cursor:pointer;border:none}
-.mc-btn.import{background:var(--green);color:#fff}
-.mc-btn.upload{background:var(--primary);color:#000}
-.mc-btn.outline{background:transparent;border:1px solid var(--border);color:var(--sub)}
-/* 上传面板 */
-.upload-panel{position:absolute;inset:0;background:var(--bg);z-index:150;display:none;flex-direction:column}
-.upload-panel.show{display:flex}
-.upload-body{flex:1;overflow-y:auto;padding:16px}
-.form-group{margin-bottom:16px}
-.form-group label{display:block;font-size:13px;color:var(--sub);margin-bottom:6px;font-weight:500}
-.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:14px;outline:none}
-.form-group textarea{height:80px;resize:vertical}
-.form-group input:focus,.form-group textarea:focus{border-color:var(--primary)}
-.file-pick{display:flex;gap:8px}
-.file-pick-btn{flex:1;padding:12px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px dashed var(--border);text-align:center;cursor:pointer;color:var(--sub);font-size:12px}
-.file-pick-btn:hover{border-color:var(--primary);color:var(--primary)}
-.price-input{display:flex;align-items:center;gap:8px}
-.price-input span{color:var(--sub);font-size:12px}
-.submit-btn{width:100%;padding:14px;border-radius:20px;background:var(--primary);color:#000;text-align:center;font-size:15px;font-weight:bold;cursor:pointer;margin-top:10px;border:none}
+/* 游戏中模式 */
+.ingame{position:absolute;inset:0;background:#111;z-index:300;display:none;flex-direction:row}
+.ingame.show{display:flex}
+.ingame-bg{flex:1;background:url('https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800') center/cover;position:relative}
+.ingame-bg::after{content:'GTA V 游戏画面';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.2);font-size:13px}
+.ingame-sidebar{width:44px;background:rgba(0,0,0,0.9);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:12px}
+.sb-icon{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:#fff}
+.sb-icon.active{background:var(--primary);color:#000}
+.ingame-panel{position:absolute;top:0;right:44px;width:300px;height:100%;background:rgba(11,13,18,0.97);border-left:1px solid var(--border);display:none;flex-direction:column;z-index:5}
+.ingame-panel.show{display:flex}
+.ip-head{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.ip-head h4{font-size:14px;color:#fff}
+.ip-tabs{display:flex;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border)}
+.ip-tab{font-size:11px;color:var(--sub);cursor:pointer;padding:3px 10px;border-radius:10px;background:rgba(255,255,255,0.05)}
+.ip-tab.active{background:#fff;color:#000;font-weight:bold}
+.ip-body{flex:1;overflow-y:auto}
+.ip-item{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer;font-size:11px}
+.ip-item:hover{background:rgba(255,255,255,0.03)}
+.ip-item img{width:44px;height:32px;border-radius:4px;object-fit:cover}
+.ip-item .info{flex:1;min-width:0}
+.ip-item .info .t{color:#fff;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ip-item .info .m{color:var(--sub);font-size:10px;margin-top:2px}
+.ip-btn{padding:3px 8px;border-radius:8px;font-size:10px;font-weight:bold;border:none;cursor:pointer;flex-shrink:0}
+.ip-btn.buy{background:var(--primary);color:#000}
+.ip-btn.use{background:var(--green);color:#fff}
 /* 弹窗 */
-.modal-mask{position:absolute;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center}
-.modal-mask.show{display:flex}
-.modal-box{background:#1e1e24;width:82%;border-radius:16px;padding:20px;text-align:center}
-.modal-box h3{color:#fff;margin-bottom:10px;font-size:16px}
-.modal-box p{color:var(--sub);font-size:13px;margin-bottom:16px;line-height:1.5}
+.modal{position:absolute;inset:0;background:rgba(0,0,0,0.7);z-index:400;display:none;align-items:center;justify-content:center}
+.modal.show{display:flex}
+.modal-box{background:#1e1e24;width:80%;max-width:320px;border-radius:16px;padding:20px;text-align:center}
+.modal-box h3{color:#fff;margin-bottom:8px;font-size:15px}
+.modal-box p{color:var(--sub);font-size:12px;margin-bottom:16px;line-height:1.6;white-space:pre-line}
 .modal-btns{display:flex;gap:10px}
-.modal-btns button{flex:1;padding:11px;border-radius:12px;font-size:14px;font-weight:bold;cursor:pointer;border:none}
+.modal-btns button{flex:1;padding:10px;border-radius:12px;font-size:13px;font-weight:bold;cursor:pointer;border:none}
 .modal-btns .cancel{background:rgba(255,255,255,0.1);color:#fff}
 .modal-btns .confirm{background:var(--primary);color:#000}
-.toast{position:absolute;top:70px;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:8px 18px;border-radius:16px;font-size:13px;font-weight:bold;opacity:0;transition:0.3s;z-index:500;pointer-events:none;white-space:nowrap}
+.toast{position:absolute;top:70px;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:8px 16px;border-radius:14px;font-size:12px;font-weight:bold;opacity:0;transition:0.3s;z-index:500;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
-/* 游戏中侧边栏模式 */
-.ingame-mode{position:absolute;inset:0;background:#111;z-index:300;display:none;flex-direction:row}
-.ingame-mode.show{display:flex}
-.ingame-bg{flex:1;background:url('https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800') center/cover;position:relative}
-.ingame-bg::after{content:'GTA V 游戏画面模拟';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.3);font-size:14px}
-.ingame-sidebar{width:48px;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:14px;border-left:1px solid rgba(255,255,255,0.1)}
-.sidebar-icon{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:#fff;transition:0.2s}
-.sidebar-icon:hover{background:rgba(255,255,255,0.15)}
-.sidebar-icon.active{background:var(--primary);color:#000}
-/* 游戏中存档面板 */
-.ingame-panel{position:absolute;top:0;right:48px;width:320px;height:100%;background:rgba(11,13,18,0.95);border-left:1px solid var(--border);display:none;flex-direction:column;z-index:5}
-.ingame-panel.show{display:flex}
-.ingame-panel-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.ingame-panel-head h3{font-size:15px;color:#fff;font-weight:bold}
-.ingame-panel-head .close{color:var(--sub);cursor:pointer;font-size:18px}
-.ingame-panel-tabs{display:flex;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border)}
-.ip-tab{font-size:12px;color:var(--sub);cursor:pointer;padding:4px 10px;border-radius:12px;background:rgba(255,255,255,0.05)}
-.ip-tab.active{background:#fff;color:#000;font-weight:bold}
-.ingame-panel-body{flex:1;overflow-y:auto;padding:10px 0}
-.ingame-save-item{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer}
-.ingame-save-item:hover{background:rgba(255,255,255,0.03)}
-.ingame-save-item img{width:50px;height:36px;border-radius:6px;object-fit:cover}
-.ingame-save-item .isi-info{flex:1;min-width:0}
-.ingame-save-item .isi-title{font-size:12px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ingame-save-item .isi-meta{font-size:10px;color:var(--sub);margin-top:2px}
-.ingame-save-item .isi-btn{padding:4px 10px;border-radius:10px;font-size:10px;font-weight:bold;cursor:pointer;border:none;flex-shrink:0}
-.isi-btn.buy{background:var(--primary);color:#000}
-.isi-btn.use{background:var(--green);color:#fff}
 </style>
 </head>
 <body>
-<button class="orient-btn" onclick="enterIngame()">🎮 进入游戏中模式（侧边栏存档）</button>
+<button class="orient-btn" onclick="enterIngame()">🎮 进入游戏中模式</button>
 <div id="app" class="portrait">
 <div class="status-bar"><span>15:30</span><span>📶 📡 🔋</span></div>
-<div class="top-bar"><span class="back" onclick="showToast('返回')">‹</span><span class="title">GTA V</span><span style="cursor:pointer;font-size:13px;color:var(--sub)" onclick="showSaveGuide()">❓说明</span></div>
+<div class="top-bar">
+<span class="back" onclick="showToast('返回')">‹</span>
+<span class="title">GTA V</span>
+<span class="guide-btn" onclick="showGuide()">❓存档说明</span>
+</div>
 <div class="main-tabs">
 <div class="m-tab" onclick="showToast('详情Tab')">详情</div>
 <div class="m-tab" onclick="showToast('社区Tab')">社区</div>
 <div class="m-tab active">存档</div>
 </div>
-<div class="sub-tabs" id="sub-tabs">
-<div class="s-tab active" onclick="switchSub('recommend',this)">推荐存档(5)</div>
+<div class="sub-tabs">
+<div class="s-tab active" onclick="switchSub('rec',this)">推荐存档</div>
 <div class="s-tab" onclick="switchSub('mine',this)">我的存档</div>
 </div>
-<div class="scroll" id="main-scroll">
-<!-- 推荐存档 -->
-<div id="sec-recommend"></div>
-<!-- 我的存档 -->
+<div class="scroll">
+<div id="sec-rec"></div>
 <div id="sec-mine" style="display:none"></div>
 </div>
 
 <!-- 详情页 -->
-<div class="detail-page" id="detail-page">
-<div class="top-bar"><span class="back" onclick="closeDetail()">‹</span><span class="title" id="d-page-title">存档详情</span></div>
-<img class="detail-cover" id="d-cover">
+<div class="detail-page" id="detailPage">
+<div class="top-bar"><span class="back" onclick="closeDetail()">‹</span><span class="title">存档详情</span><span class="guide-btn" onclick="showGuide()">❓说明</span></div>
+<img class="detail-cover" id="dCover">
 <div class="detail-body">
-<div class="detail-author"><img id="d-avatar" src=""><div><div class="name" id="d-author"></div></div></div>
-<div class="detail-title" id="d-title"></div>
-<div class="detail-desc" id="d-desc"></div>
-<div class="detail-screenshots" id="d-shots"></div>
+<div class="detail-author"><img id="dAvatar"><div style="font-size:13px;font-weight:bold;color:#fff" id="dAuthor"></div></div>
+<div class="detail-title" id="dTitle"></div>
+<div class="detail-desc" id="dDesc"></div>
+<div class="detail-shots" id="dShots"></div>
 <div class="detail-meta">
-<div class="detail-meta-row"><span class="label">存档类型</span><span class="value" id="d-type"></span></div>
-<div class="detail-meta-row"><span class="label">存档大小</span><span class="value" id="d-size"></span></div>
-<div class="detail-meta-row"><span class="label">已购买</span><span class="value" id="d-buyers"></span></div>
+<div class="dm-row"><span class="l">存档类型</span><span class="v" id="dType"></span></div>
+<div class="dm-row"><span class="l">存档大小</span><span class="v" id="dSize"></span></div>
+<div class="dm-row"><span class="l">已购买</span><span class="v" id="dBuyers"></span></div>
 </div>
 </div>
 <div class="detail-footer">
 <div class="tip">存档为虚拟商品，购买后不支持退款</div>
-<div class="buy-btn" id="d-buy" onclick="handleBuy()"></div>
+<div class="buy-btn" id="dBuyBtn" onclick="doBuy()"></div>
 </div>
 </div>
 
-
-<!-- 弹窗 -->
-<div class="modal-mask" id="modal">
-<div class="modal-box">
-<h3 id="modal-title"></h3>
-<p id="modal-desc"></p>
-<div class="modal-btns">
-<button class="cancel" onclick="closeModal()">取消</button>
-<button class="confirm" onclick="confirmAction()">确认</button>
-</div>
-</div>
-</div>
-<!-- 游戏中侧边栏模式 -->
-<div class="ingame-mode" id="ingame-mode">
+<!-- 游戏中模式 -->
+<div class="ingame" id="ingame">
 <div class="ingame-bg"></div>
-<div class="ingame-panel" id="ingame-panel">
-<div class="ingame-panel-head"><h3>存档管理</h3><span style="cursor:pointer;font-size:12px;color:var(--sub)" onclick="showSaveGuide()">❓说明</span><span class="close" onclick="toggleIngamePanel()">×</span></div>
-<div class="ingame-panel-tabs">
-<div class="ip-tab active" onclick="switchIngameTab('market',this)">存档商城</div>
-<div class="ip-tab" onclick="switchIngameTab('my',this)">我的存档</div>
+<div class="ingame-panel" id="igPanel">
+<div class="ip-head"><h4>存档管理</h4><span class="guide-btn" onclick="showGuide()">❓说明</span><span style="cursor:pointer;color:var(--sub);font-size:16px" onclick="togglePanel()">×</span></div>
+<div class="ip-tabs">
+<div class="ip-tab active" onclick="switchIgTab('market',this)">存档商城</div>
+<div class="ip-tab" onclick="switchIgTab('my',this)">我的存档</div>
 </div>
-<div class="ingame-panel-body" id="ingame-body"></div>
+<div class="ip-body" id="igBody"></div>
 </div>
 <div class="ingame-sidebar">
-<div class="sidebar-icon" onclick="exitIngame()">‹</div>
-<div class="sidebar-icon" onclick="showToast('键盘映射')">⌨</div>
-<div class="sidebar-icon" onclick="showToast('手柄设置')">🎮</div>
-<div class="sidebar-icon active" onclick="toggleIngamePanel()">💾</div>
-<div class="sidebar-icon" onclick="showToast('设置')">⚙</div>
+<div class="sb-icon" onclick="exitIngame()">‹</div>
+<div class="sb-icon" onclick="showToast('键盘')">⌨</div>
+<div class="sb-icon" onclick="showToast('手柄')">🎮</div>
+<div class="sb-icon active" onclick="togglePanel()">💾</div>
+<div class="sb-icon" onclick="showToast('设置')">⚙</div>
 </div>
 </div>
 
+<!-- 弹窗 -->
+<div class="modal" id="modal">
+<div class="modal-box">
+<h3 id="mTitle"></h3>
+<p id="mDesc"></p>
+<div class="modal-btns" id="mBtns">
+<button class="cancel" onclick="closeModal()">取消</button>
+<button class="confirm" onclick="modalConfirm()">确认</button>
+</div>
+</div>
+</div>
 <div class="toast" id="toast"></div>
 </div>
 
 <script>
 var saves=[
-{id:1,title:'500多万CR，440辆车全收集',type:'通关存档',price:6,buyers:877,desc:'CR不多，决赛已到团队。包含440辆改装车辆，全部调校完毕。',size:'12.3 MB',cover:'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400'},
-{id:2,title:'线上模式满级+全武器解锁+1000万',type:'通关存档',price:8,buyers:1200,desc:'线上模式等级200+，全武器MK2改装，现金1000万。',size:'8.7 MB',cover:'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400'},
-{id:3,title:'全BOSS击杀存档（含DLC）',type:'BOSS存档',price:6,buyers:644,desc:'全部BOSS击杀完成，含DLC新增BOSS。适合想直接体验后期剧情的玩家。',size:'15.1 MB',cover:'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400'},
-{id:4,title:'96辆车3000U+变装全改装',type:'通关存档',price:3,buyers:234,desc:'精选96辆热门车辆，全部改装到位。',size:'6.2 MB',cover:'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400'},
-{id:5,title:'单人模式100%通关全收集',type:'通关存档',price:5,buyers:156,desc:'单人模式100%完成度，三个角色全满技能。',size:'9.8 MB',cover:'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400'}
+{id:1,title:'500多万CR，440辆车全收集',type:'通关存档',price:6,buyers:877,desc:'包含440辆改装车辆全部调校完毕，CR余额500万+。',size:'12.3 MB',cover:'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400'},
+{id:2,title:'线上模式满级+全武器+1000万',type:'通关存档',price:8,buyers:1200,desc:'线上模式等级200+，全武器MK2改装，现金1000万。',size:'8.7 MB',cover:'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400'},
+{id:3,title:'全BOSS击杀存档（含DLC）',type:'BOSS存档',price:6,buyers:644,desc:'全部BOSS击杀完成含DLC，适合想直接体验后期的玩家。',size:'15.1 MB',cover:'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400'},
+{id:4,title:'96辆车3000U全改装',type:'通关存档',price:3,buyers:234,desc:'精选96辆热门车辆全部改装到位。',size:'6.2 MB',cover:'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400'},
+{id:5,title:'单人模式100%全收集',type:'通关存档',price:5,buyers:156,desc:'单人模式100%完成度，三角色全满技能。',size:'9.8 MB',cover:'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400'}
 ];
-var mySaves=[
-{id:101,title:'GTA5_save_slot1.dat',type:'本地存档',time:'2026-05-25 14:30',size:'8.1 MB'},
-{id:102,title:'GTA5_save_slot2.dat',type:'本地存档',time:'2026-05-23 09:15',size:'7.8 MB'},
-{id:103,title:'GTA5_autosave.dat',type:'自动存档',time:'2026-05-25 16:00',size:'8.0 MB'}
+var localSaves=[
+{name:'GTA5_autosave.dat',size:'8.0 MB',time:'2026-05-27 16:00'},
+{name:'GTA5_save_slot1.dat',size:'8.1 MB',time:'2026-05-25 14:30'},
+{name:'GTA5_save_slot2.dat',size:'7.8 MB',time:'2026-05-23 09:15'}
 ];
-var boughtSet=new Set();
-var currentIdx=0;
-var pendingAction=null;
+var bought=new Set();
+var activeIdx=-1;
+var curIdx=0;
+var pendingAction='';
 
-function renderRecommend(){
+function renderRec(){
 var h='';
 saves.forEach(function(s,i){
-var typeCls=s.type==='BOSS存档'?'mod':'full';
-var bought=boughtSet.has(i);
-var isActive=activeIdx===i;
-var priceHtml=bought?(isActive?'<span style="color:var(--green);font-size:12px;font-weight:bold">✓ 应用中</span>':'<span style="color:var(--sub);font-size:12px">已购买</span>'):'<span class="price-tag">¥'+s.price.toFixed(2)+'购买</span>';
-h+='<div class="save-card" onclick="openDetail('+i+')"><img class="save-cover" src="'+s.cover+'" onerror="this.style.background=\'#333\'"><div class="save-info"><div class="save-title">'+s.title+'</div><div class="save-meta"><span class="type-tag '+typeCls+'">'+s.type+'</span> '+s.buyers+'人已购买</div><div class="save-price">'+priceHtml+'</div></div></div>';
+var cls=s.type==='BOSS存档'?'boss':'full';
+var st=bought.has(i)?(activeIdx===i?'<span class="status-applied">✓ 应用中</span>':'<span class="status-bought">已购买</span>'):'<span class="price-tag">¥'+s.price.toFixed(2)+' 购买</span>';
+h+='<div class="save-card" onclick="openDetail('+i+')"><img class="save-cover" src="'+s.cover+'"><div class="save-info"><div class="save-title">'+s.title+'</div><div class="save-meta"><span class="type-tag '+cls+'">'+s.type+'</span> '+s.buyers+'人已购买</div><div class="save-price">'+st+'</div></div></div>';
 });
-document.getElementById('sec-recommend').innerHTML=h;
+document.getElementById('sec-rec').innerHTML=h;
 }
 
 function renderMine(){
-var h='<div class="my-section">';
-// 自动存档区
-h+='<div style="font-size:14px;font-weight:bold;color:#fff;margin-bottom:12px">自动存档</div>';
-mySaves.forEach(function(s){
-h+='<div class="my-card"><div class="mc-title">'+s.title+'</div><div class="mc-meta">'+s.type+' · '+s.size+' · '+s.time+'</div><div class="mc-actions"><button class="mc-btn outline" onclick="showToast(\'已备份到云端\')">云备份</button><button class="mc-btn outline" onclick="showToast(\'已导出到本地\')">导出</button></div></div>';
+var h='';
+h+='<div class="section-label">自动存档</div>';
+localSaves.forEach(function(s){
+h+='<div class="my-card"><div class="t">💾 '+s.name+'</div><div class="d">'+s.size+' · '+s.time+'</div><div class="actions"><button class="mc-btn outline" onclick="showToast(\'已云备份\')">云备份</button><button class="mc-btn outline" onclick="showToast(\'已导出\')">导出</button></div></div>';
 });
-// 已购存档区
-if(boughtSet.size>0){
-h+='<div style="font-size:14px;font-weight:bold;color:#fff;margin:20px 0 12px">已购存档</div>';
-boughtSet.forEach(function(idx){
-var s=saves[idx];
-var isActive=activeIdx===idx;
-h+='<div class="my-card"><div class="mc-title">'+s.title+(isActive?' <span style="color:var(--green);font-size:11px">✓ 应用中</span>':'')+'</div><div class="mc-meta">'+s.type+' · '+s.size+'</div><div class="mc-actions">';
-if(isActive) h+='<button class="mc-btn outline" style="color:var(--green);border-color:rgba(82,196,26,0.3)">当前使用中</button>';
-else h+='<button class="mc-btn import" onclick="applySave('+idx+')">应用此存档</button>';
-h+='</div></div>';
+h+='<div class="section-label">已购存档</div>';
+if(bought.size>0){
+bought.forEach(function(idx){
+var s=saves[idx];var isA=activeIdx===idx;
+h+='<div class="my-card"><div class="t">'+s.title+(isA?' <span style="color:var(--green);font-size:10px">✓ 应用中</span>':'')+'</div><div class="d">'+s.type+' · '+s.size+'</div><div class="actions">';
+h+=isA?'<button class="mc-btn outline" style="color:var(--green);border-color:rgba(82,196,26,0.3)">当前使用中</button>':'<button class="mc-btn green" onclick="doApply('+idx+')">应用此存档</button>';
+h+='<button class="mc-btn outline" onclick="openDetail('+idx+')">详情</button></div></div>';
 });
-} else {
-h+='<div style="font-size:14px;font-weight:bold;color:#fff;margin:20px 0 12px">已购存档</div>';
-h+='<div style="padding:20px;text-align:center;color:var(--sub);font-size:13px">暂无已购存档，去推荐存档看看</div>';
+}else{
+h+='<div style="padding:30px 16px;text-align:center;color:var(--sub);font-size:12px">暂无已购存档</div>';
 }
-h+='<div style="padding:14px 0"><button class="mc-btn outline" style="width:100%;padding:12px;text-align:center;border-radius:12px" onclick="showToast(\'选择本地存档文件导入\')">📁 导入存档文件</button></div>';
-h+='</div>';
+h+='<div class="import-bar"><button onclick="showToast(\'选择本地存档文件导入\')">📁 导入存档文件</button></div>';
 document.getElementById('sec-mine').innerHTML=h;
 }
-
-function applySave(idx){
-document.getElementById('modal-title').textContent='确认应用';
-document.getElementById('modal-desc').textContent='应用此存档将覆盖当前游戏进度，是否继续？\n建议先备份当前存档。';
-pendingAction='apply';
-pendingApplyIdx=idx;
-document.getElementById('modal').classList.add('show');
-}
-var pendingApplyIdx=-1;
 
 function switchSub(type,el){
 document.querySelectorAll('.s-tab').forEach(function(t){t.classList.remove('active')});
 el.classList.add('active');
-document.getElementById('sec-recommend').style.display=type==='recommend'?'block':'none';
+document.getElementById('sec-rec').style.display=type==='rec'?'block':'none';
 document.getElementById('sec-mine').style.display=type==='mine'?'block':'none';
-if(type==='mine') renderMine();
+if(type==='mine')renderMine();
 }
 
 function openDetail(idx){
-currentIdx=idx;var s=saves[idx];
-document.getElementById('d-cover').src=s.cover;
-document.getElementById('d-title').textContent=s.title;
-document.getElementById('d-desc').textContent=s.desc;
-document.getElementById('d-author').textContent=s.author;
-document.getElementById('d-avatar').src='https://api.dicebear.com/7.x/avataaars/svg?seed='+s.author;
-document.getElementById('d-type').textContent=s.type;
-document.getElementById('d-size').textContent=s.size;
-document.getElementById('d-buyers').textContent=s.buyers+'人';
-document.getElementById('d-shots').innerHTML='<img src="'+s.cover+'"><img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=200&fit=crop"><img src="https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=300&h=200&fit=crop">';
-var btn=document.getElementById('d-buy');
-if(boughtSet.has(idx)){btn.textContent='已购买 - 一键导入';btn.className='buy-btn bought';btn.onclick=handleImport}
-else{btn.textContent='¥'+s.price.toFixed(2)+' 购买';btn.className='buy-btn';btn.onclick=handleBuy}
-document.getElementById('detail-page').classList.add('show');
+curIdx=idx;var s=saves[idx];
+document.getElementById('dCover').src=s.cover;
+document.getElementById('dTitle').textContent=s.title;
+document.getElementById('dDesc').textContent=s.desc;
+document.getElementById('dAuthor').textContent=s.type;
+document.getElementById('dAvatar').src='https://api.dicebear.com/7.x/avataaars/svg?seed='+s.id;
+document.getElementById('dType').textContent=s.type;
+document.getElementById('dSize').textContent=s.size;
+document.getElementById('dBuyers').textContent=s.buyers+'人';
+document.getElementById('dShots').innerHTML='<img src="'+s.cover+'"><img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=200&fit=crop"><img src="https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=300&h=200&fit=crop">';
+var btn=document.getElementById('dBuyBtn');
+if(bought.has(idx)){btn.textContent='已购买 - 去我的存档应用';btn.className='buy-btn bought';btn.onclick=function(){closeDetail();switchSub('mine',document.querySelectorAll('.s-tab')[1])};}
+else{btn.textContent='¥'+s.price.toFixed(2)+' 购买';btn.className='buy-btn';btn.onclick=doBuy;}
+document.getElementById('detailPage').classList.add('show');
 }
-function closeDetail(){document.getElementById('detail-page').classList.remove('show')}
+function closeDetail(){document.getElementById('detailPage').classList.remove('show')}
 
-function handleBuy(){
-document.getElementById('modal-title').textContent='确认购买';
-document.getElementById('modal-desc').textContent='确认支付 ¥'+saves[currentIdx].price.toFixed(2)+' 购买此存档？\n存档为虚拟商品，购买后不支持退款。';
-pendingAction='buy';
+function doBuy(){
+showModal('确认购买','确认支付 ¥'+saves[curIdx].price.toFixed(2)+' 购买此存档？\n存档为虚拟商品，购买后不支持退款。','buy');
+}
+function doApply(idx){
+curIdx=idx;
+showModal('确认应用','应用此存档将覆盖当前游戏进度，是否继续？\n建议先备份当前存档。','apply');
+}
+
+function showModal(title,desc,action){
+document.getElementById('mTitle').textContent=title;
+document.getElementById('mDesc').textContent=desc;
+document.getElementById('mBtns').style.display='flex';
+pendingAction=action;
 document.getElementById('modal').classList.add('show');
 }
-function handleImport(){
-document.getElementById('modal-title').textContent='确认导入';
-document.getElementById('modal-desc').textContent='导入将覆盖当前游戏存档，是否继续？建议先备份当前存档。';
-pendingAction='import';
-document.getElementById('modal').classList.add('show');
-}
-function confirmAction(){
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+function modalConfirm(){
 closeModal();
 if(pendingAction==='buy'){
-boughtSet.add(currentIdx);saves[currentIdx].buyers++;
-var btn=document.getElementById('d-buy');btn.textContent='已购买 - 去我的存档应用';btn.className='buy-btn bought';btn.onclick=function(){closeDetail();switchSub('mine',document.querySelectorAll('.s-tab')[1])};
-renderRecommend();
+bought.add(curIdx);saves[curIdx].buyers++;
+renderRec();
+var btn=document.getElementById('dBuyBtn');
+if(btn){btn.textContent='已购买 - 去我的存档应用';btn.className='buy-btn bought';btn.onclick=function(){closeDetail();switchSub('mine',document.querySelectorAll('.s-tab')[1])};}
 showToast('购买成功！可在"我的存档"中应用');
-}else if(pendingAction==='import'){
-showToast('导入成功！启动游戏即可体验');
 }else if(pendingAction==='apply'){
-activeIdx=pendingApplyIdx;
-renderMine();renderRecommend();
+activeIdx=curIdx;
+renderMine();renderRec();
 showToast('存档已应用！重启游戏生效');
 }
 }
-function closeModal(){document.getElementById('modal').classList.remove('show')}
 
-
-var activeIdx=-1; // 当前应用中的存档idx，-1表示无
-
-function showSaveGuide(){
-document.getElementById('modal-title').textContent='存档说明';
-document.getElementById('modal-desc').textContent='• 购买的存档可在"我的存档"中切换使用\n• 切换存档会覆盖当前游戏进度，请注意备份\n• 存档为虚拟商品，购买后不支持退款\n• 自动存档每次退出游戏时自动保存\n• 如遇存档不兼容，请确认游戏版本一致';
-pendingAction=null;
+function showGuide(){
+document.getElementById('mTitle').textContent='存档说明';
+document.getElementById('mDesc').textContent='• 购买的存档可在"我的存档"中切换使用\n• 切换存档会覆盖当前游戏进度，请注意备份\n• 存档为虚拟商品，购买后不支持退款\n• 自动存档每次退出游戏时自动保存\n• 如遇存档不兼容，请确认游戏版本一致';
+document.getElementById('mBtns').style.display='none';
 document.getElementById('modal').classList.add('show');
 }
 
-renderRecommend();
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2000)}
 
-// ================= 游戏中模式 =================
+// ===== 游戏中模式 =====
 function enterIngame(){
 document.getElementById('app').classList.remove('portrait');
 document.getElementById('app').classList.add('landscape');
-document.getElementById('ingame-mode').classList.add('show');
-document.getElementById('ingame-panel').classList.add('show');
-renderIngameMarket();
+document.getElementById('ingame').classList.add('show');
+document.getElementById('igPanel').classList.add('show');
+renderIgMarket();
 }
 function exitIngame(){
-document.getElementById('ingame-mode').classList.remove('show');
-document.getElementById('ingame-panel').classList.remove('show');
+document.getElementById('ingame').classList.remove('show');
+document.getElementById('igPanel').classList.remove('show');
+document.getElementById('app').classList.remove('landscape');
+document.getElementById('app').classList.add('portrait');
 }
-function toggleIngamePanel(){
-document.getElementById('ingame-panel').classList.toggle('show');
-}
-function switchIngameTab(type,el){
+function togglePanel(){document.getElementById('igPanel').classList.toggle('show')}
+function switchIgTab(type,el){
 document.querySelectorAll('.ip-tab').forEach(function(t){t.classList.remove('active')});
 el.classList.add('active');
-if(type==='market') renderIngameMarket();
-else renderIngameMy();
+if(type==='market')renderIgMarket();else renderIgMy();
 }
-function renderIngameMarket(){
-var h="";
+function renderIgMarket(){
+var h='';
 saves.forEach(function(s,i){
-var bought=boughtSet.has(i);
-var isActive=activeIdx===i;
-h+='<div class="ingame-save-item" onclick="openDetail('+i+')"><img src="'+s.cover+'" onerror="this.style.background=\
+var isA=activeIdx===i;var b=bought.has(i);
+h+='<div class="ip-item" onclick="openDetail('+i+')"><img src="'+s.cover+'"><div class="info"><div class="t">'+s.title+'</div><div class="m">'+s.type+' · '+s.buyers+'人</div></div>';
+if(isA)h+='<span style="color:var(--green);font-size:10px">✓应用中</span>';
+else if(b)h+='<span style="color:var(--sub);font-size:10px">已购</span>';
+else h+='<button class="ip-btn buy" onclick="event.stopPropagation();igBuy('+i+')">¥'+s.price+'</button>';
+h+='</div>';
+});
+document.getElementById('igBody').innerHTML=h;
+}
+function renderIgMy(){
+var h='<div style="padding:6px 14px;font-size:10px;color:var(--sub);border-bottom:1px solid var(--border)">自动存档</div>';
+localSaves.forEach(function(s){
+h+='<div class="ip-item"><div style="width:44px;height:32px;border-radius:4px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:12px">💾</div><div class="info"><div class="t">'+s.name+'</div><div class="m">'+s.size+'</div></div><button class="ip-btn use" onclick="event.stopPropagation();showToast(\'已切换到本地存档\')">切换</button></div>';
+});
+h+='<div style="padding:6px 14px;font-size:10px;color:var(--sub);border-bottom:1px solid var(--border);margin-top:4px">已购存档</div>';
+var any=false;
+bought.forEach(function(idx){
+any=true;var s=saves[idx];var isA=activeIdx===idx;
+h+='<div class="ip-item" onclick="openDetail('+idx+')"><img src="'+s.cover+'"><div class="info"><div class="t">'+s.title+(isA?' ✓':'')+'</div><div class="m">'+s.type+'</div></div>';
+h+=isA?'<span style="color:var(--green);font-size:10px">应用中</span>':'<button class="ip-btn use" onclick="event.stopPropagation();igApply('+idx+')">切换</button>';
+h+='</div>';
+});
+if(!any)h+='<div style="padding:16px;text-align:center;color:var(--sub);font-size:11px">暂无</div>';
+h+='<div style="padding:8px 14px"><button style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px dashed var(--border);color:var(--sub);font-size:11px;cursor:pointer" onclick="showToast(\'导入本地存档文件\')">📁 导入存档</button></div>';
+document.getElementById('igBody').innerHTML=h;
+}
+function igBuy(idx){
+curIdx=idx;
+if(confirm('确认支付 ¥'+saves[idx].price.toFixed(2)+' 购买？')){
+bought.add(idx);saves[idx].buyers++;renderIgMarket();renderRec();
+showToast('购买成功');
+}
+}
+function igApply(idx){
+if(confirm('切换存档将覆盖当前进度，继续？')){
+activeIdx=idx;renderIgMy();renderRec();
+showToast('存档已切换');
+}
+}
+
+renderRec();
+</script>
+</body>
+</html>
