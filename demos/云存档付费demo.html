@@ -200,8 +200,8 @@ document.getElementById('sec-plaza').innerHTML=h;
 
 function renderMine(){
 var h='';
-// 自动存档
-h+='<div class="section-label">自动存档（'+autoSaves.length+'/4）</div><div class="save-grid">';
+// 本地存档
+h+='<div class="section-label" style="display:flex;justify-content:space-between;align-items:center">本地存档（'+autoSaves.length+'/4）<span style="font-size:11px;color:var(--primary);cursor:pointer;font-weight:bold" onclick="event.stopPropagation();doImportSave()">+ 导入</span></div><div class="save-grid">';
 autoSaves.forEach(function(s){
 h+='<div class="save-card" style="position:relative"><div style="height:50px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:20px">💾</div><div class="sc-body"><div class="sc-title">'+s.name+'</div><div class="sc-time">'+s.time+'</div></div></div>';
 });
@@ -260,7 +260,7 @@ document.getElementById('modal').classList.add('show');
 }
 function showGuide(){
 document.getElementById('mTitle').textContent='存档说明';
-document.getElementById('mDesc').textContent='• 购买的存档可在"我的存档"中使用\n• 使用存档会覆盖当前游戏进度\n• 存档为虚拟商品，购买后不支持退款\n• 自动存档每次退出游戏时自动保存\n• 寄售存档每成交1次赠送30分钟云游时长';
+document.getElementById('mDesc').textContent='• 购买的存档可在"我的存档"中使用\n• 使用存档会覆盖当前游戏进度\n• 存档为虚拟商品，购买后不支持退款\n• 本地存档每次退出游戏时自动保存\n• 支持导入外部存档文件\n• 寄售存档每成交1次赠送30分钟云游时长';
 document.getElementById('mBtns').style.display='none';
 document.getElementById('mClose').style.display='block';
 document.getElementById('modal').classList.add('show');
@@ -296,6 +296,15 @@ document.getElementById('cTitle').value='';document.getElementById('cDesc').valu
 }
 function delConsign(i){consignSaves.splice(i,1);renderMine();showToast('已删除');}
 
+function doImportSave(){
+if(autoSaves.length>=4){showToast('本地存档最多4个');return;}
+var name='imported_'+new Date().toTimeString().slice(0,5).replace(':','')+'.dat';
+autoSaves.push({name:name,size:'9.2 MB',time:new Date().toLocaleString('zh-CN')});
+renderMine();
+try{renderIgMine();}catch(e){}
+showToast('导入成功：'+name);
+}
+
 function toggleOrient(){document.getElementById('app').classList.toggle('portrait');document.getElementById('app').classList.toggle('landscape')}
 function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2000)}
 
@@ -317,8 +326,9 @@ document.getElementById('igBody').innerHTML=h;
 }
 
 function renderIgMine(){
-var h='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 8px">';
-// 自动存档
+var h='<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;font-size:10px;color:var(--sub);border-bottom:1px solid var(--border)"><span>本地存档</span><span style="color:var(--primary);cursor:pointer;font-weight:bold" onclick="doImportSave()">+ 导入</span></div>';
+h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 8px">';
+// 本地存档
 autoSaves.forEach(function(s){
 h+='<div style="background:var(--card);border-radius:6px;overflow:hidden;border:1px solid var(--border)"><div style="height:40px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;font-size:14px">💾</div><div style="padding:6px"><div style="font-size:10px;color:#fff;margin-bottom:2px">'+s.name+'</div><div style="font-size:9px;color:var(--sub)">'+s.time+'</div></div></div>';
 });
