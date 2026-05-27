@@ -63,6 +63,7 @@ tr:hover td{background:#fafafa}
 <div class="logo">盖世游戏 · 存档管理</div>
 <div class="menu-item active" onclick="switchPage('list')"><i class="fas fa-list"></i> 存档列表</div>
 <div class="menu-item" onclick="switchPage('stats')"><i class="fas fa-chart-bar"></i> 数据统计</div>
+<div class="menu-item" onclick="switchPage('orders')"><i class="fas fa-receipt"></i> 订单明细</div>
 </div>
 <div class="main">
 <div class="topbar"><div class="title" id="pageTitle">存档列表</div><div style="color:#999">管理员: 王五</div></div>
@@ -81,11 +82,12 @@ tr:hover td{background:#fafafa}
 
 <script>
 var saves=[
-{id:'SAVE001',title:'500多万CR，440辆车全收集',game:'GTA V',type:'通关存档',price:6,status:'已上架',buyers:877,time:'2026-05-20',cover:'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=120&h=80&fit=crop'},
-{id:'SAVE002',title:'线上模式满级+全武器+1000万',game:'GTA V',type:'通关存档',price:6,status:'已上架',buyers:1200,time:'2026-05-18',cover:'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=120&h=80&fit=crop'},
-{id:'SAVE003',title:'全BOSS击杀存档（含DLC）',game:'GTA V',type:'BOSS存档',price:6,status:'已上架',buyers:644,time:'2026-05-22',cover:'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=120&h=80&fit=crop'},
-{id:'SAVE004',title:'全成就通关存档',game:'艾尔登法环',type:'通关存档',price:6,status:'已上架',buyers:320,time:'2026-05-15',cover:'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=120&h=80&fit=crop'},
-{id:'SAVE005',title:'全角色满级存档',game:'赛博朋克2077',type:'通关存档',price:6,status:'已下架',buyers:89,time:'2026-05-10',cover:'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=120&h=80&fit=crop'}
+{id:'SAVE001',title:'500多万CR，440辆车全收集',game:'GTA V',type:'通关存档',price:6,status:'已上架',buyers:877,time:'2026-05-20',cover:'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=120&h=80&fit=crop',uid:'官方',source:'官方'},
+{id:'SAVE002',title:'线上模式满级+全武器+1000万',game:'GTA V',type:'通关存档',price:6,status:'已上架',buyers:1200,time:'2026-05-18',cover:'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=120&h=80&fit=crop',uid:'官方',source:'官方'},
+{id:'SAVE003',title:'全BOSS击杀存档（含DLC）',game:'GTA V',type:'BOSS存档',price:6,status:'已上架',buyers:644,time:'2026-05-22',cover:'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=120&h=80&fit=crop',uid:'官方',source:'官方'},
+{id:'SAVE004',title:'全成就通关存档',game:'艾尔登法环',type:'通关存档',price:6,status:'已上架',buyers:320,time:'2026-05-15',cover:'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=120&h=80&fit=crop',uid:'u10086',source:'用户寄售'},
+{id:'SAVE005',title:'全角色满级存档',game:'赛博朋克2077',type:'通关存档',price:6,status:'已下架',buyers:89,time:'2026-05-10',cover:'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=120&h=80&fit=crop',uid:'u20088',source:'用户寄售'},
+{id:'SAVE006',title:'96辆车全改装',game:'GTA V',type:'通关存档',price:6,status:'已上架',buyers:234,time:'2026-05-25',cover:'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=120&h=80&fit=crop',uid:'u30055',source:'用户寄售'}
 ];
 
 var editIdx=-1;
@@ -94,16 +96,18 @@ function switchPage(page){
 document.querySelectorAll('.menu-item').forEach(function(m){m.classList.remove('active')});
 event.currentTarget.classList.add('active');
 if(page==='list'){document.getElementById('pageTitle').textContent='存档列表';renderList();}
-else{document.getElementById('pageTitle').textContent='数据统计';renderStats();}
+else if(page==='stats'){document.getElementById('pageTitle').textContent='数据统计';renderStats();}
+else{document.getElementById('pageTitle').textContent='订单明细';renderOrders();}
 }
 
 function renderList(){
 var h='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><h3 style="font-size:14px">存档管理</h3><button class="btn btn-primary" onclick="openNew()"><i class="fas fa-plus"></i> 新建存档</button></div>';
-h+='<div class="filter-bar"><input placeholder="标题搜索" style="width:160px"><select><option>全部游戏</option><option>GTA V</option><option>艾尔登法环</option><option>赛博朋克2077</option></select><select><option>全部状态</option><option>已上架</option><option>已下架</option></select><button class="btn" onclick="showToast(\'查询成功\')">查询</button><button class="btn">重置</button></div>';
-h+='<table><thead><tr><th>ID</th><th>封面</th><th>标题</th><th>游戏</th><th>类型</th><th>价格</th><th>状态</th><th>购买数</th><th>上架时间</th><th>操作</th></tr></thead><tbody>';
+h+='<div class="filter-bar"><input placeholder="标题搜索" style="width:120px"><input placeholder="游戏名搜索" style="width:120px"><input placeholder="用户UID" style="width:100px"><select><option>全部类型</option><option>通关存档</option><option>BOSS存档</option></select><select><option>全部状态</option><option>已上架</option><option>已下架</option></select><input type="date" style="width:130px" title="开始日期"><span style="color:#999">~</span><input type="date" style="width:130px" title="结束日期"><button class="btn" onclick="showToast(\'查询成功\')">查询</button><button class="btn">重置</button></div>';
+h+='<table><thead><tr><th>ID</th><th>封面</th><th>标题</th><th>游戏</th><th>类型</th><th>来源</th><th>UID</th><th>价格</th><th>状态</th><th>购买数</th><th>上架时间</th><th>操作</th></tr></thead><tbody>';
 saves.forEach(function(s,i){
 var statusTag=s.status==='已上架'?'tag-green':'tag-gray';
-h+='<tr><td>'+s.id+'</td><td><img class="cover-img" src="'+s.cover+'"></td><td>'+s.title+'</td><td>'+s.game+'</td><td><span class="tag tag-orange">'+s.type+'</span></td><td>¥'+s.price.toFixed(2)+'</td><td><span class="tag '+statusTag+'">'+s.status+'</span></td><td>'+s.buyers+'</td><td>'+s.time+'</td><td><button class="btn btn-sm" onclick="openEdit('+i+')">编辑</button> ';
+var sourceTag=s.source==='官方'?'<span class="tag tag-orange">官方</span>':'<span class="tag" style="background:#e6f7ff;color:#1890ff;border:1px solid #91d5ff">寄售</span>';
+h+='<tr><td>'+s.id+'</td><td><img class="cover-img" src="'+s.cover+'"></td><td>'+s.title+'</td><td>'+s.game+'</td><td><span class="tag tag-orange">'+s.type+'</span></td><td>'+sourceTag+'</td><td>'+s.uid+'</td><td>¥'+s.price.toFixed(2)+'</td><td><span class="tag '+statusTag+'">'+s.status+'</span></td><td>'+s.buyers+'</td><td>'+s.time+'</td><td><button class="btn btn-sm" onclick="openEdit('+i+')">编辑</button> ';
 h+=s.status==='已上架'?'<button class="btn btn-sm" onclick="toggleStatus('+i+')">下架</button>':'<button class="btn btn-sm" onclick="toggleStatus('+i+')">上架</button>';
 h+=' <button class="btn btn-sm btn-danger" onclick="delItem('+i+')">删除</button></td></tr>';
 });
@@ -116,11 +120,38 @@ var total=saves.length;
 var online=saves.filter(function(s){return s.status==='已上架'}).length;
 var totalBuyers=saves.reduce(function(a,s){return a+s.buyers},0);
 var revenue=totalBuyers*6;
-var h='<div class="stats"><div class="stat-card"><div class="num">'+total+'</div><div class="label">总存档数</div></div><div class="stat-card"><div class="num">'+online+'</div><div class="label">已上架</div></div><div class="stat-card"><div class="num">'+totalBuyers+'</div><div class="label">总购买次数</div></div><div class="stat-card"><div class="num">¥'+revenue+'</div><div class="label">总收入</div></div></div>';
-h+='<div class="card"><h3 style="font-size:14px;margin-bottom:14px">各游戏存档分布</h3><table><thead><tr><th>游戏</th><th>存档数</th><th>总购买</th><th>收入</th></tr></thead><tbody>';
+var giftMinutes=totalBuyers*30;
+var h='<div class="card"><div class="filter-bar" style="margin-bottom:0"><input type="date" style="width:130px" title="开始日期"><span style="color:#999">~</span><input type="date" style="width:130px" title="结束日期"><input placeholder="游戏名搜索" style="width:140px"><button class="btn" onclick="showToast(\'查询成功\')">查询</button><button class="btn">重置</button></div></div>';
+h+='<div class="stats"><div class="stat-card"><div class="num">'+total+'</div><div class="label">总存档数</div></div><div class="stat-card"><div class="num">'+online+'</div><div class="label">已上架</div></div><div class="stat-card"><div class="num">'+totalBuyers+'</div><div class="label">总购买次数</div></div><div class="stat-card"><div class="num">¥'+revenue+'</div><div class="label">总收入</div></div></div>';
+h+='<div class="stats" style="grid-template-columns:repeat(2,1fr)"><div class="stat-card"><div class="num" style="color:var(--primary)">'+giftMinutes+'分钟</div><div class="label">赠送云游时长（寄售奖励）</div></div><div class="stat-card"><div class="num" style="color:#52c41a">'+(giftMinutes/60).toFixed(1)+'小时</div><div class="label">折合小时</div></div></div>';
+h+='<div class="card"><h3 style="font-size:14px;margin-bottom:14px">各游戏存档分布</h3><table><thead><tr><th>游戏</th><th>存档数</th><th>总购买</th><th>收入</th><th>赠送时长</th></tr></thead><tbody>';
 var games={};
 saves.forEach(function(s){if(!games[s.game])games[s.game]={count:0,buyers:0};games[s.game].count++;games[s.game].buyers+=s.buyers;});
-Object.keys(games).forEach(function(g){var d=games[g];h+='<tr><td>'+g+'</td><td>'+d.count+'</td><td>'+d.buyers+'</td><td>¥'+(d.buyers*6)+'</td></tr>';});
+Object.keys(games).forEach(function(g){var d=games[g];h+='<tr><td>'+g+'</td><td>'+d.count+'</td><td>'+d.buyers+'</td><td>¥'+(d.buyers*6)+'</td><td>'+(d.buyers*30)+'分钟</td></tr>';});
+h+='</tbody></table></div>';
+// 订单明细
+h+='<div class="card"><h3 style="font-size:14px;margin-bottom:14px">订单明细</h3>';
+h+='<div class="filter-bar"><input placeholder="买家UID" style="width:100px"><input placeholder="存档ID" style="width:100px"><input type="date" style="width:130px"><span style="color:#999">~</span><input type="date" style="width:130px"><button class="btn" onclick="showToast(\'查询成功\')">查询</button></div>';
+h+='<table><thead><tr><th>订单号</th><th>买家UID</th><th>存档标题</th><th>游戏</th><th>金额</th><th>卖家</th><th>赠送时长</th><th>购买时间</th><th>状态</th></tr></thead><tbody>';
+h+='<tr><td>ORD20260527001</td><td>u50001</td><td>500多万CR全收集</td><td>GTA V</td><td>¥6.00</td><td>官方</td><td>-</td><td>2026-05-27 14:30</td><td><span class="tag tag-green">已完成</span></td></tr>';
+h+='<tr><td>ORD20260527002</td><td>u50023</td><td>全BOSS击杀存档</td><td>GTA V</td><td>¥6.00</td><td>官方</td><td>-</td><td>2026-05-27 15:10</td><td><span class="tag tag-green">已完成</span></td></tr>';
+h+='<tr><td>ORD20260526001</td><td>u50045</td><td>全成就通关存档</td><td>艾尔登法环</td><td>¥6.00</td><td>u10086</td><td>+30分钟</td><td>2026-05-26 09:20</td><td><span class="tag tag-green">已完成</span></td></tr>';
+h+='<tr><td>ORD20260525001</td><td>u50067</td><td>96辆车全改装</td><td>GTA V</td><td>¥6.00</td><td>u30055</td><td>+30分钟</td><td>2026-05-25 18:45</td><td><span class="tag tag-green">已完成</span></td></tr>';
+h+='<tr><td>ORD20260525002</td><td>u50089</td><td>线上模式满级</td><td>GTA V</td><td>¥6.00</td><td>官方</td><td>-</td><td>2026-05-25 20:00</td><td><span class="tag tag-green">已完成</span></td></tr>';
+h+='</tbody></table></div>';
+document.getElementById('pageContent').innerHTML=h;
+}
+
+function renderOrders(){
+var h='<div class="card"><h3 style="font-size:14px;margin-bottom:14px">订单明细</h3>';
+h+='<div class="filter-bar"><input placeholder="买家UID" style="width:100px"><input placeholder="卖家UID" style="width:100px"><input placeholder="存档ID/标题" style="width:130px"><input type="date" style="width:130px"><span style="color:#999">~</span><input type="date" style="width:130px"><select><option>全部状态</option><option>已完成</option><option>已退款</option></select><button class="btn" onclick="showToast(\'查询成功\')">查询</button><button class="btn">重置</button><button class="btn" onclick="showToast(\'导出CSV\')"><i class="fas fa-download"></i> 导出</button></div>';
+h+='<table><thead><tr><th>订单号</th><th>买家UID</th><th>存档标题</th><th>游戏</th><th>金额</th><th>卖家</th><th>赠送时长</th><th>购买时间</th><th>状态</th><th>操作</th></tr></thead><tbody>';
+h+='<tr><td>ORD20260527001</td><td>u50001</td><td>500多万CR全收集</td><td>GTA V</td><td>¥6.00</td><td>官方</td><td>-</td><td>2026-05-27 14:30</td><td><span class="tag tag-green">已完成</span></td><td><button class="btn btn-sm" onclick="showToast(\'查看详情\')">详情</button></td></tr>';
+h+='<tr><td>ORD20260527002</td><td>u50023</td><td>全BOSS击杀存档</td><td>GTA V</td><td>¥6.00</td><td>官方</td><td>-</td><td>2026-05-27 15:10</td><td><span class="tag tag-green">已完成</span></td><td><button class="btn btn-sm" onclick="showToast(\'查看详情\')">详情</button></td></tr>';
+h+='<tr><td>ORD20260526001</td><td>u50045</td><td>全成就通关存档</td><td>艾尔登法环</td><td>¥6.00</td><td>u10086</td><td>+30分钟</td><td>2026-05-26 09:20</td><td><span class="tag tag-green">已完成</span></td><td><button class="btn btn-sm" onclick="showToast(\'查看详情\')">详情</button></td></tr>';
+h+='<tr><td>ORD20260525001</td><td>u50067</td><td>96辆车全改装</td><td>GTA V</td><td>¥6.00</td><td>u30055</td><td>+30分钟</td><td>2026-05-25 18:45</td><td><span class="tag tag-green">已完成</span></td><td><button class="btn btn-sm" onclick="showToast(\'查看详情\')">详情</button></td></tr>';
+h+='<tr><td>ORD20260525002</td><td>u50089</td><td>线上模式满级</td><td>GTA V</td><td>¥6.00</td><td>官方</td><td>-</td><td>2026-05-25 20:00</td><td><span class="tag tag-green">已完成</span></td><td><button class="btn btn-sm" onclick="showToast(\'查看详情\')">详情</button></td></tr>';
+h+='<tr><td>ORD20260524001</td><td>u50100</td><td>全角色满级存档</td><td>赛博朋克2077</td><td>¥6.00</td><td>u20088</td><td>+30分钟</td><td>2026-05-24 12:00</td><td><span class="tag" style="background:#fff1f0;color:#ff4d4f;border:1px solid #ffa39e">已退款</span></td><td><button class="btn btn-sm" onclick="showToast(\'查看详情\')">详情</button></td></tr>';
 h+='</tbody></table></div>';
 document.getElementById('pageContent').innerHTML=h;
 }
