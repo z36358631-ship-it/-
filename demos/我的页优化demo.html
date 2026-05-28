@@ -513,8 +513,18 @@
             <!-- 客态主页浮层 -->
             <div id="user-profile-panel" class="panel z-110">
                 <div class="scroller" id="guest-scroller">
+                    <!-- 客态顶部导航：返回 + Tab + 占位 -->
+                    <div class="top-nav-bar" style="justify-content:flex-start; gap:15px;">
+                        <div style="width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; color:#fff;" onclick="closeUserProfile()">‹</div>
+                        <div class="top-nav-tabs">
+                            <div class="nav-tab active" onclick="switchGuestSection('profile', this)">个人主页</div>
+                            <div class="nav-tab" onclick="switchGuestSection('feed', this)">动态</div>
+                        </div>
+                    </div>
+
+                    <!-- 客态-个人主页（默认显示） -->
+                    <div id="guest-section-profile">
                     <div class="layout-wrapper">
-                        <div class="panel-back-abs" onclick="closeUserProfile()">‹</div>
                         <div class="profile-part">
                             <div class="user-hero-new">
                                 <div class="avatar-container-new" style="cursor:default">
@@ -533,9 +543,9 @@
                                 <div class="stat-item" onclick="openPanel('followers', true)"><span class="val">1.2k</span><span class="lbl">粉丝</span></div>
                                 <div class="stat-item" onclick="openPanel('likes', true)"><span class="val">3.5k</span><span class="lbl">获赞与收藏</span></div>
                             </div>
-                            
-                            <!-- 客态资产卡片 (省略内部svg直接给结构) -->
-                            <div class="steam-card">
+                        </div>
+                        <div class="content-part">
+                            <div class="steam-card" style="margin-top:12px;">
                                 <div class="steam-title">Steam 信息</div>
                                 <div class="steam-user-row">
                                     <div class="steam-user-left"><div class="steam-avatar"><div class="steam-avatar-inner"></div></div><div class="steam-name">操作怪_大神</div></div>
@@ -548,13 +558,16 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="content-part">
-                            <div class="tab-bar">
-                                <div class="tab active" onclick="switchTab('dynamic', this, 'op-feed-list')">动态</div>
-                                <div class="tab" onclick="switchTab('liked', this, 'op-feed-list')">赞过</div>
-                            </div>
-                            <div id="op-feed-list" class="feed-container"></div>
+                    </div>
+                    </div>
+
+                    <!-- 客态-动态（默认隐藏） -->
+                    <div id="guest-section-feed" style="display:none;">
+                        <div style="display:flex; gap:20px; padding:10px 20px 0; border-bottom:1px solid var(--border);">
+                            <div class="tab active" onclick="switchTab('dynamic', this, 'op-feed-list')" style="font-size:13px; padding-bottom:10px;">动态</div>
+                            <div class="tab" onclick="switchTab('liked', this, 'op-feed-list')" style="font-size:13px; padding-bottom:10px;">赞过</div>
                         </div>
+                        <div id="op-feed-list" class="feed-container"></div>
                     </div>
                 </div>
             </div>
@@ -673,16 +686,30 @@
             document.getElementById('op-desc').innerText = desc || '这个人很懒，什么都没留下';
             document.getElementById('op-uid').innerText = 'UID: ' + uid;
             document.getElementById('op-avatar').style.backgroundImage = `url('${avatar}')`;
-            
+
             const followBtn = document.querySelector('.profile-follow');
             followBtn.classList.remove('followed');
             followBtn.innerText = '关注';
             followBtn.dataset.origText = '关注';
 
+            // 重置客态Tab到个人主页
+            document.getElementById('guest-section-profile').style.display = 'block';
+            document.getElementById('guest-section-feed').style.display = 'none';
+            const guestTabs = document.querySelectorAll('#user-profile-panel .top-nav-tabs .nav-tab');
+            guestTabs.forEach(t => t.classList.remove('active'));
+            if (guestTabs[0]) guestTabs[0].classList.add('active');
+
             document.getElementById('user-profile-panel').classList.add('show');
-            renderFeed('dynamic', 'op-feed-list');
         }
         function closeUserProfile() { document.getElementById('user-profile-panel').classList.remove('show'); }
+
+        function switchGuestSection(section, el) {
+            el.closest('.top-nav-tabs').querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('guest-section-profile').style.display = section === 'profile' ? 'block' : 'none';
+            document.getElementById('guest-section-feed').style.display = section === 'feed' ? 'block' : 'none';
+            if (section === 'feed') renderFeed('dynamic', 'op-feed-list');
+        }
 
         function switchPlatform(el) {
             el.closest('.steam-card-logos').querySelectorAll('.platform-icon').forEach(i => i.classList.remove('active'));
