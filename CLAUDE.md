@@ -46,6 +46,9 @@ Each button `b` in `editState[n].btns`:
 `createSubLayout()` → sets `hasSubLayout=true`, initialises `editState[2]`, sets `swWidget` to default position → `updateToolbar()` + `renderEditor()`  
 `deleteSubLayout()` → resets all state to initial, `curLayout=1`, `swWidget=null` → `updateToolbar()` + `renderEditor()`
 
+### PRD撰写规范
+写PRD时必须对照 `prd/PRD自查清单-前端展示易遗漏项.md` 逐条落实涉及的场景，不可遗漏。
+
 ### PRD Annotation System
 See `产品demo设计.txt` for full spec. Key rules when adding annotations:
 - Orange badge: `background: rgb(250,173,20)`, white 10px bold text, `padding:0 4px`, `border-radius:2px`
