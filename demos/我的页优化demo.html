@@ -50,13 +50,18 @@
 
         .profile-part { flex-shrink: 0; background: var(--bg-dark); z-index: 2; }
         .portrait .profile-part { width: 100%; padding-bottom: 15px; }
-        .landscape .profile-part { width: 50%; border-right: 1px solid var(--border); padding-bottom: 20px; }
+        .landscape .profile-part { width: 50%; border-right: 1px solid var(--border); padding-bottom: 20px; overflow-y: auto; }
 
         .content-part { flex: 1; display: flex; flex-direction: column; background: var(--bg-dark); }
         .landscape .content-part { width: 50%; }
 
-        /* ---------------- 顶部控制按钮 ---------------- */
-        .top-controls { position: absolute; top: 10px; right: 20px; display: flex; gap: 18px; z-index: 20; }
+        /* ---------------- 顶部导航栏（Tab + 操作按钮同行） ---------------- */
+        .top-nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; position: sticky; top: 0; background: var(--bg-dark); z-index: 20; }
+        .top-nav-tabs { display: flex; gap: 20px; }
+        .top-nav-tabs .nav-tab { font-size: 16px; color: var(--text-s); cursor: pointer; position: relative; padding-bottom: 4px; transition: 0.2s; }
+        .top-nav-tabs .nav-tab.active { color: var(--text-p); font-weight: bold; font-size: 17px; }
+        .top-nav-tabs .nav-tab.active::after { content:''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 16px; height: 3px; background: var(--primary); border-radius: 2px; }
+        .top-controls { display: flex; gap: 18px; }
         .icon-btn { position: relative; cursor: pointer; }
         .icon-btn svg { width: 22px; height: 22px; fill: var(--text-p); cursor: pointer; opacity: 0.8; transition: 0.2s; }
         .icon-btn svg:hover { opacity: 1; }
@@ -67,7 +72,7 @@
         .panel-back-abs { position: absolute; top: 10px; left: 15px; z-index: 20; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; color: #fff; padding-bottom: 3px; }
 
         /* 用户信息 */
-        .user-hero-new { display: flex; align-items: center; padding: 0 20px; gap: 15px; margin-bottom: 15px; margin-top: 35px; }
+        .user-hero-new { display: flex; align-items: center; padding: 0 20px; gap: 15px; margin-bottom: 15px; margin-top: 15px; }
         .landscape .user-hero-new { margin-top: 10px; }
         
         .avatar-container-new { width: 55px; height: 55px; border-radius: 50%; padding: 2px; border: 2px solid var(--primary); flex-shrink: 0; cursor: pointer; }
@@ -123,7 +128,6 @@
 
         /* ---------------- Tab 导航 ---------------- */
         .tab-bar { display: flex; gap: 25px; padding: 15px 20px 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-dark); z-index: 5; }
-        .landscape .tab-bar { padding-right: 90px; }
         .tab { color: var(--text-s); font-size: 14px; padding-bottom: 12px; cursor: pointer; position: relative; transition: 0.2s; }
         .tab.active { color: var(--text-p); font-weight: bold; font-size: 15px;}
         .tab.active::after { content:''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 16px; height: 3px; background: var(--primary); border-radius: 2px; }
@@ -241,10 +245,13 @@
         <div class="device-body">
             <!-- 主页内容区 -->
             <div class="scroller" id="main-scroller">
-                <div class="layout-wrapper">
-                    <!-- 悬浮操作按钮 -->
+                <!-- 顶部导航：Tab + 操作按钮同行 -->
+                <div class="top-nav-bar">
+                    <div class="top-nav-tabs">
+                        <div class="nav-tab active" onclick="switchMainSection('profile', this)">个人主页</div>
+                        <div class="nav-tab" onclick="switchMainSection('feed', this)">动态</div>
+                    </div>
                     <div class="top-controls">
-                        <!-- 消息按钮引入主红点 -->
                         <div class="icon-btn" title="消息" onclick="openMessages()">
                             <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
                             <div class="main-msg-dot" id="main-msg-dot"></div>
@@ -252,7 +259,11 @@
                         <div class="icon-btn" title="下载管理"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></div>
                         <div class="icon-btn" title="设置"><svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg></div>
                     </div>
+                </div>
 
+                <!-- 个人主页内容（默认显示） -->
+                <div id="section-profile">
+                <div class="layout-wrapper">
                     <div class="profile-part">
                         <div class="user-hero-new">
                             <div class="avatar-container-new" onclick="goToProfile(event, '盖世小秘书', 'https://api.dicebear.com/7.x/avataaars/svg?seed=GS', '分享最新游戏资讯与评测', '12789457489')">
@@ -320,45 +331,37 @@
                     </div>
 
                     <div class="content-part">
-                        <!-- 游戏数据 / 动态 一级Tab -->
-                        <div class="tab-bar" id="main-tab-bar">
-                            <div class="tab" onclick="switchMainSection('gamedata', this)">游戏数据</div>
-                            <div class="tab active" onclick="switchMainSection('feed', this)">动态</div>
-                        </div>
-
-                        <!-- 游戏数据区域（默认隐藏） -->
-                        <div id="section-gamedata" style="display:none; padding-bottom:40px;">
-                            <div class="steam-card" style="margin-top:12px;">
-                                <div class="steam-card-logos">
-                                    <div class="platform-icon active" onclick="switchPlatform(this)"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.8 14.7l3.2-4.6a3.6 3.6 0 0 1-.5-1.9 3.8 3.8 0 1 1 5.9 3.1l2.5 1.7a4.3 4.3 0 1 0-4.1-6 3.6 3.6 0 0 0-1.8.5l-3.1 4.5A10 10 0 1 0 12 2zm-2.1 8.4a1.9 1.9 0 1 1 0 3.8 1.9 1.9 0 0 1 0-3.8zm5.6 4.1a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/></svg></div><div class="logo-divider"></div>
-                                    <div class="platform-icon" onclick="switchPlatform(this)"><svg viewBox="0 0 24 24"><path d="M12 2L4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3zm0 2.18l6 2.25v4.57c0 4.41-2.71 8.6-6 9.82-3.29-1.22-6-5.41-6-9.82V6.43l6-2.25z"/><text x="12" y="11" font-size="4" font-weight="bold" fill="currentColor" text-anchor="middle">EPIC</text><text x="12" y="15" font-size="3" fill="currentColor" text-anchor="middle">GAMES</text></svg></div><div class="logo-divider"></div>
-                                    <div class="platform-icon" onclick="switchPlatform(this)"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.88 9.54L6.2 7.62A8.04 8.04 0 0 1 12 4a8.04 8.04 0 0 1 5.8 3.62l-3.92 3.92c-.88-.88-2.12-.88-3 0zm-.7 1.42l-4.6 4.6A8.04 8.04 0 0 1 4 12c0-1.84.6-3.52 1.62-4.88l4.42 4.42c-.22.64-.16 1.36.26 1.88zM12 20a8.04 8.04 0 0 1-5.8-3.62l3.92-3.92c.88.88 2.12.88 3 0l3.92 3.92A8.04 8.04 0 0 1 12 20zm3.28-7.04l4.6-4.6A8.04 8.04 0 0 1 20 12c0 1.84-.6 3.52-1.62 4.88l-4.42-4.42c.22-.64.16-1.36-.26-1.88z"/></svg></div>
-                                </div>
-                                <div class="steam-title">Steam 信息</div>
-                                <div class="steam-user-row">
-                                    <div class="steam-user-left"><div class="steam-avatar"><div class="steam-avatar-inner"></div></div><div class="steam-name">用户用...用户名</div></div>
-                                    <div class="steam-level">123</div>
-                                </div>
-                                <div class="steam-grid">
-                                    <div><div class="l">游玩时长 (h)</div><div class="v">15.6</div></div>
-                                    <div><div class="l">账号价值 (￥)</div><div class="v">9999.5K</div></div>
-                                    <div><div class="l">游戏数量</div><div class="v">99999</div></div>
-                                </div>
+                        <div class="steam-card" style="margin-top:12px;">
+                            <div class="steam-card-logos">
+                                <div class="platform-icon active" onclick="switchPlatform(this)"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.8 14.7l3.2-4.6a3.6 3.6 0 0 1-.5-1.9 3.8 3.8 0 1 1 5.9 3.1l2.5 1.7a4.3 4.3 0 1 0-4.1-6 3.6 3.6 0 0 0-1.8.5l-3.1 4.5A10 10 0 1 0 12 2zm-2.1 8.4a1.9 1.9 0 1 1 0 3.8 1.9 1.9 0 0 1 0-3.8zm5.6 4.1a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/></svg></div><div class="logo-divider"></div>
+                                <div class="platform-icon" onclick="switchPlatform(this)"><svg viewBox="0 0 24 24"><path d="M12 2L4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3zm0 2.18l6 2.25v4.57c0 4.41-2.71 8.6-6 9.82-3.29-1.22-6-5.41-6-9.82V6.43l6-2.25z"/><text x="12" y="11" font-size="4" font-weight="bold" fill="currentColor" text-anchor="middle">EPIC</text><text x="12" y="15" font-size="3" fill="currentColor" text-anchor="middle">GAMES</text></svg></div><div class="logo-divider"></div>
+                                <div class="platform-icon" onclick="switchPlatform(this)"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.88 9.54L6.2 7.62A8.04 8.04 0 0 1 12 4a8.04 8.04 0 0 1 5.8 3.62l-3.92 3.92c-.88-.88-2.12-.88-3 0zm-.7 1.42l-4.6 4.6A8.04 8.04 0 0 1 4 12c0-1.84.6-3.52 1.62-4.88l4.42 4.42c-.22.64-.16 1.36.26 1.88zM12 20a8.04 8.04 0 0 1-5.8-3.62l3.92-3.92c.88.88 2.12.88 3 0l3.92 3.92A8.04 8.04 0 0 1 12 20zm3.28-7.04l4.6-4.6A8.04 8.04 0 0 1 20 12c0 1.84-.6 3.52-1.62 4.88l-4.42-4.42c.22-.64.16-1.36-.26-1.88z"/></svg></div>
                             </div>
-                        </div>
-
-                        <!-- 动态区域（默认显示） -->
-                        <div id="section-feed">
-                            <!-- 动态子Tab：帖子/赞过/收藏 -->
-                            <div style="display:flex; gap:20px; padding:10px 20px 0; border-bottom:1px solid var(--border);">
-                                <div class="tab active" onclick="switchTab('dynamic', this, 'feed-list')" style="font-size:13px; padding-bottom:10px;">帖子</div>
-                                <div class="tab" onclick="switchTab('liked', this, 'feed-list')" style="font-size:13px; padding-bottom:10px;">赞过</div>
-                                <div class="tab" onclick="switchTab('fav', this, 'feed-list')" style="font-size:13px; padding-bottom:10px;">收藏</div>
+                            <div class="steam-title">Steam 信息</div>
+                            <div class="steam-user-row">
+                                <div class="steam-user-left"><div class="steam-avatar"><div class="steam-avatar-inner"></div></div><div class="steam-name">用户用...用户名</div></div>
+                                <div class="steam-level">123</div>
                             </div>
-                            <div id="feed-list" class="feed-container"></div>
+                            <div class="steam-grid">
+                                <div><div class="l">游玩时长 (h)</div><div class="v">15.6</div></div>
+                                <div><div class="l">账号价值 (￥)</div><div class="v">9999.5K</div></div>
+                                <div><div class="l">游戏数量</div><div class="v">99999</div></div>
+                            </div>
                         </div>
                     </div>
-            </div>
+                </div>
+                </div>
+
+                <!-- 动态区域（默认隐藏） -->
+                <div id="section-feed" style="display:none;">
+                    <div style="display:flex; gap:20px; padding:10px 20px 0; border-bottom:1px solid var(--border);">
+                        <div class="tab active" onclick="switchTab('dynamic', this, 'feed-list')" style="font-size:13px; padding-bottom:10px;">帖子</div>
+                        <div class="tab" onclick="switchTab('liked', this, 'feed-list')" style="font-size:13px; padding-bottom:10px;">赞过</div>
+                        <div class="tab" onclick="switchTab('fav', this, 'feed-list')" style="font-size:13px; padding-bottom:10px;">收藏</div>
+                    </div>
+                    <div id="feed-list" class="feed-container"></div>
+                </div>
+            </div> <!-- end #main-scroller -->
 
             <!-- 创作者中心面板 -->
             <!-- 创作者中心面板（初始未认证状态） -->
@@ -801,10 +804,11 @@
         }
 
         function switchMainSection(section, el) {
-            document.querySelectorAll('#main-tab-bar .tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.top-nav-tabs .nav-tab').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
-            document.getElementById('section-gamedata').style.display = section === 'gamedata' ? 'block' : 'none';
+            document.getElementById('section-profile').style.display = section === 'profile' ? 'block' : 'none';
             document.getElementById('section-feed').style.display = section === 'feed' ? 'block' : 'none';
+            if (section === 'feed') renderFeed('dynamic', 'feed-list');
         }
         function showApplyForm() {
             document.getElementById('publisher-status-area').style.display = 'none';
@@ -1028,7 +1032,6 @@
         function closeModal() { document.getElementById('stats-modal').classList.remove('show'); }
 
         // 页面启动执行初始化
-        renderFeed('dynamic', 'feed-list');
         initMsgBadgesAndSubs();
 
     </script>
