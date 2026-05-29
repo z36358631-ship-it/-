@@ -111,7 +111,7 @@ body{background:#000;color:#fff;height:100vh;width:100vw;display:flex;align-item
 
 /* 横屏子tab+入口 */
 .l-section{padding:8px 24px;display:flex;flex-direction:column;gap:10px;}
-.l-tab-row{display:flex;align-items:center;gap:0;}
+.l-tab-row{display:flex;align-items:center;gap:0;justify-content:center;}
 .l-tab-row .tab{padding:5px 14px;font-size:13px;font-weight:600;color:var(--dim);cursor:pointer;border-radius:6px;transition:0.2s;}
 .l-tab-row .tab.on{color:#fff;background:rgba(255,255,255,0.08);}
 .l-entry-row{display:flex;gap:10px;}
@@ -494,7 +494,7 @@ function renderLand(){
 
     el.innerHTML=`
         <div class="l-recent">
-            <div class="sec-row"><div class="s-icon"><i class="fas fa-search"></i></div><div class="sec-t">最近游戏</div></div>
+            <div class="sec-row"><div class="sec-t">最近游戏</div></div>
             <div class="cards-row">${recentGames.slice(0,4).map(g=>`<div class="rc"><img src="${cv(g)}"><span>${g}</span></div>`).join('')}</div>
         </div>
         <div class="l-section">
