@@ -180,7 +180,7 @@ var saves=[
 {id:4,title:'96辆车3000U全改装',type:'通关存档',price:6,buyers:234,desc:'精选96辆热门车辆全部改装。',size:'6.2 MB',cover:'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400',imgs:['https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600']},
 {id:5,title:'单人模式100%全收集',type:'通关存档',price:6,buyers:156,desc:'单人100%完成度，三角色全满技能。',size:'9.8 MB',cover:'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400',imgs:['https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600']}
 ];
-var autoSaves=[{name:'autosave_01.dat',size:'8.0 MB',time:'2026-05-27 16:00'},{name:'autosave_02.dat',size:'7.8 MB',time:'2026-05-25 14:30'},{name:'autosave_03.dat',size:'8.1 MB',time:'2026-05-23 09:15'}];
+var autoSaves=[{name:'autosave_01.dat',size:'8.0 MB',time:'2026-05-27 16:00',source:'auto'},{name:'autosave_02.dat',size:'7.8 MB',time:'2026-05-25 14:30',source:'auto'},{name:'autosave_03.dat',size:'8.1 MB',time:'2026-05-23 09:15',source:'auto'}];
 var consignSaves=[];
 var bought=new Set();
 var activeIdx=-1;
@@ -190,10 +190,13 @@ var pendingAction='';
 function renderPlaza(){
 var h='';
 saves.forEach(function(s,i){
-var cls=s.type==='BOSS存档'?'boss':'full';
 var isA=activeIdx===i;
 var btn=isA?'<button class="sc-btn using">使用中</button>':'<button class="sc-btn buy">¥6.00 购买</button>';
-h+='<div class="save-card" onclick="openDetail('+i+')"><img src="'+s.cover+'"><div class="sc-body"><div class="sc-title"><span class="type-tag '+cls+'">'+s.type+'</span>'+s.title+'</div><div class="sc-meta">'+s.buyers+'人已购买</div>'+btn+'</div></div>';
+h+='<div class="save-card" onclick="openDetail('+i+')"><img src="'+s.cover+'"><div class="sc-body"><div class="sc-title">'+s.title+'</div><div class="sc-meta">'+s.buyers+'人已购买</div>'+btn+'</div></div>';
+});
+consignSaves.forEach(function(c,ci){
+if(c.status!=='on')return;
+h+='<div class="save-card" onclick="openDetail('+ci+',\'consign-guest\')"><img src="'+(c.imgs&&c.imgs[0]||'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400')+'"><div class="sc-body"><div class="sc-title">'+c.title+'</div><div class="sc-meta">'+c.sold+'人已购买</div><button class="sc-btn buy">¥6.00 购买</button></div></div>';
 });
 document.getElementById('sec-plaza').innerHTML=h;
 }
@@ -202,9 +205,15 @@ function renderMine(){
 var h='';
 // 本地存档
 h+='<div class="section-label" style="display:flex;justify-content:space-between;align-items:center">本地存档（'+autoSaves.length+'/4）<span style="font-size:11px;color:var(--primary);cursor:pointer;font-weight:bold" onclick="event.stopPropagation();doImportSave()">+ 导入</span></div><div class="save-grid">';
+if(autoSaves.length>0){
 autoSaves.forEach(function(s){
-h+='<div class="save-card" style="position:relative"><div style="height:50px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:20px">💾</div><div class="sc-body"><div class="sc-title">'+s.name+'</div><div class="sc-time">'+s.time+'</div></div></div>';
+var tagText=s.source==='auto'?'自动存档':'导入存档';
+var tagColor=s.source==='auto'?'rgba(24,144,255,0.85)':'rgba(250,173,20,0.85)';
+h+='<div class="save-card"><div style="height:50px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:20px;position:relative">💾<span style="position:absolute;top:4px;left:4px;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:bold;color:#fff;background:'+tagColor+'">'+tagText+'</span></div><div class="sc-body"><div class="sc-title">'+s.name+'</div><div class="sc-time">'+s.time+'</div></div></div>';
 });
+}else{
+h+='<div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--sub);font-size:12px">暂无本地存档</div>';
+}
 h+='</div>';
 // 已购存档
 h+='<div class="section-label">已购存档（'+bought.size+'）</div><div class="save-grid">';
@@ -217,14 +226,14 @@ h+='<div class="save-card" onclick="openDetail('+idx+')"><img src="'+s.cover+'">
 }else{h+='<div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--sub);font-size:12px">暂无已购存档</div>';}
 h+='</div>';
 // 寄售存档
-h+='<div class="section-label">我的寄售（'+consignSaves.length+'/4）</div><div class="save-grid">';
+h+='<div class="section-label" style="display:flex;justify-content:space-between;align-items:center">我的寄售（'+consignSaves.length+'/4）<span style="font-size:11px;color:var(--primary);cursor:pointer;font-weight:bold" onclick="event.stopPropagation();openConsign()">+ 寄售存档</span></div><div class="save-grid">';
 if(consignSaves.length>0){
 consignSaves.forEach(function(c,ci){
-h+='<div class="save-card" style="position:relative"><div style="height:50px;background:linear-gradient(135deg,#1a2940,#0d1b2a);display:flex;align-items:center;justify-content:center;font-size:16px">🏷️</div><div class="sc-del" onclick="event.stopPropagation();delConsign('+ci+')">×</div><div class="sc-body"><div class="sc-title">'+c.title+'</div><div class="sc-meta">已售'+c.sold+'份 · 获'+c.sold*30+'分钟</div></div></div>';
+var stTag=c.status==='on'?'<span style="position:absolute;top:4px;right:4px;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:bold;color:#fff;background:rgba(82,196,26,0.85)">上架中</span>':'<span style="position:absolute;top:4px;right:4px;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:bold;color:#fff;background:rgba(245,34,45,0.85)">已下架</span>';
+h+='<div class="save-card" onclick="openDetail('+ci+',\'consign\')"><div style="height:50px;background:linear-gradient(135deg,#1a2940,#0d1b2a);display:flex;align-items:center;justify-content:center;font-size:16px;position:relative">🏷️'+stTag+'</div><div class="sc-body"><div class="sc-title">'+c.title+'</div><div class="sc-meta">已售'+c.sold+'份 · 获'+c.sold*30+'分钟</div></div></div>';
 });
 }else{h+='<div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--sub);font-size:12px">暂无寄售</div>';}
 h+='</div>';
-h+='<div style="padding:12px 16px"><button style="width:100%;padding:10px;border-radius:10px;background:transparent;border:1px dashed var(--border);color:var(--sub);font-size:12px;cursor:pointer" onclick="openConsign()">🏷️ 寄售存档</button></div>';
 document.getElementById('sec-mine').innerHTML=h;
 }
 
@@ -236,13 +245,42 @@ document.getElementById('sec-mine').style.display=type==='mine'?'block':'none';
 if(type==='mine')renderMine();
 }
 
-function openDetail(idx){
-curIdx=idx;var s=saves[idx];
-document.getElementById('dMedia').innerHTML=s.imgs.map(function(u){return '<img src="'+u+'">';}).join('');
-var info='<div class="d-title">'+s.title+'</div><div class="d-desc">'+s.desc+'</div><div class="d-meta"><div class="dm-row"><span class="l">类型</span><span>'+s.type+'</span></div><div class="dm-row"><span class="l">大小</span><span>'+s.size+'</span></div><div class="dm-row"><span class="l">已购买</span><span>'+s.buyers+'人</span></div></div>';
+function openDetail(idx,type){
+var detailType=type||'system';
+curIdx=idx;
+var s,isMine=false;
+if(detailType==='consign'){
+s=consignSaves[idx];isMine=true;
+}else if(detailType==='consign-guest'){
+s=consignSaves[idx];isMine=false;
+}else{
+s=saves[idx];
+}
+var imgs=s.imgs||['https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600'];
+var mediaTag='';
+if(detailType==='consign'&&isMine){
+mediaTag=s.status==='on'?'<span style="position:absolute;top:8px;right:8px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;color:#fff;background:rgba(82,196,26,0.85);z-index:2">上架中</span>':'<span style="position:absolute;top:8px;right:8px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;color:#fff;background:rgba(245,34,45,0.85);z-index:2">未上架</span>';
+}
+document.getElementById('dMedia').innerHTML='<div style="position:relative;display:inline-flex;width:100%;height:100%">'+imgs.map(function(u){return '<img src="'+u+'" style="min-width:100%;height:100%;object-fit:cover;scroll-snap-align:center;flex-shrink:0">';}).join('')+mediaTag+'</div>';
+var info='<div class="d-title">'+s.title+'</div><div class="d-desc">'+(s.desc||'')+'</div><div class="d-meta"><div class="dm-row"><span class="l">大小</span><span>'+(s.size||'--')+'</span></div><div class="dm-row"><span class="l">已购买</span><span>'+(s.buyers||s.sold||0)+'人</span></div>';
+if(detailType==='consign'&&isMine){
+info+='<div class="dm-row"><span class="l">已售</span><span>'+s.sold+'份</span></div><div class="dm-row"><span class="l">已获时长</span><span>'+s.sold*30+'分钟</span></div>';
+}
+info+='</div>';
 document.getElementById('dInfo').innerHTML=info;
-var btn=document.getElementById('dBuy');
-btn.textContent='¥6.00 购买';btn.className='d-buy';btn.onclick=function(){doBuy()};
+var footer=document.querySelector('.d-footer');
+if(detailType==='consign'&&isMine){
+var btns='';
+if(s.status==='on'){
+btns='<div style="display:flex;gap:8px"><button style="flex:1;padding:10px;border-radius:12px;background:rgba(255,255,255,0.08);color:#fff;font-size:13px;font-weight:bold;border:none;cursor:pointer" onclick="showToast(\'编辑功能\')">编辑</button><button style="flex:1;padding:10px;border-radius:12px;background:rgba(255,255,255,0.08);color:var(--sub);font-size:13px;font-weight:bold;border:none;cursor:pointer" onclick="toggleConsignStatus('+idx+')">下架</button></div>';
+}else{
+btns='<div style="display:flex;gap:8px"><button style="flex:1;padding:10px;border-radius:12px;background:rgba(255,255,255,0.08);color:#fff;font-size:13px;font-weight:bold;border:none;cursor:pointer" onclick="showToast(\'编辑功能\')">编辑</button><button style="flex:1;padding:10px;border-radius:12px;background:rgba(82,196,26,0.15);color:var(--green);font-size:13px;font-weight:bold;border:none;cursor:pointer" onclick="toggleConsignStatus('+idx+')">上架</button><button style="flex:1;padding:10px;border-radius:12px;background:rgba(245,34,45,0.15);color:var(--red);font-size:13px;font-weight:bold;border:none;cursor:pointer" onclick="confirmDelConsign('+idx+')">删除</button></div>';
+}
+footer.innerHTML=btns;
+}else{
+footer.innerHTML='<div class="tip">存档为虚拟商品，购买后不支持退款</div><button class="d-buy" id="dBuy">¥6.00 购买</button>';
+document.getElementById('dBuy').onclick=function(){doBuy()};
+}
 document.getElementById('detailPage').classList.add('show');
 }
 function closeDetail(){document.getElementById('detailPage').classList.remove('show')}
@@ -277,6 +315,24 @@ showToast('购买成功！已加入我的存档');
 }else if(pendingAction==='use'){
 activeIdx=curIdx;renderMine();renderPlaza();
 showToast('存档已加载！重启游戏生效');
+}else if(pendingAction==='import-replace'){
+var sel=document.querySelector('input[name="replace-save"]:checked');
+var ri=sel?parseInt(sel.value):0;
+var name='imported_'+new Date().toTimeString().slice(0,5).replace(':','')+'.dat';
+autoSaves[ri]={name:name,size:'9.2 MB',time:new Date().toLocaleString('zh-CN'),source:'import'};
+renderMine();try{renderIgMine();}catch(e){}
+showToast('已替换：'+name);
+}else if(pendingAction==='del-consign'){
+consignSaves.splice(curIdx,1);
+closeDetail();renderMine();renderPlaza();
+showToast('已删除');
+}else if(pendingAction==='toggle-consign'){
+consignSaves[curIdx].status=consignSaves[curIdx].status==='on'?'off':'on';
+renderMine();renderPlaza();
+showToast(consignSaves[curIdx].status==='on'?'已上架':'已下架');
+if(document.getElementById('detailPage').classList.contains('show')){
+openDetail(curIdx,'consign');
+}
 }
 }
 
@@ -288,21 +344,51 @@ document.getElementById('consignPage').classList.add('show');
 function closeConsign(){document.getElementById('consignPage').classList.remove('show')}
 function submitConsign(){
 var t=document.getElementById('cTitle').value;
+var d=document.getElementById('cDesc').value;
 if(!t){showToast('请填写标题');return;}
 if(consignSaves.length>=4){showToast('寄售存档最多4个');return;}
-consignSaves.push({title:t,sold:0});
-closeConsign();renderMine();showToast('寄售成功！已上架');
+var sel=document.querySelector('input[name="cf"]:checked');
+var fileIdx=sel?parseInt(sel.value):0;
+consignSaves.push({title:t,desc:d,sold:0,status:'on',file:autoSaves[fileIdx].name,imgs:['https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600']});
+closeConsign();renderMine();renderPlaza();showToast('寄售成功！已上架');
 document.getElementById('cTitle').value='';document.getElementById('cDesc').value='';
 }
-function delConsign(i){consignSaves.splice(i,1);renderMine();showToast('已删除');}
 
 function doImportSave(){
-if(autoSaves.length>=4){showToast('本地存档最多4个');return;}
+if(autoSaves.length>=4){
+showImportReplace();return;
+}
 var name='imported_'+new Date().toTimeString().slice(0,5).replace(':','')+'.dat';
-autoSaves.push({name:name,size:'9.2 MB',time:new Date().toLocaleString('zh-CN')});
+autoSaves.push({name:name,size:'9.2 MB',time:new Date().toLocaleString('zh-CN'),source:'import'});
 renderMine();
 try{renderIgMine();}catch(e){}
 showToast('导入成功：'+name);
+}
+
+function showImportReplace(){
+var list=autoSaves.map(function(s,i){
+var icon=s.source==='auto'?'💾':'📥';
+return '<label style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--card);border-radius:8px;margin-bottom:5px;border:1px solid var(--border);cursor:pointer"><div style="flex:4;display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#fff">'+icon+' '+s.name+'</span><span style="font-size:10px;color:var(--sub)">'+s.time+' · '+s.size+'</span></div><div style="flex:1;display:flex;justify-content:flex-end"><input type="radio" name="replace-save" value="'+i+'"'+(i===0?' checked':'')+'></div></label>';
+}).join('');
+document.getElementById('mTitle').textContent='本地存档已满（4/4）';
+document.getElementById('mDesc').innerHTML='选择要替换的存档：<div style="margin-top:8px">'+list+'</div>';
+document.getElementById('mBtns').style.display='flex';
+document.getElementById('mClose').style.display='none';
+pendingAction='import-replace';
+document.getElementById('modal').classList.add('show');
+}
+
+function toggleConsignStatus(idx){
+var newStatus=consignSaves[idx].status==='on'?'off':'on';
+var title=newStatus==='off'?'确认下架':'确认上架';
+var desc=newStatus==='off'?'下架后该存档将不在广场展示，确认下架？':'上架后该存档将在广场展示，确认上架？';
+pendingAction='toggle-consign';curIdx=idx;
+showModal(title,desc,'toggle-consign');
+}
+
+function confirmDelConsign(idx){
+pendingAction='del-consign';curIdx=idx;
+showModal('确认删除','确认删除此寄售存档？删除后不可恢复。','del-consign');
 }
 
 function toggleOrient(){document.getElementById('app').classList.toggle('portrait');document.getElementById('app').classList.toggle('landscape')}
@@ -321,6 +407,11 @@ var b=bought.has(i);var isA=activeIdx===i;
 var st=isA?'<span style="color:var(--green);font-size:9px">使用中</span>':b?'<span style="color:var(--sub);font-size:9px">已购</span>':'<span style="color:var(--primary);font-size:9px;font-weight:bold">¥6</span>';
 h+='<div style="background:var(--card);border-radius:6px;overflow:hidden;border:1px solid var(--border);cursor:pointer" onclick="igDetail('+i+')"><img src="'+s.cover+'" style="width:100%;height:50px;object-fit:cover;display:block"><div style="padding:6px"><div style="font-size:10px;color:#fff;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px">'+s.title+'</div><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:9px;color:var(--sub)">'+s.buyers+'人</span>'+st+'</div></div></div>';
 });
+consignSaves.forEach(function(c,ci){
+if(c.status!=='on')return;
+var cover=c.imgs&&c.imgs[0]||'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400';
+h+='<div style="background:var(--card);border-radius:6px;overflow:hidden;border:1px solid var(--border);cursor:pointer" onclick="showToast(\'请在主界面查看详情\')"><img src="'+cover+'" style="width:100%;height:50px;object-fit:cover;display:block"><div style="padding:6px"><div style="font-size:10px;color:#fff;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px">'+c.title+'</div><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:9px;color:var(--sub)">'+c.sold+'人</span><span style="color:var(--primary);font-size:9px;font-weight:bold">¥6</span></div></div></div>';
+});
 h+='</div>';
 document.getElementById('igBody').innerHTML=h;
 }
@@ -330,7 +421,9 @@ var h='<div style="display:flex;justify-content:space-between;align-items:center
 h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 8px">';
 // 本地存档
 autoSaves.forEach(function(s){
-h+='<div style="background:var(--card);border-radius:6px;overflow:hidden;border:1px solid var(--border)"><div style="height:40px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;font-size:14px">💾</div><div style="padding:6px"><div style="font-size:10px;color:#fff;margin-bottom:2px">'+s.name+'</div><div style="font-size:9px;color:var(--sub)">'+s.time+'</div></div></div>';
+var tagText=s.source==='auto'?'自动存档':'导入存档';
+var tagColor=s.source==='auto'?'rgba(24,144,255,0.85)':'rgba(250,173,20,0.85)';
+h+='<div style="background:var(--card);border-radius:6px;overflow:hidden;border:1px solid var(--border)"><div style="height:40px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;font-size:14px;position:relative">💾<span style="position:absolute;top:3px;left:3px;padding:1px 4px;border-radius:2px;font-size:8px;font-weight:bold;color:#fff;background:'+tagColor+'">'+tagText+'</span></div><div style="padding:6px"><div style="font-size:10px;color:#fff;margin-bottom:2px">'+s.name+'</div><div style="font-size:9px;color:var(--sub)">'+s.time+'</div></div></div>';
 });
 h+='</div>';
 // 已购存档
@@ -344,8 +437,16 @@ h+='<div style="background:var(--card);border-radius:6px;overflow:hidden;border:
 });
 }else{h+='<div style="grid-column:1/-1;padding:12px;text-align:center;color:var(--sub);font-size:10px">暂无</div>';}
 h+='</div>';
-// 寄售入口
-h+='<div style="padding:6px 8px"><button style="width:100%;padding:6px;border-radius:6px;background:transparent;border:1px dashed var(--border);color:var(--sub);font-size:10px;cursor:pointer" onclick="showToast(\'请在主界面我的存档中寄售\')">🏷️ 寄售存档</button></div>';
+// 我的寄售
+h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;font-size:10px;color:var(--sub);border-bottom:1px solid var(--border)"><span>我的寄售（'+consignSaves.length+'/4）</span><span style="color:var(--primary);cursor:pointer;font-weight:bold" onclick="showToast(\'请在主界面寄售存档\')">+ 寄售</span></div>';
+h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 8px">';
+if(consignSaves.length>0){
+consignSaves.forEach(function(c,ci){
+var stTag=c.status==='on'?'<span style="position:absolute;top:3px;right:3px;padding:1px 4px;border-radius:2px;font-size:8px;font-weight:bold;color:#fff;background:rgba(82,196,26,0.85)">上架中</span>':'<span style="position:absolute;top:3px;right:3px;padding:1px 4px;border-radius:2px;font-size:8px;font-weight:bold;color:#fff;background:rgba(245,34,45,0.85)">已下架</span>';
+h+='<div style="background:var(--card);border-radius:6px;overflow:hidden;border:1px solid var(--border);cursor:pointer" onclick="igConsignDetail('+ci+')"><div style="height:40px;background:linear-gradient(135deg,#1a2940,#0d1b2a);display:flex;align-items:center;justify-content:center;font-size:12px;position:relative">🏷️'+stTag+'</div><div style="padding:6px"><div style="font-size:10px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px">'+c.title+'</div><div style="font-size:9px;color:var(--sub)">已售'+c.sold+'份</div></div></div>';
+});
+}else{h+='<div style="grid-column:1/-1;padding:12px;text-align:center;color:var(--sub);font-size:10px">暂无寄售</div>';}
+h+='</div>';
 document.getElementById('igBody').innerHTML=h;
 }
 
@@ -355,7 +456,7 @@ var h='<div style="padding:10px"><div style="cursor:pointer;color:var(--sub);fon
 h+='<img src="'+s.cover+'" style="width:100%;height:80px;object-fit:cover;border-radius:6px;margin-bottom:8px">';
 h+='<div style="font-size:13px;font-weight:bold;margin-bottom:6px">'+s.title+'</div>';
 h+='<div style="font-size:11px;color:#ccc;line-height:1.5;margin-bottom:8px">'+s.desc+'</div>';
-h+='<div style="font-size:10px;color:var(--sub);margin-bottom:10px">'+s.type+' · '+s.size+' · '+s.buyers+'人已购买</div>';
+h+='<div style="font-size:10px;color:var(--sub);margin-bottom:10px">'+s.size+' · '+s.buyers+'人已购买</div>';
 if(b){h+='<button style="width:100%;padding:8px;border-radius:10px;background:rgba(82,196,26,0.15);color:var(--green);font-size:12px;font-weight:bold;border:none">已购买</button>';}
 else{h+='<button style="width:100%;padding:8px;border-radius:10px;background:var(--primary);color:#000;font-size:12px;font-weight:bold;border:none;cursor:pointer" onclick="igBuy('+idx+')">¥6.00 购买</button>';}
 h+='</div>';
@@ -363,6 +464,24 @@ document.getElementById('igBody').innerHTML=h;
 }
 function igBuy(idx){if(confirm('确认支付 ¥6.00？')){bought.add(idx);saves[idx].buyers++;renderIgMine();switchIg('my',document.querySelectorAll('.ig-tab')[1]);showToast('购买成功！已加入我的存档');}}
 function igUse(idx){if(confirm('确认加载存档吗？')){activeIdx=idx;renderIgMine();renderPlaza();renderMine();showToast('存档已加载');}}
+
+function igConsignDetail(ci){
+var c=consignSaves[ci];
+var cover=c.imgs&&c.imgs[0]||'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600';
+var stTag=c.status==='on'?'<span style="position:absolute;top:4px;right:4px;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:bold;color:#fff;background:rgba(82,196,26,0.85)">上架中</span>':'<span style="position:absolute;top:4px;right:4px;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:bold;color:#fff;background:rgba(245,34,45,0.85)">未上架</span>';
+var h='<div style="padding:10px"><div style="cursor:pointer;color:var(--sub);font-size:11px;margin-bottom:8px" onclick="renderIgMine()">‹ 返回</div>';
+h+='<div style="position:relative;margin-bottom:8px"><img src="'+cover+'" style="width:100%;height:80px;object-fit:cover;border-radius:6px">'+stTag+'</div>';
+h+='<div style="font-size:13px;font-weight:bold;margin-bottom:6px">'+c.title+'</div>';
+h+='<div style="font-size:11px;color:#ccc;line-height:1.5;margin-bottom:8px">'+(c.desc||'')+'</div>';
+h+='<div style="font-size:10px;color:var(--sub);margin-bottom:10px">已售'+c.sold+'份 · 获'+c.sold*30+'分钟</div>';
+if(c.status==='on'){
+h+='<div style="display:flex;gap:6px"><button style="flex:1;padding:8px;border-radius:10px;background:rgba(255,255,255,0.08);color:#fff;font-size:12px;font-weight:bold;border:none;cursor:pointer" onclick="showToast(\'编辑功能\')">编辑</button><button style="flex:1;padding:8px;border-radius:10px;background:rgba(255,255,255,0.08);color:var(--sub);font-size:12px;font-weight:bold;border:none;cursor:pointer" onclick="toggleConsignStatus('+ci+')">下架</button></div>';
+}else{
+h+='<div style="display:flex;gap:6px"><button style="flex:1;padding:8px;border-radius:10px;background:rgba(255,255,255,0.08);color:#fff;font-size:12px;font-weight:bold;border:none;cursor:pointer" onclick="showToast(\'编辑功能\')">编辑</button><button style="flex:1;padding:8px;border-radius:10px;background:rgba(82,196,26,0.15);color:var(--green);font-size:12px;font-weight:bold;border:none;cursor:pointer" onclick="toggleConsignStatus('+ci+')">上架</button><button style="flex:1;padding:8px;border-radius:10px;background:rgba(245,34,45,0.15);color:var(--red);font-size:12px;font-weight:bold;border:none;cursor:pointer" onclick="confirmDelConsign('+ci+')">删除</button></div>';
+}
+h+='</div>';
+document.getElementById('igBody').innerHTML=h;
+}
 
 renderPlaza();
 </script>
