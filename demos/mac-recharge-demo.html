@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Mac端充值系统Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;background:#0a0a14;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;overflow:auto;padding:20px;}
+
+.mac-window{width:1440px;height:900px;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 20px 80px rgba(0,0,0,.8);background:#1b1b2f;flex-shrink:0;position:relative;}
+.mac-titlebar{height:36px;background:#0e0e1c;display:flex;align-items:center;padding:0 16px;flex-shrink:0;}
+.mac-dots{display:flex;gap:8px;}
+.mac-dots span{width:12px;height:12px;border-radius:50%;}
+.dot-r{background:#ff5f57;}.dot-y{background:#febc2e;}.dot-g{background:#28c840;}
+
+.app-body{flex:1;display:flex;overflow:hidden;position:relative;}
+
+.sidebar{width:72px;background:#101026;display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:4px;flex-shrink:0;border-right:1px solid #ffffff08;}
+.sidebar .logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#5b5fc7,#8b5cf6);display:flex;align-items:center;justify-content:center;margin-bottom:12px;cursor:pointer;}
+.sidebar .logo svg{width:22px;height:22px;fill:#fff;}
+.nav-item{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#555577;transition:all .2s;position:relative;}
+.nav-item:hover{background:#ffffff12;color:#999;}
+.nav-item.active{background:#ffffff18;color:#fff;}
+.nav-item svg{width:20px;height:20px;fill:currentColor;}
+.nav-spacer{flex:1;}
+
+/* 顶部模式切换 Tab */
+.mode-tabs{position:absolute;top:0;left:72px;right:0;height:44px;background:#0e0e1c;display:flex;align-items:center;padding:0 24px;gap:4px;z-index:10;border-bottom:1px solid #ffffff08;}
+.mode-tab{padding:8px 20px;border-radius:8px;font-size:13px;font-weight:500;color:#ffffff70;cursor:pointer;transition:all .2s;}
+.mode-tab:hover{color:#fff;background:#ffffff0a;}
+.mode-tab.active{color:#fff;background:#ffffff15;}
+
+/* 主内容区 */
+.main-content{flex:1;display:flex;flex-direction:column;padding-top:44px;overflow:hidden;}
+.view-panel{display:none;flex:1;overflow-y:auto;overflow-x:hidden;}
+.view-panel.visible{display:flex;flex-direction:column;}
+
+/* ===== 用户端：充值中心 ===== */
+.recharge-page{flex:1;display:flex;flex-direction:column;padding:32px 40px;overflow-y:auto;}
+.recharge-page::-webkit-scrollbar{width:6px;}
+.recharge-page::-webkit-scrollbar-thumb{background:#ffffff20;border-radius:3px;}
+
+.rp-header{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
+.rp-back{width:32px;height:32px;border-radius:8px;border:1px solid #ffffff20;background:transparent;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.rp-back:hover{background:#ffffff15;}
+.rp-title{font-size:20px;font-weight:700;}
+
+/* SKU 卡片 */
+.sku-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
+.sku-card{position:relative;background:#1e1e3a;border:2px solid transparent;border-radius:16px;padding:20px;cursor:pointer;transition:all .25s;display:flex;flex-direction:column;}
+.sku-card:hover{border-color:#ffffff30;background:#252545;}
+.sku-card.selected{border-color:#4e73ff;background:#1a1f40;box-shadow:0 0 20px rgba(78,115,255,.15);}
+.sku-card.selected::after{content:"✓";position:absolute;top:12px;right:12px;width:22px;height:22px;border-radius:50%;background:#4e73ff;color:#fff;font-size:12px;font-weight:bold;display:flex;align-items:center;justify-content:center;}
+
+.sku-badge{position:absolute;top:12px;left:12px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;}
+.sku-name{font-size:16px;font-weight:600;margin-bottom:4px;margin-top:8px;}
+.sku-sub{font-size:12px;color:#ffffff60;margin-bottom:12px;}
+.sku-price-row{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;}
+.sku-price{font-size:28px;font-weight:700;color:#fff;}
+.sku-price-unit{font-size:14px;color:#ffffff80;}
+.sku-orig-price{font-size:14px;color:#ffffff40;text-decoration:line-through;}
+.sku-unit{font-size:12px;color:#4e73ff;margin-top:4px;font-weight:500;}
+.sku-note{font-size:11px;color:#ffffff50;margin-top:6px;}
+
+/* 权益区 */
+.benefit-section{background:#1e1e3a;border-radius:14px;padding:20px 24px;margin-bottom:24px;}
+.benefit-title{font-size:14px;font-weight:600;color:#ffffff90;margin-bottom:12px;}
+.benefit-list{list-style:none;}
+.benefit-list li{font-size:13px;color:#ffffffcc;line-height:1.8;padding-left:16px;position:relative;}
+.benefit-list li::before{content:"";position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:#4e73ff;}
+
+/* 底部支付栏 */
+.pay-bar{padding:20px 40px;border-top:1px solid #ffffff0a;display:flex;align-items:center;justify-content:flex-end;background:#0e0e1c;flex-shrink:0;}
+.pay-btn{padding:12px 48px;border-radius:10px;border:none;background:#4e73ff;color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;}
+.pay-btn:hover{background:#6b8cff;transform:translateY(-1px);}
+
+/* ===== 后台配置页 ===== */
+.admin-page{flex:1;padding:32px 40px;overflow-y:auto;}
+.admin-page::-webkit-scrollbar{width:6px;}
+.admin-page::-webkit-scrollbar-thumb{background:#ffffff20;border-radius:3px;}
+
+.admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.admin-header h2{font-size:20px;font-weight:700;}
+.admin-actions{display:flex;gap:10px;}
+.admin-btn{padding:8px 18px;border-radius:8px;border:none;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;}
+.admin-btn.primary{background:#4e73ff;color:#fff;}
+.admin-btn.primary:hover{background:#6b8cff;}
+.admin-btn.outline{background:transparent;border:1px solid #ffffff25;color:#ffffffcc;}
+.admin-btn.outline:hover{background:#ffffff0a;border-color:#ffffff40;}
+
+/* 筛选栏 */
+.filter-bar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+.filter-select{padding:7px 14px;border-radius:8px;border:1px solid #ffffff20;background:#1e1e3a;color:#fff;font-size:13px;cursor:pointer;appearance:none;-webkit-appearance:none;padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23ffffff80' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+.filter-select:focus{outline:none;border-color:#4e73ff;}
+
+/* 表格 */
+.admin-table{width:100%;border-collapse:collapse;font-size:13px;}
+.admin-table th{text-align:left;padding:12px 14px;color:#ffffff60;font-weight:500;border-bottom:1px solid #ffffff10;white-space:nowrap;}
+.admin-table td{padding:12px 14px;border-bottom:1px solid #ffffff08;color:#ffffffcc;}
+.admin-table tr:hover td{background:#ffffff05;}
+.td-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;}
+.td-badge.green{background:#16a34a20;color:#4ade80;}
+.td-badge.yellow{background:#f59e0b20;color:#fbbf24;}
+.td-badge.blue{background:#4e73ff20;color:#93b4ff;}
+.td-btn{padding:4px 12px;border-radius:6px;border:1px solid #ffffff20;background:transparent;color:#ffffffcc;font-size:12px;cursor:pointer;transition:all .15s;}
+.td-btn:hover{background:#ffffff10;border-color:#ffffff40;}
+
+/* 编辑弹窗 */
+.modal-mask{position:absolute;inset:0;background:rgba(0,0,0,.6);z-index:600;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-mask.show{display:flex;}
+.modal-box{width:480px;background:#1e1e3a;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5);overflow:hidden;}
+.modal-head{padding:18px 24px;border-bottom:1px solid #ffffff10;display:flex;align-items:center;justify-content:space-between;}
+.modal-head h3{font-size:16px;font-weight:600;}
+.modal-close{width:28px;height:28px;border-radius:6px;border:none;background:#ffffff10;color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{background:#ffffff20;}
+.modal-body{padding:20px 24px;display:flex;flex-direction:column;gap:16px;max-height:500px;overflow-y:auto;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-group label{font-size:12px;color:#ffffff70;font-weight:500;}
+.form-group input,.form-group select{padding:9px 14px;border-radius:8px;border:1px solid #ffffff20;background:#151525;color:#fff;font-size:13px;}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:#4e73ff;}
+.modal-foot{padding:14px 24px;border-top:1px solid #ffffff10;display:flex;justify-content:flex-end;gap:10px;}
+
+/* 个人中心弹窗 */
+.profile-popup{position:absolute;bottom:60px;left:80px;width:300px;background:#1e1e3a;border-radius:16px;box-shadow:0 12px 48px rgba(0,0,0,.6);z-index:800;overflow:hidden;display:none;animation:popIn .25s ease;}
+.profile-popup.show{display:block;}
+@keyframes popIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.pp-header{padding:20px 22px 16px;display:flex;align-items:center;gap:12px;}
+.pp-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#5b5fc7,#8b5cf6);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;}
+.pp-info{flex:1;}
+.pp-name{font-size:15px;font-weight:600;}
+.pp-id{font-size:12px;color:#ffffff50;margin-top:2px;}
+.pp-cloud{margin:0 14px 14px;background:#252545;border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;}
+.pp-cloud .cb-text h4{font-size:13px;font-weight:600;margin-bottom:2px;}
+.pp-cloud .cb-text p{font-size:11px;color:#ffffff60;}
+.pp-cloud .cb-btn{padding:6px 16px;border-radius:6px;border:1px solid #4e73ff;background:transparent;color:#4e73ff;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.pp-cloud .cb-btn:hover{background:#4e73ff;color:#fff;}
+.pp-menu{padding:0 14px 14px;}
+.pp-menu-item{padding:11px 14px;font-size:13px;color:#ffffffcc;cursor:pointer;border-radius:8px;transition:background .15s;}
+.pp-menu-item:hover{background:#ffffff0a;}
+</style>
+</head>
+<body>
+<div class="mac-window">
+  <div class="mac-titlebar">
+    <div class="mac-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+  </div>
+  <div class="app-body">
+    <div class="sidebar">
+      <div class="logo"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></div>
+      <div class="nav-item active" data-page="home" onclick="switchPage('home')"><svg viewBox="0 0 24 24"><path d="M3 13h1v7c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7h1a1 1 0 0 0 .7-1.7l-9-9a1 1 0 0 0-1.4 0l-9 9A1 1 0 0 0 3 13z"/></svg></div>
+      <div class="nav-spacer"></div>
+      <div class="nav-item" id="profileNav" onclick="toggleProfile(event)"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v2h20v-2c0-3.3-6.7-5-10-5z"/></svg></div>
+    </div>
+
+    <!-- 顶部模式切换 -->
+    <div class="mode-tabs">
+      <div class="mode-tab active" onclick="switchMode('user')">用户端预览</div>
+      <div class="mode-tab" onclick="switchMode('admin')">后台配置</div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+      <!-- 用户端视图 -->
+      <div class="view-panel visible" id="panel-user">
+        <div class="recharge-page">
+          <div class="rp-header">
+            <div class="rp-title">充值中心</div>
+          </div>
+          <div class="sku-grid" id="skuGrid"></div>
+          <div class="benefit-section">
+            <div class="benefit-title">当前选择套餐包含：</div>
+            <ul class="benefit-list" id="benefitList"></ul>
+          </div>
+        </div>
+        <div class="pay-bar">
+          <button class="pay-btn" id="payBtn">确认支付 ¥6.00</button>
+        </div>
+      </div>
+
+      <!-- 后台配置视图 -->
+      <div class="view-panel" id="panel-admin">
+        <div class="admin-page">
+          <div class="admin-header">
+            <h2>充值商品管理</h2>
+            <div class="admin-actions">
+              <button class="admin-btn primary" onclick="openModal('add')">+ 新增商品</button>
+            </div>
+          </div>
+          <div class="filter-bar">
+            <select class="filter-select" id="filterType" onchange="filterTable()">
+              <option value="">商品类型：全部</option>
+              <option value="普通时长包">普通时长包</option>
+              <option value="包天卡">包天卡</option>
+              <option value="包夜卡">包夜卡</option>
+            </select>
+            <select class="filter-select" id="filterLimit" onchange="filterTable()">
+              <option value="">限购类型：全部</option>
+              <option value="不限购">不限购</option>
+              <option value="限购1次">限购1次</option>
+              <option value="首购优惠">首购优惠</option>
+            </select>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr><th>序号</th><th>档位名称</th><th>商品类型</th><th>售价</th><th>时长</th><th>单价</th><th>折扣</th><th>限购类型</th><th>角标</th><th>状态</th><th>操作</th></tr>
+            </thead>
+            <tbody id="adminTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 个人中心弹窗 -->
+    <div class="profile-popup" id="profilePopup">
+      <div class="pp-header">
+        <div class="pp-avatar">N</div>
+        <div class="pp-info">
+          <div class="pp-name">nj</div>
+          <div class="pp-id">用户ID: 2190004</div>
+        </div>
+      </div>
+      <div class="pp-cloud">
+        <div class="cb-text"><h4>云游戏时长</h4><p>剩余 0小时15分钟</p></div>
+        <button class="cb-btn" onclick="openRecharge()">去充值</button>
+      </div>
+      <div class="pp-menu">
+        <div class="pp-menu-item">设置</div>
+        <div class="pp-menu-item">官方社群</div>
+      </div>
+    </div>
+
+    <!-- 编辑/新增弹窗 -->
+    <div class="modal-mask" id="modalMask">
+      <div class="modal-box">
+        <div class="modal-head">
+          <h3 id="modalTitle">新增商品</h3>
+          <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group"><label>档位名称</label><input id="f-name" placeholder="如：3小时套餐"></div>
+          <div class="form-group"><label>商品类型</label><select id="f-type"><option>普通时长包</option><option>包天卡</option><option>包夜卡</option></select></div>
+          <div class="form-group"><label>售价 (元)</label><input id="f-price" type="number" step="0.01" placeholder="6.00"></div>
+          <div class="form-group"><label>时长 (小时)</label><input id="f-hours" type="number" placeholder="3"></div>
+          <div class="form-group"><label>折扣</label><input id="f-discount" placeholder="如：4折"></div>
+          <div class="form-group"><label>限购类型</label><select id="f-limit"><option>不限购</option><option>限购1次</option><option>首购优惠</option></select></div>
+          <div class="form-group"><label>限购次数</label><input id="f-limit-count" type="number" placeholder="不填则不限制"></div>
+          <div class="form-group"><label>角标文案</label><input id="f-badge" placeholder="如：首购特惠（留空则无角标）"></div>
+        </div>
+        <div class="modal-foot">
+          <button class="admin-btn outline" onclick="closeModal()">取消</button>
+          <button class="admin-btn primary" onclick="closeModal()">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var SKU_DATA = [
+  { id:1, name:'3小时', sub:'首购特惠·仅限一次', price:6, origPrice:12, hours:3, unit:'2元/小时', discount:'4折', badge:'首购特惠', type:'普通时长包', limitType:'首购优惠', benefits:['秒玩频道全部精品3A大作畅玩','购买立即获得3小时秒玩时长','首次购买专享4折优惠'] },
+  { id:2, name:'3小时', sub:'标准套餐', price:12, origPrice:null, hours:3, unit:'4元/小时', discount:'8折', badge:'', type:'普通时长包', limitType:'不限购', benefits:['秒玩频道全部精品3A大作畅玩','购买立即获得3小时秒玩时长'] },
+  { id:3, name:'包天卡', sub:'全天畅玩', price:19.90, origPrice:null, hours:24, unit:'0.83元/小时', discount:'1.6折', badge:'', type:'包天卡', limitType:'不限购', benefits:['秒玩频道全部精品3A大作畅玩','购买立即获得24小时秒玩时长（自然24小时）'] },
+  { id:4, name:'包夜卡', sub:'夜间畅玩', price:9.90, origPrice:null, hours:12, unit:'0.83元/小时', discount:'1.6折', badge:'', type:'包夜卡', limitType:'不限购', note:'仅购买当日18:00-次日06:00可用', benefits:['秒玩频道全部精品3A大作畅玩','购买立即获得12小时秒玩时长','仅购买当日18:00-次日06:00可用'] }
+];
+
+var selectedSku = 0;
+
+function renderSkuCards() {
+  var grid = document.getElementById('skuGrid');
+  grid.innerHTML = '';
+  SKU_DATA.forEach(function(sku, i) {
+    var card = document.createElement('div');
+    card.className = 'sku-card' + (i === selectedSku ? ' selected' : '');
+    card.onclick = function() { selectSku(i); };
+    var html = '';
+    if (sku.badge) html += '<div class="sku-badge">' + sku.badge + '</div>';
+    html += '<div class="sku-name">' + sku.name + '</div>';
+    html += '<div class="sku-sub">' + sku.sub + '</div>';
+    html += '<div class="sku-price-row">';
+    html += '<span class="sku-price-unit">&yen;</span><span class="sku-price">' + sku.price.toFixed(2) + '</span>';
+    if (sku.origPrice) html += '<span class="sku-orig-price">&yen;' + sku.origPrice.toFixed(2) + '</span>';
+    html += '</div>';
+    html += '<div class="sku-unit">' + sku.unit + '</div>';
+    if (sku.note) html += '<div class="sku-note">' + sku.note + '</div>';
+    card.innerHTML = html;
+    grid.appendChild(card);
+  });
+  updateBenefits();
+}
+
+function selectSku(i) {
+  selectedSku = i;
+  var cards = document.querySelectorAll('.sku-card');
+  cards.forEach(function(c, idx) { c.className = 'sku-card' + (idx === i ? ' selected' : ''); });
+  updateBenefits();
+}
+
+function updateBenefits() {
+  var sku = SKU_DATA[selectedSku];
+  var list = document.getElementById('benefitList');
+  list.innerHTML = sku.benefits.map(function(b) { return '<li>' + b + '</li>'; }).join('');
+  document.getElementById('payBtn').textContent = '确认支付 ¥' + sku.price.toFixed(2);
+}
+
+function switchMode(mode) {
+  document.querySelectorAll('.mode-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.view-panel').forEach(function(p) { p.classList.remove('visible'); });
+  if (mode === 'user') {
+    document.querySelectorAll('.mode-tab')[0].classList.add('active');
+    document.getElementById('panel-user').classList.add('visible');
+  } else {
+    document.querySelectorAll('.mode-tab')[1].classList.add('active');
+    document.getElementById('panel-admin').classList.add('visible');
+  }
+}
+
+function renderAdminTable(data) {
+  var tbody = document.getElementById('adminTbody');
+  tbody.innerHTML = '';
+  data.forEach(function(sku, i) {
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + (i+1) + '</td><td>' + sku.name + '</td><td>' + sku.type + '</td><td>&yen;' + sku.price.toFixed(2) + '</td><td>' + sku.hours + 'h</td><td>' + sku.unit + '</td><td>' + sku.discount + '</td><td><span class="td-badge ' + (sku.limitType==='首购优惠'?'yellow':sku.limitType==='限购1次'?'blue':'green') + '">' + sku.limitType + '</span></td><td>' + (sku.badge||'-') + '</td><td><span class="td-badge green">启用</span></td><td><button class="td-btn" onclick="openModal(\'edit\',' + i + ')">编辑</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function filterTable() {
+  var ft = document.getElementById('filterType').value;
+  var fl = document.getElementById('filterLimit').value;
+  var filtered = SKU_DATA.filter(function(s) {
+    if (ft && s.type !== ft) return false;
+    if (fl && s.limitType !== fl) return false;
+    return true;
+  });
+  renderAdminTable(filtered);
+}
+
+function openModal(type, idx) {
+  document.getElementById('modalTitle').textContent = type === 'add' ? '新增商品' : '编辑商品';
+  if (type === 'edit' && idx !== undefined) {
+    var s = SKU_DATA[idx];
+    document.getElementById('f-name').value = s.name;
+    document.getElementById('f-price').value = s.price;
+    document.getElementById('f-hours').value = s.hours;
+    document.getElementById('f-discount').value = s.discount;
+    document.getElementById('f-badge').value = s.badge || '';
+  } else {
+    document.querySelectorAll('.modal-body input').forEach(function(inp){inp.value='';});
+  }
+  document.getElementById('modalMask').classList.add('show');
+}
+function closeModal() { document.getElementById('modalMask').classList.remove('show'); }
+
+function toggleProfile(e) {
+  e.stopPropagation();
+  document.getElementById('profilePopup').classList.toggle('show');
+}
+function openRecharge() {
+  document.getElementById('profilePopup').classList.remove('show');
+  switchMode('user');
+}
+
+function switchPage(name) {
+  document.getElementById('profilePopup').classList.remove('show');
+}
+
+document.addEventListener('click', function(e) {
+  var popup = document.getElementById('profilePopup');
+  if (popup.classList.contains('show') && !popup.contains(e.target) && !document.getElementById('profileNav').contains(e.target)) {
+    popup.classList.remove('show');
+  }
+});
+
+renderSkuCards();
+renderAdminTable(SKU_DATA);
+</script>
+</body>
+</html>
