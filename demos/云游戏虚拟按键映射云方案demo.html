@@ -253,6 +253,8 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
 
   <!-- 分享码弹窗 -->
   <div id="share-modal" style="position:absolute;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50;padding:20px"></div>
+  <!-- 封面上传input -->
+  <input type="file" id="cover-upload-input" accept="image/*" style="display:none" onchange="onCoverUploaded(event)">
 </div>
 
 <script>
@@ -279,6 +281,8 @@ const THUMB_SVG = `<svg viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg"
 let gamepadConnected = false;
 let mappingEnabled = true;
 let currentScheme = null;
+let activeDevice = 'virtual';
+let deviceSchemes = {virtual:'逃离塔科夫-标准', physical:'FPS通用方案'};
 
 /* ===== 横竖屏 ===== */
 function toggleOrientation(){
@@ -311,7 +315,6 @@ function toggleMappingEnabled(){
 }
 
 /* ===== 设备状态更新 ===== */
-let activeDevice = 'virtual';
 
 function updateDeviceList(){
   const phys = document.getElementById('dev-physical');
@@ -345,6 +348,7 @@ function switchDevice(dev){
     document.getElementById('vpad').style.display = 'none';
   }
   updateDeviceList();
+  document.getElementById('sidebar-scheme-name').textContent = deviceSchemes[dev]||'未设置';
   showToast(dev==='virtual'?'已切换到虚拟手柄':'已切换到物理手柄');
 }
 
@@ -406,8 +410,9 @@ function fmtUses(n){
 
 function schemeCard(s){
   const usesStr=fmtUses(s.uses);
+  const coverImg = s.coverUrl ? `<img src="${s.coverUrl}" style="width:100%;height:100%;object-fit:cover">` : THUMB_SVG;
   return `<div class="scheme-card" onclick="openDetail(${s.id})">
-    <div class="scheme-thumb">${THUMB_SVG}</div>
+    <div class="scheme-thumb">${coverImg}</div>
     <div class="scheme-info">
       <div class="scheme-name">${s.name}</div>
       <div class="scheme-meta">${s.author}${usesStr?' · '+usesStr:''}</div>
@@ -509,9 +514,10 @@ function openDetail(id){
   if(!s) return;
   currentScheme=s;
   const isMine=s.type==='mine'||s.type==='cloud';
+  const coverImg = s.coverUrl ? `<img src="${s.coverUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">` : THUMB_SVG;
   document.getElementById('detail-popup').innerHTML=`
     <div onclick="closeDetail()" style="position:absolute;top:12px;right:12px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);font-size:18px">×</div>
-    <div style="width:100%;aspect-ratio:16/9;background:#0a1520;border-radius:10px;overflow:hidden;margin-bottom:12px;display:flex;align-items:center;justify-content:center">${THUMB_SVG}</div>
+    <div style="width:100%;aspect-ratio:16/9;background:#0a1520;border-radius:10px;overflow:hidden;margin-bottom:12px;display:flex;align-items:center;justify-content:center;position:relative">${coverImg}${isMine?'<div onclick="event.stopPropagation();uploadCover()" style="position:absolute;bottom:6px;right:6px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;cursor:pointer" title="上传封面"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>':''}</div>
     <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px">${s.name}</div>
     <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px">作者：${s.author}${fmtUses(s.uses)?' · '+fmtUses(s.uses):''}${s.scope==='game'&&s.game?' · '+s.game:''}</div>
     ${s.shareCode?`<div style="padding:8px 12px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
@@ -540,6 +546,7 @@ function closeDetail(){
 
 function applyScheme(){
   if(currentScheme){
+    deviceSchemes[activeDevice] = currentScheme.name;
     document.getElementById('sidebar-scheme-name').textContent=currentScheme.name;
   }
   showToast('方案已应用');
@@ -549,6 +556,25 @@ function applyScheme(){
 function editScheme(){
   closeDetail();
   openEditPage(currentScheme);
+}
+
+/* ===== 封面上传 ===== */
+function uploadCover(){
+  document.getElementById('cover-upload-input').click();
+}
+
+function onCoverUploaded(e){
+  const file=e.target.files[0];
+  if(!file||!currentScheme) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    currentScheme.coverUrl=ev.target.result;
+    openDetail(currentScheme.id);
+    renderAllTabs();
+    showToast('封面已更新');
+  };
+  reader.readAsDataURL(file);
+  e.target.value='';
 }
 
 /* ===== 分享码 ===== */
