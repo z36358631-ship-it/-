@@ -131,15 +131,27 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
         </div>
       </div>
       <div id="mapping-dropdown" style="padding:0 16px 8px">
-        <div id="dev-virtual" onclick="openMappingForDevice('virtual')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all .15s">
-          <div style="width:28px;height:28px;border-radius:6px;background:rgba(0,200,150,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/></svg></div>
-          <div style="flex:1;min-width:0"><div style="font-size:12px;color:#fff;font-weight:500">虚拟手柄</div><div style="font-size:11px;color:rgba(255,255,255,.35)" id="virt-scheme-name">逃离塔科夫-标准</div></div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        <!-- 虚拟手柄 -->
+        <div style="margin-bottom:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:13px;color:#fff;font-weight:500">虚拟手柄</span>
+            <div onclick="openMappingForDevice('virtual')" style="cursor:pointer;padding:2px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+          <div id="dev-virtual-scheme" onclick="switchActiveDevice('virtual')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.15);cursor:pointer;transition:all .15s">
+            <span style="font-size:13px;color:#fff" id="virt-scheme-name">逃离塔科夫-标准</span>
+            <div id="virt-active-dot" style="width:10px;height:10px;border-radius:50%;background:#00c896;box-shadow:0 0 6px rgba(0,200,150,.5)"></div>
+          </div>
         </div>
-        <div id="dev-physical" onclick="openMappingForDevice('physical')" style="display:none;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all .15s">
-          <div style="width:28px;height:28px;border-radius:6px;background:rgba(100,160,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64a0ff" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M7 10v4M5 12h4"/></svg></div>
-          <div style="flex:1;min-width:0"><div style="font-size:12px;color:#fff;font-weight:500">物理手柄</div><div style="font-size:11px;color:rgba(255,255,255,.35)" id="phys-scheme-name">FPS通用方案</div></div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        <!-- 物理手柄 -->
+        <div id="dev-physical" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:13px;color:#fff;font-weight:500">物理手柄</span>
+            <div onclick="openMappingForDevice('physical')" style="cursor:pointer;padding:2px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+          <div id="dev-physical-scheme" onclick="switchActiveDevice('physical')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.15);cursor:pointer;transition:all .15s">
+            <span style="font-size:13px;color:#fff" id="phys-scheme-name">FPS通用方案</span>
+            <div id="phys-active-dot" style="width:10px;height:10px;border-radius:50%;background:transparent"></div>
+          </div>
         </div>
       </div>
       <div class="sb-divider"></div>
@@ -299,12 +311,38 @@ function toggleMappingEnabled(){
 function updateDeviceList(){
   const phys = document.getElementById('dev-physical');
   if(gamepadConnected){
-    phys.style.display = 'flex';
+    phys.style.display = '';
   } else {
     phys.style.display = 'none';
   }
   document.getElementById('virt-scheme-name').textContent = deviceSchemes.virtual||'未设置';
   document.getElementById('phys-scheme-name').textContent = deviceSchemes.physical||'未设置';
+  updateActiveDots();
+}
+
+function updateActiveDots(){
+  const virtDot=document.getElementById('virt-active-dot');
+  const physDot=document.getElementById('phys-active-dot');
+  if(virtDot){
+    virtDot.style.background=activeDevice==='virtual'?'#00c896':'transparent';
+    virtDot.style.boxShadow=activeDevice==='virtual'?'0 0 6px rgba(0,200,150,.5)':'none';
+  }
+  if(physDot){
+    physDot.style.background=activeDevice==='physical'?'#00c896':'transparent';
+    physDot.style.boxShadow=activeDevice==='physical'?'0 0 6px rgba(0,200,150,.5)':'none';
+  }
+}
+
+function switchActiveDevice(dev){
+  if(dev==='physical' && !gamepadConnected) return;
+  activeDevice=dev;
+  if(dev==='virtual'){
+    document.getElementById('vpad').style.display=mappingEnabled?'':'none';
+  } else {
+    document.getElementById('vpad').style.display='none';
+  }
+  updateActiveDots();
+  showToast(dev==='virtual'?'已激活虚拟手柄':'已激活物理手柄');
 }
 
 /* ===== 手柄接入/拔出 ===== */
@@ -367,8 +405,10 @@ function schemeCard(s){
   let deviceBadge='';
   if(deviceSchemes.virtual===s.name) deviceBadge='<span style="font-size:9px;padding:1px 4px;border-radius:3px;background:rgba(0,200,150,.15);color:#00c896">虚拟手柄</span>';
   if(deviceSchemes.physical===s.name) deviceBadge+='<span style="font-size:9px;padding:1px 4px;border-radius:3px;background:rgba(100,160,255,.15);color:#64a0ff">物理手柄</span>';
+  const isActive = deviceSchemes.virtual===s.name || deviceSchemes.physical===s.name;
+  const activeBadge = isActive ? '<div style="position:absolute;top:6px;left:6px;padding:2px 6px;border-radius:4px;background:rgba(0,200,150,.85);font-size:9px;color:#fff;font-weight:600">应用中</div>' : '';
   return `<div class="scheme-card" onclick="openDetail(${s.id})">
-    <div class="scheme-thumb">${coverImg}</div>
+    <div class="scheme-thumb" style="position:relative">${coverImg}${activeBadge}</div>
     <div class="scheme-info">
       <div class="scheme-name">${s.name}</div>
       <div class="scheme-meta">${s.author}${usesStr?' · '+usesStr:''}${deviceBadge?' '+deviceBadge:''}</div>
