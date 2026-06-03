@@ -252,21 +252,52 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
 <script>
 /* ===== 数据 ===== */
 const SCHEMES = [
-  {id:1,name:'逃离塔科夫-标准',author:'官方',uses:32000,type:'recommend',scope:'game',game:'逃离塔科夫'},
-  {id:2,name:'塔科夫-狙击手',author:'极客玩家',uses:18500,type:'recommend',scope:'game',game:'逃离塔科夫'},
-  {id:3,name:'CS2 竞技',author:'FPS老手',uses:15200,type:'recommend',scope:'game',game:'CS2'},
-  {id:4,name:'Valorant 精准',author:'GameMaster',uses:12800,type:'recommend',scope:'game',game:'Valorant'},
-  {id:5,name:'FPS通用方案',author:'官方',uses:28000,type:'recommend',scope:'general'},
-  {id:6,name:'MOBA通用映射',author:'官方',uses:24500,type:'recommend',scope:'general'},
-  {id:7,name:'绝地求生-全键位',author:'吃鸡达人',uses:19000,type:'rank',scope:'game',game:'绝地求生'},
-  {id:8,name:'Apex 高手',author:'Apex猎人',uses:22000,type:'rank',scope:'game',game:'Apex'},
-  {id:9,name:'永劫无间',author:'格斗王',uses:16000,type:'rank',scope:'game',game:'永劫无间'},
-  {id:10,name:'暗黑4 刷本流',author:'暗黑老玩家',uses:9200,type:'rank',scope:'game',game:'暗黑4'},
-  {id:11,name:'我的自定义方案1',author:'我',uses:0,type:'mine',scope:'game',game:'逃离塔科夫'},
-  {id:12,name:'塔科夫改良版',author:'我',uses:0,type:'mine',scope:'general'},
-  {id:13,name:'分享-CS2配置',author:'我',uses:156,type:'cloud',scope:'game',game:'CS2',shareCode:'GS-X7K9M2'},
-  {id:14,name:'分享-Apex方案',author:'我',uses:89,type:'cloud',scope:'game',game:'Apex',shareCode:'GS-P3N8W5'},
+  {id:1,name:'逃离塔科夫-标准',author:'官方',uses:32000,type:'recommend',scope:'game',game:'逃离塔科夫',btns:['A','B','X','Y','LB','RB','L3','R3','dpad']},
+  {id:2,name:'塔科夫-狙击手',author:'极客玩家',uses:18500,type:'recommend',scope:'game',game:'逃离塔科夫',btns:['A','B','LT','RT','R3','dpad']},
+  {id:3,name:'CS2 竞技',author:'FPS老手',uses:15200,type:'recommend',scope:'game',game:'CS2',btns:['A','B','X','Y','LT','RT','LB','RB']},
+  {id:4,name:'Valorant 精准',author:'GameMaster',uses:12800,type:'recommend',scope:'game',game:'Valorant',btns:['A','B','X','Y','L3','R3','menu']},
+  {id:5,name:'FPS通用方案',author:'官方',uses:28000,type:'recommend',scope:'general',btns:['A','B','X','Y','LB','RB','LT','RT','L3','R3']},
+  {id:6,name:'MOBA通用映射',author:'官方',uses:24500,type:'recommend',scope:'general',btns:['A','B','X','Y','dpad','menu']},
+  {id:7,name:'绝地求生-全键位',author:'吃鸡达人',uses:19000,type:'rank',scope:'game',game:'绝地求生',btns:['A','B','X','Y','LB','RB','LT','RT','dpad','L3','R3','menu']},
+  {id:8,name:'Apex 高手',author:'Apex猎人',uses:22000,type:'rank',scope:'game',game:'Apex',btns:['A','B','X','Y','LT','RT','R3']},
+  {id:9,name:'永劫无间',author:'格斗王',uses:16000,type:'rank',scope:'game',game:'永劫无间',btns:['A','B','X','Y','LB','RB','dpad']},
+  {id:10,name:'暗黑4 刷本流',author:'暗黑老玩家',uses:9200,type:'rank',scope:'game',game:'暗黑4',btns:['A','B','X','Y','LT','RT','menu','dpad']},
+  {id:11,name:'我的自定义方案1',author:'我',uses:0,type:'mine',scope:'game',game:'逃离塔科夫',btns:['A','B','LB','RB','L3']},
+  {id:12,name:'塔科夫改良版',author:'我',uses:0,type:'mine',scope:'general',btns:['A','B','X','Y','LT','RT']},
+  {id:13,name:'分享-CS2配置',author:'我',uses:156,type:'cloud',scope:'game',game:'CS2',shareCode:'GS-X7K9M2',btns:['A','B','X','Y','LB','RB','LT','RT']},
+  {id:14,name:'分享-Apex方案',author:'我',uses:89,type:'cloud',scope:'game',game:'Apex',shareCode:'GS-P3N8W5',btns:['A','B','X','Y','R3','dpad']},
 ];
+
+/* 按键SVG图标 */
+const BTN_ICONS={
+  A:'<circle cx="0" cy="0" r="10" fill="#34c759"/><text x="0" y="4" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff">A</text>',
+  B:'<circle cx="0" cy="0" r="10" fill="#ff6b35"/><text x="0" y="4" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff">B</text>',
+  X:'<circle cx="0" cy="0" r="10" fill="#007aff"/><text x="0" y="4" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff">X</text>',
+  Y:'<circle cx="0" cy="0" r="10" fill="#ffd60a"/><text x="0" y="4" text-anchor="middle" font-size="9" font-weight="bold" fill="#222">Y</text>',
+  LB:'<rect x="-14" y="-8" width="28" height="16" rx="8" fill="rgba(255,255,255,.15)"/><text x="0" y="4" text-anchor="middle" font-size="8" font-weight="600" fill="rgba(255,255,255,.7)">LB</text>',
+  RB:'<rect x="-14" y="-8" width="28" height="16" rx="8" fill="rgba(255,255,255,.15)"/><text x="0" y="4" text-anchor="middle" font-size="8" font-weight="600" fill="rgba(255,255,255,.7)">RB</text>',
+  LT:'<rect x="-14" y="-9" width="28" height="18" rx="4" fill="rgba(255,255,255,.2)"/><text x="0" y="5" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">LT</text>',
+  RT:'<rect x="-14" y="-9" width="28" height="18" rx="4" fill="rgba(255,255,255,.2)"/><text x="0" y="5" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">RT</text>',
+  L3:'<circle cx="0" cy="0" r="10" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><circle cx="0" cy="0" r="4" fill="rgba(255,255,255,.3)"/><text x="0" y="-12" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.5)">L3</text>',
+  R3:'<circle cx="0" cy="0" r="10" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><circle cx="0" cy="0" r="4" fill="rgba(255,255,255,.3)"/><text x="0" y="-12" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.5)">R3</text>',
+  dpad:'<path d="M0,-10 L5,-5 L5,-2 L2,-2 L2,2 L5,2 L5,5 L0,10 L-5,5 L-5,2 L-2,2 L-2,-2 L-5,-2 L-5,-5 Z" fill="rgba(255,255,255,.6)"/>',
+  menu:'<rect x="-8" y="-2" width="16" height="2" rx="1" fill="rgba(255,255,255,.5)"/><rect x="-8" y="2" width="12" height="2" rx="1" fill="rgba(255,255,255,.35)"/><rect x="-8" y="-6" width="16" height="2" rx="1" fill="rgba(255,255,255,.5)"/>',
+};
+
+function genThumbSVG(btns){
+  if(!btns||!btns.length) return THUMB_SVG;
+  const cols=Math.min(btns.length,4);
+  const rows=Math.ceil(btns.length/cols);
+  const w=220,h=130;
+  const gapX=w/(cols+1),gapY=h/(rows+1);
+  let inner='';
+  btns.forEach((b,i)=>{
+    const col=i%cols, row=Math.floor(i/cols);
+    const cx=gapX*(col+1), cy=gapY*(row+1);
+    inner+=`<g transform="translate(${cx},${cy})">${BTN_ICONS[b]||BTN_ICONS.A}</g>`;
+  });
+  return `<svg viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg"><rect width="220" height="130" fill="#0a1520"/>${inner}</svg>`;
+}
 
 const THUMB_SVG = `<svg viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg"><rect width="220" height="130" fill="#0a1520"/><circle cx="55" cy="88" r="22" fill="none" stroke="#1e3a52" stroke-width="2.5"/><circle cx="55" cy="88" r="10" fill="#1e3a52"/><rect x="90" y="12" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="114" y="12" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="138" y="12" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="162" y="12" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="96" y="34" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="120" y="34" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="144" y="34" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="90" y="56" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="114" y="56" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="138" y="56" width="18" height="15" rx="3" fill="#1e3a52"/></svg>`;
 
@@ -401,7 +432,7 @@ function fmtUses(n){
 
 function schemeCard(s){
   const usesStr=fmtUses(s.uses);
-  const coverImg = s.coverUrl ? `<img src="${s.coverUrl}" style="width:100%;height:100%;object-fit:cover">` : THUMB_SVG;
+  const coverImg = s.coverUrl ? `<img src="${s.coverUrl}" style="width:100%;height:100%;object-fit:cover">` : genThumbSVG(s.btns);
   let deviceBadge='';
   if(deviceSchemes.virtual===s.name) deviceBadge='<span style="font-size:9px;padding:1px 4px;border-radius:3px;background:rgba(0,200,150,.15);color:#00c896">虚拟手柄</span>';
   if(deviceSchemes.physical===s.name) deviceBadge+='<span style="font-size:9px;padding:1px 4px;border-radius:3px;background:rgba(100,160,255,.15);color:#64a0ff">物理手柄</span>';
