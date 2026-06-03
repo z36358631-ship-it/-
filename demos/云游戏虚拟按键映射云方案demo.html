@@ -218,37 +218,16 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
     </div>
   </div>
 
-  <!-- 输入映射编辑页 -->
+  <!-- 输入映射编辑页（占位，复用原按键布局编辑器） -->
   <div class="page" id="page-edit">
     <div class="pg-header">
       <div class="pg-back" onclick="closeEditPage()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg> 返回</div>
       <span class="pg-title" id="edit-page-title">输入映射</span>
       <div onclick="showToast('已保存')" style="font-size:13px;color:#00c896;cursor:pointer;padding:4px 8px">保存</div>
     </div>
-    <div style="flex:1;overflow-y:auto;scrollbar-width:none;padding:0 16px 24px">
-      <!-- 映射预览图 -->
-      <div style="width:100%;aspect-ratio:16/9;background:#0a1520;border-radius:12px;overflow:hidden;margin-bottom:16px;position:relative;display:flex;align-items:center;justify-content:center">
-        <svg viewBox="0 0 400 225" style="width:100%;height:100%" xmlns="http://www.w3.org/2000/svg">
-          <rect width="400" height="225" fill="#0a1520"/>
-          <circle cx="80" cy="160" r="35" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
-          <circle cx="80" cy="160" r="14" fill="rgba(255,255,255,.08)"/>
-          <circle cx="320" cy="120" r="16" fill="rgba(0,200,150,.1)" stroke="rgba(0,200,150,.4)" stroke-width="1.5"/>
-          <text x="320" y="125" text-anchor="middle" font-size="10" fill="rgba(0,200,150,.8)">A</text>
-          <circle cx="355" cy="90" r="16" fill="rgba(255,165,60,.1)" stroke="rgba(255,165,60,.4)" stroke-width="1.5"/>
-          <text x="355" y="95" text-anchor="middle" font-size="10" fill="rgba(255,165,60,.8)">B</text>
-          <circle cx="285" cy="90" r="16" fill="rgba(100,160,255,.1)" stroke="rgba(100,160,255,.4)" stroke-width="1.5"/>
-          <text x="285" y="95" text-anchor="middle" font-size="10" fill="rgba(100,160,255,.8)">X</text>
-          <circle cx="320" cy="60" r="16" fill="rgba(255,80,120,.1)" stroke="rgba(255,80,120,.4)" stroke-width="1.5"/>
-          <text x="320" y="65" text-anchor="middle" font-size="10" fill="rgba(255,80,120,.8)">Y</text>
-          <rect x="30" y="30" width="60" height="20" rx="10" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-          <text x="60" y="44" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.4)">LB</text>
-          <rect x="310" y="30" width="60" height="20" rx="10" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-          <text x="340" y="44" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.4)">RB</text>
-        </svg>
-      </div>
-      <!-- 按键映射列表 -->
-      <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,.5);margin-bottom:8px">按键映射配置</div>
-      <div id="edit-key-list"></div>
+    <div style="flex:1;background:#111;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1.5"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg>
+      <span style="font-size:13px;color:rgba(255,255,255,.25)">复用按键布局编辑器</span>
     </div>
   </div>
 
@@ -649,32 +628,8 @@ function doCreate(){
 }
 
 /* ===== 输入映射编辑页 ===== */
-const KEY_MAPPINGS=[
-  {btn:'A',key:'鼠标左键'},
-  {btn:'B',key:'鼠标右键'},
-  {btn:'X',key:'R'},
-  {btn:'Y',key:'F'},
-  {btn:'LB',key:'Q'},
-  {btn:'RB',key:'E'},
-  {btn:'LT',key:'Shift'},
-  {btn:'RT',key:'Ctrl'},
-  {btn:'左摇杆',key:'WASD'},
-  {btn:'右摇杆',key:'鼠标移动'},
-  {btn:'十字键↑',key:'1'},
-  {btn:'十字键↓',key:'2'},
-];
-
 function openEditPage(scheme){
   document.getElementById('edit-page-title').textContent=scheme.name+' - 输入映射';
-  const list=document.getElementById('edit-key-list');
-  list.innerHTML=KEY_MAPPINGS.map(m=>`
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 12px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:6px">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:32px;height:32px;border-radius:8px;background:rgba(0,200,150,.08);display:flex;align-items:center;justify-content:center;font-size:11px;color:#00c896;font-weight:600">${m.btn}</div>
-        <span style="font-size:13px;color:#fff">→</span>
-      </div>
-      <div style="padding:5px 12px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:12px;color:rgba(255,255,255,.7)">${m.key}</div>
-    </div>`).join('');
   document.getElementById('page-edit').classList.add('active');
 }
 
