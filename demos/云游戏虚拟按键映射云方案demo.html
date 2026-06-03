@@ -45,10 +45,6 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
 .sb-divider{height:1px;background:rgba(255,255,255,.06);margin:4px 16px}
 .sb-section{padding:10px 16px 6px;font-size:12px;color:rgba(255,255,255,.3);font-weight:600}
 
-/* 设备状态 */
-.dev-active{width:8px;height:8px;border-radius:50%;background:#00c896;box-shadow:0 0 6px rgba(0,200,150,.5)}
-.dev-inactive{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15)}
-
 /* 滑块 */
 .slider-row{padding:6px 16px 12px;display:flex;align-items:center;gap:10px}
 .slider{flex:1;height:4px;background:rgba(255,255,255,.1);border-radius:2px;position:relative}
@@ -135,26 +131,16 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
         </div>
       </div>
       <div id="mapping-dropdown" style="padding:0 16px 8px">
-        <div id="dev-virtual" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(0,200,150,.06);border:1px solid rgba(0,200,150,.2);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all .15s">
-          <div onclick="switchDevice('virtual')" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
-            <div style="width:28px;height:28px;border-radius:6px;background:rgba(0,200,150,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/></svg></div>
-            <div style="flex:1;min-width:0"><div style="font-size:12px;color:#fff">虚拟手柄</div><div style="font-size:11px;color:rgba(255,255,255,.35)" id="virt-status">使用中</div></div>
-            <div class="dev-active" id="virt-dot"></div>
-          </div>
-          <div onclick="openMappingForDevice('virtual')" style="padding:4px;cursor:pointer;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div id="dev-virtual" onclick="openMappingForDevice('virtual')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all .15s">
+          <div style="width:28px;height:28px;border-radius:6px;background:rgba(0,200,150,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/></svg></div>
+          <div style="flex:1;min-width:0"><div style="font-size:12px;color:#fff;font-weight:500">虚拟手柄</div><div style="font-size:11px;color:rgba(255,255,255,.35)" id="virt-scheme-name">逃离塔科夫-标准</div></div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
         </div>
-        <div id="dev-physical" style="display:none;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,.04);border:1px solid transparent;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all .15s">
-          <div onclick="switchDevice('physical')" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
-            <div style="width:28px;height:28px;border-radius:6px;background:rgba(100,160,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64a0ff" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M7 10v4M5 12h4"/></svg></div>
-            <div style="flex:1;min-width:0"><div style="font-size:12px;color:#fff">物理手柄</div><div style="font-size:11px;color:rgba(255,255,255,.35)" id="phys-status">已连接</div></div>
-            <div class="dev-inactive" id="phys-dot"></div>
-          </div>
-          <div onclick="openMappingForDevice('physical')" style="padding:4px;cursor:pointer;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div id="dev-physical" onclick="openMappingForDevice('physical')" style="display:none;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all .15s">
+          <div style="width:28px;height:28px;border-radius:6px;background:rgba(100,160,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64a0ff" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M7 10v4M5 12h4"/></svg></div>
+          <div style="flex:1;min-width:0"><div style="font-size:12px;color:#fff;font-weight:500">物理手柄</div><div style="font-size:11px;color:rgba(255,255,255,.35)" id="phys-scheme-name">FPS通用方案</div></div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
         </div>
-      </div>
-      <div class="sb-row" onclick="openMappingPage()" style="padding-top:4px">
-        <span class="sb-row-label" style="font-size:13px;color:rgba(255,255,255,.6)">控制器映射设置</span>
-        <span class="sb-row-right"><span style="color:rgba(255,255,255,.4);font-size:12px;margin-right:4px" id="sidebar-scheme-name">逃离塔科夫-标准</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
       </div>
       <div class="sb-divider"></div>
       <!-- 其他操作项 -->
@@ -312,38 +298,13 @@ function toggleMappingEnabled(){
 
 function updateDeviceList(){
   const phys = document.getElementById('dev-physical');
-  const virt = document.getElementById('dev-virtual');
-  const virtStatus = document.getElementById('virt-status');
-  const virtDot = document.getElementById('virt-dot');
-  const physStatus = document.getElementById('phys-status');
-  const physDot = document.getElementById('phys-dot');
   if(gamepadConnected){
     phys.style.display = 'flex';
-    physStatus.textContent = activeDevice==='physical'?'使用中 · 共享映射方案':'已连接';
-    physDot.className = activeDevice==='physical'?'dev-active':'dev-inactive';
-    phys.style.background = activeDevice==='physical'?'rgba(100,160,255,.06)':'rgba(255,255,255,.04)';
-    phys.style.borderColor = activeDevice==='physical'?'rgba(100,160,255,.25)':'transparent';
   } else {
     phys.style.display = 'none';
-    activeDevice = 'virtual';
   }
-  virtStatus.textContent = activeDevice==='virtual'?'使用中':'已暂停';
-  virtDot.className = activeDevice==='virtual'?'dev-active':'dev-inactive';
-  virt.style.background = activeDevice==='virtual'?'rgba(0,200,150,.06)':'rgba(255,255,255,.04)';
-  virt.style.borderColor = activeDevice==='virtual'?'rgba(0,200,150,.2)':'transparent';
-}
-
-function switchDevice(dev){
-  if(dev==='physical' && !gamepadConnected) return;
-  activeDevice = dev;
-  if(dev==='virtual'){
-    document.getElementById('vpad').style.display = mappingEnabled?'':'none';
-  } else {
-    document.getElementById('vpad').style.display = 'none';
-  }
-  updateDeviceList();
-  document.getElementById('sidebar-scheme-name').textContent = deviceSchemes[dev]||'未设置';
-  showToast(dev==='virtual'?'已切换到虚拟手柄':'已切换到物理手柄');
+  document.getElementById('virt-scheme-name').textContent = deviceSchemes.virtual||'未设置';
+  document.getElementById('phys-scheme-name').textContent = deviceSchemes.physical||'未设置';
 }
 
 /* ===== 手柄接入/拔出 ===== */
@@ -353,7 +314,6 @@ function simConnect(){
   document.getElementById('vpad').style.display = 'none';
   document.getElementById('ctrl-warning').style.display = 'none';
   updateDeviceList();
-  document.getElementById('sidebar-scheme-name').textContent = deviceSchemes[activeDevice]||'未设置';
   showToast('手柄已连接，已切换到物理手柄');
 }
 
@@ -363,7 +323,6 @@ function simDisconnect(){
   if(mappingEnabled) document.getElementById('vpad').style.display = '';
   document.getElementById('ctrl-warning').style.display = 'flex';
   updateDeviceList();
-  document.getElementById('sidebar-scheme-name').textContent = deviceSchemes[activeDevice]||'未设置';
   showToast('手柄已断开，虚拟按键已恢复显示');
 }
 
@@ -405,11 +364,14 @@ function fmtUses(n){
 function schemeCard(s){
   const usesStr=fmtUses(s.uses);
   const coverImg = s.coverUrl ? `<img src="${s.coverUrl}" style="width:100%;height:100%;object-fit:cover">` : THUMB_SVG;
+  let deviceBadge='';
+  if(deviceSchemes.virtual===s.name) deviceBadge='<span style="font-size:9px;padding:1px 4px;border-radius:3px;background:rgba(0,200,150,.15);color:#00c896">虚拟手柄</span>';
+  if(deviceSchemes.physical===s.name) deviceBadge+='<span style="font-size:9px;padding:1px 4px;border-radius:3px;background:rgba(100,160,255,.15);color:#64a0ff">物理手柄</span>';
   return `<div class="scheme-card" onclick="openDetail(${s.id})">
     <div class="scheme-thumb">${coverImg}</div>
     <div class="scheme-info">
       <div class="scheme-name">${s.name}</div>
-      <div class="scheme-meta">${s.author}${usesStr?' · '+usesStr:''}</div>
+      <div class="scheme-meta">${s.author}${usesStr?' · '+usesStr:''}${deviceBadge?' '+deviceBadge:''}</div>
     </div>
   </div>`;
 }
@@ -542,7 +504,7 @@ function closeDetail(){
 function applyScheme(){
   if(currentScheme){
     deviceSchemes[activeDevice] = currentScheme.name;
-    document.getElementById('sidebar-scheme-name').textContent=currentScheme.name;
+    updateDeviceList();
   }
   showToast('方案已应用');
   setTimeout(()=>{closeDetail();closeMappingPage()},600);
@@ -573,7 +535,8 @@ function onCoverUploaded(e){
   reader.onload=ev=>{
     pendingCoverUrl=ev.target.result;
     const preview=document.getElementById('create-cover-preview');
-    if(preview) preview.innerHTML=`<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
+    if(preview) preview.innerHTML=`<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover">`;
+    document.getElementById('cover-delete-btn').style.display='flex';
   };
   reader.readAsDataURL(file);
   e.target.value='';
@@ -626,8 +589,6 @@ function closeShareModal(){
 /* ===== 设备独立映射入口 ===== */
 function openMappingForDevice(dev){
   activeDevice = dev;
-  document.getElementById('sidebar-scheme-name').textContent = deviceSchemes[dev]||'未设置';
-  updateDeviceList();
   openMappingPage();
 }
 
@@ -648,7 +609,10 @@ function openSaveModal(){
       <div onclick="closeShareModal()" style="position:absolute;top:12px;right:12px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);font-size:18px">×</div>
       <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:14px">保存映射方案</div>
       <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px">方案名称</div>
-      <input id="create-name" placeholder="输入方案名称" maxlength="10" style="width:100%;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:13px;outline:none;margin-bottom:12px">
+      <div style="position:relative;margin-bottom:12px">
+        <input id="create-name" placeholder="输入方案名称" maxlength="10" oninput="updateNameCount()" style="width:100%;padding:10px 50px 10px 12px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:13px;outline:none">
+        <span id="name-count" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;color:rgba(255,255,255,.25)">0/10</span>
+      </div>
       <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px">方案类型</div>
       <div style="display:flex;gap:8px;margin-bottom:12px">
         <div onclick="selectCreateType('game')" id="ct-game" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid rgba(0,200,150,.4);background:rgba(0,200,150,.06);cursor:pointer;text-align:center">
@@ -659,12 +623,28 @@ function openSaveModal(){
         </div>
       </div>
       <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px">封面图（可选）</div>
-      <div id="create-cover-preview" onclick="uploadCover()" style="width:100%;aspect-ratio:16/9;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:14px;overflow:hidden">
-        <div style="text-align:center;color:rgba(255,255,255,.3)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><div style="font-size:11px;margin-top:4px">点击上传</div></div>
+      <div style="position:relative;width:120px;margin-bottom:14px">
+        <div id="create-cover-preview" onclick="uploadCover()" style="width:120px;height:68px;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.15);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden">
+          <div style="text-align:center;color:rgba(255,255,255,.3)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><div style="font-size:10px;margin-top:2px">上传</div></div>
+        </div>
+        <div id="cover-delete-btn" onclick="deleteCover()" style="display:none;position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:rgba(255,60,60,.8);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px;color:#fff">×</div>
       </div>
       <div onclick="doCreate()" style="text-align:center;padding:10px;border-radius:8px;background:#00c896;color:#fff;font-size:13px;cursor:pointer">确认保存</div>
     </div>`;
   setTimeout(()=>document.getElementById('create-name')?.focus(),100);
+}
+
+function updateNameCount(){
+  const inp=document.getElementById('create-name');
+  const cnt=document.getElementById('name-count');
+  if(inp&&cnt) cnt.textContent=inp.value.length+'/10';
+}
+
+function deleteCover(){
+  pendingCoverUrl=null;
+  const preview=document.getElementById('create-cover-preview');
+  if(preview) preview.innerHTML='<div style="text-align:center;color:rgba(255,255,255,.3)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><div style="font-size:10px;margin-top:2px">上传</div></div>';
+  document.getElementById('cover-delete-btn').style.display='none';
 }
 
 let createType='game';
@@ -726,7 +706,8 @@ function openGuide(){
       <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:10px">控制器映射</div>
       <div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.8">
         部分游戏（如逃离塔科夫、CS2等）不支持手柄操控。开启此功能后，可将虚拟手柄的每个按键映射到键盘/鼠标操作，从而通过虚拟按键或物理手柄来游玩这些游戏。<br><br>
-        你可以进入【控制器映射设置页】选择推荐方案，也可以自定义映射配置，并通过分享码与好友共享。
+        每个手柄（虚拟手柄、物理手柄）可独立设置各自的映射方案，互不影响。点击设备右侧的">"即可进入对应手柄的映射设置。<br><br>
+        你可以选择社区推荐方案，也可以自定义映射配置，并通过分享码与好友共享。
       </div>
     </div>`;
 }
