@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>虚拟按键映射云方案 Demo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-start;padding:30px 16px;font-family:-apple-system,'PingFang SC','Helvetica Neue',sans-serif;min-height:100vh;flex-direction:column;align-items:center;gap:14px}
+.ctrl-bar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.ctrl-bar button{background:rgba(255,255,255,.12);color:#fff;border:none;border-radius:20px;padding:7px 18px;font-size:13px;cursor:pointer}
+.ctrl-bar button.green{background:rgba(0,200,150,.18);color:#00c896;border:1px solid rgba(0,200,150,.4)}
+.phone{width:900px;height:400px;background:#111;border-radius:20px;box-shadow:0 0 0 2px #2a2a3e,0 24px 60px rgba(0,0,0,.6);overflow:hidden;position:relative;transition:width .3s,height .3s}
+.phone.portrait{width:390px;height:720px}
+.phone.portrait .sidebar{width:100%;border-radius:0;top:0}
+.phone.portrait .game-hint{display:none}
+
+.phone.portrait .scheme-list{grid-template-columns:1fr 1fr}
+
+/* 游戏画面 */
+.game-bg{position:absolute;inset:0;background:linear-gradient(135deg,#0a1a2a,#1a0a2a);display:flex;align-items:center;justify-content:center}
+.game-hint{color:rgba(255,255,255,.15);font-size:14px;letter-spacing:1px}
+.game-warning{position:absolute;top:16px;left:16px;background:rgba(0,0,0,.7);border:1px solid rgba(255,200,0,.4);border-radius:8px;padding:8px 14px;display:flex;align-items:center;gap:8px}
+.game-warning svg{flex-shrink:0}
+.game-warning span{font-size:12px;color:rgba(255,200,0,.9)}
+
+/* 虚拟按键叠加层 */
+.vpad-overlay{position:absolute;inset:0;pointer-events:none}
+.vbtn{position:absolute;border-radius:50%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);font-size:11px;font-weight:600;pointer-events:auto}
+.vjoy{position:absolute;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.15)}
+.vjoy::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.12)}
+
+/* 侧边栏 */
+.sidebar{position:absolute;right:0;top:0;bottom:0;width:280px;background:rgba(20,28,38,.97);backdrop-filter:blur(16px);border-left:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;transform:translateX(0);transition:transform .28s cubic-bezier(.32,1,.32,1);z-index:10}
+.sidebar.hidden{transform:translateX(100%)}
+.sb-header{padding:14px 16px 8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sb-title{font-size:16px;font-weight:700;color:#fff}
+.sb-close{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.sb-body{flex:1;overflow-y:auto;padding:0 0 20px;scrollbar-width:none}
+.sb-row{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;transition:background .12s}
+.sb-row:active{background:rgba(255,255,255,.04)}
+.sb-row-label{font-size:14px;color:rgba(255,255,255,.85);display:flex;align-items:center;gap:8px}
+.sb-row-right{display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.35);font-size:13px}
+.sb-row-right svg{opacity:.4}
+.sb-divider{height:1px;background:rgba(255,255,255,.06);margin:4px 16px}
+.sb-section{padding:10px 16px 6px;font-size:12px;color:rgba(255,255,255,.3);font-weight:600}
+
+/* 设备状态 */
+.dev-active{width:8px;height:8px;border-radius:50%;background:#00c896;box-shadow:0 0 6px rgba(0,200,150,.5)}
+.dev-inactive{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15)}
+
+/* 滑块 */
+.slider-row{padding:6px 16px 12px;display:flex;align-items:center;gap:10px}
+.slider{flex:1;height:4px;background:rgba(255,255,255,.1);border-radius:2px;position:relative}
+.slider-fill{height:100%;background:#00c896;border-radius:2px;width:50%}
+.slider-val{font-size:12px;color:rgba(255,255,255,.45);min-width:28px;text-align:right}
+
+/* 映射管理页 */
+.page{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;background:#0d1e2c;transform:translateX(100%);opacity:0;pointer-events:none;transition:transform .3s cubic-bezier(.32,1,.32,1),opacity .22s;z-index:20}
+.page.active{transform:translateX(0);opacity:1;pointer-events:all}
+.pg-header{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.pg-back{display:flex;align-items:center;gap:4px;color:rgba(255,255,255,.7);font-size:14px;cursor:pointer}
+.pg-title{font-size:17px;font-weight:700;color:#fff}
+.tabs{display:flex;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
+.tab{padding:10px 14px;font-size:14px;color:rgba(255,255,255,.4);cursor:pointer;position:relative;white-space:nowrap}
+.tab.active{color:#fff}
+.tab.active::after{content:'';position:absolute;bottom:0;left:14px;right:14px;height:2px;background:#00c896;border-radius:1px}
+.tab-body{flex:1;overflow-y:auto;scrollbar-width:none}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* 方案卡片 */
+.scheme-list{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:12px 16px}
+.scheme-card{background:rgba(255,255,255,.05);border-radius:12px;overflow:hidden;cursor:pointer;transition:background .12s}
+.scheme-card:active{background:rgba(255,255,255,.1)}
+.scheme-thumb{width:100%;aspect-ratio:16/10;background:#0a1520;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.scheme-thumb svg{opacity:.4;width:80%;height:80%}
+.scheme-info{padding:7px 8px 9px}
+.scheme-name{font-size:12px;font-weight:500;color:#fff;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scheme-meta{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,.35)}
+
+/* 详情弹窗 */
+.detail-overlay{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:30;opacity:0;pointer-events:none;transition:opacity .2s;padding:20px}
+.detail-overlay.show{opacity:1;pointer-events:all}
+.detail-popup{background:#162535;border-radius:14px;width:340px;max-height:80%;padding:20px;overflow-y:auto;position:relative;transform:scale(.92);transition:transform .22s cubic-bezier(.32,1,.32,1)}
+.detail-overlay.show .detail-popup{transform:scale(1)}
+.act-col{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.act-circle{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.7)}
+.act-col span{font-size:11px;color:rgba(255,255,255,.5)}
+</style>
+</head>
+<body>
+<div class="ctrl-bar">
+  <button onclick="toggleOrientation()">⇄ 横竖屏</button>
+  <button class="green" onclick="simConnect()">模拟手柄接入</button>
+  <button onclick="simDisconnect()">模拟手柄拔出</button>
+  <button onclick="toggleSidebar()">切换侧边栏</button>
+</div>
+<div class="phone" id="phone">
+  <!-- 游戏画面 -->
+  <div class="game-bg">
+    <span class="game-hint">游戏画面区域</span>
+    <div class="game-warning" id="ctrl-warning" style="display:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,200,0,.9)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span>无法识别手柄，请使用虚拟按键映射</span>
+    </div>
+  </div>
+
+  <!-- 虚拟按键 -->
+  <div class="vpad-overlay" id="vpad">
+    <div class="vjoy" style="left:30px;bottom:40px"></div>
+    <div class="vbtn" style="right:100px;bottom:60px;width:38px;height:38px">A</div>
+    <div class="vbtn" style="right:55px;bottom:95px;width:38px;height:38px">B</div>
+    <div class="vbtn" style="right:145px;bottom:95px;width:38px;height:38px">X</div>
+    <div class="vbtn" style="right:100px;bottom:130px;width:38px;height:38px">Y</div>
+    <div class="vbtn" style="right:30px;top:20px;width:50px;height:24px;border-radius:12px;font-size:10px">RB</div>
+    <div class="vbtn" style="left:120px;top:20px;width:50px;height:24px;border-radius:12px;font-size:10px">LB</div>
+  </div>
+
+  <!-- 操作侧边栏 -->
+  <div class="sidebar" id="sidebar">
+    <div class="sb-header">
+      <span class="sb-title">操作</span>
+      <div class="sb-close" onclick="toggleSidebar()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
+    </div>
+    <div class="sb-body">
+      <!-- 控制器映射区 -->
+      <div class="sb-row" style="padding-bottom:6px">
+        <span class="sb-row-label" style="font-weight:600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg>控制器映射</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div onclick="openGuide()" style="width:20px;height:20px;border-radius:50%;border:1.5px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.45);font-size:11px;font-weight:700;flex-shrink:0">?</div>
+          <div onclick="toggleMappingEnabled()" id="mapping-switch" style="width:40px;height:22px;border-radius:11px;background:#00c896;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0">
+            <div style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:2px;left:20px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)"></div>
+          </div>
+        </div>
+      </div>
+      <div id="mapping-dropdown" style="padding:0 16px 8px">
+        <div id="dev-virtual" onclick="switchDevice('virtual')" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(0,200,150,.06);border:1px solid rgba(0,200,150,.2);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all .15s">
+          <div style="width:28px;height:28px;border-radius:6px;background:rgba(0,200,150,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/></svg></div>
+          <div style="flex:1;min-width:0"><div style="font-size:12px;color:#fff">虚拟手柄</div><div style="font-size:11px;color:rgba(255,255,255,.35)" id="virt-status">使用中</div></div>
+          <div class="dev-active" id="virt-dot"></div>
+        </div>
+        <div id="dev-physical" onclick="switchDevice('physical')" style="display:none;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,.04);border:1px solid transparent;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all .15s">
+          <div style="width:28px;height:28px;border-radius:6px;background:rgba(100,160,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64a0ff" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M7 10v4M5 12h4"/></svg></div>
+          <div style="flex:1;min-width:0"><div style="font-size:12px;color:#fff">Xbox 无线控制器</div><div style="font-size:11px;color:rgba(255,255,255,.35)" id="phys-status">已连接</div></div>
+          <div class="dev-inactive" id="phys-dot"></div>
+        </div>
+      </div>
+      <div class="sb-row" onclick="openMappingPage()" style="padding-top:4px">
+        <span class="sb-row-label" style="font-size:13px;color:rgba(255,255,255,.6)">控制器映射设置</span>
+        <span class="sb-row-right"><span style="color:rgba(255,255,255,.4);font-size:12px;margin-right:4px" id="sidebar-scheme-name">逃离塔科夫-标准</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+      </div>
+      <div class="sb-divider"></div>
+      <!-- 其他操作项 -->
+      <div class="sb-row">
+        <span class="sb-row-label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>摇杆灵敏度</span>
+        <span class="sb-row-right">50%</span>
+      </div>
+      <div class="slider-row"><div class="slider"><div class="slider-fill"></div></div><span class="slider-val">50%</span></div>
+      <div class="sb-divider"></div>
+      <div class="sb-row">
+        <span class="sb-row-label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="12" r="2"/></svg>屏幕触摸方式</span>
+        <span class="sb-row-right">直接触控 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+      </div>
+      <div class="sb-divider"></div>
+      <div class="sb-row">
+        <span class="sb-row-label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>陀螺仪视角</span>
+        <span class="sb-row-right">停用 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 映射管理页 -->
+  <div class="page" id="page-mapping">
+    <div class="pg-header">
+      <div class="pg-back" onclick="closeMappingPage()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg> 返回</div>
+      <span class="pg-title">控制器映射</span>
+      <div onclick="toggleSearch()" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+    </div>
+    <!-- 搜索栏 -->
+    <div id="search-bar" style="display:none;padding:0 16px 8px;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border-radius:20px;padding:8px 14px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="search-input" placeholder="搜索映射方案" oninput="onSearch(this.value)" style="flex:1;background:none;border:none;outline:none;color:#fff;font-size:13px;min-width:0">
+        <span onclick="toggleSearch()" style="font-size:12px;color:rgba(0,200,150,.8);cursor:pointer">取消</span>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(0,this)">推荐</div>
+      <div class="tab" onclick="switchTab(1,this)">排行</div>
+      <div class="tab" onclick="switchTab(2,this)">自定义</div>
+    </div>
+    <div class="tab-body">
+      <!-- 推荐 -->
+      <div class="tab-panel active" id="tp-recommend"></div>
+      <!-- 排行 -->
+      <div class="tab-panel" id="tp-rank"></div>
+      <!-- 自定义 -->
+      <div class="tab-panel" id="tp-custom"></div>
+    </div>
+  </div>
+
+  <!-- 游戏专用方案页 -->
+  <div class="page" id="page-game-schemes">
+    <div class="pg-header">
+      <div class="pg-back" onclick="closeGameSchemes()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg> 返回</div>
+      <span class="pg-title">游戏专用方案</span>
+      <div style="width:28px"></div>
+    </div>
+    <div style="padding:0 16px 8px;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border-radius:20px;padding:8px 14px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="game-search-input" placeholder="搜索游戏专用方案" oninput="onGameSearch(this.value)" style="flex:1;background:none;border:none;outline:none;color:#fff;font-size:13px;min-width:0">
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto;scrollbar-width:none">
+      <div class="scheme-list" id="game-schemes-list"></div>
+    </div>
+  </div>
+
+  <!-- 输入映射编辑页 -->
+  <div class="page" id="page-edit">
+    <div class="pg-header">
+      <div class="pg-back" onclick="closeEditPage()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg> 返回</div>
+      <span class="pg-title" id="edit-page-title">输入映射</span>
+      <div onclick="showToast('已保存')" style="font-size:13px;color:#00c896;cursor:pointer;padding:4px 8px">保存</div>
+    </div>
+    <div style="flex:1;overflow-y:auto;scrollbar-width:none;padding:0 16px 24px">
+      <!-- 映射预览图 -->
+      <div style="width:100%;aspect-ratio:16/9;background:#0a1520;border-radius:12px;overflow:hidden;margin-bottom:16px;position:relative;display:flex;align-items:center;justify-content:center">
+        <svg viewBox="0 0 400 225" style="width:100%;height:100%" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="225" fill="#0a1520"/>
+          <circle cx="80" cy="160" r="35" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
+          <circle cx="80" cy="160" r="14" fill="rgba(255,255,255,.08)"/>
+          <circle cx="320" cy="120" r="16" fill="rgba(0,200,150,.1)" stroke="rgba(0,200,150,.4)" stroke-width="1.5"/>
+          <text x="320" y="125" text-anchor="middle" font-size="10" fill="rgba(0,200,150,.8)">A</text>
+          <circle cx="355" cy="90" r="16" fill="rgba(255,165,60,.1)" stroke="rgba(255,165,60,.4)" stroke-width="1.5"/>
+          <text x="355" y="95" text-anchor="middle" font-size="10" fill="rgba(255,165,60,.8)">B</text>
+          <circle cx="285" cy="90" r="16" fill="rgba(100,160,255,.1)" stroke="rgba(100,160,255,.4)" stroke-width="1.5"/>
+          <text x="285" y="95" text-anchor="middle" font-size="10" fill="rgba(100,160,255,.8)">X</text>
+          <circle cx="320" cy="60" r="16" fill="rgba(255,80,120,.1)" stroke="rgba(255,80,120,.4)" stroke-width="1.5"/>
+          <text x="320" y="65" text-anchor="middle" font-size="10" fill="rgba(255,80,120,.8)">Y</text>
+          <rect x="30" y="30" width="60" height="20" rx="10" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+          <text x="60" y="44" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.4)">LB</text>
+          <rect x="310" y="30" width="60" height="20" rx="10" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+          <text x="340" y="44" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.4)">RB</text>
+        </svg>
+      </div>
+      <!-- 按键映射列表 -->
+      <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,.5);margin-bottom:8px">按键映射配置</div>
+      <div id="edit-key-list"></div>
+    </div>
+  </div>
+
+  <!-- 方案详情弹层 -->
+  <div class="detail-overlay" id="detail-overlay" onclick="if(event.target===this)closeDetail()">
+    <div class="detail-popup" id="detail-popup"></div>
+  </div>
+
+  <!-- 引导弹窗（单窗说明） -->
+  <div id="guide-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:40;padding:20px"></div>
+
+  <!-- 分享码弹窗 -->
+  <div id="share-modal" style="position:absolute;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50;padding:20px"></div>
+</div>
+
+<script>
+/* ===== 数据 ===== */
+const SCHEMES = [
+  {id:1,name:'逃离塔科夫-标准',author:'官方',uses:32000,type:'recommend',scope:'game',game:'逃离塔科夫'},
+  {id:2,name:'塔科夫-狙击手',author:'极客玩家',uses:18500,type:'recommend',scope:'game',game:'逃离塔科夫'},
+  {id:3,name:'CS2 竞技',author:'FPS老手',uses:15200,type:'recommend',scope:'game',game:'CS2'},
+  {id:4,name:'Valorant 精准',author:'GameMaster',uses:12800,type:'recommend',scope:'game',game:'Valorant'},
+  {id:5,name:'FPS通用方案',author:'官方',uses:28000,type:'recommend',scope:'general'},
+  {id:6,name:'MOBA通用映射',author:'官方',uses:24500,type:'recommend',scope:'general'},
+  {id:7,name:'绝地求生-全键位',author:'吃鸡达人',uses:19000,type:'rank',scope:'game',game:'绝地求生'},
+  {id:8,name:'Apex 高手',author:'Apex猎人',uses:22000,type:'rank',scope:'game',game:'Apex'},
+  {id:9,name:'永劫无间',author:'格斗王',uses:16000,type:'rank',scope:'game',game:'永劫无间'},
+  {id:10,name:'暗黑4 刷本流',author:'暗黑老玩家',uses:9200,type:'rank',scope:'game',game:'暗黑4'},
+  {id:11,name:'我的自定义方案1',author:'我',uses:0,type:'mine',scope:'game',game:'逃离塔科夫'},
+  {id:12,name:'塔科夫改良版',author:'我',uses:0,type:'mine',scope:'general'},
+  {id:13,name:'分享-CS2配置',author:'我',uses:156,type:'cloud',scope:'game',game:'CS2',shareCode:'GS-X7K9M2'},
+  {id:14,name:'分享-Apex方案',author:'我',uses:89,type:'cloud',scope:'game',game:'Apex',shareCode:'GS-P3N8W5'},
+];
+
+const THUMB_SVG = `<svg viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg"><rect width="220" height="130" fill="#0a1520"/><circle cx="55" cy="88" r="22" fill="none" stroke="#1e3a52" stroke-width="2.5"/><circle cx="55" cy="88" r="10" fill="#1e3a52"/><rect x="90" y="12" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="114" y="12" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="138" y="12" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="162" y="12" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="96" y="34" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="120" y="34" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="144" y="34" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="90" y="56" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="114" y="56" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="138" y="56" width="18" height="15" rx="3" fill="#1e3a52"/></svg>`;
+
+let gamepadConnected = false;
+let mappingEnabled = true;
+let currentScheme = null;
+
+/* ===== 横竖屏 ===== */
+function toggleOrientation(){
+  document.getElementById('phone').classList.toggle('portrait');
+}
+
+/* ===== 侧边栏 ===== */
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('hidden');
+}
+
+/* ===== 控制器映射 启用/禁用 ===== */
+function toggleMappingEnabled(){
+  mappingEnabled = !mappingEnabled;
+  const sw = document.getElementById('mapping-switch');
+  const dd = document.getElementById('mapping-dropdown');
+  if(mappingEnabled){
+    sw.style.background='#00c896';
+    sw.firstElementChild.style.left='20px';
+    dd.style.display='';
+    if(!gamepadConnected) document.getElementById('vpad').style.display='';
+    showToast('控制器映射已启用');
+  } else {
+    sw.style.background='rgba(255,255,255,.15)';
+    sw.firstElementChild.style.left='2px';
+    dd.style.display='none';
+    document.getElementById('vpad').style.display='none';
+    showToast('控制器映射已禁用');
+  }
+}
+
+/* ===== 设备状态更新 ===== */
+let activeDevice = 'virtual';
+
+function updateDeviceList(){
+  const phys = document.getElementById('dev-physical');
+  const virt = document.getElementById('dev-virtual');
+  const virtStatus = document.getElementById('virt-status');
+  const virtDot = document.getElementById('virt-dot');
+  const physStatus = document.getElementById('phys-status');
+  const physDot = document.getElementById('phys-dot');
+  if(gamepadConnected){
+    phys.style.display = 'flex';
+    physStatus.textContent = activeDevice==='physical'?'使用中 · 共享映射方案':'已连接';
+    physDot.className = activeDevice==='physical'?'dev-active':'dev-inactive';
+    phys.style.background = activeDevice==='physical'?'rgba(100,160,255,.06)':'rgba(255,255,255,.04)';
+    phys.style.borderColor = activeDevice==='physical'?'rgba(100,160,255,.25)':'transparent';
+  } else {
+    phys.style.display = 'none';
+    activeDevice = 'virtual';
+  }
+  virtStatus.textContent = activeDevice==='virtual'?'使用中':'已暂停';
+  virtDot.className = activeDevice==='virtual'?'dev-active':'dev-inactive';
+  virt.style.background = activeDevice==='virtual'?'rgba(0,200,150,.06)':'rgba(255,255,255,.04)';
+  virt.style.borderColor = activeDevice==='virtual'?'rgba(0,200,150,.2)':'transparent';
+}
+
+function switchDevice(dev){
+  if(dev==='physical' && !gamepadConnected) return;
+  activeDevice = dev;
+  if(dev==='virtual'){
+    document.getElementById('vpad').style.display = mappingEnabled?'':'none';
+  } else {
+    document.getElementById('vpad').style.display = 'none';
+  }
+  updateDeviceList();
+  showToast(dev==='virtual'?'已切换到虚拟手柄':'已切换到物理手柄');
+}
+
+/* ===== 手柄接入/拔出 ===== */
+function simConnect(){
+  gamepadConnected = true;
+  activeDevice = 'physical';
+  document.getElementById('vpad').style.display = 'none';
+  document.getElementById('ctrl-warning').style.display = 'none';
+  updateDeviceList();
+  showToast('手柄已连接，已切换到物理手柄');
+}
+
+function simDisconnect(){
+  gamepadConnected = false;
+  activeDevice = 'virtual';
+  if(mappingEnabled) document.getElementById('vpad').style.display = '';
+  document.getElementById('ctrl-warning').style.display = 'flex';
+  updateDeviceList();
+  showToast('手柄已断开，虚拟按键已恢复显示');
+}
+
+/* ===== Toast ===== */
+function showToast(msg){
+  let t = document.getElementById('toast-el');
+  if(!t){
+    t = document.createElement('div');
+    t.id='toast-el';
+    t.style.cssText='position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(10,20,30,.92);color:#fff;font-size:12px;padding:8px 16px;border-radius:18px;white-space:nowrap;z-index:99;opacity:0;transition:opacity .25s;pointer-events:none';
+    document.getElementById('phone').appendChild(t);
+  }
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._tm);
+  t._tm=setTimeout(()=>{t.style.opacity='0'},2200);
+}
+
+/* ===== 映射管理页 ===== */
+function openMappingPage(){
+  renderAllTabs();
+  document.getElementById('page-mapping').classList.add('active');
+}
+function closeMappingPage(){
+  document.getElementById('page-mapping').classList.remove('active');
+}
+
+function switchTab(idx, el){
+  document.querySelectorAll('#page-mapping .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#page-mapping .tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#page-mapping .tab-panel')[idx].classList.add('active');
+}
+
+function fmtUses(n){
+  if(!n) return '';
+  return n>=10000?(n/10000).toFixed(1).replace(/\.0$/,'')+'万次使用':n+'次使用';
+}
+
+function schemeCard(s){
+  const usesStr=fmtUses(s.uses);
+  return `<div class="scheme-card" onclick="openDetail(${s.id})">
+    <div class="scheme-thumb">${THUMB_SVG}</div>
+    <div class="scheme-info">
+      <div class="scheme-name">${s.name}</div>
+      <div class="scheme-meta">${s.author}${usesStr?' · '+usesStr:''}</div>
+    </div>
+  </div>`;
+}
+
+function renderAllTabs(){
+  const currentGame='逃离塔科夫';
+  const forGame=SCHEMES.filter(s=>(s.type==='recommend')&&s.game===currentGame);
+  const allRec=SCHEMES.filter(s=>s.type==='recommend');
+  const rank=[...SCHEMES].filter(s=>s.type==='rank'||s.type==='recommend').sort((a,b)=>b.uses-a.uses);
+  const mine=SCHEMES.filter(s=>s.type==='mine');
+  const cloud=SCHEMES.filter(s=>s.type==='cloud');
+
+  document.getElementById('tp-recommend').innerHTML=
+    `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 4px">
+      <span style="font-size:13px;font-weight:600;color:rgba(255,255,255,.5)">适合「${currentGame}」的映射方案</span>
+      <span onclick="openGameSchemes()" style="font-size:12px;color:rgba(0,200,150,.8);cursor:pointer">查看全部 ›</span>
+    </div>
+    <div class="scheme-list">${forGame.length?forGame.map(schemeCard).join(''):'<div style="grid-column:1/-1;text-align:center;padding:30px 0;color:rgba(255,255,255,.3);font-size:12px">暂无适合当前游戏的方案</div>'}</div>
+    <div style="padding:12px 16px 4px;font-size:13px;font-weight:600;color:rgba(255,255,255,.5)">全部映射方案</div>
+    <div class="scheme-list">${allRec.map(schemeCard).join('')}</div>`;
+  document.getElementById('tp-rank').innerHTML=
+    `<div class="scheme-list">${rank.map(schemeCard).join('')}</div>`;
+  document.getElementById('tp-custom').innerHTML=
+    `<div style="display:flex;align-items:center;padding:10px 16px 0">
+      <div style="display:flex;gap:0">
+        <div class="custom-sub active" onclick="switchCustom('mine',this)" style="padding:6px 16px;font-size:13px;color:#fff;cursor:pointer;border-radius:14px;background:rgba(255,255,255,.1)">我的方案</div>
+        <div class="custom-sub" onclick="switchCustom('cloud',this)" style="padding:6px 16px;font-size:13px;color:rgba(255,255,255,.4);cursor:pointer;border-radius:14px">我的云分享</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <div onclick="openCreateModal()" style="padding:5px 12px;border-radius:14px;font-size:12px;color:#00c896;border:1px solid rgba(0,200,150,.4);cursor:pointer;background:rgba(0,200,150,.08)">+ 创建</div>
+        <div onclick="openImportCode()" style="padding:5px 12px;border-radius:14px;font-size:12px;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.15);cursor:pointer">导入</div>
+      </div>
+    </div>
+    <div id="custom-mine" class="scheme-list">${mine.length?mine.map(schemeCard).join(''):'<div style="grid-column:1/-1;text-align:center;padding:50px 0;color:rgba(255,255,255,.3);font-size:13px">暂无自定义方案</div>'}</div>
+    <div id="custom-cloud" class="scheme-list" style="display:none">${cloud.length?cloud.map(schemeCard).join(''):'<div style="grid-column:1/-1;text-align:center;padding:50px 0;color:rgba(255,255,255,.3);font-size:13px">暂无云分享</div>'}</div>`;
+}
+
+function switchCustom(tab,el){
+  el.parentElement.querySelectorAll('div').forEach(d=>{d.style.color='rgba(255,255,255,.4)';d.style.background='transparent'});
+  el.style.color='#fff';el.style.background='rgba(255,255,255,.1)';
+  document.getElementById('custom-mine').style.display=tab==='mine'?'grid':'none';
+  document.getElementById('custom-cloud').style.display=tab==='cloud'?'grid':'none';
+}
+
+/* ===== 搜索 ===== */
+let searchOpen=false;
+function toggleSearch(){
+  searchOpen=!searchOpen;
+  document.getElementById('search-bar').style.display=searchOpen?'block':'none';
+  if(searchOpen){
+    document.getElementById('search-input').value='';
+    document.getElementById('search-input').focus();
+  } else {
+    renderAllTabs();
+  }
+}
+
+function onSearch(val){
+  const q=val.trim().toLowerCase();
+  if(!q){renderAllTabs();return}
+  const res=SCHEMES.filter(s=>s.name.toLowerCase().includes(q)||s.author.toLowerCase().includes(q));
+  const panels=document.querySelectorAll('#page-mapping .tab-panel');
+  panels.forEach(p=>p.classList.remove('active'));
+  panels[0].classList.add('active');
+  document.querySelectorAll('#page-mapping .tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#page-mapping .tab')[0].classList.add('active');
+  document.getElementById('tp-recommend').innerHTML=
+    `<div style="padding:10px 16px 4px;font-size:12px;color:rgba(255,255,255,.4)">搜索结果：${res.length} 个方案</div>
+    <div class="scheme-list">${res.length?res.map(schemeCard).join(''):'<div style="grid-column:1/-1;text-align:center;padding:50px 0;color:rgba(255,255,255,.3);font-size:13px">没有找到相关方案</div>'}</div>`;
+}
+
+/* ===== 游戏专用方案页 ===== */
+function openGameSchemes(){
+  const gameSchemes=SCHEMES.filter(s=>s.scope==='game');
+  document.getElementById('game-schemes-list').innerHTML=gameSchemes.map(schemeCard).join('');
+  document.getElementById('page-game-schemes').classList.add('active');
+  const inp=document.getElementById('game-search-input');
+  if(inp) inp.value='';
+}
+
+function closeGameSchemes(){
+  document.getElementById('page-game-schemes').classList.remove('active');
+}
+
+function onGameSearch(val){
+  const q=val.trim().toLowerCase();
+  const gameSchemes=SCHEMES.filter(s=>s.scope==='game'&&(!q||s.name.toLowerCase().includes(q)||s.author.toLowerCase().includes(q)||(s.game&&s.game.toLowerCase().includes(q))));
+  document.getElementById('game-schemes-list').innerHTML=gameSchemes.length
+    ?gameSchemes.map(schemeCard).join('')
+    :'<div style="grid-column:1/-1;text-align:center;padding:50px 0;color:rgba(255,255,255,.3);font-size:13px">没有找到相关方案</div>';
+}
+
+/* ===== 方案详情弹窗 ===== */
+function openDetail(id){
+  const s=SCHEMES.find(x=>x.id===id);
+  if(!s) return;
+  currentScheme=s;
+  const isMine=s.type==='mine'||s.type==='cloud';
+  document.getElementById('detail-popup').innerHTML=`
+    <div onclick="closeDetail()" style="position:absolute;top:12px;right:12px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);font-size:18px">×</div>
+    <div style="width:100%;aspect-ratio:16/9;background:#0a1520;border-radius:10px;overflow:hidden;margin-bottom:12px;display:flex;align-items:center;justify-content:center">${THUMB_SVG}</div>
+    <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px">${s.name}</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px">作者：${s.author}${fmtUses(s.uses)?' · '+fmtUses(s.uses):''}${s.scope==='game'&&s.game?' · '+s.game:''}</div>
+    ${s.shareCode?`<div style="padding:8px 12px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:11px;color:rgba(255,255,255,.35)">分享码</span>
+      <span style="font-size:13px;color:#00c896;font-weight:600;letter-spacing:1px">${s.shareCode}</span>
+    </div>`:''}
+    <div style="display:flex;justify-content:space-around;padding-top:6px">
+      ${isMine?`
+        <div class="act-col" onclick="applyScheme()"><div class="act-circle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div><span>应用</span></div>
+        <div class="act-col" onclick="editScheme()"><div class="act-circle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z"/></svg></div><span>编辑</span></div>
+        <div class="act-col" onclick="showToast('已复制方案')"><div class="act-circle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></div><span>复制</span></div>
+        <div class="act-col" onclick="showToast('已删除');closeDetail()"><div class="act-circle" style="background:rgba(255,60,60,.1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff4040" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div><span>删除</span></div>
+        <div class="act-col" onclick="openExportCode()"><div class="act-circle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg></div><span>云分享</span></div>
+      `:`
+        <div class="act-col" onclick="applyScheme()"><div class="act-circle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div><span>应用</span></div>
+        <div class="act-col" onclick="showToast('已复制方案')"><div class="act-circle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></div><span>复制</span></div>
+        <div class="act-col" onclick="openExportCode()"><div class="act-circle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg></div><span>分享码</span></div>
+      `}
+    </div>`;
+  document.getElementById('detail-overlay').classList.add('show');
+}
+
+function closeDetail(){
+  document.getElementById('detail-overlay').classList.remove('show');
+}
+
+function applyScheme(){
+  if(currentScheme){
+    document.getElementById('sidebar-scheme-name').textContent=currentScheme.name;
+  }
+  showToast('方案已应用');
+  setTimeout(()=>{closeDetail();closeMappingPage()},600);
+}
+
+function editScheme(){
+  closeDetail();
+  openEditPage(currentScheme);
+}
+
+/* ===== 分享码 ===== */
+function openExportCode(){
+  const code=currentScheme?.shareCode||('GS-'+Math.random().toString(36).substr(2,6).toUpperCase());
+  document.getElementById('share-modal').style.display='flex';
+  document.getElementById('share-modal').innerHTML=`
+    <div style="background:#162535;border-radius:16px;padding:24px;width:280px;text-align:center">
+      <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:16px">分享码已生成</div>
+      <div style="background:rgba(0,0,0,.3);border-radius:10px;padding:16px;margin-bottom:16px">
+        <div style="font-size:22px;color:#00c896;font-weight:700;letter-spacing:2px">${code}</div>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:20px;line-height:1.6">将此分享码发送给好友<br>对方在"导入分享码"中输入即可使用</div>
+      <div onclick="copyCode('${code}')" style="padding:10px;border-radius:8px;background:#00c896;color:#fff;font-size:14px;cursor:pointer;margin-bottom:10px">复制分享码</div>
+      <div onclick="closeShareModal()" style="padding:10px;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer">关闭</div>
+    </div>`;
+}
+
+function openImportCode(){
+  document.getElementById('share-modal').style.display='flex';
+  document.getElementById('share-modal').innerHTML=`
+    <div style="background:#162535;border-radius:16px;padding:24px;width:280px">
+      <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:16px;text-align:center">导入分享码</div>
+      <input id="import-input" placeholder="输入分享码，如 GS-X7K9M2" style="width:100%;padding:12px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:14px;outline:none;margin-bottom:16px">
+      <div onclick="doImport()" style="text-align:center;padding:10px;border-radius:8px;background:#00c896;color:#fff;font-size:14px;cursor:pointer;margin-bottom:10px">确认导入</div>
+      <div onclick="closeShareModal()" style="text-align:center;padding:10px;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer">取消</div>
+    </div>`;
+  setTimeout(()=>document.getElementById('import-input')?.focus(),100);
+}
+
+function doImport(){
+  const v=document.getElementById('import-input')?.value?.trim();
+  if(!v){showToast('请输入分享码');return}
+  closeShareModal();
+  showToast('导入成功！方案已添加到"我的方案"');
+}
+
+function copyCode(code){
+  navigator.clipboard?.writeText(code);
+  showToast('已复制到剪贴板');
+}
+
+function closeShareModal(){
+  document.getElementById('share-modal').style.display='none';
+}
+
+/* ===== 创建方案 ===== */
+function openCreateModal(){
+  document.getElementById('share-modal').style.display='flex';
+  document.getElementById('share-modal').innerHTML=`
+    <div style="background:#162535;border-radius:14px;padding:20px;width:280px;position:relative">
+      <div onclick="closeShareModal()" style="position:absolute;top:12px;right:12px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);font-size:18px">×</div>
+      <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:14px">创建映射方案</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px">方案名称</div>
+      <input id="create-name" placeholder="输入方案名称" style="width:100%;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:13px;outline:none;margin-bottom:14px">
+      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px">方案类型</div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <div onclick="selectCreateType('game')" id="ct-game" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid rgba(0,200,150,.4);background:rgba(0,200,150,.06);cursor:pointer;text-align:center">
+          <div style="font-size:13px;color:#fff;font-weight:500">游戏专用</div>
+        </div>
+        <div onclick="selectCreateType('general')" id="ct-general" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid transparent;background:rgba(255,255,255,.04);cursor:pointer;text-align:center">
+          <div style="font-size:13px;color:rgba(255,255,255,.6);font-weight:500">通用方案</div>
+        </div>
+      </div>
+      <div onclick="doCreate()" style="text-align:center;padding:10px;border-radius:8px;background:#00c896;color:#fff;font-size:13px;cursor:pointer">确认创建</div>
+    </div>`;
+  setTimeout(()=>document.getElementById('create-name')?.focus(),100);
+}
+
+let createType='game';
+function selectCreateType(t){
+  createType=t;
+  const game=document.getElementById('ct-game');
+  const gen=document.getElementById('ct-general');
+  game.style.borderColor=t==='game'?'rgba(0,200,150,.4)':'transparent';
+  game.style.background=t==='game'?'rgba(0,200,150,.06)':'rgba(255,255,255,.04)';
+  game.querySelector('div').style.color=t==='game'?'#fff':'rgba(255,255,255,.6)';
+  gen.style.borderColor=t==='general'?'rgba(0,200,150,.4)':'transparent';
+  gen.style.background=t==='general'?'rgba(0,200,150,.06)':'rgba(255,255,255,.04)';
+  gen.querySelector('div').style.color=t==='general'?'#fff':'rgba(255,255,255,.6)';
+}
+
+function doCreate(){
+  const name=document.getElementById('create-name')?.value?.trim();
+  if(!name){showToast('请输入方案名称');return}
+  if(name.length>10){showToast('方案名称不超过10个字');return}
+  closeShareModal();
+  const newScheme={id:Date.now(),name,author:'我',uses:0,type:'mine',scope:createType==='game'?'game':'general'};
+  SCHEMES.push(newScheme);
+  openEditPage(newScheme);
+}
+
+/* ===== 输入映射编辑页 ===== */
+const KEY_MAPPINGS=[
+  {btn:'A',key:'鼠标左键'},
+  {btn:'B',key:'鼠标右键'},
+  {btn:'X',key:'R'},
+  {btn:'Y',key:'F'},
+  {btn:'LB',key:'Q'},
+  {btn:'RB',key:'E'},
+  {btn:'LT',key:'Shift'},
+  {btn:'RT',key:'Ctrl'},
+  {btn:'左摇杆',key:'WASD'},
+  {btn:'右摇杆',key:'鼠标移动'},
+  {btn:'十字键↑',key:'1'},
+  {btn:'十字键↓',key:'2'},
+];
+
+function openEditPage(scheme){
+  document.getElementById('edit-page-title').textContent=scheme.name+' - 输入映射';
+  const list=document.getElementById('edit-key-list');
+  list.innerHTML=KEY_MAPPINGS.map(m=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 12px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:32px;height:32px;border-radius:8px;background:rgba(0,200,150,.08);display:flex;align-items:center;justify-content:center;font-size:11px;color:#00c896;font-weight:600">${m.btn}</div>
+        <span style="font-size:13px;color:#fff">→</span>
+      </div>
+      <div style="padding:5px 12px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:12px;color:rgba(255,255,255,.7)">${m.key}</div>
+    </div>`).join('');
+  document.getElementById('page-edit').classList.add('active');
+}
+
+function closeEditPage(){
+  document.getElementById('page-edit').classList.remove('active');
+}
+
+/* ===== 引导（单弹窗说明） ===== */
+function openGuide(){
+  document.getElementById('guide-overlay').style.display='flex';
+  document.getElementById('guide-overlay').innerHTML=`
+    <div style="background:#162535;border-radius:14px;padding:20px;width:300px;position:relative">
+      <div onclick="closeGuide()" style="position:absolute;top:12px;right:12px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);font-size:18px">×</div>
+      <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:10px">控制器映射</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.8">
+        部分游戏（如逃离塔科夫、CS2等）不支持手柄操控。开启此功能后，可将虚拟手柄的每个按键映射到键盘/鼠标操作，从而通过虚拟按键或物理手柄来游玩这些游戏。<br><br>
+        你可以选择社区推荐方案，也可以自定义映射配置，并通过分享码与好友共享。
+      </div>
+    </div>`;
+}
+
+function closeGuide(){
+  document.getElementById('guide-overlay').style.display='none';
+}
+
+/* ===== 初始化 ===== */
+document.getElementById('ctrl-warning').style.display='flex';
+</script>
+</body>
+</html>
