@@ -142,8 +142,20 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
         </div>
         <div id="dev-physical" onclick="switchDevice('physical')" style="display:none;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,.04);border:1px solid transparent;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all .15s">
           <div style="width:28px;height:28px;border-radius:6px;background:rgba(100,160,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64a0ff" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M7 10v4M5 12h4"/></svg></div>
-          <div style="flex:1;min-width:0"><div style="font-size:12px;color:#fff">Xbox 无线控制器</div><div style="font-size:11px;color:rgba(255,255,255,.35)" id="phys-status">已连接</div></div>
+          <div style="flex:1;min-width:0"><div style="font-size:12px;color:#fff">物理手柄</div><div style="font-size:11px;color:rgba(255,255,255,.35)" id="phys-status">已连接</div></div>
           <div class="dev-inactive" id="phys-dot"></div>
+        </div>
+        <!-- 按键自定义布局（手柄连接后显示） -->
+        <div id="gamepad-layout-opts" style="display:none;padding:6px 0 2px">
+          <div style="font-size:11px;color:rgba(255,255,255,.35);margin-bottom:6px">按键自定义布局</div>
+          <div style="display:flex;gap:8px">
+            <div onclick="selectGamepadLayout('switch')" id="layout-switch" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid rgba(0,200,150,.3);background:rgba(0,200,150,.06);cursor:pointer;text-align:center">
+              <div style="font-size:12px;color:#fff;font-weight:500">Switch</div>
+            </div>
+            <div onclick="selectGamepadLayout('xbox')" id="layout-xbox" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid transparent;background:rgba(255,255,255,.04);cursor:pointer;text-align:center">
+              <div style="font-size:12px;color:rgba(255,255,255,.6);font-weight:500">Xbox</div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="sb-row" onclick="openMappingPage()" style="padding-top:4px">
@@ -342,6 +354,7 @@ function simConnect(){
   activeDevice = 'physical';
   document.getElementById('vpad').style.display = 'none';
   document.getElementById('ctrl-warning').style.display = 'none';
+  document.getElementById('gamepad-layout-opts').style.display = '';
   updateDeviceList();
   showToast('手柄已连接，已切换到物理手柄');
 }
@@ -351,6 +364,7 @@ function simDisconnect(){
   activeDevice = 'virtual';
   if(mappingEnabled) document.getElementById('vpad').style.display = '';
   document.getElementById('ctrl-warning').style.display = 'flex';
+  document.getElementById('gamepad-layout-opts').style.display = 'none';
   updateDeviceList();
   showToast('手柄已断开，虚拟按键已恢复显示');
 }
@@ -581,6 +595,21 @@ function closeShareModal(){
   document.getElementById('share-modal').style.display='none';
 }
 
+/* ===== 手柄布局切换 ===== */
+let gamepadLayout='switch';
+function selectGamepadLayout(type){
+  gamepadLayout=type;
+  const sw=document.getElementById('layout-switch');
+  const xb=document.getElementById('layout-xbox');
+  sw.style.borderColor=type==='switch'?'rgba(0,200,150,.3)':'transparent';
+  sw.style.background=type==='switch'?'rgba(0,200,150,.06)':'rgba(255,255,255,.04)';
+  sw.querySelector('div').style.color=type==='switch'?'#fff':'rgba(255,255,255,.6)';
+  xb.style.borderColor=type==='xbox'?'rgba(0,200,150,.3)':'transparent';
+  xb.style.background=type==='xbox'?'rgba(0,200,150,.06)':'rgba(255,255,255,.04)';
+  xb.querySelector('div').style.color=type==='xbox'?'#fff':'rgba(255,255,255,.6)';
+  showToast('已切换为'+( type==='switch'?'Switch':'Xbox')+'布局');
+}
+
 /* ===== 创建方案 ===== */
 function openCreateModal(){
   document.getElementById('share-modal').style.display='flex';
@@ -646,7 +675,7 @@ function openGuide(){
       <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:10px">控制器映射</div>
       <div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.8">
         部分游戏（如逃离塔科夫、CS2等）不支持手柄操控。开启此功能后，可将虚拟手柄的每个按键映射到键盘/鼠标操作，从而通过虚拟按键或物理手柄来游玩这些游戏。<br><br>
-        你可以选择社区推荐方案，也可以自定义映射配置，并通过分享码与好友共享。
+        你可以进入【控制器映射设置页】选择推荐方案，也可以自定义映射配置，并通过分享码与好友共享。
       </div>
     </div>`;
 }
