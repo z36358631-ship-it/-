@@ -620,9 +620,18 @@ function openSaveModal(){
       <div onclick="closeShareModal()" style="position:absolute;top:12px;right:12px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);font-size:18px">×</div>
       <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:14px">保存映射方案</div>
       <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px">方案名称</div>
-      <div style="position:relative;margin-bottom:16px">
+      <div style="position:relative;margin-bottom:12px">
         <input id="create-name" placeholder="输入方案名称" maxlength="10" oninput="updateNameCount()" style="width:100%;padding:10px 50px 10px 12px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:13px;outline:none">
         <span id="name-count" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;color:rgba(255,255,255,.25)">0/10</span>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px">方案类型</div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <div onclick="selectCreateType('game')" id="ct-game" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid rgba(0,200,150,.4);background:rgba(0,200,150,.06);cursor:pointer;text-align:center">
+          <div style="font-size:13px;color:#fff;font-weight:500">游戏专用</div>
+        </div>
+        <div onclick="selectCreateType('general')" id="ct-general" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid transparent;background:rgba(255,255,255,.04);cursor:pointer;text-align:center">
+          <div style="font-size:13px;color:rgba(255,255,255,.6);font-weight:500">通用方案</div>
+        </div>
       </div>
       <div onclick="doCreate()" style="text-align:center;padding:10px;border-radius:8px;background:#00c896;color:#fff;font-size:13px;cursor:pointer">确认保存</div>
     </div>`;
@@ -635,13 +644,26 @@ function updateNameCount(){
   if(inp&&cnt) cnt.textContent=inp.value.length+'/10';
 }
 
+let createType='game';
+function selectCreateType(t){
+  createType=t;
+  const game=document.getElementById('ct-game');
+  const gen=document.getElementById('ct-general');
+  game.style.borderColor=t==='game'?'rgba(0,200,150,.4)':'transparent';
+  game.style.background=t==='game'?'rgba(0,200,150,.06)':'rgba(255,255,255,.04)';
+  game.querySelector('div').style.color=t==='game'?'#fff':'rgba(255,255,255,.6)';
+  gen.style.borderColor=t==='general'?'rgba(0,200,150,.4)':'transparent';
+  gen.style.background=t==='general'?'rgba(0,200,150,.06)':'rgba(255,255,255,.04)';
+  gen.querySelector('div').style.color=t==='general'?'#fff':'rgba(255,255,255,.6)';
+}
+
 function doCreate(){
   const name=document.getElementById('create-name')?.value?.trim();
   if(!name){showToast('请输入方案名称');return}
   if(name.length>10){showToast('方案名称不超过10个字');return}
   if(pendingEditScheme){
     pendingEditScheme.name=name;
-    pendingEditScheme.type='mine';
+    pendingEditScheme.scope=createType;
     if(!SCHEMES.find(s=>s.id===pendingEditScheme.id)) SCHEMES.push(pendingEditScheme);
   }
   closeShareModal();
