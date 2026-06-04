@@ -15,7 +15,7 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
 .phone.portrait .sidebar{width:100%;border-radius:0;top:0}
 .phone.portrait .game-hint{display:none}
 
-.phone.portrait .scheme-list{grid-template-columns:1fr 1fr}
+.phone.portrait .scheme-list{display:flex;flex-direction:column}
 
 /* 游戏画面 */
 .game-bg{position:absolute;inset:0;background:linear-gradient(135deg,#0a1a2a,#1a0a2a);display:flex;align-items:center;justify-content:center}
@@ -66,14 +66,13 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
 .tab-panel.active{display:block}
 
 /* 方案卡片 */
-.scheme-list{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:12px 16px}
-.scheme-card{background:rgba(255,255,255,.05);border-radius:12px;overflow:hidden;cursor:pointer;transition:background .12s}
+.scheme-list{display:flex;flex-direction:column;gap:6px;padding:10px 16px}
+.scheme-card{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.05);border-radius:10px;cursor:pointer;transition:background .12s}
 .scheme-card:active{background:rgba(255,255,255,.1)}
-.scheme-thumb{width:100%;aspect-ratio:16/10;background:#0a1520;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.scheme-thumb svg{opacity:.4;width:80%;height:80%}
-.scheme-info{padding:7px 8px 9px}
-.scheme-name{font-size:12px;font-weight:500;color:#fff;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.scheme-meta{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,.35)}
+.scheme-icon{width:36px;height:36px;border-radius:8px;background:rgba(0,200,150,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.scheme-info{flex:1;min-width:0}
+.scheme-name{font-size:13px;font-weight:500;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scheme-meta{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.35)}
 
 /* 详情弹窗 */
 .detail-overlay{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:30;opacity:0;pointer-events:none;transition:opacity .2s;padding:20px}
@@ -250,52 +249,21 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:flex-sta
 <script>
 /* ===== 数据 ===== */
 const SCHEMES = [
-  {id:1,name:'逃离塔科夫-标准',author:'官方',uses:32000,type:'recommend',scope:'game',game:'逃离塔科夫',btns:['A','B','X','Y','LB','RB','L3','R3','dpad']},
-  {id:2,name:'塔科夫-狙击手',author:'极客玩家',uses:18500,type:'recommend',scope:'game',game:'逃离塔科夫',btns:['A','B','LT','RT','R3','dpad']},
-  {id:3,name:'CS2 竞技',author:'FPS老手',uses:15200,type:'recommend',scope:'game',game:'CS2',btns:['A','B','X','Y','LT','RT','LB','RB']},
-  {id:4,name:'Valorant 精准',author:'GameMaster',uses:12800,type:'recommend',scope:'game',game:'Valorant',btns:['A','B','X','Y','L3','R3','menu']},
-  {id:5,name:'FPS通用方案',author:'官方',uses:28000,type:'recommend',scope:'general',btns:['A','B','X','Y','LB','RB','LT','RT','L3','R3']},
-  {id:6,name:'MOBA通用映射',author:'官方',uses:24500,type:'recommend',scope:'general',btns:['A','B','X','Y','dpad','menu']},
-  {id:7,name:'绝地求生-全键位',author:'吃鸡达人',uses:19000,type:'rank',scope:'game',game:'绝地求生',btns:['A','B','X','Y','LB','RB','LT','RT','dpad','L3','R3','menu']},
-  {id:8,name:'Apex 高手',author:'Apex猎人',uses:22000,type:'rank',scope:'game',game:'Apex',btns:['A','B','X','Y','LT','RT','R3']},
-  {id:9,name:'永劫无间',author:'格斗王',uses:16000,type:'rank',scope:'game',game:'永劫无间',btns:['A','B','X','Y','LB','RB','dpad']},
-  {id:10,name:'暗黑4 刷本流',author:'暗黑老玩家',uses:9200,type:'rank',scope:'game',game:'暗黑4',btns:['A','B','X','Y','LT','RT','menu','dpad']},
-  {id:11,name:'我的自定义方案1',author:'我',uses:0,type:'mine',scope:'game',game:'逃离塔科夫',btns:['A','B','LB','RB','L3']},
-  {id:12,name:'塔科夫改良版',author:'我',uses:0,type:'mine',scope:'general',btns:['A','B','X','Y','LT','RT']},
-  {id:13,name:'分享-CS2配置',author:'我',uses:156,type:'cloud',scope:'game',game:'CS2',shareCode:'GS-X7K9M2',btns:['A','B','X','Y','LB','RB','LT','RT']},
-  {id:14,name:'分享-Apex方案',author:'我',uses:89,type:'cloud',scope:'game',game:'Apex',shareCode:'GS-P3N8W5',btns:['A','B','X','Y','R3','dpad']},
+  {id:1,name:'逃离塔科夫-标准',author:'官方',uses:32000,type:'recommend',game:'逃离塔科夫'},
+  {id:2,name:'塔科夫-狙击手',author:'极客玩家',uses:18500,type:'recommend',game:'逃离塔科夫'},
+  {id:3,name:'CS2 竞技',author:'FPS老手',uses:15200,type:'recommend',game:'CS2'},
+  {id:4,name:'Valorant 精准',author:'GameMaster',uses:12800,type:'recommend',game:'Valorant'},
+  {id:5,name:'FPS通用方案',author:'官方',uses:28000,type:'recommend'},
+  {id:6,name:'MOBA通用映射',author:'官方',uses:24500,type:'recommend'},
+  {id:7,name:'绝地求生-全键位',author:'吃鸡达人',uses:19000,type:'rank',game:'绝地求生'},
+  {id:8,name:'Apex 高手',author:'Apex猎人',uses:22000,type:'rank',game:'Apex'},
+  {id:9,name:'永劫无间',author:'格斗王',uses:16000,type:'rank',game:'永劫无间'},
+  {id:10,name:'暗黑4 刷本流',author:'暗黑老玩家',uses:9200,type:'rank',game:'暗黑4'},
+  {id:11,name:'我的自定义方案1',author:'我',uses:0,type:'mine',game:'逃离塔科夫'},
+  {id:12,name:'塔科夫改良版',author:'我',uses:0,type:'mine'},
+  {id:13,name:'分享-CS2配置',author:'我',uses:156,type:'cloud',game:'CS2',shareCode:'GS-X7K9M2'},
+  {id:14,name:'分享-Apex方案',author:'我',uses:89,type:'cloud',game:'Apex',shareCode:'GS-P3N8W5'},
 ];
-
-/* 按键SVG图标 */
-const BTN_ICONS={
-  A:'<circle cx="0" cy="0" r="10" fill="#34c759"/><text x="0" y="4" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff">A</text>',
-  B:'<circle cx="0" cy="0" r="10" fill="#ff6b35"/><text x="0" y="4" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff">B</text>',
-  X:'<circle cx="0" cy="0" r="10" fill="#007aff"/><text x="0" y="4" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff">X</text>',
-  Y:'<circle cx="0" cy="0" r="10" fill="#ffd60a"/><text x="0" y="4" text-anchor="middle" font-size="9" font-weight="bold" fill="#222">Y</text>',
-  LB:'<rect x="-14" y="-8" width="28" height="16" rx="8" fill="rgba(255,255,255,.15)"/><text x="0" y="4" text-anchor="middle" font-size="8" font-weight="600" fill="rgba(255,255,255,.7)">LB</text>',
-  RB:'<rect x="-14" y="-8" width="28" height="16" rx="8" fill="rgba(255,255,255,.15)"/><text x="0" y="4" text-anchor="middle" font-size="8" font-weight="600" fill="rgba(255,255,255,.7)">RB</text>',
-  LT:'<rect x="-14" y="-9" width="28" height="18" rx="4" fill="rgba(255,255,255,.2)"/><text x="0" y="5" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">LT</text>',
-  RT:'<rect x="-14" y="-9" width="28" height="18" rx="4" fill="rgba(255,255,255,.2)"/><text x="0" y="5" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">RT</text>',
-  L3:'<circle cx="0" cy="0" r="10" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><circle cx="0" cy="0" r="4" fill="rgba(255,255,255,.3)"/><text x="0" y="-12" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.5)">L3</text>',
-  R3:'<circle cx="0" cy="0" r="10" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><circle cx="0" cy="0" r="4" fill="rgba(255,255,255,.3)"/><text x="0" y="-12" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.5)">R3</text>',
-  dpad:'<path d="M0,-10 L5,-5 L5,-2 L2,-2 L2,2 L5,2 L5,5 L0,10 L-5,5 L-5,2 L-2,2 L-2,-2 L-5,-2 L-5,-5 Z" fill="rgba(255,255,255,.6)"/>',
-  menu:'<rect x="-8" y="-2" width="16" height="2" rx="1" fill="rgba(255,255,255,.5)"/><rect x="-8" y="2" width="12" height="2" rx="1" fill="rgba(255,255,255,.35)"/><rect x="-8" y="-6" width="16" height="2" rx="1" fill="rgba(255,255,255,.5)"/>',
-};
-
-function genThumbSVG(btns){
-  if(!btns||!btns.length) return THUMB_SVG;
-  const cols=Math.min(btns.length,4);
-  const rows=Math.ceil(btns.length/cols);
-  const w=220,h=130;
-  const gapX=w/(cols+1),gapY=h/(rows+1);
-  let inner='';
-  btns.forEach((b,i)=>{
-    const col=i%cols, row=Math.floor(i/cols);
-    const cx=gapX*(col+1), cy=gapY*(row+1);
-    inner+=`<g transform="translate(${cx},${cy})">${BTN_ICONS[b]||BTN_ICONS.A}</g>`;
-  });
-  return `<svg viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg"><rect width="220" height="130" fill="#0a1520"/>${inner}</svg>`;
-}
 
 const THUMB_SVG = `<svg viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg"><rect width="220" height="130" fill="#0a1520"/><circle cx="55" cy="88" r="22" fill="none" stroke="#1e3a52" stroke-width="2.5"/><circle cx="55" cy="88" r="10" fill="#1e3a52"/><rect x="90" y="12" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="114" y="12" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="138" y="12" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="162" y="12" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="96" y="34" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="120" y="34" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="144" y="34" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="90" y="56" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="114" y="56" width="18" height="15" rx="3" fill="#1e3a52"/><rect x="138" y="56" width="18" height="15" rx="3" fill="#1e3a52"/></svg>`;
 
@@ -430,18 +398,16 @@ function fmtUses(n){
 
 function schemeCard(s){
   const usesStr=fmtUses(s.uses);
-  const thumbSvg = genThumbSVG(s.btns);
-  let deviceBadge='';
-  if(deviceSchemes.virtual===s.name) deviceBadge='<span style="font-size:9px;padding:1px 4px;border-radius:3px;background:rgba(0,200,150,.15);color:#00c896">虚拟手柄</span>';
-  if(deviceSchemes.physical===s.name) deviceBadge+='<span style="font-size:9px;padding:1px 4px;border-radius:3px;background:rgba(100,160,255,.15);color:#64a0ff">物理手柄</span>';
   const isActive = deviceSchemes.virtual===s.name || deviceSchemes.physical===s.name;
-  const activeBadge = isActive ? '<div style="position:absolute;top:6px;left:6px;padding:2px 6px;border-radius:4px;background:rgba(0,200,150,.85);font-size:9px;color:#fff;font-weight:600">应用中</div>' : '';
+  const activeBadge = isActive ? '<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(0,200,150,.15);color:#00c896;flex-shrink:0">应用中</span>' : '';
   return `<div class="scheme-card" onclick="openDetail(${s.id})">
-    <div class="scheme-thumb" style="position:relative">${thumbSvg}${activeBadge}</div>
+    <div class="scheme-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.5"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg></div>
     <div class="scheme-info">
       <div class="scheme-name">${s.name}</div>
-      <div class="scheme-meta">${s.author}${usesStr?' · '+usesStr:''}${deviceBadge?' '+deviceBadge:''}</div>
+      <div class="scheme-meta">${s.author}${usesStr?' · '+usesStr:''}</div>
     </div>
+    ${activeBadge}
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="2.5" style="flex-shrink:0"><path d="M9 18l6-6-6-6"/></svg>
   </div>`;
 }
 
@@ -514,7 +480,7 @@ function onSearch(val){
 
 /* ===== 游戏专用方案页 ===== */
 function openGameSchemes(){
-  const gameSchemes=SCHEMES.filter(s=>s.scope==='game');
+  const gameSchemes=SCHEMES.filter(s=>s.game);
   document.getElementById('game-schemes-list').innerHTML=gameSchemes.map(schemeCard).join('');
   document.getElementById('page-game-schemes').classList.add('active');
   const inp=document.getElementById('game-search-input');
@@ -527,10 +493,10 @@ function closeGameSchemes(){
 
 function onGameSearch(val){
   const q=val.trim().toLowerCase();
-  const gameSchemes=SCHEMES.filter(s=>s.scope==='game'&&(!q||s.name.toLowerCase().includes(q)||s.author.toLowerCase().includes(q)||(s.game&&s.game.toLowerCase().includes(q))));
+  const gameSchemes=SCHEMES.filter(s=>s.game&&(!q||s.name.toLowerCase().includes(q)||s.author.toLowerCase().includes(q)||s.game.toLowerCase().includes(q)));
   document.getElementById('game-schemes-list').innerHTML=gameSchemes.length
     ?gameSchemes.map(schemeCard).join('')
-    :'<div style="grid-column:1/-1;text-align:center;padding:50px 0;color:rgba(255,255,255,.3);font-size:13px">没有找到相关方案</div>';
+    :'<div style="text-align:center;padding:50px 0;color:rgba(255,255,255,.3);font-size:13px">没有找到相关方案</div>';
 }
 
 /* ===== 方案详情弹窗 ===== */
@@ -539,7 +505,7 @@ function openDetail(id){
   if(!s) return;
   currentScheme=s;
   const isMine=s.type==='mine'||s.type==='cloud';
-  const detailThumb = genThumbSVG(s.btns);
+  const detailThumb = THUMB_SVG;
   document.getElementById('detail-popup').innerHTML=`
     <div onclick="closeDetail()" style="position:absolute;top:12px;right:12px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);font-size:18px">×</div>
     <div style="width:100%;aspect-ratio:16/9;background:#0a1520;border-radius:10px;overflow:hidden;margin-bottom:12px;display:flex;align-items:center;justify-content:center">${detailThumb}</div>
@@ -587,7 +553,7 @@ function editScheme(){
 function editOtherScheme(){
   closeDetail();
   showToast('已复制到我的方案并进入编辑');
-  const copy={id:Date.now(),name:currentScheme.name+'(副本)',author:'我',uses:0,type:'mine',scope:currentScheme.scope,game:currentScheme.game,btns:[...(currentScheme.btns||[])]};
+  const copy={id:Date.now(),name:currentScheme.name+'(副本)',author:'我',uses:0,type:'mine',game:currentScheme.game};
   SCHEMES.push(copy);
   openEditPage(copy);
 }
@@ -657,18 +623,9 @@ function openSaveModal(){
       <div onclick="closeShareModal()" style="position:absolute;top:12px;right:12px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);font-size:18px">×</div>
       <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:14px">保存映射方案</div>
       <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px">方案名称</div>
-      <div style="position:relative;margin-bottom:12px">
+      <div style="position:relative;margin-bottom:16px">
         <input id="create-name" placeholder="输入方案名称" maxlength="10" oninput="updateNameCount()" style="width:100%;padding:10px 50px 10px 12px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:13px;outline:none">
         <span id="name-count" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;color:rgba(255,255,255,.25)">0/10</span>
-      </div>
-      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px">方案类型</div>
-      <div style="display:flex;gap:8px;margin-bottom:16px">
-        <div onclick="selectCreateType('game')" id="ct-game" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid rgba(0,200,150,.4);background:rgba(0,200,150,.06);cursor:pointer;text-align:center">
-          <div style="font-size:13px;color:#fff;font-weight:500">游戏专用</div>
-        </div>
-        <div onclick="selectCreateType('general')" id="ct-general" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid transparent;background:rgba(255,255,255,.04);cursor:pointer;text-align:center">
-          <div style="font-size:13px;color:rgba(255,255,255,.6);font-weight:500">通用方案</div>
-        </div>
       </div>
       <div onclick="doCreate()" style="text-align:center;padding:10px;border-radius:8px;background:#00c896;color:#fff;font-size:13px;cursor:pointer">确认保存</div>
     </div>`;
@@ -681,26 +638,13 @@ function updateNameCount(){
   if(inp&&cnt) cnt.textContent=inp.value.length+'/10';
 }
 
-let createType='game';
-function selectCreateType(t){
-  createType=t;
-  const game=document.getElementById('ct-game');
-  const gen=document.getElementById('ct-general');
-  game.style.borderColor=t==='game'?'rgba(0,200,150,.4)':'transparent';
-  game.style.background=t==='game'?'rgba(0,200,150,.06)':'rgba(255,255,255,.04)';
-  game.querySelector('div').style.color=t==='game'?'#fff':'rgba(255,255,255,.6)';
-  gen.style.borderColor=t==='general'?'rgba(0,200,150,.4)':'transparent';
-  gen.style.background=t==='general'?'rgba(0,200,150,.06)':'rgba(255,255,255,.04)';
-  gen.querySelector('div').style.color=t==='general'?'#fff':'rgba(255,255,255,.6)';
-}
-
 function doCreate(){
   const name=document.getElementById('create-name')?.value?.trim();
   if(!name){showToast('请输入方案名称');return}
   if(name.length>10){showToast('方案名称不超过10个字');return}
   if(pendingEditScheme){
     pendingEditScheme.name=name;
-    pendingEditScheme.scope=createType==='game'?'game':'general';
+    pendingEditScheme.type='mine';
     if(!SCHEMES.find(s=>s.id===pendingEditScheme.id)) SCHEMES.push(pendingEditScheme);
   }
   closeShareModal();
