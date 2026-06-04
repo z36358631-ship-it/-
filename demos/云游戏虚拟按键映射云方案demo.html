@@ -389,6 +389,9 @@ function switchTab(idx, el){
   el.classList.add('active');
   document.querySelectorAll('#page-mapping .tab-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('#page-mapping .tab-panel')[idx].classList.add('active');
+  const searchBtn=document.querySelector('#page-mapping .pg-header div:last-child');
+  if(idx===2){searchBtn.style.visibility='hidden'}else{searchBtn.style.visibility=''}
+  if(searchOpen) toggleSearch();
 }
 
 function fmtUses(n){
