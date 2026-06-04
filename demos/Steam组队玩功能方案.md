@@ -206,6 +206,8 @@
 
 # 五、数据埋点
 
+## 5.1 埋点事件表
+
 |页面名称|事件类型|功能名称|数据统计|上报字段|
 |---|---|---|---|---|
 |游戏大厅|点击事件|品类筛选切换|人数、人次|filter_type(all/cloud/steam)|
@@ -213,13 +215,48 @@
 |游戏大厅|点击事件|创建房间入口|人数、人次|game_id, game_type|
 |创建房间页|点击事件|游戏类型切换|人数、人次|create_type(steam/cloud)|
 |创建房间页|点击事件|创建并进入房间|人数、人次|game_id, game_type, room_privacy|
-|组队房间|点击事件|分享邀请|人数、人次|share_channel(wechat/qq/steam_friend/discord/link), game_type|
+|组队房间|点击事件|分享邀请|人数、人次|share_channel, game_type|
 |组队房间|点击事件|启动游戏（房主）|人数、人次|game_id, game_type, member_count|
 |组队房间|点击事件|联机启动（成员）|人数、人次|game_id, game_type|
 |世界频道|点击事件|品类筛选切换|人数、人次|platform_filter(steam/cloud)|
 |世界频道|点击事件|立即加入（卡片）|人数、人次|game_id, game_type, room_id|
 |游戏内|点击事件|游戏内分享|人数、人次|share_channel, game_id, game_type|
-|分享落地页|浏览事件|落地页曝光|人数、人次|game_id, room_id, source(wechat/qq/discord/steam/link)|
+|分享落地页|浏览事件|落地页曝光|人数、人次|game_id, room_id, source|
 |分享落地页|点击事件|加入房间|人数、人次|game_id, room_id, room_status|
+
+## 5.2 埋点事件名定义
+
+|事件ID|事件名称|触发时机|
+|---|---|---|
+|steam_filter_click|品类筛选切换|用户点击游戏大厅/组队大厅/世界频道品类筛选按钮时|
+|steam_quick_join_click|快速加入点击|用户点击游戏卡片「快速加入」按钮时|
+|steam_create_room_entry|创建房间入口点击|用户点击游戏卡片或悬浮按钮「创建房间」时|
+|steam_create_type_switch|创建房间类型切换|用户在创建房间页切换Steam/云游戏按钮时|
+|steam_create_room_submit|创建房间提交|用户点击「创建并进入房间」按钮且校验通过时|
+|steam_share_invite_click|分享邀请点击|用户点击房间页/游戏内「分享邀请」按钮时|
+|steam_share_channel_select|分享渠道选择|用户在分享弹窗选择具体渠道（微信/QQ/Steam/Discord/链接）时|
+|steam_host_start_click|房主启动游戏|房主点击「启动游戏」按钮且人数≥2时|
+|steam_member_launch_click|成员联机启动|成员点击「联机启动」按钮时|
+|steam_world_platform_switch|世界频道品类切换|用户在世界频道切换Steam/云游戏筛选时|
+|steam_world_join_click|世界频道卡片加入|用户点击世界频道招募卡片「立即加入」时|
+|steam_ingame_share_click|游戏内分享|房主在游戏内点击分享按钮时|
+|steam_landing_page_view|落地页曝光|分享落地页加载完成时|
+|steam_landing_join_click|落地页加入房间|用户在落地页点击「加入房间」按钮时|
+
+## 5.3 埋点参数定义
+
+|参数名|参数说明|参数值枚举/格式|
+|---|---|---|
+|game_id|游戏ID|字符串，如"582010"、"1426210"|
+|game_type|游戏品类|steam / cloud|
+|filter_type|品类筛选值|all / cloud / steam|
+|platform_filter|世界频道品类筛选|steam / cloud|
+|create_type|创建房间选择的游戏类型|steam / cloud|
+|room_id|房间ID|6位数字字符串|
+|room_privacy|房间权限|public / private|
+|room_status|房间状态|ready / starting / playing / expired / dissolved|
+|member_count|房间内人数|数字，2-4|
+|share_channel|分享渠道|wechat / qq / steam_friend / discord / link|
+|source|落地页来源渠道|wechat / qq / discord / steam / link|
 
 PS：以上所有数据上报都必须包括用户公共属性（见数据上报列表）
