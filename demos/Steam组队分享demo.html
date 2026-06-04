@@ -1149,7 +1149,6 @@ button{font:inherit}
             </div>
           </div>
           <div class="room-actions" id="roomActions">
-            <button class="secondary" onclick="openShare()" title="分享邀请"><i class="fas fa-share-from-square"></i> 分享邀请</button>
             <button class="secondary host-only" onclick="simulateHostLeave()"><i class="fas fa-trash"></i> 解散房间</button>
             <button class="secondary member-only" onclick="openLeaveRoom()" style="display:none"><i class="fas fa-right-from-bracket"></i> 退出房间</button>
             <button class="primary member-launch" onclick="memberLaunchGame()" style="display:none" disabled><i class="fas fa-rocket"></i> 联机启动</button>
@@ -1267,14 +1266,6 @@ button{font:inherit}
   <div class="modal-mask" id="shareModal">
     <div class="modal">
       <div class="modal-head"><h3>分享邀请</h3><i class="fas fa-xmark close" onclick="closeShare()"></i></div>
-      <div class="share-preview">
-        <div class="share-preview-title" id="shareGameTitle">怪物猎人：世界</div>
-        <div class="share-preview-info">
-          <span>房间名：<b id="shareGameName">组队房间</b></span>
-          <span>人数：<b id="shareRoomCount">3/4</b> · ID：<b id="shareRoomId">582010</b></span>
-          <span>类型：<b id="shareGameType">云游戏</b></span>
-        </div>
-      </div>
       <div class="share-options"></div>
     </div>
   </div>
