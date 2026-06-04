@@ -1904,11 +1904,6 @@ function backHome(){showScreen("home")}
 let isOverseas=false;
 function openShare(){
   window.currentShareLink=`gamehub://cloud-team/room?roomId=${roomId()}&gameId=${selected.id}&from=share`;
-  document.getElementById("shareGameName").textContent=currentRoomName||selected.name+" 组队房间";
-  document.getElementById("shareGameTitle").textContent=selected.name;
-  document.getElementById("shareRoomCount").textContent=`${members.length}/${selected.max}`;
-  document.getElementById("shareRoomId").textContent=roomId();
-  document.getElementById("shareGameType").textContent=selected.type==='steam'?'Steam联机':'云游戏';
   const optionsEl=document.querySelector("#shareModal .share-options");
   if(optionsEl){
     if(isOverseas){
