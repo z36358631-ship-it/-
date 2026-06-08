@@ -470,7 +470,7 @@
                                 <option>通过已外显</option>
                                 <option>疑似待审核</option>
                                 <option>违规已拦截</option>
-                                <option>已静默</option>
+                                <option>已屏蔽</option>
                                 <option>已删除</option>
                             </select>
                         </div>
@@ -482,7 +482,7 @@
 
                     <div style="margin-bottom: 16px; display:flex; gap:10px; align-items: center; justify-content: space-between;">
                         <div>
-                            <button class="btn btn-warning topic-batch-btn" onclick="batchActionTopicPost(2)" disabled><i class="fas fa-eye-slash"></i> 批量静默</button>
+                            <button class="btn btn-warning topic-batch-btn" onclick="batchActionTopicPost(2)" disabled><i class="fas fa-eye-slash"></i> 批量屏蔽</button>
                             <button class="btn btn-danger topic-batch-btn" onclick="batchActionTopicPost(0)" disabled><i class="fas fa-trash"></i> 批量删除</button>
                             <span style="font-size: 13px; color: var(--text-sub); line-height: 32px; margin-left: 10px;">(勾选左侧多选框以激活操作按钮)</span>
                         </div>
@@ -542,7 +542,7 @@
                                 <option>通过已外显</option>
                                 <option>疑似待审核</option>
                                 <option>违规已拦截</option>
-                                <option>已静默</option>
+                                <option>已屏蔽</option>
                                 <option>已删除</option>
                             </select>
                         </div>
@@ -563,7 +563,7 @@
 
                     <div style="margin-bottom: 16px; display:flex; gap:10px; align-items: center; justify-content: space-between;">
                         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                            <button class="btn btn-warning batch-btn" onclick="batchAction(2)" disabled><i class="fas fa-eye-slash"></i> 批量静默</button>
+                            <button class="btn btn-warning batch-btn" onclick="batchAction(2)" disabled><i class="fas fa-eye-slash"></i> 批量屏蔽</button>
                             <button class="btn btn-danger batch-btn" onclick="batchAction(0)" disabled><i class="fas fa-trash"></i> 批量删除</button>
                             <select class="batch-btn" onchange="if(this.value){batchMovePost(this.value); this.selectedIndex=0;}" disabled style="padding:0 12px; height:32px; border-radius:4px; font-size:14px; cursor:pointer; border:1px solid var(--border); background:var(--white);">
                                 <option value="">批量移动到...</option>
@@ -651,7 +651,7 @@
 
                     <div style="margin-bottom: 16px; display:flex; gap:10px; align-items: center; justify-content: space-between;">
                         <div>
-                            <button class="btn btn-warning report-batch-btn" onclick="batchActionReport('mute')" disabled><i class="fas fa-eye-slash"></i> 批量静默</button>
+                            <button class="btn btn-warning report-batch-btn" onclick="batchActionReport('mute')" disabled><i class="fas fa-eye-slash"></i> 批量屏蔽</button>
                             <button class="btn btn-danger report-batch-btn" onclick="batchActionReport('delete')" disabled><i class="fas fa-trash"></i> 批量删除</button>
                             <span style="font-size: 13px; color: var(--text-sub); line-height: 32px; margin-left: 10px;">(勾选左侧多选框以激活操作按钮)</span>
                         </div>
@@ -816,7 +816,7 @@
                     <div class="bl-panel" id="bl-keyword" style="display:none">
                         <div class="filter-bar">
                             <div class="filter-item">关键词: <input type="text" placeholder="输入关键词" id="bl-kw-search"></div>
-                            <div class="filter-item">触发动作: <select id="bl-kw-action"><option>全部</option><option>静默</option><option>删帖</option><option>禁止发帖</option></select></div>
+                            <div class="filter-item">触发动作: <select id="bl-kw-action"><option>全部</option><option>屏蔽</option><option>删帖</option><option>禁止发帖</option></select></div>
                             <div class="filter-item">
                                 <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
                             </div>
@@ -834,7 +834,7 @@
                     <div class="bl-panel" id="bl-punish" style="display:none">
                         <div class="filter-bar">
                             <div class="filter-item">用户ID: <input type="text" placeholder="输入UID" id="bl-punish-uid"></div>
-                            <div class="filter-item">处罚类型: <select id="bl-punish-type"><option>全部</option><option>静默</option><option>禁言(周期)</option><option>禁言(永久)</option></select></div>
+                            <div class="filter-item">处罚类型: <select id="bl-punish-type"><option>全部</option><option>屏蔽</option><option>禁言(周期)</option><option>禁言(永久)</option></select></div>
                             <div class="filter-item">状态: <select><option>全部</option><option>生效中</option><option>已解除</option><option>已过期</option></select></div>
                             <div class="filter-item">
                                 <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
@@ -884,7 +884,7 @@
         ];
 
         const mockIdentities =[
-            { id: 'ROLE_001', name: '官方认证', perms:['身份标识','置顶','删动态','静默动态','帖子移动','官方内容发布'], color: '#ff4d4f', bgColor: '#fff1f0', count: 2, desc: '官方运营客服', createTime: '2023-01-01 10:00', status: 1 },
+            { id: 'ROLE_001', name: '官方认证', perms:['身份标识','置顶','删动态','屏蔽动态','帖子移动','官方内容发布'], color: '#ff4d4f', bgColor: '#fff1f0', count: 2, desc: '官方运营客服', createTime: '2023-01-01 10:00', status: 1 },
             { id: 'ROLE_002', name: '知名创作者', perms: ['身份标识','帖子移动'], color: '#722ed1', bgColor: '#f9f0ff', count: 2, desc: 'KOL玩家', createTime: '2023-05-12 14:20', status: 1 },
             { id: 'ROLE_003', name: 'Hardcore', perms: ['身份标识'], color: '#13c2c2', bgColor: '#e6fffb', count: 1250, desc: 'Pro gamers', createTime: '2023-08-20 09:15', status: 1 },
             { id: 'ROLE_004', name: '废弃旧标签', perms:[], color: '#8c8c8c', bgColor: '#f5f5f5', count: 0, desc: '过往活动的测试标签', createTime: '2024-01-05 16:45', status: 2 }
@@ -909,7 +909,7 @@
             { id: 'TOPIC_1004', content: '#日常打卡#', app: '双端互通', postCount: 56, views: 8900000, participants: 300000, startTime: '2026-01-01 00:00', endTime: '2099-12-31 23:59', createTime: '2026-03-12 16:45:00', status: 1 }
         ];
 
-        // status映射：1 = 通过已外显, 2 = 已静默, 3 = 疑似待审核, 4 = 违规已拦截, 0 = 已删除
+        // status映射：1 = 通过已外显, 2 = 已屏蔽, 3 = 疑似待审核, 4 = 违规已拦截, 0 = 已删除
         // 新增 isFeatured 控制是否为精选动态
         let mockPosts =[
             { id: 'D88201', p_id: 'PT10002', p_name: 'GTA 5', p_icon: 'https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg', author: '老麦', accountId: 'UID_99214', phone: '13812345678', content: '【干货】GTA5 稳60帧启动设置，彻底告别卡顿...', views: 45020, likes: 999, favs: 450, replies: 34, reposts: 55, time: '2026-03-13 10:30:00', status: 1, isPinned: true, isFeatured: true, isGuide: true },
@@ -920,7 +920,7 @@
             let st = 1;
             if (i === 5) st = 3;
             if (i === 6) st = 4;
-            if (i === 7) st = 2; // 已静默
+            if (i === 7) st = 2; // 已屏蔽
             const cat = i % 4;
             mockPosts.push({
                 id: `D8820${i < 10 ? '0'+i : i}`, p_id: 'PT10001', p_name: 'Steam', p_icon: 'https://picsum.photos/seed/steam/100/100',
@@ -1304,7 +1304,7 @@
                         <label><input type="checkbox" value="身份标识" ${isChecked('身份标识')}> 身份标识</label>
                         <label><input type="checkbox" value="置顶" ${isChecked('置顶')}> 置顶</label>
                         <label><input type="checkbox" value="删动态" ${isChecked('删动态')}> 删动态</label>
-                        <label><input type="checkbox" value="静默动态" ${isChecked('静默动态')}> 静默动态</label>
+                        <label><input type="checkbox" value="屏蔽动态" ${isChecked('屏蔽动态')}> 屏蔽动态</label>
                         <label><input type="checkbox" value="帖子移动" ${isChecked('帖子移动')}> 帖子移动</label>
                         <label><input type="checkbox" value="官方内容发布" ${isChecked('官方内容发布')}> 官方内容发布</label>
                     </div>
@@ -1324,7 +1324,7 @@
                         <div><strong>身份标识</strong> — 用户昵称旁展示对应身份标签</div>
                         <div><strong>置顶</strong> — 可将帖子置顶到分区顶部</div>
                         <div><strong>删动态</strong> — 可删除其他用户的帖子</div>
-                        <div><strong>静默动态</strong> — 可将帖子设为静默(仅发布者可见)</div>
+                        <div><strong>屏蔽动态</strong> — 可将帖子设为屏蔽(仅发布者可见)</div>
                         <div><strong>帖子移动</strong> — 可将帖子在综合/求助/攻略板块间移动</div>
                         <div><strong>官方内容发布</strong> — 该身份用户发帖时，内容自动归类到官方Tab下</div>
                     </div>
@@ -1569,7 +1569,7 @@
                 if(p.status === 1) { 
                     statusTag = `<span class="tag tag-success">通过已外显</span>`; 
                     featuredBtn = p.isFeatured ? `<a onclick="toggleFeatured('${p.id}', true)">取消精选</a>` : `<a onclick="toggleFeatured('${p.id}', true)">加入精选</a>`;
-                    actionHtml += `${pinBtn}${featuredBtn}<a class="warning" onclick="changePostStatus('${p.id}', 2, true)">静默</a><a class="danger" onclick="changePostStatus('${p.id}', 0, true)">删除</a>`;
+                    actionHtml += `${pinBtn}${featuredBtn}<a class="warning" onclick="changePostStatus('${p.id}', 2, true)">屏蔽</a><a class="danger" onclick="changePostStatus('${p.id}', 0, true)">删除</a>`;
                 } else if(p.status === 3) {
                     statusTag = `<span class="tag tag-warning">疑似待审核</span>`;
                     actionHtml += `<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1, true)">通过</a><a class="danger" onclick="changePostStatus('${p.id}', 4, true)">不通过</a><a class="danger" onclick="changePostStatus('${p.id}', 0, true)">删除</a>`;
@@ -1577,8 +1577,8 @@
                     statusTag = `<span class="tag tag-error">违规已拦截</span>`;
                     actionHtml += `<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1, true)">审核通过</a><a class="danger" onclick="changePostStatus('${p.id}', 0, true)">删除</a>`;
                 } else if(p.status === 2) { 
-                    statusTag = `<span class="tag tag-warning">已静默</span>`; 
-                    actionHtml += `${pinBtn}<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1, true)">解除静默</a><a class="danger" onclick="changePostStatus('${p.id}', 0, true)">删除</a>`;
+                    statusTag = `<span class="tag tag-warning">已屏蔽</span>`; 
+                    actionHtml += `${pinBtn}<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1, true)">解除屏蔽</a><a class="danger" onclick="changePostStatus('${p.id}', 0, true)">删除</a>`;
                 } else { 
                     statusTag = `<span class="tag tag-gray">已删除</span>`; 
                     actionHtml += `<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1, true)">恢复</a>`;
@@ -1606,7 +1606,7 @@
             const boxes = document.querySelectorAll('.topic-row-checkbox:checked');
             if(boxes.length === 0) return; 
             const ids = Array.from(boxes).map(b => b.value);
-            const actionName = targetStatus === 2 ? '静默' : '删除';
+            const actionName = targetStatus === 2 ? '屏蔽' : '删除';
             if(confirm(`确定要批量【${actionName}】该话题下选中的 ${ids.length} 条动态吗？`)) {
                 mockPosts.forEach(p => { if(ids.includes(p.id)) p.status = targetStatus; });
                 showToast(`成功批量${actionName} ${ids.length} 条动态`); renderTopicPosts();
@@ -1663,7 +1663,7 @@
                 if(p.status === 1) { 
                     statusTag = `<span class="tag tag-success">通过已外显</span>`; 
                     featuredBtn = p.isFeatured ? `<a onclick="toggleFeatured('${p.id}')">取消精选</a>` : `<a onclick="toggleFeatured('${p.id}')">加入精选</a>`;
-                    actionHtml += `${pinBtn}${featuredBtn}<a class="warning" onclick="changePostStatus('${p.id}', 2)">静默</a><a class="danger" onclick="changePostStatus('${p.id}', 0)">删除</a>`;
+                    actionHtml += `${pinBtn}${featuredBtn}<a class="warning" onclick="changePostStatus('${p.id}', 2)">屏蔽</a><a class="danger" onclick="changePostStatus('${p.id}', 0)">删除</a>`;
                 } else if(p.status === 3) {
                     statusTag = `<span class="tag tag-warning">疑似待审核</span>`;
                     actionHtml += `<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1)">通过</a><a class="danger" onclick="changePostStatus('${p.id}', 4)">不通过</a><a class="danger" onclick="changePostStatus('${p.id}', 0)">删除</a>`;
@@ -1671,8 +1671,8 @@
                     statusTag = `<span class="tag tag-error">违规已拦截</span>`;
                     actionHtml += `<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1)">审核通过</a><a class="danger" onclick="changePostStatus('${p.id}', 0)">删除</a>`;
                 } else if(p.status === 2) { 
-                    statusTag = `<span class="tag tag-warning">已静默</span>`; 
-                    actionHtml += `${pinBtn}<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1)">解除静默</a><a class="danger" onclick="changePostStatus('${p.id}', 0)">删除</a>`;
+                    statusTag = `<span class="tag tag-warning">已屏蔽</span>`; 
+                    actionHtml += `${pinBtn}<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1)">解除屏蔽</a><a class="danger" onclick="changePostStatus('${p.id}', 0)">删除</a>`;
                 } else { 
                     statusTag = `<span class="tag tag-gray">已删除</span>`; 
                     actionHtml += `<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1)">恢复</a>`;
@@ -1740,7 +1740,7 @@
             p.status = newStatus; 
             let msg = '操作成功';
             if (newStatus === 1) msg = '已审核通过，外显正常';
-            else if (newStatus === 2) msg = '已转为静默';
+            else if (newStatus === 2) msg = '已转为屏蔽';
             else if (newStatus === 4) msg = '违规已拦截';
             else if (newStatus === 0) msg = '已删除';
             showToast(msg); 
@@ -1754,7 +1754,7 @@
             const boxes = document.querySelectorAll('.row-checkbox:checked');
             if(boxes.length === 0) return; 
             const ids = Array.from(boxes).map(b => b.value);
-            const actionName = targetStatus === 2 ? '静默' : '删除';
+            const actionName = targetStatus === 2 ? '屏蔽' : '删除';
             if(confirm(`确定要批量【${actionName}】选中的 ${ids.length} 条动态吗？`)) {
                 mockPosts.forEach(p => { if(ids.includes(p.id)) p.status = targetStatus; });
                 showToast(`成功批量${actionName} ${ids.length} 条动态`); renderPosts();
@@ -1809,7 +1809,7 @@
             const boxes = document.querySelectorAll('.report-row-checkbox:checked');
             if(boxes.length === 0) return; 
             const ids = Array.from(boxes).map(b => b.value);
-            const actionName = actionType === 'mute' ? '静默' : '删除';
+            const actionName = actionType === 'mute' ? '屏蔽' : '删除';
             if(confirm(`确定要批量【${actionName}】选中的 ${ids.length} 个举报对应的动态吗？`)) {
                 mockReports.forEach(r => { 
                     if(ids.includes(r.id)) {
@@ -1840,7 +1840,7 @@
                             <label style="width:70px;">动态处理</label>
                             <select class="form-control" id="m-report-post-action">
                                 <option value="delete">删除违规动态</option>
-                                <option value="mute">仅静默动态 (仅自己可见)</option>
+                                <option value="mute">仅屏蔽动态 (仅自己可见)</option>
                             </select>
                         </div>
                     </div>
@@ -1870,7 +1870,7 @@
                     let actions =[];
                     if (handlePost) {
                         const postAction = document.getElementById('m-report-post-action').value;
-                        actions.push(postAction === 'delete' ? '删除动态' : '静默动态');
+                        actions.push(postAction === 'delete' ? '删除动态' : '屏蔽动态');
                         let p = mockPosts.find(x => x.id === r.postId);
                         if(p) p.status = postAction === 'mute' ? 2 : 0;
                     }
@@ -2060,18 +2060,18 @@
         var mockBlIp = [
             { id: 'BL_IP001', ip: '192.168.1.100', reason: '恶意刷屏', target: '针对人', action: '禁止发帖-7天', banTime: '2026-05-20 10:00', status: '生效中', operator: 'SuperAdmin' },
             { id: 'BL_IP002', ip: '10.0.0.0/24', reason: '批量注册垃圾账号', target: '针对人', action: '禁止发帖-永久', banTime: '2026-05-18 14:30', status: '生效中', operator: 'SuperAdmin' },
-            { id: 'BL_IP003', ip: '172.16.5.88', reason: '发布违规内容', target: '针对动态', action: '静默（仅自己可见）', banTime: '2026-04-01 09:00', status: '生效中', operator: '运营A' },
+            { id: 'BL_IP003', ip: '172.16.5.88', reason: '发布违规内容', target: '针对动态', action: '屏蔽（仅自己可见）', banTime: '2026-04-01 09:00', status: '生效中', operator: '运营A' },
             { id: 'BL_IP004', ip: '203.0.113.55', reason: '广告灌水', target: '针对动态', action: '删帖', banTime: '2026-05-10 11:00', status: '已过期', operator: '运营A' },
         ];
         var mockBlKw = [
-            { id: 'BL_KW001', keyword: '代练', matchMode: '精确匹配', target: '针对动态', action: '静默', triggerCount: 128, addTime: '2026-03-10 10:00', status: '启用' },
+            { id: 'BL_KW001', keyword: '代练', matchMode: '精确匹配', target: '针对动态', action: '屏蔽', triggerCount: 128, addTime: '2026-03-10 10:00', status: '启用' },
             { id: 'BL_KW002', keyword: '外挂|辅助|透视', matchMode: '正则匹配', target: '针对动态', action: '删帖', triggerCount: 456, addTime: '2026-03-05 14:00', status: '启用' },
             { id: 'BL_KW003', keyword: '加微信', matchMode: '模糊匹配', target: '针对人', action: '禁止发帖-3天', triggerCount: 89, addTime: '2026-04-12 09:00', status: '启用' },
-            { id: 'BL_KW004', keyword: '测试关键词', matchMode: '精确匹配', target: '针对动态', action: '静默', triggerCount: 0, addTime: '2026-05-20 16:00', status: '已禁用' },
+            { id: 'BL_KW004', keyword: '测试关键词', matchMode: '精确匹配', target: '针对动态', action: '屏蔽', triggerCount: 0, addTime: '2026-05-20 16:00', status: '已禁用' },
         ];
         var mockBlPunish = [
             { id: 'PUN001', uid: 'UID_77100', name: '垃圾广告号', type: '禁言(永久)', reason: '多次发布广告', rule: '关键词触发: 加微信', startTime: '2026-05-25 10:00', endTime: '永久', status: '生效中' },
-            { id: 'PUN002', uid: 'UID_44512', name: '暴躁老哥', type: '静默', reason: '发布不当言论', rule: '人工处罚', startTime: '2026-05-24 14:30', endTime: '2026-05-25 14:30', status: '已过期' },
+            { id: 'PUN002', uid: 'UID_44512', name: '暴躁老哥', type: '屏蔽', reason: '发布不当言论', rule: '人工处罚', startTime: '2026-05-24 14:30', endTime: '2026-05-25 14:30', status: '已过期' },
             { id: 'PUN003', uid: 'UID_88301', name: '刷屏机器人', type: '禁言(周期)', reason: '短时间大量发帖', rule: 'IP封禁触发', startTime: '2026-05-22 09:00', endTime: '2026-06-22 09:00', status: '生效中' },
         ];
 
@@ -2110,7 +2110,7 @@
             tbody.innerHTML = mockBlKw.map(function(r) {
                 var sCls = r.status === '启用' ? 'tag-success' : 'tag-gray';
                 var tCls = r.target === '针对人' ? 'tag-warning' : 'tag-blue';
-                var actionCls = r.action.indexOf('拦截') > -1 ? 'tag-error' : r.action.indexOf('静默') > -1 ? 'tag-orange' : r.action.indexOf('禁止发帖') > -1 ? 'tag-warning' : 'tag-blue';
+                var actionCls = r.action.indexOf('拦截') > -1 ? 'tag-error' : r.action.indexOf('屏蔽') > -1 ? 'tag-orange' : r.action.indexOf('禁止发帖') > -1 ? 'tag-warning' : 'tag-blue';
                 return '<tr><td>' + r.id + '</td><td style="font-weight:bold">' + r.keyword + '</td><td>' + r.matchMode + '</td><td><span class="tag ' + tCls + '">' + r.target + '</span></td><td><span class="tag ' + actionCls + '">' + r.action + '</span></td><td>' + r.triggerCount + '</td><td style="font-size:12px">' + r.addTime + '</td><td><span class="tag ' + sCls + '">' + r.status + '</span></td><td class="action-links"><a onclick="showToast(\'已切换状态\')">' + (r.status === '启用' ? '禁用' : '启用') + '</a><a onclick="showToast(\'已编辑\')">编辑</a><a class="danger" onclick="showToast(\'已删除\')">删除</a></td></tr>';
             }).join('');
         }
@@ -2150,7 +2150,7 @@
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* IP地址/段</label><input type="text" placeholder="如 192.168.1.100 或 10.0.0.0/24" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-bl-ip"></div>';
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 封禁原因</label><input type="text" placeholder="输入封禁原因" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-bl-ip-reason"></div>';
             h += '<div><label style="display:block;margin-bottom:6px;font-weight:500">* 处罚对象</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-ip-target','post','针对动态',true) + blRadio('bl-ip-target','user','针对人',false) + '</div></div>';
-            h += '<div id="m-bl-ip-post-detail"><label style="display:block;margin-bottom:6px;font-weight:500">动态处罚方式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-ip-post-action','删帖','删帖',true) + blRadio('bl-ip-post-action','静默','静默（仅自己可见）',false) + '</div></div>';
+            h += '<div id="m-bl-ip-post-detail"><label style="display:block;margin-bottom:6px;font-weight:500">动态处罚方式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-ip-post-action','删帖','删帖',true) + blRadio('bl-ip-post-action','屏蔽','屏蔽（仅自己可见）',false) + '</div></div>';
             h += '<div id="m-bl-ip-user-detail" style="display:none"><label style="display:block;margin-bottom:6px;font-weight:500">禁止发帖时长</label><div style="display:flex;gap:8px;flex-wrap:wrap">' + blRadio('bl-ip-dur','1','1天',true) + blRadio('bl-ip-dur','3','3天',false) + blRadio('bl-ip-dur','7','7天',false) + blRadio('bl-ip-dur','30','30天',false) + blRadio('bl-ip-dur','forever','永久',false) + blRadio('bl-ip-dur','custom','自定义',false) + '</div><input type="number" min="1" placeholder="输入天数" style="margin-top:8px;width:120px;padding:8px;border:1px solid #d9d9d9;border-radius:4px;display:none" id="m-bl-ip-custom-dur"></div>';
             h += '</div>';
             openModal('新增IP封禁规则', h, function() {
@@ -2177,9 +2177,9 @@
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 关键词</label><input type="text" placeholder="多个关键词用|分隔" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-bl-kw"></div>';
             h += '<div><label style="display:block;margin-bottom:6px;font-weight:500">匹配模式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-kw-mode','精确匹配','精确匹配',true) + blRadio('bl-kw-mode','模糊匹配','模糊匹配',false) + blRadio('bl-kw-mode','正则匹配','正则匹配',false) + '</div></div>';
             h += '<div><label style="display:block;margin-bottom:6px;font-weight:500">* 处罚对象</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-kw-target','post','针对动态',true) + blRadio('bl-kw-target','user','针对人',false) + '</div></div>';
-            h += '<div id="m-bl-kw-post-detail"><label style="display:block;margin-bottom:6px;font-weight:500">动态处罚方式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-kw-post-action','删帖','删帖',true) + blRadio('bl-kw-post-action','静默','静默（仅自己可见）',false) + '</div></div>';
+            h += '<div id="m-bl-kw-post-detail"><label style="display:block;margin-bottom:6px;font-weight:500">动态处罚方式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-kw-post-action','删帖','删帖',true) + blRadio('bl-kw-post-action','屏蔽','屏蔽（仅自己可见）',false) + '</div></div>';
             h += '<div id="m-bl-kw-user-detail" style="display:none"><label style="display:block;margin-bottom:6px;font-weight:500">禁止发帖时长</label><div style="display:flex;gap:8px;flex-wrap:wrap">' + blRadio('bl-kw-dur','1','1天',true) + blRadio('bl-kw-dur','3','3天',false) + blRadio('bl-kw-dur','7','7天',false) + blRadio('bl-kw-dur','30','30天',false) + blRadio('bl-kw-dur','forever','永久',false) + blRadio('bl-kw-dur','custom','自定义',false) + '</div><input type="number" min="1" placeholder="输入天数" style="margin-top:8px;width:120px;padding:8px;border:1px solid #d9d9d9;border-radius:4px;display:none" id="m-bl-kw-custom-dur"></div>';
-            h += '<div style="background:#fffbe6;padding:10px;border-radius:4px;font-size:12px;color:#8c6e00"><i class="fas fa-info-circle"></i> 针对动态：命中关键词的帖子被删帖或静默；针对人：发布者被禁止发帖指定天数</div>';
+            h += '<div style="background:#fffbe6;padding:10px;border-radius:4px;font-size:12px;color:#8c6e00"><i class="fas fa-info-circle"></i> 针对动态：命中关键词的帖子被删帖或屏蔽；针对人：发布者被禁止发帖指定天数</div>';
             h += '</div>';
             openModal('新增关键词规则', h, function() {
                 var kw = document.getElementById('m-bl-kw').value;
@@ -2207,7 +2207,7 @@
             h += '<div id="m-bl-pun-post-section" style="display:none"><label style="display:block;margin-bottom:4px;font-weight:500">* 动态ID</label><input type="text" placeholder="输入动态ID" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-bl-pun-postid"></div>';
             h += '<div id="m-bl-pun-type-user"><label style="display:block;margin-bottom:6px;font-weight:500">* 处罚类型</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-pun-type','禁止发帖(周期)','禁止发帖(周期)',true) + blRadio('bl-pun-type','禁止发帖(永久)','禁止发帖(永久)',false) + '</div></div>';
             h += '<div id="m-bl-pun-dur-section"><label style="display:block;margin-bottom:6px;font-weight:500">禁止发帖天数</label><div style="display:flex;gap:8px;flex-wrap:wrap">' + blRadio('bl-pun-dur','1','1天',true) + blRadio('bl-pun-dur','3','3天',false) + blRadio('bl-pun-dur','7','7天',false) + blRadio('bl-pun-dur','30','30天',false) + blRadio('bl-pun-dur','custom','自定义',false) + '</div><input type="number" min="1" placeholder="输入天数" style="margin-top:8px;width:120px;padding:8px;border:1px solid #d9d9d9;border-radius:4px;display:none" id="m-bl-pun-custom-dur"></div>';
-            h += '<div id="m-bl-pun-type-post" style="display:none"><label style="display:block;margin-bottom:6px;font-weight:500">* 动态处罚方式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-pun-post-action','删帖','删帖',true) + blRadio('bl-pun-post-action','静默','静默（仅自己可见）',false) + '</div></div>';
+            h += '<div id="m-bl-pun-type-post" style="display:none"><label style="display:block;margin-bottom:6px;font-weight:500">* 动态处罚方式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-pun-post-action','删帖','删帖',true) + blRadio('bl-pun-post-action','屏蔽','屏蔽（仅自己可见）',false) + '</div></div>';
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 处罚原因</label><textarea placeholder="输入处罚原因" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px;min-height:60px" id="m-bl-pun-reason"></textarea></div>';
             h += '</div>';
             openModal('手动处罚', h, function() {
