@@ -884,7 +884,7 @@
         ];
 
         const mockIdentities =[
-            { id: 'ROLE_001', name: '官方认证', perms:['身份标识','置顶','删动态','屏蔽动态','帖子移动','官方内容发布','禁言'], color: '#ff4d4f', bgColor: '#fff1f0', count: 2, desc: '官方运营客服', createTime: '2023-01-01 10:00', status: 1 },
+            { id: 'ROLE_001', name: '官方认证', perms:['身份标识','置顶','删动态','屏蔽动态','帖子移动','官方内容发布','禁言'], color: '#ff4d4f', bgColor: '#fff1f0', count: 2, desc: '官方运营客服', createTime: '2023-01-01 10:00', status: 1, banDays: 30 },
             { id: 'ROLE_002', name: '知名创作者', perms: ['身份标识','帖子移动'], color: '#722ed1', bgColor: '#f9f0ff', count: 2, desc: 'KOL玩家', createTime: '2023-05-12 14:20', status: 1 },
             { id: 'ROLE_003', name: 'Hardcore', perms: ['身份标识'], color: '#13c2c2', bgColor: '#e6fffb', count: 1250, desc: 'Pro gamers', createTime: '2023-08-20 09:15', status: 1 },
             { id: 'ROLE_004', name: '废弃旧标签', perms:[], color: '#8c8c8c', bgColor: '#f5f5f5', count: 0, desc: '过往活动的测试标签', createTime: '2024-01-05 16:45', status: 2 }
@@ -1307,7 +1307,12 @@
                         <label><input type="checkbox" value="屏蔽动态" ${isChecked('屏蔽动态')}> 屏蔽动态</label>
                         <label><input type="checkbox" value="帖子移动" ${isChecked('帖子移动')}> 帖子移动</label>
                         <label><input type="checkbox" value="官方内容发布" ${isChecked('官方内容发布')}> 官方内容发布</label>
-                        <label><input type="checkbox" value="禁言" ${isChecked('禁言')}> 禁言</label>
+                        <label><input type="checkbox" value="禁言" ${isChecked('禁言')} onchange="toggleBanDaysInput(this)"> 禁言</label>
+                    </div>
+                    <div id="ban-days-row" style="display:${target.perms.includes('禁言') ? 'flex' : 'none'}; align-items:center; gap:8px; margin-top:10px; padding-left:4px;">
+                        <span style="font-size:13px; color:var(--text-sub);">禁言天数上限：</span>
+                        <input type="number" class="form-control" id="m-i-ban-days" min="1" max="999" value="${target.banDays || 7}" style="width:80px; text-align:center;">
+                        <span style="font-size:13px; color:var(--text-sub);">天（1-999）</span>
                     </div>
                 </div>
                 <div class="form-group"><label class="required">状态</label>
@@ -1342,15 +1347,17 @@
                 if (isEdit) {
                     target.name = name;
                     target.perms = checkedPerms; target.status = parseInt(document.getElementById('m-i-status').value);
-                    target.color = document.getElementById('m-i-color').value; target.bgColor = document.getElementById('m-i-bg').value; 
+                    target.color = document.getElementById('m-i-color').value; target.bgColor = document.getElementById('m-i-bg').value;
                     target.desc = document.getElementById('m-i-desc').value;
+                    if (checkedPerms.includes('禁言')) target.banDays = parseInt(document.getElementById('m-i-ban-days').value) || 7;
                     showToast('保存标签成功');
                 } else {
                     mockIdentities.unshift({
                         id: 'ROLE_' + Math.floor(Math.random()*900 + 100), name: name,
                         perms: checkedPerms, count: 0, status: parseInt(document.getElementById('m-i-status').value),
                         color: document.getElementById('m-i-color').value, bgColor: document.getElementById('m-i-bg').value,
-                        desc: document.getElementById('m-i-desc').value, createTime: '2026-03-13 15:00'
+                        desc: document.getElementById('m-i-desc').value, createTime: '2026-03-13 15:00',
+                        banDays: checkedPerms.includes('禁言') ? (parseInt(document.getElementById('m-i-ban-days').value) || 7) : null
                     });
                     showToast('新增标签成功');
                 }
@@ -1359,6 +1366,11 @@
             });
         }
         function copyIdentity(id) { openIdentityModal(id, true); }
+
+        function toggleBanDaysInput(checkbox) {
+            const row = document.getElementById('ban-days-row');
+            row.style.display = checkbox.checked ? 'flex' : 'none';
+        }
 
         let currentDetailRoleId = null;
         function openIdentityUsersPage(id) {
