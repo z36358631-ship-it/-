@@ -1305,8 +1305,8 @@
                         <label><input type="checkbox" value="置顶" ${isChecked('置顶')}> 置顶</label>
                         <label><input type="checkbox" value="删动态" ${isChecked('删动态')}> 删动态</label>
                         <label><input type="checkbox" value="静默动态" ${isChecked('静默动态')}> 静默动态</label>
-                        <label><input type="checkbox" value="帖子移动" ${isChecked('帖子移动')}> 帖子移动 <i class="fas fa-question-circle" style="color:var(--text-sub); cursor:help; font-size:12px;" title="拥有此权限的用户可在前端将帖子在综合/求助/攻略板块间移动"></i></label>
-                        <label><input type="checkbox" value="官方内容发布" ${isChecked('官方内容发布')}> 官方内容发布 <i class="fas fa-question-circle" style="color:var(--text-sub); cursor:help; font-size:12px;" title="拥有此权限的用户发帖时，内容自动归类到官方Tab下"></i></label>
+                        <label><input type="checkbox" value="帖子移动" ${isChecked('帖子移动')}> 帖子移动</label>
+                        <label><input type="checkbox" value="官方内容发布" ${isChecked('官方内容发布')}> 官方内容发布</label>
                     </div>
                 </div>
                 <div class="form-group"><label class="required">状态</label>
@@ -1318,6 +1318,17 @@
                 <div class="form-group"><label>文字颜色</label><input type="color" class="form-control" id="m-i-color" value="${target.color || '#1890ff'}" style="padding: 2px;"></div>
                 <div class="form-group"><label>背景颜色</label><input type="color" class="form-control" id="m-i-bg" value="${target.bgColor || '#e6f7ff'}" style="padding: 2px;"></div>
                 <div class="form-group"><label>功能描述</label><textarea class="form-control" id="m-i-desc" placeholder="填写此标签下放的规则说明...">${target.desc || ''}</textarea></div>
+                <div class="form-group" style="align-items:flex-start;">
+                    <label>权限说明</label>
+                    <div style="flex:1; font-size:12px; color:var(--text-sub); line-height:2; border:1px solid var(--border-light); border-radius:4px; padding:10px 12px; background:#fafafa;">
+                        <div><strong>身份标识</strong> — 用户昵称旁展示对应身份标签</div>
+                        <div><strong>置顶</strong> — 可将帖子置顶到分区顶部</div>
+                        <div><strong>删动态</strong> — 可删除其他用户的帖子</div>
+                        <div><strong>静默动态</strong> — 可将帖子设为静默(仅发布者可见)</div>
+                        <div><strong>帖子移动</strong> — 可将帖子在综合/求助/攻略板块间移动</div>
+                        <div><strong>官方内容发布</strong> — 该身份用户发帖时，内容自动归类到官方Tab下</div>
+                    </div>
+                </div>
             `;
             
             openModal(isEdit ? '编辑身份配置' : (isCopy ? '复制并新增身份' : '新增身份标签'), html, () => {
