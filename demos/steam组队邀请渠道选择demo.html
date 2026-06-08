@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Steam组队邀请 - 渠道选择Demo</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+body{background:#0a0e1a;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:24px 20px 60px;gap:36px}
+
+.section-title{color:#fff;font-size:15px;font-weight:600;width:100%;max-width:900px;margin-bottom:-20px}
+
+/* ========= 横屏手机容器 ========= */
+.phone{width:900px;height:400px;background:#0a0a0f;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 8px 32px rgba(0,0,0,.6)}
+.game-bg{width:100%;height:100%;background:linear-gradient(135deg,#2d1b1b 0%,#1a0f0f 40%,#0d0505 100%);position:relative}
+.game-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(180,50,30,.15) 0%,transparent 60%)}
+
+.top-info{position:absolute;top:16px;left:20px;color:#fff;font-size:13px}
+.top-info .sub{color:#8b8b8b;font-size:11px;margin-top:4px}
+
+.invite-btn{position:absolute;top:56px;left:20px;background:#4a7c3f;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:500}
+.invite-btn:hover{background:#5a9c4a}
+
+.char-card{position:absolute;bottom:36px;left:20px;color:#fff}
+.char-name{font-size:20px;font-weight:700;margin-bottom:4px}
+.char-desc{font-size:11px;color:#999;max-width:240px;line-height:1.5}
+
+/* ========= 弹窗 ========= */
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:10}
+.overlay.show{display:flex}
+
+.channel-panel{background:#1e1e2a;border-radius:12px;padding:22px 24px;width:280px;position:relative}
+.channel-panel h3{color:#fff;font-size:14px;margin-bottom:12px;text-align:center}
+.channel-list{display:flex;flex-direction:column;gap:8px}
+.channel-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#282838;border-radius:8px;cursor:pointer;transition:background .15s}
+.channel-item:hover{background:#353548}
+.channel-item .icon{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.channel-item .icon.steam{background:#1b2838}
+.channel-item .icon.wechat{background:#07c160}
+.channel-item .icon.qq{background:#12b7f5}
+.channel-item .icon.discord{background:#5865f2}
+.channel-item .label{color:#fff;font-size:13px}
+.channel-item .desc{color:#888;font-size:10px;margin-top:1px}
+
+/* Steam好友 */
+.friends-panel{background:#1b2838;border-radius:8px;width:300px;max-height:300px;overflow:hidden;display:none;flex-direction:column;position:relative}
+.friends-panel.show{display:flex}
+.friends-panel h3{color:#fff;font-size:13px;padding:12px 14px 8px;border-bottom:1px solid #2a3f5f}
+.friends-search{margin:8px 12px;padding:6px 10px;background:#0e1a2a;border:1px solid #2a3f5f;border-radius:4px;color:#fff;font-size:12px;outline:none}
+.friends-list{overflow-y:auto;flex:1;padding:4px 0}
+.friend-item{display:flex;align-items:center;gap:10px;padding:6px 14px;cursor:pointer}
+.friend-item:hover{background:rgba(102,192,244,.08)}
+.friend-item .avatar{width:24px;height:24px;background:#2a4a6a;border-radius:50%;flex-shrink:0}
+.friend-item .name{color:#66c0f4;font-size:12px}
+.friend-item .status{color:#57a;font-size:10px}
+.friends-section{color:#8b9bb4;font-size:11px;padding:6px 14px 2px}
+
+.close-btn{position:absolute;top:8px;right:10px;color:#666;cursor:pointer;font-size:16px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.close-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+
+/* ========= 分享卡片 ========= */
+.cards-row{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;width:100%;max-width:900px}
+.card-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.card-channel-name{color:#fff;font-size:12px;font-weight:500}
+
+.share-card{width:280px;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.3);position:relative}
+.share-card.discord-link{background:#36393f;display:flex;align-items:center;justify-content:center}
+.share-card.discord-link .card-body{padding:20px 14px}
+.share-card.discord-link .link-text{color:#00aff4;font-size:12px;word-break:break-all;text-decoration:underline}
+
+.card-header{display:flex;align-items:center;gap:8px;padding:8px 12px;position:absolute;bottom:0;right:0}
+.card-header .app-icon{width:18px;height:18px;border-radius:4px;overflow:hidden}
+.card-header .app-icon img{width:100%;height:100%;object-fit:contain}
+.card-header .app-name{font-size:10px;color:#999}
+
+.card-body{padding:14px;padding-bottom:32px}
+.card-body .game-img{width:100%;height:90px;background:linear-gradient(135deg,#1a1a2e,#2d1b1b);border-radius:6px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.card-body .game-img img{width:100%;height:100%;object-fit:cover}
+.card-body .game-title{font-size:14px;font-weight:600;color:#222;margin-bottom:4px}
+.card-body .invite-text{font-size:12px;color:#555;margin-bottom:12px}
+.card-body .join-btn{display:block;width:100%;padding:10px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:center}
+.card-body .join-btn:hover{opacity:.9}
+
+/* ========= 落地页 ========= */
+.landing-wrap{display:flex;gap:32px;align-items:flex-start;justify-content:center;flex-wrap:wrap;width:100%;max-width:900px}
+
+.landing-phone{width:375px;min-height:640px;background:#0a0e1a;border-radius:28px;overflow:hidden;position:relative;box-shadow:0 8px 32px rgba(0,0,0,.5);border:2px solid #1a1e2e}
+.landing-phone .bg-glow{position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:400px;height:400px;background:radial-gradient(circle,rgba(56,120,255,.2) 0%,transparent 65%);pointer-events:none}
+
+.landing-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;padding:28px 20px 24px;gap:14px}
+.landing-content .brand{display:flex;align-items:center;gap:8px}
+.landing-content .brand-logo{width:32px;height:32px;border-radius:8px;overflow:hidden}
+.landing-content .brand-logo img{width:100%;height:100%;object-fit:contain}
+.landing-content .brand-name{font-size:14px;font-weight:700;color:rgba(255,255,255,.9)}
+
+.landing-content .game-cover{width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;margin-bottom:14px;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.landing-content .game-cover img{width:100%;height:100%;object-fit:cover}
+
+.invite-info{width:100%;text-align:left}
+.invite-info .invite-game{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px}
+.invite-info .invite-text{font-size:12px;color:rgba(255,255,255,.6)}
+
+.landing-content .cta-btn{width:100%;height:48px;border-radius:12px;border:none;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 20px rgba(59,130,246,.3)}
+.landing-content .cta-btn:active{transform:scale(.97)}
+
+.feature-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);width:100%}
+.feature-icon{width:34px;height:34px;border-radius:8px;background:rgba(56,182,255,.12);color:#38b6ff;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.feature-text b{font-size:12px;font-weight:700;color:#fff;display:block;margin-bottom:2px}
+.feature-text span{font-size:11px;color:rgba(255,255,255,.45)}
+
+/* Demo按钮区 */
+.demo-btns{display:flex;gap:10px;width:100%;max-width:900px;flex-wrap:wrap}
+.demo-btns button{padding:7px 14px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#aaa;font-size:12px;cursor:pointer}
+.demo-btns button:hover{border-color:#60a5fa;color:#60a5fa}
+</style>
+</head>
+<body>
+
+<!-- ====== 第一部分：游戏内邀请 ====== -->
+<div class="section-title">1. 游戏内 - 邀请好友（渠道选择）</div>
+<div class="phone">
+  <div class="game-bg">
+    <div class="top-info" id="topInfo">你目前是唯一的玩家！<div class="sub">Steam · Slay the Spire 2</div></div>
+    <button class="invite-btn" id="inviteBtn" onclick="showChannel()"><i class="fas fa-user-plus" style="margin-right:4px"></i>邀请好友</button>
+    <div class="char-card">
+      <div class="char-name">铁甲战士</div>
+      <div class="char-desc">铁甲军团最后的士兵。用刀剑与烈焰击溃敌人们。</div>
+    </div>
+  </div>
+
+  <!-- 渠道选择 -->
+  <div class="overlay" id="ov1" onclick="closeAll(event)">
+    <div class="channel-panel" onclick="event.stopPropagation()">
+      <div class="close-btn" onclick="closeAll()">×</div>
+      <h3>选择邀请方式</h3>
+      <div class="channel-list" id="chList"></div>
+    </div>
+  </div>
+
+  <!-- Steam好友列表 -->
+  <div class="overlay" id="ov2" onclick="closeAll(event)">
+    <div class="friends-panel" id="fp" onclick="event.stopPropagation()">
+      <div class="close-btn" onclick="closeAll()">×</div>
+      <h3>选择要邀请的好友</h3>
+      <input class="friends-search" placeholder="搜索好友...">
+      <div class="friends-list">
+        <div class="friends-section">正在玩 Slay the Spire 2</div>
+        <div class="friend-item"><div class="avatar"></div><div><div class="name">NightAspect</div><div class="status">Slay the Spire 2</div></div></div>
+        <div class="friends-section">在线好友</div>
+        <div class="friend-item"><div class="avatar"></div><div><div class="name">不怕就是不怕6</div><div class="status">在线</div></div></div>
+        <div class="friend-item"><div class="avatar"></div><div><div class="name">单翼</div><div class="status">在线</div></div></div>
+        <div class="friend-item"><div class="avatar"></div><div><div class="name">吉银吉影</div><div class="status">在线</div></div></div>
+        <div class="friend-item"><div class="avatar"></div><div><div class="name">秋天的雨</div><div class="status">在线</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="demo-btns">
+  <button onclick="showChannel()">显示渠道选择</button>
+  <button onclick="showSteamFriends()">显示Steam好友列表</button>
+  <button onclick="closeAll()">关闭弹窗</button>
+  <button id="regionBtn" onclick="toggleRegion()">切换为：海外</button>
+</div>
+
+<!-- ====== 第二部分：分享卡片 ====== -->
+<div class="section-title">2. 分享卡片样式（各渠道接收方看到）</div>
+<div class="cards-row">
+
+  <!-- 微信卡片 -->
+  <div class="card-wrap">
+    <div class="share-card">
+      <div class="card-body">
+        <div class="game-img"><img src="https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/646570/header.jpg" alt=""></div>
+        <div class="game-title">Slay the Spire 2</div>
+        <div class="invite-text">KiraPlayer 邀请你一起组队玩！</div>
+      </div>
+      <div class="card-header">
+        <div class="app-icon"><img src="../APP核心优化/竞品对比/盖世游戏APP/gw_logo.svg" alt=""></div>
+        <div class="app-name">盖世游戏</div>
+      </div>
+    </div>
+    <div class="card-channel-name">微信</div>
+  </div>
+
+  <!-- QQ卡片 -->
+  <div class="card-wrap">
+    <div class="share-card">
+      <div class="card-body">
+        <div class="game-img"><img src="https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/646570/header.jpg" alt=""></div>
+        <div class="game-title">Slay the Spire 2</div>
+        <div class="invite-text">KiraPlayer 邀请你一起组队玩！</div>
+      </div>
+      <div class="card-header">
+        <div class="app-icon"><img src="../APP核心优化/竞品对比/盖世游戏APP/gw_logo.svg" alt=""></div>
+        <div class="app-name">盖世游戏</div>
+      </div>
+    </div>
+    <div class="card-channel-name">QQ</div>
+  </div>
+
+  <!-- Discord（纯链接） -->
+  <div class="card-wrap">
+    <div class="share-card discord-link">
+      <div class="card-body">
+        <div class="link-text">https://gamehub.com/invite/KiraPlayer/slay-the-spire-2?id=a3f8k2</div>
+      </div>
+    </div>
+    <div class="card-channel-name">Discord</div>
+  </div>
+</div>
+
+<!-- ====== 第三部分：落地页 ====== -->
+<div class="section-title" id="landingSection">3. 分享落地页（点击卡片后打开）</div>
+<div class="landing-wrap">
+
+  <!-- 国内版落地页 -->
+  <div class="landing-phone">
+    <div class="bg-glow"></div>
+    <div class="landing-content">
+      <div class="brand">
+        <div class="brand-logo"><img src="../APP核心优化/竞品对比/盖世游戏APP/gw_logo.svg" alt=""></div>
+        <span class="brand-name">盖世游戏</span>
+      </div>
+      <div class="game-cover"><img src="https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/646570/header.jpg" alt=""></div>
+      <div class="invite-info">
+        <div class="invite-game">Slay the Spire 2</div>
+        <div class="invite-text">KiraPlayer 邀请你一起组队玩Steam游戏！</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><i class="fas fa-desktop"></i></div>
+        <div class="feature-text"><b>PC模拟器</b><span>手机即可畅玩Steam 3A大作</span></div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+        <div class="feature-text"><b>AI超级插帧</b><span>全游戏适配AI超级插帧，画面流畅度大幅提升</span></div>
+      </div>
+      <button class="cta-btn" onclick="toast('正在打开盖世游戏...')"><i class="fas fa-play"></i> 打开盖世游戏APP 加入游戏</button>
+    </div>
+  </div>
+
+  <!-- 海外版落地页 -->
+  <div class="landing-phone">
+    <div class="bg-glow"></div>
+    <div class="landing-content">
+      <div class="brand">
+        <div class="brand-logo"><img src="../APP核心优化/竞品对比/盖世游戏APP/gw_logo.svg" alt=""></div>
+        <span class="brand-name">GameHub</span>
+      </div>
+      <div class="game-cover"><img src="https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/646570/header.jpg" alt=""></div>
+      <div class="invite-info">
+        <div class="invite-game">Slay the Spire 2</div>
+        <div class="invite-text">KiraPlayer invites you to play Steam games together!</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><i class="fas fa-desktop"></i></div>
+        <div class="feature-text"><b>PC Emulator</b><span>Play Steam AAA games on your phone</span></div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+        <div class="feature-text"><b>AI Super Frame Gen</b><span>AI frame interpolation for all games, dramatically smoother visuals</span></div>
+      </div>
+      <button class="cta-btn" onclick="toast('Opening GameHub...')"><i class="fas fa-play"></i> Open GameHub & Join</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);background:rgba(0,0,0,.85);color:#fff;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:600;pointer-events:none;opacity:0;transition:opacity .2s,transform .2s;z-index:999;backdrop-filter:blur(12px)" id="toast"></div>
+
+<script>
+const channels={
+  cn:[
+    {icon:'steam',label:'Steam好友',desc:'拉起Steam好友列表邀请',action:'steam'},
+    {icon:'wechat',label:'微信',desc:'生成邀请卡片分享到微信',action:'share'},
+    {icon:'qq',label:'QQ',desc:'生成邀请卡片分享到QQ',action:'share'}
+  ],
+  intl:[
+    {icon:'steam',label:'Steam Friends',desc:'Invite from Steam friend list',action:'steam'},
+    {icon:'discord',label:'Discord',desc:'Share invite card to Discord',action:'share'}
+  ]
+};
+const iconText={steam:'<i class="fab fa-steam"></i>',wechat:'<i class="fab fa-weixin"></i>',qq:'<i class="fab fa-qq"></i>',discord:'<i class="fab fa-discord"></i>'};
+let region='cn';
+
+function renderCh(){
+  const l=document.getElementById('chList');l.innerHTML='';
+  channels[region].forEach(c=>{
+    const d=document.createElement('div');d.className='channel-item';
+    d.innerHTML=`<div class="icon ${c.icon}">${iconText[c.icon]}</div><div><div class="label">${c.label}</div><div class="desc">${c.desc}</div></div>`;
+    d.onclick=()=>handleCh(c.action);l.appendChild(d);
+  });
+}
+
+function toggleRegion(){
+  region = region==='cn' ? 'intl' : 'cn';
+  document.getElementById('regionBtn').textContent = region==='cn' ? '切换为：海外' : '切换为：国内';
+  document.querySelector('.channel-panel h3').textContent = region==='cn' ? '选择邀请方式' : 'Invite via';
+  document.getElementById('topInfo').innerHTML = region==='cn'
+    ? '你目前是唯一的玩家！<div class="sub">Steam · Slay the Spire 2</div>'
+    : 'You are the only player!<div class="sub">Steam · Slay the Spire 2</div>';
+  document.getElementById('inviteBtn').innerHTML = region==='cn'
+    ? '<i class="fas fa-user-plus" style="margin-right:4px"></i>邀请好友'
+    : '<i class="fas fa-user-plus" style="margin-right:4px"></i>Invite';
+  document.querySelector('.char-name').textContent = region==='cn' ? '铁甲战士' : 'Ironclad';
+  document.querySelector('.char-desc').textContent = region==='cn'
+    ? '铁甲军团最后的士兵。用刀剑与烈焰击溃敌人们。'
+    : 'The last soldier of the Ironclad Legion. Crushes enemies with blade and flame.';
+  renderCh();
+}
+
+function showChannel(){renderCh();document.getElementById('ov1').classList.add('show')}
+function showSteamFriends(){document.getElementById('ov2').classList.add('show');document.getElementById('fp').classList.add('show')}
+
+function handleCh(action){
+  document.getElementById('ov1').classList.remove('show');
+  if(action==='steam'){showSteamFriends()}
+  else{document.querySelector('.cards-row').scrollIntoView({behavior:'smooth'})}
+}
+
+function closeAll(e){
+  if(e&&e.target!==e.currentTarget)return;
+  document.getElementById('ov1').classList.remove('show');
+  document.getElementById('ov2').classList.remove('show');
+  document.getElementById('fp').classList.remove('show');
+}
+
+function scrollToLanding(){document.getElementById('landingSection').scrollIntoView({behavior:'smooth'})}
+
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';t.style.transform='translate(-50%,-50%) scale(1)';
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translate(-50%,-50%) scale(.9)'},1500);
+}
+</script>
+</body>
+</html>
