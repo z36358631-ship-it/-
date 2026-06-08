@@ -158,12 +158,6 @@
         .post-cat-tab { padding: 8px 18px; font-size: 14px; color: var(--text-sub); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; font-weight: 500; transition: 0.2s; }
         .post-cat-tab:hover { color: var(--primary); }
         .post-cat-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: bold; }
-
-        .move-cat-option { padding: 10px 20px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; cursor: pointer; transition: 0.2s; user-select: none; }
-        .move-cat-option:hover:not(.disabled) { border-color: var(--primary); color: var(--primary); }
-        .move-cat-option.selected { background: var(--primary); color: var(--white); border-color: var(--primary); }
-        .move-cat-option.disabled { opacity: 0.4; cursor: not-allowed; }
-        .move-cat-option.active { border-color: var(--border); background: var(--bg-light); }
     </style>
 </head>
 <body>
@@ -186,7 +180,7 @@
                 <i class="fas fa-fire"></i> 热门话题管理
             </div>
             <div class="menu-item" onclick="switchMenu('post', this, '国内')">
-                <i class="fas fa-comment-alt"></i> 动态管理
+                <i class="fas fa-comment-alt"></i> 帖子管理
             </div>
             <div class="menu-item" onclick="switchMenu('report', this, '国内')">
                 <i class="fas fa-flag"></i> 举报管理
@@ -213,7 +207,7 @@
                 <i class="fas fa-fire"></i> 热门话题管理
             </div>
             <div class="menu-item" onclick="switchMenu('post', this, '海外')">
-                <i class="fas fa-comment-alt"></i> 动态管理
+                <i class="fas fa-comment-alt"></i> 帖子管理
             </div>
             <div class="menu-item" onclick="switchMenu('report', this, '海外')">
                 <i class="fas fa-flag"></i> 举报管理
@@ -528,7 +522,7 @@
                 </div>
             </div>
 
-            <!-- ====== 动态管理 ====== -->
+            <!-- ====== 帖子管理 ====== -->
             <div class="page" id="page-post">
                 <div class="card">
                     <div class="filter-bar" id="post-filter">
@@ -568,10 +562,17 @@
                     </div>
 
                     <div style="margin-bottom: 16px; display:flex; gap:10px; align-items: center; justify-content: space-between;">
-                        <div>
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                             <button class="btn btn-warning batch-btn" onclick="batchAction(2)" disabled><i class="fas fa-eye-slash"></i> 批量静默</button>
                             <button class="btn btn-danger batch-btn" onclick="batchAction(0)" disabled><i class="fas fa-trash"></i> 批量删除</button>
-                            <span style="font-size: 13px; color: var(--text-sub); line-height: 32px; margin-left: 10px;">(勾选左侧多选框以激活操作按钮)</span>
+                            <select class="batch-btn" onchange="if(this.value){batchMovePost(this.value); this.selectedIndex=0;}" disabled style="padding:0 12px; height:32px; border-radius:4px; font-size:14px; cursor:pointer; border:1px solid var(--border); background:var(--white);">
+                                <option value="">批量移动到...</option>
+                                <option value="综合">综合</option>
+                                <option value="官方">官方</option>
+                                <option value="求助">求助</option>
+                                <option value="攻略">攻略</option>
+                            </select>
+                            <span style="font-size: 13px; color: var(--text-sub); line-height: 32px; margin-left: 4px;">(勾选左侧多选框以激活)</span>
                         </div>
                         <div>
                             <button class="btn btn-default" onclick="exportData()"><i class="fas fa-file-export"></i> 导出文件</button>
@@ -698,7 +699,7 @@
                                 <option>分区管理</option>
                                 <option>身份管理</option>
                                 <option>热门话题管理</option>
-                                <option>动态管理</option>
+                                <option>帖子管理</option>
                                 <option>举报管理</option>
                             </select>
                         </div>
@@ -872,29 +873,6 @@
         </div>
     </div>
 
-    <!-- 移动分类弹窗 -->
-    <div class="modal-overlay" id="moveCatModal">
-        <div class="modal" style="width:400px;">
-            <div class="modal-header">
-                <span>移动帖子分类</span>
-                <i class="fas fa-times" onclick="closeMoveModal()"></i>
-            </div>
-            <div class="modal-body">
-                <p style="margin-bottom:12px; color:var(--text-sub); font-size:13px;">当前分类：<strong id="move-current-cat" style="color:var(--text-main);"></strong></p>
-                <p style="margin-bottom:12px; font-size:14px;">选择目标分类：</p>
-                <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <div class="move-cat-option" data-cat="综合" onclick="selectMoveCat(this)">综合</div>
-                    <div class="move-cat-option" data-cat="官方" onclick="selectMoveCat(this)">官方</div>
-                    <div class="move-cat-option" data-cat="求助" onclick="selectMoveCat(this)">求助</div>
-                    <div class="move-cat-option" data-cat="攻略" onclick="selectMoveCat(this)">攻略</div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-default" onclick="closeMoveModal()">取消</button>
-                <button class="btn btn-primary" onclick="confirmMoveCategory()">确认移动</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         // ================= 数据 Mock =================
@@ -906,10 +884,10 @@
         ];
 
         const mockIdentities =[
-            { id: 'ROLE_001', name: '官方认证', perms:['身份标识','置顶','删动态','静默动态'], color: '#ff4d4f', bgColor: '#fff1f0', count: 2, desc: '官方运营客服', createTime: '2023-01-01 10:00', status: 1 },
-            { id: 'ROLE_002', name: '知名创作者', perms: ['身份标识'], color: '#722ed1', bgColor: '#f9f0ff', count: 2, desc: 'KOL玩家', createTime: '2023-05-12 14:20', status: 1 },
+            { id: 'ROLE_001', name: '官方认证', perms:['身份标识','置顶','删动态','静默动态','帖子移动','官方内容发布'], color: '#ff4d4f', bgColor: '#fff1f0', count: 2, desc: '官方运营客服', createTime: '2023-01-01 10:00', status: 1 },
+            { id: 'ROLE_002', name: '知名创作者', perms: ['身份标识','帖子移动'], color: '#722ed1', bgColor: '#f9f0ff', count: 2, desc: 'KOL玩家', createTime: '2023-05-12 14:20', status: 1 },
             { id: 'ROLE_003', name: 'Hardcore', perms: ['身份标识'], color: '#13c2c2', bgColor: '#e6fffb', count: 1250, desc: 'Pro gamers', createTime: '2023-08-20 09:15', status: 1 },
-            { id: 'ROLE_004', name: '废弃旧标签', perms:[], color: '#8c8c8c', bgColor: '#f5f5f5', count: 0, desc: '过往活动的测试标签', createTime: '2024-01-05 16:45', status: 2 } 
+            { id: 'ROLE_004', name: '废弃旧标签', perms:[], color: '#8c8c8c', bgColor: '#f5f5f5', count: 0, desc: '过往活动的测试标签', createTime: '2024-01-05 16:45', status: 2 }
         ];
         
         let mockIdentityUsersMap = {
@@ -964,7 +942,7 @@
         ];
 
         const mockLogs =[
-            { time: '2026-03-13 15:42:11', op: 'SuperAdmin', module: '动态管理', type: '修改', detail: '将动态[D88201] 设置为置顶' },
+            { time: '2026-03-13 15:42:11', op: 'SuperAdmin', module: '帖子管理', type: '修改', detail: '将动态[D88201] 设置为置顶' },
             { time: '2026-03-13 14:20:05', op: '运营小赵', module: '身份管理', type: '新增人员', detail: '为用户[UID_99214] 下发身份[知名创作者]' },
             { time: '2026-03-12 09:15:33', op: 'SuperAdmin', module: '分区管理', type: '修改', detail: '修改了分区[PT10004] 的基础配置，状态由正常变更为隐藏' },
             { time: '2026-03-11 16:50:00', op: '运营小赵', module: '分区管理', type: '新增', detail: '新建了游戏分区[黑神话：悟空]' }
@@ -1121,7 +1099,7 @@
                 'partition': '分区管理', 'partition-detail': '分区管理 / 分区数据详情',
                 'identity': '身份管理', 'identity-detail': '身份管理 / 人员详情',
                 'topic': '热门话题管理', 'topic-detail': '热门话题管理 / 话题动态详情',
-                'post': '动态管理', 'report': '举报管理', 'log': '操作记录',
+                'post': '帖子管理', 'report': '举报管理', 'log': '操作记录',
                 'official-post': '内容发布',
                 'blacklist': '黑名单管理'
             };
@@ -1327,6 +1305,8 @@
                         <label><input type="checkbox" value="置顶" ${isChecked('置顶')}> 置顶</label>
                         <label><input type="checkbox" value="删动态" ${isChecked('删动态')}> 删动态</label>
                         <label><input type="checkbox" value="静默动态" ${isChecked('静默动态')}> 静默动态</label>
+                        <label><input type="checkbox" value="帖子移动" ${isChecked('帖子移动')}> 帖子移动 <i class="fas fa-question-circle" style="color:var(--text-sub); cursor:help; font-size:12px;" title="拥有此权限的用户可在前端将帖子在综合/求助/攻略板块间移动"></i></label>
+                        <label><input type="checkbox" value="官方内容发布" ${isChecked('官方内容发布')}> 官方内容发布 <i class="fas fa-question-circle" style="color:var(--text-sub); cursor:help; font-size:12px;" title="拥有此权限的用户发帖时，内容自动归类到官方Tab下"></i></label>
                     </div>
                 </div>
                 <div class="form-group"><label class="required">状态</label>
@@ -1623,7 +1603,7 @@
         }
 
 
-        // ================= 动态管理业务逻辑 =================
+        // ================= 帖子管理业务逻辑 =================
         let currentPostCatFilter = '';
 
         function switchPostCatTab(el, category) {
@@ -1689,7 +1669,7 @@
 
                 let catLabel = getPostCategoryAdmin(p);
                 let catBadgeColor = catLabel === '求助' ? 'tag-error' : catLabel === '攻略' ? 'tag-success' : catLabel === '官方' ? 'tag-blue' : 'tag-gray';
-                let moveHtml = p.status !== 0 ? `<a onclick="openMovePostMenu('${p.id}')">移动</a>` : '';
+                let moveHtml = p.status !== 0 ? `<select style="font-size:12px; padding:2px 4px; border:1px solid var(--border); border-radius:3px; cursor:pointer;" onchange="quickMovePost('${p.id}', this.value); this.selectedIndex=0;"><option value="">移动到...</option><option value="综合">综合</option><option value="官方">官方</option><option value="求助">求助</option><option value="攻略">攻略</option></select>` : '';
                 actionHtml += moveHtml;
 
                 return `
@@ -1710,37 +1690,25 @@
 
         function viewPostDetail(id) { alert('即将跳转至H5动态详情页，动态ID: ' + id); }
 
-        let moveTargetPostId = null;
-        function openMovePostMenu(id) {
-            moveTargetPostId = id;
-            const p = mockPosts.find(x => x.id === id);
-            if (!p) return;
-            const current = getPostCategoryAdmin(p);
-            document.getElementById('move-current-cat').innerText = current;
-            document.querySelectorAll('.move-cat-option').forEach(el => {
-                el.classList.toggle('active', el.dataset.cat === current);
-                el.classList.toggle('disabled', el.dataset.cat === current);
+        function quickMovePost(id, newCat) {
+            if (!newCat) return;
+            movePostCategory(id, newCat);
+        }
+
+        function batchMovePost(targetCat) {
+            const boxes = document.querySelectorAll('.row-checkbox:checked');
+            if (boxes.length === 0) return;
+            const ids = Array.from(boxes).map(b => b.value);
+            ids.forEach(id => {
+                const p = mockPosts.find(x => x.id === id);
+                if (p && p.status !== 0) {
+                    p.isHelp = targetCat === '求助';
+                    p.isGuide = targetCat === '攻略';
+                    p.isOfficial = targetCat === '官方';
+                }
             });
-            document.getElementById('moveCatModal').classList.add('show');
-        }
-
-        function closeMoveModal() {
-            document.getElementById('moveCatModal').classList.remove('show');
-            moveTargetPostId = null;
-        }
-
-        function confirmMoveCategory() {
-            const selected = document.querySelector('.move-cat-option.selected');
-            if (!selected) { showToast('请选择目标分类'); return; }
-            const newCat = selected.dataset.cat;
-            movePostCategory(moveTargetPostId, newCat);
-            closeMoveModal();
-        }
-
-        function selectMoveCat(el) {
-            if (el.classList.contains('disabled')) return;
-            document.querySelectorAll('.move-cat-option').forEach(o => o.classList.remove('selected'));
-            el.classList.add('selected');
+            showToast(`已批量移动 ${ids.length} 条帖子到「${targetCat}」`);
+            renderPosts();
         }
         function togglePin(id, isTopicView = false) { 
             const p = mockPosts.find(x => x.id === id); 
