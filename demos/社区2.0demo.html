@@ -856,7 +856,13 @@
                     menuHtml += `<div class="more-menu-item" onclick="adminMuteFromMenu(${postId}, event)"><i class="fas fa-volume-mute" style="width:20px; text-align:center;"></i> ${p.isMuted ? '取消屏蔽' : '屏蔽'}</div>`;
                     menuHtml += `<div class="more-menu-item danger" onclick="adminDeleteFromMenu(${postId}, event)"><i class="fas fa-trash" style="width:20px; text-align:center;"></i> 删除</div>`;
                 }
-                menuHtml += `<div class="more-menu-item" onclick="adminBanFromMenu(${postId}, event)"><i class="fas fa-ban" style="width:20px; text-align:center;"></i> 禁言${adminBanDaysConfig}天</div>`;
+                const isBanned = bannedUsers[p.user] && new Date(bannedUsers[p.user]) > new Date();
+                if (isBanned) {
+                    const expireStr = formatBanExpireTime(new Date(bannedUsers[p.user]));
+                    menuHtml += `<div class="more-menu-item" style="opacity:0.4; cursor:not-allowed;" onclick="event.stopPropagation(); showToast('该用户已被禁言至 ${expireStr}')"><i class="fas fa-ban" style="width:20px; text-align:center;"></i> 禁言中</div>`;
+                } else {
+                    menuHtml += `<div class="more-menu-item" onclick="adminBanFromMenu(${postId}, event)"><i class="fas fa-ban" style="width:20px; text-align:center;"></i> 禁言${adminBanDaysConfig}天</div>`;
+                }
                 if (curCat !== '官方') {
                     menuHtml += `<div style="height:1px; background:rgba(255,255,255,0.08); margin:4px 0;"></div>`;
                     menuHtml += `<div class="more-menu-item" style="font-size:12px; color:#666; cursor:default; padding:8px 18px;">板块调整 (当前: ${curCat})</div>`;
@@ -999,7 +1005,13 @@
                     html += `<div class="action-btn-list" onclick="adminMuteFromDetail()">${p.isMuted ? '取消屏蔽' : '屏蔽'}</div>`;
                     html += `<div class="action-btn-list" style="color:#f5222d;" onclick="adminDeleteFromDetail()">删除</div>`;
                 }
-                html += `<div class="action-btn-list" onclick="adminBanFromDetail()">禁言${adminBanDaysConfig}天</div>`;
+                const detailBanned = bannedUsers[p.user] && new Date(bannedUsers[p.user]) > new Date();
+                if (detailBanned) {
+                    const expireStr = formatBanExpireTime(new Date(bannedUsers[p.user]));
+                    html += `<div class="action-btn-list" style="opacity:0.4; color:#888;" onclick="showToast('该用户已被禁言至 ${expireStr}')">禁言中</div>`;
+                } else {
+                    html += `<div class="action-btn-list" onclick="adminBanFromDetail()">禁言${adminBanDaysConfig}天</div>`;
+                }
                 if (curCat !== '官方') {
                     html += `<div style="font-size:12px; color:#888; margin:8px 0 4px; padding:0 4px;">板块调整 (当前: ${curCat})</div>`;
                     ['综合','求助','攻略'].filter(c => c !== curCat).forEach(c => {
@@ -1986,7 +1998,7 @@
 
     // ================= 管理权限测试 =================
     let adminMode = false;
-    const adminBanDaysConfig = 30; // 从后台身份配置获取的禁言天数
+    const adminBanDaysConfig = 3; // 从后台身份配置获取的禁言天数
 
     function toggleAdminMode() {
         adminMode = !adminMode;
@@ -2038,6 +2050,8 @@
 
     // 禁言功能
     let adminBanTargetUser = '';
+    let bannedUsers = {}; // {userName: banExpireDate}
+
     function adminBanFromMenu(postId, e) {
         e.stopPropagation();
         closeMoreMenu();
@@ -2053,8 +2067,22 @@
         openBanDialog(p.user);
     }
 
+    function formatBanExpireTime(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        const h = String(date.getHours()).padStart(2, '0');
+        const min = String(date.getMinutes()).padStart(2, '0');
+        return `${y}-${m}-${d} ${h}:${min}`;
+    }
+
     function openBanDialog(userName) {
         adminBanTargetUser = userName;
+        if (bannedUsers[userName] && new Date(bannedUsers[userName]) > new Date()) {
+            const expireStr = formatBanExpireTime(new Date(bannedUsers[userName]));
+            showToast(`该用户已被禁言至 ${expireStr}`);
+            return;
+        }
         document.getElementById('adminBanUserLabel').innerText = `确定要禁言用户「${userName}」${adminBanDaysConfig}天吗？`;
         document.getElementById('adminBanConfirm').classList.add('show');
     }
@@ -2065,8 +2093,12 @@
     }
 
     function confirmAdminBan() {
-        showToast(`已禁言用户「${adminBanTargetUser}」${adminBanDaysConfig}天`);
+        const expireDate = new Date(Date.now() + adminBanDaysConfig * 24 * 3600 * 1000);
+        bannedUsers[adminBanTargetUser] = expireDate.toISOString();
+        const expireStr = formatBanExpireTime(expireDate);
+        showToast(`已禁言「${adminBanTargetUser}」至 ${expireStr}`);
         closeAdminBan();
+        renderFeed();
     }
 
     function adminMoveCategoryFromMenu(id, category, e) {
