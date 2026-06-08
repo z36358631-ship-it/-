@@ -313,19 +313,76 @@
 
         .toast { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 12px 24px; border-radius: 24px; font-size: 14px; opacity: 0; transition: 0.3s; z-index: 5000; pointer-events: none; font-weight: bold;}
         .toast.show { opacity: 1; bottom: 120px; }
+
+        /* ================= 分区管理页新样式 ================= */
+        .pm-pinned-bar { padding: 10px 16px; background: rgba(40,125,250,0.05); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 44px; }
+        .pm-pinned-tag { display: inline-flex; align-items: center; gap: 4px; background: rgba(40,125,250,0.12); color: var(--primary); padding: 4px 10px; border-radius: 14px; font-size: 12px; font-weight: bold; white-space: nowrap; }
+        .pm-pinned-tag .pm-pin-remove { cursor: pointer; margin-left: 2px; opacity: 0.7; }
+        .pm-pinned-tag .pm-pin-remove:hover { opacity: 1; }
+        .pm-pinned-bar-label { font-size: 12px; color: var(--text-sub); white-space: nowrap; margin-right: 4px; }
+        .pm-pinned-bar-limit { font-size: 11px; color: var(--text-sub); margin-left: auto; white-space: nowrap; }
+        .pm-search-wrap { padding: 10px 16px; }
+        .pm-search-box { display: flex; align-items: center; background: rgba(255,255,255,0.06); border-radius: 20px; padding: 8px 14px; gap: 8px; }
+        .pm-search-box input { flex: 1; border: none; background: transparent; outline: none; font-size: 14px; color: white; }
+        .pm-search-box input::placeholder { color: #666; }
+        .pm-tabs { display: flex; border-bottom: 1px solid var(--border-color); padding: 0 16px; }
+        .pm-tab { padding: 12px 0; margin-right: 24px; font-size: 15px; color: var(--text-sub); font-weight: bold; cursor: pointer; position: relative; }
+        .pm-tab.active { color: white; }
+        .pm-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%); width: 20px; height: 3px; background: var(--primary); border-radius: 2px; }
+        .pm-list-scroll { flex: 1; overflow-y: auto; padding-bottom: 20px; }
+        .pm-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer; transition: background 0.15s; }
+        .pm-item:active { background: rgba(255,255,255,0.03); }
+        .pm-item-icon { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+        .pm-item-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+        .pm-item-name { font-size: 15px; font-weight: bold; color: white; }
+        .pm-item-desc { font-size: 12px; color: var(--text-sub); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .pm-item-action { flex-shrink: 0; }
+        .pm-pin-btn { padding: 6px 14px; border-radius: 16px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; border: none; }
+        .pm-pin-btn.pin { background: rgba(40,125,250,0.1); color: var(--primary); border: 1px solid var(--primary); }
+        .pm-pin-btn.pinned { background: rgba(255,255,255,0.08); color: #888; border: 1px solid rgba(255,255,255,0.1); }
+        .pm-empty { padding: 40px; text-align: center; color: var(--text-sub); font-size: 14px; }
+
+        /* ================= 分区详情子页面 ================= */
+        .pd-header { padding: 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-color); }
+        .pd-header-icon { width: 56px; height: 56px; border-radius: 14px; object-fit: cover; flex-shrink: 0; }
+        .pd-header-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .pd-header-name { font-size: 18px; font-weight: bold; color: white; }
+        .pd-header-desc { font-size: 13px; color: var(--text-sub); margin-top: 2px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .pd-join-btn { padding: 7px 18px; border-radius: 18px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; border: none; flex-shrink: 0; }
+        .pd-join-btn.join { background: var(--primary); color: white; }
+        .pd-join-btn.joined { background: rgba(255,255,255,0.08); color: #888; }
+        .pd-sub-tabs { display: flex; gap: 20px; padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
+        .pd-sub-tab { font-size: 14px; color: var(--text-sub); font-weight: 500; cursor: pointer; position: relative; padding-bottom: 4px; }
+        .pd-sub-tab.active { color: white; font-weight: bold; }
+        .pd-sub-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%); width: 16px; height: 3px; background: var(--primary); border-radius: 2px; }
+        .pd-feed-scroll { flex: 1; overflow-y: auto; padding-bottom: 20px; }
+        .pd-feed-item { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer; }
+        .pd-feed-item:active { background: rgba(255,255,255,0.02); }
+        .pd-feed-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .pd-feed-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+        .pd-feed-user { font-size: 13px; font-weight: bold; color: white; }
+        .pd-feed-time { font-size: 11px; color: var(--text-sub); margin-left: auto; }
+        .pd-feed-title { font-size: 15px; font-weight: bold; color: white; margin-bottom: 6px; }
+        .pd-feed-content { font-size: 13px; color: #bbb; line-height: 1.4; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .pd-feed-img { width: 100%; max-height: 180px; border-radius: 8px; object-fit: cover; margin-bottom: 8px; }
+        .pd-feed-footer { display: flex; gap: 20px; font-size: 12px; color: var(--text-sub); }
+        .pd-feed-footer span { display: flex; align-items: center; gap: 4px; }
+        .landscape .pd-feed-scroll { display: flex; flex-direction: column; }
+        .landscape .pd-feed-item { max-width: 100%; }
+
+        /* ================= 管理权限测试 ================= */
+        .admin-toggle-panel { position: fixed; top: 16px; right: 16px; z-index: 9000; background: #1a1f2e; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+        .admin-toggle-label { font-size: 12px; color: #ccc; white-space: nowrap; }
+        .admin-switch { position: relative; width: 36px; height: 20px; background: #444; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+        .admin-switch.on { background: var(--primary); }
+        .admin-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: white; border-radius: 50%; transition: 0.3s; }
+        .admin-switch.on::after { left: 18px; }
     </style>
 </head>
 <body>
 
 <!-- 全局悬浮下拉菜单（···） -->
-<div id="more-menu" class="more-menu">
-    <div class="more-menu-item" onclick="handleNotInterested(event)">
-        <i class="fas fa-eye-slash" style="width:20px; text-align:center;"></i> 不感兴趣
-    </div>
-    <div class="more-menu-item danger" onclick="handleReportClick(event)">
-        <i class="far fa-flag" style="width:20px; text-align:center;"></i> 举报内容
-    </div>
-</div>
+<div id="more-menu" class="more-menu"></div>
 
 <div class="device-mockup" id="deviceMockup">
     <!-- 状态栏 -->
@@ -395,8 +452,12 @@
             <div class="action-list">
                 <div class="action-btn-list" onclick="handleRepostDetail()">转发动态</div>
                 <div class="action-btn-list" onclick="showToast('正在为您拉起编辑页')">编辑内容</div>
-                <!-- 详情页新增举报入口 -->
                 <div class="action-btn-list" style="color:#f5222d;" onclick="handleReportDetailClick()">举报内容</div>
+            </div>
+            <!-- 管理员操作区 -->
+            <div id="detail-admin-actions" style="display:none; border-top:1px solid rgba(255,255,255,0.08); margin-top:12px; padding-top:12px;">
+                <div style="font-size:12px; color:#888; margin-bottom:8px; padding:0 4px;">管理操作</div>
+                <div class="action-list" id="detail-admin-list"></div>
             </div>
         </div>
     </div>
@@ -438,32 +499,51 @@
         </div>
     </div>
 
-    <!-- ================= 分区管理弹窗 ================= -->
+    <!-- ================= 分区管理页 ================= -->
     <div id="page-preference" class="overlay-page" style="z-index: 400;">
         <div class="nav-bar">
             <i class="fas fa-arrow-left" style="font-size:18px; cursor:pointer;" onclick="closeOverlay('page-preference')"></i>
             <span style="font-weight:bold; color:white;">分区管理</span>
-            <div style="width:18px;"></div>
+            <span style="font-size:14px; color:var(--primary); cursor:pointer; font-weight:bold;" onclick="closeOverlay('page-preference')">完成</span>
         </div>
-        
-        <div class="detail-content-wrapper" style="padding-bottom:20px;">
-            <div class="pref-group">
-                <div class="pref-title">
-                    <span>首页展示</span><span style="font-size:11px; color:var(--text-sub); font-weight:normal;">(点击取消固定)</span>
-                </div>
-                <div class="pref-tags" id="pinned-partitions"></div>
-            </div>
-            <div class="pref-group" style="margin-top:10px;">
-                <div class="pref-title">
-                    <span>我加入的分区</span><span style="font-size:11px; color:var(--text-sub); font-weight:normal;">(点击固定至首页)</span>
-                </div>
-                <div class="pref-tags" id="joined-partitions"></div>
-            </div>
-            <div class="pref-group" style="margin-top:10px;">
-                <div class="pref-title" style="margin-bottom: 4px;"><span>全部分区</span></div>
-                <div id="all-partitions-list"></div>
+
+        <div class="pm-pinned-bar" id="pm-pinned-bar"></div>
+
+        <div class="pm-search-wrap">
+            <div class="pm-search-box">
+                <i class="fas fa-search" style="color:#888; font-size:13px;"></i>
+                <input type="text" id="pm-search-input" placeholder="搜索分区名称" oninput="filterPartitions()">
             </div>
         </div>
+
+        <div class="pm-tabs">
+            <div class="pm-tab active" id="pm-tab-all" onclick="switchPmTab('all')">全部分区</div>
+            <div class="pm-tab" id="pm-tab-joined" onclick="switchPmTab('joined')">我加入的</div>
+        </div>
+
+        <div class="pm-list-scroll">
+            <div id="pm-partition-list"></div>
+        </div>
+    </div>
+
+    <!-- ================= 分区详情子页面 ================= -->
+    <div id="page-partition-detail" class="overlay-page" style="z-index: 410;">
+        <div class="nav-bar">
+            <i class="fas fa-arrow-left" style="font-size:18px; cursor:pointer;" onclick="closeOverlay('page-partition-detail')"></i>
+            <span style="font-weight:bold; color:white;" id="pd-nav-title">分区</span>
+            <i class="fas fa-ellipsis-h" style="cursor:pointer; color:var(--text-sub);" onclick="showToast('更多操作')"></i>
+        </div>
+
+        <div class="pd-header" id="pd-header"></div>
+
+        <div class="pd-sub-tabs">
+            <div class="pd-sub-tab active" onclick="switchPdTab(this, 'all')">综合</div>
+            <div class="pd-sub-tab" onclick="switchPdTab(this, 'official')">官方</div>
+            <div class="pd-sub-tab" onclick="switchPdTab(this, 'help')">求助</div>
+            <div class="pd-sub-tab" onclick="switchPdTab(this, 'guide')">攻略</div>
+        </div>
+
+        <div class="pd-feed-scroll" id="pd-feed-list"></div>
     </div>
 
     <!-- ================= 发帖页 / 转发页 ================= -->
@@ -640,7 +720,25 @@
         </div>
     </div>
 
+    <!-- 管理员删除确认弹窗 -->
+    <div class="dialog-mask" id="adminDeleteConfirm">
+        <div class="dialog-box">
+            <div class="dialog-title">确认删除</div>
+            <div class="dialog-msg">删除后该帖子将不可恢复，确定要删除吗？</div>
+            <div class="dialog-btns">
+                <button class="dialog-btn" onclick="closeAdminDeleteConfirm()">取消</button>
+                <button class="dialog-btn confirm" style="color:#f5222d;" onclick="confirmAdminDelete()">确认删除</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast" id="toastBox">提示</div>
+</div>
+
+<!-- 管理权限测试开关 -->
+<div class="admin-toggle-panel">
+    <span class="admin-toggle-label">管理权限测试</span>
+    <div class="admin-switch" id="adminSwitch" onclick="toggleAdminMode()"></div>
 </div>
 
 <!-- ================= 手机号绑定弹窗 ================= -->
@@ -721,26 +819,53 @@
     let currentDetailAuthor = '';
     let currentPostElement = null;
 
-    function openMoreMenu(e, userName) {
+    function openMoreMenu(e, userName, postId) {
         e.stopPropagation();
         currentTargetUser = userName;
         currentPostElement = e.currentTarget.closest('.wf-card');
         const menu = document.getElementById('more-menu');
-        
-        // 获取点击元素相对于视口的位置
+
+        let menuHtml = `
+            <div class="more-menu-item" onclick="handleNotInterested(event)">
+                <i class="fas fa-eye-slash" style="width:20px; text-align:center;"></i> 不感兴趣
+            </div>
+            <div class="more-menu-item danger" onclick="handleReportClick(event)">
+                <i class="far fa-flag" style="width:20px; text-align:center;"></i> 举报内容
+            </div>
+        `;
+
+        if (adminMode && postId) {
+            const p = mockPosts.find(x => x.id === postId);
+            if (p) {
+                const curCat = getPostCategory(p);
+                menuHtml += `<div style="height:1px; background:rgba(255,255,255,0.08); margin:4px 0;"></div>`;
+                menuHtml += `<div class="more-menu-item" onclick="adminPinFromMenu(${postId}, event)"><i class="fas fa-thumbtack" style="width:20px; text-align:center;"></i> ${p.isPinned ? '取消置顶' : '置顶'}</div>`;
+                if (curCat !== '官方') {
+                    menuHtml += `<div class="more-menu-item" onclick="adminMuteFromMenu(${postId}, event)"><i class="fas fa-volume-mute" style="width:20px; text-align:center;"></i> ${p.isMuted ? '取消静默' : '静默'}</div>`;
+                    menuHtml += `<div class="more-menu-item danger" onclick="adminDeleteFromMenu(${postId}, event)"><i class="fas fa-trash" style="width:20px; text-align:center;"></i> 删除</div>`;
+                    menuHtml += `<div style="height:1px; background:rgba(255,255,255,0.08); margin:4px 0;"></div>`;
+                    menuHtml += `<div class="more-menu-item" style="font-size:12px; color:#666; cursor:default; padding:8px 18px;">板块调整 (当前: ${curCat})</div>`;
+                    ['综合','求助','攻略'].filter(c => c !== curCat).forEach(c => {
+                        menuHtml += `<div class="more-menu-item" onclick="adminMoveCategoryFromMenu(${postId}, '${c}', event)"><i class="fas fa-arrow-right" style="width:20px; text-align:center;"></i> 移到「${c}」</div>`;
+                    });
+                }
+            }
+        }
+        menu.innerHTML = menuHtml;
+
         const rect = e.currentTarget.getBoundingClientRect();
         let x = rect.left - 100;
         let y = rect.bottom + 5;
-        
+
         if(x < 10) x = 10;
         if(y + 100 > window.innerHeight) {
-            y = rect.top - 100;
+            y = rect.top - 200;
         }
 
         menu.style.left = x + 'px';
         menu.style.top = y + 'px';
         menu.classList.add('show');
-        
+
         setTimeout(() => { document.addEventListener('click', closeMoreMenuOutside); }, 0);
     }
 
@@ -846,6 +971,30 @@
 
     // ================= 动作菜单弹窗 =================
     function openActionMenu() {
+        const adminArea = document.getElementById('detail-admin-actions');
+        const adminList = document.getElementById('detail-admin-list');
+
+        if (adminMode && currentDetailPostId) {
+            const p = mockPosts.find(x => x.id === currentDetailPostId);
+            if (p) {
+                const curCat = getPostCategory(p);
+                let html = '';
+                html += `<div class="action-btn-list" onclick="adminPinFromDetail()">${p.isPinned ? '取消置顶' : '置顶'}</div>`;
+                if (curCat !== '官方') {
+                    html += `<div class="action-btn-list" onclick="adminMuteFromDetail()">${p.isMuted ? '取消静默' : '静默'}</div>`;
+                    html += `<div class="action-btn-list" style="color:#f5222d;" onclick="adminDeleteFromDetail()">删除</div>`;
+                    html += `<div style="font-size:12px; color:#888; margin:8px 0 4px; padding:0 4px;">板块调整 (当前: ${curCat})</div>`;
+                    ['综合','求助','攻略'].filter(c => c !== curCat).forEach(c => {
+                        html += `<div class="action-btn-list" onclick="adminMoveCategoryFromDetail('${c}')">移到「${c}」</div>`;
+                    });
+                }
+                adminList.innerHTML = html;
+                adminArea.style.display = 'block';
+            }
+        } else {
+            adminArea.style.display = 'none';
+        }
+
         document.getElementById('actionMenu').style.display = 'flex';
         setTimeout(() => document.getElementById('actionSheetInner').classList.add('show'), 10);
     }
@@ -855,87 +1004,200 @@
     }
 
     // ================= 分区管理 =================
-    let pinnedPartitions = ['Steam', 'GTA 5', '配置分享'];
-    let joinedPartitions = new Set();
-    const allPartitionsList =['Steam', 'Epic', 'GTA 5', '配置分享'];
+    let pinnedPartitions = ['Steam', 'GTA 5'];
+    let joinedPartitions = new Set(['Steam', 'GTA 5']);
+    const allPartitionsData = [
+        { name: 'Steam', desc: '全球最大游戏平台资讯', icon: 'steam' },
+        { name: 'Epic', desc: 'Epic商城每周免费游戏', icon: 'epic' },
+        { name: 'GTA 5', desc: '侠盗猎车手5攻略分享', icon: 'gta5' },
+        { name: '配置分享', desc: '游戏配置方案交流', icon: 'config' },
+        { name: '原神', desc: '提瓦特大陆冒险社区', icon: 'genshin' },
+        { name: '艾尔登法环', desc: '褪色者交流圣地', icon: 'elden' },
+        { name: '赛博朋克2077', desc: '夜之城最新情报', icon: 'cyber' },
+        { name: '博德之门3', desc: 'D&D经典CRPG讨论', icon: 'bg3' },
+    ];
     let currentPartition = '全部';
+    let currentPmTab = 'all';
+
+    function getPartitionDesc(name) {
+        const data = allPartitionsData.find(p => p.name === name);
+        if (data) return data.desc;
+        return '欢迎来到 ' + name + ' 专区';
+    }
 
     function openPreference() {
-        renderPreferences();
+        currentPmTab = 'all';
+        document.getElementById('pm-search-input').value = '';
+        document.getElementById('pm-tab-all').classList.add('active');
+        document.getElementById('pm-tab-joined').classList.remove('active');
+        renderPmPinnedBar();
+        renderPmList();
         document.getElementById('page-preference').classList.add('show');
     }
 
-    function renderPreferences() {
-        document.getElementById('pinned-partitions').innerHTML = pinnedPartitions.map(p => `
-            <div class="pref-tag" style="padding: 4px 12px;">
-                <span style="flex:1; padding:4px 0;" onclick="jumpToPartition('${p}')">${p}</span>
-                <div style="width:1px; height:12px; background:rgba(255,255,255,0.2); margin:0 4px;"></div>
-                <i class="fas fa-times del" style="padding:4px;" onclick="unpinPartition('${p}')"></i>
+    function switchPmTab(tab) {
+        currentPmTab = tab;
+        document.getElementById('pm-tab-all').classList.toggle('active', tab === 'all');
+        document.getElementById('pm-tab-joined').classList.toggle('active', tab === 'joined');
+        document.getElementById('pm-search-input').value = '';
+        renderPmList();
+    }
+
+    function filterPartitions() { renderPmList(); }
+
+    function renderPmPinnedBar() {
+        const bar = document.getElementById('pm-pinned-bar');
+        if (pinnedPartitions.length === 0) {
+            bar.innerHTML = '<span class="pm-pinned-bar-label">暂无置顶分区</span>';
+            return;
+        }
+        let html = '<span class="pm-pinned-bar-label">已置顶:</span>';
+        pinnedPartitions.forEach(p => {
+            html += `<span class="pm-pinned-tag">${p}<i class="fas fa-times pm-pin-remove" onclick="event.stopPropagation(); unpinPartition('${p}')"></i></span>`;
+        });
+        html += `<span class="pm-pinned-bar-limit">${pinnedPartitions.length}/5</span>`;
+        bar.innerHTML = html;
+    }
+
+    function renderPmList() {
+        const container = document.getElementById('pm-partition-list');
+        const keyword = document.getElementById('pm-search-input').value.trim().toLowerCase();
+        let list = currentPmTab === 'all' ? allPartitionsData : allPartitionsData.filter(p => joinedPartitions.has(p.name));
+        if (keyword) {
+            list = list.filter(p => p.name.toLowerCase().includes(keyword) || p.desc.toLowerCase().includes(keyword));
+        }
+        if (list.length === 0) {
+            container.innerHTML = `<div class="pm-empty"><i class="fas fa-search" style="font-size:24px; margin-bottom:8px; opacity:0.5;"></i><div>${currentPmTab === 'joined' ? '还没有加入任何分区' : '未找到相关分区'}</div></div>`;
+            return;
+        }
+        container.innerHTML = list.map(p => {
+            const isPinned = pinnedPartitions.includes(p.name);
+            const btnClass = isPinned ? 'pm-pin-btn pinned' : 'pm-pin-btn pin';
+            const btnText = isPinned ? '已置顶' : '置顶';
+            const btnAction = isPinned
+                ? `onclick="event.stopPropagation(); unpinPartition('${p.name}')"`
+                : `onclick="event.stopPropagation(); pinPartition('${p.name}')"`;
+            return `
+                <div class="pm-item" onclick="enterPartitionFromManager('${p.name}')">
+                    <img class="pm-item-icon" src="https://picsum.photos/seed/${p.icon}/100/100">
+                    <div class="pm-item-info">
+                        <div class="pm-item-name">${p.name}</div>
+                        <div class="pm-item-desc">${p.desc}</div>
+                    </div>
+                    <div class="pm-item-action">
+                        <button class="${btnClass}" ${btnAction}>${btnText}</button>
+                    </div>
+                </div>`;
+        }).join('');
+    }
+
+    function enterPartitionFromManager(name) {
+        openPartitionDetail(name);
+    }
+
+    function openPartitionDetail(name) {
+        const data = allPartitionsData.find(p => p.name === name) || { name, desc: getPartitionDesc(name), icon: name };
+        const isJoined = joinedPartitions.has(name);
+        const joinBtnClass = isJoined ? 'pd-join-btn joined' : 'pd-join-btn join';
+        const joinBtnText = isJoined ? '已加入' : '加入';
+
+        document.getElementById('pd-nav-title').innerText = name;
+        document.getElementById('pd-header').innerHTML = `
+            <img class="pd-header-icon" src="https://picsum.photos/seed/${data.icon}/100/100">
+            <div class="pd-header-info">
+                <div class="pd-header-name">${name}</div>
+                <div class="pd-header-desc">${getPartitionDesc(name)}</div>
+            </div>
+            <button class="${joinBtnClass}" onclick="togglePdJoin(this, '${name}')">${joinBtnText}</button>
+        `;
+        renderPdFeed(name);
+        document.getElementById('page-partition-detail').classList.add('show');
+    }
+
+    function togglePdJoin(btn, name) {
+        if (joinedPartitions.has(name)) {
+            joinedPartitions.delete(name);
+            btn.className = 'pd-join-btn join';
+            btn.innerText = '加入';
+            showToast('已退出 ' + name);
+        } else {
+            joinedPartitions.add(name);
+            btn.className = 'pd-join-btn joined';
+            btn.innerText = '已加入';
+            showToast('已加入 ' + name);
+        }
+    }
+
+    function switchPdTab(el, type) {
+        el.parentElement.querySelectorAll('.pd-sub-tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        const name = document.getElementById('pd-nav-title').innerText;
+        renderPdFeed(name, type);
+    }
+
+    function renderPdFeed(partitionName, filterType) {
+        const container = document.getElementById('pd-feed-list');
+        let posts = mockPosts.filter(p => p.partition === partitionName);
+        if (filterType === 'official') posts = posts.filter(p => p.isOfficial);
+        else if (filterType === 'help') posts = posts.filter(p => p.isHelp);
+        else if (filterType === 'guide') posts = posts.filter(p => p.isGuide);
+        posts = posts.slice(0, 15);
+
+        if (posts.length === 0) {
+            container.innerHTML = `<div class="pm-empty"><i class="fas fa-inbox" style="font-size:28px; margin-bottom:8px; opacity:0.4;"></i><div>该分区暂无内容</div></div>`;
+            return;
+        }
+        container.innerHTML = posts.map(p => `
+            <div class="pd-feed-item" onclick="closeOverlay('page-partition-detail'); setTimeout(()=>openPostDetail(${p.id}), 300);">
+                <div class="pd-feed-top">
+                    <img class="pd-feed-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=${p.avatar}">
+                    <span class="pd-feed-user">${p.user}</span>
+                    <span class="pd-feed-time">${formatExactTime(p.timestamp)}</span>
+                </div>
+                <div class="pd-feed-title">${p.title}</div>
+                <div class="pd-feed-content">${p.content}</div>
+                ${p.images && p.images.length > 0 ? `<img class="pd-feed-img" src="${p.images[0]}">` : ''}
+                <div class="pd-feed-footer">
+                    <span><i class="far fa-heart"></i> ${p.likes}</span>
+                    <span><i class="far fa-comment"></i> ${p.comments}</span>
+                    <span><i class="fas fa-retweet"></i> ${p.reposts}</span>
+                </div>
             </div>
         `).join('');
-
-        const joinedArr = Array.from(joinedPartitions);
-        if (joinedArr.length === 0) {
-            document.getElementById('joined-partitions').innerHTML = `<div style="color:var(--text-sub); font-size:12px; padding:4px 0;">暂无加入分区，赶紧加入吧</div>`;
-        } else {
-            document.getElementById('joined-partitions').innerHTML = joinedArr.map(p => {
-                const isPinned = pinnedPartitions.includes(p);
-                const actionHtml = isPinned 
-                    ? `<i class="fas fa-check" style="padding:4px; color:#666; font-size:10px;"></i>` 
-                    : `<i class="fas fa-plus add" style="padding:4px;" onclick="pinPartition('${p}')"></i>`;
-                
-                return `
-                    <div class="pref-tag" style="padding: 4px 12px; ${isPinned ? 'border-color:rgba(255,255,255,0.03); opacity:0.6;' : ''}">
-                        ${actionHtml}
-                        <div style="width:1px; height:12px; background:rgba(255,255,255,0.2); margin:0 4px;"></div>
-                        <span style="flex:1; padding:4px 0;" onclick="jumpToPartition('${p}')">${p}</span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        document.getElementById('all-partitions-list').innerHTML = allPartitionsList.map(p => {
-            const hasJoined = joinedPartitions.has(p);
-            const btnStyle = hasJoined ? 'background:rgba(255,255,255,0.05); color:#888;' : 'background:rgba(40,125,250,0.1); color:var(--primary);';
-            const btnText = hasJoined ? '已加入' : '+ 加入';
-            const clickAction = hasJoined ? '' : `onclick="joinPartition('${p}')"`;
-            return `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-                    <span style="font-size:15px; color:white; font-weight:bold; cursor:pointer;" onclick="jumpToPartition('${p}')">${p}</span>
-                    <div style="${btnStyle} padding:6px 14px; border-radius:16px; font-size:12px; font-weight:bold; cursor:pointer; transition:0.2s;" ${clickAction}>${btnText}</div>
-                </div>
-            `;
-        }).join('');
     }
 
     function jumpToPartition(p) {
         closeOverlay('page-preference');
+        closeOverlay('page-partition-detail');
         currentPartition = p;
         document.getElementById('community-view').scrollTo(0, 0);
         renderCommunityTabs();
     }
 
     function unpinPartition(p) {
-        if(pinnedPartitions.length <= 1) { showToast('首页至少保留 1 个展示'); return; }
+        if(pinnedPartitions.length <= 1) { showToast('首页至少保留 1 个置顶'); return; }
         pinnedPartitions = pinnedPartitions.filter(x => x !== p);
-        renderPreferences(); 
+        renderPmPinnedBar();
+        renderPmList();
         renderCommunityTabs();
     }
 
     function pinPartition(p) {
         if (pinnedPartitions.includes(p)) return;
-        if (pinnedPartitions.length >= 5) { showToast('首页最多只能固定 5 个专区'); return; }
+        if (pinnedPartitions.length >= 5) { showToast('最多只能置顶 5 个分区'); return; }
         pinnedPartitions.push(p);
-        renderPreferences(); 
+        renderPmPinnedBar();
+        renderPmList();
         renderCommunityTabs();
-        showToast('已固定至首页');
+        showToast('已置顶');
     }
 
     function joinPartition(p) {
         joinedPartitions.add(p);
-        renderPreferences();
+        renderPmPinnedBar();
+        renderPmList();
         renderCommunityTabs();
-        showToast('已成功加入');
+        showToast('已加入');
     }
 
     function renderCommunityTabs() {
@@ -1049,22 +1311,18 @@
             btn.style.color = 'var(--primary)';
             btn.style.borderColor = 'var(--primary)';
             showToast('已退出 ' + partitionName);
-            
+
             joinedPartitions.delete(partitionName);
             pinnedPartitions = pinnedPartitions.filter(x => x !== partitionName);
-            
-            renderPreferences();
             renderCommunityTabs();
         } else {
             btn.innerText = '已加入';
             btn.style.background = 'rgba(255,255,255,0.1)';
             btn.style.color = '#ccc';
             btn.style.borderColor = 'transparent';
-            
+
             joinedPartitions.add(partitionName);
             showToast('已加入该专区');
-            
-            renderPreferences();
             renderCommunityTabs();
         }
     }
@@ -1169,7 +1427,7 @@
                             <span class="name-bold">${p.user}${p.isOfficial ? ' <span style="background:var(--primary);color:#000;font-size:9px;padding:1px 4px;border-radius:3px;">官方</span>' : ''}</span>
                             <span class="time-ip">${timeStr} · ${p.ip}</span>
                         </div>
-                        <div class="feed-more-btn" onclick="openMoreMenu(event, '${p.user}')"><i class="fas fa-ellipsis-h"></i></div>
+                        <div class="feed-more-btn" onclick="openMoreMenu(event, '${p.user}', ${p.id})"><i class="fas fa-ellipsis-h"></i></div>
                     </div>
                     <div class="wf-content-text">
                         <div style="font-weight:bold; margin-bottom:4px;">${p.isHelp ? '<span style="background:#f5222d;color:white;font-size:11px;padding:2px 6px;border-radius:4px;margin-right:6px;">求助</span>' : ''}${p.isGuide ? '<span style="background:#52c41a;color:white;font-size:11px;padding:2px 6px;border-radius:4px;margin-right:6px;">攻略</span>' : ''}${p.title}</div>
@@ -1184,8 +1442,7 @@
                         <div class="action-btn" onclick="handleReply(${p.id})"><i class="far fa-comment"></i> <span>${p.comments}</span></div>
                         <div class="action-btn" onclick="handleRepost(${p.id})"><i class="fas fa-retweet"></i> <span>${p.reposts}</span></div>
                     </div>
-                </div>`;
-        });
+                </div>`;        });
     }
 
     function renderFeed() {
@@ -1199,6 +1456,8 @@
             const isJoined = joinedPartitions.has(currentPartition);
             const joinBtnText = isJoined ? '已加入' : '加入';
             const joinBtnStyle = isJoined ? 'background:rgba(255,255,255,0.1);color:#ccc;border-color:transparent;' : '';
+            const pData = allPartitionsData.find(p => p.name === currentPartition);
+            const pIcon = pData ? pData.icon : currentPartition;
 
             // 生成置顶区HTML
             const pinnedPosts = filtered.filter(p => p.isPinned);
@@ -1218,10 +1477,10 @@
             const headerHtml = `
                 <div class="partition-header">
                     <div class="p-h-top">
-                        <img class="p-h-icon" src="https://picsum.photos/seed/${currentPartition}/100/100">
+                        <img class="p-h-icon" src="https://picsum.photos/seed/${pIcon}/100/100">
                         <div class="p-h-info">
                             <div class="p-h-name">${currentPartition}</div>
-                            <div class="p-h-desc">欢迎来到 ${currentPartition} 专区！这里有最新最热的游戏资讯、深度评测和同好交流。</div>
+                            <div class="p-h-desc">${getPartitionDesc(currentPartition)}</div>
                         </div>
                         <div class="p-h-follow-btn" style="${joinBtnStyle}" onclick="togglePartitionJoin(this, '${currentPartition}')">${joinBtnText}</div>
                     </div>
@@ -1255,7 +1514,7 @@
                             <span class="time-ip">${timeStr} · ${p.ip}</span>
                         </div>
                         <!-- 替换原先的关注按钮，改为操作菜单触发器 -->
-                        <div class="feed-more-btn" onclick="openMoreMenu(event, '${p.user}')"><i class="fas fa-ellipsis-h"></i></div>
+                        <div class="feed-more-btn" onclick="openMoreMenu(event, '${p.user}', ${p.id})"><i class="fas fa-ellipsis-h"></i></div>
                     </div>
 
                     <div class="wf-content-text">
@@ -1277,8 +1536,7 @@
                         <div class="action-btn" onclick="handleReply(${p.id})"><i class="far fa-comment"></i> <span>${p.comments}</span></div>
                         <div class="action-btn" onclick="handleRepost(${p.id})"><i class="fas fa-retweet"></i> <span>${p.reposts}</span></div>
                     </div>
-                </div>`;
-        });
+                </div>`;        });
     }
 
     function getUserTagHtml(role) {
@@ -1459,10 +1717,12 @@
 
     function renderPartitionSelect() {
         const list = document.getElementById('psm-list');
-        list.innerHTML = allPartitionsList.map(p => `
-            <div class="g-list-item" onclick="selectPostPartition('${p}')">
+        list.innerHTML = allPartitionsData.map(p => `
+            <div class="g-list-item" onclick="selectPostPartition('${p.name}')">
+                <img class="g-item-img" src="https://picsum.photos/seed/${p.icon}/100/100">
                 <div class="g-item-info">
-                    <span class="g-item-name">${p}</span>
+                    <span class="g-item-name">${p.name}</span>
+                    <span class="g-item-tags">${p.desc}</span>
                 </div>
             </div>
         `).join('');
@@ -1704,6 +1964,109 @@
         selectedConfigs = { startup: '', keymap: '' };
         
         setTimeout(() => { closePublishPage(); document.getElementById('community-view').scrollTo(0,0); }, 500);
+    }
+
+    // ================= 管理权限测试 =================
+    let adminMode = false;
+
+    function toggleAdminMode() {
+        adminMode = !adminMode;
+        document.getElementById('adminSwitch').classList.toggle('on', adminMode);
+        renderFeed();
+        showToast(adminMode ? '已开启管理模式' : '已关闭管理模式');
+    }
+
+    function adminPinFromMenu(id, e) {
+        e.stopPropagation();
+        closeMoreMenu();
+        const p = mockPosts.find(x => x.id === id);
+        if (!p) return;
+        p.isPinned = !p.isPinned;
+        showToast(p.isPinned ? '已置顶该帖子' : '已取消置顶');
+        renderFeed();
+    }
+
+    function adminMuteFromMenu(id, e) {
+        e.stopPropagation();
+        closeMoreMenu();
+        const p = mockPosts.find(x => x.id === id);
+        if (!p) return;
+        p.isMuted = !p.isMuted;
+        showToast(p.isMuted ? '已静默该帖子' : '已取消静默');
+        renderFeed();
+    }
+
+    function adminDeleteFromMenu(id, e) {
+        e.stopPropagation();
+        closeMoreMenu();
+        adminDeleteTargetId = id;
+        document.getElementById('adminDeleteConfirm').classList.add('show');
+    }
+
+    let adminDeleteTargetId = null;
+    function confirmAdminDelete() {
+        if (adminDeleteTargetId) {
+            mockPosts = mockPosts.filter(x => x.id !== adminDeleteTargetId);
+            renderFeed();
+            showToast('已删除该帖子');
+        }
+        closeAdminDeleteConfirm();
+    }
+    function closeAdminDeleteConfirm() {
+        document.getElementById('adminDeleteConfirm').classList.remove('show');
+        adminDeleteTargetId = null;
+    }
+
+    function adminMoveCategoryFromMenu(id, category, e) {
+        e.stopPropagation();
+        closeMoreMenu();
+        const p = mockPosts.find(x => x.id === id);
+        if (!p) return;
+        p.isHelp = category === '求助';
+        p.isGuide = category === '攻略';
+        p.isOfficial = category === '官方';
+        showToast('已将帖子移动到「' + category + '」');
+        renderFeed();
+    }
+
+    // 详情页管理操作
+    function adminPinFromDetail() {
+        closeActionMenu();
+        const p = mockPosts.find(x => x.id === currentDetailPostId);
+        if (!p) return;
+        p.isPinned = !p.isPinned;
+        showToast(p.isPinned ? '已置顶该帖子' : '已取消置顶');
+    }
+
+    function adminMuteFromDetail() {
+        closeActionMenu();
+        const p = mockPosts.find(x => x.id === currentDetailPostId);
+        if (!p) return;
+        p.isMuted = !p.isMuted;
+        showToast(p.isMuted ? '已静默该帖子' : '已取消静默');
+    }
+
+    function adminDeleteFromDetail() {
+        closeActionMenu();
+        adminDeleteTargetId = currentDetailPostId;
+        document.getElementById('adminDeleteConfirm').classList.add('show');
+    }
+
+    function adminMoveCategoryFromDetail(category) {
+        closeActionMenu();
+        const p = mockPosts.find(x => x.id === currentDetailPostId);
+        if (!p) return;
+        p.isHelp = category === '求助';
+        p.isGuide = category === '攻略';
+        p.isOfficial = category === '官方';
+        showToast('已将帖子移动到「' + category + '」');
+    }
+
+    function getPostCategory(p) {
+        if (p.isHelp) return '求助';
+        if (p.isGuide) return '攻略';
+        if (p.isOfficial) return '官方';
+        return '综合';
     }
 
     // 初始化渲染

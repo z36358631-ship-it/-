@@ -153,6 +153,17 @@
 
         .perm-checkboxes { flex: 1; display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
         .perm-checkboxes label { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text-main); width: auto; text-align: left; margin: 0; cursor: pointer; }
+
+        /* 帖子分类Tab */
+        .post-cat-tab { padding: 8px 18px; font-size: 14px; color: var(--text-sub); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; font-weight: 500; transition: 0.2s; }
+        .post-cat-tab:hover { color: var(--primary); }
+        .post-cat-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: bold; }
+
+        .move-cat-option { padding: 10px 20px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; cursor: pointer; transition: 0.2s; user-select: none; }
+        .move-cat-option:hover:not(.disabled) { border-color: var(--primary); color: var(--primary); }
+        .move-cat-option.selected { background: var(--primary); color: var(--white); border-color: var(--primary); }
+        .move-cat-option.disabled { opacity: 0.4; cursor: not-allowed; }
+        .move-cat-option.active { border-color: var(--border); background: var(--bg-light); }
     </style>
 </head>
 <body>
@@ -547,6 +558,15 @@
                         </div>
                     </div>
 
+                    <!-- 帖子分类Tab -->
+                    <div style="display:flex; gap:0; margin-bottom:16px; border-bottom:2px solid var(--border-light);" id="post-category-tabs">
+                        <div class="post-cat-tab active" onclick="switchPostCatTab(this, '')">全部</div>
+                        <div class="post-cat-tab" onclick="switchPostCatTab(this, '综合')">综合</div>
+                        <div class="post-cat-tab" onclick="switchPostCatTab(this, '官方')">官方</div>
+                        <div class="post-cat-tab" onclick="switchPostCatTab(this, '求助')">求助</div>
+                        <div class="post-cat-tab" onclick="switchPostCatTab(this, '攻略')">攻略</div>
+                    </div>
+
                     <div style="margin-bottom: 16px; display:flex; gap:10px; align-items: center; justify-content: space-between;">
                         <div>
                             <button class="btn btn-warning batch-btn" onclick="batchAction(2)" disabled><i class="fas fa-eye-slash"></i> 批量静默</button>
@@ -564,6 +584,7 @@
                                 <th style="width: 40px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
                                 <th>动态ID</th>
                                 <th>所属分区</th>
+                                <th>分类</th>
                                 <th>作者信息</th>
                                 <th>发布时间</th>
                                 <th style="width: 25%;">内容摘要</th>
@@ -851,6 +872,30 @@
         </div>
     </div>
 
+    <!-- 移动分类弹窗 -->
+    <div class="modal-overlay" id="moveCatModal">
+        <div class="modal" style="width:400px;">
+            <div class="modal-header">
+                <span>移动帖子分类</span>
+                <i class="fas fa-times" onclick="closeMoveModal()"></i>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom:12px; color:var(--text-sub); font-size:13px;">当前分类：<strong id="move-current-cat" style="color:var(--text-main);"></strong></p>
+                <p style="margin-bottom:12px; font-size:14px;">选择目标分类：</p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <div class="move-cat-option" data-cat="综合" onclick="selectMoveCat(this)">综合</div>
+                    <div class="move-cat-option" data-cat="官方" onclick="selectMoveCat(this)">官方</div>
+                    <div class="move-cat-option" data-cat="求助" onclick="selectMoveCat(this)">求助</div>
+                    <div class="move-cat-option" data-cat="攻略" onclick="selectMoveCat(this)">攻略</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" onclick="closeMoveModal()">取消</button>
+                <button class="btn btn-primary" onclick="confirmMoveCategory()">确认移动</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ================= 数据 Mock =================
         const mockPartitions =[
@@ -889,21 +934,23 @@
         // status映射：1 = 通过已外显, 2 = 已静默, 3 = 疑似待审核, 4 = 违规已拦截, 0 = 已删除
         // 新增 isFeatured 控制是否为精选动态
         let mockPosts =[
-            { id: 'D88201', p_id: 'PT10002', p_name: 'GTA 5', p_icon: 'https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg', author: '老麦', accountId: 'UID_99214', phone: '13812345678', content: '【干货】GTA5 稳60帧启动设置，彻底告别卡顿...', views: 45020, likes: 999, favs: 450, replies: 34, reposts: 55, time: '2026-03-13 10:30:00', status: 1, isPinned: true, isFeatured: true },
-            { id: 'D88202', p_id: 'PT10001', p_name: 'Steam', p_icon: 'https://picsum.photos/seed/steam/100/100', author: '盖世小秘书', accountId: 'UID_10001', phone: '13988888888', content: '【官方】盖世模拟器V2.0重大更新说明！新增诸多...', views: 120500, likes: 8520, favs: 1200, replies: 654, reposts: 1200, time: '2026-03-13 09:00:15', status: 3, isPinned: false, isFeatured: false }, 
-            { id: 'D88203', p_id: 'PT10003', p_name: '黑神话：悟空', p_icon: 'https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/header.jpg', author: '暴躁老哥', accountId: 'UID_44512', phone: '13566667777', content: 'Here is how to defeat the first boss...', views: 840, likes: 12, favs: 5, replies: 8, reposts: 0, time: '2026-03-12 14:22:00', status: 4, isPinned: false, isFeatured: false } 
+            { id: 'D88201', p_id: 'PT10002', p_name: 'GTA 5', p_icon: 'https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg', author: '老麦', accountId: 'UID_99214', phone: '13812345678', content: '【干货】GTA5 稳60帧启动设置，彻底告别卡顿...', views: 45020, likes: 999, favs: 450, replies: 34, reposts: 55, time: '2026-03-13 10:30:00', status: 1, isPinned: true, isFeatured: true, isGuide: true },
+            { id: 'D88202', p_id: 'PT10001', p_name: 'Steam', p_icon: 'https://picsum.photos/seed/steam/100/100', author: '盖世小秘书', accountId: 'UID_10001', phone: '13988888888', content: '【官方】盖世模拟器V2.0重大更新说明！新增诸多...', views: 120500, likes: 8520, favs: 1200, replies: 654, reposts: 1200, time: '2026-03-13 09:00:15', status: 3, isPinned: false, isFeatured: false, isOfficial: true },
+            { id: 'D88203', p_id: 'PT10003', p_name: '黑神话：悟空', p_icon: 'https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/header.jpg', author: '暴躁老哥', accountId: 'UID_44512', phone: '13566667777', content: 'Here is how to defeat the first boss...', views: 840, likes: 12, favs: 5, replies: 8, reposts: 0, time: '2026-03-12 14:22:00', status: 4, isPinned: false, isFeatured: false, isHelp: true }
         ];
         for(let i=4; i<=15; i++) {
             let st = 1;
             if (i === 5) st = 3;
             if (i === 6) st = 4;
             if (i === 7) st = 2; // 已静默
+            const cat = i % 4;
             mockPosts.push({
-                id: `D8820${i < 10 ? '0'+i : i}`, p_id: 'PT10001', p_name: 'Steam', p_icon: 'https://picsum.photos/seed/steam/100/100', 
-                author: `路人玩家${i}`, accountId: `UID_77${i}0`, phone: '138' + Math.floor(Math.random()*80000000 + 10000000), 
-                content: `这是第${i}条测试动态，为了占满一页显示列表。`, 
-                views: Math.floor(Math.random()*10000 + 500), likes: Math.floor(Math.random()*1000), favs: Math.floor(Math.random()*200), replies: Math.floor(Math.random()*200), reposts: Math.floor(Math.random()*50), 
-                time: `2026-03-0${Math.floor(i/3)+1} 10:00:00`, status: st, isPinned: false, isFeatured: false
+                id: `D8820${i < 10 ? '0'+i : i}`, p_id: 'PT10001', p_name: 'Steam', p_icon: 'https://picsum.photos/seed/steam/100/100',
+                author: `路人玩家${i}`, accountId: `UID_77${i}0`, phone: '138' + Math.floor(Math.random()*80000000 + 10000000),
+                content: `这是第${i}条测试动态，为了占满一页显示列表。`,
+                views: Math.floor(Math.random()*10000 + 500), likes: Math.floor(Math.random()*1000), favs: Math.floor(Math.random()*200), replies: Math.floor(Math.random()*200), reposts: Math.floor(Math.random()*50),
+                time: `2026-03-0${Math.floor(i/3)+1} 10:00:00`, status: st, isPinned: false, isFeatured: false,
+                isHelp: cat === 1, isGuide: cat === 2, isOfficial: cat === 3
             });
         }
 
@@ -1577,11 +1624,41 @@
 
 
         // ================= 动态管理业务逻辑 =================
+        let currentPostCatFilter = '';
+
+        function switchPostCatTab(el, category) {
+            document.querySelectorAll('.post-cat-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            currentPostCatFilter = category;
+            renderPosts();
+        }
+
+        function getPostCategoryAdmin(p) {
+            if (p.isHelp) return '求助';
+            if (p.isGuide) return '攻略';
+            if (p.isOfficial) return '官方';
+            return '综合';
+        }
+
+        function movePostCategory(id, newCat) {
+            const p = mockPosts.find(x => x.id === id);
+            if (!p) return;
+            p.isHelp = newCat === '求助';
+            p.isGuide = newCat === '攻略';
+            p.isOfficial = newCat === '官方';
+            showToast('已将帖子移动到「' + newCat + '」');
+            renderPosts();
+        }
+
         function renderPosts() {
             const tbody = document.getElementById('post-table-body');
             document.getElementById('selectAll').checked = false; updateBatchBtnState();
-            
-            const sortedPosts =[...mockPosts].sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
+
+            let postsToRender = [...mockPosts];
+            if (currentPostCatFilter) {
+                postsToRender = postsToRender.filter(p => getPostCategoryAdmin(p) === currentPostCatFilter);
+            }
+            const sortedPosts = postsToRender.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
             tbody.innerHTML = sortedPosts.map(p => {
                 let statusTag = '';
                 let actionHtml = `<a onclick="viewPostDetail('${p.id}')">查看</a>`;
@@ -1610,11 +1687,17 @@
                     actionHtml += `<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1)">恢复</a>`;
                 }
 
+                let catLabel = getPostCategoryAdmin(p);
+                let catBadgeColor = catLabel === '求助' ? 'tag-error' : catLabel === '攻略' ? 'tag-success' : catLabel === '官方' ? 'tag-blue' : 'tag-gray';
+                let moveHtml = p.status !== 0 ? `<a onclick="openMovePostMenu('${p.id}')">移动</a>` : '';
+                actionHtml += moveHtml;
+
                 return `
                 <tr style="${p.status === 0 ? 'background:#fafafa; opacity:0.6;' : (p.isPinned ? 'background:#fffbf0;' : '')}">
                     <td><input type="checkbox" class="row-checkbox" value="${p.id}" onclick="checkSelectAllStatus()"></td>
                     <td style="font-family:monospace; color:var(--text-sub);">${p.id} ${pinBadge}${featuredBadge}</td>
                     <td><div style="display:flex; align-items:center; gap:6px; font-size:12px;"><img src="${p.p_icon}" style="width:20px;height:20px;border-radius:4px;">${p.p_name}</div></td>
+                    <td><span class="tag ${catBadgeColor}">${catLabel}</span></td>
                     <td><div class="td-author"><div style="font-weight:bold; color:var(--primary); font-size:13px;">${p.author}</div><div style="font-size:12px; color:var(--text-sub);">UID: ${p.accountId}</div></div></td>
                     <td style="font-size:12px; color:var(--text-sub); white-space:nowrap;">${p.time.replace(' ', '<br>')}</td>
                     <td><span title="${p.content}">${p.content.substring(0, 25)}${p.content.length > 25 ? '...' : ''}</span></td>
@@ -1626,6 +1709,39 @@
         }
 
         function viewPostDetail(id) { alert('即将跳转至H5动态详情页，动态ID: ' + id); }
+
+        let moveTargetPostId = null;
+        function openMovePostMenu(id) {
+            moveTargetPostId = id;
+            const p = mockPosts.find(x => x.id === id);
+            if (!p) return;
+            const current = getPostCategoryAdmin(p);
+            document.getElementById('move-current-cat').innerText = current;
+            document.querySelectorAll('.move-cat-option').forEach(el => {
+                el.classList.toggle('active', el.dataset.cat === current);
+                el.classList.toggle('disabled', el.dataset.cat === current);
+            });
+            document.getElementById('moveCatModal').classList.add('show');
+        }
+
+        function closeMoveModal() {
+            document.getElementById('moveCatModal').classList.remove('show');
+            moveTargetPostId = null;
+        }
+
+        function confirmMoveCategory() {
+            const selected = document.querySelector('.move-cat-option.selected');
+            if (!selected) { showToast('请选择目标分类'); return; }
+            const newCat = selected.dataset.cat;
+            movePostCategory(moveTargetPostId, newCat);
+            closeMoveModal();
+        }
+
+        function selectMoveCat(el) {
+            if (el.classList.contains('disabled')) return;
+            document.querySelectorAll('.move-cat-option').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+        }
         function togglePin(id, isTopicView = false) { 
             const p = mockPosts.find(x => x.id === id); 
             p.isPinned = !p.isPinned; 
