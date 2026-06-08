@@ -210,6 +210,11 @@
 |**动态加精/置顶**|动态ID, 操作动作|点击“置顶/取消置顶”、“加入精选/取消精选”时获取的动态ID。|将动态 \[D88202\] 设置为全局 \[置顶\] 及 \[精选\]|
 |**数据导出**|操作模块名, 筛选条件|点击“导出数据”时，获取当前的页面模块名称以及生效的 Filter 筛选参数组合。|导出了 \[动态管理\] 数据，包含 842 条记录|
 |`举报管理`|举报ID，操作动态|点击判定违规并执行操作时候记录结果|`判定违规，执行操作: 删除动态，禁发用户 3 天`|
+|**玩家管理员-置顶**|动态ID, 操作人UID, 操作动作|前端管理员点击置顶/取消置顶时上报|玩家管理员 \[UID\_99214\] 将动态 \[D88201\] 设置为 \[置顶\]|
+|**玩家管理员-屏蔽**|动态ID, 操作人UID, 操作动作|前端管理员点击屏蔽/取消屏蔽时上报|玩家管理员 \[UID\_99214\] 将动态 \[D88203\] 设置为 \[屏蔽\]|
+|**玩家管理员-删除**|动态ID, 操作人UID|前端管理员确认删除帖子时上报|玩家管理员 \[UID\_99214\] 删除了动态 \[D88205\]|
+|**玩家管理员-板块移动**|动态ID, 操作人UID, 原板块, 目标板块|前端管理员执行板块调整时上报|玩家管理员 \[UID\_99214\] 将动态 \[D88201\] 从 \[综合\] 移动到 \[攻略\]|
+|**玩家管理员-禁言**|目标用户UID, 操作人UID, 禁言天数, 到期时间|前端管理员确认禁言时上报|玩家管理员 \[UID\_99214\] 禁言用户 \[UID\_44512\] 30天，至 2026-07-08 15:30|
 
 ## 4\.4 非功能需求
 
@@ -241,10 +246,15 @@
 |---|---|---|---|
 |community\_page\_view|社区页访问|进入社区首页或切换顶栏社区Tab时|`uid`, `current\_partition`|
 |post\_click|动态点击|在动态流点击任意一张动态卡片|`post\_id`, `author\_id`, `partition`|
-|post\_publish\_submit|发布动态|在发布面板点击右上角“发布”时|`has\_media`, `has\_share\_code`, `associated\_game`, `is\_forward`|
+|post\_publish\_submit|发布动态|在发布面板点击右上角”发布”时|`has\_media`, `has\_share\_code`, `associated\_game`, `is\_forward`|
 |post\_interaction|动态互动|点击点赞、收藏、评论发送按钮时|`post\_id`, `action\_type` \(like/fav/comment\)|
-|user\_follow|关注用户|在详情页点击“关注/已关注”按钮时|`target\_uid`, `action` \(follow/unfollow\)|
+|user\_follow|关注用户|在详情页点击”关注/已关注”按钮时|`target\_uid`, `action` \(follow/unfollow\)|
 |partition\_edit\_save|分区编辑完成|关闭偏好管理弹窗时|`selected\_partitions` \(array\)|
+|admin\_post\_pin|管理员置顶|管理员在前端执行置顶/取消置顶时|`operator\_uid`, `post\_id`, `action` \(pin/unpin\)|
+|admin\_post\_mute|管理员屏蔽|管理员在前端执行屏蔽/取消屏蔽时|`operator\_uid`, `post\_id`, `action` \(mute/unmute\)|
+|admin\_post\_delete|管理员删除|管理员在前端确认删除帖子时|`operator\_uid`, `post\_id`|
+|admin\_post\_move|管理员板块移动|管理员在前端执行板块调整时|`operator\_uid`, `post\_id`, `from\_category`, `to\_category`|
+|admin\_user\_ban|管理员禁言|管理员在前端确认禁言用户时|`operator\_uid`, `target\_uid`, `ban\_days`, `expire\_time`|
 
 ## 5\.3 埋点参数表
 
