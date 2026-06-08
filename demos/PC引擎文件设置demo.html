@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>盖世游戏 - PC引擎文件设置</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+    --primary-color: #287dfa;
+    --bg-color: #0f1419;
+    --card-bg: #151a24;
+    --card-border: rgba(255,255,255,0.08);
+    --text-primary: #ffffff;
+    --text-secondary: #8a9ba8;
+    --window-radius: 16px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; user-select: none; }
+
+body {
+    background-color: #05080e; color: var(--text-primary);
+    height: 100vh; width: 100vw;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}
+
+.device-toggle-btn {
+    position: fixed; bottom: 30px; right: 30px;
+    background: var(--primary-color); color: white;
+    padding: 14px 24px; border-radius: 30px;
+    cursor: pointer; font-size: 15px; font-weight: 600;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 10px 30px rgba(40,125,250,0.4);
+    z-index: 1000; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.device-toggle-btn:hover { background: #1b65d6; transform: translateY(-3px) scale(1.02); }
+
+.app-container {
+    width: 1200px; height: 640px;
+    background: linear-gradient(135deg, #0f1419 0%, #11161f 100%);
+    display: flex; position: relative;
+    box-shadow: 0 0 60px rgba(0,0,0,0.8);
+    border-radius: var(--window-radius);
+    overflow: hidden; z-index: 1;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.sidebar { width: 80px; background: rgba(20, 25, 35, 0.8); backdrop-filter: blur(20px); border-right: 1px solid var(--card-border); display: flex; flex-direction: column; align-items: center; padding-top: 15px; flex-shrink: 0; z-index: 20; transition: all 0.3s ease; }
+.window-controls { display: flex; gap: 8px; margin-bottom: 30px; }
+.win-dot { width: 12px; height: 12px; border-radius: 50%; }
+.dot-red { background: #FF5F56; } .dot-yellow { background: #FFBD2E; } .dot-green { background: #27C93F; }
+.nav-group { display: flex; flex-direction: column; gap: 20px; width: 100%; align-items: center; }
+.nav-item { cursor: pointer; color: #666; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.nav-item.active { width: 64px; height: 64px; background: rgba(255, 255, 255, 0.12); border-radius: 14px; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+.nav-item:not(.active) { width: 40px; height: 40px; color: #888; }
+.nav-item:not(.active):hover { color: white; }
+.nav-item:not(.active) .nav-text { display: none; }
+.nav-icon { font-size: 20px; }
+.nav-item.active .nav-icon { font-size: 24px; margin-bottom: 4px; }
+.nav-text { font-size: 11px; font-weight: 500; }
+
+.main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; z-index: 10; }
+
+/* 设置全屏层 */
+.settings-overlay {
+    position: absolute; inset: 0; background: rgba(15, 20, 25, 0.98);
+    backdrop-filter: blur(10px); z-index: 100; display: flex; flex-direction: column; overflow: hidden;
+}
+.settings-layout { display: flex; height: 100%; position: relative; }
+
+.settings-nav-col { width: 320px; border-right: 1px solid var(--card-border); padding: 30px 20px; display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; transition: all 0.3s ease; }
+.settings-nav-col::-webkit-scrollbar { display: none; }
+.settings-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; font-size: 20px; font-weight: 700; cursor: pointer; color: white; padding-left: 4px; }
+
+.nav-group-box { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
+.s-nav-item { padding: 14px 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: 0.2s; border-radius: 12px; }
+.s-nav-item:hover { background: rgba(255,255,255,0.05); }
+.s-nav-item.active { background: rgba(255,255,255,0.1); }
+.nav-left { display: flex; align-items: center; gap: 12px; font-size: 15px; color: #ddd; }
+.nav-left i { width: 20px; text-align: center; color: #888; font-size: 16px; }
+.s-nav-item.active .nav-left i { color: #fff; }
+.nav-badge { background: #ff4d4f; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: 8px; }
+
+.desktop-back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--primary-color); font-size: 15px; font-weight: 500; cursor: pointer; margin-bottom: 20px; transition: 0.2s; }
+.desktop-back-btn:hover { color: #5aa1ff; }
+
+.settings-content-col { flex: 1; padding: 30px 60px; overflow-y: auto; display: flex; flex-direction: column; transition: transform 0.3s ease, background 0.3s ease; position: relative; }
+.settings-content-col::-webkit-scrollbar { display: none; }
+.mobile-back-header { display: none; align-items: center; gap: 12px; font-size: 18px; font-weight: 600; color: white; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
+
+.s-section-title { font-size: 15px; color: #aaa; margin-bottom: 12px; padding-left: 4px; }
+.setting-detail-card { background: rgba(255,255,255,0.03); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 30px; }
+.s-row { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
+.s-row:last-child { border-bottom: none; }
+.s-label { font-size: 15px; color: #eee; font-weight: 500; }
+.s-value { font-size: 14px; color: #888; display: flex; align-items: center; gap: 10px; }
+
+.desktop-content-title { }
+
+/* PC引擎 版本头部区 */
+.engine-header { display: flex; align-items: center; justify-content: space-between; padding: 24px 20px; background: rgba(255,255,255,0.03); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 30px; }
+.engine-header-left { display: flex; flex-direction: column; gap: 6px; }
+.engine-version { font-size: 20px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.engine-size { font-size: 13px; color: #666; }
+.engine-status { font-size: 12px; color: #52c41a; }
+.engine-status.has-update { color: #fa8c16; }
+.update-btn { padding: 10px 28px; background: var(--primary-color); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.update-btn:hover { background: #1b65d6; }
+.update-btn.disabled { background: #333; color: #666; cursor: default; }
+
+/* 组件列表行 */
+.component-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.component-row:last-child { border-bottom: none; }
+.comp-name { font-size: 14px; color: #ddd; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.comp-info { display: flex; align-items: center; gap: 12px; }
+.comp-version { font-size: 13px; color: #888; }
+.comp-size { font-size: 12px; color: #555; }
+.comp-update-tag { background: #ff4d4f; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+.component-row.clickable { cursor: pointer; transition: 0.2s; }
+.component-row.clickable:hover { background: rgba(255,255,255,0.04); }
+
+/* 底部危险按钮 */
+.danger-btn { width: 100%; padding: 16px; background: rgba(255,77,79,0.08); border: 1px solid rgba(255,77,79,0.2); border-radius: 12px; text-align: center; font-size: 15px; font-weight: 500; color: #ff4d4f; cursor: pointer; transition: 0.2s; }
+.danger-btn:hover { background: rgba(255,77,79,0.15); }
+
+/* 居中更新弹窗 */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal-box { width: 380px; background: #1a2030; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); padding: 32px 28px; text-align: center; animation: modalIn 0.25s ease; }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+.modal-icon { width: 56px; height: 56px; background: rgba(40,125,250,0.12); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 24px; color: var(--primary-color); }
+.modal-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.modal-desc { font-size: 14px; color: #888; margin-bottom: 6px; line-height: 1.5; }
+.modal-version { font-size: 13px; color: #aaa; margin-bottom: 24px; }
+.modal-version .new-ver { color: var(--primary-color); font-weight: 600; }
+.modal-btns { display: flex; flex-direction: column; gap: 10px; }
+.modal-btn-primary { padding: 14px; background: var(--primary-color); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.modal-btn-primary:hover { background: #1b65d6; }
+.modal-btn-ghost { padding: 14px; background: transparent; color: #888; border: none; font-size: 14px; cursor: pointer; transition: 0.2s; }
+.modal-btn-ghost:hover { color: #ccc; }
+
+/* 竖屏模式 */
+.app-container.mobile-mode {
+    width: 390px; height: 844px;
+    border-radius: 40px; border: 12px solid #1a1a24;
+    box-shadow: 0 0 40px rgba(0,0,0,0.6);
+    flex-direction: column;
+}
+.app-container.mobile-mode .sidebar { width: 100%; height: 60px; flex-direction: row; padding: 0; border-right: none; border-bottom: 1px solid var(--card-border); z-index: 30; }
+.app-container.mobile-mode .window-controls { display: none; }
+.app-container.mobile-mode .nav-group { flex-direction: row; justify-content: space-around; width: 100%; gap: 0; }
+.app-container.mobile-mode .nav-item.active { background: transparent; box-shadow: none; width: auto; height: auto; color: var(--primary-color); }
+
+.app-container.mobile-mode .settings-nav-col { width: 100%; border-right: none; }
+.app-container.mobile-mode .settings-content-col {
+    position: absolute; top: 0; left: 100%; width: 100%; height: 100%;
+    background: #0f1419; z-index: 50; padding: 20px 20px;
+}
+.app-container.mobile-mode .settings-content-col.active-mobile { transform: translateX(-100%); }
+.app-container.mobile-mode .mobile-back-header { display: flex; }
+.app-container.mobile-mode .desktop-content-title { display: none; }
+.app-container.mobile-mode .desktop-back-btn { display: none; }
+.app-container.mobile-mode .setting-detail-card { margin-bottom: 20px; }
+.app-container.mobile-mode .engine-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+.app-container.mobile-mode .update-btn { width: 100%; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="device-toggle-btn" onclick="toggleDeviceMode()">
+    <i class="fas fa-mobile-alt"></i> <span>切到竖屏模式</span>
+</div>
+
+<div class="app-container" id="app">
+    <div class="sidebar">
+        <div class="window-controls">
+            <div class="win-dot dot-red"></div><div class="win-dot dot-yellow"></div><div class="win-dot dot-green"></div>
+        </div>
+        <div class="nav-group">
+            <div class="nav-item"><i class="fas fa-gamepad nav-icon"></i><span class="nav-text">游戏库</span></div>
+            <div class="nav-item"><i class="fas fa-bolt nav-icon"></i><span class="nav-text">玩游戏</span></div>
+            <div class="nav-item"><i class="fas fa-compass nav-icon"></i><span class="nav-text">探索</span></div>
+            <div class="nav-item active"><i class="far fa-user nav-icon"></i><span class="nav-text">我的</span></div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="settings-overlay">
+            <div class="settings-layout">
+                <div class="settings-nav-col">
+                    <div class="settings-header"><i class="fas fa-chevron-left"></i> 设置</div>
+                    <div class="nav-group-box">
+                        <div class="s-nav-item" onclick="openSettingTab('account', this)"><div class="nav-left"><i class="far fa-user"></i> 账号管理</div><div class="nav-right"><i class="fas fa-chevron-right"></i></div></div>
+                        <div class="s-nav-item" onclick="openSettingTab('device', this)"><div class="nav-left"><i class="fas fa-gamepad"></i> 外设管理</div><div class="nav-right"><i class="fas fa-chevron-right"></i></div></div>
+                        <div class="s-nav-item" onclick="openSettingTab('mode', this)"><div class="nav-left"><i class="fas fa-mobile-screen"></i> 模式切换</div><div class="nav-right"><i class="fas fa-chevron-right"></i></div></div>
+                        <div class="s-nav-item" onclick="openSettingTab('lang', this)"><div class="nav-left"><i class="fas fa-globe"></i> 多语言</div><div class="nav-right"><i class="fas fa-chevron-right"></i></div></div>
+                        <div class="s-nav-item" onclick="openSettingTab('exchange', this)"><div class="nav-left"><i class="fas fa-gift"></i> 兑换中心</div><div class="nav-right"><i class="fas fa-chevron-right"></i></div></div>
+                    </div>
+                    <div class="nav-group-box">
+                        <div class="s-nav-item" onclick="openSettingTab('notify', this)"><div class="nav-left"><i class="far fa-bell"></i> 通知</div><div class="nav-right"><i class="fas fa-chevron-right"></i></div></div>
+                        <div class="s-nav-item" onclick="openSettingTab('sound', this)"><div class="nav-left"><i class="fas fa-volume-up"></i> 按键音</div><div class="nav-right"><i class="fas fa-chevron-right"></i></div></div>
+                        <div class="s-nav-item" onclick="openSettingTab('privacy', this)"><div class="nav-left"><i class="fas fa-shield-alt"></i> 隐私设置</div><div class="nav-right"><i class="fas fa-chevron-right"></i></div></div>
+                        <div class="s-nav-item active" onclick="openSettingTab('pcengine', this)"><div class="nav-left"><i class="fas fa-microchip"></i> PC引擎文件</div><div class="nav-right"><span class="nav-badge" id="engine-badge">New</span><i class="fas fa-chevron-right"></i></div></div>
+                        <div class="s-nav-item" onclick="openSettingTab('storage', this)"><div class="nav-left"><i class="fas fa-hdd"></i> 存储管理</div><div class="nav-right"><i class="fas fa-chevron-right"></i></div></div>
+                    </div>
+                    <div class="nav-group-box">
+                        <div class="s-nav-item" onclick="openSettingTab('help', this)"><div class="nav-left"><i class="far fa-comment-dots"></i> 帮助</div><div class="nav-right"><i class="fas fa-chevron-right"></i></div></div>
+                        <div class="s-nav-item" onclick="openSettingTab('about', this)"><div class="nav-left"><i class="far fa-compass"></i> 关于</div><div class="nav-right"><i class="fas fa-chevron-right"></i></div></div>
+                    </div>
+                </div>
+
+                <div class="settings-content-col" id="settings-content-area">
+                    <div class="mobile-back-header" onclick="handleMobileBack()">
+                        <i class="fas fa-chevron-left"></i> <span id="mobile-title">PC引擎文件</span>
+                    </div>
+
+                    <!-- PC引擎文件面板 -->
+                    <div id="panel-pcengine" class="settings-section">
+                        <div class="s-section-title desktop-content-title">PC引擎文件</div>
+                        <div class="engine-header">
+                            <div class="engine-header-left">
+                                <div class="engine-version">PC引擎固件 v1.4.2 <span class="engine-status has-update" id="engine-status">有新版本可用</span></div>
+                                <div class="engine-size">总大小 385.6 MB</div>
+                            </div>
+                            <button class="update-btn" id="update-btn" onclick="showUpdateModal()">更新</button>
+                        </div>
+
+                        <div class="s-section-title">组件明细</div>
+                        <div class="setting-detail-card">
+                            <div class="component-row clickable" onclick="openComponentDetail('firmware')">
+                                <div class="comp-name">Firmware（固件）<span class="comp-update-tag">更新</span></div>
+                                <div class="comp-info"><span class="comp-version">v1.4.2</span><span class="comp-size">165.0 MB</span><i class="fas fa-chevron-right" style="color:#555;font-size:12px;"></i></div>
+                            </div>
+                            <div class="component-row clickable" onclick="openComponentDetail('compat')">
+                                <div class="comp-name">兼容层<span class="comp-update-tag">更新</span></div>
+                                <div class="comp-info"><span class="comp-version">v8.21</span><span class="comp-size">82.3 MB</span><i class="fas fa-chevron-right" style="color:#555;font-size:12px;"></i></div>
+                            </div>
+                            <div class="component-row clickable" onclick="openComponentDetail('translator')">
+                                <div class="comp-name">转译器</div>
+                                <div class="comp-info"><span class="comp-version">v3.1.0</span><span class="comp-size">45.7 MB</span><i class="fas fa-chevron-right" style="color:#555;font-size:12px;"></i></div>
+                            </div>
+                            <div class="component-row clickable" onclick="openComponentDetail('gpu')">
+                                <div class="comp-name">GPU驱动</div>
+                                <div class="comp-info"><span class="comp-version">v535.104</span><span class="comp-size">56.2 MB</span><i class="fas fa-chevron-right" style="color:#555;font-size:12px;"></i></div>
+                            </div>
+                            <div class="component-row clickable" onclick="openComponentDetail('dxvk')">
+                                <div class="comp-name">DXVK</div>
+                                <div class="comp-info"><span class="comp-version">v2.3.1</span><span class="comp-size">18.8 MB</span><i class="fas fa-chevron-right" style="color:#555;font-size:12px;"></i></div>
+                            </div>
+                            <div class="component-row clickable" onclick="openComponentDetail('vkd3d')">
+                                <div class="comp-name">VKD3D</div>
+                                <div class="comp-info"><span class="comp-version">v2.11</span><span class="comp-size">17.6 MB</span><i class="fas fa-chevron-right" style="color:#555;font-size:12px;"></i></div>
+                            </div>
+                        </div>
+
+                        <div class="danger-btn" onclick="confirmClearData()">完全清除PC模拟器数据</div>
+                    </div>
+
+                    <!-- 其他占位面板 -->
+                    <div id="panel-account" class="settings-section" style="display:none;"><div class="s-section-title desktop-content-title">账号管理</div><div style="color:#666;padding:20px;">账号管理内容...</div></div>
+
+                    <!-- 组件详情三级页面 -->
+                    <div id="panel-component-detail" class="settings-section" style="display:none;">
+                        <div class="desktop-back-btn" onclick="openSettingTab('pcengine', null)"><i class="fas fa-chevron-left"></i> 返回PC引擎文件</div>
+                        <div class="s-section-title desktop-content-title" id="comp-detail-title" style="font-size:18px;color:#fff;margin-bottom:20px;">Firmware（固件）</div>
+                        <div class="setting-detail-card">
+                            <div class="s-row"><div class="s-label">当前版本</div><div class="s-value" id="comp-detail-version">v1.4.2 <span class="comp-update-tag" id="comp-detail-tag" style="display:none;">更新</span></div></div>
+                            <div class="s-row"><div class="s-label">文件大小</div><div class="s-value" id="comp-detail-size">165.0 MB</div></div>
+                        </div>
+                    </div>
+                    <div id="panel-device" class="settings-section" style="display:none;"><div class="s-section-title desktop-content-title">外设管理</div><div style="color:#666;padding:20px;">外设内容...</div></div>
+                    <div id="panel-mode" class="settings-section" style="display:none;"><div class="s-section-title desktop-content-title">模式切换</div><div style="color:#666;padding:20px;">模式...</div></div>
+                    <div id="panel-lang" class="settings-section" style="display:none;"><div class="s-section-title desktop-content-title">多语言</div><div style="color:#666;padding:20px;">语言...</div></div>
+                    <div id="panel-exchange" class="settings-section" style="display:none;"><div class="s-section-title desktop-content-title">兑换中心</div><div style="color:#666;padding:20px;">兑换码...</div></div>
+                    <div id="panel-notify" class="settings-section" style="display:none;"><div class="s-section-title desktop-content-title">通知</div><div style="color:#666;padding:20px;">推送...</div></div>
+                    <div id="panel-sound" class="settings-section" style="display:none;"><div class="s-section-title desktop-content-title">按键音</div><div style="color:#666;padding:20px;">音效...</div></div>
+                    <div id="panel-privacy" class="settings-section" style="display:none;"><div class="s-section-title desktop-content-title">隐私设置</div><div style="color:#666;padding:20px;">隐私...</div></div>
+                    <div id="panel-storage" class="settings-section" style="display:none;"><div class="s-section-title desktop-content-title">存储管理</div><div style="color:#666;padding:20px;">存储...</div></div>
+                    <div id="panel-help" class="settings-section" style="display:none;"><div class="s-section-title desktop-content-title">帮助</div><div style="color:#666;padding:20px;">FAQ...</div></div>
+                    <div id="panel-about" class="settings-section" style="display:none;"><div class="s-section-title desktop-content-title">关于</div><div style="color:#666;padding:20px;">关于...</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 居中更新弹窗 -->
+<div class="modal-overlay" id="update-modal">
+    <div class="modal-box">
+        <div class="modal-icon"><i class="fas fa-microchip"></i></div>
+        <div class="modal-title">PC引擎下载提示</div>
+        <div class="modal-desc">检测到新版本，建议更新PC引擎</div>
+        <div class="modal-version">
+            <span class="new-ver">v1.5.0</span> · 总大小 402.1 MB
+        </div>
+        <div class="modal-btns">
+            <button class="modal-btn-primary" onclick="doUpdate()">更新</button>
+            <button class="modal-btn-ghost" onclick="closeUpdateModal()">取消</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let navDepth = 1;
+let currentParentTab = 'pcengine';
+let parentTitle = 'PC引擎文件';
+
+function toggleDeviceMode() {
+    const app = document.getElementById('app');
+    const btnText = document.querySelector('.device-toggle-btn span');
+    const btnIcon = document.querySelector('.device-toggle-btn i');
+    app.classList.toggle('mobile-mode');
+    if (app.classList.contains('mobile-mode')) {
+        btnText.innerText = '切回PC横屏';
+        btnIcon.className = 'fas fa-desktop';
+        if (navDepth > 0) {
+            document.getElementById('settings-content-area').classList.add('active-mobile');
+        }
+    } else {
+        btnText.innerText = '切到竖屏模式';
+        btnIcon.className = 'fas fa-mobile-alt';
+        document.getElementById('settings-content-area').classList.remove('active-mobile');
+    }
+}
+
+function openSettingTab(tabId, element) {
+    navDepth = 1;
+    currentParentTab = tabId;
+    if (element) {
+        document.querySelectorAll('.s-nav-item').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+        parentTitle = element.querySelector('.nav-left').innerText.trim();
+    }
+    document.querySelectorAll('.settings-section').forEach(el => el.style.display = 'none');
+    document.getElementById('panel-' + tabId).style.display = 'block';
+    document.getElementById('mobile-title').innerText = parentTitle;
+    if (document.getElementById('app').classList.contains('mobile-mode')) {
+        document.getElementById('settings-content-area').classList.add('active-mobile');
+    }
+}
+
+function handleMobileBack() {
+    if (navDepth === 2) {
+        openSettingTab(currentParentTab, null);
+    } else {
+        navDepth = 0;
+        document.getElementById('settings-content-area').classList.remove('active-mobile');
+    }
+}
+
+function showUpdateModal() {
+    document.getElementById('update-modal').classList.add('show');
+}
+
+function closeUpdateModal() {
+    document.getElementById('update-modal').classList.remove('show');
+}
+
+function doUpdate() {
+    closeUpdateModal();
+    const btn = document.getElementById('update-btn');
+    btn.innerText = '更新中...';
+    btn.classList.add('disabled');
+    btn.onclick = null;
+
+    setTimeout(() => {
+        btn.innerText = '已是最新';
+        var status = document.getElementById('engine-status');
+        if (status) status.style.display = 'none';
+        var badge = document.getElementById('engine-badge');
+        if (badge) badge.style.display = 'none';
+        document.querySelector('.engine-version').childNodes[0].textContent = 'PC引擎固件 v1.5.0 ';
+    }, 2500);
+}
+
+function confirmClearData() {
+    if (confirm('确定要完全清除PC模拟器数据吗？此操作不可恢复。')) {
+        alert('已清除全部PC模拟器数据');
+    }
+}
+
+const componentData = {
+    firmware: { name: 'Firmware（固件）', version: 'v1.4.2', size: '165.0 MB', hasUpdate: true },
+    compat: { name: '兼容层', version: 'v8.21', size: '82.3 MB', hasUpdate: true },
+    translator: { name: '转译器', version: 'v3.1.0', size: '45.7 MB', hasUpdate: false },
+    gpu: { name: 'GPU驱动', version: 'v535.104', size: '56.2 MB', hasUpdate: false },
+    dxvk: { name: 'DXVK', version: 'v2.3.1', size: '18.8 MB', hasUpdate: false },
+    vkd3d: { name: 'VKD3D', version: 'v2.11', size: '17.6 MB', hasUpdate: false }
+};
+
+function openComponentDetail(compId) {
+    navDepth = 2;
+    const comp = componentData[compId];
+    document.querySelectorAll('.settings-section').forEach(el => el.style.display = 'none');
+    document.getElementById('panel-component-detail').style.display = 'block';
+    document.getElementById('comp-detail-title').innerText = comp.name;
+    document.getElementById('comp-detail-version').innerHTML = comp.version + (comp.hasUpdate ? ' <span class="comp-update-tag">更新</span>' : '');
+    document.getElementById('comp-detail-size').innerText = comp.size;
+    document.getElementById('mobile-title').innerText = comp.name;
+}
+</script>
+</body>
+</html>
