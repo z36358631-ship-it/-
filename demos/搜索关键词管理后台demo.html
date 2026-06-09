@@ -103,16 +103,12 @@
 
             <div style="margin-bottom:14px">
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-                    <input v-model="searchKw" placeholder="搜索词/命中词" style="width:120px;height:28px;border:1px solid #dcdfe6;border-radius:4px;padding:0 8px;font-size:12px;outline:none;" />
-                    <select v-model="filterType" style="width:90px;height:28px;border:1px solid #dcdfe6;border-radius:4px;padding:0 4px;font-size:12px;color:#606266;">
-                        <option value="">类型</option>
-                        <option value="简称">简称</option>
-                        <option value="俗称">俗称/黑话</option>
-                        <option value="拼音">拼音/缩写</option>
-                        <option value="错别字">错别字</option>
-                        <option value="IP">角色/IP</option>
+                    <input v-model="searchKw" placeholder="搜索词/修正词" style="width:120px;height:28px;border:1px solid #dcdfe6;border-radius:4px;padding:0 8px;font-size:12px;outline:none;" />
+                    <select v-model="filterGame" style="width:120px;height:28px;border:1px solid #dcdfe6;border-radius:4px;padding:0 4px;font-size:12px;color:#606266;">
+                        <option value="">命中游戏</option>
+                        <option value="empty">命中游戏为空</option>
+                        <option value="notempty">命中游戏非空</option>
                     </select>
-                    <input v-model="filterGame" placeholder="关联游戏" style="width:100px;height:28px;border:1px solid #dcdfe6;border-radius:4px;padding:0 8px;font-size:12px;outline:none;" />
                     <input v-model="filterOperator" placeholder="审核人" style="width:80px;height:28px;border:1px solid #dcdfe6;border-radius:4px;padding:0 8px;font-size:12px;outline:none;" />
                     <span style="font-size:12px;color:#606266;">时间:</span>
                     <span class="time-shortcut" :class="{active:timeShortcut==='yesterday'}" @click="setTimeShortcut('yesterday')">昨日</span>
@@ -127,6 +123,7 @@
                 <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
                     <el-button size="small" type="success" :disabled="selectedRows.length===0" @click="batchApprove">批量通过</el-button>
                     <el-button size="small" :disabled="selectedRows.length===0" @click="batchIgnore">批量忽略</el-button>
+                    <el-button size="small" type="danger" :disabled="selectedRows.length===0" @click="batchDelete">批量删除</el-button>
                     <el-button size="small" type="primary" @click="showImport=true"><i class="fas fa-file-import" style="margin-right:4px"></i>批量导入</el-button>
                     <el-button size="small" @click="showAdd=true"><i class="fas fa-plus" style="margin-right:4px"></i>新增关键词</el-button>
                     <span v-if="selectedRows.length" style="font-size:11px;color:#909399">已选{{selectedRows.length}}项</span>
@@ -138,9 +135,8 @@
                 <thead><tr>
                     <th style="width:36px"><input type="checkbox" @change="toggleAll($event)" /></th>
                     <th>搜索词</th>
-                    <th>推荐命中词</th>
-                    <th>命中词类型</th>
-                    <th>推荐关联游戏</th>
+                    <th>修正后搜索词</th>
+                    <th>命中游戏列表</th>
                     <th class="sortable" @click="toggleSort('searchCount')">搜索次数 <i class="fas fa-sort sort-icon" :class="{active:sortKey==='searchCount'}"></i></th>
                     <th class="sortable" @click="toggleSort('searchUsers')">搜索人数 <i class="fas fa-sort sort-icon" :class="{active:sortKey==='searchUsers'}"></i></th>
                     <th>处理状态</th>
@@ -153,8 +149,7 @@
                         <td><input type="checkbox" v-model="row._checked" @change="updateSelection" /></td>
                         <td>{{row.rawKeyword}}</td>
                         <td>{{row.keyword}}</td>
-                        <td><el-tag size="small" :type="tagType(row.type)" v-if="row.type">{{row.type}}</el-tag><span v-else style="color:#ccc">—</span></td>
-                        <td>{{row.aiGame||'—'}}</td>
+                        <td>{{row.hitGames||'—'}}</td>
                         <td>{{row.searchCount}}</td>
                         <td>{{row.searchUsers}}</td>
                         <td><el-tag size="small" :type="statusType(row.status)">{{statusLabel(row.status)}}</el-tag></td>
@@ -179,7 +174,7 @@
 
     <!-- Import Dialog -->
     <el-dialog v-model="showImport" title="批量导入关键词" width="480px">
-        <p style="margin-bottom:14px;color:#606266;font-size:13px">支持 Excel / CSV，模板字段：游戏ID、游戏名称、关键词（多个用英文逗号分隔）</p>
+        <p style="margin-bottom:14px;color:#606266;font-size:13px">支持 Excel / CSV，模板字段：搜索词、修正后搜索词</p>
         <el-upload drag action="#" :auto-upload="false">
             <i class="fas fa-cloud-upload-alt" style="font-size:28px;color:#909399;margin-bottom:6px"></i>
             <div style="color:#606266;font-size:13px">拖拽文件到此处，或<span style="color:var(--el-color-primary)">点击上传</span></div>
@@ -196,21 +191,8 @@
             <el-form-item label="搜索词" required>
                 <el-input v-model="addForm.rawKeyword" placeholder="用户实际输入的搜索词" />
             </el-form-item>
-            <el-form-item label="推荐命中词" required>
-                <el-input v-model="addForm.keyword" placeholder="纠正/归一后的命中词" />
-            </el-form-item>
-            <el-form-item label="关联游戏ID" required>
-                <el-input v-model="addForm.gameId" placeholder="游戏ID" />
-            </el-form-item>
-            <el-form-item label="游戏名称">
-                <el-input v-model="addForm.gameName" placeholder="选填，人工确认用" />
-            </el-form-item>
-            <el-form-item label="命中词类型">
-                <el-select v-model="addForm.type" placeholder="选择" style="width:100%">
-                    <el-option label="简称" value="简称" /><el-option label="俗称/黑话" value="俗称" />
-                    <el-option label="拼音/缩写" value="拼音" /><el-option label="错别字" value="错别字" />
-                    <el-option label="角色/IP" value="IP" />
-                </el-select>
+            <el-form-item label="修正后搜索词" required>
+                <el-input v-model="addForm.keyword" placeholder="纠正/归一后的搜索词" />
             </el-form-item>
         </el-form>
         <template #footer>
@@ -225,18 +207,11 @@
             <el-form-item label="搜索词">
                 <el-input v-model="editForm.rawKeyword" disabled />
             </el-form-item>
-            <el-form-item label="推荐命中词">
+            <el-form-item label="修正后搜索词">
                 <el-input v-model="editForm.keyword" />
             </el-form-item>
-            <el-form-item label="推荐关联游戏">
-                <el-input v-model="editForm.aiGame" placeholder="人工填写或修改匹配游戏" />
-            </el-form-item>
-            <el-form-item label="命中词类型">
-                <el-select v-model="editForm.type" placeholder="选择" style="width:100%">
-                    <el-option label="简称" value="简称" /><el-option label="俗称/黑话" value="俗称" />
-                    <el-option label="拼音/缩写" value="拼音" /><el-option label="错别字" value="错别字" />
-                    <el-option label="角色/IP" value="IP" />
-                </el-select>
+            <el-form-item label="命中游戏列表">
+                <el-input v-model="editForm.hitGames" placeholder="前3个游戏中文名，逗号分隔" />
             </el-form-item>
         </el-form>
         <template #footer>
@@ -254,7 +229,6 @@ const app = createApp({
     setup(){
         const activeTab = ref('all');
         const searchKw = ref('');
-        const filterType = ref('');
         const filterGame = ref('');
         const filterOperator = ref('');
         const dateStart = ref('');
@@ -266,24 +240,25 @@ const app = createApp({
         const selectedRows = ref([]);
         const sortKey = ref('');
         const sortDir = ref('desc');
-        const editForm = ref({rawKeyword:'',keyword:'',aiGame:'',type:''});
-        const addForm = ref({rawKeyword:'',keyword:'',gameId:'',gameName:'',type:''});
+        const editForm = ref({rawKeyword:'',keyword:'',hitGames:''});
+        const addForm = ref({rawKeyword:'',keyword:''});
         const editingRow = ref(null);
 
         const stats = ref({totalKeywords:1286,manualCount:834,aiCount:452,hitCount:38720,hitRate:12.6,hitGrowth:18,clickCount:9453,clickRate:8.3,clickGrowth:23});
 
         const keywords = ref([
-            {rawKeyword:'王者',keyword:'王者',aiGame:'王者荣耀（高）',type:'简称',searchCount:5820,searchUsers:3240,status:'active',operator:'张三',updateTime:'2025-06-07 14:30'},
-            {rawKeyword:'吃鸡',keyword:'吃鸡',aiGame:'和平精英（高）',type:'俗称',searchCount:4930,searchUsers:2870,status:'active',operator:'张三',updateTime:'2025-06-07 14:28'},
-            {rawKeyword:'WZRY',keyword:'wzry',aiGame:'王者荣耀（高）',type:'拼音',searchCount:2680,searchUsers:1560,status:'active',operator:'AI',updateTime:'2025-06-06 09:00'},
-            {rawKeyword:'农药',keyword:'农药',aiGame:'王者荣耀（高）',type:'俗称',searchCount:2410,searchUsers:1380,status:'active',operator:'AI',updateTime:'2025-06-06 09:00'},
-            {rawKeyword:'黑猴子',keyword:'黑猴',aiGame:'黑神话：悟空（高）/黑神话：钟馗（中）',type:'俗称',searchCount:1880,searchUsers:1050,status:'ai_pending',operator:'',updateTime:''},
-            {rawKeyword:'和平经英',keyword:'和平精英',aiGame:'和平精英（高）',type:'错别字',searchCount:1280,searchUsers:760,status:'pending',operator:'',updateTime:''},
-            {rawKeyword:'鸣人 游戏',keyword:'鸣人',aiGame:'火影忍者（中）',type:'IP',searchCount:820,searchUsers:490,status:'ai_pending',operator:'',updateTime:''},
-            {rawKeyword:'赛博朋克',keyword:'赛博朋克',aiGame:'',type:'',searchCount:380,searchUsers:210,status:'ai_pending',operator:'',updateTime:''},
-            {rawKeyword:'LOL',keyword:'lol',aiGame:'英雄联盟（高）',type:'拼音',searchCount:750,searchUsers:430,status:'active',operator:'李四',updateTime:'2025-06-05 16:00'},
-            {rawKeyword:'test',keyword:'test',aiGame:'',type:'无效',searchCount:310,searchUsers:180,status:'ignored',operator:'AI',updateTime:'2025-06-07 09:00'},
-            {rawKeyword:'乱码asd',keyword:'乱码asd',aiGame:'',type:'无效',searchCount:150,searchUsers:85,status:'ignored',operator:'AI',updateTime:'2025-06-07 09:00'},
+            {rawKeyword:'王者',keyword:'王者',hitGames:'王者荣耀、王者荣耀：世界、王者万象棋',searchCount:5820,searchUsers:3240,status:'active',operator:'张三',updateTime:'2025-06-07 14:30'},
+            {rawKeyword:'吃鸡',keyword:'吃鸡',hitGames:'和平精英、绝地求生、香肠派对',searchCount:4930,searchUsers:2870,status:'active',operator:'张三',updateTime:'2025-06-07 14:28'},
+            {rawKeyword:'WZRY',keyword:'wzry',hitGames:'王者荣耀、王者荣耀：世界',searchCount:2680,searchUsers:1560,status:'active',operator:'AI',updateTime:'2025-06-06 09:00'},
+            {rawKeyword:'农药',keyword:'农药',hitGames:'王者荣耀',searchCount:2410,searchUsers:1380,status:'active',operator:'AI',updateTime:'2025-06-06 09:00'},
+            {rawKeyword:'黑猴子',keyword:'黑猴',hitGames:'黑神话：悟空、黑神话：钟馗',searchCount:1880,searchUsers:1050,status:'ai_pending',operator:'',updateTime:''},
+            {rawKeyword:'和平经英',keyword:'和平精英',hitGames:'和平精英',searchCount:1280,searchUsers:760,status:'pending',operator:'',updateTime:''},
+            {rawKeyword:'鸣人 游戏',keyword:'鸣人',hitGames:'火影忍者',searchCount:820,searchUsers:490,status:'ai_pending',operator:'',updateTime:''},
+            {rawKeyword:'赛博朋克',keyword:'赛博朋克',hitGames:'',searchCount:380,searchUsers:210,status:'ai_pending',operator:'',updateTime:''},
+            {rawKeyword:'LOL',keyword:'lol',hitGames:'英雄联盟、金铲铲之战',searchCount:750,searchUsers:430,status:'active',operator:'李四',updateTime:'2025-06-05 16:00'},
+            {rawKeyword:'好玩的',keyword:'好玩的',hitGames:'',searchCount:520,searchUsers:310,status:'pending',operator:'',updateTime:''},
+            {rawKeyword:'test',keyword:'test',hitGames:'',searchCount:310,searchUsers:180,status:'ignored',operator:'AI',updateTime:'2025-06-07 09:00'},
+            {rawKeyword:'乱码asd',keyword:'乱码asd',hitGames:'',searchCount:150,searchUsers:85,status:'ignored',operator:'AI',updateTime:'2025-06-07 09:00'},
         ]);
 
         const filteredList = computed(()=>{
@@ -292,8 +267,8 @@ const app = createApp({
                 if(activeTab.value==='active'&&k.status!=='active') return false;
                 if(activeTab.value==='ignored'&&k.status!=='ignored') return false;
                 if(searchKw.value&&!k.keyword.includes(searchKw.value)&&!k.rawKeyword.includes(searchKw.value)) return false;
-                if(filterType.value&&k.type!==filterType.value) return false;
-                if(filterGame.value&&!(k.aiGame&&k.aiGame.includes(filterGame.value))) return false;
+                if(filterGame.value==='empty'&&k.hitGames) return false;
+                if(filterGame.value==='notempty'&&!k.hitGames) return false;
                 if(filterOperator.value&&!(k.operator&&k.operator.includes(filterOperator.value))) return false;
                 return true;
             });
@@ -315,10 +290,10 @@ const app = createApp({
         function statusType(s){return{active:'success',pending:'warning',ai_pending:'',ignored:'info'}[s]||'';}
         function statusLabel(s){return{active:'已通过',pending:'待审核',ai_pending:'待AI分析',ignored:'已忽略'}[s]||s;}
 
-        function handleEdit(row){editingRow.value=row;editForm.value={rawKeyword:row.rawKeyword,keyword:row.keyword,aiGame:row.aiGame||'',type:row.type||''};showEdit.value=true;}
-        function saveEdit(){if(editingRow.value){Object.assign(editingRow.value,{keyword:editForm.value.keyword,aiGame:editForm.value.aiGame,type:editForm.value.type});}showEdit.value=false;ElMessage.success('保存成功');}
+        function handleEdit(row){editingRow.value=row;editForm.value={rawKeyword:row.rawKeyword,keyword:row.keyword,hitGames:row.hitGames||''};showEdit.value=true;}
+        function saveEdit(){if(editingRow.value){Object.assign(editingRow.value,{keyword:editForm.value.keyword,hitGames:editForm.value.hitGames});}showEdit.value=false;ElMessage.success('保存成功');}
         function handleApprove(row){ElMessageBox.confirm('确认通过"'+row.rawKeyword+'"→"'+(row.aiGame||'未设置')+'"？','审核',{confirmButtonText:'通过',type:'success'}).then(()=>{row.status='active';row.operator='当前运营';row.updateTime=new Date().toLocaleString('zh-CN');ElMessage.success('已通过');}).catch(()=>{});}
-        function handleModifyApprove(row){editingRow.value=row;editForm.value={rawKeyword:row.rawKeyword,keyword:row.keyword,aiGame:row.aiGame||'',type:row.type||''};showEdit.value=true;ElMessage.info('修改后点击保存完成审核');}
+        function handleModifyApprove(row){editingRow.value=row;editForm.value={rawKeyword:row.rawKeyword,keyword:row.keyword,hitGames:row.hitGames||''};showEdit.value=true;ElMessage.info('修改后点击保存完成审核');}
         function handleIgnore(row){ElMessageBox.confirm('忽略"'+row.rawKeyword+'"？将清空搜索次数，不再进入审核。','忽略确认',{confirmButtonText:'确认忽略',type:'warning'}).then(()=>{row.status='ignored';row.searchCount=0;row.searchUsers=0;ElMessage.success('已忽略');}).catch(()=>{});}
         function handleDelete(row){ElMessageBox.confirm('确认删除关键词"'+row.rawKeyword+'"？删除后不可恢复。','删除确认',{confirmButtonText:'确认删除',type:'error'}).then(()=>{const idx=keywords.value.indexOf(row);if(idx>-1)keywords.value.splice(idx,1);ElMessage.success('已删除');}).catch(()=>{});}
         function setTimeShortcut(type){
@@ -331,12 +306,13 @@ const app = createApp({
         function batchApprove(){const p=selectedRows.value.filter(r=>r.status==='pending'||r.status==='ai_pending');if(!p.length){ElMessage.warning('无待审核项');return;}ElMessageBox.confirm('批量通过'+p.length+'条？','批量审核',{type:'success'}).then(()=>{p.forEach(r=>{r.status='active';r.operator='当前运营';r.updateTime=new Date().toLocaleString('zh-CN');});ElMessage.success('已通过'+p.length+'项');}).catch(()=>{});}
         function batchModifyApprove(){ElMessageBox.confirm('批量修改后通过：将逐条打开编辑弹窗，是否继续？','提示',{type:'warning'}).then(()=>{const p=selectedRows.value.filter(r=>r.status==='pending'||r.status==='ai_pending');if(p.length){handleEdit(p[0]);ElMessage.info('请逐条编辑保存');}}).catch(()=>{});}
         function batchIgnore(){ElMessageBox.confirm('批量忽略'+selectedRows.value.length+'条？搜索次数将清零。','批量忽略',{type:'warning'}).then(()=>{selectedRows.value.forEach(r=>{r.status='ignored';r.searchCount=0;r.searchUsers=0;});ElMessage.success('已忽略'+selectedRows.value.length+'项');}).catch(()=>{});}
+        function batchDelete(){ElMessageBox.confirm('确认批量删除'+selectedRows.value.length+'条关键词？删除后不可恢复。','批量删除',{type:'error',confirmButtonText:'确认删除'}).then(()=>{selectedRows.value.forEach(r=>{const idx=keywords.value.indexOf(r);if(idx>-1)keywords.value.splice(idx,1);});ElMessage.success('已删除');selectedRows.value=[];}).catch(()=>{});}
         function doImport(){showImport.value=false;ElMessage.success('导入成功（demo）');}
         function doSearch(){ElMessage.success('查询完成');}
-        function doReset(){searchKw.value='';filterType.value='';filterGame.value='';filterOperator.value='';dateStart.value='';dateEnd.value='';timeShortcut.value='';ElMessage.info('已重置');}
-        function doAdd(){if(!addForm.value.rawKeyword||!addForm.value.keyword){ElMessage.warning('请填写必填项');return;}keywords.value.unshift({rawKeyword:addForm.value.rawKeyword,keyword:addForm.value.keyword,aiGame:addForm.value.gameName||'',type:addForm.value.type,searchCount:0,searchUsers:0,status:'active',operator:'当前运营',updateTime:new Date().toLocaleString('zh-CN')});showAdd.value=false;addForm.value={rawKeyword:'',keyword:'',gameId:'',gameName:'',type:''};ElMessage.success('添加成功');}
+        function doReset(){searchKw.value='';filterGame.value='';filterOperator.value='';dateStart.value='';dateEnd.value='';timeShortcut.value='';ElMessage.info('已重置');}
+        function doAdd(){if(!addForm.value.rawKeyword||!addForm.value.keyword){ElMessage.warning('请填写必填项');return;}keywords.value.unshift({rawKeyword:addForm.value.rawKeyword,keyword:addForm.value.keyword,hitGames:'',searchCount:0,searchUsers:0,status:'active',operator:'当前运营',updateTime:new Date().toLocaleString('zh-CN')});showAdd.value=false;addForm.value={rawKeyword:'',keyword:''};ElMessage.success('添加成功');}
 
-        return {activeTab,searchKw,filterType,filterGame,filterOperator,dateStart,dateEnd,timeShortcut,showImport,showAdd,showEdit,selectedRows,sortKey,sortDir,editForm,addForm,editingRow,stats,keywords,filteredList,sortedList,toggleSort,toggleAll,updateSelection,formatNum,tagType,statusType,statusLabel,handleEdit,saveEdit,handleApprove,handleModifyApprove,handleIgnore,handleDelete,setTimeShortcut,batchApprove,batchModifyApprove,batchIgnore,doImport,doSearch,doReset,doAdd};
+        return {activeTab,searchKw,filterGame,filterOperator,dateStart,dateEnd,timeShortcut,showImport,showAdd,showEdit,selectedRows,sortKey,sortDir,editForm,addForm,editingRow,stats,keywords,filteredList,sortedList,toggleSort,toggleAll,updateSelection,formatNum,statusType,statusLabel,handleEdit,saveEdit,handleApprove,handleModifyApprove,handleIgnore,handleDelete,setTimeShortcut,batchApprove,batchIgnore,batchDelete,doImport,doSearch,doReset,doAdd};
     }
 });
 app.use(ElementPlus,{locale:ElementPlusLocaleZhCn});
