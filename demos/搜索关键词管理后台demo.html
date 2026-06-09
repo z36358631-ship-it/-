@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GameSir Backend - 搜索关键词管理</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.3.8/dist/index.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/element-plus@2.3.8/dist/index.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/element-plus@2.3.8/dist/locale/zh-cn.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --el-color-primary: #409eff; --bg-color: #f0f2f5; }
+        body { margin: 0; padding: 0; background: var(--bg-color); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .sidebar { width: 160px; background: #fff; height: 100vh; border-right: 1px solid #e4e7ed; position: fixed; left: 0; top: 0; z-index: 100; }
+        .logo-area { height: 56px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #333; font-size: 15px; border-bottom: 1px solid #f0f0f0; }
+        .nav-menu { padding: 12px 0; }
+        .nav-item { padding: 11px 16px; color: #606266; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+        .nav-item:hover { background: #ecf5ff; color: var(--el-color-primary); }
+        .nav-item.active { background: #ecf5ff; color: var(--el-color-primary); font-weight: 600; border-right: 3px solid var(--el-color-primary); }
+        .main-content { margin-left: 160px; padding: 16px; min-height: 100vh; }
+        .page-header { background: #fff; padding: 14px 20px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .page-title { font-size: 17px; font-weight: 600; color: #1f2d3d; }
+        .stat-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
+        .stat-card { background: #fff; border-radius: 6px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .stat-card .label { font-size: 12px; color: #909399; margin-bottom: 6px; }
+        .stat-card .value { font-size: 24px; font-weight: 700; color: #1f2d3d; }
+        .stat-card .sub { font-size: 11px; color: #67c23a; margin-top: 4px; }
+        .table-box { background: #fff; padding: 20px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .tab-header { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 2px solid #e4e7ed; }
+        .tab-item { padding: 10px 20px; cursor: pointer; font-size: 14px; color: #606266; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+        .tab-item:hover { color: var(--el-color-primary); }
+        .tab-item.active { color: var(--el-color-primary); border-bottom-color: var(--el-color-primary); font-weight: 600; }
+        .filter-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+        .filter-bar .left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1; }
+        .filter-bar .right { display: flex; align-items: center; gap: 8px; }
+        .kw-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .kw-table th, .kw-table td { border: 1px solid #ebeef5; padding: 9px 10px; text-align: left; white-space: nowrap; }
+        .kw-table th { background: #fafafa; font-weight: 600; color: #606266; cursor: default; }
+        .kw-table th.sortable { cursor: pointer; user-select: none; }
+        .kw-table th.sortable:hover { background: #f0f2f5; }
+        .kw-table tr:hover td { background: #ecf5ff; }
+        .kw-table td { color: #303133; }
+        .sort-icon { font-size: 10px; margin-left: 3px; color: #c0c4cc; }
+        .sort-icon.active { color: var(--el-color-primary); }
+        .time-shortcut { font-size: 12px; color: #606266; padding: 4px 8px; border-radius: 3px; cursor: pointer; border: 1px solid #dcdfe6; }
+        .time-shortcut:hover { border-color: var(--el-color-primary); color: var(--el-color-primary); }
+        .time-shortcut.active { background: var(--el-color-primary); color: #fff; border-color: var(--el-color-primary); }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="sidebar">
+        <div class="logo-area">GameSir 后台</div>
+        <div class="nav-menu">
+            <div class="nav-item"><i class="fas fa-gamepad"></i> 游戏管理</div>
+            <div class="nav-item active"><i class="fas fa-search"></i> 搜索关键词</div>
+            <div class="nav-item"><i class="fas fa-chart-bar"></i> 数据统计</div>
+            <div class="nav-item"><i class="fas fa-cog"></i> 系统设置</div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <div class="page-title">游戏关键词管理</div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="stat-cards">
+            <div class="stat-card">
+                <div class="label">关键词总数</div>
+                <div class="value">{{stats.totalKeywords}}</div>
+                <div class="sub">运营 {{stats.manualCount}} / AI {{stats.aiCount}}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">命中次数</div>
+                <div class="value">{{formatNum(stats.hitCount)}}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">命中占比</div>
+                <div class="value">{{stats.hitRate}}%</div>
+                <div class="sub">命中 / 全部搜索请求</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">点击量</div>
+                <div class="value">{{formatNum(stats.clickCount)}}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">点击占比</div>
+                <div class="value">{{stats.clickRate}}%</div>
+                <div class="sub">关键词点击 / 搜索总点击</div>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="table-box">
+            <div class="tab-header">
+                <div class="tab-item" :class="{active:activeTab==='all'}" @click="activeTab='all'">全部</div>
+                <div class="tab-item" :class="{active:activeTab==='pending'}" @click="activeTab='pending'">待审核</div>
+                <div class="tab-item" :class="{active:activeTab==='active'}" @click="activeTab='active'">已生效</div>
+                <div class="tab-item" :class="{active:activeTab==='ignored'}" @click="activeTab='ignored'">已忽略</div>
+            </div>
+
+            <div style="margin-bottom:14px">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+                    <input v-model="searchKw" placeholder="搜索词/命中词" style="width:120px;height:28px;border:1px solid #dcdfe6;border-radius:4px;padding:0 8px;font-size:12px;outline:none;" />
+                    <select v-model="filterType" style="width:90px;height:28px;border:1px solid #dcdfe6;border-radius:4px;padding:0 4px;font-size:12px;color:#606266;">
+                        <option value="">类型</option>
+                        <option value="简称">简称</option>
+                        <option value="俗称">俗称/黑话</option>
+                        <option value="拼音">拼音/缩写</option>
+                        <option value="错别字">错别字</option>
+                        <option value="IP">角色/IP</option>
+                    </select>
+                    <input v-model="filterGame" placeholder="关联游戏" style="width:100px;height:28px;border:1px solid #dcdfe6;border-radius:4px;padding:0 8px;font-size:12px;outline:none;" />
+                    <input v-model="filterOperator" placeholder="审核人" style="width:80px;height:28px;border:1px solid #dcdfe6;border-radius:4px;padding:0 8px;font-size:12px;outline:none;" />
+                    <span style="font-size:12px;color:#606266;">时间:</span>
+                    <span class="time-shortcut" :class="{active:timeShortcut==='yesterday'}" @click="setTimeShortcut('yesterday')">昨日</span>
+                    <span class="time-shortcut" :class="{active:timeShortcut==='7d'}" @click="setTimeShortcut('7d')">近7天</span>
+                    <span class="time-shortcut" :class="{active:timeShortcut==='30d'}" @click="setTimeShortcut('30d')">近30天</span>
+                    <input type="date" v-model="dateStart" style="height:28px;border:1px solid #dcdfe6;border-radius:4px;padding:0 4px;font-size:12px;width:115px;" />
+                    <span style="color:#999;font-size:12px">~</span>
+                    <input type="date" v-model="dateEnd" style="height:28px;border:1px solid #dcdfe6;border-radius:4px;padding:0 4px;font-size:12px;width:115px;" />
+                    <el-button size="small" type="primary" @click="doSearch">查询</el-button>
+                    <el-button size="small" @click="doReset">重置</el-button>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+                    <el-button size="small" type="success" :disabled="selectedRows.length===0" @click="batchApprove">批量通过</el-button>
+                    <el-button size="small" :disabled="selectedRows.length===0" @click="batchIgnore">批量忽略</el-button>
+                    <el-button size="small" type="primary" @click="showImport=true"><i class="fas fa-file-import" style="margin-right:4px"></i>批量导入</el-button>
+                    <el-button size="small" @click="showAdd=true"><i class="fas fa-plus" style="margin-right:4px"></i>新增关键词</el-button>
+                    <span v-if="selectedRows.length" style="font-size:11px;color:#909399">已选{{selectedRows.length}}项</span>
+                </div>
+            </div>
+
+            <div style="overflow-x:auto">
+            <table class="kw-table">
+                <thead><tr>
+                    <th style="width:36px"><input type="checkbox" @change="toggleAll($event)" /></th>
+                    <th>搜索词</th>
+                    <th>推荐命中词</th>
+                    <th>命中词类型</th>
+                    <th>推荐关联游戏</th>
+                    <th class="sortable" @click="toggleSort('searchCount')">搜索次数 <i class="fas fa-sort sort-icon" :class="{active:sortKey==='searchCount'}"></i></th>
+                    <th class="sortable" @click="toggleSort('searchUsers')">搜索人数 <i class="fas fa-sort sort-icon" :class="{active:sortKey==='searchUsers'}"></i></th>
+                    <th>处理状态</th>
+                    <th>审核人</th>
+                    <th>审核时间</th>
+                    <th style="width:190px">操作</th>
+                </tr></thead>
+                <tbody>
+                    <tr v-for="row in sortedList" :key="row.rawKeyword+row.keyword">
+                        <td><input type="checkbox" v-model="row._checked" @change="updateSelection" /></td>
+                        <td>{{row.rawKeyword}}</td>
+                        <td>{{row.keyword}}</td>
+                        <td><el-tag size="small" :type="tagType(row.type)" v-if="row.type">{{row.type}}</el-tag><span v-else style="color:#ccc">—</span></td>
+                        <td>{{row.aiGame||'—'}}</td>
+                        <td>{{row.searchCount}}</td>
+                        <td>{{row.searchUsers}}</td>
+                        <td><el-tag size="small" :type="statusType(row.status)">{{statusLabel(row.status)}}</el-tag></td>
+                        <td>{{row.operator||'—'}}</td>
+                        <td>{{row.updateTime||'—'}}</td>
+                        <td>
+                            <el-button size="small" type="primary" link @click="handleEdit(row)">编辑</el-button>
+                            <el-button size="small" type="success" link v-if="row.status==='pending'||row.status==='ai_pending'" @click="handleApprove(row)">通过</el-button>
+                            <el-button size="small" type="warning" link v-if="row.status==='pending'||row.status==='ai_pending'" @click="handleModifyApprove(row)">修改后通过</el-button>
+                            <el-button size="small" type="danger" link v-if="row.status==='pending'||row.status==='ai_pending'" @click="handleIgnore(row)">忽略</el-button>
+                            <el-button size="small" type="danger" link v-if="row.status==='active'||row.status==='ignored'" @click="handleDelete(row)">删除</el-button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            </div>
+            <div style="margin-top:14px;display:flex;justify-content:flex-end">
+                <el-pagination :total="sortedList.length" :page-size="20" layout="total, prev, pager, next" small />
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Dialog -->
+    <el-dialog v-model="showImport" title="批量导入关键词" width="480px">
+        <p style="margin-bottom:14px;color:#606266;font-size:13px">支持 Excel / CSV，模板字段：游戏ID、游戏名称、关键词（多个用英文逗号分隔）</p>
+        <el-upload drag action="#" :auto-upload="false">
+            <i class="fas fa-cloud-upload-alt" style="font-size:28px;color:#909399;margin-bottom:6px"></i>
+            <div style="color:#606266;font-size:13px">拖拽文件到此处，或<span style="color:var(--el-color-primary)">点击上传</span></div>
+        </el-upload>
+        <template #footer>
+            <el-button @click="showImport=false" size="small">取消</el-button>
+            <el-button type="primary" @click="doImport" size="small">开始导入</el-button>
+        </template>
+    </el-dialog>
+
+    <!-- Add Dialog -->
+    <el-dialog v-model="showAdd" title="新增关键词" width="480px">
+        <el-form label-width="100px" size="small">
+            <el-form-item label="搜索词" required>
+                <el-input v-model="addForm.rawKeyword" placeholder="用户实际输入的搜索词" />
+            </el-form-item>
+            <el-form-item label="推荐命中词" required>
+                <el-input v-model="addForm.keyword" placeholder="纠正/归一后的命中词" />
+            </el-form-item>
+            <el-form-item label="关联游戏ID" required>
+                <el-input v-model="addForm.gameId" placeholder="游戏ID" />
+            </el-form-item>
+            <el-form-item label="游戏名称">
+                <el-input v-model="addForm.gameName" placeholder="选填，人工确认用" />
+            </el-form-item>
+            <el-form-item label="命中词类型">
+                <el-select v-model="addForm.type" placeholder="选择" style="width:100%">
+                    <el-option label="简称" value="简称" /><el-option label="俗称/黑话" value="俗称" />
+                    <el-option label="拼音/缩写" value="拼音" /><el-option label="错别字" value="错别字" />
+                    <el-option label="角色/IP" value="IP" />
+                </el-select>
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <el-button @click="showAdd=false" size="small">取消</el-button>
+            <el-button type="primary" @click="doAdd" size="small">确认添加</el-button>
+        </template>
+    </el-dialog>
+
+    <!-- Edit Dialog -->
+    <el-dialog v-model="showEdit" title="编辑关键词" width="480px">
+        <el-form label-width="100px" size="small">
+            <el-form-item label="搜索词">
+                <el-input v-model="editForm.rawKeyword" disabled />
+            </el-form-item>
+            <el-form-item label="推荐命中词">
+                <el-input v-model="editForm.keyword" />
+            </el-form-item>
+            <el-form-item label="推荐关联游戏">
+                <el-input v-model="editForm.aiGame" placeholder="人工填写或修改匹配游戏" />
+            </el-form-item>
+            <el-form-item label="命中词类型">
+                <el-select v-model="editForm.type" placeholder="选择" style="width:100%">
+                    <el-option label="简称" value="简称" /><el-option label="俗称/黑话" value="俗称" />
+                    <el-option label="拼音/缩写" value="拼音" /><el-option label="错别字" value="错别字" />
+                    <el-option label="角色/IP" value="IP" />
+                </el-select>
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <el-button @click="showEdit=false" size="small">取消</el-button>
+            <el-button type="primary" @click="saveEdit" size="small">保存</el-button>
+        </template>
+    </el-dialog>
+</div>
+
+<script>
+const {createApp,ref,computed,reactive} = Vue;
+const ElMessage = ElementPlus.ElMessage;
+const ElMessageBox = ElementPlus.ElMessageBox;
+const app = createApp({
+    setup(){
+        const activeTab = ref('all');
+        const searchKw = ref('');
+        const filterType = ref('');
+        const filterGame = ref('');
+        const filterOperator = ref('');
+        const dateStart = ref('');
+        const dateEnd = ref('');
+        const timeShortcut = ref('');
+        const showImport = ref(false);
+        const showAdd = ref(false);
+        const showEdit = ref(false);
+        const selectedRows = ref([]);
+        const sortKey = ref('');
+        const sortDir = ref('desc');
+        const editForm = ref({rawKeyword:'',keyword:'',aiGame:'',type:''});
+        const addForm = ref({rawKeyword:'',keyword:'',gameId:'',gameName:'',type:''});
+        const editingRow = ref(null);
+
+        const stats = ref({totalKeywords:1286,manualCount:834,aiCount:452,hitCount:38720,hitRate:12.6,hitGrowth:18,clickCount:9453,clickRate:8.3,clickGrowth:23});
+
+        const keywords = ref([
+            {rawKeyword:'王者',keyword:'王者',aiGame:'王者荣耀（高）',type:'简称',searchCount:5820,searchUsers:3240,status:'active',operator:'张三',updateTime:'2025-06-07 14:30'},
+            {rawKeyword:'吃鸡',keyword:'吃鸡',aiGame:'和平精英（高）',type:'俗称',searchCount:4930,searchUsers:2870,status:'active',operator:'张三',updateTime:'2025-06-07 14:28'},
+            {rawKeyword:'WZRY',keyword:'wzry',aiGame:'王者荣耀（高）',type:'拼音',searchCount:2680,searchUsers:1560,status:'active',operator:'AI',updateTime:'2025-06-06 09:00'},
+            {rawKeyword:'农药',keyword:'农药',aiGame:'王者荣耀（高）',type:'俗称',searchCount:2410,searchUsers:1380,status:'active',operator:'AI',updateTime:'2025-06-06 09:00'},
+            {rawKeyword:'黑猴子',keyword:'黑猴',aiGame:'黑神话：悟空（高）/黑神话：钟馗（中）',type:'俗称',searchCount:1880,searchUsers:1050,status:'ai_pending',operator:'',updateTime:''},
+            {rawKeyword:'和平经英',keyword:'和平精英',aiGame:'和平精英（高）',type:'错别字',searchCount:1280,searchUsers:760,status:'pending',operator:'',updateTime:''},
+            {rawKeyword:'鸣人 游戏',keyword:'鸣人',aiGame:'火影忍者（中）',type:'IP',searchCount:820,searchUsers:490,status:'ai_pending',operator:'',updateTime:''},
+            {rawKeyword:'赛博朋克',keyword:'赛博朋克',aiGame:'',type:'',searchCount:380,searchUsers:210,status:'ai_pending',operator:'',updateTime:''},
+            {rawKeyword:'LOL',keyword:'lol',aiGame:'英雄联盟（高）',type:'拼音',searchCount:750,searchUsers:430,status:'active',operator:'李四',updateTime:'2025-06-05 16:00'},
+            {rawKeyword:'test',keyword:'test',aiGame:'',type:'无效',searchCount:310,searchUsers:180,status:'ignored',operator:'AI',updateTime:'2025-06-07 09:00'},
+            {rawKeyword:'乱码asd',keyword:'乱码asd',aiGame:'',type:'无效',searchCount:150,searchUsers:85,status:'ignored',operator:'AI',updateTime:'2025-06-07 09:00'},
+        ]);
+
+        const filteredList = computed(()=>{
+            return keywords.value.filter(k=>{
+                if(activeTab.value==='pending'&&k.status!=='pending'&&k.status!=='ai_pending') return false;
+                if(activeTab.value==='active'&&k.status!=='active') return false;
+                if(activeTab.value==='ignored'&&k.status!=='ignored') return false;
+                if(searchKw.value&&!k.keyword.includes(searchKw.value)&&!k.rawKeyword.includes(searchKw.value)) return false;
+                if(filterType.value&&k.type!==filterType.value) return false;
+                if(filterGame.value&&!(k.aiGame&&k.aiGame.includes(filterGame.value))) return false;
+                if(filterOperator.value&&!(k.operator&&k.operator.includes(filterOperator.value))) return false;
+                return true;
+            });
+        });
+
+        const sortedList = computed(()=>{
+            const list = [...filteredList.value];
+            if(sortKey.value){
+                list.sort((a,b)=> sortDir.value==='desc'? b[sortKey.value]-a[sortKey.value] : a[sortKey.value]-b[sortKey.value]);
+            }
+            return list;
+        });
+
+        function toggleSort(key){ if(sortKey.value===key){sortDir.value=sortDir.value==='desc'?'asc':'desc';}else{sortKey.value=key;sortDir.value='desc';} }
+        function toggleAll(e){filteredList.value.forEach(r=>r._checked=e.target.checked);updateSelection();}
+        function updateSelection(){selectedRows.value=keywords.value.filter(r=>r._checked);}
+        function formatNum(n){return n>=10000?(n/10000).toFixed(1)+'w':n.toLocaleString();}
+        function tagType(t){return{简称:'',俗称:'warning',拼音:'info',错别字:'danger',IP:'success',无效:'info'}[t]||'';}
+        function statusType(s){return{active:'success',pending:'warning',ai_pending:'',ignored:'info'}[s]||'';}
+        function statusLabel(s){return{active:'已通过',pending:'待审核',ai_pending:'待AI分析',ignored:'已忽略'}[s]||s;}
+
+        function handleEdit(row){editingRow.value=row;editForm.value={rawKeyword:row.rawKeyword,keyword:row.keyword,aiGame:row.aiGame||'',type:row.type||''};showEdit.value=true;}
+        function saveEdit(){if(editingRow.value){Object.assign(editingRow.value,{keyword:editForm.value.keyword,aiGame:editForm.value.aiGame,type:editForm.value.type});}showEdit.value=false;ElMessage.success('保存成功');}
+        function handleApprove(row){ElMessageBox.confirm('确认通过"'+row.rawKeyword+'"→"'+(row.aiGame||'未设置')+'"？','审核',{confirmButtonText:'通过',type:'success'}).then(()=>{row.status='active';row.operator='当前运营';row.updateTime=new Date().toLocaleString('zh-CN');ElMessage.success('已通过');}).catch(()=>{});}
+        function handleModifyApprove(row){editingRow.value=row;editForm.value={rawKeyword:row.rawKeyword,keyword:row.keyword,aiGame:row.aiGame||'',type:row.type||''};showEdit.value=true;ElMessage.info('修改后点击保存完成审核');}
+        function handleIgnore(row){ElMessageBox.confirm('忽略"'+row.rawKeyword+'"？将清空搜索次数，不再进入审核。','忽略确认',{confirmButtonText:'确认忽略',type:'warning'}).then(()=>{row.status='ignored';row.searchCount=0;row.searchUsers=0;ElMessage.success('已忽略');}).catch(()=>{});}
+        function handleDelete(row){ElMessageBox.confirm('确认删除关键词"'+row.rawKeyword+'"？删除后不可恢复。','删除确认',{confirmButtonText:'确认删除',type:'error'}).then(()=>{const idx=keywords.value.indexOf(row);if(idx>-1)keywords.value.splice(idx,1);ElMessage.success('已删除');}).catch(()=>{});}
+        function setTimeShortcut(type){
+            timeShortcut.value=type;
+            const today=new Date();const fmt=d=>d.toISOString().slice(0,10);
+            if(type==='yesterday'){const d=new Date();d.setDate(d.getDate()-1);dateStart.value=fmt(d);dateEnd.value=fmt(d);}
+            else if(type==='7d'){const s=new Date();s.setDate(s.getDate()-7);dateStart.value=fmt(s);dateEnd.value=fmt(today);}
+            else if(type==='30d'){const s=new Date();s.setDate(s.getDate()-30);dateStart.value=fmt(s);dateEnd.value=fmt(today);}
+        }
+        function batchApprove(){const p=selectedRows.value.filter(r=>r.status==='pending'||r.status==='ai_pending');if(!p.length){ElMessage.warning('无待审核项');return;}ElMessageBox.confirm('批量通过'+p.length+'条？','批量审核',{type:'success'}).then(()=>{p.forEach(r=>{r.status='active';r.operator='当前运营';r.updateTime=new Date().toLocaleString('zh-CN');});ElMessage.success('已通过'+p.length+'项');}).catch(()=>{});}
+        function batchModifyApprove(){ElMessageBox.confirm('批量修改后通过：将逐条打开编辑弹窗，是否继续？','提示',{type:'warning'}).then(()=>{const p=selectedRows.value.filter(r=>r.status==='pending'||r.status==='ai_pending');if(p.length){handleEdit(p[0]);ElMessage.info('请逐条编辑保存');}}).catch(()=>{});}
+        function batchIgnore(){ElMessageBox.confirm('批量忽略'+selectedRows.value.length+'条？搜索次数将清零。','批量忽略',{type:'warning'}).then(()=>{selectedRows.value.forEach(r=>{r.status='ignored';r.searchCount=0;r.searchUsers=0;});ElMessage.success('已忽略'+selectedRows.value.length+'项');}).catch(()=>{});}
+        function doImport(){showImport.value=false;ElMessage.success('导入成功（demo）');}
+        function doSearch(){ElMessage.success('查询完成');}
+        function doReset(){searchKw.value='';filterType.value='';filterGame.value='';filterOperator.value='';dateStart.value='';dateEnd.value='';timeShortcut.value='';ElMessage.info('已重置');}
+        function doAdd(){if(!addForm.value.rawKeyword||!addForm.value.keyword){ElMessage.warning('请填写必填项');return;}keywords.value.unshift({rawKeyword:addForm.value.rawKeyword,keyword:addForm.value.keyword,aiGame:addForm.value.gameName||'',type:addForm.value.type,searchCount:0,searchUsers:0,status:'active',operator:'当前运营',updateTime:new Date().toLocaleString('zh-CN')});showAdd.value=false;addForm.value={rawKeyword:'',keyword:'',gameId:'',gameName:'',type:''};ElMessage.success('添加成功');}
+
+        return {activeTab,searchKw,filterType,filterGame,filterOperator,dateStart,dateEnd,timeShortcut,showImport,showAdd,showEdit,selectedRows,sortKey,sortDir,editForm,addForm,editingRow,stats,keywords,filteredList,sortedList,toggleSort,toggleAll,updateSelection,formatNum,tagType,statusType,statusLabel,handleEdit,saveEdit,handleApprove,handleModifyApprove,handleIgnore,handleDelete,setTimeShortcut,batchApprove,batchModifyApprove,batchIgnore,doImport,doSearch,doReset,doAdd};
+    }
+});
+app.use(ElementPlus,{locale:ElementPlusLocaleZhCn});
+app.mount('#app');
+</script>
+</body>
+</html>
