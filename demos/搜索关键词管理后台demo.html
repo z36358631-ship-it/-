@@ -288,7 +288,7 @@ const app = createApp({
         function formatNum(n){return n>=10000?(n/10000).toFixed(1)+'w':n.toLocaleString();}
         function tagType(t){return{简称:'',俗称:'warning',拼音:'info',错别字:'danger',IP:'success',无效:'info'}[t]||'';}
         function statusType(s){return{active:'success',pending:'warning',ai_pending:'',ignored:'info'}[s]||'';}
-        function statusLabel(s){return{active:'已通过',pending:'待审核',ai_pending:'待AI分析',ignored:'已忽略'}[s]||s;}
+        function statusLabel(s){return{active:'已通过',pending:'待审核',ai_pending:'AI未识别',ignored:'已忽略'}[s]||s;}
 
         function handleEdit(row){editingRow.value=row;editForm.value={rawKeyword:row.rawKeyword,keyword:row.keyword,hitGames:row.hitGames||''};showEdit.value=true;}
         function saveEdit(){if(editingRow.value){Object.assign(editingRow.value,{keyword:editForm.value.keyword,hitGames:editForm.value.hitGames});}showEdit.value=false;ElMessage.success('保存成功');}
