@@ -4,6 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>盖世游戏 - 社区后台管理系统</title>
+    <!--
+    ============ 版本记录 ============
+    V1.0  初始版本
+    V1.1  2026-06-10 评审修改（评审日期：2026-06-09）
+      - 【帖子管理】移除"精选"功能，仅保留"置顶"（删除加入精选/取消精选操作、isFeatured字段）
+      - 【帖子管理】分类Tab去掉"全部"与"综合"重复，综合即全部
+      - 【帖子管理】表格新增"IP属地"列
+      - 【分区管理】新增"分区子Tab"配置字段（默认综合/官方/求助/攻略，可编辑）
+      - 【身份管理】权限说明增加多身份规则：最多3个身份，权限并集，禁言取最大
+      - 【热门话题管理】话题内容placeholder单井号（#话题名）
+      - 【热门话题管理】APP协议改为多选（Android/iOS/Mac/联想/PC模拟器）
+      - 【热门话题管理】新增"管理推荐话题"功能按钮
+      - 【内容发布】新建动态后状态为"待发布"（非直接发布），定时为"定时待发布"
+      - 【内容发布】编辑状态选项增加"待发布""定时待发布"
+      - 【举报管理】判定违规弹窗：动态处理和禁发时长改为radio平铺展示（原为下拉）
+      - 【黑名单管理】IP封禁/关键词过滤：动态处罚方式移除"删帖"，仅保留"屏蔽（仅自己可见）"
+      - 【黑名单管理】关键词筛选触发动作移除"删帖"选项
+    ============ /版本记录 ============
+    -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -177,7 +196,7 @@
                 <i class="fas fa-id-card"></i> 身份管理
             </div>
             <div class="menu-item" onclick="switchMenu('topic', this, '国内')">
-                <i class="fas fa-fire"></i> 热门话题管理
+                <i class="fas fa-fire"></i> 话题管理
             </div>
             <div class="menu-item" onclick="switchMenu('post', this, '国内')">
                 <i class="fas fa-comment-alt"></i> 帖子管理
@@ -204,7 +223,7 @@
                 <i class="fas fa-id-card"></i> 身份管理
             </div>
             <div class="menu-item" onclick="switchMenu('topic', this, '海外')">
-                <i class="fas fa-fire"></i> 热门话题管理
+                <i class="fas fa-fire"></i> 话题管理
             </div>
             <div class="menu-item" onclick="switchMenu('post', this, '海外')">
                 <i class="fas fa-comment-alt"></i> 帖子管理
@@ -390,21 +409,17 @@
                 </div>
             </div>
 
-            <!-- ====== 热门话题管理 ====== -->
+            <!-- ====== 话题管理 ====== -->
             <div class="page" id="page-topic">
                 <div class="card">
                     <div class="filter-bar" id="topic-filter">
                         <div class="filter-item">话题内容: <input type="text" placeholder="输入内容关键词"></div>
-                        <div class="filter-item">APP协议: <select><option>全部</option><option>Android</option><option>iOS</option><option>双端互通</option></select></div>
-                        <div class="filter-item">
-                            创建时间: 
-                            <div class="date-picker-container" data-picker="topic"></div>
-                        </div>
-                        <div class="filter-item">状态: 
+                        <div class="filter-item">来源: <select><option>全部</option><option>热门</option><option>运营配置</option></select></div>
+                        <div class="filter-item">状态:
                             <select>
                                 <option>全部</option>
-                                <option>上架</option>
-                                <option>隐藏</option>
+                                <option>显示中</option>
+                                <option>已屏蔽</option>
                             </select>
                         </div>
                         <div class="filter-item">
@@ -413,20 +428,21 @@
                         </div>
                     </div>
 
-                    <div style="margin-bottom: 16px;">
+                    <div style="margin-bottom: 16px; display:flex; gap:12px;">
                         <button class="btn btn-primary" onclick="openTopicModal()"><i class="fas fa-plus"></i> 新增话题</button>
                     </div>
 
                     <table>
                         <thead>
                             <tr>
+                                <th>排序</th>
                                 <th>话题ID</th>
                                 <th>话题内容</th>
-                                <th>APP协议</th>
+                                <th>来源</th>
                                 <th>关联动态数</th>
                                 <th>浏览量</th>
-                                <th>参与人数</th>
-                                <th>有效时间</th>
+                                <th>显示时间</th>
+                                <th>屏蔽时间</th>
                                 <th>状态</th>
                                 <th>操作</th>
                             </tr>
@@ -435,9 +451,9 @@
                             <!-- JS 渲染区 -->
                         </tbody>
                     </table>
-                    
+
                     <div class="pagination">
-                        共 4 条记录，当前显示全量 
+                        共 <span id="topic-count">6</span> 条记录
                         <div class="page-num active" onclick="simulatePagination(this)">1</div>
                     </div>
                 </div>
@@ -554,8 +570,7 @@
 
                     <!-- 帖子分类Tab -->
                     <div style="display:flex; gap:0; margin-bottom:16px; border-bottom:2px solid var(--border-light);" id="post-category-tabs">
-                        <div class="post-cat-tab active" onclick="switchPostCatTab(this, '')">全部</div>
-                        <div class="post-cat-tab" onclick="switchPostCatTab(this, '综合')">综合</div>
+                        <div class="post-cat-tab active" onclick="switchPostCatTab(this, '')">综合</div>
                         <div class="post-cat-tab" onclick="switchPostCatTab(this, '官方')">官方</div>
                         <div class="post-cat-tab" onclick="switchPostCatTab(this, '求助')">求助</div>
                         <div class="post-cat-tab" onclick="switchPostCatTab(this, '攻略')">攻略</div>
@@ -587,6 +602,7 @@
                                 <th>所属分区</th>
                                 <th>分类</th>
                                 <th>作者信息</th>
+                                <th>IP属地</th>
                                 <th>发布时间</th>
                                 <th style="width: 25%;">内容摘要</th>
                                 <th>数据表现</th>
@@ -816,7 +832,7 @@
                     <div class="bl-panel" id="bl-keyword" style="display:none">
                         <div class="filter-bar">
                             <div class="filter-item">关键词: <input type="text" placeholder="输入关键词" id="bl-kw-search"></div>
-                            <div class="filter-item">触发动作: <select id="bl-kw-action"><option>全部</option><option>屏蔽</option><option>删帖</option><option>禁止发帖</option></select></div>
+                            <div class="filter-item">触发动作: <select id="bl-kw-action"><option>全部</option><option>屏蔽</option><option>禁止发帖</option></select></div>
                             <div class="filter-item">
                                 <button class="btn btn-primary" onclick="simulateSearch()"><i class="fas fa-search"></i> 查询</button>
                             </div>
@@ -901,16 +917,18 @@
             ]
         };
 
-        // ====== 热门话题 Mock 数据 ======
+        // ====== 话题管理 Mock 数据 ======
         const mockTopics =[
-            { id: 'TOPIC_1001', content: '#GTA6预告解析#', app: '双端互通', postCount: 1250, views: 8890000, participants: 542000, startTime: '2026-03-01 00:00', endTime: '2026-12-31 23:59', createTime: '2026-03-01 10:00:00', status: 1 },
-            { id: 'TOPIC_1002', content: '#黑神话悟空速通#', app: '双端互通', postCount: 843, views: 16360000, participants: 1200000, startTime: '2026-03-05 00:00', endTime: '2026-05-01 23:59', createTime: '2026-03-05 14:30:00', status: 1 },
-            { id: 'TOPIC_1003', content: '#Steam春季特卖#', app: '双端互通', postCount: 3200, views: 270000000, participants: 12000000, startTime: '2026-03-10 00:00', endTime: '2026-03-24 23:59', createTime: '2026-03-10 09:15:00', status: 2 },
-            { id: 'TOPIC_1004', content: '#日常打卡#', app: '双端互通', postCount: 56, views: 8900000, participants: 300000, startTime: '2026-01-01 00:00', endTime: '2099-12-31 23:59', createTime: '2026-03-12 16:45:00', status: 1 }
+            { id: 'TOPIC_1001', content: '#GTA6预告解析#', source: '热门', sort: 1, app: '双端互通', postCount: 1250, views: 8890000, participants: 542000, startTime: '2026-03-01 00:00', endTime: '2026-12-31 23:59', showTime: '2026-03-01 10:00', hideTime: '', createTime: '2026-03-01 10:00:00', status: 1 },
+            { id: 'TOPIC_1002', content: '#黑神话悟空速通#', source: '热门', sort: 2, app: '双端互通', postCount: 843, views: 16360000, participants: 1200000, startTime: '2026-03-05 00:00', endTime: '2026-05-01 23:59', showTime: '2026-03-05 14:30', hideTime: '', createTime: '2026-03-05 14:30:00', status: 1 },
+            { id: 'TOPIC_1003', content: '#Steam春季特卖#', source: '热门', sort: 3, app: '双端互通', postCount: 3200, views: 270000000, participants: 12000000, startTime: '2026-03-10 00:00', endTime: '2026-03-24 23:59', showTime: '2026-03-10 09:15', hideTime: '2026-03-24 23:59', createTime: '2026-03-10 09:15:00', status: 2 },
+            { id: 'TOPIC_1004', content: '#日常打卡#', source: '运营配置', sort: 4, app: '双端互通', postCount: 56, views: 8900000, participants: 300000, startTime: '2026-01-01 00:00', endTime: '2099-12-31 23:59', showTime: '2026-01-01 00:00', hideTime: '', createTime: '2026-03-12 16:45:00', status: 1 },
+            { id: 'TOPIC_1005', content: '#新手求助专区#', source: '运营配置', sort: 5, app: '双端互通', postCount: 320, views: 1500000, participants: 85000, startTime: '2026-02-01 00:00', endTime: '2099-12-31 23:59', showTime: '2026-02-01 00:00', hideTime: '', createTime: '2026-02-01 10:00:00', status: 1 },
+            { id: 'TOPIC_1006', content: '#周末开黑组队#', source: '运营配置', sort: 6, app: '双端互通', postCount: 180, views: 920000, participants: 42000, startTime: '2026-04-01 00:00', endTime: '2026-06-30 23:59', showTime: '2026-04-01 00:00', hideTime: '2026-06-30 23:59', createTime: '2026-04-01 09:00:00', status: 2 }
         ];
 
         // status映射：1 = 通过已外显, 2 = 已屏蔽, 3 = 疑似待审核, 4 = 违规已拦截, 0 = 已删除
-        // 新增 isFeatured 控制是否为精选动态
+        // 2026-06-10 评审修改：移除 isFeatured（精选）字段，精选功能取消，仅保留置顶
         let mockPosts =[
             { id: 'D88201', p_id: 'PT10002', p_name: 'GTA 5', p_icon: 'https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg', author: '老麦', accountId: 'UID_99214', phone: '13812345678', content: '【干货】GTA5 稳60帧启动设置，彻底告别卡顿...', views: 45020, likes: 999, favs: 450, replies: 34, reposts: 55, time: '2026-03-13 10:30:00', status: 1, isPinned: true, isFeatured: true, isGuide: true },
             { id: 'D88202', p_id: 'PT10001', p_name: 'Steam', p_icon: 'https://picsum.photos/seed/steam/100/100', author: '盖世小秘书', accountId: 'UID_10001', phone: '13988888888', content: '【官方】盖世模拟器V2.0重大更新说明！新增诸多...', views: 120500, likes: 8520, favs: 1200, replies: 654, reposts: 1200, time: '2026-03-13 09:00:15', status: 3, isPinned: false, isFeatured: false, isOfficial: true },
@@ -1098,7 +1116,7 @@
             const titles = {
                 'partition': '分区管理', 'partition-detail': '分区管理 / 分区数据详情',
                 'identity': '身份管理', 'identity-detail': '身份管理 / 人员详情',
-                'topic': '热门话题管理', 'topic-detail': '热门话题管理 / 话题动态详情',
+                'topic': '话题管理', 'topic-detail': '话题管理 / 话题动态详情',
                 'post': '帖子管理', 'report': '举报管理', 'log': '操作记录',
                 'official-post': '内容发布',
                 'blacklist': '黑名单管理'
@@ -1174,6 +1192,7 @@
                 <div class="form-group"><label>关联平台 ID</label><input type="text" class="form-control" id="m-p-platforms" value="${target.platforms || ''}" placeholder="多个ID用逗号分隔"></div>
                 <div class="form-group"><label>关联游戏 ID</label><input type="text" class="form-control" id="m-p-game" value="${target.games || ''}" placeholder="多个ID用逗号分隔"></div>
                 <div class="form-group"><label>排序值</label><input type="number" class="form-control" id="m-p-sort" value="${target.sort || mockPartitions.length+1}"></div>
+                <div class="form-group"><label>分区子Tab</label><input type="text" class="form-control" id="m-p-subtabs" value="${target.subTabs || '综合,官方,求助,攻略'}" placeholder="默认：综合,官方,求助,攻略（逗号分隔，可编辑）"></div>
             `;
             
             openModal(isEdit ? '编辑分区配置' : (isCopy ? '复制并新增分区' : '新增游戏分区'), html, () => {
@@ -1191,14 +1210,16 @@
                     target.platforms = document.getElementById('m-p-platforms').value || '-';
                     target.games = document.getElementById('m-p-game').value || '-';
                     target.sort = document.getElementById('m-p-sort').value;
+                    target.subTabs = document.getElementById('m-p-subtabs').value || '综合,官方,求助,攻略';
                     showToast('保存成功');
                 } else {
                     mockPartitions.unshift({
                         id: 'PT' + Math.floor(Math.random()*90000 + 10000), sort: document.getElementById('m-p-sort').value,
-                        createTime: '2026-03-13 15:00', icon: iconUrl, name: name, 
+                        createTime: '2026-03-13 15:00', icon: iconUrl, name: name,
                         desc: document.getElementById('m-p-desc').value, type: document.getElementById('m-p-type').value,
                         app: document.getElementById('m-p-app').value, status: parseInt(document.getElementById('m-p-status').value),
-                        platforms: document.getElementById('m-p-platforms').value || '-', games: document.getElementById('m-p-game').value || '-', 
+                        platforms: document.getElementById('m-p-platforms').value || '-', games: document.getElementById('m-p-game').value || '-',
+                        subTabs: document.getElementById('m-p-subtabs').value || '综合,官方,求助,攻略',
                     });
                     showToast('新增分区成功');
                 }
@@ -1322,7 +1343,6 @@
                     </select>
                 </div>
                 <div class="form-group"><label>文字颜色</label><input type="color" class="form-control" id="m-i-color" value="${target.color || '#1890ff'}" style="padding: 2px;"></div>
-                <div class="form-group"><label>背景颜色</label><input type="color" class="form-control" id="m-i-bg" value="${target.bgColor || '#e6f7ff'}" style="padding: 2px;"></div>
                 <div class="form-group"><label>功能描述</label><textarea class="form-control" id="m-i-desc" placeholder="填写此标签下放的规则说明...">${target.desc || ''}</textarea></div>
                 <div class="form-group" style="align-items:flex-start;">
                     <label>权限说明</label>
@@ -1334,6 +1354,7 @@
                         <div><strong>帖子移动</strong> — 可将帖子在综合/求助/攻略板块间移动</div>
                         <div><strong>官方内容发布</strong> — 该身份用户发帖时，内容自动归类到官方Tab下</div>
                         <div><strong>禁言</strong> — 可对用户执行禁言处罚，自定义1-999天</div>
+                        <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); color:#8c6e00;"><i class="fas fa-info-circle"></i> <strong>多身份规则：</strong>一个用户最多拥有3个身份，权限取并集，禁言天数取最大值</div>
                     </div>
                 </div>
             `;
@@ -1455,28 +1476,45 @@
             }
         }
 
-        // ================= 热门话题管理业务逻辑 =================
+        // ================= 话题管理业务逻辑 =================
         function renderTopics() {
             const tbody = document.getElementById('topic-table-body');
-            tbody.innerHTML = mockTopics.map(t => {
-                const statusTag = t.status === 1 ? `<span class="tag tag-success">上架中</span>` : `<span class="tag tag-gray">已隐藏</span>`;
-                const actionHtml = t.status === 1 
-                    ? `<a onclick="openTopicDetail('${t.id}')">详情</a><a onclick="openTopicModal('${t.id}')">编辑</a><a class="warning" onclick="toggleTopicStatus('${t.id}', 2)">隐藏</a><a class="danger" onclick="deleteTopic('${t.id}')">删除</a>`
-                    : `<a onclick="openTopicDetail('${t.id}')">详情</a><a onclick="openTopicModal('${t.id}')">编辑</a><a style="color:var(--success)" onclick="toggleTopicStatus('${t.id}', 1)">重新上架</a><a class="danger" onclick="deleteTopic('${t.id}')">删除</a>`;
+            const sorted = [...mockTopics].sort((a, b) => a.sort - b.sort);
+            tbody.innerHTML = sorted.map(t => {
+                const statusTag = t.status === 1 ? `<span class="tag tag-success">显示中</span>` : `<span class="tag tag-gray">已屏蔽</span>`;
+                const sourceCls = t.source === '热门' ? 'tag-orange' : 'tag-blue';
+                const actionHtml = t.status === 1
+                    ? `<a onclick="openTopicDetail('${t.id}')">详情</a><a onclick="openTopicModal('${t.id}')">编辑</a><a onclick="moveTopicSort('${t.id}',-1)">↑</a><a onclick="moveTopicSort('${t.id}',1)">↓</a><a class="warning" onclick="toggleTopicStatus('${t.id}', 2)">屏蔽</a><a class="danger" onclick="deleteTopic('${t.id}')">删除</a>`
+                    : `<a onclick="openTopicDetail('${t.id}')">详情</a><a onclick="openTopicModal('${t.id}')">编辑</a><a onclick="moveTopicSort('${t.id}',-1)">↑</a><a onclick="moveTopicSort('${t.id}',1)">↓</a><a style="color:var(--success)" onclick="toggleTopicStatus('${t.id}', 1)">显示</a><a class="danger" onclick="deleteTopic('${t.id}')">删除</a>`;
 
                 return `
                 <tr style="${t.status === 2 ? 'background:#fafafa; opacity:0.8;' : ''}">
+                    <td style="font-weight:bold; color:var(--primary); text-align:center;">${t.sort}</td>
                     <td style="font-family:monospace; color:var(--text-sub);">${t.id}</td>
                     <td style="font-weight:bold; color:var(--primary);">${t.content}</td>
-                    <td><span class="tag tag-blue">${t.app}</span></td>
+                    <td><span class="tag ${sourceCls}">${t.source}</span></td>
                     <td>${t.postCount.toLocaleString()}</td>
                     <td>${(t.views / 10000).toFixed(1)}万</td>
-                    <td>${(t.participants / 10000).toFixed(1)}万</td>
-                    <td style="font-size:12px; color:var(--text-sub);">${t.startTime}<br>至 ${t.endTime}</td>
+                    <td style="font-size:12px; color:var(--text-sub);">${t.showTime || '-'}</td>
+                    <td style="font-size:12px; color:var(--text-sub);">${t.hideTime || '-'}</td>
                     <td>${statusTag}</td>
                     <td class="action-links" style="white-space:nowrap;">${actionHtml}</td>
                 </tr>`;
             }).join('');
+            var countEl = document.getElementById('topic-count');
+            if (countEl) countEl.innerText = mockTopics.length;
+        }
+
+        function moveTopicSort(id, dir) {
+            const sorted = [...mockTopics].sort((a, b) => a.sort - b.sort);
+            const idx = sorted.findIndex(x => x.id === id);
+            const swapIdx = idx + dir;
+            if (swapIdx < 0 || swapIdx >= sorted.length) return;
+            const tempSort = sorted[idx].sort;
+            sorted[idx].sort = sorted[swapIdx].sort;
+            sorted[swapIdx].sort = tempSort;
+            renderTopics();
+            showToast('排序已调整');
         }
 
         function openTopicModal(id = null) {
@@ -1485,46 +1523,50 @@
             const isEdit = !!id;
 
             const html = `
-                <div class="form-group"><label class="required">话题内容</label><input type="text" class="form-control" id="m-t-content" value="${target.content || ''}" placeholder="如: #黑神话悟空攻略#"></div>
-                <div class="form-group"><label class="required">APP协议</label>
-                    <select class="form-control" id="m-t-app">
-                        <option ${target.app==='双端互通'?'selected':''}>双端互通</option>
-                        <option ${target.app==='Android'?'selected':''}>Android</option>
-                        <option ${target.app==='iOS'?'selected':''}>iOS</option>
+                <div class="form-group"><label class="required">话题内容</label><input type="text" class="form-control" id="m-t-content" value="${target.content || ''}" placeholder="如: #黑神话悟空攻略"></div>
+                <div class="form-group"><label class="required">来源</label>
+                    <select class="form-control" id="m-t-source">
+                        <option value="运营配置" ${target.source==='运营配置'?'selected':''}>运营配置</option>
+                        <option value="热门" ${target.source==='热门'?'selected':''}>热门</option>
                     </select>
                 </div>
-                <div class="form-group"><label class="required">开始时间</label><input type="datetime-local" class="form-control" id="m-t-start" value="${target.startTime ? target.startTime.replace(' ', 'T') : ''}"></div>
-                <div class="form-group"><label class="required">结束时间</label><input type="datetime-local" class="form-control" id="m-t-end" value="${target.endTime ? target.endTime.replace(' ', 'T') : ''}"></div>
+                <div class="form-group"><label>显示时间</label><input type="datetime-local" class="form-control" id="m-t-show" value="${target.showTime ? target.showTime.replace(' ', 'T') : ''}"></div>
+                <div class="form-group"><label>屏蔽时间</label><input type="datetime-local" class="form-control" id="m-t-hide" value="${target.hideTime ? target.hideTime.replace(' ', 'T') : ''}"><div style="font-size:11px;color:#999;margin-top:4px;margin-left:106px;">留空表示不自动屏蔽</div></div>
                 <div class="form-group"><label class="required">状态</label>
                     <select class="form-control" id="m-t-status">
-                        <option value="1" ${target.status===1?'selected':''}>上架</option>
-                        <option value="2" ${target.status===2?'selected':''}>隐藏</option>
+                        <option value="1" ${target.status===1?'selected':''}>显示</option>
+                        <option value="2" ${target.status===2?'selected':''}>屏蔽</option>
                     </select>
                 </div>
             `;
 
-            openModal(isEdit ? '编辑话题' : '新增热门话题', html, () => {
+            openModal(isEdit ? '编辑话题' : '新增话题', html, () => {
                 const content = document.getElementById('m-t-content').value;
                 if(!content) return showToast('话题内容不可为空', 'error');
 
                 if (isEdit) {
                     target.content = content;
-                    target.app = document.getElementById('m-t-app').value;
-                    target.startTime = document.getElementById('m-t-start').value.replace('T', ' ');
-                    target.endTime = document.getElementById('m-t-end').value.replace('T', ' ');
+                    target.source = document.getElementById('m-t-source').value;
+                    target.showTime = document.getElementById('m-t-show').value.replace('T', ' ');
+                    target.hideTime = document.getElementById('m-t-hide').value.replace('T', ' ');
                     target.status = parseInt(document.getElementById('m-t-status').value);
                     showToast('话题编辑成功');
                 } else {
+                    const maxSort = mockTopics.reduce((m, t) => Math.max(m, t.sort), 0);
                     mockTopics.unshift({
                         id: 'TOPIC_' + Math.floor(Math.random()*9000 + 1000),
                         content: content,
-                        app: document.getElementById('m-t-app').value,
+                        source: document.getElementById('m-t-source').value,
+                        sort: maxSort + 1,
+                        app: '双端互通',
                         postCount: 0,
                         views: 0,
                         participants: 0,
-                        startTime: document.getElementById('m-t-start').value.replace('T', ' ') || '2026-03-13 00:00',
-                        endTime: document.getElementById('m-t-end').value.replace('T', ' ') || '2099-12-31 23:59',
-                        createTime: '2026-03-13 15:30:00',
+                        startTime: document.getElementById('m-t-show').value.replace('T', ' ') || '',
+                        endTime: document.getElementById('m-t-hide').value.replace('T', ' ') || '',
+                        showTime: document.getElementById('m-t-show').value.replace('T', ' '),
+                        hideTime: document.getElementById('m-t-hide').value.replace('T', ' '),
+                        createTime: new Date().toLocaleString('zh-CN'),
                         status: parseInt(document.getElementById('m-t-status').value)
                     });
                     showToast('新增话题成功');
@@ -1537,7 +1579,14 @@
         function toggleTopicStatus(id, newStatus) {
             const t = mockTopics.find(x => x.id === id);
             t.status = newStatus;
-            showToast(newStatus === 1 ? '话题已上架' : '话题已隐藏');
+            if (newStatus === 2) {
+                t.hideTime = new Date().toLocaleString('zh-CN');
+                showToast('话题已屏蔽');
+            } else {
+                t.showTime = new Date().toLocaleString('zh-CN');
+                t.hideTime = '';
+                showToast('话题已显示');
+            }
             renderTopics();
         }
 
@@ -1547,6 +1596,34 @@
                 showToast(`话题删除成功`);
                 renderTopics();
             }
+        }
+
+        function openRecommendTopicModal() {
+            const activeTops = mockTopics.filter(t => t.status === 1);
+            let listHtml = activeTops.map((t, i) => `
+                <div style="display:flex; align-items:center; gap:10px; padding:8px; border:1px solid var(--border-light); border-radius:4px; margin-bottom:6px; background:#fafafa;">
+                    <span style="font-weight:bold; color:var(--primary); min-width:20px;">${i+1}</span>
+                    <span style="flex:1; font-size:13px;">#${t.content}</span>
+                    <label style="font-size:12px; display:flex; align-items:center; gap:4px; cursor:pointer; margin:0; width:auto; text-align:left;">
+                        <input type="checkbox" class="rec-topic-cb" value="${t.id}" ${t.isRecommend ? 'checked' : ''}> 推荐
+                    </label>
+                </div>`).join('');
+            const html = `
+                <div style="font-size:13px; color:var(--text-sub); margin-bottom:12px;">
+                    <i class="fas fa-info-circle"></i> 勾选的话题将在前端发帖话题搜索弹窗中作为"推荐话题"展示（建议不超过10个）
+                </div>
+                <div style="max-height:400px; overflow-y:auto;">${listHtml || '<div style="color:#ccc; text-align:center; padding:20px;">暂无上架话题</div>'}</div>
+            `;
+            openModal('管理推荐话题', html, () => {
+                const checked = Array.from(document.querySelectorAll('.rec-topic-cb'));
+                mockTopics.forEach(t => t.isRecommend = false);
+                checked.filter(cb => cb.checked).forEach(cb => {
+                    const t = mockTopics.find(x => x.id === cb.value);
+                    if(t) t.isRecommend = true;
+                });
+                showToast('推荐话题配置已保存');
+                closeModal();
+            });
         }
 
         let currentDetailTopicId = null;
@@ -1577,13 +1654,9 @@
                 let pinBtn = p.isPinned ? `<a onclick="togglePin('${p.id}', true)">取消置顶</a>` : `<a onclick="togglePin('${p.id}', true)">置顶</a>`;
                 let pinBadge = p.isPinned ? `<span class="tag tag-error" style="margin-left:8px;font-size:10px;">置顶</span>` : '';
                 
-                let featuredBtn = '';
-                let featuredBadge = p.isFeatured ? `<span class="tag tag-orange" style="margin-left:4px;font-size:10px;">精选</span>` : '';
-
-                if(p.status === 1) { 
-                    statusTag = `<span class="tag tag-success">通过已外显</span>`; 
-                    featuredBtn = p.isFeatured ? `<a onclick="toggleFeatured('${p.id}', true)">取消精选</a>` : `<a onclick="toggleFeatured('${p.id}', true)">加入精选</a>`;
-                    actionHtml += `${pinBtn}${featuredBtn}<a class="warning" onclick="changePostStatus('${p.id}', 2, true)">屏蔽</a><a class="danger" onclick="changePostStatus('${p.id}', 0, true)">删除</a>`;
+                if(p.status === 1) {
+                    statusTag = `<span class="tag tag-success">通过已外显</span>`;
+                    actionHtml += `${pinBtn}<a class="warning" onclick="changePostStatus('${p.id}', 2, true)">屏蔽</a><a class="danger" onclick="changePostStatus('${p.id}', 0, true)">删除</a>`;
                 } else if(p.status === 3) {
                     statusTag = `<span class="tag tag-warning">疑似待审核</span>`;
                     actionHtml += `<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1, true)">通过</a><a class="danger" onclick="changePostStatus('${p.id}', 4, true)">不通过</a><a class="danger" onclick="changePostStatus('${p.id}', 0, true)">删除</a>`;
@@ -1601,7 +1674,7 @@
                 return `
                 <tr style="${p.status === 0 ? 'background:#fafafa; opacity:0.6;' : (p.isPinned ? 'background:#fffbf0;' : '')}">
                     <td><input type="checkbox" class="topic-row-checkbox" value="${p.id}" onclick="checkSelectAllStatusTopic()"></td>
-                    <td style="font-family:monospace; color:var(--text-sub);">${p.id} ${pinBadge}${featuredBadge}</td>
+                    <td style="font-family:monospace; color:var(--text-sub);">${p.id} ${pinBadge}</td>
                     <td><div style="display:flex; align-items:center; gap:6px; font-size:12px;"><img src="${p.p_icon}" style="width:20px;height:20px;border-radius:4px;">${p.p_name}</div></td>
                     <td><div class="td-author"><div style="font-weight:bold; color:var(--primary); font-size:13px;">${p.author}</div><div style="font-size:12px; color:var(--text-sub);">UID: ${p.accountId}</div></div></td>
                     <td style="font-size:12px; color:var(--text-sub); white-space:nowrap;">${p.time.replace(' ', '<br>')}</td>
@@ -1671,13 +1744,9 @@
                 let pinBtn = p.isPinned ? `<a onclick="togglePin('${p.id}')">取消置顶</a>` : `<a onclick="togglePin('${p.id}')">置顶</a>`;
                 let pinBadge = p.isPinned ? `<span class="tag tag-error" style="margin-left:8px;font-size:10px;">置顶</span>` : '';
                 
-                let featuredBtn = '';
-                let featuredBadge = p.isFeatured ? `<span class="tag tag-orange" style="margin-left:4px;font-size:10px;">精选</span>` : '';
-
-                if(p.status === 1) { 
-                    statusTag = `<span class="tag tag-success">通过已外显</span>`; 
-                    featuredBtn = p.isFeatured ? `<a onclick="toggleFeatured('${p.id}')">取消精选</a>` : `<a onclick="toggleFeatured('${p.id}')">加入精选</a>`;
-                    actionHtml += `${pinBtn}${featuredBtn}<a class="warning" onclick="changePostStatus('${p.id}', 2)">屏蔽</a><a class="danger" onclick="changePostStatus('${p.id}', 0)">删除</a>`;
+                if(p.status === 1) {
+                    statusTag = `<span class="tag tag-success">通过已外显</span>`;
+                    actionHtml += `${pinBtn}<a class="warning" onclick="changePostStatus('${p.id}', 2)">屏蔽</a><a class="danger" onclick="changePostStatus('${p.id}', 0)">删除</a>`;
                 } else if(p.status === 3) {
                     statusTag = `<span class="tag tag-warning">疑似待审核</span>`;
                     actionHtml += `<a style="color:var(--success)" onclick="changePostStatus('${p.id}', 1)">通过</a><a class="danger" onclick="changePostStatus('${p.id}', 4)">不通过</a><a class="danger" onclick="changePostStatus('${p.id}', 0)">删除</a>`;
@@ -1700,10 +1769,11 @@
                 return `
                 <tr style="${p.status === 0 ? 'background:#fafafa; opacity:0.6;' : (p.isPinned ? 'background:#fffbf0;' : '')}">
                     <td><input type="checkbox" class="row-checkbox" value="${p.id}" onclick="checkSelectAllStatus()"></td>
-                    <td style="font-family:monospace; color:var(--text-sub);">${p.id} ${pinBadge}${featuredBadge}</td>
+                    <td style="font-family:monospace; color:var(--text-sub);">${p.id} ${pinBadge}</td>
                     <td><div style="display:flex; align-items:center; gap:6px; font-size:12px;"><img src="${p.p_icon}" style="width:20px;height:20px;border-radius:4px;">${p.p_name}</div></td>
                     <td><span class="tag ${catBadgeColor}">${catLabel}</span></td>
                     <td><div class="td-author"><div style="font-weight:bold; color:var(--primary); font-size:13px;">${p.author}</div><div style="font-size:12px; color:var(--text-sub);">UID: ${p.accountId}</div></div></td>
+                    <td style="font-size:12px; color:var(--text-sub);">${p.ipLocation || '广东'}</td>
                     <td style="font-size:12px; color:var(--text-sub); white-space:nowrap;">${p.time.replace(' ', '<br>')}</td>
                     <td><span title="${p.content}">${p.content.substring(0, 25)}${p.content.length > 25 ? '...' : ''}</span></td>
                     <td style="font-size:12px; color:var(--text-sub); white-space:nowrap;"><i class="fas fa-eye"></i> ${p.views} &nbsp; <i class="fas fa-heart"></i> ${p.likes} <br>评 ${p.replies} &brvbar; 转 ${p.reposts}</td>
@@ -1742,12 +1812,7 @@
             isTopicView ? renderTopicPosts() : renderPosts(); 
         }
         
-        function toggleFeatured(id, isTopicView = false) { 
-            const p = mockPosts.find(x => x.id === id); 
-            p.isFeatured = !p.isFeatured; 
-            showToast(p.isFeatured ? '已加入精选' : '已取消精选'); 
-            isTopicView ? renderTopicPosts() : renderPosts(); 
-        }
+        // toggleFeatured 已移除（评审确认：精选功能取消，仅保留置顶）
 
         function changePostStatus(id, newStatus, isTopicView = false) { 
             const p = mockPosts.find(x => x.id === id); 
@@ -1852,25 +1917,25 @@
                     <div id="m-report-post-options" style="display:block; background:#fafafa; padding:12px; border-radius:4px; margin-bottom:12px; border:1px solid var(--border-light);">
                         <div class="form-group" style="margin-bottom:0;">
                             <label style="width:70px;">动态处理</label>
-                            <select class="form-control" id="m-report-post-action">
-                                <option value="delete">删除违规动态</option>
-                                <option value="mute">仅屏蔽动态 (仅自己可见)</option>
-                            </select>
+                            <div style="flex:1; display:flex; gap:16px; margin-top:6px;">
+                                <label style="width:auto;display:flex;align-items:center;gap:4px;cursor:pointer;margin:0;text-align:left;"><input type="radio" name="m-report-post-action" value="delete" checked> 删除违规动态</label>
+                                <label style="width:auto;display:flex;align-items:center;gap:4px;cursor:pointer;margin:0;text-align:left;"><input type="radio" name="m-report-post-action" value="mute"> 屏蔽动态(仅自己可见)</label>
+                            </div>
                         </div>
                     </div>
                     <div id="m-report-user-options" style="display:none; background:#fafafa; padding:12px; border-radius:4px; margin-bottom:12px; border:1px solid var(--border-light);">
-                        <div class="form-group">
+                        <div class="form-group" style="margin-bottom:8px;">
                             <label style="width:70px;">禁发时长</label>
-                            <select class="form-control" id="m-report-user-ban" onchange="toggleCustomBan()">
-                                <option value="1">1天</option>
-                                <option value="7">7天</option>
-                                <option value="30">30天</option>
-                                <option value="365">365天</option>
-                                <option value="custom">自定义输入(天)</option>
-                            </select>
+                            <div style="flex:1; display:flex; flex-wrap:wrap; gap:12px; margin-top:6px;">
+                                <label style="width:auto;display:flex;align-items:center;gap:4px;cursor:pointer;margin:0;text-align:left;"><input type="radio" name="m-report-user-ban" value="1" checked> 1天</label>
+                                <label style="width:auto;display:flex;align-items:center;gap:4px;cursor:pointer;margin:0;text-align:left;"><input type="radio" name="m-report-user-ban" value="7"> 7天</label>
+                                <label style="width:auto;display:flex;align-items:center;gap:4px;cursor:pointer;margin:0;text-align:left;"><input type="radio" name="m-report-user-ban" value="30"> 30天</label>
+                                <label style="width:auto;display:flex;align-items:center;gap:4px;cursor:pointer;margin:0;text-align:left;"><input type="radio" name="m-report-user-ban" value="365"> 365天</label>
+                                <label style="width:auto;display:flex;align-items:center;gap:4px;cursor:pointer;margin:0;text-align:left;"><input type="radio" name="m-report-user-ban" value="custom" onchange="toggleCustomBan()"> 自定义</label>
+                            </div>
                         </div>
                         <div class="form-group" id="m-report-custom-ban-wrap" style="display:none; margin-bottom:0;">
-                            <label style="width:70px;">自定义时长</label>
+                            <label style="width:70px;">自定义天数</label>
                             <input type="number" class="form-control" id="m-report-custom-ban" placeholder="请输入天数" min="1">
                         </div>
                     </div>
@@ -1878,18 +1943,19 @@
                 openModal('处理违规举报', html, () => {
                     const handlePost = document.getElementById('cb-handle-post').checked;
                     const handleUser = document.getElementById('cb-handle-user').checked;
-                    
+
                     if(!handlePost && !handleUser) return showToast('请至少选择一项处理对象', 'error');
 
                     let actions =[];
                     if (handlePost) {
-                        const postAction = document.getElementById('m-report-post-action').value;
+                        const postAction = document.querySelector('input[name="m-report-post-action"]:checked').value;
                         actions.push(postAction === 'delete' ? '删除动态' : '屏蔽动态');
                         let p = mockPosts.find(x => x.id === r.postId);
                         if(p) p.status = postAction === 'mute' ? 2 : 0;
                     }
                     if (handleUser) {
-                        let days = document.getElementById('m-report-user-ban').value;
+                        const banRadio = document.querySelector('input[name="m-report-user-ban"]:checked');
+                        let days = banRadio ? banRadio.value : '1';
                         if (days === 'custom') {
                             days = document.getElementById('m-report-custom-ban').value;
                             if (!days) return showToast('请输入自定义天数', 'error');
@@ -1957,7 +2023,7 @@
             if (!tbody) return;
             var html = '';
             officialPosts.forEach(function(p, idx) {
-                var statusCls = p.status === '已发布' ? 'tag-green' : p.status === '已下架' ? 'tag-gray' : p.status === '已置顶' ? 'tag-blue' : 'tag-orange';
+                var statusCls = p.status === '已发布' ? 'tag-green' : p.status === '已下架' ? 'tag-gray' : p.status === '已置顶' ? 'tag-blue' : p.status === '待发布' ? 'tag-warning' : p.status === '定时待发布' ? 'tag-orange' : 'tag-orange';
                 var tagCell = p.tag ? '<span class="tag tag-orange">' + p.tag + '</span>' : '<span style="color:#ccc">-</span>';
                 html += '<tr><td><input type="checkbox"></td><td>' + p.id + '</td><td>-</td><td>' + p.title + '</td><td>' + p.partition + '</td><td>' + p.nickname + '</td><td>' + tagCell + '</td><td><span class="tag ' + statusCls + '">' + p.status + '</span></td><td style="font-size:12px">' + p.time + '</td><td><button class="btn btn-sm" onclick="editOfficialPost(' + idx + ')">编辑</button> <button class="btn btn-sm" onclick="previewOfficialPost(' + idx + ')">预览</button> <button class="btn btn-sm btn-danger" onclick="deleteOfficialPost(' + idx + ')">删除</button></td></tr>';
             });
@@ -1980,7 +2046,7 @@
             h += '<div style="display:flex;gap:16px"><div style="flex:1"><label style="display:block;margin-bottom:4px;font-weight:500">发布方式</label><select style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-publish-type" onchange="document.getElementById(\'m-schedule-time\').style.display=this.value===\'定时发布\'?\'block\':\'none\'"><option' + (data && data.publishType==='定时发布' ? '' : ' selected') + '>立即发布</option><option' + (data && data.publishType==='定时发布' ? ' selected' : '') + '>定时发布</option></select></div>';
             h += '<div style="flex:1"><label style="display:block;margin-bottom:4px;font-weight:500">定时时间</label><input type="datetime-local" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px;display:' + (data && data.publishType==='定时发布' ? 'block' : 'none') + '" id="m-schedule-time"></div></div>';
             if (isEdit) {
-                h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">状态</label><select style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-status"><option' + (data.status==='已发布' ? ' selected' : '') + '>已发布</option><option' + (data.status==='已下架' ? ' selected' : '') + '>已下架</option><option' + (data.status==='已置顶' ? ' selected' : '') + '>已置顶</option></select></div>';
+                h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">状态</label><select style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-status"><option' + (data.status==='待发布' ? ' selected' : '') + '>待发布</option><option' + (data.status==='定时待发布' ? ' selected' : '') + '>定时待发布</option><option' + (data.status==='已发布' ? ' selected' : '') + '>已发布</option><option' + (data.status==='已下架' ? ' selected' : '') + '>已下架</option><option' + (data.status==='已置顶' ? ' selected' : '') + '>已置顶</option></select></div>';
             } else {
                 h += '<div><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="m-pin"> 发布后置顶</label></div>';
             }
@@ -1994,6 +2060,9 @@
                 var content = document.getElementById('m-content').innerHTML;
                 if (!title) { showToast('请填写标题'); return; }
                 if (!content || content === '<br>') { showToast('请填写正文'); return; }
+                var publishType = document.getElementById('m-publish-type').value;
+                var status = '待发布';
+                if (publishType === '定时发布') status = '定时待发布';
                 officialPosts.unshift({
                     id: 'OP' + String(officialPosts.length + 1).padStart(3, '0'),
                     nickname: document.getElementById('m-nickname').value || '盖世游戏官方',
@@ -2001,13 +2070,13 @@
                     title: title,
                     content: content,
                     partition: document.getElementById('m-partition').value,
-                    status: (document.getElementById('m-pin') && document.getElementById('m-pin').checked) ? '已置顶' : '已发布',
-                    time: document.getElementById('m-publish-type').value === '定时发布' ? (document.getElementById('m-schedule-time').value || '待定') : new Date().toLocaleString('zh-CN'),
-                    publishType: document.getElementById('m-publish-type').value
+                    status: status,
+                    time: publishType === '定时发布' ? (document.getElementById('m-schedule-time').value || '待定') : new Date().toLocaleString('zh-CN'),
+                    publishType: publishType
                 });
                 renderOfficialPost();
                 closeModal();
-                showToast('动态发布成功');
+                showToast('动态已保存为' + status + '，请预览确认后发布');
             });
         }
 
@@ -2075,11 +2144,11 @@
             { id: 'BL_IP001', ip: '192.168.1.100', reason: '恶意刷屏', target: '针对人', action: '禁止发帖-7天', banTime: '2026-05-20 10:00', status: '生效中', operator: 'SuperAdmin' },
             { id: 'BL_IP002', ip: '10.0.0.0/24', reason: '批量注册垃圾账号', target: '针对人', action: '禁止发帖-永久', banTime: '2026-05-18 14:30', status: '生效中', operator: 'SuperAdmin' },
             { id: 'BL_IP003', ip: '172.16.5.88', reason: '发布违规内容', target: '针对动态', action: '屏蔽（仅自己可见）', banTime: '2026-04-01 09:00', status: '生效中', operator: '运营A' },
-            { id: 'BL_IP004', ip: '203.0.113.55', reason: '广告灌水', target: '针对动态', action: '删帖', banTime: '2026-05-10 11:00', status: '已过期', operator: '运营A' },
+            { id: 'BL_IP004', ip: '203.0.113.55', reason: '广告灌水', target: '针对动态', action: '屏蔽', banTime: '2026-05-10 11:00', status: '已过期', operator: '运营A' },
         ];
         var mockBlKw = [
             { id: 'BL_KW001', keyword: '代练', matchMode: '精确匹配', target: '针对动态', action: '屏蔽', triggerCount: 128, addTime: '2026-03-10 10:00', status: '启用' },
-            { id: 'BL_KW002', keyword: '外挂|辅助|透视', matchMode: '正则匹配', target: '针对动态', action: '删帖', triggerCount: 456, addTime: '2026-03-05 14:00', status: '启用' },
+            { id: 'BL_KW002', keyword: '外挂|辅助|透视', matchMode: '正则匹配', target: '针对动态', action: '屏蔽', triggerCount: 456, addTime: '2026-03-05 14:00', status: '启用' },
             { id: 'BL_KW003', keyword: '加微信', matchMode: '模糊匹配', target: '针对人', action: '禁止发帖-3天', triggerCount: 89, addTime: '2026-04-12 09:00', status: '启用' },
             { id: 'BL_KW004', keyword: '测试关键词', matchMode: '精确匹配', target: '针对动态', action: '屏蔽', triggerCount: 0, addTime: '2026-05-20 16:00', status: '已禁用' },
         ];
@@ -2164,7 +2233,7 @@
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* IP地址/段</label><input type="text" placeholder="如 192.168.1.100 或 10.0.0.0/24" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-bl-ip"></div>';
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 封禁原因</label><input type="text" placeholder="输入封禁原因" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-bl-ip-reason"></div>';
             h += '<div><label style="display:block;margin-bottom:6px;font-weight:500">* 处罚对象</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-ip-target','post','针对动态',true) + blRadio('bl-ip-target','user','针对人',false) + '</div></div>';
-            h += '<div id="m-bl-ip-post-detail"><label style="display:block;margin-bottom:6px;font-weight:500">动态处罚方式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-ip-post-action','删帖','删帖',true) + blRadio('bl-ip-post-action','屏蔽','屏蔽（仅自己可见）',false) + '</div></div>';
+            h += '<div id="m-bl-ip-post-detail"><label style="display:block;margin-bottom:6px;font-weight:500">动态处罚方式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-ip-post-action','屏蔽','屏蔽（仅自己可见）',true) + '</div></div>';
             h += '<div id="m-bl-ip-user-detail" style="display:none"><label style="display:block;margin-bottom:6px;font-weight:500">禁止发帖时长</label><div style="display:flex;gap:8px;flex-wrap:wrap">' + blRadio('bl-ip-dur','1','1天',true) + blRadio('bl-ip-dur','3','3天',false) + blRadio('bl-ip-dur','7','7天',false) + blRadio('bl-ip-dur','30','30天',false) + blRadio('bl-ip-dur','forever','永久',false) + blRadio('bl-ip-dur','custom','自定义',false) + '</div><input type="number" min="1" placeholder="输入天数" style="margin-top:8px;width:120px;padding:8px;border:1px solid #d9d9d9;border-radius:4px;display:none" id="m-bl-ip-custom-dur"></div>';
             h += '</div>';
             openModal('新增IP封禁规则', h, function() {
@@ -2191,9 +2260,9 @@
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 关键词</label><input type="text" placeholder="多个关键词用|分隔" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-bl-kw"></div>';
             h += '<div><label style="display:block;margin-bottom:6px;font-weight:500">匹配模式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-kw-mode','精确匹配','精确匹配',true) + blRadio('bl-kw-mode','模糊匹配','模糊匹配',false) + blRadio('bl-kw-mode','正则匹配','正则匹配',false) + '</div></div>';
             h += '<div><label style="display:block;margin-bottom:6px;font-weight:500">* 处罚对象</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-kw-target','post','针对动态',true) + blRadio('bl-kw-target','user','针对人',false) + '</div></div>';
-            h += '<div id="m-bl-kw-post-detail"><label style="display:block;margin-bottom:6px;font-weight:500">动态处罚方式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-kw-post-action','删帖','删帖',true) + blRadio('bl-kw-post-action','屏蔽','屏蔽（仅自己可见）',false) + '</div></div>';
+            h += '<div id="m-bl-kw-post-detail"><label style="display:block;margin-bottom:6px;font-weight:500">动态处罚方式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-kw-post-action','屏蔽','屏蔽（仅自己可见）',true) + '</div></div>';
             h += '<div id="m-bl-kw-user-detail" style="display:none"><label style="display:block;margin-bottom:6px;font-weight:500">禁止发帖时长</label><div style="display:flex;gap:8px;flex-wrap:wrap">' + blRadio('bl-kw-dur','1','1天',true) + blRadio('bl-kw-dur','3','3天',false) + blRadio('bl-kw-dur','7','7天',false) + blRadio('bl-kw-dur','30','30天',false) + blRadio('bl-kw-dur','forever','永久',false) + blRadio('bl-kw-dur','custom','自定义',false) + '</div><input type="number" min="1" placeholder="输入天数" style="margin-top:8px;width:120px;padding:8px;border:1px solid #d9d9d9;border-radius:4px;display:none" id="m-bl-kw-custom-dur"></div>';
-            h += '<div style="background:#fffbe6;padding:10px;border-radius:4px;font-size:12px;color:#8c6e00"><i class="fas fa-info-circle"></i> 针对动态：命中关键词的帖子被删帖或屏蔽；针对人：发布者被禁止发帖指定天数</div>';
+            h += '<div style="background:#fffbe6;padding:10px;border-radius:4px;font-size:12px;color:#8c6e00"><i class="fas fa-info-circle"></i> 针对动态：命中关键词的帖子被屏蔽（仅自己可见）；针对人：发布者被禁止发帖指定天数</div>';
             h += '</div>';
             openModal('新增关键词规则', h, function() {
                 var kw = document.getElementById('m-bl-kw').value;
@@ -2221,7 +2290,7 @@
             h += '<div id="m-bl-pun-post-section" style="display:none"><label style="display:block;margin-bottom:4px;font-weight:500">* 动态ID</label><input type="text" placeholder="输入动态ID" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px" id="m-bl-pun-postid"></div>';
             h += '<div id="m-bl-pun-type-user"><label style="display:block;margin-bottom:6px;font-weight:500">* 处罚类型</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-pun-type','禁止发帖(周期)','禁止发帖(周期)',true) + blRadio('bl-pun-type','禁止发帖(永久)','禁止发帖(永久)',false) + '</div></div>';
             h += '<div id="m-bl-pun-dur-section"><label style="display:block;margin-bottom:6px;font-weight:500">禁止发帖天数</label><div style="display:flex;gap:8px;flex-wrap:wrap">' + blRadio('bl-pun-dur','1','1天',true) + blRadio('bl-pun-dur','3','3天',false) + blRadio('bl-pun-dur','7','7天',false) + blRadio('bl-pun-dur','30','30天',false) + blRadio('bl-pun-dur','custom','自定义',false) + '</div><input type="number" min="1" placeholder="输入天数" style="margin-top:8px;width:120px;padding:8px;border:1px solid #d9d9d9;border-radius:4px;display:none" id="m-bl-pun-custom-dur"></div>';
-            h += '<div id="m-bl-pun-type-post" style="display:none"><label style="display:block;margin-bottom:6px;font-weight:500">* 动态处罚方式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-pun-post-action','删帖','删帖',true) + blRadio('bl-pun-post-action','屏蔽','屏蔽（仅自己可见）',false) + '</div></div>';
+            h += '<div id="m-bl-pun-type-post" style="display:none"><label style="display:block;margin-bottom:6px;font-weight:500">* 动态处罚方式</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + blRadio('bl-pun-post-action','屏蔽','屏蔽（仅自己可见）',true) + '</div></div>';
             h += '<div><label style="display:block;margin-bottom:4px;font-weight:500">* 处罚原因</label><textarea placeholder="输入处罚原因" style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:4px;min-height:60px" id="m-bl-pun-reason"></textarea></div>';
             h += '</div>';
             openModal('手动处罚', h, function() {
