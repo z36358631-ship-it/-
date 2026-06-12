@@ -388,9 +388,7 @@ function confirmCrop() {
   ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outW, outH);
   const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
   const wp = { type: 'image', dataUrl, name: '自定义壁纸', time: Date.now() };
-  currentWp = wp;
   selectedWp = wp;
-  addToHistory(wp);
   closeCrop();
   render();
 }
