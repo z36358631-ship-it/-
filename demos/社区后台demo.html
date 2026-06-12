@@ -919,12 +919,12 @@
 
         // ====== 话题管理 Mock 数据 ======
         const mockTopics =[
-            { id: 'TOPIC_1001', content: '#GTA6预告解析#', source: '热门', sort: 1, app: '双端互通', postCount: 1250, views: 8890000, participants: 542000, startTime: '2026-03-01 00:00', endTime: '2026-12-31 23:59', showTime: '2026-03-01 10:00', hideTime: '', createTime: '2026-03-01 10:00:00', status: 1 },
-            { id: 'TOPIC_1002', content: '#黑神话悟空速通#', source: '热门', sort: 2, app: '双端互通', postCount: 843, views: 16360000, participants: 1200000, startTime: '2026-03-05 00:00', endTime: '2026-05-01 23:59', showTime: '2026-03-05 14:30', hideTime: '', createTime: '2026-03-05 14:30:00', status: 1 },
-            { id: 'TOPIC_1003', content: '#Steam春季特卖#', source: '热门', sort: 3, app: '双端互通', postCount: 3200, views: 270000000, participants: 12000000, startTime: '2026-03-10 00:00', endTime: '2026-03-24 23:59', showTime: '2026-03-10 09:15', hideTime: '2026-03-24 23:59', createTime: '2026-03-10 09:15:00', status: 2 },
-            { id: 'TOPIC_1004', content: '#日常打卡#', source: '运营配置', sort: 4, app: '双端互通', postCount: 56, views: 8900000, participants: 300000, startTime: '2026-01-01 00:00', endTime: '2099-12-31 23:59', showTime: '2026-01-01 00:00', hideTime: '', createTime: '2026-03-12 16:45:00', status: 1 },
-            { id: 'TOPIC_1005', content: '#新手求助专区#', source: '运营配置', sort: 5, app: '双端互通', postCount: 320, views: 1500000, participants: 85000, startTime: '2026-02-01 00:00', endTime: '2099-12-31 23:59', showTime: '2026-02-01 00:00', hideTime: '', createTime: '2026-02-01 10:00:00', status: 1 },
-            { id: 'TOPIC_1006', content: '#周末开黑组队#', source: '运营配置', sort: 6, app: '双端互通', postCount: 180, views: 920000, participants: 42000, startTime: '2026-04-01 00:00', endTime: '2026-06-30 23:59', showTime: '2026-04-01 00:00', hideTime: '2026-06-30 23:59', createTime: '2026-04-01 09:00:00', status: 2 }
+            { id: 'TOPIC_1001', content: '#GTA6预告解析#', source: '热门', sort: 100, app: '双端互通', postCount: 1250, views: 8890000, participants: 542000, startTime: '2026-03-01 00:00', endTime: '2026-12-31 23:59', showTime: '2026-03-01 10:00', hideTime: '', createTime: '2026-03-01 10:00:00', status: 1 },
+            { id: 'TOPIC_1002', content: '#黑神话悟空速通#', source: '热门', sort: 90, app: '双端互通', postCount: 843, views: 16360000, participants: 1200000, startTime: '2026-03-05 00:00', endTime: '2026-05-01 23:59', showTime: '2026-03-05 14:30', hideTime: '', createTime: '2026-03-05 14:30:00', status: 1 },
+            { id: 'TOPIC_1003', content: '#Steam春季特卖#', source: '热门', sort: 80, app: '双端互通', postCount: 3200, views: 270000000, participants: 12000000, startTime: '2026-03-10 00:00', endTime: '2026-03-24 23:59', showTime: '2026-03-10 09:15', hideTime: '2026-03-24 23:59', createTime: '2026-03-10 09:15:00', status: 2 },
+            { id: 'TOPIC_1004', content: '#日常打卡#', source: '运营配置', sort: 70, app: '双端互通', postCount: 56, views: 8900000, participants: 300000, startTime: '2026-01-01 00:00', endTime: '2099-12-31 23:59', showTime: '2026-01-01 00:00', hideTime: '', createTime: '2026-03-12 16:45:00', status: 1 },
+            { id: 'TOPIC_1005', content: '#新手求助专区#', source: '运营配置', sort: 60, app: '双端互通', postCount: 320, views: 1500000, participants: 85000, startTime: '2026-02-01 00:00', endTime: '2099-12-31 23:59', showTime: '2026-02-01 00:00', hideTime: '', createTime: '2026-02-01 10:00:00', status: 1 },
+            { id: 'TOPIC_1006', content: '#周末开黑组队#', source: '运营配置', sort: 50, app: '双端互通', postCount: 180, views: 920000, participants: 42000, startTime: '2026-04-01 00:00', endTime: '2026-06-30 23:59', showTime: '2026-04-01 00:00', hideTime: '2026-06-30 23:59', createTime: '2026-04-01 09:00:00', status: 2 }
         ];
 
         // status映射：1 = 通过已外显, 2 = 已屏蔽, 3 = 疑似待审核, 4 = 违规已拦截, 0 = 已删除
@@ -1479,7 +1479,11 @@
         // ================= 话题管理业务逻辑 =================
         function renderTopics() {
             const tbody = document.getElementById('topic-table-body');
-            const sorted = [...mockTopics].sort((a, b) => a.sort - b.sort);
+            const sorted = [...mockTopics].sort((a, b) => {
+                if (a.sort !== b.sort) return b.sort - a.sort;
+                if (a.source === '热门' && b.source === '热门') return b.views - a.views;
+                return 0;
+            });
             tbody.innerHTML = sorted.map(t => {
                 const statusTag = t.status === 1 ? `<span class="tag tag-success">显示中</span>` : `<span class="tag tag-gray">已屏蔽</span>`;
                 const sourceCls = t.source === '热门' ? 'tag-orange' : 'tag-blue';
@@ -1506,15 +1510,10 @@
         }
 
         function moveTopicSort(id, dir) {
-            const sorted = [...mockTopics].sort((a, b) => a.sort - b.sort);
-            const idx = sorted.findIndex(x => x.id === id);
-            const swapIdx = idx + dir;
-            if (swapIdx < 0 || swapIdx >= sorted.length) return;
-            const tempSort = sorted[idx].sort;
-            sorted[idx].sort = sorted[swapIdx].sort;
-            sorted[swapIdx].sort = tempSort;
+            const t = mockTopics.find(x => x.id === id);
+            t.sort = Math.max(0, t.sort + (dir === -1 ? 10 : -10));
             renderTopics();
-            showToast('排序已调整');
+            showToast('排序值已调整为 ' + t.sort);
         }
 
         function openTopicModal(id = null) {
@@ -1530,6 +1529,7 @@
                         <option value="热门" ${target.source==='热门'?'selected':''}>热门</option>
                     </select>
                 </div>
+                <div class="form-group"><label class="required">排序值</label><input type="number" class="form-control" id="m-t-sort" value="${target.sort || 50}" min="0" placeholder="数值越大排名越靠前"><div style="font-size:11px;color:#999;margin-top:4px;margin-left:106px;">热门话题同排序值时按浏览量降序</div></div>
                 <div class="form-group"><label>显示时间</label><input type="datetime-local" class="form-control" id="m-t-show" value="${target.showTime ? target.showTime.replace(' ', 'T') : ''}"></div>
                 <div class="form-group"><label>屏蔽时间</label><input type="datetime-local" class="form-control" id="m-t-hide" value="${target.hideTime ? target.hideTime.replace(' ', 'T') : ''}"><div style="font-size:11px;color:#999;margin-top:4px;margin-left:106px;">留空表示不自动屏蔽</div></div>
                 <div class="form-group"><label class="required">状态</label>
@@ -1547,17 +1547,17 @@
                 if (isEdit) {
                     target.content = content;
                     target.source = document.getElementById('m-t-source').value;
+                    target.sort = parseInt(document.getElementById('m-t-sort').value) || 0;
                     target.showTime = document.getElementById('m-t-show').value.replace('T', ' ');
                     target.hideTime = document.getElementById('m-t-hide').value.replace('T', ' ');
                     target.status = parseInt(document.getElementById('m-t-status').value);
                     showToast('话题编辑成功');
                 } else {
-                    const maxSort = mockTopics.reduce((m, t) => Math.max(m, t.sort), 0);
                     mockTopics.unshift({
                         id: 'TOPIC_' + Math.floor(Math.random()*9000 + 1000),
                         content: content,
                         source: document.getElementById('m-t-source').value,
-                        sort: maxSort + 1,
+                        sort: parseInt(document.getElementById('m-t-sort').value) || 50,
                         app: '双端互通',
                         postCount: 0,
                         views: 0,
