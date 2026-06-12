@@ -38,9 +38,8 @@ body { background: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, "Seg
 .controller-preview { width: 100%; aspect-ratio: 2/1; background: #1a1a1a; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; position: relative; overflow: hidden; cursor: pointer; }
 .phone.landscape .controller-preview { margin-bottom: 0; aspect-ratio: auto; width: 100%; height: 100%; border-radius: 12px; }
 .controller-preview:active { opacity: .9; }
-.screen-area { width: 160px; height: 80px; border-radius: 8px; overflow: hidden; border: 2px solid #444; background: #000; position: relative; }
-.screen-area img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.screen-placeholder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; font-size: 12px; }
+.controller-preview > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.screen-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; font-size: 12px; z-index: 1; }
 .upload-hint { position: absolute; bottom: 8px; right: 12px; display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,.6); font-size: 11px; }
 .upload-hint svg { width: 14px; height: 14px; fill: rgba(255,255,255,.6); }
 
@@ -113,11 +112,9 @@ body { background: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, "Seg
   <div class="page-content" id="pageContent">
     <div class="left-panel">
       <div class="controller-preview" onclick="pickImage()">
-        <div class="screen-area" id="screenArea">
-          <div class="screen-placeholder" id="screenPlaceholder">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="#666" style="margin-bottom:4px"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            <span style="font-size:12px;color:#666;">请选择壁纸</span>
-          </div>
+        <div class="screen-placeholder" id="screenPlaceholder">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="#666" style="margin-bottom:4px"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          <span style="font-size:12px;color:#666;">请选择壁纸</span>
         </div>
         <div class="upload-hint" id="uploadHint" style="display:none;">
           <svg viewBox="0 0 24 24"><path d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z"/></svg>
@@ -236,28 +233,33 @@ function renderHistory() {
 }
 
 function updatePreview() {
-  const area = document.getElementById('screenArea');
+  const container = document.querySelector('.controller-preview');
   const placeholder = document.getElementById('screenPlaceholder');
   const hint = document.getElementById('uploadHint');
   const wp = selectedWp || currentWp;
+  // 清除旧图片
+  const existImg = container.querySelector(':scope > img');
   if (!wp) {
+    if (existImg) existImg.remove();
+    container.style.background = '#1a1a1a';
     placeholder.style.display = 'flex';
     hint.style.display = 'none';
-    area.style.background = '#000';
-    const existImg = area.querySelector('img');
-    if (existImg) existImg.remove();
     return;
   }
   placeholder.style.display = 'none';
   hint.style.display = 'flex';
-  const existImg = area.querySelector('img');
   if (wp.type === 'gradient') {
     if (existImg) existImg.remove();
-    area.style.background = wp.bg;
+    container.style.background = wp.bg;
   } else {
-    area.style.background = '#000';
-    if (existImg) existImg.src = wp.dataUrl;
-    else { const img = document.createElement('img'); img.src = wp.dataUrl; area.appendChild(img); }
+    container.style.background = '#1a1a1a';
+    if (existImg) {
+      existImg.src = wp.dataUrl;
+    } else {
+      const img = document.createElement('img');
+      img.src = wp.dataUrl;
+      container.appendChild(img);
+    }
   }
 }
 
@@ -429,6 +431,7 @@ function applyWallpaper() {
       }
     }
   }
+  selectedWp = null;
   render();
   showToast('保存成功');
 }
