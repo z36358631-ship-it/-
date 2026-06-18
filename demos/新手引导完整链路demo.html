@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新手引导完整链路 Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#000;--card:#161616;--card-hover:#1c1c1c;--elev:#1e1e1e;
+  --txt:#fff;--txt2:#e0e0e0;--muted:#888;--muted2:#555;
+  --gold:#ffcc43;--gold-dim:rgba(255,204,67,.12);--gold-glow:rgba(255,204,67,.25);
+  --green:#33d8a4;--blue:#5ba8f5;--purple:#8174fa;
+  --border:#2a2a2a;--border-light:#3a3a3a;
+  --r-sm:6px;--r-md:10px;--r-lg:14px;--r-xl:18px;--r-full:100px;
+  --font:'MiSans VF','MiSans',-apple-system,'PingFang SC',sans-serif;
+  --font-num:'D-DIN-PRO',var(--font);
+  --shadow-card:0 2px 12px rgba(0,0,0,.4);
+  --shadow-glow:0 0 20px rgba(255,204,67,.15);
+}
+html{font-size:16px}
+body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-smoothing:antialiased;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:24px}
+
+.phone{
+  width:390px;height:844px;background:var(--bg);border-radius:44px;
+  overflow:hidden;position:relative;
+  box-shadow:inset 0 0 0 1px #1a1a1a,0 24px 80px rgba(0,0,0,.8),0 0 0 1px #111;
+}
+.phone::before{
+  content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  width:80px;height:28px;background:#111;border-radius:14px;z-index:20;
+}
+
+.sbar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:20px 28px 0;font-size:13px;font-weight:520;
+  position:absolute;top:0;left:0;right:0;z-index:10;
+  font-family:var(--font-num);color:var(--txt2);
+}
+
+/* Pages */
+.page{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;
+  transition:opacity .35s ease,transform .35s ease;
+  transform:translateX(20px);
+}
+.page.active{opacity:1;pointer-events:auto;transform:translateX(0)}
+.page.exit-left{opacity:0;transform:translateX(-20px)}
+
+/* Step Bar */
+.step-bar{
+  display:flex;align-items:center;
+  padding:0 24px 10px;gap:0;
+}
+.step-item{display:flex;align-items:center;gap:6px;cursor:default}
+.step-item.clickable{cursor:pointer}
+.step-num{
+  width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;color:var(--muted2);
+  background:#1a1a1a;border:1.5px solid var(--border-light);
+  transition:all .3s ease;
+}
+.step-label{font-size:13px;color:var(--muted);font-weight:400;transition:all .3s}
+.step-item.active .step-num{background:var(--gold);color:#000;border-color:var(--gold);box-shadow:0 0 12px rgba(255,204,67,.3)}
+.step-item.active .step-label{color:var(--txt);font-weight:520}
+.step-item.done .step-num{background:var(--green);color:#000;border-color:var(--green)}
+.step-item.done .step-label{color:var(--green)}
+.step-line{width:44px;height:2px;background:var(--border);margin:0 12px;border-radius:1px;transition:all .4s}
+.step-line.done{background:var(--green)}
+
+/* Skip */
+.skip-btn{
+  font-size:14px;color:var(--muted);cursor:pointer;
+  border:none;background:none;font-family:var(--font);
+  transition:color .2s;
+  display:block;text-align:right;padding:44px 24px 8px;
+}
+.skip-btn:hover{color:var(--txt2)}
+.skip-btn:active{color:var(--txt)}
+
+/* Page Content */
+.page-body{padding:0 24px;flex:1;display:flex;flex-direction:column;overflow-y:auto}
+.page-body::-webkit-scrollbar{display:none}
+.page-title{font-size:22px;font-weight:600;letter-spacing:-.3px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.page-desc{font-size:14px;color:var(--muted);line-height:1.5;margin-bottom:16px}
+
+/* Game Grid */
+.game-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+  padding-bottom:24px;
+}
+.game-item{
+  position:relative;border-radius:var(--r-lg);overflow:hidden;
+  cursor:pointer;aspect-ratio:3/4;
+  border:2px solid transparent;
+  transition:all .2s ease;
+  box-shadow:var(--shadow-card);
+}
+.game-item:active{transform:scale(.94)}
+.game-item.sel{
+  border-color:var(--gold);
+  box-shadow:var(--shadow-glow),var(--shadow-card);
+}
+.game-item img{width:100%;height:100%;object-fit:cover;display:block}
+.game-item .gname{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:24px 8px 8px;
+  background:linear-gradient(transparent,rgba(0,0,0,.92));
+  font-size:11px;font-weight:400;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.game-item .check{
+  position:absolute;top:6px;right:6px;
+  width:22px;height:22px;border-radius:50%;
+  background:var(--gold);
+  display:none;align-items:center;justify-content:center;
+  font-size:12px;color:#000;font-weight:700;
+  box-shadow:0 2px 8px rgba(255,204,67,.5);
+}
+.game-item.sel .check{display:flex}
+
+/* Footer */
+.refresh-btn{
+  font-size:13px;color:var(--blue);cursor:pointer;
+  border:none;background:none;font-weight:400;
+  transition:opacity .2s;
+}
+.refresh-btn:active{opacity:.5}
+
+/* Option Cards */
+.opt-list{display:flex;flex-direction:column;gap:16px;padding-top:8px}
+.opt-card{
+  background:var(--card);border:1.5px solid var(--border);
+  border-radius:var(--r-xl);padding:24px 20px;
+  cursor:pointer;display:flex;align-items:center;gap:16px;
+  transition:all .2s ease;
+}
+.opt-card:hover{background:var(--card-hover);border-color:var(--border-light)}
+.opt-card:active{transform:scale(.97);border-color:var(--gold);box-shadow:var(--shadow-glow)}
+.opt-icon{
+  width:50px;height:50px;border-radius:var(--r-md);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;flex-shrink:0;
+}
+.opt-icon.steam{background:linear-gradient(145deg,#1b2838,#2a4a6a)}
+.opt-icon.import{background:linear-gradient(145deg,#163322,#2a6644)}
+.opt-icon.play{background:linear-gradient(145deg,#3d1a0e,#7a3a20)}
+.opt-info{flex:1}
+.opt-title{font-size:16px;font-weight:520;margin-bottom:4px}
+.opt-desc{font-size:13px;color:var(--muted);line-height:1.4}
+.opt-arrow{color:var(--muted2);font-size:18px}
+.opt-hint{text-align:center;margin-top:28px;font-size:12px;color:var(--muted2)}
+
+/* Scan Page */
+.scan-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 24px}
+.scan-circle{
+  width:100px;height:100px;border-radius:50%;
+  background:radial-gradient(circle,rgba(51,216,164,.1),transparent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;position:relative;margin-bottom:24px;
+}
+.scan-circle::after{
+  content:'';position:absolute;inset:-6px;border-radius:50%;
+  border:2px solid var(--green);border-top-color:transparent;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.scan-title{font-size:16px;font-weight:520;margin-bottom:6px;text-align:center}
+.scan-sub{font-size:13px;color:var(--muted);text-align:center}
+.scan-result{display:none;width:100%;margin-top:28px}
+.scan-result.show{display:block}
+.sr-title{font-size:14px;font-weight:520;margin-bottom:12px}
+.sr-item{
+  display:flex;align-items:center;gap:12px;padding:14px;
+  background:var(--card);border-radius:var(--r-lg);
+  margin-bottom:8px;border:1.5px solid var(--green);
+}
+.sr-cover{width:44px;height:44px;border-radius:var(--r-md);flex-shrink:0;object-fit:cover}
+.sr-info{flex:1}
+.sr-name{font-size:14px;font-weight:520}
+.sr-path{font-size:11px;color:var(--muted);margin-top:2px}
+.sr-check{width:20px;height:20px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;color:#000;font-weight:700}
+.import-btn{
+  width:100%;padding:14px;border-radius:var(--r-full);border:none;
+  background:var(--green);color:#000;font-size:15px;font-weight:520;
+  cursor:pointer;margin-top:16px;transition:transform .2s;
+}
+.import-btn:active{transform:scale(.97)}
+.manual-link{display:block;text-align:center;margin-top:12px;font-size:13px;color:var(--blue);cursor:pointer;border:none;background:none}
+
+/* Done Page */
+.done-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 32px}
+.done-icon{font-size:56px;margin-bottom:16px}
+.done-title{font-size:20px;font-weight:520;margin-bottom:8px;text-align:center}
+.done-desc{font-size:14px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:28px;white-space:pre-line}
+.done-btn{
+  width:100%;max-width:240px;padding:14px;border-radius:var(--r-full);
+  border:none;background:var(--gold);color:#000;
+  font-size:15px;font-weight:600;cursor:pointer;transition:transform .2s;
+}
+.done-btn:active{transform:scale(.97)}
+
+/* Control Panel */
+.cp{position:fixed;top:20px;right:20px;background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:16px;width:200px;font-size:12px;color:#999}
+.cp h4{font-size:12px;color:var(--gold);margin-bottom:10px;font-weight:520;text-transform:uppercase;letter-spacing:.5px}
+.cp-btn{width:100%;padding:8px;background:#1a1a1a;color:#aaa;border:1px solid #333;border-radius:var(--r-md);font-size:11px;cursor:pointer;margin-bottom:5px;transition:background .2s}
+.cp-btn:hover{background:#222}
+</style>
+</head>
+<body>
+<div class="phone">
+<div class="sbar"><span>10:24</span><span>5G</span></div>
+
+<!-- Step 1: 选择游戏 -->
+<div class="page active" id="page1">
+  <button class="skip-btn" onclick="goStep2()">跳过</button>
+  <div class="step-bar">
+    <div class="step-item active"><span class="step-num">1</span><span class="step-label">选择游戏</span></div>
+    <div class="step-line" id="stepLine1"></div>
+    <div class="step-item" id="step2marker"><span class="step-num">2</span><span class="step-label">游玩方式</span></div>
+  </div>
+  <div class="page-body">
+    <div class="page-title">选择你感兴趣的游戏<span class="title-right"><button class="refresh-btn" id="refreshBtn">换一批</button></span></div>
+    <div class="page-desc">选择你最想玩的游戏</div>
+    <div class="game-grid" id="gameGrid"></div>
+  </div>
+</div>
+
+<!-- Step 2: 选择游玩方式 -->
+<div class="page" id="page2">
+  <button class="skip-btn" onclick="showDone('play')">跳过</button>
+  <div class="step-bar">
+    <div class="step-item done clickable" onclick="goStep1()"><span class="step-num">&#x2713;</span><span class="step-label">选择游戏</span></div>
+    <div class="step-line done"></div>
+    <div class="step-item active"><span class="step-num">2</span><span class="step-label">游玩方式</span></div>
+  </div>
+  <div class="page-body">
+    <div class="page-title">你打算怎么玩？</div>
+    <div class="page-desc">选一个最适合你的方式，立即开始</div>
+    <div class="opt-list">
+      <div class="opt-card" onclick="showDone('steam')">
+        <div class="opt-icon steam"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.04 2 11.04c0 3.9 2.87 7.22 6.84 8.38l2.62-3.75c-.34-.03-.69-.05-1.04-.05-.22 0-.44.01-.66.03L7.2 13.9a2.48 2.48 0 0 1 1.76-4.24c.2 0 .4.02.58.07l2.38-3.41A5.5 5.5 0 0 1 17.5 11c0 .18-.01.35-.03.52l3.53.88C21.64 6.52 17.28 2 12 2z"/></svg></div>
+        <div class="opt-info"><div class="opt-title">我有 Steam 账号</div><div class="opt-desc">绑定后直接畅玩你的游戏库</div></div>
+        <div class="opt-arrow">&#x203A;</div>
+      </div>
+      <div class="opt-card" onclick="showScan()">
+        <div class="opt-icon import">&#x1F4C2;</div>
+        <div class="opt-info"><div class="opt-title">我想导入游戏</div><div class="opt-desc">自动扫描手机里的游戏文件，一键导入</div></div>
+        <div class="opt-arrow">&#x203A;</div>
+      </div>
+      <div class="opt-card" onclick="showDone('play')">
+        <div class="opt-icon play">&#x26A1;</div>
+        <div class="opt-info"><div class="opt-title">直接秒玩</div><div class="opt-desc">立即启动你选的游戏，云端秒玩</div></div>
+        <div class="opt-arrow">&#x203A;</div>
+      </div>
+    </div>
+    <div class="opt-hint">选完立即开始，其他方式随时可用</div>
+  </div>
+</div>
+
+<!-- Step 3: 导入扫描 -->
+<div class="page" id="page3">
+  <div class="scan-wrap">
+    <div class="scan-circle" id="scanCircle">&#x1F4C2;</div>
+    <div class="scan-title" id="scanTitle">正在扫描...</div>
+    <div class="scan-sub" id="scanSub">检查 Download、GAME 等常见目录</div>
+    <div class="scan-result" id="scanResult">
+      <div class="sr-title">找到 2 个游戏文件</div>
+      <div class="sr-item">
+        <img class="sr-cover" src="https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg" alt="">
+        <div class="sr-info"><div class="sr-name">艾尔登法环</div><div class="sr-path">Download/EldenRing.apk</div></div>
+        <div class="sr-check">&#x2713;</div>
+      </div>
+      <div class="sr-item">
+        <img class="sr-cover" src="https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg" alt="">
+        <div class="sr-info"><div class="sr-name">GTA5</div><div class="sr-path">GAME/GTA5_Setup.exe</div></div>
+        <div class="sr-check">&#x2713;</div>
+      </div>
+      <button class="import-btn" onclick="showDone('import')">导入并进入游戏库</button>
+      <button class="manual-link" onclick="showDone('import')">没找到？手动选择文件夹</button>
+    </div>
+  </div>
+</div>
+
+<!-- Step 4: 完成 -->
+<div class="page" id="page4">
+  <div class="done-wrap">
+    <div class="done-icon" id="doneIcon">&#x2705;</div>
+    <div class="done-title" id="doneTitle">准备就绪！</div>
+    <div class="done-desc" id="doneDesc">已根据你的喜好配置推荐内容
+现在开始探索你的游戏世界</div>
+    <button class="done-btn" onclick="resetAll()">进入探索页（重置）</button>
+  </div>
+</div>
+</div>
+
+<!-- 控制面板 -->
+<div class="cp">
+<h4>Demo</h4>
+<button class="cp-btn" onclick="resetAll()">重置</button>
+<button class="cp-btn" onclick="goStep2()">Step 2</button>
+<button class="cp-btn" onclick="showScan()">导入扫描</button>
+<button class="cp-btn" onclick="showDone('play')">完成页</button>
+</div>
+
+<script>
+var games=[
+{name:"黑神话：悟空",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/header.jpg"},
+{name:"赛博朋克 2077",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg"},
+{name:"艾尔登法环",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg"},
+{name:"生化危机4",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2050650/header.jpg"},
+{name:"巫师3：狂猎",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/292030/header.jpg"},
+{name:"绝地求生",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/578080/header.jpg"},
+{name:"极品飞车",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1551360/header.jpg"},
+{name:"双人成行",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1426210/header.jpg"},
+{name:"哈迪斯2",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1145350/header.jpg"},
+{name:"GTA5",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg"},
+{name:"只狼：影逝二度",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/814380/header.jpg"},
+{name:"霍格沃茨之遗",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/990080/header.jpg"},
+{name:"战神：诸神黄昏",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2322010/header.jpg"},
+{name:"博德之门3",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1086940/header.jpg"},
+{name:"死亡搁浅",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1190460/header.jpg"},
+{name:"文明6",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/289070/header.jpg"},
+{name:"星空",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1716740/header.jpg"},
+{name:"暗黑破坏神4",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2344520/header.jpg"}
+];
+var pageIdx=0,sel=null;
+
+function renderGrid(){
+  var g=document.getElementById('gameGrid'),s=(pageIdx*12)%games.length,h='';
+  for(var i=0;i<12;i++){var d=games[(s+i)%games.length];
+    h+='<div class="game-item" data-idx="'+(s+i)+'">';
+    h+='<img class="cover" src="'+d.cover+'" loading="lazy">';
+    h+='<span class="gname">'+d.name+'</span>';
+    h+='<span class="check">&#x2713;</span></div>';
+  }
+  g.innerHTML=h;
+}
+renderGrid();
+
+document.getElementById('gameGrid').onclick=function(e){
+  var item=e.target.closest('.game-item');if(!item)return;
+  document.querySelectorAll('.game-item').forEach(function(c){c.classList.remove('sel')});
+  item.classList.add('sel');sel=item.dataset.idx;
+  setTimeout(goStep2,450);
+};
+
+document.getElementById('refreshBtn').onclick=function(){pageIdx++;sel=null;renderGrid()};
+
+function switchPage(id){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active','exit-left')});
+  document.getElementById(id).classList.add('active');
+}
+
+function goStep2(){switchPage('page2')}
+function goStep1(){switchPage('page1')}
+
+function showScan(){
+  switchPage('page3');
+  var c=document.getElementById('scanCircle'),t=document.getElementById('scanTitle'),s=document.getElementById('scanSub'),r=document.getElementById('scanResult');
+  c.style.display='flex';r.classList.remove('show');
+  t.textContent='正在扫描...';s.textContent='检查 Download、GAME 等常见目录';
+  setTimeout(function(){c.style.display='none';t.textContent='扫描完成';s.textContent='在你的设备中找到了游戏文件';r.classList.add('show')},2500);
+}
+
+function showDone(type){
+  switchPage('page4');
+  var ti={steam:'前往绑定 Steam',import:'导入成功！',play:'开始秒玩'};
+  var de={steam:'正在跳转到 Steam 绑定页面...\n绑定后即可畅玩你的游戏库',import:'已将 2 个游戏导入游戏库\n现在可以开始游玩了',play:'正在为你加载适合当前设备的热门游戏...\n点击即可云端秒玩'};
+  var ic={steam:'🎮',import:'✅',play:'⚡'};
+  document.getElementById('doneIcon').textContent=ic[type]||'✅';
+  document.getElementById('doneTitle').textContent=ti[type]||'准备就绪';
+  document.getElementById('doneDesc').textContent=de[type]||'';
+}
+
+function resetAll(){sel=null;pageIdx=0;renderGrid();switchPage('page1')}
+</script>
+</body>
+</html>

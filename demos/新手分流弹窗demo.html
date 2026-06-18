@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新手分流弹窗 Demo</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg-primary: #000000;
+  --bg-card: #1a1a1a;
+  --bg-elevated: #252525;
+  --bg-overlay: #28202a;
+  --text-primary: #ffffff;
+  --text-secondary: #e6e6e6;
+  --text-muted: #7b7b7b;
+  --brand-gold: #ffcc43;
+  --brand-gold-light: #ffd98f;
+  --brand-green: #33d8a4;
+  --brand-blue: #338feb;
+  --brand-purple: #8174fa;
+  --border-default: #353d4e;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-xxl: 20px;
+  --radius-full: 100px;
+  --font-primary: 'MiSans VF', 'MiSans', -apple-system, 'PingFang SC', sans-serif;
+  --font-number: 'D-DIN-PRO', var(--font-primary);
+}
+body {
+  font-family: var(--font-primary);
+  background: #111;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.phone {
+  width: 390px;
+  height: 844px;
+  background: var(--bg-primary);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #333;
+}
+
+/* 探索页背景 */
+.explore-page {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding-bottom: 80px;
+}
+.explore-page::-webkit-scrollbar { display: none; }
+
+/* 状态栏 */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px 8px;
+  font-size: 12px;
+  font-weight: 520;
+  color: var(--text-primary);
+}
+.status-bar .time { font-family: var(--font-number); }
+.status-bar .icons { display: flex; gap: 4px; font-size: 10px; }
+
+/* 搜索框 */
+.search-bar {
+  margin: 8px 16px 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-full);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.search-bar .icon { font-size: 16px; }
+
+/* Banner */
+.banner {
+  margin: 0 16px 20px;
+  height: 180px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, #1a3a5c, #0d1f3a);
+  display: flex;
+  align-items: flex-end;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.banner::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.7));
+}
+.banner-text {
+  position: relative;
+  z-index: 1;
+}
+.banner-text h3 {
+  font-size: 18px;
+  font-weight: 520;
+  margin-bottom: 4px;
+}
+.banner-text p {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.banner-dots {
+  position: absolute;
+  bottom: 12px;
+  right: 16px;
+  display: flex;
+  gap: 4px;
+  z-index: 1;
+}
+.banner-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+}
+.banner-dots span.active {
+  width: 16px;
+  border-radius: 3px;
+  background: var(--brand-gold);
+}
+
+/* 内容分区 */
+.section {
+  margin-bottom: 24px;
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  margin-bottom: 12px;
+}
+.section-header h2 {
+  font-size: 18px;
+  font-weight: 520;
+}
+.section-header .more {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* 游戏卡片横滑列表 */
+.game-scroll {
+  display: flex;
+  gap: 12px;
+  padding: 0 16px;
+  overflow-x: auto;
+}
+.game-scroll::-webkit-scrollbar { display: none; }
+
+.game-card {
+  flex-shrink: 0;
+  width: 130px;
+}
+.game-card .cover {
+  width: 130px;
+  height: 174px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 8px;
+}
+.game-card .name {
+  font-size: 13px;
+  font-weight: 380;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.game-card .tag {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* 底部导航 */
+.bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.95) 30%);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-top: 16px;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.nav-item.active { color: var(--brand-gold); }
+.nav-item .nav-icon { font-size: 20px; }
+
+/* ====== 新手分流弹窗 ====== */
+.overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: opacity 0.3s;
+}
+.overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal {
+  width: 350px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-xxl);
+  padding: 28px 20px 20px;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-close:hover { background: rgba(255,255,255,0.15); }
+.modal-close:active { transform: scale(0.9); }
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 520;
+  text-align: center;
+  margin-bottom: 6px;
+}
+.modal-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 24px;
+  line-height: 1.4;
+}
+
+/* 选项卡片 */
+.option-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.2s;
+}
+.option-card:hover {
+  border-color: var(--brand-gold);
+  background: #222;
+}
+.option-card:active {
+  transform: scale(0.98);
+  border-color: var(--brand-gold);
+}
+.option-card:last-child { margin-bottom: 0; }
+
+.option-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.option-icon.steam { background: linear-gradient(135deg, #1b2838, #2a475e); }
+.option-icon.import { background: linear-gradient(135deg, #1a3320, #234d2e); }
+.option-icon.play { background: linear-gradient(135deg, #3d1a0e, #5c2e1a); }
+
+.option-content {
+  flex: 1;
+}
+.option-title {
+  font-size: 15px;
+  font-weight: 520;
+  margin-bottom: 3px;
+}
+.option-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.option-arrow {
+  color: var(--text-muted);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* 底部提示 */
+.modal-hint {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* 触发条件标注（仅demo展示用） */
+.demo-info {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 11px;
+  color: #888;
+  background: rgba(0,0,0,0.6);
+  padding: 8px;
+  border-radius: 8px 8px 0 0;
+}
+
+/* 选择后的反馈页 */
+.feedback-page {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--bg-primary);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.feedback-page.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.feedback-page .fb-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+.feedback-page h2 {
+  font-size: 20px;
+  font-weight: 520;
+  margin-bottom: 8px;
+}
+.feedback-page p {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+.feedback-page .fb-btn {
+  background: linear-gradient(135deg, #0086ac, #0063b5);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: var(--radius-full);
+  font-size: 15px;
+  font-weight: 520;
+  cursor: pointer;
+}
+.feedback-page .fb-btn:active { transform: scale(0.95); }
+.feedback-page .fb-back {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+.feedback-page .fb-back:hover { color: var(--text-secondary); }
+
+/* 外部控制面板 */
+.control-panel {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 16px;
+  width: 240px;
+  font-size: 12px;
+  color: #ccc;
+}
+.control-panel h4 {
+  font-size: 13px;
+  color: var(--brand-gold);
+  margin-bottom: 12px;
+}
+.control-panel .ctrl-item {
+  margin-bottom: 10px;
+}
+.control-panel label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.control-panel input[type="checkbox"] {
+  accent-color: var(--brand-gold);
+}
+.control-panel .ctrl-btn {
+  width: 100%;
+  padding: 8px;
+  background: var(--brand-gold);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 520;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.control-panel .ctrl-btn:active { transform: scale(0.95); }
+.control-panel .status-text {
+  margin-top: 10px;
+  padding: 8px;
+  background: #111;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #888;
+  line-height: 1.4;
+}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <!-- 探索页背景 -->
+  <div class="explore-page">
+    <div class="status-bar">
+      <span class="time">10:24</span>
+      <span class="icons">📶 🔋</span>
+    </div>
+
+    <div class="search-bar">
+      <span class="icon">🔍</span>
+      <span>搜索游戏</span>
+    </div>
+
+    <!-- Banner -->
+    <div class="banner">
+      <div class="banner-text">
+        <h3>云游戏组队玩 全新上线</h3>
+        <p>邀请好友一起畅玩Steam大作</p>
+      </div>
+      <div class="banner-dots">
+        <span class="active"></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+
+    <!-- 为你推荐 -->
+    <div class="section">
+      <div class="section-header">
+        <h2>为你推荐</h2>
+        <span class="more">更多 ›</span>
+      </div>
+      <div class="game-scroll">
+        <div class="game-card">
+          <div class="cover" style="background:linear-gradient(135deg,#2a1a3a,#1a0a2a)"></div>
+          <div class="name">艾尔登法环</div>
+          <div class="tag">动作RPG</div>
+        </div>
+        <div class="game-card">
+          <div class="cover" style="background:linear-gradient(135deg,#1a2a1a,#0a1a0a)"></div>
+          <div class="name">GTA5</div>
+          <div class="tag">开放世界</div>
+        </div>
+        <div class="game-card">
+          <div class="cover" style="background:linear-gradient(135deg,#3a2a1a,#2a1a0a)"></div>
+          <div class="name">只狼：影逝二度</div>
+          <div class="tag">动作冒险</div>
+        </div>
+        <div class="game-card">
+          <div class="cover" style="background:linear-gradient(135deg,#1a1a3a,#0a0a2a)"></div>
+          <div class="name">赛博朋克2077</div>
+          <div class="tag">角色扮演</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 热门资讯 -->
+    <div class="section">
+      <div class="section-header">
+        <h2>最新资讯</h2>
+        <span class="more">更多 ›</span>
+      </div>
+      <div class="game-scroll">
+        <div class="game-card">
+          <div class="cover" style="background:linear-gradient(135deg,#0a2a3a,#051a2a);height:100px"></div>
+          <div class="name">Steam夏促即将开启</div>
+          <div class="tag">资讯</div>
+        </div>
+        <div class="game-card">
+          <div class="cover" style="background:linear-gradient(135deg,#2a0a1a,#1a0510);height:100px"></div>
+          <div class="name">新游速递：黑神话悟空</div>
+          <div class="tag">资讯</div>
+        </div>
+        <div class="game-card">
+          <div class="cover" style="background:linear-gradient(135deg,#1a2a0a,#0a1a05);height:100px"></div>
+          <div class="name">手柄适配游戏推荐</div>
+          <div class="tag">攻略</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="bottom-nav">
+    <div class="nav-item active">
+      <span class="nav-icon">🏠</span>
+      <span>探索</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">🎮</span>
+      <span>玩游戏</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">🏆</span>
+      <span>榜单</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">📚</span>
+      <span>游戏库</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">👤</span>
+      <span>我的</span>
+    </div>
+  </div>
+
+  <!-- 新手分流弹窗 -->
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <button class="modal-close" id="closeBtn">✕</button>
+      <div class="modal-title">选择你的游玩方式</div>
+      <div class="modal-subtitle">选一个最适合你的入口，快速开始游戏体验</div>
+
+      <div class="option-card" data-option="steam">
+        <div class="option-icon steam">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.04 2 11.04c0 3.9 2.87 7.22 6.84 8.38l2.62-3.75c-.34-.03-.69-.05-1.04-.05-.22 0-.44.01-.66.03L7.2 13.9a2.48 2.48 0 0 1 1.76-4.24c.2 0 .4.02.58.07l2.38-3.41A5.5 5.5 0 0 1 17.5 11c0 .18-.01.35-.03.52l3.53.88C21.64 6.52 17.28 2 12 2zm-1.97 12.82l-1.47 2.1c1.18.42 2.08 1.42 2.34 2.66.05.24.08.48.08.73 0 .2-.02.39-.05.58A9.96 9.96 0 0 0 12 22c5.52 0 10-4.04 10-9.04 0-.37-.03-.73-.07-1.09l-4.43-1.1c-.5 1.34-1.8 2.3-3.33 2.3-1.2 0-2.27-.6-2.91-1.52l-1.23 2.27zm2.47.68a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+        </div>
+        <div class="option-content">
+          <div class="option-title">我有 Steam 账号</div>
+          <div class="option-desc">绑定后直接畅玩你的 Steam 游戏库</div>
+        </div>
+        <div class="option-arrow">›</div>
+      </div>
+
+      <div class="option-card" data-option="import">
+        <div class="option-icon import">📂</div>
+        <div class="option-content">
+          <div class="option-title">我想导入游戏</div>
+          <div class="option-desc">已有游戏安装包？直接导入即可游玩</div>
+        </div>
+        <div class="option-arrow">›</div>
+      </div>
+
+      <div class="option-card" data-option="play">
+        <div class="option-icon play">⚡</div>
+        <div class="option-content">
+          <div class="option-title">直接玩一把</div>
+          <div class="option-desc">无需下载，云游戏秒玩热门大作</div>
+        </div>
+        <div class="option-arrow">›</div>
+      </div>
+
+      <div class="modal-hint">选完立即开始，其他方式随时可用</div>
+    </div>
+  </div>
+
+  <!-- 选择后反馈页 -->
+  <div class="feedback-page" id="fb-steam">
+    <div class="fb-icon">🎯</div>
+    <h2>绑定你的 Steam 账号</h2>
+    <p>绑定后可直接启动你 Steam 库中已拥有的游戏，云端运行无需本地安装</p>
+    <button class="fb-btn">前往绑定 Steam</button>
+    <button class="fb-back" onclick="goBack()">返回重新选择</button>
+  </div>
+
+  <div class="feedback-page" id="fb-import">
+    <div class="fb-icon">📂</div>
+    <h2>导入你的游戏</h2>
+    <p>支持从本地存储、U盘或网盘导入已有的游戏安装包，导入后即可启动</p>
+    <button class="fb-btn">选择游戏文件</button>
+    <button class="fb-back" onclick="goBack()">返回重新选择</button>
+  </div>
+
+  <div class="feedback-page" id="fb-play">
+    <div class="fb-icon">⚡</div>
+    <h2>即刻开始游戏</h2>
+    <p>为你精选了适合当前设备的热门游戏，点击即可云端秒玩，无需等待下载</p>
+    <button class="fb-btn">浏览秒玩游戏</button>
+    <button class="fb-back" onclick="goBack()">返回重新选择</button>
+  </div>
+</div>
+
+<!-- 外部控制面板 -->
+<div class="control-panel">
+  <h4>Demo 控制面板</h4>
+  <div class="ctrl-item">
+    <label><input type="checkbox" id="chkNoGame" checked> 设备未启动过游戏</label>
+  </div>
+  <div class="ctrl-item">
+    <label><input type="checkbox" id="chkNoSteam" checked> 未绑定 Steam</label>
+  </div>
+  <div class="ctrl-item">
+    <label><input type="checkbox" id="chkNoImport" checked> 未导入过游戏</label>
+  </div>
+  <button class="ctrl-btn" onclick="resetDemo()">重置弹窗（模拟重新进入探索页）</button>
+  <div class="status-text" id="statusText">
+    触发条件：设备维度<br>
+    该设备未完成任何一条路径时弹出<br>
+    完成任一路径后永不再弹<br>
+    关闭但未完成 → 下次进入再弹
+  </div>
+</div>
+
+<script>
+const overlay = document.getElementById('overlay');
+const closeBtn = document.getElementById('closeBtn');
+const optionCards = document.querySelectorAll('.option-card');
+const statusText = document.getElementById('statusText');
+
+closeBtn.addEventListener('click', () => {
+  overlay.classList.add('hidden');
+  statusText.textContent = '用户关闭弹窗（未选择）\n下次进入探索页时将再次弹出';
+});
+
+optionCards.forEach(card => {
+  card.addEventListener('click', () => {
+    const option = card.dataset.option;
+    overlay.classList.add('hidden');
+    const fbPage = document.getElementById('fb-' + option);
+    if (fbPage) {
+      fbPage.classList.add('show');
+    }
+    const labels = { steam: 'Steam绑定', import: '导入游戏', play: '秒玩' };
+    statusText.textContent = '用户选择：' + labels[option] + '\n→ 引导进入对应流程\n完成后该设备不再弹出弹窗';
+  });
+});
+
+function goBack() {
+  document.querySelectorAll('.feedback-page').forEach(p => p.classList.remove('show'));
+  overlay.classList.remove('hidden');
+  statusText.textContent = '用户返回重新选择\n弹窗重新展示';
+}
+
+function resetDemo() {
+  document.querySelectorAll('.feedback-page').forEach(p => p.classList.remove('show'));
+  const noGame = document.getElementById('chkNoGame').checked;
+  const noSteam = document.getElementById('chkNoSteam').checked;
+  const noImport = document.getElementById('chkNoImport').checked;
+
+  if (noGame && noSteam && noImport) {
+    overlay.classList.remove('hidden');
+    statusText.textContent = '触发弹窗 ✓\n条件满足：设备无游戏启动记录 + 未绑定Steam + 未导入游戏';
+  } else {
+    overlay.classList.add('hidden');
+    let reasons = [];
+    if (!noGame) reasons.push('已启动过游戏');
+    if (!noSteam) reasons.push('已绑定Steam');
+    if (!noImport) reasons.push('已导入过游戏');
+    statusText.textContent = '不触发弹窗 ✗\n原因：' + reasons.join('、') + '\n用户已完成至少一条路径';
+  }
+}
+</script>
+</body>
+</html>
