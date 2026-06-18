@@ -29,6 +29,7 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
 .phone::before{
   content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);
   width:80px;height:28px;background:#111;border-radius:14px;z-index:20;
+  pointer-events:none;
 }
 
 .sbar{
@@ -43,11 +44,9 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
   position:absolute;top:0;left:0;right:0;bottom:0;
   display:flex;flex-direction:column;
   opacity:0;pointer-events:none;
-  transition:opacity .35s ease,transform .35s ease;
-  transform:translateX(20px);
+  transition:opacity .35s ease;
 }
-.page.active{opacity:1;pointer-events:auto;transform:translateX(0)}
-.page.exit-left{opacity:0;transform:translateX(-20px)}
+.page.active{opacity:1;pointer-events:auto}
 
 /* Step Bar */
 .step-bar{
@@ -80,6 +79,31 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
 }
 .skip-btn:hover{color:var(--txt2)}
 .skip-btn:active{color:var(--txt)}
+
+/* Features */
+.gh-features{
+  display:flex;flex-direction:column;gap:8px;
+  padding:0 0 8px;
+}
+.gh-features__title{
+  font-size:14px;font-weight:520;color:var(--gh-color-text-primary);
+  margin-bottom:6px;
+}
+.gh-feature-item{
+  font-size:13px;color:var(--gh-color-text-secondary);
+  font-weight:330;line-height:1.6;
+}
+
+/* Welcome Box */
+.gh-welcome-box{
+  padding:16px;
+  background:linear-gradient(180deg,rgba(255,255,255,0.03) 0%,rgba(255,255,255,0.01) 100%);
+  border:1px solid var(--gh-border-default);
+  border-radius:var(--gh-radius-2xl);
+}
+.gh-divider{
+  height:1px;background:var(--gh-border-default);margin:14px 0;
+}
 
 /* Page Content */
 .page-body{padding:0 24px;flex:1;display:flex;flex-direction:column;overflow-y:auto}
@@ -154,6 +178,105 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
 .opt-arrow{color:var(--muted2);font-size:18px}
 .opt-hint{text-align:center;margin-top:28px;font-size:12px;color:var(--muted2)}
 
+/* Game List (新手秒玩列表) */
+.game-list{display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1;padding-bottom:20px}
+.game-list::-webkit-scrollbar{display:none}
+.game-list-item{
+  display:flex;align-items:center;gap:12px;padding:12px;
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r-xl);
+  cursor:pointer;transition:all .2s;
+}
+.game-list-item:hover{background:var(--card-hover);border-color:var(--border-light)}
+.game-list-item:active{transform:scale(.98);border-color:var(--gold)}
+.game-list-item__cover{width:56px;height:56px;border-radius:var(--r-md);object-fit:cover;flex-shrink:0}
+.game-list-item__info{flex:1}
+.game-list-item__name{font-size:14px;font-weight:520;margin-bottom:3px}
+.game-list-item__tag{font-size:11px;color:var(--muted);line-height:1.3}
+.game-list-item__action{
+  padding:6px 14px;border-radius:var(--r-full);
+  background:var(--gold);color:#000;font-size:12px;font-weight:520;
+  border:none;cursor:pointer;flex-shrink:0;
+}
+.game-list-item__action:active{transform:scale(.95)}
+.view-more{
+  text-align:center;padding:14px 0;margin-top:4px;
+  font-size:14px;color:var(--gh-color-brand-azure);cursor:pointer;
+  font-weight:380;
+}
+.view-more:active{opacity:.6}
+
+/* Toast */
+.gh-toast{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(20,20,20,0.92);border:1px solid var(--gh-border-default);
+  border-radius:var(--gh-radius-pill);padding:10px 20px;
+  font-size:13px;color:var(--gh-color-brand-gold);font-weight:380;
+  white-space:nowrap;z-index:30;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s;
+}
+.gh-toast.show{opacity:1}
+
+/* Gift Overlay */
+.gh-gift-overlay{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+  z-index:30;opacity:0;pointer-events:none;
+  transition:opacity .4s;
+}
+.gh-gift-overlay.show{opacity:1;pointer-events:auto}
+.gh-gift-overlay.hide{opacity:0;pointer-events:none}
+.gh-gift-card{
+  text-align:center;padding:32px 24px;
+  background:var(--gh-surface-glass-strong);
+  border:1px solid var(--gh-border-default);
+  border-radius:var(--gh-radius-2xl);
+}
+.gh-gift-icon{font-size:56px;margin-bottom:12px}
+.gh-gift-text{font-size:16px;font-weight:520;color:var(--gh-color-brand-gold);margin-bottom:6px}
+.gh-gift-sub{font-size:13px;color:var(--gh-color-text-secondary);font-weight:330}
+
+/* Guide Slides (海外版) */
+.gh-guide{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  display:flex;flex-direction:column;
+}
+.gh-guide__viewport{
+  flex:1;overflow:hidden;width:100%;
+}
+.gh-guide__track{
+  display:flex;width:200%;height:100%;transition:transform .35s ease;
+}
+.gh-guide__slide{
+  width:50%;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:0 32px;
+}
+.gh-guide__img{
+  width:100px;height:100px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;margin-bottom:20px;
+}
+.gh-guide__title{font-size:18px;font-weight:520;margin-bottom:10px;text-align:center}
+.gh-guide__desc{font-size:13px;color:var(--gh-color-text-secondary);line-height:1.6;text-align:center;font-weight:330;max-width:280px}
+.gh-guide__footer{
+  padding:16px 24px 44px;display:flex;flex-direction:column;align-items:center;gap:14px;
+}
+.gh-guide__dots{
+  display:flex;justify-content:center;gap:6px;
+}
+.gh-guide__dots span{
+  width:6px;height:6px;border-radius:50%;
+  background:rgba(255,255,255,0.3);transition:all .3s;
+}
+.gh-guide__dots span.is-active{width:18px;border-radius:3px;background:#FFE240}
+.gh-guide__btn{
+  width:100%;padding:14px;border-radius:48px;
+  border:none;background:#FFE240;color:#000;
+  font-size:15px;font-weight:520;cursor:pointer;
+}
+.gh-guide__btn:active{transform:scale(.97)}
+
 /* Scan Page */
 .scan-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 24px}
 .scan-circle{
@@ -214,50 +337,96 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
 <div class="phone">
 <div class="sbar"><span>10:24</span><span>5G</span></div>
 
-<!-- Step 1: 选择游戏 -->
-<div class="page active" id="page1">
-  <button class="skip-btn" onclick="goStep2()">跳过</button>
-  <div class="step-bar">
-    <div class="step-item active"><span class="step-num">1</span><span class="step-label">选择游戏</span></div>
-    <div class="step-line" id="stepLine1"></div>
-    <div class="step-item" id="step2marker"><span class="step-num">2</span><span class="step-label">游玩方式</span></div>
-  </div>
-  <div class="page-body">
-    <div class="page-title">选择你感兴趣的游戏<span class="title-right"><button class="refresh-btn" id="refreshBtn">换一批</button></span></div>
-    <div class="page-desc">选择你最想玩的游戏</div>
-    <div class="game-grid" id="gameGrid"></div>
+<!-- Step 0: 新老用户选择 -->
+<div class="page active" id="page0">
+  <div class="page-body" style="padding-top:44px;overflow:visible">
+    <div class="gh-welcome-box">
+      <div class="page-title" id="welcomeTitle" style="text-align:center;justify-content:center;font-size:20px;margin-bottom:6px">欢迎来到盖世游戏</div>
+      <div class="page-desc" id="welcomeDesc" style="text-align:center;margin-bottom:16px">手机上的 PC 游戏平台</div>
+      <div class="gh-features" id="featuresBox">
+        <div class="gh-features__title">平台特色介绍：</div>
+        <div class="gh-feature-item">&#x1F3AE; Steam 与 Epic 平台数据互通，海量大作应有尽有</div>
+        <div class="gh-feature-item" id="featureCloud">&#x26A1; 支持云游戏，无需下载一键秒玩</div>
+        <div class="gh-feature-item">&#x1F4A1; AI超级插帧 + 虚拟按键大神方案一键套用</div>
+      </div>
+      <div class="gh-divider"></div>
+      <div class="opt-list">
+        <div class="opt-card" onclick="goStep1()">
+          <div class="opt-icon" style="background:linear-gradient(145deg,#1b2838,#2a4a6a)"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.04 2 11.04c0 3.9 2.87 7.22 6.84 8.38l2.62-3.75c-.34-.03-.69-.05-1.04-.05-.22 0-.44.01-.66.03L7.2 13.9a2.48 2.48 0 0 1 1.76-4.24c.2 0 .4.02.58.07l2.38-3.41A5.5 5.5 0 0 1 17.5 11c0 .18-.01.35-.03.52l3.53.88C21.64 6.52 17.28 2 12 2z"/></svg></div>
+          <div class="opt-info"><div class="opt-title">我有游戏想玩</div><div class="opt-desc">已有Steam账号或游戏文件，想在手机上玩</div></div>
+          <div class="opt-arrow">&#x203A;</div>
+        </div>
+        <div class="opt-card" onclick="handleNewUser()">
+          <div class="opt-icon" style="background:linear-gradient(145deg,#3d1a0e,#7a3a20);font-size:22px">&#x26A1;</div>
+          <div class="opt-info"><div class="opt-title">我是新手，想看看有什么</div><div class="opt-desc">没玩过，想体验一下热门游戏</div></div>
+          <div class="opt-arrow">&#x203A;</div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- Step 2: 选择游玩方式 -->
-<div class="page" id="page2">
-  <button class="skip-btn" onclick="showDone('play')">跳过</button>
-  <div class="step-bar">
-    <div class="step-item done clickable" onclick="goStep1()"><span class="step-num">&#x2713;</span><span class="step-label">选择游戏</span></div>
-    <div class="step-line done"></div>
-    <div class="step-item active"><span class="step-num">2</span><span class="step-label">游玩方式</span></div>
-  </div>
-  <div class="page-body">
-    <div class="page-title">你打算怎么玩？</div>
-    <div class="page-desc">选一个最适合你的方式，立即开始</div>
+<!-- Step 1: 有游戏想玩 - 选择方式 -->
+<div class="page" id="page1">
+  <button class="skip-btn" onclick="showDone('library')">跳过</button>
+  <div class="page-body" style="padding-top:60px">
+    <div class="page-title" style="margin-bottom:8px">你想怎么开始？</div>
+    <div class="page-desc">选择你的游戏来源</div>
     <div class="opt-list">
-      <div class="opt-card" onclick="showDone('steam')">
-        <div class="opt-icon steam"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.04 2 11.04c0 3.9 2.87 7.22 6.84 8.38l2.62-3.75c-.34-.03-.69-.05-1.04-.05-.22 0-.44.01-.66.03L7.2 13.9a2.48 2.48 0 0 1 1.76-4.24c.2 0 .4.02.58.07l2.38-3.41A5.5 5.5 0 0 1 17.5 11c0 .18-.01.35-.03.52l3.53.88C21.64 6.52 17.28 2 12 2z"/></svg></div>
-        <div class="opt-info"><div class="opt-title">我有 Steam 账号</div><div class="opt-desc">绑定后直接畅玩你的游戏库</div></div>
-        <div class="opt-arrow">&#x203A;</div>
-      </div>
       <div class="opt-card" onclick="showScan()">
         <div class="opt-icon import">&#x1F4C2;</div>
-        <div class="opt-info"><div class="opt-title">我想导入游戏</div><div class="opt-desc">自动扫描手机里的游戏文件，一键导入</div></div>
+        <div class="opt-info"><div class="opt-title">导入游戏</div><div class="opt-desc">自动扫描手机里的游戏文件，一键导入游玩</div></div>
         <div class="opt-arrow">&#x203A;</div>
       </div>
-      <div class="opt-card" onclick="showDone('play')">
-        <div class="opt-icon play">&#x26A1;</div>
-        <div class="opt-info"><div class="opt-title">直接秒玩</div><div class="opt-desc">立即启动你选的游戏，云端秒玩</div></div>
+      <div class="opt-card" onclick="showDone('steam')">
+        <div class="opt-icon steam"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.04 2 11.04c0 3.9 2.87 7.22 6.84 8.38l2.62-3.75c-.34-.03-.69-.05-1.04-.05-.22 0-.44.01-.66.03L7.2 13.9a2.48 2.48 0 0 1 1.76-4.24c.2 0 .4.02.58.07l2.38-3.41A5.5 5.5 0 0 1 17.5 11c0 .18-.01.35-.03.52l3.53.88C21.64 6.52 17.28 2 12 2z"/></svg></div>
+        <div class="opt-info"><div class="opt-title">绑定 Steam 账号</div><div class="opt-desc">绑定后直接畅玩你 Steam 库里的游戏</div></div>
         <div class="opt-arrow">&#x203A;</div>
       </div>
     </div>
-    <div class="opt-hint">选完立即开始，其他方式随时可用</div>
+  </div>
+</div>
+
+<!-- Step 2: 新手秒玩列表（国内版） -->
+<div class="page" id="page2">
+  <div class="gh-gift-overlay" id="giftOverlay">
+    <div class="gh-gift-card">
+      <div class="gh-gift-icon">&#x1F381;</div>
+      <div class="gh-gift-text">已赠送新手礼包</div>
+      <div class="gh-gift-sub">获得 15 分钟免费秒玩时长</div>
+    </div>
+  </div>
+  <div class="page-body" style="padding-top:56px">
+    <div class="page-title" style="margin-bottom:4px">选一款试试</div>
+    <div class="page-desc">点击秒玩，立即体验</div>
+    <div class="game-list" id="gameList"></div>
+    <div class="view-more" onclick="showDone('more')">查看更多</div>
+  </div>
+</div>
+
+<!-- Step 2b: 新手引导图（海外版） -->
+<div class="page" id="page2b">
+  <div class="gh-guide">
+    <div class="gh-guide__viewport">
+      <div class="gh-guide__track" id="guideTrack">
+        <div class="gh-guide__slide">
+          <div class="gh-guide__img" style="background:linear-gradient(135deg,#163322,#2a5a3a)">&#x1F4C2;</div>
+          <div class="gh-guide__title">Import Games</div>
+          <div class="gh-guide__desc">Step 1: Grant storage permission<br>Step 2: Auto-scan or manually select game files<br>Step 3: Confirm import, game appears in library</div>
+        </div>
+        <div class="gh-guide__slide">
+          <div class="gh-guide__img" style="background:linear-gradient(135deg,#1b2838,#2a4a6a)">&#x1F3AE;</div>
+          <div class="gh-guide__title">Bind Steam Account</div>
+          <div class="gh-guide__desc">Step 1: Tap "Bind Steam" in settings<br>Step 2: Log in to your Steam account<br>Step 3: Your game library syncs automatically</div>
+        </div>
+      </div>
+    </div>
+    <div class="gh-guide__footer">
+      <div class="gh-guide__dots" id="guideDots">
+        <span class="is-active"></span><span></span>
+      </div>
+      <button class="gh-guide__btn" id="guideBtn" onclick="guideNext()">Next</button>
+    </div>
   </div>
 </div>
 
@@ -300,63 +469,114 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
 <!-- 控制面板 -->
 <div class="cp">
 <h4>Demo</h4>
+<button class="cp-btn" id="regionBtn" onclick="toggleRegion()" style="background:#FFE240;color:#000;font-weight:520">当前：国内版</button>
 <button class="cp-btn" onclick="resetAll()">重置</button>
-<button class="cp-btn" onclick="goStep2()">Step 2</button>
+<button class="cp-btn" onclick="goStep1()">有游戏想玩</button>
+<button class="cp-btn" onclick="handleNewUser()">新手入口</button>
 <button class="cp-btn" onclick="showScan()">导入扫描</button>
 <button class="cp-btn" onclick="showDone('play')">完成页</button>
 </div>
 
 <script>
 var games=[
-{name:"黑神话：悟空",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/header.jpg"},
-{name:"赛博朋克 2077",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg"},
-{name:"艾尔登法环",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg"},
-{name:"生化危机4",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2050650/header.jpg"},
-{name:"巫师3：狂猎",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/292030/header.jpg"},
-{name:"绝地求生",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/578080/header.jpg"},
-{name:"极品飞车",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1551360/header.jpg"},
-{name:"双人成行",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1426210/header.jpg"},
-{name:"哈迪斯2",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1145350/header.jpg"},
-{name:"GTA5",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg"},
-{name:"只狼：影逝二度",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/814380/header.jpg"},
-{name:"霍格沃茨之遗",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/990080/header.jpg"},
-{name:"战神：诸神黄昏",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2322010/header.jpg"},
-{name:"博德之门3",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1086940/header.jpg"},
-{name:"死亡搁浅",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1190460/header.jpg"},
-{name:"文明6",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/289070/header.jpg"},
-{name:"星空",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1716740/header.jpg"},
-{name:"暗黑破坏神4",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2344520/header.jpg"}
+{name:"黑神话：悟空",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/header.jpg",tag:"动作RPG / 国风神话"},
+{name:"赛博朋克 2077",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg",tag:"开放世界 / 第一人称射击"},
+{name:"艾尔登法环",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg",tag:"魂系动作 / 开放世界"},
+{name:"生化危机4",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2050650/header.jpg",tag:"恐怖动作 / 第三人称"},
+{name:"巫师3：狂猎",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/292030/header.jpg",tag:"史诗剧情 / 角色扮演"},
+{name:"绝地求生",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/578080/header.jpg",tag:"战术竞技 / 多人射击"},
+{name:"极品飞车",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1551360/header.jpg",tag:"赛车竞速 / 街头改装"},
+{name:"双人成行",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1426210/header.jpg",tag:"合作冒险 / 双人必备"},
+{name:"哈迪斯2",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1145350/header.jpg",tag:"Roguelike / 动作"},
+{name:"GTA5",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg",tag:"开放世界 / 犯罪动作"},
+{name:"只狼：影逝二度",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/814380/header.jpg",tag:"魂系动作 / 忍者"},
+{name:"霍格沃茨之遗",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/990080/header.jpg",tag:"魔法世界 / 角色扮演"}
 ];
-var pageIdx=0,sel=null;
 
-function renderGrid(){
-  var g=document.getElementById('gameGrid'),s=(pageIdx*12)%games.length,h='';
-  for(var i=0;i<12;i++){var d=games[(s+i)%games.length];
-    h+='<div class="game-item" data-idx="'+(s+i)+'">';
-    h+='<img class="cover" src="'+d.cover+'" loading="lazy">';
-    h+='<span class="gname">'+d.name+'</span>';
-    h+='<span class="check">&#x2713;</span></div>';
+function renderGameList(){
+  var el=document.getElementById('gameList'),h='';
+  for(var i=0;i<8;i++){var g=games[i];
+    h+='<div class="game-list-item" onclick="showDone(\'play\')">';
+    h+='<img class="game-list-item__cover" src="'+g.cover+'" loading="lazy">';
+    h+='<div class="game-list-item__info"><div class="game-list-item__name">'+g.name+'</div><div class="game-list-item__tag">'+g.tag+'</div></div>';
+    h+='<button class="game-list-item__action">秒玩</button>';
+    h+='</div>';
   }
-  g.innerHTML=h;
+  el.innerHTML=h;
 }
-renderGrid();
+renderGameList();
 
-document.getElementById('gameGrid').onclick=function(e){
-  var item=e.target.closest('.game-item');if(!item)return;
-  document.querySelectorAll('.game-item').forEach(function(c){c.classList.remove('sel')});
-  item.classList.add('sel');sel=item.dataset.idx;
-  setTimeout(goStep2,450);
-};
-
-document.getElementById('refreshBtn').onclick=function(){pageIdx++;sel=null;renderGrid()};
+var isOverseas=false;
+function toggleRegion(){
+  isOverseas=!isOverseas;
+  var btn=document.getElementById('regionBtn');
+  btn.textContent=isOverseas?'Current: Overseas':'当前：国内版';
+  btn.style.background=isOverseas?'#90AAFF':'#FFE240';
+  document.getElementById('featureCloud').style.display=isOverseas?'none':'block';
+  // 切换语言
+  var box=document.getElementById('featuresBox');
+  if(isOverseas){
+    box.querySelector('.gh-features__title').textContent='Platform Highlights:';
+    var items=box.querySelectorAll('.gh-feature-item');
+    items[0].innerHTML='&#x1F3AE; Steam & Epic synced, massive AAA library';
+    items[1].innerHTML='&#x26A1; Cloud gaming, play instantly';
+    items[2].innerHTML='&#x1F4A1; AI frame interpolation + one-tap pro button layouts';
+  }else{
+    box.querySelector('.gh-features__title').textContent='平台特色介绍：';
+    var items=box.querySelectorAll('.gh-feature-item');
+    items[0].innerHTML='&#x1F3AE; Steam 与 Epic 平台数据互通，海量大作应有尽有';
+    items[1].innerHTML='&#x26A1; 支持云游戏，无需下载一键秒玩';
+    items[2].innerHTML='&#x1F4A1; AI超级插帧 + 虚拟按键大神方案一键套用';
+  }
+  // 切换首屏文案
+  var titleEl=document.getElementById('welcomeTitle');
+  var descEl=document.getElementById('welcomeDesc');
+  titleEl.textContent=isOverseas?'Welcome to GameHub':'欢迎来到盖世游戏';
+  descEl.textContent=isOverseas?'PC gaming platform on your phone':'手机上的 PC 游戏平台';
+  // 切换选项文案
+  var opts=document.querySelectorAll('#page0 .opt-card');
+  if(isOverseas){
+    opts[0].querySelector('.opt-title').textContent='I have games to play';
+    opts[0].querySelector('.opt-desc').textContent='Have Steam account or game files, want to play on phone';
+    opts[1].querySelector('.opt-title').textContent="I'm new, show me around";
+    opts[1].querySelector('.opt-desc').textContent='Never tried, want to explore popular games';
+  }else{
+    opts[0].querySelector('.opt-title').textContent='我有游戏想玩';
+    opts[0].querySelector('.opt-desc').textContent='已有Steam账号或游戏文件，想在手机上玩';
+    opts[1].querySelector('.opt-title').textContent='我是新手，想看看有什么';
+    opts[1].querySelector('.opt-desc').textContent='没玩过，想体验一下热门游戏';
+  }
+  resetAll();
+}
 
 function switchPage(id){
-  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active','exit-left')});
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
   document.getElementById(id).classList.add('active');
 }
-
-function goStep2(){switchPage('page2')}
 function goStep1(){switchPage('page1')}
+function goStep2(){switchPage('page2')}
+function goNewUser(){
+  switchPage('page2');
+  var overlay=document.getElementById('giftOverlay');
+  overlay.classList.add('show');
+  setTimeout(function(){overlay.classList.remove('show')},2000);
+}
+
+function goNewUserOverseas(){switchPage('page2b')}
+
+function handleNewUser(){
+  if(isOverseas){goNewUserOverseas()}else{goNewUser()}
+}
+
+var guideIdx=0;
+function guideNext(){
+  guideIdx++;
+  if(guideIdx>=2){showDone('explore');guideIdx=0;document.getElementById('guideBtn').textContent='Next';document.getElementById('guideTrack').style.transform='';var dots=document.getElementById('guideDots').children;dots[0].className='is-active';dots[1].className='';return;}
+  document.getElementById('guideTrack').style.transform='translateX(-50%)';
+  var dots=document.getElementById('guideDots').children;
+  dots[0].className='';dots[1].className='is-active';
+  document.getElementById('guideBtn').textContent='Get Started';
+}
 
 function showScan(){
   switchPage('page3');
@@ -368,15 +588,15 @@ function showScan(){
 
 function showDone(type){
   switchPage('page4');
-  var ti={steam:'前往绑定 Steam',import:'导入成功！',play:'开始秒玩'};
-  var de={steam:'正在跳转到 Steam 绑定页面...\n绑定后即可畅玩你的游戏库',import:'已将 2 个游戏导入游戏库\n现在可以开始游玩了',play:'正在为你加载适合当前设备的热门游戏...\n点击即可云端秒玩'};
-  var ic={steam:'🎮',import:'✅',play:'⚡'};
+  var ti={steam:'前往绑定 Steam',import:'导入成功！',play:'开始秒玩',library:'进入游戏库',more:'跳转 PC云游戏页',explore:'开始探索'};
+  var de={steam:'正在跳转到 Steam 绑定页面...\n绑定后即可畅玩你的游戏库',import:'已将 2 个游戏导入游戏库\n现在可以开始游玩了',play:'正在为你启动云游戏...\n已赠送15分钟新手体验时长',library:'正在进入游戏库...',more:'跳转至 玩游戏 → PC云游戏页\n恭喜已获得15分钟免费游戏时长',explore:'正在进入探索页...\n开始发现你的游戏世界'};
+  var ic={steam:'🎮',import:'✅',play:'⚡',library:'📚',more:'🎯',explore:'🌍'};
   document.getElementById('doneIcon').textContent=ic[type]||'✅';
   document.getElementById('doneTitle').textContent=ti[type]||'准备就绪';
   document.getElementById('doneDesc').textContent=de[type]||'';
 }
 
-function resetAll(){sel=null;pageIdx=0;renderGrid();switchPage('page1')}
+function resetAll(){switchPage('page0')}
 </script>
 </body>
 </html>
