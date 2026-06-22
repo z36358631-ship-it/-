@@ -1,248 +1,837 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>新手登录优化 - 后台管理Demo</title>
-<style>
-:root {
-  --bg-page: #000000;
-  --bg-desktop: #111111;
-  --bg-card: rgba(255,255,255,0.05);
-  --border-card: rgba(255,255,255,0.08);
-  --btn-primary: linear-gradient(90deg, #1a6cf7, #00a8ff);
-  --btn-primary-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
-  --text-primary: #e6e6e6;
-  --text-secondary: #666666;
-  --text-link: #338feb;
-  --input-underline: rgba(255,255,255,0.15);
-  --divider: rgba(255,255,255,0.1);
-  --icon-bg: rgba(255,255,255,0.1);
-  --accent: #1a6cf7;
-  --radius-btn: 12px;
-  --radius-card: 16px;
-  --shadow-card: 0 4px 20px rgba(0,0,0,0.3);
-  --transition: 300ms ease;
-  --font: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  background: var(--bg-desktop);
-  min-height: 100vh;
-  font-family: var(--font);
-  -webkit-font-smoothing: antialiased;
-  color: var(--text-primary);
-}
-.page-title {
-  text-align: center;
-  padding: 28px 0 20px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #fff;
-}
-.bend-panel { max-width: 1200px; margin: 0 auto; padding: 0 24px 40px; }
-.bend-sub-tabs { display: flex; gap: 24px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-.bend-sub-tabs button {
-  background: none; border: none; font-size: 14px; color: #666; cursor: pointer;
-  font-family: var(--font); padding: 10px 0; border-bottom: 2px solid transparent; transition: var(--transition);
-}
-.bend-sub-tabs button.active { color: #e6e6e6; border-bottom-color: var(--accent); }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameHub Admin - 游客账号管理</title>
+    <style>
+        :root {
+            --primary-color: #1677ff;
+            --primary-bg: #e6f4ff;
+            --text-color: #333;
+            --text-secondary: #8c8c8c;
+            --border-color: #f0f0f0;
+            --bg-color: #f5f5f5;
+            --sidebar-width: 240px;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+        }
 
-/* Stats Cards */
-.b-stats-row { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
-.b-stat-card {
-  flex: 1; min-width: 160px; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 12px; padding: 16px 20px;
-}
-.b-stat-card .label { font-size: 12px; color: #888; margin-bottom: 6px; }
-.b-stat-card .value { font-size: 22px; font-weight: 600; color: #fff; }
-.b-stat-card .sub { font-size: 11px; color: #666; margin-top: 2px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* Filter Bar */
-.b-filter-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
-.b-filter-bar select, .b-filter-bar input {
-  background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
-  color: #e6e6e6; padding: 8px 12px; font-size: 13px; font-family: var(--font); outline: none;
-}
-.b-filter-bar input[type="date"] { color-scheme: dark; }
-.b-filter-bar .btn-query {
-  background: var(--btn-primary); border: none; color: #fff; padding: 8px 18px;
-  border-radius: 8px; font-size: 13px; cursor: pointer; font-family: var(--font);
-}
-.b-filter-bar .btn-reset {
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #ccc;
-  padding: 8px 18px; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: var(--font);
-}
+        body {
+            font-family: var(--font-family);
+            color: var(--text-color);
+            background: var(--bg-color);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
 
-/* Table */
-.b-table-wrap { overflow-x: auto; margin-bottom: 16px; }
-.b-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.b-table th {
-  text-align: left; padding: 10px 12px; color: #888; font-weight: 500;
-  border-bottom: 1px solid rgba(255,255,255,0.08); white-space: nowrap;
-}
-.b-table td {
-  padding: 10px 12px; color: #ccc; border-bottom: 1px solid rgba(255,255,255,0.04); white-space: nowrap;
-}
-.b-table tr:hover td { background: rgba(255,255,255,0.02); }
-.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
-.badge-green { background: rgba(34,197,94,0.15); color: #22c55e; }
-.badge-blue { background: rgba(59,130,246,0.15); color: #3b82f6; }
-.badge-gray { background: rgba(156,163,175,0.15); color: #9ca3af; }
-.b-link { color: var(--text-link); cursor: pointer; font-size: 12px; margin-right: 8px; background:none;border:none;font-family:var(--font); }
-.b-link-red { color: #ef4444; cursor: pointer; font-size: 12px; background:none;border:none;font-family:var(--font); }
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #fff;
+            height: 100vh;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
 
-/* Pagination */
-.b-pagination { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: #888; }
-.b-pagination .pages { display: flex; gap: 4px; align-items: center; }
-.b-pagination .pages button {
-  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-  color: #ccc; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 12px;
-  font-family: var(--font); display:flex;align-items:center;justify-content:center;
-}
-.b-pagination .pages button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .brand {
+            height: 56px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f1f1f;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: color 0.2s;
+            user-select: none;
+        }
+        .brand:hover { color: var(--primary-color); }
+        .brand svg { margin-right: 8px; color: var(--primary-color); }
 
-/* Funnel Dashboard */
-.b-kpi-row { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
-.b-kpi-card {
-  flex: 1; min-width: 140px; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 12px; padding: 14px 16px; text-align: center;
-}
-.b-kpi-card .kpi-val { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 4px; }
-.b-kpi-card .kpi-label { font-size: 11px; color: #888; }
-.b-kpi-card .kpi-trend { font-size: 11px; color: #22c55e; margin-top: 2px; }
-.b-pill-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-.b-pill-row button {
-  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-  color: #aaa; padding: 6px 14px; border-radius: 16px; font-size: 12px; cursor: pointer;
-  font-family: var(--font); transition: var(--transition);
-}
-.b-pill-row button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-.b-section-title { font-size: 14px; font-weight: 600; color: #e6e6e6; margin: 24px 0 12px; }
+        .sidebar-search { padding: 16px; }
+        .sidebar-search input {
+            width: 100%;
+            height: 32px;
+            padding: 0 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .sidebar-search input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(22,119,255,0.1);
+        }
 
-/* Funnel bars */
-.b-funnel-bar { display: flex; align-items: center; margin-bottom: 8px; }
-.b-funnel-bar .bar-fill {
-  height: 32px; border-radius: 6px; display: flex; align-items: center; padding-left: 12px;
-  font-size: 12px; color: #fff; font-weight: 500; transition: width 0.5s ease;
-}
-.b-funnel-bar .bar-meta { margin-left: 12px; font-size: 12px; color: #888; white-space: nowrap; }
+        .menu-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 24px;
+        }
+        .menu-container::-webkit-scrollbar { width: 4px; }
+        .menu-container::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 4px; }
 
-/* Horizontal bar chart */
-.b-hbar { margin-bottom: 10px; }
-.b-hbar .hbar-label { font-size: 12px; color: #ccc; margin-bottom: 4px; display:flex; justify-content:space-between; }
-.b-hbar .hbar-track { height: 20px; background: rgba(255,255,255,0.04); border-radius: 4px; overflow: hidden; }
-.b-hbar .hbar-fill { height: 100%; border-radius: 4px; }
+        .menu-group { margin-bottom: 4px; }
+        .menu-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 40px;
+            padding: 0 16px 0 24px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-color);
+            transition: color 0.2s;
+        }
+        .menu-header:hover { color: var(--primary-color); }
+        .menu-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .menu-header-left svg { color: var(--text-secondary); }
 
-/* Vertical bar chart (trend) */
-.b-vbar-chart { display: flex; align-items: flex-end; gap: 12px; height: 120px; padding-top: 10px; }
-.b-vbar-col { display: flex; flex-direction: column; align-items: center; flex: 1; }
-.b-vbar-col .bar { width: 100%; max-width: 36px; background: linear-gradient(180deg, #3b82f6, #1d4ed8); border-radius: 4px 4px 0 0; transition: height 0.4s ease; }
-.b-vbar-col .day-label { font-size: 10px; color: #666; margin-top: 6px; }
-.b-vbar-col .day-val { font-size: 10px; color: #aaa; margin-bottom: 4px; }
-</style>
+        .chevron { transition: transform 0.2s; color: var(--text-secondary); }
+        .menu-group.collapsed .chevron { transform: rotate(-90deg); }
+        .menu-group.collapsed .submenu { display: none; }
+
+        .submenu { list-style: none; }
+        .submenu-item {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding-left: 48px;
+            font-size: 14px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .submenu-item:hover { color: var(--primary-color); }
+        .submenu-item.active {
+            background: var(--primary-bg);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        .submenu-item.active::after {
+            content: '';
+            position: absolute;
+            right: 0; top: 0; bottom: 0;
+            width: 3px;
+            background: var(--primary-color);
+        }
+
+        /* Main */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .header {
+            height: 56px;
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 24px;
+            flex-shrink: 0;
+        }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-avatar { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+        .avatar-circle {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: var(--primary-color); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 12px;
+        }
+
+        .content-scroll { flex: 1; overflow-y: auto; padding: 24px; }
+
+        .page-header { margin-bottom: 24px; }
+        .page-desc { font-size: 18px; font-weight: 600; color: #1f1f1f; }
+        .page-subdesc { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+        /* SPA Pages */
+        .page-section {
+            display: none;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        .page-section.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Overview Cards */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .overview-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px 24px;
+            border: 1px solid var(--border-color);
+        }
+        .card-title { color: var(--text-secondary); font-size: 13px; margin-bottom: 12px; }
+        .card-value-row { display: flex; align-items: center; gap: 12px; }
+        .card-icon {
+            width: 48px; height: 48px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; font-size: 22px;
+        }
+        .card-value { font-size: 28px; font-weight: 600; color: #1f1f1f; }
+        .card-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+        .icon-blue { color: #1677ff; background: #e6f4ff; }
+        .icon-green { color: #52c41a; background: #f6ffed; }
+        .icon-purple { color: #722ed1; background: #f9f0ff; }
+        .icon-gold { color: #faad14; background: #fffbe6; }
+
+        /* Section Block */
+        .section-block {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        .section-title {
+            padding: 16px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .section-body { padding: 24px; }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+        .filter-item { display: flex; align-items: center; gap: 8px; }
+        .filter-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+        .filter-select, .filter-input {
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-color);
+            background: #fff;
+            outline: none;
+            transition: all 0.2s;
+            height: 34px;
+        }
+        .filter-select:hover, .filter-input:hover { border-color: #4096ff; }
+        .filter-select:focus, .filter-input:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.2); }
+
+        .filter-btn {
+            padding: 6px 16px;
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            height: 34px;
+        }
+        .filter-btn:hover { background: #4096ff; }
+        .filter-btn.reset {
+            background: #fff;
+            color: var(--text-color);
+            border: 1px solid #d9d9d9;
+        }
+        .filter-btn.reset:hover { border-color: #4096ff; color: #4096ff; }
+
+        /* Table */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td {
+            text-align: left;
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+        .data-table th { color: var(--text-secondary); font-weight: 500; background: #fafafa; }
+        .data-table tr:hover td { background: #fafafa; }
+
+        .action-link {
+            color: var(--primary-color);
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 12px;
+        }
+        .action-link:hover { text-decoration: underline; }
+        .action-link.danger { color: #ff4d4f; }
+        .action-link.danger:hover { color: #ff7875; }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-badge.green { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+        .status-badge.blue { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; }
+        .status-badge.gray { background: #f5f5f5; color: #8c8c8c; border: 1px solid #d9d9d9; }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+        .pagination-info { font-size: 13px; color: var(--text-secondary); }
+        .pagination-btns { display: flex; gap: 4px; }
+        .page-btn {
+            min-width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid #d9d9d9; border-radius: 4px;
+            font-size: 13px; background: #fff; cursor: pointer;
+            color: var(--text-color); transition: all 0.2s;
+        }
+        .page-btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .page-btn.active { background: var(--primary-color); border-color: var(--primary-color); color: #fff; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Metric Cards */
+        .metric-cards { display: flex; gap: 20px; margin-bottom: 24px; }
+        .metric-card {
+            flex: 1;
+            background: linear-gradient(135deg, #ffffff 0%, #f9fbfd 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            position: relative;
+            overflow: hidden;
+        }
+        .metric-card.accent-blue { border-bottom: 3px solid #1677ff; }
+        .metric-card.accent-red { border-bottom: 3px solid #ff4d4f; }
+        .metric-card.accent-purple { border-bottom: 3px solid #722ed1; }
+
+        .metric-title { font-size: 14px; color: var(--text-secondary); font-weight: 500; margin-bottom: 8px; }
+        .metric-val { font-size: 36px; font-weight: 700; color: #1f1f1f; }
+        .metric-sub {
+            font-size: 13px; color: #52c41a;
+            display: flex; align-items: center; gap: 4px; margin-top: 8px;
+        }
+
+        /* Dashboard Panels */
+        .dash-row { display: flex; gap: 24px; margin-bottom: 24px; }
+        .dash-panel {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+        .dash-panel-title { font-size: 16px; font-weight: 600; color: #1f1f1f; margin-bottom: 20px; }
+
+        /* Filter Pills */
+        .filter-pills { display: flex; gap: 16px; align-items: center; margin-bottom: 24px; flex-wrap: wrap; }
+        .pill-group { display: flex; align-items: center; gap: 8px; }
+        .pill-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-right: 4px; }
+        .pill {
+            padding: 5px 14px; border-radius: 16px; font-size: 13px;
+            border: 1px solid #d9d9d9; background: #fff;
+            cursor: pointer; transition: all 0.2s; color: var(--text-color);
+        }
+        .pill:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .pill.active {
+            background: var(--primary-bg);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        /* Funnel */
+        .funnel-chart { display: flex; flex-direction: column; gap: 12px; }
+        .funnel-bar { display: flex; align-items: center; gap: 16px; }
+        .funnel-label { width: 100px; font-size: 13px; color: var(--text-color); text-align: right; flex-shrink: 0; }
+        .funnel-track { flex: 1; height: 36px; background: #f0f0f0; border-radius: 6px; overflow: hidden; }
+        .funnel-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1677ff 0%, #69b1ff 100%);
+            border-radius: 6px;
+            display: flex; align-items: center; padding-left: 12px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .funnel-fill-text { font-size: 12px; color: #fff; font-weight: 500; white-space: nowrap; }
+        .funnel-count { width: 80px; font-size: 14px; font-weight: 600; color: #1f1f1f; flex-shrink: 0; }
+        .funnel-pct { width: 50px; font-size: 12px; color: var(--text-secondary); flex-shrink: 0; }
+
+        /* Horizontal Bar */
+        .h-bar-chart { display: flex; flex-direction: column; gap: 16px; }
+        .h-bar-item { display: flex; align-items: center; gap: 12px; }
+        .h-bar-label { width: 70px; font-size: 13px; color: var(--text-color); text-align: right; flex-shrink: 0; }
+        .h-bar-track { flex: 1; height: 24px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+        .h-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1677ff 0%, #69b1ff 100%);
+            border-radius: 4px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .h-bar-val { width: 40px; font-size: 13px; font-weight: 600; color: #1f1f1f; }
+
+        /* Vertical Bar Chart */
+        .v-bar-chart {
+            display: flex; align-items: flex-end; justify-content: space-around;
+            height: 200px; padding-top: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .v-bar-col { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; }
+        .v-bar {
+            width: 40px;
+            background: linear-gradient(180deg, #1677ff 0%, #69b1ff 100%);
+            border-radius: 4px 4px 0 0;
+            transition: height 1s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .v-bar-val {
+            position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+            font-size: 12px; font-weight: 600; color: #1f1f1f; white-space: nowrap;
+        }
+        .v-bar-label { font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
+    </style>
 </head>
 <body>
-<div class="page-title">新手登录优化 - 后台管理Demo</div>
-<div class="bend-panel">
-  <div class="bend-sub-tabs">
-    <button class="active" onclick="switchBendTab('guest')">游客账号管理</button>
-    <button onclick="switchBendTab('funnel')">转正漏斗看板</button>
-  </div>
-  <!-- Sub-tab 1: Guest Account Management -->
-  <div id="bendTabGuest">
-    <div class="b-filter-bar">
-      <select><option>全部</option><option>活跃</option><option>已转正</option><option>已清理</option></select>
-      <input type="date" placeholder="创建时间 起">
-      <input type="date" placeholder="创建时间 止">
-      <input type="text" placeholder="输入设备ID搜索" style="width:160px;">
-      <button class="btn-query">查询</button>
-      <button class="btn-reset">重置</button>
-    </div>
-    <div class="b-stats-row">
-      <div class="b-stat-card"><div class="label">总游客数</div><div class="value">12,847</div></div>
-      <div class="b-stat-card"><div class="label">活跃游客</div><div class="value">3,261</div></div>
-      <div class="b-stat-card"><div class="label">已转正</div><div class="value">4,529</div><div class="sub">35.2%</div></div>
-      <div class="b-stat-card"><div class="label">待清理</div><div class="value">2,104</div></div>
-    </div>
-    <div class="b-table-wrap">
-      <table class="b-table">
-        <thead><tr><th>游客ID</th><th>设备ID</th><th>创建时间</th><th>最后活跃</th><th>状态</th><th>转正账号</th><th>操作</th></tr></thead>
-        <tbody>
-          <tr><td>G100281</td><td>DEV-A3F8C1</td><td>2026-06-15 10:23</td><td>2026-06-22 09:15</td><td><span class="badge badge-green">活跃</span></td><td>-</td><td><button class="b-link">查看</button><button class="b-link-red">清理</button></td></tr>
-          <tr><td>G100282</td><td>DEV-B7D2E4</td><td>2026-06-14 14:05</td><td>2026-06-21 18:30</td><td><span class="badge badge-green">活跃</span></td><td>-</td><td><button class="b-link">查看</button><button class="b-link-red">清理</button></td></tr>
-          <tr><td>G100283</td><td>DEV-C9A1F6</td><td>2026-06-12 08:41</td><td>2026-06-20 11:22</td><td><span class="badge badge-blue">已转正</span></td><td>user_38291</td><td><button class="b-link">查看</button></td></tr>
-          <tr><td>G100284</td><td>DEV-D4E8B2</td><td>2026-06-10 16:55</td><td>2026-06-19 07:48</td><td><span class="badge badge-blue">已转正</span></td><td>user_44023</td><td><button class="b-link">查看</button></td></tr>
-          <tr><td>G100285</td><td>DEV-E2F5A9</td><td>2026-06-08 21:12</td><td>2026-06-08 21:30</td><td><span class="badge badge-gray">已清理</span></td><td>-</td><td><button class="b-link">查看</button></td></tr>
-          <tr><td>G100286</td><td>DEV-F6C3D7</td><td>2026-06-07 09:33</td><td>2026-06-22 08:55</td><td><span class="badge badge-green">活跃</span></td><td>-</td><td><button class="b-link">查看</button><button class="b-link-red">清理</button></td></tr>
-          <tr><td>G100287</td><td>DEV-G1B4E8</td><td>2026-06-05 13:27</td><td>2026-06-18 15:40</td><td><span class="badge badge-blue">已转正</span></td><td>user_51782</td><td><button class="b-link">查看</button></td></tr>
-          <tr><td>G100288</td><td>DEV-H8A2C5</td><td>2026-06-03 17:49</td><td>2026-06-03 18:02</td><td><span class="badge badge-gray">已清理</span></td><td>-</td><td><button class="b-link">查看</button></td></tr>
-          <tr><td>G100289</td><td>DEV-I5D7F3</td><td>2026-06-01 11:08</td><td>2026-06-21 20:15</td><td><span class="badge badge-green">活跃</span></td><td>-</td><td><button class="b-link">查看</button><button class="b-link-red">清理</button></td></tr>
-          <tr><td>G100290</td><td>DEV-J3E9A1</td><td>2026-05-28 06:44</td><td>2026-06-17 12:33</td><td><span class="badge badge-blue">已转正</span></td><td>user_60145</td><td><button class="b-link">查看</button></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="b-pagination">
-      <span>共 12,847 条</span>
-      <div class="pages">
-        <button>&lt;</button><button class="active">1</button><button>2</button><button>3</button><button>...</button><button>643</button><button>&gt;</button>
-      </div>
-    </div>
-  </div>
 
-  <!-- Sub-tab 2: Conversion Funnel Dashboard -->
-  <div id="bendTabFunnel" style="display:none;">
-    <div class="b-pill-row">
-      <span style="color:#888;font-size:12px;line-height:28px;margin-right:4px;">时间:</span>
-      <button class="active">近7天</button><button>近30天</button><button>自定义</button>
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="brand">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="6" width="20" height="12" rx="3"/>
+            <circle cx="8" cy="12" r="2"/>
+            <circle cx="16" cy="12" r="2"/>
+            <path d="M9 6V4M15 6V4"/>
+        </svg>
+        GameHub Admin
     </div>
-    <div class="b-pill-row">
-      <span style="color:#888;font-size:12px;line-height:28px;margin-right:4px;">地区:</span>
-      <button class="active">全部</button><button>国内</button><button>海外</button>
+    <div class="sidebar-search">
+        <input type="text" placeholder="搜索菜单...">
     </div>
-    <div class="b-kpi-row">
-      <div class="b-kpi-card"><div class="kpi-val">1,847</div><div class="kpi-label">游客创建数</div><div class="kpi-trend">↑12.3%</div></div>
-      <div class="b-kpi-card"><div class="kpi-val">892</div><div class="kpi-label">游客活跃数</div><div class="kpi-trend">↑5.1%</div></div>
-      <div class="b-kpi-card"><div class="kpi-val">423</div><div class="kpi-label">转正触发次数</div><div class="kpi-trend" style="color:#888;">-</div></div>
-      <div class="b-kpi-card"><div class="kpi-val">156</div><div class="kpi-label">转正成功数</div><div class="kpi-trend">↑23.7%</div></div>
-      <div class="b-kpi-card"><div class="kpi-val">36.9%</div><div class="kpi-label">转正率</div><div class="kpi-trend" style="color:#888;">-</div></div>
+    <nav class="menu-container">
+        <div class="menu-group">
+            <div class="menu-header" onclick="toggleMenu(this)">
+                <div class="menu-header-left">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span>用户管理</span>
+                </div>
+                <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <ul class="submenu">
+                <li class="submenu-item" onclick="switchPage('user-list', this)">用户列表</li>
+                <li class="submenu-item active" onclick="switchPage('guest-manage', this)">游客账号管理</li>
+            </ul>
+        </div>
+        <div class="menu-group">
+            <div class="menu-header" onclick="toggleMenu(this)">
+                <div class="menu-header-left">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+                    <span>运营管理</span>
+                </div>
+                <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <ul class="submenu">
+                <li class="submenu-item" onclick="switchPage('ops-activity', this)">运营活动</li>
+                <li class="submenu-item" onclick="switchPage('push-manage', this)">推送管理</li>
+            </ul>
+        </div>
+        <div class="menu-group">
+            <div class="menu-header" onclick="toggleMenu(this)">
+                <div class="menu-header-left">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                    <span>数据中心</span>
+                </div>
+                <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <ul class="submenu">
+                <li class="submenu-item" onclick="switchPage('funnel', this)">转正漏斗</li>
+                <li class="submenu-item" onclick="switchPage('data-board', this)">数据看板</li>
+            </ul>
+        </div>
+    </nav>
+</aside>
+
+<!-- Main -->
+<div class="main">
+    <header class="header">
+        <div class="header-right">
+            <div class="header-avatar">
+                <div class="avatar-circle">A</div>
+                <span>Admin</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="content-scroll">
+
+        <!-- Page 1: 游客账号管理 -->
+        <div id="page-guest-manage" class="page-section active">
+            <div class="page-header">
+                <div class="page-desc">游客账号管理</div>
+                <div class="page-subdesc">管理游客账号，查看转正情况</div>
+            </div>
+
+            <div class="overview-grid">
+                <div class="overview-card">
+                    <div class="card-title">总游客数</div>
+                    <div class="card-value-row">
+                        <div class="card-icon icon-blue">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <div><div class="card-value">12,847</div></div>
+                    </div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-title">活跃游客</div>
+                    <div class="card-value-row">
+                        <div class="card-icon icon-green">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        </div>
+                        <div><div class="card-value">3,261</div></div>
+                    </div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-title">已转正</div>
+                    <div class="card-value-row">
+                        <div class="card-icon icon-purple">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        </div>
+                        <div>
+                            <div class="card-value">4,529</div>
+                            <div class="card-sub">转正率 35.2%</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-title">待清理</div>
+                    <div class="card-value-row">
+                        <div class="card-icon icon-gold">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </div>
+                        <div><div class="card-value">2,104</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-block">
+                <div class="section-title">游客列表</div>
+                <div class="section-body">
+                    <div class="filter-bar">
+                        <div class="filter-item">
+                            <span class="filter-label">状态</span>
+                            <select class="filter-select">
+                                <option>全部</option>
+                                <option>活跃</option>
+                                <option>已转正</option>
+                                <option>已清理</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <span class="filter-label">创建时间</span>
+                            <input type="date" class="filter-input" style="width:140px">
+                            <span style="color:var(--text-secondary);font-size:13px">至</span>
+                            <input type="date" class="filter-input" style="width:140px">
+                        </div>
+                        <div class="filter-item">
+                            <span class="filter-label">设备ID</span>
+                            <input type="text" class="filter-input" placeholder="请输入设备ID" style="width:160px">
+                        </div>
+                        <div class="filter-item">
+                            <button class="filter-btn">查询</button>
+                            <button class="filter-btn reset">重置</button>
+                        </div>
+                    </div>
+
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>游客ID</th>
+                                <th>设备ID</th>
+                                <th>创建时间</th>
+                                <th>最后活跃</th>
+                                <th>状态</th>
+                                <th>转正账号</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guest-table-body"></tbody>
+                    </table>
+
+                    <div class="pagination">
+                        <div class="pagination-info">共 12,847 条</div>
+                        <div class="pagination-btns">
+                            <button class="page-btn" disabled>&lt;</button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <button class="page-btn">4</button>
+                            <button class="page-btn">5</button>
+                            <button class="page-btn">...</button>
+                            <button class="page-btn">1285</button>
+                            <button class="page-btn">&gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 2: 转正漏斗看板 -->
+        <div id="page-funnel" class="page-section">
+            <div class="page-header">
+                <div class="page-desc">转正漏斗看板</div>
+                <div class="page-subdesc">游客模式转化数据分析</div>
+            </div>
+
+            <div class="filter-pills">
+                <div class="pill-group">
+                    <span class="pill-label">时间:</span>
+                    <span class="pill active" onclick="setPill(this)">近7天</span>
+                    <span class="pill" onclick="setPill(this)">近30天</span>
+                    <span class="pill" onclick="setPill(this)">近60天</span>
+                </div>
+                <div class="pill-group">
+                    <span class="pill-label">区服:</span>
+                    <span class="pill active" onclick="setPill(this)">全部</span>
+                    <span class="pill" onclick="setPill(this)">国内</span>
+                    <span class="pill" onclick="setPill(this)">海外</span>
+                </div>
+                <div class="pill-group">
+                    <span class="pill-label">场景:</span>
+                    <span class="pill active" onclick="setPill(this)">全部</span>
+                    <span class="pill" onclick="setPill(this)">充值</span>
+                    <span class="pill" onclick="setPill(this)">Steam绑定</span>
+                    <span class="pill" onclick="setPill(this)">云存档</span>
+                    <span class="pill" onclick="setPill(this)">社交</span>
+                </div>
+            </div>
+
+            <div class="metric-cards">
+                <div class="metric-card accent-blue">
+                    <div class="metric-title">游客创建数</div>
+                    <div class="metric-val">1,847</div>
+                    <div class="metric-sub">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                        +12.3%
+                    </div>
+                </div>
+                <div class="metric-card accent-blue">
+                    <div class="metric-title">游客活跃数</div>
+                    <div class="metric-val">892</div>
+                    <div class="metric-sub">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                        +5.1%
+                    </div>
+                </div>
+                <div class="metric-card accent-purple">
+                    <div class="metric-title">转正触发数</div>
+                    <div class="metric-val">423</div>
+                </div>
+                <div class="metric-card accent-blue">
+                    <div class="metric-title">转正成功数</div>
+                    <div class="metric-val">156</div>
+                    <div class="metric-sub">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                        +23.7%
+                    </div>
+                </div>
+                <div class="metric-card accent-purple">
+                    <div class="metric-title">转正率</div>
+                    <div class="metric-val">36.9%</div>
+                </div>
+            </div>
+
+            <div class="dash-row">
+                <div class="dash-panel" style="flex:6">
+                    <div class="dash-panel-title">转正漏斗</div>
+                    <div class="funnel-chart">
+                        <div class="funnel-bar">
+                            <div class="funnel-label">新用户访问</div>
+                            <div class="funnel-track"><div class="funnel-fill" style="width:100%"><span class="funnel-fill-text">10,000</span></div></div>
+                            <div class="funnel-count">10,000</div>
+                            <div class="funnel-pct">100%</div>
+                        </div>
+                        <div class="funnel-bar">
+                            <div class="funnel-label">登录浮层展示</div>
+                            <div class="funnel-track"><div class="funnel-fill" style="width:65%"><span class="funnel-fill-text">6,500</span></div></div>
+                            <div class="funnel-count">6,500</div>
+                            <div class="funnel-pct">65%</div>
+                        </div>
+                        <div class="funnel-bar">
+                            <div class="funnel-label">游客进入</div>
+                            <div class="funnel-track"><div class="funnel-fill" style="width:32%"><span class="funnel-fill-text">3,200</span></div></div>
+                            <div class="funnel-count">3,200</div>
+                            <div class="funnel-pct">32%</div>
+                        </div>
+                        <div class="funnel-bar">
+                            <div class="funnel-label">触发转正</div>
+                            <div class="funnel-track"><div class="funnel-fill" style="width:12.8%"><span class="funnel-fill-text">1,280</span></div></div>
+                            <div class="funnel-count">1,280</div>
+                            <div class="funnel-pct">12.8%</div>
+                        </div>
+                        <div class="funnel-bar">
+                            <div class="funnel-label">转正成功</div>
+                            <div class="funnel-track"><div class="funnel-fill" style="width:9.6%"><span class="funnel-fill-text">960</span></div></div>
+                            <div class="funnel-count">960</div>
+                            <div class="funnel-pct">9.6%</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dash-panel" style="flex:4">
+                    <div class="dash-panel-title">场景分布</div>
+                    <div class="h-bar-chart">
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">充值付费</div>
+                            <div class="h-bar-track"><div class="h-bar-fill" style="width:42%"></div></div>
+                            <div class="h-bar-val">42%</div>
+                        </div>
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">Steam绑定</div>
+                            <div class="h-bar-track"><div class="h-bar-fill" style="width:28%"></div></div>
+                            <div class="h-bar-val">28%</div>
+                        </div>
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">云存档</div>
+                            <div class="h-bar-track"><div class="h-bar-fill" style="width:18%"></div></div>
+                            <div class="h-bar-val">18%</div>
+                        </div>
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">社交社区</div>
+                            <div class="h-bar-track"><div class="h-bar-fill" style="width:12%"></div></div>
+                            <div class="h-bar-val">12%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dash-panel" style="width:100%">
+                <div class="dash-panel-title">近7日转正趋势</div>
+                <div class="v-bar-chart" id="trend-chart"></div>
+            </div>
+        </div>
+
     </div>
-    <div class="b-section-title">转正漏斗</div>
-    <div style="margin-bottom:24px;">
-      <div class="b-funnel-bar"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,#2563eb,#60a5fa);">新用户访问</div><div class="bar-meta">10,000 (100%)</div></div>
-      <div class="b-funnel-bar"><div class="bar-fill" style="width:65%;background:linear-gradient(90deg,#2563eb,#60a5fa);">登录浮层展示</div><div class="bar-meta">6,500 (65%)</div></div>
-      <div class="b-funnel-bar"><div class="bar-fill" style="width:32%;background:linear-gradient(90deg,#2563eb,#60a5fa);">游客模式进入</div><div class="bar-meta">3,200 (32%)</div></div>
-      <div class="b-funnel-bar"><div class="bar-fill" style="width:12.8%;background:linear-gradient(90deg,#2563eb,#60a5fa);">触发转正引导</div><div class="bar-meta">1,280 (12.8%)</div></div>
-      <div class="b-funnel-bar"><div class="bar-fill" style="width:9.6%;background:linear-gradient(90deg,#2563eb,#60a5fa);">转正成功</div><div class="bar-meta">960 (9.6%)</div></div>
-    </div>
-    <div class="b-section-title">转正触发场景分布</div>
-    <div style="margin-bottom:24px;">
-      <div class="b-hbar"><div class="hbar-label"><span>充值付费</span><span>42%</span></div><div class="hbar-track"><div class="hbar-fill" style="width:42%;background:#f59e0b;"></div></div></div>
-      <div class="b-hbar"><div class="hbar-label"><span>Steam绑定</span><span>28%</span></div><div class="hbar-track"><div class="hbar-fill" style="width:28%;background:#3b82f6;"></div></div></div>
-      <div class="b-hbar"><div class="hbar-label"><span>云存档</span><span>18%</span></div><div class="hbar-track"><div class="hbar-fill" style="width:18%;background:#8b5cf6;"></div></div></div>
-      <div class="b-hbar"><div class="hbar-label"><span>社交社区</span><span>12%</span></div><div class="hbar-track"><div class="hbar-fill" style="width:12%;background:#22c55e;"></div></div></div>
-    </div>
-    <div class="b-section-title">近7日转正趋势</div>
-    <div class="b-vbar-chart">
-      <div class="b-vbar-col"><div class="day-val">18</div><div class="bar" style="height:58%;"></div><div class="day-label">Mon</div></div>
-      <div class="b-vbar-col"><div class="day-val">22</div><div class="bar" style="height:71%;"></div><div class="day-label">Tue</div></div>
-      <div class="b-vbar-col"><div class="day-val">19</div><div class="bar" style="height:61%;"></div><div class="day-label">Wed</div></div>
-      <div class="b-vbar-col"><div class="day-val">25</div><div class="bar" style="height:81%;"></div><div class="day-label">Thu</div></div>
-      <div class="b-vbar-col"><div class="day-val">31</div><div class="bar" style="height:100%;"></div><div class="day-label">Fri</div></div>
-      <div class="b-vbar-col"><div class="day-val">28</div><div class="bar" style="height:90%;"></div><div class="day-label">Sat</div></div>
-      <div class="b-vbar-col"><div class="day-val">24</div><div class="bar" style="height:77%;"></div><div class="day-label">Sun</div></div>
-    </div>
-  </div>
 </div>
+
 <script>
-function switchBendTab(tab) {
-  var btns = document.querySelectorAll('.bend-sub-tabs button');
-  btns.forEach(function(b) {
-    b.classList.toggle('active', (tab === 'guest' && b.textContent === '游客账号管理') || (tab === 'funnel' && b.textContent === '转正漏斗看板'));
-  });
-  document.getElementById('bendTabGuest').style.display = tab === 'guest' ? '' : 'none';
-  document.getElementById('bendTabFunnel').style.display = tab === 'funnel' ? '' : 'none';
+const guestData = [
+    { id: 'G20240301001', device: 'A1B2C3D4E5F6', created: '2024-03-01 09:23', lastActive: '2024-06-20 14:12', status: '活跃', account: '-' },
+    { id: 'G20240228015', device: 'F7E8D9C0B1A2', created: '2024-02-28 16:45', lastActive: '2024-06-19 08:33', status: '已转正', account: 'user_1892@gh.com' },
+    { id: 'G20240225008', device: '1A2B3C4D5E6F', created: '2024-02-25 11:07', lastActive: '2024-06-18 22:01', status: '活跃', account: '-' },
+    { id: 'G20240220042', device: '9F8E7D6C5B4A', created: '2024-02-20 08:59', lastActive: '2024-03-15 10:44', status: '已清理', account: '-' },
+    { id: 'G20240218003', device: 'B3C4D5E6F7A8', created: '2024-02-18 20:30', lastActive: '2024-06-21 16:55', status: '活跃', account: '-' },
+    { id: 'G20240215027', device: 'E6F7A8B9C0D1', created: '2024-02-15 13:22', lastActive: '2024-06-17 09:18', status: '已转正', account: 'player_zhang@gh.com' },
+    { id: 'G20240210019', device: 'D5E6F7A8B9C0', created: '2024-02-10 07:14', lastActive: '2024-04-02 11:30', status: '已清理', account: '-' },
+    { id: 'G20240208055', device: 'C4D5E6F7A8B9', created: '2024-02-08 18:41', lastActive: '2024-06-20 20:07', status: '活跃', account: '-' },
+    { id: 'G20240205012', device: 'A8B9C0D1E2F3', created: '2024-02-05 22:05', lastActive: '2024-06-19 13:49', status: '已转正', account: 'gamer_li@gh.com' },
+    { id: 'G20240201038', device: 'F3A4B5C6D7E8', created: '2024-02-01 10:33', lastActive: '2024-06-21 07:22', status: '活跃', account: '-' },
+];
+
+function renderGuestTable() {
+    const tbody = document.getElementById('guest-table-body');
+    tbody.innerHTML = guestData.map(row => {
+        let badgeClass = 'gray';
+        if (row.status === '活跃') badgeClass = 'green';
+        else if (row.status === '已转正') badgeClass = 'blue';
+        const actions = row.status === '活跃'
+            ? '<a class="action-link">查看</a><a class="action-link danger">清理</a>'
+            : '<a class="action-link">查看</a>';
+        return '<tr>' +
+            '<td>' + row.id + '</td>' +
+            '<td><code style="font-family:monospace;background:#f5f5f5;padding:2px 6px;border-radius:4px;border:1px solid #e8e8e8;color:#d4380d;font-size:12px">' + row.device + '</code></td>' +
+            '<td>' + row.created + '</td>' +
+            '<td>' + row.lastActive + '</td>' +
+            '<td><span class="status-badge ' + badgeClass + '">' + row.status + '</span></td>' +
+            '<td>' + row.account + '</td>' +
+            '<td>' + actions + '</td>' +
+        '</tr>';
+    }).join('');
 }
+
+function renderTrendChart() {
+    const data = [
+        { label: '周一', val: 18 },
+        { label: '周二', val: 22 },
+        { label: '周三', val: 19 },
+        { label: '周四', val: 25 },
+        { label: '周五', val: 31 },
+        { label: '周六', val: 28 },
+        { label: '周日', val: 24 },
+    ];
+    const max = Math.max(...data.map(d => d.val));
+    const container = document.getElementById('trend-chart');
+    container.innerHTML = data.map(d => {
+        const h = Math.round((d.val / max) * 160);
+        return '<div class="v-bar-col">' +
+            '<div class="v-bar" style="height:' + h + 'px">' +
+                '<span class="v-bar-val">' + d.val + '</span>' +
+            '</div>' +
+            '<span class="v-bar-label">' + d.label + '</span>' +
+        '</div>';
+    }).join('');
+}
+
+function switchPage(pageKey, el) {
+    const pageMap = {
+        'guest-manage': 'page-guest-manage',
+        'funnel': 'page-funnel',
+    };
+    document.querySelectorAll('.submenu-item').forEach(item => item.classList.remove('active'));
+    if (el) el.classList.add('active');
+    document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+    const targetId = pageMap[pageKey];
+    if (targetId) {
+        const target = document.getElementById(targetId);
+        if (target) {
+            target.classList.add('active');
+            target.style.animation = 'none';
+            target.offsetHeight;
+            target.style.animation = '';
+        }
+    }
+}
+
+function toggleMenu(header) {
+    header.parentElement.classList.toggle('collapsed');
+}
+
+function setPill(el) {
+    const group = el.parentElement;
+    group.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderGuestTable();
+    renderTrendChart();
+});
 </script>
 </body>
 </html>
