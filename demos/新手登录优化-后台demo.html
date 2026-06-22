@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新手登录优化 - 后台管理Demo</title>
+<style>
+:root {
+  --bg-page: #000000;
+  --bg-desktop: #111111;
+  --bg-card: rgba(255,255,255,0.05);
+  --border-card: rgba(255,255,255,0.08);
+  --btn-primary: linear-gradient(90deg, #1a6cf7, #00a8ff);
+  --btn-primary-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+  --text-primary: #e6e6e6;
+  --text-secondary: #666666;
+  --text-link: #338feb;
+  --input-underline: rgba(255,255,255,0.15);
+  --divider: rgba(255,255,255,0.1);
+  --icon-bg: rgba(255,255,255,0.1);
+  --accent: #1a6cf7;
+  --radius-btn: 12px;
+  --radius-card: 16px;
+  --shadow-card: 0 4px 20px rgba(0,0,0,0.3);
+  --transition: 300ms ease;
+  --font: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg-desktop);
+  min-height: 100vh;
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  color: var(--text-primary);
+}
+.page-title {
+  text-align: center;
+  padding: 28px 0 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+.bend-panel { max-width: 1200px; margin: 0 auto; padding: 0 24px 40px; }
+.bend-sub-tabs { display: flex; gap: 24px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.bend-sub-tabs button {
+  background: none; border: none; font-size: 14px; color: #666; cursor: pointer;
+  font-family: var(--font); padding: 10px 0; border-bottom: 2px solid transparent; transition: var(--transition);
+}
+.bend-sub-tabs button.active { color: #e6e6e6; border-bottom-color: var(--accent); }
+
+/* Stats Cards */
+.b-stats-row { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+.b-stat-card {
+  flex: 1; min-width: 160px; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px; padding: 16px 20px;
+}
+.b-stat-card .label { font-size: 12px; color: #888; margin-bottom: 6px; }
+.b-stat-card .value { font-size: 22px; font-weight: 600; color: #fff; }
+.b-stat-card .sub { font-size: 11px; color: #666; margin-top: 2px; }
+
+/* Filter Bar */
+.b-filter-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+.b-filter-bar select, .b-filter-bar input {
+  background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+  color: #e6e6e6; padding: 8px 12px; font-size: 13px; font-family: var(--font); outline: none;
+}
+.b-filter-bar input[type="date"] { color-scheme: dark; }
+.b-filter-bar .btn-query {
+  background: var(--btn-primary); border: none; color: #fff; padding: 8px 18px;
+  border-radius: 8px; font-size: 13px; cursor: pointer; font-family: var(--font);
+}
+.b-filter-bar .btn-reset {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #ccc;
+  padding: 8px 18px; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: var(--font);
+}
+
+/* Table */
+.b-table-wrap { overflow-x: auto; margin-bottom: 16px; }
+.b-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.b-table th {
+  text-align: left; padding: 10px 12px; color: #888; font-weight: 500;
+  border-bottom: 1px solid rgba(255,255,255,0.08); white-space: nowrap;
+}
+.b-table td {
+  padding: 10px 12px; color: #ccc; border-bottom: 1px solid rgba(255,255,255,0.04); white-space: nowrap;
+}
+.b-table tr:hover td { background: rgba(255,255,255,0.02); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+.badge-green { background: rgba(34,197,94,0.15); color: #22c55e; }
+.badge-blue { background: rgba(59,130,246,0.15); color: #3b82f6; }
+.badge-gray { background: rgba(156,163,175,0.15); color: #9ca3af; }
+.b-link { color: var(--text-link); cursor: pointer; font-size: 12px; margin-right: 8px; background:none;border:none;font-family:var(--font); }
+.b-link-red { color: #ef4444; cursor: pointer; font-size: 12px; background:none;border:none;font-family:var(--font); }
+
+/* Pagination */
+.b-pagination { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: #888; }
+.b-pagination .pages { display: flex; gap: 4px; align-items: center; }
+.b-pagination .pages button {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  color: #ccc; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 12px;
+  font-family: var(--font); display:flex;align-items:center;justify-content:center;
+}
+.b-pagination .pages button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* Funnel Dashboard */
+.b-kpi-row { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+.b-kpi-card {
+  flex: 1; min-width: 140px; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px; padding: 14px 16px; text-align: center;
+}
+.b-kpi-card .kpi-val { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+.b-kpi-card .kpi-label { font-size: 11px; color: #888; }
+.b-kpi-card .kpi-trend { font-size: 11px; color: #22c55e; margin-top: 2px; }
+.b-pill-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.b-pill-row button {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  color: #aaa; padding: 6px 14px; border-radius: 16px; font-size: 12px; cursor: pointer;
+  font-family: var(--font); transition: var(--transition);
+}
+.b-pill-row button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.b-section-title { font-size: 14px; font-weight: 600; color: #e6e6e6; margin: 24px 0 12px; }
+
+/* Funnel bars */
+.b-funnel-bar { display: flex; align-items: center; margin-bottom: 8px; }
+.b-funnel-bar .bar-fill {
+  height: 32px; border-radius: 6px; display: flex; align-items: center; padding-left: 12px;
+  font-size: 12px; color: #fff; font-weight: 500; transition: width 0.5s ease;
+}
+.b-funnel-bar .bar-meta { margin-left: 12px; font-size: 12px; color: #888; white-space: nowrap; }
+
+/* Horizontal bar chart */
+.b-hbar { margin-bottom: 10px; }
+.b-hbar .hbar-label { font-size: 12px; color: #ccc; margin-bottom: 4px; display:flex; justify-content:space-between; }
+.b-hbar .hbar-track { height: 20px; background: rgba(255,255,255,0.04); border-radius: 4px; overflow: hidden; }
+.b-hbar .hbar-fill { height: 100%; border-radius: 4px; }
+
+/* Vertical bar chart (trend) */
+.b-vbar-chart { display: flex; align-items: flex-end; gap: 12px; height: 120px; padding-top: 10px; }
+.b-vbar-col { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.b-vbar-col .bar { width: 100%; max-width: 36px; background: linear-gradient(180deg, #3b82f6, #1d4ed8); border-radius: 4px 4px 0 0; transition: height 0.4s ease; }
+.b-vbar-col .day-label { font-size: 10px; color: #666; margin-top: 6px; }
+.b-vbar-col .day-val { font-size: 10px; color: #aaa; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="page-title">新手登录优化 - 后台管理Demo</div>
+<div class="bend-panel">
+  <div class="bend-sub-tabs">
+    <button class="active" onclick="switchBendTab('guest')">游客账号管理</button>
+    <button onclick="switchBendTab('funnel')">转正漏斗看板</button>
+  </div>
+  <!-- Sub-tab 1: Guest Account Management -->
+  <div id="bendTabGuest">
+    <div class="b-filter-bar">
+      <select><option>全部</option><option>活跃</option><option>已转正</option><option>已清理</option></select>
+      <input type="date" placeholder="创建时间 起">
+      <input type="date" placeholder="创建时间 止">
+      <input type="text" placeholder="输入设备ID搜索" style="width:160px;">
+      <button class="btn-query">查询</button>
+      <button class="btn-reset">重置</button>
+    </div>
+    <div class="b-stats-row">
+      <div class="b-stat-card"><div class="label">总游客数</div><div class="value">12,847</div></div>
+      <div class="b-stat-card"><div class="label">活跃游客</div><div class="value">3,261</div></div>
+      <div class="b-stat-card"><div class="label">已转正</div><div class="value">4,529</div><div class="sub">35.2%</div></div>
+      <div class="b-stat-card"><div class="label">待清理</div><div class="value">2,104</div></div>
+    </div>
+    <div class="b-table-wrap">
+      <table class="b-table">
+        <thead><tr><th>游客ID</th><th>设备ID</th><th>创建时间</th><th>最后活跃</th><th>状态</th><th>转正账号</th><th>操作</th></tr></thead>
+        <tbody>
+          <tr><td>G100281</td><td>DEV-A3F8C1</td><td>2026-06-15 10:23</td><td>2026-06-22 09:15</td><td><span class="badge badge-green">活跃</span></td><td>-</td><td><button class="b-link">查看</button><button class="b-link-red">清理</button></td></tr>
+          <tr><td>G100282</td><td>DEV-B7D2E4</td><td>2026-06-14 14:05</td><td>2026-06-21 18:30</td><td><span class="badge badge-green">活跃</span></td><td>-</td><td><button class="b-link">查看</button><button class="b-link-red">清理</button></td></tr>
+          <tr><td>G100283</td><td>DEV-C9A1F6</td><td>2026-06-12 08:41</td><td>2026-06-20 11:22</td><td><span class="badge badge-blue">已转正</span></td><td>user_38291</td><td><button class="b-link">查看</button></td></tr>
+          <tr><td>G100284</td><td>DEV-D4E8B2</td><td>2026-06-10 16:55</td><td>2026-06-19 07:48</td><td><span class="badge badge-blue">已转正</span></td><td>user_44023</td><td><button class="b-link">查看</button></td></tr>
+          <tr><td>G100285</td><td>DEV-E2F5A9</td><td>2026-06-08 21:12</td><td>2026-06-08 21:30</td><td><span class="badge badge-gray">已清理</span></td><td>-</td><td><button class="b-link">查看</button></td></tr>
+          <tr><td>G100286</td><td>DEV-F6C3D7</td><td>2026-06-07 09:33</td><td>2026-06-22 08:55</td><td><span class="badge badge-green">活跃</span></td><td>-</td><td><button class="b-link">查看</button><button class="b-link-red">清理</button></td></tr>
+          <tr><td>G100287</td><td>DEV-G1B4E8</td><td>2026-06-05 13:27</td><td>2026-06-18 15:40</td><td><span class="badge badge-blue">已转正</span></td><td>user_51782</td><td><button class="b-link">查看</button></td></tr>
+          <tr><td>G100288</td><td>DEV-H8A2C5</td><td>2026-06-03 17:49</td><td>2026-06-03 18:02</td><td><span class="badge badge-gray">已清理</span></td><td>-</td><td><button class="b-link">查看</button></td></tr>
+          <tr><td>G100289</td><td>DEV-I5D7F3</td><td>2026-06-01 11:08</td><td>2026-06-21 20:15</td><td><span class="badge badge-green">活跃</span></td><td>-</td><td><button class="b-link">查看</button><button class="b-link-red">清理</button></td></tr>
+          <tr><td>G100290</td><td>DEV-J3E9A1</td><td>2026-05-28 06:44</td><td>2026-06-17 12:33</td><td><span class="badge badge-blue">已转正</span></td><td>user_60145</td><td><button class="b-link">查看</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="b-pagination">
+      <span>共 12,847 条</span>
+      <div class="pages">
+        <button>&lt;</button><button class="active">1</button><button>2</button><button>3</button><button>...</button><button>643</button><button>&gt;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub-tab 2: Conversion Funnel Dashboard -->
+  <div id="bendTabFunnel" style="display:none;">
+    <div class="b-pill-row">
+      <span style="color:#888;font-size:12px;line-height:28px;margin-right:4px;">时间:</span>
+      <button class="active">近7天</button><button>近30天</button><button>自定义</button>
+    </div>
+    <div class="b-pill-row">
+      <span style="color:#888;font-size:12px;line-height:28px;margin-right:4px;">地区:</span>
+      <button class="active">全部</button><button>国内</button><button>海外</button>
+    </div>
+    <div class="b-kpi-row">
+      <div class="b-kpi-card"><div class="kpi-val">1,847</div><div class="kpi-label">游客创建数</div><div class="kpi-trend">↑12.3%</div></div>
+      <div class="b-kpi-card"><div class="kpi-val">892</div><div class="kpi-label">游客活跃数</div><div class="kpi-trend">↑5.1%</div></div>
+      <div class="b-kpi-card"><div class="kpi-val">423</div><div class="kpi-label">转正触发次数</div><div class="kpi-trend" style="color:#888;">-</div></div>
+      <div class="b-kpi-card"><div class="kpi-val">156</div><div class="kpi-label">转正成功数</div><div class="kpi-trend">↑23.7%</div></div>
+      <div class="b-kpi-card"><div class="kpi-val">36.9%</div><div class="kpi-label">转正率</div><div class="kpi-trend" style="color:#888;">-</div></div>
+    </div>
+    <div class="b-section-title">转正漏斗</div>
+    <div style="margin-bottom:24px;">
+      <div class="b-funnel-bar"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,#2563eb,#60a5fa);">新用户访问</div><div class="bar-meta">10,000 (100%)</div></div>
+      <div class="b-funnel-bar"><div class="bar-fill" style="width:65%;background:linear-gradient(90deg,#2563eb,#60a5fa);">登录浮层展示</div><div class="bar-meta">6,500 (65%)</div></div>
+      <div class="b-funnel-bar"><div class="bar-fill" style="width:32%;background:linear-gradient(90deg,#2563eb,#60a5fa);">游客模式进入</div><div class="bar-meta">3,200 (32%)</div></div>
+      <div class="b-funnel-bar"><div class="bar-fill" style="width:12.8%;background:linear-gradient(90deg,#2563eb,#60a5fa);">触发转正引导</div><div class="bar-meta">1,280 (12.8%)</div></div>
+      <div class="b-funnel-bar"><div class="bar-fill" style="width:9.6%;background:linear-gradient(90deg,#2563eb,#60a5fa);">转正成功</div><div class="bar-meta">960 (9.6%)</div></div>
+    </div>
+    <div class="b-section-title">转正触发场景分布</div>
+    <div style="margin-bottom:24px;">
+      <div class="b-hbar"><div class="hbar-label"><span>充值付费</span><span>42%</span></div><div class="hbar-track"><div class="hbar-fill" style="width:42%;background:#f59e0b;"></div></div></div>
+      <div class="b-hbar"><div class="hbar-label"><span>Steam绑定</span><span>28%</span></div><div class="hbar-track"><div class="hbar-fill" style="width:28%;background:#3b82f6;"></div></div></div>
+      <div class="b-hbar"><div class="hbar-label"><span>云存档</span><span>18%</span></div><div class="hbar-track"><div class="hbar-fill" style="width:18%;background:#8b5cf6;"></div></div></div>
+      <div class="b-hbar"><div class="hbar-label"><span>社交社区</span><span>12%</span></div><div class="hbar-track"><div class="hbar-fill" style="width:12%;background:#22c55e;"></div></div></div>
+    </div>
+    <div class="b-section-title">近7日转正趋势</div>
+    <div class="b-vbar-chart">
+      <div class="b-vbar-col"><div class="day-val">18</div><div class="bar" style="height:58%;"></div><div class="day-label">Mon</div></div>
+      <div class="b-vbar-col"><div class="day-val">22</div><div class="bar" style="height:71%;"></div><div class="day-label">Tue</div></div>
+      <div class="b-vbar-col"><div class="day-val">19</div><div class="bar" style="height:61%;"></div><div class="day-label">Wed</div></div>
+      <div class="b-vbar-col"><div class="day-val">25</div><div class="bar" style="height:81%;"></div><div class="day-label">Thu</div></div>
+      <div class="b-vbar-col"><div class="day-val">31</div><div class="bar" style="height:100%;"></div><div class="day-label">Fri</div></div>
+      <div class="b-vbar-col"><div class="day-val">28</div><div class="bar" style="height:90%;"></div><div class="day-label">Sat</div></div>
+      <div class="b-vbar-col"><div class="day-val">24</div><div class="bar" style="height:77%;"></div><div class="day-label">Sun</div></div>
+    </div>
+  </div>
+</div>
+<script>
+function switchBendTab(tab) {
+  var btns = document.querySelectorAll('.bend-sub-tabs button');
+  btns.forEach(function(b) {
+    b.classList.toggle('active', (tab === 'guest' && b.textContent === '游客账号管理') || (tab === 'funnel' && b.textContent === '转正漏斗看板'));
+  });
+  document.getElementById('bendTabGuest').style.display = tab === 'guest' ? '' : 'none';
+  document.getElementById('bendTabFunnel').style.display = tab === 'funnel' ? '' : 'none';
+}
+</script>
+</body>
+</html>

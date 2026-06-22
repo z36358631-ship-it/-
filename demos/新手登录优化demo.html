@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>新手登录优化Demo - 盖世游戏</title>
+<style>
+:root {
+  --bg-page: #000000;
+  --bg-desktop: #111111;
+  --bg-card: rgba(255,255,255,0.05);
+  --border-card: rgba(255,255,255,0.08);
+  --btn-primary: linear-gradient(90deg, #1a6cf7, #00a8ff);
+  --btn-primary-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+  --text-primary: #e6e6e6;
+  --text-secondary: #666666;
+  --text-link: #338feb;
+  --input-underline: rgba(255,255,255,0.15);
+  --divider: rgba(255,255,255,0.1);
+  --icon-bg: rgba(255,255,255,0.1);
+  --accent: #1a6cf7;
+  --wechat: #27d35a;
+  --qq: #1fa9f3;
+  --steam-bg: #1b2838;
+  --radius-modal: 16px;
+  --radius-btn: 12px;
+  --radius-pill: 30px;
+  --radius-card: 16px;
+  --shadow-card: 0 4px 20px rgba(0,0,0,0.3);
+  --transition: 300ms ease;
+  --sheet-transition: 350ms cubic-bezier(0.32, 0.72, 0, 1);
+  --font: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg-desktop);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+/* Phone Frame */
+.phone-frame {
+  width: 402px;
+  height: 874px;
+  background: var(--bg-page);
+  border-radius: 44px;
+  border: 3px solid #222;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+/* Status Bar */
+.status-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 54px;
+  padding: 14px 24px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+}
+.status-bar .time { font-size: 15px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+.status-bar .icons { display: flex; align-items: center; gap: 6px; }
+.status-bar .icons svg { width: 16px; height: 16px; fill: #fff; }
+
+/* Version Toggle */
+.version-toggle {
+  display: flex;
+  gap: 4px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 20px;
+  padding: 3px;
+  margin-bottom: 16px;
+}
+.version-toggle button {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 17px;
+  font-size: 13px;
+  cursor: pointer;
+  background: transparent;
+  color: #888;
+  font-family: var(--font);
+  transition: var(--transition);
+}
+.version-toggle button.active {
+  background: rgba(255,255,255,0.1);
+  color: #e6e6e6;
+}
+
+/* Tab Bar */
+.tab-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 83px;
+  padding: 8px 0 28px;
+  background: rgba(0,0,0,0.95);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 50;
+  backdrop-filter: blur(20px);
+}
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: var(--transition);
+}
+.tab-item.active { opacity: 1; }
+.tab-item.active span { color: var(--accent); }
+.tab-item svg { width: 24px; height: 24px; }
+.tab-item span { font-size: 10px; color: #e6e6e6; }
+/* Profile Page */
+.profile-page {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  padding-top: 54px;
+  padding-bottom: 83px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.profile-page::-webkit-scrollbar { display: none; }
+
+/* Top Bar */
+.profile-topbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 12px 20px;
+  gap: 16px;
+}
+.profile-topbar svg { width: 22px; height: 22px; fill: rgba(255,255,255,0.7); cursor: pointer; }
+.profile-topbar svg:active { opacity: 0.6; }
+
+/* Avatar Area */
+.avatar-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0 8px;
+  cursor: pointer;
+}
+.avatar-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  position: relative;
+}
+.avatar-circle svg { width: 40px; height: 40px; fill: rgba(255,255,255,0.3); }
+.avatar-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: #555;
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  display: none;
+}
+.avatar-badge.show { display: block; }
+.avatar-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.avatar-subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: none;
+}
+.avatar-subtitle.show { display: block; }
+
+/* Steam Sync Card */
+.steam-card {
+  margin: 20px 16px;
+  padding: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-card);
+}
+.steam-card-icons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.steam-card-icons svg { width: 20px; height: 20px; }
+.steam-card-title {
+  font-size: 16px;
+  color: #fff;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+.steam-card-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+.steam-card-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 24px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: var(--transition);
+}
+.steam-card-btn:active { transform: scale(0.97); background: rgba(255,255,255,0.1); }
+
+/* Banner */
+.promo-banner {
+  margin: 16px 16px;
+  height: 80px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #4a1a8a, #8a2be2, #6a1b9a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+.promo-banner::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: shimmer 3s infinite;
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* My Device Section */
+.section-title {
+  padding: 20px 16px 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+.device-card {
+  margin: 0 16px 20px;
+  padding: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.device-card:active { transform: scale(0.98); }
+.device-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.device-icon svg { width: 28px; height: 28px; fill: rgba(255,255,255,0.4); }
+.device-label { font-size: 14px; color: var(--text-secondary); }
+
+/* Guest Limit Banner */
+.guest-limit-banner {
+  display: none;
+  margin: 12px 16px;
+  padding: 10px 14px;
+  background: rgba(255,165,0,0.06);
+  border: 1px solid rgba(255,165,0,0.15);
+  border-radius: 10px;
+  color: rgba(255,165,0,0.9);
+  font-size: 12px;
+  align-items: center;
+  gap: 8px;
+}
+.guest-limit-banner.show { display: flex; }
+/* Bottom Sheet Overlay */
+.sheet-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 200;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 300ms ease;
+}
+.sheet-overlay.show { opacity: 1; visibility: visible; }
+
+/* Login Bottom Sheet */
+.login-sheet {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: #0d1520;
+  border-radius: var(--radius-modal) var(--radius-modal) 0 0;
+  z-index: 210;
+  transform: translateY(100%);
+  transition: transform var(--sheet-transition);
+  max-height: 82%;
+  overflow: hidden;
+}
+.login-sheet.show { transform: translateY(0); }
+.login-sheet::before {
+  content: "";
+  position: absolute;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(ellipse at center, rgba(0,218,221,0.12), transparent 65%);
+  pointer-events: none;
+}
+
+/* Sheet Handle & Close */
+.sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 2px;
+  margin: 8px auto 0;
+}
+.sheet-close {
+  position: absolute;
+  top: 12px; right: 16px;
+  width: 30px; height: 30px;
+  border: none;
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.6);
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--transition);
+  z-index: 10;
+}
+.sheet-close:active { background: rgba(255,255,255,0.15); }
+
+/* Login Sheet Content */
+.login-sheet-body {
+  padding: 24px 24px 32px;
+  position: relative;
+}
+.login-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.login-logo-icon {
+  width: 40px; height: 40px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-logo-icon svg { width: 24px; height: 24px; fill: #e6e6e6; }
+.login-logo-text { font-size: 16px; color: rgba(255,255,255,0.6); font-weight: 500; }
+.login-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 24px;
+}
+.sim-phone-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 12px 0;
+}
+.sim-phone-row svg { width: 18px; height: 18px; fill: rgba(255,255,255,0.5); }
+.sim-phone-row span { font-size: 18px; color: #fff; font-weight: 500; letter-spacing: 1px; }
+.sim-phone-row .edit-icon {
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; opacity: 0.5;
+}
+.sim-phone-row .edit-icon:active { opacity: 0.8; }
+.login-btn-primary {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: var(--radius-btn);
+  background: var(--btn-primary);
+  box-shadow: var(--btn-primary-shadow);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: var(--transition);
+}
+.login-btn-primary:active { transform: scale(0.97); opacity: 0.9; }
+.login-agreement {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.6;
+}
+.login-agreement input[type="checkbox"] { margin-top: 3px; accent-color: var(--accent); flex-shrink: 0; }
+.login-agreement a { color: var(--text-link); text-decoration: none; }
+.login-divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0 18px;
+  color: rgba(255,255,255,0.4);
+  font-size: 12px;
+}
+.login-divider::before, .login-divider::after { content: ""; flex: 1; height: 1px; background: var(--divider); }
+.login-divider span { padding: 0 14px; }
+.third-party-row {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 16px;
+}
+.tp-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.tp-circle {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--icon-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+.tp-circle:active { transform: scale(0.9); }
+.tp-circle svg { width: 22px; height: 22px; }
+.tp-name { font-size: 11px; color: rgba(255,255,255,0.5); }
+.guest-mode-link {
+  text-align: center;
+  margin-top: 14px;
+  padding-bottom: 8px;
+}
+.guest-mode-link a { color: var(--text-link); font-size: 14px; text-decoration: none; cursor: pointer; }
+
+/* Phone Input View */
+.phone-input-view { display: none; }
+.phone-input-view.show { display: block; }
+.input-field {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--input-underline);
+  padding: 14px 0;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.input-field .country-code {
+  padding: 4px 10px;
+  background: var(--icon-bg);
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.input-field input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: #fff;
+  outline: none;
+  font-family: var(--font);
+}
+.input-field input::placeholder { color: rgba(255,255,255,0.3); }
+.input-field .code-link { font-size: 13px; color: var(--text-link); white-space: nowrap; cursor: pointer; }
+/* Steam Bottom Sheet */
+.steam-sheet {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: var(--steam-bg);
+  border-radius: var(--radius-modal) var(--radius-modal) 0 0;
+  z-index: 210;
+  transform: translateY(100%);
+  transition: transform var(--sheet-transition);
+  max-height: 82%;
+  overflow: hidden;
+}
+.steam-sheet.show { transform: translateY(0); }
+.steam-sheet-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.steam-sheet-title { font-size: 16px; font-weight: 600; color: #e6e6e6; }
+.steam-tabs {
+  display: flex;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.steam-tab {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #666;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: var(--transition);
+}
+.steam-tab.active { color: #e6e6e6; border-bottom-color: var(--accent); }
+.steam-form { padding: 20px; }
+.steam-input {
+  width: 100%;
+  padding: 12px 0;
+  border: none;
+  border-bottom: 1px solid var(--input-underline);
+  background: transparent;
+  font-size: 14px;
+  color: var(--text-primary);
+  outline: none;
+  margin-bottom: 16px;
+  font-family: var(--font);
+}
+.steam-input::placeholder { color: rgba(255,255,255,0.3); }
+.steam-pwd-row { position: relative; }
+.steam-pwd-row .eye-toggle {
+  position: absolute;
+  right: 0; top: 12px;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+}
+.steam-bind-btn {
+  width: 100%;
+  height: 48px;
+  border: none;
+  border-radius: var(--radius-btn);
+  background: var(--btn-primary);
+  box-shadow: var(--btn-primary-shadow);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 8px;
+  font-family: var(--font);
+  transition: var(--transition);
+}
+.steam-bind-btn:active { transform: scale(0.97); }
+.steam-qr-section { text-align: center; padding: 16px 20px 24px; }
+.steam-qr-link { color: var(--text-link); font-size: 13px; cursor: pointer; margin-bottom: 12px; display: inline-block; }
+.steam-qr-box {
+  width: 140px; height: 140px;
+  margin: 12px auto;
+  border: 2px dashed rgba(255,255,255,0.15);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 12px;
+}
+.steam-qr-desc { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 8px; }
+
+/* Toast */
+.toast {
+  position: absolute;
+  top: 80px; left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: rgba(30,30,30,0.95);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-primary);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  z-index: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 300ms ease;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Success Overlay */
+.success-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition);
+}
+.success-overlay.show { opacity: 1; visibility: visible; }
+.success-check {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a6cf7, #00a8ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  animation: successPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.success-check svg { width: 32px; height: 32px; fill: #fff; }
+@keyframes successPop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+.success-text { font-size: 16px; color: var(--text-primary); font-weight: 500; }
+
+/* Active states */
+button:active, .clickable:active { transform: scale(0.97); }
+
+/* Quick Action Buttons (outside phone) */
+.quick-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.quick-actions button {
+  padding: 6px 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  color: #aaa;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: var(--transition);
+}
+.quick-actions button:hover { background: rgba(255,255,255,0.08); color: #e6e6e6; }
+
+/* Bind Prompt Modal (center modal inside phone) */
+.bind-prompt-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 220;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 300ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bind-prompt-overlay.show { opacity: 1; visibility: visible; }
+.bind-prompt-modal {
+  width: 340px;
+  background: #1a1a2e;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 28px 24px;
+  transform: scale(0.95);
+  transition: transform 250ms ease;
+  text-align: center;
+}
+.bind-prompt-overlay.show .bind-prompt-modal { transform: scale(1); }
+.bind-prompt-icon { font-size: 36px; margin-bottom: 12px; }
+.bind-prompt-title { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+.bind-prompt-desc { font-size: 13px; color: #888; margin-bottom: 20px; line-height: 1.5; }
+.bind-prompt-btn {
+  width: 100%; height: 46px; border: none; border-radius: 10px;
+  background: var(--btn-primary); color: #fff; font-size: 15px; font-weight: 500;
+  cursor: pointer; font-family: var(--font); margin-bottom: 12px;
+}
+.bind-prompt-dismiss {
+  background: none; border: none; color: #666; font-size: 13px;
+  cursor: pointer; font-family: var(--font); padding: 8px;
+}
+
+/* Conflict Modal */
+.conflict-modal {
+  width: 340px;
+  background: #1a1a2e;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 28px 24px;
+  transform: scale(0.95);
+  transition: transform 250ms ease;
+  text-align: center;
+}
+.bind-prompt-overlay.show .conflict-modal { transform: scale(1); }
+.conflict-icon { font-size: 36px; margin-bottom: 12px; }
+.conflict-title { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+.conflict-desc { font-size: 13px; color: #888; margin-bottom: 20px; line-height: 1.6; }
+.conflict-btn-primary {
+  width: 100%; height: 46px; border: none; border-radius: 10px;
+  background: var(--btn-primary); color: #fff; font-size: 15px; font-weight: 500;
+  cursor: pointer; font-family: var(--font); margin-bottom: 10px;
+}
+.conflict-btn-secondary {
+  width: 100%; height: 46px; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+  background: transparent; color: #ccc; font-size: 14px;
+  cursor: pointer; font-family: var(--font);
+}
+
+</style>
+</head>
+<body>
+<div style="position:relative;display:flex;justify-content:center;align-items:center;min-height:100vh;flex-direction:column;padding:40px 0;">
+  <!-- Version Toggle -->
+  <div class="version-toggle">
+    <button class="active" onclick="switchVersion('domestic')">国内版</button>
+    <button onclick="switchVersion('overseas')">海外版</button>
+  </div>
+
+  <div class="phone-frame" id="app">
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">16:32:38</span>
+      <div class="icons">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path d="M14 2a2 2 0 012 2v1h2a2 2 0 012 2v1h1a1 1 0 011 1v4a1 1 0 01-1 1h-1v1a2 2 0 01-2 2h-2v1a2 2 0 01-2 2h-4a2 2 0 01-2-2v-1H6a2 2 0 01-2-2v-1H3a1 1 0 01-1-1V9a1 1 0 011-1h1V7a2 2 0 012-2h2V4a2 2 0 012-2h4z" fill="#fff" opacity="0.7"/></svg>
+        <svg viewBox="0 0 17 12"><path d="M1 3.5h1.5v5H1a1 1 0 01-1-1v-3a1 1 0 011-1zm3 0h1.5v5H4a1 1 0 01-1-1v-3a1 1 0 011-1zm3-2h1.5v7H7a1 1 0 01-1-1v-5a1 1 0 011-1zm3-1.5h1.5v8.5H10a1 1 0 01-1-1V1a1 1 0 011-1z" fill="#fff" opacity=".9"/></svg>
+        <svg viewBox="0 0 16 12"><path d="M8 1.6a9.4 9.4 0 016.4 2.5l-1.2 1.3A7.5 7.5 0 008 3.5a7.5 7.5 0 00-5.2 2l-1.2-1.4A9.4 9.4 0 018 1.6zm0 3.8a5.6 5.6 0 013.8 1.5l-1.2 1.3a3.8 3.8 0 00-5.2 0L4.2 6.9A5.6 5.6 0 018 5.4zM8 9a1.5 1.5 0 110 3 1.5 1.5 0 010-3z" fill="#fff"/></svg>
+        <svg viewBox="0 0 25 12"><rect x="0" y="1" width="22" height="10" rx="2" stroke="#fff" stroke-width="1" fill="none" opacity=".4"/><rect x="1.5" y="2.5" width="17" height="7" rx="1" fill="#fff"/><path d="M23 4.5v3a1.5 1.5 0 000-3z" fill="#fff" opacity=".5"/></svg>
+      </div>
+    </div>
+
+    <!-- Profile Page -->
+    <div class="profile-page" id="profilePage">
+      <!-- Top Bar Icons -->
+      <div class="profile-topbar">
+        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      </div>
+
+      <!-- Avatar Area -->
+      <div class="avatar-area" id="avatarArea" onclick="onAvatarClick()">
+        <div class="avatar-circle">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <span class="avatar-badge" id="avatarBadge">游客</span>
+        </div>
+        <div class="avatar-name" id="avatarName">登录/注册</div>
+        <div class="avatar-subtitle" id="avatarSubtitle">点击登录</div>
+      </div>
+
+      <!-- Guest Limit Banner -->
+      <div class="guest-limit-banner" id="guestLimitBanner">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,165,0,0.9)"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+        <span id="guestLimitText">游客模式 · 部分功能受限</span>
+      </div>
+
+      <!-- Steam Sync Card -->
+      <div class="steam-card" id="steamCard">
+        <div class="steam-card-icons">
+          <svg viewBox="0 0 32 32" fill="#27d35a"><path d="M16 0C7.6 0 .7 6.5.1 14.7l8.6 3.6c.7-.5 1.6-.8 2.5-.8h.2l3.7-5.4v-.1c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6h-.1l-5.3 3.8v.2c0 2.5-2 4.5-4.5 4.5-2.2 0-4-1.6-4.4-3.7L.9 19.5C2.9 26.6 9 32 16 32c8.8 0 16-7.2 16-16S24.8 0 16 0z"/></svg>
+          <svg viewBox="0 0 24 24" fill="#666"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+        </div>
+        <div class="steam-card-title" id="steamCardTitle">Steam 数据同步功能</div>
+        <div class="steam-card-desc" id="steamCardDesc">绑定账号后可查看个人游戏库</div>
+        <button class="steam-card-btn" id="steamCardBtn" onclick="onSteamBtnClick()">绑定 Steam 账号</button>
+      </div>
+
+      <!-- Promo Banner -->
+      <div class="promo-banner" id="promoBanner">新人见面 多重豪礼</div>
+
+      <!-- My Device -->
+      <div class="section-title" id="deviceTitle">我的设备</div>
+      <div class="device-card">
+        <div class="device-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+        </div>
+        <span class="device-label" id="deviceLabel">添加设备</span>
+      </div>
+    </div>
+
+    <!-- Login Sheet Overlay -->
+    <div class="sheet-overlay" id="loginSheetOverlay" onclick="closeLoginSheet()"></div>
+
+    <!-- Login Bottom Sheet -->
+    <div class="login-sheet" id="loginSheet">
+      <div class="sheet-handle"></div>
+      <button class="sheet-close" onclick="closeLoginSheet()">&times;</button>
+      <div class="login-sheet-body" id="loginSheetBody">
+        <!-- Content rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Steam Sheet Overlay -->
+    <div class="sheet-overlay" id="steamSheetOverlay" onclick="closeSteamSheet()"></div>
+
+    <!-- Steam Bottom Sheet -->
+    <div class="steam-sheet" id="steamSheet">
+      <div class="sheet-handle"></div>
+      <button class="sheet-close" onclick="closeSteamSheet()">&times;</button>
+      <div class="steam-sheet-header">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="#fff"><path d="M16 0C7.6 0 .7 6.5.1 14.7l8.6 3.6c.7-.5 1.6-.8 2.5-.8h.2l3.7-5.4v-.1c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6h-.1l-5.3 3.8v.2c0 2.5-2 4.5-4.5 4.5-2.2 0-4-1.6-4.4-3.7L.9 19.5C2.9 26.6 9 32 16 32c8.8 0 16-7.2 16-16S24.8 0 16 0z"/></svg>
+        <span class="steam-sheet-title">STEAM 登录</span>
+      </div>
+      <div class="steam-qr-section">
+        <div class="steam-qr-box" style="background:#fff;padding:12px;border:none;">
+          <svg viewBox="0 0 100 100" width="120" height="120" style="display:block;margin:0 auto;">
+            <rect width="100" height="100" fill="#fff"/>
+            <rect x="4" y="4" width="24" height="24" fill="none" stroke="#000" stroke-width="3"/>
+            <rect x="9" y="9" width="14" height="14" fill="#000"/>
+            <rect x="72" y="4" width="24" height="24" fill="none" stroke="#000" stroke-width="3"/>
+            <rect x="77" y="9" width="14" height="14" fill="#000"/>
+            <rect x="4" y="72" width="24" height="24" fill="none" stroke="#000" stroke-width="3"/>
+            <rect x="9" y="77" width="14" height="14" fill="#000"/>
+            <rect x="34" y="4" width="4" height="4" fill="#000"/>
+            <rect x="42" y="4" width="4" height="4" fill="#000"/>
+            <rect x="50" y="4" width="4" height="4" fill="#000"/>
+            <rect x="34" y="12" width="4" height="4" fill="#000"/>
+            <rect x="46" y="12" width="4" height="4" fill="#000"/>
+            <rect x="58" y="12" width="4" height="4" fill="#000"/>
+            <rect x="34" y="20" width="4" height="4" fill="#000"/>
+            <rect x="42" y="20" width="4" height="4" fill="#000"/>
+            <rect x="54" y="20" width="4" height="4" fill="#000"/>
+            <rect x="62" y="20" width="4" height="4" fill="#000"/>
+            <rect x="4" y="34" width="4" height="4" fill="#000"/>
+            <rect x="12" y="34" width="4" height="4" fill="#000"/>
+            <rect x="24" y="34" width="4" height="4" fill="#000"/>
+            <rect x="34" y="34" width="4" height="4" fill="#000"/>
+            <rect x="46" y="34" width="4" height="4" fill="#000"/>
+            <rect x="54" y="34" width="4" height="4" fill="#000"/>
+            <rect x="66" y="34" width="4" height="4" fill="#000"/>
+            <rect x="78" y="34" width="4" height="4" fill="#000"/>
+            <rect x="92" y="34" width="4" height="4" fill="#000"/>
+            <rect x="4" y="42" width="4" height="4" fill="#000"/>
+            <rect x="16" y="42" width="4" height="4" fill="#000"/>
+            <rect x="28" y="42" width="4" height="4" fill="#000"/>
+            <rect x="38" y="42" width="4" height="4" fill="#000"/>
+            <rect x="50" y="42" width="4" height="4" fill="#000"/>
+            <rect x="62" y="42" width="4" height="4" fill="#000"/>
+            <rect x="72" y="42" width="4" height="4" fill="#000"/>
+            <rect x="84" y="42" width="4" height="4" fill="#000"/>
+            <rect x="8" y="50" width="4" height="4" fill="#000"/>
+            <rect x="20" y="50" width="4" height="4" fill="#000"/>
+            <rect x="34" y="50" width="4" height="4" fill="#000"/>
+            <rect x="42" y="50" width="4" height="4" fill="#000"/>
+            <rect x="54" y="50" width="4" height="4" fill="#000"/>
+            <rect x="66" y="50" width="4" height="4" fill="#000"/>
+            <rect x="78" y="50" width="4" height="4" fill="#000"/>
+            <rect x="88" y="50" width="4" height="4" fill="#000"/>
+            <rect x="4" y="58" width="4" height="4" fill="#000"/>
+            <rect x="12" y="58" width="4" height="4" fill="#000"/>
+            <rect x="24" y="58" width="4" height="4" fill="#000"/>
+            <rect x="38" y="58" width="4" height="4" fill="#000"/>
+            <rect x="50" y="58" width="4" height="4" fill="#000"/>
+            <rect x="58" y="58" width="4" height="4" fill="#000"/>
+            <rect x="72" y="58" width="4" height="4" fill="#000"/>
+            <rect x="84" y="58" width="4" height="4" fill="#000"/>
+            <rect x="92" y="58" width="4" height="4" fill="#000"/>
+            <rect x="34" y="66" width="4" height="4" fill="#000"/>
+            <rect x="46" y="66" width="4" height="4" fill="#000"/>
+            <rect x="58" y="66" width="4" height="4" fill="#000"/>
+            <rect x="72" y="66" width="4" height="4" fill="#000"/>
+            <rect x="80" y="66" width="4" height="4" fill="#000"/>
+            <rect x="92" y="66" width="4" height="4" fill="#000"/>
+            <rect x="34" y="74" width="4" height="4" fill="#000"/>
+            <rect x="42" y="74" width="4" height="4" fill="#000"/>
+            <rect x="54" y="74" width="4" height="4" fill="#000"/>
+            <rect x="66" y="74" width="4" height="4" fill="#000"/>
+            <rect x="78" y="74" width="4" height="4" fill="#000"/>
+            <rect x="88" y="74" width="4" height="4" fill="#000"/>
+            <rect x="38" y="82" width="4" height="4" fill="#000"/>
+            <rect x="50" y="82" width="4" height="4" fill="#000"/>
+            <rect x="62" y="82" width="4" height="4" fill="#000"/>
+            <rect x="72" y="82" width="4" height="4" fill="#000"/>
+            <rect x="84" y="82" width="4" height="4" fill="#000"/>
+            <rect x="34" y="90" width="4" height="4" fill="#000"/>
+            <rect x="46" y="90" width="4" height="4" fill="#000"/>
+            <rect x="58" y="90" width="4" height="4" fill="#000"/>
+            <rect x="66" y="90" width="4" height="4" fill="#000"/>
+            <rect x="80" y="90" width="4" height="4" fill="#000"/>
+            <rect x="92" y="90" width="4" height="4" fill="#000"/>
+          </svg>
+        </div>
+        <div class="steam-qr-desc">通过二维码使用 Steam 手机应用登录</div>
+      </div>
+      <div class="login-divider" style="margin:12px 20px;"><span>或使用账号密码登录</span></div>
+      <div class="steam-form">
+        <input class="steam-input" type="text" placeholder="用账户名称登录">
+        <div class="steam-pwd-row">
+          <input class="steam-input" type="password" placeholder="密码" id="steamPwd">
+          <button class="eye-toggle" onclick="togglePwd()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#666"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+          </button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin:12px 0 0;padding:0 20px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#338feb"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+          <span style="font-size:13px;color:rgba(255,255,255,0.7);">记住我</span>
+        </div>
+        <button class="steam-bind-btn" onclick="onSteamBind()">绑定</button>
+      </div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);padding:12px 20px 24px;">*登录仅验证用户的身份，不会收集和使用个人信息</div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Success Overlay -->
+    <div class="success-overlay" id="successOverlay">
+      <div class="success-check">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+      </div>
+      <div class="success-text" id="successText">登录成功</div>
+    </div>
+
+    <!-- Bind Prompt Modal -->
+    <div class="bind-prompt-overlay" id="bindPromptOverlay" onclick="closeBindPrompt()">
+      <div class="bind-prompt-modal" id="bindPromptModal" onclick="event.stopPropagation()">
+        <div class="bind-prompt-icon" id="bindPromptIcon">🔒</div>
+        <div class="bind-prompt-title" id="bindPromptTitle">登录以连接Steam</div>
+        <div class="bind-prompt-desc" id="bindPromptDesc">登录后可同步你的Steam游戏库，一键启动云游戏</div>
+        <button class="bind-prompt-btn" onclick="closeBindPrompt();openLoginSheet();">登录/注册</button>
+        <button class="bind-prompt-dismiss" onclick="closeBindPrompt();showToast('操作已取消');">暂不登录</button>
+      </div>
+    </div>
+
+    <!-- Account Conflict Modal -->
+    <div class="bind-prompt-overlay" id="conflictOverlay" onclick="closeConflict()">
+      <div class="conflict-modal" onclick="event.stopPropagation()">
+        <div class="conflict-icon">⚠️</div>
+        <div class="conflict-title" id="conflictTitle">账号已存在</div>
+        <div class="conflict-desc" id="conflictDesc">该手机号已绑定账号 user_38291，切换到该账号后，当前游客数据将丢失。</div>
+        <button class="conflict-btn-primary" onclick="closeConflict();doLogin();">确认切换</button>
+        <button class="conflict-btn-secondary" onclick="closeConflict();showToast('已取消');">留在当前账号</button>
+      </div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <div class="tab-item">
+        <svg viewBox="0 0 24 24" fill="#e6e6e6"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>主页</span>
+      </div>
+      <div class="tab-item">
+        <svg viewBox="0 0 24 24" fill="#e6e6e6"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+        <span>玩游戏</span>
+      </div>
+      <div class="tab-item">
+        <svg viewBox="0 0 24 24" fill="#e6e6e6"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
+        <span>排行榜</span>
+      </div>
+      <div class="tab-item">
+        <svg viewBox="0 0 24 24" fill="#e6e6e6"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z"/></svg>
+        <span>游戏库</span>
+      </div>
+      <div class="tab-item active">
+        <svg viewBox="0 0 24 24" fill="#4a90ff"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <span style="color:#4a90ff;">我的</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Action Buttons -->
+  <div class="quick-actions">
+    <button onclick="previewBindPrompt('pay')">转正引导-充值</button>
+    <button onclick="previewBindPrompt('steam')">转正引导-Steam</button>
+    <button onclick="previewBindPrompt('save')">转正引导-云存档</button>
+    <button onclick="previewBindPrompt('social')">转正引导-社交</button>
+    <button onclick="previewConflict()">账号冲突弹窗</button>
+  </div>
+</div>
+
+<script>
+// ============ STATE ============
+let currentVersion = 'domestic';
+let userState = 'loggedOut'; // 'loggedOut' | 'guest' | 'loggedIn'
+let pendingSteamBind = false;
+
+// ============ VERSION SWITCH ============
+function switchVersion(version) {
+  currentVersion = version;
+  document.querySelectorAll('.version-toggle button').forEach(b => {
+    b.classList.toggle('active',
+      (version === 'domestic' && b.textContent === '国内版') ||
+      (version === 'overseas' && b.textContent === '海外版')
+    );
+  });
+  updateProfilePage();
+  // If login sheet is open, re-render it
+  if (document.getElementById('loginSheet').classList.contains('show')) {
+    renderLoginSheet();
+  }
+}
+
+// ============ PROFILE PAGE UPDATE ============
+function updateProfilePage() {
+  const d = currentVersion === 'domestic';
+  const avatarName = document.getElementById('avatarName');
+  const avatarSubtitle = document.getElementById('avatarSubtitle');
+  const avatarBadge = document.getElementById('avatarBadge');
+  const steamCardTitle = document.getElementById('steamCardTitle');
+  const steamCardDesc = document.getElementById('steamCardDesc');
+  const steamCardBtn = document.getElementById('steamCardBtn');
+  const guestLimitBanner = document.getElementById('guestLimitBanner');
+  const guestLimitText = document.getElementById('guestLimitText');
+  const deviceTitle = document.getElementById('deviceTitle');
+  const deviceLabel = document.getElementById('deviceLabel');
+  const promoBanner = document.getElementById('promoBanner');
+
+  // Device section
+  deviceTitle.textContent = d ? '我的设备' : 'My Devices';
+  deviceLabel.textContent = d ? '添加设备' : 'Add Device';
+  promoBanner.textContent = d ? '新人见面 多重豪礼' : 'Welcome Bonus Rewards';
+
+  // Steam card
+  steamCardTitle.textContent = d ? 'Steam 数据同步功能' : 'Steam Data Sync';
+  steamCardDesc.textContent = d ? '绑定账号后可查看个人游戏库' : 'Bind account to view your game library';
+
+  if (userState === 'loggedOut') {
+    avatarName.textContent = d ? '登录/注册' : 'Sign In / Register';
+    avatarSubtitle.classList.remove('show');
+    avatarBadge.classList.remove('show');
+    guestLimitBanner.classList.remove('show');
+    steamCardBtn.textContent = d ? '绑定 Steam 账号' : 'Bind Steam Account';
+  } else if (userState === 'guest') {
+    avatarName.textContent = d ? '游客模式' : 'Guest Mode';
+    avatarSubtitle.textContent = d ? '点击登录' : 'Tap to sign in';
+    avatarSubtitle.classList.add('show');
+    avatarBadge.textContent = d ? '游客' : 'Guest';
+    avatarBadge.classList.add('show');
+    guestLimitBanner.classList.add('show');
+    guestLimitText.textContent = d ? '游客模式 · 存档功能、充值付费暂不可用' : 'Guest Mode · Cloud save & payments unavailable';
+    steamCardBtn.textContent = d ? '登录后绑定' : 'Sign in to Bind';
+  } else {
+    avatarName.textContent = d ? '盖世玩家' : 'GameHub Player';
+    avatarSubtitle.classList.remove('show');
+    avatarBadge.classList.remove('show');
+    guestLimitBanner.classList.remove('show');
+    steamCardBtn.textContent = d ? '绑定 Steam 账号' : 'Bind Steam Account';
+  }
+}
+
+// ============ AVATAR CLICK ============
+function onAvatarClick() {
+  if (userState === 'loggedOut' || userState === 'guest') {
+    openLoginSheet();
+  } else {
+    showToast(currentVersion === 'domestic' ? '已登录' : 'Already signed in');
+  }
+}
+
+// ============ STEAM BUTTON CLICK ============
+function onSteamBtnClick() {
+  if (userState === 'guest' || userState === 'loggedOut') {
+    pendingSteamBind = true;
+    openLoginSheet();
+  } else {
+    openSteamSheet();
+  }
+}
+
+// ============ LOGIN SHEET ============
+function openLoginSheet() {
+  document.getElementById('loginSheetOverlay').classList.add('show');
+  document.getElementById('loginSheet').classList.add('show');
+  renderLoginSheet();
+}
+
+function closeLoginSheet() {
+  document.getElementById('loginSheetOverlay').classList.remove('show');
+  document.getElementById('loginSheet').classList.remove('show');
+}
+
+function renderLoginSheet(view) {
+  const d = currentVersion === 'domestic';
+  const body = document.getElementById('loginSheetBody');
+  const showGuest = userState !== 'guest';
+
+  if (view === 'phone-input') {
+    // Phone + verification code input view
+    if (d) {
+      body.innerHTML = `
+        <div class="login-logo">
+          <div class="login-logo-icon"><svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>
+          <span class="login-logo-text">盖世游戏</span>
+        </div>
+        <div class="login-title">欢迎来到盖世游戏</div>
+        <div class="input-field">
+          <span class="country-code">+86</span>
+          <input type="tel" placeholder="输入手机号">
+        </div>
+        <div class="input-field">
+          <input type="text" placeholder="输入验证码">
+          <span class="code-link">获取验证码</span>
+        </div>
+        <button class="login-btn-primary" onclick="doLogin()">登录/注册</button>
+        <div class="login-agreement">
+          <input type="checkbox">
+          <span>未注册的手机号将自动注册，代表同意<a href="#">《用户协议》</a>和<a href="#">《隐私政策》</a></span>
+        </div>
+        <div class="login-divider"><span>其他登录方式</span></div>
+        <div class="third-party-row">
+          <div class="tp-wrap" onclick="doLogin()">
+            <div class="tp-circle" style="background:rgba(39,211,90,0.12);"><svg width="22" height="18" viewBox="0 0 24 20" fill="#27d35a"><path d="M8.4 1.2C5.1 2.2 2.7 5 2.2 8.4c-.3 2 .1 3.9 1 5.5L1 19.5l5.7-2.1c1.5.7 3.2 1.1 4.8 1.1h.1c5.5 0 10.1-4.2 10.4-9.5.1-2.8-1-5.4-3-7.4C17 .2 14.3-.5 11.5-.2c-1.1.2-2.2.6-3.1 1.4zm7.6 7.3c-.1 0-.6-.3-1.5-.8-.4-.2-.7-.1-.9.1-.2.2-.7.8-.9 1-.2.2-.4.2-.7.1-1.6-.8-2.7-1.7-3.6-3-.3-.4.3-.5.7-1.4.1-.2 0-.4-.1-.5-.1-.1-.8-2-.9-2.3-.2-.5-.5-.4-.7-.4h-.6c-.2 0-.5.1-.8.4C5.7 2.4 5 3.4 5 5.4s1.5 3.8 1.7 4c.2.3 2.9 4.5 7.1 6.1 2.6 1 3.6.8 4.2.5.9-.3 1.5-1.3 1.7-2.5.1-.5 0-1.1-.3-1.1z"/></svg></div>
+            <span class="tp-name">微信</span>
+          </div>
+          <div class="tp-wrap" onclick="doLogin()">
+            <div class="tp-circle" style="background:rgba(31,169,243,0.12);"><svg width="22" height="22" viewBox="0 0 24 24" fill="#1fa9f3"><path d="M12 2C6.48 2 2 5.59 2 10.08c0 2.57 1.33 4.88 3.4 6.44l-.36 1.29c-.06.22.18.21 0 .12l2.69-1.77c.92.24 1.87.34 2.84.34 5.52 0 10-2.88 10-6.42C22.01 5.59 17.52 2 12 2z"/></svg></div>
+            <span class="tp-name">QQ</span>
+          </div>
+          <div class="tp-wrap" onclick="doLogin()">
+            <div class="tp-circle"><svg width="22" height="22" viewBox="0 0 24 24" fill="#e6e6e6"><path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z"/></svg></div>
+            <span class="tp-name">扫码</span>
+          </div>
+        </div>
+        <div class="guest-mode-link">${showGuest ? '<a onclick="enterGuest()">游客模式，先体验一下 &rarr;</a>' : ''}</div>
+      `;
+    } else {
+      body.innerHTML = `
+        <div class="login-logo">
+          <div class="login-logo-icon"><svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>
+          <span class="login-logo-text">GameHub</span>
+        </div>
+        <div class="login-title">Welcome to GameHub</div>
+        <div class="input-field">
+          <input type="email" placeholder="Enter your email" style="width:100%;">
+        </div>
+        <div class="input-field">
+          <input type="text" placeholder="Verification code">
+          <span class="code-link">Send Code</span>
+        </div>
+        <button class="login-btn-primary" onclick="doLogin()">Log In</button>
+        <div class="login-agreement">
+          <input type="checkbox">
+          <span>By signing in you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a></span>
+        </div>
+        <div class="login-divider"><span>or sign in with</span></div>
+        <div class="third-party-row">
+          <div class="tp-wrap" onclick="doLogin()">
+            <div class="tp-circle"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></div>
+            <span class="tp-name">Google</span>
+          </div>
+          <div class="tp-wrap" onclick="doLogin()">
+            <div class="tp-circle"><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg></div>
+            <span class="tp-name">Apple</span>
+          </div>
+        </div>
+        <div class="guest-mode-link">${showGuest ? '<a onclick="enterGuest()">Guest Mode &rarr;</a>' : ''}</div>
+      `;
+    }
+    return;
+  }
+
+  // Default: one-tap login view (domestic) or email view (overseas)
+  if (d) {
+    body.innerHTML = `
+      <div class="login-logo">
+        <div class="login-logo-icon"><svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>
+        <span class="login-logo-text">盖世游戏</span>
+      </div>
+      <div class="login-title">欢迎来到盖世游戏</div>
+      <div class="sim-phone-row">
+        <svg viewBox="0 0 24 24"><path d="M17 1H7c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14z"/></svg>
+        <span>185****4686</span>
+        <div class="edit-icon" onclick="renderLoginSheet('phone-input')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#e6e6e6"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        </div>
+      </div>
+      <button class="login-btn-primary" onclick="doLogin()">一键登录</button>
+      <div class="login-agreement">
+        <input type="checkbox">
+        <span>未注册的手机号将自动注册，代表同意<a href="#">《用户协议》</a>和<a href="#">《隐私政策》</a></span>
+      </div>
+      <div class="login-divider"><span>其他登录方式</span></div>
+      <div class="third-party-row">
+        <div class="tp-wrap" onclick="doLogin()">
+          <div class="tp-circle" style="background:rgba(39,211,90,0.12);"><svg width="22" height="18" viewBox="0 0 24 20" fill="#27d35a"><path d="M8.4 1.2C5.1 2.2 2.7 5 2.2 8.4c-.3 2 .1 3.9 1 5.5L1 19.5l5.7-2.1c1.5.7 3.2 1.1 4.8 1.1h.1c5.5 0 10.1-4.2 10.4-9.5.1-2.8-1-5.4-3-7.4C17 .2 14.3-.5 11.5-.2c-1.1.2-2.2.6-3.1 1.4zm7.6 7.3c-.1 0-.6-.3-1.5-.8-.4-.2-.7-.1-.9.1-.2.2-.7.8-.9 1-.2.2-.4.2-.7.1-1.6-.8-2.7-1.7-3.6-3-.3-.4.3-.5.7-1.4.1-.2 0-.4-.1-.5-.1-.1-.8-2-.9-2.3-.2-.5-.5-.4-.7-.4h-.6c-.2 0-.5.1-.8.4C5.7 2.4 5 3.4 5 5.4s1.5 3.8 1.7 4c.2.3 2.9 4.5 7.1 6.1 2.6 1 3.6.8 4.2.5.9-.3 1.5-1.3 1.7-2.5.1-.5 0-1.1-.3-1.1z"/></svg></div>
+          <span class="tp-name">微信</span>
+        </div>
+        <div class="tp-wrap" onclick="doLogin()">
+          <div class="tp-circle" style="background:rgba(31,169,243,0.12);"><svg width="22" height="22" viewBox="0 0 24 24" fill="#1fa9f3"><path d="M12 2C6.48 2 2 5.59 2 10.08c0 2.57 1.33 4.88 3.4 6.44l-.36 1.29c-.06.22.18.21 0 .12l2.69-1.77c.92.24 1.87.34 2.84.34 5.52 0 10-2.88 10-6.42C22.01 5.59 17.52 2 12 2z"/></svg></div>
+          <span class="tp-name">QQ</span>
+        </div>
+        <div class="tp-wrap" onclick="doLogin()">
+          <div class="tp-circle"><svg width="22" height="22" viewBox="0 0 24 24" fill="#e6e6e6"><path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z"/></svg></div>
+          <span class="tp-name">扫码</span>
+        </div>
+      </div>
+      <div class="guest-mode-link"><a onclick="enterGuest()">游客模式，先体验一下 &rarr;</a></div>
+    `;
+  } else {
+    body.innerHTML = `
+      <div class="login-logo">
+        <div class="login-logo-icon"><svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>
+        <span class="login-logo-text">GameHub</span>
+      </div>
+      <div class="login-title">Welcome to GameHub</div>
+      <div class="input-field">
+        <input type="email" placeholder="Enter your email" style="width:100%;">
+      </div>
+      <div class="input-field">
+        <input type="text" placeholder="Verification code">
+        <span class="code-link">Send Code</span>
+      </div>
+      <button class="login-btn-primary" onclick="doLogin()">Log In</button>
+      <div class="login-agreement">
+        <input type="checkbox">
+        <span>By signing in you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a></span>
+      </div>
+      <div class="login-divider"><span>or sign in with</span></div>
+      <div class="third-party-row">
+        <div class="tp-wrap" onclick="doLogin()">
+          <div class="tp-circle"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></div>
+          <span class="tp-name">Google</span>
+        </div>
+        <div class="tp-wrap" onclick="doLogin()">
+          <div class="tp-circle"><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg></div>
+          <span class="tp-name">Apple</span>
+        </div>
+      </div>
+      <div class="guest-mode-link"><a onclick="enterGuest()">Guest Mode &rarr;</a></div>
+    `;
+  }
+}
+
+// ============ STEAM SHEET ============
+function openSteamSheet() {
+  document.getElementById('steamSheetOverlay').classList.add('show');
+  document.getElementById('steamSheet').classList.add('show');
+}
+
+function closeSteamSheet() {
+  document.getElementById('steamSheetOverlay').classList.remove('show');
+  document.getElementById('steamSheet').classList.remove('show');
+}
+
+function onSteamBind() {
+  closeSteamSheet();
+  setTimeout(function() {
+    showSuccess(currentVersion === 'domestic' ? 'Steam 绑定成功' : 'Steam Connected');
+  }, 200);
+}
+
+function togglePwd() {
+  const pwd = document.getElementById('steamPwd');
+  pwd.type = pwd.type === 'password' ? 'text' : 'password';
+}
+
+// ============ GUEST MODE ============
+function enterGuest() {
+  userState = 'guest';
+  closeLoginSheet();
+  setTimeout(function() {
+    showToast(currentVersion === 'domestic' ? '已进入游客模式' : 'Entered Guest Mode');
+    updateProfilePage();
+  }, 400);
+}
+
+// ============ LOGIN SUCCESS ============
+function doLogin() {
+  closeLoginSheet();
+  closeSteamSheet();
+  setTimeout(function() {
+    const d = currentVersion === 'domestic';
+    let msg;
+    if (userState === 'guest') {
+      msg = d ? '登录成功，已升级为正式账号' : 'Logged in, account upgraded';
+    } else {
+      msg = d ? '登录成功' : 'Login successful';
+    }
+    showSuccess(msg);
+  }, 200);
+}
+
+function showSuccess(msg) {
+  const overlay = document.getElementById('successOverlay');
+  document.getElementById('successText').textContent = msg;
+  overlay.classList.add('show');
+  setTimeout(function() {
+    overlay.classList.remove('show');
+    userState = 'loggedIn';
+    updateProfilePage();
+    if (pendingSteamBind) {
+      pendingSteamBind = false;
+      setTimeout(function() { openSteamSheet(); }, 300);
+    }
+  }, 2000);
+}
+
+// ============ TOAST ============
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(function() { toast.classList.remove('show'); }, 2000);
+}
+
+// ============ BIND PROMPT ============
+const bindPromptData = {
+  pay: { icon: '💰', title: '登录以使用充值功能', titleEn: 'Sign in to Top Up', desc: '登录后可购买会员、时长和游戏内货币', descEn: 'Sign in to purchase membership and in-game currency' },
+  steam: { icon: '🎮', title: '登录以连接Steam', titleEn: 'Sign in to connect Steam', desc: '登录后可同步你的Steam游戏库，一键启动云游戏', descEn: 'Sign in to sync your Steam library and launch cloud games' },
+  save: { icon: '☁️', title: '登录以使用云存档', titleEn: 'Sign in to use Cloud Save', desc: '登录后游戏进度自动同步，多设备无缝切换', descEn: 'Sign in to auto-sync your progress across devices' },
+  social: { icon: '👥', title: '登录以使用社交功能', titleEn: 'Sign in to go Social', desc: '登录后可添加好友、组队游戏、分享动态', descEn: 'Sign in to add friends, team up, and share moments' }
+};
+
+function previewBindPrompt(scene) {
+  const d = currentVersion === 'domestic';
+  const data = bindPromptData[scene];
+  document.getElementById('bindPromptIcon').textContent = data.icon;
+  document.getElementById('bindPromptTitle').textContent = d ? data.title : data.titleEn;
+  document.getElementById('bindPromptDesc').textContent = d ? data.desc : data.descEn;
+  document.getElementById('bindPromptOverlay').classList.add('show');
+}
+
+function closeBindPrompt() {
+  document.getElementById('bindPromptOverlay').classList.remove('show');
+}
+
+function previewConflict() {
+  const d = currentVersion === 'domestic';
+  document.getElementById('conflictTitle').textContent = d ? '账号已存在' : 'Account Already Exists';
+  document.getElementById('conflictDesc').textContent = d
+    ? '该手机号已绑定账号 user_38291，切换到该账号后，当前游客数据将丢失。'
+    : 'This email is already linked to account user_38291. Switching will discard your guest data.';
+  document.getElementById('conflictOverlay').classList.add('show');
+}
+
+function closeConflict() {
+  document.getElementById('conflictOverlay').classList.remove('show');
+}
+
+// ============ INIT ============
+updateProfilePage();
+</script>
+</body>
+</html>
