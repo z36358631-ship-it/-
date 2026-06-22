@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>盖世游戏 - 游戏库（含H5小游戏）</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{--pri:#287dfa;--bg:#0a0e13;--card:#151a24;--border:rgba(255,255,255,0.06);--dim:rgba(255,255,255,0.45);--radius:16px;--h5:#10b981;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;scrollbar-width:none;}
+*::-webkit-scrollbar{display:none;}
+body{background:#000;color:#fff;height:100vh;width:100vw;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:13px;}
+
+.shell{position:relative;overflow:hidden;box-shadow:0 0 50px rgba(0,0,0,0.8);transition:all 0.4s ease;background:var(--bg);}
+.shell.port{width:520px;height:836px;border-radius:40px;display:flex;flex-direction:column;}
+.shell.land{width:1200px;height:520px;border-radius:var(--radius);display:flex;flex-direction:column;}
+
+/* === 竖屏顶部 === */
+.port-top{display:none;align-items:center;padding:14px 16px 6px;flex-shrink:0;}
+.port-top .tabs{display:flex;gap:0;flex:1;}
+.port-top .tabs .tab{padding:6px 12px;font-size:17px;font-weight:700;color:var(--dim);cursor:pointer;position:relative;transition:0.2s;}
+.port-top .tabs .tab.on{color:#fff;}
+.port-top .tabs .tab.on::after{content:'';position:absolute;bottom:-2px;left:12px;width:20px;height:3px;background:var(--pri);border-radius:2px;}
+.port-top .right{display:flex;align-items:center;gap:12px;}
+.port-top .right .icon-btn{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:13px;cursor:pointer;transition:0.2s;}
+.port-top .right .icon-btn:hover{background:rgba(255,255,255,0.12);color:#fff;}
+
+/* === 横屏顶部导航 === */
+.land-nav{display:none;height:40px;background:rgba(10,14,19,0.95);border-bottom:1px solid var(--border);align-items:center;padding:0 20px;flex-shrink:0;z-index:20;justify-content:center;}
+.shell.land .land-nav{display:flex;}
+.land-nav .ni{display:flex;align-items:center;gap:5px;color:var(--dim);cursor:pointer;font-size:12px;padding:6px 16px;transition:0.2s;border-radius:6px;}
+.land-nav .ni i{font-size:14px;}
+.land-nav .ni.on{color:#fff;background:rgba(255,255,255,0.08);}
+.land-nav .right-area{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.land-nav .orient-btn{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dim);font-size:12px;transition:0.2s;}
+.land-nav .orient-btn:hover{background:rgba(255,255,255,0.12);color:#fff;}
+
+/* === 主滚动区 === */
+.main{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;}
+
+/* === 竖屏内容 === */
+.p-content{display:none;flex-direction:column;gap:14px;padding:6px 16px 16px;}
+.shell.port .p-content{display:flex;}
+
+/* 搜索icon+展开 */
+.search-trigger{display:flex;align-items:center;gap:8px;}
+.search-trigger .s-icon{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:14px;cursor:pointer;transition:0.2s;flex-shrink:0;}
+.search-trigger .s-icon:hover{background:rgba(255,255,255,0.12);color:#fff;}
+.search-trigger .s-box{width:0;overflow:hidden;transition:width 0.3s ease;display:flex;align-items:center;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;padding:0;gap:8px;opacity:0;}
+.search-trigger.open .s-box{width:160px;padding:7px 12px;opacity:1;}
+.search-trigger .s-box input{background:none;border:none;outline:none;color:#fff;font-size:12px;width:100%;}
+.search-trigger .s-box input::placeholder{color:var(--dim);}
+.search-trigger .s-box .s-close{color:var(--dim);font-size:11px;cursor:pointer;flex-shrink:0;}
+.search-trigger.left-expand{flex-direction:row-reverse;}
+.search-trigger.left-expand .s-box{direction:rtl;}
+.search-trigger.left-expand .s-box input{direction:ltr;}
+
+/* 入口卡片 */
+.entry-row{display:flex;gap:10px;}
+.entry-card{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 8px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:0.2s;}
+.entry-card:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.15);}
+.entry-card .ec-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;color:#fff;flex-shrink:0;}
+.entry-card:nth-child(1) .ec-icon{background:linear-gradient(135deg,#1b2838,#2a475e);}
+.entry-card:nth-child(2) .ec-icon{background:linear-gradient(135deg,#1a1a2e,#2d1b69);}
+.entry-card:nth-child(3) .ec-icon{background:linear-gradient(135deg,#1e3a2f,#0f2027);}
+.entry-card .ec-text{display:flex;flex-direction:column;gap:1px;}
+.entry-card .ec-text .ec-label{font-size:12px;font-weight:600;color:rgba(255,255,255,0.9);}
+.entry-card .ec-text .ec-sub{font-size:10px;color:var(--dim);}
+
+/* 我的游戏标题行 */
+.my-header{display:flex;align-items:center;}
+.my-header .left{display:flex;align-items:center;gap:8px;}
+.my-header .left .title{font-size:15px;font-weight:700;}
+.my-header .left .count{font-size:12px;color:var(--dim);}
+.my-header .right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.my-header .right .sort-btn{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--dim);cursor:pointer;padding:5px 10px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid var(--border);}
+.my-header .right .sort-btn:hover{background:rgba(255,255,255,0.08);}
+.my-header .right .filter-btn{width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:11px;cursor:pointer;}
+.my-header .right .filter-btn:hover{background:rgba(255,255,255,0.08);}
+
+/* 游戏卡片网格 */
+.game-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.gc{background:var(--card);border-radius:10px;overflow:hidden;cursor:pointer;transition:0.2s;border:1px solid var(--border);position:relative;}
+.gc:hover{transform:translateY(-2px);border-color:rgba(255,255,255,0.15);}
+.gc img{width:100%;aspect-ratio:16/10;object-fit:cover;}
+.gc .gc-info{padding:8px 10px;}
+.gc .gc-info .t{font-size:12px;font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gc .gc-info .m{font-size:10px;color:var(--dim);display:flex;align-items:center;gap:4px;}
+.gc .gc-info .m i{font-size:10px;}
+.gc .badge{position:absolute;top:6px;left:6px;display:flex;gap:3px;}
+.gc .badge i{width:18px;height:18px;border-radius:4px;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.85);}
+
+/* H5小游戏特有样式 */
+.h5-cat-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
+.h5-cat{padding:5px 14px;font-size:12px;font-weight:500;color:var(--dim);background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:16px;cursor:pointer;white-space:nowrap;transition:0.2s;}
+.h5-cat.on{color:#fff;background:rgba(16,185,129,0.15);border-color:var(--h5);}
+.h5-banner{background:linear-gradient(135deg,#064e3b,#0f766e);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:0.2s;}
+.h5-banner:hover{opacity:0.9;}
+.h5-banner .hb-icon{width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.h5-banner .hb-text{display:flex;flex-direction:column;gap:3px;}
+.h5-banner .hb-text .hb-title{font-size:14px;font-weight:700;color:#fff;}
+.h5-banner .hb-text .hb-desc{font-size:11px;color:rgba(255,255,255,0.7);}
+.h5-badge{position:absolute;top:6px;right:6px;padding:2px 6px;border-radius:4px;background:var(--h5);font-size:9px;font-weight:600;color:#fff;}
+.gc .h5-play-btn{position:absolute;bottom:40px;right:8px;width:28px;height:28px;border-radius:50%;background:var(--h5);display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;opacity:0;transition:0.2s;}
+.gc:hover .h5-play-btn{opacity:1;}
+
+/* 横屏内容 */
+.l-content{display:none;flex-direction:column;gap:0;padding:0;}
+.shell.land .l-content{display:flex;}
+.l-recent{padding:12px 24px;display:flex;flex-direction:column;gap:8px;}
+.l-recent .sec-row{display:flex;align-items:center;gap:10px;}
+.l-recent .sec-t{font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);}
+.l-recent .cards-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;}
+.l-recent .rc{cursor:pointer;transition:0.2s;background:var(--card);border-radius:8px;overflow:hidden;border:1px solid var(--border);}
+.l-recent .rc:hover{transform:translateY(-2px);border-color:rgba(255,255,255,0.15);}
+.l-recent .rc img{width:100%;aspect-ratio:3/4;object-fit:cover;}
+.l-recent .rc span{font-size:10px;color:var(--dim);display:block;padding:5px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.l-section{padding:8px 24px;display:flex;flex-direction:column;gap:10px;}
+.l-tab-row{display:flex;align-items:center;gap:0;justify-content:center;}
+.l-tab-row .tab{padding:5px 14px;font-size:13px;font-weight:600;color:var(--dim);cursor:pointer;border-radius:6px;transition:0.2s;}
+.l-tab-row .tab.on{color:#fff;background:rgba(255,255,255,0.08);}
+.l-entry-row{display:flex;gap:10px;}
+.l-entry-card{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:0.2s;}
+.l-entry-card:hover{border-color:rgba(255,255,255,0.2);}
+.l-entry-card .ec-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0;}
+.l-entry-card:nth-child(1) .ec-icon{background:linear-gradient(135deg,#1b2838,#2a475e);}
+.l-entry-card:nth-child(2) .ec-icon{background:linear-gradient(135deg,#1a1a2e,#2d1b69);}
+.l-entry-card:nth-child(3) .ec-icon{background:linear-gradient(135deg,#1e3a2f,#0f2027);}
+.l-entry-card .ec-label{font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);}
+.l-entry-card .ec-sub{font-size:9px;color:var(--dim);margin-top:1px;}
+.l-entry-card .ec-text{display:flex;flex-direction:column;}
+.l-games{padding:10px 24px 24px;display:flex;flex-direction:column;gap:10px;}
+.l-games .my-header .left .title{font-size:13px;}
+.l-games .my-header .left .count{font-size:11px;}
+.l-games .game-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+.l-games .gc img{aspect-ratio:16/10;}
+.l-games .gc .gc-info{padding:6px 8px;}
+.l-games .gc .gc-info .t{font-size:11px;}
+
+/* 子页面 */
+.subpage{position:absolute;inset:0;background:var(--bg);z-index:50;display:flex;flex-direction:column;animation:slideIn 0.25s ease;}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.subpage .sp-header{display:flex;align-items:center;gap:12px;padding:14px 16px;flex-shrink:0;}
+.subpage .sp-header .back{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dim);font-size:14px;}
+.subpage .sp-header .back:hover{color:#fff;background:rgba(255,255,255,0.15);}
+.subpage .sp-header .title{font-size:16px;font-weight:700;}
+.subpage .sp-body{flex:1;overflow-y:auto;padding:0 16px 16px;display:flex;flex-direction:column;gap:16px;}
+.subpage .sp-body .game-grid{grid-template-columns:repeat(2,1fr);}
+.shell.land .subpage .sp-body .game-grid{grid-template-columns:repeat(7,1fr);}
+.sp-bind-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;gap:14px;flex:1;}
+.sp-bind-state .bind-icon{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#1b2838,#2a475e);display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;}
+.sp-bind-state .bind-title{font-size:16px;font-weight:700;color:#fff;}
+.sp-bind-state .bind-desc{font-size:12px;color:var(--dim);max-width:240px;line-height:1.5;}
+.sp-bind-state .bind-btn{padding:10px 32px;background:var(--pri);color:#fff;font-size:13px;font-weight:600;border-radius:8px;cursor:pointer;transition:0.2s;}
+.sp-bind-state .bind-btn:hover{opacity:0.85;}
+
+/* 底部导航 */
+.btm-nav{display:none;height:60px;background:rgba(10,14,19,0.97);backdrop-filter:blur(10px);border-top:1px solid var(--border);flex-shrink:0;z-index:20;padding:0 10px;}
+.shell.port .btm-nav{display:flex;align-items:center;justify-content:space-around;}
+.btm-nav .ni{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--dim);cursor:pointer;font-size:9px;padding:6px 10px;}
+.btm-nav .ni i{font-size:18px;}
+.btm-nav .ni.on{color:#fff;}
+
+/* 搜索页 */
+.search-page{position:absolute;inset:0;background:var(--bg);z-index:500;display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.2,0.8,0.2,1);}
+.search-page.show{transform:translateX(0);}
+.search-header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(10,14,19,0.95);flex-shrink:0;}
+.search-input-wrap{flex:1;display:flex;align-items:center;background:rgba(255,255,255,0.08);border-radius:20px;height:34px;padding:0 12px;gap:8px;}
+.search-input-wrap input{flex:1;background:transparent;border:none;color:#fff;font-size:13px;outline:none;}
+.search-input-wrap input::placeholder{color:var(--dim);}
+.search-btn{background:var(--h5);color:#fff;padding:5px 14px;border-radius:14px;font-size:12px;font-weight:600;cursor:pointer;}
+.search-tabs{display:flex;justify-content:space-around;background:rgba(10,14,19,0.95);border-bottom:1px solid var(--border);flex-shrink:0;}
+.s-tab{padding:10px 0;font-size:13px;color:var(--dim);cursor:pointer;position:relative;font-weight:500;}
+.s-tab.on{color:#fff;font-weight:700;}
+.s-tab.on::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);width:18px;height:3px;background:var(--pri);border-radius:2px;}
+.search-results{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px;}
+.sr-section{display:flex;flex-direction:column;gap:8px;}
+.sr-section-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.8);padding-bottom:4px;border-bottom:1px solid var(--border);}
+.sr-item{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;cursor:pointer;transition:0.15s;}
+.sr-item:hover{background:rgba(255,255,255,0.05);}
+.sr-item img{width:48px;height:48px;border-radius:8px;object-fit:cover;background:#1a2332;flex-shrink:0;}
+.sr-item-info{flex:1;display:flex;flex-direction:column;gap:2px;overflow:hidden;}
+.sr-item-info .name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sr-item-info .meta{font-size:11px;color:var(--dim);}
+.sr-item .sr-tag{padding:2px 6px;border-radius:4px;font-size:9px;font-weight:600;flex-shrink:0;}
+.sr-tag.pc{background:rgba(40,125,250,0.15);color:var(--pri);}
+.sr-tag.retro{background:rgba(139,92,246,0.15);color:#8b5cf6;}
+.sr-tag.h5{background:rgba(16,185,129,0.15);color:var(--h5);}
+.sr-empty{text-align:center;padding:40px;color:var(--dim);font-size:13px;}
+
+/* 首页内容 */
+.home-content{display:none;flex-direction:column;gap:0;padding:0 16px 16px;}
+.shell.port .home-content.active{display:flex;}
+.sub-tabs-home{display:flex;align-items:center;gap:0;padding:10px 0 6px;position:sticky;top:0;z-index:15;background:var(--bg);}
+.sub-tabs-home .st{padding:6px 12px;font-size:13px;font-weight:600;color:var(--dim);cursor:pointer;border-radius:6px;transition:0.2s;white-space:nowrap;}
+.sub-tabs-home .st.on{color:#fff;background:rgba(255,255,255,0.08);}
+.sub-tabs-home .st:hover:not(.on){color:rgba(255,255,255,0.7);}
+.home-section-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.home-section-title .more{margin-left:auto;font-size:11px;color:var(--dim);cursor:pointer;}
+
+/* 最近游玩 竖屏 */
+.recent-p{display:flex;align-items:stretch;gap:10px;}
+.recent-p .label{writing-mode:vertical-rl;font-size:11px;font-weight:600;color:var(--dim);letter-spacing:2px;display:flex;align-items:center;flex-shrink:0;}
+.recent-p .cards{display:flex;gap:8px;overflow-x:auto;}
+.recent-p .rc{width:50px;flex-shrink:0;cursor:pointer;}
+.recent-p .rc img{width:50px;height:66px;border-radius:6px;object-fit:cover;border:1px solid var(--border);}
+
+/* Banner 竖屏 */
+.banner-p{width:100%;border-radius:12px;overflow:hidden;position:relative;height:140px;flex-shrink:0;cursor:pointer;}
+.banner-p img{width:100%;height:100%;object-fit:cover;}
+.banner-p .ov{position:absolute;bottom:0;left:0;right:0;padding:10px 14px;background:linear-gradient(transparent,rgba(0,0,0,0.85));}
+.banner-p .ov .tag{display:inline-block;background:linear-gradient(90deg,#ff9500,#ff5e00);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:3px;margin-bottom:3px;}
+.banner-p .ov .t{font-size:14px;font-weight:700;}
+
+/* 推荐横滑 */
+.rec-scroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;}
+.rec-card{width:110px;flex-shrink:0;cursor:pointer;transition:0.2s;}
+.rec-card:hover{transform:translateY(-2px);}
+.rec-card img{width:110px;height:146px;border-radius:8px;object-fit:cover;border:1px solid var(--border);}
+.rec-card span{font-size:10px;color:var(--dim);display:block;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* 资讯 */
+.news-scroll{display:flex;gap:12px;overflow-x:auto;}
+.news-card{width:220px;flex-shrink:0;background:var(--card);border-radius:10px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:0.2s;}
+.news-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,0.15);}
+.news-card img{width:100%;height:100px;object-fit:cover;}
+.news-card .txt{padding:8px 10px;font-size:11px;color:var(--dim);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+
+/* 秒玩 */
+.instant-scroll{display:flex;gap:14px;overflow-x:auto;}
+.instant-card{width:140px;flex-shrink:0;cursor:pointer;transition:0.2s;position:relative;}
+.instant-card:hover{transform:translateY(-3px);}
+.instant-card img{width:140px;height:180px;border-radius:10px;object-fit:cover;border:1px solid var(--border);}
+.instant-card .info{position:absolute;bottom:0;left:0;right:0;padding:10px;background:linear-gradient(transparent,rgba(0,0,0,0.85));border-radius:0 0 10px 10px;}
+.instant-card .info .name{font-size:12px;font-weight:600;margin-bottom:4px;}
+.instant-card .info .desc{font-size:10px;color:var(--dim);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.instant-card .info .btn{display:inline-block;background:#22c55e;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;}
+.home-search-box{display:flex;align-items:center;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:20px;padding:8px 14px;gap:8px;cursor:pointer;transition:0.2s;}
+.home-search-box:hover{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);}
+.home-search-box i{color:var(--dim);font-size:13px;}
+.home-search-box span{color:var(--dim);font-size:13px;}
+.search-row{display:flex;align-items:center;gap:10px;}
+
+/* Toast */
+.toast{position:absolute;top:60px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.95);color:#000;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:0.3s;z-index:9999;pointer-events:none;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.3);}
+.toast.show{opacity:1;top:80px;}
+
+/* 小游戏排行榜 */
+.h5-rank-list{display:flex;flex-direction:column;gap:12px;}
+.h5-rank-item{display:flex;align-items:center;gap:12px;padding:10px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid var(--border);cursor:pointer;transition:0.15s;}
+.h5-rank-item:hover{background:rgba(255,255,255,0.06);}
+.h5-rank-num{width:24px;font-size:14px;font-weight:800;text-align:center;flex-shrink:0;}
+.h5-rank-num.top1{color:#ff6b35;}
+.h5-rank-num.top2{color:#ff9500;}
+.h5-rank-num.top3{color:#ffcc00;}
+.h5-rank-item img{width:56px;height:56px;border-radius:12px;object-fit:cover;background:#1a2332;flex-shrink:0;}
+.h5-rank-info{flex:1;display:flex;flex-direction:column;gap:3px;overflow:hidden;}
+.h5-rank-info .name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.h5-rank-info .tags{font-size:11px;color:var(--dim);display:flex;gap:6px;}
+.h5-rank-info .players{font-size:11px;color:var(--dim);}
+.h5-rank-play{padding:6px 14px;background:var(--h5);color:#fff;border-radius:14px;font-size:12px;font-weight:600;flex-shrink:0;cursor:pointer;transition:0.2s;}
+.h5-rank-play:hover{opacity:0.85;}
+
+/* 排行榜页 */
+.rank-page{display:none;flex-direction:column;padding:0 16px 16px;gap:0;}
+.rank-page.active{display:flex;}
+.rank-tabs{display:flex;gap:0;padding:10px 0;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:10;}
+.rk-tab{padding:6px 14px;font-size:13px;font-weight:600;color:var(--dim);cursor:pointer;border-radius:6px;transition:0.2s;}
+.rk-tab.on{color:#fff;background:rgba(255,255,255,0.08);}
+.rk-tab:hover:not(.on){color:rgba(255,255,255,0.7);}
+.rank-body{flex:1;overflow-y:auto;padding-top:14px;}
+.rank-placeholder{text-align:center;padding:80px 20px;color:var(--dim);}
+.rank-placeholder i{font-size:36px;margin-bottom:12px;display:block;}
+
+/* 小游戏排行榜-网格模式 */
+.rk-h5-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.rk-h5-header .title{font-size:16px;font-weight:700;}
+.rk-h5-sort{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);cursor:pointer;padding:5px 10px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid var(--border);position:relative;}
+.rk-h5-sort:hover{background:rgba(255,255,255,0.08);}
+.rk-sort-dropdown{display:none;position:absolute;top:32px;right:0;background:#1e2430;border:1px solid var(--border);border-radius:8px;padding:4px 0;min-width:100px;z-index:100;box-shadow:0 8px 20px rgba(0,0,0,0.5);}
+.rk-sort-dropdown.show{display:block;}
+.rk-sort-dropdown .opt{padding:8px 14px;font-size:12px;color:var(--dim);cursor:pointer;transition:0.15s;}
+.rk-sort-dropdown .opt:hover{background:rgba(255,255,255,0.06);color:#fff;}
+.rk-sort-dropdown .opt.on{color:var(--h5);font-weight:600;}
+.rk-h5-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.rk-h5-cell{cursor:pointer;transition:0.2s;position:relative;}
+.rk-h5-cell:hover{transform:translateY(-2px);}
+.rk-h5-cell img{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;background:#1a2332;}
+.rk-h5-cell .rk-num{position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;}
+.rk-num.n1{background:#ff6b35;}
+.rk-num.n2{background:#ff9500;}
+.rk-num.n3{background:#ffcc00;color:#000;}
+.rk-num.n4{background:rgba(255,255,255,0.2);}
+.rk-h5-cell .rk-name{font-size:11px;color:rgba(255,255,255,0.85);text-align:center;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+</style>
+</head>
+<body>
+<div class="shell port" id="shell">
+
+<!-- 竖屏顶部 -->
+<!-- 竖屏顶部 -->
+<div class="port-top" id="portTop">
+    <div class="tabs" id="portTabs">
+        <div class="tab on" data-tab="pc">PC游戏</div>
+        <div class="tab" data-tab="retro">复古游戏</div>
+        <div class="tab" data-tab="h5">小游戏</div>
+    </div>
+    <div class="right">
+        <div class="icon-btn" id="portOrient"><i class="fas fa-desktop"></i></div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- 横屏顶部导航 -->
+<nav class="land-nav">
+    <div class="ni"><i class="fas fa-home"></i> 首页</div>
+    <div class="ni"><i class="fas fa-users"></i> 社区</div>
+    <div class="ni"><i class="fas fa-trophy"></i> 排行榜</div>
+    <div class="ni on"><i class="fas fa-gamepad"></i> 游戏库</div>
+    <div class="ni"><i class="far fa-user"></i> 我的</div>
+    <div class="right-area">
+        <div class="orient-btn" id="landOrient"><i class="fas fa-mobile-screen-button"></i></div>
+    </div>
+</nav>
+
+<!-- 主滚动区 -->
+<div class="main" id="mainArea">
+    <!-- 首页内容 -->
+    <div class="home-content" id="homeContent">
+        <div class="search-row" style="padding:12px 0 0;">
+            <div class="home-search-box" onclick="openSearch()" style="flex:1;">
+                <i class="fas fa-search"></i>
+                <span>搜个游戏，大世界</span>
+            </div>
+        </div>
+        <div class="sub-tabs-home" id="homeSubTabs"></div>
+        <div id="homeTabContent"></div>
+    </div>
+    <div class="p-content" id="pContent"></div>
+    <div class="l-content" id="lContent"></div>
+</div>
+
+<!-- 全局搜索页 -->
+<div id="searchPage" class="search-page">
+    <div class="search-header">
+        <i class="fas fa-chevron-left" style="font-size:16px;cursor:pointer;color:var(--dim);" onclick="closeSearch()"></i>
+        <div class="search-input-wrap">
+            <i class="fas fa-search" style="color:var(--dim);font-size:12px;"></i>
+            <input type="text" id="searchInput" placeholder="搜索游戏" oninput="doSearch()">
+            <i class="fas fa-times-circle" style="color:var(--dim);cursor:pointer;font-size:12px;" onclick="document.getElementById('searchInput').value='';doSearch()"></i>
+        </div>
+        <div class="search-btn" onclick="doSearch()">搜索</div>
+    </div>
+    <div class="search-tabs" id="searchTabs">
+        <div class="s-tab on" data-stab="all">综合</div>
+        <div class="s-tab" data-stab="pc">PC游戏</div>
+        <div class="s-tab" data-stab="retro">复古游戏</div>
+        <div class="s-tab" data-stab="h5">小游戏</div>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+</div>
+
+<!-- 排行榜页 -->
+<div class="rank-page" id="rankPage">
+    <div class="rank-tabs" id="rankTabs">
+        <div class="rk-tab on" data-rk="hot">热玩榜</div>
+        <div class="rk-tab" data-rk="rise">飙升榜</div>
+        <div class="rk-tab" data-rk="instant">秒玩榜</div>
+        <div class="rk-tab" data-rk="h5">小游戏</div>
+    </div>
+    <div class="rank-body" id="rankBody"></div>
+</div>
+
+<!-- 竖屏底部导航 -->
+<nav class="btm-nav">
+    <div class="ni on" data-page="home"><i class="fas fa-home"></i>首页</div>
+    <div class="ni"><i class="fas fa-users"></i>社区</div>
+    <div class="ni" data-page="rank"><i class="fas fa-trophy"></i>排行榜</div>
+    <div class="ni" data-page="library"><i class="fas fa-gamepad"></i>游戏库</div>
+    <div class="ni"><i class="far fa-user"></i>我的</div>
+</nav>
+</div>
+
+<script>
+const C={
+"黑神话：悟空":"https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/library_600x900.jpg",
+"赛博朋克 2077":"https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/library_600x900.jpg",
+"艾尔登法环":"https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/library_600x900.jpg",
+"荒野大镖客2":"https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/library_600x900.jpg",
+"极限竞速":"https://cdn.cloudflare.steamstatic.com/steam/apps/1551360/library_600x900.jpg",
+"博德之门3":"https://cdn.cloudflare.steamstatic.com/steam/apps/1086940/library_600x900.jpg",
+"GTA5":"https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg",
+"巫师3":"https://cdn.cloudflare.steamstatic.com/steam/apps/292030/library_600x900.jpg",
+"战神4":"https://cdn.cloudflare.steamstatic.com/steam/apps/1593500/library_600x900.jpg"
+};
+const H={
+"黑神话：悟空":"https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/header.jpg",
+"赛博朋克 2077":"https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg",
+"艾尔登法环":"https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg",
+"荒野大镖客2":"https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/header.jpg",
+"GTA5":"https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg",
+"极限竞速":"https://cdn.cloudflare.steamstatic.com/steam/apps/1551360/header.jpg",
+"博德之门3":"https://cdn.cloudflare.steamstatic.com/steam/apps/1086940/header.jpg",
+"战神4":"https://cdn.cloudflare.steamstatic.com/steam/apps/1593500/header.jpg",
+"巫师3":"https://cdn.cloudflare.steamstatic.com/steam/apps/292030/header.jpg",
+"茶杯头":"https://cdn.cloudflare.steamstatic.com/steam/apps/268910/header.jpg",
+"Hades":"https://cdn.cloudflare.steamstatic.com/steam/apps/1145360/header.jpg",
+"土豆兄弟":"https://cdn.cloudflare.steamstatic.com/steam/apps/1942280/header.jpg",
+"饥荒联机版":"https://cdn.cloudflare.steamstatic.com/steam/apps/322330/header.jpg",
+"Bloodstained":"https://cdn.cloudflare.steamstatic.com/steam/apps/692850/header.jpg",
+"求生之路2":"https://cdn.cloudflare.steamstatic.com/steam/apps/550/header.jpg"
+};
+function cv(t){return C[t]||C["黑神话：悟空"];}
+function hd(t){return H[t]||H["黑神话：悟空"];}
+
+const pcGames=[
+    {name:"黑神话：悟空",tags:"最近游玩 2小时前",platform:["steam"]},
+    {name:"艾尔登法环",tags:"最近游玩 昨天",platform:["steam"]},
+    {name:"赛博朋克 2077",tags:"最近游玩 3天前",platform:["steam","epic"]},
+    {name:"荒野大镖客2",tags:"最近游玩 1周前",platform:["steam","epic"]},
+    {name:"博德之门3",tags:"最近游玩 1周前",platform:["steam"]},
+    {name:"战神4",tags:"最近游玩 2周前",platform:["steam","epic"]},
+    {name:"极限竞速",tags:"最近游玩 2周前",platform:["steam"]},
+    {name:"巫师3",tags:"最近游玩 3周前",platform:["steam"]},
+    {name:"GTA5",tags:"最近游玩 1月前",platform:["steam","epic"]}
+];
+const retroGames=[
+    {name:"茶杯头",tags:"最近游玩 1周前",platform:[]},
+    {name:"Hades",tags:"最近游玩 1周前",platform:[]},
+    {name:"土豆兄弟",tags:"最近游玩 2周前",platform:[]},
+    {name:"饥荒联机版",tags:"最近游玩 3周前",platform:[]},
+    {name:"Bloodstained",tags:"最近游玩 1月前",platform:[]},
+    {name:"求生之路2",tags:"最近游玩 1月前",platform:[]}
+];
+const h5Games=[
+    {name:"开心消消乐",cat:"益智",players:"12.3万人在玩",cover:"https://img.icons8.com/color/240/candy-cane.png"},
+    {name:"地铁跑酷",cat:"跑酷",players:"8.7万人在玩",cover:"https://img.icons8.com/color/240/running.png"},
+    {name:"保卫萝卜",cat:"塔防",players:"5.2万人在玩",cover:"https://img.icons8.com/color/240/tower.png"},
+    {name:"贪吃蛇大作战",cat:"休闲",players:"6.1万人在玩",cover:"https://img.icons8.com/color/240/snake.png"},
+    {name:"2048",cat:"益智",players:"4.8万人在玩",cover:"https://img.icons8.com/color/240/grid-2.png"},
+    {name:"疯狂动物城",cat:"动作",players:"3.9万人在玩",cover:"https://img.icons8.com/color/240/dog.png"},
+    {name:"水果忍者",cat:"休闲",players:"7.3万人在玩",cover:"https://img.icons8.com/color/240/watermelon.png"},
+    {name:"飞刀挑战",cat:"动作",players:"2.4万人在玩",cover:"https://img.icons8.com/color/240/sword.png"},
+    {name:"弹球大师",cat:"休闲",players:"3.1万人在玩",cover:"https://img.icons8.com/color/240/tennis-ball.png"},
+    {name:"数独大师",cat:"益智",players:"1.8万人在玩",cover:"https://img.icons8.com/color/240/sudoku.png"},
+    {name:"合成大西瓜",cat:"休闲",players:"9.5万人在玩",cover:"https://img.icons8.com/color/240/watermelon.png"},
+    {name:"跳一跳",cat:"休闲",players:"6.6万人在玩",cover:"https://img.icons8.com/color/240/jump.png"}
+];
+const h5Categories=['全部','休闲','益智','跑酷','塔防','动作'];
+let h5CatFilter='全部';
+
+const recentGames=["黑神话：悟空","艾尔登法环","赛博朋克 2077","博德之门3","荒野大镖客2","极限竞速"];
+
+let curTab='pc';
+let isLand=false;
+
+function toggle(){
+    isLand=!isLand;
+    document.getElementById('shell').className='shell '+(isLand?'land':'port');
+    render();
+}
+
+function switchTab(tab){
+    curTab=tab;
+    h5CatFilter='全部';
+    render();
+}
+
+function setH5Cat(cat){
+    h5CatFilter=cat;
+    render();
+}
+
+function badgeHtml(platforms){
+    if(!platforms||!platforms.length) return '';
+    return `<div class="badge">${platforms.map(p=>
+        p==='steam'?'<i class="fab fa-steam"></i>':
+        p==='epic'?'<i class="fas fa-cube"></i>':''
+    ).join('')}</div>`;
+}
+
+function getH5Filtered(){
+    if(h5CatFilter==='全部') return h5Games;
+    return h5Games.filter(g=>g.cat===h5CatFilter);
+}
+
+function openSubpage(name){
+    const shell=document.getElementById('shell');
+    const existing=shell.querySelector('.subpage');
+    if(existing) existing.remove();
+    const sp=document.createElement('div');
+    sp.className='subpage';
+    if(name==='导入游戏'||name==='导入复古游戏'){
+        sp.innerHTML=`<div class="sp-header"><div class="back"><i class="fas fa-chevron-left"></i></div><div class="title">${name}</div></div><div class="sp-body"><div style="text-align:center;padding:60px 20px;color:var(--dim);"><i class="fas fa-file-import" style="font-size:36px;margin-bottom:12px;display:block;"></i><div>点击选择游戏文件导入</div></div></div>`;
+    } else {
+        const isSteam=name==='Steam';
+        sp.innerHTML=`<div class="sp-header"><div class="back"><i class="fas fa-chevron-left"></i></div><div class="title">${name}游戏</div></div><div class="sp-body"><div class="sp-bind-state"><div class="bind-icon"><i class="${isSteam?'fab fa-steam':'fas fa-cube'}"></i></div><div class="bind-title">绑定${name}账号</div><div class="bind-desc">绑定后可同步你的${name}游戏库，一键启动游戏</div><div class="bind-btn" id="spBindBtn">立即绑定</div></div></div>`;
+    }
+    shell.appendChild(sp);
+    sp.querySelector('.back').addEventListener('click',()=>sp.remove());
+}
+
+function renderH5Port(){
+    const el=document.getElementById('pContent');
+    const games=getH5Filtered();
+    el.innerHTML=`
+        <div class="my-header">
+            <div class="left"><div class="title">我的游戏</div><div class="count">${games.length}款游戏</div></div>
+            <div class="right">
+                <div class="search-trigger" id="searchTrigger">
+                    <div class="s-icon"><i class="fas fa-search"></i></div>
+                    <div class="s-box"><input type="text" placeholder="搜索游戏名"><div class="s-close"><i class="fas fa-times"></i></div></div>
+                </div>
+            </div>
+        </div>
+        <div class="game-grid">
+            ${games.map(g=>`<div class="gc" onclick="launchH5('${g.name}')"><div class="h5-badge">免登录</div><img src="${g.cover}" style="background:#1a2332;"><div class="h5-play-btn"><i class="fas fa-play"></i></div><div class="gc-info"><div class="t">${g.name}</div><div class="m"><i class="fas fa-users"></i> ${g.players}</div></div></div>`).join('')}
+        </div>
+    `;
+    const st=document.getElementById('searchTrigger');
+    if(st){
+        st.querySelector('.s-icon').addEventListener('click',()=>{st.classList.toggle('open');const inp=st.querySelector('input');if(st.classList.contains('open'))inp.focus();});
+        st.querySelector('.s-close').addEventListener('click',()=>{st.classList.remove('open');st.querySelector('input').value='';});
+    }
+}
+
+function renderPort(){
+    const el=document.getElementById('pContent');
+    if(curTab==='h5'){renderH5Port();bindPortTabs();return;}
+    const games=curTab==='pc'?pcGames:retroGames;
+    const showEntry=curTab==='pc';
+    el.innerHTML=`
+        ${showEntry?`<div class="entry-row">
+            <div class="entry-card" data-entry="Steam"><div class="ec-icon"><i class="fab fa-steam"></i></div><div class="ec-text"><div class="ec-label">Steam</div><div class="ec-sub">查看游戏 ›</div></div></div>
+            <div class="entry-card" data-entry="Epic"><div class="ec-icon"><i class="fas fa-cube"></i></div><div class="ec-text"><div class="ec-label">Epic Games</div><div class="ec-sub">查看游戏 ›</div></div></div>
+            <div class="entry-card" data-entry="导入游戏"><div class="ec-icon"><i class="fas fa-plus"></i></div><div class="ec-text"><div class="ec-label">导入游戏</div><div class="ec-sub">手动添加 ›</div></div></div>
+        </div>`:`<div class="entry-row">
+            <div class="entry-card" data-entry="导入复古游戏" style="flex:none;width:auto;"><div class="ec-icon" style="background:linear-gradient(135deg,#1e3a2f,#0f2027);"><i class="fas fa-plus"></i></div><div class="ec-text"><div class="ec-label">导入游戏</div><div class="ec-sub">手动添加 ›</div></div></div>
+        </div>`}
+        <div class="my-header">
+            <div class="left"><div class="title">我的游戏</div><div class="count">${games.length}款游戏</div></div>
+            <div class="right">
+                <div class="search-trigger" id="searchTrigger">
+                    <div class="s-icon"><i class="fas fa-search"></i></div>
+                    <div class="s-box"><input type="text" placeholder="搜索游戏名"><div class="s-close"><i class="fas fa-times"></i></div></div>
+                </div>
+                ${curTab==='pc'?'<div class="sort-btn"><i class="fas fa-sort-amount-down"></i> 最近游玩</div>':''}
+            </div>
+        </div>
+        <div class="game-grid">${games.map(g=>`<div class="gc">${badgeHtml(g.platform)}<img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m"><i class="fas fa-play"></i> ${g.tags}</div></div></div>`).join('')}</div>
+    `;
+    bindPortTabs();
+    el.querySelectorAll('.entry-card[data-entry]').forEach(c=>{
+        c.addEventListener('click',()=>openSubpage(c.dataset.entry));
+    });
+    const st=document.getElementById('searchTrigger');
+    if(st){
+        st.querySelector('.s-icon').addEventListener('click',()=>{st.classList.toggle('open');const inp=st.querySelector('input');if(st.classList.contains('open'))inp.focus();});
+        st.querySelector('.s-close').addEventListener('click',()=>{st.classList.remove('open');st.querySelector('input').value='';});
+    }
+}
+
+function bindPortTabs(){
+    document.querySelectorAll('#portTabs .tab').forEach(t=>{
+        t.onclick=()=>switchTab(t.dataset.tab);
+        t.classList.toggle('on',t.dataset.tab===curTab);
+    });
+}
+
+function renderLand(){
+    const el=document.getElementById('lContent');
+    if(curTab==='h5'){
+        const games=getH5Filtered();
+        el.innerHTML=`
+            <div class="l-section">
+                <div class="l-tab-row">
+                    <div class="tab" data-tab="pc">PC游戏</div>
+                    <div class="tab" data-tab="retro">复古游戏</div>
+                    <div class="tab on" data-tab="h5">小游戏</div>
+                </div>
+                <div class="h5-banner" style="margin:0;">
+                    <div class="hb-icon"><i class="fas fa-bolt"></i></div>
+                    <div class="hb-text"><div class="hb-title">免登录即玩</div><div class="hb-desc">无需登录、无需下载，点击即可开始游戏</div></div>
+                </div>
+                <div class="h5-cat-row" id="h5CatRowL">
+                    ${h5Categories.map(c=>`<div class="h5-cat${c===h5CatFilter?' on':''}" data-cat="${c}">${c}</div>`).join('')}
+                </div>
+            </div>
+            <div class="l-games">
+                <div class="my-header"><div class="left"><div class="title">小游戏</div><div class="count">${games.length}款</div></div></div>
+                <div class="game-grid">${games.map(g=>`<div class="gc" onclick="launchH5('${g.name}')"><div class="h5-badge">免登录</div><img src="${g.cover}" style="background:#1a2332;"><div class="h5-play-btn"><i class="fas fa-play"></i></div><div class="gc-info"><div class="t">${g.name}</div><div class="m"><i class="fas fa-users"></i> ${g.players}</div></div></div>`).join('')}</div>
+            </div>`;
+        el.querySelectorAll('.l-tab-row .tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
+        el.querySelectorAll('.h5-cat').forEach(c=>c.addEventListener('click',()=>setH5Cat(c.dataset.cat)));
+        return;
+    }
+    const games=curTab==='pc'?pcGames:retroGames;
+    const showEntry=curTab==='pc';
+    el.innerHTML=`
+        <div class="l-recent">
+            <div class="sec-row"><div class="sec-t">最近游戏</div></div>
+            <div class="cards-row">${recentGames.slice(0,4).map(g=>`<div class="rc"><img src="${cv(g)}"><span>${g}</span></div>`).join('')}</div>
+        </div>
+        <div class="l-section">
+            <div class="l-tab-row">
+                <div class="tab${curTab==='pc'?' on':''}" data-tab="pc">PC游戏</div>
+                <div class="tab${curTab==='retro'?' on':''}" data-tab="retro">复古游戏</div>
+                <div class="tab" data-tab="h5">小游戏</div>
+            </div>
+            ${showEntry?`<div class="l-entry-row">
+                <div class="l-entry-card" data-entry="Steam"><div class="ec-icon"><i class="fab fa-steam"></i></div><div class="ec-text"><div class="ec-label">Steam</div><div class="ec-sub">查看游戏</div></div></div>
+                <div class="l-entry-card" data-entry="Epic"><div class="ec-icon"><i class="fas fa-cube"></i></div><div class="ec-text"><div class="ec-label">Epic</div><div class="ec-sub">查看游戏</div></div></div>
+                <div class="l-entry-card" data-entry="导入游戏"><div class="ec-icon"><i class="fas fa-plus"></i></div><div class="ec-text"><div class="ec-label">导入游戏</div><div class="ec-sub">手动添加</div></div></div>
+            </div>`:`<div class="l-entry-row">
+                <div class="l-entry-card" data-entry="导入复古游戏"><div class="ec-icon" style="background:linear-gradient(135deg,#1e3a2f,#0f2027);"><i class="fas fa-plus"></i></div><div class="ec-text"><div class="ec-label">导入复古游戏</div><div class="ec-sub">手动添加</div></div></div>
+            </div>`}
+        </div>
+        <div class="l-games">
+            <div class="my-header">
+                <div class="left"><div class="title">我的游戏</div><div class="count">${games.length}款游戏</div></div>
+                <div class="right">
+                    <div class="search-trigger left-expand" id="landSearchTrigger">
+                        <div class="s-icon"><i class="fas fa-search"></i></div>
+                        <div class="s-box"><input type="text" placeholder="搜索游戏名"><div class="s-close"><i class="fas fa-times"></i></div></div>
+                    </div>
+                    ${curTab==='pc'?'<div class="sort-btn"><i class="fas fa-sort-amount-down"></i> 最近游玩</div>':''}
+                </div>
+            </div>
+            <div class="game-grid">${games.map(g=>`<div class="gc">${badgeHtml(g.platform)}<img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m"><i class="fas fa-play"></i> ${g.tags}</div></div></div>`).join('')}</div>
+        </div>`;
+    el.querySelectorAll('.l-tab-row .tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
+    el.querySelectorAll('.l-entry-card[data-entry]').forEach(c=>c.addEventListener('click',()=>openSubpage(c.dataset.entry)));
+    const lst=document.getElementById('landSearchTrigger');
+    if(lst){
+        lst.querySelector('.s-icon').addEventListener('click',()=>{lst.classList.toggle('open');const inp=lst.querySelector('input');if(lst.classList.contains('open'))inp.focus();});
+        lst.querySelector('.s-close').addEventListener('click',()=>{lst.classList.remove('open');lst.querySelector('input').value='';});
+    }
+}
+
+function render(){
+    if(isLand){renderLand();}else{renderPort();}
+}
+
+document.getElementById('portOrient').addEventListener('click',toggle);
+document.getElementById('landOrient').addEventListener('click',toggle);
+
+// Toast
+function showToast(msg){
+    const t=document.getElementById('toast');
+    t.textContent=msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// 点击小游戏启动
+function launchH5(name){
+    showToast('启动游戏中...');
+}
+
+// 页面切换（首页/游戏库）
+let curPage='home';
+function switchPage(page){
+    curPage=page;
+    document.getElementById('homeContent').classList.toggle('active',page==='home'&&!isLand);
+    document.getElementById('pContent').style.display=(page==='library'&&!isLand)?'flex':'none';
+    document.getElementById('rankPage').classList.toggle('active',page==='rank'&&!isLand);
+    document.querySelector('.port-top').style.display=(page==='library'&&!isLand)?'flex':'none';
+    document.querySelectorAll('.btm-nav .ni').forEach(n=>{
+        n.classList.toggle('on', n.dataset.page===page);
+    });
+    if(page==='home'){homeTab='推荐';renderHome();}
+    if(page==='library') render();
+    if(page==='rank') renderRank();
+}
+document.querySelectorAll('.btm-nav .ni[data-page]').forEach(n=>{
+    n.addEventListener('click',()=>switchPage(n.dataset.page));
+});
+
+// 排行榜
+let rankTab='h5';
+let rankSort='hot';
+function renderRank(){
+    const body=document.getElementById('rankBody');
+    document.querySelectorAll('#rankTabs .rk-tab').forEach(t=>{
+        t.classList.toggle('on',t.dataset.rk===rankTab);
+    });
+    if(rankTab!=='h5'){
+        body.innerHTML=`<div class="rank-placeholder"><i class="fas fa-trophy"></i><div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:6px;">${rankTab==='hot'?'热玩榜':rankTab==='rise'?'飙升榜':'秒玩榜'}</div><div style="font-size:12px;">复用原有排行榜内容，无改动</div></div>`;
+        return;
+    }
+    const sorted=rankSort==='hot'?[...h5Games]:[...h5Games].reverse();
+    body.innerHTML=`
+        <div class="h5-rank-list">
+            ${sorted.map((g,i)=>`<div class="h5-rank-item" onclick="launchH5('${g.name}')">
+                <div class="h5-rank-num${i<3?' top'+(i+1):''}">${i+1}</div>
+                <img src="${g.cover}">
+                <div class="h5-rank-info">
+                    <div class="name">${g.name}</div>
+                    <div class="tags"><span>${g.cat}</span></div>
+                    <div class="players">${g.players}</div>
+                </div>
+                <div class="h5-rank-play">开始玩</div>
+            </div>`).join('')}
+        </div>`;
+}
+document.querySelectorAll('#rankTabs .rk-tab').forEach(t=>{
+    t.addEventListener('click',()=>{rankTab=t.dataset.rk;renderRank();});
+});
+
+// 首页渲染
+const homeSubTabs=['推荐','PC游戏','云游戏','复古游戏','小游戏'];
+let homeTab='推荐';
+const newsData=[
+    {img:"荒野大镖客2",txt:"DLC要来了？《龙之信条2》Steam后台意外泄露77GB更新"},
+    {img:"艾尔登法环",txt:"国产大作《影之刃》支线影响主线副本 是多结局走向"}
+];
+const instantGames=[
+    {name:"GTA5",desc:"GTA5玩法大全，中华小当家的操作"},
+    {name:"荒野大镖客2",desc:"75年大作，19世纪末第二次工业革命"},
+    {name:"赛博朋克 2077",desc:"从头与重生，武器与枪的狂欢"}
+];
+
+function renderHome(){
+    const tabsEl=document.getElementById('homeSubTabs');
+    tabsEl.innerHTML=homeSubTabs.map(t=>`<div class="st${t===homeTab?' on':''}" data-htab="${t}">${t}</div>`).join('');
+    tabsEl.querySelectorAll('.st').forEach(t=>t.addEventListener('click',()=>{homeTab=t.dataset.htab;renderHome();}));
+
+    const el=document.getElementById('homeTabContent');
+    if(homeTab==='推荐'){
+        el.innerHTML=`<div style="display:flex;flex-direction:column;gap:18px;padding-top:8px;">
+            <div class="recent-p">
+                <div class="label">最近游玩</div>
+                <div class="cards">${recentGames.map(g=>`<div class="rc"><img src="${cv(g)}"></div>`).join('')}</div>
+            </div>
+            <div class="banner-p">
+                <img src="${hd('黑神话：悟空')}">
+                <div class="ov"><span class="tag">编辑推荐</span><div class="t">黑神话：悟空 - 完美兼容</div></div>
+            </div>
+            <div>
+                <div class="home-section-title">为你推荐</div>
+                <div class="rec-scroll">${["荒野大镖客2","巫师3","茶杯头","Hades","博德之门3","战神4"].map(g=>`<div class="rec-card"><img src="${cv(g)}"><span>${g}</span></div>`).join('')}</div>
+            </div>
+            <div>
+                <div class="home-section-title">热门小游戏 <span class="more" onclick="rankTab='h5';switchPage('rank');">查看全部 ›</span></div>
+                <div class="rec-scroll">${h5Games.slice(0,6).map(g=>`<div class="rec-card" onclick="launchH5('${g.name}')"><img src="${g.cover}" style="height:110px;width:110px;"><span>${g.name}</span></div>`).join('')}</div>
+            </div>
+            <div>
+                <div class="home-section-title">最新资讯</div>
+                <div class="news-scroll">${newsData.map(n=>`<div class="news-card"><img src="${hd(n.img)}"><div class="txt">${n.txt}</div></div>`).join('')}</div>
+            </div>
+            <div>
+                <div class="home-section-title">端游大作 · 随时秒玩</div>
+                <div class="instant-scroll">${instantGames.map(g=>`<div class="instant-card"><img src="${cv(g.name)}"><div class="info"><div class="name">${g.name}</div><div class="desc">${g.desc}</div><span class="btn">秒玩</span></div></div>`).join('')}</div>
+            </div>
+            <div>
+                <div class="home-section-title">小游戏热玩榜</div>
+                <div class="h5-rank-list">
+                    ${h5Games.slice(0,5).map((g,i)=>`<div class="h5-rank-item" onclick="launchH5('${g.name}')">
+                        <div class="h5-rank-num${i<3?' top'+(i+1):''}">${i+1}</div>
+                        <img src="${g.cover}">
+                        <div class="h5-rank-info">
+                            <div class="name">${g.name}</div>
+                            <div class="tags"><span>${g.cat}</span></div>
+                            <div class="players">${g.players}</div>
+                        </div>
+                        <div class="h5-rank-play">开始玩</div>
+                    </div>`).join('')}
+                </div>
+            </div>
+        </div>`;
+    } else if(homeTab==='小游戏'){
+        const sorted=rankSort==='hot'?[...h5Games]:[...h5Games].reverse();
+        el.innerHTML=`<div style="display:flex;flex-direction:column;gap:14px;padding-top:8px;">
+            <div class="rk-h5-header">
+                <div class="title">全部小游戏</div>
+                <div class="rk-h5-sort" id="homeSortBtn">
+                    <i class="fas fa-sliders-h"></i> ${rankSort==='hot'?'热门排序':'最新排序'}
+                    <div class="rk-sort-dropdown" id="homeSortDrop">
+                        <div class="opt${rankSort==='new'?' on':''}" data-sort="new">最新排序</div>
+                        <div class="opt${rankSort==='hot'?' on':''}" data-sort="hot">热门排序</div>
+                    </div>
+                </div>
+            </div>
+            <div class="rk-h5-grid">
+                ${sorted.map((g,i)=>`<div class="rk-h5-cell" onclick="launchH5('${g.name}')">
+                    <img src="${g.cover}">
+                    <div class="rk-num n${i<3?i+1:4}">${i+1}</div>
+                    <div class="rk-name">${g.name}</div>
+                </div>`).join('')}
+            </div>
+        </div>`;
+        document.getElementById('homeSortBtn').addEventListener('click',(e)=>{
+            e.stopPropagation();
+            document.getElementById('homeSortDrop').classList.toggle('show');
+        });
+        document.querySelectorAll('#homeSortDrop .opt').forEach(o=>{
+            o.addEventListener('click',(e)=>{
+                e.stopPropagation();
+                rankSort=o.dataset.sort;
+                document.getElementById('homeSortDrop').classList.remove('show');
+                renderHome();
+            });
+        });
+    } else {
+        el.innerHTML=`<div style="text-align:center;padding:80px 20px;color:var(--dim);">
+            <i class="fas fa-gamepad" style="font-size:36px;margin-bottom:12px;display:block;"></i>
+            <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:6px;">${homeTab}</div>
+            <div style="font-size:12px;">复用原有页面内容</div>
+        </div>`;
+    }
+}
+
+// 搜索功能
+let searchTabFilter='all';
+function openSearch(){
+    document.getElementById('searchPage').classList.add('show');
+    setTimeout(()=>document.getElementById('searchInput').focus(),300);
+}
+function closeSearch(){
+    document.getElementById('searchPage').classList.remove('show');
+}
+function doSearch(){
+    const q=document.getElementById('searchInput').value.trim().toLowerCase();
+    const el=document.getElementById('searchResults');
+    if(!q){el.innerHTML='<div class="sr-empty">输入关键词搜索游戏</div>';return;}
+    const matchPC=pcGames.filter(g=>g.name.toLowerCase().includes(q));
+    const matchRetro=retroGames.filter(g=>g.name.toLowerCase().includes(q));
+    const matchH5=h5Games.filter(g=>g.name.toLowerCase().includes(q)||g.cat.includes(q));
+    let html='';
+    const showPC=searchTabFilter==='all'||searchTabFilter==='pc';
+    const showRetro=searchTabFilter==='all'||searchTabFilter==='retro';
+    const showH5=searchTabFilter==='all'||searchTabFilter==='h5';
+    if(showPC&&matchPC.length){
+        html+=`<div class="sr-section"><div class="sr-section-title">PC游戏 (${matchPC.length})</div>`;
+        html+=matchPC.map(g=>`<div class="sr-item"><img src="${hd(g.name)}"><div class="sr-item-info"><div class="name">${g.name}</div><div class="meta">${g.tags}</div></div><span class="sr-tag pc">PC</span></div>`).join('');
+        html+='</div>';
+    }
+    if(showRetro&&matchRetro.length){
+        html+=`<div class="sr-section"><div class="sr-section-title">复古游戏 (${matchRetro.length})</div>`;
+        html+=matchRetro.map(g=>`<div class="sr-item"><img src="${hd(g.name)}"><div class="sr-item-info"><div class="name">${g.name}</div><div class="meta">${g.tags}</div></div><span class="sr-tag retro">复古</span></div>`).join('');
+        html+='</div>';
+    }
+    if(showH5&&matchH5.length){
+        html+=`<div class="sr-section"><div class="sr-section-title">小游戏 (${matchH5.length})</div>`;
+        html+=matchH5.map(g=>`<div class="sr-item"><img src="${g.cover}" style="border-radius:10px;"><div class="sr-item-info"><div class="name">${g.name}</div><div class="meta">${g.cat} · ${g.players}</div></div><span class="sr-tag h5">免登录</span></div>`).join('');
+        html+='</div>';
+    }
+    if(!html) html='<div class="sr-empty">未找到"'+q+'"相关游戏</div>';
+    el.innerHTML=html;
+}
+document.querySelectorAll('#searchTabs .s-tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+        document.querySelectorAll('#searchTabs .s-tab').forEach(x=>x.classList.remove('on'));
+        t.classList.add('on');
+        searchTabFilter=t.dataset.stab;
+        doSearch();
+    });
+});
+
+// 首页搜索入口（游戏库内）
+document.querySelector('.port-top .right .icon-btn')?.addEventListener('click',()=>{if(!isLand)openSearch();});
+
+switchPage('home');
+</script>
+</body>
+</html>
