@@ -959,11 +959,20 @@ function showWarning() {
     banner = document.createElement('div');
     banner.id = 'warning-banner';
     banner.className = 'warning-banner';
+    banner.innerHTML = '⚠ 您的游戏时长还剩15分钟，届时将强制退出 <span style="margin-left:12px;cursor:pointer;font-size:16px;" onclick="closeWarning()">✕</span>';
     phone.appendChild(banner);
   }
-  banner.textContent = '⚠ 您的游戏时长还剩15分钟，届时将强制退出';
   banner.classList.add('active');
-  setTimeout(() => banner.classList.remove('active'), 5000);
+  clearTimeout(banner._timer);
+  banner._timer = setTimeout(() => banner.classList.remove('active'), 3000);
+}
+
+function closeWarning() {
+  const b = document.getElementById('warning-banner');
+  if (b) {
+    clearTimeout(b._timer);
+    b.classList.remove('active');
+  }
 }
 
 // 充值中心
