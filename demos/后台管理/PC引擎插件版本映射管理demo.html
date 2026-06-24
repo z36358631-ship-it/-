@@ -128,6 +128,14 @@
                 <!-- 表格 -->
                 <el-table :data="filteredData" border stripe>
                     <el-table-column prop="id" label="ID" width="60" align="center"></el-table-column>
+                    <el-table-column label="APP协议" min-width="200">
+                        <template #default="{row}">
+                            <el-tag v-for="p in (row.appProtocols||[])" :key="p" size="small" effect="plain"
+                                    :type="p==='iOS官方包'?'info':p==='Global'?'warning':''" style="margin:2px 2px 2px 0;">
+                                {{ p }}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
                     <el-table-column label="引擎插件版本条件" min-width="160">
                         <template #default="{row}">
                             <span class="ver-cond">{{ formatCond(row.engineOp, row.engineV1, row.engineV2) }}</span>
@@ -218,6 +226,11 @@
                 </el-button>
             </el-form-item>
 
+            <el-form-item label="APP协议" required>
+                <el-select v-model="editForm.appProtocols" multiple placeholder="选择适用的APP协议包" style="width:100%;">
+                    <el-option v-for="p in (activeRegion==='cn' ? appProtocolOptionsCn : appProtocolOptionsOverseas)" :key="p" :label="p" :value="p"></el-option>
+                </el-select>
+            </el-form-item>
             <el-form-item label="优先级">
                 <el-input-number v-model="editForm.priority" :min="1" :max="10" style="width:120px;"></el-input-number>
                 <span style="margin-left:8px;font-size:12px;color:#9ca3af;">数字越小优先级越高</span>
@@ -267,22 +280,22 @@ function inferType(engineOp, appOp) {
 }
 
 const MOCK_DATA_OVERSEAS = [
-    { id:1, engineOp:'eq', engineV1:'1.4.2', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', priority:1, enabled:true, remark:'Global旧版兼容' },
-    { id:2, engineOp:'gte', engineV1:'1.5.0', engineV2:'', appOp:'gte', appV1:'6.0.0', appV2:'', priority:2, enabled:true, remark:'' },
-    { id:3, engineOp:'eq', engineV1:'2.0.1', engineV2:'', appOp:'between', appV1:'6.0.0', appV2:'6.0.9', priority:3, enabled:true, remark:'' },
-    { id:4, engineOp:'gte', engineV1:'2.0.0', engineV2:'', appOp:'gte', appV1:'6.0.0', appV2:'', priority:4, enabled:true, remark:'' },
-    { id:5, engineOp:'eq', engineV1:'1.3.0', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', priority:5, enabled:false, remark:'已停用' },
+    { id:1, engineOp:'eq', engineV1:'1.4.2', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['Global'], priority:1, enabled:true, remark:'Global旧版兼容' },
+    { id:2, engineOp:'gte', engineV1:'1.5.0', engineV2:'', appOp:'gte', appV1:'6.0.0', appV2:'', appProtocols:['iOS官方包','安卓官方包','安卓小米','安卓OPPO'], priority:2, enabled:true, remark:'' },
+    { id:3, engineOp:'eq', engineV1:'2.0.1', engineV2:'', appOp:'between', appV1:'6.0.0', appV2:'6.0.9', appProtocols:['Global'], priority:3, enabled:true, remark:'' },
+    { id:4, engineOp:'gte', engineV1:'2.0.0', engineV2:'', appOp:'gte', appV1:'6.0.0', appV2:'', appProtocols:['Global'], priority:4, enabled:true, remark:'' },
+    { id:5, engineOp:'eq', engineV1:'1.3.0', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['Global'], priority:5, enabled:false, remark:'已停用' },
 ];
 
 const MOCK_DATA = [
-    { id:1, engineOp:'eq', engineV1:'1.4.2', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', priority:1, enabled:true, remark:'旧版兼容' },
-    { id:2, engineOp:'gte', engineV1:'1.5.0', engineV2:'', appOp:'gte', appV1:'6.0.0', appV2:'', priority:2, enabled:true, remark:'' },
-    { id:3, engineOp:'eq', engineV1:'1.4.2', engineV2:'', appOp:'between', appV1:'6.0.0', appV2:'6.0.9', priority:3, enabled:true, remark:'' },
-    { id:4, engineOp:'gt', engineV1:'2.0.0', engineV2:'', appOp:'gte', appV1:'6.0.0', appV2:'', priority:4, enabled:true, remark:'' },
-    { id:5, engineOp:'eq', engineV1:'1.3.0', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', priority:5, enabled:false, remark:'已废弃' },
-    { id:6, engineOp:'between', engineV1:'1.4.0', engineV2:'1.4.9', appOp:'eq', appV1:'5.3.5', appV2:'', priority:6, enabled:true, remark:'' },
-    { id:7, engineOp:'eq', engineV1:'2.0.1', engineV2:'', appOp:'between', appV1:'6.0.0', appV2:'6.0.9', priority:7, enabled:true, remark:'' },
-    { id:8, engineOp:'lt', engineV1:'1.4.0', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', priority:8, enabled:false, remark:'停止支持' },
+    { id:1, engineOp:'eq', engineV1:'1.4.2', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['iOS官方包','安卓官方包'], priority:1, enabled:true, remark:'旧版兼容' },
+    { id:2, engineOp:'gte', engineV1:'1.5.0', engineV2:'', appOp:'gte', appV1:'6.0.0', appV2:'', appProtocols:['iOS官方包','安卓官方包','安卓小米','安卓OPPO'], priority:2, enabled:true, remark:'' },
+    { id:3, engineOp:'eq', engineV1:'1.4.2', engineV2:'', appOp:'between', appV1:'6.0.0', appV2:'6.0.9', appProtocols:['安卓官方包','安卓华为','安卓荣耀'], priority:3, enabled:true, remark:'' },
+    { id:4, engineOp:'gt', engineV1:'2.0.0', engineV2:'', appOp:'gte', appV1:'6.0.0', appV2:'', appProtocols:['iOS官方包','安卓官方包'], priority:4, enabled:true, remark:'' },
+    { id:5, engineOp:'eq', engineV1:'1.3.0', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['安卓官方包'], priority:5, enabled:false, remark:'已废弃' },
+    { id:6, engineOp:'between', engineV1:'1.4.0', engineV2:'1.4.9', appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['安卓小米','安卓VIVO','安卓OPPO'], priority:6, enabled:true, remark:'' },
+    { id:7, engineOp:'eq', engineV1:'2.0.1', engineV2:'', appOp:'between', appV1:'6.0.0', appV2:'6.0.9', appProtocols:['iOS官方包','安卓官方包','安卓三星'], priority:7, enabled:true, remark:'' },
+    { id:8, engineOp:'lt', engineV1:'1.4.0', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['安卓官方包'], priority:8, enabled:false, remark:'停止支持' },
 ];
 
 
@@ -291,6 +304,8 @@ const app = createApp({
         const state = reactive({
             activeTab: 'mapping',
             opOptions: OP_OPTIONS,
+            appProtocolOptionsCn: ['iOS官方包','安卓官方包','安卓小米','安卓OPPO','安卓VIVO','安卓华为','安卓荣耀','安卓三星'],
+            appProtocolOptionsOverseas: ['Global'],
             activeRegion: 'cn',
             mappingData: MOCK_DATA.map(r => ({ ...r, type: inferType(r.engineOp, r.appOp) })),
             mappingDataOverseas: MOCK_DATA_OVERSEAS.map(r => ({ ...r, type: inferType(r.engineOp, r.appOp) })),
@@ -336,7 +351,7 @@ const app = createApp({
                     appConds: row.appConds ? row.appConds.map(c=>({...c})) : [{op: row.appOp||'eq', v1: row.appV1||'', v2: row.appV2||''}],
                 };
             } else {
-                state.editForm = { id: null, engineConds: [{op:'eq',v1:'',v2:''}], appConds: [{op:'eq',v1:'',v2:''}], priority:5, enabled:true, remark:'', operator:'', updatedAt:'' };
+                state.editForm = { id: null, engineConds: [{op:'eq',v1:'',v2:''}], appConds: [{op:'eq',v1:'',v2:''}], appProtocols:[], priority:5, enabled:false, remark:'', operator:'', updatedAt:'' };
             }
             state.dialogVisible = true;
         };
