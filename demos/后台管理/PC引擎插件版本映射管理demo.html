@@ -81,6 +81,12 @@
             </div>
 
             <div class="card-container">
+                <!-- 区域切换 -->
+                <el-radio-group v-model="activeRegion" size="small" style="margin-bottom:16px;" @change="resetFilter()">
+                    <el-radio-button label="cn">APP国内版</el-radio-button>
+                    <el-radio-button label="overseas">APP海外版</el-radio-button>
+                </el-radio-group>
+
                 <!-- 筛选栏 -->
                 <div class="filter-row">
                     <span class="filter-label">引擎版本:</span>
@@ -260,6 +266,14 @@ function inferType(engineOp, appOp) {
     return '范围匹配';
 }
 
+const MOCK_DATA_OVERSEAS = [
+    { id:1, engineOp:'eq', engineV1:'1.4.2', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', priority:1, enabled:true, remark:'Global旧版兼容' },
+    { id:2, engineOp:'gte', engineV1:'1.5.0', engineV2:'', appOp:'gte', appV1:'6.0.0', appV2:'', priority:2, enabled:true, remark:'' },
+    { id:3, engineOp:'eq', engineV1:'2.0.1', engineV2:'', appOp:'between', appV1:'6.0.0', appV2:'6.0.9', priority:3, enabled:true, remark:'' },
+    { id:4, engineOp:'gte', engineV1:'2.0.0', engineV2:'', appOp:'gte', appV1:'6.0.0', appV2:'', priority:4, enabled:true, remark:'' },
+    { id:5, engineOp:'eq', engineV1:'1.3.0', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', priority:5, enabled:false, remark:'已停用' },
+];
+
 const MOCK_DATA = [
     { id:1, engineOp:'eq', engineV1:'1.4.2', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', priority:1, enabled:true, remark:'旧版兼容' },
     { id:2, engineOp:'gte', engineV1:'1.5.0', engineV2:'', appOp:'gte', appV1:'6.0.0', appV2:'', priority:2, enabled:true, remark:'' },
@@ -277,7 +291,9 @@ const app = createApp({
         const state = reactive({
             activeTab: 'mapping',
             opOptions: OP_OPTIONS,
+            activeRegion: 'cn',
             mappingData: MOCK_DATA.map(r => ({ ...r, type: inferType(r.engineOp, r.appOp) })),
+            mappingDataOverseas: MOCK_DATA_OVERSEAS.map(r => ({ ...r, type: inferType(r.engineOp, r.appOp) })),
             filters: { engineOp:'eq', engineV1:'', engineV2:'', appOp:'eq', appV1:'', appV2:'', status:'' },
             filterApplied: { engineOp:'', engineV1:'', engineV2:'', appOp:'', appV1:'', appV2:'', status:'' },
             dialogVisible: false,
@@ -286,7 +302,8 @@ const app = createApp({
         });
 
         const filteredData = computed(() => {
-            return state.mappingData.filter(row => {
+            const source = state.activeRegion === 'cn' ? state.mappingData : state.mappingDataOverseas;
+            return source.filter(row => {
                 if (state.filterApplied.status === 'enabled' && !row.enabled) return false;
                 if (state.filterApplied.status === 'disabled' && row.enabled) return false;
                 return true;
