@@ -150,6 +150,8 @@
                         </template>
                     </el-table-column>
                     <el-table-column prop="remark" label="备注" min-width="100" show-overflow-tooltip></el-table-column>
+                    <el-table-column prop="operator" label="操作人" width="100" align="center"></el-table-column>
+                    <el-table-column prop="updatedAt" label="更新时间" width="160" align="center"></el-table-column>
                     <el-table-column label="操作" width="120" align="center" fixed="right">
                         <template #default="{row}">
                             <el-button type="primary" link size="small" @click="openDialog(row)"><i class="fa-solid fa-pen"></i> 编辑</el-button>
@@ -209,34 +211,54 @@
     </div>
 
     <!-- 新增/编辑弹窗 -->
-    <el-dialog v-model="dialogVisible" :title="editForm.id ? '编辑映射' : '新增映射'" width="560px">
-        <el-form :model="editForm" label-position="top" label-width="auto">
+    <el-dialog v-model="dialogVisible" :title="editForm.id ? '编辑映射' : '新增映射'" width="600px">
+        <el-form :model="editForm" label-position="top">
+            <!-- 引擎版本条件（多条） -->
             <el-form-item label="引擎插件版本条件" required>
-                <div style="display:flex;align-items:center;gap:8px;width:100%;">
-                    <el-select v-model="editForm.engineOp" style="width:140px;" @change="clearVerInputs('engine')">
+                <div v-for="(cond, idx) in editForm.engineConds" :key="idx"
+                     style="display:flex;align-items:center;gap:8px;width:100%;margin-bottom:8px;">
+                    <el-select v-model="cond.op" style="width:140px;" @change="cond.v1='';cond.v2=''">
                         <el-option v-for="op in opOptions" :key="op.value" :label="op.label" :value="op.value"></el-option>
                     </el-select>
-                    <template v-if="editForm.engineOp === 'between'">
-                        <el-input v-model="editForm.engineV1" placeholder="起始版本 如: 1.4.0" style="flex:1;"></el-input>
+                    <template v-if="cond.op === 'between'">
+                        <el-input v-model="cond.v1" placeholder="起始 如: 1.4.0" style="flex:1;"></el-input>
                         <span style="color:#9ca3af;">~</span>
-                        <el-input v-model="editForm.engineV2" placeholder="截止版本 如: 1.4.9" style="flex:1;"></el-input>
+                        <el-input v-model="cond.v2" placeholder="截止 如: 1.4.9" style="flex:1;"></el-input>
                     </template>
-                    <el-input v-else v-model="editForm.engineV1" placeholder="如: 1.4.2" style="flex:1;"></el-input>
+                    <el-input v-else v-model="cond.v1" placeholder="如: 1.4.2" style="flex:1;"></el-input>
+                    <el-button circle size="small" type="danger" :disabled="editForm.engineConds.length === 1"
+                               @click="editForm.engineConds.splice(idx,1)">
+                        <i class="fa-solid fa-minus"></i>
+                    </el-button>
                 </div>
+                <el-button text type="primary" size="small" @click="editForm.engineConds.push({op:'eq',v1:'',v2:''})">
+                    <i class="fa-solid fa-plus" style="margin-right:4px;"></i> 添加引擎版本条件
+                </el-button>
             </el-form-item>
+
+            <!-- APP版本条件（多条） -->
             <el-form-item label="APP版本条件" required>
-                <div style="display:flex;align-items:center;gap:8px;width:100%;">
-                    <el-select v-model="editForm.appOp" style="width:140px;" @change="clearVerInputs('app')">
+                <div v-for="(cond, idx) in editForm.appConds" :key="idx"
+                     style="display:flex;align-items:center;gap:8px;width:100%;margin-bottom:8px;">
+                    <el-select v-model="cond.op" style="width:140px;" @change="cond.v1='';cond.v2=''">
                         <el-option v-for="op in opOptions" :key="op.value" :label="op.label" :value="op.value"></el-option>
                     </el-select>
-                    <template v-if="editForm.appOp === 'between'">
-                        <el-input v-model="editForm.appV1" placeholder="起始版本 如: 6.0.0" style="flex:1;"></el-input>
+                    <template v-if="cond.op === 'between'">
+                        <el-input v-model="cond.v1" placeholder="起始 如: 6.0.0" style="flex:1;"></el-input>
                         <span style="color:#9ca3af;">~</span>
-                        <el-input v-model="editForm.appV2" placeholder="截止版本 如: 6.0.9" style="flex:1;"></el-input>
+                        <el-input v-model="cond.v2" placeholder="截止 如: 6.0.9" style="flex:1;"></el-input>
                     </template>
-                    <el-input v-else v-model="editForm.appV1" placeholder="如: 6.0.0" style="flex:1;"></el-input>
+                    <el-input v-else v-model="cond.v1" placeholder="如: 6.0.0" style="flex:1;"></el-input>
+                    <el-button circle size="small" type="danger" :disabled="editForm.appConds.length === 1"
+                               @click="editForm.appConds.splice(idx,1)">
+                        <i class="fa-solid fa-minus"></i>
+                    </el-button>
                 </div>
+                <el-button text type="primary" size="small" @click="editForm.appConds.push({op:'eq',v1:'',v2:''})">
+                    <i class="fa-solid fa-plus" style="margin-right:4px;"></i> 添加APP版本条件
+                </el-button>
             </el-form-item>
+
             <el-form-item label="优先级">
                 <el-input-number v-model="editForm.priority" :min="1" :max="10" style="width:120px;"></el-input-number>
                 <span style="margin-left:8px;font-size:12px;color:#9ca3af;">数字越小优先级越高</span>
@@ -249,6 +271,9 @@
             </el-form-item>
             <el-form-item label="备注">
                 <el-input v-model="editForm.remark" type="textarea" :rows="2" placeholder="可选备注信息"></el-input>
+            </el-form-item>
+            <el-form-item label="操作人" required>
+                <el-input v-model="editForm.operator" placeholder="如: admin_li" style="width:200px;"></el-input>
             </el-form-item>
         </el-form>
         <template #footer>
@@ -350,9 +375,13 @@ const app = createApp({
 
         const openDialog = (row) => {
             if (row) {
-                state.editForm = { ...row };
+                state.editForm = {
+                    ...row,
+                    engineConds: row.engineConds ? row.engineConds.map(c=>({...c})) : [{op: row.engineOp||'eq', v1: row.engineV1||'', v2: row.engineV2||''}],
+                    appConds: row.appConds ? row.appConds.map(c=>({...c})) : [{op: row.appOp||'eq', v1: row.appV1||'', v2: row.appV2||''}],
+                };
             } else {
-                state.editForm = { id: null, engineOp:'eq', engineV1:'', engineV2:'', appOp:'eq', appV1:'', appV2:'', priority:5, enabled:true, remark:'' };
+                state.editForm = { id: null, engineConds: [{op:'eq',v1:'',v2:''}], appConds: [{op:'eq',v1:'',v2:''}], priority:5, enabled:true, remark:'', operator:'', updatedAt:'' };
             }
             state.dialogVisible = true;
         };
@@ -364,12 +393,25 @@ const app = createApp({
 
         const submitForm = () => {
             const f = state.editForm;
-            if (!f.engineV1) return ElementPlus.ElMessage.warning('请填写引擎插件版本号');
-            if (f.engineOp === 'between' && !f.engineV2) return ElementPlus.ElMessage.warning('请填写引擎版本截止号');
-            if (!f.appV1) return ElementPlus.ElMessage.warning('请填写APP版本号');
-            if (f.appOp === 'between' && !f.appV2) return ElementPlus.ElMessage.warning('请填写APP版本截止号');
-
-            const record = { ...f, type: inferType(f.engineOp, f.appOp) };
+            for (const c of f.engineConds) {
+                if (!c.v1) return ElementPlus.ElMessage.warning('请填写引擎插件版本号');
+                if (c.op === 'between' && !c.v2) return ElementPlus.ElMessage.warning('请填写引擎版本截止号');
+            }
+            for (const c of f.appConds) {
+                if (!c.v1) return ElementPlus.ElMessage.warning('请填写APP版本号');
+                if (c.op === 'between' && !c.v2) return ElementPlus.ElMessage.warning('请填写APP版本截止号');
+            }
+            const now = new Date().toLocaleString('zh-CN');
+            const record = {
+                ...f,
+                engineConds: f.engineConds.map(c=>({...c})),
+                appConds: f.appConds.map(c=>({...c})),
+                engineOp: f.engineConds[0].op, engineV1: f.engineConds[0].v1, engineV2: f.engineConds[0].v2,
+                appOp: f.appConds[0].op, appV1: f.appConds[0].v1, appV2: f.appConds[0].v2,
+                type: f.engineConds.length > 1 || f.appConds.length > 1 ? '复合映射' : inferType(f.engineConds[0].op, f.appConds[0].op),
+                updatedAt: now,
+                operator: f.operator || 'admin',
+            };
             if (f.id) {
                 const idx = state.mappingData.findIndex(r => r.id === f.id);
                 if (idx !== -1) state.mappingData[idx] = record;
