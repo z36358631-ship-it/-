@@ -89,16 +89,10 @@
 
                 <!-- 筛选栏 -->
                 <div class="filter-row">
-                    <span class="filter-label">引擎版本:</span>
-                    <el-select v-model="filters.engineOp" style="width:120px;">
-                        <el-option v-for="op in opOptions" :key="op.value" :label="op.label" :value="op.value"></el-option>
+                    <span class="filter-label">APP协议:</span>
+                    <el-select v-model="filters.appProtocol" placeholder="全部" style="width:140px;" clearable>
+                        <el-option v-for="p in (activeRegion==='cn' ? appProtocolOptionsCn : appProtocolOptionsOverseas)" :key="p" :label="p" :value="p"></el-option>
                     </el-select>
-                    <template v-if="filters.engineOp === 'between'">
-                        <el-input v-model="filters.engineV1" placeholder="如: 1.4.0" style="width:100px;" clearable></el-input>
-                        <span style="color:#9ca3af;">~</span>
-                        <el-input v-model="filters.engineV2" placeholder="如: 1.4.9" style="width:100px;" clearable></el-input>
-                    </template>
-                    <el-input v-else v-model="filters.engineV1" placeholder="如: 1.4.2" style="width:120px;" clearable></el-input>
 
                     <span class="filter-label" style="margin-left:8px;">APP版本:</span>
                     <el-select v-model="filters.appOp" style="width:120px;">
@@ -121,12 +115,12 @@
                     <el-button type="primary" @click="doFilter"><i class="fa-solid fa-search"></i> 查询</el-button>
                     <el-button @click="resetFilter"><i class="fa-solid fa-rotate-right"></i> 重置</el-button>
                     <el-button type="primary" style="margin-left:auto;" @click="openDialog(null)">
-                        <i class="fa-solid fa-plus"></i> 新增映射
+                        <i class="fa-solid fa-plus"></i> 新建插件
                     </el-button>
                 </div>
 
                 <!-- 表格 -->
-                <el-table :data="filteredData" border stripe>
+                <el-table :data="filteredData" border stripe :default-sort="{prop: 'pluginVersion', order: 'descending'}">
                     <el-table-column prop="id" label="ID" width="60" align="center"></el-table-column>
                     <el-table-column label="APP协议" min-width="200">
                         <template #default="{row}">
@@ -136,9 +130,14 @@
                             </el-tag>
                         </template>
                     </el-table-column>
-                    <el-table-column label="引擎插件版本条件" min-width="160">
+                    <el-table-column prop="pluginVersion" label="插件版本号" width="120" align="center" sortable>
                         <template #default="{row}">
-                            <span class="ver-cond">{{ formatCond(row.engineOp, row.engineV1, row.engineV2) }}</span>
+                            <span class="ver-cond">{{ row.pluginVersion }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="apkFile" label="插件文件" width="160">
+                        <template #default="{row}">
+                            <el-link type="primary" :underline="false"><i class="fa-solid fa-file-zipper" style="margin-right:4px;"></i>{{ row.apkFile }}</el-link>
                         </template>
                     </el-table-column>
                     <el-table-column label="APP版本条件" min-width="160">
@@ -153,7 +152,6 @@
                             </el-tag>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="priority" label="优先级" width="80" align="center"></el-table-column>
                     <el-table-column label="状态" width="80" align="center">
                         <template #default="{row}">
                             <el-switch v-model="row.enabled" @change="onToggle(row)"></el-switch>
@@ -178,29 +176,24 @@
     </div>
 
     <!-- 新增/编辑弹窗 -->
-    <el-dialog v-model="dialogVisible" :title="editForm.id ? '编辑映射' : '新增映射'" width="600px">
+    <el-dialog v-model="dialogVisible" :title="editForm.id ? '编辑映射' : '新建插件'" width="600px">
         <el-form :model="editForm" label-position="top">
-            <!-- 引擎版本条件（多条） -->
-            <el-form-item label="引擎插件版本条件" required>
-                <div v-for="(cond, idx) in editForm.engineConds" :key="idx"
-                     style="display:flex;align-items:center;gap:8px;width:100%;margin-bottom:8px;">
-                    <el-select v-model="cond.op" style="width:140px;" @change="cond.v1='';cond.v2=''">
-                        <el-option v-for="op in opOptions" :key="op.value" :label="op.label" :value="op.value"></el-option>
-                    </el-select>
-                    <template v-if="cond.op === 'between'">
-                        <el-input v-model="cond.v1" placeholder="起始 如: 1.4.0" style="flex:1;"></el-input>
-                        <span style="color:#9ca3af;">~</span>
-                        <el-input v-model="cond.v2" placeholder="截止 如: 1.4.9" style="flex:1;"></el-input>
-                    </template>
-                    <el-input v-else v-model="cond.v1" placeholder="如: 1.4.2" style="flex:1;"></el-input>
-                    <el-button circle size="small" type="danger" :disabled="editForm.engineConds.length === 1"
-                               @click="editForm.engineConds.splice(idx,1)">
-                        <i class="fa-solid fa-minus"></i>
-                    </el-button>
+            <el-form-item label="插件版本号" required>
+                <el-input v-model="editForm.pluginVersion" placeholder="如: 1.5.0" style="width:200px;"></el-input>
+            </el-form-item>
+            <el-form-item label="插件文件（APK）" required>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <el-button type="primary" plain size="small"><i class="fa-solid fa-upload" style="margin-right:4px;"></i>上传APK</el-button>
+                    <span v-if="editForm.apkFile" style="font-size:13px;color:#374151;">{{ editForm.apkFile }}</span>
+                    <span v-else style="font-size:12px;color:#9ca3af;">支持.apk格式，≤500MB，一次上传1个</span>
                 </div>
-                <el-button text type="primary" size="small" @click="editForm.engineConds.push({op:'eq',v1:'',v2:''})">
-                    <i class="fa-solid fa-plus" style="margin-right:4px;"></i> 添加引擎版本条件
-                </el-button>
+            </el-form-item>
+            <!-- 引擎版本条件（多条） -->
+
+            <el-form-item label="APP协议" required>
+                <el-select v-model="editForm.appProtocols" multiple placeholder="选择适用的APP协议包" style="width:100%;">
+                    <el-option v-for="p in (activeRegion==='cn' ? appProtocolOptionsCn : appProtocolOptionsOverseas)" :key="p" :label="p" :value="p"></el-option>
+                </el-select>
             </el-form-item>
 
             <!-- APP版本条件（多条） -->
@@ -224,16 +217,6 @@
                 <el-button text type="primary" size="small" @click="editForm.appConds.push({op:'eq',v1:'',v2:''})">
                     <i class="fa-solid fa-plus" style="margin-right:4px;"></i> 添加APP版本条件
                 </el-button>
-            </el-form-item>
-
-            <el-form-item label="APP协议" required>
-                <el-select v-model="editForm.appProtocols" multiple placeholder="选择适用的APP协议包" style="width:100%;">
-                    <el-option v-for="p in (activeRegion==='cn' ? appProtocolOptionsCn : appProtocolOptionsOverseas)" :key="p" :label="p" :value="p"></el-option>
-                </el-select>
-            </el-form-item>
-            <el-form-item label="优先级">
-                <el-input-number v-model="editForm.priority" :min="1" :max="10" style="width:120px;"></el-input-number>
-                <span style="margin-left:8px;font-size:12px;color:#9ca3af;">数字越小优先级越高</span>
             </el-form-item>
             <el-form-item label="状态">
                 <el-radio-group v-model="editForm.enabled">
@@ -280,22 +263,22 @@ function inferType(engineOp, appOp) {
 }
 
 const MOCK_DATA_OVERSEAS = [
-    { id:1, engineOp:'eq', engineV1:'1.4.2', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['Global'], priority:1, enabled:true, remark:'Global旧版兼容' },
-    { id:2, engineOp:'gte', engineV1:'1.5.0', engineV2:'', appOp:'gte', appV1:'6.0.0', appV2:'', appProtocols:['iOS官方包','安卓官方包','安卓小米','安卓OPPO'], priority:2, enabled:true, remark:'' },
-    { id:3, engineOp:'eq', engineV1:'2.0.1', engineV2:'', appOp:'between', appV1:'6.0.0', appV2:'6.0.9', appProtocols:['Global'], priority:3, enabled:true, remark:'' },
-    { id:4, engineOp:'gte', engineV1:'2.0.0', engineV2:'', appOp:'gte', appV1:'6.0.0', appV2:'', appProtocols:['Global'], priority:4, enabled:true, remark:'' },
-    { id:5, engineOp:'eq', engineV1:'1.3.0', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['Global'], priority:5, enabled:false, remark:'已停用' },
+    { id:1, appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['Global'], enabled:true, remark:'Global旧版兼容', pluginVersion:'1.4.2', apkFile:'engine_v1.4.2_global.apk' },
+    { id:2, appOp:'gte', appV1:'6.0.0', appV2:'', appProtocols:['iOS官方包','安卓官方包','安卓小米','安卓OPPO'], enabled:true, remark:'', pluginVersion:'1.5.0', apkFile:'engine_v1.5.0_global.apk' },
+    { id:3, appOp:'between', appV1:'6.0.0', appV2:'6.0.9', appProtocols:['Global'], enabled:true, remark:'', pluginVersion:'2.0.1', apkFile:'engine_v2.0.1_global.apk' },
+    { id:4, appOp:'gte', appV1:'6.0.0', appV2:'', appProtocols:['Global'], enabled:true, remark:'', pluginVersion:'2.0.0', apkFile:'engine_v2.0.0_global.apk' },
+    { id:5, appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['Global'], enabled:false, remark:'已停用', pluginVersion:'1.3.0', apkFile:'engine_v1.3.0_global.apk' },
 ];
 
 const MOCK_DATA = [
-    { id:1, engineOp:'eq', engineV1:'1.4.2', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['iOS官方包','安卓官方包'], priority:1, enabled:true, remark:'旧版兼容' },
-    { id:2, engineOp:'gte', engineV1:'1.5.0', engineV2:'', appOp:'gte', appV1:'6.0.0', appV2:'', appProtocols:['iOS官方包','安卓官方包','安卓小米','安卓OPPO'], priority:2, enabled:true, remark:'' },
-    { id:3, engineOp:'eq', engineV1:'1.4.2', engineV2:'', appOp:'between', appV1:'6.0.0', appV2:'6.0.9', appProtocols:['安卓官方包','安卓华为','安卓荣耀'], priority:3, enabled:true, remark:'' },
-    { id:4, engineOp:'gt', engineV1:'2.0.0', engineV2:'', appOp:'gte', appV1:'6.0.0', appV2:'', appProtocols:['iOS官方包','安卓官方包'], priority:4, enabled:true, remark:'' },
-    { id:5, engineOp:'eq', engineV1:'1.3.0', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['安卓官方包'], priority:5, enabled:false, remark:'已废弃' },
-    { id:6, engineOp:'between', engineV1:'1.4.0', engineV2:'1.4.9', appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['安卓小米','安卓VIVO','安卓OPPO'], priority:6, enabled:true, remark:'' },
-    { id:7, engineOp:'eq', engineV1:'2.0.1', engineV2:'', appOp:'between', appV1:'6.0.0', appV2:'6.0.9', appProtocols:['iOS官方包','安卓官方包','安卓三星'], priority:7, enabled:true, remark:'' },
-    { id:8, engineOp:'lt', engineV1:'1.4.0', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['安卓官方包'], priority:8, enabled:false, remark:'停止支持' },
+    { id:1, appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['iOS官方包','安卓官方包'], enabled:true, remark:'旧版兼容', pluginVersion:'1.4.2', apkFile:'engine_v1.4.2.apk' },
+    { id:2, appOp:'gte', appV1:'6.0.0', appV2:'', appProtocols:['iOS官方包','安卓官方包','安卓小米','安卓OPPO'], enabled:true, remark:'', pluginVersion:'1.5.0', apkFile:'engine_v1.5.0.apk' },
+    { id:3, appOp:'between', appV1:'6.0.0', appV2:'6.0.9', appProtocols:['安卓官方包','安卓华为','安卓荣耀'], enabled:true, remark:'', pluginVersion:'1.4.2', apkFile:'engine_v1.4.2.apk' },
+    { id:4, appOp:'gte', appV1:'6.0.0', appV2:'', appProtocols:['iOS官方包','安卓官方包'], enabled:true, remark:'', pluginVersion:'2.0.1', apkFile:'engine_v2.0.1.apk' },
+    { id:5, appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['安卓官方包'], enabled:false, remark:'已废弃', pluginVersion:'1.3.0', apkFile:'engine_v1.3.0.apk' },
+    { id:6, appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['安卓小米','安卓VIVO','安卓OPPO'], enabled:true, remark:'', pluginVersion:'1.4.5', apkFile:'engine_v1.4.5.apk' },
+    { id:7, appOp:'between', appV1:'6.0.0', appV2:'6.0.9', appProtocols:['iOS官方包','安卓官方包','安卓三星'], enabled:true, remark:'', pluginVersion:'2.0.1', apkFile:'engine_v2.0.1.apk' },
+    { id:8, appOp:'eq', appV1:'5.3.5', appV2:'', appProtocols:['安卓官方包'], enabled:false, remark:'停止支持', pluginVersion:'1.2.0', apkFile:'engine_v1.2.0.apk' },
 ];
 
 
@@ -309,8 +292,8 @@ const app = createApp({
             activeRegion: 'cn',
             mappingData: MOCK_DATA.map(r => ({ ...r, type: inferType(r.engineOp, r.appOp) })),
             mappingDataOverseas: MOCK_DATA_OVERSEAS.map(r => ({ ...r, type: inferType(r.engineOp, r.appOp) })),
-            filters: { engineOp:'eq', engineV1:'', engineV2:'', appOp:'eq', appV1:'', appV2:'', status:'' },
-            filterApplied: { engineOp:'', engineV1:'', engineV2:'', appOp:'', appV1:'', appV2:'', status:'' },
+            filters: { appProtocol:'', appOp:'eq', appV1:'', appV2:'', status:'' },
+            filterApplied: { appProtocol:'', appOp:'', appV1:'', appV2:'', status:'' },
             dialogVisible: false,
             editForm: {},
             nextId: 9,
@@ -321,6 +304,7 @@ const app = createApp({
             return source.filter(row => {
                 if (state.filterApplied.status === 'enabled' && !row.enabled) return false;
                 if (state.filterApplied.status === 'disabled' && row.enabled) return false;
+                if (state.filterApplied.appProtocol && !(row.appProtocols || []).includes(state.filterApplied.appProtocol)) return false;
                 return true;
             });
         });
@@ -330,7 +314,7 @@ const app = createApp({
         };
 
         const resetFilter = () => {
-            state.filters = { engineOp:'eq', engineV1:'', engineV2:'', appOp:'eq', appV1:'', appV2:'', status:'' };
+            state.filters = { appOp:'eq', appV1:'', appV2:'', status:'' };
             state.filterApplied = { ...state.filters };
         };
 
@@ -347,11 +331,11 @@ const app = createApp({
             if (row) {
                 state.editForm = {
                     ...row,
-                    engineConds: row.engineConds ? row.engineConds.map(c=>({...c})) : [{op: row.engineOp||'eq', v1: row.engineV1||'', v2: row.engineV2||''}],
+                    
                     appConds: row.appConds ? row.appConds.map(c=>({...c})) : [{op: row.appOp||'eq', v1: row.appV1||'', v2: row.appV2||''}],
                 };
             } else {
-                state.editForm = { id: null, engineConds: [{op:'eq',v1:'',v2:''}], appConds: [{op:'eq',v1:'',v2:''}], appProtocols:[], priority:5, enabled:false, remark:'', operator:'', updatedAt:'' };
+                state.editForm = { id: null, appConds: [{op:'eq',v1:'',v2:''}], appProtocols:[], enabled:false, remark:'', operator:'', updatedAt:'', pluginVersion:'', apkFile:'' };
             }
             state.dialogVisible = true;
         };
@@ -363,10 +347,7 @@ const app = createApp({
 
         const submitForm = () => {
             const f = state.editForm;
-            for (const c of f.engineConds) {
-                if (!c.v1) return ElementPlus.ElMessage.warning('请填写引擎插件版本号');
-                if (c.op === 'between' && !c.v2) return ElementPlus.ElMessage.warning('请填写引擎版本截止号');
-            }
+            if (!f.pluginVersion) return ElementPlus.ElMessage.warning('请填写插件版本号');
             for (const c of f.appConds) {
                 if (!c.v1) return ElementPlus.ElMessage.warning('请填写APP版本号');
                 if (c.op === 'between' && !c.v2) return ElementPlus.ElMessage.warning('请填写APP版本截止号');
@@ -374,11 +355,11 @@ const app = createApp({
             const now = new Date().toLocaleString('zh-CN');
             const record = {
                 ...f,
-                engineConds: f.engineConds.map(c=>({...c})),
+                
                 appConds: f.appConds.map(c=>({...c})),
-                engineOp: f.engineConds[0].op, engineV1: f.engineConds[0].v1, engineV2: f.engineConds[0].v2,
+                
                 appOp: f.appConds[0].op, appV1: f.appConds[0].v1, appV2: f.appConds[0].v2,
-                type: f.engineConds.length > 1 || f.appConds.length > 1 ? '复合映射' : inferType(f.engineConds[0].op, f.appConds[0].op),
+                type: f.appConds.length > 1 ? '复合映射' : (f.appConds[0].op === 'eq' ? '精确匹配' : (f.appConds[0].op === 'between' ? '复合映射' : '范围匹配')),
                 updatedAt: now,
                 operator: f.operator || 'admin',
             };
