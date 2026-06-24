@@ -49,11 +49,7 @@
         <el-menu :default-active="activeTab" @select="v => activeTab = v">
             <el-menu-item index="mapping">
                 <el-icon><i class="fa-solid fa-code-branch"></i></el-icon>
-                <span>版本映射管理</span>
-            </el-menu-item>
-            <el-menu-item index="log">
-                <el-icon><i class="fa-solid fa-clock-rotate-left"></i></el-icon>
-                <span>映射规则日志</span>
+                <span>PC引擎插件&APP版本映射表</span>
             </el-menu-item>
         </el-menu>
     </div>
@@ -165,49 +161,6 @@
                 </el-table>
             </div>
         </div>
-
-        <!-- ===== Page 2: 映射规则日志 ===== -->
-        <div v-if="activeTab === 'log'">
-            <div class="page-header">
-                <div class="page-title">映射规则日志</div>
-                <div class="page-desc">记录所有映射规则的新增、编辑、删除及状态变更操作</div>
-            </div>
-            <div class="card-container">
-                <div class="filter-row">
-                    <el-date-picker v-model="logFilter.dateRange" type="daterange" range-separator="至"
-                        start-placeholder="开始日期" end-placeholder="结束日期" style="width:240px;" value-format="YYYY-MM-DD">
-                    </el-date-picker>
-                    <el-select v-model="logFilter.opType" placeholder="操作类型" style="width:130px;" clearable>
-                        <el-option label="全部" value=""></el-option>
-                        <el-option label="新增" value="新增"></el-option>
-                        <el-option label="编辑" value="编辑"></el-option>
-                        <el-option label="删除" value="删除"></el-option>
-                        <el-option label="状态变更" value="状态变更"></el-option>
-                    </el-select>
-                    <el-input v-model="logFilter.operator" placeholder="操作人" style="width:140px;" clearable></el-input>
-                    <el-button type="primary"><i class="fa-solid fa-search"></i> 查询</el-button>
-                    <el-button @click="logFilter={dateRange:null,opType:'',operator:''}"><i class="fa-solid fa-rotate-right"></i> 重置</el-button>
-                </div>
-                <el-table :data="logData" border stripe>
-                    <el-table-column prop="time" label="时间" width="170"></el-table-column>
-                    <el-table-column label="操作类型" width="100" align="center">
-                        <template #default="{row}">
-                            <el-tag :type="row.opType==='新增'?'success':row.opType==='删除'?'danger':row.opType==='状态变更'?'warning':'primary'" effect="light">
-                                {{ row.opType }}
-                            </el-tag>
-                        </template>
-                    </el-table-column>
-                    <el-table-column label="引擎版本条件" min-width="130">
-                        <template #default="{row}"><span class="ver-cond">{{ row.engineCond }}</span></template>
-                    </el-table-column>
-                    <el-table-column label="APP版本条件" min-width="130">
-                        <template #default="{row}"><span class="ver-cond">{{ row.appCond }}</span></template>
-                    </el-table-column>
-                    <el-table-column prop="operator" label="操作人" width="100" align="center"></el-table-column>
-                    <el-table-column prop="remark" label="备注" min-width="160" show-overflow-tooltip></el-table-column>
-                </el-table>
-            </div>
-        </div>
     </div>
 
     <!-- 新增/编辑弹窗 -->
@@ -271,9 +224,6 @@
             </el-form-item>
             <el-form-item label="备注">
                 <el-input v-model="editForm.remark" type="textarea" :rows="2" placeholder="可选备注信息"></el-input>
-            </el-form-item>
-            <el-form-item label="操作人" required>
-                <el-input v-model="editForm.operator" placeholder="如: admin_li" style="width:200px;"></el-input>
             </el-form-item>
         </el-form>
         <template #footer>
