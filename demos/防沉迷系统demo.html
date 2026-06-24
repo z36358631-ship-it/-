@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>防沉迷系统demo - 盖世游戏</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg-primary: #000000;
+  --bg-card: #1a1a1a;
+  --bg-elevated: #252525;
+  --bg-overlay: rgba(0,0,0,0.7);
+  --text-primary: #ffffff;
+  --text-secondary: #e6e6e6;
+  --text-muted: #7b7b7b;
+  --text-disabled: #646464;
+  --brand-gold: #ffcc43;
+  --brand-green: #33d8a4;
+  --brand-blue: #338feb;
+  --brand-purple: #8174fa;
+  --border-default: #353d4e;
+  --danger: #ff4757;
+  --warning: #ff9500;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-full: 100px;
+  --font-primary: 'MiSans VF', 'MiSans', -apple-system, sans-serif;
+  --font-number: 'D-DIN-PRO', var(--font-primary);
+}
+body {
+  font-family: var(--font-primary);
+  background: #1a1a2e;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 20px;
+}
+.phone {
+  width: 390px;
+  height: 844px;
+  background: var(--bg-primary);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  border: 2px solid #222;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+/* 控制面板 */
+.control-panel {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  width: 220px;
+  border: 1px solid var(--border-default);
+}
+.control-panel h3 {
+  font-size: 14px;
+  font-weight: 520;
+  margin-bottom: 12px;
+  color: var(--brand-gold);
+}
+.ctrl-btn {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-family: var(--font-primary);
+  cursor: pointer;
+  transition: opacity 0.2s;
+  text-align: left;
+}
+.ctrl-btn:hover { opacity: 0.85; }
+.ctrl-btn:active { opacity: 0.7; }
+.ctrl-btn.adult { background: var(--brand-green); color: #000; }
+.ctrl-btn.minor { background: var(--warning); color: #000; }
+.ctrl-btn.night { background: var(--brand-purple); color: #fff; }
+.ctrl-btn.charge { background: var(--danger); color: #fff; }
+.ctrl-btn.warn { background: var(--brand-blue); color: #fff; }
+.ctrl-btn.reset { background: var(--bg-elevated); color: var(--text-muted); }
+
+/* 状态栏 */
+.status-bar {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+/* 游戏详情页 */
+.game-detail {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.game-header {
+  position: relative;
+  height: 220px;
+  background: linear-gradient(135deg, #1a2332 0%, #0d1117 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.game-header .play-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+}
+.game-header .play-icon::after {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 14px solid #fff;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  margin-left: 4px;
+}
+.nav-back {
+  position: absolute;
+  top: 50px;
+  left: 16px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+.media-tabs {
+  position: absolute;
+  bottom: 10px;
+  left: 16px;
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+}
+.media-tabs span { opacity: 0.6; }
+.media-tabs span.active { opacity: 1; border-bottom: 2px solid #fff; padding-bottom: 2px; }
+.game-info {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px;
+}
+.game-info::-webkit-scrollbar { display: none; }
+.game-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+.game-title { font-size: 22px; font-weight: 520; }
+.game-score { font-size: 28px; font-weight: 600; font-family: var(--font-number); color: var(--text-primary); }
+.game-score-label { font-size: 11px; color: var(--text-muted); text-align: right; }
+.game-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+.game-tags { display: flex; gap: 8px; margin-bottom: 12px; }
+.game-tags span {
+  padding: 4px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.game-meta { font-size: 12px; color: var(--text-muted); line-height: 2; }
+/* 底部栏 */
+.bottom-bar {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 10px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  background: var(--bg-primary);
+}
+.btn-grid {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+}
+.btn-play {
+  flex: 1;
+  height: 44px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: linear-gradient(135deg, #3de0c0, #2bb8a0);
+  color: #000;
+  font-size: 15px;
+  font-weight: 520;
+  font-family: var(--font-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn-play:active { opacity: 0.85; }
+.btn-demo {
+  flex: 1;
+  height: 44px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--brand-blue);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 520;
+  font-family: var(--font-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+/* 弹窗遮罩 */
+.modal-mask {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-overlay);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+}
+.modal-mask.active { display: flex; }
+.modal-box {
+  width: 320px;
+  background: var(--bg-card);
+  border-radius: var(--radius-2xl);
+  padding: 28px 24px;
+  text-align: center;
+}
+.modal-box h3 {
+  font-size: 18px;
+  font-weight: 520;
+  margin-bottom: 12px;
+}
+.modal-box p {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.modal-box .highlight { color: var(--warning); font-weight: 500; }
+.modal-box .danger { color: var(--danger); font-weight: 500; }
+.modal-btn {
+  width: 100%;
+  height: 44px;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 15px;
+  font-weight: 520;
+  font-family: var(--font-primary);
+  cursor: pointer;
+  margin-top: 8px;
+}
+.modal-btn.primary { background: var(--brand-blue); color: #fff; }
+.modal-btn.green { background: var(--brand-green); color: #000; }
+.modal-btn.secondary { background: var(--bg-elevated); color: var(--text-secondary); }
+.modal-btn.danger-btn { background: var(--danger); color: #fff; }
+/* 实名认证表单 */
+.realname-form { text-align: left; margin-bottom: 16px; }
+.realname-form label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  margin-top: 12px;
+}
+.realname-form input {
+  width: 100%;
+  height: 40px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 0 12px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: var(--font-primary);
+  outline: none;
+}
+.realname-form input:focus { border-color: var(--brand-blue); }
+/* 预警横幅 */
+.warning-banner {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  right: 0;
+  padding: 12px 16px;
+  background: rgba(255, 149, 0, 0.95);
+  color: #000;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  z-index: 90;
+  display: none;
+  backdrop-filter: blur(10px);
+}
+.warning-banner.active { display: block; }
+/* 云游戏画面模拟 */
+.game-screen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #1a3a2a 0%, #0d1f17 50%, #1a2332 100%);
+  display: none;
+  flex-direction: column;
+}
+.game-screen.active { display: flex; }
+.game-screen-hud {
+  padding: 50px 16px 10px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+}
+.game-screen-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: rgba(255,255,255,0.3);
+}
+/* 个人中心页 */
+.page-profile {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-primary);
+  display: none;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.page-profile.active { display: flex; }
+.page-profile::-webkit-scrollbar { display: none; }
+.profile-header {
+  padding: 50px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd700, #ff9500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+.profile-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.profile-name { font-size: 18px; font-weight: 520; }
+.profile-badge {
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 500;
+}
+.profile-badge.unverified { background: var(--warning); color: #000; }
+.profile-badge.verified { background: var(--brand-green); color: #000; }
+.profile-badge.minor-badge { background: var(--danger); color: #fff; }
+.profile-uid { font-size: 12px; color: var(--text-muted); }
+.profile-card {
+  margin: 12px 16px;
+  padding: 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+}
+.profile-card-title { font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
+.profile-card-content { font-size: 14px; color: var(--text-primary); }
+/* 充值中心页 */
+.page-charge {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-primary);
+  display: none;
+  flex-direction: column;
+}
+.page-charge.active { display: flex; }
+.charge-header {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.charge-back { font-size: 20px; cursor: pointer; }
+.charge-title { font-size: 17px; font-weight: 520; }
+.charge-user {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.charge-user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd700, #ff9500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+.charge-user-name { font-size: 15px; }
+.charge-time-info {
+  margin: 0 16px 16px;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.charge-time-val { color: var(--text-primary); font-family: var(--font-number); }
+.charge-packages {
+  display: flex;
+  gap: 10px;
+  padding: 0 16px;
+  margin-bottom: 20px;
+}
+.charge-pkg {
+  flex: 1;
+  padding: 16px 8px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.charge-pkg.selected { border-color: #e91e8c; background: rgba(233,30,140,0.08); }
+.charge-pkg-name { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+.charge-pkg-price { font-size: 24px; font-weight: 600; font-family: var(--font-number); }
+.charge-pkg-price .yen { font-size: 14px; color: var(--danger); }
+.charge-pkg-unit { font-size: 11px; color: var(--text-disabled); margin-top: 4px; }
+.charge-content { flex: 1; overflow-y: auto; }
+.charge-content::-webkit-scrollbar { display: none; }
+.charge-bottom {
+  padding: 12px 16px 24px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.charge-pay-btn {
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #c71585, #8b0050);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 520;
+  font-family: var(--font-primary);
+  cursor: pointer;
+}
+.charge-pay-btn:active { opacity: 0.85; }
+.charge-note { font-size: 11px; color: var(--text-disabled); text-align: center; margin-top: 8px; }
+/* 实名认证全屏页 */
+.page-realname {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-primary);
+  display: none;
+  flex-direction: column;
+  z-index: 80;
+}
+.page-realname.active { display: flex; }
+.realname-page-header {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  font-size: 17px;
+  font-weight: 520;
+}
+.realname-page-back {
+  font-size: 22px;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.realname-page-body {
+  padding: 0 24px;
+  flex: 1;
+  overflow-y: auto;
+}
+.realname-page-body::-webkit-scrollbar { display: none; }
+.realname-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  position: relative;
+}
+.realname-hero-title {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.realname-shield {
+  position: absolute;
+  top: -10px;
+  right: 0;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, rgba(51,216,164,0.3), rgba(51,216,164,0.05));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+}
+.realname-hero-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+.realname-field { margin-bottom: 20px; }
+.realname-field-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-md);
+  padding: 0 16px;
+}
+.realname-field-label {
+  font-size: 14px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 36px;
+}
+.realname-field-input {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-family: var(--font-primary);
+  outline: none;
+}
+.realname-field-input::placeholder { color: var(--text-disabled); }
+.realname-footer-notice {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+.realname-footer-notice a {
+  color: var(--brand-green);
+  text-decoration: none;
+}
+.realname-submit-btn {
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #4dd9c0, #2bb8a0);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 520;
+  font-family: var(--font-primary);
+  cursor: pointer;
+  margin-top: 16px;
+}
+.realname-submit-btn:active { opacity: 0.85; }
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <!-- 游戏详情页 -->
+  <div class="game-detail" id="page-detail">
+    <div class="game-header">
+      <span class="nav-back">‹</span>
+      <div class="play-icon"></div>
+      <div class="media-tabs">
+        <span class="active">视频</span>
+        <span>图集</span>
+      </div>
+    </div>
+    <div class="game-info">
+      <div class="game-title-row">
+        <div class="game-title">生化危机7</div>
+        <div style="text-align:right">
+          <div class="game-score">9.4</div>
+          <div class="game-score-label">玩家评价</div>
+        </div>
+      </div>
+      <div class="game-subtitle">恐怖的孤独，废弃农舍的新世界</div>
+      <div class="game-tags"><span>动作</span><span>冒险游戏</span></div>
+      <div class="game-meta">
+        开发商: CAPCOM Co., Ltd.<br>
+        发行日期: 2017年1月23日<br>
+        年龄评级: 18&emsp;&emsp;语言: 英语 16+
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <div class="btn-grid">⊞</div>
+      <button class="btn-play" onclick="onClickPlay()">☁ 秒玩</button>
+      <button class="btn-demo">DEMO 立即游戏</button>
+    </div>
+  </div>
+
+  <!-- 个人中心页 -->
+  <div class="page-profile" id="page-profile">
+    <div class="profile-header">
+      <div class="profile-avatar">😁</div>
+      <div class="profile-name-row">
+        <span class="profile-name">宝哥</span>
+        <span class="profile-badge unverified" id="profile-badge">未实名</span>
+      </div>
+      <div class="profile-uid">UID 6cgc5fwscd</div>
+    </div>
+    <div class="profile-card">
+      <div class="profile-card-title">实名认证信息</div>
+      <div class="profile-card-content" id="profile-realname-info">未完成实名认证，云游戏功能受限</div>
+    </div>
+    <div class="profile-card">
+      <div class="profile-card-title">防沉迷状态</div>
+      <div class="profile-card-content" id="profile-antiaddiction-status">未认证，无法确定防沉迷等级</div>
+    </div>
+  </div>
+
+  <!-- 充值中心页 -->
+  <div class="page-charge" id="page-charge">
+    <div class="charge-header">
+      <span class="charge-back" onclick="switchToDetail()">‹</span>
+      <span class="charge-title">充值中心</span>
+    </div>
+    <div class="charge-user">
+      <div class="charge-user-avatar">😁</div>
+      <span class="charge-user-name">宝哥</span>
+    </div>
+    <div class="charge-content">
+      <div class="charge-time-info">
+        <span>剩余秒玩时长：</span>
+        <span class="charge-time-val">0小时0分钟</span>
+      </div>
+      <div class="charge-packages">
+        <div class="charge-pkg selected" onclick="selectPkg(this)">
+          <div class="charge-pkg-name">3小时套餐</div>
+          <div class="charge-pkg-price"><span class="yen">¥</span>12</div>
+          <div class="charge-pkg-unit">4元/小时</div>
+        </div>
+        <div class="charge-pkg" onclick="selectPkg(this)">
+          <div class="charge-pkg-name">8小时套餐</div>
+          <div class="charge-pkg-price"><span class="yen">¥</span>26</div>
+          <div class="charge-pkg-unit">3.3元/小时</div>
+        </div>
+        <div class="charge-pkg" onclick="selectPkg(this)">
+          <div class="charge-pkg-name">35小时套餐</div>
+          <div class="charge-pkg-price"><span class="yen">¥</span>80</div>
+          <div class="charge-pkg-unit">2.3元/小时</div>
+        </div>
+      </div>
+    </div>
+    <div class="charge-bottom">
+      <button class="charge-pay-btn" onclick="onClickPay()">确认支付</button>
+      <div class="charge-note">充值请阅读《用户充值协议》</div>
+    </div>
+  </div>
+</div>
+<div class="control-panel">
+  <h3>防沉迷场景测试</h3>
+  <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">启动云游戏场景</div>
+  <button class="ctrl-btn adult" onclick="scenarioAdultExist()">已实名成年人 → 无感进入</button>
+  <button class="ctrl-btn minor" onclick="scenarioMinorExist()">已实名未成年人 → 限制</button>
+  <button class="ctrl-btn" style="background:#5a4e7a;color:#fff;" onclick="scenarioInvalid()">已实名无匹配 → 重新填写</button>
+  <button class="ctrl-btn" style="background:#3a3a3a;color:#ccc;" onclick="onClickPlay()">未实名 → 认证流程</button>
+  <div style="font-size:11px;color:var(--text-muted);margin:8px 0 8px;">游戏内场景</div>
+  <button class="ctrl-btn minor" onclick="showMinorLimit()">未成年人 → 时长到限</button>
+  <button class="ctrl-btn night" onclick="showNightBlock()">未成年人 → 夜间限制</button>
+  <button class="ctrl-btn warn" onclick="showWarning()">提前预警通知</button>
+  <div style="font-size:11px;color:var(--text-muted);margin:8px 0 8px;">充值中心场景</div>
+  <button class="ctrl-btn charge" onclick="switchToChargePage()">充值中心页（成年人）</button>
+  <button class="ctrl-btn" style="background:#aa3355;color:#fff;" onclick="switchToChargeMinor(14)">充值 - 未成年（8-16岁）</button>
+  <button class="ctrl-btn" style="background:#884466;color:#fff;" onclick="switchToChargeMinor(17)">充值 - 未成年（16-18岁）</button>
+  <button class="ctrl-btn" style="background:#553344;color:#fff;" onclick="switchToChargeMinor(6)">充值 - 未成年（8岁以下）</button>
+  <div style="font-size:11px;color:var(--text-muted);margin:8px 0 8px;">页面切换</div>
+  <button class="ctrl-btn" style="background:#2a4a3a;color:#aaffcc;" onclick="switchToProfilePage()">个人中心页</button>
+  <button class="ctrl-btn reset" onclick="resetAll()">重置到游戏详情</button>
+</div>
+
+<script>
+const phone = document.getElementById('phone');
+let currentPage = 'detail';
+let isMinor = false;
+let minorAge = 14;
+
+function injectModal(id, html) {
+  let el = document.getElementById(id);
+  if (!el) {
+    el = document.createElement('div');
+    el.id = id;
+    el.className = 'modal-mask';
+    phone.appendChild(el);
+  }
+  el.innerHTML = html;
+  el.classList.add('active');
+}
+
+function removeModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('active');
+}
+
+function hideAllPages() {
+  document.getElementById('page-detail').style.display = 'none';
+  document.getElementById('page-profile').classList.remove('active');
+  document.getElementById('page-charge').classList.remove('active');
+  hideGameScreen();
+}
+
+function switchToDetail() {
+  hideAllPages();
+  document.getElementById('page-detail').style.display = 'flex';
+  currentPage = 'detail';
+}
+
+function switchToProfilePage() {
+  hideAllPages();
+  document.getElementById('page-profile').classList.add('active');
+  currentPage = 'profile';
+}
+
+function switchToChargePage() {
+  isMinor = false;
+  hideAllPages();
+  document.getElementById('page-charge').classList.add('active');
+  currentPage = 'charge';
+}
+
+function switchToChargeMinor(age) {
+  isMinor = true;
+  minorAge = age;
+  updateProfileBadge('minor');
+  hideAllPages();
+  document.getElementById('page-charge').classList.add('active');
+  currentPage = 'charge';
+}
+
+function showGameScreen() {
+  let screen = document.getElementById('game-screen');
+  if (!screen) {
+    screen = document.createElement('div');
+    screen.id = 'game-screen';
+    screen.className = 'game-screen';
+    screen.innerHTML = `
+      <div class="game-screen-hud">
+        <span>生化危机7 - 云游戏</span>
+        <span>00:47:23</span>
+      </div>
+      <div class="game-screen-content">云游戏画面</div>
+    `;
+    phone.appendChild(screen);
+  }
+  screen.classList.add('active');
+}
+
+function hideGameScreen() {
+  const s = document.getElementById('game-screen');
+  if (s) s.classList.remove('active');
+}
+
+function updateProfileBadge(state) {
+  const badge = document.getElementById('profile-badge');
+  const info = document.getElementById('profile-realname-info');
+  const status = document.getElementById('profile-antiaddiction-status');
+  if (state === 'adult') {
+    badge.textContent = '已实名';
+    badge.className = 'profile-badge verified';
+    info.textContent = '张三 / 1100***1234（已通过国家系统验证）';
+    status.textContent = '成年人，无防沉迷限制';
+  } else if (state === 'minor') {
+    badge.textContent = '未成年';
+    badge.className = 'profile-badge minor-badge';
+    info.textContent = '李明 / 1100***2010（已通过国家系统验证）';
+    status.textContent = '未成年人：工作日1.5h/节假日3h，22:00-8:00禁玩';
+  } else if (state === 'invalid') {
+    badge.textContent = '实名异常';
+    badge.className = 'profile-badge unverified';
+    info.textContent = '历史实名信息与国家系统不匹配，需重新认证';
+    status.textContent = '待重新认证，云游戏功能暂不可用';
+  } else {
+    badge.textContent = '未实名';
+    badge.className = 'profile-badge unverified';
+    info.textContent = '未完成实名认证，云游戏功能受限';
+    status.textContent = '未认证，无法确定防沉迷等级';
+  }
+}
+
+// 场景1：已实名成年人 → 无感进入
+function scenarioAdultExist() {
+  isMinor = false;
+  updateProfileBadge('adult');
+  showGameScreen();
+}
+
+// 场景2：已实名未成年人 → 直接拦截
+function scenarioMinorExist() {
+  isMinor = true;
+  updateProfileBadge('minor');
+  const now = new Date();
+  const day = now.getDay();
+  const hour = now.getHours();
+  const isFriSatSun = (day === 5 || day === 6 || day === 0);
+  const isAllowedTime = isFriSatSun && (hour >= 20 && hour < 21);
+
+  if (!isAllowedTime) {
+    injectModal('modal-minor-enter', `
+      <div class="modal-box">
+        <h3>未成年人限制</h3>
+        <p>根据国家防沉迷规定，未成年人仅允许在<span class="highlight">周五、周六、周日及法定节假日的 20:00-21:00</span> 进行游戏。</p>
+        <p style="font-size:12px; color:var(--text-disabled);">当前不在可玩时段内</p>
+        <button class="modal-btn secondary" onclick="removeModal('modal-minor-enter')">返回</button>
+        <button class="modal-btn" style="background:transparent;color:var(--text-muted);font-size:13px;" onclick="logoutAccount()">退出账号</button>
+      </div>
+    `);
+  } else {
+    showGameScreen();
+  }
+}
+
+// 场景3：已实名但无匹配 → 直接弹实名认证弹窗（同未实名）
+function scenarioInvalid() {
+  isMinor = false;
+  updateProfileBadge('invalid');
+  showRealnameModal();
+}
+
+// 场景4：未实名 → 直接弹出实名认证弹窗
+function onClickPlay() {
+  showRealnameModal();
+}
+
+function goToRealnamePage() {
+  showRealnameModal();
+}
+
+function showRealnameModal() {
+  injectModal('modal-realname', `
+    <div class="modal-box" style="padding:24px 20px; text-align:left;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,rgba(51,216,164,0.3),rgba(51,216,164,0.08));display:flex;align-items:center;justify-content:center;font-size:20px;">🛡</div>
+        <div style="font-size:18px;font-weight:520;">实名认证</div>
+      </div>
+      <p style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:16px;text-align:left;">根据国家新闻出版署《关于防止未成年人沉迷网络游戏的通知》规定，使用云游戏服务前需完成实名认证。</p>
+      <div style="margin-bottom:12px;">
+        <div class="realname-field-row">
+          <span class="realname-field-label">姓名</span>
+          <input type="text" class="realname-field-input" placeholder="请输入您的真实姓名">
+        </div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div class="realname-field-row">
+          <span class="realname-field-label">证件</span>
+          <input type="text" class="realname-field-input" placeholder="请输入18位身份证号码">
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-disabled);margin-bottom:16px;">因接入防沉迷系统，未成年玩家将受游戏时长和充值限制。如您为港澳台用户/国外身份证件，<br><span style="color:var(--brand-green);cursor:pointer;">如有问题可联系官网QQ ></span></div>
+      <button class="modal-btn green" onclick="submitRealname()">提交认证</button>
+      <button class="modal-btn secondary" onclick="removeModal('modal-realname')">取消</button>
+    </div>
+  `);
+}
+
+function showRealnamePage() {
+  showRealnameModal();
+}
+
+function closeRealnamePage() {
+  removeModal('modal-realname');
+}
+
+function submitRealname() {
+  removeModal('modal-realname');
+  injectModal('modal-verify', `
+    <div class="modal-box">
+      <h3>认证中...</h3>
+      <p>正在向国家防沉迷实名认证系统验证身份信息</p>
+    </div>
+  `);
+  setTimeout(() => {
+    removeModal('modal-verify');
+    updateProfileBadge('adult');
+    showGameScreen();
+  }, 1500);
+}
+
+// 游戏内：时长到限
+function showMinorLimit() {
+  showGameScreen();
+  injectModal('modal-minor', `
+    <div class="modal-box">
+      <h3>游戏时长已到限</h3>
+      <p>根据国家防沉迷规定，未成年人本次可玩时段（20:00-21:00）已结束。</p>
+      <p style="font-size:12px; color:var(--text-disabled);">下次可玩时间：下一个周五/周六/周日 20:00</p>
+      <button class="modal-btn danger-btn" onclick="exitGame()">退出游戏</button>
+      <button class="modal-btn" style="background:transparent;color:var(--text-muted);font-size:13px;" onclick="logoutAccount()">退出账号</button>
+    </div>
+  `);
+}
+
+// 游戏内：夜间锁定
+function showNightBlock() {
+  injectModal('modal-night', `
+    <div class="modal-box">
+      <h3>当前不在可玩时段</h3>
+      <p>根据国家防沉迷规定，未成年人仅允许在<span class="danger">周五、周六、周日及法定节假日的 20:00-21:00</span> 进行游戏。</p>
+      <p style="font-size:12px; color:var(--text-disabled);">下次可玩时间：最近的周五/周六/周日 20:00</p>
+      <button class="modal-btn secondary" onclick="removeModal('modal-night')">返回</button>
+      <button class="modal-btn" style="background:transparent;color:var(--text-muted);font-size:13px;" onclick="logoutAccount()">退出账号</button>
+    </div>
+  `);
+}
+
+// 游戏内：提前预警
+function showWarning() {
+  showGameScreen();
+  let banner = document.getElementById('warning-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'warning-banner';
+    banner.className = 'warning-banner';
+    phone.appendChild(banner);
+  }
+  banner.textContent = '⚠ 您的游戏时长还剩15分钟，届时将强制退出';
+  banner.classList.add('active');
+  setTimeout(() => banner.classList.remove('active'), 5000);
+}
+
+// 充值中心
+function selectPkg(el) {
+  document.querySelectorAll('.charge-pkg').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function onClickPay() {
+  const selectedPkg = document.querySelector('.charge-pkg.selected');
+  const priceText = selectedPkg ? selectedPkg.querySelector('.charge-pkg-price').textContent.replace('¥','') : '12';
+  const price = parseInt(priceText);
+
+  if (!isMinor) {
+    injectModal('modal-charge-block', `
+      <div class="modal-box">
+        <h3>✓ 支付成功</h3>
+        <p>充值 ¥${price} 成功，已到账。</p>
+        <button class="modal-btn green" onclick="removeModal('modal-charge-block')">完成</button>
+      </div>
+    `);
+    return;
+  }
+
+  // 未成年人分段限额
+  const age = minorAge;
+  let singleLimit, monthlyLimit, monthlyUsed;
+
+  if (age < 8) {
+    injectModal('modal-charge-block', `
+      <div class="modal-box">
+        <h3>充值失败</h3>
+        <p>根据国家规定，<span class="danger">8周岁以下未成年人不得进行充值</span>。</p>
+        <button class="modal-btn secondary" onclick="removeModal('modal-charge-block')">返回</button>
+      </div>
+    `);
+    return;
+  } else if (age < 16) {
+    singleLimit = 50;
+    monthlyLimit = 200;
+    monthlyUsed = 120;
+  } else {
+    singleLimit = 100;
+    monthlyLimit = 400;
+    monthlyUsed = 250;
+  }
+
+  if (price > singleLimit) {
+    injectModal('modal-charge-block', `
+      <div class="modal-box">
+        <h3>充值失败</h3>
+        <p>根据国家规定，${age < 16 ? '8-16周岁' : '16-18周岁'}未成年人<span class="danger">单次充值不得超过${singleLimit}元</span>。</p>
+        <p>当前选择金额：<span class="highlight">¥${price}</span>，超出单次限制。</p>
+        <button class="modal-btn secondary" onclick="removeModal('modal-charge-block')">返回修改</button>
+      </div>
+    `);
+  } else if ((monthlyUsed + price) > monthlyLimit) {
+    injectModal('modal-charge-block', `
+      <div class="modal-box">
+        <h3>充值失败</h3>
+        <p>根据国家规定，${age < 16 ? '8-16周岁' : '16-18周岁'}未成年人<span class="danger">每月累计充值不得超过${monthlyLimit}元</span>。</p>
+        <p>本月已充值：¥${monthlyUsed}，本次充值¥${price}后将超出月度上限。</p>
+        <button class="modal-btn secondary" onclick="removeModal('modal-charge-block')">返回修改</button>
+      </div>
+    `);
+  } else {
+    injectModal('modal-charge-block', `
+      <div class="modal-box">
+        <h3>✓ 支付成功</h3>
+        <p>充值 ¥${price} 成功，已到账。</p>
+        <button class="modal-btn green" onclick="removeModal('modal-charge-block')">完成</button>
+      </div>
+    `);
+  }
+}
+
+function logoutAccount() {
+  document.querySelectorAll('.modal-mask').forEach(m => m.classList.remove('active'));
+  hideGameScreen();
+  updateProfileBadge('none');
+  isMinor = false;
+  injectModal('modal-logout', `
+    <div class="modal-box">
+      <h3>已退出账号</h3>
+      <p>您已退出当前账号，请重新登录。</p>
+      <button class="modal-btn primary" onclick="removeModal('modal-logout')">确定</button>
+    </div>
+  `);
+}
+
+function exitGame() {
+  removeModal('modal-minor');
+  hideGameScreen();
+}
+
+function resetAll() {
+  document.querySelectorAll('.modal-mask').forEach(m => m.classList.remove('active'));
+  hideGameScreen();
+  const b = document.getElementById('warning-banner');
+  if (b) b.classList.remove('active');
+  isMinor = false;
+  updateProfileBadge('none');
+  switchToDetail();
+}
+</script>
+</body>
+</html>
