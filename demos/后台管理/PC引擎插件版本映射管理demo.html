@@ -271,16 +271,6 @@ const MOCK_DATA = [
     { id:8, engineOp:'lt', engineV1:'1.4.0', engineV2:'', appOp:'eq', appV1:'5.3.5', appV2:'', priority:8, enabled:false, remark:'停止支持' },
 ];
 
-const LOG_DATA = [
-    { time:'2026-06-22 17:45:12', opType:'新增', engineCond:'= 2.0.1', appCond:'6.0.0 ~ 6.0.9 (含)', operator:'admin_li', remark:'新增2.0.1版本映射' },
-    { time:'2026-06-21 14:30:05', opType:'状态变更', engineCond:'= 1.3.0', appCond:'= 5.3.5', operator:'admin_wang', remark:'已废弃，禁用规则' },
-    { time:'2026-06-20 10:18:33', opType:'编辑', engineCond:'>= 1.5.0', appCond:'>= 6.0.0', operator:'admin_li', remark:'优先级从3调整为2' },
-    { time:'2026-06-19 16:02:47', opType:'删除', engineCond:'= 1.2.0', appCond:'= 5.2.0', operator:'admin_zhang', remark:'旧版本已下线，删除规则' },
-    { time:'2026-06-18 09:55:20', opType:'新增', engineCond:'1.4.0 ~ 1.4.9 (含)', appCond:'= 5.3.5', operator:'admin_li', remark:'覆盖1.4.x系列兼容' },
-    { time:'2026-06-17 15:40:11', opType:'状态变更', engineCond:'< 1.4.0', appCond:'= 5.3.5', operator:'admin_wang', remark:'低版本停止支持，禁用' },
-    { time:'2026-06-15 11:22:08', opType:'编辑', engineCond:'= 1.4.2', appCond:'= 5.3.5', operator:'admin_zhang', remark:'补充旧版兼容备注' },
-    { time:'2026-06-10 08:30:00', opType:'新增', engineCond:'= 1.4.2', appCond:'= 5.3.5', operator:'admin_li', remark:'初始化基础映射规则' },
-];
 
 const app = createApp({
     setup() {
@@ -288,10 +278,8 @@ const app = createApp({
             activeTab: 'mapping',
             opOptions: OP_OPTIONS,
             mappingData: MOCK_DATA.map(r => ({ ...r, type: inferType(r.engineOp, r.appOp) })),
-            logData: LOG_DATA,
             filters: { engineOp:'eq', engineV1:'', engineV2:'', appOp:'eq', appV1:'', appV2:'', status:'' },
             filterApplied: { engineOp:'', engineV1:'', engineV2:'', appOp:'', appV1:'', appV2:'', status:'' },
-            logFilter: { dateRange: null, opType: '', operator: '' },
             dialogVisible: false,
             editForm: {},
             nextId: 9,
