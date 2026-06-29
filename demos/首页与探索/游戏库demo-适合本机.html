@@ -158,7 +158,7 @@ body{background:#000;color:#fff;height:100vh;width:100vw;display:flex;align-item
 /* 底部导航 */
 .btm-nav{display:none;height:60px;background:rgba(10,14,19,0.97);backdrop-filter:blur(10px);border-top:1px solid var(--border);flex-shrink:0;z-index:20;padding:0 10px;}
 
-/* 适合本机子页面 */
+/* 非常适合本机子页面 */
 .compat-device-info{display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border-radius:12px;border:1px solid var(--border);margin-bottom:14px;}
 .cdi-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#0d4a2e,#10b981);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0;}
 .cdi-text{display:flex;flex-direction:column;gap:2px;}
@@ -523,7 +523,7 @@ function openCompatTopic(){
     const sp=document.createElement('div');
     sp.className='subpage';
     const gamesHtml=compatibleGames.map(g=>`<div class="gc">${badgeHtml(g.platform)}<img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m" style="justify-content:space-between;"><span>${g.genre||'动作 冒险'}</span><span class="gc-score">${g.score||'9.2'}</span></div></div></div>`).join('');
-    sp.innerHTML=`<div class="sp-header"><div class="back"><i class="fas fa-chevron-left"></i></div><div class="title">适合本机</div><div style="margin-left:auto;display:flex;align-items:center;"><div class="search-trigger" id="topicSearchTrigger"><div class="s-icon" style="width:28px;height:28px;font-size:12px;"><i class="fas fa-search"></i></div><div class="s-box"><input type="text" placeholder="搜索游戏" id="topicSearchInput"><div class="s-close"><i class="fas fa-times"></i></div></div></div></div></div><div class="sp-body"><div class="compat-device-info"><div class="cdi-icon"><i class="fas fa-mobile-alt"></i></div><div class="cdi-text"><div class="cdi-model">${deviceInfo.model}</div><div class="cdi-spec">${deviceInfo.cpu} · ${deviceInfo.gpu}</div></div></div><div class="compat-count">适配你的设备 ${compatibleGames.length}款游戏</div><div class="game-grid" id="topicGrid">${gamesHtml}</div></div>`;
+    sp.innerHTML=`<div class="sp-header"><div class="back"><i class="fas fa-chevron-left"></i></div><div class="title">非常适合本机</div><div style="margin-left:auto;display:flex;align-items:center;"><div class="search-trigger" id="topicSearchTrigger"><div class="s-icon" style="width:28px;height:28px;font-size:12px;"><i class="fas fa-search"></i></div><div class="s-box"><input type="text" placeholder="搜索游戏" id="topicSearchInput"><div class="s-close"><i class="fas fa-times"></i></div></div></div></div></div><div class="sp-body"><div class="compat-device-info"><div class="cdi-icon"><i class="fas fa-mobile-alt"></i></div><div class="cdi-text"><div class="cdi-model">${deviceInfo.model}</div><div class="cdi-spec">${deviceInfo.cpu} · ${deviceInfo.gpu}</div></div></div><div class="compat-count">适配你的设备 ${compatibleGames.length}款游戏</div><div class="game-grid" id="topicGrid">${gamesHtml}</div></div>`;
     shell.appendChild(sp);
     sp.querySelector('.back').addEventListener('click',()=>sp.remove());
     const st=sp.querySelector('#topicSearchTrigger');
@@ -545,12 +545,12 @@ function openSubpage(name){
     if(existing) existing.remove();
     const sp=document.createElement('div');
     sp.className='subpage';
-    if(name==='适合本机'){
+    if(name==='非常适合本机'){
         const compatLevel={perfect:'完美适配',good:'流畅运行',unknown:'未验证'};
         const compatColor={perfect:'#10b981',good:'#3b82f6',unknown:'var(--dim)'};
         const compatIcon={perfect:'fa-check-double',good:'fa-check',unknown:'fa-question'};
         const gamesHtml=compatibleGames.map(g=>`<div class="gc">${badgeHtml(g.platform)}<img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m"><i class="fas fa-play"></i> ${g.tags}</div></div></div>`).join('');
-        sp.innerHTML=`<div class="sp-header"><div class="back"><i class="fas fa-chevron-left"></i></div><div class="title">适合本机</div></div><div class="sp-body"><div class="compat-device-info"><div class="cdi-icon"><i class="fas fa-mobile-alt"></i></div><div class="cdi-text"><div class="cdi-model">${deviceInfo.model}</div><div class="cdi-spec">${deviceInfo.cpu} · ${deviceInfo.gpu}</div></div></div><div class="compat-toolbar"><div class="left"><div class="compat-count">适配你的设备 ${compatibleGames.length}款游戏</div></div><div class="right"><div class="search-trigger" id="compatSearchTrigger"><div class="s-icon"><i class="fas fa-search"></i></div><div class="s-box"><input type="text" placeholder="搜索游戏" id="compatSearchInput"><div class="s-close"><i class="fas fa-times"></i></div></div></div><div class="sort-btn"><i class="fas fa-sort-amount-down"></i> 最近热玩</div></div></div><div class="game-grid" id="compatGrid">${gamesHtml}</div></div>`;
+        sp.innerHTML=`<div class="sp-header"><div class="back"><i class="fas fa-chevron-left"></i></div><div class="title">非常适合本机</div></div><div class="sp-body"><div class="compat-device-info"><div class="cdi-icon"><i class="fas fa-mobile-alt"></i></div><div class="cdi-text"><div class="cdi-model">${deviceInfo.model}</div><div class="cdi-spec">${deviceInfo.cpu} · ${deviceInfo.gpu}</div></div></div><div class="compat-toolbar"><div class="left"><div class="compat-count">适配你的设备 ${compatibleGames.length}款游戏</div></div><div class="right"><div class="search-trigger" id="compatSearchTrigger"><div class="s-icon"><i class="fas fa-search"></i></div><div class="s-box"><input type="text" placeholder="搜索游戏" id="compatSearchInput"><div class="s-close"><i class="fas fa-times"></i></div></div></div><div class="sort-btn"><i class="fas fa-sort-amount-down"></i> 最近热玩</div></div></div><div class="game-grid" id="compatGrid">${gamesHtml}</div></div>`;
         setTimeout(()=>{
             const st=sp.querySelector('#compatSearchTrigger');
             if(st){
@@ -606,7 +606,7 @@ function renderPort(){
     const showEntry=curTab==='pc';
     el.innerHTML=`
         ${showEntry?`<div class="entry-row">
-            <div class="entry-card fit-device" data-entry="适合本机"><div class="ec-icon" style="background:linear-gradient(135deg,#0d4a2e,#10b981);"><i class="fas fa-check-circle"></i></div><div class="ec-text"><div class="ec-label">适合本机</div><div class="ec-sub">${compatibleGames.length}款可玩 ›</div></div></div>
+            <div class="entry-card fit-device" data-entry="非常适合本机"><div class="ec-icon" style="background:linear-gradient(135deg,#0d4a2e,#10b981);"><i class="fas fa-check-circle"></i></div><div class="ec-text"><div class="ec-label">非常适合本机</div><div class="ec-sub">${compatibleGames.length}款可玩 ›</div></div></div>
             <div class="entry-card" data-entry="Steam"><div class="ec-icon"><i class="fab fa-steam"></i></div><div class="ec-text"><div class="ec-label">Steam</div><div class="ec-sub">查看游戏 ›</div></div></div>
             <div class="entry-card" data-entry="Epic"><div class="ec-icon"><i class="fas fa-cube"></i></div><div class="ec-text"><div class="ec-label">Epic Games</div><div class="ec-sub">查看游戏 ›</div></div></div>
             <div class="entry-card" data-entry="导入游戏"><div class="ec-icon"><i class="fas fa-plus"></i></div><div class="ec-text"><div class="ec-label">导入游戏</div><div class="ec-sub">手动添加 ›</div></div></div>
@@ -684,7 +684,7 @@ function renderLand(){
                 <div class="tab" data-tab="h5">小游戏</div>
             </div>
             ${showEntry?`<div class="l-entry-row">
-                <div class="l-entry-card fit-device" data-entry="适合本机"><div class="ec-icon" style="background:linear-gradient(135deg,#0d4a2e,#10b981);"><i class="fas fa-check-circle"></i></div><div class="ec-text"><div class="ec-label">适合本机</div><div class="ec-sub">${compatibleGames.length}款可玩</div></div></div>
+                <div class="l-entry-card fit-device" data-entry="非常适合本机"><div class="ec-icon" style="background:linear-gradient(135deg,#0d4a2e,#10b981);"><i class="fas fa-check-circle"></i></div><div class="ec-text"><div class="ec-label">非常适合本机</div><div class="ec-sub">${compatibleGames.length}款可玩</div></div></div>
                 <div class="l-entry-card" data-entry="Steam"><div class="ec-icon"><i class="fab fa-steam"></i></div><div class="ec-text"><div class="ec-label">Steam</div><div class="ec-sub">查看游戏</div></div></div>
                 <div class="l-entry-card" data-entry="Epic"><div class="ec-icon"><i class="fas fa-cube"></i></div><div class="ec-text"><div class="ec-label">Epic</div><div class="ec-sub">查看游戏</div></div></div>
                 <div class="l-entry-card" data-entry="导入游戏"><div class="ec-icon"><i class="fas fa-plus"></i></div><div class="ec-text"><div class="ec-label">导入游戏</div><div class="ec-sub">手动添加</div></div></div>
@@ -814,7 +814,7 @@ function renderHome(){
                 <div class="ov"><span class="tag">编辑推荐</span><div class="t">黑神话：悟空 - 完美兼容</div></div>
             </div>
             <div>
-                <div class="home-section-title"><i class="fas fa-check-circle" style="color:#10b981;font-size:13px;"></i> 适合本机 <span class="more" onclick="openCompatTopic()">查看更多 ›</span></div>
+                <div class="home-section-title"><i class="fas fa-check-circle" style="color:#10b981;font-size:13px;"></i> 非常适合本机 <span class="more" onclick="openCompatTopic()">查看更多 ›</span></div>
                 <div class="rec-scroll">${compatibleGames.map(g=>`<div class="rec-card"><img src="${cv(g.name)}"><span>${g.name}</span></div>`).join('')}</div>
             </div>
             <div>
