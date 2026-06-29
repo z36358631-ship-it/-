@@ -136,6 +136,7 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
   font-size:11px;font-weight:400;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
+.game-item .free-tag{position:absolute;top:6px;left:6px;padding:2px 6px;background:var(--green);color:#000;font-size:9px;font-weight:700;border-radius:3px;line-height:1.4}
 .game-item .check{
   position:absolute;top:6px;right:6px;
   width:22px;height:22px;border-radius:50%;
@@ -179,7 +180,21 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
 .opt-hint{text-align:center;margin-top:28px;font-size:12px;color:var(--muted2)}
 
 /* Game List (新手秒玩列表) */
-.game-list{display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1;padding-bottom:20px}
+/* Type Legend */
+.type-legend{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;padding:10px 12px;background:var(--card);border-radius:var(--r-md);border:1px solid var(--border)}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.legend-tag{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;flex-shrink:0}
+.legend-tag.instant{background:var(--gold);color:#000}
+.legend-tag.free{background:var(--green);color:#000}
+
+/* Section Header */
+.section-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.section-title{font-size:16px;font-weight:520}
+.section-sub{font-size:12px;color:var(--muted);font-weight:380;margin-left:8px}
+.section-more{font-size:12px;color:var(--blue);cursor:pointer;flex-shrink:0}
+.section-more:active{opacity:.6}
+
+.game-list{display:flex;flex-direction:column;gap:10px;overflow-y:auto;padding-bottom:4px}
 .game-list::-webkit-scrollbar{display:none}
 .game-list-item{
   display:flex;align-items:center;gap:12px;padding:12px;
@@ -197,6 +212,7 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
   background:var(--gold);color:#000;font-size:12px;font-weight:520;
   border:none;cursor:pointer;flex-shrink:0;
 }
+.game-list-item__action.free{background:var(--green)}
 .game-list-item__action:active{transform:scale(.95)}
 .view-more{
   text-align:center;padding:14px 0;margin-top:4px;
@@ -397,10 +413,17 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
     </div>
   </div>
   <div class="page-body" style="padding-top:56px">
-    <div class="page-title" style="margin-bottom:4px">选一款试试</div>
-    <div class="page-desc">点击秒玩，立即体验</div>
-    <div class="game-list" id="gameList"></div>
-    <div class="view-more" onclick="showDone('more')">查看更多</div>
+    <div class="page-title" style="margin-bottom:16px">选一款试试</div>
+    <div class="section-header">
+      <div class="section-title">云游戏<span class="section-sub">无需下载，点开即玩</span></div>
+      <span class="section-more" onclick="showDone('play')">查看更多 ›</span>
+    </div>
+    <div class="game-list" id="gameListInstant"></div>
+    <div class="section-header" style="margin-top:20px">
+      <div class="section-title">免费游戏<span class="section-sub">需下载游戏包，无限时畅玩</span></div>
+      <span class="section-more" onclick="showDone('play')">查看更多 ›</span>
+    </div>
+    <div class="game-list" id="gameListFree"></div>
   </div>
 </div>
 
@@ -454,6 +477,24 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
   </div>
 </div>
 
+<!-- 游戏详情页（覆盖层） -->
+<div id="gameDetail" style="position:absolute;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:50;display:none;flex-direction:column;overflow-y:auto">
+  <div id="gdCover" style="width:100%;height:200px;object-fit:cover;flex-shrink:0;position:relative">
+    <img id="gdCoverImg" src="" style="width:100%;height:100%;object-fit:cover;display:block">
+    <div style="position:absolute;inset:0;background:linear-gradient(transparent 40%,var(--bg))"></div>
+    <button onclick="closeDetail()" style="position:absolute;top:48px;left:16px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.6);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&#x2190;</button>
+  </div>
+  <div style="padding:0 20px 32px">
+    <div id="gdName" style="font-size:22px;font-weight:600;margin-bottom:6px"></div>
+    <div id="gdTag" style="font-size:13px;color:var(--muted);margin-bottom:20px"></div>
+    <div style="background:var(--card);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:20px;border:1px solid var(--border)">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:4px">免费下载 · 无需账号</div>
+      <div style="font-size:12px;color:var(--muted2)">通过盖世游戏平台直接下载，完全免费体验</div>
+    </div>
+    <button onclick="showDone('play')" style="width:100%;padding:14px;border-radius:var(--r-full);border:none;background:var(--green);color:#000;font-size:15px;font-weight:600;cursor:pointer">立即免费下载</button>
+  </div>
+</div>
+
 <!-- Step 4: 完成 -->
 <div class="page" id="page4">
   <div class="done-wrap">
@@ -482,27 +523,38 @@ var games=[
 {name:"黑神话：悟空",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/header.jpg",tag:"动作RPG / 国风神话"},
 {name:"赛博朋克 2077",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg",tag:"开放世界 / 第一人称射击"},
 {name:"艾尔登法环",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg",tag:"魂系动作 / 开放世界"},
-{name:"生化危机4",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2050650/header.jpg",tag:"恐怖动作 / 第三人称"},
-{name:"巫师3：狂猎",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/292030/header.jpg",tag:"史诗剧情 / 角色扮演"},
+{name:"生化危机4",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2050650/header.jpg",tag:"恐怖动作 / 第三人称",free:true},
+{name:"巫师3：狂猎",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/292030/header.jpg",tag:"史诗剧情 / 角色扮演",free:true},
 {name:"绝地求生",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/578080/header.jpg",tag:"战术竞技 / 多人射击"},
-{name:"极品飞车",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1551360/header.jpg",tag:"赛车竞速 / 街头改装"},
+{name:"极品飞车",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1551360/header.jpg",tag:"赛车竞速 / 街头改装",free:true},
 {name:"双人成行",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1426210/header.jpg",tag:"合作冒险 / 双人必备"},
-{name:"哈迪斯2",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1145350/header.jpg",tag:"Roguelike / 动作"},
+{name:"哈迪斯2",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1145350/header.jpg",tag:"Roguelike / 动作",free:true},
 {name:"GTA5",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg",tag:"开放世界 / 犯罪动作"},
 {name:"只狼：影逝二度",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/814380/header.jpg",tag:"魂系动作 / 忍者"},
 {name:"霍格沃茨之遗",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/990080/header.jpg",tag:"魔法世界 / 角色扮演"}
 ];
 
 function renderGameList(){
-  var el=document.getElementById('gameList'),h='';
-  for(var i=0;i<8;i++){var g=games[i];
-    h+='<div class="game-list-item" onclick="showDone(\'play\')">';
-    h+='<img class="game-list-item__cover" src="'+g.cover+'" loading="lazy">';
-    h+='<div class="game-list-item__info"><div class="game-list-item__name">'+g.name+'</div><div class="game-list-item__tag">'+g.tag+'</div></div>';
-    h+='<button class="game-list-item__action">秒玩</button>';
-    h+='</div>';
+  var instant=games.filter(function(g){return !g.free});
+  var free=games.filter(function(g){return g.free});
+  var el1=document.getElementById('gameListInstant'),h1='';
+  for(var i=0;i<Math.min(8,instant.length);i++){var g=instant[i];
+    h1+='<div class="game-list-item" onclick="showDone(\'play\')">';
+    h1+='<img class="game-list-item__cover" src="'+g.cover+'" loading="lazy">';
+    h1+='<div class="game-list-item__info"><div class="game-list-item__name">'+g.name+'</div><div class="game-list-item__tag">'+g.tag+'</div></div>';
+    h1+='<button class="game-list-item__action" onclick="event.stopPropagation();showDone(\'play\')">秒玩</button>';
+    h1+='</div>';
   }
-  el.innerHTML=h;
+  el1.innerHTML=h1;
+  var el2=document.getElementById('gameListFree'),h2='';
+  for(var j=0;j<Math.min(8,free.length);j++){var f=free[j];
+    h2+='<div class="game-list-item" onclick="showDone(\'play\')">';
+    h2+='<img class="game-list-item__cover" src="'+f.cover+'" loading="lazy">';
+    h2+='<div class="game-list-item__info"><div class="game-list-item__name">'+f.name+'</div><div class="game-list-item__tag">'+f.tag+'</div></div>';
+    h2+='<button class="game-list-item__action free" onclick="event.stopPropagation();showDone(\'play\')">免费</button>';
+    h2+='</div>';
+  }
+  el2.innerHTML=h2;
 }
 renderGameList();
 
@@ -584,6 +636,17 @@ function showScan(){
   c.style.display='flex';r.classList.remove('show');
   t.textContent='正在扫描...';s.textContent='检查 Download、GAME 等常见目录';
   setTimeout(function(){c.style.display='none';t.textContent='扫描完成';s.textContent='在你的设备中找到了游戏文件';r.classList.add('show')},2500);
+}
+
+function openDetail(idx){
+  var g=games[idx];
+  document.getElementById('gdCoverImg').src=g.cover;
+  document.getElementById('gdName').textContent=g.name;
+  document.getElementById('gdTag').textContent=g.tag;
+  document.getElementById('gameDetail').style.display='flex';
+}
+function closeDetail(){
+  document.getElementById('gameDetail').style.display='none';
 }
 
 function showDone(type){
