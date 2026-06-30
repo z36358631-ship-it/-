@@ -222,6 +222,38 @@
             border-top: 1px solid var(--border-color);
         }
         .load-more:hover { background: #fafafa; }
+        /* 分页器 */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+            padding: 14px 24px;
+            border-top: 1px solid var(--border-color);
+        }
+        .pagination span {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-right: 12px;
+        }
+        .page-btn {
+            min-width: 32px;
+            height: 32px;
+            padding: 0 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: var(--text-color);
+        }
+        .page-btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .page-btn.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .rate-good { color: #52c41a; font-weight: 500; }
         .rate-mid { color: #faad14; font-weight: 500; }
         .rate-bad { color: #ff4d4f; font-weight: 500; }
@@ -436,6 +468,16 @@
                             <tr><td>2026-06-29</td><td>天玑9400</td><td>500</td><td>500</td><td>250</td><td class="rate-good">50%</td><td><a class="action-link" onclick="showChipDetail('天玑9400')">查看详情</a></td></tr>
                         </tbody>
                     </table>
+                    <div class="pagination">
+                        <span>共 86 条，每页 20 条</span>
+                        <button class="page-btn" disabled>‹</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn">4</button>
+                        <button class="page-btn">5</button>
+                        <button class="page-btn">›</button>
+                    </div>
                 </div>
             </div>
 
@@ -456,7 +498,13 @@
                             <tr><td>5</td><td>vivo Y200 GT</td><td>250</td><td>220</td><td>110</td><td class="rate-mid">44%</td></tr>
                         </tbody>
                     </table>
-                    <div class="load-more" id="chip-more" onclick="showMoreChipDevices()">点击查看更多</div>
+                    <div class="pagination">
+                        <span>共 32 条，每页 20 条</span>
+                        <button class="page-btn" disabled>‹</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">›</button>
+                    </div>
                 </div>
             </div>
 
@@ -501,6 +549,18 @@
                             <tr><td>2026-06-29</td><td>Forza Horizon 5</td><td>95703</td><td>500</td><td>500</td><td>0</td><td>250</td><td class="rate-good">50%</td><td><a class="action-link" onclick="showGameDetail('Forza Horizon 5')">查看详情</a></td></tr>
                         </tbody>
                     </table>
+                    <div class="pagination">
+                        <span>共 128 条，每页 20 条</span>
+                        <button class="page-btn" disabled>‹</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn">4</button>
+                        <button class="page-btn">5</button>
+                        <button class="page-btn">6</button>
+                        <button class="page-btn">7</button>
+                        <button class="page-btn">›</button>
+                    </div>
                 </div>
             </div>
 
@@ -523,7 +583,14 @@
                             <tr><td>5</td><td>天玑9400</td><td>50</td><td>2.5%</td><td>30</td><td>20</td></tr>
                         </tbody>
                     </table>
-                    <div class="load-more" onclick="alert('展开更多数据')">点击查看更多</div>
+                    <div class="pagination">
+                        <span>共 45 条，每页 20 条</span>
+                        <button class="page-btn" disabled>‹</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn">›</button>
+                    </div>
                 </div>
 
                 <div class="table-card">
@@ -540,7 +607,14 @@
                             <tr><td>4</td><td>天玑9300</td><td>12345</td><td>50</td><td>5%</td><td><a class="action-link" onclick="showConfigModal('12345')">具体配置方案查看</a></td></tr>
                         </tbody>
                     </table>
-                    <div class="load-more" onclick="alert('展开更多数据')">点击查看更多</div>
+                    <div class="pagination">
+                        <span>共 45 条，每页 20 条</span>
+                        <button class="page-btn" disabled>‹</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn">›</button>
+                    </div>
                 </div>
             </div>
 
@@ -693,22 +767,6 @@
         function backToChipList() {
             document.getElementById('page-chip-detail').classList.remove('active');
             document.getElementById('page-chip-report').classList.add('active');
-        }
-
-        // 芯片详情 - 查看更多
-        function showMoreChipDevices() {
-            const tbody = document.getElementById('chip-detail-body');
-            const moreData = [
-                [6, 'Redmi Note 13 Pro', 200, 180, 90, '45%'],
-                [7, '一加 Ace 3V', 180, 160, 80, '44%'],
-                [8, '荣耀 X60', 150, 130, 70, '47%'],
-            ];
-            moreData.forEach(row => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td class="rate-mid">${row[5]}</td>`;
-                tbody.appendChild(tr);
-            });
-            document.getElementById('chip-more').style.display = 'none';
         }
 
         // 游戏报表 - 查看详情
