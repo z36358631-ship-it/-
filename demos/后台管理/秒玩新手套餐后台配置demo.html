@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>盖世游戏后台 - 新手套餐活动配置</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;}
+body{background:#f5f6f8;color:#1f2329;font-size:14px;min-height:100vh;}
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:220px;background:#fff;border-right:1px solid #e5e6eb;padding:20px 0;flex-shrink:0;}
+.sidebar .logo{padding:0 20px 20px;font-size:16px;font-weight:700;color:#1f2329;border-bottom:1px solid #f0f0f0;margin-bottom:12px;}
+.sidebar .nav-item{padding:10px 20px;font-size:13px;color:#646a73;cursor:pointer;display:flex;align-items:center;gap:8px;transition:0.15s;}
+.sidebar .nav-item:hover{background:#f5f6f8;color:#1f2329;}
+.sidebar .nav-item.on{background:#e8f3ff;color:#3370ff;font-weight:600;}
+.main{flex:1;padding:24px 32px;}
+.page-title{font-size:20px;font-weight:700;margin-bottom:6px;}
+.page-desc{font-size:13px;color:#8f959e;margin-bottom:24px;}
+.card{background:#fff;border-radius:8px;border:1px solid #e5e6eb;padding:24px;margin-bottom:16px;}
+.card-title{font-size:15px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.card-title .badge{font-size:11px;background:#e8f3ff;color:#3370ff;padding:2px 8px;border-radius:4px;font-weight:500;}
+.form-row{display:flex;align-items:flex-start;margin-bottom:16px;gap:12px;}
+.form-row:last-child{margin-bottom:0;}
+.form-label{width:140px;font-size:13px;color:#646a73;padding-top:8px;flex-shrink:0;text-align:right;}
+.form-label .required{color:#f54a45;margin-right:2px;}
+.form-content{flex:1;display:flex;flex-direction:column;gap:6px;}
+.form-input{width:100%;max-width:320px;height:36px;border:1px solid #dee0e3;border-radius:6px;padding:0 12px;font-size:13px;color:#1f2329;outline:none;transition:0.2s;}
+.form-input:focus{border-color:#3370ff;box-shadow:0 0 0 2px rgba(51,112,255,0.1);}
+.form-input.short{max-width:120px;}
+.form-select{height:36px;border:1px solid #dee0e3;border-radius:6px;padding:0 12px;font-size:13px;color:#1f2329;outline:none;background:#fff;max-width:200px;cursor:pointer;}
+.form-hint{font-size:12px;color:#8f959e;}
+.form-switch{display:flex;align-items:center;gap:8px;height:36px;}
+.switch{width:40px;height:22px;border-radius:11px;background:#c9cdd4;position:relative;cursor:pointer;transition:0.2s;}
+.switch.on{background:#3370ff;}
+.switch::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.15);}
+.switch.on::after{left:20px;}
+.switch-label{font-size:13px;color:#1f2329;}
+.form-textarea{width:100%;max-width:400px;height:68px;border:1px solid #dee0e3;border-radius:6px;padding:10px 12px;font-size:13px;color:#1f2329;outline:none;resize:vertical;font-family:inherit;}
+.form-textarea:focus{border-color:#3370ff;}
+
+.btn-row{display:flex;gap:10px;margin-top:24px;padding-top:16px;border-top:1px solid #f0f0f0;}
+.btn{padding:8px 20px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:0.15s;}
+.btn-primary{background:#3370ff;color:#fff;}
+.btn-primary:hover{background:#245bdb;}
+.btn-primary:active{transform:scale(0.97);}
+.btn-default{background:#fff;color:#1f2329;border:1px solid #dee0e3;}
+.btn-default:hover{background:#f5f6f8;}
+.btn-danger{background:#fff;color:#f54a45;border:1px solid #fde2e2;}
+.btn-danger:hover{background:#fff5f5;}
+
+.status-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:500;}
+.status-tag.active{background:#e8ffea;color:#00b42a;}
+.status-tag.inactive{background:#f2f3f5;color:#8f959e;}
+
+.data-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
+.data-card{background:#f7f8fa;border-radius:8px;padding:16px;text-align:center;}
+.data-card .value{font-size:24px;font-weight:700;color:#1f2329;margin-bottom:4px;}
+.data-card .label{font-size:12px;color:#8f959e;}
+
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-20px);background:#1f2329;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:0.3s;z-index:9999;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="layout">
+    <div class="sidebar">
+        <div class="logo">盖世游戏后台</div>
+        <div class="nav-item">运营活动管理</div>
+        <div class="nav-item">Push推送管理</div>
+        <div class="nav-item on">新手套餐活动</div>
+        <div class="nav-item">充值SKU管理</div>
+        <div class="nav-item">用户管理</div>
+        <div class="nav-item">数据看板</div>
+    </div>
+    <div class="main">
+        <div class="page-title">新手套餐活动配置</div>
+        <div class="page-desc">配置新用户专属套餐活动的SKU、触发规则和展示文案。活动变更即时生效，已购买用户不受影响。</div>
+
+        <!-- 活动状态 -->
+        <div class="card">
+            <div class="card-title">活动状态 <span class="status-tag active" id="statusTag">● 进行中</span></div>
+            <div class="data-row">
+                <div class="data-card"><div class="value" id="dShow">12,847</div><div class="label">弹窗展示数</div></div>
+                <div class="data-card"><div class="value" id="dBuy">1,926</div><div class="label">购买人数</div></div>
+                <div class="data-card"><div class="value" id="dRate">15.0%</div><div class="label">购买转化率</div></div>
+                <div class="data-card"><div class="value" id="dCheckin">62.3%</div><div class="label">签到完成率</div></div>
+            </div>
+        </div>
+
+        <!-- 基础配置 -->
+        <div class="card">
+            <div class="card-title">基础配置</div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>活动开关</div>
+                <div class="form-content">
+                    <div class="form-switch">
+                        <div class="switch on" id="actSwitch" onclick="toggleSwitch(this)"></div>
+                        <span class="switch-label">开启后对所有符合条件的新用户生效</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>活动有效天数</div>
+                <div class="form-content">
+                    <input class="form-input short" type="number" value="7" min="1" max="30">
+                    <div class="form-hint">从用户首次看到弹窗开始计算，范围1-30天</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>弹窗触发频率</div>
+                <div class="form-content">
+                    <select class="form-select" id="freqSelect" onchange="toggleFreqInput()">
+                        <option value="once">永久1次</option>
+                        <option value="daily" selected>1日1次</option>
+                        <option value="custom">自定义（X日1次）</option>
+                    </select>
+                    <input class="form-input short" type="number" value="3" min="1" max="7" id="freqDays" style="display:none;">
+                    <div class="form-hint">控制未购买用户每次进入触发页面时的弹窗频率</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>弹窗标题</div>
+                <div class="form-content">
+                    <input class="form-input" type="text" value="新人专享限时福利" maxlength="20">
+                    <div class="form-hint">最多20字</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>时长有效期</div>
+                <div class="form-content">
+                    <input class="form-input short" type="number" value="30" min="1" max="365">
+                    <div class="form-hint">自获取后顺延X自然天，过期时长作废</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 套餐A -->
+        <div class="card">
+            <div class="card-title">套餐A配置 <span class="badge">8小时体验套餐</span></div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>套餐名称</div>
+                <div class="form-content"><input class="form-input" type="text" value="8小时体验套餐" maxlength="20"><div class="form-hint">最多20字</div></div>
+            </div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>标签文案</div>
+                <div class="form-content"><input class="form-input" type="text" value="新人尝鲜特惠" maxlength="8"><div class="form-hint">最多8字，展示在卡片左上角</div></div>
+            </div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>现价</div>
+                <div class="form-content"><input class="form-input short" type="number" value="6.9" step="0.1" min="0.1"><div class="form-hint">单位：元</div></div>
+            </div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>原价（划线价）</div>
+                <div class="form-content"><input class="form-input short" type="number" value="26" step="1" min="1"><div class="form-hint">必须高于现价</div></div>
+            </div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>立即到账时长</div>
+                <div class="form-content"><input class="form-input short" type="number" value="120" min="1"><div class="form-hint">单位：分钟（120分钟=2小时）</div></div>
+            </div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>每日赠送时长</div>
+                <div class="form-content"><input class="form-input short" type="number" value="60" min="1"><div class="form-hint">单位：分钟，连续6天每天到账</div></div>
+            </div>
+            <div class="form-row">
+                <div class="form-label">描述文案</div>
+                <div class="form-content"><textarea class="form-textarea">立即到账2小时 + 后续6天每天领1小时</textarea><div class="form-hint">最多50字，展示在套餐卡片中</div></div>
+            </div>
+        </div>
+
+        <!-- 套餐B -->
+        <div class="card">
+            <div class="card-title">套餐B配置 <span class="badge">20小时畅玩套餐</span></div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>套餐名称</div>
+                <div class="form-content"><input class="form-input" type="text" value="20小时畅玩套餐" maxlength="20"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>标签文案</div>
+                <div class="form-content"><input class="form-input" type="text" value="新人畅玩专享" maxlength="8"><div class="form-hint">最多8字</div></div>
+            </div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>现价</div>
+                <div class="form-content"><input class="form-input short" type="number" value="19.9" step="0.1" min="0.1"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>原价（划线价）</div>
+                <div class="form-content"><input class="form-input short" type="number" value="60" step="1" min="1"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>立即到账时长</div>
+                <div class="form-content"><input class="form-input short" type="number" value="480" min="1"><div class="form-hint">单位：分钟（480分钟=8小时）</div></div>
+            </div>
+            <div class="form-row">
+                <div class="form-label"><span class="required">*</span>每日赠送时长</div>
+                <div class="form-content"><input class="form-input short" type="number" value="120" min="1"><div class="form-hint">单位：分钟，连续6天每天到账</div></div>
+            </div>
+            <div class="form-row">
+                <div class="form-label">描述文案</div>
+                <div class="form-content"><textarea class="form-textarea">立即到账8小时 + 后续6天每天领2小时</textarea></div>
+            </div>
+            <div class="form-row">
+                <div class="form-label">标记为推荐</div>
+                <div class="form-content">
+                    <div class="form-switch"><div class="switch on" onclick="toggleSwitch(this)"></div><span class="switch-label">开启后卡片显示"推荐"角标</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="saveConfig()">保存配置</button>
+            <button class="btn btn-default" onclick="showToast('已预览弹窗效果')">预览弹窗</button>
+            <button class="btn btn-danger" onclick="showToast('活动已下线')">下线活动</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function toggleSwitch(el){
+    el.classList.toggle('on');
+}
+function toggleFreqInput(){
+    const sel=document.getElementById('freqSelect');
+    document.getElementById('freqDays').style.display=sel.value==='custom'?'block':'none';
+}
+function saveConfig(){
+    showToast('配置已保存，即时生效');
+}
+function showToast(msg){
+    const t=document.getElementById('toast');
+    t.textContent=msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>
