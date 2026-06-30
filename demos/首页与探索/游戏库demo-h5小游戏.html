@@ -261,6 +261,23 @@ body{background:#000;color:#fff;height:100vh;width:100vw;display:flex;align-item
 .h5-rank-play{padding:6px 14px;background:var(--h5);color:#fff;border-radius:14px;font-size:12px;font-weight:600;flex-shrink:0;cursor:pointer;transition:0.2s;}
 .h5-rank-play:hover{opacity:0.85;}
 
+/* H5列表样式（快爆风格） */
+.h5-list{display:flex;flex-direction:column;gap:0;}
+.h5-list-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:0.15s;}
+.h5-list-item:hover{background:rgba(255,255,255,0.03);margin:0 -6px;padding:12px 6px;}
+.h5-list-item:last-child{border-bottom:none;}
+.h5-list-item img{width:60px;height:60px;border-radius:14px;object-fit:cover;background:#1a2332;flex-shrink:0;}
+.h5-list-info{flex:1;display:flex;flex-direction:column;gap:4px;overflow:hidden;}
+.h5-list-info .name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.h5-list-info .tags{display:flex;gap:6px;}
+.h5-tag{padding:2px 8px;border-radius:4px;font-size:10px;background:rgba(16,185,129,0.1);color:var(--h5);}
+.h5-list-info .players{font-size:11px;color:var(--dim);display:flex;align-items:center;gap:4px;}
+.h5-list-info .players i{font-size:10px;color:#ff6b35;}
+
+/* 排序按钮 */
+.h5-sort-btn{padding:4px 10px;font-size:11px;color:var(--dim);border-radius:12px;cursor:pointer;transition:0.2s;border:1px solid var(--border);}
+.h5-sort-btn.on{color:#fff;background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);}
+
 /* 排行榜页 */
 .rank-page{display:none;flex-direction:column;padding:0 16px 16px;gap:0;}
 .rank-page.active{display:flex;}
@@ -502,28 +519,42 @@ function openSubpage(name){
     sp.querySelector('.back').addEventListener('click',()=>sp.remove());
 }
 
+let h5Sort='hot';
 function renderH5Port(){
     const el=document.getElementById('pContent');
-    const games=getH5Filtered();
+    let games=getH5Filtered();
+    if(h5Sort==='new') games=[...games].reverse();
     el.innerHTML=`
-        <div class="my-header">
-            <div class="left"><div class="title">我的游戏</div><div class="count">${games.length}款游戏</div></div>
-            <div class="right">
-                <div class="search-trigger" id="searchTrigger">
-                    <div class="s-icon"><i class="fas fa-search"></i></div>
-                    <div class="s-box"><input type="text" placeholder="搜索游戏名"><div class="s-close"><i class="fas fa-times"></i></div></div>
-                </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <div class="h5-cat-row" style="flex:1;padding-bottom:0;">
+                ${h5Categories.map(c=>`<div class="h5-cat${c===h5CatFilter?' on':''}" data-cat="${c}">${c}</div>`).join('')}
+            </div>
+            <div style="display:flex;gap:4px;flex-shrink:0;">
+                <div class="h5-sort-btn${h5Sort==='hot'?' on':''}" data-sort="hot">热门</div>
+                <div class="h5-sort-btn${h5Sort==='new'?' on':''}" data-sort="new">最新</div>
             </div>
         </div>
-        <div class="game-grid">
-            ${games.map(g=>`<div class="gc" onclick="launchH5('${g.name}')"><div class="h5-badge">免登录</div><img src="${g.cover}" style="background:#1a2332;"><div class="h5-play-btn"><i class="fas fa-play"></i></div><div class="gc-info"><div class="t">${g.name}</div><div class="m"><i class="fas fa-users"></i> ${g.players}</div></div></div>`).join('')}
+        <div class="my-header" style="margin-bottom:8px;">
+            <div class="left"><div class="title">全部小游戏</div><div class="count">${games.length}款</div></div>
+        </div>
+        <div class="h5-list">
+            ${games.map(g=>`<div class="h5-list-item" onclick="launchH5('${g.name}')">
+                <img src="${g.cover}">
+                <div class="h5-list-info">
+                    <div class="name">${g.name}</div>
+                    <div class="tags"><span class="h5-tag">${g.cat}</span></div>
+                    <div class="players"><i class="fas fa-fire"></i> ${g.players}</div>
+                </div>
+                <div class="h5-rank-play">开始玩</div>
+            </div>`).join('')}
         </div>
     `;
-    const st=document.getElementById('searchTrigger');
-    if(st){
-        st.querySelector('.s-icon').addEventListener('click',()=>{st.classList.toggle('open');const inp=st.querySelector('input');if(st.classList.contains('open'))inp.focus();});
-        st.querySelector('.s-close').addEventListener('click',()=>{st.classList.remove('open');st.querySelector('input').value='';});
-    }
+    el.querySelectorAll('.h5-cat').forEach(c=>{
+        c.addEventListener('click',()=>setH5Cat(c.dataset.cat));
+    });
+    el.querySelectorAll('.h5-sort-btn').forEach(b=>{
+        b.addEventListener('click',()=>{h5Sort=b.dataset.sort;render();});
+    });
 }
 
 function renderPort(){
