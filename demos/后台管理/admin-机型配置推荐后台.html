@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameHub Admin - 机型配置推荐</title>
+    <style>
+        :root {
+            --primary-color: #1677ff;
+            --primary-bg: #e6f4ff;
+            --text-color: #333;
+            --text-secondary: #8c8c8c;
+            --border-color: #f0f0f0;
+            --bg-color: #f5f5f5;
+            --sidebar-width: 240px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text-color);
+            background: var(--bg-color);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #fff;
+            height: 100vh;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .brand {
+            height: 56px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f1f1f;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .brand svg { margin-right: 8px; color: var(--primary-color); }
+        .menu-container { flex: 1; overflow-y: auto; padding: 12px 0; }
+        .menu-group { margin-bottom: 4px; }
+        .menu-header {
+            display: flex;
+            align-items: center;
+            height: 40px;
+            padding: 0 16px 0 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        .menu-header:hover { color: var(--primary-color); }
+        .submenu { list-style: none; }
+        .submenu-item {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding-left: 48px;
+            font-size: 14px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .submenu-item:hover { color: var(--primary-color); }
+        .submenu-item.active {
+            background: var(--primary-bg);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        .submenu-item.active::after {
+            content: '';
+            position: absolute;
+            right: 0; top: 0; bottom: 0;
+            width: 3px;
+            background: var(--primary-color);
+        }
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .header {
+            height: 56px;
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 24px;
+            flex-shrink: 0;
+        }
+        .header-avatar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        .avatar-circle {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: var(--primary-color); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
+        }
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+        .page-section { display: none; }
+        .page-section.active { display: block; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .page-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f1f1f;
+            margin-bottom: 20px;
+        }
+        .filter-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-item { display: flex; align-items: center; gap: 8px; }
+        .filter-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+        .filter-input, .filter-select {
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .filter-input:focus, .filter-select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(22,119,255,0.1); }
+        .btn {
+            padding: 6px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+            color: var(--text-color);
+        }
+        .btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .btn-primary { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+        .btn-primary:hover { background: #4096ff; }
+        .btn-success { background: #52c41a; color: #fff; border-color: #52c41a; }
+        .btn-success:hover { background: #73d13d; }
+        .table-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .table-card-header {
+            padding: 16px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th, .data-table td {
+            text-align: left;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+        .data-table th {
+            color: var(--text-secondary);
+            font-weight: 500;
+            background: #fafafa;
+        }
+        .data-table tr:hover td { background: #fafafa; }
+        .action-link {
+            color: var(--primary-color);
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .action-link:hover { text-decoration: underline; }
+        .back-btn {
+            background: #fff;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+        .back-btn:hover { color: var(--primary-color); border-color: var(--primary-color); }
+        .load-more {
+            text-align: center;
+            padding: 12px;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 14px;
+            border-top: 1px solid var(--border-color);
+        }
+        .load-more:hover { background: #fafafa; }
+        .rate-good { color: #52c41a; font-weight: 500; }
+        .rate-mid { color: #faad14; font-weight: 500; }
+        .rate-bad { color: #ff4d4f; font-weight: 500; }
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: #fff;
+            border-radius: 12px;
+            width: 520px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.15);
+        }
+        .modal-header {
+            padding: 20px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-close {
+            width: 28px; height: 28px;
+            border: none; background: transparent;
+            font-size: 18px; cursor: pointer;
+            border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .modal-close:hover { background: #f5f5f5; }
+        .modal-body { padding: 24px; }
+        /* 人群圈选 */
+        .condition-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .condition-label {
+            width: 120px;
+            flex-shrink: 0;
+            font-size: 14px;
+            font-weight: 500;
+            padding-top: 6px;
+        }
+        .tag-input-wrap {
+            flex: 1;
+            position: relative;
+        }
+        .tag-input-box {
+            min-height: 36px;
+            padding: 4px 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-items: center;
+            cursor: pointer;
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+        .tag-input-box:hover { border-color: #4096ff; }
+        .tag-input-box.open { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(22,119,255,0.1); }
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--primary-bg);
+            color: var(--primary-color);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 12px;
+            line-height: 20px;
+        }
+        .tag-close { cursor: pointer; opacity: 0.7; font-size: 14px; }
+        .tag-close:hover { opacity: 1; }
+        .tag-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0; right: 0;
+            background: #fff;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            z-index: 100;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 4px 0;
+        }
+        .tag-dropdown.show { display: block; }
+        .tag-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .tag-option:hover { background: #f5f7fa; }
+        .tag-option input { cursor: pointer; accent-color: var(--primary-color); }
+        .result-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .result-count { font-size: 15px; font-weight: 500; }
+        .result-count span { color: var(--primary-color); font-size: 20px; font-weight: 700; }
+        .result-actions { display: flex; gap: 8px; }
+        /* 日期范围选择器 */
+        .date-range-wrap { display: flex; flex-direction: column; gap: 8px; }
+        .date-shortcuts { display: flex; gap: 6px; }
+        .date-shortcut {
+            padding: 3px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+            color: var(--text-color);
+        }
+        .date-shortcut:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .date-shortcut.active { background: var(--primary-bg); border-color: var(--primary-color); color: var(--primary-color); font-weight: 500; }
+        .date-inputs { display: flex; align-items: center; gap: 8px; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="brand">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            GameHub Admin
+        </div>
+        <div class="menu-container">
+            <div class="menu-group">
+                <div class="menu-header">数据报表</div>
+                <ul class="submenu">
+                    <li class="submenu-item active" onclick="switchPage('chip-report')">芯片运行数据</li>
+                    <li class="submenu-item" onclick="switchPage('game-report')">游戏运行数据</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+        <div class="header">
+            <div class="header-avatar">
+                <div class="avatar-circle">运</div>
+                运营管理员
+            </div>
+        </div>
+        <div class="content-scroll">
+
+            <!-- 模块一：芯片运行数据 一级 -->
+            <div class="page-section active" id="page-chip-report">
+                <div class="page-title">芯片运行数据报表</div>
+                <div class="filter-card">
+                    <div class="filter-item">
+                        <span class="filter-label">日期</span>
+                        <div class="date-range-wrap">
+                            <div class="date-shortcuts">
+                                <span class="date-shortcut active" onclick="setDateRange(this,'yesterday')">昨日</span>
+                                <span class="date-shortcut" onclick="setDateRange(this,'7d')">近7天</span>
+                                <span class="date-shortcut" onclick="setDateRange(this,'30d')">近一个月</span>
+                            </div>
+                            <div class="date-inputs">
+                                <input type="date" class="filter-input" id="chip-date-start" value="2026-06-29">
+                                <span style="color:#999;font-size:13px">至</span>
+                                <input type="date" class="filter-input" id="chip-date-end" value="2026-06-29">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-item">
+                        <span class="filter-label">芯片</span>
+                        <input type="text" class="filter-input" placeholder="搜索芯片名称">
+                    </div>
+                    <button class="btn btn-primary" onclick="alert('查询成功')">查询</button>
+                    <button class="btn">重置</button>
+                    <button class="btn" onclick="alert('导出成功')">导出CSV</button>
+                </div>
+                <div class="table-card">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>日期</th><th>芯片</th><th>游戏启动数</th><th>启动成功数</th><th>成功运行数</th><th>成功运行率</th><th>操作</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>2026-06-29</td><td>骁龙8sGen3 12g</td><td>2,000</td><td>1,800</td><td>1,000</td><td class="rate-good">50%</td><td><a class="action-link" onclick="showChipDetail('骁龙8sGen3 12g')">查看详情</a></td></tr>
+                            <tr><td>2026-06-29</td><td>骁龙8Elite 12g</td><td>1,800</td><td>900</td><td>450</td><td class="rate-mid">25%</td><td><a class="action-link" onclick="showChipDetail('骁龙8Elite 12g')">查看详情</a></td></tr>
+                            <tr><td>2026-06-29</td><td>骁龙8EliteGen5 16g</td><td>1,500</td><td>1,000</td><td>500</td><td class="rate-mid">33%</td><td><a class="action-link" onclick="showChipDetail('骁龙8EliteGen5 16g')">查看详情</a></td></tr>
+                            <tr><td>2026-06-29</td><td>天玑9300</td><td>1,000</td><td>800</td><td>400</td><td class="rate-mid">40%</td><td><a class="action-link" onclick="showChipDetail('天玑9300')">查看详情</a></td></tr>
+                            <tr><td>2026-06-29</td><td>天玑9400</td><td>500</td><td>500</td><td>250</td><td class="rate-good">50%</td><td><a class="action-link" onclick="showChipDetail('天玑9400')">查看详情</a></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 模块一：芯片运行数据 二级 -->
+            <div class="page-section" id="page-chip-detail">
+                <button class="back-btn" onclick="backToChipList()">← 返回</button>
+                <div class="page-title" id="chip-detail-title">骁龙8sGen3 12g - 设备型号启动数据</div>
+                <div class="table-card">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>排序</th><th>设备型号</th><th>游戏启动数</th><th>启动成功数</th><th>成功运行数</th><th>成功运行率</th></tr>
+                        </thead>
+                        <tbody id="chip-detail-body">
+                            <tr><td>1</td><td>iQOO Z9 Turbo</td><td>600</td><td>550</td><td>300</td><td class="rate-good">50%</td></tr>
+                            <tr><td>2</td><td>真我GT Neo6</td><td>450</td><td>400</td><td>200</td><td class="rate-mid">44%</td></tr>
+                            <tr><td>3</td><td>红米Turbo 3</td><td>380</td><td>350</td><td>180</td><td class="rate-mid">47%</td></tr>
+                            <tr><td>4</td><td>OPPO K12</td><td>320</td><td>280</td><td>160</td><td class="rate-good">50%</td></tr>
+                            <tr><td>5</td><td>vivo Y200 GT</td><td>250</td><td>220</td><td>110</td><td class="rate-mid">44%</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="load-more" id="chip-more" onclick="showMoreChipDevices()">点击查看更多</div>
+                </div>
+            </div>
+
+            <!-- 模块二：游戏运行数据 一级 -->
+            <div class="page-section" id="page-game-report">
+                <div class="page-title">游戏运行数据报表</div>
+                <div class="filter-card">
+                    <div class="filter-item">
+                        <span class="filter-label">日期</span>
+                        <div class="date-range-wrap">
+                            <div class="date-shortcuts">
+                                <span class="date-shortcut active" onclick="setDateRange(this,'yesterday')">昨日</span>
+                                <span class="date-shortcut" onclick="setDateRange(this,'7d')">近7天</span>
+                                <span class="date-shortcut" onclick="setDateRange(this,'30d')">近一个月</span>
+                            </div>
+                            <div class="date-inputs">
+                                <input type="date" class="filter-input" id="game-date-start" value="2026-06-29">
+                                <span style="color:#999;font-size:13px">至</span>
+                                <input type="date" class="filter-input" id="game-date-end" value="2026-06-29">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-item">
+                        <span class="filter-label">游戏</span>
+                        <input type="text" class="filter-input" placeholder="搜索游戏名称/编号">
+                    </div>
+                    <button class="btn btn-primary" onclick="alert('查询成功')">查询</button>
+                    <button class="btn">重置</button>
+                    <button class="btn" onclick="alert('导出成功')">导出CSV</button>
+                </div>
+                <div class="table-card">
+                    <div class="table-card-header">游戏列表</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>日期</th><th>游戏名称</th><th>游戏编号</th><th>启动设备数</th><th>成功设备数</th><th>失败设备数</th><th>运行设备数</th><th>运行率</th><th>操作</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>2026-06-29</td><td>Grand Theft Auto V Legacy</td><td>2551</td><td>2,000</td><td>1,800</td><td>200</td><td>1,000</td><td class="rate-good">50%</td><td><a class="action-link" onclick="showGameDetail('Grand Theft Auto V Legacy')">查看详情</a></td></tr>
+                            <tr><td>2026-06-29</td><td>Forza Horizon 6</td><td>163883</td><td>1,800</td><td>900</td><td>900</td><td>450</td><td class="rate-mid">25%</td><td><a class="action-link" onclick="showGameDetail('Forza Horizon 6')">查看详情</a></td></tr>
+                            <tr><td>2026-06-29</td><td>Cyberpunk 2077</td><td>10510</td><td>1,500</td><td>1,000</td><td>500</td><td>500</td><td class="rate-mid">33%</td><td><a class="action-link" onclick="showGameDetail('Cyberpunk 2077')">查看详情</a></td></tr>
+                            <tr><td>2026-06-29</td><td>Black Myth: Wukong</td><td>8153</td><td>1,000</td><td>800</td><td>200</td><td>400</td><td class="rate-mid">40%</td><td><a class="action-link" onclick="showGameDetail('Black Myth: Wukong')">查看详情</a></td></tr>
+                            <tr><td>2026-06-29</td><td>Forza Horizon 5</td><td>95703</td><td>500</td><td>500</td><td>0</td><td>250</td><td class="rate-good">50%</td><td><a class="action-link" onclick="showGameDetail('Forza Horizon 5')">查看详情</a></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 模块二：游戏运行数据 二级 -->
+            <div class="page-section" id="page-game-detail">
+                <button class="back-btn" onclick="backToGameList()">← 返回</button>
+                <div class="page-title" id="game-detail-title">Grand Theft Auto V Legacy - 设备分析</div>
+
+                <div class="table-card">
+                    <div class="table-card-header">游戏启动设备数 - 芯片分布</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>排序</th><th>芯片</th><th>设备数量</th><th>设备占比</th><th>启动成功设备数</th><th>启动失败设备数</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>骁龙8sGen3 12g</td><td>1,000</td><td>50%</td><td>1,000</td><td>0</td></tr>
+                            <tr><td>2</td><td>骁龙8Elite 12g</td><td>500</td><td>25%</td><td>450</td><td>50</td></tr>
+                            <tr><td>3</td><td>骁龙8EliteGen5 16g</td><td>200</td><td>10%</td><td>180</td><td>20</td></tr>
+                            <tr><td>4</td><td>天玑9300</td><td>200</td><td>10%</td><td>100</td><td>100</td></tr>
+                            <tr><td>5</td><td>天玑9400</td><td>50</td><td>2.5%</td><td>30</td><td>20</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="load-more" onclick="alert('展开更多数据')">点击查看更多</div>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-card-header">成功运行设备数 - 配置方案分布</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>排序</th><th>芯片</th><th>配置方案ID</th><th>配置设备数</th><th>设备占比</th><th>操作</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>骁龙8sGen3 12g</td><td>10086</td><td>500</td><td>50%</td><td><a class="action-link" onclick="showConfigModal('10086')">具体配置方案查看</a></td></tr>
+                            <tr><td></td><td></td><td>10000</td><td>250</td><td>25%</td><td><a class="action-link" onclick="showConfigModal('10000')">具体配置方案查看</a></td></tr>
+                            <tr><td>2</td><td>骁龙8Elite 12g</td><td>12138</td><td>100</td><td>10%</td><td><a class="action-link" onclick="showConfigModal('12138')">具体配置方案查看</a></td></tr>
+                            <tr><td>3</td><td>骁龙8EliteGen5 16g</td><td>12312</td><td>50</td><td>5%</td><td><a class="action-link" onclick="showConfigModal('12312')">具体配置方案查看</a></td></tr>
+                            <tr><td>4</td><td>天玑9300</td><td>12345</td><td>50</td><td>5%</td><td><a class="action-link" onclick="showConfigModal('12345')">具体配置方案查看</a></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="load-more" onclick="alert('展开更多数据')">点击查看更多</div>
+                </div>
+            </div>
+
+            <!-- 模块三：人群圈选与导出 -->
+            <div class="page-section" id="page-crowd-select">
+                <div class="page-title">人群圈选与导出</div>
+                <div class="table-card" style="padding: 24px;">
+                    <div class="condition-row">
+                        <div class="condition-label">设备芯片</div>
+                        <select class="filter-select">
+                            <option>包含</option>
+                            <option>不包含</option>
+                        </select>
+                        <div class="tag-input-wrap" id="wrap-chip">
+                            <div class="tag-input-box" onclick="toggleDropdown('chip')">
+                                <span style="color:#bbb;font-size:13px" id="placeholder-chip">点击选择芯片</span>
+                            </div>
+                            <div class="tag-dropdown" id="dropdown-chip">
+                                <label class="tag-option"><input type="checkbox" value="骁龙8sGen3 12g" onchange="updateTags('chip')"> 骁龙8sGen3 12g</label>
+                                <label class="tag-option"><input type="checkbox" value="骁龙8Elite 12g" onchange="updateTags('chip')"> 骁龙8Elite 12g</label>
+                                <label class="tag-option"><input type="checkbox" value="骁龙8EliteGen5 16g" onchange="updateTags('chip')"> 骁龙8EliteGen5 16g</label>
+                                <label class="tag-option"><input type="checkbox" value="天玑9300" onchange="updateTags('chip')"> 天玑9300</label>
+                                <label class="tag-option"><input type="checkbox" value="天玑9400" onchange="updateTags('chip')"> 天玑9400</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="condition-row">
+                        <div class="condition-label">设备厂商</div>
+                        <select class="filter-select">
+                            <option>包含</option>
+                            <option>不包含</option>
+                        </select>
+                        <div class="tag-input-wrap" id="wrap-vendor">
+                            <div class="tag-input-box" onclick="toggleDropdown('vendor')">
+                                <span style="color:#bbb;font-size:13px" id="placeholder-vendor">点击选择厂商</span>
+                            </div>
+                            <div class="tag-dropdown" id="dropdown-vendor">
+                                <label class="tag-option"><input type="checkbox" value="小米" onchange="updateTags('vendor')"> 小米</label>
+                                <label class="tag-option"><input type="checkbox" value="vivo" onchange="updateTags('vendor')"> vivo</label>
+                                <label class="tag-option"><input type="checkbox" value="OPPO" onchange="updateTags('vendor')"> OPPO</label>
+                                <label class="tag-option"><input type="checkbox" value="真我" onchange="updateTags('vendor')"> 真我</label>
+                                <label class="tag-option"><input type="checkbox" value="iQOO" onchange="updateTags('vendor')"> iQOO</label>
+                                <label class="tag-option"><input type="checkbox" value="一加" onchange="updateTags('vendor')"> 一加</label>
+                                <label class="tag-option"><input type="checkbox" value="荣耀" onchange="updateTags('vendor')"> 荣耀</label>
+                                <label class="tag-option"><input type="checkbox" value="华为" onchange="updateTags('vendor')"> 华为</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="condition-row">
+                        <div class="condition-label">最近下载游戏</div>
+                        <select class="filter-select">
+                            <option>包含</option>
+                            <option>不包含</option>
+                        </select>
+                        <div class="tag-input-wrap" id="wrap-game">
+                            <div class="tag-input-box" onclick="toggleDropdown('game')">
+                                <span style="color:#bbb;font-size:13px" id="placeholder-game">点击选择游戏</span>
+                            </div>
+                            <div class="tag-dropdown" id="dropdown-game">
+                                <label class="tag-option"><input type="checkbox" value="GTA V" onchange="updateTags('game')"> GTA V</label>
+                                <label class="tag-option"><input type="checkbox" value="Forza Horizon 6" onchange="updateTags('game')"> Forza Horizon 6</label>
+                                <label class="tag-option"><input type="checkbox" value="Cyberpunk 2077" onchange="updateTags('game')"> Cyberpunk 2077</label>
+                                <label class="tag-option"><input type="checkbox" value="Black Myth: Wukong" onchange="updateTags('game')"> Black Myth: Wukong</label>
+                                <label class="tag-option"><input type="checkbox" value="Forza Horizon 5" onchange="updateTags('game')"> Forza Horizon 5</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="result-bar">
+                    <div class="result-count">预估人数：<span id="crowd-count">--</span></div>
+                    <div class="result-actions">
+                        <button class="btn btn-primary" onclick="document.getElementById('crowd-count').textContent='12,580'">查询人数</button>
+                        <button class="btn btn-success" onclick="alert('人群包导出成功！')">导出人群包</button>
+                        <button class="btn" onclick="resetCrowd()">重置</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 配置方案详情弹窗 -->
+    <div class="modal-overlay" id="config-modal" onclick="closeConfigModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span id="config-modal-title">配置方案详情 - ID: 10086</span>
+                <button class="modal-close" onclick="closeConfigModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>分类</th><th>参数名</th><th>值</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>图形</td><td>DXVK版本</td><td>2.4.1</td></tr>
+                        <tr><td>图形</td><td>VKD3D版本</td><td>2.12</td></tr>
+                        <tr><td>图形</td><td>GPU驱动</td><td>Adreno 750 v675.0</td></tr>
+                        <tr><td>兼容性</td><td>兼容层版本</td><td>Wine 9.0-rc3</td></tr>
+                        <tr><td>兼容性</td><td>CPU转译器</td><td>Box64 v0.3.0</td></tr>
+                        <tr><td>兼容性</td><td>转译参数模式</td><td>性能模式</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 日期快捷选择
+        function setDateRange(el, type) {
+            el.parentElement.querySelectorAll('.date-shortcut').forEach(s => s.classList.remove('active'));
+            el.classList.add('active');
+            const wrap = el.closest('.filter-card');
+            const startInput = wrap.querySelector('.date-inputs input:first-child');
+            const endInput = wrap.querySelector('.date-inputs input:last-of-type');
+            const today = new Date('2026-06-30');
+            let start, end;
+            if (type === 'yesterday') {
+                start = end = new Date('2026-06-29');
+            } else if (type === '7d') {
+                end = new Date('2026-06-29');
+                start = new Date('2026-06-23');
+            } else if (type === '30d') {
+                end = new Date('2026-06-29');
+                start = new Date('2026-05-30');
+            }
+            startInput.value = start.toISOString().split('T')[0];
+            endInput.value = end.toISOString().split('T')[0];
+        }
+
+        // 页面切换
+        function switchPage(page) {
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
+
+            const pageMap = {
+                'chip-report': 'page-chip-report',
+                'game-report': 'page-game-report',
+                'crowd-select': 'page-crowd-select'
+            };
+            document.getElementById(pageMap[page]).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // 芯片报表 - 查看详情
+        function showChipDetail(chipName) {
+            document.getElementById('page-chip-report').classList.remove('active');
+            document.getElementById('page-chip-detail').classList.add('active');
+            document.getElementById('chip-detail-title').textContent = chipName + ' - 设备型号启动数据';
+        }
+        function backToChipList() {
+            document.getElementById('page-chip-detail').classList.remove('active');
+            document.getElementById('page-chip-report').classList.add('active');
+        }
+
+        // 芯片详情 - 查看更多
+        function showMoreChipDevices() {
+            const tbody = document.getElementById('chip-detail-body');
+            const moreData = [
+                [6, 'Redmi Note 13 Pro', 200, 180, 90, '45%'],
+                [7, '一加 Ace 3V', 180, 160, 80, '44%'],
+                [8, '荣耀 X60', 150, 130, 70, '47%'],
+            ];
+            moreData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td class="rate-mid">${row[5]}</td>`;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('chip-more').style.display = 'none';
+        }
+
+        // 游戏报表 - 查看详情
+        function showGameDetail(gameName) {
+            document.getElementById('page-game-report').classList.remove('active');
+            document.getElementById('page-game-detail').classList.add('active');
+            document.getElementById('game-detail-title').textContent = gameName + ' - 设备分析';
+        }
+        function backToGameList() {
+            document.getElementById('page-game-detail').classList.remove('active');
+            document.getElementById('page-game-report').classList.add('active');
+        }
+
+        // 配置方案弹窗
+        function showConfigModal(id) {
+            document.getElementById('config-modal-title').textContent = '配置方案详情 - ID: ' + id;
+            document.getElementById('config-modal').classList.add('show');
+        }
+        function closeConfigModal(e) {
+            if (!e || e.target === document.getElementById('config-modal')) {
+                document.getElementById('config-modal').classList.remove('show');
+            }
+        }
+
+        // 人群圈选 - 多选标签
+        let openDropdown = null;
+        function toggleDropdown(type) {
+            const dropdown = document.getElementById('dropdown-' + type);
+            const box = dropdown.previousElementSibling;
+            if (openDropdown && openDropdown !== dropdown) {
+                openDropdown.classList.remove('show');
+                openDropdown.previousElementSibling.classList.remove('open');
+            }
+            dropdown.classList.toggle('show');
+            box.classList.toggle('open');
+            openDropdown = dropdown.classList.contains('show') ? dropdown : null;
+        }
+
+        function updateTags(type) {
+            const wrap = document.getElementById('wrap-' + type);
+            const box = wrap.querySelector('.tag-input-box');
+            const checkboxes = wrap.querySelectorAll('input[type=checkbox]');
+            const placeholder = document.getElementById('placeholder-' + type);
+
+            // 清除旧tags
+            box.querySelectorAll('.tag').forEach(t => t.remove());
+
+            let hasChecked = false;
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    hasChecked = true;
+                    const tag = document.createElement('span');
+                    tag.className = 'tag';
+                    tag.innerHTML = cb.value + ' <span class="tag-close" onclick="removeTag(event,\'' + type + '\',\'' + cb.value + '\')">×</span>';
+                    box.insertBefore(tag, placeholder);
+                }
+            });
+            placeholder.style.display = hasChecked ? 'none' : '';
+        }
+
+        function removeTag(e, type, value) {
+            e.stopPropagation();
+            const wrap = document.getElementById('wrap-' + type);
+            const cb = wrap.querySelector('input[value="' + value + '"]');
+            if (cb) cb.checked = false;
+            updateTags(type);
+        }
+
+        function resetCrowd() {
+            ['chip', 'vendor', 'game'].forEach(type => {
+                const wrap = document.getElementById('wrap-' + type);
+                wrap.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+                updateTags(type);
+            });
+            document.getElementById('crowd-count').textContent = '--';
+        }
+
+        // 点击外部关闭下拉
+        document.addEventListener('click', function(e) {
+            if (openDropdown && !e.target.closest('.tag-input-wrap')) {
+                openDropdown.classList.remove('show');
+                openDropdown.previousElementSibling.classList.remove('open');
+                openDropdown = null;
+            }
+        });
+    </script>
+</body>
+</html>
