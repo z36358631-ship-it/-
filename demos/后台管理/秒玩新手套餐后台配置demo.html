@@ -86,6 +86,11 @@ tr:hover td{background:#fafbfc;}
 .pagination .pages{display:flex;gap:4px;}
 .pagination .page-btn{width:28px;height:28px;border-radius:4px;border:1px solid #e5e6eb;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;background:#fff;}
 .pagination .page-btn.on{background:#3370ff;color:#fff;border-color:#3370ff;}
+
+.data-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
+.data-card{background:#fff;border-radius:8px;border:1px solid #e5e6eb;padding:18px;text-align:center;}
+.data-card .value{font-size:24px;font-weight:700;color:#1f2329;margin-bottom:4px;}
+.data-card .label{font-size:12px;color:#8f959e;}
 </style>
 </head>
 <body>
@@ -105,11 +110,22 @@ tr:hover td{background:#fafbfc;}
             <button class="btn btn-primary" onclick="openModal('create')">+ 新建活动</button>
         </div>
 
+        <!-- 数据统计 -->
+        <div class="data-row">
+            <div class="data-card"><div class="value">12,847</div><div class="label">弹窗展示数</div></div>
+            <div class="data-card"><div class="value">1,926</div><div class="label">购买人数</div></div>
+            <div class="data-card"><div class="value">15.0%</div><div class="label">购买转化率</div></div>
+            <div class="data-card"><div class="value">62.3%</div><div class="label">签到完成率</div></div>
+        </div>
+
         <div class="table-card">
             <div class="table-toolbar">
                 <div class="search"><input type="text" placeholder="搜索活动名称"></div>
                 <div class="filter">
                     <select><option>全部状态</option><option>进行中</option><option>未开始</option><option>已结束</option><option>已下线</option></select>
+                    <input type="date" class="form-input" style="height:32px;max-width:140px;font-size:12px;" value="2026-01-01">
+                    <span style="color:#8f959e;font-size:12px;">至</span>
+                    <input type="date" class="form-input" style="height:32px;max-width:140px;font-size:12px;" value="2026-12-31">
                 </div>
             </div>
             <table>
@@ -190,61 +206,8 @@ tr:hover td{background:#fafbfc;}
             </div>
 
             <div class="form-section">
-                <div class="form-section-title">套餐A</div>
-                <div class="form-row">
-                    <div class="form-label"><span class="req">*</span>名称</div>
-                    <div class="form-content"><input class="form-input w-md" type="text" value="8小时体验套餐"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-label"><span class="req">*</span>标签</div>
-                    <div class="form-content"><input class="form-input w-md" type="text" value="新人尝鲜特惠" maxlength="8"><div class="form-hint">最多8字</div></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-label"><span class="req">*</span>现价 / 原价</div>
-                    <div class="form-content">
-                        <div class="form-row-inline"><input class="form-input w-sm" type="number" value="6.9" step="0.1"> <span>/</span> <input class="form-input w-sm" type="number" value="26"><span>元</span></div>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-label"><span class="req">*</span>立即到账</div>
-                    <div class="form-content"><div class="form-row-inline"><input class="form-input w-sm" type="number" value="120"><span>分钟（=2小时）</span></div></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-label"><span class="req">*</span>每日赠送</div>
-                    <div class="form-content"><div class="form-row-inline"><input class="form-input w-sm" type="number" value="60"><span>分钟 × 6天</span></div></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-label">描述</div>
-                    <div class="form-content"><textarea class="form-textarea">立即到账2小时 + 后续6天每天领1小时</textarea></div>
-                </div>
-            </div>
-
-            <div class="form-section">
-                <div class="form-section-title">套餐B</div>
-                <div class="form-row">
-                    <div class="form-label"><span class="req">*</span>名称</div>
-                    <div class="form-content"><input class="form-input w-md" type="text" value="20小时畅玩套餐"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-label"><span class="req">*</span>标签</div>
-                    <div class="form-content"><input class="form-input w-md" type="text" value="新人畅玩专享" maxlength="8"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-label"><span class="req">*</span>现价 / 原价</div>
-                    <div class="form-content"><div class="form-row-inline"><input class="form-input w-sm" type="number" value="19.9" step="0.1"> <span>/</span> <input class="form-input w-sm" type="number" value="60"><span>元</span></div></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-label"><span class="req">*</span>立即到账</div>
-                    <div class="form-content"><div class="form-row-inline"><input class="form-input w-sm" type="number" value="480"><span>分钟（=8小时）</span></div></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-label"><span class="req">*</span>每日赠送</div>
-                    <div class="form-content"><div class="form-row-inline"><input class="form-input w-sm" type="number" value="120"><span>分钟 × 6天</span></div></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-label">描述</div>
-                    <div class="form-content"><textarea class="form-textarea">立即到账8小时 + 后续6天每天领2小时</textarea></div>
-                </div>
+                <div class="form-section-title" style="display:flex;align-items:center;justify-content:space-between;">套餐配置 <button class="btn btn-sm" style="background:#e8f3ff;color:#3370ff;border:1px solid #bedaff;" onclick="addSku()">+ 添加套餐</button></div>
+                <div id="skuList"></div>
             </div>
         </div>
         <div class="modal-footer">
@@ -295,14 +258,6 @@ function renderTable(){
     </tr>`).join('');
 }
 
-let editId=null;
-function openModal(mode,id){
-    editId=mode==='edit'?id:null;
-    document.getElementById('modalTitle').textContent=mode==='edit'?'编辑活动':'新建活动';
-    document.getElementById('modalMask').classList.add('show');
-}
-function closeModal(){document.getElementById('modalMask').classList.remove('show');}
-
 function saveActivity(){
     closeModal();
     showToast(editId?'活动已更新，即时生效':'活动已创建');
@@ -332,6 +287,52 @@ function offlineActivity(id){
 function toggleFreq(){
     document.getElementById('fFreqX').style.display=document.getElementById('fFreq').value==='custom'?'block':'none';
 }
+
+// 动态套餐管理
+let skuCount=0;
+function renderSkuList(){
+    const el=document.getElementById('skuList');
+    if(!el) return;
+    if(skuCount===0) addSku();
+}
+function addSku(){
+    skuCount++;
+    const el=document.getElementById('skuList');
+    const idx=skuCount;
+    const div=document.createElement('div');
+    div.className='sku-block';
+    div.id='sku-'+idx;
+    div.style.cssText='border:1px solid #e5e6eb;border-radius:8px;padding:16px;margin-bottom:12px;position:relative;';
+    div.innerHTML=`
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <b style="font-size:13px;">套餐 ${idx}</b>
+            ${idx>1?'<button class="btn-text danger" onclick="removeSku('+idx+')">删除</button>':'<span style="font-size:11px;color:#8f959e;">默认套餐</span>'}
+        </div>
+        <div class="form-row"><div class="form-label"><span class="req">*</span>名称</div><div class="form-content"><input class="form-input w-md" type="text" value="${idx===1?'8小时体验套餐':''}"></div></div>
+        <div class="form-row"><div class="form-label"><span class="req">*</span>标签</div><div class="form-content"><input class="form-input w-md" type="text" value="${idx===1?'新人尝鲜特惠':''}" maxlength="8"><div class="form-hint">最多8字</div></div></div>
+        <div class="form-row"><div class="form-label"><span class="req">*</span>现价/原价</div><div class="form-content"><div class="form-row-inline"><input class="form-input w-sm" type="number" value="${idx===1?'6.9':''}" step="0.1"><span>/</span><input class="form-input w-sm" type="number" value="${idx===1?'26':''}"><span>元</span></div></div></div>
+        <div class="form-row"><div class="form-label"><span class="req">*</span>立即到账</div><div class="form-content"><div class="form-row-inline"><input class="form-input w-sm" type="number" value="${idx===1?'120':''}"><span>分钟</span></div></div></div>
+        <div class="form-row"><div class="form-label"><span class="req">*</span>每日赠送</div><div class="form-content"><div class="form-row-inline"><input class="form-input w-sm" type="number" value="${idx===1?'60':''}"><span>分钟 × 6天</span></div></div></div>
+        <div class="form-row"><div class="form-label">描述</div><div class="form-content"><textarea class="form-textarea">${idx===1?'立即到账2小时 + 后续6天每天领1小时':''}</textarea></div></div>
+    `;
+    el.appendChild(div);
+}
+function removeSku(idx){
+    const el=document.getElementById('sku-'+idx);
+    if(el) el.remove();
+}
+
+// 打开弹窗时初始化套餐
+let editId=null;
+function openModal(mode,id){
+    editId=mode==='edit'?id:null;
+    document.getElementById('modalTitle').textContent=mode==='edit'?'编辑活动':'新建活动';
+    document.getElementById('modalMask').classList.add('show');
+    skuCount=0;
+    document.getElementById('skuList').innerHTML='';
+    renderSkuList();
+}
+function closeModal(){document.getElementById('modalMask').classList.remove('show');}
 
 function showToast(msg){
     const t=document.getElementById('toast');
