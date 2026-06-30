@@ -3,62 +3,89 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>盖世游戏后台 - 新手套餐活动配置</title>
+<title>盖世游戏后台 - 新手套餐活动管理</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;}
 body{background:#f5f6f8;color:#1f2329;font-size:14px;min-height:100vh;}
 .layout{display:flex;min-height:100vh;}
 .sidebar{width:220px;background:#fff;border-right:1px solid #e5e6eb;padding:20px 0;flex-shrink:0;}
-.sidebar .logo{padding:0 20px 20px;font-size:16px;font-weight:700;color:#1f2329;border-bottom:1px solid #f0f0f0;margin-bottom:12px;}
+.sidebar .logo{padding:0 20px 20px;font-size:16px;font-weight:700;border-bottom:1px solid #f0f0f0;margin-bottom:12px;}
 .sidebar .nav-item{padding:10px 20px;font-size:13px;color:#646a73;cursor:pointer;display:flex;align-items:center;gap:8px;transition:0.15s;}
 .sidebar .nav-item:hover{background:#f5f6f8;color:#1f2329;}
 .sidebar .nav-item.on{background:#e8f3ff;color:#3370ff;font-weight:600;}
-.main{flex:1;padding:24px 32px;}
-.page-title{font-size:20px;font-weight:700;margin-bottom:6px;}
-.page-desc{font-size:13px;color:#8f959e;margin-bottom:24px;}
-.card{background:#fff;border-radius:8px;border:1px solid #e5e6eb;padding:24px;margin-bottom:16px;}
-.card-title{font-size:15px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
-.card-title .badge{font-size:11px;background:#e8f3ff;color:#3370ff;padding:2px 8px;border-radius:4px;font-weight:500;}
-.form-row{display:flex;align-items:flex-start;margin-bottom:16px;gap:12px;}
-.form-row:last-child{margin-bottom:0;}
-.form-label{width:140px;font-size:13px;color:#646a73;padding-top:8px;flex-shrink:0;text-align:right;}
-.form-label .required{color:#f54a45;margin-right:2px;}
-.form-content{flex:1;display:flex;flex-direction:column;gap:6px;}
-.form-input{width:100%;max-width:320px;height:36px;border:1px solid #dee0e3;border-radius:6px;padding:0 12px;font-size:13px;color:#1f2329;outline:none;transition:0.2s;}
-.form-input:focus{border-color:#3370ff;box-shadow:0 0 0 2px rgba(51,112,255,0.1);}
-.form-input.short{max-width:120px;}
-.form-select{height:36px;border:1px solid #dee0e3;border-radius:6px;padding:0 12px;font-size:13px;color:#1f2329;outline:none;background:#fff;max-width:200px;cursor:pointer;}
-.form-hint{font-size:12px;color:#8f959e;}
-.form-switch{display:flex;align-items:center;gap:8px;height:36px;}
-.switch{width:40px;height:22px;border-radius:11px;background:#c9cdd4;position:relative;cursor:pointer;transition:0.2s;}
-.switch.on{background:#3370ff;}
-.switch::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.15);}
-.switch.on::after{left:20px;}
-.switch-label{font-size:13px;color:#1f2329;}
-.form-textarea{width:100%;max-width:400px;height:68px;border:1px solid #dee0e3;border-radius:6px;padding:10px 12px;font-size:13px;color:#1f2329;outline:none;resize:vertical;font-family:inherit;}
-.form-textarea:focus{border-color:#3370ff;}
-
-.btn-row{display:flex;gap:10px;margin-top:24px;padding-top:16px;border-top:1px solid #f0f0f0;}
-.btn{padding:8px 20px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:0.15s;}
+.main{flex:1;padding:24px 32px;overflow-y:auto;}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.page-title{font-size:20px;font-weight:700;}
+.btn{padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:0.15s;display:inline-flex;align-items:center;gap:6px;}
 .btn-primary{background:#3370ff;color:#fff;}
 .btn-primary:hover{background:#245bdb;}
-.btn-primary:active{transform:scale(0.97);}
-.btn-default{background:#fff;color:#1f2329;border:1px solid #dee0e3;}
-.btn-default:hover{background:#f5f6f8;}
-.btn-danger{background:#fff;color:#f54a45;border:1px solid #fde2e2;}
-.btn-danger:hover{background:#fff5f5;}
+.btn-sm{padding:5px 12px;font-size:12px;}
+.btn-text{background:none;color:#3370ff;padding:4px 8px;}
+.btn-text:hover{background:#e8f3ff;border-radius:4px;}
+.btn-text.danger{color:#f54a45;}
+.btn-text.danger:hover{background:#fff5f5;}
 
-.status-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:500;}
-.status-tag.active{background:#e8ffea;color:#00b42a;}
-.status-tag.inactive{background:#f2f3f5;color:#8f959e;}
+/* 表格 */
+.table-card{background:#fff;border-radius:8px;border:1px solid #e5e6eb;overflow:hidden;}
+.table-toolbar{padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f0f0f0;}
+.table-toolbar .search{display:flex;align-items:center;gap:8px;background:#f5f6f8;border:1px solid #e5e6eb;border-radius:6px;padding:0 12px;height:32px;width:240px;}
+.table-toolbar .search input{border:none;background:none;outline:none;font-size:13px;color:#1f2329;width:100%;}
+.table-toolbar .search input::placeholder{color:#c9cdd4;}
+.table-toolbar .filter{display:flex;align-items:center;gap:8px;}
+.table-toolbar .filter select{height:32px;border:1px solid #e5e6eb;border-radius:6px;padding:0 10px;font-size:13px;background:#fff;cursor:pointer;}
+table{width:100%;border-collapse:collapse;}
+th{background:#f7f8fa;padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:#646a73;border-bottom:1px solid #e5e6eb;}
+td{padding:14px 16px;font-size:13px;border-bottom:1px solid #f0f0f0;vertical-align:middle;}
+tr:hover td{background:#fafbfc;}
+.status{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500;}
+.status.active{background:#e8ffea;color:#00b42a;}
+.status.inactive{background:#f2f3f5;color:#8f959e;}
+.status.pending{background:#fff7e6;color:#ff7d00;}
+.status.expired{background:#f2f3f5;color:#c9cdd4;}
+.actions{display:flex;gap:4px;}
 
-.data-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
-.data-card{background:#f7f8fa;border-radius:8px;padding:16px;text-align:center;}
-.data-card .value{font-size:24px;font-weight:700;color:#1f2329;margin-bottom:4px;}
-.data-card .label{font-size:12px;color:#8f959e;}
+/* 弹窗 */
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:60px 20px;overflow-y:auto;}
+.modal-mask.show{display:flex;}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:640px;box-shadow:0 12px 40px rgba(0,0,0,0.12);animation:modalIn 0.2s ease;}
+@keyframes modalIn{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 12px;}
+.modal-header .title{font-size:16px;font-weight:700;}
+.modal-header .close{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8f959e;font-size:16px;}
+.modal-header .close:hover{background:#f2f3f5;}
+.modal-body{padding:0 24px 24px;max-height:calc(100vh - 200px);overflow-y:auto;}
+.modal-footer{padding:16px 24px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:10px;}
 
+.form-section{margin-bottom:20px;}
+.form-section-title{font-size:13px;font-weight:600;color:#1f2329;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f0f0f0;}
+.form-row{display:flex;align-items:flex-start;margin-bottom:14px;gap:12px;}
+.form-label{width:110px;font-size:13px;color:#646a73;padding-top:7px;flex-shrink:0;text-align:right;}
+.form-label .req{color:#f54a45;margin-right:2px;}
+.form-content{flex:1;display:flex;flex-direction:column;gap:4px;}
+.form-input{width:100%;height:34px;border:1px solid #dee0e3;border-radius:6px;padding:0 12px;font-size:13px;color:#1f2329;outline:none;transition:0.15s;}
+.form-input:focus{border-color:#3370ff;box-shadow:0 0 0 2px rgba(51,112,255,0.08);}
+.form-input.w-sm{max-width:140px;}
+.form-input.w-md{max-width:240px;}
+.form-select{height:34px;border:1px solid #dee0e3;border-radius:6px;padding:0 10px;font-size:13px;background:#fff;cursor:pointer;outline:none;}
+.form-select:focus{border-color:#3370ff;}
+.form-hint{font-size:11px;color:#8f959e;}
+.form-row-inline{display:flex;gap:8px;align-items:center;}
+.form-row-inline span{font-size:13px;color:#646a73;}
+.form-textarea{width:100%;height:60px;border:1px solid #dee0e3;border-radius:6px;padding:8px 12px;font-size:13px;color:#1f2329;outline:none;resize:vertical;font-family:inherit;}
+
+/* 空状态 */
+.empty{padding:60px 20px;text-align:center;color:#c9cdd4;font-size:13px;}
+
+/* Toast */
 .toast{position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-20px);background:#1f2329;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:0.3s;z-index:9999;pointer-events:none;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* 分页 */
+.pagination{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #f0f0f0;}
+.pagination .info{font-size:12px;color:#8f959e;}
+.pagination .pages{display:flex;gap:4px;}
+.pagination .page-btn{width:28px;height:28px;border-radius:4px;border:1px solid #e5e6eb;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;background:#fff;}
+.pagination .page-btn.on{background:#3370ff;color:#fff;border-color:#3370ff;}
 </style>
 </head>
 <body>
@@ -73,144 +100,170 @@ body{background:#f5f6f8;color:#1f2329;font-size:14px;min-height:100vh;}
         <div class="nav-item">数据看板</div>
     </div>
     <div class="main">
-        <div class="page-title">新手套餐活动配置</div>
-        <div class="page-desc">配置新用户专属套餐活动的SKU、触发规则和展示文案。活动变更即时生效，已购买用户不受影响。</div>
-
-        <!-- 活动状态 -->
-        <div class="card">
-            <div class="card-title">活动状态 <span class="status-tag active" id="statusTag">● 进行中</span></div>
-            <div class="data-row">
-                <div class="data-card"><div class="value" id="dShow">12,847</div><div class="label">弹窗展示数</div></div>
-                <div class="data-card"><div class="value" id="dBuy">1,926</div><div class="label">购买人数</div></div>
-                <div class="data-card"><div class="value" id="dRate">15.0%</div><div class="label">购买转化率</div></div>
-                <div class="data-card"><div class="value" id="dCheckin">62.3%</div><div class="label">签到完成率</div></div>
-            </div>
+        <div class="page-header">
+            <div class="page-title">新手套餐活动管理</div>
+            <button class="btn btn-primary" onclick="openModal('create')">+ 新建活动</button>
         </div>
 
-        <!-- 基础配置 -->
-        <div class="card">
-            <div class="card-title">基础配置</div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>活动开关</div>
-                <div class="form-content">
-                    <div class="form-switch">
-                        <div class="switch on" id="actSwitch" onclick="toggleSwitch(this)"></div>
-                        <span class="switch-label">开启后对所有符合条件的新用户生效</span>
+        <div class="table-card">
+            <div class="table-toolbar">
+                <div class="search"><input type="text" placeholder="搜索活动名称"></div>
+                <div class="filter">
+                    <select><option>全部状态</option><option>进行中</option><option>未开始</option><option>已结束</option><option>已下线</option></select>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>活动名称</th>
+                        <th>套餐A</th>
+                        <th>套餐B</th>
+                        <th>弹窗频率</th>
+                        <th>活动时间</th>
+                        <th>状态</th>
+                        <th>转化率</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+            <div class="pagination">
+                <div class="info">共 3 条记录</div>
+                <div class="pages">
+                    <div class="page-btn on">1</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新建/编辑弹窗 -->
+<div class="modal-mask" id="modalMask">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="title" id="modalTitle">新建活动</div>
+            <div class="close" onclick="closeModal()">✕</div>
+        </div>
+        <div class="modal-body">
+            <div class="form-section">
+                <div class="form-section-title">基础信息</div>
+                <div class="form-row">
+                    <div class="form-label"><span class="req">*</span>活动名称</div>
+                    <div class="form-content"><input class="form-input w-md" id="fName" type="text" value="新人专享限时福利" maxlength="20"><div class="form-hint">最多20字，展示为弹窗标题</div></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label"><span class="req">*</span>活动时间</div>
+                    <div class="form-content">
+                        <div class="form-row-inline">
+                            <input class="form-input w-md" id="fStart" type="datetime-local" value="2026-07-01T00:00">
+                            <span>至</span>
+                            <input class="form-input w-md" id="fEnd" type="datetime-local" value="2026-09-30T23:59">
+                        </div>
+                        <div class="form-hint">活动整体的上下线时间段</div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label"><span class="req">*</span>用户有效期</div>
+                    <div class="form-content">
+                        <div class="form-row-inline"><input class="form-input w-sm" id="fDays" type="number" value="7" min="1" max="30"><span>天（从用户首次看到弹窗开始计算）</span></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label"><span class="req">*</span>弹窗频率</div>
+                    <div class="form-content">
+                        <div class="form-row-inline">
+                            <select class="form-select" id="fFreq" onchange="toggleFreq()">
+                                <option value="once">永久1次</option>
+                                <option value="daily" selected>1日1次</option>
+                                <option value="custom">自定义（X日1次）</option>
+                            </select>
+                            <input class="form-input w-sm" id="fFreqX" type="number" value="3" min="1" style="display:none;">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label"><span class="req">*</span>时长有效期</div>
+                    <div class="form-content">
+                        <div class="form-row-inline"><input class="form-input w-sm" type="number" value="30" min="1" max="365"><span>自然天（自获取后顺延，过期作废）</span></div>
                     </div>
                 </div>
             </div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>活动有效天数</div>
-                <div class="form-content">
-                    <input class="form-input short" type="number" value="7" min="1" max="30">
-                    <div class="form-hint">从用户首次看到弹窗开始计算，范围1-30天</div>
+
+            <div class="form-section">
+                <div class="form-section-title">套餐A</div>
+                <div class="form-row">
+                    <div class="form-label"><span class="req">*</span>名称</div>
+                    <div class="form-content"><input class="form-input w-md" type="text" value="8小时体验套餐"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label"><span class="req">*</span>标签</div>
+                    <div class="form-content"><input class="form-input w-md" type="text" value="新人尝鲜特惠" maxlength="8"><div class="form-hint">最多8字</div></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label"><span class="req">*</span>现价 / 原价</div>
+                    <div class="form-content">
+                        <div class="form-row-inline"><input class="form-input w-sm" type="number" value="6.9" step="0.1"> <span>/</span> <input class="form-input w-sm" type="number" value="26"><span>元</span></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label"><span class="req">*</span>立即到账</div>
+                    <div class="form-content"><div class="form-row-inline"><input class="form-input w-sm" type="number" value="120"><span>分钟（=2小时）</span></div></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label"><span class="req">*</span>每日赠送</div>
+                    <div class="form-content"><div class="form-row-inline"><input class="form-input w-sm" type="number" value="60"><span>分钟 × 6天</span></div></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">描述</div>
+                    <div class="form-content"><textarea class="form-textarea">立即到账2小时 + 后续6天每天领1小时</textarea></div>
                 </div>
             </div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>弹窗触发频率</div>
-                <div class="form-content">
-                    <select class="form-select" id="freqSelect" onchange="toggleFreqInput()">
-                        <option value="once">永久1次</option>
-                        <option value="daily" selected>1日1次</option>
-                        <option value="custom">自定义（X日1次）</option>
-                    </select>
-                    <input class="form-input short" type="number" value="3" min="1" max="7" id="freqDays" style="display:none;">
-                    <div class="form-hint">控制未购买用户每次进入触发页面时的弹窗频率</div>
+
+            <div class="form-section">
+                <div class="form-section-title">套餐B</div>
+                <div class="form-row">
+                    <div class="form-label"><span class="req">*</span>名称</div>
+                    <div class="form-content"><input class="form-input w-md" type="text" value="20小时畅玩套餐"></div>
                 </div>
-            </div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>弹窗标题</div>
-                <div class="form-content">
-                    <input class="form-input" type="text" value="新人专享限时福利" maxlength="20">
-                    <div class="form-hint">最多20字</div>
+                <div class="form-row">
+                    <div class="form-label"><span class="req">*</span>标签</div>
+                    <div class="form-content"><input class="form-input w-md" type="text" value="新人畅玩专享" maxlength="8"></div>
                 </div>
-            </div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>时长有效期</div>
-                <div class="form-content">
-                    <input class="form-input short" type="number" value="30" min="1" max="365">
-                    <div class="form-hint">自获取后顺延X自然天，过期时长作废</div>
+                <div class="form-row">
+                    <div class="form-label"><span class="req">*</span>现价 / 原价</div>
+                    <div class="form-content"><div class="form-row-inline"><input class="form-input w-sm" type="number" value="19.9" step="0.1"> <span>/</span> <input class="form-input w-sm" type="number" value="60"><span>元</span></div></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label"><span class="req">*</span>立即到账</div>
+                    <div class="form-content"><div class="form-row-inline"><input class="form-input w-sm" type="number" value="480"><span>分钟（=8小时）</span></div></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label"><span class="req">*</span>每日赠送</div>
+                    <div class="form-content"><div class="form-row-inline"><input class="form-input w-sm" type="number" value="120"><span>分钟 × 6天</span></div></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">描述</div>
+                    <div class="form-content"><textarea class="form-textarea">立即到账8小时 + 后续6天每天领2小时</textarea></div>
                 </div>
             </div>
         </div>
-
-        <!-- 套餐A -->
-        <div class="card">
-            <div class="card-title">套餐A配置 <span class="badge">8小时体验套餐</span></div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>套餐名称</div>
-                <div class="form-content"><input class="form-input" type="text" value="8小时体验套餐" maxlength="20"><div class="form-hint">最多20字</div></div>
-            </div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>标签文案</div>
-                <div class="form-content"><input class="form-input" type="text" value="新人尝鲜特惠" maxlength="8"><div class="form-hint">最多8字，展示在卡片左上角</div></div>
-            </div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>现价</div>
-                <div class="form-content"><input class="form-input short" type="number" value="6.9" step="0.1" min="0.1"><div class="form-hint">单位：元</div></div>
-            </div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>原价（划线价）</div>
-                <div class="form-content"><input class="form-input short" type="number" value="26" step="1" min="1"><div class="form-hint">必须高于现价</div></div>
-            </div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>立即到账时长</div>
-                <div class="form-content"><input class="form-input short" type="number" value="120" min="1"><div class="form-hint">单位：分钟（120分钟=2小时）</div></div>
-            </div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>每日赠送时长</div>
-                <div class="form-content"><input class="form-input short" type="number" value="60" min="1"><div class="form-hint">单位：分钟，连续6天每天到账</div></div>
-            </div>
-            <div class="form-row">
-                <div class="form-label">描述文案</div>
-                <div class="form-content"><textarea class="form-textarea">立即到账2小时 + 后续6天每天领1小时</textarea><div class="form-hint">最多50字，展示在套餐卡片中</div></div>
-            </div>
+        <div class="modal-footer">
+            <button class="btn" style="background:#fff;border:1px solid #dee0e3;color:#1f2329;" onclick="closeModal()">取消</button>
+            <button class="btn btn-primary" onclick="saveActivity()">保存</button>
         </div>
+    </div>
+</div>
 
-        <!-- 套餐B -->
-        <div class="card">
-            <div class="card-title">套餐B配置 <span class="badge">20小时畅玩套餐</span></div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>套餐名称</div>
-                <div class="form-content"><input class="form-input" type="text" value="20小时畅玩套餐" maxlength="20"></div>
-            </div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>标签文案</div>
-                <div class="form-content"><input class="form-input" type="text" value="新人畅玩专享" maxlength="8"><div class="form-hint">最多8字</div></div>
-            </div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>现价</div>
-                <div class="form-content"><input class="form-input short" type="number" value="19.9" step="0.1" min="0.1"></div>
-            </div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>原价（划线价）</div>
-                <div class="form-content"><input class="form-input short" type="number" value="60" step="1" min="1"></div>
-            </div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>立即到账时长</div>
-                <div class="form-content"><input class="form-input short" type="number" value="480" min="1"><div class="form-hint">单位：分钟（480分钟=8小时）</div></div>
-            </div>
-            <div class="form-row">
-                <div class="form-label"><span class="required">*</span>每日赠送时长</div>
-                <div class="form-content"><input class="form-input short" type="number" value="120" min="1"><div class="form-hint">单位：分钟，连续6天每天到账</div></div>
-            </div>
-            <div class="form-row">
-                <div class="form-label">描述文案</div>
-                <div class="form-content"><textarea class="form-textarea">立即到账8小时 + 后续6天每天领2小时</textarea></div>
-            </div>
-            <div class="form-row">
-                <div class="form-label">标记为推荐</div>
-                <div class="form-content">
-                    <div class="form-switch"><div class="switch on" onclick="toggleSwitch(this)"></div><span class="switch-label">开启后卡片显示"推荐"角标</span></div>
-                </div>
-            </div>
+<!-- 删除确认弹窗 -->
+<div class="modal-mask" id="deleteMask">
+    <div class="modal" style="max-width:400px;">
+        <div class="modal-header"><div class="title">确认删除</div><div class="close" onclick="closeDelete()">✕</div></div>
+        <div class="modal-body" style="padding:12px 24px 24px;">
+            <p style="font-size:14px;color:#4e5969;">确定要删除该活动吗？删除后不可恢复，已购买用户的签到权益不受影响。</p>
         </div>
-
-        <!-- 操作按钮 -->
-        <div class="btn-row">
-            <button class="btn btn-primary" onclick="saveConfig()">保存配置</button>
-            <button class="btn btn-default" onclick="showToast('已预览弹窗效果')">预览弹窗</button>
-            <button class="btn btn-danger" onclick="showToast('活动已下线')">下线活动</button>
+        <div class="modal-footer">
+            <button class="btn" style="background:#fff;border:1px solid #dee0e3;color:#1f2329;" onclick="closeDelete()">取消</button>
+            <button class="btn" style="background:#f54a45;color:#fff;" onclick="confirmDelete()">确认删除</button>
         </div>
     </div>
 </div>
@@ -218,22 +271,76 @@ body{background:#f5f6f8;color:#1f2329;font-size:14px;min-height:100vh;}
 <div class="toast" id="toast"></div>
 
 <script>
-function toggleSwitch(el){
-    el.classList.toggle('on');
+const activities=[
+    {id:1,name:'新人专享限时福利',skuA:'8小时体验套餐 ¥6.9',skuB:'20小时畅玩套餐 ¥19.9',freq:'1日1次',start:'2026-07-01',end:'2026-09-30',status:'active',rate:'15.0%'},
+    {id:2,name:'暑期新人特惠',skuA:'5小时尝鲜包 ¥4.9',skuB:'15小时畅玩包 ¥14.9',freq:'永久1次',start:'2026-08-01',end:'2026-08-31',status:'pending',rate:'—'},
+    {id:3,name:'春节新人礼包',skuA:'3小时体验 ¥3.9',skuB:'10小时畅玩 ¥9.9',freq:'1日1次',start:'2026-01-20',end:'2026-02-10',status:'expired',rate:'11.2%'}
+];
+
+function renderTable(){
+    const tbody=document.getElementById('tableBody');
+    tbody.innerHTML=activities.map(a=>`<tr>
+        <td><b>${a.name}</b></td>
+        <td>${a.skuA}</td>
+        <td>${a.skuB}</td>
+        <td>${a.freq}</td>
+        <td>${a.start} ~ ${a.end}</td>
+        <td><span class="status ${a.status}">${a.status==='active'?'● 进行中':a.status==='pending'?'● 未开始':a.status==='expired'?'● 已结束':'● 已下线'}</span></td>
+        <td>${a.rate}</td>
+        <td class="actions">
+            <button class="btn-text" onclick="openModal('edit',${a.id})">编辑</button>
+            ${a.status==='active'?'<button class="btn-text danger" onclick="offlineActivity('+a.id+')">下线</button>':''}
+            ${a.status!=='active'?'<button class="btn-text danger" onclick="deleteActivity('+a.id+')">删除</button>':''}
+        </td>
+    </tr>`).join('');
 }
-function toggleFreqInput(){
-    const sel=document.getElementById('freqSelect');
-    document.getElementById('freqDays').style.display=sel.value==='custom'?'block':'none';
+
+let editId=null;
+function openModal(mode,id){
+    editId=mode==='edit'?id:null;
+    document.getElementById('modalTitle').textContent=mode==='edit'?'编辑活动':'新建活动';
+    document.getElementById('modalMask').classList.add('show');
 }
-function saveConfig(){
-    showToast('配置已保存，即时生效');
+function closeModal(){document.getElementById('modalMask').classList.remove('show');}
+
+function saveActivity(){
+    closeModal();
+    showToast(editId?'活动已更新，即时生效':'活动已创建');
 }
+
+let deleteId=null;
+function deleteActivity(id){
+    deleteId=id;
+    document.getElementById('deleteMask').classList.add('show');
+}
+function closeDelete(){document.getElementById('deleteMask').classList.remove('show');}
+function confirmDelete(){
+    const idx=activities.findIndex(a=>a.id===deleteId);
+    if(idx>-1) activities.splice(idx,1);
+    closeDelete();
+    renderTable();
+    showToast('活动已删除');
+}
+
+function offlineActivity(id){
+    const a=activities.find(x=>x.id===id);
+    if(a){a.status='inactive';}
+    renderTable();
+    showToast('活动已下线');
+}
+
+function toggleFreq(){
+    document.getElementById('fFreqX').style.display=document.getElementById('fFreq').value==='custom'?'block':'none';
+}
+
 function showToast(msg){
     const t=document.getElementById('toast');
     t.textContent=msg;
     t.classList.add('show');
     setTimeout(()=>t.classList.remove('show'),2500);
 }
+
+renderTable();
 </script>
 </body>
 </html>
