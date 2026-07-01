@@ -508,6 +508,36 @@
         .s3c-game-title { font-size:18px; font-weight:800; }
         .s3c-game-hint { font-size:11px; color:rgba(255,255,255,0.4); }
 
+        /* 场景3D：下载管理页 */
+        .s3d-page {
+            position:absolute; inset:0; background:var(--bg-dark);
+            display:flex; flex-direction:column;
+        }
+        .s3d-header {
+            height:48px; display:flex; align-items:center; gap:12px;
+            padding:0 16px; border-bottom:1px solid rgba(255,255,255,0.06);
+        }
+        .s3d-back { color:#fff; font-size:15px; cursor:pointer; }
+        .s3d-title { font-size:15px; font-weight:700; }
+        .s3d-list { padding:14px 16px; display:flex; flex-direction:column; gap:12px; }
+        .s3d-item {
+            display:flex; align-items:center; gap:12px;
+            padding:12px; border-radius:10px;
+            background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+        }
+        .s3d-item-cover {
+            width:56px; height:32px; border-radius:6px; overflow:hidden; flex-shrink:0;
+            background:#1a1d24;
+        }
+        .s3d-item-info { flex:1; display:flex; flex-direction:column; gap:2px; }
+        .s3d-item-name { font-size:13px; font-weight:600; }
+        .s3d-item-meta { font-size:10px; color:rgba(255,255,255,0.4); }
+        .s3d-item-btn {
+            padding:6px 14px; border-radius:8px; font-size:11px; font-weight:700;
+            background:linear-gradient(90deg, #4ade80, #22c55e); color:#000;
+            cursor:pointer; flex-shrink:0; white-space:nowrap;
+        }
+
         /* 虚拟按键（横屏） */
         .s3-gamepad {
             position:absolute; bottom:56px; right:16px; z-index:5;
@@ -987,11 +1017,41 @@
         <!-- 悬浮球 -->
         <div class="dl-float-ball show" id="dlFloatBall">
             <div class="dl-float-ball-percent" id="floatBallPct">77%</div>
-            <div class="dl-float-ball-label">下载中</div>
+            <div class="dl-float-ball-label" id="floatBallLabel">下载中</div>
             <div class="dl-float-ball-progress"><div class="dl-float-ball-fill" id="floatBallFill" style="width:77%"></div></div>
         </div>
         <!-- 拖动删除区域 -->
         <div class="dl-float-drop-zone" id="dlDropZone"><i class="fas fa-times"></i></div>
+    </div>
+
+    <!-- 场景3D：下载管理页 -->
+    <div class="scene" id="scene3d">
+        <div class="s3d-page">
+            <div class="s3d-header">
+                <div class="s3d-back" onclick="goStepC()"><i class="fas fa-chevron-left"></i></div>
+                <span class="s3d-title">下载管理</span>
+            </div>
+            <div class="s3d-list">
+                <div class="s3d-item">
+                    <div class="s3d-item-cover">
+                        <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/883710/header.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:6px;" alt="">
+                    </div>
+                    <div class="s3d-item-info">
+                        <div class="s3d-item-name">生化危机 2重制版</div>
+                        <div class="s3d-item-meta">19 GB · 已完成</div>
+                    </div>
+                    <div class="s3d-item-btn" onclick="goStep(1)"><i class="fas fa-play"></i> 打开</div>
+                </div>
+                <div class="s3d-item" style="opacity:0.5;">
+                    <div class="s3d-item-cover" style="background:#1a1d24;display:flex;align-items:center;justify-content:center;"><i class="fas fa-chess-knight" style="color:rgba(255,255,255,0.3);"></i></div>
+                    <div class="s3d-item-info">
+                        <div class="s3d-item-name">空洞骑士</div>
+                        <div class="s3d-item-meta">420 MB · 游玩中</div>
+                    </div>
+                    <div class="s3d-item-btn" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);">游玩中</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 场景4：下载完成 -->
@@ -1105,8 +1165,36 @@
         hideMiniGames();
         document.querySelectorAll('.scene').forEach(function(s){ s.classList.remove('active'); });
         document.getElementById('scene3c').classList.add('active');
-        document.getElementById('stepLabel').textContent = 'Step 3: 玩小游戏中 — 悬浮球显示下载进度（可拖动/长按关闭）';
+        document.getElementById('stepLabel').textContent = 'Step 3: 玩小游戏中 — 悬浮球显示下载进度（可拖动，拖到底部×隐藏）';
         initFloatBall();
+        startFloatBallProgress();
+    }
+
+    function goStep3D() {
+        document.querySelectorAll('.scene').forEach(function(s){ s.classList.remove('active'); });
+        document.getElementById('scene3d').classList.add('active');
+        document.getElementById('stepLabel').textContent = 'Step 3: 下载管理页 — 可直接打开已下载游戏';
+    }
+
+    function startFloatBallProgress() {
+        var p = 77;
+        var interval = setInterval(function(){
+            p += 2;
+            if (p >= 100) {
+                p = 100;
+                clearInterval(interval);
+                document.getElementById('floatBallPct').textContent = '';
+                document.getElementById('floatBallLabel').textContent = '安装';
+                document.getElementById('floatBallFill').style.width = '100%';
+                document.getElementById('dlFloatBall').style.background = 'rgba(74,222,128,0.15)';
+                document.getElementById('dlFloatBall').style.borderColor = 'rgba(74,222,128,0.4)';
+                document.getElementById('dlFloatBall').style.cursor = 'pointer';
+                document.getElementById('dlFloatBall').onclick = function(){ goStep3D(); };
+            } else {
+                document.getElementById('floatBallPct').textContent = p + '%';
+                document.getElementById('floatBallFill').style.width = p + '%';
+            }
+        }, 200);
     }
 
     function closeFloatBall() {
