@@ -124,6 +124,11 @@ function renderOverview(){
     h+='<div class="stat-card"><div class="num">11.1</div><div class="label">人均时长中位数（分钟）</div></div>';
     h+='</div>';
 
+    h+='<div class="stats" style="grid-template-columns:repeat(2,1fr)">';
+    h+='<div class="stat-card"><div class="num">8</div><div class="label">进入游戏详情游戏数（有边玩边下行为）</div></div>';
+    h+='<div class="stat-card"><div class="num orange">14.8%</div><div class="label">边玩边下游戏占比（8 / 54 详情页总游戏数）</div></div>';
+    h+='</div>';
+
     // 趋势图占位
     h+='<div class="card"><div class="card-title"><i class="fas fa-chart-line"></i> 每日趋势<span class="data-update">数据更新至：2026-07-15 08:00</span></div>';
     h+='<div style="height:200px;background:#fafafa;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#ccc;border:1px dashed #e8e8e8">';
@@ -222,13 +227,6 @@ function renderGames(){
     h+='</div></div>';
 
     h+='<div class="card"><div class="card-title"><i class="fas fa-gamepad"></i> 游戏维度统计<span class="data-update">数据更新至：2026-07-15 08:00</span></div>';
-
-    // 总览指标
-    h+='<div class="stats" style="grid-template-columns:repeat(2,1fr);margin-bottom:16px">';
-    h+='<div class="stat-card"><div class="num">8</div><div class="label">进入游戏详情游戏数（有边玩边下行为）</div></div>';
-    h+='<div class="stat-card"><div class="num orange">14.8%</div><div class="label">边玩边下游戏占比（8 / 54 详情页总游戏数）</div></div>';
-    h+='</div>';
-
     h+='<table><thead><tr>';
     h+='<th>游戏名</th>';
     h+='<th class="sortable" onclick="showToast(\'排序\')">详情页访问 <i class="fas fa-sort sort-icon"></i></th>';
