@@ -1146,10 +1146,13 @@
 
     function goStep(n) {
         currentStep = n;
-        // 进入云游戏（场景3）时自动切换横屏
         if (n===3) setOrientation('landscape');
 
-        document.querySelectorAll('.scene').forEach((s,i) => s.classList.toggle('active', i===n-1));
+        var sceneIds = ['scene1','scene2','scene3','scene4','scene5','scene6'];
+        document.querySelectorAll('.scene').forEach(function(s){ s.classList.remove('active'); });
+        var targetScene = document.getElementById(sceneIds[n-1]);
+        if (targetScene) targetScene.classList.add('active');
+
         document.querySelectorAll('.step-dot').forEach((d,i) => {
             d.classList.remove('active','done');
             if (i+1===n) d.classList.add('active');
