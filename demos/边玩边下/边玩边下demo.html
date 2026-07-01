@@ -439,6 +439,50 @@
             padding:5px 12px; border-radius:6px; font-size:10px; font-weight:700;
             background:var(--blue-gradient); color:#fff; cursor:pointer; flex-shrink:0; white-space:nowrap;
         }
+        .s3b-game-btn-green {
+            padding:5px 12px; border-radius:6px; font-size:10px; font-weight:700;
+            background:linear-gradient(90deg, #4ade80, #22c55e); color:#000;
+            cursor:pointer; flex-shrink:0; white-space:nowrap;
+        }
+
+        /* 下载悬浮球 */
+        .dl-float-ball {
+            position:absolute; z-index:80;
+            width:52px; height:52px; border-radius:10px;
+            background:rgba(20,22,28,0.95); backdrop-filter:blur(10px);
+            border:1px solid rgba(255,255,255,0.12);
+            display:none; flex-direction:column; align-items:center; justify-content:center;
+            cursor:grab; user-select:none;
+            box-shadow:0 4px 16px rgba(0,0,0,0.6);
+            transition:box-shadow 0.2s;
+            top:12px; right:12px;
+        }
+        .dl-float-ball.show { display:flex; }
+        .dl-float-ball:active { cursor:grabbing; box-shadow:0 8px 24px rgba(0,0,0,0.8); }
+        .dl-float-ball-percent { font-size:14px; font-weight:900; color:#fff; }
+        .dl-float-ball-label { font-size:8px; color:rgba(255,255,255,0.5); margin-top:1px; }
+        .dl-float-ball-progress {
+            position:absolute; bottom:0; left:0; right:0; height:3px;
+            background:rgba(255,255,255,0.1); border-radius:0 0 10px 10px; overflow:hidden;
+        }
+        .dl-float-ball-fill { height:100%; background:var(--blue-gradient); }
+        .dl-float-ball-close {
+            position:absolute; top:-6px; right:-6px;
+            width:16px; height:16px; border-radius:50%;
+            background:#ff4d4f; color:#fff; font-size:8px;
+            display:none; align-items:center; justify-content:center;
+            cursor:pointer;
+        }
+        .dl-float-ball.long-press .dl-float-ball-close { display:flex; }
+
+        /* 场景3C：玩小游戏中 */
+        .s3c-screen {
+            position:absolute; inset:0;
+            background:linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px;
+        }
+        .s3c-game-title { font-size:18px; font-weight:800; }
+        .s3c-game-hint { font-size:11px; color:rgba(255,255,255,0.4); }
 
         /* 虚拟按键（横屏） */
         .s3-gamepad {
@@ -850,27 +894,43 @@
                 <div class="s3b-games-desc">以下游戏体积小、即点即玩，适合等待下载时体验</div>
                 <div class="s3b-recommend-list">
                     <div class="s3b-game-item">
-                        <div class="s3b-game-cover"><i class="fas fa-chess-knight"></i></div>
-                        <div class="s3b-game-info"><div class="s3b-game-name">空洞骑士</div><div class="s3b-game-meta">动作冒险 · 420 MB</div></div>
-                        <div class="s3b-game-btn">即点即玩</div>
+                        <div class="s3b-game-cover" style="background:#1a2a1a;"><i class="fas fa-candy-cane" style="color:#ff6b6b;"></i></div>
+                        <div class="s3b-game-info"><div class="s3b-game-name">开心消消乐</div><div class="s3b-game-meta">益智 · 12.3万人在玩</div></div>
+                        <div class="s3b-game-btn-green" onclick="goStepC()">开始玩</div>
                     </div>
                     <div class="s3b-game-item">
-                        <div class="s3b-game-cover"><i class="fas fa-ghost"></i></div>
-                        <div class="s3b-game-info"><div class="s3b-game-name">蔚蓝</div><div class="s3b-game-meta">平台跳跃 · 380 MB</div></div>
-                        <div class="s3b-game-btn">即点即玩</div>
+                        <div class="s3b-game-cover" style="background:#2a1a2a;"><i class="fas fa-person-running" style="color:#fa8c16;"></i></div>
+                        <div class="s3b-game-info"><div class="s3b-game-name">地铁跑酷</div><div class="s3b-game-meta">跑酷 · 8.7万人在玩</div></div>
+                        <div class="s3b-game-btn-green" onclick="goStepC()">开始玩</div>
                     </div>
                     <div class="s3b-game-item">
-                        <div class="s3b-game-cover"><i class="fas fa-hat-wizard"></i></div>
-                        <div class="s3b-game-info"><div class="s3b-game-name">哈迪斯</div><div class="s3b-game-meta">Roguelike · 350 MB</div></div>
-                        <div class="s3b-game-btn">即点即玩</div>
+                        <div class="s3b-game-cover" style="background:#1a1a2a;"><i class="fas fa-chess-rook" style="color:#b57edc;"></i></div>
+                        <div class="s3b-game-info"><div class="s3b-game-name">保卫萝卜</div><div class="s3b-game-meta">塔防 · 5.2万人在玩</div></div>
+                        <div class="s3b-game-btn-green" onclick="goStepC()">开始玩</div>
                     </div>
                     <div class="s3b-game-item">
-                        <div class="s3b-game-cover"><i class="fas fa-puzzle-piece"></i></div>
-                        <div class="s3b-game-info"><div class="s3b-game-name">传说之下</div><div class="s3b-game-meta">RPG · 200 MB</div></div>
-                        <div class="s3b-game-btn">即点即玩</div>
+                        <div class="s3b-game-cover" style="background:#1a2a2a;"><i class="fas fa-worm" style="color:#52c41a;"></i></div>
+                        <div class="s3b-game-info"><div class="s3b-game-name">贪吃蛇大作战</div><div class="s3b-game-meta">休闲 · 6.1万人在玩</div></div>
+                        <div class="s3b-game-btn-green" onclick="goStepC()">开始玩</div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- 场景3C：玩小游戏中 + 下载悬浮球 -->
+    <div class="scene" id="scene3c">
+        <div class="s3c-screen">
+            <i class="fas fa-chess-knight" style="font-size:48px;color:rgba(255,255,255,0.2);"></i>
+            <div class="s3c-game-title">空洞骑士</div>
+            <div class="s3c-game-hint">游戏运行中... (模拟画面)</div>
+        </div>
+        <!-- 悬浮球 -->
+        <div class="dl-float-ball show" id="dlFloatBall">
+            <div class="dl-float-ball-percent" id="floatBallPct">77%</div>
+            <div class="dl-float-ball-label">下载中</div>
+            <div class="dl-float-ball-progress"><div class="dl-float-ball-fill" id="floatBallFill" style="width:77%"></div></div>
+            <div class="dl-float-ball-close" id="floatBallClose" onclick="closeFloatBall()"><i class="fas fa-times"></i></div>
         </div>
     </div>
 
@@ -980,6 +1040,63 @@
     }
     function hideMiniGames() {
         document.getElementById('s3bGamesOverlay').classList.remove('show');
+    }
+
+    function goStepC() {
+        hideMiniGames();
+        document.querySelectorAll('.scene').forEach(function(s){ s.classList.remove('active'); });
+        document.getElementById('scene3c').classList.add('active');
+        document.getElementById('stepLabel').textContent = 'Step 3: 玩小游戏中 — 悬浮球显示下载进度（可拖动/长按关闭）';
+        initFloatBall();
+    }
+
+    function closeFloatBall() {
+        document.getElementById('dlFloatBall').classList.remove('show');
+    }
+
+    function initFloatBall() {
+        var ball = document.getElementById('dlFloatBall');
+        var shell = document.getElementById('phoneShell');
+        var isDragging = false, longPressTimer = null, startX, startY, ballX, ballY;
+
+        ball.style.top = '12px';
+        ball.style.right = '12px';
+        ball.style.left = 'auto';
+
+        ball.onmousedown = ball.ontouchstart = function(e) {
+            e.preventDefault();
+            var ev = e.touches ? e.touches[0] : e;
+            var rect = ball.getBoundingClientRect();
+            startX = ev.clientX - rect.left;
+            startY = ev.clientY - rect.top;
+            isDragging = true;
+            ball.style.right = 'auto';
+            ball.style.left = (rect.left - shell.getBoundingClientRect().left) + 'px';
+            ball.style.top = (rect.top - shell.getBoundingClientRect().top) + 'px';
+
+            longPressTimer = setTimeout(function(){
+                ball.classList.add('long-press');
+            }, 600);
+        };
+
+        document.onmousemove = document.ontouchmove = function(e) {
+            if (!isDragging) return;
+            clearTimeout(longPressTimer);
+            ball.classList.remove('long-press');
+            var ev = e.touches ? e.touches[0] : e;
+            var shellRect = shell.getBoundingClientRect();
+            var x = ev.clientX - shellRect.left - startX;
+            var y = ev.clientY - shellRect.top - startY;
+            x = Math.max(0, Math.min(x, shellRect.width - 52));
+            y = Math.max(0, Math.min(y, shellRect.height - 52));
+            ball.style.left = x + 'px';
+            ball.style.top = y + 'px';
+        };
+
+        document.onmouseup = document.ontouchend = function() {
+            isDragging = false;
+            clearTimeout(longPressTimer);
+        };
     }
 
     function startDl() {
