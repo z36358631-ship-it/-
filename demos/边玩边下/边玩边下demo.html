@@ -487,14 +487,17 @@
             background:rgba(255,255,255,0.1); border-radius:0 0 10px 10px; overflow:hidden;
         }
         .dl-float-ball-fill { height:100%; background:var(--blue-gradient); }
-        .dl-float-ball-close {
-            position:absolute; top:-6px; right:-6px;
-            width:16px; height:16px; border-radius:50%;
-            background:#ff4d4f; color:#fff; font-size:8px;
+
+        /* 拖动删除区域 */
+        .dl-float-drop-zone {
+            position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
+            width:60px; height:36px; border-radius:8px; z-index:79;
+            background:rgba(255,77,79,0.15); border:2px dashed rgba(255,77,79,0.4);
             display:none; align-items:center; justify-content:center;
-            cursor:pointer;
+            font-size:14px; color:#ff4d4f;
         }
-        .dl-float-ball.long-press .dl-float-ball-close { display:flex; }
+        .dl-float-drop-zone.show { display:flex; }
+        .dl-float-drop-zone.hover { background:rgba(255,77,79,0.3); border-color:#ff4d4f; transform:translateX(-50%) scale(1.1); }
 
         /* 场景3C：玩小游戏中 */
         .s3c-screen {
@@ -986,8 +989,9 @@
             <div class="dl-float-ball-percent" id="floatBallPct">77%</div>
             <div class="dl-float-ball-label">下载中</div>
             <div class="dl-float-ball-progress"><div class="dl-float-ball-fill" id="floatBallFill" style="width:77%"></div></div>
-            <div class="dl-float-ball-close" id="floatBallClose" onclick="closeFloatBall()"><i class="fas fa-times"></i></div>
         </div>
+        <!-- 拖动删除区域 -->
+        <div class="dl-float-drop-zone" id="dlDropZone"><i class="fas fa-times"></i></div>
     </div>
 
     <!-- 场景4：下载完成 -->
@@ -1107,12 +1111,14 @@
 
     function closeFloatBall() {
         document.getElementById('dlFloatBall').classList.remove('show');
+        document.getElementById('dlDropZone').classList.remove('show','hover');
     }
 
     function initFloatBall() {
         var ball = document.getElementById('dlFloatBall');
         var shell = document.getElementById('phoneShell');
-        var isDragging = false, longPressTimer = null, startX, startY, ballX, ballY;
+        var dropZone = document.getElementById('dlDropZone');
+        var isDragging = false, startX, startY;
 
         ball.style.top = '12px';
         ball.style.right = '12px';
@@ -1128,16 +1134,11 @@
             ball.style.right = 'auto';
             ball.style.left = (rect.left - shell.getBoundingClientRect().left) + 'px';
             ball.style.top = (rect.top - shell.getBoundingClientRect().top) + 'px';
-
-            longPressTimer = setTimeout(function(){
-                ball.classList.add('long-press');
-            }, 600);
+            dropZone.classList.add('show');
         };
 
         document.onmousemove = document.ontouchmove = function(e) {
             if (!isDragging) return;
-            clearTimeout(longPressTimer);
-            ball.classList.remove('long-press');
             var ev = e.touches ? e.touches[0] : e;
             var shellRect = shell.getBoundingClientRect();
             var x = ev.clientX - shellRect.left - startX;
@@ -1146,11 +1147,23 @@
             y = Math.max(0, Math.min(y, shellRect.height - 52));
             ball.style.left = x + 'px';
             ball.style.top = y + 'px';
+
+            var dzRect = dropZone.getBoundingClientRect();
+            var ballRect = ball.getBoundingClientRect();
+            var ballCenterX = ballRect.left + ballRect.width/2;
+            var ballCenterY = ballRect.top + ballRect.height/2;
+            var isOver = ballCenterX >= dzRect.left && ballCenterX <= dzRect.right && ballCenterY >= dzRect.top && ballCenterY <= dzRect.bottom;
+            dropZone.classList.toggle('hover', isOver);
         };
 
         document.onmouseup = document.ontouchend = function() {
+            if (!isDragging) return;
             isDragging = false;
-            clearTimeout(longPressTimer);
+            if (dropZone.classList.contains('hover')) {
+                closeFloatBall();
+            } else {
+                dropZone.classList.remove('show');
+            }
         };
     }
 
