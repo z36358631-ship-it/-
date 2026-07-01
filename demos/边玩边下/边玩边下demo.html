@@ -390,10 +390,21 @@
             padding:10px 16px; display:flex; flex-direction:column; gap:8px;
             margin-top:auto;
         }
-        .s3b-detail-progress { display:flex; flex-direction:column; gap:4px; }
-        .s3b-detail-progress-info { display:flex; align-items:center; justify-content:space-between; }
-        .s3b-detail-progress-text { font-size:12px; font-weight:600; }
-        .s3b-detail-progress-eta { font-size:10px; color:rgba(255,255,255,0.4); }
+        .s3b-bottom-row { display:flex; align-items:center; gap:8px; }
+        .s3b-btn-more {
+            width:42px; height:42px; border-radius:10px; flex-shrink:0;
+            background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);
+            display:flex; align-items:center; justify-content:center;
+            color:rgba(255,255,255,0.6); font-size:14px; cursor:pointer;
+        }
+        .s3b-progress-btn {
+            flex:1; height:42px; border-radius:10px;
+            background:rgba(0,191,255,0.08); border:1px solid rgba(0,191,255,0.2);
+            display:flex; flex-direction:column; justify-content:center;
+            padding:0 14px; gap:4px;
+        }
+        .s3b-progress-btn-info { display:flex; align-items:center; }
+        .s3b-progress-btn-text { font-size:11px; color:rgba(255,255,255,0.7); }
         .s3b-detail-guide {
             display:flex; align-items:center; gap:6px;
             padding:8px 12px; border-radius:8px;
@@ -417,12 +428,12 @@
         .s3b-games-overlay {
             position:absolute; inset:0; z-index:50;
             background:rgba(0,0,0,0.6); backdrop-filter:blur(4px);
-            display:none; align-items:flex-end; justify-content:center;
+            display:none; align-items:center; justify-content:center;
         }
         .s3b-games-overlay.show { display:flex; }
         .s3b-games-panel {
-            width:100%; background:#1e2128; border-radius:16px 16px 0 0;
-            padding:18px 16px 20px; max-height:70%;
+            width:380px; max-width:90%; background:#1e2128; border-radius:16px;
+            padding:18px 16px 20px; max-height:80%;
             overflow-y:auto; display:flex; flex-direction:column; gap:10px;
         }
         .s3b-games-header { display:flex; align-items:center; justify-content:space-between; }
@@ -912,12 +923,15 @@
                 <div class="s1p-desc">一切起源于玩家的追求之上。一年后他次回到了1998年遭遇了一场...</div>
             </div>
             <div class="s3b-detail-bottom">
-                <div class="s3b-detail-progress">
-                    <div class="s3b-detail-progress-info">
-                        <span class="s3b-detail-progress-text">14.6 GB / 19 GB</span>
-                        <span class="s3b-detail-progress-eta">剩余约 8 分钟</span>
+                <div class="s3b-bottom-row">
+                    <div class="s3b-btn-more"><i class="fas fa-ellipsis"></i></div>
+                    <div class="s1p-btn-cloud"><i class="fas fa-cloud"></i> 秒玩</div>
+                    <div class="s3b-progress-btn">
+                        <div class="s3b-progress-btn-info">
+                            <span class="s3b-progress-btn-text"><i class="fas fa-arrow-down" style="font-size:10px;color:#00bfff;margin-right:4px;"></i>14.6 GB / 19 GB</span>
+                        </div>
+                        <div class="s3-dl-bar-bg" style="height:3px;"><div class="s3-dl-bar-fill" style="width:77%;"></div></div>
                     </div>
-                    <div class="s3-dl-bar-bg" style="height:4px;"><div class="s3-dl-bar-fill" style="width:77%;"></div></div>
                 </div>
                 <div class="s3b-detail-guide" onclick="showMiniGames()">
                     <i class="fas fa-gamepad"></i> 安装等待中，先玩点别的？<i class="fas fa-chevron-right" style="font-size:10px;margin-left:auto;"></i>
