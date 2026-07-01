@@ -403,6 +403,16 @@
         }
         .s3b-detail-guide:hover { background:rgba(250,140,22,0.14); }
 
+        /* 横屏下载进度内联 */
+        .s3b-dl-inline {
+            display:flex; align-items:center; gap:8px;
+            height:38px; padding:0 14px; border-radius:10px;
+            background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15);
+        }
+        .s3b-dl-inline-icon { font-size:12px; color:#00bfff; }
+        .s3b-dl-inline-info { display:flex; flex-direction:column; gap:3px; }
+        .s3b-dl-inline-text { font-size:10px; color:rgba(255,255,255,0.7); white-space:nowrap; }
+
         /* 小游戏弹层 */
         .s3b-games-overlay {
             position:absolute; inset:0; z-index:50;
@@ -841,10 +851,42 @@
         </div>
     </div>
 
-    <!-- 场景3B：仅下载中（无云游戏）— 竖屏详情页，底部变为进度条+引导文案 -->
+    <!-- 场景3B：仅下载中（无云游戏）— 详情页内，获取游戏按钮变为进度条 -->
     <div class="scene" id="scene3b">
-        <!-- 复用竖屏详情页 -->
-        <div class="s1-portrait" style="display:flex !important;flex-direction:column !important;">
+        <!-- 横屏版本 -->
+        <div class="s1-landscape">
+            <div class="s1l-bg"></div>
+            <div class="s1l-overlay"></div>
+            <div class="s1l-back"><i class="fas fa-chevron-left"></i></div>
+            <div class="s1l-content">
+                <div class="s1l-title">生化危机 2重制版</div>
+                <div class="s1l-sub">一切起源于玩家的追求之上</div>
+                <div class="s1l-tags"><span class="s1l-tag">动作</span></div>
+                <div class="s1l-actions">
+                    <div class="s1l-btn-cloud"><i class="fas fa-cloud"></i> 秒玩</div>
+                    <div class="s3b-dl-inline">
+                        <div class="s3b-dl-inline-icon"><i class="fas fa-arrow-down"></i></div>
+                        <div class="s3b-dl-inline-info">
+                            <div class="s3b-dl-inline-text">14.6 GB / 19 GB</div>
+                            <div class="s3-dl-bar-bg" style="width:100px;height:3px;"><div class="s3-dl-bar-fill" style="width:77%;"></div></div>
+                        </div>
+                    </div>
+                    <div class="s1l-gamepad"><i class="fas fa-gamepad"></i></div>
+                </div>
+                <div class="s3b-detail-guide" onclick="showMiniGames()" style="margin-top:8px;width:fit-content;">
+                    <i class="fas fa-gamepad"></i> 安装等待中，先玩点别的？<i class="fas fa-chevron-right" style="font-size:10px;margin-left:8px;"></i>
+                </div>
+            </div>
+            <div class="s1l-stats">
+                <div class="s1l-stat"><div class="s1l-stat-icon"><span style="color:#ffd700;font-weight:900;font-size:13px;">4.0</span></div><div class="s1l-stat-info"><div class="s1l-stat-label">兼容性评价</div><div class="star-row"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star dim"></i></div></div></div>
+                <div class="s1l-stat"><div class="s1l-stat-icon"><i class="fas fa-cloud-arrow-up"></i></div><div class="s1l-stat-info"><div class="s1l-stat-label">云存档</div><div class="s1l-stat-val">—</div></div></div>
+                <div class="s1l-stat"><div class="s1l-stat-icon"><i class="far fa-clock"></i></div><div class="s1l-stat-info"><div class="s1l-stat-label">游戏时长</div><div class="s1l-stat-val">—</div></div></div>
+                <div class="s1l-stat"><div class="s1l-stat-icon"><i class="fas fa-thumbs-up"></i></div><div class="s1l-stat-info"><div class="s1l-stat-label">玩家评分</div><div class="s1l-stat-val green">9.6</div></div></div>
+            </div>
+        </div>
+
+        <!-- 竖屏版本 -->
+        <div class="s1-portrait">
             <div class="s1p-hero">
                 <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/883710/library_hero.jpg" alt="">
                 <div class="s1p-hero-overlay"></div>
@@ -867,9 +909,8 @@
                     </div>
                 </div>
                 <div class="s1p-section-title">游戏介绍</div>
-                <div class="s1p-desc">一切起源于玩家的追求之上。一年后他次回到了1998年遭遇了一场、从城市开始、到镇端令奇事件中的大学生与未知进行斗争...</div>
+                <div class="s1p-desc">一切起源于玩家的追求之上。一年后他次回到了1998年遭遇了一场...</div>
             </div>
-            <!-- 底部栏：进度条 + 引导文案 -->
             <div class="s3b-detail-bottom">
                 <div class="s3b-detail-progress">
                     <div class="s3b-detail-progress-info">
@@ -1029,7 +1070,6 @@
     }
 
     function goStepB3() {
-        setOrientation('portrait');
         document.querySelectorAll('.scene').forEach(function(s){ s.classList.remove('active'); });
         document.getElementById('scene3b').classList.add('active');
         document.getElementById('stepLabel').textContent = 'Step 3: 下载中 — 底部引导"先玩点别的？"点击弹出小游戏列表';
