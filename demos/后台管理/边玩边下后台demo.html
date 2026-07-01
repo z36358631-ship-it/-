@@ -222,8 +222,16 @@ function renderGames(){
     h+='</div></div>';
 
     h+='<div class="card"><div class="card-title"><i class="fas fa-gamepad"></i> 游戏维度统计<span class="data-update">数据更新至：2026-07-15 08:00</span></div>';
+
+    // 总览指标
+    h+='<div class="stats" style="grid-template-columns:repeat(2,1fr);margin-bottom:16px">';
+    h+='<div class="stat-card"><div class="num">8</div><div class="label">进入游戏详情游戏数（有边玩边下行为）</div></div>';
+    h+='<div class="stat-card"><div class="num orange">14.8%</div><div class="label">边玩边下游戏占比（8 / 54 详情页总游戏数）</div></div>';
+    h+='</div>';
+
     h+='<table><thead><tr>';
     h+='<th>游戏名</th>';
+    h+='<th class="sortable" onclick="showToast(\'排序\')">详情页访问 <i class="fas fa-sort sort-icon"></i></th>';
     h+='<th class="sortable" onclick="showToast(\'排序\')">触发次数 <i class="fas fa-sort-down sort-icon" style="color:#d4b473"></i></th>';
     h+='<th class="sortable" onclick="showToast(\'排序\')">选择边玩边下 <i class="fas fa-sort sort-icon"></i></th>';
     h+='<th class="sortable" onclick="showToast(\'排序\')">转化率 <i class="fas fa-sort sort-icon"></i></th>';
@@ -235,20 +243,20 @@ function renderGames(){
     h+='</tr></thead><tbody>';
 
     var games=[
-        {name:'GTA V',trigger:3240,select:1458,rate:'45.0%',dlOnly:'32分钟',dlPlay:'38分钟',revenue:'¥2,468',sync:'97.8%',switchRate:'96.5%'},
-        {name:'生化危机 2重制版',trigger:2180,select:894,rate:'41.0%',dlOnly:'25分钟',dlPlay:'30分钟',revenue:'¥1,744',sync:'98.2%',switchRate:'97.1%'},
-        {name:'艾尔登法环',trigger:1860,select:688,rate:'37.0%',dlOnly:'28分钟',dlPlay:'33分钟',revenue:'¥1,378',sync:'95.4%',switchRate:'95.8%'},
-        {name:'赛博朋克2077',trigger:1520,select:638,rate:'42.0%',dlOnly:'35分钟',dlPlay:'42分钟',revenue:'¥1,046',sync:'96.1%',switchRate:'96.8%'},
-        {name:'逃离鸭科夫',trigger:1340,select:549,rate:'41.0%',dlOnly:'22分钟',dlPlay:'26分钟',revenue:'¥824',sync:'94.2%',switchRate:'95.2%'},
-        {name:'巫师3',trigger:980,select:372,rate:'38.0%',dlOnly:'30分钟',dlPlay:'35分钟',revenue:'¥596',sync:'97.5%',switchRate:'97.8%'},
-        {name:'空洞骑士',trigger:420,select:176,rate:'41.9%',dlOnly:'8分钟',dlPlay:'10分钟',revenue:'¥248',sync:'99.1%',switchRate:'98.5%'},
-        {name:'只狼：影逝二度',trigger:307,select:122,rate:'39.7%',dlOnly:'20分钟',dlPlay:'24分钟',revenue:'¥192',sync:'95.8%',switchRate:'96.0%'}
+        {name:'GTA V',detail:8200,trigger:3240,select:1458,rate:'45.0%',dlOnly:'32分钟',dlPlay:'38分钟',revenue:'¥2,468',sync:'97.8%',switchRate:'96.5%'},
+        {name:'生化危机 2重制版',detail:5640,trigger:2180,select:894,rate:'41.0%',dlOnly:'25分钟',dlPlay:'30分钟',revenue:'¥1,744',sync:'98.2%',switchRate:'97.1%'},
+        {name:'艾尔登法环',detail:4820,trigger:1860,select:688,rate:'37.0%',dlOnly:'28分钟',dlPlay:'33分钟',revenue:'¥1,378',sync:'95.4%',switchRate:'95.8%'},
+        {name:'赛博朋克2077',detail:4100,trigger:1520,select:638,rate:'42.0%',dlOnly:'35分钟',dlPlay:'42分钟',revenue:'¥1,046',sync:'96.1%',switchRate:'96.8%'},
+        {name:'逃离鸭科夫',detail:3680,trigger:1340,select:549,rate:'41.0%',dlOnly:'22分钟',dlPlay:'26分钟',revenue:'¥824',sync:'94.2%',switchRate:'95.2%'},
+        {name:'巫师3',detail:2540,trigger:980,select:372,rate:'38.0%',dlOnly:'30分钟',dlPlay:'35分钟',revenue:'¥596',sync:'97.5%',switchRate:'97.8%'},
+        {name:'空洞骑士',detail:1280,trigger:420,select:176,rate:'41.9%',dlOnly:'8分钟',dlPlay:'10分钟',revenue:'¥248',sync:'99.1%',switchRate:'98.5%'},
+        {name:'只狼：影逝二度',detail:960,trigger:307,select:122,rate:'39.7%',dlOnly:'20分钟',dlPlay:'24分钟',revenue:'¥192',sync:'95.8%',switchRate:'96.0%'}
     ];
 
     games.forEach(function(g){
         var syncColor=parseFloat(g.sync)>=97?'color:#52c41a':parseFloat(g.sync)>=95?'color:#fa8c16':'color:#ff4d4f';
         var switchColor=parseFloat(g.switchRate)>=97?'color:#52c41a':parseFloat(g.switchRate)>=95?'color:#fa8c16':'color:#ff4d4f';
-        h+='<tr><td><b>'+g.name+'</b></td><td>'+g.trigger.toLocaleString()+'</td><td>'+g.select.toLocaleString()+'</td><td><b style="color:#1890ff">'+g.rate+'</b></td><td>'+g.dlOnly+'</td><td>'+g.dlPlay+'</td><td><b style="color:#d4b473">'+g.revenue+'</b></td><td><span style="'+syncColor+'">'+g.sync+'</span></td><td><span style="'+switchColor+'">'+g.switchRate+'</span></td></tr>';
+        h+='<tr><td><b>'+g.name+'</b></td><td>'+g.detail.toLocaleString()+'</td><td>'+g.trigger.toLocaleString()+'</td><td>'+g.select.toLocaleString()+'</td><td><b style="color:#1890ff">'+g.rate+'</b></td><td>'+g.dlOnly+'</td><td>'+g.dlPlay+'</td><td><b style="color:#d4b473">'+g.revenue+'</b></td><td><span style="'+syncColor+'">'+g.sync+'</span></td><td><span style="'+switchColor+'">'+g.switchRate+'</span></td></tr>';
     });
 
     h+='</tbody></table>';
