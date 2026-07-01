@@ -574,6 +574,7 @@
             width:350px; background:#1e2128; border-radius:20px;
             padding:24px; box-shadow:0 20px 60px rgba(0,0,0,0.8);
             display:flex; flex-direction:column; align-items:center; gap:12px;
+            position:relative;
         }
         .s4-icon {
             width:52px; height:52px; border-radius:50%;
@@ -1067,6 +1068,7 @@
         <div class="s4-bg"></div>
         <div class="s4-overlay">
             <div class="s4-modal" id="s4Modal">
+                <span class="s2-install-close" onclick="goBackToPlay()" style="position:absolute;top:14px;right:14px;"><i class="fas fa-times"></i></span>
                 <!-- 第一步：切换确认 -->
                 <div id="s4Confirm1">
                     <div class="s4-icon"><i class="fas fa-arrow-right-arrow-left"></i></div>
@@ -1085,11 +1087,11 @@
                 <div id="s4Confirm2" style="display:none;">
                     <div class="s4-icon" style="background:rgba(255,180,0,0.1);border-color:#fa8c16;"><i class="fas fa-exclamation" style="color:#fa8c16;"></i></div>
                     <div class="s4-title">确认操作</div>
-                    <div class="s4-desc" style="color:rgba(255,180,0,0.8);font-weight:600;">请先确保当前游玩已存档</div>
+                    <div class="s4-desc" style="color:#fa8c16;font-weight:600;">请先确保当前游玩已存档</div>
                     <div class="s4-desc">切换后将关闭云游戏会话，未保存的进度可能丢失</div>
                     <div class="s4-btns">
-                        <div class="s4-btn-switch" onclick="goStep(5)"><i class="fas fa-check"></i> 确认切换</div>
-                        <div class="s4-btn-later" onclick="hideSecondConfirm()">返回</div>
+                        <div class="s4-btn-later" onclick="hideSecondConfirm()">取消</div>
+                        <div class="s4-btn-switch" onclick="goStep(5)"><i class="fas fa-check"></i> 确认</div>
                     </div>
                 </div>
             </div>
