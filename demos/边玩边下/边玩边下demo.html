@@ -307,6 +307,36 @@
         }
         .s2-install-btn-install:hover { transform:translateY(-1px); }
 
+        /* 小游戏推荐 */
+        .s2-mini-games { display:flex; flex-direction:column; gap:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06); }
+        .s2-mini-game { display:flex; align-items:center; gap:10px; padding:6px 0; }
+        .s2-mini-game-cover {
+            width:36px; height:36px; border-radius:8px;
+            background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1);
+            display:flex; align-items:center; justify-content:center;
+            font-size:14px; color:rgba(255,255,255,0.5); flex-shrink:0;
+        }
+        .s2-mini-game-info { flex:1; display:flex; flex-direction:column; gap:2px; }
+        .s2-mini-game-name { font-size:12px; font-weight:600; color:#fff; }
+        .s2-mini-game-size { font-size:10px; color:rgba(255,255,255,0.4); }
+        .s2-mini-game-btn {
+            padding:4px 12px; border-radius:6px; font-size:11px; font-weight:700;
+            background:var(--blue-gradient); color:#fff; cursor:pointer; flex-shrink:0;
+        }
+
+        /* 场景模式切换 */
+        .scene-mode-switch {
+            position:absolute; top:8px; right:8px; z-index:20;
+            display:flex; gap:4px;
+        }
+        .scene-mode-btn {
+            padding:3px 8px; border-radius:4px; font-size:9px; cursor:pointer;
+            background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.5);
+            border:1px solid rgba(255,255,255,0.15); transition:0.2s;
+        }
+        .scene-mode-btn:hover { color:#fff; background:rgba(255,255,255,0.15); }
+        .scene-mode-btn.active { background:var(--blue-gradient); border-color:transparent; color:#fff; }
+
         /* ═══════════════════════════════
            场景3：云游戏中 + 后台下载
         ═══════════════════════════════ */
@@ -596,6 +626,11 @@
         <div class="s2-bg"></div>
         <div class="s2-overlay">
             <div class="s2-install-modal">
+                <div class="scene-mode-switch">
+                    <span class="scene-mode-btn active" onclick="switchS2Mode('A')">有云游戏+WiFi</span>
+                    <span class="scene-mode-btn" onclick="switchS2Mode('B')">无云游戏/弱网</span>
+                    <span class="scene-mode-btn" onclick="switchS2Mode('C')">存档不可同步</span>
+                </div>
                 <div class="s2-install-header">
                     <span class="s2-install-title">安装游戏</span>
                     <span class="s2-install-close" onclick="goStep(1)"><i class="fas fa-times"></i></span>
@@ -620,27 +655,99 @@
                         <div class="s2-install-loc-path">/data/data/com.xiaoji.egggame/files/Steam</div>
                     </div>
                 </div>
-                <!-- 边玩边下提示 -->
-                <div class="s2-playnow-box">
-                    <div class="s2-playnow-header">
-                        <div class="s2-playnow-left">
-                            <i class="fas fa-cloud-arrow-down" style="color:#00bfff;font-size:15px;"></i>
-                            <div class="s2-playnow-text">
-                                <div class="s2-playnow-title">边玩边下</div>
-                                <div class="s2-playnow-desc">安装同时通过云游戏先行体验</div>
+
+                <!-- 模式A：有云游戏+WiFi → 边玩边下 -->
+                <div id="s2ModeA">
+                    <div class="s2-playnow-box">
+                        <div class="s2-playnow-header">
+                            <div class="s2-playnow-left">
+                                <i class="fas fa-cloud-arrow-down" style="color:#00bfff;font-size:15px;"></i>
+                                <div class="s2-playnow-text">
+                                    <div class="s2-playnow-title">边玩边下</div>
+                                    <div class="s2-playnow-desc">安装同时通过云游戏先行体验</div>
+                                </div>
+                            </div>
+                            <div class="s2-playnow-tag"><i class="fas fa-gift"></i> 首次免费10分钟</div>
+                        </div>
+                        <div class="s2-playnow-notices">
+                            <div class="s2-playnow-notice-item warn"><i class="fas fa-info-circle"></i> 需较好网络环境，下载速度可能略有降低</div>
+                            <div class="s2-playnow-notice-item ok"><i class="fas fa-cloud-arrow-up"></i> 存档可同步，切换本地后接续进度</div>
+                        </div>
+                    </div>
+                    <div class="s2-install-btns">
+                        <div class="s2-install-btn-cancel" onclick="goStep(1)">仅安装</div>
+                        <div class="s2-install-btn-install" onclick="goStep(3)"><i class="fas fa-play" style="font-size:11px;"></i> 边玩边下</div>
+                    </div>
+                </div>
+
+                <!-- 模式B：无云游戏/移动数据 → 小游戏推荐 -->
+                <div id="s2ModeB" style="display:none;">
+                    <div class="s2-playnow-box" style="border-color:rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);">
+                        <div class="s2-playnow-header">
+                            <div class="s2-playnow-left">
+                                <i class="fas fa-gamepad" style="color:#fa8c16;font-size:15px;"></i>
+                                <div class="s2-playnow-text">
+                                    <div class="s2-playnow-title">安装等待中，先玩点别的？</div>
+                                    <div class="s2-playnow-desc">以下小游戏无需等待，即点即玩</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="s2-playnow-tag"><i class="fas fa-gift"></i> 首次免费10分钟</div>
+                        <div class="s2-mini-games">
+                            <div class="s2-mini-game">
+                                <div class="s2-mini-game-cover"><i class="fas fa-chess-knight"></i></div>
+                                <div class="s2-mini-game-info">
+                                    <div class="s2-mini-game-name">空洞骑士</div>
+                                    <div class="s2-mini-game-size">420 MB · 即点即玩</div>
+                                </div>
+                                <div class="s2-mini-game-btn">玩</div>
+                            </div>
+                            <div class="s2-mini-game">
+                                <div class="s2-mini-game-cover"><i class="fas fa-ghost"></i></div>
+                                <div class="s2-mini-game-info">
+                                    <div class="s2-mini-game-name">蔚蓝</div>
+                                    <div class="s2-mini-game-size">380 MB · 即点即玩</div>
+                                </div>
+                                <div class="s2-mini-game-btn">玩</div>
+                            </div>
+                            <div class="s2-mini-game">
+                                <div class="s2-mini-game-cover"><i class="fas fa-hat-wizard"></i></div>
+                                <div class="s2-mini-game-info">
+                                    <div class="s2-mini-game-name">哈迪斯</div>
+                                    <div class="s2-mini-game-size">350 MB · 即点即玩</div>
+                                </div>
+                                <div class="s2-mini-game-btn">玩</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="s2-playnow-notices">
-                        <div class="s2-playnow-notice-item warn"><i class="fas fa-info-circle"></i> 需较好网络环境，下载速度可能略有降低</div>
-                        <div class="s2-playnow-notice-item ok"><i class="fas fa-cloud-arrow-up"></i> 存档可同步，切换本地后接续进度</div>
+                    <div class="s2-install-btns">
+                        <div class="s2-install-btn-install" onclick="goStep(1)" style="flex:1;"><i class="fas fa-download" style="font-size:11px;"></i> 开始安装</div>
                     </div>
                 </div>
-                <div class="s2-install-btns">
-                    <div class="s2-install-btn-cancel" onclick="goStep(1)">仅安装</div>
-                    <div class="s2-install-btn-install" onclick="goStep(3)"><i class="fas fa-play" style="font-size:11px;"></i> 边玩边下</div>
+
+                <!-- 模式C：有云游戏但存档不可同步 -->
+                <div id="s2ModeC" style="display:none;">
+                    <div class="s2-playnow-box">
+                        <div class="s2-playnow-header">
+                            <div class="s2-playnow-left">
+                                <i class="fas fa-cloud-arrow-down" style="color:#00bfff;font-size:15px;"></i>
+                                <div class="s2-playnow-text">
+                                    <div class="s2-playnow-title">边玩边下</div>
+                                    <div class="s2-playnow-desc">安装同时通过云游戏先行体验</div>
+                                </div>
+                            </div>
+                            <div class="s2-playnow-tag"><i class="fas fa-gift"></i> 首次免费10分钟</div>
+                        </div>
+                        <div class="s2-playnow-notices">
+                            <div class="s2-playnow-notice-item warn"><i class="fas fa-info-circle"></i> 需较好网络环境，下载速度可能略有降低</div>
+                            <div class="s2-playnow-notice-item warn"><i class="fas fa-exclamation-triangle"></i> 该游戏暂不支持存档同步，切换后需从头开始</div>
+                        </div>
+                    </div>
+                    <div class="s2-install-btns">
+                        <div class="s2-install-btn-cancel" onclick="goStep(1)">仅安装</div>
+                        <div class="s2-install-btn-install" onclick="goStep(3)"><i class="fas fa-play" style="font-size:11px;"></i> 边玩边下</div>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -752,6 +859,14 @@
 
         if (n===3) startDl(); else stopDl();
         if (n===5) startSwitch();
+    }
+
+    function switchS2Mode(mode) {
+        document.getElementById('s2ModeA').style.display = mode==='A'?'block':'none';
+        document.getElementById('s2ModeB').style.display = mode==='B'?'block':'none';
+        document.getElementById('s2ModeC').style.display = mode==='C'?'block':'none';
+        document.querySelectorAll('.scene-mode-btn').forEach(function(b){ b.classList.remove('active'); });
+        event.currentTarget.classList.add('active');
     }
 
     function startDl() {
