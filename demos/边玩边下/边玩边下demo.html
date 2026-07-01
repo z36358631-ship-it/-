@@ -290,7 +290,7 @@
         }
         .s2-playnow-notice-item.warn { color:rgba(255,180,0,0.7); }
         .s2-playnow-notice-item.ok { color:rgba(111,255,168,0.8); }
-        .s2-install-btns { display:flex; gap:10px; }
+        .s2-install-btns { display:flex; gap:10px; margin-top:10px; }
         .s2-install-btn-cancel {
             flex:1; height:40px; border-radius:10px;
             background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
@@ -381,6 +381,47 @@
             box-shadow:0 2px 8px rgba(74,222,128,0.3);
         }
         .s3-dl-switch-btn:hover { transform:scale(1.05); }
+
+        /* 场景3B：仅下载+小游戏推荐 */
+        .s3b-content {
+            position:absolute; inset:0; display:flex; flex-direction:column;
+            align-items:center; justify-content:center; gap:16px; padding:20px;
+        }
+        .s3b-dl-card {
+            width:100%; max-width:320px; background:rgba(30,33,40,0.95);
+            backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1);
+            border-radius:12px; padding:14px 16px; text-align:center;
+        }
+        .s3b-dl-title { font-size:13px; font-weight:700; }
+        .s3b-dl-sub { font-size:11px; color:rgba(255,255,255,0.45); }
+        .s3b-recommend {
+            width:100%; max-width:320px; background:rgba(30,33,40,0.95);
+            backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1);
+            border-radius:12px; padding:14px 16px;
+        }
+        .s3b-recommend-title {
+            font-size:12px; font-weight:700; color:#fa8c16;
+            display:flex; align-items:center; gap:6px; margin-bottom:10px;
+        }
+        .s3b-recommend-list { display:flex; flex-direction:column; gap:8px; }
+        .s3b-game-item {
+            display:flex; align-items:center; gap:10px; padding:6px 0;
+            border-bottom:1px solid rgba(255,255,255,0.04);
+        }
+        .s3b-game-item:last-child { border-bottom:none; }
+        .s3b-game-cover {
+            width:36px; height:36px; border-radius:8px;
+            background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1);
+            display:flex; align-items:center; justify-content:center;
+            font-size:14px; color:rgba(255,255,255,0.5); flex-shrink:0;
+        }
+        .s3b-game-info { flex:1; display:flex; flex-direction:column; gap:2px; }
+        .s3b-game-name { font-size:12px; font-weight:600; }
+        .s3b-game-meta { font-size:10px; color:rgba(255,255,255,0.4); }
+        .s3b-game-btn {
+            padding:4px 10px; border-radius:6px; font-size:10px; font-weight:700;
+            background:var(--blue-gradient); color:#fff; cursor:pointer; flex-shrink:0; white-space:nowrap;
+        }
 
         /* 虚拟按键（横屏） */
         .s3-gamepad {
@@ -682,18 +723,9 @@
 
                 <!-- 模式B：无云游戏/移动数据 → 纯安装 -->
                 <div id="s2ModeB" style="display:none;">
-                    <div class="s2-playnow-box" style="border-color:rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);">
-                        <div class="s2-playnow-header">
-                            <div class="s2-playnow-left">
-                                <i class="fas fa-circle-info" style="color:rgba(255,255,255,0.4);font-size:14px;"></i>
-                                <div class="s2-playnow-text">
-                                    <div class="s2-playnow-desc" style="color:rgba(255,255,255,0.45);">该游戏暂不支持云游戏，无法使用"边玩边下"</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     <div class="s2-install-btns">
-                        <div class="s2-install-btn-install" onclick="goStep(1)" style="flex:1;"><i class="fas fa-download" style="font-size:11px;"></i> 开始安装</div>
+                        <div class="s2-install-btn-cancel" onclick="goStep(1)">取消</div>
+                        <div class="s2-install-btn-install" onclick="goStepB3()" style="flex:1;"><i class="fas fa-download" style="font-size:11px;"></i> 安装</div>
                     </div>
                 </div>
 
@@ -744,6 +776,55 @@
             <div class="s3-dl-info">
                 <div class="s3-dl-title" id="s3DlTitle">13.7 GB / 19 GB</div>
                 <div class="s3-dl-bar-bg"><div class="s3-dl-bar-fill" id="dlFill" style="width:72%"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 场景3B：仅下载中（无云游戏）+ 小游戏推荐 -->
+    <div class="scene" id="scene3b">
+        <div class="s3-game-screen" style="filter:brightness(0.3);"></div>
+        <div class="s3b-content">
+            <div class="s3b-dl-card">
+                <div class="s3b-dl-title">生化危机 2重制版 安装中</div>
+                <div class="s3-dl-bar-bg" style="margin:8px 0;"><div class="s3-dl-bar-fill" id="dlFillB" style="width:35%"></div></div>
+                <div class="s3b-dl-sub">6.7 GB / 19 GB · 剩余约 18 分钟</div>
+            </div>
+            <div class="s3b-recommend">
+                <div class="s3b-recommend-title"><i class="fas fa-gamepad"></i> 安装等待中，先玩点别的？</div>
+                <div class="s3b-recommend-list">
+                    <div class="s3b-game-item">
+                        <div class="s3b-game-cover"><i class="fas fa-chess-knight"></i></div>
+                        <div class="s3b-game-info">
+                            <div class="s3b-game-name">空洞骑士</div>
+                            <div class="s3b-game-meta">动作冒险 · 420 MB</div>
+                        </div>
+                        <div class="s3b-game-btn">即点即玩</div>
+                    </div>
+                    <div class="s3b-game-item">
+                        <div class="s3b-game-cover"><i class="fas fa-ghost"></i></div>
+                        <div class="s3b-game-info">
+                            <div class="s3b-game-name">蔚蓝</div>
+                            <div class="s3b-game-meta">平台跳跃 · 380 MB</div>
+                        </div>
+                        <div class="s3b-game-btn">即点即玩</div>
+                    </div>
+                    <div class="s3b-game-item">
+                        <div class="s3b-game-cover"><i class="fas fa-hat-wizard"></i></div>
+                        <div class="s3b-game-info">
+                            <div class="s3b-game-name">哈迪斯</div>
+                            <div class="s3b-game-meta">Roguelike · 350 MB</div>
+                        </div>
+                        <div class="s3b-game-btn">即点即玩</div>
+                    </div>
+                    <div class="s3b-game-item">
+                        <div class="s3b-game-cover"><i class="fas fa-puzzle-piece"></i></div>
+                        <div class="s3b-game-info">
+                            <div class="s3b-game-name">传说之下</div>
+                            <div class="s3b-game-meta">RPG · 200 MB</div>
+                        </div>
+                        <div class="s3b-game-btn">即点即玩</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -840,6 +921,12 @@
         document.getElementById('s2ModeC').style.display = mode==='C'?'block':'none';
         document.querySelectorAll('.scene-mode-btn').forEach(function(b){ b.classList.remove('active'); });
         event.currentTarget.classList.add('active');
+    }
+
+    function goStepB3() {
+        document.querySelectorAll('.scene').forEach(function(s){ s.classList.remove('active'); });
+        document.getElementById('scene3b').classList.add('active');
+        document.getElementById('stepLabel').textContent = 'Step 3: 仅下载中 — 推荐小游戏打发等待时间';
     }
 
     function startDl() {
