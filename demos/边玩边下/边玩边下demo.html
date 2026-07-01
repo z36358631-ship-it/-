@@ -1196,8 +1196,7 @@
                 document.getElementById('floatBallFill').style.width = '100%';
                 document.getElementById('dlFloatBall').style.background = 'rgba(74,222,128,0.15)';
                 document.getElementById('dlFloatBall').style.borderColor = 'rgba(74,222,128,0.4)';
-                document.getElementById('dlFloatBall').style.cursor = 'pointer';
-                document.getElementById('dlFloatBall').onclick = function(){ goStep3D(); };
+                document.getElementById('floatBallBadge').style.background = '#52c41a';
             } else {
                 document.getElementById('floatBallPct').textContent = p + '%';
                 document.getElementById('floatBallFill').style.width = p + '%';
@@ -1214,11 +1213,12 @@
         var ball = document.getElementById('dlFloatBall');
         var shell = document.getElementById('phoneShell');
         var dropZone = document.getElementById('dlDropZone');
-        var isDragging = false, startX, startY;
+        var isDragging = false, hasMoved = false, startX, startY;
 
         ball.style.top = '12px';
         ball.style.right = '12px';
         ball.style.left = 'auto';
+        ball.onclick = null;
 
         ball.onmousedown = ball.ontouchstart = function(e) {
             e.preventDefault();
@@ -1227,6 +1227,7 @@
             startX = ev.clientX - rect.left;
             startY = ev.clientY - rect.top;
             isDragging = true;
+            hasMoved = false;
             ball.style.right = 'auto';
             ball.style.left = (rect.left - shell.getBoundingClientRect().left) + 'px';
             ball.style.top = (rect.top - shell.getBoundingClientRect().top) + 'px';
@@ -1235,6 +1236,7 @@
 
         document.onmousemove = document.ontouchmove = function(e) {
             if (!isDragging) return;
+            hasMoved = true;
             var ev = e.touches ? e.touches[0] : e;
             var shellRect = shell.getBoundingClientRect();
             var x = ev.clientX - shellRect.left - startX;
@@ -1259,6 +1261,7 @@
                 closeFloatBall();
             } else {
                 dropZone.classList.remove('show');
+                if (!hasMoved) { goStep3D(); }
             }
         };
     }
