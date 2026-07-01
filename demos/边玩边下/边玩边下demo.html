@@ -487,6 +487,13 @@
             background:rgba(255,255,255,0.1); border-radius:0 0 10px 10px; overflow:hidden;
         }
         .dl-float-ball-fill { height:100%; background:var(--blue-gradient); }
+        .dl-float-ball-badge {
+            position:absolute; top:-4px; right:-4px;
+            min-width:16px; height:16px; border-radius:8px;
+            background:#ff4d4f; color:#fff; font-size:9px; font-weight:700;
+            display:flex; align-items:center; justify-content:center;
+            padding:0 4px;
+        }
 
         /* 拖动删除区域 */
         .dl-float-drop-zone {
@@ -1016,6 +1023,7 @@
         </div>
         <!-- 悬浮球 -->
         <div class="dl-float-ball show" id="dlFloatBall">
+            <div class="dl-float-ball-badge" id="floatBallBadge">2</div>
             <div class="dl-float-ball-percent" id="floatBallPct">77%</div>
             <div class="dl-float-ball-label" id="floatBallLabel">下载中</div>
             <div class="dl-float-ball-progress"><div class="dl-float-ball-fill" id="floatBallFill" style="width:77%"></div></div>
