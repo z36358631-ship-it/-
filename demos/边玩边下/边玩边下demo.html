@@ -1067,31 +1067,41 @@
     <div class="scene" id="scene4">
         <div class="s4-bg"></div>
         <div class="s4-overlay">
-            <div class="s4-modal" id="s4Modal">
-                <span class="s2-install-close" onclick="goBackToPlay()" style="position:absolute;top:14px;right:14px;"><i class="fas fa-times"></i></span>
+            <div class="s2-install-modal" style="position:relative;" id="s4Modal">
+                <span class="s2-install-close" onclick="goBackToPlay()" style="position:absolute;top:16px;right:16px;"><i class="fas fa-times"></i></span>
                 <!-- 第一步：切换确认 -->
-                <div id="s4Confirm1">
-                    <div class="s4-icon"><i class="fas fa-arrow-right-arrow-left"></i></div>
-                    <div class="s4-title">切换到本地运行</div>
-                    <div class="s4-desc">将关闭云游戏并启动本地安装的游戏<br>存档将自动同步到本地</div>
-                    <div class="s4-info">
-                        <div class="s4-info-row"><span class="s4-info-label">游戏大小</span><span class="s4-info-val">19 GB</span></div>
-                        <div class="s4-info-row"><span class="s4-info-label">存档同步</span><span class="s4-info-val green"><i class="fas fa-check-circle"></i> 可同步</span></div>
+                <div id="s4Confirm1" style="display:flex;flex-direction:column;gap:14px;">
+                    <div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;">
+                        <div style="width:48px;height:48px;border-radius:50%;background:rgba(111,255,168,0.1);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;"><i class="fas fa-arrow-right-arrow-left" style="font-size:18px;color:var(--green);"></i></div>
+                        <div style="font-size:16px;font-weight:700;">切换到本地运行</div>
+                        <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">将关闭云游戏并启动本地安装的游戏<br>存档将自动同步到本地</div>
                     </div>
-                    <div class="s4-btns">
-                        <div class="s4-btn-switch" onclick="showSecondConfirm()"><i class="fas fa-arrow-right-arrow-left"></i> 切换到本地</div>
-                        <div class="s4-btn-later" onclick="goBackToPlay()">继续游玩</div>
+                    <div class="s2-install-loc-box">
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0;">
+                            <span style="font-size:12px;color:rgba(255,255,255,0.5);">游戏大小</span>
+                            <span style="font-size:13px;font-weight:700;">19 GB</span>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0;">
+                            <span style="font-size:12px;color:rgba(255,255,255,0.5);">存档同步</span>
+                            <span style="font-size:12px;font-weight:700;color:var(--green);"><i class="fas fa-check-circle"></i> 可同步</span>
+                        </div>
+                    </div>
+                    <div class="s2-install-btns">
+                        <div class="s2-install-btn-install" onclick="showSecondConfirm()" style="flex:2;background:linear-gradient(90deg,#4ade80,#22c55e);">切换到本地</div>
+                        <div class="s2-install-btn-cancel" onclick="goBackToPlay()">继续游玩</div>
                     </div>
                 </div>
                 <!-- 第二步：二次确认 -->
-                <div id="s4Confirm2" style="display:none;">
-                    <div class="s4-icon" style="background:rgba(255,180,0,0.1);border-color:#fa8c16;"><i class="fas fa-exclamation" style="color:#fa8c16;"></i></div>
-                    <div class="s4-title">确认操作</div>
-                    <div class="s4-desc" style="color:#fa8c16;font-weight:600;">请先确保当前游玩已存档</div>
-                    <div class="s4-desc">切换后将关闭云游戏会话，未保存的进度可能丢失</div>
-                    <div class="s4-btns">
-                        <div class="s4-btn-later" onclick="hideSecondConfirm()">取消</div>
-                        <div class="s4-btn-switch" onclick="goStep(5)"><i class="fas fa-check"></i> 确认</div>
+                <div id="s4Confirm2" style="display:none;flex-direction:column;gap:14px;">
+                    <div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;">
+                        <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,180,0,0.1);border:2px solid #fa8c16;display:flex;align-items:center;justify-content:center;"><i class="fas fa-exclamation" style="font-size:18px;color:#fa8c16;"></i></div>
+                        <div style="font-size:16px;font-weight:700;">确认操作</div>
+                        <div style="font-size:13px;color:#fa8c16;font-weight:600;">请先确保当前游玩已存档</div>
+                        <div style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.6;">切换后将关闭云游戏会话<br>未保存的进度可能丢失</div>
+                    </div>
+                    <div class="s2-install-btns">
+                        <div class="s2-install-btn-cancel" onclick="hideSecondConfirm()">取消</div>
+                        <div class="s2-install-btn-install" onclick="goStep(5)" style="flex:2;background:linear-gradient(90deg,#4ade80,#22c55e);">确认</div>
                     </div>
                 </div>
             </div>
@@ -1330,12 +1340,12 @@
 
     function showSecondConfirm() {
         document.getElementById('s4Confirm1').style.display = 'none';
-        document.getElementById('s4Confirm2').style.display = 'block';
+        document.getElementById('s4Confirm2').style.display = 'flex';
     }
 
     function hideSecondConfirm() {
         document.getElementById('s4Confirm2').style.display = 'none';
-        document.getElementById('s4Confirm1').style.display = 'block';
+        document.getElementById('s4Confirm1').style.display = 'flex';
     }
 
     function startSwitch() {
