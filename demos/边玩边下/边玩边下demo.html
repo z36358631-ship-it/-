@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>边玩边下 - 完整交互流程Demo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --blue-gradient: linear-gradient(90deg, #00bfff, #0080ff);
+            --green: #6fffa8;
+            --popup-bg: #252830;
+            --bg-dark: #0f1115;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,"Microsoft YaHei",sans-serif; user-select:none; }
+        body { background:#12121f; min-height:100vh; width:100vw; display:flex; align-items:center; justify-content:center; overflow:hidden; color:#fff; flex-direction:column; gap:16px; }
+
+        /* 控制条 */
+        .controls {
+            display:flex; gap:12px; align-items:center;
+        }
+        .ctrl-btn {
+            padding:6px 16px; border-radius:8px; font-size:12px; font-weight:600;
+            cursor:pointer; transition:0.2s; border:1px solid rgba(255,255,255,0.15);
+            background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.7);
+        }
+        .ctrl-btn:hover { background:rgba(255,255,255,0.12); color:#fff; }
+        .ctrl-btn.active { background:var(--blue-gradient); border-color:transparent; color:#fff; }
+
+        .step-nav {
+            display:flex; gap:6px; align-items:center;
+        }
+        .step-dot {
+            width:28px; height:28px; border-radius:50%;
+            background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.2);
+            display:flex; align-items:center; justify-content:center;
+            font-size:11px; font-weight:700; color:rgba(255,255,255,0.4);
+            cursor:pointer; transition:0.3s;
+        }
+        .step-dot.active { background:var(--blue-gradient); border-color:transparent; color:#fff; }
+        .step-dot.done { background:rgba(111,255,168,0.12); border-color:var(--green); color:var(--green); }
+        .step-line { width:16px; height:2px; background:rgba(255,255,255,0.12); }
+        .step-line.done { background:var(--green); }
+        .step-label { font-size:11px; color:rgba(255,255,255,0.5); margin-left:10px; min-width:260px; }
+
+        /* 手机壳 */
+        .phone-shell {
+            border-radius:24px; overflow:hidden; position:relative;
+            box-shadow:0 0 0 6px #222, 0 0 0 8px #2e2e2e, 0 24px 60px rgba(0,0,0,0.9);
+            transition:width 0.4s, height 0.4s;
+        }
+        .phone-shell.landscape { width:860px; height:400px; }
+        .phone-shell.portrait { width:380px; height:720px; }
+
+        /* 场景 */
+        .scene { position:absolute; inset:0; display:none; overflow:hidden; }
+        .scene.active { display:flex; flex-direction:column; }
+
+        /* ═══════════════════════════════
+           场景1：游戏详情页
+        ═══════════════════════════════ */
+
+        /* === 横屏 === */
+        .landscape .s1-landscape { display:flex !important; flex-direction:row !important; }
+        .landscape .s1-portrait { display:none !important; }
+        .portrait .s1-landscape { display:none !important; }
+        .portrait .s1-portrait { display:flex !important; flex-direction:column !important; }
+
+        /* 横屏详情 */
+        .s1-landscape {
+            position:absolute; inset:0;
+        }
+        .s1l-bg {
+            position:absolute; inset:0;
+            background:url('https://cdn.cloudflare.steamstatic.com/steam/apps/883710/library_hero.jpg') center/cover;
+        }
+        .s1l-overlay {
+            position:absolute; inset:0;
+            background:
+                linear-gradient(to right, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 38%, rgba(0,0,0,0.1) 65%, transparent 100%),
+                linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 25%, transparent 50%),
+                linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 15%);
+        }
+        .s1l-back {
+            position:absolute; top:12px; left:16px; z-index:10;
+            color:#fff; font-size:16px; cursor:pointer;
+        }
+        .s1l-content {
+            position:absolute; top:36px; bottom:68px; left:28px; width:420px; z-index:10;
+            display:flex; flex-direction:column; justify-content:center; gap:10px;
+        }
+        .s1l-title { font-size:32px; font-weight:900; line-height:1.1; text-shadow:0 2px 12px rgba(0,0,0,0.8); }
+        .s1l-sub { font-size:12px; color:rgba(255,255,255,0.55); }
+        .s1l-tags { display:flex; gap:6px; }
+        .s1l-tag { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); padding:3px 10px; border-radius:4px; font-size:11px; color:rgba(255,255,255,0.65); }
+
+        .s1l-actions { display:flex; gap:8px; align-items:center; margin-top:4px; }
+        .s1l-btn-cloud {
+            height:38px; padding:0 16px; border-radius:10px;
+            background:rgba(255,255,255,0.1); backdrop-filter:blur(8px);
+            border:1px solid rgba(255,255,255,0.18);
+            display:flex; align-items:center; gap:6px;
+            color:#fff; font-size:13px; font-weight:600; cursor:pointer; transition:0.2s;
+        }
+        .s1l-btn-cloud:hover { background:rgba(255,255,255,0.18); }
+        .s1l-btn-download {
+            height:38px; padding:0 18px; border-radius:10px;
+            background:var(--blue-gradient);
+            display:flex; align-items:center; gap:6px;
+            color:#fff; font-size:13px; font-weight:700; cursor:pointer;
+            box-shadow:0 4px 14px rgba(0,157,255,0.35); transition:0.2s;
+        }
+        .s1l-btn-download:hover { box-shadow:0 6px 20px rgba(0,157,255,0.55); transform:translateY(-1px); }
+        .s1l-size { font-size:11px; color:rgba(255,255,255,0.45); margin-left:4px; }
+        .s1l-gamepad {
+            width:38px; height:38px; border-radius:10px;
+            background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15);
+            display:flex; align-items:center; justify-content:center;
+            font-size:15px; color:rgba(255,255,255,0.5); cursor:pointer;
+        }
+
+        /* 横屏底部数据栏 */
+        .s1l-stats {
+            position:absolute; bottom:0; left:0; right:0; z-index:10;
+            display:flex; align-items:center;
+            padding:10px 20px 14px;
+            background:linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+        }
+        .s1l-stat {
+            display:flex; align-items:center; gap:8px; padding:0 16px; position:relative; flex:1;
+        }
+        .s1l-stat + .s1l-stat::before {
+            content:''; position:absolute; left:0; top:50%; transform:translateY(-50%);
+            width:1px; height:22px; background:rgba(255,255,255,0.1);
+        }
+        .s1l-stat-icon { font-size:14px; color:rgba(255,255,255,0.4); }
+        .s1l-stat-info { display:flex; flex-direction:column; gap:2px; }
+        .s1l-stat-label { font-size:10px; color:rgba(255,255,255,0.4); }
+        .s1l-stat-val { font-size:13px; font-weight:700; }
+        .s1l-stat-val.green { color:var(--green); }
+        .star-row { display:flex; gap:1px; }
+        .star-row i { font-size:9px; color:#ffd700; }
+        .star-row i.dim { color:rgba(255,255,255,0.2); }
+
+        /* === 竖屏详情 === */
+        .s1-portrait {
+            position:absolute; inset:0; overflow-y:auto;
+            background:var(--bg-dark);
+        }
+        .s1p-hero {
+            width:100%; height:220px; position:relative; flex-shrink:0;
+        }
+        .s1p-hero img { width:100%; height:100%; object-fit:cover; }
+        .s1p-hero-overlay {
+            position:absolute; inset:0;
+            background:linear-gradient(to top, var(--bg-dark) 0%, transparent 50%);
+        }
+        .s1p-back {
+            position:absolute; top:12px; left:14px; color:#fff; font-size:15px; cursor:pointer; z-index:5;
+        }
+        .s1p-page-indicator {
+            position:absolute; top:12px; left:50%; transform:translateX(-50%);
+            font-size:11px; color:rgba(255,255,255,0.6); z-index:5;
+        }
+        .s1p-rating-badge {
+            position:absolute; top:50px; left:14px; right:14px; z-index:5;
+            background:rgba(30,33,40,0.92); backdrop-filter:blur(8px);
+            border-radius:12px; padding:12px 14px;
+            display:flex; gap:12px; align-items:flex-start;
+        }
+        .s1p-rating-icon {
+            width:48px; height:64px; background:#1a1a1a; border:1px solid rgba(255,255,255,0.1);
+            border-radius:4px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+            font-size:9px; color:rgba(255,255,255,0.4); text-align:center; line-height:1.2; padding:4px;
+        }
+        .s1p-rating-text { font-size:11px; color:rgba(255,255,255,0.6); line-height:1.5; }
+
+        .s1p-info { padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+        .s1p-title-row { display:flex; align-items:flex-start; justify-content:space-between; }
+        .s1p-title { font-size:20px; font-weight:800; }
+        .s1p-score { font-size:24px; font-weight:900; color:var(--green); }
+        .s1p-sub { font-size:11px; color:rgba(255,255,255,0.5); line-height:1.5; }
+
+        .s1p-engine-box {
+            background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+            border-radius:10px; padding:10px 14px;
+            display:flex; align-items:center; gap:10px;
+        }
+        .s1p-engine-icon { font-size:16px; color:rgba(255,255,255,0.4); }
+        .s1p-engine-text { font-size:12px; color:rgba(255,255,255,0.6); }
+        .s1p-engine-score {
+            margin-left:auto; display:flex; align-items:center; gap:6px;
+            font-size:13px; font-weight:700;
+        }
+
+        .s1p-section-title { font-size:14px; font-weight:700; margin-top:4px; }
+        .s1p-desc { font-size:12px; color:rgba(255,255,255,0.55); line-height:1.8; }
+
+        /* 竖屏底部固定栏 */
+        .s1p-bottom-bar {
+            position:sticky; bottom:0; left:0; right:0;
+            background:rgba(15,17,21,0.95); backdrop-filter:blur(12px);
+            border-top:1px solid rgba(255,255,255,0.08);
+            padding:10px 16px; display:flex; gap:10px; align-items:center;
+            margin-top:auto;
+        }
+        .s1p-btn-cloud {
+            height:42px; padding:0 16px; border-radius:10px;
+            background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);
+            display:flex; align-items:center; gap:6px;
+            color:#fff; font-size:13px; font-weight:600; cursor:pointer; transition:0.2s;
+        }
+        .s1p-btn-cloud:hover { background:rgba(255,255,255,0.14); }
+        .s1p-btn-download {
+            flex:1; height:42px; border-radius:10px;
+            background:var(--blue-gradient);
+            display:flex; align-items:center; justify-content:center; gap:8px;
+            color:#fff; font-size:14px; font-weight:700; cursor:pointer;
+            box-shadow:0 4px 14px rgba(0,157,255,0.35); transition:0.2s;
+        }
+        .s1p-btn-download:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,157,255,0.55); }
+
+        /* ═══════════════════════════════
+           场景2：安装弹窗
+        ═══════════════════════════════ */
+        .s2-bg {
+            position:absolute; inset:0;
+            background:url('https://cdn.cloudflare.steamstatic.com/steam/apps/883710/library_hero.jpg') center/cover;
+            filter:blur(10px) brightness(0.25); transform:scale(1.1);
+        }
+        .s2-overlay {
+            position:absolute; inset:0; background:rgba(0,0,0,0.5);
+            display:flex; align-items:center; justify-content:center;
+        }
+        .s2-install-modal {
+            width:340px; background:#1e2128; border-radius:18px;
+            padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.8);
+            display:flex; flex-direction:column; gap:14px;
+        }
+        .s2-install-header {
+            display:flex; align-items:center; justify-content:space-between;
+        }
+        .s2-install-title { font-size:15px; font-weight:700; }
+        .s2-install-close { color:rgba(255,255,255,0.4); font-size:16px; cursor:pointer; }
+        .s2-install-close:hover { color:#fff; }
+        .s2-install-game {
+            display:flex; gap:12px; align-items:center;
+        }
+        .s2-install-cover {
+            width:80px; height:38px; border-radius:6px; overflow:hidden; flex-shrink:0;
+        }
+        .s2-install-cover img { width:100%; height:100%; object-fit:cover; }
+        .s2-install-info { display:flex; flex-direction:column; gap:3px; }
+        .s2-install-name { font-size:13px; font-weight:700; }
+        .s2-install-size { font-size:11px; color:rgba(255,255,255,0.5); }
+        .s2-install-location { display:flex; flex-direction:column; gap:6px; }
+        .s2-install-loc-label { font-size:11px; color:rgba(255,255,255,0.45); }
+        .s2-install-loc-box {
+            background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+            border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:4px;
+        }
+        .s2-install-loc-row { display:flex; align-items:center; gap:8px; }
+        .s2-install-loc-platform { font-size:12px; font-weight:600; }
+        .s2-install-loc-free { font-size:11px; color:rgba(255,255,255,0.4); }
+        .s2-install-loc-path { font-size:10px; color:rgba(255,255,255,0.3); font-family:monospace; }
+        .s2-playnow-box {
+            display:flex; flex-direction:column; gap:8px;
+            background:rgba(0,191,255,0.06); border:1px solid rgba(0,191,255,0.18);
+            border-radius:10px; padding:12px 14px;
+        }
+        .s2-playnow-header {
+            display:flex; align-items:center; justify-content:space-between;
+        }
+        .s2-playnow-left { display:flex; align-items:center; gap:10px; }
+        .s2-playnow-text { display:flex; flex-direction:column; gap:2px; }
+        .s2-playnow-title { font-size:12px; font-weight:700; color:#fff; }
+        .s2-playnow-desc { font-size:10px; color:rgba(255,255,255,0.5); }
+        .s2-playnow-tag {
+            font-size:10px; font-weight:700; color:var(--green);
+            background:rgba(111,255,168,0.1); border:1px solid rgba(111,255,168,0.2);
+            border-radius:12px; padding:3px 8px; white-space:nowrap;
+        }
+        .s2-playnow-notices {
+            display:flex; flex-direction:column; gap:4px;
+            padding-top:6px; border-top:1px solid rgba(255,255,255,0.06);
+        }
+        .s2-playnow-notice-item {
+            font-size:10px; display:flex; align-items:center; gap:5px;
+        }
+        .s2-playnow-notice-item.warn { color:rgba(255,180,0,0.7); }
+        .s2-playnow-notice-item.ok { color:rgba(111,255,168,0.8); }
+        .s2-install-btns { display:flex; gap:10px; }
+        .s2-install-btn-cancel {
+            flex:1; height:40px; border-radius:10px;
+            background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+            color:rgba(255,255,255,0.6); font-size:13px; font-weight:600; cursor:pointer;
+            display:flex; align-items:center; justify-content:center; transition:0.2s;
+        }
+        .s2-install-btn-cancel:hover { background:rgba(255,255,255,0.1); color:#fff; }
+        .s2-install-btn-install {
+            flex:2; height:40px; border-radius:10px;
+            background:var(--blue-gradient); color:#fff;
+            font-size:13px; font-weight:700; cursor:pointer;
+            display:flex; align-items:center; justify-content:center; gap:6px;
+            box-shadow:0 4px 14px rgba(0,157,255,0.30); transition:0.2s;
+        }
+        .s2-install-btn-install:hover { transform:translateY(-1px); }
+
+        /* ═══════════════════════════════
+           场景3：云游戏中 + 后台下载
+        ═══════════════════════════════ */
+        .s3-game-screen {
+            position:absolute; inset:0;
+            background:url('https://cdn.cloudflare.steamstatic.com/steam/apps/883710/library_hero.jpg') center/cover;
+        }
+        .s3-top-bar {
+            position:absolute; top:0; left:0; right:0; z-index:10;
+            display:flex; align-items:center; justify-content:space-between;
+            padding:8px 14px;
+            background:linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, transparent 100%);
+        }
+        .s3-badge {
+            display:flex; align-items:center; gap:5px;
+            background:rgba(0,191,255,0.12); border:1px solid rgba(0,191,255,0.25);
+            border-radius:16px; padding:4px 10px;
+        }
+        .s3-badge-dot { width:5px; height:5px; border-radius:50%; background:#00bfff; animation:pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+        .s3-badge-text { font-size:10px; color:#00bfff; font-weight:600; }
+        .s3-timer { font-size:11px; color:rgba(255,255,255,0.55); }
+
+        .s3-dl-bar {
+            position:absolute; top:10px; left:14px; z-index:10;
+            background:rgba(15,17,21,0.85); backdrop-filter:blur(12px);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:10px;
+            padding:8px 12px; display:flex; flex-direction:column; gap:4px;
+            width:180px;
+        }
+        .s3-dl-info { display:flex; flex-direction:column; gap:4px; }
+        .s3-dl-row { display:flex; align-items:center; justify-content:space-between; }
+        .s3-dl-title { font-size:12px; font-weight:700; color:#fff; }
+        .s3-dl-speed { font-size:10px; color:rgba(255,255,255,0.45); }
+        .s3-dl-bar-bg { width:100%; height:3px; background:rgba(255,255,255,0.12); border-radius:2px; overflow:hidden; }
+        .s3-dl-bar-fill { height:100%; background:var(--blue-gradient); border-radius:2px; transition:width 0.3s; }
+        .s3-dl-switch-btn {
+            padding:6px 12px; border-radius:8px; font-size:11px; font-weight:700;
+            background:linear-gradient(90deg, #4ade80, #22c55e); color:#000;
+            cursor:pointer; white-space:nowrap; transition:0.2s;
+            box-shadow:0 2px 8px rgba(74,222,128,0.3);
+        }
+        .s3-dl-switch-btn:hover { transform:scale(1.05); }
+
+        /* 虚拟按键（横屏） */
+        .s3-gamepad {
+            position:absolute; bottom:56px; right:16px; z-index:5;
+            display:flex; gap:6px; opacity:0.4;
+        }
+        .portrait .s3-gamepad { bottom:72px; }
+        .s3-pad-btn {
+            width:32px; height:32px; border-radius:50%;
+            background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2);
+            display:flex; align-items:center; justify-content:center;
+            font-size:11px; font-weight:700; color:rgba(255,255,255,0.5);
+        }
+
+        /* ═══════════════════════════════
+           场景4：下载完成提示
+        ═══════════════════════════════ */
+        .s4-bg {
+            position:absolute; inset:0;
+            background:url('https://cdn.cloudflare.steamstatic.com/steam/apps/883710/library_hero.jpg') center/cover;
+            filter:brightness(0.35);
+        }
+        .s4-overlay {
+            position:absolute; inset:0; background:rgba(0,0,0,0.45);
+            display:flex; align-items:center; justify-content:center;
+        }
+        .s4-modal {
+            width:350px; background:#1e2128; border-radius:20px;
+            padding:24px; box-shadow:0 20px 60px rgba(0,0,0,0.8);
+            display:flex; flex-direction:column; align-items:center; gap:12px;
+        }
+        .s4-icon {
+            width:52px; height:52px; border-radius:50%;
+            background:rgba(111,255,168,0.1); border:2px solid var(--green);
+            display:flex; align-items:center; justify-content:center;
+            font-size:20px; color:var(--green);
+        }
+        .s4-title { font-size:16px; font-weight:700; }
+        .s4-desc { font-size:12px; color:rgba(255,255,255,0.55); text-align:center; line-height:1.7; }
+        .s4-info {
+            width:100%; background:rgba(255,255,255,0.03); border-radius:10px; padding:10px 14px;
+            display:flex; flex-direction:column; gap:7px;
+        }
+        .s4-info-row { display:flex; align-items:center; justify-content:space-between; font-size:11px; }
+        .s4-info-label { color:rgba(255,255,255,0.45); }
+        .s4-info-val { color:#fff; font-weight:600; }
+        .s4-info-val.green { color:var(--green); }
+        .s4-btns { display:flex; gap:10px; width:100%; margin-top:4px; }
+        .s4-btn-switch {
+            flex:2; height:42px; border-radius:10px;
+            background:linear-gradient(90deg, #4ade80, #22c55e); color:#000;
+            font-size:13px; font-weight:700; cursor:pointer;
+            display:flex; align-items:center; justify-content:center; gap:6px;
+            box-shadow:0 4px 14px rgba(74,222,128,0.30); transition:0.2s;
+        }
+        .s4-btn-switch:hover { transform:translateY(-1px); }
+        .s4-btn-later {
+            flex:1; height:42px; border-radius:10px;
+            background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12);
+            color:rgba(255,255,255,0.6); font-size:12px; cursor:pointer;
+            display:flex; align-items:center; justify-content:center; transition:0.2s;
+        }
+        .s4-btn-later:hover { background:rgba(255,255,255,0.12); color:#fff; }
+
+        /* ═══════════════════════════════
+           场景5：切换中
+        ═══════════════════════════════ */
+        .s5-content {
+            position:absolute; inset:0; background:var(--bg-dark);
+            display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+        }
+        .s5-title { font-size:15px; font-weight:700; }
+        .s5-sub { font-size:11px; color:rgba(255,255,255,0.45); }
+        .s5-steps { display:flex; flex-direction:column; gap:12px; width:280px; }
+        .s5-step {
+            display:flex; align-items:center; gap:10px;
+            padding:10px 14px; border-radius:10px;
+            background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+            transition:0.3s;
+        }
+        .s5-step.active { background:rgba(0,191,255,0.06); border-color:rgba(0,191,255,0.25); }
+        .s5-step.done { background:rgba(111,255,168,0.04); border-color:rgba(111,255,168,0.15); }
+        .s5-step-icon {
+            width:24px; height:24px; border-radius:50%;
+            background:rgba(255,255,255,0.08);
+            display:flex; align-items:center; justify-content:center;
+            font-size:10px; color:rgba(255,255,255,0.35); flex-shrink:0;
+        }
+        .s5-step.active .s5-step-icon { background:rgba(0,191,255,0.15); color:#00bfff; }
+        .s5-step.done .s5-step-icon { background:rgba(111,255,168,0.12); color:var(--green); }
+        .s5-step-text { font-size:12px; color:rgba(255,255,255,0.5); }
+        .s5-step.active .s5-step-text { color:#fff; font-weight:600; }
+        .s5-step.done .s5-step-text { color:var(--green); }
+        .spin { animation:spin 1s linear infinite; }
+        @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+        /* ═══════════════════════════════
+           场景6：本地游戏启动成功
+        ═══════════════════════════════ */
+        .s6-screen {
+            position:absolute; inset:0;
+            background:url('https://cdn.cloudflare.steamstatic.com/steam/apps/883710/library_hero.jpg') center/cover;
+        }
+        .s6-overlay {
+            position:absolute; inset:0;
+            background:linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 35%);
+        }
+        .s6-badge {
+            position:absolute; top:12px; left:14px; z-index:10;
+            display:flex; align-items:center; gap:5px;
+            background:rgba(111,255,168,0.1); border:1px solid rgba(111,255,168,0.25);
+            border-radius:16px; padding:4px 12px;
+        }
+        .s6-badge i { color:var(--green); font-size:11px; }
+        .s6-badge span { color:var(--green); font-size:10px; font-weight:600; }
+        .s6-toast {
+            position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+            background:rgba(26,29,36,0.95); backdrop-filter:blur(12px);
+            border:1px solid rgba(111,255,168,0.18); border-radius:14px;
+            padding:16px 22px; display:flex; align-items:center; gap:12px;
+            box-shadow:0 10px 36px rgba(0,0,0,0.6);
+            animation:fadeUp 0.4s ease-out;
+        }
+        @keyframes fadeUp { from{opacity:0;transform:translate(-50%,-46%);} to{opacity:1;transform:translate(-50%,-50%);} }
+        .s6-toast-icon { font-size:20px; color:var(--green); }
+        .s6-toast-text { display:flex; flex-direction:column; gap:2px; }
+        .s6-toast-title { font-size:13px; font-weight:700; }
+        .s6-toast-sub { font-size:10px; color:rgba(255,255,255,0.45); }
+    </style>
+</head>
+<body>
+
+<!-- 控制条 -->
+<div class="controls">
+    <div class="ctrl-btn active" id="btnLandscape" onclick="setOrientation('landscape')"><i class="fas fa-mobile-screen-button" style="transform:rotate(90deg);margin-right:4px;"></i> 横屏</div>
+    <div class="ctrl-btn" id="btnPortrait" onclick="setOrientation('portrait')"><i class="fas fa-mobile-screen-button" style="margin-right:4px;"></i> 竖屏</div>
+    <span style="width:1px;height:20px;background:rgba(255,255,255,0.1);"></span>
+    <div class="step-nav">
+        <div class="step-dot active" onclick="goStep(1)">1</div>
+        <div class="step-line" id="line1"></div>
+        <div class="step-dot" onclick="goStep(2)">2</div>
+        <div class="step-line" id="line2"></div>
+        <div class="step-dot" onclick="goStep(3)">3</div>
+        <div class="step-line" id="line3"></div>
+        <div class="step-dot" onclick="goStep(4)">4</div>
+        <div class="step-line" id="line4"></div>
+        <div class="step-dot" onclick="goStep(5)">5</div>
+        <div class="step-line" id="line5"></div>
+        <div class="step-dot" onclick="goStep(6)">6</div>
+        <span class="step-label" id="stepLabel">Step 1: 游戏详情页 — 点击"下载"</span>
+    </div>
+</div>
+
+<!-- 手机壳 -->
+<div class="phone-shell landscape" id="phoneShell">
+
+    <!-- 场景1：游戏详情页 -->
+    <div class="scene active" id="scene1">
+        <!-- 横屏版本 -->
+        <div class="s1-landscape">
+            <div class="s1l-bg"></div>
+            <div class="s1l-overlay"></div>
+            <div class="s1l-back"><i class="fas fa-chevron-left"></i></div>
+            <div class="s1l-content">
+                <div class="s1l-title">生化危机 2重制版</div>
+                <div class="s1l-sub">一切起源于玩家的追求之上</div>
+                <div class="s1l-tags">
+                    <span class="s1l-tag">动作</span>
+                </div>
+                <div class="s1l-actions">
+                    <div class="s1l-btn-cloud"><i class="fas fa-cloud"></i> 秒玩</div>
+                    <div class="s1l-btn-download" onclick="goStep(2)"><i class="fas fa-download"></i> 获取游戏</div>
+                    <div class="s1l-gamepad"><i class="fas fa-gamepad"></i></div>
+                </div>
+            </div>
+            <div class="s1l-stats">
+                <div class="s1l-stat">
+                    <div class="s1l-stat-icon"><span style="color:#ffd700;font-weight:900;font-size:13px;">4.0</span></div>
+                    <div class="s1l-stat-info">
+                        <div class="s1l-stat-label">兼容性评价</div>
+                        <div class="star-row"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star dim"></i></div>
+                    </div>
+                </div>
+                <div class="s1l-stat">
+                    <div class="s1l-stat-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+                    <div class="s1l-stat-info">
+                        <div class="s1l-stat-label">云存档</div>
+                        <div class="s1l-stat-val">—</div>
+                    </div>
+                </div>
+                <div class="s1l-stat">
+                    <div class="s1l-stat-icon"><i class="far fa-clock"></i></div>
+                    <div class="s1l-stat-info">
+                        <div class="s1l-stat-label">游戏时长</div>
+                        <div class="s1l-stat-val">—</div>
+                    </div>
+                </div>
+                <div class="s1l-stat">
+                    <div class="s1l-stat-icon"><i class="fas fa-thumbs-up"></i></div>
+                    <div class="s1l-stat-info">
+                        <div class="s1l-stat-label">玩家评分</div>
+                        <div class="s1l-stat-val green">9.6</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 竖屏版本 -->
+        <div class="s1-portrait">
+            <div class="s1p-hero">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/883710/library_hero.jpg" alt="">
+                <div class="s1p-hero-overlay"></div>
+                <div class="s1p-back"><i class="fas fa-chevron-left"></i></div>
+                <div class="s1p-page-indicator"><i class="fas fa-image"></i> 1/11 <i class="fas fa-grid-2"></i></div>
+            </div>
+            <div class="s1p-info">
+                <div class="s1p-title-row">
+                    <div class="s1p-title">生化危机 2重制版</div>
+                    <div class="s1p-score">9.6</div>
+                </div>
+                <div class="s1p-sub">一切起源于玩家的追求之上。<br>来源：CAPCOM Co.,...</div>
+                <div class="s1p-engine-box">
+                    <div class="s1p-engine-icon"><i class="fas fa-desktop"></i></div>
+                    <div class="s1p-engine-text">PC游戏引擎</div>
+                    <div class="s1p-engine-score">
+                        <span style="color:#ffd700;">4.0</span>
+                        <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:400;">兼容性评价</span>
+                        <span style="font-size:10px;color:var(--green);font-weight:400;"><i class="fas fa-check-circle"></i> 亲测可行</span>
+                    </div>
+                </div>
+                <div class="s1p-section-title">游戏介绍</div>
+                <div class="s1p-desc">一切起源于玩家的追求之上。一年后他次回到了1998年遭遇了一场、从城市开始、到镇端令奇事件中的大学生与未知进行斗争...已有包括一个名为Claire — K Resident Evil 2 所重新打开，更新与近代的恐怖求生体验。</div>
+            </div>
+            <div class="s1p-bottom-bar">
+                <div class="s1p-btn-cloud"><i class="fas fa-cloud"></i> 秒玩</div>
+                <div class="s1p-btn-download" onclick="goStep(2)"><i class="fas fa-download"></i> 获取游戏</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 场景2：安装弹窗 + 边玩边下选项 -->
+    <div class="scene" id="scene2">
+        <div class="s2-bg"></div>
+        <div class="s2-overlay">
+            <div class="s2-install-modal">
+                <div class="s2-install-header">
+                    <span class="s2-install-title">安装游戏</span>
+                    <span class="s2-install-close" onclick="goStep(1)"><i class="fas fa-times"></i></span>
+                </div>
+                <div class="s2-install-game">
+                    <div class="s2-install-cover">
+                        <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/883710/header.jpg" alt="">
+                    </div>
+                    <div class="s2-install-info">
+                        <div class="s2-install-name">生化危机 2重制版</div>
+                        <div class="s2-install-size">安装大小：19 GB</div>
+                    </div>
+                </div>
+                <div class="s2-install-location">
+                    <div class="s2-install-loc-label">安装位置</div>
+                    <div class="s2-install-loc-box">
+                        <div class="s2-install-loc-row">
+                            <span class="s2-install-loc-platform">Steam</span>
+                            <span class="s2-install-loc-free">剩余 23.3 GB</span>
+                            <i class="fas fa-chevron-down" style="color:rgba(255,255,255,0.3);font-size:11px;margin-left:auto;"></i>
+                        </div>
+                        <div class="s2-install-loc-path">/data/data/com.xiaoji.egggame/files/Steam</div>
+                    </div>
+                </div>
+                <!-- 边玩边下提示 -->
+                <div class="s2-playnow-box">
+                    <div class="s2-playnow-header">
+                        <div class="s2-playnow-left">
+                            <i class="fas fa-cloud-arrow-down" style="color:#00bfff;font-size:15px;"></i>
+                            <div class="s2-playnow-text">
+                                <div class="s2-playnow-title">边玩边下</div>
+                                <div class="s2-playnow-desc">安装同时通过云游戏先行体验</div>
+                            </div>
+                        </div>
+                        <div class="s2-playnow-tag"><i class="fas fa-gift"></i> 首次免费10分钟</div>
+                    </div>
+                    <div class="s2-playnow-notices">
+                        <div class="s2-playnow-notice-item warn"><i class="fas fa-info-circle"></i> 需较好网络环境，下载速度可能略有降低</div>
+                        <div class="s2-playnow-notice-item ok"><i class="fas fa-cloud-arrow-up"></i> 存档可同步，切换本地后接续进度</div>
+                    </div>
+                </div>
+                <div class="s2-install-btns">
+                    <div class="s2-install-btn-cancel" onclick="goStep(1)">仅安装</div>
+                    <div class="s2-install-btn-install" onclick="goStep(3)"><i class="fas fa-play" style="font-size:11px;"></i> 边玩边下</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 场景3：云游戏中 + 下载 -->
+    <div class="scene" id="scene3">
+        <div class="s3-game-screen"></div>
+        <div class="s3-top-bar">
+            <div class="s3-badge">
+                <div class="s3-badge-dot"></div>
+                <span class="s3-badge-text">云游戏运行中</span>
+            </div>
+        </div>
+        <div class="s3-gamepad">
+            <div class="s3-pad-btn">A</div>
+            <div class="s3-pad-btn">B</div>
+            <div class="s3-pad-btn">X</div>
+            <div class="s3-pad-btn">Y</div>
+        </div>
+        <div class="s3-dl-bar" id="s3DlBar">
+            <div class="s3-dl-info">
+                <div class="s3-dl-title" id="s3DlTitle">13.7 GB / 19 GB</div>
+                <div class="s3-dl-bar-bg"><div class="s3-dl-bar-fill" id="dlFill" style="width:72%"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 场景4：下载完成 -->
+    <div class="scene" id="scene4">
+        <div class="s4-bg"></div>
+        <div class="s4-overlay">
+            <div class="s4-modal">
+                <div class="s4-icon"><i class="fas fa-check"></i></div>
+                <div class="s4-title">本地游戏已就绪</div>
+                <div class="s4-desc">游戏下载完成，可切换到本地运行<br>存档将自动同步，接续当前进度</div>
+                <div class="s4-info">
+                    <div class="s4-info-row"><span class="s4-info-label">游戏大小</span><span class="s4-info-val">19 GB</span></div>
+                    <div class="s4-info-row"><span class="s4-info-label">存档同步</span><span class="s4-info-val green"><i class="fas fa-check-circle"></i> 可同步</span></div>
+                </div>
+                <div class="s4-btns">
+                    <div class="s4-btn-switch" onclick="goStep(5)"><i class="fas fa-arrow-right-arrow-left"></i> 切换到本地</div>
+                    <div class="s4-btn-later" onclick="goBackToPlay()">继续游玩</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 场景5：切换中 -->
+    <div class="scene" id="scene5">
+        <div class="s5-content">
+            <div class="s5-title">正在切换到本地游戏</div>
+            <div class="s5-sub">请稍候，正在同步存档</div>
+            <div class="s5-steps">
+                <div class="s5-step done" id="sw1"><div class="s5-step-icon"><i class="fas fa-check"></i></div><span class="s5-step-text">关闭云游戏会话</span></div>
+                <div class="s5-step done" id="sw2"><div class="s5-step-icon"><i class="fas fa-check"></i></div><span class="s5-step-text">同步存档到本地 (2.8 MB)</span></div>
+                <div class="s5-step active" id="sw3"><div class="s5-step-icon"><i class="fas fa-spinner spin"></i></div><span class="s5-step-text">启动本地游戏...</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 场景6：成功 -->
+    <div class="scene" id="scene6">
+        <div class="s6-screen"></div>
+        <div class="s6-overlay"></div>
+        <div class="s6-toast">
+            <div class="s6-toast-icon"><i class="fas fa-circle-check"></i></div>
+            <div class="s6-toast-text">
+                <div class="s6-toast-title">已切换到本地运行</div>
+                <div class="s6-toast-sub">存档已同步 · 接续云游戏进度 · 不再产生云游戏费用</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const labels = [
+        'Step 1: 游戏详情页 — 点击"下载"',
+        'Step 2: 弹出"边玩边下"选项提示',
+        'Step 3: 云游戏运行中 + 后台下载进度',
+        'Step 4: 下载完成 — 提示切换到本地',
+        'Step 5: 切换中 — 关闭云游戏、同步存档',
+        'Step 6: 本地游戏启动成功 — 进度接续'
+    ];
+    let currentStep = 1;
+    let dlInterval = null;
+
+    function setOrientation(o) {
+        const shell = document.getElementById('phoneShell');
+        shell.classList.remove('landscape','portrait');
+        shell.classList.add(o);
+        document.getElementById('btnLandscape').classList.toggle('active', o==='landscape');
+        document.getElementById('btnPortrait').classList.toggle('active', o==='portrait');
+    }
+
+    function goStep(n) {
+        currentStep = n;
+        // 进入云游戏（场景3）时自动切换横屏
+        if (n===3) setOrientation('landscape');
+
+        document.querySelectorAll('.scene').forEach((s,i) => s.classList.toggle('active', i===n-1));
+        document.querySelectorAll('.step-dot').forEach((d,i) => {
+            d.classList.remove('active','done');
+            if (i+1===n) d.classList.add('active');
+            else if (i+1<n) d.classList.add('done');
+        });
+        document.querySelectorAll('[id^="line"]').forEach((l,i) => l.classList.toggle('done', i+1<n));
+        document.getElementById('stepLabel').textContent = labels[n-1];
+
+        if (n===3) startDl(); else stopDl();
+        if (n===5) startSwitch();
+    }
+
+    function startDl() {
+        let p = 72;
+        dlInterval = setInterval(() => {
+            p += 0.6;
+            if (p>=100) { p=100; clearInterval(dlInterval); setTimeout(()=>goStep(4),600); }
+            document.getElementById('dlFill').style.width = p+'%';
+            var downloaded = (19 * p / 100).toFixed(1);
+            document.getElementById('s3DlTitle').textContent = downloaded + ' GB / 19 GB';
+        }, 100);
+    }
+    function stopDl() { if(dlInterval){clearInterval(dlInterval);dlInterval=null;} }
+
+    function showDlComplete() {
+        var bar = document.getElementById('s3DlBar');
+        bar.style.background = 'rgba(111,255,168,0.1)';
+        bar.style.border = '1px solid rgba(111,255,168,0.25)';
+        bar.style.cursor = 'pointer';
+        bar.onclick = function(){ goStep(5); };
+        bar.innerHTML = '<div style="display:flex;align-items:center;gap:6px;"><i class="fas fa-check-circle" style="color:var(--green);font-size:13px;"></i><span style="font-size:12px;font-weight:700;color:var(--green);">下载完成，切换本地</span></div>';
+    }
+
+    function goBackToPlay() {
+        currentStep = 3;
+        document.querySelectorAll('.scene').forEach((s,i) => s.classList.toggle('active', i===2));
+        document.querySelectorAll('.step-dot').forEach((d,i) => {
+            d.classList.remove('active','done');
+            if (i+1===3) d.classList.add('active');
+            else if (i+1<3) d.classList.add('done');
+        });
+        document.querySelectorAll('[id^="line"]').forEach((l,i) => l.classList.toggle('done', i+1<3));
+        document.getElementById('stepLabel').textContent = 'Step 3: 云游戏运行中 — 下载已完成，可随时切换';
+        showDlComplete();
+    }
+
+    function startSwitch() {
+        setTimeout(() => {
+            const s = document.getElementById('sw3');
+            s.classList.remove('active'); s.classList.add('done');
+            s.querySelector('.s5-step-icon').innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(()=>goStep(6), 500);
+        }, 1800);
+    }
+</script>
+</body>
+</html>
