@@ -515,6 +515,62 @@
         .s3c-game-title { font-size:18px; font-weight:800; }
         .s3c-game-hint { font-size:11px; color:rgba(255,255,255,0.4); }
 
+        /* 秒玩弹窗 */
+        .cloud-play-overlay {
+            position:absolute; inset:0; z-index:60;
+            background:rgba(0,0,0,0.6); backdrop-filter:blur(4px);
+            display:none; align-items:center; justify-content:center;
+        }
+        .cloud-play-overlay.show { display:flex; }
+        .cloud-play-modal {
+            width:340px; background:#1e2128; border-radius:18px;
+            padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.8);
+            display:flex; flex-direction:column; gap:14px;
+        }
+        .cloud-play-header { display:flex; align-items:center; justify-content:space-between; }
+        .cloud-play-title { font-size:15px; font-weight:700; }
+        .cloud-play-close { color:rgba(255,255,255,0.4); font-size:16px; cursor:pointer; }
+        .cloud-play-close:hover { color:#fff; }
+        .cloud-play-section { display:flex; flex-direction:column; gap:8px; }
+        .cloud-play-section-title { font-size:12px; color:rgba(255,255,255,0.5); }
+        .cloud-play-list { display:flex; flex-direction:column; gap:6px; }
+        .cloud-play-item {
+            display:flex; align-items:center; gap:10px;
+            padding:10px 12px; border-radius:10px;
+            background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+        }
+        .cloud-play-item-icon {
+            width:36px; height:36px; border-radius:8px;
+            background:rgba(0,191,255,0.08);
+            display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;
+        }
+        .cloud-play-item-info { flex:1; display:flex; flex-direction:column; gap:2px; }
+        .cloud-play-item-name { font-size:12px; font-weight:600; }
+        .cloud-play-item-meta { font-size:10px; color:rgba(255,255,255,0.4); }
+        .cloud-play-item-tag {
+            font-size:9px; color:#00bfff; background:rgba(0,191,255,0.1);
+            border:1px solid rgba(0,191,255,0.2); border-radius:10px;
+            padding:2px 8px; white-space:nowrap;
+        }
+        .cloud-play-notice {
+            display:flex; align-items:flex-start; gap:6px;
+            font-size:10px; color:rgba(255,255,255,0.45); line-height:1.5;
+        }
+        .cloud-play-btns { display:flex; gap:10px; margin-top:4px; }
+        .cloud-play-btn-primary {
+            flex:1; height:40px; border-radius:10px;
+            background:var(--blue-gradient); color:#fff;
+            font-size:13px; font-weight:700; cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .cloud-play-btn-secondary {
+            flex:1; height:40px; border-radius:10px;
+            background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+            color:rgba(255,255,255,0.7); font-size:13px; font-weight:600; cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .cloud-play-btn-secondary:hover { background:rgba(255,255,255,0.1); color:#fff; }
+
         /* 场景3D：下载管理页 */
         .s3d-page {
             position:absolute; inset:0; background:var(--bg-dark);
@@ -715,7 +771,7 @@
                     <span class="s1l-tag">动作</span>
                 </div>
                 <div class="s1l-actions">
-                    <div class="s1l-btn-cloud"><i class="fas fa-cloud"></i> 秒玩</div>
+                    <div class="s1l-btn-cloud" onclick="showCloudPlayPopup()"><i class="fas fa-cloud"></i> 秒玩</div>
                     <div class="s1l-btn-download" onclick="goStep(2)"><i class="fas fa-download"></i> 获取游戏</div>
                     <div class="s1l-gamepad"><i class="fas fa-gamepad"></i></div>
                 </div>
@@ -780,7 +836,7 @@
             </div>
             <div class="s1p-bottom-bar">
                 <div class="s3b-btn-more"><i class="fas fa-ellipsis"></i></div>
-                <div class="s1p-btn-cloud"><i class="fas fa-cloud"></i> 秒玩</div>
+                <div class="s1p-btn-cloud" onclick="showCloudPlayPopup()"><i class="fas fa-cloud"></i> 秒玩</div>
                 <div class="s1p-btn-download" onclick="goStep(2)"><i class="fas fa-download"></i> 获取游戏</div>
             </div>
         </div>
@@ -970,7 +1026,7 @@
                 </div>
                 <div class="s3b-bottom-row">
                     <div class="s3b-btn-more"><i class="fas fa-ellipsis"></i></div>
-                    <div class="s1p-btn-cloud"><i class="fas fa-cloud"></i> 秒玩</div>
+                    <div class="s1p-btn-cloud" onclick="showCloudPlayPopup()"><i class="fas fa-cloud"></i> 秒玩</div>
                     <div class="s3b-progress-btn">
                         <div class="s3b-progress-btn-info">
                             <span class="s3b-progress-btn-text"><i class="fas fa-arrow-down" style="font-size:10px;color:#00bfff;margin-right:4px;"></i>14.6 GB / 19 GB</span>
@@ -1134,6 +1190,48 @@
         </div>
     </div>
 
+    <!-- 秒玩弹窗 -->
+    <div class="cloud-play-overlay" id="cloudPlayOverlay" onclick="hideCloudPlayPopup()">
+        <div class="cloud-play-modal" onclick="event.stopPropagation()">
+            <div class="cloud-play-header">
+                <span class="cloud-play-title">秒玩</span>
+                <span class="cloud-play-close" onclick="hideCloudPlayPopup()"><i class="fas fa-times"></i></span>
+            </div>
+            <!-- 热门分享（免账号） -->
+            <div class="cloud-play-section">
+                <div class="cloud-play-section-title">热门分享（免账号）</div>
+                <div class="cloud-play-list">
+                    <div class="cloud-play-item">
+                        <div class="cloud-play-item-icon"><i class="fas fa-save" style="color:#00bfff;"></i></div>
+                        <div class="cloud-play-item-info">
+                            <div class="cloud-play-item-name">全收集通关存档</div>
+                            <div class="cloud-play-item-meta">500万CR + 440辆车</div>
+                        </div>
+                        <div class="cloud-play-item-tag">带云存档</div>
+                    </div>
+                    <div class="cloud-play-item">
+                        <div class="cloud-play-item-icon"><i class="fas fa-save" style="color:#00bfff;"></i></div>
+                        <div class="cloud-play-item-info">
+                            <div class="cloud-play-item-name">全BOSS击杀存档</div>
+                            <div class="cloud-play-item-meta">全武器 + 全成就</div>
+                        </div>
+                        <div class="cloud-play-item-tag">带云存档</div>
+                    </div>
+                </div>
+            </div>
+            <!-- 温馨提示 -->
+            <div class="cloud-play-notice">
+                <i class="fas fa-info-circle" style="color:rgba(255,180,0,0.7);flex-shrink:0;"></i>
+                <span>Steam启动需登录Steam账号，并确保已购买此游戏</span>
+            </div>
+            <!-- 底部按钮 -->
+            <div class="cloud-play-btns">
+                <div class="cloud-play-btn-primary" onclick="hideCloudPlayPopup()">免账号启动</div>
+                <div class="cloud-play-btn-secondary" onclick="hideCloudPlayPopup()">Steam启动</div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -1147,6 +1245,13 @@
     ];
     let currentStep = 1;
     let dlInterval = null;
+
+    function showCloudPlayPopup() {
+        document.getElementById('cloudPlayOverlay').classList.add('show');
+    }
+    function hideCloudPlayPopup() {
+        document.getElementById('cloudPlayOverlay').classList.remove('show');
+    }
 
     function setOrientation(o) {
         const shell = document.getElementById('phoneShell');
