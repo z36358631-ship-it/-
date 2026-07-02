@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>盖世游戏 - 游戏库</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{--pri:#287dfa;--bg:#0a0e13;--card:#151a24;--border:rgba(255,255,255,0.06);--dim:rgba(255,255,255,0.45);--radius:16px;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;scrollbar-width:none;}
+*::-webkit-scrollbar{display:none;}
+body{background:#000;color:#fff;height:100vh;width:100vw;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:13px;}
+
+.shell{position:relative;overflow:hidden;box-shadow:0 0 50px rgba(0,0,0,0.8);transition:all 0.4s ease;background:var(--bg);}
+.shell.port{width:520px;height:836px;border-radius:40px;display:flex;flex-direction:column;}
+.shell.land{width:1200px;height:520px;border-radius:var(--radius);display:flex;flex-direction:column;}
+
+/* === 竖屏顶部 === */
+.port-top{display:none;align-items:center;padding:14px 16px 6px;flex-shrink:0;}
+.shell.port .port-top{display:flex;}
+.port-top .tabs{display:flex;gap:0;flex:1;}
+.port-top .tabs .tab{padding:6px 12px;font-size:17px;font-weight:700;color:var(--dim);cursor:pointer;position:relative;transition:0.2s;}
+.port-top .tabs .tab.on{color:#fff;}
+.port-top .tabs .tab.on::after{content:'';position:absolute;bottom:-2px;left:12px;width:20px;height:3px;background:var(--pri);border-radius:2px;}
+.port-top .right{display:flex;align-items:center;gap:12px;}
+.port-top .right .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer;}
+.port-top .right .icon-btn{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:13px;cursor:pointer;transition:0.2s;}
+.port-top .right .icon-btn:hover{background:rgba(255,255,255,0.12);color:#fff;}
+
+/* === 横屏顶部导航 === */
+.land-nav{display:none;height:40px;background:rgba(10,14,19,0.95);border-bottom:1px solid var(--border);align-items:center;padding:0 20px;flex-shrink:0;z-index:20;justify-content:center;}
+.shell.land .land-nav{display:flex;}
+.land-nav .ni{display:flex;align-items:center;gap:5px;color:var(--dim);cursor:pointer;font-size:12px;padding:6px 16px;transition:0.2s;border-radius:6px;}
+.land-nav .ni i{font-size:14px;}
+.land-nav .ni.on{color:#fff;background:rgba(255,255,255,0.08);}
+.land-nav .right-area{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.land-nav .orient-btn{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dim);font-size:12px;transition:0.2s;}
+.land-nav .orient-btn:hover{background:rgba(255,255,255,0.12);color:#fff;}
+
+/* === 主滚动区 === */
+.main{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;}
+
+/* === 竖屏内容 === */
+.p-content{display:none;flex-direction:column;gap:14px;padding:6px 16px 16px;}
+.shell.port .p-content{display:flex;}
+
+/* 搜索icon+展开 */
+.search-trigger{display:flex;align-items:center;gap:8px;}
+.search-trigger .s-icon{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:14px;cursor:pointer;transition:0.2s;flex-shrink:0;}
+.search-trigger .s-icon:hover{background:rgba(255,255,255,0.12);color:#fff;}
+.search-trigger .s-box{width:0;overflow:hidden;transition:width 0.3s ease;display:flex;align-items:center;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;padding:0;gap:8px;opacity:0;}
+.search-trigger.open .s-box{width:160px;padding:7px 12px;opacity:1;}
+.search-trigger .s-box input{background:none;border:none;outline:none;color:#fff;font-size:12px;width:100%;}
+.search-trigger .s-box input::placeholder{color:var(--dim);}
+.search-trigger .s-box .s-close{color:var(--dim);font-size:11px;cursor:pointer;flex-shrink:0;}
+/* 横屏搜索向左展开 */
+.search-trigger.left-expand{flex-direction:row-reverse;}
+.search-trigger.left-expand .s-box{direction:rtl;}
+.search-trigger.left-expand .s-box input{direction:ltr;}
+
+/* 入口卡片 */
+.entry-row{display:flex;gap:10px;}
+.entry-card{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 8px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:0.2s;}
+.entry-card:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.15);}
+.entry-card .ec-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;color:#fff;flex-shrink:0;}
+.entry-card:nth-child(1) .ec-icon{background:linear-gradient(135deg,#1b2838,#2a475e);}
+.entry-card:nth-child(2) .ec-icon{background:linear-gradient(135deg,#1a1a2e,#2d1b69);}
+.entry-card:nth-child(3) .ec-icon{background:linear-gradient(135deg,#1e3a2f,#0f2027);}
+.entry-card .ec-text{display:flex;flex-direction:column;gap:1px;}
+.entry-card .ec-text .ec-label{font-size:12px;font-weight:600;color:rgba(255,255,255,0.9);}
+.entry-card .ec-text .ec-sub{font-size:10px;color:var(--dim);}
+
+/* 我的游戏标题行 */
+.my-header{display:flex;align-items:center;}
+.my-header .left{display:flex;align-items:center;gap:8px;}
+.my-header .left .title{font-size:15px;font-weight:700;}
+.my-header .left .count{font-size:12px;color:var(--dim);}
+.my-header .right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.my-header .right .sort-btn{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--dim);cursor:pointer;padding:5px 10px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid var(--border);}
+.my-header .right .sort-btn:hover{background:rgba(255,255,255,0.08);}
+.my-header .right .filter-btn{width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:11px;cursor:pointer;}
+.my-header .right .filter-btn:hover{background:rgba(255,255,255,0.08);}
+
+/* 游戏卡片网格 */
+.game-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.gc{background:var(--card);border-radius:10px;overflow:hidden;cursor:pointer;transition:0.2s;border:1px solid var(--border);position:relative;}
+.gc:hover{transform:translateY(-2px);border-color:rgba(255,255,255,0.15);}
+.gc img{width:100%;aspect-ratio:16/10;object-fit:cover;}
+.gc .gc-info{padding:8px 10px;}
+.gc .gc-info .t{font-size:12px;font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gc .gc-info .m{font-size:10px;color:var(--dim);display:flex;align-items:center;gap:4px;}
+.gc .gc-info .m i{font-size:10px;}
+.gc .badge{position:absolute;top:6px;left:6px;display:flex;gap:3px;}
+.gc .badge i{width:18px;height:18px;border-radius:4px;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.85);}
+
+/* === 横屏内容 === */
+.l-content{display:none;flex-direction:column;gap:0;padding:0;}
+.shell.land .l-content{display:flex;}
+
+/* 横屏最近游戏 */
+.l-recent{padding:12px 24px;display:flex;flex-direction:column;gap:8px;}
+.l-recent .sec-row{display:flex;align-items:center;gap:10px;}
+.l-recent .sec-row .s-icon{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;cursor:pointer;flex-shrink:0;}
+.l-recent .sec-row .s-icon:hover{color:#fff;background:rgba(255,255,255,0.12);}
+.l-recent .sec-t{font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);}
+.l-recent .cards-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;}
+.l-recent .rc{cursor:pointer;transition:0.2s;background:var(--card);border-radius:8px;overflow:hidden;border:1px solid var(--border);}
+.l-recent .rc:hover{transform:translateY(-2px);border-color:rgba(255,255,255,0.15);}
+.l-recent .rc img{width:100%;aspect-ratio:3/4;object-fit:cover;}
+.l-recent .rc span{font-size:10px;color:var(--dim);display:block;padding:5px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* 横屏子tab+入口 */
+.l-section{padding:8px 24px;display:flex;flex-direction:column;gap:10px;}
+.l-tab-row{display:flex;align-items:center;gap:0;justify-content:center;}
+.l-tab-row .tab{padding:5px 14px;font-size:13px;font-weight:600;color:var(--dim);cursor:pointer;border-radius:6px;transition:0.2s;}
+.l-tab-row .tab.on{color:#fff;background:rgba(255,255,255,0.08);}
+.l-entry-row{display:flex;gap:10px;}
+.l-entry-card{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:0.2s;}
+.l-entry-card:hover{border-color:rgba(255,255,255,0.2);}
+.l-entry-card.active{border-color:var(--pri);background:rgba(40,125,250,0.08);}
+.l-entry-card .ec-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0;}
+.l-entry-card:nth-child(1) .ec-icon{background:linear-gradient(135deg,#1b2838,#2a475e);}
+.l-entry-card:nth-child(2) .ec-icon{background:linear-gradient(135deg,#1a1a2e,#2d1b69);}
+.l-entry-card:nth-child(3) .ec-icon{background:linear-gradient(135deg,#1e3a2f,#0f2027);}
+.l-entry-card .ec-label{font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);}
+.l-entry-card .ec-sub{font-size:9px;color:var(--dim);margin-top:1px;}
+.l-entry-card .ec-text{display:flex;flex-direction:column;}
+
+/* 横屏游戏列表 */
+.l-games{padding:10px 24px 24px;display:flex;flex-direction:column;gap:10px;}
+.l-games .my-header .left .title{font-size:13px;}
+.l-games .my-header .left .count{font-size:11px;}
+.l-games .game-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+.l-games .gc img{aspect-ratio:16/10;}
+.l-games .gc .gc-info{padding:6px 8px;}
+.l-games .gc .gc-info .t{font-size:11px;}
+
+/* 竖屏子页面 */
+.subpage{position:absolute;inset:0;background:var(--bg);z-index:50;display:flex;flex-direction:column;animation:slideIn 0.25s ease;}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.subpage .sp-header{display:flex;align-items:center;gap:12px;padding:14px 16px;flex-shrink:0;}
+.subpage .sp-header .back{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dim);font-size:14px;}
+.subpage .sp-header .back:hover{color:#fff;background:rgba(255,255,255,0.15);}
+.subpage .sp-header .title{font-size:16px;font-weight:700;}
+.subpage .sp-body{flex:1;overflow-y:auto;padding:0 16px 16px;display:flex;flex-direction:column;gap:16px;}
+.subpage .sp-body .game-grid{grid-template-columns:repeat(2,1fr);}
+.shell.land .subpage .sp-body .game-grid{grid-template-columns:repeat(7,1fr);}
+
+/* 子页面工具栏 */
+.sp-toolbar{display:flex;align-items:center;gap:8px;}
+.sp-search-bar{flex:1;display:flex;align-items:center;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:7px 10px;gap:6px;}
+.sp-search-bar i{color:var(--dim);font-size:12px;}
+.sp-search-bar input{background:none;border:none;outline:none;color:#fff;font-size:12px;width:100%;}
+.sp-search-bar input::placeholder{color:var(--dim);}
+.sp-sort{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--dim);cursor:pointer;padding:5px 10px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid var(--border);white-space:nowrap;flex-shrink:0;}
+.sp-filter-icon{width:30px;height:30px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:11px;cursor:pointer;flex-shrink:0;}
+.sp-count{font-size:12px;color:var(--dim);}
+
+/* 子页面头像+下拉 */
+.sp-avatar{margin-left:auto;position:relative;cursor:pointer;}
+.sp-avatar img{width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);object-fit:cover;}
+.sp-dropdown{display:none;position:absolute;top:38px;right:0;background:#1e2430;border:1px solid var(--border);border-radius:10px;padding:6px 0;min-width:140px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,0.5);}
+.sp-dropdown.show{display:block;}
+.dd-item{display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:12px;color:rgba(255,255,255,0.8);cursor:pointer;transition:0.15s;}
+.dd-item:hover{background:rgba(255,255,255,0.06);}
+.dd-item i{font-size:13px;width:16px;text-align:center;color:var(--dim);}
+.dd-item.danger{color:#ef4444;}
+.dd-item.danger i{color:#ef4444;}
+
+/* 绑定缺省态 */
+.sp-bind-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;gap:14px;flex:1;}
+.sp-bind-state .bind-icon{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#1b2838,#2a475e);display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;}
+.sp-bind-state .bind-title{font-size:16px;font-weight:700;color:#fff;}
+.sp-bind-state .bind-desc{font-size:12px;color:var(--dim);max-width:240px;line-height:1.5;}
+.sp-bind-state .bind-btn{padding:10px 32px;background:var(--pri);color:#fff;font-size:13px;font-weight:600;border-radius:8px;cursor:pointer;transition:0.2s;}
+.sp-bind-state .bind-btn:hover{opacity:0.85;}
+
+/* 成就弹窗 */
+.ach-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:199;display:flex;align-items:center;justify-content:center;}
+.ach-modal{width:90%;max-width:460px;max-height:75vh;background:#1a1f2a;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;}
+.ach-modal .am-header{display:flex;align-items:center;padding:16px 18px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.ach-modal .am-header .am-icon{font-size:16px;color:var(--dim);margin-right:10px;}
+.ach-modal .am-header .am-title{font-size:15px;font-weight:700;flex:1;}
+.ach-modal .am-header .am-progress{font-size:12px;color:var(--dim);margin-right:12px;}
+.ach-modal .am-header .am-close{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dim);font-size:12px;}
+.ach-modal .am-header .am-close:hover{background:rgba(255,255,255,0.15);color:#fff;}
+.ach-modal .am-list{flex:1;overflow-y:auto;padding:8px 0;}
+.ach-modal .am-item{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);}
+.ach-modal .am-item:last-child{border-bottom:none;}
+.ach-modal .am-item .ami-icon{width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,0.04);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;color:rgba(255,255,255,0.2);flex-shrink:0;}
+.ach-modal .am-item.unlocked .ami-icon{background:rgba(87,203,222,0.1);border-color:rgba(87,203,222,0.3);color:#57cbde;}
+.ach-modal .am-item .ami-info{flex:1;min-width:0;}
+.ach-modal .am-item .ami-info .ami-name{font-size:13px;font-weight:600;}
+.ach-modal .am-item .ami-info .ami-desc{font-size:11px;color:var(--dim);margin-top:2px;}
+
+/* Steam Tab栏 */
+.steam-tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:14px;position:sticky;top:0;background:var(--bg);z-index:10;padding-top:2px;}
+.steam-tab-bar .stab{padding:10px 14px;font-size:13px;font-weight:600;color:var(--dim);cursor:pointer;position:relative;transition:0.2s;white-space:nowrap;}
+.steam-tab-bar .stab.on{color:#fff;}
+.steam-tab-bar .stab.on::after{content:'';position:absolute;bottom:-1px;left:14px;right:14px;height:2px;background:var(--pri);border-radius:1px;}
+
+/* Steam主页样式 */
+.steam-profile{display:flex;align-items:center;gap:14px;padding:0 0 14px;}
+.steam-profile .sp-ava{width:56px;height:56px;border-radius:50%;background:#1b2838;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--dim);overflow:hidden;border:2px solid rgba(255,255,255,0.1);}
+.steam-profile .sp-ava img{width:100%;height:100%;object-fit:cover;}
+.steam-profile .sp-info{display:flex;flex-direction:column;gap:3px;}
+.steam-profile .sp-name{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.steam-profile .sp-name .lv{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#1a9fff,#0d6ebd);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+.steam-profile .sp-status{font-size:12px;color:var(--dim);display:flex;align-items:center;gap:5px;}
+.steam-profile .sp-status .dot{width:8px;height:8px;border-radius:50%;}
+.steam-profile .sp-status .dot.online{background:#57cbde;}
+.steam-profile .sp-status .dot.offline{background:#898989;}
+.steam-profile .sp-status .dot.away{background:#e8b730;}
+
+.steam-stats{display:flex;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 0;margin-bottom:14px;}
+.steam-stats .st-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;border-right:1px solid var(--border);}
+.steam-stats .st-item:last-child{border-right:none;}
+.steam-stats .st-item .st-val{font-size:16px;font-weight:700;}
+.steam-stats .st-item .st-label{font-size:10px;color:var(--dim);}
+
+.steam-entries{display:flex;gap:10px;margin-bottom:14px;}
+.steam-entry{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:0.2s;}
+.steam-entry:hover{border-color:rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);}
+.steam-entry .se-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0;}
+.steam-entry .se-text{display:flex;flex-direction:column;gap:1px;}
+.steam-entry .se-text .se-label{font-size:12px;font-weight:600;color:rgba(255,255,255,0.9);}
+.steam-entry .se-text .se-sub{font-size:10px;color:var(--dim);}
+
+/* 好友列表样式 */
+.friend-search{display:flex;align-items:center;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;padding:10px 14px;gap:8px;margin-bottom:14px;}
+.friend-search i{color:var(--dim);font-size:13px;}
+.friend-search input{background:none;border:none;outline:none;color:#fff;font-size:13px;width:100%;}
+.friend-search input::placeholder{color:var(--dim);}
+.friend-group-title{font-size:13px;font-weight:600;color:#57cbde;margin:12px 0 8px;}
+.friend-group-title.offline-title{color:var(--dim);}
+.friend-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.friend-item:last-child{border-bottom:none;}
+.friend-item .fi-ava{width:40px;height:40px;border-radius:50%;position:relative;overflow:visible;flex-shrink:0;}
+.friend-item .fi-ava img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
+.friend-item .fi-ava .fi-dot{position:absolute;bottom:0;left:0;width:10px;height:10px;border-radius:50%;border:2px solid var(--bg);}
+.friend-item .fi-info{flex:1;min-width:0;}
+.friend-item .fi-info .fi-name{font-size:13px;font-weight:600;color:#57cbde;}
+.friend-item .fi-info .fi-name.offline-name{color:rgba(255,255,255,0.6);}
+.friend-item .fi-info .fi-st{font-size:11px;color:var(--dim);}
+.friend-item .fi-more{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;cursor:pointer;flex-shrink:0;}
+.friend-item .fi-more:hover{background:rgba(255,255,255,0.15);}
+
+/* 好友操作弹窗 */
+.friend-action-menu{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;background:#1e2430;border-radius:16px 16px 0 0;padding:8px 0 20px;z-index:200;box-shadow:0 -8px 30px rgba(0,0,0,0.6);}
+.friend-action-menu .fam-item{display:flex;align-items:center;gap:12px;padding:14px 20px;font-size:14px;color:rgba(255,255,255,0.85);cursor:pointer;transition:0.15s;}
+.friend-action-menu .fam-item:hover{background:rgba(255,255,255,0.06);}
+.friend-action-menu .fam-item i{font-size:15px;width:20px;text-align:center;color:var(--dim);}
+.friend-action-menu .fam-item.danger{color:#ef4444;}
+.friend-action-menu .fam-item.danger i{color:#ef4444;}
+.friend-action-menu .fam-cancel{text-align:center;padding:14px;font-size:14px;color:var(--dim);cursor:pointer;border-top:1px solid var(--border);margin-top:4px;}
+.fam-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199;}
+
+/* 创意工坊样式 */
+.workshop-tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid var(--border);}
+.workshop-tabs .wt{padding:10px 16px;font-size:13px;font-weight:600;color:var(--dim);cursor:pointer;position:relative;transition:0.2s;}
+.workshop-tabs .wt.on{color:#fff;}
+.workshop-tabs .wt.on::after{content:'';position:absolute;bottom:-1px;left:16px;right:16px;height:2px;background:var(--pri);border-radius:1px;}
+.ws-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:0.2s;margin-bottom:10px;}
+.ws-card:hover{border-color:rgba(255,255,255,0.15);}
+.ws-card img{width:100%;aspect-ratio:16/9;object-fit:cover;}
+.ws-card .ws-info{padding:10px 12px;}
+.ws-card .ws-info .ws-title{font-size:13px;font-weight:600;margin-bottom:4px;}
+.ws-card .ws-info .ws-meta{font-size:11px;color:var(--dim);display:flex;align-items:center;gap:10px;}
+.ws-card .ws-info .ws-meta i{font-size:10px;}
+
+/* 底部导航 */
+.btm-nav{display:none;height:60px;background:rgba(10,14,19,0.97);backdrop-filter:blur(10px);border-top:1px solid var(--border);flex-shrink:0;z-index:20;padding:0 10px;}
+.shell.port .btm-nav{display:flex;align-items:center;justify-content:space-around;}
+.btm-nav .ni{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--dim);cursor:pointer;font-size:9px;padding:6px 10px;}
+.btm-nav .ni i{font-size:18px;}
+.btm-nav .ni.on{color:#fff;}
+</style>
+</head>
+<body>
+<div class="shell port" id="shell">
+
+<!-- 竖屏顶部 -->
+<div class="port-top">
+    <div class="tabs" id="portTabs">
+        <div class="tab on" data-tab="pc">PC游戏</div>
+        <div class="tab" data-tab="retro">复古游戏</div>
+    </div>
+    <div class="right">
+        <div class="icon-btn" id="portOrient"><i class="fas fa-desktop"></i></div>
+    </div>
+</div>
+
+<!-- 横屏顶部导航 -->
+<nav class="land-nav">
+    <div class="ni"><i class="fas fa-home"></i> 首页</div>
+    <div class="ni"><i class="fas fa-users"></i> 社区</div>
+    <div class="ni"><i class="fas fa-trophy"></i> 排行榜</div>
+    <div class="ni on"><i class="fas fa-gamepad"></i> 游戏库</div>
+    <div class="ni"><i class="far fa-user"></i> 我的</div>
+    <div class="right-area">
+        <div class="orient-btn" id="landOrient"><i class="fas fa-mobile-screen-button"></i></div>
+    </div>
+</nav>
+
+<!-- 主滚动区 -->
+<div class="main" id="mainArea">
+    <div class="p-content" id="pContent"></div>
+    <div class="l-content" id="lContent"></div>
+</div>
+
+<!-- 竖屏底部导航 -->
+<nav class="btm-nav">
+    <div class="ni"><i class="fas fa-home"></i>首页</div>
+    <div class="ni"><i class="fas fa-users"></i>社区</div>
+    <div class="ni"><i class="fas fa-trophy"></i>排行榜</div>
+    <div class="ni on"><i class="fas fa-gamepad"></i>游戏库</div>
+    <div class="ni"><i class="far fa-user"></i>我的</div>
+</nav>
+</div>
+
+<script>
+const C={
+"黑神话：悟空":"https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/library_600x900.jpg",
+"赛博朋克 2077":"https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/library_600x900.jpg",
+"艾尔登法环":"https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/library_600x900.jpg",
+"荒野大镖客2":"https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/library_600x900.jpg",
+"极限竞速":"https://cdn.cloudflare.steamstatic.com/steam/apps/1551360/library_600x900.jpg",
+"博德之门3":"https://cdn.cloudflare.steamstatic.com/steam/apps/1086940/library_600x900.jpg",
+"GTA5":"https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg",
+"巫师3":"https://cdn.cloudflare.steamstatic.com/steam/apps/292030/library_600x900.jpg",
+"战神4":"https://cdn.cloudflare.steamstatic.com/steam/apps/1593500/library_600x900.jpg"
+};
+const H={
+"黑神话：悟空":"https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/header.jpg",
+"赛博朋克 2077":"https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg",
+"艾尔登法环":"https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg",
+"荒野大镖客2":"https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/header.jpg",
+"GTA5":"https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg",
+"极限竞速":"https://cdn.cloudflare.steamstatic.com/steam/apps/1551360/header.jpg",
+"博德之门3":"https://cdn.cloudflare.steamstatic.com/steam/apps/1086940/header.jpg",
+"战神4":"https://cdn.cloudflare.steamstatic.com/steam/apps/1593500/header.jpg",
+"巫师3":"https://cdn.cloudflare.steamstatic.com/steam/apps/292030/header.jpg",
+"茶杯头":"https://cdn.cloudflare.steamstatic.com/steam/apps/268910/header.jpg",
+"Hades":"https://cdn.cloudflare.steamstatic.com/steam/apps/1145360/header.jpg",
+"土豆兄弟":"https://cdn.cloudflare.steamstatic.com/steam/apps/1942280/header.jpg",
+"饥荒联机版":"https://cdn.cloudflare.steamstatic.com/steam/apps/322330/header.jpg",
+"Bloodstained":"https://cdn.cloudflare.steamstatic.com/steam/apps/692850/header.jpg",
+"求生之路2":"https://cdn.cloudflare.steamstatic.com/steam/apps/550/header.jpg"
+};
+function cv(t){return C[t]||C["黑神话：悟空"];}
+function hd(t){return H[t]||H["黑神话：悟空"];}
+
+const pcGames=[
+    {name:"黑神话：悟空",tags:"最近游玩 2小时前",platform:["steam"]},
+    {name:"艾尔登法环",tags:"最近游玩 昨天",platform:["steam"]},
+    {name:"赛博朋克 2077",tags:"最近游玩 3天前",platform:["steam","epic"]},
+    {name:"荒野大镖客2",tags:"最近游玩 1周前",platform:["steam","epic"]},
+    {name:"博德之门3",tags:"最近游玩 1周前",platform:["steam"]},
+    {name:"战神4",tags:"最近游玩 2周前",platform:["steam","epic"]},
+    {name:"极限竞速",tags:"最近游玩 2周前",platform:["steam"]},
+    {name:"巫师3",tags:"最近游玩 3周前",platform:["steam"]},
+    {name:"GTA5",tags:"最近游玩 1月前",platform:["steam","epic"]}
+];
+const retroGames=[
+    {name:"茶杯头",tags:"最近游玩 1周前",platform:[]},
+    {name:"Hades",tags:"最近游玩 1周前",platform:[]},
+    {name:"土豆兄弟",tags:"最近游玩 2周前",platform:[]},
+    {name:"饥荒联机版",tags:"最近游玩 3周前",platform:[]},
+    {name:"Bloodstained",tags:"最近游玩 1月前",platform:[]},
+    {name:"求生之路2",tags:"最近游玩 1月前",platform:[]}
+];
+const recentGames=["黑神话：悟空","艾尔登法环","赛博朋克 2077","博德之门3","荒野大镖客2","极限竞速"];
+
+let curTab='pc';
+let landFilter='all'; // all, steam, epic
+let isLand=false;
+
+function toggle(){
+    isLand=!isLand;
+    document.getElementById('shell').className='shell '+(isLand?'land':'port');
+    render();
+}
+
+function switchTab(tab){
+    curTab=tab;
+    landFilter='all';
+    render();
+}
+
+function setLandFilter(f){
+    landFilter=landFilter===f?'all':f;
+    render();
+}
+
+function badgeHtml(platforms){
+    if(!platforms||!platforms.length) return '';
+    return `<div class="badge">${platforms.map(p=>
+        p==='steam'?'<i class="fab fa-steam"></i>':
+        p==='epic'?'<i class="fas fa-cube"></i>':''
+    ).join('')}</div>`;
+}
+
+function getFilteredGames(){
+    const games=curTab==='pc'?pcGames:retroGames;
+    if(landFilter==='all'||curTab==='retro') return games;
+    return games.filter(g=>g.platform.includes(landFilter));
+}
+
+const steamGames=[
+    {name:"黑神话：悟空",tags:"动作 · 冒险",cat:"动作"},
+    {name:"艾尔登法环",tags:"动作 · RPG",cat:"RPG"},
+    {name:"赛博朋克 2077",tags:"RPG · 开放世界",cat:"RPG"},
+    {name:"博德之门3",tags:"RPG · 回合制",cat:"RPG"},
+    {name:"极限竞速",tags:"竞速 · 模拟",cat:"竞速"},
+    {name:"巫师3",tags:"RPG · 开放世界",cat:"RPG"},
+    {name:"GTA5",tags:"动作 · 开放世界",cat:"动作"}
+];
+const epicGames=[
+    {name:"赛博朋克 2077",tags:"RPG · 开放世界",cat:"RPG"},
+    {name:"荒野大镖客2",tags:"动作 · 冒险",cat:"动作"},
+    {name:"战神4",tags:"动作 · 冒险",cat:"动作"},
+    {name:"GTA5",tags:"动作 · 开放世界",cat:"动作"}
+];
+const categories=['全部','动作','RPG','竞速','冒险'];
+
+const steamFriends=[
+    {name:'2tapWei',status:'online',ava:'fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb'},
+    {name:'J宇N',status:'online',ava:'fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb'},
+    {name:'Maksim',status:'away',ava:''},
+    {name:'Yuki',status:'online',ava:'fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb'},
+    {name:'如果你想听一千遍',status:'away',ava:'fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb'},
+    {name:'Ash金闪闪',status:'offline',ava:'fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb'},
+    {name:'c1k3h746',status:'offline',ava:''},
+    {name:'Jerry',status:'offline',ava:'fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb'},
+    {name:'junline2em',status:'offline',ava:'fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb'},
+    {name:'leanne.77',status:'offline',ava:''}
+];
+const workshopItems=[
+    {title:'高清材质包 - 艾尔登法环',game:'艾尔登法环',subs:'12.3k',img:'1245620'},
+    {title:'照片级 ReShade 预设',game:'赛博朋克 2077',subs:'8.7k',img:'1091500'},
+    {title:'自定义UI界面',game:'博德之门3',subs:'5.2k',img:'1086940'},
+    {title:'真实天气系统MOD',game:'GTA5',subs:'22.1k',img:'271590'},
+    {title:'难度重制MOD',game:'巫师3',subs:'3.8k',img:'292030'}
+];
+
+function openSubpage(name){
+    const shell=document.getElementById('shell');
+    const existing=shell.querySelector('.subpage');
+    if(existing) existing.remove();
+
+    const isImport=name==='导入游戏';
+    const isRetroSub=name==='导入复古游戏';
+    const isSteam=name==='Steam';
+    const isEpic=name==='Epic';
+    const isFriends=name==='Steam好友';
+    const isWorkshop=name==='创意工坊';
+    const games=isSteam?steamGames:isEpic?epicGames:[];
+
+    const sp=document.createElement('div');
+    sp.className='subpage';
+
+    if(isImport||isRetroSub){
+        sp.innerHTML=`
+            <div class="sp-header">
+                <div class="back"><i class="fas fa-chevron-left"></i></div>
+                <div class="title">${isRetroSub?'导入复古游戏':'导入游戏'}</div>
+            </div>
+            <div class="sp-body">
+                <div style="text-align:center;padding:60px 20px;color:var(--dim);">
+                    <i class="fas fa-file-import" style="font-size:36px;margin-bottom:12px;display:block;"></i>
+                    <div>点击选择游戏文件导入</div>
+                </div>
+            </div>`;
+    } else if(isFriends){
+        const online=steamFriends.filter(f=>f.status==='online'||f.status==='away');
+        const offline=steamFriends.filter(f=>f.status==='offline');
+        const avaUrl=a=>a?`https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/avatars/${a}_medium.jpg`:'';
+        const friendHtml=(f)=>`<div class="friend-item" data-name="${f.name}">
+            <div class="fi-ava">${f.ava?`<img src="${avaUrl(f.ava)}">`:'<img src="" style="background:#1b2838;">'}<div class="fi-dot" style="background:${f.status==='online'?'#57cbde':f.status==='away'?'#e8b730':'#898989'};"></div></div>
+            <div class="fi-info"><div class="fi-name${f.status==='offline'?' offline-name':''}">${f.name}</div><div class="fi-st">${f.status==='online'?'在线':f.status==='away'?'离开':'离线'}</div></div>
+            <div class="fi-more"><i class="fas fa-ellipsis-h"></i></div>
+        </div>`;
+        sp.innerHTML=`
+            <div class="sp-header">
+                <div class="back"><i class="fas fa-chevron-left"></i></div>
+                <div class="title">Steam 好友</div>
+                <div style="margin-left:auto;cursor:pointer;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:14px;" id="addFriendBtn"><i class="fas fa-user-plus"></i></div>
+            </div>
+            <div class="sp-body">
+                <div class="friend-search"><i class="fas fa-search"></i><input type="text" placeholder="搜索好友或游戏"></div>
+                <div class="friend-group-title">在线 (${online.length})</div>
+                ${online.map(friendHtml).join('')}
+                <div class="friend-group-title offline-title">离线 (${offline.length})</div>
+                ${offline.map(friendHtml).join('')}
+            </div>`;
+    } else if(isWorkshop){
+        sp.innerHTML=`
+            <div class="sp-header">
+                <div class="back"><i class="fas fa-chevron-left"></i></div>
+                <div class="title">创意工坊</div>
+            </div>
+            <div class="sp-body">
+                <div class="workshop-tabs"><div class="wt on" data-wt="sub">我的订阅</div><div class="wt" data-wt="hot">热门</div><div class="wt" data-wt="recent">最新</div></div>
+                <div id="wsContent">${workshopItems.map(w=>`<div class="ws-card"><img src="https://cdn.cloudflare.steamstatic.com/steam/apps/${w.img}/header.jpg"><div class="ws-info"><div class="ws-title">${w.title}</div><div class="ws-meta"><span><i class="fas fa-gamepad"></i> ${w.game}</span><span><i class="fas fa-download"></i> ${w.subs}订阅</span></div></div></div>`).join('')}</div>
+            </div>`;
+    } else if(name==='Steam成就'){
+        sp.innerHTML=`
+            <div class="sp-header">
+                <div class="back"><i class="fas fa-chevron-left"></i></div>
+                <div class="title">我的成就</div>
+            </div>
+            <div class="sp-body">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                    <div style="font-size:28px;font-weight:700;">8</div>
+                    <div style="font-size:12px;color:var(--dim);">已解锁成就</div>
+                    <div style="margin-left:auto;font-size:12px;color:var(--dim);">完成度 2.1%</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    ${[{name:'初入江湖',game:'黑神话：悟空',icon:'fa-fist-raised'},{name:'初次通关',game:'艾尔登法环',icon:'fa-crown'},{name:'收集者',game:'博德之门3',icon:'fa-gem'},{name:'速度之星',game:'极限竞速',icon:'fa-tachometer-alt'},{name:'生存专家',game:'GTA5',icon:'fa-shield-alt'},{name:'探索者',game:'赛博朋克 2077',icon:'fa-compass'},{name:'炼金术士',game:'巫师3',icon:'fa-flask'},{name:'完美主义',game:'战神4',icon:'fa-star'}].map(a=>`
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:10px;">
+                        <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#3d2e0a,#1a1500);display:flex;align-items:center;justify-content:center;color:#f5c842;font-size:14px;"><i class="fas ${a.icon}"></i></div>
+                        <div style="flex:1;"><div style="font-size:13px;font-weight:600;">${a.name}</div><div style="font-size:11px;color:var(--dim);">${a.game}</div></div>
+                        <i class="fas fa-check-circle" style="color:#4ade80;font-size:16px;"></i>
+                    </div>`).join('')}
+                </div>
+            </div>`;
+    } else if(isSteam){
+        sp.innerHTML=`
+            <div class="sp-header">
+                <div class="back"><i class="fas fa-chevron-left"></i></div>
+                <div class="steam-tab-bar" id="steamTabBar" style="display:none;margin:0;border:none;flex:1;padding:0;">
+                    <div class="stab on" data-stab="data">Steam数据</div>
+                    <div class="stab" data-stab="friends">Steam好友</div>
+                    <div class="stab" data-stab="achievements">成就</div>
+                    <div class="stab" data-stab="workshop">创意工坊</div>
+                </div>
+                <div style="margin-left:auto;display:flex;gap:10px;align-items:center;display:none;" id="steamHeaderRight">
+                    <div style="cursor:pointer;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:14px;" id="steamRefreshBtn"><i class="fas fa-sync-alt"></i></div>
+                    <div style="cursor:pointer;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:14px;" id="steamMoreBtn"><i class="fas fa-ellipsis-h"></i></div>
+                    <div class="sp-dropdown" id="spDropdown">
+                        <div class="dd-item"><i class="fas fa-user"></i> 查看主页</div>
+                        <div class="dd-item"><i class="fas fa-exchange-alt"></i> 切换账号</div>
+                        <div class="dd-item danger"><i class="fas fa-sign-out-alt"></i> 退出账号</div>
+                    </div>
+                </div>
+            </div>
+            <div class="sp-body" id="spBody">
+                <div class="sp-bind-state" id="spBindState">
+                    <div class="bind-icon"><i class="fab fa-steam"></i></div>
+                    <div class="bind-title">绑定Steam账号</div>
+                    <div class="bind-desc">绑定后可同步你的Steam游戏库，一键启动游戏</div>
+                    <div class="bind-btn" id="spBindBtn">立即绑定</div>
+                </div>
+                <div class="sp-game-state" id="spGameState" style="display:none;">
+                    <div id="steamTabContent">
+                        <div class="stab-panel" data-panel="data">
+                            <div class="steam-profile">
+                                <div class="sp-info" style="flex:1;">
+                                    <div class="sp-name">lotuszym0525 <span class="lv">3</span> <span style="font-size:11px;color:var(--dim);font-weight:400;margin-left:4px;"><span class="dot offline" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#898989;vertical-align:middle;margin-right:3px;"></span>离线</span></div>
+                                    <div style="font-size:11px;color:var(--dim);margin-top:4px;">Steam ID: 1685214463 <span style="color:var(--pri);cursor:pointer;margin-left:6px;" id="copyIdBtn">复制</span></div>
+                                </div>
+                            </div>
+                            <div class="my-header">
+                                <div class="left"><div class="title">我的游戏</div><div class="count">${games.length}款</div></div>
+                                <div class="right">
+                                    <div class="search-trigger left-expand" id="spSearchTrigger">
+                                        <div class="s-icon"><i class="fas fa-search"></i></div>
+                                        <div class="s-box"><input type="text" placeholder="搜索游戏名"><div class="s-close"><i class="fas fa-times"></i></div></div>
+                                    </div>
+                                    <div class="sort-btn"><i class="fas fa-sort-amount-down"></i> 总时长</div>
+                                    <div class="filter-btn"><i class="fas fa-sliders-h"></i></div>
+                                </div>
+                            </div>
+                            <div class="game-grid" id="spGrid">
+                                ${games.map(g=>`<div class="gc"><img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m">${g.tags}</div></div></div>`).join('')}
+                            </div>
+                        </div>
+                        <div class="stab-panel" data-panel="friends" style="display:none;">
+                            <div class="friend-search"><i class="fas fa-search"></i><input type="text" placeholder="搜索好友或游戏"></div>
+                            <div class="friend-group-title">在线 (${steamFriends.filter(f=>f.status==='online'||f.status==='away').length})</div>
+                            ${steamFriends.filter(f=>f.status==='online'||f.status==='away').map(f=>`<div class="friend-item" data-name="${f.name}"><div class="fi-ava">${f.ava?`<img src="https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/avatars/${f.ava}_medium.jpg">`:'<div style="width:100%;height:100%;border-radius:50%;background:#1b2838;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--dim);">?</div>'}<div class="fi-dot" style="background:${f.status==='online'?'#57cbde':'#e8b730'};"></div></div><div class="fi-info"><div class="fi-name">${f.name}</div><div class="fi-st">${f.status==='online'?'在线':'离开'}</div></div><div class="fi-more"><i class="fas fa-ellipsis-h"></i></div></div>`).join('')}
+                            <div class="friend-group-title offline-title">离线 (${steamFriends.filter(f=>f.status==='offline').length})</div>
+                            ${steamFriends.filter(f=>f.status==='offline').map(f=>`<div class="friend-item" data-name="${f.name}"><div class="fi-ava">${f.ava?`<img src="https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/avatars/${f.ava}_medium.jpg">`:'<div style="width:100%;height:100%;border-radius:50%;background:#1b2838;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--dim);">?</div>'}<div class="fi-dot" style="background:#898989;"></div></div><div class="fi-info"><div class="fi-name offline-name">${f.name}</div><div class="fi-st">离线</div></div><div class="fi-more"><i class="fas fa-ellipsis-h"></i></div></div>`).join('')}
+                        </div>
+                        <div class="stab-panel" data-panel="achievements" style="display:none;">
+                            <div style="display:flex;align-items:center;padding:16px 0 14px;border-bottom:1px solid var(--border);margin-bottom:14px;">
+                                <div style="text-align:center;flex:1;"><div style="font-size:20px;font-weight:700;">8 <span style="font-size:14px;color:var(--dim);font-weight:400;">/378</span></div><div style="font-size:10px;color:var(--dim);margin-top:2px;">我的成就</div></div>
+                                <div style="text-align:center;flex:1;"><div style="font-size:20px;font-weight:700;">2.1%</div><div style="font-size:10px;color:var(--dim);margin-top:2px;">进度</div></div>
+                                <div style="text-align:center;flex:1;"><div style="font-size:20px;font-weight:700;">0</div><div style="font-size:10px;color:var(--dim);margin-top:2px;">完美通关</div></div>
+                            </div>
+                            ${[
+                                {game:'中国式家长',progress:'5/23',pct:'22%',total:23,unlocked:5},
+                                {game:'幻兽帕鲁',progress:'3/57',pct:'5%',total:57,unlocked:3},
+                                {game:'森林',progress:'0/45',pct:'0%',total:45,unlocked:0},
+                                {game:'星露谷物语',progress:'0/49',pct:'0%',total:49,unlocked:0},
+                                {game:'小小梦魇2',progress:'0/35',pct:'0%',total:35,unlocked:0},
+                                {game:'灵魂摆渡人',progress:'0/39',pct:'0%',total:39,unlocked:0},
+                                {game:'艾尔登法环',progress:'0/42',pct:'0%',total:42,unlocked:0}
+                            ].map(item=>`
+                            <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;">
+                                <div style="display:flex;align-items:center;margin-bottom:10px;">
+                                    <i class="fas fa-trophy" style="font-size:14px;color:var(--dim);margin-right:8px;"></i>
+                                    <span style="font-size:13px;font-weight:600;">${item.game} 成就</span>
+                                    <span class="ach-view-all" data-game="${item.game}" style="margin-left:auto;font-size:11px;color:var(--dim);cursor:pointer;">查看全部 <i class="fas fa-chevron-right" style="font-size:9px;"></i></span>
+                                </div>
+                                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+                                    ${Array.from({length:Math.min(item.unlocked,10)}).map(()=>`<div style="width:34px;height:34px;border-radius:6px;background:rgba(87,203,222,0.15);border:1px solid rgba(87,203,222,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:#57cbde;"><i class="fas fa-trophy"></i></div>`).join('')}${Array.from({length:Math.min(item.total-item.unlocked,10-Math.min(item.unlocked,10))}).map(()=>`<div style="width:34px;height:34px;border-radius:6px;background:rgba(255,255,255,0.03);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(255,255,255,0.2);"><i class="fas fa-trophy"></i></div>`).join('')}${item.total>10?`<div style="width:34px;height:34px;border-radius:6px;background:rgba(255,255,255,0.03);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--dim);">+${item.total-10}</div>`:''}
+                                </div>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <div style="flex:1;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;"><div style="height:100%;width:${item.pct};background:#57cbde;border-radius:2px;"></div></div>
+                                    <span style="font-size:11px;color:var(--dim);">${item.pct}</span>
+                                </div>
+                            </div>`).join('')}
+                        </div>
+                        <div class="stab-panel" data-panel="workshop" style="display:none;">
+                            ${[
+                                {game:'艾尔登法环',appid:'1245620',items:[{title:'高清材质包',subs:'12.3k',size:'2.1 GB'}]},
+                                {game:'赛博朋克 2077',appid:'1091500',items:[{title:'照片级 ReShade 预设',subs:'8.7k',size:'156 MB'}]},
+                                {game:'博德之门3',appid:'1086940',items:[{title:'自定义UI界面',subs:'5.2k',size:'32 MB'}]},
+                                {game:'GTA5',appid:'271590',items:[{title:'真实天气系统MOD',subs:'22.1k',size:'890 MB'}]},
+                                {game:'巫师3',appid:'292030',items:[{title:'难度重制MOD',subs:'3.8k',size:'64 MB'}]}
+                            ].map(g=>`
+                            <div style="margin-bottom:16px;">
+                                <div style="display:flex;align-items:center;padding:6px 0;margin-bottom:8px;">
+                                    <div style="width:20px;height:20px;border-radius:4px;background:var(--card);margin-right:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--dim);"><i class="fas fa-gamepad"></i></div>
+                                    <span style="font-size:13px;font-weight:600;">${g.game} 创意工坊</span>
+                                    <span style="margin-left:auto;font-size:11px;color:var(--dim);cursor:pointer;">查看全部 <i class="fas fa-chevron-right" style="font-size:9px;"></i></span>
+                                </div>
+                                ${g.items.map(item=>`
+                                <div style="display:flex;gap:10px;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:8px;">
+                                    <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/${g.appid}/header.jpg" style="width:80px;height:60px;border-radius:6px;object-fit:cover;flex-shrink:0;">
+                                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;">
+                                        <div style="font-size:12px;font-weight:600;margin-bottom:3px;">${item.title}</div>
+                                        <div style="font-size:10px;color:var(--dim);">${item.subs} 订阅 · ${item.size}</div>
+                                    </div>
+                                    <div style="display:flex;align-items:center;"><span style="font-size:10px;color:#4ade80;white-space:nowrap;"><i class="fas fa-check"></i> 已订阅</span></div>
+                                </div>`).join('')}
+                            </div>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+    } else {
+        sp.innerHTML=`
+            <div class="sp-header">
+                <div class="back"><i class="fas fa-chevron-left"></i></div>
+                <div class="title">${name}游戏</div>
+                <div class="sp-avatar" id="spAvatar" style="display:none;">
+                    <img src="https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/avatars/fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_medium.jpg">
+                    <div class="sp-dropdown" id="spDropdown">
+                        <div class="dd-item"><i class="fas fa-user"></i> 查看主页</div>
+                        <div class="dd-item"><i class="fas fa-exchange-alt"></i> 切换账号</div>
+                        <div class="dd-item danger"><i class="fas fa-sign-out-alt"></i> 退出登录</div>
+                    </div>
+                </div>
+            </div>
+            <div class="sp-body" id="spBody">
+                <div class="sp-bind-state" id="spBindState">
+                    <div class="bind-icon"><i class="fas fa-cube"></i></div>
+                    <div class="bind-title">绑定${name}账号</div>
+                    <div class="bind-desc">绑定后可同步你的${name}游戏库，一键启动游戏</div>
+                    <div class="bind-btn" id="spBindBtn">立即绑定</div>
+                </div>
+                <div class="sp-game-state" id="spGameState" style="display:none;">
+                    <div class="my-header">
+                        <div class="left"><div class="title">全部游戏</div><div class="count">${games.length}款</div></div>
+                        <div class="right">
+                            <div class="search-trigger left-expand" id="spSearchTrigger">
+                                <div class="s-icon"><i class="fas fa-search"></i></div>
+                                <div class="s-box"><input type="text" placeholder="搜索游戏名"><div class="s-close"><i class="fas fa-times"></i></div></div>
+                            </div>
+                            <div class="sort-btn"><i class="fas fa-sort-amount-down"></i> 最近游玩</div>
+                            <div class="filter-btn"><i class="fas fa-sliders-h"></i></div>
+                        </div>
+                    </div>
+                    <div class="game-grid" id="spGrid">
+                        ${games.map(g=>`<div class="gc"><img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m">${g.tags}</div></div></div>`).join('')}
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    shell.appendChild(sp);
+    sp.querySelector('.back').addEventListener('click',()=>sp.remove());
+
+    // Steam主页特殊逻辑
+    if(isSteam){
+        const moreBtn=sp.querySelector('#steamMoreBtn');
+        const dropdown=sp.querySelector('#spDropdown');
+        moreBtn.addEventListener('click',(e)=>{
+            e.stopPropagation();
+            dropdown.classList.toggle('show');
+        });
+        sp.addEventListener('click',()=>{
+            dropdown.classList.remove('show');
+        });
+        // 退出账号 → 回到绑定态
+        sp.querySelector('.dd-item.danger').addEventListener('click',(e)=>{
+            e.stopPropagation();
+            if(confirm('确定要退出Steam账号吗？')){
+                sp.querySelector('#spBindState').style.display='';
+                sp.querySelector('#spGameState').style.display='none';
+                sp.querySelector('#steamHeaderRight').style.display='none';
+                sp.querySelector('#steamTabBar').style.display='none';
+                dropdown.classList.remove('show');
+            }
+        });
+        // Tab切换
+        sp.querySelectorAll('#steamTabBar .stab').forEach(tab=>{
+            tab.addEventListener('click',()=>{
+                sp.querySelectorAll('#steamTabBar .stab').forEach(t=>t.classList.remove('on'));
+                tab.classList.add('on');
+                const target=tab.dataset.stab;
+                sp.querySelectorAll('.stab-panel').forEach(p=>p.style.display=p.dataset.panel===target?'':'none');
+            });
+        });
+        // 好友更多菜单
+        sp.querySelectorAll('.fi-more').forEach(btn=>{
+            btn.addEventListener('click',(e)=>{
+                e.stopPropagation();
+                const fname=btn.closest('.friend-item').dataset.name;
+                showFriendMenu(fname,sp);
+            });
+        });
+        // 成就查看全部
+        sp.querySelectorAll('.ach-view-all').forEach(btn=>{
+            btn.addEventListener('click',()=>showAchievementModal(btn.dataset.game));
+        });
+        // 复制Steam ID
+        const copyBtn=sp.querySelector('#copyIdBtn');
+        if(copyBtn){
+            copyBtn.addEventListener('click',()=>{
+                navigator.clipboard.writeText('1685214463').catch(()=>{});
+                copyBtn.textContent='已复制';
+                setTimeout(()=>copyBtn.textContent='复制',1500);
+            });
+        }
+        // 绑定按钮
+        sp.querySelector('#spBindBtn').addEventListener('click',()=>{
+            sp.querySelector('#spBindState').style.display='none';
+            sp.querySelector('#spGameState').style.display='';
+            sp.querySelector('#steamHeaderRight').style.display='flex';
+            sp.querySelector('#steamTabBar').style.display='flex';
+            const spSt=sp.querySelector('#spSearchTrigger');
+            if(spSt){
+                spSt.querySelector('.s-icon').addEventListener('click',()=>{spSt.classList.toggle('open');const inp=spSt.querySelector('input');if(spSt.classList.contains('open'))inp.focus();});
+                spSt.querySelector('.s-close').addEventListener('click',()=>{spSt.classList.remove('open');spSt.querySelector('input').value='';});
+            }
+        });
+    }
+
+    // 好友列表逻辑
+    if(isFriends){
+        sp.querySelectorAll('.fi-more').forEach(btn=>{
+            btn.addEventListener('click',(e)=>{
+                e.stopPropagation();
+                const fname=btn.closest('.friend-item').dataset.name;
+                showFriendMenu(fname,sp);
+            });
+        });
+    }
+
+    // 创意工坊tab切换
+    if(isWorkshop){
+        sp.querySelectorAll('.workshop-tabs .wt').forEach(t=>{
+            t.addEventListener('click',()=>{
+                sp.querySelectorAll('.workshop-tabs .wt').forEach(x=>x.classList.remove('on'));
+                t.classList.add('on');
+            });
+        });
+    }
+
+    // Epic等其他平台逻辑
+    if(!isSteam&&!isFriends&&!isWorkshop&&!isImport&&!isRetroSub){
+        const avatar=sp.querySelector('#spAvatar');
+        if(avatar){
+            avatar.addEventListener('click',(e)=>{
+                e.stopPropagation();
+                sp.querySelector('#spDropdown').classList.toggle('show');
+            });
+            sp.addEventListener('click',()=>{
+                const dd=sp.querySelector('#spDropdown');
+                if(dd) dd.classList.remove('show');
+            });
+            sp.querySelectorAll('.dd-item.danger').forEach(item=>{
+                item.addEventListener('click',(e)=>{
+                    e.stopPropagation();
+                    sp.querySelector('#spBindState').style.display='';
+                    sp.querySelector('#spGameState').style.display='none';
+                    sp.querySelector('#spDropdown').classList.remove('show');
+                    sp.querySelector('#spAvatar').style.display='none';
+                });
+            });
+        }
+        const bindBtn=sp.querySelector('#spBindBtn');
+        if(bindBtn){
+            bindBtn.addEventListener('click',()=>{
+                sp.querySelector('#spBindState').style.display='none';
+                sp.querySelector('#spGameState').style.display='';
+                if(avatar) avatar.style.display='';
+                const spSt=sp.querySelector('#spSearchTrigger');
+                if(spSt){
+                    spSt.querySelector('.s-icon').addEventListener('click',()=>{spSt.classList.toggle('open');const inp=spSt.querySelector('input');if(spSt.classList.contains('open'))inp.focus();});
+                    spSt.querySelector('.s-close').addEventListener('click',()=>{spSt.classList.remove('open');spSt.querySelector('input').value='';});
+                }
+            });
+        }
+    }
+}
+
+function showFriendMenu(name,parentSp){
+    const existing=document.querySelector('.fam-overlay');
+    if(existing) existing.remove();
+    const existingMenu=document.querySelector('.friend-action-menu');
+    if(existingMenu) existingMenu.remove();
+
+    const overlay=document.createElement('div');
+    overlay.className='fam-overlay';
+    const menu=document.createElement('div');
+    menu.className='friend-action-menu';
+    menu.innerHTML=`
+        <div class="fam-item"><i class="fas fa-comment"></i> 发消息</div>
+        <div class="fam-item"><i class="fas fa-user"></i> 查看资料</div>
+        <div class="fam-item"><i class="fas fa-tag"></i> 添加备注</div>
+        <div class="fam-item danger"><i class="fas fa-user-minus"></i> 移除好友</div>
+        <div class="fam-cancel">取消</div>
+    `;
+    document.body.appendChild(overlay);
+    document.body.appendChild(menu);
+
+    const close=()=>{overlay.remove();menu.remove();};
+    overlay.addEventListener('click',close);
+    menu.querySelector('.fam-cancel').addEventListener('click',close);
+    menu.querySelectorAll('.fam-item').forEach(item=>item.addEventListener('click',close));
+}
+
+const achData={
+    '中国式家长':{progress:'5/23',pct:'22%',items:[{name:'班干部',desc:'班干部竞选首次获胜',unlocked:true},{name:'学霸',desc:'高考分数超过700',unlocked:true},{name:'社交达人',desc:'同时拥有5个好友',unlocked:true},{name:'零花钱大亨',desc:'零花钱超过10000',unlocked:true},{name:'才艺之星',desc:'获得才艺比赛冠军',unlocked:true},{name:'体育健将',desc:'体魄达到满值',unlocked:false},{name:'黑马逆袭',desc:'从最后一名考到第一名',unlocked:false},{name:'毕业',desc:'完成一次完整人生',unlocked:false}]},
+    '幻兽帕鲁':{progress:'3/57',pct:'5%',items:[{name:'中级帕鲁训练家',desc:'抓到了20种帕鲁',unlocked:true},{name:'初级建筑师',desc:'建造50个建筑',unlocked:true},{name:'弱肉强食',desc:'隐藏成就',unlocked:true},{name:'Boss Hunter',desc:'击败第一个Boss',unlocked:false},{name:'飞行达人',desc:'使用飞行坐骑飞行1000m',unlocked:false},{name:'满级帕鲁',desc:'拥有一只满级帕鲁',unlocked:false}]},
+    '森林':{progress:'0/45',pct:'0%',items:[{name:'5 Star Hotel',desc:'Sleep on yacht',unlocked:false},{name:'黄金时段的忠实观众',desc:'恭喜，困难重重的挑战就此落幕了。',unlocked:false},{name:'出院',desc:'隐藏成就',unlocked:false},{name:'淡出',desc:'隐藏成就',unlocked:false},{name:'讯号中断',desc:'隐藏成就',unlocked:false}]},
+    '星露谷物语':{progress:'0/49',pct:'0%',items:[{name:'牛仔',desc:'赚取50,000g',unlocked:false},{name:'千万富翁',desc:'赚取10,000,000g',unlocked:false},{name:'传奇垂钓者',desc:'抓住每一种鱼',unlocked:false},{name:'全能工匠',desc:'制作所有物品',unlocked:false}]},
+    '小小梦魇2':{progress:'0/35',pct:'0%',items:[{name:'掌中的小手',desc:'手握紧紧，六六大顺。',unlocked:false},{name:'讯号中断',desc:'隐藏成就',unlocked:false},{name:'淡出',desc:'隐藏成就',unlocked:false},{name:'出院',desc:'隐藏成就',unlocked:false},{name:'毕业',desc:'隐藏成就',unlocked:false}]},
+    '灵魂摆渡人':{progress:'0/39',pct:'0%',items:[{name:'杂技演员',desc:'激活所有的圣坛。',unlocked:false},{name:'好客之道',desc:'建造所有设施',unlocked:false},{name:'星际旅人',desc:'到达每一个岛屿',unlocked:false}]},
+    '艾尔登法环':{progress:'0/42',pct:'0%',items:[{name:'艾尔登法环',desc:'获得所有成就',unlocked:false},{name:'艾尔登之王',desc:'达成某个结局',unlocked:false},{name:'群星时代',desc:'达成某个结局',unlocked:false},{name:'癫火之王',desc:'达成某个结局',unlocked:false}]}
+};
+
+function showAchievementModal(game){
+    const data=achData[game];
+    if(!data) return;
+    const overlay=document.createElement('div');
+    overlay.className='ach-modal-overlay';
+    overlay.innerHTML=`
+        <div class="ach-modal">
+            <div class="am-header">
+                <i class="fas fa-trophy am-icon"></i>
+                <div class="am-title">${game} 成就</div>
+                <div class="am-progress">${data.progress} (${data.pct})</div>
+                <div class="am-close"><i class="fas fa-times"></i></div>
+            </div>
+            <div class="am-list">
+                ${data.items.map(a=>`
+                <div class="am-item${a.unlocked?' unlocked':''}">
+                    <div class="ami-icon"><i class="fas fa-trophy"></i></div>
+                    <div class="ami-info">
+                        <div class="ami-name">${a.name}</div>
+                        <div class="ami-desc">${a.desc}</div>
+                    </div>
+                </div>`).join('')}
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('.am-close').addEventListener('click',()=>overlay.remove());
+    overlay.addEventListener('click',(e)=>{if(e.target===overlay)overlay.remove();});
+}
+
+function renderPort(){
+    const el=document.getElementById('pContent');
+    const games=curTab==='pc'?pcGames:retroGames;
+    const showEntry=curTab==='pc';
+
+    el.innerHTML=`
+        ${showEntry?`<div class="entry-row">
+            <div class="entry-card" data-entry="Steam"><div class="ec-icon"><i class="fab fa-steam"></i></div><div class="ec-text"><div class="ec-label">Steam</div><div class="ec-sub">查看游戏 ›</div></div></div>
+            <div class="entry-card" data-entry="Epic"><div class="ec-icon"><i class="fas fa-cube"></i></div><div class="ec-text"><div class="ec-label">Epic Games</div><div class="ec-sub">查看游戏 ›</div></div></div>
+            <div class="entry-card" data-entry="导入游戏"><div class="ec-icon"><i class="fas fa-plus"></i></div><div class="ec-text"><div class="ec-label">导入游戏</div><div class="ec-sub">手动添加 ›</div></div></div>
+        </div>`:`<div class="entry-row">
+            <div class="entry-card" data-entry="导入复古游戏" style="flex:none;width:auto;"><div class="ec-icon" style="background:linear-gradient(135deg,#1e3a2f,#0f2027);"><i class="fas fa-plus"></i></div><div class="ec-text"><div class="ec-label">导入游戏</div><div class="ec-sub">手动添加 ›</div></div></div>
+        </div>`}
+        <div class="my-header">
+            <div class="left"><div class="title">我的游戏</div><div class="count">${games.length}款游戏</div></div>
+            <div class="right">
+                <div class="search-trigger" id="searchTrigger">
+                    <div class="s-icon"><i class="fas fa-search"></i></div>
+                    <div class="s-box"><input type="text" placeholder="搜索游戏名"><div class="s-close"><i class="fas fa-times"></i></div></div>
+                </div>
+                ${curTab==='pc'?'<div class="sort-btn"><i class="fas fa-sort-amount-down"></i> 最近游玩</div>':''}
+                ${curTab==='pc'?'<div class="filter-btn"><i class="fas fa-sliders-h"></i></div>':''}
+            </div>
+        </div>
+        <div class="game-grid">${games.map(g=>`<div class="gc">${badgeHtml(g.platform)}<img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m"><i class="fas fa-play"></i> ${g.tags}</div></div></div>`).join('')}</div>
+    `;
+
+    // 竖屏tab事件
+    document.querySelectorAll('#portTabs .tab').forEach(t=>{
+        t.onclick=()=>switchTab(t.dataset.tab);
+        t.classList.toggle('on',t.dataset.tab===curTab);
+    });
+    // 入口跳转子页面
+    el.querySelectorAll('.entry-card[data-entry]').forEach(c=>{
+        c.addEventListener('click',()=>openSubpage(c.dataset.entry));
+    });
+    // 搜索icon展开收起
+    const st=document.getElementById('searchTrigger');
+    if(st){
+        st.querySelector('.s-icon').addEventListener('click',()=>{st.classList.toggle('open');const inp=st.querySelector('input');if(st.classList.contains('open'))inp.focus();});
+        st.querySelector('.s-close').addEventListener('click',()=>{st.classList.remove('open');st.querySelector('input').value='';});
+    }
+}
+
+function renderLand(){
+    const el=document.getElementById('lContent');
+    const games=getFilteredGames();
+    const showEntry=curTab==='pc';
+
+    el.innerHTML=`
+        <div class="l-recent">
+            <div class="sec-row"><div class="sec-t">最近游戏</div></div>
+            <div class="cards-row">${recentGames.slice(0,4).map(g=>`<div class="rc"><img src="${cv(g)}"><span>${g}</span></div>`).join('')}</div>
+        </div>
+        <div class="l-section">
+            <div class="l-tab-row">
+                <div class="tab${curTab==='pc'?' on':''}" data-tab="pc">PC游戏</div>
+                <div class="tab${curTab==='retro'?' on':''}" data-tab="retro">复古游戏</div>
+            </div>
+            ${showEntry?`<div class="l-entry-row">
+                <div class="l-entry-card" data-entry="Steam"><div class="ec-icon"><i class="fab fa-steam"></i></div><div class="ec-text"><div class="ec-label">Steam</div><div class="ec-sub">查看游戏</div></div></div>
+                <div class="l-entry-card" data-entry="Epic"><div class="ec-icon"><i class="fas fa-cube"></i></div><div class="ec-text"><div class="ec-label">Epic</div><div class="ec-sub">查看游戏</div></div></div>
+                <div class="l-entry-card" data-entry="导入游戏"><div class="ec-icon"><i class="fas fa-plus"></i></div><div class="ec-text"><div class="ec-label">导入游戏</div><div class="ec-sub">手动添加</div></div></div>
+            </div>`:`<div class="l-entry-row">
+                <div class="l-entry-card" data-entry="导入复古游戏"><div class="ec-icon" style="background:linear-gradient(135deg,#1e3a2f,#0f2027);"><i class="fas fa-plus"></i></div><div class="ec-text"><div class="ec-label">导入复古游戏</div><div class="ec-sub">手动添加</div></div></div>
+            </div>`}
+        </div>
+        <div class="l-games">
+            <div class="my-header">
+                <div class="left"><div class="title">我的游戏</div><div class="count">${games.length}款游戏</div></div>
+                <div class="right">
+                    <div class="search-trigger left-expand" id="landSearchTrigger">
+                        <div class="s-icon"><i class="fas fa-search"></i></div>
+                        <div class="s-box"><input type="text" placeholder="搜索游戏名"><div class="s-close"><i class="fas fa-times"></i></div></div>
+                    </div>
+                    ${curTab==='pc'?'<div class="sort-btn"><i class="fas fa-sort-amount-down"></i> 最近游玩</div>':''}
+                    ${curTab==='pc'?'<div class="filter-btn"><i class="fas fa-sliders-h"></i></div>':''}
+                </div>
+            </div>
+            <div class="game-grid">${games.map(g=>`<div class="gc">${badgeHtml(g.platform)}<img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m"><i class="fas fa-play"></i> ${g.tags}</div></div></div>`).join('')}</div>
+        </div>
+    `;
+
+    // 横屏tab事件
+    el.querySelectorAll('.l-tab-row .tab').forEach(t=>{
+        t.addEventListener('click',()=>switchTab(t.dataset.tab));
+    });
+    // 横屏入口跳转子页面
+    el.querySelectorAll('.l-entry-card[data-entry]').forEach(c=>{
+        c.addEventListener('click',()=>openSubpage(c.dataset.entry));
+    });
+    // 横屏搜索icon展开收起
+    const lst=document.getElementById('landSearchTrigger');
+    if(lst){
+        lst.querySelector('.s-icon').addEventListener('click',()=>{lst.classList.toggle('open');const inp=lst.querySelector('input');if(lst.classList.contains('open'))inp.focus();});
+        lst.querySelector('.s-close').addEventListener('click',()=>{lst.classList.remove('open');lst.querySelector('input').value='';});
+    }
+}
+
+function render(){
+    if(isLand){renderLand();}else{renderPort();}
+}
+
+document.getElementById('portOrient').addEventListener('click',toggle);
+document.getElementById('landOrient').addEventListener('click',toggle);
+render();
+</script>
+</body>
+</html>
