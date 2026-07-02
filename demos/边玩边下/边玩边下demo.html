@@ -533,6 +533,9 @@
         .cloud-play-close:hover { color:#fff; }
         .cloud-play-section { display:flex; flex-direction:column; gap:8px; }
         .cloud-play-section-title { font-size:12px; color:rgba(255,255,255,0.5); }
+        .cloud-play-desc { display:flex; flex-direction:column; gap:10px; }
+        .cloud-play-desc-item { font-size:12px; color:rgba(255,255,255,0.6); line-height:1.6; }
+        .cloud-play-desc-item strong { color:#fff; }
         .cloud-play-list { display:flex; flex-direction:column; gap:6px; }
         .cloud-play-item {
             display:flex; align-items:center; gap:10px;
@@ -1194,35 +1197,15 @@
     <div class="cloud-play-overlay" id="cloudPlayOverlay" onclick="hideCloudPlayPopup()">
         <div class="cloud-play-modal" onclick="event.stopPropagation()">
             <div class="cloud-play-header">
-                <span class="cloud-play-title">秒玩</span>
+                <span class="cloud-play-title">请选择启动方式</span>
                 <span class="cloud-play-close" onclick="hideCloudPlayPopup()"><i class="fas fa-times"></i></span>
             </div>
-            <!-- 热门分享（免账号） -->
+            <!-- 启动方式说明 -->
             <div class="cloud-play-section">
-                <div class="cloud-play-section-title">热门分享（免账号）</div>
-                <div class="cloud-play-list">
-                    <div class="cloud-play-item">
-                        <div class="cloud-play-item-icon"><i class="fas fa-user-circle" style="color:#00bfff;"></i></div>
-                        <div class="cloud-play-item-info">
-                            <div class="cloud-play-item-name">玩家 Leon_S*** 的分享</div>
-                            <div class="cloud-play-item-meta">877人使用 · 2小时前更新</div>
-                        </div>
-                        <div class="cloud-play-item-tag">带云存档</div>
-                    </div>
-                    <div class="cloud-play-item">
-                        <div class="cloud-play-item-icon"><i class="fas fa-user-circle" style="color:#fa8c16;"></i></div>
-                        <div class="cloud-play-item-info">
-                            <div class="cloud-play-item-name">玩家 RE2_Fan*** 的分享</div>
-                            <div class="cloud-play-item-meta">324人使用 · 5小时前更新</div>
-                        </div>
-                        <div class="cloud-play-item-tag">带云存档</div>
-                    </div>
+                <div class="cloud-play-desc">
+                    <div class="cloud-play-desc-item"><strong>免账号启动：</strong>使用其他玩家分享的账号直接进入游戏，无需登录Steam，带云存档</div>
+                    <div class="cloud-play-desc-item"><strong>Steam启动：</strong>使用自己的Steam账号登录启动，需已购买该游戏</div>
                 </div>
-            </div>
-            <!-- 温馨提示 -->
-            <div class="cloud-play-notice">
-                <i class="fas fa-info-circle" style="color:rgba(255,180,0,0.7);flex-shrink:0;"></i>
-                <span>Steam启动需登录Steam账号，并确保已购买此游戏</span>
             </div>
             <!-- 底部按钮 -->
             <div class="cloud-play-btns">
