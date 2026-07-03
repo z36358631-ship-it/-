@@ -91,6 +91,18 @@ body{background:#000;color:#fff;height:100vh;width:100vw;display:flex;align-item
 .gc .badge{position:absolute;top:6px;left:6px;display:flex;gap:3px;}
 .gc .badge i{width:18px;height:18px;border-radius:4px;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.85);}
 
+/* 适配状态标签 */
+.compat-tag{position:absolute;top:6px;right:6px;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:600;z-index:2;line-height:1.4;}
+.compat-tag.cloud-compat{background:linear-gradient(135deg,#ffcc43,#10b981);color:#000;}
+.compat-tag.compat-only{background:#10b981;color:#000;}
+.compat-tag.cloud-only{background:#ffcc43;color:#000;}
+.compat-tag.not-compat{background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);backdrop-filter:blur(2px);}
+
+/* 不适配蒙层 */
+.gc-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.5);z-index:1;border-radius:10px;pointer-events:none;}
+.gc-dimmed{opacity:0.7;}
+.gc-dimmed:hover{opacity:0.85;}
+
 /* H5小游戏特有样式 */
 .h5-cat-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
 .h5-cat{padding:5px 14px;font-size:12px;font-weight:500;color:var(--dim);background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:16px;cursor:pointer;white-space:nowrap;transition:0.2s;}
@@ -412,6 +424,7 @@ body{background:#000;color:#fff;height:100vh;width:100vw;display:flex;align-item
 </div>
 
 <script>
+var tagMode='A';
 const C={
 "黑神话：悟空":"https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/library_600x900.jpg",
 "赛博朋克 2077":"https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/library_600x900.jpg",
@@ -444,15 +457,15 @@ function cv(t){return C[t]||C["黑神话：悟空"];}
 function hd(t){return H[t]||H["黑神话：悟空"];}
 
 const pcGames=[
-    {name:"黑神话：悟空",tags:"最近游玩 2小时前",platform:["steam"],compat:"perfect",genre:"动作 RPG",score:"9.8"},
-    {name:"艾尔登法环",tags:"最近游玩 昨天",platform:["steam"],compat:"perfect",genre:"魂系 开放世界",score:"9.6"},
-    {name:"赛博朋克 2077",tags:"最近游玩 3天前",platform:["steam","epic"],compat:"good",genre:"开放世界 射击",score:"9.1"},
-    {name:"荒野大镖客2",tags:"最近游玩 1周前",platform:["steam","epic"],compat:"unknown",genre:"开放世界 冒险",score:"9.7"},
-    {name:"博德之门3",tags:"最近游玩 1周前",platform:["steam"],compat:"perfect",genre:"角色扮演 策略",score:"9.5"},
-    {name:"战神4",tags:"最近游玩 2周前",platform:["steam","epic"],compat:"bad",genre:"动作 冒险",score:"9.4"},
-    {name:"极限竞速",tags:"最近游玩 2周前",platform:["steam"],compat:"good",genre:"赛车 竞速",score:"8.8"},
-    {name:"巫师3",tags:"最近游玩 3周前",platform:["steam"],compat:"perfect",genre:"角色扮演 剧情",score:"9.7"},
-    {name:"GTA5",tags:"最近游玩 1月前",platform:["steam","epic"],compat:"good",genre:"开放世界 犯罪",score:"9.3"}
+    {name:"黑神话：悟空",tags:"最近游玩 2小时前",platform:["steam"],compat:"perfect",cloud:true,genre:"动作 RPG",score:"9.8"},
+    {name:"艾尔登法环",tags:"最近游玩 昨天",platform:["steam"],compat:"perfect",cloud:false,genre:"魂系 开放世界",score:"9.6"},
+    {name:"赛博朋克 2077",tags:"最近游玩 3天前",platform:["steam","epic"],compat:"good",cloud:true,genre:"开放世界 射击",score:"9.1"},
+    {name:"荒野大镖客2",tags:"最近游玩 1周前",platform:["steam","epic"],compat:"unknown",cloud:false,genre:"开放世界 冒险",score:"9.7"},
+    {name:"博德之门3",tags:"最近游玩 1周前",platform:["steam"],compat:"perfect",cloud:true,genre:"角色扮演 策略",score:"9.5"},
+    {name:"战神4",tags:"最近游玩 2周前",platform:["steam","epic"],compat:"bad",cloud:false,genre:"动作 冒险",score:"9.4"},
+    {name:"极限竞速",tags:"最近游玩 2周前",platform:["steam"],compat:"good",cloud:false,genre:"赛车 竞速",score:"8.8"},
+    {name:"巫师3",tags:"最近游玩 3周前",platform:["steam"],compat:"perfect",cloud:false,genre:"角色扮演 剧情",score:"9.7"},
+    {name:"GTA5",tags:"最近游玩 1月前",platform:["steam","epic"],compat:"bad",cloud:true,genre:"开放世界 犯罪",score:"9.3"}
 ];
 const compatibleGames=pcGames.filter(g=>g.compat==='perfect'||g.compat==='good');
 const deviceInfo={gpu:"Adreno 730",cpu:"Snapdragon 8 Gen 1",model:"小米12S Pro"};
@@ -511,32 +524,42 @@ function badgeHtml(platforms){
     ).join('')}</div>`;
 }
 
+function compatTagHtml(g){
+    if(!g) return '';
+    var isCompat = g.compat==='perfect'||g.compat==='good';
+    var hasCloud = g.cloud===true;
+    if(typeof tagMode==='undefined' || tagMode==='A'){
+        if(isCompat) return '<span class="compat-tag compat-only">本机适配</span>';
+        if(hasCloud) return '<span class="compat-tag cloud-only">可云游</span>';
+        return '<span class="compat-tag not-compat">不适配</span>';
+    }
+    return '';
+}
+
+function compatInfoHtml(g){
+    if(!g) return '';
+    var isCompat = g.compat==='perfect'||g.compat==='good';
+    var hasCloud = g.cloud===true;
+    if(typeof tagMode!=='undefined' && tagMode==='D'){
+        var statusText='';var statusColor='';
+        if(isCompat){statusText='本机适配';statusColor='#10b981';}
+        else if(hasCloud){statusText='可云游';statusColor='#ffcc43';}
+        else{statusText='不适配';statusColor='rgba(255,255,255,0.4)';}
+        return '<span style="color:'+statusColor+';font-weight:600;">'+statusText+'</span> · ';
+    }
+    return '<i class="fas fa-play"></i> ';
+}
+
+function gameCardHtml(g){
+    var isNotCompat = !g.cloud && g.compat!=='perfect' && g.compat!=='good';
+    var overlay = isNotCompat ? '<div class="gc-overlay"></div>' : '';
+    var dimClass = isNotCompat ? ' gc-dimmed' : '';
+    return '<div class="gc'+dimClass+'">'+badgeHtml(g.platform)+overlay+compatTagHtml(g)+'<img src="'+hd(g.name)+'"><div class="gc-info"><div class="t">'+g.name+'</div><div class="m">'+compatInfoHtml(g)+g.tags+'</div></div></div>';
+}
+
 function getH5Filtered(){
     if(h5CatFilter==='全部') return h5Games;
     return h5Games.filter(g=>g.cat===h5CatFilter);
-}
-
-function openCompatTopic(){
-    const shell=document.getElementById('shell');
-    const existing=shell.querySelector('.subpage');
-    if(existing) existing.remove();
-    const sp=document.createElement('div');
-    sp.className='subpage';
-    const gamesHtml=compatibleGames.map(g=>`<div class="gc">${badgeHtml(g.platform)}<img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m" style="justify-content:space-between;"><span>${g.genre||'动作 冒险'}</span><span class="gc-score">${g.score||'9.2'}</span></div></div></div>`).join('');
-    sp.innerHTML=`<div class="sp-header"><div class="back"><i class="fas fa-chevron-left"></i></div><div class="title">非常适合本机</div><div style="margin-left:auto;display:flex;align-items:center;"><div class="search-trigger" id="topicSearchTrigger"><div class="s-icon" style="width:28px;height:28px;font-size:12px;"><i class="fas fa-search"></i></div><div class="s-box"><input type="text" placeholder="搜索游戏" id="topicSearchInput"><div class="s-close"><i class="fas fa-times"></i></div></div></div></div></div><div class="sp-body"><div class="compat-device-info"><div class="cdi-icon"><i class="fas fa-mobile-alt"></i></div><div class="cdi-text"><div class="cdi-model">${deviceInfo.model}</div><div class="cdi-spec">${deviceInfo.cpu} · ${deviceInfo.gpu}</div></div></div><div class="compat-count">适配你的设备 ${compatibleGames.length}款游戏</div><div class="game-grid" id="topicGrid">${gamesHtml}</div></div>`;
-    shell.appendChild(sp);
-    sp.querySelector('.back').addEventListener('click',()=>sp.remove());
-    const st=sp.querySelector('#topicSearchTrigger');
-    if(st){
-        st.querySelector('.s-icon').addEventListener('click',()=>{st.classList.toggle('open');const inp=st.querySelector('input');if(st.classList.contains('open'))inp.focus();});
-        st.querySelector('.s-close').addEventListener('click',()=>{st.classList.remove('open');st.querySelector('input').value='';filterTopic('');});
-        st.querySelector('input').addEventListener('input',(e)=>filterTopic(e.target.value));
-    }
-    function filterTopic(q){
-        q=q.toLowerCase();
-        const filtered=compatibleGames.filter(g=>g.name.toLowerCase().includes(q));
-        sp.querySelector('#topicGrid').innerHTML=filtered.map(g=>`<div class="gc">${badgeHtml(g.platform)}<img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m" style="justify-content:space-between;"><span>${g.genre||'动作 冒险'}</span><span class="gc-score">${g.score||'9.2'}</span></div></div></div>`).join('');
-    }
 }
 
 function openSubpage(name){
@@ -545,27 +568,7 @@ function openSubpage(name){
     if(existing) existing.remove();
     const sp=document.createElement('div');
     sp.className='subpage';
-    if(name==='非常适合本机'){
-        const compatLevel={perfect:'完美适配',good:'流畅运行',unknown:'未验证'};
-        const compatColor={perfect:'#10b981',good:'#3b82f6',unknown:'var(--dim)'};
-        const compatIcon={perfect:'fa-check-double',good:'fa-check',unknown:'fa-question'};
-        const gamesHtml=compatibleGames.map(g=>`<div class="gc">${badgeHtml(g.platform)}<img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m"><i class="fas fa-play"></i> ${g.tags}</div></div></div>`).join('');
-        sp.innerHTML=`<div class="sp-header"><div class="back"><i class="fas fa-chevron-left"></i></div><div class="title">非常适合本机</div></div><div class="sp-body"><div class="compat-device-info"><div class="cdi-icon"><i class="fas fa-mobile-alt"></i></div><div class="cdi-text"><div class="cdi-model">${deviceInfo.model}</div><div class="cdi-spec">${deviceInfo.cpu} · ${deviceInfo.gpu}</div></div></div><div class="compat-toolbar"><div class="left"><div class="compat-count">适配你的设备 ${compatibleGames.length}款游戏</div></div><div class="right"><div class="search-trigger" id="compatSearchTrigger"><div class="s-icon"><i class="fas fa-search"></i></div><div class="s-box"><input type="text" placeholder="搜索游戏" id="compatSearchInput"><div class="s-close"><i class="fas fa-times"></i></div></div></div><div class="sort-btn"><i class="fas fa-sort-amount-down"></i> 最近热玩</div></div></div><div class="game-grid" id="compatGrid">${gamesHtml}</div></div>`;
-        setTimeout(()=>{
-            const st=sp.querySelector('#compatSearchTrigger');
-            if(st){
-                st.querySelector('.s-icon').addEventListener('click',()=>{st.classList.toggle('open');const inp=st.querySelector('input');if(st.classList.contains('open'))inp.focus();});
-                st.querySelector('.s-close').addEventListener('click',()=>{st.classList.remove('open');st.querySelector('input').value='';filterCompat('');});
-                st.querySelector('input').addEventListener('input',(e)=>filterCompat(e.target.value));
-            }
-            function filterCompat(q){
-                q=q.toLowerCase();
-                const filtered=compatibleGames.filter(g=>g.name.toLowerCase().includes(q));
-                const grid=sp.querySelector('#compatGrid');
-                grid.innerHTML=filtered.map(g=>`<div class="gc">${badgeHtml(g.platform)}<img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m"><i class="fas fa-play"></i> ${g.tags}</div></div></div>`).join('');
-            }
-        },50);
-    } else if(name==='导入游戏'||name==='导入复古游戏'){
+    if(name==='导入游戏'||name==='导入复古游戏'){
         sp.innerHTML=`<div class="sp-header"><div class="back"><i class="fas fa-chevron-left"></i></div><div class="title">${name}</div></div><div class="sp-body"><div style="text-align:center;padding:60px 20px;color:var(--dim);"><i class="fas fa-file-import" style="font-size:36px;margin-bottom:12px;display:block;"></i><div>点击选择游戏文件导入</div></div></div>`;
     } else {
         const isSteam=name==='Steam';
@@ -606,7 +609,6 @@ function renderPort(){
     const showEntry=curTab==='pc';
     el.innerHTML=`
         ${showEntry?`<div class="entry-row">
-            <div class="entry-card fit-device" data-entry="非常适合本机"><div class="ec-icon" style="background:linear-gradient(135deg,#0d4a2e,#10b981);"><i class="fas fa-check-circle"></i></div><div class="ec-text"><div class="ec-label">非常适合本机</div><div class="ec-sub">${compatibleGames.length}款可玩 ›</div></div></div>
             <div class="entry-card" data-entry="Steam"><div class="ec-icon"><i class="fab fa-steam"></i></div><div class="ec-text"><div class="ec-label">Steam</div><div class="ec-sub">查看游戏 ›</div></div></div>
             <div class="entry-card" data-entry="Epic"><div class="ec-icon"><i class="fas fa-cube"></i></div><div class="ec-text"><div class="ec-label">Epic Games</div><div class="ec-sub">查看游戏 ›</div></div></div>
             <div class="entry-card" data-entry="导入游戏"><div class="ec-icon"><i class="fas fa-plus"></i></div><div class="ec-text"><div class="ec-label">导入游戏</div><div class="ec-sub">手动添加 ›</div></div></div>
@@ -623,7 +625,7 @@ function renderPort(){
                 ${curTab==='pc'?'<div class="sort-btn"><i class="fas fa-sort-amount-down"></i> 最近游玩</div>':''}
             </div>
         </div>
-        <div class="game-grid">${games.map(g=>`<div class="gc">${badgeHtml(g.platform)}<img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m"><i class="fas fa-play"></i> ${g.tags}</div></div></div>`).join('')}</div>
+        <div class="game-grid">${games.map(g=>gameCardHtml(g)).join('')}</div>
     `;
     bindPortTabs();
     el.querySelectorAll('.entry-card[data-entry]').forEach(c=>{
@@ -684,7 +686,6 @@ function renderLand(){
                 <div class="tab" data-tab="h5">小游戏</div>
             </div>
             ${showEntry?`<div class="l-entry-row">
-                <div class="l-entry-card fit-device" data-entry="非常适合本机"><div class="ec-icon" style="background:linear-gradient(135deg,#0d4a2e,#10b981);"><i class="fas fa-check-circle"></i></div><div class="ec-text"><div class="ec-label">非常适合本机</div><div class="ec-sub">${compatibleGames.length}款可玩</div></div></div>
                 <div class="l-entry-card" data-entry="Steam"><div class="ec-icon"><i class="fab fa-steam"></i></div><div class="ec-text"><div class="ec-label">Steam</div><div class="ec-sub">查看游戏</div></div></div>
                 <div class="l-entry-card" data-entry="Epic"><div class="ec-icon"><i class="fas fa-cube"></i></div><div class="ec-text"><div class="ec-label">Epic</div><div class="ec-sub">查看游戏</div></div></div>
                 <div class="l-entry-card" data-entry="导入游戏"><div class="ec-icon"><i class="fas fa-plus"></i></div><div class="ec-text"><div class="ec-label">导入游戏</div><div class="ec-sub">手动添加</div></div></div>
@@ -703,7 +704,7 @@ function renderLand(){
                     ${curTab==='pc'?'<div class="sort-btn"><i class="fas fa-sort-amount-down"></i> 最近游玩</div>':''}
                 </div>
             </div>
-            <div class="game-grid">${games.map(g=>`<div class="gc">${badgeHtml(g.platform)}<img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m"><i class="fas fa-play"></i> ${g.tags}</div></div></div>`).join('')}</div>
+            <div class="game-grid">${games.map(g=>gameCardHtml(g)).join('')}</div>
         </div>`;
     el.querySelectorAll('.l-tab-row .tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
     el.querySelectorAll('.l-entry-card[data-entry]').forEach(c=>c.addEventListener('click',()=>openSubpage(c.dataset.entry)));
@@ -814,12 +815,8 @@ function renderHome(){
                 <div class="ov"><span class="tag">编辑推荐</span><div class="t">黑神话：悟空 - 完美兼容</div></div>
             </div>
             <div>
-                <div class="home-section-title"><i class="fas fa-check-circle" style="color:#10b981;font-size:13px;"></i> 非常适合本机 <span class="more" onclick="openCompatTopic()">查看更多 ›</span></div>
-                <div class="rec-scroll">${compatibleGames.map(g=>`<div class="rec-card"><img src="${cv(g.name)}"><span>${g.name}</span></div>`).join('')}</div>
-            </div>
-            <div>
                 <div class="home-section-title">为你推荐</div>
-                <div class="rec-scroll">${["荒野大镖客2","巫师3","茶杯头","Hades","博德之门3","战神4"].map(g=>`<div class="rec-card"><img src="${cv(g)}"><span>${g}</span></div>`).join('')}</div>
+                <div class="rec-scroll">${pcGames.filter(g=>g.compat==='perfect'||g.compat==='good').slice(0,6).map(g=>`<div class="rec-card"><img src="${cv(g.name)}"><span>${g.name}</span></div>`).join('')}</div>
             </div>
             <div>
                 <div class="home-section-title">热门小游戏 <span class="more" onclick="rankTab='h5';switchPage('rank');">查看全部 ›</span></div>
@@ -882,6 +879,25 @@ function renderHome(){
                 renderHome();
             });
         });
+    } else if(homeTab==='PC游戏'){
+        el.innerHTML=`<div style="display:flex;flex-direction:column;gap:18px;padding-top:8px;">
+            <div>
+                <div class="home-section-title">热门推荐</div>
+                <div class="rec-scroll">${pcGames.filter(g=>g.compat==='perfect'||g.compat==='good').slice(0,6).map(g=>`<div class="rec-card"><img src="${cv(g.name)}"><span>${g.name}</span></div>`).join('')}</div>
+            </div>
+            <div>
+                <div class="home-section-title">动作冒险</div>
+                <div class="game-grid">${pcGames.filter(g=>(g.genre.includes('动作')||g.genre.includes('冒险'))&&(g.compat==='perfect'||g.compat==='good')).map(g=>`<div class="gc">${badgeHtml(g.platform)}<img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m"><i class="fas fa-play"></i> ${g.tags}</div></div></div>`).join('')}</div>
+            </div>
+            <div>
+                <div class="home-section-title">开放世界</div>
+                <div class="game-grid">${pcGames.filter(g=>g.genre.includes('开放世界')&&(g.compat==='perfect'||g.compat==='good')).map(g=>`<div class="gc">${badgeHtml(g.platform)}<img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m"><i class="fas fa-play"></i> ${g.tags}</div></div></div>`).join('')}</div>
+            </div>
+            <div>
+                <div class="home-section-title">全部游戏</div>
+                <div class="game-grid">${pcGames.filter(g=>g.compat==='perfect'||g.compat==='good').map(g=>`<div class="gc">${badgeHtml(g.platform)}<img src="${hd(g.name)}"><div class="gc-info"><div class="t">${g.name}</div><div class="m"><i class="fas fa-play"></i> ${g.tags}</div></div></div>`).join('')}</div>
+            </div>
+        </div>`;
     } else {
         el.innerHTML=`<div style="text-align:center;padding:80px 20px;color:var(--dim);">
             <i class="fas fa-gamepad" style="font-size:36px;margin-bottom:12px;display:block;"></i>
@@ -901,6 +917,9 @@ function closeSearch(){
     document.getElementById('searchPage').classList.remove('show');
 }
 function doSearch(){
+    renderSearchResults();
+}
+function renderSearchResults(){
     const q=document.getElementById('searchInput').value.trim().toLowerCase();
     const el=document.getElementById('searchResults');
     if(!q){el.innerHTML='<div class="sr-empty">输入关键词搜索游戏</div>';return;}
@@ -912,9 +931,33 @@ function doSearch(){
     const showRetro=searchTabFilter==='all'||searchTabFilter==='retro';
     const showH5=searchTabFilter==='all'||searchTabFilter==='h5';
     if(showPC&&matchPC.length){
-        html+=`<div class="sr-section"><div class="sr-section-title">PC游戏 (${matchPC.length})</div>`;
-        html+=matchPC.map(g=>`<div class="sr-item"><img src="${hd(g.name)}"><div class="sr-item-info"><div class="name">${g.name}</div><div class="meta">${g.tags}</div></div><span class="sr-tag pc">PC</span></div>`).join('');
-        html+='</div>';
+        if(searchTabFilter==='pc'){
+            html+=`<div class="sr-section"><div class="sr-section-title">PC游戏 (${matchPC.length})</div>`;
+            html+='<div class="game-grid" style="grid-template-columns:repeat(2,1fr);gap:10px;margin-top:8px;">';
+            html+=matchPC.map(g=>gameCardHtml(g)).join('');
+            html+='</div></div>';
+        } else {
+            html+=`<div class="sr-section"><div class="sr-section-title">PC游戏 (${matchPC.length})</div>`;
+            html+=matchPC.map(g=>{
+                var isCompat=g.compat==='perfect'||g.compat==='good';
+                var hasCloud=g.cloud===true;
+                var statusTag='';
+                if(tagMode==='A'){
+                    if(isCompat) statusTag='<span class="sr-tag" style="background:rgba(16,185,129,0.15);color:#10b981;">本机适配</span>';
+                    else if(hasCloud) statusTag='<span class="sr-tag" style="background:rgba(255,204,67,0.15);color:#ffcc43;">可云游</span>';
+                    else statusTag='<span class="sr-tag" style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.4);">不适配</span>';
+                }
+                var metaPrefix='';
+                if(tagMode==='D'){
+                    if(isCompat) metaPrefix='<span style="color:#10b981;font-weight:600;">本机适配</span> · ';
+                    else if(hasCloud) metaPrefix='<span style="color:#ffcc43;font-weight:600;">可云游</span> · ';
+                    else metaPrefix='<span style="color:rgba(255,255,255,0.4);font-weight:600;">不适配</span> · ';
+                }
+                var dimStyle=(!isCompat&&!hasCloud)?'opacity:0.5;':'';
+                return '<div class="sr-item" style="'+dimStyle+'"><img src="'+hd(g.name)+'"><div class="sr-item-info"><div class="name">'+g.name+'</div><div class="meta">'+metaPrefix+g.tags+'</div></div>'+(tagMode==='A'?statusTag:'<span class="sr-tag pc">PC</span>')+'</div>';
+            }).join('');
+            html+='</div>';
+        }
     }
     if(showRetro&&matchRetro.length){
         html+=`<div class="sr-section"><div class="sr-section-title">复古游戏 (${matchRetro.length})</div>`;
@@ -942,6 +985,29 @@ document.querySelectorAll('#searchTabs .s-tab').forEach(t=>{
 document.querySelector('.port-top .right .icon-btn')?.addEventListener('click',()=>{if(!isLand)openSearch();});
 
 switchPage('home');
+</script>
+
+<!-- 方案切换按钮 -->
+<div style="position:fixed;top:20px;left:20px;background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:12px;z-index:9999;font-size:12px;color:#ccc;">
+<div style="font-size:11px;color:#ffcc43;margin-bottom:8px;font-weight:600;">标签方案切换</div>
+<div style="display:flex;gap:6px;">
+<button onclick="setTagMode('A')" id="modeA" style="padding:6px 12px;border-radius:6px;border:1px solid #555;background:#333;color:#fff;cursor:pointer;font-size:11px;font-weight:600;">方案A：胶囊标签</button>
+<button onclick="setTagMode('D')" id="modeD" style="padding:6px 12px;border-radius:6px;border:1px solid #555;background:#222;color:#aaa;cursor:pointer;font-size:11px;">方案D：类型行前加</button>
+</div>
+<div style="margin-top:8px;font-size:10px;color:#666;">A=左上角胶囊 | D=类型名称前显示适配状态</div>
+</div>
+
+<script>
+function setTagMode(mode){
+    tagMode=mode;
+    document.getElementById('modeA').style.background=mode==='A'?'#333':'#222';
+    document.getElementById('modeA').style.color=mode==='A'?'#fff':'#aaa';
+    document.getElementById('modeD').style.background=mode==='D'?'#333':'#222';
+    document.getElementById('modeD').style.color=mode==='D'?'#fff':'#aaa';
+    if(typeof renderPort==='function') renderPort();
+    if(typeof renderHome==='function') renderHome();
+    if(document.querySelector('.search-page.show') && typeof renderSearchResults==='function') renderSearchResults();
+}
 </script>
 </body>
 </html>
