@@ -290,6 +290,12 @@
         }
         .s2-playnow-notice-item.warn { color:rgba(255,180,0,0.7); }
         .s2-playnow-notice-item.ok { color:rgba(111,255,168,0.8); }
+
+        /* 帮助说明 */
+        .s2-help-icon { color:rgba(255,255,255,0.35); font-size:11px; cursor:pointer; margin-left:4px; }
+        .s2-help-icon:hover { color:rgba(255,255,255,0.7); }
+        .s2-help-text { padding-top:8px; border-top:1px solid rgba(255,255,255,0.06); margin-top:6px; }
+        .s2-help-content { font-size:11px; color:rgba(255,255,255,0.5); line-height:1.7; }
         .s2-install-btns { display:flex; gap:10px; margin-top:10px; }
         .s2-install-btn-cancel {
             flex:1; height:40px; border-radius:10px;
@@ -887,7 +893,7 @@
                             <div class="s2-playnow-left">
                                 <i class="fas fa-cloud-arrow-down" style="color:#00bfff;font-size:15px;"></i>
                                 <div class="s2-playnow-text">
-                                    <div class="s2-playnow-title">边玩边下</div>
+                                    <div class="s2-playnow-title">边玩边下 <span class="s2-help-icon" onclick="togglePlayHelp(event)"><i class="fas fa-circle-question"></i></span></div>
                                     <div class="s2-playnow-desc">安装同时通过云游戏先行体验</div>
                                 </div>
                             </div>
@@ -896,6 +902,9 @@
                         <div class="s2-playnow-notices">
                             <div class="s2-playnow-notice-item warn"><i class="fas fa-info-circle"></i> 需较好网络环境，下载速度可能略有降低</div>
                             <div class="s2-playnow-notice-item ok"><i class="fas fa-cloud-arrow-up"></i> 存档可同步，切换本地后接续进度</div>
+                        </div>
+                        <div class="s2-help-text" id="s2HelpText" style="display:none;">
+                            <div class="s2-help-content">点击"边玩边下"后，系统将同时启动云游戏和后台下载。你可以立即体验该游戏，下载完成后可随时手动切换到本地运行，存档自动同步。首次使用免费赠送10分钟，之后按¥3/小时计费。</div>
                         </div>
                     </div>
                     <div class="s2-install-btns">
@@ -1234,6 +1243,11 @@
     }
     function hideCloudPlayPopup() {
         document.getElementById('cloudPlayOverlay').classList.remove('show');
+    }
+    function togglePlayHelp(e) {
+        e.stopPropagation();
+        var el = document.getElementById('s2HelpText');
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
     }
 
     function setOrientation(o) {
