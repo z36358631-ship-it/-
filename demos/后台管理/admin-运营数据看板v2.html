@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>盖世游戏 - 运营数据看板</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+:root{--primary:#3b82f6;--primary-light:#eff6ff;--primary-dark:#1d4ed8;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--purple:#8b5cf6;--bg:#f8fafc;--card:#fff;--sidebar-bg:#fff;--text:#0f172a;--text-2:#475569;--text-3:#94a3b8;--border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-md:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -2px rgba(0,0,0,.05);--font:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;--font-mono:'DIN Alternate','Roboto Mono','Menlo',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13px;-webkit-font-smoothing:antialiased;line-height:1.5}
+.layout{display:flex;height:100vh}
+.sidebar{width:220px;background:var(--sidebar-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-logo{padding:20px 20px 16px;display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;color:var(--primary)}
+.sidebar-logo .icon{width:32px;height:32px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
+.sidebar-nav{flex:1;padding:0 8px;overflow-y:auto}
+.nav-section{margin-bottom:16px}
+.nav-section-title{padding:8px 12px;font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:var(--text-2);font-size:13px;cursor:pointer;transition:all .15s;margin-bottom:2px}
+.nav-item:hover{background:var(--primary-light);color:var(--primary)}
+.nav-item.active{background:var(--primary);color:#fff;font-weight:500;box-shadow:0 2px 8px rgba(59,130,246,.3)}
+.nav-item .nav-icon{width:18px;text-align:center;font-size:14px}
+.sidebar-user{padding:16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sidebar-user .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600}
+.sidebar-user .info{font-size:12px}.sidebar-user .info .name{font-weight:600;color:var(--text)}.sidebar-user .info .role{color:var(--text-3)}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:56px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.topbar-title{font-size:16px;font-weight:600}
+.topbar-desc{font-size:12px;color:var(--text-3)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.search-box{display:flex;align-items:center;gap:6px;padding:6px 12px;background:#f1f5f9;border-radius:8px;font-size:12px;color:var(--text-3);cursor:pointer;min-width:200px}
+.topbar-btn{width:32px;height:32px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text-2);transition:background .15s}
+.topbar-btn:hover{background:#f1f5f9}
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* Tabs */
+.page-tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--card);padding:4px;border-radius:10px;border:1px solid var(--border);width:fit-content}
+.page-tab{padding:7px 16px;border-radius:7px;font-size:13px;cursor:pointer;color:var(--text-2);transition:all .2s;font-weight:500}
+.page-tab:hover{color:var(--text)}
+.page-tab.active{background:var(--primary);color:#fff;box-shadow:0 2px 4px rgba(59,130,246,.2)}
+
+/* Filter */
+.filter-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.filter-chip{padding:5px 12px;border-radius:6px;font-size:12px;border:1px solid var(--border);background:var(--card);cursor:pointer;color:var(--text-2);transition:all .15s}
+.filter-chip:hover,.filter-chip.active{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.filter-select{height:30px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;outline:none;background:var(--card);color:var(--text-2)}
+.filter-date{display:flex;align-items:center;gap:4px;padding:3px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--card);color:var(--text-2)}
+.date-input{border:none;outline:none;font-size:12px;font-family:var(--font-mono);color:var(--text);background:transparent;width:110px}
+
+/* Metric Cards */
+.metrics-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
+.metric-card{background:var(--card);border-radius:var(--radius);padding:18px 20px;border:1px solid var(--border);transition:box-shadow .2s;position:relative;overflow:hidden}
+.metric-card:hover{box-shadow:var(--shadow-md)}
+.metric-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.metric-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.metric-icon.blue{background:#eff6ff;color:#3b82f6}
+.metric-icon.green{background:#ecfdf5;color:#10b981}
+.metric-icon.purple{background:#f5f3ff;color:#8b5cf6}
+.metric-icon.orange{background:#fffbeb;color:#f59e0b}
+.metric-icon.red{background:#fef2f2;color:#ef4444}
+.metric-label{font-size:12px;color:var(--text-3);display:flex;align-items:center;gap:4px}
+.metric-help{width:14px;height:14px;border-radius:50%;background:#f1f5f9;color:var(--text-3);display:inline-flex;align-items:center;justify-content:center;font-size:9px;cursor:help;position:relative;flex-shrink:0}
+.metric-help:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:6px 10px;border-radius:6px;font-size:11px;white-space:nowrap;z-index:100;pointer-events:none;line-height:1.4;max-width:240px;white-space:normal}
+.metric-help:hover::before{content:'';position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:#1e293b;z-index:100}
+.metric-center{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px}
+.metric-value{font-size:24px;font-weight:700;font-family:var(--font-mono);color:var(--text);line-height:1.1}
+.metric-spark{width:64px;height:28px;flex-shrink:0}
+.metric-footer{display:flex;align-items:center;gap:6px;font-size:11px}
+.metric-change{display:inline-flex;align-items:center;gap:2px;font-weight:600;font-size:11px}
+.metric-change.up{color:#10b981}
+.metric-change.down{color:#ef4444}
+.metric-period{color:var(--text-3)}
+
+/* Dashboard Grid */
+.dash-grid{display:grid;gap:12px;margin-bottom:0}
+.dash-grid.g-2-1{grid-template-columns:2fr 1fr}
+.dash-grid.g-1-1{grid-template-columns:1fr 1fr}
+.dash-grid.g-1-1-1{grid-template-columns:1fr 1fr 1fr}
+.dash-grid.g-full{grid-template-columns:1fr}
+
+/* Panel */
+.panel{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden}
+.panel-header{padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.panel-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary)}
+.panel-actions{display:flex;gap:6px}
+.panel-action-btn{padding:4px 10px;border-radius:5px;font-size:11px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--text-2);transition:all .15s}
+.panel-action-btn:hover{border-color:var(--primary);color:var(--primary)}
+.panel-action-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.panel-more{font-size:12px;color:var(--primary);cursor:pointer;text-decoration:none;transition:opacity .15s;font-weight:500}
+.panel-more:hover{opacity:.7}
+
+/* Game Tab */
+.game-tab{padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;color:var(--text-3);transition:all .15s;font-weight:500}
+.game-tab:hover{color:var(--text)}
+.game-tab.active{background:var(--primary-light);color:var(--primary)}
+.panel-body{padding:16px 18px}
+.chart-box{width:100%;height:220px}
+.chart-box.sm{height:180px}
+.chart-box.lg{height:340px}
+
+/* Table */
+.table-wrap{overflow-x:auto}
+table.dtable{width:100%;border-collapse:collapse;font-size:12px}
+table.dtable thead{background:#f8fafc}
+table.dtable th{padding:9px 12px;text-align:left;font-weight:600;color:var(--text-3);border-bottom:1px solid var(--border);white-space:nowrap;font-size:11px;letter-spacing:.3px}
+table.dtable td{padding:9px 12px;border-bottom:1px solid #f1f5f9;color:var(--text-2);font-size:12px}
+table.dtable tbody tr:hover{background:#f8fafc}
+table.dtable .num{font-family:var(--font-mono);font-weight:600;color:var(--text);font-size:13px;letter-spacing:-0.3px}
+table.dtable .tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600}
+table.dtable .tag-up{background:#ecfdf5;color:#10b981}
+table.dtable .tag-down{background:#fef2f2;color:#ef4444}
+.table-footer{padding:10px 18px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-3);border-top:1px solid var(--border)}
+
+/* Todo/Alert List */
+.todo-list{list-style:none}
+.todo-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9}
+.todo-item:last-child{border-bottom:none}
+.todo-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.todo-dot.blue{background:var(--primary)}.todo-dot.green{background:var(--success)}.todo-dot.orange{background:var(--warning)}.todo-dot.red{background:var(--danger)}
+.todo-text{font-size:13px;color:var(--text)}.todo-meta{font-size:11px;color:var(--text-3);margin-top:2px}
+
+/* Rank List */
+.rank-list{list-style:none}
+.rank-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9}
+.rank-item:last-child{border-bottom:none}
+.rank-num{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--font-mono)}
+.rank-num.top{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#fff}
+.rank-num.normal{background:#f1f5f9;color:var(--text-3)}
+.rank-name{flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank-value{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--text);width:60px;text-align:right}
+.rank-item.rank-header{border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:2px}
+.rank-num-h{width:20px;font-size:11px;color:var(--text-3);text-align:center}
+.rank-name-h{flex:1;font-size:11px;color:var(--text-3)}
+.rank-val-h{width:60px;text-align:right;font-size:11px;color:var(--text-3)}
+
+/* Export */
+.btn-export{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:6px;font-size:11px;border:1px solid var(--border);background:var(--card);cursor:pointer;color:var(--text-2);transition:all .15s;position:relative}
+.btn-export:hover{border-color:var(--primary);color:var(--primary)}
+.export-dropdown{position:absolute;top:100%;right:0;margin-top:4px;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:100;min-width:140px;display:none;overflow:hidden}
+.export-dropdown.show{display:block}
+.export-dropdown-item{padding:8px 12px;font-size:12px;cursor:pointer;color:var(--text-2);transition:background .1s;display:flex;align-items:center;gap:6px}
+.export-dropdown-item:hover{background:#f8fafc;color:var(--primary)}
+
+/* Page Tabs Bar (top navigation tabs) */
+.tabs-bar{display:flex;align-items:center;gap:0;padding:0 24px;background:var(--card);border-bottom:1px solid var(--border);height:36px;overflow-x:auto;flex-shrink:0}
+.tabs-bar::-webkit-scrollbar{display:none}
+.tab-item{display:flex;align-items:center;gap:4px;padding:0 12px;height:36px;font-size:12px;color:var(--text-2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.tab-item:hover{color:var(--text);background:#f8fafc}
+.tab-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:500}
+.tab-item .tab-close{width:14px;height:14px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-3);margin-left:4px;transition:all .1s}
+.tab-item .tab-close:hover{background:#fee2e2;color:#ef4444}
+.breadcrumb{padding:8px 24px;font-size:12px;color:var(--text-3);border-bottom:1px solid var(--border);background:var(--card);flex-shrink:0}
+.breadcrumb span{margin:0 4px}
+
+/* Page */
+.page-section{display:none}.page-section.active{display:block}
+
+@media(max-width:1600px){.metrics-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1200px){.metrics-grid{grid-template-columns:repeat(2,1fr)}.dash-grid.g-2-1,.dash-grid.g-1-1,.dash-grid.g-1-1-1{grid-template-columns:1fr}}
+@media(max-width:900px){.sidebar{display:none}.metrics-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.metrics-grid{grid-template-columns:1fr}.filter-row{flex-direction:column;align-items:stretch}}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+    <div class="sidebar-logo"><div class="icon">G</div>盖世游戏</div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <div class="nav-section-title">概览</div>
+            <div class="nav-item active" data-page="overview"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>工作台</div>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">用户</div>
+            <div class="nav-item" data-page="users"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>用户数据</div>
+            <div class="nav-item" data-page="newuser"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>新手链路</div>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">业务</div>
+            <div class="nav-item" data-page="games"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="18" y2="12"/><line x1="12" y1="9" x2="12" y2="15"/></svg></span>游戏生态</div>
+            <div class="nav-item" data-page="cloud"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg></span>云游&营收</div>
+            <div class="nav-item" data-page="funnel"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></span>核心功能</div>
+            <div class="nav-item" data-page="community"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>社区运营</div>
+        </div>
+    </nav>
+    <div class="sidebar-user"><div class="avatar">运</div><div class="info"><div class="name">运营管理员</div><div class="role">数据分析组</div></div></div>
+</aside>
+<main class="main">
+    <div class="breadcrumb" id="breadcrumb">首页 <span>›</span> 工作台</div>
+    <div class="tabs-bar" id="tabsBar">
+        <div class="tab-item active" data-tab="overview">工作台</div>
+    </div>
+    <div class="content" id="mainContent">
+        <!-- Overview Page -->
+        <div class="page-section active" id="sec-overview">
+            <div class="filter-row">
+                <select class="filter-select" id="regionFilter"><option value="all">全部地区</option><option value="cn">国内</option><option value="overseas">海外</option></select>
+                <div class="filter-chip active">今日</div>
+                <div class="filter-chip">昨日</div>
+                <div class="filter-chip">近7天</div>
+                <div class="filter-chip">近30天</div>
+                <div class="filter-date"><input type="date" class="date-input" value="2026-06-05"> <span style="color:var(--text-3);margin:0 2px">~</span> <input type="date" class="date-input" value="2026-06-11"></div>
+                <div style="flex:1"></div>
+                <button class="btn-export" onclick="exportCSV('overview')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 导出</button>
+                <button class="btn-export" onclick="downloadRaw('overview')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="M5 12l7 7 7-7"/><path d="M19 21H5"/></svg> 源数据</button>
+            </div>
+            <div class="metrics-grid" id="overviewMetrics"></div>
+            <div class="dash-grid g-1-1-1">
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title"><span class="dot"></span>数据趋势</span>
+                        <div class="panel-actions">
+                            <span class="panel-action-btn active" data-trend="biz">业务</span><span class="panel-action-btn" data-trend="user">用户</span><span class="panel-action-btn" data-trend="order">订单</span><span class="panel-action-btn" data-trend="revenue">收入</span>
+                            <span style="width:1px;background:var(--border);margin:0 6px"></span>
+                            <span class="panel-action-btn active" data-period="day">日</span><span class="panel-action-btn" data-period="week">周</span><span class="panel-action-btn" data-period="month">月</span>
+                        </div>
+                    </div>
+                    <div class="panel-body"><div class="chart-box" id="chart-biz-trend"></div></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title">版本分布</span></div>
+                    <div class="panel-body"><div class="chart-box" id="chart-version-dist"></div></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title"><span class="dot" style="background:var(--warning)"></span>需关注事项</span></div>
+                    <div class="panel-body">
+                        <ul class="todo-list">
+                            <li class="todo-item"><span class="todo-dot red"></span><div><div class="todo-text">流失用户突增 23%，需关注</div><div class="todo-meta">2 小时前 · 自动告警</div></div></li>
+                            <li class="todo-item"><span class="todo-dot orange"></span><div><div class="todo-text">新手引导完成率低于目标值</div><div class="todo-meta">今天 10:30 · 漏斗异常</div></div></li>
+                            <li class="todo-item"><span class="todo-dot blue"></span><div><div class="todo-text">6.0.9 版本启动成功率待确认</div><div class="todo-meta">昨天 · 版本监控</div></div></li>
+                            <li class="todo-item"><span class="todo-dot green"></span><div><div class="todo-text">社区日活突破 4000 里程碑</div><div class="todo-meta">昨天 · 达标通知</div></div></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="dash-grid g-1-1-1" style="margin-top:12px">
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title">数据概况</span><a class="panel-more" data-goto="games">查看更多 →</a></div>
+                    <div class="panel-body"><div class="chart-box" id="chart-overview-pie" style="height:240px"></div></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title">产品渗透率</span><a class="panel-more" data-goto="funnel">查看更多 →</a></div>
+                    <div class="panel-body"><div class="chart-box" id="chart-penetration" style="height:240px"></div></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Top 游戏排名</span>
+                        <div class="panel-actions"><span class="game-tab active" data-type="pc">PC游戏</span><span class="game-tab" data-type="cloud">云游戏</span><a class="panel-more" data-goto="games">查看更多 →</a></div>
+                    </div>
+                    <div class="panel-body">
+                        <ul class="rank-list" id="topGamesList"></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="dash-grid g-full" style="margin-top:12px">
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title">核心指标日报</span><button class="btn-export" onclick="exportCSV('daily_report')">导出</button></div>
+                    <div class="table-wrap"><table class="dtable" id="dailyTable"></table></div>
+                    <div class="table-footer"><span>共 7 条</span><span>第 1/1 页</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users (merged: 活跃/新增 + 留存 + 流失) -->
+        <div class="page-section" id="sec-users">
+            <div class="filter-row"><select class="filter-select"><option>全部地区</option><option>国内</option><option>海外</option></select><div class="filter-chip active">今日</div><div class="filter-chip">昨日</div><div class="filter-chip">近7天</div><div class="filter-chip">近30天</div><div class="filter-date"><input type="date" class="date-input" value="2026-06-05"><span style="color:var(--text-3);margin:0 2px">~</span><input type="date" class="date-input" value="2026-06-11"></div><div style="flex:1"></div><select class="filter-select"><option>全部用户</option><option>新增用户</option><option>活跃用户</option></select><button class="btn-export" onclick="exportCSV('users')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 导出</button></div>
+            <div class="metrics-grid" id="usersMetrics"></div>
+            <div class="page-tabs" style="margin-bottom:16px">
+                <div class="page-tab active" data-utab="active">用户数据</div>
+                <div class="page-tab" data-utab="churn">流失分析</div>
+            </div>
+            <div id="usersTabContent"></div>
+        </div>
+
+        <!-- Games -->
+        <div class="page-section" id="sec-games">
+            <div class="filter-row"><select class="filter-select"><option>全部地区</option><option>国内</option><option>海外</option></select><div class="filter-chip active">今日</div><div class="filter-chip">昨日</div><div class="filter-chip">近7天</div><div class="filter-chip">近30天</div><div class="filter-date"><input type="date" class="date-input" value="2026-06-05"><span style="color:var(--text-3);margin:0 2px">~</span><input type="date" class="date-input" value="2026-06-11"></div><div style="flex:1"></div><select class="filter-select"><option>全部用户</option><option>新增用户</option><option>活跃用户</option></select></div>
+            <div class="metrics-grid" id="gamesMetrics"></div>
+            <div class="dash-grid g-1-1">
+                <div class="panel"><div class="panel-header"><span class="panel-title">游戏启动 & 成功运行趋势</span></div><div class="panel-body"><div class="chart-box" id="chart-games-launch"></div></div></div>
+                <div class="panel"><div class="panel-header"><span class="panel-title">游戏品类分布</span></div><div class="panel-body"><div class="chart-box" id="chart-games-type"></div></div></div>
+            </div>
+            <div class="dash-grid g-full" style="margin-top:12px">
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title">游戏排行榜</span><div class="panel-actions"><span class="game-tab active" data-grank="pc">PC游戏</span><span class="game-tab" data-grank="cloud">云游戏</span><button class="btn-export" onclick="exportCSV('game_rank')">导出</button></div></div>
+                    <div class="table-wrap"><table class="dtable" id="gamesRankTable"></table></div>
+                    <div class="table-footer" id="gamesRankFooter"><span>共 20 条</span><span>第 1/2 页  <span class="page-nav" data-dir="prev" style="cursor:pointer;color:var(--primary)">&lt;</span> <span class="page-nav" data-dir="next" style="cursor:pointer;color:var(--primary)">&gt;</span></span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cloud & Revenue -->
+        <div class="page-section" id="sec-cloud">
+            <div class="filter-row"><div class="filter-chip active">今日</div><div class="filter-chip">昨日</div><div class="filter-chip">近7天</div><div class="filter-chip">近30天</div><div class="filter-date"><input type="date" class="date-input" value="2026-06-05"><span style="color:var(--text-3);margin:0 2px">~</span><input type="date" class="date-input" value="2026-06-11"></div><div style="flex:1"></div><select class="filter-select"><option>全部用户</option><option>新增用户</option><option>活跃用户</option></select></div>
+            <div class="metrics-grid" id="cloudMetrics"></div>
+            <div class="dash-grid g-1-1">
+                <div class="panel"><div class="panel-header"><span class="panel-title">云游活跃 & 新增趋势</span></div><div class="panel-body"><div class="chart-box" id="chart-cloud-user"></div></div></div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title">Top 套餐下单量</span></div>
+                    <div class="panel-body"><ul class="rank-list" id="cloudPackageList"></ul></div>
+                </div>
+            </div>
+            <div class="dash-grid g-1-1" style="margin-top:12px">
+                <div class="panel"><div class="panel-header"><span class="panel-title">支付方式分布</span></div><div class="panel-body"><div class="chart-box" id="chart-cloud-pay" style="height:200px"></div></div></div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title">日订单数据</span><button class="btn-export" onclick="exportCSV('cloud_orders')">导出</button></div>
+                    <div class="table-wrap"><table class="dtable" id="cloudOrderTable"></table></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Community -->
+        <div class="page-section" id="sec-community">
+            <div class="filter-row"><select class="filter-select"><option>全部地区</option><option>国内</option><option>海外</option></select><div class="filter-chip active">今日</div><div class="filter-chip">昨日</div><div class="filter-chip">近7天</div><div class="filter-chip">近30天</div><div class="filter-date"><input type="date" class="date-input" value="2026-06-05"><span style="color:var(--text-3);margin:0 2px">~</span><input type="date" class="date-input" value="2026-06-11"></div><div style="flex:1"></div><select class="filter-select"><option>全部用户</option><option>新增用户</option><option>活跃用户</option></select></div>
+            <div class="metrics-grid" id="communityMetrics"></div>
+            <div class="dash-grid g-1-1">
+                <div class="panel"><div class="panel-header"><span class="panel-title">社区互动趋势</span></div><div class="panel-body"><div class="chart-box" id="chart-community-interact"></div></div></div>
+                <div class="panel"><div class="panel-header"><span class="panel-title">分类型互动曲线</span></div><div class="panel-body"><div class="chart-box" id="chart-community-type"></div></div></div>
+            </div>
+            <div class="dash-grid g-1-1" style="margin-top:12px">
+                <div class="panel"><div class="panel-header"><span class="panel-title">社区活跃用户趋势</span></div><div class="panel-body"><div class="chart-box" id="chart-community-active"></div></div></div>
+                <div class="panel"><div class="panel-header"><span class="panel-title">热门分区 Top5</span></div><div class="table-wrap"><table class="dtable" id="communityPartitionTable"></table></div></div>
+            </div>
+        </div>
+
+        <!-- Funnel -->
+        <div class="page-section" id="sec-funnel">
+            <div class="filter-row"><select class="filter-select"><option>全部地区</option><option>国内</option><option>海外</option></select><div class="filter-chip active">今日</div><div class="filter-chip">昨日</div><div class="filter-chip">近7天</div><div class="filter-chip">近30天</div><div class="filter-date"><input type="date" class="date-input" value="2026-06-05"><span style="color:var(--text-3);margin:0 2px">~</span><input type="date" class="date-input" value="2026-06-11"></div><div style="flex:1"></div><select class="filter-select"><option>全部用户</option><option>新增用户</option><option>活跃用户</option></select></div>
+            <div class="metrics-grid" id="funnelMetrics"></div>
+            <div class="panel" style="margin-bottom:12px">
+                <div class="panel-header"><span class="panel-title">功能渗透漏斗</span><div class="panel-actions"><span class="panel-action-btn active" data-funnel="login">登录率</span><span class="panel-action-btn" data-funnel="launch">启动率</span><span class="panel-action-btn" data-funnel="ai">AI插帧</span><span class="panel-action-btn" data-funnel="screen">横竖屏</span><span class="panel-action-btn" data-funnel="team">云组队</span><span class="panel-action-btn" data-funnel="community">社区互动</span><span class="panel-action-btn" data-funnel="engine">PC引擎</span><span class="panel-action-btn" data-funnel="playdown">边下边玩</span></div></div>
+                <div class="table-wrap"><table class="dtable" id="funnelTable"></table></div>
+            </div>
+            <div class="dash-grid g-1-1">
+                <div class="panel"><div class="panel-header"><span class="panel-title">登录率趋势</span></div><div class="panel-body"><div class="chart-box" id="chart-funnel-login"></div></div></div>
+                <div class="panel"><div class="panel-header"><span class="panel-title">各功能渗透率趋势</span></div><div class="panel-body"><div class="chart-box" id="chart-funnel-success"></div></div></div>
+            </div>
+        </div>
+
+        <!-- New User -->
+        <div class="page-section" id="sec-newuser">
+            <div class="filter-row"><select class="filter-select"><option>全部地区</option><option>国内</option><option>海外</option></select><div class="filter-chip active">今日</div><div class="filter-chip">昨日</div><div class="filter-chip">近7天</div><div class="filter-chip">近30天</div><div class="filter-date"><input type="date" class="date-input" value="2026-06-05"><span style="color:var(--text-3);margin:0 2px">~</span><input type="date" class="date-input" value="2026-06-11"></div><div style="flex:1"></div><select class="filter-select"><option>全部用户</option><option>新增用户</option><option>活跃用户</option></select></div>
+            <div class="metrics-grid" id="newuserMetrics"></div>
+            <div class="dash-grid g-full">
+                <div class="panel"><div class="panel-header"><span class="panel-title">新手全链路漏斗</span></div><div class="table-wrap"><table class="dtable" id="newuserFunnelTable"></table></div></div>
+            </div>
+            <div class="dash-grid g-1-1" style="margin-top:12px">
+                <div class="panel"><div class="panel-header"><span class="panel-title">新手 D0 游戏体验率趋势</span></div><div class="panel-body"><div class="chart-box" id="chart-newuser-d0"></div></div></div>
+                <div class="panel"><div class="panel-header"><span class="panel-title">新手登录方式分布</span></div><div class="panel-body"><div class="chart-box" id="chart-newuser-login"></div></div></div>
+            </div>
+        </div>
+    </div>
+</main>
+</div>
+<script>
+// ============ Helpers ============
+function rand(min,max){return Math.floor(Math.random()*(max-min)+min)}
+function randArr(n,min,max){return Array.from({length:n},()=>rand(min,max))}
+function dates(n){const d=[];for(let i=n-1;i>=0;i--){const dt=new Date(2026,5,11);dt.setDate(dt.getDate()-i);d.push((dt.getMonth()+1)+'/'+dt.getDate())}return d}
+let currentDays=7;
+function getDays(){return dates(currentDays)}
+
+// ============ Nav ============
+const pageNames={overview:'工作台',users:'用户数据',newuser:'新手链路',games:'游戏生态',cloud:'云游&营收',funnel:'核心功能',community:'社区运营'};
+const sectionNames={overview:'概览',users:'用户',newuser:'用户',games:'业务',cloud:'业务',funnel:'业务',community:'业务'};
+let openTabs=['overview'];
+
+function switchToPage(page){
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    const navItem=document.querySelector(`.nav-item[data-page="${page}"]`);
+    if(navItem)navItem.classList.add('active');
+    document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+    const sec=document.getElementById('sec-'+page);
+    if(sec){sec.classList.add('active');setTimeout(()=>initPage(page),50);}
+    // Update breadcrumb
+    document.getElementById('breadcrumb').innerHTML=`首页 <span>›</span> ${sectionNames[page]||''} <span>›</span> ${pageNames[page]||page}`;
+    // Update tabs
+    if(!openTabs.includes(page))openTabs.push(page);
+    renderTabs(page);
+}
+
+function renderTabs(activePage){
+    document.getElementById('tabsBar').innerHTML=openTabs.map(p=>`<div class="tab-item${p===activePage?' active':''}" data-tab="${p}">${pageNames[p]||p}${openTabs.length>1?'<span class="tab-close" data-tabclose="'+p+'">&times;</span>':''}</div>`).join('');
+}
+
+document.querySelectorAll('.nav-item').forEach(item=>{
+    item.addEventListener('click',()=>{switchToPage(item.dataset.page);});
+});
+
+// Tab bar clicks (switch & close)
+document.getElementById('tabsBar').addEventListener('click',(e)=>{
+    const closeBtn=e.target.closest('.tab-close');
+    if(closeBtn){
+        const page=closeBtn.dataset.tabclose;
+        openTabs=openTabs.filter(t=>t!==page);
+        if(openTabs.length===0)openTabs=['overview'];
+        const activePage=openTabs[openTabs.length-1];
+        switchToPage(activePage);
+        return;
+    }
+    const tabItem=e.target.closest('.tab-item');
+    if(tabItem){switchToPage(tabItem.dataset.tab);}
+});
+
+// "查看更多" → 跳转到侧边栏对应 tab
+document.addEventListener('click',(e)=>{
+    const more=e.target.closest('.panel-more');
+    if(!more)return;
+    const target=more.dataset.goto;
+    if(target)switchToPage(target);
+});
+
+// Filter chip → time range switch → reload data
+document.querySelectorAll('.filter-chip').forEach(c=>{
+    c.addEventListener('click',()=>{
+        c.parentElement.querySelectorAll('.filter-chip').forEach(x=>x.classList.remove('active'));
+        c.classList.add('active');
+        const txt=c.textContent;
+        if(txt.includes('今日'))currentDays=1;
+        else if(txt.includes('昨日'))currentDays=1;
+        else if(txt.includes('7'))currentDays=7;
+        else if(txt.includes('30'))currentDays=30;
+        refreshAll();
+    });
+});
+
+// Filter select → reload
+document.querySelectorAll('.filter-select').forEach(s=>{
+    s.addEventListener('change',()=>refreshAll());
+});
+
+document.querySelectorAll('.panel-action-btn').forEach(b=>{
+    b.addEventListener('click',()=>{
+        // 只在同组内切换 active
+        const group = b.dataset.trend ? 'trend' : b.dataset.period ? 'period' : null;
+        if(!group) return;
+        b.parentElement.querySelectorAll(`.panel-action-btn[data-${group}]`).forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+        // 获取当前选中的趋势类型和时间粒度
+        const trendBtn = b.closest('.panel-actions').querySelector('.panel-action-btn[data-trend].active');
+        const periodBtn = b.closest('.panel-actions').querySelector('.panel-action-btn[data-period].active');
+        const trendType = trendBtn ? trendBtn.dataset.trend : 'biz';
+        const period = periodBtn ? periodBtn.dataset.period : 'day';
+        renderTrendChart(trendType, period);
+    });
+});
+
+function refreshAll(){initOverview()}
+
+// ============ Export with dropdown ============
+function exportCSV(name){
+    const btn=event.currentTarget;
+    let dd=btn.querySelector('.export-dropdown');
+    if(dd){dd.classList.toggle('show');return;}
+    dd=document.createElement('div');
+    dd.className='export-dropdown show';
+    dd.innerHTML=`<div class="export-dropdown-item" onclick="doExport('${name}','csv');event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Excel (CSV)</div><div class="export-dropdown-item" onclick="doExport('${name}','md');event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M7 15V9l2.5 3L12 9v6"/><path d="M16 9v6l-2-2"/></svg> Markdown</div>`;
+    btn.appendChild(dd);
+    setTimeout(()=>document.addEventListener('click',function hide(){dd.classList.remove('show');document.removeEventListener('click',hide);}),10);
+}
+function downloadRaw(name){exportCSV(name+'_raw');}
+function doExport(name,format){
+    document.querySelectorAll('.export-dropdown').forEach(d=>d.classList.remove('show'));
+    const days=getDays();
+    let headers,rows;
+
+    if(name.includes('churn_uninstall')||name.includes('churn_before')){
+        const isUninstall=name.includes('uninstall');
+        const title=isUninstall?'卸载前行为还原':'流失前行为还原';
+        const items=['game_detail_view','explore_page_view','game_library_view','recharge_page_view','settings_page_view','user_search','community_page_view','ranking_page_view','play_page_view','download_manage'];
+        headers=['排名','事件/页面','触发次数','次数占比','人数','人数占比'];
+        const totalCount=items.reduce((_,__)=>_+rand(200,900),0);
+        const totalUsers=rand(800,1200);
+        rows=items.map((item,i)=>{const count=rand(30,900);const users=rand(20,400);return[i+1,item,count,(count/totalCount*100).toFixed(1)+'%',users,(users/totalUsers*100).toFixed(1)+'%']});
+    }else if(name.includes('retention')){
+        headers=['日期','活跃数','次日留存','3日留存','7日留存','14日留存','30日留存'];
+        rows=days.map(d=>[d,rand(8000,13000),rand(35,50)+'%',rand(22,35)+'%',rand(15,25)+'%',rand(10,18)+'%',rand(6,12)+'%']);
+    }else if(name.includes('cloud_rank')){
+        headers=['排名','游戏','消费时长(h)','用户数','人均时长(h)'];
+        rows=['黑神话：悟空','GTA V','赛博朋克2077','艾尔登法环','霍格沃茨','博德之门3','星空','只狼','对马岛','死亡搁浅'].map((g,i)=>{const h=rand(100,600),u=rand(50,250);return[i+1,g,h,u,(h/u).toFixed(1)]});
+    }else if(name.includes('game_rank')){
+        headers=['排名','游戏','总时长(h)','用户数','启动成功设备数','启动成功率'];
+        rows=['赛博朋克2077','GTA V','艾尔登法环','巫师3','荒野大镖客2','对马岛','鬼泣5','怪物猎人世界','黑神话：悟空','星空'].map((g,i)=>[i+1,g,rand(200,2200),rand(50,600),rand(40,500),rand(75,98)+'%']);
+    }else{
+        headers=['日期','DAU','新增','次日留存','启动成功率','D0体验率','云游付费率','充值额'];
+        rows=days.map(d=>[d,rand(8000,15000),rand(500,2000),(Math.random()*15+35).toFixed(1)+'%',(Math.random()*10+82).toFixed(1)+'%',(Math.random()*5+10).toFixed(1)+'%',(Math.random()*3+7).toFixed(1)+'%','¥'+rand(20000,40000)]);
+    }
+
+    let content,ext,mime;
+    if(format==='csv'){
+        content='﻿'+headers.join(',')+'\n'+rows.map(r=>r.join(',')).join('\n');
+        ext='.csv';mime='text/csv;charset=utf-8';
+    }else{
+        content='# '+name+' 数据导出\n\n> 导出时间：'+new Date().toLocaleString()+'\n\n';
+        content+='| '+headers.join(' | ')+' |\n';
+        content+='| '+headers.map(()=>'---').join(' | ')+' |\n';
+        rows.forEach(r=>{content+='| '+r.join(' | ')+' |\n'});
+        ext='.md';mime='text/markdown;charset=utf-8';
+    }
+    const blob=new Blob([content],{type:mime});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'_'+new Date().toISOString().slice(0,10)+ext;a.click();
+}
+
+// ============ Metrics & Charts ============
+function getMultiplier(){
+    const sel=document.querySelector('.filter-select');
+    if(!sel)return 1;
+    if(sel.value==='新增用户')return 0.15;
+    if(sel.value==='活跃用户')return 0.7;
+    return 1;
+}
+
+function initOverview(){
+    const mult=getMultiplier();
+    const days=getDays();
+    const dau=Math.floor(12847*mult),nu=Math.floor(1284*mult),launch=Math.floor(45692*mult),rev=Math.floor(28459*mult),churn=Math.floor(1043*mult);
+    const d0Rate=(Math.random()*5+12).toFixed(1);
+    const d1Retention=(Math.random()*8+35).toFixed(1);
+    const payRate=(Math.random()*3+8).toFixed(1);
+
+    const metrics=[
+        {icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',color:'blue',label:'DAU',value:dau.toLocaleString(),change:'+5.2%',dir:'up',period:'vs 上周',tip:'日活跃用户数：当天有app_launch事件的去重device_id数'},
+        {icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>',color:'green',label:'新增用户',value:nu.toLocaleString(),change:'+8.1%',dir:'up',period:'vs 昨日',tip:'当天首次产生app_launch的device_id数（is_first_launch=true）'},
+        {icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',color:'purple',label:'D0游戏体验率',value:d0Rate+'%',change:'+2.3%',dir:'up',period:'目标15%',tip:'新用户安装当天成功启动任意游戏的比例（game_play_success / 当日新增用户）'},
+        {icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',color:'green',label:'D1留存率',value:d1Retention+'%',change:'+1.2%',dir:'up',period:'vs 上周',tip:'昨日活跃用户中，今日再次活跃的比例（次日回访device_id / 昨日活跃device_id）'},
+        {icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',color:'orange',label:'云游付费转化率',value:payRate+'%',change:'+1.2%',dir:'up',period:'vs 上周',tip:'云游付费用户数 / 云游活跃用户数（pay_result成功 / cloud_game_enter去重uid）'},
+        {icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',color:'blue',label:'充值金额',value:'¥'+rev.toLocaleString(),change:'+12.5%',dir:'up',period:'vs 上周',tip:'当日pay_result(is_success=true)的amount总和，单位元'}
+    ];
+    document.getElementById('overviewMetrics').innerHTML=metrics.map((x,idx)=>`<div class="metric-card"><div class="metric-top"><div class="metric-icon ${x.color}">${x.icon}</div><div class="metric-label">${x.label}<span class="metric-help" data-tip="${x.tip}">?</span></div></div><div class="metric-center"><div class="metric-value">${x.value}</div><canvas class="metric-spark" id="spark${idx}" width="64" height="28"></canvas></div><div class="metric-footer"><span class="metric-change ${x.dir}">${x.period}</span><span class="metric-change ${x.dir}">${x.dir==='up'?'↑':'↓'} ${x.change}</span></div></div>`).join('');
+
+    // Draw sparklines
+    metrics.forEach((_,idx)=>{
+        const canvas=document.getElementById('spark'+idx);
+        if(!canvas)return;
+        const ctx=canvas.getContext('2d');
+        const pts=randArr(8,3,25);
+        const w=64,h=28;
+        ctx.clearRect(0,0,w,h);
+        ctx.beginPath();
+        ctx.strokeStyle=metrics[idx].dir==='up'?'#3b82f6':'#ef4444';
+        ctx.lineWidth=1.8;
+        ctx.lineJoin='round';
+        pts.forEach((p,i)=>{
+            const x=i*(w/(pts.length-1));
+            const y=h-p;
+            if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+    });
+
+    // Biz Trend
+    renderTrendChart('biz','day');
+
+    // Version Distribution
+    const elVer=document.getElementById('chart-version-dist');
+    if(elVer){let cv=echarts.getInstanceByDom(elVer);if(cv)cv.dispose();cv=echarts.init(elVer);
+    cv.setOption({
+        tooltip:{trigger:'item',formatter:'{b}: {d}%'},
+        color:['#3b82f6','#8b5cf6','#10b981','#94a3b8'],
+        series:[{type:'pie',radius:['45%','72%'],center:['50%','50%'],data:[
+            {value:48,name:'6.0.9'},
+            {value:28,name:'6.0.8'},
+            {value:14,name:'6.0.7'},
+            {value:10,name:'其他'}
+        ],label:{show:true,fontSize:11,formatter:'{b}\n{d}%',color:'#475569'},labelLine:{length:12,length2:8},itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2}}]
+    });}
+
+    // Pie
+    renderPie(mult);
+
+    // Penetration
+    renderPenetration();
+
+    // Top Games
+    renderTopGames('pc',mult);
+
+    // Daily table
+    const tableDays=getDays();
+    document.getElementById('dailyTable').innerHTML=`<thead><tr><th>日期</th><th>DAU</th><th>新增</th><th>次日留存</th><th>启动成功率</th><th>D0体验率</th><th>云游付费率</th><th>充值额</th><th>环比</th></tr></thead><tbody>`+tableDays.map(d=>{
+        const v_dau=rand(Math.floor(10000*mult),Math.floor(15000*mult)),v_nu=rand(Math.floor(800*mult),Math.floor(2000*mult)),ret=(Math.random()*15+35).toFixed(1),rate=(Math.random()*10+82).toFixed(1),d0=(Math.random()*5+10).toFixed(1),pay=(Math.random()*3+7).toFixed(1),v_rev=rand(Math.floor(20000*mult),Math.floor(40000*mult)),hb=(Math.random()*10-3).toFixed(1);
+        return`<tr><td>${d}</td><td class="num">${v_dau.toLocaleString()}</td><td class="num">${v_nu.toLocaleString()}</td><td class="num">${ret}%</td><td class="num">${rate}%</td><td class="num">${d0}%</td><td class="num">${pay}%</td><td class="num">¥${v_rev.toLocaleString()}</td><td><span class="tag ${hb>0?'tag-up':'tag-down'}">${hb>0?'+':''}${hb}%</span></td></tr>`;
+    }).join('')+'</tbody>';
+    document.querySelector('.table-footer span:first-child').textContent='共 '+tableDays.length+' 条';
+}
+
+function renderTrendChart(type, period){
+    if(!period) period='day';
+    let xData;
+    if(period==='day') xData=getDays();
+    else if(period==='week') xData=['5/19-5/25','5/26-6/1','6/2-6/8','6/9-6/11'];
+    else xData=['1月','2月','3月','4月','5月','6月'];
+    const n=xData.length;
+    const mult=getMultiplier();
+    const el1=document.getElementById('chart-biz-trend');
+    let c1=echarts.getInstanceByDom(el1);if(c1)c1.dispose();
+    c1=echarts.init(el1);
+    const configs={
+        biz:{legend:['DAU','新增用户','游戏启动'],series:[
+            {name:'DAU',type:'line',smooth:true,data:randArr(n,Math.floor(10000*mult),Math.floor(15000*mult)),lineStyle:{width:2.5},itemStyle:{color:'#3b82f6'},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(59,130,246,.15)'},{offset:1,color:'rgba(59,130,246,0)'}]}}},
+            {name:'新增用户',type:'line',smooth:true,data:randArr(n,Math.floor(800*mult),Math.floor(2000*mult)),lineStyle:{width:2},itemStyle:{color:'#10b981'}},
+            {name:'游戏启动',type:'line',smooth:true,data:randArr(n,Math.floor(35000*mult),Math.floor(50000*mult)),lineStyle:{width:2},itemStyle:{color:'#8b5cf6'}}
+        ]},
+        user:{legend:['活跃用户','新增用户','游客用户','匿名用户'],series:[
+            {name:'活跃用户',type:'line',smooth:true,data:randArr(n,Math.floor(10000*mult),Math.floor(15000*mult)),lineStyle:{width:2.5},itemStyle:{color:'#3b82f6'},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(59,130,246,.12)'},{offset:1,color:'rgba(59,130,246,0)'}]}}},
+            {name:'新增用户',type:'line',smooth:true,data:randArr(n,Math.floor(800*mult),Math.floor(2000*mult)),lineStyle:{width:2},itemStyle:{color:'#10b981'}},
+            {name:'游客用户',type:'line',smooth:true,data:randArr(n,Math.floor(2000*mult),Math.floor(4000*mult)),lineStyle:{width:2},itemStyle:{color:'#f59e0b'}},
+            {name:'匿名用户',type:'line',smooth:true,data:randArr(n,Math.floor(3000*mult),Math.floor(6000*mult)),lineStyle:{width:2,type:'dashed'},itemStyle:{color:'#94a3b8'}}
+        ]},
+        order:{legend:['云游订单'],series:[
+            {name:'云游订单',type:'line',smooth:true,data:randArr(n,Math.floor(60*mult),Math.floor(150*mult)),lineStyle:{width:2.5},itemStyle:{color:'#8b5cf6'},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(139,92,246,.12)'},{offset:1,color:'rgba(139,92,246,0)'}]}}}
+        ]},
+        revenue:{legend:['云游收入'],series:[
+            {name:'云游收入',type:'line',smooth:true,data:randArr(n,Math.floor(15000*mult),Math.floor(30000*mult)),lineStyle:{width:2.5},itemStyle:{color:'#8b5cf6'},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(139,92,246,.12)'},{offset:1,color:'rgba(139,92,246,0)'}]}}}
+        ]}
+    };
+    const cfg=configs[type]||configs.biz;
+    c1.setOption({tooltip:{trigger:'axis',backgroundColor:'#fff',borderColor:'#e2e8f0',textStyle:{color:'#0f172a',fontSize:12}},legend:{data:cfg.legend,bottom:0,textStyle:{fontSize:11}},grid:{top:20,right:20,bottom:40,left:50},xAxis:{type:'category',data:xData,axisLine:{lineStyle:{color:'#e2e8f0'}},axisLabel:{color:'#94a3b8',fontSize:11}},yAxis:{type:'value',splitLine:{lineStyle:{color:'#f1f5f9'}},axisLabel:{color:'#94a3b8',fontSize:11}},series:cfg.series});
+}
+
+function renderPie(mult){
+    const el2=document.getElementById('chart-overview-pie');
+    let c2=echarts.getInstanceByDom(el2);if(c2)c2.dispose();
+    c2=echarts.init(el2);
+    const pieData=[
+        {value:45,name:'PC Steam',amt:Math.floor(45692*0.45*mult)},
+        {value:25,name:'云游戏',amt:Math.floor(45692*0.25*mult)},
+        {value:15,name:'PC导入',amt:Math.floor(45692*0.15*mult)},
+        {value:10,name:'复古模拟器',amt:Math.floor(45692*0.10*mult)},
+        {value:5,name:'其他',amt:Math.floor(45692*0.05*mult)}
+    ];
+    const pieTotal=pieData.reduce((s,d)=>s+d.amt,0);
+    c2.setOption({
+        tooltip:{trigger:'item',formatter:'{b}: {d}% ({c})'},
+        color:['#3b82f6','#8b5cf6','#10b981','#f59e0b','#94a3b8'],
+        legend:{orient:'vertical',right:10,top:'middle',itemWidth:10,itemHeight:10,itemGap:14,textStyle:{fontSize:11,color:'#475569',rich:{name:{width:60,fontSize:11},pct:{width:35,fontSize:11,fontWeight:'bold',color:'#0f172a'},val:{fontSize:10,color:'#94a3b8'}}},formatter:function(name){const item=pieData.find(d=>d.name===name);if(!item)return name;const pct=(item.value/100*100).toFixed(1);return'{name|'+name+'} {pct|'+pct+'%} {val|('+item.amt.toLocaleString()+')}'}},
+        series:[{
+            type:'pie',radius:['55%','78%'],center:['28%','50%'],
+            data:pieData.map(d=>({value:d.value,name:d.name})),
+            label:{show:false},
+            emphasis:{scale:true,scaleSize:4},
+            itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2}
+        },{
+            type:'pie',radius:['0','0'],center:['28%','50%'],
+            label:{show:true,position:'center',formatter:'{total|'+pieTotal.toLocaleString()+'}\n{subtitle|总启动数}',rich:{total:{fontSize:18,fontWeight:'bold',color:'#0f172a',fontFamily:'DIN Alternate,Roboto Mono,monospace',lineHeight:24},subtitle:{fontSize:10,color:'#94a3b8',lineHeight:16}}},
+            data:[{value:0,name:''}],
+            silent:true
+        }]
+    });
+}
+
+function renderPenetration(){
+    const el3=document.getElementById('chart-penetration');
+    let c3=echarts.getInstanceByDom(el3);if(c3)c3.dispose();
+    c3=echarts.init(el3);
+    c3.setOption({tooltip:{trigger:'axis'},grid:{top:10,right:40,bottom:30,left:90},xAxis:{type:'value',max:100,axisLabel:{formatter:'{value}%',fontSize:11,color:'#94a3b8'},splitLine:{lineStyle:{color:'#f1f5f9'}}},yAxis:{type:'category',data:['云游戏','社区','配置方案','AI插帧','竖屏功能','云组队','边下边玩'].reverse(),axisLabel:{fontSize:11,color:'#475569'}},series:[{type:'bar',data:[68,42,35,28,22,15,12].reverse(),barWidth:14,itemStyle:{borderRadius:4,color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:'#3b82f6'},{offset:1,color:'#8b5cf6'}]}},label:{show:true,position:'right',formatter:'{c}%',fontSize:11,color:'#475569',fontFamily:'DIN Alternate,Roboto Mono,monospace'}}]});
+}
+
+const gameData={
+    all:['黑神话：悟空','GTA V','赛博朋克2077','艾尔登法环','霍格沃茨'],
+    cloud:['黑神话：悟空','GTA V','艾尔登法环','霍格沃茨','博德之门3'],
+    pc:['赛博朋克2077','GTA V','艾尔登法环','巫师3','荒野大镖客2']
+};
+function renderTopGames(type,mult){
+    if(!mult)mult=getMultiplier();
+    const games=gameData[type]||gameData.all;
+    const data=games.map(g=>({name:g,hours:rand(Math.floor(200*mult),Math.floor(2000*mult)),users:rand(Math.floor(50*mult),Math.floor(500*mult))}));
+    data.sort((a,b)=>b.hours-a.hours);
+    let html='<li class="rank-item rank-header"><span class="rank-num-h">#</span><span class="rank-name-h">游戏</span><span class="rank-val-h">时长</span><span class="rank-val-h">用户数</span></li>';
+    html+=data.map((d,i)=>`<li class="rank-item"><span class="rank-num ${i<3?'top':'normal'}">${i+1}</span><span class="rank-name">${d.name}</span><span class="rank-value">${d.hours}h</span><span class="rank-value">${d.users}</span></li>`).join('');
+    document.getElementById('topGamesList').innerHTML=html;
+}
+
+// Game tab click
+document.addEventListener('click',(e)=>{
+    const tab=e.target.closest('.game-tab');
+    if(!tab)return;
+    tab.parentElement.querySelectorAll('.game-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    renderTopGames(tab.dataset.type);
+});
+
+// ============ Page Router ============
+function initPage(page){
+    switch(page){
+        case 'overview':initOverview();break;
+        case 'users':initUsersPage();break;
+        case 'games':initGamesPage();break;
+        case 'cloud':initCloudPage();break;
+        case 'community':initCommunityPage();break;
+        case 'funnel':initFunnelPage();break;
+        case 'newuser':initNewuserPage();break;
+    }
+}
+
+// ============ Realtime ============
+// ============ Users (merged) ============
+function initUsersPage(){
+    document.getElementById('usersMetrics').innerHTML=[
+        {color:'blue',label:'活跃用户',value:'12,847'},{color:'green',label:'新增用户',value:'1,284'},{color:'orange',label:'游客用户',value:'2,341'},{color:'purple',label:'匿名设备',value:'4,892'},{color:'blue',label:'次日留存率',value:(Math.random()*8+38).toFixed(1)+'%'},{color:'red',label:'日流失用户',value:rand(800,1500).toLocaleString()}
+    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div></div>`).join('');
+    renderUsersTab('active');
+}
+
+function renderUsersTab(tab){
+    const d=getDays();
+    const container=document.getElementById('usersTabContent');
+    if(tab==='active'){
+        let html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
+        html+='<div class="panel"><div class="panel-header"><span class="panel-title">活跃用户趋势</span></div><div class="panel-body"><div class="chart-box" id="chart-u-active"></div></div></div>';
+        html+='<div class="panel"><div class="panel-header"><span class="panel-title">用户构成分布</span></div><div class="panel-body"><div class="chart-box" id="chart-u-compose"></div></div></div>';
+        html+='</div>';
+        html+='<div class="panel" style="margin-top:12px"><div class="panel-header"><span class="panel-title">留存矩阵</span><div class="panel-actions"><span class="panel-action-btn active">新用户留存</span><span class="panel-action-btn">活跃用户留存</span><span style="width:1px;background:var(--border);margin:0 6px"></span><span class="panel-action-btn active">天</span><span class="panel-action-btn">周</span><span class="panel-action-btn">月</span><span style="width:1px;background:var(--border);margin:0 6px"></span><span class="panel-action-btn active">留存率</span><span class="panel-action-btn">留存数</span></div></div><div class="table-wrap" id="retMatrix"></div></div>';
+        html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">';
+        html+='<div class="panel"><div class="panel-header"><span class="panel-title">留存率趋势</span></div><div class="panel-body"><div class="chart-box" id="chart-u-ret"></div></div></div>';
+        html+='<div class="panel"><div class="panel-header"><span class="panel-title">新 vs 老用户留存对比</span></div><div class="panel-body"><div class="chart-box" id="chart-u-retcmp"></div></div></div>';
+        html+='</div>';
+        container.innerHTML=html;
+        setTimeout(()=>{
+            const el1=document.getElementById('chart-u-active');let c1=echarts.init(el1);
+            c1.setOption({tooltip:{trigger:'axis'},legend:{data:['活跃','新增','游客','匿名'],bottom:0},grid:{top:20,right:20,bottom:40,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[
+                {name:'活跃',type:'line',smooth:true,data:randArr(d.length,10000,15000),itemStyle:{color:'#3b82f6'}},
+                {name:'新增',type:'line',smooth:true,data:randArr(d.length,800,2000),itemStyle:{color:'#10b981'}},
+                {name:'游客',type:'line',smooth:true,data:randArr(d.length,2000,3500),itemStyle:{color:'#f59e0b'}},
+                {name:'匿名',type:'line',smooth:true,data:randArr(d.length,4000,6000),itemStyle:{color:'#94a3b8'},lineStyle:{type:'dashed'}}
+            ]});
+            const el2=document.getElementById('chart-u-compose');let c2=echarts.init(el2);
+            const composeData=[{value:55,name:'注册活跃',amt:12847*0.55},{value:15,name:'游客用户',amt:12847*0.15},{value:30,name:'匿名设备',amt:12847*0.30}];
+            const composeTotal=Math.floor(composeData.reduce((s,d)=>s+d.amt,0));
+            c2.setOption({
+                tooltip:{trigger:'item',formatter:'{b}: {d}% ({c})'},
+                color:['#3b82f6','#f59e0b','#94a3b8'],
+                legend:{orient:'vertical',right:10,top:'middle',itemWidth:10,itemHeight:10,itemGap:14,textStyle:{fontSize:11,color:'#475569',rich:{name:{width:60,fontSize:11},pct:{width:35,fontSize:11,fontWeight:'bold',color:'#0f172a'},val:{fontSize:10,color:'#94a3b8'}}},formatter:function(name){const item=composeData.find(d=>d.name===name);if(!item)return name;const pct=(item.value).toFixed(0);return'{name|'+name+'} {pct|'+pct+'%} {val|('+Math.floor(item.amt).toLocaleString()+')}'}},
+                series:[{
+                    type:'pie',radius:['55%','78%'],center:['28%','50%'],
+                    data:composeData.map(d=>({value:d.value,name:d.name})),
+                    label:{show:false},
+                    emphasis:{scale:true,scaleSize:4},
+                    itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2}
+                },{
+                    type:'pie',radius:['0','0'],center:['28%','50%'],
+                    label:{show:true,position:'center',formatter:'{total|'+composeTotal.toLocaleString()+'}\n{subtitle|总用户数}',rich:{total:{fontSize:18,fontWeight:'bold',color:'#0f172a',fontFamily:'DIN Alternate,Roboto Mono,monospace',lineHeight:24},subtitle:{fontSize:10,color:'#94a3b8',lineHeight:16}}},
+                    data:[{value:0,name:''}],silent:true
+                }]
+            });
+            // Retention matrix
+            document.getElementById('retMatrix').innerHTML='<table class="dtable"><thead><tr><th>日期</th><th>活跃数</th><th>1天后</th><th>3天后</th><th>7天后</th><th>14天后</th><th>30天后</th></tr></thead><tbody>'+d.map(day=>{
+                const base=rand(8000,13000);const r=[rand(35,50),rand(22,35),rand(15,25),rand(10,18),rand(6,12)];
+                return'<tr><td>'+day+'</td><td class="num">'+base.toLocaleString()+'</td>'+r.map(v=>'<td class="num" style="color:'+(v>35?'#10b981':v>20?'#f59e0b':'#ef4444')+'">'+v+'%</td>').join('')+'</tr>';
+            }).join('')+'</tbody></table>';
+            const el3=document.getElementById('chart-u-ret');if(el3){let c3=echarts.init(el3);
+            c3.setOption({tooltip:{trigger:'axis'},legend:{data:['次日','3日','7日'],bottom:0},grid:{top:20,right:20,bottom:40,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',axisLabel:{formatter:'{value}%'},splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[
+                {name:'次日',type:'line',smooth:true,data:randArr(d.length,35,50),itemStyle:{color:'#3b82f6'}},
+                {name:'3日',type:'line',smooth:true,data:randArr(d.length,22,35),itemStyle:{color:'#10b981'}},
+                {name:'7日',type:'line',smooth:true,data:randArr(d.length,15,25),itemStyle:{color:'#8b5cf6'}}
+            ]});}
+            const el4=document.getElementById('chart-u-retcmp');if(el4){let c4=echarts.init(el4);
+            c4.setOption({tooltip:{trigger:'axis'},legend:{data:['新用户次日','老用户次日'],bottom:0},grid:{top:20,right:20,bottom:40,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',axisLabel:{formatter:'{value}%'},splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[
+                {name:'新用户次日',type:'line',smooth:true,data:randArr(d.length,25,40),itemStyle:{color:'#3b82f6'}},
+                {name:'老用户次日',type:'line',smooth:true,data:randArr(d.length,40,55),itemStyle:{color:'#10b981'}}
+            ]});}
+        },50);
+    }else{
+        const events=['game_detail_view','explore_page_view','game_library_view','recharge_page_view','settings_page_view','user_search','community_page_view','ranking_page_view','play_page_view','download_manage'];
+        const pages=['游戏详情页','探索首页','游戏库','充值页','设置页','搜索结果','社区首页','排行榜','游玩Tab','下载管理'];
+        let html='<div class="dash-grid g-full"><div class="panel"><div class="panel-header"><span class="panel-title">日流失趋势</span></div><div class="panel-body"><div class="chart-box" id="chart-ch-daily"></div></div></div></div>';
+        html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">';
+        html+='<div class="panel"><div class="panel-header"><span class="panel-title">卸载前行为还原</span><button class="btn-export" onclick="exportCSV(\'churn_uninstall\')">导出数据</button></div><div class="panel-body"><div style="display:flex;align-items:center;gap:6px;margin-bottom:12px"><div class="page-tabs" style="display:inline-flex"><div class="page-tab active" data-chtab="event">互动事件</div><div class="page-tab" data-chtab="page">停留页面</div></div><div class="page-tabs" style="display:inline-flex"><div class="page-tab active" data-chscope="last">最后一次</div><div class="page-tab" data-chscope="all">全部</div></div></div><div id="churnUninstallContent"></div></div></div>';
+        html+='<div class="panel"><div class="panel-header"><span class="panel-title">流失前行为还原</span><button class="btn-export" onclick="exportCSV(\'churn_before\')">导出数据</button></div><div class="panel-body"><div style="display:flex;align-items:center;gap:6px;margin-bottom:12px"><div class="page-tabs" style="display:inline-flex"><div class="page-tab active" data-chtab2="event">互动事件</div><div class="page-tab" data-chtab2="page">停留页面</div></div><div class="page-tabs" style="display:inline-flex"><div class="page-tab active" data-chscope2="last">最后一次</div><div class="page-tab" data-chscope2="all">全部</div></div></div><div id="churnBeforeContent"></div></div></div>';
+        html+='</div>';
+        html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">';
+        html+='<div class="panel"><div class="panel-header"><span class="panel-title">流失 vs 留存：版本分布</span></div><div class="panel-body"><div class="chart-box" id="chart-ch-version"></div></div></div>';
+        html+='<div class="panel"><div class="panel-header"><span class="panel-title">流失 vs 留存：渠道分布</span></div><div class="panel-body"><div class="chart-box" id="chart-ch-channel"></div></div></div>';
+        html+='</div>';
+        container.innerHTML=html;
+        setTimeout(()=>{
+            const el1=document.getElementById('chart-ch-daily');let c1=echarts.init(el1);
+            c1.setOption({tooltip:{trigger:'axis'},legend:{data:['日流失','7日累计'],bottom:0},grid:{top:20,right:20,bottom:40,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[
+                {name:'日流失',type:'line',smooth:true,data:randArr(d.length,800,1500),itemStyle:{color:'#ef4444'},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(239,68,68,.1)'},{offset:1,color:'rgba(239,68,68,0)'}]}}},
+                {name:'7日累计',type:'line',smooth:true,data:randArr(d.length,5000,11000),itemStyle:{color:'#f59e0b'}}
+            ]});
+            renderChurnPanel('churnUninstallContent','event','#10b981',events,pages);
+            renderChurnPanel('churnBeforeContent','event','#ef4444',events,pages);
+            const elV=document.getElementById('chart-ch-version');if(elV){let cv=echarts.init(elV);
+            cv.setOption({tooltip:{trigger:'axis'},legend:{data:['流失用户','留存用户'],bottom:0},grid:{top:20,right:20,bottom:40,left:50},xAxis:{type:'category',data:['6.0.9','6.0.8','6.0.7','6.0.6','其他']},yAxis:{type:'value',axisLabel:{formatter:'{value}%'},splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[
+                {name:'流失用户',type:'line',smooth:true,data:[25,35,22,12,6],itemStyle:{color:'#ef4444'}},
+                {name:'留存用户',type:'line',smooth:true,data:[45,30,15,7,3],itemStyle:{color:'#10b981'}}
+            ]});}
+            const elC=document.getElementById('chart-ch-channel');if(elC){let cc=echarts.init(elC);
+            cc.setOption({tooltip:{trigger:'axis'},legend:{data:['流失用户','留存用户'],bottom:0},grid:{top:20,right:20,bottom:40,left:50},xAxis:{type:'category',data:['官方','应用宝','小米','华为','OPPO','其他']},yAxis:{type:'value',axisLabel:{formatter:'{value}%'},splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[
+                {name:'流失用户',type:'line',smooth:true,data:[20,28,18,15,12,7],itemStyle:{color:'#ef4444'}},
+                {name:'留存用户',type:'line',smooth:true,data:[35,25,18,12,7,3],itemStyle:{color:'#10b981'}}
+            ]});}
+        },50);
+    }
+}
+
+// Users tab click
+document.addEventListener('click',(e)=>{
+    const btn=e.target.closest('.page-tab[data-utab]');
+    if(!btn)return;
+    btn.parentElement.querySelectorAll('.page-tab').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    renderUsersTab(btn.dataset.utab);
+});
+
+function renderChurnPanel(containerId,type,color,events,pages){
+    const items=type==='event'?events:pages;
+    const label=type==='event'?'事件名称':'页面名称';
+    const totalUsers=rand(800,1200);
+    const data=items.map(item=>{const count=rand(30,950);const users=rand(20,Math.floor(totalUsers*0.4));return{name:item,count,users,countPct:0,userPct:(users/totalUsers*100).toFixed(1)}});
+    const totalCount=data.reduce((s,d)=>s+d.count,0);
+    data.forEach(d=>d.countPct=(d.count/totalCount*100).toFixed(1));
+    data.sort((a,b)=>parseFloat(b.userPct)-parseFloat(a.userPct));
+    const maxBar=parseFloat(data[0].userPct);
+    document.getElementById(containerId).innerHTML=`<table class="dtable"><thead><tr><th>${label}</th><th style="width:30%"></th><th style="text-align:right">次数</th><th style="text-align:right">次数占比</th><th style="text-align:right">人数</th><th style="text-align:right">人数占比</th></tr></thead><tbody>`+data.map(d=>{const w=Math.max(parseFloat(d.userPct)/maxBar*100,5);return`<tr><td style="font-size:11px;color:var(--text)">${type==='event'?'<code style="font-size:10px;background:#f8fafc;padding:1px 4px;border-radius:3px">'+d.name+'</code>':d.name}</td><td><div style="height:10px;width:${w}%;background:${color};border-radius:3px"></div></td><td class="num" style="text-align:right">${d.count}</td><td class="num" style="text-align:right">${d.countPct}%</td><td class="num" style="text-align:right">${d.users}</td><td class="num" style="text-align:right;font-weight:700">${d.userPct}%</td></tr>`}).join('')+'</tbody></table>';
+}
+
+// Churn sub-tab click (互动事件/停留页面 + 最后一次/全部)
+document.addEventListener('click',(e)=>{
+    const t1=e.target.closest('.page-tab[data-chtab]');
+    if(t1){t1.parentElement.querySelectorAll('.page-tab').forEach(x=>x.classList.remove('active'));t1.classList.add('active');
+        const events=['game_detail_view','explore_page_view','game_library_view','recharge_page_view','settings_page_view','user_search','community_page_view','ranking_page_view','play_page_view','download_manage'];
+        const pages=['游戏详情页','探索首页','游戏库','充值页','设置页','搜索结果','社区首页','排行榜','游玩Tab','下载管理'];
+        renderChurnPanel('churnUninstallContent',t1.dataset.chtab,'#10b981',events,pages);return;}
+    const t2=e.target.closest('.page-tab[data-chtab2]');
+    if(t2){t2.parentElement.querySelectorAll('.page-tab').forEach(x=>x.classList.remove('active'));t2.classList.add('active');
+        const events=['game_detail_view','explore_page_view','game_library_view','recharge_page_view','settings_page_view','user_search','community_page_view','ranking_page_view','play_page_view','download_manage'];
+        const pages=['游戏详情页','探索首页','游戏库','充值页','设置页','搜索结果','社区首页','排行榜','游玩Tab','下载管理'];
+        renderChurnPanel('churnBeforeContent',t2.dataset.chtab2,'#ef4444',events,pages);return;}
+    const s1=e.target.closest('.page-tab[data-chscope]');
+    if(s1){s1.parentElement.querySelectorAll('.page-tab').forEach(x=>x.classList.remove('active'));s1.classList.add('active');
+        const events=['game_detail_view','explore_page_view','game_library_view','recharge_page_view','settings_page_view','user_search','community_page_view','ranking_page_view','play_page_view','download_manage'];
+        const pages=['游戏详情页','探索首页','游戏库','充值页','设置页','搜索结果','社区首页','排行榜','游玩Tab','下载管理'];
+        const activeType=document.querySelector('.page-tab[data-chtab].active');
+        renderChurnPanel('churnUninstallContent',activeType?activeType.dataset.chtab:'event','#10b981',events,pages);return;}
+    const s2=e.target.closest('.page-tab[data-chscope2]');
+    if(s2){s2.parentElement.querySelectorAll('.page-tab').forEach(x=>x.classList.remove('active'));s2.classList.add('active');
+        const events=['game_detail_view','explore_page_view','game_library_view','recharge_page_view','settings_page_view','user_search','community_page_view','ranking_page_view','play_page_view','download_manage'];
+        const pages=['游戏详情页','探索首页','游戏库','充值页','设置页','搜索结果','社区首页','排行榜','游玩Tab','下载管理'];
+        const activeType=document.querySelector('.page-tab[data-chtab2].active');
+        renderChurnPanel('churnBeforeContent',activeType?activeType.dataset.chtab2:'event','#ef4444',events,pages);return;}
+});
+
+// ============ Games ============
+let gamesRankData={};
+let gamesRankSort={field:'hours',dir:'desc'};
+let gamesRankType='pc';
+let gamesRankPage=1;
+
+function initGamesPage(){
+    document.getElementById('gamesMetrics').innerHTML=[
+        {color:'blue',label:'累计游戏',value:'8,432'},{color:'green',label:'活跃游戏',value:'2,341'},{color:'purple',label:'下载游戏',value:'1,892'},{color:'orange',label:'成功运行',value:'1,756'}
+    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div></div>`).join('');
+
+    const d=getDays();
+    const el1=document.getElementById('chart-games-launch');let c1=echarts.getInstanceByDom(el1);if(c1)c1.dispose();c1=echarts.init(el1);
+    c1.setOption({tooltip:{trigger:'axis'},legend:{data:['启动次数','成功运行'],bottom:0},grid:{top:20,right:20,bottom:40,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[
+        {name:'启动次数',type:'line',smooth:true,data:randArr(d.length,6000,12000),itemStyle:{color:'#3b82f6'}},
+        {name:'成功运行',type:'line',smooth:true,data:randArr(d.length,5000,10000),itemStyle:{color:'#10b981'}}
+    ]});
+
+    const el2=document.getElementById('chart-games-type');let c2=echarts.getInstanceByDom(el2);if(c2)c2.dispose();c2=echarts.init(el2);
+    c2.setOption({tooltip:{trigger:'item',formatter:'{b}: {d}%'},color:['#3b82f6','#8b5cf6','#10b981','#f59e0b','#94a3b8'],series:[{type:'pie',radius:['45%','72%'],center:['50%','50%'],data:[{value:40,name:'PC Steam'},{value:25,name:'PC Epic'},{value:15,name:'PC导入'},{value:12,name:'云游戏'},{value:8,name:'复古'}],label:{show:true,fontSize:11,formatter:function(p){return p.name+'\n'+p.percent+'%'},color:'#475569'},labelLine:{length:12,length2:8},itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2}}]});
+
+    const pcGames=['赛博朋克2077','GTA V','艾尔登法环','巫师3','荒野大镖客2','对马岛','鬼泣5','怪物猎人世界','黑神话：悟空','星空','霍格沃茨','博德之门3','只狼','死亡搁浅','战神','原神','崩坏星穹铁道','无人深空','星露谷物语','空洞骑士'];
+    const cloudGames=['黑神话：悟空','GTA V','艾尔登法环','霍格沃茨','博德之门3','只狼','赛博朋克2077','星空','死亡搁浅','对马岛','鬼泣5','原神','崩坏星穹铁道','战神','巫师3','荒野大镖客2','怪物猎人世界','无人深空','星露谷物语','空洞骑士'];
+    gamesRankData.pc=pcGames.map(g=>({name:g,hours:rand(200,2200),users:rand(50,600),devices:rand(40,500),rate:rand(75,98)}));
+    gamesRankData.cloud=cloudGames.map(g=>({name:g,hours:rand(100,1500),users:rand(30,400),devices:rand(25,350),rate:rand(80,99)}));
+    gamesRankType='pc';gamesRankPage=1;
+    renderGamesRankTable();
+}
+
+function renderGamesRankTable(){
+    const data=[...gamesRankData[gamesRankType]];
+    data.sort((a,b)=>gamesRankSort.dir==='desc'?b[gamesRankSort.field]-a[gamesRankSort.field]:a[gamesRankSort.field]-b[gamesRankSort.field]);
+    const pageSize=10;const total=data.length;const pages=Math.ceil(total/pageSize);
+    const start=(gamesRankPage-1)*pageSize;const pageData=data.slice(start,start+pageSize);
+    const arrow=(f)=>gamesRankSort.field===f?(gamesRankSort.dir==='desc'?'↓':'↑'):'↕';
+    document.getElementById('gamesRankTable').innerHTML=`<thead><tr><th>#</th><th>游戏名称</th><th class="sortable" data-sort="hours" style="cursor:pointer;color:var(--primary)">总时长(h) ${arrow('hours')}</th><th class="sortable" data-sort="users" style="cursor:pointer;color:var(--primary)">用户数 ${arrow('users')}</th><th class="sortable" data-sort="devices" style="cursor:pointer;color:var(--primary)">启动成功设备数 ${arrow('devices')}</th><th class="sortable" data-sort="rate" style="cursor:pointer;color:var(--primary)">启动成功率 ${arrow('rate')}</th></tr></thead><tbody>`+pageData.map((g,i)=>`<tr><td class="num">${start+i+1}</td><td>${g.name}</td><td class="num">${g.hours.toLocaleString()}</td><td class="num">${g.users.toLocaleString()}</td><td class="num">${g.devices.toLocaleString()}</td><td class="num" style="color:${g.rate>90?'#10b981':g.rate>85?'#f59e0b':'#ef4444'}">${g.rate}%</td></tr>`).join('')+'</tbody>';
+    document.getElementById('gamesRankFooter').innerHTML=`<span>共 ${total} 条</span><span>第 ${gamesRankPage}/${pages} 页  <span class="page-nav" data-dir="prev" style="cursor:pointer;color:var(--primary)">&lt;</span> <span class="page-nav" data-dir="next" style="cursor:pointer;color:var(--primary)">&gt;</span></span>`;
+}
+
+// Games rank tab/sort/page click
+document.addEventListener('click',(e)=>{
+    const gTab=e.target.closest('.game-tab[data-grank]');
+    if(gTab){
+        gTab.parentElement.querySelectorAll('.game-tab[data-grank]').forEach(x=>x.classList.remove('active'));
+        gTab.classList.add('active');
+        gamesRankType=gTab.dataset.grank;gamesRankPage=1;renderGamesRankTable();return;
+    }
+    const sortTh=e.target.closest('.sortable[data-sort]');
+    if(sortTh){
+        const f=sortTh.dataset.sort;
+        if(gamesRankSort.field===f)gamesRankSort.dir=gamesRankSort.dir==='desc'?'asc':'desc';
+        else{gamesRankSort.field=f;gamesRankSort.dir='desc';}
+        renderGamesRankTable();return;
+    }
+    const pNav=e.target.closest('.page-nav');
+    if(pNav){
+        const pages=Math.ceil(gamesRankData[gamesRankType].length/10);
+        if(pNav.dataset.dir==='next'&&gamesRankPage<pages)gamesRankPage++;
+        if(pNav.dataset.dir==='prev'&&gamesRankPage>1)gamesRankPage--;
+        renderGamesRankTable();
+    }
+});
+
+// ============ Cloud ============
+function initCloudPage(){
+    document.getElementById('cloudMetrics').innerHTML=[
+        {color:'blue',label:'云游活跃',value:'3,284'},{color:'green',label:'云游新增',value:'412'},{color:'purple',label:'充值订单',value:'892'},{color:'orange',label:'充值用户',value:'634'},{color:'blue',label:'充值金额',value:'¥28,459'},{color:'red',label:'云游流失',value:'187'}
+    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div></div>`).join('');
+
+    const d=getDays();
+    const el1=document.getElementById('chart-cloud-user');let c1=echarts.getInstanceByDom(el1);if(c1)c1.dispose();c1=echarts.init(el1);
+    c1.setOption({tooltip:{trigger:'axis'},legend:{data:['活跃','新增'],bottom:0},grid:{top:20,right:20,bottom:40,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[
+        {name:'活跃',type:'line',smooth:true,data:randArr(d.length,2800,3800),itemStyle:{color:'#3b82f6'},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(59,130,246,.1)'},{offset:1,color:'rgba(59,130,246,0)'}]}}},
+        {name:'新增',type:'line',smooth:true,data:randArr(d.length,300,600),itemStyle:{color:'#10b981'}}
+    ]});
+
+    const packages=[
+        {name:'新人8小时套餐',orders:rand(200,500),amount:rand(3000,8000)},
+        {name:'常规8小时套餐',orders:rand(150,400),amount:rand(4000,10000)},
+        {name:'35小时套餐',orders:rand(80,250),amount:rand(8000,20000)},
+        {name:'180小时套餐',orders:rand(30,100),amount:rand(10000,30000)},
+        {name:'包月无限套餐',orders:rand(20,60),amount:rand(5000,15000)}
+    ];
+    const totalOrders=packages.reduce((s,p)=>s+p.orders,0);
+    document.getElementById('cloudPackageList').innerHTML='<li class="rank-item rank-header"><span class="rank-num-h">#</span><span class="rank-name-h">套餐</span><span class="rank-val-h">订单数</span><span class="rank-val-h">金额</span><span class="rank-val-h">占比</span></li>'+packages.map((p,i)=>`<li class="rank-item"><span class="rank-num ${i<3?'top':'normal'}">${i+1}</span><span class="rank-name">${p.name}</span><span class="rank-value">${p.orders}</span><span class="rank-value">¥${p.amount.toLocaleString()}</span><span class="rank-value">${(p.orders/totalOrders*100).toFixed(1)}%</span></li>`).join('');
+
+    
+    // Payment method pie
+    const payEl=document.getElementById('chart-cloud-pay');
+    if(payEl){let cp=echarts.getInstanceByDom(payEl);if(cp)cp.dispose();cp=echarts.init(payEl);
+    cp.setOption({tooltip:{trigger:'item',formatter:'{b}: {d}%'},color:['#10b981','#3b82f6','#8b5cf6'],series:[{type:'pie',radius:['45%','72%'],center:['50%','50%'],data:[{value:45,name:'微信支付'},{value:38,name:'支付宝'},{value:17,name:'二维码支付'}],label:{show:true,fontSize:11,formatter:function(p){return p.name+'\n'+p.percent+'%'},color:'#475569'},labelLine:{length:12,length2:8},itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2}}]});}
+    document.getElementById('cloudOrderTable').innerHTML='<thead><tr><th>日期</th><th>总订单数</th><th>新人8h</th><th>常规8h</th><th>35h</th><th>180h</th><th>包月</th><th>总金额</th></tr></thead><tbody>'+d.map(day=>{
+        const o=[rand(20,60),rand(15,50),rand(8,30),rand(3,15),rand(2,8)];const total=o.reduce((s,v)=>s+v,0);const amt=rand(8000,25000);
+        return`<tr><td>${day}</td><td class="num">${total}</td><td class="num">${o[0]}</td><td class="num">${o[1]}</td><td class="num">${o[2]}</td><td class="num">${o[3]}</td><td class="num">${o[4]}</td><td class="num">¥${amt.toLocaleString()}</td></tr>`;
+    }).join('')+'</tbody>';
+}
+
+// ============ Community ============
+function initCommunityPage(){
+    document.getElementById('communityMetrics').innerHTML=[
+        {color:'blue',label:'社区活跃',value:'3,847'},{color:'green',label:'新增帖子',value:'428'},{color:'purple',label:'帖子访问',value:'52,341'},{color:'orange',label:'人均互动',value:'2.8次'}
+    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div></div>`).join('');
+
+    const d=getDays();
+    const el1=document.getElementById('chart-community-interact');let c1=echarts.getInstanceByDom(el1);if(c1)c1.dispose();c1=echarts.init(el1);
+    c1.setOption({tooltip:{trigger:'axis'},grid:{top:20,right:20,bottom:30,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[{name:'互动总量',type:'line',smooth:true,data:randArr(d.length,3000,8000),itemStyle:{color:'#3b82f6'},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(59,130,246,.1)'},{offset:1,color:'rgba(59,130,246,0)'}]}}}]});
+
+    const el2=document.getElementById('chart-community-type');let c2=echarts.getInstanceByDom(el2);if(c2)c2.dispose();c2=echarts.init(el2);
+    c2.setOption({tooltip:{trigger:'axis'},legend:{data:['点赞','收藏','评论','转发'],bottom:0},grid:{top:20,right:20,bottom:40,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[
+        {name:'点赞',type:'line',smooth:true,data:randArr(d.length,1500,3000),itemStyle:{color:'#3b82f6'}},
+        {name:'收藏',type:'line',smooth:true,data:randArr(d.length,500,1500),itemStyle:{color:'#8b5cf6'}},
+        {name:'评论',type:'line',smooth:true,data:randArr(d.length,800,2000),itemStyle:{color:'#10b981'}},
+        {name:'转发',type:'line',smooth:true,data:randArr(d.length,200,800),itemStyle:{color:'#f59e0b'}}
+    ]});
+
+    const el3=document.getElementById('chart-community-active');let c3=echarts.getInstanceByDom(el3);if(c3)c3.dispose();c3=echarts.init(el3);
+    c3.setOption({tooltip:{trigger:'axis'},grid:{top:20,right:20,bottom:30,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[{name:'活跃用户',type:'line',smooth:true,data:randArr(d.length,3000,5000),itemStyle:{color:'#8b5cf6'},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(139,92,246,.1)'},{offset:1,color:'rgba(139,92,246,0)'}]}}}]});
+
+    const partitions=['GTA V','黑神话：悟空','赛博朋克2077','原神','崩坏星穹铁道'];
+    const partData=partitions.map(p=>({name:p,posts:rand(50,300),interactions:rand(200,900),users:rand(100,500)}));
+    partData.sort((a,b)=>b.interactions-a.interactions);
+    document.getElementById('communityPartitionTable').innerHTML='<thead><tr><th>#</th><th>分区</th><th>帖子数</th><th>互动量</th><th>活跃用户</th></tr></thead><tbody>'+partData.map((p,i)=>`<tr><td class="num">${i+1}</td><td>${p.name}</td><td class="num">${p.posts}</td><td class="num">${p.interactions}</td><td class="num">${p.users}</td></tr>`).join('')+'</tbody>';
+}
+
+// ============ Revenue ============
+// ============ Funnel ============
+function initFunnelPage(){
+    document.getElementById('funnelMetrics').innerHTML=[
+        {color:'blue',label:'登录转化率',value:(Math.random()*5+40).toFixed(1)+'%'},{color:'green',label:'启动成功率',value:(Math.random()*5+85).toFixed(1)+'%'},{color:'purple',label:'Steam绑定率',value:(Math.random()*5+28).toFixed(1)+'%'},{color:'orange',label:'秒玩启动率',value:(Math.random()*5+25).toFixed(1)+'%'}
+    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div></div>`).join('');
+    renderFunnelTab('login');
+
+    const d=getDays();
+    const el1=document.getElementById('chart-funnel-login');let c1=echarts.getInstanceByDom(el1);if(c1)c1.dispose();c1=echarts.init(el1);
+    c1.setOption({tooltip:{trigger:'axis'},legend:{data:['登录率','Steam绑定率'],bottom:0},grid:{top:20,right:20,bottom:40,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',axisLabel:{formatter:'{value}%'},splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[
+        {name:'登录率',type:'line',smooth:true,data:randArr(d.length,38,48),itemStyle:{color:'#3b82f6'}},
+        {name:'Steam绑定率',type:'line',smooth:true,data:randArr(d.length,22,35),itemStyle:{color:'#8b5cf6'}}
+    ]});
+
+    const el2=document.getElementById('chart-funnel-success');let c2=echarts.getInstanceByDom(el2);if(c2)c2.dispose();c2=echarts.init(el2);
+    c2.setOption({tooltip:{trigger:'axis'},legend:{data:['云游戏','AI插帧','社区','云组队'],bottom:0},grid:{top:20,right:20,bottom:40,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',axisLabel:{formatter:'{value}%'},splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[
+        {name:'云游戏',type:'line',smooth:true,data:randArr(d.length,60,72),itemStyle:{color:'#3b82f6'}},
+        {name:'AI插帧',type:'line',smooth:true,data:randArr(d.length,22,32),itemStyle:{color:'#8b5cf6'}},
+        {name:'社区',type:'line',smooth:true,data:randArr(d.length,35,45),itemStyle:{color:'#10b981'}},
+        {name:'云组队',type:'line',smooth:true,data:randArr(d.length,10,18),itemStyle:{color:'#f59e0b'}}
+    ]});
+}
+
+const funnelData={
+    login:[
+        {step:'APP启动',metric:'PV',value:184320},
+        {step:'登录弹窗曝光',metric:'PV',value:128470},
+        {step:'选择登录方式',metric:'PV',value:92840},
+        {step:'登录成功',metric:'PV',value:74210},
+        {step:'Steam绑定',metric:'PV',value:48920}
+    ],
+    launch:[
+        {step:'APP启动',metric:'PV',value:184320},
+        {step:'APP登录',metric:'PV',value:74210},
+        {step:'Steam绑定',metric:'PV',value:48920},
+        {step:'Steam下载',metric:'PV',value:32410},
+        {step:'游戏启动',metric:'PV',value:58470},
+        {step:'秒玩启动',metric:'PV',value:21340},
+        {step:'启动成功',metric:'PV',value:49560}
+    ],
+    ai:[
+        {step:'游戏详情页',metric:'PV',value:84320},
+        {step:'进入游戏',metric:'PV',value:58470},
+        {step:'侧边栏唤起',metric:'PV',value:32410},
+        {step:'性能Tab',metric:'PV',value:21340},
+        {step:'AI插帧开启',metric:'PV',value:12870}
+    ],
+    screen:[
+        {step:'首页/游戏库/我的',metric:'PV',value:128470},
+        {step:'点击横竖屏切换',metric:'PV',value:45210},
+        {step:'切换成功',metric:'PV',value:43200}
+    ],
+    team:[
+        {step:'首页',metric:'PV',value:128470},
+        {step:'玩游戏Tab',metric:'PV',value:84320},
+        {step:'组队大厅',metric:'PV',value:21340},
+        {step:'加入/创建房间',metric:'PV',value:12870},
+        {step:'组队游戏中',metric:'PV',value:8920}
+    ],
+    community:[
+        {step:'首页',metric:'PV',value:128470},
+        {step:'社区首页',metric:'PV',value:38470},
+        {step:'帖子详情',metric:'PV',value:254100},
+        {step:'互动(赞/评/转/帖)',metric:'PV',value:18920}
+    ],
+    engine:[
+        {step:'游戏详情页',metric:'PV',value:84320},
+        {step:'唤起设置菜单',metric:'PV',value:32410},
+        {step:'PC引擎设置页',metric:'PV',value:21340},
+        {step:'应用配置方案',metric:'PV',value:14560}
+    ],
+    playdown:[
+        {step:'游戏详情页',metric:'PV',value:84320},
+        {step:'触发边下边玩',metric:'PV',value:18920},
+        {step:'进入云游',metric:'PV',value:12870}
+    ]
+};
+
+function renderFunnelTab(type){
+    const steps=funnelData[type]||funnelData.login;
+    const base=steps[0].value;
+    document.getElementById('funnelTable').innerHTML='<thead><tr><th>#</th><th>漏斗步骤</th><th>口径</th><th>数值</th><th>总转化率</th><th>步间转化率</th></tr></thead><tbody>'+steps.map((s,i)=>{
+        const isDevice=s.step.includes('启动');
+        const badge=isDevice?'设备数':'UV';
+        const totalRate=i===0?'100%':(s.value/base*100).toFixed(1)+'%';
+        const stepRate=i===0?'-':(s.value/steps[i-1].value*100).toFixed(1)+'%';
+        const color=i===0?'var(--text)':s.value/base>0.5?'#10b981':s.value/base>0.2?'#f59e0b':'#ef4444';
+        return'<tr><td class="num">'+(i+1)+'</td><td>'+s.step+'</td><td><span style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;background:'+(isDevice?'#f5f3ff':'#ecfdf5')+';color:'+(isDevice?'#8b5cf6':'#10b981')+';font-weight:600">'+badge+'</span></td><td class="num">'+s.value.toLocaleString()+'</td><td class="num" style="color:'+color+'">'+totalRate+'</td><td class="num">'+stepRate+'</td></tr>';
+    }).join('')+'</tbody>';
+}
+
+// Funnel tab click
+document.addEventListener('click',(e)=>{
+    const btn=e.target.closest('.panel-action-btn[data-funnel]');
+    if(!btn)return;
+    btn.parentElement.querySelectorAll('.panel-action-btn[data-funnel]').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    renderFunnelTab(btn.dataset.funnel);
+});
+
+function renderFunnelViz(id,steps){
+    const max=steps[0].value;
+    document.getElementById(id).innerHTML=steps.map((s,i)=>{
+        const w=Math.max((s.value/max)*100,10);
+        const rate=i===0?'100%':(s.value/steps[0].value*100).toFixed(1)+'%';
+        const step=i===0?'':(s.value/steps[i-1].value*100).toFixed(1)+'%';
+        return`<div style="display:flex;align-items:center;margin-bottom:6px"><span style="width:100px;font-size:11px;color:#94a3b8;text-align:right;padding-right:10px;flex-shrink:0">${s.name}</span><div style="height:28px;width:${w}%;background:linear-gradient(90deg,#3b82f6,#8b5cf6);border-radius:4px;display:flex;align-items:center;padding:0 10px;color:#fff;font-size:11px;font-weight:600;min-width:60px">${s.value.toLocaleString()}</div><span style="margin-left:8px;font-size:11px;color:#475569">${rate}${step?' · 转化'+step:''}</span></div>`;
+    }).join('');
+}
+
+// ============ New User ============
+function initNewuserPage(){
+    document.getElementById('newuserMetrics').innerHTML=[
+        {color:'blue',label:'引导完成率',value:(Math.random()*8+55).toFixed(1)+'%'},
+        {color:'green',label:'登录率(平台)',value:(Math.random()*8+35).toFixed(1)+'%'},
+        {color:'purple',label:'登录率(游客)',value:(Math.random()*5+15).toFixed(1)+'%'},
+        {color:'orange',label:'登录率(Steam)',value:(Math.random()*5+22).toFixed(1)+'%'},
+        {color:'blue',label:'D0游戏体验率',value:(Math.random()*5+12).toFixed(1)+'%'},
+        {color:'green',label:'引导后次日留存',value:(Math.random()*5+30).toFixed(1)+'%'}
+    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div></div>`).join('');
+    const newuserSteps=[
+        {step:'APP安装',metric:'设备数',value:5000},
+        {step:'首次启动',metric:'设备数',value:4200},
+        {step:'引导页曝光',metric:'UV',value:3800},
+        {step:'选择路径',metric:'UV',value:2900},
+        {step:'游戏体验',metric:'UV',value:1200},
+        {step:'D0成功体验',metric:'UV',value:680}
+    ];
+    const nBase=newuserSteps[0].value;
+    document.getElementById('newuserFunnelTable').innerHTML=`<thead><tr><th>#</th><th>漏斗步骤</th><th>统计口径</th><th>数值</th><th>总转化率</th><th>步间转化率</th></tr></thead><tbody>`+newuserSteps.map((s,i)=>{
+        const totalRate=i===0?'100%':(s.value/nBase*100).toFixed(1)+'%';
+        const stepRate=i===0?'-':(s.value/newuserSteps[i-1].value*100).toFixed(1)+'%';
+        const color=i===0?'var(--text)':s.value/nBase>0.5?'#10b981':s.value/nBase>0.2?'#f59e0b':'#ef4444';
+        return`<tr><td class="num">${i+1}</td><td>${s.step}</td><td><span style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;background:${s.metric==='UV'?'#ecfdf5':'#f5f3ff'};color:${s.metric==='UV'?'#10b981':'#8b5cf6'};font-weight:600">${s.metric}</span></td><td class="num">${s.value.toLocaleString()}</td><td class="num" style="color:${color}">${totalRate}</td><td class="num">${stepRate}</td></tr>`;
+    }).join('')+'</tbody>';
+
+    const d=getDays();
+    const el1=document.getElementById('chart-newuser-d0');let c1=echarts.getInstanceByDom(el1);if(c1)c1.dispose();c1=echarts.init(el1);
+    c1.setOption({tooltip:{trigger:'axis'},grid:{top:20,right:20,bottom:30,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',axisLabel:{formatter:'{value}%'},splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[{name:'D0体验率',type:'line',smooth:true,data:randArr(d.length,8,18),itemStyle:{color:'#3b82f6'},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(59,130,246,.12)'},{offset:1,color:'rgba(59,130,246,0)'}]}}}]});
+
+    const el2=document.getElementById('chart-newuser-login');let c2=echarts.getInstanceByDom(el2);if(c2)c2.dispose();c2=echarts.init(el2);
+    c2.setOption({tooltip:{trigger:'item',formatter:'{b}: {d}%'},color:['#3b82f6','#10b981','#8b5cf6','#f59e0b','#ef4444','#94a3b8'],series:[{type:'pie',radius:['45%','72%'],center:['50%','50%'],data:[{value:35,name:'SIM一键'},{value:20,name:'微信'},{value:15,name:'QQ'},{value:18,name:'游客模式'},{value:7,name:'Google'},{value:5,name:'Apple'}],label:{show:true,fontSize:11,formatter:function(p){return p.name+'\n'+p.percent+'%'},color:'#475569'},labelLine:{length:12,length2:8},itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2}}]});
+}
+
+// ============ Init ============
+window.addEventListener('load',()=>{initOverview()});
+window.addEventListener('resize',()=>{document.querySelectorAll('.chart-box').forEach(el=>{const c=echarts.getInstanceByDom(el);if(c)c.resize()})});
+</script>
+</body>
+</html>

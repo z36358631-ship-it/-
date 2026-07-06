@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>盖世游戏 - 运营数据看板</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+:root {
+    --primary: #1677ff;
+    --primary-hover: #4096ff;
+    --success: #52c41a;
+    --warning: #faad14;
+    --error: #ff4d4f;
+    --bg: #f5f5f5;
+    --card-bg: #fff;
+    --sidebar-bg: #001529;
+    --sidebar-text: rgba(255,255,255,.65);
+    --sidebar-active: #fff;
+    --text: #333;
+    --text-secondary: #8c8c8c;
+    --border: #f0f0f0;
+    --radius: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); }
+.layout { display:flex; height:100vh; }
+.sidebar { width:240px; background:var(--sidebar-bg); display:flex; flex-direction:column; flex-shrink:0; overflow-y:auto; }
+.sidebar-brand { padding:20px 24px; color:#fff; font-size:16px; font-weight:600; border-bottom:1px solid rgba(255,255,255,.1); }
+.sidebar-menu { padding:8px 0; flex:1; }
+.menu-group { margin-bottom:4px; }
+.menu-group-title { padding:8px 24px; font-size:11px; color:rgba(255,255,255,.35); text-transform:uppercase; letter-spacing:.5px; }
+.menu-item { padding:10px 24px 10px 24px; color:var(--sidebar-text); cursor:pointer; font-size:14px; transition:all .2s; display:flex; align-items:center; gap:8px; }
+.menu-item:hover { color:var(--sidebar-active); background:rgba(255,255,255,.06); }
+.menu-item.active { color:var(--sidebar-active); background:var(--primary); border-radius:0 6px 6px 0; margin-right:12px; }
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.header { height:56px; background:var(--card-bg); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 24px; flex-shrink:0; }
+.header-title { font-size:16px; font-weight:500; }
+.header-user { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-secondary); }
+.header-avatar { width:32px; height:32px; border-radius:50%; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; }
+.content { flex:1; overflow-y:auto; padding:20px 24px; }
+.page { display:none; }
+.page.active { display:block; }
+
+/* Filter Bar */
+.filter-bar { background:var(--card-bg); border-radius:var(--radius); padding:16px 20px; margin-bottom:16px; display:flex; flex-wrap:wrap; align-items:center; gap:12px; border:1px solid var(--border); }
+.filter-group { display:flex; align-items:center; gap:6px; }
+.filter-label { font-size:13px; color:var(--text-secondary); white-space:nowrap; }
+.filter-select { height:32px; border:1px solid #d9d9d9; border-radius:6px; padding:0 10px; font-size:13px; outline:none; background:#fff; }
+.filter-select:focus { border-color:var(--primary); }
+.filter-btn { height:32px; padding:0 16px; border-radius:6px; border:none; font-size:13px; cursor:pointer; transition:all .2s; }
+.filter-btn-primary { background:var(--primary); color:#fff; }
+.filter-btn-primary:hover { background:var(--primary-hover); }
+.filter-btn-default { background:#fff; border:1px solid #d9d9d9; color:var(--text); }
+.filter-btn-default:hover { border-color:var(--primary); color:var(--primary); }
+.date-shortcuts { display:flex; gap:4px; }
+.date-shortcut { padding:4px 10px; border-radius:4px; font-size:12px; cursor:pointer; border:1px solid #d9d9d9; background:#fff; color:var(--text); transition:all .15s; }
+.date-shortcut:hover, .date-shortcut.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+/* Metric Cards */
+.metric-cards { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:16px; }
+.metric-card { background:var(--card-bg); border-radius:var(--radius); padding:18px 20px; border:1px solid var(--border); min-height:96px; display:flex; flex-direction:column; justify-content:space-between; position:relative; transition:box-shadow .2s; }
+.metric-card:hover { box-shadow:0 2px 8px rgba(0,0,0,.06); }
+.metric-card-title { font-size:13px; color:var(--text-secondary); margin-bottom:6px; display:flex; align-items:center; gap:4px; }
+.metric-card-value { font-size:28px; font-weight:700; color:var(--text); font-family:'DIN Alternate','Roboto Mono',monospace; letter-spacing:-0.5px; }
+.metric-card-change { font-size:12px; margin-top:6px; display:flex; align-items:center; gap:3px; }
+.metric-card-change.up { color:var(--success); }
+.metric-card-change.up::before { content:'↑'; }
+.metric-card-change.down { color:var(--error); }
+.metric-card-change.down::before { content:'↓'; }
+.metric-card-sub { font-size:11px; color:var(--text-secondary); margin-top:2px; }
+
+/* Chart Card */
+.chart-row { display:grid; grid-template-columns:repeat(2, 1fr); gap:16px; margin-bottom:16px; }
+.chart-row.full { grid-template-columns:1fr; }
+.chart-card { background:var(--card-bg); border-radius:var(--radius); padding:16px 20px; border:1px solid var(--border); transition:box-shadow .2s; }
+.chart-card:hover { box-shadow:0 2px 12px rgba(0,0,0,.05); }
+.chart-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.chart-card-title { font-size:14px; font-weight:500; }
+.chart-card-actions { display:flex; gap:6px; }
+.chart-container { width:100%; height:300px; }
+.chart-container.small { height:220px; }
+
+/* Table */
+.data-table-wrapper { background:var(--card-bg); border-radius:var(--radius); border:1px solid var(--border); margin-bottom:16px; overflow:hidden; }
+.data-table-header { padding:14px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); }
+.data-table-title { font-size:14px; font-weight:600; }
+.data-table { width:100%; border-collapse:collapse; font-size:13px; }
+.data-table thead { background:#fafafa; position:sticky; top:0; z-index:1; }
+.data-table th, .data-table td { padding:11px 16px; text-align:left; border-bottom:1px solid var(--border); }
+.data-table th { font-weight:500; color:var(--text-secondary); white-space:nowrap; font-size:12px; text-transform:none; }
+.data-table tbody tr { cursor:pointer; transition:background .15s; }
+.data-table tbody tr:hover { background:#f0f7ff; }
+.data-table .num { font-family:'DIN Alternate','Roboto Mono',monospace; font-weight:500; }
+.data-table .rate-good { color:var(--success); font-weight:600; }
+.data-table .rate-mid { color:var(--warning); font-weight:600; }
+.data-table .rate-bad { color:var(--error); font-weight:600; }
+.data-table .status-dot { display:inline-block; width:6px; height:6px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+.data-table .status-dot.green { background:var(--success); }
+.data-table .status-dot.orange { background:var(--warning); }
+.data-table .status-dot.red { background:var(--error); }
+.table-pagination { padding:10px 20px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); font-size:12px; color:var(--text-secondary); }
+.table-pagination .page-info { }
+.table-pagination .page-btns { display:flex; gap:4px; }
+.table-pagination .page-btn { width:28px; height:28px; border-radius:4px; border:1px solid #d9d9d9; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; transition:all .15s; }
+.table-pagination .page-btn:hover, .table-pagination .page-btn.active { border-color:var(--primary); color:var(--primary); background:#f0f7ff; }
+.data-table .rate-good { color:var(--success); font-weight:500; }
+.data-table .rate-mid { color:var(--warning); font-weight:500; }
+.data-table .rate-bad { color:var(--error); font-weight:500; }
+
+/* Export Buttons */
+.export-btn { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:4px; font-size:12px; cursor:pointer; border:1px solid #d9d9d9; background:#fff; color:var(--text-secondary); transition:all .15s; }
+.export-btn:hover { border-color:var(--primary); color:var(--primary); }
+.export-btn svg { width:14px; height:14px; }
+
+/* Retention Matrix */
+.retention-matrix { overflow-x:auto; }
+.retention-matrix table { border-collapse:collapse; font-size:12px; width:100%; }
+.retention-matrix th, .retention-matrix td { padding:8px 10px; text-align:center; border:1px solid var(--border); white-space:nowrap; }
+.retention-matrix th { background:#fafafa; font-weight:500; }
+.retention-matrix .cell-high { background:#f6ffed; color:var(--success); font-weight:500; }
+.retention-matrix .cell-mid { background:#fffbe6; color:var(--warning); font-weight:500; }
+.retention-matrix .cell-low { background:#fff2f0; color:var(--error); font-weight:500; }
+
+/* Funnel */
+.funnel-container { padding:20px; }
+.funnel-step { display:flex; align-items:center; margin-bottom:8px; }
+.funnel-bar { height:36px; background:var(--primary); border-radius:4px; display:flex; align-items:center; padding:0 12px; color:#fff; font-size:12px; font-weight:500; transition:width .6s ease; }
+.funnel-label { width:140px; font-size:12px; color:var(--text-secondary); text-align:right; padding-right:12px; flex-shrink:0; }
+.funnel-value { margin-left:12px; font-size:12px; color:var(--text-secondary); white-space:nowrap; }
+
+/* Tabs inside page */
+.inner-tabs { display:flex; gap:0; margin-bottom:16px; border-bottom:1px solid var(--border); }
+.inner-tab { padding:8px 16px; font-size:13px; cursor:pointer; color:var(--text-secondary); border-bottom:2px solid transparent; transition:all .2s; }
+.inner-tab:hover { color:var(--text); }
+.inner-tab.active { color:var(--primary); border-bottom-color:var(--primary); font-weight:500; }
+
+/* Responsive */
+@media (max-width:1400px) { .metric-cards { grid-template-columns:repeat(4, 1fr); } }
+@media (max-width:1200px) { .chart-row { grid-template-columns:1fr; } .metric-cards { grid-template-columns:repeat(2, 1fr); } }
+
+/* Drawer */
+.drawer-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.35); z-index:999; opacity:0; pointer-events:none; transition:opacity .25s; }
+.drawer-overlay.open { opacity:1; pointer-events:auto; }
+.drawer { position:fixed; top:0; right:-440px; width:440px; height:100vh; background:#fff; z-index:1000; box-shadow:-4px 0 24px rgba(0,0,0,.1); transition:right .3s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column; }
+.drawer.open { right:0; }
+.drawer-header { padding:16px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+.drawer-title { font-size:16px; font-weight:600; }
+.drawer-close { width:32px; height:32px; border-radius:4px; border:none; background:transparent; cursor:pointer; font-size:18px; color:var(--text-secondary); display:flex; align-items:center; justify-content:center; transition:background .15s; }
+.drawer-close:hover { background:#f5f5f5; }
+.drawer-body { flex:1; overflow-y:auto; padding:20px 24px; }
+.drawer-kv { display:grid; grid-template-columns:100px 1fr; gap:8px 12px; font-size:13px; margin-bottom:16px; }
+.drawer-kv dt { color:var(--text-secondary); text-align:right; }
+.drawer-kv dd { color:var(--text); font-family:'DIN Alternate','Roboto Mono',monospace; }
+.drawer-section { margin-bottom:20px; }
+.drawer-section-title { font-size:13px; font-weight:600; color:var(--text); margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+.drawer-mini-chart { width:100%; height:160px; }
+
+/* Filter Input Upgrade */
+.filter-input { height:32px; border:1px solid #d9d9d9; border-radius:6px; padding:0 10px; font-size:13px; outline:none; background:#fff; font-family:'DIN Alternate','Roboto Mono',monospace; }
+.filter-input:focus { border-color:var(--primary); box-shadow:0 0 0 2px rgba(22,119,255,.1); }
+
+/* Tooltip */
+[data-tooltip] { position:relative; }
+[data-tooltip]:hover::after { content:attr(data-tooltip); position:absolute; bottom:calc(100%+6px); left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:4px 8px; border-radius:4px; font-size:11px; white-space:nowrap; z-index:100; pointer-events:none; }
+</style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand">盖世游戏 数据看板</div>
+        <nav class="sidebar-menu">
+            <div class="menu-group">
+                <div class="menu-group-title">数据概览</div>
+                <div class="menu-item active" data-page="overview">大盘数据总览</div>
+            </div>
+            <div class="menu-group">
+                <div class="menu-group-title">用户分析</div>
+                <div class="menu-item" data-page="users">用户生命周期</div>
+            </div>
+            <div class="menu-group">
+                <div class="menu-group-title">业务数据</div>
+                <div class="menu-item" data-page="games">游戏生态数据</div>
+                <div class="menu-item" data-page="community">社区平台数据</div>
+            </div>
+            <div class="menu-group">
+                <div class="menu-group-title">深度分析</div>
+                <div class="menu-item" data-page="funnel">核心功能漏斗</div>
+                <div class="menu-item" data-page="churn">流失用户分析</div>
+            </div>
+        </nav>
+    </aside>
+    <main class="main">
+        <div class="header">
+            <div class="header-title" id="pageTitle">大盘数据总览</div>
+            <div class="header-user">
+                <div class="header-avatar">运</div>
+                <span>运营管理员</span>
+            </div>
+        </div>
+        <div class="content" id="content">
+            <!-- Page 1: Overview -->
+            <div class="page active" id="page-overview">
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <span class="filter-label">时间：</span>
+                        <div class="date-shortcuts">
+                            <span class="date-shortcut" data-range="1">昨日</span>
+                            <span class="date-shortcut active" data-range="7">近7天</span>
+                            <span class="date-shortcut" data-range="30">近30天</span>
+                        </div>
+                        <input type="date" class="filter-input" value="2026-06-05">
+                        <span style="color:var(--text-secondary)">~</span>
+                        <input type="date" class="filter-input" value="2026-06-11">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">用户群：</span>
+                        <select class="filter-select" id="overviewUserGroup">
+                            <option value="all">全部用户</option>
+                            <option value="new">新增用户</option>
+                            <option value="active">活跃用户</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">版本：</span>
+                        <select class="filter-select"><option>全部</option><option>6.0.9</option><option>6.0.8</option></select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">渠道：</span>
+                        <select class="filter-select"><option>全部</option><option>官方</option><option>应用宝</option><option>小米</option></select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">系统：</span>
+                        <select class="filter-select"><option>全部</option><option>Android</option><option>iOS</option></select>
+                    </div>
+                    <button class="filter-btn filter-btn-primary">查询</button>
+                    <button class="filter-btn filter-btn-default export-btn" onclick="exportCSV('overview')">导出数据</button>
+                    <button class="filter-btn filter-btn-default export-btn" onclick="downloadRaw('overview')">下载源数据</button>
+                </div>
+                <div class="metric-cards" id="overviewMetrics"></div>
+                <div class="chart-row">
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <span class="chart-card-title">新增用户 & 活跃用户趋势</span>
+                            <button class="export-btn" onclick="exportCSV('user_trend')">导出</button>
+                        </div>
+                        <div class="chart-container" id="chart-user-trend"></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <span class="chart-card-title">游戏启动次数 & 启动成功次数</span>
+                            <button class="export-btn" onclick="exportCSV('game_launch_trend')">导出</button>
+                        </div>
+                        <div class="chart-container" id="chart-game-launch"></div>
+                    </div>
+                </div>
+                <div class="chart-row">
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <span class="chart-card-title">流失用户数趋势</span>
+                            <button class="export-btn" onclick="exportCSV('churn_trend')">导出</button>
+                        </div>
+                        <div class="chart-container" id="chart-churn-trend"></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <span class="chart-card-title">分布概览</span>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                            <div class="chart-container small" id="chart-channel-pie"></div>
+                            <div class="chart-container small" id="chart-version-pie"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 2: Users -->
+            <div class="page" id="page-users">
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <span class="filter-label">时间：</span>
+                        <div class="date-shortcuts">
+                            <span class="date-shortcut" data-range="1">昨日</span>
+                            <span class="date-shortcut active" data-range="7">近7天</span>
+                            <span class="date-shortcut" data-range="30">近30天</span>
+                        </div>
+                        <input type="date" class="filter-input" value="2026-06-05">
+                        <span style="color:var(--text-secondary)">~</span>
+                        <input type="date" class="filter-input" value="2026-06-11">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">用户群：</span>
+                        <select class="filter-select" id="usersUserGroup">
+                            <option value="all">全部用户</option>
+                            <option value="new">新增用户</option>
+                            <option value="active">活跃用户</option>
+                        </select>
+                    </div>
+                    <button class="filter-btn filter-btn-primary">查询</button>
+                    <button class="filter-btn filter-btn-default export-btn" onclick="exportCSV('users')">导出数据</button>
+                    <button class="filter-btn filter-btn-default export-btn" onclick="downloadRaw('users')">下载源数据</button>
+                </div>
+                <div class="inner-tabs" id="usersInnerTabs">
+                    <div class="inner-tab active" data-sub="active">活跃/新增</div>
+                    <div class="inner-tab" data-sub="retention">留存分析</div>
+                    <div class="inner-tab" data-sub="churn">流失用户</div>
+                </div>
+                <div id="users-sub-active">
+                    <div class="metric-cards" id="usersActiveMetrics"></div>
+                    <div class="chart-row">
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">活跃用户趋势</span><button class="export-btn" onclick="exportCSV('active_trend')">导出</button></div>
+                            <div class="chart-container" id="chart-active-trend"></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">新增用户趋势</span><button class="export-btn" onclick="exportCSV('new_trend')">导出</button></div>
+                            <div class="chart-container" id="chart-new-trend"></div>
+                        </div>
+                    </div>
+                    <div class="chart-row">
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">游客用户 & 匿名设备趋势</span><button class="export-btn" onclick="exportCSV('guest_trend')">导出</button></div>
+                            <div class="chart-container" id="chart-guest-trend"></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">用户构成</span></div>
+                            <div class="chart-container" id="chart-user-compose"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="users-sub-retention" style="display:none;">
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><span class="chart-card-title">整体活跃留存矩阵</span><button class="export-btn" onclick="exportCSV('retention_matrix')">导出</button></div>
+                        <div class="retention-matrix" id="retentionMatrix"></div>
+                    </div>
+                    <div class="chart-row">
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">留存率趋势（次日/3日/7日）</span></div>
+                            <div class="chart-container" id="chart-retention-trend"></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">新用户 vs 老用户留存对比</span></div>
+                            <div class="chart-container" id="chart-retention-compare"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="users-sub-churn" style="display:none;">
+                    <div class="chart-row">
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">每日流失 & 月累计流失</span><button class="export-btn" onclick="exportCSV('daily_churn')">导出</button></div>
+                            <div class="chart-container" id="chart-daily-churn"></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">流失用户最后活跃事件分布</span></div>
+                            <div class="chart-container" id="chart-churn-events"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 3: Games -->
+            <div class="page" id="page-games">
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <span class="filter-label">时间：</span>
+                        <div class="date-shortcuts">
+                            <span class="date-shortcut" data-range="1">昨日</span>
+                            <span class="date-shortcut active" data-range="7">近7天</span>
+                            <span class="date-shortcut" data-range="30">近30天</span>
+                        </div>
+                        <input type="date" class="filter-input" value="2026-06-05">
+                        <span style="color:var(--text-secondary)">~</span>
+                        <input type="date" class="filter-input" value="2026-06-11">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">用户群：</span>
+                        <select class="filter-select" id="gamesUserGroup">
+                            <option value="all">全部用户</option>
+                            <option value="new">新增用户</option>
+                            <option value="active">活跃用户</option>
+                        </select>
+                    </div>
+                    <button class="filter-btn filter-btn-primary">查询</button>
+                    <button class="filter-btn filter-btn-default export-btn" onclick="exportCSV('games')">导出数据</button>
+                    <button class="filter-btn filter-btn-default export-btn" onclick="downloadRaw('games')">下载源数据</button>
+                </div>
+                <div class="inner-tabs" id="gamesInnerTabs">
+                    <div class="inner-tab active" data-sub="pc">PC游戏生态</div>
+                    <div class="inner-tab" data-sub="cloud">云游板块</div>
+                    <div class="inner-tab" data-sub="rank">游戏排行榜</div>
+                </div>
+                <div id="games-sub-pc">
+                    <div class="metric-cards" id="gamesPcMetrics"></div>
+                    <div class="chart-row">
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">游戏启动 & 成功运行趋势</span><button class="export-btn" onclick="exportCSV('pc_launch')">导出</button></div>
+                            <div class="chart-container" id="chart-pc-launch"></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">游戏品类分布</span></div>
+                            <div class="chart-container" id="chart-game-type-pie"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="games-sub-cloud" style="display:none;">
+                    <div class="metric-cards" id="gamesCloudMetrics"></div>
+                    <div class="chart-row">
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">云游活跃 & 新增用户趋势</span><button class="export-btn" onclick="exportCSV('cloud_user')">导出</button></div>
+                            <div class="chart-container" id="chart-cloud-user"></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">充值用户 & 充值金额趋势</span><button class="export-btn" onclick="exportCSV('cloud_pay')">导出</button></div>
+                            <div class="chart-container" id="chart-cloud-pay"></div>
+                        </div>
+                    </div>
+                    <div class="data-table-wrapper">
+                        <div class="data-table-header"><span class="data-table-title">云游戏排行榜（按消费时长）</span><button class="export-btn" onclick="exportCSV('cloud_rank')">导出</button></div>
+                        <table class="data-table">
+                            <thead><tr><th>排名</th><th>游戏名称</th><th>总消费时长(h)</th><th>用户数</th><th>人均时长(h)</th></tr></thead>
+                            <tbody id="cloudRankBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="games-sub-rank" style="display:none;">
+                    <div class="chart-row full">
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">游戏排行榜 Top20（按总时长）</span><button class="export-btn" onclick="exportCSV('game_rank')">导出</button></div>
+                            <div class="chart-container" id="chart-game-rank" style="height:400px;"></div>
+                        </div>
+                    </div>
+                    <div class="data-table-wrapper">
+                        <div class="data-table-header"><span class="data-table-title">游戏排行明细</span><button class="export-btn" onclick="exportCSV('game_rank_detail')">导出</button></div>
+                        <table class="data-table">
+                            <thead><tr><th>排名</th><th>游戏名称</th><th>总时长(h)</th><th>用户数</th><th>启动成功设备数</th><th>启动成功率</th></tr></thead>
+                            <tbody id="gameRankBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 4: Community -->
+            <div class="page" id="page-community">
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <span class="filter-label">时间：</span>
+                        <div class="date-shortcuts">
+                            <span class="date-shortcut" data-range="1">昨日</span>
+                            <span class="date-shortcut active" data-range="7">近7天</span>
+                            <span class="date-shortcut" data-range="30">近30天</span>
+                        </div>
+                        <input type="date" class="filter-input" value="2026-06-05">
+                        <span style="color:var(--text-secondary)">~</span>
+                        <input type="date" class="filter-input" value="2026-06-11">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">用户群：</span>
+                        <select class="filter-select" id="communityUserGroup">
+                            <option value="all">全部用户</option>
+                            <option value="new">新增用户</option>
+                            <option value="active">活跃用户</option>
+                        </select>
+                    </div>
+                    <button class="filter-btn filter-btn-primary">查询</button>
+                    <button class="filter-btn filter-btn-default export-btn" onclick="exportCSV('community')">导出数据</button>
+                    <button class="filter-btn filter-btn-default export-btn" onclick="downloadRaw('community')">下载源数据</button>
+                </div>
+                <div class="metric-cards" id="communityMetrics"></div>
+                <div class="chart-row">
+                    <div class="chart-card">
+                        <div class="chart-card-header"><span class="chart-card-title">社区互动总量趋势</span><button class="export-btn" onclick="exportCSV('community_interact')">导出</button></div>
+                        <div class="chart-container" id="chart-community-interact"></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-card-header"><span class="chart-card-title">分类型互动曲线</span><button class="export-btn" onclick="exportCSV('community_type')">导出</button></div>
+                        <div class="chart-container" id="chart-community-type"></div>
+                    </div>
+                </div>
+                <div class="chart-row">
+                    <div class="chart-card">
+                        <div class="chart-card-header"><span class="chart-card-title">社区活跃用户趋势</span></div>
+                        <div class="chart-container" id="chart-community-active"></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-card-header"><span class="chart-card-title">热门分区 Top10</span></div>
+                        <div class="chart-container" id="chart-community-partition"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 5: Funnel -->
+            <div class="page" id="page-funnel">
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <span class="filter-label">时间：</span>
+                        <div class="date-shortcuts">
+                            <span class="date-shortcut" data-range="1">昨日</span>
+                            <span class="date-shortcut active" data-range="7">近7天</span>
+                            <span class="date-shortcut" data-range="30">近30天</span>
+                        </div>
+                        <input type="date" class="filter-input" value="2026-06-05">
+                        <span style="color:var(--text-secondary)">~</span>
+                        <input type="date" class="filter-input" value="2026-06-11">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">用户群：</span>
+                        <select class="filter-select" id="funnelUserGroup">
+                            <option value="all">全部用户</option>
+                            <option value="new">新增用户</option>
+                            <option value="active">活跃用户</option>
+                        </select>
+                    </div>
+                    <button class="filter-btn filter-btn-primary">查询</button>
+                    <button class="filter-btn filter-btn-default export-btn" onclick="exportCSV('funnel')">导出数据</button>
+                    <button class="filter-btn filter-btn-default export-btn" onclick="downloadRaw('funnel')">下载源数据</button>
+                </div>
+                <div class="inner-tabs" id="funnelInnerTabs">
+                    <div class="inner-tab active" data-sub="login">登录率</div>
+                    <div class="inner-tab" data-sub="launch">启动率</div>
+                    <div class="inner-tab" data-sub="ai">AI插帧</div>
+                    <div class="inner-tab" data-sub="screen">横竖屏切换</div>
+                    <div class="inner-tab" data-sub="team">云组队</div>
+                    <div class="inner-tab" data-sub="social">社区互动</div>
+                    <div class="inner-tab" data-sub="engine">PC引擎配置</div>
+                    <div class="inner-tab" data-sub="playdown">边下边玩</div>
+                </div>
+                <div id="funnel-sub-login">
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><span class="chart-card-title">登录转化漏斗</span><span style="font-size:12px;color:var(--text-secondary);">分母=当日APP启动设备数</span></div>
+                        <div class="funnel-container" id="funnelLogin"></div>
+                    </div>
+                    <div class="chart-row">
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">登录方式分布</span></div>
+                            <div class="chart-container" id="chart-login-method"></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">登录率趋势</span><button class="export-btn" onclick="exportCSV('login_rate')">导出</button></div>
+                            <div class="chart-container" id="chart-login-rate"></div>
+                        </div>
+                    </div>
+                    <div class="data-table-wrapper">
+                        <div class="data-table-header"><span class="data-table-title">Steam绑定数据</span><button class="export-btn" onclick="exportCSV('steam_bind')">导出</button></div>
+                        <table class="data-table">
+                            <thead><tr><th>日期</th><th>登录用户数</th><th>Steam绑定数</th><th>绑定率</th><th>最后一次已绑定用户数</th><th>最后一次未绑定用户数</th></tr></thead>
+                            <tbody id="steamBindBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="funnel-sub-launch" style="display:none;">
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><span class="chart-card-title">启动转化漏斗</span><span style="font-size:12px;color:var(--text-secondary);">分母=当日登录用户数</span></div>
+                        <div class="funnel-container" id="funnelLaunch"></div>
+                    </div>
+                    <div class="chart-row">
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">各品类启动率趋势</span><button class="export-btn" onclick="exportCSV('launch_rate')">导出</button></div>
+                            <div class="chart-container" id="chart-launch-rate"></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-card-header"><span class="chart-card-title">启动成功率 by 品类</span></div>
+                            <div class="chart-container" id="chart-launch-success"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="funnel-sub-ai" style="display:none;">
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><span class="chart-card-title">AI插帧功能漏斗</span></div>
+                        <div class="funnel-container" id="funnelAI"></div>
+                    </div>
+                    <div class="metric-cards" id="aiMetrics"></div>
+                </div>
+                <div id="funnel-sub-screen" style="display:none;">
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><span class="chart-card-title">横竖屏切换数据</span></div>
+                        <div class="metric-cards" id="screenMetrics"></div>
+                        <div class="chart-container" id="chart-screen-trend"></div>
+                    </div>
+                </div>
+                <div id="funnel-sub-team" style="display:none;">
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><span class="chart-card-title">云组队漏斗</span></div>
+                        <div class="funnel-container" id="funnelTeam"></div>
+                    </div>
+                </div>
+                <div id="funnel-sub-social" style="display:none;">
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><span class="chart-card-title">社区互动漏斗</span></div>
+                        <div class="funnel-container" id="funnelSocial"></div>
+                    </div>
+                </div>
+                <div id="funnel-sub-engine" style="display:none;">
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><span class="chart-card-title">PC引擎配置漏斗</span></div>
+                        <div class="funnel-container" id="funnelEngine"></div>
+                    </div>
+                </div>
+                <div id="funnel-sub-playdown" style="display:none;">
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><span class="chart-card-title">边下边玩漏斗</span></div>
+                        <div class="funnel-container" id="funnelPlaydown"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 6: Churn -->
+            <div class="page" id="page-churn">
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <span class="filter-label">时间：</span>
+                        <div class="date-shortcuts">
+                            <span class="date-shortcut" data-range="1">昨日</span>
+                            <span class="date-shortcut active" data-range="7">近7天</span>
+                            <span class="date-shortcut" data-range="30">近30天</span>
+                        </div>
+                        <input type="date" class="filter-input" value="2026-06-05">
+                        <span style="color:var(--text-secondary)">~</span>
+                        <input type="date" class="filter-input" value="2026-06-11">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">用户群：</span>
+                        <select class="filter-select" id="churnUserGroup">
+                            <option value="all">全部用户</option>
+                            <option value="new">新增用户</option>
+                            <option value="active">活跃用户</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">拆分：</span>
+                        <select class="filter-select" id="churnSplit">
+                            <option value="none">不拆分</option>
+                            <option value="version">按版本</option>
+                            <option value="channel">按渠道</option>
+                            <option value="user_type">按新/老用户</option>
+                        </select>
+                    </div>
+                    <button class="filter-btn filter-btn-primary">查询</button>
+                    <button class="filter-btn filter-btn-default export-btn" onclick="exportCSV('churn_analysis')">导出数据</button>
+                    <button class="filter-btn filter-btn-default export-btn" onclick="downloadRaw('churn_analysis')">下载源数据</button>
+                </div>
+                <div class="chart-row">
+                    <div class="chart-card">
+                        <div class="chart-card-header"><span class="chart-card-title">日流失 & 7日累计流失</span><button class="export-btn" onclick="exportCSV('churn_daily')">导出</button></div>
+                        <div class="chart-container" id="chart-churn-daily"></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-card-header"><span class="chart-card-title">流失用户画像对比（版本分布）</span></div>
+                        <div class="chart-container" id="chart-churn-portrait"></div>
+                    </div>
+                </div>
+                <div class="chart-row">
+                    <div class="chart-card">
+                        <div class="chart-card-header"><span class="chart-card-title">流失前置事件 Top10</span><button class="export-btn" onclick="exportCSV('churn_events')">导出</button></div>
+                        <div class="chart-container" id="chart-churn-pre-events"></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-card-header"><span class="chart-card-title">页面跳失率 Top10</span><button class="export-btn" onclick="exportCSV('bounce_rate')">导出</button></div>
+                        <div class="chart-container" id="chart-bounce-rate"></div>
+                    </div>
+                </div>
+                <div class="data-table-wrapper">
+                    <div class="data-table-header"><span class="data-table-title">流失前置事件明细</span><button class="export-btn" onclick="exportCSV('churn_detail')">导出</button></div>
+                    <table class="data-table">
+                        <thead><tr><th>排名</th><th>事件名</th><th>流失用户数</th><th>占比</th><th>活跃用户对比</th></tr></thead>
+                        <tbody id="churnDetailBody"></tbody>
+                    </table>
+                </div>
+                <div class="data-table-wrapper">
+                    <div class="data-table-header"><span class="data-table-title">页面跳失率明细</span><button class="export-btn" onclick="exportCSV('bounce_detail')">导出</button></div>
+                    <table class="data-table">
+                        <thead><tr><th>排名</th><th>页面</th><th>流失用户跳失率</th><th>活跃用户跳失率</th><th>差异</th></tr></thead>
+                        <tbody id="bounceDetailBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Drawer Detail Panel -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+    <div class="drawer-header">
+        <span class="drawer-title" id="drawerTitle">数据详情</span>
+        <button class="drawer-close" onclick="closeDrawer()">&times;</button>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+</div>
+
+<script>
+// ============ Drawer ============
+function openDrawer(title, content) {
+    document.getElementById('drawerTitle').textContent = title;
+    document.getElementById('drawerBody').innerHTML = content;
+    document.getElementById('drawer').classList.add('open');
+    document.getElementById('drawerOverlay').classList.add('open');
+}
+function closeDrawer() {
+    document.getElementById('drawer').classList.remove('open');
+    document.getElementById('drawerOverlay').classList.remove('open');
+}
+
+// Pagination helper
+function renderPagination(total, pageSize, current) {
+    const pages = Math.ceil(total / pageSize);
+    let html = `<div class="table-pagination"><span class="page-info">共 ${total} 条，第 ${current}/${pages} 页</span><div class="page-btns">`;
+    html += `<span class="page-btn">&lt;</span>`;
+    for (let i = 1; i <= Math.min(pages, 5); i++) {
+        html += `<span class="page-btn${i===current?' active':''}">${i}</span>`;
+    }
+    html += `<span class="page-btn">&gt;</span></div></div>`;
+    return html;
+}
+
+// Table row click → drawer detail
+document.addEventListener('click', (e) => {
+    const row = e.target.closest('.data-table tbody tr');
+    if (!row) return;
+    const cells = row.querySelectorAll('td');
+    if (cells.length < 3) return;
+    const headers = row.closest('table').querySelectorAll('th');
+    let kvHtml = '<dl class="drawer-kv">';
+    headers.forEach((h, i) => {
+        if (cells[i]) kvHtml += `<dt>${h.textContent}</dt><dd>${cells[i].textContent}</dd>`;
+    });
+    kvHtml += '</dl>';
+    const detailHtml = `
+        <div class="drawer-section">
+            <div class="drawer-section-title">行数据明细</div>
+            ${kvHtml}
+        </div>
+        <div class="drawer-section">
+            <div class="drawer-section-title">趋势（模拟）</div>
+            <div class="drawer-mini-chart" id="drawerMiniChart"></div>
+        </div>
+    `;
+    openDrawer('数据详情 - ' + (cells[1]?.textContent || cells[0]?.textContent), detailHtml);
+    setTimeout(() => {
+        const el = document.getElementById('drawerMiniChart');
+        if (el) {
+            const mc = echarts.init(el);
+            mc.setOption({xAxis:{type:'category',data:days7,show:false},yAxis:{type:'value',show:false},grid:{top:10,bottom:10,left:10,right:10},series:[{type:'line',smooth:true,areaStyle:{opacity:0.15},data:randArr(7,100,500),itemStyle:{color:'#1677ff'},symbol:'none'}]});
+        }
+    }, 100);
+});
+
+// ============ Navigation ============
+const menuItems = document.querySelectorAll('.menu-item');
+const pages = document.querySelectorAll('.page');
+const pageTitle = document.getElementById('pageTitle');
+const pageTitles = { overview:'大盘数据总览', users:'用户生命周期', games:'游戏生态数据', community:'社区平台数据', funnel:'核心功能漏斗', churn:'流失用户分析' };
+
+menuItems.forEach(item => {
+    item.addEventListener('click', () => {
+        menuItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        const p = item.dataset.page;
+        pages.forEach(pg => pg.classList.remove('active'));
+        document.getElementById('page-' + p).classList.add('active');
+        pageTitle.textContent = pageTitles[p];
+        setTimeout(() => initPageCharts(p), 50);
+    });
+});
+
+// Inner tabs
+document.querySelectorAll('.inner-tabs').forEach(tabBar => {
+    tabBar.querySelectorAll('.inner-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabBar.querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const parent = tabBar.id.replace('InnerTabs','');
+            const prefix = parent === 'usersInnerTabs' ? 'users' : parent === 'gamesInnerTabs' ? 'games' : 'funnel';
+            const pg = tabBar.closest('.page');
+            pg.querySelectorAll('[id^="'+prefix+'-sub-"]').forEach(el => el.style.display = 'none');
+            const target = pg.querySelector('#'+prefix+'-sub-'+tab.dataset.sub);
+            if(target) { target.style.display = 'block'; setTimeout(() => initSubCharts(prefix, tab.dataset.sub), 50); }
+        });
+    });
+});
+
+// Date shortcuts
+document.querySelectorAll('.date-shortcut').forEach(btn => {
+    btn.addEventListener('click', () => {
+        btn.parentElement.querySelectorAll('.date-shortcut').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    });
+});
+
+// ============ Mock Data Helpers ============
+function randArr(len, min, max) { return Array.from({length:len}, () => Math.floor(Math.random()*(max-min)+min)); }
+function dates(n) { const d=[]; for(let i=n-1;i>=0;i--){ const dt=new Date(2026,5,11); dt.setDate(dt.getDate()-i); d.push((dt.getMonth()+1)+'/'+dt.getDate()); } return d; }
+const days7 = dates(7);
+const days30 = dates(30);
+
+// ============ Export Functions ============
+function exportCSV(name) {
+    const data = generateExportData(name);
+    const blob = new Blob(['﻿'+data], {type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name + '_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click(); URL.revokeObjectURL(url);
+}
+function downloadRaw(name) {
+    const headers = ['timestamp','device_id','user_id','event_name','game_id','game_type','source_page','params_json'];
+    let rows = [headers.join(',')];
+    for(let i=0;i<100;i++){
+        rows.push([
+            '2026-06-'+(Math.floor(Math.random()*7)+5)+'T'+Math.floor(Math.random()*24)+':'+Math.floor(Math.random()*60)+':00',
+            'device_'+Math.random().toString(36).slice(2,10),
+            'uid_'+Math.floor(Math.random()*99999),
+            ['app_launch','explore_page_view','game_detail_view','game_launch_click','game_play_success','login_result'][Math.floor(Math.random()*6)],
+            'game_'+Math.floor(Math.random()*500),
+            ['cloud','pc_steam','pc_import','retro'][Math.floor(Math.random()*4)],
+            ['explore','game_detail','game_library','recent_play'][Math.floor(Math.random()*4)],
+            '"{}"'
+        ].join(','));
+    }
+    const blob = new Blob(['﻿'+rows.join('\n')], {type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = name + '_raw_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click(); URL.revokeObjectURL(url);
+}
+function generateExportData(name) {
+    if(name==='overview') return '日期,DAU,WAU,MAU,新增用户,昨日留存率,人均时长(min)\n' + days7.map(d => d+','+randArr(1,8000,15000)[0]+','+randArr(1,30000,50000)[0]+','+randArr(1,80000,120000)[0]+','+randArr(1,500,2000)[0]+','+(Math.random()*20+30).toFixed(1)+'%,'+randArr(1,10,30)[0]).join('\n');
+    return '日期,指标1,指标2,指标3\n' + days7.map(d => d+','+randArr(1,100,9999)[0]+','+randArr(1,100,9999)[0]+','+randArr(1,100,9999)[0]).join('\n');
+}
+
+// ============ Chart Initialization ============
+function initPageCharts(page) {
+    switch(page) {
+        case 'overview': initOverview(); break;
+        case 'users': initUsers(); break;
+        case 'games': initGames(); break;
+        case 'community': initCommunity(); break;
+        case 'funnel': initFunnel(); break;
+        case 'churn': initChurn(); break;
+    }
+}
+function initSubCharts(prefix, sub) {
+    if(prefix==='users') { if(sub==='retention') initRetention(); else if(sub==='churn') initUsersChurn(); }
+    else if(prefix==='games') { if(sub==='cloud') initCloud(); else if(sub==='rank') initGameRank(); }
+    else if(prefix==='funnel') { initFunnelSub(sub); }
+}
+
+// ============ Page: Overview ============
+function initOverview() {
+    const metrics = [
+        {title:'DAU', value:'12,847', change:'+5.2%', dir:'up'},
+        {title:'WAU', value:'43,291', change:'+3.1%', dir:'up'},
+        {title:'MAU', value:'98,432', change:'+2.8%', dir:'up'},
+        {title:'当日新增', value:'1,284', change:'-2.1%', dir:'down'},
+        {title:'昨日留存率', value:'42.3%', change:'+1.5%', dir:'up'},
+        {title:'人均互动时长', value:'18.5min', change:'+0.8min', dir:'up'},
+        {title:'活跃游戏数', value:'2,341', change:'+12', dir:'up'},
+        {title:'游戏启动成功率', value:'87.6%', change:'+0.3%', dir:'up'},
+        {title:'充值总额', value:'¥28,459', change:'+8.7%', dir:'up'},
+        {title:'付费用户数', value:'892', change:'+5.1%', dir:'up'},
+        {title:'人均云游时长', value:'32min', change:'+2.3min', dir:'up'},
+        {title:'社区活跃用户', value:'3,847', change:'+12.4%', dir:'up'},
+        {title:'新增内容数', value:'428', change:'+15.2%', dir:'up'},
+        {title:'流失用户', value:'1,043', change:'+3.2%', dir:'down'},
+    ];
+    document.getElementById('overviewMetrics').innerHTML = metrics.map(m => `<div class="metric-card"><div class="metric-card-title">${m.title}</div><div class="metric-card-value">${m.value}</div><div class="metric-card-change ${m.dir}">${m.change} 较上周期</div></div>`).join('');
+
+    const c1 = echarts.init(document.getElementById('chart-user-trend'));
+    c1.setOption({tooltip:{trigger:'axis'},legend:{data:['新增用户','活跃用户'],bottom:0},xAxis:{type:'category',data:days7},yAxis:[{type:'value',name:'新增'},{type:'value',name:'活跃'}],series:[{name:'新增用户',type:'line',smooth:true,data:randArr(7,800,2000),itemStyle:{color:'#1677ff'}},{name:'活跃用户',type:'line',smooth:true,yAxisIndex:1,data:randArr(7,8000,15000),itemStyle:{color:'#52c41a'}}]});
+
+    const c2 = echarts.init(document.getElementById('chart-game-launch'));
+    c2.setOption({tooltip:{trigger:'axis'},legend:{data:['启动次数','成功次数'],bottom:0},xAxis:{type:'category',data:days7},yAxis:{type:'value'},series:[{name:'启动次数',type:'bar',data:randArr(7,5000,12000),itemStyle:{color:'#1677ff'}},{name:'成功次数',type:'bar',data:randArr(7,4000,10000),itemStyle:{color:'#52c41a'}}]});
+
+    const c3 = echarts.init(document.getElementById('chart-churn-trend'));
+    c3.setOption({tooltip:{trigger:'axis'},xAxis:{type:'category',data:days7},yAxis:{type:'value'},series:[{name:'流失用户',type:'line',smooth:true,areaStyle:{opacity:0.15},data:randArr(7,800,1500),itemStyle:{color:'#ff4d4f'}}]});
+
+    const c4 = echarts.init(document.getElementById('chart-channel-pie'));
+    c4.setOption({title:{text:'渠道分布',textStyle:{fontSize:12}},tooltip:{trigger:'item'},series:[{type:'pie',radius:['35%','65%'],data:[{value:35,name:'官方'},{value:25,name:'应用宝'},{value:20,name:'小米'},{value:12,name:'华为'},{value:8,name:'其他'}],label:{fontSize:10}}]});
+
+    const c5 = echarts.init(document.getElementById('chart-version-pie'));
+    c5.setOption({title:{text:'版本分布',textStyle:{fontSize:12}},tooltip:{trigger:'item'},series:[{type:'pie',radius:['35%','65%'],data:[{value:45,name:'6.0.9'},{value:30,name:'6.0.8'},{value:15,name:'6.0.7'},{value:10,name:'其他'}],label:{fontSize:10}}]});
+}
+
+// ============ Page: Users ============
+function initUsers() {
+    const metrics = [
+        {title:'活跃用户数',value:'12,847'},{title:'活跃账号数',value:'11,293'},{title:'新增用户数',value:'1,284'},{title:'新增账号数',value:'1,156'},{title:'游客用户数',value:'2,341'},{title:'匿名设备数',value:'4,892'}
+    ];
+    document.getElementById('usersActiveMetrics').innerHTML = metrics.map(m => `<div class="metric-card"><div class="metric-card-title">${m.title}</div><div class="metric-card-value">${m.value}</div></div>`).join('');
+
+    const c1 = echarts.init(document.getElementById('chart-active-trend'));
+    c1.setOption({tooltip:{trigger:'axis'},xAxis:{type:'category',data:days7},yAxis:{type:'value'},series:[{name:'活跃用户',type:'line',smooth:true,areaStyle:{opacity:0.1},data:randArr(7,10000,15000),itemStyle:{color:'#1677ff'}}]});
+
+    const c2 = echarts.init(document.getElementById('chart-new-trend'));
+    c2.setOption({tooltip:{trigger:'axis'},xAxis:{type:'category',data:days7},yAxis:{type:'value'},series:[{name:'新增用户',type:'line',smooth:true,areaStyle:{opacity:0.1},data:randArr(7,800,2000),itemStyle:{color:'#722ed1'}}]});
+
+    const c3 = echarts.init(document.getElementById('chart-guest-trend'));
+    c3.setOption({tooltip:{trigger:'axis'},legend:{data:['游客用户','匿名设备'],bottom:0},xAxis:{type:'category',data:days7},yAxis:{type:'value'},series:[{name:'游客用户',type:'line',smooth:true,data:randArr(7,2000,3500),itemStyle:{color:'#faad14'}},{name:'匿名设备',type:'line',smooth:true,data:randArr(7,4000,6000),itemStyle:{color:'#8c8c8c'}}]});
+
+    const c4 = echarts.init(document.getElementById('chart-user-compose'));
+    c4.setOption({tooltip:{trigger:'item'},series:[{type:'pie',radius:['40%','70%'],data:[{value:55,name:'注册活跃用户'},{value:20,name:'游客用户'},{value:25,name:'匿名设备'}]}]});
+}
+
+function initRetention() {
+    const dates_r = ['6/5','6/6','6/7','6/8','6/9','6/10','6/11'];
+    let html = '<table><thead><tr><th>日期</th><th>活跃数</th><th>次日</th><th>3日</th><th>7日</th><th>14日</th><th>30日</th></tr></thead><tbody>';
+    dates_r.forEach(d => {
+        const base = Math.floor(Math.random()*5000+8000);
+        const r1 = (Math.random()*15+35).toFixed(1);
+        const r3 = (Math.random()*10+25).toFixed(1);
+        const r7 = (Math.random()*8+18).toFixed(1);
+        const r14 = (Math.random()*5+12).toFixed(1);
+        const r30 = (Math.random()*4+8).toFixed(1);
+        html += `<tr><td>${d}</td><td>${base.toLocaleString()}</td><td class="${r1>40?'cell-high':r1>30?'cell-mid':'cell-low'}">${r1}%</td><td class="${r3>30?'cell-high':r3>20?'cell-mid':'cell-low'}">${r3}%</td><td class="${r7>22?'cell-high':r7>15?'cell-mid':'cell-low'}">${r7}%</td><td class="${r14>15?'cell-high':r14>10?'cell-mid':'cell-low'}">${r14}%</td><td class="${r30>10?'cell-high':r30>7?'cell-mid':'cell-low'}">${r30}%</td></tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('retentionMatrix').innerHTML = html;
+
+    const c1 = echarts.init(document.getElementById('chart-retention-trend'));
+    c1.setOption({tooltip:{trigger:'axis'},legend:{data:['次日留存','3日留存','7日留存'],bottom:0},xAxis:{type:'category',data:days7},yAxis:{type:'value',axisLabel:{formatter:'{value}%'}},series:[{name:'次日留存',type:'line',smooth:true,data:randArr(7,35,50)},{name:'3日留存',type:'line',smooth:true,data:randArr(7,22,35)},{name:'7日留存',type:'line',smooth:true,data:randArr(7,15,25)}]});
+
+    const c2 = echarts.init(document.getElementById('chart-retention-compare'));
+    c2.setOption({tooltip:{trigger:'axis'},legend:{data:['新用户次日','老用户次日'],bottom:0},xAxis:{type:'category',data:days7},yAxis:{type:'value',axisLabel:{formatter:'{value}%'}},series:[{name:'新用户次日',type:'line',smooth:true,data:randArr(7,25,40),itemStyle:{color:'#1677ff'}},{name:'老用户次日',type:'line',smooth:true,data:randArr(7,40,55),itemStyle:{color:'#52c41a'}}]});
+}
+
+function initUsersChurn() {
+    const c1 = echarts.init(document.getElementById('chart-daily-churn'));
+    c1.setOption({tooltip:{trigger:'axis'},legend:{data:['日流失','月累计'],bottom:0},xAxis:{type:'category',data:days7},yAxis:[{type:'value',name:'日流失'},{type:'value',name:'月累计'}],series:[{name:'日流失',type:'bar',data:randArr(7,800,1500),itemStyle:{color:'#ff4d4f'}},{name:'月累计',type:'line',yAxisIndex:1,smooth:true,data:[5200,6100,7000,7900,8800,9700,10500],itemStyle:{color:'#faad14'}}]});
+
+    const c2 = echarts.init(document.getElementById('chart-churn-events'));
+    c2.setOption({tooltip:{trigger:'axis'},xAxis:{type:'value'},yAxis:{type:'category',data:['游戏详情页','探索首页','游戏库','充值页','设置页','搜索页','社区首页','排行榜','游玩页','下载管理'].reverse()},series:[{type:'bar',data:[420,380,350,310,280,250,220,190,170,150].reverse(),itemStyle:{color:'#ff4d4f'}}]});
+}
+
+// ============ Page: Games ============
+function initGames() {
+    const metrics = [
+        {title:'累计游戏总量',value:'8,432'},{title:'新增游戏数',value:'47'},{title:'活跃游戏数',value:'2,341'},{title:'下载游戏数',value:'1,892'},{title:'导入游戏数',value:'643'},{title:'成功运行游戏数',value:'1,756'}
+    ];
+    document.getElementById('gamesPcMetrics').innerHTML = metrics.map(m => `<div class="metric-card"><div class="metric-card-title">${m.title}</div><div class="metric-card-value">${m.value}</div></div>`).join('');
+
+    const c1 = echarts.init(document.getElementById('chart-pc-launch'));
+    c1.setOption({tooltip:{trigger:'axis'},legend:{data:['启动次数','成功运行'],bottom:0},xAxis:{type:'category',data:days7},yAxis:{type:'value'},series:[{name:'启动次数',type:'line',smooth:true,data:randArr(7,6000,12000),itemStyle:{color:'#1677ff'}},{name:'成功运行',type:'line',smooth:true,data:randArr(7,5000,10000),itemStyle:{color:'#52c41a'}}]});
+
+    const c2 = echarts.init(document.getElementById('chart-game-type-pie'));
+    c2.setOption({tooltip:{trigger:'item'},series:[{type:'pie',radius:['35%','65%'],data:[{value:40,name:'PC Steam'},{value:25,name:'PC Epic'},{value:15,name:'PC 导入'},{value:12,name:'云游戏'},{value:8,name:'复古游戏'}]}]});
+}
+
+function initCloud() {
+    const metrics = [
+        {title:'云游活跃用户',value:'3,284'},{title:'云游新增用户',value:'412'},{title:'充值订单数',value:'892'},{title:'充值用户数',value:'634'},{title:'充值总金额',value:'¥28,459'},{title:'云游流失用户',value:'187'}
+    ];
+    document.getElementById('gamesCloudMetrics').innerHTML = metrics.map(m => `<div class="metric-card"><div class="metric-card-title">${m.title}</div><div class="metric-card-value">${m.value}</div></div>`).join('');
+
+    const c1 = echarts.init(document.getElementById('chart-cloud-user'));
+    c1.setOption({tooltip:{trigger:'axis'},legend:{data:['云游活跃','云游新增'],bottom:0},xAxis:{type:'category',data:days7},yAxis:[{type:'value'},{type:'value'}],series:[{name:'云游活跃',type:'line',smooth:true,data:randArr(7,2800,3800),itemStyle:{color:'#1677ff'}},{name:'云游新增',type:'line',smooth:true,yAxisIndex:1,data:randArr(7,300,600),itemStyle:{color:'#722ed1'}}]});
+
+    const c2 = echarts.init(document.getElementById('chart-cloud-pay'));
+    c2.setOption({tooltip:{trigger:'axis'},legend:{data:['充值用户','充值金额(元)'],bottom:0},xAxis:{type:'category',data:days7},yAxis:[{type:'value',name:'用户'},{type:'value',name:'金额'}],series:[{name:'充值用户',type:'bar',data:randArr(7,70,120),itemStyle:{color:'#1677ff'}},{name:'充值金额(元)',type:'line',yAxisIndex:1,smooth:true,data:randArr(7,3000,6000),itemStyle:{color:'#faad14'}}]});
+
+    const games = ['黑神话：悟空','GTA V','赛博朋克2077','艾尔登法环','霍格沃茨','博德之门3','星空','只狼','对马岛','死亡搁浅'];
+    document.getElementById('cloudRankBody').innerHTML = renderCloudRankTable(1);
+}
+
+function initGameRank() {
+    const games = ['黑神话：悟空','GTA V','赛博朋克2077','艾尔登法环','霍格沃茨','博德之门3','星空','只狼','对马岛','死亡搁浅','巫师3','荒野大镖客2','战神','原神','崩坏星穹铁道','鬼泣5','怪物猎人世界','无人深空','星露谷物语','空洞骑士'];
+    const hours = games.map((_,i) => Math.floor(2000-i*80+Math.random()*50));
+
+    const c1 = echarts.init(document.getElementById('chart-game-rank'));
+    c1.setOption({tooltip:{trigger:'axis'},xAxis:{type:'value',name:'总时长(h)'},yAxis:{type:'category',data:[...games].reverse(),axisLabel:{fontSize:11}},series:[{type:'bar',data:[...hours].reverse(),itemStyle:{color:'#1677ff'}}],grid:{left:120}});
+
+    document.getElementById('gameRankBody').innerHTML = renderGameRankTable(1);
+}
+
+// ============ Page: Community ============
+function initCommunity() {
+    const metrics = [
+        {title:'社区活跃用户',value:'3,847'},{title:'新增帖子数',value:'428'},{title:'帖子访问总量',value:'52,341'},{title:'人均帖子阅读',value:'4.2篇'},{title:'人均停留时长',value:'6.3min'},{title:'人均互动事件',value:'2.8次'}
+    ];
+    document.getElementById('communityMetrics').innerHTML = metrics.map(m => `<div class="metric-card"><div class="metric-card-title">${m.title}</div><div class="metric-card-value">${m.value}</div></div>`).join('');
+
+    const c1 = echarts.init(document.getElementById('chart-community-interact'));
+    c1.setOption({tooltip:{trigger:'axis'},xAxis:{type:'category',data:days7},yAxis:{type:'value'},series:[{name:'互动总量',type:'line',smooth:true,areaStyle:{opacity:0.1},data:randArr(7,3000,8000),itemStyle:{color:'#1677ff'}}]});
+
+    const c2 = echarts.init(document.getElementById('chart-community-type'));
+    c2.setOption({tooltip:{trigger:'axis'},legend:{data:['点赞','收藏','评论','转发','分享'],bottom:0},xAxis:{type:'category',data:days7},yAxis:{type:'value'},series:[{name:'点赞',type:'line',smooth:true,data:randArr(7,1500,3000)},{name:'收藏',type:'line',smooth:true,data:randArr(7,500,1500)},{name:'评论',type:'line',smooth:true,data:randArr(7,800,2000)},{name:'转发',type:'line',smooth:true,data:randArr(7,200,800)},{name:'分享',type:'line',smooth:true,data:randArr(7,300,1000)}]});
+
+    const c3 = echarts.init(document.getElementById('chart-community-active'));
+    c3.setOption({tooltip:{trigger:'axis'},xAxis:{type:'category',data:days7},yAxis:{type:'value'},series:[{name:'社区活跃用户',type:'line',smooth:true,areaStyle:{opacity:0.1},data:randArr(7,3000,5000),itemStyle:{color:'#722ed1'}}]});
+
+    const c4 = echarts.init(document.getElementById('chart-community-partition'));
+    c4.setOption({tooltip:{trigger:'axis'},xAxis:{type:'value'},yAxis:{type:'category',data:['GTA V','黑神话','赛博朋克','原神','崩铁','配置分享','Steam','求助区','攻略区','杂谈'].reverse()},series:[{type:'bar',data:[890,780,650,580,520,480,430,380,340,300].reverse(),itemStyle:{color:'#722ed1'}}],grid:{left:80}});
+}
+
+// ============ Page: Funnel ============
+function initFunnel() { initFunnelSub('login'); }
+
+function renderFunnel(containerId, steps) {
+    const max = steps[0].value;
+    let html = '';
+    steps.forEach((s,i) => {
+        const w = Math.max((s.value/max)*100, 8);
+        const rate = i===0 ? '100%' : (s.value/steps[0].value*100).toFixed(1)+'%';
+        const stepRate = i===0 ? '' : '(转化:'+(s.value/steps[i-1].value*100).toFixed(1)+'%)';
+        html += `<div class="funnel-step"><div class="funnel-label">${s.name}</div><div class="funnel-bar" style="width:${w}%">${s.value.toLocaleString()}</div><div class="funnel-value">${rate} ${stepRate}</div></div>`;
+    });
+    document.getElementById(containerId).innerHTML = html;
+}
+
+function initFunnelSub(sub) {
+    switch(sub) {
+        case 'login':
+            renderFunnel('funnelLogin', [
+                {name:'APP启动设备数', value:18432},
+                {name:'登录弹窗曝光', value:12847},
+                {name:'选择登录方式', value:9284},
+                {name:'登录成功', value:7421},
+                {name:'Steam绑定', value:4892}
+            ]);
+            const cl1 = echarts.init(document.getElementById('chart-login-method'));
+            cl1.setOption({tooltip:{trigger:'item'},series:[{type:'pie',radius:['35%','65%'],data:[{value:35,name:'SIM一键登录'},{value:25,name:'微信'},{value:18,name:'QQ'},{value:12,name:'游客模式'},{value:7,name:'Google'},{value:3,name:'Apple'}]}]});
+
+            const cl2 = echarts.init(document.getElementById('chart-login-rate'));
+            cl2.setOption({tooltip:{trigger:'axis'},legend:{data:['登录率','Steam绑定率'],bottom:0},xAxis:{type:'category',data:days7},yAxis:{type:'value',axisLabel:{formatter:'{value}%'}},series:[{name:'登录率',type:'line',smooth:true,data:randArr(7,38,48),itemStyle:{color:'#1677ff'}},{name:'Steam绑定率',type:'line',smooth:true,data:randArr(7,22,35),itemStyle:{color:'#722ed1'}}]});
+
+            document.getElementById('steamBindBody').innerHTML = renderSteamBindTable(1, 'all');
+            break;
+        case 'launch':
+            renderFunnel('funnelLaunch', [
+                {name:'APP启动设备数', value:18432},
+                {name:'APP登录用户数', value:7421},
+                {name:'Steam绑定用户数', value:4892},
+                {name:'Steam下载用户数', value:3241},
+                {name:'游戏启动用户数', value:5847},
+                {name:'秒玩启动用户数', value:2134},
+                {name:'边下边玩用户数', value:892}
+            ]);
+            const cl3 = echarts.init(document.getElementById('chart-launch-rate'));
+            cl3.setOption({tooltip:{trigger:'axis'},legend:{data:['秒玩启动率','Steam游戏启动率','边下边玩启动率','导入游戏启动率'],bottom:0},xAxis:{type:'category',data:days7},yAxis:{type:'value',axisLabel:{formatter:'{value}%'}},series:[{name:'秒玩启动率',type:'line',smooth:true,data:randArr(7,25,35)},{name:'Steam游戏启动率',type:'line',smooth:true,data:randArr(7,35,50)},{name:'边下边玩启动率',type:'line',smooth:true,data:randArr(7,8,15)},{name:'导入游戏启动率',type:'line',smooth:true,data:randArr(7,5,12)}]});
+
+            const cl4 = echarts.init(document.getElementById('chart-launch-success'));
+            cl4.setOption({tooltip:{trigger:'axis'},xAxis:{type:'category',data:['PC Steam','PC Epic','PC 导入','云游戏','复古游戏','H5游戏']},yAxis:{type:'value',axisLabel:{formatter:'{value}%'},max:100},series:[{type:'bar',data:[87,82,75,95,91,98],itemStyle:{color:function(p){return p.data>90?'#52c41a':p.data>80?'#faad14':'#ff4d4f';}}}]});
+            break;
+        case 'ai':
+            renderFunnel('funnelAI', [
+                {name:'游戏详情页', value:8432},
+                {name:'进入游戏', value:5847},
+                {name:'侧边栏唤起', value:3241},
+                {name:'性能Tab', value:2134},
+                {name:'AI插帧开启', value:1287}
+            ]);
+            document.getElementById('aiMetrics').innerHTML = [
+                {title:'最后一次AI插帧开启用户数',value:'8,432'},{title:'最后一次AI插帧关闭用户数',value:'12,341'}
+            ].map(m => `<div class="metric-card"><div class="metric-card-title">${m.title}</div><div class="metric-card-value">${m.value}</div></div>`).join('');
+            break;
+        case 'screen':
+            document.getElementById('screenMetrics').innerHTML = [
+                {title:'最后一次横屏设备数',value:'6,842'},{title:'最后一次竖屏设备数',value:'11,590'},{title:'最后一次横屏用户数',value:'5,921'},{title:'最后一次竖屏用户数',value:'9,847'}
+            ].map(m => `<div class="metric-card"><div class="metric-card-title">${m.title}</div><div class="metric-card-value">${m.value}</div></div>`).join('');
+            const cs = echarts.init(document.getElementById('chart-screen-trend'));
+            cs.setOption({tooltip:{trigger:'axis'},legend:{data:['横屏切换次数','竖屏切换次数'],bottom:0},xAxis:{type:'category',data:days7},yAxis:{type:'value'},series:[{name:'横屏切换次数',type:'line',smooth:true,data:randArr(7,3000,6000),itemStyle:{color:'#1677ff'}},{name:'竖屏切换次数',type:'line',smooth:true,data:randArr(7,4000,8000),itemStyle:{color:'#722ed1'}}]});
+            break;
+        case 'team':
+            renderFunnel('funnelTeam', [{name:'首页',value:12847},{name:'玩游戏Tab',value:8432},{name:'组队大厅',value:2134},{name:'加入/创建房间',value:1287},{name:'组队游戏中',value:892}]);
+            break;
+        case 'social':
+            renderFunnel('funnelSocial', [{name:'首页',value:12847},{name:'社区首页',value:3847},{name:'帖子详情页',value:2541},{name:'互动(赞/评/转/发帖)',value:1892}]);
+            break;
+        case 'engine':
+            renderFunnel('funnelEngine', [{name:'游戏详情页',value:8432},{name:'唤起设置菜单',value:3241},{name:'PC引擎设置页',value:2134},{name:'推荐方案/调整参数',value:1456}]);
+            break;
+        case 'playdown':
+            renderFunnel('funnelPlaydown', [{name:'游戏详情页',value:8432},{name:'触发边玩边下',value:1892},{name:'进入云游',value:1287}]);
+            break;
+    }
+}
+
+// ============ Page: Churn ============
+function initChurn() {
+    const c1 = echarts.init(document.getElementById('chart-churn-daily'));
+    c1.setOption({tooltip:{trigger:'axis'},legend:{data:['日流失','7日累计'],bottom:0},xAxis:{type:'category',data:days7},yAxis:[{type:'value',name:'日流失'},{type:'value',name:'7日累计'}],series:[{name:'日流失',type:'bar',data:randArr(7,800,1500),itemStyle:{color:'#ff4d4f'}},{name:'7日累计',type:'line',yAxisIndex:1,smooth:true,data:[5200,6100,7000,7900,8800,9700,10500],itemStyle:{color:'#faad14'}}]});
+
+    const c2 = echarts.init(document.getElementById('chart-churn-portrait'));
+    c2.setOption({tooltip:{trigger:'axis'},legend:{data:['流失用户','留存用户'],bottom:0},xAxis:{type:'category',data:['6.0.9','6.0.8','6.0.7','6.0.6','其他']},yAxis:{type:'value',axisLabel:{formatter:'{value}%'}},series:[{name:'流失用户',type:'bar',data:[25,35,22,12,6],itemStyle:{color:'#ff4d4f'}},{name:'留存用户',type:'bar',data:[45,30,15,7,3],itemStyle:{color:'#52c41a'}}]});
+
+    const events = ['game_detail_view','explore_page_view','game_library_view','recharge_page_view','settings_page_view','user_search','community_page_view','ranking_page_view','play_page_view','download_manage_click'];
+    const c3 = echarts.init(document.getElementById('chart-churn-pre-events'));
+    c3.setOption({tooltip:{trigger:'axis'},xAxis:{type:'value'},yAxis:{type:'category',data:[...events].reverse(),axisLabel:{fontSize:10}},series:[{type:'bar',data:[420,380,350,310,280,250,220,190,170,150].reverse(),itemStyle:{color:'#ff4d4f'}}],grid:{left:140}});
+
+    const pages_b = ['游戏详情页','探索首页','游戏库','充值页','设置页','搜索结果页','社区首页','排行榜','游玩Tab','下载管理'];
+    const c4 = echarts.init(document.getElementById('chart-bounce-rate'));
+    c4.setOption({tooltip:{trigger:'axis'},legend:{data:['流失用户跳失率','活跃用户跳失率'],bottom:0},xAxis:{type:'category',data:pages_b,axisLabel:{rotate:30,fontSize:10}},yAxis:{type:'value',axisLabel:{formatter:'{value}%'}},series:[{name:'流失用户跳失率',type:'bar',data:randArr(10,30,70),itemStyle:{color:'#ff4d4f'}},{name:'活跃用户跳失率',type:'bar',data:randArr(10,10,35),itemStyle:{color:'#52c41a'}}]});
+
+    document.getElementById('churnDetailBody').innerHTML = renderChurnDetailTable(1);
+
+    document.getElementById('bounceDetailBody').innerHTML = renderBounceDetailTable(1);
+}
+
+// ============ User Group Filter Logic ============
+const userGroupMultipliers = { all: 1, new: 0.15, active: 0.7 };
+const userGroupLabels = { all: '全部用户', new: '新增用户', active: '活跃用户' };
+
+function getCurrentUserGroup(page) {
+    const pg = document.getElementById('page-' + page);
+    if (!pg) return 'all';
+    const sel = pg.querySelector('.filter-select[id*="UserGroup"], .filter-select');
+    return sel ? sel.value : 'all';
+}
+
+function applyUserGroupToTable(bodyId, baseData, userGroup) {
+    const m = userGroupMultipliers[userGroup] || 1;
+    const tbody = document.getElementById(bodyId);
+    if (!tbody || !baseData) return;
+    tbody.innerHTML = baseData(m, userGroup);
+}
+
+// Steam bind table with user group support
+function renderSteamBindTable(multiplier, userGroup) {
+    const label = userGroupLabels[userGroup] || '全部用户';
+    let html = days7.map(d => {
+        const login = Math.floor((Math.random()*3000+6000) * multiplier);
+        const bind = Math.floor(login*(Math.random()*0.15+0.25));
+        const rate = (bind/login*100).toFixed(1);
+        const bound = Math.floor((Math.random()*20000+30000) * multiplier);
+        const unbound = Math.floor((Math.random()*15000+20000) * multiplier);
+        const rateClass = rate>35?'rate-good':rate>28?'rate-mid':'rate-bad';
+        const dot = rate>35?'green':rate>28?'orange':'red';
+        return `<tr><td>${d}</td><td class="num">${login.toLocaleString()}</td><td class="num">${bind.toLocaleString()}</td><td class="${rateClass}"><span class="status-dot ${dot}"></span>${rate}%</td><td class="num">${bound.toLocaleString()}</td><td class="num">${unbound.toLocaleString()}</td></tr>`;
+    }).join('');
+    html += '</tbody></table>' + renderPagination(7, 10, 1);
+    return html;
+}
+
+// Cloud rank table with user group support
+function renderCloudRankTable(multiplier) {
+    const games = ['黑神话：悟空','GTA V','赛博朋克2077','艾尔登法环','霍格沃茨','博德之门3','星空','只狼','对马岛','死亡搁浅'];
+    let html = games.map((g,i) => `<tr><td class="num">${i+1}</td><td>${g}</td><td class="num">${Math.floor((Math.random()*500+100)*multiplier).toLocaleString()}</td><td class="num">${Math.floor((Math.random()*200+50)*multiplier).toLocaleString()}</td><td class="num">${(Math.random()*3+1).toFixed(1)}</td></tr>`).join('');
+    html += '</tbody></table>' + renderPagination(10, 10, 1);
+    return html;
+}
+
+// Game rank table with user group support
+function renderGameRankTable(multiplier) {
+    const games = ['黑神话：悟空','GTA V','赛博朋克2077','艾尔登法环','霍格沃茨','博德之门3','星空','只狼','对马岛','死亡搁浅','巫师3','荒野大镖客2','战神','原神','崩坏星穹铁道','鬼泣5','怪物猎人世界','无人深空','星露谷物语','空洞骑士'];
+    let html = games.map((g,i) => {
+        const hours = Math.floor((2000-i*80+Math.random()*50)*multiplier);
+        const users = Math.floor((Math.random()*300+50)*multiplier);
+        const devices = Math.floor(users*0.9+Math.random()*20);
+        const rate = (Math.random()*15+80).toFixed(1);
+        const rateClass = rate>90?'rate-good':rate>85?'rate-mid':'rate-bad';
+        const dot = rate>90?'green':rate>85?'orange':'red';
+        return `<tr><td class="num">${i+1}</td><td>${g}</td><td class="num">${hours.toLocaleString()}</td><td class="num">${users.toLocaleString()}</td><td class="num">${devices.toLocaleString()}</td><td class="${rateClass}"><span class="status-dot ${dot}"></span>${rate}%</td></tr>`;
+    }).join('');
+    html += '</tbody></table>' + renderPagination(20, 20, 1);
+    return html;
+}
+
+// Churn detail table with user group support
+function renderChurnDetailTable(multiplier) {
+    const events = ['game_detail_view','explore_page_view','game_library_view','recharge_page_view','settings_page_view','user_search','community_page_view','ranking_page_view','play_page_view','download_manage_click'];
+    let html = events.map((e,i) => {
+        const users = Math.floor((420-i*30+Math.random()*20)*multiplier);
+        const total = Math.floor(1043*multiplier);
+        const pct = (users/total*100).toFixed(1);
+        const active = (Math.random()*5+2).toFixed(1);
+        return `<tr><td class="num">${i+1}</td><td><code style="font-size:12px;background:#f5f5f5;padding:2px 6px;border-radius:3px;">${e}</code></td><td class="num">${users.toLocaleString()}</td><td class="num">${pct}%</td><td class="num">${active}%</td></tr>`;
+    }).join('');
+    html += '</tbody></table>' + renderPagination(10, 10, 1);
+    return html;
+}
+
+// Bounce detail table with user group support
+function renderBounceDetailTable(multiplier) {
+    const pages_b = ['游戏详情页','探索首页','游戏库','充值页','设置页','搜索结果页','社区首页','排行榜','游玩Tab','下载管理'];
+    let html = pages_b.map((p,i) => {
+        const churnRate = (Math.random()*30+30).toFixed(1);
+        const activeRate = (Math.random()*15+10).toFixed(1);
+        const diff = (churnRate-activeRate).toFixed(1);
+        return `<tr><td class="num">${i+1}</td><td>${p}</td><td class="rate-bad"><span class="status-dot red"></span>${churnRate}%</td><td class="rate-good"><span class="status-dot green"></span>${activeRate}%</td><td class="rate-bad">+${diff}%</td></tr>`;
+    }).join('');
+    html += '</tbody></table>' + renderPagination(10, 10, 1);
+    return html;
+}
+
+// Retention matrix with user group support
+function renderRetentionMatrix(multiplier) {
+    const dates_r = ['6/5','6/6','6/7','6/8','6/9','6/10','6/11'];
+    let html = '<table><thead><tr><th>日期</th><th>活跃数</th><th>次日</th><th>3日</th><th>7日</th><th>14日</th><th>30日</th></tr></thead><tbody>';
+    dates_r.forEach(d => {
+        const base = Math.floor((Math.random()*5000+8000)*multiplier);
+        const r1 = (Math.random()*15+35).toFixed(1);
+        const r3 = (Math.random()*10+25).toFixed(1);
+        const r7 = (Math.random()*8+18).toFixed(1);
+        const r14 = (Math.random()*5+12).toFixed(1);
+        const r30 = (Math.random()*4+8).toFixed(1);
+        html += `<tr><td>${d}</td><td>${base.toLocaleString()}</td><td class="${r1>40?'cell-high':r1>30?'cell-mid':'cell-low'}">${r1}%</td><td class="${r3>30?'cell-high':r3>20?'cell-mid':'cell-low'}">${r3}%</td><td class="${r7>22?'cell-high':r7>15?'cell-mid':'cell-low'}">${r7}%</td><td class="${r14>15?'cell-high':r14>10?'cell-mid':'cell-low'}">${r14}%</td><td class="${r30>10?'cell-high':r30>7?'cell-mid':'cell-low'}">${r30}%</td></tr>`;
+    });
+    html += '</tbody></table>';
+    return html;
+}
+
+// Bind filter-select change events to refresh tables
+document.querySelectorAll('.filter-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+        const page = sel.closest('.page');
+        if (!page) return;
+        const pageId = page.id.replace('page-','');
+        const userGroup = sel.value || 'all';
+        if (!userGroupMultipliers[userGroup]) return;
+        const m = userGroupMultipliers[userGroup];
+
+        switch(pageId) {
+            case 'funnel':
+                document.getElementById('steamBindBody').innerHTML = renderSteamBindTable(m, userGroup);
+                break;
+            case 'games':
+                document.getElementById('cloudRankBody').innerHTML = renderCloudRankTable(m);
+                document.getElementById('gameRankBody').innerHTML = renderGameRankTable(m);
+                break;
+            case 'churn':
+                document.getElementById('churnDetailBody').innerHTML = renderChurnDetailTable(m);
+                document.getElementById('bounceDetailBody').innerHTML = renderBounceDetailTable(m);
+                break;
+            case 'users':
+                document.getElementById('retentionMatrix').innerHTML = renderRetentionMatrix(m);
+                break;
+        }
+    });
+});
+
+// Also bind the "查询" buttons to trigger refresh
+document.querySelectorAll('.filter-btn-primary').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const page = btn.closest('.page');
+        if (!page) return;
+        const pageId = page.id.replace('page-','');
+        const sel = page.querySelector('.filter-select');
+        const userGroup = sel ? sel.value : 'all';
+        const m = userGroupMultipliers[userGroup] || 1;
+
+        // Re-init the page with current user group context
+        switch(pageId) {
+            case 'overview': initOverview(); break;
+            case 'users': initUsers(); document.getElementById('retentionMatrix').innerHTML = renderRetentionMatrix(m); break;
+            case 'games': initGames(); document.getElementById('cloudRankBody').innerHTML = renderCloudRankTable(m); document.getElementById('gameRankBody').innerHTML = renderGameRankTable(m); break;
+            case 'community': initCommunity(); break;
+            case 'funnel': initFunnel(); document.getElementById('steamBindBody').innerHTML = renderSteamBindTable(m, userGroup); break;
+            case 'churn': initChurn(); document.getElementById('churnDetailBody').innerHTML = renderChurnDetailTable(m); document.getElementById('bounceDetailBody').innerHTML = renderBounceDetailTable(m); break;
+        }
+    });
+});
+
+// ============ Init ============
+window.addEventListener('load', () => { initOverview(); });
+window.addEventListener('resize', () => { document.querySelectorAll('[id^="chart-"]').forEach(el => { const c = echarts.getInstanceByDom(el); if(c) c.resize(); }); });
+</script>
+</body>
+</html>
