@@ -561,12 +561,13 @@ function initOverview(){
     cv.setOption({
         tooltip:{trigger:'item',formatter:'{b}: {d}%'},
         color:['#3b82f6','#8b5cf6','#10b981','#94a3b8'],
-        series:[{type:'pie',radius:['45%','72%'],center:['50%','50%'],data:[
+        legend:{orient:'vertical',right:10,top:'middle',itemWidth:10,itemHeight:10,itemGap:14,textStyle:{fontSize:11,color:'#475569',rich:{name:{width:50,fontSize:11},pct:{width:35,fontSize:11,fontWeight:'bold',color:'#0f172a'},val:{fontSize:10,color:'#94a3b8'}}},formatter:function(name){var m={'6.0.9':{p:'48%',v:'5,592'},'6.0.8':{p:'28%',v:'3,262'},'6.0.7':{p:'14%',v:'1,631'},'其他':{p:'10%',v:'1,165'}};var d=m[name]||{p:'',v:''};return'{name|'+name+'} {pct|'+d.p+'} {val|('+d.v+')}'}},
+        series:[{type:'pie',radius:['45%','72%'],center:['32%','50%'],data:[
             {value:48,name:'6.0.9'},
             {value:28,name:'6.0.8'},
             {value:14,name:'6.0.7'},
             {value:10,name:'其他'}
-        ],label:{show:true,fontSize:11,formatter:'{b}\n{d}%',color:'#475569'},labelLine:{length:12,length2:8},itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2}}]
+        ],label:{show:false},itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2}}]
     });}
 
     // Pie
