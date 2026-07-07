@@ -295,7 +295,7 @@ table.dtable .tag-down{background:#fef2f2;color:#ef4444}
             <div class="filter-row"><div class="filter-chip active">今日</div><div class="filter-chip">昨日</div><div class="filter-chip">近7天</div><div class="filter-chip">近30天</div><div class="filter-date"><input type="date" class="date-input" value="2026-06-05"><span style="color:var(--text-3);margin:0 2px">~</span><input type="date" class="date-input" value="2026-06-11"></div><div style="flex:1"></div><select class="filter-select"><option>全部用户</option><option>新增用户</option><option>活跃用户</option></select></div>
             <div class="metrics-grid" id="cloudMetrics"></div>
             <div class="dash-grid g-1-1">
-                <div class="panel"><div class="panel-header"><span class="panel-title">云游活跃 & 新增趋势</span></div><div class="panel-body"><div class="chart-box" id="chart-cloud-user"></div></div></div>
+                <div class="panel"><div class="panel-header"><span class="panel-title">数据趋势</span></div><div class="panel-body"><div class="chart-box" id="chart-cloud-user"></div></div></div>
                 <div class="panel">
                     <div class="panel-header"><span class="panel-title">Top 套餐下单量</span></div>
                     <div class="panel-body"><ul class="rank-list" id="cloudPackageList"></ul></div>
@@ -710,8 +710,8 @@ function initPage(page){
 // ============ Users (merged) ============
 function initUsersPage(){
     document.getElementById('usersMetrics').innerHTML=[
-        {color:'blue',label:'活跃用户',value:'12,847'},{color:'green',label:'新增用户',value:'1,284'},{color:'orange',label:'游客用户',value:'2,341'},{color:'purple',label:'匿名设备',value:'4,892'},{color:'blue',label:'次日留存率',value:(Math.random()*8+38).toFixed(1)+'%'},{color:'red',label:'日流失用户',value:rand(800,1500).toLocaleString()}
-    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div></div>`).join('');
+        {color:'blue',label:'活跃用户',value:'12,847',tip:'所选时间范围内有app_launch的去重device_id数'},{color:'green',label:'新增用户',value:'1,284',tip:'当天首次app_launch的device_id数'},{color:'orange',label:'游客用户',value:'2,341',tip:'使用游客模式登录的去重用户数'},{color:'purple',label:'匿名设备',value:'4,892',tip:'无任何登录态的device_id数'},{color:'blue',label:'次日留存率',value:(Math.random()*8+38).toFixed(1)+'%'},{color:'red',label:'日流失用户',value:rand(800,1500).toLocaleString()}
+    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}<span class="metric-help" data-tip="${x.tip||x.label}">?</span></div><div class="metric-value">${x.value}</div></div></div>`).join('');
     renderUsersTab('active');
 }
 
@@ -863,8 +863,8 @@ let gamesRankPage=1;
 
 function initGamesPage(){
     document.getElementById('gamesMetrics').innerHTML=[
-        {color:'blue',label:'累计游戏',value:'8,432'},{color:'green',label:'活跃游戏',value:'2,341'},{color:'purple',label:'下载游戏',value:'1,892'},{color:'orange',label:'成功运行',value:'1,756'}
-    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div></div>`).join('');
+        {color:'blue',label:'累计游戏',value:'8,432',tip:'平台累计收录的游戏总数'},{color:'green',label:'活跃游戏',value:'2,341',tip:'当日有用户成功启动的去重游戏数'},{color:'purple',label:'下载游戏',value:'1,892',tip:'有下载完成记录的去重游戏数'},{color:'orange',label:'成功运行',value:'1,756',tip:'启动后运行≥5分钟的去重游戏数'},{color:'blue',label:'人均游戏时长',value:'45min',tip:'总游戏时长/活跃用户数，单位分钟'}
+    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}<span class="metric-help" data-tip="${x.tip||x.label}">?</span></div><div class="metric-value">${x.value}</div></div></div>`).join('');
 
     const d=getDays();
     const el1=document.getElementById('chart-games-launch');let c1=echarts.getInstanceByDom(el1);if(c1)c1.dispose();c1=echarts.init(el1);
@@ -921,14 +921,15 @@ document.addEventListener('click',(e)=>{
 // ============ Cloud ============
 function initCloudPage(){
     document.getElementById('cloudMetrics').innerHTML=[
-        {color:'blue',label:'云游活跃',value:'3,284'},{color:'green',label:'云游新增',value:'412'},{color:'green',label:'新增付费用户',value:'123'},{color:'purple',label:'充值订单',value:'892'},{color:'orange',label:'充值用户',value:'634'},{color:'blue',label:'充值金额',value:'¥28,459'}
-    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div></div>`).join('');
+        {color:'blue',label:'云游活跃',value:'3,284',tip:'当日有cloud_game_enter事件的去重用户数'},{color:'green',label:'云游新增',value:'412',tip:'首次产生cloud_game_enter的用户数'},{color:'purple',label:'人均游戏时长',value:'32min',tip:'云游总时长/云游活跃用户数'},{color:'green',label:'新增付费用户',value:'123'},{color:'purple',label:'充值订单',value:'892'},{color:'blue',label:'充值金额',value:'¥28,459'}
+    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}<span class="metric-help" data-tip="${x.tip||x.label}">?</span></div><div class="metric-value">${x.value}</div></div></div>`).join('');
 
     const d=getDays();
     const el1=document.getElementById('chart-cloud-user');let c1=echarts.getInstanceByDom(el1);if(c1)c1.dispose();c1=echarts.init(el1);
-    c1.setOption({tooltip:{trigger:'axis'},legend:{data:['活跃','新增'],bottom:0},grid:{top:20,right:20,bottom:40,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[
+    c1.setOption({tooltip:{trigger:'axis'},legend:{data:['活跃','新增','新增付费'],bottom:0},grid:{top:20,right:20,bottom:40,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[
         {name:'活跃',type:'line',smooth:true,data:randArr(d.length,2800,3800),itemStyle:{color:'#3b82f6'},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(59,130,246,.1)'},{offset:1,color:'rgba(59,130,246,0)'}]}}},
-        {name:'新增',type:'line',smooth:true,data:randArr(d.length,300,600),itemStyle:{color:'#10b981'}}
+        {name:'新增',type:'line',smooth:true,data:randArr(d.length,300,600),itemStyle:{color:'#10b981'}},
+        {name:'新增付费',type:'line',smooth:true,data:randArr(d.length,50,150),itemStyle:{color:'#f59e0b'}}
     ]});
 
     const packages=[
@@ -956,7 +957,7 @@ function initCloudPage(){
 function initCommunityPage(){
     document.getElementById('communityMetrics').innerHTML=[
         {color:'blue',label:'社区活跃',value:'3,847'},{color:'green',label:'新增帖子',value:'428'},{color:'purple',label:'帖子访问',value:'52,341'},{color:'orange',label:'人均互动',value:'2.8次'}
-    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div></div>`).join('');
+    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}<span class="metric-help" data-tip="${x.tip||x.label}">?</span></div><div class="metric-value">${x.value}</div></div></div>`).join('');
 
     const d=getDays();
     const el1=document.getElementById('chart-community-interact');let c1=echarts.getInstanceByDom(el1);if(c1)c1.dispose();c1=echarts.init(el1);
@@ -988,8 +989,8 @@ function initCommunityPage(){
 // ============ Funnel ============
 function initFunnelPage(){
     document.getElementById('funnelMetrics').innerHTML=[
-        {color:'blue',label:'登录转化率',value:(Math.random()*5+40).toFixed(1)+'%'},{color:'green',label:'启动成功率',value:(Math.random()*5+85).toFixed(1)+'%'},{color:'purple',label:'Steam绑定率',value:(Math.random()*5+28).toFixed(1)+'%'},{color:'orange',label:'秒玩启动率',value:(Math.random()*5+25).toFixed(1)+'%'}
-    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div></div>`).join('');
+        {color:'blue',label:'登录转化率',tip:'登录成功用户数/APP启动设备数',value:(Math.random()*5+40).toFixed(1)+'%'},{color:'green',label:'启动成功率',tip:'game_play_success / (game_play_success + game_play_fail)',value:(Math.random()*5+85).toFixed(1)+'%'},{color:'purple',label:'Steam绑定率',tip:'Steam绑定成功数/登录用户数',value:(Math.random()*5+28).toFixed(1)+'%'},{color:'orange',label:'秒玩启动率',tip:'cloud_game_enter用户数/登录用户数',value:(Math.random()*5+25).toFixed(1)+'%'}
+    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}<span class="metric-help" data-tip="${x.tip||x.label}">?</span></div><div class="metric-value">${x.value}</div></div></div>`).join('');
     renderFunnelTab('login');
 
     const d=getDays();
@@ -1104,7 +1105,7 @@ function initNewuserPage(){
         {color:'orange',label:'登录率(Steam)',value:(Math.random()*5+22).toFixed(1)+'%'},
         {color:'blue',label:'D0游戏体验率',value:(Math.random()*5+12).toFixed(1)+'%'},
         {color:'green',label:'引导后次日留存',value:(Math.random()*5+30).toFixed(1)+'%'}
-    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div></div>`).join('');
+    ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}<span class="metric-help" data-tip="${x.tip||x.label}">?</span></div><div class="metric-value">${x.value}</div></div></div>`).join('');
     const newuserSteps=[
         {step:'APP安装',metric:'设备数',value:5000},
         {step:'首次启动',metric:'设备数',value:4200},
