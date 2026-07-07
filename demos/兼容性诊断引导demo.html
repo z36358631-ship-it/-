@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>兼容性诊断 · 主动弹窗引导 Demo</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg-primary: #000000;
+  --bg-card: #1a1a1a;
+  --bg-elevated: #252525;
+  --text-primary: #ffffff;
+  --text-secondary: #e6e6e6;
+  --text-muted: #7b7b7b;
+  --brand-gold: #ffcc43;
+  --brand-green: #33d8a4;
+  --brand-blue: #338feb;
+  --brand-purple: #8174fa;
+  --border-default: #353d4e;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-full: 100px;
+  --font-primary: 'MiSans VF','MiSans','PingFang SC',-apple-system,sans-serif;
+  --font-number: 'D-DIN-PRO',var(--font-primary);
+}
+body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-primary); -webkit-font-smoothing:antialiased; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:28px 16px 60px; gap:20px; }
+.page-title { text-align:center; }
+.page-title h1 { font-size:22px; font-weight:600; }
+.page-title p { font-size:13px; color:var(--text-muted); margin-top:6px; }
+.stepbar { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+.stepbar button { font-family:var(--font-primary); font-size:13px; color:var(--text-secondary); background:var(--bg-card); border:1px solid var(--border-default); border-radius:var(--radius-full); padding:9px 16px; cursor:pointer; transition:all .2s; }
+.stepbar button:hover { border-color:var(--brand-gold); color:var(--brand-gold); }
+.stepbar button.active { background:var(--brand-gold); color:#1a1a1a; border-color:var(--brand-gold); font-weight:600; }
+
+.scene { display:none; }
+.scene.show { display:block; }
+
+/* 横屏容器 */
+.phone-h { width:874px; height:402px; background:var(--bg-primary); border-radius:28px; overflow:hidden; position:relative; box-shadow:0 20px 60px rgba(0,0,0,.6); border:1px solid #1f1f22; }
+
+/* 竖屏容器 */
+.phone-v { width:390px; height:760px; background:var(--bg-primary); border-radius:20px; overflow:hidden; position:relative; box-shadow:0 20px 60px rgba(0,0,0,.6); border:1px solid #1f1f22; }
+
+/* 详情页 */
+.detail-page { position:absolute; inset:0; display:flex; flex-direction:column; }
+.detail-header { height:220px; position:relative; flex-shrink:0; background:linear-gradient(180deg,rgba(129,116,250,.3) 0%,rgba(0,0,0,.9) 100%),linear-gradient(135deg,#1a1320,#0a0a0c); }
+.detail-header-bar { position:absolute; top:0; left:0; right:0; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 16px; z-index:2; }
+.detail-header-bar .back { font-size:20px; color:#fff; cursor:pointer; }
+.detail-header-bar .actions { display:flex; gap:12px; font-size:16px; }
+.detail-game-info { position:absolute; bottom:16px; left:16px; right:16px; display:flex; align-items:flex-end; gap:12px; }
+.detail-game-icon { width:60px; height:60px; border-radius:var(--radius-xl); flex-shrink:0; background:linear-gradient(135deg,#8174fa,#673fb8); display:flex; align-items:center; justify-content:center; font-size:28px; box-shadow:0 4px 16px rgba(129,116,250,.4); }
+.detail-game-text h2 { font-size:18px; font-weight:600; }
+.detail-game-text p { font-size:11px; color:var(--text-muted); margin-top:3px; }
+.detail-body { flex:1; background:var(--bg-primary); padding:16px; overflow-y:auto; }
+.detail-body::-webkit-scrollbar { display:none; }
+.detail-bottom { flex-shrink:0; padding:12px 16px; border-top:1px solid rgba(255,255,255,.06); display:flex; gap:10px; }
+.detail-bottom .btn-start { flex:1; background:linear-gradient(135deg,#ffcc43,#ffb600); color:#1a1a1a; border:none; border-radius:var(--radius-md); padding:12px; font-size:15px; font-weight:600; font-family:var(--font-primary); cursor:pointer; }
+
+/* 竖屏弹窗 */
+.diag-popup-v { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(.96); width:350px; max-height:420px; z-index:11; opacity:0; pointer-events:none; background:linear-gradient(180deg,#2b2830,#1c1a20); border-radius:var(--radius-2xl); box-shadow:0 12px 40px rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.06); transition:all .3s cubic-bezier(.32,.72,0,1); overflow:hidden; display:flex; flex-direction:column; }
+.diag-popup-v.show { opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+
+/* 游戏背景 */
+.game-bg { position:absolute; inset:0; background:radial-gradient(circle at 25% 30%,rgba(129,116,250,.22),transparent 45%),radial-gradient(circle at 78% 65%,rgba(51,143,235,.18),transparent 50%),linear-gradient(135deg,#1a1320,#0a0a0c 55%,#000); }
+
+/* 蒙层 */
+.v-mask { position:absolute; inset:0; background:rgba(0,0,0,.65); backdrop-filter:blur(6px); z-index:10; display:none; }
+.v-mask.show { display:block; }
+
+/* 主弹窗 */
+.diag-popup { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(.96); width:520px; max-height:380px; z-index:11; opacity:0; pointer-events:none; background:linear-gradient(180deg,#2b2830,#1c1a20); border-radius:var(--radius-2xl); box-shadow:0 12px 40px rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.06); transition:all .3s cubic-bezier(.32,.72,0,1); overflow:hidden; display:flex; flex-direction:column; }
+.diag-popup.show { opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+.diag-popup .dp-close { position:absolute; top:12px; right:12px; width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,.08); color:var(--text-secondary); border:none; font-size:12px; cursor:pointer; z-index:3; }
+.diag-popup .dp-close:hover { background:rgba(255,255,255,.16); }
+
+/* 弹窗头部 */
+.dp-header { padding:16px 18px 12px; border-bottom:1px solid rgba(255,255,255,.06); }
+.dp-header-top { display:flex; align-items:center; gap:10px; }
+.dp-header-icon { width:32px; height:32px; border-radius:50%; flex-shrink:0; background:rgba(255,86,120,.12); display:flex; align-items:center; justify-content:center; font-size:16px; }
+.dp-header h2 { font-size:15px; font-weight:600; }
+.dp-header .dp-sub { font-size:11px; color:var(--text-muted); margin-top:2px; }
+
+/* 弹窗内容 */
+.dp-body { flex:1; overflow-y:auto; padding:14px 18px; }
+.dp-body::-webkit-scrollbar { display:none; }
+
+/* 引擎方案区 */
+.dp-section-title { font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+.dp-section-title .badge { font-size:9px; padding:2px 6px; border-radius:var(--radius-sm); background:rgba(255,204,67,.12); color:var(--brand-gold); }
+.engine-list { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.engine-list.horizontal { flex-direction:row; }
+.engine-list.horizontal .engine-card { flex:1; flex-direction:column; align-items:center; text-align:center; gap:6px; padding:10px 8px; }
+.engine-card { display:flex; flex-direction:row; align-items:center; gap:10px; padding:10px 12px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:var(--radius-md); cursor:pointer; transition:all .15s; }
+.engine-card:hover { border-color:rgba(255,255,255,.15); background:rgba(255,255,255,.05); }
+.engine-card.selected { border-color:rgba(255,204,67,.5); background:rgba(255,204,67,.06); }
+.engine-card .ec-radio { width:14px; height:14px; border-radius:50%; border:2px solid rgba(255,255,255,.2); flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+.engine-card.selected .ec-radio { border-color:var(--brand-gold); background:var(--brand-gold); }
+.engine-card.selected .ec-radio::after { content:''; width:5px; height:5px; border-radius:50%; background:#1a1a1a; }
+.engine-card .ec-info { flex:1; }
+.engine-card .ec-name { font-size:12px; font-weight:600; color:var(--text-secondary); }
+.engine-card .ec-rate { font-size:11px; font-weight:600; color:var(--brand-green); font-family:var(--font-number); white-space:nowrap; }
+.engine-card.selected .ec-name { color:var(--brand-gold); }
+
+/* 问题反馈区 */
+.feedback-section { border-top:1px solid rgba(255,255,255,.06); padding-top:12px; }
+.issue-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.issue-tag { font-size:11px; color:var(--text-secondary); background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:var(--radius-full); padding:6px 12px; cursor:pointer; transition:all .15s; user-select:none; }
+.issue-tag:hover { border-color:rgba(255,255,255,.2); background:rgba(255,255,255,.06); }
+.issue-tag.selected { border-color:rgba(51,143,235,.5); background:rgba(51,143,235,.1); color:var(--brand-blue); }
+.feedback-input { width:100%; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:var(--radius-md); padding:8px 10px; font-size:11px; color:var(--text-primary); font-family:var(--font-primary); resize:none; outline:none; transition:border-color .15s; }
+.feedback-input:focus { border-color:rgba(51,143,235,.4); }
+.feedback-input::placeholder { color:var(--text-muted); }
+
+/* 弹窗底部 */
+.dp-footer { padding:12px 18px; border-top:1px solid rgba(255,255,255,.06); background:rgba(28,26,32,.5); display:flex; flex-direction:column; gap:10px; }
+.dp-footer .dp-hint { font-size:10px; color:var(--text-muted); line-height:1.4; }
+.dp-footer .dp-actions { display:flex; gap:8px; flex-shrink:0; }
+.dp-footer .btn { border:none; border-radius:var(--radius-md); font-family:var(--font-primary); font-size:12px; font-weight:600; padding:11px 16px; cursor:pointer; transition:all .15s; white-space:nowrap; flex:1; text-align:center; }
+.dp-footer .btn-ghost { background:transparent; color:var(--text-secondary); border:1px solid var(--border-default); }
+.dp-footer .btn-ghost:hover { border-color:rgba(255,255,255,.2); }
+.dp-footer .btn-primary { background:linear-gradient(135deg,#ffcc43,#ffb600); color:#1a1a1a; }
+.dp-footer .btn-primary:hover { opacity:.9; }
+.dp-footer .btn-primary:disabled { opacity:.4; cursor:not-allowed; }
+
+/* 二次确认状态（弹窗内容替换） */
+.dp-confirm { display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:32px 24px; gap:12px; }
+.dp-confirm.show { display:flex; }
+.dp-confirm .dc-icon { font-size:32px; }
+.dp-confirm .dc-title { font-size:15px; font-weight:600; }
+.dp-confirm .dc-desc { font-size:12px; color:var(--text-muted); line-height:1.6; }
+.dp-confirm .dc-actions { display:flex; gap:10px; margin-top:8px; width:100%; max-width:280px; }
+.dp-confirm .dc-actions .btn { flex:1; border:none; border-radius:var(--radius-md); font-family:var(--font-primary); font-size:13px; font-weight:600; padding:10px; cursor:pointer; white-space:nowrap; }
+.dp-confirm .btn-cancel { background:rgba(255,255,255,.06); color:var(--text-secondary); border:1px solid var(--border-default); }
+.dp-confirm .btn-confirm { background:linear-gradient(135deg,#ffcc43,#ffb600); color:#1a1a1a; }
+
+/* 关闭成功状态 */
+.success-overlay { position:absolute; inset:0; z-index:25; background:rgba(0,0,0,.8); display:none; align-items:center; justify-content:center; flex-direction:column; gap:12px; }
+.success-overlay.show { display:flex; }
+.success-overlay .so-icon { font-size:36px; }
+.success-overlay .so-title { font-size:16px; font-weight:600; }
+.success-overlay .so-desc { font-size:12px; color:var(--text-muted); text-align:center; line-height:1.6; }
+
+/* Toast */
+.toast { position:fixed; top:48px; left:50%; transform:translateX(-50%) translateY(-20px); background:rgba(28,26,32,.96); border:1px solid var(--border-default); color:var(--text-primary); font-size:12px; padding:11px 18px; border-radius:var(--radius-md); z-index:100; opacity:0; transition:all .3s; pointer-events:none; box-shadow:0 8px 24px rgba(0,0,0,.5); display:flex; align-items:center; gap:8px; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+.hint { font-size:12px; color:var(--text-muted); text-align:center; max-width:874px; line-height:1.7; }
+</style>
+</head>
+<body>
+
+<div class="page-title">
+  <h1>兼容性诊断 · 主动弹窗引导</h1>
+  <p>客户端识别异常场景后主动弹窗 · 推荐引擎方案 + 问题反馈 · 确认后切换方案</p>
+</div>
+
+<div class="stepbar">
+  <button id="t1" class="active" onclick="go(1)">① 黑屏（横屏）</button>
+  <button id="t2" onclick="go(2)">② 闪退/崩溃（横屏）</button>
+  <button id="t3" onclick="go(3)">③ 卡在启动/加载（横屏）</button>
+  <button id="t4" onclick="go(4)">④ 闪退后详情页（竖屏）</button>
+</div>
+
+<!-- 场景1：黑屏 -->
+<div class="scene show" id="s1">
+<div class="phone-h">
+  <div class="game-bg"></div>
+  <div class="v-mask show" id="mask1"></div>
+  <div class="diag-popup show" id="popup1">
+    <button class="dp-close" onclick="closePopup(1)">✕</button>
+    <div class="dp-header">
+      <div class="dp-header-top">
+        <div class="dp-header-icon">⚠️</div>
+        <div>
+          <h2>检测到游戏启动异常</h2>
+          <div class="dp-sub">建议切换PC启动引擎方案，选择你遇到的问题帮助我们定位并识别</div>
+        </div>
+      </div>
+    </div>
+    <div class="dp-body" id="popupBody1">
+      <div class="engine-list" id="engineList1"></div>
+      <div class="feedback-section">
+        <div class="dp-section-title">启动异常类型（可选）</div>
+        <div class="issue-tags" id="issueTags1"></div>
+        <textarea class="feedback-input" id="feedbackInput1" rows="2" placeholder="描述你遇到的具体情况，例如：进入设置后黑屏、有声音没画面…"></textarea>
+      </div>
+    </div>
+    <div class="dp-confirm" id="popupConfirm1">
+      <div class="dc-icon">⚠️</div>
+      <div class="dc-title">确认切换引擎方案？</div>
+      <div class="dc-desc" id="confirmDesc1"></div>
+      <div class="dc-actions">
+        <button class="btn btn-cancel" onclick="hideConfirm(1)">取消</button>
+        <button class="btn btn-confirm" onclick="doClose(1)">确认切换</button>
+      </div>
+    </div>
+    <div class="dp-footer" id="popupFoot1">
+      <div class="dp-hint">切换后需重新启动游戏方可生效</div>
+      <div class="dp-actions">
+        <button class="btn btn-ghost" onclick="closePopup(1)">暂不处理</button>
+        <button class="btn btn-primary" id="confirmBtn1" onclick="doConfirm(1)">切换方案</button>
+      </div>
+    </div>
+  </div>
+  <div class="success-overlay" id="successOverlay1">
+    <div class="so-icon">✅</div>
+    <div class="so-title">应用成功</div>
+    <div class="so-desc">请重新启动游戏</div>
+  </div>
+</div>
+</div>
+
+<!-- 场景2：闪退/崩溃 -->
+<div class="scene" id="s2">
+<div class="phone-h">
+  <div class="game-bg"></div>
+  <div class="v-mask show" id="mask2"></div>
+  <div class="diag-popup show" id="popup2">
+    <button class="dp-close" onclick="closePopup(2)">✕</button>
+    <div class="dp-header">
+      <div class="dp-header-top">
+        <div class="dp-header-icon">⚠️</div>
+        <div>
+          <h2>检测到游戏启动异常</h2>
+          <div class="dp-sub">建议切换PC启动引擎方案，选择你遇到的问题帮助我们定位并识别</div>
+        </div>
+      </div>
+    </div>
+    <div class="dp-body" id="popupBody2">
+      <div class="engine-list" id="engineList2"></div>
+      <div class="feedback-section">
+        <div class="dp-section-title">启动异常类型（可选）</div>
+        <div class="issue-tags" id="issueTags2"></div>
+        <textarea class="feedback-input" id="feedbackInput2" rows="2" placeholder="描述你遇到的具体情况，例如：进入某个场景后闪退、更新后闪退…"></textarea>
+      </div>
+    </div>
+    <div class="dp-confirm" id="popupConfirm2">
+      <div class="dc-icon">⚠️</div>
+      <div class="dc-title">确认切换引擎方案？</div>
+      <div class="dc-desc" id="confirmDesc2"></div>
+      <div class="dc-actions">
+        <button class="btn btn-cancel" onclick="hideConfirm(2)">取消</button>
+        <button class="btn btn-confirm" onclick="doClose(2)">确认切换</button>
+      </div>
+    </div>
+    <div class="dp-footer" id="popupFoot2">
+      <div class="dp-hint">切换后需重新启动游戏方可生效</div>
+      <div class="dp-actions">
+        <button class="btn btn-ghost" onclick="closePopup(2)">暂不处理</button>
+        <button class="btn btn-primary" id="confirmBtn2" onclick="doConfirm(2)">切换方案</button>
+      </div>
+    </div>
+  </div>
+  <div class="success-overlay" id="successOverlay2">
+    <div class="so-icon">✅</div>
+    <div class="so-title">应用成功</div>
+    <div class="so-desc">请重新启动游戏</div>
+  </div>
+</div>
+</div>
+
+<!-- 场景3：卡在启动/加载 -->
+<div class="scene" id="s3">
+<div class="phone-h">
+  <div class="game-bg"></div>
+  <div class="v-mask show" id="mask3"></div>
+  <div class="diag-popup show" id="popup3">
+    <button class="dp-close" onclick="closePopup(3)">✕</button>
+    <div class="dp-header">
+      <div class="dp-header-top">
+        <div class="dp-header-icon">⚠️</div>
+        <div>
+          <h2>检测到游戏启动异常</h2>
+          <div class="dp-sub">建议切换PC启动引擎方案，选择你遇到的问题帮助我们定位并识别</div>
+        </div>
+      </div>
+    </div>
+    <div class="dp-body" id="popupBody3">
+      <div class="engine-list" id="engineList3"></div>
+      <div class="feedback-section">
+        <div class="dp-section-title">启动异常类型（可选）</div>
+        <div class="issue-tags" id="issueTags3"></div>
+        <textarea class="feedback-input" id="feedbackInput3" rows="2" placeholder="描述你遇到的具体情况，例如：卡在检查环境界面、Download Config失败…"></textarea>
+      </div>
+    </div>
+    <div class="dp-confirm" id="popupConfirm3">
+      <div class="dc-icon">⚠️</div>
+      <div class="dc-title">确认切换引擎方案？</div>
+      <div class="dc-desc" id="confirmDesc3"></div>
+      <div class="dc-actions">
+        <button class="btn btn-cancel" onclick="hideConfirm(3)">取消</button>
+        <button class="btn btn-confirm" onclick="doClose(3)">确认切换</button>
+      </div>
+    </div>
+    <div class="dp-footer" id="popupFoot3">
+      <div class="dp-hint">切换后需重新启动游戏方可生效</div>
+      <div class="dp-actions">
+        <button class="btn btn-ghost" onclick="closePopup(3)">暂不处理</button>
+        <button class="btn btn-primary" id="confirmBtn3" onclick="doConfirm(3)">切换方案</button>
+      </div>
+    </div>
+  </div>
+  <div class="success-overlay" id="successOverlay3">
+    <div class="so-icon">✅</div>
+    <div class="so-title">应用成功</div>
+    <div class="so-desc">请重新启动游戏</div>
+  </div>
+</div>
+</div>
+
+<div class="hint">点击顶部切换场景 · ①②③为横屏游戏内弹窗 · ④为竖屏闪退后详情页弹窗（无问题反馈区）</div>
+
+<!-- 场景4：闪退后详情页（竖屏） -->
+<div class="scene" id="s4">
+<div class="phone-v">
+  <div class="detail-page">
+    <div class="detail-header">
+      <div class="detail-header-bar"><span class="back">‹</span><div class="actions"><span>♡</span><span>⋯</span></div></div>
+      <div class="detail-game-info">
+        <div class="detail-game-icon">🎮</div>
+        <div class="detail-game-text"><h2>艾尔登法环</h2><p>ELDEN RING · FromSoftware</p></div>
+      </div>
+    </div>
+    <div class="detail-body">
+      <div style="font-size:13px;color:var(--text-muted);line-height:1.8;padding:12px 0;">交错的广阔世界，庞大的地下迷宫，遍布各处的工艺品与武器。在辽阔的大地上，壮丽的景色奇观以及步步惊心的威胁在等着你。</div>
+    </div>
+    <div class="detail-bottom"><button class="btn-start">秒玩</button></div>
+  </div>
+  <div class="v-mask show" id="mask4"></div>
+  <div class="diag-popup-v show" id="popup4">
+    <button class="dp-close" onclick="closePopup(4)" style="position:absolute;top:12px;right:12px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.08);color:var(--text-secondary);border:none;font-size:12px;cursor:pointer;z-index:3;">✕</button>
+    <div class="dp-header">
+      <div class="dp-header-top">
+        <div class="dp-header-icon">⚠️</div>
+        <div>
+          <h2>检测到游戏启动异常</h2>
+          <div class="dp-sub">建议切换PC启动引擎方案</div>
+        </div>
+      </div>
+    </div>
+    <div class="dp-body" id="popupBody4">
+      <div class="engine-list" id="engineList4"></div>
+    </div>
+    <div class="dp-confirm" id="popupConfirm4">
+      <div class="dc-icon">⚠️</div>
+      <div class="dc-title">确认切换引擎方案？</div>
+      <div class="dc-desc" id="confirmDesc4"></div>
+      <div class="dc-actions">
+        <button class="btn btn-cancel" onclick="hideConfirm(4)">取消</button>
+        <button class="btn btn-confirm" onclick="doClose(4)">确认切换</button>
+      </div>
+    </div>
+    <div class="dp-footer" id="popupFoot4">
+      <div class="dp-actions" style="width:100%;">
+        <button class="btn btn-ghost" onclick="closePopup(4)">暂不处理</button>
+        <button class="btn btn-primary" id="confirmBtn4" onclick="doConfirm(4)">切换方案</button>
+      </div>
+    </div>
+  </div>
+  <div class="success-overlay" id="successOverlay4">
+    <div class="so-icon">✅</div>
+    <div class="so-title">应用成功</div>
+    <div class="so-desc">请重新启动游戏</div>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ENGINE_PLANS = [
+  { name:'系统智能设置方案', rate:'94.4%', badge:'推荐' },
+  { name:'sts2 8至尊', rate:'89.2%', badge:'' },
+  { name:'尖塔2', rate:'86.7%', badge:'' },
+];
+
+const ISSUE_OPTIONS = {
+  1: ['黑屏','启动报错','卡在启动/加载','其他'],
+  2: ['黑屏','启动报错','卡在启动/加载','其他'],
+  3: ['黑屏','启动报错','卡在启动/加载','其他'],
+};
+
+let selectedEngine = {1:0, 2:0, 3:0, 4:0};
+let selectedIssues = {1:new Set(), 2:new Set(), 3:new Set()};
+
+function go(n) {
+  document.querySelectorAll('.stepbar button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('t'+n).classList.add('active');
+  document.querySelectorAll('.scene').forEach(s=>s.classList.remove('show'));
+  document.getElementById('s'+n).classList.add('show');
+  resetScene(n);
+}
+
+function resetScene(n) {
+  selectedEngine[n] = 0;
+  if(selectedIssues[n]) selectedIssues[n] = new Set();
+  document.getElementById('mask'+n).classList.add('show');
+  document.getElementById('popup'+n).classList.add('show');
+  document.getElementById('popupBody'+n).style.display='block';
+  document.getElementById('popupConfirm'+n).classList.remove('show');
+  document.getElementById('popupFoot'+n).style.display='flex';
+  document.getElementById('successOverlay'+n).classList.remove('show');
+  const header = document.querySelector('#popup'+n+' .dp-header');
+  if(header) header.style.display='';
+  const close = document.querySelector('#popup'+n+' .dp-close');
+  if(close) close.style.display='';
+  const input = document.getElementById('feedbackInput'+n);
+  if(input) input.value = '';
+  renderEngineList(n);
+  if(document.getElementById('issueTags'+n)) renderIssueTags(n);
+  updateConfirmBtn(n);
+}
+
+function renderEngineList(n) {
+  const el = document.getElementById('engineList'+n);
+  const isHorizontal = (n <= 3);
+  el.className = 'engine-list' + (isHorizontal ? ' horizontal' : '');
+  el.innerHTML = ENGINE_PLANS.map((p,i) => `
+    <div class="engine-card ${selectedEngine[n]===i?'selected':''}" onclick="selectEngine(${n},${i})">
+      <div class="ec-radio"></div>
+      <div class="ec-info">
+        <div class="ec-name">${p.name}${p.badge?' <span style="font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(255,204,67,.12);color:var(--brand-gold);font-weight:500;margin-left:4px;">'+p.badge+'</span>':''}</div>
+      </div>
+      <div class="ec-rate">成功率 ${p.rate}</div>
+    </div>
+  `).join('');
+}
+
+function renderIssueTags(n) {
+  const el = document.getElementById('issueTags'+n);
+  el.innerHTML = ISSUE_OPTIONS[n].map((tag,i) => `
+    <div class="issue-tag ${selectedIssues[n].has(i)?'selected':''}" onclick="toggleIssue(${n},${i})">${tag}</div>
+  `).join('');
+}
+
+function selectEngine(n, idx) {
+  selectedEngine[n] = idx;
+  renderEngineList(n);
+  updateConfirmBtn(n);
+}
+
+function toggleIssue(n, idx) {
+  if(selectedIssues[n].has(idx)) selectedIssues[n].delete(idx);
+  else selectedIssues[n].add(idx);
+  renderIssueTags(n);
+}
+
+function updateConfirmBtn(n) {
+  const btn = document.getElementById('confirmBtn'+n);
+  btn.disabled = (selectedEngine[n] === undefined);
+}
+
+function closePopup(n) {
+  document.getElementById('mask'+n).classList.remove('show');
+  document.getElementById('popup'+n).classList.remove('show');
+}
+
+function doConfirm(n) {
+  const plan = ENGINE_PLANS[selectedEngine[n]];
+  const desc = document.getElementById('confirmDesc'+n);
+  let txt = `将切换为「<strong>${plan.name}</strong>」方案（启动成功率 ${plan.rate}）<br>切换后需重新启动游戏方可生效`;
+  const input = document.getElementById('feedbackInput'+n);
+  if((selectedIssues[n] && selectedIssues[n].size > 0) || (input && input.value.trim())) {
+    txt += `<br><span style="color:var(--brand-blue);font-size:11px;">同时上报你选择的问题反馈</span>`;
+  }
+  desc.innerHTML = txt;
+  document.getElementById('popupBody'+n).style.display='none';
+  document.getElementById('popupFoot'+n).style.display='none';
+  document.querySelector('#popup'+n+' .dp-header').style.display='none';
+  document.querySelector('#popup'+n+' .dp-close').style.display='none';
+  document.getElementById('popupConfirm'+n).classList.add('show');
+}
+
+function hideConfirm(n) {
+  document.getElementById('popupConfirm'+n).classList.remove('show');
+  document.getElementById('popupBody'+n).style.display='block';
+  document.getElementById('popupFoot'+n).style.display='flex';
+  document.querySelector('#popup'+n+' .dp-header').style.display='';
+  document.querySelector('#popup'+n+' .dp-close').style.display='';
+}
+
+function doClose(n) {
+  document.getElementById('popup'+n).classList.remove('show');
+  setTimeout(()=>{
+    document.getElementById('successOverlay'+n).classList.add('show');
+    toast('✅ 引擎方案已切换，重启游戏后生效');
+  }, 400);
+}
+
+function toast(msg) {
+  const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+setTimeout(()=>go(1), 300);
+</script>
+</body>
+</html>

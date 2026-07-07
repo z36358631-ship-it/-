@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>兼容性治理 · 诊断后台管理</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg: #f5f6fa;
+  --bg-card: #ffffff;
+  --text: #1a1a2e;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --border: #e5e7eb;
+  --primary: #4f46e5;
+  --primary-light: #eef2ff;
+  --danger: #ef4444;
+  --danger-light: #fef2f2;
+  --success: #10b981;
+  --success-light: #ecfdf5;
+  --warning: #f59e0b;
+  --warning-light: #fffbeb;
+  --radius: 8px;
+  --font: 'MiSans VF','MiSans','PingFang SC',-apple-system,sans-serif;
+}
+body { font-family:var(--font); background:var(--bg); color:var(--text); min-height:100vh; display:flex; }
+
+/* 侧边导航 */
+.sidebar { width:200px; background:var(--primary); padding:24px 0; flex-shrink:0; position:fixed; top:0; bottom:0; }
+.sidebar-logo { padding:0 20px 24px; font-size:15px; font-weight:700; color:#fff; }
+.sidebar-nav { display:flex; flex-direction:column; gap:2px; padding:0 8px; }
+.nav-item { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:6px; font-size:13px; color:rgba(255,255,255,.7); cursor:pointer; transition:all .15s; }
+.nav-item:hover { background:rgba(255,255,255,.1); color:#fff; }
+.nav-item.active { background:rgba(255,255,255,.15); color:#fff; font-weight:600; }
+
+/* 主内容区 */
+.main { flex:1; margin-left:200px; padding:24px 32px; }
+.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
+.page-header h1 { font-size:20px; font-weight:700; }
+.page-header .desc { font-size:12px; color:var(--text-muted); margin-top:4px; }
+
+/* 按钮 */
+.btn { border:none; border-radius:6px; font-family:var(--font); font-size:13px; font-weight:500; padding:8px 16px; cursor:pointer; transition:all .15s; display:inline-flex; align-items:center; gap:6px; }
+.btn-primary { background:var(--primary); color:#fff; }
+.btn-primary:hover { opacity:.9; }
+.btn-ghost { background:transparent; color:var(--text-secondary); border:1px solid var(--border); }
+.btn-ghost:hover { border-color:var(--primary); color:var(--primary); }
+.btn-danger { background:var(--danger); color:#fff; }
+.btn-sm { padding:5px 10px; font-size:12px; }
+
+/* Tab */
+.tabs { display:flex; gap:0; margin-bottom:20px; border-bottom:1px solid var(--border); }
+.tab { padding:10px 18px; font-size:13px; color:var(--text-secondary); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all .15s; }
+.tab:hover { color:var(--primary); }
+.tab.active { color:var(--primary); font-weight:600; border-bottom-color:var(--primary); }
+
+/* 统计卡片 */
+.stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+.stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; }
+.stat-card .label { font-size:11px; color:var(--text-muted); margin-bottom:4px; }
+.stat-card .value { font-size:22px; font-weight:700; }
+.stat-card .trend { font-size:10px; margin-top:3px; }
+.stat-card .trend.up { color:var(--danger); }
+.stat-card .trend.down { color:var(--success); }
+
+/* 规则列表 */
+.rule-list { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.rule-item { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; justify-content:space-between; gap:16px; transition:background .1s; }
+.rule-item:last-child { border-bottom:none; }
+.rule-item:hover { background:#fafbfc; }
+.rule-item .ri-main { flex:1; min-width:0; }
+.rule-item .ri-top { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.rule-item .ri-name { font-size:14px; font-weight:600; }
+.rule-item .ri-group { font-size:10px; color:var(--text-muted); background:#f3f4f6; padding:2px 6px; border-radius:3px; }
+.badge { display:inline-block; font-size:10px; font-weight:500; padding:2px 7px; border-radius:3px; }
+.badge-success { background:var(--success-light); color:var(--success); }
+.badge-danger { background:var(--danger-light); color:var(--danger); }
+.badge-warning { background:var(--warning-light); color:var(--warning); }
+.badge-info { background:var(--primary-light); color:var(--primary); }
+.rule-item .ri-desc { font-size:12px; color:var(--text-secondary); margin-top:6px; line-height:1.6; }
+.rule-item .ri-params { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+.ri-param { font-size:11px; background:#f3f4f6; border:1px solid var(--border); border-radius:4px; padding:3px 7px; color:var(--text-secondary); }
+.rule-item .ri-actions { display:flex; gap:6px; flex-shrink:0; align-items:center; padding-top:2px; }
+.ri-btn { font-size:12px; color:var(--primary); cursor:pointer; padding:4px 10px; border-radius:4px; background:transparent; border:none; font-family:var(--font); }
+.ri-btn:hover { background:var(--primary-light); }
+.ri-btn.danger { color:var(--danger); }
+.ri-btn.danger:hover { background:var(--danger-light); }
+
+/* 表格 */
+.table-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:20px; }
+.table-head { padding:14px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.table-head h3 { font-size:14px; font-weight:600; }
+table { width:100%; border-collapse:collapse; }
+th { padding:10px 16px; font-size:11px; font-weight:600; color:var(--text-muted); text-align:left; background:#fafbfc; border-bottom:1px solid var(--border); }
+td { padding:11px 16px; font-size:12px; color:var(--text); border-bottom:1px solid var(--border); }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:#f9fafb; }
+.device-tag { font-size:10px; color:var(--text-muted); background:#f3f4f6; padding:2px 5px; border-radius:3px; }
+
+/* 弹窗 */
+.modal-mask { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:100; display:none; align-items:center; justify-content:center; }
+.modal-mask.show { display:flex; }
+.modal { background:#fff; border-radius:12px; width:520px; max-height:80vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+.modal-head { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.modal-head h3 { font-size:16px; font-weight:600; }
+.modal-close { width:28px; height:28px; border-radius:50%; background:#f3f4f6; border:none; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.modal-close:hover { background:#e5e7eb; }
+.modal-body { padding:20px 24px; }
+.modal-foot { padding:16px 24px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px; }
+.form-group { margin-bottom:16px; }
+.form-label { font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; display:block; }
+.form-input { width:100%; border:1px solid var(--border); border-radius:6px; padding:9px 12px; font-size:13px; font-family:var(--font); color:var(--text); outline:none; transition:border .15s; }
+.form-input:focus { border-color:var(--primary); }
+.form-select { width:100%; border:1px solid var(--border); border-radius:6px; padding:9px 12px; font-size:13px; font-family:var(--font); color:var(--text); outline:none; background:#fff; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+/* 确认弹窗 */
+.confirm-body { text-align:center; padding:24px; }
+.confirm-body .icon { font-size:36px; margin-bottom:12px; }
+.confirm-body .msg { font-size:14px; color:var(--text); }
+.confirm-body .sub { font-size:12px; color:var(--text-muted); margin-top:6px; }
+
+.section { display:none; }
+.section.show { display:block; }
+
+/* Toast */
+.toast { position:fixed; top:24px; right:24px; background:var(--text); color:#fff; font-size:13px; padding:12px 20px; border-radius:8px; z-index:200; opacity:0; transform:translateY(-10px); transition:all .3s; pointer-events:none; }
+.toast.show { opacity:1; transform:translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-logo">诊断后台</div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" onclick="switchSection('report',this)">📋 问题上报</div>
+    <div class="nav-item" onclick="switchSection('copyConfig',this)">📝 弹窗文案配置</div>
+    <div class="nav-item" onclick="switchSection('rules',this)">⚙️ 检测规则配置</div>
+    <div class="nav-item" onclick="switchSection('stats',this)">📊 诊断数据统计</div>
+  </nav>
+</div>
+
+<div class="main">
+
+<!-- 模块1：问题上报 -->
+<div class="section show" id="sec-report">
+  <div class="page-header">
+    <div><h1>问题上报列表</h1><div class="desc">查看与处理用户通过诊断引导上报的兼容性问题</div></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" onclick="toast('已导出CSV文件')">导出CSV</button>
+      <button class="btn btn-primary" onclick="toast('已批量标记为处理中')">批量处理</button>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="label">今日上报</div><div class="value">47</div><div class="trend up">↑ 23% 较昨日</div></div>
+    <div class="stat-card"><div class="label">本周上报</div><div class="value">312</div><div class="trend down">↓ 8% 较上周</div></div>
+    <div class="stat-card"><div class="label">待处理</div><div class="value" style="color:var(--warning)">89</div><div class="trend">平均处理 4.2h</div></div>
+    <div class="stat-card"><div class="label">已解决</div><div class="value" style="color:var(--success)">1,247</div><div class="trend">解决率 82.3%</div></div>
+  </div>
+
+  <div class="table-card">
+    <div class="table-head">
+      <h3>最新上报</h3>
+      <div style="display:flex;gap:8px;">
+        <select class="form-select" style="width:auto;padding:5px 10px;font-size:12px;" onchange="toast('已筛选：'+this.value)">
+          <option>全部类型</option><option>闪退</option><option>黑屏</option><option>花屏</option><option>卡顿</option><option>卡加载</option>
+        </select>
+        <select class="form-select" style="width:auto;padding:5px 10px;font-size:12px;" onchange="toast('已筛选：'+this.value)">
+          <option>全部状态</option><option>待处理</option><option>处理中</option><option>已解决</option>
+        </select>
+      </div>
+    </div>
+    <table>
+      <tr><th>时间</th><th>游戏</th><th>异常类型</th><th>反馈类型</th><th>设备</th><th>系统</th><th>APP版本</th><th>芯片</th><th>状态</th><th>操作</th></tr>
+      <tr><td>07-15 14:32</td><td>艾尔登法环</td><td><span class="badge badge-danger">闪退</span></td><td><span class="badge badge-info">启动报错</span></td><td>Redmi K70 Pro</td><td>Android 14</td><td>6.2.1</td><td><span class="device-tag">骁龙8 Gen3</span></td><td><span class="badge badge-warning">待处理</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(0)">查看</button></td></tr>
+      <tr><td>07-15 14:28</td><td>GTA5</td><td><span class="badge badge-danger">黑屏</span></td><td><span class="badge badge-info">黑屏</span></td><td>小米14 Ultra</td><td>Android 14</td><td>6.2.1</td><td><span class="device-tag">骁龙8 Gen3</span></td><td><span class="badge badge-warning">待处理</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(1)">查看</button></td></tr>
+      <tr><td>07-15 14:15</td><td>赛博朋克2077</td><td><span class="badge badge-warning">卡顿</span></td><td><span class="badge badge-info">其他</span></td><td>OPPO Find X7</td><td>Android 14</td><td>6.2.0</td><td><span class="device-tag">天玑9300</span></td><td><span class="badge badge-info">处理中</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(2)">查看</button></td></tr>
+      <tr><td>07-15 13:58</td><td>艾尔登法环</td><td><span class="badge badge-danger">花屏</span></td><td><span class="badge badge-info">黑屏</span></td><td>三星S24 Ultra</td><td>Android 15</td><td>6.2.1</td><td><span class="device-tag">骁龙8 Elite</span></td><td><span class="badge badge-success">已解决</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(3)">查看</button></td></tr>
+      <tr><td>07-15 13:42</td><td>巫师3</td><td><span class="badge badge-warning">帧率低</span></td><td><span class="badge badge-info">卡在启动/加载</span></td><td>vivo X100 Pro</td><td>Android 14</td><td>6.1.9</td><td><span class="device-tag">天玑9300</span></td><td><span class="badge badge-success">已解决</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(4)">查看</button></td></tr>
+      <tr><td>07-15 13:30</td><td>博德之门3</td><td><span class="badge badge-danger">闪退</span></td><td><span class="badge badge-info">启动报错</span></td><td>一加12</td><td>Android 14</td><td>6.2.1</td><td><span class="device-tag">骁龙8 Gen3</span></td><td><span class="badge badge-warning">待处理</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(5)">查看</button></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 模块：弹窗文案配置 -->
+<div class="section" id="sec-copyConfig">
+  <div class="page-header">
+    <div><h1>弹窗文案配置</h1><div class="desc">配置诊断弹窗中的标题、引导语、异常类型标签，支持国内/海外多语言</div></div>
+    <button class="btn btn-primary" onclick="toast('已保存全部配置')">保存配置</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchCopyTab(this,'domestic')">国内版</div>
+    <div class="tab" onclick="switchCopyTab(this,'overseas')">海外版 (GameHub)</div>
+  </div>
+
+  <div id="copyTabContent">
+    <!-- 国内版配置 -->
+    <div class="table-card">
+      <div class="table-head"><h3>弹窗基础文案</h3><span style="font-size:11px;color:var(--text-muted)">修改后需发版生效</span></div>
+      <table>
+        <tr><th style="width:160px;">字段</th><th>中文（默认）</th><th>操作</th></tr>
+        <tr><td>弹窗标题</td><td><input class="form-input" value="检测到游戏启动异常" style="font-size:12px;padding:6px 8px;"></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已恢复默认')">恢复默认</button></td></tr>
+        <tr><td>引导语</td><td><input class="form-input" value="建议切换PC启动引擎方案，选择你遇到的问题帮助我们定位并识别" style="font-size:12px;padding:6px 8px;"></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已恢复默认')">恢复默认</button></td></tr>
+        <tr><td>确认按钮</td><td><input class="form-input" value="切换方案" style="font-size:12px;padding:6px 8px;"></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已恢复默认')">恢复默认</button></td></tr>
+        <tr><td>取消按钮</td><td><input class="form-input" value="暂不处理" style="font-size:12px;padding:6px 8px;"></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已恢复默认')">恢复默认</button></td></tr>
+        <tr><td>二次确认标题</td><td><input class="form-input" value="确认切换引擎方案？" style="font-size:12px;padding:6px 8px;"></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已恢复默认')">恢复默认</button></td></tr>
+        <tr><td>底部提示</td><td><input class="form-input" value="切换后需重新启动游戏方可生效" style="font-size:12px;padding:6px 8px;"></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已恢复默认')">恢复默认</button></td></tr>
+      </table>
+    </div>
+
+    <div class="table-card">
+      <div class="table-head"><h3>启动异常类型标签</h3><div style="display:flex;gap:8px;"><button class="btn btn-ghost btn-sm" onclick="toast('已新增类型')">+ 新增类型</button></div></div>
+      <table>
+        <tr><th>序号</th><th>标签名称（中文）</th><th>标签KEY</th><th>状态</th><th>操作</th></tr>
+        <tr><td>1</td><td><input class="form-input" value="黑屏" style="font-size:12px;padding:5px 8px;width:120px;"></td><td><span class="device-tag">black_screen</span></td><td><span class="badge badge-success">启用</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已禁用')">禁用</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已删除')">删除</button></td></tr>
+        <tr><td>2</td><td><input class="form-input" value="启动报错" style="font-size:12px;padding:5px 8px;width:120px;"></td><td><span class="device-tag">launch_error</span></td><td><span class="badge badge-success">启用</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已禁用')">禁用</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已删除')">删除</button></td></tr>
+        <tr><td>3</td><td><input class="form-input" value="卡在启动/加载" style="font-size:12px;padding:5px 8px;width:120px;"></td><td><span class="device-tag">stuck_loading</span></td><td><span class="badge badge-success">启用</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已禁用')">禁用</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已删除')">删除</button></td></tr>
+        <tr><td>4</td><td><input class="form-input" value="其他" style="font-size:12px;padding:5px 8px;width:120px;"></td><td><span class="device-tag">other</span></td><td><span class="badge badge-success">启用</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已禁用')">禁用</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已删除')">删除</button></td></tr>
+      </table>
+    </div>
+
+    <div class="table-card">
+      <div class="table-head"><h3>多语言翻译（海外版）</h3><span style="font-size:11px;color:var(--text-muted)">国内版仅中文，海外版需配置多语言</span></div>
+      <table>
+        <tr><th>字段KEY</th><th>中文</th><th>English</th><th>日本語</th><th>Русский</th><th>Português</th></tr>
+        <tr><td>title</td><td>检测到游戏启动异常</td><td><input class="form-input" value="Game launch issue detected" style="font-size:11px;padding:4px 6px;width:160px;"></td><td><input class="form-input" value="ゲーム起動異常を検出" style="font-size:11px;padding:4px 6px;width:130px;"></td><td><input class="form-input" value="Обнаружена ошибка запуска" style="font-size:11px;padding:4px 6px;width:150px;"></td><td><input class="form-input" value="Problema ao iniciar o jogo" style="font-size:11px;padding:4px 6px;width:150px;"></td></tr>
+        <tr><td>black_screen</td><td>黑屏</td><td><input class="form-input" value="Black screen" style="font-size:11px;padding:4px 6px;width:160px;"></td><td><input class="form-input" value="ブラックスクリーン" style="font-size:11px;padding:4px 6px;width:130px;"></td><td><input class="form-input" value="Чёрный экран" style="font-size:11px;padding:4px 6px;width:150px;"></td><td><input class="form-input" value="Tela preta" style="font-size:11px;padding:4px 6px;width:150px;"></td></tr>
+        <tr><td>launch_error</td><td>启动报错</td><td><input class="form-input" value="Launch error" style="font-size:11px;padding:4px 6px;width:160px;"></td><td><input class="form-input" value="起動エラー" style="font-size:11px;padding:4px 6px;width:130px;"></td><td><input class="form-input" value="Ошибка запуска" style="font-size:11px;padding:4px 6px;width:150px;"></td><td><input class="form-input" value="Erro ao iniciar" style="font-size:11px;padding:4px 6px;width:150px;"></td></tr>
+        <tr><td>stuck_loading</td><td>卡在启动/加载</td><td><input class="form-input" value="Stuck on loading" style="font-size:11px;padding:4px 6px;width:160px;"></td><td><input class="form-input" value="ロード中に停止" style="font-size:11px;padding:4px 6px;width:130px;"></td><td><input class="form-input" value="Зависание при загрузке" style="font-size:11px;padding:4px 6px;width:150px;"></td><td><input class="form-input" value="Travado no carregamento" style="font-size:11px;padding:4px 6px;width:150px;"></td></tr>
+        <tr><td>other</td><td>其他</td><td><input class="form-input" value="Other" style="font-size:11px;padding:4px 6px;width:160px;"></td><td><input class="form-input" value="その他" style="font-size:11px;padding:4px 6px;width:130px;"></td><td><input class="form-input" value="Другое" style="font-size:11px;padding:4px 6px;width:150px;"></td><td><input class="form-input" value="Outro" style="font-size:11px;padding:4px 6px;width:150px;"></td></tr>
+        <tr><td>confirm_btn</td><td>切换方案</td><td><input class="form-input" value="Switch plan" style="font-size:11px;padding:4px 6px;width:160px;"></td><td><input class="form-input" value="プランを切替" style="font-size:11px;padding:4px 6px;width:130px;"></td><td><input class="form-input" value="Сменить план" style="font-size:11px;padding:4px 6px;width:150px;"></td><td><input class="form-input" value="Trocar plano" style="font-size:11px;padding:4px 6px;width:150px;"></td></tr>
+        <tr><td>cancel_btn</td><td>暂不处理</td><td><input class="form-input" value="Not now" style="font-size:11px;padding:4px 6px;width:160px;"></td><td><input class="form-input" value="今はしない" style="font-size:11px;padding:4px 6px;width:130px;"></td><td><input class="form-input" value="Не сейчас" style="font-size:11px;padding:4px 6px;width:150px;"></td><td><input class="form-input" value="Agora não" style="font-size:11px;padding:4px 6px;width:150px;"></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 模块2：检测规则配置 -->
+<div class="section" id="sec-rules">
+  <div class="page-header">
+    <div><h1>检测规则配置</h1><div class="desc">管理诊断检测项、判定规则和修复方案</div></div>
+    <button class="btn btn-primary" onclick="openRuleModal()">新增检测项</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchRuleTab(this,'all')">基础环境（4项）</div>
+    <div class="tab" onclick="switchRuleTab(this,'compat')">兼容性配置（5项）</div>
+    <div class="tab" onclick="switchRuleTab(this,'game')">游戏特有（3项）</div>
+  </div>
+
+  <div class="rule-list" id="ruleList"></div>
+</div>
+
+<!-- 模块3：诊断数据统计 -->
+<div class="section" id="sec-stats">
+  <div class="page-header">
+    <div><h1>诊断数据统计</h1><div class="desc">诊断触发、修复效果和异常分布数据</div></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" onclick="toast('已切换为今日数据')">今日</button>
+      <button class="btn btn-ghost" onclick="toast('已切换为本周数据')">本周</button>
+      <button class="btn btn-primary">本月</button>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="label">诊断触发次数</div><div class="value">8,432</div><div class="trend up">↑ 15%</div></div>
+    <div class="stat-card"><div class="label">一键修复使用率</div><div class="value">67.2%</div><div class="trend up">↑ 5.3%</div></div>
+    <div class="stat-card"><div class="label">修复后启动成功率</div><div class="value" style="color:var(--success)">84.6%</div><div class="trend up">↑ 12%</div></div>
+    <div class="stat-card"><div class="label">问题上报率</div><div class="value" style="color:var(--warning)">18.4%</div><div class="trend down">↓ 3.1%</div></div>
+  </div>
+
+  <div class="table-card">
+    <div class="table-head"><h3>异常类型分布</h3></div>
+    <table>
+      <tr><th>异常类型</th><th>触发次数</th><th>占比</th><th>修复成功率</th><th>趋势</th></tr>
+      <tr><td>Wine/Proton 兼容层不匹配</td><td>2,156</td><td>25.6%</td><td><span class="badge badge-success">91.2%</span></td><td style="color:var(--success)">↓ 稳定</td></tr>
+      <tr><td>DXVK版本不兼容</td><td>1,843</td><td>21.9%</td><td><span class="badge badge-success">87.5%</span></td><td style="color:var(--success)">↓ 改善</td></tr>
+      <tr><td>内存不足</td><td>1,520</td><td>18.0%</td><td><span class="badge badge-warning">72.3%</span></td><td style="color:var(--warning)">→ 持平</td></tr>
+      <tr><td>GPU驱动版本低</td><td>1,102</td><td>13.1%</td><td><span class="badge badge-success">89.1%</span></td><td style="color:var(--success)">↓ 改善</td></tr>
+      <tr><td>游戏缓存损坏</td><td>892</td><td>10.6%</td><td><span class="badge badge-success">95.4%</span></td><td style="color:var(--success)">↓ 稳定</td></tr>
+      <tr><td>分辨率不匹配</td><td>543</td><td>6.4%</td><td><span class="badge badge-success">88.7%</span></td><td style="color:var(--success)">↓ 改善</td></tr>
+      <tr><td>性能模式未开启</td><td>376</td><td>4.5%</td><td><span class="badge badge-warning">—</span></td><td style="color:var(--text-muted)">仅提示</td></tr>
+    </table>
+  </div>
+
+  <div class="table-card">
+    <div class="table-head"><h3>芯片维度统计</h3></div>
+    <table>
+      <tr><th>芯片</th><th>诊断触发</th><th>修复成功率</th><th>最常见异常</th><th>上报率</th></tr>
+      <tr><td>骁龙8 Gen3</td><td>3,210</td><td><span class="badge badge-success">86.4%</span></td><td>Wine/Proton不匹配</td><td>16.2%</td></tr>
+      <tr><td>骁龙8 Elite</td><td>2,045</td><td><span class="badge badge-success">82.1%</span></td><td>DXVK不兼容</td><td>19.8%</td></tr>
+      <tr><td>天玑9300/9400</td><td>1,876</td><td><span class="badge badge-warning">76.5%</span></td><td>GPU驱动版本低</td><td>22.3%</td></tr>
+      <tr><td>骁龙8 Elite Gen5</td><td>901</td><td><span class="badge badge-success">83.7%</span></td><td>DXVK不兼容</td><td>17.5%</td></tr>
+      <tr><td>天玑9400+ (MC12)</td><td>400</td><td><span class="badge badge-danger">62.3%</span></td><td>Wine/Proton不匹配</td><td>31.2%</td></tr>
+    </table>
+  </div>
+
+  <div class="table-card">
+    <div class="table-head"><h3>触发场景分布</h3></div>
+    <table>
+      <tr><th>触发场景</th><th>次数</th><th>占比</th><th>修复率</th></tr>
+      <tr><td>闪退后进APP弹窗</td><td>4,120</td><td>48.9%</td><td>83.2%</td></tr>
+      <tr><td>启动超时横屏浮层</td><td>2,856</td><td>33.9%</td><td>86.1%</td></tr>
+      <tr><td>游戏内侧边栏手动触发</td><td>1,456</td><td>17.3%</td><td>88.7%</td></tr>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<!-- 弹窗：上报详情 -->
+<div class="modal-mask" id="reportModal">
+  <div class="modal">
+    <div class="modal-head"><h3>上报详情</h3><button class="modal-close" onclick="closeModal('reportModal')">✕</button></div>
+    <div class="modal-body" id="reportModalBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('reportModal')">关闭</button>
+      <button class="btn btn-primary" onclick="toast('已标记为已解决');closeModal('reportModal')">标记已解决</button>
+    </div>
+  </div>
+</div>
+
+<!-- 弹窗：新增/编辑规则 -->
+<div class="modal-mask" id="ruleModal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="ruleModalTitle">新增检测项</h3><button class="modal-close" onclick="closeModal('ruleModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">检测项名称</label><input class="form-input" id="ruleName" placeholder="如：Wine/Proton 兼容层"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">所属分组</label><select class="form-select" id="ruleGroup"><option>基础环境</option><option>兼容性配置</option><option>游戏特有</option></select></div>
+        <div class="form-group"><label class="form-label">修复类型</label><select class="form-select" id="ruleFix"><option>自动切换</option><option>一键操作</option><option>提示引导</option><option>跳转系统设置</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">判定规则</label><input class="form-input" id="ruleCondition" placeholder="如：当前版本不在推荐配置列表中"></div>
+      <div class="form-group"><label class="form-label">修复方案描述</label><input class="form-input" id="ruleAction" placeholder="如：自动切换为成功率最高的推荐版本"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">数据源</label><input class="form-input" id="ruleSource" placeholder="如：推荐配置表"></div>
+        <div class="form-group"><label class="form-label">需重启</label><select class="form-select" id="ruleRestart"><option>是</option><option>否</option></select></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('ruleModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveRule()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 弹窗：删除确认 -->
+<div class="modal-mask" id="confirmModal">
+  <div class="modal" style="width:380px;">
+    <div class="modal-body">
+      <div class="confirm-body">
+        <div class="icon">⚠️</div>
+        <div class="msg" id="confirmMsg">确定要删除该检测项吗？</div>
+        <div class="sub">删除后不可恢复，该规则将从诊断流程中移除</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('confirmModal')">取消</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">确定删除</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const rulesData = {
+  all: [
+    { name:'存储空间', group:'基础环境', status:'启用', condition:'判定规则：可用存储 < 2GB 时标记异常', action:'修复方案：提示用户清理存储空间', params:['阈值: 2GB','修复类型: 提示引导'] },
+    { name:'内存占用', group:'基础环境', status:'启用', condition:'判定规则：可用内存 < 1.5GB 时标记异常', action:'修复方案：一键清理后台进程释放内存', params:['阈值: 1.5GB','修复类型: 一键操作'] },
+    { name:'设备温度', group:'基础环境', status:'启用', condition:'判定规则：设备温度 > 45°C 时标记异常', action:'修复方案：建议用户降温后再启动', params:['阈值: 45°C','修复类型: 提示引导'] },
+    { name:'性能模式', group:'基础环境', status:'启用', condition:'判定规则：设备非"性能模式"时标记异常', action:'修复方案：引导用户前往系统设置切换性能模式', params:['判定: 非性能模式','修复类型: 跳转系统设置'] }
+  ],
+  compat: [
+    { name:'Wine/Proton 兼容层', group:'兼容性配置', status:'启用', condition:'判定规则：当前版本不在该芯片+游戏的推荐配置列表中', action:'修复方案：自动切换为成功率最高的推荐版本', params:['数据源: 推荐配置表','修复类型: 自动切换','需重启: 是'] },
+    { name:'图形驱动 (Wrapper)', group:'兼容性配置', status:'启用', condition:'判定规则：当前wrapper类型与推荐不一致', action:'修复方案：切换到推荐的wrapper类型', params:['数据源: 推荐配置表','修复类型: 自动切换','需重启: 是'] },
+    { name:'GPU驱动版本', group:'兼容性配置', status:'启用', condition:'判定规则：当前GPU驱动版本低于推荐版本', action:'修复方案：升级到推荐版本（Turnip Gen8 V28等）', params:['数据源: 推荐配置表','修复类型: 自动升级','需重启: 是'] },
+    { name:'DXVK/VKD3D', group:'兼容性配置', status:'启用', condition:'判定规则：当前DXVK版本与GPU驱动不兼容（基于兼容矩阵）', action:'修复方案：切换到兼容版本', params:['数据源: 兼容矩阵','修复类型: 自动切换','需重启: 是'] },
+    { name:'CPU转译器', group:'兼容性配置', status:'启用', condition:'判定规则：转译模式与游戏不兼容导致启动即崩溃', action:'修复方案：切换为兼容模式', params:['数据源: 游戏兼容列表','修复类型: 自动切换','需重启: 是'] }
+  ],
+  game: [
+    { name:'游戏缓存', group:'游戏特有', status:'启用', condition:'判定规则：缓存文件损坏或异常中断写入', action:'修复方案：清理游戏缓存后重启', params:['修复类型: 一键操作','需重启: 是'] },
+    { name:'依赖组件', group:'游戏特有', status:'启用', condition:'判定规则：winedat/K-Lite/GFW等依赖安装失败或版本异常', action:'修复方案：重新安装依赖组件', params:['修复类型: 自动安装','需重启: 是'] },
+    { name:'分辨率设置', group:'游戏特有', status:'启用', condition:'判定规则：分辨率与设备不匹配或超出GPU渲染能力', action:'修复方案：重置为推荐分辨率', params:['修复类型: 自动切换','需重启: 否'] }
+  ]
+};
+
+const reportData = [
+  { time:'07-15 14:32', game:'艾尔登法环', type:'闪退', device:'Redmi K70 Pro', chip:'骁龙8 Gen3', appVer:'6.2.1', os:'Android 14', ram:'12GB', mem:'756MB可用', system:'MIUI 15', feedbackType:'启动报错', feedbackText:'进去就闪退，试了3次都一样', wine:'wine-10.6-arm64ec', gpu:'Turnip Gen8 V25', dxvk:'2.7.1' },
+  { time:'07-15 14:28', game:'GTA5', type:'黑屏', device:'小米14 Ultra', chip:'骁龙8 Gen3', appVer:'6.2.1', os:'Android 14', ram:'16GB', mem:'2.1GB可用', system:'MIUI 15', feedbackType:'黑屏', feedbackText:'有声音没画面，改了分辨率后就这样', wine:'proton-9.0-arm64ec', gpu:'Turnip Gen8 V25', dxvk:'2.4.1-gplasync' },
+  { time:'07-15 14:15', game:'赛博朋克2077', type:'卡顿', device:'OPPO Find X7', chip:'天玑9300', appVer:'6.2.0', os:'Android 14', ram:'12GB', mem:'1.8GB可用', system:'ColorOS 14', feedbackType:'其他', feedbackText:'切换菜单的时候特别卡，帧率掉到个位数', wine:'proton-10.0-arm64ec-2', gpu:'System', dxvk:'async-1.10.3' },
+  { time:'07-15 13:58', game:'艾尔登法环', type:'花屏', device:'三星S24 Ultra', chip:'骁龙8 Elite', appVer:'6.2.1', os:'Android 15', ram:'12GB', mem:'3.2GB可用', system:'OneUI 7', feedbackType:'黑屏', feedbackText:'进入设置界面后花屏然后黑屏', wine:'proton-10.0-arm64ec-2', gpu:'Turnip Gen8 V28', dxvk:'2.4.1-gplasync' },
+  { time:'07-15 13:42', game:'巫师3', type:'帧率低', device:'vivo X100 Pro', chip:'天玑9300', appVer:'6.1.9', os:'Android 14', ram:'16GB', mem:'1.4GB可用', system:'OriginOS 4', feedbackType:'卡在启动/加载', feedbackText:'一直卡在加载进不去，等了5分钟', wine:'wine-10.6-arm64ec', gpu:'System', dxvk:'async-1.10.3' },
+  { time:'07-15 13:30', game:'博德之门3', type:'闪退', device:'一加12', chip:'骁龙8 Gen3', appVer:'6.2.1', os:'Android 14', ram:'16GB', mem:'890MB可用', system:'ColorOS 14', feedbackType:'启动报错', feedbackText:'UE崩溃报错，更新版本后就开始闪退', wine:'wine-10.6-arm64ec', gpu:'Turnip_Gen8_V25', dxvk:'1.10.3-gplasync' }
+];
+
+let currentTab = 'all';
+let editingIdx = -1;
+let deletingIdx = -1;
+
+function switchCopyTab(el, region) {
+  el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  toast('已切换到' + (region==='domestic'?'国内版':'海外版') + '配置');
+}
+
+function switchSection(name, el) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('show'));
+  document.getElementById('sec-'+name).classList.add('show');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function switchRuleTab(el, tab) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  currentTab = tab;
+  renderRules();
+}
+
+function renderRules() {
+  const list = document.getElementById('ruleList');
+  const data = rulesData[currentTab];
+  list.innerHTML = data.map((r,i) => `
+    <div class="rule-item">
+      <div class="ri-main">
+        <div class="ri-top">
+          <span class="ri-name">${r.name}</span>
+          <span class="ri-group">${r.group}</span>
+          <span class="badge badge-success">${r.status}</span>
+        </div>
+        <div class="ri-desc">${r.condition}<br>${r.action}</div>
+        <div class="ri-params">${r.params.map(p=>'<span class="ri-param">'+p+'</span>').join('')}</div>
+      </div>
+      <div class="ri-actions">
+        <button class="ri-btn" onclick="editRule(${i})">编辑</button>
+        <button class="ri-btn danger" onclick="deleteRule(${i})">删除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openRuleModal() {
+  editingIdx = -1;
+  document.getElementById('ruleModalTitle').textContent = '新增检测项';
+  document.getElementById('ruleName').value = '';
+  document.getElementById('ruleCondition').value = '';
+  document.getElementById('ruleAction').value = '';
+  document.getElementById('ruleSource').value = '';
+  document.getElementById('ruleModal').classList.add('show');
+}
+
+function editRule(idx) {
+  editingIdx = idx;
+  const r = rulesData[currentTab][idx];
+  document.getElementById('ruleModalTitle').textContent = '编辑检测项';
+  document.getElementById('ruleName').value = r.name;
+  document.getElementById('ruleCondition').value = r.condition.replace('判定规则：','');
+  document.getElementById('ruleAction').value = r.action.replace('修复方案：','');
+  document.getElementById('ruleSource').value = (r.params.find(p=>p.includes('数据源'))||'').replace('数据源: ','');
+  document.getElementById('ruleModal').classList.add('show');
+}
+
+function saveRule() {
+  const name = document.getElementById('ruleName').value;
+  if(!name) { toast('请填写检测项名称'); return; }
+  if(editingIdx >= 0) {
+    rulesData[currentTab][editingIdx].name = name;
+    rulesData[currentTab][editingIdx].condition = '判定规则：' + document.getElementById('ruleCondition').value;
+    rulesData[currentTab][editingIdx].action = '修复方案：' + document.getElementById('ruleAction').value;
+    toast('已保存修改');
+  } else {
+    const group = document.getElementById('ruleGroup').value;
+    const tab = group==='基础环境'?'all':group==='兼容性配置'?'compat':'game';
+    rulesData[tab].push({
+      name, group, status:'启用',
+      condition:'判定规则：'+document.getElementById('ruleCondition').value,
+      action:'修复方案：'+document.getElementById('ruleAction').value,
+      params:[document.getElementById('ruleSource').value?'数据源: '+document.getElementById('ruleSource').value:'','修复类型: '+document.getElementById('ruleFix').value,'需重启: '+document.getElementById('ruleRestart').value].filter(Boolean)
+    });
+    toast('已新增检测项');
+  }
+  closeModal('ruleModal');
+  renderRules();
+}
+
+function deleteRule(idx) {
+  deletingIdx = idx;
+  document.getElementById('confirmMsg').textContent = '确定要删除「' + rulesData[currentTab][idx].name + '」吗？';
+  document.getElementById('confirmModal').classList.add('show');
+}
+
+function confirmDelete() {
+  rulesData[currentTab].splice(deletingIdx, 1);
+  closeModal('confirmModal');
+  renderRules();
+  toast('已删除');
+}
+
+function openReportDetail(idx) {
+  const r = reportData[idx];
+  document.getElementById('reportModalBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group"><div class="form-label">游戏</div><div style="font-size:14px;font-weight:500">${r.game}</div></div>
+      <div class="form-group"><div class="form-label">异常类型</div><div><span class="badge badge-danger">${r.type}</span></div></div>
+      <div class="form-group"><div class="form-label">反馈类型</div><div><span class="badge badge-info">${r.feedbackType}</span></div></div>
+      <div class="form-group"><div class="form-label">设备</div><div style="font-size:13px">${r.device}</div></div>
+      <div class="form-group"><div class="form-label">芯片</div><div style="font-size:13px">${r.chip}</div></div>
+      <div class="form-group"><div class="form-label">系统</div><div style="font-size:13px">${r.system}</div></div>
+      <div class="form-group"><div class="form-label">APP版本</div><div style="font-size:13px">${r.appVer}</div></div>
+      <div class="form-group"><div class="form-label">OS版本</div><div style="font-size:13px">${r.os}</div></div>
+      <div class="form-group"><div class="form-label">内存</div><div style="font-size:12px;color:var(--text-secondary)">${r.ram}（${r.mem}）</div></div>
+      <div class="form-group"><div class="form-label">Wine/Proton</div><div style="font-size:12px;color:var(--text-secondary)">${r.wine}</div></div>
+      <div class="form-group"><div class="form-label">GPU驱动</div><div style="font-size:12px;color:var(--text-secondary)">${r.gpu}</div></div>
+      <div class="form-group"><div class="form-label">DXVK版本</div><div style="font-size:12px;color:var(--text-secondary)">${r.dxvk}</div></div>
+    </div>
+    <div class="form-group" style="margin-top:12px;"><div class="form-label">用户反馈原文</div><div style="font-size:13px;background:#f9fafb;border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);line-height:1.6;">"${r.feedbackText}"</div></div>
+    <div class="form-group" style="margin-top:8px"><div class="form-label">上报时间</div><div style="font-size:13px">${r.time}</div></div>
+  `;
+  document.getElementById('reportModal').classList.add('show');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function toast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+renderRules();
+</script>
+</body>
+</html>
