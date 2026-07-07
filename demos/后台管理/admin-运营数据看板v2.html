@@ -314,13 +314,16 @@ table.dtable .tag-down{background:#fef2f2;color:#ef4444}
         <div class="page-section" id="sec-community">
             <div class="filter-row"><select class="filter-select"><option>全部地区</option><option>国内</option><option>海外</option></select><div class="filter-chip active">今日</div><div class="filter-chip">昨日</div><div class="filter-chip">近7天</div><div class="filter-chip">近30天</div><div class="filter-date"><input type="date" class="date-input" value="2026-06-05"><span style="color:var(--text-3);margin:0 2px">~</span><input type="date" class="date-input" value="2026-06-11"></div><div style="flex:1"></div><select class="filter-select"><option>全部用户</option><option>新增用户</option><option>活跃用户</option></select></div>
             <div class="metrics-grid" id="communityMetrics"></div>
-            <div class="dash-grid g-1-1">
+            <div class="dash-grid g-full">
+                <div class="panel"><div class="panel-header"><span class="panel-title">社区活跃用户趋势</span></div><div class="panel-body"><div class="chart-box" id="chart-community-active"></div></div></div>
+            </div>
+            <div class="dash-grid g-1-1" style="margin-top:12px">
                 <div class="panel"><div class="panel-header"><span class="panel-title">社区互动趋势</span></div><div class="panel-body"><div class="chart-box" id="chart-community-interact"></div></div></div>
                 <div class="panel"><div class="panel-header"><span class="panel-title">分类型互动曲线</span></div><div class="panel-body"><div class="chart-box" id="chart-community-type"></div></div></div>
             </div>
             <div class="dash-grid g-1-1" style="margin-top:12px">
-                <div class="panel"><div class="panel-header"><span class="panel-title">社区活跃用户趋势</span></div><div class="panel-body"><div class="chart-box" id="chart-community-active"></div></div></div>
-                <div class="panel"><div class="panel-header"><span class="panel-title">热门分区 Top5</span></div><div class="table-wrap"><table class="dtable" id="communityPartitionTable"></table></div></div>
+                <div class="panel"><div class="panel-header"><span class="panel-title">热门分区 Top10</span></div><div class="table-wrap"><table class="dtable" id="communityPartitionTable"></table></div></div>
+                <div class="panel"><div class="panel-header"><span class="panel-title">热门话题 Top10</span></div><div class="table-wrap"><table class="dtable" id="communityTopicTable"></table></div></div>
             </div>
         </div>
 
@@ -524,7 +527,7 @@ function initOverview(){
         {icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>',color:'green',label:'新增用户',value:nu.toLocaleString(),change:'+8.1%',dir:'up',period:'vs 昨日',tip:'当天首次产生app_launch的device_id数（is_first_launch=true）'},
         {icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',color:'purple',label:'D0游戏体验率',value:d0Rate+'%',change:'+2.3%',dir:'up',period:'目标15%',tip:'新用户安装当天成功启动任意游戏的比例（game_play_success / 当日新增用户）'},
         {icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',color:'green',label:'D1留存率',value:d1Retention+'%',change:'+1.2%',dir:'up',period:'vs 上周',tip:'昨日活跃用户中，今日再次活跃的比例（次日回访device_id / 昨日活跃device_id）'},
-        {icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',color:'orange',label:'人均互动时长',value:(Math.random()*8+15).toFixed(1)+'min',change:'+1.2%',dir:'up',period:'vs 上周',tip:'每位活跃用户的平均session时长（总session时长 / 活跃用户数），单位分钟'},
+        {icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',color:'orange',label:'人均互动时长',value:Math.floor(Math.random()*8+15)+'min',change:'+1.2%',dir:'up',period:'vs 上周',tip:'每位活跃用户的平均session时长（总session时长 / 活跃用户数），单位分钟'},
         {icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',color:'blue',label:'充值金额',value:'¥'+rev.toLocaleString(),change:'+12.5%',dir:'up',period:'vs 上周',tip:'当日pay_result(is_success=true)的amount总和，单位元'}
     ];
     document.getElementById('overviewMetrics').innerHTML=metrics.map((x,idx)=>`<div class="metric-card"><div class="metric-top"><div class="metric-icon ${x.color}">${x.icon}</div><div class="metric-label">${x.label}<span class="metric-help" data-tip="${x.tip}">?</span></div></div><div class="metric-center"><div class="metric-value">${x.value}</div><canvas class="metric-spark" id="spark${idx}" width="64" height="28"></canvas></div><div class="metric-footer"><span class="metric-change ${x.dir}">${x.period}</span><span class="metric-change ${x.dir}">${x.dir==='up'?'↑':'↓'} ${x.change}</span></div></div>`).join('');
@@ -919,7 +922,7 @@ document.addEventListener('click',(e)=>{
 // ============ Cloud ============
 function initCloudPage(){
     document.getElementById('cloudMetrics').innerHTML=[
-        {color:'blue',label:'云游活跃',value:'3,284'},{color:'green',label:'云游新增',value:'412'},{color:'purple',label:'充值订单',value:'892'},{color:'orange',label:'充值用户',value:'634'},{color:'blue',label:'充值金额',value:'¥28,459'},{color:'red',label:'云游流失',value:'187'}
+        {color:'blue',label:'云游活跃',value:'3,284'},{color:'green',label:'云游新增',value:'412'},{color:'purple',label:'充值订单',value:'892'},{color:'orange',label:'充值用户',value:'634'},{color:'blue',label:'充值金额',value:'¥28,459'},{color:'green',label:'新增付费用户',value:'123'}
     ].map(x=>`<div class="metric-card"><div class="metric-icon ${x.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg></div><div class="metric-body"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div></div>`).join('');
 
     const d=getDays();
@@ -971,10 +974,15 @@ function initCommunityPage(){
     const el3=document.getElementById('chart-community-active');let c3=echarts.getInstanceByDom(el3);if(c3)c3.dispose();c3=echarts.init(el3);
     c3.setOption({tooltip:{trigger:'axis'},grid:{top:20,right:20,bottom:30,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[{name:'活跃用户',type:'line',smooth:true,data:randArr(d.length,3000,5000),itemStyle:{color:'#8b5cf6'},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(139,92,246,.1)'},{offset:1,color:'rgba(139,92,246,0)'}]}}}]});
 
-    const partitions=['GTA V','黑神话：悟空','赛博朋克2077','原神','崩坏星穹铁道'];
+    const partitions=['GTA V','黑神话：悟空','赛博朋克2077','原神','崩坏星穹铁道','配置分享','Steam','求助区','攻略区','杂谈'];
     const partData=partitions.map(p=>({name:p,posts:rand(50,300),interactions:rand(200,900),users:rand(100,500)}));
     partData.sort((a,b)=>b.interactions-a.interactions);
     document.getElementById('communityPartitionTable').innerHTML='<thead><tr><th>#</th><th>分区</th><th>帖子数</th><th>互动量</th><th>活跃用户</th></tr></thead><tbody>'+partData.map((p,i)=>`<tr><td class="num">${i+1}</td><td>${p.name}</td><td class="num">${p.posts}</td><td class="num">${p.interactions}</td><td class="num">${p.users}</td></tr>`).join('')+'</tbody>';
+
+    const topics=['#发现好游戏','#配置分享大赛','#Steam夏促','#黑神话二周目','#新手求助','#云游戏体验','#手柄设置','#画质对比','#组队开黑','#周末推荐'];
+    const topicData=topics.map(t=>({name:t,posts:rand(20,200),interactions:rand(100,800),users:rand(50,300)}));
+    topicData.sort((a,b)=>b.interactions-a.interactions);
+    document.getElementById('communityTopicTable').innerHTML='<thead><tr><th>#</th><th>话题</th><th>帖子数</th><th>互动量</th><th>参与用户</th></tr></thead><tbody>'+topicData.map((t,i)=>`<tr><td class="num">${i+1}</td><td>${t.name}</td><td class="num">${t.posts}</td><td class="num">${t.interactions}</td><td class="num">${t.users}</td></tr>`).join('')+'</tbody>';
 }
 
 // ============ Revenue ============
