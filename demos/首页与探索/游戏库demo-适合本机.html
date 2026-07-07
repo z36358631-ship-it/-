@@ -463,9 +463,18 @@ const pcGames=[
     {name:"荒野大镖客2",tags:"最近游玩 1周前",platform:["steam","epic"],compat:"unknown",cloud:false,genre:"开放世界 冒险",score:"9.7"},
     {name:"博德之门3",tags:"最近游玩 1周前",platform:["steam"],compat:"perfect",cloud:true,genre:"角色扮演 策略",score:"9.5"},
     {name:"战神4",tags:"最近游玩 2周前",platform:["steam","epic"],compat:"bad",cloud:false,genre:"动作 冒险",score:"9.4"},
-    {name:"极限竞速",tags:"最近游玩 2周前",platform:["steam"],compat:"good",cloud:false,genre:"赛车 竞速",score:"8.8"},
-    {name:"巫师3",tags:"最近游玩 3周前",platform:["steam"],compat:"perfect",cloud:false,genre:"角色扮演 剧情",score:"9.7"},
-    {name:"GTA5",tags:"最近游玩 1月前",platform:["steam","epic"],compat:"bad",cloud:true,genre:"开放世界 犯罪",score:"9.3"}
+    {name:"极限竞速：地平线5",tags:"最近游玩 2周前",platform:["steam"],compat:"good",cloud:false,genre:"赛车 竞速",score:"8.8"},
+    {name:"巫师3：狂猎",tags:"最近游玩 3周前",platform:["steam"],compat:"perfect",cloud:false,genre:"角色扮演 剧情",score:"9.7"},
+    {name:"GTA5",tags:"最近游玩 1月前",platform:["steam","epic"],compat:"bad",cloud:true,genre:"开放世界 犯罪",score:"9.3"},
+    {name:"死亡搁浅",tags:"最近游玩 1月前",platform:["steam","epic"],compat:"good",cloud:true,genre:"动作 冒险",score:"8.9"},
+    {name:"只狼：影逝二度",tags:"最近游玩 2月前",platform:["steam"],compat:"perfect",cloud:false,genre:"动作 魂系",score:"9.5"},
+    {name:"生化危机4",tags:"最近游玩 2月前",platform:["steam"],compat:"good",cloud:true,genre:"恐怖 动作",score:"9.2"},
+    {name:"双人成行",tags:"最近游玩 3月前",platform:["steam"],compat:"bad",cloud:false,genre:"合作 冒险",score:"9.1"},
+    {name:"星空",tags:"未游玩",platform:["steam"],compat:"bad",cloud:false,genre:"开放世界 RPG",score:"6.8"},
+    {name:"绝地求生",tags:"未游玩",platform:["steam"],compat:"good",cloud:true,genre:"射击 竞技",score:"7.5"},
+    {name:"暗黑破坏神4",tags:"未游玩",platform:["steam"],compat:"bad",cloud:true,genre:"动作 RPG",score:"7.2"},
+    {name:"霍格沃茨之遗",tags:"未游玩",platform:["steam"],compat:"bad",cloud:false,genre:"动作 冒险 RPG",score:"8.1"},
+    {name:"文明6",tags:"未游玩",platform:["steam","epic"],compat:"perfect",cloud:false,genre:"策略 回合",score:"9.0"}
 ];
 const compatibleGames=pcGames.filter(g=>g.compat==='perfect'||g.compat==='good');
 const deviceInfo={gpu:"Adreno 730",cpu:"Snapdragon 8 Gen 1",model:"小米12S Pro"};
@@ -527,11 +536,9 @@ function badgeHtml(platforms){
 function compatTagHtml(g){
     if(!g) return '';
     var isCompat = g.compat==='perfect'||g.compat==='good';
-    var hasCloud = g.cloud===true;
     if(typeof tagMode==='undefined' || tagMode==='A'){
         if(isCompat) return '<span class="compat-tag compat-only">本机适配</span>';
-        if(hasCloud) return '<span class="compat-tag cloud-only">可云游</span>';
-        return '<span class="compat-tag not-compat">不适配</span>';
+        if(!isCompat) return '<span class="compat-tag not-compat">不适配</span>';
     }
     return '';
 }
@@ -539,22 +546,18 @@ function compatTagHtml(g){
 function compatInfoHtml(g){
     if(!g) return '';
     var isCompat = g.compat==='perfect'||g.compat==='good';
-    var hasCloud = g.cloud===true;
     if(typeof tagMode!=='undefined' && tagMode==='D'){
-        var statusText='';var statusColor='';
-        if(isCompat){statusText='本机适配';statusColor='#10b981';}
-        else if(hasCloud){statusText='可云游';statusColor='#ffcc43';}
-        else{statusText='不适配';statusColor='rgba(255,255,255,0.4)';}
-        return '<span style="color:'+statusColor+';font-weight:600;">'+statusText+'</span> · ';
+        if(isCompat) return '<span style="color:#10b981;font-weight:600;">本机适配</span> · ';
+        else return '<span style="color:rgba(255,255,255,0.4);font-weight:600;">不适配</span> · ';
     }
     return '<i class="fas fa-play"></i> ';
 }
 
 function gameCardHtml(g){
-    var isNotCompat = !g.cloud && g.compat!=='perfect' && g.compat!=='good';
-    var overlay = isNotCompat ? '<div class="gc-overlay"></div>' : '';
-    var dimClass = isNotCompat ? ' gc-dimmed' : '';
-    return '<div class="gc'+dimClass+'">'+badgeHtml(g.platform)+overlay+compatTagHtml(g)+'<img src="'+hd(g.name)+'"><div class="gc-info"><div class="t">'+g.name+'</div><div class="m">'+compatInfoHtml(g)+g.tags+'</div></div></div>';
+    var overlay = '';
+    var dimClass = '';
+    var cloudBtn = g.cloud ? '<span style="position:absolute;bottom:8px;right:8px;background:#10b981;color:#fff;font-size:9px;font-weight:700;padding:4px 10px;border-radius:4px;z-index:2;">秒玩</span>' : '';
+    return '<div class="gc'+dimClass+'">'+badgeHtml(g.platform)+overlay+compatTagHtml(g)+cloudBtn+'<img src="'+hd(g.name)+'"><div class="gc-info"><div class="t">'+g.name+'</div><div class="m">'+compatInfoHtml(g)+g.tags+'</div></div></div>';
 }
 
 function getH5Filtered(){
@@ -923,7 +926,7 @@ function renderSearchResults(){
     const q=document.getElementById('searchInput').value.trim().toLowerCase();
     const el=document.getElementById('searchResults');
     if(!q){el.innerHTML='<div class="sr-empty">输入关键词搜索游戏</div>';return;}
-    const matchPC=pcGames.filter(g=>g.name.toLowerCase().includes(q));
+    const matchPC=pcGames.filter(g=>g.name.toLowerCase().includes(q)||g.genre.toLowerCase().includes(q));
     const matchRetro=retroGames.filter(g=>g.name.toLowerCase().includes(q));
     const matchH5=h5Games.filter(g=>g.name.toLowerCase().includes(q)||g.cat.includes(q));
     let html='';
@@ -937,24 +940,14 @@ function renderSearchResults(){
             html+=matchPC.map(g=>gameCardHtml(g)).join('');
             html+='</div></div>';
         } else {
-            html+=`<div class="sr-section"><div class="sr-section-title">PC游戏 (${matchPC.length})</div>`;
-            html+=matchPC.map(g=>{
+            html+=`<div class="sr-section"><div class="sr-section-title" style="display:flex;justify-content:space-between;align-items:center;">游戏<span style="font-size:11px;color:var(--dim);font-weight:400;cursor:pointer;">查看更多 ›</span></div>`;
+            html+=matchPC.slice(0,5).map(g=>{
                 var isCompat=g.compat==='perfect'||g.compat==='good';
-                var hasCloud=g.cloud===true;
                 var statusTag='';
-                if(tagMode==='A'){
-                    if(isCompat) statusTag='<span class="sr-tag" style="background:rgba(16,185,129,0.15);color:#10b981;">本机适配</span>';
-                    else if(hasCloud) statusTag='<span class="sr-tag" style="background:rgba(255,204,67,0.15);color:#ffcc43;">可云游</span>';
-                    else statusTag='<span class="sr-tag" style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.4);">不适配</span>';
-                }
-                var metaPrefix='';
-                if(tagMode==='D'){
-                    if(isCompat) metaPrefix='<span style="color:#10b981;font-weight:600;">本机适配</span> · ';
-                    else if(hasCloud) metaPrefix='<span style="color:#ffcc43;font-weight:600;">可云游</span> · ';
-                    else metaPrefix='<span style="color:rgba(255,255,255,0.4);font-weight:600;">不适配</span> · ';
-                }
-                var dimStyle=(!isCompat&&!hasCloud)?'opacity:0.5;':'';
-                return '<div class="sr-item" style="'+dimStyle+'"><img src="'+hd(g.name)+'"><div class="sr-item-info"><div class="name">'+g.name+'</div><div class="meta">'+metaPrefix+g.tags+'</div></div>'+(tagMode==='A'?statusTag:'<span class="sr-tag pc">PC</span>')+'</div>';
+                if(isCompat) statusTag='<span style="color:#10b981;font-size:10px;font-weight:600;margin-left:8px;">本机适配</span>';
+                else statusTag='<span style="color:rgba(255,255,255,0.35);font-size:10px;font-weight:600;margin-left:8px;">不适配</span>';
+                var nameHtml=g.name.replace(new RegExp('('+q+')','gi'),'<span style="color:#5ba8f5;">$1</span>');
+                return '<div class="sr-item" style="padding:10px 8px;gap:12px;align-items:flex-start;"><img src="'+hd(g.name)+'" style="width:56px;height:56px;border-radius:8px;"><div class="sr-item-info" style="gap:3px;"><div class="name" style="font-size:14px;font-weight:600;">'+nameHtml+'</div><div class="meta" style="font-size:11px;color:var(--dim);">'+g.genre+'</div><div class="meta" style="font-size:11px;display:flex;align-items:center;"><span style="color:#ffcc43;">★ '+g.score+'</span> <span style="color:var(--dim);margin-left:4px;">'+g.genre.split(' ').join('·')+'</span>'+statusTag+'</div></div></div>';
             }).join('');
             html+='</div>';
         }
