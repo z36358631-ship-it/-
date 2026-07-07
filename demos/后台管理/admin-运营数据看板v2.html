@@ -127,12 +127,12 @@ table.dtable .tag-down{background:#fef2f2;color:#ef4444}
 .rank-num{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--font-mono)}
 .rank-num.top{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#fff}
 .rank-num.normal{background:#f1f5f9;color:var(--text-3)}
-.rank-name{flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rank-value{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--text);width:60px;text-align:right}
+.rank-name{width:120px;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
+.rank-value{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--text);flex:1;text-align:right}
 .rank-item.rank-header{border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:2px}
 .rank-num-h{width:20px;font-size:11px;color:var(--text-3);text-align:center}
-.rank-name-h{flex:1;font-size:11px;color:var(--text-3)}
-.rank-val-h{width:60px;text-align:right;font-size:11px;color:var(--text-3)}
+.rank-name-h{width:120px;font-size:11px;color:var(--text-3);flex-shrink:0}
+.rank-val-h{flex:1;text-align:right;font-size:11px;color:var(--text-3)}
 
 /* Export */
 .btn-export{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:6px;font-size:11px;border:1px solid var(--border);background:var(--card);cursor:pointer;color:var(--text-2);transition:all .15s;position:relative}
@@ -875,7 +875,7 @@ function initGamesPage(){
     ]});
 
     const el2=document.getElementById('chart-games-type');let c2=echarts.getInstanceByDom(el2);if(c2)c2.dispose();c2=echarts.init(el2);
-    c2.setOption({tooltip:{trigger:'item',formatter:'{b}: {d}%'},color:['#3b82f6','#8b5cf6','#10b981','#f59e0b','#94a3b8'],legend:{orient:'vertical',right:10,top:'middle',itemWidth:10,itemHeight:10,itemGap:12,textStyle:{fontSize:11,color:'#475569'}},series:[{type:'pie',radius:['45%','72%'],center:['35%','50%'],data:[{value:40,name:'PC Steam'},{value:25,name:'PC Epic'},{value:15,name:'PC导入'},{value:12,name:'云游戏'},{value:8,name:'复古'}],label:{show:false},itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2}}]});
+    c2.setOption({tooltip:{trigger:'item',formatter:'{b}: {d}%'},color:['#3b82f6','#8b5cf6','#10b981','#f59e0b','#94a3b8'],legend:{orient:'vertical',right:10,top:'middle',itemWidth:10,itemHeight:10,itemGap:14,textStyle:{fontSize:11,color:'#475569',rich:{name:{width:55,fontSize:11},pct:{width:38,fontSize:11,fontWeight:'bold',color:'#0f172a'},val:{fontSize:10,color:'#94a3b8'}}},formatter:function(name){var m={"PC Steam":{p:"40%",v:"18,277"},"PC Epic":{p:"25%",v:"11,423"},"PC导入":{p:"15%",v:"6,854"},"云游戏":{p:"12%",v:"5,483"},"复古":{p:"8%",v:"3,655"}};var d=m[name]||{p:'',v:''};return'{name|'+name+'} {pct|'+d.p+'} {val|('+d.v+')}'}},series:[{type:'pie',radius:['45%','72%'],center:['32%','50%'],data:[{value:40,name:'PC Steam'},{value:25,name:'PC Epic'},{value:15,name:'PC导入'},{value:12,name:'云游戏'},{value:8,name:'复古'}],label:{show:false},itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2}}]});
 
     const pcGames=['赛博朋克2077','GTA V','艾尔登法环','巫师3','荒野大镖客2','对马岛','鬼泣5','怪物猎人世界','黑神话：悟空','星空','霍格沃茨','博德之门3','只狼','死亡搁浅','战神','原神','崩坏星穹铁道','无人深空','星露谷物语','空洞骑士'];
     const cloudGames=['黑神话：悟空','GTA V','艾尔登法环','霍格沃茨','博德之门3','只狼','赛博朋克2077','星空','死亡搁浅','对马岛','鬼泣5','原神','崩坏星穹铁道','战神','巫师3','荒野大镖客2','怪物猎人世界','无人深空','星露谷物语','空洞骑士'];
@@ -947,7 +947,7 @@ function initCloudPage(){
     // Payment method pie
     const payEl=document.getElementById('chart-cloud-pay');
     if(payEl){let cp=echarts.getInstanceByDom(payEl);if(cp)cp.dispose();cp=echarts.init(payEl);
-    cp.setOption({tooltip:{trigger:'item',formatter:'{b}: {d}%'},color:['#10b981','#3b82f6','#8b5cf6'],legend:{orient:'vertical',right:10,top:'middle',itemWidth:10,itemHeight:10,itemGap:12,textStyle:{fontSize:11,color:'#475569'}},series:[{type:'pie',radius:['45%','72%'],center:['35%','50%'],data:[{value:45,name:'微信支付'},{value:38,name:'支付宝'},{value:17,name:'二维码支付'}],label:{show:false},itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2}}]});}
+    cp.setOption({tooltip:{trigger:'item',formatter:'{b}: {d}%'},color:['#10b981','#3b82f6','#8b5cf6'],legend:{orient:'vertical',right:10,top:'middle',itemWidth:10,itemHeight:10,itemGap:14,textStyle:{fontSize:11,color:'#475569',rich:{name:{width:60,fontSize:11},pct:{width:35,fontSize:11,fontWeight:'bold',color:'#0f172a'},val:{fontSize:10,color:'#94a3b8'}}},formatter:function(name){var m={"微信支付":{p:"45%",v:"¥12,807"},"支付宝":{p:"38%",v:"¥10,814"},"二维码支付":{p:"17%",v:"¥4,838"}};var d=m[name]||{p:'',v:''};return'{name|'+name+'} {pct|'+d.p+'} {val|('+d.v+')}'}},series:[{type:'pie',radius:['45%','72%'],center:['32%','50%'],data:[{value:45,name:'微信支付'},{value:38,name:'支付宝'},{value:17,name:'二维码支付'}],label:{show:false},itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2}}]});}
     document.getElementById('cloudOrderTable').innerHTML='<thead><tr><th>日期</th><th>总订单数</th><th>新人8h</th><th>常规8h</th><th>35h</th><th>180h</th><th>包月</th><th>总金额</th><th>环比</th><th>同比</th></tr></thead><tbody>'+d.map(day=>{
         const o=[rand(20,60),rand(15,50),rand(8,30),rand(3,15),rand(2,8)];const total=o.reduce((s,v)=>s+v,0);const amt=rand(8000,25000);
         const hb=(Math.random()*12-3).toFixed(1);const hbC=hb>0?'tag-up':'tag-down';const hbS=hb>0?'+':'';
@@ -1130,7 +1130,7 @@ function initNewuserPage(){
     c1.setOption({tooltip:{trigger:'axis'},grid:{top:20,right:20,bottom:30,left:50},xAxis:{type:'category',data:d},yAxis:{type:'value',axisLabel:{formatter:'{value}%'},splitLine:{lineStyle:{color:'#f1f5f9'}}},series:[{name:'D0体验率',type:'line',smooth:true,data:randArr(d.length,8,18),itemStyle:{color:'#3b82f6'},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(59,130,246,.12)'},{offset:1,color:'rgba(59,130,246,0)'}]}}}]});
 
     const el2=document.getElementById('chart-newuser-login');let c2=echarts.getInstanceByDom(el2);if(c2)c2.dispose();c2=echarts.init(el2);
-    c2.setOption({tooltip:{trigger:'item',formatter:'{b}: {d}%'},color:['#3b82f6','#10b981','#8b5cf6','#f59e0b','#ef4444','#94a3b8'],legend:{orient:'vertical',right:10,top:'middle',itemWidth:10,itemHeight:10,itemGap:10,textStyle:{fontSize:11,color:'#475569'}},series:[{type:'pie',radius:['45%','72%'],center:['32%','50%'],data:[{value:35,name:'SIM一键'},{value:20,name:'微信'},{value:15,name:'QQ'},{value:18,name:'游客模式'},{value:7,name:'Google'},{value:5,name:'Apple'}],label:{show:false},itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2}}]});
+    c2.setOption({tooltip:{trigger:'item',formatter:'{b}: {d}%'},color:['#3b82f6','#10b981','#8b5cf6','#f59e0b','#ef4444','#94a3b8'],legend:{orient:'vertical',right:10,top:'middle',itemWidth:10,itemHeight:10,itemGap:10,textStyle:{fontSize:11,color:'#475569',rich:{name:{width:55,fontSize:11},pct:{width:35,fontSize:11,fontWeight:'bold',color:'#0f172a'},val:{fontSize:10,color:'#94a3b8'}}},formatter:function(name){var m={"SIM一键":{p:"35%",v:"1,470"},"微信":{p:"20%",v:"840"},"QQ":{p:"15%",v:"630"},"游客模式":{p:"18%",v:"756"},"Google":{p:"7%",v:"294"},"Apple":{p:"5%",v:"210"}};var d=m[name]||{p:'',v:''};return'{name|'+name+'} {pct|'+d.p+'} {val|('+d.v+')}'}},series:[{type:'pie',radius:['45%','72%'],center:['30%','50%'],data:[{value:35,name:'SIM一键'},{value:20,name:'微信'},{value:15,name:'QQ'},{value:18,name:'游客模式'},{value:7,name:'Google'},{value:5,name:'Apple'}],label:{show:false},itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2}}]});
 }
 
 // ============ Init ============
