@@ -136,8 +136,6 @@ tr:hover td { background:#f9fafb; }
   <nav class="sidebar-nav">
     <div class="nav-item active" onclick="switchSection('report',this)">📋 问题上报</div>
     <div class="nav-item" onclick="switchSection('copyConfig',this)">📝 弹窗文案配置</div>
-    <div class="nav-item" onclick="switchSection('rules',this)">⚙️ 检测规则配置</div>
-    <div class="nav-item" onclick="switchSection('stats',this)">📊 诊断数据统计</div>
   </nav>
 </div>
 
@@ -187,7 +185,7 @@ tr:hover td { background:#f9fafb; }
 <!-- 模块：弹窗文案配置 -->
 <div class="section" id="sec-copyConfig">
   <div class="page-header">
-    <div><h1>弹窗文案配置</h1><div class="desc">配置诊断弹窗中的标题、引导语、异常类型标签，支持国内/海外多语言</div></div>
+    <div><h1>弹窗文案配置</h1><div class="desc">配置诊断弹窗中的启动异常类型标签，支持国内/海外多语言</div></div>
     <button class="btn btn-primary" onclick="toast('已保存全部配置')">保存配置</button>
   </div>
 
@@ -197,42 +195,14 @@ tr:hover td { background:#f9fafb; }
   </div>
 
   <div id="copyTabContent">
-    <!-- 国内版配置 -->
     <div class="table-card">
-      <div class="table-head"><h3>弹窗基础文案</h3><span style="font-size:11px;color:var(--text-muted)">修改后需发版生效</span></div>
+      <div class="table-head"><h3>启动异常类型标签</h3><div style="display:flex;gap:8px;"><button class="btn btn-ghost btn-sm" onclick="openAddTypeModal()">+ 新增类型</button></div></div>
       <table>
-        <tr><th style="width:160px;">字段</th><th>中文（默认）</th><th>操作</th></tr>
-        <tr><td>弹窗标题</td><td><input class="form-input" value="检测到游戏启动异常" style="font-size:12px;padding:6px 8px;"></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已恢复默认')">恢复默认</button></td></tr>
-        <tr><td>引导语</td><td><input class="form-input" value="建议切换PC启动引擎方案，选择你遇到的问题帮助我们定位并识别" style="font-size:12px;padding:6px 8px;"></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已恢复默认')">恢复默认</button></td></tr>
-        <tr><td>确认按钮</td><td><input class="form-input" value="切换方案" style="font-size:12px;padding:6px 8px;"></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已恢复默认')">恢复默认</button></td></tr>
-        <tr><td>取消按钮</td><td><input class="form-input" value="暂不处理" style="font-size:12px;padding:6px 8px;"></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已恢复默认')">恢复默认</button></td></tr>
-        <tr><td>二次确认标题</td><td><input class="form-input" value="确认切换引擎方案？" style="font-size:12px;padding:6px 8px;"></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已恢复默认')">恢复默认</button></td></tr>
-        <tr><td>底部提示</td><td><input class="form-input" value="切换后需重新启动游戏方可生效" style="font-size:12px;padding:6px 8px;"></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已恢复默认')">恢复默认</button></td></tr>
-      </table>
-    </div>
-
-    <div class="table-card">
-      <div class="table-head"><h3>启动异常类型标签</h3><div style="display:flex;gap:8px;"><button class="btn btn-ghost btn-sm" onclick="toast('已新增类型')">+ 新增类型</button></div></div>
-      <table>
-        <tr><th>序号</th><th>标签名称（中文）</th><th>标签KEY</th><th>状态</th><th>操作</th></tr>
-        <tr><td>1</td><td><input class="form-input" value="黑屏" style="font-size:12px;padding:5px 8px;width:120px;"></td><td><span class="device-tag">black_screen</span></td><td><span class="badge badge-success">启用</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已禁用')">禁用</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已删除')">删除</button></td></tr>
-        <tr><td>2</td><td><input class="form-input" value="启动报错" style="font-size:12px;padding:5px 8px;width:120px;"></td><td><span class="device-tag">launch_error</span></td><td><span class="badge badge-success">启用</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已禁用')">禁用</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已删除')">删除</button></td></tr>
-        <tr><td>3</td><td><input class="form-input" value="卡在启动/加载" style="font-size:12px;padding:5px 8px;width:120px;"></td><td><span class="device-tag">stuck_loading</span></td><td><span class="badge badge-success">启用</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已禁用')">禁用</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已删除')">删除</button></td></tr>
-        <tr><td>4</td><td><input class="form-input" value="其他" style="font-size:12px;padding:5px 8px;width:120px;"></td><td><span class="device-tag">other</span></td><td><span class="badge badge-success">启用</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已禁用')">禁用</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已删除')">删除</button></td></tr>
-      </table>
-    </div>
-
-    <div class="table-card">
-      <div class="table-head"><h3>多语言翻译（海外版）</h3><span style="font-size:11px;color:var(--text-muted)">国内版仅中文，海外版需配置多语言</span></div>
-      <table>
-        <tr><th>字段KEY</th><th>中文</th><th>English</th><th>日本語</th><th>Русский</th><th>Português</th></tr>
-        <tr><td>title</td><td>检测到游戏启动异常</td><td><input class="form-input" value="Game launch issue detected" style="font-size:11px;padding:4px 6px;width:160px;"></td><td><input class="form-input" value="ゲーム起動異常を検出" style="font-size:11px;padding:4px 6px;width:130px;"></td><td><input class="form-input" value="Обнаружена ошибка запуска" style="font-size:11px;padding:4px 6px;width:150px;"></td><td><input class="form-input" value="Problema ao iniciar o jogo" style="font-size:11px;padding:4px 6px;width:150px;"></td></tr>
-        <tr><td>black_screen</td><td>黑屏</td><td><input class="form-input" value="Black screen" style="font-size:11px;padding:4px 6px;width:160px;"></td><td><input class="form-input" value="ブラックスクリーン" style="font-size:11px;padding:4px 6px;width:130px;"></td><td><input class="form-input" value="Чёрный экран" style="font-size:11px;padding:4px 6px;width:150px;"></td><td><input class="form-input" value="Tela preta" style="font-size:11px;padding:4px 6px;width:150px;"></td></tr>
-        <tr><td>launch_error</td><td>启动报错</td><td><input class="form-input" value="Launch error" style="font-size:11px;padding:4px 6px;width:160px;"></td><td><input class="form-input" value="起動エラー" style="font-size:11px;padding:4px 6px;width:130px;"></td><td><input class="form-input" value="Ошибка запуска" style="font-size:11px;padding:4px 6px;width:150px;"></td><td><input class="form-input" value="Erro ao iniciar" style="font-size:11px;padding:4px 6px;width:150px;"></td></tr>
-        <tr><td>stuck_loading</td><td>卡在启动/加载</td><td><input class="form-input" value="Stuck on loading" style="font-size:11px;padding:4px 6px;width:160px;"></td><td><input class="form-input" value="ロード中に停止" style="font-size:11px;padding:4px 6px;width:130px;"></td><td><input class="form-input" value="Зависание при загрузке" style="font-size:11px;padding:4px 6px;width:150px;"></td><td><input class="form-input" value="Travado no carregamento" style="font-size:11px;padding:4px 6px;width:150px;"></td></tr>
-        <tr><td>other</td><td>其他</td><td><input class="form-input" value="Other" style="font-size:11px;padding:4px 6px;width:160px;"></td><td><input class="form-input" value="その他" style="font-size:11px;padding:4px 6px;width:130px;"></td><td><input class="form-input" value="Другое" style="font-size:11px;padding:4px 6px;width:150px;"></td><td><input class="form-input" value="Outro" style="font-size:11px;padding:4px 6px;width:150px;"></td></tr>
-        <tr><td>confirm_btn</td><td>切换方案</td><td><input class="form-input" value="Switch plan" style="font-size:11px;padding:4px 6px;width:160px;"></td><td><input class="form-input" value="プランを切替" style="font-size:11px;padding:4px 6px;width:130px;"></td><td><input class="form-input" value="Сменить план" style="font-size:11px;padding:4px 6px;width:150px;"></td><td><input class="form-input" value="Trocar plano" style="font-size:11px;padding:4px 6px;width:150px;"></td></tr>
-        <tr><td>cancel_btn</td><td>暂不处理</td><td><input class="form-input" value="Not now" style="font-size:11px;padding:4px 6px;width:160px;"></td><td><input class="form-input" value="今はしない" style="font-size:11px;padding:4px 6px;width:130px;"></td><td><input class="form-input" value="Не сейчас" style="font-size:11px;padding:4px 6px;width:150px;"></td><td><input class="form-input" value="Agora não" style="font-size:11px;padding:4px 6px;width:150px;"></td></tr>
+        <tr><th>序号</th><th>标签名称（中文）</th><th>English</th><th>标签KEY</th><th>状态</th><th>操作</th></tr>
+        <tr><td>1</td><td><input class="form-input" value="黑屏" style="font-size:12px;padding:5px 8px;width:100px;"></td><td><input class="form-input" value="Black screen" style="font-size:12px;padding:5px 8px;width:120px;"></td><td><span class="device-tag">black_screen</span></td><td><span class="badge badge-success">启用</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已禁用')">禁用</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已删除')">删除</button></td></tr>
+        <tr><td>2</td><td><input class="form-input" value="启动报错" style="font-size:12px;padding:5px 8px;width:100px;"></td><td><input class="form-input" value="Launch error" style="font-size:12px;padding:5px 8px;width:120px;"></td><td><span class="device-tag">launch_error</span></td><td><span class="badge badge-success">启用</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已禁用')">禁用</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已删除')">删除</button></td></tr>
+        <tr><td>3</td><td><input class="form-input" value="卡在启动/加载" style="font-size:12px;padding:5px 8px;width:100px;"></td><td><input class="form-input" value="Stuck on loading" style="font-size:12px;padding:5px 8px;width:120px;"></td><td><span class="device-tag">stuck_loading</span></td><td><span class="badge badge-success">启用</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已禁用')">禁用</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已删除')">删除</button></td></tr>
+        <tr><td>4</td><td><input class="form-input" value="其他" style="font-size:12px;padding:5px 8px;width:100px;"></td><td><input class="form-input" value="Other" style="font-size:12px;padding:5px 8px;width:120px;"></td><td><span class="device-tag">other</span></td><td><span class="badge badge-success">启用</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已禁用')">禁用</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已删除')">删除</button></td></tr>
       </table>
     </div>
   </div>
@@ -364,6 +334,22 @@ tr:hover td { background:#f9fafb; }
   </div>
 </div>
 
+<!-- 弹窗：新增异常类型 -->
+<div class="modal-mask" id="addTypeModal">
+  <div class="modal" style="width:420px;">
+    <div class="modal-head"><h3>新增异常类型</h3><button class="modal-close" onclick="closeModal('addTypeModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">标签名称（中文）</label><input class="form-input" id="newTypeCN" placeholder="如：画面异常"></div>
+      <div class="form-group"><label class="form-label">标签名称（English）</label><input class="form-input" id="newTypeEN" placeholder="如：Display issue"></div>
+      <div class="form-group"><label class="form-label">标签KEY</label><input class="form-input" id="newTypeKey" placeholder="如：display_issue（英文下划线格式）"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('addTypeModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveNewType()">保存</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -405,6 +391,20 @@ function switchCopyTab(el, region) {
   el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   toast('已切换到' + (region==='domestic'?'国内版':'海外版') + '配置');
+}
+
+function openAddTypeModal() {
+  document.getElementById('newTypeCN').value = '';
+  document.getElementById('newTypeEN').value = '';
+  document.getElementById('newTypeKey').value = '';
+  document.getElementById('addTypeModal').classList.add('show');
+}
+
+function saveNewType() {
+  const cn = document.getElementById('newTypeCN').value;
+  if(!cn) { toast('请填写标签名称'); return; }
+  closeModal('addTypeModal');
+  toast('已新增类型：' + cn);
 }
 
 function switchSection(name, el) {
