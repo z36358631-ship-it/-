@@ -136,6 +136,7 @@ tr:hover td { background:#f9fafb; }
   <nav class="sidebar-nav">
     <div class="nav-item active" onclick="switchSection('report',this)">📋 问题上报</div>
     <div class="nav-item" onclick="switchSection('copyConfig',this)">📝 弹窗文案配置</div>
+    <div class="nav-item" onclick="switchSection('stats',this)">📊 未解决统计</div>
   </nav>
 </div>
 
@@ -171,13 +172,13 @@ tr:hover td { background:#f9fafb; }
       </div>
     </div>
     <table>
-      <tr><th>时间</th><th>游戏</th><th>异常类型</th><th>反馈类型</th><th>设备</th><th>系统</th><th>APP版本</th><th>芯片</th><th>状态</th><th>操作</th></tr>
-      <tr><td>07-15 14:32</td><td>艾尔登法环</td><td><span class="badge badge-danger">闪退</span></td><td><span class="badge badge-info">启动报错</span></td><td>Redmi K70 Pro</td><td>Android 14</td><td>6.2.1</td><td><span class="device-tag">骁龙8 Gen3</span></td><td><span class="badge badge-warning">待处理</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(0)">查看</button></td></tr>
-      <tr><td>07-15 14:28</td><td>GTA5</td><td><span class="badge badge-danger">黑屏</span></td><td><span class="badge badge-info">黑屏</span></td><td>小米14 Ultra</td><td>Android 14</td><td>6.2.1</td><td><span class="device-tag">骁龙8 Gen3</span></td><td><span class="badge badge-warning">待处理</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(1)">查看</button></td></tr>
-      <tr><td>07-15 14:15</td><td>赛博朋克2077</td><td><span class="badge badge-warning">卡顿</span></td><td><span class="badge badge-info">其他</span></td><td>OPPO Find X7</td><td>Android 14</td><td>6.2.0</td><td><span class="device-tag">天玑9300</span></td><td><span class="badge badge-info">处理中</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(2)">查看</button></td></tr>
-      <tr><td>07-15 13:58</td><td>艾尔登法环</td><td><span class="badge badge-danger">花屏</span></td><td><span class="badge badge-info">黑屏</span></td><td>三星S24 Ultra</td><td>Android 15</td><td>6.2.1</td><td><span class="device-tag">骁龙8 Elite</span></td><td><span class="badge badge-success">已解决</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(3)">查看</button></td></tr>
-      <tr><td>07-15 13:42</td><td>巫师3</td><td><span class="badge badge-warning">帧率低</span></td><td><span class="badge badge-info">卡在启动/加载</span></td><td>vivo X100 Pro</td><td>Android 14</td><td>6.1.9</td><td><span class="device-tag">天玑9300</span></td><td><span class="badge badge-success">已解决</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(4)">查看</button></td></tr>
-      <tr><td>07-15 13:30</td><td>博德之门3</td><td><span class="badge badge-danger">闪退</span></td><td><span class="badge badge-info">启动报错</span></td><td>一加12</td><td>Android 14</td><td>6.2.1</td><td><span class="device-tag">骁龙8 Gen3</span></td><td><span class="badge badge-warning">待处理</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(5)">查看</button></td></tr>
+      <tr><th>时间</th><th>游戏</th><th>异常类型</th><th>反馈类型</th><th>设备</th><th>CPU</th><th>系统</th><th>APP版本</th><th>状态</th><th>操作</th></tr>
+      <tr><td>07-15 14:32</td><td>艾尔登法环</td><td><span class="badge badge-danger">闪退</span></td><td><span class="badge badge-info">启动报错</span></td><td>Redmi K70 Pro</td><td><span class="device-tag">骁龙8 Gen3</span></td><td>Android 14</td><td>6.2.1</td><td><span class="badge badge-warning">待处理</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(0)">查看</button></td></tr>
+      <tr><td>07-15 14:28</td><td>GTA5</td><td><span class="badge badge-danger">黑屏</span></td><td><span class="badge badge-info">黑屏</span></td><td>小米14 Ultra</td><td><span class="device-tag">骁龙8 Gen3</span></td><td>Android 14</td><td>6.2.1</td><td><span class="badge badge-warning">待处理</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(1)">查看</button></td></tr>
+      <tr><td>07-15 14:15</td><td>赛博朋克2077</td><td><span class="badge badge-warning">卡顿</span></td><td><span class="badge badge-info">其他</span></td><td>OPPO Find X7</td><td><span class="device-tag">天玑9300</span></td><td>Android 14</td><td>6.2.0</td><td><span class="badge badge-info">处理中</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(2)">查看</button></td></tr>
+      <tr><td>07-15 13:58</td><td>艾尔登法环</td><td><span class="badge badge-danger">花屏</span></td><td><span class="badge badge-info">黑屏</span></td><td>三星S24 Ultra</td><td><span class="device-tag">骁龙8 Elite</span></td><td>Android 15</td><td>6.2.1</td><td><span class="badge badge-success">已解决</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(3)">查看</button></td></tr>
+      <tr><td>07-15 13:42</td><td>巫师3</td><td><span class="badge badge-warning">帧率低</span></td><td><span class="badge badge-info">卡在启动/加载</span></td><td>vivo X100 Pro</td><td><span class="device-tag">天玑9300</span></td><td>Android 14</td><td>6.1.9</td><td><span class="badge badge-success">已解决</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(4)">查看</button></td></tr>
+      <tr><td>07-15 13:30</td><td>博德之门3</td><td><span class="badge badge-danger">闪退</span></td><td><span class="badge badge-info">启动报错</span></td><td>一加12</td><td><span class="device-tag">骁龙8 Gen3</span></td><td>Android 14</td><td>6.2.1</td><td><span class="badge badge-warning">待处理</span></td><td><button class="btn btn-ghost btn-sm" onclick="openReportDetail(5)">查看</button></td></tr>
     </table>
   </div>
 </div>
@@ -203,6 +204,55 @@ tr:hover td { background:#f9fafb; }
         <tr><td>2</td><td><input class="form-input" value="启动报错" style="font-size:12px;padding:5px 8px;width:100px;"></td><td><input class="form-input" value="Launch error" style="font-size:12px;padding:5px 8px;width:120px;"></td><td><span class="device-tag">launch_error</span></td><td><span class="badge badge-success">启用</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已禁用')">禁用</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已删除')">删除</button></td></tr>
         <tr><td>3</td><td><input class="form-input" value="卡在启动/加载" style="font-size:12px;padding:5px 8px;width:100px;"></td><td><input class="form-input" value="Stuck on loading" style="font-size:12px;padding:5px 8px;width:120px;"></td><td><span class="device-tag">stuck_loading</span></td><td><span class="badge badge-success">启用</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已禁用')">禁用</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已删除')">删除</button></td></tr>
         <tr><td>4</td><td><input class="form-input" value="其他" style="font-size:12px;padding:5px 8px;width:100px;"></td><td><input class="form-input" value="Other" style="font-size:12px;padding:5px 8px;width:120px;"></td><td><span class="device-tag">other</span></td><td><span class="badge badge-success">启用</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('已禁用')">禁用</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toast('已删除')">删除</button></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 模块：未解决统计 -->
+<div class="section" id="sec-stats">
+  <div class="page-header">
+    <div><h1>未解决统计</h1><div class="desc">未标记为已解决的求助上报，按游戏和机型维度统计TOP10</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="table-card">
+      <div class="table-head">
+        <h3>未解决TOP10游戏</h3>
+        <button class="btn btn-ghost btn-sm" onclick="toast('已下载全部游戏统计数据')">下载全部</button>
+      </div>
+      <table>
+        <tr><th>排名</th><th>游戏</th><th>未解决数</th><th>占比</th></tr>
+        <tr><td>1</td><td>艾尔登法环</td><td>47</td><td>18.2%</td></tr>
+        <tr><td>2</td><td>博德之门3</td><td>38</td><td>14.7%</td></tr>
+        <tr><td>3</td><td>赛博朋克2077</td><td>31</td><td>12.0%</td></tr>
+        <tr><td>4</td><td>GTA5</td><td>28</td><td>10.9%</td></tr>
+        <tr><td>5</td><td>巫师3</td><td>22</td><td>8.5%</td></tr>
+        <tr><td>6</td><td>只狼</td><td>19</td><td>7.4%</td></tr>
+        <tr><td>7</td><td>黑神话悟空</td><td>16</td><td>6.2%</td></tr>
+        <tr><td>8</td><td>霍格沃茨</td><td>14</td><td>5.4%</td></tr>
+        <tr><td>9</td><td>星空</td><td>11</td><td>4.3%</td></tr>
+        <tr><td>10</td><td>战神5</td><td>9</td><td>3.5%</td></tr>
+      </table>
+    </div>
+
+    <div class="table-card">
+      <div class="table-head">
+        <h3>未解决TOP10机型</h3>
+        <button class="btn btn-ghost btn-sm" onclick="toast('已下载全部机型统计数据')">下载全部</button>
+      </div>
+      <table>
+        <tr><th>排名</th><th>机型</th><th>CPU</th><th>未解决数</th><th>占比</th></tr>
+        <tr><td>1</td><td>Redmi K70 Pro</td><td><span class="device-tag">骁龙8 Gen3</span></td><td>32</td><td>12.4%</td></tr>
+        <tr><td>2</td><td>一加12</td><td><span class="device-tag">骁龙8 Gen3</span></td><td>28</td><td>10.9%</td></tr>
+        <tr><td>3</td><td>OPPO Find X7</td><td><span class="device-tag">天玑9300</span></td><td>25</td><td>9.7%</td></tr>
+        <tr><td>4</td><td>小米14 Ultra</td><td><span class="device-tag">骁龙8 Gen3</span></td><td>22</td><td>8.5%</td></tr>
+        <tr><td>5</td><td>三星S24 Ultra</td><td><span class="device-tag">骁龙8 Elite</span></td><td>19</td><td>7.4%</td></tr>
+        <tr><td>6</td><td>vivo X100 Pro</td><td><span class="device-tag">天玑9300</span></td><td>17</td><td>6.6%</td></tr>
+        <tr><td>7</td><td>华为Mate60 Pro</td><td><span class="device-tag">麒麟9000S</span></td><td>15</td><td>5.8%</td></tr>
+        <tr><td>8</td><td>荣耀Magic6 Pro</td><td><span class="device-tag">骁龙8 Gen3</span></td><td>13</td><td>5.0%</td></tr>
+        <tr><td>9</td><td>iQOO 12</td><td><span class="device-tag">骁龙8 Gen3</span></td><td>11</td><td>4.3%</td></tr>
+        <tr><td>10</td><td>Redmi K70E</td><td><span class="device-tag">天玑8300</span></td><td>9</td><td>3.5%</td></tr>
       </table>
     </div>
   </div>
@@ -375,12 +425,12 @@ const rulesData = {
 };
 
 const reportData = [
-  { time:'07-15 14:32', game:'艾尔登法环', type:'闪退', device:'Redmi K70 Pro', chip:'骁龙8 Gen3', appVer:'6.2.1', os:'Android 14', ram:'12GB', mem:'756MB可用', system:'MIUI 15', feedbackType:'启动报错', feedbackText:'进去就闪退，试了3次都一样', wine:'wine-10.6-arm64ec', gpu:'Turnip Gen8 V25', dxvk:'2.7.1' },
-  { time:'07-15 14:28', game:'GTA5', type:'黑屏', device:'小米14 Ultra', chip:'骁龙8 Gen3', appVer:'6.2.1', os:'Android 14', ram:'16GB', mem:'2.1GB可用', system:'MIUI 15', feedbackType:'黑屏', feedbackText:'有声音没画面，改了分辨率后就这样', wine:'proton-9.0-arm64ec', gpu:'Turnip Gen8 V25', dxvk:'2.4.1-gplasync' },
-  { time:'07-15 14:15', game:'赛博朋克2077', type:'卡顿', device:'OPPO Find X7', chip:'天玑9300', appVer:'6.2.0', os:'Android 14', ram:'12GB', mem:'1.8GB可用', system:'ColorOS 14', feedbackType:'其他', feedbackText:'切换菜单的时候特别卡，帧率掉到个位数', wine:'proton-10.0-arm64ec-2', gpu:'System', dxvk:'async-1.10.3' },
-  { time:'07-15 13:58', game:'艾尔登法环', type:'花屏', device:'三星S24 Ultra', chip:'骁龙8 Elite', appVer:'6.2.1', os:'Android 15', ram:'12GB', mem:'3.2GB可用', system:'OneUI 7', feedbackType:'黑屏', feedbackText:'进入设置界面后花屏然后黑屏', wine:'proton-10.0-arm64ec-2', gpu:'Turnip Gen8 V28', dxvk:'2.4.1-gplasync' },
-  { time:'07-15 13:42', game:'巫师3', type:'帧率低', device:'vivo X100 Pro', chip:'天玑9300', appVer:'6.1.9', os:'Android 14', ram:'16GB', mem:'1.4GB可用', system:'OriginOS 4', feedbackType:'卡在启动/加载', feedbackText:'一直卡在加载进不去，等了5分钟', wine:'wine-10.6-arm64ec', gpu:'System', dxvk:'async-1.10.3' },
-  { time:'07-15 13:30', game:'博德之门3', type:'闪退', device:'一加12', chip:'骁龙8 Gen3', appVer:'6.2.1', os:'Android 14', ram:'16GB', mem:'890MB可用', system:'ColorOS 14', feedbackType:'启动报错', feedbackText:'UE崩溃报错，更新版本后就开始闪退', wine:'wine-10.6-arm64ec', gpu:'Turnip_Gen8_V25', dxvk:'1.10.3-gplasync' }
+  { time:'07-15 14:32', game:'艾尔登法环', type:'闪退', device:'Redmi K70 Pro', chip:'骁龙8 Gen3', cpu:'骁龙8 Gen3', appVer:'6.2.1', os:'Android 14', ram:'12GB', mem:'756MB可用', system:'MIUI 15', feedbackType:'启动报错', feedbackText:'进去就闪退，试了3次都一样', wine:'wine-10.6-arm64ec', gpu:'Turnip Gen8 V25', dxvk:'2.7.1' },
+  { time:'07-15 14:28', game:'GTA5', type:'黑屏', device:'小米14 Ultra', chip:'骁龙8 Gen3', cpu:'骁龙8 Gen3', appVer:'6.2.1', os:'Android 14', ram:'16GB', mem:'2.1GB可用', system:'MIUI 15', feedbackType:'黑屏', feedbackText:'有声音没画面，改了分辨率后就这样', wine:'proton-9.0-arm64ec', gpu:'Turnip Gen8 V25', dxvk:'2.4.1-gplasync' },
+  { time:'07-15 14:15', game:'赛博朋克2077', type:'卡顿', device:'OPPO Find X7', chip:'天玑9300', cpu:'天玑9300', appVer:'6.2.0', os:'Android 14', ram:'12GB', mem:'1.8GB可用', system:'ColorOS 14', feedbackType:'其他', feedbackText:'切换菜单的时候特别卡，帧率掉到个位数', wine:'proton-10.0-arm64ec-2', gpu:'System', dxvk:'async-1.10.3' },
+  { time:'07-15 13:58', game:'艾尔登法环', type:'花屏', device:'三星S24 Ultra', chip:'骁龙8 Elite', cpu:'骁龙8 Elite', appVer:'6.2.1', os:'Android 15', ram:'12GB', mem:'3.2GB可用', system:'OneUI 7', feedbackType:'黑屏', feedbackText:'进入设置界面后花屏然后黑屏', wine:'proton-10.0-arm64ec-2', gpu:'Turnip Gen8 V28', dxvk:'2.4.1-gplasync' },
+  { time:'07-15 13:42', game:'巫师3', type:'帧率低', device:'vivo X100 Pro', chip:'天玑9300', cpu:'天玑9300', appVer:'6.1.9', os:'Android 14', ram:'16GB', mem:'1.4GB可用', system:'OriginOS 4', feedbackType:'卡在启动/加载', feedbackText:'一直卡在加载进不去，等了5分钟', wine:'wine-10.6-arm64ec', gpu:'System', dxvk:'async-1.10.3' },
+  { time:'07-15 13:30', game:'博德之门3', type:'闪退', device:'一加12', chip:'骁龙8 Gen3', cpu:'骁龙8 Gen3', appVer:'6.2.1', os:'Android 14', ram:'16GB', mem:'890MB可用', system:'ColorOS 14', feedbackType:'启动报错', feedbackText:'UE崩溃报错，更新版本后就开始闪退', wine:'wine-10.6-arm64ec', gpu:'Turnip_Gen8_V25', dxvk:'1.10.3-gplasync' }
 ];
 
 let currentTab = 'all';
@@ -508,6 +558,7 @@ function openReportDetail(idx) {
       <div class="form-group"><div class="form-label">异常类型</div><div><span class="badge badge-danger">${r.type}</span></div></div>
       <div class="form-group"><div class="form-label">反馈类型</div><div><span class="badge badge-info">${r.feedbackType}</span></div></div>
       <div class="form-group"><div class="form-label">设备</div><div style="font-size:13px">${r.device}</div></div>
+      <div class="form-group"><div class="form-label">CPU</div><div style="font-size:13px">${r.cpu}</div></div>
       <div class="form-group"><div class="form-label">芯片</div><div style="font-size:13px">${r.chip}</div></div>
       <div class="form-group"><div class="form-label">系统</div><div style="font-size:13px">${r.system}</div></div>
       <div class="form-group"><div class="form-label">APP版本</div><div style="font-size:13px">${r.appVer}</div></div>

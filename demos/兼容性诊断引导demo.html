@@ -105,9 +105,19 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
 .engine-card .ec-rate { font-size:11px; font-weight:600; color:var(--brand-green); font-family:var(--font-number); white-space:nowrap; }
 .engine-card.selected .ec-name { color:var(--brand-gold); }
 
-/* 问题反馈区 */
-.feedback-section { border-top:1px solid rgba(255,255,255,.06); padding-top:12px; }
-.issue-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+/* 兜底入口 */
+.fallback-entry { font-size:11px; color:var(--text-muted); margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.06); }
+.fallback-entry .fe-title { margin-bottom:8px; }
+.fallback-options { display:flex; gap:8px; }
+.fallback-btn { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px 8px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:var(--radius-md); cursor:pointer; transition:all .15s; font-size:11px; color:var(--text-secondary); }
+.fallback-btn:hover { border-color:rgba(255,255,255,.2); background:rgba(255,255,255,.06); }
+.fallback-btn .fb-icon { font-size:14px; }
+.help-form { display:none; margin-top:10px; }
+.help-form.show { display:block; }
+.help-form .hf-title { font-size:11px; color:var(--text-muted); font-weight:600; margin-bottom:6px; }
+.help-form .hf-submit { width:100%; border:none; border-radius:var(--radius-md); padding:9px; font-family:var(--font-primary); font-size:12px; font-weight:600; cursor:pointer; background:rgba(51,143,235,.15); color:var(--brand-blue); margin-top:8px; transition:all .15s; }
+.help-form .hf-submit:hover { background:rgba(51,143,235,.25); }
+.issue-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
 .issue-tag { font-size:11px; color:var(--text-secondary); background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:var(--radius-full); padding:6px 12px; cursor:pointer; transition:all .15s; user-select:none; }
 .issue-tag:hover { border-color:rgba(255,255,255,.2); background:rgba(255,255,255,.06); }
 .issue-tag.selected { border-color:rgba(51,143,235,.5); background:rgba(51,143,235,.1); color:var(--brand-blue); }
@@ -183,10 +193,18 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
     </div>
     <div class="dp-body" id="popupBody1">
       <div class="engine-list" id="engineList1"></div>
-      <div class="feedback-section">
-        <div class="dp-section-title">启动异常类型（可选）</div>
-        <div class="issue-tags" id="issueTags1"></div>
-        <textarea class="feedback-input" id="feedbackInput1" rows="2" placeholder="描述你遇到的具体情况，例如：进入设置后黑屏、有声音没画面…"></textarea>
+      <div class="fallback-entry" id="fallback1">
+        <div class="fe-title">以上方案都无法解决？</div>
+        <div class="fallback-options">
+          <div class="fallback-btn" onclick="toast('正在跳转机型配置攻略…')"><span class="fb-icon">📖</span>查看机型配置攻略</div>
+          <div class="fallback-btn" onclick="showHelp(1)"><span class="fb-icon">🙋</span>我要求助</div>
+        </div>
+        <div class="help-form" id="helpForm1">
+          <div class="hf-title">选择你遇到的问题</div>
+          <div class="issue-tags" id="issueTags1"></div>
+          <textarea class="feedback-input" id="feedbackInput1" rows="2" placeholder="描述你遇到的具体情况…"></textarea>
+          <button class="hf-submit" onclick="submitHelp(1)">提交求助</button>
+        </div>
       </div>
     </div>
     <div class="dp-confirm" id="popupConfirm1">
@@ -232,10 +250,18 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
     </div>
     <div class="dp-body" id="popupBody2">
       <div class="engine-list" id="engineList2"></div>
-      <div class="feedback-section">
-        <div class="dp-section-title">启动异常类型（可选）</div>
-        <div class="issue-tags" id="issueTags2"></div>
-        <textarea class="feedback-input" id="feedbackInput2" rows="2" placeholder="描述你遇到的具体情况，例如：进入某个场景后闪退、更新后闪退…"></textarea>
+      <div class="fallback-entry" id="fallback2">
+        <div class="fe-title">以上方案都无法解决？</div>
+        <div class="fallback-options">
+          <div class="fallback-btn" onclick="toast('正在跳转机型配置攻略…')"><span class="fb-icon">📖</span>查看机型配置攻略</div>
+          <div class="fallback-btn" onclick="showHelp(2)"><span class="fb-icon">🙋</span>我要求助</div>
+        </div>
+        <div class="help-form" id="helpForm2">
+          <div class="hf-title">选择你遇到的问题</div>
+          <div class="issue-tags" id="issueTags2"></div>
+          <textarea class="feedback-input" id="feedbackInput2" rows="2" placeholder="描述你遇到的具体情况…"></textarea>
+          <button class="hf-submit" onclick="submitHelp(2)">提交求助</button>
+        </div>
       </div>
     </div>
     <div class="dp-confirm" id="popupConfirm2">
@@ -281,10 +307,18 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
     </div>
     <div class="dp-body" id="popupBody3">
       <div class="engine-list" id="engineList3"></div>
-      <div class="feedback-section">
-        <div class="dp-section-title">启动异常类型（可选）</div>
-        <div class="issue-tags" id="issueTags3"></div>
-        <textarea class="feedback-input" id="feedbackInput3" rows="2" placeholder="描述你遇到的具体情况，例如：卡在检查环境界面、Download Config失败…"></textarea>
+      <div class="fallback-entry" id="fallback3">
+        <div class="fe-title">以上方案都无法解决？</div>
+        <div class="fallback-options">
+          <div class="fallback-btn" onclick="toast('正在跳转机型配置攻略…')"><span class="fb-icon">📖</span>查看机型配置攻略</div>
+          <div class="fallback-btn" onclick="showHelp(3)"><span class="fb-icon">🙋</span>我要求助</div>
+        </div>
+        <div class="help-form" id="helpForm3">
+          <div class="hf-title">选择你遇到的问题</div>
+          <div class="issue-tags" id="issueTags3"></div>
+          <textarea class="feedback-input" id="feedbackInput3" rows="2" placeholder="描述你遇到的具体情况…"></textarea>
+          <button class="hf-submit" onclick="submitHelp(3)">提交求助</button>
+        </div>
       </div>
     </div>
     <div class="dp-confirm" id="popupConfirm3">
@@ -410,6 +444,8 @@ function resetScene(n) {
   if(close) close.style.display='';
   const input = document.getElementById('feedbackInput'+n);
   if(input) input.value = '';
+  const helpForm = document.getElementById('helpForm'+n);
+  if(helpForm) helpForm.classList.remove('show');
   renderEngineList(n);
   if(document.getElementById('issueTags'+n)) renderIssueTags(n);
   updateConfirmBtn(n);
@@ -459,14 +495,19 @@ function closePopup(n) {
   document.getElementById('popup'+n).classList.remove('show');
 }
 
+function showHelp(n) {
+  document.getElementById('helpForm'+n).classList.add('show');
+}
+
+function submitHelp(n) {
+  toast('✅ 已提交求助，我们将尽快处理');
+  document.getElementById('helpForm'+n).classList.remove('show');
+}
+
 function doConfirm(n) {
   const plan = ENGINE_PLANS[selectedEngine[n]];
   const desc = document.getElementById('confirmDesc'+n);
   let txt = `将切换为「<strong>${plan.name}</strong>」方案（启动成功率 ${plan.rate}）<br>切换后需重新启动游戏方可生效`;
-  const input = document.getElementById('feedbackInput'+n);
-  if((selectedIssues[n] && selectedIssues[n].size > 0) || (input && input.value.trim())) {
-    txt += `<br><span style="color:var(--brand-blue);font-size:11px;">同时上报你选择的问题反馈</span>`;
-  }
   desc.innerHTML = txt;
   document.getElementById('popupBody'+n).style.display='none';
   document.getElementById('popupFoot'+n).style.display='none';
