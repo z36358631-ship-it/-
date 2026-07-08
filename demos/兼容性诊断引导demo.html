@@ -106,12 +106,15 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
 .engine-card.selected .ec-name { color:var(--brand-gold); }
 
 /* 兜底入口 */
-.fallback-entry { font-size:11px; color:var(--text-muted); margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.06); }
-.fallback-entry .fe-title { display:block; margin-bottom:6px; }
+.fallback-entry { font-size:11px; color:var(--text-muted); margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.06); display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+.fallback-entry .fe-title { margin-right:4px; }
 .fallback-entry .fe-links { display:flex; align-items:center; gap:4px; }
 .fallback-link { color:var(--brand-blue); cursor:pointer; transition:opacity .15s; text-decoration:underline; text-underline-offset:2px; white-space:nowrap; }
 .fallback-link:hover { opacity:.8; }
 .fallback-sep { color:var(--text-muted); margin:0 2px; }
+/* 竖屏弹窗内兜底换行 */
+.diag-popup-v .fallback-entry { flex-direction:column; align-items:flex-start; gap:6px; }
+.diag-popup-v .fallback-entry .fe-title { margin-right:0; }
 .issue-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
 .issue-tag { font-size:11px; color:var(--text-secondary); background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:var(--radius-full); padding:6px 12px; cursor:pointer; transition:all .15s; user-select:none; }
 .issue-tag:hover { border-color:rgba(255,255,255,.2); background:rgba(255,255,255,.06); }
@@ -198,13 +201,11 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
       <div class="engine-list" id="engineList1"></div>
       <div class="fallback-entry" id="fallback1">
         <span class="fe-title">以上方案都无法解决？</span>
-        <div class="fe-links">
-          <span class="fallback-link" onclick="toast('正在跳转机型配置攻略…')">查看机型配置攻略</span>
-          <span class="fallback-sep">|</span>
-          <span class="fallback-link" onclick="showHelp(1)">社区搜索</span>
-          <span class="fallback-sep">|</span>
-          <span class="fallback-link" onclick="toast('正在跳转社区发帖…')">社区发帖求助</span>
-        </div>
+        <span class="fallback-link" onclick="toast('正在跳转机型配置攻略…')">查看机型配置攻略</span>
+        <span class="fallback-sep">|</span>
+        <span class="fallback-link" onclick="showHelp(1)">社区搜索</span>
+        <span class="fallback-sep">|</span>
+        <span class="fallback-link" onclick="toast('正在跳转社区发帖…')">社区发帖求助</span>
       </div>
     </div>
     <div class="dp-confirm" id="popupConfirm1">
@@ -251,13 +252,11 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
       <div class="engine-list" id="engineList2"></div>
       <div class="fallback-entry" id="fallback2">
         <span class="fe-title">以上方案都无法解决？</span>
-        <div class="fe-links">
-          <span class="fallback-link" onclick="toast('正在跳转机型配置攻略…')">查看机型配置攻略</span>
-          <span class="fallback-sep">|</span>
-          <span class="fallback-link" onclick="showHelp(2)">社区搜索</span>
-          <span class="fallback-sep">|</span>
-          <span class="fallback-link" onclick="toast('正在跳转社区发帖…')">社区发帖求助</span>
-        </div>
+        <span class="fallback-link" onclick="toast('正在跳转机型配置攻略…')">查看机型配置攻略</span>
+        <span class="fallback-sep">|</span>
+        <span class="fallback-link" onclick="showHelp(2)">社区搜索</span>
+        <span class="fallback-sep">|</span>
+        <span class="fallback-link" onclick="toast('正在跳转社区发帖…')">社区发帖求助</span>
       </div>
     </div>
     <div class="dp-confirm" id="popupConfirm2">
@@ -304,13 +303,11 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
       <div class="engine-list" id="engineList3"></div>
       <div class="fallback-entry" id="fallback3">
         <span class="fe-title">以上方案都无法解决？</span>
-        <div class="fe-links">
-          <span class="fallback-link" onclick="toast('正在跳转机型配置攻略…')">查看机型配置攻略</span>
-          <span class="fallback-sep">|</span>
-          <span class="fallback-link" onclick="showHelp(3)">社区搜索</span>
-          <span class="fallback-sep">|</span>
-          <span class="fallback-link" onclick="toast('正在跳转社区发帖…')">社区发帖求助</span>
-        </div>
+        <span class="fallback-link" onclick="toast('正在跳转机型配置攻略…')">查看机型配置攻略</span>
+        <span class="fallback-sep">|</span>
+        <span class="fallback-link" onclick="showHelp(3)">社区搜索</span>
+        <span class="fallback-sep">|</span>
+        <span class="fallback-link" onclick="toast('正在跳转社区发帖…')">社区发帖求助</span>
       </div>
     </div>
     <div class="dp-confirm" id="popupConfirm3">
