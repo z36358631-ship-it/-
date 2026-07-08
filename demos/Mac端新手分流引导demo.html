@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mac端新手分流引导 Demo</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  width:100%; height:100%; overflow:hidden;
+  background:#0d0d1a; color:#f0f2f5;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  display:flex; align-items:center; justify-content:center;
+}
+.win { width:1076px; height:734px; border-radius:10px; overflow:hidden; position:relative; box-shadow:0 40px 120px rgba(0,0,0,0.8),0 0 0 .5px rgba(255,255,255,0.06); background:#080c16; }
+.tb { height:32px; background:rgba(8,12,22,0.98); border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; padding:0 14px; position:relative; z-index:5; }
+.dots { display:flex; gap:7px; } .dots span { width:12px; height:12px; border-radius:50%; } .dots .r{background:#ff5f57} .dots .y{background:#febc2e} .dots .g{background:#28c840}
+.tb-t { position:absolute; left:50%; transform:translateX(-50%); font-size:12px; color:rgba(255,255,255,0.35); }
+.bd { position:relative; width:100%; height:calc(100% - 32px); overflow:hidden; }
+
+/* 底层探索页 */
+.base { position:absolute; inset:0; display:flex; z-index:1; }
+.side { width:52px; background:rgba(8,12,22,0.96); border-right:1px solid rgba(255,255,255,0.06); display:flex; flex-direction:column; align-items:center; padding:12px 0 14px; gap:6px; }
+.sl { width:28px; height:28px; border-radius:7px; overflow:hidden; margin-bottom:8px; } .sl img { width:100%; height:100%; }
+.si { width:34px; height:34px; border-radius:8px; background:transparent; border:none; color:rgba(255,255,255,0.35); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; }
+.si:hover { background:rgba(255,255,255,0.04); } .si.on { background:rgba(18,150,219,0.1); color:#1296db; }
+.ssp { flex:1; }
+.sav { width:26px; height:26px; border-radius:50%; background:#333; display:flex; align-items:center; justify-content:center; font-size:11px; cursor:pointer; border:none; color:rgba(255,255,255,0.5); }
+.mn { flex:1; padding:20px 24px; overflow-y:auto; background:linear-gradient(180deg,#0c1020,#080c16); }
+.mn::-webkit-scrollbar{width:3px} .mn::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
+.eh { display:flex; gap:16px; height:210px; margin-bottom:20px; }
+.eb { flex:2; border-radius:14px; background:linear-gradient(135deg,#162a42,#0a1520); position:relative; overflow:hidden; }
+.eb::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,0.7)); }
+.eb h3 { position:absolute; bottom:14px; left:14px; z-index:1; font-size:15px; }
+.esd { flex:1; display:flex; flex-direction:column; gap:8px; }
+.eth { display:flex; gap:4px; } .ethi { width:44px; height:30px; border-radius:4px; background:rgba(255,255,255,0.05); }
+.et { font-size:14px; font-weight:600; }
+.ed { font-size:10px; color:rgba(255,255,255,0.4); line-height:1.5; flex:1; }
+.est { font-size:13px; font-weight:600; margin-bottom:10px; }
+.eg { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.egc { border-radius:10px; cursor:pointer; } .egc:hover { opacity:0.85; }
+.ecv { width:100%; height:90px; border-radius:10px; background-size:cover; background-position:center; }
+.enm { font-size:11px; margin-top:5px; color:rgba(255,255,255,0.7); }
+
+/* 遮罩 */
+.ov { position:absolute; inset:0; z-index:10; background:rgba(4,6,12,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); display:none; align-items:center; justify-content:center; }
+.ov::before { content:''; position:absolute; inset:0; background:url('../APP核心优化/竞品对比/盖世（MAC端）/背景图.png') center/cover no-repeat; opacity:0.12; pointer-events:none; }
+.ov.show { display:flex; }
+
+/* 弹窗 */
+.dlg {
+  background:rgba(40,44,56,0.72);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:24px; position:relative;
+  box-shadow:0 32px 80px rgba(0,0,0,0.5), inset 0 0.5px 0 rgba(255,255,255,0.1);
+  backdrop-filter:blur(40px) saturate(1.4); -webkit-backdrop-filter:blur(40px) saturate(1.4);
+  animation:dIn .2s ease;
+}
+@keyframes dIn { from{opacity:0;transform:scale(.97) translateY(6px)} to{opacity:1;transform:none} }
+.dlg-back { position:absolute; top:18px; left:18px; width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,0.08); border:none; color:rgba(255,255,255,0.7); font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.dlg-back:hover { background:rgba(255,255,255,0.14); }
+.dlg-skip { position:absolute; top:22px; right:22px; font-size:12px; color:rgba(255,255,255,0.5); background:none; border:none; cursor:pointer; }
+.dlg-skip:hover { color:rgba(255,255,255,0.8); }
+
+/* 通用图标路径 */
+:root {
+  --img: ../APP核心优化/竞品对比/盖世（MAC端）;
+}
+
+/* === P1: 欢迎（左右横排） === */
+.d1 { width:720px; padding:40px 44px; display:flex; gap:36px; position:relative; }
+.d1-left { width:300px; flex-shrink:0; }
+.d1-logo { width:36px; height:36px; } .d1-logo img { width:100%; height:100%; }
+.d1-title { font-size:20px; font-weight:700; margin-bottom:4px; }
+.d1-sub { font-size:13px; color:rgba(255,255,255,0.55); margin-bottom:18px; line-height:1.4; }
+.d1-feat-t { font-size:11px; color:rgba(255,255,255,0.3); margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px; font-weight:500; }
+.d1-fi { font-size:13px; color:rgba(255,255,255,0.65); padding:5px 0; padding-left:14px; position:relative; line-height:1.4; white-space:nowrap; }
+.d1-fi::before { content:'•'; position:absolute; left:0; top:5px; color:#1296db; font-size:14px; }
+.d1-right { flex:1; display:flex; flex-direction:column; gap:12px; justify-content:center; }
+.d1-opt { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:20px; cursor:pointer; transition:all .15s; display:flex; align-items:center; gap:14px; }
+.d1-opt:hover { background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.2); }
+.d1-opt:active { transform:scale(.98); }
+.d1-oi { width:44px; height:44px; border-radius:50%; overflow:hidden; flex-shrink:0; }
+.d1-oi img { width:100%; height:100%; }
+.d1-ot { font-size:15px; font-weight:600; margin-bottom:2px; }
+.d1-od { font-size:11px; color:rgba(255,255,255,0.45); }
+
+/* === P2: 游玩方式 === */
+.d2 { width:620px; padding:32px 36px; position:relative; }
+.d2-header { display:flex; align-items:flex-start; gap:14px; margin-bottom:24px; }
+.d2-header .d2-back { width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,0.08); border:none; color:rgba(255,255,255,0.6); font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:4px; }
+.d2-header .d2-back:hover { background:rgba(255,255,255,0.14); }
+.d2-header-info { flex:1; }
+.d2-header-info h2 { font-size:20px; font-weight:700; margin-bottom:3px; }
+.d2-header-info p { font-size:13px; color:rgba(255,255,255,0.45); }
+.d2-header .d2-skip { font-size:13px; color:rgba(255,255,255,0.45); background:none; border:none; cursor:pointer; margin-top:6px; white-space:nowrap; }
+.d2-header .d2-skip:hover { color:rgba(255,255,255,0.7); }
+.d2-row { display:flex; gap:14px; }
+.d2-card { flex:1; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:28px 22px; text-align:center; cursor:pointer; transition:all .15s; }
+.d2-card:hover { background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.2); transform:translateY(-2px); }
+.d2-card:active { transform:scale(.98); }
+.d2-ci { width:52px; height:52px; border-radius:50%; margin:0 auto 14px; overflow:hidden; }
+.d2-ci img { width:100%; height:100%; }
+.d2-ct { font-size:15px; font-weight:600; margin-bottom:4px; }
+.d2-cd { font-size:12px; color:rgba(255,255,255,0.45); line-height:1.4; }
+
+/* === P3: 扫描中 === */
+.d3 { width:480px; padding:48px 40px; text-align:center; }
+.d3-anim { width:88px; height:88px; margin:0 auto 28px; position:relative; display:flex; align-items:center; justify-content:center; }
+.d3-anim::before { content:''; position:absolute; inset:0; border:2.5px solid rgba(255,255,255,0.08); border-top-color:rgba(18,150,219,0.8); border-radius:50%; animation:spin 1.2s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.d3-anim img { width:48px; height:48px; }
+.d3-t { font-size:18px; font-weight:700; margin-bottom:6px; }
+.d3-d { font-size:12px; color:rgba(255,255,255,0.45); }
+.d3-demo { margin-top:28px; height:36px; padding:0 20px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:10px; color:rgba(255,255,255,0.6); font-size:12px; cursor:pointer; }
+.d3-demo:hover { background:rgba(255,255,255,0.1); }
+
+/* === P4: 扫描结果 === */
+.d4 { width:680px; padding:28px 36px 24px; }
+.d4-top { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+.d4-top .dlg-back { position:static; }
+.d4-top-info { flex:1; }
+.d4-top-info h2 { font-size:18px; font-weight:700; }
+.d4-top-info span { font-size:12px; color:rgba(255,255,255,0.4); }
+.d4-sel-all { font-size:12px; color:rgba(18,150,219,0.9); background:none; border:none; cursor:pointer; white-space:nowrap; }
+.d4-sel-all:hover { color:#4db8e8; }
+.d4-list { margin-bottom:18px; }
+.d4-item { display:flex; align-items:center; gap:14px; padding:14px 16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; margin-bottom:10px; cursor:pointer; transition:all .12s; }
+.d4-item.selected { border-color:rgba(18,150,219,0.5); background:rgba(18,150,219,0.06); }
+.d4-item:hover { background:rgba(255,255,255,0.06); }
+.d4-chk { width:22px; height:22px; border-radius:50%; border:2px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .12s; }
+.d4-item.selected .d4-chk { background:#1296db; border-color:#1296db; }
+.d4-item.selected .d4-chk::after { content:'✓'; color:white; font-size:11px; font-weight:700; }
+.d4-cv { width:56px; height:56px; border-radius:10px; flex-shrink:0; background-size:cover; background-position:center; }
+.d4-info { flex:1; }
+.d4-nm { font-size:14px; font-weight:600; margin-bottom:2px; }
+.d4-path { font-size:10px; color:rgba(255,255,255,0.35); font-family:"SF Mono",Menlo,monospace; }
+.d4-sz { font-size:11px; color:rgba(255,255,255,0.45); margin-top:2px; }
+.d4-footer { display:flex; align-items:center; justify-content:space-between; padding-top:4px; border-top:1px solid rgba(255,255,255,0.06); }
+.d4-count { font-size:12px; color:rgba(255,255,255,0.4); }
+.d4-actions { display:flex; gap:12px; align-items:center; }
+.d4-manual { font-size:12px; color:rgba(18,150,219,0.8); background:none; border:none; cursor:pointer; }
+.d4-manual:hover { color:#4db8e8; text-decoration:underline; }
+.d4-btn { height:38px; padding:0 24px; background:rgba(18,150,219,0.12); border:1px solid rgba(18,150,219,0.5); border-radius:10px; color:#4db8e8; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; }
+.d4-btn:hover { background:rgba(18,150,219,0.2); } .d4-btn:active { transform:scale(.98); }
+
+/* === P5: 新手列表 === */
+.d5 { width:720px; padding:28px 36px 24px; max-height:540px; overflow-y:auto; }
+.d5::-webkit-scrollbar{width:3px} .d5::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
+.d5-top { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+.d5-top .dlg-back { position:static; }
+.d5-top-info h2 { font-size:18px; font-weight:700; }
+.d5-top-info p { font-size:12px; color:rgba(255,255,255,0.45); margin-top:2px; }
+.d5-cols { display:flex; gap:20px; }
+.d5-col { flex:1; }
+.d5-col-h { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.d5-col-t { font-size:15px; font-weight:700; }
+.d5-col-s { font-size:11px; color:rgba(255,255,255,0.4); margin-left:6px; }
+.d5-col-m { font-size:12px; color:#1296db; background:none; border:none; cursor:pointer; }
+.d5-col-m:hover { text-decoration:underline; }
+.d5-item { display:flex; align-items:center; gap:10px; padding:10px 8px; border-radius:10px; cursor:pointer; transition:background .1s; }
+.d5-item:hover { background:rgba(255,255,255,0.04); }
+.d5-cv { width:48px; height:48px; border-radius:10px; flex-shrink:0; background-size:cover; background-position:center; }
+.d5-info { flex:1; }
+.d5-nm { font-size:14px; font-weight:600; margin-bottom:2px; }
+.d5-tg { font-size:11px; color:rgba(255,255,255,0.4); }
+.d5-btn { height:28px; padding:0 14px; border:none; border-radius:8px; font-size:11px; font-weight:600; cursor:pointer; flex-shrink:0; transition:all .12s; }
+.d5-btn.i { background:rgba(245,166,35,0.1); color:#f5a623; }
+.d5-btn.i:hover { background:rgba(245,166,35,0.18); }
+.d5-btn.f { background:rgba(52,199,89,0.1); color:#34c759; }
+.d5-btn.f:hover { background:rgba(52,199,89,0.18); }
+
+/* 礼盒 */
+.gift { position:absolute; inset:0; z-index:15; background:rgba(4,6,12,0.5); display:flex; align-items:center; justify-content:center; transition:opacity .3s; }
+.gift.hidden { opacity:0; pointer-events:none; }
+.gift-box { position:relative; background:rgba(40,44,56,0.8); border:1px solid rgba(255,255,255,0.15); border-radius:24px; padding:36px 48px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5), inset 0 0.5px 0 rgba(255,255,255,0.1); backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px); animation:dIn .25s ease; }
+.gift-icon { width:56px; height:56px; margin:0 auto 14px; }
+.gift-t { font-size:17px; font-weight:700; margin-bottom:4px; }
+.gift-d { font-size:13px; color:rgba(255,255,255,0.5); }
+.gift-a { font-size:28px; font-weight:700; color:#f5a623; margin-top:10px; }
+.gift-sub { font-size:11px; color:rgba(255,255,255,0.35); margin-top:4px; }
+
+/* 游客面板 */
+.gp { position:absolute; inset:0; z-index:12; display:none; } .gp.show { display:block; }
+.gp-bg { position:absolute; inset:0; }
+.gp-box { position:absolute; bottom:8px; left:56px; width:260px; max-height:calc(100% - 16px); overflow-y:auto; background:rgba(24,26,34,0.94); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:14px; box-shadow:0 16px 48px rgba(0,0,0,0.6); backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px); animation:dIn .15s ease; }
+.gp-box::-webkit-scrollbar{width:3px} .gp-box::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+.gph { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+.gpav { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#f5a623,#e67e22); display:flex; align-items:center; justify-content:center; font-size:16px; }
+.gp-name-row { }
+.gpn-row { display:flex; align-items:center; gap:8px; }
+.gpn { font-size:14px; font-weight:600; }
+.gpb { display:inline-block; padding:2px 8px; background:rgba(245,166,35,0.15); color:#f5a623; font-size:10px; font-weight:600; border-radius:100px; }
+.gpid-row { display:flex; align-items:center; gap:6px; margin-top:2px; }
+.gpid { font-size:11px; color:rgba(255,255,255,0.4); }
+.gpid-copy { width:14px; height:14px; cursor:pointer; opacity:0.4; font-size:10px; }
+.gp-guide { display:block; width:100%; padding:8px 12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:8px; margin-bottom:12px; font-size:11px; color:rgba(18,150,219,0.9); text-align:center; cursor:pointer; transition:all .12s; }
+.gp-guide:hover { background:rgba(18,150,219,0.08); border-color:rgba(18,150,219,0.3); }
+.gp-cloud { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px; margin-bottom:12px; }
+.gp-cloud-info { flex:1; }
+.gp-cloud-t { font-size:13px; font-weight:600; margin-bottom:3px; }
+.gp-cloud-d { font-size:10px; color:rgba(255,255,255,0.4); line-height:1.3; }
+.gp-cloud-btn { height:28px; padding:0 14px; background:rgba(255,255,255,0.9); border:none; border-radius:100px; color:#111; font-size:11px; font-weight:600; cursor:pointer; flex-shrink:0; transition:all .12s; }
+.gp-cloud-btn:hover { background:#fff; }
+.gp-menu { margin-bottom:12px; }
+.gpmi { display:flex; align-items:center; gap:8px; padding:8px 4px; font-size:13px; color:rgba(255,255,255,0.7); cursor:pointer; background:none; border:none; width:100%; text-align:left; border-radius:6px; }
+.gpmi:hover { background:rgba(255,255,255,0.04); }
+.gpmi-icon { font-size:12px; opacity:0.5; }
+.gp-login-link { display:block; padding:10px 4px; font-size:13px; color:rgba(255,255,255,0.7); cursor:pointer; background:none; border:none; width:100%; text-align:left; border-top:1px solid rgba(255,255,255,0.06); }
+.gp-login-link:hover { color:#f5a623; }
+
+/* toast */
+.toast { position:absolute; top:40px; left:50%; transform:translateX(-50%); background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.15); border-radius:100px; padding:8px 20px; font-size:12px; color:rgba(255,255,255,0.8); z-index:100; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); opacity:0; transition:opacity .2s; pointer-events:none; }
+.toast.show { opacity:1; }
+
+/* 角标 */
+.badge{display:none;align-items:center;justify-content:center;background:rgb(250,173,20);color:white;font-size:11px;font-weight:bold;width:20px;height:20px;border-radius:50%;cursor:pointer;position:absolute;top:-10px;right:-6px;z-index:50;transition:all .2s;box-shadow:0 2px 6px rgba(250,173,20,0.4)}
+.badge:hover{transform:scale(1.2)}
+.badges-visible .badge{display:inline-flex}
+.badge.highlight{background:#e74c3c;box-shadow:0 0 12px rgba(231,76,60,0.6);transform:scale(1.3)}
+
+/* 控制 */
+.ctrl { position:fixed; top:8px; right:8px; background:rgba(8,12,22,0.96); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:10px; width:170px; z-index:300; }
+.ctrl h4 { font-size:10px; color:#1296db; margin-bottom:6px; font-weight:600; }
+.ctrl button { display:block; width:100%; text-align:left; padding:4px 6px; background:none; border:1px solid transparent; border-radius:4px; color:rgba(255,255,255,0.4); font-size:10px; cursor:pointer; margin-bottom:1px; font-family:inherit; }
+.ctrl button:hover { background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.8); }
+.ctrl button.on { border-color:#1296db; color:#1296db; }
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="tb"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div><span class="tb-t">盖世游戏</span></div>
+  <div class="bd">
+
+    <!-- 底层探索页 -->
+    <div class="base">
+      <div class="side">
+        <div class="sl"><img src="../APP核心优化/竞品对比/盖世（MAC端）/20260707-150209.png" alt=""></div>
+        <button class="si on">🏠</button><button class="si">☁️</button><button class="si">🧭</button><button class="si">🏆</button><button class="si">👥</button>
+        <div class="ssp"></div>
+        <button class="si">🔍</button><button class="sav" onclick="toggleGP()" style="position:relative">🐱<span class="badge" onclick="event.stopPropagation();badgeClick(19)" style="top:-6px;right:-6px">19</span></button>
+      </div>
+      <div class="mn">
+        <div class="eh">
+          <div class="eb"><h3>鬼泣 5</h3></div>
+          <div class="esd"><div class="eth"><div class="ethi"></div><div class="ethi"></div><div class="ethi"></div><div class="ethi"></div></div><div class="et">鬼泣 5</div><div class="ed">最强的恶魔猎人强势回归！动作游戏迷翘首以待，Stylish Action终于复活！</div></div>
+        </div>
+        <div class="est">编辑推荐</div>
+        <div class="eg">
+          <div class="egc"><div class="ecv" style="background-image:url('../APP核心优化/竞品对比/盖世（MAC端）/游戏封面.png')"></div><div class="enm">ARC Raiders</div></div>
+          <div class="egc"><div class="ecv" style="background-image:url('../APP核心优化/竞品对比/盖世（MAC端）/游戏封面.png')"></div><div class="enm">无主之地3</div></div>
+          <div class="egc"><div class="ecv" style="background-image:url('../APP核心优化/竞品对比/盖世（MAC端）/游戏封面.png')"></div><div class="enm">黑暗之魂3</div></div>
+          <div class="egc"><div class="ecv" style="background-image:url('../APP核心优化/竞品对比/盖世（MAC端）/游戏封面.png')"></div><div class="enm">艾尔登法环</div></div>
+        </div>
+      </div>
+      <!-- 游客面板 -->
+      <div class="gp" id="gp">
+        <div class="gp-bg" onclick="toggleGP()"></div>
+        <div class="gp-box" style="position:relative">
+          <span class="badge" onclick="event.stopPropagation();badgeClick(20)" style="top:-8px;right:-4px">20</span>
+          <div class="gph">
+            <div class="gpav">🐱</div>
+            <div class="gp-name-row">
+              <div class="gpn-row"><span class="gpn">游客</span><span class="gpb">游客模式</span></div>
+              <div class="gpid-row"><span class="gpid">用户ID：--</span><span class="gpid-copy">📋</span></div>
+            </div>
+          </div>
+          <button class="gp-guide" onclick="showToast('拉起登录页面')">登录/注册后可保存进度、同步数据</button>
+          <div class="gp-cloud">
+            <div class="gp-cloud-info">
+              <div class="gp-cloud-t">云游戏秒玩 3A 大作</div>
+              <div class="gp-cloud-d">新用户注册即送 15 分钟体验时长</div>
+            </div>
+            <button class="gp-cloud-btn">去体验</button>
+          </div>
+          <div class="gp-menu">
+            <button class="gpmi">官方社群 <span class="gpmi-icon">🔗</span></button>
+            <button class="gpmi">设置 <span class="gpmi-icon">⚙️</span></button>
+          </div>
+          <button class="gp-login-link" onclick="showToast('拉起登录页面')">前往登录</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- O0: 登录页 -->
+    <div class="ov" id="o-login">
+      <div class="dlg" style="width:380px;padding:32px 28px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+          <img src="../APP核心优化/竞品对比/盖世（MAC端）/20260707-150209.png" style="width:36px;height:36px" alt="">
+          <span style="font-size:18px;font-weight:700" id="login-brand">盖世游戏</span>
+        </div>
+        <div style="margin-bottom:6px;font-size:16px;font-weight:700" id="login-title">手机号登录 / 注册</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:20px" id="login-desc">未注册账号的手机号将在验证后自动注册盖世账号并登录</div>
+        <div style="display:flex;align-items:center;gap:0;margin-bottom:14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;overflow:hidden">
+          <span style="padding:0 12px;font-size:13px;color:rgba(255,255,255,0.6);border-right:1px solid rgba(255,255,255,0.08)">+86</span>
+          <input type="tel" placeholder="输入手机号码" style="flex:1;height:42px;background:transparent;border:none;padding:0 12px;font-size:14px;color:#fff;outline:none" id="login-phone-input">
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:18px">
+          <input type="text" placeholder="输入短信中的验证码" style="flex:1;height:42px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:0 14px;font-size:13px;color:#fff;outline:none" id="login-code-input">
+          <button style="height:42px;padding:0 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:rgba(255,255,255,0.7);font-size:13px;cursor:pointer;white-space:nowrap" id="login-code-btn">获取验证码</button>
+        </div>
+        <button onclick="go('welcome')" style="width:100%;height:46px;background:rgba(255,255,255,0.9);border:none;border-radius:10px;color:#111;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:16px" id="login-submit">登录</button>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <span style="width:14px;height:14px;border:1.5px solid rgba(255,255,255,0.3);border-radius:3px;display:inline-block"></span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.45)" id="login-agree">我已阅读并同意 <span style="color:#4db8e8">《用户协议》</span> & <span style="color:#4db8e8">《隐私政策》</span></span>
+        </div>
+        <div style="text-align:center;margin:18px 0 14px;font-size:11px;color:rgba(255,255,255,0.3);display:flex;align-items:center;gap:10px"><span style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></span><span id="login-third">第三方登录</span><span style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></span></div>
+        <div style="display:flex;gap:12px;justify-content:center;margin-bottom:18px">
+          <div style="width:52px;height:40px;border-radius:8px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px">🐧</div>
+          <div style="width:52px;height:40px;border-radius:8px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px">💬</div>
+          <div style="width:52px;height:40px;border-radius:8px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px">🍎</div>
+        </div>
+        <div onclick="showToast('游客模式进入');go('welcome')" style="width:100%;padding:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;position:relative;color:rgba(18,150,219,0.9);font-size:13px">
+          <img src="../APP核心优化/竞品对比/盖世（MAC端）/游客头像.png" style="width:22px;height:22px;border-radius:50%" alt="">
+          <span id="login-guest-text">游客模式，先体验一下</span>
+          <span class="badge" onclick="event.stopPropagation();badgeClick(21)" style="top:-10px;right:-6px">21</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- O1: 欢迎（左文案右选项） -->
+    <div class="ov show" id="o-welcome">
+      <div class="dlg d1">
+        <button class="dlg-skip" onclick="go('explore')" style="position:absolute;top:22px;right:22px">跳过<span class="badge" onclick="event.stopPropagation();badgeClick(4)">4</span></button>
+        <div class="d1-left">
+          <div class="d1-logo" style="margin-bottom:14px"><img src="../APP核心优化/竞品对比/盖世（MAC端）/20260707-150209.png" alt=""></div>
+          <h1 class="d1-title" style="position:relative">欢迎来到盖世游戏<span class="badge" onclick="badgeClick(1)" style="top:-8px;right:-8px">1</span></h1>
+          <p class="d1-sub">Mac 上畅玩 Windows 游戏</p>
+          <div style="position:relative">
+            <div class="d1-feat-t">平台特色</div>
+            <div class="d1-fi">Steam与Epic与GOG平台数据互通</div>
+            <div class="d1-fi">支持云游戏，无需下载一键秒玩</div>
+            <div class="d1-fi">全游戏适配 AI 超级插帧技术</div>
+            <span class="badge" onclick="badgeClick(5)" style="top:-8px;right:-4px">5</span>
+          </div>
+        </div>
+        <div class="d1-right">
+          <div class="d1-opt" onclick="go('route')" style="position:relative">
+            <div class="d1-oi"><img src="../APP核心优化/竞品对比/盖世（MAC端）/我有游戏.png" alt=""></div>
+            <div><div class="d1-ot">我有游戏想玩</div><div class="d1-od">已有Steam账号或游戏文件，想在Mac上玩</div></div>
+            <span class="badge" onclick="event.stopPropagation();badgeClick(2)">2</span>
+          </div>
+          <div class="d1-opt" onclick="go('newbie')" style="position:relative">
+            <div class="d1-oi"><img src="../APP核心优化/竞品对比/盖世（MAC端）/我是新手.png" alt=""></div>
+            <div><div class="d1-ot">我是新手，想看看游戏</div><div class="d1-od">没玩过，想体验一下热门游戏</div></div>
+            <span class="badge" onclick="event.stopPropagation();badgeClick(3)">3</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- O2: 游玩方式 -->
+    <div class="ov" id="o-route">
+      <div class="dlg d2">
+        <div class="d2-header">
+          <button class="d2-back" onclick="go('welcome')" style="position:relative">‹<span class="badge" onclick="event.stopPropagation();badgeClick(6)" style="top:-10px;right:-10px">6</span></button>
+          <div class="d2-header-info">
+            <h2>你想怎么开始？</h2>
+            <p>选择你的游戏来源</p>
+          </div>
+          <button class="d2-skip" onclick="go('explore')" style="position:relative">跳过<span class="badge" onclick="event.stopPropagation();badgeClick(9)" style="top:-10px;right:-10px">9</span></button>
+        </div>
+        <div class="d2-row">
+          <div class="d2-card" onclick="go('scanning')" style="position:relative">
+            <div class="d2-ci"><img src="../APP核心优化/竞品对比/盖世（MAC端）/导入游戏.png" alt=""></div>
+            <div class="d2-ct">导入游戏</div>
+            <div class="d2-cd">自动扫描本地steamapps<br>CrossOver容器和外接硬盘</div>
+            <span class="badge" onclick="event.stopPropagation();badgeClick(7)">7</span>
+          </div>
+          <div class="d2-card" onclick="showToast('拉起Steam登录弹窗')" style="position:relative">
+            <div class="d2-ci"><img src="../APP核心优化/竞品对比/盖世（MAC端）/steam.png" alt=""></div>
+            <div class="d2-ct">绑定 Steam</div>
+            <div class="d2-cd">绑定后直接畅玩<br>Steam库里的游戏</div>
+            <span class="badge" onclick="event.stopPropagation();badgeClick(8)">8</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- O3: 扫描中 -->
+    <div class="ov" id="o-scanning">
+      <div class="dlg d3">
+        <button class="dlg-back" onclick="go('route')">‹</button>
+        <div class="d3-anim" style="position:relative">
+          <img src="../APP核心优化/竞品对比/盖世（MAC端）/导入文件夹.png" alt="">
+          <span class="badge" onclick="badgeClick(10)" style="top:0;right:-12px">10</span>
+        </div>
+        <h2 class="d3-t">正在扫描...</h2>
+        <p class="d3-d">检查 steamapps、CrossOver 容器等常见目录</p>
+      </div>
+    </div>
+
+    <!-- O4: 扫描结果 -->
+    <div class="ov" id="o-result">
+      <div class="dlg d4">
+        <div class="d4-top">
+          <button class="dlg-back" onclick="go('route')">‹</button>
+          <div class="d4-top-info">
+            <h2>扫描完成</h2>
+            <span>找到 2 个游戏文件</span>
+          </div>
+          <button class="d4-sel-all" id="selAllBtn" onclick="toggleSelectAll()" style="position:relative">全选<span class="badge" onclick="event.stopPropagation();badgeClick(12)">12</span></button>
+        </div>
+        <div class="d4-list" id="d4-list" style="position:relative">
+          <span class="badge" onclick="badgeClick(11)" style="top:4px;right:4px">11</span>
+          <div class="d4-item selected" onclick="toggleItem(this)">
+            <div class="d4-chk"></div>
+            <div class="d4-cv" style="background-image:url('../APP核心优化/竞品对比/盖世（MAC端）/游戏封面.png')"></div>
+            <div class="d4-info"><div class="d4-nm">DELTA FORCE</div><div class="d4-path">~/CrossOver/Bottles/Steam/.../deltaforce.exe</div><div class="d4-sz">32.4 GB</div></div>
+          </div>
+          <div class="d4-item selected" onclick="toggleItem(this)">
+            <div class="d4-chk"></div>
+            <div class="d4-cv" style="background-image:url('../APP核心优化/竞品对比/盖世（MAC端）/游戏封面.png')"></div>
+            <div class="d4-info"><div class="d4-nm">空洞骑士</div><div class="d4-path">~/steamapps/common/HollowKnight/hollow_knight.exe</div><div class="d4-sz">12.4 GB</div></div>
+          </div>
+        </div>
+        <div class="d4-footer">
+          <div class="d4-count" id="d4-count">已选 2/2</div>
+          <div class="d4-actions">
+            <button class="d4-manual" onclick="showToast('拉起添加游戏弹窗')" style="position:relative">手动选择文件夹<span class="badge" onclick="event.stopPropagation();badgeClick(14)">14</span></button>
+            <button class="d4-btn" onclick="go('explore')" style="position:relative">导入并进入游戏库<span class="badge" onclick="event.stopPropagation();badgeClick(13)">13</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- O5: 新手列表 -->
+    <div class="ov" id="o-newbie">
+      <div class="dlg d5">
+        <div class="d5-top">
+          <button class="dlg-back" onclick="go('welcome')">‹</button>
+          <div class="d5-top-info">
+            <h2>选一款试试</h2>
+          </div>
+        </div>
+        <div class="d5-cols">
+          <div class="d5-col" style="position:relative">
+            <span class="badge" onclick="badgeClick(15)" style="top:-12px;right:40px">15</span>
+            <div class="d5-col-h"><div><span class="d5-col-t">云游戏</span><span class="d5-col-s">无需下载，点开即玩</span></div><button class="d5-col-m" onclick="showToast('跳转秒玩页')" style="position:relative">更多 ›<span class="badge" onclick="event.stopPropagation();badgeClick(17)" style="top:-10px;right:-24px">17</span></button></div>
+            <div class="d5-item"><div class="d5-cv" style="background-image:url('../APP核心优化/竞品对比/盖世（MAC端）/游戏封面.png')"></div><div class="d5-info"><div class="d5-nm">ARC Raiders</div><div class="d5-tg">射击 · 多人</div></div><button class="d5-btn i">秒玩</button></div>
+            <div class="d5-item"><div class="d5-cv" style="background-image:url('../APP核心优化/竞品对比/盖世（MAC端）/游戏封面.png')"></div><div class="d5-info"><div class="d5-nm">艾尔登法环</div><div class="d5-tg">动作RPG</div></div><button class="d5-btn i">秒玩</button></div>
+            <div class="d5-item"><div class="d5-cv" style="background-image:url('../APP核心优化/竞品对比/盖世（MAC端）/游戏封面.png')"></div><div class="d5-info"><div class="d5-nm">GTA5</div><div class="d5-tg">开放世界</div></div><button class="d5-btn i">秒玩</button></div>
+            <div class="d5-item"><div class="d5-cv" style="background-image:url('../APP核心优化/竞品对比/盖世（MAC端）/游戏封面.png')"></div><div class="d5-info"><div class="d5-nm">只狼：影逝二度</div><div class="d5-tg">动作冒险</div></div><button class="d5-btn i">秒玩</button></div>
+          </div>
+          <div class="d5-col" style="position:relative">
+            <span class="badge" onclick="badgeClick(16)" style="top:-12px;right:40px">16</span>
+            <div class="d5-col-h"><div><span class="d5-col-t">免费游戏</span><span class="d5-col-s">需下载游戏包，无限时畅玩</span></div><button class="d5-col-m" onclick="showToast('跳转探索页「免费游戏」专题')">更多 ›</button></div>
+            <div class="d5-item"><div class="d5-cv" style="background-image:url('../APP核心优化/竞品对比/盖世（MAC端）/游戏封面.png')"></div><div class="d5-info"><div class="d5-nm">Dota 2</div><div class="d5-tg">MOBA</div></div><button class="d5-btn f">免费</button></div>
+            <div class="d5-item"><div class="d5-cv" style="background-image:url('../APP核心优化/竞品对比/盖世（MAC端）/游戏封面.png')"></div><div class="d5-info"><div class="d5-nm">CS2</div><div class="d5-tg">射击</div></div><button class="d5-btn f">免费</button></div>
+            <div class="d5-item"><div class="d5-cv" style="background-image:url('../APP核心优化/竞品对比/盖世（MAC端）/游戏封面.png')"></div><div class="d5-info"><div class="d5-nm">War Thunder</div><div class="d5-tg">战争模拟</div></div><button class="d5-btn f">免费</button></div>
+            <div class="d5-item"><div class="d5-cv" style="background-image:url('../APP核心优化/竞品对比/盖世（MAC端）/游戏封面.png')"></div><div class="d5-info"><div class="d5-nm">原神</div><div class="d5-tg">开放世界</div></div><button class="d5-btn f">免费</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="gift" id="gift"><div class="gift-box"><div class="gift-icon"><img src="../APP核心优化/竞品对比/盖世（MAC端）/新手礼盒.png" alt="" style="width:100%;height:100%"></div><div class="gift-t">已赠送新手礼包</div><div class="gift-d">获得免费秒玩时长</div><div class="gift-a">15 分钟</div><div class="gift-sub">可在云游戏中使用</div><span class="badge" onclick="event.stopPropagation();badgeClick(18)" style="top:-10px;right:-10px">18</span></div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="ctrl" style="display:none">
+  <h4>Demo 控制</h4>
+  <button class="on" onclick="go('welcome')">1. 欢迎首屏</button>
+  <button onclick="go('route')">2. 游玩方式</button>
+  <button onclick="go('scanning')">3. 扫描中</button>
+  <button onclick="go('result')">4. 扫描结果</button>
+  <button onclick="go('newbie')">5. 新手列表</button>
+  <button onclick="go('explore')">6. 探索页（游客）</button>
+</div>
+
+<script>
+const ovs=document.querySelectorAll('.ov'),cbs=document.querySelectorAll('.ctrl button');
+const ns=['login','welcome','route','scanning','result','newbie','explore'];
+let gt;
+
+function go(n){
+  ovs.forEach(o=>o.classList.remove('show'));
+  if(n!=='explore'){const e=document.getElementById('o-'+n);if(e)e.classList.add('show');}
+  cbs.forEach((b,i)=>b.classList.toggle('on',i===ns.indexOf(n)));
+  if(n==='newbie')showGift();
+  if(n==='explore'){
+    document.getElementById('gp').classList.add('show');
+  }else{
+    document.getElementById('gp').classList.remove('show');
+  }
+}
+
+function showGift(){
+  const e=document.getElementById('gift');
+  e.classList.remove('hidden');
+  clearTimeout(gt);
+  gt=setTimeout(()=>e.classList.add('hidden'),2500);
+}
+
+function toggleGP(){document.getElementById('gp').classList.toggle('show');}
+
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+function badgeClick(id){
+  if(window.parent&&window.parent!==window){
+    window.parent.postMessage({type:'badge-click',id:id},'*');
+  }
+}
+
+// 扫描结果交互
+function toggleItem(el){
+  el.classList.toggle('selected');
+  updateCount();
+}
+
+function toggleSelectAll(){
+  const items=document.querySelectorAll('.d4-item');
+  const allSelected=[...items].every(i=>i.classList.contains('selected'));
+  items.forEach(i=>{
+    if(allSelected) i.classList.remove('selected');
+    else i.classList.add('selected');
+  });
+  document.getElementById('selAllBtn').textContent=allSelected?'全选':'取消全选';
+  updateCount();
+}
+
+function updateCount(){
+  const total=document.querySelectorAll('.d4-item').length;
+  const selected=document.querySelectorAll('.d4-item.selected').length;
+  document.getElementById('d4-count').textContent=`已选 ${selected}/${total}`;
+  const btn=document.getElementById('selAllBtn');
+  btn.textContent=selected===total?'取消全选':'全选';
+}
+
+// 新手列表秒玩按钮交互
+document.querySelectorAll('.d5-btn').forEach(btn=>{
+  btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    const orig=this.textContent;
+    this.textContent='启动中...';
+    this.style.opacity='0.6';
+    setTimeout(()=>{
+      this.textContent=orig;
+      this.style.opacity='1';
+    },1500);
+  });
+});
+
+// 接收父窗口消息（标注版控制）
+window.addEventListener('message',function(e){
+  if(!e.data||!e.data.type)return;
+  if(e.data.type==='switch-page'){
+    go(e.data.page);
+  }
+  if(e.data.type==='toggle-badges'){
+    if(e.data.hidden){
+      document.body.classList.remove('badges-visible');
+    }else{
+      document.body.classList.add('badges-visible');
+    }
+  }
+  if(e.data.type==='highlight-badge'){
+    document.querySelectorAll('.badge').forEach(b=>b.classList.remove('highlight'));
+    const id=e.data.id;
+    document.querySelectorAll('.badge').forEach(b=>{
+      if(b.textContent.trim()===String(id)) b.classList.add('highlight');
+    });
+  }
+  if(e.data.type==='switch-lang'){
+    switchLang(e.data.lang);
+  }
+});
+
+// 国际化
+let currentLang='cn';
+const i18n={
+  cn:{
+    title:'欢迎来到盖世游戏',
+    subtitle:'Mac 上畅玩 Windows 游戏',
+    featTitle:'平台特色',
+    feat1:'Steam与Epic与GOG平台数据互通',
+    feat2:'支持云游戏，无需下载一键秒玩',
+    feat3:'全游戏适配 AI 超级插帧技术',
+    optA:'我有游戏想玩',
+    optADesc:'已有Steam账号或游戏文件，想在Mac上玩',
+    optB:'我是新手，想看看游戏',
+    optBDesc:'没玩过，想体验一下热门游戏',
+    skip:'跳过',
+    routeTitle:'你想怎么开始？',
+    routeSub:'选择你的游戏来源',
+    importTitle:'导入游戏',
+    importDesc:'自动扫描本地steamapps<br>CrossOver容器和外接硬盘',
+    steamTitle:'绑定 Steam',
+    steamDesc:'绑定后直接畅玩<br>Steam库里的游戏',
+    scanning:'正在扫描...',
+    scanDesc:'检查 steamapps、CrossOver 容器等常见目录',
+    scanDone:'扫描完成',
+    scanFound:'找到 2 个游戏文件',
+    selectAll:'全选',
+    deselectAll:'取消全选',
+    importBtn:'导入并进入游戏库',
+    manualSelect:'手动选择文件夹',
+    newbieTitle:'选一款试试',
+    cloudTitle:'云游戏',
+    cloudSub:'无需下载，点开即玩',
+    freeTitle:'免费游戏',
+    freeSub:'需下载游戏包，无限时畅玩',
+    more:'更多 ›',
+    instantPlay:'秒玩',
+    freeBtn:'免费',
+    giftTitle:'已赠送新手礼包',
+    giftDesc:'获得免费秒玩时长',
+    giftAmount:'15 分钟',
+    giftSub:'可在云游戏中使用',
+    showFeat2:true,
+    showNewbieList:true
+  },
+  en:{
+    title:'Welcome to GameHub',
+    subtitle:'Play Windows Games on Mac',
+    featTitle:'Features',
+    feat1:'Steam, Epic & GOG cross-platform',
+    feat2:'',
+    feat3:'AI Super Frame for all games',
+    optA:'I have games to play',
+    optADesc:'Already have Steam account or game files on Mac',
+    optB:"I'm new, show me games",
+    optBDesc:'Never played before, want to explore',
+    skip:'Skip',
+    routeTitle:'How to get started?',
+    routeSub:'Choose your game source',
+    importTitle:'Import Games',
+    importDesc:'Auto-scan local steamapps,<br>CrossOver bottles & drives',
+    steamTitle:'Bind Steam',
+    steamDesc:'Link your Steam account<br>to play your library',
+    scanning:'Scanning...',
+    scanDesc:'Checking steamapps, CrossOver bottles & drives',
+    scanDone:'Scan Complete',
+    scanFound:'Found 2 game files',
+    selectAll:'Select All',
+    deselectAll:'Deselect All',
+    importBtn:'Import & Enter Library',
+    manualSelect:'Select Folder Manually',
+    newbieTitle:'Get Started',
+    guide1Title:'Import Local Games',
+    guide1Desc:'Step 1: Grant storage access<br>Step 2: Scan automatically or add manually<br>Step 3: Ready to play! Your game library is all set.<br><br><em style="opacity:0.6;font-size:11px">We only scan game files locally to build your library.</em>',
+    guide2Title:'Link Your Steam Account',
+    guide2Desc:'Step 1: Go to Profile, log in / sign up for GameHub.<br>Step 2: Tap "Bind Steam Account" & log in to Steam.<br>Step 3: Your game library will sync automatically.',
+    guideBtn:'Get Started',
+    cloudTitle:'',
+    cloudSub:'',
+    freeTitle:'',
+    freeSub:'',
+    more:'',
+    instantPlay:'',
+    freeBtn:'',
+    giftTitle:'',
+    giftDesc:'',
+    giftAmount:'',
+    giftSub:'',
+    showFeat2:false,
+    showNewbieList:false
+  }
+};
+
+function switchLang(lang){
+  currentLang=lang;
+  const t=i18n[lang];
+  // P1 欢迎
+  document.querySelector('.d1-title').childNodes[0].textContent=t.title;
+  document.querySelector('.d1-sub').textContent=t.subtitle;
+  document.querySelector('.d1-feat-t').textContent=t.featTitle;
+  const fis=document.querySelectorAll('.d1-fi');
+  if(fis[0])fis[0].textContent=t.feat1;
+  if(fis[1]){fis[1].textContent=t.feat2;fis[1].style.display=t.showFeat2?'':'none';}
+  if(fis[2])fis[2].textContent=t.feat3;
+  document.querySelector('.d1-ot').textContent=t.optA;
+  document.querySelector('.d1-od').textContent=t.optADesc;
+  const opts=document.querySelectorAll('.d1-opt');
+  if(opts[1]){
+    opts[1].querySelector('.d1-ot').textContent=t.optB;
+    opts[1].querySelector('.d1-od').textContent=t.optBDesc;
+  }
+  document.querySelectorAll('.dlg-skip').forEach(s=>{if(s.childNodes[0])s.childNodes[0].textContent=t.skip;});
+  // P2 路线
+  const d2h2=document.querySelector('.d2-header-info h2');
+  if(d2h2)d2h2.textContent=t.routeTitle;
+  const d2p=document.querySelector('.d2-header-info p');
+  if(d2p)d2p.textContent=t.routeSub;
+  document.querySelectorAll('.d2-ct')[0].textContent=t.importTitle;
+  document.querySelectorAll('.d2-cd')[0].innerHTML=t.importDesc;
+  document.querySelectorAll('.d2-ct')[1].textContent=t.steamTitle;
+  document.querySelectorAll('.d2-cd')[1].innerHTML=t.steamDesc;
+  const d2skip=document.querySelector('.d2-skip');
+  if(d2skip&&d2skip.childNodes[0])d2skip.childNodes[0].textContent=t.skip;
+  // P3 扫描
+  document.querySelector('.d3-t').textContent=t.scanning;
+  document.querySelector('.d3-d').textContent=t.scanDesc;
+  // P4 结果
+  document.querySelector('.d4-top-info h2').textContent=t.scanDone;
+  document.querySelector('.d4-top-info span').textContent=t.scanFound;
+  document.querySelector('.d4-btn').childNodes[0].textContent=t.importBtn;
+  document.querySelector('.d4-manual').childNodes[0].textContent=t.manualSelect;
+  const selBtn=document.getElementById('selAllBtn');
+  const allSel=[...document.querySelectorAll('.d4-item')].every(i=>i.classList.contains('selected'));
+  selBtn.childNodes[0].textContent=allSel?(lang==='en'?'Deselect All':'取消全选'):(lang==='en'?'Select All':'全选');
+  document.getElementById('d4-count').textContent=lang==='en'?'Selected 2/2':'已选 2/2';
+  // 游戏名
+  const gameNames=document.querySelectorAll('.d4-nm');
+  if(gameNames[1])gameNames[1].textContent=lang==='en'?'Hollow Knight':'空洞骑士';
+  // P5 新手
+  const d5=document.getElementById('o-newbie');
+  if(t.showNewbieList){
+    // 国内：显示秒玩列表
+    document.querySelector('.d5-cols').style.display='flex';
+    if(document.getElementById('guide-page'))document.getElementById('guide-page').style.display='none';
+    document.querySelector('.d5 .d5-top-info h2').textContent=t.newbieTitle;
+  }else{
+    // 海外：隐藏秒玩列表，显示引导图
+    document.querySelector('.d5-cols').style.display='none';
+    document.querySelector('.d5 .d5-top-info h2').textContent=t.newbieTitle;
+    let gp=document.getElementById('guide-page');
+    if(!gp){
+      gp=document.createElement('div');
+      gp.id='guide-page';
+      gp.style.cssText='padding:0 20px';
+      gp.innerHTML=`
+        <div id="guide-step1">
+          <div style="display:flex;align-items:center;gap:0;margin-bottom:20px">
+            <div style="width:40%;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+              <img src="../APP核心优化/竞品对比/盖世（MAC端）/导入游戏引导.png" style="width:90%;border-radius:10px;object-fit:contain" alt="">
+            </div>
+            <div style="width:60%">
+              <div style="font-size:16px;font-weight:600;margin-bottom:10px">${t.guide1Title}</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.8">${t.guide1Desc}</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+            <div style="display:flex;gap:6px"><span style="width:20px;height:4px;border-radius:2px;background:#4db8e8"></span><span style="width:20px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15)"></span></div>
+            <button onclick="document.getElementById('guide-step1').style.display='none';document.getElementById('guide-step2').style.display='block'" style="height:38px;padding:0 28px;background:rgba(18,150,219,0.12);border:1px solid rgba(18,150,219,0.5);border-radius:10px;color:#4db8e8;font-size:13px;font-weight:600;cursor:pointer">Next</button>
+          </div>
+        </div>
+        <div id="guide-step2" style="display:none">
+          <div style="display:flex;align-items:center;gap:0;margin-bottom:20px">
+            <div style="width:40%;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+              <img src="../APP核心优化/竞品对比/盖世（MAC端）/steam绑定引导.png" style="width:90%;border-radius:10px;object-fit:contain" alt="">
+            </div>
+            <div style="width:60%">
+              <div style="font-size:16px;font-weight:600;margin-bottom:10px">${t.guide2Title}</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.8">${t.guide2Desc}</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+            <div style="display:flex;gap:6px"><span style="width:20px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15)"></span><span style="width:20px;height:4px;border-radius:2px;background:#4db8e8"></span></div>
+            <button onclick="go('explore')" style="height:38px;padding:0 28px;background:rgba(18,150,219,0.12);border:1px solid rgba(18,150,219,0.5);border-radius:10px;color:#4db8e8;font-size:13px;font-weight:600;cursor:pointer">${t.guideBtn}</button>
+          </div>
+        </div>
+      `;
+      document.querySelector('.d5-cols').parentNode.appendChild(gp);
+    }else{
+      gp.style.display='block';
+    }
+  }
+  // 礼盒
+  const gift=document.getElementById('gift');
+  if(lang==='en')gift.style.display='none';
+  else gift.style.display='';
+  // 登录页
+  const lBrand=document.getElementById('login-brand');
+  const lTitle=document.getElementById('login-title');
+  const lDesc=document.getElementById('login-desc');
+  const lCodeBtn=document.getElementById('login-code-btn');
+  const lSubmit=document.getElementById('login-submit');
+  const lThird=document.getElementById('login-third');
+  const lGuest=document.getElementById('login-guest-text');
+  const lTerms=document.getElementById('login-terms');
+  const lPhoneInput=document.getElementById('login-phone-input');
+  const lCodeInput=document.getElementById('login-code-input');
+  if(lang==='en'){
+    if(lBrand)lBrand.textContent='GameHub';
+    if(lTitle)lTitle.textContent='Phone Login / Sign Up';
+    if(lDesc)lDesc.textContent='Unregistered numbers will auto-create an account after verification';
+    if(lCodeBtn)lCodeBtn.textContent='Get Code';
+    if(lSubmit)lSubmit.textContent='Login';
+    if(lThird)lThird.textContent='Third-party Login';
+    if(lGuest)lGuest.textContent='Guest Mode, try it first';
+    if(lTerms)lTerms.innerHTML='By logging in, you agree to <span style="color:rgba(18,150,219,0.7)">Terms</span> and <span style="color:rgba(18,150,219,0.7)">Privacy Policy</span>';
+    if(lPhoneInput)lPhoneInput.placeholder='Enter phone number';
+    if(lCodeInput)lCodeInput.placeholder='Enter verification code';
+    const lAgree=document.getElementById('login-agree');
+    if(lAgree)lAgree.innerHTML='I agree to <span style="color:#4db8e8">Terms of Service</span> & <span style="color:#4db8e8">Privacy Policy</span>';
+  }else{
+    if(lBrand)lBrand.textContent='盖世游戏';
+    if(lTitle)lTitle.textContent='手机号登录 / 注册';
+    if(lDesc)lDesc.textContent='未注册账号的手机号将在验证后自动注册盖世账号并登录';
+    if(lCodeBtn)lCodeBtn.textContent='获取验证码';
+    if(lSubmit)lSubmit.textContent='登录';
+    if(lThird)lThird.textContent='第三方登录';
+    if(lGuest)lGuest.textContent='游客模式，先体验一下';
+    if(lPhoneInput)lPhoneInput.placeholder='输入手机号码';
+    if(lCodeInput)lCodeInput.placeholder='输入短信中的验证码';
+    const lAgree=document.getElementById('login-agree');
+    if(lAgree)lAgree.innerHTML='我已阅读并同意 <span style="color:#4db8e8">《用户协议》</span> & <span style="color:#4db8e8">《隐私政策》</span>';
+  }
+  // 游客面板多语言
+  const gpName=document.querySelector('.gpn');
+  const gpBadge=document.querySelector('.gpb');
+  const gpGuide=document.querySelector('.gp-guide');
+  const gpCloudT=document.querySelector('.gp-cloud-t');
+  const gpCloudD=document.querySelector('.gp-cloud-d');
+  const gpCloudBtn=document.querySelector('.gp-cloud-btn');
+  const gpMenuItems=document.querySelectorAll('.gpmi');
+  const gpLogin=document.querySelector('.gp-login-link');
+  if(lang==='en'){
+    if(gpName)gpName.textContent='Guest';
+    if(gpBadge)gpBadge.textContent='Guest Mode';
+    if(gpGuide)gpGuide.textContent='Log in to save progress & sync data';
+    if(gpCloudT)gpCloudT.textContent='Play AAA Games Instantly';
+    if(gpCloudD)gpCloudD.textContent='New users get 15 min free play time';
+    if(gpCloudBtn)gpCloudBtn.textContent='Try Now';
+    if(gpMenuItems[0])gpMenuItems[0].innerHTML='Community <span class="gpmi-icon">🔗</span>';
+    if(gpMenuItems[1])gpMenuItems[1].innerHTML='Settings <span class="gpmi-icon">⚙️</span>';
+    if(gpLogin)gpLogin.textContent='Go to Login';
+  }else{
+    if(gpName)gpName.textContent='游客';
+    if(gpBadge)gpBadge.textContent='游客模式';
+    if(gpGuide)gpGuide.textContent='登录/注册后可保存进度、同步数据';
+    if(gpCloudT)gpCloudT.textContent='云游戏秒玩 3A 大作';
+    if(gpCloudD)gpCloudD.textContent='新用户注册即送 15 分钟体验时长';
+    if(gpCloudBtn)gpCloudBtn.textContent='去体验';
+    if(gpMenuItems[0])gpMenuItems[0].innerHTML='官方社群 <span class="gpmi-icon">🔗</span>';
+    if(gpMenuItems[1])gpMenuItems[1].innerHTML='设置 <span class="gpmi-icon">⚙️</span>';
+    if(gpLogin)gpLogin.textContent='前往登录';
+  }
+}
+</script>
+</body>
+</html>

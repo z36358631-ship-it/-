@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Mac端新手分流引导 - 交互标注版</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#12141e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC",sans-serif;-webkit-font-smoothing:antialiased}
+.layout{display:flex;height:100%;width:100%}
+
+/* 左侧导航 */
+.left-nav{width:220px;background:#1e2235;border-right:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;padding:0;flex-shrink:0}
+.nav-header{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.nav-header h3{font-size:16px;font-weight:600;color:rgba(255,255,255,0.85)}
+.nav-header p{font-size:12px;color:rgba(255,255,255,0.35);margin-top:3px}
+.nav-group-title{font-size:11px;color:rgba(255,255,255,0.3);padding:16px 20px 8px;text-transform:uppercase;letter-spacing:.5px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;cursor:pointer;font-size:14px;color:rgba(255,255,255,0.55);transition:all .12s;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.85)}
+.nav-item.active{background:rgba(18,150,219,0.08);color:#4db8e8;border-left-color:#1296db}
+.nav-item .nav-icon{width:18px;text-align:center;font-size:13px;opacity:0.6;flex-shrink:0}
+.nav-item.active .nav-icon{opacity:1}
+.nav-spacer{flex:1}
+
+/* 语言切换 */
+.nav-lang{flex:1;padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5);font-size:11px;cursor:pointer;text-align:center;transition:all .12s}
+.nav-lang:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8)}
+.nav-lang.active{background:rgba(18,150,219,0.15);border-color:rgba(18,150,219,0.4);color:#4db8e8}
+
+/* 模拟按钮 */
+.nav-sim{margin-left:auto;padding:2px 8px;border-radius:4px;background:rgba(52,199,89,0.12);border:1px solid rgba(52,199,89,0.3);color:#34c759;font-size:9px;cursor:pointer;white-space:nowrap}
+.nav-sim:hover{background:rgba(52,199,89,0.2)}
+.nav-actions{padding:12px 16px;border-top:1px solid rgba(255,255,255,0.06)}
+.nav-btn{width:100%;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.6);font-size:11px;cursor:pointer;transition:all .12s}
+.nav-btn:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.9)}
+
+/* 中间demo区 */
+.center{flex:1;display:flex;align-items:center;justify-content:center;background:#14161e;position:relative;overflow:hidden;min-width:0}
+.center iframe{border:none;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.4)}
+
+/* 右侧标注面板 */
+.right-panel{width:400px;background:#1a1e2a;border-left:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;flex-shrink:0;transition:width .2s,opacity .2s}
+.right-panel.collapsed{width:0;overflow:hidden;opacity:0}
+.panel-header{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:12px}
+.panel-header h3{font-size:15px;font-weight:600;flex:1}
+.panel-badge-toggle{padding:5px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.6);font-size:11px;cursor:pointer;white-space:nowrap}
+.panel-badge-toggle:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.9)}
+.panel-toggle{width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,0.06);border:none;color:rgba(255,255,255,0.5);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
+.panel-toggle:hover{background:rgba(255,255,255,0.1);color:#fff}
+.panel-content{flex:1;overflow-y:auto;padding:12px 0}
+.panel-content::-webkit-scrollbar{width:4px}
+.panel-content::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
+
+/* 标注项 */
+.anno-item{padding:16px 18px;border-bottom:1px solid rgba(255,255,255,0.04);border-left:3px solid transparent;cursor:pointer;transition:all .12s}
+.anno-item:hover{background:rgba(255,255,255,0.02)}
+.anno-item.highlight{background:rgba(250,173,20,0.08);border-left-color:#faad14}
+.anno-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.anno-badge{display:inline-flex;align-items:center;justify-content:center;background:rgb(250,173,20);color:white;font-size:11px;font-weight:bold;width:20px;height:20px;border-radius:50%;flex-shrink:0}
+.anno-title{font-size:14px;font-weight:600;color:rgba(255,255,255,0.9)}
+.anno-body{font-size:13px;color:rgba(255,255,255,0.6);line-height:1.7}
+.anno-body strong{color:rgba(255,255,255,0.85);font-weight:600}
+.anno-body .tag{display:inline-block;padding:2px 6px;border-radius:3px;font-size:10px;margin-left:4px}
+.anno-body .tag-blue{background:rgba(18,150,219,0.12);color:#4db8e8}
+.anno-body .tag-green{background:rgba(52,199,89,0.12);color:#34c759}
+.anno-body .tag-orange{background:rgba(245,166,35,0.12);color:#f5a623}
+
+/* 折叠展开按钮（面板收起时显示） */
+.panel-expand{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:28px;height:60px;background:#1a1e2a;border:1px solid rgba(255,255,255,0.1);border-radius:6px;display:none;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,0.5);font-size:14px;z-index:10}
+.panel-expand:hover{background:#222638;color:#fff}
+.right-panel.collapsed~.panel-expand{display:flex}
+
+/* 页面分隔标题 */
+.anno-section{padding:10px 18px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:.5px;background:rgba(0,0,0,0.2)}
+
+/* Tab切换 */
+.panel-tab{padding:10px 16px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.4);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .12s}
+.panel-tab:hover{color:rgba(255,255,255,0.7)}
+.panel-tab.active{color:#4db8e8;border-bottom-color:#1296db}
+.tab-content{display:block}
+</style>
+</head>
+<body>
+<div class="layout">
+  <!-- 左侧导航 -->
+  <div class="left-nav">
+    <div class="nav-header">
+      <h3>Mac端新手分流</h3>
+      <p>交互标注文档</p>
+    </div>
+    <div class="nav-group-title">页面流程</div>
+    <div style="padding:0 16px 12px;display:flex;gap:6px">
+      <button class="nav-lang active" id="langCN" onclick="switchLang('cn')">国内版</button>
+      <button class="nav-lang" id="langEN" onclick="switchLang('en')">海外版</button>
+    </div>
+    <div class="nav-item" data-page="welcome" onclick="switchPage('welcome',this)">
+      <span class="nav-icon">◎</span> 欢迎首屏
+    </div>
+    <div class="nav-item" data-page="route" onclick="switchPage('route',this)">
+      <span class="nav-icon">◇</span> 游玩方式
+    </div>
+    <div class="nav-item" data-page="scanning" onclick="switchPage('scanning',this)">
+      <span class="nav-icon">↻</span> 扫描中
+      <button class="nav-sim" onclick="event.stopPropagation();simScanDone()">▶完成</button>
+    </div>
+    <div class="nav-item" data-page="result" onclick="switchPage('result',this)">
+      <span class="nav-icon">☑</span> 扫描结果
+    </div>
+    <div class="nav-item" data-page="newbie" onclick="switchPage('newbie',this)">
+      <span class="nav-icon">★</span> 新手列表
+    </div>
+    <div class="nav-item" data-page="explore" onclick="switchPage('explore',this)">
+      <span class="nav-icon">◉</span> 探索页（游客）
+    </div>
+    <div class="nav-item" data-page="login" onclick="switchPage('login',this)">
+      <span class="nav-icon">🔑</span> 登录页（游客模式）
+    </div>
+
+    <div class="nav-spacer"></div>
+  </div>
+
+  <!-- 中间Demo -->
+  <div class="center">
+    <iframe id="demoFrame" src="Mac端新手分流引导demo.html" width="1076" height="734" style="transform:scale(1);transform-origin:center center;border:none;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.4)"></iframe>
+    <div class="panel-expand" id="panelExpand" onclick="togglePanel()">›</div>
+  </div>
+
+  <!-- 右侧标注面板 -->
+  <div class="right-panel" id="rightPanel">
+    <div class="panel-header">
+      <h3>展示&交互说明标注</h3>
+      <button class="panel-badge-toggle" id="toggleBadges" onclick="toggleBadges()">显示标号</button>
+      <button class="panel-toggle" onclick="togglePanel()">›</button>
+    </div>
+    <div style="display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.06);padding:0 18px;flex-shrink:0">
+      <button class="panel-tab active" onclick="switchTab('interaction',this)">交互说明</button>
+      <button class="panel-tab" onclick="switchTab('exception',this)">异常&边界</button>
+    </div>
+    <div class="panel-content" id="panelContent">
+
+      <!-- 交互说明内容 -->
+      <div class="tab-content" id="tab-interaction">
+
+      <!-- 全局逻辑 -->
+      <div class="anno-item" style="background:rgba(18,150,219,0.04);border-left-color:#1296db;border-bottom:1px solid rgba(255,255,255,0.06)">
+        <div class="anno-head"><span class="anno-badge" style="background:#1296db">G</span><span class="anno-title">全局触发与消失逻辑</span></div>
+        <div class="anno-body">
+          <strong>触发条件：</strong>未登录时以设备设备为维度，登录后以账号维度，未完成任一路径的账号，每次启动时展示<br>
+          <strong>消失条件：</strong>永久1次<br>
+          <strong>覆盖范围：</strong> 匿名&旧版登录设备均覆盖
+        </div>
+      </div>
+
+      <!-- 登录页 -->
+      <div class="anno-section">登录页改造（游客模式）</div>
+      <div class="anno-item" data-id="21" data-page="login" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">21</span><span class="anno-title">"游客模式，先体验一下"入口</span></div>
+        <div class="anno-body">
+          <strong>位置：</strong>登录弹窗底部，三方登录按钮下方<br><br>
+          <strong>触发条件（显示规则）：</strong><br>
+          • 仅在<strong>未登录过的设备</strong>显示<br>
+          • 已登录过的设备不显示此入口<br>
+          • 新增改造点：现有登录页无此入口<br><br>
+          <strong>登录页输入规则：</strong><br>
+          • 手机号输入框最多支持<strong>11位</strong>数字<br>
+          • 验证码6位数字<br><br>
+          <strong>点击行为：</strong><br>
+          • 自动创建游客账号，跳转到【欢迎首屏】引导页<br><br>
+          <strong>游客账号规则：</strong><br>
+          • 有效期：<strong>永久</strong><br>
+          • 数据：继承保留，不丢失<br>
+          • 清理策略：超过<strong>90天</strong>未登录，可清理掉数据<br>
+          • 允许参与运营活动和签到<br><br>
+          <strong>转正场景（触发拉起正式登录）：</strong><br>
+          • Steam 账号绑定<br>
+          • Epic 账号绑定<br>
+          • GOG 账号绑定<br>
+          • 云游戏充值<br>
+          • 云游组队玩（创建/加入房间）<br><br>
+          <strong>主动转正：</strong>游客可随时通过个人中心"前往登录"绑定手机号升级为正式账号
+          <span class="tag tag-blue">可交互</span><span class="tag tag-orange">新增</span>
+        </div>
+      </div>
+
+      <!-- 页面1 -->
+      <div class="anno-section">页面1：欢迎首屏</div>
+      <div class="anno-item" data-id="1" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">1</span><span class="anno-title">Logo + 标题区</span></div>
+        <div class="anno-body">纯展示，不可交互。标题"欢迎来到盖世游戏"，副标题"Mac上畅玩Windows游戏"</div>
+      </div>
+      <div class="anno-item" data-id="2" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">2</span><span class="anno-title">"我有游戏想玩"选项</span></div>
+        <div class="anno-body"><strong>点击 →</strong> 跳转到【游玩方式选择页】<br><strong>目标用户：</strong>已有Steam账号或本地游戏文件（含CrossOver用户）<br><strong>描述文案：</strong>"已有Steam账号或游戏文件，想在Mac上玩"<span class="tag tag-blue">可交互</span></div>
+      </div>
+      <div class="anno-item" data-id="3" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">3</span><span class="anno-title">"我是新手"选项</span></div>
+        <div class="anno-body"><strong>点击 →</strong> 跳转到【新手秒玩列表页】<br><strong>目标用户：</strong>纯新用户，从未玩过<br><strong>描述文案：</strong>"没玩过，想体验一下热门游戏"<span class="tag tag-blue">可交互</span></div>
+      </div>
+      <div class="anno-item" data-id="4" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">4</span><span class="anno-title">"跳过"按钮</span></div>
+        <div class="anno-body"><strong>点击 →</strong> 关闭引导弹窗，直接进入探索页<br><strong>状态记录：</strong>跳过<strong>不记录</strong>为已完成，下次登录仍触发引导<span class="tag tag-orange">注意</span></div>
+      </div>
+      <div class="anno-item" data-id="5" data-page="welcome" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">5</span><span class="anno-title">平台特色介绍区</span></div>
+        <div class="anno-body">纯展示，运营可配置<br><strong>国内版（3条）：</strong><br>•与 Steam、Epic、GOG平台数据互通<br>• 支持云游戏，无需下载一键秒玩<br>• 全游戏适配AI超级插帧技术<br><strong>海外版（2条）：</strong>隐藏"云游戏"条目<span class="tag tag-green">国内/海外差异</span></div>
+      </div>
+
+      <!-- 页面2 -->
+      <div class="anno-section">页面2：游玩方式选择</div>
+      <div class="anno-item" data-id="6" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">6</span><span class="anno-title">返回按钮</span></div>
+        <div class="anno-body"><strong>点击 →</strong> 返回到【欢迎首屏】</div>
+      </div>
+      <div class="anno-item" data-id="7" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">7</span><span class="anno-title">"导入游戏"卡片</span></div>
+        <div class="anno-body"><strong>点击 →</strong> 进入【自动扫描页】<br><strong>扫描范围：</strong><br>1. ~/Library/.../CrossOver/Bottles/Steam/<br>2. ~/Library/.../Steam/steamapps/<br>3. /Volumes/（外接硬盘优先）<br><strong>流程：</strong>自动扫描，无需用户手动选择路径<span class="tag tag-blue">可交互</span></div>
+      </div>
+      <div class="anno-item" data-id="8" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">8</span><span class="anno-title">"绑定Steam"卡片</span></div>
+        <div class="anno-body"><strong>点击 →</strong> 拉起Steam登录流程<br><strong>前置条件：</strong>需先登录平台账号（游客不可用）<br><strong>成功后：</strong>进入探索页，引导标记为已完成<br><strong>失败处理：</strong>提示"绑定失败，请重试"<span class="tag tag-blue">可交互</span></div>
+      </div>
+      <div class="anno-item" data-id="9" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">9</span><span class="anno-title">"跳过"按钮</span></div>
+        <div class="anno-body">同标注4逻辑。点击关闭弹窗进入探索页，不记录为已完成</div>
+      </div>
+
+      <!-- 页面3 -->
+      <div class="anno-section">页面3：扫描中</div>
+      <div class="anno-item" data-id="10" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">10</span><span class="anno-title">扫描动画 + 进度</span></div>
+        <div class="anno-body"><strong>行为：</strong>自动执行，无需用户操作<br><strong>扫描路径顺序：</strong><br>1. CrossOver容器（优先）<br>2. Steam steamapps目录<br>3. 外接硬盘 /Volumes/<br><strong>超时处理：</strong>10秒未完成 → 提示"扫描超时，请手动选择"<br><strong>预计耗时：</strong>3-15秒<span class="tag tag-orange">自动流程</span></div>
+      </div>
+
+      <!-- 页面4 -->
+      <div class="anno-section">页面4：扫描结果</div>
+      <div class="anno-item" data-id="11" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">11</span><span class="anno-title">游戏列表（可勾选）</span></div>
+        <div class="anno-body"><strong>每条显示：</strong>勾选框 + 游戏封面 + 游戏名 + 来源路径 + 文件大小<br><strong>默认状态：</strong>全部选中<br><strong>交互：</strong>点击单条可取消/重新选择<br><strong>来源标识：</strong>CrossOver Steam / steamapps（区分展示）<span class="tag tag-blue">可交互</span></div>
+      </div>
+      <div class="anno-item" data-id="12" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">12</span><span class="anno-title">全选/取消全选</span></div>
+        <div class="anno-body"><strong>逻辑：</strong>当前全选 → 点击变为"取消全选"；当前非全选 → 点击变为"全选"<br><strong>联动：</strong>更新底部已选计数<span class="tag tag-blue">可交互</span></div>
+      </div>
+      <div class="anno-item" data-id="13" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">13</span><span class="anno-title">"导入并进入游戏库"按钮</span></div>
+        <div class="anno-body"><strong>点击 →</strong> 导入选中游戏 → 完成后进入探索页游戏库tab<br><strong>引导状态：</strong>标记为已完成，后续不再触发<br><strong>禁用条件：</strong>已选数量=0时按钮置灰不可点击<br><strong>导入过程：</strong>显示导入进度，完成后高亮刚导入的游戏<span class="tag tag-blue">可交互</span></div>
+      </div>
+      <div class="anno-item" data-id="14" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">14</span><span class="anno-title">"手动选择文件夹"</span></div>
+        <div class="anno-body"><strong>点击 →</strong> 拉起macOS系统文件选择器<br><strong>用途：</strong>自动扫描未找到时，用户手动指定游戏目录<br><strong>选择后：</strong>扫描指定目录，找到游戏则加入列表<span class="tag tag-blue">可交互</span></div>
+      </div>
+
+      <!-- 页面5 -->
+      <div class="anno-section">页面5：新手秒玩列表</div>
+      <div class="anno-item" data-id="15" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">15</span><span class="anno-title">云游戏列表 + "秒玩"按钮</span></div>
+        <div class="anno-body"><strong>点击秒玩 →</strong> 直接启动该游戏的云游戏<br><strong>账号模式：</strong>以游客模式游玩（无需登录）<br><strong>数据来源：</strong>后台"新手推荐池（云游戏）"专题管理<br><strong>列表数量：</strong>展示最多8款，按热度排序<br><strong>引导状态：</strong>成功启动秒玩 → 标记为已完成<span class="tag tag-blue">可交互</span></div>
+      </div>
+      <div class="anno-item" data-id="16" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">16</span><span class="anno-title">免费游戏列表 + "免费"按钮</span></div>
+        <div class="anno-body"><strong>点击免费 →</strong> 跳转该游戏详情页，开始下载<br><strong>账号模式：</strong>以游客模式游玩<br><strong>数据来源：</strong>后台"新手推荐池（免费游戏）"专题管理<br><strong>游戏类型：</strong>Steam/GOG平台免费游戏（Demo版、F2P、限免）<br><strong>验证要求：</strong>仅含已验证可在平台正常运行的游戏<span class="tag tag-blue">可交互</span></div>
+      </div>
+      <div class="anno-item" data-id="17" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">17</span><span class="anno-title">"更多"按钮</span></div>
+        <div class="anno-body"><strong>云游戏"更多" →</strong> 跳转"玩游戏"tab → 云游戏页<br><strong>免费游戏"更多" →</strong> 跳转"玩游戏"tab → PC游戏页<br><strong>提示：</strong>进入云游戏页时顶部提示"恭喜已获得15分钟免费游戏时长"<span class="tag tag-blue">可交互</span></div>
+      </div>
+      <div class="anno-item" data-id="18" data-page="newbie" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">18</span><span class="anno-title">新手礼盒弹窗</span></div>
+        <div class="anno-body"><strong>触发时机：</strong>进入新手列表页后自动弹出<br><strong>内容：</strong>"已赠送新手礼包 / 获得15分钟免费秒玩时长"<br><strong>行为：</strong>2.5秒后自动消失，无需用户操作<br><strong>时长说明：</strong>此15分钟为账号注册时默认赠送的时长，<strong>不额外赠送</strong>，弹窗仅作为告知提示<br><strong>重复进入：</strong>仅首次进入展示，重复进入不再弹出<span class="tag tag-orange">自动流程</span></div>
+      </div>
+
+      <!-- 页面6 -->
+      <div class="anno-section">页面6：探索页（游客态）</div>
+      <div class="anno-item" data-id="19" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">19</span><span class="anno-title">游客头像按钮</span></div>
+        <div class="anno-body"><strong>点击 →</strong> 弹出个人中心面板<br><strong>位置：</strong>左侧导航栏底部<br><strong>默认头像：</strong>系统默认猫头像<span class="tag tag-blue">可交互</span></div>
+      </div>
+      <div class="anno-item" data-id="20" data-page="explore" onclick="highlightAnno(this)">
+        <div class="anno-head"><span class="anno-badge">20</span><span class="anno-title">游客个人中心面板</span></div>
+        <div class="anno-body"><strong>显示内容：</strong><br>• 游客名称 + "游客模式"金色标签<br>• 用户ID：-- （游客无ID）<br>• 登录引导提示："登录/注册后可保存进度、同步数据"<br>• 云游戏体验卡："新用户注册即送15分钟体验时长" + "去体验"按钮<br>• 官方社群入口<br>• 设置入口<br>• "前往登录"链接<br><br><strong>差异点：</strong>已登录用户显示真实昵称/ID/充值入口等，游客态隐藏这些<span class="tag tag-green">游客/登录差异</span></div>
+      </div>
+
+      </div><!-- end tab-interaction -->
+
+      <!-- 异常&边界内容 -->
+      <div class="tab-content" id="tab-exception" style="display:none">
+
+      <div class="anno-section">全局异常</div>
+      <div class="anno-item">
+        <div class="anno-head"><span class="anno-badge" style="background:#e74c3c">E1</span><span class="anno-title">接口超时/网络异常</span></div>
+        <div class="anno-body"><strong>场景：</strong>引导页数据接口请求失败<br><strong>处理：</strong>跳过引导，直接进入探索页<br><strong>重试：</strong>下次登录重新触发引导<span class="tag tag-orange">降级</span></div>
+      </div>
+      <div class="anno-item">
+        <div class="anno-head"><span class="anno-badge" style="background:#e74c3c">E2</span><span class="anno-title">中途退出（杀进程/关闭窗口）</span></div>
+        <div class="anno-body"><strong>场景：</strong>用户在引导流程中强制关闭APP<br><strong>处理：</strong>不记录为已完成，下次打开APP重新进入引导页<br><strong>数据：</strong>已选择但未确认的导入游戏不保存</div>
+      </div>
+
+      <div class="anno-section">扫描相关异常</div>
+      <div class="anno-item">
+        <div class="anno-head"><span class="anno-badge" style="background:#e74c3c">E4</span><span class="anno-title">扫描超时</span></div>
+        <div class="anno-body"><strong>触发条件：</strong>扫描耗时 > 10秒<br><strong>UI表现：</strong>停止动画，弹出提示"扫描超时，请手动选择"<br><strong>操作：</strong>展示"手动选择文件夹"按钮<span class="tag tag-orange">超时</span></div>
+      </div>
+      <div class="anno-item">
+        <div class="anno-head"><span class="anno-badge" style="background:#e74c3c">E5</span><span class="anno-title">扫描结果为空</span></div>
+        <div class="anno-body"><strong>场景：</strong>扫描完成但未找到任何游戏文件<br><strong>UI表现：</strong>展示"未检测到游戏文件"提示<br><strong>选项：</strong>① 手动选择文件夹 ② 去看看其他游戏（跳转探索页）</div>
+      </div>
+      <div class="anno-item">
+        <div class="anno-head"><span class="anno-badge" style="background:#e74c3c">E6</span><span class="anno-title">外接硬盘未连接</span></div>
+        <div class="anno-body"><strong>场景：</strong>优先扫描 /Volumes/ 但无外接设备<br><strong>处理：</strong>静默跳过，继续扫描其他路径<br><strong>不提示：</strong>不需要告知用户"未检测到外接硬盘"</div>
+      </div>
+
+      <div class="anno-section">导入相关异常</div>
+      <div class="anno-item">
+        <div class="anno-head"><span class="anno-badge" style="background:#e74c3c">E8</span><span class="anno-title">导入失败（文件损坏/路径失效）</span></div>
+        <div class="anno-body"><strong>场景：</strong>游戏文件在扫描后被移动/删除<br><strong>处理：</strong>该条标记为导入失败（红色提示），其他正常导入的游戏不受影响<br><strong>文案：</strong>"导入失败：文件不存在或已损坏"</div>
+      </div>
+      <div class="anno-item">
+        <div class="anno-head"><span class="anno-badge" style="background:#e74c3c">E9</span><span class="anno-title">磁盘空间不足</span></div>
+        <div class="anno-body"><strong>场景：</strong>导入游戏时目标磁盘空间不够<br><strong>处理：</strong>提示"磁盘空间不足，请清理后重试"<br><strong>按钮状态：</strong>导入按钮可用，点击后弹提示</div>
+      </div>
+
+      <div class="anno-section">Steam绑定异常</div>
+      <div class="anno-item">
+        <div class="anno-head"><span class="anno-badge" style="background:#e74c3c">E10</span><span class="anno-title">Steam登录失败/取消</span></div>
+        <div class="anno-body"><strong>场景：</strong>用户取消Steam登录或网络超时<br><strong>处理：</strong>返回"游玩方式选择页"，不记录为已完成<br><strong>文案：</strong>取消→无提示；失败→Toast"绑定失败，请检查网络后重试"</div>
+      </div>
+      <div class="anno-item">
+        <div class="anno-head"><span class="anno-badge" style="background:#e74c3c">E11</span><span class="anno-title">Steam账号已被其他用户绑定</span></div>
+        <div class="anno-body"><strong>场景：</strong>该Steam账号已绑定到平台内另一个用户<br><strong>处理：</strong>提示"该Steam账号已被绑定，请使用其他账号或联系客服"<br><strong>不可覆盖：</strong>不允许强制解绑<span class="tag tag-orange">注意</span></div>
+      </div>
+
+      <div class="anno-section">秒玩相关异常</div>
+      <div class="anno-item">
+        <div class="anno-head"><span class="anno-badge" style="background:#e74c3c">E12</span><span class="anno-title">云游戏启动失败</span></div>
+        <div class="anno-body"><strong>场景：</strong>云游戏服务不可用/排队满<br><strong>处理：</strong>提示"当前云游戏繁忙，请稍后再试"<br><strong>引导状态：</strong>启动失败不标记为已完成<br><strong>按钮恢复：</strong>"秒玩"按钮恢复可点击状态</div>
+      </div>
+      <div class="anno-item">
+        <div class="anno-head"><span class="anno-badge" style="background:#e74c3c">E13</span><span class="anno-title">秒玩时长用完</span></div>
+        <div class="anno-body"><strong>场景：</strong>15分钟免费时长已耗尽<br><strong>处理：</strong>游戏内弹出"体验时长已用完"弹窗<br><strong>选项：</strong>① 充值继续 ② 退出游戏<br><strong>注意：</strong>此场景不在引导页内，在游戏运行时触发</div>
+      </div>
+
+      <div class="anno-section">新手列表边界</div>
+      <div class="anno-item">
+        <div class="anno-head"><span class="anno-badge" style="background:#e74c3c">E14</span><span class="anno-title">新手推荐池为空</span></div>
+        <div class="anno-body"><strong>场景：</strong>后台未配置推荐游戏池，或接口返回空列表<br><strong>处理：</strong>跳过新手列表，直接进入探索页<br><strong>降级：</strong>不展示空白列表页面<span class="tag tag-orange">降级</span></div>
+      </div>
+      <div class="anno-item">
+        <div class="anno-head"><span class="anno-badge" style="background:#e74c3c">E15</span><span class="anno-title">游戏封面加载失败</span></div>
+        <div class="anno-body"><strong>场景：</strong>CDN图片加载超时/404<br><strong>处理：</strong>展示占位色块 + 游戏名文字<br><strong>不影响交互：</strong>秒玩/免费按钮仍可正常点击</div>
+      </div>
+
+      </div><!-- end tab-exception -->
+
+    </div>
+  </div>
+</div>
+
+<script>
+// 标注项对应的页面映射
+const annoPageMap={1:'welcome',2:'welcome',3:'welcome',4:'welcome',5:'welcome',6:'route',7:'route',8:'route',9:'route',10:'scanning',11:'result',12:'result',13:'result',14:'result',15:'newbie',16:'newbie',17:'newbie',18:'newbie',19:'explore',20:'explore',21:'login'};
+
+function switchPage(name, el){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  const frame=document.getElementById('demoFrame');
+  frame.contentWindow.postMessage({type:'switch-page',page:name},'*');
+}
+
+let badgesHidden=true;
+function toggleBadges(){
+  badgesHidden=!badgesHidden;
+  const btn=document.getElementById('toggleBadges');
+  btn.textContent=badgesHidden?'显示标号':'隐藏标号';
+  const frame=document.getElementById('demoFrame');
+  frame.contentWindow.postMessage({type:'toggle-badges',hidden:badgesHidden},'*');
+}
+
+function togglePanel(){
+  const panel=document.getElementById('rightPanel');
+  const expand=document.getElementById('panelExpand');
+  panel.classList.toggle('collapsed');
+  if(panel.classList.contains('collapsed')){
+    expand.style.display='flex';
+  }else{
+    expand.style.display='none';
+  }
+  setTimeout(resizeFrame,250);
+}
+
+function highlightAnno(el){
+  document.querySelectorAll('.anno-item').forEach(i=>i.classList.remove('highlight'));
+  el.classList.add('highlight');
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+  // 联动demo跳转到对应页面并高亮角标
+  const id=el.getAttribute('data-id');
+  if(id&&annoPageMap[id]){
+    const page=annoPageMap[id];
+    const frame=document.getElementById('demoFrame');
+    frame.contentWindow.postMessage({type:'switch-page',page:page},'*');
+    // 如果标号隐藏则自动显示
+    if(badgesHidden){
+      badgesHidden=false;
+      document.getElementById('toggleBadges').textContent='隐藏标号';
+      frame.contentWindow.postMessage({type:'toggle-badges',hidden:false},'*');
+    }
+    frame.contentWindow.postMessage({type:'highlight-badge',id:parseInt(id)},'*');
+    // 同步左侧导航高亮
+    document.querySelectorAll('.nav-item').forEach(n=>{
+      n.classList.toggle('active',n.getAttribute('data-page')===page);
+    });
+  }
+}
+
+function switchTab(tab, btn){
+  document.querySelectorAll('.panel-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-interaction').style.display=tab==='interaction'?'block':'none';
+  document.getElementById('tab-exception').style.display=tab==='exception'?'block':'none';
+}
+
+window.addEventListener('message',function(e){
+  if(e.data&&e.data.type==='badge-click'){
+    const id=e.data.id;
+    // 切到交互说明tab
+    switchTab('interaction',document.querySelector('.panel-tab'));
+    const item=document.querySelector(`.anno-item[data-id="${id}"]`);
+    if(item){
+      highlightAnno(item);
+    }
+  }
+});
+
+function switchLang(lang){
+  document.getElementById('langCN').classList.toggle('active',lang==='cn');
+  document.getElementById('langEN').classList.toggle('active',lang==='en');
+  const frame=document.getElementById('demoFrame');
+  frame.contentWindow.postMessage({type:'switch-lang',lang:lang},'*');
+}
+
+function simScanDone(){
+  const frame=document.getElementById('demoFrame');
+  frame.contentWindow.postMessage({type:'switch-page',page:'result'},'*');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    n.classList.toggle('active',n.getAttribute('data-page')==='result');
+  });
+}
+
+function resizeFrame(){
+  const center=document.querySelector('.center');
+  const frame=document.getElementById('demoFrame');
+  const cw=center.clientWidth-40;
+  const ch=center.clientHeight-40;
+  const sw=cw/1076;
+  const sh=ch/734;
+  const s=Math.min(sw,sh,1);
+  frame.style.transform=`scale(${s})`;
+  frame.style.transformOrigin='center center';
+}
+window.addEventListener('resize',resizeFrame);
+window.addEventListener('load',function(){setTimeout(resizeFrame,100)});
+</script>
+</body>
+</html>
