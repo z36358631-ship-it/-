@@ -164,6 +164,9 @@ tr:hover td { background:#f9fafb; }
       <h3>最新上报</h3>
       <div style="display:flex;gap:8px;">
         <select class="form-select" style="width:auto;padding:5px 10px;font-size:12px;" onchange="toast('已筛选：'+this.value)">
+          <option>全部区服</option><option>国内</option><option>海外</option>
+        </select>
+        <select class="form-select" style="width:auto;padding:5px 10px;font-size:12px;" onchange="toast('已筛选：'+this.value)">
           <option>全部类型</option><option>闪退</option><option>黑屏</option><option>花屏</option><option>卡顿</option><option>卡加载</option>
         </select>
         <select class="form-select" style="width:auto;padding:5px 10px;font-size:12px;" onchange="toast('已筛选：'+this.value)">
@@ -255,6 +258,26 @@ tr:hover td { background:#f9fafb; }
         <tr><td>10</td><td>Redmi K70E</td><td><span class="device-tag">天玑8300</span></td><td>9</td><td>3.5%</td></tr>
       </table>
     </div>
+  </div>
+
+  <div class="table-card" style="margin-top:16px;">
+    <div class="table-head">
+      <h3>未解决TOP10 游戏+GPU组合</h3>
+      <button class="btn btn-ghost btn-sm" onclick="toast('已下载全部游戏+GPU统计数据')">下载全部</button>
+    </div>
+    <table>
+      <tr><th>排名</th><th>游戏</th><th>GPU驱动</th><th>未解决数</th><th>占比</th></tr>
+      <tr><td>1</td><td>艾尔登法环</td><td><span class="device-tag">Turnip Gen8 V25</span></td><td>23</td><td>8.9%</td></tr>
+      <tr><td>2</td><td>博德之门3</td><td><span class="device-tag">Turnip Gen8 V25</span></td><td>19</td><td>7.4%</td></tr>
+      <tr><td>3</td><td>赛博朋克2077</td><td><span class="device-tag">System</span></td><td>17</td><td>6.6%</td></tr>
+      <tr><td>4</td><td>GTA5</td><td><span class="device-tag">Turnip Gen8 V25</span></td><td>15</td><td>5.8%</td></tr>
+      <tr><td>5</td><td>艾尔登法环</td><td><span class="device-tag">System</span></td><td>14</td><td>5.4%</td></tr>
+      <tr><td>6</td><td>巫师3</td><td><span class="device-tag">System</span></td><td>12</td><td>4.7%</td></tr>
+      <tr><td>7</td><td>黑神话悟空</td><td><span class="device-tag">Turnip Gen8 V28</span></td><td>11</td><td>4.3%</td></tr>
+      <tr><td>8</td><td>博德之门3</td><td><span class="device-tag">System</span></td><td>10</td><td>3.9%</td></tr>
+      <tr><td>9</td><td>只狼</td><td><span class="device-tag">Turnip Gen8 V25</span></td><td>9</td><td>3.5%</td></tr>
+      <tr><td>10</td><td>赛博朋克2077</td><td><span class="device-tag">Turnip Gen8 V25</span></td><td>8</td><td>3.1%</td></tr>
+    </table>
   </div>
 </div>
 
