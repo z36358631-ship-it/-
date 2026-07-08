@@ -198,6 +198,8 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
       <div class="engine-list" id="engineList1"></div>
       <div class="fallback-entry" id="fallback1">
         <span class="fe-title">以上方案都无法解决？</span>
+        <span class="fallback-link" onclick="toast('正在跳转机型配置攻略…')">查看机型配置攻略</span>
+        <span class="fallback-sep">|</span>
         <span class="fallback-link" onclick="showHelp(1)">社区搜索</span>
         <span class="fallback-sep">|</span>
         <span class="fallback-link" onclick="toast('正在跳转社区发帖…')">社区发帖求助</span>
@@ -213,7 +215,7 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
       </div>
     </div>
     <div class="dp-footer" id="popupFoot1">
-      <div class="dp-hint">切换后需重新启动游戏方可生效</div>
+      <div class="dp-hint"></div>
       <div class="dp-actions">
         <button class="btn btn-ghost" onclick="closePopup(1)">暂不处理</button>
         <button class="btn btn-primary" id="confirmBtn1" onclick="doConfirm(1)">切换方案</button>
@@ -248,6 +250,8 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
       <div class="engine-list" id="engineList2"></div>
       <div class="fallback-entry" id="fallback2">
         <span class="fe-title">以上方案都无法解决？</span>
+        <span class="fallback-link" onclick="toast('正在跳转机型配置攻略…')">查看机型配置攻略</span>
+        <span class="fallback-sep">|</span>
         <span class="fallback-link" onclick="showHelp(2)">社区搜索</span>
         <span class="fallback-sep">|</span>
         <span class="fallback-link" onclick="toast('正在跳转社区发帖…')">社区发帖求助</span>
@@ -263,7 +267,7 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
       </div>
     </div>
     <div class="dp-footer" id="popupFoot2">
-      <div class="dp-hint">切换后需重新启动游戏方可生效</div>
+      <div class="dp-hint"></div>
       <div class="dp-actions">
         <button class="btn btn-ghost" onclick="closePopup(2)">暂不处理</button>
         <button class="btn btn-primary" id="confirmBtn2" onclick="doConfirm(2)">切换方案</button>
@@ -298,6 +302,8 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
       <div class="engine-list" id="engineList3"></div>
       <div class="fallback-entry" id="fallback3">
         <span class="fe-title">以上方案都无法解决？</span>
+        <span class="fallback-link" onclick="toast('正在跳转机型配置攻略…')">查看机型配置攻略</span>
+        <span class="fallback-sep">|</span>
         <span class="fallback-link" onclick="showHelp(3)">社区搜索</span>
         <span class="fallback-sep">|</span>
         <span class="fallback-link" onclick="toast('正在跳转社区发帖…')">社区发帖求助</span>
@@ -313,7 +319,7 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
       </div>
     </div>
     <div class="dp-footer" id="popupFoot3">
-      <div class="dp-hint">切换后需重新启动游戏方可生效</div>
+      <div class="dp-hint"></div>
       <div class="dp-actions">
         <button class="btn btn-ghost" onclick="closePopup(3)">暂不处理</button>
         <button class="btn btn-primary" id="confirmBtn3" onclick="doConfirm(3)">切换方案</button>
@@ -362,6 +368,8 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
       <div class="engine-list" id="engineList4"></div>
       <div class="fallback-entry">
         <span class="fe-title">以上方案都无法解决？</span>
+        <span class="fallback-link" onclick="toast('正在跳转机型配置攻略…')">查看机型配置攻略</span>
+        <span class="fallback-sep">|</span>
         <span class="fallback-link" onclick="showHelp(4)">社区搜索</span>
         <span class="fallback-sep">|</span>
         <span class="fallback-link" onclick="toast('正在跳转社区发帖…')">社区发帖求助</span>
@@ -564,7 +572,7 @@ function doHelpSearch() {
 function doConfirm(n) {
   const plan = ENGINE_PLANS[selectedEngine[n]];
   const desc = document.getElementById('confirmDesc'+n);
-  let txt = `将切换为「<strong>${plan.name}</strong>」方案（启动成功率 ${plan.rate}）<br>切换后需重新启动游戏方可生效`;
+  let txt = `将切换为「<strong>${plan.name}</strong>」方案（启动成功率 ${plan.rate}）`;
   desc.innerHTML = txt;
   document.getElementById('popupBody'+n).style.display='none';
   document.getElementById('popupFoot'+n).style.display='none';
