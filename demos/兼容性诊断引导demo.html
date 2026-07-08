@@ -131,7 +131,7 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
 /* 弹窗底部 */
 .dp-footer { padding:12px 18px; border-top:1px solid rgba(255,255,255,.06); background:rgba(28,26,32,.5); display:flex; flex-direction:column; gap:10px; }
 .dp-footer .dp-hint { font-size:10px; color:var(--text-muted); line-height:1.4; }
-.dp-footer .dp-actions { display:flex; gap:8px; flex-shrink:0; }
+.dp-footer .dp-actions { display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end; }
 .dp-footer .btn { border:none; border-radius:var(--radius-md); font-family:var(--font-primary); font-size:12px; font-weight:600; padding:11px 16px; cursor:pointer; transition:all .15s; white-space:nowrap; flex:1; text-align:center; }
 .dp-footer .btn-ghost { background:transparent; color:var(--text-secondary); border:1px solid var(--border-default); }
 .dp-footer .btn-ghost:hover { border-color:rgba(255,255,255,.2); }
@@ -140,12 +140,11 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
 .dp-footer .btn-primary:disabled { opacity:.4; cursor:not-allowed; }
 
 /* 二次确认状态（弹窗内容替换） */
-.dp-confirm { display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:32px 24px; gap:12px; }
+.dp-confirm { display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:32px 24px; gap:10px; }
 .dp-confirm.show { display:flex; }
-.dp-confirm .dc-icon { font-size:32px; }
 .dp-confirm .dc-title { font-size:15px; font-weight:600; }
 .dp-confirm .dc-desc { font-size:12px; color:var(--text-muted); line-height:1.6; }
-.dp-confirm .dc-actions { display:flex; gap:10px; margin-top:8px; width:100%; max-width:280px; }
+.dp-confirm .dc-actions { display:flex; gap:10px; margin-top:12px; width:100%; max-width:280px; }
 .dp-confirm .dc-actions .btn { flex:1; border:none; border-radius:var(--radius-md); font-family:var(--font-primary); font-size:13px; font-weight:600; padding:10px; cursor:pointer; white-space:nowrap; }
 .dp-confirm .btn-cancel { background:rgba(255,255,255,.06); color:var(--text-secondary); border:1px solid var(--border-default); }
 .dp-confirm .btn-confirm { background:linear-gradient(135deg,#ffcc43,#ffb600); color:#1a1a1a; }
@@ -206,8 +205,7 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
       </div>
     </div>
     <div class="dp-confirm" id="popupConfirm1">
-      <div class="dc-icon">⚠️</div>
-      <div class="dc-title">确认切换引擎方案？</div>
+      <div class="dc-title">提示</div>
       <div class="dc-desc" id="confirmDesc1"></div>
       <div class="dc-actions">
         <button class="btn btn-cancel" onclick="hideConfirm(1)">取消</button>
@@ -258,8 +256,7 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
       </div>
     </div>
     <div class="dp-confirm" id="popupConfirm2">
-      <div class="dc-icon">⚠️</div>
-      <div class="dc-title">确认切换引擎方案？</div>
+      <div class="dc-title">提示</div>
       <div class="dc-desc" id="confirmDesc2"></div>
       <div class="dc-actions">
         <button class="btn btn-cancel" onclick="hideConfirm(2)">取消</button>
@@ -310,8 +307,7 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
       </div>
     </div>
     <div class="dp-confirm" id="popupConfirm3">
-      <div class="dc-icon">⚠️</div>
-      <div class="dc-title">确认切换引擎方案？</div>
+      <div class="dc-title">提示</div>
       <div class="dc-desc" id="confirmDesc3"></div>
       <div class="dc-actions">
         <button class="btn btn-cancel" onclick="hideConfirm(3)">取消</button>
@@ -376,8 +372,7 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
       </div>
     </div>
     <div class="dp-confirm" id="popupConfirm4">
-      <div class="dc-icon">⚠️</div>
-      <div class="dc-title">确认切换引擎方案？</div>
+      <div class="dc-title">提示</div>
       <div class="dc-desc" id="confirmDesc4"></div>
       <div class="dc-actions">
         <button class="btn btn-cancel" onclick="hideConfirm(4)">取消</button>
@@ -572,7 +567,7 @@ function doHelpSearch() {
 function doConfirm(n) {
   const plan = ENGINE_PLANS[selectedEngine[n]];
   const desc = document.getElementById('confirmDesc'+n);
-  let txt = `将切换为「<strong>${plan.name}</strong>」方案（启动成功率 ${plan.rate}）`;
+  let txt = `是否确认切换为「<strong>${plan.name}</strong>」方案？`;
   desc.innerHTML = txt;
   document.getElementById('popupBody'+n).style.display='none';
   document.getElementById('popupFoot'+n).style.display='none';
