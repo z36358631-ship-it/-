@@ -122,7 +122,18 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
 /* 求助弹窗覆盖层 */
 .help-overlay { position:fixed; inset:0; z-index:200; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; }
 .help-overlay.show { display:flex; }
-.help-modal { width:400px; max-height:420px; background:linear-gradient(180deg,#2b2830,#1c1a20); border-radius:var(--radius-2xl); box-shadow:0 12px 40px rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.06); overflow:hidden; display:flex; flex-direction:column; position:relative; }
+.help-modal { width:420px; max-height:480px; background:linear-gradient(180deg,#2b2830,#1c1a20); border-radius:var(--radius-2xl); box-shadow:0 12px 40px rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.06); overflow:hidden; display:flex; flex-direction:column; position:relative; }
+.help-search-bar { display:flex; gap:8px; }
+.help-search-btn { border:none; border-radius:var(--radius-md); padding:8px 14px; font-family:var(--font-primary); font-size:11px; font-weight:600; cursor:pointer; background:rgba(51,143,235,.15); color:var(--brand-blue); white-space:nowrap; transition:all .15s; }
+.help-search-btn:hover { background:rgba(51,143,235,.25); }
+.help-post-list { display:flex; flex-direction:column; gap:6px; }
+.help-post-item { padding:10px 12px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:var(--radius-md); cursor:pointer; transition:all .15s; }
+.help-post-item:hover { border-color:rgba(255,255,255,.15); background:rgba(255,255,255,.05); }
+.help-post-item .hp-title { font-size:12px; color:var(--text-secondary); font-weight:500; }
+.help-post-item .hp-meta { font-size:10px; color:var(--text-muted); margin-top:3px; }
+.help-not-found { font-size:11px; color:var(--text-muted); margin-top:12px; text-align:center; }
+.help-sync-check { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-secondary); margin-top:12px; cursor:pointer; }
+.help-sync-check input[type="checkbox"] { width:14px; height:14px; accent-color:var(--brand-blue); }
 
 /* 弹窗底部 */
 .dp-footer { padding:12px 18px; border-top:1px solid rgba(255,255,255,.06); background:rgba(28,26,32,.5); display:flex; flex-direction:column; gap:10px; }
@@ -196,7 +207,7 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
         <span class="fe-title">以上方案都无法解决？</span>
         <span class="fallback-link" onclick="toast('正在跳转机型配置攻略…')">查看机型配置攻略</span>
         <span class="fallback-sep">|</span>
-        <span class="fallback-link" onclick="showHelp(1)">我要求助</span>
+        <span class="fallback-link" onclick="showHelp(1)">我要发帖求助</span>
       </div>
     </div>
     <div class="dp-confirm" id="popupConfirm1">
@@ -246,7 +257,7 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
         <span class="fe-title">以上方案都无法解决？</span>
         <span class="fallback-link" onclick="toast('正在跳转机型配置攻略…')">查看机型配置攻略</span>
         <span class="fallback-sep">|</span>
-        <span class="fallback-link" onclick="showHelp(2)">我要求助</span>
+        <span class="fallback-link" onclick="showHelp(2)">我要发帖求助</span>
       </div>
     </div>
     <div class="dp-confirm" id="popupConfirm2">
@@ -296,7 +307,7 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
         <span class="fe-title">以上方案都无法解决？</span>
         <span class="fallback-link" onclick="toast('正在跳转机型配置攻略…')">查看机型配置攻略</span>
         <span class="fallback-sep">|</span>
-        <span class="fallback-link" onclick="showHelp(3)">我要求助</span>
+        <span class="fallback-link" onclick="showHelp(3)">我要发帖求助</span>
       </div>
     </div>
     <div class="dp-confirm" id="popupConfirm3">
@@ -389,25 +400,72 @@ body { font-family:var(--font-primary); background:#0c0c0e; color:var(--text-pri
 <div class="help-overlay" id="helpOverlay">
   <div class="help-modal">
     <button class="dp-close" onclick="closeHelp()" style="position:absolute;top:12px;right:12px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.08);color:var(--text-secondary);border:none;font-size:12px;cursor:pointer;z-index:3;">✕</button>
-    <div class="dp-header">
-      <div class="dp-header-top">
-        <div class="dp-header-icon" style="background:rgba(51,143,235,.12);">🙋</div>
-        <div>
-          <h2>我要求助</h2>
-          <div class="dp-sub">选择你遇到的问题，帮助我们定位并解决</div>
+    <!-- 搜索态 -->
+    <div id="helpSearchView">
+      <div class="dp-header">
+        <div class="dp-header-top">
+          <div class="dp-header-icon" style="background:rgba(51,143,235,.12);">🔍</div>
+          <div>
+            <h2>搜索相关问题</h2>
+            <div class="dp-sub">看看其他玩家是否遇到过类似问题</div>
+          </div>
+        </div>
+      </div>
+      <div class="dp-body">
+        <div class="help-search-bar">
+          <input class="feedback-input" id="helpSearchInput" placeholder="搜索问题，如：艾尔登法环 黑屏" style="flex:1;">
+          <button class="help-search-btn" onclick="doHelpSearch()">搜索</button>
+        </div>
+        <div id="helpSearchResults" style="margin-top:12px;display:none;">
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:8px;">相关帖子</div>
+          <div class="help-post-list">
+            <div class="help-post-item" onclick="toast('正在跳转帖子详情…')">
+              <div class="hp-title">艾尔登法环黑屏解决方案汇总</div>
+              <div class="hp-meta">32回复 · 已解决 · 2天前</div>
+            </div>
+            <div class="help-post-item" onclick="toast('正在跳转帖子详情…')">
+              <div class="hp-title">骁龙8Gen3 黑屏已解决，分享方案</div>
+              <div class="hp-meta">12回复 · 已解决 · 3天前</div>
+            </div>
+            <div class="help-post-item" onclick="toast('正在跳转帖子详情…')">
+              <div class="hp-title">GTA5启动后黑屏有声音，切换DXVK解决</div>
+              <div class="hp-meta">8回复 · 已解决 · 5天前</div>
+            </div>
+          </div>
+          <div class="help-not-found" onclick="switchToPost()">没找到解决方案？<span class="fallback-link">发帖求助</span></div>
+        </div>
+        <div id="helpSearchEmpty" style="display:none;text-align:center;padding:20px 0;">
+          <div style="font-size:12px;color:var(--text-muted);">输入关键词搜索相关问题</div>
         </div>
       </div>
     </div>
-    <div class="dp-body">
-      <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:8px;">问题类型</div>
-      <div class="issue-tags" id="helpIssueTags"></div>
-      <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;margin-top:12px;">问题描述</div>
-      <textarea class="feedback-input" id="helpFeedbackInput" rows="3" placeholder="描述你遇到的具体情况…"></textarea>
-    </div>
-    <div class="dp-footer" style="flex-direction:row;justify-content:flex-end;">
-      <div class="dp-actions">
-        <button class="btn btn-ghost" onclick="closeHelp()">取消</button>
-        <button class="btn btn-primary" onclick="submitHelp()">提交上报</button>
+    <!-- 发帖态 -->
+    <div id="helpPostView" style="display:none;">
+      <div class="dp-header">
+        <div class="dp-header-top">
+          <div class="dp-header-icon" style="background:rgba(51,143,235,.12);">📝</div>
+          <div>
+            <h2>发帖求助</h2>
+            <div class="dp-sub">提交后将自动附带你的设备和引擎信息</div>
+          </div>
+        </div>
+      </div>
+      <div class="dp-body">
+        <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:8px;">问题类型</div>
+        <div class="issue-tags" id="helpIssueTags"></div>
+        <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;margin-top:12px;">问题描述</div>
+        <textarea class="feedback-input" id="helpFeedbackInput" rows="3" placeholder="描述你遇到的具体情况…"></textarea>
+        <label class="help-sync-check" id="helpSyncLabel">
+          <input type="checkbox" id="helpSyncCheckbox" checked>
+          <span>同步发布到社区求助板块</span>
+        </label>
+      </div>
+      <div class="dp-footer" style="flex-direction:row;justify-content:space-between;">
+        <span class="fallback-link" onclick="switchToSearch()" style="font-size:11px;">← 返回搜索</span>
+        <div class="dp-actions">
+          <button class="btn btn-ghost" onclick="closeHelp()">取消</button>
+          <button class="btn btn-primary" onclick="submitHelp()">提交上报</button>
+        </div>
       </div>
     </div>
   </div>
@@ -506,6 +564,10 @@ function closePopup(n) {
 function showHelp(n) {
   helpIssues = new Set();
   document.getElementById('helpFeedbackInput').value = '';
+  document.getElementById('helpSearchInput').value = '';
+  document.getElementById('helpSearchResults').style.display = 'none';
+  document.getElementById('helpSearchView').style.display = 'block';
+  document.getElementById('helpPostView').style.display = 'none';
   renderHelpIssueTags();
   document.getElementById('helpOverlay').classList.add('show');
 }
@@ -514,9 +576,25 @@ function closeHelp() {
   document.getElementById('helpOverlay').classList.remove('show');
 }
 
+function doHelpSearch() {
+  const q = document.getElementById('helpSearchInput').value.trim();
+  if(!q) { toast('请输入搜索关键词'); return; }
+  document.getElementById('helpSearchResults').style.display = 'block';
+}
+
+function switchToPost() {
+  document.getElementById('helpSearchView').style.display = 'none';
+  document.getElementById('helpPostView').style.display = 'block';
+}
+
+function switchToSearch() {
+  document.getElementById('helpPostView').style.display = 'none';
+  document.getElementById('helpSearchView').style.display = 'block';
+}
+
 function submitHelp() {
   closeHelp();
-  toast('✅ 已提交求助，我们将尽快处理');
+  toast('✅ 提交成功，感谢您的反馈');
 }
 
 let helpIssues = new Set();
