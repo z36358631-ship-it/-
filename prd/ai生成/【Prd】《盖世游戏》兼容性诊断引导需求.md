@@ -70,23 +70,28 @@
 
 #### 4.2.0 异常场景识别与触发规则
 
-**三种检测场景：**
+**两种检测场景：**
 
-|场景|识别条件|典型表现|
+|场景|客户端判定条件|弹窗形态|
 |---|---|---|
-|黑屏（最高频）|游戏进程存活但连续N秒无有效画面帧输出（视频流全黑/无渲染输出）|进去就黑屏、有声音没画面、改分辨率后黑屏、EA登录界面黑屏|
-|闪退/崩溃|游戏进程非用户主动退出（进程异常终止/信号中断），心跳回溯检测到异常退出记录|启动即闪退、游戏中途闪退、UE崩溃报错、更新后闪退|
-|卡在启动/加载|游戏启动后超过设定阈值（如3分钟）未进入可交互画面|Download Config失败、卡在检查环境界面、一直加载进不去、组件安装卡死|
+|启动失败|游戏启动后超过阈值时间（如3分钟），第一帧仍未渲染成功|横屏弹窗（游戏内）|
+|闪退|游戏进程非用户主动退出（心跳中断/进程异常终止），包括Download Config失败、内核报错、UE崩溃、黑屏crash等所有退出游戏界面的异常|竖屏弹窗（下次进APP打开该游戏详情页时）|
+
+**服务端辅助（闪退分类）：**
+
+客户端仅能判定"非正常退出"，具体闪退原因需服务端配合：
+- 客户端上报：崩溃日志、退出信号、最后活跃场景、引擎配置快照
+- 服务端分类：根据日志归类为 Download失败 / 内核报错 / UE崩溃 / 渲染异常 / 其他
+- 后续可接入AI分析自动定位根因
 
 **弹窗触发逻辑：**
 
 |规则|说明|
 |---|---|
-|触发时机-黑屏|游戏运行中实时检测，连续10秒无有效画面帧 → 触发弹窗|
-|触发时机-闪退|下次打开APP时，检测到上次该游戏进程异常退出记录 → 进入游戏详情页时触发弹窗|
-|触发时机-卡加载|游戏启动后超过3分钟未进入可交互画面 → 触发弹窗|
-|频控|同一游戏7天内最多弹出3次，超过不再弹出|
-|去重|同一次启动过程中只触发一次（如先卡加载再黑屏，只弹第一次识别到的场景）|
+|触发时机-启动失败|游戏启动后超过3分钟，第一帧仍未渲染成功 → 游戏内横屏弹窗|
+|触发时机-闪退|下次打开APP时，检测到该游戏上次非正常退出 → 进入游戏详情页时竖屏弹窗|
+|频控|同一游戏7天内最多弹出3次|
+|去重|同一次启动过程中只触发一次|
 |冷却|用户点击"暂不处理"后，本次游戏会话不再弹出|
 |前置条件|方案接口可用且返回≥1个可选方案时才弹窗；接口不可用且无本地缓存时不弹|
 
@@ -179,26 +184,31 @@
 
 |事件ID|事件名称|触发时机|关键参数|
 |---|---|---|---|
-|diag_popup_show|弹窗展示|弹窗展示时|trigger_scene, game_id, chip, layout_mode|
+|diag_popup_show|弹窗展示|弹窗展示时|trigger_scene, game_id, chip, gpu, layout_mode|
 |diag_engine_select|选择引擎方案|用户点击方案卡片|plan_name, plan_rate|
-|diag_issue_select|选择异常类型|用户点击类型标签|issue_tags|
-|diag_confirm|确认切换|用户点击"切换方案"|plan_name, issue_tags, has_feedback_text|
-|diag_confirm_final|最终确认|用户点击"确认切换"|plan_name|
+|diag_confirm|确认切换|用户点击"切换方案"|plan_name|
+|diag_confirm_final|最终确认|用户点击"确认切换"|plan_name, game_id|
 |diag_dismiss|关闭弹窗|用户点击"暂不处理"或✕|trigger_scene, game_id|
 |diag_success|应用成功|成功状态展示时|plan_name, game_id|
+|diag_fallback_click|兜底链接点击|用户点击兜底区域文字链|fallback_type, game_id|
+|diag_search|社区搜索|用户在搜索页回车搜索|keyword, game_id|
+|game_launch_result|游戏启动结果|每次游戏启动成功/失败时|game_id, gpu, plan_name, result, crash_signal|
 
 ### 6.2 埋点参数表
 
 |参数名|类型|必填|说明|枚举/示例|
 |---|---|---|---|---|
-|trigger_scene|string|是|触发场景|black_screen / crash / stuck_loading|
+|trigger_scene|string|是|触发场景|launch_fail / crash|
 |game_id|string|是|游戏唯一标识|#1245620|
 |chip|string|是|设备芯片型号|snapdragon_8_gen3|
+|gpu|string|是|GPU型号|Turnip Gen8 V28|
 |layout_mode|string|是|弹窗形态|landscape / portrait|
 |plan_name|string|是|选择的方案名|系统智能设置方案|
-|plan_rate|string|是|方案成功率|94.4%|
-|issue_tags|string[]|否|选择的异常类型标签|["black_screen","stuck_loading"]|
-|has_feedback_text|boolean|否|是否填写了描述|true / false|
+|plan_rate|string|否|方案成功率|94.4%|
+|fallback_type|string|是|兜底链接类型|guide / community_search / community_post|
+|keyword|string|否|搜索关键词|启动失败|
+|result|string|是|启动结果|success / fail|
+|crash_signal|string|否|崩溃信号/退出原因|SIGSEGV / UE_CRASH / DOWNLOAD_FAIL / UNKNOWN|
 
 ## 七、运营需求
 
