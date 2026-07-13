@@ -22,6 +22,12 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
    - Use deterministic fallback routes for direct page entry.
    - Disable the button on the Explore root page when there is no previous page.
    - Remove duplicate return buttons from journey page content.
+6. Limit the visible order list to the first three matching orders.
+   - When the filtered result contains more than three orders, show a centered `...` overflow indicator after the third order.
+   - Keep filtering based on the full order collection.
+7. Remove the `全部订单` shortcut from refund and journey page headers.
+   - The sidebar return button is the primary way back.
+   - Remove other duplicate in-content return buttons where they only repeat the same navigation.
 
 ## Interaction And Layout
 
@@ -29,6 +35,7 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
 - Keep all four period options in one row; increase button height for the secondary price line.
 - Keep the three detail actions in one row with stable widths and `white-space: nowrap`.
 - Sidebar back navigation must not affect the administration pages.
+- The order overflow indicator is informational and must not resize the surrounding order cards.
 
 ## Verification
 
@@ -36,5 +43,7 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
 - Verify version switching recalculates all four daily rates.
 - Verify the permanent daily rate uses 3650 days and one decimal place.
 - Verify sidebar back navigation and fallback routes.
+- Verify order filters still work and lists with more than three results show exactly three cards plus `...`.
+- Verify journey and refund headers no longer contain the `全部订单` shortcut.
 - Capture Explore, game detail, and checkout screenshots and check for wrapping or overlap.
 - Run the existing browser smoke test and require `data-smoke-status="pass"`.
