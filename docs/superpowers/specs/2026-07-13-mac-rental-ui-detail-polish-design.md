@@ -37,6 +37,11 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
    - Pending payment: show the payment action.
    - Refund requested: show the refund-progress action.
    - Use the same order-state conditions as the list so actions cannot disagree between the two views.
+10. Use the entire order card as the order-detail entry.
+   - Remove the fixed `查看详情` button from the right-side action column.
+   - Keep only state-specific business actions in the action column.
+   - Make the card keyboard-focusable and expose button semantics.
+   - Clicking a nested business-action button must execute that action without also triggering card navigation.
 
 ## Interaction And Layout
 
@@ -56,5 +61,6 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
 - Verify journey and refund headers no longer contain the `全部订单` shortcut.
 - Verify an order without a refund request has no refund-status field, while requested refunds still show their current state.
 - Verify each order state exposes the same available actions in the list and detail views.
+- Verify mouse and keyboard activation on an order card opens its detail page and nested actions do not double-trigger navigation.
 - Capture Explore, game detail, and checkout screenshots and check for wrapping or overlap.
 - Run the existing browser smoke test and require `data-smoke-status="pass"`.
