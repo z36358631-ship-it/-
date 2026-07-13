@@ -32,6 +32,11 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
    - Hide the entire refund-status field when `refundStatus` is `none`.
    - Keep review, refunding, refunded, rejected, and release-failed states visible.
    - Let the remaining detail fields reflow without leaving an empty placeholder.
+9. Mirror order-list actions in the order-detail page, excluding the `查看详情` action itself.
+   - Renting: show one-click launch, renewal, and after-sales/refund application.
+   - Pending payment: show the payment action.
+   - Refund requested: show the refund-progress action.
+   - Use the same order-state conditions as the list so actions cannot disagree between the two views.
 
 ## Interaction And Layout
 
@@ -50,5 +55,6 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
 - Verify order filters still work and lists with more than three results show exactly three cards plus `...`.
 - Verify journey and refund headers no longer contain the `全部订单` shortcut.
 - Verify an order without a refund request has no refund-status field, while requested refunds still show their current state.
+- Verify each order state exposes the same available actions in the list and detail views.
 - Capture Explore, game detail, and checkout screenshots and check for wrapping or overlap.
 - Run the existing browser smoke test and require `data-smoke-status="pass"`.
