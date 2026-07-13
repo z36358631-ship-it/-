@@ -42,6 +42,17 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
    - Keep only state-specific business actions in the action column.
    - Make the card keyboard-focusable and expose button semantics.
    - Clicking a nested business-action button must execute that action without also triggering card navigation.
+11. Remove the order-detail fulfillment-record panel and use a clear order lifecycle model.
+   - Primary states: pending payment, pending fulfillment, renting, ended, closed, and fulfillment failed.
+   - `closed` covers 30-minute payment timeout and user cancellation, with the close reason stored separately.
+   - Payment failure remains a payment-attempt result while the order stays pending.
+   - Conditional after-sales states: processing, refunding, refunded, and closed, with the resolution displayed separately.
+12. Move non-rental game interception into the target game-detail page.
+   - Remove the standalone guard page from the Mac navigation.
+   - Replace `获取游戏` with `安装 783M` for an uninstalled target and `启动游戏` for an installed target.
+   - Clicking either action during a rental session opens an interception overlay on the same detail page.
+   - The overlay distinguishes install and launch blocking and retains return-to-rental-game, switch-to-personal-account, and end-rental actions.
+   - Keep uninstalled and installed demo states available so both interception branches can be verified.
 
 ## Interaction And Layout
 
@@ -50,6 +61,7 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
 - Keep the three detail actions in one row with stable widths and `white-space: nowrap`.
 - Sidebar back navigation must not affect the administration pages.
 - The order overflow indicator is informational and must not resize the surrounding order cards.
+- Game-detail interception must not create an installation task or game process before AppID validation passes.
 
 ## Verification
 
@@ -62,5 +74,7 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
 - Verify an order without a refund request has no refund-status field, while requested refunds still show their current state.
 - Verify each order state exposes the same available actions in the list and detail views.
 - Verify mouse and keyboard activation on an order card opens its detail page and nested actions do not double-trigger navigation.
+- Verify the order detail has no fulfillment-record panel and each primary/after-sales state renders the correct label and actions.
+- Verify `安装 783M` and `启动游戏` both open the correct in-page interception overlay during a rental session.
 - Capture Explore, game detail, and checkout screenshots and check for wrapping or overlap.
 - Run the existing browser smoke test and require `data-smoke-status="pass"`.
