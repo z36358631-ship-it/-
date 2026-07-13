@@ -54,6 +54,26 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
    - The overlay distinguishes download and launch blocking and retains return-to-rental-game, switch-to-personal-account, and end-rental actions.
    - Keep undownloaded and downloaded demo states available so both interception branches can be verified.
 
+13. Simplify the customer-facing after-sales application.
+   - Keep only after-sales issue selection, an editable issue description, and one submit action inside the Mac client.
+   - Do not ask the customer to select or view refund eligibility before submission.
+   - Submit every application into the same review state; eligibility is evaluated by the system after submission.
+   - Replace the eligibility result panel with neutral processing instructions.
+   - Move eligible/ineligible scenario controls into the annotation panel outside the Mac client canvas.
+14. Make every rental-business control demonstrably interactive in both the Mac client and administration screens.
+   - Search, filters, sorting, tabs, selectors, and table sorting update the visible result immediately.
+   - Create, copy, edit, synchronize, detect, compare, and export actions open a form, progress surface, or confirmation before reporting success.
+   - Destructive or state-changing actions such as online/offline, release, end order, and refund decisions require explicit confirmation.
+   - Cancelling any form or confirmation must leave all demo data unchanged.
+   - Successful mutations update shared product, inventory, order, refund, and statistics data and append an audit record.
+   - Non-rental platform navigation remains clickable but only explains that the module is outside this demo scope.
+15. Replace placeholder administration creation behavior with explicit forms.
+   - `New product` opens a product form instead of copying the first product.
+   - Add `New inventory` to account resource management.
+   - The inventory form captures game, version, provider resource ID, and masked account identifier.
+   - Data is appended only after the user confirms a valid form; summary totals and related product/statistics inventory values refresh immediately.
+   - Batch price adjustment captures the adjustment method and value rather than applying a fixed hidden percentage.
+
 ## Interaction And Layout
 
 - Preserve the existing single-file renderer and delegated action model.
@@ -62,6 +82,10 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
 - Sidebar back navigation must not affect the administration pages.
 - The order overflow indicator is informational and must not resize the surrounding order cards.
 - Game-detail interception must not create a download task, installation write, or game process before AppID validation passes.
+- Use one reusable modal shell for create/edit forms and one confirmation shell for consequential actions.
+- Keep demo-only scenario controls in the annotation panel; they must never appear inside the Mac or administration application canvas.
+- Every visible rental-business button must have a defined result: navigation, state mutation, filtering, a modal, a confirmation, progress feedback, or a scoped informational message.
+- Form submission validates required fields inline and does not close or mutate state when validation fails.
 
 ## Verification
 
@@ -78,3 +102,10 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
 - Verify `下载 783M` and `启动游戏` both open the correct in-page interception overlay during a rental session.
 - Capture Explore, game detail, and checkout screenshots and check for wrapping or overlap.
 - Run the existing browser smoke test and require `data-smoke-status="pass"`.
+- Verify the after-sales form has no eligibility selector or eligibility result inside the Mac canvas.
+- Verify the issue description is editable and is stored on the submitted order.
+- Verify eligible/ineligible demo controls exist only in the external annotation panel.
+- Verify new product and new inventory forms do not mutate data before confirmation and do update all related summaries after confirmation.
+- Verify copy, synchronization, detection, export, comparison, state transitions, and refund decisions expose an intermediate form or confirmation state.
+- Verify all visible rental-business controls have delegated handlers and no placeholder button remains silent.
+- Verify search, filters, sorting, table sorting, and batch operations produce visible and repeatable results.
