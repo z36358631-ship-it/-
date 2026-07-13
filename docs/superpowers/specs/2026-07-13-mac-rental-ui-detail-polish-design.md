@@ -49,10 +49,10 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
    - Conditional after-sales states: processing, refunding, refunded, and closed, with the resolution displayed separately.
 12. Move non-rental game interception into the target game-detail page.
    - Remove the standalone guard page from the Mac navigation.
-   - Replace `获取游戏` with `安装 783M` for an uninstalled target and `启动游戏` for an installed target.
+   - Replace `获取游戏` with `下载 783M` for an undownloaded target and `启动游戏` for a downloaded target.
    - Clicking either action during a rental session opens an interception overlay on the same detail page.
-   - The overlay distinguishes install and launch blocking and retains return-to-rental-game, switch-to-personal-account, and end-rental actions.
-   - Keep uninstalled and installed demo states available so both interception branches can be verified.
+   - The overlay distinguishes download and launch blocking and retains return-to-rental-game, switch-to-personal-account, and end-rental actions.
+   - Keep undownloaded and downloaded demo states available so both interception branches can be verified.
 
 ## Interaction And Layout
 
@@ -61,7 +61,7 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
 - Keep the three detail actions in one row with stable widths and `white-space: nowrap`.
 - Sidebar back navigation must not affect the administration pages.
 - The order overflow indicator is informational and must not resize the surrounding order cards.
-- Game-detail interception must not create an installation task or game process before AppID validation passes.
+- Game-detail interception must not create a download task, installation write, or game process before AppID validation passes.
 
 ## Verification
 
@@ -75,6 +75,6 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
 - Verify each order state exposes the same available actions in the list and detail views.
 - Verify mouse and keyboard activation on an order card opens its detail page and nested actions do not double-trigger navigation.
 - Verify the order detail has no fulfillment-record panel and each primary/after-sales state renders the correct label and actions.
-- Verify `安装 783M` and `启动游戏` both open the correct in-page interception overlay during a rental session.
+- Verify `下载 783M` and `启动游戏` both open the correct in-page interception overlay during a rental session.
 - Capture Explore, game detail, and checkout screenshots and check for wrapping or overlap.
 - Run the existing browser smoke test and require `data-smoke-status="pass"`.
