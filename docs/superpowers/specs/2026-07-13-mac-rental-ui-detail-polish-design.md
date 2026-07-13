@@ -28,6 +28,10 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
 7. Remove the `全部订单` shortcut from refund and journey page headers.
    - The sidebar return button is the primary way back.
    - Remove other duplicate in-content return buttons where they only repeat the same navigation.
+8. Show the order-detail refund status only after a refund or after-sales refund request exists.
+   - Hide the entire refund-status field when `refundStatus` is `none`.
+   - Keep review, refunding, refunded, rejected, and release-failed states visible.
+   - Let the remaining detail fields reflow without leaving an empty placeholder.
 
 ## Interaction And Layout
 
@@ -45,5 +49,6 @@ Only update `Mac端demo/mac端租号功能/Mac端租号功能-标注版.html`. D
 - Verify sidebar back navigation and fallback routes.
 - Verify order filters still work and lists with more than three results show exactly three cards plus `...`.
 - Verify journey and refund headers no longer contain the `全部订单` shortcut.
+- Verify an order without a refund request has no refund-status field, while requested refunds still show their current state.
 - Capture Explore, game detail, and checkout screenshots and check for wrapping or overlap.
 - Run the existing browser smoke test and require `data-smoke-status="pass"`.
