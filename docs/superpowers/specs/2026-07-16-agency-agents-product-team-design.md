@@ -12,7 +12,7 @@
 - 原始格式：各业务目录中的 Markdown 机器人定义
 - Codex 中间产物：`integrations\codex\agents\<slug>.toml`
 - Codex 全局安装目录：`C:\Users\z3635\.codex\agents`
-- 配套中文使用指南：工作区 `docs` 目录中的独立 Markdown 文档
+- 配套中文使用指南：`C:\Users\z3635\官网改动\docs\agency-agents-product-team-guide.md`
 
 原始英文机器人定义是职责判断的权威来源。网页中文说明只用于辅助理解，不以其中的机翻措辞作为机器人名称或安装依据。
 
