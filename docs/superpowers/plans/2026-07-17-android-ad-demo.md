@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 交付一个高度复原盖世游戏 App、可在用户端与运营后台之间切换、覆盖六个广告场景和三页后台配置的单文件交互标注 Demo。
+**Goal:** 交付一个高度复原盖世游戏 App、可在用户端与运营后台之间切换、覆盖七个广告场景（含 Q1 排队加速激励）和三页后台配置的单文件交互标注 Demo。
 
 **Architecture:** 最终交付物是一个不使用 iframe 的自包含 HTML；页面内部由纯函数策略核心、共享演示状态、用户端渲染器、后台渲染器和标注面板组成。真实 App 截图由构建脚本转成 Data URL 写入 HTML，运营后台的草稿、发布、实验和统计与用户端共享同一状态，但国内与海外使用两套独立配置。
 
@@ -14,7 +14,7 @@
 
 ### 新建文件
 
-- `demos/Android广告接入-交互标注版.html`：唯一可交付 Demo，包含三栏框架、六个用户场景、三个后台页面、状态、策略核心、标注与全部图片 Data URL。
+- `demos/Android广告接入-交互标注版.html`：唯一可交付 Demo，包含 `/demo标记` 三栏框架、七个用户场景、三个后台页面、状态、策略核心、标注与全部图片 Data URL。
 - `tools/embed-android-ad-demo-assets.mjs`：读取四张基准截图，将其幂等写入 HTML 的资产区块。
 - `tools/verify-android-ad-demo.mjs`：无第三方依赖的结构和策略回归脚本，抽取 HTML 内的数据与纯函数执行测试。
 
@@ -38,7 +38,8 @@ window.AdDemoCore = {
   recordImpression,
   publishDraft,
   validateExperiment,
-  completeReward
+  completeReward,
+  completeQueueReward
 };
 
 window.AdDemoApp = {
@@ -55,7 +56,7 @@ window.AdDemoApp = {
 };
 ```
 
-广告位固定为 `H1/P1/G1/O1/D1/S1`，地区固定为 `cn/overseas`，后台页面固定为 `delivery/experiment/report`。拒绝原因使用固定枚举：
+广告位固定为 `H1/P1/G1/Q1/O1/D1/S1`，地区固定为 `cn/overseas`，后台页面固定为 `delivery/experiment/report`。拒绝原因使用固定枚举：
 
 ```js
 const REASONS = Object.freeze({
@@ -69,6 +70,11 @@ const REASONS = Object.freeze({
   CONTENT_RATIO_MISS: 'CONTENT_RATIO_MISS',
   NOT_COLD_START: 'NOT_COLD_START',
   NOT_ZERO_TIME: 'NOT_ZERO_TIME',
+  NOT_FREE_QUEUE: 'NOT_FREE_QUEUE',
+  PAID_FAST_CHANNEL: 'PAID_FAST_CHANNEL',
+  WAIT_BELOW_THRESHOLD: 'WAIT_BELOW_THRESHOLD',
+  NOT_USER_INITIATED: 'NOT_USER_INITIATED',
+  REWARD_MUTEX: 'REWARD_MUTEX',
   NATURAL_RESULT_EXISTS: 'NATURAL_RESULT_EXISTS',
   NOT_VISIBLE: 'NOT_VISIBLE',
   NOT_FILLED: 'NOT_FILLED',
@@ -129,8 +135,8 @@ function seed() {
 
 function checkCore() {
   const data = seed();
-  assert.deepEqual(Object.keys(data.policies.cn.placements), ['H1', 'P1', 'G1', 'O1', 'D1', 'S1']);
-  assert.deepEqual(Object.keys(data.policies.overseas.placements), ['H1', 'P1', 'G1', 'O1', 'D1', 'S1']);
+  assert.deepEqual(Object.keys(data.policies.cn.placements), ['H1', 'P1', 'G1', 'Q1', 'O1', 'D1', 'S1']);
+  assert.deepEqual(Object.keys(data.policies.overseas.placements), ['H1', 'P1', 'G1', 'Q1', 'O1', 'D1', 'S1']);
   const core = loadCore();
   const state = core.createState(data);
   assert.equal(core.evaluatePlacement(state, 'H1', {
@@ -154,7 +160,7 @@ function checkAssets() {
 }
 
 function checkScenes() {
-  for (const id of ['H1', 'P1', 'G1', 'O1', 'D1', 'S1']) {
+  for (const id of ['H1', 'P1', 'G1', 'Q1', 'O1', 'D1', 'S1']) {
     assert.match(html, new RegExp(`data-page=["']${id}["']`), `missing scene ${id}`);
   }
   for (const label of ['触发条件', '展示说明', '交互说明', '异常&边界']) {
@@ -376,12 +382,23 @@ const base = {
 assert.equal(core.evaluatePlacement(core.createState(data), 'O1', {...base, userType:'new'}).reason, 'AUDIENCE_MISMATCH');
 assert.equal(core.evaluatePlacement(core.createState(data), 'O1', {...base, coldStart:false}).reason, 'NOT_COLD_START');
 assert.equal(core.evaluatePlacement(core.createState(data), 'G1', {...base, zeroTime:false}).reason, 'NOT_ZERO_TIME');
+assert.equal(core.evaluatePlacement(core.createState(data), 'Q1', {...base, context:'queue', freeQueue:false, userInitiated:true, estimatedWaitMinutes:52}).reason, 'NOT_FREE_QUEUE');
+assert.equal(core.evaluatePlacement(core.createState(data), 'Q1', {...base, context:'queue', freeQueue:true, paidFastChannel:true, userInitiated:true, estimatedWaitMinutes:52}).reason, 'PAID_FAST_CHANNEL');
+assert.equal(core.evaluatePlacement(core.createState(data), 'Q1', {...base, context:'queue', freeQueue:true, paidFastChannel:false, userInitiated:true, estimatedWaitMinutes:10}).reason, 'WAIT_BELOW_THRESHOLD');
+assert.equal(core.evaluatePlacement(core.createState(data), 'Q1', {...base, context:'queue', freeQueue:true, paidFastChannel:false, userInitiated:false, estimatedWaitMinutes:52}).reason, 'NOT_USER_INITIATED');
+assert.equal(core.evaluatePlacement(core.createState(data), 'Q1', {...base, context:'queue', forbidden:true, freeQueue:true, paidFastChannel:false, userInitiated:true, estimatedWaitMinutes:52}).allowed, true);
 assert.equal(core.evaluatePlacement(core.createState(data), 'S1', {...base, naturalResultCount:2}).reason, 'NATURAL_RESULT_EXISTS');
 assert.equal(core.validateExperiment({holdout:10,control:70,H1:10,P1:10}).ok, true);
 assert.equal(core.validateExperiment({holdout:10,control:60,H1:10,P1:10}).ok, false);
 const rewardState = core.createState(data);
 assert.equal(core.completeReward(rewardState, 'reward-1').awarded, true);
 assert.equal(core.completeReward(rewardState, 'reward-1').awarded, false);
+const queueState = core.createState(data);
+const queueGranted = core.completeQueueReward(queueState, 'queue-reward-1', {sessionId:'intent-q1',queueState:'QUEUING'});
+assert.deepEqual(queueGranted, {awarded:true,minutes:5,accelerationGranted:true,result:'GRANTED'});
+assert.equal(core.completeQueueReward(queueState, 'queue-reward-1', {sessionId:'intent-q1',queueState:'QUEUING'}).awarded, false);
+const alreadyMatched = core.completeQueueReward(core.createState(data), 'queue-reward-2', {sessionId:'intent-q2',queueState:'MATCHED'});
+assert.deepEqual(alreadyMatched, {awarded:true,minutes:5,accelerationGranted:false,result:'PARTIAL_GRANTED'});
 ```
 
 Run:
@@ -407,7 +424,7 @@ Expected: FAIL，首个缺失函数或错误拒绝原因被明确打印。
 }
 ```
 
-固定默认值：H1/P1 为 40% 内容占比；G1 仅 `zeroTime`；O1 仅 `old` 且 `lifetime` 频控；D1/S1 为 30%。国内网络为 `PANGLE`，海外网络为 `ADMOB`，两地区的 `globalKill` 默认均为 `false`。
+固定默认值：H1/P1 为 40% 内容占比；G1 仅 `zeroTime`；Q1 使用 `waitThresholdMinutes:30`、`rewardMinutes:5`、`accelerationLevel:'FAST_1'`、每日 1 次并启用 `g1Q1SessionMutex`；O1 仅 `old` 且 `lifetime` 频控；D1/S1 为 30%。国内网络为 `PANGLE`，海外网络为 `ADMOB`，两地区的 `globalKill` 默认均为 `false`。
 
 - [ ] **Step 3: 实现核心函数**
 
@@ -418,7 +435,8 @@ window.AdDemoCore=(()=>{
   const clone=value=>structuredClone(value);
   const createState=seed=>({
     draft:clone(seed.policies),published:clone(seed.policies),
-    experiments:clone(seed.experiments),impressions:{},rewardIds:new Set(),stats:clone(seed.stats)
+    experiments:clone(seed.experiments),impressions:{},rewardIds:new Set(),queueRewardResults:new Map(),
+    rewardSessions:new Set(),stats:clone(seed.stats)
   });
   const frequencyKey=(region,id,userId)=>`${region}:${id}:${userId||'demo-user'}`;
   function frequencyBlocked(state,region,id,context,policy){
@@ -433,12 +451,18 @@ window.AdDemoCore=(()=>{
     const policy=root.placements[id];
     if(root.globalKill) return {allowed:false,reason:'GLOBAL_KILL'};
     if(!policy.enabled) return {allowed:false,reason:'PLACEMENT_OFF'};
-    if(context.forbidden) return {allowed:false,reason:'FORBIDDEN_CONTEXT'};
+    const activeQueueReward=id==='Q1'&&context.context==='queue'&&context.userInitiated===true;
+    if(context.forbidden&&!activeQueueReward) return {allowed:false,reason:'FORBIDDEN_CONTEXT'};
     if(context.holdout) return {allowed:false,reason:'HOLDOUT'};
     if(!policy.audience.includes('all')&&!policy.audience.includes(context.userType)) return {allowed:false,reason:'AUDIENCE_MISMATCH'};
     if(context.bucket>=policy.experimentRatio) return {allowed:false,reason:'EXPERIMENT_MISS'};
     if(id==='O1'&&!context.coldStart) return {allowed:false,reason:'NOT_COLD_START'};
     if(id==='G1'&&!context.zeroTime) return {allowed:false,reason:'NOT_ZERO_TIME'};
+    if(id==='Q1'&&!context.freeQueue) return {allowed:false,reason:'NOT_FREE_QUEUE'};
+    if(id==='Q1'&&context.paidFastChannel) return {allowed:false,reason:'PAID_FAST_CHANNEL'};
+    if(id==='Q1'&&context.estimatedWaitMinutes<=policy.waitThresholdMinutes) return {allowed:false,reason:'WAIT_BELOW_THRESHOLD'};
+    if(id==='Q1'&&!context.userInitiated) return {allowed:false,reason:'NOT_USER_INITIATED'};
+    if(id==='Q1'&&state.rewardSessions.has(context.sessionId||'demo-intent')) return {allowed:false,reason:'REWARD_MUTEX'};
     if(id==='S1'&&context.naturalResultCount>0) return {allowed:false,reason:'NATURAL_RESULT_EXISTS'};
     if(id==='D1'&&!context.visible) return {allowed:false,reason:'NOT_VISIBLE'};
     if(frequencyBlocked(state,region,id,{...context,now:context.now||Date.now()},policy)) return {allowed:false,reason:'FREQUENCY_LIMIT'};
@@ -454,8 +478,18 @@ window.AdDemoCore=(()=>{
   }
   function publishDraft(state,region){state.published[region]=clone(state.draft[region]);return state;}
   function validateExperiment(groups){const total=Object.values(groups).reduce((a,b)=>a+Number(b),0);return {ok:total===100,total};}
-  function completeReward(state,rewardId){if(state.rewardIds.has(rewardId))return {awarded:false};state.rewardIds.add(rewardId);return {awarded:true,minutes:5};}
-  return {createState,evaluatePlacement,recordImpression,publishDraft,validateExperiment,completeReward};
+  function completeReward(state,rewardId,sessionId='demo-intent'){
+    if(state.rewardIds.has(rewardId)||state.rewardSessions.has(sessionId))return {awarded:false};
+    state.rewardIds.add(rewardId);state.rewardSessions.add(sessionId);return {awarded:true,minutes:5};
+  }
+  function completeQueueReward(state,rewardId,{sessionId='demo-intent',queueState='QUEUING'}={}){
+    if(state.queueRewardResults.has(rewardId))return {...state.queueRewardResults.get(rewardId),awarded:false};
+    if(state.rewardSessions.has(sessionId))return {awarded:false,reason:'REWARD_MUTEX'};
+    const accelerationGranted=queueState==='QUEUING';
+    const result={awarded:true,minutes:5,accelerationGranted,result:accelerationGranted?'GRANTED':'PARTIAL_GRANTED'};
+    state.queueRewardResults.set(rewardId,result);state.rewardSessions.add(sessionId);return result;
+  }
+  return {createState,evaluatePlacement,recordImpression,publishDraft,validateExperiment,completeReward,completeQueueReward};
 })();
 ```
 
@@ -523,25 +557,28 @@ git commit -m "feat: add Android ad demo annotation shell" -- tools/verify-andro
 
 Expected: `PASS shell`。
 
-### Task 6: 实现六个用户端广告场景
+### Task 6: 实现七个用户端广告场景
 
 **Files:**
 - Modify: `demos/Android广告接入-交互标注版.html`
 - Modify: `tools/verify-android-ad-demo.mjs`
 - Test: `tools/verify-android-ad-demo.mjs`
 
-- [ ] **Step 1: 增加六场景结构和禁投断言**
+- [ ] **Step 1: 增加七场景结构和保护链路断言**
 
 在 `checkScenes()` 中加入：
 
 ```js
-for (const id of ['H1','P1','G1','O1','D1','S1']) {
+for (const id of ['H1','P1','G1','Q1','O1','D1','S1']) {
   assert.match(html,new RegExp(`render${id}\\s*=`),`missing render${id}`);
 }
 for (const value of ['游戏启动中','游戏运行中','失败重连','下载配置','支付']) {
   assert.match(html,new RegExp(value),`missing forbidden label ${value}`);
 }
 assert.match(html,/看约\s*15\s*秒广告，获得\s*5\s*分钟/);
+assert.match(html,/看广告加速排队/);
+assert.match(html,/加速排队并领取\s*5\s*分钟/);
+assert.match(html,/权益确认中/);
 assert.match(html,/PRD 新增状态/);
 ```
 
@@ -549,10 +586,10 @@ assert.match(html,/PRD 新增状态/);
 
 - [ ] **Step 2: 实现用户场景渲染器**
 
-在 `ad-demo-ui` 中提供六个独立渲染器，统一返回 `{html,annotations,exceptions}`：
+在 `ad-demo-ui` 中提供七个独立渲染器，统一返回 `{html,annotations,exceptions}`：
 
 ```js
-const USER_RENDERERS={H1:renderH1,P1:renderP1,G1:renderG1,O1:renderO1,D1:renderD1,S1:renderS1};
+const USER_RENDERERS={H1:renderH1,P1:renderP1,G1:renderG1,Q1:renderQ1,O1:renderO1,D1:renderD1,S1:renderS1};
 ```
 
 每个渲染器必须满足：
@@ -560,6 +597,7 @@ const USER_RENDERERS={H1:renderH1,P1:renderP1,G1:renderG1,O1:renderO1,D1:renderD
 - `renderH1`：使用 `DEMO_ASSETS.home`，第一组自然内容后插入原生赞助卡，不替换“今日推荐”；
 - `renderP1`：使用 `DEMO_ASSETS.play`，第一组完整自然内容后插入一次赞助游戏卡；
 - `renderG1`：使用玩游戏页风格，弹窗显示“看约 15 秒广告，获得 5 分钟”，支持播放、提前关闭、失败、校验和到账；
+- `renderQ1`：切换为 874×402 横屏画布，按用户提供的 GTA V 排队截图复原暗色背景、“排队中…预计大于 52 分钟”“免费通道第 822 位”和中央加速区；入口文案为“看广告加速排队”“约 15 秒｜加速排队并领取 5 分钟｜今日剩 1 次”；支持播放中保留排队、双权益成功、提前关闭、失败、校验中、已排到和已退出六种结果；
 - `renderO1`：使用盖世品牌渐变生成 PRD 新增开屏状态，支持倒计时跳过、广告点击、热启动和广告未就绪直达首页；
 - `renderD1`：使用 `DEMO_ASSETS.detail`，广告在核心启动与兼容信息之后；点击启动设置 `forbidden=true` 并取消未曝光广告；
 - `renderS1`：使用 `DEMO_ASSETS.search`，自然结果为 0 才显示赞助区，切换到有结果时立即移除；
@@ -576,18 +614,20 @@ const USER_RENDERERS={H1:renderH1,P1:renderP1,G1:renderG1,O1:renderO1,D1:renderD
 const simulatorDefaults={
   userType:'old', launchType:'cold', filled:true, zeroTime:true,
   naturalResultCount:0, visible:true, forbidden:false,
+  freeQueue:true, paidFastChannel:false, estimatedWaitMinutes:52,
+  queueState:'QUEUING', userInitiated:false, sessionId:'demo-intent',
   bucket:5, ratioRoll:0, outcome:'success'
 };
 ```
 
-下拉或按钮支持新用户、老用户、零时长、Holdout；冷启动、热启动、Push、Deep Link、游戏返回；正常填充、无填充、超时、SDK 异常。每次变化立即重算并在画布顶部显示 `展示广告 / 未展示：REASON`。
+下拉或按钮支持新用户、老用户、零时长、Holdout；冷启动、热启动、Push、Deep Link、游戏返回；正常填充、无填充、超时、SDK 异常；Q1 支持免费/付费通道、等待 10/52 分钟、排队中/已排到/已退出、完整观看/提前关闭/校验超时。每次变化立即重算并在画布顶部显示 `展示广告 / 未展示：REASON`。Q1 初始 `userInitiated=false`，只有点击入口时临时置为 `true` 并调用策略核心。
 
 - [ ] **Step 4: 运行验证并提交**
 
 ```powershell
 node tools/verify-android-ad-demo.mjs scenes
 git add -- tools/verify-android-ad-demo.mjs 'demos/Android广告接入-交互标注版.html'
-git commit -m "feat: add six Android ad demo scenes" -- tools/verify-android-ad-demo.mjs 'demos/Android广告接入-交互标注版.html'
+git commit -m "feat: add seven Android ad demo scenes" -- tools/verify-android-ad-demo.mjs 'demos/Android广告接入-交互标注版.html'
 ```
 
 Expected: `PASS scenes`。
@@ -607,7 +647,7 @@ Expected: `PASS scenes`。
 for (const fn of ['renderDelivery','renderExperiment','renderReport']) {
   assert.match(html,new RegExp(`${fn}\\s*=`),`missing ${fn}`);
 }
-for (const value of ['内容广告占比','实验流量比例','X 天 X 次','保存草稿','发布策略','全局熔断']) {
+for (const value of ['内容广告占比','实验流量比例','X 天 X 次','保存草稿','发布策略','全局熔断','等待阈值','赠送时长','加速等级','G1/Q1 同会话互斥']) {
   assert.match(html,new RegExp(value),`missing admin control ${value}`);
 }
 ```
@@ -619,7 +659,7 @@ for (const value of ['内容广告占比','实验流量比例','X 天 X 次','�
 `renderDelivery` 在一个页面完成：
 
 - 顶部显示策略版本、草稿状态和全局熔断；
-- H1～S1 横向广告位选择；
+- H1、P1、G1、Q1、O1、D1、S1 横向广告位选择；
 - 开关、用户范围、固定网络、内容广告占比；
 - 频控模式 `daily/custom/lifetime`；
 - `daily` 显示“一天一次”；
@@ -628,14 +668,15 @@ for (const value of ['内容广告占比','实验流量比例','X 天 X 次','�
 - “保存草稿”只更新 `state.draft[region]`；
 - “发布策略”调用 `publishDraft()` 并生成 `vN` 版本号；
 - 国内固定穿山甲、海外固定 AdMob，错误组合阻止发布并显示 E 标注。
+- 选择 Q1 时追加等待阈值、赠送时长、服务端加速等级枚举、Q1 独立频控和 G1/Q1 同会话互斥；付费快速通道排除为只读安全规则。
 
 - [ ] **Step 3: 实现 A/B 测试配置页**
 
-`renderExperiment` 展示长期 Holdout、对照组、H1 和 P1 实验组。编辑时实时计算合计值；只有 `validateExperiment(...).ok === true` 才允许启动。启动后锁定核心分组输入；暂停后允许编辑。内容广告占比不得出现在实验分组字段中。
+`renderExperiment` 默认展示长期 Holdout、对照组、H1 和 P1 实验组；选择 Q1 模板时展示“对照组 / 仅加时长组 / 加速＋时长组”。编辑时实时计算合计值；只有 `validateExperiment(...).ok === true` 才允许启动。启动后锁定核心分组输入；暂停后允许编辑。内容广告占比不得出现在实验分组字段中，G1/Q1 同会话互斥不得被实验编辑器关闭。
 
 - [ ] **Step 4: 实现效果统计页**
 
-`renderReport` 展示收入、曝光、eCPM、CTR，广告漏斗，H1～S1 对比，D1/D7 与启动成功率。地区 Tab 切换后只展示该地区数据；止损状态触发时标红，并提供跳转投放配置页的“暂停广告位”按钮。
+`renderReport` 展示收入、曝光、eCPM、CTR，广告漏斗，七个广告位对比，D1/D7 与启动成功率。Q1 详情展示入口曝光、点击、完成率、双权益成功率、加速前后预计等待、排队退出率、进入游戏率和非广告用户等待时间。地区 Tab 切换后只展示该地区数据；止损状态触发时标红，并提供跳转投放配置页的“暂停广告位”按钮。
 
 - [ ] **Step 5: 运行验证并提交**
 
@@ -682,15 +723,16 @@ const STAT_DELTAS={
   click:{clicks:1,revenue:0.08},
   nofill:{opportunities:1,requests:1},
   timeout:{opportunities:1,requests:1},
-  reward:{rewards:1,rewardMinutes:5,revenue:0.12}
+  reward:{rewards:1,rewardMinutes:5,revenue:0.12},
+  queueReward:{queueOfferClicks:1,rewardCompletions:1,rewards:1,rewardMinutes:5,accelerationGrants:1,revenue:0.12}
 };
 ```
 
-当模拟 D7 相对对照下降超过设计阈值或启动成功率下降超过阈值时，统计页显示红色止损卡；点击暂停只关闭当前地区当前广告位，并要求发布后才影响用户端。
+Q1 成功后同时记录 `estimatedWaitBefore:52`、`estimatedWaitAfter:18`、排队退出和进入游戏结果；“已排到/已退出”只增加时长发放，不增加 `accelerationGrants`。当模拟 D7 相对对照下降、启动成功率下降、Q1 排队退出率恶化或非广告用户等待时间相对对照上升达到 5%时，统计页显示红色止损卡；点击暂停只关闭当前地区当前广告位，并要求发布后才影响用户端。
 
 - [ ] **Step 3: 补齐异常矩阵**
 
-右侧异常 Tab 必须包含：无填充、超时、SDK 异常、全局熔断、频控命中、Holdout、G1 重复奖励、O1 非冷启动、S1 有自然结果、D1 启动后取消、国内/海外网络错配、A/B 比例不等于 100%。每一项点击后应改变模拟器状态并高亮结果区域。
+右侧异常 Tab 必须包含：无填充、超时、SDK 异常、全局熔断、频控命中、Holdout、G1 重复奖励、Q1 提前关闭、Q1 校验超时、Q1 重复 `reward_id`、Q1 广告期间已排到、Q1 广告期间已退出、G1/Q1 互斥、O1 非冷启动、S1 有自然结果、D1 启动后取消、国内/海外网络错配、A/B 比例不等于 100%。每一项点击后应改变模拟器状态并高亮结果区域。
 
 - [ ] **Step 4: 运行全部自动验证并提交**
 
@@ -731,7 +773,7 @@ Expected: Edge 进程返回 0，`.tmp/android-ad-demo-user.png` 存在且宽高�
 
 - [ ] **Step 2: 使用本地图片查看工具检查用户端**
 
-检查：三栏无重叠；402×874 手机完整可见；首页与玩游戏页保留盖世原视觉；广告标识清晰但不过度抢眼；右侧标注文本不截断；标号默认关闭。
+检查：三栏无重叠；402×874 竖屏和 Q1 874×402 横屏均完整可见；首页、玩游戏页与 Q1 排队页保留盖世原视觉；广告标识清晰但不过度抢眼；右侧标注文本不截断；标号默认关闭。
 
 - [ ] **Step 3: 生成后台截图**
 
@@ -745,7 +787,7 @@ $url=([System.Uri]::new($demo).AbsoluteUri)+'?surface=admin&page=delivery&region
 
 Expected: `.tmp/android-ad-demo-admin.png` 存在且宽高为 1800×1100。
 
-- [ ] **Step 4: 手动执行 12 条设计验收路径**
+- [ ] **Step 4: 手动执行 15 条设计验收路径**
 
 逐条执行设计文档第 9 章。重点保留以下证据：
 
@@ -753,6 +795,9 @@ Expected: `.tmp/android-ad-demo-admin.png` 存在且宽高为 1800×1100。
 - 海外独立配置不被国内发布修改；
 - P1 永久一次；
 - G1 完整观看与提前关闭；
+- Q1 免费长排队用户完整观看后获得加速通道和 5 分钟；
+- Q1 付费快速通道、等待未超阈值和未主动点击时均不展示；
+- Q1 播放期间已排到/已退出只发时长，校验超时不要求重看，G1/Q1 成功互斥；
 - O1 新用户和非冷启动拒绝；
 - S1 有自然结果时消失；
 - D1 启动后取消；
@@ -793,9 +838,9 @@ Expected: 三个任务文件均无未提交改动；其他用户文件的状态�
 
 ## 4. 计划自检结果
 
-- 设计文档六个用户场景分别由 Task 6 覆盖；
+- 设计文档七个用户场景分别由 Task 6 覆盖，Q1 同时覆盖横屏排队页、双权益、竞态、幂等和 G1/Q1 互斥；
 - 三个后台页面和国内/海外独立配置由 Task 7 覆盖；
 - 草稿、发布、实验、统计和异常闭环由 Task 8 覆盖；
-- 单文件、无 iframe、截图 Data URL 和 `demo标记` 三栏结构由 Task 2、3、5 覆盖；
+- 单文件、无 iframe、截图 Data URL 和 `/demo标记` 三栏结构由 Task 2、3、5 覆盖；
 - 自动回归、策略矩阵和浏览器视觉检查由 Task 1、4、9 覆盖；
 - 计划没有扩大到真实 SDK、服务端、会员、iOS 或第四个后台页面。
