@@ -186,15 +186,15 @@ flowchart LR
 
 **功能截图（完整界面）：**
 
-![探索场景的租号发现与曝光](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c01-rental-discovery-explore.png)
+![探索场景的租号发现与曝光](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c01-rental-discovery-explore.png)
 
 *图 4.2.1-1：探索内容中的租号金额、在租热度和编辑推荐。*
 
-![找游戏场景的租号筛选](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c01-rental-discovery-catalog.png)
+![找游戏场景的租号筛选](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c01-rental-discovery-catalog.png)
 
 *图 4.2.1-2：找游戏中的排序、可租号筛选和游戏列表。*
 
-![搜索场景的租号结果](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c01-rental-discovery-search.png)
+![搜索场景的租号结果](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c01-rental-discovery-search.png)
 
 *图 4.2.1-3：搜索结果中的租号金额和在租人数。*
 
@@ -222,6 +222,8 @@ flowchart LR
 | 个人 Steam 账号 | 个人账号未拥有当前游戏 | “秒玩” + “获取游戏” | 展示“租号开玩” | 点击“获取游戏”直接打开 Steam 商品信息，不弹租号弹窗；点击“租号开玩”进入当前游戏确认订单 |
 
 > 判定顺序：先判断当前是否为租赁 Steam 会话，再判断当前游戏是否为有效订单目标和账号是否拥有，最后判断本地是否已下载。按钮点击时必须重新校验，不能只使用进入页面时的缓存结果。租赁目标游戏出现账号无权益属于履约异常，不得引导用户重复下单，应进入换号或售后处理。
+
+**拦截弹窗游戏卡片：** “当前游戏未租用”、过期本地包启动拦截和 T0 到期退出结果三类弹窗均展示当前游戏封面、游戏名及红色 `¥X 租号`；不展示 `Steam · 启动游戏/下载/获取游戏`、版本或订单状态等第二行副文案。`¥X` 为当前可售版本中的最低小时套餐参考价，最终应付金额以确认订单页实时计算为准。
 
 **业务规则：**
 
@@ -259,11 +261,11 @@ flowchart LR
 
 **功能截图（完整界面）：**
 
-![确认订单与支付方式](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c02-package-and-checkout.png)
+![确认订单与支付方式](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c02-package-and-checkout.png)
 
 *图 4.2.3-1：确认订单右侧价格区的“游戏原价”和“订单金额”使用白色标题，灰色游戏原价金额与红色实付价按右边缘上下对齐；首单 5 折使用绿色底白字标签，实付价右侧只展示灰色划线金额，不展示“标准租价”或计价说明副文案。右下角“模拟支付完成”为 Demo 验证入口，不进入正式产品。*
 
-![高频退款用户购买前确认](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c03-refund-risk-warning.png)
+![高频退款用户购买前确认](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c03-refund-risk-warning.png)
 
 *图 4.2.3-2：命中后台退款风控后，付款前提示本单不享受3天无理由退款；履约售后继续保留。*
 
@@ -294,7 +296,7 @@ flowchart LR
 
 **功能截图（完整界面）：**
 
-![个人 Steam 会话下的游戏权益判断](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c04-game-entitlement.png)
+![个人 Steam 会话下的游戏权益判断](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c04-game-entitlement.png)
 
 *图 4.2.4：根据 Steam 会话、游戏拥有状态和租赁目标展示获取、下载、启动或租号动作。*
 
@@ -318,7 +320,7 @@ flowchart LR
 
 **功能截图（完整界面）：**
 
-![租赁账号操作非目标游戏时的拦截](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c05-non-target-guard.png)
+![租赁账号操作非目标游戏时的拦截](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c05-non-target-guard.png)
 
 *图 4.2.5-1：租赁账号对非目标游戏执行获取、下载或启动时的租用询问。*
 
@@ -338,14 +340,14 @@ flowchart LR
 |---|---:|---|
 | 当前为个人 Steam 账号且个人账号拥有目标游戏 | 1 | 按个人游戏正常启动，不触发租号校验或过期拦截 |
 | 存在游戏、版本匹配且 `expire_at > server_time` 的有效租赁 | 2 | 建立或复用有效租赁会话并启动目标游戏 |
-| 租赁已过期且本地仍有安装包 | 3 | 拦截启动，提示“该游戏租期已结束，重新租用后可继续游戏”，操作为“取消、重新租用” |
+| 租赁已过期且本地仍有安装包 | 3 | 拦截启动，提示“该游戏租期已结束，重新租用后可继续游戏”；弹窗展示游戏封面、游戏名和当前最低时租价，操作为“取消、重新租用” |
 | 无网络或服务端状态校验失败 | 4 | 不放行租赁游戏，提示“租赁状态验证失败，请检查网络后重试” |
 
 判定必须先识别个人拥有权益，避免历史租赁订单误伤个人游戏；租赁有效性只认服务端 `expire_at`。重新租用成功后，同游戏同版本且本地包可用时复用安装包并直接上号启动，版本不一致时才更新或下载。租期结束不删除本地安装包、游戏设置或个人存档。
 
-![过期本地安装包启动拦截](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c12-expired-launch-block.png)
+![过期本地安装包启动拦截](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c12-expired-launch-block.png)
 
-*图 4.2.5-2：租赁已过期且本地包仍存在时阻断启动，只提供取消和重新租用。*
+*图 4.2.5-2：租赁已过期且本地包仍存在时阻断启动，展示统一游戏卡片并提供取消和重新租用。*
 
 **启动结果：**
 
@@ -359,7 +361,7 @@ flowchart LR
 
 **功能截图（完整界面）：**
 
-![游戏库与 Steam 租赁账号状态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c06-game-library.png)
+![游戏库与 Steam 租赁账号状态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c06-game-library.png)
 
 *图 4.2.6：已安装/未安装游戏分组、筛选搜索和 Steam 租赁账号信息。*
 
@@ -380,11 +382,11 @@ flowchart LR
 
 **功能截图（完整界面）：**
 
-![租号订单中心](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c07-order-center.png)
+![租号订单中心](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c07-order-center.png)
 
 *图 4.2.7-1：订单中心的状态筛选、卡片信息和状态对应操作。*
 
-![租号订单详情](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c07-order-detail.png)
+![租号订单详情](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c07-order-detail.png)
 
 *图 4.2.7-2：订单详情顶部状态、操作、订单号和横向订单进度。*
 
@@ -409,11 +411,11 @@ flowchart LR
 3. 客户端从休眠或最小化恢复时重新拉取 `server_time`。若同时错过两个阈值且订单仍有效，只补发与当前剩余时间最接近的一档，不连续补发历史提醒。
 4. 提醒支持“知道了/暂不续租”和“立即续租”；关闭不改变订单状态，立即续租进入原订单续租页。
 
-![剩余15分钟的顶部续租提醒](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c10-expiry-reminder-15m.png)
+![剩余15分钟的顶部续租提醒](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c10-expiry-reminder-15m.png)
 
 *图 4.2.7-3：有效订单首次进入剩余 15 分钟档位时，在顶部居中提醒一次。*
 
-![剩余5分钟的顶部续租提醒](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c10-expiry-reminder-5m.png)
+![剩余5分钟的顶部续租提醒](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c10-expiry-reminder-5m.png)
 
 *图 4.2.7-4：有效订单首次进入剩余 5 分钟档位时再次提醒，并明确到期即结束游戏；不设置 1 分钟提醒。*
 
@@ -424,17 +426,17 @@ flowchart LR
 3. 到期前续租仍未支付成功时，续租单关闭。关闭后收到迟到支付回调，不得延长订单或重新占用账号，按幂等规则原路退款并记录异常。
 4. 已完成订单点击“续租”或过期拦截中的“重新租用”均创建新服务订单并重新分配账号；同游戏同版本的本地安装包可复用并直接启动。
 
-![原订单续租确认页](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c11-renewal-checkout.png)
+![原订单续租确认页](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c11-renewal-checkout.png)
 
 *图 4.2.7-5：续租展示原到期时间、所选时长、顺延后的新到期时间和账号最大可用时间，按标准租赁价结算。*
 
 **到期 T0 处理：**
 
-到达 `expire_at` 且续租未成功时，服务端立即将订单置为已完成并撤销租赁权限；客户端结束目标游戏、清理租赁 Steam 会话和本地租赁凭证，服务端释放账号。任一步骤失败需重试、告警并在后台展示具体结果，不得延后订单终止。游戏安装包、本地设置和个人存档继续保留。
+到达 `expire_at` 且续租未成功时，服务端立即将订单置为已完成并撤销租赁权限；客户端结束目标游戏、清理租赁 Steam 会话和本地租赁凭证，服务端释放账号。任一步骤失败需重试、告警并在后台展示具体结果，不得延后订单终止。游戏安装包、本地设置和个人存档继续保留。到期退出结果弹窗展示对应游戏的封面、游戏名和当前最低时租价，不展示平台、操作、版本或订单状态副文案。
 
-![租期结束后的退出结果](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c13-expiry-ended-result.png)
+![租期结束后的退出结果](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c13-expiry-ended-result.png)
 
-*图 4.2.7-6：到达 `expire_at` 后立即结束目标游戏并提示租期已结束，用户可重新租用或返回首页。*
+*图 4.2.7-6：到达 `expire_at` 后立即结束目标游戏，结果弹窗展示统一游戏卡片，用户可重新租用或返回首页。*
 
 **订单状态与主要操作：**
 
@@ -451,11 +453,11 @@ flowchart LR
 
 **功能截图（完整界面）：**
 
-![售后申请弹窗](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c08-after-sales-form.png)
+![售后申请弹窗](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c08-after-sales-form.png)
 
 *图 4.2.8-1：售后问题类型、游戏摘要和问题描述输入。*
 
-![退款申请处理进度](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c08-refund-progress.png)
+![退款申请处理进度](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c08-refund-progress.png)
 
 *图 4.2.8-2：申请中状态下的退款详情和横向处理进度。*
 
@@ -484,7 +486,7 @@ flowchart LR
 
 **功能截图（完整界面）：**
 
-![3天无理由退款说明](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/c09-no-reason-refund.png)
+![3天无理由退款说明](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/c09-no-reason-refund.png)
 
 *图 4.2.9：3天无理由退款的72小时、累计游戏时长30分钟和履约售后规则。*
 
@@ -514,7 +516,7 @@ flowchart LR
 
 **功能截图（完整界面）：**
 
-![租号商品与套餐管理](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/b01-product-management.png)
+![租号商品与套餐管理](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/b01-product-management.png)
 
 *图 4.3.1：商品摘要、筛选、批量处理、版本套餐价格和快捷操作。*
 
@@ -544,7 +546,7 @@ flowchart LR
 
 **功能截图（完整界面）：**
 
-![Steam 账号资源与库存管理](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/b02-account-inventory.png)
+![Steam 账号资源与库存管理](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/b02-account-inventory.png)
 
 *图 4.3.2：库存摘要、账号状态、占用订单、健康检测和上下架操作。*
 
@@ -577,7 +579,7 @@ flowchart LR
 
 **功能截图（完整界面）：**
 
-![订单履约工作台](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/b03-order-fulfillment.png)
+![订单履约工作台](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/b03-order-fulfillment.png)
 
 *图 4.3.3：订单摘要、组合筛选、启动结果、账号占用和履约操作。*
 
@@ -610,7 +612,7 @@ flowchart LR
 
 **功能截图（完整界面）：**
 
-![售后申请审核与退款处理](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/b04-after-sales-review.png)
+![售后申请审核与退款处理](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/b04-after-sales-review.png)
 
 *图 4.3.4：售后申请列表、用户问题描述、启动结果和订单售后详情。*
 
@@ -641,7 +643,7 @@ flowchart LR
 
 **功能截图（完整界面）：**
 
-![租号业务效果统计](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/b05-rental-statistics.png)
+![租号业务效果统计](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/b05-rental-statistics.png)
 
 *图 4.3.5：交易、库存、使用率、复用率、复租率、趋势和转化漏斗；页面保留导出与 KPI 涨跌，不提供周期对比按钮。*
 
@@ -681,11 +683,11 @@ flowchart LR
 
 **功能截图（完整界面）：**
 
-![后台操作审计记录](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/b06-operation-audit.png)
+![后台操作审计记录](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/b06-operation-audit.png)
 
 *图 4.3.6-1：租号运营中心独立操作记录页的组合筛选、列表，以及已打开的只读详情；详情展示 Before/After、Request ID、错误和批处理结果。*
 
-![无理由退款风控设置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4360ecec70836206b63438ffd4bfca5a16987baf/public/prd/mac-rental/b07-refund-risk-settings.png)
+![无理由退款风控设置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2efa2b11d4f60f7d9e1aa775d31fc1be69d5b1c6/public/prd/mac-rental/b07-refund-risk-settings.png)
 
 *图 4.3.6-2：后台配置规则开关、滚动统计天数和无理由退款笔数阈值。*
 
@@ -976,6 +978,7 @@ flowchart LR
 | AC-29 | 审计范围与不可变 | 五个后台模块的成功、失败、敏感查看和导出均生成服务端日志；浏览、Tab、搜索、筛选和翻页不生成；记录保留 180 天且不可改删 |
 | AC-30 | 审计查询与导出 | 八项筛选可组合，`pageSize=1` 可前后翻页，重置恢复第 1 页；详情含 Before/After、Request ID、错误和失败对象；当前筛选导出 ID 唯一，批量结果完整且敏感字段已脱敏 |
 | AC-31 | 统计页操作 | 效果统计页无周期对比按钮和对应状态，导出按钮、KPI 卡片已有涨跌百分比均保留 |
+| AC-32 | 拦截弹窗游戏卡片 | 未租用拦截、过期安装包启动拦截和到期退出结果均展示对应游戏的封面、名称及当前最低时租价 `¥X 租号`；三类卡片均无平台、操作、版本或订单状态副文案 |
 
 ### 5.5 上线监控与告警
 
