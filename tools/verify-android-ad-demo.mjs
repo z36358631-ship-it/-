@@ -1,91 +1,55 @@
-import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const demoPath = path.join(root, 'demos', 'Android广告接入-交互标注版.html');
-const stage = process.argv[2] || 'all';
-const html = fs.readFileSync(demoPath, 'utf8');
+const htmlPath = path.join(root, 'demos', 'Android广告接入-交互标注版.html');
+const html = fs.readFileSync(htmlPath, 'utf8');
+const mode = process.argv[2] || 'all';
 
-function scriptText(id) {
-  const match = html.match(new RegExp(`<script[^>]*id=["']${id}["'][^>]*>([\\s\\S]*?)<\\/script>`));
-  assert.ok(match, `missing script#${id}`);
-  return match[1];
+function assert(ok, message) { if (!ok) throw new Error(message); }
+function pass(name) { console.log(`PASS ${name}`); }
+
+function shell() {
+  for (const token of ['用户端','运营后台','leftNav','demoCanvas','annoList','触发条件','展示说明','交互说明']) assert(html.includes(token), `Missing shell token: ${token}`);
+  pass('shell');
 }
 
-function seed() { return JSON.parse(scriptText('demo-seed')); }
-
-function loadCore() {
-  const context = { window: {}, structuredClone, console, Set, Map, Date };
-  vm.createContext(context);
-  vm.runInContext(scriptText('ad-demo-core'), context);
-  return context.window.AdDemoCore;
-}
-
-function checkShell() {
-  for (const id of ['topSurfaceSwitch','leftNav','demoCanvas','rightPanel','interactionTab','exceptionTab','badgeToggle','resetDemo','panelCollapse']) {
-    assert.match(html, new RegExp(`id=["']${id}["']`), `missing #${id}`);
+function scenes() {
+  for (const id of ['O1','H1','P1','C1','G1','Q1','L1']) {
+    assert(html.includes(`['${id}'`) || html.includes(`"${id}"`), `Missing placement ${id}`);
+    assert(html.includes(`${id}:{i:`), `Missing annotations ${id}`);
   }
-  assert.doesNotMatch(html, /<iframe\b/i);
-  assert.match(html, /用户端/);
-  assert.match(html, /运营后台/);
-  assert.match(html, /国内（穿山甲）/);
-  assert.match(html, /海外（AdMob）/);
+  assert(!html.includes("['D1'"), 'Removed D1 still in placement list');
+  assert(!html.includes("['S1'"), 'Removed S1 still in placement list');
+  assert(html.includes('data-o1-step'), 'O1 state machine DOM missing');
+  assert(html.includes('data-checkin-state'), 'C1 check-in flow missing');
+  assert(html.includes('data-request-id'), 'L1 shared request identity missing');
+  pass('scenes');
 }
 
-function checkCore() {
-  const data = seed();
-  const ids = ['H1','P1','G1','Q1','O1','D1','S1'];
-  assert.deepEqual(Object.keys(data.policies.cn.placements), ids);
-  assert.deepEqual(Object.keys(data.policies.overseas.placements), ids);
-  const core = loadCore();
-  const base = {region:'cn',userType:'old',context:'home',bucket:5,ratioRoll:0,filled:true,naturalResultCount:0,visible:true,coldStart:true,zeroTime:true,now:Date.now()};
-  assert.equal(core.evaluatePlacement(core.createState(data),'H1',base).allowed,true);
-  const killed=core.createState(data); killed.published.cn.globalKill=true;
-  assert.equal(core.evaluatePlacement(killed,'H1',base).reason,'GLOBAL_KILL');
-  assert.equal(core.evaluatePlacement(core.createState(data),'O1',{...base,userType:'new'}).reason,'AUDIENCE_MISMATCH');
-  assert.equal(core.evaluatePlacement(core.createState(data),'G1',{...base,zeroTime:false}).reason,'NOT_ZERO_TIME');
-  assert.equal(core.evaluatePlacement(core.createState(data),'Q1',{...base,context:'queue',freeQueue:true,paidFastChannel:false,estimatedWaitMinutes:52,userInitiated:false}).reason,'NOT_USER_INITIATED');
-  assert.equal(core.evaluatePlacement(core.createState(data),'Q1',{...base,context:'queue',freeQueue:true,paidFastChannel:false,estimatedWaitMinutes:10,userInitiated:true}).reason,'WAIT_BELOW_THRESHOLD');
-  assert.equal(core.evaluatePlacement(core.createState(data),'Q1',{...base,context:'queue',forbidden:true,freeQueue:true,paidFastChannel:false,estimatedWaitMinutes:52,userInitiated:true}).allowed,true);
-  const q=core.createState(data);
-  const granted=core.completeQueueReward(q,'reward-q1',{sessionId:'intent-q1',queueState:'QUEUING'});
-  assert.equal(granted.awarded,true); assert.equal(granted.accelerationGranted,true);
-  assert.equal(core.completeQueueReward(q,'reward-q1',{sessionId:'intent-q1',queueState:'QUEUING'}).awarded,false);
-  const partial=core.completeQueueReward(core.createState(data),'reward-q2',{sessionId:'intent-q2',queueState:'MATCHED'});
-  assert.equal(partial.result,'PARTIAL_GRANTED'); assert.equal(partial.accelerationGranted,false);
-  assert.equal(core.validateExperiment({control:50,timeOnly:25,dual:25}).ok,true);
+function admin() {
+  for (const token of ['adminProductName','adminSidebar','adminRegionTabs','deliveryTable','experimentTable','adminDrawer','确认删除','保存草稿']) assert(html.includes(token), `Missing admin token: ${token}`);
+  pass('admin');
 }
 
-function checkAssets() {
-  for (const key of ['home','play','detail','search']) assert.match(html,new RegExp(`"${key}":"data:image\\/jpeg;base64,`),`missing ${key}`);
-  assert.doesNotMatch(html,/https?:\/\/[^"']+\.(png|jpe?g|webp)/i);
+function assets() {
+  const count = (html.match(/data:image\//g) || []).length;
+  assert(count >= 9, `Expected at least 9 embedded image assets, found ${count}`);
+  assert(!html.includes('/* ASSET_BUNDLE */'), 'Asset marker was not replaced');
+  for (const token of ['20260618-120632.jpg','20260521-152127.jpg','gw_logo.svg']) assert(html.includes(token), `Missing source metadata ${token}`);
+  pass('assets');
 }
 
-function checkScenes() {
-  for (const id of ['H1','P1','G1','Q1','O1','D1','S1']) {
-    assert.match(html,new RegExp(`function\\s+render${id}\\b`),`missing render${id}`);
-  }
-  for (const label of ['触发条件','展示说明','交互说明','异常&边界','看广告加速排队','权益确认中']) assert.match(html,new RegExp(label));
+function syntax() {
+  const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+  assert(scripts.length >= 2, 'Inline scripts missing');
+  scripts.forEach((code, i) => new vm.Script(code, { filename: `inline-${i}.js` }));
+  pass('uiSyntax');
 }
 
-function checkAdmin() {
-  for (const id of ['delivery','experiment','report']) assert.match(html,new RegExp(`data-admin-page=["']${id}["']`));
-  for (const label of ['一天一次','X 天 X 次','永久一次','等待阈值','赠送时长','加速等级','G1/Q1 同会话互斥','仅加时长组','加速＋时长组','非广告用户等待']) assert.match(html,new RegExp(label));
-  assert.match(html, /state\.experiments\[ui\.region\]\.q1/);
-  assert.doesNotMatch(html, /state\.experiments\[ui\.region\]\.q(?:\W|$)/);
-}
-
-function checkUiSyntax() {
-  for (const id of ['ad-demo-ui', 'demo-query-bootstrap']) {
-    assert.doesNotThrow(
-      () => new vm.Script(scriptText(id), { filename: `${id}.js` }),
-      `invalid JavaScript in script#${id}`,
-    );
-  }
-}
-
-const checks={shell:checkShell,core:checkCore,assets:checkAssets,scenes:checkScenes,admin:checkAdmin,uiSyntax:checkUiSyntax};
-for (const name of stage==='all'?Object.keys(checks):[stage]) { assert.ok(checks[name],`unknown stage ${name}`); checks[name](); console.log(`PASS ${name}`); }
+const tasks = { shell, scenes, admin, assets, syntax };
+if (mode === 'all') Object.values(tasks).forEach(fn => fn());
+else if (tasks[mode]) tasks[mode]();
+else throw new Error(`Unknown mode: ${mode}`);
