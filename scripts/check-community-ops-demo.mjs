@@ -5,19 +5,19 @@ const file = 'demos/社区/社区文章与马甲号运营后台demo.html';
 const html = fs.readFileSync(file, 'utf8');
 const required = [
   'page-official-post',
-  'page-drafts',
   'page-vest-account',
   'page-log',
-  'page-risk',
-  'acting-identity-bar',
   'article-editor-workspace',
+  'editor-vest-selector',
+  'content-type-tabs',
   'phone-preview',
-  'openIdentityPicker',
-  'selectVest',
+  'copyArticle',
+  'useVestToPublish',
+  'switchEditorContentType',
   'validateArticle',
   'syncArticlePreview',
-  'saveDraft',
   'submitArticle',
+  'renderArticleTable',
   'renderVestTable',
   'renderAuditTable'
 ];
@@ -47,4 +47,19 @@ for (const text of forbidden) {
   }
 }
 
-console.log(`PASS: ${required.length} required tokens and ${scripts.length} inline scripts validated`);
+const forbiddenStructure = [
+  'id="ops-menu-drafts"',
+  'id="page-drafts"',
+  'id="ops-menu-risk"',
+  'id="page-risk"',
+  'id="acting-identity-bar"',
+  'onclick="saveDraft()"'
+];
+
+for (const token of forbiddenStructure) {
+  if (html.includes(token)) {
+    throw new Error(`Removed structure still exists: ${token}`);
+  }
+}
+
+console.log(`PASS: community operations structure validated (${required.length} tokens, ${scripts.length} scripts)`);
