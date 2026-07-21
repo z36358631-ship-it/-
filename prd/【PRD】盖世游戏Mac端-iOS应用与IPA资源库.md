@@ -11,12 +11,13 @@
 |2026.07.21|V2.3|郑群超|🟨 **按标准 PRD 模板重排全文；恢复盖世 Mac 端完整侧边栏，iOS 应用作为独立选中入口**|本次变更|
 |2026.07.21|V2.4|郑群超|🟨 **图示改为固定版本的真实交互截图；补充我的 App 与 IPA 资源空状态操作；搜索无结果仅提示调整关键词**|本次变更|
 |2026.07.21|V2.5|郑群超|🟨 **并入游戏库，新增“PC 游戏 / IOS应用库”一级切换与“已安装 / IPA 资源”二级切换；新增 `tersafe.framework` ACE 风险检测与安装前强确认**|本次变更|
+|2026.07.21|V2.6|郑群超|🟨 **一级 Tab“PC 游戏”改为“PC游戏库”；ACE 风险弹窗删除“最终文案以法务与安全评审结果为准”**|本次变更|
 
 ## 二、背景与目标
 
 背景：盖世游戏 Mac 端需要承接 Apple Silicon Mac 上的 iOS App 管理和 IPA 使用场景。当前本地 App、IPA 来源、下载任务与应用设置分散，若另设独立侧边栏入口还会与现有“游戏库”产生心智重叠。PlayCover 3.1.0 已形成相对稳定的 App 库和 IPA 资源库交互，可作为功能基准。
 
-目标：保留侧边栏“游戏库”唯一入口，一级用“PC 游戏 / IOS应用库”区分运行平台，IOS应用库再用“已安装 / IPA 资源”区分本机管理与远程资源；同时在 IPA 安装前识别 ACE 风险特征，让用户在明确知情后决定是否继续。
+目标：保留侧边栏“游戏库”唯一入口，一级用“PC游戏库 / IOS应用库”区分运行平台，IOS应用库再用“已安装 / IPA 资源”区分本机管理与远程资源；同时在 IPA 安装前识别 ACE 风险特征，让用户在明确知情后决定是否继续。
 
 核心挑战：
 
@@ -56,7 +57,7 @@
 
 ### 3.3 核心体验路径
 
-- 入口切换：侧边栏“游戏库”→PC 游戏 / IOS应用库；IOS应用库→已安装 / IPA 资源。
+- 入口切换：侧边栏“游戏库”→PC游戏库 / IOS应用库；IOS应用库→已安装 / IPA 资源。
 - 本地导入：游戏库→IOS应用库→已安装→导入 IPA→macOS 文件选择器→解析候选项→勾选→ACE 特征检测→导入。
 - 来源导入：游戏库→IOS应用库→IPA 资源→添加来源→输入 URL→实时验证→选择候选资源→确认。
 - 下载与安装：IPA 资源→下载→校验→ACE 特征检测→未命中直接安装，命中则经用户确认后安装→“已安装”出现应用。
@@ -77,7 +78,7 @@
 
 ### 3.5 路径规划
 
-- **V2.5（当前）**：将 IOS应用库并入游戏库，完成 PC 游戏 / IOS应用库一级切换、已安装 / IPA 资源二级切换、完整 IPA 管理与 ACE 风险检测闭环。
+- **V2.6（当前）**：将 IOS应用库并入游戏库，完成 PC游戏库 / IOS应用库一级切换、已安装 / IPA 资源二级切换、完整 IPA 管理与 ACE 风险检测闭环。
 - **V3.0（预告）**：安卓模拟器上线时，在游戏库增加“Android 应用”一级 Tab；来源云同步、可信来源推荐和自动更新另行评审。
 
 ## 四、概要设计
@@ -86,7 +87,7 @@
 
 |模块|功能|
 |---|---|
-|F001 游戏库信息架构|侧边栏仅保留并选中“游戏库”；页面一级 Tab 为“PC 游戏 / IOS应用库”，IOS应用库二级 Tab 为“已安装 / IPA 资源”|
+|F001 游戏库信息架构|侧边栏仅保留并选中“游戏库”；页面一级 Tab 为“PC游戏库 / IOS应用库”，IOS应用库二级 Tab 为“已安装 / IPA 资源”|
 |F002 已安装|管理唯一 App 库路径中的本地 App，支持搜索、刷新、网格/列表、导入 IPA 和右键操作|
 |F003 App 设置|提供键盘映射、图像设置、绕过、杂项和详细信息五页设置|
 |F004 本地 IPA 导入|拉起 macOS 文件选择器，支持单选、批量选择、解析和二级勾选|
@@ -102,23 +103,23 @@
 
 |模块名称|图示|展示&交互说明|
 |---|---|---|
-|游戏库与 PC 游戏|![游戏库与 PC 游戏](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b8534a47b2e184f95da5bba65762e892fa6bff71/public/prd/mac-ios-library/00-pc-game-library.png)|① 侧边栏保留既有“游戏库”并在进入页面时选中，不再显示独立“iOS 应用”入口。<br>② 页面标题固定为“游戏库”，不显示副标题。<br>③ 一级 Tab 为“PC 游戏 / IOS应用库”，默认进入时展示 PC 游戏。<br>④ PC 游戏保持原有导入、刷新、搜索和启动能力，本期不因 IOS应用库调整其业务规则。<br>⑤ 未来上线安卓模拟器时，在此处新增“Android 应用”一级 Tab。|
-|IOS应用库·已安装|![IOS应用库·已安装](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b8534a47b2e184f95da5bba65762e892fa6bff71/public/prd/mac-ios-library/13-ios-app-library.png)<br>![已安装空状态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b8534a47b2e184f95da5bba65762e892fa6bff71/public/prd/mac-ios-library/11-app-empty.png)|① IOS应用库下显示“已安装 / IPA 资源”二级 Tab。<br>② 已安装页工具栏依次显示“导入 IPA”“刷新”“设置”、网格/列表切换和最右侧搜索。<br>③ “导入 IPA”在空库和非空库中均常驻；初始空状态同时显示“导入 IPA”。<br>④ 搜索按 App 名称或 Bundle ID 模糊匹配；搜索无结果只提示调整关键词。<br>⑤ 网格仅显示图标、App 名称和必要状态，不显示版本号或总数说明。<br>⑥ 列表显示名称、Bundle ID、版本、最近使用时间和状态。|
-|App 右键菜单|![App 右键菜单](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b8534a47b2e184f95da5bba65762e892fa6bff71/public/prd/mac-ios-library/02-app-context-menu.png)|① 顺序固定为设置、显示应用数据、在访达中查看、分隔线、清除应用数据、清除应用偏好设置、清除 PlayChain 数据、分隔线、卸载应用。<br>② 不显示键盘映射导入或导出。<br>③ 设置与工具栏设置打开同一窗口。<br>④ 清理与卸载分别二次确认，一次确认不得授权其他危险操作。|
-|App 设置|![App 设置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b8534a47b2e184f95da5bba65762e892fa6bff71/public/prd/mac-ios-library/03-app-settings.png)|① 标题为“{App 名称} 设置”，展示 App 图标。<br>② 顶部五个 Tab 为键盘映射、图像设置、绕过、杂项、详细信息。<br>③ 设置只作用于当前 App，非法数值不保存并在原字段提示。<br>④ 底部只显示“重置设置”和“重置键盘映射”，两个按钮右对齐。<br>⑤ 关闭入口只保留右上角“X”，不显示底部“关闭”。<br>⑥ 重置设置和重置键盘映射互不替代，操作后分别反馈。|
-|本地 IPA 导入|![本地 IPA 导入](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b8534a47b2e184f95da5bba65762e892fa6bff71/public/prd/mac-ios-library/04-local-ipa-import.png)|① 点击“导入 IPA”拉起 macOS 文件选择器，只允许选择 `.ipa`，支持单选与多选。<br>② 未授权 App 库路径时，先选择一个可读写文件夹，再继续原导入意图。<br>③ 解析后显示二级选择弹窗，默认不勾选。<br>④ “全选/取消全选”位于候选列表容器外、弹窗头部区域。<br>⑤ 重复、损坏、不兼容或非 IPA 项置灰并显示原因。<br>⑥ 无选择时“导入”置灰；确认后才创建任务。<br>⑦ 取消文件选择或弹窗不报错、不创建任务。|
-|ACE 风险检测与强提醒|![ACE 风险强提醒](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b8534a47b2e184f95da5bba65762e892fa6bff71/public/prd/mac-ios-library/14-ace-warning.png)|① 本地 IPA 解析完成后立即检测；远程 IPA 在下载完成、安装前检测。<br>② 包内路径按 `/(^|\/)tersafe\.framework(\/|$)/i` 匹配，命中时显示“检测到 ACE 风险特征”。<br>③ 弹窗说明可能触发账号风控及封号风险，且盖世游戏不承担因第三方 IPA 导致的账号封禁损失；最终文案需法务与安全评审。<br>④ 底部按钮固定为“取消安装 / 了解风险，仍要安装”；关闭或取消返回原流程并保留选择。<br>⑤ 确认按 IPA SHA-256 留存，同一包不重复提示；哈希变化或新版本重新提示。<br>⑥ 未命中不显示“安全”，已安装但无确认记录的 App 在首次启动前补提示。|
-|IPA 来源树|![IPA 来源树](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b8534a47b2e184f95da5bba65762e892fa6bff71/public/prd/mac-ios-library/05-ipa-source-tree.png)<br>![IPA 资源空状态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b8534a47b2e184f95da5bba65762e892fa6bff71/public/prd/mac-ios-library/12-ipa-empty.png)|① 左侧显示“IPA 资源库”根节点和各来源子节点。<br>② 根节点聚合全部启用来源，按 Bundle ID 去重。<br>③ 单个来源节点只显示当前来源资源；同名来源仍独立。<br>④ 根节点刷新全部启用来源，子节点只刷新当前来源。<br>⑤ 刷新失败保留上次成功缓存，不中断下载或安装任务。<br>⑥ 当前来源被删除或失效时自动回到根节点。<br>⑦ 全库或当前来源初始为空时显示“添加来源”；搜索无结果不显示该按钮。|
-|添加来源|![添加来源](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b8534a47b2e184f95da5bba65762e892fa6bff71/public/prd/mac-ios-library/06-add-ipa-source.png)|① 只接受公开 HTTPS JSON 地址，不接受账号、令牌或登录态。<br>② 输入变化后延迟校验并清除旧结果，校验区预留固定空间。<br>③ 地址、JSON 或目标资源无效时提示“链接无效，JSON 无效或未找到！”。<br>④ 验证成功后进入资源二级选择，不直接保存来源。<br>⑤ 用户确认选中资源后，才保存来源和资源。|
-|来源管理|![来源管理](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b8534a47b2e184f95da5bba65762e892fa6bff71/public/prd/mac-ios-library/07-source-manager.png)|① 每个来源支持启用/停用、上移/下移、删除和查看地址。<br>② 选中来源节点后，通过页面工具栏“刷新”更新当前来源。<br>③ 展示最近成功缓存时间和当前状态。<br>④ 停用来源不删除本地已安装 App。<br>⑤ 删除来源需确认；删除后不可再从该来源刷新。<br>⑥ 关闭入口只保留右上角“X”，不显示底部“完成”。|
-|IPA 资源列表与网格|![IPA 资源列表与网格](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b8534a47b2e184f95da5bba65762e892fa6bff71/public/prd/mac-ios-library/08-ipa-resource-states.png)|① 工具栏显示添加来源、刷新、应用信息、字母排序、网格/列表切换和最右侧搜索。<br>② 网格显示图标、名称、版本、状态、唯一主操作和必要进度。<br>③ 列表显示操作、图标、名称、Bundle ID、版本、大小和状态。<br>④ 搜索按名称或 Bundle ID 模糊匹配；搜索与来源筛选取交集。<br>⑤ 切换视图保留搜索、来源、排序、滚动位置和任务状态。<br>⑥ 初始无资源显示“添加来源”；搜索无结果只提示调整关键词，不显示“添加来源”；加载失败显示重试。|
-|应用信息|![应用信息](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b8534a47b2e184f95da5bba65762e892fa6bff71/public/prd/mac-ios-library/09-ipa-app-info.png)|① IPA 右键只显示“应用信息”，与工具栏信息按钮打开同一窗口。<br>② 展示 Bundle 名称、Bundle ID、版本、iTunes 地址、IPA 地址、校验和、来源、大小、兼容性和风险。<br>③ 图标加载失败只显示占位图，不把 IPA 标记为无效。<br>④ 关闭入口只保留右上角“X”，不显示底部“完成”。|
-|下载、校验、安装和更新|![下载、校验、安装和更新状态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b8534a47b2e184f95da5bba65762e892fa6bff71/public/prd/mac-ios-library/08-ipa-resource-states.png)|① 每个资源只显示一个主操作。<br>② 状态包括未下载、排队中、下载中、已暂停、校验中、可安装、安装中、已安装、可更新、下载失败、校验失败、安装失败、不兼容和缺少哈希。<br>③ 暂停、继续、取消和重试只影响当前资源。<br>④ 切换 Tab、来源、搜索、排序或视图不终止任务。<br>⑤ 新版失败时旧版 App 和用户数据保持可用。<br>⑥ 缺少哈希可下载，但安装前必须单独确认。|
-|卸载与清理|![卸载与清理](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b8534a47b2e184f95da5bba65762e892fa6bff71/public/prd/mac-ios-library/10-uninstall-confirm.png)|① 显示应用数据和在访达中查看为只读操作，不弹危险确认。<br>② 清除应用数据、偏好设置和 PlayChain 分别处理并分别确认。<br>③ 卸载确认展示 App 名称和不可逆提示。<br>④ 可选择同时清理 PlayChain、Entitlements、设置、键盘映射和应用数据；前三项默认勾选，后两项默认不勾选。<br>⑤ 卸载失败保留 App 项并显示原因。|
+|游戏库与 PC游戏库|![游戏库与 PC游戏库](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ce29a877d32add02fdbb1502b329bbc209357f5a/public/prd/mac-ios-library/00-pc-game-library.png)|① 侧边栏保留既有“游戏库”并在进入页面时选中，不再显示独立“iOS 应用”入口。<br>② 页面标题固定为“游戏库”，不显示副标题。<br>③ 一级 Tab 为“PC游戏库 / IOS应用库”，默认进入时展示 PC游戏库。<br>④ PC游戏库保持原有导入、刷新、搜索和启动能力，本期不因 IOS应用库调整其业务规则。<br>⑤ 未来上线安卓模拟器时，在此处新增“Android 应用”一级 Tab。|
+|IOS应用库·已安装|![IOS应用库·已安装](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ce29a877d32add02fdbb1502b329bbc209357f5a/public/prd/mac-ios-library/13-ios-app-library.png)<br>![已安装空状态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ce29a877d32add02fdbb1502b329bbc209357f5a/public/prd/mac-ios-library/11-app-empty.png)|① IOS应用库下显示“已安装 / IPA 资源”二级 Tab。<br>② 已安装页工具栏依次显示“导入 IPA”“刷新”“设置”、网格/列表切换和最右侧搜索。<br>③ “导入 IPA”在空库和非空库中均常驻；初始空状态同时显示“导入 IPA”。<br>④ 搜索按 App 名称或 Bundle ID 模糊匹配；搜索无结果只提示调整关键词。<br>⑤ 网格仅显示图标、App 名称和必要状态，不显示版本号或总数说明。<br>⑥ 列表显示名称、Bundle ID、版本、最近使用时间和状态。|
+|App 右键菜单|![App 右键菜单](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ce29a877d32add02fdbb1502b329bbc209357f5a/public/prd/mac-ios-library/02-app-context-menu.png)|① 顺序固定为设置、显示应用数据、在访达中查看、分隔线、清除应用数据、清除应用偏好设置、清除 PlayChain 数据、分隔线、卸载应用。<br>② 不显示键盘映射导入或导出。<br>③ 设置与工具栏设置打开同一窗口。<br>④ 清理与卸载分别二次确认，一次确认不得授权其他危险操作。|
+|App 设置|![App 设置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ce29a877d32add02fdbb1502b329bbc209357f5a/public/prd/mac-ios-library/03-app-settings.png)|① 标题为“{App 名称} 设置”，展示 App 图标。<br>② 顶部五个 Tab 为键盘映射、图像设置、绕过、杂项、详细信息。<br>③ 设置只作用于当前 App，非法数值不保存并在原字段提示。<br>④ 底部只显示“重置设置”和“重置键盘映射”，两个按钮右对齐。<br>⑤ 关闭入口只保留右上角“X”，不显示底部“关闭”。<br>⑥ 重置设置和重置键盘映射互不替代，操作后分别反馈。|
+|本地 IPA 导入|![本地 IPA 导入](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ce29a877d32add02fdbb1502b329bbc209357f5a/public/prd/mac-ios-library/04-local-ipa-import.png)|① 点击“导入 IPA”拉起 macOS 文件选择器，只允许选择 `.ipa`，支持单选与多选。<br>② 未授权 App 库路径时，先选择一个可读写文件夹，再继续原导入意图。<br>③ 解析后显示二级选择弹窗，默认不勾选。<br>④ “全选/取消全选”位于候选列表容器外、弹窗头部区域。<br>⑤ 重复、损坏、不兼容或非 IPA 项置灰并显示原因。<br>⑥ 无选择时“导入”置灰；确认后才创建任务。<br>⑦ 取消文件选择或弹窗不报错、不创建任务。|
+|ACE 风险检测与强提醒|![ACE 风险强提醒](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ce29a877d32add02fdbb1502b329bbc209357f5a/public/prd/mac-ios-library/14-ace-warning.png)|① 本地 IPA 解析完成后立即检测；远程 IPA 在下载完成、安装前检测。<br>② 包内路径按 `/(^|\/)tersafe\.framework(\/|$)/i` 匹配，命中时显示“检测到 ACE 风险特征”。<br>③ 弹窗说明可能触发账号风控及封号风险，且盖世游戏不承担因第三方 IPA 导致的账号封禁损失。<br>④ 底部按钮固定为“取消安装 / 了解风险，仍要安装”；关闭或取消返回原流程并保留选择。<br>⑤ 确认按 IPA SHA-256 留存，同一包不重复提示；哈希变化或新版本重新提示。<br>⑥ 未命中不显示“安全”，已安装但无确认记录的 App 在首次启动前补提示。|
+|IPA 来源树|![IPA 来源树](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ce29a877d32add02fdbb1502b329bbc209357f5a/public/prd/mac-ios-library/05-ipa-source-tree.png)<br>![IPA 资源空状态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ce29a877d32add02fdbb1502b329bbc209357f5a/public/prd/mac-ios-library/12-ipa-empty.png)|① 左侧显示“IPA 资源库”根节点和各来源子节点。<br>② 根节点聚合全部启用来源，按 Bundle ID 去重。<br>③ 单个来源节点只显示当前来源资源；同名来源仍独立。<br>④ 根节点刷新全部启用来源，子节点只刷新当前来源。<br>⑤ 刷新失败保留上次成功缓存，不中断下载或安装任务。<br>⑥ 当前来源被删除或失效时自动回到根节点。<br>⑦ 全库或当前来源初始为空时显示“添加来源”；搜索无结果不显示该按钮。|
+|添加来源|![添加来源](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ce29a877d32add02fdbb1502b329bbc209357f5a/public/prd/mac-ios-library/06-add-ipa-source.png)|① 只接受公开 HTTPS JSON 地址，不接受账号、令牌或登录态。<br>② 输入变化后延迟校验并清除旧结果，校验区预留固定空间。<br>③ 地址、JSON 或目标资源无效时提示“链接无效，JSON 无效或未找到！”。<br>④ 验证成功后进入资源二级选择，不直接保存来源。<br>⑤ 用户确认选中资源后，才保存来源和资源。|
+|来源管理|![来源管理](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ce29a877d32add02fdbb1502b329bbc209357f5a/public/prd/mac-ios-library/07-source-manager.png)|① 每个来源支持启用/停用、上移/下移、删除和查看地址。<br>② 选中来源节点后，通过页面工具栏“刷新”更新当前来源。<br>③ 展示最近成功缓存时间和当前状态。<br>④ 停用来源不删除本地已安装 App。<br>⑤ 删除来源需确认；删除后不可再从该来源刷新。<br>⑥ 关闭入口只保留右上角“X”，不显示底部“完成”。|
+|IPA 资源列表与网格|![IPA 资源列表与网格](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ce29a877d32add02fdbb1502b329bbc209357f5a/public/prd/mac-ios-library/08-ipa-resource-states.png)|① 工具栏显示添加来源、刷新、应用信息、字母排序、网格/列表切换和最右侧搜索。<br>② 网格显示图标、名称、版本、状态、唯一主操作和必要进度。<br>③ 列表显示操作、图标、名称、Bundle ID、版本、大小和状态。<br>④ 搜索按名称或 Bundle ID 模糊匹配；搜索与来源筛选取交集。<br>⑤ 切换视图保留搜索、来源、排序、滚动位置和任务状态。<br>⑥ 初始无资源显示“添加来源”；搜索无结果只提示调整关键词，不显示“添加来源”；加载失败显示重试。|
+|应用信息|![应用信息](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ce29a877d32add02fdbb1502b329bbc209357f5a/public/prd/mac-ios-library/09-ipa-app-info.png)|① IPA 右键只显示“应用信息”，与工具栏信息按钮打开同一窗口。<br>② 展示 Bundle 名称、Bundle ID、版本、iTunes 地址、IPA 地址、校验和、来源、大小、兼容性和风险。<br>③ 图标加载失败只显示占位图，不把 IPA 标记为无效。<br>④ 关闭入口只保留右上角“X”，不显示底部“完成”。|
+|下载、校验、安装和更新|![下载、校验、安装和更新状态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ce29a877d32add02fdbb1502b329bbc209357f5a/public/prd/mac-ios-library/08-ipa-resource-states.png)|① 每个资源只显示一个主操作。<br>② 状态包括未下载、排队中、下载中、已暂停、校验中、可安装、安装中、已安装、可更新、下载失败、校验失败、安装失败、不兼容和缺少哈希。<br>③ 暂停、继续、取消和重试只影响当前资源。<br>④ 切换 Tab、来源、搜索、排序或视图不终止任务。<br>⑤ 新版失败时旧版 App 和用户数据保持可用。<br>⑥ 缺少哈希可下载，但安装前必须单独确认。|
+|卸载与清理|![卸载与清理](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ce29a877d32add02fdbb1502b329bbc209357f5a/public/prd/mac-ios-library/10-uninstall-confirm.png)|① 显示应用数据和在访达中查看为只读操作，不弹危险确认。<br>② 清除应用数据、偏好设置和 PlayChain 分别处理并分别确认。<br>③ 卸载确认展示 App 名称和不可逆提示。<br>④ 可选择同时清理 PlayChain、Entitlements、设置、键盘映射和应用数据；前三项默认勾选，后两项默认不勾选。<br>⑤ 卸载失败保留 App 项并显示原因。|
 
 #### 4.2.1 目标选择与工具栏规则
 
-- 游戏库首次进入默认展示“PC 游戏”；客户端重启后可恢复用户上次选择的一级与二级 Tab。
+- 游戏库首次进入默认展示“PC游戏库”；客户端重启后可恢复用户上次选择的一级与二级 Tab。
 - 已安装和 IPA 资源主页面均只支持单选，不提供多选；批量选择只存在于 IPA 导入二级选择弹窗。
 - 未选中项目时，“设置”或“应用信息”置灰；只在恰好选中一个有效项目时启用。
 - 单击项目后将其设为当前选中项；单击空白、切换业务 Tab 或目标被删除后清除选中。
@@ -284,7 +285,7 @@ ACE 特征检测规则：
 
 |事件ID|事件名称|触发时机|关键参数|
 |---|---|---|---|
-|`game_library_platform_tab_view`|游戏库平台 Tab 曝光|进入 PC 游戏或 IOS应用库|`platform_tab`,`entry`,`package_region`|
+|`game_library_platform_tab_view`|游戏库平台 Tab 曝光|进入 PC游戏库或 IOS应用库|`platform_tab`,`entry`,`package_region`|
 |`ios_library_tab_view`|IOS应用库业务 Tab 曝光|进入已安装或 IPA 资源|`tab`,`entry`|
 |`ios_library_refresh`|刷新结果|本地扫描或来源刷新结束|`tab`,`source_id`,`result`,`cache_used`,`duration_ms`|
 |`ios_app_context_action`|App 右键操作|点击右键菜单项|`bundle_id`,`action`,`confirm_result`|
@@ -367,7 +368,7 @@ ACE 特征检测规则：
 
 - 已按 `/to-prd` 模板重排为版本信息、背景与目标、故事介绍、概要设计、非功能需求、埋点需求、运营需求和上线后更新八个章节。
 - 已确认本需求仅涉及 C 端 Mac 客户端，不输出 B 端详细设计。
-- 已补充游戏库唯一侧边栏入口、PC 游戏 / IOS应用库一级 Tab、已安装 / IPA 资源二级 Tab、搜索、排序、加载和空状态。
+- 已补充游戏库唯一侧边栏入口、PC游戏库 / IOS应用库一级 Tab、已安装 / IPA 资源二级 Tab、搜索、排序、加载和空状态。
 - 已区分纯查看/设置弹窗与确认/导入弹窗的关闭和业务按钮规则。
 - 已补充来源弱网、缓存、同名来源、图标失败、哈希缺失、Bundle ID 不一致、ACE 特征误报/漏报与更新失败保旧版等边界。
 - 已补充国内与海外产品名称及语言差异；本模块不触发登录、云游戏和实名认证差异。
