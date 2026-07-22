@@ -1,5 +1,7 @@
 # macOS 26 盖世全屏启动台设计
 
+> **历史版本提示：** 本文件为 V1.0“游戏优先”方案，已被 [`2026-07-22-macos-26-gamehub-launchpad-parity-design.md`](./2026-07-22-macos-26-gamehub-launchpad-parity-design.md) 替代。
+
 > 日期：2026-07-20  
 > 状态：设计已逐段确认，待书面评审  
 > 适用端：盖世游戏 Mac 客户端，macOS 26 及以上  

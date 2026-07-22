@@ -1,5 +1,7 @@
 # 盖世游戏 Mac｜macOS 26 全屏启动台 PRD
 
+> **历史版本提示：** 本文件为 V1.0“游戏优先”方案，已被 2026-07-22 确认的“全部应用 Launchpad”方案替代。开发、测试和 Demo 请使用 [`2026-07-22-macos-26-gamehub-fullscreen-launcher-prd-v2.md`](./2026-07-22-macos-26-gamehub-fullscreen-launcher-prd-v2.md)。
+
 > 文档版本：V1.0  
 > 更新日期：2026-07-20  
 > 文档状态：已确认，可进入技术预研与开发评审  
