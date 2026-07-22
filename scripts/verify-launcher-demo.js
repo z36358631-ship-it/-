@@ -58,18 +58,23 @@ const checks = {
   allAppsDirect: ['全部应用启动台', '搜索应用', 'launchpad-screen'].every(text => html.includes(text)),
   pagination: ['pageDots', 'goToPage', 'data-action="page-dot"', 'page-dots'].every(text => html.includes(text)),
   search: ['launchpadSearch', 'flattenedApps', 'searchResults', 'toLocaleLowerCase', '未找到应用'].every(text => html.includes(text)),
-  folderDrag: ['dragstart', 'dragover', 'drop', 'createFolder', 'moveIntoFolder'].every(text => html.includes(text)),
+  pointerDrag: [
+    'startPointerDrag', 'updatePointerDrag', 'finishPointerDrag',
+    'moveAppToGridSlot', 'gridSlotFromPoint', 'resolvePointerDropTarget',
+    'scheduleEdgePageTurn', 'EDGE_TURN_ZONE', 'EDGE_TURN_DELAY'
+  ].every(text => html.includes(text)),
   dragScope: [
     "canDrag=state.editing&&scope==='top'&&item.type==='app'",
     "scope=searching?'search':'top'",
     "source=layout.find(item=>item.id===appId&&item.type==='app')"
   ].every(text => html.includes(text)),
   crossPageDrag: [
-    'renderPageEdges', 'page-edge-drop left', 'page-edge-drop right',
-    'moveAppToAdjacentPage', 'const targetPage=state.page+direction',
-    'const insertIndex=Math.min(layout.length,(targetPage+1)*PAGE_SIZE-1)',
-    "event.target.closest('.page-edge-drop')"
-  ].every(text => html.includes(text)),
+    'EDGE_TURN_ZONE=48', 'EDGE_TURN_DELAY=500',
+    'state.drag.edgeLocked', 'state.drag.edgeTimer',
+    'state.page+=direction', 'clearEdgePageTurn'
+  ].every(text => html.includes(text)) &&
+    !html.includes('page-edge-drop') &&
+    !html.includes('renderPageEdges'),
   layoutPolicy: [
     '首次发现按名称生成布局', '持久化人工全局顺序', '人工全局顺序',
     '新安装应用追加全局末尾', '分辨率变化只按新容量重分页',
@@ -99,7 +104,7 @@ const checks = {
   ].every(text => createFolderSource.includes(text)) && !createFolderSource.includes('layout.push(folder)'),
   folderDropStaysOnPage: [
     "state.folderId=null;state.screen=state.editing?'edit':'launchpad'",
-    'refreshLaunchpad({dots:previousPageCount!==pageCount(),edges:true})'
+    'refreshLaunchpad({grid:true,dots:previousPageCount!==pageCount()})'
   ].every(text => createFolderSource.includes(text)) &&
     !createFolderSource.includes('render()') &&
     !moveIntoFolderSource.includes('render()') &&
@@ -116,7 +121,7 @@ const checks = {
   ].every(text => html.includes(text)) && !deleteDialogSource.includes('仅移动应用包'),
   deleteDialogSize: ['width:420px', 'width:136px'].every(text => html.includes(text)),
   settings: ['自定义快捷键', 'F4 键', '触控板手势', '屏幕触发角', '自定义目录', '标准应用目录', '添加到程序坞'].every(text => html.includes(text)),
-  dockEntry: ['dockGuide', 'dockAdded', 'add-to-dock', 'dismiss-dock-guide', 'open-dock-launcher', '已添加启动台到程序坞'].every(text => html.includes(text)),
+  dockEntry: ['dockGuide', 'dockAdded', 'add-to-dock', 'dismiss-dock-guide', 'open-dock-launcher'].every(text => html.includes(text)),
   dockGuideContent: [
     '添加启动台到程序坞？', 'class="dock-guide-add"',
     '>确认</button>', 'class="dock-guide-close"', 'aria-label="关闭">×</button>'
@@ -132,10 +137,10 @@ const checks = {
     '.menu-copy{display:flex;align-items:center;gap:9px}',
     '.menu-icon{width:14px;flex:none;text-align:center}'
   ].every(text => html.includes(text)),
-  editSettingsGuard: html.includes("if(action==='open-settings'){if(state.editing){state.editing=false;state.screen='launchpad';state.menu=false;if(!refreshLaunchpad({menu:true,grid:true,edges:true}))render();return}"),
+  editSettingsGuard: html.includes("if(action==='toggle-more'){if(state.editing){cancelPointerDrag();state.editing=false;state.screen='launchpad';state.menu=false;if(!refreshLaunchpad({menu:true,grid:true}))render();return}"),
   stablePartialRendering: [
     'launchpadGridSlot', 'moreMenuSlot', 'launchpadOverlaySlot',
-    'pageEdgesSlot', 'pageDotsSlot', 'setLaunchpadSlot', 'finishDrag'
+    'pageDotsSlot', 'setLaunchpadSlot', 'finishPointerDrag'
   ].every(text => html.includes(text)) &&
     refreshLaunchpadSource.includes("if(parts.grid)setLaunchpadSlot('launchpadGridSlot',renderGrid(Boolean(parts.animateGrid)))") &&
     renderGridSource.includes("app-grid${animate?' page-enter':''}") &&
@@ -153,6 +158,13 @@ const checks = {
   clientState: ['foreground', 'background', 'minimized', 'quit', 'clientProcess'].every(text => html.includes(text)),
   launcherAvailability: ['盖世已彻底退出，全局入口不可用', '前台', '后台驻留', '最小化'].every(text => html.includes(text)),
   launchOutcomes: ['startLaunch', 'activateGameHub', 'NSWorkspace', 'Demo 不展示目标应用', '激活已有窗口'].every(text => html.includes(text)),
+  markersHiddenByDefault: html.includes('showMarkers:false') &&
+    html.includes('previewParams.get(\'markers\')===\'1\'') &&
+    html.includes('>显示标号</button>'),
+  noToast: !html.includes('showToast(') &&
+    !html.includes('class="toast"') &&
+    !html.includes('.toast{') &&
+    !html.includes('toastTimer'),
   escPriority: ['deleteDialog', 'editingFolder', 'state.drag', 'state.editing', 'state.folderId', 'state.query', 'Escape'].every(text => html.includes(text)),
   edgeCoverage: ['多显示器', '目录失效', '快捷键冲突', '设备不支持', '拖放期间', '只读卷'].every(text => html.includes(text)),
   appVolume: (html.match(/id:'app-/g) || []).length >= 36,
@@ -168,4 +180,4 @@ if (failed.length) {
   process.exit(1);
 }
 
-console.log('PASS macOS 26 launchpad v2.5 demo static checks');
+console.log('PASS macOS 26 launchpad v2.6 demo static checks');
