@@ -58,14 +58,33 @@ const checks = {
   ].every(text => html.includes(text)),
   folders: ['createFolder', 'openFolder', 'renameFolder', 'removeFromFolder', 'dissolveFolderIfNeeded', '实用工具', 'folder-title'].every(text => html.includes(text)),
   folderPreview: ['folder-mini', 'grid-template-columns:repeat(3,1fr)', '完整图标'].every(text => html.includes(text)),
+  folderExplicitControls: [
+    'class="folder-close" data-action="close-folder" aria-label="关闭文件夹"',
+    'class="move-out" data-action="remove-from-folder"',
+    '>移出</button>', '<div class="overlay-shade" data-action="close-folder"></div>'
+  ].every(text => html.includes(text)),
+  folderDropStaysOnPage: [
+    '已创建文件夹，停留当前页', '已移入 ${folder.name}，停留当前页',
+    "state.folderId=null;state.screen=state.editing?'edit':'launchpad'"
+  ].every(text => html.includes(text)) && !html.includes('state.page=Math.floor(newIndex/PAGE_SIZE)'),
+  folderMoveOutRefreshes: html.includes('normalizeLayout();render();showToast(`${app.name} 已移出文件夹`)'),
   editMode: ['LONG_PRESS_MS', 'MOVE_TOLERANCE', 'enterEditMode', 'editing-mode', 'icon-jiggle'].every(text => html.includes(text)),
   deleteControls: ['delete-app', 'deletable', 'deleteDialog', 'trashApp', 'app-delete-badge'].every(text => html.includes(text)),
   deleteCopy: [
-    '确认要删除“', '应用将被移到废纸篓。', '不能将项目“',
-    '移到废纸篓，因为它已打开。', '>取消<', '>删除<', '>好<'
+    '<span class="delete-primary-line">确认要删除“',
+    '<span class="delete-primary-line">应用将被移到废纸篓。</span>',
+    '<span class="delete-primary-line">不能将项目“',
+    '<span class="delete-primary-line">因为它已打开。</span>',
+    '>取消<', '>删除<', '>好<'
   ].every(text => html.includes(text)),
   settings: ['自定义快捷键', 'F4 键', '触控板手势', '屏幕触发角', '自定义目录', '标准应用目录', '添加到程序坞'].every(text => html.includes(text)),
   dockEntry: ['dockGuide', 'dockAdded', 'add-to-dock', 'dismiss-dock-guide', 'open-dock-launcher', '已添加启动台到程序坞'].every(text => html.includes(text)),
+  dockGuideContent: [
+    'class="dock-guide-icon">G</span>', '添加启动台到程序坞？',
+    '点击图标可直接打开全屏启动台', 'class="dock-guide-add"',
+    '>确认</button>', 'class="dock-guide-close"', 'aria-label="关闭">×</button>'
+  ].every(text => html.includes(text)),
+  moreMenu: ['设置', '添加到程序坞', '已添加到程序坞', '退出'].every(text => html.includes(text)),
   permissions: ['requestPermission', 'resolvePermission', 'granted', 'denied', 'unsupported', '去授权'].every(text => html.includes(text)),
   globalTriggers: ['shortcut', 'f4', 'trackpad', 'hot_corner', 'triggerLauncher'].every(text => html.includes(text)),
   clientState: ['foreground', 'background', 'minimized', 'quit', 'clientProcess'].every(text => html.includes(text)),
@@ -86,4 +105,4 @@ if (failed.length) {
   process.exit(1);
 }
 
-console.log('PASS macOS 26 launchpad v2 demo static checks');
+console.log('PASS macOS 26 launchpad v2.3 demo static checks');
