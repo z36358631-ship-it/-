@@ -10,6 +10,10 @@ const dockGuideSource = functionSource('renderDockGuide');
 const moreMenuSource = functionSource('renderMoreMenu');
 const settingsSource = functionSource('renderSettings');
 const createFolderSource = functionSource('createFolder');
+const moveIntoFolderSource = functionSource('moveIntoFolder');
+const refreshLaunchpadSource = functionSource('refreshLaunchpad');
+const renderGridSource = functionSource('renderGrid');
+const renameFolderSource = functionSource('renameFolder');
 const deleteDialogSource = functionSource('renderDeleteDialog');
 
 let scriptSyntax = true;
@@ -24,14 +28,16 @@ try {
 const requiredFlows = [
   'client', 'launchpad', 'search', 'edit', 'folder',
   'deleteConfirm', 'deleteBlocked', 'settings', 'permission',
-  'launching', 'failure'
+  'launching'
 ];
 const forbiddenLegacy = [
   '游戏 / 全部应用', '添加到游戏', '从游戏中移除', 'game-cover-grid',
-  'data-value="games"', 'reorderItem', 'drag_edge', '跨页拖动', '拖拽调整排序',
+  'data-value="games"', 'reorderItem', 'drag_edge',
   "id:'scanning'", "id:'external'", 'external-app', 'back-launchpad',
   'data-action="clear-search"', 'data-action="edit-folder"', '退出启动台',
-  '正在查找应用', '模拟首次扫描'
+  '正在查找应用', '模拟首次扫描', "id:'failure'", 'failedId',
+  'launch-notice', 'data-action="retry"', 'simulate-failure', "outcome:'failure'",
+  '启动失败', 'search-summary', '没有与“', '引导已关闭，可随时在设置中添加'
 ];
 const localReferences = [...new Set(
   [...html.matchAll(/(?:src|url\()=['"]?([^'"\)]+\.(?:png|jpe?g|svg|webp))/gi)]
@@ -51,15 +57,23 @@ const checks = {
   noLegacy: forbiddenLegacy.every(text => !html.includes(text)),
   allAppsDirect: ['全部应用启动台', '搜索应用', 'launchpad-screen'].every(text => html.includes(text)),
   pagination: ['pageDots', 'goToPage', 'data-action="page-dot"', 'page-dots'].every(text => html.includes(text)),
-  search: ['launchpadSearch', 'flattenedApps', 'searchResults', 'toLocaleLowerCase'].every(text => html.includes(text)),
+  search: ['launchpadSearch', 'flattenedApps', 'searchResults', 'toLocaleLowerCase', '未找到应用'].every(text => html.includes(text)),
   folderDrag: ['dragstart', 'dragover', 'drop', 'createFolder', 'moveIntoFolder'].every(text => html.includes(text)),
   dragScope: [
-    "canDrag=scope==='top'&&item.type==='app'",
+    "canDrag=state.editing&&scope==='top'&&item.type==='app'",
     "scope=searching?'search':'top'",
     "source=layout.find(item=>item.id===appId&&item.type==='app')"
   ].every(text => html.includes(text)),
+  crossPageDrag: [
+    'renderPageEdges', 'page-edge-drop left', 'page-edge-drop right',
+    'moveAppToAdjacentPage', 'const targetPage=state.page+direction',
+    'const insertIndex=Math.min(layout.length,(targetPage+1)*PAGE_SIZE-1)',
+    "event.target.closest('.page-edge-drop')"
+  ].every(text => html.includes(text)),
   layoutPolicy: [
-    '首次发现按名称生成布局', '保留原槽位', 'navigator.language', 'a.id.localeCompare(b.id)',
+    '首次发现按名称生成布局', '持久化人工全局顺序', '人工全局顺序',
+    '新安装应用追加全局末尾', '分辨率变化只按新容量重分页',
+    'navigator.language', 'a.id.localeCompare(b.id)',
     'items:[target,source].sort(byName)', 'folder.items.sort(byName)'
   ].every(text => html.includes(text)) && !html.includes('function normalizeLayout()'),
   folders: ['createFolder', 'openFolder', 'renameFolder', 'removeFromFolder', 'dissolveFolderIfNeeded', '实用工具', 'folder-title'].every(text => html.includes(text)),
@@ -69,20 +83,27 @@ const checks = {
     '等比方形缩略图'
   ].every(text => html.includes(text)),
   folderExplicitControls: [
-    'class="folder-close" data-action="close-folder" aria-label="关闭文件夹"',
     'class="move-out" data-action="remove-from-folder"',
-    '>移出</button>', '<div class="overlay-shade" data-action="close-folder"></div>'
-  ].every(text => html.includes(text)),
+    '>−</button>', '<div class="overlay-shade" data-action="close-folder"></div>',
+    '.move-out{position:absolute;z-index:9;left:calc(50% - 42px);top:1px'
+  ].every(text => html.includes(text)) &&
+    !html.includes('class="folder-close"') &&
+    !renameFolderSource.includes('文件夹名称已保存') &&
+    !renameFolderSource.includes('位置保持不变'),
   folderTargetSlot: [
     'const sourceIndex=layout.indexOf(source)',
     'const targetIndex=layout.findIndex(item=>item.id===targetId)',
     'layout.splice(targetIndex,1,folder)',
-    '后续应用已前移一格'
+    'sourceCard?.remove()',
+    "targetCard.replaceWith(elementFromMarkup(appCard(folder,'top')))"
   ].every(text => createFolderSource.includes(text)) && !createFolderSource.includes('layout.push(folder)'),
   folderDropStaysOnPage: [
-    '已在目标位置创建文件夹', '文件夹位置保持不变',
-    "state.folderId=null;state.screen=state.editing?'edit':'launchpad'"
-  ].every(text => html.includes(text)) && !html.includes('state.page=Math.floor(newIndex/PAGE_SIZE)'),
+    "state.folderId=null;state.screen=state.editing?'edit':'launchpad'",
+    'refreshLaunchpad({dots:previousPageCount!==pageCount(),edges:true})'
+  ].every(text => createFolderSource.includes(text)) &&
+    !createFolderSource.includes('render()') &&
+    !moveIntoFolderSource.includes('render()') &&
+    !html.includes('state.page=Math.floor(newIndex/PAGE_SIZE)'),
   folderMoveOutRefreshes: ['放在文件夹后一位', 'layout.splice(folderIndex+1,0,app)'].every(text => html.includes(text)),
   editMode: ['LONG_PRESS_MS', 'MOVE_TOLERANCE', 'enterEditMode', 'editing-mode', 'icon-jiggle'].every(text => html.includes(text)),
   deleteControls: ['delete-app', 'deletable', 'deleteDialog', 'trashApp', 'app-delete-badge'].every(text => html.includes(text)),
@@ -104,18 +125,36 @@ const checks = {
     !dockGuideSource.includes('<small>') &&
     !dockGuideSource.includes('点击图标可直接打开全屏启动台'),
   moreMenu: ['设置', '退出'].every(text => moreMenuSource.includes(text)) &&
-    !moreMenuSource.includes('add-to-dock') && !moreMenuSource.includes('dockAdded'),
+    !moreMenuSource.includes('add-to-dock') && !moreMenuSource.includes('dockAdded') &&
+    ['class="menu-copy"', 'class="menu-icon"', 'class="menu-label"'].every(text => moreMenuSource.includes(text)),
+  moreMenuAlignment: [
+    '.more-menu button{width:100%;height:30px;border:0;background:transparent;border-radius:6px;color:#30343a;text-align:left;padding:0 11px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}',
+    '.menu-copy{display:flex;align-items:center;gap:9px}',
+    '.menu-icon{width:14px;flex:none;text-align:center}'
+  ].every(text => html.includes(text)),
+  editSettingsGuard: html.includes("if(action==='open-settings'){if(state.editing){state.editing=false;state.screen='launchpad';state.menu=false;if(!refreshLaunchpad({menu:true,grid:true,edges:true}))render();return}"),
+  stablePartialRendering: [
+    'launchpadGridSlot', 'moreMenuSlot', 'launchpadOverlaySlot',
+    'pageEdgesSlot', 'pageDotsSlot', 'setLaunchpadSlot', 'finishDrag'
+  ].every(text => html.includes(text)) &&
+    refreshLaunchpadSource.includes("if(parts.grid)setLaunchpadSlot('launchpadGridSlot',renderGrid(Boolean(parts.animateGrid)))") &&
+    renderGridSource.includes("app-grid${animate?' page-enter':''}") &&
+    !renderGridSource.includes('app-grid page-enter'),
   settingsSwitches: [
-    "resident:false", "settingToggle('resident',state.settingsDraft.resident)",
     "settingToggle('dock',state.dockAdded)", "if(key==='dock')"
-  ].every(text => html.includes(text)) && !settingsSource.includes('dock-guide-icon'),
+  ].every(text => html.includes(text)) &&
+    !settingsSource.includes('dock-guide-icon') &&
+    !settingsSource.includes('保持盖世后台驻留') &&
+    !settingsSource.includes("settingToggle('resident'") &&
+    !html.includes('resident:false') &&
+    !html.includes("if(key==='resident')"),
   permissions: ['requestPermission', 'resolvePermission', 'granted', 'denied', 'unsupported', '去授权'].every(text => html.includes(text)),
   globalTriggers: ['shortcut', 'f4', 'trackpad', 'hot_corner', 'triggerLauncher'].every(text => html.includes(text)),
   clientState: ['foreground', 'background', 'minimized', 'quit', 'clientProcess'].every(text => html.includes(text)),
   launcherAvailability: ['盖世已彻底退出，全局入口不可用', '前台', '后台驻留', '最小化'].every(text => html.includes(text)),
-  launchOutcomes: ['startLaunch', 'activateGameHub', 'NSWorkspace', 'Demo 不展示目标应用', '启动失败', '激活已有窗口'].every(text => html.includes(text)),
+  launchOutcomes: ['startLaunch', 'activateGameHub', 'NSWorkspace', 'Demo 不展示目标应用', '激活已有窗口'].every(text => html.includes(text)),
   escPriority: ['deleteDialog', 'editingFolder', 'state.drag', 'state.editing', 'state.folderId', 'state.query', 'Escape'].every(text => html.includes(text)),
-  edgeCoverage: ['多显示器', '目录失效', '快捷键冲突', '设备不支持', '文件夹拖放期间', '只读卷'].every(text => html.includes(text)),
+  edgeCoverage: ['多显示器', '目录失效', '快捷键冲突', '设备不支持', '拖放期间', '只读卷'].every(text => html.includes(text)),
   appVolume: (html.match(/id:'app-/g) || []).length >= 36,
   noExternal: !/https?:\/\//.test(html),
   localAssetsExist: localReferences.every(relative => fs.existsSync(path.resolve(demoDir, relative))),
@@ -129,4 +168,4 @@ if (failed.length) {
   process.exit(1);
 }
 
-console.log('PASS macOS 26 launchpad v2.4 demo static checks');
+console.log('PASS macOS 26 launchpad v2.5 demo static checks');
