@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const prdPath = path.resolve('docs/superpowers/specs/2026-07-22-macos-26-gamehub-fullscreen-launcher-prd-v2.md');
-const assetRoot = 'https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@fd9a99ed999ab201eb243886aefec51bb1b0c327/prd/ai%E7%94%9F%E6%88%90/macos26-launchpad-v2.6';
+const assetRoot = 'https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@e5c6f8810d9f5e613243a152e053ba102b7ffdff/public/prd/macos26-launchpad-v2.6';
 
 const image = (file, figure, alt) =>
   `![${figure}：${alt}](${assetRoot}/${file})`;
