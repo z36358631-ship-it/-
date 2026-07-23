@@ -4,29 +4,29 @@ import path from 'node:path';
 const prdPath = path.resolve('docs/superpowers/specs/2026-07-22-macos-26-gamehub-fullscreen-launcher-prd-v2.md');
 const assetRoot = '../../../prd/ai生成/macos26-launchpad-v2.6';
 
-const image = (file, alt, width = 280) =>
-  `<a href="${assetRoot}/${file}"><img src="${assetRoot}/${file}" alt="${alt}" width="${width}"></a>`;
+const image = (file, figure, alt) =>
+  `![${figure}：${alt}](${assetRoot}/${file})`;
 
 const diagrams = new Map([
-  ['F001', image('01-client-entry.png', '盖世客户端侧边栏启动台入口')],
-  ['F002', image('02-all-apps.png', '进入启动台后直接展示全部应用')],
+  ['F001', image('01-client-entry.png', '图4.2.1-1', '盖世客户端侧边栏启动台入口')],
+  ['F002', image('02-all-apps.png', '图4.2.2-1', '进入启动台后直接展示全部应用')],
   ['F003', [
-    image('02-all-apps.png', '启动台应用网格和横向分页', 260),
-    image('03-search-empty.png', '搜索无结果状态', 260)
+    image('02-all-apps.png', '图4.2.3-1', '启动台应用网格与横向分页'),
+    image('03-search-empty.png', '图4.2.3-2', '搜索无结果状态')
   ].join('<br>')],
   ['F004', [
-    image('04-edit-mode.png', '长按进入应用编辑模式', 260),
-    image('05-folder.png', '启动台文件夹展开状态', 260)
+    image('04-edit-mode.png', '图4.2.4-1', '长按进入应用编辑模式'),
+    image('05-folder.png', '图4.2.4-2', '启动台文件夹展开状态')
   ].join('<br>')],
-  ['F005', image('06-app-launching.png', '应用启动中的进度状态')],
-  ['F006', image('07-global-entry.png', '全局快捷入口与盖世进程状态模拟')],
-  ['F007', image('08-settings-sources.png', '启动台设置与应用来源')],
-  ['F008', image('09-edge-cases.png', '启动台异常与边界状态说明')],
+  ['F005', image('06-app-launching.png', '图4.2.5-1', '应用启动中的进度状态')],
+  ['F006', image('07-global-entry.png', '图4.2.6-1', '全局快捷入口与盖世进程状态')],
+  ['F007', image('08-settings-sources.png', '图4.2.7-1', '启动台设置与应用来源')],
+  ['F008', image('09-edge-cases.png', '图4.2.8-1', '启动台异常与边界状态')],
   ['F011', [
-    image('10-delete-confirm.png', '删除应用二次确认', 260),
-    image('11-delete-blocked.png', '运行中应用禁止删除', 260)
+    image('10-delete-confirm.png', '图4.2.11-1', '删除应用二次确认'),
+    image('11-delete-blocked.png', '图4.2.11-2', '运行中应用禁止删除')
   ].join('<br>')],
-  ['F012', image('12-dock-guide.png', '首次进入时添加到程序坞引导')]
+  ['F012', image('12-dock-guide.png', '图4.2.12-1', '首次进入时添加到程序坞引导')]
 ]);
 
 const source = fs.readFileSync(prdPath, 'utf8');
