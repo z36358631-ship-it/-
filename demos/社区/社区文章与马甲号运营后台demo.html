@@ -21,6 +21,11 @@
       - 【举报管理】判定违规弹窗：动态处理和禁发时长改为radio平铺展示（原为下拉）
       - 【黑名单管理】IP封禁/关键词过滤：动态处罚方式移除"删帖"，仅保留"屏蔽（仅自己可见）"
       - 【黑名单管理】关键词筛选触发动作移除"删帖"选项
+    V1.2  2026-07-23 需求评审修改
+      - 【内容发布】内容列表改为"帖子 / 文章"双Tab，分别新建和预览，不再按图文、文章、视频分类
+      - 【文章发布】支持从外部内容复制粘贴图文与视频、资源本地化处理和客户端实时预览
+      - 【马甲号管理】前台可见改为隐私设置，补充真实粉丝数与关注数；后台备注仅运营可见
+      - 【批量导入】UID改为系统生成，按用户名去重，重复行跳过且不影响其他行
     ============ /版本记录 ============
     -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -275,6 +280,14 @@
         .import-dropzone { border:1px dashed #91caff; background:#f7fbff; border-radius:8px; padding:28px; text-align:center; color:#595959; cursor:pointer; }
         .import-result { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:14px; }
         .import-result div { padding:12px; border-radius:6px; background:#fafafa; text-align:center; }
+        .editor-mode-note { margin:-5px 0 16px; padding:10px 12px; border-radius:7px; background:#f6f8fa; color:#595959; font-size:12px; line-height:1.6; }
+        .editor-mode-note strong { color:#1f2937; }
+        .paste-actions { display:flex; gap:8px; margin:8px 0 0; }
+        .privacy-note { margin-top:5px; color:#8c8c8c; font-size:12px; line-height:1.5; }
+        .metric-pair { display:flex; gap:10px; color:#595959; white-space:nowrap; }
+        .metric-pair span { display:inline-flex; align-items:center; gap:4px; }
+        .post-preview #preview-title { font-size:16px; margin-bottom:8px; }
+        .post-preview .preview-cover { height:118px; }
         .audit-diff { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
         .code-panel { background:#111827; color:#d1fae5; border-radius:7px; padding:12px; white-space:pre-wrap; font:12px/1.6 Consolas,monospace; min-height:120px; }
         .risk-title { display:flex; align-items:center; gap:8px; font-weight:600; }
@@ -2466,15 +2479,15 @@
     <script>
         // ================= 社区文章与马甲号运营扩展 =================
         const vestAccounts = [
-            { uid:'10008621', nickname:'盖世攻略君', mark:'攻略内容', note:'负责攻略与游戏推荐', status:'active', visible:true, avatar:'攻', recent:'2026-07-20 11:08' },
-            { uid:'10008635', nickname:'新游情报站', mark:'新游资讯', note:'负责测试招募和新品资讯', status:'active', visible:true, avatar:'新', recent:'2026-07-20 10:43' },
-            { uid:'10008702', nickname:'盖世福利酱', mark:'活动福利', note:'活动规则待复核', status:'disabled', visible:true, avatar:'福', recent:'2026-07-19 18:42', disabledReason:'账号资料待复核' },
-            { uid:'10008718', nickname:'掌机研究所', mark:'硬件评测', note:'掌机与外设内容', status:'active', visible:false, avatar:'掌', recent:'2026-07-18 16:20' }
+            { uid:'10008621', nickname:'盖世攻略君', mark:'攻略内容', note:'负责攻略与游戏推荐，仅后台可见', status:'active', visible:true, followers:12864, following:38, avatar:'攻', recent:'2026-07-20 11:08' },
+            { uid:'10008635', nickname:'新游情报站', mark:'新游资讯', note:'负责测试招募和新品资讯，仅后台可见', status:'active', visible:true, followers:8421, following:21, avatar:'新', recent:'2026-07-20 10:43' },
+            { uid:'10008702', nickname:'盖世福利酱', mark:'活动福利', note:'活动规则待复核，仅后台可见', status:'disabled', visible:true, followers:5068, following:16, avatar:'福', recent:'2026-07-19 18:42', disabledReason:'账号资料待复核' },
+            { uid:'10008718', nickname:'掌机研究所', mark:'硬件评测', note:'掌机与外设内容，仅后台可见', status:'active', visible:false, followers:2316, following:12, avatar:'掌', recent:'2026-07-18 16:20' }
         ];
         const articleRows = [
             { id:'ART20260720001', type:'article', title:'本周值得体验的 5 款合作游戏', author:'盖世攻略君', authorUid:'10008621', section:'游戏推荐', topic:'#多人联机', status:'published', views:12860, likes:426, comments:87, updatedAt:'2026-07-20 10:32' },
-            { id:'ART20260720002', type:'image', title:'新游测试资格领取指南', author:'新游情报站', authorUid:'10008635', section:'新游资讯', topic:'#测试招募', status:'reviewing', views:0, likes:0, comments:0, updatedAt:'2026-07-20 11:08' },
-            { id:'ART20260719018', type:'video', title:'周末组队福利活动说明', author:'盖世福利酱', authorUid:'10008702', section:'活动中心', topic:'#周末福利', status:'rejected', views:0, likes:0, comments:0, updatedAt:'2026-07-19 18:42', rejectReason:'活动规则中的时间描述不完整，请补充活动时区。' },
+            { id:'POST20260720002', type:'post', title:'新游测试资格领取指南', author:'新游情报站', authorUid:'10008635', section:'新游资讯', topic:'#测试招募', status:'reviewing', views:0, likes:0, comments:0, updatedAt:'2026-07-20 11:08' },
+            { id:'ART20260719018', type:'article', title:'周末组队福利活动说明', author:'盖世福利酱', authorUid:'10008702', section:'活动中心', topic:'#周末福利', status:'rejected', views:0, likes:0, comments:0, updatedAt:'2026-07-19 18:42', rejectReason:'活动规则中的时间描述不完整，请补充活动时区。' },
             { id:'ART20260718031', type:'article', title:'七月独立游戏观察', author:'新游情报站', authorUid:'10008635', section:'新游资讯', topic:'#独立游戏', status:'offline', views:2380, likes:96, comments:21, updatedAt:'2026-07-18 15:24' }
         ];
         const draftRows = [
@@ -2482,7 +2495,7 @@
             { id:'DRF20260719003', title:'七月新游盘点', source:'手动保存', authorUid:'10008635', operator:'王璐', updatedAt:'2026-07-19 16:40', section:'新游资讯', topic:'#新游推荐', body:'<p>七月的新游戏数量不少，这里整理了值得关注的作品。</p>' }
         ];
         const auditRows = [
-            { time:'2026-07-20 11:08:21', operator:'李明', vestUid:'10008635', module:'内容发布', action:'新建并提交', objectId:'ART20260720002', result:'成功', requestId:'req_0720_a81d', before:null, after:{type:'image',status:'reviewing'} },
+            { time:'2026-07-20 11:08:21', operator:'李明', vestUid:'10008635', module:'内容发布', action:'新建并提交', objectId:'POST20260720002', result:'成功', requestId:'req_0720_a81d', before:null, after:{type:'post',status:'reviewing'} },
             { time:'2026-07-20 10:32:14', operator:'李明', vestUid:'10008621', module:'内容发布', action:'编辑并提交', objectId:'ART20260720001', result:'成功', requestId:'req_0720_b672', before:{status:'published'}, after:{status:'reviewing'} },
             { time:'2026-07-19 17:20:08', operator:'王璐', vestUid:'10008702', module:'马甲号管理', action:'编辑马甲号', objectId:'10008702', result:'成功', requestId:'req_0719_f39b', before:{note:'负责活动福利'}, after:{note:'活动规则待复核'} },
             { time:'2026-07-18 15:16:33', operator:'李明', vestUid:'10008718', module:'马甲号管理', action:'创建马甲号', objectId:'10008718', result:'成功', requestId:'req_0718_c210', before:null, after:{status:'active'} }
@@ -2498,13 +2511,13 @@
             { id:'G2088', name:'幻兽帕鲁', meta:'开放世界 · Steam', icon:'幻' },
             { id:'G3092', name:'胡闹厨房 2', meta:'派对合作 · Steam', icon:'厨' }
         ];
-        const contentTypeLabels = { image:'图文', article:'文章', video:'视频' };
-        let articleListType = 'all';
+        const contentTypeLabels = { post:'帖子', article:'文章' };
+        let articleListType = 'article';
         let editorVestUid = null;
         let editorContentType = 'article';
         let editorMode = 'create';
         let editorSourceId = null;
-        let typeMediaState = { image:0, article:false, video:false };
+        let typeMediaState = { post:0, article:0 };
         let currentVestUid = null;
         let selectedGameIds = ['G1024'];
         let editingDraftId = null;
@@ -2543,14 +2556,14 @@
 
         function installOpsNavigation() {
             const menu = document.querySelector('.menu');
-            const official = [...menu.querySelectorAll('.menu-item')].find(item => {
-                const call = item.getAttribute('onclick') || '';
-                return call.includes("'official-post'") && call.includes("'国内'");
-            });
-            if (official && !document.getElementById('ops-menu-vest')) {
-                official.insertAdjacentHTML('afterend', `
-                    <div class="menu-item" id="ops-menu-vest" onclick="switchMenu('vest-account', this, '国内')"><i class="fas fa-user-secret"></i> 马甲号管理</div>
-                `);
+            const officialMenus = [...menu.querySelectorAll('.menu-item')].filter(item => (item.getAttribute('onclick') || '').includes("'official-post'"));
+            if (officialMenus.length && !document.getElementById('ops-menu-vest')) {
+                officialMenus.forEach(item => {
+                    const call = item.getAttribute('onclick') || '';
+                    const region = call.includes("'海外'") ? '海外' : '国内';
+                    const id = region === '国内' ? 'ops-menu-vest' : 'ops-menu-vest-overseas';
+                    item.insertAdjacentHTML('afterend', `<div class="menu-item" id="${id}" onclick="switchMenu('vest-account', this, '${region}')"><i class="fas fa-user-secret"></i> 马甲号管理</div>`);
+                });
             }
             const scroll = document.querySelector('.content-scroll');
             if (scroll && !document.getElementById('page-vest-account')) {
@@ -2642,11 +2655,10 @@
         function buildContentPage() {
             return `
                 <div class="ops-page-head">
-                    <div><h2>内容发布</h2><p>统一管理图文、长文章和视频内容，提交后进入社区审核流程。</p></div>
+                    <div><h2>内容发布</h2><p>帖子沿用现有社区发布能力；文章支持图文、视频混排和长内容排版。</p></div>
                     <div class="ops-actions">
-                        <button class="btn btn-default" onclick="openArticleEditor({type:'image'})"><i class="fas fa-images"></i> 发布图文</button>
-                        <button class="btn btn-primary" onclick="openArticleEditor({type:'article'})"><i class="fas fa-pen-nib"></i> 发布文章</button>
-                        <button class="btn btn-default" onclick="openArticleEditor({type:'video'})"><i class="fas fa-video"></i> 发布视频</button>
+                        <button class="btn btn-default" onclick="openArticleEditor({type:'post'})"><i class="fas fa-comment-alt"></i> 新建帖子</button>
+                        <button class="btn btn-primary" onclick="openArticleEditor({type:'article'})"><i class="fas fa-pen-nib"></i> 新建文章</button>
                     </div>
                 </div>
                 <div class="stats-grid">
@@ -2656,9 +2668,9 @@
                     <div class="stat-card"><div class="stat-label">已驳回</div><div class="stat-value" id="article-rejected-stat">0</div><div class="stat-note">可修改后重新提交</div></div>
                 </div>
                 <div class="card">
-                    <div class="toolbar-tabs" id="content-type-tabs"><div class="toolbar-tab active" data-type="all" onclick="setArticleListType('all')">全部内容</div><div class="toolbar-tab" data-type="image" onclick="setArticleListType('image')">图文</div><div class="toolbar-tab" data-type="article" onclick="setArticleListType('article')">文章</div><div class="toolbar-tab" data-type="video" onclick="setArticleListType('video')">视频</div></div>
+                    <div class="toolbar-tabs" id="content-type-tabs"><div class="toolbar-tab" data-type="post" onclick="setArticleListType('post')">帖子</div><div class="toolbar-tab active" data-type="article" onclick="setArticleListType('article')">文章</div></div>
                     <div class="filter-bar" id="article-filter">
-                        <div class="filter-item">标题/ID：<input id="article-keyword" placeholder="输入文章标题或 ID"></div>
+                        <div class="filter-item">标题/ID：<input id="article-keyword" placeholder="输入标题或内容 ID"></div>
                         <div class="filter-item">发布身份：<select id="article-author-filter"><option value="">全部身份</option>${vestAccounts.map(item => `<option value="${item.uid}">${opsEscapeHtml(item.nickname)}</option>`).join('')}</select></div>
                         <div class="filter-item">状态：<select id="article-status-filter"><option value="">全部状态</option><option value="reviewing">审核中</option><option value="published">已发布</option><option value="rejected">已驳回</option><option value="offline">已下架</option></select></div>
                         <div class="filter-item"><button class="btn btn-primary" onclick="renderArticleTable()"><i class="fas fa-search"></i> 查询</button><button class="btn btn-default" onclick="resetArticleFilter()">重置</button></div>
@@ -2673,7 +2685,7 @@
             const keyword = (document.getElementById('article-keyword')?.value || '').trim().toLowerCase();
             const author = document.getElementById('article-author-filter')?.value || '';
             const status = document.getElementById('article-status-filter')?.value || '';
-            const rows = articleRows.filter(item => (articleListType === 'all' || item.type === articleListType) && (!keyword || `${item.title} ${item.id}`.toLowerCase().includes(keyword)) && (!author || item.authorUid === author) && (!status || item.status === status));
+            const rows = articleRows.filter(item => item.type === articleListType && (!keyword || `${item.title} ${item.id}`.toLowerCase().includes(keyword)) && (!author || item.authorUid === author) && (!status || item.status === status));
             tbody.innerHTML = rows.length ? rows.map(item => `
                 <tr>
                     <td><div class="article-cell"><div class="article-cover"><i class="fas fa-newspaper"></i></div><div><div class="article-title">${opsEscapeHtml(item.title)}</div><div class="article-id">${item.id}</div></div></div></td>
@@ -2725,14 +2737,15 @@
         function showReviewResult(id) {
             const row = articleRows.find(item => item.id === id);
             if (!row) return;
-            const text = row.status === 'rejected' ? `<div style="padding:12px;background:#fff1f0;border:1px solid #ffa39e;border-radius:7px;color:#cf1322"><strong>审核驳回</strong><p style="margin:8px 0 0">${opsEscapeHtml(row.rejectReason)}</p></div>` : `<div style="padding:12px;background:#f6ffed;border:1px solid #b7eb8f;border-radius:7px"><strong>当前状态：${opsStatusLabels[row.status]}</strong><p style="margin:8px 0 0;color:#595959">文章提交记录和审核流转均已写入操作日志。</p></div>`;
+            const text = row.status === 'rejected' ? `<div style="padding:12px;background:#fff1f0;border:1px solid #ffa39e;border-radius:7px;color:#cf1322"><strong>审核驳回</strong><p style="margin:8px 0 0">${opsEscapeHtml(row.rejectReason)}</p></div>` : `<div style="padding:12px;background:#f6ffed;border:1px solid #b7eb8f;border-radius:7px"><strong>当前状态：${opsStatusLabels[row.status]}</strong><p style="margin:8px 0 0;color:#595959">${contentTypeLabels[row.type]}提交记录和审核流转均已写入操作日志。</p></div>`;
             openModal(`审核详情 · ${row.id}`, text, null, true);
         }
         function previewArticle(id) {
             const row = articleRows.find(item => item.id === id);
             if (!row) return;
             const author = getVest(row.authorUid);
-            openModal('客户端文章预览', `<div style="max-width:360px;margin:auto"><div class="phone-shell" style="height:570px"><div class="phone-status"><span>9:41</span><span>● ● ●</span></div><div class="phone-page"><div class="phone-nav"><i class="fas fa-chevron-left"></i><strong>文章详情</strong><i class="fas fa-ellipsis-h"></i></div><div class="preview-content"><div class="preview-author"><span class="mini-avatar">${author?.avatar || '盖'}</span><div class="preview-author-meta"><strong>${opsEscapeHtml(row.author)}</strong><small>社区运营账号 · ${row.updatedAt}</small></div></div><h1 style="font-size:20px">${opsEscapeHtml(row.title)}</h1><div class="preview-cover"><i class="fas fa-gamepad fa-2x"></i></div><p style="line-height:1.8">这是一段客户端文章内容预览，用于验证作者、标题、图文排版、话题和游戏卡片的最终呈现效果。</p><span class="preview-topic">${opsEscapeHtml(row.topic)}</span><div class="preview-game-card"><span class="game-cover">双</span><div><strong>双人成行</strong><small style="display:block;color:#8c8c8c">合作冒险 · Steam</small></div></div></div></div></div></div>`, null, true);
+            const isPost = row.type === 'post';
+            openModal(`客户端${contentTypeLabels[row.type]}预览`, `<div style="max-width:360px;margin:auto"><div class="phone-shell ${isPost ? 'post-preview' : ''}" style="height:570px"><div class="phone-status"><span>9:41</span><span>● ● ●</span></div><div class="phone-page"><div class="phone-nav"><i class="fas fa-chevron-left"></i><strong>${isPost ? '帖子详情' : '文章详情'}</strong><i class="fas fa-ellipsis-h"></i></div><div class="preview-content"><div class="preview-author"><span class="mini-avatar">${author?.avatar || '盖'}</span><div class="preview-author-meta"><strong>${opsEscapeHtml(row.author)}</strong><small>社区运营账号 · ${row.updatedAt}</small></div></div><h1>${opsEscapeHtml(row.title)}</h1>${isPost ? '<p style="line-height:1.8">帖子正文使用社区现有样式，可附带图片、视频、话题和游戏卡片。</p><div class="preview-cover"><i class="fas fa-images fa-2x"></i></div>' : '<div class="preview-cover"><i class="fas fa-newspaper fa-2x"></i></div><p style="line-height:1.8">文章正文支持从外部内容复制粘贴图文和视频，并按客户端文章样式混排展示。</p>'}<span class="preview-topic">${opsEscapeHtml(row.topic)}</span><div class="preview-game-card"><span class="game-cover">双</span><div><strong>双人成行</strong><small style="display:block;color:#8c8c8c">合作冒险 · Steam</small></div></div></div></div></div></div>`, null, true);
         }
 
         function buildEditorWorkspace() {
@@ -2741,13 +2754,13 @@
                     <div class="editor-topbar"><div class="editor-title-line"><button class="btn btn-default" onclick="requestCloseEditor()"><i class="fas fa-arrow-left"></i></button><h2 id="editor-heading">新建内容</h2><span class="status-tag status-reviewing">提交后审核</span></div><div style="font-size:12px;color:#8c8c8c">真实操作人：李明</div></div>
                     <div class="editor-layout">
                         <div class="editor-panel">
-                            <div class="toolbar-tabs" id="editor-content-type-tabs"><div class="toolbar-tab" data-type="image" onclick="switchEditorContentType('image')">发布图文</div><div class="toolbar-tab active" data-type="article" onclick="switchEditorContentType('article')">发布文章</div><div class="toolbar-tab" data-type="video" onclick="switchEditorContentType('video')">发布视频</div></div>
+                            <div class="editor-mode-note" id="editor-mode-note"><strong>文章编辑</strong>：支持长文排版，以及从外部内容复制粘贴图文和视频；提交前请结合右侧客户端预览人工检查。</div>
                             <div class="form-group" id="editor-vest-selector"><label class="required">发布马甲号</label><div style="flex:1"><div id="editor-vest-selected" style="margin-bottom:8px;color:#8c8c8c">尚未选择，提交时必须选择</div><button class="btn btn-default" onclick="openEditorVestPicker()"><i class="fas fa-user-secret"></i> 选择马甲号</button><button class="btn btn-default" id="clear-editor-vest" onclick="clearEditorVest()" style="display:none">清除</button><div class="editor-error" id="error-editor-vest"></div></div></div>
-                            <div class="form-group" id="type-specific-fields"><label id="type-media-label">文章封面</label><div style="flex:1"><div class="cover-uploader" id="article-cover" onclick="toggleCover()"><i class="fas fa-cloud-upload-alt"></i><span>点击上传封面，建议比例 16:9</span></div></div></div>
+                            <div class="form-group" id="type-specific-fields"><label id="type-media-label">帖子媒体（选填）</label><div style="flex:1"><div class="cover-uploader" id="article-cover" onclick="toggleCover()"><i class="fas fa-images"></i><span>点击添加图片或视频</span></div></div></div>
                             <div class="form-group"><label class="required" id="editor-title-label">文章标题</label><div style="flex:1"><div class="title-input-wrap"><input class="form-control" id="article-title" maxlength="40" placeholder="请输入内容标题" oninput="handleEditorChange();updateTitleCount()"><span class="char-count" id="title-char-count">0/40</span></div><div class="editor-error" id="error-article-title"></div></div></div>
                             <div class="form-group"><label class="required" id="editor-body-label">正文内容</label><div style="flex:1"><div class="rich-toolbar">
-                                <button class="tool-btn" title="标题" onclick="execEditorCommand('formatBlock','h2')">H</button><button class="tool-btn" title="粗体" onclick="execEditorCommand('bold')"><i class="fas fa-bold"></i></button><button class="tool-btn" title="斜体" onclick="execEditorCommand('italic')"><i class="fas fa-italic"></i></button><button class="tool-btn" title="删除线" onclick="execEditorCommand('strikeThrough')"><i class="fas fa-strikethrough"></i></button><button class="tool-btn" title="下划线" onclick="execEditorCommand('underline')"><i class="fas fa-underline"></i></button><button class="tool-btn" title="文字颜色" onclick="execEditorCommand('foreColor','#1677ff')"><i class="fas fa-palette"></i></button><span class="tool-divider"></span><button class="tool-btn" title="引用" onclick="execEditorCommand('formatBlock','blockquote')"><i class="fas fa-quote-right"></i></button><button class="tool-btn" title="无序列表" onclick="execEditorCommand('insertUnorderedList')"><i class="fas fa-list-ul"></i></button><button class="tool-btn" title="有序列表" onclick="execEditorCommand('insertOrderedList')"><i class="fas fa-list-ol"></i></button><button class="tool-btn" title="分割线" onclick="execEditorCommand('insertHorizontalRule')"><i class="fas fa-minus"></i></button><span class="tool-divider"></span><button class="tool-btn" title="图片" onclick="insertDemoImage()"><i class="far fa-image"></i></button><button class="tool-btn" title="链接" onclick="insertDemoLink()"><i class="fas fa-link"></i></button><button class="tool-btn" title="游戏卡片" onclick="openGamePicker()"><i class="fas fa-gamepad"></i></button>
-                            </div><div class="rich-editor" id="article-body" contenteditable="true" data-placeholder="输入文章正文" oninput="handleEditorChange()"></div><div class="editor-error" id="error-article-body"></div></div></div>
+                                <button class="tool-btn" title="标题" onclick="execEditorCommand('formatBlock','h2')">H</button><button class="tool-btn" title="粗体" onclick="execEditorCommand('bold')"><i class="fas fa-bold"></i></button><button class="tool-btn" title="斜体" onclick="execEditorCommand('italic')"><i class="fas fa-italic"></i></button><button class="tool-btn" title="删除线" onclick="execEditorCommand('strikeThrough')"><i class="fas fa-strikethrough"></i></button><button class="tool-btn" title="下划线" onclick="execEditorCommand('underline')"><i class="fas fa-underline"></i></button><button class="tool-btn" title="文字颜色" onclick="execEditorCommand('foreColor','#1677ff')"><i class="fas fa-palette"></i></button><span class="tool-divider"></span><button class="tool-btn" title="引用" onclick="execEditorCommand('formatBlock','blockquote')"><i class="fas fa-quote-right"></i></button><button class="tool-btn" title="无序列表" onclick="execEditorCommand('insertUnorderedList')"><i class="fas fa-list-ul"></i></button><button class="tool-btn" title="有序列表" onclick="execEditorCommand('insertOrderedList')"><i class="fas fa-list-ol"></i></button><button class="tool-btn" title="分割线" onclick="execEditorCommand('insertHorizontalRule')"><i class="fas fa-minus"></i></button><span class="tool-divider"></span><button class="tool-btn" title="图片" onclick="insertDemoImage()"><i class="far fa-image"></i></button><button class="tool-btn" title="视频" onclick="insertDemoVideo()"><i class="fas fa-video"></i></button><button class="tool-btn" title="链接" onclick="insertDemoLink()"><i class="fas fa-link"></i></button><button class="tool-btn" title="游戏卡片" onclick="openGamePicker()"><i class="fas fa-gamepad"></i></button>
+                            </div><div class="rich-editor" id="article-body" contenteditable="true" data-placeholder="输入正文或直接粘贴外部图文内容" oninput="handleEditorChange()"></div><div class="paste-actions" id="article-paste-actions"><button class="btn btn-default" onclick="insertExternalArticleSample()"><i class="fas fa-paste"></i> 模拟粘贴外部图文</button><span style="color:#8c8c8c;font-size:12px;align-self:center">外链图片与视频提交时转存到平台资源库，超限内容标记失败并保留正文。</span></div><div class="editor-error" id="error-article-body"></div></div></div>
                             <div class="editor-form-grid"><div class="form-group"><label class="required">内容分区</label><select class="form-control" id="article-section" onchange="handleEditorChange()"><option value="">请选择分区</option><option>游戏推荐</option><option>新游资讯</option><option>活动中心</option><option>硬件评测</option></select><div class="editor-error" id="error-article-section"></div></div><div class="form-group"><label>关联话题</label><select class="form-control" id="article-topic" onchange="handleEditorChange()"><option value="">请选择话题</option><option>#多人联机</option><option>#测试招募</option><option>#新游推荐</option><option>#周末福利</option></select><div class="editor-error"></div></div></div>
                             <div class="form-group"><label>关联游戏卡片</label><div style="flex:1"><div style="display:flex;justify-content:flex-end;align-items:center"><button class="btn btn-default" onclick="openGamePicker()"><i class="fas fa-plus"></i> 添加游戏</button></div><div class="game-card-list" id="selected-game-list"></div></div></div>
                         </div>
@@ -2808,6 +2821,17 @@
             document.getElementById('article-body').focus();
             document.execCommand('insertHTML', false, '<div style="height:150px;background:linear-gradient(135deg,#111827,#1677ff);border-radius:8px;color:#fff;display:flex;align-items:center;justify-content:center;margin:10px 0"><i class="fas fa-image"></i>&nbsp; 文章配图</div>');
             handleEditorChange();
+        }
+        function insertDemoVideo() {
+            document.getElementById('article-body').focus();
+            document.execCommand('insertHTML', false, '<div style="height:170px;background:#111827;border-radius:8px;color:#fff;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;margin:10px 0"><i class="fas fa-play-circle fa-3x"></i><span>文章视频 · 提交后转存平台资源</span></div>');
+            handleEditorChange();
+        }
+        function insertExternalArticleSample() {
+            if (editorContentType !== 'article') return;
+            document.getElementById('article-body').innerHTML = '<h2>合作游戏为什么更适合朋友一起玩？</h2><p>这段内容模拟从微信公众号等外部页面复制粘贴。后台保留基础图文结构，并在提交时转存可识别的图片与视频资源。</p><div style="height:150px;background:linear-gradient(135deg,#312e81,#2563eb);border-radius:8px;color:#fff;display:flex;align-items:center;justify-content:center;margin:10px 0"><i class="fas fa-image"></i>&nbsp; 已识别并转存的文章配图</div><p><strong>提交前请查看右侧预览</strong>，无法转存或超过平台限制的媒体会标记原因，由运营修改后再提交。</p>';
+            handleEditorChange();
+            showToast('已粘贴外部图文示例');
         }
         function insertDemoLink() {
             document.getElementById('article-body').focus();
@@ -2907,7 +2931,7 @@
             }
             appendAuditLog({module:'内容发布',action:'提交审核',objectId:id,result:'成功',before:old ? {status:beforeStatus} : null,after:{status:'reviewing',title:data.title}});
             editorDirty = false; closeModal(); closeArticleEditor(); renderArticleTable(); renderDraftTable();
-            showToast('提交成功，文章已进入审核队列');
+            showToast('提交成功，内容已进入审核队列');
         }
         function requestCloseEditor() {
             if (!editorDirty) return closeArticleEditor();
@@ -2932,8 +2956,8 @@
             editorContentType = options.type || source?.type || 'article';
             editorVestUid = options.vestUid || source?.authorUid || null;
             editingArticleId = editorMode === 'edit' ? editorSourceId : null;
-            typeMediaState = { image:0, article:false, video:false };
-            if (source) typeMediaState[editorContentType] = editorContentType === 'image' ? 3 : true;
+            typeMediaState = { post:0, article:0 };
+            if (source?.type === 'post') typeMediaState.post = 3;
             document.getElementById('article-title').value = source ? `${source.title}${editorMode === 'copy' ? '（副本）' : ''}` : '';
             document.getElementById('article-body').innerHTML = source?.body || (source ? `<p>${opsEscapeHtml(source.title)}的内容说明，可在此修改后重新提交审核。</p>` : '');
             document.getElementById('article-section').value = source?.section || '';
@@ -2949,38 +2973,37 @@
         }
         function switchEditorContentType(type, markDirty = true) {
             editorContentType = type;
-            document.querySelectorAll('#editor-content-type-tabs .toolbar-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.type === type));
             const actionLabel = editorMode === 'edit' ? '编辑' : editorMode === 'copy' ? '复制' : '新建';
             document.getElementById('editor-heading').textContent = `${actionLabel}${contentTypeLabels[type]}`;
             document.getElementById('editor-title-label').textContent = `${contentTypeLabels[type]}标题`;
-            document.getElementById('editor-body-label').textContent = type === 'article' ? '正文内容' : type === 'image' ? '图文描述' : '视频描述';
+            document.getElementById('editor-body-label').textContent = type === 'article' ? '文章正文' : '帖子内容';
+            document.getElementById('article-body').dataset.placeholder = type === 'article' ? '输入正文或直接粘贴外部图文内容' : '输入帖子内容';
+            document.querySelector('.rich-toolbar').style.display = type === 'article' ? 'flex' : 'none';
+            document.getElementById('article-paste-actions').style.display = type === 'article' ? 'flex' : 'none';
+            document.getElementById('editor-mode-note').innerHTML = type === 'article'
+                ? '<strong>文章编辑</strong>：支持长文排版，以及从外部内容复制粘贴图文和视频；提交前请结合右侧客户端预览人工检查。'
+                : '<strong>帖子编辑</strong>：沿用社区现有帖子样式，可填写正文并附带图片、视频、话题和游戏卡片。';
             renderTypeSpecificFields(); syncArticlePreview();
             if (markDirty) editorDirty = true;
         }
         function renderTypeSpecificFields() {
+            const field = document.getElementById('type-specific-fields');
             const cover = document.getElementById('article-cover');
             const label = document.getElementById('type-media-label');
-            if (!cover || !label) return;
-            const state = typeMediaState[editorContentType];
+            if (!field || !cover || !label) return;
+            field.style.display = editorContentType === 'post' ? 'flex' : 'none';
+            if (editorContentType !== 'post') return;
+            const state = typeMediaState.post;
             cover.classList.toggle('has-cover', !!state);
-            if (editorContentType === 'image') {
-                label.textContent = '图文图片';
-                cover.innerHTML = state ? `<i class="fas fa-images"></i><span>已添加 ${state} 张图片 · 点击继续添加</span><button class="btn btn-default" style="margin-top:8px" onclick="event.stopPropagation();clearTypeMedia()">删除全部</button>` : '<i class="fas fa-images"></i><span>点击添加图片，最多 9 张</span>';
-            } else if (editorContentType === 'video') {
-                label.textContent = '视频文件';
-                cover.innerHTML = state ? '<i class="fas fa-play-circle"></i><span>视频已上传 · 00:48 · 点击替换</span><button class="btn btn-default" style="margin-top:8px" onclick="event.stopPropagation();clearTypeMedia()">删除视频</button>' : '<i class="fas fa-video"></i><span>点击上传视频文件</span>';
-            } else {
-                label.textContent = '文章封面';
-                cover.innerHTML = state ? '<i class="fas fa-image"></i><span>封面已选择 · 点击替换</span><button class="btn btn-default" style="margin-top:8px" onclick="event.stopPropagation();clearTypeMedia()">删除封面</button>' : '<i class="fas fa-cloud-upload-alt"></i><span>点击上传封面，建议比例 16:9</span>';
-            }
+            label.textContent = '帖子媒体（选填）';
+            cover.innerHTML = state ? `<i class="fas fa-images"></i><span>已添加 ${state} 个媒体 · 点击继续添加</span><button class="btn btn-default" style="margin-top:8px" onclick="event.stopPropagation();clearTypeMedia()">删除全部</button>` : '<i class="fas fa-images"></i><span>点击添加图片或视频</span>';
         }
         function toggleCover() {
-            if (editorContentType === 'image') typeMediaState.image = Math.min(9, Number(typeMediaState.image || 0) + 1);
-            else typeMediaState[editorContentType] = true;
+            if (editorContentType === 'post') typeMediaState.post = Math.min(9, Number(typeMediaState.post || 0) + 1);
             renderTypeSpecificFields(); handleEditorChange();
         }
         function clearTypeMedia() {
-            typeMediaState[editorContentType] = editorContentType === 'image' ? 0 : false;
+            typeMediaState.post = 0;
             renderTypeSpecificFields(); handleEditorChange();
         }
         function openEditorVestPicker() {
@@ -3025,13 +3048,14 @@
             document.getElementById('preview-author-avatar').textContent = vest ? vest.avatar : '盖';
             document.getElementById('preview-page-title').textContent = `${contentTypeLabels[editorContentType]}详情`;
             document.getElementById('preview-title').textContent = document.getElementById('article-title')?.value || `请输入${contentTypeLabels[editorContentType]}标题`;
+            document.getElementById('phone-preview').classList.toggle('post-preview', editorContentType === 'post');
             const source = document.getElementById('article-body');
             document.getElementById('preview-body').innerHTML = source?.innerHTML.trim() || `<p class="preview-placeholder">${contentTypeLabels[editorContentType]}内容将在这里实时显示</p>`;
             document.getElementById('preview-topic').textContent = document.getElementById('article-topic')?.value || '#选择话题';
             const previewCover = document.getElementById('preview-cover');
-            const mediaState = typeMediaState[editorContentType];
+            const mediaState = editorContentType === 'post' ? typeMediaState.post : 0;
             previewCover.style.display = mediaState ? 'flex' : 'none';
-            if (mediaState) previewCover.innerHTML = editorContentType === 'video' ? '<i class="fas fa-play-circle fa-3x"></i>' : editorContentType === 'image' ? `<div style="text-align:center"><i class="fas fa-images fa-2x"></i><br><small>${mediaState} 张图片</small></div>` : '<i class="fas fa-gamepad fa-2x"></i>';
+            if (mediaState) previewCover.innerHTML = `<div style="text-align:center"><i class="fas fa-images fa-2x"></i><br><small>${mediaState} 个图片/视频</small></div>`;
             renderPreviewGameCards();
             if (notify) showToast('预览已刷新');
         }
@@ -3044,9 +3068,8 @@
             const errors = [];
             if (!getVest(editorVestUid)) errors.push({field:'editor-vest', message:'请选择发布马甲号'});
             if (!document.getElementById('article-title').value.trim()) errors.push({field:'article-title', message:`请输入${contentTypeLabels[editorContentType]}标题`});
-            if (!document.getElementById('article-body').innerText.trim()) errors.push({field:'article-body', message:`请输入${editorContentType === 'article' ? '正文内容' : '内容描述'}`});
+            if (!document.getElementById('article-body').innerText.trim()) errors.push({field:'article-body', message:`请输入${editorContentType === 'article' ? '文章正文' : '帖子内容'}`});
             if (!document.getElementById('article-section').value) errors.push({field:'article-section', message:'请选择内容分区'});
-            if (!typeMediaState[editorContentType]) errors.push({field:'article-cover', message:`请上传${editorContentType === 'video' ? '视频文件' : editorContentType === 'image' ? '图文图片' : '文章封面'}`});
             return errors;
         }
         function showArticleErrors(errors) {
@@ -3126,27 +3149,27 @@
         }
 
         function buildVestPage() {
-            return `<div class="ops-page-head"><div><h2>马甲号管理</h2><p>管理社区运营身份；马甲号仅作为代操作上下文，不替换真实员工登录态。</p></div><div class="ops-actions"><button class="btn btn-default" onclick="openImportVestModal()"><i class="fas fa-file-import"></i> 批量导入</button><button class="btn btn-primary" onclick="openVestEditor()"><i class="fas fa-plus"></i> 创建马甲号</button></div></div><div class="stats-grid"><div class="stat-card"><div class="stat-label">账号总数</div><div class="stat-value" id="vest-total-stat">0</div><div class="stat-note">当前运营账号池</div></div><div class="stat-card"><div class="stat-label">启用账号</div><div class="stat-value" id="vest-active-stat">0</div><div class="stat-note good">可用于代操作</div></div><div class="stat-card"><div class="stat-label">停用账号</div><div class="stat-value" id="vest-disabled-stat">0</div><div class="stat-note warn">不可发布与互动</div></div><div class="stat-card"><div class="stat-label">今日代操作</div><div class="stat-value">38</div><div class="stat-note">按真实员工留痕</div></div></div><div class="card"><div class="filter-bar"><div class="filter-item">UID/昵称：<input id="vest-keyword" placeholder="输入 UID 或昵称"></div><div class="filter-item">状态：<select id="vest-status-filter"><option value="">全部状态</option><option value="active">启用</option><option value="disabled">停用</option></select></div><div class="filter-item">前台可见：<select id="vest-visible-filter"><option value="">全部</option><option value="true">可见</option><option value="false">不可见</option></select></div><div class="filter-item"><button class="btn btn-primary" onclick="renderVestTable()"><i class="fas fa-search"></i> 查询</button><button class="btn btn-default" onclick="resetVestFilter()">重置</button></div></div><table><thead><tr><th>马甲号</th><th>内部标识</th><th>后台备注</th><th>前台可见</th><th>状态</th><th>最近使用</th><th>操作</th></tr></thead><tbody id="vest-table-body"></tbody></table></div>`;
+            return `<div class="ops-page-head"><div><h2>马甲号管理</h2><p>仅具备“马甲号管理”权限的员工可维护账号；身份标签仍在“身份管理”中配置。</p></div><div class="ops-actions"><button class="btn btn-default" onclick="openImportVestModal()"><i class="fas fa-file-import"></i> 批量导入</button><button class="btn btn-primary" onclick="openVestEditor()"><i class="fas fa-plus"></i> 创建马甲号</button></div></div><div class="stats-grid"><div class="stat-card"><div class="stat-label">账号总数</div><div class="stat-value" id="vest-total-stat">0</div><div class="stat-note">当前运营账号池</div></div><div class="stat-card"><div class="stat-label">启用账号</div><div class="stat-value" id="vest-active-stat">0</div><div class="stat-note good">可用于内容发布</div></div><div class="stat-card"><div class="stat-label">停用账号</div><div class="stat-value" id="vest-disabled-stat">0</div><div class="stat-note warn">不可发布新内容</div></div><div class="stat-card"><div class="stat-label">今日代操作</div><div class="stat-value">38</div><div class="stat-note">按真实员工留痕</div></div></div><div class="card"><div class="filter-bar"><div class="filter-item">UID/用户名：<input id="vest-keyword" placeholder="输入 UID 或用户名"></div><div class="filter-item">状态：<select id="vest-status-filter"><option value="">全部状态</option><option value="active">启用</option><option value="disabled">停用</option></select></div><div class="filter-item">隐私设置：<select id="vest-visible-filter"><option value="">全部</option><option value="false">隐私保护</option><option value="true">公开数据</option></select></div><div class="filter-item"><button class="btn btn-primary" onclick="renderVestTable()"><i class="fas fa-search"></i> 查询</button><button class="btn btn-default" onclick="resetVestFilter()">重置</button></div></div><table><thead><tr><th>马甲号</th><th>内部标识</th><th>后台备注</th><th>粉丝 / 关注</th><th>隐私设置</th><th>状态</th><th>最近使用</th><th>操作</th></tr></thead><tbody id="vest-table-body"></tbody></table></div>`;
         }
         function renderVestTable() {
             const tbody=document.getElementById('vest-table-body'); if(!tbody)return;
             const key=(document.getElementById('vest-keyword')?.value||'').trim().toLowerCase(); const status=document.getElementById('vest-status-filter')?.value||''; const visible=document.getElementById('vest-visible-filter')?.value||'';
             const rows=vestAccounts.filter(item=>(!key||`${item.uid} ${item.nickname}`.toLowerCase().includes(key))&&(!status||item.status===status)&&(!visible||String(item.visible)===visible));
-            tbody.innerHTML=rows.length?rows.map(item=>`<tr><td><div class="identity-summary"><span class="mini-avatar">${item.avatar}</span><div class="identity-meta"><strong>${opsEscapeHtml(item.nickname)}</strong><small>UID ${item.uid}</small></div></div></td><td><span class="tag tag-blue">${opsEscapeHtml(item.mark)}</span></td><td>${opsEscapeHtml(item.note)}</td><td>${item.visible?'<span style="color:#52c41a">可见</span>':'<span style="color:#8c8c8c">不可见</span>'}</td><td>${statusTag(item.status)}</td><td>${item.recent}</td><td class="action-links"><button class="btn btn-primary" ${item.status!=='active'?'disabled':''} onclick="useVestToPublish('${item.uid}')">使用该身份发布</button><a onclick="openVestEditor('${item.uid}')">编辑</a><a onclick="toggleVestStatus('${item.uid}')">${item.status==='active'?'停用':'启用'}</a><a class="danger" onclick="deleteVestAccount('${item.uid}')">删除</a></td></tr>`).join(''):'<tr><td colspan="7"><div class="empty-state">暂无匹配马甲号</div></td></tr>';
+            tbody.innerHTML=rows.length?rows.map(item=>`<tr><td><div class="identity-summary"><span class="mini-avatar">${item.avatar}</span><div class="identity-meta"><strong>${opsEscapeHtml(item.nickname)}</strong><small>UID ${item.uid}</small></div></div></td><td><span class="tag tag-blue">${opsEscapeHtml(item.mark)}</span></td><td title="仅后台运营人员可见">${opsEscapeHtml(item.note)}</td><td><div class="metric-pair"><span><i class="fas fa-user-friends"></i>${item.followers}</span><span><i class="fas fa-user-plus"></i>${item.following}</span></div></td><td>${item.visible?'<span style="color:#52c41a">公开数据</span>':'<span style="color:#8c8c8c">隐私保护</span>'}<div class="article-id">${item.visible?'主页展示粉丝、关注和游戏数据':'主页可进入，隐藏粉丝/关注列表和游戏卡片'}</div></td><td>${statusTag(item.status)}</td><td>${item.recent}</td><td class="action-links"><button class="btn btn-primary" ${item.status!=='active'?'disabled':''} onclick="useVestToPublish('${item.uid}')">使用该身份发布</button><a onclick="openVestEditor('${item.uid}')">编辑</a><a onclick="toggleVestStatus('${item.uid}')">${item.status==='active'?'停用':'启用'}</a><a class="danger" onclick="deleteVestAccount('${item.uid}')">删除</a></td></tr>`).join(''):'<tr><td colspan="8"><div class="empty-state">暂无匹配马甲号</div></td></tr>';
             document.getElementById('vest-total-stat').textContent=vestAccounts.length; document.getElementById('vest-active-stat').textContent=vestAccounts.filter(item=>item.status==='active').length; document.getElementById('vest-disabled-stat').textContent=vestAccounts.filter(item=>item.status==='disabled').length;
         }
         function resetVestFilter(){document.getElementById('vest-keyword').value='';document.getElementById('vest-status-filter').value='';document.getElementById('vest-visible-filter').value='';renderVestTable();}
         function useVestToPublish(uid){const account=getVest(uid);if(!account||account.status!=='active'){showToast('停用账号不能用于发布','error');return;}openArticleEditor({type:'article',vestUid:uid});}
         function openVestEditor(uid) {
             editingVestUid=uid||null; const row=uid?getVest(uid):null;
-            openModal(uid?'编辑马甲号':'创建马甲号',`<div class="form-group"><label>头像</label><div style="display:flex;gap:12px;align-items:center"><span class="identity-avatar">${row?.avatar||'新'}</span><button class="btn btn-default" onclick="showToast('已选择模拟头像')">选择头像</button></div></div><div class="form-group"><label class="required">昵称</label><input class="form-control" id="vest-form-nickname" value="${opsEscapeHtml(row?.nickname||'')}" placeholder="输入前台展示昵称"></div><div class="form-group"><label>UID</label><input class="form-control" id="vest-form-uid" value="${row?.uid||'保存后自动生成'}" disabled></div><div class="form-group"><label class="required">内部标识</label><input class="form-control" id="vest-form-mark" value="${opsEscapeHtml(row?.mark||'')}" placeholder="例如：攻略内容"></div><div class="form-group"><label>后台备注</label><textarea class="form-control" id="vest-form-note">${opsEscapeHtml(row?.note||'')}</textarea></div><div class="editor-form-grid"><div class="form-group"><label>前台可见</label><select class="form-control" id="vest-form-visible"><option value="true" ${row?.visible!==false?'selected':''}>可见</option><option value="false" ${row?.visible===false?'selected':''}>不可见</option></select></div><div class="form-group"><label>状态</label><select class="form-control" id="vest-form-status"><option value="active" ${row?.status!=='disabled'?'selected':''}>启用</option><option value="disabled" ${row?.status==='disabled'?'selected':''}>停用</option></select></div></div>`,saveVestAccount);
+            openModal(uid?'编辑马甲号':'创建马甲号',`<div class="form-group"><label>头像</label><div style="display:flex;gap:12px;align-items:center"><span class="identity-avatar">${row?.avatar||'新'}</span><button class="btn btn-default" onclick="showToast('已选择模拟头像')">选择头像</button></div></div><div class="form-group"><label class="required">用户名（前台显示）</label><input class="form-control" id="vest-form-nickname" value="${opsEscapeHtml(row?.nickname||'')}" placeholder="输入唯一用户名"></div><div class="form-group"><label>UID</label><input class="form-control" id="vest-form-uid" value="${row?.uid||'保存后由系统自动生成'}" disabled></div><div class="form-group"><label class="required">内部标识</label><input class="form-control" id="vest-form-mark" value="${opsEscapeHtml(row?.mark||'')}" placeholder="例如：攻略内容"></div><div class="form-group"><label>后台备注</label><textarea class="form-control" id="vest-form-note" placeholder="仅后台运营人员可见">${opsEscapeHtml(row?.note||'')}</textarea><div class="privacy-note">后台备注只用于运营识别账号用途，不在客户端展示。</div></div><div class="editor-form-grid"><div class="form-group"><label>隐私设置</label><select class="form-control" id="vest-form-visible"><option value="false" ${row ? (row.visible===false?'selected':'') : 'selected'}>隐私保护（默认）</option><option value="true" ${row?.visible===true?'selected':''}>公开粉丝、关注和游戏数据</option></select><div class="privacy-note">隐私保护下仍可进入账号主页，并可正常关注；仅隐藏粉丝/关注列表和游戏卡片。</div></div><div class="form-group"><label>状态</label><select class="form-control" id="vest-form-status"><option value="active" ${row?.status!=='disabled'?'selected':''}>启用</option><option value="disabled" ${row?.status==='disabled'?'selected':''}>停用</option></select></div></div>`,saveVestAccount);
         }
-        function saveVestAccount(){const nickname=document.getElementById('vest-form-nickname').value.trim();const mark=document.getElementById('vest-form-mark').value.trim();if(!nickname||!mark){showToast('请填写昵称和内部标识','error');return;}const row=editingVestUid?getVest(editingVestUid):null;const before=row?{...row}:null;const data={nickname,mark,note:document.getElementById('vest-form-note').value.trim(),visible:document.getElementById('vest-form-visible').value==='true',status:document.getElementById('vest-form-status').value};if(row)Object.assign(row,data);else{const uid=String(10008800+vestAccounts.length+1);vestAccounts.unshift({uid,...data,avatar:nickname[0],recent:'尚未使用'});editingVestUid=uid;}appendAuditLog({module:'马甲号管理',action:row?'编辑马甲号':'创建马甲号',objectId:editingVestUid,vestUid:editingVestUid,result:'成功',before,after:data});closeModal();renderVestTable();showToast(row?'马甲号已更新':'马甲号已创建');}
+        function saveVestAccount(){const nickname=document.getElementById('vest-form-nickname').value.trim();const mark=document.getElementById('vest-form-mark').value.trim();if(!nickname||!mark){showToast('请填写用户名和内部标识','error');return;}if(vestAccounts.some(item=>item.nickname===nickname&&item.uid!==editingVestUid)){showToast(`用户名“${nickname}”已存在，请修改后重试`,'error');return;}const row=editingVestUid?getVest(editingVestUid):null;const before=row?{...row}:null;const data={nickname,mark,note:document.getElementById('vest-form-note').value.trim(),visible:document.getElementById('vest-form-visible').value==='true',status:document.getElementById('vest-form-status').value};if(row)Object.assign(row,data);else{const uid=String(10008800+vestAccounts.length+1);vestAccounts.unshift({uid,...data,followers:0,following:0,avatar:nickname[0],recent:'尚未使用'});editingVestUid=uid;}appendAuditLog({module:'马甲号管理',action:row?'编辑马甲号':'创建马甲号',objectId:editingVestUid,vestUid:editingVestUid,result:'成功',before,after:data});closeModal();renderVestTable();showToast(row?'马甲号已更新':'马甲号已创建，UID 已由系统生成');}
         function toggleVestStatus(uid){const row=getVest(uid);if(!row)return;const next=row.status==='active'?'disabled':'active';openModal(`${next==='disabled'?'停用':'启用'}马甲号`,`<p>确认${next==='disabled'?'停用':'启用'}“${opsEscapeHtml(row.nickname)}”吗？${next==='disabled'?'停用后将无法用于发布。':''}</p>`,()=>{const before=row.status;row.status=next;if(editorVestUid===uid&&next==='disabled'){editorVestUid=null;renderEditorVestSelection();syncArticlePreview();}appendAuditLog({module:'马甲号管理',action:next==='disabled'?'停用马甲号':'启用马甲号',objectId:uid,vestUid:uid,result:'成功',before:{status:before},after:{status:next}});closeModal();renderVestTable();showToast(`账号已${next==='disabled'?'停用':'启用'}`);});}
         function deleteVestAccount(uid){const row=getVest(uid);if(!row)return;if(articleRows.some(item=>item.authorUid===uid)){showToast('该账号已关联内容，建议停用而非删除','error');return;}openModal('删除马甲号',`<p>确认删除“${opsEscapeHtml(row.nickname)}”吗？该操作会记录审计日志。</p>`,()=>{vestAccounts.splice(vestAccounts.findIndex(item=>item.uid===uid),1);appendAuditLog({module:'马甲号管理',action:'删除马甲号',objectId:uid,vestUid:uid,result:'成功',before:row,after:null});closeModal();renderVestTable();showToast('马甲号已删除');});}
-        function openImportVestModal(){openModal('批量导入马甲号',`<div class="import-dropzone" onclick="document.getElementById('vest-import-file').click()" ondragover="event.preventDefault()" ondrop="handleVestDrop(event)"><i class="fas fa-cloud-upload-alt fa-2x" style="color:#1677ff;margin-bottom:10px"></i><p style="margin:4px">点击或拖放 CSV / XLSX 文件</p><small style="color:#8c8c8c">必填字段：昵称、内部标识；UID 可选</small><input id="vest-import-file" type="file" accept=".csv,.xlsx" style="display:none" onchange="simulateVestImport(this)"></div><p style="font-size:12px;color:#8c8c8c"><i class="fas fa-download"></i> 下载导入模板　·　单次最多 500 条</p><div id="vest-import-result"></div>`,null,true);}
+        function openImportVestModal(){openModal('批量导入马甲号',`<div class="import-dropzone" onclick="document.getElementById('vest-import-file').click()" ondragover="event.preventDefault()" ondrop="handleVestDrop(event)"><i class="fas fa-cloud-upload-alt fa-2x" style="color:#1677ff;margin-bottom:10px"></i><p style="margin:4px">点击或拖放 CSV / XLSX 文件</p><small style="color:#8c8c8c">必填字段：用户名、内部标识；模板不包含 UID，导入成功后由系统生成</small><input id="vest-import-file" type="file" accept=".csv,.xlsx" style="display:none" onchange="simulateVestImport(this)"></div><p style="font-size:12px;color:#8c8c8c"><i class="fas fa-download"></i> 下载导入模板　·　单次最多 500 条　·　手机号/邮箱仅去重，不验证真实性或发送验证码</p><div id="vest-import-result"></div>`,null,true);}
         function handleVestDrop(event){event.preventDefault();const file=event.dataTransfer.files[0];if(!file)return;const ext=file.name.split('.').pop().toLowerCase();if(!['csv','xlsx'].includes(ext)){showToast('仅支持 CSV 或 XLSX 文件','error');return;}simulateVestImport({files:[file]});}
-        function simulateVestImport(input){if(!input.files.length)return;const result=document.getElementById('vest-import-result');result.innerHTML='<p style="color:#1677ff"><i class="fas fa-spinner fa-spin"></i> 正在校验文件...</p>';setTimeout(()=>{result.innerHTML='<div class="import-result"><div><strong style="color:#52c41a;font-size:20px">6</strong><br><small>导入成功</small></div><div><strong style="color:#fa8c16;font-size:20px">1</strong><br><small>重复 UID</small></div><div><strong style="color:#ff4d4f;font-size:20px">1</strong><br><small>缺少昵称</small></div><div><strong style="color:#ff4d4f;font-size:20px">1</strong><br><small>格式错误</small></div></div><p style="color:#8c8c8c;font-size:12px">已完成 9 条数据校验，失败行可下载后修正并重新导入。</p>';appendAuditLog({module:'马甲号管理',action:'批量导入',objectId:input.files[0].name,vestUid:'-',result:'成功',after:{success:6,failed:3}});showToast('导入完成：成功 6 条，失败 3 条');},700);}
+        function simulateVestImport(input){if(!input.files.length)return;const result=document.getElementById('vest-import-result');result.innerHTML='<p style="color:#1677ff"><i class="fas fa-spinner fa-spin"></i> 正在校验用户名并生成 UID...</p>';setTimeout(()=>{result.innerHTML='<div class="import-result"><div><strong style="color:#52c41a;font-size:20px">6</strong><br><small>创建成功</small></div><div><strong style="color:#fa8c16;font-size:20px">1</strong><br><small>用户名重复</small></div><div><strong style="color:#ff4d4f;font-size:20px">1</strong><br><small>缺少用户名</small></div><div><strong style="color:#ff4d4f;font-size:20px">1</strong><br><small>格式错误</small></div></div><p style="color:#595959;font-size:12px">已处理 9 行：重复行“盖世攻略君”已跳过，其余有效行继续创建并自动生成 UID。</p><p style="color:#8c8c8c;font-size:12px">结果仅在当前弹窗展示，不生成失败行下载文件；修正原文件后可重新导入。</p>';appendAuditLog({module:'马甲号管理',action:'批量导入',objectId:input.files[0].name,vestUid:'-',result:'成功',after:{success:6,duplicateUsername:1,failed:2}});showToast('导入完成：成功 6 条，用户名重复 1 条，失败 2 条');},700);}
 
         function buildAuditPage(){return `<div class="ops-page-head"><div><h2>操作记录</h2><p>记录内容发布与马甲号管理操作，保留真实员工、发布身份和变更前后数据。</p></div><button class="btn btn-default" onclick="showToast('操作记录已导出')"><i class="fas fa-file-export"></i> 导出记录</button></div><div class="card"><div class="filter-bar" id="audit-filter"><div class="filter-item">真实操作人：<input id="audit-operator" placeholder="姓名/账号"></div><div class="filter-item">马甲号 UID：<input id="audit-vest" placeholder="输入 UID"></div><div class="filter-item">模块：<select id="audit-module"><option value="">全部模块</option><option>内容发布</option><option>马甲号管理</option></select></div><div class="filter-item">动作：<input id="audit-action" placeholder="输入动作"></div><div class="filter-item">结果：<select id="audit-result"><option value="">全部结果</option><option>成功</option><option>失败</option></select></div><div class="filter-item">对象 ID：<input id="audit-object" placeholder="内容或马甲号 ID"></div><div class="filter-item"><button class="btn btn-primary" onclick="renderAuditTable()"><i class="fas fa-search"></i> 查询</button><button class="btn btn-default" onclick="resetAuditFilter()">重置</button></div></div><table><thead><tr><th>操作时间</th><th>真实操作人</th><th>发布马甲号</th><th>模块 / 动作</th><th>对象 ID</th><th>结果</th><th>终端摘要</th><th>详情</th></tr></thead><tbody id="audit-table-body"></tbody></table><div class="pagination">共 <span id="audit-total">0</span> 条记录 <div class="page-num active">1</div></div></div>`;}
         function renderAuditTable(){const tbody=document.getElementById('audit-table-body');if(!tbody)return;const operator=(document.getElementById('audit-operator')?.value||'').trim();const vest=(document.getElementById('audit-vest')?.value||'').trim();const module=document.getElementById('audit-module')?.value||'';const action=(document.getElementById('audit-action')?.value||'').trim();const result=document.getElementById('audit-result')?.value||'';const object=(document.getElementById('audit-object')?.value||'').trim();const rows=auditRows.filter(item=>(!operator||item.operator.includes(operator))&&(!vest||item.vestUid.includes(vest))&&(!module||item.module===module)&&(!action||item.action.includes(action))&&(!result||item.result===result)&&(!object||item.objectId.includes(object)));tbody.innerHTML=rows.length?rows.map((item,index)=>{const account=getVest(item.vestUid);return `<tr class="clickable-row" onclick="openAuditDetail(${auditRows.indexOf(item)})"><td>${item.time}</td><td>${opsEscapeHtml(item.operator)}<div class="article-id">员工账号</div></td><td>${account?opsEscapeHtml(account.nickname):'-'}<div class="article-id">${item.vestUid==='-'?'未使用马甲号':'UID '+item.vestUid}</div></td><td><strong>${opsEscapeHtml(item.module)}</strong><div style="color:#8c8c8c;margin-top:3px">${opsEscapeHtml(item.action)}</div></td><td class="article-id">${opsEscapeHtml(item.objectId)}</td><td>${statusTag(item.result==='成功'?'success':'failed')}</td><td>10.18.26.42<div class="article-id">Chrome · Windows</div></td><td><a onclick="event.stopPropagation();openAuditDetail(${auditRows.indexOf(item)})">查看详情</a></td></tr>`}).join(''):'<tr><td colspan="8"><div class="empty-state">暂无匹配记录</div></td></tr>';document.getElementById('audit-total').textContent=rows.length;}
