@@ -102,10 +102,10 @@
 
 |模块名称|图示|展示与交互说明|
 |---|---|---|
-|内容发布列表|![图4.3-1：内容发布列表](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b61632cf17c32c9e51888c2a83eddb965c2d557c/public/prd/community-ops/01-content-publish-list.png)|<span style="background-color: #FEF794;">内容发布按“帖子 / 文章”两个 Tab 展示，当前 Tab 提供对应的新建入口，并支持筛选、预览、编辑、复制、查看审核信息和操作记录；不再按图文、视频单独分类 //2026.7.23修改</span>|
-|内容编辑页<br>|![图4.3-2：内容编辑页](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b61632cf17c32c9e51888c2a83eddb965c2d557c/public/prd/community-ops/02-content-editor.png)|<span style="background-color: #FEF794;">编辑页内选择马甲号并完成发布详情；帖子沿用现有发布能力，文章使用独立富文本编辑器并支持外部图文/视频粘贴，右侧按对应客户端详情样式实时预览 //2026.7.23修改</span>|
-|马甲号管理|![图4.3-3：马甲号管理](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b61632cf17c32c9e51888c2a83eddb965c2d557c/public/prd/community-ops/03-vest-account-management.png)|<span style="background-color: #FEF794;">管理账号基本信息、真实粉丝/关注数据、隐私设置和启停状态，支持单个创建、批量导入和使用指定身份发布；国内版与海外版均提供该页面 //2026.7.23修改</span>|
-|操作记录|![图4.3-4：操作记录](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b61632cf17c32c9e51888c2a83eddb965c2d557c/public/prd/community-ops/04-operation-records.png)|查询、查看和导出内容发布与马甲号管理的操作痕迹。顶部提供导出入口，筛选区包含真实操作人、马甲号 UID、模块、动作、结果和对象 ID，列表显示双身份与变更结果。<br>|
+|内容发布列表|![图4.3.1-1：内容发布列表](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b61632cf17c32c9e51888c2a83eddb965c2d557c/public/prd/community-ops/01-content-publish-list.png)|<span style="background-color: #FEF794;">内容发布按“帖子 / 文章”两个 Tab 展示，当前 Tab 提供对应的新建入口，并支持筛选、预览、编辑、复制、查看审核信息和操作记录；不再按图文、视频单独分类 //2026.7.23修改</span>|
+|内容编辑页<br>|![图4.3.1-2：内容编辑页](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b61632cf17c32c9e51888c2a83eddb965c2d557c/public/prd/community-ops/02-content-editor.png)|<span style="background-color: #FEF794;">编辑页内选择马甲号并完成发布详情；帖子沿用现有发布能力，文章使用独立富文本编辑器并支持外部图文/视频粘贴，右侧按对应客户端详情样式实时预览 //2026.7.23修改</span>|
+|马甲号管理|![图4.3.1-3：马甲号管理](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b61632cf17c32c9e51888c2a83eddb965c2d557c/public/prd/community-ops/03-vest-account-management.png)|<span style="background-color: #FEF794;">管理账号基本信息、真实粉丝/关注数据、隐私设置和启停状态，支持单个创建、批量导入和使用指定身份发布；国内版与海外版均提供该页面 //2026.7.23修改</span>|
+|操作记录|![图4.3.1-4：操作记录](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b61632cf17c32c9e51888c2a83eddb965c2d557c/public/prd/community-ops/04-operation-records.png)|查询、查看和导出内容发布与马甲号管理的操作痕迹。顶部提供导出入口，筛选区包含真实操作人、马甲号 UID、模块、动作、结果和对象 ID，列表显示双身份与变更结果。<br>|
 
 #### 4\.3\.1 F001 内容发布列表
 
