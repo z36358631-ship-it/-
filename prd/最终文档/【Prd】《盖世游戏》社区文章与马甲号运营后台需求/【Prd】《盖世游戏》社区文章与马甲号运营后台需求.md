@@ -100,14 +100,14 @@
 
 ### 4\.3 详细设计（B 端）
 
-功能 Demo：[社区文章与马甲号运营后台](https://raw.githack.com/z36358631-ship-it/-/899f63b60ec14d8a98042836a002ecd4cc0adc54/demos/%E7%A4%BE%E5%8C%BA/%E7%A4%BE%E5%8C%BA%E6%96%87%E7%AB%A0%E4%B8%8E%E9%A9%AC%E7%94%B2%E5%8F%B7%E8%BF%90%E8%90%A5%E5%90%8E%E5%8F%B0demo.html)
+功能 Demo：[社区文章与马甲号运营后台](https://raw.githack.com/z36358631-ship-it/-/b61632cf17c32c9e51888c2a83eddb965c2d557c/demos/%E7%A4%BE%E5%8C%BA/%E7%A4%BE%E5%8C%BA%E6%96%87%E7%AB%A0%E4%B8%8E%E9%A9%AC%E7%94%B2%E5%8F%B7%E8%BF%90%E8%90%A5%E5%90%8E%E5%8F%B0demo.html)
 
 |模块名称|图示|展示与交互说明|
 |---|---|---|
-|内容发布列表|![d6e794fb\-9c42\-4930\-aeb9\-83e71773ebdd\.png](图片和附件/d6e794fb-9c42-4930-aeb9-83e71773ebdd.png)<br><br>图 4\.3\-1|<span style="background-color: #FEF794;">内容发布按“帖子 / 文章”两个 Tab 展示，当前 Tab 提供对应的新建入口，并支持筛选、预览、编辑、复制、查看审核信息和操作记录；不再按图文、视频单独分类 //2026.7.23修改</span>|
-|内容编辑页<br>|![9caaa42f\-bb0a\-46c7\-8941\-92bf671da7ec\.png](图片和附件/9caaa42f-bb0a-46c7-8941-92bf671da7ec.png)<br><br>图 4\.3\-2|<span style="background-color: #FEF794;">编辑页内选择马甲号并完成发布详情；帖子沿用现有发布能力，文章使用独立富文本编辑器并支持外部图文/视频粘贴，右侧按对应客户端详情样式实时预览 //2026.7.23修改</span>|
-|马甲号管理|![aeaabf8b\-0609\-44fd\-86cf\-4ae1ce6beebc\.png](图片和附件/aeaabf8b-0609-44fd-86cf-4ae1ce6beebc.png)<br><br>图 4\.3\-3|<span style="background-color: #FEF794;">管理账号基本信息、真实粉丝/关注数据、隐私设置和启停状态，支持单个创建、批量导入和使用指定身份发布；国内版与海外版均提供该页面 //2026.7.23修改</span>|
-|操作记录|![abd7206c\-8952\-4e88\-8e19\-1bbdc1f2b176\.png](图片和附件/abd7206c-8952-4e88-8e19-1bbdc1f2b176.png)<br><br>图 4\.3\-4|查询、查看和导出内容发布与马甲号管理的操作痕迹。顶部提供导出入口，筛选区包含真实操作人、马甲号 UID、模块、动作、结果和对象 ID，列表显示双身份与变更结果。<br>|
+|内容发布列表|![内容发布列表](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b61632cf17c32c9e51888c2a83eddb965c2d557c/public/prd/community-ops/01-content-publish-list.png)<br><br>图 4\.3\-1|<span style="background-color: #FEF794;">内容发布按“帖子 / 文章”两个 Tab 展示，当前 Tab 提供对应的新建入口，并支持筛选、预览、编辑、复制、查看审核信息和操作记录；不再按图文、视频单独分类 //2026.7.23修改</span>|
+|内容编辑页<br>|![内容编辑页](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b61632cf17c32c9e51888c2a83eddb965c2d557c/public/prd/community-ops/02-content-editor.png)<br><br>图 4\.3\-2|<span style="background-color: #FEF794;">编辑页内选择马甲号并完成发布详情；帖子沿用现有发布能力，文章使用独立富文本编辑器并支持外部图文/视频粘贴，右侧按对应客户端详情样式实时预览 //2026.7.23修改</span>|
+|马甲号管理|![马甲号管理](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b61632cf17c32c9e51888c2a83eddb965c2d557c/public/prd/community-ops/03-vest-account-management.png)<br><br>图 4\.3\-3|<span style="background-color: #FEF794;">管理账号基本信息、真实粉丝/关注数据、隐私设置和启停状态，支持单个创建、批量导入和使用指定身份发布；国内版与海外版均提供该页面 //2026.7.23修改</span>|
+|操作记录|![操作记录](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b61632cf17c32c9e51888c2a83eddb965c2d557c/public/prd/community-ops/04-operation-records.png)<br><br>图 4\.3\-4|查询、查看和导出内容发布与马甲号管理的操作痕迹。顶部提供导出入口，筛选区包含真实操作人、马甲号 UID、模块、动作、结果和对象 ID，列表显示双身份与变更结果。<br>|
 
 #### 4\.3\.1 F001 内容发布列表
 
