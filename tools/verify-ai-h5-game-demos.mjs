@@ -77,6 +77,25 @@ async function exercise(page, gameId, touch) {
     await page.locator('.game').first().scrollIntoViewIfNeeded();
     return;
   }
+  if (gameId === 'lotus-guardian') {
+    const activeStory = page.locator('.story-card.active');
+    if (await activeStory.isVisible().catch(() => false)) {
+      await activeStory.click();
+      await page.waitForTimeout(120);
+    }
+    const recruit = page.locator('#recruitButton');
+    await recruit.click();
+    await recruit.click();
+    await page.locator('[data-slot="0"]').click();
+    await page.locator('[data-slot="1"]').click();
+    await page.locator('[data-pad="3"]').click();
+    for (let i = 0; i < 4; i += 1) await recruit.click();
+    await page.locator('#summonButton').click();
+    await page.locator('#battleButton').click();
+    await page.locator('#speedButton').click();
+    await page.waitForTimeout(900);
+    return;
+  }
 
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('ArrowUp');

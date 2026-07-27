@@ -16,7 +16,7 @@
 - `demos/AI游戏赛道评测/01-ghost-grid.html`: adaptive maze chase.
 - `demos/AI游戏赛道评测/02-trap-lab.html`: adaptive Obby runner.
 - `demos/AI游戏赛道评测/03-bio-forge.html`: fusion and auto-battle loop.
-- `demos/AI游戏赛道评测/04-lotus-guardian.html`: random recruit/merge defense, name-fragment summon, scripted rival, and token/ad item choice.
+- `demos/AI游戏赛道评测/04-lotus-guardian.html`: portrait five-slot random recruit/merge duel, localized name-fragment hero summon, independent rival defense, and token/ad item parity across Timun Mas, Vikram & Betaal, and Thạch Sanh story packages.
 - `tools/verify-ai-h5-game-demos.mjs`: automated interaction, responsive checks, event checks, console error collection, and screenshots.
 - `docs/superpowers/specs/2026-07-27-ai-h5-four-game-playtest-report.md`: evidence, scores, ranking, and Top 2 conclusion.
 
@@ -138,30 +138,30 @@ Use battle telemetry to offer two relevant mutations. The rewarded refresh retur
 
 Apply the selected mutation, run a shorter Boss fight, unlock a collection silhouette, and emit `core_payoff`.
 
-### Task 5: Implement Coreguard Duel
+### Task 5: Implement Folktale Frontline
 
 **Files:**
 - Create: `demos/AI游戏赛道评测/04-lotus-guardian.html`
 
 - [ ] **Step 1: Add the merge-defense field**
 
-Render a fixed enemy route, six defense pads, five reserve slots, a three-heart core, enemy waves, projectiles, and a scripted rival survival meter.
+Render a portrait fixed enemy route, six semantic defense pads, five reserve slots, both sides’ three-heart HUD, enemy waves, projectiles, and an independently simulated rival defense line that receives the same enemies.
 
 - [ ] **Step 2: Add random recruit and merging**
 
-Recruit into the reserve slots: melee, ranged, slow, or one of two fictional name fragments. Drag units onto pads and merge matching type/level units. Combining the two name fragments summons a higher-tier guardian.
+Spend visibly increasing food costs to recruit melee, ranged, utility units or one of two localized name fragments. Use tap-to-select to place units on role-compatible pads or merge matching type/level units. Combining the two story-specific name fragments summons the local hero outside the five reserve slots.
 
 - [ ] **Step 3: Add the AI counter wave**
 
-Read the first-wave tower mix, select shields, runners, or splitters, and display the choice at least eight seconds before the second wave.
+Make the rival independently damage and leak the same spawned enemies, show its real kill and field counts, and emit an explainable AI merge event after ten battle seconds.
 
 - [ ] **Step 4: Add tokens and equivalent reward choices**
 
-Award two activity tokens after wave one. Equipment, skill item, and consumable each cost two tokens and must also expose an equivalent simulated-ad button. Enforce one reward slot per run.
+Start the prototype with 90 earned activity tokens. Equipment, skill item, and consumable each cost 30 tokens and must also expose an equivalent three-second simulated-ad button. Each item can be granted only once per run.
 
 - [ ] **Step 5: Verify fairness**
 
-Expected: refusing both tokens and ad still leaves a winning recruit/merge path; watching an ad does not alter AI difficulty; repeated ad completion cannot stack rewards; the rival is scripted and requires no network connection.
+Expected: refusing both tokens and ad still leaves a winning recruit/merge path; watching an ad does not alter AI difficulty; repeated ad completion cannot stack the same item; the independently simulated rival requires no network connection.
 
 ### Task 6: Add automated verification
 
