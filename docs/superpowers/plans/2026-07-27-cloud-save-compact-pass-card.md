@@ -56,7 +56,7 @@ Expected: 顶部卡片渲染仍包含 `.package-meta` 和两行待删除文案�
 }
 .package-action{
   width:80px;
-  min-height:36px;
+  min-height:44px;
   padding:7px 8px;
 }
 ```
@@ -122,7 +122,7 @@ Expected: 生成可读取的 PNG 页面截图。
 卡片高度 88～96px
 左右两栏无重叠
 价格与按钮单行
-按钮点击热区不小于 72×36px
+按钮点击热区不小于 72×44px
 两行待删除说明不可见
 首排存档内容上移
 ```
