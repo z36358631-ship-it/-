@@ -1,0 +1,993 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="data:,">
+  <title>TrapLab · AI 机关导演跑酷</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg-primary:#000000;--bg-card:#1a1a1a;--bg-elevated:#252525;--bg-overlay:#28202a;
+      --text-primary:#ffffff;--text-secondary:#e6e6e6;--text-muted:#7b7b7b;--brand-gold:#ffcc43;
+      --brand-gold-light:#ffd98f;--brand-green:#33d8a4;--brand-blue:#338feb;--brand-purple:#8174fa;
+      --danger:#ff5678;--border-default:#353d4e;--radius-sm:4px;--radius-md:8px;
+      --radius-lg:12px;--radius-xl:16px;--radius-2xl:20px;--radius-full:100px;
+      --font-primary:'MiSans VF','MiSans','PingFang SC',-apple-system,BlinkMacSystemFont,sans-serif;
+      --font-number:'D-DIN-PRO','MiSans VF',monospace
+    }
+    html,body{min-height:100%;background:var(--bg-primary);color:var(--text-primary)}
+    body{font-family:var(--font-primary);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    button{font:inherit;border:0;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    button:focus-visible{outline:2px solid var(--brand-gold);outline-offset:3px}
+    .app{width:min(1200px,100%);min-height:100dvh;margin:auto;padding:20px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
+    .title-wrap{display:flex;align-items:center;gap:12px;min-width:0}
+    .logo{position:relative;display:grid;place-items:center;width:48px;height:48px;border:1px solid #685629;border-radius:14px;background:linear-gradient(145deg,#463918,#17140d);color:var(--brand-gold);font-family:var(--font-number);font-size:17px;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+    .logo::after{content:"";position:absolute;width:8px;height:8px;right:6px;top:6px;border-radius:50%;background:var(--brand-green);box-shadow:0 0 9px var(--brand-green)}
+    h1{font-size:24px;line-height:30px;font-weight:520;letter-spacing:.2px}
+    .subtitle{margin-top:2px;color:var(--text-muted);font-size:12px;line-height:17px}
+    .live-pill{display:flex;align-items:center;gap:7px;padding:7px 11px;border:1px solid var(--border-default);border-radius:var(--radius-full);background:#151515;color:var(--text-secondary);font-size:12px;white-space:nowrap}
+    .live-pill::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--brand-purple);box-shadow:0 0 10px rgba(129,116,250,.8)}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+    .game-card,.panel{background:var(--bg-card);border:1px solid var(--border-default);border-radius:var(--radius-xl);box-shadow:0 4px 12px rgba(0,0,0,.3)}
+    .game-card{overflow:hidden}
+    .hud{min-height:54px;display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border-default);background:#151515}
+    .hud-item{flex:1;min-width:0}
+    .hud-label{color:var(--text-muted);font-size:10px;line-height:14px;text-transform:uppercase;letter-spacing:.6px}
+    .hud-value{margin-top:1px;font-family:var(--font-number);font-size:14px;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .hud-value.gold{color:var(--brand-gold)}
+    .canvas-wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#080b12;touch-action:none;cursor:pointer}
+    canvas{display:block;width:100%;height:100%}
+    .canvas-tip{position:absolute;left:10px;bottom:10px;padding:6px 9px;border:1px solid rgba(255,255,255,.14);border-radius:var(--radius-md);background:rgba(0,0,0,.72);color:var(--text-secondary);font-size:11px;pointer-events:none}
+    .status-line{display:flex;align-items:center;gap:8px;min-height:42px;padding:9px 12px;border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:12px;line-height:18px}
+    .status-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:var(--brand-green);box-shadow:0 0 10px rgba(51,216,164,.6)}
+    .jump-zone{display:none;padding:10px 12px 12px;background:#111}
+    .jump-btn{width:100%;min-height:60px;border:1px solid #6d5b27;border-radius:14px;background:linear-gradient(180deg,#4a3d1f,#2a2418);color:var(--brand-gold);font-size:16px;font-weight:520;touch-action:none;user-select:none}
+    .jump-btn:active{transform:translateY(1px);background:#59491f}
+    .side{display:grid;gap:12px}
+    .panel{padding:14px}
+    .panel-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;font-size:16px;line-height:22px;font-weight:520}
+    .tag{padding:3px 7px;border-radius:var(--radius-sm);background:rgba(255,204,67,.12);color:var(--brand-gold);font-size:10px;font-weight:520}
+    .mission{display:grid;gap:9px}
+    .mission-row{display:flex;align-items:flex-start;gap:9px;color:var(--text-secondary);font-size:13px;line-height:19px}
+    .step{display:grid;place-items:center;width:20px;height:20px;flex:0 0 20px;border-radius:50%;background:#2d2d2d;color:var(--brand-gold);font-family:var(--font-number);font-size:11px}
+    .ai-card{background:linear-gradient(145deg,rgba(129,116,250,.13),rgba(51,143,235,.06));border-color:#433f68}
+    .ai-kicker{color:#aaa3ff;font-size:11px;line-height:16px}
+    .ai-title{margin:4px 0 6px;font-size:15px;line-height:21px;font-weight:520}
+    .ai-copy{min-height:38px;color:var(--text-muted);font-size:12px;line-height:18px}
+    .meter{height:5px;margin-top:10px;overflow:hidden;border-radius:var(--radius-full);background:#303030}
+    .meter>i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--brand-blue),var(--brand-purple));transition:width .3s ease}
+    .module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+    .module{padding:7px 3px;border:1px solid #3b3b3b;border-radius:var(--radius-md);background:#222;text-align:center;color:var(--text-muted);font-size:10px}
+    .module i{display:block;margin-bottom:2px;color:var(--text-secondary);font-style:normal;font-size:17px}
+    .action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+    .btn{min-height:44px;padding:9px 12px;border-radius:var(--radius-md);font-size:13px;font-weight:520;transition:transform .12s ease,filter .12s ease}
+    .btn:active{transform:scale(.98)}
+    .btn-primary{background:var(--brand-gold);color:#1a1400}
+    .btn-secondary{background:#2c2c2c;border:1px solid #494949;color:var(--text-secondary)}
+    .overlay{position:fixed;inset:0;z-index:20;display:none;place-items:center;padding:20px;background:rgba(0,0,0,.78);backdrop-filter:blur(12px)}
+    .overlay.show{display:grid}
+    .modal{width:min(430px,100%);padding:22px;border:1px solid #4b4550;border-radius:var(--radius-2xl);background:var(--bg-overlay);box-shadow:0 18px 60px rgba(0,0,0,.6)}
+    .modal-icon{display:grid;place-items:center;width:48px;height:48px;margin-bottom:14px;border-radius:14px;background:#37323a;color:var(--brand-gold);font-size:24px}
+    .modal h2{font-size:20px;line-height:28px;font-weight:520}
+    .modal p{margin-top:8px;color:var(--text-secondary);font-size:14px;line-height:21px}
+    .modal .fine{color:var(--text-muted);font-size:11px;line-height:17px}
+    .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}
+    .modal-actions.one{grid-template-columns:1fr}
+    .ad-stage{text-align:center}
+    .ad-badge{display:inline-block;padding:4px 8px;border:1px solid #5c5264;border-radius:var(--radius-full);color:var(--text-muted);font-size:10px}
+    .countdown{margin:20px 0 6px;color:var(--brand-gold);font-family:var(--font-number);font-size:64px;line-height:70px;font-weight:700}
+    .toast{position:fixed;z-index:30;left:50%;top:18px;width:min(480px,calc(100% - 24px));padding:12px 14px;transform:translate(-50%,-20px);border:1px solid #514b75;border-radius:var(--radius-lg);background:rgba(31,29,47,.96);box-shadow:0 10px 30px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:.25s ease}
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    .toast strong{display:block;color:#b8b2ff;font-size:12px;line-height:17px}
+    .toast span{display:block;margin-top:2px;color:var(--text-secondary);font-size:12px;line-height:18px}
+    @media(max-width:800px){
+      .app{padding:10px 10px calc(14px + env(safe-area-inset-bottom))}
+      .topbar{margin-bottom:10px}.logo{width:42px;height:42px;border-radius:12px}
+      h1{font-size:20px;line-height:26px}.subtitle{font-size:10px}.live-pill{padding:6px 9px}
+      .layout{grid-template-columns:1fr;gap:10px}.hud{padding:7px 9px}.hud-value{font-size:12px}
+      .jump-zone{display:block}.canvas-tip{display:none}
+      .side{grid-template-columns:1fr 1fr;gap:10px}.side .panel{padding:12px}
+      .side .panel:first-child{grid-column:1/-1}.mission{grid-template-columns:1fr 1fr}
+      .action-row{grid-template-columns:1fr}
+    }
+    @media(max-width:480px){
+      .app{padding:8px 8px calc(12px + env(safe-area-inset-bottom))}
+      .topbar{gap:8px}.logo{width:38px;height:38px;font-size:15px}
+      h1{font-size:18px;line-height:23px}.subtitle{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:235px}
+      .live-pill{display:none}.hud-label{font-size:9px}.hud-value{font-size:11px}
+      .status-line{min-height:38px;padding:7px 10px}.jump-zone{padding:8px 10px 10px}.jump-btn{min-height:54px}
+      .side{display:block}.side .panel{margin-top:8px}.side .panel:first-child{display:none}
+      .module-grid{display:none}.ai-copy{min-height:auto}.modal{padding:18px}.modal-actions{grid-template-columns:1fr}.countdown{font-size:54px}
+    }
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="title-wrap">
+        <div class="logo" aria-hidden="true">TL</div>
+        <div>
+          <h1>TrapLab</h1>
+          <p class="subtitle">下一段机关，专门为你的节奏改拍</p>
+        </div>
+      </div>
+      <div class="live-pill">导演无人机在线</div>
+    </header>
+
+    <section class="layout">
+      <article class="game-card">
+        <div class="hud" aria-live="polite">
+          <div class="hud-item"><div class="hud-label">片场进度</div><div class="hud-value gold" id="progressHud">0%</div></div>
+          <div class="hud-item"><div class="hud-label">检查点</div><div class="hud-value" id="checkpointHud">A</div></div>
+          <div class="hud-item"><div class="hud-label">导演状态</div><div class="hud-value" id="aiHud">观察中</div></div>
+        </div>
+        <div class="canvas-wrap" id="canvasWrap" aria-label="点击或触摸跳跃">
+          <canvas id="game" width="900" height="500" aria-label="TrapLab 自动跑酷游戏画面"></canvas>
+          <div class="canvas-tip">空格 / 点击 / 触摸跳跃 · 长按跳得更高</div>
+        </div>
+        <div class="status-line" aria-live="polite"><i class="status-dot"></i><span id="statusText">角色会自动前进，你只负责掌握跳跃时机。</span></div>
+        <div class="jump-zone"><button class="jump-btn" id="jumpBtn">按住跳跃 · 松手短跳</button></div>
+      </article>
+
+      <aside class="side">
+        <section class="panel">
+          <div class="panel-title">拍摄任务 <span class="tag">约 75 秒</span></div>
+          <div class="mission">
+            <div class="mission-row"><span class="step">1</span><span>自动向右奔跑，按住可跳得更高。</span></div>
+            <div class="mission-row"><span class="step">2</span><span>前三段会记录起跳距离与失误类型。</span></div>
+            <div class="mission-row"><span class="step">3</span><span>读懂预告，破解导演安排的后半段。</span></div>
+          </div>
+        </section>
+
+        <section class="panel ai-card">
+          <div class="ai-kicker">ADAPTIVE DIRECTOR · SEED TL-12</div>
+          <div class="ai-title" id="aiTitle">正在观察起跳节奏</div>
+          <div class="ai-copy" id="aiCopy">导演会把你归为谨慎、激进或节奏不稳，并提前公布机关组合。</div>
+          <div class="meter" aria-hidden="true"><i id="aiMeter"></i></div>
+          <div class="action-row"><button class="btn btn-secondary" id="restartBtn">重新开拍</button><button class="btn btn-secondary" id="soundBtn" aria-pressed="true">提示音：开</button></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">已验证模块 <span class="tag">固定几何</span></div>
+          <div class="module-grid">
+            <div class="module"><i>◒</i>摆锤</div><div class="module"><i>▦</i>塌板</div><div class="module"><i>↟</i>弹簧</div>
+            <div class="module"><i>↔</i>移动台</div><div class="module"><i>●</i>滚筒</div><div class="module"><i>▔</i>低顶</div>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <div class="overlay show" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal" id="modalBox"></div>
+  </div>
+  <div class="overlay" id="adOverlay" role="dialog" aria-modal="true" aria-label="本地模拟广告">
+    <div class="modal ad-stage">
+      <span class="ad-badge">本地模拟广告 · 无网络请求</span>
+      <div class="countdown" id="adCount">3</div>
+      <h2>原地复拍准备中</h2>
+      <p>完成后回到当前检查点，并获得 5 秒护盾。</p>
+      <div class="modal-actions one"><button class="btn btn-secondary" id="cancelAdBtn">关闭广告，无护盾继续</button></div>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status"><strong id="toastTitle"></strong><span id="toastText"></span></div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const GAME_ID = 'trap-lab';
+      const SEED = 'TL-12';
+      const WORLD_END = 6600;
+      const GROUND_Y = 420;
+      const FIXED_STEP = 1 / 60;
+      const canvas = document.querySelector('#game');
+      const ctx = canvas.getContext('2d');
+      const canvasWrap = document.querySelector('#canvasWrap');
+      const jumpBtn = document.querySelector('#jumpBtn');
+      const progressHud = document.querySelector('#progressHud');
+      const checkpointHud = document.querySelector('#checkpointHud');
+      const aiHud = document.querySelector('#aiHud');
+      const statusText = document.querySelector('#statusText');
+      const aiTitle = document.querySelector('#aiTitle');
+      const aiCopy = document.querySelector('#aiCopy');
+      const aiMeter = document.querySelector('#aiMeter');
+      const modalOverlay = document.querySelector('#modalOverlay');
+      const modalBox = document.querySelector('#modalBox');
+      const adOverlay = document.querySelector('#adOverlay');
+      const adCount = document.querySelector('#adCount');
+      const toast = document.querySelector('#toast');
+      const toastTitle = document.querySelector('#toastTitle');
+      const toastText = document.querySelector('#toastText');
+
+      let player;
+      let modules = [];
+      let tutorialModules = [];
+      let adaptiveModules = [];
+      let finaleModules = [];
+      let started = false;
+      let paused = true;
+      let finished = false;
+      let runId = '';
+      let activeMs = 0;
+      let cameraX = 0;
+      let accumulator = 0;
+      let lastFrame = performance.now();
+      let firstInputSent = false;
+      let checkpointX = 80;
+      let checkpointName = 'A';
+      let aiLocked = false;
+      let aiApplied = false;
+      let aiProfile = 'pending';
+      let aiResponseId = 'pending';
+      let soundEnabled = true;
+      let adDecisionMade = false;
+      let adAccepted = false;
+      let adTimer = null;
+      let failureLock = false;
+      let toastTimer = null;
+      let stats = {early:0,late:0,neutral:0,failures:0,successes:0,jumps:0};
+
+      function emit(type, data = {}) {
+        const detail = {
+          source:'ai-h5-demo',
+          gameId:GAME_ID,
+          type,
+          event:type,
+          ts:Date.now(),
+          elapsed_ms:Math.round(activeMs),
+          run_id:runId,
+          seed:SEED,
+          ai_profile:aiProfile,
+          ai_response_id:aiResponseId,
+          ...data
+        };
+        detail.detail = {...data};
+        window.__aiH5Events = window.__aiH5Events || [];
+        window.__aiH5Events.push(detail);
+        const targets = new Set();
+        if (window.parent && window.parent !== window) targets.add(window.parent);
+        if (window.opener && !window.opener.closed && window.opener !== window) targets.add(window.opener);
+        targets.forEach(target => {
+          try { target.postMessage(detail, '*'); } catch (_) {}
+        });
+        window.dispatchEvent(new CustomEvent('ai-h5-event', {detail}));
+      }
+
+      function createModule(type,x,label = type) {
+        return {type,x,label,touchedAt:0,hidden:false,passed:false};
+      }
+
+      function buildTutorial() {
+        return [
+          createModule('pendulum',720,'摆锤试镜'),
+          createModule('crumble',1350,'塌板试镜'),
+          createModule('spring',1940,'弹簧试镜')
+        ];
+      }
+
+      function buildAdaptive(profile) {
+        if (profile === 'cautious') {
+          return [
+            createModule('spring',2900,'推进弹簧'),
+            createModule('moving',3500,'节奏移动台')
+          ];
+        }
+        if (profile === 'aggressive') {
+          return [
+            createModule('low',2900,'收跳低顶'),
+            createModule('pendulum',3500,'延迟摆锤')
+          ];
+        }
+        return [
+          createModule('roller',2900,'节拍滚筒'),
+          createModule('moving',3500,'稳定移动台')
+        ];
+      }
+
+      function buildFinale() {
+        return [
+          createModule('roller',4380,'滚筒终场'),
+          createModule('low',4920,'低顶终场'),
+          createModule('moving',5520,'移动台终场')
+        ];
+      }
+
+      function resetState(isReplay = false) {
+        if (isReplay) emit('replay_start', {previous_outcome:finished ? 'finished' : 'restart',seed:SEED});
+        runId = `${GAME_ID}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        player = {
+          x:80,y:GROUND_Y-42,w:30,h:42,vy:0,onGround:true,
+          jumpHeld:false,jumpHold:0,shieldUntil:0
+        };
+        tutorialModules = buildTutorial();
+        adaptiveModules = [];
+        finaleModules = buildFinale();
+        modules = [...tutorialModules,...finaleModules];
+        started = true;
+        paused = false;
+        finished = false;
+        activeMs = 0;
+        cameraX = 0;
+        accumulator = 0;
+        firstInputSent = false;
+        checkpointX = 80;
+        checkpointName = 'A';
+        aiLocked = false;
+        aiApplied = false;
+        aiProfile = 'pending';
+        aiResponseId = 'pending';
+        adDecisionMade = false;
+        adAccepted = false;
+        failureLock = false;
+        stats = {early:0,late:0,neutral:0,failures:0,successes:0,jumps:0};
+        aiTitle.textContent = '正在观察起跳节奏';
+        aiCopy.textContent = '导演会把你归为谨慎、激进或节奏不稳，并提前公布机关组合。';
+        aiHud.textContent = '观察中';
+        aiMeter.style.width = '0%';
+        setStatus('角色会自动前进，你只负责掌握跳跃时机。');
+        closeModal();
+        updateHud();
+        emit('game_start', {control:'space_pointer_touch',objective:'reach_finish'});
+      }
+
+      function showStart() {
+        modalBox.innerHTML = `
+          <div class="modal-icon">↟</div>
+          <h2 id="modalTitle">自动奔跑，只管跳</h2>
+          <p>角色会自动向右。按空格、点击画面或按住屏幕按钮跳跃；轻点是短跳，按住会跳得更高。</p>
+          <p class="fine">前三段记录起跳节奏；导演先公布判断，再装配一组可反制的固定机关。</p>
+          <div class="modal-actions one"><button class="btn btn-primary" id="startBtn">开始试镜</button></div>`;
+        modalOverlay.classList.add('show');
+        document.querySelector('#startBtn').addEventListener('click', () => resetState(false), {once:true});
+      }
+
+      function closeModal() {
+        modalOverlay.classList.remove('show');
+      }
+
+      function setStatus(text) {
+        statusText.textContent = text;
+      }
+
+      function showToast(title,text,duration = 2600) {
+        clearTimeout(toastTimer);
+        toastTitle.textContent = title;
+        toastText.textContent = text;
+        toast.classList.add('show');
+        toastTimer = setTimeout(() => toast.classList.remove('show'),duration);
+      }
+
+      function updateHud() {
+        const progress = Math.max(0,Math.min(100,Math.round(player.x / WORLD_END * 100)));
+        progressHud.textContent = `${progress}%`;
+        checkpointHud.textContent = checkpointName;
+        if (!aiLocked) aiMeter.style.width = `${Math.min(96,Math.round(player.x / 2350 * 100))}%`;
+      }
+
+      function jumpStart(method) {
+        if (!started || paused || finished || failureLock) return;
+        if (!firstInputSent) {
+          firstInputSent = true;
+          emit('first_input', {method});
+        }
+        if (!player.onGround) {
+          player.jumpHeld = true;
+          return;
+        }
+        player.vy = -650;
+        player.onGround = false;
+        player.jumpHeld = true;
+        player.jumpHold = 0;
+        stats.jumps += 1;
+        classifyJumpTiming();
+        tone(520,0.045);
+      }
+
+      function jumpEnd() {
+        if (!player) return;
+        player.jumpHeld = false;
+        if (player.vy < -260) player.vy = -260;
+      }
+
+      function classifyJumpTiming() {
+        const upcoming = modules
+          .filter(module => !module.hidden && module.x > player.x)
+          .sort((a,b) => a.x - b.x)[0];
+        if (!upcoming) {
+          stats.neutral += 1;
+          return;
+        }
+        const lead = upcoming.x - player.x;
+        if (lead > 185) stats.early += 1;
+        else if (lead < 90) stats.late += 1;
+        else stats.neutral += 1;
+      }
+
+      function fixedUpdate(dt) {
+        if (!started || paused || finished || failureLock) return;
+        activeMs += dt * 1000;
+        const previousY = player.y;
+        const previousBottom = previousY + player.h;
+        player.x += 174 * dt;
+        if (player.jumpHeld && player.vy < 0 && player.jumpHold < .18) {
+          player.vy -= 430 * dt;
+          player.jumpHold += dt;
+        }
+        player.vy += 1680 * dt;
+        player.y += player.vy * dt;
+        player.onGround = false;
+
+        updateModules();
+        resolvePlatforms(previousBottom);
+        resolveCeilings();
+        checkHazards();
+
+        if (player.y > canvas.height + 100) {
+          failRun('跌落');
+          return;
+        }
+        if (checkpointName === 'A' && player.x >= 2250) setCheckpoint('B',2250);
+        if (checkpointName === 'B' && player.x >= 4300) setCheckpoint('C',4300);
+        if (!aiLocked && (player.x >= 1750 || activeMs >= 18000)) lockDirector();
+        if (player.x >= WORLD_END) finishRun();
+        cameraX += ((Math.max(0,player.x - 210)) - cameraX) * Math.min(1,dt * 6);
+        updateHud();
+      }
+
+      function updateModules() {
+        const now = activeMs;
+        for (const module of modules) {
+          if (module.type === 'crumble' && module.touchedAt && now - module.touchedAt > 720) module.hidden = true;
+          if (!module.passed && player.x > module.x + 170) {
+            module.passed = true;
+            stats.successes += 1;
+          }
+        }
+      }
+
+      function allGaps() {
+        const gaps = [];
+        for (const module of modules) {
+          if (module.type === 'crumble') gaps.push({x1:module.x-55,x2:module.x+75});
+          if (module.type === 'moving') gaps.push({x1:module.x-45,x2:module.x+145});
+        }
+        return gaps;
+      }
+
+      function isGap(x) {
+        return allGaps().some(gap => x >= gap.x1 && x <= gap.x2);
+      }
+
+      function resolvePlatforms(previousBottom) {
+        const centerX = player.x + player.w / 2;
+        const bottom = player.y + player.h;
+        if (!isGap(centerX) && previousBottom <= GROUND_Y + 8 && bottom >= GROUND_Y && player.vy >= 0) {
+          player.y = GROUND_Y - player.h;
+          player.vy = 0;
+          player.onGround = true;
+        }
+        for (const module of modules) {
+          if (module.hidden) continue;
+          if (module.type === 'crumble') {
+            landOnPlatform(module.x-55,GROUND_Y-12,130,12,module,previousBottom);
+          } else if (module.type === 'moving') {
+            const platformY = movingPlatformY(module);
+            landOnPlatform(module.x-35,platformY,120,14,module,previousBottom);
+          } else if (module.type === 'spring') {
+            const hit = overlaps(player,{x:module.x-18,y:GROUND_Y-20,w:54,h:20});
+            if (hit && player.vy >= 0 && bottom >= GROUND_Y-20) {
+              player.y = GROUND_Y - 20 - player.h;
+              player.vy = -790;
+              player.onGround = false;
+              tone(720,.06);
+              setStatus('弹簧补拍：保持按住可获得更长滞空。');
+            }
+          }
+        }
+      }
+
+      function landOnPlatform(x,y,w,h,module,previousBottom) {
+        const bottom = player.y + player.h;
+        const horizontal = player.x + player.w > x && player.x < x + w;
+        if (horizontal && previousBottom <= y + 7 && bottom >= y && player.vy >= 0) {
+          player.y = y - player.h;
+          player.vy = 0;
+          player.onGround = true;
+          if (module.type === 'crumble' && !module.touchedAt) {
+            module.touchedAt = activeMs;
+            setStatus('塌板已触发：约 0.7 秒后落下，继续向前。');
+          }
+        }
+      }
+
+      function resolveCeilings() {
+        for (const module of modules) {
+          if (module.type !== 'low' || module.hidden) continue;
+          const ceiling = {x:module.x-45,y:305,w:190,h:64};
+          if (overlaps(player,ceiling) && player.vy < 0) {
+            player.y = ceiling.y + ceiling.h;
+            player.vy = 80;
+            setStatus('低顶限制了高跳，下一次用短跳或不跳通过。');
+          }
+        }
+      }
+
+      function checkHazards() {
+        for (const module of modules) {
+          if (module.hidden) continue;
+          if (module.type === 'pendulum') {
+            const point = pendulumPoint(module);
+            if (circleRect(point.x,point.y,22,player)) {
+              hitHazard('摆锤');
+              return;
+            }
+          } else if (module.type === 'roller') {
+            const x = module.x + Math.sin(activeMs / 340) * 25;
+            if (circleRect(x,GROUND_Y-19,19,player)) {
+              hitHazard('滚筒');
+              return;
+            }
+          }
+        }
+      }
+
+      function hitHazard(reason) {
+        if (activeMs < player.shieldUntil) {
+          player.x += 72;
+          player.vy = -250;
+          showToast('护盾抵消失误', `已越过${reason}，护盾仍按原时长计时。`);
+          tone(860,.07);
+          return;
+        }
+        failRun(reason);
+      }
+
+      function setCheckpoint(name,x) {
+        checkpointName = name;
+        checkpointX = x;
+        setStatus(`通过检查点 ${name}，跌落后从这里继续。`);
+        showToast(`检查点 ${name} 已记录`,'导演画像与机关组合会保留。');
+      }
+
+      function lockDirector() {
+        if (aiLocked) return;
+        aiLocked = true;
+        if (stats.failures >= 2 || Math.abs(stats.early - stats.late) <= 1) {
+          aiProfile = 'unstable';
+          aiResponseId = 'TL_ROLLER_PLATFORM';
+          aiTitle.textContent = '判定：节奏不稳';
+          aiCopy.textContent = '响应预告：节拍滚筒 → 稳定移动台。反制：跟随金色脉冲再起跳。';
+        } else if (stats.early > stats.late) {
+          aiProfile = 'cautious';
+          aiResponseId = 'TL_SPRING_PLATFORM';
+          aiTitle.textContent = '判定：谨慎早跳';
+          aiCopy.textContent = '响应预告：推进弹簧 → 节奏移动台。反制：按住延长滞空。';
+        } else {
+          aiProfile = 'aggressive';
+          aiResponseId = 'TL_LOW_PENDULUM';
+          aiTitle.textContent = '判定：激进晚跳';
+          aiCopy.textContent = '响应预告：收跳低顶 → 延迟摆锤。反制：短跳后停一拍。';
+        }
+        aiHud.textContent = '画像锁定';
+        aiMeter.style.width = '100%';
+        emit('ai_observation_locked', {
+          observation:{...stats,progress_x:Math.round(player.x)},
+          ai_profile:aiProfile,
+          ai_response_id:aiResponseId
+        });
+        showToast('导演已改写后半场',aiCopy.textContent,3300);
+        setTimeout(applyDirectorResponse,1350);
+      }
+
+      function applyDirectorResponse() {
+        if (!started || finished || aiApplied) return;
+        aiApplied = true;
+        adaptiveModules = buildAdaptive(aiProfile);
+        modules = [...tutorialModules,...adaptiveModules,...finaleModules].sort((a,b) => a.x-b.x);
+        aiHud.textContent = '机关已换组';
+        setStatus(`${profileName()}画像已锁定；后半场机关已按预告装配。`);
+        emit('ai_change_shown', {
+          ai_profile:aiProfile,
+          ai_response_id:aiResponseId,
+          sequence:adaptiveModules.map(module => module.type),
+          counterplay:counterplayText()
+        });
+      }
+
+      function profileName() {
+        if (aiProfile === 'cautious') return '谨慎';
+        if (aiProfile === 'aggressive') return '激进';
+        if (aiProfile === 'unstable') return '节奏不稳';
+        return '观察中';
+      }
+
+      function counterplayText() {
+        if (aiProfile === 'cautious') return 'hold_jump_for_longer_airtime';
+        if (aiProfile === 'aggressive') return 'short_jump_then_wait';
+        return 'jump_on_gold_pulse';
+      }
+
+      function failRun(reason) {
+        if (failureLock || paused || finished) return;
+        failureLock = true;
+        paused = true;
+        stats.failures += 1;
+        player.jumpHeld = false;
+        emit('run_end', {
+          outcome:'failed',
+          reason,
+          checkpoint:checkpointName,
+          progress:Math.round(player.x / WORLD_END * 100)
+        });
+        const canOffer = activeMs >= 30000 && !adDecisionMade;
+        if (canOffer) {
+          emit('ad_offer_view', {placement:'fall_retake',reward:'checkpoint_shield_5s'});
+          modalBox.innerHTML = `
+            <div class="modal-icon">↺</div>
+            <h2 id="modalTitle">${reason}失误，是否原地复拍？</h2>
+            <p>观看 3 秒本地模拟广告：回到检查点 ${checkpointName}，并获得 5 秒护盾。</p>
+            <p class="fine">不观看也会回到同一检查点；导演不会因为你的选择改变难度。</p>
+            <div class="modal-actions">
+              <button class="btn btn-primary" id="acceptAd">看 3 秒，带护盾复拍</button>
+              <button class="btn btn-secondary" id="declineAd">不观看，直接继续</button>
+            </div>`;
+          modalOverlay.classList.add('show');
+          document.querySelector('#acceptAd').addEventListener('click',startAd,{once:true});
+          document.querySelector('#declineAd').addEventListener('click',() => {
+            adDecisionMade = true;
+            emit('ad_cancel', {placement:'fall_retake',reason:'declined'});
+            restoreCheckpoint(false);
+          },{once:true});
+        } else {
+          showToast(`${reason}失误`,`正在返回检查点 ${checkpointName}，游戏不会卡住。`,1000);
+          setTimeout(() => restoreCheckpoint(false),720);
+        }
+      }
+
+      function startAd() {
+        adDecisionMade = true;
+        adAccepted = true;
+        emit('ad_accept', {placement:'fall_retake'});
+        closeModal();
+        adOverlay.classList.add('show');
+        let remaining = 3;
+        adCount.textContent = String(remaining);
+        clearInterval(adTimer);
+        adTimer = setInterval(() => {
+          remaining -= 1;
+          adCount.textContent = String(Math.max(remaining,0));
+          if (remaining <= 0) {
+            clearInterval(adTimer);
+            adTimer = null;
+            adOverlay.classList.remove('show');
+            emit('ad_complete', {placement:'fall_retake',duration_ms:3000});
+            emit('reward_grant', {reward:'checkpoint_shield_5s',grant_once:true});
+            restoreCheckpoint(true);
+          }
+        },1000);
+      }
+
+      function cancelAd() {
+        if (!adTimer) return;
+        clearInterval(adTimer);
+        adTimer = null;
+        adOverlay.classList.remove('show');
+        adAccepted = false;
+        emit('ad_cancel', {placement:'fall_retake',reason:'closed_during_ad'});
+        restoreCheckpoint(false);
+      }
+
+      function restoreCheckpoint(withShield) {
+        closeModal();
+        player.x = checkpointX;
+        player.y = GROUND_Y - player.h;
+        player.vy = 0;
+        player.onGround = true;
+        player.jumpHeld = false;
+        player.jumpHold = 0;
+        player.shieldUntil = withShield ? activeMs + 5000 : 0;
+        modules.forEach(module => {
+          if (module.x >= checkpointX - 200) {
+            module.hidden = false;
+            module.touchedAt = 0;
+            module.passed = false;
+          }
+        });
+        cameraX = Math.max(0,checkpointX - 210);
+        failureLock = false;
+        paused = false;
+        setStatus(withShield ? '复拍开始：5 秒护盾已生效。' : '未观看广告：已从同一检查点继续，无额外惩罚。');
+        showToast('重新开拍',withShield ? '护盾只抵消碰撞，不改变导演难度。' : '原机关组合与难度保持不变。');
+      }
+
+      function finishRun() {
+        if (finished) return;
+        finished = true;
+        paused = true;
+        emit('core_payoff', {
+          payoff:'finished_adaptive_course',
+          profile:aiProfile,
+          failures:stats.failures,
+          jumps:stats.jumps,
+          used_ad:adAccepted
+        });
+        emit('run_end', {
+          outcome:'finished',
+          profile:aiProfile,
+          failures:stats.failures,
+          jumps:stats.jumps,
+          used_ad:adAccepted
+        });
+        modalBox.innerHTML = `
+          <div class="modal-icon">★</div>
+          <h2 id="modalTitle">终场镜头完成</h2>
+          <p>导演评价：你属于“${profileName()}”型选手，并成功破解了“${responseName()}”机关组。</p>
+          <p class="fine">跳跃 ${stats.jumps} 次 · 失误 ${stats.failures} 次 · ${adAccepted ? '使用过复拍护盾' : '未使用广告护盾'}</p>
+          <div class="modal-actions one"><button class="btn btn-primary" id="replayBtn">同种子再拍一次</button></div>`;
+        modalOverlay.classList.add('show');
+        document.querySelector('#replayBtn').addEventListener('click',() => resetState(true),{once:true});
+      }
+
+      function responseName() {
+        if (aiResponseId === 'TL_SPRING_PLATFORM') return '推进弹簧 → 节奏移动台';
+        if (aiResponseId === 'TL_LOW_PENDULUM') return '收跳低顶 → 延迟摆锤';
+        if (aiResponseId === 'TL_ROLLER_PLATFORM') return '节拍滚筒 → 稳定移动台';
+        return '基础试镜';
+      }
+
+      function movingPlatformY(module) {
+        return 345 + Math.sin(activeMs / 620 + module.x) * 36;
+      }
+
+      function pendulumPoint(module) {
+        const angle = Math.sin(activeMs / 520 + module.x) * .8;
+        const length = 135;
+        return {x:module.x + Math.sin(angle) * length,y:150 + Math.cos(angle) * length};
+      }
+
+      function overlaps(a,b) {
+        return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
+      }
+
+      function circleRect(cx,cy,r,rect) {
+        const nearestX = Math.max(rect.x,Math.min(cx,rect.x+rect.w));
+        const nearestY = Math.max(rect.y,Math.min(cy,rect.y+rect.h));
+        const dx = cx-nearestX;
+        const dy = cy-nearestY;
+        return dx*dx+dy*dy < r*r;
+      }
+
+      function tone(frequency,duration) {
+        if (!soundEnabled) return;
+        try {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) return;
+          tone.context = tone.context || new AudioContextClass();
+          const oscillator = tone.context.createOscillator();
+          const gain = tone.context.createGain();
+          oscillator.frequency.value = frequency;
+          gain.gain.setValueAtTime(.035,tone.context.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.001,tone.context.currentTime+duration);
+          oscillator.connect(gain).connect(tone.context.destination);
+          oscillator.start();
+          oscillator.stop(tone.context.currentTime+duration);
+        } catch (_) {}
+      }
+
+      function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        drawBackground();
+        drawTrack();
+        for (const module of modules) drawModule(module);
+        drawCheckpoints();
+        drawDirector();
+        drawPlayer();
+        drawProgress();
+      }
+
+      function drawBackground() {
+        const gradient = ctx.createLinearGradient(0,0,0,canvas.height);
+        gradient.addColorStop(0,'#11192b');
+        gradient.addColorStop(.68,'#10131b');
+        gradient.addColorStop(1,'#08090d');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = 'rgba(129,116,250,.08)';
+        for (let i = -1; i < 7; i += 1) {
+          const x = ((i*190 - cameraX*.18) % 1330) - 120;
+          ctx.beginPath();
+          ctx.moveTo(x,GROUND_Y);ctx.lineTo(x+120,190);ctx.lineTo(x+250,GROUND_Y);ctx.fill();
+        }
+        ctx.strokeStyle = 'rgba(255,255,255,.035)';
+        ctx.lineWidth = 1;
+        for (let x = -(cameraX%100); x < canvas.width; x += 100) {
+          ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();
+        }
+      }
+
+      function drawTrack() {
+        const start = Math.floor(cameraX/50)*50-50;
+        const end = cameraX+canvas.width+100;
+        for (let x = start; x < end; x += 50) {
+          if (isGap(x+25)) continue;
+          const sx = x-cameraX;
+          ctx.fillStyle = (Math.floor(x/50)%2) ? '#282e3a' : '#303746';
+          ctx.fillRect(sx,GROUND_Y,50,80);
+          ctx.strokeStyle = '#424b5d';
+          ctx.strokeRect(sx+.5,GROUND_Y+.5,49,79);
+          ctx.fillStyle = 'rgba(255,204,67,.15)';
+          ctx.fillRect(sx,GROUND_Y,50,3);
+        }
+      }
+
+      function drawModule(module) {
+        if (module.hidden) return;
+        const sx = module.x-cameraX;
+        if (sx < -220 || sx > canvas.width+220) return;
+        ctx.save();
+        if (module.type === 'pendulum') {
+          const point = pendulumPoint(module);
+          const px = point.x-cameraX;
+          ctx.strokeStyle = '#77708f';ctx.lineWidth = 5;
+          ctx.beginPath();ctx.moveTo(sx,150);ctx.lineTo(px,point.y);ctx.stroke();
+          ctx.fillStyle = '#4e4760';ctx.fillRect(sx-32,137,64,15);
+          ctx.shadowColor = '#ff5678';ctx.shadowBlur = 15;ctx.fillStyle = '#ff5678';
+          ctx.beginPath();ctx.arc(px,point.y,22,0,Math.PI*2);ctx.fill();
+        } else if (module.type === 'crumble') {
+          const opacity = module.touchedAt ? Math.max(.25,1-(activeMs-module.touchedAt)/900) : 1;
+          ctx.globalAlpha = opacity;
+          for (let i=0;i<4;i+=1) {
+            ctx.fillStyle = '#9a7b38';
+            ctx.fillRect(sx-55+i*33,GROUND_Y-12,30,12);
+          }
+        } else if (module.type === 'spring') {
+          ctx.fillStyle = '#ffcc43';ctx.fillRect(sx-18,GROUND_Y-20,54,8);
+          ctx.strokeStyle = '#ffd98f';ctx.lineWidth = 4;
+          ctx.beginPath();ctx.moveTo(sx-10,GROUND_Y-12);ctx.lineTo(sx,GROUND_Y-3);ctx.lineTo(sx+10,GROUND_Y-12);ctx.lineTo(sx+20,GROUND_Y-3);ctx.stroke();
+        } else if (module.type === 'moving') {
+          const y = movingPlatformY(module);
+          ctx.fillStyle = '#8174fa';roundRect(ctx,sx-35,y,120,14,7);ctx.fill();
+          ctx.strokeStyle = 'rgba(184,178,255,.45)';ctx.setLineDash([4,5]);
+          ctx.beginPath();ctx.moveTo(sx+25,300);ctx.lineTo(sx+25,410);ctx.stroke();
+        } else if (module.type === 'roller') {
+          const x = sx+Math.sin(activeMs/340)*25;
+          ctx.shadowColor = '#ff5678';ctx.shadowBlur = 12;ctx.fillStyle = '#ff785f';
+          ctx.beginPath();ctx.arc(x,GROUND_Y-19,19,0,Math.PI*2);ctx.fill();
+          ctx.shadowBlur = 0;ctx.strokeStyle = '#48150f';ctx.lineWidth = 4;
+          ctx.beginPath();ctx.moveTo(x-11,GROUND_Y-30);ctx.lineTo(x+11,GROUND_Y-8);ctx.moveTo(x+11,GROUND_Y-30);ctx.lineTo(x-11,GROUND_Y-8);ctx.stroke();
+        } else if (module.type === 'low') {
+          ctx.fillStyle = '#384052';roundRect(ctx,sx-45,305,190,64,10);ctx.fill();
+          ctx.fillStyle = 'rgba(255,204,67,.2)';ctx.fillRect(sx-35,359,170,4);
+          ctx.fillStyle = '#ffcc43';ctx.font = '12px sans-serif';ctx.fillText('短跳区',sx+18,330);
+        }
+        ctx.restore();
+      }
+
+      function drawCheckpoints() {
+        const points = [{x:2250,name:'B'},{x:4300,name:'C'},{x:WORLD_END,name:'FINISH'}];
+        for (const point of points) {
+          const x = point.x-cameraX;
+          if (x < -30 || x > canvas.width+30) continue;
+          ctx.strokeStyle = point.name === 'FINISH' ? '#ffcc43' : '#33d8a4';
+          ctx.lineWidth = 3;ctx.setLineDash([7,6]);
+          ctx.beginPath();ctx.moveTo(x,150);ctx.lineTo(x,GROUND_Y);ctx.stroke();ctx.setLineDash([]);
+          ctx.fillStyle = point.name === 'FINISH' ? '#ffcc43' : '#33d8a4';
+          ctx.font = '700 12px sans-serif';ctx.fillText(point.name,x+8,170);
+        }
+      }
+
+      function drawDirector() {
+        if (!aiLocked) return;
+        const x = Math.min(canvas.width-68,Math.max(90,player.x-cameraX+140));
+        const y = 82+Math.sin(activeMs/350)*5;
+        ctx.save();
+        ctx.strokeStyle = '#aaa3ff';ctx.lineWidth = 3;
+        ctx.beginPath();ctx.moveTo(x-28,y);ctx.lineTo(x+28,y);ctx.stroke();
+        ctx.fillStyle = '#8174fa';roundRect(ctx,x-18,y-11,36,22,8);ctx.fill();
+        ctx.fillStyle = '#ffcc43';ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();
+        ctx.restore();
+      }
+
+      function drawPlayer() {
+        const x = player.x-cameraX;
+        const shielded = activeMs < player.shieldUntil;
+        ctx.save();
+        if (shielded) {
+          ctx.strokeStyle = '#33d8a4';ctx.lineWidth = 4;ctx.shadowColor = '#33d8a4';ctx.shadowBlur = 14;
+          ctx.beginPath();ctx.arc(x+15,player.y+21,29,0,Math.PI*2);ctx.stroke();ctx.shadowBlur = 0;
+        }
+        ctx.fillStyle = '#57a7ff';roundRect(ctx,x,player.y,30,42,9);ctx.fill();
+        ctx.fillStyle = '#d9efff';ctx.fillRect(x+18,player.y+10,6,6);
+        ctx.fillStyle = '#1d4d7c';ctx.fillRect(x+5,player.y+34,8,8);ctx.fillRect(x+19,player.y+34,8,8);
+        ctx.restore();
+      }
+
+      function drawProgress() {
+        const progress = Math.max(0,Math.min(1,player.x/WORLD_END));
+        ctx.fillStyle = 'rgba(0,0,0,.55)';roundRect(ctx,18,18,240,9,5);ctx.fill();
+        const gradient = ctx.createLinearGradient(18,0,258,0);
+        gradient.addColorStop(0,'#338feb');gradient.addColorStop(1,'#ffcc43');
+        ctx.fillStyle = gradient;roundRect(ctx,18,18,240*progress,9,5);ctx.fill();
+      }
+
+      function roundRect(context,x,y,w,h,r) {
+        const radius = Math.max(0,Math.min(r,w/2,h/2));
+        context.beginPath();
+        context.moveTo(x+radius,y);
+        context.arcTo(x+w,y,x+w,y+h,radius);
+        context.arcTo(x+w,y+h,x,y+h,radius);
+        context.arcTo(x,y+h,x,y,radius);
+        context.arcTo(x,y,x+w,y,radius);
+        context.closePath();
+      }
+
+      function frame(now) {
+        const raw = Math.min(.1,(now-lastFrame)/1000);
+        lastFrame = now;
+        if (!paused && started && !finished) {
+          accumulator += raw;
+          while (accumulator >= FIXED_STEP) {
+            fixedUpdate(FIXED_STEP);
+            accumulator -= FIXED_STEP;
+          }
+        }
+        draw();
+        requestAnimationFrame(frame);
+      }
+
+      window.addEventListener('keydown',event => {
+        if (event.code !== 'Space' && event.code !== 'ArrowUp' && event.code !== 'KeyW') return;
+        event.preventDefault();
+        if (!event.repeat) jumpStart('keyboard');
+      },{passive:false});
+      window.addEventListener('keyup',event => {
+        if (event.code !== 'Space' && event.code !== 'ArrowUp' && event.code !== 'KeyW') return;
+        event.preventDefault();
+        jumpEnd();
+      },{passive:false});
+
+      [canvasWrap,jumpBtn].forEach(target => {
+        target.addEventListener('pointerdown',event => {
+          event.preventDefault();
+          target.setPointerCapture?.(event.pointerId);
+          jumpStart(target === jumpBtn ? 'touch_button' : 'pointer_canvas');
+        });
+        target.addEventListener('pointerup',event => {
+          event.preventDefault();
+          jumpEnd();
+        });
+        target.addEventListener('pointercancel',jumpEnd);
+      });
+
+      document.querySelector('#restartBtn').addEventListener('click',() => {
+        if (!started) return;
+        resetState(true);
+      });
+      document.querySelector('#soundBtn').addEventListener('click',event => {
+        soundEnabled = !soundEnabled;
+        event.currentTarget.textContent = `提示音：${soundEnabled ? '开' : '关'}`;
+        event.currentTarget.setAttribute('aria-pressed',String(soundEnabled));
+      });
+      document.querySelector('#cancelAdBtn').addEventListener('click',cancelAd);
+      document.addEventListener('visibilitychange',() => {
+        if (!started || finished || modalOverlay.classList.contains('show') || adOverlay.classList.contains('show')) return;
+        paused = document.hidden;
+        if (!document.hidden) lastFrame = performance.now();
+      });
+
+      player = {x:80,y:GROUND_Y-42,w:30,h:42,vy:0,onGround:true,jumpHeld:false,jumpHold:0,shieldUntil:0};
+      tutorialModules = buildTutorial();
+      finaleModules = buildFinale();
+      modules = [...tutorialModules,...finaleModules];
+      updateHud();
+      showStart();
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>

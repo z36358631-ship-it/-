@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="data:,">
+  <title>GhostGrid · 自适应迷宫追逃</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg-primary:#000000;--bg-card:#1a1a1a;--bg-elevated:#252525;--bg-overlay:#28202a;
+      --text-primary:#ffffff;--text-secondary:#e6e6e6;--text-muted:#7b7b7b;--brand-gold:#ffcc43;
+      --brand-gold-light:#ffd98f;--brand-green:#33d8a4;--brand-blue:#338feb;--brand-purple:#8174fa;
+      --danger:#ff5678;--border-default:#353d4e;--radius-sm:4px;--radius-md:8px;
+      --radius-lg:12px;--radius-xl:16px;--radius-2xl:20px;--radius-full:100px;
+      --font-primary:'MiSans VF','MiSans','PingFang SC',-apple-system,BlinkMacSystemFont,sans-serif;
+      --font-number:'D-DIN-PRO','MiSans VF',monospace
+    }
+    html,body{min-height:100%;background:var(--bg-primary);color:var(--text-primary)}
+    body{font-family:var(--font-primary);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    button{font:inherit;border:0;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    button:focus-visible{outline:2px solid var(--brand-gold);outline-offset:3px}
+    .app{width:min(1180px,100%);min-height:100dvh;margin:auto;padding:20px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
+    .title-wrap{display:flex;align-items:center;gap:12px;min-width:0}
+    .logo{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:linear-gradient(145deg,#40351a,#181610);border:1px solid #655328;color:var(--brand-gold);font-size:24px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+    h1{font-size:24px;line-height:30px;font-weight:520;letter-spacing:.2px}
+    .subtitle{margin-top:2px;color:var(--text-muted);font-size:12px;line-height:17px}
+    .live-pill{display:flex;align-items:center;gap:7px;padding:7px 11px;border:1px solid var(--border-default);border-radius:var(--radius-full);background:#151515;color:var(--text-secondary);font-size:12px;white-space:nowrap}
+    .live-pill::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--brand-green);box-shadow:0 0 10px rgba(51,216,164,.8)}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+    .game-card,.panel{background:var(--bg-card);border:1px solid var(--border-default);border-radius:var(--radius-xl);box-shadow:0 4px 12px rgba(0,0,0,.3)}
+    .game-card{overflow:hidden}
+    .hud{min-height:54px;display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border-default);background:#151515}
+    .hud-item{flex:1;min-width:0}
+    .hud-label{color:var(--text-muted);font-size:10px;line-height:14px;text-transform:uppercase;letter-spacing:.6px}
+    .hud-value{margin-top:1px;font-family:var(--font-number);font-size:14px;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .hud-value.gold{color:var(--brand-gold)}
+    .canvas-wrap{position:relative;width:100%;aspect-ratio:15/11;background:#080b10;overflow:hidden;touch-action:none}
+    canvas{display:block;width:100%;height:100%}
+    .canvas-tip{position:absolute;left:10px;bottom:10px;padding:6px 9px;border-radius:var(--radius-md);background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.14);color:var(--text-secondary);font-size:11px;pointer-events:none}
+    .status-line{display:flex;align-items:center;gap:8px;min-height:42px;padding:9px 12px;border-top:1px solid var(--border-default);color:var(--text-secondary);font-size:12px;line-height:18px}
+    .status-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:var(--brand-blue);box-shadow:0 0 10px rgba(51,143,235,.6)}
+    .controls{display:none;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(2,52px);justify-content:center;gap:7px;padding:10px 12px 12px;background:#111}
+    .dpad{display:grid;place-items:center;min-width:52px;min-height:48px;border:1px solid #4a4a4a;border-radius:12px;background:linear-gradient(180deg,#323232,#222);font-size:20px;user-select:none;touch-action:manipulation}
+    .dpad:active{transform:translateY(1px);background:#3d3827;color:var(--brand-gold)}
+    .dpad.up{grid-column:2}.dpad.left{grid-column:1;grid-row:2}.dpad.down{grid-column:2;grid-row:2}.dpad.right{grid-column:3;grid-row:2}
+    .side{display:grid;gap:12px}
+    .panel{padding:14px}
+    .panel-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;font-size:16px;line-height:22px;font-weight:520}
+    .tag{padding:3px 7px;border-radius:var(--radius-sm);background:rgba(255,204,67,.12);color:var(--brand-gold);font-size:10px;font-weight:520}
+    .mission{display:grid;gap:9px}
+    .mission-row{display:flex;align-items:flex-start;gap:9px;color:var(--text-secondary);font-size:13px;line-height:19px}
+    .step{display:grid;place-items:center;width:20px;height:20px;flex:0 0 20px;border-radius:50%;background:#2d2d2d;color:var(--brand-gold);font-family:var(--font-number);font-size:11px}
+    .ai-card{background:linear-gradient(145deg,rgba(129,116,250,.13),rgba(51,143,235,.06));border-color:#433f68}
+    .ai-kicker{color:#aaa3ff;font-size:11px;line-height:16px}
+    .ai-title{margin:4px 0 6px;font-size:15px;line-height:21px;font-weight:520}
+    .ai-copy{min-height:38px;color:var(--text-muted);font-size:12px;line-height:18px}
+    .meter{height:5px;margin-top:10px;overflow:hidden;border-radius:var(--radius-full);background:#303030}
+    .meter>i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--brand-blue),var(--brand-purple));transition:width .3s ease}
+    .action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+    .btn{min-height:44px;padding:9px 12px;border-radius:var(--radius-md);font-size:13px;font-weight:520;transition:transform .12s ease,filter .12s ease}
+    .btn:active{transform:scale(.98)}
+    .btn-primary{background:var(--brand-gold);color:#1a1400}
+    .btn-secondary{background:#2c2c2c;border:1px solid #494949;color:var(--text-secondary)}
+    .btn-purple{background:linear-gradient(135deg,#8174fa,#673fb8)}
+    .btn:disabled{cursor:not-allowed;background:#303030;color:var(--text-muted);border-color:#393939;filter:saturate(.2)}
+    .legend{display:flex;flex-wrap:wrap;gap:8px 12px;color:var(--text-muted);font-size:11px}
+    .legend span{display:flex;align-items:center;gap:5px}
+    .swatch{width:9px;height:9px;border-radius:3px}
+    .overlay{position:fixed;inset:0;z-index:20;display:none;place-items:center;padding:20px;background:rgba(0,0,0,.78);backdrop-filter:blur(12px)}
+    .overlay.show{display:grid}
+    .modal{width:min(420px,100%);padding:22px;border:1px solid #4b4550;border-radius:var(--radius-2xl);background:var(--bg-overlay);box-shadow:0 18px 60px rgba(0,0,0,.6)}
+    .modal-icon{display:grid;place-items:center;width:48px;height:48px;margin-bottom:14px;border-radius:14px;background:#37323a;color:var(--brand-gold);font-size:24px}
+    .modal h2{font-size:20px;line-height:28px;font-weight:520}
+    .modal p{margin-top:8px;color:var(--text-secondary);font-size:14px;line-height:21px}
+    .modal .fine{color:var(--text-muted);font-size:11px;line-height:17px}
+    .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}
+    .modal-actions.one{grid-template-columns:1fr}
+    .ad-stage{text-align:center}
+    .ad-badge{display:inline-block;padding:4px 8px;border:1px solid #5c5264;border-radius:var(--radius-full);color:var(--text-muted);font-size:10px}
+    .countdown{margin:20px 0 6px;color:var(--brand-gold);font-family:var(--font-number);font-size:64px;line-height:70px;font-weight:700}
+    .toast{position:fixed;z-index:30;left:50%;top:18px;width:min(460px,calc(100% - 24px));padding:12px 14px;transform:translate(-50%,-20px);border:1px solid #514b75;border-radius:var(--radius-lg);background:rgba(31,29,47,.96);box-shadow:0 10px 30px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:.25s ease}
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    .toast strong{display:block;color:#b8b2ff;font-size:12px;line-height:17px}
+    .toast span{display:block;margin-top:2px;color:var(--text-secondary);font-size:12px;line-height:18px}
+    @media(max-width:800px){
+      .app{padding:10px 10px calc(14px + env(safe-area-inset-bottom))}
+      .topbar{margin-bottom:10px}.logo{width:42px;height:42px;border-radius:12px}
+      h1{font-size:20px;line-height:26px}.subtitle{font-size:10px}.live-pill{padding:6px 9px}
+      .layout{grid-template-columns:1fr;gap:10px}.hud{padding:7px 9px}.hud-value{font-size:12px}
+      .canvas-wrap{aspect-ratio:15/11}.canvas-tip{display:none}.controls{display:grid}
+      .side{grid-template-columns:1fr 1fr;gap:10px}.side .panel{padding:12px}
+      .side .panel:first-child{grid-column:1/-1}.mission{grid-template-columns:1fr 1fr}
+      .action-row{grid-template-columns:1fr}.legend{display:none}
+    }
+    @media(max-width:480px){
+      .app{padding:8px 8px calc(12px + env(safe-area-inset-bottom))}
+      .topbar{gap:8px}.logo{width:38px;height:38px;font-size:20px}
+      h1{font-size:18px;line-height:23px}.subtitle{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+      .live-pill{display:none}.hud-label{font-size:9px}.hud-value{font-size:11px}
+      .status-line{min-height:38px;padding:7px 10px}
+      .controls{grid-template-columns:repeat(3,60px);grid-template-rows:repeat(2,48px);padding:8px 10px 10px}
+      .dpad{min-height:44px}.side{display:block}.side .panel{margin-top:8px}
+      .side .panel:first-child{display:none}.ai-copy{min-height:auto}
+      .modal{padding:18px}.modal-actions{grid-template-columns:1fr}.countdown{font-size:54px}
+    }
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="title-wrap">
+        <div class="logo" aria-hidden="true">◈</div>
+        <div>
+          <h1>GhostGrid</h1>
+          <p class="subtitle">它在学习你的逃跑习惯</p>
+        </div>
+      </div>
+      <div class="live-pill">本地自适应导演</div>
+    </header>
+
+    <section class="layout">
+      <article class="game-card">
+        <div class="hud" aria-live="polite">
+          <div class="hud-item"><div class="hud-label">能量钥匙</div><div class="hud-value gold" id="keyHud">0 / 2</div></div>
+          <div class="hud-item"><div class="hud-label">逃跑步数</div><div class="hud-value" id="moveHud">0</div></div>
+          <div class="hud-item"><div class="hud-label">导演状态</div><div class="hud-value" id="aiHud">观察中</div></div>
+        </div>
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="game" width="750" height="550" aria-label="GhostGrid 迷宫游戏画面"></canvas>
+          <div class="canvas-tip">WASD / 方向键移动 · 先拿 2 把钥匙再到出口</div>
+        </div>
+        <div class="status-line" aria-live="polite"><i class="status-dot"></i><span id="statusText">先拿两枚能量钥匙，再抵达金色出口。</span></div>
+        <div class="controls" aria-label="屏幕方向键">
+          <button class="dpad up" data-dir="up" aria-label="向上">↑</button>
+          <button class="dpad left" data-dir="left" aria-label="向左">←</button>
+          <button class="dpad down" data-dir="down" aria-label="向下">↓</button>
+          <button class="dpad right" data-dir="right" aria-label="向右">→</button>
+        </div>
+      </article>
+
+      <aside class="side">
+        <section class="panel">
+          <div class="panel-title">逃生任务 <span class="tag">约 60 秒</span></div>
+          <div class="mission">
+            <div class="mission-row"><span class="step">1</span><span>移动蓝色信标，收集两枚金色钥匙。</span></div>
+            <div class="mission-row"><span class="step">2</span><span>观察导演预告，改变路线反制猎手。</span></div>
+            <div class="mission-row"><span class="step">3</span><span>带齐钥匙抵达右上角出口。</span></div>
+          </div>
+        </section>
+
+        <section class="panel ai-card">
+          <div class="ai-kicker">ADAPTIVE DIRECTOR · SEED GG-07</div>
+          <div class="ai-title" id="aiTitle">正在建立移动画像</div>
+          <div class="ai-copy" id="aiCopy">记录直行、左右转与回头动作；变化前会先明确预告。</div>
+          <div class="meter" aria-hidden="true"><i id="aiMeter"></i></div>
+          <div class="action-row">
+            <button class="btn btn-purple" id="decoyBtn" disabled>诱饵未就绪</button>
+            <button class="btn btn-secondary" id="restartBtn">重新开始</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">图例</div>
+          <div class="legend">
+            <span><i class="swatch" style="background:#57a7ff"></i>你</span>
+            <span><i class="swatch" style="background:#ff5678"></i>猎手</span>
+            <span><i class="swatch" style="background:#ffcc43"></i>钥匙</span>
+            <span><i class="swatch" style="background:#33d8a4"></i>出口</span>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <div class="overlay show" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal" id="modalBox"></div>
+  </div>
+  <div class="overlay" id="adOverlay" role="dialog" aria-modal="true" aria-label="本地模拟广告">
+    <div class="modal ad-stage">
+      <span class="ad-badge">本地模拟广告 · 无网络请求</span>
+      <div class="countdown" id="adCount">3</div>
+      <h2>时空回溯充能中</h2>
+      <p>完成后回到最近 8 步中最早的位置。</p>
+      <div class="modal-actions one"><button class="btn btn-secondary" id="cancelAdBtn">关闭广告，检查点继续</button></div>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status"><strong id="toastTitle"></strong><span id="toastText"></span></div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const GAME_ID = 'ghost-grid';
+      const SEED = 'GG-07';
+      const canvas = document.querySelector('#game');
+      const ctx = canvas.getContext('2d');
+      const keyHud = document.querySelector('#keyHud');
+      const moveHud = document.querySelector('#moveHud');
+      const aiHud = document.querySelector('#aiHud');
+      const statusText = document.querySelector('#statusText');
+      const aiTitle = document.querySelector('#aiTitle');
+      const aiCopy = document.querySelector('#aiCopy');
+      const aiMeter = document.querySelector('#aiMeter');
+      const decoyBtn = document.querySelector('#decoyBtn');
+      const modalOverlay = document.querySelector('#modalOverlay');
+      const modalBox = document.querySelector('#modalBox');
+      const adOverlay = document.querySelector('#adOverlay');
+      const adCount = document.querySelector('#adCount');
+      const toast = document.querySelector('#toast');
+      const toastTitle = document.querySelector('#toastTitle');
+      const toastText = document.querySelector('#toastText');
+
+      const baseMap = [
+        '###############',
+        '#S....#......E#',
+        '#.##..#.###...#',
+        '#..K..#...#...#',
+        '###.#.###.#.#.#',
+        '#...#.....#.#.#',
+        '#.#.#####.#.#.#',
+        '#.#.....#...#.#',
+        '#.#####.#####.#',
+        '#.....K.......#',
+        '###############'
+      ];
+      const directions = {
+        up:{x:0,y:-1,name:'up'},down:{x:0,y:1,name:'down'},
+        left:{x:-1,y:0,name:'left'},right:{x:1,y:0,name:'right'}
+      };
+
+      let map = [];
+      let player;
+      let hunter;
+      let exit;
+      let keys = new Map();
+      let history = [];
+      let checkpoint;
+      let started = false;
+      let paused = true;
+      let finished = false;
+      let runId = '';
+      let activeMs = 0;
+      let lastFrame = performance.now();
+      let firstInputSent = false;
+      let aiLocked = false;
+      let aiApplied = false;
+      let aiProfile = 'pending';
+      let aiResponseId = 'pending';
+      let hunterStep = 0;
+      let hunterMoveCount = 0;
+      let lastDir = null;
+      let collected = 0;
+      let moveCount = 0;
+      let decoy = null;
+      let decoyCharges = 0;
+      let adUsed = false;
+      let adTimer = null;
+      let toastTimer = null;
+      let stats = {left:0,right:0,straight:0,reversals:0};
+
+      function emit(type, data = {}) {
+        const detail = {
+          source:'ai-h5-demo',
+          gameId:GAME_ID,
+          type,
+          event:type,
+          ts:Date.now(),
+          elapsed_ms:Math.round(activeMs),
+          run_id:runId,
+          seed:SEED,
+          ai_profile:aiProfile,
+          ai_response_id:aiResponseId,
+          ...data
+        };
+        detail.detail = {...data};
+        window.__aiH5Events = window.__aiH5Events || [];
+        window.__aiH5Events.push(detail);
+        const targets = new Set();
+        if (window.parent && window.parent !== window) targets.add(window.parent);
+        if (window.opener && !window.opener.closed && window.opener !== window) targets.add(window.opener);
+        targets.forEach(target => {
+          try { target.postMessage(detail, '*'); } catch (_) {}
+        });
+        window.dispatchEvent(new CustomEvent('ai-h5-event', {detail}));
+      }
+
+      function setupMap() {
+        map = baseMap.map(row => row.split(''));
+        keys = new Map();
+        for (let y = 0; y < map.length; y += 1) {
+          for (let x = 0; x < map[y].length; x += 1) {
+            const cell = map[y][x];
+            if (cell === 'S') {
+              player = {x,y};
+              checkpoint = {x,y};
+              map[y][x] = '.';
+            } else if (cell === 'E') {
+              exit = {x,y};
+              map[y][x] = '.';
+            } else if (cell === 'K') {
+              keys.set(`${x},${y}`, true);
+              map[y][x] = '.';
+            }
+          }
+        }
+        hunter = {x:13,y:9};
+      }
+
+      function resetState(isReplay = false) {
+        if (isReplay) emit('replay_start', {previous_outcome:finished ? 'escaped' : 'restart'});
+        setupMap();
+        runId = `${GAME_ID}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        history = [{...player}];
+        started = true;
+        paused = false;
+        finished = false;
+        activeMs = 0;
+        firstInputSent = false;
+        aiLocked = false;
+        aiApplied = false;
+        aiProfile = 'pending';
+        aiResponseId = 'pending';
+        hunterStep = 0;
+        hunterMoveCount = 0;
+        lastDir = null;
+        collected = 0;
+        moveCount = 0;
+        decoy = null;
+        decoyCharges = 0;
+        adUsed = false;
+        stats = {left:0,right:0,straight:0,reversals:0};
+        aiTitle.textContent = '正在建立移动画像';
+        aiCopy.textContent = '记录直行、左右转与回头动作；变化前会先明确预告。';
+        aiHud.textContent = '观察中';
+        aiMeter.style.width = '0%';
+        decoyBtn.disabled = true;
+        decoyBtn.textContent = '诱饵未就绪';
+        setStatus('先拿两枚能量钥匙，再抵达金色出口。');
+        closeModal();
+        updateHud();
+        emit('game_start', {control:'keyboard_touch',objective:'collect_2_keys_and_exit'});
+      }
+
+      function showStart() {
+        modalBox.innerHTML = `
+          <div class="modal-icon">◈</div>
+          <h2 id="modalTitle">拿钥匙，躲猎手，冲出口</h2>
+          <p>用 WASD、方向键或屏幕方向键移动蓝色信标。收齐 2 枚钥匙后，抵达右上角绿色出口。</p>
+          <p class="fine">导演会读取你的转向习惯，先预告判断，再改变猎手路线。画像锁定后可获得 1 次诱饵反制。</p>
+          <div class="modal-actions one"><button class="btn btn-primary" id="startBtn">开始逃生</button></div>`;
+        modalOverlay.classList.add('show');
+        document.querySelector('#startBtn').addEventListener('click', () => resetState(false), {once:true});
+      }
+
+      function closeModal() {
+        modalOverlay.classList.remove('show');
+      }
+
+      function setStatus(text) {
+        statusText.textContent = text;
+      }
+
+      function showToast(title, text, duration = 2600) {
+        clearTimeout(toastTimer);
+        toastTitle.textContent = title;
+        toastText.textContent = text;
+        toast.classList.add('show');
+        toastTimer = setTimeout(() => toast.classList.remove('show'), duration);
+      }
+
+      function updateHud() {
+        keyHud.textContent = `${collected} / 2`;
+        moveHud.textContent = String(moveCount);
+        const progress = aiLocked ? 100 : Math.min(96, Math.round(moveCount / 12 * 100));
+        aiMeter.style.width = `${progress}%`;
+      }
+
+      function isFloor(x, y) {
+        return y >= 0 && y < map.length && x >= 0 && x < map[0].length && map[y][x] !== '#';
+      }
+
+      function recordDirection(dir) {
+        if (lastDir) {
+          if (dir.x === -lastDir.x && dir.y === -lastDir.y) {
+            stats.reversals += 1;
+          } else if (dir.x === lastDir.x && dir.y === lastDir.y) {
+            stats.straight += 1;
+          } else {
+            const cross = lastDir.x * dir.y - lastDir.y * dir.x;
+            if (cross > 0) stats.right += 1;
+            else stats.left += 1;
+          }
+        }
+        lastDir = dir;
+      }
+
+      function attemptMove(dir) {
+        if (!started || paused || finished) return;
+        const next = {x:player.x + dir.x,y:player.y + dir.y};
+        if (!isFloor(next.x, next.y)) {
+          setStatus('墙挡住了这条路，换个方向。');
+          return;
+        }
+        if (!firstInputSent) {
+          firstInputSent = true;
+          emit('first_input', {method:'direction',direction:dir.name});
+        }
+        history.push({...player});
+        if (history.length > 8) history.shift();
+        player = next;
+        moveCount += 1;
+        recordDirection(dir);
+
+        const key = `${player.x},${player.y}`;
+        if (keys.get(key)) {
+          keys.delete(key);
+          collected += 1;
+          checkpoint = {...player};
+          setStatus(`获得第 ${collected} 枚钥匙，检查点已更新。`);
+          showToast('能量钥匙已同步', collected === 2 ? '出口权限已解锁。' : '还差一枚，继续探索。');
+        }
+
+        if (!aiLocked && moveCount >= 12) lockDirector();
+        moveHunter();
+        if (sameCell(player, hunter)) {
+          caught();
+          return;
+        }
+        if (player.x === exit.x && player.y === exit.y) {
+          if (collected >= 2) win();
+          else setStatus(`出口还缺 ${2 - collected} 枚钥匙。`);
+        }
+        updateHud();
+      }
+
+      function lockDirector() {
+        aiLocked = true;
+        if (stats.reversals >= 3) {
+          aiProfile = 'reversal';
+          aiResponseId = 'GG_ECHO_TRAIL';
+          aiTitle.textContent = '判定：高频回头';
+          aiCopy.textContent = '响应预告：猎手将追踪你的旧路线。反制：走新岔路或释放诱饵。';
+        } else if (stats.straight >= stats.left + stats.right && stats.straight >= 4) {
+          aiProfile = 'straight_runner';
+          aiResponseId = 'GG_PREDICT_AHEAD';
+          aiTitle.textContent = '判定：直线冲刺';
+          aiCopy.textContent = '响应预告：猎手将拦截前方落点。反制：突然转向或释放诱饵。';
+        } else {
+          aiProfile = 'corner_explorer';
+          aiResponseId = 'GG_EXIT_PATROL';
+          aiTitle.textContent = '判定：转角探索';
+          aiCopy.textContent = '响应预告：猎手将巡逻出口侧。反制：新捷径即将开启。';
+        }
+        aiHud.textContent = '画像锁定';
+        aiMeter.style.width = '100%';
+        emit('ai_observation_locked', {
+          observation:{moves:moveCount,...stats},
+          ai_profile:aiProfile,
+          ai_response_id:aiResponseId
+        });
+        showToast('导演已读出你的习惯', aiCopy.textContent, 3200);
+        setTimeout(applyDirectorResponse, 1300);
+      }
+
+      function applyDirectorResponse() {
+        if (!started || finished || aiApplied) return;
+        aiApplied = true;
+        decoyCharges = 1;
+        decoyBtn.disabled = false;
+        decoyBtn.textContent = '释放诱饵 ×1';
+        aiHud.textContent = '路线已变化';
+        if (aiResponseId === 'GG_EXIT_PATROL') {
+          map[2][6] = '.';
+          map[3][6] = '.';
+          setStatus('导演开放了中央捷径；猎手开始巡逻出口侧。');
+        } else if (aiResponseId === 'GG_ECHO_TRAIL') {
+          setStatus('猎手开始追踪你的旧路线；用新岔路甩开它。');
+        } else {
+          setStatus('猎手开始预测直线落点；突然转向可以骗过它。');
+        }
+        emit('ai_change_shown', {
+          ai_profile:aiProfile,
+          ai_response_id:aiResponseId,
+          counterplay:'change_route_or_use_decoy'
+        });
+      }
+
+      function hunterTarget() {
+        if (decoy && decoy.turns > 0) return decoy;
+        if (!aiApplied) return player;
+        if (aiResponseId === 'GG_PREDICT_AHEAD' && lastDir) {
+          let target = {...player};
+          for (let i = 0; i < 3; i += 1) {
+            const next = {x:target.x + lastDir.x,y:target.y + lastDir.y};
+            if (!isFloor(next.x, next.y)) break;
+            target = next;
+          }
+          return target;
+        }
+        if (aiResponseId === 'GG_ECHO_TRAIL' && history.length) return history[0];
+        if (aiResponseId === 'GG_EXIT_PATROL' && hunterMoveCount % 4 < 2) return exit;
+        return player;
+      }
+
+      function moveHunter() {
+        hunterStep += 1;
+        if (hunterStep % 2 !== 0) return;
+        const target = hunterTarget();
+        const next = findNextStep(hunter, target);
+        if (next) hunter = next;
+        hunterMoveCount += 1;
+        if (decoy) {
+          decoy.turns -= 1;
+          if (decoy.turns <= 0) decoy = null;
+        }
+      }
+
+      function findNextStep(start, target) {
+        if (sameCell(start, target)) return {...start};
+        const queue = [{...start}];
+        const seen = new Set([`${start.x},${start.y}`]);
+        const previous = new Map();
+        const order = [directions.up,directions.left,directions.down,directions.right];
+        let found = false;
+        while (queue.length && !found) {
+          const current = queue.shift();
+          for (const dir of order) {
+            const next = {x:current.x + dir.x,y:current.y + dir.y};
+            const key = `${next.x},${next.y}`;
+            if (!isFloor(next.x,next.y) || seen.has(key)) continue;
+            seen.add(key);
+            previous.set(key,current);
+            if (sameCell(next,target)) { found = true; break; }
+            queue.push(next);
+          }
+        }
+        if (!found) return null;
+        let cursor = {...target};
+        let parent = previous.get(`${cursor.x},${cursor.y}`);
+        while (parent && !sameCell(parent,start)) {
+          cursor = parent;
+          parent = previous.get(`${cursor.x},${cursor.y}`);
+        }
+        return cursor;
+      }
+
+      function useDecoy() {
+        if (!started || paused || finished || decoyCharges < 1) return;
+        if (!firstInputSent) {
+          firstInputSent = true;
+          emit('first_input', {method:'decoy'});
+        }
+        decoy = {x:player.x,y:player.y,turns:4};
+        decoyCharges = 0;
+        decoyBtn.disabled = true;
+        decoyBtn.textContent = '诱饵已使用';
+        setStatus('诱饵已释放：猎手接下来 4 次移动会追踪假信号。');
+        showToast('反制成功', '猎手锁定了你的假信号，趁现在换路。');
+      }
+
+      function caught() {
+        if (paused || finished) return;
+        paused = true;
+        emit('run_end', {outcome:'caught',keys:collected,moves:moveCount});
+        const canOffer = !adUsed;
+        if (canOffer) emit('ad_offer_view', {placement:'caught_rewind',reward:'rewind_8_steps'});
+        modalBox.innerHTML = `
+          <div class="modal-icon">!</div>
+          <h2 id="modalTitle">猎手截住了你</h2>
+          <p>${canOffer ? '可观看 3 秒本地模拟广告，回到最近 8 步中最早的位置。' : '本局回溯已使用，仍可从最近钥匙检查点继续。'}</p>
+          <p class="fine">拒绝不会结束游戏，也不会提高难度。</p>
+          <div class="modal-actions ${canOffer ? '' : 'one'}">
+            ${canOffer ? '<button class="btn btn-primary" id="acceptAd">看 3 秒，回溯 8 步</button>' : ''}
+            <button class="btn btn-secondary" id="declineAd">检查点继续</button>
+          </div>`;
+        modalOverlay.classList.add('show');
+        if (canOffer) document.querySelector('#acceptAd').addEventListener('click', startAd, {once:true});
+        document.querySelector('#declineAd').addEventListener('click', () => {
+          if (canOffer) {
+            adUsed = true;
+            emit('ad_cancel', {placement:'caught_rewind',reason:'declined'});
+          }
+          resumeAt(checkpoint, false);
+        }, {once:true});
+      }
+
+      function startAd() {
+        adUsed = true;
+        emit('ad_accept', {placement:'caught_rewind'});
+        closeModal();
+        adOverlay.classList.add('show');
+        let remaining = 3;
+        adCount.textContent = String(remaining);
+        clearInterval(adTimer);
+        adTimer = setInterval(() => {
+          remaining -= 1;
+          adCount.textContent = String(Math.max(remaining,0));
+          if (remaining <= 0) {
+            clearInterval(adTimer);
+            adTimer = null;
+            adOverlay.classList.remove('show');
+            emit('ad_complete', {placement:'caught_rewind',duration_ms:3000});
+            emit('reward_grant', {reward:'rewind_8_steps',grant_once:true});
+            resumeAt(history[0] || checkpoint, true);
+          }
+        }, 1000);
+      }
+
+      function cancelAd() {
+        if (!adTimer) return;
+        clearInterval(adTimer);
+        adTimer = null;
+        adUsed = true;
+        adOverlay.classList.remove('show');
+        emit('ad_cancel', {placement:'caught_rewind',reason:'closed_during_ad'});
+        resumeAt(checkpoint, false);
+      }
+
+      function resumeAt(position, rewound) {
+        closeModal();
+        player = {...position};
+        hunter = {x:13,y:9};
+        history = [{...player}];
+        paused = false;
+        setStatus(rewound ? '回溯完成：你回到了 8 步前，钥匙进度保留。' : '已从检查点继续，钥匙进度保留。');
+        showToast('逃生继续', rewound ? '时间位置已回溯，导演画像保持不变。' : '没有观看广告，难度保持不变。');
+      }
+
+      function win() {
+        finished = true;
+        paused = true;
+        emit('core_payoff', {
+          payoff:'escaped_with_two_keys',
+          keys:collected,
+          moves:moveCount,
+          used_ad:adUsed
+        });
+        emit('run_end', {outcome:'escaped',keys:collected,moves:moveCount,used_ad:adUsed});
+        modalBox.innerHTML = `
+          <div class="modal-icon">✓</div>
+          <h2 id="modalTitle">你破解了猎手路线</h2>
+          <p>收齐 2 枚钥匙并成功逃生。导演把你识别为“${profileName()}”，本局只改变了一次追踪策略。</p>
+          <p class="fine">反制记录：${decoyCharges === 0 ? '使用过诱饵' : '依靠路线变化'} · 广告：${adUsed ? '已使用或关闭' : '未使用'}</p>
+          <div class="modal-actions one"><button class="btn btn-primary" id="replayBtn">同种子再逃一次</button></div>`;
+        modalOverlay.classList.add('show');
+        document.querySelector('#replayBtn').addEventListener('click', () => resetState(true), {once:true});
+      }
+
+      function profileName() {
+        if (aiProfile === 'reversal') return '高频回头';
+        if (aiProfile === 'straight_runner') return '直线冲刺';
+        if (aiProfile === 'corner_explorer') return '转角探索';
+        return '观察中';
+      }
+
+      function sameCell(a,b) {
+        return a.x === b.x && a.y === b.y;
+      }
+
+      function draw() {
+        const cell = 50;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        const gradient = ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+        gradient.addColorStop(0,'#101726');
+        gradient.addColorStop(1,'#07090d');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+
+        for (let y = 0; y < map.length; y += 1) {
+          for (let x = 0; x < map[y].length; x += 1) {
+            const px = x * cell;
+            const py = y * cell;
+            if (map[y][x] === '#') {
+              ctx.fillStyle = '#273042';
+              roundRect(ctx,px + 3,py + 3,cell - 6,cell - 6,9);
+              ctx.fill();
+              ctx.fillStyle = 'rgba(255,255,255,.035)';
+              roundRect(ctx,px + 7,py + 7,cell - 14,6,3);
+              ctx.fill();
+            } else {
+              ctx.fillStyle = (x + y) % 2 ? 'rgba(255,255,255,.022)' : 'rgba(255,255,255,.012)';
+              ctx.fillRect(px,py,cell,cell);
+            }
+          }
+        }
+
+        drawExit(exit.x * cell + cell/2,exit.y * cell + cell/2);
+        keys.forEach((_, key) => {
+          const [x,y] = key.split(',').map(Number);
+          drawKey(x * cell + cell/2,y * cell + cell/2);
+        });
+        if (decoy) drawDecoy(decoy.x * cell + cell/2,decoy.y * cell + cell/2);
+        drawHunter(hunter.x * cell + cell/2,hunter.y * cell + cell/2);
+        drawPlayer(player.x * cell + cell/2,player.y * cell + cell/2);
+
+        if (!started) {
+          ctx.fillStyle = 'rgba(0,0,0,.3)';
+          ctx.fillRect(0,0,canvas.width,canvas.height);
+        }
+        requestAnimationFrame(draw);
+      }
+
+      function drawPlayer(x,y) {
+        ctx.save();
+        ctx.shadowColor = '#338feb';
+        ctx.shadowBlur = 18;
+        ctx.fillStyle = '#57a7ff';
+        ctx.beginPath();
+        ctx.arc(x,y,14,0,Math.PI*2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = '#d8ecff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(x,y,8,0,Math.PI*2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawHunter(x,y) {
+        ctx.save();
+        ctx.shadowColor = '#ff5678';
+        ctx.shadowBlur = 18;
+        ctx.fillStyle = '#ff5678';
+        ctx.beginPath();
+        ctx.moveTo(x,y-17);ctx.lineTo(x+16,y+14);ctx.lineTo(x-16,y+14);ctx.closePath();ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#240713';
+        ctx.beginPath();ctx.arc(x-5,y+4,2.5,0,Math.PI*2);ctx.arc(x+5,y+4,2.5,0,Math.PI*2);ctx.fill();
+        ctx.restore();
+      }
+
+      function drawKey(x,y) {
+        ctx.save();
+        ctx.strokeStyle = '#ffcc43';
+        ctx.fillStyle = '#ffcc43';
+        ctx.lineWidth = 5;
+        ctx.shadowColor = '#ffcc43';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();ctx.arc(x-6,y-2,7,0,Math.PI*2);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(x,y+3);ctx.lineTo(x+13,y+12);ctx.lineTo(x+18,y+7);ctx.moveTo(x+10,y+9);ctx.lineTo(x+14,y+4);ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawExit(x,y) {
+        ctx.save();
+        ctx.strokeStyle = '#33d8a4';
+        ctx.lineWidth = 4;
+        ctx.shadowColor = '#33d8a4';
+        ctx.shadowBlur = 16;
+        ctx.strokeRect(x-15,y-18,30,36);
+        ctx.fillStyle = 'rgba(51,216,164,.18)';
+        ctx.fillRect(x-12,y-15,24,30);
+        ctx.fillStyle = '#33d8a4';
+        ctx.beginPath();ctx.arc(x+7,y,2.5,0,Math.PI*2);ctx.fill();
+        ctx.restore();
+      }
+
+      function drawDecoy(x,y) {
+        ctx.save();
+        ctx.strokeStyle = '#b4a8ff';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([4,4]);
+        ctx.beginPath();ctx.arc(x,y,17,0,Math.PI*2);ctx.stroke();
+        ctx.restore();
+      }
+
+      function roundRect(context,x,y,w,h,r) {
+        const radius = Math.min(r,w/2,h/2);
+        context.beginPath();
+        context.moveTo(x+radius,y);
+        context.arcTo(x+w,y,x+w,y+h,radius);
+        context.arcTo(x+w,y+h,x,y+h,radius);
+        context.arcTo(x,y+h,x,y,radius);
+        context.arcTo(x,y,x+w,y,radius);
+        context.closePath();
+      }
+
+      function tick(now) {
+        const delta = Math.min(50,now - lastFrame);
+        lastFrame = now;
+        if (started && !paused && !finished) {
+          activeMs += delta;
+          if (!aiLocked && activeMs >= 25000) lockDirector();
+        }
+        requestAnimationFrame(tick);
+      }
+
+      const keyMap = {
+        ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',
+        ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right'
+      };
+      window.addEventListener('keydown', event => {
+        const name = keyMap[event.code];
+        if (!name || event.repeat) return;
+        event.preventDefault();
+        attemptMove(directions[name]);
+      }, {passive:false});
+      document.querySelectorAll('[data-dir]').forEach(button => {
+        button.addEventListener('pointerdown', event => {
+          event.preventDefault();
+          attemptMove(directions[button.dataset.dir]);
+        });
+      });
+      decoyBtn.addEventListener('click', useDecoy);
+      document.querySelector('#restartBtn').addEventListener('click', () => {
+        if (!started) return;
+        resetState(true);
+      });
+      document.querySelector('#cancelAdBtn').addEventListener('click', cancelAd);
+      document.addEventListener('visibilitychange', () => {
+        if (!started || finished || modalOverlay.classList.contains('show') || adOverlay.classList.contains('show')) return;
+        paused = document.hidden;
+        if (!document.hidden) lastFrame = performance.now();
+      });
+
+      setupMap();
+      updateHud();
+      showStart();
+      requestAnimationFrame(draw);
+      requestAnimationFrame(tick);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <link rel="icon" href="data:,">
+  <title>BioForge · Adaptive Monster Lab</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-primary: #07100f;
+      --bg-card: #101c1a;
+      --bg-elevated: #192724;
+      --text-primary: #f7fff7;
+      --text-secondary: #c8d8d2;
+      --text-muted: #7e9890;
+      --brand-gold: #ffd166;
+      --brand-green: #52f2a7;
+      --brand-blue: #55c8ff;
+      --brand-purple: #bb86fc;
+      --danger: #ff6b7a;
+      --border-default: rgba(166, 255, 214, .16);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 22px;
+      --radius-full: 999px;
+      --font-primary: Inter, "Segoe UI", "PingFang SC", sans-serif;
+      --font-number: "Segoe UI", var(--font-primary);
+    }
+    html, body { width: 100%; min-height: 100%; }
+    body {
+      font-family: var(--font-primary);
+      color: var(--text-primary);
+      background:
+        radial-gradient(circle at 15% 10%, rgba(82, 242, 167, .13), transparent 31rem),
+        radial-gradient(circle at 90% 90%, rgba(85, 200, 255, .11), transparent 34rem),
+        #050b0a;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    button { font: inherit; }
+    button:focus-visible { outline: 3px solid rgba(85, 200, 255, .72); outline-offset: 3px; }
+    .app {
+      width: min(1180px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 22px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 18px;
+    }
+    .topbar {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 18px;
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      background: rgba(11, 21, 19, .82);
+      box-shadow: 0 16px 44px rgba(0, 0, 0, .24);
+      backdrop-filter: blur(18px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-mark {
+      width: 42px; height: 42px; border-radius: 14px;
+      display: grid; place-items: center;
+      color: #04110d; font-weight: 900; letter-spacing: -2px;
+      background: linear-gradient(145deg, var(--brand-green), var(--brand-blue));
+      box-shadow: 0 0 28px rgba(82, 242, 167, .22);
+    }
+    .brand h1 { font-size: 20px; line-height: 1.05; letter-spacing: -.03em; }
+    .brand p { color: var(--text-muted); font-size: 12px; margin-top: 4px; }
+    .phase-pills { display: flex; align-items: center; gap: 6px; }
+    .phase-pills span {
+      width: 30px; height: 6px; border-radius: var(--radius-full);
+      background: #263532; transition: .25s ease;
+    }
+    .phase-pills span.active { width: 46px; background: var(--brand-green); box-shadow: 0 0 12px rgba(82, 242, 167, .45); }
+    .metric {
+      font-size: 12px; color: var(--text-muted); white-space: nowrap;
+      padding: 8px 12px; border: 1px solid var(--border-default); border-radius: var(--radius-full);
+    }
+    .stage {
+      position: relative;
+      min-height: 650px;
+      overflow: hidden;
+      border: 1px solid var(--border-default);
+      border-radius: 28px;
+      background:
+        linear-gradient(rgba(100, 255, 187, .025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(100, 255, 187, .025) 1px, transparent 1px),
+        linear-gradient(150deg, rgba(13, 31, 27, .98), rgba(7, 16, 15, .98));
+      background-size: 30px 30px, 30px 30px, auto;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .3);
+    }
+    .screen {
+      min-height: 650px;
+      padding: 42px;
+      display: none;
+      animation: rise .36s ease both;
+    }
+    .screen.active { display: flex; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--brand-green); font-size: 12px; font-weight: 800; letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; }
+    .screen-title { font-size: clamp(34px, 5vw, 60px); line-height: .98; letter-spacing: -.055em; margin: 15px 0 14px; }
+    .screen-copy { max-width: 620px; color: var(--text-secondary); font-size: 15px; line-height: 1.6; }
+
+    .select-screen { flex-direction: column; justify-content: center; }
+    .select-head { max-width: 760px; margin-bottom: 28px; }
+    .gene-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .gene-card {
+      min-height: 228px;
+      text-align: left;
+      color: var(--text-primary);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(155deg, rgba(255,255,255,.055), rgba(255,255,255,.015));
+      padding: 16px;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .gene-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--gene), transparent 35%); }
+    .gene-card.selected {
+      border-color: var(--gene);
+      background: color-mix(in srgb, var(--gene), transparent 88%);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gene), transparent 45%), 0 12px 32px rgba(0,0,0,.2);
+    }
+    .gene-card.selected::after {
+      content: attr(data-order);
+      position: absolute; top: 12px; right: 12px;
+      width: 25px; height: 25px; display: grid; place-items: center;
+      color: #06100d; background: var(--gene); border-radius: 50%; font-size: 12px; font-weight: 900;
+    }
+    .gene-orb {
+      width: 74px; height: 74px; margin-bottom: 22px;
+      border-radius: 44% 56% 52% 48% / 58% 45% 55% 42%;
+      display: grid; place-items: center;
+      color: #07100f; font-size: 27px; font-weight: 900;
+      background: radial-gradient(circle at 32% 28%, #fff, var(--gene) 24%, color-mix(in srgb, var(--gene), #000 34%) 72%);
+      box-shadow: 0 0 24px color-mix(in srgb, var(--gene), transparent 62%);
+      transform: rotate(-7deg);
+    }
+    .gene-card h3 { font-size: 18px; letter-spacing: -.02em; }
+    .gene-card .gene-type { color: var(--gene); font-size: 11px; margin: 5px 0 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .11em; }
+    .gene-card p { color: var(--text-muted); font-size: 12px; line-height: 1.45; }
+    .gene-stat { margin-top: 15px; font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between; }
+    .select-action { margin-top: 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .selection-hint { color: var(--text-muted); font-size: 13px; }
+    .primary-btn, .secondary-btn, .ghost-btn {
+      min-height: 48px; border-radius: var(--radius-md); padding: 0 19px;
+      cursor: pointer; font-weight: 800; border: 0;
+      transition: transform .15s ease, filter .15s ease, opacity .15s ease;
+    }
+    .primary-btn { color: #06100d; background: linear-gradient(135deg, var(--brand-green), #91ffd2); box-shadow: 0 9px 24px rgba(82,242,167,.18); }
+    .primary-btn:hover:not(:disabled), .secondary-btn:hover, .ghost-btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+    .primary-btn:disabled { cursor: not-allowed; opacity: .34; box-shadow: none; }
+    .secondary-btn { color: var(--text-primary); background: var(--bg-elevated); border: 1px solid var(--border-default); }
+    .ghost-btn { color: var(--text-secondary); background: transparent; border: 1px solid var(--border-default); }
+
+    .fusion-screen { align-items: center; justify-content: center; text-align: center; flex-direction: column; }
+    .fusion-chamber { position: relative; width: min(570px, 100%); height: 330px; display: grid; place-items: center; }
+    .fusion-ring {
+      position: absolute; border-radius: 50%; border: 1px solid rgba(82,242,167,.24);
+      animation: spin 7s linear infinite;
+    }
+    .fusion-ring.r1 { width: 270px; height: 270px; border-style: dashed; }
+    .fusion-ring.r2 { width: 200px; height: 200px; animation-direction: reverse; border-color: rgba(85,200,255,.32); }
+    .fusion-beam { position: absolute; inset: 50% auto auto 50%; width: 70%; height: 3px; transform: translate(-50%,-50%); background: linear-gradient(90deg, transparent, var(--brand-green), #fff, var(--brand-blue), transparent); filter: blur(1px); animation: beam 1s ease-in-out infinite alternate; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes beam { from { opacity: .35; transform: translate(-50%,-50%) scaleX(.75); } to { opacity: 1; transform: translate(-50%,-50%) scaleX(1.05); } }
+    .fusing-orb { width: 118px; height: 118px; border-radius: 42% 58% 49% 51% / 58% 43% 57% 42%; background: var(--fusion-gradient); box-shadow: 0 0 54px rgba(82,242,167,.35); animation: morph 1.2s ease-in-out infinite alternate; z-index: 2; }
+    @keyframes morph { to { border-radius: 58% 42% 61% 39% / 40% 60% 40% 60%; transform: scale(1.08) rotate(8deg); } }
+    .fusion-status { color: var(--text-secondary); font-size: 14px; letter-spacing: .1em; text-transform: uppercase; }
+
+    .battle-screen { flex-direction: column; gap: 16px; }
+    .battle-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .battle-label h2 { font-size: 24px; letter-spacing: -.035em; }
+    .battle-label p { color: var(--text-muted); font-size: 12px; margin-top: 5px; }
+    .battle-round { color: var(--brand-gold); font-weight: 900; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+    .arena {
+      position: relative; flex: 1; min-height: 385px;
+      overflow: hidden; border: 1px solid var(--border-default); border-radius: var(--radius-xl);
+      background:
+        radial-gradient(ellipse at 50% 95%, rgba(82,242,167,.1), transparent 45%),
+        linear-gradient(180deg, #0b1715 0%, #0a1312 61%, #15201e 61%, #0b1211 100%);
+    }
+    .arena::before {
+      content: ""; position: absolute; left: 0; right: 0; top: 61%; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(139,255,205,.2), transparent);
+    }
+    .scan-lines { position: absolute; inset: 0; pointer-events: none; opacity: .25; background: repeating-linear-gradient(180deg, transparent 0 5px, rgba(125,255,206,.025) 6px); }
+    .fighter {
+      position: absolute; bottom: 78px; width: 180px;
+      display: flex; flex-direction: column; align-items: center; gap: 11px;
+      transition: transform .16s ease;
+    }
+    .fighter.player { left: 10%; }
+    .fighter.enemy { right: 10%; }
+    .fighter.hit { animation: hit .22s ease; }
+    .fighter.attack .creature { animation: lunge .25s ease; }
+    @keyframes hit { 50% { filter: brightness(2); transform: translateX(7px); } }
+    @keyframes lunge { 50% { transform: translateX(18px) scale(1.04); } }
+    .fighter.enemy.attack .creature { animation-name: enemy-lunge; }
+    @keyframes enemy-lunge { 50% { transform: translateX(-18px) scale(1.04); } }
+    .creature {
+      --c1: var(--brand-green); --c2: var(--brand-blue);
+      width: 116px; height: 118px; position: relative;
+      border-radius: 45% 55% 42% 58% / 55% 41% 59% 45%;
+      background: radial-gradient(circle at 35% 28%, #fff 0 4%, var(--c1) 5% 30%, color-mix(in srgb, var(--c2), #000 25%) 74%);
+      box-shadow: inset -13px -16px 24px rgba(0,0,0,.26), 0 0 28px color-mix(in srgb, var(--c1), transparent 60%);
+    }
+    .creature::before, .creature::after { content: ""; position: absolute; background: var(--c2); box-shadow: inset -5px -5px 8px rgba(0,0,0,.22); }
+    .creature::before { width: 44px; height: 30px; border-radius: 80% 12% 70% 20%; left: -19px; top: 38px; transform: rotate(-28deg); }
+    .creature::after { width: 44px; height: 30px; border-radius: 12% 80% 20% 70%; right: -19px; top: 32px; transform: rotate(26deg); }
+    .creature .eye {
+      position: absolute; width: 15px; height: 15px; border-radius: 50%; top: 35px;
+      background: #05110e; box-shadow: inset 4px 3px 0 #fff;
+    }
+    .creature .eye.e1 { left: 30px; } .creature .eye.e2 { right: 30px; }
+    .creature .crest { position: absolute; width: 31px; height: 46px; left: 43px; top: -25px; background: var(--c2); clip-path: polygon(50% 0, 100% 100%, 0 100%); filter: drop-shadow(0 0 8px var(--c2)); }
+    .enemy-creature { --c1: #ff8d70; --c2: #ff5d7a; filter: saturate(.72); }
+    .boss-creature { width: 138px; height: 138px; --c1: #ff6a70; --c2: #9a55ff; }
+    .fighter-name { font-weight: 850; font-size: 13px; }
+    .health { width: 170px; height: 9px; border-radius: var(--radius-full); overflow: hidden; background: #26302e; border: 1px solid rgba(255,255,255,.06); }
+    .health-fill { height: 100%; width: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--brand-green), #b3ff79); transition: width .22s ease; }
+    .enemy .health-fill { background: linear-gradient(90deg, #ff5573, #ffb06c); }
+    .damage-pop {
+      position: absolute; z-index: 8; font: 900 18px var(--font-number); pointer-events: none;
+      animation: float-up .72s ease-out forwards;
+    }
+    @keyframes float-up { from { opacity: 0; transform: translateY(8px) scale(.8); } 20% { opacity: 1; } to { opacity: 0; transform: translateY(-38px) scale(1.05); } }
+    .battle-console {
+      position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%);
+      width: min(72%, 590px); text-align: center; color: var(--text-secondary);
+      font-size: 12px; padding: 10px 14px; border-radius: var(--radius-full);
+      background: rgba(4, 12, 10, .72); border: 1px solid var(--border-default);
+    }
+    .battle-actions { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+    .ability-info { min-width: 0; }
+    .ability-info strong { display: block; font-size: 14px; }
+    .ability-info span { display: block; color: var(--text-muted); font-size: 12px; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .overload-btn {
+      min-height: 52px; min-width: 196px; border: 0; border-radius: var(--radius-md);
+      color: #0a1010; font-weight: 900; cursor: pointer;
+      background: linear-gradient(135deg, var(--brand-gold), #ff935c);
+      box-shadow: 0 10px 26px rgba(255,209,102,.16);
+    }
+    .overload-btn:disabled { cursor: not-allowed; opacity: .38; box-shadow: none; }
+    .overload-btn.ready { animation: pulse 1.15s ease-in-out infinite; }
+    @keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(255,209,102,.08), 0 12px 30px rgba(255,209,102,.2); } }
+
+    .mutation-screen { flex-direction: column; justify-content: center; }
+    .analysis-card {
+      display: grid; grid-template-columns: auto 1fr; gap: 14px;
+      align-items: center; padding: 14px 16px; margin: 22px 0;
+      border-radius: var(--radius-lg); border: 1px solid rgba(85,200,255,.26);
+      background: rgba(85,200,255,.075);
+    }
+    .analysis-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px; background: rgba(85,200,255,.15); color: var(--brand-blue); font-weight: 900; }
+    .analysis-card strong { font-size: 14px; } .analysis-card p { color: var(--text-muted); font-size: 12px; margin-top: 4px; }
+    .mutation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .mutation-card {
+      min-height: 174px; padding: 17px; text-align: left;
+      color: var(--text-primary); border: 1px solid var(--border-default); border-radius: var(--radius-lg);
+      background: linear-gradient(155deg, rgba(255,255,255,.055), rgba(255,255,255,.014));
+      cursor: pointer; transition: .18s ease;
+    }
+    .mutation-card:hover { transform: translateY(-3px); border-color: rgba(82,242,167,.55); }
+    .mutation-card .mutation-symbol { color: var(--brand-green); font-size: 23px; font-weight: 900; }
+    .mutation-card h3 { margin: 20px 0 7px; font-size: 17px; }
+    .mutation-card p { color: var(--text-muted); font-size: 12px; line-height: 1.45; }
+    .mutation-card small { display: block; color: var(--brand-green); margin-top: 13px; font-weight: 800; }
+    .ad-strip {
+      margin-top: 16px; display: flex; justify-content: space-between; align-items: center; gap: 14px;
+      padding: 13px 14px; border-radius: var(--radius-lg); border: 1px solid rgba(255,209,102,.2);
+      background: rgba(255,209,102,.055);
+    }
+    .ad-strip strong { font-size: 13px; } .ad-strip p { margin-top: 4px; color: var(--text-muted); font-size: 11px; }
+    .ad-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    .result-screen { flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    .unlock-ring {
+      width: 180px; height: 180px; border-radius: 50%; margin: 22px 0;
+      display: grid; place-items: center; position: relative;
+      border: 1px solid rgba(82,242,167,.32); background: radial-gradient(circle, rgba(82,242,167,.14), transparent 68%);
+      box-shadow: 0 0 60px rgba(82,242,167,.12);
+    }
+    .unlock-ring::after { content: ""; position: absolute; inset: 14px; border: 1px dashed rgba(85,200,255,.32); border-radius: 50%; animation: spin 10s linear infinite; }
+    .unlock-creature { transform: scale(.84); }
+    .result-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; width: min(620px, 100%); margin: 5px 0 20px; }
+    .result-stat { padding: 13px; border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--border-default); }
+    .result-stat strong { font: 800 18px var(--font-number); display: block; }
+    .result-stat span { color: var(--text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+    .result-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+    .toast {
+      position: fixed; left: 50%; top: 26px; z-index: 50; transform: translate(-50%, -18px);
+      opacity: 0; pointer-events: none; max-width: calc(100vw - 32px);
+      padding: 11px 15px; border-radius: var(--radius-full); color: var(--text-primary);
+      background: rgba(16,28,26,.95); border: 1px solid var(--border-default);
+      box-shadow: 0 12px 34px rgba(0,0,0,.34); transition: .24s ease; font-size: 13px;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .ad-overlay {
+      position: fixed; inset: 0; z-index: 100; display: none; place-items: center;
+      padding: 20px; background: rgba(2,7,6,.88); backdrop-filter: blur(14px);
+    }
+    .ad-overlay.active { display: grid; }
+    .ad-box {
+      width: min(420px, 100%); padding: 28px; text-align: center;
+      border: 1px solid rgba(255,209,102,.3); border-radius: var(--radius-xl);
+      background: linear-gradient(155deg, #1c241d, #111b18); box-shadow: 0 24px 80px rgba(0,0,0,.5);
+    }
+    .ad-tag { display: inline-block; color: #181000; background: var(--brand-gold); border-radius: var(--radius-full); padding: 5px 9px; font-size: 10px; font-weight: 900; letter-spacing: .1em; }
+    .ad-box h2 { margin: 18px 0 6px; font-size: 21px; }
+    .ad-box p { color: var(--text-muted); font-size: 13px; }
+    .ad-count {
+      width: 78px; height: 78px; display: grid; place-items: center; margin: 22px auto 0;
+      border-radius: 50%; border: 3px solid var(--brand-gold); color: var(--brand-gold);
+      font: 900 32px var(--font-number); box-shadow: 0 0 25px rgba(255,209,102,.14);
+    }
+
+    @media (max-width: 760px) {
+      .app { padding: 10px; gap: 10px; min-height: 100svh; }
+      .topbar { min-height: 58px; padding: 10px 12px; border-radius: var(--radius-lg); }
+      .brand-mark { width: 36px; height: 36px; border-radius: 11px; }
+      .brand h1 { font-size: 17px; } .brand p, .metric { display: none; }
+      .phase-pills span { width: 18px; } .phase-pills span.active { width: 28px; }
+      .stage, .screen { min-height: calc(100svh - 78px); }
+      .stage { border-radius: 20px; }
+      .screen { padding: 22px 15px; }
+      .screen-title { font-size: 36px; }
+      .screen-copy { font-size: 13px; }
+      .select-screen { justify-content: flex-start; overflow-y: auto; }
+      .select-head { margin-bottom: 17px; }
+      .gene-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .gene-card { min-height: 164px; padding: 12px; }
+      .gene-orb { width: 48px; height: 48px; margin-bottom: 12px; font-size: 18px; }
+      .gene-card h3 { font-size: 15px; }
+      .gene-card p { display: none; }
+      .gene-card .gene-type { margin-bottom: 8px; }
+      .gene-stat { margin-top: 10px; }
+      .select-action { position: sticky; bottom: 0; padding: 10px 0 0; background: linear-gradient(transparent, #0b1715 34%); }
+      .selection-hint { font-size: 11px; }
+      .fusion-chamber { height: 280px; }
+      .battle-screen { padding: 16px 12px; }
+      .battle-head { align-items: flex-start; }
+      .battle-label h2 { font-size: 20px; }
+      .arena { min-height: 430px; }
+      .fighter { bottom: 104px; width: 125px; }
+      .fighter.player { left: 3%; } .fighter.enemy { right: 3%; }
+      .creature { width: 88px; height: 91px; }
+      .boss-creature { width: 104px; height: 108px; }
+      .creature::before, .creature::after { width: 31px; height: 22px; }
+      .creature::before { left: -13px; } .creature::after { right: -13px; }
+      .creature .eye { width: 12px; height: 12px; top: 28px; }
+      .creature .eye.e1 { left: 22px; } .creature .eye.e2 { right: 22px; }
+      .creature .crest { width: 23px; height: 34px; left: 33px; top: -19px; }
+      .health { width: 118px; }
+      .battle-console { width: calc(100% - 24px); bottom: 15px; border-radius: 12px; }
+      .battle-actions { grid-template-columns: 1fr; }
+      .ability-info span { white-space: normal; }
+      .overload-btn { width: 100%; min-width: 0; }
+      .mutation-screen { justify-content: flex-start; overflow-y: auto; }
+      .analysis-card { margin: 15px 0; }
+      .mutation-grid { grid-template-columns: 1fr; }
+      .mutation-card { min-height: 112px; }
+      .mutation-card h3 { margin-top: 9px; }
+      .ad-strip { align-items: flex-start; flex-direction: column; }
+      .ad-actions { width: 100%; }
+      .ad-actions button { flex: 1; }
+      .unlock-ring { width: 148px; height: 148px; }
+      .result-stats { gap: 6px; }
+      .result-stat { padding: 10px 5px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">BF</div>
+        <div>
+          <h1>BioForge</h1>
+          <p>Adaptive monster laboratory</p>
+        </div>
+      </div>
+      <div class="phase-pills" aria-label="Run progress">
+        <span class="active"></span><span></span><span></span><span></span>
+      </div>
+      <div class="metric" id="runMetric">Run 01 · Local AI</div>
+    </header>
+
+    <section class="stage">
+      <section class="screen select-screen active" data-screen="select">
+        <div class="select-head">
+          <div class="eyebrow">Gene bank online</div>
+          <h2 class="screen-title">Forge the impossible.</h2>
+          <p class="screen-copy">Choose two gene cores. Their color, body traits and combat ability will combine into one explainable hybrid.</p>
+        </div>
+        <div class="gene-grid" id="geneGrid"></div>
+        <div class="select-action">
+          <div class="selection-hint" id="selectionHint">Select 2 different cores</div>
+          <button class="primary-btn" id="fuseButton" disabled>Fuse selected genes</button>
+        </div>
+      </section>
+
+      <section class="screen fusion-screen" data-screen="fusion">
+        <div class="eyebrow">Synthesis in progress</div>
+        <div class="fusion-chamber">
+          <div class="fusion-ring r1"></div>
+          <div class="fusion-ring r2"></div>
+          <div class="fusion-beam"></div>
+          <div class="fusing-orb" id="fusingOrb"></div>
+        </div>
+        <h2 class="screen-title" id="fusionName">Reading gene grammar…</h2>
+        <p class="fusion-status" id="fusionStatus">Binding inherited traits</p>
+      </section>
+
+      <section class="screen battle-screen" data-screen="battle">
+        <div class="battle-head">
+          <div class="battle-label">
+            <h2 id="battleTitle">Calibration Battle</h2>
+            <p id="battleSubtitle">The director is observing damage, defense and your overload timing.</p>
+          </div>
+          <div class="battle-round" id="battleRound">Trial 01</div>
+        </div>
+        <div class="arena" id="arena">
+          <div class="scan-lines"></div>
+          <div class="fighter player" id="playerFighter">
+            <div class="creature" id="playerCreature">
+              <i class="crest"></i><i class="eye e1"></i><i class="eye e2"></i>
+            </div>
+            <div class="fighter-name" id="playerName">Hybrid</div>
+            <div class="health"><div class="health-fill" id="playerHealth"></div></div>
+          </div>
+          <div class="fighter enemy" id="enemyFighter">
+            <div class="creature enemy-creature" id="enemyCreature">
+              <i class="crest"></i><i class="eye e1"></i><i class="eye e2"></i>
+            </div>
+            <div class="fighter-name" id="enemyName">Scrap Hound</div>
+            <div class="health"><div class="health-fill" id="enemyHealth"></div></div>
+          </div>
+          <div class="battle-console" id="battleConsole">Auto-attacks are active. You control the decisive overload.</div>
+        </div>
+        <div class="battle-actions">
+          <div class="ability-info">
+            <strong id="abilityName">Inherited Overload</strong>
+            <span id="abilityDescription">A burst assembled from both selected cores.</span>
+          </div>
+          <button class="overload-btn ready" id="overloadButton">Release overload</button>
+        </div>
+      </section>
+
+      <section class="screen mutation-screen" data-screen="mutation">
+        <div>
+          <div class="eyebrow">Adaptive director</div>
+          <h2 class="screen-title">Your battle changed the lab.</h2>
+          <p class="screen-copy">The director read your first fight and prepared side-grade mutations for the Boss. Every current option can win.</p>
+        </div>
+        <div class="analysis-card">
+          <div class="analysis-icon">AI</div>
+          <div>
+            <strong id="analysisTitle">Profile locked</strong>
+            <p id="analysisCopy">Your combat telemetry created this recommendation.</p>
+          </div>
+        </div>
+        <div class="mutation-grid" id="mutationGrid"></div>
+        <div class="ad-strip">
+          <div>
+            <strong>Want a different tactical set?</strong>
+            <p>Optional 3-second simulated ad refreshes three equal side-grades. No exclusive rarity.</p>
+          </div>
+          <div class="ad-actions">
+            <button class="ghost-btn" id="keepChoices">Keep choices</button>
+            <button class="secondary-btn" id="refreshChoices">Watch 3s · Refresh</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen result-screen" data-screen="result">
+        <div class="eyebrow">Collection specimen unlocked</div>
+        <h2 class="screen-title" id="resultTitle">Boss genome stabilized.</h2>
+        <p class="screen-copy" id="resultCopy">Your hybrid survived two fights and earned a permanent silhouette in this demo collection.</p>
+        <div class="unlock-ring">
+          <div class="creature unlock-creature" id="unlockCreature">
+            <i class="crest"></i><i class="eye e1"></i><i class="eye e2"></i>
+          </div>
+        </div>
+        <div class="result-stats">
+          <div class="result-stat"><strong id="damageStat">0</strong><span>Total damage</span></div>
+          <div class="result-stat"><strong id="profileStat">—</strong><span>AI profile</span></div>
+          <div class="result-stat"><strong id="mutationStat">—</strong><span>Mutation</span></div>
+        </div>
+        <div class="result-actions">
+          <button class="primary-btn" id="replayButton">Forge another hybrid</button>
+          <button class="secondary-btn" id="sameSeedButton">Replay same genes</button>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="ad-overlay" id="adOverlay" role="dialog" aria-modal="true" aria-label="Simulated rewarded advertisement">
+    <div class="ad-box">
+      <span class="ad-tag">SIMULATED REWARDED AD</span>
+      <h2>Gene sponsor calibration</h2>
+      <p>Gameplay and battle timers are paused. Your refreshed mutation set arrives when the countdown ends.</p>
+      <div class="ad-count" id="adCount">3</div>
+      <button class="secondary-btn" id="cancelAdPlayback" style="width:100%;margin-top:16px">Cancel · Keep original choices</button>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const GAME_ID = "bio-forge";
+      const genes = [
+        { id: "ember", name: "Ember", type: "Volcanic core", color: "#ff7b54", accent: "#ffd166", stat: "Power +", glyph: "E", ability: "Cinder Pulse", description: "Aggressive heat gene. Adds burn damage and a horned crest." },
+        { id: "shell", name: "Shell", type: "Tidal core", color: "#54c9ff", accent: "#73f2e6", stat: "Guard +", glyph: "S", ability: "Tidal Guard", description: "Dense ocean gene. Adds armor and broad stabilizing fins." },
+        { id: "volt", name: "Volt", type: "Storm core", color: "#bf8cff", accent: "#7be7ff", stat: "Haste +", glyph: "V", ability: "Arc Relay", description: "Fast electric gene. Adds attack speed and a charged spine." },
+        { id: "spore", name: "Spore", type: "Bloom core", color: "#73e36f", accent: "#e0ff78", stat: "Regen +", glyph: "B", ability: "Mend Spores", description: "Resilient fungal gene. Adds regeneration and branching growth." }
+      ];
+
+      const combinations = {
+        "ember-shell": { name: "Magma Bastion", ability: "Steamquake", description: "A guarded blast that combines Ember force with Shell plating.", style: "fortress" },
+        "ember-volt": { name: "Stormflare Raptor", ability: "Flashfire Dive", description: "A rapid electric strike that leaves a burning trail.", style: "raptor" },
+        "ember-spore": { name: "Ashbloom Colossus", ability: "Wildfire Bloom", description: "A heavy blast followed by regenerative spores.", style: "bloom" },
+        "shell-volt": { name: "Tidecoil Ray", ability: "Current Breaker", description: "A shielded arc that accelerates after impact.", style: "ray" },
+        "shell-spore": { name: "Reefroot Warden", ability: "Living Bulwark", description: "A restorative barrier grown from coral-like roots.", style: "warden" },
+        "spore-volt": { name: "Neon Mycelisk", ability: "Synapse Spores", description: "Charged spores trigger a chain of quick attacks.", style: "mycelisk" }
+      };
+
+      const mutationSets = {
+        fragile: [
+          { id: "mantle", symbol: "⬡", name: "Reactive Mantle", copy: "+28 max integrity. Survive longer, overload unchanged.", effect: { hp: 28 } },
+          { id: "siphon", symbol: "↺", name: "Siphon Veins", copy: "Heal 18 integrity when overload lands.", effect: { healOnOverload: 18 } }
+        ],
+        hesitant: [
+          { id: "quick", symbol: "≫", name: "Quick Fuse", copy: "Overload gains +16 damage when used before half time.", effect: { overload: 16 } },
+          { id: "guarded", symbol: "◇", name: "Guarded Trigger", copy: "Overload grants a 20-point temporary shield.", effect: { shield: 20 } }
+        ],
+        burst: [
+          { id: "overclock", symbol: "▲", name: "Safe Overclock", copy: "+4 auto-attack damage, −12 max integrity.", effect: { damage: 4, hp: -12 } },
+          { id: "echo", symbol: "✦", name: "Echo Organ", copy: "Overload echoes for 14 extra damage after one second.", effect: { echo: 14 } }
+        ]
+      };
+
+      const refreshMutations = [
+        { id: "adaptive", symbol: "◫", name: "Adaptive Armor", copy: "+18 max integrity and −1 incoming damage.", effect: { hp: 18, armor: 1 } },
+        { id: "reactor", symbol: "◎", name: "Pulse Reactor", copy: "+12 overload damage, −2 auto-attack damage.", effect: { overload: 12, damage: -2 } },
+        { id: "tempo", symbol: "⌁", name: "Tempo Gland", copy: "Auto-attacks are 12% faster, max integrity −8.", effect: { speed: .88, hp: -8 } }
+      ];
+
+      const state = {
+        runId: newRunId(),
+        startedAt: performance.now(),
+        selected: [],
+        hybrid: null,
+        phase: "select",
+        firstInputSent: false,
+        adOfferSent: false,
+        adUsed: false,
+        profile: null,
+        mutation: null,
+        telemetry: { damageTaken: 0, damageDealt: 0, overloadUsed: false, overloadEnemyRatio: 1 },
+        battle: null,
+        timers: [],
+        totalDamage: 0,
+        replayGenes: null
+      };
+
+      const $ = (selector) => document.querySelector(selector);
+      const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+      function newRunId() {
+        return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      }
+
+      function emitEvent(event, detail = {}) {
+        const payload = {
+          source: "ai-h5-demo",
+          gameId: GAME_ID,
+          event,
+          eventName: event,
+          type: event,
+          runId: state.runId,
+          timestamp: Date.now(),
+          elapsedMs: Math.round(performance.now() - state.startedAt),
+          ...detail
+        };
+        if (window.parent && window.parent !== window) window.parent.postMessage(payload, "*");
+        if (window.opener && !window.opener.closed) window.opener.postMessage(payload, "*");
+        console.info("[ai-h5-demo]", payload);
+      }
+
+      function noteFirstInput(input) {
+        if (state.firstInputSent) return;
+        state.firstInputSent = true;
+        emitEvent("first_input", { input });
+      }
+
+      function clearTimers() {
+        state.timers.forEach((timer) => {
+          clearInterval(timer);
+          clearTimeout(timer);
+        });
+        state.timers = [];
+      }
+
+      function later(callback, delay) {
+        const timer = setTimeout(callback, delay);
+        state.timers.push(timer);
+        return timer;
+      }
+
+      function showScreen(name) {
+        state.phase = name;
+        $$(".screen").forEach((screen) => screen.classList.toggle("active", screen.dataset.screen === name));
+        const index = { select: 0, fusion: 1, battle: 2, mutation: 3, result: 3 }[name] ?? 0;
+        $$(".phase-pills span").forEach((pill, pillIndex) => pill.classList.toggle("active", pillIndex === index));
+      }
+
+      let toastTimer = 0;
+      let adInterval = 0;
+      function toast(message) {
+        const element = $("#toast");
+        element.textContent = message;
+        element.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => element.classList.remove("show"), 2200);
+      }
+
+      function renderGenes() {
+        $("#geneGrid").innerHTML = genes.map((gene) => `
+          <button class="gene-card" type="button" data-gene="${gene.id}" style="--gene:${gene.color}" aria-pressed="false">
+            <div class="gene-orb">${gene.glyph}</div>
+            <h3>${gene.name}</h3>
+            <div class="gene-type">${gene.type}</div>
+            <p>${gene.description}</p>
+            <div class="gene-stat"><span>${gene.ability}</span><strong>${gene.stat}</strong></div>
+          </button>
+        `).join("");
+        $$(".gene-card").forEach((card) => card.addEventListener("click", () => toggleGene(card.dataset.gene)));
+      }
+
+      function toggleGene(geneId) {
+        noteFirstInput("gene_select");
+        const existing = state.selected.indexOf(geneId);
+        if (existing >= 0) {
+          state.selected.splice(existing, 1);
+        } else if (state.selected.length < 2) {
+          state.selected.push(geneId);
+        } else {
+          state.selected.shift();
+          state.selected.push(geneId);
+        }
+        $$(".gene-card").forEach((card) => {
+          const order = state.selected.indexOf(card.dataset.gene);
+          card.classList.toggle("selected", order >= 0);
+          card.setAttribute("aria-pressed", order >= 0 ? "true" : "false");
+          card.dataset.order = order >= 0 ? order + 1 : "";
+        });
+        $("#fuseButton").disabled = state.selected.length !== 2;
+        $("#selectionHint").textContent = state.selected.length === 2
+          ? `${geneById(state.selected[0]).name} + ${geneById(state.selected[1]).name} ready`
+          : `Select ${2 - state.selected.length} more core${state.selected.length === 1 ? "" : "s"}`;
+      }
+
+      function geneById(id) {
+        return genes.find((gene) => gene.id === id);
+      }
+
+      function combinationKey(ids) {
+        return [...ids].sort((a, b) => ["ember", "shell", "volt", "spore"].indexOf(a) - ["ember", "shell", "volt", "spore"].indexOf(b)).join("-");
+      }
+
+      function fuse() {
+        if (state.selected.length !== 2) return;
+        noteFirstInput("fuse");
+        const sources = state.selected.map(geneById);
+        const combination = combinations[combinationKey(state.selected)];
+        state.hybrid = {
+          ...combination,
+          sources,
+          color1: sources[0].color,
+          color2: sources[1].color,
+          maxHp: 112 + (state.selected.includes("shell") ? 18 : 0) + (state.selected.includes("spore") ? 8 : 0),
+          damage: 14 + (state.selected.includes("ember") ? 4 : 0),
+          attackDelay: state.selected.includes("volt") ? 760 : 930,
+          overloadDamage: 38
+        };
+        $("#fusingOrb").style.setProperty("--fusion-gradient", `radial-gradient(circle at 30% 25%, #fff, ${state.hybrid.color1} 22%, ${state.hybrid.color2} 75%)`);
+        $("#fusionName").textContent = state.hybrid.name;
+        $("#fusionStatus").textContent = `${sources[0].ability} × ${sources[1].ability}`;
+        showScreen("fusion");
+        later(() => {
+          configureCreature($("#playerCreature"), state.hybrid.color1, state.hybrid.color2, state.hybrid.style);
+          configureCreature($("#unlockCreature"), state.hybrid.color1, state.hybrid.color2, state.hybrid.style);
+          startBattle(false);
+        }, 1900);
+      }
+
+      function configureCreature(element, color1, color2, style) {
+        element.style.setProperty("--c1", color1);
+        element.style.setProperty("--c2", color2);
+        element.dataset.style = style || "";
+        const transforms = {
+          fortress: "scaleX(1.08)",
+          raptor: "rotate(-4deg) scaleX(.92)",
+          bloom: "scale(1.06)",
+          ray: "scaleX(1.14) scaleY(.88)",
+          warden: "scale(1.08) rotate(2deg)",
+          mycelisk: "scaleX(.94) rotate(-2deg)"
+        };
+        element.style.transform = transforms[style] || "";
+      }
+
+      function startBattle(isBoss) {
+        clearTimers();
+        showScreen("battle");
+        const mutationEffect = state.mutation?.effect || {};
+        const baseMax = state.hybrid.maxHp + (mutationEffect.hp || 0);
+        const playerMax = Math.max(86, baseMax);
+        const enemyMax = isBoss ? 238 : 176;
+        state.battle = {
+          isBoss,
+          playerHp: playerMax,
+          playerMax,
+          enemyHp: enemyMax,
+          enemyMax,
+          shield: 0,
+          overloadUsed: false,
+          ended: false,
+          startedAt: performance.now()
+        };
+        if (!isBoss) state.telemetry = { damageTaken: 0, damageDealt: 0, overloadUsed: false, overloadEnemyRatio: 1 };
+        $("#battleTitle").textContent = isBoss ? "Boss Genome Test" : "Calibration Battle";
+        $("#battleSubtitle").textContent = isBoss
+          ? `${state.mutation.name} is active. Your original build remains the foundation.`
+          : "The director is observing damage, defense and your overload timing.";
+        $("#battleRound").textContent = isBoss ? "Boss · Final" : "Trial 01";
+        $("#playerName").textContent = state.hybrid.name;
+        $("#enemyName").textContent = isBoss ? "Null Maw Alpha" : "Scrap Hound";
+        $("#enemyCreature").classList.toggle("boss-creature", isBoss);
+        $("#abilityName").textContent = state.hybrid.ability;
+        $("#abilityDescription").textContent = isBoss && state.mutation
+          ? `${state.hybrid.description} Mutation: ${state.mutation.name}.`
+          : state.hybrid.description;
+        $("#overloadButton").disabled = false;
+        $("#overloadButton").classList.add("ready");
+        $("#overloadButton").textContent = `Release ${state.hybrid.ability}`;
+        updateHealth();
+        $("#battleConsole").textContent = isBoss
+          ? "Boss detected. Time the overload or trust your auto-attacks."
+          : "Auto-attacks are active. You control the decisive overload.";
+
+        const playerInterval = setInterval(() => {
+          if (!state.battle || state.battle.ended) return;
+          const effect = state.mutation?.effect || {};
+          const damage = Math.max(8, state.hybrid.damage + (effect.damage || 0));
+          dealDamage("enemy", damage, "auto");
+        }, Math.max(560, state.hybrid.attackDelay * (effectNumber(mutationEffect.speed, 1))));
+        const enemyInterval = setInterval(() => {
+          if (!state.battle || state.battle.ended) return;
+          const armor = mutationEffect.armor || 0;
+          const damage = Math.max(5, (isBoss ? 10 : 8) - armor);
+          dealDamage("player", damage, "enemy");
+        }, isBoss ? 1190 : 1320);
+        state.timers.push(playerInterval, enemyInterval);
+      }
+
+      function effectNumber(value, fallback) {
+        return typeof value === "number" ? value : fallback;
+      }
+
+      function dealDamage(target, amount, source) {
+        const battle = state.battle;
+        if (!battle || battle.ended) return;
+        if (target === "player") {
+          let remaining = amount;
+          if (battle.shield > 0) {
+            const absorbed = Math.min(battle.shield, remaining);
+            battle.shield -= absorbed;
+            remaining -= absorbed;
+          }
+          battle.playerHp = Math.max(0, battle.playerHp - remaining);
+          if (!battle.isBoss) state.telemetry.damageTaken += remaining;
+          animateHit($("#playerFighter"), amount, false);
+        } else {
+          battle.enemyHp = Math.max(0, battle.enemyHp - amount);
+          state.totalDamage += amount;
+          if (!battle.isBoss) state.telemetry.damageDealt += amount;
+          animateHit($("#enemyFighter"), amount, source === "overload");
+        }
+        updateHealth();
+        if (battle.enemyHp <= 0) finishBattle(true);
+        else if (battle.playerHp <= 0) finishBattle(false);
+      }
+
+      function animateHit(element, amount, critical) {
+        element.classList.remove("hit");
+        void element.offsetWidth;
+        element.classList.add("hit");
+        const pop = document.createElement("span");
+        pop.className = "damage-pop";
+        pop.textContent = `${critical ? "OVERLOAD " : "−"}${amount}`;
+        pop.style.color = critical ? "var(--brand-gold)" : "var(--text-primary)";
+        pop.style.left = `${element.offsetLeft + element.offsetWidth / 2}px`;
+        pop.style.top = `${element.offsetTop + 18}px`;
+        $("#arena").appendChild(pop);
+        setTimeout(() => pop.remove(), 760);
+      }
+
+      function updateHealth() {
+        if (!state.battle) return;
+        $("#playerHealth").style.width = `${Math.max(0, state.battle.playerHp / state.battle.playerMax * 100)}%`;
+        $("#enemyHealth").style.width = `${Math.max(0, state.battle.enemyHp / state.battle.enemyMax * 100)}%`;
+      }
+
+      function useOverload() {
+        const battle = state.battle;
+        if (!battle || battle.ended || battle.overloadUsed) return;
+        noteFirstInput("overload");
+        battle.overloadUsed = true;
+        $("#overloadButton").disabled = true;
+        $("#overloadButton").classList.remove("ready");
+        $("#overloadButton").textContent = "Overload spent";
+        $("#playerFighter").classList.add("attack");
+        later(() => $("#playerFighter").classList.remove("attack"), 300);
+        const effect = state.mutation?.effect || {};
+        let damage = state.hybrid.overloadDamage + (effect.overload || 0);
+        if (effect.quick && performance.now() - battle.startedAt < 6000) damage += effect.quick;
+        if (!battle.isBoss) {
+          state.telemetry.overloadUsed = true;
+          state.telemetry.overloadEnemyRatio = battle.enemyHp / battle.enemyMax;
+        }
+        if (effect.shield) battle.shield += effect.shield;
+        dealDamage("enemy", damage, "overload");
+        if (effect.healOnOverload) {
+          battle.playerHp = Math.min(battle.playerMax, battle.playerHp + effect.healOnOverload);
+          updateHealth();
+        }
+        if (effect.echo && battle.enemyHp > 0) {
+          later(() => dealDamage("enemy", effect.echo, "overload"), 700);
+        }
+        $("#battleConsole").textContent = `${state.hybrid.ability} landed for ${damage}. Auto-attacks continue.`;
+      }
+
+      function finishBattle(playerWon) {
+        const battle = state.battle;
+        if (!battle || battle.ended) return;
+        battle.ended = true;
+        clearTimers();
+        if (!playerWon) {
+          battle.playerHp = Math.max(34, Math.round(battle.playerMax * .28));
+          updateHealth();
+          $("#battleConsole").textContent = "Emergency lab shield restored your hybrid. No ad required.";
+          toast("Lab safety restored integrity — no ad required.");
+          later(() => startBattle(battle.isBoss), 1500);
+          return;
+        }
+        $("#battleConsole").textContent = battle.isBoss ? "Boss genome contained." : "Calibration complete. Director is reading telemetry…";
+        if (battle.isBoss) {
+          later(showResult, 1200);
+        } else {
+          later(prepareMutations, 1250);
+        }
+      }
+
+      function prepareMutations() {
+        const t = state.telemetry;
+        if (t.damageTaken >= 36) state.profile = "fragile";
+        else if (!t.overloadUsed || t.overloadEnemyRatio < .34) state.profile = "hesitant";
+        else state.profile = "burst";
+        const profiles = {
+          fragile: {
+            title: "Profile: exposed brawler",
+            copy: `You absorbed ${t.damageTaken} damage. The lab prepared survival side-grades instead of secretly weakening the Boss.`,
+            response: "survival_sidegrades"
+          },
+          hesitant: {
+            title: "Profile: patient trigger",
+            copy: t.overloadUsed
+              ? "You held overload until the enemy was nearly finished. The lab prepared safer timing options."
+              : "You trusted auto-attacks and saved overload. The lab prepared timing-focused options.",
+            response: "timing_sidegrades"
+          },
+          burst: {
+            title: "Profile: decisive striker",
+            copy: "You released overload while the enemy still had room to fight. The lab prepared tempo side-grades.",
+            response: "tempo_sidegrades"
+          }
+        };
+        const profileData = profiles[state.profile];
+        $("#analysisTitle").textContent = profileData.title;
+        $("#analysisCopy").textContent = profileData.copy;
+        emitEvent("ai_observation_locked", {
+          ai_profile: state.profile,
+          damage_taken: t.damageTaken,
+          overload_used: t.overloadUsed,
+          overload_enemy_ratio: Number(t.overloadEnemyRatio.toFixed(2))
+        });
+        renderMutations(mutationSets[state.profile]);
+        showScreen("mutation");
+        emitEvent("ai_change_shown", { ai_profile: state.profile, ai_response_id: profileData.response });
+        if (!state.adOfferSent) {
+          state.adOfferSent = true;
+          emitEvent("ad_offer_view", { placement: "mutation_refresh", reward: "three_equal_sidegrades" });
+        }
+      }
+
+      function renderMutations(options) {
+        $("#mutationGrid").innerHTML = options.map((mutation) => `
+          <button class="mutation-card" type="button" data-mutation="${mutation.id}">
+            <span class="mutation-symbol">${mutation.symbol}</span>
+            <h3>${mutation.name}</h3>
+            <p>${mutation.copy}</p>
+            <small>Choose side-grade →</small>
+          </button>
+        `).join("");
+        $$(".mutation-card").forEach((card) => card.addEventListener("click", () => chooseMutation(card.dataset.mutation, options)));
+      }
+
+      function chooseMutation(id, options) {
+        const mutation = options.find((option) => option.id === id);
+        if (!mutation) return;
+        noteFirstInput("mutation_select");
+        state.mutation = mutation;
+        toast(`${mutation.name} installed`);
+        later(() => startBattle(true), 450);
+      }
+
+      function simulateAd() {
+        if (state.adUsed || state.phase !== "mutation") return;
+        noteFirstInput("rewarded_ad");
+        state.adUsed = true;
+        emitEvent("ad_accept", { placement: "mutation_refresh" });
+        $("#adOverlay").classList.add("active");
+        let remaining = 3;
+        $("#adCount").textContent = remaining;
+        clearInterval(adInterval);
+        adInterval = setInterval(() => {
+          remaining -= 1;
+          if (remaining > 0) {
+            $("#adCount").textContent = remaining;
+            return;
+          }
+          clearInterval(adInterval);
+          adInterval = 0;
+          $("#adOverlay").classList.remove("active");
+          renderMutations(refreshMutations);
+          $("#refreshChoices").disabled = true;
+          $("#refreshChoices").textContent = "Refresh claimed";
+          emitEvent("ad_complete", { placement: "mutation_refresh", duration_seconds: 3 });
+          emitEvent("reward_grant", { reward: "mutation_refresh", count: 3, source_method: "simulated_ad" });
+          toast("Three equal side-grades refreshed");
+        }, 1000);
+      }
+
+      function cancelPlayingAd() {
+        if (!adInterval) return;
+        clearInterval(adInterval);
+        adInterval = 0;
+        $("#adOverlay").classList.remove("active");
+        emitEvent("ad_cancel", { placement: "mutation_refresh", reason: "closed_during_ad" });
+        toast("Ad cancelled · original choices kept");
+      }
+
+      function keepChoices() {
+        emitEvent("ad_cancel", { placement: "mutation_refresh", reason: "kept_original_choices" });
+        $("#keepChoices").disabled = true;
+        $("#keepChoices").textContent = "Original choices kept";
+        toast("Choose either original mutation above");
+      }
+
+      function showResult() {
+        showScreen("result");
+        $("#resultTitle").textContent = `${state.hybrid.name} stabilized.`;
+        $("#resultCopy").textContent = `${state.mutation.name} answered the Boss without changing its hidden difficulty. A new collection silhouette is now visible.`;
+        $("#damageStat").textContent = state.totalDamage;
+        $("#profileStat").textContent = state.profile;
+        $("#mutationStat").textContent = state.mutation.name.replace("Reactive ", "").replace("Safe ", "");
+        emitEvent("core_payoff", {
+          hybrid_id: combinationKey(state.selected),
+          hybrid_name: state.hybrid.name,
+          mutation_id: state.mutation.id,
+          ai_profile: state.profile
+        });
+        emitEvent("run_end", { result: "win", ad_used: state.adUsed, total_damage: state.totalDamage });
+      }
+
+      function resetRun(keepGenes) {
+        clearTimers();
+        const previousGenes = [...state.selected];
+        state.runId = newRunId();
+        state.startedAt = performance.now();
+        state.selected = [];
+        state.hybrid = null;
+        state.phase = "select";
+        state.firstInputSent = false;
+        state.adOfferSent = false;
+        state.adUsed = false;
+        state.profile = null;
+        state.mutation = null;
+        state.telemetry = { damageTaken: 0, damageDealt: 0, overloadUsed: false, overloadEnemyRatio: 1 };
+        state.battle = null;
+        state.totalDamage = 0;
+        $("#refreshChoices").disabled = false;
+        $("#refreshChoices").textContent = "Watch 3s · Refresh";
+        $("#keepChoices").disabled = false;
+        $("#keepChoices").textContent = "Keep choices";
+        $$(".gene-card").forEach((card) => {
+          card.classList.remove("selected");
+          card.setAttribute("aria-pressed", "false");
+          card.dataset.order = "";
+        });
+        $("#fuseButton").disabled = true;
+        $("#selectionHint").textContent = "Select 2 different cores";
+        showScreen("select");
+        emitEvent("replay_start", { mode: keepGenes ? "same_genes" : "new_genes" });
+        emitEvent("game_start", { mode: keepGenes ? "same_genes" : "new_genes" });
+        if (keepGenes && previousGenes.length === 2) {
+          previousGenes.forEach(toggleGene);
+          later(fuse, 240);
+        }
+      }
+
+      $("#fuseButton").addEventListener("click", fuse);
+      $("#overloadButton").addEventListener("click", useOverload);
+      $("#refreshChoices").addEventListener("click", simulateAd);
+      $("#cancelAdPlayback").addEventListener("click", cancelPlayingAd);
+      $("#keepChoices").addEventListener("click", keepChoices);
+      $("#replayButton").addEventListener("click", () => resetRun(false));
+      $("#sameSeedButton").addEventListener("click", () => resetRun(true));
+      document.addEventListener("keydown", (event) => {
+        if ((event.code === "Space" || event.code === "Enter") && state.phase === "battle") {
+          event.preventDefault();
+          useOverload();
+        }
+      });
+
+      renderGenes();
+      emitEvent("game_start", { mode: "cold_start" });
+    })();
+  </script>
+</body>
+</html>

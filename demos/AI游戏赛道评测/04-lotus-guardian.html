@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <link rel="icon" href="data:,">
+  <title>Coreguard Duel · Adaptive Merge Defense</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #070b12;
+      --panel: #101824;
+      --elevated: #172231;
+      --text: #f8fbff;
+      --secondary: #c6d1df;
+      --muted: #7c8b9d;
+      --line: rgba(176, 204, 237, .15);
+      --green: #43e19c;
+      --blue: #59baff;
+      --orange: #ff9b67;
+      --purple: #a989ff;
+      --gold: #ffd066;
+      --red: #ff647c;
+      --radius: 16px;
+      --font: Inter, "Segoe UI", "PingFang SC", sans-serif;
+    }
+    html, body { width: 100%; min-height: 100%; }
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--text);
+      font-family: var(--font);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(67,225,156,.1), transparent 30rem),
+        radial-gradient(circle at 88% 88%, rgba(169,137,255,.11), transparent 34rem),
+        #05080d;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { font: inherit; }
+    button:focus-visible { outline: 3px solid rgba(89,186,255,.75); outline-offset: 2px; }
+    .app {
+      width: min(1280px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 14px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 10px;
+    }
+    .topbar {
+      min-height: 64px;
+      display: grid;
+      grid-template-columns: 1fr minmax(300px, 460px) 1fr;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(13,20,30,.9);
+      box-shadow: 0 14px 42px rgba(0,0,0,.24);
+      backdrop-filter: blur(16px);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .brand-mark {
+      width: 40px; height: 40px; display: grid; place-items: center;
+      border-radius: 13px; color: #06100d; font-weight: 1000;
+      background: linear-gradient(145deg, var(--green), #b6ffdb);
+      box-shadow: 0 0 25px rgba(67,225,156,.18);
+    }
+    .brand h1 { font-size: 18px; letter-spacing: -.035em; }
+    .brand p { color: var(--muted); font-size: 10px; margin-top: 3px; }
+    .duel {
+      display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px;
+      padding: 8px 10px; border-radius: 12px; border: 1px solid var(--line);
+      background: rgba(255,255,255,.025);
+    }
+    .duelist { min-width: 82px; }
+    .duelist.right { text-align: right; }
+    .duelist strong { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .1em; }
+    .hearts { margin-top: 3px; color: var(--red); font-size: 15px; letter-spacing: 2px; min-height: 19px; }
+    .duel-center { min-width: 0; }
+    .duel-center div:first-child { display: flex; justify-content: space-between; color: var(--muted); font-size: 8px; margin-bottom: 5px; }
+    .duel-bar { height: 6px; overflow: hidden; border-radius: 999px; background: #293543; }
+    .duel-bar i { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg,var(--purple),var(--blue)); transition: width .2s linear; }
+    .hud { justify-self: end; display: flex; gap: 6px; }
+    .chip {
+      min-height: 34px; display: flex; align-items: center; gap: 6px;
+      padding: 0 10px; border: 1px solid var(--line); border-radius: 999px;
+      color: var(--muted); background: rgba(255,255,255,.02); font-size: 10px;
+    }
+    .chip strong { color: var(--text); font-size: 13px; }
+    .shell {
+      min-height: 700px;
+      display: grid;
+      grid-template-columns: minmax(0,1fr) 294px;
+      gap: 10px;
+    }
+    .game-panel {
+      position: relative;
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto minmax(360px,1fr) auto;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: linear-gradient(150deg,#111d2a,#09111a 65%);
+      box-shadow: 0 22px 70px rgba(0,0,0,.28);
+    }
+    .mission {
+      min-height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 10px 14px; border-bottom: 1px solid var(--line); background: rgba(7,12,19,.72);
+    }
+    .mission strong { display: block; font-size: 13px; }
+    .mission span { display: block; color: var(--muted); font-size: 10px; margin-top: 3px; }
+    .wave-pills { display: flex; gap: 5px; }
+    .wave-pills i { width: 26px; height: 6px; border-radius: 999px; background: #293543; }
+    .wave-pills i.active { width: 40px; background: var(--green); box-shadow: 0 0 12px rgba(67,225,156,.36); }
+    .canvas-wrap { position: relative; min-height: 0; }
+    canvas { display: block; width: 100%; height: 100%; min-height: 360px; touch-action: manipulation; cursor: crosshair; }
+    .canvas-hint {
+      position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
+      max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      padding: 7px 11px; border: 1px solid var(--line); border-radius: 999px;
+      background: rgba(5,10,16,.82); color: var(--secondary); font-size: 10px; pointer-events: none;
+    }
+    .prep {
+      padding: 9px 10px;
+      display: grid;
+      grid-template-columns: 138px minmax(0,1fr) auto;
+      gap: 8px;
+      align-items: stretch;
+      border-top: 1px solid var(--line);
+      background: rgba(7,12,19,.82);
+    }
+    .supply-button, .guardian-button, .skill-button, .item-button,
+    .primary, .secondary, .ghost {
+      min-height: 48px; border-radius: 10px; cursor: pointer; font-weight: 900;
+      transition: transform .15s ease, filter .15s ease, opacity .15s ease;
+    }
+    .supply-button {
+      padding: 0 12px; border: 0; color: #06100d;
+      background: linear-gradient(135deg,var(--gold),#ff9b67);
+    }
+    .supply-button span, .guardian-button span, .skill-button span, .item-button span {
+      display: block; font-size: 9px; font-weight: 650; opacity: .7; margin-top: 2px;
+    }
+    button:disabled { opacity: .35; cursor: not-allowed; transform: none !important; }
+    .bench-wrap { min-width: 0; }
+    .bench-label { color: var(--muted); font-size: 8px; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 4px; }
+    .bench { display: grid; grid-template-columns: repeat(4,minmax(60px,1fr)); gap: 5px; }
+    .bench-slot {
+      min-height: 48px; display: grid; place-items: center; padding: 4px;
+      color: var(--muted); border: 1px dashed rgba(176,204,237,.17); border-radius: 9px;
+      background: rgba(255,255,255,.018); font-size: 9px; cursor: default;
+    }
+    .bench-slot.filled {
+      grid-template-columns: 28px 1fr; gap: 5px; text-align: left; cursor: pointer;
+      color: var(--text); border-style: solid; border-color: var(--unit-color);
+      background: color-mix(in srgb,var(--unit-color),transparent 89%);
+    }
+    .bench-slot.selected { box-shadow: inset 0 0 0 2px var(--gold), 0 0 18px rgba(255,208,102,.15); }
+    .unit-icon {
+      width: 28px; height: 28px; display: grid; place-items: center;
+      border-radius: 8px; background: color-mix(in srgb,var(--unit-color),transparent 74%);
+      color: var(--unit-color); font-size: 10px; font-weight: 1000;
+    }
+    .bench-slot strong { display: block; font-size: 9px; }
+    .bench-slot small { display: block; color: var(--muted); font-size: 7px; margin-top: 1px; }
+    .prep-actions { display: flex; gap: 5px; }
+    .guardian-button, .skill-button, .item-button {
+      min-width: 112px; padding: 0 9px; color: var(--text); border: 1px solid var(--line); background: var(--elevated);
+    }
+    .start-inline { display: none; }
+    .guardian-button.ready { color: #07100e; border: 0; background: linear-gradient(135deg,var(--green),#9dffd0); }
+    .skill-button { color: #07100e; border: 0; background: linear-gradient(135deg,var(--gold),#ff9b67); }
+    .item-button { background: linear-gradient(135deg,#5d6f9a,#836bc4); }
+
+    .side {
+      min-width: 0;
+      padding: 12px;
+      display: flex; flex-direction: column; gap: 9px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: linear-gradient(160deg,rgba(17,26,39,.98),rgba(8,13,21,.98));
+    }
+    .card { padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.023); }
+    .label { color: var(--muted); font-size: 8px; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }
+    .guide h2 { font-size: 19px; letter-spacing: -.04em; margin: 7px 0 5px; }
+    .guide p, .ai-copy, .slot p { color: var(--muted); font-size: 9px; line-height: 1.45; }
+    .recipe {
+      margin-top: 9px;
+      display: grid; grid-template-columns: 1fr auto 1fr auto; align-items: center; gap: 5px;
+    }
+    .fragment {
+      min-height: 39px; display: grid; place-items: center;
+      color: var(--muted); border: 1px dashed rgba(176,204,237,.2); border-radius: 9px; font-weight: 1000;
+    }
+    .fragment.found { color: #07100e; border-style: solid; border-color: var(--green); background: var(--green); }
+    .recipe em { color: var(--muted); font-style: normal; font-size: 10px; }
+    .ai-card { border-color: rgba(169,137,255,.26); background: rgba(169,137,255,.05); }
+    .ai-head { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+    .ai-orb {
+      width: 34px; height: 34px; display: grid; place-items: center; flex-shrink: 0;
+      border-radius: 11px; color: #080712; background: linear-gradient(145deg,var(--purple),var(--blue));
+      font-size: 9px; font-weight: 1000;
+    }
+    .ai-head strong { display: block; font-size: 11px; }
+    .ai-head span { display: block; color: var(--muted); font-size: 8px; margin-top: 2px; }
+    .ai-copy { margin-top: 8px; min-height: 39px; }
+    .slot { min-height: 89px; }
+    .empty-slot {
+      min-height: 43px; display: grid; place-items: center; margin-top: 8px;
+      border: 1px dashed rgba(176,204,237,.18); border-radius: 9px; color: var(--muted); font-size: 8px;
+    }
+    .reward { display: none; margin-top: 8px; }
+    .reward strong { color: var(--gold); font-size: 11px; }
+    .reward p { margin-top: 4px; }
+    .log-card { flex: 1; min-height: 130px; overflow: hidden; }
+    .log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; margin-top: 8px; scrollbar-width: none; }
+    .log::-webkit-scrollbar { display: none; }
+    .entry { padding-left: 7px; border-left: 2px solid rgba(89,186,255,.28); color: var(--muted); font-size: 8px; line-height: 1.35; }
+    .entry strong { color: var(--secondary); }
+    .start-button { width: 100%; margin-top: 8px; }
+
+    .primary { padding: 0 15px; color: #06100d; border: 0; background: linear-gradient(135deg,var(--green),#a4ffd2); }
+    .secondary { padding: 0 13px; color: var(--text); border: 1px solid var(--line); background: var(--elevated); }
+    .ghost { padding: 0 13px; color: var(--secondary); border: 1px solid var(--line); background: transparent; }
+    button:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.06); }
+
+    .overlay {
+      position: fixed; inset: 0; z-index: 80; display: none; place-items: center;
+      padding: 16px; background: rgba(3,7,12,.89); backdrop-filter: blur(13px);
+    }
+    .overlay.active { display: grid; }
+    .modal {
+      width: min(820px,100%); max-height: calc(100svh - 32px); overflow-y: auto;
+      padding: 22px; border: 1px solid var(--line); border-radius: 22px;
+      background: linear-gradient(155deg,#172334,#0a111b);
+      box-shadow: 0 28px 90px rgba(0,0,0,.55);
+    }
+    .modal-head { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+    .eyebrow { color: var(--purple); font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .13em; }
+    .modal h2 { font-size: 27px; letter-spacing: -.045em; margin: 7px 0 6px; }
+    .modal-copy { color: var(--muted); font-size: 10px; line-height: 1.5; max-width: 590px; }
+    .timer {
+      flex-shrink: 0; padding: 7px 10px; border: 1px solid rgba(255,208,102,.22); border-radius: 999px;
+      color: var(--gold); background: rgba(255,208,102,.07); font-size: 10px; font-weight: 900;
+    }
+    .forecast {
+      margin: 14px 0; padding: 11px; display: grid; grid-template-columns: 40px 1fr; gap: 9px; align-items: center;
+      border: 1px solid rgba(169,137,255,.24); border-radius: 13px; background: rgba(169,137,255,.05);
+    }
+    .forecast-icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; color: var(--purple); background: rgba(169,137,255,.15); font-weight: 1000; }
+    .forecast strong { display: block; font-size: 11px; }
+    .forecast span { display: block; color: var(--muted); font-size: 9px; margin-top: 3px; }
+    .items { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+    .item { padding: 12px; border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.02); }
+    .item-type { color: var(--green); font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .1em; }
+    .item h3 { font-size: 13px; margin: 7px 0 5px; }
+    .item p { color: var(--muted); min-height: 38px; font-size: 9px; line-height: 1.4; }
+    .tradeoff { display: block; min-height: 22px; margin: 7px 0; color: var(--gold); font-size: 8px; }
+    .buy { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+    .buy button { min-height: 40px; padding: 0 5px; font-size: 9px; }
+    .modal-footer { margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .fair { max-width: 470px; color: var(--muted); font-size: 8px; line-height: 1.4; }
+    .ad-modal, .result-modal { width: min(460px,100%); text-align: center; }
+    .ad-tag { display: inline-block; padding: 5px 8px; border-radius: 999px; color: #171006; background: var(--gold); font-size: 8px; font-weight: 1000; letter-spacing: .1em; }
+    .ad-count {
+      width: 80px; height: 80px; display: grid; place-items: center; margin: 18px auto 0;
+      border: 3px solid var(--gold); border-radius: 50%; color: var(--gold);
+      font-size: 32px; font-weight: 1000; box-shadow: 0 0 28px rgba(255,208,102,.15);
+    }
+    .result-seal {
+      width: 92px; height: 92px; display: grid; place-items: center; margin: 14px auto;
+      border-radius: 50%; color: #06100d; background: radial-gradient(circle at 32% 27%,#fff,var(--green) 24%,#2db77d 72%);
+      font-size: 31px; font-weight: 1000; box-shadow: 0 0 38px rgba(67,225,156,.2);
+    }
+    .result-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin: 13px 0; }
+    .result-stat { padding: 9px 4px; border: 1px solid var(--line); border-radius: 9px; background: rgba(255,255,255,.02); }
+    .result-stat strong { display: block; font-size: 15px; }
+    .result-stat span { display: block; color: var(--muted); font-size: 7px; margin-top: 2px; text-transform: uppercase; letter-spacing: .08em; }
+    .toast {
+      position: fixed; left: 50%; top: 18px; z-index: 120; transform: translate(-50%,-14px);
+      max-width: calc(100vw - 28px); opacity: 0; pointer-events: none;
+      padding: 9px 13px; border: 1px solid var(--line); border-radius: 999px;
+      color: var(--text); background: rgba(16,24,36,.97); box-shadow: 0 12px 34px rgba(0,0,0,.4);
+      transition: .2s ease; font-size: 10px;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%,0); }
+
+    @media (max-width: 820px) {
+      .app { min-height: 100svh; padding: 7px; gap: 7px; }
+      .topbar { min-height: 54px; grid-template-columns: 1fr auto; padding: 7px 9px; }
+      .brand-mark { width: 34px; height: 34px; border-radius: 10px; }
+      .brand h1 { font-size: 15px; } .brand p, .duel { display: none; }
+      .chip { padding: 0 7px; min-height: 31px; }
+      .shell { min-height: calc(100svh - 68px); grid-template-columns: 1fr; gap: 7px; }
+      .game-panel { min-height: 665px; grid-template-rows: auto minmax(340px,1fr) auto; border-radius: 17px; }
+      .mission { min-height: 48px; padding: 7px 9px; }
+      .mission strong { font-size: 11px; } .mission span { font-size: 8px; }
+      canvas { min-height: 340px; }
+      .prep { grid-template-columns: 104px 1fr; padding: 7px; }
+      .supply-button { min-height: 45px; padding: 0 7px; font-size: 10px; }
+      .bench { grid-template-columns: repeat(4,minmax(44px,1fr)); }
+      .bench-slot { min-height: 45px; }
+      .bench-slot.filled { grid-template-columns: 22px 1fr; gap: 3px; padding: 3px; }
+      .unit-icon { width: 22px; height: 24px; }
+      .bench-slot strong { font-size: 8px; }
+      .prep-actions { grid-column: 1 / -1; }
+      .guardian-button, .skill-button, .item-button { flex: 1; min-width: 0; min-height: 44px; font-size: 10px; }
+      .start-inline { display: block; flex: 1.4; min-width: 120px; min-height: 44px; }
+      .side { display: grid; grid-template-columns: 1fr 1fr; padding: 8px; gap: 7px; border-radius: 17px; }
+      .guide { grid-column: 1 / -1; }
+      .guide h2 { font-size: 15px; margin: 4px 0; }
+      .guide p { display: none; }
+      .card { padding: 9px; }
+      .log-card { display: none; }
+      .recipe { margin-top: 6px; }
+      .fragment { min-height: 32px; }
+      .ai-copy { min-height: 0; }
+      .modal { padding: 15px 11px; }
+      .modal-head { display: block; }
+      .modal h2 { font-size: 21px; }
+      .timer { display: inline-block; margin-top: 8px; }
+      .items { grid-template-columns: 1fr; }
+      .item { padding: 9px; }
+      .item p, .tradeoff { min-height: 0; }
+      .modal-footer { flex-direction: column; align-items: stretch; }
+      .modal-footer button { width: 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">CG</div>
+        <div><h1>Coreguard</h1><p>Adaptive merge defense</p></div>
+      </div>
+      <div class="duel">
+        <div class="duelist"><strong>You</strong><div class="hearts" id="playerHearts">◆◆◆</div></div>
+        <div class="duel-center">
+          <div><span>Rival clear progress</span><span id="rivalProgressText">0%</span></div>
+          <div class="duel-bar"><i id="rivalProgressBar"></i></div>
+        </div>
+        <div class="duelist right"><strong>AI rival</strong><div class="hearts" id="rivalHearts">◆◆◆</div></div>
+      </div>
+      <div class="hud">
+        <div class="chip"><span>Tokens</span><strong id="tokenCount">0</strong></div>
+        <div class="chip"><span>Supply</span><strong id="supplyCount">6</strong></div>
+      </div>
+    </header>
+
+    <section class="shell">
+      <section class="game-panel">
+        <div class="mission">
+          <div><strong id="missionTitle">Open seeded random supply</strong><span id="missionSubtitle">The first two recruits match, so you can learn merging immediately.</span></div>
+          <div class="wave-pills"><i class="active"></i><i></i></div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="gameCanvas" width="900" height="520" aria-label="Fixed-route three-heart tower defense arena"></canvas>
+          <div class="canvas-hint" id="canvasHint">Draw supply · merge matching recruits · deploy from the 4-slot bench</div>
+        </div>
+        <div class="prep">
+          <button class="supply-button" id="supplyButton">Open supply<span id="supplyHint">6 seeded draws</span></button>
+          <div class="bench-wrap">
+            <div class="bench-label">4-slot preparation bench · tap two matching units to merge</div>
+            <div class="bench" id="bench"></div>
+          </div>
+          <div class="prep-actions">
+            <button class="primary start-inline" id="startWaveInline" disabled>Deploy 2 units</button>
+            <button class="guardian-button" id="guardianButton" disabled>Assemble guardian<span id="guardianStatus">Need 2 fragments</span></button>
+            <button class="skill-button" id="skillButton" disabled>Core Burst<span id="skillStatus">Guardian offline</span></button>
+            <button class="item-button" id="itemButton" hidden disabled>Reward item<span id="itemStatus">One use</span></button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="side">
+        <section class="card guide">
+          <span class="label">90-second loop</span>
+          <h2>Recruit. Merge. Hold three hearts.</h2>
+          <p>Supply is locally seeded, the bench is limited to four slots, identical recruits combine into stronger tiers, and the first core to lose all three hearts loses the duel.</p>
+          <button class="primary start-button" id="startWaveButton" disabled>Deploy 2 units first</button>
+        </section>
+        <section class="card">
+          <span class="label">Two-part guardian code</span>
+          <div class="recipe">
+            <div class="fragment" id="fragmentA">KA</div><em>+</em><div class="fragment" id="fragmentB">VI</div><em>= KAVI</em>
+          </div>
+        </section>
+        <section class="card ai-card">
+          <span class="label">Adaptive rival</span>
+          <div class="ai-head">
+            <div class="ai-orb">AI</div>
+            <div><strong id="aiTitle">Observing deployment</strong><span id="aiMeta">Near 0 · Ranged 0</span></div>
+          </div>
+          <p class="ai-copy" id="aiCopy">The rival will lock one Wave 2 response from your near/ranged ratio, then preview it for at least 8 seconds.</p>
+        </section>
+        <section class="card slot">
+          <span class="label">Single reward slot</span>
+          <div class="empty-slot" id="emptyReward">Empty · token and ad rewards never stack</div>
+          <div class="reward" id="reward"><strong id="rewardName">—</strong><p id="rewardCopy">—</p></div>
+        </section>
+        <section class="card log-card">
+          <span class="label">Duel log</span>
+          <div class="log" id="eventLog"></div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <div class="overlay" id="intermissionOverlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="eyebrow">Wave 1 clear · response already locked</div>
+          <h2 id="counterTitle">AI counter forecast</h2>
+          <p class="modal-copy">You earned two activity tokens. Choose one optional side-grade with tokens or one equivalent 3-second simulated ad, or continue with no item.</p>
+        </div>
+        <div class="timer">Wave 2 in <span id="forecastTimer">8</span>s+</div>
+      </div>
+      <div class="forecast">
+        <div class="forecast-icon" id="counterIcon">AI</div>
+        <div><strong id="counterReason">Reading near/ranged ratio…</strong><span id="counterplay">Base recruits and guardian skill remain enough to win.</span></div>
+      </div>
+      <div class="items" id="itemGrid"></div>
+      <div class="modal-footer">
+        <p class="fair">Same item, same attributes, same one-run duration. One reward slot only. Watching an ad never changes the AI response or wave strength.</p>
+        <button class="ghost" id="continueButton" disabled>Continue without item</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="adOverlay" role="dialog" aria-modal="true">
+    <div class="modal ad-modal">
+      <span class="ad-tag">SIMULATED REWARDED AD</span>
+      <h2>Supply sponsor signal</h2>
+      <p class="modal-copy" style="margin:0 auto">All gameplay and duel progress are paused. This grants the same item as two activity tokens.</p>
+      <div class="ad-count" id="adCount">3</div>
+    </div>
+  </div>
+
+  <div class="overlay" id="resultOverlay" role="dialog" aria-modal="true">
+    <div class="modal result-modal">
+      <div class="eyebrow" id="resultEyebrow">Core duel won</div>
+      <div class="result-seal" id="resultSeal">✓</div>
+      <h2 id="resultTitle">The rival core leaked first.</h2>
+      <p class="modal-copy" id="resultCopy" style="margin:0 auto">Your three-heart core survived the disclosed counter wave.</p>
+      <div class="result-stats">
+        <div class="result-stat"><strong id="resultHearts">0</strong><span>Your hearts</span></div>
+        <div class="result-stat"><strong id="resultCounter">—</strong><span>AI response</span></div>
+        <div class="result-stat"><strong id="resultMethod">None</strong><span>Reward path</span></div>
+      </div>
+      <button class="primary" id="replayButton">Start another seeded duel</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const GAME_ID = "lotus-guardian";
+      const canvas = document.querySelector("#gameCanvas");
+      const ctx = canvas.getContext("2d");
+      const $ = (selector) => document.querySelector(selector);
+      const $$ = (selector) => [...document.querySelectorAll(selector)];
+      const laneY = [112, 253, 394];
+      const pads = [
+        { x: 285, y: 112, lane: 0 }, { x: 560, y: 112, lane: 0 },
+        { x: 285, y: 253, lane: 1 }, { x: 560, y: 253, lane: 1 },
+        { x: 285, y: 394, lane: 2 }, { x: 560, y: 394, lane: 2 }
+      ];
+      const unitDefs = {
+        bolt: { name: "Bolt", role: "Ranged", glyph: "B", color: "#59baff", range: 245, damage: 18, cooldown: .58, slow: 1, splash: 0 },
+        blade: { name: "Blade", role: "Near", glyph: "N", color: "#ff9b67", range: 142, damage: 27, cooldown: .48, slow: 1, splash: 0 },
+        mist: { name: "Mist", role: "Utility", glyph: "M", color: "#a989ff", range: 195, damage: 8, cooldown: .77, slow: .58, splash: 0 }
+      };
+      const itemDefs = [
+        { id: "scope-link", type: "Equipment", name: "Scope Link", copy: "All deployed units gain 18% range.", tradeoff: "Trade-off: fire rate −15%.", slot: "+18% range, −15% fire rate." },
+        { id: "vector-lock", type: "Skill item", name: "Vector Lock", copy: "Guardian burst becomes a 3-second global stun.", tradeoff: "Trade-off: lower direct damage.", slot: "Guardian skill replaced by lower-damage stun." },
+        { id: "smoke-capsule", type: "Normal item", name: "Smoke Capsule", copy: "One use: slow all active enemies for 4 seconds.", tradeoff: "Trade-off: consumed after use.", slot: "One global slow, consumed on use." }
+      ];
+
+      const state = {
+        runId: newRunId(), startedAt: performance.now(), firstInputSent: false,
+        recipe: ["KA","VI"], deck: [], bench: [null,null,null,null], selectedBench: null,
+        towers: [], guardian: null, fragments: new Set(), supplyLeft: 6,
+        phase: "setup", wave: 0, waveElapsed: 0, spawnQueue: [], enemies: [], projectiles: [], effects: [],
+        playerHearts: 3, rivalHearts: 3, rivalProgress: 0, rivalLeakMarks: new Set(),
+        tokens: 0, rewardItem: null, rewardMethod: "none", adUsed: false, adOfferSent: false, smokeUsed: false,
+        aiProfile: null, aiResponse: null, forecastUnlocked: false, forecastTimer: null,
+        skillCooldown: 0, defeated: 0, lastFrame: performance.now(), runNumber: 0
+      };
+
+      function newRunId() {
+        return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
+      }
+      function emitEvent(event, detail = {}) {
+        const payload = {
+          source: "ai-h5-demo", gameId: GAME_ID, event, eventName: event, type: event,
+          runId: state.runId, timestamp: Date.now(),
+          elapsedMs: Math.round(performance.now() - state.startedAt), ...detail
+        };
+        if (window.parent && window.parent !== window) window.parent.postMessage(payload, "*");
+        if (window.opener && !window.opener.closed) window.opener.postMessage(payload, "*");
+        console.info("[ai-h5-demo]", payload);
+      }
+      function noteFirstInput(input) {
+        if (state.firstInputSent) return;
+        state.firstInputSent = true;
+        emitEvent("first_input", { input });
+      }
+      let toastTimer = 0;
+      function toast(message) {
+        const element = $("#toast");
+        element.textContent = message;
+        element.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => element.classList.remove("show"), 2000);
+      }
+      function log(title, copy) {
+        const entry = document.createElement("div");
+        entry.className = "entry";
+        entry.innerHTML = `<strong>${title}</strong><br>${copy}`;
+        $("#eventLog").prepend(entry);
+        while ($("#eventLog").children.length > 7) $("#eventLog").lastElementChild.remove();
+      }
+      function makeDeck() {
+        const recipe = state.recipe;
+        const tail = state.runNumber % 2
+          ? [{kind:"unit",unit:"mist"},{kind:"fragment",value:recipe[0]},{kind:"unit",unit:"blade"},{kind:"fragment",value:recipe[1]}]
+          : [{kind:"fragment",value:recipe[0]},{kind:"unit",unit:"blade"},{kind:"fragment",value:recipe[1]},{kind:"unit",unit:"mist"}];
+        return [{kind:"unit",unit:"bolt"},{kind:"unit",unit:"bolt"},...tail];
+      }
+      function updateHud() {
+        $("#tokenCount").textContent = state.tokens;
+        $("#supplyCount").textContent = state.supplyLeft;
+        $("#playerHearts").textContent = "◆".repeat(Math.max(0,state.playerHearts)) + "◇".repeat(Math.max(0,3-state.playerHearts));
+        $("#rivalHearts").textContent = "◆".repeat(Math.max(0,state.rivalHearts)) + "◇".repeat(Math.max(0,3-state.rivalHearts));
+        $("#rivalProgressText").textContent = `${Math.round(state.rivalProgress*100)}%`;
+        $("#rivalProgressBar").style.width = `${Math.min(100,state.rivalProgress*100)}%`;
+        $("#supplyButton").disabled = state.phase !== "setup" || state.supplyLeft <= 0 || state.bench.every(Boolean);
+        $("#supplyHint").textContent = state.supplyLeft ? `${state.supplyLeft} seeded draw${state.supplyLeft===1?"":"s"}` : "Supply exhausted";
+        $("#startWaveButton").disabled = state.phase !== "setup" || state.towers.length < 2;
+        $("#startWaveButton").textContent = state.towers.length < 2 ? `Deploy ${2-state.towers.length} more unit${state.towers.length===1?"":"s"}` : "Start Wave 1";
+        $("#startWaveInline").disabled = state.phase !== "setup" || state.towers.length < 2;
+        $("#startWaveInline").textContent = state.towers.length < 2 ? `Deploy ${2-state.towers.length}` : "Start Wave 1";
+        $$(".wave-pills i").forEach((pill,index) => pill.classList.toggle("active", index===Math.max(0,state.wave-1)));
+      }
+      function renderBench() {
+        $("#bench").innerHTML = state.bench.map((unit,index) => {
+          if (!unit) return `<button class="bench-slot" type="button" data-slot="${index}" disabled>Empty</button>`;
+          const def = unitDefs[unit.type];
+          return `<button class="bench-slot filled ${state.selectedBench===index?"selected":""}" type="button" data-slot="${index}" style="--unit-color:${def.color}">
+            <span class="unit-icon">${def.glyph}</span><span><strong>${def.name} T${unit.tier}</strong><small>${def.role}</small></span>
+          </button>`;
+        }).join("");
+        $$("[data-slot]:not(:disabled)").forEach(button => button.addEventListener("click",()=>selectBench(Number(button.dataset.slot))));
+        updateHud();
+      }
+      function drawSupply() {
+        if (state.phase !== "setup" || state.supplyLeft <= 0) return;
+        noteFirstInput("supply_draw");
+        if (state.bench.every(Boolean)) {
+          toast("The 4-slot bench is full. Merge or deploy a recruit first.");
+          return;
+        }
+        const draw = state.deck.shift();
+        state.supplyLeft -= 1;
+        if (draw.kind === "fragment") {
+          state.fragments.add(draw.value);
+          updateFragments();
+          log("Code fragment found", `${draw.value} stored outside the limited bench`);
+          toast(`${draw.value} guardian fragment found`);
+        } else {
+          const slot = state.bench.findIndex(value=>!value);
+          state.bench[slot] = { type: draw.unit, tier: 1 };
+          const def = unitDefs[draw.unit];
+          log("Random recruit", `${def.name} T1 added to bench slot ${slot+1}`);
+          toast(`${def.name} recruited`);
+        }
+        renderBench();
+        if (state.supplyLeft===0) {
+          $("#missionTitle").textContent = "Merge, assemble and deploy";
+          $("#missionSubtitle").textContent = "Tap two matching recruits to merge. Select a bench unit, then tap a field pad.";
+        }
+      }
+      function selectBench(index) {
+        if (state.phase !== "setup" || !state.bench[index]) return;
+        noteFirstInput("bench_select");
+        if (state.selectedBench === null) {
+          state.selectedBench = index;
+          $("#canvasHint").textContent = `${unitDefs[state.bench[index].type].name} T${state.bench[index].tier} selected · tap a field pad or a matching bench unit`;
+          renderBench();
+          return;
+        }
+        if (state.selectedBench === index) {
+          state.selectedBench = null;
+          renderBench();
+          return;
+        }
+        const first = state.bench[state.selectedBench];
+        const second = state.bench[index];
+        if (first.type===second.type && first.tier===second.tier && first.tier<3) {
+          const target = Math.min(state.selectedBench,index);
+          const other = Math.max(state.selectedBench,index);
+          state.bench[target] = { type:first.type, tier:first.tier+1 };
+          state.bench[other] = null;
+          state.selectedBench = target;
+          log("Merge complete", `${unitDefs[first.type].name} T${first.tier} + T${first.tier} → T${first.tier+1}`);
+          toast(`Merged into ${unitDefs[first.type].name} T${first.tier+1}`);
+        } else {
+          state.selectedBench = index;
+          toast("Selected a different recruit. Matching type and tier are required to merge.");
+        }
+        renderBench();
+      }
+      function updateFragments() {
+        const [a,b] = state.recipe;
+        $("#fragmentA").textContent = a;
+        $("#fragmentB").textContent = b;
+        $("#fragmentA").classList.toggle("found",state.fragments.has(a));
+        $("#fragmentB").classList.toggle("found",state.fragments.has(b));
+        const complete = state.fragments.has(a) && state.fragments.has(b) && !state.guardian;
+        $("#guardianButton").disabled = !complete || state.phase!=="setup";
+        $("#guardianButton").classList.toggle("ready",complete);
+        $("#guardianButton").firstChild.textContent = state.guardian ? `${state.guardian.name} active` : "Assemble guardian";
+        $("#guardianStatus").textContent = state.guardian ? "High-tier sentinel" : complete ? `${a}+${b} ready` : "Need 2 fragments";
+      }
+      function assembleGuardian() {
+        const [a,b] = state.recipe;
+        if (state.guardian || !state.fragments.has(a) || !state.fragments.has(b) || state.phase!=="setup") return;
+        noteFirstInput("guardian_assemble");
+        state.guardian = { name:`${a}${b} Prime`, cooldown:0 };
+        updateFragments();
+        $("#skillButton").disabled = true;
+        $("#skillStatus").textContent = "Ready in battle";
+        log("High-tier guardian", `${state.guardian.name} assembled from two fictional code fragments`);
+        toast(`${state.guardian.name} summoned`);
+      }
+      function canvasPoint(event) {
+        const rect = canvas.getBoundingClientRect();
+        return { x:(event.clientX-rect.left)/rect.width*canvas.width, y:(event.clientY-rect.top)/rect.height*canvas.height };
+      }
+      function placeSelected(event) {
+        if (state.phase!=="setup" || state.selectedBench===null) return;
+        event.preventDefault();
+        noteFirstInput("unit_deploy");
+        const point = canvasPoint(event);
+        const pad = pads.find(p=>Math.hypot(p.x-point.x,p.y-point.y)<=46);
+        if (!pad) { toast("Tap a glowing deployment pad."); return; }
+        const benchUnit = state.bench[state.selectedBench];
+        const tower = state.towers.find(t=>t.x===pad.x&&t.y===pad.y);
+        if (tower) {
+          if (tower.type===benchUnit.type && tower.tier===benchUnit.tier && tower.tier<3) {
+            tower.tier += 1;
+            state.bench[state.selectedBench] = null;
+            log("Field merge", `${unitDefs[tower.type].name} upgraded to T${tower.tier} on the fixed route`);
+          } else {
+            toast("Occupied pad: only a matching type and tier can merge here.");
+            return;
+          }
+        } else {
+          state.towers.push({ ...pad, ...benchUnit, cooldown:0 });
+          state.bench[state.selectedBench] = null;
+          log("Unit deployed", `${unitDefs[benchUnit.type].name} T${benchUnit.tier} on Route ${pad.lane+1}`);
+        }
+        state.selectedBench = null;
+        $("#missionTitle").textContent = state.towers.length>=2 ? "Defense can launch" : "Deploy one more recruit";
+        $("#missionSubtitle").textContent = "The rival only reads near/ranged deployment after Wave 1.";
+        $("#canvasHint").textContent = state.towers.length>=2 ? "Draw remaining supply or start Wave 1" : "Select another bench unit and field pad";
+        renderBench();
+      }
+      function startWaveOne() {
+        if (state.phase!=="setup" || state.towers.length<2) return;
+        noteFirstInput("wave_start");
+        state.phase="wave1"; state.wave=1; state.waveElapsed=0; state.rivalProgress=0; state.rivalLeakMarks.clear();
+        state.spawnQueue=buildWave(false);
+        $("#missionTitle").textContent="Wave 1 · Fixed routes active";
+        $("#missionSubtitle").textContent="Your core and the simulated rival each have three hearts.";
+        $("#canvasHint").textContent="Units auto-attack · the first core to lose all three hearts loses";
+        updateActionButtons();
+        updateHud();
+        log("Wave 1 launched",`${state.towers.length} deployed units; rival progress simulation started`);
+      }
+      function buildWave(counter) {
+        const queue=[];
+        if (!counter) {
+          for(let i=0;i<10;i+=1) queue.push({delay:i*.76,kind:"scout",lane:i%3});
+        } else {
+          for(let i=0;i<12;i+=1) queue.push({delay:i*.7,kind:i%3===2?state.aiResponse:"scout",lane:(i*2)%3});
+          queue.push({delay:9.1,kind:"boss",lane:1});
+        }
+        return queue;
+      }
+      function spawnEnemy(kind,lane,x=930) {
+        const defs={
+          scout:{hp:58,speed:48,color:"#ee8794",radius:15,rangedArmor:1},
+          shield:{hp:102,speed:38,color:"#91a8db",radius:18,rangedArmor:.66},
+          runner:{hp:55,speed:77,color:"#ffbd72",radius:13,rangedArmor:1},
+          splitter:{hp:70,speed:48,color:"#ba8eff",radius:16,rangedArmor:1,split:true},
+          mini:{hp:25,speed:59,color:"#ddc4ff",radius:9,rangedArmor:1},
+          boss:{hp:290,speed:25,color:"#ff647c",radius:26,rangedArmor:.84,boss:true}
+        };
+        state.enemies.push({kind,lane,x,y:laneY[lane],hp:defs[kind].hp,maxHp:defs[kind].hp,slowUntil:0,stunUntil:0,...defs[kind]});
+      }
+      function update(dt,now) {
+        if (state.phase!=="wave1" && state.phase!=="wave2") return;
+        state.waveElapsed+=dt;
+        state.skillCooldown=Math.max(0,state.skillCooldown-dt);
+        state.rivalProgress=Math.min(1,state.waveElapsed/(state.wave===1?12:20));
+        simulateRivalLeaks();
+        while(state.spawnQueue.length && state.spawnQueue[0].delay<=state.waveElapsed) {
+          const next=state.spawnQueue.shift(); spawnEnemy(next.kind,next.lane);
+        }
+        state.enemies.forEach(enemy=>{
+          if(enemy.stunUntil>now) return;
+          enemy.x-=enemy.speed*(enemy.slowUntil>now?.54:1)*dt;
+        });
+        const escaped=state.enemies.filter(enemy=>enemy.x<48);
+        escaped.forEach(enemy=>{
+          state.playerHearts=Math.max(0,state.playerHearts-1);
+          addEffect(54,enemy.y,"CORE −1",varColor("--red"));
+          log("Your core leaked",`${enemy.kind} crossed Route ${enemy.lane+1}`);
+        });
+        state.enemies=state.enemies.filter(enemy=>enemy.x>=48&&enemy.hp>0);
+        const equipment=state.rewardItem?.id==="scope-link";
+        state.towers.forEach(tower=>{
+          const def=unitDefs[tower.type];
+          tower.cooldown=Math.max(0,tower.cooldown-dt);
+          if(tower.cooldown>0) return;
+          const tierPower=1+(tower.tier-1)*.72;
+          const range=def.range*(equipment?1.18:1);
+          const target=state.enemies.filter(enemy=>enemy.hp>0&&enemy.lane===tower.lane&&enemy.x>tower.x-22&&Math.abs(enemy.x-tower.x)<=range).sort((a,b)=>a.x-b.x)[0];
+          if(!target) return;
+          tower.cooldown=def.cooldown*(equipment?1.15:1)/(1+(tower.tier-1)*.12);
+          const raw=def.damage*tierPower*(tower.type==="bolt"?target.rangedArmor:1);
+          damageEnemy(target,raw);
+          if(def.slow<1) target.slowUntil=Math.max(target.slowUntil,now+2100);
+          state.projectiles.push({x:tower.x,y:tower.y,tx:target.x,ty:target.y,color:def.color,life:.14});
+        });
+        if(state.guardian) {
+          state.guardian.cooldown=Math.max(0,state.guardian.cooldown-dt);
+          if(state.guardian.cooldown<=0) {
+            const target=state.enemies.filter(e=>e.hp>0).sort((a,b)=>a.x-b.x)[0];
+            if(target) {
+              state.guardian.cooldown=.92;
+              damageEnemy(target,15);
+              state.projectiles.push({x:115,y:253,tx:target.x,ty:target.y,color:varColor("--green"),life:.18});
+            }
+          }
+        }
+        state.projectiles.forEach(p=>p.life-=dt); state.projectiles=state.projectiles.filter(p=>p.life>0);
+        state.effects.forEach(e=>{e.life-=dt;e.y-=17*dt;}); state.effects=state.effects.filter(e=>e.life>0);
+        updateActionButtons(); updateHud();
+        if(state.playerHearts<=0) finishRun(false,"player_leaked_first");
+        else if(state.rivalHearts<=0) finishRun(true,"rival_leaked_first");
+        else if(!state.spawnQueue.length&&!state.enemies.length&&state.waveElapsed>8) {
+          if(state.wave===1) finishWaveOne(); else forceRivalFinish();
+        }
+      }
+      function simulateRivalLeaks() {
+        const marks=state.wave===1?[.58]:[.46,.84];
+        marks.forEach((mark,index)=>{
+          const key=`${state.wave}-${index}`;
+          if(state.rivalProgress>=mark&&!state.rivalLeakMarks.has(key)) {
+            state.rivalLeakMarks.add(key);
+            state.rivalHearts=Math.max(0,state.rivalHearts-1);
+            log("Rival core leaked",`AI defense missed a unit at ${Math.round(mark*100)}% clear progress`);
+            addEffect(820,65,"AI CORE −1",varColor("--red"));
+          }
+        });
+      }
+      function forceRivalFinish() {
+        if(state.phase!=="wave2") return;
+        state.rivalHearts=0;
+        finishRun(true,"rival_leaked_first");
+      }
+      function damageEnemy(enemy,amount) {
+        if(enemy.hp<=0) return;
+        enemy.hp-=amount;
+        addEffect(enemy.x,enemy.y-20,`−${Math.round(amount)}`,"#ffffff");
+        if(enemy.hp<=0) {
+          state.defeated+=1;
+          if(enemy.split&&enemy.kind==="splitter") {
+            spawnEnemy("mini",enemy.lane,enemy.x+10); spawnEnemy("mini",enemy.lane,enemy.x-8);
+          }
+        }
+      }
+      function addEffect(x,y,text,color) { state.effects.push({x,y,text,color,life:.75}); }
+      function varColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+      function useSkill() {
+        if(!state.guardian || (state.phase!=="wave1"&&state.phase!=="wave2") || state.skillCooldown>0) return;
+        noteFirstInput("guardian_skill");
+        const lock=state.rewardItem?.id==="vector-lock";
+        state.enemies.forEach(enemy=>{
+          if(lock) { enemy.hp-=17; enemy.stunUntil=performance.now()+3000; }
+          else enemy.hp-=34;
+          addEffect(enemy.x,enemy.y-27,lock?"LOCK":"BURST",lock?varColor("--purple"):varColor("--gold"));
+        });
+        state.enemies=state.enemies.filter(enemy=>enemy.hp>0);
+        state.skillCooldown=10;
+        log(lock?"Vector Lock":"Core Burst",lock?"Global 3-second stun":"34 damage to all active enemies");
+        updateActionButtons();
+      }
+      function useItem() {
+        if(state.rewardItem?.id!=="smoke-capsule"||state.smokeUsed||(state.phase!=="wave1"&&state.phase!=="wave2")) return;
+        noteFirstInput("reward_item_use");
+        state.smokeUsed=true;
+        const until=performance.now()+4000;
+        state.enemies.forEach(enemy=>enemy.slowUntil=Math.max(enemy.slowUntil,until));
+        $("#itemButton").disabled=true; $("#itemStatus").textContent="Consumed";
+        log("Smoke Capsule","All active enemies slowed for 4 seconds");
+      }
+      function updateActionButtons() {
+        const battle=state.phase==="wave1"||state.phase==="wave2";
+        $("#skillButton").disabled=!battle||!state.guardian||state.skillCooldown>0;
+        $("#skillButton").firstChild.textContent=state.rewardItem?.id==="vector-lock"?"Vector Lock":"Core Burst";
+        $("#skillStatus").textContent=!state.guardian?"Guardian offline":!battle?"Ready in battle":state.skillCooldown>0?`${state.skillCooldown.toFixed(1)}s cooldown`:"Ready";
+        if(state.rewardItem?.id==="smoke-capsule") {
+          $("#itemButton").hidden=false;
+          $("#itemButton").disabled=!battle||state.smokeUsed;
+          $("#itemButton").firstChild.textContent="Smoke Capsule";
+          $("#itemStatus").textContent=state.smokeUsed?"Consumed":battle?"Ready · one use":"Ready in Wave 2";
+        }
+      }
+      function classify() {
+        let near=0,ranged=0,utility=0;
+        state.towers.forEach(t=>{const value=t.tier;if(t.type==="blade")near+=value;else if(t.type==="bolt")ranged+=value;else utility+=value;});
+        if(ranged>=Math.max(1,near*1.25)) return {
+          profile:"ranged_heavy",response:"shield",title:"Shield column incoming",icon:"SH",near,ranged,utility,
+          reason:`Weighted deployment: Near ${near}, Ranged ${ranged}. Wave 2 adds shields with partial ranged resistance.`,
+          counter:"Near units, utility slow and guardian burst remain effective."
+        };
+        if(near>=Math.max(1,ranged*1.25)) return {
+          profile:"near_heavy",response:"runner",title:"Runner flank incoming",icon:"RN",near,ranged,utility,
+          reason:`Weighted deployment: Near ${near}, Ranged ${ranged}. Wave 2 adds runners that pressure short-range coverage.`,
+          counter:"Ranged units, Mist slow and early guardian skill remain effective."
+        };
+        return {
+          profile:"balanced",response:"splitter",title:"Splitter swarm incoming",icon:"SP",near,ranged,utility,
+          reason:`Weighted deployment: Near ${near}, Ranged ${ranged}. Wave 2 adds units that split once on defeat.`,
+          counter:"Merged tiers, focused fire and guardian burst clear the extra bodies."
+        };
+      }
+      function finishWaveOne() {
+        if(state.phase!=="wave1") return;
+        state.phase="intermission"; state.tokens+=2; state.rivalProgress=1;
+        emitEvent("token_earn",{amount:2,balance:state.tokens,source_method:"wave_clear"});
+        const result=classify();
+        state.aiProfile=result.profile; state.aiResponse=result.response;
+        emitEvent("ai_observation_locked",{ai_profile:result.profile,ai_response_id:result.response,near_weight:result.near,ranged_weight:result.ranged,utility_weight:result.utility});
+        $("#aiTitle").textContent=`Locked: ${result.title}`; $("#aiMeta").textContent=`Near ${result.near} · Ranged ${result.ranged}`;
+        $("#aiCopy").textContent=result.reason;
+        $("#counterTitle").textContent=result.title; $("#counterIcon").textContent=result.icon;
+        $("#counterReason").textContent=result.reason; $("#counterplay").textContent=result.counter;
+        emitEvent("ai_change_shown",{ai_profile:result.profile,ai_response_id:result.response,preview_seconds:8});
+        if(!state.adOfferSent) {
+          state.adOfferSent=true;
+          emitEvent("ad_offer_view",{placement:"wave_intermission",reward:"one_run_sidegrade"});
+        }
+        renderItems();
+        $("#intermissionOverlay").classList.add("active");
+        $("#missionTitle").textContent="Wave 1 clear · AI response disclosed";
+        $("#missionSubtitle").textContent="Two activity tokens earned. The next wave is locked before reward choice.";
+        startForecast();
+        updateHud();
+      }
+      function renderItems() {
+        $("#itemGrid").innerHTML=itemDefs.map(item=>`<article class="item">
+          <span class="item-type">${item.type}</span><h3>${item.name}</h3><p>${item.copy}</p>
+          <span class="tradeoff">${item.tradeoff}</span>
+          <div class="buy"><button class="secondary" data-token="${item.id}">Use 2 tokens</button><button class="ghost" data-ad="${item.id}">Watch 3s ad</button></div>
+        </article>`).join("");
+        $$("[data-token]").forEach(button=>button.addEventListener("click",()=>acquire(button.dataset.token,"tokens")));
+        $$("[data-ad]").forEach(button=>button.addEventListener("click",()=>acquire(button.dataset.ad,"ad")));
+      }
+      function startForecast() {
+        clearInterval(state.forecastTimer); state.forecastUnlocked=false;
+        let remaining=8; $("#forecastTimer").textContent=remaining; $("#continueButton").disabled=true;
+        state.forecastTimer=setInterval(()=>{
+          remaining-=1; $("#forecastTimer").textContent=Math.max(0,remaining);
+          if(remaining>0) return;
+          clearInterval(state.forecastTimer); state.forecastUnlocked=true; $("#continueButton").disabled=false;
+          $("#continueButton").textContent=state.rewardItem?`Start Wave 2 with ${state.rewardItem.name}`:"Continue without item";
+          toast("Eight-second counter preview complete");
+        },1000);
+      }
+      function acquire(id,method) {
+        if(state.rewardItem) { toast("Single reward slot already filled."); return; }
+        const item=itemDefs.find(value=>value.id===id); if(!item) return;
+        noteFirstInput(method==="ad"?"rewarded_ad":"token_spend");
+        if(method==="tokens") {
+          if(state.tokens<2) { toast("Two activity tokens are required."); return; }
+          state.tokens-=2; emitEvent("token_spend",{amount:2,balance:state.tokens,item_id:id});
+          grant(item,"tokens");
+        } else {
+          if(state.adUsed) { toast("One simulated ad maximum per run."); return; }
+          state.adUsed=true; simulateAd(item);
+        }
+      }
+      function simulateAd(item) {
+        emitEvent("ad_accept",{placement:"wave_intermission",item_id:item.id});
+        $("#intermissionOverlay").classList.remove("active"); $("#adOverlay").classList.add("active");
+        let remaining=3; $("#adCount").textContent=remaining;
+        const timer=setInterval(()=>{
+          remaining-=1;
+          if(remaining>0) { $("#adCount").textContent=remaining; return; }
+          clearInterval(timer); $("#adOverlay").classList.remove("active");
+          emitEvent("ad_complete",{placement:"wave_intermission",duration_seconds:3,item_id:item.id});
+          grant(item,"simulated_ad");
+        },1000);
+      }
+      function grant(item,method) {
+        if(state.rewardItem) return;
+        state.rewardItem=item; state.rewardMethod=method;
+        $("#emptyReward").style.display="none"; $("#reward").style.display="block";
+        $("#rewardName").textContent=item.name; $("#rewardCopy").textContent=item.slot;
+        emitEvent("reward_grant",{item_id:item.id,reward:item.type,source_method:method,duration:"one_run"});
+        $$("[data-token],[data-ad]").forEach(button=>button.disabled=true);
+        updateActionButtons(); updateHud();
+        log("Single slot filled",`${item.name} via ${method==="tokens"?"2 activity tokens":"3-second simulated ad"}`);
+        if(state.forecastUnlocked) startWaveTwo();
+        else {
+          $("#intermissionOverlay").classList.add("active");
+          $("#continueButton").textContent=`Wait for forecast · ${$("#forecastTimer").textContent}s`;
+        }
+      }
+      function continueWave() {
+        if(!state.forecastUnlocked) return;
+        if(!state.rewardItem) emitEvent("ad_cancel",{placement:"wave_intermission",reason:"continue_without_item"});
+        startWaveTwo();
+      }
+      function startWaveTwo() {
+        if(!state.forecastUnlocked||state.phase!=="intermission") return;
+        clearInterval(state.forecastTimer); $("#intermissionOverlay").classList.remove("active");
+        state.phase="wave2"; state.wave=2; state.waveElapsed=0; state.rivalProgress=0; state.rivalLeakMarks.clear();
+        state.spawnQueue=buildWave(true);
+        $("#missionTitle").textContent=`Wave 2 · ${state.aiResponse} response`;
+        $("#missionSubtitle").textContent="The disclosed counter is active. Reward choice did not alter it.";
+        $("#canvasHint").textContent=state.rewardItem?`${state.rewardItem.name} active · one slot only`:"No reward selected · base formation remains viable";
+        updateActionButtons(); updateHud();
+        log("Wave 2 launched",`${state.aiResponse} response arrived after an 8-second preview`);
+      }
+      function finishRun(won,reason) {
+        if(state.phase==="result") return;
+        state.phase="result"; state.enemies=[]; state.spawnQueue=[];
+        updateActionButtons(); updateHud();
+        if(won) {
+          $("#resultEyebrow").textContent="Core duel won"; $("#resultSeal").textContent="✓";
+          $("#resultTitle").textContent="The rival core leaked first.";
+          $("#resultCopy").textContent=state.rewardItem
+            ? `${state.rewardItem.name} was a one-slot side-grade. The same AI response was locked before acquisition.`
+            : "You declined both reward paths and held the three-heart core with recruited and merged units.";
+          emitEvent("core_payoff",{ai_profile:state.aiProfile,ai_response_id:state.aiResponse,reward_item:state.rewardItem?.id||"none",reward_method:state.rewardMethod,guardian:state.guardian?.name||"none"});
+        } else {
+          $("#resultEyebrow").textContent="Core duel lost"; $("#resultSeal").textContent="↺";
+          $("#resultTitle").textContent="Your core leaked first.";
+          $("#resultCopy").textContent="Retry needs no ad. Merge the opening pair, cover near and ranged distances, and time the guardian skill.";
+        }
+        $("#resultHearts").textContent=state.playerHearts; $("#resultCounter").textContent=state.aiResponse||"—";
+        $("#resultMethod").textContent=state.rewardMethod==="simulated_ad"?"Ad":state.rewardMethod==="tokens"?"Tokens":"None";
+        $("#resultOverlay").classList.add("active");
+        emitEvent("run_end",{result:won?"win":"loss",reason,ad_used:state.adUsed,reward_method:state.rewardMethod,player_hearts:state.playerHearts,rival_hearts:state.rivalHearts});
+      }
+      function resetRun() {
+        clearInterval(state.forecastTimer);
+        state.runNumber+=1; state.runId=newRunId(); state.startedAt=performance.now(); state.firstInputSent=false;
+        state.recipe=state.runNumber%2?["RA","KA"]:["KA","VI"]; state.deck=makeDeck();
+        state.bench=[null,null,null,null]; state.selectedBench=null; state.towers=[]; state.guardian=null; state.fragments=new Set(); state.supplyLeft=6;
+        state.phase="setup"; state.wave=0; state.waveElapsed=0; state.spawnQueue=[]; state.enemies=[]; state.projectiles=[]; state.effects=[];
+        state.playerHearts=3; state.rivalHearts=3; state.rivalProgress=0; state.rivalLeakMarks=new Set();
+        state.tokens=0; state.rewardItem=null; state.rewardMethod="none"; state.adUsed=false; state.adOfferSent=false; state.smokeUsed=false;
+        state.aiProfile=null; state.aiResponse=null; state.forecastUnlocked=false; state.skillCooldown=0; state.defeated=0;
+        $("#resultOverlay").classList.remove("active"); $("#intermissionOverlay").classList.remove("active"); $("#adOverlay").classList.remove("active");
+        $("#emptyReward").style.display="grid"; $("#reward").style.display="none"; $("#itemButton").hidden=true;
+        $("#eventLog").innerHTML=""; $("#aiTitle").textContent="Observing deployment"; $("#aiMeta").textContent="Near 0 · Ranged 0";
+        $("#aiCopy").textContent="The rival will lock one Wave 2 response from your near/ranged ratio, then preview it for at least 8 seconds.";
+        $("#missionTitle").textContent="Open seeded random supply"; $("#missionSubtitle").textContent="The first two recruits match, so you can learn merging immediately.";
+        $("#canvasHint").textContent="Draw supply · merge matching recruits · deploy from the 4-slot bench";
+        updateFragments(); renderBench(); updateActionButtons(); updateHud();
+        emitEvent("replay_start",{mode:"new_seeded_duel"}); emitEvent("game_start",{mode:"replay"});
+      }
+
+      function rounded(x,y,w,h,r) { ctx.beginPath(); ctx.roundRect(x,y,w,h,r); }
+      function draw(now) {
+        const gradient=ctx.createLinearGradient(0,0,900,520);
+        gradient.addColorStop(0,"#102031"); gradient.addColorStop(.55,"#12241f"); gradient.addColorStop(1,"#182235");
+        ctx.fillStyle=gradient; ctx.fillRect(0,0,900,520);
+        ctx.strokeStyle="rgba(170,205,235,.065)"; ctx.lineWidth=1;
+        for(let x=0;x<=900;x+=45){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,520);ctx.stroke();}
+        for(let y=0;y<=520;y+=45){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(900,y);ctx.stroke();}
+        laneY.forEach((y,index)=>{
+          ctx.fillStyle=index%2?"rgba(67,98,116,.14)":"rgba(76,119,104,.12)";
+          rounded(46,y-34,812,68,26);ctx.fill();
+          ctx.setLineDash([8,12]);ctx.strokeStyle="rgba(205,230,242,.11)";ctx.beginPath();ctx.moveTo(58,y);ctx.lineTo(848,y);ctx.stroke();ctx.setLineDash([]);
+          ctx.fillStyle="rgba(220,239,248,.38)";ctx.font="800 10px Segoe UI";ctx.fillText(`FIXED ROUTE ${index+1}`,58,y-43);
+        });
+        drawCore(58,253,state.playerHearts,"YOU");
+        drawRivalMonitor();
+        pads.forEach(pad=>{
+          const tower=state.towers.find(t=>t.x===pad.x&&t.y===pad.y);
+          ctx.beginPath();ctx.arc(pad.x,pad.y,tower?27:24+Math.sin(now/360+pad.x)*2,0,Math.PI*2);
+          ctx.fillStyle=tower?"rgba(4,10,15,.82)":"rgba(89,186,255,.07)";ctx.fill();
+          const readyToDeploy=!tower&&state.phase==="setup"&&state.selectedBench!==null;
+          ctx.strokeStyle=tower?unitDefs[tower.type].color:readyToDeploy?"#ffd066":"rgba(89,186,255,.36)";ctx.lineWidth=tower?2.5:readyToDeploy?3:1.5;ctx.stroke();
+          if(readyToDeploy){ctx.beginPath();ctx.arc(pad.x,pad.y,31+Math.sin(now/210)*2,0,Math.PI*2);ctx.strokeStyle="rgba(255,208,102,.45)";ctx.lineWidth=2;ctx.stroke();}
+          if(tower) drawUnit(tower); else {ctx.beginPath();ctx.arc(pad.x,pad.y,4,0,Math.PI*2);ctx.fillStyle="rgba(89,186,255,.66)";ctx.fill();}
+        });
+        if(state.guardian) drawGuardian(now);
+        state.enemies.forEach(drawEnemy);
+        state.projectiles.forEach(p=>{
+          ctx.globalAlpha=Math.max(0,p.life/.18);ctx.strokeStyle=p.color;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.tx,p.ty);ctx.stroke();ctx.globalAlpha=1;
+        });
+        state.effects.forEach(e=>{ctx.globalAlpha=Math.max(0,e.life/.75);ctx.fillStyle=e.color;ctx.font="900 13px Segoe UI";ctx.fillText(e.text,e.x-12,e.y);ctx.globalAlpha=1;});
+      }
+      function drawCore(x,y,hearts,label) {
+        ctx.save();ctx.translate(x,y);
+        ctx.fillStyle="#43e19c";ctx.shadowColor="#43e19c";ctx.shadowBlur=15;
+        ctx.beginPath();
+        for(let i=0;i<6;i++){const angle=Math.PI/3*i-Math.PI/2;const px=Math.cos(angle)*25,py=Math.sin(angle)*25;if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);}
+        ctx.closePath();ctx.fill();ctx.shadowBlur=0;
+        ctx.fillStyle="#07100e";ctx.font="1000 15px Segoe UI";ctx.textAlign="center";ctx.fillText(hearts,0,5);
+        ctx.fillStyle="rgba(220,239,248,.46)";ctx.font="800 8px Segoe UI";ctx.fillText(label,0,42);ctx.restore();ctx.textAlign="left";
+      }
+      function drawRivalMonitor() {
+        ctx.fillStyle="rgba(169,137,255,.12)";rounded(724,23,142,55,12);ctx.fill();
+        ctx.strokeStyle="rgba(169,137,255,.25)";ctx.stroke();
+        ctx.fillStyle="#cbbaff";ctx.font="800 9px Segoe UI";ctx.fillText("AI RIVAL CORE",737,40);
+        ctx.fillStyle="#ff647c";ctx.font="900 15px Segoe UI";ctx.fillText("◆".repeat(state.rivalHearts)+"◇".repeat(3-state.rivalHearts),737,59);
+        ctx.fillStyle="rgba(5,10,15,.64)";ctx.fillRect(737,67,115,4);
+        ctx.fillStyle="#a989ff";ctx.fillRect(737,67,115*Math.min(1,state.rivalProgress),4);
+      }
+      function drawUnit(tower) {
+        const def=unitDefs[tower.type];ctx.save();ctx.translate(tower.x,tower.y);ctx.fillStyle=def.color;ctx.shadowColor=def.color;ctx.shadowBlur=9;
+        if(tower.type==="bolt"){ctx.beginPath();ctx.moveTo(0,-18);ctx.lineTo(14,15);ctx.lineTo(-14,15);ctx.closePath();ctx.fill();}
+        else if(tower.type==="blade"){ctx.rotate(Math.PI/4);rounded(-13,-13,26,26,6);ctx.fill();}
+        else {ctx.beginPath();for(let i=0;i<8;i++){const a=i/8*Math.PI*2,r=i%2?9:18,x=Math.cos(a)*r,y=Math.sin(a)*r;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.closePath();ctx.fill();}
+        ctx.shadowBlur=0;ctx.fillStyle="#07100e";ctx.font="1000 10px Segoe UI";ctx.textAlign="center";ctx.fillText(`T${tower.tier}`,0,4);ctx.restore();ctx.textAlign="left";
+      }
+      function drawGuardian(now) {
+        const pulse=1+Math.sin(now/260)*.05;ctx.save();ctx.translate(116,253);ctx.scale(pulse,pulse);
+        ctx.fillStyle="#ffd066";ctx.shadowColor="#ffd066";ctx.shadowBlur=18;ctx.beginPath();ctx.arc(0,0,24,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+        ctx.fillStyle="#07100e";ctx.font="1000 9px Segoe UI";ctx.textAlign="center";ctx.fillText(state.guardian.name.split(" ")[0],0,3);
+        ctx.fillStyle="#ffd066";ctx.font="800 8px Segoe UI";ctx.fillText("PRIME",0,39);ctx.restore();ctx.textAlign="left";
+      }
+      function drawEnemy(enemy) {
+        ctx.save();ctx.translate(enemy.x,enemy.y);ctx.fillStyle=enemy.color;ctx.shadowColor=enemy.color;ctx.shadowBlur=enemy.boss?14:7;
+        if(enemy.kind==="shield"){ctx.beginPath();ctx.moveTo(0,-enemy.radius);ctx.lineTo(enemy.radius,-6);ctx.lineTo(enemy.radius-4,enemy.radius);ctx.lineTo(0,enemy.radius+5);ctx.lineTo(-enemy.radius+4,enemy.radius);ctx.lineTo(-enemy.radius,-6);ctx.closePath();ctx.fill();}
+        else if(enemy.kind==="runner"){ctx.beginPath();ctx.moveTo(enemy.radius+7,0);ctx.lineTo(-enemy.radius,-enemy.radius);ctx.lineTo(-enemy.radius+4,0);ctx.lineTo(-enemy.radius,enemy.radius);ctx.closePath();ctx.fill();}
+        else if(enemy.kind==="splitter"){ctx.beginPath();ctx.arc(-7,0,enemy.radius*.68,0,Math.PI*2);ctx.arc(7,0,enemy.radius*.68,0,Math.PI*2);ctx.fill();}
+        else {ctx.beginPath();ctx.arc(0,0,enemy.radius,0,Math.PI*2);ctx.fill();}
+        ctx.shadowBlur=0;ctx.fillStyle="#081019";ctx.beginPath();ctx.arc(4,-4,Math.max(2,enemy.radius*.17),0,Math.PI*2);ctx.fill();
+        const w=enemy.boss?56:36;ctx.fillStyle="rgba(5,10,15,.72)";ctx.fillRect(-w/2,-enemy.radius-11,w,4);
+        ctx.fillStyle=enemy.boss?"#ffd066":"#43e19c";ctx.fillRect(-w/2,-enemy.radius-11,w*Math.max(0,enemy.hp/enemy.maxHp),4);
+        if(enemy.slowUntil>performance.now()){ctx.strokeStyle="#a989ff";ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,enemy.radius+5,0,Math.PI*2);ctx.stroke();}
+        if(enemy.stunUntil>performance.now()){ctx.fillStyle="#ffd066";ctx.font="900 9px Segoe UI";ctx.fillText("LOCK",-12,-enemy.radius-17);}
+        ctx.restore();
+      }
+      function frame(now) {
+        const dt=Math.min(.034,Math.max(0,(now-state.lastFrame)/1000));state.lastFrame=now;
+        update(dt,now);draw(now);requestAnimationFrame(frame);
+      }
+
+      $("#supplyButton").addEventListener("click",drawSupply);
+      $("#guardianButton").addEventListener("click",assembleGuardian);
+      $("#startWaveButton").addEventListener("click",startWaveOne);
+      $("#startWaveInline").addEventListener("click",startWaveOne);
+      $("#skillButton").addEventListener("click",useSkill);
+      $("#itemButton").addEventListener("click",useItem);
+      $("#continueButton").addEventListener("click",continueWave);
+      $("#replayButton").addEventListener("click",resetRun);
+      canvas.addEventListener("pointerdown",placeSelected);
+      window.addEventListener("keydown",event=>{
+        if(event.code==="KeyS") drawSupply();
+        if(event.code==="Space"){event.preventDefault();useSkill();}
+      });
+
+      state.deck=makeDeck();
+      updateFragments();renderBench();updateActionButtons();updateHud();
+      log("Seeded duel ready","Open supply. The first two recruits match for a guaranteed merge tutorial.");
+      emitEvent("game_start",{mode:"cold_start"});
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>

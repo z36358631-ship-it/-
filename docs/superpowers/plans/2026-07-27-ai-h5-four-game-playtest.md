@@ -4,7 +4,7 @@
 
 **Goal:** Build four independent playable H5 game demos, a comparison hub, and an evidence-based test report that selects the strongest two concepts.
 
-**Architecture:** Each game is a self-contained HTML file with inline CSS and JavaScript so it can be opened or shared independently. A separate hub launches each game in an iframe, receives normalized `postMessage` events, and stores completion state in `localStorage`; Playwright verification opens every file at desktop and mobile sizes.
+**Architecture:** Each game is a self-contained HTML file with inline CSS and JavaScript so it can be opened or shared independently. A separate hub launches each game in a new tab, receives normalized `postMessage` events through `window.opener`, and stores completion state in `localStorage`; Playwright verification opens every file at desktop and mobile sizes.
 
 **Tech Stack:** HTML5 Canvas, vanilla JavaScript, CSS, browser `postMessage`, `localStorage`, Playwright Core.
 
@@ -12,11 +12,11 @@
 
 ## File map
 
-- `demos/AI游戏赛道评测/index.html`: comparison hub and Top 2 result view.
+- `demos/AI游戏赛道评测/index.html`: comparison hub, new-tab launch controls, and Top 2 result view.
 - `demos/AI游戏赛道评测/01-ghost-grid.html`: adaptive maze chase.
 - `demos/AI游戏赛道评测/02-trap-lab.html`: adaptive Obby runner.
 - `demos/AI游戏赛道评测/03-bio-forge.html`: fusion and auto-battle loop.
-- `demos/AI游戏赛道评测/04-lotus-guardian.html`: adaptive escort tower defense and token/ad item choice.
+- `demos/AI游戏赛道评测/04-lotus-guardian.html`: random recruit/merge defense, name-fragment summon, scripted rival, and token/ad item choice.
 - `tools/verify-ai-h5-game-demos.mjs`: automated interaction, responsive checks, event checks, console error collection, and screenshots.
 - `docs/superpowers/specs/2026-07-27-ai-h5-four-game-playtest-report.md`: evidence, scores, ranking, and Top 2 conclusion.
 
@@ -40,7 +40,7 @@ window.addEventListener('message', (event) => {
 });
 ```
 
-- [ ] **Step 2: Add four launch cards and an iframe player**
+- [ ] **Step 2: Add four launch cards and new-tab launch controls**
 
 Each launch card must use a relative source, for example:
 
@@ -138,18 +138,18 @@ Use battle telemetry to offer two relevant mutations. The rewarded refresh retur
 
 Apply the selected mutation, run a shorter Boss fight, unlock a collection silhouette, and emit `core_payoff`.
 
-### Task 5: Implement Lotus Guardian
+### Task 5: Implement Coreguard Duel
 
 **Files:**
 - Create: `demos/AI游戏赛道评测/04-lotus-guardian.html`
 
-- [ ] **Step 1: Add the escort field**
+- [ ] **Step 1: Add the merge-defense field**
 
-Render three lanes, six tower pads, a moving caravan, enemies, tower projectiles, health, and a guardian skill button.
+Render a fixed enemy route, six defense pads, five reserve slots, a three-heart core, enemy waves, projectiles, and a scripted rival survival meter.
 
-- [ ] **Step 2: Add three towers**
+- [ ] **Step 2: Add random recruit and merging**
 
-Arrow tower provides range, cannon provides splash damage, and mist tower provides slowing. The no-item baseline must remain winnable.
+Recruit into the reserve slots: melee, ranged, slow, or one of two fictional name fragments. Drag units onto pads and merge matching type/level units. Combining the two name fragments summons a higher-tier guardian.
 
 - [ ] **Step 3: Add the AI counter wave**
 
@@ -161,7 +161,7 @@ Award two activity tokens after wave one. Equipment, skill item, and consumable 
 
 - [ ] **Step 5: Verify fairness**
 
-Expected: refusing both tokens and ad still leaves a winning placement; watching an ad does not alter AI difficulty; repeated ad completion cannot stack rewards.
+Expected: refusing both tokens and ad still leaves a winning recruit/merge path; watching an ad does not alter AI difficulty; repeated ad completion cannot stack rewards; the rival is scripted and requires no network connection.
 
 ### Task 6: Add automated verification
 
@@ -245,4 +245,3 @@ Expected: no runtime network dependency.
 Run: `git status --short -- "demos/AI游戏赛道评测" "tools/verify-ai-h5-game-demos.mjs" "docs/superpowers/specs/2026-07-27-ai-h5-*"`
 
 Expected: only the design, plan, demos, verifier, screenshots if tracked, and report appear.
-
