@@ -263,11 +263,30 @@ async function expandRuntimeArchive({
 }) {
   let archiveDescriptor;
   let ownsArchive = false;
+  let primaryError;
+  let hasPrimaryError = false;
+  const cleanupErrors = [];
   const closeOpenArchive = () => {
     if (archiveDescriptor === undefined) return;
-    const descriptor = archiveDescriptor;
+    closeArchive(archiveDescriptor);
     archiveDescriptor = undefined;
-    closeArchive(descriptor);
+  };
+  const attachCleanupErrors = (error, errors) => {
+    if (
+      errors.length === 0
+      || error === null
+      || !['function', 'object'].includes(typeof error)
+    ) {
+      return;
+    }
+    try {
+      const existing = Array.isArray(error.cleanupErrors)
+        ? error.cleanupErrors
+        : [];
+      error.cleanupErrors = [...existing, ...errors];
+    } catch {
+      // Cleanup diagnostics must never replace the error being reported.
+    }
   };
   try {
     archiveDescriptor = openArchive(archiveFile);
@@ -297,12 +316,33 @@ async function expandRuntimeArchive({
         error => (error ? reject(error) : resolve()),
       );
     });
+  } catch (error) {
+    primaryError = error;
+    hasPrimaryError = true;
   } finally {
-    try {
-      closeOpenArchive();
-    } finally {
-      if (ownsArchive) removeArchive(archiveFile);
+    if (archiveDescriptor !== undefined) {
+      try {
+        closeOpenArchive();
+      } catch (error) {
+        cleanupErrors.push(error);
+      }
     }
+    if (ownsArchive) {
+      try {
+        removeArchive(archiveFile);
+      } catch (error) {
+        cleanupErrors.push(error);
+      }
+    }
+  }
+  if (hasPrimaryError) {
+    attachCleanupErrors(primaryError, cleanupErrors);
+    throw primaryError;
+  }
+  if (cleanupErrors.length > 0) {
+    const [cleanupError, ...additionalCleanupErrors] = cleanupErrors;
+    attachCleanupErrors(cleanupError, additionalCleanupErrors);
+    throw cleanupError;
   }
 }
 

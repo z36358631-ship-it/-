@@ -480,6 +480,104 @@ test('PowerShell callback failures remove the ZIP and preserve the original erro
   assert.equal(fs.existsSync(archiveFile), false);
 });
 
+test('primary archive errors survive close and remove cleanup failures', async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'portable-expand-cleanup-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const archiveFile = path.join(root, 'runtime.zip');
+  const primaryError = new Error('archive write failed');
+  const closeError = new Error('archive close failed');
+  const removeError = new Error('archive remove failed');
+  let powershellCalled = false;
+  let removeCalls = 0;
+
+  await assert.rejects(
+    () => expandRuntimeArchive({
+      archive: Buffer.from('fixture archive'),
+      archiveFile,
+      closeArchive: descriptor => {
+        fs.closeSync(descriptor);
+        throw closeError;
+      },
+      destination: path.join(root, 'destination'),
+      execFile: (command, args, options, callback) => {
+        powershellCalled = true;
+        callback(null);
+      },
+      removeArchive: filename => {
+        removeCalls += 1;
+        fs.rmSync(filename, { force: true });
+        throw removeError;
+      },
+      writeArchive: () => {
+        throw primaryError;
+      },
+    }),
+    error => {
+      assert.equal(error, primaryError);
+      assert.deepEqual(error.cleanupErrors, [closeError, removeError]);
+      return true;
+    },
+  );
+
+  assert.equal(powershellCalled, false);
+  assert.equal(removeCalls, 1);
+  assert.equal(fs.existsSync(archiveFile), false);
+});
+
+test('wx ownership conflicts preserve the existing ZIP without removing it', async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'portable-expand-owned-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const archiveFile = path.join(root, 'runtime.zip');
+  fs.writeFileSync(archiveFile, 'existing archive', 'utf8');
+  let powershellCalled = false;
+  let removeCalled = false;
+
+  await assert.rejects(
+    () => expandRuntimeArchive({
+      archive: Buffer.from('replacement archive'),
+      archiveFile,
+      destination: path.join(root, 'destination'),
+      execFile: (command, args, options, callback) => {
+        powershellCalled = true;
+        callback(null);
+      },
+      removeArchive: () => {
+        removeCalled = true;
+      },
+    }),
+    error => error?.code === 'EEXIST',
+  );
+
+  assert.equal(powershellCalled, false);
+  assert.equal(removeCalled, false);
+  assert.equal(fs.readFileSync(archiveFile, 'utf8'), 'existing archive');
+});
+
+test('cleanup failures without a primary error propagate the first cleanup error', async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'portable-expand-remove-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const archiveFile = path.join(root, 'runtime.zip');
+  const removeError = new Error('archive remove failed');
+
+  await assert.rejects(
+    () => expandRuntimeArchive({
+      archive: Buffer.from('fixture archive'),
+      archiveFile,
+      destination: path.join(root, 'destination'),
+      execFile: (command, args, options, callback) => {
+        callback(null);
+      },
+      removeArchive: filename => {
+        fs.rmSync(filename, { force: true });
+        throw removeError;
+      },
+    }),
+    error => error === removeError,
+  );
+
+  assert.equal(fs.existsSync(archiveFile), false);
+});
+
 test('startup failures are logged with credential-like values redacted', t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'portable-startup-log-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
