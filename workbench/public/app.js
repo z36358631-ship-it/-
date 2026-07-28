@@ -59,6 +59,26 @@ const permissionLabels = {
   'generate-candidate': '生成候选产物',
   'modify-existing': '修改已选产物',
 };
+const approvalKindLabels = new Map([
+  ['file-change', '文件变化'],
+  ['command', '命令请求'],
+  ['file-delete', '文件删除'],
+  ['out-of-scope-file', '目标外文件'],
+]);
+const validationStatusLabels = {
+  passed: '通过',
+  failed: '失败',
+  skipped: '已跳过',
+};
+const validationNameLabels = {
+  'target-integrity': '目标完整性',
+  'unrelated-files': '非目标文件检查',
+  'Codex validation': 'Codex 验证',
+  'Broker restart conflict check': 'Broker 重启冲突检查',
+  contract: '契约检查',
+  visual: '视觉检查',
+  optional: '可选检查',
+};
 const workflowLabels = {
   'feedback-triage': '整理反馈并去重',
   'demo-prd-review': '检查 Demo、PRD 差异与漏洞',
@@ -1173,13 +1193,15 @@ function approvalGuidance(kind) {
 function buildApprovalCard(item) {
   const card = createElement('article', 'approval-card');
   const top = createElement('div', 'approval-card-top');
+  const kindLabel = approvalKindLabels.get(item.kind) || '未知请求';
   top.append(
-    createElement('strong', '', `${item.kind || '未知请求'} · ${item.summary || '无摘要'}`),
+    createElement('strong', '', `${kindLabel}（${item.kind || 'unknown'}）`),
     buildStatusPill(item.status || 'pending', item.status === 'pending' ? '待确认' : item.status),
   );
   const paths = Array.isArray(item.payload?.paths) ? item.payload.paths : [];
   card.append(
     top,
+    createElement('p', '', `原始摘要：${item.summary || '无摘要'}`),
     createElement(
       'p',
       '',
@@ -1197,7 +1219,10 @@ function buildApprovalCard(item) {
   approve.disabled = !approvable;
   reject.disabled = !pending;
   if (!pending) approve.textContent = item.status === 'approved' ? '已允许' : '已拒绝';
-  if (pending && !approvable) approve.textContent = '不可允许';
+  if (pending && !approvable) {
+    approve.className = 'button button-locked';
+    approve.textContent = '已锁定：不可允许';
+  }
   approve.addEventListener('click', () => {
     decideApproval(item.id, 'approved').catch(error => {
       text(query('#runDetailMessage'), error.message);
@@ -1232,15 +1257,23 @@ function buildValidationCard(item) {
     `validation-card is-${item.status || 'skipped'}`,
   );
   const top = createElement('div', 'validation-card-top');
+  const rawName = item.name || 'unnamed';
+  const rawStatus = item.status || 'skipped';
+  const nameLabel = validationNameLabels[rawName] || rawName;
+  const statusLabel = validationStatusLabels[rawStatus] || rawStatus;
   top.append(
-    createElement('strong', '', item.name || '未命名验证'),
+    createElement(
+      'strong',
+      '',
+      nameLabel === rawName ? rawName : `${nameLabel}（${rawName}）`,
+    ),
     buildStatusPill(
-      item.status === 'passed'
+      rawStatus === 'passed'
         ? 'completed'
-        : item.status === 'failed'
+        : rawStatus === 'failed'
           ? 'failed'
           : 'pending',
-      item.status || '未记录',
+      `${statusLabel}（${rawStatus}）`,
     ),
   );
   card.append(top, createElement('p', '', item.detail || '无补充信息'));

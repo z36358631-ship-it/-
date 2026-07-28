@@ -103,6 +103,11 @@ assert.match(css, /@media\s*\(max-width:\s*1023px\)/);
 assert.match(css, /@media\s*\(max-width:\s*767px\)/);
 assert.match(css, /@media\s*\(max-width:\s*420px\)/);
 assert.match(css, /prefers-reduced-motion:\s*reduce/);
+assert.match(css, /\.button-locked,\s*\.button-locked:disabled\s*{[^}]*background:\s*#eef2f6;[^}]*opacity:\s*1;/s);
+assert.match(
+  css,
+  /@media\s*\(max-width:\s*420px\)[\s\S]*?\.run-control-actions\s*{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
+);
 
 assert.match(app, /new EventSource\(\s*`\/api\/runs\/\$\{encodeURIComponent\(run\.id\)\}\/events\?token=\$\{encodeURIComponent\(state\.token\)\}`/s);
 assert.match(app, /api\(['"`]\/api\/bootstrap/);
@@ -132,6 +137,15 @@ assert.equal(/\bsetInterval\s*\(/.test(app), false, 'Run detail polling must not
 assert.match(app, /window\.setTimeout\(poll,\s*700\)/);
 assert.match(app, /item\.kind === ['"]file-change['"]/);
 assert.match(app, /只恢复本 Run 明确记录的文件/);
+assert.match(app, /\[['"]command['"],\s*['"]命令请求['"]\]/);
+assert.match(app, /\[['"]file-delete['"],\s*['"]文件删除['"]\]/);
+assert.match(app, /\[['"]out-of-scope-file['"],\s*['"]目标外文件['"]\]/);
+assert.match(app, /['"]target-integrity['"]:\s*['"]目标完整性['"]/);
+assert.match(app, /['"]unrelated-files['"]:\s*['"]非目标文件检查['"]/);
+assert.match(app, /passed:\s*['"]通过['"]/);
+assert.match(app, /failed:\s*['"]失败['"]/);
+assert.match(app, /approve\.className\s*=\s*['"]button button-locked['"]/);
+assert.match(app, /approve\.textContent\s*=\s*['"]已锁定：不可允许['"]/);
 assert.match(app, /history\.replaceState/);
 assert.match(app, /sessionStorage\.setItem/);
 assert.match(app, /aria-current/);
@@ -143,6 +157,37 @@ assert.equal(/<script[^>]+src=|<link[^>]+href=["']https?:/.test(demo), false, 'D
 console.log('PASS personal workbench static contract');
 
 const evidenceRoot = path.join(root, 'test-results', 'personal-codex-workbench');
+const requiredEvidence = [
+  {
+    path: 'permissions-desktop.png',
+    assertions: [
+      '三种权限模式可见且触控高度不低于 44px',
+      '写入模式禁用只读工作流并显示对应目标控件',
+    ],
+  },
+  {
+    path: 'safety-desktop.png',
+    assertions: [
+      '安全文件变化允许按钮保持可用',
+      '命令、删除和目标外文件审批以中性灰锁定态禁用',
+      '审批类型显示中文并保留原始英文与摘要',
+    ],
+  },
+  {
+    path: 'safety-mobile.png',
+    assertions: [
+      '375px 失败 Run 显示文本 diff 与二进制无文本差异提示',
+      '验证名称与状态显示中文并保留原始英文',
+    ],
+  },
+  {
+    path: 'safety-mobile-controls.png',
+    assertions: [
+      '375px 底部四操作采用 2×2 紧凑布局',
+      '每个操作高度不低于 44px、无横向溢出且不遮挡抽屉内容',
+    ],
+  },
+];
 const mockSafetyRuns = [
   {
     id: 'RUN-MOCK-WAITING',
@@ -495,6 +540,9 @@ async function verifyViewport(page, viewport, screenshotName) {
 
 async function runBrowserVerification() {
   fs.mkdirSync(evidenceRoot, { recursive: true });
+  for (const item of requiredEvidence) {
+    fs.rmSync(path.join(evidenceRoot, item.path), { force: true });
+  }
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'personal-codex-workbench-ui-'));
   const server = startWorkbench(tempRoot);
   const executablePath = chromeCandidates.find(candidate => fs.existsSync(candidate));
@@ -515,10 +563,16 @@ async function runBrowserVerification() {
     safetyRunDetail: null,
     dialog: null,
     health: null,
+    writeRunRequests: 0,
     viewports: [],
     consoleErrors: [],
     pageErrors: [],
-    screenshots: ['desktop.png', 'mobile.png'],
+    screenshots: [
+      'desktop.png',
+      'mobile.png',
+      ...requiredEvidence.map(item => item.path),
+    ],
+    evidence: requiredEvidence.map(item => ({ ...item, status: 'pending' })),
   };
   let browser;
   let failure;
@@ -535,6 +589,11 @@ async function runBrowserVerification() {
       locale: 'zh-CN',
     });
     const page = await context.newPage();
+    page.on('request', request => {
+      if (new URL(request.url()).pathname === '/api/runs/write') {
+        report.writeRunRequests += 1;
+      }
+    });
     page.on('console', message => {
       if (message.type() === 'error') {
         report.consoleErrors.push({
@@ -712,6 +771,14 @@ async function runBrowserVerification() {
     assert.equal(await workflowButtons.first().isDisabled(), false);
     assert.equal(await page.locator('#authorizedFiles').isVisible(), true);
     assert.equal(await page.locator('#candidateTarget').isVisible(), false);
+    await page.locator('input[name="permission"][value="modify-existing"]').check();
+    assert.equal(await workflowButtons.first().isDisabled(), true);
+    await page.locator('#permissionPicker').scrollIntoViewIfNeeded();
+    await settleLayout(page);
+    await page.screenshot({
+      path: path.join(evidenceRoot, 'permissions-desktop.png'),
+    });
+    await page.locator('input[name="permission"][value="read-only"]').check();
     report.registeredArtifactSelection = 'registered-only/synchronized passed';
     report.workflowControls = 'three/focusable/mode-switch passed';
     report.permissionModes = 'read/generate/modify target rules passed';
@@ -729,16 +796,44 @@ async function runBrowserVerification() {
     const safeApproval = page.locator('#approvalCards .approval-card').filter({
       hasText: 'file-change',
     });
+    assert.match(await safeApproval.innerText(), /文件变化（file-change）/);
     assert.equal(
       await safeApproval.getByRole('button', { name: '允许本次文件变化' }).isEnabled(),
       true,
     );
+    const safeApprovalColor = await safeApproval
+      .getByRole('button', { name: '允许本次文件变化' })
+      .evaluate(element => getComputedStyle(element).backgroundColor);
     for (const kind of ['command', 'file-delete', 'out-of-scope-file']) {
       const dangerous = page.locator('#approvalCards .approval-card').filter({ hasText: kind });
+      const dangerousButton = dangerous.getByRole('button', { name: '已锁定：不可允许' });
       assert.equal(
-        await dangerous.getByRole('button', { name: '不可允许' }).isDisabled(),
+        await dangerousButton.isDisabled(),
         true,
         `${kind} approval unexpectedly enabled`,
+      );
+      const dangerousStyle = await dangerousButton.evaluate(element => {
+        const style = getComputedStyle(element);
+        return {
+          backgroundColor: style.backgroundColor,
+          opacity: style.opacity,
+          className: element.className,
+        };
+      });
+      assert.match(
+        await dangerous.innerText(),
+        kind === 'command'
+          ? /命令请求（command）[\s\S]*原始摘要：Command request: git push/
+          : kind === 'file-delete'
+            ? /文件删除（file-delete）[\s\S]*原始摘要：file-delete: prd\/safe\.md/
+            : /目标外文件（out-of-scope-file）[\s\S]*原始摘要：out-of-scope-file: prd\/outside\.md/,
+      );
+      assert.match(dangerousStyle.className, /\bbutton-locked\b/);
+      assert.equal(dangerousStyle.opacity, '1');
+      assert.notEqual(
+        dangerousStyle.backgroundColor,
+        safeApprovalColor,
+        `${kind} locked approval still uses the safe primary action color`,
       );
       assert.equal(
         await dangerous.getByRole('button', { name: '拒绝' }).isEnabled(),
@@ -749,6 +844,11 @@ async function runBrowserVerification() {
     assert.equal(await page.locator('[data-action="cancel-run"]').isEnabled(), true);
     assert.equal(await page.locator('[data-action="retry-run"]').isDisabled(), true);
     assert.equal(await page.locator('[data-action="restore-run"]').isDisabled(), true);
+    await page.locator('#approvalCards').scrollIntoViewIfNeeded();
+    await settleLayout(page);
+    await page.screenshot({
+      path: path.join(evidenceRoot, 'safety-desktop.png'),
+    });
     await page.locator('#closeCodex').click();
     await page.locator('#codexDrawer').waitFor({ state: 'hidden' });
 
@@ -759,9 +859,65 @@ async function runBrowserVerification() {
     assert.match(await page.locator('#fileChanges').innerText(), /old rule[\s\S]*new safe rule/);
     assert.match(await page.locator('#fileChanges').innerText(), /二进制或无文本差异/);
     assert.equal(await page.locator('#validationResults .validation-card').count(), 2);
+    const validationText = await page.locator('#validationResults').innerText();
+    assert.match(validationText, /目标完整性（target-integrity）[\s\S]*失败（failed）/);
+    assert.match(validationText, /非目标文件检查（unrelated-files）[\s\S]*通过（passed）/);
     assert.equal(await page.locator('[data-action="cancel-run"]').isDisabled(), true);
     assert.equal(await page.locator('[data-action="retry-run"]').isEnabled(), true);
     assert.equal(await page.locator('[data-action="restore-run"]').isEnabled(), true);
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.locator('#fileChanges').scrollIntoViewIfNeeded();
+    await settleLayout(page);
+    await page.screenshot({
+      path: path.join(evidenceRoot, 'safety-mobile.png'),
+    });
+    const mobileControls = await page.locator('.drawer-footer').evaluate(element => {
+      const footer = element.getBoundingClientRect();
+      const body = element.parentElement.querySelector('.drawer-body').getBoundingClientRect();
+      const buttons = [...element.querySelectorAll('.run-control-actions .button')].map(button => {
+        const rect = button.getBoundingClientRect();
+        return {
+          left: Math.round(rect.left),
+          right: Math.round(rect.right),
+          top: Math.round(rect.top),
+          bottom: Math.round(rect.bottom),
+          height: rect.height,
+        };
+      });
+      return {
+        footer: {
+          left: Math.round(footer.left),
+          right: Math.round(footer.right),
+          top: Math.round(footer.top),
+          bottom: Math.round(footer.bottom),
+        },
+        bodyBottom: Math.round(body.bottom),
+        clientWidth: element.clientWidth,
+        scrollWidth: element.scrollWidth,
+        viewportHeight: window.innerHeight,
+        buttons,
+      };
+    });
+    assert.equal(mobileControls.buttons.length, 4);
+    assert.equal(new Set(mobileControls.buttons.map(button => button.top)).size, 2);
+    assert.equal(new Set(mobileControls.buttons.map(button => button.left)).size, 2);
+    assert(
+      mobileControls.buttons.every(button => (
+        button.height >= 44
+        && button.left >= mobileControls.footer.left
+        && button.right <= mobileControls.footer.right
+      )),
+      `375px footer controls are too small or overflow: ${JSON.stringify(mobileControls)}`,
+    );
+    assert(
+      mobileControls.scrollWidth <= mobileControls.clientWidth
+        && mobileControls.bodyBottom <= mobileControls.footer.top + 1
+        && mobileControls.footer.bottom <= mobileControls.viewportHeight,
+      `375px footer overlaps or exceeds the drawer: ${JSON.stringify(mobileControls)}`,
+    );
+    await page.locator('.drawer-footer').screenshot({
+      path: path.join(evidenceRoot, 'safety-mobile-controls.png'),
+    });
     report.safetyRunDetail = 'approval/diff/validation/run-controls passed';
     await page.locator('#closeCodex').click();
     await page.locator('#codexDrawer').waitFor({ state: 'hidden' });
@@ -777,6 +933,13 @@ async function runBrowserVerification() {
       report.viewports.push({ ...viewport, ...layout, controls: 'passed' });
     }
 
+    for (const item of report.evidence) {
+      const screenshotPath = path.join(evidenceRoot, item.path);
+      assert(fs.existsSync(screenshotPath), `Missing evidence screenshot: ${item.path}`);
+      assert(fs.statSync(screenshotPath).size > 0, `Empty evidence screenshot: ${item.path}`);
+      item.status = 'passed';
+    }
+    assert.equal(report.writeRunRequests, 0, 'UI verification submitted a real write Run');
     assert.deepEqual(report.consoleErrors, [], 'Browser console errors were reported');
     assert.deepEqual(report.pageErrors, [], 'Uncaught browser page errors were reported');
     report.status = 'passed';
