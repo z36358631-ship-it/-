@@ -92,6 +92,12 @@ export function openDatabase(filename) {
          FROM requirements ORDER BY updated_at DESC`,
       ).all();
     },
+    getRequirement(requirementId) {
+      return db.prepare(
+        `SELECT id,title,stage,external_wait AS externalWait,updated_at AS updatedAt
+         FROM requirements WHERE id=?`,
+      ).get(requirementId);
+    },
     addArtifact(value) {
       db.prepare(
         `INSERT INTO artifacts(id,requirement_id,kind,path) VALUES(?,?,?,?)
