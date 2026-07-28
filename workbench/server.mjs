@@ -241,7 +241,15 @@ export async function createWorkbenchServer({
   seedPersonalWorkbench(store);
   const codex = codexFactory
     ? codexFactory(config)
-    : new CodexAppServerClient({ cwd: config.allowedRoot });
+    : new CodexAppServerClient({
+        args: config.codexArgs,
+        command: config.codexCommand,
+        cwd: config.allowedRoot,
+        nonceFactory: config.codexProcessNonce
+          ? () => config.codexProcessNonce
+          : undefined,
+        shell: config.codexShell,
+      });
   const contextService = new ContextService({
     store,
     allowedRoot: config.allowedRoot,

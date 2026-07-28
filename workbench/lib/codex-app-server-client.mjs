@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import crypto from 'node:crypto';
 import { EventEmitter } from 'node:events';
+import path from 'node:path';
 import readline from 'node:readline';
 
 const APP_SERVER_COMMAND = 'codex.cmd';
@@ -29,15 +30,39 @@ export function classifyCodexHealth({ running, stderr = '', launchError = '' }) 
 
 export class CodexAppServerClient extends EventEmitter {
   constructor({
+    args = APP_SERVER_ARGS,
+    command = APP_SERVER_COMMAND,
     cwd = process.cwd(),
-    spawnProcess = (command, args, options) => spawn(command, args, options),
+    shell = process.platform === 'win32',
+    spawnProcess = (launchCommand, launchArgs, options) => (
+      spawn(launchCommand, launchArgs, options)
+    ),
     requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
     nonceFactory = () => crypto.randomBytes(32).toString('hex'),
   } = {}) {
     super();
+    if (typeof command !== 'string' || !command.trim()) {
+      throw new TypeError('command must be a non-empty string');
+    }
+    if (!Array.isArray(args) || args.some(value => typeof value !== 'string')) {
+      throw new TypeError('args must be an array of strings');
+    }
+    if (typeof shell !== 'boolean') {
+      throw new TypeError('shell must be a boolean');
+    }
+    if (
+      shell === false
+      && process.platform === 'win32'
+      && !path.win32.isAbsolute(command)
+    ) {
+      throw new TypeError('shell:false command must be an absolute Windows path');
+    }
     if (!Number.isInteger(requestTimeoutMs) || requestTimeoutMs < 1) {
       throw new TypeError('requestTimeoutMs must be a positive integer');
     }
+    this.command = command;
+    this.args = Object.freeze([...args]);
+    this.shell = Boolean(shell);
     this.cwd = cwd;
     this.spawnProcess = spawnProcess;
     this.requestTimeoutMs = requestTimeoutMs;
@@ -63,17 +88,16 @@ export class CodexAppServerClient extends EventEmitter {
 
     let child;
     try {
-      const useWindowsShell = process.platform === 'win32';
-      const launchCommand = useWindowsShell
+      const launchCommand = this.shell
         ? `set "${PROCESS_NONCE_NAME}=${processNonce}" && `
-          + `${APP_SERVER_COMMAND} ${APP_SERVER_ARGS.join(' ')}`
-        : APP_SERVER_COMMAND;
-      const launchArgs = useWindowsShell ? [] : [...APP_SERVER_ARGS];
+          + `${this.command} ${this.args.join(' ')}`
+        : this.command;
+      const launchArgs = this.shell ? [] : [...this.args];
       child = this.spawnProcess(launchCommand, launchArgs, {
         cwd: this.cwd,
         stdio: ['pipe', 'pipe', 'pipe'],
         windowsHide: true,
-        shell: useWindowsShell,
+        shell: this.shell,
         env: {
           ...process.env,
           [PROCESS_NONCE_NAME]: processNonce,
@@ -193,8 +217,8 @@ export class CodexAppServerClient extends EventEmitter {
   diagnostics() {
     return {
       running: Boolean(this.child),
-      command: APP_SERVER_COMMAND,
-      args: [...APP_SERVER_ARGS],
+      command: this.command,
+      args: [...this.args],
       stderr: this.stderrText,
       launchError: this.launchErrorText,
     };

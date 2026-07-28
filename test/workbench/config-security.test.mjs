@@ -15,7 +15,6 @@ test('createConfig fixes host, root, limits and creates a per-process token', ()
   const config = createConfig({
     WORKBENCH_ROOT: root,
     WORKBENCH_PORT: '4317',
-    WORKBENCH_CODEX_COMMAND: 'powershell.exe',
     WORKBENCH_CODEX_ARGS: '-Command arbitrary-command',
   });
   const nextConfig = createConfig({ WORKBENCH_ROOT: root });
@@ -28,6 +27,8 @@ test('createConfig fixes host, root, limits and creates a per-process token', ()
   assert.notEqual(config.sessionToken, nextConfig.sessionToken);
   assert.equal(config.codexCommand, 'codex.cmd');
   assert.deepEqual(config.codexArgs, ['app-server']);
+  assert.equal(config.codexShell, process.platform === 'win32');
+  assert.equal(config.codexProcessNonce, null);
   assert.ok(Object.isFrozen(config));
   assert.ok(Object.isFrozen(config.codexArgs));
 });

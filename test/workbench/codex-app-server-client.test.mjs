@@ -25,7 +25,7 @@ function nextTurn() {
   return new Promise(resolve => setImmediate(resolve));
 }
 
-test('client launches the fixed app-server command, initializes in order, and routes notifications', async () => {
+test('client launches the development app-server command, initializes in order, and routes notifications', async () => {
   const child = fakeProcess();
   const launches = [];
   const writes = [];
@@ -75,6 +75,73 @@ test('client launches the fixed app-server command, initializes in order, and ro
   await nextTurn();
   assert.equal(events[0].method, 'item/agentMessage/delta');
   await client.stop();
+});
+
+test('portable client launches an absolute codex.exe with args and shell false', async () => {
+  const child = fakeProcess({ pid: 7301 });
+  const launches = [];
+  const writes = [];
+  const nonce = '9'.repeat(64);
+  const command = 'C:\\runtime\\codex-sessions\\'
+    + `${nonce}\\codex.exe`;
+  child.stdin.on('data', chunk => {
+    const message = JSON.parse(chunk.toString('utf8'));
+    writes.push(message);
+    if (message.method === 'initialize') {
+      child.stdout.write(`${JSON.stringify({ id: message.id, result: {} })}\n`);
+    }
+  });
+  const client = new CodexAppServerClient({
+    command,
+    args: ['app-server'],
+    shell: false,
+    nonceFactory: () => nonce,
+    spawnProcess: (launchCommand, args, options) => {
+      launches.push({ command: launchCommand, args, options });
+      return child;
+    },
+  });
+
+  await client.start();
+  assert.equal(launches[0].command, command);
+  assert.deepEqual(launches[0].args, ['app-server']);
+  assert.equal(launches[0].options.shell, false);
+  assert.equal(
+    launches[0].options.env.PERSONAL_CODEX_WORKBENCH_NONCE,
+    nonce,
+  );
+  assert.equal(client.diagnostics().command, command);
+  assert.deepEqual(client.diagnostics().args, ['app-server']);
+  assert.equal(writes[0].method, 'initialize');
+  await client.stop();
+});
+
+test('client validates the command and argument array before launch', () => {
+  assert.throws(
+    () => new CodexAppServerClient({ command: '' }),
+    /non-empty string/,
+  );
+  assert.throws(
+    () => new CodexAppServerClient({ args: 'app-server' }),
+    /array of strings/,
+  );
+  assert.throws(
+    () => new CodexAppServerClient({ args: ['app-server', 1] }),
+    /array of strings/,
+  );
+  assert.throws(
+    () => new CodexAppServerClient({ shell: 0 }),
+    /shell must be a boolean/,
+  );
+  if (process.platform === 'win32') {
+    assert.throws(
+      () => new CodexAppServerClient({
+        command: 'codex.exe',
+        shell: false,
+      }),
+      /absolute Windows path/,
+    );
+  }
 });
 
 test('client rejects an invalid internally generated ownership nonce before launch', async () => {

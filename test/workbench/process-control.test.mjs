@@ -58,6 +58,53 @@ test('ownership requires a Windows Codex wrapper with the exact internal nonce',
   }, PROCESS_NONCE), false);
 });
 
+test('portable direct Codex ownership requires the exact nonce path', () => {
+  const portable = {
+    executable: 'C:\\cache\\runtime\\v1\\codex\\codex.exe',
+    commandLine: '"C:\\cache\\runtime\\v1\\codex-sessions\\'
+      + `${PROCESS_NONCE}\\codex.exe" app-server`,
+  };
+
+  assert.equal(isCodexAppServerProcess(portable), true);
+  assert.equal(isOwnedCodexAppServerProcess(portable, PROCESS_NONCE), true);
+  assert.equal(
+    isOwnedCodexAppServerProcess(portable, 'b'.repeat(64)),
+    false,
+  );
+  assert.equal(isOwnedCodexAppServerProcess({
+    ...portable,
+    commandLine: portable.commandLine.replace('app-server', 'login'),
+  }, PROCESS_NONCE), false);
+  assert.equal(isOwnedCodexAppServerProcess({
+    ...portable,
+    commandLine: `${portable.commandLine} --extra`,
+  }, PROCESS_NONCE), false);
+});
+
+test('portable recovery terminates only the direct Codex process with the exact nonce', async () => {
+  const terminated = [];
+  const recovery = await recoverPersistedProcesses([
+    { pid: 4520, processNonce: PROCESS_NONCE },
+    { pid: 4521, processNonce: 'b'.repeat(64) },
+  ], {
+    inspector: async pid => ({
+      executable: 'C:\\cache\\runtime\\v1\\codex\\codex.exe',
+      commandLine: '"C:\\cache\\runtime\\v1\\codex-sessions\\'
+        + `${PROCESS_NONCE}\\codex.exe" app-server`,
+      pid,
+    }),
+    terminator: async pid => terminated.push(pid),
+  });
+
+  assert.equal(recovery.status, 'ok');
+  assert.deepEqual(
+    recovery.results.map(result => result.status),
+    ['matched', 'reused'],
+  );
+  assert.match(recovery.results[1].detail, /nonce does not match/);
+  assert.deepEqual(terminated, [4520]);
+});
+
 test('recovery terminates only a PID with matching Codex command and ownership nonce', async () => {
   const terminated = [];
   const recovery = await recoverPersistedProcesses([{

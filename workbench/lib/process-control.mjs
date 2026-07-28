@@ -44,6 +44,16 @@ function hasCodexInvocation(value) {
   ).test(text);
 }
 
+function isNonceBoundPortableCommand(commandLine, processNonce) {
+  const escapedNonce = String(processNonce).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(
+    '^\\s*"?(?:[^"\\r\\n]*[\\\\/])?codex-sessions[\\\\/]'
+      + `${escapedNonce}[\\\\/]codex\\.exe"?\\s+app-server\\s*$`,
+    'i',
+  );
+  return pattern.test(String(commandLine || ''));
+}
+
 export function isCodexAppServerProcess({
   commandLine = '',
   executable = '',
@@ -76,6 +86,12 @@ export function isOwnedCodexAppServerProcess({
 } = {}, processNonce) {
   if (!PROCESS_NONCE_PATTERN.test(String(processNonce || ''))) return false;
   const wrapper = executableName(executable).toLowerCase();
+  if (
+    wrapper === 'codex.exe'
+    && isNonceBoundPortableCommand(commandLine, processNonce)
+  ) {
+    return true;
+  }
   if (!['cmd', 'cmd.exe'].includes(wrapper)) return false;
   const wrappedCommand = String(commandLine)
     .match(/(?:^|\s)\/c\s+([\s\S]+)$/i)?.[1] || '';
