@@ -14,11 +14,14 @@ class FakeCodex extends EventEmitter {
     super();
     this.calls = [];
     this.responses = [];
+    this.startCalls = 0;
     this.threadSequence = 0;
     this.turnSequence = 0;
   }
 
-  async start() {}
+  async start() {
+    this.startCalls += 1;
+  }
 
   diagnostics() {
     return { running: true, stderr: '' };
@@ -52,12 +55,20 @@ class FakeCodex extends EventEmitter {
   }
 }
 
-async function setupServer(t, { root = null, codex = new FakeCodex() } = {}) {
+async function setupServer(
+  t,
+  {
+    root = null,
+    codex = new FakeCodex(),
+    processRecovery,
+  } = {},
+) {
   const allowedRoot = root || fs.mkdtempSync(path.join(os.tmpdir(), 'file-api-'));
   fs.mkdirSync(path.join(allowedRoot, 'prd'), { recursive: true });
   const app = await createWorkbenchServer({
     env: { WORKBENCH_ROOT: allowedRoot, WORKBENCH_PORT: '0' },
     codexFactory: () => codex,
+    processRecovery,
   });
   await app.listen();
   const base = `http://127.0.0.1:${app.address().port}`;
@@ -104,6 +115,20 @@ async function requestJson(
     body: await response.json(),
     response,
   };
+}
+
+function assertSecurityHeaders(response) {
+  assert.equal(
+    response.headers.get('content-security-policy'),
+    "default-src 'self'; img-src 'self' data:; connect-src 'self'; "
+      + "object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
+  );
+  assert.equal(response.headers.get('referrer-policy'), 'no-referrer');
+  assert.equal(
+    response.headers.get('permissions-policy'),
+    'camera=(), microphone=(), geolocation=()',
+  );
+  assert.equal(response.headers.get('x-frame-options'), 'DENY');
 }
 
 async function startCandidate(context, target = 'prd/candidate.md') {
@@ -193,6 +218,79 @@ function completeCandidate(context, runInfo, content = 'candidate\n') {
     },
   });
 }
+
+test('JSON, static, and SSE responses include the security header baseline', async t => {
+  const context = await setupServer(t);
+  const health = await fetch(`${context.base}/api/health`, {
+    headers: context.headers,
+  });
+  assert.equal(health.status, 200);
+  assertSecurityHeaders(health);
+
+  const staticResponse = await fetch(`${context.base}/`);
+  assert.equal(staticResponse.status, 200);
+  assertSecurityHeaders(staticResponse);
+
+  const started = await startCandidate(context);
+  await requestJson(
+    context,
+    `/api/runs/${encodeURIComponent(started.run.id)}/cancel`,
+    { method: 'POST' },
+  );
+  const events = await fetch(
+    `${context.base}/api/runs/${encodeURIComponent(started.run.id)}/events`,
+    { headers: context.headers },
+  );
+  assert.equal(events.status, 200);
+  assertSecurityHeaders(events);
+  await events.text();
+});
+
+test('manual task and requirement writes reject non-objects and extra fields', async t => {
+  const context = await setupServer(t);
+  const manualTaskId = context.bootstrap.manualTasks[0].id;
+  const requirement = context.bootstrap.requirements[0];
+  const cases = [
+    {
+      body: {
+        assigneeNote: '产品专员A',
+        description: 'Prepare evidence',
+        expectedDeliverable: 'Evidence report',
+        requirementId: context.requirementId,
+      },
+      path: '/api/manual-tasks',
+      method: 'POST',
+    },
+    {
+      body: { currentNote: 'Updated note' },
+      path: `/api/manual-tasks/${encodeURIComponent(manualTaskId)}`,
+      method: 'PATCH',
+    },
+    {
+      body: {
+        externalWait: requirement.externalWait,
+        stage: requirement.stage,
+      },
+      path: `/api/requirements/${encodeURIComponent(requirement.id)}`,
+      method: 'PATCH',
+    },
+  ];
+
+  for (const item of cases) {
+    for (const invalidBody of [null, []]) {
+      const result = await requestJson(context, item.path, {
+        body: invalidBody,
+        method: item.method,
+      });
+      assert.equal(result.response.status, 400, `${item.method} ${item.path}`);
+    }
+    const extra = await requestJson(context, item.path, {
+      body: { ...item.body, unexpected: true },
+      method: item.method,
+    });
+    assert.equal(extra.response.status, 400, `${item.method} ${item.path}`);
+  }
+});
 
 test('write and detail routes enforce auth, body limits, relative targets, and exact fields', async t => {
   const context = await setupServer(t);
@@ -623,6 +721,116 @@ function seedRestartDatabase(root) {
   });
   store.close();
 }
+
+function seedProcessRecoveryDatabase(root, runs) {
+  const store = openDatabase(path.join(root, '.workbench-data', 'workbench.sqlite'));
+  store.upsertRequirement({
+    id: 'REQ-RECOVERY',
+    title: 'Process recovery',
+    stage: 'PRD',
+    externalWait: 'none',
+  });
+  for (const run of runs) {
+    store.createRun({
+      id: run.id,
+      requirementId: 'REQ-RECOVERY',
+      prompt: `Recover PID ${run.processPid}`,
+      permission: 'read-only',
+      processPid: run.processPid,
+      status: run.status,
+      workflowType: null,
+    });
+  }
+  store.close();
+}
+
+test('restart deduplicates persisted PIDs and records matched and safe-skip recovery', async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'file-api-process-recovery-'));
+  fs.mkdirSync(path.join(root, 'prd'), { recursive: true });
+  seedProcessRecoveryDatabase(root, [
+    { id: 'RUN-MATCHED-A', processPid: 5101, status: 'running' },
+    { id: 'RUN-MATCHED-B', processPid: 5101, status: 'interrupted' },
+    { id: 'RUN-MISSING', processPid: 5102, status: 'queued' },
+    { id: 'RUN-REUSED', processPid: 5103, status: 'interrupted' },
+  ]);
+  let receivedPids = [];
+  const context = await setupServer(t, {
+    processRecovery: async pids => {
+      receivedPids = pids;
+      return {
+        status: 'ok',
+        results: [
+          { detail: 'Terminated matching Codex app-server process', pid: 5101, status: 'matched' },
+          { detail: 'Persisted process no longer exists', pid: 5102, status: 'missing' },
+          { detail: 'PID belongs to a different process', pid: 5103, status: 'reused' },
+        ],
+      };
+    },
+    root,
+  });
+
+  assert.deepEqual([...receivedPids].sort(), [5101, 5102, 5103]);
+  for (const [runId, expectedStatus] of [
+    ['RUN-MATCHED-A', 'passed'],
+    ['RUN-MATCHED-B', 'passed'],
+    ['RUN-MISSING', 'skipped'],
+    ['RUN-REUSED', 'skipped'],
+  ]) {
+    const detail = await requestJson(context, `/api/runs/${runId}`);
+    const validation = detail.body.validations.find(
+      item => item.name === 'Broker process recovery',
+    );
+    assert.equal(validation?.status, expectedStatus, runId);
+  }
+});
+
+test('process inspection errors keep diagnostics available but block Codex and Run APIs', async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'file-api-recovery-error-'));
+  fs.mkdirSync(path.join(root, 'prd'), { recursive: true });
+  seedProcessRecoveryDatabase(root, [
+    { id: 'RUN-INSPECTION-ERROR', processPid: 5201, status: 'running' },
+  ]);
+  const codex = new FakeCodex();
+  const context = await setupServer(t, {
+    codex,
+    processRecovery: async () => ({
+      status: 'error',
+      results: [{
+        detail: 'Unable to inspect PID 5201: access denied',
+        pid: 5201,
+        status: 'error',
+      }],
+    }),
+    root,
+  });
+
+  assert.equal(codex.startCalls, 0);
+  assert.equal(context.bootstrap.health.broker, 'error');
+  assert.equal(context.bootstrap.health.recovery, 'error');
+  assert.match(
+    JSON.stringify(context.bootstrap.health.recoveryDiagnostics),
+    /access denied/,
+  );
+  const health = await requestJson(context, '/api/health');
+  assert.equal(health.body.recovery, 'error');
+  assert.match(JSON.stringify(health.body.recoveryDiagnostics), /5201/);
+  assert.equal(codex.startCalls, 0);
+
+  const run = await requestJson(context, '/api/runs', {
+    body: { prompt: 'Do not start Codex while recovery is unsafe' },
+    method: 'POST',
+  });
+  assert.equal(run.response.status, 503);
+  assert.equal(run.body.recovery, 'error');
+  assert.equal(codex.startCalls, 0);
+
+  const detail = await requestJson(context, '/api/runs/RUN-INSPECTION-ERROR');
+  const validation = detail.body.validations.find(
+    item => item.name === 'Broker process recovery',
+  );
+  assert.equal(validation.status, 'failed');
+  assert.match(validation.detail, /access denied/);
+});
 
 test('restart interrupts every active state and records only recoverable applying changes', async t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'file-api-restart-'));

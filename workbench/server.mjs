@@ -12,6 +12,7 @@ import { ApprovalManager } from './lib/approval-manager.mjs';
 import { ContextService } from './lib/context-service.mjs';
 import { openDatabase } from './lib/database.mjs';
 import { FileSafety } from './lib/file-safety.mjs';
+import { recoverPersistedProcesses } from './lib/process-control.mjs';
 import { RunManager } from './lib/run-manager.mjs';
 import { assertLocalRequest, readJsonBody } from './lib/security.mjs';
 import { workflowCatalog } from './lib/workflow-catalog.mjs';
@@ -53,6 +54,28 @@ const externalWaits = new Set([
 const manualTaskStatuses = new Set(['待开始', '进行中', '已完成']);
 const productSpecialists = new Set(['产品专员A', '产品专员B']);
 const workflowRunFields = new Set(['requirementId', 'files', 'input']);
+const manualTaskCreateFields = new Set([
+  'requirementId',
+  'assigneeNote',
+  'description',
+  'dueAt',
+  'expectedDeliverable',
+  'currentNote',
+]);
+const manualTaskUpdateFields = new Set([
+  'assigneeNote',
+  'description',
+  'currentNote',
+  'status',
+]);
+const requirementUpdateFields = new Set(['stage', 'externalWait']);
+const securityHeaders = Object.freeze({
+  'content-security-policy': "default-src 'self'; img-src 'self' data:; "
+    + "connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
+  'permissions-policy': 'camera=(), microphone=(), geolocation=()',
+  'referrer-policy': 'no-referrer',
+  'x-frame-options': 'DENY',
+});
 
 function sendJson(response, status, value) {
   response.writeHead(status, {
@@ -65,6 +88,22 @@ function sendJson(response, status, value) {
 
 function requestError(message, statusCode) {
   return Object.assign(new Error(message), { statusCode });
+}
+
+function assertPlainObjectFields(body, allowedFields, label) {
+  if (
+    body === null
+    || typeof body !== 'object'
+    || Array.isArray(body)
+    || ![Object.prototype, null].includes(Object.getPrototypeOf(body))
+  ) {
+    throw requestError(`${label} must be an object`, 400);
+  }
+  for (const key of Object.keys(body)) {
+    if (!allowedFields.has(key)) {
+      throw requestError(`${key} is not accepted for ${label}`, 400);
+    }
+  }
 }
 
 function decodePathSegment(value) {
@@ -192,7 +231,11 @@ function seedPersonalWorkbench(store) {
   });
 }
 
-export async function createWorkbenchServer({ env = process.env, codexFactory } = {}) {
+export async function createWorkbenchServer({
+  env = process.env,
+  codexFactory,
+  processRecovery = recoverPersistedProcesses,
+} = {}) {
   const config = createConfig(env);
   const store = openDatabase(config.databasePath);
   seedPersonalWorkbench(store);
@@ -204,7 +247,64 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
     allowedRoot: config.allowedRoot,
   });
   const fileSafety = new FileSafety({ allowedRoot: config.allowedRoot });
-  for (const stale of store.listRuns(1_000).filter(run => staleRunStatuses.has(run.status))) {
+  const restartRuns = store.listRuns(1_000)
+    .filter(run => staleRunStatuses.has(run.status) || run.status === 'interrupted');
+  const persistedPids = [...new Set(
+    restartRuns
+      .map(run => run.processPid)
+      .filter(pid => Number.isInteger(pid) && pid > 0),
+  )];
+  let processRecoveryResult;
+  try {
+    processRecoveryResult = await processRecovery(persistedPids);
+  } catch (error) {
+    processRecoveryResult = {
+      results: persistedPids.map(pid => ({
+        detail: `Process recovery failed before PID ${pid} could be inspected: ${error.message}`,
+        pid,
+        status: 'error',
+      })),
+      status: 'error',
+    };
+  }
+  const processRecoveryResults = Array.isArray(processRecoveryResult?.results)
+    ? [...processRecoveryResult.results]
+    : [];
+  const recoveredPids = new Set(processRecoveryResults.map(result => result.pid));
+  for (const pid of persistedPids) {
+    if (!recoveredPids.has(pid)) {
+      processRecoveryResults.push({
+        detail: `Process recovery returned no result for persisted PID ${pid}`,
+        pid,
+        status: 'error',
+      });
+    }
+  }
+  const recoveryDiagnostics = processRecoveryResults.map(result => ({
+    detail: String(result.detail || ''),
+    pid: result.pid,
+    status: result.status,
+  }));
+  const recoveryStatus = processRecoveryResult?.status === 'error'
+    || recoveryDiagnostics.some(result => result.status === 'error')
+    ? 'error'
+    : 'ok';
+  const recoveryByPid = new Map(
+    recoveryDiagnostics.map(result => [result.pid, result]),
+  );
+  for (const run of restartRuns) {
+    const result = recoveryByPid.get(run.processPid);
+    if (!result) continue;
+    store.saveValidation(run.id, {
+      detail: `PID ${result.pid}: ${result.detail}`,
+      name: 'Broker process recovery',
+      status: result.status === 'matched'
+        ? 'passed'
+        : result.status === 'error' ? 'failed' : 'skipped',
+    });
+  }
+
+  for (const stale of restartRuns.filter(run => staleRunStatuses.has(run.status))) {
     store.finishRun(
       stale.id,
       'interrupted',
@@ -252,6 +352,15 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
   });
 
   async function healthPayload() {
+    if (recoveryStatus === 'error') {
+      return {
+        broker: 'error',
+        database: 'ok',
+        recovery: 'error',
+        recoveryDiagnostics,
+        ...classifyCodexHealth(codex.diagnostics()),
+      };
+    }
     let launchError = '';
     try {
       await codex.start();
@@ -261,11 +370,24 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
     return {
       broker: 'ok',
       database: 'ok',
+      recovery: 'ok',
+      recoveryDiagnostics,
       ...classifyCodexHealth({ ...codex.diagnostics(), launchError }),
     };
   }
 
+  function rejectRunDuringRecovery(response) {
+    return sendJson(response, 503, {
+      error: 'Broker process recovery requires attention before Codex can start',
+      recovery: 'error',
+      recoveryDiagnostics,
+    });
+  }
+
   const server = http.createServer(async (request, response) => {
+    for (const [name, value] of Object.entries(securityHeaders)) {
+      response.setHeader(name, value);
+    }
     try {
       const url = new URL(request.url, 'http://127.0.0.1');
       if (url.pathname.startsWith('/api/')) {
@@ -293,11 +415,13 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
           return sendJson(response, 200, await healthPayload());
         }
         if (request.method === 'POST' && url.pathname === '/api/runs') {
+          if (recoveryStatus === 'error') return rejectRunDuringRecovery(response);
           const body = await readJsonBody(request, config.maxBodyBytes);
           const run = await runs.startReadOnlyRun(body);
           return sendJson(response, 202, run);
         }
         if (request.method === 'POST' && url.pathname === '/api/runs/write') {
+          if (recoveryStatus === 'error') return rejectRunDuringRecovery(response);
           const body = await readJsonBody(request, config.maxBodyBytes);
           const run = await runs.startWriteRun(body);
           return sendJson(response, 202, run);
@@ -315,6 +439,7 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
         }
         if (request.method === 'POST' && url.pathname === '/api/manual-tasks') {
           const body = await readJsonBody(request, config.maxBodyBytes);
+          assertPlainObjectFields(body, manualTaskCreateFields, 'manual task input');
           if (!store.getRequirement(body.requirementId)) {
             return sendJson(response, 404, { error: 'Requirement not found' });
           }
@@ -348,6 +473,7 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
           const current = store.getRequirement(requirementId);
           if (!current) return sendJson(response, 404, { error: 'Requirement not found' });
           const body = await readJsonBody(request, config.maxBodyBytes);
+          assertPlainObjectFields(body, requirementUpdateFields, 'requirement update');
           const stage = body.stage ?? current.stage;
           const externalWait = body.externalWait ?? current.externalWait;
           if (!requirementStages.has(stage) || !externalWaits.has(externalWait)) {
@@ -365,6 +491,7 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
           const current = store.getManualTask(taskId);
           if (!current) return sendJson(response, 404, { error: 'Manual task not found' });
           const body = await readJsonBody(request, config.maxBodyBytes);
+          assertPlainObjectFields(body, manualTaskUpdateFields, 'manual task update');
           const next = {
             ...current,
             currentNote: String(body.currentNote ?? current.currentNote),
@@ -431,6 +558,7 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
           /^\/api\/workflows\/([^/]+)\/runs$/,
         );
         if (request.method === 'POST' && workflowMatch) {
+          if (recoveryStatus === 'error') return rejectRunDuringRecovery(response);
           const workflowType = decodePathSegment(workflowMatch[1]);
           if (!Object.hasOwn(workflowCatalog, workflowType)) {
             return sendJson(response, 400, { error: 'Unknown workflow type' });
@@ -479,6 +607,7 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
 
         const retryMatch = url.pathname.match(/^\/api\/runs\/([^/]+)\/retry$/);
         if (request.method === 'POST' && retryMatch) {
+          if (recoveryStatus === 'error') return rejectRunDuringRecovery(response);
           const runId = decodePathSegment(retryMatch[1]);
           if (!store.getRun(runId)) {
             return sendJson(response, 404, { error: 'Run not found' });
