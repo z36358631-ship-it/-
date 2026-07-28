@@ -45,6 +45,7 @@ assert((await text('.device .device-toast')).includes('播放未完成，奖励�
 ```js
 await page.click('.scene-tools [data-action="reward-sim-complete"]');
 assert((await text('.device .device-toast')).includes('奖励已发放'));
+assert.equal(await page.locator('.device .system-dialog').count(), 0, 'G1 success must not open another dialog');
 ```
 
 把社区菜单用例改为：
@@ -128,6 +129,15 @@ if(a==='reward-sim-fail'){
 state.rewardAd=null;
 render();
 deviceToast('奖励已发放');
+```
+
+将 G1 成功态从额外弹窗改为原页面：
+
+```js
+function renderG1(){
+  const dialog=state.g1.dismissed||state.g1.awarded?'':`<section class="system-dialog cloud-time-dialog">...</section>`;
+  return titlebar('G1','playLandscape')+`<div class="stage">${device('landscape',img('playLandscape')+dialog,'playLandscape')}</div>`;
+}
 ```
 
 不改变 `state.c1`、`state.g1`、`state.q1` 或 `state.r1` 的权益字段，从而保证：
