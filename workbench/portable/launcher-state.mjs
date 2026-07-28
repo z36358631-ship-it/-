@@ -41,9 +41,9 @@ function resolveMappedPath(root, mappingPath, description) {
   return resolved;
 }
 
-function readJson(filename) {
+function readJson(filename, fileSystem = fs) {
   try {
-    return JSON.parse(fs.readFileSync(filename, 'utf8'));
+    return JSON.parse(fileSystem.readFileSync(filename, 'utf8'));
   } catch {
     return null;
   }
@@ -79,6 +79,7 @@ function defaultIsPidAlive(pid) {
 }
 
 function createOwnedLock({
+  fileSystem,
   lockPath,
   ownerNonceFactory,
   sessionPath,
@@ -88,15 +89,22 @@ function createOwnedLock({
     throw new Error('Portable instance owner nonce must be 64 lowercase hexadecimal characters');
   }
   let handle;
+  let created = false;
   try {
-    handle = fs.openSync(lockPath, 'wx');
-    fs.writeFileSync(handle, JSON.stringify({
+    handle = fileSystem.openSync(lockPath, 'wx');
+    created = true;
+    fileSystem.writeFileSync(handle, JSON.stringify({
       ownerNonce,
       pid: process.pid,
     }));
   } catch (error) {
-    if (handle !== undefined) fs.closeSync(handle);
-    if (error.code !== 'EEXIST') fs.rmSync(lockPath, { force: true });
+    if (handle !== undefined) {
+      try {
+        fileSystem.closeSync(handle);
+      } finally {
+        if (created) fileSystem.rmSync(lockPath, { force: true });
+      }
+    }
     throw error;
   }
   return {
@@ -204,11 +212,41 @@ export function copyMissingSeeds({
   workspace,
 }) {
   const copied = [];
+  const realRuntime = fs.realpathSync(runtimePath);
+  const realWorkspace = fs.realpathSync(workspace);
   for (const mapping of mappings) {
     const source = resolveMappedPath(runtimePath, mapping.source, 'seed source');
     const target = resolveMappedPath(workspace, mapping.target, 'seed target');
+    const realSource = fs.realpathSync(source);
+    if (!isPathInside(realRuntime, realSource)) {
+      throw new Error('seed source escaped runtime root');
+    }
+    let existingTargetParent = path.dirname(target);
+    while (!fs.existsSync(existingTargetParent)) {
+      const parent = path.dirname(existingTargetParent);
+      if (parent === existingTargetParent) {
+        throw new Error('seed target escaped workspace root');
+      }
+      existingTargetParent = parent;
+    }
+    if (
+      !isPathInside(
+        realWorkspace,
+        fs.realpathSync(existingTargetParent),
+      )
+    ) {
+      throw new Error('seed target escaped workspace root');
+    }
     if (fs.existsSync(target)) continue;
     fs.mkdirSync(path.dirname(target), { recursive: true });
+    if (
+      !isPathInside(
+        realWorkspace,
+        fs.realpathSync(path.dirname(target)),
+      )
+    ) {
+      throw new Error('seed target escaped workspace root');
+    }
     try {
       fs.copyFileSync(source, target, fs.constants.COPYFILE_EXCL);
       copied.push(mapping.target);
@@ -264,14 +302,16 @@ export async function checkBrokerHealth(session, fetchImpl = fetch) {
 export async function acquireInstance({
   appRoot,
   checkHealth = checkBrokerHealth,
+  fileSystem = fs,
   isPidAlive = defaultIsPidAlive,
   ownerNonceFactory = () => crypto.randomBytes(32).toString('hex'),
 }) {
-  fs.mkdirSync(appRoot, { recursive: true });
+  fileSystem.mkdirSync(appRoot, { recursive: true });
   const lockPath = path.join(appRoot, 'instance.lock');
   const sessionPath = path.join(appRoot, 'session.json');
   try {
     return createOwnedLock({
+      fileSystem,
       lockPath,
       ownerNonceFactory,
       sessionPath,
@@ -280,8 +320,8 @@ export async function acquireInstance({
     if (error.code !== 'EEXIST') throw error;
   }
 
-  const lock = readJson(lockPath);
-  const session = readJson(sessionPath);
+  const lock = readJson(lockPath, fileSystem);
+  const session = readJson(sessionPath, fileSystem);
   if (!lock || !validPid(lock.pid)) {
     throw new Error('旧工作台锁文件无法验证；为避免接管正在启动的进程，本次启动已停止');
   }
@@ -307,9 +347,10 @@ export async function acquireInstance({
     throw new Error('旧工作台进程仍在运行但健康检查失败；为避免接管错误进程，本次启动已停止');
   }
 
-  fs.rmSync(lockPath, { force: true });
-  fs.rmSync(sessionPath, { force: true });
+  fileSystem.rmSync(lockPath, { force: true });
+  fileSystem.rmSync(sessionPath, { force: true });
   return createOwnedLock({
+    fileSystem,
     lockPath,
     ownerNonceFactory,
     sessionPath,

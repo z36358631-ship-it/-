@@ -29,6 +29,30 @@ test('reused instance only opens its existing token URL', async () => {
   ]);
 });
 
+test('reused instance browser failure is non-fatal and logs no token', async () => {
+  const events = [];
+  const printed = [];
+  const session = { port: 48112, token: 'a'.repeat(64) };
+  const result = await runPortableLauncher({
+    appRoot: 'C:\\state',
+    runtimePath: 'C:\\runtime',
+    dependencies: {
+      acquireInstance: async () => ({ session, status: 'reused' }),
+      createLauncherLogger: () => silentLogger(events),
+      openDefaultBrowser: async () => { throw new Error('no browser'); },
+      print: message => printed.push(message),
+    },
+  });
+
+  assert.equal(result.status, 'reused');
+  assert.equal(printed.some(message => message.includes(session.token)), true);
+  assert.deepEqual(
+    events.find(event => event.message === '浏览器自动打开失败')?.fields,
+    { port: session.port },
+  );
+  assert.equal(JSON.stringify(events).includes(session.token), false);
+});
+
 test('cancelled workspace exits before seeds, login, or Broker creation', async () => {
   let loginCount = 0;
   let seedCount = 0;

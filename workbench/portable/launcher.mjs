@@ -63,6 +63,7 @@ export async function runPortableLauncher({
     ensureCodexLogin,
     loadWorkspace,
     openDefaultBrowser,
+    print: message => console.log(message),
     releaseInstance,
     waitForShutdown,
     writeJsonAtomic,
@@ -74,8 +75,13 @@ export async function runPortableLauncher({
   const instance = await dependencies.acquireInstance({ appRoot });
   if (instance.status === 'reused') {
     const url = sessionUrl(instance.session);
-    await dependencies.openDefaultBrowser(url);
     logger.info('复用现有 Broker', { port: instance.session.port });
+    try {
+      await dependencies.openDefaultBrowser(url);
+    } catch {
+      logger.error('浏览器自动打开失败', { port: instance.session.port });
+      dependencies.print(`浏览器未能自动打开，请复制此地址：${url}`);
+    }
     return { status: 'reused', url };
   }
 
@@ -164,10 +170,10 @@ export async function runPortableLauncher({
       logger.info('浏览器已打开', { port });
     } catch {
       logger.error('浏览器自动打开失败', { port });
-      console.log(`浏览器未能自动打开，请复制此地址：${url}`);
+      dependencies.print(`浏览器未能自动打开，请复制此地址：${url}`);
     }
-    console.log('个人产品经理工作台已启动');
-    console.log('关闭此窗口或按 Ctrl+C 将停止本地服务');
+    dependencies.print('个人产品经理工作台已启动');
+    dependencies.print('关闭此窗口或按 Ctrl+C 将停止本地服务');
 
     await dependencies.waitForShutdown();
     await closeApp();

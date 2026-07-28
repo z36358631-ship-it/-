@@ -129,6 +129,77 @@ test('seed mappings cannot escape the runtime or workspace roots', t => {
   );
 });
 
+test('seed copying rejects workspace parent junctions that escape the selected root', t => {
+  const root = temporaryRoot(t, 'portable-seed-workspace-junction-');
+  const runtimePath = path.join(root, 'runtime');
+  const workspace = path.join(root, 'workspace');
+  const outside = path.join(root, 'outside');
+  const source = path.join(runtimePath, 'starter-workspace', 'demo.txt');
+  fs.mkdirSync(path.dirname(source), { recursive: true });
+  fs.mkdirSync(workspace);
+  fs.mkdirSync(outside);
+  fs.writeFileSync(source, 'seed');
+  try {
+    fs.symlinkSync(outside, path.join(workspace, 'docs'), 'junction');
+  } catch (error) {
+    if (['EACCES', 'EPERM', 'UNKNOWN'].includes(error.code)) {
+      t.skip(`junction creation unavailable: ${error.code}`);
+      return;
+    }
+    throw error;
+  }
+
+  assert.throws(
+    () => copyMissingSeeds({
+      mappings: [{
+        source: 'starter-workspace/demo.txt',
+        target: 'docs/demo.txt',
+      }],
+      runtimePath,
+      workspace,
+    }),
+    /seed target escaped workspace root/i,
+  );
+  assert.equal(fs.existsSync(path.join(outside, 'demo.txt')), false);
+});
+
+test('seed copying rejects runtime parent junctions that escape the verified cache', t => {
+  const root = temporaryRoot(t, 'portable-seed-runtime-junction-');
+  const runtimePath = path.join(root, 'runtime');
+  const workspace = path.join(root, 'workspace');
+  const outside = path.join(root, 'outside');
+  fs.mkdirSync(runtimePath);
+  fs.mkdirSync(workspace);
+  fs.mkdirSync(outside);
+  fs.writeFileSync(path.join(outside, 'demo.txt'), 'outside');
+  try {
+    fs.symlinkSync(
+      outside,
+      path.join(runtimePath, 'starter-workspace'),
+      'junction',
+    );
+  } catch (error) {
+    if (['EACCES', 'EPERM', 'UNKNOWN'].includes(error.code)) {
+      t.skip(`junction creation unavailable: ${error.code}`);
+      return;
+    }
+    throw error;
+  }
+
+  assert.throws(
+    () => copyMissingSeeds({
+      mappings: [{
+        source: 'starter-workspace/demo.txt',
+        target: 'demo.txt',
+      }],
+      runtimePath,
+      workspace,
+    }),
+    /seed source escaped runtime root/i,
+  );
+  assert.equal(fs.existsSync(path.join(workspace, 'demo.txt')), false);
+});
+
 test('cancelled selection returns null and does not create workspace data', async t => {
   const root = temporaryRoot(t, 'portable-workspace-');
   const workspace = await loadWorkspace({
@@ -233,6 +304,36 @@ test('a live lock without a session fails closed during startup', async t => {
     /仍在运行但会话尚未就绪/,
   );
   assert.equal(fs.existsSync(path.join(root, 'instance.lock')), true);
+});
+
+test('lock open failure never removes a path this process did not create', async t => {
+  const root = temporaryRoot(t, 'portable-lock-open-failure-');
+  const lockPath = path.join(root, 'instance.lock');
+  fs.writeFileSync(
+    lockPath,
+    JSON.stringify({ ownerNonce: 'a'.repeat(64), pid: process.pid }),
+  );
+  const removed = [];
+  let openCount = 0;
+  const denied = Object.assign(new Error('access denied'), { code: 'EACCES' });
+
+  await assert.rejects(
+    () => acquireInstance({
+      appRoot: root,
+      fileSystem: {
+        mkdirSync: () => {},
+        openSync: () => {
+          openCount += 1;
+          throw denied;
+        },
+        rmSync: filename => removed.push(filename),
+      },
+    }),
+    /access denied/,
+  );
+  assert.equal(openCount, 1);
+  assert.deepEqual(removed, []);
+  assert.equal(fs.existsSync(lockPath), true);
 });
 
 test('an unhealthy live instance fails closed and preserves its state', async t => {
