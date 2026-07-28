@@ -116,6 +116,10 @@ export function openDatabase(filename) {
   fs.mkdirSync(path.dirname(filename), { recursive: true });
   const db = new DatabaseSync(filename);
   db.exec(migration);
+  const runColumns = db.prepare(`PRAGMA table_info(runs)`).all().map(row => row.name);
+  if (!runColumns.includes('workflow_type')) {
+    db.exec(`ALTER TABLE runs ADD COLUMN workflow_type TEXT`);
+  }
   db.prepare(
     `UPDATE runs SET status = 'interrupted', error = ?, finished_at = ?
      WHERE status IN ('queued', 'running')`,
@@ -188,8 +192,9 @@ export function openDatabase(filename) {
     },
     createRun(value) {
       db.prepare(
-        `INSERT INTO runs(id,requirement_id,prompt,cwd,process_pid,permission,status,started_at)
-         VALUES(?,?,?,?,?,?,?,?)`,
+        `INSERT INTO runs
+         (id,requirement_id,prompt,cwd,process_pid,permission,status,workflow_type,started_at)
+         VALUES(?,?,?,?,?,?,?,?,?)`,
       ).run(
         value.id,
         value.requirementId,
@@ -198,6 +203,7 @@ export function openDatabase(filename) {
         value.processPid || null,
         value.permission,
         value.status,
+        value.workflowType || null,
         now(),
       );
     },
@@ -233,7 +239,8 @@ export function openDatabase(filename) {
     getRun(runId) {
       return db.prepare(
         `SELECT id,requirement_id AS requirementId,thread_id AS threadId,turn_id AS turnId,
-                prompt,cwd,process_pid AS processPid,permission,status,result,error,
+                prompt,cwd,process_pid AS processPid,permission,status,
+                workflow_type AS workflowType,result,error,
                 started_at AS startedAt,finished_at AS finishedAt
          FROM runs WHERE id=?`,
       ).get(runId);
@@ -241,7 +248,8 @@ export function openDatabase(filename) {
     listRuns(limit = 30) {
       return db.prepare(
         `SELECT id,requirement_id AS requirementId,thread_id AS threadId,turn_id AS turnId,
-                prompt,cwd,process_pid AS processPid,permission,status,result,error,
+                prompt,cwd,process_pid AS processPid,permission,status,
+                workflow_type AS workflowType,result,error,
                 started_at AS startedAt,finished_at AS finishedAt
          FROM runs ORDER BY started_at DESC LIMIT ?`,
       ).all(limit);

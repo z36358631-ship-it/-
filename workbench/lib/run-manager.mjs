@@ -1,8 +1,19 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
 import { assertAuthorizedPath } from './security.mjs';
+import {
+  buildWorkflowPrompt,
+  parseWorkflowResult,
+  validateWorkflowInput,
+} from './workflow-catalog.mjs';
 
 const ALLOWED_INPUT_KEYS = new Set(['requirementId', 'prompt', 'files']);
+const ALLOWED_WORKFLOW_INPUT_KEYS = new Set([
+  'requirementId',
+  'workflowType',
+  'files',
+  'input',
+]);
 
 function requestError(message, statusCode) {
   return Object.assign(new Error(message), { statusCode });
@@ -32,15 +43,30 @@ function authorizeFiles(allowedRoot, files) {
     if (typeof value !== 'string' || !value.trim()) {
       throw requestError('files must contain non-empty paths', 400);
     }
-    const candidate = path.isAbsolute(value)
-      ? value
-      : path.resolve(allowedRoot, value);
+    if (path.isAbsolute(value)) {
+      throw requestError('files must contain workspace-relative paths', 400);
+    }
+    const candidate = path.resolve(allowedRoot, value);
     const absolute = assertAuthorizedPath(allowedRoot, candidate);
     const relative = path.relative(allowedRoot, absolute);
     if (!relative) throw requestError('files must identify a file below the allowed root', 400);
     return relative.split(path.sep).join('/');
   });
   return [...new Set(normalized)];
+}
+
+function threadRequestParams(allowedRoot) {
+  return {
+    approvalPolicy: 'never',
+    cwd: allowedRoot,
+    sandbox: 'read-only',
+  };
+}
+
+function isMissingPersistedThread(error) {
+  return error?.code === -32600
+    && typeof error.message === 'string'
+    && error.message.startsWith('no rollout found for thread id ');
 }
 
 function buildContext(requirement, files, prompt) {
@@ -104,7 +130,13 @@ function persistedEvent(message) {
 }
 
 export class RunManager {
-  constructor({ store, codex, allowedRoot, maxConcurrentRuns = 1 }) {
+  constructor({
+    store,
+    codex,
+    allowedRoot,
+    maxConcurrentRuns = 1,
+    contextService = null,
+  }) {
     if (!store || !codex) throw new TypeError('store and codex are required');
     if (!Number.isInteger(maxConcurrentRuns) || maxConcurrentRuns < 1) {
       throw new TypeError('maxConcurrentRuns must be a positive integer');
@@ -113,6 +145,7 @@ export class RunManager {
     this.codex = codex;
     this.allowedRoot = path.resolve(allowedRoot);
     this.maxConcurrentRuns = maxConcurrentRuns;
+    this.contextService = contextService;
     this.activeByThread = new Map();
     this.activeByTurn = new Map();
     this.codex.on('notification', message => this.#onNotification(message));
@@ -135,7 +168,15 @@ export class RunManager {
     if (requirementId && !requirement) {
       throw requestError('requirement does not exist', 404);
     }
-    const authorizedFiles = authorizeFiles(this.allowedRoot, input.files ?? []);
+    const requestedFiles = input.files ?? [];
+    if (!Array.isArray(requestedFiles)) {
+      throw requestError('files must be an array', 400);
+    }
+    const authorizedFiles = requirementId && this.contextService
+      ? this.contextService
+          .authorizeFiles(requirementId, requestedFiles)
+          .map(artifact => artifact.path)
+      : authorizeFiles(this.allowedRoot, requestedFiles);
     if (this.store.countActiveRuns() >= this.maxConcurrentRuns) {
       throw requestError('Concurrent run limit reached', 429);
     }
@@ -158,13 +199,15 @@ export class RunManager {
     try {
       await this.codex.start();
       const pid = processPid(this.codex);
-      const threadResult = await this.codex.request('thread/start', {
-        approvalPolicy: 'never',
-        cwd: this.allowedRoot,
-        sandbox: 'read-only',
-      });
-      const threadId = protocolId(threadResult, 'thread');
+      const threadState = requirementId
+        ? await this.#requirementThread(requirementId)
+        : {
+            rebuilt: false,
+            threadId: await this.#startThread(),
+          };
+      const { rebuilt, threadId } = threadState;
       this.store.bindProtocolIds(runId, threadId, null, pid);
+      if (rebuilt) this.#recordThreadRebuilt(runId);
 
       active = {
         completedAgentItems: new Set(),
@@ -174,6 +217,7 @@ export class RunManager {
         text: '',
         threadId,
         turnId: null,
+        workflowType: null,
       };
       this.activeByThread.set(threadId, active);
 
@@ -197,6 +241,138 @@ export class RunManager {
       this.store.finishRun(runId, 'failed', active?.text || null, error.message);
       throw error;
     }
+  }
+
+  async startWorkflowRun(request) {
+    if (!request || typeof request !== 'object' || Array.isArray(request)) {
+      throw requestError('workflow run input must be an object', 400);
+    }
+    for (const key of Object.keys(request)) {
+      if (!ALLOWED_WORKFLOW_INPUT_KEYS.has(key)) {
+        throw requestError(`${key} is not accepted for a workflow run`, 400);
+      }
+    }
+    if (!this.contextService) {
+      throw new Error('ContextService is required for workflow runs');
+    }
+
+    const {
+      requirementId,
+      workflowType,
+      files = [],
+      input = {},
+    } = request;
+    if (!Array.isArray(files)) throw requestError('files must be an array', 400);
+    const context = this.contextService.getRequirementContext(requirementId);
+    const artifacts = this.contextService.authorizeFiles(requirementId, files);
+    const workflow = validateWorkflowInput(workflowType, input, artifacts);
+    if (this.store.countActiveRuns() >= this.maxConcurrentRuns) {
+      throw requestError('Concurrent run limit reached', 429);
+    }
+
+    const prompt = buildWorkflowPrompt(workflowType, {
+      requirement: context.requirement,
+      files: artifacts,
+      input,
+    });
+    const runId = `RUN-${crypto.randomUUID()}`;
+    this.store.createRun({
+      id: runId,
+      requirementId,
+      prompt,
+      cwd: this.allowedRoot,
+      permission: workflow.permission,
+      status: 'running',
+      workflowType,
+    });
+    this.store.saveRunContext(runId, {
+      files: artifacts.map(artifact => artifact.path),
+      input: { workflowType, workflowInput: input },
+    });
+
+    let active = null;
+    try {
+      await this.codex.start();
+      const pid = processPid(this.codex);
+      const { rebuilt, threadId } = await this.#requirementThread(requirementId);
+      this.store.bindProtocolIds(runId, threadId, null, pid);
+      if (rebuilt) this.#recordThreadRebuilt(runId);
+
+      active = {
+        completedAgentItems: new Set(),
+        deltaAgentItems: new Set(),
+        finished: false,
+        requirementId,
+        runId,
+        text: '',
+        threadId,
+        turnId: null,
+        workflowType,
+      };
+      this.activeByThread.set(threadId, active);
+
+      const turnResult = await this.codex.request('turn/start', {
+        approvalPolicy: 'never',
+        cwd: this.allowedRoot,
+        input: [{ type: 'text', text: prompt }],
+        outputSchema: workflow.outputSchema,
+        sandboxPolicy: { type: 'readOnly', networkAccess: false },
+        threadId,
+      });
+      const turnId = protocolId(turnResult, 'turn');
+      if (active.turnId && active.turnId !== turnId) {
+        throw new Error('Codex turn/start response did not match the notification turn id');
+      }
+      active.turnId = turnId;
+      this.store.bindProtocolIds(runId, threadId, turnId, pid);
+      if (!active.finished) this.activeByTurn.set(turnId, active);
+      return this.store.getRun(runId);
+    } catch (error) {
+      if (active) this.#removeActive(active);
+      this.store.finishRun(runId, 'failed', active?.text || null, error.message);
+      throw error;
+    }
+  }
+
+  async #startThread() {
+    const started = await this.codex.request(
+      'thread/start',
+      threadRequestParams(this.allowedRoot),
+    );
+    return protocolId(started, 'thread');
+  }
+
+  async #requirementThread(requirementId) {
+    const existing = this.store.getRequirementThread(requirementId);
+    if (existing) {
+      try {
+        const resumed = await this.codex.request('thread/resume', {
+          ...threadRequestParams(this.allowedRoot),
+          threadId: existing.threadId,
+        });
+        const threadId = protocolId(resumed, 'thread');
+        if (threadId !== existing.threadId) {
+          throw new Error('Codex thread/resume response did not match the requested thread id');
+        }
+        this.store.touchRequirementThread(requirementId);
+        return { rebuilt: false, threadId };
+      } catch (error) {
+        if (!isMissingPersistedThread(error)) throw error;
+        const threadId = await this.#startThread();
+        this.store.replaceRequirementThread(requirementId, threadId);
+        return { rebuilt: true, threadId };
+      }
+    }
+
+    const threadId = await this.#startThread();
+    this.store.bindRequirementThread(requirementId, threadId);
+    return { rebuilt: false, threadId };
+  }
+
+  #recordThreadRebuilt(runId) {
+    this.store.appendRunEvent(runId, 'workbench/thread-rebuilt', {
+      message: '原 Codex Thread 不可恢复，已创建新 Thread；本轮上下文由需求和授权文件重建。',
+    });
   }
 
   #onNotification(message) {
@@ -246,16 +422,32 @@ export class RunManager {
     if (message.method !== 'turn/completed') return;
     const status = message.params?.turn?.status;
     const failed = status !== 'completed';
-    const error = failed
-      ? safeString(message.params?.turn?.error?.message)
-        || `Codex turn ended with ${safeString(status) || 'unknown status'}`
-      : null;
-    this.store.finishRun(
-      active.runId,
-      failed ? 'failed' : 'completed',
-      active.text || null,
-      error,
-    );
+    if (failed) {
+      const error = safeString(message.params?.turn?.error?.message)
+        || `Codex turn ended with ${safeString(status) || 'unknown status'}`;
+      this.store.finishRun(active.runId, 'failed', active.text || null, error);
+    } else if (active.workflowType) {
+      try {
+        const result = parseWorkflowResult(active.workflowType, active.text);
+        this.store.saveWorkflowResult({
+          id: `RESULT-${crypto.randomUUID()}`,
+          runId: active.runId,
+          requirementId: active.requirementId,
+          workflowType: active.workflowType,
+          result,
+        });
+        this.store.finishRun(active.runId, 'completed', JSON.stringify(result));
+      } catch (error) {
+        this.store.finishRun(
+          active.runId,
+          'failed',
+          active.text,
+          `Structured result rejected: ${error.message}`,
+        );
+      }
+    } else {
+      this.store.finishRun(active.runId, 'completed', active.text || null);
+    }
     active.finished = true;
     this.#removeActive(active);
   }
