@@ -83,6 +83,7 @@ assert.equal(
   false,
   `Candidate path must be absent before verification: ${candidatePath}`,
 );
+fs.mkdirSync(path.dirname(candidateAbsolutePath), { recursive: true });
 
 const app = externalSession
   ? {
