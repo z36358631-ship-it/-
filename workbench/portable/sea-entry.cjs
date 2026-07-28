@@ -165,10 +165,7 @@ async function ensureRuntimeCache({
     }
   }
 
-  const temporary = path.join(
-    resolvedRuntimeRoot,
-    `.extract-${payloadVersion}-${process.pid}-${crypto.randomBytes(8).toString('hex')}`,
-  );
+  const temporary = createTemporaryRuntimePath(resolvedRuntimeRoot);
   try {
     await expandArchive(temporary, archive);
     await verifyRuntimeManifestWithRetry(temporary, manifest, { verifyManifest });
@@ -209,6 +206,26 @@ function createTemporaryArchivePath(
   );
 }
 
+function createTemporaryRuntimePath(
+  runtimeRoot,
+  {
+    pid = process.pid,
+    randomBytes = crypto.randomBytes,
+  } = {},
+) {
+  if (!Number.isSafeInteger(pid) || pid <= 0) {
+    throw new Error('Runtime extraction PID is invalid');
+  }
+  const nonce = randomBytes(8).toString('hex');
+  if (!/^[a-f0-9]{16}$/.test(nonce)) {
+    throw new Error('Runtime extraction nonce is invalid');
+  }
+  return path.join(
+    path.resolve(runtimeRoot),
+    `.x-${pid}-${nonce}`,
+  );
+}
+
 function redactStartupMessage(value) {
   return String(value || 'Unknown startup failure')
     .replace(/\bauth\.json\b/gi, '[redacted-file]')
@@ -232,6 +249,42 @@ function writeStartupFailure(appRoot, error) {
       + `${JSON.stringify({ code, message, name })}\n`,
     'utf8',
   );
+}
+
+async function expandRuntimeArchive({
+  archive,
+  archiveFile,
+  destination,
+  execFile = require('node:child_process').execFile,
+}) {
+  fs.writeFileSync(archiveFile, archive, { flag: 'wx' });
+  try {
+    await new Promise((resolve, reject) => {
+      execFile(
+        'powershell.exe',
+        [
+          '-NoLogo',
+          '-NoProfile',
+          '-NonInteractive',
+          '-Command',
+          'Expand-Archive -LiteralPath $env:WORKBENCH_ARCHIVE '
+            + '-DestinationPath $env:WORKBENCH_DESTINATION -Force '
+            + '-ErrorAction Stop',
+        ],
+        {
+          env: {
+            ...process.env,
+            WORKBENCH_ARCHIVE: archiveFile,
+            WORKBENCH_DESTINATION: destination,
+          },
+          windowsHide: true,
+        },
+        error => (error ? reject(error) : resolve()),
+      );
+    });
+  } finally {
+    fs.rmSync(archiveFile, { force: true });
+  }
 }
 
 async function runSea({
@@ -259,36 +312,11 @@ async function runSea({
     appRoot,
     manifest.payloadVersion,
   );
-  const expandArchive = async destination => {
-    fs.writeFileSync(archiveFile, archive, { flag: 'wx' });
-    try {
-      await new Promise((resolve, reject) => {
-        const { execFile } = require('node:child_process');
-        execFile(
-          'powershell.exe',
-          [
-            '-NoLogo',
-            '-NoProfile',
-            '-NonInteractive',
-            '-Command',
-            'Expand-Archive -LiteralPath $env:WORKBENCH_ARCHIVE '
-              + '-DestinationPath $env:WORKBENCH_DESTINATION -Force',
-          ],
-          {
-            env: {
-              ...process.env,
-              WORKBENCH_ARCHIVE: archiveFile,
-              WORKBENCH_DESTINATION: destination,
-            },
-            windowsHide: true,
-          },
-          error => (error ? reject(error) : resolve()),
-        );
-      });
-    } finally {
-      fs.rmSync(archiveFile, { force: true });
-    }
-  };
+  const expandArchive = destination => expandRuntimeArchive({
+    archive,
+    archiveFile,
+    destination,
+  });
 
   const runtimePath = await ensureRuntimeCache({
     archive,
@@ -308,7 +336,9 @@ async function runSea({
 
 module.exports = {
   createTemporaryArchivePath,
+  createTemporaryRuntimePath,
   ensureRuntimeCache,
+  expandRuntimeArchive,
   hashBuffer,
   hashFile,
   runSea,

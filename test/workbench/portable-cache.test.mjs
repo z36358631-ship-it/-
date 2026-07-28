@@ -8,11 +8,13 @@ import test from 'node:test';
 const require = createRequire(import.meta.url);
 const {
   createTemporaryArchivePath,
+  createTemporaryRuntimePath,
+  ensureRuntimeCache,
+  expandRuntimeArchive,
   hashBuffer,
   hashFile,
   verifyRuntimeManifest,
   verifyRuntimeManifestWithRetry,
-  ensureRuntimeCache,
   writeStartupFailure,
 } = require('../../workbench/portable/sea-entry.cjs');
 
@@ -363,6 +365,69 @@ test('temporary archive names include randomness so stale PID files do not colli
   assert.notEqual(first, second);
   assert.equal(path.dirname(first), root);
   assert.match(path.basename(first), /^runtime-fixture-v1-\d+-[a-f0-9]{16}\.zip$/);
+});
+
+test('temporary runtime paths are unique and omit the long payload version', () => {
+  const runtimeRoot = 'C:\\state\\runtime';
+  const payloadVersion = 'v1-6d294fbc6efa-47dc68b9633c410f';
+  const first = createTemporaryRuntimePath(runtimeRoot, {
+    pid: 1234,
+    randomBytes: () => Buffer.from('0011223344556677', 'hex'),
+  });
+  const second = createTemporaryRuntimePath(runtimeRoot, {
+    pid: 1234,
+    randomBytes: () => Buffer.from('8899aabbccddeeff', 'hex'),
+  });
+
+  assert.equal(path.dirname(first), path.resolve(runtimeRoot));
+  assert.equal(
+    path.basename(first),
+    '.x-1234-0011223344556677',
+  );
+  assert.equal(path.basename(first).includes(payloadVersion), false);
+  assert(path.basename(first).length <= 32);
+  assert.notEqual(first, second);
+});
+
+test('PowerShell expansion promotes non-terminating errors and removes its ZIP', async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'portable-expand-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const archive = Buffer.from('fixture archive');
+  const archiveFile = path.join(root, 'runtime.zip');
+  const destination = path.join(root, 'destination');
+  const calls = [];
+
+  await expandRuntimeArchive({
+    archive,
+    archiveFile,
+    destination,
+    execFile: (command, args, options, callback) => {
+      calls.push({ args, command, options });
+      callback(null);
+    },
+  });
+
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].command, 'powershell.exe');
+  assert.deepEqual(calls[0].args, [
+    '-NoLogo',
+    '-NoProfile',
+    '-NonInteractive',
+    '-Command',
+    'Expand-Archive -LiteralPath $env:WORKBENCH_ARCHIVE '
+      + '-DestinationPath $env:WORKBENCH_DESTINATION -Force '
+      + '-ErrorAction Stop',
+  ]);
+  assert.equal(
+    calls[0].options.env.WORKBENCH_ARCHIVE,
+    archiveFile,
+  );
+  assert.equal(
+    calls[0].options.env.WORKBENCH_DESTINATION,
+    destination,
+  );
+  assert.equal(calls[0].options.windowsHide, true);
+  assert.equal(fs.existsSync(archiveFile), false);
 });
 
 test('startup failures are logged with credential-like values redacted', t => {
