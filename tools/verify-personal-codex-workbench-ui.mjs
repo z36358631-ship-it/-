@@ -35,6 +35,12 @@ const requiredCopy = [
   '产品专员任务备注',
   'Codex运行状态',
   '只读分析',
+  '整理反馈并去重',
+  '检查 Demo、PRD 差异与漏洞',
+  '开发/测试问题转产品策略',
+  'Codex 整理后的需求候选',
+  'data-workflow',
+  'workflowResult',
 ];
 for (const token of requiredCopy) {
   assert(html.includes(token), `Missing UI token: ${token}`);
@@ -61,7 +67,15 @@ assert.match(html, /class="skip-link"\s+href="#mainContent"/);
 assert.match(html, /<aside[^>]+aria-label="主导航"/);
 assert.match(html, /<main[^>]+id="mainContent"[^>]+tabindex="-1"/);
 assert.match(html, /<dialog[^>]+id="codexDrawer"[^>]+aria-labelledby="codexTitle"/);
+assert.match(html, /<dialog[^>]+id="manualTaskDialog"[^>]+aria-labelledby="manualTaskTitle"/);
 assert.match(html, /id="streamOutput"[^>]+aria-live="polite"/);
+assert.match(html, /id="workflowResult"[^>]+aria-live="polite"/);
+assert.match(html, /id="authorizedFiles"[^>]+class="authorized-artifacts"/);
+assert.equal(
+  /<textarea[^>]+id="authorizedFiles"/.test(html),
+  false,
+  'Registered artifact selection must not be a free-form textarea',
+);
 assert.match(html, /<svg\b/);
 assert.equal(/https?:\/\//.test(html), false, 'Workbench UI must not depend on remote assets');
 assert.equal(/\p{Extended_Pictographic}/u.test(productUi), false, 'Structural emoji is not allowed');
@@ -80,11 +94,21 @@ assert.match(css, /prefers-reduced-motion:\s*reduce/);
 assert.match(app, /new EventSource\(`\/api\/runs\/\$\{encodeURIComponent\(run\.id\)\}\/events\?token=\$\{encodeURIComponent\(state\.token\)\}`\)/);
 assert.match(app, /api\(['"`]\/api\/bootstrap/);
 assert.match(app, /api\(['"`]\/api\/runs/);
+assert.match(app, /\/api\/requirements\/\$\{encodeURIComponent\(id\)\}\/context/);
+assert.match(app, /\/api\/workflows\/\$\{workflowType\}\/runs/);
+assert.match(app, /\/api\/runs\/\$\{encodeURIComponent\(run\.id\)\}\/workflow-result/);
+assert.match(app, /bootstrap\.requirementCandidates/);
+assert.match(app, /bootstrap\.reviewFindings/);
+assert.match(app, /bootstrap\.productStrategies/);
 assert.match(app, /\.textContent\s*=/);
 assert.match(app, /\.replaceChildren\(/);
 assert.match(app, /document\.createElement\(/);
 assert.equal(/\.innerHTML\s*=|insertAdjacentHTML|\.outerHTML\s*=/.test(app), false, 'Unsafe HTML injection API found');
-assert.equal(/\b(command|codexArgs|sandboxPolicy)\s*:/.test(app), false, 'Frontend must not submit Codex controls');
+assert.equal(
+  /\b(permission|sandbox|command|codexArgs|sandboxPolicy)\s*:/.test(app),
+  false,
+  'Frontend must not submit Codex controls',
+);
 assert.match(app, /history\.replaceState/);
 assert.match(app, /sessionStorage\.setItem/);
 assert.match(app, /aria-current/);
@@ -258,6 +282,29 @@ async function assertCodexDialog(page, viewportLabel) {
     dialogBounds.left >= 0 && dialogBounds.right <= dialogBounds.viewportWidth,
     `${viewportLabel}: Codex dialog exceeds the horizontal viewport ${JSON.stringify(dialogBounds)}`,
   );
+  const workflowButtons = dialog.locator('#workflowPicker [data-workflow]');
+  assert.equal(
+    await workflowButtons.count(),
+    3,
+    `${viewportLabel}: expected exactly three product workflows`,
+  );
+  for (let index = 0; index < 3; index += 1) {
+    const button = workflowButtons.nth(index);
+    const height = await button.evaluate(element => element.getBoundingClientRect().height);
+    assert(height >= 44, `${viewportLabel}: workflow control ${index} is below 44px`);
+    await button.focus();
+    assert(
+      await button.evaluate(element => element === document.activeElement),
+      `${viewportLabel}: workflow control ${index} cannot receive keyboard focus`,
+    );
+  }
+  await workflowButtons.first().click();
+  assert.equal(await workflowButtons.first().getAttribute('aria-pressed'), 'true');
+  assert.equal(await dialog.locator('#businessInput').isVisible(), true);
+  assert.equal(await dialog.locator('#prompt').isVisible(), false);
+  await dialog.locator('#useFreeformMode').click();
+  assert.equal(await dialog.locator('#prompt').isVisible(), true);
+  assert.equal(await dialog.locator('#businessInput').isVisible(), false);
   await dialog.locator('#closeCodex').click();
   await dialog.waitFor({ state: 'hidden' });
   assert.equal(await dialog.getAttribute('open'), null, `${viewportLabel}: Codex dialog did not close`);
@@ -334,6 +381,9 @@ async function runBrowserVerification() {
     urlTokenRemoved: false,
     navigation: [],
     selectedRequirement: null,
+    registeredArtifactSelection: null,
+    manualTaskNote: null,
+    workflowControls: null,
     dialog: null,
     health: null,
     viewports: [],
@@ -398,6 +448,7 @@ async function runBrowserVerification() {
     await activateNavigation(page, 'requirements');
     await page.locator('#requirementList [data-requirement-id="REQ-002"]').click();
     assert.match(await page.locator('#requirementDetail').innerText(), /REQ-002[\s\S]*iOS应用与IPA资源库/);
+    await page.locator('#requirementDetail .detail-controls').waitFor();
     assert(
       await page.locator('#requirementList [data-requirement-id="REQ-002"]').evaluate(
         element => element.classList.contains('is-selected'),
@@ -406,10 +457,78 @@ async function runBrowserVerification() {
     );
     report.selectedRequirement = 'REQ-002';
 
+    const stageSelect = page.locator('[aria-label="手动调整需求阶段"]');
+    const waitSelect = page.locator('[aria-label="手动调整外部等待"]');
+    assert.equal(await stageSelect.count(), 1, 'Requirement stage control is missing');
+    assert.equal(await waitSelect.count(), 1, 'External wait control is missing');
+
+    await page.getByRole('button', { name: '记录产品专员任务' }).click();
+    const manualDialog = page.locator('#manualTaskDialog');
+    await manualDialog.waitFor({ state: 'visible' });
+    await manualDialog.locator('#manualTaskDescription').fill('浏览器验收跟进事项');
+    await manualDialog.locator('#manualTaskDeliverable').fill('验收记录');
+    await manualDialog.locator('#manualTaskNote').fill('仅作为个人任务备注');
+    await manualDialog.getByRole('button', { name: '保存记录' }).click();
+    await manualDialog.waitFor({ state: 'hidden' });
+    await activateNavigation(page, 'home');
+    const createdTask = page.locator('#manualTaskNotes .note-card').filter({
+      hasText: '浏览器验收跟进事项',
+    });
+    await createdTask.waitFor();
+    await createdTask.getByRole('button', { name: '标记完成' }).click();
+    await page.waitForFunction(() => (
+      [...document.querySelectorAll('#manualTaskNotes .note-card')]
+        .some(card => card.textContent.includes('浏览器验收跟进事项')
+          && card.textContent.includes('已完成'))
+    ));
+    report.manualTaskNote = 'create-complete passed';
+
+    await activateNavigation(page, 'requirements');
+    await page.locator('#requirementList [data-requirement-id="REQ-001"]').click();
+    const detailArtifacts = page.locator(
+      '#requirementDetail [data-artifact-surface="detail"]',
+    );
+    await detailArtifacts.first().waitFor();
+    assert.equal(await detailArtifacts.count(), 2, 'Registered artifacts were not loaded');
+    assert.deepEqual(
+      await detailArtifacts.evaluateAll(elements => elements.map(element => ({
+        checked: element.checked,
+        kind: element.dataset.artifactKind,
+        value: element.value,
+      }))),
+      [
+        {
+          checked: true,
+          kind: 'Demo',
+          value: 'demos/产品经理全生命周期工作台demo.html',
+        },
+        {
+          checked: true,
+          kind: 'PRD',
+          value: 'docs/superpowers/specs/2026-07-28-personal-codex-workbench-design.md',
+        },
+      ],
+    );
+
     await page.locator('#askCodex').click();
     await page.locator('#codexDrawer').waitFor({ state: 'visible' });
-    assert.match(await page.locator('#contextRequirement').innerText(), /REQ-002.*iOS应用与IPA资源库/);
+    assert.match(await page.locator('#contextRequirement').innerText(), /REQ-001.*Android广告接入/);
     assert.equal((await page.locator('.permission-badge').innerText()).trim(), '只读分析');
+    const drawerArtifacts = page.locator(
+      '#drawerArtifactOptions [data-artifact-surface="drawer"]',
+    );
+    assert.equal(await drawerArtifacts.count(), 2);
+    await drawerArtifacts.first().uncheck();
+    assert.equal(await detailArtifacts.first().isChecked(), false);
+    await drawerArtifacts.first().check();
+    assert.equal(await detailArtifacts.first().isChecked(), true);
+    assert.equal(
+      await page.locator('#authorizedFiles textarea, textarea#authorizedFiles').count(),
+      0,
+      'Drawer exposes free-form artifact paths',
+    );
+    report.registeredArtifactSelection = 'registered-only/synchronized passed';
+    report.workflowControls = 'three/focusable/mode-switch passed';
     report.dialog = 'open-close/read-only passed';
     await page.locator('#closeCodex').click();
     await page.locator('#codexDrawer').waitFor({ state: 'hidden' });

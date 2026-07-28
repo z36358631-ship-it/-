@@ -300,6 +300,19 @@
         </div>
 
         <div class="dashboard-grid">
+          <section class="panel panel-span-12" aria-labelledby="requirementCandidatesTitle">
+            <div class="panel-header">
+              <div>
+                <h2 id="requirementCandidatesTitle">Codex 整理后的需求候选</h2>
+                <p>由已选需求的反馈整理工作流生成，保留证据与建议优先级。</p>
+              </div>
+              <span class="panel-meta">个人需求池</span>
+            </div>
+            <div id="requirementCandidates" class="workflow-record-list" aria-live="polite">
+              <div class="loading-row">正在读取需求候选</div>
+            </div>
+          </section>
+
           <section class="panel panel-span-8" aria-labelledby="versionBoardTitle">
             <div class="panel-header">
               <div><h2 id="versionBoardTitle">版本候选板</h2><p>同一需求只在一个阶段出现。</p></div>
@@ -404,6 +417,30 @@
         </div>
 
         <div class="dashboard-grid">
+          <section class="panel panel-span-6" aria-labelledby="reviewFindingsTitle">
+            <div class="panel-header">
+              <div>
+                <h2 id="reviewFindingsTitle">Demo/PRD 差异与漏洞</h2>
+                <p>按位置和严重度归档工作流发现。</p>
+              </div>
+            </div>
+            <div id="reviewFindings" class="workflow-record-list" aria-live="polite">
+              <div class="loading-row">正在读取评审发现</div>
+            </div>
+          </section>
+
+          <section class="panel panel-span-6" aria-labelledby="productStrategiesTitle">
+            <div class="panel-header">
+              <div>
+                <h2 id="productStrategiesTitle">开发/测试产品策略</h2>
+                <p>把问题转成主流程、异常边界与同步摘要。</p>
+              </div>
+            </div>
+            <div id="productStrategies" class="workflow-record-list" aria-live="polite">
+              <div class="loading-row">正在读取产品策略</div>
+            </div>
+          </section>
+
           <section class="panel panel-span-7" aria-labelledby="reviewQueueTitle">
             <div class="panel-header"><div><h2 id="reviewQueueTitle">检查工作区</h2><p>选定需求与文件后再让 Codex 给出证据。</p></div></div>
             <div class="checklist">
@@ -503,6 +540,51 @@
     </main>
   </div>
 
+  <dialog id="manualTaskDialog" aria-labelledby="manualTaskTitle" aria-describedby="manualTaskDescriptionText">
+    <form id="manualTaskForm" class="manual-task-form">
+      <header class="manual-task-header">
+        <div>
+          <span class="drawer-kicker">PERSONAL NOTE</span>
+          <h2 id="manualTaskTitle">记录产品专员任务</h2>
+          <p id="manualTaskDescriptionText">仅记录给自己的跟进备注，不创建其他登录身份或协作关系。</p>
+        </div>
+        <button class="icon-button" type="button" data-action="close-manual-task" aria-label="关闭产品专员任务">
+          <svg class="icon" aria-hidden="true"><use href="#icon-close"></use></svg>
+        </button>
+      </header>
+      <div class="manual-task-fields">
+        <label for="manualTaskAssignee">
+          <span>分派备注对象</span>
+          <select id="manualTaskAssignee">
+            <option>产品专员A</option>
+            <option>产品专员B</option>
+          </select>
+        </label>
+        <label for="manualTaskDescription">
+          <span>事项说明</span>
+          <textarea id="manualTaskDescription" rows="3" required></textarea>
+        </label>
+        <label for="manualTaskDue">
+          <span>截止时间</span>
+          <input id="manualTaskDue" type="date">
+        </label>
+        <label for="manualTaskDeliverable">
+          <span>期望交付物</span>
+          <input id="manualTaskDeliverable" required>
+        </label>
+        <label for="manualTaskNote">
+          <span>当前备注</span>
+          <textarea id="manualTaskNote" rows="3"></textarea>
+        </label>
+        <p id="manualTaskMessage" class="form-message" role="status" aria-live="polite"></p>
+      </div>
+      <footer class="manual-task-actions">
+        <button class="button button-secondary" type="button" data-action="close-manual-task">取消</button>
+        <button class="button button-primary" type="submit">保存记录</button>
+      </footer>
+    </form>
+  </dialog>
+
   <dialog id="codexDrawer" aria-labelledby="codexTitle">
     <div class="drawer-shell">
       <header class="drawer-header">
@@ -534,32 +616,47 @@
           </div>
         </section>
 
-        <section class="drawer-section" aria-labelledby="quickActionsTitle">
+        <section class="drawer-section" aria-labelledby="workflowPickerTitle">
           <div class="section-title-row">
-            <h3 id="quickActionsTitle">快捷任务</h3>
-            <span>选择后仍可编辑</span>
+            <h3 id="workflowPickerTitle">场景快捷动作</h3>
+            <span id="runModeLabel">自由任务</span>
           </div>
-          <div class="quick-actions">
-            <button type="button" data-prompt-template="检查已授权文档的遗漏、异常和边界条件，并按严重程度给出可定位的问题清单。">检查文档漏洞</button>
-            <button type="button" data-prompt-template="对比已授权的 Demo 与 PRD，列出业务规则、界面状态和验收口径差异。">检查 Demo 与 PRD</button>
-            <button type="button" data-prompt-template="归纳已授权材料中的用户反馈，合并相似项，匹配已有需求并指出信息缺口。">整理反馈并查重</button>
-            <button type="button" data-prompt-template="把当前开发或测试问题转化为产品策略、异常边界和可验证的验收条件。">输出产品策略</button>
-          </div>
+          <fieldset id="workflowPicker">
+            <legend class="visually-hidden">选择产品工作流</legend>
+            <button type="button" data-workflow="feedback-triage" aria-pressed="false">整理反馈并去重</button>
+            <button type="button" data-workflow="demo-prd-review" aria-pressed="false">检查 Demo、PRD 差异与漏洞</button>
+            <button type="button" data-workflow="issue-strategy" aria-pressed="false">开发/测试问题转产品策略</button>
+          </fieldset>
+          <button id="useFreeformMode" class="text-button workflow-reset" type="button" hidden>切回自由任务</button>
         </section>
 
         <section class="drawer-section form-section" aria-labelledby="taskInputTitle">
           <h3 id="taskInputTitle">任务输入</h3>
-          <label for="authorizedFiles">
-            <span>授权文件</span>
-            <small>每行一个工作区相对路径，仅用于本次分析。</small>
-          </label>
-          <textarea id="authorizedFiles" rows="4" spellcheck="false" placeholder="例如：prd/feature.md"></textarea>
+          <fieldset id="authorizedFiles" class="authorized-artifacts">
+            <legend>本次授权文件</legend>
+            <p id="drawerArtifactSelectionMeta">只可选择当前需求已经登记的产物。</p>
+            <div id="drawerArtifactOptions" class="artifact-options"></div>
+          </fieldset>
 
-          <label for="prompt">
+          <label id="businessInputLabel" for="businessInput" hidden>
+            <span>业务输入</span>
+            <small id="businessInputHelp">补充工作流需要处理的原始信息。</small>
+          </label>
+          <textarea id="businessInput" rows="5" hidden placeholder="粘贴反馈、开发问题或测试异常"></textarea>
+
+          <label id="freeformPromptLabel" for="prompt">
             <span>任务描述</span>
             <small>写清目标、输出格式和需要重点检查的范围。</small>
           </label>
           <textarea id="prompt" rows="7" placeholder="例如：检查这份 PRD 的遗漏、异常和边界条件，并按严重程度输出。"></textarea>
+        </section>
+
+        <section class="drawer-section workflow-result-section" aria-labelledby="workflowResultTitle" hidden>
+          <div class="section-title-row">
+            <h3 id="workflowResultTitle">结构化结果</h3>
+            <span>已保存到对应工作区</span>
+          </div>
+          <div id="workflowResult" class="workflow-result" aria-live="polite"></div>
         </section>
 
         <section class="drawer-section stream-section" id="streamSection" aria-labelledby="streamTitle" hidden>
