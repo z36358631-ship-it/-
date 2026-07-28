@@ -31,6 +31,22 @@ http://127.0.0.1:8080/demos/微信H5精品游戏/
 node tools/verify-wechat-h5-premium-games.mjs
 ```
 
+当前脚本覆盖三档移动视口的大厅与三款游戏、真实触摸拖动、确定性胜负路径、后台暂停与主动恢复、事件信封、结算重玩、对象池边界，以及大厅和三款页面的 `file://` 直开。机器结果和关键截图写入 `test-results/wechat-h5-premium-games/`。
+
+`wechat-miniprogram-shell/` 提供可导入微信开发者工具的最小 `web-view` 承载壳。静态结构验收：
+
+```powershell
+node tools/verify-wechat-miniprogram-shell.mjs
+```
+
+自然速度浏览器性能预警：
+
+```powershell
+node tools/profile-wechat-h5-premium-games.mjs
+```
+
+该脚本在本地移动视口中各运行约 8 秒并输出 rAF 帧间隔、Long Task 和 JS 堆摘要，只用于回归预警，不替代微信真机性能测试。
+
 ## 微信小程序 WebView 接入
 
 当前交付适合用普通微信小程序的 `web-view` 作为玩法验证入口。部署前需要：
@@ -43,7 +59,7 @@ node tools/verify-wechat-h5-premium-games.mjs
 页面示例：
 
 ```xml
-<web-view src="{{gameUrl}}" bindmessage="onGameMessage"></web-view>
+<web-view src="{{gameUrl}}"></web-view>
 ```
 
 ```js
@@ -60,15 +76,20 @@ Page({
     const route = routes[options.game] || routes.five;
     const baseUrl = getApp().globalData.h5GameBaseUrl;
     this.setData({ gameUrl: `${baseUrl}${route}` });
-  },
-  onGameMessage(event) {
-    const messages = event.detail.data || [];
-    console.log("H5 游戏摘要事件", messages);
   }
 });
 ```
 
 小程序全局配置 `h5GameBaseUrl` 时使用公司实际 HTTPS 业务域名。H5 不在 URL 中传递 `OpenID`、`session_key` 或长期登录令牌。
+
+当前单文件 H5 **没有引入微信 JS-SDK，也没有调用 `wx.miniProgram.postMessage`**。因此，小程序页面不能通过 `bindmessage` 收到下文事件信封。现有 `GamePlatform.emit` 只用于同源本地大厅：游戏由新窗口打开时，通过 `window.opener.postMessage` 返回关键体验事件。
+
+生产环境如需采集事件，有两种方案：
+
+1. 推荐由 H5 通过公司 HTTPS 数据接口批量上报，补充匿名设备、会话、版本、去重和重试字段。
+2. 如必须传给小程序页面，先按微信官方要求引入并初始化 JS-SDK，再调用 `wx.miniProgram.postMessage`；该通道只会在后退、组件销毁、分享等特定时机投递，不得作为局内实时 RPC。
+
+这两种生产能力均不包含在当前离线纵切片中。
 
 ## 事件协议
 
@@ -98,7 +119,7 @@ Page({
 - `lifecycle_pause`
 - `lifecycle_resume`
 
-微信 `web-view postMessage` 只会在后退、组件销毁、分享等特定时机投递，不能用于局内实时 RPC。本试玩包的核心游戏状态不依赖该通道。
+微信 `web-view postMessage` 只会在后退、组件销毁、分享等特定时机投递，不能用于局内实时 RPC。本试玩包的核心游戏状态不依赖该通道，当前版本也未实现该微信桥。
 
 ## 测试参数
 

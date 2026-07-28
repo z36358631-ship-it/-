@@ -106,12 +106,13 @@
     }
     @media (orientation:landscape) and (max-height:600px) { #rotate { display:flex; } }
     @media (prefers-reduced-motion:reduce) { * { transition:none!important; animation:none!important; } }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
   </style>
 </head>
 <body>
-<main id="app">
+<main id="app" tabindex="-1">
   <canvas id="game" aria-label="裂隙猎人游戏区域"></canvas>
-  <section id="hud" aria-live="polite">
+  <section id="hud">
     <div class="topline">
       <div class="brand"><div class="eyebrow">RIFT PROTOCOL</div><h1>裂隙猎人</h1></div>
       <button class="icon-btn" id="pauseBtn" aria-label="暂停游戏">Ⅱ</button>
@@ -119,7 +120,7 @@
     <div class="primary-status">
       <div class="meter health-meter"><div class="meter-head"><span>生命装甲</span><strong id="hpText">100</strong></div><div class="bar"><i id="hpFill"></i></div></div>
       <div class="danger-card"><span>危险</span><b id="danger">01</b></div>
-      <div id="objective">90秒后开放</div>
+      <div id="objective">60秒后开放</div>
     </div>
     <div class="secondary-status">
       <div class="meter weapon-meter"><div class="meter-head"><span id="weaponName">裂隙单发</span><strong id="xpText">0/8</strong></div><div class="bar"><i id="xpFill"></i></div></div>
@@ -128,21 +129,22 @@
       <div class="minor-stat"><span>击杀</span><b id="killCount">0</b></div>
     </div>
   </section>
+  <p class="sr-only" id="liveStatus" role="status" aria-live="polite" aria-atomic="true"></p>
   <div id="toast"></div>
 
   <section class="screen active" id="intro">
     <div class="hero-mark"><span>⌁</span></div>
     <div class="intro-copy">
       <div class="kicker">EXTRACTION SURVIVAL</div>
-      <h2>拿得越多<br>越难离开</h2>
-      <p>拖动猎人穿越裂隙。武器会自动锁定威胁，橙金战利品将让每一次深入都更有价值。</p>
+      <h2>待得越久<br>收益越高</h2>
+      <p>拖动猎人穿越裂隙。时间越久，危险越高，掉落也越值钱；何时撤离由你决定。</p>
       <div class="rules">
         <div class="rule"><i>◎</i><b>单指移动</b><small>瞄准与开火自动完成</small></div>
         <div class="rule"><i>↟</i><b>积累经验</b><small>武器连续两次变形</small></div>
-        <div class="rule"><i>△</i><b>站位撤离</b><small>绿区内坚守三秒</small></div>
+        <div class="rule"><i>△</i><b>站位撤离</b><small>三角信标区坚守三秒</small></div>
       </div>
       <button class="primary" id="startBtn">进入裂隙</button>
-      <p class="subnote">无广告 · 无付费 · 建议佩戴耳机</p>
+      <p class="subnote">撤离全部带出 · 死亡只保最高价值 1 件</p>
     </div>
   </section>
 
@@ -158,7 +160,7 @@
     </div>
   </section>
 
-  <section class="screen" id="result">
+  <section class="screen" id="result" role="dialog" aria-modal="true" aria-labelledby="resultTitle" tabindex="-1">
     <div class="result-card">
       <span class="result-badge" id="resultBadge">撤离完成</span>
       <h2 id="resultTitle">满载而归</h2>
@@ -194,7 +196,7 @@
   const $ = id => document.getElementById(id);
   const canvas = $("game"), ctx = canvas.getContext("2d", { alpha:false });
   const ui = {
-    intro:$("intro"), pause:$("pausePanel"), result:$("result"), objective:$("objective"), toast:$("toast"),
+    intro:$("intro"), pause:$("pausePanel"), result:$("result"), objective:$("objective"), toast:$("toast"), live:$("liveStatus"),
     hpText:$("hpText"), hpFill:$("hpFill"), xpText:$("xpText"), xpFill:$("xpFill"), weapon:$("weaponName"),
     clock:$("clock"), danger:$("danger"), loot:$("lootCount"), kills:$("killCount")
   };
@@ -222,7 +224,7 @@
 
   let vw=390,vh=844,dpr=1, last=performance.now(), accumulator=0, raf=0;
   let seed=SEED, toastTimer=0, audioCtx=null;
-  const TAU=Math.PI*2, FIXED=1/60;
+  const TAU=Math.PI*2, FIXED=1/60, FIRST_EXTRACTION=60, FINAL_EXTRACTION=150, RISK_REMINDER=45;
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const dist2=(a,b)=>{const x=a.x-b.x,y=a.y-b.y;return x*x+y*y};
   function rnd(){ seed=(seed+0x6D2B79F5)|0; let t=seed; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; }
@@ -249,14 +251,24 @@
   const drops=makePool(48,()=>({x:0,y:0,r:6,kind:"loot",name:"",value:0,rarity:"普通",life:0,phase:0}));
   const particles=makePool(128,()=>({x:0,y:0,vx:0,vy:0,life:0,max:0,size:1,color:"#fff"}));
 
+  function readSettings(){
+    const fallback={sound:!MUTED_BY_QUERY,reduced:matchMedia("(prefers-reduced-motion: reduce)").matches};
+    const saved=GamePlatform.loadLocal("settings",fallback);
+    if(!saved||typeof saved!=="object"||Array.isArray(saved))return fallback;
+    return {
+      sound:typeof saved.sound==="boolean"?saved.sound:fallback.sound,
+      reduced:typeof saved.reduced==="boolean"?saved.reduced:fallback.reduced
+    };
+  }
+
   function initialState(){
     return {
       mode:"intro", runId:uid(), elapsed:0, realElapsed:0, paused:false, ended:false, result:null,
       player:{x:vw/2,y:vh*.62,targetX:vw/2,targetY:vh*.62,r:12,hp:100,maxHp:100,speed:164,invuln:0,fireCd:0},
-      xp:0, weaponStage:1, kills:0, danger:1, loot:[], firstInput:false, firstUpgrade:false,
+      xp:0, weaponStage:1, kills:0, danger:1, loot:[], firstInput:false, firstUpgrade:false, lootRuleShown:false, riskReminderShown:false,
       nextSpawn:.6, nextElite:45, eliteSpawned:false, collapseElite:false,
       zones:[], extractProgress:0, extractionZone:null, collapse:false, safeRadius:Math.max(vw,vh), pulse:0,
-      settings:GamePlatform.loadLocal("settings",{sound:!MUTED_BY_QUERY,reduced:matchMedia("(prefers-reduced-motion: reduce)").matches}),
+      settings:readSettings(),
       stats:{spawned:0,shots:0,hits:0,picked:0}
     };
   }
@@ -274,6 +286,7 @@
     const priorRun=state?.runId;
     clearPools(); seed=(SEED+(replay&&!TEST?Date.now():0))>>>0; state=initialState(); state.mode="playing";
     ui.intro.classList.remove("active"); ui.pause.classList.remove("active"); ui.result.classList.remove("active");
+    $("app").focus({preventScroll:true});
     updateSettingsUI(); updateHUD();
     GamePlatform.emit("game_start",{priorRunId:priorRun||null,replay,testMode:TEST,seed:SEED,timeScale:TIME_SCALE});
     if(replay)GamePlatform.emit("replay_start",{priorRunId:priorRun||null});
@@ -305,6 +318,7 @@
   }
   function showToast(text,duration=1500){
     ui.toast.textContent=text; ui.toast.classList.add("show"); clearTimeout(toastTimer);
+    ui.live.textContent=text;
     toastTimer=setTimeout(()=>ui.toast.classList.remove("show"),duration);
   }
 
@@ -453,6 +467,10 @@
       if(dd<state.player.r+d.r+4){
         d.active=false;state.loot.push({id:uid(),name:d.name,rarity:d.rarity,value:d.value});state.stats.picked++;
         burst(d.x,d.y,"#ffbd3f",10,95);playTone(600,.08,"sine",.03);
+        if(!state.lootRuleShown){
+          state.lootRuleShown=true;
+          showToast("撤离全部带出 · 死亡只保最高价值 1 件",2600);
+        }
         GamePlatform.emit("loot_pickup",{name:d.name,rarity:d.rarity,value:d.value,total:state.loot.length});
       }
     });
@@ -460,15 +478,17 @@
   function updateParticles(dt){each(particles,p=>{p.life-=dt;if(p.life<=0){p.active=false;return;}p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.96;p.vy*=.96;});}
 
   function openZone(index){
+    if(index===1&&state.zones.some(z=>z.index===2))return;
     if(state.zones.some(z=>z.index===index))return;
+    if(index===2)state.zones=state.zones.filter(z=>z.index!==1);
     const zone=index===1?{x:68,y:vh*.72,r:38,index:1,label:"临时撤离"}:{x:vw-70,y:vh*.32,r:42,index:2,label:"最终撤离"};
     state.zones.push(zone); state.extractionZone=zone; state.extractProgress=0;
     showToast(index===1?"撤离信标已开放 · 站稳 3 秒":"最终信标开启 · 裂隙坍缩",2200);
     GamePlatform.emit("phase_change",{phase:index===1?"first_extraction":"collapse",elapsed:state.elapsed});
   }
   function updateExtraction(dt){
-    if(state.elapsed>=90)openZone(1);
-    if(state.elapsed>=150){
+    if(state.elapsed>=FIRST_EXTRACTION)openZone(1);
+    if(state.elapsed>=FINAL_EXTRACTION){
       openZone(2);
       if(!state.collapse){
         state.collapse=true;state.safeRadius=Math.max(vw,vh)*.72;
@@ -497,6 +517,10 @@
   function step(dt){
     if(state.mode!=="playing"||state.paused||state.ended)return;
     state.elapsed+=dt;state.pulse+=dt;director(dt);updatePlayer(dt);updateBullets(dt);updateEnemies(dt);updateDrops(dt);updateParticles(dt);updateExtraction(dt);updateHUD();
+    if(state.elapsed>=RISK_REMINDER&&state.elapsed<FIRST_EXTRACTION&&!state.riskReminderShown){
+      state.riskReminderShown=true;
+      showToast("精英战后可撤离 · 现在走全带出，死亡只保 1 件",2600);
+    }
     if(state.elapsed>=180&&!state.ended)damagePlayer(999);
   }
 
@@ -508,7 +532,8 @@
     if(extracted)GamePlatform.emit("core_payoff",{result:"extracted",lootCount:kept.length,value:keptValue,elapsed:state.elapsed});
     else GamePlatform.emit("player_death",{kept:kept.length,lost:lost.length,elapsed:state.elapsed});
     GamePlatform.emit("run_end",{result:state.result,elapsed:state.elapsed,kills:state.kills,keptValue,lostValue});
-    GamePlatform.saveLocal("bestValue",Math.max(keptValue,GamePlatform.loadLocal("bestValue",0)));
+    const storedBest=Number(GamePlatform.loadLocal("bestValue",0));
+    GamePlatform.saveLocal("bestValue",Math.max(keptValue,Number.isFinite(storedBest)?storedBest:0));
     showResult(extracted,kept,lost,keptValue,lostValue);
   }
   function lootHTML(list,lost=false){
@@ -523,6 +548,10 @@
     $("keptValue").textContent=`价值 ${keptValue}`;$("lostValue").textContent=`价值 ${lostValue}`;
     $("keptList").innerHTML=lootHTML(kept);$("lostList").innerHTML=lootHTML(lost,true);
     ui.result.classList.add("active");
+    ui.live.textContent=extracted
+      ? `撤离完成，带出 ${kept.length} 件战利品，总价值 ${keptValue}`
+      : `行动终止，保留最高价值 ${keptValue}，遗失价值 ${lostValue}`;
+    ui.result.focus({preventScroll:true});
   }
   function updateHUD(){
     const p=state.player;ui.hpText.textContent=Math.ceil(p.hp);ui.hpFill.style.width=`${p.hp/p.maxHp*100}%`;
@@ -534,10 +563,10 @@
     ui.loot.textContent=state.loot.length;ui.kills.textContent=state.kills;
     let text="";
     if(state.zones.length){
-      if(state.extractProgress>0)text=`撤离同步 ${Math.min(100,Math.floor(state.extractProgress/3*100))}% · 不要离开绿区`;
-      else if(state.collapse)text=`裂隙坍缩 · 前往最终撤离区`;
-      else text=`撤离已开放 · 继续搜刮，或进入绿区`;
-    } else text=`${Math.max(0,Math.ceil(90-state.elapsed))}秒后开放`;
+      if(state.extractProgress>0)text=`撤离同步 ${Math.min(100,Math.floor(state.extractProgress/3*100))}% · 留在三角信标区`;
+      else if(state.collapse)text=`裂隙坍缩 · 前往最终三角区`;
+      else text=`撤离开放 · 三角区站稳 3 秒`;
+    } else text=`${Math.max(0,Math.ceil(FIRST_EXTRACTION-state.elapsed))}秒后可撤离`;
     ui.objective.textContent=text;ui.objective.classList.toggle("show",!!text);
   }
 
@@ -584,7 +613,7 @@
   function drawBullets(){
     ctx.save();ctx.lineCap="round";
     each(bullets,b=>{ctx.strokeStyle="#ffd363";ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(b.x-b.vx*.018,b.y-b.vy*.018);ctx.lineTo(b.x,b.y);ctx.stroke();});
-    each(enemyShots,b=>{ctx.shadowColor="#d564ff";ctx.shadowBlur=8;circle(b.x,b.y,b.r,"#b55cff","#efb9ff",1);});
+    each(enemyShots,b=>{ctx.shadowColor="#ff4f7f";ctx.shadowBlur=10;circle(b.x,b.y,Math.max(5,b.r),"#ff315f","#ffd5df",1.5);});
     ctx.restore();
   }
   function drawEnemy(e){
@@ -632,6 +661,8 @@
       kept:(state.kept||[]).map(v=>({...v})),lost:(state.lost||[]).map(v=>({...v})),
       extraction:{zones:state.zones.map(v=>({...v})),progress:state.extractProgress,required:3},
       collapse:state.collapse,safeRadius:state.safeRadius,
+      timing:{firstExtraction:FIRST_EXTRACTION,finalExtraction:FINAL_EXTRACTION,riskReminder:RISK_REMINDER},
+      settings:{...state.settings},
       pools:{enemies:enemies.filter(v=>v.active).length,bullets:bullets.filter(v=>v.active).length,enemyShots:enemyShots.filter(v=>v.active).length,drops:drops.filter(v=>v.active).length,particles:particles.filter(v=>v.active).length,
         limits:{enemies:64,bullets:96,enemyShots:48,drops:48,particles:128}},
       stats:{...state.stats},testMode:TEST,timeScale:TIME_SCALE,seed:SEED
@@ -664,7 +695,6 @@
 
   state=initialState();updateSettingsUI();updateHUD();last=performance.now();raf=requestAnimationFrame(frame);
   GamePlatform.emit("game_ready",{env:GamePlatform.getEnv(),testMode:TEST});
-  if(TEST) requestAnimationFrame(startGame);
 })();
 </script>
 </body>

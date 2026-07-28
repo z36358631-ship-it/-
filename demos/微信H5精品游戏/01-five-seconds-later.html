@@ -345,6 +345,17 @@
       letter-spacing: .06em;
     }
     .test-badge.show { display: block; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
     @media (max-width: 430px), (max-height: 850px) {
       .game-shell { width: 100vw; height: 100vh; border-radius: 0; }
     }
@@ -354,8 +365,9 @@
   </style>
 </head>
 <body>
-  <main class="game-shell" id="gameShell" aria-label="五秒之后游戏">
+  <main class="game-shell" id="gameShell" aria-label="五秒之后游戏" tabindex="-1">
     <canvas id="game" width="390" height="844" aria-label="时间回声战场，拖动角色移动"></canvas>
+    <p class="sr-only" id="liveStatus" role="status" aria-live="polite" aria-atomic="true"></p>
     <div class="controls" id="controls" hidden>
       <button class="icon-button" id="muteBtn" type="button" aria-label="切换声音">♪</button>
       <button class="icon-button" id="pauseBtn" type="button" aria-label="暂停游戏">Ⅱ</button>
@@ -391,7 +403,7 @@
       </div>
     </section>
 
-    <section class="overlay" id="resultOverlay" aria-labelledby="resultTitle">
+    <section class="overlay" id="resultOverlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle" tabindex="-1">
       <div class="panel">
         <p class="eyebrow" id="resultEyebrow">TIMELINE RESTORED</p>
         <h1 class="result-title" id="resultTitle">世界线已复原</h1>
@@ -461,6 +473,7 @@
     const pauseBtn = document.getElementById("pauseBtn");
     const motionSwitch = document.getElementById("motionSwitch");
     const testBadge = document.getElementById("testBadge");
+    const liveStatus = document.getElementById("liveStatus");
 
     const echoStyles = [
       { color: "#62e7ff", dim: "rgba(98,231,255,.28)", shape: "diamond", label: "Ⅰ" },
@@ -484,6 +497,12 @@
     let eventLog = [];
     let state = createState(initialSeed);
 
+    function setMessage(message, duration = 4) {
+      state.message = message;
+      state.messageTimer = duration;
+      liveStatus.textContent = message;
+    }
+
     function createState(seed) {
       return {
         mode: "intro",
@@ -498,6 +517,7 @@
         player: { x: 195, y: 640, targetX: 195, targetY: 640, energy: 100, invulnerable: 0 },
         pointerDown: false,
         firstInputSent: false,
+        firstEchoRevealed: false,
         currentPath: [{ t: 0, x: 195, y: 640 }],
         echoes: [],
         maxEchoes: 0,
@@ -510,7 +530,7 @@
         switchCharge: 0,
         switchActivated: false,
         collabCount: 0,
-        gates: gatePositions.map((p, slot) => ({ ...p, slot, primed: false, broken: false, flash: 0 })),
+        gates: gatePositions.map((p, slot) => ({ ...p, slot, primed: false, broken: false, flash: 0, warned: false })),
         core: { x: 195, y: 352, visible: false, hp: 18, maxHp: 18, hitFlash: 0 },
         hazards: [],
         particles: [],
@@ -587,9 +607,11 @@
       pauseOverlay.classList.remove("show");
       resultOverlay.classList.remove("show");
       controls.hidden = false;
-      muteBtn.textContent = state.muted ? "×" : "♪";
+      shell.focus({ preventScroll: true });
+      muteBtn.textContent = state.muted ? "静" : "♪";
       lastFrame = performance.now();
       accumulator = 0;
+      setMessage(state.message, 5);
       GamePlatform.emit(isReplay ? "replay_start" : "game_start", { seed: nextSeed, testMode, timeScale });
       tone(330, .05, .04);
     }
@@ -655,6 +677,19 @@
       if (audioContext && !state.muted) audioContext.resume().catch(() => {});
     }
 
+    function lossGuidance(reason) {
+      if (reason === "energy") return "能量耗尽：避开锯齿裂隙，清除锚点可以降低局内压力。";
+      if (!state.switchActivated) return "协同机关未解：先让一条回声停在 A，再让现在的你站上 B。";
+      const pendingGates = state.gates.filter(gate => !gate.primed);
+      if (pendingGates.length) {
+        const labels = pendingGates.map(gate => echoStyles[gate.slot].label).join("、");
+        return `编号门未完成：录制经过 ${labels} 门的路线，让同编号回声在五秒后开门。`;
+      }
+      const shields = state.gates.filter(gate => !gate.broken).length;
+      if (shields) return `核心仍有 ${shields} 层护盾：保持编号回声穿门，等待护盾依次破除。`;
+      return "终击未完成：四层护盾破除后，让现在的你靠近核心。";
+    }
+
     function endGame(won, reason) {
       if (state.mode !== "playing") return;
       state.mode = won ? "won" : "lost";
@@ -665,7 +700,7 @@
       document.getElementById("resultTitle").textContent = won ? "世界线已复原" : "时间线已崩塌";
       document.getElementById("resultText").textContent = won
         ? "过去的你，在最后一秒赶到了。"
-        : (reason === "energy" ? "你的能量耗尽了，但这条轨迹仍可重写。" : "核心吞没了这条世界线，再试一次。");
+        : lossGuidance(reason);
       const convergence = document.getElementById("timeConvergence");
       const convergenceCaption = document.getElementById("convergenceCaption");
       convergence.classList.toggle("lost", !won);
@@ -677,6 +712,12 @@
       document.getElementById("statSwitches").textContent = String(state.collabCount);
       document.getElementById("statTime").textContent = formatTime(state.elapsed);
       resultOverlay.classList.add("show");
+      liveStatus.textContent = won ? "世界线已复原" : `时间线已崩塌。${lossGuidance(reason)}`;
+      resultOverlay.focus({ preventScroll: true });
+      requestAnimationFrame(() => resultOverlay.focus({ preventScroll: true }));
+      setTimeout(() => {
+        if (state.mode === "won" || state.mode === "lost") resultOverlay.focus({ preventScroll: true });
+      }, 240);
       const payload = {
         result: won ? "win" : "loss",
         reason,
@@ -738,8 +779,7 @@
         gates: "四道时间门显形：用同编号回声穿过对应门",
         core: "终局核心降临：破除四层护盾，靠近完成终击"
       };
-      state.message = messages[phase];
-      state.messageTimer = 6;
+      setMessage(messages[phase], 6);
       if (phase === "gates" || phase === "core") GamePlatform.emit("phase_change", { phase, elapsed: round(state.elapsed) });
       if (phase === "core") {
         state.core.visible = true;
@@ -784,13 +824,17 @@
         : [{ t: 0, x: state.player.x, y: state.player.y }, { t: ECHO_PERIOD, x: state.player.x, y: state.player.y }];
       const last = path[path.length - 1];
       if (last.t < ECHO_PERIOD) path.push({ t: ECHO_PERIOD, x: last.x, y: last.y });
-      let slot = state.nextEchoSlot;
-      if (state.echoes.length >= MAX_ECHOES) {
-        const removed = state.echoes.shift();
-        slot = removed.slot;
-      } else {
-        state.nextEchoSlot = (state.nextEchoSlot + 1) % MAX_ECHOES;
+      const slot = state.nextEchoSlot;
+      state.nextEchoSlot = (state.nextEchoSlot + 1) % MAX_ECHOES;
+      const travel = path.slice(1).reduce((sum, point, index) => sum + distance(point, path[index]), 0);
+      if (travel < 18) {
+        state.currentPath = [{ t: 0, x: state.player.x, y: state.player.y }];
+        state.countdownFlash = .35;
+        setMessage(`${echoStyles[slot].label}号时间槽没有形成路线 · 拖动后再录制下一段`, 4);
+        GamePlatform.emit("echo_skipped", { reason: "static_path", slot, travel: round(travel), elapsed: round(state.elapsed) });
+        return;
       }
+      state.echoes = state.echoes.filter(echo => echo.slot !== slot);
       const first = path[0];
       state.echoes.push({
         id: `${slot}-${state.elapsed.toFixed(2)}`,
@@ -806,9 +850,9 @@
       state.countdownFlash = .7;
       burst(state.player.x, state.player.y, echoStyles[slot].color, 14);
       tone(280 + slot * 90, .12, .04);
-      if (state.echoes.length === 1) {
-        state.message = "第一条回声已生成，它会永远重演这五秒";
-        state.messageTimer = 5;
+      if (!state.firstEchoRevealed) {
+        state.firstEchoRevealed = true;
+        setMessage("第一条回声已生成，它会永远重演你刚才移动的五秒", 5);
         GamePlatform.emit("mechanic_reveal", { mechanic: "five_second_echo", elapsed: round(state.elapsed) });
       }
       GamePlatform.emit("echo_created", { slot, echoCount: state.echoes.length, elapsed: round(state.elapsed) });
@@ -877,8 +921,7 @@
       if (state.switchCharge >= 1) {
         state.switchActivated = true;
         state.collabCount++;
-        state.message = "协同锁已解除！现在与过去完成同步";
-        state.messageTimer = 5;
+        setMessage("协同锁已解除！现在与过去完成同步", 5);
         burst(195, 603, "#ffcc63", 24);
         tone(720, .3, .06);
         GamePlatform.emit("dual_switch_activated", { elapsed: round(state.elapsed), actors: [onA[0]?.id, onB[0]?.id] });
@@ -897,8 +940,7 @@
           state.player.energy = Math.max(0, state.player.energy - 18);
           state.player.invulnerable = 1.1;
           state.lastDamageSource = `rift_${h.id}`;
-          state.message = "时间障碍撕裂了能量，观察漂移节奏";
-          state.messageTimer = 2.5;
+          setMessage("时间障碍撕裂了能量，观察漂移节奏", 2.5);
           burst(state.player.x, state.player.y, "#ff5678", 18);
           tone(110, .15, .07);
           GamePlatform.emit("damage", { source: state.lastDamageSource, energy: state.player.energy });
@@ -908,7 +950,16 @@
 
     function updateCore(dt) {
       if (state.elapsed >= 95) {
+        const recordingSlot = state.nextEchoSlot;
         state.gates.forEach(gate => {
+          const playerDistance = distance(state.player, gate);
+          if (!gate.primed && playerDistance < 30 && !gate.warned) {
+            gate.warned = true;
+            const remaining = Math.max(0, ECHO_PERIOD - state.sealClock).toFixed(1);
+            setMessage(`现在的你不能开${echoStyles[gate.slot].label}门 · ${remaining}s 后成为${echoStyles[recordingSlot].label}号回声`, 4);
+          } else if (playerDistance > 48) {
+            gate.warned = false;
+          }
           if (gate.primed || gate.broken) return;
           const echo = state.echoes.find(e => e.slot === gate.slot);
           if (echo && distance(echo, gate) < 30) {
@@ -916,8 +967,7 @@
             gate.flash = .8;
             burst(gate.x, gate.y, echoStyles[gate.slot].color, 14);
             tone(360 + gate.slot * 90, .12, .035);
-            state.message = `${echoStyles[gate.slot].label}号回声已标记对应时间门`;
-            state.messageTimer = 2.5;
+            setMessage(`${echoStyles[gate.slot].label}号回声已标记对应时间门`, 2.5);
             GamePlatform.emit("gate_primed", { slot: gate.slot, elapsed: round(state.elapsed) });
           }
         });
@@ -932,8 +982,7 @@
           burst(gate.x, gate.y, echoStyles[gate.slot].color, 24);
           tone(420 + gate.slot * 110, .22, .05);
           const remaining = state.gates.filter(g => !g.broken).length;
-          state.message = remaining ? `第 ${gate.slot + 1} 层护盾破除，还剩 ${remaining} 层` : "四层护盾全部破除，靠近核心完成终击！";
-          state.messageTimer = 4;
+          setMessage(remaining ? `第 ${gate.slot + 1} 层护盾破除，还剩 ${remaining} 层` : "四层护盾全部破除，靠近核心完成终击！", 4);
           GamePlatform.emit("shield_broken", { slot: gate.slot, remaining });
         }
       });
@@ -1121,13 +1170,29 @@
 
     function drawGates() {
       if (state.elapsed < 95) return;
+      const recordingSlot = state.nextEchoSlot;
       state.gates.forEach(gate => {
         const style = echoStyles[gate.slot];
         ctx.save();
         ctx.translate(gate.x, gate.y);
         const open = gate.broken;
         const primed = gate.primed && !open;
+        const recording = gate.slot === recordingSlot && !open;
         const wave = Math.sin(state.elapsed * 3 + gate.slot) * 3;
+        if (recording) {
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.arc(0, 0, 32 + wave * .25, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "700 10px sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("录制→", 0, -39);
+        }
         ctx.globalAlpha = open ? .34 : 1;
         ctx.strokeStyle = style.color;
         ctx.fillStyle = primed ? style.color : style.dim;
@@ -1244,7 +1309,7 @@
       ctx.stroke();
       ctx.globalAlpha = .9;
       ctx.fillStyle = "#ffffff";
-      ctx.font = "700 9px sans-serif";
+      ctx.font = "700 10px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(style.label, 0, 1);
@@ -1328,10 +1393,11 @@
       ctx.fillText(`能量 ${Math.ceil(state.player.energy)}%`, 16, 88);
 
       const echoProgress = (state.sealClock % ECHO_PERIOD) / ECHO_PERIOD;
+      const recordingSlot = state.nextEchoSlot;
       ctx.textAlign = "right";
       ctx.fillStyle = "#98a2c2";
-      ctx.font = "500 10px sans-serif";
-      ctx.fillText("下一回声", 270, 26);
+      ctx.font = "600 11px sans-serif";
+      ctx.fillText(`录制 ${echoStyles[recordingSlot].label} 号回声`, 270, 26);
       ctx.fillStyle = "#ffffff";
       ctx.font = "700 17px 'D-DIN-PRO', sans-serif";
       ctx.fillText((ECHO_PERIOD - state.sealClock).toFixed(1) + "s", 270, 48);
@@ -1349,12 +1415,19 @@
         ctx.globalAlpha = active ? 1 : .25;
         ctx.fillStyle = active ? echoStyles[i].color : "#68708b";
         ctx.beginPath();
-        ctx.arc(x + 7, 87, 7, 0, Math.PI * 2);
+        ctx.arc(x + 7, 87, 9, 0, Math.PI * 2);
         ctx.fill();
+        if (i === recordingSlot) {
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(x + 7, 87, 11, 0, Math.PI * 2);
+          ctx.stroke();
+        }
         ctx.fillStyle = active ? "#07101b" : "#c4cada";
-        ctx.font = "700 8px sans-serif";
+        ctx.font = "700 11px sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(echoStyles[i].label, x + 7, 90);
+        ctx.fillText(echoStyles[i].label, x + 7, 91);
       }
       ctx.globalAlpha = 1;
       ctx.textAlign = "left";
@@ -1378,9 +1451,11 @@
       ctx.textAlign = "center";
       ctx.fillText(phaseLabel, 43, 117);
       ctx.fillStyle = "#ffffff";
-      ctx.font = "600 14px sans-serif";
+      ctx.font = objective.length > 18 ? "600 11px sans-serif" : "600 14px sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText(objective, 76, 118);
+      const objectiveLines = wrapCanvasText(objective, 292, 2);
+      const objectiveStartY = objectiveLines.length > 1 ? 111 : 118;
+      objectiveLines.forEach((line, index) => ctx.fillText(line, 76, objectiveStartY + index * 12));
 
       if (state.messageTimer > 0 && state.mode === "playing") {
         const width = Math.min(340, Math.max(210, ctx.measureText(state.message).width + 38));
@@ -1398,11 +1473,30 @@
       ctx.restore();
     }
 
+    function wrapCanvasText(text, maxWidth, maxLines) {
+      const lines = [""];
+      for (const character of [...text]) {
+        const index = lines.length - 1;
+        const candidate = lines[index] + character;
+        if (ctx.measureText(candidate).width <= maxWidth) {
+          lines[index] = candidate;
+        } else if (lines.length < maxLines) {
+          lines.push(character);
+        } else {
+          let clipped = lines[index];
+          while (clipped && ctx.measureText(clipped + "…").width > maxWidth) clipped = clipped.slice(0, -1);
+          lines[index] = clipped + "…";
+          break;
+        }
+      }
+      return lines;
+    }
+
     function currentObjective() {
       const targetsLeft = state.targets.filter(target => !target.dead).length;
       if (state.phase === "awakening") {
         return targetsLeft
-          ? `靠近并清除六边锚点（${targetsLeft}）`
+          ? `清除锚点可降低压力（剩 ${targetsLeft}）`
           : "持续移动，生成第一条五秒回声";
       }
       if (!state.switchActivated && (state.phase === "switch" || state.phase === "fracture" || state.phase === "gates" || state.phase === "core")) {
@@ -1410,15 +1504,21 @@
       }
       if (state.phase === "switch") {
         return targetsLeft
-          ? `清除剩余六边锚点（${targetsLeft}）`
+          ? `清除锚点可降低压力（剩 ${targetsLeft}）`
           : "保持移动，准备时间裂变";
       }
       if (state.phase === "fracture") {
         return targetsLeft
-          ? `清除锚点（${targetsLeft}），避开红色裂隙`
-          : "避开红色裂隙，保留四条不同路线";
+          ? `清除锚点降压（剩 ${targetsLeft}）· 避开锯齿裂隙`
+          : "避开锯齿裂隙，保留四条不同路线";
       }
       if (state.phase === "gates") {
+        const recordingSlot = state.nextEchoSlot;
+        const recordingGate = state.gates.find(gate => gate.slot === recordingSlot && !gate.primed);
+        if (recordingGate) {
+          const label = echoStyles[recordingSlot].label;
+          return `录制 ${label} 号：现在走进 ${label} 门，5秒后由回声开门`;
+        }
         const labels = state.gates.filter(gate => !gate.primed).map(gate => echoStyles[gate.slot].label).join("");
         return labels
           ? `让 ${labels} 号回声穿过同编号门`
@@ -1523,6 +1623,7 @@
     }
 
     function publicState() {
+      const recordingSlot = state.nextEchoSlot;
       return {
         gameId: GAME_ID,
         runId: state.runId,
@@ -1545,6 +1646,9 @@
         collabCount: state.collabCount,
         shieldsRemaining: state.gates.filter(g => !g.broken).length,
         gates: state.gates.map(g => ({ slot: g.slot, primed: g.primed, broken: g.broken })),
+        recordingSlot,
+        highlightedGateSlot: state.elapsed >= 95 && !state.gates[recordingSlot]?.primed ? recordingSlot : null,
+        message: state.message,
         coreVisible: state.core.visible,
         coreHp: round(state.core.hp),
         paused: state.mode === "paused",
@@ -1616,7 +1720,7 @@
     pauseBtn.addEventListener("click", () => pauseGame("manual"));
     muteBtn.addEventListener("click", () => {
       state.muted = !state.muted;
-      muteBtn.textContent = state.muted ? "×" : "♪";
+      muteBtn.textContent = state.muted ? "静" : "♪";
       muteBtn.setAttribute("aria-label", state.muted ? "开启声音" : "关闭声音");
       GamePlatform.saveLocal("muted", state.muted);
       if (!state.muted) tone(520, .08, .04);

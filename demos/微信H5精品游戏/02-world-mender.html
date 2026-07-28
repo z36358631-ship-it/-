@@ -39,7 +39,8 @@
     .tips{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 18px;text-align:left}
     .tip{border-radius:13px;padding:10px;background:#ffffff08;border:1px dashed #ffffff20;color:#d8d9df;font-size:12px;line-height:1.5}
     .tip b{display:block;color:#ffe29b;margin-bottom:2px}
-    .score{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0 18px}
+    .route-summary{margin:12px 0 0;color:#ffe3a2;font-size:12px;line-height:1.5}
+    .score{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 18px}
     .score div{padding:12px 4px;border-radius:13px;background:#ffffff08}.score strong{display:block;font-size:22px;color:#ffe297}.score span{font-size:11px;color:#aeb3c3}
     #continueBtn{margin-top:12px}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
@@ -47,7 +48,7 @@
   </style>
 </head>
 <body>
-<main id="app" aria-label="世界缝补师游戏">
+<main id="app" aria-label="世界缝补师游戏" tabindex="-1">
   <canvas id="game" width="390" height="844" aria-label="布艺微缩世界游戏区域"></canvas>
   <div class="top-actions">
     <button id="pauseBtn" aria-label="暂停游戏">暂停</button>
@@ -68,7 +69,7 @@
       <div class="emblem" aria-hidden="true">✦</div>
       <p class="eyebrow">A STITCH OF HOPE</p>
       <h1>世界缝补师</h1>
-      <p class="desc">拖住发光锚点，拉到与它匹配的锚点。用有限的金线架桥、挡住风沙，把小生命送回中心花园。</p>
+      <p class="desc">拖住发光锚点，沿虚线拉到匹配锚点。目标是救回至少 9/12 个生命并连接花园；金线只够花园加三条救援路线。</p>
       <div class="tips">
         <div class="tip"><b>桥梁针脚 ═</b>跨过撕裂的地面</div>
         <div class="tip"><b>屏障针脚 ╳</b>安全穿过风沙</div>
@@ -90,12 +91,13 @@
     </div>
   </section>
 
-  <section id="result" class="overlay" hidden>
+  <section id="result" class="overlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle" tabindex="-1" hidden>
     <div class="card">
       <div id="resultEmblem" class="emblem" aria-hidden="true">✦</div>
       <p id="resultEyebrow" class="eyebrow">THE WORLD REMEMBERS</p>
       <h2 id="resultTitle">世界重新有了颜色</h2>
       <p id="resultDesc" class="desc"></p>
+      <p id="routeSummary" class="route-summary"></p>
       <div class="score">
         <div><strong id="savedScore">0</strong><span>获救生命</span></div>
         <div><strong id="lostScore">0</strong><span>未能抵达</span></div>
@@ -104,7 +106,7 @@
       <button id="replayBtn" class="primary">换一块世界重玩</button>
     </div>
   </section>
-  <div id="liveStatus" class="sr-only" aria-live="polite"></div>
+  <div id="liveStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 </main>
 
 <script>
@@ -123,9 +125,9 @@
 
   const state={
     phase:"intro",runId:"",elapsed:0,thread:345,maxThread:345,stitches:[],lives:[],saved:0,lost:0,
-    paused:false,pauseReason:"",drag:null,feedback:[],particles:[],cameraShake:0,
+    paused:false,pauseReason:"",drag:null,selectedAnchor:null,feedback:[],particles:[],cameraShake:0,
     firstInput:false,bridgeRevealed:false,barrierRevealed:false,gardenConnected:false,
-    mute:forcedMute||false,reducedMotion:prefersReduce,legendExpanded:true,legendAutoCollapsed:false,
+    mute:forcedMute||false,reducedMotion:prefersReduce,legendExpanded:true,legendAutoCollapsed:false,settleBoostAnnounced:false,
     lastTs:0,acc:0,layoutVariant:0
   };
 
@@ -174,9 +176,9 @@
   function freshRunId(){return "wm-"+Date.now().toString(36)+"-"+Math.floor(rand()*1e6).toString(36)}
   function resetRun(isReplay=false){
     state.phase="intro";state.runId=freshRunId();state.elapsed=0;state.thread=state.maxThread;state.stitches=[];
-    state.lives=[];state.saved=0;state.lost=0;state.paused=false;state.pauseReason="";state.drag=null;
+    state.lives=[];state.saved=0;state.lost=0;state.paused=false;state.pauseReason="";state.drag=null;state.selectedAnchor=null;
     state.feedback=[];state.particles=[];state.cameraShake=0;state.firstInput=false;state.bridgeRevealed=false;
-    state.barrierRevealed=false;state.gardenConnected=false;state.lastTs=performance.now();state.acc=0;
+    state.barrierRevealed=false;state.gardenConnected=false;state.settleBoostAnnounced=false;state.lastTs=performance.now();state.acc=0;
     state.layoutVariant=Math.floor(rand()*3);
     $("intro").hidden=false;$("pauseOverlay").hidden=true;$("result").hidden=true;$("undoBtn").disabled=true;
     state.legendAutoCollapsed=false;setLegend(true);
@@ -184,11 +186,11 @@
   }
   function startRun(){
     if(state.phase!=="intro")return;
-    state.phase="playing";state.lastTs=performance.now();$("intro").hidden=true;
+    state.phase="playing";state.lastTs=performance.now();$("intro").hidden=true;$("app").focus({preventScroll:true});
     const payload={env:GamePlatform.getEnv(),seed:initialSeed,test:TEST};
     GamePlatform.emit("game_start",payload);
     GamePlatform.emit("run_start",payload);
-    announce("开始缝补。拖动发光锚点连接道路。");
+    announce("先缝第一针：拖动西侧苔原桥的两个发光锚点。");
   }
   function pauseGame(reason="manual"){
     if(state.phase!=="playing"||state.paused)return;
@@ -314,7 +316,11 @@
     $("resultEmblem").textContent=won?"✦":"⌁";$("resultEyebrow").textContent=won?"THE WORLD REMEMBERS":"THE THREAD RESTS";
     $("resultTitle").textContent=won?"世界重新有了颜色":"还有裂口等待下一针";
     $("resultDesc").textContent=won?`你用桥梁与屏障护送了 ${state.saved} 个小生命。每一道针脚都成了归途。`:`本次救回 ${state.saved} 个生命。撤销错误选择，先保证三条安全路线和花园回路。`;
+    const bridges=state.stitches.filter(s=>s.role==="bridge").length,barriers=state.stitches.filter(s=>s.role==="barrier").length;
+    $("routeSummary").textContent=`桥梁 ${bridges} · 屏障 ${barriers} · 花园回路${state.gardenConnected?"已连接":"未连接"}`;
     $("savedScore").textContent=state.saved;$("lostScore").textContent=12-state.saved;$("threadScore").textContent=state.thread;
+    announce(won?`世界重新有了颜色，获救 ${state.saved} 个生命`:`还有裂口等待下一针，本次获救 ${state.saved} 个生命`);
+    $("result").focus({preventScroll:true});
     if(won)GamePlatform.emit("core_payoff",{saved:state.saved,thread:state.thread,elapsed:+state.elapsed.toFixed(2)});
     GamePlatform.emit("run_end",{result:won?"won":"lost",reason,saved:state.saved,lost:12-state.saved,thread:state.thread,
       elapsed:+state.elapsed.toFixed(2),roles:[...new Set(state.stitches.map(s=>s.role))]});
@@ -328,9 +334,18 @@
       finish(state.saved>=9&&state.gardenConnected,state.gardenConnected?"time":"garden_unconnected");
     }else if(resolved===12&&state.saved<9)finish(false,"insufficient_rescue");
   }
+  function settlementBoost(){
+    return state.stitches.length===4;
+  }
   function update(dt){
     state.elapsed=Math.min(180,state.elapsed+dt);spawnScheduled();
-    state.lives.forEach(l=>updateLife(l,dt));
+    const boost=settlementBoost()?1.8:1;
+    if(boost>1&&!state.settleBoostAnnounced){
+      state.settleBoostAnnounced=true;
+      announce("四条线路已选定，生命归园速度提升。");
+      GamePlatform.emit("phase_change",{phase:"settlement_accelerated",multiplier:boost});
+    }
+    state.lives.forEach(l=>updateLife(l,dt*boost));
     state.feedback.forEach(f=>f.life-=dt);state.feedback=state.feedback.filter(f=>f.life>0);
     state.particles.forEach(p=>{p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=25*dt});state.particles=state.particles.filter(p=>p.life>0);
     state.cameraShake=Math.max(0,state.cameraShake-dt*22);checkEnd();
@@ -348,15 +363,15 @@
     ctx.fillStyle="#101525dd";rr(12,14,366,118,22);ctx.fill();ctx.strokeStyle="#ffffff12";ctx.stroke();
     ctx.fillStyle="#aeb7cc";ctx.font="600 11px sans-serif";ctx.fillText("剩余金线",25,38);
     ctx.fillStyle="#fff1c5";ctx.font="800 25px sans-serif";ctx.fillText(Math.ceil(state.thread)+" cm",25,65);
-    ctx.fillStyle="#aeb7cc";ctx.font="600 11px sans-serif";ctx.fillText("归园生命",25,92);ctx.fillText("剩余时间",205,92);
-    ctx.fillStyle="#fff1c5";ctx.font="800 18px sans-serif";ctx.fillText(`${state.saved} / 12`,88,92);
+    ctx.fillStyle="#aeb7cc";ctx.font="600 11px sans-serif";ctx.fillText("获救目标",25,92);ctx.fillText("剩余时间",205,92);
+    ctx.fillStyle="#fff1c5";ctx.font="800 18px sans-serif";ctx.fillText(`${state.saved} / 9`,88,92);
     const remain=Math.max(0,180-state.elapsed),m=Math.floor(remain/60),s=Math.floor(remain%60);
     ctx.textAlign="right";ctx.fillStyle=remain<30?"#ff8a82":"#c8cede";ctx.font="800 18px monospace";ctx.fillText(`${m}:${String(s).padStart(2,"0")}`,360,92);ctx.textAlign="left";
     const tg=ctx.createLinearGradient(25,0,360,0);tg.addColorStop(0,"#ef9b4e");tg.addColorStop(.55,"#ffe19a");tg.addColorStop(1,"#72d9b0");
     ctx.fillStyle=tg;rr(25,108,335*(state.thread/state.maxThread),8,4);ctx.fill();
     ctx.fillStyle="#343b51";rr(25,108,335,8,4);ctx.fill();
     ctx.fillStyle=tg;rr(25,108,335*(state.thread/state.maxThread),8,4);ctx.fill();
-    ctx.fillStyle="#858da2";ctx.font="500 10px sans-serif";ctx.fillText("拖动匹配锚点 · 错误连接不耗线",25,128);
+    ctx.fillStyle="#a7adbd";ctx.font="600 10px sans-serif";ctx.fillText(settlementBoost()?"线路已定 · 归园加速 ×1.8":"花园需 76cm · 金线只够 3 条救援路线",25,128);
   }
   function drawWorld(){
     const repaired=state.stitches.length/edges.length,bright=Math.min(1,repaired*1.1);
@@ -396,9 +411,13 @@
   function drawGuideEdges(){
     edges.forEach(e=>{
       const a=anchorById[e.a],b=anchorById[e.b];if(isStitched(e.id))return;
-      line(a.x,a.y,b.x,b.y,"#fff2",1.5,[3,7]);
-      ctx.fillStyle="#bbb8b6";ctx.font="700 9px sans-serif";ctx.textAlign="center";
-      ctx.fillText(`${e.cost}`,(a.x+b.x)/2,(a.y+b.y)/2-7);ctx.textAlign="left";
+      const firstGuide=!state.firstInput&&e.id==="west_bridge";
+      line(a.x,a.y,b.x,b.y,firstGuide?"#fff1a8":"#fff2",firstGuide?4:1.5,firstGuide?[7,5]:[3,7]);
+      const mx=(a.x+b.x)/2,my=(a.y+b.y)/2-8;
+      ctx.fillStyle=firstGuide?"#6b4e1fee":"#11182add";rr(mx-(firstGuide?31:17),my-11,firstGuide?62:34,20,8);ctx.fill();
+      ctx.strokeStyle="#ffe19a3d";ctx.stroke();
+      ctx.fillStyle="#fff0c4";ctx.font="800 12px sans-serif";ctx.textAlign="center";
+      ctx.fillText(firstGuide?`第一针 ${e.cost}`:`${e.cost}`,mx,my+4);ctx.textAlign="left";
     });
   }
   function drawStitches(){
@@ -416,10 +435,17 @@
   }
   function drawAnchors(){
     anchors.forEach(a=>{
-      const used=edges.some(e=>isStitched(e.id)&&(e.a===a.id||e.b===a.id)),hover=state.drag?.hover===a.id;
-      ctx.save();ctx.shadowColor=hover?"#fff4b0":used?"#e9ba62":"#ffffff55";ctx.shadowBlur=hover?18:8;
-      ctx.fillStyle=used?"#d49b48":"#242b3e";ctx.strokeStyle=hover?"#fff6c5":"#f1c977";ctx.lineWidth=hover?4:2;
-      ctx.beginPath();ctx.arc(a.x,a.y,hover?10:8,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle="#fff2c8";ctx.beginPath();ctx.arc(a.x,a.y,2.4,0,Math.PI*2);ctx.fill();ctx.restore();
+      const used=edges.some(e=>isStitched(e.id)&&(e.a===a.id||e.b===a.id)),hover=state.drag?.hover===a.id,selected=state.selectedAnchor===a.id;
+      const firstGuide=!state.firstInput&&(a.id==="w1"||a.id==="w2");
+      ctx.save();ctx.shadowColor=hover||selected?"#fff4b0":used?"#e9ba62":"#ffffff55";ctx.shadowBlur=hover||selected?18:8;
+      if(firstGuide){
+        ctx.strokeStyle="#fff1a8";ctx.lineWidth=2;ctx.globalAlpha=.72;
+        ctx.beginPath();ctx.arc(a.x,a.y,14+Math.sin(state.elapsed*5)*2,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+      }
+      ctx.fillStyle=used?"#d49b48":"#242b3e";ctx.strokeStyle=hover||selected?"#fff6c5":"#f1c977";ctx.lineWidth=hover||selected?4:2;
+      ctx.beginPath();ctx.arc(a.x,a.y,hover||selected?10:8,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle="#fff2c8";ctx.beginPath();ctx.arc(a.x,a.y,2.4,0,Math.PI*2);ctx.fill();
+      if(selected){ctx.fillStyle="#fff4bd";ctx.font="800 10px sans-serif";ctx.textAlign="center";ctx.fillText("已选",a.x,a.y-18);ctx.textAlign="left"}
+      ctx.restore();
     });
   }
   function drawLives(){
@@ -465,15 +491,24 @@
   }
   canvas.addEventListener("pointerdown",ev=>{
     if(state.phase!=="playing"||state.paused)return;const p=point(ev),a=hitAnchor(p);
-    if(!a)return;autoCollapseLegend();canvas.setPointerCapture?.(ev.pointerId);state.drag={from:a.id,x:p.x,y:p.y,hover:null,pointerId:ev.pointerId};
+    if(!a)return;autoCollapseLegend();canvas.setPointerCapture?.(ev.pointerId);
+    const from=state.selectedAnchor&&state.selectedAnchor!==a.id?state.selectedAnchor:a.id;
+    state.drag={from,x:p.x,y:p.y,startX:p.x,startY:p.y,moved:false,hover:from===a.id?null:a.id,pointerId:ev.pointerId};
   });
   canvas.addEventListener("pointermove",ev=>{
     if(!state.drag||state.drag.pointerId!==ev.pointerId)return;const p=point(ev),a=hitAnchor(p,state.drag.from);
-    state.drag.x=p.x;state.drag.y=p.y;state.drag.hover=a?.id||null;
+    state.drag.x=p.x;state.drag.y=p.y;state.drag.moved ||= Math.hypot(p.x-state.drag.startX,p.y-state.drag.startY)>8;state.drag.hover=a?.id||null;
   });
   function endDrag(ev){
     if(!state.drag||state.drag.pointerId!==ev.pointerId)return;const d=state.drag,p=point(ev),to=hitAnchor(p,d.from);
-    state.drag=null;if(to)stitch(d.from,to.id);else invalidFeedback(d.from,null,"没有落在锚点上");
+    state.drag=null;
+    if(to){state.selectedAnchor=null;stitch(d.from,to.id)}
+    else if(!d.moved){
+      state.selectedAnchor=d.from;
+      const anchor=anchorById[d.from];
+      state.feedback.push({text:"已选起点",x:anchor.x,y:anchor.y-18,life:1.2,color:"#fff0b0"});
+      announce(`已选择${anchor.label}，再点匹配锚点完成缝合`);
+    }else{state.selectedAnchor=null;invalidFeedback(d.from,null,"没有落在锚点上")}
   }
   canvas.addEventListener("pointerup",endDrag);canvas.addEventListener("pointercancel",()=>{state.drag=null});
 
@@ -500,8 +535,8 @@
       stitchedEdges:state.stitches.map(s=>s.id),stitches:state.stitches.map(s=>({id:s.id,role:s.role,cost:s.cost})),
       saved:state.saved,lost:state.lost,spawned:state.lives.length,gardenConnected:state.gardenConnected,
       bridgeBuilt:state.stitches.some(s=>s.role==="bridge"),barrierBuilt:state.stitches.some(s=>s.role==="barrier"),
-      mechanics:{firstInput:state.firstInput,bridge:state.bridgeRevealed,barrier:state.barrierRevealed},
-      ui:{legendExpanded:state.legendExpanded},
+      mechanics:{firstInput:state.firstInput,bridge:state.bridgeRevealed,barrier:state.barrierRevealed,firstGuideEdge:state.firstInput?null:"west_bridge",settlementBoost:settlementBoost()?1.8:1},
+      ui:{legendExpanded:state.legendExpanded,selectedAnchor:state.selectedAnchor},
       anchors:anchors.map(a=>({id:a.id,x:a.x,y:a.y,type:a.type})),
       availableEdges:edges.map(e=>({id:e.id,a:e.a,b:e.b,cost:e.cost,role:e.role,stitched:isStitched(e.id)}))
     };

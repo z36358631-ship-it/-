@@ -1,0 +1,31 @@
+<view class="page">
+  <view class="hero">
+    <text class="eyebrow">THREE MINUTE ORIGINALS</text>
+    <text class="title">选一条世界线</text>
+    <text class="subtitle">竖屏单手 · 即开即玩 · 每局约三分钟</text>
+  </view>
+
+  <view class="game-list">
+    <button
+      wx:for="{{games}}"
+      wx:key="id"
+      class="game-card {{item.accent}}"
+      data-game="{{item.id}}"
+      bindtap="openGame"
+      aria-label="开始{{item.title}}"
+    >
+      <view class="card-head">
+        <text class="order">{{item.order}}</text>
+        <text class="genre">{{item.genre}}</text>
+      </view>
+      <text class="game-title">{{item.title}}</text>
+      <text class="summary">{{item.summary}}</text>
+      <view class="action">
+        <text>进入游戏</text>
+        <text aria-hidden="true">→</text>
+      </view>
+    </button>
+  </view>
+
+  <text class="note">试玩壳不传递 OpenID、session_key 或长期登录令牌</text>
+</view>

@@ -1,0 +1,228 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-28T17:16:39.778Z",
+  "scope": "本地 Edge/Playwright 移动视口、自然速度、单次 8 秒性能预警",
+  "disclaimer": "本报告用于浏览器侧回归预警，不代表微信 web-view 真机性能、功耗、内存或上线认证结论。",
+  "environment": {
+    "platform": "win32",
+    "release": "10.0.26200",
+    "arch": "x64",
+    "nodeVersion": "v24.12.0",
+    "browser": "Microsoft Edge",
+    "browserVersion": "150.0.4078.99",
+    "executablePath": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+    "headless": true,
+    "viewport": {
+      "width": 390,
+      "height": 844,
+      "deviceScaleFactor": 2
+    },
+    "hasTouch": true,
+    "isMobile": true,
+    "reducedMotion": "no-preference",
+    "seed": 20260728,
+    "timeScale": 1
+  },
+  "thresholds": {
+    "frameP95WarningMs": 34,
+    "frameMaxWarningMs": 100,
+    "framesOver34MsRatioWarning": 0.05,
+    "longTaskDurationWarningMs": 50,
+    "policy": "阈值仅生成 WARN，不造成性能失败；console/page 错误、外部请求或请求失败才判定 FAIL。"
+  },
+  "summary": {
+    "games": 3,
+    "pass": 3,
+    "passWithWarnings": 0,
+    "fail": 0,
+    "noExternalRequests": true,
+    "noConsoleErrors": true,
+    "noPageErrors": true
+  },
+  "games": [
+    {
+      "id": "five-seconds-later",
+      "title": "五秒之后",
+      "measurementDurationMs": 8018.9,
+      "activity": "测试接口启动；每 650ms 在八个场内目标点间移动，时间倍率 1",
+      "metrics": {
+        "frame": {
+          "samples": 462,
+          "medianMs": 18,
+          "p95Ms": 18.1,
+          "maxMs": 19,
+          "over34MsCount": 0,
+          "over34MsRatio": 0
+        },
+        "longTasks": {
+          "supported": true,
+          "count": 0,
+          "totalDurationMs": 0,
+          "maxDurationMs": 0
+        },
+        "jsHeap": {
+          "supported": true,
+          "source": "Chrome DevTools Protocol Performance.getMetrics",
+          "startUsedBytes": 2152200,
+          "endUsedBytes": 2068932,
+          "deltaUsedBytes": -83268,
+          "peakUsedBytes": 2524866,
+          "totalBytes": 3461120
+        }
+      },
+      "finalPublicState": {
+        "gameId": "five-seconds-later",
+        "runId": "five-seconds-later-ms4x3jua-cg8jay",
+        "mode": "playing",
+        "phase": "awakening",
+        "elapsed": 8,
+        "remaining": 172,
+        "energy": 100,
+        "player": {
+          "x": 214.929,
+          "y": 527.254
+        },
+        "target": {
+          "x": 300,
+          "y": 550
+        },
+        "echoCount": 1,
+        "pathPoints": 61,
+        "targetsDestroyed": 1,
+        "targetsRemaining": 9
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "externalRequests": [],
+      "requestFailures": [],
+      "warnings": [],
+      "status": "PASS"
+    },
+    {
+      "id": "world-mender",
+      "title": "世界缝补师",
+      "measurementDurationMs": 8021.4,
+      "activity": "测试接口启动；建立三条救援路线与花园回路，动态生命按自然时间运行",
+      "metrics": {
+        "frame": {
+          "samples": 467,
+          "medianMs": 18,
+          "p95Ms": 18.2,
+          "maxMs": 19,
+          "over34MsCount": 0,
+          "over34MsRatio": 0
+        },
+        "longTasks": {
+          "supported": true,
+          "count": 0,
+          "totalDurationMs": 0,
+          "maxDurationMs": 0
+        },
+        "jsHeap": {
+          "supported": true,
+          "source": "Chrome DevTools Protocol Performance.getMetrics",
+          "startUsedBytes": 2197036,
+          "endUsedBytes": 1720952,
+          "deltaUsedBytes": -476084,
+          "peakUsedBytes": 2952954,
+          "totalBytes": 3461120
+        }
+      },
+      "finalPublicState": {
+        "gameId": "world-mender",
+        "runId": "wm-ms4x3qqh-72x7",
+        "phase": "playing",
+        "elapsed": 8.617,
+        "timeRemaining": 171.383,
+        "paused": false,
+        "thread": 29,
+        "stitchedEdges": [
+          "west_bridge",
+          "north_barrier",
+          "east_bridge",
+          "garden_gate"
+        ],
+        "saved": 0,
+        "lost": 0,
+        "spawned": 3,
+        "gardenConnected": true
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "externalRequests": [],
+      "requestFailures": [],
+      "warnings": [],
+      "status": "PASS"
+    },
+    {
+      "id": "rift-hunter",
+      "title": "裂隙猎人",
+      "measurementDurationMs": 8015.1,
+      "activity": "测试接口启动；每 650ms 移动，间隔补充少量经验与战利品，时间倍率 1",
+      "metrics": {
+        "frame": {
+          "samples": 473,
+          "medianMs": 18,
+          "p95Ms": 18.2,
+          "maxMs": 19.3,
+          "over34MsCount": 0,
+          "over34MsRatio": 0
+        },
+        "longTasks": {
+          "supported": true,
+          "count": 0,
+          "totalDurationMs": 0,
+          "maxDurationMs": 0
+        },
+        "jsHeap": {
+          "supported": true,
+          "source": "Chrome DevTools Protocol Performance.getMetrics",
+          "startUsedBytes": 1537764,
+          "endUsedBytes": 2039048,
+          "deltaUsedBytes": 501284,
+          "peakUsedBytes": 2585972,
+          "totalBytes": 2936832
+        }
+      },
+      "finalPublicState": {
+        "gameId": "rift-hunter",
+        "runId": "ms4x3xmr-s1bu3s",
+        "mode": "playing",
+        "elapsed": 8.53,
+        "paused": false,
+        "result": null,
+        "player": {
+          "x": 207.6849464923327,
+          "y": 520.179614595235,
+          "hp": 93,
+          "maxHp": 100
+        },
+        "xp": 20,
+        "weaponStage": 2,
+        "kills": 4,
+        "danger": 1,
+        "lootCount": 3,
+        "pools": {
+          "enemies": 4,
+          "bullets": 0,
+          "enemyShots": 2,
+          "drops": 3,
+          "particles": 0,
+          "limits": {
+            "enemies": 64,
+            "bullets": 96,
+            "enemyShots": 48,
+            "drops": 48,
+            "particles": 128
+          }
+        }
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "externalRequests": [],
+      "requestFailures": [],
+      "warnings": [],
+      "status": "PASS"
+    }
+  ]
+}

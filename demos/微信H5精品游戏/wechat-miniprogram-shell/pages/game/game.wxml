@@ -1,0 +1,10 @@
+<web-view wx:if="{{ready}}" src="{{gameUrl}}"></web-view>
+
+<view wx:else class="setup">
+  <view class="setup-card" role="alert">
+    <text class="eyebrow">DOMAIN REQUIRED</text>
+    <text class="title">{{gameTitle}}尚未连接</text>
+    <text class="copy">{{error}}</text>
+    <button class="back" bindtap="goBack">返回游戏列表</button>
+  </view>
+</view>

@@ -3,6 +3,7 @@ import http from 'node:http';
 import path from 'node:path';
 import fsSync from 'node:fs';
 import { promises as fs } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright-core';
 
 const root = process.cwd();
@@ -37,7 +38,8 @@ function startServer() {
     try {
       const pathname = decodeURIComponent(new URL(request.url || '/', 'http://127.0.0.1').pathname);
       const requested = path.resolve(root, `.${pathname}`);
-      if (!requested.startsWith(root)) {
+      const relative = path.relative(root, requested);
+      if (relative.startsWith('..') || path.isAbsolute(relative)) {
         response.writeHead(403);
         response.end('Forbidden');
         return;
@@ -116,6 +118,179 @@ async function clickMatchingButton(page, pattern) {
   return false;
 }
 
+async function verifyLifecycle(page, gameId) {
+  await page.evaluate(() => window.__setVisibilityForTest(true));
+  const pausedAt = await page.evaluate(() => window.__GAME_TEST__.getState());
+  assert.equal(pausedAt.paused, true, `${gameId} 页面隐藏后未暂停`);
+  await page.waitForTimeout(180);
+  const hidden = await page.evaluate(() => window.__GAME_TEST__.getState());
+  assert.equal(hidden.paused, true, `${gameId} 页面隐藏后未暂停`);
+  assert(
+    Math.abs(Number(hidden.elapsed || 0) - Number(pausedAt.elapsed || 0)) <= 0.1,
+    `${gameId} 页面隐藏期间仍推进时间：${pausedAt.elapsed} → ${hidden.elapsed}`
+  );
+
+  await page.evaluate(() => {
+    window.__setVisibilityForTest(false);
+    const game = window.__GAME_TEST__;
+    if (typeof game.resume === 'function') game.resume();
+    else window.GamePlatform.resume();
+  });
+  await page.waitForTimeout(100);
+  const resumed = await page.evaluate(() => window.__GAME_TEST__.getState());
+  assert.equal(resumed.paused, false, `${gameId} 主动继续后仍处于暂停`);
+  return { pausedAt, hidden, resumed };
+}
+
+async function verifyHubEventFlow(page) {
+  await page.evaluate(() => {
+    localStorage.removeItem('wechat-h5-premium-games:events:v1');
+    window.dispatchEvent(new StorageEvent('storage', { key: 'wechat-h5-premium-games:events:v1' }));
+  });
+  await page.evaluate(() => {
+    for (const event of ['first_input', 'mechanic_reveal', 'core_payoff']) {
+      window.dispatchEvent(new MessageEvent('message', {
+        origin: 'https://untrusted.example',
+        source: window,
+        data: {
+          source: 'wechat-h5-premium-games',
+          version: 1,
+          gameId: 'five-seconds-later',
+          runId: 'spoofed',
+          event,
+          ts: Date.now(),
+          payload: {}
+        }
+      }));
+    }
+    window.dispatchEvent(new MessageEvent('message', {
+      origin: location.origin,
+      source: window,
+      data: {
+        source: 'wechat-h5-premium-games',
+        version: 1,
+        gameId: 'five-seconds-later',
+        runId: 'malicious',
+        event: '<img src=x onerror=alert(1)>',
+        ts: Date.now(),
+        payload: {}
+      }
+    }));
+  });
+  await page.waitForTimeout(50);
+  assert.equal(
+    await page.locator('#progress').innerText(),
+    '完成 0 / 3',
+    '大厅接受了非同源伪造事件'
+  );
+  assert.equal(await page.locator('#events img').count(), 0, '大厅渲染了非法事件名中的 HTML');
+  assert.equal(
+    await page.evaluate(() => JSON.parse(localStorage.getItem('wechat-h5-premium-games:events:v1') || '[]').length),
+    0,
+    '大厅保存了非同源或非法事件'
+  );
+  const gameIds = ['five-seconds-later', 'world-mender', 'rift-hunter'];
+  for (let index = 0; index < gameIds.length; index += 1) {
+    const popupPromise = page.waitForEvent('popup');
+    await page.locator('.game .play').nth(index).click();
+    const popup = await popupPromise;
+    await popup.waitForLoadState('domcontentloaded');
+    assert.equal(
+      await popup.evaluate(() => Boolean(window.opener)),
+      true,
+      `${gameIds[index]} 新窗口无法访问大厅 opener`
+    );
+    await popup.evaluate(() => {
+      window.GamePlatform.emit('first_input', { verifier: true });
+      window.GamePlatform.emit('mechanic_reveal', { verifier: true });
+      window.GamePlatform.emit('core_payoff', { verifier: true });
+    });
+    await page.waitForFunction(
+      completed => document.getElementById('progress').textContent.includes(`完成 ${completed} / 3`),
+      index + 1,
+      { timeout: 2000 }
+    );
+    await popup.close();
+  }
+  const result = await page.evaluate(() => ({
+    progress: document.getElementById('progress').textContent.trim(),
+    states: [...document.querySelectorAll('.game .state')].map(node => node.textContent.trim()),
+    eventRows: document.querySelectorAll('#events .event').length
+  }));
+  assert.equal(result.progress, '完成 3 / 3', `大厅完成进度异常：${result.progress}`);
+  assert(result.states.every(state => state === '关键体验已完成'), `大厅卡片状态异常：${JSON.stringify(result.states)}`);
+  assert(result.eventRows > 0, '大厅最近事件列表为空');
+  return result;
+}
+
+async function verifyEventsAndReplay(page, gameId) {
+  const beforeReplay = await page.evaluate(() => window.__GAME_TEST__.getState());
+  const expectedResultId = gameId === 'five-seconds-later' ? 'resultOverlay' : 'result';
+  await page.waitForFunction(
+    expectedId => document.activeElement?.id === expectedId,
+    expectedResultId,
+    { timeout: 1000 }
+  );
+  const resultAccessibility = await page.evaluate(() => ({
+    activeElement: document.activeElement?.id || null,
+    liveText: document.getElementById('liveStatus')?.textContent || ''
+  }));
+  assert.equal(resultAccessibility.activeElement, expectedResultId, `${gameId} 结算后未把焦点移入结算层`);
+  assert(resultAccessibility.liveText.trim().length > 0, `${gameId} 结算后缺少状态播报`);
+  const replayButton = page.locator('#replayBtn');
+  await replayButton.waitFor({ state: 'visible', timeout: 2000 });
+  await replayButton.click();
+  await page.waitForFunction(
+    priorRunId => window.__GAME_TEST__.getState().runId !== priorRunId,
+    beforeReplay.runId,
+    { timeout: 2000 }
+  );
+  const afterReplay = await page.evaluate(() => window.__GAME_TEST__.getState());
+  assert.notEqual(afterReplay.runId, beforeReplay.runId, `${gameId} 重玩未生成新 runId`);
+  const replayFocus = await page.evaluate(() => document.activeElement?.id || null);
+  const expectedGameFocus = gameId === 'five-seconds-later' ? 'gameShell' : 'app';
+  assert.equal(replayFocus, expectedGameFocus, `${gameId} 重玩后焦点仍留在隐藏结算控件`);
+
+  const events = await page.evaluate(() => window.__capturedGameEvents.slice());
+  assert(events.length > 0, `${gameId} 未捕获到运行时事件`);
+  for (const message of events) {
+    assert.equal(message.source, 'wechat-h5-premium-games', `${gameId} 事件 source 非法`);
+    assert.equal(message.version, 1, `${gameId} 事件 version 非法`);
+    assert.equal(message.gameId, gameId, `${gameId} 事件 gameId 非法`);
+    assert.equal(typeof message.runId, 'string', `${gameId} 事件缺少 runId`);
+    assert(message.runId.length > 0, `${gameId} 事件 runId 为空`);
+    assert.equal(typeof message.event, 'string', `${gameId} 事件名非法`);
+    assert(Number.isFinite(message.ts), `${gameId} 事件 ts 非法`);
+    assert(message.payload && typeof message.payload === 'object', `${gameId} 事件 payload 非法`);
+  }
+  const eventNames = new Set(events.map(event => event.event));
+  for (const required of [
+    'game_start',
+    'first_input',
+    'mechanic_reveal',
+    'phase_change',
+    'core_payoff',
+    'run_end',
+    'replay_start',
+    'lifecycle_pause',
+    'lifecycle_resume'
+  ]) {
+    assert(eventNames.has(required), `${gameId} 未在运行时发出 ${required}`);
+  }
+  assert(
+    events.some(event => event.event === 'replay_start' && event.runId === afterReplay.runId),
+    `${gameId} replay_start 未绑定新 runId`
+  );
+  return {
+    beforeRunId: beforeReplay.runId,
+    afterRunId: afterReplay.runId,
+    resultAccessibility,
+    replayFocus,
+    eventNames: [...eventNames].sort(),
+    eventCount: events.length
+  };
+}
+
 async function driveCanvas(page, durationMs) {
   const canvas = page.locator('canvas').first();
   const box = await canvas.boundingBox();
@@ -146,10 +321,243 @@ async function driveCanvas(page, durationMs) {
   }
 }
 
+async function dispatchTouchDrag(page, start, end) {
+  const session = await page.context().newCDPSession(page);
+  const touchPoint = (x, y) => ({
+    x,
+    y,
+    radiusX: 6,
+    radiusY: 6,
+    force: 0.7,
+    id: 1
+  });
+  await session.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [touchPoint(start.x, start.y)]
+  });
+  const steps = 8;
+  for (let index = 1; index <= steps; index += 1) {
+    const progress = index / steps;
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [touchPoint(
+        start.x + (end.x - start.x) * progress,
+        start.y + (end.y - start.y) * progress
+      )]
+    });
+  }
+  await session.send('Input.dispatchTouchEvent', {
+    type: 'touchEnd',
+    touchPoints: []
+  });
+  await session.detach();
+}
+
+async function verifyTouchInput(page, gameId) {
+  const canvas = page.locator('canvas').first();
+  const box = await canvas.boundingBox();
+  assert(box, `${gameId} 触摸验收未找到 Canvas`);
+  const toScreen = (point, width, height) => ({
+    x: box.x + point.x / width * box.width,
+    y: box.y + point.y / height * box.height
+  });
+  const before = await page.evaluate(() => window.__GAME_TEST__.getState());
+  await page.screenshot({ path: path.join(outputDir, `${gameId}-first-input.png`), fullPage: false });
+  let alternateInput = null;
+
+  if (gameId === 'world-mender') {
+    const anchors = Object.fromEntries(before.anchors.map(anchor => [anchor.id, anchor]));
+    assert.equal(before.mechanics.firstGuideEdge, 'west_bridge', '世界缝补师开场未定向提示苔原桥第一针');
+    await dispatchTouchDrag(
+      page,
+      toScreen(anchors.w1, 390, 844),
+      toScreen(anchors.w2, 390, 844)
+    );
+    await page.waitForTimeout(100);
+    const after = await page.evaluate(() => window.__GAME_TEST__.getState());
+    assert(after.stitchedEdges.includes('west_bridge'), '世界缝补师真实触摸拖动未建立苔原桥');
+    assert.equal(after.mechanics.firstInput, true, '世界缝补师真实触摸拖动未记录首次输入');
+    assert.equal(after.mechanics.firstGuideEdge, null, '世界缝补师完成第一针后仍保留首针引导');
+    await page.evaluate(() => {
+      window.__GAME_TEST__.reset();
+      window.__GAME_TEST__.start();
+    });
+    const w1 = toScreen(anchors.w1, 390, 844);
+    const w2 = toScreen(anchors.w2, 390, 844);
+    await page.touchscreen.tap(w1.x, w1.y);
+    await page.waitForTimeout(60);
+    const selected = await page.evaluate(() => window.__GAME_TEST__.getState());
+    assert.equal(selected.ui.selectedAnchor, 'w1', '世界缝补师轻点起点后未进入选中态');
+    await page.touchscreen.tap(w2.x, w2.y);
+    await page.waitForTimeout(100);
+    const afterTap = await page.evaluate(() => window.__GAME_TEST__.getState());
+    assert(afterTap.stitchedEdges.includes('west_bridge'), '世界缝补师连续轻点两个锚点未完成缝合');
+    assert.equal(afterTap.ui.selectedAnchor, null, '世界缝补师轻点缝合后未清除选中态');
+    alternateInput = { selected, afterTap };
+  } else {
+    const start = toScreen(before.player, gameId === 'five-seconds-later' ? 390 : box.width, gameId === 'five-seconds-later' ? 844 : box.height);
+    const end = {
+      x: Math.min(box.x + box.width - 28, start.x + 82),
+      y: Math.max(box.y + 190, start.y - 92)
+    };
+    await dispatchTouchDrag(page, start, end);
+    await page.waitForTimeout(120);
+    const after = await page.evaluate(() => window.__GAME_TEST__.getState());
+    if (gameId === 'five-seconds-later') {
+      assert(
+        Math.hypot(after.target.x - before.target.x, after.target.y - before.target.y) > 20,
+        '五秒之后真实触摸拖动未更新移动目标'
+      );
+    } else {
+      assert(
+        Math.hypot(after.player.x - before.player.x, after.player.y - before.player.y) > 2,
+        '裂隙猎人真实触摸拖动未移动猎人'
+      );
+    }
+  }
+
+  const touchEvents = await page.evaluate(() => window.__capturedGameEvents
+    .filter(event => event.event === 'first_input')
+    .map(event => event.payload));
+  assert(touchEvents.length > 0, `${gameId} 真实触摸后未发出 first_input`);
+  const touchPayload = touchEvents.at(-1);
+  if (gameId === 'five-seconds-later') {
+    assert.equal(touchPayload.input, 'pointer_drag', '五秒之后 first_input 不是触摸拖动来源');
+  } else if (gameId === 'world-mender') {
+    assert.equal(touchPayload.action, 'stitch', '世界缝补师 first_input 不是缝线来源');
+  } else {
+    assert.equal(touchPayload.method, 'pointer', '裂隙猎人 first_input 不是指针移动来源');
+  }
+
+  await page.evaluate(() => {
+    const game = window.__GAME_TEST__;
+    game.reset();
+    if (typeof game.start === 'function') game.start();
+  });
+  return { before, touchPayload, alternateInput };
+}
+
+async function verifyDirectFile(browser, entry) {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 1,
+    hasTouch: true,
+    isMobile: true,
+    reducedMotion: 'reduce'
+  });
+  const page = await context.newPage();
+  const errors = [];
+  const externalRequests = [];
+  page.on('console', message => {
+    if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+  });
+  page.on('pageerror', error => errors.push(`page: ${error.message}`));
+  page.on('request', request => {
+    if (!request.url().startsWith('file:') && !request.url().startsWith('data:')) {
+      externalRequests.push(request.url());
+    }
+  });
+  const file = path.join(root, ...decodeURIComponent(demoRoot).split('/').filter(Boolean), entry.file);
+  const url = pathToFileURL(file);
+  if (entry.game) url.search = '?test=1&seed=20260728&speed=20&mute=1';
+  await page.goto(url.href, { waitUntil: 'domcontentloaded', timeout: 15000 });
+  await page.waitForTimeout(250);
+  const layout = await collectLayout(page);
+  assert(layout.title, `${entry.id} file:// 直开缺少标题`);
+  assert(layout.visibleTextLength >= 20, `${entry.id} file:// 直开可见文案不足`);
+  assert(layout.scrollWidth <= layout.clientWidth + 2, `${entry.id} file:// 直开横向溢出`);
+  if (entry.game) {
+    assert(layout.canvasCount >= 1, `${entry.id} file:// 直开缺少 Canvas`);
+    assert(layout.testApi, `${entry.id} file:// 直开测试接口不可用`);
+  }
+  assert.equal(errors.length, 0, `${entry.id} file:// 直开报错：${errors.join(' | ')}`);
+  assert.equal(externalRequests.length, 0, `${entry.id} file:// 直开产生外部请求：${externalRequests.join(' | ')}`);
+  await context.close();
+  return {
+    page: entry.id,
+    viewport: 'direct-file',
+    layout,
+    errors,
+    externalRequests
+  };
+}
+
 async function runBaselineScenario(page, gameId) {
   if (gameId === 'world-mender') {
+    const budgetInvariant = await page.evaluate(() => {
+      const state = window.__GAME_TEST__.getState();
+      const garden = state.availableEdges.find(edge => edge.role === 'garden');
+      const rescue = state.availableEdges.filter(edge => edge.role !== 'garden');
+      const combinations = [];
+      for (let a = 0; a < rescue.length; a += 1) {
+        for (let b = a + 1; b < rescue.length; b += 1) {
+          for (let c = b + 1; c < rescue.length; c += 1) {
+            const edges = [rescue[a], rescue[b], rescue[c]];
+            combinations.push({
+              ids: edges.map(edge => edge.id),
+              cost: garden.cost + edges.reduce((sum, edge) => sum + edge.cost, 0)
+            });
+          }
+        }
+      }
+      return {
+        maxThread: state.maxThread,
+        combinations,
+        allRescueAndGarden: garden.cost + rescue.reduce((sum, edge) => sum + edge.cost, 0),
+        allRescueOnly: rescue.reduce((sum, edge) => sum + edge.cost, 0)
+      };
+    });
+    assert.equal(budgetInvariant.combinations.length, 4, '世界缝补师三选一救援组合数量异常');
+    assert(
+      budgetInvariant.combinations.every(combination => combination.cost <= budgetInvariant.maxThread),
+      `世界缝补师存在无法支付的三救援加花园组合：${JSON.stringify(budgetInvariant.combinations)}`
+    );
+    assert(
+      budgetInvariant.allRescueAndGarden > budgetInvariant.maxThread,
+      '世界缝补师全部救援加花园不应能同时支付'
+    );
+    assert(
+      budgetInvariant.allRescueOnly <= budgetInvariant.maxThread,
+      '世界缝补师应允许误选四条外围路线以形成可复盘的资源后果'
+    );
+
+    const interaction = await page.evaluate(() => {
+      const game = window.__GAME_TEST__;
+      game.reset();
+      game.start();
+      const before = game.getState();
+      const invalid = game.connect('w1', 'n1');
+      const afterInvalid = game.getState();
+      const valid = game.connect('w1', 'w2');
+      const afterValid = game.getState();
+      const undone = game.undo();
+      const afterUndo = game.getState();
+      return { before, invalid, afterInvalid, valid, afterValid, undone, afterUndo };
+    });
+    assert.equal(interaction.invalid.ok, false, '世界缝补师非法非相邻连接被接受');
+    assert.equal(interaction.afterInvalid.thread, interaction.before.thread, '世界缝补师非法连接错误消耗金线');
+    assert.equal(interaction.valid.ok, true, '世界缝补师有效桥梁连接失败');
+    assert(interaction.afterValid.thread < interaction.before.thread, '世界缝补师有效连接未消耗金线');
+    assert.equal(interaction.undone.ok, true, '世界缝补师撤销失败');
+    assert.equal(interaction.afterUndo.thread, interaction.before.thread, '世界缝补师撤销未完整返还金线');
+    assert.equal(interaction.afterUndo.stitchedEdges.length, 0, '世界缝补师撤销后仍残留针脚');
+
+    const wrongChoiceBoost = await page.evaluate(() => {
+      const game = window.__GAME_TEST__;
+      game.reset();
+      game.start();
+      game.connect('w1', 'w2');
+      game.connect('n1', 'n2');
+      game.connect('e1', 'e2');
+      game.connect('s1', 's2');
+      return game.getState();
+    });
+    assert.equal(wrongChoiceBoost.gardenConnected, false, '世界缝补师错误四外围路线不应连接花园');
+    assert.equal(wrongChoiceBoost.mechanics.settlementBoost, 1.8, '世界缝补师四条错误路线锁定后未加速失败结算');
+
     const mechanic = await page.evaluate(() => {
       const game = window.__GAME_TEST__;
+      game.reset();
       game.start();
       game.connect('w1', 'w2');
       game.connect('n1', 'n2');
@@ -161,6 +569,7 @@ async function runBaselineScenario(page, gameId) {
     assert.equal(mechanic.bridgeBuilt, true, '世界缝补师未建立桥梁');
     assert.equal(mechanic.barrierBuilt, true, '世界缝补师未建立风沙屏障');
     assert.equal(mechanic.gardenConnected, true, '世界缝补师未连接中心花园');
+    assert.equal(mechanic.mechanics.settlementBoost, 1.8, '世界缝补师线路锁定后未进入归园加速');
     await page.screenshot({ path: path.join(outputDir, `${gameId}-mechanic.png`), fullPage: false });
     const final = await page.evaluate(() => {
       window.__GAME_TEST__.advance(100);
@@ -178,20 +587,43 @@ async function runBaselineScenario(page, gameId) {
     });
     assert.equal(failure.phase, 'lost', '世界缝补师空路线未失败');
     assert.equal(failure.saved, 0, '世界缝补师空路线不应救回生命');
-    return { mechanic, final, failure };
+    return { budgetInvariant, interaction, wrongChoiceBoost, mechanic, final, failure };
   }
 
   if (gameId === 'rift-hunter') {
-    await page.evaluate(() => {
-      window.__GAME_TEST__.grantXp(260);
-      window.__GAME_TEST__.grantLoot(160);
-      window.__GAME_TEST__.setElapsed(90);
+    const storageRecovery = await page.evaluate(() => {
+      const game = window.__GAME_TEST__;
+      localStorage.setItem('premium-h5:rift-hunter:settings', '42');
+      localStorage.setItem('premium-h5:rift-hunter:bestValue', '{"bad":true}');
+      game.reset();
+      const settings = game.getState().settings;
+      game.grantLoot(100);
+      game.forceDeath();
+      const bestValue = JSON.parse(localStorage.getItem('premium-h5:rift-hunter:bestValue'));
+      game.reset();
+      return { settings, bestValue };
     });
+    assert.equal(typeof storageRecovery.settings.sound, 'boolean', '裂隙猎人损坏设置未恢复声音默认值');
+    assert.equal(typeof storageRecovery.settings.reduced, 'boolean', '裂隙猎人损坏设置未恢复动效默认值');
+    assert.equal(storageRecovery.bestValue, 100, '裂隙猎人损坏最佳价值未恢复为有限数值');
+
+    const beforeExtraction = await page.evaluate(() => {
+      const game = window.__GAME_TEST__;
+      game.reset();
+      game.grantXp(260);
+      game.grantXp(260);
+      game.grantLoot(160);
+      game.setElapsed(59);
+      return game.getState();
+    });
+    assert.equal(beforeExtraction.timing.firstExtraction, 60, '裂隙猎人首次撤离节奏不是 60 秒');
+    assert.equal(beforeExtraction.extraction.zones.length, 0, '裂隙猎人 60 秒前提前开放撤离区');
+    await page.evaluate(() => window.__GAME_TEST__.setElapsed(60));
     await page.waitForTimeout(240);
     const mechanic = await page.evaluate(() => window.__GAME_TEST__.getState());
     assert.equal(mechanic.weaponStage, 3, '裂隙猎人未完成三段武器');
     const zone = await page.evaluate(() => window.__GAME_TEST__.getActiveZone());
-    assert(zone, '裂隙猎人 90 秒未开放撤离区');
+    assert(zone, '裂隙猎人 60 秒未开放撤离区');
     await page.screenshot({ path: path.join(outputDir, `${gameId}-mechanic.png`), fullPage: false });
     await page.evaluate(activeZone => {
       window.__GAME_TEST__.moveTo(activeZone.x, activeZone.y);
@@ -200,11 +632,32 @@ async function runBaselineScenario(page, gameId) {
     const final = await page.evaluate(() => window.__GAME_TEST__.getState());
     assert.equal(final.mode, 'extracted', `裂隙猎人未成功撤离：${JSON.stringify(final)}`);
     assert(final.kept.length >= 1, '裂隙猎人撤离后未保留战利品');
+    const resultAccessibility = await page.evaluate(() => ({
+      activeElement: document.activeElement?.id || null,
+      liveText: document.getElementById('liveStatus')?.textContent || ''
+    }));
+    assert.equal(resultAccessibility.activeElement, 'result', '裂隙猎人结算后未把焦点移入结算层');
+    assert(resultAccessibility.liveText.includes('撤离完成'), '裂隙猎人撤离结算未播报结果');
     await page.screenshot({ path: path.join(outputDir, `${gameId}-result.png`), fullPage: false });
+    await page.evaluate(() => {
+      const game = window.__GAME_TEST__;
+      game.reset();
+      game.setElapsed(150);
+    });
+    await page.waitForTimeout(240);
+    const collapse = await page.evaluate(() => window.__GAME_TEST__.getState());
+    assert.equal(collapse.collapse, true, '裂隙猎人 150 秒未进入坍缩');
+    assert.deepEqual(
+      collapse.extraction.zones.map(zone => zone.index),
+      [2],
+      `裂隙猎人最终信标开启后旧撤离区仍有效：${JSON.stringify(collapse.extraction.zones)}`
+    );
+    for (const [pool, limit] of Object.entries(collapse.pools.limits)) {
+      assert(collapse.pools[pool] <= limit, `裂隙猎人对象池 ${pool} 超限：${collapse.pools[pool]}/${limit}`);
+    }
     const failure = await page.evaluate(() => {
       const game = window.__GAME_TEST__;
       game.reset();
-      document.getElementById('startBtn').click();
       game.grantLoot(180);
       game.grantLoot(60);
       game.forceDeath();
@@ -213,7 +666,13 @@ async function runBaselineScenario(page, gameId) {
     assert.equal(failure.mode, 'dead', '裂隙猎人强制死亡未进入失败结算');
     assert.equal(failure.kept.length, 1, '裂隙猎人死亡后未只保留一件战利品');
     assert(failure.lost.length >= 1, '裂隙猎人死亡后未记录遗失战利品');
-    return { mechanic, final, failure };
+    const failureAccessibility = await page.evaluate(() => ({
+      activeElement: document.activeElement?.id || null,
+      liveText: document.getElementById('liveStatus')?.textContent || ''
+    }));
+    assert.equal(failureAccessibility.activeElement, 'result', '裂隙猎人死亡结算后未把焦点移入结算层');
+    assert(failureAccessibility.liveText.includes('行动终止'), '裂隙猎人死亡结算未播报结果');
+    return { storageRecovery, beforeExtraction, mechanic, final, resultAccessibility, collapse, failure, failureAccessibility };
   }
 
   const waitGameTime = time => page.waitForFunction(
@@ -240,6 +699,11 @@ async function runBaselineScenario(page, gameId) {
   assert(mechanic.state.echoCount >= 1, '五秒之后未生成回声');
   assert(mechanic.events.some(event => event.event === 'mechanic_reveal'), '五秒之后未发出核心机制事件');
   await page.screenshot({ path: path.join(outputDir, `${gameId}-mechanic.png`), fullPage: false });
+  await waitGameTime(96);
+  const gateGuide = await page.evaluate(() => window.__GAME_TEST__.getState());
+  assert.equal(gateGuide.highlightedGateSlot, gateGuide.recordingSlot, '五秒之后录制编号未高亮对应时间门');
+  assert(gateGuide.message || gateGuide.objective, '五秒之后编号门阶段缺少可读操作指引');
+  await page.screenshot({ path: path.join(outputDir, `${gameId}-gate-guide.png`), fullPage: false });
   const gateRoute = [
     [101, 76, 247],
     [106, 313, 288],
@@ -270,6 +734,38 @@ async function runBaselineScenario(page, gameId) {
   await page.evaluate(() => {
     const game = window.__GAME_TEST__;
     game.reset();
+    game.setTarget(112, 603);
+  });
+  await waitGameTime(6);
+  await page.evaluate(() => window.__GAME_TEST__.setTarget(112, 603));
+  await waitGameTime(20);
+  await page.evaluate(() => window.__GAME_TEST__.setTarget(278, 603));
+  await waitGameTime(26);
+  const mechanicIdempotency = await page.evaluate(() => {
+    const state = window.__GAME_TEST__.getState();
+    return {
+      state,
+      events: window.__GAME_TEST__.getEvents().filter(event => event.runId === state.runId)
+    };
+  });
+  assert.equal(
+    mechanicIdempotency.events.filter(event => event.event === 'mechanic_reveal').length,
+    1,
+    '五秒之后单槽反复重录时重复发出核心机制教学'
+  );
+  assert.equal(
+    mechanicIdempotency.events.filter(event => event.event === 'echo_created').length,
+    2,
+    '五秒之后单槽重录路径未形成两条有效录制事件'
+  );
+  assert.deepEqual(
+    mechanicIdempotency.state.echoes.map(echo => echo.slot),
+    [0],
+    '五秒之后单槽重录后未只保留最新的 Ⅰ 号回声'
+  );
+  await page.evaluate(() => {
+    const game = window.__GAME_TEST__;
+    game.reset();
     game.setTarget(195, 640);
   });
   await page.waitForFunction(
@@ -280,7 +776,8 @@ async function runBaselineScenario(page, gameId) {
   const failure = await page.evaluate(() => window.__GAME_TEST__.getState());
   assert.equal(failure.mode, 'lost', '五秒之后无操作路线未进入失败结算');
   assert.equal(failure.targetsDestroyed, 0, '五秒之后无操作失败不应摧毁锚点');
-  return { mechanic: mechanic.state, final, failure };
+  assert.equal(failure.echoCount, 0, '五秒之后静止轨迹不应生成有效回声');
+  return { mechanic: mechanic.state, gateGuide, final, mechanicIdempotency, failure };
 }
 
 async function collectLayout(page) {
@@ -305,6 +802,12 @@ async function collectLayout(page) {
           height: Math.round(rect.height)
         };
       });
+    const liveRegions = [...document.querySelectorAll('[aria-live], [role="status"]')]
+      .map(element => ({
+        id: element.id || null,
+        ariaLive: element.getAttribute('aria-live') || null,
+        role: element.getAttribute('role') || null
+      }));
     return {
       title: document.title,
       scrollWidth: document.documentElement.scrollWidth,
@@ -313,6 +816,7 @@ async function collectLayout(page) {
       canvasCount: document.querySelectorAll('canvas').length,
       visibleTextLength: document.body.innerText.trim().length,
       tinyTargets,
+      liveRegions,
       testApi: Boolean(window.__GAME_TEST__ && typeof window.__GAME_TEST__.getState === 'function')
     };
   });
@@ -329,6 +833,30 @@ async function verifyEntry(browser, origin, entry, viewport) {
   const page = await context.newPage();
   const errors = [];
   const externalRequests = [];
+  await page.addInitScript(() => {
+    let forcedHidden = false;
+    Object.defineProperty(document, 'hidden', {
+      configurable: true,
+      get: () => forcedHidden
+    });
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => forcedHidden ? 'hidden' : 'visible'
+    });
+    window.__setVisibilityForTest = value => {
+      forcedHidden = Boolean(value);
+      document.dispatchEvent(new Event('visibilitychange'));
+    };
+    window.__capturedGameEvents = [];
+    const capture = event => {
+      const message = event?.detail;
+      if (message?.source === 'wechat-h5-premium-games') {
+        window.__capturedGameEvents.push(JSON.parse(JSON.stringify(message)));
+      }
+    };
+    window.addEventListener('gameplatform', capture);
+    window.addEventListener('gameplatform:event', capture);
+  });
   page.on('console', message => {
     if (message.type() === 'error') errors.push(`console: ${message.text()}`);
   });
@@ -349,18 +877,26 @@ async function verifyEntry(browser, origin, entry, viewport) {
   assert(layout.title, `${entry.id}/${viewport.id} 缺少标题`);
   assert(layout.visibleTextLength >= 20, `${entry.id}/${viewport.id} 可见文案不足`);
   assert(layout.scrollWidth <= layout.clientWidth + 2, `${entry.id}/${viewport.id} 横向溢出 ${layout.scrollWidth}/${layout.clientWidth}`);
+  assert.equal(layout.tinyTargets.length, 0, `${entry.id}/${viewport.id} 存在小于 44px 的触控目标：${JSON.stringify(layout.tinyTargets)}`);
   if (entry.game) {
     assert(layout.canvasCount >= 1, `${entry.id}/${viewport.id} 缺少 Canvas`);
     assert(layout.testApi, `${entry.id}/${viewport.id} 缺少测试接口`);
+    assert(layout.liveRegions.length >= 1, `${entry.id}/${viewport.id} 缺少离散状态播报区`);
+    assert(!layout.liveRegions.some(region => region.id === 'hud'), `${entry.id}/${viewport.id} 不应把高频 HUD 设为直播区`);
   }
 
   let scenario = null;
   if (entry.game && viewport.id === 'baseline') {
     await page.screenshot({ path: path.join(outputDir, `${entry.id}-opening.png`), fullPage: false });
     await clickMatchingButton(page, /开始|进入|出发|唤醒|拿起/);
+    const touch = await verifyTouchInput(page, entry.id);
+    const lifecycle = await verifyLifecycle(page, entry.id);
     scenario = await runBaselineScenario(page, entry.id);
+    const replay = await verifyEventsAndReplay(page, entry.id);
+    scenario = { ...scenario, touch, lifecycle, replay };
   } else if (!entry.game && viewport.id === 'baseline') {
     await page.screenshot({ path: path.join(outputDir, 'hub-baseline.png'), fullPage: true });
+    scenario = await verifyHubEventFlow(page);
   } else if (entry.game) {
     await clickMatchingButton(page, /开始|进入|出发|唤醒|拿起/);
   }
@@ -400,6 +936,11 @@ try {
       const failures = [...result.errors, ...result.externalRequests.map(url => `外部请求: ${url}`)];
       process.stdout.write(`${entry.id.padEnd(21)} ${viewport.id.padEnd(8)} ${failures.length ? `FAIL ${failures.join(' | ')}` : 'PASS'}${warnings ? ` · WARN ${warnings}` : ''}\n`);
     }
+  }
+  for (const entry of entries) {
+    const result = await verifyDirectFile(browser, entry);
+    results.push(result);
+    process.stdout.write(`${entry.id.padEnd(21)} ${'direct-file'.padEnd(8)} PASS\n`);
   }
   await fs.writeFile(path.join(outputDir, 'verification.json'), JSON.stringify(results, null, 2), 'utf8');
   const hardFailures = results.flatMap(result => [

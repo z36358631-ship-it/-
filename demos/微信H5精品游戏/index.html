@@ -199,7 +199,7 @@
     function readEvents(){
       try{
         const value=JSON.parse(localStorage.getItem(storageKey)||"[]");
-        return Array.isArray(value)?value:[];
+        return Array.isArray(value)?value.filter(validMessage).slice(-180):[];
       }catch(_){return []}
     }
     function gameEvents(id){return events.filter(item=>item.gameId===id)}
@@ -208,17 +208,27 @@
       return ["first_input","mechanic_reveal","core_payoff"].every(name=>names.has(name));
     }
     function validMessage(data){
-      return data&&data.source==="wechat-h5-premium-games"&&data.version===1&&
-        catalog.some(game=>game.id===data.gameId)&&typeof data.event==="string";
+      return data&&typeof data==="object"&&data.source==="wechat-h5-premium-games"&&data.version===1&&
+        catalog.some(game=>game.id===data.gameId)&&typeof data.runId==="string"&&data.runId.length>0&&data.runId.length<=96&&
+        typeof data.event==="string"&&/^[a-z][a-z0-9_]{0,47}$/.test(data.event)&&Number.isFinite(data.ts)&&
+        data.payload&&typeof data.payload==="object"&&!Array.isArray(data.payload);
+    }
+    function trustedMessageEvent(event){
+      if(!event.source)return false;
+      if(location.protocol==="file:")return event.origin==="null";
+      return event.origin===location.origin;
     }
     function saveEvent(data){
-      events.push({...data,receivedAt:Date.now()});
+      events.push({
+        source:data.source,version:data.version,gameId:data.gameId,runId:data.runId,
+        event:data.event,ts:data.ts,payload:{},receivedAt:Date.now()
+      });
       if(events.length>180)events=events.slice(-180);
       localStorage.setItem(storageKey,JSON.stringify(events));
       render();
     }
     window.addEventListener("message",event=>{
-      if(validMessage(event.data))saveEvent(event.data);
+      if(trustedMessageEvent(event)&&validMessage(event.data))saveEvent(event.data);
     });
 
     function renderGames(){
@@ -230,7 +240,7 @@
           <h3>${game.name}</h3><div class="role">${game.role}</div>
           <p class="hook">${game.hook}</p>
           <div class="meta">${game.meta.map(item=>`<span>${item}</span>`).join("")}</div>
-          <a class="play" href="${game.file}" target="_blank" rel="noopener">${done?"再玩一局":"开始试玩"} →</a>
+          <a class="play" href="${game.file}" target="_blank" rel="opener">${done?"再玩一局":"开始试玩"} →</a>
         </article>`;
       }).join("");
     }
