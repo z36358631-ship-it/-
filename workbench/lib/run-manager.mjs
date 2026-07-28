@@ -1,5 +1,7 @@
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import path from 'node:path';
+import { terminateProcessTree } from './process-control.mjs';
 import { assertAuthorizedPath } from './security.mjs';
 import {
   buildWorkflowPrompt,
@@ -14,6 +16,14 @@ const ALLOWED_WORKFLOW_INPUT_KEYS = new Set([
   'files',
   'input',
 ]);
+const ALLOWED_WRITE_INPUT_KEYS = new Set([
+  'requirementId',
+  'prompt',
+  'permission',
+  'targets',
+]);
+const WRITE_PERMISSIONS = new Set(['generate-candidate', 'modify-existing']);
+const INTERRUPT_GRACE_MS = 3_000;
 
 function requestError(message, statusCode) {
   return Object.assign(new Error(message), { statusCode });
@@ -136,18 +146,33 @@ export class RunManager {
     allowedRoot,
     maxConcurrentRuns = 1,
     contextService = null,
+    fileSafety = null,
+    approvalManager = null,
+    runTimeoutMs = 600_000,
+    processTerminator = terminateProcessTree,
   }) {
     if (!store || !codex) throw new TypeError('store and codex are required');
     if (!Number.isInteger(maxConcurrentRuns) || maxConcurrentRuns < 1) {
       throw new TypeError('maxConcurrentRuns must be a positive integer');
+    }
+    if (!Number.isInteger(runTimeoutMs) || runTimeoutMs < 1) {
+      throw new TypeError('runTimeoutMs must be a positive integer');
+    }
+    if (typeof processTerminator !== 'function') {
+      throw new TypeError('processTerminator must be a function');
     }
     this.store = store;
     this.codex = codex;
     this.allowedRoot = path.resolve(allowedRoot);
     this.maxConcurrentRuns = maxConcurrentRuns;
     this.contextService = contextService;
+    this.fileSafety = fileSafety;
+    this.approvalManager = approvalManager;
+    this.runTimeoutMs = runTimeoutMs;
+    this.processTerminator = processTerminator;
     this.activeByThread = new Map();
     this.activeByTurn = new Map();
+    this.activeByRun = new Map();
     this.codex.on('notification', message => this.#onNotification(message));
   }
 
@@ -210,9 +235,11 @@ export class RunManager {
       if (rebuilt) this.#recordThreadRebuilt(runId);
 
       active = {
+        approvalRegistered: false,
         completedAgentItems: new Set(),
         deltaAgentItems: new Set(),
         finished: false,
+        finalized: false,
         runId,
         text: '',
         threadId,
@@ -220,6 +247,7 @@ export class RunManager {
         workflowType: null,
       };
       this.activeByThread.set(threadId, active);
+      this.#registerActive(active);
 
       const turnResult = await this.codex.request('turn/start', {
         approvalPolicy: 'never',
@@ -237,8 +265,7 @@ export class RunManager {
       if (!active.finished) this.activeByTurn.set(turnId, active);
       return this.store.getRun(runId);
     } catch (error) {
-      if (active) this.#removeActive(active);
-      this.store.finishRun(runId, 'failed', active?.text || null, error.message);
+      this.#handleStartFailure(runId, active, error);
       throw error;
     }
   }
@@ -299,9 +326,11 @@ export class RunManager {
       if (rebuilt) this.#recordThreadRebuilt(runId);
 
       active = {
+        approvalRegistered: false,
         completedAgentItems: new Set(),
         deltaAgentItems: new Set(),
         finished: false,
+        finalized: false,
         requirementId,
         runId,
         text: '',
@@ -310,6 +339,7 @@ export class RunManager {
         workflowType,
       };
       this.activeByThread.set(threadId, active);
+      this.#registerActive(active);
 
       const turnResult = await this.codex.request('turn/start', {
         approvalPolicy: 'never',
@@ -328,9 +358,439 @@ export class RunManager {
       if (!active.finished) this.activeByTurn.set(turnId, active);
       return this.store.getRun(runId);
     } catch (error) {
-      if (active) this.#removeActive(active);
-      this.store.finishRun(runId, 'failed', active?.text || null, error.message);
+      this.#handleStartFailure(runId, active, error);
       throw error;
+    }
+  }
+
+  async startWriteRun(input) {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) {
+      throw requestError('write run input must be an object', 400);
+    }
+    for (const key of Object.keys(input)) {
+      if (!ALLOWED_WRITE_INPUT_KEYS.has(key)) {
+        throw requestError(`${key} is not accepted for a write run`, 400);
+      }
+    }
+    if (!this.contextService || !this.fileSafety || !this.approvalManager) {
+      throw new Error(
+        'ContextService, FileSafety and ApprovalManager are required for write runs',
+      );
+    }
+
+    const cleanPrompt = typeof input.prompt === 'string' ? input.prompt.trim() : '';
+    if (!cleanPrompt) throw requestError('prompt is required', 400);
+    if (!WRITE_PERMISSIONS.has(input.permission)) {
+      throw requestError('Unsupported write permission', 400);
+    }
+
+    const context = this.contextService.getRequirementContext(input.requirementId);
+    const normalizedTargets = this.fileSafety.normalizeTargets(input.targets);
+    for (const target of normalizedTargets) {
+      const exists = fs.existsSync(target.absolute);
+      if (input.permission === 'generate-candidate') {
+        if (exists) {
+          throw requestError(
+            `Candidate target must not already exist: ${target.path}`,
+            409,
+          );
+        }
+        let parentIsDirectory = false;
+        try {
+          parentIsDirectory = fs.statSync(path.dirname(target.absolute)).isDirectory();
+        } catch {
+          parentIsDirectory = false;
+        }
+        if (!parentIsDirectory) {
+          throw requestError(
+            `Candidate parent directory must already exist: ${target.path}`,
+            409,
+          );
+        }
+      } else if (!exists) {
+        throw requestError(
+          `Modify target must already exist: ${target.path}`,
+          409,
+        );
+      }
+    }
+    const targetPaths = normalizedTargets.map(target => target.path);
+    if (input.permission === 'modify-existing') {
+      this.contextService.authorizeFiles(input.requirementId, targetPaths);
+    }
+    if (this.store.countActiveRuns() >= this.maxConcurrentRuns) {
+      throw requestError('Concurrent run limit reached', 429);
+    }
+
+    const runId = `RUN-${crypto.randomUUID()}`;
+    const snapshot = this.fileSafety.capture(targetPaths);
+    const stagingRoot = this.fileSafety.prepareStaging(runId, snapshot);
+    this.store.createRun({
+      id: runId,
+      requirementId: input.requirementId,
+      prompt: cleanPrompt,
+      cwd: this.allowedRoot,
+      permission: input.permission,
+      status: 'running',
+      workflowType: null,
+    });
+    this.store.saveRunContext(runId, {
+      files: targetPaths,
+      input: { permission: input.permission },
+    });
+    for (const item of snapshot) this.store.saveFileSnapshot(runId, item);
+
+    let active = null;
+    try {
+      await this.codex.start();
+      const pid = processPid(this.codex);
+      const { rebuilt, threadId } = await this.#requirementThread(
+        input.requirementId,
+      );
+      this.store.bindProtocolIds(runId, threadId, null, pid);
+      if (rebuilt) this.#recordThreadRebuilt(runId);
+
+      active = {
+        approvalRegistered: false,
+        completedAgentItems: new Set(),
+        deltaAgentItems: new Set(),
+        finalized: false,
+        finished: false,
+        permission: input.permission,
+        requirementId: input.requirementId,
+        runId,
+        snapshot,
+        stagingRoot,
+        targets: targetPaths,
+        text: '',
+        threadId,
+        turnId: null,
+        workflowType: null,
+      };
+      this.activeByThread.set(threadId, active);
+      this.#registerActive(active);
+
+      const fullPrompt = [
+        `当前需求：${context.requirement.id} ${context.requirement.title}`,
+        `本次权限：${input.permission}`,
+        '你现在位于本次运行的隔离暂存区，只允许处理这些相对路径：',
+        targetPaths.map(value => `- ${value}`).join('\n'),
+        '不得删除文件，不得修改目标清单外文件，不得访问真实工作区路径，不得发布或外部发送。',
+        `任务：${cleanPrompt}`,
+      ].join('\n\n');
+      const turnResult = await this.codex.request('turn/start', {
+        approvalPolicy: 'on-request',
+        cwd: stagingRoot,
+        input: [{ type: 'text', text: fullPrompt }],
+        sandboxPolicy: {
+          type: 'workspaceWrite',
+          writableRoots: [stagingRoot],
+          networkAccess: false,
+        },
+        threadId,
+      });
+      const turnId = protocolId(turnResult, 'turn');
+      if (active.turnId && active.turnId !== turnId) {
+        throw new Error(
+          'Codex turn/start response did not match the notification turn id',
+        );
+      }
+      active.turnId = turnId;
+      this.store.bindProtocolIds(runId, threadId, turnId, pid);
+      if (!active.finished) {
+        this.activeByTurn.set(turnId, active);
+        this.#registerApproval(active);
+      }
+      return this.store.getRun(runId);
+    } catch (error) {
+      this.#handleStartFailure(runId, active, error);
+      throw error;
+    }
+  }
+
+  async cancel(runId) {
+    const active = this.activeByRun.get(runId);
+    if (!active || !this.#beginFinalization(active)) {
+      throw requestError('Run is not active', 409);
+    }
+
+    let controlError = null;
+    try {
+      this.approvalManager?.rejectPendingForRun(runId);
+    } catch (error) {
+      controlError = error;
+    }
+    try {
+      await this.#interruptActive(active);
+    } catch (error) {
+      controlError ||= error;
+    } finally {
+      const message = controlError
+        ? `Cancelled by user; cleanup warning: ${controlError.message}`
+        : 'Cancelled by user';
+      this.store.finishRun(runId, 'cancelled', active.text || null, message);
+      this.#finalizeActive(active);
+    }
+    return this.store.getRun(runId);
+  }
+
+  async retry(runId) {
+    const previous = this.store.getRun(runId);
+    if (
+      !previous
+      || !['failed', 'cancelled', 'interrupted'].includes(previous.status)
+    ) {
+      throw requestError(
+        'Only failed, cancelled or interrupted runs can retry',
+        409,
+      );
+    }
+    const context = this.store.getRunContext(runId);
+    if (!context) {
+      throw new Error('Run context is missing and cannot be retried safely');
+    }
+    const unrestoredChanges = this.store
+      .listFileChanges(runId)
+      .filter(change => !change.restoredAt);
+    if (unrestoredChanges.length > 0) {
+      throw requestError(
+        'Restore or manually accept the previous file changes before retrying',
+        409,
+      );
+    }
+
+    if (previous.workflowType) {
+      return this.startWorkflowRun({
+        requirementId: previous.requirementId,
+        workflowType: context.input.workflowType,
+        files: context.files,
+        input: context.input.workflowInput,
+      });
+    }
+    if (previous.permission === 'read-only') {
+      return this.startReadOnlyRun({
+        requirementId: previous.requirementId,
+        prompt: previous.prompt,
+        files: context.files,
+      });
+    }
+    return this.startWriteRun({
+      requirementId: previous.requirementId,
+      prompt: previous.prompt,
+      permission: context.input.permission,
+      targets: context.files,
+    });
+  }
+
+  #registerActive(active) {
+    if (this.activeByRun.has(active.runId)) {
+      throw new Error(`Run is already active: ${active.runId}`);
+    }
+    active.timeout = setTimeout(() => {
+      void this.#timeout(active.runId);
+    }, this.runTimeoutMs);
+    active.timeout.unref?.();
+    this.activeByRun.set(active.runId, active);
+    if (active.turnId) this.activeByTurn.set(active.turnId, active);
+    return active;
+  }
+
+  #registerApproval(active) {
+    if (
+      active.approvalRegistered
+      || !active.snapshot
+      || !active.turnId
+      || !this.approvalManager
+    ) {
+      return;
+    }
+    this.approvalManager.registerRun(active.runId, {
+      targets: active.targets,
+      turnId: active.turnId,
+      approvalRoot: active.stagingRoot,
+    });
+    active.approvalRegistered = true;
+  }
+
+  #beginFinalization(active) {
+    if (!active || active.finished) return false;
+    active.finished = true;
+    return true;
+  }
+
+  #handleStartFailure(runId, active, error) {
+    if (!active) {
+      this.store.finishRun(runId, 'failed', null, error.message);
+      return;
+    }
+    if (this.#beginFinalization(active)) {
+      this.store.finishRun(runId, 'failed', active.text || null, error.message);
+    }
+    this.#finalizeActive(active);
+  }
+
+  async #timeout(runId) {
+    const active = this.activeByRun.get(runId);
+    if (!active || !this.#beginFinalization(active)) return;
+
+    let controlError = null;
+    try {
+      this.approvalManager?.rejectPendingForRun(runId);
+    } catch (error) {
+      controlError = error;
+    }
+    try {
+      await this.#interruptActive(active);
+    } catch (error) {
+      controlError ||= error;
+    } finally {
+      const message = controlError
+        ? `Run timed out; cleanup warning: ${controlError.message}`
+        : 'Run timed out';
+      this.store.finishRun(runId, 'failed', active.text || null, message);
+      this.#finalizeActive(active);
+    }
+  }
+
+  async #interruptActive(active) {
+    const run = this.store.getRun(active.runId);
+    const validProtocolIds = typeof run?.threadId === 'string'
+      && Boolean(run.threadId)
+      && typeof active.turnId === 'string'
+      && Boolean(active.turnId);
+    let timer = null;
+    const interrupted = validProtocolIds
+      ? await Promise.race([
+          this.codex.request('turn/interrupt', {
+            threadId: run.threadId,
+            turnId: active.turnId,
+          }).then(() => true, () => false),
+          new Promise(resolve => {
+            timer = setTimeout(() => resolve(false), INTERRUPT_GRACE_MS);
+          }),
+        ])
+      : false;
+    if (timer) clearTimeout(timer);
+    if (interrupted) return;
+
+    const persistedPid = run?.processPid;
+    const livePid = processPid(this.codex);
+    if (
+      Number.isInteger(persistedPid)
+      && persistedPid > 0
+      && persistedPid === livePid
+    ) {
+      await this.processTerminator(livePid);
+    }
+  }
+
+  #finalizeActive(active) {
+    if (!active || active.finalized) return;
+    active.finalized = true;
+    if (active.timeout) clearTimeout(active.timeout);
+    if (this.activeByRun.get(active.runId) === active) {
+      this.activeByRun.delete(active.runId);
+    }
+    if (this.activeByThread.get(active.threadId) === active) {
+      this.activeByThread.delete(active.threadId);
+    }
+    if (active.turnId && this.activeByTurn.get(active.turnId) === active) {
+      this.activeByTurn.delete(active.turnId);
+    }
+    if (active.turnId && active.approvalRegistered) {
+      this.approvalManager?.unregisterTurn(active.turnId);
+    }
+  }
+
+  #recordChanges(active) {
+    const unexpected = this.fileSafety.findUnexpectedFiles(
+      active.stagingRoot,
+      active.targets,
+    );
+    if (unexpected.length > 0) {
+      throw new Error(
+        `Staging contains out-of-scope files: ${unexpected.join(', ')}`,
+      );
+    }
+    const stagedChanges = this.fileSafety.compare(
+      active.snapshot,
+      active.stagingRoot,
+    );
+    const appliedChanges = this.fileSafety.applyFromStaging(
+      active.snapshot,
+      stagedChanges,
+      active.stagingRoot,
+      () => this.store.setRunApplyState(active.runId, 'applying'),
+    );
+    for (const change of appliedChanges) {
+      this.store.saveFileChange(active.runId, change);
+    }
+    this.store.setRunApplyState(active.runId, 'applied');
+    return appliedChanges;
+  }
+
+  #recordPartialChanges(active) {
+    if (this.store.getRunApplyState(active.runId).state !== 'applying') return;
+    for (const partial of this.fileSafety.compare(active.snapshot)) {
+      this.store.saveFileChange(active.runId, partial);
+    }
+  }
+
+  #completeWrite(active) {
+    let changes;
+    try {
+      this.approvalManager?.rejectPendingForRun(active.runId);
+      changes = this.#recordChanges(active);
+    } catch (error) {
+      let recoveryError = null;
+      try {
+        this.#recordPartialChanges(active);
+      } catch (partialError) {
+        recoveryError = partialError;
+      }
+      const detail = recoveryError
+        ? `${error.message}; recovery record failed: ${recoveryError.message}`
+        : error.message;
+      this.store.finishRun(
+        active.runId,
+        'failed',
+        active.text || null,
+        `Staged changes were not applied: ${detail}`,
+      );
+      return;
+    }
+
+    try {
+      if (active.permission === 'generate-candidate') {
+        for (const change of changes.filter(item => item.kind === 'created')) {
+          this.store.addArtifact({
+            id: `ARTIFACT-${crypto.randomUUID()}`,
+            requirementId: active.requirementId,
+            kind: '候选产物',
+            path: change.path,
+          });
+        }
+      }
+      if (this.store.listValidations(active.runId).length === 0) {
+        this.store.saveValidation(active.runId, {
+          name: 'Codex validation',
+          status: 'skipped',
+          detail: '本次运行没有产生可识别的命令验证结果',
+        });
+      }
+      this.store.finishRun(
+        active.runId,
+        'completed',
+        active.text || null,
+        null,
+      );
+    } catch (error) {
+      this.store.finishRun(
+        active.runId,
+        'failed',
+        active.text || null,
+        `Staged changes were applied but completion metadata failed: ${error.message}`,
+      );
     }
   }
 
@@ -385,6 +845,7 @@ export class RunManager {
       if (starting && !starting.turnId && turnId) {
         starting.turnId = turnId;
         this.activeByTurn.set(turnId, starting);
+        this.#registerApproval(starting);
         active = starting;
       }
     }
@@ -419,45 +880,61 @@ export class RunManager {
       if (itemId) active.completedAgentItems.add(itemId);
     }
 
+    if (
+      message.method === 'item/completed'
+      && message.params?.item?.type === 'commandExecution'
+      && active.snapshot
+    ) {
+      const item = message.params.item;
+      this.store.saveValidation(active.runId, {
+        name: String(item.command || 'Codex command').slice(0, 240),
+        status: Number(item.exitCode) === 0 ? 'passed' : 'failed',
+        detail: String(item.aggregatedOutput || item.output || '').slice(-8_000),
+      });
+    }
+
     if (message.method !== 'turn/completed') return;
+    if (!this.#beginFinalization(active)) return;
     const status = message.params?.turn?.status;
     const failed = status !== 'completed';
-    if (failed) {
-      const error = safeString(message.params?.turn?.error?.message)
-        || `Codex turn ended with ${safeString(status) || 'unknown status'}`;
-      this.store.finishRun(active.runId, 'failed', active.text || null, error);
-    } else if (active.workflowType) {
-      try {
-        const result = parseWorkflowResult(active.workflowType, active.text);
-        this.store.saveWorkflowResult({
-          id: `RESULT-${crypto.randomUUID()}`,
-          runId: active.runId,
-          requirementId: active.requirementId,
-          workflowType: active.workflowType,
-          result,
-        });
-        this.store.finishRun(active.runId, 'completed', JSON.stringify(result));
-      } catch (error) {
-        this.store.finishRun(
-          active.runId,
-          'failed',
-          active.text,
-          `Structured result rejected: ${error.message}`,
-        );
+    try {
+      if (failed) {
+        let error = safeString(message.params?.turn?.error?.message)
+          || `Codex turn ended with ${safeString(status) || 'unknown status'}`;
+        if (active.snapshot) {
+          try {
+            this.approvalManager?.rejectPendingForRun(active.runId);
+          } catch (approvalError) {
+            error += `; pending approval cleanup failed: ${approvalError.message}`;
+          }
+        }
+        this.store.finishRun(active.runId, 'failed', active.text || null, error);
+      } else if (active.snapshot) {
+        this.#completeWrite(active);
+      } else if (active.workflowType) {
+        try {
+          const result = parseWorkflowResult(active.workflowType, active.text);
+          this.store.saveWorkflowResult({
+            id: `RESULT-${crypto.randomUUID()}`,
+            runId: active.runId,
+            requirementId: active.requirementId,
+            workflowType: active.workflowType,
+            result,
+          });
+          this.store.finishRun(active.runId, 'completed', JSON.stringify(result));
+        } catch (error) {
+          this.store.finishRun(
+            active.runId,
+            'failed',
+            active.text,
+            `Structured result rejected: ${error.message}`,
+          );
+        }
+      } else {
+        this.store.finishRun(active.runId, 'completed', active.text || null);
       }
-    } else {
-      this.store.finishRun(active.runId, 'completed', active.text || null);
-    }
-    active.finished = true;
-    this.#removeActive(active);
-  }
-
-  #removeActive(active) {
-    if (this.activeByThread.get(active.threadId) === active) {
-      this.activeByThread.delete(active.threadId);
-    }
-    if (active.turnId && this.activeByTurn.get(active.turnId) === active) {
-      this.activeByTurn.delete(active.turnId);
+    } finally {
+      this.#finalizeActive(active);
     }
   }
 }
