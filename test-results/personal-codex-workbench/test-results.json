@@ -1,0 +1,131 @@
+{
+  "generatedAt": "2026-07-28T06:39:19.678Z",
+  "status": "passed",
+  "staticContract": "passed",
+  "browser": "chrome.exe",
+  "browserVersion": "150.0.7871.186",
+  "nodeVersion": "v24.12.0",
+  "playwrightCoreVersion": "1.61.1",
+  "sourceCommit": "68c80137bde374c5d356ba5fa7ee07c248b9e5ed",
+  "sourceStatus": "",
+  "verificationScriptSha256": "5db608a926f8a556be120c8f016fa6bb8f506a6200d4a1c145bd27091e4bcf9b",
+  "urlTokenRemoved": true,
+  "navigation": [
+    "home",
+    "planning",
+    "requirements",
+    "review",
+    "data",
+    "codex"
+  ],
+  "selectedRequirement": "REQ-002",
+  "registeredArtifactSelection": "registered-only/synchronized passed",
+  "manualTaskNote": "create-complete passed",
+  "workflowControls": "three/focusable/mode-switch passed",
+  "permissionModes": "read/generate/modify target rules passed",
+  "safetyRunDetail": "approval/diff/validation/run-controls passed",
+  "actionControls": [
+    "approval:APPROVAL-SAFE:approved",
+    "approval:APPROVAL-COMMAND:rejected",
+    "run:RUN-MOCK-WAITING:cancel",
+    "run:RUN-MOCK-FAILED:restore",
+    "run:RUN-MOCK-FAILED:retry"
+  ],
+  "dialog": "open-close/read-only passed",
+  "health": "Broker 正常",
+  "writeRunRequests": 0,
+  "viewports": [
+    {
+      "label": "desktop-1440",
+      "width": 1440,
+      "height": 900,
+      "screenshot": "desktop.png",
+      "bodyScrollWidth": 1440,
+      "clientWidth": 1440,
+      "documentScrollWidth": 1440,
+      "usableControls": 14,
+      "controls": "passed"
+    },
+    {
+      "label": "laptop-1024",
+      "width": 1024,
+      "height": 900,
+      "screenshot": "laptop-1024.png",
+      "bodyScrollWidth": 1024,
+      "clientWidth": 1024,
+      "documentScrollWidth": 1024,
+      "usableControls": 14,
+      "controls": "passed"
+    },
+    {
+      "label": "tablet-768",
+      "width": 768,
+      "height": 900,
+      "screenshot": "tablet-768.png",
+      "bodyScrollWidth": 768,
+      "clientWidth": 768,
+      "documentScrollWidth": 768,
+      "usableControls": 14,
+      "controls": "passed"
+    },
+    {
+      "label": "mobile-375",
+      "width": 375,
+      "height": 812,
+      "screenshot": "mobile.png",
+      "bodyScrollWidth": 375,
+      "clientWidth": 375,
+      "documentScrollWidth": 375,
+      "usableControls": 13,
+      "controls": "passed"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "screenshots": [
+    "desktop.png",
+    "laptop-1024.png",
+    "tablet-768.png",
+    "mobile.png",
+    "permissions-desktop.png",
+    "safety-desktop.png",
+    "safety-mobile.png",
+    "safety-mobile-controls.png"
+  ],
+  "evidence": [
+    {
+      "path": "permissions-desktop.png",
+      "assertions": [
+        "三种权限模式可见且触控高度不低于 44px",
+        "写入模式禁用只读工作流并显示对应目标控件"
+      ],
+      "status": "passed"
+    },
+    {
+      "path": "safety-desktop.png",
+      "assertions": [
+        "安全文件变化允许按钮保持可用",
+        "命令、删除和目标外文件审批以中性灰锁定态禁用",
+        "审批类型显示中文并保留原始英文与摘要"
+      ],
+      "status": "passed"
+    },
+    {
+      "path": "safety-mobile.png",
+      "assertions": [
+        "375px 失败 Run 显示文本 diff 与二进制无文本差异提示",
+        "验证名称与状态显示中文并保留原始英文"
+      ],
+      "status": "passed"
+    },
+    {
+      "path": "safety-mobile-controls.png",
+      "assertions": [
+        "375px 底部四操作采用 2×2 紧凑布局",
+        "每个操作高度不低于 44px、无横向溢出且不遮挡抽屉内容"
+      ],
+      "status": "passed"
+    }
+  ],
+  "cleanup": "passed"
+}
