@@ -60,6 +60,7 @@ async function setupServer(
   {
     root = null,
     codex = new FakeCodex(),
+    databaseFactory,
     processRecovery,
   } = {},
 ) {
@@ -68,6 +69,7 @@ async function setupServer(
   const app = await createWorkbenchServer({
     env: { WORKBENCH_ROOT: allowedRoot, WORKBENCH_PORT: '0' },
     codexFactory: () => codex,
+    databaseFactory,
     processRecovery,
   });
   await app.listen();
@@ -602,6 +604,150 @@ test('multi-file restore checkpoints I/O success and retry skips completed files
   bootstrap = await requestJson(context, '/api/bootstrap');
   assert.equal(
     bootstrap.body.artifacts.some(artifact => targets.includes(artifact.path)),
+    false,
+  );
+});
+
+test('restore retry checkpoints a file already restored before a database failure', async t => {
+  let checkpointAttempts = 0;
+  const context = await setupServer(t, {
+    databaseFactory: databasePath => {
+      const store = openDatabase(databasePath);
+      const markFileChangeRestored = store.markFileChangeRestored.bind(store);
+      store.markFileChangeRestored = (runId, filePath) => {
+        checkpointAttempts += 1;
+        if (checkpointAttempts === 1) {
+          throw new Error('simulated restore checkpoint failure');
+        }
+        return markFileChangeRestored(runId, filePath);
+      };
+      return store;
+    },
+  });
+  const started = await startCandidate(context, 'prd/checkpoint-retry.md');
+  completeCandidate(context, started, 'generated candidate\n');
+  const actual = path.join(context.allowedRoot, ...started.target.split('/'));
+  const originalUnlink = fs.unlinkSync;
+  let restoreUnlinks = 0;
+  fs.unlinkSync = function countRestoreUnlinks(filename, ...args) {
+    if (path.resolve(filename) === path.resolve(actual)) restoreUnlinks += 1;
+    return originalUnlink.call(this, filename, ...args);
+  };
+
+  let failed;
+  let retried;
+  try {
+    failed = await requestJson(
+      context,
+      `/api/runs/${encodeURIComponent(started.run.id)}/restore`,
+      { method: 'POST' },
+    );
+    assert.equal(failed.response.status, 500);
+    assert.equal(failed.body.restoredCount, 1);
+    assert.deepEqual(failed.body.restored, [started.target]);
+    assert.deepEqual(failed.body.pendingCheckpoint, [started.target]);
+    assert.deepEqual(failed.body.remaining, []);
+    assert.match(failed.body.error, /checkpoint failure/i);
+    assert.equal(restoreUnlinks, 1);
+    assert.equal(fs.existsSync(actual), false);
+    const beforeRetry = await requestJson(
+      context,
+      `/api/runs/${encodeURIComponent(started.run.id)}`,
+    );
+    assert.equal(beforeRetry.body.fileChanges[0].restoredAt, null);
+
+    retried = await requestJson(
+      context,
+      `/api/runs/${encodeURIComponent(started.run.id)}/restore`,
+      { method: 'POST' },
+    );
+  } finally {
+    fs.unlinkSync = originalUnlink;
+  }
+
+  assert.equal(retried.response.status, 200);
+  assert.deepEqual(retried.body, { restored: [started.target] });
+  assert.equal(checkpointAttempts, 2);
+  assert.equal(restoreUnlinks, 1);
+  assert.equal(fs.existsSync(actual), false);
+
+  const detail = await requestJson(
+    context,
+    `/api/runs/${encodeURIComponent(started.run.id)}`,
+  );
+  assert.match(detail.body.fileChanges[0].restoredAt, /^\d{4}-\d{2}-\d{2}T/);
+  const bootstrap = await requestJson(context, '/api/bootstrap');
+  assert.equal(
+    bootstrap.body.artifacts.some(artifact => artifact.path === started.target),
+    false,
+  );
+});
+
+test('restore retry removes a candidate artifact after its first cleanup failure', async t => {
+  let artifactRemovalAttempts = 0;
+  let checkpointAttempts = 0;
+  const context = await setupServer(t, {
+    databaseFactory: databasePath => {
+      const store = openDatabase(databasePath);
+      const markFileChangeRestored = store.markFileChangeRestored.bind(store);
+      const removeArtifact = store.removeArtifact.bind(store);
+      store.markFileChangeRestored = (...args) => {
+        checkpointAttempts += 1;
+        return markFileChangeRestored(...args);
+      };
+      store.removeArtifact = (...args) => {
+        artifactRemovalAttempts += 1;
+        if (artifactRemovalAttempts === 1) {
+          throw new Error('simulated artifact cleanup failure');
+        }
+        return removeArtifact(...args);
+      };
+      return store;
+    },
+  });
+  const started = await startCandidate(context, 'prd/artifact-retry.md');
+  completeCandidate(context, started, 'generated candidate\n');
+  const actual = path.join(context.allowedRoot, ...started.target.split('/'));
+
+  const failed = await requestJson(
+    context,
+    `/api/runs/${encodeURIComponent(started.run.id)}/restore`,
+    { method: 'POST' },
+  );
+  assert.equal(failed.response.status, 500);
+  assert.deepEqual(failed.body.restored, [started.target]);
+  assert.deepEqual(failed.body.pendingCheckpoint, [started.target]);
+  assert.match(failed.body.error, /artifact cleanup failure/i);
+  assert.equal(checkpointAttempts, 0);
+  assert.equal(fs.existsSync(actual), false);
+  let detail = await requestJson(
+    context,
+    `/api/runs/${encodeURIComponent(started.run.id)}`,
+  );
+  assert.equal(detail.body.fileChanges[0].restoredAt, null);
+  let bootstrap = await requestJson(context, '/api/bootstrap');
+  assert(
+    bootstrap.body.artifacts.some(artifact => artifact.path === started.target),
+  );
+
+  const retried = await requestJson(
+    context,
+    `/api/runs/${encodeURIComponent(started.run.id)}/restore`,
+    { method: 'POST' },
+  );
+  assert.equal(retried.response.status, 200);
+  assert.deepEqual(retried.body, { restored: [started.target] });
+  assert.equal(artifactRemovalAttempts, 2);
+  assert.equal(checkpointAttempts, 1);
+  assert.equal(fs.existsSync(actual), false);
+  detail = await requestJson(
+    context,
+    `/api/runs/${encodeURIComponent(started.run.id)}`,
+  );
+  assert.match(detail.body.fileChanges[0].restoredAt, /^\d{4}-\d{2}-\d{2}T/);
+  bootstrap = await requestJson(context, '/api/bootstrap');
+  assert.equal(
+    bootstrap.body.artifacts.some(artifact => artifact.path === started.target),
     false,
   );
 });

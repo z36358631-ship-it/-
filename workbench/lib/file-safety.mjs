@@ -452,23 +452,34 @@ export class FileSafety {
   }
 
   restore(snapshot, changes) {
-    const { beforeByPath, normalizedChanges } = this.#restorePlan(
+    const { beforeByPath, restoreEntries } = this.#restorePlan(
       snapshot,
       changes,
     );
 
-    for (const change of normalizedChanges) {
+    const outcomes = [];
+    for (const { change, state } of restoreEntries) {
       const before = beforeByPath.get(changeKey(change.path));
       const current = readState(normalizeRelative(this.allowedRoot, change.path));
-      if (current.hash !== change.afterHash || current.existed !== (change.afterHash !== null)) {
+      const expectedHash = state === 'already-restored' ? before.hash : change.afterHash;
+      const expectedExisted = state === 'already-restored'
+        ? before.existed
+        : change.afterHash !== null;
+      if (current.hash !== expectedHash || current.existed !== expectedExisted) {
         throw conflict(`File changed after this run: ${change.path}`);
+      }
+      if (state === 'already-restored') {
+        outcomes.push({ path: change.path, status: state });
+        continue;
       }
       if (!before.existed) {
         fs.unlinkSync(normalizeRelative(this.allowedRoot, change.path).absolute);
       } else {
         writeAtomic(this.allowedRoot, change.path, before.content);
       }
+      outcomes.push({ path: change.path, status: 'restored' });
     }
+    return outcomes;
   }
 
   #restorePlan(snapshot, changes) {
@@ -476,14 +487,23 @@ export class FileSafety {
     const beforeByPath = new Map(validated.map(item => [changeKey(item.path), item]));
     const normalizedChanges = this.#validateChanges(changes, beforeByPath);
 
-    for (const change of normalizedChanges) {
+    const restoreEntries = normalizedChanges.map(change => {
+      const before = beforeByPath.get(changeKey(change.path));
       const current = readState(normalizeRelative(this.allowedRoot, change.path));
       const afterExisted = change.afterHash !== null;
-      if (current.hash !== change.afterHash || current.existed !== afterExisted) {
+      const matchesAfter = current.hash === change.afterHash
+        && current.existed === afterExisted;
+      const matchesBefore = current.hash === before.hash
+        && current.existed === before.existed;
+      if (!matchesAfter && !matchesBefore) {
         throw conflict(`File changed after this run: ${change.path}`);
       }
-    }
-    return { beforeByPath, normalizedChanges };
+      return {
+        change,
+        state: matchesBefore ? 'already-restored' : 'needs-restore',
+      };
+    });
+    return { beforeByPath, normalizedChanges, restoreEntries };
   }
 
   #assertStagingRoot(stagingRoot) {

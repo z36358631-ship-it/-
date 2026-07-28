@@ -233,10 +233,11 @@ function seedPersonalWorkbench(store) {
 export async function createWorkbenchServer({
   env = process.env,
   codexFactory,
+  databaseFactory = openDatabase,
   processRecovery = recoverPersistedProcesses,
 } = {}) {
   const config = createConfig(env);
-  const store = openDatabase(config.databasePath);
+  const store = databaseFactory(config.databasePath);
   seedPersonalWorkbench(store);
   const codex = codexFactory
     ? codexFactory(config)
@@ -659,36 +660,48 @@ export async function createWorkbenchServer({
             snapshots.map(snapshot => [snapshot.path, snapshot]),
           );
           const restored = [];
+          const pendingCheckpoint = [];
+          const restoreFailure = error => {
+            const restoredSet = new Set(restored);
+            return sendJson(response, error.statusCode || 500, {
+              error: `Restored ${restored.length} of ${changes.length} file changes`
+                + ` before failure: ${error.message}`,
+              restoredCount: restored.length,
+              total: changes.length,
+              restored,
+              pendingCheckpoint,
+              remaining: changes
+                .map(item => item.path)
+                .filter(filePath => !restoredSet.has(filePath)),
+            });
+          };
           for (const change of changes) {
-            let checkpointed = false;
             try {
               fileSafety.restore([snapshotsByPath.get(change.path)], [change]);
-              if (!store.markFileChangeRestored(runId, change.path)) {
-                throw new Error(
-                  `Restore checkpoint was not recorded: ${change.path}`,
-                );
-              }
-              checkpointed = true;
+              restored.push(change.path);
+            } catch (error) {
+              return restoreFailure(error);
+            }
+            try {
               if (
                 run.permission === 'generate-candidate'
                 && change.kind === 'created'
               ) {
                 store.removeArtifact(run.requirementId, change.path);
               }
-              restored.push(change.path);
             } catch (error) {
-              if (checkpointed) restored.push(change.path);
-              const restoredSet = new Set(restored);
-              return sendJson(response, error.statusCode || 500, {
-                error: `Restored ${restored.length} of ${changes.length} file changes`
-                  + ` before failure: ${error.message}`,
-                restoredCount: restored.length,
-                total: changes.length,
-                restored,
-                remaining: changes
-                  .map(item => item.path)
-                  .filter(filePath => !restoredSet.has(filePath)),
-              });
+              pendingCheckpoint.push(change.path);
+              return restoreFailure(error);
+            }
+            try {
+              if (!store.markFileChangeRestored(runId, change.path)) {
+                throw new Error(
+                  `Restore checkpoint was not recorded: ${change.path}`,
+                );
+              }
+            } catch (error) {
+              pendingCheckpoint.push(change.path);
+              return restoreFailure(error);
             }
           }
           return sendJson(response, 200, {
