@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-28T19:01:11.688Z",
+  "gitCommit": "390ddb238018f234224bdca7b7e4df8b6f228c25",
+  "command": "\"D:\\\\Program Files\\\\nodejs\\\\node.exe\" C:\\Users\\z3635\\官网改动\\tools\\verify-wechat-miniprogram-shell.mjs",
+  "environment": {
+    "platform": "win32",
+    "release": "10.0.26200",
+    "arch": "x64",
+    "nodeVersion": "v24.12.0",
+    "browserVersion": "not-used"
+  },
+  "sourceState": {
+    "testedPathsDirty": false,
+    "testedPathCount": 16,
+    "statusCheck": "git-status-porcelain-v1"
+  },
+  "scope": "微信小程序 web-view 试玩壳静态与 VM 行为验收",
+  "exitCode": 0,
+  "summary": {
+    "total": 47,
+    "pass": 47,
+    "fail": 0
+  },
+  "checks": [
+    {
+      "id": "file:app.js",
+      "status": "PASS",
+      "detail": "文件存在且非空"
+    },
+    {
+      "id": "file:app.json",
+      "status": "PASS",
+      "detail": "文件存在且非空"
+    },
+    {
+      "id": "file:app.wxss",
+      "status": "PASS",
+      "detail": "文件存在且非空"
+    },
+    {
+      "id": "file:project.config.json",
+      "status": "PASS",
+      "detail": "文件存在且非空"
+    },
+    {
+      "id": "file:sitemap.json",
+      "status": "PASS",
+      "detail": "文件存在且非空"
+    },
+    {
+      "id": "file:pages/index/index.js",
+      "status": "PASS",
+      "detail": "文件存在且非空"
+    },
+    {
+      "id": "file:pages/index/index.json",
+      "status": "PASS",
+      "detail": "文件存在且非空"
+    },
+    {
+      "id": "file:pages/index/index.wxml",
+      "status": "PASS",
+      "detail": "文件存在且非空"
+    },
+    {
+      "id": "file:pages/index/index.wxss",
+      "status": "PASS",
+      "detail": "文件存在且非空"
+    },
+    {
+      "id": "file:pages/game/game.js",
+      "status": "PASS",
+      "detail": "文件存在且非空"
+    },
+    {
+      "id": "file:pages/game/game.json",
+      "status": "PASS",
+      "detail": "文件存在且非空"
+    },
+    {
+      "id": "file:pages/game/game.wxml",
+      "status": "PASS",
+      "detail": "文件存在且非空"
+    },
+    {
+      "id": "file:pages/game/game.wxss",
+      "status": "PASS",
+      "detail": "文件存在且非空"
+    },
+    {
+      "id": "file:README.md",
+      "status": "PASS",
+      "detail": "文件存在且非空"
+    },
+    {
+      "id": "json:app.json",
+      "status": "PASS",
+      "detail": "JSON 语法有效"
+    },
+    {
+      "id": "json:project.config.json",
+      "status": "PASS",
+      "detail": "JSON 语法有效"
+    },
+    {
+      "id": "json:sitemap.json",
+      "status": "PASS",
+      "detail": "JSON 语法有效"
+    },
+    {
+      "id": "json:pages/index/index.json",
+      "status": "PASS",
+      "detail": "JSON 语法有效"
+    },
+    {
+      "id": "json:pages/game/game.json",
+      "status": "PASS",
+      "detail": "JSON 语法有效"
+    },
+    {
+      "id": "javascript:app.js",
+      "status": "PASS",
+      "detail": "JavaScript 语法有效"
+    },
+    {
+      "id": "javascript:pages/index/index.js",
+      "status": "PASS",
+      "detail": "JavaScript 语法有效"
+    },
+    {
+      "id": "javascript:pages/game/game.js",
+      "status": "PASS",
+      "detail": "JavaScript 语法有效"
+    },
+    {
+      "id": "app:page-routes",
+      "status": "PASS",
+      "detail": "app.json 包含列表页和游戏页路由"
+    },
+    {
+      "id": "project:compile-type",
+      "status": "PASS",
+      "detail": "项目类型为 miniprogram"
+    },
+    {
+      "id": "project:url-check",
+      "status": "PASS",
+      "detail": "业务域名校验保持开启"
+    },
+    {
+      "id": "app:base-url-empty",
+      "status": "PASS",
+      "detail": "默认 H5 域名为空"
+    },
+    {
+      "id": "route:01-five-seconds-later.html",
+      "status": "PASS",
+      "detail": "游戏承载页包含 01-five-seconds-later.html"
+    },
+    {
+      "id": "route:02-world-mender.html",
+      "status": "PASS",
+      "detail": "游戏承载页包含 02-world-mender.html"
+    },
+    {
+      "id": "route:03-rift-hunter.html",
+      "status": "PASS",
+      "detail": "游戏承载页包含 03-rift-hunter.html"
+    },
+    {
+      "id": "guard:no-login-or-payment",
+      "status": "PASS",
+      "detail": "试玩壳未接入登录或支付"
+    },
+    {
+      "id": "runtime:page-registration",
+      "status": "PASS",
+      "detail": "游戏承载页已注册 Page"
+    },
+    {
+      "id": "guard:invalid-base-url:1",
+      "status": "PASS",
+      "detail": "拒绝非法地址 (empty)"
+    },
+    {
+      "id": "guard:invalid-base-url:2",
+      "status": "PASS",
+      "detail": "拒绝非法地址 http://game.example.com/path"
+    },
+    {
+      "id": "guard:invalid-base-url:3",
+      "status": "PASS",
+      "detail": "拒绝非法地址 https:///broken"
+    },
+    {
+      "id": "guard:invalid-base-url:4",
+      "status": "PASS",
+      "detail": "拒绝非法地址 https://game..example.com/path"
+    },
+    {
+      "id": "guard:invalid-base-url:5",
+      "status": "PASS",
+      "detail": "拒绝非法地址 https://game.example.com:8443/path"
+    },
+    {
+      "id": "guard:invalid-base-url:6",
+      "status": "PASS",
+      "detail": "拒绝非法地址 https://game.example.com/path?env=test"
+    },
+    {
+      "id": "guard:invalid-base-url:7",
+      "status": "PASS",
+      "detail": "拒绝非法地址 https://game.example.com/path#preview"
+    },
+    {
+      "id": "guard:invalid-base-url:8",
+      "status": "PASS",
+      "detail": "拒绝非法地址 https://user:secret@game.example.com/path"
+    },
+    {
+      "id": "route:valid-https-base-url",
+      "status": "PASS",
+      "detail": "合法 HTTPS 目录正确拼接游戏地址"
+    },
+    {
+      "id": "guard:unknown-game",
+      "status": "PASS",
+      "detail": "未知游戏参数进入明确错误态"
+    },
+    {
+      "id": "navigation:back-fallback",
+      "status": "PASS",
+      "detail": "深链返回失败时重启到列表页"
+    },
+    {
+      "id": "template:guarded-web-view",
+      "status": "PASS",
+      "detail": "web-view 仅在配置有效时显示"
+    },
+    {
+      "id": "template:error-fallback",
+      "status": "PASS",
+      "detail": "域名未配置时显示错误态"
+    },
+    {
+      "id": "index:game:five",
+      "status": "PASS",
+      "detail": "首页包含游戏 five"
+    },
+    {
+      "id": "index:game:mender",
+      "status": "PASS",
+      "detail": "首页包含游戏 mender"
+    },
+    {
+      "id": "index:game:hunter",
+      "status": "PASS",
+      "detail": "首页包含游戏 hunter"
+    }
+  ]
+}

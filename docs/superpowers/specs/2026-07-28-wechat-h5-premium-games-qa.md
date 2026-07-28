@@ -56,6 +56,7 @@ world-mender          sound-bus PASS
 | 状态播报 | PASS | 三款均有离散 `aria-live`/`role=status`；高频 HUD 不作为直播区 |
 | 结算焦点 | PASS | 三款胜负结算均播报结果并把焦点移入带标题的对话层；重玩后焦点返回游戏容器 |
 | 自然速度性能预警 | PASS | 本地 Edge、390×844、DPR2、每款约 8 秒；三款 rAF P95 为 18.1–18.2ms、最大 19.3ms、Long Task 为 0 |
+| 自然速度长测 | PASS WITH WARNING | 每款约 2 分钟；三款 rAF P95 18.2ms、Long Task 0、DOM 增量 0；《裂隙猎人》CDP Nodes 波动预警保留，真实 DOM 111 与事件监听 28 保持不变 |
 | 生命周期 | PASS | 测试注入 `document.hidden=true` 后三款均进入暂停，等待期间局内时间变化不超过 100ms；恢复可见后由玩家主动继续 |
 | 公共事件 | PASS | 三款确定性路径均在运行时实际发出必需九类公共事件；事件信封逐条校验 `source/version/gameId/runId/event/ts/payload` |
 | 大厅事件安全 | PASS | HTTP 只接收同源窗口消息，`file://` 只接收本地 `null` origin；事件名、`runId`、时间戳和 payload 类型受限，非同源或 HTML 注入事件不能写入记录或伪造进度 |
@@ -82,6 +83,14 @@ node tools/profile-wechat-h5-premium-games.mjs
 ```
 
 结果位于 `test-results/wechat-h5-premium-games/performance.json`。该短测只用于浏览器回归预警，不代表微信真机帧率、内存、功耗或热稳定性。
+
+长测命令：
+
+```powershell
+node tools/profile-wechat-h5-longrun.mjs
+```
+
+结果位于 `test-results/wechat-h5-premium-games/longrun-performance.json`。`PASS_WITH_WARNINGS` 不等于内存泄漏结论：本轮《裂隙猎人》的 CDP Nodes 在采样间多次回落，真实 DOM、事件监听、Long Task 和 JS 堆均未达到硬失败阈值。该预警必须带到微信真机长时验收，不得删除或改写成无风险。
 
 ## 3. 《五秒之后》
 

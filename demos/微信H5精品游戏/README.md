@@ -47,6 +47,14 @@ node tools/profile-wechat-h5-premium-games.mjs
 
 该脚本在本地移动视口中各运行约 8 秒并输出 rAF 帧间隔、Long Task 和 JS 堆摘要，只用于回归预警，不替代微信真机性能测试。
 
+自然速度长时浏览器预警：
+
+```powershell
+node tools/profile-wechat-h5-longrun.mjs
+```
+
+该脚本为三款游戏各运行约 2 分钟并记录堆、DOM、CDP Nodes、事件监听和帧时间趋势。当前三款无硬失败、Long Task 为 0、DOM 增量为 0；《裂隙猎人》保留一项 CDP Nodes 波动预警。CDP 数量在采样间反复回落，真实 DOM 和监听数保持不变，因此仅作为后续真机内存测试的观察项，不等同于已证明泄漏或已证明无泄漏。
+
 ## 微信小程序 WebView 接入
 
 当前交付适合用普通微信小程序的 `web-view` 作为玩法验证入口。部署前需要：

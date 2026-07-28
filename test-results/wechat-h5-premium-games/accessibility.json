@@ -1,9 +1,30 @@
 {
-  "generatedAt": "2026-07-28T17:34:18.347Z",
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-28T19:02:26.605Z",
+  "gitCommit": "390ddb238018f234224bdca7b7e4df8b6f228c25",
+  "command": "\"D:\\\\Program Files\\\\nodejs\\\\node.exe\" C:\\Users\\z3635\\官网改动\\tools\\verify-wechat-h5-accessibility.mjs",
   "environment": {
+    "platform": "win32",
+    "release": "10.0.26200",
+    "arch": "x64",
+    "nodeVersion": "v24.12.0",
+    "browserVersion": "150.0.4078.99",
+    "runner": "playwright-core",
+    "origin": "http://127.0.0.1:62955",
+    "baselineViewport": {
+      "width": 390,
+      "height": 844
+    }
+  },
+  "sourceState": {
+    "testedPathsDirty": false,
+    "testedPathCount": 8,
+    "statusCheck": "git-status-porcelain-v1"
+  },
+  "testEnvironment": {
     "browser": "本地 Edge/Chrome（由脚本自动发现）",
     "runner": "playwright-core",
-    "origin": "http://127.0.0.1:56010",
+    "origin": "http://127.0.0.1:62955",
     "baselineViewport": {
       "width": 390,
       "height": 844
@@ -34,10 +55,19 @@
     "减少动态效果检查覆盖 prefers-reduced-motion 媒体查询、可观察 CSS/控件状态与持续可操作性，不对页面未暴露的内部状态作假设。",
     "隐藏/恢复由测试注入 document.hidden/visibilityState 并派发 visibilitychange，不等同移动系统回收 WebView 进程。"
   ],
+  "allowedFailures": [
+    "five-seconds-later:zoom-200",
+    "world-mender:zoom-200",
+    "rift-hunter:zoom-200"
+  ],
+  "unexpectedFailures": [],
+  "exitCode": 0,
   "summary": {
     "total": 28,
-    "pass": 16,
-    "fail": 12
+    "pass": 25,
+    "fail": 3,
+    "allowedFail": 3,
+    "unexpectedFail": 0
   },
   "results": [
     {
@@ -227,16 +257,16 @@
         },
         {
           "pass": true,
-          "message": "主入口控件仍在可视区域",
-          "details": null
-        },
-        {
-          "pass": true,
           "message": "没有横向页面溢出",
           "details": {
             "scrollWidth": 844,
             "clientWidth": 844
           }
+        },
+        {
+          "pass": true,
+          "message": "主入口控件仍在可视区域",
+          "details": null
         }
       ],
       "metrics": {
@@ -268,7 +298,13 @@
           }
         ],
         "clippedText": [],
-        "canvas": null
+        "canvas": null,
+        "primaryControlVisible": true,
+        "rotateGuard": {
+          "visible": false,
+          "text": ""
+        },
+        "orientation": null
       },
       "errors": [],
       "externalRequests": [],
@@ -296,16 +332,16 @@
         },
         {
           "pass": true,
-          "message": "主入口控件仍在可视区域",
-          "details": null
-        },
-        {
-          "pass": true,
           "message": "没有横向页面溢出",
           "details": {
             "scrollWidth": 1200,
             "clientWidth": 1200
           }
+        },
+        {
+          "pass": true,
+          "message": "主入口控件仍在可视区域",
+          "details": null
         }
       ],
       "metrics": {
@@ -337,7 +373,13 @@
           }
         ],
         "clippedText": [],
-        "canvas": null
+        "canvas": null,
+        "primaryControlVisible": true,
+        "rotateGuard": {
+          "visible": false,
+          "text": ""
+        },
+        "orientation": null
       },
       "errors": [],
       "externalRequests": [],
@@ -384,11 +426,8 @@
               "outline": "1px auto rgb(16, 16, 16)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "a",
-                "id": null,
-                "className": "play"
-              },
+              "modalId": null,
+              "insideModal": false,
               "inViewport": true
             },
             {
@@ -400,11 +439,8 @@
               "outline": "1px auto rgb(16, 16, 16)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "a",
-                "id": null,
-                "className": "play"
-              },
+              "modalId": null,
+              "insideModal": false,
               "inViewport": true
             },
             {
@@ -416,11 +452,8 @@
               "outline": "1px auto rgb(16, 16, 16)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "a",
-                "id": null,
-                "className": "play"
-              },
+              "modalId": null,
+              "insideModal": false,
               "inViewport": true
             },
             {
@@ -432,11 +465,8 @@
               "outline": "1px auto rgb(16, 16, 16)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "button",
-                "id": "reset",
-                "className": "reset"
-              },
+              "modalId": null,
+              "insideModal": false,
               "inViewport": true
             },
             {
@@ -448,11 +478,8 @@
               "outline": "1px auto rgb(16, 16, 16)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "a",
-                "id": null,
-                "className": "play"
-              },
+              "modalId": null,
+              "insideModal": false,
               "inViewport": true
             }
           ]
@@ -470,11 +497,8 @@
               "outline": "1px auto rgb(16, 16, 16)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "a",
-                "id": null,
-                "className": "play"
-              },
+              "modalId": null,
+              "insideModal": false,
               "inViewport": true
             },
             {
@@ -486,11 +510,8 @@
               "outline": "1px auto rgb(16, 16, 16)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "a",
-                "id": null,
-                "className": "play"
-              },
+              "modalId": null,
+              "insideModal": false,
               "inViewport": true
             },
             {
@@ -502,11 +523,8 @@
               "outline": "1px auto rgb(16, 16, 16)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "a",
-                "id": null,
-                "className": "play"
-              },
+              "modalId": null,
+              "insideModal": false,
               "inViewport": true
             },
             {
@@ -518,11 +536,8 @@
               "outline": "1px auto rgb(16, 16, 16)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "button",
-                "id": "reset",
-                "className": "reset"
-              },
+              "modalId": null,
+              "insideModal": false,
               "inViewport": true
             },
             {
@@ -534,11 +549,8 @@
               "outline": "1px auto rgb(16, 16, 16)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "a",
-                "id": null,
-                "className": "play"
-              },
+              "modalId": null,
+              "insideModal": false,
               "inViewport": true
             }
           ]
@@ -556,11 +568,8 @@
               "outline": "1px auto rgb(16, 16, 16)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "a",
-                "id": null,
-                "className": "play"
-              },
+              "modalId": null,
+              "insideModal": false,
               "inViewport": true
             },
             {
@@ -572,11 +581,8 @@
               "outline": "1px auto rgb(16, 16, 16)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "a",
-                "id": null,
-                "className": "play"
-              },
+              "modalId": null,
+              "insideModal": false,
               "inViewport": true
             },
             {
@@ -588,11 +594,8 @@
               "outline": "1px auto rgb(16, 16, 16)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "a",
-                "id": null,
-                "className": "play"
-              },
+              "modalId": null,
+              "insideModal": false,
               "inViewport": true
             },
             {
@@ -604,11 +607,8 @@
               "outline": "1px auto rgb(16, 16, 16)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "button",
-                "id": "reset",
-                "className": "reset"
-              },
+              "modalId": null,
+              "insideModal": false,
               "inViewport": true
             },
             {
@@ -620,11 +620,8 @@
               "outline": "1px auto rgb(16, 16, 16)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "a",
-                "id": null,
-                "className": "play"
-              },
+              "modalId": null,
+              "insideModal": false,
               "inViewport": true
             }
           ]
@@ -642,11 +639,8 @@
             "outline": "1px auto rgb(16, 16, 16)",
             "boxShadow": "none",
             "occluded": false,
-            "topElement": {
-              "tag": "a",
-              "id": null,
-              "className": "play"
-            },
+            "modalId": null,
+            "insideModal": false,
             "inViewport": true
           },
           {
@@ -658,11 +652,8 @@
             "outline": "1px auto rgb(16, 16, 16)",
             "boxShadow": "none",
             "occluded": false,
-            "topElement": {
-              "tag": "a",
-              "id": null,
-              "className": "play"
-            },
+            "modalId": null,
+            "insideModal": false,
             "inViewport": true
           },
           {
@@ -674,11 +665,8 @@
             "outline": "1px auto rgb(16, 16, 16)",
             "boxShadow": "none",
             "occluded": false,
-            "topElement": {
-              "tag": "a",
-              "id": null,
-              "className": "play"
-            },
+            "modalId": null,
+            "insideModal": false,
             "inViewport": true
           },
           {
@@ -690,11 +678,8 @@
             "outline": "1px auto rgb(16, 16, 16)",
             "boxShadow": "none",
             "occluded": false,
-            "topElement": {
-              "tag": "button",
-              "id": "reset",
-              "className": "reset"
-            },
+            "modalId": null,
+            "insideModal": false,
             "inViewport": true
           },
           {
@@ -706,11 +691,8 @@
             "outline": "3px none rgb(255, 255, 255)",
             "boxShadow": "none",
             "occluded": false,
-            "topElement": {
-              "tag": "div",
-              "id": null,
-              "className": "icon"
-            },
+            "modalId": null,
+            "insideModal": false,
             "inViewport": true
           },
           {
@@ -722,14 +704,12 @@
             "outline": "1px auto rgb(16, 16, 16)",
             "boxShadow": "none",
             "occluded": false,
-            "topElement": {
-              "tag": "a",
-              "id": null,
-              "className": "play"
-            },
+            "modalId": null,
+            "insideModal": false,
             "inViewport": true
           }
-        ]
+        ],
+        "modal": null
       },
       "errors": [],
       "externalRequests": [],
@@ -739,7 +719,7 @@
     {
       "page": "hub",
       "scenario": "reduced-motion",
-      "status": "FAIL",
+      "status": "PASS",
       "assertions": [
         {
           "pass": true,
@@ -757,58 +737,14 @@
           "details": null
         },
         {
-          "pass": false,
+          "pass": true,
           "message": "大厅在减少动态效果环境下没有持续 CSS 动画或过渡",
-          "details": [
-            {
-              "tag": "a",
-              "id": null,
-              "className": "play",
-              "animationDuration": "0s",
-              "transitionDuration": "0.16s, 0.16s"
-            },
-            {
-              "tag": "a",
-              "id": null,
-              "className": "play",
-              "animationDuration": "0s",
-              "transitionDuration": "0.16s, 0.16s"
-            },
-            {
-              "tag": "a",
-              "id": null,
-              "className": "play",
-              "animationDuration": "0s",
-              "transitionDuration": "0.16s, 0.16s"
-            }
-          ]
+          "details": []
         }
       ],
       "metrics": {
         "mediaMatches": true,
-        "motionNodes": [
-          {
-            "tag": "a",
-            "id": null,
-            "className": "play",
-            "animationDuration": "0s",
-            "transitionDuration": "0.16s, 0.16s"
-          },
-          {
-            "tag": "a",
-            "id": null,
-            "className": "play",
-            "animationDuration": "0s",
-            "transitionDuration": "0.16s, 0.16s"
-          },
-          {
-            "tag": "a",
-            "id": null,
-            "className": "play",
-            "animationDuration": "0s",
-            "transitionDuration": "0.16s, 0.16s"
-          }
-        ],
+        "motionNodes": [],
         "controlState": null
       },
       "errors": [],
@@ -1030,7 +966,7 @@
     {
       "page": "five-seconds-later",
       "scenario": "landscape",
-      "status": "FAIL",
+      "status": "PASS",
       "assertions": [
         {
           "pass": true,
@@ -1040,12 +976,7 @@
         {
           "pass": true,
           "message": "存在可读页面文案",
-          "details": 129
-        },
-        {
-          "pass": false,
-          "message": "主入口控件仍在可视区域",
-          "details": null
+          "details": 29
         },
         {
           "pass": true,
@@ -1057,12 +988,1468 @@
         },
         {
           "pass": true,
-          "message": "游戏 Canvas 保持最低可操作尺寸",
+          "message": "游戏保持可操作尺寸，或显示明确竖屏阻断",
           "details": {
-            "x": 207,
-            "y": 0,
-            "width": 430,
-            "height": 390
+            "playable": false,
+            "rotateGuard": {
+              "visible": true,
+              "text": "请旋转至竖屏\n      时间裂隙只在纵向稳定"
+            },
+            "canvas": {
+              "x": 207,
+              "y": 0,
+              "width": 430,
+              "height": 390
+            }
+          }
+        },
+        {
+          "pass": true,
+          "message": "短横屏旋转层声明为当前可访问模态对话框",
+          "details": {
+            "id": "rotateGuard",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaHidden": "false",
+            "inert": false,
+            "visible": true
+          }
+        },
+        {
+          "pass": true,
+          "message": "短横屏焦点进入旋转层",
+          "details": "rotateGuard"
+        },
+        {
+          "pass": true,
+          "message": "短横屏时 Canvas、控制栏及底层模态均被 inert 隔离",
+          "details": [
+            {
+              "id": "game",
+              "role": null,
+              "ariaModal": null,
+              "ariaHidden": null,
+              "inert": true,
+              "visible": true
+            },
+            {
+              "id": "controls",
+              "role": null,
+              "ariaModal": null,
+              "ariaHidden": null,
+              "inert": true,
+              "visible": true
+            },
+            {
+              "id": "introOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            {
+              "id": "pauseOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            {
+              "id": "resultOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            }
+          ]
+        },
+        {
+          "pass": true,
+          "message": "回到竖屏后恢复开场层及其主入口焦点",
+          "details": {
+            "activeElement": "startBtn",
+            "guard": {
+              "id": "rotateGuard",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "intro": {
+              "id": "introOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "false",
+              "inert": false,
+              "visible": true
+            },
+            "pause": {
+              "id": "pauseOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "result": {
+              "id": "resultOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "background": [
+              {
+                "id": "game",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "controls",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "false",
+                "inert": false,
+                "visible": true
+              },
+              {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              }
+            ],
+            "allBackgroundInert": false,
+            "state": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtba-u8d5zo",
+              "mode": "intro",
+              "phase": "awakening",
+              "objective": "持续移动，生成第一条五秒回声",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 0,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": false,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 0,
+              "lastDamageSource": ""
+            }
+          }
+        },
+        {
+          "pass": true,
+          "message": "开场状态跨横竖屏切换保持不变",
+          "details": {
+            "before": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtba-u8d5zo",
+              "mode": "intro",
+              "phase": "awakening",
+              "objective": "持续移动，生成第一条五秒回声",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 0,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": false,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 0,
+              "lastDamageSource": ""
+            },
+            "after": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtba-u8d5zo",
+              "mode": "intro",
+              "phase": "awakening",
+              "objective": "持续移动，生成第一条五秒回声",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 0,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": false,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 0,
+              "lastDamageSource": ""
+            }
+          }
+        },
+        {
+          "pass": true,
+          "message": "局内进入短横屏后旋转层取得焦点并隔离暂停层",
+          "details": {
+            "activeElement": "rotateGuard",
+            "guard": {
+              "id": "rotateGuard",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "false",
+              "inert": false,
+              "visible": true
+            },
+            "intro": {
+              "id": "introOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "pause": {
+              "id": "pauseOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "result": {
+              "id": "resultOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "background": [
+              {
+                "id": "game",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "controls",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              }
+            ],
+            "allBackgroundInert": true,
+            "state": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtpk-mvmael",
+              "mode": "paused",
+              "phase": "awakening",
+              "objective": "清除锚点可降低压力（剩 10）",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 10,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": true,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 1,
+              "lastDamageSource": ""
+            }
+          }
+        },
+        {
+          "pass": true,
+          "message": "局内进入短横屏后保持暂停且局时冻结",
+          "details": {
+            "paused": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtpk-mvmael",
+              "mode": "paused",
+              "phase": "awakening",
+              "objective": "清除锚点可降低压力（剩 10）",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 10,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": true,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 1,
+              "lastDamageSource": ""
+            },
+            "frozen": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtpk-mvmael",
+              "mode": "paused",
+              "phase": "awakening",
+              "objective": "清除锚点可降低压力（剩 10）",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 10,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": true,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 1,
+              "lastDamageSource": ""
+            }
+          }
+        },
+        {
+          "pass": true,
+          "message": "局内回到竖屏后恢复暂停层与继续按钮焦点",
+          "details": {
+            "activeElement": "resumeBtn",
+            "guard": {
+              "id": "rotateGuard",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "intro": {
+              "id": "introOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "pause": {
+              "id": "pauseOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "false",
+              "inert": false,
+              "visible": true
+            },
+            "result": {
+              "id": "resultOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "background": [
+              {
+                "id": "game",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "controls",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "false",
+                "inert": false,
+                "visible": true
+              },
+              {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              }
+            ],
+            "allBackgroundInert": false,
+            "state": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtpk-mvmael",
+              "mode": "paused",
+              "phase": "awakening",
+              "objective": "清除锚点可降低压力（剩 10）",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 10,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": true,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 1,
+              "lastDamageSource": ""
+            }
+          }
+        },
+        {
+          "pass": true,
+          "message": "旋转恢复后仍需玩家主动继续同一局游戏",
+          "details": {
+            "before": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtpk-mvmael",
+              "mode": "playing",
+              "phase": "awakening",
+              "objective": "清除锚点可降低压力（剩 10）",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 10,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": false,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 1,
+              "lastDamageSource": ""
+            },
+            "after": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtpk-mvmael",
+              "mode": "paused",
+              "phase": "awakening",
+              "objective": "清除锚点可降低压力（剩 10）",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 10,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": true,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 1,
+              "lastDamageSource": ""
+            }
+          }
+        },
+        {
+          "pass": true,
+          "message": "测试态可驱动结算层旋转恢复场景",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "结算状态进入短横屏后旋转层优先且结果层 inert",
+          "details": {
+            "before": {
+              "activeElement": "resultOverlay",
+              "guard": {
+                "id": "rotateGuard",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              "intro": {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              "pause": {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              "result": {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "false",
+                "inert": false,
+                "visible": true
+              },
+              "background": [
+                {
+                  "id": "game",
+                  "role": null,
+                  "ariaModal": null,
+                  "ariaHidden": null,
+                  "inert": true,
+                  "visible": true
+                },
+                {
+                  "id": "controls",
+                  "role": null,
+                  "ariaModal": null,
+                  "ariaHidden": null,
+                  "inert": true,
+                  "visible": true
+                },
+                {
+                  "id": "introOverlay",
+                  "role": "dialog",
+                  "ariaModal": "true",
+                  "ariaHidden": "true",
+                  "inert": true,
+                  "visible": false
+                },
+                {
+                  "id": "pauseOverlay",
+                  "role": "dialog",
+                  "ariaModal": "true",
+                  "ariaHidden": "true",
+                  "inert": true,
+                  "visible": false
+                },
+                {
+                  "id": "resultOverlay",
+                  "role": "dialog",
+                  "ariaModal": "true",
+                  "ariaHidden": "false",
+                  "inert": false,
+                  "visible": true
+                }
+              ],
+              "allBackgroundInert": false,
+              "state": {
+                "gameId": "five-seconds-later",
+                "runId": "five-seconds-later-ms50vtpk-mvmael",
+                "mode": "lost",
+                "phase": "awakening",
+                "objective": "清除锚点可降低压力（剩 10）",
+                "elapsed": 0,
+                "remaining": 180,
+                "energy": 100,
+                "player": {
+                  "x": 195,
+                  "y": 640
+                },
+                "target": {
+                  "x": 195,
+                  "y": 640
+                },
+                "echoCount": 0,
+                "maxEchoes": 0,
+                "echoes": [],
+                "pathPoints": 1,
+                "targetsDestroyed": 0,
+                "targetsRemaining": 10,
+                "switchActivated": false,
+                "switchCharge": 0,
+                "collabCount": 0,
+                "shieldsRemaining": 4,
+                "gates": [
+                  {
+                    "slot": 0,
+                    "primed": false,
+                    "broken": false
+                  },
+                  {
+                    "slot": 1,
+                    "primed": false,
+                    "broken": false
+                  },
+                  {
+                    "slot": 2,
+                    "primed": false,
+                    "broken": false
+                  },
+                  {
+                    "slot": 3,
+                    "primed": false,
+                    "broken": false
+                  }
+                ],
+                "recordingSlot": 0,
+                "highlightedGateSlot": null,
+                "message": "拖动光标，留下第一段五秒轨迹",
+                "coreVisible": false,
+                "coreHp": 18,
+                "paused": false,
+                "testMode": true,
+                "timeScale": 1,
+                "seed": 20260728,
+                "layoutVersion": 1,
+                "lastDamageSource": ""
+              }
+            },
+            "landscape": {
+              "activeElement": "rotateGuard",
+              "guard": {
+                "id": "rotateGuard",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "false",
+                "inert": false,
+                "visible": true
+              },
+              "intro": {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              "pause": {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              "result": {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              "background": [
+                {
+                  "id": "game",
+                  "role": null,
+                  "ariaModal": null,
+                  "ariaHidden": null,
+                  "inert": true,
+                  "visible": true
+                },
+                {
+                  "id": "controls",
+                  "role": null,
+                  "ariaModal": null,
+                  "ariaHidden": null,
+                  "inert": true,
+                  "visible": true
+                },
+                {
+                  "id": "introOverlay",
+                  "role": "dialog",
+                  "ariaModal": "true",
+                  "ariaHidden": "true",
+                  "inert": true,
+                  "visible": false
+                },
+                {
+                  "id": "pauseOverlay",
+                  "role": "dialog",
+                  "ariaModal": "true",
+                  "ariaHidden": "true",
+                  "inert": true,
+                  "visible": false
+                },
+                {
+                  "id": "resultOverlay",
+                  "role": "dialog",
+                  "ariaModal": "true",
+                  "ariaHidden": "true",
+                  "inert": true,
+                  "visible": false
+                }
+              ],
+              "allBackgroundInert": true,
+              "state": {
+                "gameId": "five-seconds-later",
+                "runId": "five-seconds-later-ms50vtpk-mvmael",
+                "mode": "lost",
+                "phase": "awakening",
+                "objective": "清除锚点可降低压力（剩 10）",
+                "elapsed": 0,
+                "remaining": 180,
+                "energy": 100,
+                "player": {
+                  "x": 195,
+                  "y": 640
+                },
+                "target": {
+                  "x": 195,
+                  "y": 640
+                },
+                "echoCount": 0,
+                "maxEchoes": 0,
+                "echoes": [],
+                "pathPoints": 1,
+                "targetsDestroyed": 0,
+                "targetsRemaining": 10,
+                "switchActivated": false,
+                "switchCharge": 0,
+                "collabCount": 0,
+                "shieldsRemaining": 4,
+                "gates": [
+                  {
+                    "slot": 0,
+                    "primed": false,
+                    "broken": false
+                  },
+                  {
+                    "slot": 1,
+                    "primed": false,
+                    "broken": false
+                  },
+                  {
+                    "slot": 2,
+                    "primed": false,
+                    "broken": false
+                  },
+                  {
+                    "slot": 3,
+                    "primed": false,
+                    "broken": false
+                  }
+                ],
+                "recordingSlot": 0,
+                "highlightedGateSlot": null,
+                "message": "拖动光标，留下第一段五秒轨迹",
+                "coreVisible": false,
+                "coreHp": 18,
+                "paused": false,
+                "testMode": true,
+                "timeScale": 1,
+                "seed": 20260728,
+                "layoutVersion": 1,
+                "lastDamageSource": ""
+              }
+            }
+          }
+        },
+        {
+          "pass": true,
+          "message": "回到竖屏后恢复结算层焦点且游戏结果保持不变",
+          "details": {
+            "before": {
+              "activeElement": "resultOverlay",
+              "guard": {
+                "id": "rotateGuard",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              "intro": {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              "pause": {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              "result": {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "false",
+                "inert": false,
+                "visible": true
+              },
+              "background": [
+                {
+                  "id": "game",
+                  "role": null,
+                  "ariaModal": null,
+                  "ariaHidden": null,
+                  "inert": true,
+                  "visible": true
+                },
+                {
+                  "id": "controls",
+                  "role": null,
+                  "ariaModal": null,
+                  "ariaHidden": null,
+                  "inert": true,
+                  "visible": true
+                },
+                {
+                  "id": "introOverlay",
+                  "role": "dialog",
+                  "ariaModal": "true",
+                  "ariaHidden": "true",
+                  "inert": true,
+                  "visible": false
+                },
+                {
+                  "id": "pauseOverlay",
+                  "role": "dialog",
+                  "ariaModal": "true",
+                  "ariaHidden": "true",
+                  "inert": true,
+                  "visible": false
+                },
+                {
+                  "id": "resultOverlay",
+                  "role": "dialog",
+                  "ariaModal": "true",
+                  "ariaHidden": "false",
+                  "inert": false,
+                  "visible": true
+                }
+              ],
+              "allBackgroundInert": false,
+              "state": {
+                "gameId": "five-seconds-later",
+                "runId": "five-seconds-later-ms50vtpk-mvmael",
+                "mode": "lost",
+                "phase": "awakening",
+                "objective": "清除锚点可降低压力（剩 10）",
+                "elapsed": 0,
+                "remaining": 180,
+                "energy": 100,
+                "player": {
+                  "x": 195,
+                  "y": 640
+                },
+                "target": {
+                  "x": 195,
+                  "y": 640
+                },
+                "echoCount": 0,
+                "maxEchoes": 0,
+                "echoes": [],
+                "pathPoints": 1,
+                "targetsDestroyed": 0,
+                "targetsRemaining": 10,
+                "switchActivated": false,
+                "switchCharge": 0,
+                "collabCount": 0,
+                "shieldsRemaining": 4,
+                "gates": [
+                  {
+                    "slot": 0,
+                    "primed": false,
+                    "broken": false
+                  },
+                  {
+                    "slot": 1,
+                    "primed": false,
+                    "broken": false
+                  },
+                  {
+                    "slot": 2,
+                    "primed": false,
+                    "broken": false
+                  },
+                  {
+                    "slot": 3,
+                    "primed": false,
+                    "broken": false
+                  }
+                ],
+                "recordingSlot": 0,
+                "highlightedGateSlot": null,
+                "message": "拖动光标，留下第一段五秒轨迹",
+                "coreVisible": false,
+                "coreHp": 18,
+                "paused": false,
+                "testMode": true,
+                "timeScale": 1,
+                "seed": 20260728,
+                "layoutVersion": 1,
+                "lastDamageSource": ""
+              }
+            },
+            "after": {
+              "activeElement": "resultOverlay",
+              "guard": {
+                "id": "rotateGuard",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              "intro": {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              "pause": {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              "result": {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "false",
+                "inert": false,
+                "visible": true
+              },
+              "background": [
+                {
+                  "id": "game",
+                  "role": null,
+                  "ariaModal": null,
+                  "ariaHidden": null,
+                  "inert": true,
+                  "visible": true
+                },
+                {
+                  "id": "controls",
+                  "role": null,
+                  "ariaModal": null,
+                  "ariaHidden": null,
+                  "inert": true,
+                  "visible": true
+                },
+                {
+                  "id": "introOverlay",
+                  "role": "dialog",
+                  "ariaModal": "true",
+                  "ariaHidden": "true",
+                  "inert": true,
+                  "visible": false
+                },
+                {
+                  "id": "pauseOverlay",
+                  "role": "dialog",
+                  "ariaModal": "true",
+                  "ariaHidden": "true",
+                  "inert": true,
+                  "visible": false
+                },
+                {
+                  "id": "resultOverlay",
+                  "role": "dialog",
+                  "ariaModal": "true",
+                  "ariaHidden": "false",
+                  "inert": false,
+                  "visible": true
+                }
+              ],
+              "allBackgroundInert": false,
+              "state": {
+                "gameId": "five-seconds-later",
+                "runId": "five-seconds-later-ms50vtpk-mvmael",
+                "mode": "lost",
+                "phase": "awakening",
+                "objective": "清除锚点可降低压力（剩 10）",
+                "elapsed": 0,
+                "remaining": 180,
+                "energy": 100,
+                "player": {
+                  "x": 195,
+                  "y": 640
+                },
+                "target": {
+                  "x": 195,
+                  "y": 640
+                },
+                "echoCount": 0,
+                "maxEchoes": 0,
+                "echoes": [],
+                "pathPoints": 1,
+                "targetsDestroyed": 0,
+                "targetsRemaining": 10,
+                "switchActivated": false,
+                "switchCharge": 0,
+                "collabCount": 0,
+                "shieldsRemaining": 4,
+                "gates": [
+                  {
+                    "slot": 0,
+                    "primed": false,
+                    "broken": false
+                  },
+                  {
+                    "slot": 1,
+                    "primed": false,
+                    "broken": false
+                  },
+                  {
+                    "slot": 2,
+                    "primed": false,
+                    "broken": false
+                  },
+                  {
+                    "slot": 3,
+                    "primed": false,
+                    "broken": false
+                  }
+                ],
+                "recordingSlot": 0,
+                "highlightedGateSlot": null,
+                "message": "拖动光标，留下第一段五秒轨迹",
+                "coreVisible": false,
+                "coreHp": 18,
+                "paused": false,
+                "testMode": true,
+                "timeScale": 1,
+                "seed": 20260728,
+                "layoutVersion": 1,
+                "lastDamageSource": ""
+              }
+            }
           }
         }
       ],
@@ -1074,24 +2461,1273 @@
         "clientHeight": 390,
         "scrollWidth": 844,
         "scrollHeight": 390,
-        "bodyTextLength": 129,
-        "interactiveCount": 4,
-        "offscreenInteractive": [
-          {
-            "id": "startBtn",
-            "text": "进入时间裂隙"
-          },
-          {
-            "id": "motionSwitch",
-            "text": ""
-          }
-        ],
+        "bodyTextLength": 29,
+        "interactiveCount": 2,
+        "offscreenInteractive": [],
         "clippedText": [],
         "canvas": {
           "x": 207,
           "y": 0,
           "width": 430,
           "height": 390
+        },
+        "primaryControlVisible": false,
+        "rotateGuard": {
+          "visible": true,
+          "text": "请旋转至竖屏\n      时间裂隙只在纵向稳定"
+        },
+        "orientation": {
+          "initialLandscape": {
+            "activeElement": "rotateGuard",
+            "guard": {
+              "id": "rotateGuard",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "false",
+              "inert": false,
+              "visible": true
+            },
+            "intro": {
+              "id": "introOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "pause": {
+              "id": "pauseOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "result": {
+              "id": "resultOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "background": [
+              {
+                "id": "game",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "controls",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              }
+            ],
+            "allBackgroundInert": true,
+            "state": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtba-u8d5zo",
+              "mode": "intro",
+              "phase": "awakening",
+              "objective": "持续移动，生成第一条五秒回声",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 0,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": false,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 0,
+              "lastDamageSource": ""
+            }
+          },
+          "restoredIntro": {
+            "activeElement": "startBtn",
+            "guard": {
+              "id": "rotateGuard",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "intro": {
+              "id": "introOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "false",
+              "inert": false,
+              "visible": true
+            },
+            "pause": {
+              "id": "pauseOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "result": {
+              "id": "resultOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "background": [
+              {
+                "id": "game",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "controls",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "false",
+                "inert": false,
+                "visible": true
+              },
+              {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              }
+            ],
+            "allBackgroundInert": false,
+            "state": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtba-u8d5zo",
+              "mode": "intro",
+              "phase": "awakening",
+              "objective": "持续移动，生成第一条五秒回声",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 0,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": false,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 0,
+              "lastDamageSource": ""
+            }
+          },
+          "playingBeforeRotate": {
+            "activeElement": "gameShell",
+            "guard": {
+              "id": "rotateGuard",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "intro": {
+              "id": "introOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "pause": {
+              "id": "pauseOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "result": {
+              "id": "resultOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "background": [
+              {
+                "id": "game",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": false,
+                "visible": true
+              },
+              {
+                "id": "controls",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": false,
+                "visible": true
+              },
+              {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              }
+            ],
+            "allBackgroundInert": false,
+            "state": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtpk-mvmael",
+              "mode": "playing",
+              "phase": "awakening",
+              "objective": "清除锚点可降低压力（剩 10）",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 10,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": false,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 1,
+              "lastDamageSource": ""
+            }
+          },
+          "playingLandscape": {
+            "activeElement": "rotateGuard",
+            "guard": {
+              "id": "rotateGuard",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "false",
+              "inert": false,
+              "visible": true
+            },
+            "intro": {
+              "id": "introOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "pause": {
+              "id": "pauseOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "result": {
+              "id": "resultOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "background": [
+              {
+                "id": "game",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "controls",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              }
+            ],
+            "allBackgroundInert": true,
+            "state": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtpk-mvmael",
+              "mode": "paused",
+              "phase": "awakening",
+              "objective": "清除锚点可降低压力（剩 10）",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 10,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": true,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 1,
+              "lastDamageSource": ""
+            }
+          },
+          "frozenLandscape": {
+            "activeElement": "rotateGuard",
+            "guard": {
+              "id": "rotateGuard",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "false",
+              "inert": false,
+              "visible": true
+            },
+            "intro": {
+              "id": "introOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "pause": {
+              "id": "pauseOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "result": {
+              "id": "resultOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "background": [
+              {
+                "id": "game",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "controls",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              }
+            ],
+            "allBackgroundInert": true,
+            "state": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtpk-mvmael",
+              "mode": "paused",
+              "phase": "awakening",
+              "objective": "清除锚点可降低压力（剩 10）",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 10,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": true,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 1,
+              "lastDamageSource": ""
+            }
+          },
+          "restoredPause": {
+            "activeElement": "resumeBtn",
+            "guard": {
+              "id": "rotateGuard",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "intro": {
+              "id": "introOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "pause": {
+              "id": "pauseOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "false",
+              "inert": false,
+              "visible": true
+            },
+            "result": {
+              "id": "resultOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "background": [
+              {
+                "id": "game",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "controls",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "false",
+                "inert": false,
+                "visible": true
+              },
+              {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              }
+            ],
+            "allBackgroundInert": false,
+            "state": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtpk-mvmael",
+              "mode": "paused",
+              "phase": "awakening",
+              "objective": "清除锚点可降低压力（剩 10）",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 10,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": true,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 1,
+              "lastDamageSource": ""
+            }
+          },
+          "resultBeforeRotate": {
+            "activeElement": "resultOverlay",
+            "guard": {
+              "id": "rotateGuard",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "intro": {
+              "id": "introOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "pause": {
+              "id": "pauseOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "result": {
+              "id": "resultOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "false",
+              "inert": false,
+              "visible": true
+            },
+            "background": [
+              {
+                "id": "game",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "controls",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "false",
+                "inert": false,
+                "visible": true
+              }
+            ],
+            "allBackgroundInert": false,
+            "state": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtpk-mvmael",
+              "mode": "lost",
+              "phase": "awakening",
+              "objective": "清除锚点可降低压力（剩 10）",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 10,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": false,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 1,
+              "lastDamageSource": ""
+            }
+          },
+          "resultLandscape": {
+            "activeElement": "rotateGuard",
+            "guard": {
+              "id": "rotateGuard",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "false",
+              "inert": false,
+              "visible": true
+            },
+            "intro": {
+              "id": "introOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "pause": {
+              "id": "pauseOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "result": {
+              "id": "resultOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "background": [
+              {
+                "id": "game",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "controls",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              }
+            ],
+            "allBackgroundInert": true,
+            "state": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtpk-mvmael",
+              "mode": "lost",
+              "phase": "awakening",
+              "objective": "清除锚点可降低压力（剩 10）",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 10,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": false,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 1,
+              "lastDamageSource": ""
+            }
+          },
+          "restoredResult": {
+            "activeElement": "resultOverlay",
+            "guard": {
+              "id": "rotateGuard",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "intro": {
+              "id": "introOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "pause": {
+              "id": "pauseOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "true",
+              "inert": true,
+              "visible": false
+            },
+            "result": {
+              "id": "resultOverlay",
+              "role": "dialog",
+              "ariaModal": "true",
+              "ariaHidden": "false",
+              "inert": false,
+              "visible": true
+            },
+            "background": [
+              {
+                "id": "game",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "controls",
+                "role": null,
+                "ariaModal": null,
+                "ariaHidden": null,
+                "inert": true,
+                "visible": true
+              },
+              {
+                "id": "introOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "pauseOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "true",
+                "inert": true,
+                "visible": false
+              },
+              {
+                "id": "resultOverlay",
+                "role": "dialog",
+                "ariaModal": "true",
+                "ariaHidden": "false",
+                "inert": false,
+                "visible": true
+              }
+            ],
+            "allBackgroundInert": false,
+            "state": {
+              "gameId": "five-seconds-later",
+              "runId": "five-seconds-later-ms50vtpk-mvmael",
+              "mode": "lost",
+              "phase": "awakening",
+              "objective": "清除锚点可降低压力（剩 10）",
+              "elapsed": 0,
+              "remaining": 180,
+              "energy": 100,
+              "player": {
+                "x": 195,
+                "y": 640
+              },
+              "target": {
+                "x": 195,
+                "y": 640
+              },
+              "echoCount": 0,
+              "maxEchoes": 0,
+              "echoes": [],
+              "pathPoints": 1,
+              "targetsDestroyed": 0,
+              "targetsRemaining": 10,
+              "switchActivated": false,
+              "switchCharge": 0,
+              "collabCount": 0,
+              "shieldsRemaining": 4,
+              "gates": [
+                {
+                  "slot": 0,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 1,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 2,
+                  "primed": false,
+                  "broken": false
+                },
+                {
+                  "slot": 3,
+                  "primed": false,
+                  "broken": false
+                }
+              ],
+              "recordingSlot": 0,
+              "highlightedGateSlot": null,
+              "message": "拖动光标，留下第一段五秒轨迹",
+              "coreVisible": false,
+              "coreHp": 18,
+              "paused": false,
+              "testMode": true,
+              "timeScale": 1,
+              "seed": 20260728,
+              "layoutVersion": 1,
+              "lastDamageSource": ""
+            }
+          }
         }
       },
       "errors": [],
@@ -1106,7 +3742,7 @@
     {
       "page": "five-seconds-later",
       "scenario": "ultrawide-short",
-      "status": "FAIL",
+      "status": "PASS",
       "assertions": [
         {
           "pass": true,
@@ -1116,12 +3752,7 @@
         {
           "pass": true,
           "message": "存在可读页面文案",
-          "details": 129
-        },
-        {
-          "pass": false,
-          "message": "主入口控件仍在可视区域",
-          "details": null
+          "details": 29
         },
         {
           "pass": true,
@@ -1133,12 +3764,19 @@
         },
         {
           "pass": true,
-          "message": "游戏 Canvas 保持最低可操作尺寸",
+          "message": "游戏保持可操作尺寸，或显示明确竖屏阻断",
           "details": {
-            "x": 385,
-            "y": 0,
-            "width": 430,
-            "height": 390
+            "playable": false,
+            "rotateGuard": {
+              "visible": true,
+              "text": "请旋转至竖屏\n      时间裂隙只在纵向稳定"
+            },
+            "canvas": {
+              "x": 385,
+              "y": 0,
+              "width": 430,
+              "height": 390
+            }
           }
         }
       ],
@@ -1150,25 +3788,22 @@
         "clientHeight": 390,
         "scrollWidth": 1200,
         "scrollHeight": 390,
-        "bodyTextLength": 129,
-        "interactiveCount": 4,
-        "offscreenInteractive": [
-          {
-            "id": "startBtn",
-            "text": "进入时间裂隙"
-          },
-          {
-            "id": "motionSwitch",
-            "text": ""
-          }
-        ],
+        "bodyTextLength": 29,
+        "interactiveCount": 2,
+        "offscreenInteractive": [],
         "clippedText": [],
         "canvas": {
           "x": 385,
           "y": 0,
           "width": 430,
           "height": 390
-        }
+        },
+        "primaryControlVisible": false,
+        "rotateGuard": {
+          "visible": true,
+          "text": "请旋转至竖屏\n      时间裂隙只在纵向稳定"
+        },
+        "orientation": null
       },
       "errors": [],
       "externalRequests": [],
@@ -1182,7 +3817,7 @@
     {
       "page": "five-seconds-later",
       "scenario": "keyboard-focus",
-      "status": "FAIL",
+      "status": "PASS",
       "assertions": [
         {
           "pass": true,
@@ -1192,14 +3827,14 @@
         {
           "pass": true,
           "message": "存在可键盘聚焦控件",
-          "details": 4
+          "details": 2
         },
         {
           "pass": true,
           "message": "Tab 顺序覆盖全部当前可见控件",
           "details": {
-            "expected": 4,
-            "actual": 4
+            "expected": 2,
+            "actual": 2
           }
         },
         {
@@ -1208,34 +3843,15 @@
           "details": [
             {
               "tag": "button",
-              "id": "muteBtn",
+              "id": "motionSwitch",
               "href": null,
-              "text": "×",
+              "text": "",
               "visibleIndicator": true,
               "outline": "3px solid rgba(95, 234, 255, 0.8)",
-              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "introOverlay",
-                "className": "overlay show"
-              },
-              "inViewport": true
-            },
-            {
-              "tag": "button",
-              "id": "pauseBtn",
-              "href": null,
-              "text": "Ⅱ",
-              "visibleIndicator": true,
-              "outline": "3px solid rgba(95, 234, 255, 0.8)",
-              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "introOverlay",
-                "className": "overlay show"
-              },
+              "boxShadow": "none",
+              "occluded": false,
+              "modalId": "introOverlay",
+              "insideModal": true,
               "inViewport": true
             },
             {
@@ -1247,11 +3863,8 @@
               "outline": "3px solid rgba(95, 234, 255, 0.8)",
               "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
               "occluded": false,
-              "topElement": {
-                "tag": "button",
-                "id": "startBtn",
-                "className": "primary-button"
-              },
+              "modalId": "introOverlay",
+              "insideModal": true,
               "inViewport": true
             },
             {
@@ -1260,68 +3873,43 @@
               "href": null,
               "text": "",
               "visibleIndicator": true,
-              "outline": "1px auto rgb(16, 16, 16)",
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "button",
-                "id": "motionSwitch",
-                "className": "switch"
-              },
+              "modalId": "introOverlay",
+              "insideModal": true,
               "inViewport": true
             },
             {
               "tag": "button",
-              "id": "muteBtn",
+              "id": "startBtn",
               "href": null,
-              "text": "×",
+              "text": "进入时间裂隙",
               "visibleIndicator": true,
               "outline": "3px solid rgba(95, 234, 255, 0.8)",
-              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "introOverlay",
-                "className": "overlay show"
-              },
+              "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+              "occluded": false,
+              "modalId": "introOverlay",
+              "insideModal": true,
               "inViewport": true
             }
           ]
         },
         {
-          "pass": false,
+          "pass": true,
           "message": "键盘焦点不会进入视觉遮罩后的背景控件",
           "details": [
             {
               "tag": "button",
-              "id": "muteBtn",
+              "id": "motionSwitch",
               "href": null,
-              "text": "×",
+              "text": "",
               "visibleIndicator": true,
               "outline": "3px solid rgba(95, 234, 255, 0.8)",
-              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "introOverlay",
-                "className": "overlay show"
-              },
-              "inViewport": true
-            },
-            {
-              "tag": "button",
-              "id": "pauseBtn",
-              "href": null,
-              "text": "Ⅱ",
-              "visibleIndicator": true,
-              "outline": "3px solid rgba(95, 234, 255, 0.8)",
-              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "introOverlay",
-                "className": "overlay show"
-              },
+              "boxShadow": "none",
+              "occluded": false,
+              "modalId": "introOverlay",
+              "insideModal": true,
               "inViewport": true
             },
             {
@@ -1333,11 +3921,8 @@
               "outline": "3px solid rgba(95, 234, 255, 0.8)",
               "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
               "occluded": false,
-              "topElement": {
-                "tag": "button",
-                "id": "startBtn",
-                "className": "primary-button"
-              },
+              "modalId": "introOverlay",
+              "insideModal": true,
               "inViewport": true
             },
             {
@@ -1346,30 +3931,24 @@
               "href": null,
               "text": "",
               "visibleIndicator": true,
-              "outline": "1px auto rgb(16, 16, 16)",
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "button",
-                "id": "motionSwitch",
-                "className": "switch"
-              },
+              "modalId": "introOverlay",
+              "insideModal": true,
               "inViewport": true
             },
             {
               "tag": "button",
-              "id": "muteBtn",
+              "id": "startBtn",
               "href": null,
-              "text": "×",
+              "text": "进入时间裂隙",
               "visibleIndicator": true,
               "outline": "3px solid rgba(95, 234, 255, 0.8)",
-              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "introOverlay",
-                "className": "overlay show"
-              },
+              "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+              "occluded": false,
+              "modalId": "introOverlay",
+              "insideModal": true,
               "inViewport": true
             }
           ]
@@ -1380,34 +3959,15 @@
           "details": [
             {
               "tag": "button",
-              "id": "muteBtn",
+              "id": "motionSwitch",
               "href": null,
-              "text": "×",
+              "text": "",
               "visibleIndicator": true,
               "outline": "3px solid rgba(95, 234, 255, 0.8)",
-              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "introOverlay",
-                "className": "overlay show"
-              },
-              "inViewport": true
-            },
-            {
-              "tag": "button",
-              "id": "pauseBtn",
-              "href": null,
-              "text": "Ⅱ",
-              "visibleIndicator": true,
-              "outline": "3px solid rgba(95, 234, 255, 0.8)",
-              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "introOverlay",
-                "className": "overlay show"
-              },
+              "boxShadow": "none",
+              "occluded": false,
+              "modalId": "introOverlay",
+              "insideModal": true,
               "inViewport": true
             },
             {
@@ -1419,11 +3979,8 @@
               "outline": "3px solid rgba(95, 234, 255, 0.8)",
               "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
               "occluded": false,
-              "topElement": {
-                "tag": "button",
-                "id": "startBtn",
-                "className": "primary-button"
-              },
+              "modalId": "introOverlay",
+              "insideModal": true,
               "inViewport": true
             },
             {
@@ -1432,68 +3989,213 @@
               "href": null,
               "text": "",
               "visibleIndicator": true,
-              "outline": "1px auto rgb(16, 16, 16)",
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
               "boxShadow": "none",
               "occluded": false,
-              "topElement": {
-                "tag": "button",
-                "id": "motionSwitch",
-                "className": "switch"
-              },
+              "modalId": "introOverlay",
+              "insideModal": true,
               "inViewport": true
             },
             {
               "tag": "button",
-              "id": "muteBtn",
+              "id": "startBtn",
               "href": null,
-              "text": "×",
+              "text": "进入时间裂隙",
               "visibleIndicator": true,
               "outline": "3px solid rgba(95, 234, 255, 0.8)",
-              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "introOverlay",
-                "className": "overlay show"
-              },
+              "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+              "occluded": false,
+              "modalId": "introOverlay",
+              "insideModal": true,
               "inViewport": true
             }
           ]
+        },
+        {
+          "pass": true,
+          "message": "开场层声明为可见模态对话框",
+          "details": "introOverlay"
+        },
+        {
+          "pass": true,
+          "message": "初始焦点进入开场层",
+          "details": {
+            "tag": "button",
+            "id": "startBtn",
+            "href": null,
+            "text": "进入时间裂隙",
+            "visibleIndicator": true,
+            "outline": "3px solid rgba(95, 234, 255, 0.8)",
+            "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+            "occluded": false,
+            "modalId": "introOverlay",
+            "insideModal": true,
+            "inViewport": true
+          }
+        },
+        {
+          "pass": true,
+          "message": "开场层 Tab 循环不会离开当前模态层",
+          "details": [
+            {
+              "tag": "button",
+              "id": "motionSwitch",
+              "href": null,
+              "text": "",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "none",
+              "occluded": false,
+              "modalId": "introOverlay",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "进入时间裂隙",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+              "occluded": false,
+              "modalId": "introOverlay",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "motionSwitch",
+              "href": null,
+              "text": "",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "none",
+              "occluded": false,
+              "modalId": "introOverlay",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "进入时间裂隙",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+              "occluded": false,
+              "modalId": "introOverlay",
+              "insideModal": true,
+              "inViewport": true
+            }
+          ]
+        },
+        {
+          "pass": true,
+          "message": "开场层显示时背景控件均被 inert 隔离",
+          "details": []
+        },
+        {
+          "pass": true,
+          "message": "暂停层声明为可见模态对话框",
+          "details": "pauseOverlay"
+        },
+        {
+          "pass": true,
+          "message": "暂停焦点进入暂停层",
+          "details": {
+            "tag": "button",
+            "id": "resumeBtn",
+            "href": null,
+            "text": "继续行动",
+            "visibleIndicator": true,
+            "outline": "3px none rgb(255, 255, 255)",
+            "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+            "occluded": false,
+            "modalId": "pauseOverlay",
+            "insideModal": true,
+            "inViewport": true
+          }
+        },
+        {
+          "pass": true,
+          "message": "暂停层 Tab 循环不会离开当前模态层",
+          "details": [
+            {
+              "tag": "button",
+              "id": "restartBtn",
+              "href": null,
+              "text": "重新开始",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "none",
+              "occluded": false,
+              "modalId": "pauseOverlay",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "resumeBtn",
+              "href": null,
+              "text": "继续行动",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+              "occluded": false,
+              "modalId": "pauseOverlay",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "restartBtn",
+              "href": null,
+              "text": "重新开始",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "none",
+              "occluded": false,
+              "modalId": "pauseOverlay",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "resumeBtn",
+              "href": null,
+              "text": "继续行动",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+              "occluded": false,
+              "modalId": "pauseOverlay",
+              "insideModal": true,
+              "inViewport": true
+            }
+          ]
+        },
+        {
+          "pass": true,
+          "message": "暂停层显示时背景控件均被 inert 隔离",
+          "details": []
         }
       ],
       "metrics": {
-        "focusableCount": 4,
+        "focusableCount": 2,
         "sequence": [
           {
             "tag": "button",
-            "id": "muteBtn",
+            "id": "motionSwitch",
             "href": null,
-            "text": "×",
+            "text": "",
             "visibleIndicator": true,
             "outline": "3px solid rgba(95, 234, 255, 0.8)",
-            "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
-            "occluded": true,
-            "topElement": {
-              "tag": "section",
-              "id": "introOverlay",
-              "className": "overlay show"
-            },
-            "inViewport": true
-          },
-          {
-            "tag": "button",
-            "id": "pauseBtn",
-            "href": null,
-            "text": "Ⅱ",
-            "visibleIndicator": true,
-            "outline": "3px solid rgba(95, 234, 255, 0.8)",
-            "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
-            "occluded": true,
-            "topElement": {
-              "tag": "section",
-              "id": "introOverlay",
-              "className": "overlay show"
-            },
+            "boxShadow": "none",
+            "occluded": false,
+            "modalId": "introOverlay",
+            "insideModal": true,
             "inViewport": true
           },
           {
@@ -1505,11 +4207,8 @@
             "outline": "3px solid rgba(95, 234, 255, 0.8)",
             "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
             "occluded": false,
-            "topElement": {
-              "tag": "button",
-              "id": "startBtn",
-              "className": "primary-button"
-            },
+            "modalId": "introOverlay",
+            "insideModal": true,
             "inViewport": true
           },
           {
@@ -1518,49 +4217,171 @@
             "href": null,
             "text": "",
             "visibleIndicator": true,
-            "outline": "1px auto rgb(16, 16, 16)",
+            "outline": "3px solid rgba(95, 234, 255, 0.8)",
             "boxShadow": "none",
             "occluded": false,
-            "topElement": {
-              "tag": "button",
-              "id": "motionSwitch",
-              "className": "switch"
-            },
-            "inViewport": true
-          },
-          {
-            "tag": "body",
-            "id": null,
-            "href": null,
-            "text": "× Ⅱ TEST ×1 TIME ECHO PROTOCOL 五秒之后 你走过的每一段路，五秒后都会回来。让过去的自己，",
-            "visibleIndicator": false,
-            "outline": "3px none rgb(255, 255, 255)",
-            "boxShadow": "none",
-            "occluded": false,
-            "topElement": {
-              "tag": "div",
-              "id": null,
-              "className": "rift-mark"
-            },
+            "modalId": "introOverlay",
+            "insideModal": true,
             "inViewport": true
           },
           {
             "tag": "button",
-            "id": "muteBtn",
+            "id": "startBtn",
             "href": null,
-            "text": "×",
+            "text": "进入时间裂隙",
             "visibleIndicator": true,
             "outline": "3px solid rgba(95, 234, 255, 0.8)",
-            "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
-            "occluded": true,
-            "topElement": {
-              "tag": "section",
-              "id": "introOverlay",
-              "className": "overlay show"
-            },
+            "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+            "occluded": false,
+            "modalId": "introOverlay",
+            "insideModal": true,
             "inViewport": true
           }
-        ]
+        ],
+        "modal": {
+          "intro": {
+            "modalId": "introOverlay",
+            "focus": {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "进入时间裂隙",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+              "occluded": false,
+              "modalId": "introOverlay",
+              "insideModal": true,
+              "inViewport": true
+            },
+            "sequence": [
+              {
+                "tag": "button",
+                "id": "motionSwitch",
+                "href": null,
+                "text": "",
+                "visibleIndicator": true,
+                "outline": "3px solid rgba(95, 234, 255, 0.8)",
+                "boxShadow": "none",
+                "occluded": false,
+                "modalId": "introOverlay",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "startBtn",
+                "href": null,
+                "text": "进入时间裂隙",
+                "visibleIndicator": true,
+                "outline": "3px solid rgba(95, 234, 255, 0.8)",
+                "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+                "occluded": false,
+                "modalId": "introOverlay",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "motionSwitch",
+                "href": null,
+                "text": "",
+                "visibleIndicator": true,
+                "outline": "3px solid rgba(95, 234, 255, 0.8)",
+                "boxShadow": "none",
+                "occluded": false,
+                "modalId": "introOverlay",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "startBtn",
+                "href": null,
+                "text": "进入时间裂隙",
+                "visibleIndicator": true,
+                "outline": "3px solid rgba(95, 234, 255, 0.8)",
+                "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+                "occluded": false,
+                "modalId": "introOverlay",
+                "insideModal": true,
+                "inViewport": true
+              }
+            ],
+            "backgroundLeaks": []
+          },
+          "pause": {
+            "modalId": "pauseOverlay",
+            "focus": {
+              "tag": "button",
+              "id": "resumeBtn",
+              "href": null,
+              "text": "继续行动",
+              "visibleIndicator": true,
+              "outline": "3px none rgb(255, 255, 255)",
+              "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+              "occluded": false,
+              "modalId": "pauseOverlay",
+              "insideModal": true,
+              "inViewport": true
+            },
+            "sequence": [
+              {
+                "tag": "button",
+                "id": "restartBtn",
+                "href": null,
+                "text": "重新开始",
+                "visibleIndicator": true,
+                "outline": "3px solid rgba(95, 234, 255, 0.8)",
+                "boxShadow": "none",
+                "occluded": false,
+                "modalId": "pauseOverlay",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "resumeBtn",
+                "href": null,
+                "text": "继续行动",
+                "visibleIndicator": true,
+                "outline": "3px solid rgba(95, 234, 255, 0.8)",
+                "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+                "occluded": false,
+                "modalId": "pauseOverlay",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "restartBtn",
+                "href": null,
+                "text": "重新开始",
+                "visibleIndicator": true,
+                "outline": "3px solid rgba(95, 234, 255, 0.8)",
+                "boxShadow": "none",
+                "occluded": false,
+                "modalId": "pauseOverlay",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "resumeBtn",
+                "href": null,
+                "text": "继续行动",
+                "visibleIndicator": true,
+                "outline": "3px solid rgba(95, 234, 255, 0.8)",
+                "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+                "occluded": false,
+                "modalId": "pauseOverlay",
+                "insideModal": true,
+                "inViewport": true
+              }
+            ],
+            "backgroundLeaks": []
+          }
+        }
       },
       "errors": [],
       "externalRequests": [],
@@ -1570,7 +4391,7 @@
     {
       "page": "five-seconds-later",
       "scenario": "reduced-motion",
-      "status": "FAIL",
+      "status": "PASS",
       "assertions": [
         {
           "pass": true,
@@ -1588,11 +4409,11 @@
           "details": null
         },
         {
-          "pass": false,
+          "pass": true,
           "message": "游戏可观察的减少动态效果控件与系统偏好一致",
           "details": {
             "id": "motionSwitch",
-            "value": "false",
+            "value": "true",
             "expected": "true"
           }
         }
@@ -1743,7 +4564,7 @@
         ],
         "controlState": {
           "id": "motionSwitch",
-          "value": "false",
+          "value": "true",
           "expected": "true"
         }
       },
@@ -1767,12 +4588,12 @@
           "message": "页面隐藏后游戏进入暂停",
           "details": {
             "gameId": "five-seconds-later",
-            "runId": "five-seconds-later-ms4xqkgj-osyyso",
+            "runId": "five-seconds-later-ms50vwbj-1ze04p",
             "mode": "paused",
             "phase": "awakening",
             "objective": "清除锚点可降低压力（剩 10）",
-            "elapsed": 0.117,
-            "remaining": 179.883,
+            "elapsed": 0.1,
+            "remaining": 179.9,
             "energy": 100,
             "player": {
               "x": 195,
@@ -1831,8 +4652,8 @@
           "pass": true,
           "message": "隐藏期间局内时间冻结",
           "details": {
-            "pausedAt": 0.117,
-            "hidden": 0.117
+            "pausedAt": 0.1,
+            "hidden": 0.1
           }
         },
         {
@@ -1840,7 +4661,7 @@
           "message": "页面恢复后可由玩家继续游戏",
           "details": {
             "gameId": "five-seconds-later",
-            "runId": "five-seconds-later-ms4xqkgj-osyyso",
+            "runId": "five-seconds-later-ms50vwbj-1ze04p",
             "mode": "playing",
             "phase": "awakening",
             "objective": "清除锚点可降低压力（剩 10）",
@@ -1904,12 +4725,12 @@
       "metrics": {
         "before": {
           "gameId": "five-seconds-later",
-          "runId": "five-seconds-later-ms4xqkgj-osyyso",
+          "runId": "five-seconds-later-ms50vwbj-1ze04p",
           "mode": "playing",
           "phase": "awakening",
           "objective": "清除锚点可降低压力（剩 10）",
-          "elapsed": 0.083,
-          "remaining": 179.917,
+          "elapsed": 0.1,
+          "remaining": 179.9,
           "energy": 100,
           "player": {
             "x": 195,
@@ -1922,7 +4743,7 @@
           "echoCount": 0,
           "maxEchoes": 0,
           "echoes": [],
-          "pathPoints": 2,
+          "pathPoints": 3,
           "targetsDestroyed": 0,
           "targetsRemaining": 10,
           "switchActivated": false,
@@ -1965,12 +4786,12 @@
         },
         "pausedAt": {
           "gameId": "five-seconds-later",
-          "runId": "five-seconds-later-ms4xqkgj-osyyso",
+          "runId": "five-seconds-later-ms50vwbj-1ze04p",
           "mode": "paused",
           "phase": "awakening",
           "objective": "清除锚点可降低压力（剩 10）",
-          "elapsed": 0.117,
-          "remaining": 179.883,
+          "elapsed": 0.1,
+          "remaining": 179.9,
           "energy": 100,
           "player": {
             "x": 195,
@@ -2026,12 +4847,12 @@
         },
         "hidden": {
           "gameId": "five-seconds-later",
-          "runId": "five-seconds-later-ms4xqkgj-osyyso",
+          "runId": "five-seconds-later-ms50vwbj-1ze04p",
           "mode": "paused",
           "phase": "awakening",
           "objective": "清除锚点可降低压力（剩 10）",
-          "elapsed": 0.117,
-          "remaining": 179.883,
+          "elapsed": 0.1,
+          "remaining": 179.9,
           "energy": 100,
           "player": {
             "x": 195,
@@ -2087,7 +4908,7 @@
         },
         "resumed": {
           "gameId": "five-seconds-later",
-          "runId": "five-seconds-later-ms4xqkgj-osyyso",
+          "runId": "five-seconds-later-ms50vwbj-1ze04p",
           "mode": "playing",
           "phase": "awakening",
           "objective": "清除锚点可降低压力（剩 10）",
@@ -2322,7 +5143,7 @@
     {
       "page": "world-mender",
       "scenario": "landscape",
-      "status": "FAIL",
+      "status": "PASS",
       "assertions": [
         {
           "pass": true,
@@ -2332,12 +5153,7 @@
         {
           "pass": true,
           "message": "存在可读页面文案",
-          "details": 156
-        },
-        {
-          "pass": false,
-          "message": "主入口控件仍在可视区域",
-          "details": null
+          "details": 195
         },
         {
           "pass": true,
@@ -2348,13 +5164,20 @@
           }
         },
         {
-          "pass": false,
-          "message": "游戏 Canvas 保持最低可操作尺寸",
+          "pass": true,
+          "message": "游戏保持可操作尺寸，或显示明确竖屏阻断",
           "details": {
-            "x": 332,
-            "y": 0,
-            "width": 180,
-            "height": 390
+            "playable": true,
+            "rotateGuard": {
+              "visible": true,
+              "text": "↻\n      请旋转至竖屏\n      针脚需要完整的纵向画布。回到竖屏后，可从暂停处继续缝补。"
+            },
+            "canvas": {
+              "x": 0,
+              "y": 0,
+              "width": 844,
+              "height": 390
+            }
           }
         }
       ],
@@ -2366,21 +5189,22 @@
         "clientHeight": 390,
         "scrollWidth": 844,
         "scrollHeight": 390,
-        "bodyTextLength": 156,
+        "bodyTextLength": 195,
         "interactiveCount": 3,
-        "offscreenInteractive": [
-          {
-            "id": "startBtn",
-            "text": "拿起金针"
-          }
-        ],
+        "offscreenInteractive": [],
         "clippedText": [],
         "canvas": {
-          "x": 332,
+          "x": 0,
           "y": 0,
-          "width": 180,
+          "width": 844,
           "height": 390
-        }
+        },
+        "primaryControlVisible": true,
+        "rotateGuard": {
+          "visible": true,
+          "text": "↻\n      请旋转至竖屏\n      针脚需要完整的纵向画布。回到竖屏后，可从暂停处继续缝补。"
+        },
+        "orientation": null
       },
       "errors": [],
       "externalRequests": [],
@@ -2394,7 +5218,7 @@
     {
       "page": "world-mender",
       "scenario": "ultrawide-short",
-      "status": "FAIL",
+      "status": "PASS",
       "assertions": [
         {
           "pass": true,
@@ -2404,12 +5228,7 @@
         {
           "pass": true,
           "message": "存在可读页面文案",
-          "details": 156
-        },
-        {
-          "pass": false,
-          "message": "主入口控件仍在可视区域",
-          "details": null
+          "details": 195
         },
         {
           "pass": true,
@@ -2420,13 +5239,20 @@
           }
         },
         {
-          "pass": false,
-          "message": "游戏 Canvas 保持最低可操作尺寸",
+          "pass": true,
+          "message": "游戏保持可操作尺寸，或显示明确竖屏阻断",
           "details": {
-            "x": 510,
-            "y": 0,
-            "width": 180,
-            "height": 390
+            "playable": true,
+            "rotateGuard": {
+              "visible": true,
+              "text": "↻\n      请旋转至竖屏\n      针脚需要完整的纵向画布。回到竖屏后，可从暂停处继续缝补。"
+            },
+            "canvas": {
+              "x": 0,
+              "y": 0,
+              "width": 1200,
+              "height": 390
+            }
           }
         }
       ],
@@ -2438,21 +5264,22 @@
         "clientHeight": 390,
         "scrollWidth": 1200,
         "scrollHeight": 390,
-        "bodyTextLength": 156,
+        "bodyTextLength": 195,
         "interactiveCount": 3,
-        "offscreenInteractive": [
-          {
-            "id": "startBtn",
-            "text": "拿起金针"
-          }
-        ],
+        "offscreenInteractive": [],
         "clippedText": [],
         "canvas": {
-          "x": 510,
+          "x": 0,
           "y": 0,
-          "width": 180,
+          "width": 1200,
           "height": 390
-        }
+        },
+        "primaryControlVisible": true,
+        "rotateGuard": {
+          "visible": true,
+          "text": "↻\n      请旋转至竖屏\n      针脚需要完整的纵向画布。回到竖屏后，可从暂停处继续缝补。"
+        },
+        "orientation": null
       },
       "errors": [],
       "externalRequests": [],
@@ -2466,7 +5293,7 @@
     {
       "page": "world-mender",
       "scenario": "keyboard-focus",
-      "status": "FAIL",
+      "status": "PASS",
       "assertions": [
         {
           "pass": true,
@@ -2476,14 +5303,14 @@
         {
           "pass": true,
           "message": "存在可键盘聚焦控件",
-          "details": 3
+          "details": 1
         },
         {
           "pass": true,
           "message": "Tab 顺序覆盖全部当前可见控件",
           "details": {
-            "expected": 3,
-            "actual": 3
+            "expected": 1,
+            "actual": 1
           }
         },
         {
@@ -2492,34 +5319,15 @@
           "details": [
             {
               "tag": "button",
-              "id": "pauseBtn",
+              "id": "startBtn",
               "href": null,
-              "text": "暂停",
+              "text": "拿起金针",
               "visibleIndicator": true,
               "outline": "3px solid rgb(255, 227, 154)",
-              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "intro",
-                "className": "overlay"
-              },
-              "inViewport": true
-            },
-            {
-              "tag": "button",
-              "id": "legendToggle",
-              "href": null,
-              "text": "路线提示点击收起",
-              "visibleIndicator": true,
-              "outline": "3px solid rgb(255, 227, 154)",
-              "boxShadow": "none",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "intro",
-                "className": "overlay"
-              },
+              "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             },
             {
@@ -2531,65 +5339,40 @@
               "outline": "3px solid rgb(255, 227, 154)",
               "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
               "occluded": false,
-              "topElement": {
-                "tag": "button",
-                "id": "startBtn",
-                "className": "primary"
-              },
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             },
             {
               "tag": "button",
-              "id": "pauseBtn",
+              "id": "startBtn",
               "href": null,
-              "text": "暂停",
+              "text": "拿起金针",
               "visibleIndicator": true,
               "outline": "3px solid rgb(255, 227, 154)",
-              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "intro",
-                "className": "overlay"
-              },
+              "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             }
           ]
         },
         {
-          "pass": false,
+          "pass": true,
           "message": "键盘焦点不会进入视觉遮罩后的背景控件",
           "details": [
             {
               "tag": "button",
-              "id": "pauseBtn",
+              "id": "startBtn",
               "href": null,
-              "text": "暂停",
+              "text": "拿起金针",
               "visibleIndicator": true,
               "outline": "3px solid rgb(255, 227, 154)",
-              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "intro",
-                "className": "overlay"
-              },
-              "inViewport": true
-            },
-            {
-              "tag": "button",
-              "id": "legendToggle",
-              "href": null,
-              "text": "路线提示点击收起",
-              "visibleIndicator": true,
-              "outline": "3px solid rgb(255, 227, 154)",
-              "boxShadow": "none",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "intro",
-                "className": "overlay"
-              },
+              "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             },
             {
@@ -2601,27 +5384,21 @@
               "outline": "3px solid rgb(255, 227, 154)",
               "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
               "occluded": false,
-              "topElement": {
-                "tag": "button",
-                "id": "startBtn",
-                "className": "primary"
-              },
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             },
             {
               "tag": "button",
-              "id": "pauseBtn",
+              "id": "startBtn",
               "href": null,
-              "text": "暂停",
+              "text": "拿起金针",
               "visibleIndicator": true,
               "outline": "3px solid rgb(255, 227, 154)",
-              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "intro",
-                "className": "overlay"
-              },
+              "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             }
           ]
@@ -2632,34 +5409,15 @@
           "details": [
             {
               "tag": "button",
-              "id": "pauseBtn",
+              "id": "startBtn",
               "href": null,
-              "text": "暂停",
+              "text": "拿起金针",
               "visibleIndicator": true,
               "outline": "3px solid rgb(255, 227, 154)",
-              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "intro",
-                "className": "overlay"
-              },
-              "inViewport": true
-            },
-            {
-              "tag": "button",
-              "id": "legendToggle",
-              "href": null,
-              "text": "路线提示点击收起",
-              "visibleIndicator": true,
-              "outline": "3px solid rgb(255, 227, 154)",
-              "boxShadow": "none",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "intro",
-                "className": "overlay"
-              },
+              "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             },
             {
@@ -2671,65 +5429,210 @@
               "outline": "3px solid rgb(255, 227, 154)",
               "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
               "occluded": false,
-              "topElement": {
-                "tag": "button",
-                "id": "startBtn",
-                "className": "primary"
-              },
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             },
             {
               "tag": "button",
-              "id": "pauseBtn",
+              "id": "startBtn",
               "href": null,
-              "text": "暂停",
+              "text": "拿起金针",
               "visibleIndicator": true,
               "outline": "3px solid rgb(255, 227, 154)",
-              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "intro",
-                "className": "overlay"
-              },
+              "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             }
           ]
+        },
+        {
+          "pass": true,
+          "message": "开场层声明为可见模态对话框",
+          "details": "intro"
+        },
+        {
+          "pass": true,
+          "message": "初始焦点进入开场层",
+          "details": {
+            "tag": "button",
+            "id": "startBtn",
+            "href": null,
+            "text": "拿起金针",
+            "visibleIndicator": true,
+            "outline": "3px solid rgb(255, 227, 154)",
+            "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+            "occluded": false,
+            "modalId": "intro",
+            "insideModal": true,
+            "inViewport": true
+          }
+        },
+        {
+          "pass": true,
+          "message": "开场层 Tab 循环不会离开当前模态层",
+          "details": [
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "拿起金针",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "拿起金针",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "拿起金针",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
+              "inViewport": true
+            }
+          ]
+        },
+        {
+          "pass": true,
+          "message": "开场层显示时背景控件均被 inert 隔离",
+          "details": []
+        },
+        {
+          "pass": true,
+          "message": "暂停层声明为可见模态对话框",
+          "details": "pauseOverlay"
+        },
+        {
+          "pass": true,
+          "message": "暂停焦点进入暂停层",
+          "details": {
+            "tag": "button",
+            "id": "continueBtn",
+            "href": null,
+            "text": "继续缝补",
+            "visibleIndicator": true,
+            "outline": "3px none rgb(40, 32, 16)",
+            "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+            "occluded": false,
+            "modalId": "pauseOverlay",
+            "insideModal": true,
+            "inViewport": true
+          }
+        },
+        {
+          "pass": true,
+          "message": "暂停层 Tab 循环不会离开当前模态层",
+          "details": [
+            {
+              "tag": "button",
+              "id": "muteBtn",
+              "href": null,
+              "text": "静音",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+              "occluded": false,
+              "modalId": "pauseOverlay",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "motionBtn",
+              "href": null,
+              "text": "动效",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+              "occluded": false,
+              "modalId": "pauseOverlay",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "continueBtn",
+              "href": null,
+              "text": "继续缝补",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+              "occluded": false,
+              "modalId": "pauseOverlay",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "muteBtn",
+              "href": null,
+              "text": "静音",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+              "occluded": false,
+              "modalId": "pauseOverlay",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "motionBtn",
+              "href": null,
+              "text": "动效",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+              "occluded": false,
+              "modalId": "pauseOverlay",
+              "insideModal": true,
+              "inViewport": true
+            }
+          ]
+        },
+        {
+          "pass": true,
+          "message": "暂停层显示时背景控件均被 inert 隔离",
+          "details": []
         }
       ],
       "metrics": {
-        "focusableCount": 3,
+        "focusableCount": 1,
         "sequence": [
           {
             "tag": "button",
-            "id": "pauseBtn",
+            "id": "startBtn",
             "href": null,
-            "text": "暂停",
+            "text": "拿起金针",
             "visibleIndicator": true,
             "outline": "3px solid rgb(255, 227, 154)",
-            "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
-            "occluded": true,
-            "topElement": {
-              "tag": "section",
-              "id": "intro",
-              "className": "overlay"
-            },
-            "inViewport": true
-          },
-          {
-            "tag": "button",
-            "id": "legendToggle",
-            "href": null,
-            "text": "路线提示点击收起",
-            "visibleIndicator": true,
-            "outline": "3px solid rgb(255, 227, 154)",
-            "boxShadow": "none",
-            "occluded": true,
-            "topElement": {
-              "tag": "section",
-              "id": "intro",
-              "className": "overlay"
-            },
+            "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+            "occluded": false,
+            "modalId": "intro",
+            "insideModal": true,
             "inViewport": true
           },
           {
@@ -2741,46 +5644,168 @@
             "outline": "3px solid rgb(255, 227, 154)",
             "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
             "occluded": false,
-            "topElement": {
-              "tag": "button",
-              "id": "startBtn",
-              "className": "primary"
-            },
-            "inViewport": true
-          },
-          {
-            "tag": "body",
-            "id": null,
-            "href": null,
-            "text": "暂停 ↶ 撤销一针 路线提示点击收起 ●苔团 ◆云兔 ▲陶鸟 ■绒鹿 ✦ A STITCH OF HOPE 世界缝补师 ",
-            "visibleIndicator": false,
-            "outline": "3px none rgb(255, 244, 214)",
-            "boxShadow": "none",
-            "occluded": false,
-            "topElement": {
-              "tag": "p",
-              "id": null,
-              "className": "desc"
-            },
+            "modalId": "intro",
+            "insideModal": true,
             "inViewport": true
           },
           {
             "tag": "button",
-            "id": "pauseBtn",
+            "id": "startBtn",
             "href": null,
-            "text": "暂停",
+            "text": "拿起金针",
             "visibleIndicator": true,
             "outline": "3px solid rgb(255, 227, 154)",
-            "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
-            "occluded": true,
-            "topElement": {
-              "tag": "section",
-              "id": "intro",
-              "className": "overlay"
-            },
+            "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+            "occluded": false,
+            "modalId": "intro",
+            "insideModal": true,
             "inViewport": true
           }
-        ]
+        ],
+        "modal": {
+          "intro": {
+            "modalId": "intro",
+            "focus": {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "拿起金针",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
+              "inViewport": true
+            },
+            "sequence": [
+              {
+                "tag": "button",
+                "id": "startBtn",
+                "href": null,
+                "text": "拿起金针",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(255, 227, 154)",
+                "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+                "occluded": false,
+                "modalId": "intro",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "startBtn",
+                "href": null,
+                "text": "拿起金针",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(255, 227, 154)",
+                "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+                "occluded": false,
+                "modalId": "intro",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "startBtn",
+                "href": null,
+                "text": "拿起金针",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(255, 227, 154)",
+                "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+                "occluded": false,
+                "modalId": "intro",
+                "insideModal": true,
+                "inViewport": true
+              }
+            ],
+            "backgroundLeaks": []
+          },
+          "pause": {
+            "modalId": "pauseOverlay",
+            "focus": {
+              "tag": "button",
+              "id": "continueBtn",
+              "href": null,
+              "text": "继续缝补",
+              "visibleIndicator": true,
+              "outline": "3px none rgb(40, 32, 16)",
+              "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+              "occluded": false,
+              "modalId": "pauseOverlay",
+              "insideModal": true,
+              "inViewport": true
+            },
+            "sequence": [
+              {
+                "tag": "button",
+                "id": "muteBtn",
+                "href": null,
+                "text": "静音",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(255, 227, 154)",
+                "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+                "occluded": false,
+                "modalId": "pauseOverlay",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "motionBtn",
+                "href": null,
+                "text": "动效",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(255, 227, 154)",
+                "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+                "occluded": false,
+                "modalId": "pauseOverlay",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "continueBtn",
+                "href": null,
+                "text": "继续缝补",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(255, 227, 154)",
+                "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+                "occluded": false,
+                "modalId": "pauseOverlay",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "muteBtn",
+                "href": null,
+                "text": "静音",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(255, 227, 154)",
+                "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+                "occluded": false,
+                "modalId": "pauseOverlay",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "motionBtn",
+                "href": null,
+                "text": "动效",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(255, 227, 154)",
+                "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+                "occluded": false,
+                "modalId": "pauseOverlay",
+                "insideModal": true,
+                "inViewport": true
+              }
+            ],
+            "backgroundLeaks": []
+          }
+        }
       },
       "errors": [],
       "externalRequests": [],
@@ -2847,7 +5872,7 @@
           "details": {
             "gameId": "world-mender",
             "phase": "playing",
-            "runId": "wm-ms4xqo7w-72x7",
+            "runId": "wm-ms50w0if-72x7",
             "elapsed": 0.1,
             "timeRemaining": 179.9,
             "paused": true,
@@ -2873,6 +5898,8 @@
               "legendExpanded": true,
               "selectedAnchor": null
             },
+            "testMode": true,
+            "timeScale": 1,
             "anchors": [
               {
                 "id": "w1",
@@ -2993,9 +6020,9 @@
           "details": {
             "gameId": "world-mender",
             "phase": "playing",
-            "runId": "wm-ms4xqo7w-72x7",
-            "elapsed": 0.2,
-            "timeRemaining": 179.8,
+            "runId": "wm-ms50w0if-72x7",
+            "elapsed": 0.217,
+            "timeRemaining": 179.783,
             "paused": false,
             "pauseReason": "",
             "thread": 345,
@@ -3019,6 +6046,8 @@
               "legendExpanded": true,
               "selectedAnchor": null
             },
+            "testMode": true,
+            "timeScale": 1,
             "anchors": [
               {
                 "id": "w1",
@@ -3130,7 +6159,7 @@
         "before": {
           "gameId": "world-mender",
           "phase": "playing",
-          "runId": "wm-ms4xqo7w-72x7",
+          "runId": "wm-ms50w0if-72x7",
           "elapsed": 0.1,
           "timeRemaining": 179.9,
           "paused": false,
@@ -3156,6 +6185,8 @@
             "legendExpanded": true,
             "selectedAnchor": null
           },
+          "testMode": true,
+          "timeScale": 1,
           "anchors": [
             {
               "id": "w1",
@@ -3264,7 +6295,7 @@
         "pausedAt": {
           "gameId": "world-mender",
           "phase": "playing",
-          "runId": "wm-ms4xqo7w-72x7",
+          "runId": "wm-ms50w0if-72x7",
           "elapsed": 0.1,
           "timeRemaining": 179.9,
           "paused": true,
@@ -3290,6 +6321,8 @@
             "legendExpanded": true,
             "selectedAnchor": null
           },
+          "testMode": true,
+          "timeScale": 1,
           "anchors": [
             {
               "id": "w1",
@@ -3398,7 +6431,7 @@
         "hidden": {
           "gameId": "world-mender",
           "phase": "playing",
-          "runId": "wm-ms4xqo7w-72x7",
+          "runId": "wm-ms50w0if-72x7",
           "elapsed": 0.1,
           "timeRemaining": 179.9,
           "paused": true,
@@ -3424,6 +6457,8 @@
             "legendExpanded": true,
             "selectedAnchor": null
           },
+          "testMode": true,
+          "timeScale": 1,
           "anchors": [
             {
               "id": "w1",
@@ -3532,9 +6567,9 @@
         "resumed": {
           "gameId": "world-mender",
           "phase": "playing",
-          "runId": "wm-ms4xqo7w-72x7",
-          "elapsed": 0.2,
-          "timeRemaining": 179.8,
+          "runId": "wm-ms50w0if-72x7",
+          "elapsed": 0.217,
+          "timeRemaining": 179.783,
           "paused": false,
           "pauseReason": "",
           "thread": 345,
@@ -3558,6 +6593,8 @@
             "legendExpanded": true,
             "selectedAnchor": null
           },
+          "testMode": true,
+          "timeScale": 1,
           "anchors": [
             {
               "id": "w1",
@@ -3840,11 +6877,6 @@
         },
         {
           "pass": true,
-          "message": "主入口控件仍在可视区域",
-          "details": null
-        },
-        {
-          "pass": true,
           "message": "没有横向页面溢出",
           "details": {
             "scrollWidth": 844,
@@ -3853,12 +6885,19 @@
         },
         {
           "pass": true,
-          "message": "游戏 Canvas 保持最低可操作尺寸",
+          "message": "游戏保持可操作尺寸，或显示明确竖屏阻断",
           "details": {
-            "x": 162,
-            "y": 0,
-            "width": 520,
-            "height": 520
+            "playable": true,
+            "rotateGuard": {
+              "visible": false,
+              "text": ""
+            },
+            "canvas": {
+              "x": 162,
+              "y": 0,
+              "width": 520,
+              "height": 520
+            }
           }
         }
       ],
@@ -3879,7 +6918,13 @@
           "y": 0,
           "width": 520,
           "height": 520
-        }
+        },
+        "primaryControlVisible": true,
+        "rotateGuard": {
+          "visible": false,
+          "text": ""
+        },
+        "orientation": null
       },
       "errors": [],
       "externalRequests": [],
@@ -3907,11 +6952,6 @@
         },
         {
           "pass": true,
-          "message": "主入口控件仍在可视区域",
-          "details": null
-        },
-        {
-          "pass": true,
           "message": "没有横向页面溢出",
           "details": {
             "scrollWidth": 1200,
@@ -3920,12 +6960,19 @@
         },
         {
           "pass": true,
-          "message": "游戏 Canvas 保持最低可操作尺寸",
+          "message": "游戏保持可操作尺寸，或显示明确竖屏阻断",
           "details": {
-            "x": 340,
-            "y": 0,
-            "width": 520,
-            "height": 520
+            "playable": true,
+            "rotateGuard": {
+              "visible": false,
+              "text": ""
+            },
+            "canvas": {
+              "x": 340,
+              "y": 0,
+              "width": 520,
+              "height": 520
+            }
           }
         }
       ],
@@ -3946,7 +6993,13 @@
           "y": 0,
           "width": 520,
           "height": 520
-        }
+        },
+        "primaryControlVisible": true,
+        "rotateGuard": {
+          "visible": false,
+          "text": ""
+        },
+        "orientation": null
       },
       "errors": [],
       "externalRequests": [],
@@ -3960,7 +7013,7 @@
     {
       "page": "rift-hunter",
       "scenario": "keyboard-focus",
-      "status": "FAIL",
+      "status": "PASS",
       "assertions": [
         {
           "pass": true,
@@ -3970,14 +7023,14 @@
         {
           "pass": true,
           "message": "存在可键盘聚焦控件",
-          "details": 2
+          "details": 1
         },
         {
           "pass": true,
           "message": "Tab 顺序覆盖全部当前可见控件",
           "details": {
-            "expected": 2,
-            "actual": 2
+            "expected": 1,
+            "actual": 1
           }
         },
         {
@@ -3986,18 +7039,15 @@
           "details": [
             {
               "tag": "button",
-              "id": "pauseBtn",
+              "id": "startBtn",
               "href": null,
-              "text": "Ⅱ",
+              "text": "进入裂隙",
               "visibleIndicator": true,
-              "outline": "1px auto rgb(16, 16, 16)",
-              "boxShadow": "none",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "intro",
-                "className": "screen active"
-              },
+              "outline": "3px solid rgb(255, 242, 168)",
+              "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             },
             {
@@ -4006,52 +7056,43 @@
               "href": null,
               "text": "进入裂隙",
               "visibleIndicator": true,
-              "outline": "1px auto rgb(16, 16, 16)",
+              "outline": "3px solid rgb(255, 242, 168)",
               "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
               "occluded": false,
-              "topElement": {
-                "tag": "button",
-                "id": "startBtn",
-                "className": "primary"
-              },
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             },
             {
               "tag": "button",
-              "id": "pauseBtn",
+              "id": "startBtn",
               "href": null,
-              "text": "Ⅱ",
+              "text": "进入裂隙",
               "visibleIndicator": true,
-              "outline": "1px auto rgb(16, 16, 16)",
-              "boxShadow": "none",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "intro",
-                "className": "screen active"
-              },
+              "outline": "3px solid rgb(255, 242, 168)",
+              "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             }
           ]
         },
         {
-          "pass": false,
+          "pass": true,
           "message": "键盘焦点不会进入视觉遮罩后的背景控件",
           "details": [
             {
               "tag": "button",
-              "id": "pauseBtn",
+              "id": "startBtn",
               "href": null,
-              "text": "Ⅱ",
+              "text": "进入裂隙",
               "visibleIndicator": true,
-              "outline": "1px auto rgb(16, 16, 16)",
-              "boxShadow": "none",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "intro",
-                "className": "screen active"
-              },
+              "outline": "3px solid rgb(255, 242, 168)",
+              "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             },
             {
@@ -4060,30 +7101,24 @@
               "href": null,
               "text": "进入裂隙",
               "visibleIndicator": true,
-              "outline": "1px auto rgb(16, 16, 16)",
+              "outline": "3px solid rgb(255, 242, 168)",
               "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
               "occluded": false,
-              "topElement": {
-                "tag": "button",
-                "id": "startBtn",
-                "className": "primary"
-              },
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             },
             {
               "tag": "button",
-              "id": "pauseBtn",
+              "id": "startBtn",
               "href": null,
-              "text": "Ⅱ",
+              "text": "进入裂隙",
               "visibleIndicator": true,
-              "outline": "1px auto rgb(16, 16, 16)",
-              "boxShadow": "none",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "intro",
-                "className": "screen active"
-              },
+              "outline": "3px solid rgb(255, 242, 168)",
+              "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             }
           ]
@@ -4094,18 +7129,15 @@
           "details": [
             {
               "tag": "button",
-              "id": "pauseBtn",
+              "id": "startBtn",
               "href": null,
-              "text": "Ⅱ",
+              "text": "进入裂隙",
               "visibleIndicator": true,
-              "outline": "1px auto rgb(16, 16, 16)",
-              "boxShadow": "none",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "intro",
-                "className": "screen active"
-              },
+              "outline": "3px solid rgb(255, 242, 168)",
+              "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             },
             {
@@ -4114,52 +7146,226 @@
               "href": null,
               "text": "进入裂隙",
               "visibleIndicator": true,
-              "outline": "1px auto rgb(16, 16, 16)",
+              "outline": "3px solid rgb(255, 242, 168)",
               "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
               "occluded": false,
-              "topElement": {
-                "tag": "button",
-                "id": "startBtn",
-                "className": "primary"
-              },
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             },
             {
               "tag": "button",
-              "id": "pauseBtn",
+              "id": "startBtn",
               "href": null,
-              "text": "Ⅱ",
+              "text": "进入裂隙",
               "visibleIndicator": true,
-              "outline": "1px auto rgb(16, 16, 16)",
-              "boxShadow": "none",
-              "occluded": true,
-              "topElement": {
-                "tag": "section",
-                "id": "intro",
-                "className": "screen active"
-              },
+              "outline": "3px solid rgb(255, 242, 168)",
+              "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
               "inViewport": true
             }
           ]
+        },
+        {
+          "pass": true,
+          "message": "开场层声明为可见模态对话框",
+          "details": "intro"
+        },
+        {
+          "pass": true,
+          "message": "初始焦点进入开场层",
+          "details": {
+            "tag": "button",
+            "id": "startBtn",
+            "href": null,
+            "text": "进入裂隙",
+            "visibleIndicator": true,
+            "outline": "3px solid rgb(255, 242, 168)",
+            "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+            "occluded": false,
+            "modalId": "intro",
+            "insideModal": true,
+            "inViewport": true
+          }
+        },
+        {
+          "pass": true,
+          "message": "开场层 Tab 循环不会离开当前模态层",
+          "details": [
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "进入裂隙",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 242, 168)",
+              "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "进入裂隙",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 242, 168)",
+              "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "进入裂隙",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 242, 168)",
+              "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
+              "inViewport": true
+            }
+          ]
+        },
+        {
+          "pass": true,
+          "message": "开场层显示时背景控件均被 inert 隔离",
+          "details": []
+        },
+        {
+          "pass": true,
+          "message": "暂停层声明为可见模态对话框",
+          "details": "pausePanel"
+        },
+        {
+          "pass": true,
+          "message": "暂停焦点进入暂停层",
+          "details": {
+            "tag": "button",
+            "id": "resumeBtn",
+            "href": null,
+            "text": "继续行动",
+            "visibleIndicator": true,
+            "outline": "3px none rgb(24, 14, 4)",
+            "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+            "occluded": false,
+            "modalId": "pausePanel",
+            "insideModal": true,
+            "inViewport": true
+          }
+        },
+        {
+          "pass": true,
+          "message": "暂停层 Tab 循环不会离开当前模态层",
+          "details": [
+            {
+              "tag": "button",
+              "id": "soundToggle",
+              "href": null,
+              "text": "",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(220, 212, 232)",
+              "boxShadow": "none",
+              "occluded": false,
+              "modalId": "pausePanel",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "motionToggle",
+              "href": null,
+              "text": "",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(220, 212, 232)",
+              "boxShadow": "none",
+              "occluded": false,
+              "modalId": "pausePanel",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "restartBtn",
+              "href": null,
+              "text": "重新开始",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 242, 168)",
+              "boxShadow": "none",
+              "occluded": false,
+              "modalId": "pausePanel",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "resumeBtn",
+              "href": null,
+              "text": "继续行动",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 242, 168)",
+              "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+              "occluded": false,
+              "modalId": "pausePanel",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "soundToggle",
+              "href": null,
+              "text": "",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(220, 212, 232)",
+              "boxShadow": "none",
+              "occluded": false,
+              "modalId": "pausePanel",
+              "insideModal": true,
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "motionToggle",
+              "href": null,
+              "text": "",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(220, 212, 232)",
+              "boxShadow": "none",
+              "occluded": false,
+              "modalId": "pausePanel",
+              "insideModal": true,
+              "inViewport": true
+            }
+          ]
+        },
+        {
+          "pass": true,
+          "message": "暂停层显示时背景控件均被 inert 隔离",
+          "details": []
         }
       ],
       "metrics": {
-        "focusableCount": 2,
+        "focusableCount": 1,
         "sequence": [
           {
             "tag": "button",
-            "id": "pauseBtn",
+            "id": "startBtn",
             "href": null,
-            "text": "Ⅱ",
+            "text": "进入裂隙",
             "visibleIndicator": true,
-            "outline": "1px auto rgb(16, 16, 16)",
-            "boxShadow": "none",
-            "occluded": true,
-            "topElement": {
-              "tag": "section",
-              "id": "intro",
-              "className": "screen active"
-            },
+            "outline": "3px solid rgb(255, 242, 168)",
+            "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+            "occluded": false,
+            "modalId": "intro",
+            "insideModal": true,
             "inViewport": true
           },
           {
@@ -4168,49 +7374,184 @@
             "href": null,
             "text": "进入裂隙",
             "visibleIndicator": true,
-            "outline": "1px auto rgb(16, 16, 16)",
+            "outline": "3px solid rgb(255, 242, 168)",
             "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
             "occluded": false,
-            "topElement": {
-              "tag": "button",
-              "id": "startBtn",
-              "className": "primary"
-            },
-            "inViewport": true
-          },
-          {
-            "tag": "body",
-            "id": null,
-            "href": null,
-            "text": "RIFT PROTOCOL裂隙猎人 Ⅱ 生命装甲100 危险01 60秒后可撤离 裂隙单发0/8 时间00:00 战利品",
-            "visibleIndicator": false,
-            "outline": "3px none rgb(248, 245, 255)",
-            "boxShadow": "none",
-            "occluded": false,
-            "topElement": {
-              "tag": "section",
-              "id": "intro",
-              "className": "screen active"
-            },
+            "modalId": "intro",
+            "insideModal": true,
             "inViewport": true
           },
           {
             "tag": "button",
-            "id": "pauseBtn",
+            "id": "startBtn",
             "href": null,
-            "text": "Ⅱ",
+            "text": "进入裂隙",
             "visibleIndicator": true,
-            "outline": "1px auto rgb(16, 16, 16)",
-            "boxShadow": "none",
-            "occluded": true,
-            "topElement": {
-              "tag": "section",
-              "id": "intro",
-              "className": "screen active"
-            },
+            "outline": "3px solid rgb(255, 242, 168)",
+            "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+            "occluded": false,
+            "modalId": "intro",
+            "insideModal": true,
             "inViewport": true
           }
-        ]
+        ],
+        "modal": {
+          "intro": {
+            "modalId": "intro",
+            "focus": {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "进入裂隙",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 242, 168)",
+              "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+              "occluded": false,
+              "modalId": "intro",
+              "insideModal": true,
+              "inViewport": true
+            },
+            "sequence": [
+              {
+                "tag": "button",
+                "id": "startBtn",
+                "href": null,
+                "text": "进入裂隙",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(255, 242, 168)",
+                "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+                "occluded": false,
+                "modalId": "intro",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "startBtn",
+                "href": null,
+                "text": "进入裂隙",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(255, 242, 168)",
+                "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+                "occluded": false,
+                "modalId": "intro",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "startBtn",
+                "href": null,
+                "text": "进入裂隙",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(255, 242, 168)",
+                "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+                "occluded": false,
+                "modalId": "intro",
+                "insideModal": true,
+                "inViewport": true
+              }
+            ],
+            "backgroundLeaks": []
+          },
+          "pause": {
+            "modalId": "pausePanel",
+            "focus": {
+              "tag": "button",
+              "id": "resumeBtn",
+              "href": null,
+              "text": "继续行动",
+              "visibleIndicator": true,
+              "outline": "3px none rgb(24, 14, 4)",
+              "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+              "occluded": false,
+              "modalId": "pausePanel",
+              "insideModal": true,
+              "inViewport": true
+            },
+            "sequence": [
+              {
+                "tag": "button",
+                "id": "soundToggle",
+                "href": null,
+                "text": "",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(220, 212, 232)",
+                "boxShadow": "none",
+                "occluded": false,
+                "modalId": "pausePanel",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "motionToggle",
+                "href": null,
+                "text": "",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(220, 212, 232)",
+                "boxShadow": "none",
+                "occluded": false,
+                "modalId": "pausePanel",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "restartBtn",
+                "href": null,
+                "text": "重新开始",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(255, 242, 168)",
+                "boxShadow": "none",
+                "occluded": false,
+                "modalId": "pausePanel",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "resumeBtn",
+                "href": null,
+                "text": "继续行动",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(255, 242, 168)",
+                "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+                "occluded": false,
+                "modalId": "pausePanel",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "soundToggle",
+                "href": null,
+                "text": "",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(220, 212, 232)",
+                "boxShadow": "none",
+                "occluded": false,
+                "modalId": "pausePanel",
+                "insideModal": true,
+                "inViewport": true
+              },
+              {
+                "tag": "button",
+                "id": "motionToggle",
+                "href": null,
+                "text": "",
+                "visibleIndicator": true,
+                "outline": "3px solid rgb(220, 212, 232)",
+                "boxShadow": "none",
+                "occluded": false,
+                "modalId": "pausePanel",
+                "insideModal": true,
+                "inViewport": true
+              }
+            ],
+            "backgroundLeaks": []
+          }
+        }
       },
       "errors": [],
       "externalRequests": [],
@@ -4277,7 +7618,7 @@
           "details": {
             "gameId": "rift-hunter",
             "mode": "paused",
-            "runId": "ms4xqs7v-7irplk",
+            "runId": "ms50w4p3-tztuf8",
             "elapsed": 0.11666666666666665,
             "paused": true,
             "result": null,
@@ -4349,8 +7690,8 @@
           "details": {
             "gameId": "rift-hunter",
             "mode": "playing",
-            "runId": "ms4xqs7v-7irplk",
-            "elapsed": 0.2333333333333333,
+            "runId": "ms50w4p3-tztuf8",
+            "elapsed": 0.21666666666666665,
             "paused": false,
             "result": null,
             "player": {
@@ -4412,7 +7753,7 @@
         "before": {
           "gameId": "rift-hunter",
           "mode": "playing",
-          "runId": "ms4xqs7v-7irplk",
+          "runId": "ms50w4p3-tztuf8",
           "elapsed": 0.11666666666666665,
           "paused": false,
           "result": null,
@@ -4472,7 +7813,7 @@
         "pausedAt": {
           "gameId": "rift-hunter",
           "mode": "paused",
-          "runId": "ms4xqs7v-7irplk",
+          "runId": "ms50w4p3-tztuf8",
           "elapsed": 0.11666666666666665,
           "paused": true,
           "result": null,
@@ -4532,7 +7873,7 @@
         "hidden": {
           "gameId": "rift-hunter",
           "mode": "paused",
-          "runId": "ms4xqs7v-7irplk",
+          "runId": "ms50w4p3-tztuf8",
           "elapsed": 0.11666666666666665,
           "paused": true,
           "result": null,
@@ -4592,8 +7933,8 @@
         "resumed": {
           "gameId": "rift-hunter",
           "mode": "playing",
-          "runId": "ms4xqs7v-7irplk",
-          "elapsed": 0.2333333333333333,
+          "runId": "ms50w4p3-tztuf8",
+          "elapsed": 0.21666666666666665,
           "paused": false,
           "result": null,
           "player": {
