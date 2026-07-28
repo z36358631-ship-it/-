@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import http from 'node:http';
+import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -12,6 +13,7 @@ class FakeCodex extends EventEmitter {
   constructor() {
     super();
     this.running = false;
+    this.stopCount = 0;
   }
 
   async start() {
@@ -33,11 +35,12 @@ class FakeCodex extends EventEmitter {
   }
 
   async stop() {
+    this.stopCount += 1;
     this.running = false;
   }
 }
 
-async function startServer(t) {
+async function startServer(t, { autoClose = true } = {}) {
   const root = path.join(os.tmpdir(), `workbench-server-${crypto.randomUUID()}`);
   fs.mkdirSync(root, { recursive: true });
   const codex = new FakeCodex();
@@ -46,13 +49,15 @@ async function startServer(t) {
     codexFactory: () => codex,
   });
   await app.listen();
-  t.after(async () => {
-    await app.close();
-    fs.rmSync(root, { force: true, recursive: true });
-  });
+  if (autoClose) {
+    t.after(async () => {
+      await app.close();
+      fs.rmSync(root, { force: true, recursive: true });
+    });
+  }
   const address = app.address();
   const base = `http://127.0.0.1:${address.port}`;
-  return { app, base, codex };
+  return { app, base, codex, root };
 }
 
 function authorizedHeaders(app, extras = {}) {
@@ -289,4 +294,55 @@ test('unknown and traversal-like static paths return a safe 404', async t => {
     assert.equal(response.status, 404);
     assert.deepEqual(await response.json(), { error: 'Static file not found' });
   }
+});
+
+test('close stops Codex before active connections and is idempotent', async t => {
+  const {
+    app,
+    codex,
+    root,
+  } = await startServer(t, { autoClose: false });
+  const address = app.address();
+  const socket = net.createConnection({
+    host: address.address,
+    port: address.port,
+  });
+  await new Promise((resolve, reject) => {
+    socket.once('connect', resolve);
+    socket.once('error', reject);
+  });
+  socket.write(
+    `GET /api/bootstrap HTTP/1.1\r\nHost: 127.0.0.1:${address.port}\r\n`,
+  );
+  await new Promise(resolve => setImmediate(resolve));
+
+  const firstClose = app.close();
+  const secondClose = app.close();
+  const stoppedBeforeManualSocketCleanup = codex.stopCount === 1;
+  socket.destroy();
+
+  let timeout;
+  try {
+    await Promise.race([
+      firstClose,
+      new Promise((_, reject) => {
+        timeout = setTimeout(
+          () => reject(
+            new Error('server close timed out with an active connection'),
+          ),
+          1_000,
+        );
+      }),
+    ]);
+  } finally {
+    clearTimeout(timeout);
+    socket.destroy();
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+
+  assert.equal(firstClose, secondClose);
+  assert.equal(stoppedBeforeManualSocketCleanup, true);
+  assert.equal(codex.stopCount, 1);
+  await app.close();
+  assert.equal(codex.stopCount, 1);
 });

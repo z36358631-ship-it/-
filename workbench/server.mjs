@@ -53,6 +53,7 @@ const externalWaits = new Set([
 const manualTaskStatuses = new Set(['待开始', '进行中', '已完成']);
 const productSpecialists = new Set(['产品专员A', '产品专员B']);
 const workflowRunFields = new Set(['requirementId', 'files', 'input']);
+const SERVER_CLOSE_TIMEOUT_MS = 2_000;
 const manualTaskCreateFields = new Set([
   'requirementId',
   'assigneeNote',
@@ -750,6 +751,84 @@ export async function createWorkbenchServer({
       sendJson(response, error.statusCode || 500, { error: error.message });
     }
   });
+  const connections = new Set();
+  server.on('connection', socket => {
+    connections.add(socket);
+    socket.once('close', () => connections.delete(socket));
+  });
+
+  let closePromise = null;
+  const beginHttpClose = () => {
+    let resolveClose;
+    let settled = false;
+    const completed = new Promise(resolve => {
+      resolveClose = resolve;
+    });
+    const finish = error => {
+      if (settled) return;
+      settled = true;
+      resolveClose(error || null);
+    };
+    try {
+      server.close(finish);
+    } catch (error) {
+      finish(error);
+    }
+    for (const socket of connections) {
+      socket.destroy();
+    }
+    return completed;
+  };
+  const awaitHttpClose = async completed => {
+    let timeout;
+    const outcome = await Promise.race([
+      completed.then(error => ({ error, timedOut: false })),
+      new Promise(resolve => {
+        timeout = setTimeout(
+          () => resolve({ error: null, timedOut: true }),
+          SERVER_CLOSE_TIMEOUT_MS,
+        );
+      }),
+    ]);
+    clearTimeout(timeout);
+    if (outcome.timedOut) {
+      for (const socket of connections) {
+        socket.destroy();
+      }
+      server.closeAllConnections?.();
+      return;
+    }
+    if (
+      outcome.error
+      && outcome.error.code !== 'ERR_SERVER_NOT_RUNNING'
+    ) {
+      throw outcome.error;
+    }
+  };
+  const close = () => {
+    if (closePromise) return closePromise;
+    closePromise = (async () => {
+      const httpClose = beginHttpClose();
+      let failure = null;
+      try {
+        await codex.stop();
+      } catch (error) {
+        failure = error;
+      }
+      try {
+        await awaitHttpClose(httpClose);
+      } catch (error) {
+        failure ||= error;
+      }
+      try {
+        store.close();
+      } catch (error) {
+        failure ||= error;
+      }
+      if (failure) throw failure;
+    })();
+    return closePromise;
+  };
 
   return {
     config,
@@ -761,14 +840,7 @@ export async function createWorkbenchServer({
         resolve();
       });
     }),
-    close: () => new Promise(resolve => {
-      server.close(() => {
-        Promise.resolve(codex.stop()).finally(() => {
-          store.close();
-          resolve();
-        });
-      });
-    }),
+    close,
   };
 }
 
