@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>产品经理全生命周期工作台</title>
+<style>
+:root{
+  --primary:#2563eb;--primary-dark:#1e40af;--primary-light:#eff6ff;
+  --success:#10b981;--warning:#f59e0b;--danger:#ef4444;--purple:#8b5cf6;
+  --bg:#f8fafc;--surface:#fff;--text:#0f172a;--text-2:#475569;--text-3:#64748b;
+  --border:#e2e8f0;--line:#f1f5f9;--radius:12px;
+  --shadow:0 1px 3px rgba(15,23,42,.06);--shadow-md:0 8px 24px rgba(15,23,42,.10);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI","MiSans","PingFang SC","Microsoft YaHei",sans-serif;
+  --mono:"DIN Alternate","D-DIN-PRO","Roboto Mono",Menlo,monospace
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg)}
+body{color:var(--text);font:14px/1.5 var(--font);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit}
+button,[role=button],.clickable{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.45}
+:focus-visible{outline:3px solid rgba(59,130,246,.32);outline-offset:2px}
+.skip-link{position:fixed;left:12px;top:-48px;z-index:1000;padding:8px 12px;border-radius:8px;background:var(--text);color:#fff;text-decoration:none}
+.skip-link:focus{top:12px}
+.layout{display:flex;min-height:100vh}
+.sidebar{position:fixed;inset:0 auto 0 0;z-index:30;width:220px;display:flex;flex-direction:column;background:var(--surface);border-right:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:10px;padding:20px 20px 16px;color:var(--primary);font-size:15px;font-weight:750}
+.brand-mark{display:grid;place-items:center;width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--purple));color:#fff;font-weight:800}
+.nav{flex:1;padding:0 8px;overflow-y:auto}
+.nav-title{padding:10px 12px 6px;color:var(--text-3);font-size:11px;font-weight:700;letter-spacing:.5px}
+.nav-item{width:100%;display:flex;align-items:center;gap:10px;margin:2px 0;padding:9px 12px;border:0;border-radius:8px;background:transparent;color:var(--text-2);text-align:left;transition:background .16s,color .16s,box-shadow .16s}
+.nav-item svg{width:17px;height:17px;flex:0 0 17px}
+.nav-item:hover{background:var(--primary-light);color:var(--primary)}
+.nav-item.active{background:var(--primary);color:#fff;font-weight:600;box-shadow:0 3px 10px rgba(59,130,246,.28)}
+.profile{display:flex;align-items:center;gap:10px;padding:16px;border-top:1px solid var(--border)}
+.avatar{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--purple));color:#fff;font-weight:700}
+.profile small{display:block;color:var(--text-3)}
+.main{min-width:0;width:calc(100% - 220px);margin-left:220px}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;min-height:58px;padding:8px 24px;background:rgba(255,255,255,.96);border-bottom:1px solid var(--border);backdrop-filter:blur(12px)}
+.breadcrumb{color:var(--text-3);font-size:12px;white-space:nowrap}
+.global-search{position:relative;flex:1;max-width:520px;margin-left:auto}
+.global-search svg{position:absolute;left:11px;top:10px;color:var(--text-3)}
+.global-search input{width:100%;height:38px;padding:0 12px 0 34px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text-2);white-space:nowrap;transition:border-color .16s,color .16s,background .16s}
+.btn:hover{border-color:var(--primary);color:var(--primary)}
+.btn.primary{border-color:var(--primary);background:var(--primary);color:#fff}
+.btn.primary:hover{background:var(--primary-dark)}
+.btn.danger{border-color:#fecaca;color:#b91c1c;background:#fef2f2}
+.content{padding:20px 24px 44px}
+.page{display:none;min-width:0}.page.active{display:block}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.page-head h1,.page-head h2{margin:0 0 4px;font-size:22px;line-height:1.3}
+.page-head p{margin:0;color:var(--text-3)}
+.metric-grid,.summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.metric{position:relative;padding:17px 18px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);overflow:hidden}
+.metric:before{content:"";position:absolute;left:0;top:0;width:3px;height:100%;background:var(--metric-color,var(--primary))}
+.metric-label{display:flex;align-items:center;gap:7px;color:var(--text-3);font-size:12px}
+.metric-value{margin-top:7px;font:750 27px/1.1 var(--mono)}
+.metric-note{margin-top:8px;color:var(--text-2);font-size:12px}
+.grid-2-1{display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:12px}
+.grid-1-1{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.panel{min-width:0;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);overflow:hidden}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border)}
+.panel-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700}
+.panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary)}
+.panel-body{padding:16px 18px}
+.table-wrap{max-width:100%;overflow:auto}
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{padding:10px 12px;border-bottom:1px solid var(--border);background:var(--bg);color:var(--text-3);text-align:left;font-weight:650;white-space:nowrap}
+.data-table td{padding:11px 12px;border-bottom:1px solid var(--line);color:var(--text-2);vertical-align:middle}
+.data-table tbody tr:hover td{background:#f8fafc}
+.data-table strong{color:var(--text);font-size:13px}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:700;white-space:nowrap}
+.tag.critical,.tag.P0{color:#b91c1c;background:#fef2f2}
+.tag.high,.tag.P1{color:#b45309;background:#fffbeb}
+.tag.medium,.tag.P2{color:#1d4ed8;background:#eff6ff}
+.tag.success{color:#047857;background:#ecfdf5}
+.tag.purple{color:#6d28d9;background:#f5f3ff}
+.muted{color:var(--text-3);font-size:12px}
+.list{display:grid;gap:10px}
+.list-item{padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--surface)}
+.list-item strong{display:block;margin-bottom:3px}
+.list-item.row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.section-gap{margin-top:12px}
+.tabs{display:inline-flex;gap:4px;margin-bottom:16px;padding:4px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+.tab{min-height:32px;padding:0 12px;border:0;border-radius:7px;background:transparent;color:var(--text-2)}
+.tab.active{background:var(--primary);color:#fff}
+.toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.toolbar select,.toolbar input{min-height:34px;padding:0 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text-2)}
+.toolbar .spacer{flex:1}
+.release-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.capacity{height:8px;margin:11px 0 7px;border-radius:999px;background:#e2e8f0;overflow:hidden}
+.capacity span{display:block;height:100%;background:linear-gradient(90deg,var(--primary),#60a5fa)}
+.capacity.over span{background:linear-gradient(90deg,var(--warning),var(--danger))}
+.requirement-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.requirement-card{min-width:0;padding:16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);text-align:left;transition:border-color .16s,box-shadow .16s,transform .16s}
+.requirement-card:hover{border-color:var(--primary);box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.requirement-card h2{margin:14px 0 7px;font-size:16px}
+.requirement-card p{min-height:42px;margin:0;color:var(--text-2)}
+.card-top,.card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-foot{margin-top:15px;color:var(--text-3);font-size:12px}
+.detail-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,1fr);gap:12px}
+.stage-track{display:flex;max-width:100%;padding:8px 0 2px;overflow-x:auto}
+.stage-step{position:relative;min-width:104px;padding:11px 9px 5px;border-top:3px solid var(--border);color:var(--text-3);font-size:11px}
+.stage-step:before{content:"";position:absolute;left:8px;top:-6px;width:9px;height:9px;border:2px solid var(--surface);border-radius:50%;background:var(--border)}
+.stage-step.done{border-color:var(--success);color:#047857}.stage-step.done:before{background:var(--success)}
+.stage-step.current{border-color:var(--primary);color:var(--primary);font-weight:700}.stage-step.current:before{background:var(--primary)}
+.flow-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.flow-step{position:relative;padding:11px;border:1px solid var(--border);border-radius:8px;background:#fafcff}
+.flow-step b{display:block;margin-bottom:3px}.flow-step small{color:var(--text-3)}
+.artifact{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px;border:1px solid var(--border);border-radius:8px}
+.artifact-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:8px;background:var(--primary-light);color:var(--primary);font-weight:800}
+.artifact-main{flex:1;min-width:0}.artifact-main strong,.artifact-main span{display:block}.artifact-main span{overflow:hidden;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+.decision-gate{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}
+.decision-gate:last-child{border:0}
+.empty{padding:28px;color:var(--text-3);text-align:center}
+.overlay{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:rgba(15,23,42,.48)}
+.dialog{width:min(640px,100%);max-height:calc(100vh - 40px);overflow:auto;border-radius:16px;background:var(--surface);box-shadow:0 24px 60px rgba(15,23,42,.25)}
+.dialog-head,.dialog-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border)}
+.dialog-head strong{font-size:16px}.dialog-body{padding:18px}.dialog-foot{justify-content:flex-end;border-top:1px solid var(--border);border-bottom:0}
+.form-grid{display:grid;gap:13px}.form-grid label{display:grid;gap:5px;color:var(--text-2);font-size:12px;font-weight:650}
+.form-grid input,.form-grid select,.form-grid textarea{width:100%;min-height:40px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-weight:400}
+.form-grid textarea{resize:vertical}
+.form-grid.two-column{grid-template-columns:repeat(2,minmax(0,1fr))}
+.form-grid .full{grid-column:1/-1}
+.form-error{display:none;margin:0;padding:9px 10px;border-radius:7px;background:#fef2f2;color:#b91c1c;font-size:12px}
+.form-error.visible{display:block}
+.search-result{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;background:#fff;text-align:left}
+.search-result:hover{border-color:var(--primary);background:var(--primary-light)}
+.audit{display:flex;align-items:center;gap:8px;color:var(--text-3);font-size:12px}
+.audit:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--success)}
+.release-items{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.release-item{padding:4px 7px;border-radius:6px;background:var(--primary-light);color:var(--primary-dark);font-size:11px}
+.stage-hint{margin-top:7px;color:var(--text-3);font-size:11px;text-align:right}
+@media(max-width:1200px){
+  .metric-grid,.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid-2-1,.detail-grid{grid-template-columns:1fr}
+  .requirement-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .flow-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:1024px){
+  .sidebar{width:176px}.brand{padding:18px 14px}.profile{display:none}
+  .nav-item{padding:10px}.main{width:calc(100% - 176px);margin-left:176px}
+  .content{padding:18px}.topbar{padding:8px 16px}
+}
+@media(max-width:720px){
+  .layout{display:block}
+  .sidebar{inset:auto 0 0;width:100%;height:66px;border-top:1px solid var(--border);border-right:0}
+  .brand,.nav-title,.profile{display:none}
+  .nav{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));padding:4px;overflow:visible}
+  .nav-item{flex-direction:column;justify-content:center;gap:2px;min-height:56px;margin:0;padding:3px 1px;font-size:9px;text-align:center}
+  .nav-item svg{width:18px;height:18px}
+  .main{width:100%;margin-left:0;padding-bottom:66px}
+  .topbar{flex-wrap:wrap;padding:8px 10px}.breadcrumb{display:none}
+  .global-search{order:3;flex-basis:100%;max-width:none}
+  .content{padding:14px 10px 30px}.page-head{display:block}.page-head .btn{margin-top:10px}
+  .release-grid,.requirement-grid,.grid-1-1,.flow-list,.form-grid.two-column{grid-template-columns:1fr}
+  .btn,.tab,.toolbar select,.toolbar input{min-height:44px}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#mainContent">跳到主要内容</a>
+<div class="layout">
+  <aside class="sidebar" aria-label="主导航">
+    <div class="brand"><span class="brand-mark">G</span><span>产品工作台</span></div>
+    <nav class="nav">
+      <div class="nav-title">工作</div>
+      <button class="nav-item active" data-page="home" aria-label="首页">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>首页</span>
+      </button>
+      <button class="nav-item" data-page="planning" aria-label="规划中心">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19V3"/></svg><span>规划中心</span>
+      </button>
+      <button class="nav-item" data-page="requirements" aria-label="需求中心">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg><span>需求中心</span>
+      </button>
+      <button class="nav-item" data-page="review" aria-label="评审与验收">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5-8"/></svg><span>评审与验收</span>
+      </button>
+      <div class="nav-title">洞察与协作</div>
+      <button class="nav-item" data-page="data" aria-label="数据与复盘">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-7"/></svg><span>数据与复盘</span>
+      </button>
+      <button class="nav-item" data-page="team" aria-label="团队与AI">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg><span>团队与AI</span>
+      </button>
+    </nav>
+    <div class="profile"><span class="avatar">产</span><div><strong>产品负责人</strong><small>App & Mac</small></div></div>
+  </aside>
+  <main class="main" id="mainContent">
+    <header class="topbar">
+      <div class="breadcrumb" id="breadcrumb">首页 › 待我处理</div>
+      <label class="global-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input id="globalSearch" aria-label="全局搜索" placeholder="搜索需求、版本、Demo、PRD、决策">
+      </label>
+      <button class="btn primary" data-action="new-requirement">新建需求</button>
+      <button class="btn" data-action="reset-demo">重置</button>
+    </header>
+    <div class="content">
+      <section class="page active" id="page-home"></section>
+      <section class="page" id="page-planning"></section>
+      <section class="page" id="page-requirements"></section>
+      <section class="page" id="page-review"></section>
+      <section class="page" id="page-data"></section>
+      <section class="page" id="page-team"></section>
+    </div>
+  </main>
+</div>
+<div id="overlayRoot"></div>
+<script>
+'use strict';
+const STORAGE_KEY='product-manager-workbench-v2';
+const lifecycleStages=['待分诊','需求池','已规划','方案中','Demo中','PRD中','待业务确认','待领导确认','待需求评审','开发中','测试中','待验收','待上线','效果观察','已归档'];
+const pageNames={home:'待我处理',planning:'规划中心',requirements:'需求中心',review:'评审与验收',data:'数据与复盘',team:'团队与AI'};
+const seedState = {
+  currentPage:'home',
+  planningView:'sources',
+  reviewFilter:'全部',
+  requirementFilters:{product:'全部产品端',stage:'全部阶段',owner:'全部负责人'},
+  selectedRequirementId:'REQ-001',
+  releases:[
+    {id:'REL-APP-0826',code:'APP-2026.8',goal:'提升商业化效率与新手体验',capacity:34,baseUsed:16},
+    {id:'REL-MAC-0826',code:'MAC-2026.8',goal:'完善Mac内容获取与启动体验',capacity:26,baseUsed:10}
+  ],
+  requirements:[
+    {id:'REQ-001',title:'Android广告接入',product:'App',releaseIds:['REL-APP-0826'],source:'商业化规划',priority:'P0',effort:13,executionPath:'完整需求',stage:'开发中',status:'待确认',owner:'产品负责人',nextOwner:'产品负责人',approver:'产品负责人',goal:'在不破坏核心体验的前提下建立可控广告收入',flow:['广告位策略','Demo验证','PRD定稿','运营确认','领导确认','需求评审','开发实现','测试验收'],artifacts:[{type:'Demo',name:'Android广告接入-交互标注版.html',state:'主版本'},{type:'PRD',name:'Android广告接入需求-V2.0.md',state:'主版本'}],decisionGates:[{code:'G1',name:'进入版本',state:'已通过'},{code:'G2',name:'方案确认',state:'已通过'},{code:'G3',name:'文档定稿',state:'已通过'},{code:'G4',name:'验收通过',state:'未开始'}]},
+    {id:'REQ-002',title:'iOS应用与IPA资源库',product:'Mac',releaseIds:['REL-MAC-0826'],source:'PlayCover竞品研究',priority:'P1',effort:8,executionPath:'专员执行',stage:'PRD中',status:'待确认',owner:'产品专员A',nextOwner:'产品负责人',approver:'产品负责人',goal:'让Mac用户可以发现、导入并管理iOS应用与IPA资源',flow:['资源发现','导入IPA','安装','启动','卸载与异常处理'],artifacts:[{type:'Demo',name:'Mac端-iOS应用与IPA资源库demo.html',state:'主版本'},{type:'PRD',name:'Mac端-iOS应用与IPA资源库.md',state:'候选版本'}],decisionGates:[{code:'G1',name:'进入版本',state:'已通过'},{code:'G2',name:'方案确认',state:'已通过'},{code:'G3',name:'文档定稿',state:'待确认'}]},
+    {id:'REQ-003',title:'云存档月卡插单',product:'App & Mac',releaseIds:[],source:'运营紧急反馈',priority:'P0',effort:6,executionPath:'快速需求',stage:'需求池',status:'阻塞',owner:'产品负责人',nextOwner:'产品负责人',approver:'产品负责人',goal:'验证云存档月卡的紧急商业化机会',flow:['套餐说明','购买','权益生效','续费与到期'],artifacts:[],decisionGates:[{code:'G1',name:'进入版本',state:'待确认'}]}
+  ],
+  inbox:[
+    {id:'IN-001',requirementId:'REQ-002',taskId:'TASK-001',type:'专员提交',title:'确认iOS/IPA资源库PRD',source:'产品专员A',due:'今天 15:00',severity:'high',action:'评审',nextOwner:'运营',afterNextOwner:'产品负责人',resultStage:'待业务确认',defaultDecision:'PRD可进入业务确认，卸载与ACE风险按当前版本执行。'},
+    {id:'IN-002',requirementId:'REQ-001',reviewId:'REV-002',type:'开发问题',title:'广告无填充时是否保留占位',source:'Android开发',due:'今天 17:00',severity:'high',action:'给出策略',nextOwner:'Android开发',afterNextOwner:'产品负责人',resultStage:'开发中',defaultDecision:'无填充时移除广告节点，不保留空白占位。'},
+    {id:'IN-003',requirementId:'REQ-001',taskId:'TASK-002',type:'AI检查',title:'Demo与PRD发现3处规则差异',source:'需求验收官',due:'明天',severity:'medium',action:'查看差异',nextOwner:'产品负责人',afterNextOwner:'产品专员A',resultStage:'PRD中',defaultDecision:'接受差异清单，先统一三处规则再进入文档定稿。'},
+    {id:'IN-004',requirementId:'REQ-003',type:'插单审批',title:'云存档月卡希望进入APP-2026.8',source:'运营',due:'今天',severity:'critical',action:'评估影响',nextOwner:'高级项目经理',afterNextOwner:'产品负责人',resultStage:'已规划'},
+    {id:'IN-005',requirementId:'REQ-001',reviewId:'REV-003',type:'测试异常',title:'横屏切竖屏后激励弹窗状态丢失',source:'测试',due:'本周五',severity:'medium',action:'确认方案',nextOwner:'Android开发',afterNextOwner:'测试',resultStage:'测试中',defaultDecision:'保留激励任务状态，方向切换后按剩余时长恢复弹窗。'}
+  ],
+  tasks:[
+    {id:'TASK-001',requirementId:'REQ-002',title:'补充卸载和ACE风险规则',assignee:'产品专员A',kind:'人工',state:'待负责人确认',due:'2026-07-28',deliverable:'PRD修订稿',inputMaterials:'主版本Demo、候选PRD、ACE风险清单',authorizationScope:'仅可编辑候选PRD',acceptanceCriteria:'主流程、异常和验收口径完整',approver:'产品负责人'},
+    {id:'TASK-002',requirementId:'REQ-001',title:'扫描Demo与PRD差异',assignee:'需求验收官',kind:'AI',state:'已交付',due:'2026-07-28',deliverable:'差异清单',inputMaterials:'主版本Demo与PRD',authorizationScope:'只读，不改变正式状态',acceptanceCriteria:'逐条给出位置、影响和修改建议',approver:'产品负责人'},
+    {id:'TASK-003',requirementId:'REQ-003',title:'测算插单对版本容量影响',assignee:'高级项目经理',kind:'AI',state:'进行中',due:'2026-07-28',deliverable:'容量影响报告',inputMaterials:'APP-2026.8容量与需求池',authorizationScope:'只读规划数据',acceptanceCriteria:'包含超额、被挤出项和截止影响',approver:'产品负责人'}
+  ],
+  reviews:[
+    {id:'REV-001',requirementId:'REQ-002',category:'PRD评审',title:'卸载前是否需要清理IPA安装包',severity:'P1',owner:'产品负责人',state:'待确认'},
+    {id:'REV-002',requirementId:'REQ-001',category:'开发问题',title:'无填充状态不应留下广告空白',severity:'P0',owner:'产品负责人',state:'待确认'},
+    {id:'REV-003',requirementId:'REQ-001',category:'测试异常',title:'横竖屏切换保持激励任务状态',severity:'P1',owner:'Android开发',state:'待修复'},
+    {id:'REV-004',requirementId:'REQ-001',category:'功能验收',title:'广告关闭后返回原页面滚动位置',severity:'P1',owner:'产品负责人',state:'待复验'}
+  ],
+  insertionRecords:[],
+  activity:[]
+};
+function clone(value){return JSON.parse(JSON.stringify(value))}
+function isValidState(value){
+  return Boolean(value&&typeof value==='object'&&pageNames[value.currentPage]
+    &&Array.isArray(value.releases)&&value.releases.every(item=>item&&typeof item.id==='string'&&Number.isFinite(item.baseUsed)&&Number.isFinite(item.capacity))
+    &&Array.isArray(value.requirements)&&value.requirements.every(item=>item&&typeof item.id==='string'&&Array.isArray(item.releaseIds)&&Array.isArray(item.artifacts)&&Array.isArray(item.decisionGates))
+    &&Array.isArray(value.inbox)&&Array.isArray(value.tasks)&&Array.isArray(value.reviews)
+    &&Array.isArray(value.insertionRecords)&&Array.isArray(value.activity));
+}
+function loadState(){try{const raw=localStorage.getItem(STORAGE_KEY),parsed=raw?JSON.parse(raw):null;return isValidState(parsed)?parsed:clone(seedState)}catch{return clone(seedState)}}
+let state=loadState();
+function saveState(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}
+function requirementById(id){return state.requirements.find(item=>item.id===id)}
+function releaseById(id){return state.releases.find(item=>item.id===id)}
+function releaseRequirements(id){return state.requirements.filter(item=>item.releaseIds.includes(id))}
+function releaseUsage(release){return release.baseUsed+releaseRequirements(release.id).reduce((sum,item)=>sum+item.effort,0)}
+function esc(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
+function renderApp(){
+  renderHome();renderPlanning();renderRequirements();renderReview();renderData();renderTeam();
+  document.querySelectorAll('.page').forEach(page=>page.classList.toggle('active',page.id===`page-${state.currentPage}`));
+  document.querySelectorAll('nav [data-page]').forEach(item=>item.classList.toggle('active',item.dataset.page===state.currentPage));
+  document.getElementById('breadcrumb').textContent=`首页 › ${pageNames[state.currentPage]}`;
+}
+function setPage(page){if(!pageNames[page])return;state.currentPage=page;saveState();renderApp();window.scrollTo(0,0)}
+function renderHome(){
+  const blocking=state.inbox.filter(item=>item.severity==='critical').length;
+  const dueToday=state.inbox.filter(item=>item.due.includes('今天')).length;
+  const aiRunning=state.tasks.filter(item=>item.kind==='AI'&&item.state==='进行中').length;
+  const metrics=[
+    ['待我处理',state.inbox.length,'完成决策后流转给下一责任人','var(--primary)'],
+    ['阻塞事项',blocking,'当前会阻塞版本或后续阶段','var(--danger)'],
+    ['今日到期',dueToday,'优先处理等待产品策略的事项','var(--warning)'],
+    ['AI进行中',aiRunning,'AI结果只进入待确认','var(--purple)']
+  ];
+  document.getElementById('page-home').innerHTML=`
+    <div class="page-head"><div><h1>待我处理</h1><p>把专员、AI、运营、研发和测试的待确认事项收拢到一个队列。</p></div></div>
+    <div class="metric-grid">${metrics.map(item=>`<article class="metric" data-metric style="--metric-color:${item[3]}"><div class="metric-label">${item[0]}</div><div class="metric-value">${item[1]}</div><div class="metric-note">${item[2]}</div></article>`).join('')}</div>
+    <div class="grid-2-1">
+      <section class="panel"><div class="panel-head"><span class="panel-title"><span class="dot"></span>统一待办</span><span class="muted">按阻塞、截止时间和优先级排序</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>事项</th><th>所属需求</th><th>来源</th><th>截止</th><th>操作</th></tr></thead><tbody>
+      ${state.inbox.map(item=>{const req=requirementById(item.requirementId);return `<tr data-inbox-row data-inbox-id="${item.id}"><td><span class="tag ${item.severity}">${item.type}</span><div><strong>${item.title}</strong></div></td><td><strong>${req.title}</strong><div class="muted">${req.product} · ${req.stage}</div></td><td>${item.source}</td><td>${item.due}</td><td><button class="btn" data-action="open-inbox">${item.action}</button></td></tr>`}).join('')}
+      </tbody></table></div></section>
+      <aside class="panel"><div class="panel-head"><span class="panel-title">版本与团队风险</span></div><div class="panel-body list">
+        <div class="list-item"><strong>APP-2026.8容量接近上限</strong><span class="muted">已使用${releaseUsage(releaseById('REL-APP-0826'))}/34人天，云存档插单需要明确影响。</span></div>
+        <div class="list-item"><strong>产品专员A等待确认</strong><span class="muted">iOS/IPA资源库PRD等待最终审批。</span></div>
+        <div class="list-item"><strong>Android广告仍有测试异常</strong><span class="muted">进入验收前需关闭1个P0和1个P1问题。</span></div>
+        <div class="audit">所有正式状态变化均保留操作者与证据</div>
+      </div></aside>
+    </div>`;
+}
+function renderPlanning(){
+  const sources=[['用户反馈','意见反馈中整理出8个候选问题','每周归纳'],['三方反馈','运营提出云存档月卡紧急机会','需要分诊'],['数据分析','D0体验率低于目标2.3个百分点','需要调查'],['竞品调研','PlayCover新增IPA源管理能力','已转需求']];
+  const tabs=[['sources','需求来源'],['pool','需求池'],['releases','版本规划'],['insertions','插单记录']];
+  const active=state.planningView||'sources';
+  let body='';
+  if(active==='sources'){
+    body=`<section class="panel"><div class="panel-head"><span class="panel-title">需求来源</span><span class="muted">AI归类查重，产品负责人最终分诊</span></div><div class="panel-body grid-1-1">${sources.map(source=>`<div class="list-item" data-source-row><strong>${source[0]}</strong><div>${source[1]}</div><div class="muted">${source[2]}</div></div>`).join('')}</div></section>`;
+  }else if(active==='pool'){
+    body=`<section class="panel"><div class="panel-head"><span class="panel-title">需求池</span><span class="muted">人工排序优先，评分只作参考</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>需求</th><th>产品端</th><th>来源</th><th>优先级</th><th>工作量</th><th>执行路径</th><th>状态</th><th>操作</th></tr></thead><tbody>
+    ${state.requirements.map(item=>`<tr data-requirement-row data-id="${item.id}"><td><strong>${esc(item.title)}</strong><div class="muted">${item.id}</div></td><td>${item.product}</td><td>${item.source}</td><td><span class="tag ${item.priority}">${item.priority}</span></td><td>${item.effort}人天</td><td>${item.executionPath}</td><td>${item.stage}</td><td>${item.id==='REQ-003'?`<button class="btn" data-action="assess-insertion" data-id="${item.id}">插单影响</button>`:`<button class="btn" data-action="open-requirement" data-id="${item.id}">查看</button>`}</td></tr>`).join('')}
+    </tbody></table></div></section>`;
+  }else if(active==='releases'){
+    body=`<div class="release-grid">${state.releases.map(release=>{const used=releaseUsage(release),pct=Math.round(used/release.capacity*100),linked=releaseRequirements(release.id);return `<article class="panel" data-release="${release.id}"><div class="panel-head"><span class="panel-title">${release.code}</span><span class="tag ${used>release.capacity?'critical':'medium'}">${used}/${release.capacity}人天</span></div><div class="panel-body"><strong>${release.goal}</strong><div class="capacity ${used>release.capacity?'over':''}"><span style="width:${Math.min(pct,100)}%"></span></div><div class="muted">容量使用 ${pct}% · 基础承诺${release.baseUsed}人天 · ${linked.length}个关联需求</div><div class="release-items">${linked.map(item=>`<span class="release-item">${esc(item.title)} · ${item.effort}人天</span>`).join('')||'<span class="muted">暂无关联需求</span>'}</div></div></article>`}).join('')}</div>`;
+  }else{
+    body=`<section class="panel"><div class="panel-head"><span class="panel-title">插单决策记录</span><span class="muted">保留审批人、理由、容量和受影响项</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>需求</th><th>目标版本</th><th>容量变化</th><th>审批人</th><th>决策理由</th><th>时间</th></tr></thead><tbody>${state.insertionRecords.length?state.insertionRecords.map(record=>`<tr data-insertion-record><td><strong>${esc(requirementById(record.requirementId).title)}</strong></td><td>${record.releaseCode}</td><td><span class="tag critical">${record.before}/${record.capacity} → ${record.after}/${record.capacity}</span><div class="muted">${record.impact}</div></td><td>${record.approver}</td><td>${esc(record.reason)}</td><td>${record.time}</td></tr>`).join(''):'<tr><td colspan="6"><div class="empty">尚无插单决策。先在需求池评估影响，再由唯一审批人确认。</div></td></tr>'}</tbody></table></div></section>`;
+  }
+  document.getElementById('page-planning').innerHTML=`
+    <div class="page-head"><div><h1>规划中心</h1><p>从多来源输入到需求池、版本规划和插单影响。</p></div></div>
+    <div class="tabs" role="tablist" aria-label="规划视图">${tabs.map(tab=>`<button class="tab ${active===tab[0]?'active':''}" role="tab" aria-selected="${active===tab[0]}" data-planning-view="${tab[0]}">${tab[1]}</button>`).join('')}</div>
+    ${body}`;
+}
+function renderRequirements(){
+  const selected=requirementById(state.selectedRequirementId)||state.requirements[0];
+  const filters=state.requirementFilters||seedState.requirementFilters;
+  const visible=state.requirements.filter(item=>(filters.product==='全部产品端'||item.product===filters.product)&&(filters.stage==='全部阶段'||item.stage===filters.stage)&&(filters.owner==='全部负责人'||item.owner===filters.owner));
+  const option=(value,current)=>`<option ${value===current?'selected':''}>${value}</option>`;
+  document.getElementById('page-requirements').innerHTML=`
+    <div class="page-head"><div><h1>需求中心</h1><p>需求是唯一事实源，版本、任务、产物和角色队列都是关联视图。</p></div></div>
+    <div class="toolbar"><label>产品端 <select aria-label="产品端筛选" data-requirement-filter="product">${['全部产品端','App','Mac','App & Mac'].map(value=>option(value,filters.product)).join('')}</select></label><label>阶段 <select aria-label="阶段筛选" data-requirement-filter="stage">${['全部阶段',...lifecycleStages].map(value=>option(value,filters.stage)).join('')}</select></label><label>负责人 <select aria-label="负责人筛选" data-requirement-filter="owner">${['全部负责人','产品负责人','产品专员A'].map(value=>option(value,filters.owner)).join('')}</select></label><span class="spacer"></span><span class="muted">${visible.length}/${state.requirements.length}个需求</span></div>
+    <div class="requirement-grid">${visible.map(item=>`<button class="requirement-card" data-requirement-card data-id="${item.id}"><div class="card-top"><span class="tag ${item.priority}">${item.priority}</span><span class="muted">${item.product}</span></div><h2>${esc(item.title)}</h2><p>${item.goal}</p><div class="card-foot"><span>${item.executionPath}</span><span>${item.stage}</span></div></button>`).join('')||'<div class="empty">没有符合筛选条件的需求。</div>'}</div>
+    <section class="section-gap" id="requirementDetail">${renderRequirementDetail(selected)}</section>`;
+}
+function renderRequirementDetail(item){
+  const current=Math.max(lifecycleStages.indexOf(item.stage),0);
+  const releases=item.releaseIds.map(id=>releaseById(id)?.code).filter(Boolean);
+  return `<div data-requirement-detail="${item.id}">
+    <div class="page-head"><div><h2>${esc(item.title)}</h2><p>${item.id} · ${item.product} · ${item.executionPath} · 关联版本：${releases.join('、')||'未规划'}</p></div><span class="tag ${item.priority}">${item.priority}</span></div>
+    <section class="panel"><div class="panel-head"><span class="panel-title">生命周期</span><span class="muted">阶段可按执行路径跳过，但需要记录原因</span></div><div class="panel-body"><div class="stage-track" tabindex="0" aria-label="15阶段生命周期，可横向滚动">${lifecycleStages.map((stage,index)=>`<div class="stage-step ${index<current?'done':index===current?'current':''}" data-stage-step>${stage}</div>`).join('')}</div><div class="stage-hint">横向滑动查看全部15个阶段</div></div></section>
+    <div class="detail-grid section-gap"><div class="list">
+      <section class="panel"><div class="panel-head"><span class="panel-title">业务流与规则</span><span class="tag purple">${item.executionPath}</span></div><div class="panel-body"><p>${item.goal}</p><div class="flow-list">${item.flow.map((step,index)=>`<div class="flow-step"><b>${index+1}. ${step}</b><small>主流程、异常与验收统一沉淀</small></div>`).join('')}</div></div></section>
+      <section class="panel"><div class="panel-head"><span class="panel-title">产物与任务</span><button class="btn primary" data-action="assign-task" data-id="${item.id}">分派任务</button></div><div class="panel-body list">${item.artifacts.length?item.artifacts.map((artifact,index)=>`<div class="artifact" data-artifact><span class="artifact-icon">${artifact.type==='Demo'?'D':'P'}</span><span class="artifact-main"><strong>${artifact.type} · ${artifact.state}</strong><span>${artifact.name}</span></span><button class="btn" data-action="open-artifact" data-id="${item.id}" data-index="${index}">查看</button></div>`).join(''):'<div class="empty">当前执行路径不要求正式Demo或PRD。</div>'}</div></section>
+    </div><aside class="list">
+      <section class="panel"><div class="panel-head"><span class="panel-title">当前责任</span></div><div class="panel-body"><p><strong>负责人：</strong>${item.owner}</p><p><strong>下一责任人：</strong>${item.nextOwner}</p><p><strong>唯一审批人：</strong>${item.approver}</p><p><strong>状态：</strong><span class="tag medium">${item.status}</span></p></div></section>
+      <section class="panel"><div class="panel-head"><span class="panel-title">决策门</span></div><div class="panel-body">${item.decisionGates.map(gate=>`<div class="decision-gate"><span><strong>${gate.code}</strong> ${gate.name}</span><span class="tag ${gate.state==='已通过'?'success':'medium'}">${gate.state}</span></div>`).join('')}</div></section>
+      <section class="panel"><div class="panel-head"><span class="panel-title">来源证据</span></div><div class="panel-body"><strong>${item.source}</strong><p class="muted">历史会话、反馈、数据或竞品材料已绑定当前需求。</p></div></section>
+    </aside></div>
+  </div>`;
+}
+function renderReview(){
+  const filters=['全部','PRD评审','开发问题','测试异常','功能验收'];
+  const visible=state.reviewFilter==='全部'?state.reviews:state.reviews.filter(item=>item.category===state.reviewFilter);
+  document.getElementById('page-review').innerHTML=`
+    <div class="page-head"><div><h1>评审与验收</h1><p>集中处理专员产物、开发问题、测试异常、功能验收和复验。</p></div></div>
+    <div class="tabs" role="tablist" aria-label="评审类型">${filters.map(filter=>`<button class="tab ${state.reviewFilter===filter?'active':''}" role="tab" aria-selected="${state.reviewFilter===filter}" data-review-filter="${filter}">${filter==='PRD评审'?'文档评审':filter}</button>`).join('')}</div>
+    <div class="summary-grid"><article class="metric" style="--metric-color:var(--warning)"><div class="metric-label">待产品决策</div><div class="metric-value">${state.reviews.filter(item=>item.state==='待确认').length}</div><div class="metric-note">没有产品结论无法继续</div></article><article class="metric" style="--metric-color:var(--danger)"><div class="metric-label">P0问题</div><div class="metric-value">${state.reviews.filter(item=>item.severity==='P0').length}</div><div class="metric-note">阻塞进入验收</div></article><article class="metric" style="--metric-color:var(--primary)"><div class="metric-label">待复验</div><div class="metric-value">${state.reviews.filter(item=>item.state==='待复验').length}</div><div class="metric-note">需保留操作证据</div></article><article class="metric" style="--metric-color:var(--success)"><div class="metric-label">已决策</div><div class="metric-value">${state.reviews.filter(item=>item.state==='已决策').length}</div><div class="metric-note">同步生成产物更新任务</div></article></div>
+    <section class="panel"><div class="panel-head"><span class="panel-title">质量门队列</span><span class="muted">结论自动关联需求和产物</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>类型</th><th>问题</th><th>需求</th><th>级别</th><th>负责人</th><th>状态</th><th>操作</th></tr></thead><tbody>
+    ${visible.map(review=>`<tr data-review-row data-review-id="${review.id}"><td>${review.category}</td><td><strong>${review.title}</strong>${review.decision?`<div class="muted">${review.decision}</div>`:''}</td><td>${esc(requirementById(review.requirementId).title)}</td><td><span class="tag ${review.severity}">${review.severity}</span></td><td>${review.owner}</td><td><span class="tag ${review.state==='已决策'?'success':'medium'}">${review.state}</span></td><td><button class="btn" data-action="open-review">${review.state==='已决策'?'查看':'处理'}</button></td></tr>`).join('')}
+    </tbody></table></div></section>`;
+}
+function renderData(){
+  document.getElementById('page-data').innerHTML=`
+    <div class="page-head"><div><h1>数据与复盘</h1><p>把功能目标、上线证据和继续优化结论绑定到需求。</p></div></div>
+    <div class="summary-grid"><article class="metric" style="--metric-color:var(--success)"><div class="metric-label">Android广告填充率</div><div class="metric-value">82.4%</div><div class="metric-note">目标80% · 已进入观察</div></article><article class="metric" style="--metric-color:var(--primary)"><div class="metric-label">广告关闭率</div><div class="metric-value">18.7%</div><div class="metric-note">较上线首日下降2.1%</div></article><article class="metric" style="--metric-color:var(--purple)"><div class="metric-label">IPA导入成功率</div><div class="metric-value">91.3%</div><div class="metric-note">内测样本46次</div></article><article class="metric" style="--metric-color:var(--warning)"><div class="metric-label">待复盘需求</div><div class="metric-value">2</div><div class="metric-note">需要继续、观察或停止决策</div></article></div>
+    <div class="grid-2-1"><section class="panel"><div class="panel-head"><span class="panel-title">上线效果与后续结论</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>需求</th><th>目标</th><th>当前结果</th><th>证据</th><th>建议</th></tr></thead><tbody><tr><td><strong>Android广告接入</strong></td><td>建立可控广告收入</td><td>填充率达到目标</td><td>观察7天</td><td><span class="tag success">继续优化</span></td></tr><tr><td><strong>iOS应用与IPA资源库</strong></td><td>提升Mac内容获取效率</td><td>样本不足</td><td>内测46次</td><td><span class="tag medium">继续观察</span></td></tr></tbody></table></div></section><aside class="panel"><div class="panel-head"><span class="panel-title">自动复盘</span></div><div class="panel-body list"><div class="list-item"><strong>本周周报草稿</strong><span class="muted">由需求活动、评审、验收和上线记录生成。</span></div><div class="list-item"><strong>版本目标偏差</strong><span class="muted">APP-2026.8插单后需重新确认商业化与体验目标。</span></div></div></aside></div>`;
+}
+function renderTeam(){
+  const aiRunning=state.tasks.filter(task=>task.kind==='AI'&&task.state==='进行中').length;
+  document.getElementById('page-team').innerHTML=`
+    <div class="page-head"><div><h1>团队与AI</h1><p>任务必须绑定需求、输入、交付物和唯一审批人。</p></div></div>
+    <div class="summary-grid"><article class="metric"><div class="metric-label">产品专员A</div><div class="metric-value">2</div><div class="metric-note">1项待负责人确认</div></article><article class="metric"><div class="metric-label">产品专员B</div><div class="metric-value">1</div><div class="metric-note">本周负载正常</div></article><article class="metric" style="--metric-color:var(--purple)"><div class="metric-label">AI进行中</div><div class="metric-value">${aiRunning}</div><div class="metric-note">只读授权材料</div></article><article class="metric" style="--metric-color:var(--success)"><div class="metric-label">AI已交付</div><div class="metric-value">${state.tasks.filter(task=>task.kind==='AI'&&task.state==='已交付').length}</div><div class="metric-note">结果进入待我处理</div></article></div>
+    <section class="panel"><div class="panel-head"><span class="panel-title">任务运行队列</span><span class="muted">人工与AI使用同一交付口径</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>任务</th><th>需求</th><th>执行人</th><th>类型</th><th>状态</th><th>截止</th><th>审批人</th><th>操作</th></tr></thead><tbody>${state.tasks.map(task=>`<tr data-task-row data-task-id="${task.id}"><td><strong>${esc(task.title)}</strong><div class="muted">${esc(task.deliverable)}</div></td><td>${esc(requirementById(task.requirementId).title)}</td><td>${task.assignee}</td><td><span class="tag ${task.kind==='AI'?'purple':'medium'}">${task.kind}</span></td><td>${task.state}</td><td>${task.due}</td><td>${task.approver}</td><td><button class="btn" data-action="open-task" data-id="${task.id}">查看授权</button></td></tr>`).join('')}</tbody></table></div></section>`;
+}
+let lastDialogTrigger=null;
+function focusDialog(){requestAnimationFrame(()=>{const dialog=document.querySelector('[role="dialog"]');if(dialog){dialog.tabIndex=-1;dialog.focus()}})}
+function showDialog(content,labelId){
+  lastDialogTrigger=document.activeElement;
+  document.querySelector('.layout').inert=true;
+  document.getElementById('overlayRoot').innerHTML=`<div class="overlay"><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="${labelId}">${content}</section></div>`;
+  focusDialog();
+}
+function closeOverlay(){
+  document.querySelector('.layout').inert=false;
+  document.getElementById('overlayRoot').innerHTML='';
+  const trigger=lastDialogTrigger;lastDialogTrigger=null;
+  requestAnimationFrame(()=>{if(trigger&&trigger.isConnected)trigger.focus()});
+}
+function showFormError(id,message){const node=document.getElementById(id);if(node){node.textContent=message;node.classList.add('visible');node.focus()}}
+function openInbox(id){
+  const item=state.inbox.find(entry=>entry.id===id),req=requirementById(item.requirementId);
+  if(item.type==='插单审批'){openInsertionImpact(item.requirementId);return}
+  showDialog(`<div class="dialog-head"><strong id="decisionTitle">${esc(item.title)}</strong><button class="btn" data-action="close-overlay">关闭</button></div><div class="dialog-body form-grid"><p><span class="tag ${item.severity}">${item.type}</span></p><p><strong>所属需求：</strong>${esc(req.title)}　<strong>来源：</strong>${item.source}</p><label>产品结论<textarea id="inboxDecision" rows="4">${esc(item.defaultDecision||'')}</textarea></label><p><strong>下一责任人：</strong>${item.nextOwner}</p><p><strong>唯一审批人：</strong>${req.approver}</p><p class="form-error" id="inboxError" role="alert" tabindex="-1"></p></div><div class="dialog-foot"><button class="btn" data-action="close-overlay">稍后处理</button><button class="btn primary" data-action="approve-inbox" data-id="${item.id}">确认结论并流转</button></div>`,'decisionTitle');
+}
+function approveInbox(id){
+  const item=state.inbox.find(entry=>entry.id===id),req=requirementById(item.requirementId),decision=document.getElementById('inboxDecision').value.trim();
+  if(!decision){showFormError('inboxError','请先写明产品结论，结论会随需求留痕。');return}
+  const task=item.taskId&&state.tasks.find(entry=>entry.id===item.taskId);
+  if(task){task.state='已确认';task.approvalDecision=decision}
+  const review=item.reviewId&&state.reviews.find(entry=>entry.id===item.reviewId);
+  if(review){review.state='已决策';review.decision=decision;review.reason=decision}
+  req.stage=item.resultStage;req.status='已流转';req.owner=item.nextOwner;req.nextOwner=item.afterNextOwner||item.nextOwner;
+  state.tasks.unshift({id:`TASK-FLOW-${item.id}`,requirementId:req.id,title:`落实决策：${item.title}`,assignee:item.nextOwner,kind:'人工',state:'待执行',due:item.due,deliverable:decision,inputMaterials:`${req.id}需求与${item.id}决策记录`,authorizationScope:'仅执行已审批结论',acceptanceCriteria:'完成后回传证据并进入待我处理',approver:req.approver});
+  state.inbox=state.inbox.filter(entry=>entry.id!==id);
+  state.activity.unshift({type:'待办决策',itemId:id,requirementId:req.id,decision,approver:req.approver,nextOwner:item.nextOwner,time:new Date().toLocaleString('zh-CN')});
+  saveState();closeOverlay();renderApp();
+}
+function openInsertionImpact(id){
+  const req=requirementById(id),release=releaseById('REL-APP-0826'),before=releaseUsage(release),projected=before+(req.releaseIds.includes(release.id)?0:req.effort),overflow=Math.max(projected-release.capacity,0);
+  showDialog(`<div class="dialog-head"><strong id="insertionTitle">插单影响：${esc(req.title)}</strong><button class="btn" data-action="close-overlay">关闭</button></div><div class="dialog-body form-grid"><p><strong>目标版本：</strong>${release.code}　<strong>唯一审批人：</strong>${req.approver}</p><p><strong>当前容量：</strong>${before}/${release.capacity}人天　<strong>插单后：</strong>${projected}/${release.capacity}人天，超出${overflow}人天</p><p><strong>被挤出：</strong>新手登录微调（4人天）建议移至APP-2026.9</p><p><strong>截止影响：</strong>Android广告验收预计延后1个工作日</p><label>审批理由<textarea id="insertionReason" rows="3">验证紧急商业化机会，接受超出1人天并调整版本组合。</textarea></label><label>决策证据<input id="insertionEvidence" value="运营紧急反馈、容量影响报告"></label><p class="form-error" id="insertionError" role="alert" tabindex="-1"></p></div><div class="dialog-foot"><button class="btn" data-action="close-overlay">取消</button><button class="btn primary" data-action="confirm-insertion" data-id="${id}">由${req.approver}确认并留痕</button></div>`,'insertionTitle');
+}
+function confirmInsertion(id){
+  const req=requirementById(id),release=releaseById('REL-APP-0826'),reason=document.getElementById('insertionReason').value.trim(),evidence=document.getElementById('insertionEvidence').value.trim();
+  if(!reason||!evidence){showFormError('insertionError','请补全审批理由和决策证据。');return}
+  if(!req.releaseIds.includes(release.id)){
+    const before=releaseUsage(release);req.releaseIds=[...req.releaseIds,release.id];const after=releaseUsage(release);
+    req.stage='已规划';req.status='已流转';req.owner='高级项目经理';req.nextOwner='产品负责人';
+    const gate=req.decisionGates.find(item=>item.code==='G1');if(gate)gate.state='已通过';
+    state.insertionRecords.unshift({id:`INSERT-${Date.now()}`,requirementId:id,releaseId:release.id,releaseCode:release.code,before,after,capacity:release.capacity,approver:req.approver,reason,evidence,impact:'挤出新手登录微调，Android广告验收延后1个工作日',time:new Date().toLocaleString('zh-CN')});
+    state.activity.unshift({type:'插单决策',requirementId:id,releaseId:release.id,decision:reason,approver:req.approver,time:new Date().toLocaleString('zh-CN')});
+    state.inbox=state.inbox.filter(item=>!(item.requirementId===id&&item.type==='插单审批'));
+  }
+  state.planningView='releases';
+  saveState();closeOverlay();renderApp();
+}
+function openTaskDialog(id){
+  const req=requirementById(id);
+  const materials=req.artifacts.map(item=>item.name).join('、')||`${req.id}业务流与来源证据`;
+  showDialog(`<div class="dialog-head"><strong id="taskDialogTitle">分派任务 · ${esc(req.title)}</strong><button class="btn" data-action="close-overlay">关闭</button></div><div class="dialog-body form-grid two-column"><label>执行人<select id="taskAssignee"><option>产品专员A</option><option>产品专员B</option><option>需求验收官</option><option>快速原型工程师</option><option>产品数据分析师</option></select></label><label>唯一审批人<select id="taskApprover"><option>${req.approver}</option></select></label><label class="full">任务标题<input id="taskTitle" value="补充需求产物"></label><label class="full">输入材料<input id="taskMaterials" value="${esc(materials)}"></label><label>授权范围<select id="taskScope"><option>只读材料，不改变正式状态</option><option>可编辑候选产物</option><option>可生成新候选产物</option></select></label><label>截止时间<input id="taskDue" type="date" value="2026-07-29"></label><label class="full">交付物<input id="taskDeliverable" value="可评审的文档或检查结果"></label><label class="full">验收条件<input id="taskAcceptance" value="结论有证据、问题可定位、建议可执行"></label><p class="form-error full" id="taskError" role="alert" tabindex="-1"></p><p class="muted full">AI结果只进入待确认，不能自动改变需求的正式状态。</p></div><div class="dialog-foot"><button class="btn" data-action="close-overlay">取消</button><button class="btn primary" data-action="submit-task" data-id="${id}">下发任务</button></div>`,'taskDialogTitle');
+}
+function submitTask(id){
+  const assignee=document.getElementById('taskAssignee').value,title=document.getElementById('taskTitle').value.trim(),deliverable=document.getElementById('taskDeliverable').value.trim(),inputMaterials=document.getElementById('taskMaterials').value.trim(),authorizationScope=document.getElementById('taskScope').value,due=document.getElementById('taskDue').value,acceptanceCriteria=document.getElementById('taskAcceptance').value.trim(),approver=document.getElementById('taskApprover').value;
+  if(!title||!deliverable||!inputMaterials||!due||!acceptanceCriteria){showFormError('taskError','请补全任务标题、输入材料、截止时间、交付物和验收条件。');return}
+  state.tasks.unshift({id:`TASK-${Date.now()}`,requirementId:id,title,assignee,kind:assignee.includes('专员')?'人工':'AI',state:'进行中',due,deliverable,inputMaterials,authorizationScope,acceptanceCriteria,approver});
+  saveState();closeOverlay();renderApp();
+}
+function openTaskRecord(id){
+  const task=state.tasks.find(item=>item.id===id),req=requirementById(task.requirementId);
+  showDialog(`<div class="dialog-head"><strong id="taskRecordTitle">${esc(task.title)}</strong><button class="btn" data-action="close-overlay">关闭</button></div><div class="dialog-body list"><p><strong>所属需求：</strong>${esc(req.title)}</p><p><strong>执行人：</strong>${task.assignee}　<strong>类型：</strong>${task.kind}　<strong>截止：</strong>${task.due}</p><div class="list-item"><strong>输入材料</strong>${esc(task.inputMaterials||'未记录')}</div><div class="list-item"><strong>授权范围</strong>${esc(task.authorizationScope||'未记录')}</div><div class="list-item"><strong>交付物</strong>${esc(task.deliverable)}</div><div class="list-item"><strong>验收条件</strong>${esc(task.acceptanceCriteria||'未记录')}</div><p><strong>唯一审批人：</strong>${task.approver||req.approver}</p></div>`,'taskRecordTitle');
+}
+function openReview(id){
+  const review=state.reviews.find(item=>item.id===id),req=requirementById(review.requirementId);
+  if(review.state==='已决策'){
+    showDialog(`<div class="dialog-head"><strong id="reviewTitle">${review.title}</strong><button class="btn" data-action="close-overlay">关闭</button></div><div class="dialog-body list"><p><strong>需求：</strong>${esc(req.title)}</p><p><strong>处理结论：</strong>${esc(review.decision)}</p><div class="list-item"><strong>产品策略与证据</strong>${esc(review.reason||review.decision)}</div><p><strong>状态：</strong><span class="tag success">已决策，仅查看</span></p></div>`,'reviewTitle');return;
+  }
+  showDialog(`<div class="dialog-head"><strong id="reviewTitle">${review.title}</strong><button class="btn" data-action="close-overlay">关闭</button></div><div class="dialog-body form-grid"><p><strong>需求：</strong>${esc(req.title)}</p><p><strong>类型：</strong>${review.category}　<strong>级别：</strong>${review.severity}</p><label>处理结论<select id="reviewDecision"><option>补充PRD并同步Demo</option><option>仅修改Demo</option><option>转为后续需求</option><option>接受风险</option></select></label><label>产品策略与证据<textarea id="reviewReason" rows="4">${esc(review.reason||'')}</textarea></label><p class="form-error" id="reviewError" role="alert" tabindex="-1"></p></div><div class="dialog-foot"><button class="btn" data-action="close-overlay">取消</button><button class="btn primary" data-action="submit-review" data-id="${id}">确认决策</button></div>`,'reviewTitle');
+}
+function submitReview(id){
+  const review=state.reviews.find(item=>item.id===id);if(review.state==='已决策'){closeOverlay();return}
+  const reason=document.getElementById('reviewReason').value.trim();if(!reason){showFormError('reviewError','正式决策必须填写策略依据或验收证据。');return}
+  review.decision=document.getElementById('reviewDecision').value;review.reason=reason;review.state='已决策';
+  state.tasks.unshift({id:`TASK-REVIEW-${id}`,requirementId:review.requirementId,title:review.decision,assignee:review.owner,kind:'人工',state:'待执行',due:'2026-07-29',deliverable:reason,inputMaterials:`${id}评审记录`,authorizationScope:'仅执行已审批结论',acceptanceCriteria:'更新产物并回传复验凭证',approver:'产品负责人'});
+  saveState();closeOverlay();renderApp();
+}
+function openArtifact(requirementId,index){
+  const req=requirementById(requirementId),artifact=req.artifacts[index];
+  showDialog(`<div class="dialog-head"><strong id="artifactTitle">${artifact.type} · ${artifact.state}</strong><button class="btn" data-action="close-overlay">关闭</button></div><div class="dialog-body list"><p><strong>所属需求：</strong>${esc(req.title)}</p><div class="list-item"><strong>产物名称</strong>${artifact.name}</div><div class="list-item"><strong>原型说明</strong>当前V1展示产物关联关系；接入真实文档系统后可在此预览版本、评论与变更记录。</div></div>`,'artifactTitle');
+}
+function openSearch(query){
+  const normalized=query.trim().toLowerCase(),matches=state.requirements.filter(item=>`${item.id} ${item.title} ${item.goal} ${item.source}`.toLowerCase().includes(normalized));
+  showDialog(`<div class="dialog-head"><strong id="searchTitle">搜索结果 · ${esc(query)}</strong><button class="btn" data-action="close-overlay">关闭</button></div><div class="dialog-body list">${matches.length?matches.map(item=>`<button class="search-result" data-search-result data-id="${item.id}"><strong>${esc(item.title)}</strong><div class="muted">${item.product} · ${item.stage} · ${item.source}</div></button>`).join(''):'<div class="empty">没有找到已授权的相关需求。</div>'}</div>`,'searchTitle');
+}
+function openNewRequirement(){
+  showDialog(`<div class="dialog-head"><strong id="newRequirementHeading">新建需求</strong><button class="btn" data-action="close-overlay">关闭</button></div><div class="dialog-body form-grid"><label>需求名称<input id="newRequirementTitle"></label><label>产品端<select id="newRequirementProduct"><option>App</option><option>Mac</option><option>App & Mac</option></select></label><label>执行路径<select id="newRequirementPath"><option>快速需求</option><option>专员执行</option><option>完整需求</option></select></label><p class="form-error" id="newRequirementError" role="alert" tabindex="-1"></p></div><div class="dialog-foot"><button class="btn" data-action="close-overlay">取消</button><button class="btn primary" data-action="create-requirement">进入需求池</button></div>`,'newRequirementHeading');
+}
+function createRequirement(){
+  const title=document.getElementById('newRequirementTitle').value.trim();if(!title){showFormError('newRequirementError','请填写需求名称。');return}
+  const item={id:`REQ-${String(state.requirements.length+1).padStart(3,'0')}`,title,product:document.getElementById('newRequirementProduct').value,releaseIds:[],source:'产品负责人主动规划',priority:'P2',effort:3,executionPath:document.getElementById('newRequirementPath').value,stage:'需求池',status:'未开始',owner:'产品负责人',nextOwner:'产品负责人',approver:'产品负责人',goal:'待产品负责人完成目标和成功指标定义',flow:['明确用户问题','确认业务规则','进入对应执行路径'],artifacts:[],decisionGates:[{code:'G1',name:'进入版本',state:'未开始'}]};
+  state.requirements.push(item);state.selectedRequirementId=item.id;state.currentPage='requirements';saveState();closeOverlay();renderApp();
+}
+function openResetDialog(){
+  showDialog(`<div class="dialog-head"><strong id="resetTitle">重置演示数据</strong><button class="btn" data-action="close-overlay">关闭</button></div><div class="dialog-body"><p>这会清除本地新增需求、任务、评审结论和插单记录，并恢复为种子数据。</p><p class="muted">此操作只影响当前浏览器中的演示数据。</p></div><div class="dialog-foot"><button class="btn" data-action="close-overlay">取消</button><button class="btn danger" data-action="confirm-reset">确认重置</button></div>`,'resetTitle');
+}
+function resetDemo(){
+  localStorage.removeItem(STORAGE_KEY);state=clone(seedState);closeOverlay();document.getElementById('globalSearch').value='';window.scrollTo(0,0);renderApp();
+}
+document.addEventListener('click',event=>{
+  const nav=event.target.closest('nav [data-page]');if(nav){setPage(nav.dataset.page);return}
+  if(event.target.closest('[data-action="new-requirement"]')){openNewRequirement();return}
+  if(event.target.closest('[data-action="reset-demo"]')){openResetDialog();return}
+  if(event.target.closest('[data-action="confirm-reset"]')){resetDemo();return}
+  const planningTab=event.target.closest('[data-planning-view]');if(planningTab){state.planningView=planningTab.dataset.planningView;saveState();renderPlanning();return}
+  const reviewTab=event.target.closest('[data-review-filter]');if(reviewTab){state.reviewFilter=reviewTab.dataset.reviewFilter;saveState();renderReview();return}
+  const inboxRow=event.target.closest('[data-inbox-id]');if(event.target.closest('[data-action="open-inbox"]')&&inboxRow){openInbox(inboxRow.dataset.inboxId);return}
+  const approve=event.target.closest('[data-action="approve-inbox"]');if(approve){approveInbox(approve.dataset.id);return}
+  const insertion=event.target.closest('[data-action="assess-insertion"]');if(insertion){openInsertionImpact(insertion.dataset.id);return}
+  const confirmInsert=event.target.closest('[data-action="confirm-insertion"]');if(confirmInsert){confirmInsertion(confirmInsert.dataset.id);return}
+  const openReq=event.target.closest('[data-action="open-requirement"]');if(openReq){state.selectedRequirementId=openReq.dataset.id;setPage('requirements');return}
+  const requirementCard=event.target.closest('[data-requirement-card]');if(requirementCard){state.selectedRequirementId=requirementCard.dataset.id;saveState();renderRequirements();document.getElementById('requirementDetail').scrollIntoView({behavior:'smooth'});return}
+  const assign=event.target.closest('[data-action="assign-task"]');if(assign){openTaskDialog(assign.dataset.id);return}
+  const submitTaskButton=event.target.closest('[data-action="submit-task"]');if(submitTaskButton){submitTask(submitTaskButton.dataset.id);return}
+  const taskRecord=event.target.closest('[data-action="open-task"]');if(taskRecord){openTaskRecord(taskRecord.dataset.id);return}
+  const artifact=event.target.closest('[data-action="open-artifact"]');if(artifact){openArtifact(artifact.dataset.id,Number(artifact.dataset.index));return}
+  const reviewRow=event.target.closest('[data-review-id]');if(event.target.closest('[data-action="open-review"]')&&reviewRow){openReview(reviewRow.dataset.reviewId);return}
+  const reviewSubmit=event.target.closest('[data-action="submit-review"]');if(reviewSubmit){submitReview(reviewSubmit.dataset.id);return}
+  const searchResult=event.target.closest('[data-search-result]');if(searchResult){state.selectedRequirementId=searchResult.dataset.id;closeOverlay();setPage('requirements');return}
+  if(event.target.closest('[data-action="create-requirement"]')){createRequirement();return}
+  if(event.target.closest('[data-action="close-overlay"]')||event.target.classList.contains('overlay')){closeOverlay()}
+});
+document.addEventListener('change',event=>{
+  const filter=event.target.closest('[data-requirement-filter]');if(!filter)return;
+  state.requirementFilters[filter.dataset.requirementFilter]=filter.value;saveState();renderRequirements();
+});
+document.getElementById('globalSearch').addEventListener('keydown',event=>{if(event.key==='Enter'&&event.currentTarget.value.trim())openSearch(event.currentTarget.value)});
+document.addEventListener('keydown',event=>{
+  const dialog=document.querySelector('[role="dialog"]');if(!dialog)return;
+  if(event.key === 'Escape'){closeOverlay();return}
+  if(event.key==='Tab'){
+    const focusable=[...dialog.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[href],[tabindex]:not([tabindex="-1"])')];
+    if(!focusable.length){event.preventDefault();dialog.focus();return}
+    const first=focusable[0],last=focusable[focusable.length-1];
+    if(event.shiftKey&&(document.activeElement===first||document.activeElement===dialog)){event.preventDefault();last.focus()}
+    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+  }
+});
+window.WorkbenchDemo={getState:()=>clone(state),getReleaseUsage:id=>releaseUsage(releaseById(id)),reset:resetDemo,setPage};
+renderApp();
+</script>
+</body>
+</html>
