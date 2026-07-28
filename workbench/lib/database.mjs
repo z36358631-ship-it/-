@@ -104,21 +104,107 @@ CREATE TABLE IF NOT EXISTS product_strategies (
   feishu_summary TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT '待确认'
 );
+CREATE TABLE IF NOT EXISTS file_snapshots (
+  run_id TEXT NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
+  path TEXT NOT NULL,
+  absolute_path TEXT NOT NULL,
+  existed INTEGER NOT NULL CHECK(existed IN (0,1)),
+  content_base64 TEXT,
+  hash TEXT,
+  PRIMARY KEY(run_id,path)
+);
+CREATE TABLE IF NOT EXISTS file_changes (
+  run_id TEXT NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
+  path TEXT NOT NULL,
+  absolute_path TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK(kind IN ('created','modified','deleted')),
+  before_hash TEXT,
+  after_hash TEXT,
+  diff TEXT NOT NULL,
+  restored_at TEXT,
+  PRIMARY KEY(run_id,path)
+);
+CREATE TABLE IF NOT EXISTS approvals (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
+  protocol_request_id TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  payload_json TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending'
+    CHECK(status IN ('pending','approved','rejected')),
+  created_at TEXT NOT NULL,
+  resolved_at TEXT
+);
+CREATE TABLE IF NOT EXISTS validations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  run_id TEXT NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  status TEXT NOT NULL CHECK(status IN ('passed','failed','skipped')),
+  detail TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS run_apply_states (
+  run_id TEXT PRIMARY KEY REFERENCES runs(id) ON DELETE CASCADE,
+  state TEXT NOT NULL CHECK(state IN ('not-started','applying','applied')),
+  updated_at TEXT NOT NULL
+);
 CREATE INDEX IF NOT EXISTS idx_runs_started_at ON runs(started_at DESC);
 CREATE INDEX IF NOT EXISTS idx_run_events_run_sequence ON run_events(run_id, sequence);
+CREATE INDEX IF NOT EXISTS idx_approvals_run_status_created
+  ON approvals(run_id,status,created_at);
 `;
 
 function now() {
   return new Date().toISOString();
 }
 
+function assertFileSafetyRunsSchema(db) {
+  const runsSql = String(db.prepare(
+    `SELECT sql FROM sqlite_master WHERE type='table' AND name='runs'`,
+  ).get()?.sql || '');
+  if (!runsSql) return;
+  for (const requiredToken of ['generate-candidate', 'modify-existing', 'waiting-approval']) {
+    if (!runsSql.includes(requiredToken)) {
+      throw new Error(
+        `Database runs schema is older than the file-safety plan: missing ${requiredToken}`,
+      );
+    }
+  }
+}
+
+function parseStoredJson(value, label) {
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    throw new Error(`Invalid JSON stored for ${label}`, { cause: error });
+  }
+}
+
+function stringifyJson(value, label) {
+  try {
+    const result = JSON.stringify(value);
+    if (result === undefined) throw new TypeError('value serializes to undefined');
+    return result;
+  } catch (error) {
+    throw new TypeError(`${label} must be JSON-serializable`, { cause: error });
+  }
+}
+
 export function openDatabase(filename) {
   fs.mkdirSync(path.dirname(filename), { recursive: true });
   const db = new DatabaseSync(filename);
-  db.exec(migration);
-  const runColumns = db.prepare(`PRAGMA table_info(runs)`).all().map(row => row.name);
-  if (!runColumns.includes('workflow_type')) {
-    db.exec(`ALTER TABLE runs ADD COLUMN workflow_type TEXT`);
+  try {
+    assertFileSafetyRunsSchema(db);
+    db.exec(migration);
+    assertFileSafetyRunsSchema(db);
+    const runColumns = db.prepare(`PRAGMA table_info(runs)`).all().map(row => row.name);
+    if (!runColumns.includes('workflow_type')) {
+      db.exec(`ALTER TABLE runs ADD COLUMN workflow_type TEXT`);
+    }
+  } catch (error) {
+    db.close();
+    throw error;
   }
   db.prepare(
     `UPDATE runs SET status = 'interrupted', error = ?, finished_at = ?
@@ -163,6 +249,12 @@ export function openDatabase(filename) {
             `SELECT id,requirement_id AS requirementId,kind,path
              FROM artifacts ORDER BY requirement_id,kind,path`,
           ).all();
+    },
+    removeArtifact(requirementId, artifactPath) {
+      const result = db.prepare(
+        `DELETE FROM artifacts WHERE requirement_id=? AND path=?`,
+      ).run(requirementId, artifactPath);
+      return Number(result.changes) > 0;
     },
     bindRequirementThread(requirementId, threadId) {
       const timestamp = now();
@@ -219,7 +311,12 @@ export function openDatabase(filename) {
         `SELECT files_json AS filesJson,input_json AS inputJson
          FROM run_contexts WHERE run_id=?`,
       ).get(runId);
-      return row ? { files: JSON.parse(row.filesJson), input: JSON.parse(row.inputJson) } : null;
+      return row
+        ? {
+            files: parseStoredJson(row.filesJson, `run ${runId} context files`),
+            input: parseStoredJson(row.inputJson, `run ${runId} context input`),
+          }
+        : null;
     },
     bindProtocolIds(runId, threadId, turnId = null, processPid = null) {
       db.prepare(`UPDATE runs SET thread_id=?,turn_id=?,process_pid=? WHERE id=?`)
@@ -235,6 +332,10 @@ export function openDatabase(filename) {
       db.prepare(
         `UPDATE runs SET status=?,result=?,error=?,finished_at=? WHERE id=?`,
       ).run(status, result, error, now(), runId);
+    },
+    setRunStatus(runId, status) {
+      const result = db.prepare(`UPDATE runs SET status=? WHERE id=?`).run(status, runId);
+      return Number(result.changes) > 0;
     },
     getRun(runId) {
       return db.prepare(
@@ -263,7 +364,163 @@ export function openDatabase(filename) {
       return db.prepare(
         `SELECT sequence,type,payload_json AS payloadJson,created_at AS createdAt
          FROM run_events WHERE run_id=? AND sequence>? ORDER BY sequence`,
-      ).all(runId, after).map(row => ({ ...row, payload: JSON.parse(row.payloadJson) }));
+      ).all(runId, after).map(row => ({
+        ...row,
+        payload: parseStoredJson(
+          row.payloadJson,
+          `run ${runId} event ${row.sequence} payload`,
+        ),
+      }));
+    },
+    setRunApplyState(runId, state) {
+      db.prepare(
+        `INSERT INTO run_apply_states(run_id,state,updated_at) VALUES(?,?,?)
+         ON CONFLICT(run_id) DO UPDATE SET
+           state=excluded.state,updated_at=excluded.updated_at`,
+      ).run(runId, state, now());
+    },
+    getRunApplyState(runId) {
+      return db.prepare(
+        `SELECT state,updated_at AS updatedAt FROM run_apply_states WHERE run_id=?`,
+      ).get(runId) || { state: 'not-started', updatedAt: null };
+    },
+    saveFileSnapshot(runId, value) {
+      db.prepare(
+        `INSERT INTO file_snapshots
+         (run_id,path,absolute_path,existed,content_base64,hash)
+         VALUES(?,?,?,?,?,?)
+         ON CONFLICT(run_id,path) DO UPDATE SET
+           absolute_path=excluded.absolute_path,
+           existed=excluded.existed,
+           content_base64=excluded.content_base64,
+           hash=excluded.hash`,
+      ).run(
+        runId,
+        value.path,
+        value.absolutePath,
+        value.existed ? 1 : 0,
+        value.contentBase64 ?? null,
+        value.hash ?? null,
+      );
+    },
+    listFileSnapshots(runId) {
+      return db.prepare(
+        `SELECT path,absolute_path AS absolutePath,existed,
+                content_base64 AS contentBase64,hash
+         FROM file_snapshots WHERE run_id=? ORDER BY path`,
+      ).all(runId).map(row => ({ ...row, existed: Boolean(row.existed) }));
+    },
+    saveFileChange(runId, value) {
+      db.prepare(
+        `INSERT INTO file_changes
+         (run_id,path,absolute_path,kind,before_hash,after_hash,diff)
+         VALUES(?,?,?,?,?,?,?)
+         ON CONFLICT(run_id,path) DO UPDATE SET
+           absolute_path=excluded.absolute_path,
+           kind=excluded.kind,
+           before_hash=excluded.before_hash,
+           after_hash=excluded.after_hash,
+           diff=excluded.diff,
+           restored_at=NULL`,
+      ).run(
+        runId,
+        value.path,
+        value.absolutePath,
+        value.kind,
+        value.beforeHash ?? null,
+        value.afterHash ?? null,
+        value.diff,
+      );
+    },
+    listFileChanges(runId) {
+      return db.prepare(
+        `SELECT path,absolute_path AS absolutePath,kind,
+                before_hash AS beforeHash,after_hash AS afterHash,
+                diff,restored_at AS restoredAt
+         FROM file_changes WHERE run_id=? ORDER BY path`,
+      ).all(runId);
+    },
+    markChangesRestored(runId) {
+      const result = db.prepare(
+        `UPDATE file_changes SET restored_at=? WHERE run_id=?`,
+      ).run(now(), runId);
+      return Number(result.changes);
+    },
+    createApproval(value) {
+      const payloadJson = stringifyJson(value.payload, 'Approval payload');
+      db.prepare(
+        `INSERT INTO approvals
+         (id,run_id,protocol_request_id,kind,summary,payload_json,status,created_at)
+         VALUES(?,?,?,?,?,?,'pending',?)`,
+      ).run(
+        value.id,
+        value.runId,
+        String(value.protocolRequestId),
+        value.kind,
+        value.summary,
+        payloadJson,
+        now(),
+      );
+    },
+    getApproval(id) {
+      const row = db.prepare(
+        `SELECT id,run_id AS runId,protocol_request_id AS protocolRequestId,
+                kind,summary,payload_json AS payloadJson,status,
+                created_at AS createdAt,resolved_at AS resolvedAt
+         FROM approvals WHERE id=?`,
+      ).get(id);
+      return row
+        ? {
+            ...row,
+            payload: parseStoredJson(row.payloadJson, `approval ${row.id} payload`),
+          }
+        : null;
+    },
+    listPendingApprovals(runId) {
+      return db.prepare(
+        `SELECT id,run_id AS runId,protocol_request_id AS protocolRequestId,
+                kind,summary,payload_json AS payloadJson,status,
+                created_at AS createdAt,resolved_at AS resolvedAt
+         FROM approvals
+         WHERE run_id=? AND status='pending'
+         ORDER BY created_at,id`,
+      ).all(runId).map(row => ({
+        ...row,
+        payload: parseStoredJson(row.payloadJson, `approval ${row.id} payload`),
+      }));
+    },
+    listApprovals(runId) {
+      return db.prepare(
+        `SELECT id,run_id AS runId,protocol_request_id AS protocolRequestId,
+                kind,summary,payload_json AS payloadJson,status,
+                created_at AS createdAt,resolved_at AS resolvedAt
+         FROM approvals WHERE run_id=? ORDER BY created_at,id`,
+      ).all(runId).map(row => ({
+        ...row,
+        payload: parseStoredJson(row.payloadJson, `approval ${row.id} payload`),
+      }));
+    },
+    resolveApproval(id, status) {
+      if (!['approved', 'rejected'].includes(status)) {
+        throw new Error('Approval resolution status must be approved or rejected');
+      }
+      const result = db.prepare(
+        `UPDATE approvals SET status=?,resolved_at=?
+         WHERE id=? AND status='pending'`,
+      ).run(status, now(), id);
+      return Number(result.changes) === 1;
+    },
+    saveValidation(runId, value) {
+      db.prepare(
+        `INSERT INTO validations(run_id,name,status,detail,created_at)
+         VALUES(?,?,?,?,?)`,
+      ).run(runId, value.name, value.status, value.detail, now());
+    },
+    listValidations(runId) {
+      return db.prepare(
+        `SELECT name,status,detail,created_at AS createdAt
+         FROM validations WHERE run_id=? ORDER BY id`,
+      ).all(runId);
     },
     saveWorkflowResult(value) {
       db.exec('BEGIN IMMEDIATE');
@@ -344,7 +601,12 @@ export function openDatabase(filename) {
                 workflow_type AS workflowType,result_json AS resultJson,created_at AS createdAt
          FROM workflow_results WHERE run_id=?`,
       ).get(runId);
-      return row ? { ...row, result: JSON.parse(row.resultJson) } : null;
+      return row
+        ? {
+            ...row,
+            result: parseStoredJson(row.resultJson, `workflow result ${row.id}`),
+          }
+        : null;
     },
     listRequirementCandidates() {
       return db.prepare(
@@ -377,7 +639,10 @@ export function openDatabase(filename) {
          ORDER BY r.created_at DESC`,
       ).all().map(row => ({
         ...row,
-        acceptanceCriteria: JSON.parse(row.acceptanceCriteriaJson),
+        acceptanceCriteria: parseStoredJson(
+          row.acceptanceCriteriaJson,
+          `product strategy ${row.id} acceptance criteria`,
+        ),
       }));
     },
     upsertManualTask(value) {
