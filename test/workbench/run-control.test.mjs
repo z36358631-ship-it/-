@@ -9,6 +9,10 @@ import { ContextService } from '../../workbench/lib/context-service.mjs';
 import { openDatabase } from '../../workbench/lib/database.mjs';
 import { FileSafety } from '../../workbench/lib/file-safety.mjs';
 import { RunManager } from '../../workbench/lib/run-manager.mjs';
+import {
+  buildWorkflowPrompt,
+  workflowCatalog,
+} from '../../workbench/lib/workflow-catalog.mjs';
 
 const feedbackResult = {
   themes: [{ name: '启动失败', count: 1 }],
@@ -238,6 +242,21 @@ async function waitFor(predicate, message, timeoutMs = 500) {
     await new Promise(resolve => setTimeout(resolve, 5));
   }
   assert.fail(message);
+}
+
+function assertStartupStateCleared(manager, active) {
+  assert.deepEqual(active.pendingNotifications, []);
+  assert.equal(active.pendingNotificationBytes, 0);
+  assert.equal(active.turnStartPending, false);
+  assert.equal(manager.activeByRun.size, 0);
+  assert.equal(manager.activeByThread.size, 0);
+  assert.equal(manager.activeByTurn.size, 0);
+}
+
+function assertStartupStateBuffered(active, count = 1) {
+  assert.equal(active.turnStartPending, true);
+  assert.equal(active.pendingNotifications.length, count);
+  assert.ok(active.pendingNotificationBytes > 0);
 }
 
 test('write runs enforce exact inputs and use only the run staging root', async t => {
@@ -844,4 +863,502 @@ test('completion before turn/start returns wins once over duplicate completion a
   assert.equal(store.listFileChanges(run.id).length, 1);
   assert.deepEqual(approvals.registered.map(item => item.turnId), [run.turnId]);
   assert.deepEqual(approvals.unregistered, [run.turnId]);
+});
+
+test('matching pre-response notifications replay in order exactly once', async t => {
+  const codex = new FakeCodex();
+  codex.onTurnStart = async ({ codex: sender, threadId, turnId }) => {
+    sender.emit('notification', {
+      method: 'item/agentMessage/delta',
+      params: {
+        delta: 'first',
+        itemId: 'early-1',
+        threadId,
+        turnId,
+      },
+    });
+    sender.emit('notification', {
+      method: 'item/agentMessage/delta',
+      params: {
+        delta: 'STALE',
+        itemId: 'stale',
+        threadId,
+        turnId: 'previous-turn',
+      },
+    });
+    sender.emit('notification', {
+      method: 'item/agentMessage/delta',
+      params: {
+        delta: ' second',
+        itemId: 'early-2',
+        threadId,
+        turnId,
+      },
+    });
+    sender.emit('notification', {
+      method: 'turn/completed',
+      params: {
+        threadId,
+        turn: { id: turnId, items: [], status: 'completed' },
+      },
+    });
+  };
+  const { manager, store } = setup(t, { codex });
+  const run = await manager.startReadOnlyRun({
+    requirementId: 'REQ-1',
+    prompt: 'ordered replay',
+    files: ['prd/a.md'],
+  });
+
+  assert.equal(run.status, 'completed');
+  assert.equal(run.result, 'first second');
+  assert.deepEqual(
+    store.listRunEvents(run.id)
+      .filter(event => event.type === 'item/agentMessage/delta')
+      .map(event => event.payload.delta),
+    ['first', ' second'],
+  );
+  assert.deepEqual(
+    store.listRunEvents(run.id)
+      .filter(event => event.type === 'workbench/stale-turn-notifications-dropped')
+      .map(event => event.payload),
+    [{ count: 1 }],
+  );
+});
+
+test('turn startup notification count overflow fails and releases the Run slot', async t => {
+  const codex = new FakeCodex();
+  codex.onTurnStart = async ({ codex: sender, threadId, turnId }) => {
+    for (let index = 0; index < 513; index += 1) {
+      sender.emit('notification', {
+        method: 'item/agentMessage/delta',
+        params: {
+          delta: 'x',
+          itemId: `item-${index}`,
+          threadId,
+          turnId,
+        },
+      });
+    }
+  };
+  const { manager, store } = setup(t, { codex });
+
+  await assert.rejects(
+    () => manager.startReadOnlyRun({
+      requirementId: 'REQ-1',
+      prompt: 'overflow',
+      files: ['prd/a.md'],
+    }),
+    /turn\/start notification buffer exceeded/,
+  );
+
+  const [failed] = store.listRuns();
+  assert.equal(failed.status, 'failed');
+  assert.equal(failed.result, null);
+  assert.deepEqual(store.listRunEvents(failed.id), []);
+  assert.equal(store.countActiveRuns(), 0);
+});
+
+test('turn startup notification byte overflow fails without persisting the payload', async t => {
+  const codex = new FakeCodex();
+  codex.onTurnStart = async ({ codex: sender, threadId, turnId }) => {
+    sender.emit('notification', {
+      method: 'item/agentMessage/delta',
+      params: {
+        delta: 'x'.repeat(1_048_577),
+        itemId: 'oversized',
+        threadId,
+        turnId,
+      },
+    });
+  };
+  const { manager, store } = setup(t, { codex });
+
+  await assert.rejects(
+    () => manager.startReadOnlyRun({
+      requirementId: 'REQ-1',
+      prompt: 'oversized',
+      files: ['prd/a.md'],
+    }),
+    /turn\/start notification buffer exceeded/,
+  );
+
+  const [failed] = store.listRuns();
+  assert.equal(failed.status, 'failed');
+  assert.equal(failed.result, null);
+  assert.deepEqual(store.listRunEvents(failed.id), []);
+  assert.equal(store.countActiveRuns(), 0);
+});
+
+test('all Run entry points buffer pre-response notifications and preserve exact turn/start params', async t => {
+  const workflowInput = { feedbackText: '启动失败' };
+  const cases = [
+    {
+      name: 'read-only',
+      resultText: 'read result',
+      start: manager => manager.startReadOnlyRun({
+        requirementId: 'REQ-1',
+        prompt: '检查遗漏',
+        files: [],
+      }),
+      expectedParams: ({ root }) => ({
+        approvalPolicy: 'never',
+        cwd: root,
+        input: [{
+          type: 'text',
+          text: [
+            '你正在执行个人产品经理工作台的只读任务。',
+            '禁止创建、修改、移动或删除任何文件，也不要请求扩大权限。',
+            '当前需求：REQ-1 启动策略；阶段：PRD中',
+            '用户任务：检查遗漏',
+          ].join('\n\n'),
+        }],
+        sandboxPolicy: {
+          type: 'readOnly',
+          networkAccess: false,
+        },
+        threadId: 'thread-1',
+      }),
+    },
+    {
+      name: 'workflow',
+      resultText: JSON.stringify(feedbackResult),
+      start: manager => manager.startWorkflowRun({
+        requirementId: 'REQ-1',
+        workflowType: 'feedback-triage',
+        files: [],
+        input: workflowInput,
+      }),
+      expectedParams: ({ root, store }) => ({
+        approvalPolicy: 'never',
+        cwd: root,
+        input: [{
+          type: 'text',
+          text: buildWorkflowPrompt('feedback-triage', {
+            requirement: store.getRequirement('REQ-1'),
+            files: [],
+            input: workflowInput,
+          }),
+        }],
+        outputSchema: workflowCatalog['feedback-triage'].outputSchema,
+        sandboxPolicy: {
+          type: 'readOnly',
+          networkAccess: false,
+        },
+        threadId: 'thread-1',
+      }),
+    },
+    {
+      name: 'write',
+      resultText: 'write result',
+      start: manager => manager.startWriteRun(writeInput()),
+      beforeCompletion: params => {
+        fs.writeFileSync(
+          path.join(params.cwd, 'prd', 'a.md'),
+          'after\n',
+          'utf8',
+        );
+      },
+      expectedParams: ({ root, run }) => {
+        const stagingRoot = path.join(
+          root,
+          '.workbench-data',
+          'staging',
+          run.id,
+        );
+        return {
+          approvalPolicy: 'on-request',
+          cwd: stagingRoot,
+          input: [{
+            type: 'text',
+            text: [
+              '当前需求：REQ-1 启动策略',
+              '本次权限：modify-existing',
+              '你现在位于本次运行的隔离暂存区，只允许处理这些相对路径：',
+              '- prd/a.md',
+              '不得删除文件，不得修改目标清单外文件，不得访问真实工作区路径，不得发布或外部发送。',
+              '任务：补充异常策略',
+            ].join('\n\n'),
+          }],
+          sandboxPolicy: {
+            type: 'workspaceWrite',
+            writableRoots: [stagingRoot],
+            networkAccess: false,
+          },
+          threadId: 'thread-1',
+        };
+      },
+    },
+  ];
+
+  for (const entry of cases) {
+    await t.test(entry.name, async subtest => {
+      const codex = new FakeCodex();
+      codex.onTurnStart = async ({
+        codex: sender,
+        params,
+        threadId,
+        turnId,
+      }) => {
+        entry.beforeCompletion?.(params);
+        sender.emit('notification', {
+          method: 'item/agentMessage/delta',
+          params: {
+            delta: 'STALE',
+            itemId: 'stale-agent',
+            threadId,
+            turnId: 'stale-turn',
+          },
+        });
+        sender.emit('notification', {
+          method: 'item/agentMessage/delta',
+          params: {
+            delta: entry.resultText,
+            itemId: 'current-agent',
+            threadId,
+            turnId,
+          },
+        });
+        sender.emit('notification', {
+          method: 'turn/completed',
+          params: {
+            threadId,
+            turn: {
+              id: turnId,
+              items: [],
+              status: 'completed',
+            },
+          },
+        });
+      };
+      const {
+        manager,
+        root,
+        store,
+      } = setup(subtest, { codex });
+
+      const run = await entry.start(manager);
+      const persisted = store.getRun(run.id);
+      const turnStart = codex.calls.find(call => call.method === 'turn/start');
+
+      assert.equal(persisted.status, 'completed');
+      assert.equal(persisted.error, null);
+      assert.equal(persisted.result.includes('STALE'), false);
+      assert.deepEqual(
+        turnStart.params,
+        entry.expectedParams({ root, run, store }),
+      );
+      assert.deepEqual(
+        store.listRunEvents(run.id)
+          .filter(event => (
+            event.type === 'workbench/stale-turn-notifications-dropped'
+          ))
+          .map(event => event.payload),
+        [{ count: 1 }],
+      );
+      if (entry.name === 'write') {
+        assert.equal(
+          fs.readFileSync(path.join(root, 'prd', 'a.md'), 'utf8'),
+          'after\n',
+        );
+      }
+    });
+  }
+});
+
+test('startup rejection after an early notification releases buffered state and the Run slot', async t => {
+  const codex = new FakeCodex();
+  const { manager, store } = setup(t, { codex });
+  let activeAtFailure = null;
+  codex.onTurnStart = async ({ codex: sender, threadId, turnId }) => {
+    activeAtFailure = manager.activeByThread.get(threadId);
+    sender.emit('notification', {
+      method: 'item/agentMessage/delta',
+      params: {
+        delta: 'must-not-leak',
+        itemId: 'early-agent',
+        threadId,
+        turnId,
+      },
+    });
+    throw new Error('turn start rejected after notification');
+  };
+
+  await assert.rejects(
+    () => manager.startReadOnlyRun({
+      requirementId: 'REQ-1',
+      prompt: 'startup rejection',
+      files: [],
+    }),
+    /turn start rejected after notification/,
+  );
+
+  assert.equal(store.countActiveRuns(), 0);
+  const [failed] = store.listRuns();
+  assert.equal(failed.status, 'failed');
+  assert.equal(failed.result, null);
+  assert.deepEqual(
+    store.listRunEvents(failed.id)
+      .filter(event => event.type === 'item/agentMessage/delta'),
+    [],
+  );
+  assert.ok(activeAtFailure);
+  assertStartupStateCleared(manager, activeAtFailure);
+
+  codex.onTurnStart = null;
+  const replacement = await manager.startReadOnlyRun({
+    requirementId: 'REQ-1',
+    prompt: 'replacement',
+    files: [],
+  });
+  emitCompleted(codex, replacement);
+  assert.equal(store.getRun(replacement.id).result, null);
+});
+
+test('cancel while turn/start is pending drops buffered notifications and releases the Run slot', async t => {
+  const codex = new FakeCodex();
+  const responseGate = deferred();
+  let notificationSent = false;
+  codex.onTurnStart = async ({ codex: sender, threadId, turnId }) => {
+    sender.emit('notification', {
+      method: 'item/agentMessage/delta',
+      params: {
+        delta: 'cancelled-buffer',
+        itemId: 'early-agent',
+        threadId,
+        turnId,
+      },
+    });
+    notificationSent = true;
+    await responseGate.promise;
+  };
+  const { manager, store } = setup(t, { codex });
+  const starting = manager.startReadOnlyRun({
+    requirementId: 'REQ-1',
+    prompt: 'cancel pending turn',
+    files: [],
+  });
+  const startupRejected = assert.rejects(starting, /Cancelled by user/);
+
+  await waitFor(
+    () => notificationSent,
+    'pre-response notification was not sent',
+  );
+  const [run] = store.listRuns();
+  const active = manager.activeByRun.get(run.id);
+  assert.ok(active);
+  assertStartupStateBuffered(active);
+  const cancelled = await manager.cancel(run.id);
+  responseGate.resolve();
+  await startupRejected;
+
+  assert.equal(cancelled.status, 'cancelled');
+  assert.equal(store.getRun(run.id).result, null);
+  assert.deepEqual(
+    store.listRunEvents(run.id)
+      .filter(event => event.type === 'item/agentMessage/delta'),
+    [],
+  );
+  assertStartupStateCleared(manager, active);
+  assert.equal(store.countActiveRuns(), 0);
+});
+
+test('timeout while turn/start is pending drops buffered notifications and releases the Run slot', async t => {
+  const codex = new FakeCodex();
+  const responseGate = deferred();
+  let notificationSent = false;
+  codex.onTurnStart = async ({ codex: sender, threadId, turnId }) => {
+    sender.emit('notification', {
+      method: 'item/agentMessage/delta',
+      params: {
+        delta: 'timed-out-buffer',
+        itemId: 'early-agent',
+        threadId,
+        turnId,
+      },
+    });
+    notificationSent = true;
+    await responseGate.promise;
+  };
+  const {
+    manager,
+    store,
+  } = setup(t, { codex, runTimeoutMs: 200 });
+  const starting = manager.startReadOnlyRun({
+    requirementId: 'REQ-1',
+    prompt: 'timeout pending turn',
+    files: [],
+  });
+  const startupRejected = assert.rejects(starting, /Run timed out/);
+
+  await waitFor(
+    () => notificationSent,
+    'pre-response notification was not sent',
+  );
+  const [run] = store.listRuns();
+  const active = manager.activeByRun.get(run.id);
+  assert.ok(active);
+  assertStartupStateBuffered(active);
+  const failed = await waitForStatus(store, run.id, 'failed', 1_000);
+  responseGate.resolve();
+  await startupRejected;
+
+  assert.equal(failed.error, 'Run timed out');
+  assert.equal(failed.result, null);
+  assert.deepEqual(
+    store.listRunEvents(run.id)
+      .filter(event => event.type === 'item/agentMessage/delta'),
+    [],
+  );
+  assertStartupStateCleared(manager, active);
+  assert.equal(store.countActiveRuns(), 0);
+});
+
+test('App Server exit during turn startup drops buffered payload and releases the Run', async t => {
+  const codex = new FakeCodex();
+  const responseGate = deferred();
+  let notificationSent = false;
+  codex.onTurnStart = async ({ codex: sender, threadId, turnId }) => {
+    sender.emit('notification', {
+      method: 'item/agentMessage/delta',
+      params: {
+        delta: 'must-not-persist',
+        itemId: 'early',
+        threadId,
+        turnId,
+      },
+    });
+    notificationSent = true;
+    await responseGate.promise;
+  };
+  const { manager, store } = setup(t, { codex });
+
+  const starting = manager.startReadOnlyRun({
+    requirementId: 'REQ-1',
+    prompt: 'exit cleanup',
+    files: [],
+  });
+  const startupRejected = assert.rejects(starting, /Codex App Server exited/);
+  await waitFor(
+    () => notificationSent,
+    'pre-response notification was not sent',
+  );
+  const [run] = store.listRuns();
+  const active = manager.activeByRun.get(run.id);
+  assert.ok(active);
+  assertStartupStateBuffered(active);
+  codex.emit('exit', { code: 1, signal: null });
+  responseGate.resolve();
+  await startupRejected;
+
+  const failed = store.getRun(run.id);
+  assert.equal(failed.status, 'failed');
+  assert.equal(failed.result, null);
+  assert.deepEqual(
+    store.listRunEvents(run.id)
+      .filter(event => event.type === 'item/agentMessage/delta'),
+    [],
+  );
+  assertStartupStateCleared(manager, active);
+  assert.equal(store.countActiveRuns(), 0);
 });

@@ -24,6 +24,8 @@ const ALLOWED_WRITE_INPUT_KEYS = new Set([
 ]);
 const WRITE_PERMISSIONS = new Set(['generate-candidate', 'modify-existing']);
 const INTERRUPT_GRACE_MS = 3_000;
+const MAX_PENDING_TURN_NOTIFICATIONS = 512;
+const MAX_PENDING_TURN_NOTIFICATION_BYTES = 1_048_576;
 
 function requestError(message, statusCode) {
   return Object.assign(new Error(message), { statusCode });
@@ -111,6 +113,24 @@ function safeString(value) {
   return typeof value === 'string' ? value : null;
 }
 
+function notificationThreadId(message) {
+  return safeString(message?.params?.threadId);
+}
+
+function notificationTurnId(message) {
+  return safeString(message?.params?.turnId)
+    || safeString(message?.params?.turn?.id);
+}
+
+function turnStartupState() {
+  return {
+    pendingNotificationBytes: 0,
+    pendingNotifications: [],
+    staleNotificationCount: 0,
+    turnStartPending: false,
+  };
+}
+
 function persistedEvent(message) {
   if (message?.method === 'item/agentMessage/delta') {
     const delta = safeString(message.params?.delta);
@@ -188,6 +208,7 @@ export class RunManager {
     this.activeByTurn = new Map();
     this.activeByRun = new Map();
     this.codex.on('notification', message => this.#onNotification(message));
+    this.codex.on('exit', info => this.#onCodexExit(info));
   }
 
   async startReadOnlyRun(input) {
@@ -235,6 +256,7 @@ export class RunManager {
     });
 
     const active = {
+      ...turnStartupState(),
       approvalRegistered: false,
       completedAgentItems: new Set(),
       deltaAgentItems: new Set(),
@@ -263,23 +285,13 @@ export class RunManager {
       if (rebuilt) this.#recordThreadRebuilt(runId);
       this.activeByThread.set(threadId, active);
 
-      const turnResult = await this.#awaitStartup(
-        active,
-        this.codex.request('turn/start', {
-          approvalPolicy: 'never',
-          cwd: this.allowedRoot,
-          input: [{ type: 'text', text: buildContext(requirement, authorizedFiles, cleanPrompt) }],
-          sandboxPolicy: { type: 'readOnly', networkAccess: false },
-          threadId,
-        }),
-      );
-      const turnId = protocolId(turnResult, 'turn');
-      if (active.turnId && active.turnId !== turnId) {
-        throw new Error('Codex turn/start response did not match the notification turn id');
-      }
-      active.turnId = turnId;
-      this.store.bindProtocolIds(runId, threadId, turnId, pid, active.processNonce);
-      if (!active.finished) this.activeByTurn.set(turnId, active);
+      await this.#startTurn(active, {
+        approvalPolicy: 'never',
+        cwd: this.allowedRoot,
+        input: [{ type: 'text', text: buildContext(requirement, authorizedFiles, cleanPrompt) }],
+        sandboxPolicy: { type: 'readOnly', networkAccess: false },
+        threadId,
+      }, pid);
       return this.store.getRun(runId);
     } catch (error) {
       if (
@@ -348,6 +360,7 @@ export class RunManager {
     });
 
     const active = {
+      ...turnStartupState(),
       approvalRegistered: false,
       completedAgentItems: new Set(),
       deltaAgentItems: new Set(),
@@ -374,24 +387,14 @@ export class RunManager {
       if (rebuilt) this.#recordThreadRebuilt(runId);
       this.activeByThread.set(threadId, active);
 
-      const turnResult = await this.#awaitStartup(
-        active,
-        this.codex.request('turn/start', {
-          approvalPolicy: 'never',
-          cwd: this.allowedRoot,
-          input: [{ type: 'text', text: prompt }],
-          outputSchema: workflow.outputSchema,
-          sandboxPolicy: { type: 'readOnly', networkAccess: false },
-          threadId,
-        }),
-      );
-      const turnId = protocolId(turnResult, 'turn');
-      if (active.turnId && active.turnId !== turnId) {
-        throw new Error('Codex turn/start response did not match the notification turn id');
-      }
-      active.turnId = turnId;
-      this.store.bindProtocolIds(runId, threadId, turnId, pid, active.processNonce);
-      if (!active.finished) this.activeByTurn.set(turnId, active);
+      await this.#startTurn(active, {
+        approvalPolicy: 'never',
+        cwd: this.allowedRoot,
+        input: [{ type: 'text', text: prompt }],
+        outputSchema: workflow.outputSchema,
+        sandboxPolicy: { type: 'readOnly', networkAccess: false },
+        threadId,
+      }, pid);
       return this.store.getRun(runId);
     } catch (error) {
       if (
@@ -488,6 +491,7 @@ export class RunManager {
       input: { permission: input.permission },
     });
     const active = {
+      ...turnStartupState(),
       approvalRegistered: false,
       completedAgentItems: new Set(),
       deltaAgentItems: new Set(),
@@ -527,32 +531,17 @@ export class RunManager {
         '不得删除文件，不得修改目标清单外文件，不得访问真实工作区路径，不得发布或外部发送。',
         `任务：${cleanPrompt}`,
       ].join('\n\n');
-      const turnResult = await this.#awaitStartup(
-        active,
-        this.codex.request('turn/start', {
-          approvalPolicy: 'on-request',
-          cwd: stagingRoot,
-          input: [{ type: 'text', text: fullPrompt }],
-          sandboxPolicy: {
-            type: 'workspaceWrite',
-            writableRoots: [stagingRoot],
-            networkAccess: false,
-          },
-          threadId,
-        }),
-      );
-      const turnId = protocolId(turnResult, 'turn');
-      if (active.turnId && active.turnId !== turnId) {
-        throw new Error(
-          'Codex turn/start response did not match the notification turn id',
-        );
-      }
-      active.turnId = turnId;
-      this.store.bindProtocolIds(runId, threadId, turnId, pid, active.processNonce);
-      if (!active.finished) {
-        this.activeByTurn.set(turnId, active);
-        this.#registerApproval(active);
-      }
+      await this.#startTurn(active, {
+        approvalPolicy: 'on-request',
+        cwd: stagingRoot,
+        input: [{ type: 'text', text: fullPrompt }],
+        sandboxPolicy: {
+          type: 'workspaceWrite',
+          writableRoots: [stagingRoot],
+          networkAccess: false,
+        },
+        threadId,
+      }, pid);
       return this.store.getRun(runId);
     } catch (error) {
       if (
@@ -695,6 +684,35 @@ export class RunManager {
     return outcome.value;
   }
 
+  async #startTurn(active, params, pid) {
+    active.turnStartPending = true;
+    let turnResult;
+    try {
+      turnResult = await this.#awaitStartup(
+        active,
+        this.codex.request('turn/start', params),
+      );
+    } catch (error) {
+      this.#clearTurnStartBuffer(active);
+      throw error;
+    }
+
+    const turnId = protocolId(turnResult, 'turn');
+    active.turnId = turnId;
+    active.turnStartPending = false;
+    this.store.bindProtocolIds(
+      active.runId,
+      active.threadId,
+      turnId,
+      pid,
+      active.processNonce,
+    );
+    if (!active.finished) this.activeByTurn.set(turnId, active);
+    this.#registerApproval(active);
+    this.#replayTurnStartNotifications(active);
+    return turnId;
+  }
+
   #registerActive(active) {
     if (this.activeByRun.has(active.runId)) {
       throw new Error(`Run is already active: ${active.runId}`);
@@ -733,6 +751,62 @@ export class RunManager {
     active.finished = true;
     active.finishReason = finishReason;
     return true;
+  }
+
+  #clearTurnStartBuffer(active) {
+    if (!active) return;
+    active.pendingNotifications = [];
+    active.pendingNotificationBytes = 0;
+    active.turnStartPending = false;
+  }
+
+  #bufferTurnStartNotification(active, message) {
+    let bytes;
+    try {
+      bytes = Buffer.byteLength(JSON.stringify(message), 'utf8');
+    } catch {
+      this.#handleStartFailure(
+        active.runId,
+        active,
+        new Error('turn/start notification buffer received non-serializable data'),
+      );
+      return;
+    }
+    if (
+      active.pendingNotifications.length + 1 > MAX_PENDING_TURN_NOTIFICATIONS
+      || active.pendingNotificationBytes + bytes > MAX_PENDING_TURN_NOTIFICATION_BYTES
+    ) {
+      this.#handleStartFailure(
+        active.runId,
+        active,
+        new Error('turn/start notification buffer exceeded its safety limit'),
+      );
+      return;
+    }
+    active.pendingNotifications.push(message);
+    active.pendingNotificationBytes += bytes;
+  }
+
+  #replayTurnStartNotifications(active) {
+    const buffered = active.pendingNotifications;
+    const authoritativeTurnId = active.turnId;
+    this.#clearTurnStartBuffer(active);
+    let stale = 0;
+    for (const message of buffered) {
+      if (notificationTurnId(message) !== authoritativeTurnId) {
+        stale += 1;
+        continue;
+      }
+      this.#onNotification(message);
+    }
+    active.staleNotificationCount += stale;
+    if (stale > 0) {
+      this.store.appendRunEvent(
+        active.runId,
+        'workbench/stale-turn-notifications-dropped',
+        { count: stale },
+      );
+    }
   }
 
   #handleStartFailure(runId, active, error) {
@@ -804,6 +878,7 @@ export class RunManager {
   #finalizeActive(active) {
     if (!active || active.finalized) return;
     active.finalized = true;
+    this.#clearTurnStartBuffer(active);
     if (active.timeout) clearTimeout(active.timeout);
     if (this.activeByRun.get(active.runId) === active) {
       this.activeByRun.delete(active.runId);
@@ -960,19 +1035,55 @@ export class RunManager {
     });
   }
 
+  #onCodexExit({
+    code = null,
+    current = true,
+    processNonce: exitedProcessNonce = null,
+    signal = null,
+  } = {}) {
+    if (current === false) return;
+    const baseMessage = `Codex App Server exited: code=${code} signal=${signal}`;
+    for (const active of [...this.activeByRun.values()]) {
+      if (
+        active.processNonce
+        && exitedProcessNonce
+        && active.processNonce !== exitedProcessNonce
+      ) {
+        continue;
+      }
+      if (!this.#beginFinalization(active, baseMessage)) continue;
+      let message = baseMessage;
+      try {
+        this.approvalManager?.rejectPendingForRun(active.runId);
+      } catch (error) {
+        message += `; pending approval cleanup failed: ${error.message}`;
+      }
+      this.store.finishRun(
+        active.runId,
+        'failed',
+        active.text || null,
+        message,
+      );
+      this.#finalizeActive(active);
+    }
+  }
+
   #onNotification(message) {
-    const threadId = safeString(message?.params?.threadId);
-    const turnId = safeString(message?.params?.turnId)
-      || safeString(message?.params?.turn?.id);
+    const threadId = notificationThreadId(message);
+    const turnId = notificationTurnId(message);
     let active = turnId ? this.activeByTurn.get(turnId) : null;
     if (!active && threadId) {
       const starting = this.activeByThread.get(threadId);
-      if (starting && !starting.turnId && turnId) {
-        starting.turnId = turnId;
-        this.activeByTurn.set(turnId, starting);
-        this.#registerApproval(starting);
-        active = starting;
+      if (
+        starting
+        && starting.turnStartPending
+        && !starting.turnId
+        && turnId
+        && !starting.finished
+      ) {
+        this.#bufferTurnStartNotification(starting, message);
       }
+      return;
     }
     if (
       !active

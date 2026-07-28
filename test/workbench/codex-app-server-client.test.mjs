@@ -7,8 +7,9 @@ import {
   CodexAppServerClient,
 } from '../../workbench/lib/codex-app-server-client.mjs';
 
-function fakeProcess() {
+function fakeProcess({ pid = null } = {}) {
   const child = new EventEmitter();
+  child.pid = pid;
   child.stdin = new PassThrough();
   child.stdout = new PassThrough();
   child.stderr = new PassThrough();
@@ -333,6 +334,100 @@ test('process exit rejects pending requests and clears their deadlines', async (
   child.emit('exit', 1, null);
 
   await assert.rejects(pending, /exited: code=1/);
+  assert.equal(client.pending.size, 0);
+  assert.equal(client.diagnostics().running, false);
+});
+
+test('a stopped child late error and exit cannot reject requests from a restarted child', async () => {
+  const firstNonce = '1'.repeat(64);
+  const secondNonce = '2'.repeat(64);
+  const firstChild = fakeProcess({ pid: 7101 });
+  const secondChild = fakeProcess({ pid: 7102 });
+  const children = [firstChild, secondChild];
+  const nonces = [firstNonce, secondNonce];
+  const writesByChild = new Map();
+  for (const child of children) {
+    const writes = [];
+    writesByChild.set(child, writes);
+    child.stdin.on('data', chunk => {
+      const message = JSON.parse(chunk.toString('utf8'));
+      writes.push(message);
+      if (message.method === 'initialize') {
+        child.stdout.write(`${JSON.stringify({ id: message.id, result: {} })}\n`);
+      }
+    });
+  }
+  const client = new CodexAppServerClient({
+    nonceFactory: () => nonces.shift(),
+    spawnProcess: () => children.shift(),
+  });
+  const exits = [];
+  client.on('exit', info => exits.push(info));
+
+  await client.start();
+  await client.stop();
+  await client.start();
+  const request = client.request('thread/start', { cwd: 'C:/current' });
+  const observed = request.then(
+    value => ({ status: 'fulfilled', value }),
+    error => ({ status: 'rejected', error }),
+  );
+  const currentRequest = writesByChild.get(secondChild)
+    .find(message => message.method === 'thread/start');
+
+  firstChild.emit('error', new Error('late old-child error'));
+  firstChild.emit('exit', 0, null);
+  secondChild.stdout.write(`${JSON.stringify({
+    id: currentRequest.id,
+    result: { thread: { id: 'thread-current' } },
+  })}\n`);
+
+  const outcome = await observed;
+  assert.equal(outcome.status, 'fulfilled');
+  assert.equal(outcome.value.thread.id, 'thread-current');
+  assert.equal(client.diagnostics().running, true);
+  assert.equal(client.diagnostics().launchError, '');
+  assert.equal(client.nonce(), secondNonce);
+  assert.deepEqual(exits, [{
+    code: 0,
+    current: false,
+    pid: 7101,
+    processNonce: firstNonce,
+    signal: null,
+  }]);
+  await client.stop();
+});
+
+test('current child exit reports process identity and rejects only its requests', async () => {
+  const processNonce = '3'.repeat(64);
+  const child = fakeProcess({ pid: 7201 });
+  const writes = [];
+  child.stdin.on('data', chunk => {
+    const message = JSON.parse(chunk.toString('utf8'));
+    writes.push(message);
+    if (message.method === 'initialize') {
+      child.stdout.write(`${JSON.stringify({ id: message.id, result: {} })}\n`);
+    }
+  });
+  const client = new CodexAppServerClient({
+    nonceFactory: () => processNonce,
+    spawnProcess: () => child,
+  });
+  const exits = [];
+  client.on('exit', info => exits.push(info));
+  await client.start();
+
+  const pending = client.request('thread/resume', { threadId: 'thread-current' });
+  child.emit('exit', 23, 'SIGTERM');
+
+  await assert.rejects(pending, /exited: code=23 signal=SIGTERM/);
+  assert.deepEqual(exits, [{
+    code: 23,
+    current: true,
+    pid: 7201,
+    processNonce,
+    signal: 'SIGTERM',
+  }]);
   assert.equal(client.pending.size, 0);
   assert.equal(client.diagnostics().running, false);
 });

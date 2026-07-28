@@ -86,29 +86,45 @@ export class CodexAppServerClient extends EventEmitter {
     }
 
     this.child = child;
+    const processPid = Number.isInteger(child.pid) && child.pid > 0
+      ? child.pid
+      : null;
     const lines = readline.createInterface({ input: child.stdout });
     this.lines = lines;
-    lines.on('line', line => this.#receive(line));
+    lines.on('line', line => this.#receive(line, child));
     child.stderr.on('data', chunk => {
+      if (this.child !== child) return;
       const text = chunk.toString('utf8');
       this.stderrText = tail(`${this.stderrText}${text}`);
       this.emit('stderr', text);
     });
     child.on('error', error => {
-      this.#recordLaunchError(error);
-      this.#rejectPending(error);
-      if (this.child === child) this.child = null;
+      const current = this.child === child;
+      if (current) this.#recordLaunchError(error);
+      this.#rejectPending(error, child);
+      if (current) this.child = null;
       if (this.lines === lines) this.lines = null;
       lines.close();
-      this.emit('processError', error);
+      this.emit('processError', error, {
+        current,
+        pid: processPid,
+        processNonce,
+      });
     });
     child.on('exit', (code, signal) => {
+      const current = this.child === child;
       const error = new Error(`Codex App Server exited: code=${code} signal=${signal}`);
-      this.#rejectPending(error);
-      if (this.child === child) this.child = null;
+      this.#rejectPending(error, child);
+      if (current) this.child = null;
       if (this.lines === lines) this.lines = null;
       lines.close();
-      this.emit('exit', { code, signal });
+      this.emit('exit', {
+        code,
+        current,
+        pid: processPid,
+        processNonce,
+        signal,
+      });
     });
 
     try {
@@ -125,6 +141,7 @@ export class CodexAppServerClient extends EventEmitter {
 
   request(method, params) {
     if (!this.child) return Promise.reject(new Error('Codex App Server is not running'));
+    const child = this.child;
     const id = this.nextId++;
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -136,6 +153,7 @@ export class CodexAppServerClient extends EventEmitter {
         );
       }, this.requestTimeoutMs);
       this.pending.set(id, {
+        child,
         method,
         reject,
         resolve,
@@ -190,7 +208,7 @@ export class CodexAppServerClient extends EventEmitter {
       this.lines.close();
       this.lines = null;
     }
-    this.#rejectPending(new Error('Codex App Server stopped'));
+    this.#rejectPending(new Error('Codex App Server stopped'), child);
     child.kill();
   }
 
@@ -200,19 +218,21 @@ export class CodexAppServerClient extends EventEmitter {
     );
   }
 
-  #rejectPending(error) {
-    for (const waiter of this.pending.values()) {
+  #rejectPending(error, child) {
+    for (const [id, waiter] of this.pending.entries()) {
+      if (waiter.child !== child) continue;
       clearTimeout(waiter.timer);
       waiter.reject(error);
+      this.pending.delete(id);
     }
-    this.pending.clear();
   }
 
   #write(message) {
     this.child.stdin.write(`${JSON.stringify(message)}\n`);
   }
 
-  #receive(line) {
+  #receive(line, child) {
+    if (this.child !== child) return;
     let message;
     try {
       message = JSON.parse(line);
@@ -226,7 +246,7 @@ export class CodexAppServerClient extends EventEmitter {
     }
     if (Object.hasOwn(message, 'id')) {
       const waiter = this.pending.get(message.id);
-      if (!waiter) return;
+      if (!waiter || waiter.child !== child) return;
       this.pending.delete(message.id);
       clearTimeout(waiter.timer);
       if (message.error) {

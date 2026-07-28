@@ -25,6 +25,7 @@ const validFeedbackResult = {
 
 class RecordingCodex extends EventEmitter {
   calls = [];
+  onTurnStart = null;
   resumeErrors = new Map();
   startCalls = 0;
   threadCount = 0;
@@ -45,13 +46,20 @@ class RecordingCodex extends EventEmitter {
       return { thread: { id: params.threadId } };
     }
     if (method === 'turn/start') {
-      return {
-        turn: {
-          id: `turn-${++this.turnCount}`,
-          items: [],
-          status: 'inProgress',
-        },
+      const turn = {
+        id: `turn-${++this.turnCount}`,
+        items: [],
+        status: 'inProgress',
       };
+      if (this.onTurnStart) {
+        await this.onTurnStart({
+          codex: this,
+          params,
+          threadId: params.threadId,
+          turnId: turn.id,
+        });
+      }
+      return { turn };
     }
     throw new Error(`Unexpected method ${method}`);
   }
@@ -228,6 +236,62 @@ test('workflow runs isolate requirements, resume the exact thread, and persist s
   }
   assert.equal(codex.calls.some(call => JSON.stringify(call).includes('--last')), false);
   emitCompleted(codex, secondA, text);
+});
+
+test('a stale previous-Turn notification cannot claim the next Run on the same Thread', async t => {
+  const { codex, manager, store } = createFixture(t);
+  const first = await manager.startWorkflowRun({
+    requirementId: 'REQ-A',
+    workflowType: 'feedback-triage',
+    files: [],
+    input: { feedbackText: '第一次反馈' },
+  });
+  emitCompleted(codex, first, JSON.stringify(validFeedbackResult));
+  assert.equal(store.getRun(first.id).status, 'completed');
+
+  const second = await manager.startWorkflowRun({
+    requirementId: 'REQ-A',
+    workflowType: 'feedback-triage',
+    files: [],
+    input: { feedbackText: '第二次反馈' },
+  });
+  emitCompleted(codex, second, JSON.stringify(validFeedbackResult));
+  assert.equal(store.getRun(second.id).status, 'completed');
+
+  codex.onTurnStart = async ({ codex: sender, threadId, turnId }) => {
+    sender.emit('notification', {
+      method: 'item/agentMessage/delta',
+      params: {
+        delta: 'STALE',
+        itemId: 'stale-agent',
+        threadId,
+        turnId: second.turnId,
+      },
+    });
+    emitCompleted(
+      sender,
+      { threadId, turnId },
+      JSON.stringify(validFeedbackResult),
+    );
+  };
+
+  const third = await manager.startWorkflowRun({
+    requirementId: 'REQ-A',
+    workflowType: 'feedback-triage',
+    files: [],
+    input: { feedbackText: '第三次反馈' },
+  });
+
+  assert.equal(third.status, 'completed');
+  assert.notEqual(third.turnId, second.turnId);
+  assert.deepEqual(store.getWorkflowResult(third.id).result, validFeedbackResult);
+  assert.equal(store.getRun(third.id).result.includes('STALE'), false);
+  assert.deepEqual(
+    store.listRunEvents(third.id)
+      .filter(event => event.type === 'workbench/stale-turn-notifications-dropped')
+      .map(event => event.payload),
+    [{ count: 1 }],
+  );
 });
 
 test('only the exact missing-rollout error rebuilds and records the replacement', async t => {
