@@ -73,6 +73,35 @@ function browserExecutable() {
   return executable;
 }
 
+async function verifySources() {
+  const requiredEvents = [
+    'game_start',
+    'first_input',
+    'mechanic_reveal',
+    'phase_change',
+    'core_payoff',
+    'run_end',
+    'replay_start',
+    'lifecycle_pause',
+    'lifecycle_resume'
+  ];
+  for (const entry of entries.filter(item => item.game)) {
+    const file = path.join(root, 'demos', '微信H5精品游戏', entry.file);
+    const source = await fs.readFile(file, 'utf8');
+    assert(source.includes('window.__GAME_TEST__'), `${entry.id} 缺少统一测试接口`);
+    assert(source.includes('GamePlatform'), `${entry.id} 缺少平台适配器`);
+    assert(source.includes('visibilitychange'), `${entry.id} 缺少页面生命周期处理`);
+    for (const event of requiredEvents) {
+      assert(source.includes(`"${event}"`) || source.includes(`'${event}'`), `${entry.id} 缺少公共事件 ${event}`);
+    }
+    assert(!/<script[^>]+src\s*=/i.test(source), `${entry.id} 不应加载外部脚本`);
+    assert(!/<iframe\b/i.test(source), `${entry.id} 不应包含 iframe`);
+    const externalResources = [...source.matchAll(/<(?:img|audio|video|source|link)[^>]+(?:src|href)\s*=\s*["'](https?:\/\/[^"']+)/gi)]
+      .map(match => match[1]);
+    assert.equal(externalResources.length, 0, `${entry.id} 存在外部资源 ${externalResources.join(', ')}`);
+  }
+}
+
 async function clickMatchingButton(page, pattern) {
   const buttons = page.locator('button:visible, [role="button"]:visible');
   const count = await buttons.count();
@@ -98,6 +127,8 @@ async function driveCanvas(page, durationMs) {
   const endAt = Date.now() + durationMs;
   let index = 0;
   while (Date.now() < endAt) {
+    const mode = await page.evaluate(() => window.__GAME_TEST__?.getState?.().mode).catch(() => null);
+    if (mode && !['playing', 'paused'].includes(mode)) break;
     const [startX, startY] = points[index % points.length];
     const [endX, endY] = points[(index + 1) % points.length];
     await page.mouse.move(box.x + box.width * startX, box.y + box.height * startY);
@@ -105,7 +136,12 @@ async function driveCanvas(page, durationMs) {
     await page.mouse.move(box.x + box.width * endX, box.y + box.height * endY, { steps: 8 });
     await page.mouse.up();
     await page.waitForTimeout(180);
-    await clickMatchingButton(page, /开始|进入|继续|知道了|出发|拿起/);
+    const nextMode = await page.evaluate(() => {
+      const game = window.__GAME_TEST__;
+      if (game?.getState?.().mode === 'paused' && typeof game.resume === 'function') game.resume();
+      return game?.getState?.().mode || null;
+    }).catch(() => {});
+    if (nextMode && !['playing', 'paused'].includes(nextMode)) break;
     index += 1;
   }
 }
@@ -133,7 +169,16 @@ async function runBaselineScenario(page, gameId) {
     assert.equal(final.phase, 'won', `世界缝补师标准路线未胜利：${JSON.stringify(final)}`);
     assert(final.saved >= 9, `世界缝补师获救数量不足：${final.saved}`);
     await page.screenshot({ path: path.join(outputDir, `${gameId}-result.png`), fullPage: false });
-    return { mechanic, final };
+    const failure = await page.evaluate(() => {
+      const game = window.__GAME_TEST__;
+      game.reset();
+      game.start();
+      game.finish();
+      return game.getState();
+    });
+    assert.equal(failure.phase, 'lost', '世界缝补师空路线未失败');
+    assert.equal(failure.saved, 0, '世界缝补师空路线不应救回生命');
+    return { mechanic, final, failure };
   }
 
   if (gameId === 'rift-hunter') {
@@ -156,10 +201,38 @@ async function runBaselineScenario(page, gameId) {
     assert.equal(final.mode, 'extracted', `裂隙猎人未成功撤离：${JSON.stringify(final)}`);
     assert(final.kept.length >= 1, '裂隙猎人撤离后未保留战利品');
     await page.screenshot({ path: path.join(outputDir, `${gameId}-result.png`), fullPage: false });
-    return { mechanic, final };
+    const failure = await page.evaluate(() => {
+      const game = window.__GAME_TEST__;
+      game.reset();
+      document.getElementById('startBtn').click();
+      game.grantLoot(180);
+      game.grantLoot(60);
+      game.forceDeath();
+      return game.getState();
+    });
+    assert.equal(failure.mode, 'dead', '裂隙猎人强制死亡未进入失败结算');
+    assert.equal(failure.kept.length, 1, '裂隙猎人死亡后未只保留一件战利品');
+    assert(failure.lost.length >= 1, '裂隙猎人死亡后未记录遗失战利品');
+    return { mechanic, final, failure };
   }
 
-  await driveCanvas(page, 3600);
+  const waitGameTime = time => page.waitForFunction(
+    expected => window.__GAME_TEST__.getState().elapsed >= expected,
+    time,
+    { timeout: 10000 }
+  );
+  await page.evaluate(() => {
+    window.__GAME_TEST__.start();
+    window.__GAME_TEST__.setTarget(112, 603);
+  });
+  await waitGameTime(6);
+  await page.evaluate(() => window.__GAME_TEST__.setTarget(278, 603));
+  await page.waitForFunction(
+    () => window.__GAME_TEST__.getState().switchActivated,
+    null,
+    { timeout: 3000 }
+  );
+  await waitGameTime(70);
   const mechanic = await page.evaluate(() => ({
     state: window.__GAME_TEST__.getState(),
     events: window.__GAME_TEST__.getEvents()
@@ -167,12 +240,47 @@ async function runBaselineScenario(page, gameId) {
   assert(mechanic.state.echoCount >= 1, '五秒之后未生成回声');
   assert(mechanic.events.some(event => event.event === 'mechanic_reveal'), '五秒之后未发出核心机制事件');
   await page.screenshot({ path: path.join(outputDir, `${gameId}-mechanic.png`), fullPage: false });
-  await driveCanvas(page, 6500);
+  const gateRoute = [
+    [101, 76, 247],
+    [106, 313, 288],
+    [111, 84, 426],
+    [116, 306, 477]
+  ];
+  for (const [time, x, y] of gateRoute) {
+    await waitGameTime(time);
+    await page.evaluate(([targetX, targetY]) => {
+      window.__GAME_TEST__.setTarget(targetX, targetY);
+    }, [x, y]);
+  }
+  await waitGameTime(123);
+  const shieldState = await page.evaluate(() => window.__GAME_TEST__.getState());
+  assert.equal(shieldState.shieldsRemaining, 0, `五秒之后仍有护盾：${JSON.stringify(shieldState.gates)}`);
+  assert(shieldState.gates.every(gate => gate.primed && gate.broken), '五秒之后存在未经过编号回声的时间门');
+  await page.evaluate(() => window.__GAME_TEST__.setTarget(195, 352));
+  await page.waitForFunction(
+    () => window.__GAME_TEST__.getState().mode === 'won',
+    null,
+    { timeout: 3000 }
+  );
   const final = await page.evaluate(() => window.__GAME_TEST__.getState());
-  assert(['won', 'lost'].includes(final.mode), `五秒之后未进入结算：${JSON.stringify(final)}`);
+  assert.equal(final.mode, 'won', `五秒之后未胜利：${JSON.stringify(final)}`);
   assert.equal(final.echoCount, 4, '五秒之后结算时未形成四条回声');
+  assert.equal(final.coreHp, 0, '五秒之后核心生命未归零');
   await page.screenshot({ path: path.join(outputDir, `${gameId}-result.png`), fullPage: false });
-  return { mechanic: mechanic.state, final };
+  await page.evaluate(() => {
+    const game = window.__GAME_TEST__;
+    game.reset();
+    game.setTarget(195, 640);
+  });
+  await page.waitForFunction(
+    () => window.__GAME_TEST__.getState().mode === 'lost',
+    null,
+    { timeout: 12000 }
+  );
+  const failure = await page.evaluate(() => window.__GAME_TEST__.getState());
+  assert.equal(failure.mode, 'lost', '五秒之后无操作路线未进入失败结算');
+  assert.equal(failure.targetsDestroyed, 0, '五秒之后无操作失败不应摧毁锚点');
+  return { mechanic: mechanic.state, final, failure };
 }
 
 async function collectLayout(page) {
@@ -273,6 +381,7 @@ async function verifyEntry(browser, origin, entry, viewport) {
   return result;
 }
 
+await verifySources();
 await fs.mkdir(outputDir, { recursive: true });
 const { server, port } = await startServer();
 const origin = `http://127.0.0.1:${port}`;
