@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>个人产品工作台</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">跳到主要内容</a>
+
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="icon-grid" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+      <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+      <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+      <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+    </symbol>
+    <symbol id="icon-roadmap" viewBox="0 0 24 24">
+      <path d="M5 4v16M19 4v16M5 7h8a3 3 0 0 1 3 3v0a3 3 0 0 1-3 3H9a3 3 0 0 0-3 3v0a3 3 0 0 0 3 3h10"></path>
+      <circle cx="5" cy="4" r="2"></circle>
+      <circle cx="19" cy="20" r="2"></circle>
+    </symbol>
+    <symbol id="icon-file" viewBox="0 0 24 24">
+      <path d="M6 3h8l4 4v14H6z"></path>
+      <path d="M14 3v5h5M9 12h6M9 16h6"></path>
+    </symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"></circle>
+      <path d="m8 12 2.5 2.5L16 9"></path>
+    </symbol>
+    <symbol id="icon-chart" viewBox="0 0 24 24">
+      <path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path>
+    </symbol>
+    <symbol id="icon-terminal" viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+      <path d="m7 9 3 3-3 3M13 15h4"></path>
+    </symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="7"></circle>
+      <path d="m20 20-4-4"></path>
+    </symbol>
+    <symbol id="icon-spark" viewBox="0 0 24 24">
+      <path d="m12 3 1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5zM18.5 15l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"></path>
+    </symbol>
+    <symbol id="icon-menu" viewBox="0 0 24 24">
+      <path d="M4 7h16M4 12h16M4 17h16"></path>
+    </symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24">
+      <path d="m6 6 12 12M18 6 6 18"></path>
+    </symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24">
+      <path d="M5 12h14M14 7l5 5-5 5"></path>
+    </symbol>
+    <symbol id="icon-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"></circle>
+      <path d="M12 7v5l3 2"></path>
+    </symbol>
+    <symbol id="icon-link" viewBox="0 0 24 24">
+      <path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1.1"></path>
+      <path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1.1"></path>
+    </symbol>
+    <symbol id="icon-folder" viewBox="0 0 24 24">
+      <path d="M3 6h7l2 2h9v11H3z"></path>
+    </symbol>
+    <symbol id="icon-info" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"></circle>
+      <path d="M12 11v6M12 7h.01"></path>
+    </symbol>
+    <symbol id="icon-refresh" viewBox="0 0 24 24">
+      <path d="M20 7v5h-5M4 17v-5h5"></path>
+      <path d="M18.5 10a7 7 0 0 0-12-3L4 9M5.5 14a7 7 0 0 0 12 3l2.5-2"></path>
+    </symbol>
+  </svg>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="primarySidebar" aria-label="主导航">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg class="icon"><use href="#icon-spark"></use></svg>
+        </span>
+        <span class="brand-copy">
+          <strong>产品工作台</strong>
+          <small>PERSONAL CODEX OPS</small>
+        </span>
+      </div>
+
+      <div class="nav-section-label">工作视图</div>
+      <nav id="primaryNav">
+        <button class="nav-item active" type="button" data-page="home" aria-controls="page-home" aria-current="page">
+          <svg class="icon" aria-hidden="true"><use href="#icon-grid"></use></svg>
+          <span>待我处理</span>
+        </button>
+        <button class="nav-item" type="button" data-page="planning" aria-controls="page-planning">
+          <svg class="icon" aria-hidden="true"><use href="#icon-roadmap"></use></svg>
+          <span>规划中心</span>
+        </button>
+        <button class="nav-item" type="button" data-page="requirements" aria-controls="page-requirements">
+          <svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg>
+          <span>需求中心</span>
+        </button>
+        <button class="nav-item" type="button" data-page="review" aria-controls="page-review">
+          <svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+          <span>评审与验收</span>
+        </button>
+        <button class="nav-item" type="button" data-page="data" aria-controls="page-data">
+          <svg class="icon" aria-hidden="true"><use href="#icon-chart"></use></svg>
+          <span>数据与复盘</span>
+        </button>
+        <button class="nav-item" type="button" data-page="codex" aria-controls="page-codex">
+          <svg class="icon" aria-hidden="true"><use href="#icon-terminal"></use></svg>
+          <span>Codex任务</span>
+          <span class="nav-badge" id="navRunBadge" hidden>0</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-status">
+        <span class="status-light" aria-hidden="true"></span>
+        <div>
+          <strong>本地工作区</strong>
+          <span>仅本机访问</span>
+        </div>
+      </div>
+    </aside>
+
+    <button class="nav-scrim" id="navScrim" type="button" aria-label="关闭主导航" tabindex="-1"></button>
+
+    <header class="topbar">
+      <div class="topbar-leading">
+        <button class="icon-button nav-toggle" id="navToggle" type="button" aria-label="打开主导航" aria-expanded="false" aria-controls="primarySidebar">
+          <svg class="icon" aria-hidden="true"><use href="#icon-menu"></use></svg>
+        </button>
+        <div class="current-location">
+          <span>个人工作台</span>
+          <strong id="currentPageLabel">待我处理</strong>
+        </div>
+      </div>
+
+      <label class="search-field" for="globalSearch">
+        <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+        <span class="visually-hidden">搜索需求、文档或运行</span>
+        <input id="globalSearch" type="search" autocomplete="off" placeholder="搜索需求、文档或运行">
+        <kbd aria-hidden="true">/</kbd>
+      </label>
+
+      <div class="topbar-actions">
+        <span id="healthBadge" class="health-badge is-checking" role="status">
+          <span class="status-light" aria-hidden="true"></span>
+          <span>Broker 检查中</span>
+        </span>
+        <button id="askCodex" class="button button-primary" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#icon-spark"></use></svg>
+          <span>问 Codex</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="mainContent" tabindex="-1">
+      <section class="page active" id="page-home" data-page-panel="home" aria-labelledby="homeTitle">
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">TODAY / FOCUS</span>
+            <h1 id="homeTitle" tabindex="-1">待我处理</h1>
+            <p>集中处理需要判断、补充和跟进的产品事项。</p>
+          </div>
+          <div class="heading-actions">
+            <span class="date-chip" id="todayLabel"></span>
+            <button class="button button-secondary open-codex" type="button">
+              <svg class="icon" aria-hidden="true"><use href="#icon-spark"></use></svg>
+              总结今日进展
+            </button>
+          </div>
+        </div>
+
+        <div class="metrics-grid" aria-label="工作台关键指标">
+          <article class="metric-card">
+            <div class="metric-icon is-blue"><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg></div>
+            <div>
+              <span class="metric-label">我的待办</span>
+              <strong class="metric-value" id="myTodoCount">0</strong>
+              <small>当前需求总数</small>
+            </div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-icon is-amber"><svg class="icon" aria-hidden="true"><use href="#icon-clock"></use></svg></div>
+            <div>
+              <span class="metric-label">外部等待</span>
+              <strong class="metric-value" id="externalWaitCount">0</strong>
+              <small>需要主动跟进</small>
+            </div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-icon is-violet"><svg class="icon" aria-hidden="true"><use href="#icon-terminal"></use></svg></div>
+            <div>
+              <span class="metric-label">进行中的 Codex</span>
+              <strong class="metric-value" id="activeRunCount">0</strong>
+              <small>固定单任务并发</small>
+            </div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-icon is-green"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg></div>
+            <div>
+              <span class="metric-label">最近结果</span>
+              <strong class="metric-value" id="recentResultCount">0</strong>
+              <small>已持久化完成记录</small>
+            </div>
+          </article>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel panel-span-7" aria-labelledby="focusRequirementsTitle">
+            <div class="panel-header">
+              <div>
+                <h2 id="focusRequirementsTitle">当前需求</h2>
+                <p>按最近更新排序，选择后可携带上下文提问。</p>
+              </div>
+              <button class="text-button" type="button" data-go-page="requirements">
+                查看全部
+                <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+              </button>
+            </div>
+            <div id="homeRequirements" class="requirement-table" aria-live="polite">
+              <div class="loading-row">正在读取需求数据</div>
+            </div>
+          </section>
+
+          <section class="panel panel-span-5" aria-labelledby="recentRunsTitle">
+            <div class="panel-header">
+              <div>
+                <h2 id="recentRunsTitle">最近 Codex 结果</h2>
+                <p>运行结束后仍可刷新回看。</p>
+              </div>
+              <button class="text-button" type="button" data-go-page="codex">
+                运行记录
+                <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+              </button>
+            </div>
+            <div id="homeRuns" class="run-stack" aria-live="polite">
+              <div class="loading-row">正在读取运行记录</div>
+            </div>
+          </section>
+
+          <section class="panel panel-span-7" aria-labelledby="manualNotesTitle">
+            <div class="panel-header">
+              <div>
+                <h2 id="manualNotesTitle">产品专员任务备注</h2>
+                <p>仅记录事项、截止时间、交付物和当前备注。</p>
+              </div>
+              <span class="panel-meta">手动维护</span>
+            </div>
+            <div id="manualTaskNotes" class="note-list" aria-live="polite">
+              <div class="loading-row">正在读取任务备注</div>
+            </div>
+          </section>
+
+          <section class="panel panel-span-5" aria-labelledby="workRhythmTitle">
+            <div class="panel-header">
+              <div>
+                <h2 id="workRhythmTitle">今日节奏</h2>
+                <p>优先清除阻塞，再推进方案与文档。</p>
+              </div>
+            </div>
+            <ol class="focus-list">
+              <li>
+                <span class="focus-index">01</span>
+                <div><strong>清理外部等待</strong><p>核对反馈缺口，形成可直接追问的清单。</p></div>
+              </li>
+              <li>
+                <span class="focus-index">02</span>
+                <div><strong>检查关键产物</strong><p>对 Demo、PRD 和验收口径做只读差异检查。</p></div>
+              </li>
+              <li>
+                <span class="focus-index">03</span>
+                <div><strong>沉淀当日结论</strong><p>把已确认的判断写入需求与复盘上下文。</p></div>
+              </li>
+            </ol>
+          </section>
+        </div>
+      </section>
+
+      <section class="page" id="page-planning" data-page-panel="planning" aria-labelledby="planningTitle" hidden>
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">ROADMAP / CAPACITY</span>
+            <h1 id="planningTitle" tabindex="-1">规划中心</h1>
+            <p>从来源、优先级和版本容量看需求，明确插单影响。</p>
+          </div>
+          <button class="button button-secondary open-codex" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#icon-spark"></use></svg>
+            分析规划风险
+          </button>
+        </div>
+
+        <div class="summary-strip" aria-label="规划摘要">
+          <div><span>当前版本</span><strong>V6.1 规划窗口</strong></div>
+          <div><span>决策原则</span><strong>价值、证据、成本、时效</strong></div>
+          <div><span>容量状态</span><strong class="text-warning">待补研发评估</strong></div>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel panel-span-8" aria-labelledby="versionBoardTitle">
+            <div class="panel-header">
+              <div><h2 id="versionBoardTitle">版本候选板</h2><p>同一需求只在一个阶段出现。</p></div>
+              <span class="panel-meta">基础视图</span>
+            </div>
+            <div class="roadmap-board">
+              <section class="roadmap-column">
+                <div class="column-heading"><span>待判断</span><strong>2</strong></div>
+                <article class="work-card"><small>REQ-021</small><strong>搜索关键词治理</strong><p>证据范围待补充</p></article>
+                <article class="work-card"><small>REQ-024</small><strong>社区内容标签</strong><p>等待用户反馈归纳</p></article>
+              </section>
+              <section class="roadmap-column">
+                <div class="column-heading"><span>已规划</span><strong>2</strong></div>
+                <article class="work-card is-accent"><small>REQ-003</small><strong>云存档月卡插单</strong><p>需确认版本容量影响</p></article>
+                <article class="work-card"><small>REQ-018</small><strong>游戏库筛选优化</strong><p>方案边界已明确</p></article>
+              </section>
+              <section class="roadmap-column">
+                <div class="column-heading"><span>产物推进</span><strong>2</strong></div>
+                <article class="work-card"><small>REQ-001</small><strong>Android广告接入</strong><p>PRD中</p></article>
+                <article class="work-card"><small>REQ-002</small><strong>iOS应用与IPA资源库</strong><p>待评审</p></article>
+              </section>
+            </div>
+          </section>
+
+          <aside class="panel panel-span-4" aria-labelledby="decisionFrameTitle">
+            <div class="panel-header"><div><h2 id="decisionFrameTitle">插单判断框架</h2><p>先补齐事实，再做取舍。</p></div></div>
+            <dl class="decision-list">
+              <div><dt>业务价值</dt><dd>影响用户、收入或关键体验的程度</dd></div>
+              <div><dt>证据强度</dt><dd>反馈数量、数据趋势和复现材料</dd></div>
+              <div><dt>机会成本</dt><dd>占用资源后被推迟的既定目标</dd></div>
+              <div><dt>时间窗口</dt><dd>活动、版本或合作节点是否不可逆</dd></div>
+            </dl>
+            <button class="button button-primary button-block open-codex" type="button">生成判断提纲</button>
+          </aside>
+
+          <section class="panel panel-span-12" aria-labelledby="sourceTitle">
+            <div class="panel-header"><div><h2 id="sourceTitle">需求来源台账</h2><p>外部输入先归纳，再进入需求池。</p></div></div>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th scope="col">来源</th><th scope="col">主题</th><th scope="col">证据状态</th><th scope="col">建议动作</th></tr></thead>
+                <tbody>
+                  <tr><td>用户反馈</td><td>搜索结果相关性</td><td><span class="status-pill is-warning">待归纳</span></td><td>去重并匹配已有需求</td></tr>
+                  <tr><td>运营输入</td><td>Android 广告素材限制</td><td><span class="status-pill is-progress">补充中</span></td><td>形成明确约束清单</td></tr>
+                  <tr><td>测试异常</td><td>IPA 导入失败路径</td><td><span class="status-pill is-success">已定位</span></td><td>纳入评审检查项</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="page" id="page-requirements" data-page-panel="requirements" aria-labelledby="requirementsTitle" hidden>
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">REQUIREMENT / CONTEXT</span>
+            <h1 id="requirementsTitle" tabindex="-1">需求中心</h1>
+            <p>统一查看阶段、外部等待、关联产物和运行上下文。</p>
+          </div>
+          <button class="button button-primary open-codex" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#icon-spark"></use></svg>
+            基于当前需求提问
+          </button>
+        </div>
+
+        <div class="requirements-layout">
+          <section class="panel requirements-master" aria-labelledby="requirementListTitle">
+            <div class="panel-header">
+              <div><h2 id="requirementListTitle">需求列表</h2><p id="requirementResultMeta">正在载入</p></div>
+            </div>
+            <div id="requirementList" class="requirement-list" aria-live="polite">
+              <div class="loading-row">正在读取需求数据</div>
+            </div>
+          </section>
+
+          <section class="panel requirement-detail" id="requirementDetail" aria-live="polite" aria-labelledby="requirementDetailTitle">
+            <div class="detail-empty">
+              <div class="empty-icon"><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg></div>
+              <h2 id="requirementDetailTitle">选择一个需求</h2>
+              <p>查看阶段、外部等待和已授权产物，并可直接发起只读分析。</p>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="page" id="page-review" data-page-panel="review" aria-labelledby="reviewTitle" hidden>
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">REVIEW / ACCEPTANCE</span>
+            <h1 id="reviewTitle" tabindex="-1">评审与验收</h1>
+            <p>集中梳理 PRD 问题、开发疑问、测试异常和验收口径。</p>
+          </div>
+          <button class="button button-primary open-codex" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+            发起只读检查
+          </button>
+        </div>
+
+        <div class="review-summary">
+          <article><span>PRD 完整性</span><strong>待检查</strong><p>主流程、异常、边界和埋点</p></article>
+          <article><span>Demo 一致性</span><strong>待检查</strong><p>界面、状态与业务规则</p></article>
+          <article><span>验收口径</span><strong>待补充</strong><p>可观察、可复现、可判定</p></article>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel panel-span-7" aria-labelledby="reviewQueueTitle">
+            <div class="panel-header"><div><h2 id="reviewQueueTitle">检查工作区</h2><p>选定需求与文件后再让 Codex 给出证据。</p></div></div>
+            <div class="checklist">
+              <label><input type="checkbox"> <span><strong>主流程完整</strong><small>入口、关键动作、成功结果可以闭环</small></span></label>
+              <label><input type="checkbox"> <span><strong>异常策略明确</strong><small>失败提示、重试方式和数据保留已定义</small></span></label>
+              <label><input type="checkbox"> <span><strong>边界条件可判定</strong><small>空态、弱网、重复操作和权限边界已覆盖</small></span></label>
+              <label><input type="checkbox"> <span><strong>Demo 与 PRD 一致</strong><small>交互状态、文案和验收条件没有冲突</small></span></label>
+            </div>
+          </section>
+
+          <aside class="panel panel-span-5" aria-labelledby="reviewOutputTitle">
+            <div class="panel-header"><div><h2 id="reviewOutputTitle">推荐输出结构</h2><p>便于同步给开发与测试。</p></div></div>
+            <ol class="output-outline">
+              <li><span>1</span><div><strong>问题本质</strong><p>事实、影响与复现条件</p></div></li>
+              <li><span>2</span><div><strong>产品策略</strong><p>主流程、异常和边界判断</p></div></li>
+              <li><span>3</span><div><strong>修改位置</strong><p>需要更新的文档与段落</p></div></li>
+              <li><span>4</span><div><strong>验收条件</strong><p>明确可验证的通过标准</p></div></li>
+            </ol>
+          </aside>
+        </div>
+      </section>
+
+      <section class="page" id="page-data" data-page-panel="data" aria-labelledby="dataTitle" hidden>
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">METRICS / LEARNING</span>
+            <h1 id="dataTitle" tabindex="-1">数据与复盘</h1>
+            <p>把上线指标、版本周报和后续判断沉淀为可追踪结论。</p>
+          </div>
+          <button class="button button-secondary open-codex" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#icon-spark"></use></svg>
+            生成复盘框架
+          </button>
+        </div>
+
+        <div class="data-empty-banner">
+          <div class="empty-icon"><svg class="icon" aria-hidden="true"><use href="#icon-chart"></use></svg></div>
+          <div><strong>业务数据尚未接入</strong><p>本阶段保留指标结构，不展示伪造趋势；接入后由真实数据驱动。</p></div>
+          <span class="status-pill is-neutral">基础阶段</span>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel panel-span-8" aria-labelledby="metricFrameTitle">
+            <div class="panel-header"><div><h2 id="metricFrameTitle">指标框架</h2><p>每个指标都需要口径、基线、目标和观察窗口。</p></div></div>
+            <div class="metric-framework">
+              <article><span>核心结果</span><strong>—</strong><p>验证产品目标是否成立</p></article>
+              <article><span>过程指标</span><strong>—</strong><p>定位链路中的变化位置</p></article>
+              <article><span>护栏指标</span><strong>—</strong><p>避免局部优化伤害整体体验</p></article>
+              <article><span>用户反馈</span><strong>—</strong><p>补充数据无法解释的原因</p></article>
+            </div>
+          </section>
+
+          <aside class="panel panel-span-4" aria-labelledby="reviewPromptTitle">
+            <div class="panel-header"><div><h2 id="reviewPromptTitle">复盘问题</h2><p>从结果回到下一步行动。</p></div></div>
+            <ul class="question-list">
+              <li>原目标是否被验证？</li>
+              <li>变化来自产品还是外部因素？</li>
+              <li>哪些判断需要保留或推翻？</li>
+              <li>下一轮最小验证动作是什么？</li>
+            </ul>
+          </aside>
+        </div>
+      </section>
+
+      <section class="page" id="page-codex" data-page-panel="codex" aria-labelledby="codexPageTitle" hidden>
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">RUNS / EVENTS</span>
+            <h1 id="codexPageTitle" tabindex="-1">Codex任务</h1>
+            <p>查看真实会话、运行状态、事件摘要和最终结果。</p>
+          </div>
+          <button class="button button-primary open-codex" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#icon-spark"></use></svg>
+            新建只读任务
+          </button>
+        </div>
+
+        <div class="summary-strip codex-summary" aria-label="Codex 运行摘要">
+          <div><span>当前能力</span><strong>只读分析</strong></div>
+          <div><span>并发上限</span><strong>1 个运行</strong></div>
+          <div><span>历史保存</span><strong>SQLite 持久化</strong></div>
+          <div><span>事件展示</span><strong>过滤推理内容</strong></div>
+        </div>
+
+        <section class="panel" aria-labelledby="runListTitle">
+          <div class="panel-header">
+            <div><h2 id="runListTitle">运行记录</h2><p id="runResultMeta">正在载入</p></div>
+            <button class="icon-button" id="refreshRuns" type="button" aria-label="刷新运行记录">
+              <svg class="icon" aria-hidden="true"><use href="#icon-refresh"></use></svg>
+            </button>
+          </div>
+          <div id="runList" class="run-table" aria-live="polite">
+            <div class="loading-row">正在读取运行记录</div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="codexDrawer" aria-labelledby="codexTitle">
+    <div class="drawer-shell">
+      <header class="drawer-header">
+        <div>
+          <span class="drawer-kicker">READ-ONLY RUN</span>
+          <h2 id="codexTitle">问 Codex</h2>
+          <p>把当前业务上下文交给本机 Codex 做只读分析。</p>
+        </div>
+        <button class="icon-button drawer-close" id="closeCodex" type="button" aria-label="关闭 Codex 抽屉">
+          <svg class="icon" aria-hidden="true"><use href="#icon-close"></use></svg>
+        </button>
+      </header>
+
+      <div class="drawer-body">
+        <section class="drawer-section" aria-labelledby="contextTitle">
+          <div class="section-title-row">
+            <h3 id="contextTitle">运行上下文</h3>
+            <span class="permission-badge">只读分析</span>
+          </div>
+          <dl class="context-grid">
+            <div><dt>当前需求</dt><dd id="contextRequirement">未选择，按全局任务处理</dd></div>
+            <div><dt>工作目录</dt><dd id="contextRoot">由 Broker 授权</dd></div>
+            <div><dt>当前 Thread</dt><dd id="contextThread">首次运行时创建</dd></div>
+            <div><dt>Codex运行状态</dt><dd id="drawerRunStatus">未执行</dd></div>
+          </dl>
+          <div class="security-note">
+            <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+            <p>本阶段不会创建、修改、移动或删除文件，也不会请求扩大权限。</p>
+          </div>
+        </section>
+
+        <section class="drawer-section" aria-labelledby="quickActionsTitle">
+          <div class="section-title-row">
+            <h3 id="quickActionsTitle">快捷任务</h3>
+            <span>选择后仍可编辑</span>
+          </div>
+          <div class="quick-actions">
+            <button type="button" data-prompt-template="检查已授权文档的遗漏、异常和边界条件，并按严重程度给出可定位的问题清单。">检查文档漏洞</button>
+            <button type="button" data-prompt-template="对比已授权的 Demo 与 PRD，列出业务规则、界面状态和验收口径差异。">检查 Demo 与 PRD</button>
+            <button type="button" data-prompt-template="归纳已授权材料中的用户反馈，合并相似项，匹配已有需求并指出信息缺口。">整理反馈并查重</button>
+            <button type="button" data-prompt-template="把当前开发或测试问题转化为产品策略、异常边界和可验证的验收条件。">输出产品策略</button>
+          </div>
+        </section>
+
+        <section class="drawer-section form-section" aria-labelledby="taskInputTitle">
+          <h3 id="taskInputTitle">任务输入</h3>
+          <label for="authorizedFiles">
+            <span>授权文件</span>
+            <small>每行一个工作区相对路径，仅用于本次分析。</small>
+          </label>
+          <textarea id="authorizedFiles" rows="4" spellcheck="false" placeholder="例如：prd/feature.md"></textarea>
+
+          <label for="prompt">
+            <span>任务描述</span>
+            <small>写清目标、输出格式和需要重点检查的范围。</small>
+          </label>
+          <textarea id="prompt" rows="7" placeholder="例如：检查这份 PRD 的遗漏、异常和边界条件，并按严重程度输出。"></textarea>
+        </section>
+
+        <section class="drawer-section stream-section" id="streamSection" aria-labelledby="streamTitle" hidden>
+          <div class="section-title-row">
+            <h3 id="streamTitle">实时结果</h3>
+            <span id="streamConnectionState">等待事件</span>
+          </div>
+          <ol id="streamEvents" class="stream-events" aria-label="运行事件"></ol>
+          <pre id="streamOutput" aria-live="polite" aria-atomic="false">运行结果将在这里实时出现。</pre>
+        </section>
+      </div>
+
+      <footer class="drawer-footer">
+        <p id="drawerMessage" role="status" aria-live="polite">提交后会创建独立 Run，并保存上下文与结果。</p>
+        <button id="startRun" class="button button-primary" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#icon-spark"></use></svg>
+          <span>开始只读任务</span>
+        </button>
+      </footer>
+    </div>
+  </dialog>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+
+  <template id="requirementCard">
+    <button class="requirement-row" type="button">
+      <span class="requirement-main">
+        <small class="requirement-id"></small>
+        <strong class="requirement-title"></strong>
+      </span>
+      <span class="stage status-pill"></span>
+      <span class="external-wait"></span>
+      <svg class="icon row-arrow" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+    </button>
+  </template>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
