@@ -8,9 +8,11 @@ import {
   classifyCodexHealth,
   CodexAppServerClient,
 } from './lib/codex-app-server-client.mjs';
+import { ContextService } from './lib/context-service.mjs';
 import { openDatabase } from './lib/database.mjs';
 import { RunManager } from './lib/run-manager.mjs';
 import { assertLocalRequest, readJsonBody } from './lib/security.mjs';
+import { workflowCatalog } from './lib/workflow-catalog.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const publicRoot = path.join(here, 'public');
@@ -46,6 +48,7 @@ const externalWaits = new Set([
 ]);
 const manualTaskStatuses = new Set(['待开始', '进行中', '已完成']);
 const productSpecialists = new Set(['产品专员A', '产品专员B']);
+const workflowRunFields = new Set(['requirementId', 'files', 'input']);
 
 function sendJson(response, status, value) {
   response.writeHead(status, {
@@ -54,6 +57,29 @@ function sendJson(response, status, value) {
     'x-content-type-options': 'nosniff',
   });
   response.end(JSON.stringify(value));
+}
+
+function requestError(message, statusCode) {
+  return Object.assign(new Error(message), { statusCode });
+}
+
+function decodePathSegment(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    throw requestError('Invalid path encoding', 400);
+  }
+}
+
+function assertWorkflowRunBody(body) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    throw requestError('workflow run input must be an object', 400);
+  }
+  for (const key of Object.keys(body)) {
+    if (!workflowRunFields.has(key)) {
+      throw requestError(`${key} is not accepted for a workflow run`, 400);
+    }
+  }
 }
 
 function isOutside(root, candidate) {
@@ -141,10 +167,15 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
   const codex = codexFactory
     ? codexFactory(config)
     : new CodexAppServerClient({ cwd: config.allowedRoot });
+  const contextService = new ContextService({
+    store,
+    allowedRoot: config.allowedRoot,
+  });
   const runs = new RunManager({
     store,
     codex,
     allowedRoot: config.allowedRoot,
+    contextService,
     maxConcurrentRuns: config.maxConcurrentRuns,
   });
 
@@ -178,6 +209,9 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
             artifacts: store.listArtifacts(),
             manualTasks: store.listManualTasks(),
             runs: store.listRuns(),
+            requirementCandidates: store.listRequirementCandidates(),
+            reviewFindings: store.listReviewFindings(),
+            productStrategies: store.listProductStrategies(),
             workspace: { root: config.allowedRoot },
             capabilities: { permissions: ['read-only'] },
             health: await healthPayload(),
@@ -190,6 +224,17 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
           const body = await readJsonBody(request, config.maxBodyBytes);
           const run = await runs.startReadOnlyRun(body);
           return sendJson(response, 202, run);
+        }
+        if (request.method === 'GET' && url.pathname === '/api/workflows') {
+          return sendJson(
+            response,
+            200,
+            Object.entries(workflowCatalog).map(([id, workflow]) => ({
+              id,
+              label: workflow.label,
+              permission: workflow.permission,
+            })),
+          );
         }
         if (request.method === 'POST' && url.pathname === '/api/manual-tasks') {
           const body = await readJsonBody(request, config.maxBodyBytes);
@@ -222,7 +267,7 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
 
         const requirementMatch = url.pathname.match(/^\/api\/requirements\/([^/]+)$/);
         if (request.method === 'PATCH' && requirementMatch) {
-          const requirementId = decodeURIComponent(requirementMatch[1]);
+          const requirementId = decodePathSegment(requirementMatch[1]);
           const current = store.getRequirement(requirementId);
           if (!current) return sendJson(response, 404, { error: 'Requirement not found' });
           const body = await readJsonBody(request, config.maxBodyBytes);
@@ -239,7 +284,7 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
 
         const manualTaskMatch = url.pathname.match(/^\/api\/manual-tasks\/([^/]+)$/);
         if (request.method === 'PATCH' && manualTaskMatch) {
-          const taskId = decodeURIComponent(manualTaskMatch[1]);
+          const taskId = decodePathSegment(manualTaskMatch[1]);
           const current = store.getManualTask(taskId);
           if (!current) return sendJson(response, 404, { error: 'Manual task not found' });
           const body = await readJsonBody(request, config.maxBodyBytes);
@@ -256,7 +301,7 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
         }
 
         if (request.method === 'GET' && eventMatch) {
-          const runId = decodeURIComponent(eventMatch[1]);
+          const runId = decodePathSegment(eventMatch[1]);
           const run = store.getRun(runId);
           if (!run) return sendJson(response, 404, { error: 'Run not found' });
           response.writeHead(200, {
@@ -291,6 +336,43 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
             request.on('close', () => clearInterval(timer));
           }
           return;
+        }
+
+        const contextMatch = url.pathname.match(
+          /^\/api\/requirements\/([^/]+)\/context$/,
+        );
+        if (request.method === 'GET' && contextMatch) {
+          const requirementId = decodePathSegment(contextMatch[1]);
+          return sendJson(
+            response,
+            200,
+            contextService.getRequirementContext(requirementId),
+          );
+        }
+
+        const workflowMatch = url.pathname.match(
+          /^\/api\/workflows\/([^/]+)\/runs$/,
+        );
+        if (request.method === 'POST' && workflowMatch) {
+          const workflowType = decodePathSegment(workflowMatch[1]);
+          if (!Object.hasOwn(workflowCatalog, workflowType)) {
+            return sendJson(response, 400, { error: 'Unknown workflow type' });
+          }
+          const body = await readJsonBody(request, config.maxBodyBytes);
+          assertWorkflowRunBody(body);
+          const run = await runs.startWorkflowRun({ ...body, workflowType });
+          return sendJson(response, 202, run);
+        }
+
+        const resultMatch = url.pathname.match(
+          /^\/api\/runs\/([^/]+)\/workflow-result$/,
+        );
+        if (request.method === 'GET' && resultMatch) {
+          const runId = decodePathSegment(resultMatch[1]);
+          const result = store.getWorkflowResult(runId);
+          return result
+            ? sendJson(response, 200, result)
+            : sendJson(response, 404, { error: 'Workflow result not found' });
         }
         return sendJson(response, 404, { error: 'API route not found' });
       }
