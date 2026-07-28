@@ -216,6 +216,25 @@ test('restore rejects later edits and never touches unrelated dirty files', t =>
   assert.equal(fs.readFileSync(unrelated, 'utf8'), '保留我');
 });
 
+test('restore preflight validates every change without modifying an earlier file', t => {
+  const { root, safety } = fixture(t);
+  const first = path.join(root, 'prd', 'feature.md');
+  const second = path.join(root, 'prd', 'second.md');
+  fs.writeFileSync(second, 'second before\n', 'utf8');
+  const snapshot = safety.capture(['prd/feature.md', 'prd/second.md']);
+  fs.writeFileSync(first, 'first Codex version\n', 'utf8');
+  fs.writeFileSync(second, 'second Codex version\n', 'utf8');
+  const changes = safety.compare(snapshot);
+  fs.writeFileSync(second, 'second user version\n', 'utf8');
+
+  assert.throws(
+    () => safety.assertRestorable(snapshot, changes),
+    /changed after this run: prd\/second\.md/,
+  );
+  assert.equal(fs.readFileSync(first, 'utf8'), 'first Codex version\n');
+  assert.equal(fs.readFileSync(second, 'utf8'), 'second user version\n');
+});
+
 test('restore removes only a matching file created by that run', t => {
   const { root, safety } = fixture(t);
   const candidate = path.join(root, 'prd', 'candidate.md');

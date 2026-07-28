@@ -446,6 +446,13 @@ export function openDatabase(filename) {
       ).run(now(), runId);
       return Number(result.changes);
     },
+    markFileChangeRestored(runId, filePath) {
+      const result = db.prepare(
+        `UPDATE file_changes SET restored_at=?
+         WHERE run_id=? AND path=? AND restored_at IS NULL`,
+      ).run(now(), runId, filePath);
+      return Number(result.changes) === 1;
+    },
     createApproval(value) {
       const payloadJson = stringifyJson(value.payload, 'Approval payload');
       db.prepare(

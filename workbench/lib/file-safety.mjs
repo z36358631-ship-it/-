@@ -447,18 +447,15 @@ export class FileSafety {
     return this.compare(snapshot);
   }
 
-  restore(snapshot, changes) {
-    const validated = validateSnapshot(snapshot, this.allowedRoot);
-    const beforeByPath = new Map(validated.map(item => [changeKey(item.path), item]));
-    const normalizedChanges = this.#validateChanges(changes, beforeByPath);
+  assertRestorable(snapshot, changes) {
+    this.#restorePlan(snapshot, changes);
+  }
 
-    for (const change of normalizedChanges) {
-      const current = readState(normalizeRelative(this.allowedRoot, change.path));
-      const afterExisted = change.afterHash !== null;
-      if (current.hash !== change.afterHash || current.existed !== afterExisted) {
-        throw conflict(`File changed after this run: ${change.path}`);
-      }
-    }
+  restore(snapshot, changes) {
+    const { beforeByPath, normalizedChanges } = this.#restorePlan(
+      snapshot,
+      changes,
+    );
 
     for (const change of normalizedChanges) {
       const before = beforeByPath.get(changeKey(change.path));
@@ -472,6 +469,21 @@ export class FileSafety {
         writeAtomic(this.allowedRoot, change.path, before.content);
       }
     }
+  }
+
+  #restorePlan(snapshot, changes) {
+    const validated = validateSnapshot(snapshot, this.allowedRoot);
+    const beforeByPath = new Map(validated.map(item => [changeKey(item.path), item]));
+    const normalizedChanges = this.#validateChanges(changes, beforeByPath);
+
+    for (const change of normalizedChanges) {
+      const current = readState(normalizeRelative(this.allowedRoot, change.path));
+      const afterExisted = change.afterHash !== null;
+      if (current.hash !== change.afterHash || current.existed !== afterExisted) {
+        throw conflict(`File changed after this run: ${change.path}`);
+      }
+    }
+    return { beforeByPath, normalizedChanges };
   }
 
   #assertStagingRoot(stagingRoot) {

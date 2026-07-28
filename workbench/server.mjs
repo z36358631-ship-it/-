@@ -523,15 +523,45 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
             });
           }
           const snapshots = store.listFileSnapshots(runId);
-          fileSafety.restore(snapshots, changes);
-          if (run.permission === 'generate-candidate') {
-            for (const change of changes.filter(item => item.kind === 'created')) {
-              store.removeArtifact(run.requirementId, change.path);
+          fileSafety.assertRestorable(snapshots, changes);
+          const snapshotsByPath = new Map(
+            snapshots.map(snapshot => [snapshot.path, snapshot]),
+          );
+          const restored = [];
+          for (const change of changes) {
+            let checkpointed = false;
+            try {
+              fileSafety.restore([snapshotsByPath.get(change.path)], [change]);
+              if (!store.markFileChangeRestored(runId, change.path)) {
+                throw new Error(
+                  `Restore checkpoint was not recorded: ${change.path}`,
+                );
+              }
+              checkpointed = true;
+              if (
+                run.permission === 'generate-candidate'
+                && change.kind === 'created'
+              ) {
+                store.removeArtifact(run.requirementId, change.path);
+              }
+              restored.push(change.path);
+            } catch (error) {
+              if (checkpointed) restored.push(change.path);
+              const restoredSet = new Set(restored);
+              return sendJson(response, error.statusCode || 500, {
+                error: `Restored ${restored.length} of ${changes.length} file changes`
+                  + ` before failure: ${error.message}`,
+                restoredCount: restored.length,
+                total: changes.length,
+                restored,
+                remaining: changes
+                  .map(item => item.path)
+                  .filter(filePath => !restoredSet.has(filePath)),
+              });
             }
           }
-          store.markChangesRestored(runId);
           return sendJson(response, 200, {
-            restored: changes.map(item => item.path),
+            restored,
           });
         }
         return sendJson(response, 404, { error: 'API route not found' });

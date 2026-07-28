@@ -107,13 +107,14 @@ async function requestJson(
 }
 
 async function startCandidate(context, target = 'prd/candidate.md') {
+  const targets = Array.isArray(target) ? target : [target];
   const result = await requestJson(context, '/api/runs/write', {
     method: 'POST',
     body: {
       permission: 'generate-candidate',
       prompt: 'Generate a candidate document',
       requirementId: context.requirementId,
-      targets: [target],
+      targets,
     },
   });
   const turnCall = context.codex.calls
@@ -123,7 +124,8 @@ async function startCandidate(context, target = 'prd/candidate.md') {
     response: result.response,
     run: result.body,
     stagingRoot: turnCall?.params.cwd,
-    target,
+    target: targets[0],
+    targets,
     threadId: turnCall?.params.threadId,
     turnId: `turn-${context.codex.turnSequence}`,
   };
@@ -175,9 +177,14 @@ function requestDangerousCommandApproval(context, runInfo, requestId = 'approval
 }
 
 function completeCandidate(context, runInfo, content = 'candidate\n') {
-  const target = path.join(runInfo.stagingRoot, ...runInfo.target.split('/'));
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, content, 'utf8');
+  for (const relativePath of runInfo.targets) {
+    const target = path.join(runInfo.stagingRoot, ...relativePath.split('/'));
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    const fileContent = typeof content === 'object'
+      ? content[relativePath]
+      : content;
+    fs.writeFileSync(target, fileContent, 'utf8');
+  }
   context.codex.emit('notification', {
     method: 'turn/completed',
     params: {
@@ -393,6 +400,112 @@ test('restore refuses a later user edit and preserves the file and artifact', as
   assert.equal(detail.body.fileChanges[0].restoredAt, null);
   const bootstrap = await requestJson(context, '/api/bootstrap');
   assert(bootstrap.body.artifacts.some(artifact => artifact.path === started.target));
+});
+
+test('multi-file restore preflight leaves every file untouched when the second conflicts', async t => {
+  const context = await setupServer(t);
+  const targets = ['prd/preflight-a.md', 'prd/preflight-b.md'];
+  const started = await startCandidate(context, targets);
+  completeCandidate(context, started, {
+    [targets[0]]: 'first generated\n',
+    [targets[1]]: 'second generated\n',
+  });
+  const first = path.join(context.allowedRoot, 'prd', 'preflight-a.md');
+  const second = path.join(context.allowedRoot, 'prd', 'preflight-b.md');
+  fs.writeFileSync(second, 'second user edit\n', 'utf8');
+
+  const restore = await requestJson(
+    context,
+    `/api/runs/${encodeURIComponent(started.run.id)}/restore`,
+    { method: 'POST' },
+  );
+  assert.equal(restore.response.status, 409);
+  assert.equal(fs.readFileSync(first, 'utf8'), 'first generated\n');
+  assert.equal(fs.readFileSync(second, 'utf8'), 'second user edit\n');
+  const detail = await requestJson(
+    context,
+    `/api/runs/${encodeURIComponent(started.run.id)}`,
+  );
+  assert.equal(detail.body.fileChanges.length, 2);
+  assert(detail.body.fileChanges.every(change => change.restoredAt === null));
+});
+
+test('multi-file restore checkpoints I/O success and retry skips completed files', async t => {
+  const context = await setupServer(t);
+  const targets = ['prd/partial-a.md', 'prd/partial-b.md'];
+  const started = await startCandidate(context, targets);
+  completeCandidate(context, started, {
+    [targets[0]]: 'first generated\n',
+    [targets[1]]: 'second generated\n',
+  });
+  const first = path.join(context.allowedRoot, 'prd', 'partial-a.md');
+  const second = path.join(context.allowedRoot, 'prd', 'partial-b.md');
+  const originalUnlink = fs.unlinkSync;
+  fs.unlinkSync = function unlinkWithInjectedFailure(filename, ...args) {
+    if (path.resolve(filename) === path.resolve(second)) {
+      throw Object.assign(new Error('simulated second-file unlink failure'), {
+        code: 'EIO',
+      });
+    }
+    return originalUnlink.call(this, filename, ...args);
+  };
+  let partial;
+  try {
+    partial = await requestJson(
+      context,
+      `/api/runs/${encodeURIComponent(started.run.id)}/restore`,
+      { method: 'POST' },
+    );
+  } finally {
+    fs.unlinkSync = originalUnlink;
+  }
+
+  assert.equal(partial.response.status, 500);
+  assert.equal(partial.body.restoredCount, 1);
+  assert.equal(partial.body.total, 2);
+  assert.deepEqual(partial.body.restored, [targets[0]]);
+  assert.deepEqual(partial.body.remaining, [targets[1]]);
+  assert.match(partial.body.error, /restored 1 of 2.*simulated second-file/i);
+  assert.equal(fs.existsSync(first), false);
+  assert.equal(fs.readFileSync(second, 'utf8'), 'second generated\n');
+
+  let detail = await requestJson(
+    context,
+    `/api/runs/${encodeURIComponent(started.run.id)}`,
+  );
+  const firstChange = detail.body.fileChanges.find(change => change.path === targets[0]);
+  const secondChange = detail.body.fileChanges.find(change => change.path === targets[1]);
+  assert.match(firstChange.restoredAt, /^\d{4}-\d{2}-\d{2}T/);
+  assert.equal(secondChange.restoredAt, null);
+  let bootstrap = await requestJson(context, '/api/bootstrap');
+  assert.equal(
+    bootstrap.body.artifacts.some(artifact => artifact.path === targets[0]),
+    false,
+  );
+  assert(
+    bootstrap.body.artifacts.some(artifact => artifact.path === targets[1]),
+  );
+
+  const retried = await requestJson(
+    context,
+    `/api/runs/${encodeURIComponent(started.run.id)}/restore`,
+    { method: 'POST' },
+  );
+  assert.equal(retried.response.status, 200);
+  assert.deepEqual(retried.body, { restored: [targets[1]] });
+  assert.equal(fs.existsSync(second), false);
+  detail = await requestJson(
+    context,
+    `/api/runs/${encodeURIComponent(started.run.id)}`,
+  );
+  assert(detail.body.fileChanges.every(
+    change => typeof change.restoredAt === 'string',
+  ));
+  bootstrap = await requestJson(context, '/api/bootstrap');
+  assert.equal(
+    bootstrap.body.artifacts.some(artifact => targets.includes(artifact.path)),
+    false,
+  );
 });
 
 test('cancel, retry, restore, and approval routes enforce state gates and unknown ids', async t => {

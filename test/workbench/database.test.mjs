@@ -283,6 +283,60 @@ test('database persists and upserts file safety records across repeatable migrat
   migratedAgain.close();
 });
 
+test('single file restoration state uses CAS and survives reopening', () => {
+  const dbPath = temporaryDatabasePath();
+  const store = openDatabase(dbPath);
+  createSafetyRun(store, 'RUN-PARTIAL-RESTORE');
+  for (const filePath of ['prd/a.md', 'prd/b.md']) {
+    store.saveFileChange('RUN-PARTIAL-RESTORE', {
+      path: filePath,
+      absolutePath: `C:/workspace/${filePath}`,
+      kind: 'created',
+      beforeHash: null,
+      afterHash: `after-${filePath}`,
+      diff: `+${filePath}`,
+    });
+  }
+
+  assert.equal(
+    store.markFileChangeRestored('RUN-PARTIAL-RESTORE', 'prd/a.md'),
+    true,
+  );
+  const firstTimestamp = store
+    .listFileChanges('RUN-PARTIAL-RESTORE')
+    .find(change => change.path === 'prd/a.md')
+    .restoredAt;
+  assert.match(firstTimestamp, /^\d{4}-\d{2}-\d{2}T/);
+  assert.equal(
+    store.markFileChangeRestored('RUN-PARTIAL-RESTORE', 'prd/a.md'),
+    false,
+  );
+  assert.equal(
+    store.markFileChangeRestored('RUN-PARTIAL-RESTORE', 'prd/missing.md'),
+    false,
+  );
+  store.close();
+
+  const reopened = openDatabase(dbPath);
+  const reopenedChanges = reopened.listFileChanges('RUN-PARTIAL-RESTORE');
+  assert.equal(
+    reopenedChanges.find(change => change.path === 'prd/a.md').restoredAt,
+    firstTimestamp,
+  );
+  assert.equal(
+    reopenedChanges.find(change => change.path === 'prd/b.md').restoredAt,
+    null,
+  );
+  assert.equal(
+    reopened.markFileChangeRestored('RUN-PARTIAL-RESTORE', 'prd/b.md'),
+    true,
+  );
+  assert(reopened.listFileChanges('RUN-PARTIAL-RESTORE').every(
+    change => typeof change.restoredAt === 'string',
+  ));
+  reopened.close();
+});
+
 test('file safety status constraints reject invalid transitions and values', () => {
   const dbPath = temporaryDatabasePath();
   const store = openDatabase(dbPath);
