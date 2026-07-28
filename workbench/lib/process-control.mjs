@@ -1,5 +1,8 @@
 import { execFile } from 'node:child_process';
 
+const PROCESS_NONCE_NAME = 'PERSONAL_CODEX_WORKBENCH_NONCE';
+const PROCESS_NONCE_PATTERN = /^[a-f0-9]{64}$/;
+
 function execFileOutput(command, args) {
   return new Promise((resolve, reject) => {
     execFile(command, args, { windowsHide: true }, (error, stdout = '') => {
@@ -22,7 +25,13 @@ function isCodexExecutable(value) {
 }
 
 function hasCodexInvocation(value) {
-  const text = String(value || '');
+  const text = String(value || '').replace(
+    new RegExp(
+      `^\\s*["']?set\\s+"${PROCESS_NONCE_NAME}=[a-f0-9]{64}"\\s*&&\\s*`,
+      'i',
+    ),
+    '',
+  );
   const codexExecutable = [
     '"[^"\\r\\n]*[\\\\/]codex(?:-[a-z0-9_-]+)?(?:\\.cmd|\\.exe)?"',
     "'[^'\\r\\n]*[\\\\/]codex(?:-[a-z0-9_-]+)?(?:\\.cmd|\\.exe)?'",
@@ -59,6 +68,28 @@ export function isCodexAppServerProcess({
       .test(String(commandLine));
   }
   return hasCodexInvocation(wrappedCommand);
+}
+
+export function isOwnedCodexAppServerProcess({
+  commandLine = '',
+  executable = '',
+} = {}, processNonce) {
+  if (!PROCESS_NONCE_PATTERN.test(String(processNonce || ''))) return false;
+  const wrapper = executableName(executable).toLowerCase();
+  if (!['cmd', 'cmd.exe'].includes(wrapper)) return false;
+  const wrappedCommand = String(commandLine)
+    .match(/(?:^|\s)\/c\s+([\s\S]+)$/i)?.[1] || '';
+  const escapedNonce = String(processNonce).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const codexExecutable = [
+    '"[^"\\r\\n]*[\\\\/]codex(?:-[a-z0-9_-]+)?(?:\\.cmd|\\.exe)?"',
+    "'[^'\\r\\n]*[\\\\/]codex(?:-[a-z0-9_-]+)?(?:\\.cmd|\\.exe)?'",
+    '(?:[^\\s"\'&]*[\\\\/])?codex(?:-[a-z0-9_-]+)?(?:\\.cmd|\\.exe)?',
+  ].join('|');
+  return new RegExp(
+    `^\\s*["']?set\\s+"${PROCESS_NONCE_NAME}=${escapedNonce}"\\s*&&\\s*`
+      + `(?:${codexExecutable})\\s+app-server\\s*(?:["'])?\\s*$`,
+    'i',
+  ).test(wrappedCommand);
 }
 
 export async function inspectProcessIdentity(pid, platform = process.platform) {
@@ -132,19 +163,38 @@ export function terminateProcessTree(pid, platform = process.platform) {
 }
 
 export async function recoverPersistedProcesses(
-  pids,
+  processes,
   {
     inspector = inspectProcessIdentity,
     platform = process.platform,
     terminator = terminateProcessTree,
   } = {},
 ) {
-  const uniquePids = [...new Set(
-    [...(pids || [])].filter(pid => Number.isInteger(pid) && pid > 0),
-  )];
+  const uniqueProcesses = new Map();
+  for (const value of processes || []) {
+    const pid = Number.isInteger(value) ? value : value?.pid;
+    if (!Number.isInteger(pid) || pid <= 0) continue;
+    const processNonce = typeof value?.processNonce === 'string'
+      ? value.processNonce
+      : null;
+    const key = `${pid}:${processNonce || ''}`;
+    if (!uniqueProcesses.has(key)) {
+      uniqueProcesses.set(key, { pid, processNonce });
+    }
+  }
   const results = [];
 
-  for (const pid of uniquePids) {
+  for (const { pid, processNonce } of uniqueProcesses.values()) {
+    if (!PROCESS_NONCE_PATTERN.test(String(processNonce || ''))) {
+      results.push({
+        detail: 'Persisted process has no verifiable ownership nonce; automatic termination skipped',
+        pid,
+        processNonce: null,
+        status: 'unowned',
+      });
+      continue;
+    }
+
     let processInfo;
     try {
       processInfo = await inspector(pid, platform);
@@ -152,6 +202,7 @@ export async function recoverPersistedProcesses(
       results.push({
         detail: `Unable to inspect persisted PID ${pid}: ${error.message}`,
         pid,
+        processNonce,
         status: 'error',
       });
       continue;
@@ -161,6 +212,7 @@ export async function recoverPersistedProcesses(
       results.push({
         detail: 'Persisted process no longer exists',
         pid,
+        processNonce,
         status: 'missing',
       });
       continue;
@@ -169,16 +221,19 @@ export async function recoverPersistedProcesses(
       results.push({
         detail: String(processInfo.detail || `Unable to inspect persisted PID ${pid}`),
         pid,
+        processNonce,
         status: 'error',
       });
       continue;
     }
-    const matched = processInfo.status === 'matched'
-      || isCodexAppServerProcess(processInfo);
+    const matched = isOwnedCodexAppServerProcess(processInfo, processNonce);
     if (!matched) {
       results.push({
-        detail: 'Persisted PID belongs to a different process',
+        detail: isCodexAppServerProcess(processInfo)
+          ? 'Persisted PID is Codex app-server but its ownership nonce does not match'
+          : 'Persisted PID belongs to a different process',
         pid,
+        processNonce,
         status: 'reused',
       });
       continue;
@@ -189,12 +244,14 @@ export async function recoverPersistedProcesses(
       results.push({
         detail: 'Terminated matching Codex app-server process',
         pid,
+        processNonce,
         status: 'matched',
       });
     } catch (error) {
       results.push({
         detail: `Unable to terminate matching PID ${pid}: ${error.message}`,
         pid,
+        processNonce,
         status: 'error',
       });
     }

@@ -28,9 +28,11 @@ test('client launches the fixed app-server command, initializes in order, and ro
   const child = fakeProcess();
   const launches = [];
   const writes = [];
+  const processNonce = 'a'.repeat(64);
   child.stdin.on('data', chunk => writes.push(JSON.parse(chunk.toString('utf8'))));
   const client = new CodexAppServerClient({
     cwd: 'C:/workspace',
+    nonceFactory: () => processNonce,
     spawnProcess: (command, args, options) => {
       launches.push({ command, args, options });
       return child;
@@ -49,11 +51,18 @@ test('client launches the fixed app-server command, initializes in order, and ro
 
   assert.deepEqual(
     launches[0].command,
-    process.platform === 'win32' ? 'codex.cmd app-server' : 'codex.cmd',
+    process.platform === 'win32'
+      ? `set "PERSONAL_CODEX_WORKBENCH_NONCE=${processNonce}" && codex.cmd app-server`
+      : 'codex.cmd',
   );
   assert.deepEqual(launches[0].args, process.platform === 'win32' ? [] : ['app-server']);
   assert.equal(launches[0].options.cwd, 'C:/workspace');
   assert.equal(launches[0].options.shell, process.platform === 'win32');
+  assert.equal(
+    launches[0].options.env.PERSONAL_CODEX_WORKBENCH_NONCE,
+    processNonce,
+  );
+  assert.equal(client.nonce(), processNonce);
   assert.deepEqual(writes[1], { method: 'initialized' });
 
   const events = [];
@@ -65,6 +74,21 @@ test('client launches the fixed app-server command, initializes in order, and ro
   await nextTurn();
   assert.equal(events[0].method, 'item/agentMessage/delta');
   await client.stop();
+});
+
+test('client rejects an invalid internally generated ownership nonce before launch', async () => {
+  let launchCount = 0;
+  const client = new CodexAppServerClient({
+    nonceFactory: () => 'browser-controlled-or-malformed',
+    spawnProcess: () => {
+      launchCount += 1;
+      return fakeProcess();
+    },
+  });
+
+  await assert.rejects(client.start(), /64 lowercase hexadecimal/);
+  assert.equal(launchCount, 0);
+  assert.equal(client.diagnostics().running, false);
 });
 
 test('client correlates JSONL responses by id and exposes stderr diagnostics', async () => {

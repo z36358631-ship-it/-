@@ -737,6 +737,7 @@ function seedProcessRecoveryDatabase(root, runs) {
       prompt: `Recover PID ${run.processPid}`,
       permission: 'read-only',
       processPid: run.processPid,
+      processNonce: run.processNonce,
       status: run.status,
       workflowType: null,
     });
@@ -747,32 +748,76 @@ function seedProcessRecoveryDatabase(root, runs) {
 test('restart deduplicates persisted PIDs and records matched and safe-skip recovery', async t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'file-api-process-recovery-'));
   fs.mkdirSync(path.join(root, 'prd'), { recursive: true });
+  const matchedNonce = 'a'.repeat(64);
+  const missingNonce = 'b'.repeat(64);
+  const reusedNonce = 'c'.repeat(64);
   seedProcessRecoveryDatabase(root, [
-    { id: 'RUN-MATCHED-A', processPid: 5101, status: 'running' },
-    { id: 'RUN-MATCHED-B', processPid: 5101, status: 'interrupted' },
-    { id: 'RUN-MISSING', processPid: 5102, status: 'queued' },
-    { id: 'RUN-REUSED', processPid: 5103, status: 'interrupted' },
+    {
+      id: 'RUN-MATCHED-A',
+      processNonce: matchedNonce,
+      processPid: 5101,
+      status: 'running',
+    },
+    {
+      id: 'RUN-HISTORICAL',
+      processNonce: 'd'.repeat(64),
+      processPid: 5999,
+      status: 'interrupted',
+    },
+    {
+      id: 'RUN-MISSING',
+      processNonce: missingNonce,
+      processPid: 5102,
+      status: 'queued',
+    },
+    {
+      id: 'RUN-REUSED',
+      processNonce: reusedNonce,
+      processPid: 5103,
+      status: 'waiting-approval',
+    },
   ]);
-  let receivedPids = [];
+  let receivedProcesses = [];
   const context = await setupServer(t, {
-    processRecovery: async pids => {
-      receivedPids = pids;
+    processRecovery: async processes => {
+      receivedProcesses = processes;
       return {
         status: 'ok',
         results: [
-          { detail: 'Terminated matching Codex app-server process', pid: 5101, status: 'matched' },
-          { detail: 'Persisted process no longer exists', pid: 5102, status: 'missing' },
-          { detail: 'PID belongs to a different process', pid: 5103, status: 'reused' },
+          {
+            detail: 'Terminated matching Codex app-server process',
+            pid: 5101,
+            processNonce: matchedNonce,
+            status: 'matched',
+          },
+          {
+            detail: 'Persisted process no longer exists',
+            pid: 5102,
+            processNonce: missingNonce,
+            status: 'missing',
+          },
+          {
+            detail: 'PID belongs to a different process',
+            pid: 5103,
+            processNonce: reusedNonce,
+            status: 'reused',
+          },
         ],
       };
     },
     root,
   });
 
-  assert.deepEqual([...receivedPids].sort(), [5101, 5102, 5103]);
+  assert.deepEqual(
+    [...receivedProcesses].sort((left, right) => left.pid - right.pid),
+    [
+      { pid: 5101, processNonce: matchedNonce },
+      { pid: 5102, processNonce: missingNonce },
+      { pid: 5103, processNonce: reusedNonce },
+    ],
+  );
   for (const [runId, expectedStatus] of [
     ['RUN-MATCHED-A', 'passed'],
-    ['RUN-MATCHED-B', 'passed'],
     ['RUN-MISSING', 'skipped'],
     ['RUN-REUSED', 'skipped'],
   ]) {
@@ -782,13 +827,23 @@ test('restart deduplicates persisted PIDs and records matched and safe-skip reco
     );
     assert.equal(validation?.status, expectedStatus, runId);
   }
+  const historical = await requestJson(context, '/api/runs/RUN-HISTORICAL');
+  assert.equal(
+    historical.body.validations.some(item => item.name === 'Broker process recovery'),
+    false,
+  );
 });
 
 test('process inspection errors keep diagnostics available but block Codex and Run APIs', async t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'file-api-recovery-error-'));
   fs.mkdirSync(path.join(root, 'prd'), { recursive: true });
   seedProcessRecoveryDatabase(root, [
-    { id: 'RUN-INSPECTION-ERROR', processPid: 5201, status: 'running' },
+    {
+      id: 'RUN-INSPECTION-ERROR',
+      processNonce: 'e'.repeat(64),
+      processPid: 5201,
+      status: 'running',
+    },
   ]);
   const codex = new FakeCodex();
   const context = await setupServer(t, {
@@ -798,6 +853,7 @@ test('process inspection errors keep diagnostics available but block Codex and R
       results: [{
         detail: 'Unable to inspect PID 5201: access denied',
         pid: 5201,
+        processNonce: 'e'.repeat(64),
         status: 'error',
       }],
     }),

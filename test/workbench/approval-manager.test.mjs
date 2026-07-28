@@ -10,7 +10,7 @@ import { openDatabase } from '../../workbench/lib/database.mjs';
 
 const permissionsResponseSchema = JSON.parse(fs.readFileSync(
   new URL(
-    '../../.workbench-data/app-server-schema/PermissionsRequestApprovalResponse.json',
+    './fixtures/PermissionsRequestApprovalResponse.json',
     import.meta.url,
   ),
   'utf8',

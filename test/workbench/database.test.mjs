@@ -38,7 +38,8 @@ test('database persists requirements, artifacts, runs and ordered events', () =>
     files: ['prd/android-ad.md'],
     input: { source: '需求详情' },
   });
-  store.bindProtocolIds('RUN-001', 'thread-001', 'turn-001', 4202);
+  const processNonce = 'c'.repeat(64);
+  store.bindProtocolIds('RUN-001', 'thread-001', 'turn-001', 4202, processNonce);
   store.appendRunEvent('RUN-001', 'agent_message_delta', { text: '发现一个问题' });
   store.appendRunEvent('RUN-001', 'turn_completed', { usage: 12 });
   store.finishRun('RUN-001', 'completed', '发现一个问题');
@@ -89,6 +90,7 @@ test('database persists requirements, artifacts, runs and ordered events', () =>
   assert.equal(persistedRun.result, '发现一个问题');
   assert.equal(persistedRun.cwd, 'C:\\workspace\\android-ad');
   assert.equal(persistedRun.processPid, 4202);
+  assert.equal(persistedRun.processNonce, processNonce);
   assert.equal(persistedRun.threadId, 'thread-001');
   assert.equal(persistedRun.turnId, 'turn-001');
   assert.equal(reopened.listRuns().length, 3);
@@ -97,7 +99,7 @@ test('database persists requirements, artifacts, runs and ordered events', () =>
       .map(run => run.permission),
     ['read-only', 'generate-candidate', 'modify-existing'],
   );
-  assert.equal(reopened.getRun('RUN-CANDIDATE').status, 'waiting-approval');
+  assert.equal(reopened.getRun('RUN-CANDIDATE').status, 'interrupted');
   assert.equal(reopened.listRequirements()[0].externalWait, '等待运营反馈');
   assert.equal(reopened.listArtifacts()[0].requirementId, 'REQ-001');
   assert.deepEqual(reopened.getRunContext('RUN-001').input, { source: '需求详情' });
@@ -106,7 +108,7 @@ test('database persists requirements, artifacts, runs and ordered events', () =>
   reopened.close();
 });
 
-test('startup marks stale queued and running rows as interrupted', () => {
+test('startup captures only newly stale active rows once and marks every active state interrupted', () => {
   const dbPath = temporaryDatabasePath();
   const first = openDatabase(dbPath);
   first.createRun({
@@ -123,16 +125,42 @@ test('startup marks stale queued and running rows as interrupted', () => {
     permission: 'read-only',
     status: 'running',
   });
+  first.createRun({
+    id: 'RUN-WAITING',
+    requirementId: null,
+    prompt: '等待审批',
+    permission: 'modify-existing',
+    status: 'waiting-approval',
+  });
+  first.createRun({
+    id: 'RUN-HISTORICAL',
+    requirementId: null,
+    prompt: '历史中断',
+    processPid: 9999,
+    processNonce: 'd'.repeat(64),
+    permission: 'read-only',
+    status: 'interrupted',
+  });
   first.close();
 
   const second = openDatabase(dbPath);
-  for (const id of ['RUN-QUEUED', 'RUN-STALE']) {
+  assert.deepEqual(
+    second.listStartupInterruptedRuns().map(run => run.id).sort(),
+    ['RUN-QUEUED', 'RUN-STALE', 'RUN-WAITING'],
+  );
+  assert.deepEqual(second.listStartupInterruptedRuns(), []);
+  for (const id of ['RUN-QUEUED', 'RUN-STALE', 'RUN-WAITING']) {
     const run = second.getRun(id);
     assert.equal(run.status, 'interrupted');
     assert.equal(run.error, 'Broker restarted before the run completed');
     assert.match(run.finishedAt, /^\d{4}-\d{2}-\d{2}T/);
   }
+  assert.equal(second.getRun('RUN-HISTORICAL').status, 'interrupted');
   second.close();
+
+  const third = openDatabase(dbPath);
+  assert.deepEqual(third.listStartupInterruptedRuns(), []);
+  third.close();
 });
 
 function createSafetyRun(store, runId = 'RUN-SAFETY') {
@@ -259,7 +287,7 @@ test('database persists and upserts file safety records across repeatable migrat
   store.close();
 
   const reopened = openDatabase(dbPath);
-  assert.equal(reopened.getRun('RUN-SAFETY').status, 'waiting-approval');
+  assert.equal(reopened.getRun('RUN-SAFETY').status, 'interrupted');
   assert.equal(reopened.getRequirementThread('REQ-SAFETY').threadId, 'thread-safety');
   assert.equal(reopened.listFileSnapshots('RUN-SAFETY')[0].contentBase64, 'ZGVm');
   assert.equal(reopened.listFileChanges('RUN-SAFETY')[0].afterHash, 'after-v2');

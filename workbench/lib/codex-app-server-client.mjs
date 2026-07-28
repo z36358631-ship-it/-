@@ -1,9 +1,12 @@
 import { spawn } from 'node:child_process';
+import crypto from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import readline from 'node:readline';
 
 const APP_SERVER_COMMAND = 'codex.cmd';
 const APP_SERVER_ARGS = Object.freeze(['app-server']);
+const PROCESS_NONCE_NAME = 'PERSONAL_CODEX_WORKBENCH_NONCE';
+const PROCESS_NONCE_PATTERN = /^[a-f0-9]{64}$/;
 const MAX_DIAGNOSTIC_LENGTH = 16_384;
 const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
 
@@ -29,6 +32,7 @@ export class CodexAppServerClient extends EventEmitter {
     cwd = process.cwd(),
     spawnProcess = (command, args, options) => spawn(command, args, options),
     requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
+    nonceFactory = () => crypto.randomBytes(32).toString('hex'),
   } = {}) {
     super();
     if (!Number.isInteger(requestTimeoutMs) || requestTimeoutMs < 1) {
@@ -37,6 +41,8 @@ export class CodexAppServerClient extends EventEmitter {
     this.cwd = cwd;
     this.spawnProcess = spawnProcess;
     this.requestTimeoutMs = requestTimeoutMs;
+    this.nonceFactory = nonceFactory;
+    this.processNonce = null;
     this.child = null;
     this.lines = null;
     this.nextId = 1;
@@ -49,12 +55,18 @@ export class CodexAppServerClient extends EventEmitter {
     if (this.child) return;
     this.stderrText = '';
     this.launchErrorText = '';
+    const processNonce = this.nonceFactory();
+    if (!PROCESS_NONCE_PATTERN.test(String(processNonce || ''))) {
+      throw new Error('Codex process nonce must be 64 lowercase hexadecimal characters');
+    }
+    this.processNonce = processNonce;
 
     let child;
     try {
       const useWindowsShell = process.platform === 'win32';
       const launchCommand = useWindowsShell
-        ? `${APP_SERVER_COMMAND} ${APP_SERVER_ARGS.join(' ')}`
+        ? `set "${PROCESS_NONCE_NAME}=${processNonce}" && `
+          + `${APP_SERVER_COMMAND} ${APP_SERVER_ARGS.join(' ')}`
         : APP_SERVER_COMMAND;
       const launchArgs = useWindowsShell ? [] : [...APP_SERVER_ARGS];
       child = this.spawnProcess(launchCommand, launchArgs, {
@@ -62,7 +74,10 @@ export class CodexAppServerClient extends EventEmitter {
         stdio: ['pipe', 'pipe', 'pipe'],
         windowsHide: true,
         shell: useWindowsShell,
-        env: process.env,
+        env: {
+          ...process.env,
+          [PROCESS_NONCE_NAME]: processNonce,
+        },
       });
     } catch (error) {
       this.#recordLaunchError(error);
@@ -151,6 +166,10 @@ export class CodexAppServerClient extends EventEmitter {
     const error = { code, message };
     if (data !== undefined) error.data = data;
     this.#write({ id, error });
+  }
+
+  nonce() {
+    return this.processNonce;
   }
 
   diagnostics() {

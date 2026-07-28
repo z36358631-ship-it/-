@@ -52,6 +52,13 @@ function processPid(codex) {
   return Number.isInteger(value) && value > 0 ? value : null;
 }
 
+function processNonce(codex) {
+  let value = null;
+  if (typeof codex.nonce === 'function') value = codex.nonce();
+  else if (typeof codex.processNonce === 'string') value = codex.processNonce;
+  return /^[a-f0-9]{64}$/.test(String(value || '')) ? value : null;
+}
+
 function authorizeFiles(allowedRoot, files) {
   if (!Array.isArray(files)) {
     throw requestError('files must be an array', 400);
@@ -233,6 +240,7 @@ export class RunManager {
       deltaAgentItems: new Set(),
       finished: false,
       finalized: false,
+      processNonce: null,
       processPid: null,
       runId,
       text: '',
@@ -251,7 +259,7 @@ export class RunManager {
           };
       const { rebuilt, threadId } = threadState;
       active.threadId = threadId;
-      this.store.bindProtocolIds(runId, threadId, null, pid);
+      this.store.bindProtocolIds(runId, threadId, null, pid, active.processNonce);
       if (rebuilt) this.#recordThreadRebuilt(runId);
       this.activeByThread.set(threadId, active);
 
@@ -270,7 +278,7 @@ export class RunManager {
         throw new Error('Codex turn/start response did not match the notification turn id');
       }
       active.turnId = turnId;
-      this.store.bindProtocolIds(runId, threadId, turnId, pid);
+      this.store.bindProtocolIds(runId, threadId, turnId, pid, active.processNonce);
       if (!active.finished) this.activeByTurn.set(turnId, active);
       return this.store.getRun(runId);
     } catch (error) {
@@ -283,6 +291,7 @@ export class RunManager {
           active.threadId,
           active.turnId,
           active.processPid,
+          active.processNonce,
         );
         return this.store.getRun(runId);
       }
@@ -344,6 +353,7 @@ export class RunManager {
       deltaAgentItems: new Set(),
       finished: false,
       finalized: false,
+      processNonce: null,
       processPid: null,
       requirementId,
       runId,
@@ -360,7 +370,7 @@ export class RunManager {
         active,
       );
       active.threadId = threadId;
-      this.store.bindProtocolIds(runId, threadId, null, pid);
+      this.store.bindProtocolIds(runId, threadId, null, pid, active.processNonce);
       if (rebuilt) this.#recordThreadRebuilt(runId);
       this.activeByThread.set(threadId, active);
 
@@ -380,7 +390,7 @@ export class RunManager {
         throw new Error('Codex turn/start response did not match the notification turn id');
       }
       active.turnId = turnId;
-      this.store.bindProtocolIds(runId, threadId, turnId, pid);
+      this.store.bindProtocolIds(runId, threadId, turnId, pid, active.processNonce);
       if (!active.finished) this.activeByTurn.set(turnId, active);
       return this.store.getRun(runId);
     } catch (error) {
@@ -393,6 +403,7 @@ export class RunManager {
           active.threadId,
           active.turnId,
           active.processPid,
+          active.processNonce,
         );
         return this.store.getRun(runId);
       }
@@ -483,6 +494,7 @@ export class RunManager {
       finalized: false,
       finished: false,
       permission: input.permission,
+      processNonce: null,
       processPid: null,
       requirementId: input.requirementId,
       runId,
@@ -503,7 +515,7 @@ export class RunManager {
         active,
       );
       active.threadId = threadId;
-      this.store.bindProtocolIds(runId, threadId, null, pid);
+      this.store.bindProtocolIds(runId, threadId, null, pid, active.processNonce);
       if (rebuilt) this.#recordThreadRebuilt(runId);
       this.activeByThread.set(threadId, active);
 
@@ -536,7 +548,7 @@ export class RunManager {
         );
       }
       active.turnId = turnId;
-      this.store.bindProtocolIds(runId, threadId, turnId, pid);
+      this.store.bindProtocolIds(runId, threadId, turnId, pid, active.processNonce);
       if (!active.finished) {
         this.activeByTurn.set(turnId, active);
         this.#registerApproval(active);
@@ -552,6 +564,7 @@ export class RunManager {
           active.threadId,
           active.turnId,
           active.processPid,
+          active.processNonce,
         );
         return this.store.getRun(runId);
       }
@@ -640,20 +653,26 @@ export class RunManager {
       starting = this.codex.start();
     } catch (error) {
       const pid = processPid(this.codex);
+      const nonce = processNonce(this.codex);
       active.processPid = pid;
-      this.store.bindProtocolIds(active.runId, null, null, pid);
+      active.processNonce = nonce;
+      this.store.bindProtocolIds(active.runId, null, null, pid, nonce);
       throw error;
     }
 
     let pid = processPid(this.codex);
+    let nonce = processNonce(this.codex);
     active.processPid = pid;
-    this.store.bindProtocolIds(active.runId, null, null, pid);
+    active.processNonce = nonce;
+    this.store.bindProtocolIds(active.runId, null, null, pid, nonce);
     await this.#awaitStartup(active, starting);
 
     if (!pid) {
       pid = processPid(this.codex);
+      nonce = processNonce(this.codex);
       active.processPid = pid;
-      this.store.bindProtocolIds(active.runId, null, null, pid);
+      active.processNonce = nonce;
+      this.store.bindProtocolIds(active.runId, null, null, pid, nonce);
     }
     return pid;
   }

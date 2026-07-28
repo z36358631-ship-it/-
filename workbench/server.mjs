@@ -25,7 +25,6 @@ const contentTypes = {
   '.js': 'text/javascript; charset=utf-8',
 };
 const activeRunStatuses = new Set(['queued', 'running', 'waiting-approval']);
-const staleRunStatuses = new Set(['queued', 'running', 'waiting-approval']);
 const approvalDecisions = new Set(['approved', 'rejected']);
 const requirementStages = new Set([
   '待分析',
@@ -247,21 +246,27 @@ export async function createWorkbenchServer({
     allowedRoot: config.allowedRoot,
   });
   const fileSafety = new FileSafety({ allowedRoot: config.allowedRoot });
-  const restartRuns = store.listRuns(1_000)
-    .filter(run => staleRunStatuses.has(run.status) || run.status === 'interrupted');
-  const persistedPids = [...new Set(
+  const restartRuns = store.listStartupInterruptedRuns();
+  const recoveryTargets = [...new Map(
     restartRuns
-      .map(run => run.processPid)
-      .filter(pid => Number.isInteger(pid) && pid > 0),
-  )];
+      .filter(run => Number.isInteger(run.processPid) && run.processPid > 0)
+      .map(run => {
+        const target = {
+          pid: run.processPid,
+          processNonce: run.processNonce || null,
+        };
+        return [`${target.pid}:${target.processNonce || ''}`, target];
+      }),
+  ).values()];
   let processRecoveryResult;
   try {
-    processRecoveryResult = await processRecovery(persistedPids);
+    processRecoveryResult = await processRecovery(recoveryTargets);
   } catch (error) {
     processRecoveryResult = {
-      results: persistedPids.map(pid => ({
-        detail: `Process recovery failed before PID ${pid} could be inspected: ${error.message}`,
-        pid,
+      results: recoveryTargets.map(target => ({
+        detail: `Process recovery failed before PID ${target.pid} could be inspected: ${error.message}`,
+        pid: target.pid,
+        processNonce: target.processNonce,
         status: 'error',
       })),
       status: 'error',
@@ -270,12 +275,14 @@ export async function createWorkbenchServer({
   const processRecoveryResults = Array.isArray(processRecoveryResult?.results)
     ? [...processRecoveryResult.results]
     : [];
-  const recoveredPids = new Set(processRecoveryResults.map(result => result.pid));
-  for (const pid of persistedPids) {
-    if (!recoveredPids.has(pid)) {
+  const recoveryKey = value => `${value.pid}:${value.processNonce || ''}`;
+  const recoveredProcesses = new Set(processRecoveryResults.map(recoveryKey));
+  for (const target of recoveryTargets) {
+    if (!recoveredProcesses.has(recoveryKey(target))) {
       processRecoveryResults.push({
-        detail: `Process recovery returned no result for persisted PID ${pid}`,
-        pid,
+        detail: `Process recovery returned no result for persisted PID ${target.pid}`,
+        pid: target.pid,
+        processNonce: target.processNonce,
         status: 'error',
       });
     }
@@ -289,11 +296,14 @@ export async function createWorkbenchServer({
     || recoveryDiagnostics.some(result => result.status === 'error')
     ? 'error'
     : 'ok';
-  const recoveryByPid = new Map(
-    recoveryDiagnostics.map(result => [result.pid, result]),
+  const recoveryByProcess = new Map(
+    processRecoveryResults.map(result => [recoveryKey(result), result]),
   );
   for (const run of restartRuns) {
-    const result = recoveryByPid.get(run.processPid);
+    const result = recoveryByProcess.get(recoveryKey({
+      pid: run.processPid,
+      processNonce: run.processNonce,
+    }));
     if (!result) continue;
     store.saveValidation(run.id, {
       detail: `PID ${result.pid}: ${result.detail}`,
@@ -304,15 +314,7 @@ export async function createWorkbenchServer({
     });
   }
 
-  for (const stale of restartRuns.filter(run => staleRunStatuses.has(run.status))) {
-    store.finishRun(
-      stale.id,
-      'interrupted',
-      stale.result || null,
-      'Broker restarted before the run completed',
-    );
-  }
-  for (const interrupted of store.listRuns(1_000).filter(run => run.status === 'interrupted')) {
+  for (const interrupted of restartRuns) {
     for (const approval of store.listPendingApprovals(interrupted.id)) {
       store.resolveApproval(approval.id, 'rejected');
     }

@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS runs (
   prompt TEXT NOT NULL,
   cwd TEXT NOT NULL,
   process_pid INTEGER,
+  process_nonce TEXT,
   permission TEXT NOT NULL CHECK(permission IN ('read-only','generate-candidate','modify-existing')),
   status TEXT NOT NULL CHECK(status IN ('queued','running','waiting-approval','completed','failed','cancelled','interrupted')),
   result TEXT,
@@ -194,6 +195,7 @@ function stringifyJson(value, label) {
 export function openDatabase(filename) {
   fs.mkdirSync(path.dirname(filename), { recursive: true });
   const db = new DatabaseSync(filename);
+  let startupInterruptedRuns = [];
   try {
     assertFileSafetyRunsSchema(db);
     db.exec(migration);
@@ -202,16 +204,33 @@ export function openDatabase(filename) {
     if (!runColumns.includes('workflow_type')) {
       db.exec(`ALTER TABLE runs ADD COLUMN workflow_type TEXT`);
     }
+    if (!runColumns.includes('process_nonce')) {
+      db.exec(`ALTER TABLE runs ADD COLUMN process_nonce TEXT`);
+    }
+    startupInterruptedRuns = db.prepare(
+      `SELECT id,requirement_id AS requirementId,thread_id AS threadId,turn_id AS turnId,
+              prompt,cwd,process_pid AS processPid,process_nonce AS processNonce,
+              permission,status,workflow_type AS workflowType,result,error,
+              started_at AS startedAt,finished_at AS finishedAt
+       FROM runs WHERE status IN ('queued','running','waiting-approval')
+       ORDER BY started_at DESC`,
+    ).all();
+    db.prepare(
+      `UPDATE runs SET status = 'interrupted', error = ?, finished_at = ?
+       WHERE status IN ('queued','running','waiting-approval')`,
+    ).run('Broker restarted before the run completed', now());
   } catch (error) {
     db.close();
     throw error;
   }
-  db.prepare(
-    `UPDATE runs SET status = 'interrupted', error = ?, finished_at = ?
-     WHERE status IN ('queued', 'running')`,
-  ).run('Broker restarted before the run completed', now());
+  let startupInterruptedRunsRead = false;
 
   return {
+    listStartupInterruptedRuns() {
+      if (startupInterruptedRunsRead) return [];
+      startupInterruptedRunsRead = true;
+      return startupInterruptedRuns.map(run => ({ ...run }));
+    },
     upsertRequirement(value) {
       db.prepare(
         `INSERT INTO requirements(id,title,stage,external_wait,updated_at)
@@ -285,14 +304,16 @@ export function openDatabase(filename) {
     createRun(value) {
       db.prepare(
         `INSERT INTO runs
-         (id,requirement_id,prompt,cwd,process_pid,permission,status,workflow_type,started_at)
-         VALUES(?,?,?,?,?,?,?,?,?)`,
+         (id,requirement_id,prompt,cwd,process_pid,process_nonce,
+          permission,status,workflow_type,started_at)
+         VALUES(?,?,?,?,?,?,?,?,?,?)`,
       ).run(
         value.id,
         value.requirementId,
         value.prompt,
         value.cwd || process.cwd(),
         value.processPid || null,
+        value.processNonce || null,
         value.permission,
         value.status,
         value.workflowType || null,
@@ -318,9 +339,17 @@ export function openDatabase(filename) {
           }
         : null;
     },
-    bindProtocolIds(runId, threadId, turnId = null, processPid = null) {
-      db.prepare(`UPDATE runs SET thread_id=?,turn_id=?,process_pid=? WHERE id=?`)
-        .run(threadId, turnId, processPid, runId);
+    bindProtocolIds(
+      runId,
+      threadId,
+      turnId = null,
+      processPid = null,
+      processNonce = null,
+    ) {
+      db.prepare(
+        `UPDATE runs SET thread_id=?,turn_id=?,process_pid=?,
+         process_nonce=COALESCE(?,process_nonce) WHERE id=?`,
+      ).run(threadId, turnId, processPid, processNonce, runId);
     },
     appendRunEvent(runId, type, payload) {
       db.prepare(
@@ -340,7 +369,8 @@ export function openDatabase(filename) {
     getRun(runId) {
       return db.prepare(
         `SELECT id,requirement_id AS requirementId,thread_id AS threadId,turn_id AS turnId,
-                prompt,cwd,process_pid AS processPid,permission,status,
+                prompt,cwd,process_pid AS processPid,process_nonce AS processNonce,
+                permission,status,
                 workflow_type AS workflowType,result,error,
                 started_at AS startedAt,finished_at AS finishedAt
          FROM runs WHERE id=?`,
@@ -349,7 +379,8 @@ export function openDatabase(filename) {
     listRuns(limit = 30) {
       return db.prepare(
         `SELECT id,requirement_id AS requirementId,thread_id AS threadId,turn_id AS turnId,
-                prompt,cwd,process_pid AS processPid,permission,status,
+                prompt,cwd,process_pid AS processPid,process_nonce AS processNonce,
+                permission,status,
                 workflow_type AS workflowType,result,error,
                 started_at AS startedAt,finished_at AS finishedAt
          FROM runs ORDER BY started_at DESC LIMIT ?`,

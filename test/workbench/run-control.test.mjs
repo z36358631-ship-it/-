@@ -21,6 +21,7 @@ const feedbackResult = {
 class FakeCodex extends EventEmitter {
   calls = [];
   interruptMode = 'resolve';
+  nonceValue = 'f'.repeat(64);
   pidValue = 8642;
   requestGates = new Map();
   running = false;
@@ -80,6 +81,10 @@ class FakeCodex extends EventEmitter {
 
   pid() {
     return this.pidValue;
+  }
+
+  nonce() {
+    return this.nonceValue;
   }
 }
 
@@ -281,6 +286,7 @@ test('write runs enforce exact inputs and use only the run staging root', async 
   );
 
   const run = await manager.startWriteRun(writeInput());
+  assert.equal(run.processNonce, codex.nonceValue);
   const turn = codex.calls.find(call => call.method === 'turn/start');
   const expectedStagingRoot = path.join(
     root,

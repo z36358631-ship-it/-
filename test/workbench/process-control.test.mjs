@@ -2,8 +2,11 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   isCodexAppServerProcess,
+  isOwnedCodexAppServerProcess,
   recoverPersistedProcesses,
 } from '../../workbench/lib/process-control.mjs';
+
+const PROCESS_NONCE = 'a'.repeat(64);
 
 test('recognizes direct and Windows shell Codex app-server processes', () => {
   assert.equal(isCodexAppServerProcess({
@@ -37,11 +40,33 @@ test('recognizes direct and Windows shell Codex app-server processes', () => {
   }), false);
 });
 
-test('recovery terminates only a strongly matched Codex app-server PID', async () => {
+test('ownership requires a Windows Codex wrapper with the exact internal nonce', () => {
+  const processInfo = {
+    executable: 'C:\\Windows\\System32\\cmd.exe',
+    commandLine: 'cmd.exe /d /s /c '
+      + `"set "PERSONAL_CODEX_WORKBENCH_NONCE=${PROCESS_NONCE}" && codex.cmd app-server"`,
+  };
+  assert.equal(isOwnedCodexAppServerProcess(processInfo, PROCESS_NONCE), true);
+  assert.equal(
+    isOwnedCodexAppServerProcess(processInfo, 'b'.repeat(64)),
+    false,
+  );
+  assert.equal(isOwnedCodexAppServerProcess(processInfo, null), false);
+  assert.equal(isOwnedCodexAppServerProcess({
+    executable: 'C:\\Windows\\System32\\cmd.exe',
+    commandLine: `cmd.exe /d /s /c "echo ${processInfo.commandLine}"`,
+  }, PROCESS_NONCE), false);
+});
+
+test('recovery terminates only a PID with matching Codex command and ownership nonce', async () => {
   const terminated = [];
-  const recovery = await recoverPersistedProcesses([4512], {
+  const recovery = await recoverPersistedProcesses([{
+    pid: 4512,
+    processNonce: PROCESS_NONCE,
+  }], {
     inspector: async pid => ({
-      commandLine: 'cmd.exe /d /s /c "codex.cmd app-server"',
+      commandLine: 'cmd.exe /d /s /c '
+        + `"set "PERSONAL_CODEX_WORKBENCH_NONCE=${PROCESS_NONCE}" && codex.cmd app-server"`,
       executable: 'C:\\Windows\\System32\\cmd.exe',
       pid,
     }),
@@ -62,7 +87,10 @@ test('recovery safely skips missing and reused PIDs', async () => {
       executable: '/usr/bin/python3',
     }],
   ]);
-  const recovery = await recoverPersistedProcesses([4513, 4514], {
+  const recovery = await recoverPersistedProcesses([
+    { pid: 4513, processNonce: PROCESS_NONCE },
+    { pid: 4514, processNonce: PROCESS_NONCE },
+  ], {
     inspector: async pid => processes.get(pid),
     terminator: async pid => terminated.push(pid),
   });
@@ -75,9 +103,51 @@ test('recovery safely skips missing and reused PIDs', async () => {
   assert.deepEqual(terminated, []);
 });
 
+test('same Codex PID with a different nonce is never terminated', async () => {
+  const terminated = [];
+  const recovery = await recoverPersistedProcesses([{
+    pid: 4517,
+    processNonce: 'b'.repeat(64),
+  }], {
+    inspector: async pid => ({
+      commandLine: 'cmd.exe /d /s /c '
+        + `"set "PERSONAL_CODEX_WORKBENCH_NONCE=${PROCESS_NONCE}" && codex.cmd app-server"`,
+      executable: 'C:\\Windows\\System32\\cmd.exe',
+      pid,
+    }),
+    terminator: async pid => terminated.push(pid),
+  });
+
+  assert.equal(recovery.status, 'ok');
+  assert.equal(recovery.results[0].status, 'reused');
+  assert.match(recovery.results[0].detail, /nonce does not match/);
+  assert.deepEqual(terminated, []);
+});
+
+test('legacy persisted PID without a nonce is diagnostic-only and is not inspected or killed', async () => {
+  let inspected = 0;
+  const terminated = [];
+  const recovery = await recoverPersistedProcesses([{ pid: 4518 }], {
+    inspector: async () => {
+      inspected += 1;
+      throw new Error('legacy process must not be inspected for termination');
+    },
+    terminator: async pid => terminated.push(pid),
+  });
+
+  assert.equal(recovery.status, 'ok');
+  assert.equal(recovery.results[0].status, 'unowned');
+  assert.match(recovery.results[0].detail, /no verifiable ownership nonce/);
+  assert.equal(inspected, 0);
+  assert.deepEqual(terminated, []);
+});
+
 test('inspection errors fail closed and never terminate the PID', async () => {
   const terminated = [];
-  const recovery = await recoverPersistedProcesses([4515], {
+  const recovery = await recoverPersistedProcesses([{
+    pid: 4515,
+    processNonce: PROCESS_NONCE,
+  }], {
     inspector: async () => {
       throw new Error('process inspection denied');
     },
@@ -93,7 +163,15 @@ test('inspection errors fail closed and never terminate the PID', async () => {
 test('recovery deduplicates positive persisted PIDs and ignores invalid values', async () => {
   const inspected = [];
   const recovery = await recoverPersistedProcesses(
-    [4516, 4516, null, -1, 0, 1.5, '4516'],
+    [
+      { pid: 4516, processNonce: PROCESS_NONCE },
+      { pid: 4516, processNonce: PROCESS_NONCE },
+      null,
+      { pid: -1, processNonce: PROCESS_NONCE },
+      { pid: 0, processNonce: PROCESS_NONCE },
+      { pid: 1.5, processNonce: PROCESS_NONCE },
+      { pid: '4516', processNonce: PROCESS_NONCE },
+    ],
     {
       inspector: async pid => {
         inspected.push(pid);
@@ -110,6 +188,7 @@ test('recovery deduplicates positive persisted PIDs and ignores invalid values',
   assert.deepEqual(recovery.results, [{
     detail: 'Persisted process no longer exists',
     pid: 4516,
+    processNonce: PROCESS_NONCE,
     status: 'missing',
   }]);
 });
