@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
+import { chromium } from 'playwright-core';
 
 const root = path.resolve(import.meta.dirname, '..');
 const files = {
@@ -91,3 +94,367 @@ assert.match(demo, /127\.0\.0\.1/);
 assert.equal(/<script[^>]+src=|<link[^>]+href=["']https?:/.test(demo), false, 'Demo must be self-contained');
 
 console.log('PASS personal workbench static contract');
+
+const evidenceRoot = path.join(root, 'test-results', 'personal-codex-workbench');
+const chromeCandidates = [
+  process.env.CHROME_PATH,
+  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+].filter(Boolean);
+
+function wait(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
+function startWorkbench(workspaceRoot) {
+  const isolatedEnvironment = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => key.toLowerCase() !== 'path'),
+  );
+  const child = spawn(process.execPath, ['workbench/server.mjs'], {
+    cwd: root,
+    env: {
+      ...isolatedEnvironment,
+      PATH: path.dirname(process.execPath),
+      WORKBENCH_PORT: '0',
+      WORKBENCH_ROOT: workspaceRoot,
+    },
+    stdio: ['ignore', 'pipe', 'pipe'],
+    windowsHide: true,
+  });
+  child.stdout.setEncoding('utf8');
+  child.stderr.setEncoding('utf8');
+
+  let stdout = '';
+  let stderr = '';
+  child.stdout.on('data', chunk => {
+    stdout += chunk;
+  });
+  child.stderr.on('data', chunk => {
+    stderr = `${stderr}${chunk}`.slice(-4_000);
+  });
+
+  const ready = new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(`Workbench server did not become ready: ${stderr || 'no diagnostic'}`));
+    }, 20_000);
+    const inspect = () => {
+      const baseMatch = stdout.match(/Personal Codex Workbench:\s+(http:\/\/127\.0\.0\.1:\d+)/);
+      const tokenMatch = stdout.match(/Local session token:\s+([a-f0-9]{64})/);
+      if (!baseMatch || !tokenMatch) return;
+      clearTimeout(timeout);
+      resolve({ baseUrl: baseMatch[1], token: tokenMatch[1] });
+    };
+    child.stdout.on('data', inspect);
+    child.once('error', error => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+    child.once('exit', (code, signal) => {
+      clearTimeout(timeout);
+      reject(new Error(`Workbench server exited before readiness: code=${code} signal=${signal}`));
+    });
+  });
+
+  return { child, ready };
+}
+
+async function stopChild(child) {
+  if (!child || child.exitCode !== null || child.signalCode !== null) return;
+  const exited = new Promise(resolve => child.once('exit', resolve));
+  child.kill('SIGTERM');
+  if (await Promise.race([exited.then(() => false), wait(5_000).then(() => true)])) {
+    child.kill('SIGKILL');
+    await Promise.race([exited, wait(5_000)]);
+  }
+  assert(
+    child.exitCode !== null || child.signalCode !== null,
+    'Workbench server process did not exit during cleanup',
+  );
+}
+
+async function removeTempRoot(tempRoot) {
+  let lastError;
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    try {
+      fs.rmSync(tempRoot, { force: true, recursive: true });
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!['EBUSY', 'EPERM', 'ENOTEMPTY'].includes(error.code)) throw error;
+      await wait(250 * (attempt + 1));
+    }
+  }
+  throw lastError;
+}
+
+async function settleLayout(page) {
+  await page.evaluate(() => new Promise(resolve => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  }));
+}
+
+async function activateNavigation(page, pageName, mobile = false) {
+  const navigation = page.locator(`#primaryNav [data-page="${pageName}"]`);
+  if (mobile) {
+    await page.locator('#navToggle').click();
+    await page.locator('#navToggle').getAttribute('aria-expanded').then(value => {
+      assert.equal(value, 'true', 'Mobile navigation did not open');
+    });
+  }
+  await navigation.click();
+  await page.locator(`[data-page-panel="${pageName}"]`).waitFor({ state: 'visible' });
+  assert.equal(
+    await navigation.getAttribute('aria-current'),
+    'page',
+    `Navigation did not select ${pageName}`,
+  );
+  assert.equal(
+    await page.locator(`[data-page-panel="${pageName}"]`).getAttribute('hidden'),
+    null,
+    `Navigation panel stayed hidden for ${pageName}`,
+  );
+  if (mobile) {
+    assert.equal(
+      await page.locator('#navToggle').getAttribute('aria-expanded'),
+      'false',
+      'Mobile navigation did not close after selection',
+    );
+  }
+}
+
+async function assertCodexDialog(page, viewportLabel) {
+  await page.locator('#askCodex').click();
+  const dialog = page.locator('#codexDrawer');
+  await dialog.waitFor({ state: 'visible' });
+  await dialog.evaluate(async element => {
+    await Promise.all(element.getAnimations().map(animation => animation.finished.catch(() => {})));
+  });
+  assert.equal(await dialog.getAttribute('open'), '', `${viewportLabel}: Codex dialog did not open`);
+  assert.equal(
+    (await dialog.locator('.permission-badge').innerText()).trim(),
+    '只读分析',
+    `${viewportLabel}: read-only badge is missing`,
+  );
+  assert.match(
+    await dialog.locator('.security-note').innerText(),
+    /不会创建、修改、移动或删除文件/,
+    `${viewportLabel}: read-only safety copy is missing`,
+  );
+  assert.equal(
+    await dialog.locator('[name="command"], [name="codexArgs"], [name="sandboxPolicy"]').count(),
+    0,
+    `${viewportLabel}: forbidden Codex controls are exposed`,
+  );
+  const dialogBounds = await dialog.evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    return {
+      left: Math.round(rect.left),
+      right: Math.round(rect.right),
+      viewportWidth: window.innerWidth,
+    };
+  });
+  assert(
+    dialogBounds.left >= 0 && dialogBounds.right <= dialogBounds.viewportWidth,
+    `${viewportLabel}: Codex dialog exceeds the horizontal viewport ${JSON.stringify(dialogBounds)}`,
+  );
+  await dialog.locator('#closeCodex').click();
+  await dialog.waitFor({ state: 'hidden' });
+  assert.equal(await dialog.getAttribute('open'), null, `${viewportLabel}: Codex dialog did not close`);
+}
+
+async function verifyViewport(page, viewport, screenshotName) {
+  await page.setViewportSize({ width: viewport.width, height: viewport.height });
+  await activateNavigation(page, 'home', viewport.width <= 767);
+  await settleLayout(page);
+
+  const layout = await page.evaluate(() => {
+    const rootElement = document.documentElement;
+    const body = document.body;
+    const usableControls = [...document.querySelectorAll('button, input, textarea, select, a[href]')]
+      .filter(element => {
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return !element.disabled
+          && style.visibility !== 'hidden'
+          && style.display !== 'none'
+          && rect.width > 0
+          && rect.height > 0
+          && rect.right > 0
+          && rect.left < rootElement.clientWidth
+          && rect.bottom > 0
+          && rect.top < rootElement.clientHeight;
+      }).length;
+    return {
+      bodyScrollWidth: body.scrollWidth,
+      clientWidth: rootElement.clientWidth,
+      documentScrollWidth: rootElement.scrollWidth,
+      usableControls,
+    };
+  });
+  assert(
+    layout.documentScrollWidth <= layout.clientWidth
+      && layout.bodyScrollWidth <= layout.clientWidth,
+    `${viewport.label}: horizontal overflow ${JSON.stringify(layout)}`,
+  );
+  assert(layout.usableControls > 0, `${viewport.label}: no usable controls in the viewport`);
+
+  if (viewport.width <= 767) {
+    await page.locator('#navToggle').click();
+    assert.equal(await page.locator('#navToggle').getAttribute('aria-expanded'), 'true');
+    await page.locator('#navScrim').click({ position: { x: viewport.width - 5, y: 5 } });
+    assert.equal(await page.locator('#navToggle').getAttribute('aria-expanded'), 'false');
+  } else {
+    await activateNavigation(page, 'planning');
+    await activateNavigation(page, 'home');
+  }
+
+  await assertCodexDialog(page, viewport.label);
+  if (screenshotName) {
+    await page.screenshot({
+      path: path.join(evidenceRoot, screenshotName),
+      fullPage: true,
+    });
+  }
+  return layout;
+}
+
+async function runBrowserVerification() {
+  fs.mkdirSync(evidenceRoot, { recursive: true });
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'personal-codex-workbench-ui-'));
+  const server = startWorkbench(tempRoot);
+  const executablePath = chromeCandidates.find(candidate => fs.existsSync(candidate));
+  assert(executablePath, 'Chrome or Edge executable was not found');
+
+  const report = {
+    generatedAt: new Date().toISOString(),
+    status: 'running',
+    staticContract: 'passed',
+    browser: path.basename(executablePath),
+    urlTokenRemoved: false,
+    navigation: [],
+    selectedRequirement: null,
+    dialog: null,
+    health: null,
+    viewports: [],
+    consoleErrors: [],
+    pageErrors: [],
+    screenshots: ['desktop.png', 'mobile.png'],
+  };
+  let browser;
+  let failure;
+
+  try {
+    const { baseUrl, token } = await server.ready;
+    browser = await chromium.launch({
+      executablePath,
+      headless: true,
+      args: ['--disable-gpu'],
+    });
+    const context = await browser.newContext({
+      viewport: { width: 1440, height: 900 },
+      locale: 'zh-CN',
+    });
+    const page = await context.newPage();
+    page.on('console', message => {
+      if (message.type() === 'error') {
+        report.consoleErrors.push({
+          text: message.text(),
+          url: message.location().url,
+        });
+      }
+    });
+    page.on('pageerror', error => {
+      report.pageErrors.push(error.message);
+    });
+
+    await page.goto(`${baseUrl}/?token=${encodeURIComponent(token)}#home`, {
+      waitUntil: 'domcontentloaded',
+    });
+    await page.locator('#homeRequirements .requirement-row').first().waitFor();
+    await page.waitForFunction(() => {
+      const badge = document.querySelector('#healthBadge');
+      return badge && !badge.textContent.includes('检查中');
+    });
+
+    const currentUrl = new URL(page.url());
+    assert.equal(currentUrl.search, '', 'Session token remained in the browser URL');
+    assert.equal(currentUrl.hash, '#home', 'History replacement did not preserve the page hash');
+    assert.equal(await page.evaluate(() => sessionStorage.getItem('workbenchToken')), token);
+    report.urlTokenRemoved = true;
+    report.health = (await page.locator('#healthBadge').innerText()).trim();
+    assert.match(
+      report.health,
+      /Codex 配置错误|Codex 认证失效|Codex 已连接|Broker 正常|本机连接异常/,
+      `Unexpected health status: ${report.health}`,
+    );
+
+    const pageNames = ['home', 'planning', 'requirements', 'review', 'data', 'codex'];
+    for (const pageName of pageNames) {
+      await activateNavigation(page, pageName);
+      report.navigation.push(pageName);
+    }
+
+    await activateNavigation(page, 'requirements');
+    await page.locator('#requirementList [data-requirement-id="REQ-002"]').click();
+    assert.match(await page.locator('#requirementDetail').innerText(), /REQ-002[\s\S]*iOS应用与IPA资源库/);
+    assert(
+      await page.locator('#requirementList [data-requirement-id="REQ-002"]').evaluate(
+        element => element.classList.contains('is-selected'),
+      ),
+      'Selected requirement did not receive its selected state',
+    );
+    report.selectedRequirement = 'REQ-002';
+
+    await page.locator('#askCodex').click();
+    await page.locator('#codexDrawer').waitFor({ state: 'visible' });
+    assert.match(await page.locator('#contextRequirement').innerText(), /REQ-002.*iOS应用与IPA资源库/);
+    assert.equal((await page.locator('.permission-badge').innerText()).trim(), '只读分析');
+    report.dialog = 'open-close/read-only passed';
+    await page.locator('#closeCodex').click();
+    await page.locator('#codexDrawer').waitFor({ state: 'hidden' });
+
+    const viewports = [
+      { label: 'desktop-1440', width: 1440, height: 900, screenshot: 'desktop.png' },
+      { label: 'laptop-1024', width: 1024, height: 900 },
+      { label: 'tablet-768', width: 768, height: 900 },
+      { label: 'mobile-375', width: 375, height: 812, screenshot: 'mobile.png' },
+    ];
+    for (const viewport of viewports) {
+      const layout = await verifyViewport(page, viewport, viewport.screenshot);
+      report.viewports.push({ ...viewport, ...layout, controls: 'passed' });
+    }
+
+    assert.deepEqual(report.consoleErrors, [], 'Browser console errors were reported');
+    assert.deepEqual(report.pageErrors, [], 'Uncaught browser page errors were reported');
+    report.status = 'passed';
+    console.log('PASS personal workbench browser contract');
+  } catch (error) {
+    failure = error;
+    report.status = 'failed';
+    report.failure = error.stack || error.message;
+  } finally {
+    if (browser) await browser.close();
+    await stopChild(server.child);
+    try {
+      await removeTempRoot(tempRoot);
+      report.cleanup = 'passed';
+    } catch (error) {
+      report.cleanup = `failed: ${error.message}`;
+      if (!failure) {
+        failure = error;
+        report.status = 'failed';
+        report.failure = error.stack || error.message;
+      }
+    }
+    fs.writeFileSync(
+      path.join(evidenceRoot, 'test-results.json'),
+      `${JSON.stringify(report, null, 2)}\n`,
+      'utf8',
+    );
+  }
+
+  if (failure) throw failure;
+}
+
+await runBrowserVerification();
