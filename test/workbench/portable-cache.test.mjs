@@ -430,6 +430,56 @@ test('PowerShell expansion promotes non-terminating errors and removes its ZIP',
   assert.equal(fs.existsSync(archiveFile), false);
 });
 
+test('archive write failures remove a partially written owned ZIP', async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'portable-expand-write-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const archive = Buffer.from('fixture archive');
+  const archiveFile = path.join(root, 'runtime.zip');
+  const writeError = new Error('archive write interrupted');
+  let powershellCalled = false;
+
+  await assert.rejects(
+    () => expandRuntimeArchive({
+      archive,
+      archiveFile,
+      destination: path.join(root, 'destination'),
+      execFile: (command, args, options, callback) => {
+        powershellCalled = true;
+        callback(null);
+      },
+      writeArchive: (descriptor, value) => {
+        fs.writeSync(descriptor, value.subarray(0, 7));
+        throw writeError;
+      },
+    }),
+    error => error === writeError,
+  );
+
+  assert.equal(powershellCalled, false);
+  assert.equal(fs.existsSync(archiveFile), false);
+});
+
+test('PowerShell callback failures remove the ZIP and preserve the original error', async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'portable-expand-error-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const archiveFile = path.join(root, 'runtime.zip');
+  const expandError = new Error('Expand-Archive failed');
+
+  await assert.rejects(
+    () => expandRuntimeArchive({
+      archive: Buffer.from('fixture archive'),
+      archiveFile,
+      destination: path.join(root, 'destination'),
+      execFile: (command, args, options, callback) => {
+        callback(expandError);
+      },
+    }),
+    error => error === expandError,
+  );
+
+  assert.equal(fs.existsSync(archiveFile), false);
+});
+
 test('startup failures are logged with credential-like values redacted', t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'portable-startup-log-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));

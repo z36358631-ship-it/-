@@ -254,11 +254,26 @@ function writeStartupFailure(appRoot, error) {
 async function expandRuntimeArchive({
   archive,
   archiveFile,
+  closeArchive = descriptor => fs.closeSync(descriptor),
   destination,
   execFile = require('node:child_process').execFile,
+  openArchive = filename => fs.openSync(filename, 'wx'),
+  removeArchive = filename => fs.rmSync(filename, { force: true }),
+  writeArchive = (descriptor, value) => fs.writeFileSync(descriptor, value),
 }) {
-  fs.writeFileSync(archiveFile, archive, { flag: 'wx' });
+  let archiveDescriptor;
+  let ownsArchive = false;
+  const closeOpenArchive = () => {
+    if (archiveDescriptor === undefined) return;
+    const descriptor = archiveDescriptor;
+    archiveDescriptor = undefined;
+    closeArchive(descriptor);
+  };
   try {
+    archiveDescriptor = openArchive(archiveFile);
+    ownsArchive = true;
+    writeArchive(archiveDescriptor, archive);
+    closeOpenArchive();
     await new Promise((resolve, reject) => {
       execFile(
         'powershell.exe',
@@ -283,7 +298,11 @@ async function expandRuntimeArchive({
       );
     });
   } finally {
-    fs.rmSync(archiveFile, { force: true });
+    try {
+      closeOpenArchive();
+    } finally {
+      if (ownsArchive) removeArchive(archiveFile);
+    }
   }
 }
 
