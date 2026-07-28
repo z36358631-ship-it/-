@@ -1,0 +1,4659 @@
+{
+  "generatedAt": "2026-07-28T17:34:18.347Z",
+  "environment": {
+    "browser": "本地 Edge/Chrome（由脚本自动发现）",
+    "runner": "playwright-core",
+    "origin": "http://127.0.0.1:56010",
+    "baselineViewport": {
+      "width": 390,
+      "height": 844
+    }
+  },
+  "scope": {
+    "pages": [
+      "hub",
+      "five-seconds-later",
+      "world-mender",
+      "rift-hunter"
+    ],
+    "scenarios": [
+      "zoom-200",
+      "large-text-200",
+      "landscape",
+      "ultrawide-short",
+      "keyboard-focus",
+      "reduced-motion",
+      "lifecycle"
+    ]
+  },
+  "caveats": [
+    "200% 页面缩放使用 CSS zoom 模拟内容放大与裁切风险，不等同浏览器原生 Ctrl/+ 或微信 WebView 缩放。",
+    "大字号使用测试脚本把可见 DOM 文本的计算字号放大到 200%，不等同 iOS/Android 或微信系统字号；Canvas 内绘制文字不会被用户样式表放大。",
+    "横屏与超宽短屏只覆盖 Edge/Playwright 视口，不代表带刘海、折叠屏或微信导航栏的真实可用区域。",
+    "键盘检查覆盖当前可见 DOM 控件的 Tab 顺序和焦点可见性；Canvas 核心玩法仍以触摸/指针为主。",
+    "减少动态效果检查覆盖 prefers-reduced-motion 媒体查询、可观察 CSS/控件状态与持续可操作性，不对页面未暴露的内部状态作假设。",
+    "隐藏/恢复由测试注入 document.hidden/visibilityState 并派发 visibilitychange，不等同移动系统回收 WebView 进程。"
+  ],
+  "summary": {
+    "total": 28,
+    "pass": 16,
+    "fail": 12
+  },
+  "results": [
+    {
+      "page": "hub",
+      "scenario": "zoom-200",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "200% 模拟缩放后文案仍存在",
+          "details": 778
+        },
+        {
+          "pass": true,
+          "message": "200% 模拟缩放后主入口仍可见",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "200% 模拟缩放后没有横向页面溢出",
+          "details": {
+            "scrollWidth": 390,
+            "clientWidth": 390
+          }
+        }
+      ],
+      "metrics": {
+        "before": {
+          "title": "微信 H5 精品游戏实验室",
+          "innerWidth": 390,
+          "innerHeight": 844,
+          "clientWidth": 390,
+          "clientHeight": 844,
+          "scrollWidth": 390,
+          "scrollHeight": 2584,
+          "bodyTextLength": 778,
+          "interactiveCount": 4,
+          "offscreenInteractive": [
+            {
+              "id": null,
+              "text": "开始试玩 →"
+            },
+            {
+              "id": null,
+              "text": "开始试玩 →"
+            },
+            {
+              "id": null,
+              "text": "开始试玩 →"
+            },
+            {
+              "id": "reset",
+              "text": "清空本地体验记录"
+            }
+          ],
+          "clippedText": [],
+          "canvas": null
+        },
+        "after": {
+          "title": "微信 H5 精品游戏实验室",
+          "innerWidth": 390,
+          "innerHeight": 844,
+          "clientWidth": 390,
+          "clientHeight": 844,
+          "scrollWidth": 390,
+          "scrollHeight": 6606,
+          "bodyTextLength": 778,
+          "interactiveCount": 4,
+          "offscreenInteractive": [
+            {
+              "id": null,
+              "text": "开始试玩 →"
+            },
+            {
+              "id": null,
+              "text": "开始试玩 →"
+            },
+            {
+              "id": null,
+              "text": "开始试玩 →"
+            },
+            {
+              "id": "reset",
+              "text": "清空本地体验记录"
+            }
+          ],
+          "clippedText": [],
+          "canvas": null
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/hub-zoom-200.png",
+      "limitation": "200% 页面缩放使用 CSS zoom 模拟内容放大与裁切风险，不等同浏览器原生 Ctrl/+ 或微信 WebView 缩放。"
+    },
+    {
+      "page": "hub",
+      "scenario": "large-text-200",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "已对可见 DOM 文本应用 200% 测试字号",
+          "details": 46
+        },
+        {
+          "pass": true,
+          "message": "200% 测试字号下主入口仍可见",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "200% 测试字号下没有横向页面溢出",
+          "details": {
+            "scrollWidth": 390,
+            "clientWidth": 390
+          }
+        },
+        {
+          "pass": true,
+          "message": "200% 测试字号下没有检测到文本裁切",
+          "details": []
+        }
+      ],
+      "metrics": {
+        "scaledElements": 46,
+        "title": "微信 H5 精品游戏实验室",
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientWidth": 390,
+        "clientHeight": 844,
+        "scrollWidth": 390,
+        "scrollHeight": 4531,
+        "bodyTextLength": 778,
+        "interactiveCount": 4,
+        "offscreenInteractive": [
+          {
+            "id": null,
+            "text": "开始试玩 →"
+          },
+          {
+            "id": null,
+            "text": "开始试玩 →"
+          },
+          {
+            "id": null,
+            "text": "开始试玩 →"
+          },
+          {
+            "id": "reset",
+            "text": "清空本地体验记录"
+          }
+        ],
+        "clippedText": [],
+        "canvas": null,
+        "canvasTextScaled": false
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/hub-large-text-200.png",
+      "limitation": "大字号使用测试脚本把可见 DOM 文本的计算字号放大到 200%，不等同 iOS/Android 或微信系统字号；Canvas 内绘制文字不会被用户样式表放大。"
+    },
+    {
+      "page": "hub",
+      "scenario": "landscape",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "存在可读页面文案",
+          "details": 794
+        },
+        {
+          "pass": true,
+          "message": "主入口控件仍在可视区域",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "没有横向页面溢出",
+          "details": {
+            "scrollWidth": 844,
+            "clientWidth": 844
+          }
+        }
+      ],
+      "metrics": {
+        "title": "微信 H5 精品游戏实验室",
+        "innerWidth": 844,
+        "innerHeight": 390,
+        "clientWidth": 844,
+        "clientHeight": 390,
+        "scrollWidth": 844,
+        "scrollHeight": 2341,
+        "bodyTextLength": 794,
+        "interactiveCount": 4,
+        "offscreenInteractive": [
+          {
+            "id": null,
+            "text": "开始试玩 →"
+          },
+          {
+            "id": null,
+            "text": "开始试玩 →"
+          },
+          {
+            "id": null,
+            "text": "开始试玩 →"
+          },
+          {
+            "id": "reset",
+            "text": "清空本地体验记录"
+          }
+        ],
+        "clippedText": [],
+        "canvas": null
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/hub-landscape.png",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "limitation": "浏览器视口证据，不包含微信顶部/底部导航栏及安全区遮挡。"
+    },
+    {
+      "page": "hub",
+      "scenario": "ultrawide-short",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "存在可读页面文案",
+          "details": 794
+        },
+        {
+          "pass": true,
+          "message": "主入口控件仍在可视区域",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "没有横向页面溢出",
+          "details": {
+            "scrollWidth": 1200,
+            "clientWidth": 1200
+          }
+        }
+      ],
+      "metrics": {
+        "title": "微信 H5 精品游戏实验室",
+        "innerWidth": 1200,
+        "innerHeight": 390,
+        "clientWidth": 1200,
+        "clientHeight": 390,
+        "scrollWidth": 1200,
+        "scrollHeight": 1332,
+        "bodyTextLength": 794,
+        "interactiveCount": 4,
+        "offscreenInteractive": [
+          {
+            "id": null,
+            "text": "开始试玩 →"
+          },
+          {
+            "id": null,
+            "text": "开始试玩 →"
+          },
+          {
+            "id": null,
+            "text": "开始试玩 →"
+          },
+          {
+            "id": "reset",
+            "text": "清空本地体验记录"
+          }
+        ],
+        "clippedText": [],
+        "canvas": null
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/hub-ultrawide-short.png",
+      "viewport": {
+        "width": 1200,
+        "height": 390
+      },
+      "limitation": "浏览器视口证据，不包含微信顶部/底部导航栏及安全区遮挡。"
+    },
+    {
+      "page": "hub",
+      "scenario": "keyboard-focus",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "存在可键盘聚焦控件",
+          "details": 4
+        },
+        {
+          "pass": true,
+          "message": "Tab 顺序覆盖全部当前可见控件",
+          "details": {
+            "expected": 4,
+            "actual": 4
+          }
+        },
+        {
+          "pass": true,
+          "message": "每个键盘焦点都有可观察焦点指示",
+          "details": [
+            {
+              "tag": "a",
+              "id": null,
+              "href": "01-five-seconds-later.html",
+              "text": "开始试玩 →",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "a",
+                "id": null,
+                "className": "play"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "a",
+              "id": null,
+              "href": "02-world-mender.html",
+              "text": "开始试玩 →",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "a",
+                "id": null,
+                "className": "play"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "a",
+              "id": null,
+              "href": "03-rift-hunter.html",
+              "text": "开始试玩 →",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "a",
+                "id": null,
+                "className": "play"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "reset",
+              "href": null,
+              "text": "清空本地体验记录",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "button",
+                "id": "reset",
+                "className": "reset"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "a",
+              "id": null,
+              "href": "01-five-seconds-later.html",
+              "text": "开始试玩 →",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "a",
+                "id": null,
+                "className": "play"
+              },
+              "inViewport": true
+            }
+          ]
+        },
+        {
+          "pass": true,
+          "message": "键盘焦点不会进入视觉遮罩后的背景控件",
+          "details": [
+            {
+              "tag": "a",
+              "id": null,
+              "href": "01-five-seconds-later.html",
+              "text": "开始试玩 →",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "a",
+                "id": null,
+                "className": "play"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "a",
+              "id": null,
+              "href": "02-world-mender.html",
+              "text": "开始试玩 →",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "a",
+                "id": null,
+                "className": "play"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "a",
+              "id": null,
+              "href": "03-rift-hunter.html",
+              "text": "开始试玩 →",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "a",
+                "id": null,
+                "className": "play"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "reset",
+              "href": null,
+              "text": "清空本地体验记录",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "button",
+                "id": "reset",
+                "className": "reset"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "a",
+              "id": null,
+              "href": "01-five-seconds-later.html",
+              "text": "开始试玩 →",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "a",
+                "id": null,
+                "className": "play"
+              },
+              "inViewport": true
+            }
+          ]
+        },
+        {
+          "pass": true,
+          "message": "聚焦控件均处于可视区域",
+          "details": [
+            {
+              "tag": "a",
+              "id": null,
+              "href": "01-five-seconds-later.html",
+              "text": "开始试玩 →",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "a",
+                "id": null,
+                "className": "play"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "a",
+              "id": null,
+              "href": "02-world-mender.html",
+              "text": "开始试玩 →",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "a",
+                "id": null,
+                "className": "play"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "a",
+              "id": null,
+              "href": "03-rift-hunter.html",
+              "text": "开始试玩 →",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "a",
+                "id": null,
+                "className": "play"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "reset",
+              "href": null,
+              "text": "清空本地体验记录",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "button",
+                "id": "reset",
+                "className": "reset"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "a",
+              "id": null,
+              "href": "01-five-seconds-later.html",
+              "text": "开始试玩 →",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "a",
+                "id": null,
+                "className": "play"
+              },
+              "inViewport": true
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "focusableCount": 4,
+        "sequence": [
+          {
+            "tag": "a",
+            "id": null,
+            "href": "01-five-seconds-later.html",
+            "text": "开始试玩 →",
+            "visibleIndicator": true,
+            "outline": "1px auto rgb(16, 16, 16)",
+            "boxShadow": "none",
+            "occluded": false,
+            "topElement": {
+              "tag": "a",
+              "id": null,
+              "className": "play"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "a",
+            "id": null,
+            "href": "02-world-mender.html",
+            "text": "开始试玩 →",
+            "visibleIndicator": true,
+            "outline": "1px auto rgb(16, 16, 16)",
+            "boxShadow": "none",
+            "occluded": false,
+            "topElement": {
+              "tag": "a",
+              "id": null,
+              "className": "play"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "a",
+            "id": null,
+            "href": "03-rift-hunter.html",
+            "text": "开始试玩 →",
+            "visibleIndicator": true,
+            "outline": "1px auto rgb(16, 16, 16)",
+            "boxShadow": "none",
+            "occluded": false,
+            "topElement": {
+              "tag": "a",
+              "id": null,
+              "className": "play"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "button",
+            "id": "reset",
+            "href": null,
+            "text": "清空本地体验记录",
+            "visibleIndicator": true,
+            "outline": "1px auto rgb(16, 16, 16)",
+            "boxShadow": "none",
+            "occluded": false,
+            "topElement": {
+              "tag": "button",
+              "id": "reset",
+              "className": "reset"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "body",
+            "id": null,
+            "href": null,
+            "text": "G GameHub H5 Lab三款核心乐趣纵切片 本地运行 · 无真实付费与广告 PLAYABLE VERTICAL ",
+            "visibleIndicator": false,
+            "outline": "3px none rgb(255, 255, 255)",
+            "boxShadow": "none",
+            "occluded": false,
+            "topElement": {
+              "tag": "div",
+              "id": null,
+              "className": "icon"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "a",
+            "id": null,
+            "href": "01-five-seconds-later.html",
+            "text": "开始试玩 →",
+            "visibleIndicator": true,
+            "outline": "1px auto rgb(16, 16, 16)",
+            "boxShadow": "none",
+            "occluded": false,
+            "topElement": {
+              "tag": "a",
+              "id": null,
+              "className": "play"
+            },
+            "inViewport": true
+          }
+        ]
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/hub-keyboard-focus.png",
+      "limitation": "键盘检查覆盖当前可见 DOM 控件的 Tab 顺序和焦点可见性；Canvas 核心玩法仍以触摸/指针为主。"
+    },
+    {
+      "page": "hub",
+      "scenario": "reduced-motion",
+      "status": "FAIL",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "prefers-reduced-motion: reduce 匹配成功",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "减少动态效果环境下主入口仍可操作",
+          "details": null
+        },
+        {
+          "pass": false,
+          "message": "大厅在减少动态效果环境下没有持续 CSS 动画或过渡",
+          "details": [
+            {
+              "tag": "a",
+              "id": null,
+              "className": "play",
+              "animationDuration": "0s",
+              "transitionDuration": "0.16s, 0.16s"
+            },
+            {
+              "tag": "a",
+              "id": null,
+              "className": "play",
+              "animationDuration": "0s",
+              "transitionDuration": "0.16s, 0.16s"
+            },
+            {
+              "tag": "a",
+              "id": null,
+              "className": "play",
+              "animationDuration": "0s",
+              "transitionDuration": "0.16s, 0.16s"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "mediaMatches": true,
+        "motionNodes": [
+          {
+            "tag": "a",
+            "id": null,
+            "className": "play",
+            "animationDuration": "0s",
+            "transitionDuration": "0.16s, 0.16s"
+          },
+          {
+            "tag": "a",
+            "id": null,
+            "className": "play",
+            "animationDuration": "0s",
+            "transitionDuration": "0.16s, 0.16s"
+          },
+          {
+            "tag": "a",
+            "id": null,
+            "className": "play",
+            "animationDuration": "0s",
+            "transitionDuration": "0.16s, 0.16s"
+          }
+        ],
+        "controlState": null
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/hub-reduced-motion.png",
+      "limitation": "减少动态效果检查覆盖 prefers-reduced-motion 媒体查询、可观察 CSS/控件状态与持续可操作性，不对页面未暴露的内部状态作假设。"
+    },
+    {
+      "page": "hub",
+      "scenario": "lifecycle",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "大厅隐藏/恢复后内容保持稳定",
+          "details": {
+            "before": {
+              "title": "微信 H5 精品游戏实验室",
+              "textLength": 778
+            },
+            "after": {
+              "title": "微信 H5 精品游戏实验室",
+              "textLength": 778
+            }
+          }
+        }
+      ],
+      "metrics": {
+        "before": {
+          "title": "微信 H5 精品游戏实验室",
+          "textLength": 778
+        },
+        "after": {
+          "title": "微信 H5 精品游戏实验室",
+          "textLength": 778
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/hub-lifecycle-resumed.png",
+      "limitation": "隐藏/恢复由测试注入 document.hidden/visibilityState 并派发 visibilitychange，不等同移动系统回收 WebView 进程。"
+    },
+    {
+      "page": "five-seconds-later",
+      "scenario": "zoom-200",
+      "status": "FAIL",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "200% 模拟缩放后文案仍存在",
+          "details": 129
+        },
+        {
+          "pass": false,
+          "message": "200% 模拟缩放后主入口仍可见",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "200% 模拟缩放后没有横向页面溢出",
+          "details": {
+            "scrollWidth": 390,
+            "clientWidth": 390
+          }
+        },
+        {
+          "pass": false,
+          "message": "200% 模拟缩放后完整游戏 Canvas 可通过视口或滚动到达",
+          "details": {
+            "canvas": {
+              "x": 0,
+              "y": 0,
+              "width": 780,
+              "height": 1688
+            },
+            "scroll": [
+              390,
+              844
+            ],
+            "client": [
+              390,
+              844
+            ]
+          }
+        }
+      ],
+      "metrics": {
+        "before": {
+          "title": "五秒之后",
+          "innerWidth": 390,
+          "innerHeight": 844,
+          "clientWidth": 390,
+          "clientHeight": 844,
+          "scrollWidth": 390,
+          "scrollHeight": 844,
+          "bodyTextLength": 129,
+          "interactiveCount": 4,
+          "offscreenInteractive": [],
+          "clippedText": [],
+          "canvas": {
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 844
+          }
+        },
+        "after": {
+          "title": "五秒之后",
+          "innerWidth": 390,
+          "innerHeight": 844,
+          "clientWidth": 390,
+          "clientHeight": 844,
+          "scrollWidth": 390,
+          "scrollHeight": 844,
+          "bodyTextLength": 129,
+          "interactiveCount": 4,
+          "offscreenInteractive": [
+            {
+              "id": "muteBtn",
+              "text": "×"
+            },
+            {
+              "id": "pauseBtn",
+              "text": "Ⅱ"
+            },
+            {
+              "id": "startBtn",
+              "text": "进入时间裂隙"
+            },
+            {
+              "id": "motionSwitch",
+              "text": ""
+            }
+          ],
+          "clippedText": [],
+          "canvas": {
+            "x": 0,
+            "y": 0,
+            "width": 780,
+            "height": 1688
+          }
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/five-seconds-later-zoom-200.png",
+      "limitation": "200% 页面缩放使用 CSS zoom 模拟内容放大与裁切风险，不等同浏览器原生 Ctrl/+ 或微信 WebView 缩放。"
+    },
+    {
+      "page": "five-seconds-later",
+      "scenario": "large-text-200",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "已对可见 DOM 文本应用 200% 测试字号",
+          "details": 11
+        },
+        {
+          "pass": true,
+          "message": "200% 测试字号下主入口仍可见",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "200% 测试字号下没有横向页面溢出",
+          "details": {
+            "scrollWidth": 390,
+            "clientWidth": 390
+          }
+        },
+        {
+          "pass": true,
+          "message": "200% 测试字号下没有检测到文本裁切",
+          "details": []
+        }
+      ],
+      "metrics": {
+        "scaledElements": 11,
+        "title": "五秒之后",
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientWidth": 390,
+        "clientHeight": 844,
+        "scrollWidth": 390,
+        "scrollHeight": 844,
+        "bodyTextLength": 129,
+        "interactiveCount": 4,
+        "offscreenInteractive": [],
+        "clippedText": [],
+        "canvas": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 844
+        },
+        "canvasTextScaled": false
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/five-seconds-later-large-text-200.png",
+      "limitation": "大字号使用测试脚本把可见 DOM 文本的计算字号放大到 200%，不等同 iOS/Android 或微信系统字号；Canvas 内绘制文字不会被用户样式表放大。"
+    },
+    {
+      "page": "five-seconds-later",
+      "scenario": "landscape",
+      "status": "FAIL",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "存在可读页面文案",
+          "details": 129
+        },
+        {
+          "pass": false,
+          "message": "主入口控件仍在可视区域",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "没有横向页面溢出",
+          "details": {
+            "scrollWidth": 844,
+            "clientWidth": 844
+          }
+        },
+        {
+          "pass": true,
+          "message": "游戏 Canvas 保持最低可操作尺寸",
+          "details": {
+            "x": 207,
+            "y": 0,
+            "width": 430,
+            "height": 390
+          }
+        }
+      ],
+      "metrics": {
+        "title": "五秒之后",
+        "innerWidth": 844,
+        "innerHeight": 390,
+        "clientWidth": 844,
+        "clientHeight": 390,
+        "scrollWidth": 844,
+        "scrollHeight": 390,
+        "bodyTextLength": 129,
+        "interactiveCount": 4,
+        "offscreenInteractive": [
+          {
+            "id": "startBtn",
+            "text": "进入时间裂隙"
+          },
+          {
+            "id": "motionSwitch",
+            "text": ""
+          }
+        ],
+        "clippedText": [],
+        "canvas": {
+          "x": 207,
+          "y": 0,
+          "width": 430,
+          "height": 390
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/five-seconds-later-landscape.png",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "limitation": "浏览器视口证据，不包含微信顶部/底部导航栏及安全区遮挡。"
+    },
+    {
+      "page": "five-seconds-later",
+      "scenario": "ultrawide-short",
+      "status": "FAIL",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "存在可读页面文案",
+          "details": 129
+        },
+        {
+          "pass": false,
+          "message": "主入口控件仍在可视区域",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "没有横向页面溢出",
+          "details": {
+            "scrollWidth": 1200,
+            "clientWidth": 1200
+          }
+        },
+        {
+          "pass": true,
+          "message": "游戏 Canvas 保持最低可操作尺寸",
+          "details": {
+            "x": 385,
+            "y": 0,
+            "width": 430,
+            "height": 390
+          }
+        }
+      ],
+      "metrics": {
+        "title": "五秒之后",
+        "innerWidth": 1200,
+        "innerHeight": 390,
+        "clientWidth": 1200,
+        "clientHeight": 390,
+        "scrollWidth": 1200,
+        "scrollHeight": 390,
+        "bodyTextLength": 129,
+        "interactiveCount": 4,
+        "offscreenInteractive": [
+          {
+            "id": "startBtn",
+            "text": "进入时间裂隙"
+          },
+          {
+            "id": "motionSwitch",
+            "text": ""
+          }
+        ],
+        "clippedText": [],
+        "canvas": {
+          "x": 385,
+          "y": 0,
+          "width": 430,
+          "height": 390
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/five-seconds-later-ultrawide-short.png",
+      "viewport": {
+        "width": 1200,
+        "height": 390
+      },
+      "limitation": "浏览器视口证据，不包含微信顶部/底部导航栏及安全区遮挡。"
+    },
+    {
+      "page": "five-seconds-later",
+      "scenario": "keyboard-focus",
+      "status": "FAIL",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "存在可键盘聚焦控件",
+          "details": 4
+        },
+        {
+          "pass": true,
+          "message": "Tab 顺序覆盖全部当前可见控件",
+          "details": {
+            "expected": 4,
+            "actual": 4
+          }
+        },
+        {
+          "pass": true,
+          "message": "每个键盘焦点都有可观察焦点指示",
+          "details": [
+            {
+              "tag": "button",
+              "id": "muteBtn",
+              "href": null,
+              "text": "×",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "introOverlay",
+                "className": "overlay show"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "pauseBtn",
+              "href": null,
+              "text": "Ⅱ",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "introOverlay",
+                "className": "overlay show"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "进入时间裂隙",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+              "occluded": false,
+              "topElement": {
+                "tag": "button",
+                "id": "startBtn",
+                "className": "primary-button"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "motionSwitch",
+              "href": null,
+              "text": "",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "button",
+                "id": "motionSwitch",
+                "className": "switch"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "muteBtn",
+              "href": null,
+              "text": "×",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "introOverlay",
+                "className": "overlay show"
+              },
+              "inViewport": true
+            }
+          ]
+        },
+        {
+          "pass": false,
+          "message": "键盘焦点不会进入视觉遮罩后的背景控件",
+          "details": [
+            {
+              "tag": "button",
+              "id": "muteBtn",
+              "href": null,
+              "text": "×",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "introOverlay",
+                "className": "overlay show"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "pauseBtn",
+              "href": null,
+              "text": "Ⅱ",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "introOverlay",
+                "className": "overlay show"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "进入时间裂隙",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+              "occluded": false,
+              "topElement": {
+                "tag": "button",
+                "id": "startBtn",
+                "className": "primary-button"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "motionSwitch",
+              "href": null,
+              "text": "",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "button",
+                "id": "motionSwitch",
+                "className": "switch"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "muteBtn",
+              "href": null,
+              "text": "×",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "introOverlay",
+                "className": "overlay show"
+              },
+              "inViewport": true
+            }
+          ]
+        },
+        {
+          "pass": true,
+          "message": "聚焦控件均处于可视区域",
+          "details": [
+            {
+              "tag": "button",
+              "id": "muteBtn",
+              "href": null,
+              "text": "×",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "introOverlay",
+                "className": "overlay show"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "pauseBtn",
+              "href": null,
+              "text": "Ⅱ",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "introOverlay",
+                "className": "overlay show"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "进入时间裂隙",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+              "occluded": false,
+              "topElement": {
+                "tag": "button",
+                "id": "startBtn",
+                "className": "primary-button"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "motionSwitch",
+              "href": null,
+              "text": "",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": false,
+              "topElement": {
+                "tag": "button",
+                "id": "motionSwitch",
+                "className": "switch"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "muteBtn",
+              "href": null,
+              "text": "×",
+              "visibleIndicator": true,
+              "outline": "3px solid rgba(95, 234, 255, 0.8)",
+              "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "introOverlay",
+                "className": "overlay show"
+              },
+              "inViewport": true
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "focusableCount": 4,
+        "sequence": [
+          {
+            "tag": "button",
+            "id": "muteBtn",
+            "href": null,
+            "text": "×",
+            "visibleIndicator": true,
+            "outline": "3px solid rgba(95, 234, 255, 0.8)",
+            "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
+            "occluded": true,
+            "topElement": {
+              "tag": "section",
+              "id": "introOverlay",
+              "className": "overlay show"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "button",
+            "id": "pauseBtn",
+            "href": null,
+            "text": "Ⅱ",
+            "visibleIndicator": true,
+            "outline": "3px solid rgba(95, 234, 255, 0.8)",
+            "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
+            "occluded": true,
+            "topElement": {
+              "tag": "section",
+              "id": "introOverlay",
+              "className": "overlay show"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "button",
+            "id": "startBtn",
+            "href": null,
+            "text": "进入时间裂隙",
+            "visibleIndicator": true,
+            "outline": "3px solid rgba(95, 234, 255, 0.8)",
+            "boxShadow": "rgba(98, 76, 255, 0.3) 0px 10px 30px 0px",
+            "occluded": false,
+            "topElement": {
+              "tag": "button",
+              "id": "startBtn",
+              "className": "primary-button"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "button",
+            "id": "motionSwitch",
+            "href": null,
+            "text": "",
+            "visibleIndicator": true,
+            "outline": "1px auto rgb(16, 16, 16)",
+            "boxShadow": "none",
+            "occluded": false,
+            "topElement": {
+              "tag": "button",
+              "id": "motionSwitch",
+              "className": "switch"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "body",
+            "id": null,
+            "href": null,
+            "text": "× Ⅱ TEST ×1 TIME ECHO PROTOCOL 五秒之后 你走过的每一段路，五秒后都会回来。让过去的自己，",
+            "visibleIndicator": false,
+            "outline": "3px none rgb(255, 255, 255)",
+            "boxShadow": "none",
+            "occluded": false,
+            "topElement": {
+              "tag": "div",
+              "id": null,
+              "className": "rift-mark"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "button",
+            "id": "muteBtn",
+            "href": null,
+            "text": "×",
+            "visibleIndicator": true,
+            "outline": "3px solid rgba(95, 234, 255, 0.8)",
+            "boxShadow": "rgba(0, 0, 0, 0.3) 0px 4px 12px 0px",
+            "occluded": true,
+            "topElement": {
+              "tag": "section",
+              "id": "introOverlay",
+              "className": "overlay show"
+            },
+            "inViewport": true
+          }
+        ]
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/five-seconds-later-keyboard-focus.png",
+      "limitation": "键盘检查覆盖当前可见 DOM 控件的 Tab 顺序和焦点可见性；Canvas 核心玩法仍以触摸/指针为主。"
+    },
+    {
+      "page": "five-seconds-later",
+      "scenario": "reduced-motion",
+      "status": "FAIL",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "prefers-reduced-motion: reduce 匹配成功",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "减少动态效果环境下主入口仍可操作",
+          "details": null
+        },
+        {
+          "pass": false,
+          "message": "游戏可观察的减少动态效果控件与系统偏好一致",
+          "details": {
+            "id": "motionSwitch",
+            "value": "false",
+            "expected": "true"
+          }
+        }
+      ],
+      "metrics": {
+        "mediaMatches": true,
+        "motionNodes": [
+          {
+            "tag": "html",
+            "id": null,
+            "className": "",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "body",
+            "id": null,
+            "className": "",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "main",
+            "id": "gameShell",
+            "className": "game-shell",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "canvas",
+            "id": "game",
+            "className": "",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "p",
+            "id": "liveStatus",
+            "className": "sr-only",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "div",
+            "id": "controls",
+            "className": "controls",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "button",
+            "id": "muteBtn",
+            "className": "icon-button",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "button",
+            "id": "pauseBtn",
+            "className": "icon-button",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "span",
+            "id": "testBadge",
+            "className": "test-badge show",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "section",
+            "id": "introOverlay",
+            "className": "overlay show",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "div",
+            "id": null,
+            "className": "panel",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "p",
+            "id": null,
+            "className": "eyebrow",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "h1",
+            "id": "gameTitle",
+            "className": "",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "p",
+            "id": null,
+            "className": "subtitle",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "div",
+            "id": null,
+            "className": "rift-mark",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "span",
+            "id": null,
+            "className": "",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "div",
+            "id": null,
+            "className": "how",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "div",
+            "id": null,
+            "className": "",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "strong",
+            "id": null,
+            "className": "",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          },
+          {
+            "tag": "div",
+            "id": null,
+            "className": "",
+            "animationDuration": "0s",
+            "transitionDuration": "1e-05s"
+          }
+        ],
+        "controlState": {
+          "id": "motionSwitch",
+          "value": "false",
+          "expected": "true"
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/five-seconds-later-reduced-motion.png",
+      "limitation": "减少动态效果检查覆盖 prefers-reduced-motion 媒体查询、可观察 CSS/控件状态与持续可操作性，不对页面未暴露的内部状态作假设。"
+    },
+    {
+      "page": "five-seconds-later",
+      "scenario": "lifecycle",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "页面隐藏后游戏进入暂停",
+          "details": {
+            "gameId": "five-seconds-later",
+            "runId": "five-seconds-later-ms4xqkgj-osyyso",
+            "mode": "paused",
+            "phase": "awakening",
+            "objective": "清除锚点可降低压力（剩 10）",
+            "elapsed": 0.117,
+            "remaining": 179.883,
+            "energy": 100,
+            "player": {
+              "x": 195,
+              "y": 640
+            },
+            "target": {
+              "x": 195,
+              "y": 640
+            },
+            "echoCount": 0,
+            "maxEchoes": 0,
+            "echoes": [],
+            "pathPoints": 3,
+            "targetsDestroyed": 0,
+            "targetsRemaining": 10,
+            "switchActivated": false,
+            "switchCharge": 0,
+            "collabCount": 0,
+            "shieldsRemaining": 4,
+            "gates": [
+              {
+                "slot": 0,
+                "primed": false,
+                "broken": false
+              },
+              {
+                "slot": 1,
+                "primed": false,
+                "broken": false
+              },
+              {
+                "slot": 2,
+                "primed": false,
+                "broken": false
+              },
+              {
+                "slot": 3,
+                "primed": false,
+                "broken": false
+              }
+            ],
+            "recordingSlot": 0,
+            "highlightedGateSlot": null,
+            "message": "拖动光标，留下第一段五秒轨迹",
+            "coreVisible": false,
+            "coreHp": 18,
+            "paused": true,
+            "testMode": true,
+            "timeScale": 1,
+            "seed": 20260728,
+            "layoutVersion": 1,
+            "lastDamageSource": ""
+          }
+        },
+        {
+          "pass": true,
+          "message": "隐藏期间局内时间冻结",
+          "details": {
+            "pausedAt": 0.117,
+            "hidden": 0.117
+          }
+        },
+        {
+          "pass": true,
+          "message": "页面恢复后可由玩家继续游戏",
+          "details": {
+            "gameId": "five-seconds-later",
+            "runId": "five-seconds-later-ms4xqkgj-osyyso",
+            "mode": "playing",
+            "phase": "awakening",
+            "objective": "清除锚点可降低压力（剩 10）",
+            "elapsed": 0.2,
+            "remaining": 179.8,
+            "energy": 100,
+            "player": {
+              "x": 195,
+              "y": 640
+            },
+            "target": {
+              "x": 195,
+              "y": 640
+            },
+            "echoCount": 0,
+            "maxEchoes": 0,
+            "echoes": [],
+            "pathPoints": 5,
+            "targetsDestroyed": 0,
+            "targetsRemaining": 10,
+            "switchActivated": false,
+            "switchCharge": 0,
+            "collabCount": 0,
+            "shieldsRemaining": 4,
+            "gates": [
+              {
+                "slot": 0,
+                "primed": false,
+                "broken": false
+              },
+              {
+                "slot": 1,
+                "primed": false,
+                "broken": false
+              },
+              {
+                "slot": 2,
+                "primed": false,
+                "broken": false
+              },
+              {
+                "slot": 3,
+                "primed": false,
+                "broken": false
+              }
+            ],
+            "recordingSlot": 0,
+            "highlightedGateSlot": null,
+            "message": "拖动光标，留下第一段五秒轨迹",
+            "coreVisible": false,
+            "coreHp": 18,
+            "paused": false,
+            "testMode": true,
+            "timeScale": 1,
+            "seed": 20260728,
+            "layoutVersion": 1,
+            "lastDamageSource": ""
+          }
+        }
+      ],
+      "metrics": {
+        "before": {
+          "gameId": "five-seconds-later",
+          "runId": "five-seconds-later-ms4xqkgj-osyyso",
+          "mode": "playing",
+          "phase": "awakening",
+          "objective": "清除锚点可降低压力（剩 10）",
+          "elapsed": 0.083,
+          "remaining": 179.917,
+          "energy": 100,
+          "player": {
+            "x": 195,
+            "y": 640
+          },
+          "target": {
+            "x": 195,
+            "y": 640
+          },
+          "echoCount": 0,
+          "maxEchoes": 0,
+          "echoes": [],
+          "pathPoints": 2,
+          "targetsDestroyed": 0,
+          "targetsRemaining": 10,
+          "switchActivated": false,
+          "switchCharge": 0,
+          "collabCount": 0,
+          "shieldsRemaining": 4,
+          "gates": [
+            {
+              "slot": 0,
+              "primed": false,
+              "broken": false
+            },
+            {
+              "slot": 1,
+              "primed": false,
+              "broken": false
+            },
+            {
+              "slot": 2,
+              "primed": false,
+              "broken": false
+            },
+            {
+              "slot": 3,
+              "primed": false,
+              "broken": false
+            }
+          ],
+          "recordingSlot": 0,
+          "highlightedGateSlot": null,
+          "message": "拖动光标，留下第一段五秒轨迹",
+          "coreVisible": false,
+          "coreHp": 18,
+          "paused": false,
+          "testMode": true,
+          "timeScale": 1,
+          "seed": 20260728,
+          "layoutVersion": 1,
+          "lastDamageSource": ""
+        },
+        "pausedAt": {
+          "gameId": "five-seconds-later",
+          "runId": "five-seconds-later-ms4xqkgj-osyyso",
+          "mode": "paused",
+          "phase": "awakening",
+          "objective": "清除锚点可降低压力（剩 10）",
+          "elapsed": 0.117,
+          "remaining": 179.883,
+          "energy": 100,
+          "player": {
+            "x": 195,
+            "y": 640
+          },
+          "target": {
+            "x": 195,
+            "y": 640
+          },
+          "echoCount": 0,
+          "maxEchoes": 0,
+          "echoes": [],
+          "pathPoints": 3,
+          "targetsDestroyed": 0,
+          "targetsRemaining": 10,
+          "switchActivated": false,
+          "switchCharge": 0,
+          "collabCount": 0,
+          "shieldsRemaining": 4,
+          "gates": [
+            {
+              "slot": 0,
+              "primed": false,
+              "broken": false
+            },
+            {
+              "slot": 1,
+              "primed": false,
+              "broken": false
+            },
+            {
+              "slot": 2,
+              "primed": false,
+              "broken": false
+            },
+            {
+              "slot": 3,
+              "primed": false,
+              "broken": false
+            }
+          ],
+          "recordingSlot": 0,
+          "highlightedGateSlot": null,
+          "message": "拖动光标，留下第一段五秒轨迹",
+          "coreVisible": false,
+          "coreHp": 18,
+          "paused": true,
+          "testMode": true,
+          "timeScale": 1,
+          "seed": 20260728,
+          "layoutVersion": 1,
+          "lastDamageSource": ""
+        },
+        "hidden": {
+          "gameId": "five-seconds-later",
+          "runId": "five-seconds-later-ms4xqkgj-osyyso",
+          "mode": "paused",
+          "phase": "awakening",
+          "objective": "清除锚点可降低压力（剩 10）",
+          "elapsed": 0.117,
+          "remaining": 179.883,
+          "energy": 100,
+          "player": {
+            "x": 195,
+            "y": 640
+          },
+          "target": {
+            "x": 195,
+            "y": 640
+          },
+          "echoCount": 0,
+          "maxEchoes": 0,
+          "echoes": [],
+          "pathPoints": 3,
+          "targetsDestroyed": 0,
+          "targetsRemaining": 10,
+          "switchActivated": false,
+          "switchCharge": 0,
+          "collabCount": 0,
+          "shieldsRemaining": 4,
+          "gates": [
+            {
+              "slot": 0,
+              "primed": false,
+              "broken": false
+            },
+            {
+              "slot": 1,
+              "primed": false,
+              "broken": false
+            },
+            {
+              "slot": 2,
+              "primed": false,
+              "broken": false
+            },
+            {
+              "slot": 3,
+              "primed": false,
+              "broken": false
+            }
+          ],
+          "recordingSlot": 0,
+          "highlightedGateSlot": null,
+          "message": "拖动光标，留下第一段五秒轨迹",
+          "coreVisible": false,
+          "coreHp": 18,
+          "paused": true,
+          "testMode": true,
+          "timeScale": 1,
+          "seed": 20260728,
+          "layoutVersion": 1,
+          "lastDamageSource": ""
+        },
+        "resumed": {
+          "gameId": "five-seconds-later",
+          "runId": "five-seconds-later-ms4xqkgj-osyyso",
+          "mode": "playing",
+          "phase": "awakening",
+          "objective": "清除锚点可降低压力（剩 10）",
+          "elapsed": 0.2,
+          "remaining": 179.8,
+          "energy": 100,
+          "player": {
+            "x": 195,
+            "y": 640
+          },
+          "target": {
+            "x": 195,
+            "y": 640
+          },
+          "echoCount": 0,
+          "maxEchoes": 0,
+          "echoes": [],
+          "pathPoints": 5,
+          "targetsDestroyed": 0,
+          "targetsRemaining": 10,
+          "switchActivated": false,
+          "switchCharge": 0,
+          "collabCount": 0,
+          "shieldsRemaining": 4,
+          "gates": [
+            {
+              "slot": 0,
+              "primed": false,
+              "broken": false
+            },
+            {
+              "slot": 1,
+              "primed": false,
+              "broken": false
+            },
+            {
+              "slot": 2,
+              "primed": false,
+              "broken": false
+            },
+            {
+              "slot": 3,
+              "primed": false,
+              "broken": false
+            }
+          ],
+          "recordingSlot": 0,
+          "highlightedGateSlot": null,
+          "message": "拖动光标，留下第一段五秒轨迹",
+          "coreVisible": false,
+          "coreHp": 18,
+          "paused": false,
+          "testMode": true,
+          "timeScale": 1,
+          "seed": 20260728,
+          "layoutVersion": 1,
+          "lastDamageSource": ""
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/five-seconds-later-lifecycle-resumed.png",
+      "limitation": "隐藏/恢复由测试注入 document.hidden/visibilityState 并派发 visibilitychange，不等同移动系统回收 WebView 进程。"
+    },
+    {
+      "page": "world-mender",
+      "scenario": "zoom-200",
+      "status": "FAIL",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "200% 模拟缩放后文案仍存在",
+          "details": 156
+        },
+        {
+          "pass": false,
+          "message": "200% 模拟缩放后主入口仍可见",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "200% 模拟缩放后没有横向页面溢出",
+          "details": {
+            "scrollWidth": 390,
+            "clientWidth": 390
+          }
+        },
+        {
+          "pass": false,
+          "message": "200% 模拟缩放后完整游戏 Canvas 可通过视口或滚动到达",
+          "details": {
+            "canvas": {
+              "x": 0,
+              "y": 0,
+              "width": 780,
+              "height": 1688
+            },
+            "scroll": [
+              390,
+              844
+            ],
+            "client": [
+              390,
+              844
+            ]
+          }
+        }
+      ],
+      "metrics": {
+        "before": {
+          "title": "世界缝补师",
+          "innerWidth": 390,
+          "innerHeight": 844,
+          "clientWidth": 390,
+          "clientHeight": 844,
+          "scrollWidth": 390,
+          "scrollHeight": 844,
+          "bodyTextLength": 156,
+          "interactiveCount": 3,
+          "offscreenInteractive": [],
+          "clippedText": [],
+          "canvas": {
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 844
+          }
+        },
+        "after": {
+          "title": "世界缝补师",
+          "innerWidth": 390,
+          "innerHeight": 844,
+          "clientWidth": 390,
+          "clientHeight": 844,
+          "scrollWidth": 390,
+          "scrollHeight": 844,
+          "bodyTextLength": 156,
+          "interactiveCount": 3,
+          "offscreenInteractive": [
+            {
+              "id": "pauseBtn",
+              "text": "暂停"
+            },
+            {
+              "id": "legendToggle",
+              "text": "路线提示点击收起"
+            },
+            {
+              "id": "startBtn",
+              "text": "拿起金针"
+            }
+          ],
+          "clippedText": [],
+          "canvas": {
+            "x": 0,
+            "y": 0,
+            "width": 780,
+            "height": 1688
+          }
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/world-mender-zoom-200.png",
+      "limitation": "200% 页面缩放使用 CSS zoom 模拟内容放大与裁切风险，不等同浏览器原生 Ctrl/+ 或微信 WebView 缩放。"
+    },
+    {
+      "page": "world-mender",
+      "scenario": "large-text-200",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "已对可见 DOM 文本应用 200% 测试字号",
+          "details": 13
+        },
+        {
+          "pass": true,
+          "message": "200% 测试字号下主入口仍可见",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "200% 测试字号下没有横向页面溢出",
+          "details": {
+            "scrollWidth": 390,
+            "clientWidth": 390
+          }
+        },
+        {
+          "pass": true,
+          "message": "200% 测试字号下没有检测到文本裁切",
+          "details": []
+        }
+      ],
+      "metrics": {
+        "scaledElements": 13,
+        "title": "世界缝补师",
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientWidth": 390,
+        "clientHeight": 844,
+        "scrollWidth": 390,
+        "scrollHeight": 844,
+        "bodyTextLength": 156,
+        "interactiveCount": 3,
+        "offscreenInteractive": [],
+        "clippedText": [],
+        "canvas": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 844
+        },
+        "canvasTextScaled": false
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/world-mender-large-text-200.png",
+      "limitation": "大字号使用测试脚本把可见 DOM 文本的计算字号放大到 200%，不等同 iOS/Android 或微信系统字号；Canvas 内绘制文字不会被用户样式表放大。"
+    },
+    {
+      "page": "world-mender",
+      "scenario": "landscape",
+      "status": "FAIL",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "存在可读页面文案",
+          "details": 156
+        },
+        {
+          "pass": false,
+          "message": "主入口控件仍在可视区域",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "没有横向页面溢出",
+          "details": {
+            "scrollWidth": 844,
+            "clientWidth": 844
+          }
+        },
+        {
+          "pass": false,
+          "message": "游戏 Canvas 保持最低可操作尺寸",
+          "details": {
+            "x": 332,
+            "y": 0,
+            "width": 180,
+            "height": 390
+          }
+        }
+      ],
+      "metrics": {
+        "title": "世界缝补师",
+        "innerWidth": 844,
+        "innerHeight": 390,
+        "clientWidth": 844,
+        "clientHeight": 390,
+        "scrollWidth": 844,
+        "scrollHeight": 390,
+        "bodyTextLength": 156,
+        "interactiveCount": 3,
+        "offscreenInteractive": [
+          {
+            "id": "startBtn",
+            "text": "拿起金针"
+          }
+        ],
+        "clippedText": [],
+        "canvas": {
+          "x": 332,
+          "y": 0,
+          "width": 180,
+          "height": 390
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/world-mender-landscape.png",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "limitation": "浏览器视口证据，不包含微信顶部/底部导航栏及安全区遮挡。"
+    },
+    {
+      "page": "world-mender",
+      "scenario": "ultrawide-short",
+      "status": "FAIL",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "存在可读页面文案",
+          "details": 156
+        },
+        {
+          "pass": false,
+          "message": "主入口控件仍在可视区域",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "没有横向页面溢出",
+          "details": {
+            "scrollWidth": 1200,
+            "clientWidth": 1200
+          }
+        },
+        {
+          "pass": false,
+          "message": "游戏 Canvas 保持最低可操作尺寸",
+          "details": {
+            "x": 510,
+            "y": 0,
+            "width": 180,
+            "height": 390
+          }
+        }
+      ],
+      "metrics": {
+        "title": "世界缝补师",
+        "innerWidth": 1200,
+        "innerHeight": 390,
+        "clientWidth": 1200,
+        "clientHeight": 390,
+        "scrollWidth": 1200,
+        "scrollHeight": 390,
+        "bodyTextLength": 156,
+        "interactiveCount": 3,
+        "offscreenInteractive": [
+          {
+            "id": "startBtn",
+            "text": "拿起金针"
+          }
+        ],
+        "clippedText": [],
+        "canvas": {
+          "x": 510,
+          "y": 0,
+          "width": 180,
+          "height": 390
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/world-mender-ultrawide-short.png",
+      "viewport": {
+        "width": 1200,
+        "height": 390
+      },
+      "limitation": "浏览器视口证据，不包含微信顶部/底部导航栏及安全区遮挡。"
+    },
+    {
+      "page": "world-mender",
+      "scenario": "keyboard-focus",
+      "status": "FAIL",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "存在可键盘聚焦控件",
+          "details": 3
+        },
+        {
+          "pass": true,
+          "message": "Tab 顺序覆盖全部当前可见控件",
+          "details": {
+            "expected": 3,
+            "actual": 3
+          }
+        },
+        {
+          "pass": true,
+          "message": "每个键盘焦点都有可观察焦点指示",
+          "details": [
+            {
+              "tag": "button",
+              "id": "pauseBtn",
+              "href": null,
+              "text": "暂停",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "intro",
+                "className": "overlay"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "legendToggle",
+              "href": null,
+              "text": "路线提示点击收起",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "none",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "intro",
+                "className": "overlay"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "拿起金针",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+              "occluded": false,
+              "topElement": {
+                "tag": "button",
+                "id": "startBtn",
+                "className": "primary"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "pauseBtn",
+              "href": null,
+              "text": "暂停",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "intro",
+                "className": "overlay"
+              },
+              "inViewport": true
+            }
+          ]
+        },
+        {
+          "pass": false,
+          "message": "键盘焦点不会进入视觉遮罩后的背景控件",
+          "details": [
+            {
+              "tag": "button",
+              "id": "pauseBtn",
+              "href": null,
+              "text": "暂停",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "intro",
+                "className": "overlay"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "legendToggle",
+              "href": null,
+              "text": "路线提示点击收起",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "none",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "intro",
+                "className": "overlay"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "拿起金针",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+              "occluded": false,
+              "topElement": {
+                "tag": "button",
+                "id": "startBtn",
+                "className": "primary"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "pauseBtn",
+              "href": null,
+              "text": "暂停",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "intro",
+                "className": "overlay"
+              },
+              "inViewport": true
+            }
+          ]
+        },
+        {
+          "pass": true,
+          "message": "聚焦控件均处于可视区域",
+          "details": [
+            {
+              "tag": "button",
+              "id": "pauseBtn",
+              "href": null,
+              "text": "暂停",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "intro",
+                "className": "overlay"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "legendToggle",
+              "href": null,
+              "text": "路线提示点击收起",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "none",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "intro",
+                "className": "overlay"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "拿起金针",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+              "occluded": false,
+              "topElement": {
+                "tag": "button",
+                "id": "startBtn",
+                "className": "primary"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "pauseBtn",
+              "href": null,
+              "text": "暂停",
+              "visibleIndicator": true,
+              "outline": "3px solid rgb(255, 227, 154)",
+              "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "intro",
+                "className": "overlay"
+              },
+              "inViewport": true
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "focusableCount": 3,
+        "sequence": [
+          {
+            "tag": "button",
+            "id": "pauseBtn",
+            "href": null,
+            "text": "暂停",
+            "visibleIndicator": true,
+            "outline": "3px solid rgb(255, 227, 154)",
+            "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+            "occluded": true,
+            "topElement": {
+              "tag": "section",
+              "id": "intro",
+              "className": "overlay"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "button",
+            "id": "legendToggle",
+            "href": null,
+            "text": "路线提示点击收起",
+            "visibleIndicator": true,
+            "outline": "3px solid rgb(255, 227, 154)",
+            "boxShadow": "none",
+            "occluded": true,
+            "topElement": {
+              "tag": "section",
+              "id": "intro",
+              "className": "overlay"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "button",
+            "id": "startBtn",
+            "href": null,
+            "text": "拿起金针",
+            "visibleIndicator": true,
+            "outline": "3px solid rgb(255, 227, 154)",
+            "boxShadow": "rgba(197, 126, 41, 0.25) 0px 10px 25px 0px",
+            "occluded": false,
+            "topElement": {
+              "tag": "button",
+              "id": "startBtn",
+              "className": "primary"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "body",
+            "id": null,
+            "href": null,
+            "text": "暂停 ↶ 撤销一针 路线提示点击收起 ●苔团 ◆云兔 ▲陶鸟 ■绒鹿 ✦ A STITCH OF HOPE 世界缝补师 ",
+            "visibleIndicator": false,
+            "outline": "3px none rgb(255, 244, 214)",
+            "boxShadow": "none",
+            "occluded": false,
+            "topElement": {
+              "tag": "p",
+              "id": null,
+              "className": "desc"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "button",
+            "id": "pauseBtn",
+            "href": null,
+            "text": "暂停",
+            "visibleIndicator": true,
+            "outline": "3px solid rgb(255, 227, 154)",
+            "boxShadow": "rgba(6, 8, 18, 0.4) 0px 5px 14px 0px",
+            "occluded": true,
+            "topElement": {
+              "tag": "section",
+              "id": "intro",
+              "className": "overlay"
+            },
+            "inViewport": true
+          }
+        ]
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/world-mender-keyboard-focus.png",
+      "limitation": "键盘检查覆盖当前可见 DOM 控件的 Tab 顺序和焦点可见性；Canvas 核心玩法仍以触摸/指针为主。"
+    },
+    {
+      "page": "world-mender",
+      "scenario": "reduced-motion",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "prefers-reduced-motion: reduce 匹配成功",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "减少动态效果环境下主入口仍可操作",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "游戏可观察的减少动态效果控件与系统偏好一致",
+          "details": {
+            "id": "motionBtn",
+            "value": "简动",
+            "expected": "简动"
+          }
+        }
+      ],
+      "metrics": {
+        "mediaMatches": true,
+        "motionNodes": [],
+        "controlState": {
+          "id": "motionBtn",
+          "value": "简动",
+          "expected": "简动"
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/world-mender-reduced-motion.png",
+      "limitation": "减少动态效果检查覆盖 prefers-reduced-motion 媒体查询、可观察 CSS/控件状态与持续可操作性，不对页面未暴露的内部状态作假设。"
+    },
+    {
+      "page": "world-mender",
+      "scenario": "lifecycle",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "页面隐藏后游戏进入暂停",
+          "details": {
+            "gameId": "world-mender",
+            "phase": "playing",
+            "runId": "wm-ms4xqo7w-72x7",
+            "elapsed": 0.1,
+            "timeRemaining": 179.9,
+            "paused": true,
+            "pauseReason": "hidden",
+            "thread": 345,
+            "maxThread": 345,
+            "stitchedEdges": [],
+            "stitches": [],
+            "saved": 0,
+            "lost": 0,
+            "spawned": 0,
+            "gardenConnected": false,
+            "bridgeBuilt": false,
+            "barrierBuilt": false,
+            "mechanics": {
+              "firstInput": false,
+              "bridge": false,
+              "barrier": false,
+              "firstGuideEdge": "west_bridge",
+              "settlementBoost": 1
+            },
+            "ui": {
+              "legendExpanded": true,
+              "selectedAnchor": null
+            },
+            "anchors": [
+              {
+                "id": "w1",
+                "x": 39,
+                "y": 342,
+                "type": "bridge"
+              },
+              {
+                "id": "w2",
+                "x": 125,
+                "y": 342,
+                "type": "bridge"
+              },
+              {
+                "id": "n1",
+                "x": 184,
+                "y": 206,
+                "type": "barrier"
+              },
+              {
+                "id": "n2",
+                "x": 264,
+                "y": 206,
+                "type": "barrier"
+              },
+              {
+                "id": "e1",
+                "x": 270,
+                "y": 397,
+                "type": "bridge"
+              },
+              {
+                "id": "e2",
+                "x": 358,
+                "y": 397,
+                "type": "bridge"
+              },
+              {
+                "id": "s1",
+                "x": 175,
+                "y": 578,
+                "type": "barrier"
+              },
+              {
+                "id": "s2",
+                "x": 269,
+                "y": 578,
+                "type": "barrier"
+              },
+              {
+                "id": "g1",
+                "x": 195,
+                "y": 518,
+                "type": "garden"
+              },
+              {
+                "id": "g2",
+                "x": 195,
+                "y": 448,
+                "type": "garden"
+              }
+            ],
+            "availableEdges": [
+              {
+                "id": "west_bridge",
+                "a": "w1",
+                "b": "w2",
+                "cost": 72,
+                "role": "bridge",
+                "stitched": false
+              },
+              {
+                "id": "north_barrier",
+                "a": "n1",
+                "b": "n2",
+                "cost": 80,
+                "role": "barrier",
+                "stitched": false
+              },
+              {
+                "id": "east_bridge",
+                "a": "e1",
+                "b": "e2",
+                "cost": 88,
+                "role": "bridge",
+                "stitched": false
+              },
+              {
+                "id": "south_barrier",
+                "a": "s1",
+                "b": "s2",
+                "cost": 94,
+                "role": "barrier",
+                "stitched": false
+              },
+              {
+                "id": "garden_gate",
+                "a": "g1",
+                "b": "g2",
+                "cost": 76,
+                "role": "garden",
+                "stitched": false
+              }
+            ]
+          }
+        },
+        {
+          "pass": true,
+          "message": "隐藏期间局内时间冻结",
+          "details": {
+            "pausedAt": 0.1,
+            "hidden": 0.1
+          }
+        },
+        {
+          "pass": true,
+          "message": "页面恢复后可由玩家继续游戏",
+          "details": {
+            "gameId": "world-mender",
+            "phase": "playing",
+            "runId": "wm-ms4xqo7w-72x7",
+            "elapsed": 0.2,
+            "timeRemaining": 179.8,
+            "paused": false,
+            "pauseReason": "",
+            "thread": 345,
+            "maxThread": 345,
+            "stitchedEdges": [],
+            "stitches": [],
+            "saved": 0,
+            "lost": 0,
+            "spawned": 0,
+            "gardenConnected": false,
+            "bridgeBuilt": false,
+            "barrierBuilt": false,
+            "mechanics": {
+              "firstInput": false,
+              "bridge": false,
+              "barrier": false,
+              "firstGuideEdge": "west_bridge",
+              "settlementBoost": 1
+            },
+            "ui": {
+              "legendExpanded": true,
+              "selectedAnchor": null
+            },
+            "anchors": [
+              {
+                "id": "w1",
+                "x": 39,
+                "y": 342,
+                "type": "bridge"
+              },
+              {
+                "id": "w2",
+                "x": 125,
+                "y": 342,
+                "type": "bridge"
+              },
+              {
+                "id": "n1",
+                "x": 184,
+                "y": 206,
+                "type": "barrier"
+              },
+              {
+                "id": "n2",
+                "x": 264,
+                "y": 206,
+                "type": "barrier"
+              },
+              {
+                "id": "e1",
+                "x": 270,
+                "y": 397,
+                "type": "bridge"
+              },
+              {
+                "id": "e2",
+                "x": 358,
+                "y": 397,
+                "type": "bridge"
+              },
+              {
+                "id": "s1",
+                "x": 175,
+                "y": 578,
+                "type": "barrier"
+              },
+              {
+                "id": "s2",
+                "x": 269,
+                "y": 578,
+                "type": "barrier"
+              },
+              {
+                "id": "g1",
+                "x": 195,
+                "y": 518,
+                "type": "garden"
+              },
+              {
+                "id": "g2",
+                "x": 195,
+                "y": 448,
+                "type": "garden"
+              }
+            ],
+            "availableEdges": [
+              {
+                "id": "west_bridge",
+                "a": "w1",
+                "b": "w2",
+                "cost": 72,
+                "role": "bridge",
+                "stitched": false
+              },
+              {
+                "id": "north_barrier",
+                "a": "n1",
+                "b": "n2",
+                "cost": 80,
+                "role": "barrier",
+                "stitched": false
+              },
+              {
+                "id": "east_bridge",
+                "a": "e1",
+                "b": "e2",
+                "cost": 88,
+                "role": "bridge",
+                "stitched": false
+              },
+              {
+                "id": "south_barrier",
+                "a": "s1",
+                "b": "s2",
+                "cost": 94,
+                "role": "barrier",
+                "stitched": false
+              },
+              {
+                "id": "garden_gate",
+                "a": "g1",
+                "b": "g2",
+                "cost": 76,
+                "role": "garden",
+                "stitched": false
+              }
+            ]
+          }
+        }
+      ],
+      "metrics": {
+        "before": {
+          "gameId": "world-mender",
+          "phase": "playing",
+          "runId": "wm-ms4xqo7w-72x7",
+          "elapsed": 0.1,
+          "timeRemaining": 179.9,
+          "paused": false,
+          "pauseReason": "",
+          "thread": 345,
+          "maxThread": 345,
+          "stitchedEdges": [],
+          "stitches": [],
+          "saved": 0,
+          "lost": 0,
+          "spawned": 0,
+          "gardenConnected": false,
+          "bridgeBuilt": false,
+          "barrierBuilt": false,
+          "mechanics": {
+            "firstInput": false,
+            "bridge": false,
+            "barrier": false,
+            "firstGuideEdge": "west_bridge",
+            "settlementBoost": 1
+          },
+          "ui": {
+            "legendExpanded": true,
+            "selectedAnchor": null
+          },
+          "anchors": [
+            {
+              "id": "w1",
+              "x": 39,
+              "y": 342,
+              "type": "bridge"
+            },
+            {
+              "id": "w2",
+              "x": 125,
+              "y": 342,
+              "type": "bridge"
+            },
+            {
+              "id": "n1",
+              "x": 184,
+              "y": 206,
+              "type": "barrier"
+            },
+            {
+              "id": "n2",
+              "x": 264,
+              "y": 206,
+              "type": "barrier"
+            },
+            {
+              "id": "e1",
+              "x": 270,
+              "y": 397,
+              "type": "bridge"
+            },
+            {
+              "id": "e2",
+              "x": 358,
+              "y": 397,
+              "type": "bridge"
+            },
+            {
+              "id": "s1",
+              "x": 175,
+              "y": 578,
+              "type": "barrier"
+            },
+            {
+              "id": "s2",
+              "x": 269,
+              "y": 578,
+              "type": "barrier"
+            },
+            {
+              "id": "g1",
+              "x": 195,
+              "y": 518,
+              "type": "garden"
+            },
+            {
+              "id": "g2",
+              "x": 195,
+              "y": 448,
+              "type": "garden"
+            }
+          ],
+          "availableEdges": [
+            {
+              "id": "west_bridge",
+              "a": "w1",
+              "b": "w2",
+              "cost": 72,
+              "role": "bridge",
+              "stitched": false
+            },
+            {
+              "id": "north_barrier",
+              "a": "n1",
+              "b": "n2",
+              "cost": 80,
+              "role": "barrier",
+              "stitched": false
+            },
+            {
+              "id": "east_bridge",
+              "a": "e1",
+              "b": "e2",
+              "cost": 88,
+              "role": "bridge",
+              "stitched": false
+            },
+            {
+              "id": "south_barrier",
+              "a": "s1",
+              "b": "s2",
+              "cost": 94,
+              "role": "barrier",
+              "stitched": false
+            },
+            {
+              "id": "garden_gate",
+              "a": "g1",
+              "b": "g2",
+              "cost": 76,
+              "role": "garden",
+              "stitched": false
+            }
+          ]
+        },
+        "pausedAt": {
+          "gameId": "world-mender",
+          "phase": "playing",
+          "runId": "wm-ms4xqo7w-72x7",
+          "elapsed": 0.1,
+          "timeRemaining": 179.9,
+          "paused": true,
+          "pauseReason": "hidden",
+          "thread": 345,
+          "maxThread": 345,
+          "stitchedEdges": [],
+          "stitches": [],
+          "saved": 0,
+          "lost": 0,
+          "spawned": 0,
+          "gardenConnected": false,
+          "bridgeBuilt": false,
+          "barrierBuilt": false,
+          "mechanics": {
+            "firstInput": false,
+            "bridge": false,
+            "barrier": false,
+            "firstGuideEdge": "west_bridge",
+            "settlementBoost": 1
+          },
+          "ui": {
+            "legendExpanded": true,
+            "selectedAnchor": null
+          },
+          "anchors": [
+            {
+              "id": "w1",
+              "x": 39,
+              "y": 342,
+              "type": "bridge"
+            },
+            {
+              "id": "w2",
+              "x": 125,
+              "y": 342,
+              "type": "bridge"
+            },
+            {
+              "id": "n1",
+              "x": 184,
+              "y": 206,
+              "type": "barrier"
+            },
+            {
+              "id": "n2",
+              "x": 264,
+              "y": 206,
+              "type": "barrier"
+            },
+            {
+              "id": "e1",
+              "x": 270,
+              "y": 397,
+              "type": "bridge"
+            },
+            {
+              "id": "e2",
+              "x": 358,
+              "y": 397,
+              "type": "bridge"
+            },
+            {
+              "id": "s1",
+              "x": 175,
+              "y": 578,
+              "type": "barrier"
+            },
+            {
+              "id": "s2",
+              "x": 269,
+              "y": 578,
+              "type": "barrier"
+            },
+            {
+              "id": "g1",
+              "x": 195,
+              "y": 518,
+              "type": "garden"
+            },
+            {
+              "id": "g2",
+              "x": 195,
+              "y": 448,
+              "type": "garden"
+            }
+          ],
+          "availableEdges": [
+            {
+              "id": "west_bridge",
+              "a": "w1",
+              "b": "w2",
+              "cost": 72,
+              "role": "bridge",
+              "stitched": false
+            },
+            {
+              "id": "north_barrier",
+              "a": "n1",
+              "b": "n2",
+              "cost": 80,
+              "role": "barrier",
+              "stitched": false
+            },
+            {
+              "id": "east_bridge",
+              "a": "e1",
+              "b": "e2",
+              "cost": 88,
+              "role": "bridge",
+              "stitched": false
+            },
+            {
+              "id": "south_barrier",
+              "a": "s1",
+              "b": "s2",
+              "cost": 94,
+              "role": "barrier",
+              "stitched": false
+            },
+            {
+              "id": "garden_gate",
+              "a": "g1",
+              "b": "g2",
+              "cost": 76,
+              "role": "garden",
+              "stitched": false
+            }
+          ]
+        },
+        "hidden": {
+          "gameId": "world-mender",
+          "phase": "playing",
+          "runId": "wm-ms4xqo7w-72x7",
+          "elapsed": 0.1,
+          "timeRemaining": 179.9,
+          "paused": true,
+          "pauseReason": "hidden",
+          "thread": 345,
+          "maxThread": 345,
+          "stitchedEdges": [],
+          "stitches": [],
+          "saved": 0,
+          "lost": 0,
+          "spawned": 0,
+          "gardenConnected": false,
+          "bridgeBuilt": false,
+          "barrierBuilt": false,
+          "mechanics": {
+            "firstInput": false,
+            "bridge": false,
+            "barrier": false,
+            "firstGuideEdge": "west_bridge",
+            "settlementBoost": 1
+          },
+          "ui": {
+            "legendExpanded": true,
+            "selectedAnchor": null
+          },
+          "anchors": [
+            {
+              "id": "w1",
+              "x": 39,
+              "y": 342,
+              "type": "bridge"
+            },
+            {
+              "id": "w2",
+              "x": 125,
+              "y": 342,
+              "type": "bridge"
+            },
+            {
+              "id": "n1",
+              "x": 184,
+              "y": 206,
+              "type": "barrier"
+            },
+            {
+              "id": "n2",
+              "x": 264,
+              "y": 206,
+              "type": "barrier"
+            },
+            {
+              "id": "e1",
+              "x": 270,
+              "y": 397,
+              "type": "bridge"
+            },
+            {
+              "id": "e2",
+              "x": 358,
+              "y": 397,
+              "type": "bridge"
+            },
+            {
+              "id": "s1",
+              "x": 175,
+              "y": 578,
+              "type": "barrier"
+            },
+            {
+              "id": "s2",
+              "x": 269,
+              "y": 578,
+              "type": "barrier"
+            },
+            {
+              "id": "g1",
+              "x": 195,
+              "y": 518,
+              "type": "garden"
+            },
+            {
+              "id": "g2",
+              "x": 195,
+              "y": 448,
+              "type": "garden"
+            }
+          ],
+          "availableEdges": [
+            {
+              "id": "west_bridge",
+              "a": "w1",
+              "b": "w2",
+              "cost": 72,
+              "role": "bridge",
+              "stitched": false
+            },
+            {
+              "id": "north_barrier",
+              "a": "n1",
+              "b": "n2",
+              "cost": 80,
+              "role": "barrier",
+              "stitched": false
+            },
+            {
+              "id": "east_bridge",
+              "a": "e1",
+              "b": "e2",
+              "cost": 88,
+              "role": "bridge",
+              "stitched": false
+            },
+            {
+              "id": "south_barrier",
+              "a": "s1",
+              "b": "s2",
+              "cost": 94,
+              "role": "barrier",
+              "stitched": false
+            },
+            {
+              "id": "garden_gate",
+              "a": "g1",
+              "b": "g2",
+              "cost": 76,
+              "role": "garden",
+              "stitched": false
+            }
+          ]
+        },
+        "resumed": {
+          "gameId": "world-mender",
+          "phase": "playing",
+          "runId": "wm-ms4xqo7w-72x7",
+          "elapsed": 0.2,
+          "timeRemaining": 179.8,
+          "paused": false,
+          "pauseReason": "",
+          "thread": 345,
+          "maxThread": 345,
+          "stitchedEdges": [],
+          "stitches": [],
+          "saved": 0,
+          "lost": 0,
+          "spawned": 0,
+          "gardenConnected": false,
+          "bridgeBuilt": false,
+          "barrierBuilt": false,
+          "mechanics": {
+            "firstInput": false,
+            "bridge": false,
+            "barrier": false,
+            "firstGuideEdge": "west_bridge",
+            "settlementBoost": 1
+          },
+          "ui": {
+            "legendExpanded": true,
+            "selectedAnchor": null
+          },
+          "anchors": [
+            {
+              "id": "w1",
+              "x": 39,
+              "y": 342,
+              "type": "bridge"
+            },
+            {
+              "id": "w2",
+              "x": 125,
+              "y": 342,
+              "type": "bridge"
+            },
+            {
+              "id": "n1",
+              "x": 184,
+              "y": 206,
+              "type": "barrier"
+            },
+            {
+              "id": "n2",
+              "x": 264,
+              "y": 206,
+              "type": "barrier"
+            },
+            {
+              "id": "e1",
+              "x": 270,
+              "y": 397,
+              "type": "bridge"
+            },
+            {
+              "id": "e2",
+              "x": 358,
+              "y": 397,
+              "type": "bridge"
+            },
+            {
+              "id": "s1",
+              "x": 175,
+              "y": 578,
+              "type": "barrier"
+            },
+            {
+              "id": "s2",
+              "x": 269,
+              "y": 578,
+              "type": "barrier"
+            },
+            {
+              "id": "g1",
+              "x": 195,
+              "y": 518,
+              "type": "garden"
+            },
+            {
+              "id": "g2",
+              "x": 195,
+              "y": 448,
+              "type": "garden"
+            }
+          ],
+          "availableEdges": [
+            {
+              "id": "west_bridge",
+              "a": "w1",
+              "b": "w2",
+              "cost": 72,
+              "role": "bridge",
+              "stitched": false
+            },
+            {
+              "id": "north_barrier",
+              "a": "n1",
+              "b": "n2",
+              "cost": 80,
+              "role": "barrier",
+              "stitched": false
+            },
+            {
+              "id": "east_bridge",
+              "a": "e1",
+              "b": "e2",
+              "cost": 88,
+              "role": "bridge",
+              "stitched": false
+            },
+            {
+              "id": "south_barrier",
+              "a": "s1",
+              "b": "s2",
+              "cost": 94,
+              "role": "barrier",
+              "stitched": false
+            },
+            {
+              "id": "garden_gate",
+              "a": "g1",
+              "b": "g2",
+              "cost": 76,
+              "role": "garden",
+              "stitched": false
+            }
+          ]
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/world-mender-lifecycle-resumed.png",
+      "limitation": "隐藏/恢复由测试注入 document.hidden/visibilityState 并派发 visibilitychange，不等同移动系统回收 WebView 进程。"
+    },
+    {
+      "page": "rift-hunter",
+      "scenario": "zoom-200",
+      "status": "FAIL",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "200% 模拟缩放后文案仍存在",
+          "details": 221
+        },
+        {
+          "pass": true,
+          "message": "200% 模拟缩放后主入口仍可见",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "200% 模拟缩放后没有横向页面溢出",
+          "details": {
+            "scrollWidth": 390,
+            "clientWidth": 390
+          }
+        },
+        {
+          "pass": false,
+          "message": "200% 模拟缩放后完整游戏 Canvas 可通过视口或滚动到达",
+          "details": {
+            "canvas": {
+              "x": 0,
+              "y": 0,
+              "width": 780,
+              "height": 1688
+            },
+            "scroll": [
+              390,
+              844
+            ],
+            "client": [
+              390,
+              844
+            ]
+          }
+        }
+      ],
+      "metrics": {
+        "before": {
+          "title": "裂隙猎人",
+          "innerWidth": 390,
+          "innerHeight": 844,
+          "clientWidth": 390,
+          "clientHeight": 844,
+          "scrollWidth": 390,
+          "scrollHeight": 844,
+          "bodyTextLength": 221,
+          "interactiveCount": 2,
+          "offscreenInteractive": [],
+          "clippedText": [],
+          "canvas": {
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 844
+          }
+        },
+        "after": {
+          "title": "裂隙猎人",
+          "innerWidth": 390,
+          "innerHeight": 844,
+          "clientWidth": 390,
+          "clientHeight": 844,
+          "scrollWidth": 390,
+          "scrollHeight": 844,
+          "bodyTextLength": 221,
+          "interactiveCount": 2,
+          "offscreenInteractive": [],
+          "clippedText": [],
+          "canvas": {
+            "x": 0,
+            "y": 0,
+            "width": 780,
+            "height": 1688
+          }
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/rift-hunter-zoom-200.png",
+      "limitation": "200% 页面缩放使用 CSS zoom 模拟内容放大与裁切风险，不等同浏览器原生 Ctrl/+ 或微信 WebView 缩放。"
+    },
+    {
+      "page": "rift-hunter",
+      "scenario": "large-text-200",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "已对可见 DOM 文本应用 200% 测试字号",
+          "details": 18
+        },
+        {
+          "pass": true,
+          "message": "200% 测试字号下主入口仍可见",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "200% 测试字号下没有横向页面溢出",
+          "details": {
+            "scrollWidth": 390,
+            "clientWidth": 390
+          }
+        },
+        {
+          "pass": true,
+          "message": "200% 测试字号下没有检测到文本裁切",
+          "details": []
+        }
+      ],
+      "metrics": {
+        "scaledElements": 18,
+        "title": "裂隙猎人",
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientWidth": 390,
+        "clientHeight": 844,
+        "scrollWidth": 390,
+        "scrollHeight": 844,
+        "bodyTextLength": 221,
+        "interactiveCount": 2,
+        "offscreenInteractive": [],
+        "clippedText": [],
+        "canvas": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 844
+        },
+        "canvasTextScaled": false
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/rift-hunter-large-text-200.png",
+      "limitation": "大字号使用测试脚本把可见 DOM 文本的计算字号放大到 200%，不等同 iOS/Android 或微信系统字号；Canvas 内绘制文字不会被用户样式表放大。"
+    },
+    {
+      "page": "rift-hunter",
+      "scenario": "landscape",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "存在可读页面文案",
+          "details": 238
+        },
+        {
+          "pass": true,
+          "message": "主入口控件仍在可视区域",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "没有横向页面溢出",
+          "details": {
+            "scrollWidth": 844,
+            "clientWidth": 844
+          }
+        },
+        {
+          "pass": true,
+          "message": "游戏 Canvas 保持最低可操作尺寸",
+          "details": {
+            "x": 162,
+            "y": 0,
+            "width": 520,
+            "height": 520
+          }
+        }
+      ],
+      "metrics": {
+        "title": "裂隙猎人",
+        "innerWidth": 844,
+        "innerHeight": 390,
+        "clientWidth": 844,
+        "clientHeight": 390,
+        "scrollWidth": 844,
+        "scrollHeight": 390,
+        "bodyTextLength": 238,
+        "interactiveCount": 2,
+        "offscreenInteractive": [],
+        "clippedText": [],
+        "canvas": {
+          "x": 162,
+          "y": 0,
+          "width": 520,
+          "height": 520
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/rift-hunter-landscape.png",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "limitation": "浏览器视口证据，不包含微信顶部/底部导航栏及安全区遮挡。"
+    },
+    {
+      "page": "rift-hunter",
+      "scenario": "ultrawide-short",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "存在可读页面文案",
+          "details": 238
+        },
+        {
+          "pass": true,
+          "message": "主入口控件仍在可视区域",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "没有横向页面溢出",
+          "details": {
+            "scrollWidth": 1200,
+            "clientWidth": 1200
+          }
+        },
+        {
+          "pass": true,
+          "message": "游戏 Canvas 保持最低可操作尺寸",
+          "details": {
+            "x": 340,
+            "y": 0,
+            "width": 520,
+            "height": 520
+          }
+        }
+      ],
+      "metrics": {
+        "title": "裂隙猎人",
+        "innerWidth": 1200,
+        "innerHeight": 390,
+        "clientWidth": 1200,
+        "clientHeight": 390,
+        "scrollWidth": 1200,
+        "scrollHeight": 390,
+        "bodyTextLength": 238,
+        "interactiveCount": 2,
+        "offscreenInteractive": [],
+        "clippedText": [],
+        "canvas": {
+          "x": 340,
+          "y": 0,
+          "width": 520,
+          "height": 520
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/rift-hunter-ultrawide-short.png",
+      "viewport": {
+        "width": 1200,
+        "height": 390
+      },
+      "limitation": "浏览器视口证据，不包含微信顶部/底部导航栏及安全区遮挡。"
+    },
+    {
+      "page": "rift-hunter",
+      "scenario": "keyboard-focus",
+      "status": "FAIL",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "存在可键盘聚焦控件",
+          "details": 2
+        },
+        {
+          "pass": true,
+          "message": "Tab 顺序覆盖全部当前可见控件",
+          "details": {
+            "expected": 2,
+            "actual": 2
+          }
+        },
+        {
+          "pass": true,
+          "message": "每个键盘焦点都有可观察焦点指示",
+          "details": [
+            {
+              "tag": "button",
+              "id": "pauseBtn",
+              "href": null,
+              "text": "Ⅱ",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "intro",
+                "className": "screen active"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "进入裂隙",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+              "occluded": false,
+              "topElement": {
+                "tag": "button",
+                "id": "startBtn",
+                "className": "primary"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "pauseBtn",
+              "href": null,
+              "text": "Ⅱ",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "intro",
+                "className": "screen active"
+              },
+              "inViewport": true
+            }
+          ]
+        },
+        {
+          "pass": false,
+          "message": "键盘焦点不会进入视觉遮罩后的背景控件",
+          "details": [
+            {
+              "tag": "button",
+              "id": "pauseBtn",
+              "href": null,
+              "text": "Ⅱ",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "intro",
+                "className": "screen active"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "进入裂隙",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+              "occluded": false,
+              "topElement": {
+                "tag": "button",
+                "id": "startBtn",
+                "className": "primary"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "pauseBtn",
+              "href": null,
+              "text": "Ⅱ",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "intro",
+                "className": "screen active"
+              },
+              "inViewport": true
+            }
+          ]
+        },
+        {
+          "pass": true,
+          "message": "聚焦控件均处于可视区域",
+          "details": [
+            {
+              "tag": "button",
+              "id": "pauseBtn",
+              "href": null,
+              "text": "Ⅱ",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "intro",
+                "className": "screen active"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "startBtn",
+              "href": null,
+              "text": "进入裂隙",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+              "occluded": false,
+              "topElement": {
+                "tag": "button",
+                "id": "startBtn",
+                "className": "primary"
+              },
+              "inViewport": true
+            },
+            {
+              "tag": "button",
+              "id": "pauseBtn",
+              "href": null,
+              "text": "Ⅱ",
+              "visibleIndicator": true,
+              "outline": "1px auto rgb(16, 16, 16)",
+              "boxShadow": "none",
+              "occluded": true,
+              "topElement": {
+                "tag": "section",
+                "id": "intro",
+                "className": "screen active"
+              },
+              "inViewport": true
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "focusableCount": 2,
+        "sequence": [
+          {
+            "tag": "button",
+            "id": "pauseBtn",
+            "href": null,
+            "text": "Ⅱ",
+            "visibleIndicator": true,
+            "outline": "1px auto rgb(16, 16, 16)",
+            "boxShadow": "none",
+            "occluded": true,
+            "topElement": {
+              "tag": "section",
+              "id": "intro",
+              "className": "screen active"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "button",
+            "id": "startBtn",
+            "href": null,
+            "text": "进入裂隙",
+            "visibleIndicator": true,
+            "outline": "1px auto rgb(16, 16, 16)",
+            "boxShadow": "rgba(255, 105, 49, 0.26) 0px 12px 30px 0px",
+            "occluded": false,
+            "topElement": {
+              "tag": "button",
+              "id": "startBtn",
+              "className": "primary"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "body",
+            "id": null,
+            "href": null,
+            "text": "RIFT PROTOCOL裂隙猎人 Ⅱ 生命装甲100 危险01 60秒后可撤离 裂隙单发0/8 时间00:00 战利品",
+            "visibleIndicator": false,
+            "outline": "3px none rgb(248, 245, 255)",
+            "boxShadow": "none",
+            "occluded": false,
+            "topElement": {
+              "tag": "section",
+              "id": "intro",
+              "className": "screen active"
+            },
+            "inViewport": true
+          },
+          {
+            "tag": "button",
+            "id": "pauseBtn",
+            "href": null,
+            "text": "Ⅱ",
+            "visibleIndicator": true,
+            "outline": "1px auto rgb(16, 16, 16)",
+            "boxShadow": "none",
+            "occluded": true,
+            "topElement": {
+              "tag": "section",
+              "id": "intro",
+              "className": "screen active"
+            },
+            "inViewport": true
+          }
+        ]
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/rift-hunter-keyboard-focus.png",
+      "limitation": "键盘检查覆盖当前可见 DOM 控件的 Tab 顺序和焦点可见性；Canvas 核心玩法仍以触摸/指针为主。"
+    },
+    {
+      "page": "rift-hunter",
+      "scenario": "reduced-motion",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "prefers-reduced-motion: reduce 匹配成功",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "减少动态效果环境下主入口仍可操作",
+          "details": null
+        },
+        {
+          "pass": true,
+          "message": "游戏可观察的减少动态效果控件与系统偏好一致",
+          "details": {
+            "id": "motionToggle",
+            "value": true,
+            "expected": true
+          }
+        }
+      ],
+      "metrics": {
+        "mediaMatches": true,
+        "motionNodes": [],
+        "controlState": {
+          "id": "motionToggle",
+          "value": true,
+          "expected": true
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/rift-hunter-reduced-motion.png",
+      "limitation": "减少动态效果检查覆盖 prefers-reduced-motion 媒体查询、可观察 CSS/控件状态与持续可操作性，不对页面未暴露的内部状态作假设。"
+    },
+    {
+      "page": "rift-hunter",
+      "scenario": "lifecycle",
+      "status": "PASS",
+      "assertions": [
+        {
+          "pass": true,
+          "message": "页面成功加载",
+          "details": 200
+        },
+        {
+          "pass": true,
+          "message": "页面隐藏后游戏进入暂停",
+          "details": {
+            "gameId": "rift-hunter",
+            "mode": "paused",
+            "runId": "ms4xqs7v-7irplk",
+            "elapsed": 0.11666666666666665,
+            "paused": true,
+            "result": null,
+            "player": {
+              "x": 195,
+              "y": 523.28,
+              "hp": 100,
+              "maxHp": 100
+            },
+            "xp": 0,
+            "weaponStage": 1,
+            "kills": 0,
+            "danger": 1,
+            "loot": [],
+            "kept": [],
+            "lost": [],
+            "extraction": {
+              "zones": [],
+              "progress": 0,
+              "required": 3
+            },
+            "collapse": false,
+            "safeRadius": 844,
+            "timing": {
+              "firstExtraction": 60,
+              "finalExtraction": 150,
+              "riskReminder": 45
+            },
+            "settings": {
+              "sound": false,
+              "reduced": false
+            },
+            "pools": {
+              "enemies": 0,
+              "bullets": 0,
+              "enemyShots": 0,
+              "drops": 0,
+              "particles": 0,
+              "limits": {
+                "enemies": 64,
+                "bullets": 96,
+                "enemyShots": 48,
+                "drops": 48,
+                "particles": 128
+              }
+            },
+            "stats": {
+              "spawned": 0,
+              "shots": 0,
+              "hits": 0,
+              "picked": 0
+            },
+            "testMode": true,
+            "timeScale": 1,
+            "seed": 20260728
+          }
+        },
+        {
+          "pass": true,
+          "message": "隐藏期间局内时间冻结",
+          "details": {
+            "pausedAt": 0.11666666666666665,
+            "hidden": 0.11666666666666665
+          }
+        },
+        {
+          "pass": true,
+          "message": "页面恢复后可由玩家继续游戏",
+          "details": {
+            "gameId": "rift-hunter",
+            "mode": "playing",
+            "runId": "ms4xqs7v-7irplk",
+            "elapsed": 0.2333333333333333,
+            "paused": false,
+            "result": null,
+            "player": {
+              "x": 195,
+              "y": 523.28,
+              "hp": 100,
+              "maxHp": 100
+            },
+            "xp": 0,
+            "weaponStage": 1,
+            "kills": 0,
+            "danger": 1,
+            "loot": [],
+            "kept": [],
+            "lost": [],
+            "extraction": {
+              "zones": [],
+              "progress": 0,
+              "required": 3
+            },
+            "collapse": false,
+            "safeRadius": 844,
+            "timing": {
+              "firstExtraction": 60,
+              "finalExtraction": 150,
+              "riskReminder": 45
+            },
+            "settings": {
+              "sound": false,
+              "reduced": false
+            },
+            "pools": {
+              "enemies": 0,
+              "bullets": 0,
+              "enemyShots": 0,
+              "drops": 0,
+              "particles": 0,
+              "limits": {
+                "enemies": 64,
+                "bullets": 96,
+                "enemyShots": 48,
+                "drops": 48,
+                "particles": 128
+              }
+            },
+            "stats": {
+              "spawned": 0,
+              "shots": 0,
+              "hits": 0,
+              "picked": 0
+            },
+            "testMode": true,
+            "timeScale": 1,
+            "seed": 20260728
+          }
+        }
+      ],
+      "metrics": {
+        "before": {
+          "gameId": "rift-hunter",
+          "mode": "playing",
+          "runId": "ms4xqs7v-7irplk",
+          "elapsed": 0.11666666666666665,
+          "paused": false,
+          "result": null,
+          "player": {
+            "x": 195,
+            "y": 523.28,
+            "hp": 100,
+            "maxHp": 100
+          },
+          "xp": 0,
+          "weaponStage": 1,
+          "kills": 0,
+          "danger": 1,
+          "loot": [],
+          "kept": [],
+          "lost": [],
+          "extraction": {
+            "zones": [],
+            "progress": 0,
+            "required": 3
+          },
+          "collapse": false,
+          "safeRadius": 844,
+          "timing": {
+            "firstExtraction": 60,
+            "finalExtraction": 150,
+            "riskReminder": 45
+          },
+          "settings": {
+            "sound": false,
+            "reduced": false
+          },
+          "pools": {
+            "enemies": 0,
+            "bullets": 0,
+            "enemyShots": 0,
+            "drops": 0,
+            "particles": 0,
+            "limits": {
+              "enemies": 64,
+              "bullets": 96,
+              "enemyShots": 48,
+              "drops": 48,
+              "particles": 128
+            }
+          },
+          "stats": {
+            "spawned": 0,
+            "shots": 0,
+            "hits": 0,
+            "picked": 0
+          },
+          "testMode": true,
+          "timeScale": 1,
+          "seed": 20260728
+        },
+        "pausedAt": {
+          "gameId": "rift-hunter",
+          "mode": "paused",
+          "runId": "ms4xqs7v-7irplk",
+          "elapsed": 0.11666666666666665,
+          "paused": true,
+          "result": null,
+          "player": {
+            "x": 195,
+            "y": 523.28,
+            "hp": 100,
+            "maxHp": 100
+          },
+          "xp": 0,
+          "weaponStage": 1,
+          "kills": 0,
+          "danger": 1,
+          "loot": [],
+          "kept": [],
+          "lost": [],
+          "extraction": {
+            "zones": [],
+            "progress": 0,
+            "required": 3
+          },
+          "collapse": false,
+          "safeRadius": 844,
+          "timing": {
+            "firstExtraction": 60,
+            "finalExtraction": 150,
+            "riskReminder": 45
+          },
+          "settings": {
+            "sound": false,
+            "reduced": false
+          },
+          "pools": {
+            "enemies": 0,
+            "bullets": 0,
+            "enemyShots": 0,
+            "drops": 0,
+            "particles": 0,
+            "limits": {
+              "enemies": 64,
+              "bullets": 96,
+              "enemyShots": 48,
+              "drops": 48,
+              "particles": 128
+            }
+          },
+          "stats": {
+            "spawned": 0,
+            "shots": 0,
+            "hits": 0,
+            "picked": 0
+          },
+          "testMode": true,
+          "timeScale": 1,
+          "seed": 20260728
+        },
+        "hidden": {
+          "gameId": "rift-hunter",
+          "mode": "paused",
+          "runId": "ms4xqs7v-7irplk",
+          "elapsed": 0.11666666666666665,
+          "paused": true,
+          "result": null,
+          "player": {
+            "x": 195,
+            "y": 523.28,
+            "hp": 100,
+            "maxHp": 100
+          },
+          "xp": 0,
+          "weaponStage": 1,
+          "kills": 0,
+          "danger": 1,
+          "loot": [],
+          "kept": [],
+          "lost": [],
+          "extraction": {
+            "zones": [],
+            "progress": 0,
+            "required": 3
+          },
+          "collapse": false,
+          "safeRadius": 844,
+          "timing": {
+            "firstExtraction": 60,
+            "finalExtraction": 150,
+            "riskReminder": 45
+          },
+          "settings": {
+            "sound": false,
+            "reduced": false
+          },
+          "pools": {
+            "enemies": 0,
+            "bullets": 0,
+            "enemyShots": 0,
+            "drops": 0,
+            "particles": 0,
+            "limits": {
+              "enemies": 64,
+              "bullets": 96,
+              "enemyShots": 48,
+              "drops": 48,
+              "particles": 128
+            }
+          },
+          "stats": {
+            "spawned": 0,
+            "shots": 0,
+            "hits": 0,
+            "picked": 0
+          },
+          "testMode": true,
+          "timeScale": 1,
+          "seed": 20260728
+        },
+        "resumed": {
+          "gameId": "rift-hunter",
+          "mode": "playing",
+          "runId": "ms4xqs7v-7irplk",
+          "elapsed": 0.2333333333333333,
+          "paused": false,
+          "result": null,
+          "player": {
+            "x": 195,
+            "y": 523.28,
+            "hp": 100,
+            "maxHp": 100
+          },
+          "xp": 0,
+          "weaponStage": 1,
+          "kills": 0,
+          "danger": 1,
+          "loot": [],
+          "kept": [],
+          "lost": [],
+          "extraction": {
+            "zones": [],
+            "progress": 0,
+            "required": 3
+          },
+          "collapse": false,
+          "safeRadius": 844,
+          "timing": {
+            "firstExtraction": 60,
+            "finalExtraction": 150,
+            "riskReminder": 45
+          },
+          "settings": {
+            "sound": false,
+            "reduced": false
+          },
+          "pools": {
+            "enemies": 0,
+            "bullets": 0,
+            "enemyShots": 0,
+            "drops": 0,
+            "particles": 0,
+            "limits": {
+              "enemies": 64,
+              "bullets": 96,
+              "enemyShots": 48,
+              "drops": 48,
+              "particles": 128
+            }
+          },
+          "stats": {
+            "spawned": 0,
+            "shots": 0,
+            "hits": 0,
+            "picked": 0
+          },
+          "testMode": true,
+          "timeScale": 1,
+          "seed": 20260728
+        }
+      },
+      "errors": [],
+      "externalRequests": [],
+      "screenshot": "accessibility-screenshots/rift-hunter-lifecycle-resumed.png",
+      "limitation": "隐藏/恢复由测试注入 document.hidden/visibilityState 并派发 visibilitychange，不等同移动系统回收 WebView 进程。"
+    }
+  ]
+}

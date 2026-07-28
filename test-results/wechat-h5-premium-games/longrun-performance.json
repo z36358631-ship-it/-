@@ -1,0 +1,2442 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-28T17:33:13.979Z",
+  "scope": "本地 Edge/Playwright 移动视口、自然速度、每款 2 分钟长时稳定性与内存趋势预警",
+  "disclaimer": "本报告仅用于浏览器回归与泄漏线索筛查；未经微信真机多轮测试，不代表微信 web-view 的帧率、内存、功耗或上线认证结论。",
+  "methodology": {
+    "sequence": "三款游戏在同一浏览器进程中按列表顺序运行，每款使用全新浏览器上下文",
+    "sampling": "预热 1 秒后每 10 秒采样，共 13 个时间点",
+    "heap": "优先读取 CDP JSHeapUsedSize；不主动触发 GC，因此首尾增量和线性斜率只能提示趋势，不能单独证明内存泄漏",
+    "dom": "同时记录页面实时 DOM 元素数与 CDP Nodes；CDP Nodes 可能包含文档或暂未回收节点",
+    "frame": "通过页面 requestAnimationFrame 帧间隔观测；无头 Edge 调度与微信 web-view 真机不同",
+    "longTask": "使用 PerformanceObserver longtask；仅在浏览器支持时记录"
+  },
+  "environment": {
+    "platform": "win32",
+    "release": "10.0.26200",
+    "arch": "x64",
+    "nodeVersion": "v24.12.0",
+    "browser": "Microsoft Edge",
+    "browserVersion": "150.0.4078.99",
+    "executablePath": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+    "headless": true,
+    "viewport": {
+      "width": 390,
+      "height": 844,
+      "deviceScaleFactor": 2
+    },
+    "hasTouch": true,
+    "isMobile": true,
+    "reducedMotion": "no-preference",
+    "seed": 20260728,
+    "timeScale": 1
+  },
+  "thresholds": {
+    "frameP95WarningMs": 34,
+    "frameMaxWarningMs": 100,
+    "framesOver34MsRatioWarning": 0.05,
+    "heapGrowthWarningBytes": 16777216,
+    "heapGrowthWarningRatio": 0.3,
+    "domElementGrowthWarningCount": 100,
+    "domElementGrowthWarningRatio": 0.2,
+    "cdpNodeGrowthWarningCount": 300,
+    "cdpNodeGrowthWarningRatio": 0.3,
+    "minimumRafSamplesPerSecond": 20,
+    "allowedDurationShortfallMs": 2000,
+    "policy": "帧、Long Task、堆和 DOM 阈值仅生成 WARN；页面/控制台错误、外部请求、请求失败或采样完整性不足才判定 FAIL 并返回非零退出码。"
+  },
+  "summary": {
+    "games": 3,
+    "pass": 3,
+    "passWithWarnings": 0,
+    "fail": 0,
+    "noExternalRequests": true,
+    "noConsoleErrors": true,
+    "noPageErrors": true
+  },
+  "games": [
+    {
+      "id": "five-seconds-later",
+      "title": "五秒之后",
+      "targetDurationMs": 120000,
+      "measuredDurationMs": 120009.2,
+      "sampleIntervalMs": 10000,
+      "activityPolicy": "自然速度；每 650ms 移动目标，结束后通过公开测试接口重开",
+      "activityTotals": {
+        "actions": 186,
+        "resets": 3
+      },
+      "overall": {
+        "frame": {
+          "samples": 7198,
+          "medianMs": 17.9,
+          "p95Ms": 18.2,
+          "maxMs": 52.5,
+          "over34MsCount": 2,
+          "over34MsRatio": 0.00028
+        },
+        "longTasks": {
+          "supported": true,
+          "count": 0,
+          "totalDurationMs": 0,
+          "maxDurationMs": 0
+        }
+      },
+      "trend": {
+        "firstToLast": {
+          "heapUsedBytes": 145928,
+          "heapUsedRatio": 0.074,
+          "domElements": 0,
+          "domElementsRatio": 0,
+          "cdpNodes": 0,
+          "cdpNodesRatio": 0
+        },
+        "slopePerMinute": {
+          "heapUsedBytes": 50444.46,
+          "domElements": 0,
+          "cdpNodes": -0.16
+        }
+      },
+      "samples": [
+        {
+          "atMs": 4.1,
+          "windowDurationMs": 4.1,
+          "frame": {
+            "samples": 0,
+            "medianMs": null,
+            "p95Ms": null,
+            "maxMs": null,
+            "over34MsCount": 0,
+            "over34MsRatio": null
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 1971360,
+            "totalBytes": 3723264
+          },
+          "dom": {
+            "elementCount": 80,
+            "cdpNodes": 206,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "five-seconds-later-ms4xhmpz-alg3b5",
+            "mode": "playing",
+            "phase": "awakening",
+            "elapsed": 0.85,
+            "energy": 100,
+            "echoCount": 0,
+            "pathPoints": 18,
+            "targetsRemaining": 10,
+            "coreHp": 18
+          },
+          "activity": {
+            "actions": 1,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 10013.6,
+          "windowDurationMs": 10009.5,
+          "frame": {
+            "samples": 593,
+            "medianMs": 17.7,
+            "p95Ms": 18.3,
+            "maxMs": 19.1,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2076632,
+            "totalBytes": 4247552
+          },
+          "dom": {
+            "elementCount": 80,
+            "cdpNodes": 206,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "five-seconds-later-ms4xhmpz-alg3b5",
+            "mode": "playing",
+            "phase": "awakening",
+            "elapsed": 10.85,
+            "energy": 100,
+            "echoCount": 2,
+            "pathPoints": 18,
+            "targetsRemaining": 7,
+            "coreHp": 18
+          },
+          "activity": {
+            "actions": 16,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 20016.7,
+          "windowDurationMs": 10003.1,
+          "frame": {
+            "samples": 596,
+            "medianMs": 17.8,
+            "p95Ms": 18.2,
+            "maxMs": 19,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 1899104,
+            "totalBytes": 4771840
+          },
+          "dom": {
+            "elementCount": 80,
+            "cdpNodes": 207,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "five-seconds-later-ms4xhmpz-alg3b5",
+            "mode": "playing",
+            "phase": "switch",
+            "elapsed": 20.85,
+            "energy": 100,
+            "echoCount": 4,
+            "pathPoints": 18,
+            "targetsRemaining": 7,
+            "coreHp": 18
+          },
+          "activity": {
+            "actions": 32,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 30020.4,
+          "windowDurationMs": 10003.7,
+          "frame": {
+            "samples": 605,
+            "medianMs": 17.8,
+            "p95Ms": 18.2,
+            "maxMs": 19,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2313880,
+            "totalBytes": 4771840
+          },
+          "dom": {
+            "elementCount": 80,
+            "cdpNodes": 206,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "five-seconds-later-ms4xhmpz-alg3b5",
+            "mode": "playing",
+            "phase": "switch",
+            "elapsed": 30.85,
+            "energy": 100,
+            "echoCount": 4,
+            "pathPoints": 18,
+            "targetsRemaining": 7,
+            "coreHp": 18
+          },
+          "activity": {
+            "actions": 47,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 40014.4,
+          "windowDurationMs": 9994,
+          "frame": {
+            "samples": 607,
+            "medianMs": 17.8,
+            "p95Ms": 18.2,
+            "maxMs": 19.1,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2580792,
+            "totalBytes": 4771840
+          },
+          "dom": {
+            "elementCount": 80,
+            "cdpNodes": 206,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "five-seconds-later-ms4xhmpz-alg3b5",
+            "mode": "playing",
+            "phase": "switch",
+            "elapsed": 40.85,
+            "energy": 100,
+            "echoCount": 4,
+            "pathPoints": 18,
+            "targetsRemaining": 7,
+            "coreHp": 18
+          },
+          "activity": {
+            "actions": 63,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 50011.5,
+          "windowDurationMs": 9997.1,
+          "frame": {
+            "samples": 594,
+            "medianMs": 17.8,
+            "p95Ms": 18.3,
+            "maxMs": 19,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2540152,
+            "totalBytes": 4771840
+          },
+          "dom": {
+            "elementCount": 80,
+            "cdpNodes": 207,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "five-seconds-later-ms4xhmpz-alg3b5",
+            "mode": "playing",
+            "phase": "switch",
+            "elapsed": 50.85,
+            "energy": 46,
+            "echoCount": 4,
+            "pathPoints": 18,
+            "targetsRemaining": 7,
+            "coreHp": 18
+          },
+          "activity": {
+            "actions": 78,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 60015.9,
+          "windowDurationMs": 10004.4,
+          "frame": {
+            "samples": 589,
+            "medianMs": 17.9,
+            "p95Ms": 18.2,
+            "maxMs": 52.5,
+            "over34MsCount": 2,
+            "over34MsRatio": 0.0034
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 1802932,
+            "totalBytes": 3198976
+          },
+          "dom": {
+            "elementCount": 80,
+            "cdpNodes": 206,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "five-seconds-later-ms4xivv4-6jyjo9",
+            "mode": "playing",
+            "phase": "awakening",
+            "elapsed": 2.517,
+            "energy": 100,
+            "echoCount": 0,
+            "pathPoints": 51,
+            "targetsRemaining": 10,
+            "coreHp": 18
+          },
+          "activity": {
+            "actions": 93,
+            "resets": 2
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 70017.2,
+          "windowDurationMs": 10001.3,
+          "frame": {
+            "samples": 614,
+            "medianMs": 17.8,
+            "p95Ms": 18.3,
+            "maxMs": 18.9,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 1890568,
+            "totalBytes": 3198976
+          },
+          "dom": {
+            "elementCount": 80,
+            "cdpNodes": 206,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "five-seconds-later-ms4xivv4-6jyjo9",
+            "mode": "playing",
+            "phase": "awakening",
+            "elapsed": 12.517,
+            "energy": 100,
+            "echoCount": 2,
+            "pathPoints": 51,
+            "targetsRemaining": 6,
+            "coreHp": 18
+          },
+          "activity": {
+            "actions": 109,
+            "resets": 2
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 80008.8,
+          "windowDurationMs": 9991.6,
+          "frame": {
+            "samples": 619,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 19,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2073668,
+            "totalBytes": 5033984
+          },
+          "dom": {
+            "elementCount": 80,
+            "cdpNodes": 206,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "five-seconds-later-ms4xivv4-6jyjo9",
+            "mode": "playing",
+            "phase": "switch",
+            "elapsed": 22.517,
+            "energy": 100,
+            "echoCount": 4,
+            "pathPoints": 51,
+            "targetsRemaining": 6,
+            "coreHp": 18
+          },
+          "activity": {
+            "actions": 124,
+            "resets": 2
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 90015.7,
+          "windowDurationMs": 10006.9,
+          "frame": {
+            "samples": 603,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 20.8,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2305560,
+            "totalBytes": 5033984
+          },
+          "dom": {
+            "elementCount": 80,
+            "cdpNodes": 206,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "five-seconds-later-ms4xivv4-6jyjo9",
+            "mode": "playing",
+            "phase": "switch",
+            "elapsed": 32.517,
+            "energy": 100,
+            "echoCount": 4,
+            "pathPoints": 51,
+            "targetsRemaining": 6,
+            "coreHp": 18
+          },
+          "activity": {
+            "actions": 140,
+            "resets": 2
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 100013.5,
+          "windowDurationMs": 9997.8,
+          "frame": {
+            "samples": 593,
+            "medianMs": 17.8,
+            "p95Ms": 18.2,
+            "maxMs": 19.1,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2180768,
+            "totalBytes": 4771840
+          },
+          "dom": {
+            "elementCount": 80,
+            "cdpNodes": 206,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "five-seconds-later-ms4xivv4-6jyjo9",
+            "mode": "playing",
+            "phase": "switch",
+            "elapsed": 42.517,
+            "energy": 100,
+            "echoCount": 4,
+            "pathPoints": 51,
+            "targetsRemaining": 6,
+            "coreHp": 18
+          },
+          "activity": {
+            "actions": 155,
+            "resets": 2
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 110009.1,
+          "windowDurationMs": 9995.6,
+          "frame": {
+            "samples": 592,
+            "medianMs": 17.9,
+            "p95Ms": 18.3,
+            "maxMs": 19.2,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2319968,
+            "totalBytes": 5033984
+          },
+          "dom": {
+            "elementCount": 80,
+            "cdpNodes": 206,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "five-seconds-later-ms4xivv4-6jyjo9",
+            "mode": "playing",
+            "phase": "switch",
+            "elapsed": 52.5,
+            "energy": 46,
+            "echoCount": 4,
+            "pathPoints": 51,
+            "targetsRemaining": 6,
+            "coreHp": 18
+          },
+          "activity": {
+            "actions": 170,
+            "resets": 2
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 120009.2,
+          "windowDurationMs": 10000.1,
+          "frame": {
+            "samples": 593,
+            "medianMs": 17.9,
+            "p95Ms": 18.2,
+            "maxMs": 18.8,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2117288,
+            "totalBytes": 3198976
+          },
+          "dom": {
+            "elementCount": 80,
+            "cdpNodes": 206,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "five-seconds-later-ms4xk60a-kjhglq",
+            "mode": "playing",
+            "phase": "awakening",
+            "elapsed": 2.7,
+            "energy": 100,
+            "echoCount": 0,
+            "pathPoints": 55,
+            "targetsRemaining": 8,
+            "coreHp": 18
+          },
+          "activity": {
+            "actions": 186,
+            "resets": 3
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        }
+      ],
+      "finalPublicState": {
+        "runId": "five-seconds-later-ms4xk60a-kjhglq",
+        "mode": "playing",
+        "phase": "awakening",
+        "elapsed": 2.7,
+        "energy": 100,
+        "echoCount": 0,
+        "pathPoints": 55,
+        "targetsRemaining": 8,
+        "coreHp": 18
+      },
+      "errors": {
+        "console": [],
+        "page": [],
+        "externalRequests": [],
+        "requestFailures": [],
+        "validation": []
+      },
+      "warnings": [],
+      "hardErrors": [],
+      "status": "PASS"
+    },
+    {
+      "id": "world-mender",
+      "title": "世界缝补师",
+      "targetDurationMs": 120000,
+      "measuredDurationMs": 120019,
+      "sampleIntervalMs": 10000,
+      "activityPolicy": "自然速度；每局建立三条救援路线和花园回路，结算后通过公开测试接口重开",
+      "activityTotals": {
+        "actions": 173,
+        "resets": 3
+      },
+      "overall": {
+        "frame": {
+          "samples": 7117,
+          "medianMs": 18,
+          "p95Ms": 18.2,
+          "maxMs": 35.6,
+          "over34MsCount": 1,
+          "over34MsRatio": 0.00014
+        },
+        "longTasks": {
+          "supported": true,
+          "count": 0,
+          "totalDurationMs": 0,
+          "maxDurationMs": 0
+        }
+      },
+      "trend": {
+        "firstToLast": {
+          "heapUsedBytes": -395548,
+          "heapUsedRatio": -0.1555,
+          "domElements": 0,
+          "domElementsRatio": 0,
+          "cdpNodes": -16,
+          "cdpNodesRatio": -0.0821
+        },
+        "slopePerMinute": {
+          "heapUsedBytes": -165640.75,
+          "domElements": 0,
+          "cdpNodes": -2.14
+        }
+      },
+      "samples": [
+        {
+          "atMs": 1.8,
+          "windowDurationMs": 1.8,
+          "frame": {
+            "samples": 0,
+            "medianMs": null,
+            "p95Ms": null,
+            "maxMs": null,
+            "over34MsCount": 0,
+            "over34MsRatio": null
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2544336,
+            "totalBytes": 4771840
+          },
+          "dom": {
+            "elementCount": 68,
+            "cdpNodes": 195,
+            "documents": 3,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "wm-ms4xk8d7-72x7",
+            "phase": "playing",
+            "elapsed": 1,
+            "paused": false,
+            "thread": 29,
+            "stitchedEdges": [
+              "west_bridge",
+              "north_barrier",
+              "east_bridge",
+              "garden_gate"
+            ],
+            "saved": 0,
+            "lost": 0,
+            "spawned": 1
+          },
+          "activity": {
+            "actions": 5,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 10012.7,
+          "windowDurationMs": 10010.9,
+          "frame": {
+            "samples": 598,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 19.1,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2212760,
+            "totalBytes": 4247552
+          },
+          "dom": {
+            "elementCount": 68,
+            "cdpNodes": 177,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "wm-ms4xk8d7-72x7",
+            "phase": "playing",
+            "elapsed": 11.017,
+            "paused": false,
+            "thread": 29,
+            "stitchedEdges": [
+              "west_bridge",
+              "north_barrier",
+              "east_bridge",
+              "garden_gate"
+            ],
+            "saved": 0,
+            "lost": 0,
+            "spawned": 3
+          },
+          "activity": {
+            "actions": 18,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 20009.8,
+          "windowDurationMs": 9997.1,
+          "frame": {
+            "samples": 585,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 19,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2453264,
+            "totalBytes": 4247552
+          },
+          "dom": {
+            "elementCount": 68,
+            "cdpNodes": 177,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "wm-ms4xk8d7-72x7",
+            "phase": "playing",
+            "elapsed": 21.017,
+            "paused": false,
+            "thread": 29,
+            "stitchedEdges": [
+              "west_bridge",
+              "north_barrier",
+              "east_bridge",
+              "garden_gate"
+            ],
+            "saved": 3,
+            "lost": 0,
+            "spawned": 6
+          },
+          "activity": {
+            "actions": 32,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 30016.2,
+          "windowDurationMs": 10006.4,
+          "frame": {
+            "samples": 588,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 19,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2110492,
+            "totalBytes": 3985408
+          },
+          "dom": {
+            "elementCount": 68,
+            "cdpNodes": 177,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "wm-ms4xk8d7-72x7",
+            "phase": "playing",
+            "elapsed": 31.017,
+            "paused": false,
+            "thread": 29,
+            "stitchedEdges": [
+              "west_bridge",
+              "north_barrier",
+              "east_bridge",
+              "garden_gate"
+            ],
+            "saved": 6,
+            "lost": 0,
+            "spawned": 9
+          },
+          "activity": {
+            "actions": 45,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 40007.7,
+          "windowDurationMs": 9991.5,
+          "frame": {
+            "samples": 589,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 19.3,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2005656,
+            "totalBytes": 3723264
+          },
+          "dom": {
+            "elementCount": 68,
+            "cdpNodes": 177,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "wm-ms4xk8d7-72x7",
+            "phase": "playing",
+            "elapsed": 41.017,
+            "paused": false,
+            "thread": 29,
+            "stitchedEdges": [
+              "west_bridge",
+              "north_barrier",
+              "east_bridge",
+              "garden_gate"
+            ],
+            "saved": 9,
+            "lost": 0,
+            "spawned": 12
+          },
+          "activity": {
+            "actions": 58,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 50011.6,
+          "windowDurationMs": 10003.9,
+          "frame": {
+            "samples": 600,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 19.1,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2171248,
+            "totalBytes": 3723264
+          },
+          "dom": {
+            "elementCount": 68,
+            "cdpNodes": 177,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "wm-ms4xk8d7-72x7",
+            "phase": "playing",
+            "elapsed": 51.017,
+            "paused": false,
+            "thread": 29,
+            "stitchedEdges": [
+              "west_bridge",
+              "north_barrier",
+              "east_bridge",
+              "garden_gate"
+            ],
+            "saved": 9,
+            "lost": 0,
+            "spawned": 12
+          },
+          "activity": {
+            "actions": 72,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 60006.9,
+          "windowDurationMs": 9995.3,
+          "frame": {
+            "samples": 590,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 19,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2268080,
+            "totalBytes": 4509696
+          },
+          "dom": {
+            "elementCount": 68,
+            "cdpNodes": 179,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "wm-ms4xli34-72x7",
+            "phase": "playing",
+            "elapsed": 1.75,
+            "paused": false,
+            "thread": 29,
+            "stitchedEdges": [
+              "west_bridge",
+              "north_barrier",
+              "east_bridge",
+              "garden_gate"
+            ],
+            "saved": 0,
+            "lost": 0,
+            "spawned": 1
+          },
+          "activity": {
+            "actions": 89,
+            "resets": 2
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 70012.8,
+          "windowDurationMs": 10005.9,
+          "frame": {
+            "samples": 598,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 19,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2236036,
+            "totalBytes": 3985408
+          },
+          "dom": {
+            "elementCount": 68,
+            "cdpNodes": 180,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "wm-ms4xli34-72x7",
+            "phase": "playing",
+            "elapsed": 11.767,
+            "paused": false,
+            "thread": 29,
+            "stitchedEdges": [
+              "west_bridge",
+              "north_barrier",
+              "east_bridge",
+              "garden_gate"
+            ],
+            "saved": 1,
+            "lost": 0,
+            "spawned": 3
+          },
+          "activity": {
+            "actions": 102,
+            "resets": 2
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 80015.6,
+          "windowDurationMs": 10002.8,
+          "frame": {
+            "samples": 597,
+            "medianMs": 17.9,
+            "p95Ms": 18.2,
+            "maxMs": 18.9,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 1806088,
+            "totalBytes": 3461120
+          },
+          "dom": {
+            "elementCount": 68,
+            "cdpNodes": 179,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "wm-ms4xli34-72x7",
+            "phase": "playing",
+            "elapsed": 21.75,
+            "paused": false,
+            "thread": 29,
+            "stitchedEdges": [
+              "west_bridge",
+              "north_barrier",
+              "east_bridge",
+              "garden_gate"
+            ],
+            "saved": 3,
+            "lost": 0,
+            "spawned": 6
+          },
+          "activity": {
+            "actions": 116,
+            "resets": 2
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 90014.5,
+          "windowDurationMs": 9998.9,
+          "frame": {
+            "samples": 585,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 35.6,
+            "over34MsCount": 1,
+            "over34MsRatio": 0.00171
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2231176,
+            "totalBytes": 3723264
+          },
+          "dom": {
+            "elementCount": 68,
+            "cdpNodes": 179,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "wm-ms4xli34-72x7",
+            "phase": "playing",
+            "elapsed": 31.767,
+            "paused": false,
+            "thread": 29,
+            "stitchedEdges": [
+              "west_bridge",
+              "north_barrier",
+              "east_bridge",
+              "garden_gate"
+            ],
+            "saved": 6,
+            "lost": 0,
+            "spawned": 9
+          },
+          "activity": {
+            "actions": 129,
+            "resets": 2
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 100017.2,
+          "windowDurationMs": 10002.7,
+          "frame": {
+            "samples": 584,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 18.9,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2096116,
+            "totalBytes": 3723264
+          },
+          "dom": {
+            "elementCount": 68,
+            "cdpNodes": 179,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "wm-ms4xli34-72x7",
+            "phase": "playing",
+            "elapsed": 41.767,
+            "paused": false,
+            "thread": 29,
+            "stitchedEdges": [
+              "west_bridge",
+              "north_barrier",
+              "east_bridge",
+              "garden_gate"
+            ],
+            "saved": 9,
+            "lost": 0,
+            "spawned": 12
+          },
+          "activity": {
+            "actions": 142,
+            "resets": 2
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 110010.5,
+          "windowDurationMs": 9993.3,
+          "frame": {
+            "samples": 584,
+            "medianMs": 18,
+            "p95Ms": 18.3,
+            "maxMs": 19.1,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 1962676,
+            "totalBytes": 3985408
+          },
+          "dom": {
+            "elementCount": 68,
+            "cdpNodes": 179,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "wm-ms4xli34-72x7",
+            "phase": "playing",
+            "elapsed": 51.767,
+            "paused": false,
+            "thread": 29,
+            "stitchedEdges": [
+              "west_bridge",
+              "north_barrier",
+              "east_bridge",
+              "garden_gate"
+            ],
+            "saved": 9,
+            "lost": 0,
+            "spawned": 12
+          },
+          "activity": {
+            "actions": 156,
+            "resets": 2
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 120019,
+          "windowDurationMs": 10008.5,
+          "frame": {
+            "samples": 619,
+            "medianMs": 18,
+            "p95Ms": 18.3,
+            "maxMs": 20.1,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2148788,
+            "totalBytes": 5033984
+          },
+          "dom": {
+            "elementCount": 68,
+            "cdpNodes": 179,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "wm-ms4xmrt4-72x7",
+            "phase": "playing",
+            "elapsed": 2.5,
+            "paused": false,
+            "thread": 29,
+            "stitchedEdges": [
+              "west_bridge",
+              "north_barrier",
+              "east_bridge",
+              "garden_gate"
+            ],
+            "saved": 0,
+            "lost": 0,
+            "spawned": 1
+          },
+          "activity": {
+            "actions": 173,
+            "resets": 3
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        }
+      ],
+      "finalPublicState": {
+        "runId": "wm-ms4xmrt4-72x7",
+        "phase": "playing",
+        "elapsed": 2.5,
+        "paused": false,
+        "thread": 29,
+        "stitchedEdges": [
+          "west_bridge",
+          "north_barrier",
+          "east_bridge",
+          "garden_gate"
+        ],
+        "saved": 0,
+        "lost": 0,
+        "spawned": 1
+      },
+      "errors": {
+        "console": [],
+        "page": [],
+        "externalRequests": [],
+        "requestFailures": [],
+        "validation": []
+      },
+      "warnings": [],
+      "hardErrors": [],
+      "status": "PASS"
+    },
+    {
+      "id": "rift-hunter",
+      "title": "裂隙猎人",
+      "targetDurationMs": 120000,
+      "measuredDurationMs": 120019.8,
+      "sampleIntervalMs": 10000,
+      "activityPolicy": "自然速度；每 650ms 移动，按低频测试接口补经验且战利品不超过五件，结束后重开",
+      "activityTotals": {
+        "actions": 186,
+        "resets": 1
+      },
+      "overall": {
+        "frame": {
+          "samples": 7132,
+          "medianMs": 18,
+          "p95Ms": 18.2,
+          "maxMs": 19.6,
+          "over34MsCount": 0,
+          "over34MsRatio": 0
+        },
+        "longTasks": {
+          "supported": true,
+          "count": 0,
+          "totalDurationMs": 0,
+          "maxDurationMs": 0
+        }
+      },
+      "trend": {
+        "firstToLast": {
+          "heapUsedBytes": 1036804,
+          "heapUsedRatio": 0.6288,
+          "domElements": 0,
+          "domElementsRatio": 0,
+          "cdpNodes": 56,
+          "cdpNodesRatio": 0.115
+        },
+        "slopePerMinute": {
+          "heapUsedBytes": 241301.62,
+          "domElements": 0,
+          "cdpNodes": -97.3
+        }
+      },
+      "samples": [
+        {
+          "atMs": 1.7,
+          "windowDurationMs": 1.7,
+          "frame": {
+            "samples": 0,
+            "medianMs": null,
+            "p95Ms": null,
+            "maxMs": null,
+            "over34MsCount": 0,
+            "over34MsRatio": null
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 1648908,
+            "totalBytes": 3723264
+          },
+          "dom": {
+            "elementCount": 111,
+            "cdpNodes": 487,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "ms4xmu1b-o3a63v",
+            "mode": "playing",
+            "elapsed": 0.9,
+            "paused": false,
+            "result": null,
+            "hp": 100,
+            "xp": 0,
+            "weaponStage": 1,
+            "kills": 0,
+            "danger": 1,
+            "lootCount": 0,
+            "activePools": {
+              "enemies": 1,
+              "bullets": 0,
+              "enemyShots": 0,
+              "drops": 0,
+              "particles": 0
+            }
+          },
+          "activity": {
+            "actions": 1,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 10008.8,
+          "windowDurationMs": 10007.1,
+          "frame": {
+            "samples": 612,
+            "medianMs": 18,
+            "p95Ms": 18.1,
+            "maxMs": 19.1,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2531816,
+            "totalBytes": 5033984
+          },
+          "dom": {
+            "elementCount": 111,
+            "cdpNodes": 847,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "ms4xmu1b-o3a63v",
+            "mode": "playing",
+            "elapsed": 10.92,
+            "paused": false,
+            "result": null,
+            "hp": 93,
+            "xp": 33,
+            "weaponStage": 3,
+            "kills": 9,
+            "danger": 1,
+            "lootCount": 4,
+            "activePools": {
+              "enemies": 1,
+              "bullets": 6,
+              "enemyShots": 1,
+              "drops": 6,
+              "particles": 30
+            }
+          },
+          "activity": {
+            "actions": 16,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 20014.4,
+          "windowDurationMs": 10005.6,
+          "frame": {
+            "samples": 595,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 19,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2154632,
+            "totalBytes": 3723264
+          },
+          "dom": {
+            "elementCount": 111,
+            "cdpNodes": 1047,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "ms4xmu1b-o3a63v",
+            "mode": "playing",
+            "elapsed": 20.92,
+            "paused": false,
+            "result": null,
+            "hp": 93,
+            "xp": 65,
+            "weaponStage": 3,
+            "kills": 17,
+            "danger": 1,
+            "lootCount": 5,
+            "activePools": {
+              "enemies": 2,
+              "bullets": 2,
+              "enemyShots": 0,
+              "drops": 9,
+              "particles": 15
+            }
+          },
+          "activity": {
+            "actions": 32,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 30016.3,
+          "windowDurationMs": 10001.9,
+          "frame": {
+            "samples": 595,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 18.9,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 1986804,
+            "totalBytes": 5296128
+          },
+          "dom": {
+            "elementCount": 111,
+            "cdpNodes": 1231,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "ms4xmu1b-o3a63v",
+            "mode": "playing",
+            "elapsed": 30.92,
+            "paused": false,
+            "result": null,
+            "hp": 93,
+            "xp": 93,
+            "weaponStage": 3,
+            "kills": 25,
+            "danger": 2,
+            "lootCount": 5,
+            "activePools": {
+              "enemies": 3,
+              "bullets": 3,
+              "enemyShots": 1,
+              "drops": 8,
+              "particles": 15
+            }
+          },
+          "activity": {
+            "actions": 47,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 40007.6,
+          "windowDurationMs": 9991.3,
+          "frame": {
+            "samples": 593,
+            "medianMs": 18,
+            "p95Ms": 18.3,
+            "maxMs": 18.9,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2025496,
+            "totalBytes": 3461120
+          },
+          "dom": {
+            "elementCount": 111,
+            "cdpNodes": 503,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "ms4xmu1b-o3a63v",
+            "mode": "playing",
+            "elapsed": 40.92,
+            "paused": false,
+            "result": null,
+            "hp": 93,
+            "xp": 128,
+            "weaponStage": 3,
+            "kills": 36,
+            "danger": 2,
+            "lootCount": 5,
+            "activePools": {
+              "enemies": 3,
+              "bullets": 0,
+              "enemyShots": 0,
+              "drops": 11,
+              "particles": 0
+            }
+          },
+          "activity": {
+            "actions": 63,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 50008.4,
+          "windowDurationMs": 10000.8,
+          "frame": {
+            "samples": 597,
+            "medianMs": 17.9,
+            "p95Ms": 18.2,
+            "maxMs": 19,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2424372,
+            "totalBytes": 5033984
+          },
+          "dom": {
+            "elementCount": 111,
+            "cdpNodes": 1271,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "ms4xmu1b-o3a63v",
+            "mode": "playing",
+            "elapsed": 50.92,
+            "paused": false,
+            "result": null,
+            "hp": 93,
+            "xp": 168,
+            "weaponStage": 3,
+            "kills": 47,
+            "danger": 2,
+            "lootCount": 5,
+            "activePools": {
+              "enemies": 3,
+              "bullets": 3,
+              "enemyShots": 1,
+              "drops": 11,
+              "particles": 3
+            }
+          },
+          "activity": {
+            "actions": 78,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 60013.2,
+          "windowDurationMs": 10004.8,
+          "frame": {
+            "samples": 592,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 19.1,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2474096,
+            "totalBytes": 3723264
+          },
+          "dom": {
+            "elementCount": 111,
+            "cdpNodes": 713,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "ms4xmu1b-o3a63v",
+            "mode": "playing",
+            "elapsed": 60.92,
+            "paused": false,
+            "result": null,
+            "hp": 65,
+            "xp": 199,
+            "weaponStage": 3,
+            "kills": 58,
+            "danger": 3,
+            "lootCount": 5,
+            "activePools": {
+              "enemies": 2,
+              "bullets": 8,
+              "enemyShots": 0,
+              "drops": 7,
+              "particles": 18
+            }
+          },
+          "activity": {
+            "actions": 93,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 70004.6,
+          "windowDurationMs": 9991.4,
+          "frame": {
+            "samples": 583,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 19,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2774064,
+            "totalBytes": 5033984
+          },
+          "dom": {
+            "elementCount": 111,
+            "cdpNodes": 1199,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "ms4xmu1b-o3a63v",
+            "mode": "playing",
+            "elapsed": 70.92,
+            "paused": false,
+            "result": null,
+            "hp": 65,
+            "xp": 234,
+            "weaponStage": 3,
+            "kills": 69,
+            "danger": 3,
+            "lootCount": 5,
+            "activePools": {
+              "enemies": 3,
+              "bullets": 0,
+              "enemyShots": 0,
+              "drops": 11,
+              "particles": 0
+            }
+          },
+          "activity": {
+            "actions": 109,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 80014,
+          "windowDurationMs": 10009.4,
+          "frame": {
+            "samples": 594,
+            "medianMs": 18,
+            "p95Ms": 18.3,
+            "maxMs": 19.2,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2102192,
+            "totalBytes": 3198976
+          },
+          "dom": {
+            "elementCount": 111,
+            "cdpNodes": 967,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "ms4xmu1b-o3a63v",
+            "mode": "playing",
+            "elapsed": 80.92,
+            "paused": false,
+            "result": null,
+            "hp": 65,
+            "xp": 270,
+            "weaponStage": 3,
+            "kills": 81,
+            "danger": 3,
+            "lootCount": 6,
+            "activePools": {
+              "enemies": 2,
+              "bullets": 2,
+              "enemyShots": 0,
+              "drops": 11,
+              "particles": 18
+            }
+          },
+          "activity": {
+            "actions": 124,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 90010.5,
+          "windowDurationMs": 9996.5,
+          "frame": {
+            "samples": 589,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 19,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2539948,
+            "totalBytes": 5033984
+          },
+          "dom": {
+            "elementCount": 111,
+            "cdpNodes": 479,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "ms4xmu1b-o3a63v",
+            "mode": "playing",
+            "elapsed": 90.9,
+            "paused": false,
+            "result": null,
+            "hp": 65,
+            "xp": 307,
+            "weaponStage": 3,
+            "kills": 94,
+            "danger": 4,
+            "lootCount": 6,
+            "activePools": {
+              "enemies": 1,
+              "bullets": 5,
+              "enemyShots": 0,
+              "drops": 13,
+              "particles": 18
+            }
+          },
+          "activity": {
+            "actions": 140,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 100016.8,
+          "windowDurationMs": 10006.3,
+          "frame": {
+            "samples": 591,
+            "medianMs": 18,
+            "p95Ms": 18.3,
+            "maxMs": 19.6,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2375564,
+            "totalBytes": 4509696
+          },
+          "dom": {
+            "elementCount": 111,
+            "cdpNodes": 1175,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "ms4xmu1b-o3a63v",
+            "mode": "playing",
+            "elapsed": 100.92,
+            "paused": false,
+            "result": null,
+            "hp": 51,
+            "xp": 340,
+            "weaponStage": 3,
+            "kills": 103,
+            "danger": 4,
+            "lootCount": 6,
+            "activePools": {
+              "enemies": 5,
+              "bullets": 7,
+              "enemyShots": 2,
+              "drops": 9,
+              "particles": 5
+            }
+          },
+          "activity": {
+            "actions": 155,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 110015.7,
+          "windowDurationMs": 9998.9,
+          "frame": {
+            "samples": 606,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 18.4,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2142456,
+            "totalBytes": 5033984
+          },
+          "dom": {
+            "elementCount": 111,
+            "cdpNodes": 367,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "ms4xmu1b-o3a63v",
+            "mode": "playing",
+            "elapsed": 110.93,
+            "paused": false,
+            "result": null,
+            "hp": 37,
+            "xp": 376,
+            "weaponStage": 3,
+            "kills": 119,
+            "danger": 4,
+            "lootCount": 6,
+            "activePools": {
+              "enemies": 3,
+              "bullets": 0,
+              "enemyShots": 2,
+              "drops": 13,
+              "particles": 0
+            }
+          },
+          "activity": {
+            "actions": 170,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        },
+        {
+          "atMs": 120019.8,
+          "windowDurationMs": 10004.1,
+          "frame": {
+            "samples": 585,
+            "medianMs": 18,
+            "p95Ms": 18.2,
+            "maxMs": 19.2,
+            "over34MsCount": 0,
+            "over34MsRatio": 0
+          },
+          "longTasks": {
+            "supported": true,
+            "count": 0,
+            "totalDurationMs": 0,
+            "maxDurationMs": 0
+          },
+          "jsHeap": {
+            "supported": true,
+            "source": "Chrome DevTools Protocol Performance.getMetrics",
+            "usedBytes": 2685712,
+            "totalBytes": 5033984
+          },
+          "dom": {
+            "elementCount": 111,
+            "cdpNodes": 543,
+            "documents": 1,
+            "eventListeners": 27
+          },
+          "publicState": {
+            "runId": "ms4xmu1b-o3a63v",
+            "mode": "playing",
+            "elapsed": 120.92,
+            "paused": false,
+            "result": null,
+            "hp": 1,
+            "xp": 419,
+            "weaponStage": 3,
+            "kills": 133,
+            "danger": 5,
+            "lootCount": 6,
+            "activePools": {
+              "enemies": 3,
+              "bullets": 2,
+              "enemyShots": 0,
+              "drops": 15,
+              "particles": 29
+            }
+          },
+          "activity": {
+            "actions": 186,
+            "resets": 1
+          },
+          "observedErrorCounts": {
+            "console": 0,
+            "page": 0,
+            "externalRequests": 0,
+            "requestFailures": 0
+          }
+        }
+      ],
+      "finalPublicState": {
+        "runId": "ms4xmu1b-o3a63v",
+        "mode": "playing",
+        "elapsed": 120.92,
+        "paused": false,
+        "result": null,
+        "hp": 1,
+        "xp": 419,
+        "weaponStage": 3,
+        "kills": 133,
+        "danger": 5,
+        "lootCount": 6,
+        "activePools": {
+          "enemies": 3,
+          "bullets": 2,
+          "enemyShots": 0,
+          "drops": 15,
+          "particles": 29
+        }
+      },
+      "errors": {
+        "console": [],
+        "page": [],
+        "externalRequests": [],
+        "requestFailures": [],
+        "validation": []
+      },
+      "warnings": [],
+      "hardErrors": [],
+      "status": "PASS"
+    }
+  ]
+}
