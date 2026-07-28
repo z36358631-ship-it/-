@@ -12,7 +12,7 @@ function isOutside(root, candidate) {
     || path.isAbsolute(relative);
 }
 
-export function assertLocalRequest(request, config) {
+export function assertLocalRequest(request, config, { queryToken = null } = {}) {
   const expectedOrigin = config.origin || config.originForPort(request.socket.localPort);
   const expectedHost = new URL(expectedOrigin).host;
   if (request.headers.host !== expectedHost) {
@@ -28,7 +28,9 @@ export function assertLocalRequest(request, config) {
   ) {
     throw requestError('Request is not same-origin', 403);
   }
-  if (request.headers.authorization !== `Bearer ${config.sessionToken}`) {
+  const bearerIsValid = request.headers.authorization === `Bearer ${config.sessionToken}`;
+  const queryTokenIsValid = queryToken !== null && queryToken === config.sessionToken;
+  if (!bearerIsValid && !queryTokenIsValid) {
     throw requestError('Invalid local session token', 401);
   }
 }
