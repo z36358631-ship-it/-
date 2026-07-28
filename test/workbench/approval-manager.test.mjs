@@ -85,6 +85,131 @@ function fileApprovalRequest({ id, itemId, turnId = 'turn-1' }) {
   };
 }
 
+function permissionsApprovalRequest({
+  id,
+  cwd,
+  turnId = 'turn-1',
+}) {
+  return {
+    id,
+    method: 'item/permissions/requestApproval',
+    params: {
+      cwd,
+      itemId: 'item-permissions',
+      permissions: {
+        fileSystem: {
+          read: [cwd],
+          write: [cwd],
+        },
+        network: { enabled: true },
+      },
+      reason: 'The command requests broader filesystem and network access.',
+      startedAtMs: 1_754_000_000_003,
+      threadId: 'thread-1',
+      turnId,
+    },
+  };
+}
+
+test('a registered permissions request is immediately declined without changing run state', t => {
+  const {
+    approvalRoot,
+    codex,
+    store,
+  } = setup(t);
+  codex.emit('request', permissionsApprovalRequest({
+    id: 'permissions-registered',
+    cwd: approvalRoot,
+  }));
+
+  assert.deepEqual(codex.responses, [{
+    id: 'permissions-registered',
+    result: { decision: 'decline' },
+  }]);
+  assert.equal(Object.hasOwn(codex.responses[0], 'jsonrpc'), false);
+  assert.equal(store.listApprovals('RUN-1').length, 0);
+  assert.equal(store.listPendingApprovals('RUN-1').length, 0);
+  assert.equal(store.getRun('RUN-1').status, 'running');
+});
+
+test('an unregistered permissions request is immediately declined with its numeric id', t => {
+  const {
+    approvalRoot,
+    codex,
+    store,
+  } = setup(t);
+  codex.emit('request', permissionsApprovalRequest({
+    id: 131,
+    cwd: approvalRoot,
+    turnId: 'turn-unknown',
+  }));
+
+  assert.deepEqual(codex.responses, [{
+    id: 131,
+    result: { decision: 'decline' },
+  }]);
+  assert.equal(store.listApprovals('RUN-1').length, 0);
+  assert.equal(store.getRun('RUN-1').status, 'running');
+});
+
+test('unknown account, MCP and future server requests all fail closed once', t => {
+  const { codex, store } = setup(t);
+  const requests = [
+    {
+      id: 'account-request',
+      method: 'account/chatgptAuthTokens/refresh',
+      params: { reason: 'unauthorized' },
+    },
+    {
+      id: 132,
+      method: 'mcpServer/elicitation/request',
+      params: {
+        message: 'Provide credentials',
+        mode: 'form',
+        requestedSchema: { type: 'object' },
+        serverName: 'untrusted-server',
+      },
+    },
+    {
+      id: 'future-request',
+      method: 'future/server/request',
+      params: { threadId: 'thread-1', turnId: 'turn-1' },
+    },
+  ];
+  for (const request of requests) codex.emit('request', request);
+
+  assert.deepEqual(codex.responses, requests.map(request => ({
+    id: request.id,
+    result: { decision: 'decline' },
+  })));
+  assert.equal(codex.responseAttempts, requests.length);
+  assert.equal(store.listApprovals('RUN-1').length, 0);
+  assert.equal(store.getRun('RUN-1').status, 'running');
+});
+
+test('unsupported request response failures are observable without pending state or retry', t => {
+  const {
+    approvalRoot,
+    codex,
+    store,
+  } = setup(t);
+  codex.responseError = new Error('protocol write failed');
+  const request = permissionsApprovalRequest({
+    id: 'permissions-write-failure',
+    cwd: approvalRoot,
+  });
+
+  assert.throws(
+    () => codex.emit('request', request),
+    /protocol write failed/,
+  );
+  assert.equal(codex.responseAttempts, 1);
+  assert.deepEqual(codex.responses, []);
+  assert.equal(store.listApprovals('RUN-1').length, 0);
+  assert.equal(store.listPendingApprovals('RUN-1').length, 0);
+  assert.equal(store.getRun('RUN-1').status, 'running');
+});
+
 test('an approval request for an unregistered turn is declined without persistence', t => {
   const { codex, store } = setup(t);
   codex.emit('request', fileApprovalRequest({

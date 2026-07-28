@@ -161,7 +161,12 @@ export class ApprovalManager {
   #onRequest(request) {
     const fileChange = request?.method === FILE_APPROVAL_METHOD;
     const command = request?.method === COMMAND_APPROVAL_METHOD;
-    if (!fileChange && !command) return;
+    if (!fileChange && !command) {
+      if (request && Object.hasOwn(request, 'id')) {
+        this.codex.respond(request.id, { decision: 'decline' });
+      }
+      return;
+    }
 
     const turn = this.byTurn.get(request.params?.turnId);
     if (!turn) {
