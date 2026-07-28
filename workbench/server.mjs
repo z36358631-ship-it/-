@@ -8,8 +8,10 @@ import {
   classifyCodexHealth,
   CodexAppServerClient,
 } from './lib/codex-app-server-client.mjs';
+import { ApprovalManager } from './lib/approval-manager.mjs';
 import { ContextService } from './lib/context-service.mjs';
 import { openDatabase } from './lib/database.mjs';
+import { FileSafety } from './lib/file-safety.mjs';
 import { RunManager } from './lib/run-manager.mjs';
 import { assertLocalRequest, readJsonBody } from './lib/security.mjs';
 import { workflowCatalog } from './lib/workflow-catalog.mjs';
@@ -21,7 +23,9 @@ const contentTypes = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
 };
-const activeRunStatuses = new Set(['queued', 'running']);
+const activeRunStatuses = new Set(['queued', 'running', 'waiting-approval']);
+const staleRunStatuses = new Set(['queued', 'running', 'waiting-approval']);
+const approvalDecisions = new Set(['approved', 'rejected']);
 const requirementStages = new Set([
   '待分析',
   '需求池',
@@ -80,6 +84,34 @@ function assertWorkflowRunBody(body) {
       throw requestError(`${key} is not accepted for a workflow run`, 400);
     }
   }
+}
+
+function assertApprovalDecisionBody(body) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    throw requestError('approval decision input must be an object', 400);
+  }
+  const keys = Object.keys(body);
+  if (keys.length !== 1 || keys[0] !== 'decision') {
+    throw requestError('approval decision accepts only decision', 400);
+  }
+  if (!approvalDecisions.has(body.decision)) {
+    throw requestError('decision must be approved or rejected', 400);
+  }
+}
+
+async function assertEmptyRequestBody(request, maxBodyBytes) {
+  const declaredLength = Number(request.headers['content-length'] || 0);
+  if (declaredLength > maxBodyBytes) {
+    throw requestError('Request body is too large', 413);
+  }
+  let size = 0;
+  for await (const chunk of request) {
+    size += chunk.length;
+    if (size > maxBodyBytes) {
+      throw requestError('Request body is too large', 413);
+    }
+  }
+  if (size !== 0) throw requestError('Request body must be empty', 400);
 }
 
 function isOutside(root, candidate) {
@@ -171,12 +203,52 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
     store,
     allowedRoot: config.allowedRoot,
   });
+  const fileSafety = new FileSafety({ allowedRoot: config.allowedRoot });
+  for (const stale of store.listRuns(1_000).filter(run => staleRunStatuses.has(run.status))) {
+    store.finishRun(
+      stale.id,
+      'interrupted',
+      stale.result || null,
+      'Broker restarted before the run completed',
+    );
+  }
+  for (const interrupted of store.listRuns(1_000).filter(run => run.status === 'interrupted')) {
+    for (const approval of store.listPendingApprovals(interrupted.id)) {
+      store.resolveApproval(approval.id, 'rejected');
+    }
+    const snapshots = store.listFileSnapshots(interrupted.id);
+    if (snapshots.length === 0) continue;
+    const differences = fileSafety.compare(snapshots);
+    if (store.getRunApplyState(interrupted.id).state === 'applying') {
+      for (const change of differences) store.saveFileChange(interrupted.id, change);
+    } else if (
+      differences.length > 0
+      && !store.listValidations(interrupted.id)
+        .some(validation => validation.name === 'Broker restart conflict check')
+    ) {
+      store.saveValidation(interrupted.id, {
+        name: 'Broker restart conflict check',
+        status: 'failed',
+        detail: `Files changed outside an applying run: ${
+          differences.map(item => item.path).join(', ')
+        }`,
+      });
+    }
+  }
+  const approvalManager = new ApprovalManager({
+    store,
+    codex,
+    allowedRoot: config.allowedRoot,
+  });
   const runs = new RunManager({
     store,
     codex,
     allowedRoot: config.allowedRoot,
     contextService,
+    fileSafety,
+    approvalManager,
     maxConcurrentRuns: config.maxConcurrentRuns,
+    runTimeoutMs: config.runTimeoutMs,
   });
 
   async function healthPayload() {
@@ -223,6 +295,11 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
         if (request.method === 'POST' && url.pathname === '/api/runs') {
           const body = await readJsonBody(request, config.maxBodyBytes);
           const run = await runs.startReadOnlyRun(body);
+          return sendJson(response, 202, run);
+        }
+        if (request.method === 'POST' && url.pathname === '/api/runs/write') {
+          const body = await readJsonBody(request, config.maxBodyBytes);
+          const run = await runs.startWriteRun(body);
           return sendJson(response, 202, run);
         }
         if (request.method === 'GET' && url.pathname === '/api/workflows') {
@@ -373,6 +450,89 @@ export async function createWorkbenchServer({ env = process.env, codexFactory } 
           return result
             ? sendJson(response, 200, result)
             : sendJson(response, 404, { error: 'Workflow result not found' });
+        }
+
+        const runDetailMatch = url.pathname.match(/^\/api\/runs\/([^/]+)$/);
+        if (request.method === 'GET' && runDetailMatch) {
+          const runId = decodePathSegment(runDetailMatch[1]);
+          const run = store.getRun(runId);
+          return run
+            ? sendJson(response, 200, {
+                ...run,
+                events: store.listRunEvents(runId),
+                approvals: store.listApprovals(runId),
+                fileChanges: store.listFileChanges(runId),
+                validations: store.listValidations(runId),
+              })
+            : sendJson(response, 404, { error: 'Run not found' });
+        }
+
+        const cancelMatch = url.pathname.match(/^\/api\/runs\/([^/]+)\/cancel$/);
+        if (request.method === 'POST' && cancelMatch) {
+          const runId = decodePathSegment(cancelMatch[1]);
+          if (!store.getRun(runId)) {
+            return sendJson(response, 404, { error: 'Run not found' });
+          }
+          await assertEmptyRequestBody(request, config.maxBodyBytes);
+          return sendJson(response, 200, await runs.cancel(runId));
+        }
+
+        const retryMatch = url.pathname.match(/^\/api\/runs\/([^/]+)\/retry$/);
+        if (request.method === 'POST' && retryMatch) {
+          const runId = decodePathSegment(retryMatch[1]);
+          if (!store.getRun(runId)) {
+            return sendJson(response, 404, { error: 'Run not found' });
+          }
+          await assertEmptyRequestBody(request, config.maxBodyBytes);
+          return sendJson(response, 202, await runs.retry(runId));
+        }
+
+        const approvalMatch = url.pathname.match(
+          /^\/api\/approvals\/([^/]+)\/decision$/,
+        );
+        if (request.method === 'POST' && approvalMatch) {
+          const approvalId = decodePathSegment(approvalMatch[1]);
+          const body = await readJsonBody(request, config.maxBodyBytes);
+          assertApprovalDecisionBody(body);
+          const approval = store.getApproval(approvalId);
+          if (!approval) {
+            return sendJson(response, 404, { error: 'Approval not found' });
+          }
+          if (approval.status !== 'pending') {
+            return sendJson(response, 409, { error: 'Approval is not pending' });
+          }
+          approvalManager.resolve(approvalId, body.decision);
+          return sendJson(response, 200, { status: body.decision });
+        }
+
+        const restoreMatch = url.pathname.match(/^\/api\/runs\/([^/]+)\/restore$/);
+        if (request.method === 'POST' && restoreMatch) {
+          const runId = decodePathSegment(restoreMatch[1]);
+          const run = store.getRun(runId);
+          if (!run) return sendJson(response, 404, { error: 'Run not found' });
+          await assertEmptyRequestBody(request, config.maxBodyBytes);
+          if (activeRunStatuses.has(run.status)) {
+            return sendJson(response, 409, { error: 'Active runs cannot be restored' });
+          }
+          const changes = store
+            .listFileChanges(runId)
+            .filter(change => !change.restoredAt);
+          if (changes.length === 0) {
+            return sendJson(response, 409, {
+              error: 'Run has no unrestored file changes',
+            });
+          }
+          const snapshots = store.listFileSnapshots(runId);
+          fileSafety.restore(snapshots, changes);
+          if (run.permission === 'generate-candidate') {
+            for (const change of changes.filter(item => item.kind === 'created')) {
+              store.removeArtifact(run.requirementId, change.path);
+            }
+          }
+          store.markChangesRestored(runId);
+          return sendJson(response, 200, {
+            restored: changes.map(item => item.path),
+          });
         }
         return sendJson(response, 404, { error: 'API route not found' });
       }
