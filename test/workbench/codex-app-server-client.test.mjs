@@ -12,7 +12,11 @@ function fakeProcess() {
   child.stdin = new PassThrough();
   child.stdout = new PassThrough();
   child.stderr = new PassThrough();
-  child.kill = () => true;
+  child.killCount = 0;
+  child.kill = () => {
+    child.killCount += 1;
+    return true;
+  };
   return child;
 }
 
@@ -172,4 +176,76 @@ test('client retains launch errors and classifies a missing Codex executable', a
     authentication: 'unknown',
     diagnostic: 'spawn codex.cmd ENOENT',
   });
+});
+
+test('initialize has a fixed request deadline and stops only its own child', async () => {
+  const child = fakeProcess();
+  const writes = [];
+  child.stdin.on('data', chunk => writes.push(JSON.parse(chunk.toString('utf8'))));
+  const client = new CodexAppServerClient({
+    requestTimeoutMs: 15,
+    spawnProcess: () => child,
+  });
+
+  await assert.rejects(
+    () => client.start(),
+    /request timed out: initialize/,
+  );
+
+  assert.equal(writes[0].method, 'initialize');
+  assert.equal(child.killCount, 1);
+  assert.equal(client.diagnostics().running, false);
+  assert.equal(client.pending.size, 0);
+});
+
+test('request deadlines identify the method and ignore a late response', async () => {
+  const child = fakeProcess();
+  const writes = [];
+  child.stdin.on('data', chunk => {
+    const message = JSON.parse(chunk.toString('utf8'));
+    writes.push(message);
+    if (message.method === 'initialize') {
+      child.stdout.write(`${JSON.stringify({ id: message.id, result: {} })}\n`);
+    }
+  });
+  const client = new CodexAppServerClient({
+    requestTimeoutMs: 15,
+    spawnProcess: () => child,
+  });
+  await client.start();
+
+  const pending = client.request('thread/start', { cwd: 'C:/workspace' });
+  const request = writes.find(message => message.method === 'thread/start');
+  await assert.rejects(pending, /request timed out: thread\/start/);
+  assert.equal(client.pending.size, 0);
+
+  child.stdout.write(`${JSON.stringify({
+    id: request.id,
+    result: { thread: { id: 'late-thread' } },
+  })}\n`);
+  await nextTurn();
+  assert.equal(client.pending.size, 0);
+  await client.stop();
+});
+
+test('process exit rejects pending requests and clears their deadlines', async () => {
+  const child = fakeProcess();
+  child.stdin.on('data', chunk => {
+    const message = JSON.parse(chunk.toString('utf8'));
+    if (message.method === 'initialize') {
+      child.stdout.write(`${JSON.stringify({ id: message.id, result: {} })}\n`);
+    }
+  });
+  const client = new CodexAppServerClient({
+    requestTimeoutMs: 100,
+    spawnProcess: () => child,
+  });
+  await client.start();
+
+  const pending = client.request('thread/resume', { threadId: 'thread-1' });
+  child.emit('exit', 1, null);
+
+  await assert.rejects(pending, /exited: code=1/);
+  assert.equal(client.pending.size, 0);
+  assert.equal(client.diagnostics().running, false);
 });

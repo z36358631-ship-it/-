@@ -22,7 +22,9 @@ class FakeCodex extends EventEmitter {
   calls = [];
   interruptMode = 'resolve';
   pidValue = 8642;
+  requestGates = new Map();
   running = false;
+  startGate = null;
   threadCount = 0;
   turnCount = 0;
   turnStartError = null;
@@ -30,10 +32,13 @@ class FakeCodex extends EventEmitter {
 
   async start() {
     this.running = true;
+    if (this.startGate) await this.startGate.promise;
   }
 
   async request(method, params) {
     this.calls.push({ method, params });
+    const gate = this.requestGates.get(method);
+    if (gate) await gate.promise;
     if (method === 'thread/start') {
       return { thread: { id: `thread-${++this.threadCount}` } };
     }
@@ -76,6 +81,16 @@ class FakeCodex extends EventEmitter {
   pid() {
     return this.pidValue;
   }
+}
+
+function deferred() {
+  let reject;
+  let resolve;
+  const promise = new Promise((resolvePromise, rejectPromise) => {
+    reject = rejectPromise;
+    resolve = resolvePromise;
+  });
+  return { promise, reject, resolve };
 }
 
 class RecordingApprovals {
@@ -209,6 +224,15 @@ async function waitForStatus(store, runId, status, timeoutMs = 500) {
     await new Promise(resolve => setTimeout(resolve, 5));
   }
   assert.fail(`Run ${runId} did not reach ${status}`);
+}
+
+async function waitFor(predicate, message, timeoutMs = 500) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (predicate()) return;
+    await new Promise(resolve => setTimeout(resolve, 5));
+  }
+  assert.fail(message);
 }
 
 test('write runs enforce exact inputs and use only the run staging root', async t => {
@@ -608,6 +632,95 @@ test('read-only, workflow and write runs all time out and release control state'
       }
     });
   }
+});
+
+test('cancel during Codex initialization releases the only slot and kills only the persisted client PID', async t => {
+  const codex = new FakeCodex();
+  const initialization = deferred();
+  codex.startGate = initialization;
+  const {
+    manager,
+    store,
+    terminated,
+  } = setup(t, { codex });
+  const input = {
+    prompt: 'inspect startup',
+    files: [],
+  };
+
+  const starting = manager.startReadOnlyRun(input);
+  const startupRejected = assert.rejects(starting, /Cancelled by user/);
+  await waitFor(
+    () => store.listRuns().length === 1
+      && store.listRuns()[0].processPid === 8642,
+    'starting run did not persist its Codex PID',
+  );
+  const [run] = store.listRuns();
+  await assert.rejects(
+    () => manager.startReadOnlyRun(input),
+    error => error.statusCode === 429,
+  );
+
+  const cancelled = await manager.cancel(run.id);
+  await startupRejected;
+
+  assert.equal(cancelled.status, 'cancelled');
+  assert.equal(cancelled.threadId, null);
+  assert.equal(cancelled.turnId, null);
+  assert.deepEqual(terminated, [8642]);
+
+  codex.startGate = null;
+  initialization.resolve();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(store.getRun(run.id).status, 'cancelled');
+
+  const replacement = await manager.startReadOnlyRun(input);
+  assert.equal(replacement.status, 'running');
+  await manager.cancel(replacement.id);
+});
+
+test('thread startup timeout rejects the caller, ignores the late response, and releases the only slot', async t => {
+  const codex = new FakeCodex();
+  const threadStart = deferred();
+  codex.requestGates.set('thread/start', threadStart);
+  const {
+    manager,
+    store,
+    terminated,
+  } = setup(t, { codex, runTimeoutMs: 20 });
+  const input = {
+    requirementId: 'REQ-1',
+    prompt: 'inspect thread startup',
+    files: [],
+  };
+
+  const starting = manager.startReadOnlyRun(input);
+  const startupRejected = assert.rejects(starting, /Run timed out/);
+  await waitFor(
+    () => codex.calls.some(call => call.method === 'thread/start'),
+    'thread/start was not requested',
+  );
+  const [run] = store.listRuns();
+  const failed = await waitForStatus(store, run.id, 'failed');
+  await startupRejected;
+
+  assert.equal(failed.error, 'Run timed out');
+  assert.equal(failed.processPid, 8642);
+  assert.equal(failed.threadId, null);
+  assert.equal(failed.turnId, null);
+  assert.deepEqual(terminated, [8642]);
+
+  codex.requestGates.delete('thread/start');
+  threadStart.resolve();
+  await new Promise(resolve => setImmediate(resolve));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(store.getRun(run.id).status, 'failed');
+  assert.equal(store.getRun(run.id).threadId, null);
+  assert.equal(store.getRequirementThread('REQ-1') ?? null, null);
+
+  const replacement = await manager.startReadOnlyRun(input);
+  assert.equal(replacement.status, 'running');
+  await manager.cancel(replacement.id);
 });
 
 test('retry reconstructs every run kind from persisted context without --last', async t => {

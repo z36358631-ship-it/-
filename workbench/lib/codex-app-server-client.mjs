@@ -5,6 +5,7 @@ import readline from 'node:readline';
 const APP_SERVER_COMMAND = 'codex.cmd';
 const APP_SERVER_ARGS = Object.freeze(['app-server']);
 const MAX_DIAGNOSTIC_LENGTH = 16_384;
+const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
 
 function tail(value, length = MAX_DIAGNOSTIC_LENGTH) {
   return String(value || '').slice(-length);
@@ -27,10 +28,15 @@ export class CodexAppServerClient extends EventEmitter {
   constructor({
     cwd = process.cwd(),
     spawnProcess = (command, args, options) => spawn(command, args, options),
+    requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
   } = {}) {
     super();
+    if (!Number.isInteger(requestTimeoutMs) || requestTimeoutMs < 1) {
+      throw new TypeError('requestTimeoutMs must be a positive integer');
+    }
     this.cwd = cwd;
     this.spawnProcess = spawnProcess;
+    this.requestTimeoutMs = requestTimeoutMs;
     this.child = null;
     this.lines = null;
     this.nextId = 1;
@@ -106,11 +112,25 @@ export class CodexAppServerClient extends EventEmitter {
     if (!this.child) return Promise.reject(new Error('Codex App Server is not running'));
     const id = this.nextId++;
     return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject });
+      const timer = setTimeout(() => {
+        const waiter = this.pending.get(id);
+        if (!waiter) return;
+        this.pending.delete(id);
+        waiter.reject(
+          new Error(`Codex App Server request timed out: ${method}`),
+        );
+      }, this.requestTimeoutMs);
+      this.pending.set(id, {
+        method,
+        reject,
+        resolve,
+        timer,
+      });
       try {
         this.#write({ id, method, params });
       } catch (error) {
         this.pending.delete(id);
+        clearTimeout(timer);
         reject(error);
       }
     });
@@ -155,7 +175,10 @@ export class CodexAppServerClient extends EventEmitter {
   }
 
   #rejectPending(error) {
-    for (const waiter of this.pending.values()) waiter.reject(error);
+    for (const waiter of this.pending.values()) {
+      clearTimeout(waiter.timer);
+      waiter.reject(error);
+    }
     this.pending.clear();
   }
 
@@ -179,6 +202,7 @@ export class CodexAppServerClient extends EventEmitter {
       const waiter = this.pending.get(message.id);
       if (!waiter) return;
       this.pending.delete(message.id);
+      clearTimeout(waiter.timer);
       if (message.error) {
         const error = new Error(message.error.message || 'App Server request failed');
         error.code = message.error.code;

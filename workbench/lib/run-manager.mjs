@@ -29,6 +29,13 @@ function requestError(message, statusCode) {
   return Object.assign(new Error(message), { statusCode });
 }
 
+class StartupFinalizedError extends Error {
+  constructor(run, fallbackMessage) {
+    super(run?.error || fallbackMessage || 'Run ended during startup');
+    this.run = run || null;
+  }
+}
+
 function protocolId(result, kind) {
   const id = result?.[kind]?.id;
   if (typeof id !== 'string' || !id) {
@@ -220,42 +227,44 @@ export class RunManager {
       input: { kind: 'freeform-read-only' },
     });
 
-    let active = null;
+    const active = {
+      approvalRegistered: false,
+      completedAgentItems: new Set(),
+      deltaAgentItems: new Set(),
+      finished: false,
+      finalized: false,
+      processPid: null,
+      runId,
+      text: '',
+      threadId: null,
+      turnId: null,
+      workflowType: null,
+    };
+    this.#registerActive(active);
     try {
-      await this.codex.start();
-      const pid = processPid(this.codex);
+      const pid = await this.#startCodex(active);
       const threadState = requirementId
-        ? await this.#requirementThread(requirementId)
+        ? await this.#requirementThread(requirementId, active)
         : {
             rebuilt: false,
-            threadId: await this.#startThread(),
+            threadId: await this.#startThread(active),
           };
       const { rebuilt, threadId } = threadState;
+      active.threadId = threadId;
       this.store.bindProtocolIds(runId, threadId, null, pid);
       if (rebuilt) this.#recordThreadRebuilt(runId);
-
-      active = {
-        approvalRegistered: false,
-        completedAgentItems: new Set(),
-        deltaAgentItems: new Set(),
-        finished: false,
-        finalized: false,
-        runId,
-        text: '',
-        threadId,
-        turnId: null,
-        workflowType: null,
-      };
       this.activeByThread.set(threadId, active);
-      this.#registerActive(active);
 
-      const turnResult = await this.codex.request('turn/start', {
-        approvalPolicy: 'never',
-        cwd: this.allowedRoot,
-        input: [{ type: 'text', text: buildContext(requirement, authorizedFiles, cleanPrompt) }],
-        sandboxPolicy: { type: 'readOnly', networkAccess: false },
-        threadId,
-      });
+      const turnResult = await this.#awaitStartup(
+        active,
+        this.codex.request('turn/start', {
+          approvalPolicy: 'never',
+          cwd: this.allowedRoot,
+          input: [{ type: 'text', text: buildContext(requirement, authorizedFiles, cleanPrompt) }],
+          sandboxPolicy: { type: 'readOnly', networkAccess: false },
+          threadId,
+        }),
+      );
       const turnId = protocolId(turnResult, 'turn');
       if (active.turnId && active.turnId !== turnId) {
         throw new Error('Codex turn/start response did not match the notification turn id');
@@ -265,6 +274,18 @@ export class RunManager {
       if (!active.finished) this.activeByTurn.set(turnId, active);
       return this.store.getRun(runId);
     } catch (error) {
+      if (
+        error instanceof StartupFinalizedError
+        && error.run?.status === 'completed'
+      ) {
+        this.store.bindProtocolIds(
+          runId,
+          active.threadId,
+          active.turnId,
+          active.processPid,
+        );
+        return this.store.getRun(runId);
+      }
       this.#handleStartFailure(runId, active, error);
       throw error;
     }
@@ -317,38 +338,43 @@ export class RunManager {
       input: { workflowType, workflowInput: input },
     });
 
-    let active = null;
+    const active = {
+      approvalRegistered: false,
+      completedAgentItems: new Set(),
+      deltaAgentItems: new Set(),
+      finished: false,
+      finalized: false,
+      processPid: null,
+      requirementId,
+      runId,
+      text: '',
+      threadId: null,
+      turnId: null,
+      workflowType,
+    };
+    this.#registerActive(active);
     try {
-      await this.codex.start();
-      const pid = processPid(this.codex);
-      const { rebuilt, threadId } = await this.#requirementThread(requirementId);
+      const pid = await this.#startCodex(active);
+      const { rebuilt, threadId } = await this.#requirementThread(
+        requirementId,
+        active,
+      );
+      active.threadId = threadId;
       this.store.bindProtocolIds(runId, threadId, null, pid);
       if (rebuilt) this.#recordThreadRebuilt(runId);
-
-      active = {
-        approvalRegistered: false,
-        completedAgentItems: new Set(),
-        deltaAgentItems: new Set(),
-        finished: false,
-        finalized: false,
-        requirementId,
-        runId,
-        text: '',
-        threadId,
-        turnId: null,
-        workflowType,
-      };
       this.activeByThread.set(threadId, active);
-      this.#registerActive(active);
 
-      const turnResult = await this.codex.request('turn/start', {
-        approvalPolicy: 'never',
-        cwd: this.allowedRoot,
-        input: [{ type: 'text', text: prompt }],
-        outputSchema: workflow.outputSchema,
-        sandboxPolicy: { type: 'readOnly', networkAccess: false },
-        threadId,
-      });
+      const turnResult = await this.#awaitStartup(
+        active,
+        this.codex.request('turn/start', {
+          approvalPolicy: 'never',
+          cwd: this.allowedRoot,
+          input: [{ type: 'text', text: prompt }],
+          outputSchema: workflow.outputSchema,
+          sandboxPolicy: { type: 'readOnly', networkAccess: false },
+          threadId,
+        }),
+      );
       const turnId = protocolId(turnResult, 'turn');
       if (active.turnId && active.turnId !== turnId) {
         throw new Error('Codex turn/start response did not match the notification turn id');
@@ -358,6 +384,18 @@ export class RunManager {
       if (!active.finished) this.activeByTurn.set(turnId, active);
       return this.store.getRun(runId);
     } catch (error) {
+      if (
+        error instanceof StartupFinalizedError
+        && error.run?.status === 'completed'
+      ) {
+        this.store.bindProtocolIds(
+          runId,
+          active.threadId,
+          active.turnId,
+          active.processPid,
+        );
+        return this.store.getRun(runId);
+      }
       this.#handleStartFailure(runId, active, error);
       throw error;
     }
@@ -438,37 +476,36 @@ export class RunManager {
       files: targetPaths,
       input: { permission: input.permission },
     });
-    for (const item of snapshot) this.store.saveFileSnapshot(runId, item);
-
-    let active = null;
+    const active = {
+      approvalRegistered: false,
+      completedAgentItems: new Set(),
+      deltaAgentItems: new Set(),
+      finalized: false,
+      finished: false,
+      permission: input.permission,
+      processPid: null,
+      requirementId: input.requirementId,
+      runId,
+      snapshot,
+      stagingRoot,
+      targets: targetPaths,
+      text: '',
+      threadId: null,
+      turnId: null,
+      workflowType: null,
+    };
+    this.#registerActive(active);
     try {
-      await this.codex.start();
-      const pid = processPid(this.codex);
+      for (const item of snapshot) this.store.saveFileSnapshot(runId, item);
+      const pid = await this.#startCodex(active);
       const { rebuilt, threadId } = await this.#requirementThread(
         input.requirementId,
+        active,
       );
+      active.threadId = threadId;
       this.store.bindProtocolIds(runId, threadId, null, pid);
       if (rebuilt) this.#recordThreadRebuilt(runId);
-
-      active = {
-        approvalRegistered: false,
-        completedAgentItems: new Set(),
-        deltaAgentItems: new Set(),
-        finalized: false,
-        finished: false,
-        permission: input.permission,
-        requirementId: input.requirementId,
-        runId,
-        snapshot,
-        stagingRoot,
-        targets: targetPaths,
-        text: '',
-        threadId,
-        turnId: null,
-        workflowType: null,
-      };
       this.activeByThread.set(threadId, active);
-      this.#registerActive(active);
 
       const fullPrompt = [
         `当前需求：${context.requirement.id} ${context.requirement.title}`,
@@ -478,17 +515,20 @@ export class RunManager {
         '不得删除文件，不得修改目标清单外文件，不得访问真实工作区路径，不得发布或外部发送。',
         `任务：${cleanPrompt}`,
       ].join('\n\n');
-      const turnResult = await this.codex.request('turn/start', {
-        approvalPolicy: 'on-request',
-        cwd: stagingRoot,
-        input: [{ type: 'text', text: fullPrompt }],
-        sandboxPolicy: {
-          type: 'workspaceWrite',
-          writableRoots: [stagingRoot],
-          networkAccess: false,
-        },
-        threadId,
-      });
+      const turnResult = await this.#awaitStartup(
+        active,
+        this.codex.request('turn/start', {
+          approvalPolicy: 'on-request',
+          cwd: stagingRoot,
+          input: [{ type: 'text', text: fullPrompt }],
+          sandboxPolicy: {
+            type: 'workspaceWrite',
+            writableRoots: [stagingRoot],
+            networkAccess: false,
+          },
+          threadId,
+        }),
+      );
       const turnId = protocolId(turnResult, 'turn');
       if (active.turnId && active.turnId !== turnId) {
         throw new Error(
@@ -503,6 +543,18 @@ export class RunManager {
       }
       return this.store.getRun(runId);
     } catch (error) {
+      if (
+        error instanceof StartupFinalizedError
+        && error.run?.status === 'completed'
+      ) {
+        this.store.bindProtocolIds(
+          runId,
+          active.threadId,
+          active.turnId,
+          active.processPid,
+        );
+        return this.store.getRun(runId);
+      }
       this.#handleStartFailure(runId, active, error);
       throw error;
     }
@@ -510,7 +562,7 @@ export class RunManager {
 
   async cancel(runId) {
     const active = this.activeByRun.get(runId);
-    if (!active || !this.#beginFinalization(active)) {
+    if (!active || !this.#beginFinalization(active, 'Cancelled by user')) {
       throw requestError('Run is not active', 409);
     }
 
@@ -582,6 +634,48 @@ export class RunManager {
     });
   }
 
+  async #startCodex(active) {
+    let starting;
+    try {
+      starting = this.codex.start();
+    } catch (error) {
+      const pid = processPid(this.codex);
+      active.processPid = pid;
+      this.store.bindProtocolIds(active.runId, null, null, pid);
+      throw error;
+    }
+
+    let pid = processPid(this.codex);
+    active.processPid = pid;
+    this.store.bindProtocolIds(active.runId, null, null, pid);
+    await this.#awaitStartup(active, starting);
+
+    if (!pid) {
+      pid = processPid(this.codex);
+      active.processPid = pid;
+      this.store.bindProtocolIds(active.runId, null, null, pid);
+    }
+    return pid;
+  }
+
+  async #awaitStartup(active, operation) {
+    const outcome = await Promise.race([
+      Promise.resolve(operation).then(
+        value => ({ kind: 'result', value }),
+        error => ({ error, kind: 'error' }),
+      ),
+      active.terminalPromise.then(() => ({ kind: 'terminal' })),
+    ]);
+    if (active.finished || outcome.kind === 'terminal') {
+      throw new StartupFinalizedError(
+        this.store.getRun(active.runId),
+        active.finishReason,
+      );
+    }
+    if (outcome.kind === 'error') throw outcome.error;
+    return outcome.value;
+  }
+
   #registerActive(active) {
     if (this.activeByRun.has(active.runId)) {
       throw new Error(`Run is already active: ${active.runId}`);
@@ -590,6 +684,9 @@ export class RunManager {
       void this.#timeout(active.runId);
     }, this.runTimeoutMs);
     active.timeout.unref?.();
+    active.terminalPromise = new Promise(resolve => {
+      active.resolveTerminal = resolve;
+    });
     this.activeByRun.set(active.runId, active);
     if (active.turnId) this.activeByTurn.set(active.turnId, active);
     return active;
@@ -612,9 +709,10 @@ export class RunManager {
     active.approvalRegistered = true;
   }
 
-  #beginFinalization(active) {
+  #beginFinalization(active, finishReason = null) {
     if (!active || active.finished) return false;
     active.finished = true;
+    active.finishReason = finishReason;
     return true;
   }
 
@@ -623,15 +721,15 @@ export class RunManager {
       this.store.finishRun(runId, 'failed', null, error.message);
       return;
     }
-    if (this.#beginFinalization(active)) {
+    if (this.#beginFinalization(active, error.message)) {
       this.store.finishRun(runId, 'failed', active.text || null, error.message);
+      this.#finalizeActive(active);
     }
-    this.#finalizeActive(active);
   }
 
   async #timeout(runId) {
     const active = this.activeByRun.get(runId);
-    if (!active || !this.#beginFinalization(active)) return;
+    if (!active || !this.#beginFinalization(active, 'Run timed out')) return;
 
     let controlError = null;
     try {
@@ -700,6 +798,8 @@ export class RunManager {
     if (active.turnId && active.approvalRegistered) {
       this.approvalManager?.unregisterTurn(active.turnId);
     }
+    active.resolveTerminal?.();
+    active.resolveTerminal = null;
   }
 
   #recordChanges(active) {
@@ -794,22 +894,28 @@ export class RunManager {
     }
   }
 
-  async #startThread() {
-    const started = await this.codex.request(
-      'thread/start',
-      threadRequestParams(this.allowedRoot),
+  async #startThread(active) {
+    const started = await this.#awaitStartup(
+      active,
+      this.codex.request(
+        'thread/start',
+        threadRequestParams(this.allowedRoot),
+      ),
     );
     return protocolId(started, 'thread');
   }
 
-  async #requirementThread(requirementId) {
+  async #requirementThread(requirementId, active) {
     const existing = this.store.getRequirementThread(requirementId);
     if (existing) {
       try {
-        const resumed = await this.codex.request('thread/resume', {
-          ...threadRequestParams(this.allowedRoot),
-          threadId: existing.threadId,
-        });
+        const resumed = await this.#awaitStartup(
+          active,
+          this.codex.request('thread/resume', {
+            ...threadRequestParams(this.allowedRoot),
+            threadId: existing.threadId,
+          }),
+        );
         const threadId = protocolId(resumed, 'thread');
         if (threadId !== existing.threadId) {
           throw new Error('Codex thread/resume response did not match the requested thread id');
@@ -818,13 +924,13 @@ export class RunManager {
         return { rebuilt: false, threadId };
       } catch (error) {
         if (!isMissingPersistedThread(error)) throw error;
-        const threadId = await this.#startThread();
+        const threadId = await this.#startThread(active);
         this.store.replaceRequirementThread(requirementId, threadId);
         return { rebuilt: true, threadId };
       }
     }
 
-    const threadId = await this.#startThread();
+    const threadId = await this.#startThread(active);
     this.store.bindRequirementThread(requirementId, threadId);
     return { rebuilt: false, threadId };
   }
