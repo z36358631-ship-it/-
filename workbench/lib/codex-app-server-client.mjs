@@ -121,6 +121,11 @@ export class CodexAppServerClient extends EventEmitter {
     this.#write(params === undefined ? { method } : { method, params });
   }
 
+  respond(id, result) {
+    if (!this.child) throw new Error('Codex App Server is not running');
+    this.#write({ id, result });
+  }
+
   diagnostics() {
     return {
       running: Boolean(this.child),
@@ -164,6 +169,10 @@ export class CodexAppServerClient extends EventEmitter {
       message = JSON.parse(line);
     } catch {
       this.emit('protocolError', new Error(`Invalid JSONL from App Server: ${line.slice(0, 200)}`));
+      return;
+    }
+    if (Object.hasOwn(message, 'id') && message.method) {
+      this.emit('request', message);
       return;
     }
     if (Object.hasOwn(message, 'id')) {

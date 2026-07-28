@@ -104,6 +104,54 @@ test('client correlates JSONL responses by id and exposes stderr diagnostics', a
   await client.stop();
 });
 
+test('client emits server requests and responds without a jsonrpc envelope', async () => {
+  const child = fakeProcess();
+  const writes = [];
+  child.stdin.on('data', chunk => writes.push(JSON.parse(chunk.toString('utf8'))));
+  const client = new CodexAppServerClient({ spawnProcess: () => child });
+  const starting = client.start();
+  await nextTurn();
+  child.stdout.write(`${JSON.stringify({ id: writes[0].id, result: {} })}\n`);
+  await starting;
+
+  const requests = [];
+  client.on('request', message => requests.push(message));
+  const numericRequest = {
+    id: 91,
+    method: 'item/fileChange/requestApproval',
+    params: {
+      threadId: 'thread-1',
+      turnId: 'turn-1',
+      itemId: 'item-1',
+      startedAtMs: 1_754_000_000_000,
+    },
+  };
+  child.stdout.write(`${JSON.stringify(numericRequest)}\n`);
+  await nextTurn();
+  assert.deepEqual(requests[0], numericRequest);
+  client.respond(numericRequest.id, { decision: 'accept' });
+  assert.deepEqual(writes.at(-1), {
+    id: 91,
+    result: { decision: 'accept' },
+  });
+  assert.equal(Object.hasOwn(writes.at(-1), 'jsonrpc'), false);
+
+  const stringRequest = {
+    ...numericRequest,
+    id: 'approval-request-92',
+    params: { ...numericRequest.params, itemId: 'item-2' },
+  };
+  child.stdout.write(`${JSON.stringify(stringRequest)}\n`);
+  await nextTurn();
+  assert.deepEqual(requests[1], stringRequest);
+  client.respond(stringRequest.id, { decision: 'decline' });
+  assert.deepEqual(writes.at(-1), {
+    id: 'approval-request-92',
+    result: { decision: 'decline' },
+  });
+  await client.stop();
+});
+
 test('client retains launch errors and classifies a missing Codex executable', async () => {
   const child = fakeProcess();
   const client = new CodexAppServerClient({ spawnProcess: () => child });
