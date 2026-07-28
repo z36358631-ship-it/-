@@ -1,11 +1,30 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
 
 const root = path.resolve(import.meta.dirname, '..');
+const verificationScriptPath = path.join(
+  root,
+  'tools',
+  'verify-personal-codex-workbench-ui.mjs',
+);
+
+function commandOutput(command, args) {
+  try {
+    return execFileSync(command, args, {
+      cwd: root,
+      encoding: 'utf8',
+      windowsHide: true,
+    }).trim();
+  } catch {
+    return 'unavailable';
+  }
+}
+
 const files = {
   html: 'workbench/public/index.html',
   css: 'workbench/public/styles.css',
@@ -278,6 +297,20 @@ const mockRunDetails = {
     ],
   },
 };
+const mockRetryRun = {
+  id: 'RUN-MOCK-RETRY',
+  requirementId: 'REQ-001',
+  prompt: 'Mock retried write',
+  permission: 'modify-existing',
+  status: 'completed',
+  result: 'Mock retry completed',
+  startedAt: '2026-07-28T05:00:00.000Z',
+  finishedAt: '2026-07-28T05:00:01.000Z',
+  approvals: [],
+  fileChanges: [],
+  validations: [],
+};
+mockRunDetails[mockRetryRun.id] = mockRetryRun;
 const chromeCandidates = [
   process.env.CHROME_PATH,
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
@@ -553,6 +586,27 @@ async function runBrowserVerification() {
     status: 'running',
     staticContract: 'passed',
     browser: path.basename(executablePath),
+    browserVersion: null,
+    nodeVersion: process.version,
+    playwrightCoreVersion: JSON.parse(fs.readFileSync(
+      path.join(root, 'node_modules', 'playwright-core', 'package.json'),
+      'utf8',
+    )).version,
+    sourceCommit: commandOutput('git', ['rev-parse', 'HEAD']),
+    sourceStatus: commandOutput('git', [
+      'status',
+      '--short',
+      '--',
+      'workbench',
+      'test/workbench',
+      'tools/verify-personal-codex-workbench-ui.mjs',
+      'package.json',
+      'package-lock.json',
+    ]),
+    verificationScriptSha256: crypto
+      .createHash('sha256')
+      .update(fs.readFileSync(verificationScriptPath))
+      .digest('hex'),
     urlTokenRemoved: false,
     navigation: [],
     selectedRequirement: null,
@@ -561,6 +615,7 @@ async function runBrowserVerification() {
     workflowControls: null,
     permissionModes: null,
     safetyRunDetail: null,
+    actionControls: [],
     dialog: null,
     health: null,
     writeRunRequests: 0,
@@ -569,6 +624,8 @@ async function runBrowserVerification() {
     pageErrors: [],
     screenshots: [
       'desktop.png',
+      'laptop-1024.png',
+      'tablet-768.png',
       'mobile.png',
       ...requiredEvidence.map(item => item.path),
     ],
@@ -584,6 +641,7 @@ async function runBrowserVerification() {
       headless: true,
       args: ['--disable-gpu'],
     });
+    report.browserVersion = browser.version();
     const context = await browser.newContext({
       viewport: { width: 1440, height: 900 },
       locale: 'zh-CN',
@@ -628,6 +686,64 @@ async function runBrowserVerification() {
         status: 200,
         contentType: 'application/json; charset=utf-8',
         body: JSON.stringify(detail),
+      });
+    });
+    const actionRequests = [];
+    await page.route(/\/api\/approvals\/APPROVAL-[^/]+\/decision$/, async route => {
+      const approvalId = decodeURIComponent(
+        new URL(route.request().url()).pathname.split('/').at(-2),
+      );
+      const body = route.request().postDataJSON();
+      const approval = mockRunDetails['RUN-MOCK-WAITING'].approvals
+        .find(item => item.id === approvalId);
+      assert(approval, `Missing mocked approval: ${approvalId}`);
+      approval.status = body.decision;
+      actionRequests.push(`approval:${approvalId}:${body.decision}`);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json; charset=utf-8',
+        body: JSON.stringify({ status: body.decision }),
+      });
+    });
+    await page.route(/\/api\/runs\/RUN-MOCK-(WAITING|FAILED)\/(cancel|retry|restore)$/, async route => {
+      const [, runKind, action] = new URL(route.request().url()).pathname
+        .match(/\/api\/runs\/RUN-MOCK-(WAITING|FAILED)\/(cancel|retry|restore)$/);
+      const runId = `RUN-MOCK-${runKind}`;
+      actionRequests.push(`run:${runId}:${action}`);
+      if (action === 'cancel') {
+        mockRunDetails[runId].status = 'cancelled';
+        const summary = mockSafetyRuns.find(item => item.id === runId);
+        if (summary) summary.status = 'cancelled';
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json; charset=utf-8',
+          body: JSON.stringify({ status: 'cancelled' }),
+        });
+        return;
+      }
+      if (action === 'restore') {
+        const restored = mockRunDetails[runId].fileChanges.map(item => item.path);
+        for (const item of mockRunDetails[runId].fileChanges) {
+          item.restoredAt = new Date().toISOString();
+        }
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json; charset=utf-8',
+          body: JSON.stringify({ restored }),
+        });
+        return;
+      }
+      await route.fulfill({
+        status: 202,
+        contentType: 'application/json; charset=utf-8',
+        body: JSON.stringify(mockRetryRun),
+      });
+    });
+    await page.route('**/api/runs/RUN-MOCK-RETRY/events*', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream; charset=utf-8',
+        body: 'id: 1\nevent: run_completed\ndata: {"status":"completed"}\n\n',
       });
     });
 
@@ -849,6 +965,32 @@ async function runBrowserVerification() {
     await page.screenshot({
       path: path.join(evidenceRoot, 'safety-desktop.png'),
     });
+    await Promise.all([
+      page.waitForResponse(response => (
+        new URL(response.url()).pathname === '/api/approvals/APPROVAL-SAFE/decision'
+      )),
+      safeApproval.locator('.approval-card-actions button').first().click(),
+    ]);
+    const commandApproval = page.locator('#approvalCards .approval-card').filter({
+      hasText: 'command',
+    });
+    await Promise.all([
+      page.waitForResponse(response => (
+        new URL(response.url()).pathname === '/api/approvals/APPROVAL-COMMAND/decision'
+      )),
+      commandApproval.locator('.approval-card-actions button').nth(1).click(),
+    ]);
+    await Promise.all([
+      page.waitForResponse(response => (
+        new URL(response.url()).pathname === '/api/runs/RUN-MOCK-WAITING/cancel'
+      )),
+      page.locator('[data-action="cancel-run"]').click(),
+    ]);
+    assert.deepEqual(actionRequests.slice(0, 3), [
+      'approval:APPROVAL-SAFE:approved',
+      'approval:APPROVAL-COMMAND:rejected',
+      'run:RUN-MOCK-WAITING:cancel',
+    ]);
     await page.locator('#closeCodex').click();
     await page.locator('#codexDrawer').waitFor({ state: 'hidden' });
 
@@ -918,14 +1060,41 @@ async function runBrowserVerification() {
     await page.locator('.drawer-footer').screenshot({
       path: path.join(evidenceRoot, 'safety-mobile-controls.png'),
     });
+    page.once('dialog', dialog => dialog.accept());
+    await Promise.all([
+      page.waitForResponse(response => (
+        response.request().method() === 'POST'
+        && new URL(response.url()).pathname === '/api/runs/RUN-MOCK-FAILED/restore'
+      )),
+      page.locator('[data-action="restore-run"]').click(),
+    ]);
+    await page.locator('#fileChanges .status-pill.is-success').first().waitFor();
+    const retryResponse = page.waitForResponse(response => (
+      response.request().method() === 'POST'
+      && new URL(response.url()).pathname === '/api/runs/RUN-MOCK-FAILED/retry'
+    ));
+    const retryDetailResponse = page.waitForResponse(response => (
+      response.request().method() === 'GET'
+      && new URL(response.url()).pathname === '/api/runs/RUN-MOCK-RETRY'
+    ));
+    await page.locator('[data-action="retry-run"]').click();
+    await Promise.all([retryResponse, retryDetailResponse]);
+    assert.deepEqual(actionRequests, [
+      'approval:APPROVAL-SAFE:approved',
+      'approval:APPROVAL-COMMAND:rejected',
+      'run:RUN-MOCK-WAITING:cancel',
+      'run:RUN-MOCK-FAILED:restore',
+      'run:RUN-MOCK-FAILED:retry',
+    ]);
+    report.actionControls = [...actionRequests];
     report.safetyRunDetail = 'approval/diff/validation/run-controls passed';
     await page.locator('#closeCodex').click();
     await page.locator('#codexDrawer').waitFor({ state: 'hidden' });
 
     const viewports = [
       { label: 'desktop-1440', width: 1440, height: 900, screenshot: 'desktop.png' },
-      { label: 'laptop-1024', width: 1024, height: 900 },
-      { label: 'tablet-768', width: 768, height: 900 },
+      { label: 'laptop-1024', width: 1024, height: 900, screenshot: 'laptop-1024.png' },
+      { label: 'tablet-768', width: 768, height: 900, screenshot: 'tablet-768.png' },
       { label: 'mobile-375', width: 375, height: 812, screenshot: 'mobile.png' },
     ];
     for (const viewport of viewports) {
