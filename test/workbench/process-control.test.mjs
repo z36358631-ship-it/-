@@ -160,6 +160,27 @@ test('inspection errors fail closed and never terminate the PID', async () => {
   assert.deepEqual(terminated, []);
 });
 
+test('termination errors fail closed after exact ownership matching', async () => {
+  const recovery = await recoverPersistedProcesses([{
+    pid: 4519,
+    processNonce: PROCESS_NONCE,
+  }], {
+    inspector: async pid => ({
+      commandLine: 'cmd.exe /d /s /c '
+        + `"set "PERSONAL_CODEX_WORKBENCH_NONCE=${PROCESS_NONCE}" && codex.cmd app-server"`,
+      executable: 'C:\\Windows\\System32\\cmd.exe',
+      pid,
+    }),
+    terminator: async () => {
+      throw new Error('taskkill denied');
+    },
+  });
+
+  assert.equal(recovery.status, 'error');
+  assert.equal(recovery.results[0].status, 'error');
+  assert.match(recovery.results[0].detail, /taskkill denied/);
+});
+
 test('recovery deduplicates positive persisted PIDs and ignores invalid values', async () => {
   const inspected = [];
   const recovery = await recoverPersistedProcesses(

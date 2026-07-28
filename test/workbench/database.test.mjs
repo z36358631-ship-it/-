@@ -121,6 +121,8 @@ test('startup captures only newly stale active rows once and marks every active 
   first.createRun({
     id: 'RUN-STALE',
     requirementId: null,
+    processPid: 7331,
+    processNonce: 'e'.repeat(64),
     prompt: '总结今天工作',
     permission: 'read-only',
     status: 'running',
@@ -156,11 +158,33 @@ test('startup captures only newly stale active rows once and marks every active 
     assert.match(run.finishedAt, /^\d{4}-\d{2}-\d{2}T/);
   }
   assert.equal(second.getRun('RUN-HISTORICAL').status, 'interrupted');
+  assert.deepEqual(second.listPendingProcessRecoveries().map(item => ({
+    processNonce: item.processNonce,
+    processPid: item.processPid,
+    runId: item.runId,
+  })), [{
+    processNonce: 'e'.repeat(64),
+    processPid: 7331,
+    runId: 'RUN-STALE',
+  }]);
+  assert.equal(
+    second.recordProcessRecoveryError('RUN-STALE', 'inspection denied'),
+    true,
+  );
   second.close();
 
   const third = openDatabase(dbPath);
   assert.deepEqual(third.listStartupInterruptedRuns(), []);
+  assert.equal(
+    third.listPendingProcessRecoveries()[0].lastError,
+    'inspection denied',
+  );
+  assert.equal(third.completeProcessRecovery('RUN-STALE'), true);
   third.close();
+
+  const fourth = openDatabase(dbPath);
+  assert.deepEqual(fourth.listPendingProcessRecoveries(), []);
+  fourth.close();
 });
 
 function createSafetyRun(store, runId = 'RUN-SAFETY') {

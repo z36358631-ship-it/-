@@ -150,10 +150,20 @@ CREATE TABLE IF NOT EXISTS run_apply_states (
   state TEXT NOT NULL CHECK(state IN ('not-started','applying','applied')),
   updated_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS process_recoveries (
+  run_id TEXT PRIMARY KEY REFERENCES runs(id) ON DELETE CASCADE,
+  process_pid INTEGER NOT NULL,
+  process_nonce TEXT,
+  last_error TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 CREATE INDEX IF NOT EXISTS idx_runs_started_at ON runs(started_at DESC);
 CREATE INDEX IF NOT EXISTS idx_run_events_run_sequence ON run_events(run_id, sequence);
 CREATE INDEX IF NOT EXISTS idx_approvals_run_status_created
   ON approvals(run_id,status,created_at);
+CREATE INDEX IF NOT EXISTS idx_process_recoveries_process
+  ON process_recoveries(process_pid,process_nonce);
 `;
 
 function now() {
@@ -207,18 +217,47 @@ export function openDatabase(filename) {
     if (!runColumns.includes('process_nonce')) {
       db.exec(`ALTER TABLE runs ADD COLUMN process_nonce TEXT`);
     }
-    startupInterruptedRuns = db.prepare(
-      `SELECT id,requirement_id AS requirementId,thread_id AS threadId,turn_id AS turnId,
-              prompt,cwd,process_pid AS processPid,process_nonce AS processNonce,
-              permission,status,workflow_type AS workflowType,result,error,
-              started_at AS startedAt,finished_at AS finishedAt
-       FROM runs WHERE status IN ('queued','running','waiting-approval')
-       ORDER BY started_at DESC`,
-    ).all();
-    db.prepare(
-      `UPDATE runs SET status = 'interrupted', error = ?, finished_at = ?
-       WHERE status IN ('queued','running','waiting-approval')`,
-    ).run('Broker restarted before the run completed', now());
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      startupInterruptedRuns = db.prepare(
+        `SELECT id,requirement_id AS requirementId,thread_id AS threadId,turn_id AS turnId,
+                prompt,cwd,process_pid AS processPid,process_nonce AS processNonce,
+                permission,status,workflow_type AS workflowType,result,error,
+                started_at AS startedAt,finished_at AS finishedAt
+         FROM runs WHERE status IN ('queued','running','waiting-approval')
+         ORDER BY started_at DESC`,
+      ).all();
+      const timestamp = now();
+      const saveRecovery = db.prepare(
+        `INSERT INTO process_recoveries
+         (run_id,process_pid,process_nonce,last_error,created_at,updated_at)
+         VALUES(?,?,?,?,?,?)
+         ON CONFLICT(run_id) DO UPDATE SET
+           process_pid=excluded.process_pid,
+           process_nonce=excluded.process_nonce,
+           last_error=NULL,
+           updated_at=excluded.updated_at`,
+      );
+      for (const run of startupInterruptedRuns) {
+        if (!Number.isInteger(run.processPid) || run.processPid <= 0) continue;
+        saveRecovery.run(
+          run.id,
+          run.processPid,
+          run.processNonce || null,
+          null,
+          timestamp,
+          timestamp,
+        );
+      }
+      db.prepare(
+        `UPDATE runs SET status = 'interrupted', error = ?, finished_at = ?
+         WHERE status IN ('queued','running','waiting-approval')`,
+      ).run('Broker restarted before the run completed', timestamp);
+      db.exec('COMMIT');
+    } catch (error) {
+      db.exec('ROLLBACK');
+      throw error;
+    }
   } catch (error) {
     db.close();
     throw error;
@@ -230,6 +269,26 @@ export function openDatabase(filename) {
       if (startupInterruptedRunsRead) return [];
       startupInterruptedRunsRead = true;
       return startupInterruptedRuns.map(run => ({ ...run }));
+    },
+    listPendingProcessRecoveries() {
+      return db.prepare(
+        `SELECT run_id AS runId,process_pid AS processPid,
+                process_nonce AS processNonce,last_error AS lastError,
+                created_at AS createdAt,updated_at AS updatedAt
+         FROM process_recoveries ORDER BY created_at,run_id`,
+      ).all();
+    },
+    recordProcessRecoveryError(runId, detail) {
+      const result = db.prepare(
+        `UPDATE process_recoveries SET last_error=?,updated_at=? WHERE run_id=?`,
+      ).run(String(detail || 'Process recovery failed'), now(), runId);
+      return Number(result.changes) === 1;
+    },
+    completeProcessRecovery(runId) {
+      const result = db.prepare(
+        `DELETE FROM process_recoveries WHERE run_id=?`,
+      ).run(runId);
+      return Number(result.changes) === 1;
     },
     upsertRequirement(value) {
       db.prepare(

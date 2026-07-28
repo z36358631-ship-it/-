@@ -248,13 +248,14 @@ export async function createWorkbenchServer({
   });
   const fileSafety = new FileSafety({ allowedRoot: config.allowedRoot });
   const restartRuns = store.listStartupInterruptedRuns();
+  const recoveryRecords = store.listPendingProcessRecoveries();
   const recoveryTargets = [...new Map(
-    restartRuns
-      .filter(run => Number.isInteger(run.processPid) && run.processPid > 0)
-      .map(run => {
+    recoveryRecords
+      .filter(record => Number.isInteger(record.processPid) && record.processPid > 0)
+      .map(record => {
         const target = {
-          pid: run.processPid,
-          processNonce: run.processNonce || null,
+          pid: record.processPid,
+          processNonce: record.processNonce || null,
         };
         return [`${target.pid}:${target.processNonce || ''}`, target];
       }),
@@ -288,32 +289,50 @@ export async function createWorkbenchServer({
       });
     }
   }
-  const recoveryDiagnostics = processRecoveryResults.map(result => ({
-    detail: String(result.detail || ''),
-    pid: result.pid,
-    status: result.status,
-  }));
-  const recoveryStatus = processRecoveryResult?.status === 'error'
-    || recoveryDiagnostics.some(result => result.status === 'error')
-    ? 'error'
-    : 'ok';
   const recoveryByProcess = new Map(
     processRecoveryResults.map(result => [recoveryKey(result), result]),
   );
-  for (const run of restartRuns) {
+  const recoveryPersistenceErrors = [];
+  for (const record of recoveryRecords) {
     const result = recoveryByProcess.get(recoveryKey({
-      pid: run.processPid,
-      processNonce: run.processNonce,
+      pid: record.processPid,
+      processNonce: record.processNonce,
     }));
     if (!result) continue;
-    store.saveValidation(run.id, {
+    store.saveValidation(record.runId, {
       detail: `PID ${result.pid}: ${result.detail}`,
       name: 'Broker process recovery',
       status: result.status === 'matched'
         ? 'passed'
         : result.status === 'error' ? 'failed' : 'skipped',
     });
+    try {
+      const persisted = result.status === 'error'
+        ? store.recordProcessRecoveryError(record.runId, result.detail)
+        : store.completeProcessRecovery(record.runId);
+      if (!persisted) {
+        throw new Error(`Recovery ledger row is missing for Run ${record.runId}`);
+      }
+    } catch (error) {
+      recoveryPersistenceErrors.push({
+        detail: `Unable to update process recovery ledger for Run ${record.runId}: ${error.message}`,
+        pid: record.processPid,
+        status: 'error',
+      });
+    }
   }
+  const recoveryDiagnostics = [
+    ...processRecoveryResults.map(result => ({
+      detail: String(result.detail || ''),
+      pid: result.pid,
+      status: result.status,
+    })),
+    ...recoveryPersistenceErrors,
+  ];
+  const recoveryStatus = processRecoveryResult?.status === 'error'
+    || recoveryDiagnostics.some(result => result.status === 'error')
+    ? 'error'
+    : 'ok';
 
   for (const interrupted of restartRuns) {
     for (const approval of store.listPendingApprovals(interrupted.id)) {

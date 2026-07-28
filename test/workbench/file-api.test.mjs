@@ -980,6 +980,139 @@ test('restart deduplicates persisted PIDs and records matched and safe-skip reco
   );
 });
 
+test('process recovery errors persist across broker restarts until a terminal result clears them', async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'file-api-recovery-ledger-'));
+  fs.mkdirSync(path.join(root, 'prd'), { recursive: true });
+  const processNonce = '9'.repeat(64);
+  seedProcessRecoveryDatabase(root, [
+    {
+      id: 'RUN-LEDGER-A',
+      processNonce,
+      processPid: 5301,
+      status: 'running',
+    },
+    {
+      id: 'RUN-LEDGER-B',
+      processNonce,
+      processPid: 5301,
+      status: 'waiting-approval',
+    },
+    {
+      id: 'RUN-HISTORICAL-NO-LEDGER',
+      processNonce: '8'.repeat(64),
+      processPid: 5399,
+      status: 'interrupted',
+    },
+  ]);
+  t.after(() => fs.rmSync(root, { force: true, recursive: true }));
+
+  const openServer = async processRecovery => {
+    const codex = new FakeCodex();
+    const app = await createWorkbenchServer({
+      env: { WORKBENCH_ROOT: root, WORKBENCH_PORT: '0' },
+      codexFactory: () => codex,
+      processRecovery,
+    });
+    await app.listen();
+    const base = `http://127.0.0.1:${app.address().port}`;
+    const headers = {
+      Authorization: `Bearer ${app.config.sessionToken}`,
+      'Content-Type': 'application/json',
+      Origin: app.config.originForPort(app.address().port),
+    };
+    return { app, base, codex, headers };
+  };
+
+  let firstTargets = [];
+  const first = await openServer(async targets => {
+    firstTargets = targets;
+    return {
+      status: 'error',
+      results: [{
+        detail: 'Unable to inspect PID 5301: access denied',
+        pid: 5301,
+        processNonce,
+        status: 'error',
+      }],
+    };
+  });
+  assert.deepEqual(firstTargets, [{ pid: 5301, processNonce }]);
+  const firstHealth = await requestJson(first, '/api/health');
+  assert.equal(firstHealth.body.recovery, 'error');
+  const blocked = await requestJson(first, '/api/runs', {
+    body: { prompt: 'Recovery ledger must still block this Run' },
+    method: 'POST',
+  });
+  assert.equal(blocked.response.status, 503);
+  await first.app.close();
+
+  let ledgerStore = openDatabase(path.join(root, '.workbench-data', 'workbench.sqlite'));
+  assert.deepEqual(
+    ledgerStore.listPendingProcessRecoveries().map(item => item.runId).sort(),
+    ['RUN-LEDGER-A', 'RUN-LEDGER-B'],
+  );
+  assert(ledgerStore.listPendingProcessRecoveries().every(
+    item => /access denied/.test(item.lastError),
+  ));
+  ledgerStore.close();
+
+  let secondTargets = [];
+  const second = await openServer(async targets => {
+    secondTargets = targets;
+    return {
+      status: 'ok',
+      results: [{
+        detail: 'Persisted process no longer exists',
+        pid: 5301,
+        processNonce,
+        status: 'missing',
+      }],
+    };
+  });
+  assert.deepEqual(secondTargets, [{ pid: 5301, processNonce }]);
+  const secondHealth = await requestJson(second, '/api/health');
+  assert.equal(secondHealth.body.recovery, 'ok');
+  await second.app.close();
+
+  ledgerStore = openDatabase(path.join(root, '.workbench-data', 'workbench.sqlite'));
+  assert.deepEqual(ledgerStore.listPendingProcessRecoveries(), []);
+  ledgerStore.close();
+
+  let thirdTargets = null;
+  const third = await openServer(async targets => {
+    thirdTargets = targets;
+    return { status: 'ok', results: [] };
+  });
+  assert.deepEqual(thirdTargets, []);
+  await third.app.close();
+});
+
+test('a recovery implementation that omits a target keeps its ledger and blocks the broker', async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'file-api-recovery-omitted-'));
+  fs.mkdirSync(path.join(root, 'prd'), { recursive: true });
+  seedProcessRecoveryDatabase(root, [{
+    id: 'RUN-OMITTED',
+    processNonce: '7'.repeat(64),
+    processPid: 5401,
+    status: 'running',
+  }]);
+  const context = await setupServer(t, {
+    processRecovery: async () => ({ status: 'ok', results: [] }),
+    root,
+  });
+  assert.equal(context.bootstrap.health.recovery, 'error');
+  assert.match(
+    JSON.stringify(context.bootstrap.health.recoveryDiagnostics),
+    /returned no result/,
+  );
+  const store = openDatabase(path.join(root, '.workbench-data', 'workbench.sqlite'));
+  assert.deepEqual(
+    store.listPendingProcessRecoveries().map(item => item.runId),
+    ['RUN-OMITTED'],
+  );
+  store.close();
+});
+
 test('process inspection errors keep diagnostics available but block Codex and Run APIs', async t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'file-api-recovery-error-'));
   fs.mkdirSync(path.join(root, 'prd'), { recursive: true });
