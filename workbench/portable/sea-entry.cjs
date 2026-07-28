@@ -87,6 +87,49 @@ function verifyRuntimeManifest(runtimePath, manifest) {
   }
 }
 
+const TRANSIENT_MANIFEST_ERROR_CODES = new Set([
+  'EACCES',
+  'EBUSY',
+  'ENOENT',
+  'EPERM',
+]);
+
+function monotonicMilliseconds() {
+  return Number(process.hrtime.bigint() / 1_000_000n);
+}
+
+async function verifyRuntimeManifestWithRetry(
+  runtimePath,
+  manifest,
+  {
+    delay = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds)),
+    now = monotonicMilliseconds,
+    retryDelayMs = 50,
+    timeoutMs = 2_000,
+    verifyManifest = verifyRuntimeManifest,
+  } = {},
+) {
+  if (
+    !Number.isFinite(timeoutMs)
+    || timeoutMs < 0
+    || !Number.isFinite(retryDelayMs)
+    || retryDelayMs <= 0
+  ) {
+    throw new Error('Runtime manifest retry timing is invalid');
+  }
+  const deadline = now() + timeoutMs;
+  while (true) {
+    try {
+      return verifyManifest(runtimePath, manifest);
+    } catch (error) {
+      if (!TRANSIENT_MANIFEST_ERROR_CODES.has(error?.code)) throw error;
+      const remaining = deadline - now();
+      if (remaining <= 0) throw error;
+      await delay(Math.min(retryDelayMs, remaining));
+    }
+  }
+}
+
 async function ensureRuntimeCache({
   archive,
   archiveSha256,
@@ -95,6 +138,7 @@ async function ensureRuntimeCache({
   payloadVersion,
   renameRuntime = fs.renameSync,
   runtimeRoot,
+  verifyManifest = verifyRuntimeManifest,
 }) {
   if (!/^[a-zA-Z0-9._-]+$/.test(String(payloadVersion || ''))) {
     throw new Error('Payload version contains unsafe path characters');
@@ -114,7 +158,7 @@ async function ensureRuntimeCache({
   const target = path.join(resolvedRuntimeRoot, payloadVersion);
   if (fs.existsSync(target)) {
     try {
-      verifyRuntimeManifest(target, manifest);
+      await verifyRuntimeManifestWithRetry(target, manifest, { verifyManifest });
       return target;
     } catch {
       fs.rmSync(target, { recursive: true, force: true });
@@ -127,18 +171,17 @@ async function ensureRuntimeCache({
   );
   try {
     await expandArchive(temporary, archive);
-    verifyRuntimeManifest(temporary, manifest);
+    await verifyRuntimeManifestWithRetry(temporary, manifest, { verifyManifest });
     try {
       renameRuntime(temporary, target);
     } catch (error) {
       if (
         !['EEXIST', 'ENOTEMPTY', 'EPERM', 'EACCES'].includes(error.code)
-        || !fs.existsSync(target)
       ) {
         throw error;
       }
       try {
-        verifyRuntimeManifest(target, manifest);
+        await verifyRuntimeManifestWithRetry(target, manifest, { verifyManifest });
       } catch {
         throw error;
       }
@@ -271,6 +314,7 @@ module.exports = {
   runSea,
   safePayloadPath,
   verifyRuntimeManifest,
+  verifyRuntimeManifestWithRetry,
   writeStartupFailure,
 };
 

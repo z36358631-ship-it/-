@@ -11,6 +11,7 @@ const {
   hashBuffer,
   hashFile,
   verifyRuntimeManifest,
+  verifyRuntimeManifestWithRetry,
   ensureRuntimeCache,
   writeStartupFailure,
 } = require('../../workbench/portable/sea-entry.cjs');
@@ -141,11 +142,39 @@ test('runtime cache reuses a valid target and rebuilds a corrupt target atomical
   assert.doesNotThrow(() => verifyRuntimeManifest(rebuilt, manifest));
 });
 
+test('expanded payload verification retries transient file visibility errors', async t => {
+  const { manifest, root, source } = fixture(t);
+  const archive = Buffer.from('fixture archive');
+  let verificationAttempts = 0;
+  const result = await ensureRuntimeCache({
+    archive,
+    archiveSha256: hashBuffer(archive),
+    expandArchive: async destination => {
+      fs.cpSync(source, destination, { recursive: true });
+    },
+    manifest,
+    payloadVersion: manifest.payloadVersion,
+    runtimeRoot: path.join(root, 'runtime'),
+    verifyManifest: (runtimePath, runtimeManifest) => {
+      verificationAttempts += 1;
+      if (verificationAttempts < 3) {
+        const error = new Error('file is not visible yet');
+        error.code = 'ENOENT';
+        throw error;
+      }
+      verifyRuntimeManifest(runtimePath, runtimeManifest);
+    },
+  });
+  assert.equal(verificationAttempts, 3);
+  assert.doesNotThrow(() => verifyRuntimeManifest(result, manifest));
+});
+
 test('concurrent Windows rename errors reuse only a fully verified target', async t => {
   const { manifest, root, source } = fixture(t);
   const runtimeRoot = path.join(root, 'runtime');
   const target = path.join(runtimeRoot, manifest.payloadVersion);
   const archive = Buffer.from('fixture archive');
+  let winnerAttempts = 0;
   const result = await ensureRuntimeCache({
     archive,
     archiveSha256: hashBuffer(archive),
@@ -161,8 +190,56 @@ test('concurrent Windows rename errors reuse only a fully verified target', asyn
       throw error;
     },
     runtimeRoot,
+    verifyManifest: (runtimePath, runtimeManifest) => {
+      if (runtimePath === target) {
+        winnerAttempts += 1;
+        if (winnerAttempts === 1) {
+          const error = new Error('winning target is briefly busy');
+          error.code = 'EBUSY';
+          throw error;
+        }
+      }
+      verifyRuntimeManifest(runtimePath, runtimeManifest);
+    },
   });
   assert.equal(result, target);
+  assert.equal(winnerAttempts, 2);
+  assert.doesNotThrow(() => verifyRuntimeManifest(target, manifest));
+});
+
+test('concurrent winner visibility is retried even before target existsSync succeeds', async t => {
+  const { manifest, root, source } = fixture(t);
+  const runtimeRoot = path.join(root, 'runtime');
+  const target = path.join(runtimeRoot, manifest.payloadVersion);
+  const archive = Buffer.from('fixture archive');
+  let winnerAttempts = 0;
+  const result = await ensureRuntimeCache({
+    archive,
+    archiveSha256: hashBuffer(archive),
+    expandArchive: async destination => {
+      fs.cpSync(source, destination, { recursive: true });
+    },
+    manifest,
+    payloadVersion: manifest.payloadVersion,
+    renameRuntime: () => {
+      const error = new Error('access denied by not-yet-visible winner');
+      error.code = 'EACCES';
+      throw error;
+    },
+    runtimeRoot,
+    verifyManifest: (runtimePath, runtimeManifest) => {
+      if (runtimePath === target && winnerAttempts === 0) {
+        winnerAttempts += 1;
+        fs.cpSync(source, target, { recursive: true });
+        const error = new Error('winning target is not visible yet');
+        error.code = 'ENOENT';
+        throw error;
+      }
+      verifyRuntimeManifest(runtimePath, runtimeManifest);
+    },
+  });
+  assert.equal(result, target);
+  assert.equal(winnerAttempts, 1);
   assert.doesNotThrow(() => verifyRuntimeManifest(target, manifest));
 });
 
@@ -187,6 +264,56 @@ test('a rename access error without a valid winning target is not swallowed', as
     }),
     /access denied without winner/,
   );
+});
+
+test('manifest retry is bounded to two seconds for transient errors', async () => {
+  let clock = 0;
+  let attempts = 0;
+  const delays = [];
+  await assert.rejects(
+    () => verifyRuntimeManifestWithRetry('runtime', {}, {
+      delay: async milliseconds => {
+        delays.push(milliseconds);
+        clock += milliseconds;
+      },
+      now: () => clock,
+      retryDelayMs: 250,
+      timeoutMs: 2_000,
+      verifyManifest: () => {
+        attempts += 1;
+        const error = new Error('runtime remains busy');
+        error.code = 'EBUSY';
+        throw error;
+      },
+    }),
+    /runtime remains busy/,
+  );
+  assert.equal(clock, 2_000);
+  assert.equal(delays.reduce((sum, value) => sum + value, 0), 2_000);
+  assert.equal(attempts, 9);
+});
+
+test('manifest retry never retries hash or size mismatches', async () => {
+  for (const mismatch of ['hash', 'size']) {
+    let attempts = 0;
+    let delays = 0;
+    await assert.rejects(
+      () => verifyRuntimeManifestWithRetry('runtime', {}, {
+        delay: async () => {
+          delays += 1;
+        },
+        verifyManifest: () => {
+          attempts += 1;
+          throw new Error(
+            `Runtime file ${mismatch} mismatch: workbench/server.mjs`,
+          );
+        },
+      }),
+      new RegExp(`${mismatch} mismatch`, 'i'),
+    );
+    assert.equal(attempts, 1);
+    assert.equal(delays, 0);
+  }
 });
 
 test('archive hash mismatch is rejected before expansion', async t => {
