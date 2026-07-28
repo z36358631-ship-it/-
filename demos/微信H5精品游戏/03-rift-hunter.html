@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#07050d">
+  <link rel="icon" href="data:,">
+  <title>裂隙猎人</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg:#07050d; --panel:rgba(16,11,28,.88); --line:rgba(201,163,255,.19);
+      --violet:#9d62ff; --hot:#ff6936; --gold:#ffbd3f; --green:#48e08d;
+      --text:#f8f5ff; --muted:#aaa0bd; --danger:#ff536b;
+    }
+    * { box-sizing:border-box }
+    html,body { width:100%; height:100%; margin:0; overflow:hidden; background:var(--bg); font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif; color:var(--text); }
+    body { touch-action:none; user-select:none; -webkit-user-select:none; }
+    button { font:inherit; color:inherit; border:0; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    #app { position:relative; width:100%; height:100%; max-width:520px; margin:auto; overflow:hidden; background:#07050d; isolation:isolate; }
+    canvas { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; }
+    #hud { position:absolute; z-index:3; inset:0 0 auto; padding:max(10px,env(safe-area-inset-top)) 12px 0; pointer-events:none; }
+    .topline { display:flex; align-items:center; gap:8px; }
+    .brand { min-width:0; flex:1; }
+    .eyebrow { font-size:9px; letter-spacing:.22em; color:#b99cdf; font-weight:800; }
+    h1 { font-size:18px; letter-spacing:.08em; margin:2px 0 0; line-height:1; }
+    .icon-btn { pointer-events:auto; width:44px; height:44px; border-radius:14px; background:rgba(16,11,28,.8); border:1px solid var(--line); backdrop-filter:blur(10px); display:grid; place-items:center; font-size:18px; }
+    .meters { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:10px; }
+    .meter { padding:8px 10px; background:rgba(10,7,18,.72); border:1px solid var(--line); border-radius:12px; backdrop-filter:blur(8px); overflow:hidden; }
+    .meter-head { display:flex; justify-content:space-between; align-items:center; font-size:10px; color:var(--muted); margin-bottom:5px; }
+    .meter-head strong { color:var(--text); font-size:11px; }
+    .bar { height:4px; border-radius:99px; background:rgba(255,255,255,.1); overflow:hidden; }
+    .bar i { display:block; height:100%; width:100%; border-radius:inherit; transition:width .18s; background:linear-gradient(90deg,#ff4162,#ff9d55); }
+    #xpFill { background:linear-gradient(90deg,#8959ff,#cf82ff); }
+    .status-row { display:flex; gap:6px; margin-top:7px; overflow:hidden; }
+    .chip { min-width:0; height:25px; display:flex; align-items:center; gap:5px; padding:0 9px; border-radius:99px; background:rgba(12,8,22,.76); border:1px solid var(--line); color:#ddd3eb; font-size:10px; white-space:nowrap; }
+    .chip b { color:var(--gold); font-size:11px; }
+    #objective { position:absolute; z-index:3; top:152px; left:50%; transform:translateX(-50%); width:max-content; max-width:calc(100% - 32px); padding:8px 13px; border-radius:99px; border:1px solid rgba(72,224,141,.25); background:rgba(7,14,15,.76); color:#bdfbd8; font-size:11px; font-weight:700; letter-spacing:.03em; text-align:center; pointer-events:none; backdrop-filter:blur(8px); opacity:0; transition:opacity .25s,transform .25s; }
+    #objective.show { opacity:1; transform:translateX(-50%) translateY(4px); }
+    #toast { position:absolute; z-index:5; left:50%; top:38%; transform:translate(-50%,-50%) scale(.94); width:max-content; max-width:86%; padding:12px 18px; border:1px solid rgba(255,189,63,.38); border-radius:14px; background:rgba(18,10,25,.9); box-shadow:0 12px 45px rgba(0,0,0,.4); color:#ffe8b0; text-align:center; font-size:12px; font-weight:800; letter-spacing:.05em; pointer-events:none; opacity:0; transition:.22s ease; }
+    #toast.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
+    .screen { position:absolute; z-index:10; inset:0; display:none; padding:calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom)); background:radial-gradient(circle at 50% 28%,rgba(120,53,190,.22),transparent 45%),rgba(5,3,10,.82); backdrop-filter:blur(9px); overflow:auto; }
+    .screen.active { display:flex; }
+    #intro { flex-direction:column; justify-content:flex-end; }
+    .hero-mark { margin:auto; width:176px; height:176px; position:relative; display:grid; place-items:center; }
+    .hero-mark::before,.hero-mark::after { content:""; position:absolute; inset:8px; border:1px solid rgba(173,103,255,.32); border-radius:50% 43% 52% 41%; transform:rotate(24deg); box-shadow:0 0 40px rgba(156,78,255,.22),inset 0 0 34px rgba(86,26,144,.18); }
+    .hero-mark::after { inset:28px; border-color:rgba(255,111,54,.42); transform:rotate(-34deg); }
+    .hero-mark span { font-size:54px; filter:drop-shadow(0 0 18px rgba(255,130,55,.6)); }
+    .intro-copy .kicker { color:var(--gold); font-size:11px; letter-spacing:.25em; font-weight:900; }
+    .intro-copy h2 { font-size:39px; line-height:1.04; margin:9px 0 12px; letter-spacing:.08em; }
+    .intro-copy p { color:#c1b6ce; font-size:14px; line-height:1.65; margin:0 0 18px; }
+    .rules { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:16px; }
+    .rule { min-height:77px; padding:10px; border-radius:14px; background:rgba(18,12,30,.74); border:1px solid var(--line); }
+    .rule i { display:block; font-style:normal; color:var(--gold); font-size:17px; margin-bottom:7px; }
+    .rule b { font-size:11px; display:block; }
+    .rule small { color:#988da9; font-size:9px; line-height:1.4; }
+    .primary { width:100%; min-height:54px; border-radius:17px; color:#180e04; font-weight:900; letter-spacing:.12em; background:linear-gradient(135deg,#ffb338,#ff6c32); box-shadow:0 12px 30px rgba(255,105,49,.26); }
+    .subnote { text-align:center; color:#776d86; font-size:9px; margin:10px 0 0; }
+    #pausePanel { align-items:center; justify-content:center; }
+    .dialog { width:100%; padding:22px; border-radius:24px; background:linear-gradient(160deg,rgba(28,18,46,.96),rgba(11,8,20,.98)); border:1px solid rgba(188,130,255,.25); box-shadow:0 28px 80px rgba(0,0,0,.55); }
+    .dialog h2 { margin:0 0 5px; font-size:24px; }
+    .dialog>p { margin:0 0 20px; color:var(--muted); font-size:12px; }
+    .option { min-height:50px; padding:0 2px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,.07); color:#dcd4e8; font-size:13px; }
+    .toggle { position:relative; width:52px; height:44px; border-radius:99px; padding:11px 5px; background:transparent; transition:.2s; }
+    .toggle::before { content:""; position:absolute; inset:8px 2px; border-radius:99px; background:#332846; transition:.2s; }
+    .toggle::after { content:""; position:relative; display:block; width:22px; height:22px; border-radius:50%; background:white; transition:.2s; }
+    .toggle.on::before { background:#7a48d9; }
+    .toggle.on::after { transform:translateX(20px); }
+    .dialog-actions { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:16px; }
+    .secondary { min-height:48px; border-radius:14px; background:#241a34; border:1px solid var(--line); font-size:12px; font-weight:800; }
+    #result { align-items:flex-end; background:linear-gradient(180deg,rgba(5,3,10,.52),rgba(5,3,10,.98) 34%); }
+    .result-card { width:100%; margin:auto 0 0; padding:22px 18px 18px; border-radius:28px 28px 18px 18px; background:linear-gradient(160deg,#211532,#0d0917); border:1px solid rgba(189,131,255,.26); box-shadow:0 -22px 70px rgba(54,16,84,.2); }
+    .result-badge { display:inline-flex; padding:6px 10px; border-radius:99px; font-size:10px; letter-spacing:.12em; font-weight:900; background:rgba(72,224,141,.13); color:#74efa8; border:1px solid rgba(72,224,141,.3); }
+    .result-badge.dead { background:rgba(255,83,107,.12); color:#ff8496; border-color:rgba(255,83,107,.3); }
+    .result-card h2 { margin:10px 0 2px; font-size:27px; letter-spacing:.05em; }
+    .result-card>p { margin:0 0 15px; color:var(--muted); font-size:11px; }
+    .summary { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:15px; }
+    .summary div { padding:10px 7px; background:rgba(255,255,255,.045); border-radius:12px; text-align:center; }
+    .summary b { display:block; font-size:17px; color:#fff; }
+    .summary span { color:#877b98; font-size:9px; }
+    .loot-section { margin-top:10px; }
+    .loot-head { display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:800; margin-bottom:7px; }
+    .loot-head span:last-child { color:var(--gold); }
+    .loot-list { display:flex; gap:6px; min-height:43px; flex-wrap:wrap; padding:8px; border-radius:12px; background:rgba(0,0,0,.18); color:#786f84; font-size:10px; }
+    .loot-tag { display:flex; align-items:center; gap:4px; height:27px; padding:0 8px; border-radius:8px; background:rgba(255,173,55,.1); border:1px solid rgba(255,183,61,.18); color:#ffd78b; }
+    .loot-tag.lost { background:rgba(255,83,107,.08); border-color:rgba(255,83,107,.16); color:#d9919c; text-decoration:line-through; }
+    #result .primary { margin-top:16px; }
+    #rotate { display:none; position:absolute; z-index:30; inset:0; background:#08050e; align-items:center; justify-content:center; text-align:center; padding:30px; font-size:13px; color:#cbbade; }
+    @media (orientation:landscape) and (max-height:600px) { #rotate { display:flex; } }
+    @media (prefers-reduced-motion:reduce) { * { transition:none!important; animation:none!important; } }
+  </style>
+</head>
+<body>
+<main id="app">
+  <canvas id="game" aria-label="裂隙猎人游戏区域"></canvas>
+  <section id="hud" aria-live="polite">
+    <div class="topline">
+      <div class="brand"><div class="eyebrow">RIFT PROTOCOL</div><h1>裂隙猎人</h1></div>
+      <button class="icon-btn" id="pauseBtn" aria-label="暂停游戏">Ⅱ</button>
+    </div>
+    <div class="meters">
+      <div class="meter"><div class="meter-head"><span>生命装甲</span><strong id="hpText">100</strong></div><div class="bar"><i id="hpFill"></i></div></div>
+      <div class="meter"><div class="meter-head"><span id="weaponName">裂隙单发</span><strong id="xpText">0/8</strong></div><div class="bar"><i id="xpFill"></i></div></div>
+    </div>
+    <div class="status-row">
+      <div class="chip">◈ <b id="clock">00:00</b></div>
+      <div class="chip">危险 <b id="danger">01</b></div>
+      <div class="chip">战利品 <b id="lootCount">0</b></div>
+      <div class="chip">击杀 <b id="killCount">0</b></div>
+    </div>
+  </section>
+  <div id="objective"></div>
+  <div id="toast"></div>
+
+  <section class="screen active" id="intro">
+    <div class="hero-mark"><span>⌁</span></div>
+    <div class="intro-copy">
+      <div class="kicker">EXTRACTION SURVIVAL</div>
+      <h2>拿得越多<br>越难离开</h2>
+      <p>拖动猎人穿越裂隙。武器会自动锁定威胁，橙金战利品将让每一次深入都更有价值。</p>
+      <div class="rules">
+        <div class="rule"><i>◎</i><b>单指移动</b><small>瞄准与开火自动完成</small></div>
+        <div class="rule"><i>↟</i><b>积累经验</b><small>武器连续两次变形</small></div>
+        <div class="rule"><i>△</i><b>站位撤离</b><small>绿区内坚守三秒</small></div>
+      </div>
+      <button class="primary" id="startBtn">进入裂隙</button>
+      <p class="subnote">无广告 · 无付费 · 建议佩戴耳机</p>
+    </div>
+  </section>
+
+  <section class="screen" id="pausePanel">
+    <div class="dialog">
+      <h2>行动暂停</h2><p>裂隙时间与全部敌人已冻结。</p>
+      <div class="option"><span>音效</span><button id="soundToggle" class="toggle on" aria-label="切换音效"></button></div>
+      <div class="option"><span>减少动态效果</span><button id="motionToggle" class="toggle" aria-label="切换减少动态效果"></button></div>
+      <div class="dialog-actions">
+        <button class="secondary" id="restartBtn">重新开始</button>
+        <button class="primary" id="resumeBtn">继续行动</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="result">
+    <div class="result-card">
+      <span class="result-badge" id="resultBadge">撤离完成</span>
+      <h2 id="resultTitle">满载而归</h2>
+      <p id="resultCopy">裂隙在你身后闭合，所有战利品已安全入库。</p>
+      <div class="summary">
+        <div><b id="sumTime">00:00</b><span>生存时间</span></div>
+        <div><b id="sumKills">0</b><span>消灭威胁</span></div>
+        <div><b id="sumValue">0</b><span>带出价值</span></div>
+      </div>
+      <div class="loot-section">
+        <div class="loot-head"><span>安全带出</span><span id="keptValue">0</span></div>
+        <div class="loot-list" id="keptList">没有战利品</div>
+      </div>
+      <div class="loot-section">
+        <div class="loot-head"><span>遗失在裂隙</span><span id="lostValue">0</span></div>
+        <div class="loot-list" id="lostList">无遗失</div>
+      </div>
+      <button class="primary" id="replayBtn">再次深入</button>
+    </div>
+  </section>
+  <div id="rotate">请旋转至竖屏<br>裂隙只在纵向稳定</div>
+</main>
+
+<script>
+(() => {
+  "use strict";
+  const GAME_ID = "rift-hunter";
+  const qs = new URLSearchParams(location.search);
+  const TEST = qs.get("test") === "1";
+  const TIME_SCALE = Math.max(1, Math.min(40, Number(qs.get("speed")) || 1));
+  const MUTED_BY_QUERY = qs.get("mute") === "1";
+  const SEED = (Number(qs.get("seed")) || Date.now()) >>> 0;
+  const $ = id => document.getElementById(id);
+  const canvas = $("game"), ctx = canvas.getContext("2d", { alpha:false });
+  const ui = {
+    intro:$("intro"), pause:$("pausePanel"), result:$("result"), objective:$("objective"), toast:$("toast"),
+    hpText:$("hpText"), hpFill:$("hpFill"), xpText:$("xpText"), xpFill:$("xpFill"), weapon:$("weaponName"),
+    clock:$("clock"), danger:$("danger"), loot:$("lootCount"), kills:$("killCount")
+  };
+
+  function uid() { return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`; }
+  let state;
+  function createEvent(event, payload = {}) {
+    return { source:"wechat-h5-premium-games", version:1, gameId:GAME_ID, runId:state?.runId || "boot", event, ts:Date.now(), payload };
+  }
+  const GamePlatform = window.GamePlatform = {
+    getEnv() { return window.__wxjs_environment === "miniprogram" ? "miniprogram" : "web"; },
+    emit(event,payload={}) {
+      const message = createEvent(event,payload);
+      try { if (window.parent && window.parent !== window) window.parent.postMessage(message,"*"); } catch (_) {}
+      try { if (window.opener && !window.opener.closed) window.opener.postMessage(message,"*"); } catch (_) {}
+      window.dispatchEvent(new CustomEvent("gameplatform:event",{detail:message}));
+      return message;
+    },
+    saveLocal(key,value) { try { localStorage.setItem(`premium-h5:${GAME_ID}:${key}`,JSON.stringify(value)); return true; } catch (_) { return false; } },
+    loadLocal(key,fallback) { try { const raw=localStorage.getItem(`premium-h5:${GAME_ID}:${key}`); return raw===null?fallback:JSON.parse(raw); } catch (_) { return fallback; } },
+    pause() { pauseGame("platform"); },
+    resume() { resumeGame("platform"); },
+    requestShare() { return Promise.resolve({supported:false}); }
+  };
+
+  let vw=390,vh=844,dpr=1, last=performance.now(), accumulator=0, raf=0;
+  let seed=SEED, toastTimer=0, audioCtx=null;
+  const TAU=Math.PI*2, FIXED=1/60;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const dist2=(a,b)=>{const x=a.x-b.x,y=a.y-b.y;return x*x+y*y};
+  function rnd(){ seed=(seed+0x6D2B79F5)|0; let t=seed; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; }
+  function formatTime(s){ const m=Math.floor(s/60),q=Math.floor(s%60); return `${String(m).padStart(2,"0")}:${String(q).padStart(2,"0")}`; }
+  function makePool(size, factory){ return Array.from({length:size},(_,i)=>Object.assign({active:false,born:0,poolId:i},factory())); }
+  function take(pool){
+    let item=pool.find(v=>!v.active);
+    if(!item) item=pool.reduce((a,b)=>a.born<b.born?a:b);
+    item.active=true; item.born=state?.elapsed||0; return item;
+  }
+  function takeEnemy(){
+    let item=enemies.find(v=>!v.active);
+    if(!item){
+      const recyclable=enemies.filter(v=>!v.elite);
+      item=(recyclable.length?recyclable:enemies).reduce((a,b)=>a.born<b.born?a:b);
+    }
+    item.active=true;item.born=state?.elapsed||0;return item;
+  }
+  function each(pool,fn){ for(let i=0;i<pool.length;i++) if(pool[i].active) fn(pool[i],i); }
+
+  const bullets=makePool(96,()=>({x:0,y:0,vx:0,vy:0,r:3,damage:0,life:0,pierce:0}));
+  const enemyShots=makePool(48,()=>({x:0,y:0,vx:0,vy:0,r:4,damage:0,life:0}));
+  const enemies=makePool(64,()=>({x:0,y:0,r:11,type:"stalker",hp:1,maxHp:1,speed:1,damage:1,attackCd:0,shotCd:0,chargeCd:0,charge:0,vx:0,vy:0,elite:false,flash:0}));
+  const drops=makePool(48,()=>({x:0,y:0,r:6,kind:"loot",name:"",value:0,rarity:"普通",life:0,phase:0}));
+  const particles=makePool(128,()=>({x:0,y:0,vx:0,vy:0,life:0,max:0,size:1,color:"#fff"}));
+
+  function initialState(){
+    return {
+      mode:"intro", runId:uid(), elapsed:0, realElapsed:0, paused:false, ended:false, result:null,
+      player:{x:vw/2,y:vh*.62,targetX:vw/2,targetY:vh*.62,r:12,hp:100,maxHp:100,speed:164,invuln:0,fireCd:0},
+      xp:0, weaponStage:1, kills:0, danger:1, loot:[], firstInput:false, firstUpgrade:false,
+      nextSpawn:.6, nextElite:45, eliteSpawned:false, collapseElite:false,
+      zones:[], extractProgress:0, extractionZone:null, collapse:false, safeRadius:Math.max(vw,vh), pulse:0,
+      settings:GamePlatform.loadLocal("settings",{sound:!MUTED_BY_QUERY,reduced:matchMedia("(prefers-reduced-motion: reduce)").matches}),
+      stats:{spawned:0,shots:0,hits:0,picked:0}
+    };
+  }
+  function clearPools(){ [bullets,enemyShots,enemies,drops,particles].forEach(p=>p.forEach(v=>v.active=false)); }
+
+  function resize(){
+    const rect=$("app").getBoundingClientRect(); vw=Math.max(280,rect.width); vh=Math.max(520,rect.height);
+    dpr=Math.min(2,window.devicePixelRatio||1); canvas.width=Math.round(vw*dpr); canvas.height=Math.round(vh*dpr);
+    canvas.style.width=vw+"px"; canvas.style.height=vh+"px"; ctx.setTransform(dpr,0,0,dpr,0,0);
+    if(state?.mode==="intro"){ state.player.x=state.player.targetX=vw/2; state.player.y=state.player.targetY=vh*.62; }
+  }
+  new ResizeObserver(resize).observe($("app")); resize();
+
+  function resetRun(replay=false){
+    const priorRun=state?.runId;
+    clearPools(); seed=(SEED+(replay&&!TEST?Date.now():0))>>>0; state=initialState(); state.mode="playing";
+    ui.intro.classList.remove("active"); ui.pause.classList.remove("active"); ui.result.classList.remove("active");
+    updateSettingsUI(); updateHUD();
+    GamePlatform.emit("game_start",{priorRunId:priorRun||null,replay,testMode:TEST,seed:SEED,timeScale:TIME_SCALE});
+    if(replay)GamePlatform.emit("replay_start",{priorRunId:priorRun||null});
+    showToast("裂隙已开启 · 拖动移动");
+    playTone(220,.06,"sine",.04);
+  }
+  function startGame(){ resetRun(false); }
+  function pauseGame(reason="user"){
+    if(!state || state.mode!=="playing" || state.paused || state.ended) return;
+    state.paused=true; state.mode="paused"; ui.pause.classList.add("active"); GamePlatform.emit("lifecycle_pause",{reason});
+  }
+  function resumeGame(reason="user"){
+    if(!state || state.mode!=="paused" || state.ended) return;
+    state.paused=false; state.mode="playing"; last=performance.now(); ui.pause.classList.remove("active"); GamePlatform.emit("lifecycle_resume",{reason});
+  }
+  function updateSettingsUI(){
+    $("soundToggle").classList.toggle("on",state.settings.sound&&!MUTED_BY_QUERY);
+    $("motionToggle").classList.toggle("on",state.settings.reduced);
+  }
+  function setSetting(key,val){ state.settings[key]=val; GamePlatform.saveLocal("settings",state.settings); updateSettingsUI(); }
+  function playTone(freq,duration=.05,type="sine",gain=.025){
+    if(MUTED_BY_QUERY||!state?.settings.sound) return;
+    try{
+      audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();
+      const o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.type=type;o.frequency.value=freq;
+      g.gain.setValueAtTime(gain,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+duration);
+      o.connect(g).connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+duration);
+    }catch(_){}
+  }
+  function showToast(text,duration=1500){
+    ui.toast.textContent=text; ui.toast.classList.add("show"); clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>ui.toast.classList.remove("show"),duration);
+  }
+
+  function pointerPosition(e){
+    const r=canvas.getBoundingClientRect(); return {x:clamp(e.clientX-r.left,18,vw-18),y:clamp(e.clientY-r.top,180,vh-18)};
+  }
+  let pointerDown=false;
+  canvas.addEventListener("pointerdown",e=>{
+    if(state.mode!=="playing"||state.paused) return; pointerDown=true; canvas.setPointerCapture(e.pointerId);
+    const p=pointerPosition(e); state.player.targetX=p.x;state.player.targetY=p.y;
+  });
+  canvas.addEventListener("pointermove",e=>{
+    if(!pointerDown||state.mode!=="playing"||state.paused)return;
+    const p=pointerPosition(e); state.player.targetX=p.x;state.player.targetY=p.y;
+  });
+  function endPointer(){pointerDown=false;}
+  canvas.addEventListener("pointerup",endPointer);canvas.addEventListener("pointercancel",endPointer);
+
+  function burst(x,y,color,count=8,speed=90){
+    const n=state.settings.reduced?Math.ceil(count/3):count;
+    for(let i=0;i<n;i++){const p=take(particles),a=rnd()*TAU,s=speed*(.4+rnd()*.7);Object.assign(p,{x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.35+rnd()*.3,max:.65,size:1.5+rnd()*3,color});}
+  }
+  function spawnEnemy(type, forcedElite=false){
+    const e=takeEnemy(), edge=Math.floor(rnd()*4), margin=24;
+    let x,y;
+    if(edge===0){x=rnd()*vw;y=175-margin;} else if(edge===1){x=vw+margin;y=175+rnd()*(vh-175);}
+    else if(edge===2){x=rnd()*vw;y=vh+margin;} else{x=-margin;y=175+rnd()*(vh-175);}
+    const d=state.danger, elite=forcedElite||type==="elite";
+    const data={
+      stalker:{r:11,hp:15+d*2,speed:46+d*4,damage:9},
+      rusher:{r:10,hp:12+d*1.5,speed:35+d*3,damage:13},
+      shooter:{r:12,hp:18+d*2.3,speed:30+d*2,damage:8},
+      elite:{r:22,hp:150+d*14,speed:42+d*3,damage:18}
+    }[elite?"elite":type];
+    Object.assign(e,{x,y,type:elite?"elite":type,r:data.r,hp:data.hp,maxHp:data.hp,speed:data.speed,damage:data.damage,
+      attackCd:0,shotCd:.8+rnd(),chargeCd:1.5+rnd(),charge:0,vx:0,vy:0,elite,flash:0});
+    state.stats.spawned++;
+    if(elite){showToast(state.collapse?"坍缩猎手正在追击":"精英信号闯入",1800);burst(x,y,"#ff6b36",20,130);}
+  }
+  function spawnWave(){
+    const cap=state.collapse?52:42, active=enemies.reduce((n,e)=>n+(e.active?1:0),0); if(active>=cap)return;
+    const n=1+(state.danger>=5&&rnd()<.38?1:0);
+    for(let i=0;i<n;i++){const r=rnd();spawnEnemy(r<.52?"stalker":r<.78?"rusher":"shooter");}
+  }
+  function spawnBullet(angle,offset=0){
+    const p=state.player,b=take(bullets),a=angle+offset,s=420;
+    Object.assign(b,{x:p.x+Math.cos(a)*17,y:p.y+Math.sin(a)*17,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:3.2,damage:state.weaponStage===1?10:9,life:1.1,pierce:state.weaponStage===3?2:0});
+    state.stats.shots++;
+  }
+  function autoFire(dt){
+    const p=state.player;p.fireCd-=dt;
+    if(p.fireCd>0)return;
+    let target=null,best=245*245;
+    each(enemies,e=>{const d=dist2(p,e);if(d<best){best=d;target=e;}});
+    if(!target)return;
+    const angle=Math.atan2(target.y-p.y,target.x-p.x);
+    if(state.weaponStage===1)spawnBullet(angle);
+    else if(state.weaponStage===2){spawnBullet(angle,-.075);spawnBullet(angle,.075);}
+    else{spawnBullet(angle,-.16);spawnBullet(angle);spawnBullet(angle,.16);}
+    p.fireCd=[0,.38,.31,.25][state.weaponStage];playTone(160+state.weaponStage*48,.035,"square",.012);
+  }
+  function weaponThreshold(){return state.weaponStage===1?8:state.weaponStage===2?22:40;}
+  function gainXp(n){
+    state.xp+=n;
+    if(state.weaponStage<3&&state.xp>=weaponThreshold()){
+      state.weaponStage++; burst(state.player.x,state.player.y,"#d17aff",34,150);playTone(440,.18,"sawtooth",.04);
+      showToast(state.weaponStage===2?"武器变形 · 双脉冲":"武器变形 · 穿透散射",1900);
+      GamePlatform.emit(state.firstUpgrade?"weapon_upgrade":"mechanic_reveal",{stage:state.weaponStage,xp:state.xp});
+      state.firstUpgrade=true;
+    }
+  }
+  const LOOT=[
+    ["裂隙残片","普通",22],["旧世界芯片","普通",31],["熔金电池","精良",48],["星火密钥","稀有",76],
+    ["虚空罗盘","稀有",92],["王庭信标","传说",138],["坍缩之眼","传说",190]
+  ];
+  function dropLoot(e){
+    const xp=1+(e.elite?5:0);gainXp(xp);
+    const chance=e.elite?1:.42+state.danger*.035;
+    if(rnd()<chance){
+      let tier=Math.floor(rnd()*Math.min(LOOT.length,2+Math.ceil(state.danger*.8)+(e.elite?2:0)));
+      if(e.elite)tier=Math.max(3,tier);
+      const base=LOOT[clamp(tier,0,LOOT.length-1)],d=take(drops);
+      Object.assign(d,{x:e.x,y:e.y,r:e.elite?9:7,kind:"loot",name:base[0],rarity:base[1],value:Math.round(base[2]*(1+(state.danger-1)*.14)),life:18,phase:rnd()*TAU});
+    }
+  }
+  function killEnemy(e){
+    e.active=false;state.kills++;dropLoot(e);burst(e.x,e.y,e.elite?"#ffbd3f":"#ad72ff",e.elite?28:9,e.elite?170:85);
+  }
+  function damagePlayer(amount){
+    const p=state.player;if(p.invuln>0||state.ended)return;
+    p.hp=Math.max(0,p.hp-amount);p.invuln=.42;burst(p.x,p.y,"#ff536b",12,110);playTone(90,.1,"sawtooth",.035);
+    if(p.hp<=0)endRun(false);
+  }
+  function fireEnemyShot(e){
+    const a=Math.atan2(state.player.y-e.y,state.player.x-e.x),b=take(enemyShots),s=e.elite?180:145;
+    Object.assign(b,{x:e.x,y:e.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:e.elite?6:4,damage:e.elite?12:7,life:3});
+  }
+  function updatePlayer(dt){
+    const p=state.player,dx=p.targetX-p.x,dy=p.targetY-p.y,d=Math.hypot(dx,dy);
+    if(d>2){
+      const step=Math.min(d,p.speed*dt);p.x+=dx/d*step;p.y+=dy/d*step;
+      if(!state.firstInput&&d>7){state.firstInput=true;GamePlatform.emit("first_input",{method:"pointer"});}
+    }
+    p.x=clamp(p.x,15,vw-15);p.y=clamp(p.y,174,vh-15);p.invuln=Math.max(0,p.invuln-dt);
+    autoFire(dt);
+  }
+  function updateBullets(dt){
+    each(bullets,b=>{
+      b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(b.life<=0||b.x<-20||b.x>vw+20||b.y<150||b.y>vh+20){b.active=false;return;}
+      for(const e of enemies){if(!e.active)continue;const rr=b.r+e.r;if(dist2(b,e)<=rr*rr){
+        e.hp-=b.damage;e.flash=.08;state.stats.hits++;burst(b.x,b.y,"#ffb33e",3,55);
+        if(e.hp<=0)killEnemy(e);
+        if(b.pierce>0)b.pierce--;else{b.active=false;break;}
+      }}
+    });
+    each(enemyShots,b=>{
+      b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(b.life<=0){b.active=false;return;}
+      const rr=b.r+state.player.r;if(dist2(b,state.player)<=rr*rr){b.active=false;damagePlayer(b.damage);}
+    });
+  }
+  function updateEnemies(dt){
+    const p=state.player;
+    each(enemies,e=>{
+      e.flash=Math.max(0,e.flash-dt);e.attackCd-=dt;e.shotCd-=dt;e.chargeCd-=dt;
+      let dx=p.x-e.x,dy=p.y-e.y,d=Math.max(1,Math.hypot(dx,dy)),speed=e.speed;
+      if(e.type==="shooter"){
+        if(d>180){e.x+=dx/d*speed*dt;e.y+=dy/d*speed*dt;}
+        else if(d<125){e.x-=dx/d*speed*.7*dt;e.y-=dy/d*speed*.7*dt;}
+        if(e.shotCd<=0&&d<300){fireEnemyShot(e);e.shotCd=1.8-state.danger*.06+rnd()*.4;}
+      } else if(e.type==="rusher"){
+        if(e.charge>0){e.charge-=dt;e.x+=e.vx*dt;e.y+=e.vy*dt;}
+        else if(e.chargeCd<=0&&d<250){e.charge=.36;e.chargeCd=2.5;e.vx=dx/d*speed*3.4;e.vy=dy/d*speed*3.4;}
+        else {e.x+=dx/d*speed*dt;e.y+=dy/d*speed*dt;}
+      } else {
+        if(e.elite&&e.shotCd<=0&&d<320){fireEnemyShot(e);e.shotCd=1.15;}
+        e.x+=dx/d*speed*(e.elite&&state.collapse?1.32:1)*dt;e.y+=dy/d*speed*(e.elite&&state.collapse?1.32:1)*dt;
+      }
+      const rr=e.r+p.r;if(dist2(e,p)<rr*rr&&e.attackCd<=0){damagePlayer(e.damage);e.attackCd=.75;if(!e.elite){e.x-=dx/d*14;e.y-=dy/d*14;}}
+    });
+  }
+  function updateDrops(dt){
+    each(drops,d=>{
+      d.life-=dt;d.phase+=dt*3;if(d.life<=0){d.active=false;return;}
+      const dx=state.player.x-d.x,dy=state.player.y-d.y,dd=Math.hypot(dx,dy);
+      if(dd<62){const speed=180+(62-dd)*5;d.x+=dx/Math.max(1,dd)*speed*dt;d.y+=dy/Math.max(1,dd)*speed*dt;}
+      if(dd<state.player.r+d.r+4){
+        d.active=false;state.loot.push({id:uid(),name:d.name,rarity:d.rarity,value:d.value});state.stats.picked++;
+        burst(d.x,d.y,"#ffbd3f",10,95);playTone(600,.08,"sine",.03);
+        GamePlatform.emit("loot_pickup",{name:d.name,rarity:d.rarity,value:d.value,total:state.loot.length});
+      }
+    });
+  }
+  function updateParticles(dt){each(particles,p=>{p.life-=dt;if(p.life<=0){p.active=false;return;}p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.96;p.vy*=.96;});}
+
+  function openZone(index){
+    if(state.zones.some(z=>z.index===index))return;
+    const zone=index===1?{x:68,y:vh*.72,r:38,index:1,label:"临时撤离"}:{x:vw-70,y:vh*.32,r:42,index:2,label:"最终撤离"};
+    state.zones.push(zone); state.extractionZone=zone; state.extractProgress=0;
+    showToast(index===1?"撤离信标已开放 · 站稳 3 秒":"最终信标开启 · 裂隙坍缩",2200);
+    GamePlatform.emit("phase_change",{phase:index===1?"first_extraction":"collapse",elapsed:state.elapsed});
+  }
+  function updateExtraction(dt){
+    if(state.elapsed>=90)openZone(1);
+    if(state.elapsed>=150){
+      openZone(2);
+      if(!state.collapse){
+        state.collapse=true;state.safeRadius=Math.max(vw,vh)*.72;
+        if(!state.collapseElite){spawnEnemy("elite",true);state.collapseElite=true;}
+      }
+    }
+    let inside=null;
+    for(const z of state.zones){const rr=z.r-state.player.r*.25;if(dist2(z,state.player)<rr*rr)inside=z;}
+    if(inside){
+      state.extractionZone=inside;state.extractProgress+=dt;
+      if(state.extractProgress>=3){endRun(true);return;}
+    }else state.extractProgress=0;
+    if(state.collapse){
+      state.safeRadius=Math.max(62,state.safeRadius-dt*9);
+      const cx=vw/2,cy=(vh+170)/2,dx=state.player.x-cx,dy=state.player.y-cy;
+      if(Math.hypot(dx,dy)>state.safeRadius&&state.player.invuln<=0)damagePlayer(6);
+    }
+  }
+  function director(dt){
+    state.danger=clamp(1+Math.floor(state.elapsed/30),1,7);
+    state.nextSpawn-=dt;
+    if(state.nextSpawn<=0){spawnWave();state.nextSpawn=Math.max(.26,1.18-state.danger*.105);}
+    if(state.elapsed>=45&&!state.eliteSpawned){spawnEnemy("elite",true);state.eliteSpawned=true;state.nextElite=110;}
+    if(state.elapsed>=state.nextElite&&!state.collapse){spawnEnemy("elite",true);state.nextElite+=48;}
+  }
+  function step(dt){
+    if(state.mode!=="playing"||state.paused||state.ended)return;
+    state.elapsed+=dt;state.pulse+=dt;director(dt);updatePlayer(dt);updateBullets(dt);updateEnemies(dt);updateDrops(dt);updateParticles(dt);updateExtraction(dt);updateHUD();
+    if(state.elapsed>=180&&!state.ended)damagePlayer(999);
+  }
+
+  function endRun(extracted){
+    if(state.ended)return;state.ended=true;state.mode=extracted?"extracted":"dead";state.result=extracted?"extracted":"dead";
+    const sorted=[...state.loot].sort((a,b)=>b.value-a.value),kept=extracted?sorted:sorted.slice(0,1),lost=extracted?[]:sorted.slice(1);
+    state.kept=kept;state.lost=lost;
+    const keptValue=kept.reduce((s,v)=>s+v.value,0),lostValue=lost.reduce((s,v)=>s+v.value,0);
+    if(extracted)GamePlatform.emit("core_payoff",{result:"extracted",lootCount:kept.length,value:keptValue,elapsed:state.elapsed});
+    else GamePlatform.emit("player_death",{kept:kept.length,lost:lost.length,elapsed:state.elapsed});
+    GamePlatform.emit("run_end",{result:state.result,elapsed:state.elapsed,kills:state.kills,keptValue,lostValue});
+    GamePlatform.saveLocal("bestValue",Math.max(keptValue,GamePlatform.loadLocal("bestValue",0)));
+    showResult(extracted,kept,lost,keptValue,lostValue);
+  }
+  function lootHTML(list,lost=false){
+    if(!list.length)return lost?"无遗失":"没有战利品";
+    return list.map(v=>`<span class="loot-tag${lost?" lost":""}">${v.rarity==="传说"?"◆":"◇"} ${v.name} · ${v.value}</span>`).join("");
+  }
+  function showResult(extracted,kept,lost,keptValue,lostValue){
+    const badge=$("resultBadge");badge.textContent=extracted?"撤离完成":"行动终止";badge.classList.toggle("dead",!extracted);
+    $("resultTitle").textContent=extracted?"满载而归":"仅保住一件";
+    $("resultCopy").textContent=extracted?"裂隙在你身后闭合，全部战利品已安全入库。":"你倒在坍缩前，裂隙只允许最高价值物随你返回。";
+    $("sumTime").textContent=formatTime(state.elapsed);$("sumKills").textContent=state.kills;$("sumValue").textContent=keptValue;
+    $("keptValue").textContent=`价值 ${keptValue}`;$("lostValue").textContent=`价值 ${lostValue}`;
+    $("keptList").innerHTML=lootHTML(kept);$("lostList").innerHTML=lootHTML(lost,true);
+    ui.result.classList.add("active");
+  }
+  function updateHUD(){
+    const p=state.player;ui.hpText.textContent=Math.ceil(p.hp);ui.hpFill.style.width=`${p.hp/p.maxHp*100}%`;
+    const names=["","裂隙单发","双脉冲","穿透散射"];ui.weapon.textContent=names[state.weaponStage];
+    const prior=state.weaponStage===1?0:state.weaponStage===2?8:22,next=weaponThreshold();
+    ui.xpText.textContent=state.weaponStage===3?`${state.xp} MAX`:`${state.xp}/${next}`;
+    ui.xpFill.style.width=`${state.weaponStage===3?100:clamp((state.xp-prior)/(next-prior)*100,0,100)}%`;
+    ui.clock.textContent=formatTime(state.elapsed);ui.danger.textContent=String(state.danger).padStart(2,"0");
+    ui.loot.textContent=state.loot.length;ui.kills.textContent=state.kills;
+    let text="";
+    if(state.zones.length){
+      if(state.extractProgress>0)text=`撤离同步 ${Math.min(100,Math.floor(state.extractProgress/3*100))}% · 不要离开绿区`;
+      else if(state.collapse)text=`裂隙坍缩 · 前往最终撤离区`;
+      else text=`撤离已开放 · 继续搜刮，或进入绿区`;
+    } else if(state.elapsed>72) text=`撤离信标将在 ${Math.ceil(90-state.elapsed)} 秒后开放`;
+    ui.objective.textContent=text;ui.objective.classList.toggle("show",!!text);
+  }
+
+  function circle(x,y,r,fill,stroke,width=1){
+    ctx.beginPath();ctx.arc(x,y,r,0,TAU);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.lineWidth=width;ctx.strokeStyle=stroke;ctx.stroke();}
+  }
+  function drawBackground(){
+    const g=ctx.createRadialGradient(vw*.5,vh*.55,0,vw*.5,vh*.55,Math.max(vw,vh)*.72);
+    g.addColorStop(0,"#171024");g.addColorStop(.52,"#0c0815");g.addColorStop(1,"#050309");ctx.fillStyle=g;ctx.fillRect(0,0,vw,vh);
+    ctx.save();ctx.globalAlpha=.19;ctx.strokeStyle="#7c42bb";ctx.lineWidth=1;
+    const gap=46, ox=(state.pulse*5)%gap,oy=(state.pulse*3)%gap;
+    for(let x=-gap+ox;x<vw+gap;x+=gap){ctx.beginPath();ctx.moveTo(x,165);ctx.lineTo(x+35,vh);ctx.stroke();}
+    for(let y=165-gap+oy;y<vh+gap;y+=gap){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(vw,y-12);ctx.stroke();}
+    ctx.restore();
+    for(let i=0;i<7;i++){
+      const x=(i*97+seed%83)%vw,y=190+(i*151+seed%71)%(Math.max(200,vh-210));
+      const rg=ctx.createRadialGradient(x,y,0,x,y,35);rg.addColorStop(0,"rgba(148,68,219,.12)");rg.addColorStop(1,"rgba(148,68,219,0)");
+      ctx.fillStyle=rg;ctx.fillRect(x-35,y-35,70,70);
+    }
+    if(state.collapse){
+      const cx=vw/2,cy=(vh+170)/2;ctx.save();ctx.fillStyle="rgba(55,3,72,.40)";ctx.fillRect(0,165,vw,vh-165);
+      ctx.globalCompositeOperation="destination-out";circle(cx,cy,state.safeRadius,"#000");ctx.restore();
+      ctx.save();ctx.setLineDash([5,8]);circle(cx,cy,state.safeRadius,null,"rgba(255,82,118,.72)",2);ctx.restore();
+    }
+  }
+  function drawZones(){
+    for(const z of state.zones){
+      const active=state.extractionZone===z&&state.extractProgress>0,pulse=Math.sin(state.pulse*4)*3;
+      ctx.save();ctx.globalAlpha=.18;circle(z.x,z.y,z.r+10+pulse,"#48e08d");ctx.globalAlpha=.15;circle(z.x,z.y,z.r,"#48e08d");
+      ctx.globalAlpha=.9;ctx.lineWidth=2.5;ctx.setLineDash([7,5]);circle(z.x,z.y,z.r,null,"#63efa2",2.5);ctx.setLineDash([]);
+      ctx.beginPath();ctx.moveTo(z.x,z.y-12);ctx.lineTo(z.x+11,z.y+8);ctx.lineTo(z.x-11,z.y+8);ctx.closePath();ctx.strokeStyle="#b5ffd3";ctx.lineWidth=2;ctx.stroke();
+      if(active){ctx.beginPath();ctx.arc(z.x,z.y,z.r+6,-Math.PI/2,-Math.PI/2+TAU*state.extractProgress/3);ctx.strokeStyle="#e5ffed";ctx.lineWidth=5;ctx.stroke();}
+      ctx.font="800 9px Inter,sans-serif";ctx.textAlign="center";ctx.fillStyle="#caffdc";ctx.fillText(active?`同步 ${Math.floor(state.extractProgress/3*100)}%`:z.label,z.x,z.y+z.r+17);ctx.restore();
+    }
+  }
+  function drawDrops(){
+    each(drops,d=>{
+      const y=d.y+Math.sin(d.phase)*3;ctx.save();ctx.translate(d.x,y);ctx.rotate(d.phase*.25);
+      ctx.shadowColor="#ff9b32";ctx.shadowBlur=14;ctx.fillStyle=d.rarity==="传说"?"#ffe36a":"#ffad38";
+      ctx.beginPath();ctx.moveTo(0,-d.r);ctx.lineTo(d.r*.8,0);ctx.lineTo(0,d.r);ctx.lineTo(-d.r*.8,0);ctx.closePath();ctx.fill();
+      ctx.shadowBlur=0;ctx.strokeStyle="#fff2b2";ctx.lineWidth=1;ctx.stroke();ctx.restore();
+    });
+  }
+  function drawBullets(){
+    ctx.save();ctx.lineCap="round";
+    each(bullets,b=>{ctx.strokeStyle="#ffd363";ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(b.x-b.vx*.018,b.y-b.vy*.018);ctx.lineTo(b.x,b.y);ctx.stroke();});
+    each(enemyShots,b=>{ctx.shadowColor="#d564ff";ctx.shadowBlur=8;circle(b.x,b.y,b.r,"#b55cff","#efb9ff",1);});
+    ctx.restore();
+  }
+  function drawEnemy(e){
+    ctx.save();ctx.translate(e.x,e.y);const hit=e.flash>0, elite=e.elite;
+    ctx.shadowColor=elite?"#ff6438":"#812bd1";ctx.shadowBlur=elite?18:8;
+    ctx.fillStyle=hit?"#fff":elite?"#611f2b":e.type==="rusher"?"#6e245d":e.type==="shooter"?"#30206d":"#41215f";
+    ctx.strokeStyle=elite?"#ff8a45":e.type==="rusher"?"#ff69a7":e.type==="shooter"?"#8a7cff":"#bc79ff";ctx.lineWidth=elite?3:1.5;
+    ctx.beginPath();
+    if(e.type==="rusher"){ctx.moveTo(e.r,0);ctx.lineTo(-e.r*.7,e.r*.72);ctx.lineTo(-e.r*.45,0);ctx.lineTo(-e.r*.7,-e.r*.72);}
+    else if(e.type==="shooter"){for(let i=0;i<6;i++){const a=i*TAU/6;ctx.lineTo(Math.cos(a)*e.r,Math.sin(a)*e.r);}ctx.closePath();}
+    else {ctx.arc(0,0,e.r,0,TAU);}
+    ctx.fill();ctx.stroke();ctx.shadowBlur=0;
+    if(elite){circle(0,0,e.r*.48,"#ff7a36");circle(0,0,e.r*.19,"#fff2b3");}
+    else{circle(0,0,2.4,e.type==="shooter"?"#bfc3ff":"#ffb1ec");}
+    ctx.restore();
+    if(e.hp<e.maxHp){const w=e.r*2;ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(e.x-w/2,e.y-e.r-8,w,3);ctx.fillStyle=e.elite?"#ff7b42":"#cf73ff";ctx.fillRect(e.x-w/2,e.y-e.r-8,w*e.hp/e.maxHp,3);}
+  }
+  function drawPlayer(){
+    const p=state.player,inv=p.invuln>0&&Math.floor(state.pulse*18)%2===0;ctx.save();ctx.translate(p.x,p.y);ctx.globalAlpha=inv?.35:1;
+    ctx.shadowColor="#df9bff";ctx.shadowBlur=18;circle(0,0,p.r+5,"rgba(145,78,236,.16)","#b97aff",1);
+    ctx.rotate(state.pulse*.7);ctx.strokeStyle="#e4bdff";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-13);ctx.lineTo(10,8);ctx.lineTo(0,4);ctx.lineTo(-10,8);ctx.closePath();ctx.stroke();
+    ctx.rotate(-state.pulse*.7);circle(0,0,6,"#fff","#b75cff",2);ctx.restore();
+    if(pointerDown){ctx.save();ctx.globalAlpha=.28;circle(p.targetX,p.targetY,15,null,"#d5b3ff",1);ctx.restore();}
+  }
+  function drawParticles(){each(particles,p=>{ctx.save();ctx.globalAlpha=clamp(p.life/p.max,0,1);circle(p.x,p.y,p.size,p.color);ctx.restore();});}
+  function draw(){
+    ctx.setTransform(dpr,0,0,dpr,0,0);drawBackground();drawZones();drawDrops();each(enemies,drawEnemy);drawBullets();drawParticles();drawPlayer();
+    if(state.paused){ctx.fillStyle="rgba(4,2,8,.2)";ctx.fillRect(0,0,vw,vh);}
+  }
+  function frame(now){
+    const raw=Math.min(.05,(now-last)/1000);last=now;
+    if(state.mode==="playing"&&!state.paused&&!state.ended){
+      state.realElapsed+=raw;accumulator+=raw*TIME_SCALE;let loops=0;
+      while(accumulator>=FIXED&&loops<120){step(FIXED);accumulator-=FIXED;loops++;}
+      if(loops===120)accumulator=0;
+    }
+    draw();raf=requestAnimationFrame(frame);
+  }
+
+  function publicState(){
+    return {
+      gameId:GAME_ID,mode:state.mode,runId:state.runId,elapsed:state.elapsed,paused:state.paused,result:state.result,
+      player:{x:state.player.x,y:state.player.y,hp:state.player.hp,maxHp:state.player.maxHp},
+      xp:state.xp,weaponStage:state.weaponStage,kills:state.kills,danger:state.danger,loot:state.loot.map(v=>({...v})),
+      kept:(state.kept||[]).map(v=>({...v})),lost:(state.lost||[]).map(v=>({...v})),
+      extraction:{zones:state.zones.map(v=>({...v})),progress:state.extractProgress,required:3},
+      collapse:state.collapse,safeRadius:state.safeRadius,
+      pools:{enemies:enemies.filter(v=>v.active).length,bullets:bullets.filter(v=>v.active).length,enemyShots:enemyShots.filter(v=>v.active).length,drops:drops.filter(v=>v.active).length,particles:particles.filter(v=>v.active).length,
+        limits:{enemies:64,bullets:96,enemyShots:48,drops:48,particles:128}},
+      stats:{...state.stats},testMode:TEST,timeScale:TIME_SCALE,seed:SEED
+    };
+  }
+  window.__GAME_TEST__ = {
+    getState:()=>JSON.parse(JSON.stringify(publicState())),
+    reset:()=>{resetRun(true);return publicState();},
+    moveTo:(x,y)=>{state.player.targetX=clamp(Number(x),18,vw-18);state.player.targetY=clamp(Number(y),174,vh-18);return true;},
+    setElapsed:s=>{if(TEST&&state.mode==="playing")state.elapsed=Math.max(0,Number(s)||0);return state.elapsed;},
+    grantXp:n=>{if(TEST)gainXp(Math.max(0,Number(n)||0));return state.xp;},
+    grantLoot:(value=100)=>{if(TEST)state.loot.push({id:uid(),name:"测试信标",rarity:"稀有",value:Number(value)||100});return state.loot.length;},
+    damage:n=>{if(TEST)damagePlayer(Math.max(0,Number(n)||0));return state.player.hp;},
+    forceDeath:()=>{if(TEST)damagePlayer(999);return state.result;},
+    getActiveZone:()=>state.extractionZone?{...state.extractionZone}:null
+  };
+
+  $("startBtn").addEventListener("click",startGame);
+  $("pauseBtn").addEventListener("click",()=>pauseGame("user"));
+  $("resumeBtn").addEventListener("click",()=>resumeGame("user"));
+  $("restartBtn").addEventListener("click",()=>resetRun(true));
+  $("replayBtn").addEventListener("click",()=>resetRun(true));
+  $("soundToggle").addEventListener("click",()=>setSetting("sound",!state.settings.sound));
+  $("motionToggle").addEventListener("click",()=>setSetting("reduced",!state.settings.reduced));
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden){if(state.mode==="playing")pauseGame("visibility");}
+  });
+  window.addEventListener("blur",()=>{if(state.mode==="playing")pauseGame("blur");});
+  window.addEventListener("pagehide",()=>cancelAnimationFrame(raf),{once:true});
+
+  state=initialState();updateSettingsUI();updateHUD();last=performance.now();raf=requestAnimationFrame(frame);
+  GamePlatform.emit("game_ready",{env:GamePlatform.getEnv(),testMode:TEST});
+  if(TEST) requestAnimationFrame(startGame);
+})();
+</script>
+</body>
+</html>

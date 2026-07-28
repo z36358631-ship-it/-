@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07070b">
+  <link rel="icon" href="data:,">
+  <title>微信 H5 精品游戏实验室</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#07070b;--card:#15151c;--card-2:#1e1e28;--line:#343543;
+      --text:#fff;--sub:#d6d7df;--muted:#888a98;--gold:#ffcc43;
+      --green:#33d8a4;--blue:#56a8ff;--purple:#987cff;--red:#ff6b7d;
+      --font:'MiSans VF','MiSans','PingFang SC',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    }
+    html{background:var(--bg);color:var(--text);font-family:var(--font)}
+    body{
+      min-height:100vh;background:
+        radial-gradient(circle at 12% -10%,rgba(129,116,250,.22),transparent 31rem),
+        radial-gradient(circle at 92% 6%,rgba(51,216,164,.12),transparent 30rem),
+        var(--bg);-webkit-font-smoothing:antialiased
+    }
+    button,a{font:inherit}
+    .shell{width:min(1160px,calc(100% - 36px));margin:auto;padding:24px 0 56px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:28px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand-mark{
+      width:42px;height:42px;display:grid;place-items:center;border-radius:13px;
+      background:linear-gradient(145deg,#ffe79a,#ffb600);color:#111;font-weight:900;
+      box-shadow:0 10px 30px rgba(255,204,67,.18)
+    }
+    .brand strong{display:block;font-size:16px}.brand small{color:var(--muted);font-size:11px}
+    .live{display:flex;align-items:center;gap:9px;color:var(--sub);font-size:12px}
+    .live i{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 5px rgba(51,216,164,.1)}
+    .hero{
+      display:grid;grid-template-columns:minmax(0,1.35fr) minmax(290px,.65fr);
+      gap:18px;margin-bottom:30px
+    }
+    .hero-main,.brief{
+      border:1px solid rgba(255,255,255,.08);border-radius:22px;
+      background:rgba(21,21,28,.8);backdrop-filter:blur(18px)
+    }
+    .hero-main{padding:34px;min-height:276px;position:relative;overflow:hidden}
+    .hero-main:after{
+      content:"";position:absolute;width:330px;height:330px;right:-150px;top:-170px;border-radius:50%;
+      background:conic-gradient(from 90deg,rgba(86,168,255,.24),rgba(152,124,255,.22),rgba(51,216,164,.08),rgba(86,168,255,.24));
+      filter:blur(4px)
+    }
+    .eyebrow{font-size:11px;letter-spacing:.17em;color:var(--gold);font-weight:700;margin-bottom:16px}
+    h1{font-size:clamp(34px,6vw,58px);line-height:1.03;letter-spacing:-.04em;position:relative;z-index:1}
+    .hero-main p{color:var(--sub);font-size:15px;line-height:1.75;max-width:650px;margin-top:18px;position:relative;z-index:1}
+    .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:23px;position:relative;z-index:1}
+    .pill{font-size:11px;color:#dedfe6;padding:7px 10px;border-radius:100px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.035)}
+    .brief{padding:24px;display:flex;flex-direction:column;justify-content:space-between}
+    .brief h2{font-size:18px}.brief ol{display:grid;gap:12px;list-style:none;margin-top:18px}
+    .brief li{display:grid;grid-template-columns:28px 1fr;gap:9px;align-items:center;color:var(--sub);font-size:12px;line-height:1.45}
+    .brief b{width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:#0e0e14;color:var(--gold);font-size:11px}
+    .brief-note{font-size:10px;color:var(--muted);line-height:1.6;margin-top:18px}
+    .section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:16px}
+    .section-head h2{font-size:24px}.section-head p{font-size:12px;color:var(--muted);margin-top:6px}
+    .progress{font-size:11px;color:var(--sub);border:1px solid var(--line);background:var(--card);border-radius:100px;padding:8px 11px}
+    .games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+    .game{
+      --accent:var(--gold);position:relative;min-height:430px;padding:20px;border-radius:20px;
+      border:1px solid rgba(255,255,255,.09);background:linear-gradient(150deg,var(--card),#0f0f15);
+      overflow:hidden;box-shadow:0 18px 42px rgba(0,0,0,.23)
+    }
+    .game:before{
+      content:"";position:absolute;width:230px;height:230px;border-radius:50%;right:-100px;top:-110px;
+      background:var(--glow);filter:blur(3px)
+    }
+    .game-top{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}
+    .number{font-size:10px;color:var(--muted);letter-spacing:.13em}
+    .state{font-size:10px;color:var(--muted);padding:5px 8px;border:1px solid rgba(255,255,255,.07);border-radius:100px;background:#22222a}
+    .state.done{color:var(--green);border-color:rgba(51,216,164,.25);background:rgba(51,216,164,.11)}
+    .art{height:145px;display:grid;place-items:center;margin:15px 0 8px;position:relative}
+    .art:before,.art:after{content:"";position:absolute;border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);border-radius:50%}
+    .art:before{width:122px;height:122px}.art:after{width:86px;height:86px}
+    .icon{font-size:52px;color:var(--accent);filter:drop-shadow(0 0 17px color-mix(in srgb,var(--accent) 45%,transparent));z-index:1}
+    .game h3{font-size:22px;position:relative;z-index:1}
+    .role{font-size:10px;color:var(--accent);margin-top:5px;font-weight:650;letter-spacing:.08em}
+    .hook{color:var(--sub);font-size:13px;line-height:1.6;margin:12px 0;min-height:62px}
+    .meta{display:flex;flex-wrap:wrap;gap:6px}
+    .meta span{font-size:10px;color:var(--muted);padding:5px 7px;border-radius:6px;background:#0b0b10}
+    .play{
+      position:absolute;left:20px;right:20px;bottom:20px;min-height:48px;display:flex;align-items:center;justify-content:center;
+      border:0;border-radius:12px;text-decoration:none;background:var(--accent);color:#08080c;font-weight:750;
+      transition:transform .16s,filter .16s
+    }
+    .play:hover{filter:brightness(1.07);transform:translateY(-1px)}.play:active{transform:translateY(1px)}
+    .panels{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:28px}
+    .panel{padding:20px;border-radius:16px;background:var(--card);border:1px solid rgba(255,255,255,.08)}
+    .panel h3{font-size:16px;margin-bottom:13px}
+    .checks{display:grid;gap:10px}
+    .check{display:grid;grid-template-columns:19px 1fr;gap:9px;color:var(--sub);font-size:12px;line-height:1.5}
+    .check:before{content:"✓";width:19px;height:19px;display:grid;place-items:center;border-radius:6px;background:rgba(51,216,164,.11);color:var(--green);font-size:10px}
+    .events{display:grid;gap:7px;max-height:180px;overflow:auto;scrollbar-width:none}.events::-webkit-scrollbar{display:none}
+    .event{display:flex;justify-content:space-between;gap:10px;color:var(--sub);background:#0f0f15;border-radius:8px;padding:9px;font-size:10px}
+    .event time{color:var(--muted);white-space:nowrap}.empty{color:var(--muted);font-size:11px;text-align:center;padding:28px 0}
+    footer{margin-top:30px;padding-top:22px;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;gap:18px;color:var(--muted);font-size:10px;line-height:1.6}
+    .reset{border:0;background:none;color:var(--muted);text-decoration:underline;cursor:pointer;min-height:44px}
+    @media(max-width:900px){.games{grid-template-columns:1fr}.game{min-height:390px}.hero{grid-template-columns:1fr}.art{height:120px}}
+    @media(max-width:620px){
+      .shell{width:calc(100% - 20px);padding-top:14px}.topbar{margin-bottom:18px}.live span{display:none}
+      .hero-main{padding:24px 19px;min-height:245px}.brief{padding:19px}.panels{grid-template-columns:1fr}
+      .section-head{align-items:flex-start;flex-direction:column}.games{gap:12px}.game{padding:18px}.play{left:18px;right:18px;bottom:18px}
+      footer{flex-direction:column}h1{font-size:38px}
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">G</div>
+        <div><strong>GameHub H5 Lab</strong><small>三款核心乐趣纵切片</small></div>
+      </div>
+      <div class="live"><i></i><span>本地运行 · 无真实付费与广告</span></div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-main">
+        <div class="eyebrow">PLAYABLE VERTICAL SLICE</div>
+        <h1>不是三份概念，<br>是三种能玩的乐趣。</h1>
+        <p>创新机制、治愈触感、风险战斗。每款都只保留一种核心操作，在三分钟内完成教学、局势升级、高潮、结算和重玩。</p>
+        <div class="pills">
+          <span class="pill">竖屏单手</span><span class="pill">三分钟首局</span>
+          <span class="pill">Canvas 核心</span><span class="pill">可接小程序 WebView</span>
+        </div>
+      </div>
+      <aside class="brief">
+        <div>
+          <h2>统一试玩任务</h2>
+          <ol>
+            <li><b>01</b><span>不读说明，确认十秒内能否看懂核心因果。</span></li>
+            <li><b>02</b><span>完成一次关键局势变化，而非只看开场效果。</span></li>
+            <li><b>03</b><span>看到结算后，判断是否愿意立即再玩一次。</span></li>
+          </ol>
+        </div>
+        <p class="brief-note">体验事件仅保存在当前浏览器，不采集账号、设备或个人信息。</p>
+      </aside>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div><h2>三款游戏</h2><p>每款在独立页面打开；完成关键体验后返回本页查看进度。</p></div>
+        <div class="progress" id="progress">完成 0 / 3</div>
+      </div>
+      <div class="games" id="games"></div>
+    </section>
+
+    <section class="panels">
+      <div class="panel">
+        <h3>共同交付标准</h3>
+        <div class="checks">
+          <div class="check">单手完成全部核心操作，不依赖键盘与悬停。</div>
+          <div class="check">完整覆盖开局、变化、高潮、结算和无刷新重玩。</div>
+          <div class="check">失焦暂停、静音、安全区域和多尺寸移动端适配。</div>
+          <div class="check">纯本地资源，可作为微信 WebView 玩法验证版本。</div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>最近体验事件</h3>
+        <div class="events" id="events"><div class="empty">开始试玩后显示关键节点</div></div>
+      </div>
+    </section>
+
+    <footer>
+      <p>当前版本用于验证核心乐趣与视觉钩子。微信登录、分享、广告、支付、排行榜、版号与真机兼容不包含在本地纵切片中。</p>
+      <button class="reset" id="reset">清空本地体验记录</button>
+    </footer>
+  </main>
+
+  <script>
+    const catalog=[
+      {
+        id:"five-seconds-later",file:"01-five-seconds-later.html",number:"CONCEPT 01",
+        name:"五秒之后",role:"创新机制担当",icon:"⧖",accent:"#65c8ff",glow:"rgba(86,168,255,.2)",
+        hook:"每过五秒，刚才的你都会留下来。规划四段路线，让过去的自己共同完成终局合击。",
+        meta:["时间回声","拖动移动","约 180 秒"]
+      },
+      {
+        id:"world-mender",file:"02-world-mender.html",number:"CONCEPT 02",
+        name:"世界缝补师",role:"情绪与触感担当",icon:"⌁",accent:"#ffcc43",glow:"rgba(255,204,67,.18)",
+        hook:"把正在裂开的世界一针针缝好。针脚既是逃生桥，也是挡住风沙的屏障。",
+        meta:["锚点缝线","救援取舍","约 180 秒"]
+      },
+      {
+        id:"rift-hunter",file:"03-rift-hunter.html",number:"CONCEPT 03",
+        name:"裂隙猎人",role:"战斗与商业潜力担当",icon:"✦",accent:"#33d8a4",glow:"rgba(51,216,164,.18)",
+        hook:"你已经可以安全撤离，但下一只精英可能掉落稀有宝物。走，还是再贪一次？",
+        meta:["自动射击","撤离博弈","约 180 秒"]
+      }
+    ];
+    const storageKey="wechat-h5-premium-games:events:v1";
+    let events=readEvents();
+
+    function readEvents(){
+      try{
+        const value=JSON.parse(localStorage.getItem(storageKey)||"[]");
+        return Array.isArray(value)?value:[];
+      }catch(_){return []}
+    }
+    function gameEvents(id){return events.filter(item=>item.gameId===id)}
+    function completed(id){
+      const names=new Set(gameEvents(id).map(item=>item.event));
+      return ["first_input","mechanic_reveal","core_payoff"].every(name=>names.has(name));
+    }
+    function validMessage(data){
+      return data&&data.source==="wechat-h5-premium-games"&&data.version===1&&
+        catalog.some(game=>game.id===data.gameId)&&typeof data.event==="string";
+    }
+    function saveEvent(data){
+      events.push({...data,receivedAt:Date.now()});
+      if(events.length>180)events=events.slice(-180);
+      localStorage.setItem(storageKey,JSON.stringify(events));
+      render();
+    }
+    window.addEventListener("message",event=>{
+      if(validMessage(event.data))saveEvent(event.data);
+    });
+
+    function renderGames(){
+      document.getElementById("games").innerHTML=catalog.map(game=>{
+        const done=completed(game.id);
+        return `<article class="game" style="--accent:${game.accent};--glow:${game.glow}">
+          <div class="game-top"><span class="number">${game.number}</span><span class="state ${done?"done":""}">${done?"关键体验已完成":"等待试玩"}</span></div>
+          <div class="art"><div class="icon">${game.icon}</div></div>
+          <h3>${game.name}</h3><div class="role">${game.role}</div>
+          <p class="hook">${game.hook}</p>
+          <div class="meta">${game.meta.map(item=>`<span>${item}</span>`).join("")}</div>
+          <a class="play" href="${game.file}" target="_blank" rel="noopener">${done?"再玩一局":"开始试玩"} →</a>
+        </article>`;
+      }).join("");
+    }
+    function renderEvents(){
+      const labels={
+        game_start:"进入游戏",first_input:"首次操作",mechanic_reveal:"核心机制出现",
+        phase_change:"局势变化",core_payoff:"完成核心回报",run_end:"本局结束",
+        replay_start:"再次挑战",lifecycle_pause:"游戏暂停",lifecycle_resume:"继续游戏"
+      };
+      const target=document.getElementById("events");
+      if(!events.length){target.innerHTML='<div class="empty">开始试玩后显示关键节点</div>';return}
+      target.innerHTML=events.slice(-8).reverse().map(item=>{
+        const game=catalog.find(entry=>entry.id===item.gameId);
+        const time=new Date(item.receivedAt||item.ts||Date.now()).toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+        return `<div class="event"><span>${game?game.name:item.gameId} · ${labels[item.event]||item.event}</span><time>${time}</time></div>`;
+      }).join("");
+    }
+    function render(){
+      renderGames();renderEvents();
+      document.getElementById("progress").textContent=`完成 ${catalog.filter(game=>completed(game.id)).length} / ${catalog.length}`;
+    }
+    document.getElementById("reset").addEventListener("click",()=>{
+      if(!window.confirm("清空三款游戏在本浏览器中的体验记录？"))return;
+      events=[];localStorage.removeItem(storageKey);render();
+    });
+    window.addEventListener("storage",event=>{
+      if(event.key===storageKey){events=readEvents();render()}
+    });
+    render();
+  </script>
+</body>
+</html>

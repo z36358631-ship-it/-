@@ -1,0 +1,1535 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#050812">
+  <link rel="icon" href="data:,">
+  <title>五秒之后</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-primary: #000000;
+      --bg-card: #1a1a1a;
+      --bg-elevated: #252525;
+      --bg-overlay: #28202a;
+      --text-primary: #ffffff;
+      --text-secondary: #e6e6e6;
+      --text-muted: #7b7b7b;
+      --brand-gold: #ffcc43;
+      --brand-green: #33d8a4;
+      --brand-blue: #338feb;
+      --brand-purple: #8174fa;
+      --border-default: #353d4e;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-full: 100px;
+      --font-primary: "MiSans VF", "MiSans", "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-number: "D-DIN-PRO", var(--font-primary);
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #02030a;
+      color: var(--text-primary);
+      font-family: var(--font-primary);
+      -webkit-font-smoothing: antialiased;
+      touch-action: none;
+      user-select: none;
+    }
+    body {
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 50% 22%, rgba(72, 78, 178, .22), transparent 42%),
+        #02030a;
+    }
+    .game-shell {
+      position: relative;
+      width: min(100vw, calc(100vh * 390 / 844), 390px);
+      height: min(100vh, calc(100vw * 844 / 390), 844px);
+      max-width: 430px;
+      overflow: hidden;
+      border-radius: 20px;
+      background: #050812;
+      box-shadow: 0 20px 80px rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(255, 255, 255, .08);
+      isolation: isolate;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+      touch-action: none;
+    }
+    .controls {
+      position: absolute;
+      z-index: 5;
+      top: max(14px, env(safe-area-inset-top));
+      right: 14px;
+      display: flex;
+      gap: 8px;
+    }
+    .icon-button {
+      width: 44px;
+      height: 44px;
+      border: 1px solid rgba(255, 255, 255, .13);
+      border-radius: var(--radius-full);
+      background: rgba(10, 13, 30, .72);
+      color: #eef6ff;
+      font: 520 18px/1 var(--font-primary);
+      backdrop-filter: blur(12px);
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
+      transition: transform .15s ease, background .15s ease;
+    }
+    .icon-button:hover { background: rgba(30, 36, 72, .86); }
+    .icon-button:active { transform: scale(.92); }
+    .icon-button:focus-visible, .primary-button:focus-visible, .secondary-button:focus-visible {
+      outline: 3px solid rgba(95, 234, 255, .8);
+      outline-offset: 2px;
+    }
+    .overlay {
+      position: absolute;
+      z-index: 10;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 50% 29%, rgba(104, 77, 255, .28), transparent 34%),
+        linear-gradient(180deg, rgba(3, 6, 18, .78), rgba(2, 3, 11, .96));
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .22s ease, visibility .22s ease;
+    }
+    .overlay.show {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .panel {
+      width: 100%;
+      padding: 24px 20px 20px;
+      border: 1px solid rgba(122, 217, 255, .2);
+      border-radius: 20px;
+      background: linear-gradient(145deg, rgba(24, 25, 51, .94), rgba(12, 13, 28, .94));
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .52), inset 0 1px rgba(255, 255, 255, .06);
+      text-align: center;
+    }
+    .eyebrow {
+      color: #78e7ff;
+      font: 600 11px/1.4 var(--font-number);
+      letter-spacing: .22em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin-top: 8px;
+      font-size: 36px;
+      line-height: 1.15;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-shadow: 0 0 28px rgba(119, 224, 255, .35);
+    }
+    .subtitle {
+      margin: 10px auto 0;
+      max-width: 280px;
+      color: #b8bdd5;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .rift-mark {
+      position: relative;
+      width: 114px;
+      height: 114px;
+      margin: 18px auto 20px;
+    }
+    .rift-mark::before, .rift-mark::after {
+      content: "";
+      position: absolute;
+      inset: 11px;
+      border: 2px solid #71e6ff;
+      border-radius: 46% 54% 55% 45%;
+      filter: drop-shadow(0 0 10px rgba(113, 230, 255, .7));
+      transform: rotate(23deg);
+    }
+    .rift-mark::after {
+      inset: 25px;
+      border-color: #9a78ff;
+      transform: rotate(-32deg);
+    }
+    .rift-mark span {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 16px;
+      height: 52px;
+      transform: translate(-50%, -50%) skew(-12deg);
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 16px #fff, 0 0 32px #66dcff, 0 0 52px #865bff;
+    }
+    .how {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 16px 0 20px;
+    }
+    .how div {
+      min-height: 72px;
+      padding: 10px 6px;
+      border: 1px solid rgba(255, 255, 255, .07);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .035);
+      color: #aeb5cf;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .how strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #fff;
+      font-size: 17px;
+    }
+    .primary-button, .secondary-button {
+      width: 100%;
+      min-height: 50px;
+      border-radius: 12px;
+      border: 0;
+      color: white;
+      font: 600 16px/1 var(--font-primary);
+      cursor: pointer;
+      transition: transform .15s ease, filter .15s ease;
+    }
+    .primary-button {
+      background: linear-gradient(135deg, #4772ff, #8a4dff);
+      box-shadow: 0 10px 30px rgba(98, 76, 255, .3);
+    }
+    .primary-button:hover { filter: brightness(1.1); }
+    .primary-button:active, .secondary-button:active { transform: scale(.98); }
+    .secondary-button {
+      margin-top: 10px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      background: rgba(255, 255, 255, .05);
+    }
+    .result-title { font-size: 30px; }
+    .result-icon {
+      margin: 10px auto 12px;
+      color: #78e7ff;
+      font-size: 54px;
+      filter: drop-shadow(0 0 18px rgba(83, 220, 255, .55));
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 20px 0;
+    }
+    .stat {
+      padding: 12px 5px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .05);
+    }
+    .stat b {
+      display: block;
+      color: #fff;
+      font: 700 22px/1.2 var(--font-number);
+    }
+    .stat span {
+      color: #929ab7;
+      font-size: 10px;
+    }
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 48px;
+      margin-top: 10px;
+      padding: 0 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .04);
+      color: #cdd3e7;
+      font-size: 13px;
+    }
+    .switch {
+      position: relative;
+      width: 52px;
+      height: 44px;
+      border: 0;
+      border-radius: 100px;
+      background: #353d4e;
+      cursor: pointer;
+    }
+    .switch::after {
+      content: "";
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      left: 7px;
+      top: 7px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform .18s ease;
+    }
+    .switch[aria-checked="true"] { background: var(--brand-purple); }
+    .switch[aria-checked="true"]::after { transform: translateX(8px); }
+    .test-badge {
+      display: none;
+      position: absolute;
+      z-index: 6;
+      left: 14px;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      padding: 5px 8px;
+      border-radius: 4px;
+      color: #050812;
+      background: var(--brand-gold);
+      font: 700 10px/1 var(--font-number);
+      letter-spacing: .06em;
+    }
+    .test-badge.show { display: block; }
+    @media (max-width: 430px), (max-height: 850px) {
+      .game-shell { width: 100vw; height: 100vh; border-radius: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="game-shell" id="gameShell" aria-label="五秒之后游戏">
+    <canvas id="game" width="390" height="844" aria-label="时间回声战场，拖动角色移动"></canvas>
+    <div class="controls" id="controls" hidden>
+      <button class="icon-button" id="muteBtn" type="button" aria-label="切换声音">♪</button>
+      <button class="icon-button" id="pauseBtn" type="button" aria-label="暂停游戏">Ⅱ</button>
+    </div>
+    <span class="test-badge" id="testBadge">TEST ×1</span>
+
+    <section class="overlay show" id="introOverlay" aria-labelledby="gameTitle">
+      <div class="panel">
+        <p class="eyebrow">TIME ECHO PROTOCOL</p>
+        <h1 id="gameTitle">五秒之后</h1>
+        <p class="subtitle">你走过的每一段路，五秒后都会回来。让过去的自己，与现在并肩作战。</p>
+        <div class="rift-mark" aria-hidden="true"><span></span></div>
+        <div class="how" aria-label="玩法说明">
+          <div><strong>① 拖</strong>单指拖动<br>穿越裂隙</div>
+          <div><strong>② 等</strong>每 5 秒<br>生成回声</div>
+          <div><strong>③ 合</strong>协同站位<br>击碎核心</div>
+        </div>
+        <button class="primary-button" id="startBtn" type="button">进入时间裂隙</button>
+        <div class="setting-row">
+          <span>减少动态效果</span>
+          <button class="switch" id="motionSwitch" type="button" role="switch" aria-checked="false" aria-label="减少动态效果"></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="overlay" id="pauseOverlay" aria-labelledby="pauseTitle">
+      <div class="panel">
+        <p class="eyebrow">TIMELINE SUSPENDED</p>
+        <h1 id="pauseTitle">时间已暂停</h1>
+        <p class="subtitle" id="pauseReason">所有回声都停在这一刻。准备好后，主动继续。</p>
+        <button class="primary-button" id="resumeBtn" type="button">继续行动</button>
+        <button class="secondary-button" id="restartBtn" type="button">重新开始</button>
+      </div>
+    </section>
+
+    <section class="overlay" id="resultOverlay" aria-labelledby="resultTitle">
+      <div class="panel">
+        <p class="eyebrow" id="resultEyebrow">TIMELINE RESTORED</p>
+        <div class="result-icon" id="resultIcon" aria-hidden="true">◇</div>
+        <h1 class="result-title" id="resultTitle">世界线已复原</h1>
+        <p class="subtitle" id="resultText">过去的你，在最后一秒赶到了。</p>
+        <div class="stats">
+          <div class="stat"><b id="statEchoes">4</b><span>最多回声</span></div>
+          <div class="stat"><b id="statSwitches">1</b><span>协同机关</span></div>
+          <div class="stat"><b id="statTime">0:00</b><span>完成时间</span></div>
+        </div>
+        <button class="primary-button" id="replayBtn" type="button">再造一条世界线</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+  (() => {
+    "use strict";
+
+    const GAME_ID = "five-seconds-later";
+    const SOURCE = "wechat-h5-premium-games";
+    const VERSION = 1;
+    const W = 390;
+    const H = 844;
+    const FIELD_TOP = 132;
+    const FIELD_BOTTOM = 822;
+    const FIXED_STEP = 1 / 60;
+    const ECHO_PERIOD = 5;
+    const MAX_ECHOES = 4;
+    const RUN_LIMIT = 180;
+    const params = new URLSearchParams(location.search);
+    const testMode = params.get("test") === "1";
+    const requestedSpeed = Number(params.get("speed"));
+    const timeScale = testMode && Number.isFinite(requestedSpeed) ? Math.max(1, Math.min(30, requestedSpeed)) : 1;
+    const seedParam = Number(params.get("seed"));
+    const initialSeed = Number.isFinite(seedParam) ? seedParam >>> 0 : (Date.now() >>> 0);
+
+    const canvas = document.getElementById("game");
+    const shell = document.getElementById("gameShell");
+    const ctx = canvas.getContext("2d", { alpha: false });
+    const controls = document.getElementById("controls");
+    const introOverlay = document.getElementById("introOverlay");
+    const pauseOverlay = document.getElementById("pauseOverlay");
+    const resultOverlay = document.getElementById("resultOverlay");
+    const pauseReason = document.getElementById("pauseReason");
+    const muteBtn = document.getElementById("muteBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const motionSwitch = document.getElementById("motionSwitch");
+    const testBadge = document.getElementById("testBadge");
+
+    const echoStyles = [
+      { color: "#62e7ff", dim: "rgba(98,231,255,.28)", shape: "diamond", label: "Ⅰ" },
+      { color: "#9b7cff", dim: "rgba(155,124,255,.28)", shape: "square", label: "Ⅱ" },
+      { color: "#ffcc63", dim: "rgba(255,204,99,.28)", shape: "triangle", label: "Ⅲ" },
+      { color: "#ff78ba", dim: "rgba(255,120,186,.28)", shape: "hex", label: "Ⅳ" }
+    ];
+    const gatePositions = [
+      { x: 76, y: 247 },
+      { x: 313, y: 288 },
+      { x: 84, y: 426 },
+      { x: 306, y: 477 }
+    ];
+
+    let audioContext = null;
+    let accumulator = 0;
+    let lastFrame = performance.now();
+    let rafId = 0;
+    let dpr = 1;
+    let rng = mulberry32(initialSeed);
+    let eventLog = [];
+    let state = createState(initialSeed);
+
+    function createState(seed) {
+      return {
+        mode: "intro",
+        runId: makeRunId(),
+        seed,
+        elapsed: 0,
+        accumulatorTime: 0,
+        recordClock: 0,
+        sealClock: 0,
+        countdownFlash: 0,
+        nextEchoSlot: 0,
+        player: { x: 195, y: 640, targetX: 195, targetY: 640, energy: 100, invulnerable: 0 },
+        pointerDown: false,
+        firstInputSent: false,
+        currentPath: [{ t: 0, x: 195, y: 640 }],
+        echoes: [],
+        maxEchoes: 0,
+        targets: [],
+        destroyedTargets: 0,
+        switches: [
+          { x: 112, y: 603, r: 27, occupied: false },
+          { x: 278, y: 603, r: 27, occupied: false }
+        ],
+        switchCharge: 0,
+        switchActivated: false,
+        collabCount: 0,
+        gates: gatePositions.map((p, slot) => ({ ...p, slot, primed: false, broken: false, flash: 0 })),
+        core: { x: 195, y: 352, visible: false, hp: 18, maxHp: 18, hitFlash: 0 },
+        hazards: [],
+        particles: [],
+        trails: [],
+        message: "拖动光标，留下第一段五秒轨迹",
+        messageTimer: 5,
+        phase: "awakening",
+        reducedMotion: false,
+        muted: params.get("mute") === "1",
+        endedAt: 0,
+        lastDamageSource: "",
+        layoutVersion: 0
+      };
+    }
+
+    function mulberry32(seed) {
+      return function() {
+        let t = seed += 0x6D2B79F5;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+
+    function makeRunId() {
+      return `${GAME_ID}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function createEvent(event, payload = {}) {
+      return { source: SOURCE, version: VERSION, gameId: GAME_ID, runId: state.runId, event, ts: Date.now(), payload };
+    }
+
+    const GamePlatform = {
+      getEnv() {
+        return window.__wxjs_environment === "miniprogram" ? "miniprogram" : "web";
+      },
+      emit(event, payload = {}) {
+        const message = createEvent(event, payload);
+        eventLog.push(message);
+        if (eventLog.length > 100) eventLog.shift();
+        try {
+          if (window.parent && window.parent !== window) window.parent.postMessage(message, "*");
+          if (window.opener && !window.opener.closed) window.opener.postMessage(message, "*");
+          window.dispatchEvent(new CustomEvent("gameplatform", { detail: message }));
+        } catch (_) {}
+        return message;
+      },
+      saveLocal(key, value) {
+        try { localStorage.setItem(`premium-h5:${GAME_ID}:${key}`, JSON.stringify(value)); } catch (_) {}
+      },
+      loadLocal(key, fallback) {
+        try {
+          const raw = localStorage.getItem(`premium-h5:${GAME_ID}:${key}`);
+          return raw === null ? fallback : JSON.parse(raw);
+        } catch (_) { return fallback; }
+      },
+      pause() { pauseGame("platform"); },
+      resume() { resumeGame(); },
+      requestShare() { return Promise.resolve({ supported: false }); }
+    };
+    window.GamePlatform = GamePlatform;
+
+    function setupRun(isReplay = false) {
+      const reducedMotion = state.reducedMotion;
+      const muted = state.muted;
+      const nextSeed = isReplay ? ((state.seed + 0x9E3779B9) >>> 0) : state.seed;
+      rng = mulberry32(nextSeed);
+      state = createState(nextSeed);
+      state.reducedMotion = reducedMotion;
+      state.muted = muted;
+      state.mode = "playing";
+      createLayout();
+      introOverlay.classList.remove("show");
+      pauseOverlay.classList.remove("show");
+      resultOverlay.classList.remove("show");
+      controls.hidden = false;
+      muteBtn.textContent = state.muted ? "×" : "♪";
+      lastFrame = performance.now();
+      accumulator = 0;
+      GamePlatform.emit(isReplay ? "replay_start" : "game_start", { seed: nextSeed, testMode, timeScale });
+      tone(330, .05, .04);
+    }
+
+    function createLayout() {
+      const reserved = [
+        { x: 195, y: 640, r: 80 },
+        { x: 195, y: 352, r: 105 },
+        ...state.switches.map(s => ({ x: s.x, y: s.y, r: 62 })),
+        ...gatePositions.map(g => ({ x: g.x, y: g.y, r: 50 }))
+      ];
+      state.targets = [];
+      for (let i = 0; i < 10; i++) {
+        let point = null;
+        for (let tries = 0; tries < 80; tries++) {
+          const candidate = { x: 42 + rng() * 306, y: 190 + rng() * 350 };
+          if (reserved.every(item => distance(candidate, item) > item.r)) {
+            point = candidate;
+            reserved.push({ ...candidate, r: 42 });
+            break;
+          }
+        }
+        point ||= { x: 48 + (i % 4) * 96, y: 190 + Math.floor(i / 4) * 100 };
+        state.targets.push({ id: i, x: point.x, y: point.y, hp: 2, maxHp: 2, cooldown: 0, dead: false, pulse: rng() * Math.PI * 2 });
+      }
+      state.hazards = [
+        { id: 0, baseX: 195, baseY: 515, x: 195, y: 515, rx: 58, ry: 16, phase: rng() * 6, speed: .55 },
+        { id: 1, baseX: 195, baseY: 220, x: 195, y: 220, rx: 18, ry: 54, phase: rng() * 6, speed: .7 },
+        { id: 2, baseX: 196, baseY: 415, x: 196, y: 415, rx: 74, ry: 12, phase: rng() * 6, speed: .42 }
+      ];
+      state.layoutVersion++;
+    }
+
+    function startGame() {
+      unlockAudio();
+      setupRun(false);
+    }
+
+    function resetRun(isReplay = true) {
+      setupRun(isReplay);
+      return publicState();
+    }
+
+    function pauseGame(reason = "manual") {
+      if (state.mode !== "playing") return;
+      state.mode = "paused";
+      state.pointerDown = false;
+      pauseReason.textContent = reason === "hidden"
+        ? "页面离开时，所有计时与回声已自动冻结。准备好后，主动继续。"
+        : "所有回声都停在这一刻。准备好后，主动继续。";
+      pauseOverlay.classList.add("show");
+      GamePlatform.emit("lifecycle_pause", { reason, elapsed: round(state.elapsed) });
+      if (audioContext && audioContext.state === "running") audioContext.suspend().catch(() => {});
+    }
+
+    function resumeGame() {
+      if (state.mode !== "paused") return;
+      state.mode = "playing";
+      pauseOverlay.classList.remove("show");
+      lastFrame = performance.now();
+      accumulator = 0;
+      GamePlatform.emit("lifecycle_resume", { elapsed: round(state.elapsed) });
+      if (audioContext && !state.muted) audioContext.resume().catch(() => {});
+    }
+
+    function endGame(won, reason) {
+      if (state.mode !== "playing") return;
+      state.mode = won ? "won" : "lost";
+      state.endedAt = state.elapsed;
+      state.pointerDown = false;
+      controls.hidden = true;
+      document.getElementById("resultEyebrow").textContent = won ? "TIMELINE RESTORED" : "TIMELINE COLLAPSED";
+      document.getElementById("resultIcon").textContent = won ? "◇" : "⌁";
+      document.getElementById("resultTitle").textContent = won ? "世界线已复原" : "时间线已崩塌";
+      document.getElementById("resultText").textContent = won
+        ? "过去的你，在最后一秒赶到了。"
+        : (reason === "energy" ? "你的能量耗尽了，但这条轨迹仍可重写。" : "核心吞没了这条世界线，再试一次。");
+      document.getElementById("statEchoes").textContent = String(state.maxEchoes);
+      document.getElementById("statSwitches").textContent = String(state.collabCount);
+      document.getElementById("statTime").textContent = formatTime(state.elapsed);
+      resultOverlay.classList.add("show");
+      const payload = {
+        result: won ? "win" : "loss",
+        reason,
+        elapsed: round(state.elapsed),
+        maxEchoes: state.maxEchoes,
+        collabCount: state.collabCount,
+        targetsDestroyed: state.destroyedTargets
+      };
+      if (won) GamePlatform.emit("core_payoff", payload);
+      GamePlatform.emit("run_end", payload);
+      GamePlatform.saveLocal("best", updateBest(won));
+      tone(won ? 660 : 120, .5, .08);
+    }
+
+    function updateBest(won) {
+      const previous = GamePlatform.loadLocal("best", null);
+      const current = { won, elapsed: round(state.elapsed), maxEchoes: state.maxEchoes, at: Date.now() };
+      if (!previous || (won && (!previous.won || current.elapsed < previous.elapsed))) return current;
+      return previous;
+    }
+
+    function update(dt) {
+      if (state.mode !== "playing") return;
+      state.elapsed += dt;
+      state.recordClock += dt;
+      state.sealClock += dt;
+      state.countdownFlash = Math.max(0, state.countdownFlash - dt);
+      state.messageTimer = Math.max(0, state.messageTimer - dt);
+      state.player.invulnerable = Math.max(0, state.player.invulnerable - dt);
+      state.core.hitFlash = Math.max(0, state.core.hitFlash - dt);
+      state.gates.forEach(g => g.flash = Math.max(0, g.flash - dt));
+
+      updatePhase();
+      updatePlayer(dt);
+      recordPath();
+      if (state.sealClock >= ECHO_PERIOD) sealEcho();
+      updateEchoes();
+      updateTargets(dt);
+      updateSwitch(dt);
+      updateHazards(dt);
+      updateCore(dt);
+      updateParticles(dt);
+
+      if (state.player.energy <= 0) endGame(false, "energy");
+      else if (state.elapsed >= RUN_LIMIT) endGame(false, "timeout");
+    }
+
+    function updatePhase() {
+      let phase = "awakening";
+      if (state.elapsed >= 120) phase = "core";
+      else if (state.elapsed >= 95) phase = "gates";
+      else if (state.elapsed >= 60) phase = "fracture";
+      else if (state.elapsed >= 20) phase = "switch";
+      if (phase === state.phase) return;
+      state.phase = phase;
+      const messages = {
+        switch: "协同机关出现：让回声与现在分别站上双环",
+        fracture: "裂隙开始漂移，预判五秒后的路线",
+        gates: "四道时间门显形：用同编号回声穿过对应门",
+        core: "终局核心降临：破除四层护盾，靠近完成终击"
+      };
+      state.message = messages[phase];
+      state.messageTimer = 6;
+      if (phase === "gates" || phase === "core") GamePlatform.emit("phase_change", { phase, elapsed: round(state.elapsed) });
+      if (phase === "core") {
+        state.core.visible = true;
+        tone(90, .5, .08);
+        burst(state.core.x, state.core.y, "#a879ff", 30);
+      }
+    }
+
+    function updatePlayer(dt) {
+      const p = state.player;
+      const dx = p.targetX - p.x;
+      const dy = p.targetY - p.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > .5) {
+        const step = Math.min(dist, 188 * dt);
+        p.x += dx / dist * step;
+        p.y += dy / dist * step;
+        if (state.trails.length === 0 || distance(p, state.trails[state.trails.length - 1]) > 8) {
+          state.trails.push({ x: p.x, y: p.y, life: 1 });
+          if (state.trails.length > 70) state.trails.shift();
+        }
+      }
+      state.trails.forEach(t => t.life -= dt * 1.8);
+      state.trails = state.trails.filter(t => t.life > 0);
+    }
+
+    function recordPath() {
+      if (state.recordClock < .05) return;
+      state.recordClock %= .05;
+      state.currentPath.push({
+        t: Math.min(ECHO_PERIOD, state.sealClock),
+        x: state.player.x,
+        y: state.player.y
+      });
+      if (state.currentPath.length > 110) state.currentPath.shift();
+    }
+
+    function sealEcho() {
+      state.sealClock -= ECHO_PERIOD;
+      const path = state.currentPath.length >= 2
+        ? state.currentPath.map(p => ({ ...p }))
+        : [{ t: 0, x: state.player.x, y: state.player.y }, { t: ECHO_PERIOD, x: state.player.x, y: state.player.y }];
+      const last = path[path.length - 1];
+      if (last.t < ECHO_PERIOD) path.push({ t: ECHO_PERIOD, x: last.x, y: last.y });
+      let slot = state.nextEchoSlot;
+      if (state.echoes.length >= MAX_ECHOES) {
+        const removed = state.echoes.shift();
+        slot = removed.slot;
+      } else {
+        state.nextEchoSlot = (state.nextEchoSlot + 1) % MAX_ECHOES;
+      }
+      const first = path[0];
+      state.echoes.push({
+        id: `${slot}-${state.elapsed.toFixed(2)}`,
+        slot,
+        path,
+        x: first.x,
+        y: first.y,
+        attackClock: 0,
+        bornAt: state.elapsed
+      });
+      state.maxEchoes = Math.max(state.maxEchoes, state.echoes.length);
+      state.currentPath = [{ t: 0, x: state.player.x, y: state.player.y }];
+      state.countdownFlash = .7;
+      burst(state.player.x, state.player.y, echoStyles[slot].color, 14);
+      tone(280 + slot * 90, .12, .04);
+      if (state.echoes.length === 1) {
+        state.message = "第一条回声已生成，它会永远重演这五秒";
+        state.messageTimer = 5;
+        GamePlatform.emit("mechanic_reveal", { mechanic: "five_second_echo", elapsed: round(state.elapsed) });
+      }
+      GamePlatform.emit("echo_created", { slot, echoCount: state.echoes.length, elapsed: round(state.elapsed) });
+    }
+
+    function updateEchoes() {
+      const localTime = state.elapsed % ECHO_PERIOD;
+      state.echoes.forEach(echo => {
+        const pos = samplePath(echo.path, localTime);
+        echo.x = pos.x;
+        echo.y = pos.y;
+      });
+    }
+
+    function samplePath(path, t) {
+      if (path.length === 1) return path[0];
+      let low = 0;
+      let high = path.length - 1;
+      while (low < high - 1) {
+        const mid = (low + high) >> 1;
+        if (path[mid].t <= t) low = mid; else high = mid;
+      }
+      const a = path[low];
+      const b = path[Math.min(low + 1, path.length - 1)];
+      const span = Math.max(.001, b.t - a.t);
+      const k = clamp((t - a.t) / span, 0, 1);
+      return { x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k) };
+    }
+
+    function actors() {
+      return [{ id: "current", slot: -1, x: state.player.x, y: state.player.y, current: true }, ...state.echoes];
+    }
+
+    function updateTargets(dt) {
+      const activeActors = actors();
+      state.targets.forEach(target => {
+        if (target.dead) return;
+        target.cooldown = Math.max(0, target.cooldown - dt);
+        target.pulse += dt * 3;
+        const attacker = activeActors.find(actor => distance(actor, target) < 51);
+        if (attacker && target.cooldown <= 0) {
+          target.hp -= 1;
+          target.cooldown = .55;
+          burst(target.x, target.y, attacker.current ? "#ffffff" : echoStyles[attacker.slot].color, 5);
+          tone(520, .025, .018);
+          if (target.hp <= 0) {
+            target.dead = true;
+            state.destroyedTargets++;
+            burst(target.x, target.y, "#71e6ff", 12);
+            GamePlatform.emit("target_destroyed", { id: target.id, by: attacker.current ? "current" : `echo_${attacker.slot}` });
+          }
+        }
+      });
+    }
+
+    function updateSwitch(dt) {
+      if (state.elapsed < 20 || state.switchActivated) return;
+      const activeActors = actors();
+      const onA = activeActors.filter(a => distance(a, state.switches[0]) < state.switches[0].r);
+      const onB = activeActors.filter(a => distance(a, state.switches[1]) < state.switches[1].r);
+      const distinct = onA.some(a => onB.some(b => a.id !== b.id));
+      state.switches[0].occupied = onA.length > 0;
+      state.switches[1].occupied = onB.length > 0;
+      if (distinct) state.switchCharge = Math.min(1, state.switchCharge + dt / .8);
+      else state.switchCharge = Math.max(0, state.switchCharge - dt * 1.4);
+      if (state.switchCharge >= 1) {
+        state.switchActivated = true;
+        state.collabCount++;
+        state.message = "协同锁已解除！现在与过去完成同步";
+        state.messageTimer = 5;
+        burst(195, 603, "#ffcc63", 24);
+        tone(720, .3, .06);
+        GamePlatform.emit("dual_switch_activated", { elapsed: round(state.elapsed), actors: [onA[0]?.id, onB[0]?.id] });
+      }
+    }
+
+    function updateHazards(dt) {
+      if (state.elapsed < 42) return;
+      const hazardCount = state.elapsed < 60 ? 1 : state.elapsed < 95 ? 2 : 3;
+      for (let i = 0; i < hazardCount; i++) {
+        const h = state.hazards[i];
+        const t = state.elapsed * h.speed + h.phase;
+        h.x = h.baseX + Math.sin(t) * h.rx;
+        h.y = h.baseY + Math.cos(t * .83) * h.ry;
+        if (state.player.invulnerable <= 0 && distance(state.player, h) < 25) {
+          state.player.energy = Math.max(0, state.player.energy - 18);
+          state.player.invulnerable = 1.1;
+          state.lastDamageSource = `rift_${h.id}`;
+          state.message = "时间障碍撕裂了能量，观察漂移节奏";
+          state.messageTimer = 2.5;
+          burst(state.player.x, state.player.y, "#ff5678", 18);
+          tone(110, .15, .07);
+          GamePlatform.emit("damage", { source: state.lastDamageSource, energy: state.player.energy });
+        }
+      }
+    }
+
+    function updateCore(dt) {
+      if (state.elapsed >= 95) {
+        state.gates.forEach(gate => {
+          if (gate.primed || gate.broken) return;
+          const echo = state.echoes.find(e => e.slot === gate.slot);
+          if (echo && distance(echo, gate) < 30) {
+            gate.primed = true;
+            gate.flash = .8;
+            burst(gate.x, gate.y, echoStyles[gate.slot].color, 14);
+            tone(360 + gate.slot * 90, .12, .035);
+            state.message = `${echoStyles[gate.slot].label}号回声已标记对应时间门`;
+            state.messageTimer = 2.5;
+            GamePlatform.emit("gate_primed", { slot: gate.slot, elapsed: round(state.elapsed) });
+          }
+        });
+      }
+      if (!state.core.visible || !state.switchActivated) return;
+      state.gates.forEach(gate => {
+        if (gate.broken) return;
+        const echo = state.echoes.find(e => e.slot === gate.slot);
+        if (gate.primed || (echo && distance(echo, gate) < 30)) {
+          gate.broken = true;
+          gate.flash = .8;
+          burst(gate.x, gate.y, echoStyles[gate.slot].color, 24);
+          tone(420 + gate.slot * 110, .22, .05);
+          const remaining = state.gates.filter(g => !g.broken).length;
+          state.message = remaining ? `第 ${gate.slot + 1} 层护盾破除，还剩 ${remaining} 层` : "四层护盾全部破除，靠近核心完成终击！";
+          state.messageTimer = 4;
+          GamePlatform.emit("shield_broken", { slot: gate.slot, remaining });
+        }
+      });
+      const shields = state.gates.filter(g => !g.broken).length;
+      if (shields > 0) return;
+      const near = actors().filter(actor => distance(actor, state.core) < 74);
+      if (near.length > 0) {
+        state.core.hp = Math.max(0, state.core.hp - near.length * dt * 2.2);
+        state.core.hitFlash = .08;
+        if (Math.random() < dt * 10) burst(state.core.x + (rng() - .5) * 30, state.core.y + (rng() - .5) * 30, "#ffffff", 2);
+        if (state.core.hp <= 0) endGame(true, "core_destroyed");
+      }
+    }
+
+    function updateParticles(dt) {
+      const multiplier = state.reducedMotion ? 3.3 : 1;
+      state.particles.forEach(p => {
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vx *= .98;
+        p.vy *= .98;
+        p.life -= dt * multiplier;
+      });
+      state.particles = state.particles.filter(p => p.life > 0).slice(-160);
+    }
+
+    function burst(x, y, color, count) {
+      const actual = state.reducedMotion ? Math.min(4, count) : count;
+      for (let i = 0; i < actual; i++) {
+        const angle = rng() * Math.PI * 2;
+        const speed = 18 + rng() * 78;
+        state.particles.push({
+          x, y, color,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: .35 + rng() * .55,
+          size: 1 + rng() * 2.5
+        });
+      }
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, W, H);
+      drawBackground();
+      drawField();
+      drawPaths();
+      drawTargets();
+      drawSwitches();
+      drawGates();
+      drawHazards();
+      drawCore();
+      drawActors();
+      drawParticles();
+      drawHud();
+    }
+
+    function drawBackground() {
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, "#07101f");
+      grad.addColorStop(.35, "#080b1c");
+      grad.addColorStop(1, "#03050d");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+      ctx.save();
+      ctx.globalAlpha = .12;
+      ctx.strokeStyle = "#6274bb";
+      ctx.lineWidth = 1;
+      const drift = state.reducedMotion ? 0 : (state.elapsed * 5) % 36;
+      for (let x = -36 + drift; x < W + 36; x += 36) {
+        ctx.beginPath();
+        ctx.moveTo(x, FIELD_TOP);
+        ctx.lineTo(x - 88, FIELD_BOTTOM);
+        ctx.stroke();
+      }
+      for (let y = FIELD_TOP; y < FIELD_BOTTOM; y += 42) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+      const glow = ctx.createRadialGradient(195, 395, 0, 195, 395, 250);
+      glow.addColorStop(0, "rgba(91,67,170,.12)");
+      glow.addColorStop(1, "rgba(10,8,32,0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, FIELD_TOP, W, FIELD_BOTTOM - FIELD_TOP);
+    }
+
+    function drawField() {
+      ctx.save();
+      ctx.strokeStyle = "rgba(111,221,255,.12)";
+      ctx.lineWidth = 1;
+      roundRectPath(12, FIELD_TOP, W - 24, FIELD_BOTTOM - FIELD_TOP, 18);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawPaths() {
+      ctx.save();
+      state.trails.forEach((t, i) => {
+        ctx.globalAlpha = t.life * .3;
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, 1 + i / Math.max(1, state.trails.length) * 1.8, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      state.echoes.forEach(echo => {
+        const style = echoStyles[echo.slot];
+        ctx.globalAlpha = .16;
+        ctx.strokeStyle = style.color;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 7]);
+        ctx.beginPath();
+        echo.path.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    function drawTargets() {
+      state.targets.forEach(target => {
+        if (target.dead) return;
+        const pulse = Math.sin(target.pulse) * 2;
+        ctx.save();
+        ctx.translate(target.x, target.y);
+        ctx.rotate(target.pulse * .18);
+        ctx.shadowBlur = 14;
+        ctx.shadowColor = "#50c9f5";
+        ctx.strokeStyle = "rgba(102,224,255,.9)";
+        ctx.fillStyle = "rgba(52,141,190,.16)";
+        ctx.lineWidth = 2;
+        polygonPath(6, 11 + pulse, Math.PI / 6);
+        ctx.fill();
+        ctx.stroke();
+        ctx.rotate(-target.pulse * .36);
+        ctx.strokeStyle = "rgba(255,255,255,.5)";
+        ctx.lineWidth = 1;
+        polygonPath(3, 5, -Math.PI / 2);
+        ctx.stroke();
+        ctx.restore();
+        ctx.fillStyle = "rgba(255,255,255,.14)";
+        ctx.fillRect(target.x - 11, target.y + 17, 22, 2);
+        ctx.fillStyle = "#71e6ff";
+        ctx.fillRect(target.x - 11, target.y + 17, 22 * (target.hp / target.maxHp), 2);
+      });
+    }
+
+    function drawSwitches() {
+      if (state.elapsed < 20) return;
+      state.switches.forEach((sw, index) => {
+        const active = state.switchActivated || sw.occupied;
+        ctx.save();
+        ctx.translate(sw.x, sw.y);
+        ctx.strokeStyle = state.switchActivated ? "#ffcc63" : active ? "#76eaff" : "rgba(143,151,205,.5)";
+        ctx.fillStyle = state.switchActivated ? "rgba(255,204,99,.2)" : active ? "rgba(92,225,255,.16)" : "rgba(50,57,96,.24)";
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = active ? 18 : 0;
+        ctx.shadowColor = ctx.strokeStyle;
+        ctx.beginPath();
+        ctx.arc(0, 0, sw.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(0, 0, 15, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = "#fff";
+        ctx.font = "600 12px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(index ? "B" : "A", 0, 0);
+        ctx.restore();
+      });
+      if (!state.switchActivated) {
+        ctx.save();
+        ctx.fillStyle = "rgba(255,255,255,.08)";
+        roundRectPath(144, 638, 102, 6, 3);
+        ctx.fill();
+        ctx.fillStyle = "#71e6ff";
+        roundRectPath(144, 638, 102 * state.switchCharge, 6, 3);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function drawGates() {
+      if (state.elapsed < 95) return;
+      state.gates.forEach(gate => {
+        const style = echoStyles[gate.slot];
+        ctx.save();
+        ctx.translate(gate.x, gate.y);
+        const open = gate.broken;
+        const primed = gate.primed && !open;
+        const wave = Math.sin(state.elapsed * 3 + gate.slot) * 3;
+        ctx.globalAlpha = open ? .34 : 1;
+        ctx.strokeStyle = style.color;
+        ctx.fillStyle = primed ? style.color : style.dim;
+        ctx.lineWidth = open ? 1 : 3;
+        ctx.shadowBlur = open ? 0 : 17;
+        ctx.shadowColor = style.color;
+        ctx.beginPath();
+        ctx.arc(0, 0, 23 + wave, -1.1, 1.1);
+        ctx.arc(0, 0, 23 + wave, 2.04, 4.24);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 0, 13, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = open ? .34 : 1;
+        ctx.fillStyle = open ? "#8290ad" : primed ? "#07101b" : "#ffffff";
+        ctx.font = "700 13px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(open ? "✓" : style.label, 0, 1);
+        ctx.restore();
+      });
+    }
+
+    function drawHazards() {
+      if (state.elapsed < 42) return;
+      const count = state.elapsed < 60 ? 1 : state.elapsed < 95 ? 2 : 3;
+      for (let i = 0; i < count; i++) {
+        const h = state.hazards[i];
+        ctx.save();
+        ctx.translate(h.x, h.y);
+        ctx.rotate(state.elapsed * .8 + h.phase);
+        ctx.strokeStyle = "rgba(255,82,123,.88)";
+        ctx.fillStyle = "rgba(255,42,107,.12)";
+        ctx.shadowBlur = 16;
+        ctx.shadowColor = "#ff3d76";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-18, -3);
+        ctx.quadraticCurveTo(-5, -14, 1, -4);
+        ctx.quadraticCurveTo(8, 12, 18, 3);
+        ctx.quadraticCurveTo(5, 15, -2, 5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    function drawCore() {
+      if (!state.core.visible) return;
+      const shields = state.gates.filter(g => !g.broken).length;
+      ctx.save();
+      ctx.translate(state.core.x, state.core.y);
+      const pulse = state.reducedMotion ? 0 : Math.sin(state.elapsed * 2.6) * 4;
+      for (let i = 0; i < shields; i++) {
+        const radius = 42 + i * 9 + pulse * .25;
+        ctx.strokeStyle = echoStyles[i].dim.replace(".28", ".72");
+        ctx.lineWidth = 2;
+        ctx.setLineDash([7, 5]);
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, state.elapsed * (.18 + i * .03), state.elapsed * (.18 + i * .03) + Math.PI * 1.55);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      const coreGradient = ctx.createRadialGradient(-8, -9, 2, 0, 0, 34);
+      coreGradient.addColorStop(0, "#ffffff");
+      coreGradient.addColorStop(.18, state.core.hitFlash ? "#ffffff" : "#bb8cff");
+      coreGradient.addColorStop(.65, "#6337a8");
+      coreGradient.addColorStop(1, "rgba(50,15,85,.1)");
+      ctx.fillStyle = coreGradient;
+      ctx.shadowBlur = 28;
+      ctx.shadowColor = "#995cff";
+      ctx.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const a = i / 8 * Math.PI * 2;
+        const r = i % 2 ? 25 : 34 + pulse;
+        const x = Math.cos(a) * r;
+        const y = Math.sin(a) * r;
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      if (!shields) {
+        ctx.fillStyle = "rgba(255,255,255,.14)";
+        roundRectPath(145, 401, 100, 5, 3);
+        ctx.fill();
+        ctx.fillStyle = "#c496ff";
+        roundRectPath(145, 401, 100 * state.core.hp / state.core.maxHp, 5, 3);
+        ctx.fill();
+      }
+    }
+
+    function drawActors() {
+      state.echoes.forEach(echo => drawEcho(echo));
+      drawPlayer();
+    }
+
+    function drawEcho(echo) {
+      const style = echoStyles[echo.slot];
+      const crowded = actors().some(actor => actor.id !== echo.id && distance(actor, echo) < 9);
+      const visualOffset = crowded ? 11 : 0;
+      const offsetAngle = echo.slot / MAX_ECHOES * Math.PI * 2 - Math.PI / 2;
+      ctx.save();
+      ctx.translate(echo.x + Math.cos(offsetAngle) * visualOffset, echo.y + Math.sin(offsetAngle) * visualOffset);
+      ctx.globalAlpha = .68;
+      ctx.fillStyle = style.dim;
+      ctx.strokeStyle = style.color;
+      ctx.shadowBlur = 16;
+      ctx.shadowColor = style.color;
+      ctx.lineWidth = 2;
+      drawShape(style.shape, 14);
+      ctx.fill();
+      ctx.stroke();
+      ctx.globalAlpha = .9;
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "700 9px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(style.label, 0, 1);
+      ctx.restore();
+    }
+
+    function drawPlayer() {
+      const p = state.player;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      if (p.invulnerable > 0 && Math.floor(p.invulnerable * 14) % 2) ctx.globalAlpha = .25;
+      ctx.shadowBlur = 26;
+      ctx.shadowColor = "#ffffff";
+      ctx.fillStyle = "#f8fdff";
+      ctx.strokeStyle = "#7be9ff";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#172a4b";
+      ctx.beginPath();
+      ctx.arc(0, 0, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.35)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, 0, 22 + Math.sin(state.elapsed * 4) * 2, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawShape(shape, r) {
+      if (shape === "diamond") {
+        ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(r, 0); ctx.lineTo(0, r); ctx.lineTo(-r, 0); ctx.closePath();
+      } else if (shape === "square") {
+        ctx.beginPath(); ctx.rect(-r * .75, -r * .75, r * 1.5, r * 1.5);
+      } else if (shape === "triangle") {
+        polygonPath(3, r, -Math.PI / 2);
+      } else {
+        polygonPath(6, r, Math.PI / 6);
+      }
+    }
+
+    function drawParticles() {
+      ctx.save();
+      state.particles.forEach(p => {
+        ctx.globalAlpha = clamp(p.life * 1.7, 0, 1);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+      });
+      ctx.restore();
+    }
+
+    function drawHud() {
+      ctx.save();
+      const topGrad = ctx.createLinearGradient(0, 0, 0, 132);
+      topGrad.addColorStop(0, "rgba(2,5,14,.98)");
+      topGrad.addColorStop(1, "rgba(5,9,23,.78)");
+      ctx.fillStyle = topGrad;
+      ctx.fillRect(0, 0, W, 132);
+      ctx.fillStyle = "#7ae6ff";
+      ctx.font = "600 10px sans-serif";
+      ctx.letterSpacing = "2px";
+      ctx.fillText("五秒之后", 16, 25);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "700 24px 'D-DIN-PRO', sans-serif";
+      ctx.fillText(formatTime(Math.max(0, RUN_LIMIT - state.elapsed)), 16, 52);
+
+      ctx.fillStyle = "rgba(255,255,255,.1)";
+      roundRectPath(16, 66, 140, 8, 4);
+      ctx.fill();
+      const energyGrad = ctx.createLinearGradient(16, 0, 156, 0);
+      energyGrad.addColorStop(0, state.player.energy < 35 ? "#ff5678" : "#55e6ff");
+      energyGrad.addColorStop(1, "#8174fa");
+      ctx.fillStyle = energyGrad;
+      roundRectPath(16, 66, 140 * state.player.energy / 100, 8, 4);
+      ctx.fill();
+      ctx.fillStyle = "#96a0bc";
+      ctx.font = "500 10px sans-serif";
+      ctx.fillText(`能量 ${Math.ceil(state.player.energy)}%`, 16, 88);
+
+      const echoProgress = (state.sealClock % ECHO_PERIOD) / ECHO_PERIOD;
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#98a2c2";
+      ctx.font = "500 10px sans-serif";
+      ctx.fillText("下一回声", 270, 26);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "700 17px 'D-DIN-PRO', sans-serif";
+      ctx.fillText((ECHO_PERIOD - state.sealClock).toFixed(1) + "s", 270, 48);
+      ctx.fillStyle = "rgba(255,255,255,.1)";
+      roundRectPath(180, 66, 90, 6, 3);
+      ctx.fill();
+      ctx.fillStyle = state.countdownFlash ? "#ffffff" : "#7de7ff";
+      roundRectPath(180, 66, 90 * echoProgress, 6, 3);
+      ctx.fill();
+
+      ctx.textAlign = "left";
+      for (let i = 0; i < MAX_ECHOES; i++) {
+        const x = 181 + i * 23;
+        const active = state.echoes.some(e => e.slot === i);
+        ctx.globalAlpha = active ? 1 : .25;
+        ctx.fillStyle = active ? echoStyles[i].color : "#68708b";
+        ctx.beginPath();
+        ctx.arc(x + 7, 87, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = active ? "#07101b" : "#c4cada";
+        ctx.font = "700 8px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(echoStyles[i].label, x + 7, 90);
+      }
+      ctx.globalAlpha = 1;
+      ctx.textAlign = "left";
+
+      const phaseLabel = {
+        awakening: "阶段 1 · 留下轨迹",
+        switch: "阶段 2 · 同步机关",
+        fracture: "阶段 3 · 漂移裂隙",
+        gates: "阶段 4 · 标记时间门",
+        core: "终局 · 击碎核心"
+      }[state.phase];
+      ctx.fillStyle = "rgba(7,10,26,.84)";
+      roundRectPath(14, 99, 362, 25, 8);
+      ctx.fill();
+      ctx.fillStyle = "#dbe4ff";
+      ctx.font = "600 11px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(phaseLabel, 195, 116);
+
+      if (state.messageTimer > 0 && state.mode === "playing") {
+        const width = Math.min(340, Math.max(210, ctx.measureText(state.message).width + 38));
+        ctx.globalAlpha = Math.min(1, state.messageTimer * 1.5);
+        ctx.fillStyle = "rgba(13,16,38,.9)";
+        roundRectPath((W - width) / 2, 143, width, 38, 12);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(111,224,255,.22)";
+        ctx.stroke();
+        ctx.fillStyle = "#f4f7ff";
+        ctx.font = "500 12px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(state.message, W / 2, 167);
+      }
+      ctx.restore();
+    }
+
+    function handlePointer(event) {
+      if (state.mode !== "playing") return;
+      const rect = canvas.getBoundingClientRect();
+      const x = clamp((event.clientX - rect.left) / rect.width * W, 18, W - 18);
+      const y = clamp((event.clientY - rect.top) / rect.height * H, FIELD_TOP + 18, FIELD_BOTTOM - 18);
+      state.player.targetX = x;
+      state.player.targetY = y;
+      if (!state.firstInputSent && distance(state.player, { x, y }) > 5) {
+        state.firstInputSent = true;
+        GamePlatform.emit("first_input", { elapsed: round(state.elapsed), input: "pointer_drag" });
+      }
+    }
+
+    function pointerDown(event) {
+      if (state.mode !== "playing" || (event.pointerType === "touch" && !event.isPrimary)) return;
+      state.pointerDown = true;
+      canvas.setPointerCapture?.(event.pointerId);
+      handlePointer(event);
+      event.preventDefault();
+    }
+
+    function pointerMove(event) {
+      if (!state.pointerDown) return;
+      handlePointer(event);
+      event.preventDefault();
+    }
+
+    function pointerUp(event) {
+      state.pointerDown = false;
+      canvas.releasePointerCapture?.(event.pointerId);
+    }
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      const targetW = Math.max(1, Math.round(rect.width * dpr));
+      const targetH = Math.max(1, Math.round(rect.height * dpr));
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
+      }
+      ctx.setTransform(targetW / W, 0, 0, targetH / H, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      render();
+    }
+
+    function loop(now) {
+      const frameDelta = Math.min(.1, Math.max(0, (now - lastFrame) / 1000));
+      lastFrame = now;
+      if (state.mode === "playing") {
+        accumulator += frameDelta * timeScale;
+        let steps = 0;
+        while (accumulator >= FIXED_STEP && steps < 180) {
+          update(FIXED_STEP);
+          accumulator -= FIXED_STEP;
+          steps++;
+        }
+      } else {
+        accumulator = 0;
+      }
+      render();
+      rafId = requestAnimationFrame(loop);
+    }
+
+    function unlockAudio() {
+      if (state.muted || audioContext) return;
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (_) {}
+    }
+
+    function tone(frequency, duration, volume) {
+      if (state.muted) return;
+      unlockAudio();
+      if (!audioContext) return;
+      try {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(Math.max(40, frequency * .72), audioContext.currentTime + duration);
+        gain.gain.setValueAtTime(0, audioContext.currentTime);
+        gain.gain.linearRampToValueAtTime(volume, audioContext.currentTime + .012);
+        gain.gain.exponentialRampToValueAtTime(.0001, audioContext.currentTime + duration);
+        oscillator.connect(gain).connect(audioContext.destination);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + duration);
+      } catch (_) {}
+    }
+
+    function publicState() {
+      return {
+        gameId: GAME_ID,
+        runId: state.runId,
+        mode: state.mode,
+        phase: state.phase,
+        elapsed: round(state.elapsed),
+        remaining: round(Math.max(0, RUN_LIMIT - state.elapsed)),
+        energy: round(state.player.energy),
+        player: { x: round(state.player.x), y: round(state.player.y) },
+        target: { x: round(state.player.targetX), y: round(state.player.targetY) },
+        echoCount: state.echoes.length,
+        maxEchoes: state.maxEchoes,
+        echoes: state.echoes.map(e => ({ slot: e.slot, x: round(e.x), y: round(e.y), points: e.path.length })),
+        pathPoints: state.currentPath.length,
+        targetsDestroyed: state.destroyedTargets,
+        targetsRemaining: state.targets.filter(t => !t.dead).length,
+        switchActivated: state.switchActivated,
+        switchCharge: round(state.switchCharge),
+        collabCount: state.collabCount,
+        shieldsRemaining: state.gates.filter(g => !g.broken).length,
+        gates: state.gates.map(g => ({ slot: g.slot, primed: g.primed, broken: g.broken })),
+        coreVisible: state.core.visible,
+        coreHp: round(state.core.hp),
+        paused: state.mode === "paused",
+        testMode,
+        timeScale,
+        seed: state.seed,
+        layoutVersion: state.layoutVersion,
+        lastDamageSource: state.lastDamageSource
+      };
+    }
+
+    function clone(value) {
+      return typeof structuredClone === "function" ? structuredClone(value) : JSON.parse(JSON.stringify(value));
+    }
+
+    window.__GAME_TEST__ = {
+      getState: () => clone(publicState()),
+      getEvents: () => clone(eventLog),
+      reset: () => clone(resetRun(true)),
+      start: () => { if (state.mode === "intro") startGame(); return clone(publicState()); },
+      setTarget: (x, y) => {
+        if (state.mode === "playing") {
+          state.player.targetX = clamp(Number(x) || 0, 18, W - 18);
+          state.player.targetY = clamp(Number(y) || 0, FIELD_TOP + 18, FIELD_BOTTOM - 18);
+          if (!state.firstInputSent) {
+            state.firstInputSent = true;
+            GamePlatform.emit("first_input", { elapsed: round(state.elapsed), input: "test_pointer" });
+          }
+        }
+        return clone(publicState());
+      },
+      pause: () => { pauseGame("test"); return clone(publicState()); },
+      resume: () => { resumeGame(); return clone(publicState()); }
+    };
+
+    function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+    function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function round(value) { return Math.round(value * 1000) / 1000; }
+    function formatTime(seconds) {
+      const total = Math.max(0, Math.ceil(seconds));
+      return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+    }
+    function polygonPath(sides, radius, rotation = 0) {
+      ctx.beginPath();
+      for (let i = 0; i < sides; i++) {
+        const angle = rotation + i / sides * Math.PI * 2;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.closePath();
+    }
+    function roundRectPath(x, y, width, height, radius) {
+      const r = Math.max(0, Math.min(radius, Math.abs(width) / 2, Math.abs(height) / 2));
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + width, y, x + width, y + height, r);
+      ctx.arcTo(x + width, y + height, x, y + height, r);
+      ctx.arcTo(x, y + height, x, y, r);
+      ctx.arcTo(x, y, x + width, y, r);
+      ctx.closePath();
+    }
+
+    document.getElementById("startBtn").addEventListener("click", startGame);
+    document.getElementById("resumeBtn").addEventListener("click", resumeGame);
+    document.getElementById("restartBtn").addEventListener("click", () => resetRun(true));
+    document.getElementById("replayBtn").addEventListener("click", () => resetRun(true));
+    pauseBtn.addEventListener("click", () => pauseGame("manual"));
+    muteBtn.addEventListener("click", () => {
+      state.muted = !state.muted;
+      muteBtn.textContent = state.muted ? "×" : "♪";
+      muteBtn.setAttribute("aria-label", state.muted ? "开启声音" : "关闭声音");
+      GamePlatform.saveLocal("muted", state.muted);
+      if (!state.muted) tone(520, .08, .04);
+    });
+    motionSwitch.addEventListener("click", () => {
+      state.reducedMotion = !state.reducedMotion;
+      motionSwitch.setAttribute("aria-checked", String(state.reducedMotion));
+      GamePlatform.saveLocal("reducedMotion", state.reducedMotion);
+    });
+    canvas.addEventListener("pointerdown", pointerDown);
+    canvas.addEventListener("pointermove", pointerMove);
+    canvas.addEventListener("pointerup", pointerUp);
+    canvas.addEventListener("pointercancel", pointerUp);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) pauseGame("hidden");
+    });
+    window.addEventListener("blur", () => {
+      if (state.mode === "playing") pauseGame("hidden");
+    });
+    window.addEventListener("beforeunload", () => cancelAnimationFrame(rafId));
+
+    state.muted = state.muted || Boolean(GamePlatform.loadLocal("muted", false));
+    state.reducedMotion = Boolean(GamePlatform.loadLocal("reducedMotion", false));
+    muteBtn.textContent = state.muted ? "×" : "♪";
+    motionSwitch.setAttribute("aria-checked", String(state.reducedMotion));
+    if (testMode) {
+      testBadge.classList.add("show");
+      testBadge.textContent = `TEST ×${timeScale}`;
+    }
+    if ("ResizeObserver" in window) new ResizeObserver(resizeCanvas).observe(shell);
+    else window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+    GamePlatform.emit("game_open", { env: GamePlatform.getEnv(), testMode, timeScale });
+    rafId = requestAnimationFrame(loop);
+  })();
+  </script>
+</body>
+</html>
