@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 为四个激励广告场景补齐失败 Toast 和来源状态恢复，并将 M1/T1 信息流广告菜单收敛为单一“不感兴趣”操作。
+**Goal:** 为四个激励广告场景补齐成功/失败 Toast 和来源状态恢复，并将 M1/T1 信息流广告菜单收敛为单一“不感兴趣”操作。
 
 **Architecture:** 以 `demos/Android广告接入-交互标注版.template.html` 作为唯一业务源码，通过独立 `deviceToast()` 将技术失败提示渲染在模拟设备内部；现有 `toast()` 继续承担 Demo 外壳与后台提示。信息流菜单沿用现有 `community.menuPlacement` 和 `hiddenAds` 状态，只删除举报分支及多余业务选项，最后通过构建脚本生成成品 HTML。
 
@@ -21,8 +21,9 @@
 在 `tools/verify-android-ad-demo.mjs` 的激励和社区断言中加入：
 
 ```js
-assert(html.includes('广告播放失败，请稍后重试'), 'Reward failure toast copy missing');
-assert(html.includes('对此广告不感兴趣'), 'Single community dislike action missing');
+assert(html.includes('奖励已发放'), 'Reward success toast copy missing');
+assert(html.includes('播放未完成，奖励未发放'), 'Reward failure toast copy missing');
+assert(html.includes('不感兴趣'), 'Single community dislike action missing');
 assert(!html.includes('data-action="community-ad-report"'), 'Community report action should be removed');
 assert(!html.includes('向平台反馈问题'), 'Legacy community report copy should be removed');
 ```
@@ -36,14 +37,21 @@ await page.click('[data-action="g1-watch"]');
 await page.click('.scene-tools [data-action="reward-sim-fail"]');
 assert.equal(await page.locator('.system-dialog').count(), 1, 'G1 prompt did not recover after ad failure');
 assert.equal(await page.locator('.device .device-toast').count(), 1, 'Reward failure toast is not inside device');
-assert((await text('.device .device-toast')).includes('广告播放失败，请稍后重试'));
+assert((await text('.device .device-toast')).includes('播放未完成，奖励未发放'));
+```
+
+在完整观看用例中增加：
+
+```js
+await page.click('.scene-tools [data-action="reward-sim-complete"]');
+assert((await text('.device .device-toast')).includes('奖励已发放'));
 ```
 
 把社区菜单用例改为：
 
 ```js
 await page.locator('[data-action="community-ad-menu"]').click();
-assert((await text('#modalBox')).includes('对此广告不感兴趣'));
+assert((await text('#modalBox')).includes('不感兴趣'));
 assert(!(await text('#modalBox')).includes('举报广告'));
 assert.equal(await page.locator('#modalBox [data-action="community-ad-hide"]').count(), 1);
 assert.equal(await page.locator('#modalBox [data-action="community-ad-report"]').count(), 0);
@@ -110,8 +118,16 @@ function deviceToast(msg){
 if(a==='reward-sim-fail'){
   state.rewardAd=null;
   render();
-  deviceToast('广告播放失败，请稍后重试');
+  deviceToast('播放未完成，奖励未发放');
 }
+```
+
+将 `completeReward()` 的结尾改为：
+
+```js
+state.rewardAd=null;
+render();
+deviceToast('奖励已发放');
 ```
 
 不改变 `state.c1`、`state.g1`、`state.q1` 或 `state.r1` 的权益字段，从而保证：
@@ -126,7 +142,7 @@ if(a==='reward-sim-fail'){
 在 C1、G1、Q1、R1 的异常说明中明确增加：
 
 ```text
-广告加载或播放失败后关闭广告层、恢复来源页面，并提示“广告播放失败，请稍后重试”；不发奖励、不扣领取资格。
+广告加载或播放失败后关闭广告层、恢复来源页面，并提示“播放未完成，奖励未发放”；不发奖励、不扣领取资格。
 ```
 
 - [ ] **Step 5: 重新生成成品 HTML**
@@ -150,7 +166,7 @@ Expected: `demos/Android广告接入-交互标注版.html` 更新且不再包含
 将 M1/T1 交互说明统一为：
 
 ```text
-点击“查看详情”进入落地页；更多菜单本期只提供“对此广告不感兴趣”。
+点击“查看详情”进入落地页；更多菜单本期只提供“不感兴趣”。
 ```
 
 异常说明补充：
@@ -166,7 +182,7 @@ Expected: `demos/Android广告接入-交互标注版.html` 更新且不再包含
 ```js
 if(a==='community-ad-menu'){
   state.community.menuPlacement=b.dataset.placement;
-  openModal(`<h2>广告选项</h2><p>你可以减少此类广告在当前页面的展示。</p><div class="actions"><button class="secondary" data-action="community-ad-hide">对此广告不感兴趣</button></div>`);
+  openModal(`<h2>广告选项</h2><p>你可以减少此类广告在当前页面的展示。</p><div class="actions"><button class="secondary" data-action="community-ad-hide">不感兴趣</button></div>`);
 }
 ```
 
@@ -206,7 +222,7 @@ Expected: 成品仅保留 `community-ad-hide`，不包含 `community-ad-report` 
 将两个信息流资源位的菜单说明修改为：
 
 ```text
-更多菜单本期只提供“对此广告不感兴趣”；点击后隐藏本次页面中的当前广告。点击遮罩只关闭菜单。本期不提供“举报广告”。
+更多菜单本期只提供“不感兴趣”；点击后隐藏本次页面中的当前广告。点击遮罩只关闭菜单。本期不提供“举报广告”。
 ```
 
 - [ ] **Step 2: 更新 PRD 的激励失败规则**
@@ -214,7 +230,7 @@ Expected: 成品仅保留 `community-ad-hide`，不包含 `community-ad-report` 
 在 C1/G1/Q1/R1 全屏激励链路及异常边界中增加：
 
 ```text
-广告加载或播放失败后关闭广告层，恢复来源页面并 Toast 提示“广告播放失败，请稍后重试”；不发奖励、不扣领取资格。用户主动提前关闭按 SDK 提前关闭规则处理，不展示技术失败 Toast。
+广告加载或播放失败后关闭广告层，恢复来源页面并 Toast 提示“播放未完成，奖励未发放”；不发奖励、不扣领取资格。用户主动提前关闭按 SDK 提前关闭规则处理，不展示技术失败 Toast。
 ```
 
 - [ ] **Step 3: 运行格式与残留扫描**
