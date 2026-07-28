@@ -17,6 +17,7 @@
     html,body { width:100%; height:100%; margin:0; overflow:hidden; background:var(--bg); font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif; color:var(--text); }
     body { touch-action:none; user-select:none; -webkit-user-select:none; }
     button { font:inherit; color:inherit; border:0; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    button:focus-visible { outline:3px solid #fff2a8; outline-offset:3px; }
     #app { position:relative; width:100%; height:100%; max-width:520px; margin:auto; overflow:hidden; background:#07050d; isolation:isolate; }
     canvas { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; }
     #hud { position:absolute; z-index:3; inset:0 0 auto; padding:max(10px,env(safe-area-inset-top)) 12px 0; pointer-events:none; }
@@ -132,11 +133,11 @@
   <p class="sr-only" id="liveStatus" role="status" aria-live="polite" aria-atomic="true"></p>
   <div id="toast"></div>
 
-  <section class="screen active" id="intro">
+  <section class="screen active" id="intro" role="dialog" aria-modal="true" aria-labelledby="introTitle" aria-hidden="false" tabindex="-1">
     <div class="hero-mark"><span>⌁</span></div>
     <div class="intro-copy">
       <div class="kicker">EXTRACTION SURVIVAL</div>
-      <h2>待得越久<br>收益越高</h2>
+      <h2 id="introTitle">待得越久<br>收益越高</h2>
       <p>拖动猎人穿越裂隙。时间越久，危险越高，掉落也越值钱；何时撤离由你决定。</p>
       <div class="rules">
         <div class="rule"><i>◎</i><b>单指移动</b><small>瞄准与开火自动完成</small></div>
@@ -148,11 +149,11 @@
     </div>
   </section>
 
-  <section class="screen" id="pausePanel">
+  <section class="screen" id="pausePanel" role="dialog" aria-modal="true" aria-labelledby="pauseTitle" aria-hidden="true" tabindex="-1">
     <div class="dialog">
-      <h2>行动暂停</h2><p>裂隙时间与全部敌人已冻结。</p>
-      <div class="option"><span>音效</span><button id="soundToggle" class="toggle on" aria-label="切换音效"></button></div>
-      <div class="option"><span>减少动态效果</span><button id="motionToggle" class="toggle" aria-label="切换减少动态效果"></button></div>
+      <h2 id="pauseTitle">行动暂停</h2><p>裂隙时间与全部敌人已冻结。</p>
+      <div class="option"><span>音效</span><button id="soundToggle" class="toggle on" role="switch" aria-checked="true" aria-label="切换音效"></button></div>
+      <div class="option"><span>减少动态效果</span><button id="motionToggle" class="toggle" role="switch" aria-checked="false" aria-label="切换减少动态效果"></button></div>
       <div class="dialog-actions">
         <button class="secondary" id="restartBtn">重新开始</button>
         <button class="primary" id="resumeBtn">继续行动</button>
@@ -160,7 +161,7 @@
     </div>
   </section>
 
-  <section class="screen" id="result" role="dialog" aria-modal="true" aria-labelledby="resultTitle" tabindex="-1">
+  <section class="screen" id="result" role="dialog" aria-modal="true" aria-labelledby="resultTitle" aria-hidden="true" tabindex="-1">
     <div class="result-card">
       <span class="result-badge" id="resultBadge">撤离完成</span>
       <h2 id="resultTitle">满载而归</h2>
@@ -181,7 +182,7 @@
       <button class="primary" id="replayBtn">再次深入</button>
     </div>
   </section>
-  <div id="rotate">请旋转至竖屏<br>裂隙只在纵向稳定</div>
+  <div id="rotate" role="status" aria-live="polite">请旋转至竖屏<br>裂隙只在纵向稳定</div>
 </main>
 
 <script>
@@ -190,9 +191,12 @@
   const GAME_ID = "rift-hunter";
   const qs = new URLSearchParams(location.search);
   const TEST = qs.get("test") === "1";
-  const TIME_SCALE = Math.max(1, Math.min(40, Number(qs.get("speed")) || 1));
-  const MUTED_BY_QUERY = qs.get("mute") === "1";
-  const SEED = (Number(qs.get("seed")) || Date.now()) >>> 0;
+  const requestedSpeed = Number(qs.get("speed"));
+  const TIME_SCALE = TEST && Number.isFinite(requestedSpeed) ? Math.max(1, Math.min(40, requestedSpeed)) : 1;
+  const MUTED_BY_QUERY = TEST && qs.get("mute") === "1";
+  const requestedSeed = TEST ? Number(qs.get("seed")) : NaN;
+  const SEED = (Number.isFinite(requestedSeed) ? requestedSeed : Date.now()) >>> 0;
+  window.__GAME_META__ = Object.freeze({schemaVersion:1,gameId:GAME_ID,testMode:TEST,timeScale:TIME_SCALE});
   const $ = id => document.getElementById(id);
   const canvas = $("game"), ctx = canvas.getContext("2d", { alpha:false });
   const ui = {
@@ -200,6 +204,51 @@
     hpText:$("hpText"), hpFill:$("hpFill"), xpText:$("xpText"), xpFill:$("xpFill"), weapon:$("weaponName"),
     clock:$("clock"), danger:$("danger"), loot:$("lootCount"), kills:$("killCount")
   };
+  const screens = [ui.intro,ui.pause,ui.result];
+  const modalBackground = [canvas,$("hud")];
+  const focusableSelector = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  let activeModal=null;
+
+  function modalFocusables(modal){
+    return [...modal.querySelectorAll(focusableSelector)].filter(element=>{
+      const style=getComputedStyle(element),rect=element.getBoundingClientRect();
+      return style.display!=="none"&&style.visibility!=="hidden"&&!element.inert&&rect.width>0&&rect.height>0;
+    });
+  }
+  function setModalState(modal,active){
+    modal.classList.toggle("active",active);
+    modal.setAttribute("aria-hidden",String(!active));
+    modal.inert=!active;
+  }
+  function activateModal(modal,focusTarget=modal){
+    activeModal=modal;
+    screens.forEach(screen=>setModalState(screen,screen===modal));
+    modalBackground.forEach(element=>{element.inert=true;});
+    focusTarget.focus({preventScroll:true});
+  }
+  function deactivateModals(focusTarget=null){
+    activeModal=null;
+    screens.forEach(screen=>setModalState(screen,false));
+    modalBackground.forEach(element=>{element.inert=false;});
+    if(focusTarget)focusTarget.focus({preventScroll:true});
+  }
+  document.addEventListener("keydown",event=>{
+    if(event.key!=="Tab"||!activeModal)return;
+    const focusables=modalFocusables(activeModal);
+    if(!focusables.length){
+      event.preventDefault();
+      activeModal.focus({preventScroll:true});
+      return;
+    }
+    const first=focusables[0],last=focusables[focusables.length-1];
+    if(!activeModal.contains(document.activeElement)||(event.shiftKey&&document.activeElement===first)){
+      event.preventDefault();
+      (event.shiftKey?last:first).focus({preventScroll:true});
+    }else if(!event.shiftKey&&document.activeElement===last){
+      event.preventDefault();
+      first.focus({preventScroll:true});
+    }
+  });
 
   function uid() { return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`; }
   let state;
@@ -285,8 +334,7 @@
   function resetRun(replay=false){
     const priorRun=state?.runId;
     clearPools(); seed=(SEED+(replay&&!TEST?Date.now():0))>>>0; state=initialState(); state.mode="playing";
-    ui.intro.classList.remove("active"); ui.pause.classList.remove("active"); ui.result.classList.remove("active");
-    $("app").focus({preventScroll:true});
+    deactivateModals($("app"));
     updateSettingsUI(); updateHUD();
     GamePlatform.emit("game_start",{priorRunId:priorRun||null,replay,testMode:TEST,seed:SEED,timeScale:TIME_SCALE});
     if(replay)GamePlatform.emit("replay_start",{priorRunId:priorRun||null});
@@ -296,15 +344,18 @@
   function startGame(){ resetRun(false); }
   function pauseGame(reason="user"){
     if(!state || state.mode!=="playing" || state.paused || state.ended) return;
-    state.paused=true; state.mode="paused"; ui.pause.classList.add("active"); GamePlatform.emit("lifecycle_pause",{reason});
+    state.paused=true; state.mode="paused"; activateModal(ui.pause,$("resumeBtn")); GamePlatform.emit("lifecycle_pause",{reason});
   }
   function resumeGame(reason="user"){
     if(!state || state.mode!=="paused" || state.ended) return;
-    state.paused=false; state.mode="playing"; last=performance.now(); ui.pause.classList.remove("active"); GamePlatform.emit("lifecycle_resume",{reason});
+    state.paused=false; state.mode="playing"; last=performance.now(); deactivateModals($("pauseBtn")); GamePlatform.emit("lifecycle_resume",{reason});
   }
   function updateSettingsUI(){
-    $("soundToggle").classList.toggle("on",state.settings.sound&&!MUTED_BY_QUERY);
+    const soundEnabled=state.settings.sound&&!MUTED_BY_QUERY;
+    $("soundToggle").classList.toggle("on",soundEnabled);
+    $("soundToggle").setAttribute("aria-checked",String(soundEnabled));
     $("motionToggle").classList.toggle("on",state.settings.reduced);
+    $("motionToggle").setAttribute("aria-checked",String(state.settings.reduced));
   }
   function setSetting(key,val){ state.settings[key]=val; GamePlatform.saveLocal("settings",state.settings); updateSettingsUI(); }
   function playTone(freq,duration=.05,type="sine",gain=.025){
@@ -547,11 +598,10 @@
     $("sumTime").textContent=formatTime(state.elapsed);$("sumKills").textContent=state.kills;$("sumValue").textContent=keptValue;
     $("keptValue").textContent=`价值 ${keptValue}`;$("lostValue").textContent=`价值 ${lostValue}`;
     $("keptList").innerHTML=lootHTML(kept);$("lostList").innerHTML=lootHTML(lost,true);
-    ui.result.classList.add("active");
+    activateModal(ui.result,ui.result);
     ui.live.textContent=extracted
       ? `撤离完成，带出 ${kept.length} 件战利品，总价值 ${keptValue}`
       : `行动终止，保留最高价值 ${keptValue}，遗失价值 ${lostValue}`;
-    ui.result.focus({preventScroll:true});
   }
   function updateHUD(){
     const p=state.player;ui.hpText.textContent=Math.ceil(p.hp);ui.hpFill.style.width=`${p.hp/p.maxHp*100}%`;
@@ -668,17 +718,19 @@
       stats:{...state.stats},testMode:TEST,timeScale:TIME_SCALE,seed:SEED
     };
   }
-  window.__GAME_TEST__ = {
-    getState:()=>JSON.parse(JSON.stringify(publicState())),
-    reset:()=>{resetRun(true);return publicState();},
-    moveTo:(x,y)=>{state.player.targetX=clamp(Number(x),18,vw-18);state.player.targetY=clamp(Number(y),174,vh-18);return true;},
-    setElapsed:s=>{if(TEST&&state.mode==="playing")state.elapsed=Math.max(0,Number(s)||0);return state.elapsed;},
-    grantXp:n=>{if(TEST)gainXp(Math.max(0,Number(n)||0));return state.xp;},
-    grantLoot:(value=100)=>{if(TEST)state.loot.push({id:uid(),name:"测试信标",rarity:"稀有",value:Number(value)||100});return state.loot.length;},
-    damage:n=>{if(TEST)damagePlayer(Math.max(0,Number(n)||0));return state.player.hp;},
-    forceDeath:()=>{if(TEST)damagePlayer(999);return state.result;},
-    getActiveZone:()=>state.extractionZone?{...state.extractionZone}:null
-  };
+  if(TEST){
+    window.__GAME_TEST__ = {
+      getState:()=>JSON.parse(JSON.stringify(publicState())),
+      reset:()=>{resetRun(true);return publicState();},
+      moveTo:(x,y)=>{state.player.targetX=clamp(Number(x),18,vw-18);state.player.targetY=clamp(Number(y),174,vh-18);return true;},
+      setElapsed:s=>{if(state.mode==="playing")state.elapsed=Math.max(0,Number(s)||0);return state.elapsed;},
+      grantXp:n=>{gainXp(Math.max(0,Number(n)||0));return state.xp;},
+      grantLoot:(value=100)=>{state.loot.push({id:uid(),name:"测试信标",rarity:"稀有",value:Number(value)||100});return state.loot.length;},
+      damage:n=>{damagePlayer(Math.max(0,Number(n)||0));return state.player.hp;},
+      forceDeath:()=>{damagePlayer(999);return state.result;},
+      getActiveZone:()=>state.extractionZone?{...state.extractionZone}:null
+    };
+  }
 
   $("startBtn").addEventListener("click",startGame);
   $("pauseBtn").addEventListener("click",()=>pauseGame("user"));
@@ -693,7 +745,7 @@
   window.addEventListener("blur",()=>{if(state.mode==="playing")pauseGame("blur");});
   window.addEventListener("pagehide",()=>cancelAnimationFrame(raf),{once:true});
 
-  state=initialState();updateSettingsUI();updateHUD();last=performance.now();raf=requestAnimationFrame(frame);
+  state=initialState();updateSettingsUI();updateHUD();activateModal(ui.intro,$("startBtn"));last=performance.now();raf=requestAnimationFrame(frame);
   GamePlatform.emit("game_ready",{env:GamePlatform.getEnv(),testMode:TEST});
 })();
 </script>

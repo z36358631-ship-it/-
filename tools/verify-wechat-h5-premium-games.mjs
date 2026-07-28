@@ -5,6 +5,11 @@ import fsSync from 'node:fs';
 import { promises as fs } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright-core';
+import {
+  createVerificationMetadata,
+  errorText,
+  writeJsonAtomic
+} from './verification-metadata.mjs';
 
 const root = process.cwd();
 const outputDir = path.join(root, 'test-results', 'wechat-h5-premium-games');
@@ -15,6 +20,13 @@ const entries = [
   { id: 'world-mender', file: '02-world-mender.html', game: true },
   { id: 'rift-hunter', file: '03-rift-hunter.html', game: true }
 ];
+const testedPaths = [
+  ...entries.map(entry => `demos/微信H5精品游戏/${entry.file}`),
+  'package-lock.json',
+  'package.json',
+  'tools/verification-metadata.mjs',
+  'tools/verify-wechat-h5-premium-games.mjs'
+].sort();
 const viewports = [
   { id: 'compact', width: 360, height: 800 },
   { id: 'baseline', width: 390, height: 844 },
@@ -118,10 +130,60 @@ async function clickMatchingButton(page, pattern) {
   return false;
 }
 
+async function collectWorldMenderModalState(page) {
+  return page.evaluate(() => ({
+    activeId: document.activeElement?.id || null,
+    modals: Object.fromEntries(
+      ['intro', 'pauseOverlay', 'result'].map(id => {
+        const modal = document.getElementById(id);
+        return [id, {
+          hidden: modal?.hidden ?? null,
+          ariaHidden: modal?.getAttribute('aria-hidden') ?? null,
+          inert: modal?.inert ?? null
+        }];
+      })
+    )
+  }));
+}
+
+function assertWorldMenderModalState(snapshot, activeModalId, label) {
+  for (const id of ['intro', 'pauseOverlay', 'result']) {
+    const modal = snapshot.modals[id];
+    const active = id === activeModalId;
+    assert.equal(modal.hidden, !active, `${label} ${id} hidden 状态错误`);
+    assert.equal(modal.ariaHidden, active ? null : 'true', `${label} ${id} aria-hidden 状态错误`);
+    assert.equal(modal.inert, !active, `${label} ${id} inert 状态错误`);
+  }
+}
+
 async function verifyLifecycle(page, gameId) {
   await page.evaluate(() => window.__setVisibilityForTest(true));
   const pausedAt = await page.evaluate(() => window.__GAME_TEST__.getState());
   assert.equal(pausedAt.paused, true, `${gameId} 页面隐藏后未暂停`);
+  let pausedFocus = null;
+  if (gameId === 'world-mender') {
+    pausedFocus = {
+      ...(await collectWorldMenderModalState(page)),
+      ...(await page.evaluate(() => ({
+      pauseRole: document.getElementById('pauseOverlay')?.getAttribute('role'),
+      pauseModal: document.getElementById('pauseOverlay')?.getAttribute('aria-modal'),
+      backgroundInert: [
+        document.getElementById('game'),
+        document.querySelector('.top-actions'),
+        document.getElementById('undoBtn'),
+        document.getElementById('legendDock')
+      ].every(element => element?.inert === true),
+      sound: window.__GAME_TEST__.sound()
+      })))
+    };
+    assertWorldMenderModalState(pausedFocus, 'pauseOverlay', '世界缝补师暂停态');
+    assert.equal(pausedFocus.activeId, 'continueBtn', '世界缝补师暂停层未把焦点移到继续按钮');
+    assert.equal(pausedFocus.pauseRole, 'dialog', '世界缝补师暂停层缺少 dialog 语义');
+    assert.equal(pausedFocus.pauseModal, 'true', '世界缝补师暂停层缺少 aria-modal');
+    assert.equal(pausedFocus.backgroundInert, true, '世界缝补师暂停时背景控件未隔离');
+    assert.equal(pausedFocus.sound.suspended, true, '世界缝补师隐藏暂停后声音总线未挂起');
+    assert.equal(pausedFocus.sound.activeVoices, 0, '世界缝补师隐藏暂停后仍有活动声音节点');
+  }
   await page.waitForTimeout(180);
   const hidden = await page.evaluate(() => window.__GAME_TEST__.getState());
   assert.equal(hidden.paused, true, `${gameId} 页面隐藏后未暂停`);
@@ -139,7 +201,27 @@ async function verifyLifecycle(page, gameId) {
   await page.waitForTimeout(100);
   const resumed = await page.evaluate(() => window.__GAME_TEST__.getState());
   assert.equal(resumed.paused, false, `${gameId} 主动继续后仍处于暂停`);
-  return { pausedAt, hidden, resumed };
+  let resumedFocus = null;
+  if (gameId === 'world-mender') {
+    resumedFocus = {
+      ...(await collectWorldMenderModalState(page)),
+      ...(await page.evaluate(() => ({
+      backgroundInert: [
+        document.getElementById('game'),
+        document.querySelector('.top-actions'),
+        document.getElementById('undoBtn'),
+        document.getElementById('legendDock')
+      ].some(element => element?.inert === true),
+      sound: window.__GAME_TEST__.sound()
+      })))
+    };
+    assertWorldMenderModalState(resumedFocus, null, '世界缝补师继续游戏态');
+    assert.equal(resumedFocus.activeId, 'app', '世界缝补师继续后焦点未回到游戏容器');
+    assert.equal(resumedFocus.backgroundInert, false, '世界缝补师继续后背景仍被隔离');
+    assert.equal(resumedFocus.sound.contextCount, 0, '静音验收不应创建 AudioContext');
+    assert.equal(resumedFocus.sound.activeVoices, 0, '静音验收存在活动声音节点');
+  }
+  return { pausedAt, hidden, resumed, pausedFocus, resumedFocus };
 }
 
 async function verifyHubEventFlow(page) {
@@ -237,6 +319,21 @@ async function verifyEventsAndReplay(page, gameId) {
   }));
   assert.equal(resultAccessibility.activeElement, expectedResultId, `${gameId} 结算后未把焦点移入结算层`);
   assert(resultAccessibility.liveText.trim().length > 0, `${gameId} 结算后缺少状态播报`);
+  let resultTabTrap = null;
+  if (gameId === 'world-mender') {
+    const resultModalState = await collectWorldMenderModalState(page);
+    assertWorldMenderModalState(resultModalState, 'result', '世界缝补师结算态');
+    await page.keyboard.press('Tab');
+    const firstTab = await page.evaluate(() => document.activeElement?.id || null);
+    await page.keyboard.press('Tab');
+    const wrappedTab = await page.evaluate(() => document.activeElement?.id || null);
+    await page.keyboard.press('Shift+Tab');
+    const reverseWrappedTab = await page.evaluate(() => document.activeElement?.id || null);
+    assert.equal(firstTab, 'replayBtn', '世界缝补师结算层 Tab 未进入重玩按钮');
+    assert.equal(wrappedTab, 'replayBtn', '世界缝补师结算层 Tab 未限制在模态内');
+    assert.equal(reverseWrappedTab, 'replayBtn', '世界缝补师结算层 Shift+Tab 未限制在模态内');
+    resultTabTrap = { firstTab, wrappedTab, reverseWrappedTab, modalState: resultModalState };
+  }
   const replayButton = page.locator('#replayBtn');
   await replayButton.waitFor({ state: 'visible', timeout: 2000 });
   await replayButton.click();
@@ -250,6 +347,11 @@ async function verifyEventsAndReplay(page, gameId) {
   const replayFocus = await page.evaluate(() => document.activeElement?.id || null);
   const expectedGameFocus = gameId === 'five-seconds-later' ? 'gameShell' : 'app';
   assert.equal(replayFocus, expectedGameFocus, `${gameId} 重玩后焦点仍留在隐藏结算控件`);
+  let replayModalState = null;
+  if (gameId === 'world-mender') {
+    replayModalState = await collectWorldMenderModalState(page);
+    assertWorldMenderModalState(replayModalState, null, '世界缝补师重玩游戏态');
+  }
 
   const events = await page.evaluate(() => window.__capturedGameEvents.slice());
   assert(events.length > 0, `${gameId} 未捕获到运行时事件`);
@@ -285,7 +387,9 @@ async function verifyEventsAndReplay(page, gameId) {
     beforeRunId: beforeReplay.runId,
     afterRunId: afterReplay.runId,
     resultAccessibility,
+    resultTabTrap,
     replayFocus,
+    replayModalState,
     eventNames: [...eventNames].sort(),
     eventCount: events.length
   };
@@ -482,8 +586,266 @@ async function verifyDirectFile(browser, entry) {
   };
 }
 
+async function verifyProductionGuards(browser, origin, entry) {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 1,
+    hasTouch: true,
+    isMobile: true,
+    reducedMotion: 'reduce'
+  });
+  const page = await context.newPage();
+  const errors = [];
+  const externalRequests = [];
+  await page.addInitScript(() => {
+    window.__productionGuardEvents = [];
+    const capture = event => {
+      if (event?.detail?.event === 'game_start') {
+        window.__productionGuardEvents.push(JSON.parse(JSON.stringify(event.detail)));
+      }
+    };
+    window.addEventListener('gameplatform', capture);
+    window.addEventListener('gameplatform:event', capture);
+  });
+  page.on('console', message => {
+    if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+  });
+  page.on('pageerror', error => errors.push(`page: ${error.message}`));
+  page.on('request', request => {
+    if (!request.url().startsWith(origin) && !request.url().startsWith('data:')) {
+      externalRequests.push(request.url());
+    }
+  });
+  try {
+    const response = await page.goto(
+      `${origin}${demoRoot}/${entry.file}?speed=40&seed=1&mute=1`,
+      { waitUntil: 'domcontentloaded', timeout: 15000 }
+    );
+    if (!response?.ok()) errors.push(`普通入口加载失败：${response?.status() || '无响应'}`);
+    await page.waitForTimeout(250);
+    const guard = await page.evaluate(() => ({
+      testApiType: typeof window.__GAME_TEST__,
+      meta: window.__GAME_META__ || null,
+      testBadgeVisible: [...document.querySelectorAll('#testBadge,[data-test-badge]')]
+        .some(element => {
+          const style = getComputedStyle(element);
+          const rect = element.getBoundingClientRect();
+          return !element.hidden
+            && style.display !== 'none'
+            && style.visibility !== 'hidden'
+            && rect.width > 0
+            && rect.height > 0;
+        })
+    }));
+    if (guard.testApiType !== 'undefined') errors.push('普通入口暴露 window.__GAME_TEST__');
+    if (guard.meta?.testMode !== false) errors.push('普通入口缺少 testMode=false 的只读元数据');
+    if (guard.meta?.timeScale !== 1) errors.push(`普通入口 speed 改变规则：${guard.meta?.timeScale}`);
+    if (guard.testBadgeVisible) errors.push('普通入口显示测试标记');
+    await clickMatchingButton(page, /开始|进入|出发|唤醒|拿起/);
+    await page.waitForTimeout(50);
+    const startEvent = await page.evaluate(
+      () => window.__productionGuardEvents?.at(-1) || null
+    );
+    if (!startEvent) errors.push('普通入口未发出 game_start，无法校验 seed 门禁');
+    if (startEvent?.payload?.seed === 1) errors.push('普通入口 seed=1 改变了随机种子');
+    let productionAudio = null;
+    if (entry.id === 'world-mender') {
+      await page.locator('#pauseBtn').click();
+      productionAudio = await page.evaluate(() => ({
+        muteLabel: document.getElementById('muteBtn')?.textContent?.trim() || null,
+        activeId: document.activeElement?.id || null
+      }));
+      if (productionAudio.muteLabel !== '声音') {
+        errors.push(`世界缝补师普通入口 mute=1 改变了静音状态：${productionAudio.muteLabel}`);
+      }
+    }
+    return {
+      page: entry.id,
+      viewport: 'production-guard',
+      guard,
+      startEvent,
+      productionAudio,
+      errors,
+      externalRequests
+    };
+  } finally {
+    await context.close();
+  }
+}
+
+async function verifyWorldMenderLandscapeGuard(browser, origin) {
+  const context = await browser.newContext({
+    viewport: { width: 844, height: 390 },
+    deviceScaleFactor: 1,
+    hasTouch: true,
+    isMobile: true,
+    reducedMotion: 'reduce'
+  });
+  const page = await context.newPage();
+  const errors = [];
+  const externalRequests = [];
+  page.on('console', message => {
+    if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+  });
+  page.on('pageerror', error => errors.push(`page: ${error.message}`));
+  page.on('request', request => {
+    if (!request.url().startsWith(origin) && !request.url().startsWith('data:')) {
+      externalRequests.push(request.url());
+    }
+  });
+  try {
+    const response = await page.goto(
+      `${origin}${demoRoot}/02-world-mender.html?test=1&seed=20260728&speed=20&mute=1`,
+      { waitUntil: 'domcontentloaded', timeout: 15000 }
+    );
+    if (!response?.ok()) errors.push(`短横屏入口加载失败：${response?.status() || '无响应'}`);
+    await page.waitForTimeout(250);
+    const guard = await page.evaluate(() => {
+      const rotate = document.getElementById('rotateGuard');
+      const rect = rotate?.getBoundingClientRect();
+      const style = rotate ? getComputedStyle(rotate) : null;
+      return {
+        visible: Boolean(
+          rotate
+          && style?.display !== 'none'
+          && style?.visibility !== 'hidden'
+          && rect?.width > 0
+          && rect?.height > 0
+        ),
+        activeId: document.activeElement?.id || null,
+        role: rotate?.getAttribute('role') || null,
+        modal: rotate?.getAttribute('aria-modal') || null,
+        text: rotate?.textContent?.trim() || ''
+      };
+    });
+    if (!guard.visible) errors.push('短横屏未显示旋转阻断层');
+    if (guard.activeId !== 'rotateGuard') errors.push(`短横屏焦点未进入阻断层：${guard.activeId}`);
+    if (guard.role !== 'dialog' || guard.modal !== 'true') errors.push('短横屏阻断层缺少模态对话框语义');
+    if (!guard.text.includes('竖屏')) errors.push('短横屏阻断层缺少竖屏指引');
+    return {
+      page: 'world-mender',
+      viewport: 'short-landscape',
+      guard,
+      errors,
+      externalRequests
+    };
+  } finally {
+    await context.close();
+  }
+}
+
+async function verifyWorldMenderSoundBus(browser, origin) {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 1,
+    hasTouch: true,
+    isMobile: true,
+    reducedMotion: 'reduce'
+  });
+  const page = await context.newPage();
+  const errors = [];
+  const externalRequests = [];
+  page.on('console', message => {
+    if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+  });
+  page.on('pageerror', error => errors.push(`page: ${error.message}`));
+  page.on('request', request => {
+    if (!request.url().startsWith(origin) && !request.url().startsWith('data:')) {
+      externalRequests.push(request.url());
+    }
+  });
+  try {
+    const response = await page.goto(
+      `${origin}${demoRoot}/02-world-mender.html?test=1&seed=20260728&speed=20`,
+      { waitUntil: 'domcontentloaded', timeout: 15000 }
+    );
+    if (!response?.ok()) errors.push(`声音入口加载失败：${response?.status() || '无响应'}`);
+    await page.waitForTimeout(250);
+    await page.locator('#startBtn').click();
+    const played = await page.evaluate(() => {
+      const game = window.__GAME_TEST__;
+      const beforeUnknown = game.sound();
+      const unknownResult = game.cue('unknown_verifier_cue');
+      const afterUnknown = game.sound();
+      game.connect('w1', 'n1');
+      game.connect('w1', 'w2');
+      game.connect('n1', 'n2');
+      game.connect('e1', 'e2');
+      game.connect('g1', 'g2');
+      game.advance(125);
+      const won = game.getState();
+      const afterWin = game.sound();
+      game.reset();
+      game.start();
+      game.finish();
+      const lost = game.getState();
+      const afterLoss = game.sound();
+      game.reset();
+      game.start();
+      game.connect('w1', 'w2');
+      game.pause();
+      const paused = game.sound();
+      return { beforeUnknown, unknownResult, afterUnknown, won, afterWin, lost, afterLoss, paused };
+    });
+    await page.locator('#continueBtn').click();
+    const resumed = await page.evaluate(() => window.__GAME_TEST__.sound());
+    await page.waitForTimeout(650);
+    const settled = await page.evaluate(() => window.__GAME_TEST__.sound());
+    if (played.afterWin.contextCount !== 1) {
+      errors.push(`声音总线未保持单一 AudioContext：${played.afterWin.contextCount}`);
+    }
+    if (played.unknownResult !== false) {
+      errors.push(`未知声音名未被拒绝：${JSON.stringify(played.unknownResult)}`);
+    }
+    if (
+      played.afterUnknown.activeVoices !== played.beforeUnknown.activeVoices
+      || JSON.stringify(played.afterUnknown.cueCounts) !== JSON.stringify(played.beforeUnknown.cueCounts)
+    ) {
+      errors.push(`未知声音名污染声音状态：${JSON.stringify({
+        before: played.beforeUnknown,
+        after: played.afterUnknown
+      })}`);
+    }
+    if ((played.afterWin.cueCounts.stitch_invalid || 0) !== 1) {
+      errors.push(`无效缝合声音次数异常：${played.afterWin.cueCounts.stitch_invalid || 0}`);
+    }
+    if ((played.afterWin.cueCounts.stitch_ok || 0) !== 4) {
+      errors.push(`有效缝合声音次数异常：${played.afterWin.cueCounts.stitch_ok || 0}`);
+    }
+    if ((played.afterWin.cueCounts.life_saved || 0) < 1) {
+      errors.push('生命获救未触发程序合成声音');
+    }
+    if ((played.afterWin.cueCounts.run_won || 0) !== 1) {
+      errors.push(`胜利声音次数异常：${played.afterWin.cueCounts.run_won || 0}`);
+    }
+    if ((played.afterLoss.cueCounts.run_lost || 0) !== 1) {
+      errors.push(`失败声音次数异常：${played.afterLoss.cueCounts.run_lost || 0}`);
+    }
+    if (played.paused.suspended !== true || played.paused.activeVoices !== 0) {
+      errors.push(`暂停未安全停止声音：${JSON.stringify(played.paused)}`);
+    }
+    if (resumed.suspended !== false) errors.push('继续手势后声音总线仍处于挂起标记');
+    if (settled.contextCount !== 1 || settled.activeVoices !== 0) {
+      errors.push(`声音节点未收敛：${JSON.stringify(settled)}`);
+    }
+    return {
+      page: 'world-mender',
+      viewport: 'sound-bus',
+      sound: { played, resumed, settled },
+      errors,
+      externalRequests
+    };
+  } finally {
+    await context.close();
+  }
+}
+
 async function runBaselineScenario(page, gameId) {
   if (gameId === 'world-mender') {
+    const initialSound = await page.evaluate(() => window.__GAME_TEST__.sound());
+    assert.equal(initialSound.contextCount, 0, '世界缝补师静音测试启动后创建了 AudioContext');
+    assert.equal(initialSound.activeVoices, 0, '世界缝补师静音测试启动后存在活动声音节点');
+    assert.equal(initialSound.muted, true, '世界缝补师 mute=1 未传入声音总线');
     const budgetInvariant = await page.evaluate(() => {
       const state = window.__GAME_TEST__.getState();
       const garden = state.availableEdges.find(edge => edge.role === 'garden');
@@ -577,6 +939,24 @@ async function runBaselineScenario(page, gameId) {
     });
     assert.equal(final.phase, 'won', `世界缝补师标准路线未胜利：${JSON.stringify(final)}`);
     assert(final.saved >= 9, `世界缝补师获救数量不足：${final.saved}`);
+    const resultIsolation = await page.evaluate(() => ({
+      activeId: document.activeElement?.id || null,
+      role: document.getElementById('result')?.getAttribute('role'),
+      modal: document.getElementById('result')?.getAttribute('aria-modal'),
+      backgroundInert: [
+        document.getElementById('game'),
+        document.querySelector('.top-actions'),
+        document.getElementById('undoBtn'),
+        document.getElementById('legendDock')
+      ].every(element => element?.inert === true),
+      sound: window.__GAME_TEST__.sound()
+    }));
+    assert.equal(resultIsolation.activeId, 'result', '世界缝补师结算层未接管焦点');
+    assert.equal(resultIsolation.role, 'dialog', '世界缝补师结算层缺少 dialog 语义');
+    assert.equal(resultIsolation.modal, 'true', '世界缝补师结算层缺少 aria-modal');
+    assert.equal(resultIsolation.backgroundInert, true, '世界缝补师结算时背景控件未隔离');
+    assert.equal(resultIsolation.sound.contextCount, 0, '静音结算路径不应创建 AudioContext');
+    assert.equal(resultIsolation.sound.activeVoices, 0, '静音结算路径存在活动声音节点');
     await page.screenshot({ path: path.join(outputDir, `${gameId}-result.png`), fullPage: false });
     const failure = await page.evaluate(() => {
       const game = window.__GAME_TEST__;
@@ -587,7 +967,7 @@ async function runBaselineScenario(page, gameId) {
     });
     assert.equal(failure.phase, 'lost', '世界缝补师空路线未失败');
     assert.equal(failure.saved, 0, '世界缝补师空路线不应救回生命');
-    return { budgetInvariant, interaction, wrongChoiceBoost, mechanic, final, failure };
+    return { initialSound, budgetInvariant, interaction, wrongChoiceBoost, mechanic, final, resultIsolation, failure };
   }
 
   if (gameId === 'rift-hunter') {
@@ -888,12 +1268,33 @@ async function verifyEntry(browser, origin, entry, viewport) {
   let scenario = null;
   if (entry.game && viewport.id === 'baseline') {
     await page.screenshot({ path: path.join(outputDir, `${entry.id}-opening.png`), fullPage: false });
+    let openingFocus = null;
+    if (entry.id === 'world-mender') {
+      openingFocus = {
+        ...(await collectWorldMenderModalState(page)),
+        ...(await page.evaluate(() => ({
+        role: document.getElementById('intro')?.getAttribute('role'),
+        modal: document.getElementById('intro')?.getAttribute('aria-modal'),
+        backgroundInert: [
+          document.getElementById('game'),
+          document.querySelector('.top-actions'),
+          document.getElementById('undoBtn'),
+          document.getElementById('legendDock')
+        ].every(element => element?.inert === true)
+        })))
+      };
+      assertWorldMenderModalState(openingFocus, 'intro', '世界缝补师开场态');
+      assert.equal(openingFocus.activeId, 'startBtn', '世界缝补师开场未把焦点移到开始按钮');
+      assert.equal(openingFocus.role, 'dialog', '世界缝补师开场缺少 dialog 语义');
+      assert.equal(openingFocus.modal, 'true', '世界缝补师开场缺少 aria-modal');
+      assert.equal(openingFocus.backgroundInert, true, '世界缝补师开场背景控件未隔离');
+    }
     await clickMatchingButton(page, /开始|进入|出发|唤醒|拿起/);
     const touch = await verifyTouchInput(page, entry.id);
     const lifecycle = await verifyLifecycle(page, entry.id);
     scenario = await runBaselineScenario(page, entry.id);
     const replay = await verifyEventsAndReplay(page, entry.id);
-    scenario = { ...scenario, touch, lifecycle, replay };
+    scenario = { ...scenario, openingFocus, touch, lifecycle, replay };
   } else if (!entry.game && viewport.id === 'baseline') {
     await page.screenshot({ path: path.join(outputDir, 'hub-baseline.png'), fullPage: true });
     scenario = await verifyHubEventFlow(page);
@@ -917,15 +1318,21 @@ async function verifyEntry(browser, origin, entry, viewport) {
   return result;
 }
 
-await verifySources();
-await fs.mkdir(outputDir, { recursive: true });
-const { server, port } = await startServer();
-const origin = `http://127.0.0.1:${port}`;
 const results = [];
-let browser;
+const fatalErrors = [];
+let browser = null;
+let browserVersion = 'not-launched';
+let server = null;
+let origin = 'not-started';
 
 try {
+  await verifySources();
+  await fs.mkdir(outputDir, { recursive: true });
+  const started = await startServer();
+  server = started.server;
+  origin = `http://127.0.0.1:${started.port}`;
   browser = await chromium.launch({ executablePath: browserExecutable(), headless: true });
+  browserVersion = browser.version();
   for (const entry of entries) {
     for (const viewport of viewports) {
       const result = await verifyEntry(browser, origin, entry, viewport);
@@ -942,16 +1349,91 @@ try {
     results.push(result);
     process.stdout.write(`${entry.id.padEnd(21)} ${'direct-file'.padEnd(8)} PASS\n`);
   }
-  await fs.writeFile(path.join(outputDir, 'verification.json'), JSON.stringify(results, null, 2), 'utf8');
-  const hardFailures = results.flatMap(result => [
-    ...result.errors.map(error => `${result.page}/${result.viewport}: ${error}`),
-    ...result.externalRequests.map(url => `${result.page}/${result.viewport}: 外部请求 ${url}`)
+  for (const entry of entries.filter(item => item.game)) {
+    const result = await verifyProductionGuards(browser, origin, entry);
+    results.push(result);
+    process.stdout.write(
+      `${entry.id.padEnd(21)} ${'production-guard'.padEnd(16)}`
+      + ` ${result.errors.length ? `FAIL ${result.errors.join(' | ')}` : 'PASS'}\n`
+    );
+  }
+  const landscapeGuard = await verifyWorldMenderLandscapeGuard(browser, origin);
+  results.push(landscapeGuard);
+  process.stdout.write(
+    `${landscapeGuard.page.padEnd(21)} ${landscapeGuard.viewport.padEnd(16)}`
+    + ` ${landscapeGuard.errors.length ? `FAIL ${landscapeGuard.errors.join(' | ')}` : 'PASS'}\n`
+  );
+  const soundBus = await verifyWorldMenderSoundBus(browser, origin);
+  results.push(soundBus);
+  process.stdout.write(
+    `${soundBus.page.padEnd(21)} ${soundBus.viewport.padEnd(16)}`
+    + ` ${soundBus.errors.length ? `FAIL ${soundBus.errors.join(' | ')}` : 'PASS'}\n`
+  );
+} catch (error) {
+  fatalErrors.push(errorText(error));
+} finally {
+  try {
+    await browser?.close();
+  } catch (error) {
+    fatalErrors.push(`关闭浏览器失败：${errorText(error)}`);
+  }
+  try {
+    server?.close();
+  } catch (error) {
+    fatalErrors.push(`关闭本地服务失败：${errorText(error)}`);
+  }
+
+  const resultFailures = results.flatMap(result => [
+    ...(result.errors || []).map(error => `${result.page}/${result.viewport}: ${error}`),
+    ...(result.externalRequests || []).map(url => `${result.page}/${result.viewport}: 外部请求 ${url}`)
   ]);
-  if (hardFailures.length) {
-    process.stderr.write(`${hardFailures.join('\n')}\n`);
+  const hardFailures = [
+    ...resultFailures,
+    ...fatalErrors.map(error => `fatal: ${error}`)
+  ];
+  const exitCode = hardFailures.length ? 1 : 0;
+  const passedResults = results.filter(
+    result => (result.errors || []).length === 0 && (result.externalRequests || []).length === 0
+  ).length;
+  const failedResults = results.length - passedResults;
+
+  try {
+    const metadata = await createVerificationMetadata({
+      root,
+      browserVersion,
+      testedPaths,
+      environment: {
+        runner: 'playwright-core',
+        origin: origin === 'not-started' ? origin : 'local-ephemeral-http',
+        viewports,
+        testQuery: '?test=1&seed=20260728&speed=20&mute=1'
+      }
+    });
+    await writeJsonAtomic(path.join(outputDir, 'verification.json'), {
+      ...metadata,
+      status: exitCode === 0 ? 'PASS' : 'FAIL',
+      exitCode,
+      scope: {
+        suite: 'wechat-h5-premium-games',
+        pages: entries.map(entry => entry.id),
+        expectedResultCount: 21,
+        completedResultCount: results.length
+      },
+      summary: {
+        total: results.length,
+        pass: passedResults,
+        fail: failedResults + fatalErrors.length
+      },
+      hardFailures,
+      fatalErrors,
+      results
+    });
+  } catch (error) {
+    fatalErrors.push(`原子写入验收报告失败：${errorText(error)}`);
+    process.stderr.write(`${fatalErrors.at(-1)}\n`);
     process.exitCode = 1;
   }
-} finally {
-  await browser?.close();
-  server.close();
+
+  if (hardFailures.length) process.stderr.write(`${hardFailures.join('\n')}\n`);
+  if (process.exitCode !== 1) process.exitCode = exitCode;
 }

@@ -107,6 +107,15 @@
       .section-head{align-items:flex-start;flex-direction:column}.games{gap:12px}.game{padding:18px}.play{left:18px;right:18px;bottom:18px}
       footer{flex-direction:column}h1{font-size:38px}
     }
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{
+      scroll-behavior:auto!important;
+      animation:none!important;
+      animation-iteration-count:1!important;
+      transition:none!important
+    }
+    .play:hover,.play:active{transform:none}
+  }
   </style>
 </head>
 <body>

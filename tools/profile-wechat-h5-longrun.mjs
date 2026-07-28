@@ -2,9 +2,13 @@ import assert from 'node:assert/strict';
 import fsSync from 'node:fs';
 import { promises as fs } from 'node:fs';
 import http from 'node:http';
-import os from 'node:os';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
+import {
+  createVerificationMetadata,
+  errorText,
+  writeJsonAtomic
+} from './verification-metadata.mjs';
 
 const root = process.cwd();
 const outputFile = path.join(
@@ -23,6 +27,13 @@ const games = [
   { id: 'world-mender', title: '世界缝补师', file: '02-world-mender.html' },
   { id: 'rift-hunter', title: '裂隙猎人', file: '03-rift-hunter.html' }
 ];
+const testedPaths = [
+  ...games.map(game => `demos/微信H5精品游戏/${game.file}`),
+  'package-lock.json',
+  'package.json',
+  'tools/profile-wechat-h5-longrun.mjs',
+  'tools/verification-metadata.mjs'
+].sort();
 const thresholds = {
   frameP95WarningMs: 34,
   frameMaxWarningMs: 100,
@@ -595,13 +606,71 @@ async function profileGame(browser, origin, game) {
   }
 }
 
-await fs.mkdir(path.dirname(outputFile), { recursive: true });
-const executablePath = browserExecutable();
-const { server, port } = await startServer();
-const origin = `http://127.0.0.1:${port}`;
 let browser;
+let server;
+let executablePath = 'unavailable';
+let browserVersion = 'launch-failed';
+const results = [];
+
+async function createReport(fatalError) {
+  const hardFailures = results.filter(result => result.status === 'FAIL');
+  const failCount = hardFailures.length + (fatalError ? 1 : 0);
+  const metadata = await createVerificationMetadata({
+    root,
+    browserVersion,
+    testedPaths,
+    environment: {
+      browser: executablePath === 'unavailable'
+        ? 'unavailable'
+        : executablePath.toLowerCase().includes('msedge')
+          ? 'Microsoft Edge'
+          : 'Google Chrome',
+      executablePath,
+      headless: true,
+      viewport,
+      hasTouch: true,
+      isMobile: true,
+      reducedMotion: 'no-preference',
+      seed,
+      timeScale: 1
+    }
+  });
+  return {
+    ...metadata,
+    scope: '本地 Edge/Playwright 移动视口、自然速度、每款 2 分钟长时稳定性与内存趋势预警',
+    disclaimer: '本报告仅用于浏览器回归与泄漏线索筛查；未经微信真机多轮测试，不代表微信 web-view 的帧率、内存、功耗或上线认证结论。',
+    exitCode: failCount > 0 ? 1 : 0,
+    methodology: {
+      sequence: '三款游戏在同一浏览器进程中按列表顺序运行，每款使用全新浏览器上下文',
+      sampling: `预热 1 秒后每 ${sampleIntervalMs / 1000} 秒采样，共 ${durationMs / sampleIntervalMs + 1} 个时间点`,
+      heap: '优先读取 CDP JSHeapUsedSize；不主动触发 GC，因此首尾增量和线性斜率只能提示趋势，不能单独证明内存泄漏',
+      dom: '同时记录页面实时 DOM 元素数与 CDP Nodes；CDP Nodes 可能包含文档或暂未回收节点',
+      frame: '通过页面 requestAnimationFrame 帧间隔观测；无头 Edge 调度与微信 web-view 真机不同',
+      longTask: '使用 PerformanceObserver longtask；仅在浏览器支持时记录'
+    },
+    thresholds: {
+      ...thresholds,
+      policy: '帧、Long Task、堆和 DOM 阈值仅生成 WARN；页面/控制台错误、外部请求、请求失败或采样完整性不足才判定 FAIL 并返回非零退出码。'
+    },
+    summary: {
+      games: results.length,
+      pass: results.filter(result => result.status === 'PASS').length,
+      passWithWarnings: results.filter(result => result.status === 'PASS_WITH_WARNINGS').length,
+      fail: failCount,
+      noExternalRequests: results.every(result => (result.errors?.externalRequests?.length ?? 0) === 0),
+      noConsoleErrors: results.every(result => (result.errors?.console?.length ?? 0) === 0),
+      noPageErrors: results.every(result => (result.errors?.page?.length ?? 0) === 0)
+    },
+    ...(fatalError ? { fatalError } : {}),
+    games: results
+  };
+}
 
 try {
+  executablePath = browserExecutable();
+  const runningServer = await startServer();
+  server = runningServer.server;
+  const origin = `http://127.0.0.1:${runningServer.port}`;
   browser = await chromium.launch({
     executablePath,
     headless: true,
@@ -613,7 +682,8 @@ try {
       '--enable-precise-memory-info'
     ]
   });
-  const results = [];
+  browserVersion = browser.version();
+
   for (const game of games) {
     process.stdout.write(`开始 ${game.title}：自然速度 ${durationMs / 60_000} 分钟长时剖析\n`);
     try {
@@ -629,69 +699,33 @@ try {
         + ` · DOM 增量 ${delta.domElements}\n`
       );
     } catch (error) {
+      const fatalError = errorText(error);
       results.push({
         id: game.id,
         title: game.title,
         targetDurationMs: durationMs,
         measuredDurationMs: null,
         status: 'FAIL',
-        fatalError: error instanceof Error ? error.stack || error.message : String(error),
+        fatalError,
         hardErrors: [error instanceof Error ? error.message : String(error)]
       });
-      process.stderr.write(`${game.title} FAIL · ${error instanceof Error ? error.message : String(error)}\n`);
+      process.stderr.write(`${game.title} FAIL · ${fatalError}\n`);
     }
   }
 
-  const hardFailures = results.filter(result => result.status === 'FAIL');
-  const report = {
-    schemaVersion: 1,
-    generatedAt: new Date().toISOString(),
-    scope: '本地 Edge/Playwright 移动视口、自然速度、每款 2 分钟长时稳定性与内存趋势预警',
-    disclaimer: '本报告仅用于浏览器回归与泄漏线索筛查；未经微信真机多轮测试，不代表微信 web-view 的帧率、内存、功耗或上线认证结论。',
-    methodology: {
-      sequence: '三款游戏在同一浏览器进程中按列表顺序运行，每款使用全新浏览器上下文',
-      sampling: `预热 1 秒后每 ${sampleIntervalMs / 1000} 秒采样，共 ${durationMs / sampleIntervalMs + 1} 个时间点`,
-      heap: '优先读取 CDP JSHeapUsedSize；不主动触发 GC，因此首尾增量和线性斜率只能提示趋势，不能单独证明内存泄漏',
-      dom: '同时记录页面实时 DOM 元素数与 CDP Nodes；CDP Nodes 可能包含文档或暂未回收节点',
-      frame: '通过页面 requestAnimationFrame 帧间隔观测；无头 Edge 调度与微信 web-view 真机不同',
-      longTask: '使用 PerformanceObserver longtask；仅在浏览器支持时记录'
-    },
-    environment: {
-      platform: os.platform(),
-      release: os.release(),
-      arch: os.arch(),
-      nodeVersion: process.version,
-      browser: executablePath.toLowerCase().includes('msedge') ? 'Microsoft Edge' : 'Google Chrome',
-      browserVersion: browser.version(),
-      executablePath,
-      headless: true,
-      viewport,
-      hasTouch: true,
-      isMobile: true,
-      reducedMotion: 'no-preference',
-      seed,
-      timeScale: 1
-    },
-    thresholds: {
-      ...thresholds,
-      policy: '帧、Long Task、堆和 DOM 阈值仅生成 WARN；页面/控制台错误、外部请求、请求失败或采样完整性不足才判定 FAIL 并返回非零退出码。'
-    },
-    summary: {
-      games: results.length,
-      pass: results.filter(result => result.status === 'PASS').length,
-      passWithWarnings: results.filter(result => result.status === 'PASS_WITH_WARNINGS').length,
-      fail: hardFailures.length,
-      noExternalRequests: results.every(result => (result.errors?.externalRequests?.length ?? 0) === 0),
-      noConsoleErrors: results.every(result => (result.errors?.console?.length ?? 0) === 0),
-      noPageErrors: results.every(result => (result.errors?.page?.length ?? 0) === 0)
-    },
-    games: results
-  };
-  await fs.writeFile(outputFile, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+  const report = await createReport();
+  await writeJsonAtomic(outputFile, report);
   process.stdout.write(`长时性能报告：${path.relative(root, outputFile)}\n`);
   process.stdout.write('说明：以上为本地无头 Edge 预警数据，不替代微信真机长时验收。\n');
-  if (hardFailures.length) process.exitCode = 1;
+  if (report.exitCode !== 0) process.exitCode = report.exitCode;
+} catch (error) {
+  const fatalError = errorText(error);
+  const report = await createReport(fatalError);
+  await writeJsonAtomic(outputFile, report);
+  process.stderr.write(`长时性能验收异常：${fatalError}\n`);
+  process.stderr.write(`失败报告：${path.relative(root, outputFile)}\n`);
+  process.exitCode = 1;
 } finally {
-  await browser?.close();
-  server.close();
+  await browser?.close().catch(() => {});
+  server?.close();
 }

@@ -2,9 +2,9 @@
 
 ## 1. 验收结论
 
-浏览器纵切片验收：**PASS**。
+浏览器非生产评审包验收：**READY**。
 
-本结论覆盖本地 Edge/Playwright、三档移动视口、确定性胜负路径、生命周期、事件协议、离线资源和人工截图审查；不代表 iOS/Android 微信 WebView 真机认证或微信平台审核通过。
+本结论覆盖本地 Edge/Playwright、三档移动视口、确定性胜负路径、生命周期、事件协议、离线资源、生产入口门禁、无障碍专项和人工截图审查；不代表 iOS/Android 微信 WebView 真机认证或微信平台审核通过。
 
 执行命令：
 
@@ -31,6 +31,11 @@ hub                   direct-file PASS
 five-seconds-later    direct-file PASS
 world-mender          direct-file PASS
 rift-hunter           direct-file PASS
+five-seconds-later    production-guard PASS
+world-mender          production-guard PASS
+rift-hunter           production-guard PASS
+world-mender          landscape-guard PASS
+world-mender          sound-bus PASS
 ```
 
 详细机器结果：`test-results/wechat-h5-premium-games/verification.json`。
@@ -47,7 +52,7 @@ rift-hunter           direct-file PASS
 | 控制台与页面异常 | PASS | `errors` 为空 |
 | 外部请求 | PASS | `externalRequests` 为空 |
 | 离线单文件 | PASS | 无外部脚本、iframe、HTTP 图片/音视频资源；大厅和三款均通过 Edge `file://` 直开 |
-| 测试接口 | PASS | 三款均有 `window.__GAME_TEST__` |
+| 测试接口 | PASS | 三款只在 `test=1` 时挂载 `window.__GAME_TEST__`；普通入口为 `undefined`，且 `seed/speed/mute` 不改变规则 |
 | 状态播报 | PASS | 三款均有离散 `aria-live`/`role=status`；高频 HUD 不作为直播区 |
 | 结算焦点 | PASS | 三款胜负结算均播报结果并把焦点移入带标题的对话层；重玩后焦点返回游戏容器 |
 | 自然速度性能预警 | PASS | 本地 Edge、390×844、DPR2、每款约 8 秒；三款 rAF P95 为 18.1–18.2ms、最大 19.3ms、Long Task 为 0 |
@@ -236,6 +241,15 @@ node tools/profile-wechat-h5-premium-games.mjs
 - 高频生命、计时和击杀 HUD 移出 `aria-live`，只播报升级、风险规则和撤离阶段等离散事件。
 - 撤离或死亡结算会更新状态播报，并把焦点移入带标题的结算对话层。
 
+### 第五轮无障碍、音频与发布门禁加固
+
+- 三款开场、暂停和结算统一使用对话层、背景 `inert`、Tab 循环降级和焦点恢复。
+- 《五秒之后》《世界缝补师》在高度不超过 600px 的短横屏显示竖屏阻断，不推进局时；恢复竖屏后仍需玩家主动继续。
+- 大厅和《五秒之后》正确响应系统减少动态效果。
+- 《世界缝补师》增加有效缝合、无效缝合、生命获救和胜负结算四类程序合成短音效；单 AudioContext、首次手势解锁，静音、暂停和页面隐藏时安全降级。
+- `seed/speed/mute` 与 `window.__GAME_TEST__` 全部限定在 `test=1`；普通入口固定自然速度。
+- 无障碍自动验收达到 `25/28 PASS`，唯一允许失败为三款 `zoom-200`。这三项是 P2 已知限制，不得改写为 PASS。
+
 截图：
 
 - `rift-hunter-opening.png`
@@ -258,7 +272,7 @@ node tools/profile-wechat-h5-premium-games.mjs
 node tools/verify-wechat-miniprogram-shell.mjs
 ```
 
-结果：必需文件存在，五个 JSON 可解析，三个 JavaScript 文件语法通过，三款 HTML 路由、`web-view` 模板和合法 HTTPS 目录拼接均通过；HTTP、缺失主机、query、hash、URL 凭证和未知游戏参数均进入错误态，深链无上一页时回到游戏列表。当前电脑未安装微信开发者工具，因此本结论不包含微信编译、预览、真机或审核证据。
+结果：47/47 PASS，并生成 `test-results/wechat-h5-premium-games/miniprogram-shell-verification.json`。必需文件存在，五个 JSON 可解析，三个 JavaScript 文件语法通过，三款 HTML 路由、`web-view` 模板和合法 HTTPS 目录拼接均通过；HTTP、缺失主机、query、hash、URL 凭证和未知游戏参数均进入错误态，深链无上一页时回到游戏列表。当前电脑未安装微信开发者工具，因此本结论不包含微信编译、预览、真机或审核证据。
 
 ## 7. 已关闭问题
 
@@ -284,5 +298,6 @@ node tools/verify-wechat-miniprogram-shell.mjs
 - 弱网、远程资源缓存、CDN 回滚和真实线上上报。
 - 登录、云存档、分享、广告、支付、排行榜和反作弊。
 - 五名以上非制作人员的无引导首局测试。
+- 三款全屏 Canvas 的 200% CSS zoom 重构与真机验证。
 
-以上项目进入小流量测试前必须补齐，不能由当前浏览器结果推定。
+以上项目进入小流量测试前必须补齐，不能由当前浏览器结果推定。本包是非生产评审包；微信开发者工具、正式 AppID、业务域名、iOS/Android 真机、CDN、灰度、监控、回滚和审核未完成，不能声明生产 GO。

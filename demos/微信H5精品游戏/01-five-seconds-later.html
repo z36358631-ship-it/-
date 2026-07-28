@@ -88,7 +88,7 @@
     }
     .icon-button:hover { background: rgba(30, 36, 72, .86); }
     .icon-button:active { transform: scale(.92); }
-    .icon-button:focus-visible, .primary-button:focus-visible, .secondary-button:focus-visible {
+    .icon-button:focus-visible, .primary-button:focus-visible, .secondary-button:focus-visible, .switch:focus-visible {
       outline: 3px solid rgba(95, 234, 255, .8);
       outline-offset: 2px;
     }
@@ -113,6 +113,7 @@
       visibility: visible;
       pointer-events: auto;
     }
+    .overlay[aria-hidden="true"] { display: none; }
     .panel {
       width: 100%;
       padding: 24px 20px 20px;
@@ -356,6 +357,23 @@
       white-space: nowrap;
       border: 0;
     }
+    .rotate-guard {
+      display: none;
+      position: fixed;
+      z-index: 40;
+      inset: 0;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+      padding: 28px;
+      text-align: center;
+      background: #050812;
+      color: #d9efff;
+    }
+    .rotate-guard strong { font-size: 20px; }
+    .rotate-guard span { color: #9fb0ca; font-size: 13px; }
+    .rotate-guard.show { display: flex; }
     @media (max-width: 430px), (max-height: 850px) {
       .game-shell { width: 100vw; height: 100vh; border-radius: 0; }
     }
@@ -374,7 +392,7 @@
     </div>
     <span class="test-badge" id="testBadge">TEST ×1</span>
 
-    <section class="overlay show" id="introOverlay" aria-labelledby="gameTitle">
+    <section class="overlay show" id="introOverlay" role="dialog" aria-modal="true" aria-labelledby="gameTitle" aria-hidden="false" tabindex="-1">
       <div class="panel">
         <p class="eyebrow">TIME ECHO PROTOCOL</p>
         <h1 id="gameTitle">五秒之后</h1>
@@ -393,7 +411,7 @@
       </div>
     </section>
 
-    <section class="overlay" id="pauseOverlay" aria-labelledby="pauseTitle">
+    <section class="overlay" id="pauseOverlay" role="dialog" aria-modal="true" aria-labelledby="pauseTitle" aria-hidden="true" tabindex="-1">
       <div class="panel">
         <p class="eyebrow">TIMELINE SUSPENDED</p>
         <h1 id="pauseTitle">时间已暂停</h1>
@@ -403,7 +421,7 @@
       </div>
     </section>
 
-    <section class="overlay" id="resultOverlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle" tabindex="-1">
+    <section class="overlay" id="resultOverlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle" aria-hidden="true" tabindex="-1">
       <div class="panel">
         <p class="eyebrow" id="resultEyebrow">TIMELINE RESTORED</p>
         <h1 class="result-title" id="resultTitle">世界线已复原</h1>
@@ -437,6 +455,10 @@
         <button class="primary-button" id="replayBtn" type="button">再造一条世界线</button>
       </div>
     </section>
+    <div class="rotate-guard" id="rotateGuard" role="dialog" aria-modal="true" aria-labelledby="rotateTitle" aria-hidden="true" tabindex="-1" inert>
+      <strong id="rotateTitle">请旋转至竖屏</strong>
+      <span>时间裂隙只在纵向稳定</span>
+    </div>
   </main>
 
   <script>
@@ -458,8 +480,11 @@
     const testMode = params.get("test") === "1";
     const requestedSpeed = Number(params.get("speed"));
     const timeScale = testMode && Number.isFinite(requestedSpeed) ? Math.max(1, Math.min(30, requestedSpeed)) : 1;
-    const seedParam = Number(params.get("seed"));
+    const seedParam = testMode ? Number(params.get("seed")) : NaN;
     const initialSeed = Number.isFinite(seedParam) ? seedParam >>> 0 : (Date.now() >>> 0);
+    window.__GAME_META__ = Object.freeze({ schemaVersion: 1, gameId: GAME_ID, testMode, timeScale });
+    const systemReducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+    const shortLandscape = matchMedia("(orientation: landscape) and (max-height: 600px)");
 
     const canvas = document.getElementById("game");
     const shell = document.getElementById("gameShell");
@@ -472,8 +497,114 @@
     const muteBtn = document.getElementById("muteBtn");
     const pauseBtn = document.getElementById("pauseBtn");
     const motionSwitch = document.getElementById("motionSwitch");
+    const startBtn = document.getElementById("startBtn");
+    const resumeBtn = document.getElementById("resumeBtn");
+    const replayBtn = document.getElementById("replayBtn");
     const testBadge = document.getElementById("testBadge");
     const liveStatus = document.getElementById("liveStatus");
+    const rotateGuard = document.getElementById("rotateGuard");
+    const contentModals = [introOverlay, pauseOverlay, resultOverlay];
+    const modalLayers = [...contentModals, rotateGuard];
+    let activeModal = null;
+    let focusReturn = null;
+    let orientationReturn = null;
+
+    function focusables(layer) {
+      return [...layer.querySelectorAll(
+        'button:not([disabled]),a[href],input:not([disabled]),[tabindex]:not([tabindex="-1"])'
+      )].filter(node => !node.hidden && node.getClientRects().length > 0);
+    }
+
+    function setBackgroundInert(value) {
+      canvas.inert = value;
+      controls.inert = value;
+    }
+
+    function setModalState(layer, value) {
+      layer.classList.toggle("show", value);
+      layer.setAttribute("aria-hidden", String(!value));
+      layer.inert = !value;
+    }
+
+    function showModal(layer, preferred) {
+      if (document.activeElement && !layer.contains(document.activeElement)) {
+        focusReturn = document.activeElement;
+      }
+      activeModal = layer;
+      modalLayers.forEach(item => setModalState(item, item === layer));
+      setBackgroundInert(true);
+      (preferred || focusables(layer)[0] || layer).focus({ preventScroll: true });
+    }
+
+    function preferredFocus(layer) {
+      if (layer === introOverlay) return startBtn;
+      if (layer === pauseOverlay) return resumeBtn;
+      if (layer === resultOverlay) return resultOverlay;
+      return layer;
+    }
+
+    function activateModal(layer, preferred) {
+      if (layer !== rotateGuard && shortLandscape.matches) {
+        orientationReturn = { layer, preferred: preferred || preferredFocus(layer) };
+        showModal(rotateGuard, rotateGuard);
+        return;
+      }
+      if (layer !== rotateGuard) orientationReturn = null;
+      showModal(layer, preferred);
+    }
+
+    function enterOrientationGuard() {
+      if (activeModal === rotateGuard) return;
+      const layer = contentModals.includes(activeModal) ? activeModal : null;
+      orientationReturn = {
+        layer,
+        preferred: layer ? preferredFocus(layer) : shell
+      };
+      showModal(rotateGuard, rotateGuard);
+    }
+
+    function restoreOrientationContext() {
+      if (activeModal !== rotateGuard) return;
+      const restore = orientationReturn;
+      orientationReturn = null;
+      if (restore?.layer) {
+        showModal(restore.layer, restore.preferred || preferredFocus(restore.layer));
+        return;
+      }
+      activeModal = null;
+      modalLayers.forEach(layer => setModalState(layer, false));
+      setBackgroundInert(false);
+      (restore?.preferred || shell).focus({ preventScroll: true });
+    }
+
+    function deactivateModal(layer, fallback = shell) {
+      setModalState(layer, false);
+      if (activeModal !== layer) return;
+      activeModal = null;
+      setBackgroundInert(false);
+      const target = fallback || focusReturn || shell;
+      focusReturn = null;
+      target?.focus?.({ preventScroll: true });
+    }
+
+    document.addEventListener("keydown", event => {
+      if (event.key !== "Tab" || !activeModal) return;
+      const items = focusables(activeModal);
+      if (!items.length) {
+        event.preventDefault();
+        activeModal.focus({ preventScroll: true });
+        return;
+      }
+      const first = items[0];
+      const last = items.at(-1);
+      if (!activeModal.contains(document.activeElement) || (event.shiftKey && document.activeElement === first)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
 
     const echoStyles = [
       { color: "#62e7ff", dim: "rgba(98,231,255,.28)", shape: "diamond", label: "Ⅰ" },
@@ -539,7 +670,7 @@
         messageTimer: 5,
         phase: "awakening",
         reducedMotion: false,
-        muted: params.get("mute") === "1",
+        muted: testMode && params.get("mute") === "1",
         endedAt: 0,
         lastDamageSource: "",
         layoutVersion: 0
@@ -603,11 +734,13 @@
       state.muted = muted;
       state.mode = "playing";
       createLayout();
-      introOverlay.classList.remove("show");
-      pauseOverlay.classList.remove("show");
-      resultOverlay.classList.remove("show");
       controls.hidden = false;
-      shell.focus({ preventScroll: true });
+      activeModal = null;
+      orientationReturn = null;
+      modalLayers.forEach(layer => setModalState(layer, false));
+      setBackgroundInert(false);
+      if (shortLandscape.matches) pauseGame("orientation");
+      else shell.focus({ preventScroll: true });
       muteBtn.textContent = state.muted ? "静" : "♪";
       lastFrame = performance.now();
       accumulator = 0;
@@ -662,15 +795,19 @@
       pauseReason.textContent = reason === "hidden"
         ? "页面离开时，所有计时与回声已自动冻结。准备好后，主动继续。"
         : "所有回声都停在这一刻。准备好后，主动继续。";
-      pauseOverlay.classList.add("show");
+      activateModal(pauseOverlay, resumeBtn);
       GamePlatform.emit("lifecycle_pause", { reason, elapsed: round(state.elapsed) });
       if (audioContext && audioContext.state === "running") audioContext.suspend().catch(() => {});
     }
 
     function resumeGame() {
       if (state.mode !== "paused") return;
+      if (shortLandscape.matches) {
+        enterOrientationGuard();
+        return;
+      }
       state.mode = "playing";
-      pauseOverlay.classList.remove("show");
+      deactivateModal(pauseOverlay, pauseBtn);
       lastFrame = performance.now();
       accumulator = 0;
       GamePlatform.emit("lifecycle_resume", { elapsed: round(state.elapsed) });
@@ -713,11 +850,7 @@
       document.getElementById("statTime").textContent = formatTime(state.elapsed);
       resultOverlay.classList.add("show");
       liveStatus.textContent = won ? "世界线已复原" : `时间线已崩塌。${lossGuidance(reason)}`;
-      resultOverlay.focus({ preventScroll: true });
-      requestAnimationFrame(() => resultOverlay.focus({ preventScroll: true }));
-      setTimeout(() => {
-        if (state.mode === "won" || state.mode === "lost") resultOverlay.focus({ preventScroll: true });
-      }, 240);
+      activateModal(resultOverlay, resultOverlay);
       const payload = {
         result: won ? "win" : "loss",
         reason,
@@ -1664,25 +1797,31 @@
       return typeof structuredClone === "function" ? structuredClone(value) : JSON.parse(JSON.stringify(value));
     }
 
-    window.__GAME_TEST__ = {
-      getState: () => clone(publicState()),
-      getEvents: () => clone(eventLog),
-      reset: () => clone(resetRun(true)),
-      start: () => { if (state.mode === "intro") startGame(); return clone(publicState()); },
-      setTarget: (x, y) => {
-        if (state.mode === "playing") {
-          state.player.targetX = clamp(Number(x) || 0, 18, W - 18);
-          state.player.targetY = clamp(Number(y) || 0, FIELD_TOP + 18, FIELD_BOTTOM - 18);
-          if (!state.firstInputSent) {
-            state.firstInputSent = true;
-            GamePlatform.emit("first_input", { elapsed: round(state.elapsed), input: "test_pointer" });
+    if (testMode) {
+      window.__GAME_TEST__ = {
+        getState: () => clone(publicState()),
+        getEvents: () => clone(eventLog),
+        reset: () => clone(resetRun(true)),
+        start: () => { if (state.mode === "intro") startGame(); return clone(publicState()); },
+        setTarget: (x, y) => {
+          if (state.mode === "playing") {
+            state.player.targetX = clamp(Number(x) || 0, 18, W - 18);
+            state.player.targetY = clamp(Number(y) || 0, FIELD_TOP + 18, FIELD_BOTTOM - 18);
+            if (!state.firstInputSent) {
+              state.firstInputSent = true;
+              GamePlatform.emit("first_input", { elapsed: round(state.elapsed), input: "test_pointer" });
+            }
           }
+          return clone(publicState());
+        },
+        pause: () => { pauseGame("test"); return clone(publicState()); },
+        resume: () => { resumeGame(); return clone(publicState()); },
+        finish: won => {
+          if (state.mode === "playing") endGame(Boolean(won), "test");
+          return clone(publicState());
         }
-        return clone(publicState());
-      },
-      pause: () => { pauseGame("test"); return clone(publicState()); },
-      resume: () => { resumeGame(); return clone(publicState()); }
-    };
+      };
+    }
 
     function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
     function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
@@ -1713,10 +1852,10 @@
       ctx.closePath();
     }
 
-    document.getElementById("startBtn").addEventListener("click", startGame);
-    document.getElementById("resumeBtn").addEventListener("click", resumeGame);
+    startBtn.addEventListener("click", startGame);
+    resumeBtn.addEventListener("click", resumeGame);
     document.getElementById("restartBtn").addEventListener("click", () => resetRun(true));
-    document.getElementById("replayBtn").addEventListener("click", () => resetRun(true));
+    replayBtn.addEventListener("click", () => resetRun(true));
     pauseBtn.addEventListener("click", () => pauseGame("manual"));
     muteBtn.addEventListener("click", () => {
       state.muted = !state.muted;
@@ -1743,9 +1882,23 @@
     window.addEventListener("beforeunload", () => cancelAnimationFrame(rafId));
 
     state.muted = state.muted || Boolean(GamePlatform.loadLocal("muted", false));
-    state.reducedMotion = Boolean(GamePlatform.loadLocal("reducedMotion", false));
+    state.reducedMotion = systemReducedMotion.matches
+      || Boolean(GamePlatform.loadLocal("reducedMotion", false));
     muteBtn.textContent = state.muted ? "×" : "♪";
     motionSwitch.setAttribute("aria-checked", String(state.reducedMotion));
+    systemReducedMotion.addEventListener?.("change", event => {
+      if (!event.matches) return;
+      state.reducedMotion = true;
+      motionSwitch.setAttribute("aria-checked", "true");
+    });
+    shortLandscape.addEventListener?.("change", event => {
+      if (event.matches) {
+        if (state.mode === "playing") pauseGame("orientation");
+        else enterOrientationGuard();
+      } else {
+        restoreOrientationContext();
+      }
+    });
     if (testMode) {
       testBadge.classList.add("show");
       testBadge.textContent = `TEST ×${timeScale}`;
@@ -1753,6 +1906,7 @@
     if ("ResizeObserver" in window) new ResizeObserver(resizeCanvas).observe(shell);
     else window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
+    activateModal(introOverlay, startBtn);
     GamePlatform.emit("game_open", { env: GamePlatform.getEnv(), testMode, timeScale });
     rafId = requestAnimationFrame(loop);
   })();

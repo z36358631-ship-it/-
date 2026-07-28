@@ -43,7 +43,14 @@
     .score{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 18px}
     .score div{padding:12px 4px;border-radius:13px;background:#ffffff08}.score strong{display:block;font-size:22px;color:#ffe297}.score span{font-size:11px;color:#aeb3c3}
     #continueBtn{margin-top:12px}
+    #rotateGuard{display:none;position:absolute;z-index:30;inset:0;align-items:center;justify-content:center;padding:28px;text-align:center;background:#0d1020;color:#fff4d6}
+    #rotateGuard .card{max-width:520px}
+    #rotateGuard p{margin:8px auto 0;color:#c9ccda;font-size:14px;line-height:1.7}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    @media (orientation:landscape) and (max-height:600px){
+      #app{width:100vw;height:100vh;max-width:none;max-height:none}
+      #rotateGuard{display:flex}
+    }
     @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.legend-dock{transition:none}}
   </style>
 </head>
@@ -64,11 +71,11 @@
     </div>
   </div>
 
-  <section id="intro" class="overlay">
+  <section id="intro" class="overlay" role="dialog" aria-modal="true" aria-labelledby="introTitle">
     <div class="card">
       <div class="emblem" aria-hidden="true">✦</div>
       <p class="eyebrow">A STITCH OF HOPE</p>
-      <h1>世界缝补师</h1>
+      <h1 id="introTitle">世界缝补师</h1>
       <p class="desc">拖住发光锚点，沿虚线拉到匹配锚点。目标是救回至少 9/12 个生命并连接花园；金线只够花园加三条救援路线。</p>
       <div class="tips">
         <div class="tip"><b>桥梁针脚 ═</b>跨过撕裂的地面</div>
@@ -78,10 +85,10 @@
     </div>
   </section>
 
-  <section id="pauseOverlay" class="overlay" hidden>
+  <section id="pauseOverlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="pauseTitle" hidden>
     <div class="card">
       <div class="emblem" aria-hidden="true">Ⅱ</div>
-      <h2>针线暂歇</h2>
+      <h2 id="pauseTitle">针线暂歇</h2>
       <p class="desc">世界、生命和倒计时都已暂停。</p>
       <div class="pause-settings" aria-label="游戏设置">
         <button id="muteBtn" aria-label="切换声音">声音</button>
@@ -107,6 +114,13 @@
     </div>
   </section>
   <div id="liveStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+  <section id="rotateGuard" role="dialog" aria-modal="true" aria-labelledby="rotateTitle" tabindex="-1" aria-hidden="true">
+    <div class="card">
+      <div class="emblem" aria-hidden="true">↻</div>
+      <h2 id="rotateTitle">请旋转至竖屏</h2>
+      <p>针脚需要完整的纵向画布。回到竖屏后，可从暂停处继续缝补。</p>
+    </div>
+  </section>
 </main>
 
 <script>
@@ -116,12 +130,99 @@
   const canvas=document.getElementById("game"),ctx=canvas.getContext("2d",{alpha:false});
   const $=id=>document.getElementById(id);
   const params=new URLSearchParams(location.search);
-  const TEST=params.get("test")==="1", SPEED=Math.max(1,Math.min(30,Number(params.get("speed"))||1));
-  const forcedMute=params.get("mute")==="1";
-  let seed=(Number(params.get("seed"))||Date.now())>>>0;
+  const TEST=params.get("test")==="1";
+  const requestedSpeed=Number(params.get("speed"));
+  const SPEED=TEST&&Number.isFinite(requestedSpeed)?Math.max(1,Math.min(30,requestedSpeed)):1;
+  const forcedMute=TEST&&params.get("mute")==="1";
+  const requestedSeed=TEST?Number(params.get("seed")):NaN;
+  let seed=(Number.isFinite(requestedSeed)?requestedSeed:Date.now())>>>0;
   const initialSeed=seed;
+  window.__GAME_META__=Object.freeze({schemaVersion:1,gameId:GAME_ID,testMode:TEST,timeScale:SPEED});
   function rand(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}
   const prefersReduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const SoundBus=(()=>{
+    let context=null,master=null,muted=forcedMute,suspended=false,contextCount=0,lastLifeSavedAt=0;
+    const voices=new Set(),cueCounts=Object.create(null);
+    const allowedCues=new Set(["stitch_ok","stitch_invalid","life_saved","run_won","run_lost"]);
+    const supported=()=>Boolean(window.AudioContext||window.webkitAudioContext);
+    function cleanup(voice){
+      if(!voices.has(voice))return;
+      voices.delete(voice);
+      try{voice.oscillator.disconnect()}catch(_){}
+      try{voice.gain.disconnect()}catch(_){}
+    }
+    function stopVoices(){
+      for(const voice of [...voices]){
+        try{voice.oscillator.stop()}catch(_){}
+        cleanup(voice);
+      }
+    }
+    function unlock(){
+      if(muted)return false;
+      try{
+        if(!context){
+          const AudioCtor=window.AudioContext||window.webkitAudioContext;
+          if(!AudioCtor)return false;
+          context=new AudioCtor();contextCount++;
+          master=context.createGain();master.gain.value=.045;master.connect(context.destination);
+        }
+        suspended=false;
+        if(context.state==="suspended")context.resume().catch(()=>{});
+        return true;
+      }catch(_){return false}
+    }
+    function voice(frequency,duration,offset=0,type="sine"){
+      if(!context||!master||muted||suspended)return false;
+      try{
+        const now=context.currentTime+offset,oscillator=context.createOscillator(),gain=context.createGain();
+        oscillator.type=type;oscillator.frequency.setValueAtTime(frequency,now);
+        gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.7,now+.012);
+        gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
+        oscillator.connect(gain);gain.connect(master);
+        const record={oscillator,gain};voices.add(record);oscillator.onended=()=>cleanup(record);
+        oscillator.start(now);oscillator.stop(now+duration+.02);
+        return true;
+      }catch(_){return false}
+    }
+    function cue(name){
+      if(!allowedCues.has(name))return false;
+      if(muted||suspended||!context)return false;
+      if(name==="life_saved"){
+        const now=performance.now();
+        if(now-lastLifeSavedAt<180)return false;
+        lastLifeSavedAt=now;
+      }
+      cueCounts[name]=(cueCounts[name]||0)+1;
+      if(name==="stitch_ok"){voice(440,.11);voice(660,.13,.07)}
+      else if(name==="stitch_invalid"){voice(190,.12,0,"triangle");voice(145,.12,.05,"triangle")}
+      else if(name==="life_saved")voice(784,.15);
+      else if(name==="run_won"){voice(523,.18);voice(659,.2,.08);voice(784,.22,.16)}
+      else if(name==="run_lost"){voice(220,.2,0,"triangle");voice(165,.24,.11,"triangle")}
+      return true;
+    }
+    function setMuted(value){
+      muted=Boolean(value);
+      if(muted)stopVoices();
+      if(master&&context)master.gain.setValueAtTime(muted?0:.045,context.currentTime);
+    }
+    function suspend(){
+      suspended=true;stopVoices();
+      try{context?.suspend?.().catch(()=>{})}catch(_){}
+    }
+    function resume(){
+      if(muted||!context)return false;
+      suspended=false;
+      try{if(context.state==="suspended")context.resume().catch(()=>{});return true}catch(_){return false}
+    }
+    return {
+      unlock,cue,setMuted,suspend,resume,silence:stopVoices,
+      getState:()=>({
+        supported:supported(),contextCount,contextState:context?.state||"uncreated",
+        muted,suspended,activeVoices:voices.size,cueCounts:{...cueCounts}
+      })
+    };
+  })();
 
   const state={
     phase:"intro",runId:"",elapsed:0,thread:345,maxThread:345,stitches:[],lives:[],saved:0,lost:0,
@@ -173,20 +274,91 @@
     requestShare(){return Promise.resolve({supported:false})}
   };
 
+  const FocusManager=(()=>{
+    const rotate=$("rotateGuard");
+    const shortLandscape=matchMedia("(orientation: landscape) and (max-height: 600px)");
+    const background=()=>[
+      canvas,document.querySelector(".top-actions"),$("undoBtn"),$("legendDock")
+    ].filter(Boolean);
+    const overlays=()=>[$("result"),$("pauseOverlay"),$("intro")];
+    const defaultFocus={intro:"startBtn",pauseOverlay:"continueBtn",result:"result"};
+    let focusToken=0;
+    function isolate(element,value){
+      if(!element)return;
+      element.inert=Boolean(value);
+      if(value)element.setAttribute("aria-hidden","true");
+      else element.removeAttribute("aria-hidden");
+    }
+    function setModalState(modal,active){
+      if(!modal)return;
+      modal.hidden=!active;
+      isolate(modal,!active);
+    }
+    function focusLater(element){
+      const token=++focusToken;
+      if(element&&!element.hidden&&!element.inert)element.focus({preventScroll:true});
+      requestAnimationFrame(()=>{
+        if(token===focusToken&&element&&!element.hidden&&!element.inert)element.focus({preventScroll:true});
+      });
+    }
+    function activeOverlay(){return overlays().find(overlay=>overlay&&!overlay.hidden)||null}
+    function sync(preferred=null){
+      const modalElements=overlays();
+      [...$("app").children].forEach(element=>{
+        if(modalElements.includes(element))setModalState(element,!element.hidden);
+        else isolate(element,false);
+      });
+      rotate.setAttribute("aria-hidden","true");
+      if(shortLandscape.matches){
+        [...$("app").children].forEach(element=>isolate(element,element!==rotate));
+        rotate.setAttribute("aria-hidden","false");isolate(rotate,false);focusLater(rotate);return;
+      }
+      const modal=activeOverlay();
+      if(modal){
+        background().forEach(element=>isolate(element,true));
+        focusLater(preferred||$(defaultFocus[modal.id])||modal);
+      }else{
+        focusLater(preferred||$("app"));
+      }
+    }
+    function show(id,focusId){
+      const overlay=$(id);
+      overlays().forEach(modal=>setModalState(modal,modal===overlay));
+      sync($(focusId||defaultFocus[id])||overlay);
+    }
+    function hide(id,focusTarget=null){
+      setModalState($(id),false);sync(focusTarget);
+    }
+    document.addEventListener("keydown",event=>{
+      if(event.key!=="Tab")return;
+      const modal=shortLandscape.matches?rotate:activeOverlay();
+      if(!modal)return;
+      const focusables=[...modal.querySelectorAll("button:not([disabled]),a[href],[tabindex]:not([tabindex='-1'])")]
+        .filter(element=>!element.hidden&&!element.inert&&getComputedStyle(element).display!=="none");
+      if(!focusables.length){event.preventDefault();focusLater(modal);return}
+      const first=focusables[0],last=focusables[focusables.length-1],active=document.activeElement;
+      if(event.shiftKey&&(active===first||!modal.contains(active))){event.preventDefault();last.focus()}
+      else if(!event.shiftKey&&(active===last||!modal.contains(active))){event.preventDefault();first.focus()}
+    });
+    return {show,hide,sync,isShortLandscape:()=>shortLandscape.matches,media:shortLandscape};
+  })();
+
   function freshRunId(){return "wm-"+Date.now().toString(36)+"-"+Math.floor(rand()*1e6).toString(36)}
   function resetRun(isReplay=false){
+    SoundBus.silence();
     state.phase="intro";state.runId=freshRunId();state.elapsed=0;state.thread=state.maxThread;state.stitches=[];
     state.lives=[];state.saved=0;state.lost=0;state.paused=false;state.pauseReason="";state.drag=null;state.selectedAnchor=null;
     state.feedback=[];state.particles=[];state.cameraShake=0;state.firstInput=false;state.bridgeRevealed=false;
     state.barrierRevealed=false;state.gardenConnected=false;state.settleBoostAnnounced=false;state.lastTs=performance.now();state.acc=0;
     state.layoutVariant=Math.floor(rand()*3);
-    $("intro").hidden=false;$("pauseOverlay").hidden=true;$("result").hidden=true;$("undoBtn").disabled=true;
+    $("undoBtn").disabled=true;
+    FocusManager.show("intro","startBtn");
     state.legendAutoCollapsed=false;setLegend(true);
     if(isReplay)GamePlatform.emit("replay_start",{seed:initialSeed});
   }
   function startRun(){
     if(state.phase!=="intro")return;
-    state.phase="playing";state.lastTs=performance.now();$("intro").hidden=true;$("app").focus({preventScroll:true});
+    state.phase="playing";state.lastTs=performance.now();FocusManager.hide("intro",$("app"));
     const payload={env:GamePlatform.getEnv(),seed:initialSeed,test:TEST};
     GamePlatform.emit("game_start",payload);
     GamePlatform.emit("run_start",payload);
@@ -194,14 +366,16 @@
   }
   function pauseGame(reason="manual"){
     if(state.phase!=="playing"||state.paused)return;
-    state.paused=true;state.pauseReason=reason;state.drag=null;$("pauseOverlay").hidden=false;
+    state.paused=true;state.pauseReason=reason;state.drag=null;SoundBus.suspend();
+    FocusManager.show("pauseOverlay","continueBtn");
     GamePlatform.emit("lifecycle_pause",{reason,elapsed:+state.elapsed.toFixed(2)});
     GamePlatform.emit("pause",{reason,elapsed:+state.elapsed.toFixed(2)});
   }
-  function showResume(){if(state.phase==="playing"&&state.paused)$("pauseOverlay").hidden=false}
+  function showResume(){if(state.phase==="playing"&&state.paused)FocusManager.show("pauseOverlay","continueBtn")}
   function resumeGame(){
     if(state.phase!=="playing"||!state.paused)return;
-    state.paused=false;state.pauseReason="";state.lastTs=performance.now();$("pauseOverlay").hidden=true;
+    state.paused=false;state.pauseReason="";state.lastTs=performance.now();SoundBus.resume();
+    FocusManager.hide("pauseOverlay",$("app"));
     GamePlatform.emit("lifecycle_resume",{elapsed:+state.elapsed.toFixed(2)});
     GamePlatform.emit("resume",{elapsed:+state.elapsed.toFixed(2)});
   }
@@ -265,6 +439,7 @@
     l.status="saved";state.saved++;burst(l.x,l.y,routes[l.route].color,12);
     announce(`${routes[l.route].name}抵达花园，已获救 ${state.saved} 个生命`);
     GamePlatform.emit("life_saved",{id:l.id,route:routes[l.route].edge,saved:state.saved});
+    SoundBus.cue("life_saved");
   }
   function loseLife(l,reason){
     l.status="lost";state.lost++;burst(l.x,l.y,"#8c8793",7);
@@ -291,6 +466,7 @@
     autoCollapseLegend();
     announce(`${edge.name}完成，消耗 ${edge.cost} 线长`);
     GamePlatform.emit("stitch_complete",{edgeId:edge.id,role:edge.role,cost:edge.cost,thread:state.thread});
+    SoundBus.cue("stitch_ok");
     return true;
   }
   function invalidFeedback(from,to,reason){
@@ -298,6 +474,7 @@
     state.feedback.push({text:`× ${reason} · 不消耗线`,x:b.x,y:b.y-24,life:1.3,color:"#ff7378"});
     state.cameraShake=state.reducedMotion?0:8;announce(`${reason}，没有消耗金线`);
     GamePlatform.emit("invalid_stitch",{from,to:to||null,reason,thread:state.thread});
+    SoundBus.cue("stitch_invalid");
   }
   function undo(){
     if(state.phase!=="playing"||state.paused||!state.stitches.length)return false;
@@ -312,7 +489,7 @@
   function finish(won,reason){
     if(state.phase!=="playing")return;
     state.phase=won?"won":"lost";state.paused=false;state.drag=null;
-    $("pauseOverlay").hidden=true;$("result").hidden=false;$("undoBtn").disabled=true;
+    $("pauseOverlay").hidden=true;$("undoBtn").disabled=true;
     $("resultEmblem").textContent=won?"✦":"⌁";$("resultEyebrow").textContent=won?"THE WORLD REMEMBERS":"THE THREAD RESTS";
     $("resultTitle").textContent=won?"世界重新有了颜色":"还有裂口等待下一针";
     $("resultDesc").textContent=won?`你用桥梁与屏障护送了 ${state.saved} 个小生命。每一道针脚都成了归途。`:`本次救回 ${state.saved} 个生命。撤销错误选择，先保证三条安全路线和花园回路。`;
@@ -320,7 +497,8 @@
     $("routeSummary").textContent=`桥梁 ${bridges} · 屏障 ${barriers} · 花园回路${state.gardenConnected?"已连接":"未连接"}`;
     $("savedScore").textContent=state.saved;$("lostScore").textContent=12-state.saved;$("threadScore").textContent=state.thread;
     announce(won?`世界重新有了颜色，获救 ${state.saved} 个生命`:`还有裂口等待下一针，本次获救 ${state.saved} 个生命`);
-    $("result").focus({preventScroll:true});
+    SoundBus.cue(won?"run_won":"run_lost");
+    FocusManager.show("result","result");
     if(won)GamePlatform.emit("core_payoff",{saved:state.saved,thread:state.thread,elapsed:+state.elapsed.toFixed(2)});
     GamePlatform.emit("run_end",{result:won?"won":"lost",reason,saved:state.saved,lost:12-state.saved,thread:state.thread,
       elapsed:+state.elapsed.toFixed(2),roles:[...new Set(state.stitches.map(s=>s.role))]});
@@ -490,6 +668,7 @@
     return best;
   }
   canvas.addEventListener("pointerdown",ev=>{
+    SoundBus.unlock();
     if(state.phase!=="playing"||state.paused)return;const p=point(ev),a=hitAnchor(p);
     if(!a)return;autoCollapseLegend();canvas.setPointerCapture?.(ev.pointerId);
     const from=state.selectedAnchor&&state.selectedAnchor!==a.id?state.selectedAnchor:a.id;
@@ -512,20 +691,28 @@
   }
   canvas.addEventListener("pointerup",endDrag);canvas.addEventListener("pointercancel",()=>{state.drag=null});
 
-  $("startBtn").addEventListener("click",startRun);
+  $("startBtn").addEventListener("click",()=>{SoundBus.unlock();startRun()});
   $("pauseBtn").addEventListener("click",()=>state.paused?showResume():pauseGame("manual"));
   $("continueBtn").addEventListener("click",resumeGame);
   $("undoBtn").addEventListener("click",undo);
   $("legendToggle").addEventListener("click",()=>setLegend(!state.legendExpanded));
-  $("replayBtn").addEventListener("click",()=>{resetRun(true);startRun()});
+  $("replayBtn").addEventListener("click",()=>{SoundBus.unlock();resetRun(true);startRun()});
   $("muteBtn").addEventListener("click",()=>{
-    state.mute=!state.mute;$("muteBtn").textContent=state.mute?"静音":"声音";GamePlatform.saveLocal("mute",state.mute);
+    state.mute=!state.mute;SoundBus.setMuted(state.mute);
+    if(!state.mute){SoundBus.unlock();if(state.paused)SoundBus.suspend()}
+    $("muteBtn").textContent=state.mute?"静音":"声音";GamePlatform.saveLocal("mute",state.mute);
   });
   $("motionBtn").addEventListener("click",()=>{
     state.reducedMotion=!state.reducedMotion;$("motionBtn").textContent=state.reducedMotion?"简动":"动效";GamePlatform.saveLocal("reducedMotion",state.reducedMotion);
   });
   document.addEventListener("visibilitychange",()=>{if(document.hidden)pauseGame("hidden");else showResume()});
   window.addEventListener("blur",()=>{if(!TEST)pauseGame("blur")});
+  const onOrientationChange=()=>{
+    if(FocusManager.isShortLandscape()&&state.phase==="playing"&&!state.paused)pauseGame("orientation");
+    FocusManager.sync();
+  };
+  if(FocusManager.media.addEventListener)FocusManager.media.addEventListener("change",onOrientationChange);
+  else FocusManager.media.addListener?.(onOrientationChange);
   new ResizeObserver(resize).observe(canvas);
 
   function publicState(){
@@ -537,27 +724,33 @@
       bridgeBuilt:state.stitches.some(s=>s.role==="bridge"),barrierBuilt:state.stitches.some(s=>s.role==="barrier"),
       mechanics:{firstInput:state.firstInput,bridge:state.bridgeRevealed,barrier:state.barrierRevealed,firstGuideEdge:state.firstInput?null:"west_bridge",settlementBoost:settlementBoost()?1.8:1},
       ui:{legendExpanded:state.legendExpanded,selectedAnchor:state.selectedAnchor},
+      testMode:TEST,timeScale:SPEED,
       anchors:anchors.map(a=>({id:a.id,x:a.x,y:a.y,type:a.type})),
       availableEdges:edges.map(e=>({id:e.id,a:e.a,b:e.b,cost:e.cost,role:e.role,stitched:isStitched(e.id)}))
     };
   }
-  window.__GAME_TEST__={
-    getState:()=>JSON.parse(JSON.stringify(publicState())),
-    reset:()=>{seed=initialSeed;resetRun(false);return publicState()},
-    start:()=>{startRun();return publicState()},
-    stitch:(from,to)=>{if(state.phase==="intro")startRun();return {ok:stitch(from,to),state:publicState()}},
-    connect:(from,to)=>{if(state.phase==="intro")startRun();return {ok:stitch(from,to),state:publicState()}},
-    undo:()=>({ok:undo(),state:publicState()}),
-    resume:()=>{resumeGame();return publicState()},
-    pause:()=>{pauseGame("test");return publicState()},
-    advance:(seconds)=>{
-      if(state.phase==="intro")startRun();const total=Math.max(0,Math.min(180,Number(seconds)||0)),n=Math.ceil(total*60);
-      for(let i=0;i<n&&state.phase==="playing";i++)update(1/60);render();return publicState();
-    },
-    finish:()=>{if(state.phase==="intro")startRun();window.__GAME_TEST__.advance(180);return publicState()}
-  };
+  if(TEST){
+    window.__GAME_TEST__={
+      getState:()=>JSON.parse(JSON.stringify(publicState())),
+      reset:()=>{seed=initialSeed;resetRun(false);return publicState()},
+      start:()=>{startRun();return publicState()},
+      stitch:(from,to)=>{if(state.phase==="intro")startRun();return {ok:stitch(from,to),state:publicState()}},
+      connect:(from,to)=>{if(state.phase==="intro")startRun();return {ok:stitch(from,to),state:publicState()}},
+      undo:()=>({ok:undo(),state:publicState()}),
+      resume:()=>{resumeGame();return publicState()},
+      pause:()=>{pauseGame("test");return publicState()},
+      advance:(seconds)=>{
+        if(state.phase==="intro")startRun();const total=Math.max(0,Math.min(180,Number(seconds)||0)),n=Math.ceil(total*60);
+        for(let i=0;i<n&&state.phase==="playing";i++)update(1/60);render();return publicState();
+      },
+      finish:()=>{if(state.phase==="intro")startRun();window.__GAME_TEST__.advance(180);return publicState()},
+      sound:()=>JSON.parse(JSON.stringify(SoundBus.getState())),
+      cue:name=>SoundBus.cue(name)
+    };
+  }
 
   state.mute=forcedMute||GamePlatform.loadLocal("mute",false);
+  SoundBus.setMuted(state.mute);
   state.reducedMotion=prefersReduce||GamePlatform.loadLocal("reducedMotion",false);
   $("muteBtn").textContent=state.mute?"静音":"声音";$("motionBtn").textContent=state.reducedMotion?"简动":"动效";
   resetRun(false);resize();requestAnimationFrame(frame);
