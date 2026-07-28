@@ -3,10 +3,16 @@
     "workbench:start": "node workbench/server.mjs",
     "workbench:test": "node --test test/workbench/*.test.mjs",
     "workbench:verify-ui": "node tools/verify-personal-codex-workbench-ui.mjs",
-    "workbench:verify-real": "node tools/verify-personal-codex-workbench-real.mjs"
+    "workbench:verify-real": "node tools/verify-personal-codex-workbench-real.mjs",
+    "workbench:build-portable": "node tools/build-portable-workbench.mjs",
+    "workbench:verify-portable": "node tools/verify-portable-workbench.mjs"
   },
   "dependencies": {
     "docx": "^9.6.1",
     "playwright-core": "1.61.1"
+  },
+  "devDependencies": {
+    "@openai/codex": "0.130.0",
+    "postject": "1.0.0-alpha.6"
   }
 }

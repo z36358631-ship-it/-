@@ -5,24 +5,42 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createWorkbenchServer } from '../workbench/server.mjs';
 
-const workspaceRoot = path.resolve(import.meta.dirname, '..');
-const evidencePath = path.join(
-  workspaceRoot,
-  'test-results',
-  'personal-codex-workbench',
-  'real-integration-results.json',
+const externalSession = process.env.WORKBENCH_VERIFY_SESSION_JSON
+  ? JSON.parse(process.env.WORKBENCH_VERIFY_SESSION_JSON)
+  : null;
+const repositoryRoot = path.resolve(import.meta.dirname, '..');
+const workspaceRoot = path.resolve(
+  process.env.WORKBENCH_VERIFY_WORKSPACE || repositoryRoot,
+);
+const evidencePath = path.resolve(
+  process.env.WORKBENCH_VERIFY_EVIDENCE
+    || path.join(
+      repositoryRoot,
+      'test-results',
+      'personal-codex-workbench',
+      'real-integration-results.json',
+    ),
 );
 const candidatePath = 'test-results/personal-codex-workbench/real-integration-candidate.md';
 const candidateAbsolutePath = path.join(workspaceRoot, ...candidatePath.split('/'));
 const terminalStatuses = new Set(['completed', 'failed', 'cancelled', 'interrupted']);
 const startedAt = new Date().toISOString();
-const codexVersion = process.platform === 'win32'
-  ? execFileSync('cmd.exe', ['/d', '/s', '/c', 'codex.cmd --version'], {
-      cwd: workspaceRoot,
-      encoding: 'utf8',
-      windowsHide: true,
-    }).trim()
-  : execFileSync('codex.cmd', ['--version'], {
+const codexVersion = externalSession
+  ? String(process.env.WORKBENCH_VERIFY_CODEX_VERSION || 'portable Codex 0.130.0')
+  : process.platform === 'win32'
+    ? execFileSync('cmd.exe', ['/d', '/s', '/c', 'codex.cmd --version'], {
+        cwd: workspaceRoot,
+        encoding: 'utf8',
+        windowsHide: true,
+      }).trim()
+    : execFileSync('codex.cmd', ['--version'], {
+        cwd: workspaceRoot,
+        encoding: 'utf8',
+        windowsHide: true,
+      }).trim();
+const sourceCommit = externalSession
+  ? String(process.env.WORKBENCH_VERIFY_SOURCE_COMMIT || 'external-session')
+  : execFileSync('git', ['rev-parse', 'HEAD'], {
       cwd: workspaceRoot,
       encoding: 'utf8',
       windowsHide: true,
@@ -30,11 +48,7 @@ const codexVersion = process.platform === 'win32'
 const report = {
   startedAt,
   finishedAt: null,
-  sourceCommit: execFileSync('git', ['rev-parse', 'HEAD'], {
-    cwd: workspaceRoot,
-    encoding: 'utf8',
-    windowsHide: true,
-  }).trim(),
+  sourceCommit,
   codexVersion,
   candidatePath,
   status: 'running',
@@ -70,13 +84,23 @@ assert.equal(
   `Candidate path must be absent before verification: ${candidatePath}`,
 );
 
-const app = await createWorkbenchServer({
-  env: {
-    ...process.env,
-    WORKBENCH_PORT: '0',
-    WORKBENCH_ROOT: workspaceRoot,
-  },
-});
+const app = externalSession
+  ? {
+      address: () => ({ port: externalSession.port }),
+      close: async () => {},
+      config: {
+        originForPort: port => `http://127.0.0.1:${port}`,
+        sessionToken: externalSession.token,
+      },
+      listen: async () => {},
+    }
+  : await createWorkbenchServer({
+      env: {
+        ...process.env,
+        WORKBENCH_PORT: '0',
+        WORKBENCH_ROOT: workspaceRoot,
+      },
+    });
 let context;
 let writeRunId = null;
 
