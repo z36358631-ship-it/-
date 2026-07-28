@@ -51,19 +51,11 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 .type-tag.full{background:rgba(250,173,20,0.15);color:var(--primary)}
 .type-tag.boss{background:rgba(245,34,45,0.15);color:var(--red)}
 .section-label{padding:12px 16px 4px;font-size:11px;color:var(--sub);font-weight:bold}
-.package-slot{padding:8px 16px 0;flex-shrink:0}
-.package-card{position:relative;min-height:92px;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid rgba(212,180,115,.3);border-radius:14px;padding:10px 12px;background:linear-gradient(135deg,#241e14,#14161d 72%);box-shadow:0 8px 24px rgba(0,0,0,.24)}
-.package-card::after{content:'✦';position:absolute;right:74px;top:-18px;font-size:56px;color:rgba(212,180,115,.08);pointer-events:none}
-.package-main{position:relative;z-index:1;min-width:0;flex:1}
-.package-side{position:relative;z-index:1;width:92px;flex:0 0 92px;display:flex;flex-direction:column;align-items:flex-end;gap:7px}
-.package-promo{display:inline-block;padding:2px 7px;border-radius:8px;background:var(--primary);color:#171208;font-size:9px;font-weight:bold;margin-bottom:4px}
-.package-name{display:block;font-size:14px;color:#fff;white-space:nowrap}.package-copy{font-size:11px;color:#d8c89d;margin-top:3px;white-space:nowrap}
-.package-price{text-align:right;white-space:nowrap;line-height:1}.package-price strong{font-size:20px;color:var(--primary)}.package-price span{font-size:9px;color:var(--sub)}
-.package-action{width:80px;min-height:44px;padding:7px 8px;border-radius:10px;border:none;background:var(--primary);color:#171208;font-size:11px;font-weight:bold;cursor:pointer;white-space:nowrap}
-.package-action.ghost{background:rgba(212,180,115,.12);color:var(--primary);border:1px solid rgba(212,180,115,.22);cursor:default}
 .status-card{margin:10px 16px 0;padding:11px 12px;border-radius:12px;background:linear-gradient(135deg,rgba(212,180,115,.14),rgba(255,255,255,.025));border:1px solid rgba(212,180,115,.2)}
 .status-row{display:flex;justify-content:space-between;align-items:center;gap:8px}.status-title{font-size:12px;font-weight:bold}.status-pill{font-size:9px;padding:2px 7px;border-radius:9px;background:rgba(255,255,255,.08);color:var(--sub)}.status-pill.active{background:rgba(82,196,26,.14);color:var(--green)}.status-pill.expired{background:rgba(245,34,45,.14);color:#ff7875}
 .status-desc{font-size:9px;color:var(--sub);line-height:1.55;margin:5px 0 8px}
+.package-status-line{margin:5px 16px 0;padding:8px 10px;border-radius:9px;border:1px solid rgba(212,180,115,.22);background:rgba(212,180,115,.08);color:#d8c89d;font-size:10px;line-height:1.5}
+.acquired-label{display:inline-block;margin-bottom:5px;padding:2px 6px;border-radius:7px;background:rgba(255,255,255,.07);color:var(--sub);font-size:9px}
 .entitlement-list{display:grid;gap:8px;margin:12px 0}
 .entitlement-card{padding:11px;border-radius:11px;border:1px solid var(--border);background:var(--card);cursor:pointer}
 .entitlement-card.primary{border-color:rgba(212,180,115,.42);background:linear-gradient(135deg,rgba(212,180,115,.12),rgba(255,255,255,.025))}
@@ -130,6 +122,32 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 .modal-btns button{flex:1;padding:9px;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;border:none}
 .mbtn-cancel{background:rgba(255,255,255,0.1);color:#fff}
 .mbtn-confirm{background:var(--primary);color:#000}
+.checkout-layer,.payment-layer{position:absolute;inset:0;z-index:420;display:none;background:rgba(0,0,0,.72);align-items:flex-end}
+.checkout-layer.show,.payment-layer.show{display:flex}
+.checkout-sheet{width:100%;max-height:92%;overflow-y:auto;background:#17181e;border-radius:22px 22px 0 0;padding:18px 16px 20px}
+.checkout-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.checkout-head h3{font-size:16px}.checkout-head p{margin-top:4px;color:var(--sub);font-size:10px}
+.checkout-head button{width:28px;height:28px;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:var(--sub);font-size:18px;cursor:pointer}
+.checkout-save{display:flex;gap:10px;padding:12px;margin-top:12px;border:1px solid var(--border);border-radius:12px;background:var(--card)}
+.checkout-save img{width:72px;height:48px;border-radius:8px;object-fit:cover}
+.checkout-save div{display:flex;min-width:0;flex-direction:column;justify-content:center}.checkout-save strong{overflow:hidden;font-size:12px;text-overflow:ellipsis;white-space:nowrap}.checkout-save span{margin-top:5px;color:var(--sub);font-size:10px}
+.checkout-section{margin-top:16px}.checkout-section h4{font-size:12px;margin-bottom:8px}
+.checkout-options{display:grid;gap:8px}
+.checkout-option{padding:11px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:#fff;text-align:left;cursor:pointer}
+.checkout-option.selected{border-color:var(--primary);background:rgba(212,180,115,.11)}
+.checkout-option strong{display:flex;justify-content:space-between;font-size:12px}.checkout-option strong em{color:var(--primary);font-style:normal}.checkout-option span{display:block;margin-top:5px;color:var(--sub);font-size:10px;line-height:1.5}
+.payment-methods{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.payment-method{padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:#fff;cursor:pointer}
+.payment-method.selected{border-color:var(--primary);background:rgba(212,180,115,.11)}
+.checkout-summary{margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:11px}
+.checkout-summary>div:first-child{color:var(--sub)}.checkout-summary small{display:block;margin-top:5px;color:var(--sub);font-size:9px;line-height:1.5}
+.checkout-total{display:flex;justify-content:space-between;align-items:end;margin-top:8px}.checkout-total strong{color:var(--primary);font-size:20px}
+.checkout-confirm{width:100%;margin-top:14px;padding:12px;border:0;border-radius:12px;background:var(--primary);color:#171208;font-weight:bold;cursor:pointer}
+.payment-layer{z-index:430;align-items:center;justify-content:center}
+.payment-dialog{width:82%;max-width:320px;margin:auto;background:#1e1e24;border-radius:16px;padding:18px;text-align:center}
+.payment-dialog .channel{font-size:14px;font-weight:bold}.payment-dialog .amount{font-size:26px;color:var(--primary);margin:14px 0}.payment-dialog p{color:var(--sub);font-size:11px}
+.payment-actions{display:flex;gap:8px;margin-top:16px}.payment-actions button{flex:1;padding:10px;border:0;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;cursor:pointer}.payment-actions button:last-child{background:var(--primary);color:#171208;font-weight:bold}
+.landscape .checkout-layer{align-items:stretch;justify-content:flex-end}.landscape .checkout-sheet{width:390px;max-height:100%;border-radius:20px 0 0 20px}
 .toast{position:absolute;top:60px;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:7px 16px;border-radius:12px;font-size:12px;font-weight:bold;opacity:0;transition:0.3s;z-index:500;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
 </style>
@@ -150,7 +168,6 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 <div class="stab active" onclick="switchSub('plaza',this)">存档广场</div>
 <div class="stab" onclick="switchSub('mine',this)">我的存档</div>
 </div>
-<div class="package-slot" id="packageSlot"></div>
 <div class="scroll">
 <div id="sec-plaza" class="save-grid"></div>
 <div id="sec-mine" style="display:none"></div>
@@ -197,6 +214,8 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
 <div class="modal-box"><span class="modal-close" id="mClose" onclick="closeModal()">×</span><h3 id="mTitle"></h3><p id="mDesc"></p><div class="modal-btns" id="mBtns"><button class="mbtn-cancel" onclick="closeModal()">取消</button><button class="mbtn-confirm" onclick="modalConfirm()">确认</button></div></div>
 </div>
+<div class="checkout-layer" id="checkoutLayer"></div>
+<div class="payment-layer" id="paymentLayer"></div>
 <div class="toast" id="toast"></div>
 </div>
 <script>
@@ -232,6 +251,7 @@ var packageCycles=[];
 var packageUsage=[];
 var monthlySaveIds=new Set();
 var packageDemoState='none';
+var checkoutState={saveId:null,source:'plaza',plan:'single',payment:'alipay',orderId:'',processing:false};
 
 function addDays(date,days){return new Date(date.getTime()+days*24*60*60*1000)}
 function formatDateTime(value){
@@ -266,22 +286,84 @@ return'none';
 }
 function isActivePackageState(state){return state==='active'||state==='active-renewed'||state==='expiring'||state==='expiring-renewed'}
 function sourceLabel(save){return save.source==='official'?'官方存档':'玩家寄售'}
-function renderPackageCard(){
-var state=getPackageState(),future=getFutureCycle(),button='';
-if(isActivePackageState(state)){
-button=future?'<button class="package-action ghost" type="button" disabled aria-disabled="true">已续费</button>':'<button class="package-action" type="button" onclick="openPackagePurchase(\'renew\')">续费</button>';
-}else if(state==='expired'){
-button='<button class="package-action" type="button" onclick="openPackagePurchase(\'renew\')">续费</button>';
-}else{
-button='<button class="package-action" type="button" onclick="openPackagePurchase(\'buy\')">开通</button>';
+function openCheckout(saveId,options){
+var opts=options||{};
+curIdx=saveId;
+checkoutState.saveId=saveId;
+checkoutState.source=opts.source||'plaza';
+checkoutState.plan=opts.preferredPlan||'single';
+checkoutState.payment=checkoutState.payment||'alipay';
+checkoutState.orderId='';
+checkoutState.processing=false;
+renderCheckout();
+document.getElementById('checkoutLayer').classList.add('show');
 }
-document.getElementById('packageSlot').innerHTML='<div class="package-card"><div class="package-main"><span class="package-promo">'+monthlyProduct.promoLabel+'</span><strong class="package-name">'+monthlyProduct.name+'</strong><div class="package-copy">全部存档 30 天不限次使用</div></div><div class="package-side"><div class="package-price"><strong>¥18</strong><span>/30天</span></div>'+button+'</div></div>';
+function closeCheckout(){document.getElementById('checkoutLayer').classList.remove('show')}
+function renderCheckout(){
+var s=saves[checkoutState.saveId];
+var monthly=checkoutState.plan==='monthly';
+var amount=monthly?18:6;
+var title=monthly?'云存档月度套餐':'永久拥有当前存档';
+var estimate=monthly?formatDateTime(addDays(new Date(),monthlyProduct.durationDays)):'永久有效';
+document.getElementById('checkoutLayer').innerHTML=
+'<section class="checkout-sheet" role="dialog" aria-modal="true" aria-label="确认订单">'+
+'<div class="checkout-head"><div><h3>确认订单</h3><p>选择购买方案并完成支付</p></div><button type="button" aria-label="关闭订单" onclick="closeCheckout()">×</button></div>'+
+'<div class="checkout-save"><img src="'+s.cover+'" alt=""><div><strong>'+s.title+'</strong><span>GTA V · '+sourceLabel(s)+' · 月套餐可用</span></div></div>'+
+'<div class="checkout-section"><h4>购买方案</h4><div class="checkout-options">'+
+'<button class="checkout-option '+(!monthly?'selected':'')+'" data-checkout-plan="single" onclick="selectCheckoutPlan(\'single\')"><strong><b>永久拥有当前存档</b><em>¥6</em></strong><span>一次购买，永久使用当前存档</span></button>'+
+'<button class="checkout-option '+(monthly?'selected':'')+'" data-checkout-plan="monthly" onclick="selectCheckoutPlan(\'monthly\')"><strong><b>云存档月度套餐</b><em>¥18</em></strong><span>30 天内全部存档不限次使用 · 非自动续费</span></button>'+
+'</div></div>'+
+'<div class="checkout-section"><h4>支付方式</h4><div class="payment-methods">'+
+'<button class="payment-method '+(checkoutState.payment==='alipay'?'selected':'')+'" data-checkout-payment="alipay" onclick="selectCheckoutPayment(\'alipay\')">支付宝</button>'+
+'<button class="payment-method '+(checkoutState.payment==='wechat'?'selected':'')+'" data-checkout-payment="wechat" onclick="selectCheckoutPayment(\'wechat\')">微信支付</button>'+
+'</div></div>'+
+'<div class="checkout-summary"><div>商品：'+title+'</div><small>'+(monthly?'预计有效至 '+estimate+'，实际以支付成功后的服务端周期为准。':'当前存档永久有效。')+' 虚拟商品按当前退款规则处理。</small><div class="checkout-total"><span>实付金额</span><strong>¥'+amount+'</strong></div></div>'+
+'<button class="checkout-confirm" data-action="checkout-confirm" onclick="launchCheckoutPayment()">确认支付 · ¥'+amount+'</button>'+
+'</section>';
+}
+function selectCheckoutPlan(plan){checkoutState.plan=plan;renderCheckout()}
+function selectCheckoutPayment(payment){checkoutState.payment=payment;renderCheckout()}
+function launchCheckoutPayment(){
+if(checkoutState.processing)return;
+checkoutState.processing=true;
+if(!checkoutState.orderId)checkoutState.orderId='SAVE-'+Date.now();
+var amount=checkoutState.plan==='monthly'?18:6;
+var channel=checkoutState.payment==='wechat'?'微信支付':'支付宝';
+document.getElementById('paymentLayer').innerHTML=
+'<section class="payment-dialog" role="dialog" aria-modal="true" aria-label="模拟支付">'+
+'<div class="channel">'+channel+'</div><div class="amount">¥'+amount+'</div>'+
+'<p>'+(checkoutState.plan==='monthly'?'云存档月度套餐':'永久拥有当前存档')+'</p>'+
+'<div class="payment-actions"><button data-action="payment-cancel" onclick="cancelCheckoutPayment()">取消支付</button><button data-action="payment-success" onclick="completeCheckoutPayment()">模拟支付成功</button></div>'+
+'</section>';
+document.getElementById('paymentLayer').classList.add('show');
+}
+function cancelCheckoutPayment(){
+checkoutState.processing=false;
+document.getElementById('paymentLayer').classList.remove('show');
+}
+function completeCheckoutPayment(){
+document.getElementById('paymentLayer').classList.remove('show');
+if(checkoutState.plan==='monthly')confirmPackagePurchaseFromCheckout();
+else confirmPermanentPurchaseFromCheckout();
+checkoutState.processing=false;
+closeCheckout();
+}
+function confirmPermanentPurchaseFromCheckout(){
+bought.add(checkoutState.saveId);
+saves[checkoutState.saveId].buyers++;
+refreshAll();
+if(document.getElementById('detailPage').classList.contains('show')&&currentDetailType==='system')openDetail(checkoutState.saveId,'system');
+showToast('购买成功，已永久拥有此存档');
+}
+function confirmPackagePurchaseFromCheckout(){
+pendingPackageMode=getPackageState()==='none'?'buy':'renew';
+confirmPackagePurchase();
 }
 function renderSaveCover(s){
 return '<div class="save-cover"><img src="'+s.cover+'"><span class="source-tag">'+sourceLabel(s)+'</span><span class="package-tag">月包可用</span></div>';
 }
 function refreshAll(){
-renderPackageCard();renderPlaza();renderMine();
+renderPlaza();renderMine();
 if(document.getElementById('ingame').classList.contains('show')){
 var myTab=document.querySelectorAll('.ig-tab')[1];
 if(myTab&&myTab.classList.contains('active'))renderIgMine();else renderIgPlaza();
@@ -315,8 +397,7 @@ saves.forEach(function(s,i){
 var isA=activeIdx===i,right=getSaveRight(i),btn='';
 if(isA)btn='<button class="sc-btn using">使用中</button>';
 else if(right!=='none')btn='<button class="sc-btn use" onclick="event.stopPropagation();doUse('+i+')">使用</button>';
-else if(monthlySaveIds.has(i))btn='<button class="sc-btn buy" onclick="event.stopPropagation();openExpiredIntercept('+i+')">续费后使用</button>';
-else btn='<button class="sc-btn buy" onclick="event.stopPropagation();openDetail('+i+')">¥6 购买</button>';
+else btn='<button class="sc-btn buy" onclick="event.stopPropagation();openCheckout('+i+',{preferredPlan:\'single\',source:\'plaza\'})">购买</button>';
 h+='<div class="save-card" onclick="openDetail('+i+')">'+renderSaveCover(s)+'<div class="sc-body"><div class="sc-title">'+s.title+'</div><div class="sc-meta">'+sourceLabel(s)+' · '+s.buyers+'人已购买</div>'+btn+'</div></div>';
 });
 consignSaves.forEach(function(c,ci){
@@ -326,13 +407,23 @@ h+='<div class="save-card" onclick="openDetail('+ci+',\'consign-guest\')"><div c
 document.getElementById('sec-plaza').innerHTML=h;
 }
 
+function getAcquiredSaveIds(){
+return Array.from(new Set([].concat(Array.from(bought),Array.from(monthlySaveIds))));
+}
+function getAcquiredLabel(idx){
+if(bought.has(idx))return'永久拥有';
+return canUseByPackage()?'套餐可用':'套餐已到期';
+}
+function getPackageStatusLine(){
+var state=getPackageState(),cycle=getActiveCycle(),future=getFutureCycle(),ended=getLastEndedCycle();
+if(state==='none'&&!cycle&&!monthlySaveIds.size)return'';
+var end=future?future.endAt:cycle?cycle.endAt:ended?ended.endAt:null;
+if(!end)return'';
+if(isActivePackageState(state))return state.indexOf('expiring')===0?'月度套餐将于 '+formatDateTime(end)+' 到期':'月度套餐有效至 '+formatDateTime(end);
+return'月度套餐已于 '+formatDateTime(end)+' 到期';
+}
 function renderMine(){
 var h='';
-var state=getPackageState(),cycle=getActiveCycle(),future=getFutureCycle(),statusText=state.indexOf('expiring')===0?'即将到期':state.indexOf('active')===0?'有效':state==='expired'?'已到期':'未开通';
-var statusClass=isActivePackageState(state)?'active':state==='expired'?'expired':'';
-var statusDesc=cycle?'有效至 '+formatPackageEndAt(cycle)+(future?'；下一周期已续至 '+formatPackageEndAt(future):'；剩余约 '+Math.ceil((cycle.endAt-Date.now())/86400000)+' 天')+'；本周期寄售奖励 '+cycle.rewardSlotsUsed+'/3':state==='expired'?'续费后恢复全部云存档使用权；本地游戏进度保留':'开通后全部官方和玩家寄售存档 30 天不限次使用';
-var statusButton=isActivePackageState(state)?(future?'<button class="package-action ghost" onclick="showToast(\'下一周期已安排\')">已续费下一周期</button>':'<button class="package-action" onclick="openPackagePurchase(\'renew\')">续费 30 天</button>'):state==='expired'?'<button class="package-action" onclick="openPackagePurchase(\'renew\')">¥18 续费 30 天</button>':'<button class="package-action" onclick="openPackagePurchase(\'buy\')">¥18 开通套餐</button>';
-h+='<div class="status-card"><div class="status-row"><span class="status-title">云存档月度套餐</span><span class="status-pill '+statusClass+'">'+statusText+'</span></div><div class="status-desc">'+statusDesc+'<br>非自动续费</div>'+statusButton+'</div>';
 // 本地存档
 h+='<div class="section-label" style="display:flex;justify-content:space-between;align-items:center">本地存档（'+autoSaves.length+'/4）<span style="font-size:11px;color:var(--primary);cursor:pointer;font-weight:bold" onclick="event.stopPropagation();doImportSave()">+ 导入</span></div><div class="save-grid">';
 if(autoSaves.length>0){
@@ -345,26 +436,20 @@ h+='<div class="save-card"><div style="height:50px;background:var(--card);displa
 h+='<div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--sub);font-size:12px">暂无本地存档</div>';
 }
 h+='</div>';
-// 月包存档
-var packageIds=Array.from(monthlySaveIds).filter(function(idx){return !bought.has(idx)});
-h+='<div class="section-label">月包存档（'+packageIds.length+'）</div><div class="save-grid">';
-if(packageIds.length){
-packageIds.forEach(function(idx){
+// 已获得存档
+var acquiredIds=getAcquiredSaveIds();
+h+='<div class="section-label">已获得存档（'+acquiredIds.length+'）</div>';
+var packageLine=getPackageStatusLine();
+if(packageLine)h+='<div class="package-status-line">'+packageLine+'</div>';
+h+='<div class="save-grid">';
+if(acquiredIds.length){
+acquiredIds.forEach(function(idx){
 var s=saves[idx],isA=activeIdx===idx;
-var btn=isA?'<button class="sc-btn using">使用中</button>':canUseByPackage()?'<button class="sc-btn use" onclick="event.stopPropagation();doUse('+idx+')">使用</button>':'<button class="sc-btn buy" onclick="event.stopPropagation();openExpiredIntercept('+idx+')">续费后使用</button>';
-h+='<div class="save-card" onclick="openDetail('+idx+')">'+renderSaveCover(s)+'<div class="sc-body"><div class="sc-title">'+s.title+'</div>'+btn+'</div></div>';
+var usable=bought.has(idx)||canUseByPackage();
+var btn=isA?'<button class="sc-btn using">使用中</button>':usable?'<button class="sc-btn use" onclick="event.stopPropagation();doUse('+idx+')">使用</button>':'<button class="sc-btn buy" onclick="event.stopPropagation();openCheckout('+idx+',{preferredPlan:\'monthly\',source:\'mine-expired\'})">续费后使用</button>';
+h+='<div class="save-card" onclick="openDetail('+idx+')">'+renderSaveCover(s)+'<div class="sc-body"><span class="acquired-label">'+getAcquiredLabel(idx)+'</span><div class="sc-title">'+s.title+'</div>'+btn+'</div></div>';
 });
-}else{h+='<div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--sub);font-size:12px">使用套餐存档后将在这里显示</div>';}
-h+='</div>';
-// 已购存档
-h+='<div class="section-label">已购存档（'+bought.size+'）</div><div class="save-grid">';
-if(bought.size>0){
-bought.forEach(function(idx){
-var s=saves[idx];var isA=activeIdx===idx;
-var btn=isA?'<button class="sc-btn using">使用中</button>':'<button class="sc-btn use" onclick="event.stopPropagation();doUse('+idx+')">使用</button>';
-h+='<div class="save-card" onclick="openDetail('+idx+')">'+renderSaveCover(s)+'<div class="sc-body"><div class="sc-title">'+s.title+'</div>'+btn+'</div></div>';
-});
-}else{h+='<div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--sub);font-size:12px">暂无已购存档</div>';}
+}else{h+='<div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--sub);font-size:12px">购买或使用过的存档将在这里显示</div>';}
 h+='</div>';
 // 寄售存档
 h+='<div class="section-label" style="display:flex;justify-content:space-between;align-items:center">我的寄售（'+consignSaves.length+'/4）<span style="font-size:11px;color:var(--primary);cursor:pointer;font-weight:bold" onclick="event.stopPropagation();openConsign()">+ 寄售存档</span></div><div class="save-grid">';
@@ -383,7 +468,6 @@ document.querySelectorAll('.stab').forEach(function(t){t.classList.remove('activ
 el.classList.add('active');
 document.getElementById('sec-plaza').style.display=type==='plaza'?'grid':'none';
 document.getElementById('sec-mine').style.display=type==='mine'?'block':'none';
-document.getElementById('packageSlot').style.display=type==='plaza'?'block':'none';
 if(type==='mine')renderMine();
 }
 
@@ -413,10 +497,8 @@ info+='<div class="dm-row"><span class="l">已售</span><span>'+s.sold+'份</spa
 info+='</div>';
 if(detailType==='system'){
 var right=getSaveRight(idx);
-var packageMode=getPackageState()==='none'?'buy':'renew';
-info+='<div class="entitlement-list"><div class="entitlement-card" onclick="doBuy()"><div class="entitlement-title"><span>永久拥有此存档</span><em>¥6</em></div><div class="entitlement-desc">一次购买，永久使用当前存档</div></div><div class="entitlement-card primary" onclick="openPackagePurchase(\''+packageMode+'\')"><div class="entitlement-title"><span>全部存档畅用 30 天</span><em>试运营优惠 ¥18</em></div><div class="entitlement-desc">含当前存档 · 购买后立即生效 · 30 天有效 · 非自动续费</div></div></div>';
 if(right==='package')info+='<div class="status-desc">当前由月度套餐提供使用权。成功加载并启动游戏后计入本周期使用记录。</div>';
-if(right==='permanent')info+='<div class="status-desc">已永久拥有此存档；月度套餐可解锁其他全部存档。</div>';
+if(right==='permanent')info+='<div class="status-desc">已永久拥有此存档，不受月度套餐到期影响。</div>';
 }
 document.getElementById('dInfo').innerHTML=info;
 var footer=document.querySelector('.d-footer');
@@ -432,13 +514,13 @@ footer.innerHTML=btns;
 if(detailType==='system'){
 var saveRight=getSaveRight(idx),isExpiredRecord=monthlySaveIds.has(idx)&&saveRight==='none';
 if(saveRight==='package'){
-footer.innerHTML='<div class="tip">套餐首次成功使用后不再满足退款条件</div><div class="detail-actions"><button class="primary" onclick="doUse('+idx+')">立即使用</button><button class="secondary" onclick="doBuy()">¥6 永久购买</button></div>';
+footer.innerHTML='<div class="tip">套餐首次成功使用后不再满足退款条件</div><div class="detail-actions"><button class="primary" onclick="doUse('+idx+')">立即使用</button><button class="secondary" onclick="openCheckout('+idx+',{preferredPlan:\'single\',source:\'detail-permanent\'})">购买永久权益</button></div>';
 }else if(saveRight==='permanent'){
-footer.innerHTML='<div class="tip">已永久拥有此存档</div><div class="detail-actions"><button class="primary" onclick="doUse('+idx+')">使用</button><button class="secondary" onclick="openPackagePurchase(\''+packageMode+'\')">解锁其他存档</button></div>';
+footer.innerHTML='<div class="tip">已永久拥有此存档</div><button class="d-buy bought" onclick="doUse('+idx+')">使用</button>';
 }else if(isExpiredRecord){
-footer.innerHTML='<div class="tip">月度套餐已到期，本地游戏进度不受影响</div><div class="detail-actions"><button class="primary" onclick="openExpiredIntercept('+idx+')">¥18 续费 30 天</button><button class="secondary" onclick="doBuy()">¥6 永久购买</button></div>';
+footer.innerHTML='<div class="tip">月度套餐已到期，本地游戏进度不受影响</div><button class="d-buy" onclick="openCheckout('+idx+',{preferredPlan:\'monthly\',source:\'expired\'})">续费后使用</button>';
 }else{
-footer.innerHTML='<div class="tip">任选一种权益；套餐不自动续费</div><div class="detail-actions"><button class="secondary" onclick="doBuy()">¥6 永久购买</button><button class="primary" onclick="openPackagePurchase(\''+packageMode+'\')">¥18 '+(packageMode==='renew'?'续费 30 天':'开通套餐')+'</button></div>';
+footer.innerHTML='<div class="tip">可选择永久购买或 30 天月度套餐</div><button class="d-buy" onclick="openCheckout('+idx+',{preferredPlan:\'single\',source:\'detail\'})">购买</button>';
 }
 }else{
 footer.innerHTML='<div class="tip">这是你发布的寄售存档，不可购买自己的存档</div><button class="d-buy" onclick="closeDetail()">返回存档广场</button>';
@@ -448,7 +530,7 @@ document.getElementById('detailPage').classList.add('show');
 }
 function closeDetail(){document.getElementById('detailPage').classList.remove('show')}
 
-function doBuy(){showModal('确认永久购买','确认支付 ¥6 永久购买此存档？\n永久权益优先于月度套餐，购买后不支持退款。','buy')}
+function doBuy(){openCheckout(curIdx,{preferredPlan:'single',source:currentDetailType==='system'?'detail':'plaza'})}
 function doUse(idx){curIdx=idx;applySaveWithRight(idx)}
 function applySaveWithRight(saveId){
 var right=getSaveRight(saveId);
@@ -494,16 +576,6 @@ if(usage&&usage.rewardStatus==='pending')showToast('加载并启动成功 · 作
 else if(usage)showToast('加载并启动成功 · '+usage.rewardReason);
 else showToast('存档已加载并启动游戏');
 }
-function openPackagePurchase(mode){
-var active=getActiveCycle(),future=getFutureCycle();
-if(mode==='renew'&&active&&future){showToast('试运营期间最多提前续费 1 期');return;}
-pendingPackageMode=mode;
-var start=active&&mode==='renew'?new Date(active.endAt):new Date();
-var end=addDays(start,monthlyProduct.durationDays);
-var title=mode==='renew'?'续费云存档月度套餐':'开通云存档月度套餐';
-var timing=active&&mode==='renew'?'将在当前周期结束后自动生效':'支付成功后立即生效';
-showModal(title,'试运营优惠 ¥18 / 30 天\n全部官方及玩家寄售存档不限次使用\n'+timing+'\n本次周期：'+formatDateTime(start)+' 至 '+formatDateTime(end)+'\n续费后有效至 '+formatDateTime(end)+'\n非自动续费\n\n退款条件：本周期未成功使用任何存档时，可联系客服申请人工退款；成功加载并启动游戏后不可退款。','package-confirm');
-}
 function confirmPackagePurchase(){
 var active=getActiveCycle(),start=active&&pendingPackageMode==='renew'?new Date(active.endAt):new Date();
 if(active&&pendingPackageMode==='renew'&&getFutureCycle()){showToast('最多提前续费 1 期');return;}
@@ -513,13 +585,7 @@ if(document.getElementById('detailPage').classList.contains('show')&&currentDeta
 showToast(pendingPackageMode==='renew'?'续费成功，未来周期已安排':'开通成功，套餐立即生效');
 }
 function openExpiredIntercept(saveId){
-curIdx=saveId;
-document.getElementById('mTitle').textContent='云存档月度套餐已到期';
-document.getElementById('mDesc').textContent='续费后可继续使用全部云存档，已加载的本地游戏进度不受影响。\n\n你也可以 ¥6 永久购买当前存档。';
-document.getElementById('mBtns').innerHTML='<button class="mbtn-cancel" onclick="closeModal();doBuy()">¥6 永久购买</button><button class="mbtn-confirm" onclick="closeModal();openPackagePurchase(\'renew\')">¥18 续费 30 天</button>';
-document.getElementById('mBtns').style.display='flex';
-document.getElementById('mClose').style.display='block';
-document.getElementById('modal').classList.add('show');
+openCheckout(saveId,{preferredPlan:'monthly',source:'expired'});
 }
 
 function showModal(t,d,action){
@@ -541,17 +607,10 @@ document.getElementById('modal').classList.add('show');
 function closeModal(){document.getElementById('modal').classList.remove('show')}
 function modalConfirm(){
 closeModal();
-if(pendingAction==='buy'){
-bought.add(curIdx);saves[curIdx].buyers++;
-monthlySaveIds.delete(curIdx);closeDetail();
-switchSub('mine',document.querySelectorAll('.stab')[1]);refreshAll();
-showToast('购买成功！已加入我的存档');
-}else if(pendingAction==='package-use'||pendingAction==='package-use-first'){
+if(pendingAction==='package-use'||pendingAction==='package-use-first'){
 completeSaveUse(curIdx,true);
 }else if(pendingAction==='permanent-use'){
 completeSaveUse(curIdx,false);
-}else if(pendingAction==='package-confirm'){
-confirmPackagePurchase();
 }else if(pendingAction==='import-replace'){
 var sel=document.querySelector('input[name="replace-save"]:checked');
 var ri=sel?parseInt(sel.value):0;
@@ -637,17 +696,11 @@ function exitIngame(){document.getElementById('ingame').classList.remove('show')
 function toggleIgPanel(){document.getElementById('igPanel').classList.toggle('show')}
 function switchIg(type,el){document.querySelectorAll('.ig-tab').forEach(function(t){t.classList.remove('active')});el.classList.add('active');if(type==='market')renderIgPlaza();else renderIgMine();}
 
-function renderIgPackageStatus(){
-var state=getPackageState(),cycle=getActiveCycle(),future=getFutureCycle();
-var label=cycle?'有效至 '+formatPackageEndAt(cycle):state==='expired'?'已到期，本地进度不受影响':'未开通';
-var action=cycle?(future?'<span style="font-size:9px;color:var(--green)">下一周期已安排</span>':'<button style="padding:4px 7px;border:0;border-radius:7px;background:var(--primary);color:#171208;font-size:9px;font-weight:bold;cursor:pointer" onclick="openPackagePurchase(\'renew\')">续费</button>'):'<button style="padding:4px 7px;border:0;border-radius:7px;background:var(--primary);color:#171208;font-size:9px;font-weight:bold;cursor:pointer" onclick="openPackagePurchase(\''+(state==='expired'?'renew':'buy')+'\')">'+(state==='expired'?'续费':'¥18 开通')+'</button>';
-return '<div style="margin:7px 8px 2px;padding:8px;border-radius:9px;border:1px solid rgba(212,180,115,.28);background:linear-gradient(135deg,#241e14,#151820);display:flex;justify-content:space-between;align-items:center;gap:6px"><div><div style="font-size:10px;font-weight:bold;color:#fff">云存档月度套餐 <span style="color:var(--primary)">¥18/30天</span></div><div style="font-size:8px;color:var(--sub);margin-top:2px">'+label+' · 非自动续费</div></div>'+action+'</div>';
-}
 function renderIgPlaza(){
-var h=renderIgPackageStatus()+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 8px">';
+var h='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 8px">';
 saves.forEach(function(s,i){
 var right=getSaveRight(i),isA=activeIdx===i;
-var st=isA?'<span style="color:var(--green);font-size:9px">使用中</span>':right==='permanent'?'<span style="color:var(--sub);font-size:9px">已购</span>':right==='package'?'<span style="color:#fff;font-size:9px">使用</span>':monthlySaveIds.has(i)?'<span style="color:var(--primary);font-size:9px">续费后使用</span>':'<span style="color:var(--primary);font-size:9px;font-weight:bold">¥6</span>';
+var st=isA?'<span style="color:var(--green);font-size:9px">使用中</span>':right!=='none'?'<button style="padding:3px 7px;border:0;border-radius:6px;background:rgba(255,255,255,.08);color:#fff;font-size:9px;cursor:pointer" onclick="event.stopPropagation();igUse('+i+')">使用</button>':'<button style="padding:3px 7px;border:0;border-radius:6px;background:var(--primary);color:#171208;font-size:9px;font-weight:bold;cursor:pointer" onclick="event.stopPropagation();openCheckout('+i+',{preferredPlan:\'single\',source:\'ingame-plaza\'})">购买</button>';
 h+='<div style="background:var(--card);border-radius:6px;overflow:hidden;border:1px solid var(--border);cursor:pointer" onclick="igDetail('+i+')"><div style="position:relative"><img src="'+s.cover+'" style="width:100%;height:50px;object-fit:cover;display:block"><span style="position:absolute;top:3px;right:3px;padding:1px 4px;border-radius:4px;background:rgba(212,180,115,.9);color:#171208;font-size:7px;font-weight:bold">月包可用</span></div><div style="padding:6px"><div style="font-size:10px;color:#fff;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px">'+s.title+'</div><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:9px;color:var(--sub)">'+sourceLabel(s)+'</span>'+st+'</div></div></div>';
 });
 consignSaves.forEach(function(c,ci){
@@ -660,7 +713,7 @@ document.getElementById('igBody').innerHTML=h;
 }
 
 function renderIgMine(){
-var h=renderIgPackageStatus()+'<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;font-size:10px;color:var(--sub);border-bottom:1px solid var(--border)"><span>本地存档</span><span style="color:var(--primary);cursor:pointer;font-weight:bold" onclick="doImportSave()">+ 导入</span></div>';
+var h='<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;font-size:10px;color:var(--sub);border-bottom:1px solid var(--border)"><span>本地存档</span><span style="color:var(--primary);cursor:pointer;font-weight:bold" onclick="doImportSave()">+ 导入</span></div>';
 h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 8px">';
 // 本地存档
 autoSaves.forEach(function(s){
@@ -669,27 +722,19 @@ var tagColor=s.source==='auto'?'rgba(24,144,255,0.85)':'rgba(250,173,20,0.85)';
 h+='<div style="background:var(--card);border-radius:6px;overflow:hidden;border:1px solid var(--border)"><div style="height:40px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;font-size:14px;position:relative">💾<span style="position:absolute;top:3px;left:3px;padding:1px 4px;border-radius:2px;font-size:8px;font-weight:bold;color:#fff;background:'+tagColor+'">'+tagText+'</span></div><div style="padding:6px"><div style="font-size:10px;color:#fff;margin-bottom:2px">'+s.name+'</div><div style="font-size:9px;color:var(--sub)">'+s.time+'</div></div></div>';
 });
 h+='</div>';
-// 月包存档
-var igPackageIds=Array.from(monthlySaveIds).filter(function(idx){return !bought.has(idx)});
-h+='<div style="padding:4px 8px;font-size:10px;color:var(--sub);border-bottom:1px solid var(--border)">月包存档（'+igPackageIds.length+'）</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 8px">';
-if(igPackageIds.length){
-igPackageIds.forEach(function(idx){
-var s=saves[idx],isA=activeIdx===idx;
-var btn=isA?'<div style="text-align:center;padding:3px;font-size:9px;color:var(--green);font-weight:bold">使用中</div>':canUseByPackage()?'<div style="text-align:center;padding:3px;font-size:9px;color:#fff;background:rgba(255,255,255,.08);border-radius:4px;cursor:pointer" onclick="event.stopPropagation();igUse('+idx+')">使用</div>':'<div style="text-align:center;padding:3px;font-size:9px;color:var(--primary);background:rgba(212,180,115,.09);border-radius:4px;cursor:pointer" onclick="event.stopPropagation();openExpiredIntercept('+idx+')">续费后使用</div>';
-h+='<div style="background:var(--card);border-radius:6px;overflow:hidden;border:1px solid var(--border);cursor:pointer" onclick="igDetail('+idx+')"><img src="'+s.cover+'" style="width:100%;height:40px;object-fit:cover;display:block"><div style="padding:6px"><div style="font-size:10px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px">'+s.title+'</div>'+btn+'</div></div>';
-});
-}else{h+='<div style="grid-column:1/-1;padding:10px;text-align:center;color:var(--sub);font-size:9px">使用套餐存档后显示</div>';}
-h+='</div>';
-// 已购存档
-h+='<div style="padding:4px 8px;font-size:10px;color:var(--sub);border-bottom:1px solid var(--border)">已购存档</div>';
+// 已获得存档
+var acquiredIds=getAcquiredSaveIds(),packageLine=getPackageStatusLine();
+h+='<div style="padding:4px 8px;font-size:10px;color:var(--sub);border-bottom:1px solid var(--border)">已获得存档（'+acquiredIds.length+'）</div>';
+if(packageLine)h+='<div style="margin:5px 8px 0;padding:6px 8px;border-radius:7px;background:rgba(212,180,115,.08);color:#d8c89d;font-size:8px">'+packageLine+'</div>';
 h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 8px">';
-if(bought.size>0){
-bought.forEach(function(idx){
-var s=saves[idx];var isA=activeIdx===idx;
-var btn=isA?'<div style="text-align:center;padding:3px;font-size:9px;color:var(--green);font-weight:bold">使用中</div>':'<div style="text-align:center;padding:3px;font-size:9px;color:#fff;background:rgba(255,255,255,0.08);border-radius:4px;cursor:pointer" onclick="event.stopPropagation();igUse('+idx+')">使用</div>';
-h+='<div style="background:var(--card);border-radius:6px;overflow:hidden;border:1px solid var(--border);cursor:pointer" onclick="igDetail('+idx+')"><img src="'+s.cover+'" style="width:100%;height:40px;object-fit:cover;display:block"><div style="padding:6px"><div style="font-size:10px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px">'+s.title+'</div>'+btn+'</div></div>';
+if(acquiredIds.length){
+acquiredIds.forEach(function(idx){
+var s=saves[idx],isA=activeIdx===idx;
+var usable=bought.has(idx)||canUseByPackage();
+var btn=isA?'<div style="text-align:center;padding:3px;font-size:9px;color:var(--green);font-weight:bold">使用中</div>':usable?'<div style="text-align:center;padding:3px;font-size:9px;color:#fff;background:rgba(255,255,255,.08);border-radius:4px;cursor:pointer" onclick="event.stopPropagation();igUse('+idx+')">使用</div>':'<div style="text-align:center;padding:3px;font-size:9px;color:var(--primary);background:rgba(212,180,115,.09);border-radius:4px;cursor:pointer" onclick="event.stopPropagation();openCheckout('+idx+',{preferredPlan:\'monthly\',source:\'ingame-mine-expired\'})">续费后使用</div>';
+h+='<div style="background:var(--card);border-radius:6px;overflow:hidden;border:1px solid var(--border);cursor:pointer" onclick="igDetail('+idx+')"><img src="'+s.cover+'" style="width:100%;height:40px;object-fit:cover;display:block"><div style="padding:6px"><div style="font-size:8px;color:var(--sub);margin-bottom:2px">'+getAcquiredLabel(idx)+'</div><div style="font-size:10px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px">'+s.title+'</div>'+btn+'</div></div>';
 });
-}else{h+='<div style="grid-column:1/-1;padding:12px;text-align:center;color:var(--sub);font-size:10px">暂无</div>';}
+}else{h+='<div style="grid-column:1/-1;padding:10px;text-align:center;color:var(--sub);font-size:9px">购买或使用过的存档将在这里显示</div>';}
 h+='</div>';
 // 我的寄售
 h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;font-size:10px;color:var(--sub);border-bottom:1px solid var(--border)"><span>我的寄售（'+consignSaves.length+'/4）</span><span style="color:var(--primary);cursor:pointer;font-weight:bold" onclick="showToast(\'请在主界面寄售存档\')">+ 寄售</span></div>';
@@ -705,20 +750,20 @@ document.getElementById('igBody').innerHTML=h;
 }
 
 function igDetail(idx){
-var s=saves[idx],right=getSaveRight(idx),packageMode=getPackageState()==='none'?'buy':'renew';
+var s=saves[idx],right=getSaveRight(idx);
 var h='<div style="padding:10px"><div style="cursor:pointer;color:var(--sub);font-size:11px;margin-bottom:8px" onclick="renderIgPlaza()">‹ 返回</div>';
 h+='<img src="'+s.cover+'" style="width:100%;height:80px;object-fit:cover;border-radius:6px;margin-bottom:8px">';
 h+='<div style="font-size:13px;font-weight:bold;margin-bottom:6px">'+s.title+'</div>';
 h+='<div style="font-size:11px;color:#ccc;line-height:1.5;margin-bottom:8px">'+s.desc+'</div>';
 h+='<div style="font-size:10px;color:var(--sub);margin-bottom:8px">'+s.size+' · '+sourceLabel(s)+' · 月包可用</div>';
-if(right==='package')h+='<div style="display:flex;gap:6px"><button style="flex:1;padding:8px;border-radius:10px;background:var(--primary);color:#171208;font-size:11px;font-weight:bold;border:none;cursor:pointer" onclick="igUse('+idx+')">使用</button><button style="flex:1;padding:8px;border-radius:10px;background:rgba(255,255,255,.08);color:#fff;font-size:10px;border:none;cursor:pointer" onclick="igBuy('+idx+')">¥6 永久购买</button></div>';
+if(right==='package')h+='<div style="display:flex;gap:6px"><button style="flex:1;padding:8px;border-radius:10px;background:var(--primary);color:#171208;font-size:11px;font-weight:bold;border:none;cursor:pointer" onclick="igUse('+idx+')">使用</button><button style="flex:1;padding:8px;border-radius:10px;background:rgba(255,255,255,.08);color:#fff;font-size:10px;border:none;cursor:pointer" onclick="openCheckout('+idx+',{preferredPlan:\'single\',source:\'ingame-detail-permanent\'})">购买永久权益</button></div>';
 else if(right==='permanent')h+='<button style="width:100%;padding:8px;border-radius:10px;background:rgba(82,196,26,0.15);color:var(--green);font-size:12px;font-weight:bold;border:none;cursor:pointer" onclick="igUse('+idx+')">使用</button>';
-else if(monthlySaveIds.has(idx))h+='<div style="display:flex;gap:6px"><button style="flex:1;padding:8px;border-radius:10px;background:var(--primary);color:#171208;font-size:10px;font-weight:bold;border:none;cursor:pointer" onclick="openExpiredIntercept('+idx+')">¥18 续费</button><button style="flex:1;padding:8px;border-radius:10px;background:rgba(255,255,255,.08);color:#fff;font-size:10px;border:none;cursor:pointer" onclick="igBuy('+idx+')">¥6 永久购买</button></div>';
-else h+='<div style="display:flex;gap:6px"><button style="flex:1;padding:8px;border-radius:10px;background:rgba(255,255,255,.08);color:#fff;font-size:10px;border:none;cursor:pointer" onclick="igBuy('+idx+')">¥6 永久购买</button><button style="flex:1;padding:8px;border-radius:10px;background:var(--primary);color:#171208;font-size:10px;font-weight:bold;border:none;cursor:pointer" onclick="openPackagePurchase(\''+packageMode+'\')">¥18 '+(packageMode==='renew'?'续费':'开通套餐')+'</button></div>';
+else if(monthlySaveIds.has(idx))h+='<button style="width:100%;padding:8px;border-radius:10px;background:var(--primary);color:#171208;font-size:11px;font-weight:bold;border:none;cursor:pointer" onclick="openCheckout('+idx+',{preferredPlan:\'monthly\',source:\'ingame-expired\'})">续费后使用</button>';
+else h+='<button style="width:100%;padding:8px;border-radius:10px;background:var(--primary);color:#171208;font-size:11px;font-weight:bold;border:none;cursor:pointer" onclick="openCheckout('+idx+',{preferredPlan:\'single\',source:\'ingame-detail\'})">购买</button>';
 h+='</div>';
 document.getElementById('igBody').innerHTML=h;
 }
-function igBuy(idx){curIdx=idx;doBuy()}
+function igBuy(idx){openCheckout(idx,{preferredPlan:'single',source:'ingame-detail'})}
 function igUse(idx){curIdx=idx;applySaveWithRight(idx)}
 
 function igConsignDetail(ci){
@@ -739,6 +784,11 @@ h+='</div>';
 document.getElementById('igBody').innerHTML=h;
 }
 
+window.CloudSaveDemo={
+setDemoState:setDemoState,
+openCheckout:openCheckout,
+getCheckoutState:function(){return Object.assign({},checkoutState)}
+};
 refreshAll();
 </script>
 </body>
