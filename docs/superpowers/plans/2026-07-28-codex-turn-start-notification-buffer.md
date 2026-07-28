@@ -79,7 +79,7 @@ class RecordingCodex extends EventEmitter {
 
 - [ ] **Step 2: Add a sequential same-Thread regression test**
 
-The first Workflow establishes and completes `turn-1`. The second Workflow receives a late `turn-1` delta before its own `turn-2` response, followed by valid early `turn-2` content and completion:
+The first two Workflows establish and complete `turn-1` and `turn-2`. The third Workflow then receives a late `turn-2` delta before its own `turn-3` response, followed by valid early `turn-3` content and completion:
 
 ```js
 test('a stale previous-Turn notification cannot claim the next Run on the same Thread', async t => {
@@ -93,6 +93,15 @@ test('a stale previous-Turn notification cannot claim the next Run on the same T
   emitCompleted(codex, first, JSON.stringify(validFeedbackResult));
   assert.equal(store.getRun(first.id).status, 'completed');
 
+  const second = await manager.startWorkflowRun({
+    requirementId: 'REQ-A',
+    workflowType: 'feedback-triage',
+    files: [],
+    input: { feedbackText: '第二次反馈' },
+  });
+  emitCompleted(codex, second, JSON.stringify(validFeedbackResult));
+  assert.equal(store.getRun(second.id).status, 'completed');
+
   codex.onTurnStart = async ({ codex: sender, threadId, turnId }) => {
     sender.emit('notification', {
       method: 'item/agentMessage/delta',
@@ -100,7 +109,7 @@ test('a stale previous-Turn notification cannot claim the next Run on the same T
         delta: 'STALE',
         itemId: 'stale-agent',
         threadId,
-        turnId: first.turnId,
+        turnId: second.turnId,
       },
     });
     emitCompleted(
@@ -110,19 +119,19 @@ test('a stale previous-Turn notification cannot claim the next Run on the same T
     );
   };
 
-  const second = await manager.startWorkflowRun({
+  const third = await manager.startWorkflowRun({
     requirementId: 'REQ-A',
     workflowType: 'feedback-triage',
     files: [],
-    input: { feedbackText: '第二次反馈' },
+    input: { feedbackText: '第三次反馈' },
   });
 
-  assert.equal(second.status, 'completed');
-  assert.notEqual(second.turnId, first.turnId);
-  assert.deepEqual(store.getWorkflowResult(second.id).result, validFeedbackResult);
-  assert.equal(store.getRun(second.id).result.includes('STALE'), false);
+  assert.equal(third.status, 'completed');
+  assert.notEqual(third.turnId, second.turnId);
+  assert.deepEqual(store.getWorkflowResult(third.id).result, validFeedbackResult);
+  assert.equal(store.getRun(third.id).result.includes('STALE'), false);
   assert.deepEqual(
-    store.listRunEvents(second.id)
+    store.listRunEvents(third.id)
       .filter(event => event.type === 'workbench/stale-turn-notifications-dropped')
       .map(event => event.payload),
     [{ count: 1 }],
@@ -148,8 +157,10 @@ Preferred execution is to keep the red test unstaged until Task 2 is green. Do n
 
 **Files:**
 - Modify: `workbench/lib/run-manager.mjs`
+- Modify: `workbench/lib/codex-app-server-client.mjs`
 - Test: `test/workbench/thread-isolation.test.mjs`
 - Test: `test/workbench/run-control.test.mjs`
+- Test: `test/workbench/codex-app-server-client.test.mjs`
 
 - [ ] **Step 1: Add fixed limits and reusable Active Run startup state**
 
@@ -445,9 +456,22 @@ this.codex.on('exit', info => this.#onCodexExit(info));
 Add this private handler before `#onNotification`:
 
 ```js
-#onCodexExit({ code = null, signal = null } = {}) {
+#onCodexExit({
+  code = null,
+  current = true,
+  processNonce: exitedProcessNonce = null,
+  signal = null,
+} = {}) {
+  if (current === false) return;
   const baseMessage = `Codex App Server exited: code=${code} signal=${signal}`;
   for (const active of [...this.activeByRun.values()]) {
+    if (
+      active.processNonce
+      && exitedProcessNonce
+      && active.processNonce !== exitedProcessNonce
+    ) {
+      continue;
+    }
     if (!this.#beginFinalization(active, baseMessage)) continue;
     let message = baseMessage;
     try {
@@ -466,20 +490,267 @@ Add this private handler before `#onNotification`:
 }
 ```
 
-- [ ] **Step 7: Run focused tests**
+- [ ] **Step 7: Bind client requests and exit events to one child generation**
+
+In `CodexAppServerClient.start`, capture `processNonce`, `child`, and its PID in each listener. Pass `child` into `#receive`, reject only waiters owned by that child, ignore old-child stdout/stderr, and emit the exit identity:
+
+```js
+this.child = child;
+const processPid = Number.isInteger(child.pid) && child.pid > 0
+  ? child.pid
+  : null;
+const lines = readline.createInterface({ input: child.stdout });
+this.lines = lines;
+lines.on('line', line => this.#receive(line, child));
+child.stderr.on('data', chunk => {
+  if (this.child !== child) return;
+  const text = chunk.toString('utf8');
+  this.stderrText = tail(`${this.stderrText}${text}`);
+  this.emit('stderr', text);
+});
+child.on('error', error => {
+  const current = this.child === child;
+  if (current) this.#recordLaunchError(error);
+  this.#rejectPending(error, child);
+  if (current) this.child = null;
+  if (this.lines === lines) this.lines = null;
+  lines.close();
+  this.emit('processError', error, {
+    current,
+    pid: processPid,
+    processNonce,
+  });
+});
+child.on('exit', (code, signal) => {
+  const current = this.child === child;
+  const error = new Error(`Codex App Server exited: code=${code} signal=${signal}`);
+  this.#rejectPending(error, child);
+  if (current) this.child = null;
+  if (this.lines === lines) this.lines = null;
+  lines.close();
+  this.emit('exit', {
+    code,
+    current,
+    pid: processPid,
+    processNonce,
+    signal,
+  });
+});
+```
+
+Capture the request generation and make `stop`, `#rejectPending`, and `#receive` generation-aware:
+
+```js
+request(method, params) {
+  if (!this.child) return Promise.reject(new Error('Codex App Server is not running'));
+  const child = this.child;
+  const id = this.nextId++;
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      const waiter = this.pending.get(id);
+      if (!waiter) return;
+      this.pending.delete(id);
+      waiter.reject(
+        new Error(`Codex App Server request timed out: ${method}`),
+      );
+    }, this.requestTimeoutMs);
+    this.pending.set(id, {
+      child,
+      method,
+      reject,
+      resolve,
+      timer,
+    });
+    try {
+      this.#write({ id, method, params });
+    } catch (error) {
+      this.pending.delete(id);
+      clearTimeout(timer);
+      reject(error);
+    }
+  });
+}
+
+#rejectPending(error, child) {
+  for (const [id, waiter] of this.pending.entries()) {
+    if (waiter.child !== child) continue;
+    clearTimeout(waiter.timer);
+    waiter.reject(error);
+    this.pending.delete(id);
+  }
+}
+
+#receive(line, child) {
+  if (this.child !== child) return;
+  let message;
+  try {
+    message = JSON.parse(line);
+  } catch {
+    this.emit('protocolError', new Error(`Invalid JSONL from App Server: ${line.slice(0, 200)}`));
+    return;
+  }
+  if (Object.hasOwn(message, 'id') && message.method) {
+    this.emit('request', message);
+    return;
+  }
+  if (Object.hasOwn(message, 'id')) {
+    const waiter = this.pending.get(message.id);
+    if (!waiter || waiter.child !== child) return;
+    this.pending.delete(message.id);
+    clearTimeout(waiter.timer);
+    if (message.error) {
+      const error = new Error(message.error.message || 'App Server request failed');
+      error.code = message.error.code;
+      error.data = message.error.data;
+      waiter.reject(error);
+    } else {
+      waiter.resolve(message.result);
+    }
+    return;
+  }
+  if (message.method) this.emit('notification', message);
+}
+```
+
+In `stop`, call:
+
+```js
+this.#rejectPending(new Error('Codex App Server stopped'), child);
+```
+
+Make the fake child PID-configurable:
+
+```js
+function fakeProcess({ pid = null } = {}) {
+  const child = new EventEmitter();
+  child.pid = pid;
+  child.stdin = new PassThrough();
+  child.stdout = new PassThrough();
+  child.stderr = new PassThrough();
+  child.killCount = 0;
+  child.kill = () => {
+    child.killCount += 1;
+    return true;
+  };
+  return child;
+}
+```
+
+Add these two generation tests:
+
+```js
+test('a stopped child late error and exit cannot reject requests from a restarted child', async () => {
+  const firstNonce = '1'.repeat(64);
+  const secondNonce = '2'.repeat(64);
+  const firstChild = fakeProcess({ pid: 7101 });
+  const secondChild = fakeProcess({ pid: 7102 });
+  const children = [firstChild, secondChild];
+  const nonces = [firstNonce, secondNonce];
+  const writesByChild = new Map();
+  for (const child of children) {
+    const writes = [];
+    writesByChild.set(child, writes);
+    child.stdin.on('data', chunk => {
+      const message = JSON.parse(chunk.toString('utf8'));
+      writes.push(message);
+      if (message.method === 'initialize') {
+        child.stdout.write(`${JSON.stringify({ id: message.id, result: {} })}\n`);
+      }
+    });
+  }
+  const client = new CodexAppServerClient({
+    nonceFactory: () => nonces.shift(),
+    spawnProcess: () => children.shift(),
+  });
+  const exits = [];
+  client.on('exit', info => exits.push(info));
+
+  await client.start();
+  await client.stop();
+  await client.start();
+  const request = client.request('thread/start', { cwd: 'C:/current' });
+  const observed = request.then(
+    value => ({ status: 'fulfilled', value }),
+    error => ({ status: 'rejected', error }),
+  );
+  const currentRequest = writesByChild.get(secondChild)
+    .find(message => message.method === 'thread/start');
+
+  firstChild.emit('error', new Error('late old-child error'));
+  firstChild.emit('exit', 0, null);
+  secondChild.stdout.write(`${JSON.stringify({
+    id: currentRequest.id,
+    result: { thread: { id: 'thread-current' } },
+  })}\n`);
+
+  const outcome = await observed;
+  assert.equal(outcome.status, 'fulfilled');
+  assert.equal(outcome.value.thread.id, 'thread-current');
+  assert.equal(client.diagnostics().running, true);
+  assert.equal(client.diagnostics().launchError, '');
+  assert.equal(client.nonce(), secondNonce);
+  assert.deepEqual(exits, [{
+    code: 0,
+    current: false,
+    pid: 7101,
+    processNonce: firstNonce,
+    signal: null,
+  }]);
+  await client.stop();
+});
+
+test('current child exit reports process identity and rejects only its requests', async () => {
+  const processNonce = '3'.repeat(64);
+  const child = fakeProcess({ pid: 7201 });
+  const writes = [];
+  child.stdin.on('data', chunk => {
+    const message = JSON.parse(chunk.toString('utf8'));
+    writes.push(message);
+    if (message.method === 'initialize') {
+      child.stdout.write(`${JSON.stringify({ id: message.id, result: {} })}\n`);
+    }
+  });
+  const client = new CodexAppServerClient({
+    nonceFactory: () => processNonce,
+    spawnProcess: () => child,
+  });
+  const exits = [];
+  client.on('exit', info => exits.push(info));
+  await client.start();
+
+  const pending = client.request('thread/resume', { threadId: 'thread-current' });
+  child.emit('exit', 23, 'SIGTERM');
+
+  await assert.rejects(pending, /exited: code=23 signal=SIGTERM/);
+  assert.deepEqual(exits, [{
+    code: 23,
+    current: true,
+    pid: 7201,
+    processNonce,
+    signal: 'SIGTERM',
+  }]);
+  assert.equal(client.pending.size, 0);
+  assert.equal(client.diagnostics().running, false);
+});
+```
+
+- [ ] **Step 8: Run focused tests**
 
 Run:
 
 ```powershell
 node --test test/workbench/thread-isolation.test.mjs test/workbench/run-control.test.mjs
+node --test test/workbench/codex-app-server-client.test.mjs
 ```
 
 Expected: all focused tests PASS, including the existing `completion before turn/start returns wins once` test.
 
-- [ ] **Step 8: Commit the core fix**
+- [ ] **Step 9: Commit the core fix**
 
 ```powershell
-git add -- workbench/lib/run-manager.mjs test/workbench/thread-isolation.test.mjs
+git add -- workbench/lib/run-manager.mjs workbench/lib/codex-app-server-client.mjs `
+  test/workbench/thread-isolation.test.mjs `
+  test/workbench/codex-app-server-client.test.mjs
 git commit -m "fix: buffer notifications until turn start responds"
 ```
 
@@ -488,6 +759,25 @@ git commit -m "fix: buffer notifications until turn start responds"
 **Files:**
 - Modify: `test/workbench/run-control.test.mjs`
 - Test: `test/workbench/run-control.test.mjs`
+
+Add exact buffer and Active Map cleanup helpers before the new tests:
+
+```js
+function assertStartupStateCleared(manager, active) {
+  assert.deepEqual(active.pendingNotifications, []);
+  assert.equal(active.pendingNotificationBytes, 0);
+  assert.equal(active.turnStartPending, false);
+  assert.equal(manager.activeByRun.size, 0);
+  assert.equal(manager.activeByThread.size, 0);
+  assert.equal(manager.activeByTurn.size, 0);
+}
+
+function assertStartupStateBuffered(active, count = 1) {
+  assert.equal(active.turnStartPending, true);
+  assert.equal(active.pendingNotifications.length, count);
+  assert.ok(active.pendingNotificationBytes > 0);
+}
+```
 
 - [ ] **Step 1: Add an ordered early-notification test**
 
@@ -783,7 +1073,10 @@ test('all Run entry points buffer pre-response notifications and preserve exact 
 ```js
 test('startup rejection after an early notification releases buffered state and the Run slot', async t => {
   const codex = new FakeCodex();
+  const { manager, store } = setup(t, { codex });
+  let activeAtFailure = null;
   codex.onTurnStart = async ({ codex: sender, threadId, turnId }) => {
+    activeAtFailure = manager.activeByThread.get(threadId);
     sender.emit('notification', {
       method: 'item/agentMessage/delta',
       params: {
@@ -795,7 +1088,6 @@ test('startup rejection after an early notification releases buffered state and 
     });
     throw new Error('turn start rejected after notification');
   };
-  const { manager, store } = setup(t, { codex });
 
   await assert.rejects(
     () => manager.startReadOnlyRun({
@@ -810,6 +1102,8 @@ test('startup rejection after an early notification releases buffered state and 
   const [failed] = store.listRuns();
   assert.equal(failed.status, 'failed');
   assert.equal(failed.result, null);
+  assert.ok(activeAtFailure);
+  assertStartupStateCleared(manager, activeAtFailure);
 
   codex.onTurnStart = null;
   const replacement = await manager.startReadOnlyRun({
@@ -851,6 +1145,9 @@ test('cancel while turn/start is pending drops buffered notifications and releas
   const startupRejected = assert.rejects(starting, /Cancelled by user/);
   await waitFor(() => buffered, 'pre-response notification was not buffered');
   const [run] = store.listRuns();
+  const active = manager.activeByRun.get(run.id);
+  assert.ok(active);
+  assertStartupStateBuffered(active);
 
   await manager.cancel(run.id);
   responseGate.resolve();
@@ -859,6 +1156,7 @@ test('cancel while turn/start is pending drops buffered notifications and releas
   assert.equal(store.countActiveRuns(), 0);
   assert.equal(store.getRun(run.id).status, 'cancelled');
   assert.equal(store.getRun(run.id).result, null);
+  assertStartupStateCleared(manager, active);
 });
 
 test('timeout while turn/start is pending drops buffered notifications and releases the Run slot', async t => {
@@ -881,7 +1179,7 @@ test('timeout while turn/start is pending drops buffered notifications and relea
   const {
     manager,
     store,
-  } = setup(t, { codex, runTimeoutMs: 20 });
+  } = setup(t, { codex, runTimeoutMs: 200 });
   const starting = manager.startReadOnlyRun({
     requirementId: 'REQ-1',
     prompt: 'timeout pending turn',
@@ -890,14 +1188,18 @@ test('timeout while turn/start is pending drops buffered notifications and relea
   const startupRejected = assert.rejects(starting, /Run timed out/);
   await waitFor(() => buffered, 'pre-response notification was not buffered');
   const [run] = store.listRuns();
+  const active = manager.activeByRun.get(run.id);
+  assert.ok(active);
+  assertStartupStateBuffered(active);
 
-  const failed = await waitForStatus(store, run.id, 'failed');
+  const failed = await waitForStatus(store, run.id, 'failed', 1_000);
   responseGate.resolve();
   await startupRejected;
 
   assert.equal(failed.error, 'Run timed out');
   assert.equal(failed.result, null);
   assert.equal(store.countActiveRuns(), 0);
+  assertStartupStateCleared(manager, active);
 });
 ```
 
@@ -906,6 +1208,8 @@ test('timeout while turn/start is pending drops buffered notifications and relea
 ```js
 test('App Server exit during turn startup drops buffered payload and releases the Run', async t => {
   const codex = new FakeCodex();
+  const responseGate = deferred();
+  let notificationSent = false;
   codex.onTurnStart = async ({ codex: sender, threadId, turnId }) => {
     sender.emit('notification', {
       method: 'item/agentMessage/delta',
@@ -916,27 +1220,38 @@ test('App Server exit during turn startup drops buffered payload and releases th
         turnId,
       },
     });
-    sender.emit('exit', { code: 1, signal: null });
+    notificationSent = true;
+    await responseGate.promise;
   };
   const { manager, store } = setup(t, { codex });
 
-  await assert.rejects(
-    () => manager.startReadOnlyRun({
-      requirementId: 'REQ-1',
-      prompt: 'exit cleanup',
-      files: [],
-    }),
-    /Codex App Server exited/,
+  const starting = manager.startReadOnlyRun({
+    requirementId: 'REQ-1',
+    prompt: 'exit cleanup',
+    files: [],
+  });
+  const startupRejected = assert.rejects(starting, /Codex App Server exited/);
+  await waitFor(
+    () => notificationSent,
+    'pre-response notification was not sent',
   );
-
   const [run] = store.listRuns();
-  assert.equal(run.status, 'failed');
+  const active = manager.activeByRun.get(run.id);
+  assert.ok(active);
+  assertStartupStateBuffered(active);
+  codex.emit('exit', { code: 1, signal: null });
+  responseGate.resolve();
+  await startupRejected;
+
+  const failed = store.getRun(run.id);
+  assert.equal(failed.status, 'failed');
   assert.equal(store.countActiveRuns(), 0);
   assert.deepEqual(
     store.listRunEvents(run.id)
       .filter(event => event.type === 'item/agentMessage/delta'),
     [],
   );
+  assertStartupStateCleared(manager, active);
 });
 ```
 
@@ -949,7 +1264,7 @@ node --test test/workbench/run-control.test.mjs test/workbench/thread-isolation.
 npm.cmd run workbench:test
 ```
 
-Expected: focused tests PASS; full suite exceeds the current 118 tests and has zero failures.
+Expected: focused tests PASS; full suite reports 132 tests and zero failures.
 
 - [ ] **Step 8: Commit edge-case coverage**
 
@@ -1004,7 +1319,26 @@ assert.equal(fs.existsSync(candidateAbsolutePath), false);
 assert.equal(hashes.after, hashes.before);
 ```
 
-It must continue to write `real-integration-results.json` in `finally`, cancel an active write Run on failure, and use only the Workbench restore API for an applied candidate.
+Run this exact source-contract check before the real integration:
+
+```powershell
+$source = Get-Content -Raw -Encoding utf8 `
+  tools/verify-personal-codex-workbench-real.mjs
+@(
+  'finally {',
+  'writeReport();',
+  'await app.close();',
+  '/cancel',
+  '/restore',
+  'assert.deepEqual(restored.restored, [candidatePath]);'
+) | ForEach-Object {
+  if (-not $source.Contains($_)) {
+    throw "Missing real-verifier safety contract: $_"
+  }
+}
+```
+
+Expected: the command exits 0. The subsequent real integration proves the `finally` report write, active-write cancellation branch, and Workbench restore API path execute without direct candidate deletion.
 
 - [ ] **Step 3: Run the real integration**
 
