@@ -8,6 +8,14 @@ import test from 'node:test';
 import { ApprovalManager } from '../../workbench/lib/approval-manager.mjs';
 import { openDatabase } from '../../workbench/lib/database.mjs';
 
+const permissionsResponseSchema = JSON.parse(fs.readFileSync(
+  new URL(
+    '../../.workbench-data/app-server-schema/PermissionsRequestApprovalResponse.json',
+    import.meta.url,
+  ),
+  'utf8',
+));
+
 class FakeCodex extends EventEmitter {
   constructor() {
     super();
@@ -20,6 +28,14 @@ class FakeCodex extends EventEmitter {
     this.responseAttempts += 1;
     if (this.responseError) throw this.responseError;
     this.responses.push({ id, result });
+  }
+
+  respondError(id, code = -32601, message = 'Method not supported', data) {
+    this.responseAttempts += 1;
+    if (this.responseError) throw this.responseError;
+    const error = { code, message };
+    if (data !== undefined) error.data = data;
+    this.responses.push({ id, error });
   }
 }
 
@@ -111,7 +127,7 @@ function permissionsApprovalRequest({
   };
 }
 
-test('a registered permissions request is immediately declined without changing run state', t => {
+test('a registered permissions request returns the schema-required empty grant without changing run state', t => {
   const {
     approvalRoot,
     codex,
@@ -124,15 +140,20 @@ test('a registered permissions request is immediately declined without changing 
 
   assert.deepEqual(codex.responses, [{
     id: 'permissions-registered',
-    result: { decision: 'decline' },
+    result: { permissions: {} },
   }]);
+  assert.deepEqual(permissionsResponseSchema.required, ['permissions']);
+  for (const required of permissionsResponseSchema.required) {
+    assert.equal(Object.hasOwn(codex.responses[0].result, required), true);
+  }
+  assert.equal(Object.hasOwn(codex.responses[0].result, 'decision'), false);
   assert.equal(Object.hasOwn(codex.responses[0], 'jsonrpc'), false);
   assert.equal(store.listApprovals('RUN-1').length, 0);
   assert.equal(store.listPendingApprovals('RUN-1').length, 0);
   assert.equal(store.getRun('RUN-1').status, 'running');
 });
 
-test('an unregistered permissions request is immediately declined with its numeric id', t => {
+test('an unregistered permissions request returns the schema-required empty grant with its numeric id', t => {
   const {
     approvalRoot,
     codex,
@@ -146,8 +167,9 @@ test('an unregistered permissions request is immediately declined with its numer
 
   assert.deepEqual(codex.responses, [{
     id: 131,
-    result: { decision: 'decline' },
+    result: { permissions: {} },
   }]);
+  assert.equal(Object.hasOwn(codex.responses[0].result, 'decision'), false);
   assert.equal(store.listApprovals('RUN-1').length, 0);
   assert.equal(store.getRun('RUN-1').status, 'running');
 });
@@ -180,24 +202,24 @@ test('unknown account, MCP and future server requests all fail closed once', t =
 
   assert.deepEqual(codex.responses, requests.map(request => ({
     id: request.id,
-    result: { decision: 'decline' },
+    error: {
+      code: -32601,
+      message: 'Method not supported',
+    },
   })));
   assert.equal(codex.responseAttempts, requests.length);
   assert.equal(store.listApprovals('RUN-1').length, 0);
   assert.equal(store.getRun('RUN-1').status, 'running');
 });
 
-test('unsupported request response failures are observable without pending state or retry', t => {
-  const {
-    approvalRoot,
-    codex,
-    store,
-  } = setup(t);
+test('unsupported error response failures are observable without pending state or retry', t => {
+  const { codex, store } = setup(t);
   codex.responseError = new Error('protocol write failed');
-  const request = permissionsApprovalRequest({
+  const request = {
     id: 'permissions-write-failure',
-    cwd: approvalRoot,
-  });
+    method: 'future/server/request',
+    params: { threadId: 'thread-1', turnId: 'turn-1' },
+  };
 
   assert.throws(
     () => codex.emit('request', request),

@@ -146,6 +146,13 @@ export class CodexAppServerClient extends EventEmitter {
     this.#write({ id, result });
   }
 
+  respondError(id, code = -32601, message = 'Method not supported', data) {
+    if (!this.child) throw new Error('Codex App Server is not running');
+    const error = { code, message };
+    if (data !== undefined) error.data = data;
+    this.#write({ id, error });
+  }
+
   diagnostics() {
     return {
       running: Boolean(this.child),

@@ -4,6 +4,7 @@ import { assertAuthorizedPath } from './security.mjs';
 
 const FILE_APPROVAL_METHOD = 'item/fileChange/requestApproval';
 const COMMAND_APPROVAL_METHOD = 'item/commandExecution/requestApproval';
+const PERMISSIONS_APPROVAL_METHOD = 'item/permissions/requestApproval';
 const FILE_ITEM_METHODS = new Set(['item/started', 'item/completed']);
 
 function conflict(message) {
@@ -161,9 +162,16 @@ export class ApprovalManager {
   #onRequest(request) {
     const fileChange = request?.method === FILE_APPROVAL_METHOD;
     const command = request?.method === COMMAND_APPROVAL_METHOD;
+    const permissions = request?.method === PERMISSIONS_APPROVAL_METHOD;
+    if (permissions) {
+      if (request && Object.hasOwn(request, 'id')) {
+        this.codex.respond(request.id, { permissions: {} });
+      }
+      return;
+    }
     if (!fileChange && !command) {
       if (request && Object.hasOwn(request, 'id')) {
-        this.codex.respond(request.id, { decision: 'decline' });
+        this.codex.respondError(request.id);
       }
       return;
     }

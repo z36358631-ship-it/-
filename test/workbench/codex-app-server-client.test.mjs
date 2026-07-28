@@ -156,6 +156,69 @@ test('client emits server requests and responds without a jsonrpc envelope', asy
   await client.stop();
 });
 
+test('client responds with default and custom protocol error envelopes without jsonrpc', async () => {
+  const child = fakeProcess();
+  const writes = [];
+  child.stdin.on('data', chunk => writes.push(JSON.parse(chunk.toString('utf8'))));
+  const client = new CodexAppServerClient({ spawnProcess: () => child });
+  const starting = client.start();
+  await nextTurn();
+  child.stdout.write(`${JSON.stringify({ id: writes[0].id, result: {} })}\n`);
+  await starting;
+
+  client.respondError(93);
+  assert.deepEqual(writes.at(-1), {
+    id: 93,
+    error: {
+      code: -32601,
+      message: 'Method not supported',
+    },
+  });
+  assert.equal(Object.hasOwn(writes.at(-1), 'jsonrpc'), false);
+
+  client.respondError(
+    'server-request-94',
+    -32001,
+    'Request denied',
+    { reason: 'policy' },
+  );
+  assert.deepEqual(writes.at(-1), {
+    id: 'server-request-94',
+    error: {
+      code: -32001,
+      message: 'Request denied',
+      data: { reason: 'policy' },
+    },
+  });
+  assert.equal(Object.hasOwn(writes.at(-1), 'jsonrpc'), false);
+  await client.stop();
+});
+
+test('client protocol error write failures are synchronous and never retried', async () => {
+  const child = fakeProcess();
+  child.stdin.on('data', chunk => {
+    const message = JSON.parse(chunk.toString('utf8'));
+    if (message.method === 'initialize') {
+      child.stdout.write(`${JSON.stringify({ id: message.id, result: {} })}\n`);
+    }
+  });
+  const client = new CodexAppServerClient({ spawnProcess: () => child });
+  await client.start();
+
+  let writeAttempts = 0;
+  child.stdin.write = () => {
+    writeAttempts += 1;
+    throw new Error('protocol write failed');
+  };
+  assert.throws(
+    () => client.respondError('server-request-write-failure'),
+    /protocol write failed/,
+  );
+  assert.equal(writeAttempts, 1);
+  assert.equal(client.pending.size, 0);
+  await client.stop();
+});
+
 test('client retains launch errors and classifies a missing Codex executable', async () => {
   const child = fakeProcess();
   const client = new CodexAppServerClient({ spawnProcess: () => child });
