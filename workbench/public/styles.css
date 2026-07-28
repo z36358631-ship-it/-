@@ -46,6 +46,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   min-width: 320px;
   background: var(--color-canvas);
@@ -944,6 +948,19 @@ main {
   min-height: 70px;
   padding: 12px 16px;
   border-bottom: 1px solid var(--color-border);
+}
+
+.run-card[role="button"],
+.run-table-row[role="button"] {
+  transition:
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.run-card[role="button"]:hover,
+.run-table-row[role="button"]:hover {
+  background: var(--color-primary-soft);
+  box-shadow: inset 3px 0 0 var(--color-primary);
 }
 
 .run-card:last-child,
@@ -1845,6 +1862,18 @@ dialog::backdrop {
   font-weight: 750;
 }
 
+.permission-badge.is-generate {
+  border-color: var(--color-primary-border);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-strong);
+}
+
+.permission-badge.is-modify {
+  border-color: #fde68a;
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
 .context-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1898,6 +1927,62 @@ dialog::backdrop {
 .security-note p {
   color: inherit;
   font-size: 10px;
+}
+
+.security-note.is-write {
+  border-color: #fde68a;
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+#permissionPicker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+#permissionPicker label {
+  display: grid;
+  min-height: 72px;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+#permissionPicker label:has(input:checked) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+#permissionPicker input {
+  width: 17px;
+  height: 17px;
+  margin: 2px 0 0;
+  accent-color: var(--color-primary);
+}
+
+#permissionPicker label > span {
+  display: grid;
+  gap: 3px;
+}
+
+#permissionPicker strong {
+  font-size: 11px;
+}
+
+#permissionPicker small {
+  color: var(--color-text-muted);
+  font-size: 9px;
+  line-height: 1.45;
 }
 
 .quick-actions {
@@ -1956,6 +2041,10 @@ dialog::backdrop {
   box-shadow: inset 3px 0 0 var(--color-primary);
 }
 
+.drawer-section.is-disabled #workflowPicker {
+  opacity: 0.58;
+}
+
 .workflow-reset {
   min-height: var(--control-height);
   margin-top: 6px;
@@ -2009,7 +2098,8 @@ dialog::backdrop {
   font-size: 9px;
 }
 
-.form-section textarea {
+.form-section textarea,
+.form-section > input {
   width: 100%;
   min-height: var(--control-height);
   padding: 10px 11px;
@@ -2026,12 +2116,14 @@ dialog::backdrop {
     box-shadow 160ms ease;
 }
 
-.form-section textarea:focus {
+.form-section textarea:focus,
+.form-section > input:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.form-section textarea::placeholder {
+.form-section textarea::placeholder,
+.form-section > input::placeholder {
   color: #94a3b8;
 }
 
@@ -2110,6 +2202,132 @@ dialog::backdrop {
   white-space: pre-wrap;
 }
 
+.run-detail-section[hidden] {
+  display: none;
+}
+
+.run-detail-group {
+  padding: 12px 0 2px;
+  border-top: 1px solid var(--color-border);
+}
+
+.run-detail-group:first-of-type {
+  border-top: 0;
+}
+
+.run-detail-group h4 {
+  margin: 0;
+  font-size: 11px;
+}
+
+.safety-card-list {
+  display: grid;
+  gap: 8px;
+}
+
+.approval-card,
+.change-card,
+.validation-card {
+  display: grid;
+  gap: 8px;
+  padding: 11px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
+}
+
+.approval-card {
+  border-color: #f3d08a;
+  background: var(--color-warning-soft);
+}
+
+.approval-card-top,
+.change-card-top,
+.validation-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.approval-card strong,
+.change-card strong,
+.validation-card strong {
+  font-size: 11px;
+}
+
+.approval-card p,
+.change-card p,
+.validation-card p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+
+.approval-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.approval-card-actions .button {
+  min-width: 96px;
+}
+
+.approval-guidance {
+  color: var(--color-warning);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.diff {
+  max-height: 320px;
+  padding: 12px;
+  margin: 0;
+  overflow: auto;
+  border: 1px solid #334155;
+  border-radius: var(--radius-md);
+  background: #0f172a;
+  color: #cbd5e1;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.65;
+  white-space: pre;
+}
+
+.diff span {
+  display: block;
+  min-height: 1em;
+}
+
+.diff .add {
+  color: #86efac;
+}
+
+.diff .remove {
+  color: #fca5a5;
+}
+
+.diff .meta {
+  color: #93c5fd;
+}
+
+.validation-card.is-passed {
+  border-color: #a7f3d0;
+  background: var(--color-success-soft);
+}
+
+.validation-card.is-failed {
+  border-color: #fecaca;
+  background: var(--color-danger-soft);
+}
+
+.validation-card.is-skipped {
+  border-color: #fde68a;
+  background: var(--color-warning-soft);
+}
+
 .drawer-footer {
   display: flex;
   min-height: 76px;
@@ -2127,6 +2345,24 @@ dialog::backdrop {
   margin: 0;
   color: var(--color-text-muted);
   font-size: 10px;
+}
+
+.run-control-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.button-danger {
+  border-color: #fecaca;
+  background: var(--color-surface);
+  color: var(--color-danger);
+}
+
+.button-danger:hover:not(:disabled) {
+  border-color: var(--color-danger);
+  background: var(--color-danger-soft);
 }
 
 #manualTaskDialog {
@@ -2551,7 +2787,8 @@ dialog::backdrop {
 
   .metric-framework,
   .quick-actions,
-  .context-grid {
+  .context-grid,
+  #permissionPicker {
     grid-template-columns: 1fr;
   }
 
@@ -2590,7 +2827,12 @@ dialog::backdrop {
     gap: 9px;
   }
 
-  .drawer-footer .button {
+  .run-control-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .run-control-actions .button {
     width: 100%;
   }
 
@@ -2618,6 +2860,10 @@ dialog::backdrop {
 
   .search-field input {
     font-size: 16px;
+  }
+
+  .run-control-actions {
+    grid-template-columns: 1fr;
   }
 
   .topbar-actions .button {

@@ -589,9 +589,9 @@
     <div class="drawer-shell">
       <header class="drawer-header">
         <div>
-          <span class="drawer-kicker">READ-ONLY RUN</span>
+          <span class="drawer-kicker" id="drawerKicker">CODEX RUN</span>
           <h2 id="codexTitle">问 Codex</h2>
-          <p>把当前业务上下文交给本机 Codex 做只读分析。</p>
+          <p id="drawerSubtitle">选择最小必要权限，把当前业务上下文交给本机 Codex。</p>
         </div>
         <button class="icon-button drawer-close" id="closeCodex" type="button" aria-label="关闭 Codex 抽屉">
           <svg class="icon" aria-hidden="true"><use href="#icon-close"></use></svg>
@@ -602,18 +602,42 @@
         <section class="drawer-section" aria-labelledby="contextTitle">
           <div class="section-title-row">
             <h3 id="contextTitle">运行上下文</h3>
-            <span class="permission-badge">只读分析</span>
+            <span class="permission-badge" id="permissionBadge">只读分析</span>
           </div>
           <dl class="context-grid">
             <div><dt>当前需求</dt><dd id="contextRequirement">未选择，按全局任务处理</dd></div>
             <div><dt>工作目录</dt><dd id="contextRoot">由 Broker 授权</dd></div>
             <div><dt>当前 Thread</dt><dd id="contextThread">首次运行时创建</dd></div>
             <div><dt>Codex运行状态</dt><dd id="drawerRunStatus">未执行</dd></div>
+            <div><dt>本次权限</dt><dd id="contextPermission">只读分析</dd></div>
+            <div><dt>当前 Run</dt><dd id="contextRunId">尚未创建</dd></div>
           </dl>
-          <div class="security-note">
+          <div class="security-note" id="permissionSecurityNote">
             <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
-            <p>本阶段不会创建、修改、移动或删除文件，也不会请求扩大权限。</p>
+            <p id="permissionSecurityCopy">只读分析不会创建、修改、移动或删除文件。</p>
           </div>
+        </section>
+
+        <section class="drawer-section" aria-labelledby="permissionPickerTitle">
+          <div class="section-title-row">
+            <h3 id="permissionPickerTitle">运行权限</h3>
+            <span>一次 Run 固定一种权限</span>
+          </div>
+          <fieldset id="permissionPicker">
+            <legend class="visually-hidden">选择本次运行权限</legend>
+            <label>
+              <input type="radio" name="permission" value="read-only" checked>
+              <span><strong>只读分析</strong><small>读取勾选的登记产物</small></span>
+            </label>
+            <label>
+              <input type="radio" name="permission" value="generate-candidate">
+              <span><strong>生成候选产物</strong><small>仅创建一个新的相对路径</small></span>
+            </label>
+            <label>
+              <input type="radio" name="permission" value="modify-existing">
+              <span><strong>修改已选产物</strong><small>仅修改勾选的登记产物</small></span>
+            </label>
+          </fieldset>
         </section>
 
         <section class="drawer-section" aria-labelledby="workflowPickerTitle">
@@ -637,6 +661,12 @@
             <p id="drawerArtifactSelectionMeta">只可选择当前需求已经登记的产物。</p>
             <div id="drawerArtifactOptions" class="artifact-options"></div>
           </fieldset>
+
+          <label id="candidateTargetLabel" for="candidateTarget" hidden>
+            <span>新候选相对路径</span>
+            <small>填写尚不存在的工作区相对路径，不代表它已是登记产物。</small>
+          </label>
+          <input id="candidateTarget" type="text" autocomplete="off" spellcheck="false" hidden placeholder="例如：prd/ai生成/候选验收清单.md">
 
           <label id="businessInputLabel" for="businessInput" hidden>
             <span>业务输入</span>
@@ -667,14 +697,52 @@
           <ol id="streamEvents" class="stream-events" aria-label="运行事件"></ol>
           <pre id="streamOutput" aria-live="polite" aria-atomic="false">运行结果将在这里实时出现。</pre>
         </section>
+
+        <section class="drawer-section run-detail-section" id="runDetailSection" aria-labelledby="runDetailTitle" hidden>
+          <div class="section-title-row">
+            <h3 id="runDetailTitle">Run 安全详情</h3>
+            <span id="runDetailStatus">等待选择运行</span>
+          </div>
+
+          <section class="run-detail-group" aria-labelledby="approvalCardsTitle">
+            <div class="section-title-row">
+              <h4 id="approvalCardsTitle">等待我确认</h4>
+              <span>逐项决定</span>
+            </div>
+            <div id="approvalCards" class="safety-card-list"></div>
+          </section>
+
+          <section class="run-detail-group" aria-labelledby="fileChangesTitle">
+            <div class="section-title-row">
+              <h4 id="fileChangesTitle">文件变化</h4>
+              <span>逐文件差异</span>
+            </div>
+            <div id="fileChanges" class="safety-card-list"></div>
+          </section>
+
+          <section class="run-detail-group" aria-labelledby="validationResultsTitle">
+            <div class="section-title-row">
+              <h4 id="validationResultsTitle">验证结果</h4>
+              <span>执行后证据</span>
+            </div>
+            <div id="validationResults" class="safety-card-list"></div>
+          </section>
+
+          <p id="runDetailMessage" class="form-message" role="status" aria-live="polite"></p>
+        </section>
       </div>
 
       <footer class="drawer-footer">
         <p id="drawerMessage" role="status" aria-live="polite">提交后会创建独立 Run，并保存上下文与结果。</p>
-        <button id="startRun" class="button button-primary" type="button">
-          <svg class="icon" aria-hidden="true"><use href="#icon-spark"></use></svg>
-          <span>开始只读任务</span>
-        </button>
+        <div class="run-control-actions">
+          <button id="startRun" class="button button-primary" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#icon-spark"></use></svg>
+            <span>开始只读任务</span>
+          </button>
+          <button class="button button-secondary" type="button" data-action="cancel-run" disabled>取消任务</button>
+          <button class="button button-secondary" type="button" data-action="retry-run" disabled>重试</button>
+          <button class="button button-danger" type="button" data-action="restore-run" disabled>恢复本次修改</button>
+        </div>
       </footer>
     </div>
   </dialog>

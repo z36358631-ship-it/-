@@ -19,6 +19,11 @@ const state = {
   contextLoading: false,
   searchTerm: '',
   activeEvents: null,
+  activeRunId: null,
+  currentRunDetail: null,
+  permission: 'read-only',
+  detailPollTimer: null,
+  detailPollGeneration: 0,
   codexTrigger: null,
   manualTaskTrigger: null,
 };
@@ -48,6 +53,12 @@ const runLabels = {
 };
 
 const activeRunStatuses = new Set(['queued', 'running', 'waiting-approval']);
+const retryableRunStatuses = new Set(['failed', 'cancelled', 'interrupted']);
+const permissionLabels = {
+  'read-only': '只读分析',
+  'generate-candidate': '生成候选产物',
+  'modify-existing': '修改已选产物',
+};
 const workflowLabels = {
   'feedback-triage': '整理反馈并去重',
   'demo-prd-review': '检查 Demo、PRD 差异与漏洞',
@@ -123,6 +134,25 @@ function describeRun(run) {
 
 function runTitle(run) {
   return workflowLabels[run.workflowType] || run.prompt || '未命名任务';
+}
+
+function makeRunOpenable(element, run) {
+  element.dataset.runId = run.id;
+  element.tabIndex = 0;
+  element.setAttribute('role', 'button');
+  element.setAttribute('aria-label', `查看运行 ${run.id}：${runTitle(run)}`);
+  const open = () => {
+    openHistoricalRun(run).catch(error => {
+      text(query('#drawerMessage'), error.message);
+      showToast(error.message, true);
+    });
+  };
+  element.addEventListener('click', open);
+  element.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    open();
+  });
 }
 
 function matchesSearch(value) {
@@ -253,6 +283,7 @@ function buildRunCard(run) {
     createElement('span', '', formatDate(run.startedAt, true)),
   );
   card.append(top, detail, meta);
+  makeRunOpenable(card, run);
   return card;
 }
 
@@ -274,6 +305,7 @@ function buildRunTableRow(run) {
   const time = createElement('time', 'run-time', formatDate(run.startedAt, true));
   if (run.startedAt) time.dateTime = run.startedAt;
   row.append(title, status, context, time);
+  makeRunOpenable(row, run);
   return row;
 }
 
@@ -771,9 +803,103 @@ function closeMobileNavigation({ restoreFocus = false } = {}) {
   if (wasOpen && restoreFocus) query('#navToggle').focus();
 }
 
+function isSafeRelativeCandidatePath(value) {
+  const normalized = String(value || '').trim().replaceAll('\\', '/');
+  if (
+    !normalized
+    || normalized.includes('\0')
+    || normalized.startsWith('/')
+    || /^[a-zA-Z]:\//.test(normalized)
+  ) {
+    return false;
+  }
+  const segments = normalized.split('/');
+  return segments.every(segment => segment && segment !== '.' && segment !== '..');
+}
+
+function permissionButtonLabel() {
+  if (state.permission === 'generate-candidate') return '开始生成候选';
+  if (state.permission === 'modify-existing') return '开始修改产物';
+  return state.selectedWorkflow ? '运行所选工作流' : '开始只读任务';
+}
+
+function updatePermissionUi(permission, { preserveWorkflow = false } = {}) {
+  if (!Object.hasOwn(permissionLabels, permission)) return;
+  state.permission = permission;
+  for (const input of queryAll('input[name="permission"]')) {
+    input.checked = input.value === permission;
+  }
+
+  const readOnly = permission === 'read-only';
+  const generating = permission === 'generate-candidate';
+  if (!readOnly && !preserveWorkflow) useFreeformMode({ focus: false });
+  query('#workflowPicker').disabled = !readOnly;
+  query('#workflowPicker').closest('.drawer-section').classList.toggle(
+    'is-disabled',
+    !readOnly,
+  );
+  text(
+    query('#runModeLabel'),
+    readOnly
+      ? workflowLabels[state.selectedWorkflow] || '自由任务'
+      : '写入模式已禁用',
+  );
+  query('#authorizedFiles').hidden = generating;
+  query('#candidateTargetLabel').hidden = !generating;
+  query('#candidateTarget').hidden = !generating;
+
+  const badge = query('#permissionBadge');
+  badge.className = `permission-badge${
+    generating
+      ? ' is-generate'
+      : permission === 'modify-existing'
+        ? ' is-modify'
+        : ''
+  }`;
+  text(badge, permissionLabels[permission]);
+  text(query('#contextPermission'), permissionLabels[permission]);
+  text(
+    query('#drawerKicker'),
+    readOnly ? 'READ-ONLY RUN' : 'CONTROLLED WRITE RUN',
+  );
+  text(
+    query('#drawerSubtitle'),
+    readOnly
+      ? '把当前业务上下文交给本机 Codex 做只读分析。'
+      : 'Codex 只能处理本次明确授权的目标，写入请求仍需逐项确认。',
+  );
+  const security = query('#permissionSecurityNote');
+  security.classList.toggle('is-write', !readOnly);
+  text(
+    query('#permissionSecurityCopy'),
+    readOnly
+      ? '只读分析不会创建、修改、移动或删除文件。'
+      : generating
+        ? '只允许创建填写的新候选相对路径；它在成功后才登记为需求产物。'
+        : '只允许修改本次勾选的登记产物；删除、命令和目标外请求不能批准。',
+  );
+  updateSubmittingState(Boolean(query('#startRun').dataset.submitting));
+}
+
+function resetRunDetail() {
+  stopRunDetailPolling();
+  state.activeRunId = null;
+  state.currentRunDetail = null;
+  text(query('#contextRunId'), '尚未创建');
+  text(query('#drawerRunStatus'), '未执行');
+  text(query('#runDetailStatus'), '等待选择运行');
+  text(query('#runDetailMessage'), '');
+  query('#runDetailSection').hidden = true;
+  query('#approvalCards').replaceChildren();
+  query('#fileChanges').replaceChildren();
+  query('#validationResults').replaceChildren();
+  updateRunControlButtons(null);
+}
+
 function openCodex() {
   const drawer = query('#codexDrawer');
   state.codexTrigger = document.activeElement;
+  resetRunDetail();
   syncDrawerContext();
   if (!drawer.open) drawer.showModal();
   requestAnimationFrame(() => {
@@ -785,6 +911,27 @@ function openCodex() {
 function closeCodex() {
   const drawer = query('#codexDrawer');
   if (drawer.open) drawer.close();
+}
+
+async function openHistoricalRun(run) {
+  state.codexTrigger = document.activeElement;
+  stopRunDetailPolling();
+  if (
+    run.requirementId
+    && state.requirements.some(item => item.id === run.requirementId)
+  ) {
+    await selectRequirement(run.requirementId);
+  }
+  updatePermissionUi(
+    Object.hasOwn(permissionLabels, run.permission) ? run.permission : 'read-only',
+  );
+  state.activeRunId = run.id;
+  text(query('#contextRunId'), run.id);
+  text(query('#drawerRunStatus'), runLabels[run.status] || run.status);
+  const drawer = query('#codexDrawer');
+  if (!drawer.open) drawer.showModal();
+  await renderRunDetail(run.id);
+  if (activeRunStatuses.has(run.status)) scheduleRunDetailPoll(run.id);
 }
 
 function showToast(message, error = false) {
@@ -885,7 +1032,7 @@ function appendStreamEvent(label, detail = '') {
 }
 
 function selectWorkflow(type) {
-  if (!Object.hasOwn(workflowLabels, type)) return;
+  if (state.permission !== 'read-only' || !Object.hasOwn(workflowLabels, type)) return;
   state.selectedWorkflow = type;
   for (const button of queryAll('[data-workflow]')) {
     const selected = button.dataset.workflow === type;
@@ -988,6 +1135,226 @@ function renderWorkflowResult(value) {
   query('.workflow-result-section').hidden = false;
 }
 
+function diffNode(change) {
+  const pre = createElement('pre', 'diff');
+  pre.setAttribute('aria-label', `${change.path || '文件'}的差异`);
+  const rawDiff = typeof change.diff === 'string' ? change.diff : '';
+  const lines = rawDiff
+    ? rawDiff.split(/\r?\n/)
+    : [
+        `二进制或无文本差异：${change.kind || 'changed'}`,
+        `before ${change.beforeHash || '无'}`,
+        `after ${change.afterHash || '无'}`,
+      ];
+  for (const line of lines) {
+    const span = createElement('span', '', line || ' ');
+    if (line.startsWith('+++') || line.startsWith('---') || line.startsWith('@@')) {
+      span.className = 'meta';
+    } else if (line.startsWith('+')) {
+      span.className = 'add';
+    } else if (line.startsWith('-')) {
+      span.className = 'remove';
+    }
+    pre.append(span);
+  }
+  return pre;
+}
+
+function approvalGuidance(kind) {
+  if (kind === 'command') return '命令请求不能批准；只能拒绝。';
+  if (kind === 'file-delete') return '删除请求不能批准；只能拒绝。';
+  if (kind === 'out-of-scope-file') {
+    return '目标不在本 Run 授权清单中；只能拒绝，并在重新选择目标后重启任务。';
+  }
+  if (kind !== 'file-change') return '此类请求不能批准；只能拒绝。';
+  return '';
+}
+
+function buildApprovalCard(item) {
+  const card = createElement('article', 'approval-card');
+  const top = createElement('div', 'approval-card-top');
+  top.append(
+    createElement('strong', '', `${item.kind || '未知请求'} · ${item.summary || '无摘要'}`),
+    buildStatusPill(item.status || 'pending', item.status === 'pending' ? '待确认' : item.status),
+  );
+  const paths = Array.isArray(item.payload?.paths) ? item.payload.paths : [];
+  card.append(
+    top,
+    createElement(
+      'p',
+      '',
+      paths.length ? `目标：${paths.join('、')}` : '未提供可批准的文件目标',
+    ),
+  );
+
+  const actions = createElement('div', 'approval-card-actions');
+  const approve = createElement('button', 'button button-primary', '允许本次文件变化');
+  const reject = createElement('button', 'button button-secondary', '拒绝');
+  approve.type = 'button';
+  reject.type = 'button';
+  const pending = item.status === 'pending';
+  const approvable = pending && item.kind === 'file-change';
+  approve.disabled = !approvable;
+  reject.disabled = !pending;
+  if (!pending) approve.textContent = item.status === 'approved' ? '已允许' : '已拒绝';
+  if (pending && !approvable) approve.textContent = '不可允许';
+  approve.addEventListener('click', () => {
+    decideApproval(item.id, 'approved').catch(error => {
+      text(query('#runDetailMessage'), error.message);
+    });
+  });
+  reject.addEventListener('click', () => {
+    decideApproval(item.id, 'rejected').catch(error => {
+      text(query('#runDetailMessage'), error.message);
+    });
+  });
+  actions.append(approve, reject);
+  card.append(actions);
+  const guidance = approvalGuidance(item.kind);
+  if (guidance) card.append(createElement('span', 'approval-guidance', guidance));
+  return card;
+}
+
+function buildChangeCard(item) {
+  const card = createElement('article', 'change-card');
+  const top = createElement('div', 'change-card-top');
+  top.append(
+    createElement('strong', '', `${item.kind || 'changed'} · ${item.path || '未知文件'}`),
+    buildStatusPill(item.restoredAt ? 'completed' : 'pending', item.restoredAt ? '已恢复' : '未恢复'),
+  );
+  card.append(top, diffNode(item));
+  return card;
+}
+
+function buildValidationCard(item) {
+  const card = createElement(
+    'article',
+    `validation-card is-${item.status || 'skipped'}`,
+  );
+  const top = createElement('div', 'validation-card-top');
+  top.append(
+    createElement('strong', '', item.name || '未命名验证'),
+    buildStatusPill(
+      item.status === 'passed'
+        ? 'completed'
+        : item.status === 'failed'
+          ? 'failed'
+          : 'pending',
+      item.status || '未记录',
+    ),
+  );
+  card.append(top, createElement('p', '', item.detail || '无补充信息'));
+  return card;
+}
+
+function updateRunControlButtons(detail) {
+  query('[data-action="cancel-run"]').disabled = !detail
+    || !activeRunStatuses.has(detail.status);
+  query('[data-action="retry-run"]').disabled = !detail
+    || !retryableRunStatuses.has(detail.status);
+  const fileChanges = Array.isArray(detail?.fileChanges) ? detail.fileChanges : [];
+  query('[data-action="restore-run"]').disabled = !detail
+    || activeRunStatuses.has(detail.status)
+    || fileChanges.length === 0
+    || fileChanges.every(item => item.restoredAt);
+}
+
+function renderRunDetailValue(detail) {
+  if (!detail || typeof detail !== 'object') return null;
+  const approvals = Array.isArray(detail.approvals) ? detail.approvals : [];
+  const fileChanges = Array.isArray(detail.fileChanges) ? detail.fileChanges : [];
+  const validations = Array.isArray(detail.validations) ? detail.validations : [];
+  state.currentRunDetail = { ...detail, approvals, fileChanges, validations };
+  state.runs = state.runs.map(run => (
+    run.id === detail.id ? { ...run, ...detail } : run
+  ));
+  text(query('#contextRunId'), detail.id || state.activeRunId);
+  text(query('#drawerRunStatus'), runLabels[detail.status] || detail.status || '状态未知');
+  text(
+    query('#runDetailStatus'),
+    detail.status === 'waiting-approval'
+      ? '等待我确认'
+      : runLabels[detail.status] || detail.status || '状态未知',
+  );
+  query('#runDetailSection').hidden = false;
+  query('#approvalCards').replaceChildren(...(
+    approvals.length
+      ? approvals.map(buildApprovalCard)
+      : [emptyState('当前没有等待确认的请求')]
+  ));
+  query('#fileChanges').replaceChildren(...(
+    fileChanges.length
+      ? fileChanges.map(buildChangeCard)
+      : [emptyState('当前没有已记录的文件变化')]
+  ));
+  query('#validationResults').replaceChildren(...(
+    validations.length
+      ? validations.map(buildValidationCard)
+      : [emptyState('当前没有验证结果')]
+  ));
+  updateRunControlButtons(state.currentRunDetail);
+  if (!activeRunStatuses.has(detail.status)) stopRunDetailPolling();
+  return state.currentRunDetail;
+}
+
+async function renderRunDetail(runId) {
+  const detail = await api(`/api/runs/${encodeURIComponent(runId)}`);
+  if (state.activeRunId !== runId) return detail;
+  return renderRunDetailValue(detail);
+}
+
+async function decideApproval(id, decision) {
+  if (!state.activeRunId) return;
+  await api(`/api/approvals/${encodeURIComponent(id)}/decision`, {
+    method: 'POST',
+    body: JSON.stringify({ decision }),
+  });
+  text(
+    query('#runDetailMessage'),
+    decision === 'approved' ? '已允许本次文件变化。' : '已拒绝请求。',
+  );
+  await renderRunDetail(state.activeRunId);
+}
+
+function stopRunDetailPolling() {
+  state.detailPollGeneration += 1;
+  if (state.detailPollTimer !== null) {
+    window.clearTimeout(state.detailPollTimer);
+    state.detailPollTimer = null;
+  }
+}
+
+function scheduleRunDetailPoll(runId) {
+  stopRunDetailPolling();
+  const generation = state.detailPollGeneration;
+  const poll = async () => {
+    state.detailPollTimer = null;
+    if (
+      generation !== state.detailPollGeneration
+      || state.activeRunId !== runId
+      || !query('#codexDrawer').open
+    ) {
+      return;
+    }
+    try {
+      const detail = await renderRunDetail(runId);
+      if (
+        generation !== state.detailPollGeneration
+        || !detail
+        || !activeRunStatuses.has(detail.status)
+      ) {
+        return;
+      }
+    } catch (error) {
+      text(query('#runDetailMessage'), `刷新 Run 详情失败：${error.message}`);
+    }
+    if (generation === state.detailPollGeneration) {
+      state.detailPollTimer = window.setTimeout(poll, 700);
+    }
+  };
+  state.detailPollTimer = window.setTimeout(poll, 700);
+}
+
 function updateSubmittingState(submitting) {
   const button = query('#startRun');
   if (submitting) button.dataset.submitting = 'true';
@@ -999,35 +1366,100 @@ function updateSubmittingState(submitting) {
     query('span', button),
     submitting
       ? '正在创建任务'
-      : state.selectedWorkflow
-        ? '运行所选工作流'
-        : '开始只读任务',
+      : permissionButtonLabel(),
   );
 }
 
+function watchRunEvents(run, workflowType = run.workflowType || null) {
+  if (state.activeEvents) state.activeEvents.close();
+  let settled = false;
+  const events = new EventSource(
+    `/api/runs/${encodeURIComponent(run.id)}/events?token=${encodeURIComponent(state.token)}`,
+  );
+  state.activeEvents = events;
+
+  events.addEventListener('item/agentMessage/delta', event => {
+    const payload = parseEvent(event);
+    if (typeof payload.delta === 'string') {
+      query('#streamOutput').textContent += payload.delta;
+    }
+  });
+  events.addEventListener('item/started', event => {
+    const payload = parseEvent(event);
+    appendStreamEvent('开始处理', payload.itemType || '事件');
+  });
+  events.addEventListener('item/completed', event => {
+    const payload = parseEvent(event);
+    appendStreamEvent('完成步骤', payload.itemType || '事件');
+  });
+  events.addEventListener('turn/completed', event => {
+    const payload = parseEvent(event);
+    appendStreamEvent('Turn 结束', payload.status || '状态未知');
+  });
+  events.addEventListener('run.status', async event => {
+    settled = true;
+    const payload = parseEvent(event);
+    events.close();
+    if (state.activeEvents === events) state.activeEvents = null;
+    stopRunDetailPolling();
+    text(query('#drawerRunStatus'), runLabels[payload.status] || payload.status || '运行结束');
+    text(query('#streamConnectionState'), '事件已保存');
+    text(
+      query('#drawerMessage'),
+      payload.status === 'completed'
+        ? run.permission === 'read-only'
+          ? '只读任务已完成，结果已保存。'
+          : '受控写入任务已完成，请检查文件变化与验证结果。'
+        : `任务结束：${payload.error || runLabels[payload.status] || '状态未知'}`,
+    );
+    try {
+      if (state.activeRunId === run.id) await renderRunDetail(run.id);
+      if (payload.status === 'completed' && workflowType) {
+        const result = await api(
+          `/api/runs/${encodeURIComponent(run.id)}/workflow-result`,
+        );
+        renderWorkflowResult(result);
+      } else if (payload.status === 'completed' && payload.result) {
+        text(query('#streamOutput'), payload.result);
+      }
+      await refreshBootstrap();
+    } catch (error) {
+      text(query('#drawerMessage'), `结果读取失败：${error.message}`);
+      showToast(error.message, true);
+    } finally {
+      updateSubmittingState(false);
+    }
+  });
+  events.onerror = () => {
+    if (settled) return;
+    events.close();
+    if (state.activeEvents === events) state.activeEvents = null;
+    text(query('#drawerRunStatus'), '连接中断');
+    text(query('#streamConnectionState'), '详情仍在轮询');
+    text(query('#drawerMessage'), '事件连接已中断；Run 详情仍会从 Broker 刷新。');
+    updateSubmittingState(false);
+  };
+}
+
 async function startRun() {
-  const workflowType = state.selectedWorkflow;
+  const permission = state.permission;
+  const workflowType = permission === 'read-only' ? state.selectedWorkflow : null;
   const prompt = query('#prompt').value.trim();
   const inputText = query('#businessInput').value.trim();
   const files = selectedArtifacts().map(artifact => artifact.path);
+  const candidateTarget = query('#candidateTarget').value.trim().replaceAll('\\', '/');
 
-  if (workflowType && !state.selectedRequirementId) {
-    text(query('#drawerMessage'), '请先选择需求后再运行产品工作流。');
+  if ((workflowType || permission !== 'read-only') && !state.selectedRequirementId) {
+    text(query('#drawerMessage'), '请先选择需求后再开始任务。');
     showToast('请先选择需求', true);
     return;
   }
-  if (
-    workflowType === 'feedback-triage'
-    && !inputText
-  ) {
+  if (workflowType === 'feedback-triage' && !inputText) {
     text(query('#drawerMessage'), '请先粘贴需要整理的反馈。');
     query('#businessInput').focus();
     return;
   }
-  if (
-    workflowType === 'issue-strategy'
-    && !inputText
-  ) {
+  if (workflowType === 'issue-strategy' && !inputText) {
     text(query('#drawerMessage'), '请先粘贴开发问题或测试异常。');
     query('#businessInput').focus();
     return;
@@ -1041,8 +1473,28 @@ async function startRun() {
     }
   }
   if (!workflowType && !prompt) {
-    text(query('#drawerMessage'), '请输入任务描述后再开始。');
+    text(
+      query('#drawerMessage'),
+      permission === 'read-only' ? '请输入任务描述后再开始。' : '请输入写入任务后再开始。',
+    );
     query('#prompt').focus();
+    return;
+  }
+  if (permission === 'generate-candidate') {
+    if (!isSafeRelativeCandidatePath(candidateTarget)) {
+      text(query('#drawerMessage'), '请输入不含绝对路径、空段或上级目录的新候选相对路径。');
+      query('#candidateTarget').focus();
+      return;
+    }
+    if (state.artifacts.some(artifact => artifact.path === candidateTarget)) {
+      text(query('#drawerMessage'), '该路径已经登记；生成候选必须使用一个新的相对路径。');
+      query('#candidateTarget').focus();
+      return;
+    }
+  }
+  if (permission === 'modify-existing' && files.length === 0) {
+    text(query('#drawerMessage'), '请至少勾选一个需要修改的登记产物。');
+    query('#drawerArtifactOptions input')?.focus();
     return;
   }
   if (!state.token) {
@@ -1054,103 +1506,78 @@ async function startRun() {
     state.activeEvents.close();
     state.activeEvents = null;
   }
+  stopRunDetailPolling();
+  state.activeRunId = null;
+  state.currentRunDetail = null;
   updateSubmittingState(true);
-  text(query('#drawerMessage'), '正在创建持久化 Run 与只读 Codex 会话。');
+  text(
+    query('#drawerMessage'),
+    permission === 'read-only'
+      ? '正在创建持久化 Run 与只读 Codex 会话。'
+      : '正在创建受控写入 Run、目标快照与隔离暂存区。',
+  );
   text(query('#drawerRunStatus'), '正在创建');
+  text(query('#contextRunId'), '正在创建');
   query('#streamSection').hidden = false;
   query('#streamEvents').replaceChildren();
   text(query('#streamOutput'), '');
   text(query('#streamConnectionState'), '连接准备中');
+  query('#runDetailSection').hidden = true;
   query('.workflow-result-section').hidden = true;
   query('#workflowResult').replaceChildren();
 
   try {
-    const run = workflowType
-      ? await api(`/api/workflows/${workflowType}/runs`, {
-          method: 'POST',
-          body: JSON.stringify({
-            requirementId: state.selectedRequirementId,
-            files,
-            input: workflowInput(workflowType, inputText),
-          }),
-        })
-      : await api('/api/runs', {
-          method: 'POST',
-          body: JSON.stringify({
-            requirementId: state.selectedRequirementId,
-            prompt,
-            files,
-          }),
-        });
+    let run;
+    if (permission !== 'read-only') {
+      run = await api('/api/runs/write', {
+        method: 'POST',
+        body: JSON.stringify({
+          requirementId: state.selectedRequirementId,
+          prompt,
+          permission,
+          targets: permission === 'generate-candidate' ? [candidateTarget] : files,
+        }),
+      });
+    } else if (workflowType) {
+      run = await api(`/api/workflows/${workflowType}/runs`, {
+        method: 'POST',
+        body: JSON.stringify({
+          requirementId: state.selectedRequirementId,
+          files,
+          input: workflowInput(workflowType, inputText),
+        }),
+      });
+    } else {
+      run = await api('/api/runs', {
+        method: 'POST',
+        body: JSON.stringify({
+          requirementId: state.selectedRequirementId,
+          prompt,
+          files,
+        }),
+      });
+    }
+
+    state.activeRunId = run.id;
     state.runs = [run, ...state.runs.filter(item => item.id !== run.id)];
     render();
+    text(query('#contextRunId'), run.id);
     text(query('#drawerRunStatus'), runLabels[run.status] || '执行中');
     text(query('#contextThread'), run.threadId || '等待 App Server 返回');
-    text(query('#drawerMessage'), '任务已创建，正在接收持久化事件。');
+    text(query('#drawerMessage'), '任务已创建，正在接收持久化事件与安全详情。');
     text(query('#streamConnectionState'), '实时连接中');
     appendStreamEvent('Run 已创建', run.id);
-
-    let settled = false;
-    const events = new EventSource(`/api/runs/${encodeURIComponent(run.id)}/events?token=${encodeURIComponent(state.token)}`);
-    state.activeEvents = events;
-
-    events.addEventListener('item/agentMessage/delta', event => {
-      const payload = parseEvent(event);
-      if (typeof payload.delta === 'string') {
-        query('#streamOutput').textContent += payload.delta;
-      }
+    updateRunControlButtons({
+      ...run,
+      approvals: [],
+      fileChanges: [],
+      validations: [],
     });
-    events.addEventListener('item/started', event => {
-      const payload = parseEvent(event);
-      appendStreamEvent('开始处理', payload.itemType || '事件');
+    renderRunDetail(run.id).catch(error => {
+      text(query('#runDetailMessage'), `首次读取 Run 详情失败：${error.message}`);
     });
-    events.addEventListener('item/completed', event => {
-      const payload = parseEvent(event);
-      appendStreamEvent('完成步骤', payload.itemType || '事件');
-    });
-    events.addEventListener('turn/completed', event => {
-      const payload = parseEvent(event);
-      appendStreamEvent('Turn 结束', payload.status || '状态未知');
-    });
-    events.addEventListener('run.status', async event => {
-      settled = true;
-      const payload = parseEvent(event);
-      text(query('#drawerRunStatus'), runLabels[payload.status] || payload.status || '运行结束');
-      text(query('#streamConnectionState'), '事件已保存');
-      text(
-        query('#drawerMessage'),
-        payload.status === 'completed'
-          ? '只读任务已完成，结果已保存。'
-          : `任务结束：${payload.error || runLabels[payload.status] || '状态未知'}`,
-      );
-      events.close();
-      state.activeEvents = null;
-      try {
-        if (payload.status === 'completed' && workflowType) {
-          const result = await api(
-            `/api/runs/${encodeURIComponent(run.id)}/workflow-result`,
-          );
-          renderWorkflowResult(result);
-        } else if (payload.status === 'completed' && payload.result) {
-          text(query('#streamOutput'), payload.result);
-        }
-        await refreshBootstrap();
-      } catch (error) {
-        text(query('#drawerMessage'), `结果读取失败：${error.message}`);
-        showToast(error.message, true);
-      } finally {
-        updateSubmittingState(false);
-      }
-    });
-    events.onerror = () => {
-      if (settled) return;
-      events.close();
-      state.activeEvents = null;
-      text(query('#drawerRunStatus'), '连接中断');
-      text(query('#streamConnectionState'), '可刷新回看');
-      text(query('#drawerMessage'), '事件连接已中断；运行记录仍会由 Broker 持久化。');
-      updateSubmittingState(false);
-    };
+    scheduleRunDetailPoll(run.id);
+    watchRunEvents(run, workflowType);
   } catch (error) {
     text(query('#drawerRunStatus'), '创建失败');
     text(query('#streamConnectionState'), '未连接');
@@ -1174,6 +1601,98 @@ function showBootstrapError(error) {
   text(query('#drawerMessage'), error.message);
 }
 
+async function cancelActiveRun() {
+  if (!state.activeRunId) return;
+  const button = query('[data-action="cancel-run"]');
+  button.disabled = true;
+  button.setAttribute('aria-busy', 'true');
+  text(query('#runDetailMessage'), '正在取消当前 Run…');
+  try {
+    await api(`/api/runs/${encodeURIComponent(state.activeRunId)}/cancel`, {
+      method: 'POST',
+    });
+    await renderRunDetail(state.activeRunId);
+    text(query('#runDetailMessage'), '当前 Run 已取消。');
+  } catch (error) {
+    text(query('#runDetailMessage'), error.message);
+  } finally {
+    button.removeAttribute('aria-busy');
+  }
+}
+
+async function retryActiveRun() {
+  if (!state.activeRunId) return;
+  const button = query('[data-action="retry-run"]');
+  button.disabled = true;
+  button.setAttribute('aria-busy', 'true');
+  text(query('#runDetailMessage'), '正在基于持久化上下文创建重试 Run…');
+  try {
+    const next = await api(`/api/runs/${encodeURIComponent(state.activeRunId)}/retry`, {
+      method: 'POST',
+    });
+    stopRunDetailPolling();
+    if (state.activeEvents) state.activeEvents.close();
+    state.activeRunId = next.id;
+    state.currentRunDetail = null;
+    state.runs = [next, ...state.runs.filter(run => run.id !== next.id)];
+    updatePermissionUi(
+      Object.hasOwn(permissionLabels, next.permission) ? next.permission : 'read-only',
+    );
+    text(query('#contextRunId'), next.id);
+    text(query('#drawerRunStatus'), runLabels[next.status] || next.status);
+    text(query('#runDetailMessage'), '重试 Run 已创建。');
+    query('#streamSection').hidden = false;
+    query('#streamEvents').replaceChildren();
+    text(query('#streamOutput'), '');
+    appendStreamEvent('重试 Run 已创建', next.id);
+    renderRunDetail(next.id).catch(error => {
+      text(query('#runDetailMessage'), error.message);
+    });
+    scheduleRunDetailPoll(next.id);
+    watchRunEvents(next, next.workflowType || null);
+    render();
+  } catch (error) {
+    text(query('#runDetailMessage'), error.message);
+  } finally {
+    button.removeAttribute('aria-busy');
+    updateRunControlButtons(state.currentRunDetail);
+  }
+}
+
+async function restoreActiveRun() {
+  if (!state.activeRunId) return;
+  const confirmed = window.confirm(
+    '只恢复本 Run 明确记录的文件；若文件后来被修改，将停止恢复。继续吗？',
+  );
+  if (!confirmed) return;
+  const button = query('[data-action="restore-run"]');
+  button.disabled = true;
+  button.setAttribute('aria-busy', 'true');
+  text(query('#runDetailMessage'), '正在恢复本 Run 的明确文件变化…');
+  try {
+    const result = await api(`/api/runs/${encodeURIComponent(state.activeRunId)}/restore`, {
+      method: 'POST',
+    });
+    const restored = Array.isArray(result.restored) ? result.restored : [];
+    text(
+      query('#runDetailMessage'),
+      restored.length ? `已恢复：${restored.join('、')}` : '没有需要恢复的文件。',
+    );
+    showToast(restored.length ? '本 Run 的文件变化已恢复' : '没有需要恢复的文件');
+    await refreshBootstrap();
+    await renderRunDetail(state.activeRunId);
+  } catch (error) {
+    text(
+      query('#runDetailMessage'),
+      `恢复已停止：${error.message}。请检查当前文件差异。`,
+    );
+    showToast(error.message, true);
+  } finally {
+    button.removeAttribute('aria-busy');
+    updateRunControlButtons(state.currentRunDetail);
+  }
+}
+
 query('#primaryNav').addEventListener('click', event => {
   const button = event.target.closest('[data-page]');
   if (button) activatePage(button.dataset.page);
@@ -1193,11 +1712,23 @@ for (const button of queryAll('.open-codex')) button.addEventListener('click', o
 query('#askCodex').addEventListener('click', openCodex);
 query('#closeCodex').addEventListener('click', closeCodex);
 query('#startRun').addEventListener('click', startRun);
+query('#permissionPicker').addEventListener('change', event => {
+  if (event.target.name === 'permission') updatePermissionUi(event.target.value);
+});
 query('#workflowPicker').addEventListener('click', event => {
   const button = event.target.closest('[data-workflow]');
   if (button) selectWorkflow(button.dataset.workflow);
 });
 query('#useFreeformMode').addEventListener('click', () => useFreeformMode());
+query('[data-action="cancel-run"]').addEventListener('click', () => {
+  cancelActiveRun().catch(error => text(query('#runDetailMessage'), error.message));
+});
+query('[data-action="retry-run"]').addEventListener('click', () => {
+  retryActiveRun().catch(error => text(query('#runDetailMessage'), error.message));
+});
+query('[data-action="restore-run"]').addEventListener('click', () => {
+  restoreActiveRun().catch(error => text(query('#runDetailMessage'), error.message));
+});
 
 for (const button of queryAll('[data-prompt-template]')) {
   button.addEventListener('click', () => {
@@ -1270,6 +1801,7 @@ document.addEventListener('keydown', event => {
 });
 
 query('#codexDrawer').addEventListener('close', () => {
+  stopRunDetailPolling();
   if (state.codexTrigger?.isConnected) state.codexTrigger.focus();
   else query('#askCodex').focus();
   state.codexTrigger = null;
@@ -1294,6 +1826,7 @@ const requestedPage = location.hash.replace(/^#/, '');
 activatePage(Object.hasOwn(pageLabels, requestedPage) ? requestedPage : 'home', {
   focusHeading: false,
 });
+updatePermissionUi('read-only', { preserveWorkflow: true });
 
 try {
   await refreshBootstrap();

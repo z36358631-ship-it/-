@@ -41,6 +41,14 @@ const requiredCopy = [
   'Codex 整理后的需求候选',
   'data-workflow',
   'workflowResult',
+  '生成候选产物',
+  '修改已选产物',
+  '等待我确认',
+  '文件变化',
+  '验证结果',
+  '恢复本次修改',
+  'data-action="cancel-run"',
+  'data-action="retry-run"',
 ];
 for (const token of requiredCopy) {
   assert(html.includes(token), `Missing UI token: ${token}`);
@@ -71,6 +79,11 @@ assert.match(html, /<dialog[^>]+id="manualTaskDialog"[^>]+aria-labelledby="manua
 assert.match(html, /id="streamOutput"[^>]+aria-live="polite"/);
 assert.match(html, /id="workflowResult"[^>]+aria-live="polite"/);
 assert.match(html, /id="authorizedFiles"[^>]+class="authorized-artifacts"/);
+assert.match(html, /id="candidateTarget"[^>]+type="text"/);
+assert.match(html, /name="permission"\s+value="read-only"/);
+assert.match(html, /name="permission"\s+value="generate-candidate"/);
+assert.match(html, /name="permission"\s+value="modify-existing"/);
+assert.match(html, /data-action="restore-run"/);
 assert.equal(
   /<textarea[^>]+id="authorizedFiles"/.test(html),
   false,
@@ -91,12 +104,18 @@ assert.match(css, /@media\s*\(max-width:\s*767px\)/);
 assert.match(css, /@media\s*\(max-width:\s*420px\)/);
 assert.match(css, /prefers-reduced-motion:\s*reduce/);
 
-assert.match(app, /new EventSource\(`\/api\/runs\/\$\{encodeURIComponent\(run\.id\)\}\/events\?token=\$\{encodeURIComponent\(state\.token\)\}`\)/);
+assert.match(app, /new EventSource\(\s*`\/api\/runs\/\$\{encodeURIComponent\(run\.id\)\}\/events\?token=\$\{encodeURIComponent\(state\.token\)\}`/s);
 assert.match(app, /api\(['"`]\/api\/bootstrap/);
 assert.match(app, /api\(['"`]\/api\/runs/);
 assert.match(app, /\/api\/requirements\/\$\{encodeURIComponent\(id\)\}\/context/);
 assert.match(app, /\/api\/workflows\/\$\{workflowType\}\/runs/);
 assert.match(app, /\/api\/runs\/\$\{encodeURIComponent\(run\.id\)\}\/workflow-result/);
+assert.match(app, /api\(['"`]\/api\/runs\/write/);
+assert.match(app, /\/api\/runs\/\$\{encodeURIComponent\(runId\)\}`/);
+assert.match(app, /\/api\/approvals\/\$\{encodeURIComponent\(id\)\}\/decision/);
+assert.match(app, /\/cancel`/);
+assert.match(app, /\/retry`/);
+assert.match(app, /\/restore`/);
 assert.match(app, /bootstrap\.requirementCandidates/);
 assert.match(app, /bootstrap\.reviewFindings/);
 assert.match(app, /bootstrap\.productStrategies/);
@@ -105,10 +124,14 @@ assert.match(app, /\.replaceChildren\(/);
 assert.match(app, /document\.createElement\(/);
 assert.equal(/\.innerHTML\s*=|insertAdjacentHTML|\.outerHTML\s*=/.test(app), false, 'Unsafe HTML injection API found');
 assert.equal(
-  /\b(permission|sandbox|command|codexArgs|sandboxPolicy)\s*:/.test(app),
+  /\b(sandbox|command|codexArgs|sandboxPolicy|cwd|absoluteRoot)\s*:/.test(app),
   false,
   'Frontend must not submit Codex controls',
 );
+assert.equal(/\bsetInterval\s*\(/.test(app), false, 'Run detail polling must not use setInterval');
+assert.match(app, /window\.setTimeout\(poll,\s*700\)/);
+assert.match(app, /item\.kind === ['"]file-change['"]/);
+assert.match(app, /只恢复本 Run 明确记录的文件/);
 assert.match(app, /history\.replaceState/);
 assert.match(app, /sessionStorage\.setItem/);
 assert.match(app, /aria-current/);
@@ -120,6 +143,96 @@ assert.equal(/<script[^>]+src=|<link[^>]+href=["']https?:/.test(demo), false, 'D
 console.log('PASS personal workbench static contract');
 
 const evidenceRoot = path.join(root, 'test-results', 'personal-codex-workbench');
+const mockSafetyRuns = [
+  {
+    id: 'RUN-MOCK-WAITING',
+    requirementId: 'REQ-001',
+    prompt: 'Mock waiting approval',
+    permission: 'modify-existing',
+    status: 'waiting-approval',
+    startedAt: '2026-07-28T04:00:00.000Z',
+  },
+  {
+    id: 'RUN-MOCK-FAILED',
+    requirementId: 'REQ-001',
+    prompt: 'Mock failed write with diff',
+    permission: 'modify-existing',
+    status: 'failed',
+    error: 'Mock validation failure',
+    startedAt: '2026-07-28T03:00:00.000Z',
+  },
+];
+const mockRunDetails = {
+  'RUN-MOCK-WAITING': {
+    ...mockSafetyRuns[0],
+    approvals: [
+      {
+        id: 'APPROVAL-SAFE',
+        kind: 'file-change',
+        summary: 'file-change: prd/safe.md',
+        status: 'pending',
+        payload: { paths: ['prd/safe.md'] },
+      },
+      {
+        id: 'APPROVAL-COMMAND',
+        kind: 'command',
+        summary: 'Command request: git push',
+        status: 'pending',
+        payload: { paths: [] },
+      },
+      {
+        id: 'APPROVAL-DELETE',
+        kind: 'file-delete',
+        summary: 'file-delete: prd/safe.md',
+        status: 'pending',
+        payload: { paths: ['prd/safe.md'] },
+      },
+      {
+        id: 'APPROVAL-OUTSIDE',
+        kind: 'out-of-scope-file',
+        summary: 'out-of-scope-file: prd/outside.md',
+        status: 'pending',
+        payload: { paths: ['prd/outside.md'] },
+      },
+    ],
+    fileChanges: [],
+    validations: [],
+  },
+  'RUN-MOCK-FAILED': {
+    ...mockSafetyRuns[1],
+    approvals: [],
+    fileChanges: [
+      {
+        path: 'prd/safe.md',
+        kind: 'modified',
+        beforeHash: 'before-hash',
+        afterHash: 'after-hash',
+        diff: '--- a/prd/safe.md\n+++ b/prd/safe.md\n@@ -1 +1 @@\n-old rule\n+new safe rule',
+        restoredAt: null,
+      },
+      {
+        path: 'assets/mock.bin',
+        kind: 'modified',
+        beforeHash: 'binary-before',
+        afterHash: 'binary-after',
+        diff: '',
+        restoredAt: null,
+      },
+    ],
+    validations: [
+      {
+        name: 'target-integrity',
+        status: 'failed',
+        detail: 'Mock target hash mismatch',
+      },
+      {
+        name: 'unrelated-files',
+        status: 'passed',
+        detail: 'No unrelated file changed',
+      },
+    ],
+  },
+};
 const chromeCandidates = [
   process.env.CHROME_PATH,
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
@@ -251,6 +364,7 @@ async function assertCodexDialog(page, viewportLabel) {
   await page.locator('#askCodex').click();
   const dialog = page.locator('#codexDrawer');
   await dialog.waitFor({ state: 'visible' });
+  await dialog.locator('input[name="permission"][value="read-only"]').check();
   await dialog.evaluate(async element => {
     await Promise.all(element.getAnimations().map(animation => animation.finished.catch(() => {})));
   });
@@ -272,16 +386,29 @@ async function assertCodexDialog(page, viewportLabel) {
   );
   const dialogBounds = await dialog.evaluate(element => {
     const rect = element.getBoundingClientRect();
+    const body = element.querySelector('.drawer-body');
     return {
       left: Math.round(rect.left),
       right: Math.round(rect.right),
       viewportWidth: window.innerWidth,
+      bodyClientWidth: body.clientWidth,
+      bodyScrollWidth: body.scrollWidth,
     };
   });
   assert(
-    dialogBounds.left >= 0 && dialogBounds.right <= dialogBounds.viewportWidth,
+    dialogBounds.left >= 0
+      && dialogBounds.right <= dialogBounds.viewportWidth
+      && dialogBounds.bodyScrollWidth <= dialogBounds.bodyClientWidth,
     `${viewportLabel}: Codex dialog exceeds the horizontal viewport ${JSON.stringify(dialogBounds)}`,
   );
+  const permissionControls = dialog.locator('#permissionPicker label');
+  assert.equal(await permissionControls.count(), 3);
+  for (let index = 0; index < 3; index += 1) {
+    const height = await permissionControls.nth(index).evaluate(
+      element => element.getBoundingClientRect().height,
+    );
+    assert(height >= 44, `${viewportLabel}: permission control ${index} is below 44px`);
+  }
   const workflowButtons = dialog.locator('#workflowPicker [data-workflow]');
   assert.equal(
     await workflowButtons.count(),
@@ -384,6 +511,8 @@ async function runBrowserVerification() {
     registeredArtifactSelection: null,
     manualTaskNote: null,
     workflowControls: null,
+    permissionModes: null,
+    safetyRunDetail: null,
     dialog: null,
     health: null,
     viewports: [],
@@ -416,6 +545,31 @@ async function runBrowserVerification() {
     });
     page.on('pageerror', error => {
       report.pageErrors.push(error.message);
+    });
+
+    await page.route('**/api/bootstrap', async route => {
+      const response = await route.fetch();
+      const bootstrap = await response.json();
+      await route.fulfill({
+        response,
+        json: {
+          ...bootstrap,
+          runs: [
+            ...mockSafetyRuns,
+            ...(Array.isArray(bootstrap.runs) ? bootstrap.runs : []),
+          ],
+        },
+      });
+    });
+    await page.route('**/api/runs/RUN-MOCK-*', async route => {
+      const runId = decodeURIComponent(new URL(route.request().url()).pathname.split('/').at(-1));
+      const detail = mockRunDetails[runId];
+      assert(detail, `Missing mocked run detail for ${runId}`);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json; charset=utf-8',
+        body: JSON.stringify(detail),
+      });
     });
 
     await page.goto(`${baseUrl}/?token=${encodeURIComponent(token)}#home`, {
@@ -527,9 +681,88 @@ async function runBrowserVerification() {
       0,
       'Drawer exposes free-form artifact paths',
     );
+
+    const workflowButtons = page.locator('#workflowPicker [data-workflow]');
+    await workflowButtons.first().click();
+    await page.locator('input[name="permission"][value="modify-existing"]').check();
+    assert.equal((await page.locator('#permissionBadge').innerText()).trim(), '修改已选产物');
+    assert.equal(await page.locator('#authorizedFiles').isVisible(), true);
+    assert.equal(await page.locator('#candidateTarget').isVisible(), false);
+    for (let index = 0; index < 3; index += 1) {
+      assert.equal(
+        await workflowButtons.nth(index).isDisabled(),
+        true,
+        `Write mode left workflow ${index} enabled`,
+      );
+      assert.equal(await workflowButtons.nth(index).getAttribute('aria-pressed'), 'false');
+    }
+    assert.equal(await page.locator('#businessInput').isVisible(), false);
+
+    await page.locator('input[name="permission"][value="generate-candidate"]').check();
+    assert.equal((await page.locator('#permissionBadge').innerText()).trim(), '生成候选产物');
+    assert.equal(await page.locator('#authorizedFiles').isVisible(), false);
+    assert.equal(await page.locator('#candidateTarget').isVisible(), true);
+    await page.locator('#candidateTarget').fill('prd/ai生成/mock-candidate.md');
+    assert.match(
+      await page.locator('#permissionSecurityCopy').innerText(),
+      /新候选相对路径/,
+    );
+
+    await page.locator('input[name="permission"][value="read-only"]').check();
+    assert.equal(await workflowButtons.first().isDisabled(), false);
+    assert.equal(await page.locator('#authorizedFiles').isVisible(), true);
+    assert.equal(await page.locator('#candidateTarget').isVisible(), false);
     report.registeredArtifactSelection = 'registered-only/synchronized passed';
     report.workflowControls = 'three/focusable/mode-switch passed';
+    report.permissionModes = 'read/generate/modify target rules passed';
     report.dialog = 'open-close/read-only passed';
+    await page.locator('#closeCodex').click();
+    await page.locator('#codexDrawer').waitFor({ state: 'hidden' });
+
+    await activateNavigation(page, 'codex');
+    const waitingRun = page.locator('#runList [data-run-id="RUN-MOCK-WAITING"]');
+    await waitingRun.focus();
+    assert.equal(await waitingRun.getAttribute('role'), 'button');
+    await waitingRun.press('Enter');
+    await page.locator('#approvalCards .approval-card').first().waitFor();
+    assert.equal(await page.locator('#approvalCards .approval-card').count(), 4);
+    const safeApproval = page.locator('#approvalCards .approval-card').filter({
+      hasText: 'file-change',
+    });
+    assert.equal(
+      await safeApproval.getByRole('button', { name: '允许本次文件变化' }).isEnabled(),
+      true,
+    );
+    for (const kind of ['command', 'file-delete', 'out-of-scope-file']) {
+      const dangerous = page.locator('#approvalCards .approval-card').filter({ hasText: kind });
+      assert.equal(
+        await dangerous.getByRole('button', { name: '不可允许' }).isDisabled(),
+        true,
+        `${kind} approval unexpectedly enabled`,
+      );
+      assert.equal(
+        await dangerous.getByRole('button', { name: '拒绝' }).isEnabled(),
+        true,
+        `${kind} rejection unexpectedly disabled`,
+      );
+    }
+    assert.equal(await page.locator('[data-action="cancel-run"]').isEnabled(), true);
+    assert.equal(await page.locator('[data-action="retry-run"]').isDisabled(), true);
+    assert.equal(await page.locator('[data-action="restore-run"]').isDisabled(), true);
+    await page.locator('#closeCodex').click();
+    await page.locator('#codexDrawer').waitFor({ state: 'hidden' });
+
+    const failedRun = page.locator('#runList [data-run-id="RUN-MOCK-FAILED"]');
+    await failedRun.focus();
+    await failedRun.press(' ');
+    await page.locator('#fileChanges .change-card').first().waitFor();
+    assert.match(await page.locator('#fileChanges').innerText(), /old rule[\s\S]*new safe rule/);
+    assert.match(await page.locator('#fileChanges').innerText(), /二进制或无文本差异/);
+    assert.equal(await page.locator('#validationResults .validation-card').count(), 2);
+    assert.equal(await page.locator('[data-action="cancel-run"]').isDisabled(), true);
+    assert.equal(await page.locator('[data-action="retry-run"]').isEnabled(), true);
+    assert.equal(await page.locator('[data-action="restore-run"]').isEnabled(), true);
+    report.safetyRunDetail = 'approval/diff/validation/run-controls passed';
     await page.locator('#closeCodex').click();
     await page.locator('#codexDrawer').waitFor({ state: 'hidden' });
 
