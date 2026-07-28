@@ -13,6 +13,7 @@ import {
   releaseInstance,
   writeJsonAtomic,
 } from '../../workbench/portable/launcher-state.mjs';
+import * as portableState from '../../workbench/portable/launcher-state.mjs';
 import {
   chooseWorkspaceFolder,
   ensureCodexLogin,
@@ -79,6 +80,62 @@ test('portable Codex command rejects malformed nonces and unexpected junction ta
     () => createPortableCodexCommand({ codexRoot, nonce, runtimeRoot }),
     /unexpected target/,
   );
+});
+
+test('portable Codex command rejects an external codex-sessions junction', t => {
+  const root = temporaryRoot(t, 'portable-codex-sessions-junction-');
+  const runtimeRoot = path.join(root, 'runtime');
+  const codexRoot = path.join(runtimeRoot, 'codex');
+  const outside = path.join(root, 'outside');
+  fs.mkdirSync(codexRoot, { recursive: true });
+  fs.mkdirSync(outside);
+  fs.writeFileSync(path.join(codexRoot, 'codex.exe'), 'fixture');
+  try {
+    fs.symlinkSync(
+      outside,
+      path.join(runtimeRoot, 'codex-sessions'),
+      'junction',
+    );
+  } catch (error) {
+    if (['EACCES', 'EPERM', 'UNKNOWN'].includes(error.code)) {
+      t.skip(`junction creation unavailable: ${error.code}`);
+      return;
+    }
+    throw error;
+  }
+  const nonce = 'a'.repeat(64);
+
+  assert.throws(
+    () => createPortableCodexCommand({ codexRoot, nonce, runtimeRoot }),
+    /codex-sessions.*(?:junction|runtime root)/i,
+  );
+  assert.equal(fs.existsSync(path.join(outside, nonce)), false);
+});
+
+test('portable Codex cleanup removes only its exact nonce junction', t => {
+  const root = temporaryRoot(t, 'portable-codex-cleanup-');
+  const runtimeRoot = path.join(root, 'runtime');
+  const codexRoot = path.join(runtimeRoot, 'codex');
+  fs.mkdirSync(codexRoot, { recursive: true });
+  fs.writeFileSync(path.join(codexRoot, 'codex.exe'), 'fixture');
+  const firstNonce = 'b'.repeat(64);
+  const secondNonce = 'c'.repeat(64);
+  createPortableCodexCommand({ codexRoot, nonce: firstNonce, runtimeRoot });
+  createPortableCodexCommand({ codexRoot, nonce: secondNonce, runtimeRoot });
+
+  assert.equal(portableState.removePortableCodexCommand({
+    nonce: firstNonce,
+    runtimeRoot,
+  }), true);
+  assert.equal(
+    fs.existsSync(path.join(runtimeRoot, 'codex-sessions', firstNonce)),
+    false,
+  );
+  assert.equal(
+    fs.existsSync(path.join(runtimeRoot, 'codex-sessions', secondNonce)),
+    true,
+  );
+  assert.equal(fs.existsSync(path.join(codexRoot, 'codex.exe')), true);
 });
 
 test('missing seeds are copied once and existing workspace files are never overwritten', t => {
@@ -388,6 +445,100 @@ test('a dead stale instance is replaced with nonce-bound ownership', async t => 
   assert.equal(lock.pid, process.pid);
   assert.match(lock.ownerNonce, /^[a-f0-9]{64}$/);
   assert.equal(lock.ownerNonce, acquired.ownerNonce);
+  releaseInstance(acquired);
+  assert.equal(fs.existsSync(acquired.lockPath), false);
+});
+
+test('concurrent stale-lock contenders have exactly one atomic claim winner', async t => {
+  const root = temporaryRoot(t, 'portable-stale-instance-race-');
+  const staleNonce = 'd'.repeat(64);
+  const stalePid = process.pid + 10_000;
+  fs.mkdirSync(root, { recursive: true });
+  fs.writeFileSync(
+    path.join(root, 'instance.lock'),
+    JSON.stringify({ ownerNonce: staleNonce, pid: stalePid }),
+  );
+  writeJsonAtomic(path.join(root, 'session.json'), {
+    ownerNonce: staleNonce,
+    pid: stalePid,
+    port: 49126,
+    token: 'e'.repeat(64),
+  });
+
+  let arrivals = 0;
+  let releaseBarrier;
+  const barrier = new Promise(resolve => {
+    releaseBarrier = resolve;
+  });
+  const claimPaths = [];
+  const beforeStaleClaim = async ({ claimPath }) => {
+    claimPaths.push(claimPath);
+    arrivals += 1;
+    if (arrivals === 2) releaseBarrier();
+    await barrier;
+  };
+  const common = {
+    appRoot: root,
+    beforeStaleClaim,
+    checkHealth: async () => false,
+    isPidAlive: pid => pid === process.pid,
+  };
+
+  const settled = await Promise.allSettled([
+    acquireInstance({
+      ...common,
+      ownerNonceFactory: () => 'f'.repeat(64),
+    }),
+    acquireInstance({
+      ...common,
+      ownerNonceFactory: () => '1'.repeat(64),
+    }),
+  ]);
+  const acquired = settled
+    .filter(result => result.status === 'fulfilled')
+    .map(result => result.value)
+    .filter(result => result.status === 'acquired');
+  for (const instance of acquired) releaseInstance(instance);
+
+  assert.equal(acquired.length, 1);
+  assert.equal(
+    settled.filter(result => result.status === 'rejected').length,
+    1,
+  );
+  assert.equal(claimPaths.length, 2);
+  assert.equal(
+    claimPaths.every(filename => (
+      path.basename(filename).includes(staleNonce)
+      && path.basename(filename).includes(String(stalePid))
+    )),
+    true,
+  );
+  assert.deepEqual(
+    fs.readdirSync(root).filter(filename => filename.includes('.claim-')),
+    [],
+  );
+});
+
+test('claim winner clears an unchanged dead session before cancellable startup', async t => {
+  const root = temporaryRoot(t, 'portable-stale-mismatched-session-');
+  fs.mkdirSync(root, { recursive: true });
+  fs.writeFileSync(
+    path.join(root, 'instance.lock'),
+    JSON.stringify({ ownerNonce: '2'.repeat(64), pid: process.pid + 20_000 }),
+  );
+  writeJsonAtomic(path.join(root, 'session.json'), {
+    ownerNonce: '3'.repeat(64),
+    pid: process.pid + 20_001,
+    port: 49127,
+    token: '4'.repeat(64),
+  });
+
+  const acquired = await acquireInstance({
+    appRoot: root,
+    checkHealth: async () => false,
+    isPidAlive: () => false,
+  });
+  assert.equal(fs.existsSync(acquired.sessionPath), false);
   releaseInstance(acquired);
   assert.equal(fs.existsSync(acquired.lockPath), false);
 });

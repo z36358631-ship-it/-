@@ -81,6 +81,7 @@ test('cancelled workspace exits before seeds, login, or Broker creation', async 
 
 test('login failure releases the instance and never starts the Broker', async () => {
   let listenCount = 0;
+  let removeCount = 0;
   let releaseCount = 0;
   await assert.rejects(
     () => runPortableLauncher({
@@ -103,6 +104,7 @@ test('login failure releases the instance and never starts the Broker', async ()
         }),
         ensureCodexLogin: async () => { throw new Error('login failed'); },
         loadWorkspace: async () => 'C:\\workspace',
+        removePortableCodexCommand: () => { removeCount += 1; },
         releaseInstance: () => { releaseCount += 1; },
       },
     }),
@@ -110,11 +112,46 @@ test('login failure releases the instance and never starts the Broker', async ()
   );
 
   assert.equal(listenCount, 0);
+  assert.equal(removeCount, 1);
+  assert.equal(releaseCount, 1);
+});
+
+test('Broker creation failure removes the nonce junction and releases ownership', async () => {
+  let removeCount = 0;
+  let releaseCount = 0;
+  await assert.rejects(
+    () => runPortableLauncher({
+      appRoot: 'C:\\state',
+      runtimePath: 'C:\\runtime',
+      dependencies: {
+        acquireInstance: async () => ({
+          ownerNonce: '9'.repeat(64),
+          pid: process.pid,
+          sessionPath: 'C:\\state\\session.json',
+          status: 'acquired',
+        }),
+        copyMissingSeeds: () => [],
+        createLauncherLogger: () => silentLogger(),
+        createPortableCodexCommand: () => 'C:\\runtime\\codex.exe',
+        createWorkbenchServer: async () => {
+          throw new Error('Broker creation failed');
+        },
+        ensureCodexLogin: async () => {},
+        loadWorkspace: async () => 'C:\\workspace',
+        removePortableCodexCommand: () => { removeCount += 1; },
+        releaseInstance: () => { releaseCount += 1; },
+      },
+    }),
+    /Broker creation failed/,
+  );
+
+  assert.equal(removeCount, 1);
   assert.equal(releaseCount, 1);
 });
 
 test('shutdown uses a dynamic port, token URL, portable env, and releases ownership', async () => {
   let closeCount = 0;
+  const lifecycle = [];
   let releaseCount = 0;
   let savedSession;
   let serverEnv;
@@ -151,7 +188,10 @@ test('shutdown uses a dynamic port, token URL, portable env, and releases owners
         serverEnv = env;
         return {
           address: () => ({ port: 48222 }),
-          close: async () => { closeCount += 1; },
+          close: async () => {
+            closeCount += 1;
+            lifecycle.push('close');
+          },
           config: { sessionToken: token },
           listen: async () => {},
         };
@@ -159,7 +199,11 @@ test('shutdown uses a dynamic port, token URL, portable env, and releases owners
       ensureCodexLogin: async () => {},
       loadWorkspace: async () => 'C:\\workspace',
       openDefaultBrowser: async url => opened.push(url),
-      releaseInstance: () => { releaseCount += 1; },
+      releaseInstance: () => {
+        releaseCount += 1;
+        lifecycle.push('release');
+      },
+      removePortableCodexCommand: () => lifecycle.push('remove'),
       waitForShutdown: async () => {},
       writeJsonAtomic: (_filename, value) => { savedSession = value; },
     },
@@ -168,6 +212,7 @@ test('shutdown uses a dynamic port, token URL, portable env, and releases owners
   assert.equal(result.status, 'stopped');
   assert.equal(closeCount, 1);
   assert.equal(releaseCount, 1);
+  assert.deepEqual(lifecycle, ['close', 'remove', 'release']);
   assert.equal(savedSession.port, 48222);
   assert.equal(savedSession.token, token);
   assert.equal(savedSession.ownerNonce, ownerNonce);

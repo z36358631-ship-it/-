@@ -9,6 +9,7 @@ import {
   createLauncherLogger,
   createPortableCodexCommand,
   loadWorkspace,
+  removePortableCodexCommand,
   releaseInstance,
   writeJsonAtomic,
 } from './launcher-state.mjs';
@@ -64,6 +65,7 @@ export async function runPortableLauncher({
     loadWorkspace,
     openDefaultBrowser,
     print: message => console.log(message),
+    removePortableCodexCommand,
     releaseInstance,
     waitForShutdown,
     writeJsonAtomic,
@@ -86,12 +88,29 @@ export async function runPortableLauncher({
   }
 
   let app = null;
+  let codexSession = null;
+  let appCloseFailed = false;
   let released = false;
   const closeApp = async () => {
     if (!app) return;
     const current = app;
     app = null;
-    await current.close();
+    try {
+      await current.close();
+    } catch (error) {
+      appCloseFailed = true;
+      throw error;
+    }
+  };
+  const removeCodexSession = () => {
+    if (!codexSession || appCloseFailed) return;
+    const current = codexSession;
+    codexSession = null;
+    try {
+      dependencies.removePortableCodexCommand(current);
+    } catch {
+      logger.error('Codex 会话目录清理失败');
+    }
   };
   const release = () => {
     if (released) return;
@@ -139,6 +158,7 @@ export async function runPortableLauncher({
       nonce,
       runtimeRoot: runtimePath,
     });
+    codexSession = { nonce, runtimeRoot: runtimePath };
     await dependencies.ensureCodexLogin(path.join(codexRoot, 'codex.exe'));
     logger.info('Codex 登录状态检查通过');
 
@@ -177,6 +197,7 @@ export async function runPortableLauncher({
 
     await dependencies.waitForShutdown();
     await closeApp();
+    removeCodexSession();
     release();
     logger.info('Broker 已停止', { port });
     return { status: 'stopped' };
@@ -184,6 +205,7 @@ export async function runPortableLauncher({
     try {
       await closeApp();
     } finally {
+      removeCodexSession();
       release();
     }
   }

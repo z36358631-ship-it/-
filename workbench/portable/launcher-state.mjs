@@ -117,6 +117,27 @@ function createOwnedLock({
   };
 }
 
+function validateCodexSessionsRoot({
+  create,
+  runtimeRoot,
+}) {
+  const resolvedRuntime = path.resolve(runtimeRoot);
+  const realRuntime = fs.realpathSync(resolvedRuntime);
+  const sessionsRoot = path.join(resolvedRuntime, 'codex-sessions');
+  if (create) fs.mkdirSync(sessionsRoot, { recursive: true });
+  if (!fs.existsSync(sessionsRoot)) {
+    return { realRuntime, sessionsRoot };
+  }
+  const sessionsInfo = fs.lstatSync(sessionsRoot);
+  if (sessionsInfo.isSymbolicLink() || !sessionsInfo.isDirectory()) {
+    throw new Error('Portable codex-sessions root must not be a junction or symlink');
+  }
+  if (!isPathInside(realRuntime, fs.realpathSync(sessionsRoot))) {
+    throw new Error('Portable codex-sessions root escaped runtime root');
+  }
+  return { realRuntime, sessionsRoot };
+}
+
 export function createPortableCodexCommand({
   codexRoot,
   nonce,
@@ -127,7 +148,14 @@ export function createPortableCodexCommand({
   }
   const resolvedRuntime = path.resolve(runtimeRoot);
   const resolvedCodex = path.resolve(codexRoot);
-  if (!isPathInside(resolvedRuntime, resolvedCodex) || resolvedCodex === resolvedRuntime) {
+  const realRuntime = fs.realpathSync(resolvedRuntime);
+  const realCodex = fs.realpathSync(resolvedCodex);
+  if (
+    !isPathInside(resolvedRuntime, resolvedCodex)
+    || resolvedCodex === resolvedRuntime
+    || !isPathInside(realRuntime, realCodex)
+    || realCodex === realRuntime
+  ) {
     throw new Error('Portable Codex root escaped runtime root');
   }
   const directCommand = path.join(resolvedCodex, 'codex.exe');
@@ -135,15 +163,17 @@ export function createPortableCodexCommand({
     throw new Error('Portable codex.exe is missing');
   }
 
-  const sessionsRoot = path.join(resolvedRuntime, 'codex-sessions');
+  const { sessionsRoot } = validateCodexSessionsRoot({
+    create: true,
+    runtimeRoot: resolvedRuntime,
+  });
   const sessionRoot = path.join(sessionsRoot, nonce);
   if (!isPathInside(resolvedRuntime, sessionRoot)) {
     throw new Error('Portable Codex session path escaped runtime root');
   }
-  fs.mkdirSync(sessionsRoot, { recursive: true });
   if (!fs.existsSync(sessionRoot)) {
     fs.symlinkSync(resolvedCodex, sessionRoot, 'junction');
-  } else if (fs.realpathSync(sessionRoot) !== fs.realpathSync(resolvedCodex)) {
+  } else if (fs.realpathSync(sessionRoot) !== realCodex) {
     throw new Error('Portable Codex session junction points to an unexpected target');
   }
   const command = path.join(sessionRoot, 'codex.exe');
@@ -151,6 +181,30 @@ export function createPortableCodexCommand({
     throw new Error('Portable codex.exe is missing');
   }
   return command;
+}
+
+export function removePortableCodexCommand({
+  nonce,
+  runtimeRoot,
+}) {
+  if (!PROCESS_NONCE_PATTERN.test(String(nonce || ''))) {
+    throw new Error('Portable Codex nonce must be 64 lowercase hexadecimal characters');
+  }
+  const resolvedRuntime = path.resolve(runtimeRoot);
+  const { sessionsRoot } = validateCodexSessionsRoot({
+    create: false,
+    runtimeRoot: resolvedRuntime,
+  });
+  const sessionRoot = path.join(sessionsRoot, nonce);
+  if (!isPathInside(resolvedRuntime, sessionRoot)) {
+    throw new Error('Portable Codex session path escaped runtime root');
+  }
+  if (!fs.existsSync(sessionRoot)) return false;
+  if (!fs.lstatSync(sessionRoot).isSymbolicLink()) {
+    throw new Error('Portable Codex session path is not a junction');
+  }
+  fs.unlinkSync(sessionRoot);
+  return true;
 }
 
 export function writeJsonAtomic(filename, value) {
@@ -301,6 +355,8 @@ export async function checkBrokerHealth(session, fetchImpl = fetch) {
 
 export async function acquireInstance({
   appRoot,
+  beforeStaleClaim = async () => {},
+  claimNonceFactory = () => crypto.randomBytes(8).toString('hex'),
   checkHealth = checkBrokerHealth,
   fileSystem = fs,
   isPidAlive = defaultIsPidAlive,
@@ -309,52 +365,121 @@ export async function acquireInstance({
   fileSystem.mkdirSync(appRoot, { recursive: true });
   const lockPath = path.join(appRoot, 'instance.lock');
   const sessionPath = path.join(appRoot, 'session.json');
-  try {
-    return createOwnedLock({
-      fileSystem,
-      lockPath,
-      ownerNonceFactory,
-      sessionPath,
-    });
-  } catch (error) {
-    if (error.code !== 'EEXIST') throw error;
-  }
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      return createOwnedLock({
+        fileSystem,
+        lockPath,
+        ownerNonceFactory,
+        sessionPath,
+      });
+    } catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+    }
 
-  const lock = readJson(lockPath, fileSystem);
-  const session = readJson(sessionPath, fileSystem);
-  if (!lock || !validPid(lock.pid)) {
-    throw new Error('旧工作台锁文件无法验证；为避免接管正在启动的进程，本次启动已停止');
-  }
+    const lock = readJson(lockPath, fileSystem);
+    const session = readJson(sessionPath, fileSystem);
+    if (!lock || !validPid(lock.pid)) {
+      throw new Error('旧工作台锁文件无法验证；为避免接管正在启动的进程，本次启动已停止');
+    }
 
-  if (
-    session
-    && sameOwner(lock, session)
-    && await checkHealth(session)
-  ) {
-    return { session, status: 'reused' };
-  }
+    if (
+      session
+      && sameOwner(lock, session)
+      && await checkHealth(session)
+    ) {
+      return { session, status: 'reused' };
+    }
 
-  const lockIsAlive = isPidAlive(lock.pid);
-  const sessionIsAlive = (
-    validPid(session?.pid)
-    && session.pid !== lock.pid
-    && isPidAlive(session.pid)
-  );
-  if (lockIsAlive && !session) {
-    throw new Error('旧工作台进程仍在运行但会话尚未就绪；请稍候重试，本次启动已停止');
-  }
-  if (lockIsAlive || sessionIsAlive) {
-    throw new Error('旧工作台进程仍在运行但健康检查失败；为避免接管错误进程，本次启动已停止');
-  }
+    const lockIsAlive = isPidAlive(lock.pid);
+    const sessionIsAlive = (
+      validPid(session?.pid)
+      && session.pid !== lock.pid
+      && isPidAlive(session.pid)
+    );
+    if (lockIsAlive && !session) {
+      throw new Error('旧工作台进程仍在运行但会话尚未就绪；请稍候重试，本次启动已停止');
+    }
+    if (lockIsAlive || sessionIsAlive) {
+      throw new Error('旧工作台进程仍在运行但健康检查失败；为避免接管错误进程，本次启动已停止');
+    }
 
-  fileSystem.rmSync(lockPath, { force: true });
-  fileSystem.rmSync(sessionPath, { force: true });
-  return createOwnedLock({
-    fileSystem,
-    lockPath,
-    ownerNonceFactory,
-    sessionPath,
-  });
+    const claimNonce = String(claimNonceFactory());
+    if (!/^[a-f0-9]{16}$/.test(claimNonce)) {
+      throw new Error('Portable stale-lock claim nonce must be 16 lowercase hexadecimal characters');
+    }
+    const claimOwner = validOwnerNonce(lock.ownerNonce)
+      ? lock.ownerNonce
+      : 'legacy';
+    const claimPath = path.join(
+      appRoot,
+      `instance.lock.claim-${claimOwner}-${lock.pid}-${claimNonce}`,
+    );
+    await beforeStaleClaim({ claimPath, lock: { ...lock } });
+
+    const currentLock = readJson(lockPath, fileSystem);
+    if (!sameOwner(currentLock, lock)) continue;
+    try {
+      fileSystem.renameSync(lockPath, claimPath);
+    } catch (error) {
+      if (['EACCES', 'EBUSY', 'EEXIST', 'ENOENT', 'EPERM'].includes(error.code)) {
+        continue;
+      }
+      throw error;
+    }
+
+    const claimedLock = readJson(claimPath, fileSystem);
+    if (!sameOwner(claimedLock, lock)) {
+      try {
+        fileSystem.linkSync(claimPath, lockPath);
+        fileSystem.rmSync(claimPath, { force: true });
+      } catch {
+        // A changed lock cannot be safely restored over a new contender.
+      }
+      continue;
+    }
+    if (isPidAlive(claimedLock.pid)) {
+      try {
+        fileSystem.linkSync(claimPath, lockPath);
+        fileSystem.rmSync(claimPath, { force: true });
+      } catch {
+        // Preserve the claim for diagnosis if restoration is ambiguous.
+      }
+      throw new Error('旧工作台进程在接管期间恢复运行；为避免并发实例，本次启动已停止');
+    }
+
+    const claimedSession = readJson(sessionPath, fileSystem);
+    if (
+      claimedSession
+      && session
+      && sameOwner(claimedSession, session)
+    ) {
+      fileSystem.rmSync(sessionPath, { force: true });
+    }
+    try {
+      const acquired = createOwnedLock({
+        fileSystem,
+        lockPath,
+        ownerNonceFactory,
+        sessionPath,
+      });
+      fileSystem.rmSync(claimPath, { force: true });
+      return acquired;
+    } catch (error) {
+      if (error.code === 'EEXIST') {
+        fileSystem.rmSync(claimPath, { force: true });
+        continue;
+      }
+      try {
+        fileSystem.linkSync(claimPath, lockPath);
+        fileSystem.rmSync(claimPath, { force: true });
+      } catch {
+        // Preserve the claim for diagnosis if restoration is ambiguous.
+      }
+      throw error;
+    }
+  }
+  throw new Error('工作台实例锁在接管期间持续变化；为避免并发实例，本次启动已停止');
 }
 
 export function releaseInstance(instance) {
