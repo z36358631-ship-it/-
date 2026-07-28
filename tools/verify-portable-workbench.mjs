@@ -178,7 +178,7 @@ async function countListeningBrokers(port) {
       windowsHide: true,
     },
   );
-  const count = Number.parseInt(stdout.trim(), 10);
+  const count = Number.parseInt(String(stdout).trim(), 10);
   assert(Number.isInteger(count), `Unable to count listeners on port ${port}`);
   return count;
 }
@@ -216,7 +216,7 @@ async function processTree(rootPid) {
       windowsHide: true,
     },
   );
-  const parsed = JSON.parse(stdout);
+  const parsed = JSON.parse(String(stdout));
   const all = Array.isArray(parsed) ? parsed : [parsed];
   const wanted = new Set([rootPid]);
   let changed = true;

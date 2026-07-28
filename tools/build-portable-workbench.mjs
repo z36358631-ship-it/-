@@ -367,7 +367,7 @@ export async function main() {
     `${exeSha256}  ${outputName}\n`,
     'utf8',
   );
-  const buildManifest = {
+  const artifactManifest = {
     artifact: {
       bytes: exeBytes,
       path: `dist/${outputName}`,
@@ -385,7 +385,7 @@ export async function main() {
   };
   fs.writeFileSync(
     path.join(distRoot, 'portable-build-manifest.json'),
-    `${JSON.stringify(buildManifest, null, 2)}\n`,
+    `${JSON.stringify(artifactManifest, null, 2)}\n`,
     'utf8',
   );
   process.stdout.write(
@@ -394,7 +394,7 @@ export async function main() {
       + `SHA-256: ${exeSha256}\n`
       + 'Signed: false\n',
   );
-  return buildManifest;
+  return artifactManifest;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
