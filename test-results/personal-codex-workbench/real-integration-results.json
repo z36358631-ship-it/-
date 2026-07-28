@@ -1,0 +1,103 @@
+{
+  "startedAt": "2026-07-28T08:16:29.438Z",
+  "finishedAt": "2026-07-28T08:18:59.271Z",
+  "sourceCommit": "0852f940238eebf21db11c910a5c3005c01d5d06",
+  "codexVersion": "codex-cli 0.130.0",
+  "candidatePath": "test-results/personal-codex-workbench/real-integration-candidate.md",
+  "status": "passed",
+  "health": {
+    "broker": "ok",
+    "database": "ok",
+    "recovery": "ok",
+    "recoveryDiagnostics": [
+      {
+        "detail": "Persisted process no longer exists",
+        "pid": 35168,
+        "status": "missing"
+      }
+    ],
+    "codex": "ok",
+    "configuration": "ok",
+    "authentication": "unknown-until-turn",
+    "diagnostic": ""
+  },
+  "readOnlyRun": {
+    "id": "RUN-1f2fcc43-d4ea-49aa-819b-88b130928992",
+    "status": "completed",
+    "resultLength": 95,
+    "eventCount": 44
+  },
+  "workflows": {
+    "feedback-triage": {
+      "id": "RUN-56e60af7-80e0-479f-8fc4-dc25cd4ffe3f",
+      "status": "completed",
+      "eventCount": 355,
+      "resultKeys": [
+        "themes",
+        "duplicates",
+        "existingMatches",
+        "candidates",
+        "informationGaps"
+      ]
+    },
+    "demo-prd-review": {
+      "id": "RUN-b11a8ed4-0678-4ff2-b609-da59a26de51e",
+      "status": "completed",
+      "eventCount": 1051,
+      "resultKeys": [
+        "summary",
+        "findings"
+      ]
+    },
+    "issue-strategy": {
+      "id": "RUN-42c17ee2-f0c1-486c-ac29-0c50b5e6e805",
+      "status": "completed",
+      "eventCount": 747,
+      "resultKeys": [
+        "essence",
+        "mainFlow",
+        "exceptionPolicy",
+        "boundaryPolicy",
+        "documentLocations",
+        "acceptanceCriteria",
+        "feishuSummary"
+      ]
+    }
+  },
+  "writeRun": {
+    "id": "RUN-ec13518e-c6d7-43bd-ab6e-ea9bafef20d3",
+    "status": "completed",
+    "approvals": [],
+    "fileChanges": [
+      {
+        "kind": "created",
+        "path": "test-results/personal-codex-workbench/real-integration-candidate.md",
+        "diffLength": 270
+      }
+    ],
+    "validations": [
+      {
+        "name": "Codex validation",
+        "status": "skipped"
+      }
+    ]
+  },
+  "restored": {
+    "paths": [
+      "test-results/personal-codex-workbench/real-integration-candidate.md"
+    ],
+    "candidateAbsent": true,
+    "checkpointsRecorded": true
+  },
+  "protectedArtifactHashes": {
+    "demos/产品经理全生命周期工作台demo.html": {
+      "before": "efc71aa59c71364037a30941c5e0727580a9ed5adcaeb28e007aec6738388444",
+      "after": "efc71aa59c71364037a30941c5e0727580a9ed5adcaeb28e007aec6738388444"
+    },
+    "docs/superpowers/specs/2026-07-28-personal-codex-workbench-design.md": {
+      "before": "dae3547fde5a04f17f7a056e833f44983d35ab264d3643da3afab0be59b561ea",
+      "after": "dae3547fde5a04f17f7a056e833f44983d35ab264d3643da3afab0be59b561ea"
+    }
+  },
+  "failure": null
+}
