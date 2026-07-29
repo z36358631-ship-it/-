@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 9",
+  "phase": "phase1",
+  "agent": "/root/task1_atomic_capture",
+  "role": "AI 试玩交付证据工程",
+  "objective": "按正式报告引用打包 canonical evidence，并实现不可改名绕过的 trace 体积门禁",
+  "commit": "ee525eb657db1cf80852c746bff4586491c4f229",
+  "files": [
+    "games/wechat-h5-v2/tools/ai-playtest/formal-evidence-set.mjs",
+    "games/wechat-h5-v2/tools/verify-delivery.mjs",
+    "games/wechat-h5-v2/tools/export-git-snapshot.mjs",
+    "games/wechat-h5-v2/tests/integration/delivery-security.test.mjs"
+  ],
+  "commands": [
+    "node --test tests/integration/delivery-security.test.mjs"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 13,
+    "pass": 13,
+    "fail": 0
+  },
+  "startedAt": "2026-07-30T00:51:20+08:00",
+  "finishedAt": "2026-07-30T01:13:22+08:00",
+  "activeMinutes": 20,
+  "review": {
+    "specReview": "PASS",
+    "securityReview": "APPROVED",
+    "conclusion": "13 个报告引用、14 个单元目录文件和 trace 单项/总量限制通过双审。"
+  }
+}

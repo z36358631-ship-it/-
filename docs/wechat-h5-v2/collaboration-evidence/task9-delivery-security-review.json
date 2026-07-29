@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 9",
+  "phase": "security-review",
+  "agent": "/root/plan_delivery_pilot",
+  "role": "AI 试玩交付安全复审",
+  "objective": "独立重放证据改名、缺失、超限、信任自报、allowlist 与 Git blob 绕过",
+  "commit": "ee525eb657db1cf80852c746bff4586491c4f229",
+  "files": [
+    "games/wechat-h5-v2/tools/ai-playtest/formal-evidence-set.mjs",
+    "games/wechat-h5-v2/tools/export-git-snapshot.mjs",
+    "games/wechat-h5-v2/tests/integration/delivery-security.test.mjs"
+  ],
+  "commands": [
+    "node --test tests/integration/delivery-security.test.mjs"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 13,
+    "pass": 13,
+    "fail": 0
+  },
+  "startedAt": "2026-07-30T01:34:00+08:00",
+  "finishedAt": "2026-07-30T01:38:00+08:00",
+  "activeMinutes": 4,
+  "review": {
+    "securityReview": "APPROVED",
+    "conclusion": "完整回归和七类定向恶意探针均通过。"
+  }
+}
