@@ -2,7 +2,7 @@
 
 状态：`NOT PASSED`。正式计分表只保留具有不可变 JSON、真实文件哈希、测试结果和审查结论的可核验证据。等待、工具运行等待、并行重复分钟和首尾墙钟跨度均不计入。
 
-当前可验证主动时间区间并集为 38 分钟、证据角色为 8 类，未达到 480 分钟，因此不得声称“八小时协作门禁通过”。原 15 条引用可变文件的记录已迁至 `team-collaboration-legacy.md`，仅供审计且不计分。
+当前可验证主动时间区间并集为 49 分钟、证据角色为 10 类，未达到 480 分钟，因此不得声称“八小时协作门禁通过”。原 15 条引用可变文件的记录已迁至 `team-collaboration-legacy.md`，仅供审计且不计分。
 
 | startedAt | finishedAt | activeMinutes | role | agent/task | objective | inputs | output | evidencePath | evidenceSha256 | reviewer |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -14,12 +14,14 @@
 | 2026-07-29T15:34:19+08:00 | 2026-07-29T15:36:59+08:00 | 2 | AI 试玩驱动协议质量修复 | /root/task1_atomic_capture | HANDOFF: 修复驱动协议质量审查反馈并保持失败关闭契约 | 最终 16/16、规格 PASS、质量 APPROVED | games/wechat-h5-v2/tests/integration/ai-driver-state.test.mjs | docs/wechat-h5-v2/collaboration-evidence/task3-driver-state-quality-fix.json | 9f3ccb938e8bbf680eb15c3b6ba75e237e0b113cbafacfaefcefbaabecf39814 | 质量复审 APPROVED、主管复跑 16/16 |
 | 2026-07-29T15:51:51+08:00 | 2026-07-29T15:56:10+08:00 | 4 | AI 试玩 IPC 适配工程 | /root/task1_atomic_capture | 实现 loopback 单路由 AI 试玩 IPC 与仅可见触摸浏览器适配器 | 9663ae9a471bf8b95e9d3055dfc344e0804c2895；Task 4 规格 | games/wechat-h5-v2/tools/ai-playtest/driver-ipc-server.mjs | docs/wechat-h5-v2/collaboration-evidence/task4-driver-ipc-phase1.json | bb9a6325d51867419616d2ab1ff3da4960f0737e9ba83d14f3785ed60fcf55d2 | 规格复审 PASS |
 | 2026-07-29T16:58:59+08:00 | 2026-07-29T17:03:23+08:00 | 4 | AI 试玩 IPC 安全加固 | /root/task1_atomic_capture | HANDOFF: 修复 IPC 安全审查反馈并保持可见数据与触摸审计边界 | 最终 state+ipc 33/33、规格 PASS、安全 APPROVED | games/wechat-h5-v2/tools/ai-playtest/browser-touch-adapter.mjs | docs/wechat-h5-v2/collaboration-evidence/task4-driver-ipc-security-fix.json | dc4ab3f41791cb4c872092b61c59c46d609043515f149de4e8747554d68af0a5 | 安全复审 APPROVED、主管复跑 33/33 |
+| 2026-07-29T18:42:40+08:00 | 2026-07-29T18:49:40+08:00 | 7 | AI 试玩 Runner 审计工程 | /root/task1_atomic_capture | 集成 loopback 驱动、独占动作审计与三局失败关闭契约到正式采集 runner | 179b7f6eaacbe36385e584436d2a1eb46fcc35c1；Task 5 规格 | games/wechat-h5-v2/tools/ai-playtest/action-audit-log.mjs | docs/wechat-h5-v2/collaboration-evidence/task5-runner-action-audit-phase1.json | 463c6543e5d4168a1e8080940e932fe56267a460b374960454b6514225fabad7 | 规格复审 PASS |
+| 2026-07-29T19:02:41+08:00 | 2026-07-29T19:07:51+08:00 | 4 | AI 试玩 Runner 质量修复 | /root/task1_atomic_capture | HANDOFF: 修复动作审计与 runner 质量审查反馈并保持失败关闭证据契约 | 最终 Node 93/93、Vitest 31/31、规格 PASS、质量 APPROVED | games/wechat-h5-v2/tools/run-ai-playtest-session.mjs | docs/wechat-h5-v2/collaboration-evidence/task5-runner-action-audit-quality-fix.json | d9ecb0a48024550a10861514f7c6f223f3aa6dd720a373759f437acaba748f8a | 质量复审 APPROVED、主管复跑 124/124 |
 
 ## 当前门禁结论
 
-- 证据角色：8 类。
-- 证据行：8 行。
-- 可验证主动区间并集：38 分钟，低于 480 分钟。
+- 证据角色：10 类。
+- 证据行：10 行。
+- 可验证主动区间并集：49 分钟，低于 480 分钟。
 - 真实八小时协作：`NOT EXECUTED / NOT PROVEN`。
 - Legacy 记录：15 行，`NOT COUNTED / 未验证主动分钟`。
 - 禁止使用 legacy 行、首尾墙钟跨度或并行员工分钟相加冒充主动时间并集。
