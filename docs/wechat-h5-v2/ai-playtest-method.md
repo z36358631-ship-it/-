@@ -43,7 +43,9 @@ AI 评审只能形成内部产品假设，不能替代真实用户研究、微�
 - 至少三项优点、三项问题；
 - 事实、推断、个人评价与未验证项分开记录。
 
-运行器只收集机器证据，不自动生成主观分数。
+运行器只收集机器证据，不自动生成主观分数。正式提升时从单元外的 draft 复制出 `report.json`，明确设置 `draftOnly: false`、`evidenceOnly: false`、`subjectiveScoresGenerated: true`，填写 `reviewerId`、`claimsActualPlay`、策略标签和全部主观字段，且不得改写机器事实。
+
+每份正式报告固定引用 13 个 canonical evidence：`session-evidence.json`、`entry.png`、`session-actions.jsonl`、`session-trace.zip`、六张三局开始/结算 PNG 和三个事件日志。正式单元目录恰好 14 个文件，额外文件是 `report.json` 本身。
 
 ## 八项评分与决定
 
@@ -71,11 +73,47 @@ AI 评审只能形成内部产品假设，不能替代真实用户研究、微�
 
 ## 执行命令
 
-示例会话：
+在冻结 commit 的工作树内，从 `games/wechat-h5-v2` 启动示例会话。descriptor、draft 和 invalid 目录均在正式单元之外：
 
 ```powershell
-node games/wechat-h5-v2/tools/run-ai-playtest-session.mjs --round baseline --game ricochet-crew --reviewer action --output games/wechat-h5-v2/test-results/ai-playtests/baseline/action-ricochet-crew
+$Role = 'action'
+$Game = 'ricochet-crew'
+$Cell = Join-Path $EvidenceRoot "baseline\$Role-$Game"
+$Descriptor = Join-Path $EvidenceRoot "descriptors\$Role-$Game.json"
+$Draft = Join-Path $EvidenceRoot "drafts\$Role-$Game-report-draft.json"
+$InvalidRoot = Join-Path $EvidenceRoot 'invalid'
+
+New-Item -ItemType Directory -Force `
+  -Path (Split-Path $Descriptor),(Split-Path $Draft),$InvalidRoot |
+  Out-Null
+
+node tools/run-ai-playtest-session.mjs `
+  --round baseline `
+  --reviewer $Role `
+  --game $Game `
+  --expected-commit $Commit `
+  --output $Cell `
+  --driver-enabled true `
+  --driver-descriptor-path $Descriptor `
+  --draft-output $Draft `
+  --invalid-root $InvalidRoot `
+  --timeout-ms 1800000 `
+  --headed true
 ```
+
+descriptor 出现后，在另一个终端设置同一 `$Descriptor` 路径并启动：
+
+```powershell
+node tools/ai-playtest-heartbeat.mjs --descriptor $Descriptor
+```
+
+玩家随后只通过受限 CLI 做 `capture → 检查图片 → visible → touch` 循环。`capture`、`visible` 和 touch 是玩家命令；`ready`、`heartbeat` 只是控制命令。禁止 debug、CDP、`evaluate`、storage、seed、speed、solver 或绕过 CLI 的输入。
+
+CLI 与 heartbeat 在带 `{pid, ownerToken, createdAt}` 元数据的同一锁下读取 `<descriptor>.sequence.json` 和 `<descriptor>.frame.json`；两者分别是严格非负 safe integer 纯文本。锁覆盖完整 POST 与两个 sidecar 的 same-directory 临时文件原子提交。只有成功的 `ready`/`capture` 更新 frame，其他命令只推进 request sequence，显式 frame 只能与共享值相等。
+
+cleanup 不会因固定等待超时而强拆锁。只有元数据有效、足龄且 PID 明确不存在的死锁可在 token 复核后原子隔离清除；活跃 owner、`EPERM`/未知进程状态、缺失或损坏的元数据都 fail closed，并使 runner 记录 `INCOMPLETE`。cleanup 随后必须持有自己的锁才清理 sequence、frame 及两类临时文件。
+
+每局结算后等 `runRecorded(N)` 确认才开始下一局；第三局结算后立即停止。协议没有 `disconnect` 命令，停止 heartbeat 后由 runner watchdog 判定。4173 被未知进程占用时必须暂停核实，不得终止未知进程或静默改端口。完整命令见 [正式 AI 试玩运行手册](./ai-playtest-runbook.md)。
 
 单份报告校验：
 
@@ -92,6 +130,8 @@ node games/wechat-h5-v2/tools/validate-ai-playtest-matrix.mjs --root games/wecha
 在矩阵校验通过之前，不运行正式汇总，不发布保留决定。
 
 ## 与真实用户的边界
+
+交付校验输出的 `packageAuthenticated=true` 只证明包字节匹配固定 Git commit，不证明执行由第三方见证。正式 AI 本地证据的信任声明为 `executionTrust="local-audited"`、`independentlyAttested=false`。
 
 当前：
 

@@ -54,6 +54,9 @@ import {
   DRIVER_HEARTBEAT_INTERVAL_MS,
   GESTURE_LEASE_MS,
 } from "./ai-playtest/driver-session-state.mjs";
+import {
+  cleanupDriverRequestSequence,
+} from "./ai-playtest/driver-request-sequence.mjs";
 
 export {
   assertCompleteRunObservation,
@@ -1211,6 +1214,13 @@ export async function captureAiPlaytestSession(rawOptions, dependencies = {}) {
         if (error?.code !== "ENOENT") recordTerminalError(error);
       }
       descriptorPublished = false;
+    }
+    if (options.driverEnabled) {
+      try {
+        await cleanupDriverRequestSequence(options.driverDescriptorPath);
+      } catch (error) {
+        recordTerminalError(error);
+      }
     }
   }
 

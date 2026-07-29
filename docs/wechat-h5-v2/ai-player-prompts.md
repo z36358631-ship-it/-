@@ -8,13 +8,24 @@
 
 1. 使用 `390×844`、触摸开启的浏览器，通过真实 browser touch 完成恰好三局。
 2. 只访问 `http://127.0.0.1:4173/<gameId>/`，不得添加 `test`、`seed`、`speed`、`mute` 等查询参数。
-3. 不调用 `__GAME_TEST__`、`__GAME_DEBUG__`、`__THREE_LANE_SQUAD_DEBUG__` 或任何测试钩子，不读内部状态来决定操作。
-4. 第一局按直觉玩；第二局明确更换策略；第三局验证变化是否真实，并在结算后独立判断是否愿意主动再玩。每局开始后正常操作；每局结算画面至少停留 1 秒，确认采证器有机会记录结果后再开始下一局。
-5. 不为得到胜利而重复刷新、改存档、加速或照抄前一角色的路线。失败也是有效证据。
-6. 每局结束记录一句实际策略标签；三局后立即停止，不得开始第四局，再填写评分、优点、问题和 `wouldReplay`。
-7. 任一局缺失 `first_input` 会使整个三局单元作废重跑；缺失 `first_payoff` 时保持 `null` 和原始 note，不得补猜测值。
+3. 玩家命令只允许 `capture`、`visible` 和 touch（`tap`、`begin`、`move`、`end`）；`ready`、`heartbeat` 是连接与状态控制命令，不算玩家操作。不得使用 debug、CDP、`evaluate`、storage 读写、固定 seed、改 speed、solver、`__GAME_TEST__`、`__GAME_DEBUG__`、`__THREE_LANE_SQUAD_DEBUG__` 或任何测试钩子，也不得读内部状态来决定操作。
+4. 每次操作严格执行 `capture → 实际检查新图片 → visible → touch`；触摸前使用刚刚成功的 `capture` 所确认的共享 frame。CLI 与 heartbeat 在同一 owner 锁下读取 `<descriptor>.sequence.json` 与 `<descriptor>.frame.json` 两个严格非负整数纯文本 sidecar，不得手工编辑、删除或写入 JSON/浮点数/负数/尾随内容，也不得用显式 `--frame` 主动推进 frame。
+5. 第一局按直觉玩；第二局明确更换策略；第三局验证变化是否真实，并在结算后独立判断是否愿意主动再玩。每局结算画面至少停留 1 秒并停止 touch；收到 `runRecorded(N)` 确认后才能开始下一局。
+6. 不为得到胜利而重复刷新、改存档、加速或照抄前一角色的路线。失败也是有效证据。
+7. 每局结束记录一句实际策略标签；第三局结算后立即停止，不得发送第四局 touch，再填写评分、优点、问题和 `wouldReplay`。
+8. 任一局缺失 `first_input` 会使整个三局单元作废重跑；缺失 `first_payoff` 时保持 `null` 和原始 note，不得补猜测值。
 
 若无法发送真实触摸，只能做 `evidence-review`，不得把该结果标为实际试玩，也不得贡献主动重玩票。
+
+## 正式报告提升契约
+
+只从 runner 生成的外置 draft 复制出正式单元内的 `report.json`，把 `draftOnly`、`evidenceOnly`、`subjectiveScoresGenerated` 分别改为 `false`、`false`、`true`。同时填写 `reviewerId`、`claimsActualPlay`、三局 `strategyTag`、八项整数分、`wouldReplay`、至少三项优点和至少三项含严重度与证据的问题，并将事实、推断和未验证项分开记录；不得改写任何机器事实。
+
+每份正式报告必须引用固定 13 个 canonical evidence：`session-evidence.json`、`entry.png`、`session-actions.jsonl`、`session-trace.zip`、六张三局开始/结算 PNG 和三个事件日志。正式单元目录因此恰好有 14 个文件，额外一个是 `report.json` 本身。
+
+`packageAuthenticated=true` 只表示交付包字节匹配固定 Git commit；本地执行证据仍是 `executionTrust="local-audited"`、`independentlyAttested=false`，不代表第三方独立见证或真实用户结论。
+
+锁目录的 owner 元数据必须保持完整。runner 收尾只会接管“元数据有效、达到最小年龄且原进程明确不存在”的死锁；owner 仍存活、权限状态不明或元数据缺失/损坏都会 fail closed，使单元成为 `INCOMPLETE`，不得手工强拆后继续沿用该单元。
 
 ## 六类玩家
 

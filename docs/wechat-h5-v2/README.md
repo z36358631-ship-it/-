@@ -79,10 +79,15 @@ node tools/assets/serve-dist.mjs
 方法见 [AI 资深玩家评审方法](./ai-playtest-method.md)。当前只有预检素材和验证工具，不存在完整的 18 份基线报告与 54 个唯一局次，因此：
 
 - AI-playtest：`NOT EXECUTED`
+- Task 12 真实三局 pilot：`NOT EXECUTED`
 - RETAIN / REWORK / DROP：`INCOMPLETE`
 - 真实用户测试：`NOT EXECUTED`
 
-不得根据自动化通过、美术质量或少量预检截图推导“用户会持续游玩”。
+在 Task 12 按 [正式运行手册](./ai-playtest-runbook.md) 完成真实 browser-touch 三局 pilot、通过报告与 canonical evidence 校验之前，AI-playtest 必须继续保持 `NOT EXECUTED`。
+
+每份正式报告应引用 13 个 canonical evidence，正式单元目录恰好 14 个文件（额外文件为 `report.json`）。报告提升必须设置 `draftOnly: false`、`evidenceOnly: false`、`subjectiveScoresGenerated: true`，填写 reviewer 与主观字段，但不得修改机器事实。
+
+即使后续交付校验显示 `packageAuthenticated=true`，也只表示包字节匹配固定 Git commit；本地执行证据仍声明 `executionTrust="local-audited"`、`independentlyAttested=false`。不得根据这些状态、自动化通过、美术质量或少量预检截图推导“用户会持续游玩”。
 
 ## 微信 `web-view` 壳
 

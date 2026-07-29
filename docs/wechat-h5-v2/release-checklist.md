@@ -7,7 +7,7 @@
 | 门禁 | 状态 | 当前证据 / 缺口 |
 | --- | --- | --- |
 | browser-review | PASS（非生产 Chromium） | `games/wechat-h5-v2/tests/e2e/hub-and-apps.spec.ts`；本线程执行 4/4，通过大厅图片解码和三款直达启动。未覆盖生产域名。 |
-| AI-playtest | NOT EXECUTED | 只有预检素材与验证工具；缺少 18 份有效基线报告和 54 个唯一局次。 |
+| AI-playtest | NOT EXECUTED | Task 12 真实 browser-touch 三局 pilot 尚未执行；在 pilot 通过前保持 `NOT EXECUTED`。仍缺少 18 份有效基线报告和 54 个唯一局次。每份正式报告必须引用 13 个 canonical evidence，单元目录恰好 14 个文件（额外文件为 `report.json`）。 |
 | real-user | NOT EXECUTED | 未招募真实目标用户，未获得三局完成率、主动重玩或留存数据。 |
 | WeChat-developer-tools | NOT EXECUTED | 仅建立 `touristappid` 非生产壳；未在微信开发者工具执行。 |
 | iOS | NOT EXECUTED | 未执行微信 iOS 真机、弱网、后台恢复、内存和音频测试。 |
@@ -23,8 +23,10 @@
 
 - 团队协作主动区间并集：`FAIL`，当前可核验证据少于 480 分钟；精确值以验证器即时输出为准。
 - 正式 ZIP、包外 SHA-256、只读母包：`NOT EXECUTED`。
+- Task 12 真实三局 AI pilot：`NOT EXECUTED`；不得用工具测试、预检截图或草稿替代。
 - 完整 AI 保留决定：`INCOMPLETE`。
 - 真实用户持续游玩验证：`NOT EXECUTED`。
+- 证据信任边界：即使 `packageAuthenticated=true`，也只证明包字节匹配固定 Git commit；当前执行声明仍是 `executionTrust="local-audited"`、`independentlyAttested=false`，不是第三方独立认证。
 
 ## Go 条件
 

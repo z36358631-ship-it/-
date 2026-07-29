@@ -1071,7 +1071,9 @@ Assert `capture` writes a PNG only to the requested temporary path, CLI output n
 
 - [ ] **Step 2: Implement the one-shot CLI**
 
-The CLI and heartbeat process both call one shared `allocateRequestSequence()` helper. It atomically creates `<descriptor>.sequence.lock` with `mkdir(..., { recursive: false })`, reads the integer sidecar, writes `current + 1` through a same-directory temporary file, renames it while holding the lock, then removes the lock in `finally`. This serializes heartbeat and action requests across processes. The runner removes the sequence sidecar and abandoned lock during final cleanup. The CLI creates a UUID action ID, POSTs to `/v1/command`, and prints JSON without token. `capture` decodes `pngBase64` and writes `--out` with `flag: "wx"`.
+The CLI and heartbeat process both call one shared request-transaction helper. It atomically creates `<descriptor>.sequence.lock` with `mkdir(..., { recursive: false })`, writes lock-owner metadata containing the PID, a random owner token, and creation time, reads separate strict-integer sequence and frame sidecars, allocates `current + 1`, holds the same lock through the complete HTTP POST, atomically commits the new integer and any `ready`/`capture` response frame through separate same-directory temporary files, then removes the lock in `finally` only after proving that the stored owner token is its own. Holding the lock only while incrementing the integer is insufficient because a later request could reach the server first and permanently fault the session. Explicit action `--frame` values must equal the shared frame and never overwrite it.
+
+The runner final cleanup must never remove a lock merely because a fixed timeout elapsed. It may take over an abandoned lock only when valid owner metadata is old enough and the operating system proves the owner PID no longer exists; an active, permission-denied, malformed, missing, or otherwise ambiguous owner fails closed and makes the session `INCOMPLETE`. A proven-dead lock is token-rechecked, atomically renamed to a cleanup quarantine, and removed before cleanup acquires its own lock and deletes both sidecars and both temporary-file classes. The CLI creates a UUID action ID, POSTs to `/v1/command`, and prints JSON without token. `capture` decodes `pngBase64` and writes `--out` with `flag: "wx"`.
 
 - [ ] **Step 3: Implement the heartbeat keeper**
 
@@ -1081,16 +1083,15 @@ The heartbeat process:
 const timer = setInterval(sendHeartbeat, 2_000);
 timer.unref();
 for (const signal of ["SIGINT", "SIGTERM"]) {
-  process.on(signal, async () => {
+  process.on(signal, () => {
     clearInterval(timer);
-    await sendDisconnectNotice().catch(() => {});
     process.exit(0);
   });
 }
 await new Promise(() => {});
 ```
 
-It prints only `AI_DRIVER_HEARTBEAT_READY session=<sessionId> pid=<pid>`. It never performs game actions and exits nonzero after two consecutive heartbeat failures.
+It prints only `AI_DRIVER_HEARTBEAT_READY session=<sessionId> pid=<pid>`. It never performs game actions and exits nonzero after two consecutive heartbeat failures. The nine-command protocol has no disconnect command; do not send an ignored `disconnect:true` heartbeat because that would refresh the server deadline while conveying no notice. Process exit stops heartbeats and the server watchdog remains the authoritative disconnect detector.
 
 - [ ] **Step 4: Update the Chinese operating documents**
 

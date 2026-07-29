@@ -76,6 +76,16 @@ Get-NetTCPConnection -LocalPort 4173 -State Listen -ErrorAction SilentlyContinue
 $Role = 'action'
 $Game = 'ricochet-crew'
 $Cell = Join-Path $EvidenceRoot "baseline\$Role-$Game"
+$DescriptorRoot = Join-Path $EvidenceRoot 'descriptors'
+$DraftRoot = Join-Path $EvidenceRoot 'drafts'
+$InvalidRoot = Join-Path $EvidenceRoot 'invalid'
+$OperatorCaptureRoot = Join-Path $EvidenceRoot "operator-captures\$Role-$Game"
+$Descriptor = Join-Path $DescriptorRoot "$Role-$Game.json"
+$Draft = Join-Path $DraftRoot "$Role-$Game-report-draft.json"
+
+New-Item -ItemType Directory -Force `
+  -Path $DescriptorRoot,$DraftRoot,$InvalidRoot,$OperatorCaptureRoot |
+  Out-Null
 
 node tools/run-ai-playtest-session.mjs `
   --round baseline `
@@ -83,11 +93,49 @@ node tools/run-ai-playtest-session.mjs `
   --game $Game `
   --expected-commit $Commit `
   --output $Cell `
+  --driver-enabled true `
+  --driver-descriptor-path $Descriptor `
+  --draft-output $Draft `
+  --invalid-root $InvalidRoot `
   --timeout-ms 1800000 `
-  --headed
+  --headed true
 ```
 
-runner 默认根据 `$Game` 打开 4173 下对应路径。`--headed` 只是让外部 AI 玩家能操作页面，不会自动产生输入。玩家必须使用 browser touch 完成恰好三局。
+在终端 A 保持 runner 运行。等 `$Descriptor` 出现后，在终端 B 重新执行上方从 `$Role` 到 `$Descriptor` 的变量定义，再启动 heartbeat：
+
+```powershell
+node tools/ai-playtest-heartbeat.mjs --descriptor $Descriptor
+```
+
+协议没有 `disconnect` 命令。完成或作废时停止 heartbeat；runner 的 watchdog 会判定连接结束。不要伪造 `disconnect` 请求。
+
+runner 默认根据 `$Game` 打开 4173 下对应路径。`--headed` 只显示页面，不会自动产生输入。玩家必须在终端 C 通过受限 CLI 发送 browser touch，完成恰好三局：
+
+```powershell
+node tools/ai-playtest-driver-cli.mjs --descriptor $Descriptor ready
+node tools/ai-playtest-driver-cli.mjs --descriptor $Descriptor capture --out (Join-Path $OperatorCaptureRoot 'frame-001.png')
+node tools/ai-playtest-driver-cli.mjs --descriptor $Descriptor visible
+node tools/ai-playtest-driver-cli.mjs --descriptor $Descriptor tap --x 195 --y 730 --frame 1
+node tools/ai-playtest-driver-cli.mjs --descriptor $Descriptor begin --x 195 --y 730 --frame 2
+node tools/ai-playtest-driver-cli.mjs --descriptor $Descriptor move --gesture <gestureId> --x 195 --y 790
+node tools/ai-playtest-driver-cli.mjs --descriptor $Descriptor end --gesture <gestureId> --x 195 --y 790
+```
+
+每次操作必须按 `capture → 实际检查新图片 → visible → touch` 循环。`capture` 输出的 `frameSeq` 是后续 `tap`/`begin --frame` 的依据；每张人工检查图使用新的文件名，因为 CLI 以 `wx` 创建且拒绝覆盖。检查图保存在 `$OperatorCaptureRoot`，不得放入正式 `$Cell`。
+
+玩家操作只允许 `capture`、`visible` 和 touch（`tap`、`begin`、`move`、`end`）；`ready`、`heartbeat` 只是连接与状态控制命令，不算玩家操作。禁止使用 debug、CDP、`evaluate`、storage 读写、固定 seed、改 speed 或 solver，也不得绕过 CLI 直接调用协议。
+
+CLI 与 heartbeat 共用以下状态文件：
+
+- `<descriptor>.sequence.json`：严格非负 safe integer 的纯文本 request sequence；
+- `<descriptor>.frame.json`：严格非负 safe integer 的纯文本 frame；
+- `<descriptor>.sequence.lock/owner.json`：`pid`、UUID `ownerToken` 和 `createdAt`。
+
+同一 owner 锁覆盖两个 sidecar 的读取、序号分配、完整 POST、响应处理，以及两个 same-directory 临时文件的分别原子提交。对象 JSON、浮点数、负数、尾随字符或只有一个 sidecar 都会 fail closed。只有成功的 `ready`/`capture` 响应能更新 frame；其他命令仍提交已使用的 request sequence，但不更新 frame。显式 `--frame` 只与共享 frame 比对，不能覆盖或推进它。
+
+不得手工修改或删除 sidecar、临时文件、owner 元数据或锁目录。正常释放会复核 `ownerToken`，进程只能删除自己的锁。runner cleanup 不按固定超时强拆：锁存在时，只有 owner 元数据有效、达到最小年龄且 `process.kill(pid, 0)` 明确返回 `ESRCH` 的死 owner 才会在二次 token 核验后原子移入 cleanup quarantine 并删除；owner 活跃、`EPERM`/未知状态、锁过新、元数据缺失或损坏均产生稳定 cleanup error，使整个单元为 `INCOMPLETE`。随后 cleanup 必须取得自己的 owner 锁，才能删除两个 sidecar及两类同目录临时文件。
+
+每局结算后停止 touch，等待 runner/driver 返回 `runRecorded(N)`；未收到该确认不得开始下一局，也不得用截图、`visible` 或自行计数代替。第三局收到 `runRecorded(3)` 后立即停止，不发送第四局 touch；heartbeat 随 runner 结束或失败停止。
 
 启动后 runner 会：
 
@@ -102,17 +150,23 @@ runner 默认根据 `$Game` 打开 4173 下对应路径。`--headed` 只是让�
 
 ## 4. 输出与报告
 
-每个有效单元至少包含：
+runner 的 `$Draft` 位于正式单元目录之外。完成主观审核后，正式 `$Cell` 必须恰好包含 14 个文件：`report.json` 本身，以及它引用的 13 个 canonical evidence：
 
 ```text
-entry.png
-session-trace.zip
 session-evidence.json
-report-draft.json
+entry.png
+session-actions.jsonl
+session-trace.zip
 run-1-start.png
 run-1-result.png
 run-1-events.json
-... run-2 / run-3 ...
+run-2-start.png
+run-2-result.png
+run-2-events.json
+run-3-start.png
+run-3-result.png
+run-3-events.json
+report.json
 ```
 
 事件文件固定为：
@@ -125,9 +179,9 @@ run-1-events.json
 }
 ```
 
-`session-evidence.json` 是机器证据，并包含首尾源码门禁和 `servedDist` 双证明。`report-draft.json` 只预填机器事实及截图、trace、事件日志的 `evidenceSha256`；评分、策略标签、问题、优点、实际试玩声明和重玩意向为空。两个文件均以不可覆盖方式写入。
+`session-evidence.json` 是机器证据，并包含首尾源码门禁和 `servedDist` 双证明。外置 `$Draft` 只预填机器事实及 12 个同目录采证文件的 `evidenceSha256`；评分、策略标签、问题、优点、实际试玩声明和重玩意向为空。机器证据与 draft 均以不可覆盖方式写入。
 
-外部 AI 玩家应复制 draft 为 `report.json`，填写 `reviewerId`、`claimsActualPlay` 及主观空位，并在提交正式校验前明确修改：
+外部 AI 玩家应把 `$Draft` 复制为 `$Cell\report.json`，填写 `reviewerId`、`claimsActualPlay`、三局 `strategyTag`、八项 `scores`、`wouldReplay`、至少三项 `positives`、至少三项含 `severity` 与 `evidence` 的 `problems`，并区分 `facts`、`inferences`、`unverified`。提交正式校验前必须明确修改：
 
 ```json
 {
@@ -148,6 +202,10 @@ run-1-events.json
 - `evidenceSha256`
 
 缺失 `firstInputMs` 的单元不得提升为正式报告，必须整体隔离并重跑。缺失 `firstPayoffMs` 时保持 `null` 和 `firstPayoffNote`，不得为了过校验填写假值。
+
+`report.json` 的 13 个 canonical evidence 引用固定为：`session-evidence.json`、`entry.png`、`session-actions.jsonl`、`session-trace.zip`、六张 `run-<N>-start/result.png` 和三个 `run-<N>-events.json`。不得增加、删减、改名或用额外文件替代。
+
+交付验证中的 `packageAuthenticated=true` 仅表示包字节匹配固定 Git commit；执行证据的信任声明固定为 `executionTrust="local-audited"`，且 `independentlyAttested=false`。这些字段不表示第三方独立见证、真实用户验证或生产认证。
 
 完成后校验：
 
@@ -218,8 +276,9 @@ node tools/summarize-ai-playtests.mjs `
 
 ## 8. 收尾
 
-1. 停止并核对 4173 监听进程。
-2. 确认 18 份正式报告、54 个唯一 runId 和单一 commit。
-3. 保留 `invalid/`、服务器日志和全部 trace。
-4. 不清空浏览器或证据目录来掩盖失败；不同矩阵单元始终使用新的 browser context。
-5. 记录实际开始、结束时间和作废次数。
+1. 停止 heartbeat；协议没有 `disconnect`，由 watchdog 判定连接结束。
+2. 停止并核对 4173 监听进程；未知占用者仍不得终止。
+3. 确认 18 份正式报告、54 个唯一 runId 和单一 commit。
+4. 保留 `invalid/`、服务器日志和全部 trace。
+5. 不清空浏览器或证据目录来掩盖失败；不同矩阵单元始终使用新的 browser context。
+6. 记录实际开始、结束时间和作废次数。
