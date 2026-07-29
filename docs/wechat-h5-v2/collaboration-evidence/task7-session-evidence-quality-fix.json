@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 7",
+  "phase": "quality-fix",
+  "agent": "/root/task1_atomic_capture",
+  "role": "AI 试玩证据质量修复",
+  "objective": "HANDOFF: 修复 trace/action 双向绑定、正式报告身份、时间窗口、gesture 边界与稳定错误契约",
+  "commit": "5473a2e48263d6b0238e2aeb168f95dfebe57ea8",
+  "files": [
+    "games/wechat-h5-v2/tools/ai-playtest/playwright-trace-evidence.mjs",
+    "games/wechat-h5-v2/tools/ai-playtest/session-evidence-validator.mjs",
+    "games/wechat-h5-v2/tools/run-ai-playtest-session.mjs",
+    "games/wechat-h5-v2/tests/integration/ai-session-evidence.test.mjs"
+  ],
+  "commands": [
+    "node --test tests/integration/ai-evidence-primitives.test.mjs tests/integration/ai-session-evidence.test.mjs",
+    "node --test tests/integration/ai-driver-state.test.mjs tests/integration/ai-driver-ipc.test.mjs tests/integration/ai-playtest-session.test.mjs",
+    "node node_modules/vitest/vitest.mjs run tests/integration/ai-playtest-evidence.test.mjs"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 172,
+    "pass": 172,
+    "fail": 0,
+    "sessionEvidence": {
+      "tests": 48,
+      "pass": 48,
+      "fail": 0
+    },
+    "runnerRegression": {
+      "tests": 93,
+      "pass": 93,
+      "fail": 0
+    },
+    "vitestRegression": {
+      "tests": 31,
+      "pass": 31,
+      "fail": 0
+    }
+  },
+  "startedAt": "2026-07-29T23:53:01+08:00",
+  "finishedAt": "2026-07-30T00:18:01+08:00",
+  "activeMinutes": 25,
+  "review": {
+    "specReview": "PASS",
+    "securityReview": "APPROVED",
+    "supervisorRerun": "session evidence 48/48；runner 93/93；Vitest 31/31",
+    "conclusion": "所有既定恶意变异均失败关闭；CDP gesture 仅按 runner 动作审计验证，不虚构 trace 绑定。"
+  }
+}

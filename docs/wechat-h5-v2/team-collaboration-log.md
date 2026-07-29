@@ -2,7 +2,7 @@
 
 状态：`NOT PASSED`。正式计分表只保留具有不可变 JSON、真实文件哈希、测试结果和审查结论的可核验证据。等待、工具运行等待、并行重复分钟和首尾墙钟跨度均不计入。
 
-当前可验证主动时间区间并集为 66 分钟、证据角色为 12 类，未达到 480 分钟，因此不得声称“八小时协作门禁通过”。原 15 条引用可变文件的记录已迁至 `team-collaboration-legacy.md`，仅供审计且不计分。
+当前可验证主动时间区间并集为 108 分钟、证据角色为 16 类，未达到 480 分钟，因此不得声称“八小时协作门禁通过”。原 15 条引用可变文件的记录已迁至 `team-collaboration-legacy.md`，仅供审计且不计分。
 
 | startedAt | finishedAt | activeMinutes | role | agent/task | objective | inputs | output | evidencePath | evidenceSha256 | reviewer |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -18,12 +18,16 @@
 | 2026-07-29T19:02:41+08:00 | 2026-07-29T19:07:51+08:00 | 4 | AI 试玩 Runner 质量修复 | /root/task1_atomic_capture | HANDOFF: 修复动作审计与 runner 质量审查反馈并保持失败关闭证据契约 | 最终 Node 93/93、Vitest 31/31、规格 PASS、质量 APPROVED | games/wechat-h5-v2/tools/run-ai-playtest-session.mjs | docs/wechat-h5-v2/collaboration-evidence/task5-runner-action-audit-quality-fix.json | d9ecb0a48024550a10861514f7c6f223f3aa6dd720a373759f437acaba748f8a | 质量复审 APPROVED、主管复跑 124/124 |
 | 2026-07-29T22:02:22+08:00 | 2026-07-29T22:14:20+08:00 | 11 | AI 试玩证据解析工程 | /root/task1_atomic_capture | 实现严格 PNG 解码与有界 ZIP 内容提取证据原语 | 18e9a0f9169e22c1586a2c3b860a3ec6c3757e5d；Task 6 规格 | games/wechat-h5-v2/tools/ai-playtest/png-evidence.mjs | docs/wechat-h5-v2/collaboration-evidence/task6-evidence-primitives-phase1.json | d7e91089ed6f660ef9eabcaeea676dc27c4a24c455b200fc7481d60b602e7108 | 规格复审 PASS |
 | 2026-07-29T22:46:13+08:00 | 2026-07-29T22:53:08+08:00 | 6 | AI 试玩证据解析安全修复 | /root/task1_atomic_capture | HANDOFF: 修复 PNG/ZIP 公共契约与安全审查反馈并保持严格证据边界 | 最终 primitives 21/21、联合 114/114、规格 PASS、安全 APPROVED | games/wechat-h5-v2/tools/ai-playtest/zip-evidence.mjs | docs/wechat-h5-v2/collaboration-evidence/task6-evidence-primitives-quality-fix.json | 211a3897e4566978e79101b1d5297ed4dc6f1e91f26c9e3fc5696f7d272f1eb3 | 安全复审 APPROVED、主管复跑 114/114 |
+| 2026-07-29T23:23:38+08:00 | 2026-07-29T23:37:46+08:00 | 14 | AI 试玩会话证据工程 | /root/task1_atomic_capture | 实现真实 Playwright trace、生产事件、动作日志与 CAPTURED session 的跨文件证据绑定 | 5473a2e48263d6b0238e2aeb168f95dfebe57ea8；Task 7 规格 | games/wechat-h5-v2/tools/ai-playtest/playwright-trace-evidence.mjs | docs/wechat-h5-v2/collaboration-evidence/task7-session-evidence-phase1.json | b6216059c078f11c95c4c10aab9bf8a3f4e29570f7f33cfc2e60784d35145b69 | 最终规格复审 PASS |
+| 2026-07-29T23:53:01+08:00 | 2026-07-30T00:18:01+08:00 | 25 | AI 试玩证据质量修复 | /root/task1_atomic_capture | HANDOFF: 修复 trace/action 双向绑定、正式报告身份、时间窗口、gesture 边界与稳定错误契约 | 最终 session 48/48、runner 93/93、Vitest 31/31 | games/wechat-h5-v2/tools/ai-playtest/session-evidence-validator.mjs | docs/wechat-h5-v2/collaboration-evidence/task7-session-evidence-quality-fix.json | 862a2fe4ce106779d79e208957caf08ef1c42689ddb79202ab4df064c62a72bf | 最终规格 PASS、安全 APPROVED |
+| 2026-07-30T00:19:04+08:00 | 2026-07-30T00:22:04+08:00 | 3 | AI 试玩证据规格复审 | /root/plan_evidence_validators | 独立核对真实 trace、session、动作、事件、正式报告和公共返回契约 | Task 7 最终提交与 48 项测试 | docs/superpowers/plans/2026-07-29-trusted-ai-playtest-driver.md | docs/wechat-h5-v2/collaboration-evidence/task7-session-evidence-spec-review.json | 5b4cc2638e721fa1be25863d50940bb5cbb609cfac5c346063cd39d0762ce4c5 | 规格复审 PASS |
+| 2026-07-30T00:19:04+08:00 | 2026-07-30T00:22:34+08:00 | 3 | AI 试玩证据安全复审 | /root/plan_delivery_pilot | 独立重放 session 缩窗、路径、时间、gesture、stacks、资源、异常输入和 tap 孤儿攻击 | Task 7 最终提交与 48 项测试 | games/wechat-h5-v2/tests/integration/ai-session-evidence.test.mjs | docs/wechat-h5-v2/collaboration-evidence/task7-session-evidence-security-review.json | 5a14ffc39008380ba66a2521ea5ca066d15734852bd3f67d67a2e8ad171a1d89 | 安全复审 APPROVED |
 
 ## 当前门禁结论
 
-- 证据角色：12 类。
-- 证据行：12 行。
-- 可验证主动区间并集：66 分钟，低于 480 分钟。
+- 证据角色：16 类。
+- 证据行：16 行。
+- 可验证主动区间并集：108 分钟，低于 480 分钟。
 - 真实八小时协作：`NOT EXECUTED / NOT PROVEN`。
 - Legacy 记录：15 行，`NOT COUNTED / 未验证主动分钟`。
 - 禁止使用 legacy 行、首尾墙钟跨度或并行员工分钟相加冒充主动时间并集。

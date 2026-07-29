@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 7",
+  "phase": "spec-review",
+  "agent": "/root/plan_evidence_validators",
+  "role": "AI 试玩证据规格复审",
+  "objective": "独立核对真实 trace、session、动作、事件、正式报告和公共返回契约",
+  "commit": "5473a2e48263d6b0238e2aeb168f95dfebe57ea8",
+  "files": [
+    "games/wechat-h5-v2/tools/ai-playtest/playwright-trace-evidence.mjs",
+    "games/wechat-h5-v2/tools/ai-playtest/session-evidence-validator.mjs",
+    "docs/superpowers/plans/2026-07-29-trusted-ai-playtest-driver.md"
+  ],
+  "commands": [
+    "node --test tests/integration/ai-evidence-primitives.test.mjs tests/integration/ai-session-evidence.test.mjs"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 48,
+    "pass": 48,
+    "fail": 0
+  },
+  "startedAt": "2026-07-30T00:19:04+08:00",
+  "finishedAt": "2026-07-30T00:22:04+08:00",
+  "activeMinutes": 3,
+  "review": {
+    "specReview": "PASS",
+    "conclusion": "上轮六项规格问题全部关闭，真实 CDP gesture 证据边界已同步到设计与计划。"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 7",
+  "phase": "phase1",
+  "agent": "/root/task1_atomic_capture",
+  "role": "AI 试玩会话证据工程",
+  "objective": "实现真实 Playwright trace、生产事件、动作日志与 CAPTURED session 的跨文件证据绑定",
+  "commit": "5473a2e48263d6b0238e2aeb168f95dfebe57ea8",
+  "files": [
+    "games/wechat-h5-v2/tools/ai-playtest/playwright-trace-evidence.mjs",
+    "games/wechat-h5-v2/tools/ai-playtest/session-evidence-validator.mjs",
+    "games/wechat-h5-v2/tests/helpers/ai-playtest-evidence-fixture.mjs",
+    "games/wechat-h5-v2/tests/integration/ai-session-evidence.test.mjs"
+  ],
+  "commands": [
+    "node --test tests/integration/ai-evidence-primitives.test.mjs tests/integration/ai-session-evidence.test.mjs",
+    "node --test tests/integration/ai-driver-state.test.mjs tests/integration/ai-driver-ipc.test.mjs tests/integration/ai-playtest-session.test.mjs",
+    "node node_modules/vitest/vitest.mjs run tests/integration/ai-playtest-evidence.test.mjs"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 172,
+    "pass": 172,
+    "fail": 0,
+    "sessionEvidence": {
+      "tests": 48,
+      "pass": 48,
+      "fail": 0
+    },
+    "runnerRegression": {
+      "tests": 93,
+      "pass": 93,
+      "fail": 0
+    },
+    "vitestRegression": {
+      "tests": 31,
+      "pass": 31,
+      "fail": 0
+    }
+  },
+  "startedAt": "2026-07-29T23:23:38+08:00",
+  "finishedAt": "2026-07-29T23:37:46+08:00",
+  "activeMinutes": 14,
+  "review": {
+    "specReview": "PASS after two correction rounds",
+    "securityReview": "APPROVED after two correction rounds",
+    "conclusion": "真实 Chromium trace 与 session 证据跨文件绑定通过最终规格和安全复审。"
+  }
+}

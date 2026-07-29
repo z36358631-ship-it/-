@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 7",
+  "phase": "security-review",
+  "agent": "/root/plan_delivery_pilot",
+  "role": "AI 试玩证据安全复审",
+  "objective": "独立重放 session 缩窗、路径、时间、gesture、stacks、资源、异常输入和 tap 孤儿攻击",
+  "commit": "5473a2e48263d6b0238e2aeb168f95dfebe57ea8",
+  "files": [
+    "games/wechat-h5-v2/tools/ai-playtest/playwright-trace-evidence.mjs",
+    "games/wechat-h5-v2/tools/ai-playtest/session-evidence-validator.mjs",
+    "games/wechat-h5-v2/tests/integration/ai-session-evidence.test.mjs"
+  ],
+  "commands": [
+    "node --test tests/integration/ai-evidence-primitives.test.mjs tests/integration/ai-session-evidence.test.mjs"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 48,
+    "pass": 48,
+    "fail": 0
+  },
+  "startedAt": "2026-07-30T00:19:04+08:00",
+  "finishedAt": "2026-07-30T00:22:34+08:00",
+  "activeMinutes": 3,
+  "review": {
+    "securityReview": "APPROVED",
+    "conclusion": "既定九类安全边界全部失败关闭，未发现可复现的未关闭项。"
+  }
+}
