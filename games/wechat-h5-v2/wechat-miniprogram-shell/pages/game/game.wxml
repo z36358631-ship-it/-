@@ -1,0 +1,7 @@
+<web-view wx:if="{{src}}" src="{{src}}"></web-view>
+<view wx:else class="error-page">
+  <text class="error-title">配置错误</text>
+  <text class="error-copy">{{error}}</text>
+  <button class="back" bindtap="back">返回选择页</button>
+  <text class="notice">非生产壳 · touristappid 不可用于发布</text>
+</view>

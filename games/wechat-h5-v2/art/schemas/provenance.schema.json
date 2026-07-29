@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gamehub.example/schemas/h5-art-provenance.schema.json",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "gameId",
+      "role",
+      "sourceFile",
+      "runtimeFile",
+      "prompt",
+      "generatedAt",
+      "usage",
+      "sha256",
+      "humanRevisionStatus"
+    ],
+    "properties": {
+      "id": { "type": "string", "minLength": 3 },
+      "gameId": {
+        "enum": [
+          "hub",
+          "ricochet-crew",
+          "monster-night-market",
+          "three-lane-squad"
+        ]
+      },
+      "role": {
+        "enum": [
+          "key-art",
+          "scene",
+          "character",
+          "boss",
+          "atlas",
+          "effect",
+          "ui",
+          "audio"
+        ]
+      },
+      "sourceFile": { "type": "string", "minLength": 1 },
+      "runtimeFile": { "type": "string", "minLength": 1 },
+      "prompt": { "type": "string", "minLength": 20 },
+      "generatedAt": { "type": "string", "format": "date-time" },
+      "usage": { "type": "string", "minLength": 8 },
+      "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "humanRevisionStatus": {
+        "enum": ["generated", "retouched", "approved", "rejected"]
+      },
+      "frameRate": { "type": "number", "minimum": 8, "maximum": 12 },
+      "notes": { "type": "string" }
+    }
+  }
+}

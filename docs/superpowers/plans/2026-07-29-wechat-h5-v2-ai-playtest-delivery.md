@@ -593,7 +593,7 @@ git add -- games/wechat-h5-v2/tools/enforce-retention-decision.mjs games/wechat-
 git commit -m "test: enforce AI playtest retention decisions"
 ```
 
-### Task 9: 团队协作证据与真实四小时门禁
+### Task 9: 团队协作证据与真实八小时门禁
 
 **文件：**
 - 创建：`docs/wechat-h5-v2/team-collaboration-log.md`
@@ -614,7 +614,7 @@ startedAt | finishedAt | activeMinutes | role | agent/task | objective | inputs 
 
 必须拒绝：
 
-- 按时间区间求并集后的有证据主动协作时间少于 240 分钟；
+- 按时间区间求并集后的有证据主动协作时间少于 480 分钟；
 - 用最早开始到最晚结束的墙钟跨度冒充主动协作时长；
 - 不同职能角色少于六类；
 - 任一行结束时间早于开始时间；
@@ -734,7 +734,7 @@ git commit -m "docs: add v2 game portfolio delivery guide"
 - 被测提交之后出现运行时代码变化；
 - 基线矩阵不是恰好 18 份报告、54 个唯一 `runId`；
 - 任一保留游戏缺少其最新完整六角色轮次，或返工次数超过两轮；
-- 协作报告的 `verifiedActiveUnionMinutes` 少于 240；
+- 协作报告的 `verifiedActiveUnionMinutes` 少于 480；
 - 微信壳报告、AI 决定、协作报告与 `testedSourceCommit` 不一致；
 - a package self-consistent with a forged manifest but not matching trusted Git;
 - 输出位于工作区 `dist/v2` 之外；
@@ -861,7 +861,7 @@ ZIP SHA-256: <64 lowercase hex>
 ## 计划完成标准
 
 - 三款游戏均可从大厅和小程序壳独立加载。
-- 跨游戏自动化、三局稳定性、高保真视觉证据和真实四小时协作门禁全部通过。
+- 跨游戏自动化、三局稳定性、高保真视觉证据和真实八小时协作门禁全部通过。
 - 基线轮完整覆盖 6 类玩家 × 3 款游戏 × 3 局，严格生成 54 局、18 份有效评审；进入交付包的每款游戏最终决定均为 `RETAIN`。
 - `REWORK`、`DROP` 或 `INCOMPLETE` 游戏不能进入交付白名单；每款游戏最多两轮返工。
 - 最终 ZIP 从固定 Git blob 构建，具有匹配 sidecar，通过可信验证并能拒绝篡改。

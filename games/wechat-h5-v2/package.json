@@ -1,0 +1,36 @@
+{
+  "name": "@gamehub/wechat-h5-v2",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck:shared": "tsc -p tsconfig.shared.json --noEmit",
+    "test": "vitest run && npm run test:assets",
+    "test:assets": "node --test tools/assets/validate-art-assets.test.mjs tools/assets/export-art-assets.test.mjs tools/assets/clean-dist-bundles.test.mjs",
+    "test:delivery": "node --test tests/integration/delivery-security.test.mjs",
+    "test:e2e": "playwright test tests/e2e",
+    "test:performance": "playwright test tests/performance --project=chromium",
+    "assets:export": "node tools/assets/export-art-assets.mjs",
+    "assets:manifest": "node tools/assets/build-asset-manifests.mjs",
+    "assets:validate": "node tools/assets/validate-art-assets.mjs",
+    "build:apps": "npm run build -w @gamehub/h5-hub -w @gamehub/h5-ricochet-crew -w @gamehub/h5-monster-night-market -w @gamehub/h5-three-lane-squad",
+    "build": "npm run assets:manifest -- art/recipes/hub.json && npm run assets:validate -- hub && node tools/assets/clean-dist-bundles.mjs && npm run build:apps && node tools/assets/verify-bundles.mjs",
+    "verify": "npm run typecheck && npm run test && npm run build && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.0",
+    "@types/node": "22.13.1",
+    "sharp": "0.35.3",
+    "typescript": "5.7.3",
+    "vite": "6.4.3",
+    "vitest": "3.2.7"
+  }
+}

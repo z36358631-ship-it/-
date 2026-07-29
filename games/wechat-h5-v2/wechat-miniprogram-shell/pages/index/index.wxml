@@ -1,0 +1,20 @@
+<view class="page">
+  <view class="hero">
+    <text class="eyebrow">GAMEHUB · NON-PRODUCTION</text>
+    <text class="title">奇想游乐场</text>
+    <text class="subtitle">选择一款游戏，通过 HTTPS web-view 打开评审构建。</text>
+  </view>
+  <view class="list" aria-label="可评审游戏">
+    <button
+      wx:for="{{games}}"
+      wx:key="key"
+      class="card"
+      data-game="{{item.key}}"
+      bindtap="openGame"
+    >
+      <text class="card-title">{{item.title}}</text>
+      <text class="card-copy">{{item.summary}}</text>
+    </button>
+  </view>
+  <text class="warning">当前为非生产壳，不代表微信发布、真机或正式域名验证通过。</text>
+</view>
