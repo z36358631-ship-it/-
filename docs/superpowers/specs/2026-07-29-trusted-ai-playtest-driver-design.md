@@ -274,6 +274,8 @@ sources=false
 - trace 中的页面生命周期与 session evidence 一致；
 - ZIP 条目无重复、路径穿越、加密、数据描述符欺骗或异常压缩比。
 
+真实 Playwright 1.62 勘察确认：`page.touchscreen.tap` 会形成可验证的 before/input/after/input-snapshot 闭环，因此每个成功 `touchTap` 必须与 trace 双向唯一绑定；`CDPSession.send("Input.dispatchTouchEvent", ...)` 的 touchStart/move/end/cancel 参数不会写入 `trace.trace`，所以 gesture 只能由 runner 自有动作日志的类型、坐标、时间、gestureId 和逐局闭合规则审计。验证器和最终报告不得声称 CDP gesture 已由 Playwright trace 证明。
+
 单 trace 上限保持 128 MiB，18 单元总 trace 上限保持 1 GiB。Ricochet 试点必须证明关闭 trace screenshots 后低于该上限，否则不得启动正式矩阵。
 
 ### 9.5 动作审计

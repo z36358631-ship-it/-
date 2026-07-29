@@ -649,6 +649,7 @@ export function buildReportDraft(evidence) {
     entryUrl: evidence.entryUrl,
     interactionMode: "browser-touch",
     claimsActualPlay: null,
+    sessionId: evidence.driver?.sessionId ?? null,
     startedAt: evidence.startedAt,
     finishedAt: evidence.finishedAt,
     evidenceSha256: evidence.evidenceSha256,

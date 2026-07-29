@@ -4,7 +4,9 @@ import { inflateRawSync } from "node:zlib";
 const SIGNATURE_LOCAL = 0x04034b50;
 const SIGNATURE_CENTRAL = 0x02014b50;
 const SIGNATURE_EOCD = 0x06054b50;
+const SIGNATURE_DATA_DESCRIPTOR = 0x08074b50;
 const ZIP64_EXTRA_ID = 0x0001;
+const EXTENDED_TIMESTAMP_EXTRA_ID = 0x5455;
 const ENCRYPTED_FLAG = 0x0001;
 const DESCRIPTOR_FLAG = 0x0008;
 const STRONG_ENCRYPTION_FLAGS = 0x2040;
@@ -61,8 +63,30 @@ function crc32(bytes) {
   return (crc ^ 0xffffffff) >>> 0;
 }
 
-function parseExtraFields(extra, entryName) {
+function parseExtendedTimestamp(payload, entryName, location) {
+  if (payload.length < 1) {
+    throw zipError("ZIP_EXTRA_TIMESTAMP", entryName);
+  }
+  const flags = payload[0];
+  if ((flags & ~0x07) !== 0) {
+    throw zipError("ZIP_EXTRA_TIMESTAMP", entryName);
+  }
+  const presentTimes = (
+    Number((flags & 0x01) !== 0)
+    + Number((flags & 0x02) !== 0)
+    + Number((flags & 0x04) !== 0)
+  );
+  const expectedLength = location === "central"
+    ? 1 + Number((flags & 0x01) !== 0) * 4
+    : 1 + presentTimes * 4;
+  if (payload.length !== expectedLength) {
+    throw zipError("ZIP_EXTRA_TIMESTAMP", entryName);
+  }
+}
+
+function parseExtraFields(extra, entryName, location) {
   let offset = 0;
+  const ids = new Set();
   while (offset < extra.length) {
     if (extra.length - offset < 4) {
       throw zipError("ZIP_EXTRA", entryName);
@@ -73,9 +97,17 @@ function parseExtraFields(extra, entryName) {
     if (length > extra.length - offset) {
       throw zipError("ZIP_EXTRA", entryName);
     }
+    if (ids.has(id)) throw zipError("ZIP_EXTRA_DUPLICATE", entryName);
+    ids.add(id);
+    const payload = extra.subarray(offset, offset + length);
     if (id === ZIP64_EXTRA_ID) throw zipError("ZIP64", entryName);
     if (id === 0x7075 || id === 0x6375) {
       throw zipError("ZIP_EXTRA_UNICODE", entryName);
+    }
+    if (id === EXTENDED_TIMESTAMP_EXTRA_ID) {
+      parseExtendedTimestamp(payload, entryName, location);
+      offset += length;
+      continue;
     }
     throw zipError("ZIP_EXTRA_UNSUPPORTED", `${entryName}:${id}`);
   }
@@ -148,10 +180,17 @@ function validateFlagsAndMethod(flags, method, entryName) {
   if ((flags & (ENCRYPTED_FLAG | STRONG_ENCRYPTION_FLAGS)) !== 0) {
     throw zipError("ZIP_ENCRYPTED", entryName);
   }
-  if ((flags & DESCRIPTOR_FLAG) !== 0) {
+  if (
+    (flags & DESCRIPTOR_FLAG) !== 0
+    && flags !== (0x0800 | DESCRIPTOR_FLAG)
+  ) {
     throw zipError("ZIP_DESCRIPTOR", entryName);
   }
-  if (flags !== 0 && flags !== 0x0800) {
+  if (
+    flags !== 0
+    && flags !== 0x0800
+    && flags !== (0x0800 | DESCRIPTOR_FLAG)
+  ) {
     throw zipError("ZIP_FLAGS", `${entryName}:${flags}`);
   }
   if (method !== 0 && method !== 8) {
@@ -285,7 +324,7 @@ export function readBoundedZip(value, {
     decodedNames.add(name);
     normalizedNames.add(normalized);
     normalizedSafePath(name);
-    parseExtraFields(extra, name);
+    parseExtraFields(extra, name, "central");
     validateFlagsAndMethod(flags, method, name);
     assertRegularFile(versionMadeBy, externalAttributes, name);
     if (
@@ -365,31 +404,59 @@ export function readBoundedZip(value, {
       throw zipError("ZIP_LOCAL_OVERLAP", entry.name);
     }
     const localName = bytes.subarray(nameStart, extraStart);
+    const usesDescriptor = (entry.flags & DESCRIPTOR_FLAG) !== 0;
     if (
       versionNeeded !== entry.versionNeeded
       || flags !== entry.flags
       || method !== entry.method
-      || checksum !== entry.checksum
+      || !localName.equals(entry.nameBytes)
+    ) {
+      throw zipError("ZIP_HEADER_MISMATCH", entry.name);
+    }
+    if (usesDescriptor) {
+      if (checksum !== 0 || compressedSize !== 0 || uncompressedSize !== 0) {
+        throw zipError("ZIP_DESCRIPTOR", entry.name);
+      }
+    } else if (
+      checksum !== entry.checksum
       || compressedSize !== entry.compressedSize
       || uncompressedSize !== entry.uncompressedSize
-      || !localName.equals(entry.nameBytes)
     ) {
       throw zipError("ZIP_HEADER_MISMATCH", entry.name);
     }
     parseExtraFields(
       bytes.subarray(extraStart, dataStart),
       entry.name,
+      "local",
     );
     const dataEnd = dataStart + entry.compressedSize;
+    let localEnd = dataEnd;
     if (
       dataEnd < dataStart
       || dataEnd > centralOffset
     ) {
       throw zipError("ZIP_LOCAL_OVERLAP", entry.name);
     }
+    if (usesDescriptor) {
+      localEnd += 16;
+      if (
+        localEnd < dataEnd
+        || localEnd > centralOffset
+        || bytes.readUInt32LE(dataEnd) !== SIGNATURE_DATA_DESCRIPTOR
+      ) {
+        throw zipError("ZIP_DESCRIPTOR", entry.name);
+      }
+      if (
+        bytes.readUInt32LE(dataEnd + 4) !== entry.checksum
+        || bytes.readUInt32LE(dataEnd + 8) !== entry.compressedSize
+        || bytes.readUInt32LE(dataEnd + 12) !== entry.uncompressedSize
+      ) {
+        throw zipError("ZIP_DESCRIPTOR", entry.name);
+      }
+    }
     intervals.push({
       start: offset,
-      end: dataEnd,
+      end: localEnd,
       dataStart,
       dataEnd,
       entry,

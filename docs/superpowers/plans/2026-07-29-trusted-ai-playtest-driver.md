@@ -777,6 +777,9 @@ Expected: all malformed evidence is rejected and a real 390×844 Playwright PNG 
 - Create: `games/wechat-h5-v2/tools/ai-playtest/session-evidence-validator.mjs`
 - Create: `games/wechat-h5-v2/tests/helpers/ai-playtest-evidence-fixture.mjs`
 - Create: `games/wechat-h5-v2/tests/integration/ai-session-evidence.test.mjs`
+- Modify: `games/wechat-h5-v2/tools/ai-playtest/zip-evidence.mjs`
+- Modify: `games/wechat-h5-v2/tools/run-ai-playtest-session.mjs`
+- Modify: `games/wechat-h5-v2/tests/integration/ai-evidence-primitives.test.mjs`
 
 - [ ] **Step 1: Create a real Playwright trace fixture in the test**
 
@@ -848,13 +851,14 @@ The implementation must:
 - validate every production event field and recompute outcome/input/payoff;
 - parse JSONL action records, enforce unique IDs/sequences/frame order/coordinate bounds/gesture pairing/run closure;
 - require each run's first successful `touchTap`, `touchBegin`, or `touchEnd` to occur no later than the production `first_input`, with `first_input.clientAt - action.executedAt` between 0 and 2,000 ms;
+- bind every successful `touchTap` bidirectionally to a unique Playwright `touchscreenTap` before/input/after/input-snapshot closure by coordinates and time. Playwright 1.62 does not record `CDPSession.send("Input.dispatchTouchEvent", ...)` payloads in `trace.trace`, so `touchBegin`, `touchMove`, `touchEnd`, and `touchCancel` are verified only through the runner-owned action audit, coordinate/time rules, gesture identity, and per-run closure; do not claim those CDP gestures are trace-bound;
 - cross-bind sessionId, gameId, runId, round, reviewer role, build commit, three runs, and all hashes to the report.
 
 - [ ] **Step 5: Run evidence tests and commit**
 
 ```powershell
 node --test tests/integration/ai-evidence-primitives.test.mjs tests/integration/ai-session-evidence.test.mjs
-git add -- games/wechat-h5-v2/tools/ai-playtest/playwright-trace-evidence.mjs games/wechat-h5-v2/tools/ai-playtest/session-evidence-validator.mjs games/wechat-h5-v2/tests/helpers/ai-playtest-evidence-fixture.mjs games/wechat-h5-v2/tests/integration/ai-session-evidence.test.mjs
+git add -- docs/superpowers/plans/2026-07-29-trusted-ai-playtest-driver.md games/wechat-h5-v2/tools/ai-playtest/zip-evidence.mjs games/wechat-h5-v2/tools/ai-playtest/playwright-trace-evidence.mjs games/wechat-h5-v2/tools/ai-playtest/session-evidence-validator.mjs games/wechat-h5-v2/tools/run-ai-playtest-session.mjs games/wechat-h5-v2/tests/helpers/ai-playtest-evidence-fixture.mjs games/wechat-h5-v2/tests/integration/ai-evidence-primitives.test.mjs games/wechat-h5-v2/tests/integration/ai-session-evidence.test.mjs
 git commit -m "feat(games): validate captured playtest sessions"
 ```
 

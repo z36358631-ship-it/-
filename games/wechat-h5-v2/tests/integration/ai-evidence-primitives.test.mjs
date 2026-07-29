@@ -138,6 +138,33 @@ function makeZip(entries, {
     const uncompressedSize = source.uncompressedSize ?? data.length;
     const localExtra = source.localExtra ?? Buffer.alloc(0);
     const centralExtra = source.centralExtra ?? Buffer.alloc(0);
+    const descriptor = source.descriptor
+      ? Buffer.alloc(source.descriptorLength ?? 16)
+      : Buffer.alloc(0);
+    if (source.descriptor) {
+      descriptor.writeUInt32LE(
+        source.descriptorSignature ?? 0x08074b50,
+        0,
+      );
+      if (descriptor.length >= 8) {
+        descriptor.writeUInt32LE(
+          source.descriptorCrc ?? checksum,
+          4,
+        );
+      }
+      if (descriptor.length >= 12) {
+        descriptor.writeUInt32LE(
+          source.descriptorCompressedSize ?? compressedSize,
+          8,
+        );
+      }
+      if (descriptor.length >= 16) {
+        descriptor.writeUInt32LE(
+          source.descriptorUncompressedSize ?? uncompressedSize,
+          12,
+        );
+      }
+    }
     const local = Buffer.alloc(30);
     local.writeUInt32LE(0x04034b50, 0);
     local.writeUInt16LE(source.versionNeeded ?? 20, 4);
@@ -154,7 +181,7 @@ function makeZip(entries, {
     );
     local.writeUInt16LE(localName.length, 26);
     local.writeUInt16LE(localExtra.length, 28);
-    localParts.push(local, localName, localExtra, compressed);
+    localParts.push(local, localName, localExtra, compressed, descriptor);
 
     centralEntries.push({
       source,
@@ -172,6 +199,7 @@ function makeZip(entries, {
       + localName.length
       + localExtra.length
       + compressed.length
+      + descriptor.length
     );
   }
 
@@ -588,6 +616,43 @@ describe("strict ZIP evidence primitive", () => {
     }
   });
 
+  it("accepts only signed 32-bit Playwright data descriptors", async () => {
+    const playwrightEntry = {
+      ...DEFLATED_ENTRY,
+      flags: 0x0808,
+      descriptor: true,
+      localCrc: 0,
+      localCompressedSize: 0,
+      localUncompressedSize: 0,
+    };
+    assert.deepEqual(
+      readBoundedZip(makeZip([playwrightEntry]))
+        .get(playwrightEntry.name),
+      Buffer.from(playwrightEntry.data),
+    );
+
+    for (const entry of [
+      { ...playwrightEntry, flags: 0x0008, localFlags: 0x0008 },
+      { ...playwrightEntry, localCrc: 1 },
+      { ...playwrightEntry, localCompressedSize: 1 },
+      { ...playwrightEntry, localUncompressedSize: 1 },
+      { ...playwrightEntry, descriptorSignature: 0 },
+      { ...playwrightEntry, descriptorCrc: 1 },
+      { ...playwrightEntry, descriptorCompressedSize: 1 },
+      { ...playwrightEntry, descriptorUncompressedSize: 1 },
+      { ...playwrightEntry, descriptorLength: 12 },
+      {
+        ...playwrightEntry,
+        descriptorLength: 20,
+      },
+    ]) {
+      await assert.rejects(
+        validateZipEvidence(makeZip([entry])),
+        /AI_PLAYTEST_ZIP_(?:DESCRIPTOR|LOCAL_LAYOUT)/u,
+      );
+    }
+  });
+
   it("rejects ambiguous names and every unsafe path shape", async () => {
     const unsafeNames = [
       Buffer.from([0x80]),
@@ -772,5 +837,91 @@ describe("strict ZIP evidence primitive", () => {
       }])),
       /ZIP_EXTRA/u,
     );
+  });
+
+  it("strictly accepts Playwright extended timestamp extras", () => {
+    const timestamp = Buffer.from([0x49, 0x1a, 0x6a, 0x6a]);
+    const playwrightCentral = extraField(
+      0x5455,
+      Buffer.concat([Buffer.from([0x03]), timestamp]),
+    );
+    const allLocalTimes = extraField(
+      0x5455,
+      Buffer.concat([
+        Buffer.from([0x07]),
+        timestamp,
+        timestamp,
+        timestamp,
+      ]),
+    );
+    assert.equal(
+      readBoundedZip(makeZip([{
+        ...STORED_ENTRY,
+        centralExtra: playwrightCentral,
+      }])).size,
+      1,
+    );
+    assert.equal(
+      readBoundedZip(makeZip([{
+        ...STORED_ENTRY,
+        centralExtra: extraField(
+          0x5455,
+          Buffer.concat([Buffer.from([0x07]), timestamp]),
+        ),
+        localExtra: allLocalTimes,
+      }])).size,
+      1,
+    );
+  });
+
+  it("rejects malformed or duplicate extended timestamp extras", async () => {
+    const timestamp = Buffer.alloc(4);
+    const valid = extraField(
+      0x5455,
+      Buffer.concat([Buffer.from([0x01]), timestamp]),
+    );
+    for (const entry of [
+      {
+        ...STORED_ENTRY,
+        centralExtra: Buffer.concat([valid, valid]),
+      },
+      {
+        ...STORED_ENTRY,
+        centralExtra: extraField(0x5455, Buffer.from([0x08])),
+      },
+      {
+        ...STORED_ENTRY,
+        centralExtra: extraField(
+          0x5455,
+          Buffer.concat([Buffer.from([0x01]), Buffer.alloc(3)]),
+        ),
+      },
+      {
+        ...STORED_ENTRY,
+        centralExtra: extraField(
+          0x5455,
+          Buffer.concat([Buffer.from([0x01]), Buffer.alloc(5)]),
+        ),
+      },
+      {
+        ...STORED_ENTRY,
+        localExtra: extraField(
+          0x5455,
+          Buffer.concat([Buffer.from([0x03]), timestamp]),
+        ),
+      },
+      {
+        ...STORED_ENTRY,
+        localExtra: extraField(
+          0x5455,
+          Buffer.concat([Buffer.from([0x01]), Buffer.alloc(5)]),
+        ),
+      },
+    ]) {
+      await assert.rejects(
+        validateZipEvidence(makeZip([entry])),
+        /AI_PLAYTEST_ZIP_EXTRA_(?:DUPLICATE|TIMESTAMP)/u,
+      );
+    }
   });
 });
