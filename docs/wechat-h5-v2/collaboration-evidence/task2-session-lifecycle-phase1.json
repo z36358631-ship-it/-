@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 2",
+  "phase": "phase1",
+  "agent": "/root/task2_session_lifecycle",
+  "role": "开发员工",
+  "objective": "实现试玩会话分阶段生命周期、INCOMPLETE 证据与失败隔离",
+  "commit": "e0c76ecd38c5f75d8d197e261d10a69efd80b8fc",
+  "files": [
+    "games/wechat-h5-v2/tools/ai-playtest/session-lifecycle.mjs",
+    "games/wechat-h5-v2/tools/run-ai-playtest-session.mjs",
+    "games/wechat-h5-v2/tests/integration/ai-playtest-session.test.mjs"
+  ],
+  "commands": [
+    "node --test tests/integration/ai-playtest-session.test.mjs",
+    "npx vitest run tests/integration/ai-playtest-evidence.test.mjs"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 79,
+    "pass": 79,
+    "fail": 0,
+    "session": {
+      "tests": 48,
+      "pass": 48,
+      "fail": 0
+    },
+    "evidence": {
+      "tests": 31,
+      "pass": 31,
+      "fail": 0
+    }
+  },
+  "startedAt": "2026-07-29T14:56:18+08:00",
+  "finishedAt": "2026-07-29T15:06:33+08:00",
+  "activeMinutes": 10,
+  "review": {
+    "specReview": "PASS",
+    "conclusion": "分阶段生命周期、trace 失败降级、CAPTURED-only draft、quarantine 与 runner 接线通过规格复审。"
+  }
+}

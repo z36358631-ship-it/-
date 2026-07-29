@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 1",
+  "phase": "phase1",
+  "agent": "/root/task1_atomic_capture",
+  "role": "开发员工",
+  "objective": "原子占有试玩单元并不可覆盖发布证据",
+  "files": [
+    "games/wechat-h5-v2/tools/ai-playtest/exclusive-artifacts.mjs",
+    "games/wechat-h5-v2/tools/run-ai-playtest-session.mjs",
+    "games/wechat-h5-v2/tests/integration/ai-playtest-session.test.mjs"
+  ],
+  "commands": [
+    "node --test tests/integration/ai-playtest-session.test.mjs"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 27,
+    "pass": 27,
+    "fail": 0
+  },
+  "startedAt": "2026-07-29T14:36:57+08:00",
+  "finishedAt": "2026-07-29T14:41:37+08:00",
+  "activeMinutes": 4,
+  "review": {
+    "specReview": "PASS",
+    "conclusion": "初版实现通过规格复审，目标测试 27/27 PASS。"
+  }
+}

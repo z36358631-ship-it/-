@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 2",
+  "phase": "quality-fix",
+  "agent": "/root/task2_session_lifecycle",
+  "role": "开发员工",
+  "objective": "HANDOFF: 修复生命周期质量审查反馈并保持失败关闭契约",
+  "commit": "e0c76ecd38c5f75d8d197e261d10a69efd80b8fc",
+  "files": [
+    "games/wechat-h5-v2/tools/ai-playtest/session-lifecycle.mjs",
+    "games/wechat-h5-v2/tools/run-ai-playtest-session.mjs",
+    "games/wechat-h5-v2/tests/integration/ai-playtest-session.test.mjs"
+  ],
+  "commands": [
+    "node --test tests/integration/ai-playtest-session.test.mjs",
+    "npx vitest run tests/integration/ai-playtest-evidence.test.mjs"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 79,
+    "pass": 79,
+    "fail": 0,
+    "session": {
+      "tests": 48,
+      "pass": 48,
+      "fail": 0
+    },
+    "evidence": {
+      "tests": 31,
+      "pass": 31,
+      "fail": 0
+    }
+  },
+  "startedAt": "2026-07-29T15:11:59+08:00",
+  "finishedAt": "2026-07-29T15:18:38+08:00",
+  "activeMinutes": 6,
+  "review": {
+    "specReview": "PASS",
+    "qualityReview": "APPROVED",
+    "conclusion": "最终生命周期实现通过质量复审，session 48/48 与 evidence 31/31 PASS。"
+  }
+}
