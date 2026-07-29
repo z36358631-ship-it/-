@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 6",
+  "phase": "phase1",
+  "agent": "/root/task1_atomic_capture",
+  "role": "开发员工",
+  "objective": "实现严格 PNG 解码与有界 ZIP 内容提取证据原语",
+  "commit": "18e9a0f9169e22c1586a2c3b860a3ec6c3757e5d",
+  "files": [
+    "games/wechat-h5-v2/tools/ai-playtest/png-evidence.mjs",
+    "games/wechat-h5-v2/tools/ai-playtest/zip-evidence.mjs",
+    "games/wechat-h5-v2/tests/integration/ai-evidence-primitives.test.mjs"
+  ],
+  "commands": [
+    "node --test tests/integration/ai-evidence-primitives.test.mjs",
+    "node --test tests/integration/ai-playtest-session.test.mjs tests/integration/ai-driver-state.test.mjs tests/integration/ai-driver-ipc.test.mjs tests/integration/ai-evidence-primitives.test.mjs"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 114,
+    "pass": 114,
+    "fail": 0,
+    "primitives": {
+      "tests": 21,
+      "pass": 21,
+      "fail": 0
+    },
+    "combined": {
+      "tests": 114,
+      "pass": 114,
+      "fail": 0
+    }
+  },
+  "startedAt": "2026-07-29T22:02:22+08:00",
+  "finishedAt": "2026-07-29T22:14:20+08:00",
+  "activeMinutes": 11,
+  "review": {
+    "specReview": "PASS",
+    "conclusion": "严格 PNG/ZIP 证据原语及正式公共契约通过规格复审；primitives 21/21、联合 114/114 PASS。"
+  }
+}
