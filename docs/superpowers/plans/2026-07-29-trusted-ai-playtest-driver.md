@@ -976,9 +976,13 @@ Use the same real trace/session fixture helper as Task 7. Assert the packaged ce
 ]
 ```
 
+The report references exactly 13 canonical evidence files: four top-level evidence files plus nine run files. The packaged cell directory contains 14 files because `report.json` itself is also present; tests must state both counts explicitly.
+
 Add negative tests for an unreferenced draft, renamed trace, 128 MiB + 1 byte trace, 1 GiB + 1 byte aggregate, missing session evidence, and any legacy `authenticated` field or “AUTHENTICATED DELIVERY” wording.
 
 Add one repository-level allowlist test that loads the real `delivery-allowlist.json`, expands every `files`, `runtimePaths`, `reports`, `documentation`, and single-report selector at `HEAD`, and fails if a configured path does not exist. The valid documentation set must include `ai-playtest-runbook.md` and `ai-player-prompts.md`; remove any selector for a document that is not present at the tested commit.
+
+Task 9 runs before the real Task 12 playtest matrix exists. Therefore static `files`, `runtimePaths`, and `documentation` selectors must resolve to committed blobs at Task 9 `HEAD`; dynamic `reports` and single-report selectors must pass path-safety and containment checks now, then are required to expand non-empty at the Task 11/12 frozen-build gate. Do not add placeholder reports merely to satisfy the earlier test.
 
 - [ ] **Step 2: Derive package files from the report reference function**
 

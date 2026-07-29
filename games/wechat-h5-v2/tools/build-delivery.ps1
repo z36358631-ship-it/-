@@ -1,7 +1,5 @@
 [CmdletBinding()]
 param(
-  [Parameter(Mandatory = $true)]
-  [ValidatePattern('^[0-9a-fA-F]{40}$')]
   [string]$TestedSourceCommit,
 
   [string]$PackageCommit = 'HEAD',
@@ -21,13 +19,24 @@ $repoRoot = [System.IO.Path]::GetFullPath($repoRoot)
 $exportTool = Join-Path $repoRoot 'games/wechat-h5-v2/tools/export-git-snapshot.mjs'
 $verifyTool = Join-Path $repoRoot 'games/wechat-h5-v2/tools/verify-delivery.mjs'
 
+$testedSourceInput = $TestedSourceCommit
+if ([string]::IsNullOrWhiteSpace($testedSourceInput)) {
+  $testedSourceInput = $env:WECHAT_H5_TESTED_SOURCE_COMMIT
+}
+if ([string]::IsNullOrWhiteSpace($testedSourceInput)) {
+  throw 'TESTED_SOURCE_COMMIT_REQUIRED: run with -TestedSourceCommit <40-char SHA> or set WECHAT_H5_TESTED_SOURCE_COMMIT'
+}
+if ($testedSourceInput -notmatch '^[0-9a-fA-F]{40}$') {
+  throw "TESTED_SOURCE_COMMIT_INVALID:$testedSourceInput"
+}
+
 $resolvedPackageCommit = (& git -C $repoRoot rev-parse --verify "$PackageCommit`^{commit}").Trim()
 if ($LASTEXITCODE -ne 0 -or $resolvedPackageCommit -notmatch '^[0-9a-f]{40}$') {
   throw "PACKAGE_COMMIT_INVALID:$PackageCommit"
 }
-$resolvedTestedCommit = (& git -C $repoRoot rev-parse --verify "$TestedSourceCommit`^{commit}").Trim()
+$resolvedTestedCommit = (& git -C $repoRoot rev-parse --verify "$testedSourceInput`^{commit}").Trim()
 if ($LASTEXITCODE -ne 0 -or $resolvedTestedCommit -notmatch '^[0-9a-f]{40}$') {
-  throw "TESTED_SOURCE_COMMIT_INVALID:$TestedSourceCommit"
+  throw "TESTED_SOURCE_COMMIT_INVALID:$testedSourceInput"
 }
 
 if (-not $OutputDirectory) {
@@ -50,6 +59,7 @@ $payload = Join-Path $tempRoot 'payload'
 $candidateArchive = Join-Path $tempRoot $archiveName
 $candidateSidecar = "$candidateArchive.sha256"
 $verificationDirectory = Join-Path $tempRoot 'verified'
+$archivePublished = $false
 $sidecarPublished = $false
 
 New-Item -ItemType Directory -Path $tempRoot | Out-Null
@@ -87,19 +97,24 @@ try {
     throw "SHA256_SIDECAR_VERIFICATION_FAILED:$LASTEXITCODE"
   }
 
+  Move-Item -LiteralPath $candidateArchive -Destination $finalArchive
+  $archivePublished = $true
   Move-Item -LiteralPath $candidateSidecar -Destination $finalSidecar
   $sidecarPublished = $true
-  Move-Item -LiteralPath $candidateArchive -Destination $finalArchive
-  $sidecarPublished = $false
 
-  Write-Output 'AUTHENTICATED DELIVERY PASS'
+  Write-Output 'PACKAGE_AUTHENTICATED=true'
+  Write-Output 'EXECUTION_TRUST=local-audited'
+  Write-Output 'INDEPENDENTLY_ATTESTED=false'
   Write-Output "ZIP SHA-256: $sha256"
   Write-Output "Archive: $finalArchive"
   Write-Output "Sidecar: $finalSidecar"
 }
 catch {
-  if ($sidecarPublished -and -not (Test-Path -LiteralPath $finalArchive)) {
+  if ($sidecarPublished -and (Test-Path -LiteralPath $finalSidecar)) {
     Remove-Item -LiteralPath $finalSidecar -Force -ErrorAction SilentlyContinue
+  }
+  if ($archivePublished -and (Test-Path -LiteralPath $finalArchive)) {
+    Remove-Item -LiteralPath $finalArchive -Force -ErrorAction SilentlyContinue
   }
   throw
 }

@@ -3,11 +3,16 @@ import { createHash } from "node:crypto";
 import {
   access,
   mkdir,
+  readFile,
   writeFile,
 } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { pathToFileURL } from "node:url";
+import {
+  assertReferencedTraceLimits,
+} from "./ai-playtest/formal-evidence-set.mjs";
+import { validateReportEvidenceFiles } from "./validate-ai-playtest-report.mjs";
 
 const execFileAsync = promisify(execFile);
 const REVIEW_SCOPE = "wechat-h5-v2-non-production-review";
@@ -20,9 +25,21 @@ const SINGLE_REPORT_FIELDS = Object.freeze([
 const ARRAY_FIELDS = Object.freeze([
   "files",
   "runtimePaths",
+  "playtestEvidencePaths",
   "reports",
   "documentation",
 ]);
+const PLAYTEST_EVIDENCE_PATH_PATTERN = /^games\/wechat-h5-v2\/test-results\/ai-playtests\/baseline\/(?:action|roguelite|casual|puzzle|tower-defense|skeptical-generalist)-(?:ricochet-crew|monster-night-market|three-lane-squad)$/u;
+const PLAYTEST_TRACE_PATTERN = /^games\/wechat-h5-v2\/test-results\/ai-playtests\/(?:baseline|rework-1|rework-2)\/(?:action|roguelite|casual|puzzle|tower-defense|skeptical-generalist)-(?:ricochet-crew|monster-night-market|three-lane-squad)\/session-trace\.zip$/u;
+const DEFAULT_MAX_TRACE_BYTES = 128 * 1024 * 1024;
+const DEFAULT_MAX_TOTAL_TRACE_BYTES = 1024 * 1024 * 1024;
+const MANIFEST_TRUST_EXPLANATION = Object.freeze({
+  metadataType: "verification-metadata",
+  generatedManifestIsGitBlob: false,
+  packageAuthentication: "derived-by-verifier-against-fixed-git-commit",
+  executionTrust: "derived-by-verifier-from-local-audited-evidence",
+  independentAttestation: "not-present",
+});
 
 async function exists(target) {
   try {
@@ -67,7 +84,11 @@ function assertAllowedContentPath(value, code = "ALLOWLIST_FORBIDDEN_PATH") {
     || basename === "project.private.config.json"
     || /(?:^|[._-])(?:credential|credentials|secret|secrets|token|tokens)(?:[._-]|$)/u.test(basename)
     || /\.(?:pem|key|p12|pfx|jks|keystore|mobileprovision)$/u.test(basename)
-    || /\.(?:map|zip|tar|tgz|gz|7z|rar)$/u.test(basename)
+    || /\.(?:map|tar|tgz|gz|7z|rar)$/u.test(basename)
+    || (
+      lower.split("/").some((segment) => segment.endsWith(".zip"))
+      && !PLAYTEST_TRACE_PATTERN.test(value)
+    )
     || lower.includes("/node_modules/")
     || lower.startsWith("node_modules/")
     || lower.includes("/.git/")
@@ -102,6 +123,11 @@ export function validateDeliveryAllowlist(allowlist) {
       throw new Error(`ALLOWLIST_${field.toUpperCase()}_PATH`);
     }
   }
+  for (const evidencePath of allowlist.playtestEvidencePaths) {
+    if (!PLAYTEST_EVIDENCE_PATH_PATTERN.test(evidencePath)) {
+      throw new Error(`ALLOWLIST_PLAYTEST_EVIDENCE_PATH:${evidencePath}`);
+    }
+  }
   const selectors = [
     ...ARRAY_FIELDS.flatMap((field) => allowlist[field]),
     ...SINGLE_REPORT_FIELDS.map((field) => allowlist[field]).filter(Boolean),
@@ -116,6 +142,7 @@ function allSelectors(allowlist) {
   return [
     ...allowlist.files,
     ...allowlist.runtimePaths,
+    ...allowlist.playtestEvidencePaths,
     ...allowlist.reports,
     ...SINGLE_REPORT_FIELDS.map((field) => allowlist[field]).filter(Boolean),
     ...allowlist.documentation,
@@ -174,6 +201,11 @@ async function expandAllowlist(repo, commit, allowlist) {
     const found = entries.some((entry) =>
       entry.path === runtimePath || entry.path.startsWith(`${runtimePath}/`));
     if (!found) throw new Error(`ALLOWLIST_RUNTIME_PATH_MISSING:${runtimePath}`);
+  }
+  for (const evidencePath of allowlist.playtestEvidencePaths) {
+    const found = entries.some((entry) =>
+      entry.path === evidencePath || entry.path.startsWith(`${evidencePath}/`));
+    if (!found) throw new Error(`ALLOWLIST_PLAYTEST_EVIDENCE_PATH_MISSING:${evidencePath}`);
   }
   for (const entry of entries) {
     assertAllowedContentPath(entry.path, "FORBIDDEN_PATH");
@@ -276,6 +308,8 @@ export async function exportGitSnapshot({
   packageCommit: packageRevision = "HEAD",
   testedSourceCommit: testedRevision,
   output,
+  maxTraceBytes = DEFAULT_MAX_TRACE_BYTES,
+  maxTotalTraceBytes = DEFAULT_MAX_TOTAL_TRACE_BYTES,
 }) {
   const repoRoot = path.resolve(repo);
   const outputRoot = path.resolve(output);
@@ -328,6 +362,25 @@ export async function exportGitSnapshot({
       gitObjectId: entry.objectId,
     });
   }
+  const formalReports = [];
+  for (const evidenceDirectory of allowlist.playtestEvidencePaths) {
+    const reportPath = path.posix.join(evidenceDirectory, "report.json");
+    const report = JSON.parse(await readFile(
+      path.join(outputRoot, ...reportPath.split("/")),
+      "utf8",
+    ));
+    await validateReportEvidenceFiles(
+      report,
+      path.join(outputRoot, ...reportPath.split("/")),
+    );
+    formalReports.push({ reportPath, report });
+  }
+  assertReferencedTraceLimits({
+    reports: formalReports,
+    sizeByPackagePath: new Map(files.map((file) => [file.path, file.bytes])),
+    maxTraceBytes,
+    maxTotalTraceBytes,
+  });
   const manifest = {
     schemaVersion: 1,
     scope: allowlist.scope,
@@ -335,6 +388,7 @@ export async function exportGitSnapshot({
     testedSourceCommit,
     createdAt: new Date().toISOString(),
     allowlistPath,
+    trust: MANIFEST_TRUST_EXPLANATION,
     files,
     verificationReports: [
       ...allowlist.reports,
