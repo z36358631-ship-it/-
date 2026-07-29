@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 8",
+  "phase": "spec-review",
+  "agent": "/root/plan_evidence_validators",
+  "role": "AI 试玩正式报告规格复审",
+  "objective": "独立核对 canonical 路径、双哈希、Task 7 调用与矩阵 sessionId 哈希契约",
+  "commit": "9153e7f7ceb93048cd076afe851b28225ee1cc8c",
+  "files": [
+    "games/wechat-h5-v2/tools/validate-ai-playtest-report.mjs",
+    "games/wechat-h5-v2/tools/validate-ai-playtest-matrix.mjs"
+  ],
+  "commands": [
+    "node node_modules/vitest/vitest.mjs run tests/integration/ai-playtest-evidence.test.mjs tests/integration/score-ai-playtests.test.mjs",
+    "node --test tests/integration/ai-session-evidence.test.mjs"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 41,
+    "pass": 41,
+    "fail": 0
+  },
+  "startedAt": "2026-07-30T00:38:21+08:00",
+  "finishedAt": "2026-07-30T00:41:21+08:00",
+  "activeMinutes": 3,
+  "review": {
+    "specReview": "PASS",
+    "conclusion": "Task 8 全部计划项和真实证据负例通过。"
+  }
+}

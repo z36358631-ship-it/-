@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 8",
+  "phase": "phase1",
+  "agent": "/root/task1_atomic_capture",
+  "role": "AI 试玩正式报告工程",
+  "objective": "将正式报告和矩阵绑定到 canonical session evidence，并强制 sessionId 唯一",
+  "commit": "9153e7f7ceb93048cd076afe851b28225ee1cc8c",
+  "files": [
+    "games/wechat-h5-v2/tools/ai-playtest/formal-evidence-set.mjs",
+    "games/wechat-h5-v2/tools/validate-ai-playtest-report.mjs",
+    "games/wechat-h5-v2/tools/validate-ai-playtest-matrix.mjs",
+    "games/wechat-h5-v2/tests/integration/ai-playtest-evidence.test.mjs",
+    "games/wechat-h5-v2/tests/integration/score-ai-playtests.test.mjs"
+  ],
+  "commands": [
+    "node node_modules/vitest/vitest.mjs run tests/integration/ai-playtest-evidence.test.mjs tests/integration/score-ai-playtests.test.mjs",
+    "node --test tests/integration/ai-session-evidence.test.mjs"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 41,
+    "pass": 41,
+    "fail": 0
+  },
+  "startedAt": "2026-07-30T00:28:14+08:00",
+  "finishedAt": "2026-07-30T00:34:18+08:00",
+  "activeMinutes": 6,
+  "review": {
+    "specReview": "PASS",
+    "securityReview": "APPROVED",
+    "conclusion": "正式报告、12 份 canonical evidence 与矩阵 sessionId 哈希契约通过双审。"
+  }
+}

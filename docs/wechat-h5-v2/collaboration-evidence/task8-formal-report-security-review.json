@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 8",
+  "phase": "security-review",
+  "agent": "/root/plan_delivery_pilot",
+  "role": "AI 试玩正式报告安全复审",
+  "objective": "独立重放路径、哈希分叉、漏引用、合成证据、身份错配和重复 sessionId 攻击",
+  "commit": "9153e7f7ceb93048cd076afe851b28225ee1cc8c",
+  "files": [
+    "games/wechat-h5-v2/tools/ai-playtest/formal-evidence-set.mjs",
+    "games/wechat-h5-v2/tests/integration/ai-playtest-evidence.test.mjs"
+  ],
+  "commands": [
+    "node node_modules/vitest/vitest.mjs run tests/integration/ai-playtest-evidence.test.mjs tests/integration/score-ai-playtests.test.mjs",
+    "node --test tests/integration/ai-session-evidence.test.mjs"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 41,
+    "pass": 41,
+    "fail": 0
+  },
+  "startedAt": "2026-07-30T00:38:21+08:00",
+  "finishedAt": "2026-07-30T00:41:51+08:00",
+  "activeMinutes": 3,
+  "review": {
+    "securityReview": "APPROVED",
+    "conclusion": "既定八类报告和矩阵绕过均失败关闭。"
+  }
+}
