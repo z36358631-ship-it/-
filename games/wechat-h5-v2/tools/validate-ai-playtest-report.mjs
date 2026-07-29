@@ -1,6 +1,16 @@
-import { access, readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import {
+  FORMAL_EVIDENCE_PATHS,
+  referencedEvidencePaths,
+} from "./ai-playtest/formal-evidence-set.mjs";
+import {
+  validateCapturedSessionEvidence,
+} from "./ai-playtest/session-evidence-validator.mjs";
+
+export { referencedEvidencePaths };
 
 export const PLAYTEST_ROUNDS = Object.freeze(["baseline", "rework-1", "rework-2"]);
 export const REVIEWER_ROLES = Object.freeze([
@@ -30,7 +40,6 @@ export const SCORE_KEYS = Object.freeze([
 const OUTCOMES = new Set(["win", "loss"]);
 const INTERACTION_MODES = new Set(["browser-touch", "evidence-review"]);
 const SEVERITIES = new Set(["P0", "P1", "P2"]);
-const FORBIDDEN_ENTRY_PARAMS = new Set(["test", "seed", "speed", "mute"]);
 
 function isObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -69,6 +78,11 @@ export function collectAiPlaytestReportErrors(report, options = {}) {
   const errors = [];
   if (!isObject(report)) return ["report must be an object"];
   if (report.schemaVersion !== 1) errors.push("schemaVersion must equal 1");
+  if (report.draftOnly !== false) errors.push("draftOnly must equal false");
+  if (report.evidenceOnly !== false) errors.push("evidenceOnly must equal false");
+  if (report.subjectiveScoresGenerated !== true) {
+    errors.push("subjectiveScoresGenerated must equal true");
+  }
   if (!PLAYTEST_ROUNDS.includes(report.roundId)) errors.push("roundId is invalid");
   if (!REVIEWER_ROLES.includes(report.reviewerRole)) errors.push("reviewerRole is invalid");
   if (!GAME_IDS.includes(report.gameId)) errors.push("gameId is invalid");
@@ -89,26 +103,37 @@ export function collectAiPlaytestReportErrors(report, options = {}) {
   if (!/^[0-9a-f]{40}$/u.test(report.buildCommit ?? "")) {
     errors.push("buildCommit must be 40 lowercase hexadecimal characters");
   }
+  if (!nonEmptyString(report.sessionId)) errors.push("sessionId is required");
+  const dedicatedEvidence = [
+    ["sessionEvidencePath", "sessionEvidenceSha256"],
+    ["entryScreenshotPath", "entryScreenshotSha256"],
+    ["actionLogPath", "actionLogSha256"],
+    ["tracePath", "traceSha256"],
+  ];
+  for (const [pathField, hashField] of dedicatedEvidence) {
+    const expectedPath = FORMAL_EVIDENCE_PATHS[pathField];
+    if (report[pathField] !== expectedPath) {
+      errors.push(`${pathField} must equal ${expectedPath}`);
+    }
+    validateEvidencePath(errors, report[pathField], pathField);
+    if (!/^[a-f0-9]{64}$/u.test(report[hashField] ?? "")) {
+      errors.push(`${hashField} must be a lowercase SHA-256`);
+    }
+  }
   if (!INTERACTION_MODES.has(report.interactionMode)) {
     errors.push("interactionMode is invalid");
+  }
+  if (typeof report.claimsActualPlay !== "boolean") {
+    errors.push("claimsActualPlay must be boolean");
   }
   if (report.claimsActualPlay === true && report.interactionMode !== "browser-touch") {
     errors.push("claimsActualPlay requires interactionMode browser-touch");
   }
 
-  if (!nonEmptyString(report.entryUrl)) {
-    errors.push("entryUrl is required");
-  } else {
-    try {
-      const entry = new URL(report.entryUrl);
-      for (const key of FORBIDDEN_ENTRY_PARAMS) {
-        if (entry.searchParams.has(key)) {
-          errors.push(`entryUrl must not contain ${key}`);
-        }
-      }
-    } catch {
-      errors.push("entryUrl must be an absolute URL");
-    }
+  const expectedEntryUrl =
+    `http://127.0.0.1:4173/${report.gameId}/`;
+  if (report.entryUrl !== expectedEntryUrl) {
+    errors.push(`entryUrl must equal ${expectedEntryUrl}`);
   }
 
   if (!validIsoTimestamp(report.startedAt)) errors.push("startedAt must be ISO-8601");
@@ -122,6 +147,7 @@ export function collectAiPlaytestReportErrors(report, options = {}) {
     errors.push("runs must contain exactly three runs");
   } else {
     const runIds = new Set();
+    const screenshotPaths = new Set();
     let screenshotCount = 0;
     report.runs.forEach((run, index) => {
       const field = `runs[${index}]`;
@@ -137,10 +163,15 @@ export function collectAiPlaytestReportErrors(report, options = {}) {
         runIds.add(run.runId);
       }
       if (!OUTCOMES.has(run.outcome)) errors.push(`${field}.outcome is invalid`);
-      for (const timing of ["firstInputMs", "firstPayoffMs"]) {
-        if (!Number.isInteger(run[timing]) || run[timing] < 0) {
-          errors.push(`${field}.${timing} must be a non-negative integer`);
+      if (!Number.isInteger(run.firstInputMs) || run.firstInputMs < 0) {
+        errors.push(`${field}.firstInputMs must be a non-negative integer`);
+      }
+      if (run.firstPayoffMs === null) {
+        if (!nonEmptyString(run.firstPayoffNote)) {
+          errors.push(`${field}.firstPayoffNote is required when firstPayoffMs is null`);
         }
+      } else if (!Number.isInteger(run.firstPayoffMs) || run.firstPayoffMs < 0) {
+        errors.push(`${field}.firstPayoffMs must be a non-negative integer or null`);
       }
       if (Number.isInteger(run.firstInputMs) && Number.isInteger(run.firstPayoffMs)
         && run.firstPayoffMs < run.firstInputMs) {
@@ -150,15 +181,66 @@ export function collectAiPlaytestReportErrors(report, options = {}) {
       if (!Array.isArray(run.screenshotPaths)) {
         errors.push(`${field}.screenshotPaths must be an array`);
       } else {
+        if (run.screenshotPaths.length < 2) {
+          errors.push(`${field}.screenshotPaths must contain start and result screenshots`);
+        }
         screenshotCount += run.screenshotPaths.length;
         run.screenshotPaths.forEach((value, screenshotIndex) => {
           validateEvidencePath(errors, value, `${field}.screenshotPaths[${screenshotIndex}]`);
+          if (screenshotPaths.has(value)) {
+            errors.push(`SCREENSHOT_PATH_DUPLICATE ${value}`);
+          } else {
+            screenshotPaths.add(value);
+          }
         });
       }
       validateEvidencePath(errors, run.tracePath, `${field}.tracePath`);
+      if (run.tracePath !== report.tracePath) {
+        errors.push(`${field}.tracePath must equal tracePath`);
+      }
       validateEvidencePath(errors, run.eventLogPath, `${field}.eventLogPath`);
     });
     if (screenshotCount < 6) errors.push("runs must reference at least six screenshots");
+  }
+
+  if (!isObject(report.evidenceSha256)) {
+    errors.push("evidenceSha256 must be an object");
+  } else if (Array.isArray(report.runs) && report.runs.length === 3) {
+    const referenced = referencedEvidencePaths(report);
+    const uniqueReferenced = new Set(referenced);
+    for (const evidencePath of uniqueReferenced) {
+      if (!/^[a-f0-9]{64}$/u.test(report.evidenceSha256[evidencePath] ?? "")) {
+        errors.push(`evidenceSha256.${evidencePath} must be a lowercase SHA-256`);
+      }
+    }
+    const extras = Object.keys(report.evidenceSha256)
+      .filter((evidencePath) => !uniqueReferenced.has(evidencePath));
+    if (extras.length > 0) {
+      errors.push(`evidenceSha256 contains unreferenced paths: ${extras.join(",")}`);
+    }
+    for (const run of report.runs) {
+      if (!isObject(run) || !Array.isArray(run.screenshotPaths)
+        || run.screenshotPaths.length < 2) continue;
+      const startHash = report.evidenceSha256[run.screenshotPaths[0]];
+      const resultHash = report.evidenceSha256[run.screenshotPaths.at(-1)];
+      if (/^[a-f0-9]{64}$/u.test(startHash ?? "") && startHash === resultHash) {
+        errors.push(
+          `SCREENSHOT_START_RESULT_IDENTICAL ${run.screenshotPaths[0]} `
+          + `${run.screenshotPaths.at(-1)}`,
+        );
+      }
+    }
+    for (const [pathField, hashField] of dedicatedEvidence) {
+      const evidencePath = report[pathField];
+      if (
+        /^[a-f0-9]{64}$/u.test(report[hashField] ?? "")
+        && report[hashField] !== report.evidenceSha256[evidencePath]
+      ) {
+        errors.push(
+          `${hashField} must equal evidenceSha256.${evidencePath}`,
+        );
+      }
+    }
   }
 
   if (!isObject(report.scores)) {
@@ -202,18 +284,43 @@ export function validateAiPlaytestReport(report, options = {}) {
 export async function validateReportEvidenceFiles(report, reportPath) {
   validateAiPlaytestReport(report);
   const base = path.dirname(path.resolve(reportPath));
-  const paths = report.runs.flatMap((run) => [
-    ...run.screenshotPaths,
-    run.tracePath,
-    run.eventLogPath,
-  ]);
-  for (const relativePath of paths) {
+  const evidenceByPath = new Map();
+  for (const relativePath of referencedEvidencePaths(report)) {
     const resolved = path.resolve(base, relativePath);
     if (!resolved.startsWith(`${base}${path.sep}`)) {
       throw new Error(`AI_PLAYTEST_EVIDENCE_OUTSIDE_REPORT:${relativePath}`);
     }
-    await access(resolved);
+    const bytes = await readFile(resolved);
+    if (bytes.length === 0) throw new Error(`AI_PLAYTEST_EVIDENCE_EMPTY:${relativePath}`);
+    const digest = createHash("sha256").update(bytes).digest("hex");
+    if (digest !== report.evidenceSha256[relativePath]) {
+      throw new Error(`AI_PLAYTEST_EVIDENCE_HASH_MISMATCH:${relativePath}`);
+    }
+    evidenceByPath.set(relativePath, bytes);
   }
+  let session;
+  try {
+    session = JSON.parse(
+      evidenceByPath.get(report.sessionEvidencePath).toString("utf8"),
+    );
+  } catch {
+    throw new Error(
+      `AI_PLAYTEST_SESSION_EVIDENCE_JSON_INVALID:${report.sessionEvidencePath}`,
+    );
+  }
+  const canonicalEvidence = new Map(evidenceByPath);
+  canonicalEvidence.delete(report.sessionEvidencePath);
+  await validateCapturedSessionEvidence({
+    session,
+    report: {
+      ...report,
+      draftOnly: true,
+      evidenceOnly: true,
+      subjectiveScoresGenerated: false,
+      evidenceSha256: session.evidenceSha256,
+    },
+    evidenceByPath: canonicalEvidence,
+  });
   return report;
 }
 

@@ -9,6 +9,7 @@ import {
 } from "../../tools/summarize-ai-playtests.mjs";
 
 const COMMIT = "c".repeat(40);
+const hashAt = (index) => index.toString(16).padStart(64, "0");
 
 function reportsFor({
   gameId = GAME_IDS[0],
@@ -21,14 +22,27 @@ function reportsFor({
 } = {}) {
   return roles.map((reviewerRole, index) => ({
     schemaVersion: 1,
+    draftOnly: false,
+    evidenceOnly: false,
+    subjectiveScoresGenerated: true,
     roundId,
     matrixCellId: `${roundId}:${reviewerRole}:${gameId}`,
     reviewerId: `fixture-${reviewerRole}`,
     reviewerRole,
     gameId,
     buildCommit: COMMIT,
-    entryUrl: `http://127.0.0.1/${gameId}/`,
+    entryUrl: `http://127.0.0.1:4173/${gameId}/`,
+    sessionId: `${roundId}-${gameId}-${reviewerRole}-session`,
+    sessionEvidencePath: "session-evidence.json",
+    sessionEvidenceSha256: hashAt(1),
+    entryScreenshotPath: "entry.png",
+    entryScreenshotSha256: hashAt(2),
+    actionLogPath: "session-actions.jsonl",
+    actionLogSha256: hashAt(3),
+    tracePath: "session-trace.zip",
+    traceSha256: hashAt(4),
     interactionMode: index < evidenceReviewVotes ? "evidence-review" : "browser-touch",
+    claimsActualPlay: index >= evidenceReviewVotes,
     startedAt: "2026-07-29T00:00:00.000Z",
     finishedAt: "2026-07-29T00:30:00.000Z",
     runs: Array.from({ length: 3 }, (_, runIndex) => ({
@@ -37,10 +51,24 @@ function reportsFor({
       firstInputMs: 500,
       firstPayoffMs: 2_000,
       strategyTag: `s${runIndex}`,
-      screenshotPaths: [`a${runIndex}.png`, `b${runIndex}.png`],
-      tracePath: `trace-${runIndex}.zip`,
-      eventLogPath: `events-${runIndex}.json`,
+      screenshotPaths: [
+        `run-${runIndex + 1}-start.png`,
+        `run-${runIndex + 1}-result.png`,
+      ],
+      tracePath: "session-trace.zip",
+      eventLogPath: `run-${runIndex + 1}-events.json`,
     })),
+    evidenceSha256: Object.fromEntries([
+      "session-evidence.json",
+      "entry.png",
+      "session-actions.jsonl",
+      "session-trace.zip",
+      ...Array.from({ length: 3 }, (_, runIndex) => [
+        `run-${runIndex + 1}-start.png`,
+        `run-${runIndex + 1}-result.png`,
+        `run-${runIndex + 1}-events.json`,
+      ]).flat(),
+    ].map((evidencePath, index) => [evidencePath, hashAt(index + 1)])),
     scores: {
       first30Seconds: score,
       inputFeedback: score,

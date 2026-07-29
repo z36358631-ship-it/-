@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -9,7 +10,7 @@ import {
   validateReportEvidenceFiles,
 } from "./validate-ai-playtest-report.mjs";
 
-async function findReportFiles(root) {
+async function findAllReportFiles(root) {
   const found = [];
   async function visit(directory) {
     const entries = await readdir(directory, { withFileTypes: true });
@@ -62,29 +63,52 @@ export async function validateAiPlaytestMatrix({
     throw new Error("expectedRuns must equal expectedReports × 3");
   }
 
-  const basename = path.basename(path.resolve(root));
+  const resolvedRoot = path.resolve(root);
+  const basename = path.basename(resolvedRoot);
   if (PLAYTEST_ROUNDS.includes(basename) && basename !== roundId) {
     throw new Error(`matrix directory round ${basename} does not match ${roundId}`);
   }
-  const reportFiles = await findReportFiles(root);
-  if (reportFiles.length !== expectedReportCount) {
+  const reportFiles = roles.flatMap((role) =>
+    games.map((game) => path.join(resolvedRoot, `${role}-${game}`, "report.json")));
+  const expectedReportPaths = new Set(reportFiles);
+  const discoveredReportFiles = await findAllReportFiles(resolvedRoot);
+  const unexpectedReports = discoveredReportFiles
+    .filter((reportPath) => !expectedReportPaths.has(reportPath));
+  if (unexpectedReports.length > 0) {
     throw new Error(
-      `AI_PLAYTEST_MATRIX_REPORT_COUNT expected ${expectedReportCount}, got ${reportFiles.length}`,
+      `AI_PLAYTEST_MATRIX_UNEXPECTED_REPORT ${unexpectedReports.join(",")}`,
     );
+  }
+  const discoveredReportPaths = new Set(discoveredReportFiles);
+  const missingReports = reportFiles.filter((reportPath) =>
+    !discoveredReportPaths.has(reportPath));
+  if (missingReports.length > 0) {
+    throw new Error(`AI_PLAYTEST_MATRIX_MISSING_CELL_REPORT ${missingReports.join(",")}`);
   }
 
   const reports = [];
+  const reportHashes = [];
   const cells = new Map();
   const runIds = new Map();
+  const sessionIds = new Map();
   const commits = new Set();
   for (const reportPath of reportFiles) {
     let report;
     try {
-      report = JSON.parse(await readFile(reportPath, "utf8"));
+      const reportBytes = await readFile(reportPath);
+      report = JSON.parse(reportBytes.toString("utf8"));
+      reportHashes.push({
+        matrixCellId: report.matrixCellId,
+        reportPath: path.relative(resolvedRoot, reportPath).split(path.sep).join("/"),
+        sha256: createHash("sha256").update(reportBytes).digest("hex"),
+      });
     } catch (error) {
       throw new Error(`AI_PLAYTEST_MATRIX_JSON ${reportPath}: ${error.message}`);
     }
     validateAiPlaytestReport(report, { expectedRound: roundId });
+    if (report.interactionMode !== "browser-touch" || report.claimsActualPlay !== true) {
+      throw new Error(`AI_PLAYTEST_MATRIX_ACTUAL_PLAY_REQUIRED ${report.matrixCellId}`);
+    }
     if (!roles.includes(report.reviewerRole) || !games.includes(report.gameId)) {
       throw new Error(`AI_PLAYTEST_MATRIX_UNEXPECTED_CELL ${report.matrixCellId}`);
     }
@@ -94,6 +118,14 @@ export async function validateAiPlaytestMatrix({
     }
     cells.set(report.matrixCellId, reportPath);
     commits.add(report.buildCommit);
+    const previousSession = sessionIds.get(report.sessionId);
+    if (previousSession) {
+      throw new Error(
+        `AI_PLAYTEST_MATRIX_DUPLICATE_SESSION_ID duplicate sessionId `
+        + `${report.sessionId}: ${previousSession} and ${reportPath}`,
+      );
+    }
+    sessionIds.set(report.sessionId, reportPath);
     for (const run of report.runs) {
       const previous = runIds.get(run.runId);
       if (previous) {
@@ -120,6 +152,22 @@ export async function validateAiPlaytestMatrix({
     throw new Error(`AI_PLAYTEST_MATRIX_MIXED_COMMIT ${[...commits].join(",")}`);
   }
 
+  const sortedReportHashes = reportHashes.sort((left, right) =>
+    left.matrixCellId.localeCompare(right.matrixCellId));
+  const matrixCells = [...cells.keys()].sort();
+  const sortedRunIds = [...runIds.keys()].sort();
+  const sortedSessionIds = [...sessionIds.keys()].sort();
+  const matrixHashContract = {
+    schemaVersion: 1,
+    roundId,
+    buildCommit: [...commits][0],
+    roles: [...roles],
+    games: [...games],
+    matrixCells,
+    runIds: sortedRunIds,
+    sessionIds: sortedSessionIds,
+    reportHashes: sortedReportHashes,
+  };
   return {
     schemaVersion: 1,
     roundId,
@@ -128,7 +176,13 @@ export async function validateAiPlaytestMatrix({
     games: [...games],
     reportCount: reports.length,
     runCount: runIds.size,
-    matrixCells: [...cells.keys()].sort(),
+    matrixCells,
+    runIds: sortedRunIds,
+    sessionIds: sortedSessionIds,
+    reportHashes: sortedReportHashes,
+    matrixSha256: createHash("sha256")
+      .update(JSON.stringify(matrixHashContract))
+      .digest("hex"),
     reports,
   };
 }
@@ -169,6 +223,8 @@ async function main(argv) {
       reviewerId: report.reviewerId,
       interactionMode: report.interactionMode,
       runIds: report.runs.map((run) => run.runId),
+      reportHash: matrix.reportHashes.find(({ matrixCellId }) =>
+        matrixCellId === report.matrixCellId),
     })),
   };
   const json = `${JSON.stringify(output, null, 2)}\n`;
