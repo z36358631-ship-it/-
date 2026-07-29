@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 
 import {
   createDriverSessionState,
+  DRIVER_HEARTBEAT_INTERVAL_MS,
   VIEWPORT,
 } from "./driver-session-state.mjs";
 
@@ -233,6 +234,7 @@ export async function startDriverIpcServer({
   randomId,
   onFault = () => {},
   timeouts = {},
+  healthCheckIntervalMs = DRIVER_HEARTBEAT_INTERVAL_MS,
 }) {
   const state = createDriverSessionState({
     sessionId,
@@ -256,9 +258,17 @@ export async function startDriverIpcServer({
   if (typeof onFault !== "function") {
     throw protocolError("AI_DRIVER_ON_FAULT_INVALID", 500);
   }
+  if (
+    !Number.isSafeInteger(healthCheckIntervalMs)
+    || healthCheckIntervalMs < 1
+  ) {
+    throw protocolError("AI_DRIVER_HEALTH_INTERVAL_INVALID", 500);
+  }
 
   let latchedFault = null;
   let commandInFlight = false;
+  let acceptingRequests = true;
+  const activeDispatches = new Set();
 
   const latchFault = (reason) => {
     const code = errorCode(reason);
@@ -353,7 +363,11 @@ export async function startDriverIpcServer({
   };
 
   const server = createServer(async (request, response) => {
+    let dispatchStarted = false;
     try {
+      if (!acceptingRequests) {
+        throw protocolError("AI_DRIVER_SERVER_CLOSING", 503);
+      }
       assertNotLatched();
       if (request.url !== COMMAND_PATH) {
         throw protocolError("AI_DRIVER_ROUTE_NOT_FOUND", 404);
@@ -370,6 +384,9 @@ export async function startDriverIpcServer({
 
       const contentLength = declaredContentLength(request);
       const command = await readBoundedJson(request, contentLength);
+      if (!acceptingRequests) {
+        throw protocolError("AI_DRIVER_SERVER_CLOSING", 503);
+      }
       assertNotLatched();
       const authorization = state.authorize({
         ...command,
@@ -383,13 +400,21 @@ export async function startDriverIpcServer({
       }
 
       commandInFlight = true;
+      const operation = dispatch(command, authorization);
+      dispatchStarted = true;
+      activeDispatches.add(operation);
       try {
-        const result = await dispatch(command, authorization);
+        const result = await operation;
         json(response, 200, result);
       } finally {
+        activeDispatches.delete(operation);
         commandInFlight = false;
       }
     } catch (error) {
+      if (!acceptingRequests && !dispatchStarted) {
+        response.destroy();
+        return;
+      }
       const code = latchFault(error);
       json(response, errorStatus(error), { error: code });
     }
@@ -450,18 +475,35 @@ export async function startDriverIpcServer({
     url: `http://${HOST}:${address.port}${COMMAND_PATH}`,
     token,
   });
+  let healthTimer = setInterval(() => {
+    if (latchedFault || state.snapshot().fatalReason) return;
+    try {
+      state.assertConnected();
+    } catch (error) {
+      latchFault(error);
+    }
+  }, healthCheckIntervalMs);
+  healthTimer.unref?.();
   let closing = null;
   const close = () => {
     if (closing) return closing;
-    closing = new Promise((resolve, reject) => {
-      const finish = (error) => {
-        if (error) reject(error);
-        else resolve();
-      };
-      if (server.listening) server.close(finish);
-      else resolve();
-      for (const socket of sockets) socket.destroy();
-    });
+    acceptingRequests = false;
+    if (healthTimer) {
+      clearInterval(healthTimer);
+      healthTimer = null;
+    }
+    const serverClosed = closeServer(server);
+    for (const socket of sockets) socket.destroy();
+    const dispatches = [...activeDispatches];
+    closing = (async () => {
+      const [serverResult] = await Promise.allSettled([
+        serverClosed,
+        ...dispatches,
+      ]);
+      if (serverResult.status === "rejected") {
+        throw serverResult.reason;
+      }
+    })();
     return closing;
   };
 

@@ -1,6 +1,13 @@
 import { execFile } from "node:child_process";
-import { createHash } from "node:crypto";
-import { access, readFile, unlink } from "node:fs/promises";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
+import {
+  access,
+  lstat,
+  open,
+  readFile,
+  realpath,
+  unlink,
+} from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -33,6 +40,20 @@ import {
   createTerminalErrorRecorder,
   runSessionLifecycle,
 } from "./ai-playtest/session-lifecycle.mjs";
+import {
+  createActionAuditLog,
+} from "./ai-playtest/action-audit-log.mjs";
+import {
+  createBrowserTouchAdapter,
+} from "./ai-playtest/browser-touch-adapter.mjs";
+import {
+  startDriverIpcServer,
+} from "./ai-playtest/driver-ipc-server.mjs";
+import {
+  DRIVER_DISCONNECT_MS,
+  DRIVER_HEARTBEAT_INTERVAL_MS,
+  GESTURE_LEASE_MS,
+} from "./ai-playtest/driver-session-state.mjs";
 
 export {
   assertCompleteRunObservation,
@@ -52,6 +73,103 @@ const DEFAULT_URLS = Object.freeze({
 const FORBIDDEN_ENTRY_PARAMS = ["test", "seed", "speed", "mute"];
 const COMMIT_PATTERN = /^[0-9a-f]{40}$/u;
 const DEBUG_GLOBAL_PATTERN = /^__.*(?:TEST|DEBUG).*__$/u;
+
+function pathIsInside(parent, candidate) {
+  const relative = path.relative(parent, candidate);
+  return (
+    relative === ""
+    || (
+      relative !== ".."
+      && !relative.startsWith(`..${path.sep}`)
+      && !path.isAbsolute(relative)
+    )
+  );
+}
+
+function assertNoDriverPathOverlap(entries) {
+  for (let left = 0; left < entries.length; left += 1) {
+    for (let right = left + 1; right < entries.length; right += 1) {
+      const [leftName, leftPath] = entries[left];
+      const [rightName, rightPath] = entries[right];
+      if (
+        pathIsInside(leftPath, rightPath)
+        || pathIsInside(rightPath, leftPath)
+      ) {
+        throw new Error(
+          `AI_PLAYTEST_DRIVER_PATH_OVERLAP:${leftName}:${rightName}`,
+        );
+      }
+    }
+  }
+}
+
+async function canonicalPathWithoutReparse(target, {
+  lstatImpl,
+  realpathImpl,
+}) {
+  const resolved = path.resolve(target);
+  const parsed = path.parse(resolved);
+  const segments = resolved
+    .slice(parsed.root.length)
+    .split(path.sep)
+    .filter(Boolean);
+  let lexical = parsed.root;
+  let deepestExisting = parsed.root;
+  let firstMissingIndex = segments.length;
+  for (let index = 0; index < segments.length; index += 1) {
+    lexical = path.join(lexical, segments[index]);
+    try {
+      const stats = await lstatImpl(lexical);
+      if (stats.isSymbolicLink()) {
+        throw new Error(`AI_PLAYTEST_DRIVER_PATH_REPARSE:${lexical}`);
+      }
+      deepestExisting = lexical;
+    } catch (error) {
+      if (error?.code !== "ENOENT") throw error;
+      firstMissingIndex = index;
+      break;
+    }
+  }
+  const canonical = await realpathImpl(deepestExisting);
+  return path.resolve(canonical, ...segments.slice(firstMissingIndex));
+}
+
+export async function assertSafeDriverPaths({
+  output,
+  driverDescriptorPath,
+  draftOutput,
+  invalidRoot,
+}, {
+  lstatImpl = lstat,
+  realpathImpl = realpath,
+} = {}) {
+  const entries = [
+    ["output", output],
+    ["driverDescriptorPath", driverDescriptorPath],
+    ["draftOutput", draftOutput],
+    ["invalidRoot", invalidRoot],
+  ];
+  const canonicalEntries = [];
+  for (const [name, target] of entries) {
+    canonicalEntries.push([
+      name,
+      await canonicalPathWithoutReparse(target, {
+        lstatImpl,
+        realpathImpl,
+      }),
+    ]);
+  }
+  const canonicalPaths = Object.fromEntries(canonicalEntries);
+  const canonicalRoundRoot = path.dirname(canonicalPaths.output);
+  if (pathIsInside(canonicalRoundRoot, canonicalPaths.invalidRoot)) {
+    throw new Error("AI_PLAYTEST_INVALID_ROOT_INSIDE_ROUND");
+  }
+  assertNoDriverPathOverlap(canonicalEntries);
+  return Object.freeze({
+    ...canonicalPaths,
+    roundRoot: canonicalRoundRoot,
+  });
+}
 
 export function validateSessionOptions(options) {
   const {
@@ -88,6 +206,40 @@ export function validateSessionOptions(options) {
       "output must be <root>/<round>/<reviewer>-<game> to prevent matrix-cell overwrite",
     );
   }
+  const driverEnabled = options.driverEnabled === true;
+  let driverDescriptorPath = options.driverDescriptorPath;
+  let draftOutput = options.draftOutput;
+  let invalidRoot = options.invalidRoot;
+  if (driverEnabled) {
+    for (const [name, value] of [
+      ["driverDescriptorPath", driverDescriptorPath],
+      ["draftOutput", draftOutput],
+      ["invalidRoot", invalidRoot],
+    ]) {
+      if (!value || typeof value !== "string") {
+        throw new Error(`AI_PLAYTEST_${name.toUpperCase()}_REQUIRED`);
+      }
+    }
+    driverDescriptorPath = path.resolve(driverDescriptorPath);
+    draftOutput = path.resolve(draftOutput);
+    invalidRoot = path.resolve(invalidRoot);
+    const roundRoot = path.dirname(resolvedOutput);
+    if (pathIsInside(resolvedOutput, draftOutput)) {
+      throw new Error("AI_PLAYTEST_DRAFT_INSIDE_OUTPUT");
+    }
+    if (pathIsInside(roundRoot, invalidRoot)) {
+      throw new Error("AI_PLAYTEST_INVALID_ROOT_INSIDE_ROUND");
+    }
+    if (pathIsInside(resolvedOutput, driverDescriptorPath)) {
+      throw new Error("AI_PLAYTEST_DESCRIPTOR_INSIDE_OUTPUT");
+    }
+    assertNoDriverPathOverlap([
+      ["output", resolvedOutput],
+      ["driverDescriptorPath", driverDescriptorPath],
+      ["draftOutput", draftOutput],
+      ["invalidRoot", invalidRoot],
+    ]);
+  }
   return {
     ...options,
     roundId,
@@ -96,6 +248,10 @@ export function validateSessionOptions(options) {
     entryUrl: parsedUrl.href,
     output: resolvedOutput,
     matrixCellId: `${roundId}:${reviewerRole}:${gameId}`,
+    driverEnabled,
+    driverDescriptorPath,
+    draftOutput,
+    invalidRoot,
   };
 }
 
@@ -345,6 +501,35 @@ export async function writeJsonExclusive(target, value) {
   await publishJsonExclusive(target, value);
 }
 
+async function writePrivateJsonExclusive(target, value) {
+  const handle = await open(target, "wx", 0o600);
+  let operationError = null;
+  try {
+    await handle.writeFile(`${JSON.stringify(value)}\n`, "utf8");
+    await handle.sync();
+  } catch (error) {
+    operationError = error;
+  }
+  try {
+    await handle.close();
+  } catch (error) {
+    operationError ??= error;
+  }
+  if (!operationError) return;
+  try {
+    await unlink(target);
+  } catch (cleanupError) {
+    if (cleanupError?.code !== "ENOENT") {
+      throw new AggregateError(
+        [operationError, cleanupError],
+        "AI_PLAYTEST_DRIVER_DESCRIPTOR_WRITE_FAILED",
+        { cause: operationError },
+      );
+    }
+  }
+  throw operationError;
+}
+
 export function buildRunEventLog(runId, outcome, events) {
   return {
     runId,
@@ -353,12 +538,12 @@ export function buildRunEventLog(runId, outcome, events) {
   };
 }
 
-export async function hashRunEvidence(output, runs) {
+export async function hashRunEvidence(output, runs, additionalPaths = []) {
   const relativePaths = [...new Set(runs.flatMap((run) => [
     ...run.screenshotPaths,
     run.tracePath,
     run.eventLogPath,
-  ]))];
+  ]).concat(additionalPaths))];
   const entries = await Promise.all(relativePaths.map(async (relativePath) => {
     const bytes = await readFile(path.join(output, relativePath));
     return [
@@ -367,6 +552,85 @@ export async function hashRunEvidence(output, runs) {
     ];
   }));
   return Object.fromEntries(entries);
+}
+
+function runnerDriverError(code) {
+  const error = new Error(code);
+  error.code = code;
+  return error;
+}
+
+function createRunnerDriverOrchestration({
+  actionLog,
+  sessionId,
+  gameId,
+}) {
+  let actionsOpen = true;
+  let currentRunId = null;
+  let nextRunIndex = 1;
+  const pendingRecords = [];
+  const writeRecord = (record, runId) => actionLog.write({
+    ...record,
+    sessionId,
+    gameId,
+    runId,
+  });
+
+  return {
+    wrapAdapter(adapter) {
+      const guarded = {
+        capture: (...args) => adapter.capture(...args),
+        visible: (...args) => adapter.visible(...args),
+      };
+      for (const method of [
+        "touchTap",
+        "touchBegin",
+        "touchMove",
+        "touchEnd",
+        "touchCancel",
+      ]) {
+        guarded[method] = (...args) => {
+          if (!actionsOpen) {
+            throw runnerDriverError("AI_DRIVER_ACTIONS_CLOSED");
+          }
+          return adapter[method](...args);
+        };
+      }
+      return Object.freeze(guarded);
+    },
+    async writeAction(record) {
+      if (!currentRunId) {
+        pendingRecords.push(record);
+        return;
+      }
+      await writeRecord(record, currentRunId);
+    },
+    async recordRunStarted(index, runId) {
+      if (index !== nextRunIndex || !runId) {
+        throw runnerDriverError("AI_DRIVER_RUN_START_ORDER");
+      }
+      currentRunId = runId;
+      actionsOpen = true;
+      while (pendingRecords.length > 0) {
+        await writeRecord(pendingRecords.shift(), currentRunId);
+      }
+    },
+    closeActions() {
+      actionsOpen = false;
+    },
+    openReplayWindow() {
+      nextRunIndex += 1;
+      currentRunId = null;
+      actionsOpen = true;
+    },
+    async close() {
+      actionsOpen = false;
+      while (pendingRecords.length > 0) {
+        await writeRecord(pendingRecords.shift(), currentRunId);
+      }
+      await actionLog.close();
+    },
+  };
 }
 
 export function buildReportDraft(evidence) {
@@ -574,6 +838,8 @@ export async function finalizeSessionEvidence({
   invalidRoot = null,
   sessionId = null,
   quarantineImpl = quarantineIncompleteSession,
+  draftOutput = null,
+  canonicalEvidencePaths = [],
 }) {
   const failureErrors = [];
   const recordedErrors = [];
@@ -595,14 +861,19 @@ export async function finalizeSessionEvidence({
   let evidenceSha256 = {};
   if (status === "CAPTURED") {
     try {
-      evidenceSha256 = await hashEvidence(output, runs);
+      evidenceSha256 = await hashEvidence(
+        output,
+        runs,
+        canonicalEvidencePaths,
+      );
     } catch (error) {
       recordFailure(error);
       status = "INCOMPLETE";
     }
   }
   const sessionEvidencePath = path.join(output, "session-evidence.json");
-  const reportDraftPath = path.join(output, "report-draft.json");
+  const reportDraftPath =
+    draftOutput ?? path.join(output, "report-draft.json");
   const buildEvidence = (currentStatus, currentRuns, currentHashes) => ({
     schemaVersion: 1,
     evidenceOnly: true,
@@ -621,17 +892,22 @@ export async function finalizeSessionEvidence({
   });
   if (status === "CAPTURED") {
     const candidatePaths = [];
+    let reportPublished = false;
     try {
       const sessionCandidate = await candidatePath(
         output,
         "session-evidence.json",
       );
-      const reportCandidate = await candidatePath(output, "report-draft.json");
+      const reportCandidate = await candidatePath(
+        path.dirname(reportDraftPath),
+        path.basename(reportDraftPath),
+      );
       candidatePaths.push(sessionCandidate, reportCandidate);
       const capturedEvidence = buildEvidence("CAPTURED", runs, evidenceSha256);
       await writeEvidence(sessionCandidate, capturedEvidence);
       await writeEvidence(reportCandidate, buildReportDraft(capturedEvidence));
       await publishCandidate(reportCandidate, reportDraftPath);
+      reportPublished = true;
       await publishCandidate(sessionCandidate, sessionEvidencePath);
       return capturedEvidence;
     } catch (error) {
@@ -639,8 +915,8 @@ export async function finalizeSessionEvidence({
       status = "INCOMPLETE";
       for (const artifactPath of [
         ...candidatePaths,
-        reportDraftPath,
         sessionEvidencePath,
+        ...(reportPublished ? [reportDraftPath] : []),
       ]) {
         try {
           await removeArtifact(artifactPath);
@@ -701,13 +977,40 @@ export async function finalizeSessionEvidence({
     : evidence;
 }
 
-export async function captureAiPlaytestSession(rawOptions) {
+export async function captureAiPlaytestSession(rawOptions, dependencies = {}) {
+  const readSourceStateImpl =
+    dependencies.readSourceState ?? readSourceState;
+  const attestServedDistImpl =
+    dependencies.attestServedDist ?? attestServedDist;
+  const claimOutputDirectoryImpl =
+    dependencies.claimOutputDirectory ?? claimOutputDirectory;
+  const runClaimedSessionLifecycleImpl =
+    dependencies.runClaimedSessionLifecycle ?? runClaimedSessionLifecycle;
+  const startDriverIpcServerImpl =
+    dependencies.startDriverIpcServer ?? startDriverIpcServer;
+  const createBrowserTouchAdapterImpl =
+    dependencies.createBrowserTouchAdapter ?? createBrowserTouchAdapter;
+  const createActionAuditLogImpl =
+    dependencies.createActionAuditLog ?? createActionAuditLog;
+  const assertSafeDriverPathsImpl =
+    dependencies.assertSafeDriverPaths ?? assertSafeDriverPaths;
+  const randomUUIDImpl = dependencies.randomUUID ?? randomUUID;
+  const randomBytesImpl = dependencies.randomBytes ?? randomBytes;
+  const launchImpl =
+    dependencies.launch
+    ?? (() => chromium.launch({ headless: rawOptions.headed !== true }));
   const options = validateSessionOptions(rawOptions);
   if (!options.expectedCommit) throw new Error("AI_PLAYTEST_EXPECTED_COMMIT_REQUIRED");
   assertExpectedEntryUrl(options.entryUrl, options.gameId);
-  const source = await readSourceState(options.expectedCommit);
-  const servedDistAtStart = await attestServedDist(options.expectedCommit, options.gameId);
-  await claimOutputDirectory(options.output);
+  const source = await readSourceStateImpl(options.expectedCommit);
+  const servedDistAtStart = await attestServedDistImpl(
+    options.expectedCommit,
+    options.gameId,
+  );
+  await claimOutputDirectoryImpl(options.output);
+  if (options.driverEnabled) {
+    await assertSafeDriverPathsImpl(options);
+  }
   const consoleErrors = [];
   const pageErrors = [];
   const requestFailures = [];
@@ -722,16 +1025,30 @@ export async function captureAiPlaytestSession(rawOptions) {
   const terminalRecorder = createTerminalErrorRecorder();
   const terminalErrors = terminalRecorder.errors;
   const recordTerminalError = (error) => terminalRecorder.record(error);
+  const sessionId = options.driverEnabled
+    ? randomUUIDImpl()
+    : options.sessionId ?? options.matrixCellId.replaceAll(":", "-");
+  const token = options.driverEnabled
+    ? randomBytesImpl(32).toString("hex")
+    : null;
+  let driverController = null;
+  let driverOrchestration = null;
+  let actionLog = null;
+  let descriptorPublished = false;
+  const assertDriverHealthy = () => {
+    const reason = driverController?.fatalReason();
+    if (reason) throw runnerDriverError(reason);
+  };
   try {
-    const lifecycle = await runClaimedSessionLifecycle({
+    const lifecycle = await runClaimedSessionLifecycleImpl({
       output: options.output,
-      launch: () => chromium.launch({ headless: options.headed !== true }),
+      launch: launchImpl,
       contextOptions: {
         viewport: { width: 390, height: 844 },
         hasTouch: true,
         isMobile: true,
       },
-      configurePage(page) {
+      async configurePage(page) {
         page.on("console", (message) => {
           if (message.type() === "error") consoleErrors.push(message.text());
         });
@@ -756,10 +1073,42 @@ export async function captureAiPlaytestSession(rawOptions) {
             externalRequests.push(request.url());
           }
         });
+        if (options.driverEnabled) {
+          actionLog = await createActionAuditLogImpl(
+            path.join(options.output, "session-actions.jsonl"),
+            { forbiddenValues: [token] },
+          );
+          driverOrchestration = createRunnerDriverOrchestration({
+            actionLog,
+            sessionId,
+            gameId: options.gameId,
+          });
+          const cdp = await page.context().newCDPSession(page);
+          const adapter = createBrowserTouchAdapterImpl({
+            page,
+            cdp,
+            writeAction: (record) => (
+              driverOrchestration.writeAction(record)
+            ),
+          });
+          driverController = await startDriverIpcServerImpl({
+            sessionId,
+            token,
+            gameId: options.gameId,
+            adapter: driverOrchestration.wrapAdapter(adapter),
+            onFault: recordTerminalError,
+          });
+          await writePrivateJsonExclusive(
+            options.driverDescriptorPath,
+            driverController.descriptor,
+          );
+          descriptorPublished = true;
+        }
       },
       recordError: recordTerminalError,
       async execute({ page }) {
         await page.goto(options.entryUrl, { waitUntil: "networkidle" });
+        assertDriverHealthy();
         actualEntryUrl = assertExpectedEntryUrl(page.url(), options.gameId);
         runtimeSafety = await inspectNormalRuntime(page, options.gameId);
         await publishBufferExclusive(
@@ -768,6 +1117,7 @@ export async function captureAiPlaytestSession(rawOptions) {
         );
         const deadline = Date.now() + (options.timeoutMs ?? 15 * 60_000);
         while (Date.now() < deadline) {
+          assertDriverHealthy();
           assertExpectedEntryUrl(page.url(), options.gameId);
           const events = await readTelemetry(page, options.gameId);
           const pageState = await readPublicRuntimeState(page);
@@ -786,8 +1136,14 @@ export async function captureAiPlaytestSession(rawOptions) {
                 ),
                 await page.screenshot({ type: "png", fullPage: false }),
               );
+              await driverOrchestration?.recordRunStarted(
+                transition.run.index,
+                transition.run.runId,
+              );
               continue;
             }
+            driverOrchestration?.closeActions();
+            await page.waitForTimeout(1_000);
             await publishBufferExclusive(
               path.join(
                 options.output,
@@ -806,11 +1162,16 @@ export async function captureAiPlaytestSession(rawOptions) {
                 transition.run.events,
               ),
             );
+            driverController?.recordRun(transition.run.index);
+            if (transition.run.index < 3) {
+              driverOrchestration?.openReplayWindow();
+            }
           }
           if (runObservation.endCount === 3) {
             await page.waitForTimeout(250);
             assertExpectedEntryUrl(page.url(), options.gameId);
             observeRunPoll(runObservation, await readTelemetry(page, options.gameId));
+            assertDriverHealthy();
             assertExpectedEntryUrl(page.url(), options.gameId);
             break;
           }
@@ -821,6 +1182,35 @@ export async function captureAiPlaytestSession(rawOptions) {
     lifecycleTraceError = lifecycle.traceError;
   } catch (error) {
     recordTerminalError(error);
+  } finally {
+    if (driverController) {
+      try {
+        await driverController.close();
+      } catch (error) {
+        recordTerminalError(error);
+      }
+    }
+    if (driverOrchestration) {
+      try {
+        await driverOrchestration.close();
+      } catch (error) {
+        recordTerminalError(error);
+      }
+    } else if (actionLog) {
+      try {
+        await actionLog.close();
+      } catch (error) {
+        recordTerminalError(error);
+      }
+    }
+    if (descriptorPublished) {
+      try {
+        await unlink(options.driverDescriptorPath);
+      } catch (error) {
+        if (error?.code !== "ENOENT") recordTerminalError(error);
+      }
+      descriptorPublished = false;
+    }
   }
 
   try {
@@ -839,7 +1229,10 @@ export async function captureAiPlaytestSession(rawOptions) {
   let servedDistAtFinish = null;
   let servedDistStable = false;
   try {
-    servedDistAtFinish = await attestServedDist(options.expectedCommit, options.gameId);
+    servedDistAtFinish = await attestServedDistImpl(
+      options.expectedCommit,
+      options.gameId,
+    );
     if (servedDistAtFinish.aggregateSha256 !== servedDistAtStart.aggregateSha256) {
       throw new Error(
         `AI_PLAYTEST_SERVED_DIST_CHANGED start ${servedDistAtStart.aggregateSha256}, `
@@ -854,7 +1247,7 @@ export async function captureAiPlaytestSession(rawOptions) {
   let sourceAtFinish = null;
   let sourceStable = false;
   try {
-    sourceAtFinish = await readSourceState(options.expectedCommit);
+    sourceAtFinish = await readSourceStateImpl(options.expectedCommit);
     assertStableSourceState(source, sourceAtFinish);
     sourceStable = true;
   } catch (error) {
@@ -866,6 +1259,7 @@ export async function captureAiPlaytestSession(rawOptions) {
     && completionIssues.length === 0
     && sourceStable
     && servedDistStable;
+  const driverFatalReason = driverController?.fatalReason() ?? null;
   const evidence = await finalizeSessionEvidence({
     output: options.output,
     baseEvidence: {
@@ -885,6 +1279,23 @@ export async function captureAiPlaytestSession(rawOptions) {
         stable: servedDistStable,
       },
       interactionMode: "browser-touch",
+      executionTrust:
+        options.driverEnabled ? "local-audited" : "local-browser",
+      entryScreenshotPath: "entry.png",
+      actionLogPath:
+        options.driverEnabled ? "session-actions.jsonl" : null,
+      tracePath: "session-trace.zip",
+      driver: options.driverEnabled
+        ? {
+            protocol: "loopback-whitelist-v1",
+            sessionId,
+            descriptorPath: null,
+            fatalReason: driverFatalReason,
+            heartbeatIntervalMs: DRIVER_HEARTBEAT_INTERVAL_MS,
+            disconnectMs: DRIVER_DISCONNECT_MS,
+            gestureLeaseMs: GESTURE_LEASE_MS,
+          }
+        : null,
       startedAt,
       finishedAt: new Date().toISOString(),
       runtimeSafety,
@@ -904,12 +1315,14 @@ export async function captureAiPlaytestSession(rawOptions) {
     invalidRoot:
       options.invalidRoot
       ?? path.resolve(path.dirname(path.dirname(options.output)), "invalid"),
-    sessionId:
-      options.sessionId
-      ?? options.matrixCellId.replaceAll(":", "-"),
+    sessionId,
+    draftOutput: options.driverEnabled ? options.draftOutput : null,
+    canonicalEvidencePaths: options.driverEnabled
+      ? ["entry.png", "session-actions.jsonl", "session-trace.zip"]
+      : [],
   });
   if (evidence.status !== "CAPTURED") {
-    throw new Error(
+    const error = new Error(
       `AI_PLAYTEST_SESSION_INCOMPLETE captured ${completedRuns.length}/3 completed runs; `
       + `invalidOutput=${evidence.invalidOutput ?? "unavailable"}; `
       + `${[
@@ -917,6 +1330,9 @@ export async function captureAiPlaytestSession(rawOptions) {
         ...evidence.diagnostics.completionNotes,
       ].join(" | ")}`,
     );
+    error.code = "AI_PLAYTEST_SESSION_INCOMPLETE";
+    error.invalidOutput = evidence.invalidOutput ?? null;
+    throw error;
   }
   return evidence;
 }
@@ -950,6 +1366,10 @@ async function main(argv) {
     expectedCommit: args["expected-commit"],
     timeoutMs: args["timeout-ms"] ? Number(args["timeout-ms"]) : undefined,
     headed: args.headed,
+    driverEnabled: args["driver-enabled"] === "true",
+    driverDescriptorPath: args["driver-descriptor-path"],
+    draftOutput: args["draft-output"],
+    invalidRoot: args["invalid-root"],
   });
   process.stdout.write(
     `AI PLAYTEST EVIDENCE CAPTURED | ${evidence.matrixCellId} | 3 runs | no scores generated\n`,

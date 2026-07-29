@@ -1,4 +1,5 @@
 import {
+  access,
   mkdir,
   mkdtemp,
   readdir,
@@ -9,16 +10,19 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { describe, it } from "node:test";
 import {
   assertCompleteRunObservation,
   assertExpectedEntryUrl,
   assertNormalRuntimeSnapshot,
+  assertSafeDriverPaths,
   assertSourceState,
   assertStableSourceState,
   buildReportDraft,
   buildRunEventLog,
   buildRunMachineFacts,
+  captureAiPlaytestSession,
   collectRunCompletionIssues,
   createRunObservationState,
   finalizeSessionEvidence,
@@ -31,6 +35,12 @@ import {
   verifyServedDistFiles,
   writeJsonExclusive,
 } from "../../tools/run-ai-playtest-session.mjs";
+import {
+  createActionAuditLog,
+} from "../../tools/ai-playtest/action-audit-log.mjs";
+import {
+  startDriverIpcServer,
+} from "../../tools/ai-playtest/driver-ipc-server.mjs";
 import {
   claimOutputDirectory,
   publishBufferExclusive,
@@ -167,6 +177,246 @@ function fakeBrowserResources({
   };
 }
 
+async function fakeDriverCapture(scenario = "success") {
+  const root = await mkdtemp(path.join(tmpdir(), "ai-driver-runner-"));
+  const roundRoot = path.join(root, "baseline");
+  const output = path.join(roundRoot, "action-ricochet-crew");
+  const invalidRoot = path.join(root, "invalid");
+  const draftOutput = path.join(root, "drafts", "report-draft.json");
+  const driverDescriptorPath = path.join(
+    root,
+    "descriptors",
+    "driver.json",
+  );
+  await Promise.all([
+    mkdir(roundRoot, { recursive: true }),
+    mkdir(path.dirname(draftOutput), { recursive: true }),
+    mkdir(path.dirname(driverDescriptorPath), { recursive: true }),
+  ]);
+
+  const sessionId = "11111111-1111-4111-8111-111111111111";
+  const token = "ab".repeat(32);
+  const events = [];
+  let sequence = 0;
+  for (let index = 1; index <= 3; index += 1) {
+    const runId = `run-${index}`;
+    events.push({
+      ...lifecycleEvent("run_start", runId, ++sequence),
+      sessionId,
+    });
+    events.push({
+      ...lifecycleEvent("first_input", runId, ++sequence),
+      event: "first_input",
+      sessionId,
+    });
+    events.push({
+      ...lifecycleEvent("run_end", runId, ++sequence),
+      sessionId,
+    });
+  }
+  const snapshots = [
+    [],
+    events.slice(0, 2),
+    events.slice(0, 3),
+    events.slice(0, 5),
+    events.slice(0, 6),
+    events.slice(0, 8),
+    events.slice(0, 9),
+  ];
+  if (scenario === "fourth-run") {
+    snapshots.push([
+      ...events,
+      {
+        ...lifecycleEvent("run_start", "run-4", ++sequence),
+        sessionId,
+      },
+    ]);
+  } else {
+    snapshots.push(events);
+  }
+
+  let clock = 1_000;
+  let telemetryReads = 0;
+  let phase = "initial";
+  let requestSeq = 0;
+  let screenshotCount = 0;
+  const replaySent = new Set();
+  const waitDelays = [];
+  let context;
+
+  const sendTap = async () => {
+    const descriptor = JSON.parse(
+      await readFile(driverDescriptorPath, "utf8"),
+    );
+    requestSeq += 1;
+    const response = await fetch(descriptor.url, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${descriptor.token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        type: "touchTap",
+        sessionId: descriptor.sessionId,
+        requestSeq,
+        actionId: `tap-${requestSeq}`,
+        frameSeq: 0,
+        x: 10,
+        y: 20,
+      }),
+    });
+    assert.equal(response.status, 200);
+  };
+
+  const page = {
+    on() {},
+    context: () => context,
+    url: () => "http://127.0.0.1:4173/ricochet-crew/",
+    touchscreen: {
+      async tap() {},
+    },
+    async goto() {
+      if (scenario === "disconnect") {
+        clock += 10_001;
+        await new Promise((resolve) => setTimeout(resolve, 15));
+      } else {
+        await sendTap();
+      }
+    },
+    async evaluate(callback) {
+      if (callback.toString().includes("localStorage.getItem")) {
+        const snapshot = snapshots[
+          Math.min(telemetryReads, snapshots.length - 1)
+        ];
+        telemetryReads += 1;
+        phase = [
+          "initial",
+          "start-1",
+          "end-1",
+          "start-2",
+          "end-2",
+          "start-3",
+          "end-3",
+          "final",
+        ][Math.min(telemetryReads - 1, 7)];
+        return snapshot;
+      }
+      return {
+        debugGlobals: [],
+        publicState: { testMode: false, timeScale: 1 },
+      };
+    },
+    async screenshot() {
+      screenshotCount += 1;
+      return Buffer.from(`png-${screenshotCount}`);
+    },
+    async waitForTimeout(delayMs) {
+      waitDelays.push(delayMs);
+      if (
+        delayMs === 500
+        && (phase === "end-1" || phase === "end-2")
+        && !replaySent.has(phase)
+      ) {
+        replaySent.add(phase);
+        await sendTap();
+      }
+    },
+    async close() {},
+  };
+  context = {
+    tracing: {
+      async start() {},
+      async stop({ path: target }) {
+        await writeFile(target, "trace", { flag: "wx" });
+      },
+    },
+    async newPage() {
+      return page;
+    },
+    async newCDPSession() {
+      return { send: async () => ({ private: true }) };
+    },
+    async close() {},
+  };
+  const browser = {
+    async newContext() {
+      return context;
+    },
+    async close() {},
+  };
+  const sourceState = {
+    expectedCommit: COMMIT,
+    headCommit: COMMIT,
+    clean: true,
+    statusEntries: [],
+  };
+  const servedDist = {
+    expectedCommit: COMMIT,
+    aggregateSha256: "d".repeat(64),
+    files: [],
+    fileCount: 0,
+  };
+
+  const options = {
+    roundId: "baseline",
+    gameId: "ricochet-crew",
+    reviewerRole: "action",
+    entryUrl: "http://127.0.0.1:4173/ricochet-crew/",
+    output,
+    expectedCommit: COMMIT,
+    driverEnabled: true,
+    driverDescriptorPath,
+    draftOutput,
+    invalidRoot,
+    timeoutMs: 5_000,
+  };
+  const dependencies = {
+    randomUUID: () => sessionId,
+    randomBytes: () => Buffer.from(token, "hex"),
+    readSourceState: async () => sourceState,
+    attestServedDist: async () => servedDist,
+    launch: async () => browser,
+    startDriverIpcServer: (driverOptions) => startDriverIpcServer({
+      ...driverOptions,
+      now: () => clock,
+      healthCheckIntervalMs: 5,
+    }),
+    ...(scenario === "action-log-close"
+      ? {
+          async createActionAuditLog(...args) {
+            const realLog = await createActionAuditLog(...args);
+            return {
+              write: (record) => realLog.write(record),
+              async close() {
+                await realLog.close();
+                throw new Error("simulated-action-log-close-failure");
+              },
+            };
+          },
+        }
+      : {}),
+  };
+  let evidence = null;
+  let error = null;
+  try {
+    evidence = await captureAiPlaytestSession(options, dependencies);
+  } catch (caught) {
+    error = caught;
+  }
+  return {
+    root,
+    output,
+    invalidRoot,
+    draftOutput,
+    driverDescriptorPath,
+    sessionId,
+    token,
+    evidence,
+    error,
+    waitDelays,
+  };
+}
+
 function expectedClosures(failurePoint) {
   return {
     launch: [],
@@ -176,6 +426,508 @@ function expectedClosures(failurePoint) {
     tracing: ["close:page", "close:context", "close:browser"],
   }[failurePoint];
 }
+
+describe("trusted AI driver runner integration", () => {
+  it("writes an exclusive synced action log and closes it idempotently", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "ai-actions-"));
+    const target = path.join(root, "session-actions.jsonl");
+    try {
+      const log = await createActionAuditLog(target);
+      await log.write({
+        schemaVersion: 1,
+        type: "touchTap",
+        actionId: "tap-1",
+        requestSeq: 1,
+        frameSeq: 0,
+        x: 10,
+        y: 20,
+        requestedAt: 1,
+        executedAt: 2,
+        completedAt: 3,
+        result: "success",
+        sessionId: "session-1",
+        gameId: "ricochet-crew",
+        runId: "run-1",
+      });
+      await log.close();
+      await log.close();
+      assert.deepEqual(
+        JSON.parse((await readFile(target, "utf8")).trim()),
+        {
+          schemaVersion: 1,
+          type: "touchTap",
+          actionId: "tap-1",
+          requestSeq: 1,
+          frameSeq: 0,
+          x: 10,
+          y: 20,
+          requestedAt: 1,
+          executedAt: 2,
+          completedAt: 3,
+          result: "success",
+          sessionId: "session-1",
+          gameId: "ricochet-crew",
+          runId: "run-1",
+        },
+      );
+      await assert.rejects(
+        log.write({ type: "touchTap" }),
+        /AI_DRIVER_ACTION_LOG_CLOSED/u,
+      );
+      await assert.rejects(
+        createActionAuditLog(target),
+        (error) => error?.code === "EEXIST",
+      );
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects token, HTML, storage, globals, and CDP response fields", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "ai-actions-safe-"));
+    try {
+      for (const forbiddenField of [
+        "token",
+        "html",
+        "storage",
+        "globals",
+        "cdpResponse",
+      ]) {
+        const log = await createActionAuditLog(
+          path.join(root, `${forbiddenField}.jsonl`),
+        );
+        await assert.rejects(
+          log.write({
+            type: "touchTap",
+            [forbiddenField]: "secret",
+          }),
+          /AI_DRIVER_ACTION_LOG_FORBIDDEN_FIELD/u,
+        );
+        await log.close();
+      }
+      const secretValue = "e".repeat(64);
+      const secretLog = await createActionAuditLog(
+        path.join(root, "secret-value.jsonl"),
+        { forbiddenValues: [secretValue] },
+      );
+      await assert.rejects(
+        secretLog.write({
+          type: "touchTap",
+          actionId: secretValue,
+        }),
+        /AI_DRIVER_ACTION_LOG_SECRET_VALUE/u,
+      );
+      await secretLog.close();
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects structurally unsafe action field values without keyword filtering", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "ai-actions-schema-"));
+    const target = path.join(root, "session-actions.jsonl");
+    const unsafeValues = [
+      { actionId: "<html>" },
+      { actionId: { storage: "private" } },
+      { result: "{\"cdpResponse\":{\"ok\":true}}" },
+      { gestureId: "gesture-1\n{\"globals\":true}" },
+      { errorCode: "[\"STORAGE_DUMP\"]" },
+      { sessionId: ["session-1"] },
+      { gameId: "g".repeat(129) },
+      { runId: String.raw`run\1` },
+      { requestSeq: 0 },
+      { requestSeq: { value: 1 } },
+      { frameSeq: -1 },
+      { x: Number.POSITIVE_INFINITY },
+      { requestedAt: "1" },
+      { completedAt: { now: 3 } },
+      { schemaVersion: "1" },
+      { type: "touchTap<script>" },
+    ];
+    try {
+      const log = await createActionAuditLog(target);
+      for (const unsafe of unsafeValues) {
+        await assert.rejects(
+          log.write({ type: "touchTap", ...unsafe }),
+          /AI_DRIVER_ACTION_LOG_FIELD_INVALID/u,
+        );
+      }
+      await log.write({
+        schemaVersion: 1,
+        type: "touchTap",
+        actionId: "action:run_1.step-2",
+        requestSeq: 1,
+        frameSeq: 0,
+        gestureId: "gesture:run_1.step-2",
+        x: -0.5,
+        y: 843.5,
+        requestedAt: 1,
+        executedAt: 2,
+        completedAt: 3,
+        result: "failure",
+        errorCode: "AI_DRIVER_TOUCH_FAILED",
+        sessionId: "session:run_1.step-2",
+        gameId: "ricochet-crew",
+        runId: "run-1",
+      });
+      await log.close();
+      const lines = (await readFile(target, "utf8")).trim().split(/\r?\n/u);
+      assert.equal(lines.length, 1);
+      assert.equal(JSON.parse(lines[0]).actionId, "action:run_1.step-2");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("latches the first partial write failure and closes the handle", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "ai-actions-write-fault-"));
+    const persistenceError = new Error("partial-write-failed");
+    let closeCalls = 0;
+    const handle = {
+      async writeFile() {
+        throw persistenceError;
+      },
+      async sync() {
+        assert.fail("sync must not follow a failed write");
+      },
+      async close() {
+        closeCalls += 1;
+      },
+    };
+    let log;
+    try {
+      log = await createActionAuditLog(
+        path.join(root, "session-actions.jsonl"),
+        { openFile: async () => handle },
+      );
+      await assert.rejects(
+        log.write({ type: "touchTap" }),
+        (error) => error === persistenceError,
+      );
+      await assert.rejects(
+        log.write({ type: "touchTap", actionId: "after-failure" }),
+        (error) => error === persistenceError,
+      );
+      await assert.rejects(
+        log.close(),
+        (error) => error === persistenceError,
+      );
+      await assert.rejects(
+        log.close(),
+        (error) => error === persistenceError,
+      );
+      assert.equal(closeCalls, 1);
+    } finally {
+      await log?.close().catch(() => {});
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("waits for concurrent writes on close and aggregates sync plus close failures", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "ai-actions-sync-fault-"));
+    const syncError = new Error("sync-failed");
+    const closeError = new Error("close-failed");
+    let releaseWrite;
+    let writeStarted;
+    let writeCalls = 0;
+    let closeCalls = 0;
+    const started = new Promise((resolve) => {
+      writeStarted = resolve;
+    });
+    const blocked = new Promise((resolve) => {
+      releaseWrite = resolve;
+    });
+    const handle = {
+      async writeFile() {
+        writeCalls += 1;
+        writeStarted();
+        await blocked;
+      },
+      async sync() {
+        throw syncError;
+      },
+      async close() {
+        closeCalls += 1;
+        throw closeError;
+      },
+    };
+    let log;
+    try {
+      log = await createActionAuditLog(
+        path.join(root, "session-actions.jsonl"),
+        { openFile: async () => handle },
+      );
+      const firstWrite = log.write({ type: "touchTap", actionId: "first" });
+      const queuedWrite = log.write({ type: "touchTap", actionId: "second" });
+      await Promise.race([
+        started,
+        new Promise((_, reject) => {
+          setTimeout(
+            () => reject(
+              new Error("AI_DRIVER_ACTION_LOG_OPEN_INJECTION_IGNORED"),
+            ),
+            100,
+          );
+        }),
+      ]);
+      let closeSettled = false;
+      const close = log.close().finally(() => {
+        closeSettled = true;
+      });
+      await Promise.resolve();
+      assert.equal(closeSettled, false);
+      releaseWrite();
+      await assert.rejects(
+        firstWrite,
+        (error) => error === syncError,
+      );
+      await assert.rejects(
+        queuedWrite,
+        (error) => error === syncError,
+      );
+      await assert.rejects(close, (error) => {
+        assert.equal(error instanceof AggregateError, true);
+        assert.deepEqual(error.errors, [syncError, closeError]);
+        return true;
+      });
+      assert.equal(writeCalls, 1);
+      assert.equal(closeCalls, 1);
+    } finally {
+      releaseWrite();
+      await log?.close().catch(() => {});
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("requires driver paths outside formal output and invalid root outside the round", () => {
+    const root = path.resolve("evidence");
+    const output = path.join(
+      root,
+      "baseline",
+      "action-ricochet-crew",
+    );
+    const base = {
+      ...validOptions({
+        entryUrl: "http://127.0.0.1:4173/ricochet-crew/",
+        output,
+      }),
+      driverEnabled: true,
+      driverDescriptorPath: path.join(root, "tmp", "driver.json"),
+      draftOutput: path.join(root, "drafts", "draft.json"),
+      invalidRoot: path.join(root, "invalid"),
+    };
+    assert.equal(validateSessionOptions(base).driverEnabled, true);
+    assert.throws(
+      () => validateSessionOptions({
+        ...base,
+        draftOutput: path.join(output, "report-draft.json"),
+      }),
+      /AI_PLAYTEST_DRAFT_INSIDE_OUTPUT/u,
+    );
+    assert.throws(
+      () => validateSessionOptions({
+        ...base,
+        invalidRoot: path.join(root, "baseline", "invalid"),
+      }),
+      /AI_PLAYTEST_INVALID_ROOT_INSIDE_ROUND/u,
+    );
+    assert.throws(
+      () => validateSessionOptions({
+        ...base,
+        driverDescriptorPath: path.join(output, "driver.json"),
+      }),
+      /AI_PLAYTEST_DESCRIPTOR_INSIDE_OUTPUT/u,
+    );
+    assert.throws(
+      () => validateSessionOptions({
+        ...base,
+        driverDescriptorPath: base.draftOutput,
+      }),
+      /AI_PLAYTEST_DRIVER_PATH_OVERLAP/u,
+    );
+    assert.throws(
+      () => validateSessionOptions({
+        ...base,
+        invalidRoot: root,
+      }),
+      /AI_PLAYTEST_DRIVER_PATH_OVERLAP/u,
+    );
+  });
+
+  it("rejects reparse parents and canonical driver path aliases", async () => {
+    const root = path.resolve("canonical-driver-paths");
+    const output = path.join(
+      root,
+      "baseline",
+      "action-ricochet-crew",
+    );
+    const descriptor = path.join(root, "linked", "driver.json");
+    const draft = path.join(root, "drafts", "draft.json");
+    const invalidRoot = path.join(root, "invalid");
+    const ordinaryStats = {
+      isSymbolicLink: () => false,
+    };
+    await assert.rejects(
+      assertSafeDriverPaths({
+        output,
+        driverDescriptorPath: descriptor,
+        draftOutput: draft,
+        invalidRoot,
+      }, {
+        lstatImpl: async (target) => ({
+          isSymbolicLink: () => target === path.join(root, "linked"),
+        }),
+        realpathImpl: async (target) => target,
+      }),
+      /AI_PLAYTEST_DRIVER_PATH_REPARSE/u,
+    );
+    await assert.rejects(
+      assertSafeDriverPaths({
+        output,
+        driverDescriptorPath: descriptor,
+        draftOutput: draft,
+        invalidRoot,
+      }, {
+        lstatImpl: async () => ordinaryStats,
+        realpathImpl: async (target) => (
+          target === draft ? descriptor : target
+        ),
+      }),
+      /AI_PLAYTEST_DRIVER_PATH_OVERLAP/u,
+    );
+    await assert.rejects(
+      assertSafeDriverPaths({
+        output,
+        driverDescriptorPath: descriptor,
+        draftOutput: draft,
+        invalidRoot,
+      }, {
+        lstatImpl: async () => ordinaryStats,
+        realpathImpl: async (target) => (
+          target === invalidRoot
+            ? path.join(root, "baseline", "invalid-alias")
+            : target
+        ),
+      }),
+      /AI_PLAYTEST_INVALID_ROOT_INSIDE_ROUND/u,
+    );
+  });
+
+  it("orchestrates three runs, removes the descriptor, and hashes closed actions", async () => {
+    const capture = await fakeDriverCapture("success");
+    try {
+      assert.equal(capture.error, null);
+      assert.equal(capture.evidence.status, "CAPTURED");
+      assert.equal(capture.evidence.executionTrust, "local-audited");
+      assert.equal(capture.evidence.driver.protocol, "loopback-whitelist-v1");
+      assert.equal(capture.evidence.driver.sessionId, capture.sessionId);
+      assert.equal(capture.evidence.driver.descriptorPath, null);
+      assert.equal(capture.evidence.driver.fatalReason, null);
+      assert.equal(capture.evidence.entryScreenshotPath, "entry.png");
+      assert.equal(capture.evidence.actionLogPath, "session-actions.jsonl");
+      assert.equal(capture.evidence.tracePath, "session-trace.zip");
+      assert.deepEqual(
+        capture.waitDelays.filter((delayMs) => delayMs >= 1_000),
+        [1_000, 1_000, 1_000],
+      );
+
+      await assert.rejects(access(capture.driverDescriptorPath), {
+        code: "ENOENT",
+      });
+      await assert.rejects(
+        access(path.join(capture.output, "report-draft.json")),
+        { code: "ENOENT" },
+      );
+      const draft = JSON.parse(await readFile(capture.draftOutput, "utf8"));
+      assert.equal(draft.draftOnly, true);
+      const actionBytes = await readFile(
+        path.join(capture.output, "session-actions.jsonl"),
+      );
+      const actionLines = actionBytes.toString("utf8").trim().split(/\r?\n/u);
+      assert.equal(actionLines.length, 3);
+      assert.deepEqual(
+        actionLines.map((line) => JSON.parse(line).runId),
+        ["run-1", "run-2", "run-3"],
+      );
+      assert.equal(actionBytes.includes(Buffer.from(capture.token)), false);
+      assert.equal(
+        capture.evidence.evidenceSha256["session-actions.jsonl"],
+        createHash("sha256").update(actionBytes).digest("hex"),
+      );
+      for (const target of [
+        path.join(capture.output, "session-evidence.json"),
+        capture.draftOutput,
+      ]) {
+        assert.equal(
+          (await readFile(target, "utf8")).includes(capture.token),
+          false,
+        );
+      }
+    } finally {
+      await rm(capture.root, { recursive: true, force: true });
+    }
+  });
+
+  it("quarantines disconnect and fourth-run sessions without a draft", async () => {
+    for (const scenario of ["disconnect", "fourth-run"]) {
+      const capture = await fakeDriverCapture(scenario);
+      try {
+        assert.equal(capture.evidence, null);
+        assert.match(
+          capture.error?.message ?? "",
+          /AI_PLAYTEST_SESSION_INCOMPLETE/u,
+        );
+        assert.match(capture.error?.invalidOutput ?? "", /invalid/u);
+        const durable = JSON.parse(
+          await readFile(
+            path.join(capture.error.invalidOutput, "session-evidence.json"),
+            "utf8",
+          ),
+        );
+        assert.equal(durable.status, "INCOMPLETE");
+        assert.match(
+          durable.diagnostics.terminalErrors.join("|"),
+          scenario === "disconnect"
+            ? /AI_DRIVER_HEARTBEAT_TIMEOUT/u
+            : /FOURTH_RUN/u,
+        );
+        await assert.rejects(access(capture.driverDescriptorPath), {
+          code: "ENOENT",
+        });
+        await assert.rejects(access(capture.draftOutput), { code: "ENOENT" });
+      } finally {
+        await rm(capture.root, { recursive: true, force: true });
+      }
+    }
+  });
+
+  it("quarantines after an action log close failure and keeps the draft absent", async () => {
+    const capture = await fakeDriverCapture("action-log-close");
+    try {
+      assert.equal(capture.evidence, null);
+      assert.match(
+        capture.error?.message ?? "",
+        /AI_PLAYTEST_SESSION_INCOMPLETE/u,
+      );
+      const durable = JSON.parse(
+        await readFile(
+          path.join(capture.error.invalidOutput, "session-evidence.json"),
+          "utf8",
+        ),
+      );
+      assert.match(
+        durable.diagnostics.terminalErrors.join("|"),
+        /simulated-action-log-close-failure/u,
+      );
+      await assert.rejects(access(capture.draftOutput), { code: "ENOENT" });
+      await assert.rejects(access(capture.driverDescriptorPath), {
+        code: "ENOENT",
+      });
+    } finally {
+      await rm(capture.root, { recursive: true, force: true });
+    }
+  });
+});
 
 describe("formal AI playtest staged lifecycle", () => {
   for (const failurePoint of [

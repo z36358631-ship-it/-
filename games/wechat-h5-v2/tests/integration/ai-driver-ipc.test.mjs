@@ -110,6 +110,7 @@ async function startTestServer({
   now,
   randomId,
   timeouts,
+  healthCheckIntervalMs,
 } = {}) {
   const faults = [];
   const controller = await startDriverIpcServer({
@@ -119,6 +120,7 @@ async function startTestServer({
     now,
     randomId,
     timeouts,
+    healthCheckIntervalMs,
     onFault: (code) => faults.push(code),
   });
   return { controller, adapter, faults };
@@ -406,6 +408,79 @@ describe("AI driver loopback HTTP transport", () => {
       assert.equal(sockets.every((socket) => socket.destroyed), true);
     } finally {
       for (const socket of sockets) socket.destroy();
+      await context.controller.close();
+    }
+  });
+
+  it("waits for an in-flight touch audit and latched fault before close returns", async () => {
+    let releaseTouch;
+    let markTouchStarted;
+    let touchFinished = false;
+    const touchStarted = new Promise((resolve) => {
+      markTouchStarted = resolve;
+    });
+    const blockedTouch = new Promise((resolve) => {
+      releaseTouch = resolve;
+    });
+    const touchError = new Error("delayed touch audit failed");
+    touchError.code = "AI_DRIVER_DELAYED_TOUCH_FAILED";
+    const adapter = fakeAdapter({
+      async touchTap(input) {
+        adapter.calls.push({ type: "touchTap", input });
+        markTouchStarted();
+        await blockedTouch;
+        touchFinished = true;
+        throw touchError;
+      },
+    });
+    const context = await startTestServer({ adapter });
+    const request = sendCommand(
+      context.controller,
+      command("touchTap", 1, { x: 10, y: 20 }),
+    ).catch((error) => error);
+    try {
+      await touchStarted;
+      let closeSettled = false;
+      const close = context.controller.close().then(() => {
+        closeSettled = true;
+      });
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      assert.equal(closeSettled, false);
+      releaseTouch();
+      await close;
+      await request;
+      assert.equal(touchFinished, true);
+      assert.equal(
+        context.controller.fatalReason(),
+        "AI_DRIVER_DELAYED_TOUCH_FAILED",
+      );
+      assert.deepEqual(context.faults, ["AI_DRIVER_DELAYED_TOUCH_FAILED"]);
+    } finally {
+      releaseTouch();
+      await request;
+      await context.controller.close();
+    }
+  });
+
+  it("permanently faults a silent heartbeat timeout and clears its watchdog on close", async () => {
+    let now = 1_000;
+    const context = await startTestServer({
+      now: () => now,
+      healthCheckIntervalMs: 5,
+    });
+    try {
+      now += 10_001;
+      await new Promise((resolve) => setTimeout(resolve, 25));
+      assert.equal(
+        context.controller.fatalReason(),
+        "AI_DRIVER_HEARTBEAT_TIMEOUT",
+      );
+      assert.deepEqual(context.faults, ["AI_DRIVER_HEARTBEAT_TIMEOUT"]);
+      await context.controller.close();
+      now += 10_001;
+      await new Promise((resolve) => setTimeout(resolve, 25));
+      assert.deepEqual(context.faults, ["AI_DRIVER_HEARTBEAT_TIMEOUT"]);
+    } finally {
       await context.controller.close();
     }
   });
