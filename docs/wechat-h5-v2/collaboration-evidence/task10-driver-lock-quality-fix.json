@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 10",
+  "phase": "quality-fix",
+  "agent": "/root/task1_atomic_capture",
+  "role": "AI 试玩请求锁安全修复",
+  "objective": "HANDOFF: 修复双 sidecar、owner lock、cleanup 竞态和 descriptor 输出泄漏",
+  "commit": "c941c074431d94cf46f41f3f6fc2d264989b1001",
+  "files": [
+    "games/wechat-h5-v2/tools/ai-playtest/driver-request-sequence.mjs",
+    "games/wechat-h5-v2/tools/ai-playtest-driver-cli.mjs",
+    "games/wechat-h5-v2/tools/ai-playtest-heartbeat.mjs",
+    "games/wechat-h5-v2/tests/integration/ai-driver-cli.test.mjs"
+  ],
+  "commands": [
+    "node --test tests/integration/ai-driver-cli.test.mjs tests/integration/ai-driver-ipc.test.mjs tests/integration/ai-playtest-session.test.mjs"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 83,
+    "pass": 83,
+    "fail": 0
+  },
+  "startedAt": "2026-07-30T02:11:34+08:00",
+  "finishedAt": "2026-07-30T02:23:13+08:00",
+  "activeMinutes": 11,
+  "review": {
+    "specReview": "PASS",
+    "securityReview": "APPROVED",
+    "conclusion": "活锁不再被强拆，dead owner 接管与 token 输出均失败关闭。"
+  }
+}

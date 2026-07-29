@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 10",
+  "phase": "docs",
+  "agent": "/root/task1_atomic_capture",
+  "role": "AI 试玩操作文档工程",
+  "objective": "更新中文操作流程、三局门禁、canonical evidence 与信任边界",
+  "commit": "c941c074431d94cf46f41f3f6fc2d264989b1001",
+  "files": [
+    "docs/wechat-h5-v2/ai-player-prompts.md",
+    "docs/wechat-h5-v2/ai-playtest-runbook.md",
+    "docs/wechat-h5-v2/ai-playtest-method.md",
+    "docs/wechat-h5-v2/README.md",
+    "docs/wechat-h5-v2/release-checklist.md"
+  ],
+  "commands": [
+    "git diff --check -- docs/wechat-h5-v2"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 5,
+    "pass": 5,
+    "fail": 0
+  },
+  "startedAt": "2026-07-30T02:00:28+08:00",
+  "finishedAt": "2026-07-30T02:03:28+08:00",
+  "activeMinutes": 3,
+  "review": {
+    "specReview": "PASS",
+    "conclusion": "五份中文文档与最终协议一致，pilot 状态保持 NOT EXECUTED。"
+  }
+}

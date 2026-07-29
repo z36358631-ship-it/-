@@ -2,7 +2,7 @@
 
 状态：`NOT PASSED`。正式计分表只保留具有不可变 JSON、真实文件哈希、测试结果和审查结论的可核验证据。等待、工具运行等待、并行重复分钟和首尾墙钟跨度均不计入。
 
-当前可验证主动时间区间并集为 157 分钟、证据角色为 23 类，未达到 480 分钟，因此不得声称“八小时协作门禁通过”。原 15 条引用可变文件的记录已迁至 `team-collaboration-legacy.md`，仅供审计且不计分。
+当前可验证主动时间区间并集为 182 分钟、证据角色为 27 类，未达到 480 分钟，因此不得声称“八小时协作门禁通过”。原 15 条引用可变文件的记录已迁至 `team-collaboration-legacy.md`，仅供审计且不计分。
 
 | startedAt | finishedAt | activeMinutes | role | agent/task | objective | inputs | output | evidencePath | evidenceSha256 | reviewer |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -29,12 +29,16 @@
 | 2026-07-30T01:13:22+08:00 | 2026-07-30T01:25:25+08:00 | 12 | AI 试玩交付信任修复 | /root/task1_atomic_capture | HANDOFF: 拆分包认证、本地执行审计和独立背书字段并修复 allowlist/交付负例 | 最终 delivery-security 13/13 | games/wechat-h5-v2/tools/verify-delivery.mjs | docs/wechat-h5-v2/collaboration-evidence/task9-delivery-trust-quality-fix.json | 3e6387b8d9d98a3adf730679af94fbdacc714ea88067a78ef9a9a1f669ec08b3 | 规格 PASS、安全 APPROVED |
 | 2026-07-30T01:29:33+08:00 | 2026-07-30T01:33:33+08:00 | 4 | AI 试玩交付规格复审 | /root/plan_evidence_validators | 独立核对 canonical 打包、trace 限额、trust 输出与 allowlist 时序 | Task 9 最终提交与 13 项完整回归 | games/wechat-h5-v2/delivery-allowlist.json | docs/wechat-h5-v2/collaboration-evidence/task9-delivery-spec-review.json | 2fff862b48209fb10997ac1370e8958d11ad916f83afaaf35760a0df48f4b8fe | 规格复审 PASS |
 | 2026-07-30T01:34:00+08:00 | 2026-07-30T01:38:00+08:00 | 4 | AI 试玩交付安全复审 | /root/plan_delivery_pilot | 独立重放证据改名、缺失、超限、信任自报、allowlist 与 Git blob 绕过 | Task 9 最终提交、13 项完整回归与 7 项探针 | games/wechat-h5-v2/tests/integration/delivery-security.test.mjs | docs/wechat-h5-v2/collaboration-evidence/task9-delivery-security-review.json | f9512f3a6783a21c6e0f232395bc8538344004f2c4a85eb96c66e1bd245a9ca2 | 安全复审 APPROVED |
+| 2026-07-30T01:45:08+08:00 | 2026-07-30T01:54:44+08:00 | 9 | AI 试玩操作 CLI 工程 | /root/task1_atomic_capture | 实现 one-shot CLI、heartbeat、共享请求事务与 runner 清理 | c941c074431d94cf46f41f3f6fc2d264989b1001；Task 10 规格 | games/wechat-h5-v2/tools/ai-playtest-driver-cli.mjs | docs/wechat-h5-v2/collaboration-evidence/task10-driver-cli-phase1.json | 522e5dc17570c738be3c9060c58589c9c0a0d548e0df872b50004233ac2a9097 | 最终规格 PASS、安全 APPROVED |
+| 2026-07-30T02:00:28+08:00 | 2026-07-30T02:03:28+08:00 | 3 | AI 试玩操作文档工程 | /root/task1_atomic_capture | 更新中文操作流程、三局门禁、canonical evidence 与信任边界 | Task 10 文档范围 | docs/wechat-h5-v2/ai-playtest-runbook.md | docs/wechat-h5-v2/collaboration-evidence/task10-driver-docs-phase1.json | f9674579ea9c2a06d5eaf877f3656eed24a13aa7406415492d978b189b25f886 | 规格复审 PASS |
+| 2026-07-30T02:11:34+08:00 | 2026-07-30T02:23:13+08:00 | 11 | AI 试玩请求锁安全修复 | /root/task1_atomic_capture | HANDOFF: 修复双 sidecar、owner lock、cleanup 竞态和 descriptor 输出泄漏 | 最终联合 83/83、runner 58/58 | games/wechat-h5-v2/tools/ai-playtest/driver-request-sequence.mjs | docs/wechat-h5-v2/collaboration-evidence/task10-driver-lock-quality-fix.json | 490996eaea771e5799201efbf8617cd726fe15b8828edd9680a9c1d3f7edf06d | 规格 PASS、安全 APPROVED |
+| 2026-07-30T02:23:30+08:00 | 2026-07-30T02:25:30+08:00 | 2 | AI 试玩操作流最终复审 | /root/plan_delivery_pilot + /root/plan_evidence_validators | 独立复核请求锁并发、descriptor 注入、heartbeat 与 runner cleanup | Task 10 最终提交与 83 项联合回归 | games/wechat-h5-v2/tests/integration/ai-driver-cli.test.mjs | docs/wechat-h5-v2/collaboration-evidence/task10-driver-final-review.json | e1fe6b37fcdef89e819aed352834bcfaa0edd5142341cc7fef6cfe113b53074e | 规格 PASS、安全 APPROVED |
 
 ## 当前门禁结论
 
-- 证据角色：23 类。
-- 证据行：23 行。
-- 可验证主动区间并集：157 分钟，低于 480 分钟。
+- 证据角色：27 类。
+- 证据行：27 行。
+- 可验证主动区间并集：182 分钟，低于 480 分钟。
 - 真实八小时协作：`NOT EXECUTED / NOT PROVEN`。
 - Legacy 记录：15 行，`NOT COUNTED / 未验证主动分钟`。
 - 禁止使用 legacy 行、首尾墙钟跨度或并行员工分钟相加冒充主动时间并集。

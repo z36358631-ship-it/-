@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "task": "Task 10",
+  "phase": "phase1",
+  "agent": "/root/task1_atomic_capture",
+  "role": "AI 试玩操作 CLI 工程",
+  "objective": "实现 one-shot CLI、heartbeat、共享请求事务与 runner 清理",
+  "commit": "c941c074431d94cf46f41f3f6fc2d264989b1001",
+  "files": [
+    "games/wechat-h5-v2/tools/ai-playtest-driver-cli.mjs",
+    "games/wechat-h5-v2/tools/ai-playtest-heartbeat.mjs",
+    "games/wechat-h5-v2/tools/ai-playtest/driver-request-sequence.mjs",
+    "games/wechat-h5-v2/tests/integration/ai-driver-cli.test.mjs"
+  ],
+  "commands": [
+    "node --test tests/integration/ai-driver-cli.test.mjs tests/integration/ai-driver-ipc.test.mjs tests/integration/ai-playtest-session.test.mjs"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "tests": 83,
+    "pass": 83,
+    "fail": 0
+  },
+  "startedAt": "2026-07-30T01:45:08+08:00",
+  "finishedAt": "2026-07-30T01:54:44+08:00",
+  "activeMinutes": 9,
+  "review": {
+    "specReview": "PASS after correction",
+    "securityReview": "APPROVED after correction",
+    "conclusion": "CLI、heartbeat 与 runner 联合流程通过双审。"
+  }
+}
