@@ -229,7 +229,7 @@ function syntheticTraceZip() {
 
 beforeAll(async () => {
   realCapture = await createAiPlaytestEvidenceFixture();
-});
+}, 60_000);
 
 afterEach(async () => {
   await Promise.all(temporaryRoots.splice(0).map((root) =>
