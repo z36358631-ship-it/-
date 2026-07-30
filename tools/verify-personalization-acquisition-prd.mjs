@@ -50,7 +50,7 @@ assert(images.length === 5, `expected exactly five fixed-sha images, found ${ima
 const commits = new Set(images.map((match) => match[1]));
 assert(commits.size === 1, `expected one image commit, found ${commits.size}`);
 assert(
-  commits.has('24e997afb287200748d7c0a5c1c9643aca0d6e1a'),
+  commits.has('8d57a53c8deb06f9cb11e45610c6328e727e915c'),
   `unexpected image commit: ${[...commits].join(', ')}`,
 );
 
