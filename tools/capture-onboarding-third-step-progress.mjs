@@ -37,6 +37,10 @@ async function chooseNewUserAndSource(sourceCode) {
 }
 
 await reset();
+await page.waitForTimeout(500);
+await page.locator('.phone').screenshot({
+  path: path.join(outputDir, '05-user-type-page.png'),
+});
 await chooseNewUserAndSource('other_or_unknown');
 await page.locator('#page2.active').waitFor();
 await page.waitForTimeout(200);
@@ -60,6 +64,27 @@ await page.locator('#guideBtn').click();
 await page.waitForTimeout(500);
 await page.locator('.phone').screenshot({
   path: path.join(outputDir, '04-overseas-guide-slide-2.png'),
+});
+
+await reset();
+await page.locator('#page0 .opt-card').first().click();
+await page.locator('[data-onboarding-source-code="friend_referral"]').click();
+await page.locator('[data-action="submit-onboarding-source"]').click();
+await page.locator('#page1.active').waitFor();
+await page.waitForTimeout(500);
+await page.locator('.phone').screenshot({
+  path: path.join(outputDir, '06-has-game-branch.png'),
+});
+
+await page.locator('#page1 .opt-card').first().click();
+await page.locator('#page3.active').waitFor();
+await page.waitForTimeout(300);
+await page.locator('.phone').screenshot({
+  path: path.join(outputDir, '07-import-scan-loading.png'),
+});
+await page.waitForTimeout(2600);
+await page.locator('.phone').screenshot({
+  path: path.join(outputDir, '08-import-scan-result.png'),
 });
 
 assert.deepEqual(pageErrors, [], `page errors: ${pageErrors.join('; ')}`);
