@@ -1081,7 +1081,6 @@ The heartbeat process:
 
 ```js
 const timer = setInterval(sendHeartbeat, 2_000);
-timer.unref();
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, () => {
     clearInterval(timer);
@@ -1091,7 +1090,7 @@ for (const signal of ["SIGINT", "SIGTERM"]) {
 await new Promise(() => {});
 ```
 
-It prints only `AI_DRIVER_HEARTBEAT_READY session=<sessionId> pid=<pid>`. It never performs game actions and exits nonzero after two consecutive heartbeat failures. The nine-command protocol has no disconnect command; do not send an ignored `disconnect:true` heartbeat because that would refresh the server deadline while conveying no notice. Process exit stops heartbeats and the server watchdog remains the authoritative disconnect detector.
+The interval must stay referenced because it is the standalone keeper's active event-loop handle; an unresolved Promise alone does not keep Node.js alive. It prints only `AI_DRIVER_HEARTBEAT_READY session=<sessionId> pid=<pid>`. It never performs game actions and exits nonzero after two consecutive heartbeat failures. The nine-command protocol has no disconnect command; do not send an ignored `disconnect:true` heartbeat because that would refresh the server deadline while conveying no notice. Process exit stops heartbeats and the server watchdog remains the authoritative disconnect detector.
 
 - [ ] **Step 4: Update the Chinese operating documents**
 
@@ -1158,32 +1157,49 @@ Stage only the remaining intended files listed by Step 2, then:
 
 ```powershell
 git commit -m "feat(games): secure AI playtest evidence loop"
-git rev-parse HEAD
+$PILOT_COMMIT = (git rev-parse HEAD).Trim()
+if ($PILOT_COMMIT -notmatch '^[0-9a-f]{40}$') {
+  throw 'The verified pilot commit must be a complete 40-character lowercase SHA'
+}
+$PILOT_COMMIT
 ```
 
-Record the complete 40-character SHA as `PILOT_COMMIT`. Do not use `b67e513...` or `3b80730...` as the tested build.
+Record the printed complete 40-character SHA as `PILOT_COMMIT` and keep the exact `$PILOT_COMMIT` value for Task 12. If Task 12 runs in a new PowerShell session, set `$PILOT_COMMIT` to that recorded value before running its commands. Do not use `b67e513...` or `3b80730...` as the tested build.
 
 ## Task 12: Execute the real casual Ricochet three-run pilot
 
 **Files:**
-- Generate outside the dirty source tree first: `C:\ai-playtests\<PILOT_COMMIT>\pilot\casual-ricochet-crew\`
+- Generate outside the dirty source tree first: `C:\ai-playtests\<PILOT_COMMIT>\pilot\baseline\casual-ricochet-crew\`
 - After validation, copy only the approved pilot report to the documented pilot evidence location; do not place it in the baseline 18-cell matrix.
 
 - [ ] **Step 1: Create a clean detached worktree and verify the fixed commit**
 
 ```powershell
 $Repo = 'C:\Users\z3635\官网改动'
-$Commit = (git -C $Repo rev-parse HEAD).Trim()
-$Worktree = "C:\ai-playtest-worktrees\$Commit"
-$Evidence = "C:\ai-playtests\$Commit\pilot\casual-ricochet-crew"
+$Commit = $PILOT_COMMIT
+if ($Commit -notmatch '^[0-9a-f]{40}$') {
+  throw 'PILOT_COMMIT must be the recorded 40-character lowercase SHA'
+}
+$VerifyWorktree = "C:\ai-playtest-worktrees\$Commit-verify"
+$Worktree = "C:\ai-playtest-worktrees\$Commit-pilot"
+$Evidence = "C:\ai-playtests\$Commit\pilot\baseline\casual-ricochet-crew"
 $InvalidRoot = "C:\ai-playtests\$Commit\invalid"
 $Draft = "C:\ai-playtests\$Commit\drafts\casual-ricochet-crew-report-draft.json"
 $Descriptor = Join-Path $env:TEMP "ai-driver-$Commit.json"
 
-git -C $Repo worktree add --detach $Worktree $Commit
+git -C $Repo worktree add --detach $VerifyWorktree $Commit
+Set-Location "$VerifyWorktree\games\wechat-h5-v2"
+npm.cmd ci
+npm.cmd run assets:export -- art/recipes/hub.json
+npm.cmd run verify
+
+# The asset export report contains an absolute target path, and the build
+# rewrites generated text bytes. Never use that now-dirty verification
+# worktree for evidence capture. Create a fresh exact-byte worktree instead.
+git -C $Repo -c core.autocrlf=false worktree add --detach $Worktree $Commit
 Set-Location "$Worktree\games\wechat-h5-v2"
 npm.cmd ci
-npm.cmd run verify
+git status --short --untracked-files=all -- .
 New-Item -ItemType Directory -Force -Path (Split-Path $Evidence),$InvalidRoot,(Split-Path $Draft) | Out-Null
 ```
 
@@ -1207,7 +1223,8 @@ node tools/run-ai-playtest-session.mjs `
   --game ricochet-crew `
   --expected-commit $Commit `
   --output $Evidence `
-  --driver-descriptor $Descriptor `
+  --driver-enabled true `
+  --driver-descriptor-path $Descriptor `
   --draft-output $Draft `
   --invalid-root $InvalidRoot `
   --timeout-ms 2100000

@@ -521,6 +521,8 @@ describe("AI driver heartbeat keeper", () => {
         /^AI_DRIVER_HEARTBEAT_READY session=123e4567-e89b-42d3-a456-426614174000 pid=[1-9][0-9]*\n$/u,
       );
       assert.equal(stdout.includes(TOKEN), false);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      assert.equal(child.exitCode, null);
       child.kill("SIGTERM");
       const [code, signal] = await once(child, "exit");
       assert.ok(code === 0 || signal === "SIGTERM");

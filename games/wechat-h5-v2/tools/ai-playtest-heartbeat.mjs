@@ -76,7 +76,8 @@ export async function runHeartbeatKeeper({
     ]),
   );
   const timer = setInterval(heartbeat, heartbeatIntervalMs);
-  timer.unref();
+  // This interval is the standalone keeper's active event-loop handle.
+  // An unresolved Promise alone does not keep Node.js alive.
   for (const [signal, handler] of signalHandlers) {
     signalSource.on(signal, handler);
   }
