@@ -491,8 +491,7 @@
     }
 
     .back-detail:hover,
-    .refresh-button:hover,
-    .detail-button:hover {
+    .refresh-button:hover {
       background: rgba(255, 255, 255, 0.08);
     }
 
@@ -713,18 +712,6 @@
       cursor: default;
       background: #4a484e;
       color: #b4b1b8;
-    }
-
-    .detail-button {
-      min-width: 86px;
-      height: 49px;
-      margin-left: auto;
-      padding: 0 21px;
-      border: 2px solid rgba(255, 255, 255, 0.09);
-      border-radius: 25px;
-      background: rgba(255, 255, 255, 0.02);
-      color: #b8b6bb;
-      font-size: 20px;
     }
 
     .empty-list {
@@ -1060,15 +1047,31 @@
       margin-left: 20px;
     }
 
+    .mods-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
     .mods-discovery-copy strong {
-      display: block;
       color: #e1dfe2;
       font-size: 28px;
       font-weight: 560;
       line-height: 36px;
     }
 
-    .mods-discovery-copy span {
+    .mods-source-badge {
+      padding: 3px 9px;
+      border: 2px solid rgba(255, 255, 255, 0.09);
+      border-radius: 12px;
+      color: #8f8d94;
+      font-size: 15px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 20px;
+    }
+
+    .mods-discovery-copy .mods-subtitle {
       display: block;
       margin-top: 6px;
       color: #89878e;
@@ -1310,28 +1313,36 @@
       gap: 16px;
     }
 
-    .sort-control {
-      height: 48px;
-      padding: 0 15px 0 18px;
-      display: inline-flex;
+    .browse-sort-options {
+      display: flex;
       align-items: center;
-      gap: 10px;
-      border: 2px solid rgba(255, 255, 255, 0.09);
-      border-radius: 24px;
-      background: rgba(35, 34, 39, 0.8);
+      gap: 7px;
+    }
+
+    .browse-sort-options > span {
+      margin-right: 5px;
       color: #817f86;
       font-size: 18px;
     }
 
-    .sort-control select {
-      min-width: 116px;
-      border: 0;
-      outline: 0;
-      background: #252429;
+    .browse-sort-options button {
+      height: 42px;
+      padding: 0 16px;
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      border-radius: 22px;
+      background: rgba(35, 34, 39, 0.76);
+      color: #85838a;
+      font-size: 17px;
+    }
+
+    .browse-sort-options button:hover {
       color: #c9c7cb;
-      font: inherit;
-      font-size: 19px;
-      cursor: pointer;
+    }
+
+    .browse-sort-options button.is-active {
+      border-color: rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.12);
+      color: #f0eff1;
     }
 
     .installed-filters {
@@ -1372,8 +1383,40 @@
     }
 
     .mod-card {
+      position: relative;
       height: 492px;
       grid-template-rows: 320px 108px 64px;
+      transition:
+        border-color 150ms ease,
+        transform 150ms ease;
+    }
+
+    .mod-card:has(.mod-card-hit-area:hover) {
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .mod-card-hit-area {
+      position: absolute;
+      z-index: 2;
+      inset: 0;
+      border: 0;
+      border-radius: inherit;
+      background: transparent;
+    }
+
+    .mod-card-hit-area:focus-visible {
+      outline: 3px solid rgba(255, 255, 255, 0.86);
+      outline-offset: -6px;
+    }
+
+    .mods-grid.is-installed-grid {
+      grid-auto-rows: 428px;
+    }
+
+    .mod-card.is-installed-view {
+      height: 428px;
+      grid-template-rows: 320px 108px;
     }
 
     .mod-copy {
@@ -1406,7 +1449,29 @@
     }
 
     .mod-card footer {
+      position: relative;
+      z-index: 3;
       padding: 0 27px;
+      pointer-events: none;
+    }
+
+    .mod-card footer .install-button {
+      margin-left: auto;
+      pointer-events: auto;
+    }
+
+    .installed-pill {
+      height: 44px;
+      margin-left: auto;
+      padding: 0 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 2px solid rgba(255, 255, 255, 0.09);
+      border-radius: 23px;
+      background: rgba(255, 255, 255, 0.035);
+      color: #9c9aa0;
+      font-size: 18px;
     }
 
     .empty-list {
@@ -1747,10 +1812,8 @@
         updated: (a, b) => b.updated_at.localeCompare(a.updated_at),
         name: (a, b) => a.name.localeCompare(b.name, 'zh-CN')
       };
-      const installedComparators = {
-        recent: (a, b) => (b.installed_at || '').localeCompare(a.installed_at || ''),
-        name: (a, b) => a.name.localeCompare(b.name, 'zh-CN')
-      };
+      const installedRecentComparator = (a, b) =>
+        (b.installed_at || '').localeCompare(a.installed_at || '');
       const installedFilters = {
         all: () => true,
         enabled: mod => mod.enabled_value === 'enabled',
@@ -1764,7 +1827,7 @@
       const sourceMods = activeTab === 'installed'
         ? installedMods
             .filter(installedFilters[current.ui.installedFilter] || installedFilters.all)
-            .sort(installedComparators[current.ui.installedSort] || installedComparators.recent)
+            .sort(installedRecentComparator)
         : [...allMods].sort(browseComparators[current.ui.browseSort] || browseComparators.popular);
       const visibleMods = search
         ? sourceMods.filter(mod =>
@@ -2052,8 +2115,11 @@
             <div class="mods-discovery-heading">
               <span class="mods-symbol">${icon('box')}</span>
               <span class="mods-discovery-copy">
-                <strong>MODS</strong>
-                <span>非官方来源 · 热门推荐 · ${viewModel.installedCount} 个已安装 · 仅此设备</span>
+                <span class="mods-title-row">
+                  <strong>MODS</strong>
+                  <em class="mods-source-badge">非官方</em>
+                </span>
+                <span class="mods-subtitle">热门推荐</span>
               </span>
               <button class="mods-discovery-all" type="button" data-action="open-mods" data-tab="browse">
                 <span class="mods-discovery-count">${viewModel.catalogTotal} 个 MOD</span>
@@ -2109,13 +2175,21 @@
           ? `${enabledLabel} · 可更新`
           : `${enabledLabel} · 已是最新`;
       const status = viewModel.activeTab === 'installed' ? installedStatus : '';
-      const buttonLabel = running
-        ? taskLabel(task)
+      const showBrowseFooter = viewModel.activeTab === 'browse';
+      const footerAction = !showBrowseFooter
+        ? ''
         : installed
-          ? viewModel.activeTab === 'installed' ? '管理' : '已安装'
-          : '安装';
+          ? `<span class="installed-pill">${icon('box', 'small')}已安装</span>`
+          : `<button class="install-button" type="button" data-action="install" data-mod-id="${mod.mod_id}" ${running ? 'disabled' : ''}>
+              ${icon(running ? 'refresh' : 'download', 'small')}${escapeHtml(running ? taskLabel(task) : '安装')}
+            </button>`;
       return `
-        <article class="mod-card" data-mod-card data-mod-id="${mod.mod_id}">
+        <article class="mod-card ${viewModel.activeTab === 'installed' ? 'is-installed-view' : ''}" data-mod-card data-mod-id="${mod.mod_id}">
+          <button class="mod-card-hit-area" type="button"
+            data-card-detail
+            data-action="open-detail"
+            data-mod-id="${mod.mod_id}"
+            aria-label="查看 ${escapeHtml(mod.name)} 详情"></button>
           <div class="mod-cover">${renderModCover(mod)}</div>
           <div class="mod-copy">
             <h2>${escapeHtml(mod.name)}</h2>
@@ -2124,12 +2198,7 @@
               ? `<strong class="mod-state ${installed ? 'is-installed' : ''}">${escapeHtml(status)}</strong>`
               : ''}
           </div>
-          <footer>
-            <button class="install-button" type="button" data-action="${installed ? 'open-detail' : 'install'}" data-mod-id="${mod.mod_id}" ${running ? 'disabled' : ''}>
-              ${icon(running ? 'refresh' : installed ? 'box' : 'download', 'small')}${escapeHtml(buttonLabel)}
-            </button>
-            <button class="detail-button" type="button" data-action="open-detail" data-mod-id="${mod.mod_id}">详情</button>
-          </footer>
+          ${showBrowseFooter ? `<footer>${footerAction}</footer>` : ''}
         </article>
       `;
     }
@@ -2141,28 +2210,22 @@
             ? '没有符合当前筛选的已安装 MOD'
             : '没有找到匹配的 MOD'}</div>`;
       const browseControls = `
-        <label class="sort-control">
+        <div class="browse-sort-options" role="group" aria-label="浏览排序">
           <span>排序</span>
-          <select data-input="browse-sort" aria-label="浏览排序">
-            ${selectOptions([
-              ['popular', '热门推荐'],
-              ['downloads', '下载量'],
-              ['updated', '最近更新'],
-              ['name', '名称']
-            ], viewModel.state.ui.browseSort)}
-          </select>
-        </label>
+          ${[
+            ['popular', '热门推荐'],
+            ['downloads', '下载量'],
+            ['updated', '最近更新'],
+            ['name', '名称']
+          ].map(([value, label]) => `
+            <button type="button"
+              class="${viewModel.state.ui.browseSort === value ? 'is-active' : ''}"
+              data-action="set-browse-sort"
+              data-value="${value}">${label}</button>
+          `).join('')}
+        </div>
       `;
       const installedControls = `
-        <label class="sort-control">
-          <span>排序</span>
-          <select data-input="installed-sort" aria-label="已安装排序">
-            ${selectOptions([
-              ['recent', '最近安装'],
-              ['name', '名称']
-            ], viewModel.state.ui.installedSort)}
-          </select>
-        </label>
         <div class="installed-filters" aria-label="已安装筛选">
           ${[
             ['all', '全部'],
@@ -2207,7 +2270,7 @@
               : `${viewModel.installedCount} 个已安装 · 仅此设备`}</p>
             <div class="catalog-controls">${viewModel.activeTab === 'browse' ? browseControls : installedControls}</div>
           </div>
-          <div class="mods-grid" data-mods-scroll>${cards}</div>
+          <div class="mods-grid ${viewModel.activeTab === 'installed' ? 'is-installed-grid' : ''}" data-mods-scroll>${cards}</div>
         </section>
       `;
     }
@@ -2399,6 +2462,9 @@
       if (action === 'set-installed-filter') {
         dispatch({ type: 'SET_INSTALLED_FILTER', value: control.dataset.value });
       }
+      if (action === 'set-browse-sort') {
+        dispatch({ type: 'SET_BROWSE_SORT', value: control.dataset.value });
+      }
       if (action === 'refresh') {
         dispatch({ type: 'REFRESH_REQUESTED' });
         setTimeout(() => {
@@ -2437,15 +2503,6 @@
     root.addEventListener('input', event => {
       if (event.target.matches('[data-input="search"]')) {
         dispatch({ type: 'SET_SEARCH', value: event.target.value });
-      }
-    });
-
-    root.addEventListener('change', event => {
-      if (event.target.matches('[data-input="browse-sort"]')) {
-        dispatch({ type: 'SET_BROWSE_SORT', value: event.target.value });
-      }
-      if (event.target.matches('[data-input="installed-sort"]')) {
-        dispatch({ type: 'SET_INSTALLED_SORT', value: event.target.value });
       }
     });
 
