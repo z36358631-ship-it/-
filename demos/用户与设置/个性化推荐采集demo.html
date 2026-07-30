@@ -360,6 +360,7 @@
       font-size: 28px;
       line-height: 1;
     }
+    .back-button[hidden] { display: none; }
     .back-button + .wizard-kicker,
     .back-button ~ h2,
     .back-button ~ .wizard-description { margin-left: 30px; }
@@ -741,7 +742,7 @@
     <aside class="simulator-panel" aria-label="触发与异常模拟">
       <p class="panel-eyebrow">GameHub Product Demo</p>
       <h1>个性化推荐与来源采集</h1>
-      <p class="panel-summary">新手引流保持独立；个性化选游戏与获客来源合并为两步全屏问卷。</p>
+      <p class="panel-summary">新用户来源已并入新手引流；本页只演示非新用户按缺失状态完成选游戏与来源。</p>
 
       <section class="panel-section">
         <h2>预览方向</h2>
@@ -756,11 +757,12 @@
         <label class="field">
           <span>用户场景</span>
           <select id="personaSelect">
-            <option value="existing">非新用户 · 首次合格冷启动</option>
-            <option value="new_under_24h">新用户 · 完成引流未满24小时</option>
-            <option value="new_eligible">新用户 · 已满24小时</option>
-            <option value="source_resume">第一步已完成 · 恢复第二步</option>
+            <option value="existing_full">非新用户 · 游戏与来源均待答</option>
+            <option value="existing_source_only">非新用户 · 仅来源待答</option>
+            <option value="existing_game_only">非新用户 · 仅游戏待答</option>
+            <option value="source_resume">来源步骤中断恢复</option>
             <option value="completed">历史已完成 · 不再展示</option>
+            <option value="new_exempt">新用户 · 已由新手引流处理</option>
           </select>
         </label>
         <label class="field">
@@ -865,7 +867,6 @@
     const MIN_GAME_SELECTION = 3;
     const MAX_GAME_SELECTION = 9;
     const STORAGE_KEY = "gamehub_personalization_acquisition_v1";
-    const ONBOARDING_HANDOFF_KEY = "gamehub_onboarding_handoff_v1";
 
     const WIZARD_STATES = Object.freeze({
       NOT_ELIGIBLE: "not_eligible",
@@ -937,7 +938,10 @@
       optionVersion: null,
       sourceSavedAt: null,
       syncStatus: null,
-      onboarding_completed_at: null,
+      gameTerminal: null,
+      sourceTerminal: false,
+      manualInterestExempt: false,
+      entryGroup: "existing_user_recall",
       identity: { installId: "demo-install", accountId: null },
       events: []
     };
@@ -988,9 +992,12 @@
         network: state.network,
         option_version: state.optionVersion,
         optionVersion: state.optionVersion,
-        onboarding_completed_at: state.onboarding_completed_at,
         sourceSavedAt: state.sourceSavedAt,
         syncStatus: state.syncStatus,
+        gameTerminal: state.gameTerminal,
+        sourceTerminal: state.sourceTerminal,
+        manualInterestExempt: state.manualInterestExempt,
+        entryGroup: state.entryGroup,
         identity: state.identity,
         events: state.events
       };
@@ -1007,6 +1014,16 @@
         events: saved.events || []
       });
       if (saved.option_version && !saved.optionVersion) state.optionVersion = saved.option_version;
+      if (!("gameTerminal" in saved)) {
+        if (saved.status === WIZARD_STATES.GAME_COMPLETED) state.gameTerminal = "submitted";
+        if (saved.status === WIZARD_STATES.GAME_SKIPPED) state.gameTerminal = "skipped";
+        if (saved.step === "source" || saved.status === WIZARD_STATES.COMPLETED) {
+          state.gameTerminal = saved.selectedGameIds?.length ? "submitted" : "skipped";
+        }
+      }
+      if (!("sourceTerminal" in saved)) {
+        state.sourceTerminal = saved.status === WIZARD_STATES.COMPLETED && Boolean(saved.sourceSavedAt);
+      }
     }
 
     function restoreWizardState() {
@@ -1015,7 +1032,7 @@
       assignSavedState(saved);
       renderGameStep();
       renderSourceStep();
-      showStep(saved.status === WIZARD_STATES.COMPLETED ? "result" : saved.step || "game", false);
+      showStep(nextMissingStep() || "result", false);
       renderEventLog();
       renderStatePanel();
       return true;
@@ -1029,6 +1046,26 @@
       if (accountState.sourceSavedAt) return accountState;
       if (deviceState.sourceSavedAt) return deviceState;
       return accountState.step === "source" ? accountState : deviceState;
+    }
+
+    function nextMissingStep() {
+      if (state.manualInterestExempt) return null;
+      if (!state.gameTerminal) return "game";
+      if (!state.sourceTerminal) return "source";
+      return null;
+    }
+
+    function finishOrContinue() {
+      const next = nextMissingStep();
+      if (next) {
+        state.status = next === "game"
+          ? WIZARD_STATES.GAME_IN_PROGRESS
+          : WIZARD_STATES.SOURCE_PENDING;
+        showStep(next);
+        return;
+      }
+      state.status = WIZARD_STATES.COMPLETED;
+      showStep("result");
     }
 
     function showStep(step, persist = true) {
@@ -1075,7 +1112,7 @@
     }
 
     function toggleGameSelection(gameId) {
-      if (state.sourceSavedAt) return;
+      if (state.gameTerminal) return;
       const selected = state.selectedGameIds.has(gameId);
       if (selected) state.selectedGameIds.delete(gameId);
       else if (state.selectedGameIds.size < MAX_GAME_SELECTION) state.selectedGameIds.add(gameId);
@@ -1088,7 +1125,7 @@
     }
 
     function shuffleGames() {
-      if (state.sourceSavedAt) return;
+      if (state.gameTerminal) return;
       const selected = [...state.selectedGameIds];
       const rest = gameCatalog.filter(game => !state.selectedGameIds.has(game.id));
       const offset = Math.max(1, Math.floor(rest.length / 3));
@@ -1099,27 +1136,29 @@
     }
 
     function submitGames() {
-      if (state.selectedGameIds.size < MIN_GAME_SELECTION || state.sourceSavedAt) return;
+      if (state.selectedGameIds.size < MIN_GAME_SELECTION || state.gameTerminal) return;
+      state.gameTerminal = "submitted";
       state.status = WIZARD_STATES.GAME_COMPLETED;
       saveWizardState();
       emitEvent("personalization_game_submit", {
         selected_count: state.selectedGameIds.size,
         selected_ids: [...state.selectedGameIds]
       });
-      state.status = WIZARD_STATES.SOURCE_PENDING;
-      showStep("source");
-      emitEvent("personalization_wizard_view", { step: "source", market: state.market });
+      finishOrContinue();
+      const next = nextMissingStep();
+      if (next) emitEvent("personalization_wizard_view", { step: next, market: state.market });
     }
 
     function skipGames() {
-      if (state.sourceSavedAt) return;
+      if (state.gameTerminal) return;
       state.selectedGameIds.clear();
+      state.gameTerminal = "skipped";
       state.status = WIZARD_STATES.GAME_SKIPPED;
       saveWizardState();
       emitEvent("personalization_game_skip", { selected_count: 0 });
-      state.status = WIZARD_STATES.SOURCE_PENDING;
-      showStep("source");
-      emitEvent("personalization_wizard_view", { step: "source", market: state.market });
+      finishOrContinue();
+      const next = nextMissingStep();
+      if (next) emitEvent("personalization_wizard_view", { step: next, market: state.market });
     }
 
     function renderSourceStep() {
@@ -1144,6 +1183,7 @@
       submit.textContent = state.sourceCode
         ? (state.market === "domestic" ? "完成" : "Finish")
         : (state.market === "domestic" ? "请选择一项" : "Choose one option");
+      document.querySelector('[data-action="back-to-games"]').hidden = Boolean(state.gameTerminal);
       renderStatePanel();
     }
 
@@ -1162,24 +1202,25 @@
     }
 
     function backToGames() {
-      if (state.sourceSavedAt) return;
+      if (state.sourceSavedAt || state.gameTerminal) return;
       showStep("game");
       emitEvent("personalization_wizard_view", { step: "game", restored: true });
     }
 
     function completeWizard() {
       if (!state.sourceCode || state.sourceSavedAt) return;
-      state.status = WIZARD_STATES.COMPLETED;
-      state.step = "result";
       state.sourceSavedAt = new Date().toISOString();
       state.syncStatus = state.network === "online" ? "synced" : "sync_pending";
+      state.sourceTerminal = true;
+      state.entryGroup = "existing_user_recall";
       saveWizardState();
       emitEvent("acquisition_source_submit", {
         source_code: state.sourceCode,
         market: state.market,
-        option_version: state.optionVersion
+        option_version: state.optionVersion,
+        entry_group: state.entryGroup
       });
-      showStep("result", false);
+      finishOrContinue();
     }
 
     function retryPendingSync() {
@@ -1211,8 +1252,12 @@
       } else {
         mark.textContent = "→";
         title.textContent = "本次不展示问卷";
-        description.textContent = "未命中触发条件，按原流程进入首页。";
-        meta.innerHTML = '<span>保留原首页体验</span>';
+        description.textContent = state.manualInterestExempt
+          ? "新用户来源已在新手引流处理；兴趣由实际行为生成，本页不再展示。"
+          : "未命中触发条件，按原流程进入首页。";
+        meta.innerHTML = state.manualInterestExempt
+          ? '<span>新手引流已处理</span>'
+          : '<span>保留原首页体验</span>';
       }
     }
 
@@ -1220,12 +1265,8 @@
       if (!input.isColdStart) return false;
       if (!input.complianceFinished || input.hasHigherPriorityLayer) return false;
       if (!input.featureEnabled || !input.inVersionRange || !input.inRollout) return false;
-      if (input.status === WIZARD_STATES.COMPLETED) return false;
-      if (input.userType === "new") {
-        if (!input.onboardingCompletedAt) return false;
-        return input.serverNow - input.onboardingCompletedAt >= 24 * 60 * 60 * 1000;
-      }
-      return true;
+      if (input.userType === "new" || input.manualInterestExempt) return false;
+      return input.status !== WIZARD_STATES.COMPLETED;
     }
 
     function resetStateModel({ keepMarket = true, keepNetwork = true } = {}) {
@@ -1242,38 +1283,49 @@
         optionVersion: null,
         sourceSavedAt: null,
         syncStatus: null,
-        onboarding_completed_at: null,
+        gameTerminal: null,
+        sourceTerminal: false,
+        manualInterestExempt: false,
+        entryGroup: "existing_user_recall",
         identity: { installId: "demo-install", accountId: null },
         events: []
       });
     }
 
-    function readOnboardingHandoff() {
-      return JSON.parse(localStorage.getItem(ONBOARDING_HANDOFF_KEY) || "null");
-    }
-
     function applyPersonaScenario(persona) {
       resetStateModel();
-      const now = Date.now();
-      if (persona === "new_under_24h") {
-        state.onboarding_completed_at = new Date(now - 23 * 60 * 60 * 1000).toISOString();
-      } else if (persona === "new_eligible") {
-        const handoff = readOnboardingHandoff();
-        state.onboarding_completed_at = handoff?.onboarding_completed_at || new Date(now - 25 * 60 * 60 * 1000).toISOString();
+      if (persona === "existing_source_only") {
+        state.gameTerminal = "historical_profile";
+        state.status = WIZARD_STATES.SOURCE_PENDING;
+        state.step = "source";
+      } else if (persona === "existing_game_only") {
+        state.sourceTerminal = true;
+        state.sourceCode = "friend_referral";
+        state.sourceSavedAt = new Date().toISOString();
+        state.syncStatus = "synced";
+        state.status = WIZARD_STATES.GAME_IN_PROGRESS;
+        state.step = "game";
       } else if (persona === "source_resume") {
+        state.gameTerminal = "submitted";
         state.status = WIZARD_STATES.SOURCE_PENDING;
         state.step = "source";
         state.selectedGameIds = new Set(["black_myth_wukong", "elden_ring", "it_takes_two"]);
         state.sourceCode = "friend_referral";
         state.optionVersion = SOURCE_OPTIONS[state.market].optionVersion;
       } else if (persona === "completed") {
+        state.gameTerminal = "submitted";
+        state.sourceTerminal = true;
         state.status = WIZARD_STATES.COMPLETED;
         state.step = "result";
         state.selectedGameIds = new Set(["black_myth_wukong", "elden_ring", "it_takes_two"]);
         state.sourceCode = "friend_referral";
         state.optionVersion = SOURCE_OPTIONS[state.market].optionVersion;
-        state.sourceSavedAt = new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString();
+        state.sourceSavedAt = new Date().toISOString();
         state.syncStatus = "synced";
+      } else if (persona === "new_exempt") {
+        state.manualInterestExempt = true;
+        state.status = WIZARD_STATES.NOT_ELIGIBLE;
+        state.step = "result";
       }
       saveWizardState();
     }
@@ -1281,10 +1333,6 @@
     function simulateColdStart() {
       const persona = document.querySelector("#personaSelect").value;
       applyPersonaScenario(persona);
-      const serverNow = Date.now();
-      const onboardingCompletedAt = state.onboarding_completed_at
-        ? new Date(state.onboarding_completed_at).getTime()
-        : null;
       const input = {
         isColdStart: true,
         complianceFinished: true,
@@ -1292,37 +1340,32 @@
         featureEnabled: true,
         inVersionRange: true,
         inRollout: true,
-        userType: persona.startsWith("new_") ? "new" : "existing",
-        onboardingCompletedAt,
-        serverNow,
+        userType: persona === "new_exempt" ? "new" : "existing",
+        manualInterestExempt: state.manualInterestExempt,
         status: state.status
       };
 
-      if (persona === "source_resume") {
-        showStep("source");
-        document.querySelector("#simulatorStatus").textContent = "恢复第二步：保留第一步结果和已选来源，不要求用户重新选游戏。";
-        emitEvent("personalization_wizard_interrupt", { step: "source", interrupt_type: "process_restart" });
-        return;
-      }
-
       const eligible = eligibleColdStart(input);
       if (eligible) {
-        state.status = WIZARD_STATES.GAME_IN_PROGRESS;
-        showStep("game");
-        document.querySelector("#simulatorStatus").textContent = persona === "new_eligible"
-          ? "已满足滚动24小时：在本次合格冷启动展示两步问卷。"
-          : "非新用户命中目标版本与灰度：本次合格冷启动展示两步问卷。";
+        const next = nextMissingStep();
+        state.status = next === "source"
+          ? WIZARD_STATES.SOURCE_PENDING
+          : WIZARD_STATES.GAME_IN_PROGRESS;
+        showStep(next);
+        document.querySelector("#simulatorStatus").textContent = persona === "source_resume"
+          ? "恢复来源步骤：保留已选来源，不要求用户重新选游戏。"
+          : `非新用户命中目标版本与灰度：仅展示${next === "source" ? "来源" : "选游戏"}缺失步骤。`;
         emitEvent("personalization_wizard_view", {
-          step: "game",
+          step: next,
           market: state.market,
-          entry_group: persona
+          entry_group: state.entryGroup
         });
       } else {
         if (persona !== "completed") state.status = WIZARD_STATES.NOT_ELIGIBLE;
         saveWizardState();
         showStep("result", false);
-        document.querySelector("#simulatorStatus").textContent = persona === "new_under_24h"
-          ? "未满滚动24小时：本次不展示问卷，直接进入原首页。"
+        document.querySelector("#simulatorStatus").textContent = persona === "new_exempt"
+          ? "新用户来源已在新手引流处理；兴趣由实际行为生成，本页不再展示。"
           : "历史已完成：账号或设备去重，本次不重复展示。";
       }
     }
@@ -1381,7 +1424,7 @@
       showStep("game", false);
       renderEventLog();
       renderStatePanel();
-      document.querySelector("#personaSelect").value = "existing";
+      document.querySelector("#personaSelect").value = "existing_full";
       document.querySelector("#simulatorStatus").textContent = "演示数据已重置，可重新选择场景。";
     }
 
@@ -1415,6 +1458,7 @@
       eligibleColdStart,
       restoreWizardState,
       mergeIdentityState,
+      nextMissingStep,
       setMarket,
       setNetwork,
       reset: resetDemo
