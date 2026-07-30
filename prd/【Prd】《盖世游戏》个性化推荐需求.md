@@ -8,6 +8,7 @@
 |2026\.3\.23|V1\.1|郑群超|1、补充分类游戏显示数量限制|搜2026\.3\.23修改|
 |2026\.4\.8|V1\.2|郑群超|1、兴趣采集游戏最多数量由10调整为9<br>2、选满9个时，换一批按钮置灰<br>3、兴趣采集一次性提供200个游戏，换一批超量时循环展示<br>4、探索页\-为你推荐\&全部游戏**/**玩游戏页\-PC云游戏移除缓存逻辑，一次性提供500个游戏，超量时循环展示<br>5、探索页、PC云游戏tab补充去重逻辑|搜2026\.4\.8修改|
 |2026\.07\.30|V1\.3|郑群超|<span style="background-color: #FEF794;">把兴趣采集升级为</span><span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">选游戏＋获客来源两步问卷</span><span style="background-color: #FEF794;">；补充新老用户触发、滚动24小时、国内海外选项、中断恢复、离线补报、运营配置、埋点和验收规则</span>|<span style="background-color: #FEF794;">V1\.3规则覆盖旧版冲突内容</span>|
+|2026\.07\.30|V1\.4|郑群超|<span style="background-color: #FEF794;">将</span><span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">新用户来源采集并入新手引流</span><span style="background-color: #FEF794;">，删除新用户24小时后的手动选游戏问卷；非新用户保留游戏与来源步骤，并独立判断终态；补充运营配置、三组实验、护栏、异常、埋点和验收。</span>|<span style="background-color: #FEF794;">V1\.4为当前规则；冲突的V1\.3规则已由V1\.4覆盖</span>|
 
 # 二、 功能概述
 
@@ -67,7 +68,8 @@
 |**序号**|**模块**|**功能简述**|**优先级**|
 |---|---|---|---|
 |1|兴趣采集页|新用户首次登录后的引导页，支持网格点选交互，至少选择3款。|P0|
-|1\.1|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">两步个性化与来源问卷</span>|<span style="background-color: #FEF794;">目标用户在合格冷启动进入两步全屏问卷：第一步选3\-9款游戏或暂不选择，第二步必须单选获客来源后完成。</span>|P0|
+|1\.1|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.3两步个性化与来源问卷（历史）</span>|<span style="background-color: #FEF794;">目标用户在合格冷启动进入两步全屏问卷：第一步选3\-9款游戏或暂不选择，第二步必须单选获客来源后完成。涉及新用户的部分已由V1\.4覆盖。</span>|P0|
+|1\.2|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.4分流采集</span>|<span style="background-color: #FEF794;">新用户在新手引流内完成来源采集，不再手动选游戏；非新用户只进入尚未完成的游戏或来源步骤。</span>|P0|
 |2|数据池构建|每日通过ai生成用户推荐池。|P0|
 |3|混合排序算法|针对指定栏目，执行前10位插空推荐\+长尾循环填充逻辑。|P0|
 |4|推荐策略|基于用户游戏库或全局热度的个性化填充逻辑（过滤已安装）。|P1|
@@ -129,13 +131,13 @@
 
 #### <span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.3 两步个性化与来源问卷</span>
 
-<span style="background-color: #FEF794;">本节规则优先级高于3\.2\.1旧版“单设备首次访问、右上角跳过后直接进首页、提交失败自动跳过”等冲突内容。旧版探索页、秒玩页和推荐算法规则不变。</span>
+<span style="background-color: #FEF794;">V1\.3原规则：本节规则优先级高于3\.2\.1旧版“单设备首次访问、右上角跳过后直接进首页、提交失败自动跳过”等冲突内容，旧版探索页、秒玩页和推荐算法规则不变。当前说明：本节为历史规则，其中新用户完成引流后等待滚动24小时、再进入手动选游戏与来源问卷的规则，</span><span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">已由 V1\.4 覆盖</span><span style="background-color: #FEF794;">；非新用户、探索页、秒玩页和推荐算法的非冲突规则保留。</span>
 
 **触发规则：**
 
 |<span style="background-color: #FEF794;">用户类型</span>|<span style="background-color: #FEF794;">触发时间</span>|<span style="background-color: #FEF794;">不触发场景</span>|
 |---|---|---|
-|<span style="background-color: #FEF794;">新用户</span>|<span style="background-color: #FEF794;">完成独立新手引流后记录完成时间；满滚动24小时后的首次合格冷启动展示，不在完成新手引流的当次启动叠加。</span>|<span style="background-color: #FEF794;">未满24小时、问卷已完成、未命中版本/市场/灰度或存在更高优先级流程。</span>|
+|<span style="background-color: #FEF794;">新用户（历史）</span>|<span style="background-color: #FEF794;">完成独立新手引流后记录完成时间；满滚动24小时后的首次合格冷启动展示，不在完成新手引流的当次启动叠加。该方案已由V1\.4覆盖，不再执行。</span>|<span style="background-color: #FEF794;">V1\.3原不触发场景：未满24小时、问卷已完成、未命中版本/市场/灰度或存在更高优先级流程。历史口径，不作为当前触发判断。</span>|
 |<span style="background-color: #FEF794;">非新用户</span>|<span style="background-color: #FEF794;">目标版本上线后的首次合格冷启动展示；有历史兴趣采集终态但无来源答案时直接进入第二步。</span>|<span style="background-color: #FEF794;">问卷已完成、未命中版本/市场/灰度或存在更高优先级流程。</span>|
 
 <span style="background-color: #FEF794;">合格冷启动指App从未运行状态启动，且隐私协议、强制升级和安全合规流程已完成；当前不在新手引流、登录、授权、支付、下载、导入、Steam绑定或游戏恢复流程；没有更高优先级系统弹层。后台返回、支付返回、Deep Link、推送直达和游戏恢复不触发。优先级为：隐私/合规 ＞ 强制升级/安全 ＞ 新手引流 ＞ 两步问卷 ＞ 运营活动/广告。</span>
@@ -184,6 +186,69 @@
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">保存与冲突</span>|<span style="background-color: #FEF794;">保存时校验市场、版本、目标用户、灰度、生效时间和6个来源项；提交期间按钮不可重复点击。并发保存只接受基于最新配置版本的请求；冲突提示“配置已更新，请刷新后重试”。失败或超时继续使用上一有效配置。</span>|
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">权限与审计</span>|<span style="background-color: #FEF794;">产品管理员和指定运营可新增、编辑、复制、启停；数据分析和客服只读。每次保存记录操作人、时间、修改前后、配置版本和请求标识。</span>|
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">客户端降级</span>|<span style="background-color: #FEF794;">远程配置失败时使用包内默认6项或最近一次完整缓存；总开关、版本、市场和灰度无法可靠判断时本次不展示，不影响原首页。</span>|
+
+#### <span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.4 新用户并入新手引流、非新用户按缺失步骤展示</span>
+
+<span style="background-color: #FEF794;">本节是当前规则。V1\.3中“新用户完成引流后等待24小时，再展示手动选游戏＋来源问卷”的规则</span><span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">已由 V1\.4 覆盖</span><span style="background-color: #FEF794;">。新用户来源在新手引流内采集，</span><span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">不在24小时后</span><span style="background-color: #FEF794;">补弹问卷；非新用户仍使用本问卷。</span>
+
+**<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">当前触发规则</span>**
+
+|<span style="background-color: #FEF794;">用户类型</span>|<span style="background-color: #FEF794;">当前处理</span>|<span style="background-color: #FEF794;">不触发场景</span>|
+|---|---|---|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">新用户</span>|<span style="background-color: #FEF794;">按实验组执行：对照组不展示新手来源，满24小时后保留V1\.3“选游戏＋来源”；来源影响组在新手内答来源，满24小时后只补选游戏；最终方案组在新手内答来源且完成引流即写入 `manual_interest_exempt=true`。兴趣由启动、导入、Steam游戏库同步等实际行为生成；`behavior_profile_ready=false` 时使用推荐池兜底。</span>|<span style="background-color: #FEF794;">V1\.3滚动24小时不再作为全量规则，只允许在对照组和来源影响组隔离执行；来源影响组来源已有终态，不重复问来源。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">非新用户</span>|<span style="background-color: #FEF794;">目标版本上线后的合格冷启动读取游戏步骤和来源步骤终态；</span><span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">游戏步骤和来源步骤独立</span><span style="background-color: #FEF794;">，只展示缺失步骤。游戏提交或“暂不选择”均结束游戏步骤；来源提交后结束来源步骤。</span>|<span style="background-color: #FEF794;">`manual_interest_exempt=true` 只禁止游戏步骤，不禁止来源步骤。游戏步骤按游戏终态、游戏步骤开关、人群、市场和版本配置独立判断；来源步骤按来源终态、来源步骤开关、人群、市场和版本配置独立判断。最终方案组即使已有免弹状态，只要来源曾因开关关闭而未答，来源开关重开后仍在下次安全入口补答；两个步骤均有终态、未命中适用配置、总开关关闭或存在更高优先级流程时，才不再展示对应步骤。</span>|
+
+|<span style="background-color: #FEF794;">模块名称</span>|<span style="background-color: #FEF794;">图示</span>|<span style="background-color: #FEF794;">展示\&交互说明</span>|
+|---|---|---|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.4 新用户处理</span>|<span style="background-color: #FEF794;">—（图示见《新手引导分流需求》）</span>|<span style="background-color: #FEF794;">① 对照组在新手引流期间不写 `manual_interest_exempt`，满24小时后完成游戏＋来源两步才写入。<br>② 来源影响组在新手内答来源，满24小时后只补选游戏；游戏提交或跳过后写入 `manual_interest_exempt=true`。<br>③ 最终方案组在新手内答来源，完成引流即写入 `manual_interest_exempt=true`，不再问游戏。<br>④ 来源答案只用于渠道分析；兴趣读取启动、导入、Steam游戏库同步等行为，无画像时使用推荐池兜底。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">非新用户游戏步骤</span>|![图3.2.1-5：非新用户选择游戏](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a88599cf88ab93cf27c2795f4288828912f96f59/public/prd/personalization-acquisition-onboarding-v2/05-existing-game-step.png)|<span style="background-color: #FEF794;">① 仅游戏步骤缺失且未命中新用户永久免弹的非新用户展示。<br>② 至少选3款、最多9款；不足3款不可提交；也可点击“暂不选择”。<br>③ 提交成功记为已提交终态，暂不选择记为已跳过终态，两者都不因来源步骤中断而回退。<br>④ 候选加载失败时可重试或主动暂不选择；技术失败不写入跳过终态。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">非新用户来源步骤</span>|![图3.2.1-6：非新用户来源采集](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a88599cf88ab93cf27c2795f4288828912f96f59/public/prd/personalization-acquisition-onboarding-v2/06-existing-source-step.png)|<span style="background-color: #FEF794;">① 仅来源步骤缺失的非新用户展示；游戏步骤已有终态时直接进入本页。<br>② 来源单选、必答、默认不选中，保留“其他／不记得”，不提供跳过。<br>③ 本地可靠保存后结束来源步骤并放行；断网标记待补报，联网后幂等补报。<br>④ 旧用户回忆来源标记 `existing_user_recall`，只用于独立分析，不混入新用户获客归因。</span>|
+
+**<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">步骤状态与身份合并</span>**
+
+|<span style="background-color: #FEF794;">场景</span>|<span style="background-color: #FEF794;">当前处理</span>|
+|---|---|
+|<span style="background-color: #FEF794;">游戏步骤终态</span>|<span style="background-color: #FEF794;">未完成、已提交、已跳过。已提交和已跳过均为终态，来源步骤失败或中断不回退游戏终态。</span>|
+|<span style="background-color: #FEF794;">来源步骤终态</span>|<span style="background-color: #FEF794;">未完成、已完成。只有来源答案本地可靠保存后进入已完成；服务端补报状态与业务终态分开保存。</span>|
+|<span style="background-color: #FEF794;">下一缺失步骤</span>|<span style="background-color: #FEF794;">`manual_interest_exempt=true` 只禁止手动选游戏，不生成来源终态。系统仍按实验组和步骤开关检查来源缺失；步骤开关关闭时临时绕过该步骤继续检查下一缺失步骤，不写完成或跳过终态；重开后符合条件者在下次安全入口补答。</span>|
+|<span style="background-color: #FEF794;">独立开关</span>|<span style="background-color: #FEF794;">总开关关闭时同样临时绕过全部受控步骤，不清除草稿、不写终态。新用户来源关闭时直接进入原分支；开关重开后，所有未有来源终态的符合条件用户在下次安全入口补答，包括已写 `manual_interest_exempt` 的最终方案组用户。</span>|
+|<span style="background-color: #FEF794;">中断恢复</span>|<span style="background-color: #FEF794;">每次选择后保存草稿、步骤和终态；App关闭、强杀或崩溃后恢复尚未完成的步骤，不重复展示已完成步骤。</span>|
+|<span style="background-color: #FEF794;">游客转登录</span>|<span style="background-color: #FEF794;">设备草稿迁移至账号；账号终态优先于设备进行中状态。迁移失败保留本地状态并重试，不阻断用户进入首页。</span>|
+|<span style="background-color: #FEF794;">游客离线答案A登录账号已有答案B</span>|<span style="background-color: #FEF794;">安装级A继续使用原 `response_id` 补报，固定归属原 `install_id` 和 `new_user_onboarding`，不得取消A或覆盖账号B；当前问卷按账号B终态放行，并记录冲突日志。账号无B时，A按同一 `response_id` 一次性关联账号；不得生成新答案。</span>|
+|<span style="background-color: #FEF794;">稳定分组</span>|<span style="background-color: #FEF794;">灰度与实验使用</span><span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">稳定安装标识</span><span style="background-color: #FEF794;">分桶；登录后绑定账号并保持原实验组，不因重装、登录或配置刷新跳组。</span>|
+
+**<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.4运营配置（复用现有配置平台）</span>**
+
+|<span style="background-color: #FEF794;">配置项</span>|<span style="background-color: #FEF794;">规则</span>|
+|---|---|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">总开关</span>|<span style="background-color: #FEF794;">控制新用户来源页和非新用户问卷是否触发；关闭时临时绕过受控步骤，不写完成/跳过终态，不清除草稿、终态、来源答案或永久免弹状态；重开后在下次安全入口补答。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">市场</span>|<span style="background-color: #FEF794;">国内、海外分开配置；国内包使用中文固定文案，海外包支持多语言并统一使用GameHub。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">目标版本</span>|<span style="background-color: #FEF794;">配置最低和最高适用版本；最低版本不得高于最高版本，保存时统一校验。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">目标用户/步骤开关</span>|<span style="background-color: #FEF794;">新用户来源页、非新用户游戏步骤、非新用户来源步骤分别独立开启；关闭某步骤只临时绕过，不写终态、不改变历史终态，重开后在下次安全入口补答。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">灰度比例</span>|<span style="background-color: #FEF794;">0\-100%的整数；按稳定安装标识分桶，登录后同一账号保持实验组稳定。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">生效时间</span>|<span style="background-color: #FEF794;">配置开始和结束时间，格式YYYY\-MM\-DD HH:mm，按服务端时区判断；结束时间必须晚于开始时间。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">来源选项</span>|<span style="background-color: #FEF794;">每个市场最多5个主要渠道＋1个“其他／不记得”兜底项；稳定枚举必填且同一版本内唯一。用户可见名称按语言填写1\-20个字符，去除首尾空格后校验，不允许纯空格或敏感词；缺少海外任一启用语言文案时不可发布。兜底项不可删除、停用或移出末位。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">选项顺序</span>|<span style="background-color: #FEF794;">支持按市场拖拽调整主要渠道顺序；兜底项固定最后。保存后只影响新曝光流程。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">选项版本</span>|<span style="background-color: #FEF794;">修改枚举含义或选项集合时生成新的 `option_version`；进行中的流程继续使用首次曝光版本，历史答案按原版本解释。</span>|
+
+|<span style="background-color: #FEF794;">实验配置项</span>|<span style="background-color: #FEF794;">规则</span>|
+|---|---|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">实验ID</span>|<span style="background-color: #FEF794;">创建后生成唯一 `experiment_id`，不可修改，用于分桶、埋点和日志关联。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">适用范围</span>|<span style="background-color: #FEF794;">分别配置国内/海外市场、最低/最高版本和渠道；同一市场、版本范围、渠道与时间段只能有一个来源引流实验，保存和启用时校验互斥。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">三组权重</span>|<span style="background-color: #FEF794;">默认对照组/来源影响组/最终方案组为80/10/10；仅允许整数且合计100，只能在草稿态修改。实验启动后稳定分桶冻结，登录后组别不变。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">起止时间</span>|<span style="background-color: #FEF794;">开始时间早于结束时间；启动后不可修改开始时间，需提前结束时执行手动停止。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">护栏阈值</span>|<span style="background-color: #FEF794;">`guardrail_drop_pp` 默认且本次固定1\.5个百分点，创建实验时锁定，启动后不可修改。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">状态</span>|<span style="background-color: #FEF794;">草稿 `draft` → 待生效 `scheduled` → 运行中 `running` → 正常结束 `completed`；运行中可转手动停止 `stopped_manual` 或护栏停止 `stopped_guardrail`。两个停止态均不可恢复，只能复制为新实验。</span>|
+
+|<span style="background-color: #FEF794;">B端区域</span>|<span style="background-color: #FEF794;">展示\&交互说明</span>|
+|---|---|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">筛选区</span>|<span style="background-color: #FEF794;">支持配置ID输入＋精确查询、市场/状态/目标用户下拉单选、版本输入、操作人模糊搜索、生效时间范围选择；多个条件取交集。查询后回到第一页；重置清空条件、回到第一页并刷新。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">列表</span>|<span style="background-color: #FEF794;">字段：配置ID、实验ID、总开关、市场、版本/渠道、目标用户、三组权重、护栏阈值、生效时间、选项版本、状态、操作人、操作时间。默认按操作时间倒序，时间相同按配置ID倒序；每页20条，显示总条数；无数据与筛选无结果使用不同空态。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">状态流转</span>|<span style="background-color: #FEF794;">实验状态统一为草稿 `draft` → 待生效 `scheduled` → 运行中 `running` → 正常结束 `completed`。运行中可转手动停止 `stopped_manual` 或护栏停止 `stopped_guardrail`；两个停止态不可恢复，只能复制为新实验。仅草稿可软删除；操作成功刷新当前页并保留筛选，失败保留输入并显示原因。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">新增与复制</span>|<span style="background-color: #FEF794;">支持新增和复制；复制生成草稿并清空生效时间。保存时校验市场、版本、目标用户、灰度、生效时间、选项数量、枚举唯一性和兜底项。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">查看与编辑</span>|<span style="background-color: #FEF794;">有查看权限可查看详情；仅草稿可编辑全部字段。待生效、运行中、正常结束及两个停止态均不可修改市场、稳定枚举、总开关或权重；变更需求须复制为新草稿。并发修改冲突时拒绝后提交并提示刷新。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">删除、发布与停止</span>|<span style="background-color: #FEF794;">仅草稿可软删除，删除前二次确认；其他状态均保留审计记录，不可删除。发布前再次校验冲突时间段；运行中的手动停止或护栏停止均不清除用户状态，且停止后不可恢复。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">权限与操作日志</span>|<span style="background-color: #FEF794;">产品管理员可增删查改和启停，指定运营可新增、编辑、复制和启停，数据分析及客服只读。日志记录操作人、角色、时间、动作、配置版本、修改前后和请求标识；支持按配置ID、操作人和时间查询。</span>|
 
 ### 3\.2\.2 探索页改造
 
@@ -282,9 +347,13 @@
 |**3\. 稳定性**|**熔断与降级**|● 若推荐算法服务超时（\>500ms）或不可用，系统需自动降级为 **\[兜底策略\]**。<br>● 降级时前端无感知，但埋点 `strategy_id` 需上报为 `system_fallback`。|
 ||**冷启动容错**|● 若兴趣采集页提交失败（网络/服务异常），自动执行“跳过”逻辑，进入首页展示热度兜底。|
 ||<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.3问卷容错</span>|<span style="background-color: #FEF794;">● 本行覆盖上一行冲突规则：第一步提交失败保留选择并允许重试或主动跳过，不自动记为用户跳过。<br>● 第二步来源在本地可靠保存后即可进入首页，服务端同步失败后台重试。<br>● 来源配置加载失败时使用包内默认6项或最近一次完整缓存。</span>|
+||<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.4步骤容错</span>|<span style="background-color: #FEF794;">● 新用户来源和非新用户来源均以本地可靠保存作为放行条件，接口失败写入待补报队列；联网后按同一响应标识幂等补报。<br>● 游戏步骤和来源步骤分别保存，任一步失败不得回退另一已完成步骤。<br>● 本地写入失败时停留当前页并提示重试，不能以未保存状态放行。</span>|
 |**4\. 数据一致性**<br>|**曝光去重**|● 同一次下拉刷新（Request ID相同）内，同一游戏ID在客户端 **只上报一次** 曝光，避免CTR分母虚高。|
 ||<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">问卷状态</span>|<span style="background-color: #FEF794;">● 来源首次有效答案不可覆盖；账号终态优先于设备进行中草稿。<br>● 客户端横竖屏切换保留步骤、选择和滚动位置。<br>● 重复提交按同一请求处理，不生成重复答案。</span>|
+||<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.4来源隔离</span>|<span style="background-color: #FEF794;">● 新用户来源标记 `new_user_onboarding`，非新用户回忆来源标记 `existing_user_recall`，两个口径分表统计。<br>● 自报来源不得写回、覆盖或修正客观安装归因。<br>● `manual_interest_exempt` 与游戏、来源终态需在游客转登录时幂等合并。</span>|
 |<span style="background-color: #FEF794;">5\. 兼容性与多语言</span>|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">国内/海外</span>|<span style="background-color: #FEF794;">● 国内包显示中文；海外包跟随App语言并使用GameHub。<br>● Android、iOS均支持竖屏和横屏，系统安全区内无遮挡。</span>|
+||<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">横竖屏状态</span>|<span style="background-color: #FEF794;">● 新手来源页与非新用户问卷均支持横竖屏；横屏使用居中可滚动容器。<br>● 方向切换保留实验组、当前步骤、选择、终态和滚动位置，不重新曝光、不重复提交。</span>|
+|<span style="background-color: #FEF794;">6\. 隐私与安全</span>|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">最小采集</span>|<span style="background-color: #FEF794;">● 来源答案只采集用户主动选择的渠道枚举，不采集通讯录、位置或其他系统权限。<br>● 数据用途需纳入隐私政策或首次采集说明；日志中不得记录可识别个人的自由文本。</span>|
 
 # 五、埋点需求
 
@@ -298,9 +367,12 @@
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`personalization_game_submit`</span>|<span style="background-color: #FEF794;">第一步提交</span>|<span style="background-color: #FEF794;">第一步成功提交3\-9款游戏</span>|<span style="background-color: #FEF794;">`selected_ids`,`selected_count`</span>|
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`personalization_game_skip`</span>|<span style="background-color: #FEF794;">第一步跳过</span>|<span style="background-color: #FEF794;">点击“暂不选择”</span>|<span style="background-color: #FEF794;">`duration_ms`</span>|
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`acquisition_source_select`</span>|<span style="background-color: #FEF794;">来源选择</span>|<span style="background-color: #FEF794;">选择或切换来源</span>|<span style="background-color: #FEF794;">`source_code`,`option_position`,`option_version`</span>|
-|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`acquisition_source_submit`</span>|<span style="background-color: #FEF794;">来源完成</span>|<span style="background-color: #FEF794;">来源在本地可靠保存</span>|<span style="background-color: #FEF794;">`source_code`,`market`,`package_channel`,`option_version`</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`acquisition_source_submit`</span>|<span style="background-color: #FEF794;">来源完成</span>|<span style="background-color: #FEF794;">非新用户来源在本地可靠保存</span>|<span style="background-color: #FEF794;">`source_code`,`market`,`package_channel`,`option_version`,`entry_group`,`experiment_id`,`experiment_group`,`response_id`,`install_id`</span>|
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`personalization_wizard_interrupt`</span>|<span style="background-color: #FEF794;">问卷中断</span>|<span style="background-color: #FEF794;">退出、强杀恢复或异常中断</span>|<span style="background-color: #FEF794;">`step`,`interrupt_type`</span>|
-|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`personalization_wizard_sync_result`</span>|<span style="background-color: #FEF794;">补报结果</span>|<span style="background-color: #FEF794;">后台同步成功或失败</span>|<span style="background-color: #FEF794;">`result`,`retry_count`</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`personalization_wizard_sync_result`</span>|<span style="background-color: #FEF794;">来源补报结果</span>|<span style="background-color: #FEF794;">非新用户来源后台同步成功或失败</span>|<span style="background-color: #FEF794;">`result`,`retry_count`,`entry_group`,`experiment_id`,`experiment_group`,`response_id`,`install_id`</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`personalization_step_terminal`</span>|<span style="background-color: #FEF794;">步骤终态</span>|<span style="background-color: #FEF794;">非新用户游戏步骤提交/跳过或来源步骤完成</span>|<span style="background-color: #FEF794;">`step`,`terminal_type`,`entry_group`,`response_id`</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`behavior_profile_status`</span>|<span style="background-color: #FEF794;">行为画像状态</span>|<span style="background-color: #FEF794;">启动、导入、Steam游戏库同步后生成或更新画像</span>|<span style="background-color: #FEF794;">`behavior_profile_ready`,`behavior_source`,`strategy_id`</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`personalization_experiment_exposure`</span>|<span style="background-color: #FEF794;">实验曝光</span>|<span style="background-color: #FEF794;">用户首次命中本轮实验组</span>|<span style="background-color: #FEF794;">`experiment_id`,`experiment_group`,`install_id`,`market`,`app_version`</span>|
 |**`module_view`**|推荐模块曝光|列表/模块加载成功且展示在视区时<br>|**`uid`**` ， `**`action_type`**` ， device_id ， app_version ， network ， ab_test_group ，module_name`,`request_id`，**game\_type**|
 |**`card_show`**|卡片曝光|游戏卡片进入屏幕可视区域 \> 50%<br>|**`uid`**` ， `**`action_type`**` ， device_id ， app_version ， network ， ab_test_group ，game_id`,`strategy_id`,`position_index`，**game\_type**|
 |**`card_click`**|卡片点击|点击游戏卡片进入详情页时<br>|**`uid`**` ， `**`action_type`**` ， device_id ， app_version ， network ， ab_test_group ，game_id`,`strategy_id`,`position_index`，**game\_type**|
@@ -336,12 +408,21 @@
 |**`duration`**|int|否|页面停留时长（毫秒）|`4500`|
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`step`</span>|string|是|<span style="background-color: #FEF794;">问卷步骤</span>|`game`,`source`|
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`market`</span>|string|是|<span style="background-color: #FEF794;">市场</span>|`domestic`,`overseas`|
-|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`entry_group`</span>|string|是|<span style="background-color: #FEF794;">触发人群</span>|`new_user`,`existing_user`,`source_resume`|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`entry_group`</span>|string|是|<span style="background-color: #FEF794;">来源答案入口组；V1\.3使用新用户、非新用户和恢复组，V1\.4非新用户使用回忆来源组</span>|`new_user`,`existing_user`,`source_resume`,`existing_user_recall`|
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`source_code`</span>|string|否|<span style="background-color: #FEF794;">来源稳定枚举</span>|`douyin`,`youtube`,`friend_referral`|
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`option_version`</span>|string|否|<span style="background-color: #FEF794;">来源选项版本</span>|`domestic_v1`,`overseas_v1`|
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`package_channel`</span>|string|否|<span style="background-color: #FEF794;">客观包体渠道，只用于交叉分析，不被来源答案覆盖</span>|`official`,`GooglePlay`,`vivo`|
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`interrupt_type`</span>|string|否|<span style="background-color: #FEF794;">中断类型</span>|`app_close`,`process_kill`,`crash`,`system_back`|
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`retry_count`</span>|int|否|<span style="background-color: #FEF794;">后台补报次数</span>|`0`,`1`,`2`|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`terminal_type`</span>|string|否|<span style="background-color: #FEF794;">步骤终态类型</span>|`submitted`,`skipped`,`source_completed`|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`response_id`</span>|string|否|<span style="background-color: #FEF794;">一次来源回答的幂等标识；作用域为原 `install_id`＋入口组，登录和补报不变</span>|`source_20260730_ab12`|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`manual_interest_exempt`</span>|boolean|是|<span style="background-color: #FEF794;">新用户是否永久免于手动选游戏问卷</span>|`true`,`false`|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`behavior_profile_ready`</span>|boolean|否|<span style="background-color: #FEF794;">是否已根据实际游戏行为生成画像</span>|`true`,`false`|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`behavior_source`</span>|string|否|<span style="background-color: #FEF794;">画像行为来源</span>|`game_start`,`game_import`,`steam_library_sync`|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`experiment_group`</span>|string|否|<span style="background-color: #FEF794;">本轮来源并入新手引流实验组</span>|`control`,`source_impact`,`final_plan`|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`experiment_id`</span>|string|否|<span style="background-color: #FEF794;">实验唯一标识；来源提交、补报和曝光事件固定携带</span>|`acq_20260730_01`|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`install_id`</span>|string|是|<span style="background-color: #FEF794;">安装级稳定分桶和新用户来源归属；补报时保持原值</span>|`install_8f21`|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">`guardrail_drop_pp`</span>|float|否|<span style="background-color: #FEF794;">护栏绝对下降阈值，实验创建时锁定</span>|`1.5`|
 
 
 
@@ -354,8 +435,8 @@
 |**1\. 冷启动**|**1: 正常提交标签**<br>|● 首页“猜你喜欢”列表第 2,4,6,7 位展示 MOBA/RPG/射击类游戏。<br>● 埋点 cold\_start\_action 上报 action\_type=submit。|
 ||**2: 跳过 \(兜底策略\)**|● 列表展示全站热度榜游戏（兜底）。<br>● 列表顺序需随机打散（多次测试跳过，前10位不完全一致）。<br>● 埋点 cold\_start\_action 上报 action\_type=skip。|
 ||**3: 跳过后的修正**|● 刷新后的推荐位（Slot 2,4\.\.\.）需出现其他“赛车类”游戏。<br>● 埋点 strategy\_id 由 rule\_fallback\_hot 变为 algo\_item\_cf。|
-|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.3两步问卷</span>|<span style="background-color: #FEF794;">AC\-01 新用户当日不叠加</span>|<span style="background-color: #FEF794;">完成新手引流的当次启动和未满滚动24小时的冷启动均不展示问卷。</span>|
-||<span style="background-color: #FEF794;">AC\-02 滚动24小时触发</span>|<span style="background-color: #FEF794;">满24小时后不主动唤起；下一次合格冷启动展示，非自然日零点口径。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.3两步问卷（历史，已由V1\.4覆盖）</span>|<span style="background-color: #FEF794;">AC\-01 新用户当日不叠加</span>|<span style="background-color: #FEF794;">V1\.3原预期：完成新手引流的当次启动和未满滚动24小时的冷启动均不展示问卷。该规则已由V1\.4覆盖，不作为当前验收。</span>|
+||<span style="background-color: #FEF794;">AC\-02 滚动24小时触发</span>|<span style="background-color: #FEF794;">V1\.3原预期：满24小时后不主动唤起；下一次合格冷启动展示，非自然日零点口径。该规则已由V1\.4覆盖，不作为当前验收。</span>|
 ||<span style="background-color: #FEF794;">AC\-03 游戏选择限制</span>|<span style="background-color: #FEF794;">不足3款不能提交，最多9款；换一批保留已选游戏。</span>|
 ||<span style="background-color: #FEF794;">AC\-04 游戏跳过</span>|<span style="background-color: #FEF794;">点击“暂不选择”进入第二步，手选兴趣标签为空，推荐使用行为或热度兜底。</span>|
 ||<span style="background-color: #FEF794;">AC\-05 来源必答</span>|<span style="background-color: #FEF794;">来源单选、必答、不可跳过；默认不选中，未选择不能完成。</span>|
@@ -365,6 +446,18 @@
 ||<span style="background-color: #FEF794;">AC\-09 身份去重</span>|<span style="background-color: #FEF794;">账号终态优先于设备草稿；同账号其他设备完成后当前设备不重复展示；首次答案不覆盖。</span>|
 ||<span style="background-color: #FEF794;">AC\-10 横竖屏</span>|<span style="background-color: #FEF794;">切换方向后步骤、游戏选择、来源选择和滚动位置保持不变，无裁切或遮挡。</span>|
 ||<span style="background-color: #FEF794;">AC\-11 数据隔离</span>|<span style="background-color: #FEF794;">来源不进入兴趣标签，不覆盖客观安装归因；报表可与包体、商店和广告归因交叉分析。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.4当前规则</span>|<span style="background-color: #FEF794;">AC\-12 新用户链路</span>|<span style="background-color: #FEF794;">按实验组执行：对照组新手期不写免弹；来源影响组满24小时补选游戏后写免弹；最终方案组完成引流即写免弹。</span>|
+||<span style="background-color: #FEF794;">AC\-13 行为画像与兜底</span>|<span style="background-color: #FEF794;">新用户启动、导入或Steam库同步后生成行为画像；无行为、画像为空或服务异常时首页使用推荐池兜底，来源答案不参与推荐。</span>|
+||<span style="background-color: #FEF794;">AC\-14 非新用户缺失步骤</span>|<span style="background-color: #FEF794;">游戏步骤和来源步骤分别保存终态；只缺来源时直接展示来源，只缺游戏时只展示游戏，两步均完成时不展示。</span>|
+||<span style="background-color: #FEF794;">AC\-15 旧用户来源隔离</span>|<span style="background-color: #FEF794;">非新用户来源上报 `existing_user_recall`，报表不得计入新用户来源有效覆盖或客观安装归因。</span>|
+||<span style="background-color: #FEF794;">AC\-16 中断与离线</span>|<span style="background-color: #FEF794;">每步选择和终态可断点恢复；来源本地可靠保存后放行，断网时进入待补报，联网后只补报一次有效答案。</span>|
+||<span style="background-color: #FEF794;">AC\-17 稳定灰度</span>|<span style="background-color: #FEF794;">同一稳定安装标识多次启动保持同组；登录后同一账号保持原组，运营调整比例不使已入组用户跳组。</span>|
+||<span style="background-color: #FEF794;">AC\-18 后台增删查改</span>|<span style="background-color: #FEF794;">按权限完成新增、查询、编辑、复制、草稿软删除和启停；并发编辑冲突拒绝保存，所有变更可在操作日志追溯。</span>|
+||<span style="background-color: #FEF794;">AC\-19 独立开关</span>|<span style="background-color: #FEF794;">步骤或总开关关闭时临时绕过且不写终态；重开后在下次安全入口补答。新用户来源关闭时直接进入原分支；`manual_interest_exempt=true` 不阻止来源补答。</span>|
+||<span style="background-color: #FEF794;">AC\-20 横竖屏</span>|<span style="background-color: #FEF794;">横屏使用居中可滚动容器；方向切换保留组别、步骤、选择和滚动位置，不重复曝光或提交。</span>|
+||<span style="background-color: #FEF794;">AC\-21 游客来源冲突</span>|<span style="background-color: #FEF794;">安装级A按原 `response_id` 和 `install_id` 补报，不覆盖账号B；按账号B终态放行并记录冲突日志。账号无B时A只关联一次，不生成新答案。</span>|
+||<span style="background-color: #FEF794;">AC\-22 实验权重与互斥</span>|<span style="background-color: #FEF794;">默认80/10/10，整数且合计100；非草稿态不可修改。同一市场、版本、渠道和时间段存在重叠实验时禁止保存或启用。</span>|
+||<span style="background-color: #FEF794;">AC\-23 护栏边界</span>|<span style="background-color: #FEF794;">下降=1\.5个百分点不触发；下降>1\.5个百分点且连续2个自然日，在D1成熟且对照组与最终方案组各≥1000个合格安装后自动进入 `stopped_guardrail`。</span>|
 |**2\. 混合排序**|**4: 结构验证**|● 兜底策略：必须是热度/潜力/口碑池 Top1。<br>● ai推荐池：必须是算法推荐内容。|
 ||**5: 过滤已安装/已入库**|● 已安装的《黑神话：悟空》绝对不可出现在推荐位。|
 ||**6: 分类避让**|● 列表中 不可连续出现 3 个 射击游戏。<br>● 第 3 个射击游戏应被顺延至后续位置。|
@@ -379,12 +472,41 @@
 |---|---|---|---|---|
 |1|兴趣采集页|“定制你的专属首页” / “挑选你感兴趣的游戏，让推荐更懂你”。<br>|设计专门的设计采集业，并展示9宫格游戏列表|![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=OTE0ZGJjMGIyNjM3YmNmZGI3YTk3MGM1NGY1NDNhMTBfZTQ2MDlkNmY3MzZlODc0OTRmZTNkMGQyNzFlNjg5YTdfSUQ6NzYwNTg5MjA4NjQ1MDgxNzk5M18xNzgyNzkxNzk3OjE3ODI4NzgxOTdfVjM)<br>|
 
-# 八、<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.3上线验证</span>
+# 八、<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">上线验证</span>
+
+### <span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.3历史验证口径</span>
 
 - <span style="background-color: #FEF794;">国内、海外分别从5%稳定灰度开始；新用户和非新用户分开观察。</span>
 - <span style="background-color: #FEF794;">核心指标：第一步提交率、跳过率、平均选择数；第二步完成率、退出率、“其他/不记得”占比；问卷曝光后的App退出率；本地保存成功率、补报成功率、重复触发率。</span>
 - <span style="background-color: #FEF794;">来源为用户自报数据，只用于渠道分析。分析来源用户的后续启动和留存时，必须与客观安装归因分栏展示。</span>
 - <span style="background-color: #FEF794;">若第二步退出率明显高于第一步，或“其他/不记得”占比异常升高，先检查强制回答和选项覆盖，不直接把答案解释为真实渠道分布。</span>
+
+### <span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.4三组实验</span>
+
+|<span style="background-color: #FEF794;">分组</span>|<span style="background-color: #FEF794;">新用户来源页</span>|<span style="background-color: #FEF794;">后续选游戏页</span>|<span style="background-color: #FEF794;">验证目的</span>|
+|---|---|---|---|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">对照组</span>|<span style="background-color: #FEF794;">无；直接进入原分支</span>|<span style="background-color: #FEF794;">引流完成满24小时后保留V1\.3“选游戏＋来源”</span>|<span style="background-color: #FEF794;">新手期间不写 `manual_interest_exempt`；完成后续两步后写入，提供基线。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">来源影响组</span>|<span style="background-color: #FEF794;">并入新手引流</span>|<span style="background-color: #FEF794;">满24小时后只补选游戏，来源不重复展示</span>|<span style="background-color: #FEF794;">游戏提交或跳过后写 `manual_interest_exempt=true`，单独判断来源页影响。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">最终方案组</span>|<span style="background-color: #FEF794;">并入新手引流</span>|<span style="background-color: #FEF794;">删除</span>|<span style="background-color: #FEF794;">完成引流即写 `manual_interest_exempt=true`，判断删除后续选游戏页的影响。</span>|
+
+<span style="background-color: #FEF794;">国内、海外分别按稳定安装标识分桶，三个组在同一市场、版本和渠道内随机；至少覆盖完整7天获客周期，并继续观察D7。实验期间不调整来源选项含义；确需调整时新建选项版本并另开实验。</span>
+
+|<span style="background-color: #FEF794;">指标</span>|<span style="background-color: #FEF794;">口径与处置</span>|
+|---|---|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">首次有效价值行为率</span>|<span style="background-color: #FEF794;">主护栏。分母为首次进入新手引流的合格去重安装，分子为24小时内首次完成游戏启动、游戏导入或Steam游戏库同步的去重安装。早期“下降超过1—2个百分点”是历史预估；当前 `guardrail_drop_pp` 默认且本次固定1\.5个百分点，创建实验时锁定。</span>|
+|<span style="background-color: #FEF794;">来源有效覆盖率</span>|<span style="background-color: #FEF794;">新用户获得一条本地可靠保存且可解释来源答案的去重安装数 ÷ 新用户来源页曝光安装数；“其他／不记得”计完成、不计可解释来源。</span>|
+|<span style="background-color: #FEF794;">来源页完成率与答题时长</span>|<span style="background-color: #FEF794;">记录完成率、平均答题时间、中位数和P90；国内、海外分开统计。</span>|
+|<span style="background-color: #FEF794;">来源质量</span>|<span style="background-color: #FEF794;">记录“其他／不记得”占比；新用户来源与 `existing_user_recall` 分栏，不合并为同一获客来源口径。</span>|
+|<span style="background-color: #FEF794;">推荐准备度</span>|<span style="background-color: #FEF794;">行为画像生成率：产生至少一次有效启动、导入或Steam同步后成功生成画像的用户数 ÷ 产生有效行为的用户数。</span>|
+|<span style="background-color: #FEF794;">留存</span>|<span style="background-color: #FEF794;">观察D1、D7，按市场、渠道包和实验组分层；低样本分层只展示样本量，不直接下结论。</span>|
+|<span style="background-color: #FEF794;">可靠性</span>|<span style="background-color: #FEF794;">记录本地保存成功率、补报成功率和重复触发率；任一组本地保存成功率低于99%或重复触发率高于0\.5%时暂停放量并排查。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">护栏计算与停止</span>|<span style="background-color: #FEF794;">D1成熟（入组满24小时）且对照组、最终方案组各≥1000个合格安装后，每日按自然日计算。最终方案较对照下降>1\.5个百分点连续2个自然日，系统自动置 `stopped_guardrail`，停止来源影响组和最终方案组新流量，后续新用户归入对照；已入组用户组别不变。下降=1\.5个百分点不触发。运营可提前手动停止为 `stopped_manual`。</span>|
+
+**<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">放量顺序</span>**
+
+1. <span style="background-color: #FEF794;">内部验证：国内、海外各验证所有来源项、断点恢复、离线补报和步骤终态。</span>
+2. <span style="background-color: #FEF794;">小流量：各市场5%，连续观察至少一个完整获客周期；护栏无异常后进入下一阶段。</span>
+3. <span style="background-color: #FEF794;">分级放量：20% → 50% → 100%，每级至少观察24小时。运行中不修改总开关与权重；手动停止或护栏停止均停止两个试验组的新分配，后续新用户归入对照，已入组用户组别不变。</span>
 
 # 九、<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">自检记录</span>
 
@@ -397,8 +519,16 @@
 |<span style="background-color: #FEF794;">后台增删查改</span>|<span style="background-color: #FEF794;">已写筛选、列表、分页、新增、编辑、复制、启停、草稿删除、权限和操作日志。</span>|<span style="background-color: #FEF794;">3\.2\.1“运营配置能力”</span>|
 |<span style="background-color: #FEF794;">灰度与指标</span>|<span style="background-color: #FEF794;">已写5%稳定灰度、核心漏斗、退出率、补报成功率和数据解释边界。</span>|<span style="background-color: #FEF794;">八</span>|
 |<span style="background-color: #FEF794;">图示</span>|<span style="background-color: #FEF794;">4张V1\.3图示均在3\.2\.1表格“图示”列，使用固定提交8d57a53c8deb06f9cb11e45610c6328e727e915c。</span>|<span style="background-color: #FEF794;">3\.2\.1 V1\.3</span>|
+|<span style="background-color: #FEF794;">V1\.4触发与状态</span>|<span style="background-color: #FEF794;">已写新用户永久免弹、行为画像兜底、非新用户独立步骤终态、断点恢复、游客转登录和稳定分桶。</span>|<span style="background-color: #FEF794;">3\.2\.1 V1\.4</span>|
+|<span style="background-color: #FEF794;">V1\.4后台能力</span>|<span style="background-color: #FEF794;">已写总开关、市场、版本、目标用户、灰度、生效时间、来源选项与版本，以及筛选、分页、增删查改、权限、并发和日志。</span>|<span style="background-color: #FEF794;">3\.2\.1“V1\.4运营配置”</span>|
+|<span style="background-color: #FEF794;">V1\.4输入与状态</span>|<span style="background-color: #FEF794;">已写来源文案长度、空格与敏感词校验、多语言完整性、配置状态枚举、合法流转和操作反馈。</span>|<span style="background-color: #FEF794;">3\.2\.1“V1\.4运营配置”</span>|
+|<span style="background-color: #FEF794;">V1\.4实验与护栏</span>|<span style="background-color: #FEF794;">已写三组实验、首次有效价值行为率、停止阈值、完整7天周期、D1/D7和可靠性指标。</span>|<span style="background-color: #FEF794;">八</span>|
+|<span style="background-color: #FEF794;">V1\.4图示</span>|<span style="background-color: #FEF794;">2张V1\.4图示均在3\.2\.1表格“图示”列，使用固定提交a88599cf88ab93cf27c2795f4288828912f96f59；旧4张V1\.3图示保留原提交。</span>|<span style="background-color: #FEF794;">3\.2\.1 V1\.4</span>|
+|<span style="background-color: #FEF794;">前端硬伤回填</span>|<span style="background-color: #FEF794;">已补独立开关临时绕过、横竖屏状态保持、三组免弹时机和游客来源冲突合并。</span>|<span style="background-color: #FEF794;">3\.2\.1 V1\.4、四</span>|
+|<span style="background-color: #FEF794;">测试硬伤回填</span>|<span style="background-color: #FEF794;">已补开关重开补答、实验互斥、权重边界、护栏样本门槛、连续自然日和=1\.5不触发验收。</span>|<span style="background-color: #FEF794;">六、八</span>|
+|<span style="background-color: #FEF794;">运营硬伤回填</span>|<span style="background-color: #FEF794;">已补实验ID、市场/版本/渠道、80/10/10权重、固定护栏、状态流转、自动/手动停止和新流量回退。</span>|<span style="background-color: #FEF794;">3\.2\.1 B端、八</span>|
 
-**模拟评审结果：**
+**<span style="background-color: #FEF794;">V1\.3历史模拟评审结果：</span>**
 
 |角色|结论|发现的问题|
 |---|---|---|
