@@ -8,6 +8,7 @@ const TRACE_ROOTS = Object.freeze([
 const SAFE_ENTRY_URL = /^http:\/\/127\.0\.0\.1:4173\/[a-z0-9-]+\/$/u;
 const RESOURCE_SHA1 = /^[a-f0-9]{40}(?:\.[a-z0-9]+)?$/u;
 const NETWORK_TIME_TOLERANCE_MS = 10;
+const NETWORK_CLOCK_OFFSET_LIMIT_MS = 250;
 const SESSION_TIME_TOLERANCE_MS = 5_000;
 
 function traceError(code, detail = "") {
@@ -238,6 +239,8 @@ function validateNetwork(networkRecords, entries, {
   }
   const referencedResources = new Set();
   let hasDocument = false;
+  let documentClockOffset = null;
+  const clockOffsets = [];
   for (const [index, { snapshot }] of networkRecords.entries()) {
     const request = snapshot?.request;
     const response = snapshot?.response;
@@ -249,11 +252,15 @@ function validateNetwork(networkRecords, entries, {
       || !safeUrl(request?.url, entryUrl)
       || !Number.isFinite(startedAt)
       || !Number.isFinite(snapshot._monotonicTime)
-      || Math.abs(startedAt - toWallTime(snapshot._monotonicTime))
-        > NETWORK_TIME_TOLERANCE_MS
     ) {
       throw traceError("NETWORK_BINDING", String(index));
     }
+    const clockOffset =
+      startedAt - toWallTime(snapshot._monotonicTime);
+    if (Math.abs(clockOffset) > NETWORK_CLOCK_OFFSET_LIMIT_MS) {
+      throw traceError("NETWORK_BINDING", String(index));
+    }
+    clockOffsets.push(clockOffset);
     if (
       request.method === "GET"
       && request.url === entryUrl
@@ -270,6 +277,7 @@ function validateNetwork(networkRecords, entries, {
       ))
     ) {
       hasDocument = true;
+      documentClockOffset ??= clockOffset;
     }
     const sha1 = response?.content?._sha1;
     if (sha1 !== undefined) {
@@ -285,6 +293,14 @@ function validateNetwork(networkRecords, entries, {
     }
   }
   if (!hasDocument) throw traceError("DOCUMENT_REQUEST");
+  for (const [index, clockOffset] of clockOffsets.entries()) {
+    if (
+      Math.abs(clockOffset - documentClockOffset)
+        > NETWORK_TIME_TOLERANCE_MS
+    ) {
+      throw traceError("NETWORK_BINDING", String(index));
+    }
+  }
   if (referencedResources.size === 0) throw traceError("RESOURCE_REQUIRED");
   const archiveResources = [...entries.keys()]
     .filter((name) => name.startsWith("resources/"));

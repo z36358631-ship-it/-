@@ -665,6 +665,53 @@ describe("AI session evidence cross-binding", () => {
     }
   });
 
+  it("calibrates bounded network clock offset while rejecting relative drift", async () => {
+    const alignedShift = cloneFixture(realFixture);
+    await mutateTraceJson(alignedShift, "trace.network", (records) => {
+      for (const record of records) {
+        record.snapshot.startedDateTime = new Date(
+          Date.parse(record.snapshot.startedDateTime) + 50,
+        ).toISOString();
+      }
+    });
+    await assert.doesNotReject(
+      validatePlaywrightTrace(
+        alignedShift.evidenceByPath.get(alignedShift.session.tracePath),
+        traceOptions(alignedShift),
+      ),
+    );
+
+    const relativeDrift = cloneFixture(realFixture);
+    await mutateTraceJson(relativeDrift, "trace.network", (records) => {
+      records[1].snapshot.startedDateTime = new Date(
+        Date.parse(records[1].snapshot.startedDateTime) + 20,
+      ).toISOString();
+    });
+    await assert.rejects(
+      validatePlaywrightTrace(
+        relativeDrift.evidenceByPath.get(relativeDrift.session.tracePath),
+        traceOptions(relativeDrift),
+      ),
+      /TRACE_NETWORK_BINDING:1/u,
+    );
+
+    const unboundedShift = cloneFixture(realFixture);
+    await mutateTraceJson(unboundedShift, "trace.network", (records) => {
+      for (const record of records) {
+        record.snapshot.startedDateTime = new Date(
+          Date.parse(record.snapshot.startedDateTime) + 500,
+        ).toISOString();
+      }
+    });
+    await assert.rejects(
+      validatePlaywrightTrace(
+        unboundedShift.evidenceByPath.get(unboundedShift.session.tracePath),
+        traceOptions(unboundedShift),
+      ),
+      /TRACE_NETWORK_BINDING/u,
+    );
+  });
+
   it("rejects touchMove first, late execution, and action after first_input", async () => {
     const move = cloneFixture(realFixture);
     await mutateActions(move, (actions) => {
