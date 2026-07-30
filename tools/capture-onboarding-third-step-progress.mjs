@@ -39,6 +39,10 @@ async function chooseNewUserAndSource(sourceCode) {
 await reset();
 await chooseNewUserAndSource('other_or_unknown');
 await page.locator('#page2.active').waitFor();
+await page.waitForTimeout(200);
+await page.locator('.phone').screenshot({
+  path: path.join(outputDir, '03-domestic-gift-overlay.png'),
+});
 await page.waitForTimeout(2300);
 await page.locator('.phone').screenshot({
   path: path.join(outputDir, '01-domestic-third-step.png'),
@@ -51,6 +55,11 @@ await page.locator('#page2b.active').waitFor();
 await page.waitForTimeout(500);
 await page.locator('.phone').screenshot({
   path: path.join(outputDir, '02-overseas-third-step.png'),
+});
+await page.locator('#guideBtn').click();
+await page.waitForTimeout(500);
+await page.locator('.phone').screenshot({
+  path: path.join(outputDir, '04-overseas-guide-slide-2.png'),
 });
 
 assert.deepEqual(pageErrors, [], `page errors: ${pageErrors.join('; ')}`);
