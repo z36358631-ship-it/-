@@ -9,6 +9,7 @@
 |2026\.7\.7|V1\.2|郑群超|1、补充优先扫描外接硬盘规则|搜7\.7修改|
 |2026\.07\.30|V1\.3|郑群超|<span style="background-color: #FEF794;">补充新手引流与</span><span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">两步个性化问卷</span><span style="background-color: #FEF794;">的滚动24小时交接、完成时间、国内海外差异和验收规则</span>|<span style="background-color: #FEF794;">新手引流继续独立</span>|
 |2026\.07\.30|V1\.4|郑群超|<span style="background-color: #FEF794;">将</span><span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">来源单选页并入新手引流</span><span style="background-color: #FEF794;">，放在用户类型选择与原分支之间；删除新用户24小时后手动选游戏问卷，补充断点恢复、离线补报、永久免弹、后台配置、埋点和验收。</span>|<span style="background-color: #FEF794;">V1\.4为当前规则；冲突的V1\.3规则已由V1\.4覆盖</span>|
+|2026\.07\.31|V1\.5|郑群超|<span style="background-color: #FEF794;">国内、海外“我是新手”分支第三页增加</span><span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">三段全亮顶部进度条</span><span style="background-color: #FEF794;">，明确分支范围、安全区、横竖屏状态保持与回归验收；同步将原文失效飞书临时图示替换为固定Git图片。</span>|<span style="background-color: #FEF794;">仅调整第三页进度表达，不新增接口、业务状态或埋点</span>|
 
 ## 二、背景与目标
 
@@ -66,6 +67,8 @@
 
 - <span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.4（当前）</span><span style="background-color: #FEF794;">：来源采集并入新手引流；用户类型与原分支之间增加来源单选页；删除新用户后续手动选游戏问卷。上一条V1\.3规划已由V1\.4覆盖。</span>
 
+- <span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.5（当前视觉补充）</span><span style="background-color: #FEF794;">：“我是新手”国内秒玩列表与海外操作引导页统一补齐第三步进度表达；不改变V1\.4页面顺序、分流规则和数据口径。</span>
+
 - V2\.0（预告）：根据用户行为动态调整探索页内容推荐策略；H5小游戏兜底路径
 
 ## 四、概要设计
@@ -88,6 +91,8 @@
 
 - <span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.4来源采集、断点恢复与永久免弹</span>
 
+- <span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.5新手第三页进度表达</span>
+
 ### 4\.2 详细设计（C端）
 
 功能demo：[新用户分流弹窗](https://z36358631-ship-it.github.io/-/demos/%E6%96%B0%E6%89%8B%E5%BC%95%E5%AF%BC%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AFdemo.html)
@@ -107,6 +112,12 @@
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">海外来源采集</span>|![图4.2-4：海外新用户来源采集](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a88599cf88ab93cf27c2795f4288828912f96f59/public/prd/personalization-acquisition-onboarding-v2/03-onboarding-source-overseas.png)|<span style="background-color: #FEF794;">① 海外显示YouTube、TikTok、Reddit、Discord、Friends、Other / I don’t remember；品牌统一为GameHub。<br>② 海外包跟随App语言；来源稳定枚举、必答和保存规则与国内一致。<br>③ 海外无云游戏与新手礼包；来源完成后进入原海外新手引导图或导入/Steam分支。</span>|
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">断点恢复、实验与离线补报</span>|![图4.2-5：新手来源中断恢复](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a88599cf88ab93cf27c2795f4288828912f96f59/public/prd/personalization-acquisition-onboarding-v2/04-onboarding-source-resume.png)|<span style="background-color: #FEF794;">① 用户类型、来源选择、选项版本、实验组和流程状态每次变化后本地保存；方向切换、关闭、强杀或崩溃后恢复。<br>② 对照组不展示来源，直接进入原分支且不写免弹；来源影响组在新手内答来源，满24小时后只补选游戏，提交或跳过后写免弹；最终方案组完成引流即写免弹。<br>③ 来源已保存、原分支未完成时恢复原分支；断网时按同一 `response_id` 补报。<br>④ 来源步骤或总开关关闭时直接进入原分支，不写来源终态；重开后在下次安全入口补答。<br>⑤ 横屏使用居中可滚动容器，方向切换保留组别、页面、选择和滚动位置。</span>|
 
+#### <span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.5 新手第三页进度</span>
+
+|<span style="background-color: #FEF794;">模块名称</span>|<span style="background-color: #FEF794;">图示</span>|<span style="background-color: #FEF794;">展示\&交互说明</span>|
+|---|---|---|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">国内／海外新手第三页</span>|![图4.2-6：国内新手第三页三段全亮进度](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@bff4c1dc5570025a84a5ee2a38f7d274ce80b61b/public/prd/onboarding-third-step-progress/01-domestic-third-step.png)<br>![图4.2-7：海外新手第三页三段全亮进度](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@bff4c1dc5570025a84a5ee2a38f7d274ce80b61b/public/prd/onboarding-third-step-progress/02-overseas-third-step.png)|<span style="background-color: #FEF794;">① 仅“我是新手／I'm new”分支展示本进度条；国内秒玩游戏列表、海外操作引导页均显示3段且全部点亮，表示“第3步，共3步”。<br>② “我有游戏想玩／I have games to play”分支不展示本进度条，原导入、Steam绑定路径不变。<br>③ 进度条为只读状态表达，不支持点击、滑动或返回跳步；国内无障碍文案为“独立新手引流，第3步，共3步”，海外为“GameHub onboarding, step 3 of 3”。<br>④ 国内进入页面时可继续展示原新手礼包浮层；浮层按原规则消失后，进度条正常显示且无残影，不改变游戏列表、秒玩、免费和查看更多交互。<br>⑤ 海外进度条使用独立顶部安全区，不遮挡系统状态栏、引导图、分页点和底部按钮；轮播、Next与Get Started逻辑保持不变。<br>⑥ 横竖屏切换、应用中断恢复后保留原分支、当前页面和已有选择；恢复到第三页时仍显示三段全亮，不重新开始流程。<br>⑦ 本次仅补充前端视觉状态，不新增接口、字段、业务状态、后台配置或埋点，不改变V1\.4实验分组和免弹规则。</span>|
+
 #### ① 引导首屏（新老用户分流）
 
 **新用户判定条件：**
@@ -119,7 +130,9 @@
 
 - **版本号≤6\.0（均需登录）：**判定游戏时长小于0，则弹出引导
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=NzNmMDljNmMyZWM3OTE1ZWY5YWE0MzUxNTgzZjdiNmRfOTE2NDg2MjM0MGI5ZjdlZTA2YzkyOTcxMzM3MjBlZWJfSUQ6NzY1MjY3MTIyNTI5OTM1NjkxNV8xNzgzNDA0ODA4OjE3ODM0OTEyMDhfVjM)
+|模块名称|图示|展示\&交互说明|
+|---|---|---|
+|引导首屏|![图4.2-12：新老用户分流首屏](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@bff4c1dc5570025a84a5ee2a38f7d274ce80b61b/public/prd/onboarding-third-step-progress/05-user-type-page.png)|用户查看平台特色并选择“我有游戏想玩”或“我是新手”；详细规则见下表。|
 
 |模块名称|展示\&交互说明|
 |---|---|
@@ -130,7 +143,9 @@
 
 #### ② 游玩方式选择（"有游戏想玩"路径）
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=ZTk4NGI0M2NkOWNlOThhY2Y2MGM2Yzk4ZWUzY2M1NmVfODk3ZmY2NzhkNTE1MjI2YmQ1ZDUyNzc5NjMwM2UyMmRfSUQ6NzY1MjY3MTI4NjExNjMzODY1Nl8xNzgzNDA0ODA4OjE3ODM0OTEyMDhfVjM)
+|模块名称|图示|展示\&交互说明|
+|---|---|---|
+|游玩方式选择|![图4.2-13：有游戏想玩分支](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@bff4c1dc5570025a84a5ee2a38f7d274ce80b61b/public/prd/onboarding-third-step-progress/06-has-game-branch.png)|用户选择导入游戏或绑定Steam账号；详细规则见下表。|
 
 |模块名称|展示\&交互说明|
 |---|---|
@@ -140,9 +155,9 @@
 
 ##### 导入游戏自动扫描
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=NDM5NmYxZjUzMTI5Yjg0MThmMzJlMTQyNTU1NGRkZTlfOWZlY2ZiYjVkYmI2OThhYjZjZGQzMTY0ZWI4ZmY0ODlfSUQ6NzY1NDc4NDM4NDQ1Njk2OTE2Nl8xNzgzNDA0ODA4OjE3ODM0OTEyMDhfVjM)
-
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=NWQzMzhhZWNjNDI2NTJiM2VlYzlmMzkwZWFhNzdlNjFfNDdkMTlkOGFkZjU4MTc0NTY5YjY1ZTU0NTA5MDk4ZjBfSUQ6NzY1NDc4NDM4MTM2Njg4MTQ5Ml8xNzgzNDA0ODA4OjE3ODM0OTEyMDhfVjM)
+|模块名称|图示|展示\&交互说明|
+|---|---|---|
+|导入游戏自动扫描|![图4.2-14：自动扫描中](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@bff4c1dc5570025a84a5ee2a38f7d274ce80b61b/public/prd/onboarding-third-step-progress/07-import-scan-loading.png)<br>![图4.2-15：自动扫描结果](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@bff4c1dc5570025a84a5ee2a38f7d274ce80b61b/public/prd/onboarding-third-step-progress/08-import-scan-result.png)|授权后进入扫描中状态，完成后展示已找到的游戏文件；详细规则见下表。|
 
 |模块名称|展示\&交互说明|
 |---|---|
@@ -154,11 +169,13 @@
 
 #### ③ 新手秒玩游戏列表（国内版）
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=NTMxNjU2OTIxZGE5NGZkMjg1YmU4NjlkZDNjZmMyNThfYzQzYmE3MjJkNjZjYmQyYzRlODhmOGI0ZGZkYjk3NGJfSUQ6NzY1NDgwNjM3ODk3MjAwNzY0MF8xNzgzNDA0ODA4OjE3ODM0OTEyMDhfVjM)
+|模块名称|图示|展示\&交互说明|
+|---|---|---|
+|新手秒玩游戏列表|![图4.2-8：国内新手秒玩游戏列表](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@bff4c1dc5570025a84a5ee2a38f7d274ce80b61b/public/prd/onboarding-third-step-progress/01-domestic-third-step.png)<br>![图4.2-9：国内新手礼包浮层](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@bff4c1dc5570025a84a5ee2a38f7d274ce80b61b/public/prd/onboarding-third-step-progress/03-domestic-gift-overlay.png)|进入页面先展示新手礼包浮层，浮层消失后用户浏览云游戏与免费游戏列表；详细规则见下表。|
 
 |模块名称|展示\&交互说明|
 |---|---|
-|礼盒弹窗|进入页面时居中弹出礼盒卡片："已赠送新手礼包 / 获得15分钟免费秒玩时长"，2秒后自动消失<br>![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=ZjFiNWNhMjU3Njg2MzcwNDNmOTBhYWM0OGJmZDg2YzFfMmVlZmMyZDI0NjAwNWU3OTBiNmJmOWFiMWFlNTY2YWNfSUQ6NzY1MjY3MTM2OTQ4MjcwMTgxMl8xNzgzNDA0ODA4OjE3ODM0OTEyMDhfVjM)|
+|礼盒弹窗|进入页面时居中弹出礼盒卡片："已赠送新手礼包 / 获得15分钟免费秒玩时长"，2秒后自动消失|
 |页面结构|标题"选一款试试" \+ 两个分区（云游戏 / 免费游戏），各自带标题\+副标题\+游戏列表\+查看更多|
 |分区一：云游戏|标题"云游戏"，副标题"无需下载，点开即玩"，右侧"查看更多 ›"。纵向列表展示8款，每条：游戏封面 \+ 游戏名 \+ 核心玩法标签 \+ 金色"秒玩"按钮|
 |分区二：免费游戏|标题"免费游戏"，副标题"需下载游戏包，无限时畅玩"，右侧"查看更多 ›"。纵向列表展示最多8款，每条：游戏封面 \+ 游戏名 \+ 核心玩法标签 \+ 绿色"免费"按钮|
@@ -174,9 +191,9 @@
 
 #### ④ 新手操作引导图（海外版）
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=ZDcwOTgwM2VlOThmYjEzZGM5MWRkMjk2NWEwNzVjMDlfYjg4ZGEyZTFjNDk5NzI2NDE2ZjQ2MTkxN2ZhZDBlZjBfSUQ6NzY1MjY3MTY0ODczOTEzNDQxOF8xNzgzNDA0ODA4OjE3ODM0OTEyMDhfVjM)
-
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=OWU0Nzg5MjM3OTEzOGI4MTVkMDdiNjY5ZGRlMTQ1NjRfOWQ0YjYwMjc4NDkyMzZlY2M1Njc5YzA3MTRkMDk3MDVfSUQ6NzY1MjY3MTUwNzM5OTMxNDM4OF8xNzgzNDA0ODA4OjE3ODM0OTEyMDhfVjM)
+|模块名称|图示|展示\&交互说明|
+|---|---|---|
+|海外新手操作引导|![图4.2-10：海外新手操作引导第1张](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@bff4c1dc5570025a84a5ee2a38f7d274ce80b61b/public/prd/onboarding-third-step-progress/02-overseas-third-step.png)<br>![图4.2-11：海外新手操作引导第2张](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@bff4c1dc5570025a84a5ee2a38f7d274ce80b61b/public/prd/onboarding-third-step-progress/04-overseas-guide-slide-2.png)|用户依次查看导入游戏与绑定Steam两张引导图；详细规则见下表。|
 
 |模块名称|展示\&交互说明|
 |---|---|
@@ -211,6 +228,7 @@
 |新手礼包|赠送15分钟秒玩时长|无（无云游戏）|
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">来源题目</span>|<span style="background-color: #FEF794;">中文，盖世游戏</span>|<span style="background-color: #FEF794;">跟随App语言，品牌统一为GameHub</span>|
 |<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">来源选项</span>|<span style="background-color: #FEF794;">抖音、哔哩哔哩、小红书、应用商店、朋友推荐、其他／不记得</span>|<span style="background-color: #FEF794;">YouTube、TikTok、Reddit、Discord、Friends、Other / I don’t remember</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.5第三页进度</span>|<span style="background-color: #FEF794;">秒玩游戏列表顶部显示3段全亮；保留新手礼包浮层</span>|<span style="background-color: #FEF794;">操作引导图顶部安全区显示3段全亮；无礼包浮层</span>|
 
 #### <span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">⑦ 个性化问卷衔接</span>
 
@@ -231,9 +249,9 @@
 
 新版专题管理\-新增2个专题位置类型，分别为新手推荐池（云游戏）、新手推荐池（免费游戏），供此页面调用，其余功能均复用
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=NWIyMmE5MGFjY2U0NGFmMWI3ZmMwOWM4NTQ1YTIxNDJfYTViYjQ2YWEyOGFlZmQ4Yjk3ZTNiZjZiNDM2MzFiNDhfSUQ6NzY1NDgxMzcyNDAxMzU2MzA3Nl8xNzgzNDA0ODA4OjE3ODM0OTEyMDhfVjM)
-
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=ZTIyZTc4N2FlZWZkYmE0MzZmNTEyNzliMTQ5ZjYzYjJfMTRiOWU2NDMyNTU0YTc0YjJlOWU2ZjBkZDEwYTlmZDFfSUQ6NzY1NDgxMzk1NjY1MzE1NzMzMF8xNzgzNDA0ODA4OjE3ODM0OTEyMDhfVjM)
+|模块名称|图示|展示\&交互说明|
+|---|---|---|
+|新手推荐池专题类型|—（复用现有专题管理页）|专题管理新增“新手推荐池（云游戏）”和“新手推荐池（免费游戏）”两种位置类型，供新手秒玩列表调用；其余功能复用现有能力。|
 
 #### <span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.4新手来源配置</span>
 
@@ -362,6 +380,11 @@
 ||<span style="background-color: #FEF794;">AC\-21 游客登录冲突</span>|<span style="background-color: #FEF794;">A按原 `response_id`/`install_id` 补报，不覆盖账号B；按B终态放行并记录冲突日志。账号无B时A只关联一次。</span>|
 ||<span style="background-color: #FEF794;">AC\-22 实验配置</span>|<span style="background-color: #FEF794;">默认80/10/10，整数合计100且仅草稿态可改；相同市场/版本/渠道/时间范围互斥；启动后分桶冻结。</span>|
 ||<span style="background-color: #FEF794;">AC\-23 护栏边界</span>|<span style="background-color: #FEF794;">D1成熟且对照/最终各≥1000安装后每日计算；=1\.5个百分点不触发，>1\.5连续2个自然日自动 `stopped_guardrail`，新流量回对照，已入组不变。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">V1\.5第三页进度</span>|<span style="background-color: #FEF794;">AC\-24 分支范围</span>|<span style="background-color: #FEF794;">选择“我是新手／I'm new”并完成来源采集后，国内秒玩游戏列表、海外操作引导页显示进度条；“我有游戏想玩／I have games to play”分支不显示。</span>|
+||<span style="background-color: #FEF794;">AC\-25 国内第三页</span>|<span style="background-color: #FEF794;">国内页显示3段且全部点亮，无障碍文案为“独立新手引流，第3步，共3步”；礼包浮层消失后进度条完整、无残影，游戏列表与原按钮正常操作。</span>|
+||<span style="background-color: #FEF794;">AC\-26 海外第三页</span>|<span style="background-color: #FEF794;">海外页显示3段且全部点亮，无障碍文案为“GameHub onboarding, step 3 of 3”；顶部安全区不遮挡状态栏、引导图、分页点、Next或Get Started。</span>|
+||<span style="background-color: #FEF794;">AC\-27 方向与恢复</span>|<span style="background-color: #FEF794;">第三页横竖屏切换或中断恢复后仍保持原分支和页面状态，进度条持续显示3段全亮，不重复礼包、来源提交或流程完成记录。</span>|
+||<span style="background-color: #FEF794;">AC\-28 回归与数据</span>|<span style="background-color: #FEF794;">进度条不可点击，不改变国内游戏列表、海外轮播及原返回/完成逻辑；网络请求、业务字段、后台配置和埋点与V1\.4保持一致。</span>|
 
 ## 八、运营需求
 
@@ -395,6 +418,9 @@
 |<span style="background-color: #FEF794;">V1\.4输入与状态</span>|<span style="background-color: #FEF794;">已写来源文案长度、空格与敏感词校验、多语言完整性、配置状态枚举与流转，以及页面返回保留草稿。</span>|<span style="background-color: #FEF794;">4\.2 V1\.4、4\.3 V1\.4</span>|
 |<span style="background-color: #FEF794;">V1\.4国内/海外</span>|<span style="background-color: #FEF794;">国内使用盖世游戏和中文选项；海外使用GameHub、多语言选项，无云游戏与礼包。</span>|<span style="background-color: #FEF794;">4\.2“国内/海外差异”</span>|
 |<span style="background-color: #FEF794;">V1\.4图示</span>|<span style="background-color: #FEF794;">4张V1\.4图示均在4\.2表格“图示”列，使用固定提交a88599cf88ab93cf27c2795f4288828912f96f59；旧1张V1\.3图示保留原提交。</span>|<span style="background-color: #FEF794;">4\.2 V1\.4</span>|
+|<span style="background-color: #FEF794;">V1\.5状态完整性</span>|<span style="background-color: #FEF794;">已覆盖仅新手分支展示、国内/海外三段全亮、非新手分支不展示、礼包浮层消失、海外安全区、横竖屏与中断恢复。</span>|<span style="background-color: #FEF794;">4\.2 V1\.5、七 AC\-24～AC\-27</span>|
+|<span style="background-color: #FEF794;">V1\.5无障碍与回归</span>|<span style="background-color: #FEF794;">已明确中英文无障碍文案、进度条只读，以及不新增接口、状态、后台配置和埋点。</span>|<span style="background-color: #FEF794;">4\.2 V1\.5、七 AC\-28</span>|
+|<span style="background-color: #FEF794;">V1\.5图示</span>|<span style="background-color: #FEF794;">本次新增2张第三页图示，并将原文10个飞书临时图片清理：C端以8张真实Demo截图替换，统一使用固定提交bff4c1dc5570025a84a5ee2a38f7d274ce80b61b；B端2张失效旧图改为“复用现有专题管理页”。所有图片均位于表格“图示”列。</span>|<span style="background-color: #FEF794;">4\.2 V1\.5、①～④、4\.3</span>|
 |<span style="background-color: #FEF794;">前端硬伤回填</span>|<span style="background-color: #FEF794;">已补用户类型先来源后分支、独立开关临时绕过、横竖屏状态保持、三组免弹时机和游客来源冲突。</span>|<span style="background-color: #FEF794;">4\.2、五</span>|
 |<span style="background-color: #FEF794;">测试硬伤回填</span>|<span style="background-color: #FEF794;">已补开关重开补答、80/10/10权重、实验互斥、护栏样本门槛、连续自然日和=1\.5边界。</span>|<span style="background-color: #FEF794;">七</span>|
 |<span style="background-color: #FEF794;">运营硬伤回填</span>|<span style="background-color: #FEF794;">已补实验ID、市场/版本/渠道、起止时间、固定护栏、状态流转、自动/手动停止和稳定分桶。</span>|<span style="background-color: #FEF794;">4\.3、六</span>|
@@ -406,3 +432,11 @@
 |前端开发|✓|完成点、时间口径、问卷触发优先级和离线补报均有明确规则。|
 |<span style="background-color: #FEF794;">测试工程师</span>|<span style="background-color: #FEF794;">✓</span>|<span style="background-color: #FEF794;">V1\.3历史评审已覆盖未满24小时、自然日跨天、中途退出、重复上报、断网和弹层竞争；24小时规则现已由V1\.4覆盖。</span>|
 |运营/业务方|✓|新手引流继续独立，国内海外差异、数据口径和旧规则覆盖关系无歧义。|
+
+**<span style="background-color: #FEF794;">V1\.5模拟评审结果：</span>**
+
+|角色|结论|发现的问题与处理|
+|---|---|---|
+|<span style="background-color: #FEF794;">前端开发</span>|<span style="background-color: #FEF794;">✓</span>|<span style="background-color: #FEF794;">已明确进度条仅进入国内秒玩游戏列表、海外操作引导页，并复用现有页面状态；无需新增接口、状态机或后台配置。</span>|
+|<span style="background-color: #FEF794;">测试工程师</span>|<span style="background-color: #FEF794;">✓</span>|<span style="background-color: #FEF794;">已补非新手分支不展示、国内礼包浮层消失、海外顶部安全区、方向切换、中断恢复、无障碍文案和原交互回归。</span>|
+|<span style="background-color: #FEF794;">运营/业务方</span>|<span style="background-color: #FEF794;">✓</span>|<span style="background-color: #FEF794;">本次仅统一第三步完成感，不影响国内/海外内容差异、实验分组、运营配置与指标口径。</span>|
