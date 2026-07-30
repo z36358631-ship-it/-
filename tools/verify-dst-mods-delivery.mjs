@@ -256,6 +256,11 @@ const rules = [
       /ja-JP/,
       /ru-RU/,
       /pt-BR/,
+      /批次主判层/,
+      /灰度单元护栏层/,
+      /语言证据层/,
+      /重复下载或重复安装任务：停止全部 MODS 灰度单元/,
+      /metric_evaluation_scope/,
       /当前结论保持 No-Go/
     ],
     forbidden: [
