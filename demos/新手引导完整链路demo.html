@@ -17,17 +17,21 @@
   --font-num:'D-DIN-PRO',var(--font);
   --shadow-card:0 2px 12px rgba(0,0,0,.4);
   --shadow-glow:0 0 20px rgba(255,204,67,.15);
+  --gh-color-text-primary:#fff;--gh-color-text-secondary:#8d95a1;
+  --gh-color-brand-azure:#338feb;--gh-color-brand-gold:#ffcc43;
+  --gh-border-default:#353d4e;--gh-radius-2xl:20px;--gh-radius-pill:100px;
+  --gh-surface-glass-strong:rgba(25,27,33,.94);
 }
 html{font-size:16px}
-body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-smoothing:antialiased;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:24px}
+body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(51,143,235,.14),transparent 28%),radial-gradient(circle at 20% 84%,rgba(51,216,164,.09),transparent 28%),#101217;color:var(--txt);-webkit-font-smoothing:antialiased;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:24px}
 
 .phone{
-  width:390px;height:844px;background:var(--bg);border-radius:44px;
+  width:390px;height:844px;background:radial-gradient(circle at 108% -8%,rgba(51,143,235,.24),transparent 30%),radial-gradient(circle at -18% 88%,rgba(51,216,164,.13),transparent 28%),var(--bg);border-radius:20px;
   overflow:hidden;position:relative;
   box-shadow:inset 0 0 0 1px #1a1a1a,0 24px 80px rgba(0,0,0,.8),0 0 0 1px #111;
 }
 .phone::before{
-  content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  content:'';display:none;position:absolute;top:12px;left:50%;transform:translateX(-50%);
   width:80px;height:28px;background:#111;border-radius:14px;z-index:20;
   pointer-events:none;
 }
@@ -97,9 +101,10 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
 /* Welcome Box */
 .gh-welcome-box{
   padding:16px;
-  background:linear-gradient(180deg,rgba(255,255,255,0.03) 0%,rgba(255,255,255,0.01) 100%);
+  background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.014) 70%);
   border:1px solid var(--gh-border-default);
   border-radius:var(--gh-radius-2xl);
+  box-shadow:0 18px 44px rgba(0,0,0,.22);
 }
 .gh-divider{
   height:1px;background:var(--gh-border-default);margin:14px 0;
@@ -107,9 +112,15 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
 
 /* Page Content */
 .page-body{padding:0 24px;flex:1;display:flex;flex-direction:column;overflow-y:auto}
+#page0 .page-body{justify-content:center;padding:58px 24px 42px!important}
 .page-body::-webkit-scrollbar{display:none}
 .page-title{font-size:22px;font-weight:600;letter-spacing:-.3px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
 .page-desc{font-size:14px;color:var(--muted);line-height:1.5;margin-bottom:16px}
+.onboarding-progress{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:22px}
+.onboarding-progress span{height:3px;border-radius:100px;background:#262c34}
+.onboarding-progress span.is-active{background:linear-gradient(90deg,#ffdd72,var(--gold));box-shadow:0 0 12px rgba(255,204,67,.2)}
+.guide-kicker{margin-bottom:5px;color:var(--gold);font-size:10px;line-height:14px;font-weight:520;letter-spacing:.14em;text-align:center;text-transform:uppercase}
+.handoff-note{max-width:290px;margin:16px auto 0;color:#7f8793;font-size:12px;line-height:19px;text-align:center}
 
 /* Game Grid */
 .game-grid{
@@ -357,6 +368,10 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
 <div class="page active" id="page0">
   <div class="page-body" style="padding-top:44px;overflow:visible">
     <div class="gh-welcome-box">
+      <div class="onboarding-progress" aria-label="独立新手引流，第1步，共3步">
+        <span class="is-active"></span><span></span><span></span>
+      </div>
+      <p class="guide-kicker">Start your GameHub journey.</p>
       <div class="page-title" id="welcomeTitle" style="text-align:center;justify-content:center;font-size:20px;margin-bottom:6px">欢迎来到盖世游戏</div>
       <div class="page-desc" id="welcomeDesc" style="text-align:center;margin-bottom:16px">手机上的 PC 游戏平台</div>
       <div class="gh-features" id="featuresBox">
@@ -502,6 +517,7 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
     <div class="done-title" id="doneTitle">准备就绪！</div>
     <div class="done-desc" id="doneDesc">已根据你的喜好配置推荐内容
 现在开始探索你的游戏世界</div>
+    <p class="handoff-note">独立新手引流已完成；个性化问卷将在满24小时后的首次合格冷启动展示。</p>
     <button class="done-btn" onclick="resetAll()">进入探索页（重置）</button>
   </div>
 </div>
@@ -516,6 +532,7 @@ body{font-family:var(--font);background:#050505;color:var(--txt);-webkit-font-sm
 <button class="cp-btn" onclick="handleNewUser()">新手入口</button>
 <button class="cp-btn" onclick="showScan()">导入扫描</button>
 <button class="cp-btn" onclick="showDone('play')">完成页</button>
+<button class="cp-btn" onclick="location.href='用户与设置/个性化推荐采集demo.html?persona=new_eligible'">查看24小时后问卷</button>
 </div>
 
 <script>
@@ -649,7 +666,19 @@ function closeDetail(){
   document.getElementById('gameDetail').style.display='none';
 }
 
+var ONBOARDING_HANDOFF_KEY='gamehub_onboarding_handoff_v1';
+function recordOnboardingCompletion(path){
+  var handoff={
+    onboarding_completed_at:new Date().toISOString(),
+    onboarding_path:path,
+    next_rule:'满24小时后的首次合格冷启动'
+  };
+  localStorage.setItem(ONBOARDING_HANDOFF_KEY,JSON.stringify(handoff));
+  return handoff;
+}
+
 function showDone(type){
+  recordOnboardingCompletion(type);
   switchPage('page4');
   var ti={steam:'前往绑定 Steam',import:'导入成功！',play:'开始秒玩',library:'进入游戏库',more:'跳转 PC云游戏页',explore:'开始探索'};
   var de={steam:'正在跳转到 Steam 绑定页面...\n绑定后即可畅玩你的游戏库',import:'已将 2 个游戏导入游戏库\n现在可以开始游玩了',play:'正在为你启动云游戏...\n已赠送15分钟新手体验时长',library:'正在进入游戏库...',more:'跳转至 玩游戏 → PC云游戏页\n恭喜已获得15分钟免费游戏时长',explore:'正在进入探索页...\n开始发现你的游戏世界'};
