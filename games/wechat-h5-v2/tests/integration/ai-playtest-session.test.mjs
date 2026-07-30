@@ -42,6 +42,9 @@ import {
   startDriverIpcServer,
 } from "../../tools/ai-playtest/driver-ipc-server.mjs";
 import {
+  driverRequestSequencePaths,
+} from "../../tools/ai-playtest/driver-request-sequence.mjs";
+import {
   claimOutputDirectory,
   publishBufferExclusive,
   publishTemporaryFileExclusive,
@@ -188,6 +191,8 @@ async function fakeDriverCapture(scenario = "success") {
     "descriptors",
     "driver.json",
   );
+  const driverSequencePaths =
+    driverRequestSequencePaths(driverDescriptorPath);
   await Promise.all([
     mkdir(roundRoot, { recursive: true }),
     mkdir(path.dirname(draftOutput), { recursive: true }),
@@ -276,6 +281,16 @@ async function fakeDriverCapture(scenario = "success") {
       async tap() {},
     },
     async goto() {
+      await writeFile(driverSequencePaths.sequencePath, "9\n");
+      await writeFile(driverSequencePaths.framePath, "0\n");
+      await writeFile(
+        `${driverSequencePaths.sequencePath}.123.runner.tmp`,
+        "stale",
+      );
+      await writeFile(
+        `${driverSequencePaths.framePath}.123.runner.tmp`,
+        "stale",
+      );
       if (scenario === "disconnect") {
         clock += 10_001;
         await new Promise((resolve) => setTimeout(resolve, 15));
@@ -414,6 +429,7 @@ async function fakeDriverCapture(scenario = "success") {
     evidence,
     error,
     waitDelays,
+    driverSequencePaths,
   };
 }
 
@@ -834,6 +850,15 @@ describe("trusted AI driver runner integration", () => {
       await assert.rejects(access(capture.driverDescriptorPath), {
         code: "ENOENT",
       });
+      for (const target of [
+        capture.driverSequencePaths.sequencePath,
+        capture.driverSequencePaths.framePath,
+        `${capture.driverSequencePaths.sequencePath}.123.runner.tmp`,
+        `${capture.driverSequencePaths.framePath}.123.runner.tmp`,
+        capture.driverSequencePaths.lockPath,
+      ]) {
+        await assert.rejects(access(target), { code: "ENOENT" });
+      }
       await assert.rejects(
         access(path.join(capture.output, "report-draft.json")),
         { code: "ENOENT" },
