@@ -1,0 +1,3223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>盖世游戏 · DST MODS 场景联动 Demo</title>
+<style>
+:root {
+  --bg-primary: #000000;
+  --bg-card: #1a1a1a;
+  --bg-elevated: #252525;
+  --bg-overlay: #28202a;
+  --text-primary: #ffffff;
+  --text-secondary: #e6e6e6;
+  --text-tertiary: #f2f2f2;
+  --text-muted: #7b7b7b;
+  --text-disabled: #646464;
+  --brand-gold: #ffcc43;
+  --brand-gold-light: #ffd98f;
+  --brand-green: #33d8a4;
+  --brand-blue: #338feb;
+  --brand-purple: #8174fa;
+  --warning: #ff9b70;
+  --danger: #ff5678;
+  --border-default: #353d4e;
+  --font-primary: "MiSans VF", "MiSans", "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-number: "D-DIN-PRO", "MiSans VF", sans-serif;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-full: 100px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: #070707;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 78% 10%, rgba(51, 143, 235, 0.12), transparent 30%),
+    radial-gradient(circle at 18% 90%, rgba(255, 204, 67, 0.08), transparent 32%),
+    #070707;
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+button,
+select,
+[role="button"] {
+  cursor: pointer;
+}
+
+button:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--brand-gold);
+  outline-offset: 2px;
+}
+
+.svg-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.review-studio {
+  display: grid;
+  grid-template-columns: minmax(248px, 292px) minmax(0, 1fr);
+  gap: 24px;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.review-panel {
+  align-self: start;
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-2xl);
+  background: rgba(25, 25, 25, 0.9);
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(20px);
+  scrollbar-width: none;
+}
+
+.review-panel::-webkit-scrollbar,
+.screen-scroll::-webkit-scrollbar,
+.library-grid::-webkit-scrollbar,
+.detail-copy::-webkit-scrollbar {
+  display: none;
+}
+
+.review-eyebrow {
+  margin-bottom: 6px;
+  color: var(--brand-gold);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.review-panel h1 {
+  margin-bottom: 8px;
+  font-size: 20px;
+  font-weight: 520;
+  line-height: 28px;
+}
+
+.review-lead {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.review-section {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.review-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.review-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.review-button,
+.review-select {
+  min-height: 40px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  transition: 160ms ease;
+}
+
+.review-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+}
+
+.review-button:hover,
+.review-select:hover {
+  border-color: rgba(255, 204, 67, 0.55);
+  color: var(--text-primary);
+}
+
+.review-button.is-active {
+  border-color: var(--brand-gold);
+  background: rgba(255, 204, 67, 0.12);
+  color: var(--brand-gold);
+}
+
+.review-button.is-primary {
+  border-color: transparent;
+  background: linear-gradient(135deg, #0086ac, #0063b5);
+  color: #fff;
+}
+
+.review-select {
+  width: 100%;
+  padding: 0 10px;
+}
+
+.review-scenario-list {
+  display: grid;
+  gap: 8px;
+}
+
+.review-metrics {
+  display: grid;
+  gap: 8px;
+}
+
+.review-metric {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.review-metric strong {
+  color: var(--text-secondary);
+  font-family: var(--font-number);
+  font-weight: 600;
+}
+
+.stage {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+}
+
+.device {
+  position: relative;
+  overflow: hidden;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--bg-primary);
+  box-shadow: 0 26px 90px rgba(0, 0, 0, 0.72);
+}
+
+.device.portrait {
+  width: 390px;
+  height: 844px;
+  border-radius: 30px;
+}
+
+.device.landscape {
+  width: 874px;
+  height: 402px;
+  border-radius: 20px;
+}
+
+.device-shell {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background:
+    radial-gradient(circle at 75% -10%, rgba(51, 143, 235, 0.15), transparent 35%),
+    var(--bg-primary);
+}
+
+.portrait .device-shell {
+  flex-direction: column;
+}
+
+.landscape .device-shell {
+  flex-direction: row;
+}
+
+.status-bar {
+  z-index: 20;
+  display: flex;
+  height: 42px;
+  flex: 0 0 42px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  color: var(--text-secondary);
+  font-family: var(--font-number);
+  font-size: 11px;
+}
+
+.status-icons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status-pill {
+  width: 18px;
+  height: 8px;
+  border: 1px solid var(--text-secondary);
+  border-radius: 3px;
+  position: relative;
+}
+
+.status-pill::before {
+  position: absolute;
+  inset: 2px 4px 2px 2px;
+  border-radius: 1px;
+  background: var(--text-secondary);
+  content: "";
+}
+
+.side-rail {
+  display: none;
+  width: 68px;
+  flex: 0 0 68px;
+  padding: 14px 10px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(19, 19, 19, 0.92);
+}
+
+.landscape .side-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.brand-mark {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--brand-gold), #dd7a00);
+  color: #17120a;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(255, 182, 0, 0.2);
+}
+
+.rail-stack {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.rail-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.rail-icon.is-active {
+  background: var(--bg-elevated);
+  color: var(--brand-gold);
+}
+
+.device-main {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.screen {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.screen-scroll {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+.app-header {
+  z-index: 15;
+  display: flex;
+  min-height: 52px;
+  flex: 0 0 52px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(18px);
+}
+
+.landscape .app-header {
+  min-height: 48px;
+  flex-basis: 48px;
+  padding: 0 18px;
+}
+
+.header-title {
+  min-width: 0;
+  flex: 1;
+}
+
+.header-title strong {
+  display: block;
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 520;
+  line-height: 21px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-title span {
+  display: block;
+  margin-top: 1px;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.icon-button {
+  display: inline-grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-secondary);
+  transition: 150ms ease;
+}
+
+.icon-button:hover,
+.icon-button:active {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.page-content {
+  padding: 16px;
+}
+
+.landscape .page-content {
+  padding: 14px 18px;
+}
+
+.hero-art {
+  position: relative;
+  min-height: 216px;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(circle at 72% 26%, rgba(255, 204, 67, 0.55) 0 4%, transparent 5%),
+    radial-gradient(circle at 68% 24%, rgba(255, 204, 67, 0.16) 0 20%, transparent 36%),
+    linear-gradient(135deg, #153737 0 32%, #1d5b51 32% 48%, #352d1d 48% 64%, #181818 64%);
+  box-shadow: inset 0 -70px 70px rgba(0, 0, 0, 0.76);
+}
+
+.hero-art::before,
+.hero-art::after {
+  position: absolute;
+  bottom: 0;
+  width: 50%;
+  height: 48%;
+  background:
+    linear-gradient(152deg, transparent 0 40%, rgba(8, 16, 12, 0.92) 41% 58%, transparent 59%),
+    linear-gradient(28deg, transparent 0 43%, rgba(18, 31, 23, 0.9) 44% 60%, transparent 61%);
+  content: "";
+}
+
+.hero-art::before {
+  left: -4%;
+}
+
+.hero-art::after {
+  right: -4%;
+  transform: scaleX(-1);
+}
+
+.landscape .hero-art {
+  min-height: 150px;
+}
+
+.hero-copy {
+  position: absolute;
+  inset: auto 16px 15px;
+  z-index: 2;
+}
+
+.hero-copy h2 {
+  margin-bottom: 3px;
+  font-size: 25px;
+  font-weight: 520;
+  line-height: 32px;
+}
+
+.hero-copy p {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 14px;
+}
+
+.tag.is-official {
+  border-color: rgba(51, 143, 235, 0.38);
+  color: #7fc1ff;
+}
+
+.tag.is-local {
+  border-color: rgba(255, 155, 112, 0.42);
+  color: var(--warning);
+}
+
+.tag.is-success {
+  border-color: rgba(51, 216, 164, 0.35);
+  color: var(--brand-green);
+}
+
+.tag.is-risk {
+  border-color: rgba(255, 204, 67, 0.34);
+  color: var(--brand-gold);
+}
+
+.game-action-row {
+  display: grid;
+  grid-template-columns: 1fr 56px;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 10px;
+  font-weight: 520;
+  transition: 150ms ease;
+}
+
+.primary-button {
+  border: 0;
+  background: linear-gradient(135deg, #0086ac, #0063b5);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(0, 99, 181, 0.28);
+}
+
+.primary-button:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.primary-button:active,
+.secondary-button:active,
+.danger-button:active {
+  transform: translateY(1px);
+}
+
+.primary-button:disabled {
+  background: var(--border-default);
+  box-shadow: none;
+  color: var(--text-disabled);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.secondary-button {
+  border: 1px solid var(--border-default);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+}
+
+.secondary-button:hover {
+  border-color: rgba(255, 204, 67, 0.52);
+  color: var(--text-primary);
+}
+
+.danger-button {
+  border: 1px solid rgba(255, 86, 120, 0.35);
+  background: rgba(255, 86, 120, 0.08);
+  color: #ff9bb0;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 20px 0 10px;
+}
+
+.section-heading h3 {
+  font-size: 16px;
+  font-weight: 520;
+}
+
+.section-heading span {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.reference-card,
+.info-card,
+.manifest-card,
+.evidence-card,
+.recovery-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+}
+
+.reference-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+}
+
+.reference-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(51, 143, 235, 0.12);
+  color: var(--brand-blue);
+}
+
+.reference-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.reference-copy strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.reference-copy p {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  background: rgba(0, 0, 0, 0.66);
+  backdrop-filter: blur(6px);
+}
+
+.menu-sheet {
+  position: absolute;
+  z-index: 80;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-overlay);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.portrait .menu-sheet {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 8px 16px 26px;
+  border-radius: 24px 24px 0 0;
+}
+
+.landscape .menu-sheet {
+  top: 58px;
+  right: 18px;
+  width: 330px;
+  padding: 10px;
+  border-radius: 16px;
+}
+
+.sheet-handle {
+  width: 38px;
+  height: 4px;
+  margin: 2px auto 12px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.landscape .sheet-handle {
+  display: none;
+}
+
+.menu-sheet h2 {
+  margin: 2px 4px 10px;
+  font-size: 18px;
+  font-weight: 520;
+}
+
+.menu-item {
+  display: flex;
+  width: 100%;
+  min-height: 68px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+}
+
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.menu-item-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border-radius: 12px;
+}
+
+.menu-item-icon.mods {
+  background: rgba(255, 155, 112, 0.12);
+  color: var(--warning);
+}
+
+.menu-item-icon.workshop {
+  background: rgba(51, 143, 235, 0.12);
+  color: var(--brand-blue);
+}
+
+.menu-item-copy strong,
+.menu-item-copy span {
+  display: block;
+}
+
+.menu-item-copy strong {
+  margin-bottom: 3px;
+  font-size: 14px;
+}
+
+.menu-item-copy span {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 15px;
+}
+
+.scope-note {
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--warning);
+  border-radius: 4px 10px 10px 4px;
+  background: rgba(255, 155, 112, 0.08);
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--bg-card);
+}
+
+.tab {
+  min-height: 38px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.tab.is-active {
+  background: var(--bg-elevated);
+  color: var(--brand-gold);
+  font-weight: 520;
+}
+
+.library-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding-bottom: 24px;
+}
+
+.landscape .library-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mod-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  min-height: 116px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  text-align: left;
+  transition: 160ms ease;
+}
+
+.mod-card:hover {
+  border-color: rgba(255, 204, 67, 0.32);
+  transform: translateY(-1px);
+}
+
+.mod-art {
+  position: relative;
+  min-height: 100%;
+  overflow: hidden;
+  background: linear-gradient(145deg, #163f45, #122329);
+}
+
+.mod-art::before,
+.mod-art::after {
+  position: absolute;
+  content: "";
+}
+
+.mod-art::before {
+  inset: 17px 22px 34px;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  box-shadow: 13px 9px 0 -8px var(--brand-gold), -11px 19px 0 -9px var(--brand-green);
+}
+
+.mod-art::after {
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
+  height: 28px;
+  border-radius: 50% 50% 8px 8px;
+  background: rgba(0, 0, 0, 0.3);
+  transform: rotate(-6deg);
+}
+
+.mod-art.art-map {
+  background: linear-gradient(145deg, #5c3f23, #231810);
+}
+
+.mod-art.art-night {
+  background: linear-gradient(145deg, #29245e, #111026);
+}
+
+.mod-art.art-label {
+  background: linear-gradient(145deg, #31542d, #152313);
+}
+
+.mod-card-copy {
+  min-width: 0;
+  padding: 11px 12px;
+}
+
+.mod-card-copy h3 {
+  overflow: hidden;
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 520;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mod-card-copy p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 15px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.mod-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.card-status {
+  margin-top: 7px;
+  color: var(--brand-green);
+  font-size: 10px;
+}
+
+.detail-grid {
+  display: grid;
+  min-height: 0;
+  flex: 1;
+}
+
+.portrait .detail-grid {
+  grid-template-rows: 204px minmax(0, 1fr);
+}
+
+.landscape .detail-grid {
+  grid-template-columns: minmax(270px, 42%) minmax(0, 1fr);
+}
+
+.detail-art {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 63% 38%, rgba(255, 204, 67, 0.62) 0 4%, transparent 5%),
+    radial-gradient(circle at 57% 38%, rgba(255, 204, 67, 0.16), transparent 28%),
+    linear-gradient(145deg, #1e5158 0 42%, #12272b 42% 60%, #0b1214 60%);
+}
+
+.detail-art::before {
+  position: absolute;
+  right: 15%;
+  bottom: -8%;
+  width: 48%;
+  height: 72%;
+  border: 3px solid rgba(255, 255, 255, 0.76);
+  border-radius: 48% 48% 22% 22%;
+  box-shadow: -25px -10px 0 -20px var(--brand-gold), 32px 28px 0 -24px var(--brand-green);
+  content: "";
+  transform: rotate(8deg);
+}
+
+.art-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+}
+
+.detail-copy {
+  min-height: 0;
+  overflow: auto;
+  padding: 17px 16px 24px;
+  scrollbar-width: none;
+}
+
+.detail-copy h2 {
+  margin-bottom: 5px;
+  font-size: 20px;
+  font-weight: 520;
+  line-height: 28px;
+}
+
+.detail-byline {
+  margin-bottom: 12px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.detail-summary {
+  margin: 13px 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.fact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.fact {
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--bg-card);
+}
+
+.fact span,
+.fact strong {
+  display: block;
+}
+
+.fact span {
+  margin-bottom: 3px;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.fact strong {
+  color: var(--text-secondary);
+  font-family: var(--font-number);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.detail-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 9px;
+  margin-top: 15px;
+}
+
+.detail-actions .secondary-button {
+  padding: 0 14px;
+}
+
+.task-layout,
+.installed-layout,
+.preflight-layout,
+.evidence-layout,
+.recovery-layout {
+  display: grid;
+  gap: 14px;
+}
+
+.landscape .task-layout,
+.landscape .installed-layout,
+.landscape .preflight-layout,
+.landscape .evidence-layout,
+.landscape .recovery-layout {
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+}
+
+.task-hero {
+  padding: 17px;
+  border: 1px solid rgba(51, 143, 235, 0.22);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(145deg, rgba(51, 143, 235, 0.13), rgba(37, 37, 37, 0.78));
+}
+
+.task-hero h2 {
+  margin: 12px 0 4px;
+  font-size: 20px;
+  font-weight: 520;
+}
+
+.task-id {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-family: var(--font-number);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progress-track {
+  height: 8px;
+  margin: 18px 0 8px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--brand-blue), var(--brand-green));
+  transition: width 220ms ease;
+}
+
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.timeline {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 36px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.timeline-dot {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid var(--border-default);
+  border-radius: 50%;
+  font-family: var(--font-number);
+  font-size: 9px;
+}
+
+.timeline-item.is-complete {
+  color: var(--text-secondary);
+}
+
+.timeline-item.is-complete .timeline-dot {
+  border-color: rgba(51, 216, 164, 0.36);
+  background: rgba(51, 216, 164, 0.1);
+  color: var(--brand-green);
+}
+
+.timeline-item.is-current {
+  color: var(--brand-gold);
+}
+
+.timeline-item.is-current .timeline-dot {
+  border-color: rgba(255, 204, 67, 0.46);
+  background: rgba(255, 204, 67, 0.12);
+}
+
+.installed-summary {
+  padding: 18px;
+  border: 1px solid rgba(51, 216, 164, 0.24);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(145deg, rgba(51, 216, 164, 0.11), rgba(26, 26, 26, 0.88));
+}
+
+.installed-summary h2 {
+  margin: 11px 0 5px;
+  font-size: 20px;
+  font-weight: 520;
+}
+
+.installed-summary p {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+}
+
+.switch-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.switch-copy strong,
+.switch-copy span {
+  display: block;
+}
+
+.switch-copy strong {
+  margin-bottom: 3px;
+  font-size: 13px;
+}
+
+.switch-copy span {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.switch {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  flex: 0 0 46px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--border-default);
+}
+
+.switch::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  content: "";
+  transition: 180ms ease;
+}
+
+.switch.is-on {
+  background: var(--brand-green);
+}
+
+.switch.is-on::after {
+  left: 23px;
+}
+
+.manifest-card {
+  padding: 14px;
+}
+
+.manifest-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 11px;
+}
+
+.manifest-header h3 {
+  margin-bottom: 3px;
+  font-size: 14px;
+  font-weight: 520;
+}
+
+.manifest-header p {
+  color: var(--text-muted);
+  font-family: var(--font-number);
+  font-size: 9px;
+  line-height: 14px;
+}
+
+.manifest-groups {
+  display: grid;
+  gap: 8px;
+}
+
+.manifest-group {
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.manifest-group-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+  font-size: 11px;
+  font-weight: 520;
+}
+
+.manifest-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.manifest-item:first-of-type {
+  border-top: 0;
+}
+
+.manifest-item-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.manifest-item-copy strong,
+.manifest-item-copy span {
+  display: block;
+}
+
+.manifest-item-copy strong {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.manifest-item-copy span {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.decision-chip {
+  padding: 3px 7px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  font-family: var(--font-number);
+  font-size: 9px;
+}
+
+.contract-note {
+  padding: 13px;
+  border: 1px solid rgba(255, 204, 67, 0.24);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 204, 67, 0.07);
+}
+
+.contract-note strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--brand-gold);
+  font-size: 12px;
+}
+
+.contract-note p {
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.launch-result {
+  display: grid;
+  min-height: 100%;
+  place-items: center;
+  padding: 20px;
+  text-align: center;
+}
+
+.launch-orb {
+  display: grid;
+  width: 92px;
+  height: 92px;
+  margin: 0 auto 18px;
+  place-items: center;
+  border: 1px solid rgba(51, 216, 164, 0.35);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(51, 216, 164, 0.24), rgba(51, 216, 164, 0.03) 62%, transparent 64%);
+  color: var(--brand-green);
+  box-shadow: 0 0 48px rgba(51, 216, 164, 0.12);
+}
+
+.launch-orb .icon {
+  width: 36px;
+  height: 36px;
+}
+
+.launch-result h2 {
+  margin-bottom: 8px;
+  font-size: 24px;
+  font-weight: 520;
+}
+
+.launch-result p {
+  max-width: 440px;
+  margin: 0 auto 16px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.launch-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+
+.evidence-card {
+  padding: 13px;
+}
+
+.evidence-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.result-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  border-radius: 11px;
+  background: rgba(51, 216, 164, 0.1);
+  color: var(--brand-green);
+}
+
+.result-icon.is-warning {
+  background: rgba(255, 155, 112, 0.1);
+  color: var(--warning);
+}
+
+.evidence-summary strong,
+.evidence-summary span {
+  display: block;
+}
+
+.evidence-summary strong {
+  margin-bottom: 2px;
+  font-size: 13px;
+}
+
+.evidence-summary span {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.evidence-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.evidence-row strong,
+.evidence-row span {
+  display: block;
+}
+
+.evidence-row strong {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.evidence-row span {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-family: var(--font-number);
+  font-size: 9px;
+}
+
+.evidence-result {
+  color: var(--brand-green);
+  font-family: var(--font-number);
+  font-size: 9px;
+}
+
+.evidence-result.is-warning {
+  color: var(--warning);
+}
+
+.exit-card {
+  padding: 18px;
+  border: 1px solid rgba(255, 86, 120, 0.24);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(145deg, rgba(255, 86, 120, 0.1), rgba(26, 26, 26, 0.9));
+}
+
+.exit-card.is-suppressed {
+  border-color: rgba(51, 143, 235, 0.24);
+  background: linear-gradient(145deg, rgba(51, 143, 235, 0.1), rgba(26, 26, 26, 0.9));
+}
+
+.exit-card h2 {
+  margin: 12px 0 6px;
+  font-size: 20px;
+  font-weight: 520;
+}
+
+.exit-card p {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.condition-list {
+  display: grid;
+  gap: 8px;
+}
+
+.condition {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.condition.is-met {
+  color: var(--text-secondary);
+}
+
+.condition-mark {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  place-items: center;
+  border: 1px solid var(--border-default);
+  border-radius: 50%;
+  font-size: 10px;
+}
+
+.condition.is-met .condition-mark {
+  border-color: rgba(51, 216, 164, 0.36);
+  color: var(--brand-green);
+}
+
+.recovery-options {
+  display: grid;
+  gap: 9px;
+}
+
+.recovery-option {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 68px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  text-align: left;
+}
+
+.recovery-option:hover {
+  border-color: rgba(255, 204, 67, 0.35);
+}
+
+.recovery-option.is-selected {
+  border-color: var(--brand-gold);
+  background: rgba(255, 204, 67, 0.08);
+}
+
+.radio-mark {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--border-default);
+  border-radius: 50%;
+}
+
+.recovery-option.is-selected .radio-mark {
+  border-color: var(--brand-gold);
+  color: var(--brand-gold);
+}
+
+.recovery-option-copy strong,
+.recovery-option-copy span {
+  display: block;
+}
+
+.recovery-option-copy strong {
+  margin-bottom: 3px;
+  font-size: 12px;
+}
+
+.recovery-option-copy span {
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.action-stack {
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.landscape .action-stack {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.home-indicator {
+  width: 116px;
+  height: 4px;
+  flex: 0 0 4px;
+  align-self: center;
+  margin: 8px 0 7px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.landscape .status-bar,
+.landscape .home-indicator {
+  display: none;
+}
+
+.toast-region {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.toast {
+  max-width: 320px;
+  padding: 11px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(40, 32, 42, 0.96);
+  color: var(--text-secondary);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.38);
+  font-size: 12px;
+}
+
+.empty-state {
+  display: grid;
+  min-height: 220px;
+  place-items: center;
+  padding: 20px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.empty-state strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+@media (max-width: 1180px) {
+  .review-studio {
+    grid-template-columns: 1fr;
+  }
+
+  .review-panel {
+    position: static;
+    width: min(874px, 100%);
+    max-height: none;
+    justify-self: center;
+  }
+
+  .stage {
+    overflow: auto;
+    justify-content: flex-start;
+  }
+
+  .device {
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 920px) {
+  .review-studio {
+    padding: 14px;
+  }
+
+  .stage {
+    padding-inline: 0;
+  }
+
+  .device.landscape {
+    transform-origin: top left;
+  }
+}
+</style>
+</head>
+<body>
+<svg class="svg-sprite" aria-hidden="true">
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"></circle></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"></path></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7V5z"></path></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></symbol>
+  <symbol id="i-puzzle" viewBox="0 0 24 24"><path d="M9 4h3v3a2 2 0 104 0V4h4v6h-3a2 2 0 100 4h3v6h-6v-3a2 2 0 10-4 0v3H4v-6h3a2 2 0 100-4H4V4h5z"></path></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 00.7-7.94A6 6 0 006.2 8.8 4.6 4.6 0 007 18z"></path><path d="M9 13l3-3 3 3M12 10v7"></path></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l4 4L19 6"></path></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3L12 4z"></path><path d="M12 9v5M12 17h.01"></path></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.8-2.8 8-7 10-4.2-2-7-5.2-7-10V6l7-3z"></path><path d="M9 12l2 2 4-5"></path></symbol>
+  <symbol id="i-rotate" viewBox="0 0 24 24"><rect x="7" y="4" width="10" height="16" rx="2"></rect><path d="M4 9a8 8 0 0112-5M20 15a8 8 0 01-12 5"></path></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6V3z"></path><path d="M14 3v5h5M9 13h6M9 17h5"></path></symbol>
+  <symbol id="i-log" viewBox="0 0 24 24"><path d="M5 4h14v16H5V4z"></path><path d="M8 8h8M8 12h8M8 16h5"></path></symbol>
+  <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v9"></path><path d="M7 6.5a8 8 0 1010 0"></path></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5"></path><path d="M4 17v-5h5"></path><path d="M6.1 8A7 7 0 0118.6 6L20 8M4 16l1.4 2A7 7 0 0017.9 16"></path></symbol>
+</svg>
+
+<div class="review-studio">
+  <aside class="review-panel" aria-label="评审控制台">
+    <div class="review-eyebrow">DST MODS · Scene Review</div>
+    <h1>场景联动评审台</h1>
+    <p class="review-lead">控制台位于产品画布之外，仅派发动作。所有页面、任务、清单、证据与恢复选择来自同一根状态。</p>
+
+    <section class="review-section">
+      <label class="review-label" for="sceneSelect">直达场景</label>
+      <select class="review-select" id="sceneSelect" data-review-scene></select>
+      <div class="review-row" style="margin-top:8px">
+        <button class="review-button" data-action="scene-prev">上一步</button>
+        <button class="review-button is-primary" data-action="scene-next">下一步</button>
+      </div>
+    </section>
+
+    <section class="review-section">
+      <span class="review-label">设备方向</span>
+      <div class="review-row">
+        <button class="review-button" data-action="orientation-portrait">竖屏</button>
+        <button class="review-button" data-action="orientation-landscape">横屏</button>
+      </div>
+    </section>
+
+    <section class="review-section">
+      <label class="review-label" for="evidenceSelect">证据场景</label>
+      <select class="review-select" id="evidenceSelect" data-evidence-scenario>
+        <option value="loaded_match">loaded_match</option>
+        <option value="missing">missing</option>
+        <option value="version_mismatch">version_mismatch</option>
+        <option value="unexpected_loaded">unexpected_loaded</option>
+        <option value="log_unreadable">log_unreadable</option>
+        <option value="parser_failed">parser_failed</option>
+      </select>
+    </section>
+
+    <section class="review-section">
+      <span class="review-label">边界场景</span>
+      <div class="review-scenario-list">
+        <button class="review-button" data-action="empty-manifest">空清单直接启动</button>
+        <button class="review-button" data-action="abnormal-with-change">清单变化后异常退出</button>
+        <button class="review-button" data-action="abnormal-without-change">清单未变但异常退出</button>
+        <button class="review-button" data-action="reset">重置完整链路</button>
+      </div>
+    </section>
+
+    <section class="review-section review-metrics" data-review-metrics></section>
+  </aside>
+
+  <main class="stage">
+    <section class="device portrait" data-demo-root data-orientation="portrait" aria-label="盖世游戏 APP DST MODS 场景联动 Demo"></section>
+  </main>
+</div>
+
+<div class="toast-region" aria-live="polite" data-toast-region></div>
+
+<script>
+const DEMO_MODEL_VERSION = 'dst_mods_demo_v1';
+const GAME_ID = 'steam:322330';
+
+const SCENES = [
+  'game-detail',
+  'more-menu',
+  'mods-library',
+  'mod-detail',
+  'install-task',
+  'installed',
+  'preflight',
+  'launch-result',
+  'load-evidence',
+  'abnormal-exit',
+  'recovery'
+];
+
+const SCENE_LABELS = {
+  'game-detail': '01 游戏详情',
+  'more-menu': '02 更多菜单',
+  'mods-library': '03 MODS 列表',
+  'mod-detail': '04 MOD 详情',
+  'install-task': '05 安装任务',
+  'installed': '06 安装完成',
+  'preflight': '07 启动前检查',
+  'launch-result': '08 启动结果',
+  'load-evidence': '09 实际加载证据',
+  'abnormal-exit': '10 异常退出',
+  'recovery': '11 恢复建议'
+};
+
+const EVIDENCE_SCENARIOS = [
+  'loaded_match',
+  'missing',
+  'version_mismatch',
+  'unexpected_loaded',
+  'log_unreadable',
+  'parser_failed'
+];
+
+const MOD_COPY = {
+  'dst-fast-travel': {
+    name: '快速旅行路标',
+    author: 'CampCraft',
+    summary: '在已探索的路标之间快速移动，适合大型世界长期档。',
+    version: '1.4.0',
+    size: '8.6 MB',
+    artClass: '',
+    source: 'Community Atlas',
+    dependencyText: '含 1 个必要依赖：Shared Map API'
+  },
+  'dst-storage-labels': {
+    name: '储物箱智能标签',
+    author: 'TidyBase',
+    summary: '自动识别容器内容，并在地图与世界中显示标签。',
+    version: '2.3.1',
+    size: '3.2 MB',
+    artClass: 'art-label',
+    source: 'Open Survival Mods',
+    dependencyText: '无必要依赖'
+  },
+  'dst-broken-map': {
+    name: '世界地图标记扩展',
+    author: 'NorthStar',
+    summary: '本地文件不完整，本次启动将跳过。',
+    version: '3.0.2',
+    size: '12.1 MB',
+    artClass: 'art-map',
+    source: 'Community Atlas',
+    dependencyText: '本地文件清单缺失'
+  },
+  'dst-night-contrast': {
+    name: '夜间对比增强',
+    author: 'MoonLamp',
+    summary: '兼容性信息由来源提供，目前状态未知。',
+    version: '1.8.4',
+    size: '5.8 MB',
+    artClass: 'art-night',
+    source: 'Open Survival Mods',
+    dependencyText: '兼容性未知，启动前需确认'
+  }
+};
+
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function createInitialMods() {
+  return {
+    'dst-fast-travel': {
+      mod_id: 'dst-fast-travel',
+      installation_fact: 'not_installed',
+      enabled_value: 'not_applicable',
+      update_fact: 'no_update',
+      install_gate: 'allowed',
+      installed_version: null,
+      latest_version: '1.4.0',
+      installed_package_hash: null,
+      active_version_pointer: null,
+      current_task_id: null,
+      changed_since_last_success: false
+    },
+    'dst-storage-labels': {
+      mod_id: 'dst-storage-labels',
+      installation_fact: 'installed',
+      enabled_value: 'enabled',
+      update_fact: 'no_update',
+      install_gate: 'allowed',
+      installed_version: '2.3.1',
+      latest_version: '2.3.1',
+      installed_package_hash: 'sha256-storage-labels-231',
+      active_version_pointer: 'mods/dst-storage-labels/2.3.1',
+      current_task_id: null,
+      changed_since_last_success: false
+    },
+    'dst-broken-map': {
+      mod_id: 'dst-broken-map',
+      installation_fact: 'installed',
+      enabled_value: 'enabled',
+      update_fact: 'no_update',
+      install_gate: 'allowed',
+      installed_version: '3.0.2',
+      latest_version: '3.0.2',
+      installed_package_hash: 'sha256-broken-map-302',
+      active_version_pointer: 'mods/dst-broken-map/3.0.2',
+      current_task_id: null,
+      local_file_health: 'missing',
+      changed_since_last_success: false
+    },
+    'dst-night-contrast': {
+      mod_id: 'dst-night-contrast',
+      installation_fact: 'installed',
+      enabled_value: 'enabled',
+      update_fact: 'source_unknown',
+      install_gate: 'allowed',
+      installed_version: '1.8.4',
+      latest_version: null,
+      installed_package_hash: 'sha256-night-contrast-184',
+      active_version_pointer: 'mods/dst-night-contrast/1.8.4',
+      current_task_id: null,
+      compatibility: 'unknown',
+      changed_since_last_success: false
+    }
+  };
+}
+
+function createInitialState() {
+  return {
+    contractVersion: DEMO_MODEL_VERSION,
+    game_id: GAME_ID,
+    device_installation_id: 'device-app-scene-01',
+    platform: 'app',
+    orientation: 'portrait',
+    mods: createInitialMods(),
+    tasks: {},
+    ui: {
+      screen: 'game-detail',
+      sceneIndex: 0,
+      tab: 'available',
+      searchText: '',
+      sortKey: 'recommended',
+      filterKey: 'all',
+      currentModId: 'dst-fast-travel',
+      selectedPreviewId: 'preview-1',
+      readingSectionId: 'summary',
+      listAnchorModId: 'dst-fast-travel',
+      detailAnchorSectionId: 'summary',
+      listAnchorOffset: 0,
+      detailAnchorOffset: 0,
+      activeDialog: null,
+      evidenceScenario: 'loaded_match',
+      toast: null
+    },
+    launch: {
+      manifestId: null,
+      launchId: null,
+      items: [],
+      evidence: null,
+      manifestChanged: false,
+      exitType: null,
+      status: 'idle',
+      emptyManifest: false
+    },
+    recovery: {
+      visible: false,
+      selectedAction: null,
+      executedAction: null
+    },
+    metrics: {
+      taskCreateCount: 0,
+      detailRequestCount: 0,
+      orientationChangeCount: 0
+    }
+  };
+}
+
+let state = createInitialState();
+
+function ensureInstallTask(next, modId, operation = 'install') {
+  const mod = next.mods[modId];
+  if (!mod) return null;
+  if (mod.current_task_id && next.tasks[mod.current_task_id]) {
+    const currentTask = next.tasks[mod.current_task_id];
+    if (operation === 'update' && ['failed', 'cancelled'].includes(currentTask.task_state)) {
+      currentTask.task_state = 'queued';
+      currentTask.progress_percent = 0;
+      currentTask.downloaded_bytes = 0;
+      currentTask.failure_code = null;
+      currentTask.operation_attempt += 1;
+    }
+    return mod.current_task_id;
+  }
+  if (operation === 'install' && mod.installation_fact === 'installed') {
+    const prior = Object.values(next.tasks).find(task => task.root_mod_id === modId);
+    return prior ? prior.task_id : null;
+  }
+  if (mod.install_gate !== 'allowed') return null;
+
+  const taskId = `task-${next.device_installation_id}-${modId}`;
+  if (!next.tasks[taskId]) {
+    next.tasks[taskId] = {
+      task_id: taskId,
+      root_mod_id: modId,
+      operation,
+      task_state: 'queued',
+      progress_percent: 0,
+      downloaded_bytes: 0,
+      failure_code: null,
+      operation_attempt: 1,
+      auto_resume_used: false,
+      auto_resume_failed: false,
+      auto_resume_should_fail: false,
+      resume_capability: 'automatic_once',
+      previous: {
+        installed_version: mod.installed_version,
+        installed_package_hash: mod.installed_package_hash,
+        active_version_pointer: mod.active_version_pointer,
+        enabled_value: mod.enabled_value,
+        update_fact: mod.update_fact
+      }
+    };
+    next.metrics.taskCreateCount += 1;
+  } else if (operation === 'update') {
+    const task = next.tasks[taskId];
+    task.operation = 'update';
+    task.task_state = 'queued';
+    task.progress_percent = 0;
+    task.downloaded_bytes = 0;
+    task.failure_code = null;
+    task.operation_attempt += 1;
+    task.previous = {
+      installed_version: mod.installed_version,
+      installed_package_hash: mod.installed_package_hash,
+      active_version_pointer: mod.active_version_pointer,
+      enabled_value: mod.enabled_value,
+      update_fact: mod.update_fact
+    };
+  }
+  mod.current_task_id = taskId;
+  return taskId;
+}
+
+function getTaskForMod(source, modId) {
+  const mod = source.mods[modId];
+  if (mod && mod.current_task_id && source.tasks[mod.current_task_id]) {
+    return source.tasks[mod.current_task_id];
+  }
+  return Object.values(source.tasks).find(task => task.root_mod_id === modId) || null;
+}
+
+function completeInstall(next, modId) {
+  const mod = next.mods[modId];
+  if (!mod) return;
+  let task = getTaskForMod(next, modId);
+  if (!task && mod.installation_fact !== 'installed') {
+    const taskId = ensureInstallTask(next, modId, 'install');
+    task = taskId ? next.tasks[taskId] : null;
+  }
+  if (task) {
+    task.task_state = 'succeeded';
+    task.progress_percent = 100;
+    task.downloaded_bytes = 9017753;
+  }
+  const operation = task?.operation || 'install';
+  mod.installation_fact = 'installed';
+  mod.enabled_value = operation === 'update'
+    ? (task.previous?.enabled_value ?? mod.enabled_value)
+    : 'enabled';
+  mod.installed_version = mod.latest_version || '1.4.0';
+  mod.installed_package_hash = `sha256-${modId}-${String(mod.installed_version).replaceAll('.', '')}`;
+  mod.active_version_pointer = `mods/${modId}/${mod.installed_version}`;
+  mod.update_fact = 'no_update';
+  mod.current_task_id = null;
+  mod.changed_since_last_success = true;
+}
+
+function buildManifest(next, options = {}) {
+  const empty = options.empty === true;
+  next.launch.manifestId = empty ? 'manifest-demo-empty' : 'manifest-demo-01';
+  next.launch.launchId = empty ? 'launch-demo-empty' : 'launch-demo-01';
+  next.launch.emptyManifest = empty;
+  next.launch.status = 'ready';
+  next.launch.evidence = null;
+  next.launch.exitType = null;
+  next.recovery.visible = false;
+  next.recovery.selectedAction = null;
+  next.recovery.executedAction = null;
+
+  if (empty) {
+    next.launch.items = [];
+    next.launch.manifestChanged = false;
+    return;
+  }
+
+  completeInstall(next, 'dst-fast-travel');
+  next.launch.items = [
+    {
+      mod_id: 'dst-fast-travel',
+      local_version: '1.4.0',
+      package_hash: 'sha256-dst-fast-travel-140',
+      load_order: 1,
+      preflight_result: 'effective',
+      load_decision: 'load',
+      reason_code: null,
+      dependency_chain: ['dst-shared-map-api'],
+      risk_confirmed: false
+    },
+    {
+      mod_id: 'dst-storage-labels',
+      local_version: '2.3.1',
+      package_hash: 'sha256-storage-labels-231',
+      load_order: 2,
+      preflight_result: 'effective',
+      load_decision: 'load',
+      reason_code: null,
+      dependency_chain: [],
+      risk_confirmed: false
+    },
+    {
+      mod_id: 'dst-broken-map',
+      local_version: '3.0.2',
+      package_hash: 'sha256-broken-map-302',
+      load_order: 3,
+      preflight_result: 'skipped',
+      load_decision: 'skip',
+      reason_code: 'LOCAL_FILE_MISSING',
+      dependency_chain: [],
+      risk_confirmed: false
+    },
+    {
+      mod_id: 'dst-night-contrast',
+      local_version: '1.8.4',
+      package_hash: 'sha256-night-contrast-184',
+      load_order: 4,
+      preflight_result: 'risk',
+      load_decision: 'load',
+      reason_code: 'COMPATIBILITY_UNKNOWN',
+      dependency_chain: [],
+      risk_confirmed: true
+    }
+  ];
+  next.launch.manifestChanged = true;
+}
+
+function buildEvidence(next, scenario) {
+  if (!next.launch.manifestId) buildManifest(next);
+  const plannedLoads = next.launch.items.filter(item => item.load_decision === 'load');
+  const evidence = {
+    evidence_id: `evidence-demo-${scenario}`,
+    manifest_id: next.launch.manifestId,
+    launch_id: next.launch.launchId,
+    game_id: next.game_id,
+    device_installation_id: next.device_installation_id,
+    log_source: 'game',
+    parse_status: 'parsed',
+    scenario,
+    items: []
+  };
+
+  if (scenario === 'log_unreadable') {
+    evidence.parse_status = 'log_unreadable';
+  } else if (scenario === 'parser_failed') {
+    evidence.parse_status = 'parser_failed';
+  } else {
+    evidence.items = plannedLoads.map((item, index) => ({
+      mod_id: item.mod_id,
+      expected_local_version: item.local_version,
+      logged_local_version: item.local_version,
+      result: 'loaded_match',
+      matched_log_lines: [`Loaded ${item.mod_id} version ${item.local_version}`],
+      index
+    }));
+
+    if (scenario === 'missing' && evidence.items[0]) {
+      evidence.items[0].logged_local_version = null;
+      evidence.items[0].result = 'missing';
+      evidence.items[0].matched_log_lines = [];
+    }
+    if (scenario === 'version_mismatch' && evidence.items[0]) {
+      evidence.items[0].logged_local_version = '1.3.2';
+      evidence.items[0].result = 'version_mismatch';
+      evidence.items[0].matched_log_lines = ['Loaded dst-fast-travel version 1.3.2'];
+    }
+    if (scenario === 'unexpected_loaded') {
+      evidence.items.push({
+        mod_id: 'dst-unplanned-helper',
+        expected_local_version: null,
+        logged_local_version: '0.9.0',
+        result: 'unexpected_loaded',
+        matched_log_lines: ['Loaded dst-unplanned-helper version 0.9.0']
+      });
+    }
+  }
+
+  next.ui.evidenceScenario = scenario;
+  next.launch.evidence = evidence;
+}
+
+function prepareScene(next, screen) {
+  next.ui.screen = screen;
+  next.ui.sceneIndex = SCENES.indexOf(screen);
+  next.ui.activeDialog = screen === 'more-menu' ? 'more-menu' : null;
+
+  if (screen === 'mod-detail') {
+    next.ui.currentModId = 'dst-fast-travel';
+    next.metrics.detailRequestCount = Math.max(1, next.metrics.detailRequestCount);
+  }
+  if (screen === 'install-task') {
+    const taskId = ensureInstallTask(next, 'dst-fast-travel');
+    if (taskId && next.tasks[taskId] && next.tasks[taskId].task_state === 'queued') {
+      next.tasks[taskId].task_state = 'downloading';
+      next.tasks[taskId].progress_percent = 46;
+      next.tasks[taskId].downloaded_bytes = 4148167;
+    }
+  }
+  if (screen === 'installed') {
+    const targetModId = next.ui.currentModId || 'dst-fast-travel';
+    if (next.mods[targetModId]?.installation_fact !== 'installed') {
+      completeInstall(next, targetModId);
+    }
+  }
+  if (screen === 'preflight' && !next.launch.manifestId) {
+    buildManifest(next);
+  }
+  if (screen === 'launch-result') {
+    if (!next.launch.manifestId) buildManifest(next);
+    next.launch.status = 'launched';
+  }
+  if (screen === 'load-evidence') {
+    if (!next.launch.manifestId) buildManifest(next);
+    next.launch.status = 'launched';
+    if (!next.launch.evidence) buildEvidence(next, next.ui.evidenceScenario);
+  }
+  if (screen === 'abnormal-exit') {
+    if (!next.launch.manifestId) buildManifest(next);
+    if (!next.launch.evidence) buildEvidence(next, next.ui.evidenceScenario);
+    next.launch.exitType = 'abnormal';
+    next.recovery.visible = false;
+    next.recovery.selectedAction = null;
+  }
+  if (screen === 'recovery') {
+    if (!next.launch.manifestId) buildManifest(next);
+    next.launch.manifestChanged = true;
+    next.launch.exitType = 'abnormal';
+    next.recovery.visible = true;
+    next.recovery.selectedAction = null;
+    next.recovery.executedAction = null;
+  }
+}
+
+function reducer(current, action) {
+  if (!action || typeof action.type !== 'string') return current;
+  if (action.type === 'RESET') return createInitialState();
+
+  const next = clone(current);
+  const modId = action.modId || next.ui.currentModId || 'dst-fast-travel';
+
+  switch (action.type) {
+    case 'SCENE_CHANGED': {
+      const screen = action.screen || action.scene;
+      if (SCENES.includes(screen)) prepareScene(next, screen);
+      break;
+    }
+    case 'SCENE_NEXT': {
+      const target = SCENES[Math.min(SCENES.length - 1, next.ui.sceneIndex + 1)];
+      prepareScene(next, target);
+      break;
+    }
+    case 'SCENE_PREV': {
+      const target = SCENES[Math.max(0, next.ui.sceneIndex - 1)];
+      prepareScene(next, target);
+      break;
+    }
+    case 'ORIENTATION_CHANGED': {
+      if (['portrait', 'landscape'].includes(action.orientation) && action.orientation !== next.orientation) {
+        next.orientation = action.orientation;
+        next.metrics.orientationChangeCount += 1;
+      }
+      if (action.listAnchorModId) next.ui.listAnchorModId = action.listAnchorModId;
+      if (Number.isFinite(action.listAnchorOffset)) next.ui.listAnchorOffset = action.listAnchorOffset;
+      if (action.detailAnchorSectionId) next.ui.detailAnchorSectionId = action.detailAnchorSectionId;
+      if (Number.isFinite(action.detailAnchorOffset)) next.ui.detailAnchorOffset = action.detailAnchorOffset;
+      break;
+    }
+    case 'OPEN_MORE_MENU': {
+      prepareScene(next, 'more-menu');
+      break;
+    }
+    case 'OPEN_MODS': {
+      prepareScene(next, 'mods-library');
+      break;
+    }
+    case 'OPEN_DETAIL': {
+      if (next.mods[action.modId]) next.ui.currentModId = action.modId;
+      next.metrics.detailRequestCount += 1;
+      prepareScene(next, 'mod-detail');
+      break;
+    }
+    case 'INSTALL_REQUESTED': {
+      const taskId = ensureInstallTask(next, modId);
+      if (taskId && next.tasks[taskId].task_state === 'queued') {
+        next.tasks[taskId].task_state = 'downloading';
+        next.tasks[taskId].progress_percent = 18;
+        next.tasks[taskId].downloaded_bytes = 1623195;
+      }
+      prepareScene(next, next.mods[modId].installation_fact === 'installed' ? 'installed' : 'install-task');
+      break;
+    }
+    case 'TASK_ADVANCE': {
+      const task = getTaskForMod(next, modId);
+      if (!task) break;
+      const transitions = {
+        queued: ['downloading', 18],
+        downloading: ['verifying', 72],
+        paused_by_system: ['downloading', 46],
+        verifying: ['installing', 90],
+        installing: ['succeeded', 100]
+      };
+      const transition = transitions[task.task_state];
+      if (transition) {
+        task.task_state = transition[0];
+        task.progress_percent = transition[1];
+        task.downloaded_bytes = Math.round(9017753 * transition[1] / 100);
+      }
+      if (task.task_state === 'succeeded') {
+        completeInstall(next, modId);
+        prepareScene(next, 'installed');
+      }
+      break;
+    }
+    case 'SYSTEM_PAUSED': {
+      const task = getTaskForMod(next, modId);
+      if (task && task.task_state === 'downloading') {
+        task.task_state = 'paused_by_system';
+        task.auto_resume_should_fail = action.autoResumeShouldFail === true;
+        task.auto_resume_failed = false;
+      }
+      break;
+    }
+    case 'APP_FOREGROUNDED': {
+      const task = getTaskForMod(next, modId);
+      if (task && task.task_state === 'paused_by_system' && !task.auto_resume_used) {
+        task.auto_resume_used = true;
+        task.resume_capability = 'manual';
+        if (task.auto_resume_should_fail) {
+          task.auto_resume_failed = true;
+          task.failure_code = 'AUTO_RESUME_FAILED';
+        } else {
+          task.task_state = 'downloading';
+        }
+      }
+      break;
+    }
+    case 'CONTINUE_REQUESTED': {
+      const task = getTaskForMod(next, modId);
+      if (task && ['paused_by_system', 'failed'].includes(task.task_state)) {
+        task.task_state = 'downloading';
+        task.auto_resume_failed = false;
+        task.failure_code = null;
+      }
+      break;
+    }
+    case 'CANCEL_REQUESTED': {
+      const task = getTaskForMod(next, modId);
+      if (task && ['queued', 'downloading', 'paused_by_system'].includes(task.task_state)) {
+        task.task_state = 'cancelled';
+        next.mods[modId].current_task_id = null;
+      }
+      break;
+    }
+    case 'ENABLE_CHANGED': {
+      const mod = next.mods[modId];
+      if (mod && mod.installation_fact === 'installed') {
+        mod.enabled_value = action.enabled === undefined
+          ? (mod.enabled_value === 'enabled' ? 'disabled' : 'enabled')
+          : (action.enabled ? 'enabled' : 'disabled');
+      }
+      break;
+    }
+    case 'UPDATE_REQUESTED': {
+      const mod = next.mods[modId];
+      if (mod && mod.installation_fact === 'installed' && mod.update_fact === 'update_available') {
+        next.ui.currentModId = modId;
+        ensureInstallTask(next, modId, 'update');
+      }
+      break;
+    }
+    case 'UPDATE_FAILED': {
+      const mod = next.mods[modId];
+      if (mod && mod.installation_fact === 'installed') {
+        mod.update_fact = 'update_available';
+        const task = getTaskForMod(next, modId);
+        if (task) {
+          task.task_state = 'failed';
+          task.failure_code = 'PACKAGE_HASH_MISMATCH';
+        }
+      }
+      break;
+    }
+    case 'UNINSTALL_REQUESTED': {
+      next.ui.activeDialog = 'uninstall-confirmation';
+      break;
+    }
+    case 'UNINSTALL_CONFIRMED': {
+      const mod = next.mods[modId];
+      if (mod) {
+        mod.installation_fact = 'not_installed';
+        mod.enabled_value = 'not_applicable';
+        mod.installed_version = null;
+        mod.installed_package_hash = null;
+        mod.active_version_pointer = null;
+        mod.current_task_id = null;
+      }
+      next.ui.activeDialog = null;
+      break;
+    }
+    case 'SET_TAB': {
+      next.ui.tab = action.tab;
+      break;
+    }
+    case 'SET_SEARCH': {
+      next.ui.searchText = String(action.value || '');
+      break;
+    }
+    case 'SET_SORT': {
+      next.ui.sortKey = action.value || 'recommended';
+      break;
+    }
+    case 'SET_FILTER': {
+      next.ui.filterKey = action.value || 'all';
+      break;
+    }
+    case 'SET_READING_SECTION': {
+      next.ui.readingSectionId = action.sectionId || 'summary';
+      next.ui.detailAnchorSectionId = next.ui.readingSectionId;
+      break;
+    }
+    case 'PREFLIGHT_REQUESTED': {
+      buildManifest(next, { empty: action.empty === true });
+      prepareScene(next, action.empty === true ? 'launch-result' : 'preflight');
+      if (action.empty === true) next.launch.status = 'launched';
+      break;
+    }
+    case 'LAUNCH_CONFIRMED': {
+      if (!next.launch.manifestId) buildManifest(next);
+      next.launch.status = 'launched';
+      prepareScene(next, 'launch-result');
+      break;
+    }
+    case 'EVIDENCE_SCENARIO_SELECTED': {
+      const requestedScenario = action.scenario || action.result;
+      const scenario = EVIDENCE_SCENARIOS.includes(requestedScenario) ? requestedScenario : 'loaded_match';
+      if (!next.launch.manifestId) buildManifest(next);
+      buildEvidence(next, scenario);
+      prepareScene(next, 'load-evidence');
+      break;
+    }
+    case 'ABNORMAL_EXIT_INJECTED': {
+      if (!next.launch.manifestId) buildManifest(next);
+      if (!next.launch.evidence) buildEvidence(next, next.ui.evidenceScenario);
+      next.launch.manifestChanged = action.manifestChanged !== false;
+      next.launch.exitType = 'abnormal';
+      next.recovery.visible = false;
+      next.recovery.selectedAction = null;
+      prepareScene(next, 'abnormal-exit');
+      break;
+    }
+    case 'OPEN_RECOVERY': {
+      const canShow = next.launch.manifestChanged === true && next.launch.exitType === 'abnormal';
+      next.recovery.visible = canShow;
+      next.recovery.selectedAction = null;
+      if (canShow) prepareScene(next, 'recovery');
+      break;
+    }
+    case 'RECOVERY_ACTION_SELECTED': {
+      if (['disable_changes_and_retry', 'launch_without_mods', 'retry_with_current_settings'].includes(action.action)) {
+        next.recovery.selectedAction = action.action;
+      }
+      break;
+    }
+    case 'RECOVERY_ACTION_CONFIRMED': {
+      const selected = next.recovery.selectedAction;
+      if (!selected) break;
+      next.recovery.executedAction = selected;
+      if (selected === 'disable_changes_and_retry') {
+        Object.values(next.mods).forEach(mod => {
+          if (mod.changed_since_last_success) mod.enabled_value = 'disabled';
+        });
+        next.launch.manifestId = null;
+        buildManifest(next);
+        next.mods['dst-fast-travel'].enabled_value = 'disabled';
+        next.launch.items = next.launch.items.filter(item => item.mod_id !== 'dst-fast-travel');
+        next.launch.manifestChanged = false;
+        prepareScene(next, 'preflight');
+      }
+      if (selected === 'launch_without_mods') {
+        buildManifest(next, { empty: true });
+        next.launch.status = 'launched';
+        prepareScene(next, 'launch-result');
+      }
+      if (selected === 'retry_with_current_settings') {
+        next.launch.manifestId = null;
+        buildManifest(next);
+        prepareScene(next, 'preflight');
+      }
+      break;
+    }
+    case 'EMPTY_MANIFEST_LAUNCH': {
+      buildManifest(next, { empty: true });
+      next.launch.status = 'launched';
+      prepareScene(next, 'launch-result');
+      break;
+    }
+    case 'SHOW_WORKSHOP_REFERENCE': {
+      next.ui.activeDialog = 'workshop-reference';
+      next.ui.toast = '创意工坊保留官方订阅语义，不读取非官方 MODS 状态';
+      break;
+    }
+    case 'DISMISS_DIALOG': {
+      next.ui.activeDialog = null;
+      next.ui.toast = null;
+      break;
+    }
+    default:
+      return current;
+  }
+  return next;
+}
+
+function derive(source = state) {
+  const currentMod = source.mods[source.ui.currentModId] || source.mods['dst-fast-travel'];
+  const activeTask = getTaskForMod(source, currentMod.mod_id);
+  const installedMods = Object.values(source.mods).filter(mod => mod.installation_fact === 'installed');
+  const enabledMods = installedMods.filter(mod => mod.enabled_value === 'enabled');
+  const preflightGroups = {
+    effective: source.launch.items.filter(item => item.preflight_result === 'effective'),
+    skipped: source.launch.items.filter(item => item.preflight_result === 'skipped'),
+    risk: source.launch.items.filter(item => item.preflight_result === 'risk')
+  };
+  const evidence = source.launch.evidence;
+  const evidenceConfirmed = Boolean(
+    evidence &&
+    evidence.parse_status === 'parsed' &&
+    evidence.items.length > 0 &&
+    evidence.items.every(item => item.result === 'loaded_match')
+  );
+  const canShowRecovery = source.launch.manifestChanged === true && source.launch.exitType === 'abnormal';
+  const currentCopy = MOD_COPY[currentMod.mod_id];
+  const primaryStatus = currentMod.installation_fact === 'installed'
+    ? `已安装 · ${currentMod.enabled_value === 'enabled' ? '已启用' : '未启用'} · 仅此设备`
+    : '未安装 · 仅此设备';
+
+  return {
+    version: source.contractVersion,
+    screen: source.ui.screen,
+    sceneIndex: source.ui.sceneIndex,
+    orientation: source.orientation,
+    currentMod,
+    currentCopy,
+    activeTask,
+    installedMods,
+    enabledMods,
+    installedCount: installedMods.length,
+    enabledCount: enabledMods.length,
+    availableMods: Object.values(source.mods),
+    preflightGroups,
+    evidence,
+    evidenceConfirmed,
+    canShowRecovery,
+    primaryStatus,
+    launchButtonLabel: preflightGroups.risk.length
+      ? '仍要启动'
+      : (preflightGroups.skipped.length ? `启动游戏，跳过 ${preflightGroups.skipped.length} 个 MOD` : '启动游戏'),
+    metrics: clone(source.metrics),
+    state: source
+  };
+}
+
+function icon(name) {
+  return `<svg class="icon" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
+}
+
+function tag(text, kind = '') {
+  return `<span class="tag ${kind}">${text}</span>`;
+}
+
+function renderStatusBar() {
+  return `<div class="status-bar">
+    <span>9:41</span>
+    <div class="status-icons"><span>5G</span><span>▰▰▰</span><span class="status-pill"></span></div>
+  </div>`;
+}
+
+function renderSideRail() {
+  return `<aside class="side-rail" aria-hidden="true">
+    <div class="brand-mark">G</div>
+    <div class="rail-stack">
+      <button class="rail-icon is-active" tabindex="-1">${icon('grid')}</button>
+      <button class="rail-icon" tabindex="-1">${icon('play')}</button>
+      <button class="rail-icon" tabindex="-1">${icon('shield')}</button>
+    </div>
+  </aside>`;
+}
+
+function renderHeader(title, subtitle, options = {}) {
+  const back = options.back
+    ? `<button class="icon-button" data-action="${options.back}" aria-label="返回">${icon('back')}</button>`
+    : '';
+  const more = options.more
+    ? `<button class="icon-button" data-action="${options.more}" aria-label="更多">${icon('more')}</button>`
+    : '';
+  return `<header class="app-header">
+    ${back}
+    <div class="header-title"><strong>${title}</strong>${subtitle ? `<span>${subtitle}</span>` : ''}</div>
+    ${more}
+  </header>`;
+}
+
+function renderGameDetail(viewModel) {
+  return `<section class="screen" data-screen="game-detail">
+    ${renderHeader('饥荒联机版', 'Steam · 已安装', { more: 'open-more-menu' })}
+    <div class="screen-scroll">
+      <div class="page-content">
+        <div class="hero-art">
+          <div class="hero-copy">
+            <div class="tag-row">${tag('steam:322330')}${tag('当前设备', 'is-local')}</div>
+            <h2>饥荒联机版</h2>
+            <p>Klei Entertainment · 最近游玩：今天</p>
+          </div>
+        </div>
+        <div class="game-action-row">
+          <button class="primary-button" data-action="start-game">${icon('play')}开始游戏</button>
+          <button class="secondary-button" data-action="open-more-menu" aria-label="更多">${icon('more')}</button>
+        </div>
+        <div class="section-heading">
+          <h3>本机运行状态</h3>
+          <span>${viewModel.installedCount} 个已安装 · ${viewModel.enabledCount} 个已启用</span>
+        </div>
+        <div class="tag-row">
+          ${tag('安装/启停/更新/卸载跟设备走', 'is-local')}
+          ${tag('账号不覆盖本机状态')}
+        </div>
+        <div class="section-heading">
+          <h3>官方内容参考</h3>
+          <span>非本期</span>
+        </div>
+        <div class="reference-card">
+          <div class="reference-icon">${icon('cloud')}</div>
+          <div class="reference-copy">
+            <strong>创意工坊 ${tag('官方', 'is-official')}</strong>
+            <p>沿用订阅、取消订阅与我的订阅。与非官方 MODS 的数据、文件、任务完全隔离。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderMoreMenu() {
+  return `<section class="screen" data-screen="more-menu">
+    ${renderHeader('饥荒联机版', '游戏详情', { more: 'dismiss-menu' })}
+    <div class="screen-scroll">
+      <div class="page-content">
+        <div class="hero-art"><div class="hero-copy"><h2>饥荒联机版</h2><p>更多功能从这里进入</p></div></div>
+      </div>
+    </div>
+    <div class="sheet-backdrop" data-action="dismiss-menu"></div>
+    <div class="menu-sheet" role="dialog" aria-modal="true" aria-label="更多菜单">
+      <div class="sheet-handle"></div>
+      <h2>更多</h2>
+      <button class="menu-item" data-action="open-mods">
+        <span class="menu-item-icon mods">${icon('puzzle')}</span>
+        <span class="menu-item-copy"><strong>MODS ${tag('非官方来源', 'is-local')}</strong><span>当前设备本地安装与管理 · 仅此设备</span></span>
+      </button>
+      <button class="menu-item" data-action="workshop-reference">
+        <span class="menu-item-icon workshop">${icon('cloud')}</span>
+        <span class="menu-item-copy"><strong>创意工坊 ${tag('官方', 'is-official')}</strong><span>订阅 / 取消订阅 / 我的订阅 · 非本期</span></span>
+      </button>
+    </div>
+  </section>`;
+}
+
+function renderModCard(mod) {
+  const copy = MOD_COPY[mod.mod_id];
+  const status = mod.installation_fact === 'installed'
+    ? `已安装 · ${mod.enabled_value === 'enabled' ? '已启用' : '未启用'} · 仅此设备`
+    : (mod.install_gate === 'allowed' ? '可安装 · 仅此设备' : '当前不可安装');
+  return `<button class="mod-card" data-action="open-detail" data-mod-id="${mod.mod_id}" data-list-anchor="${mod.mod_id}">
+    <span class="mod-art ${copy.artClass}"></span>
+    <span class="mod-card-copy">
+      <h3>${copy.name}</h3>
+      <p>${copy.summary}</p>
+      <span class="mod-meta">${tag(`v${copy.version}`)}${tag(copy.size)}${mod.update_fact === 'source_unknown' ? tag('更新状态未知', 'is-risk') : ''}</span>
+      <span class="card-status">${status}</span>
+    </span>
+  </button>`;
+}
+
+function renderLibrary(viewModel) {
+  const visible = viewModel.state.ui.tab === 'installed'
+    ? viewModel.installedMods
+    : viewModel.availableMods;
+  return `<section class="screen" data-screen="mods-library">
+    ${renderHeader('DST MODS', '非官方来源 · 当前设备本地管理', { back: 'back-game-detail' })}
+    <div class="screen-scroll">
+      <div class="page-content">
+        <div class="scope-note">本页只处理外部非官方 MOD。创意工坊的官方订阅状态不会在这里出现，也不会被安装任务改写。</div>
+        <div class="tabs" role="tablist">
+          <button class="tab ${viewModel.state.ui.tab === 'available' ? 'is-active' : ''}" data-action="tab-available">可用 MOD</button>
+          <button class="tab ${viewModel.state.ui.tab === 'installed' ? 'is-active' : ''}" data-action="tab-installed">已安装 ${viewModel.installedCount}</button>
+        </div>
+        <div class="library-grid">
+          ${visible.length ? visible.map(renderModCard).join('') : '<div class="empty-state"><div><strong>当前设备尚未安装 MOD</strong><span>切换到“可用 MOD”开始浏览。</span></div></div>'}
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderDetail(viewModel) {
+  const { currentCopy, currentMod, primaryStatus } = viewModel;
+  const installed = currentMod.installation_fact === 'installed';
+  const task = viewModel.activeTask;
+  const actionLabel = installed
+    ? (currentMod.enabled_value === 'enabled' ? '查看已安装状态' : '启用')
+    : (task && !['succeeded', 'cancelled'].includes(task.task_state) ? `继续任务 · ${task.progress_percent}%` : '安装（含 1 个必要依赖）');
+  return `<section class="screen" data-screen="mod-detail">
+    ${renderHeader(currentCopy.name, 'MOD 详情', { back: 'back-library' })}
+    <div class="detail-grid">
+      <div class="detail-art">
+        <div class="art-badge">${tag('非官方来源', 'is-local')}</div>
+      </div>
+      <div class="detail-copy">
+        <div data-detail-section="summary">
+          <h2>${currentCopy.name}</h2>
+          <p class="detail-byline">${currentCopy.author} · 来源：${currentCopy.source}</p>
+          <div class="tag-row">${tag(primaryStatus, installed ? 'is-success' : 'is-local')}${tag('当前设备')}</div>
+          <p class="detail-summary">${currentCopy.summary}</p>
+        </div>
+        <div class="fact-grid">
+          <div class="fact"><span>当前版本</span><strong>${currentCopy.version}</strong></div>
+          <div class="fact"><span>文件大小</span><strong>${currentCopy.size}</strong></div>
+          <div class="fact"><span>平台兼容</span><strong>APP 可用</strong></div>
+          <div class="fact"><span>更新状态</span><strong>${currentMod.update_fact}</strong></div>
+        </div>
+        <div class="contract-note" data-detail-section="dependency">
+          <strong>依赖与安装说明</strong>
+          <p>${currentCopy.dependencyText}。点击一次后，必要依赖与主 MOD 进入同一个设备级任务；旋转与重复点击不会创建第二个任务。</p>
+        </div>
+        <div class="detail-actions">
+          <button class="primary-button" data-action="${installed ? 'view-installed' : 'install'}" data-mod-id="${currentMod.mod_id}">${icon(installed ? 'check' : 'puzzle')}${actionLabel}</button>
+          <button class="secondary-button" data-action="back-library">返回</button>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function taskStageIndex(taskState) {
+  return {
+    queued: 0,
+    downloading: 1,
+    paused_by_system: 1,
+    verifying: 2,
+    installing: 3,
+    succeeded: 4,
+    failed: 1,
+    cancelled: 0
+  }[taskState] ?? 0;
+}
+
+function renderTask(viewModel) {
+  const task = viewModel.activeTask;
+  if (!task) return renderDetail(viewModel);
+  const stages = ['创建任务', '下载到 staging', '校验 package_hash', '原子安装', '安装完成'];
+  const currentStage = taskStageIndex(task.task_state);
+  return `<section class="screen" data-screen="install-task">
+    ${renderHeader('安装任务', '同一任务跨页面与方向保留', { back: 'back-detail' })}
+    <div class="screen-scroll">
+      <div class="page-content task-layout">
+        <div class="task-hero">
+          <div class="tag-row">${tag(task.task_state, task.task_state === 'paused_by_system' ? 'is-risk' : 'is-local')}${tag('仅此设备')}</div>
+          <h2>${MOD_COPY[task.root_mod_id].name}</h2>
+          <div class="task-id">task_id · ${task.task_id}</div>
+          <div class="progress-track"><div class="progress-fill" style="width:${task.progress_percent}%"></div></div>
+          <div class="progress-meta"><span>${task.task_state === 'paused_by_system' ? '系统已暂停' : '当前任务进度'}</span><strong>${task.progress_percent}%</strong></div>
+          <div class="action-stack">
+            <button class="primary-button" data-action="task-advance">${task.task_state === 'paused_by_system' ? '继续原任务' : '推进到下一阶段'}</button>
+            ${task.task_state === 'paused_by_system'
+              ? '<button class="secondary-button" data-action="cancel-task">取消任务</button>'
+              : ''}
+            <button class="secondary-button" data-action="rotate-inline">${icon('rotate')}旋转设备，任务保持</button>
+          </div>
+        </div>
+        <div>
+          <div class="timeline">
+            ${stages.map((stage, index) => `<div class="timeline-item ${index < currentStage ? 'is-complete' : ''} ${index === currentStage ? 'is-current' : ''}"><span class="timeline-dot">${index < currentStage ? '✓' : index + 1}</span><span>${stage}</span></div>`).join('')}
+          </div>
+          <div class="contract-note" style="margin-top:10px">
+            <strong>幂等与页面生命周期</strong>
+            <p>重复 INSTALL_REQUESTED、打开详情或旋转只绑定当前 task_id。render() 不推进任务，也不创建进度计时器。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderInstalled(viewModel) {
+  const mod = viewModel.currentMod;
+  const copy = viewModel.currentCopy;
+  const enabled = mod.enabled_value === 'enabled';
+  return `<section class="screen" data-screen="installed">
+    ${renderHeader('安装完成', '默认启用 · 当前设备', { back: 'back-library' })}
+    <div class="screen-scroll">
+      <div class="page-content installed-layout">
+        <div class="installed-summary">
+          <div class="result-icon">${icon('check')}</div>
+          <h2>${copy.name}</h2>
+          <p>下载、校验与原子安装已完成。安装成功只证明本地程序文件可用，不等于游戏已经实际加载。</p>
+          <div class="tag-row" style="margin-top:12px">${tag(viewModel.primaryStatus, 'is-success')}${tag(`v${mod.installed_version}`)}</div>
+        </div>
+        <div>
+          <div class="switch-row">
+            <div class="switch-copy"><strong>启动时启用</strong><span>启用值与安装事实分开保存</span></div>
+            <button class="switch ${enabled ? 'is-on' : ''}" data-action="toggle-enabled" aria-label="${enabled ? '停用' : '启用'}"></button>
+          </div>
+          <div class="contract-note" style="margin-top:10px">
+            <strong>设备边界</strong>
+            <p>安装、启停、更新与卸载只影响 device-app-scene-01，不同步到 Mac 或其他 APP 设备。</p>
+          </div>
+          <div class="action-stack">
+            <button class="primary-button" data-action="start-game">${icon('play')}启动饥荒联机版</button>
+            <button class="secondary-button" data-action="back-game-detail">返回游戏详情</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderManifestGroup(title, items, kind) {
+  if (!items.length) return '';
+  const label = { effective: '本次生效', skipped: '本次跳过', risk: '需确认风险' }[kind];
+  return `<div class="manifest-group">
+    <div class="manifest-group-title"><span>${label}</span>${tag(`${items.length} 项`, kind === 'effective' ? 'is-success' : 'is-risk')}</div>
+    ${items.map(item => {
+      const copy = MOD_COPY[item.mod_id] || { name: item.mod_id };
+      const reason = item.reason_code || '文件、依赖与兼容检查通过';
+      return `<div class="manifest-item">
+        <div class="manifest-item-copy"><strong>${copy.name}</strong><span>${item.preflight_result} · ${reason}</span></div>
+        <span class="decision-chip">${item.load_decision}</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderPreflight(viewModel) {
+  const launch = viewModel.state.launch;
+  return `<section class="screen" data-screen="preflight">
+    ${renderHeader('启动前检查', 'ResolvedLaunchManifest', { back: 'back-installed' })}
+    <div class="screen-scroll">
+      <div class="page-content preflight-layout">
+        <div class="manifest-card">
+          <div class="manifest-header">
+            <div><h3>本次启动清单</h3><p>${launch.manifestId}<br>${viewModel.state.game_id}<br>${viewModel.state.device_installation_id}</p></div>
+            ${tag(`${launch.items.length} 项`, 'is-local')}
+          </div>
+          <div class="manifest-groups">
+            ${renderManifestGroup('本次生效', viewModel.preflightGroups.effective, 'effective')}
+            ${renderManifestGroup('本次跳过', viewModel.preflightGroups.skipped, 'skipped')}
+            ${renderManifestGroup('需确认风险', viewModel.preflightGroups.risk, 'risk')}
+          </div>
+        </div>
+        <div>
+          <div class="contract-note">
+            <strong>这仍不是实际加载证据</strong>
+            <p>安装完成、启用值为真、预检查通过或进入 manifest 都不能证明游戏实际加载。启动后必须核对游戏或引擎日志中的 MOD ID 与本地版本。</p>
+          </div>
+          <div class="action-stack">
+            <button class="primary-button" data-action="confirm-launch">${icon('play')}${viewModel.launchButtonLabel}</button>
+            <button class="secondary-button" data-action="empty-manifest">空清单直接启动</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderLaunchResult(viewModel) {
+  const launch = viewModel.state.launch;
+  const empty = launch.items.length === 0;
+  return `<section class="screen" data-screen="launch-result">
+    ${renderHeader('启动结果', empty ? '空清单直接启动' : '已提交本次启动清单', { back: 'back-preflight' })}
+    <div class="screen-scroll">
+      <div class="launch-result">
+        <div>
+          <div class="launch-orb">${icon('play')}</div>
+          <h2>${empty ? '基础游戏已直接启动' : '饥荒联机版已启动'}</h2>
+          <p>${empty ? 'ResolvedLaunchManifest.items = []，未显示额外确认页，也没有修改任何 MOD 的安装或启用状态。' : `本次向启动链路提交 ${launch.items.filter(item => item.load_decision === 'load').length} 个 load、${launch.items.filter(item => item.load_decision === 'skip').length} 个 skip。下一步读取游戏日志核对实际加载。`}</p>
+          <div class="launch-meta">
+            ${tag(viewModel.state.game_id)}
+            ${tag(viewModel.state.device_installation_id, 'is-local')}
+            ${tag(launch.manifestId)}
+          </div>
+          ${empty
+            ? '<button class="secondary-button" data-action="back-game-detail" style="padding:0 22px">返回游戏详情</button>'
+            : `<button class="primary-button" data-action="view-evidence" style="padding:0 22px">${icon('log')}查看实际加载证据</button>`}
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function evidenceDisplayName(value) {
+  return {
+    loaded_match: '实际加载匹配',
+    missing: '日志中缺少计划项',
+    version_mismatch: '实际版本不匹配',
+    unexpected_loaded: '加载了清单外 MOD',
+    log_unreadable: '游戏日志不可读',
+    parser_failed: '日志解析失败'
+  }[value] || value;
+}
+
+function renderEvidence(viewModel) {
+  const evidence = viewModel.evidence;
+  const parseFailed = evidence && evidence.parse_status !== 'parsed';
+  const confirmed = viewModel.evidenceConfirmed;
+  return `<section class="screen" data-screen="load-evidence">
+    ${renderHeader('实际加载证据', 'ActualLoadEvidence', { back: 'back-launch-result' })}
+    <div class="screen-scroll">
+      <div class="page-content evidence-layout">
+        <div class="evidence-card">
+          <div class="evidence-summary">
+            <div class="result-icon ${confirmed ? '' : 'is-warning'}">${icon(confirmed ? 'check' : 'alert')}</div>
+            <div><strong>${confirmed ? '日志证据与计划一致' : '无法把全部计划项计为实际生效'}</strong><span>parse_status · ${evidence ? evidence.parse_status : 'none'}</span></div>
+          </div>
+          ${parseFailed
+            ? `<div class="empty-state"><div><strong>${evidenceDisplayName(evidence.parse_status)}</strong><span>保留原始日志与解析结果，不计入实际生效。</span></div></div>`
+            : evidence.items.map(item => `<div class="evidence-row">
+                <div><strong>${MOD_COPY[item.mod_id]?.name || item.mod_id}</strong><span>expected ${item.expected_local_version ?? '—'} · logged ${item.logged_local_version ?? '—'}</span></div>
+                <span class="evidence-result ${item.result === 'loaded_match' ? '' : 'is-warning'}">${item.result}</span>
+              </div>`).join('')}
+        </div>
+        <div>
+          <div class="contract-note">
+            <strong>安装成功或进入启动清单不等于实际加载</strong>
+            <p>只有游戏或引擎日志中的 MOD ID 与本地版本匹配，结果才是 loaded_match。missing、version_mismatch、unexpected_loaded、log_unreadable、parser_failed 均不能计入实际生效。</p>
+          </div>
+          <div class="action-stack">
+            <button class="danger-button" data-action="inject-abnormal">${icon('alert')}模拟异常退出</button>
+            <button class="secondary-button" data-action="back-game-detail">正常结束并返回</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderAbnormalExit(viewModel) {
+  const canShow = viewModel.canShowRecovery;
+  return `<section class="screen" data-screen="abnormal-exit">
+    ${renderHeader('游戏异常退出', '恢复判断', { back: 'back-evidence' })}
+    <div class="screen-scroll">
+      <div class="page-content recovery-layout">
+        <div class="exit-card ${canShow ? '' : 'is-suppressed'}">
+          <div class="result-icon is-warning">${icon('alert')}</div>
+          <h2>${canShow ? '发现清单变化与异常退出' : '不把本次异常归因给 MOD'}</h2>
+          <p>${canShow ? '本次清单相对最近成功清单新增“快速旅行路标”，且游戏异常退出。可以显示恢复建议，但不会默认执行任何动作。' : '虽然游戏异常退出，但本次 manifest 与最近成功清单没有变化，因此不显示恢复建议，也不修改任何 MOD。'}</p>
+        </div>
+        <div>
+          <div class="condition-list">
+            <div class="condition ${viewModel.state.launch.exitType === 'abnormal' ? 'is-met' : ''}"><span class="condition-mark">${viewModel.state.launch.exitType === 'abnormal' ? '✓' : '—'}</span><span>存在异常退出证据</span></div>
+            <div class="condition ${viewModel.state.launch.manifestChanged ? 'is-met' : ''}"><span class="condition-mark">${viewModel.state.launch.manifestChanged ? '✓' : '—'}</span><span>启用清单较上次成功启动有变化</span></div>
+          </div>
+          <div class="contract-note" style="margin-top:10px">
+            <strong>恢复门禁</strong>
+            <p>只有检测到本次启用清单发生变化且游戏异常退出时，才会提供恢复建议。</p>
+          </div>
+          <div class="action-stack">
+            <button class="primary-button" data-action="open-recovery" ${canShow ? '' : 'disabled'}>查看恢复建议</button>
+            <button class="secondary-button" data-action="back-game-detail">返回游戏详情</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function recoveryOption(action, title, description, selected) {
+  return `<button class="recovery-option ${selected === action ? 'is-selected' : ''}" data-action="select-recovery" data-recovery-action="${action}">
+    <span class="radio-mark">${selected === action ? '●' : ''}</span>
+    <span class="recovery-option-copy"><strong>${title}</strong><span>${description}</span></span>
+  </button>`;
+}
+
+function renderRecovery(viewModel) {
+  const selected = viewModel.state.recovery.selectedAction;
+  if (!viewModel.canShowRecovery || !viewModel.state.recovery.visible) {
+    return `<section class="screen" data-screen="recovery">
+      ${renderHeader('恢复建议', '门禁未满足', { back: 'back-abnormal' })}
+      <div class="empty-state"><div><strong>暂不显示恢复建议</strong><span>需要检测到启用清单发生变化，且本次启动异常退出，才会提供恢复建议。</span></div></div>
+    </section>`;
+  }
+  return `<section class="screen" data-screen="recovery">
+    ${renderHeader('恢复建议', '默认不执行任何动作', { back: 'back-abnormal' })}
+    <div class="screen-scroll">
+      <div class="page-content recovery-layout">
+        <div>
+          <div class="contract-note">
+            <strong>上次启动异常退出</strong>
+            <p>变化项：快速旅行路标 v1.4.0。当前不会自动修改任何设置，请选择一种恢复方式后确认。</p>
+          </div>
+          <div class="tag-row" style="margin-top:10px">${tag('异常退出', 'is-risk')}${tag('清单已变化', 'is-local')}${tag('未执行恢复动作')}</div>
+        </div>
+        <div>
+          <div class="recovery-options">
+            ${recoveryOption('disable_changes_and_retry', '停用本次变化后重试', '确认后才停用变化项，并重新执行启动检查。', selected)}
+            ${recoveryOption('launch_without_mods', '无 MOD 启动', '本次使用空清单，不改变安装与启用状态。', selected)}
+            ${recoveryOption('retry_with_current_settings', '保持当前设置继续尝试', '不修改状态，重新执行当前集合的启动检查。', selected)}
+          </div>
+          <div class="action-stack">
+            <button class="primary-button" data-action="confirm-recovery" ${selected ? '' : 'disabled'}>确认执行所选动作</button>
+            <button class="secondary-button" data-action="back-game-detail">取消并返回</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderScreen(viewModel) {
+  return {
+    'game-detail': renderGameDetail,
+    'more-menu': renderMoreMenu,
+    'mods-library': renderLibrary,
+    'mod-detail': renderDetail,
+    'install-task': renderTask,
+    'installed': renderInstalled,
+    'preflight': renderPreflight,
+    'launch-result': renderLaunchResult,
+    'load-evidence': renderEvidence,
+    'abnormal-exit': renderAbnormalExit,
+    'recovery': renderRecovery
+  }[viewModel.screen](viewModel);
+}
+
+function renderReviewControls(viewModel) {
+  const sceneSelect = document.querySelector('[data-review-scene]');
+  if (!sceneSelect.options.length) {
+    sceneSelect.innerHTML = SCENES.map(scene => `<option value="${scene}">${SCENE_LABELS[scene]}</option>`).join('');
+  }
+  sceneSelect.value = viewModel.screen;
+
+  const evidenceSelect = document.querySelector('[data-evidence-scenario]');
+  evidenceSelect.value = viewModel.state.ui.evidenceScenario;
+
+  document.querySelectorAll('[data-action^="orientation-"]').forEach(button => {
+    button.classList.toggle('is-active', button.dataset.action.endsWith(viewModel.orientation));
+  });
+
+  const task = viewModel.activeTask;
+  document.querySelector('[data-review-metrics]').innerHTML = `
+    <div class="review-metric"><span>模型版本</span><strong>${viewModel.version}</strong></div>
+    <div class="review-metric"><span>设备</span><strong>${viewModel.state.device_installation_id}</strong></div>
+    <div class="review-metric"><span>当前场景</span><strong>${viewModel.sceneIndex + 1}/${SCENES.length}</strong></div>
+    <div class="review-metric"><span>任务创建数</span><strong>${viewModel.metrics.taskCreateCount}</strong></div>
+    <div class="review-metric"><span>当前 task_id</span><strong>${task ? task.task_id : '—'}</strong></div>
+    <div class="review-metric"><span>旋转次数</span><strong>${viewModel.metrics.orientationChangeCount}</strong></div>`;
+}
+
+function renderToast(viewModel) {
+  const region = document.querySelector('[data-toast-region]');
+  region.innerHTML = viewModel.state.ui.toast ? `<div class="toast">${viewModel.state.ui.toast}</div>` : '';
+}
+
+function nearestAnchor(container, selector, dataKey) {
+  if (!container) return null;
+  if (container.scrollHeight <= container.clientHeight + 1) return null;
+  const containerTop = container.getBoundingClientRect().top;
+  const candidates = [...container.querySelectorAll(selector)];
+  if (!candidates.length) return null;
+  const element = candidates.reduce((nearest, candidate) => {
+    const distance = Math.abs(candidate.getBoundingClientRect().top - containerTop);
+    return !nearest || distance < nearest.distance ? { element: candidate, distance } : nearest;
+  }, null)?.element;
+  if (!element) return null;
+  return {
+    id: element.dataset[dataKey],
+    offset: Math.round(element.getBoundingClientRect().top - containerTop)
+  };
+}
+
+function captureAnchors() {
+  const list = nearestAnchor(
+    document.querySelector('[data-screen="mods-library"] .screen-scroll'),
+    '[data-list-anchor]',
+    'listAnchor'
+  );
+  const detail = nearestAnchor(
+    document.querySelector('[data-screen="mod-detail"] .detail-copy'),
+    '[data-detail-section]',
+    'detailSection'
+  );
+  return {
+    listAnchorModId: list?.id ?? state.ui.listAnchorModId,
+    listAnchorOffset: list?.offset ?? state.ui.listAnchorOffset,
+    detailAnchorSectionId: detail?.id ?? state.ui.detailAnchorSectionId,
+    detailAnchorOffset: detail?.offset ?? state.ui.detailAnchorOffset
+  };
+}
+
+function restoreAnchor(container, selector, dataKey, id, offset) {
+  if (!container || !id) return;
+  const element = [...container.querySelectorAll(selector)]
+    .find(candidate => candidate.dataset[dataKey] === id);
+  if (!element) return;
+  const delta = element.getBoundingClientRect().top - container.getBoundingClientRect().top - (offset || 0);
+  container.scrollTop += delta;
+}
+
+function restoreAnchors(ui) {
+  restoreAnchor(
+    document.querySelector('[data-screen="mods-library"] .screen-scroll'),
+    '[data-list-anchor]',
+    'listAnchor',
+    ui.listAnchorModId,
+    ui.listAnchorOffset
+  );
+  restoreAnchor(
+    document.querySelector('[data-screen="mod-detail"] .detail-copy'),
+    '[data-detail-section]',
+    'detailSection',
+    ui.detailAnchorSectionId,
+    ui.detailAnchorOffset
+  );
+}
+
+function render() {
+  const viewModel = derive(state);
+  const root = document.querySelector('[data-demo-root]');
+  root.dataset.orientation = state.orientation;
+  root.className = `device ${state.orientation}`;
+  root.innerHTML = `<div class="device-shell">
+    ${renderSideRail()}
+    <div class="device-main">
+      ${renderStatusBar()}
+      ${renderScreen(viewModel)}
+      <div class="home-indicator"></div>
+    </div>
+  </div>`;
+  renderReviewControls(viewModel);
+  renderToast(viewModel);
+  restoreAnchors(state.ui);
+}
+
+function dispatch(action) {
+  if (action.type === 'ORIENTATION_CHANGED') {
+    action = { ...action, ...captureAnchors() };
+  }
+  state = reducer(state, action);
+  render();
+  return clone(derive(state));
+}
+
+function reset() {
+  state = createInitialState();
+  render();
+  return clone(state);
+}
+
+function getState() {
+  return clone(state);
+}
+
+function changeScene(screen) {
+  dispatch({ type: 'SCENE_CHANGED', screen });
+}
+
+document.addEventListener('click', event => {
+  const control = event.target.closest('[data-action]');
+  if (!control) return;
+  const action = control.dataset.action;
+  const modId = control.dataset.modId || state.ui.currentModId;
+  const actions = {
+    'scene-prev': () => dispatch({ type: 'SCENE_PREV' }),
+    'scene-next': () => dispatch({ type: 'SCENE_NEXT' }),
+    'orientation-portrait': () => dispatch({ type: 'ORIENTATION_CHANGED', orientation: 'portrait' }),
+    'orientation-landscape': () => dispatch({ type: 'ORIENTATION_CHANGED', orientation: 'landscape' }),
+    'rotate-inline': () => dispatch({ type: 'ORIENTATION_CHANGED', orientation: state.orientation === 'portrait' ? 'landscape' : 'portrait' }),
+    'open-more-menu': () => dispatch({ type: 'OPEN_MORE_MENU' }),
+    'dismiss-menu': () => dispatch({ type: 'SCENE_CHANGED', screen: 'game-detail' }),
+    'open-mods': () => dispatch({ type: 'OPEN_MODS' }),
+    'workshop-reference': () => dispatch({ type: 'SHOW_WORKSHOP_REFERENCE' }),
+    'back-game-detail': () => dispatch({ type: 'SCENE_CHANGED', screen: 'game-detail' }),
+    'back-library': () => dispatch({ type: 'SCENE_CHANGED', screen: 'mods-library' }),
+    'back-detail': () => dispatch({ type: 'SCENE_CHANGED', screen: 'mod-detail' }),
+    'back-installed': () => dispatch({ type: 'SCENE_CHANGED', screen: 'installed' }),
+    'back-preflight': () => dispatch({ type: 'SCENE_CHANGED', screen: 'preflight' }),
+    'back-launch-result': () => dispatch({ type: 'SCENE_CHANGED', screen: 'launch-result' }),
+    'back-evidence': () => dispatch({ type: 'SCENE_CHANGED', screen: 'load-evidence' }),
+    'back-abnormal': () => dispatch({ type: 'SCENE_CHANGED', screen: 'abnormal-exit' }),
+    'open-detail': () => dispatch({ type: 'OPEN_DETAIL', modId }),
+    'install': () => dispatch({ type: 'INSTALL_REQUESTED', modId }),
+    'task-advance': () => dispatch({
+      type: getTaskForMod(state, modId)?.task_state === 'paused_by_system'
+        ? 'CONTINUE_REQUESTED'
+        : 'TASK_ADVANCE',
+      modId
+    }),
+    'cancel-task': () => dispatch({ type: 'CANCEL_REQUESTED', modId }),
+    'view-installed': () => dispatch({ type: 'SCENE_CHANGED', screen: 'installed' }),
+    'toggle-enabled': () => dispatch({ type: 'ENABLE_CHANGED', modId }),
+    'tab-available': () => dispatch({ type: 'SET_TAB', tab: 'available' }),
+    'tab-installed': () => dispatch({ type: 'SET_TAB', tab: 'installed' }),
+    'start-game': () => dispatch({ type: 'PREFLIGHT_REQUESTED' }),
+    'confirm-launch': () => dispatch({ type: 'LAUNCH_CONFIRMED' }),
+    'view-evidence': () => dispatch({ type: 'EVIDENCE_SCENARIO_SELECTED', scenario: state.ui.evidenceScenario }),
+    'inject-abnormal': () => dispatch({ type: 'ABNORMAL_EXIT_INJECTED', manifestChanged: true }),
+    'open-recovery': () => dispatch({ type: 'OPEN_RECOVERY' }),
+    'select-recovery': () => dispatch({ type: 'RECOVERY_ACTION_SELECTED', action: control.dataset.recoveryAction }),
+    'confirm-recovery': () => dispatch({ type: 'RECOVERY_ACTION_CONFIRMED' }),
+    'empty-manifest': () => dispatch({ type: 'EMPTY_MANIFEST_LAUNCH' }),
+    'abnormal-with-change': () => dispatch({ type: 'ABNORMAL_EXIT_INJECTED', manifestChanged: true }),
+    'abnormal-without-change': () => dispatch({ type: 'ABNORMAL_EXIT_INJECTED', manifestChanged: false }),
+    'reset': () => dispatch({ type: 'RESET' })
+  };
+  if (actions[action]) actions[action]();
+});
+
+document.querySelector('[data-review-scene]').addEventListener('change', event => {
+  changeScene(event.target.value);
+});
+
+document.querySelector('[data-evidence-scenario]').addEventListener('change', event => {
+  dispatch({ type: 'EVIDENCE_SCENARIO_SELECTED', scenario: event.target.value });
+});
+
+window.__DST_MODS_DEMO__ = Object.freeze({
+  version: DEMO_MODEL_VERSION,
+  getState,
+  dispatch,
+  derive: () => clone(derive(state)),
+  reset
+});
+
+render();
+</script>
+</body>
+</html>

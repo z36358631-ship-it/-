@@ -1,0 +1,3634 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>盖世游戏 APP · DST MODS 离线交互 Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #000000;
+      --bg-shell: #090b0e;
+      --bg-card: #1a1a1a;
+      --bg-card-strong: #202126;
+      --bg-elevated: #252525;
+      --bg-overlay: #28202a;
+      --text-primary: #ffffff;
+      --text-secondary: #e6e6e6;
+      --text-tertiary: #b7bcc5;
+      --text-muted: #7b7b7b;
+      --text-disabled: #646464;
+      --brand-gold: #ffcc43;
+      --brand-gold-light: #ffd98f;
+      --brand-green: #33d8a4;
+      --brand-blue: #338feb;
+      --brand-orange: #ff9b70;
+      --brand-red: #ff5678;
+      --border-default: #353d4e;
+      --border-soft: rgba(255, 255, 255, 0.08);
+      --blue-gradient: linear-gradient(135deg, #0086ac, #0063b5);
+      --gold-gradient: linear-gradient(135deg, #f1d893, #d99946);
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-2xl: 20px;
+      --radius-full: 100px;
+      --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.28);
+      --shadow-dialog: 0 24px 70px rgba(0, 0, 0, 0.58);
+      --font-primary: "MiSans VF", "MiSans", "PingFang SC", "Microsoft YaHei", sans-serif;
+      --font-number: "D-DIN-PRO", "MiSans VF", sans-serif;
+      color-scheme: dark;
+    }
+
+    html,
+    body {
+      min-width: 320px;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 50% -20%, rgba(51, 143, 235, 0.14), transparent 38rem),
+        #020304;
+      color: var(--text-primary);
+      font-family: var(--font-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 18px;
+      overflow: auto;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button,
+    select {
+      cursor: pointer;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 2px solid var(--brand-gold);
+      outline-offset: 2px;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    .svg-sprite {
+      position: absolute;
+      width: 0;
+      height: 0;
+      overflow: hidden;
+    }
+
+    .icon {
+      width: 20px;
+      height: 20px;
+      display: inline-block;
+      flex: 0 0 auto;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vertical-align: -0.18em;
+    }
+
+    .review-toolbar {
+      width: min(1120px, 100%);
+      margin: 0 auto 16px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      background: rgba(13, 16, 21, 0.94);
+      box-shadow: var(--shadow-card);
+      backdrop-filter: blur(20px);
+    }
+
+    .review-brand {
+      min-width: 190px;
+      margin-right: auto;
+    }
+
+    .review-brand strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .review-brand span {
+      display: block;
+      margin-top: 2px;
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    .review-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .review-button {
+      min-height: 36px;
+      padding: 0 10px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      background: #171a20;
+      color: var(--text-tertiary);
+      font-size: 12px;
+      transition: 160ms ease;
+    }
+
+    .review-button:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+
+    .review-button.is-active {
+      border-color: rgba(255, 204, 67, 0.5);
+      background: rgba(255, 204, 67, 0.12);
+      color: var(--brand-gold);
+    }
+
+    .review-button.is-danger {
+      color: #ff9ea9;
+    }
+
+    .app-stage {
+      min-height: calc(100vh - 112px);
+      display: grid;
+      place-items: start center;
+    }
+
+    .device {
+      position: relative;
+      flex: 0 0 auto;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: var(--bg-primary);
+      box-shadow:
+        0 40px 100px rgba(0, 0, 0, 0.7),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+      isolation: isolate;
+    }
+
+    .device.portrait {
+      width: 390px;
+      height: 844px;
+      border-radius: 30px;
+    }
+
+    .device.landscape {
+      width: 874px;
+      height: 402px;
+      border-radius: 22px;
+    }
+
+    .product-screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      overflow: hidden;
+      background: var(--bg-primary);
+    }
+
+    .portrait-shell {
+      flex-direction: column;
+    }
+
+    .status-bar {
+      position: relative;
+      z-index: 20;
+      height: 34px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex: 0 0 auto;
+      color: var(--text-secondary);
+      font-family: var(--font-number);
+      font-size: 11px;
+      letter-spacing: 0.02em;
+      background: rgba(0, 0, 0, 0.74);
+      backdrop-filter: blur(18px);
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .online-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--brand-green);
+      box-shadow: 0 0 0 3px rgba(51, 216, 164, 0.12);
+    }
+
+    .page-header {
+      position: relative;
+      z-index: 18;
+      min-height: 56px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 0 0 auto;
+      border-bottom: 1px solid var(--border-soft);
+      background: rgba(4, 5, 7, 0.94);
+      backdrop-filter: blur(20px);
+    }
+
+    .icon-button {
+      width: 44px;
+      height: 44px;
+      display: inline-grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--text-secondary);
+      transition: 160ms ease;
+    }
+
+    .icon-button:hover,
+    .icon-button:active {
+      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.09);
+      color: var(--text-primary);
+    }
+
+    .header-title {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .header-title strong {
+      display: block;
+      overflow: hidden;
+      color: var(--text-primary);
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 24px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .header-title span {
+      display: block;
+      overflow: hidden;
+      margin-top: 1px;
+      color: var(--text-muted);
+      font-size: 11px;
+      line-height: 16px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .app-scroll,
+    .catalog-scroll,
+    .detail-scroll {
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: none;
+    }
+
+    .app-scroll::-webkit-scrollbar,
+    .catalog-scroll::-webkit-scrollbar,
+    .detail-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .game-page {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .game-page .app-scroll {
+      flex: 1;
+      padding-bottom: 82px;
+    }
+
+    .game-hero {
+      position: relative;
+      min-height: 282px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 72% 38%, rgba(255, 204, 67, 0.22), transparent 16rem),
+        linear-gradient(135deg, #15201d 0%, #0c1311 42%, #1a140d 100%);
+    }
+
+    .game-hero::before,
+    .game-hero::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(0.2px);
+    }
+
+    .game-hero::before {
+      width: 260px;
+      height: 260px;
+      right: -40px;
+      bottom: -86px;
+      background:
+        radial-gradient(circle at 48% 38%, #191512 0 28%, transparent 29%),
+        conic-gradient(from 20deg, #3d3426, #101713, #6b5a33, #15201d, #3d3426);
+      opacity: 0.78;
+    }
+
+    .game-hero::after {
+      width: 130px;
+      height: 230px;
+      right: 32px;
+      bottom: -112px;
+      border-radius: 46% 46% 22% 22%;
+      background: #050605;
+      box-shadow: 0 -30px 70px rgba(0, 0, 0, 0.68);
+      transform: rotate(-7deg);
+    }
+
+    .game-hero-fade {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.25), transparent 26%, rgba(0, 0, 0, 0.88) 100%),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.72), transparent 78%);
+    }
+
+    .game-brand-mark {
+      position: absolute;
+      top: 28px;
+      right: 22px;
+      z-index: 3;
+      color: rgba(255, 237, 188, 0.82);
+      font-family: Georgia, serif;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.11em;
+      text-align: right;
+      text-transform: uppercase;
+    }
+
+    .game-hero-content {
+      position: absolute;
+      inset: auto 18px 22px;
+      z-index: 5;
+    }
+
+    .eyebrow {
+      color: var(--brand-gold);
+      font-family: var(--font-number);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .game-hero-content h1 {
+      margin-top: 8px;
+      font-size: 30px;
+      font-weight: 650;
+      line-height: 38px;
+    }
+
+    .game-hero-content p {
+      max-width: 320px;
+      margin-top: 8px;
+      color: var(--text-tertiary);
+      font-size: 13px;
+      line-height: 20px;
+    }
+
+    .tag-row {
+      margin-top: 12px;
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      min-height: 26px;
+      padding: 4px 9px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      background: rgba(0, 0, 0, 0.42);
+      color: var(--text-secondary);
+      font-size: 11px;
+    }
+
+    .game-actions {
+      padding: 14px 16px 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 92px;
+      gap: 10px;
+    }
+
+    .primary-button,
+    .secondary-button,
+    .danger-button,
+    .ghost-button {
+      min-height: 44px;
+      padding: 0 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: var(--radius-lg);
+      font-size: 14px;
+      font-weight: 600;
+      transition: 160ms ease;
+    }
+
+    .primary-button {
+      border: 0;
+      background: var(--blue-gradient);
+      color: var(--text-primary);
+      box-shadow: 0 8px 18px rgba(0, 99, 181, 0.24);
+    }
+
+    .primary-button:hover,
+    .primary-button:active {
+      filter: brightness(1.09);
+      transform: translateY(-1px);
+    }
+
+    .secondary-button,
+    .ghost-button {
+      border: 1px solid var(--border-default);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+    }
+
+    .secondary-button:hover,
+    .ghost-button:hover {
+      border-color: rgba(255, 255, 255, 0.23);
+      color: var(--text-primary);
+    }
+
+    .danger-button {
+      border: 1px solid rgba(255, 86, 120, 0.4);
+      background: rgba(255, 86, 120, 0.11);
+      color: #ff9aac;
+    }
+
+    .content-section {
+      padding: 22px 16px 0;
+    }
+
+    .section-heading {
+      margin-bottom: 12px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .section-heading h2 {
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 28px;
+    }
+
+    .section-heading p {
+      margin-top: 2px;
+      color: var(--text-muted);
+      font-size: 12px;
+      line-height: 17px;
+    }
+
+    .official-workshop-card {
+      position: relative;
+      overflow: hidden;
+      padding: 16px;
+      border: 1px solid rgba(51, 143, 235, 0.28);
+      border-radius: var(--radius-xl);
+      background:
+        radial-gradient(circle at 92% 10%, rgba(51, 143, 235, 0.2), transparent 11rem),
+        linear-gradient(135deg, #171b22, #12161d);
+    }
+
+    .official-workshop-card::after {
+      content: "";
+      position: absolute;
+      width: 86px;
+      height: 86px;
+      right: -18px;
+      bottom: -25px;
+      border: 12px dotted rgba(51, 143, 235, 0.12);
+      border-radius: 50%;
+    }
+
+    .official-card-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .official-icon {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border: 1px solid rgba(51, 143, 235, 0.35);
+      border-radius: var(--radius-lg);
+      background: rgba(51, 143, 235, 0.1);
+      color: #7fc1ff;
+    }
+
+    .official-card-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .official-card-copy strong {
+      display: block;
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .official-card-copy span {
+      display: block;
+      margin-top: 3px;
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    .channel-badge,
+    .source-badge,
+    .status-badge,
+    .gate-badge {
+      min-height: 24px;
+      padding: 3px 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: var(--radius-sm);
+      font-size: 10px;
+      font-weight: 600;
+      line-height: 16px;
+      white-space: nowrap;
+    }
+
+    .channel-badge {
+      background: rgba(51, 143, 235, 0.13);
+      color: #7fc1ff;
+    }
+
+    .source-badge {
+      background: rgba(255, 155, 112, 0.12);
+      color: var(--brand-orange);
+    }
+
+    .status-badge {
+      background: rgba(51, 216, 164, 0.11);
+      color: var(--brand-green);
+    }
+
+    .gate-badge {
+      background: rgba(255, 204, 67, 0.1);
+      color: var(--brand-gold);
+    }
+
+    .official-workshop-card > p {
+      position: relative;
+      z-index: 2;
+      margin-top: 13px;
+      color: var(--text-tertiary);
+      font-size: 13px;
+      line-height: 20px;
+    }
+
+    .official-card-foot {
+      position: relative;
+      z-index: 2;
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+    .bottom-nav {
+      position: absolute;
+      z-index: 30;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 72px;
+      padding: 7px 12px max(8px, env(safe-area-inset-bottom));
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--border-soft);
+      background: rgba(8, 10, 13, 0.94);
+      backdrop-filter: blur(22px);
+    }
+
+    .nav-item {
+      min-width: 44px;
+      min-height: 52px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      border: 0;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 10px;
+    }
+
+    .nav-item.is-active {
+      color: var(--brand-gold);
+    }
+
+    .tabs {
+      padding: 0 14px;
+      display: flex;
+      gap: 20px;
+      flex: 0 0 auto;
+      border-bottom: 1px solid var(--border-soft);
+      background: rgba(4, 5, 7, 0.96);
+    }
+
+    .tab-button {
+      position: relative;
+      min-height: 46px;
+      padding: 0 2px;
+      border: 0;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .tab-button.is-active {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .tab-button.is-active::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: -1px;
+      left: 0;
+      height: 3px;
+      border-radius: 3px 3px 0 0;
+      background: var(--brand-gold);
+    }
+
+    .catalog-tools {
+      padding: 12px 14px;
+      display: grid;
+      gap: 8px;
+      flex: 0 0 auto;
+      background: var(--bg-primary);
+    }
+
+    .search-field {
+      min-height: 44px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      background: #111318;
+      color: var(--text-muted);
+    }
+
+    .search-field:focus-within {
+      border-color: rgba(255, 204, 67, 0.48);
+      box-shadow: 0 0 0 3px rgba(255, 204, 67, 0.08);
+    }
+
+    .search-field input {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    .search-field input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .select-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .select-control {
+      min-width: 0;
+      min-height: 44px;
+      padding: 0 34px 0 12px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      background: #111318;
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+    .catalog-scroll {
+      flex: 1;
+      padding: 0 14px 116px;
+    }
+
+    .catalog-summary {
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    .catalog-summary strong {
+      color: var(--text-secondary);
+      font-family: var(--font-number);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .catalog-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .mod-card {
+      position: relative;
+      min-width: 0;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 108px minmax(0, 1fr);
+      gap: 12px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 60%),
+        var(--bg-card);
+      box-shadow: 0 2px 0 rgba(255, 255, 255, 0.01);
+      transition: 160ms ease;
+    }
+
+    .mod-card:hover {
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-card);
+    }
+
+    .cover-art {
+      position: relative;
+      min-height: 94px;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(145deg, #1b2431, #0a0d12);
+      isolation: isolate;
+    }
+
+    .cover-art::before,
+    .cover-art::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      border-radius: 50%;
+    }
+
+    .cover-art::before {
+      width: 92px;
+      height: 92px;
+      right: -22px;
+      top: -24px;
+      background: var(--cover-accent, #338feb);
+      opacity: 0.22;
+      filter: blur(2px);
+    }
+
+    .cover-art::after {
+      width: 80px;
+      height: 80px;
+      left: -32px;
+      bottom: -38px;
+      border: 14px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .cover-map { --cover-accent: #f4b35e; background: linear-gradient(145deg, #263027, #101713); }
+    .cover-box { --cover-accent: #a87555; background: linear-gradient(145deg, #2e2722, #14100e); }
+    .cover-heart { --cover-accent: #ff5678; background: linear-gradient(145deg, #2b1d25, #120b0f); }
+    .cover-type { --cover-accent: #e9e1c9; background: linear-gradient(145deg, #302d29, #121110); }
+    .cover-leaf { --cover-accent: #33d8a4; background: linear-gradient(145deg, #19322c, #0c1512); }
+    .cover-gear { --cover-accent: #8174fa; background: linear-gradient(145deg, #25223a, #100f18); }
+
+    .cover-symbol {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: rgba(255, 255, 255, 0.82);
+    }
+
+    .cover-symbol .icon {
+      width: 50px;
+      height: 50px;
+      stroke-width: 1.3;
+      filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.38));
+    }
+
+    .cover-version {
+      position: absolute;
+      right: 6px;
+      bottom: 6px;
+      min-height: 22px;
+      padding: 2px 6px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: var(--radius-sm);
+      background: rgba(0, 0, 0, 0.62);
+      color: var(--text-tertiary);
+      font-family: var(--font-number);
+      font-size: 9px;
+      backdrop-filter: blur(6px);
+    }
+
+    .mod-card-main {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mod-card-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .mod-card-title {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .mod-card-title strong {
+      display: block;
+      overflow: hidden;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 20px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mod-card-title span {
+      display: block;
+      overflow: hidden;
+      margin-top: 1px;
+      color: var(--text-muted);
+      font-size: 10px;
+      line-height: 15px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mod-card-description {
+      display: -webkit-box;
+      overflow: hidden;
+      margin-top: 7px;
+      color: var(--text-tertiary);
+      font-size: 11px;
+      line-height: 16px;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    .mod-meta {
+      margin-top: 7px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+      color: var(--text-muted);
+      font-family: var(--font-number);
+      font-size: 9px;
+    }
+
+    .mod-meta span + span::before {
+      content: "·";
+      margin-right: 5px;
+      color: #555b65;
+    }
+
+    .state-line {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      color: var(--text-secondary);
+      font-size: 10px;
+      line-height: 15px;
+    }
+
+    .state-line .is-warning {
+      color: var(--brand-gold);
+    }
+
+    .state-line .is-error {
+      color: #ff8da4;
+    }
+
+    .state-line .is-success {
+      color: var(--brand-green);
+    }
+
+    .card-actions {
+      margin-top: auto;
+      padding-top: 9px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-button {
+      min-height: 44px;
+      padding: 0 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--text-secondary);
+      font-size: 11px;
+      transition: 160ms ease;
+    }
+
+    .card-button.primary {
+      min-width: 96px;
+      flex: 1;
+      border-color: transparent;
+      background: var(--blue-gradient);
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .card-button.warning {
+      border-color: rgba(255, 204, 67, 0.35);
+      background: rgba(255, 204, 67, 0.08);
+      color: var(--brand-gold);
+    }
+
+    .card-button:hover {
+      filter: brightness(1.1);
+    }
+
+    .enable-control {
+      min-height: 44px;
+      padding: 0 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.025);
+      color: var(--text-tertiary);
+      font-size: 10px;
+    }
+
+    .switch {
+      position: relative;
+      width: 34px;
+      height: 20px;
+      flex: 0 0 auto;
+      border: 0;
+      border-radius: var(--radius-full);
+      background: #3a3d44;
+      transition: 160ms ease;
+    }
+
+    .switch::after {
+      content: "";
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      top: 3px;
+      left: 3px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35);
+      transition: 160ms ease;
+    }
+
+    .switch.is-on {
+      background: var(--brand-green);
+    }
+
+    .switch.is-on::after {
+      transform: translateX(14px);
+    }
+
+    .progress-track {
+      height: 4px;
+      margin-top: 8px;
+      overflow: hidden;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .progress-value {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--brand-blue), var(--brand-green));
+      transition: width 350ms ease;
+    }
+
+    .empty-state {
+      min-height: 260px;
+      padding: 32px 22px;
+      display: grid;
+      place-items: center;
+      border: 1px dashed var(--border-default);
+      border-radius: var(--radius-xl);
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .empty-state .icon {
+      width: 42px;
+      height: 42px;
+      margin-bottom: 12px;
+      color: #5e6570;
+    }
+
+    .empty-state strong {
+      display: block;
+      color: var(--text-secondary);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .empty-state p {
+      margin-top: 6px;
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .task-dock {
+      position: absolute;
+      z-index: 35;
+      right: 12px;
+      bottom: 12px;
+      left: 12px;
+      padding: 12px;
+      border: 1px solid rgba(51, 143, 235, 0.32);
+      border-radius: var(--radius-xl);
+      background: rgba(26, 27, 31, 0.97);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.52);
+      backdrop-filter: blur(22px);
+    }
+
+    .task-dock-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .task-icon {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: var(--radius-lg);
+      background: rgba(51, 143, 235, 0.12);
+      color: #7fc1ff;
+    }
+
+    .task-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .task-copy strong {
+      display: block;
+      overflow: hidden;
+      font-size: 12px;
+      line-height: 18px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .task-copy span {
+      display: block;
+      margin-top: 1px;
+      color: var(--text-muted);
+      font-family: var(--font-number);
+      font-size: 10px;
+      line-height: 14px;
+    }
+
+    .task-actions {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .task-actions .card-button {
+      min-height: 44px;
+    }
+
+    .detail-scroll {
+      flex: 1;
+      padding-bottom: 104px;
+    }
+
+    .detail-cover {
+      min-height: 222px;
+      border-radius: 0;
+    }
+
+    .detail-cover .cover-symbol .icon {
+      width: 92px;
+      height: 92px;
+    }
+
+    .detail-content {
+      padding: 18px 16px 0;
+    }
+
+    .detail-title-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .detail-title-row > div:first-child {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .detail-title-row h1 {
+      font-size: 22px;
+      font-weight: 650;
+      line-height: 30px;
+    }
+
+    .detail-byline {
+      margin-top: 4px;
+      color: var(--text-muted);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .device-fact {
+      margin-top: 13px;
+      padding: 11px 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.025);
+      color: var(--text-tertiary);
+      font-size: 11px;
+      line-height: 17px;
+    }
+
+    .device-fact .icon {
+      margin-top: 1px;
+      color: var(--brand-orange);
+    }
+
+    .detail-metrics {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .metric-card {
+      min-height: 64px;
+      padding: 10px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      background: var(--bg-card);
+    }
+
+    .metric-card span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 9px;
+    }
+
+    .metric-card strong {
+      display: block;
+      overflow: hidden;
+      margin-top: 5px;
+      color: var(--text-secondary);
+      font-family: var(--font-number);
+      font-size: 12px;
+      font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .section-jump {
+      margin-top: 16px;
+      padding-bottom: 4px;
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .section-jump::-webkit-scrollbar {
+      display: none;
+    }
+
+    .section-chip {
+      min-height: 44px;
+      padding: 0 12px;
+      flex: 0 0 auto;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    .section-chip.is-active {
+      border-color: rgba(255, 204, 67, 0.36);
+      background: rgba(255, 204, 67, 0.1);
+      color: var(--brand-gold);
+    }
+
+    .detail-section {
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border-soft);
+      scroll-margin-top: 10px;
+    }
+
+    .detail-section:last-child {
+      border-bottom: 0;
+    }
+
+    .detail-section h2 {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 22px;
+    }
+
+    .detail-section h2::before {
+      content: "";
+      width: 3px;
+      height: 15px;
+      border-radius: var(--radius-full);
+      background: var(--brand-gold);
+    }
+
+    .detail-section p,
+    .detail-section li {
+      color: var(--text-tertiary);
+      font-size: 13px;
+      line-height: 21px;
+    }
+
+    .detail-section p {
+      margin-top: 9px;
+    }
+
+    .detail-section ul {
+      margin: 9px 0 0 18px;
+    }
+
+    .dependency-list {
+      margin-top: 10px;
+      display: grid;
+      gap: 7px;
+    }
+
+    .dependency-item {
+      padding: 10px 11px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.025);
+      color: var(--text-secondary);
+      font-size: 11px;
+    }
+
+    .detail-action-bar {
+      position: absolute;
+      z-index: 32;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      min-height: 86px;
+      padding: 10px 14px max(12px, env(safe-area-inset-bottom));
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-top: 1px solid var(--border-soft);
+      background: rgba(8, 10, 13, 0.97);
+      backdrop-filter: blur(20px);
+    }
+
+    .detail-action-bar .primary-button {
+      flex: 1;
+    }
+
+    .detail-action-bar .icon-button {
+      background: var(--bg-elevated);
+    }
+
+    .detail-enable {
+      min-width: 88px;
+      min-height: 50px;
+      padding: 5px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      font-size: 9px;
+    }
+
+    .dialog-layer {
+      position: absolute;
+      z-index: 100;
+      inset: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.62);
+      backdrop-filter: blur(8px);
+    }
+
+    .dialog-sheet {
+      width: 100%;
+      max-height: 78%;
+      overflow-y: auto;
+      padding: 12px 16px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 24px;
+      background: var(--bg-overlay);
+      box-shadow: var(--shadow-dialog);
+      scrollbar-width: none;
+    }
+
+    .dialog-sheet::-webkit-scrollbar {
+      display: none;
+    }
+
+    .sheet-handle {
+      width: 42px;
+      height: 4px;
+      margin: 0 auto 14px;
+      border-radius: var(--radius-full);
+      background: #646970;
+    }
+
+    .dialog-title-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .dialog-title-row > div {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .dialog-title-row h2 {
+      font-size: 19px;
+      font-weight: 600;
+      line-height: 27px;
+    }
+
+    .dialog-title-row p {
+      margin-top: 3px;
+      color: var(--text-muted);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .menu-list {
+      margin-top: 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .menu-item {
+      width: 100%;
+      min-height: 64px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.035);
+      text-align: left;
+      transition: 160ms ease;
+    }
+
+    .menu-item:hover,
+    .menu-item:active {
+      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.075);
+    }
+
+    .menu-item-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-secondary);
+    }
+
+    .menu-item.is-mods .menu-item-icon {
+      background: rgba(255, 155, 112, 0.1);
+      color: var(--brand-orange);
+    }
+
+    .menu-item-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .menu-item-copy strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .menu-item-copy span {
+      display: block;
+      overflow: hidden;
+      margin-top: 2px;
+      color: var(--text-muted);
+      font-size: 10px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dialog-message {
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      background: rgba(0, 0, 0, 0.16);
+      color: var(--text-tertiary);
+      font-size: 12px;
+      line-height: 19px;
+    }
+
+    .dialog-message strong {
+      color: var(--text-primary);
+    }
+
+    .dialog-actions {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .landscape-shell {
+      display: grid;
+      grid-template-columns: 54px minmax(0, 1fr);
+    }
+
+    .landscape-rail {
+      position: relative;
+      z-index: 50;
+      padding: 8px 5px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      border-right: 1px solid var(--border-soft);
+      background: #0b0e12;
+    }
+
+    .rail-logo {
+      width: 42px;
+      height: 42px;
+      margin-bottom: 3px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      background: var(--gold-gradient);
+      color: #16120b;
+      font-family: var(--font-number);
+      font-size: 17px;
+      font-weight: 800;
+      box-shadow: 0 5px 14px rgba(217, 153, 70, 0.2);
+    }
+
+    .rail-item {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: var(--radius-lg);
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    .rail-item.is-active {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--brand-gold);
+    }
+
+    .rail-spacer {
+      flex: 1;
+    }
+
+    .landscape-main {
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .landscape-topbar {
+      min-height: 54px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 0 0 auto;
+      border-bottom: 1px solid var(--border-soft);
+      background: rgba(6, 8, 11, 0.96);
+    }
+
+    .landscape-topbar .header-title strong {
+      font-size: 17px;
+      line-height: 22px;
+    }
+
+    .topbar-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      font-size: 10px;
+    }
+
+    .landscape-game {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(290px, 0.8fr);
+      overflow: hidden;
+    }
+
+    .landscape-game .game-hero {
+      min-height: 100%;
+    }
+
+    .landscape-game .game-hero-content {
+      inset: auto 24px 24px;
+      max-width: 470px;
+    }
+
+    .landscape-game .game-hero-content h1 {
+      font-size: 28px;
+      line-height: 34px;
+    }
+
+    .landscape-game .game-hero-content p {
+      max-width: 440px;
+    }
+
+    .landscape-game-side {
+      padding: 16px;
+      overflow-y: auto;
+      border-left: 1px solid var(--border-soft);
+      background: linear-gradient(145deg, #141619, #0b0d10);
+      scrollbar-width: none;
+    }
+
+    .landscape-game-side::-webkit-scrollbar {
+      display: none;
+    }
+
+    .landscape-game-side .game-actions {
+      padding: 0;
+    }
+
+    .landscape-game-side .content-section {
+      padding: 18px 0 0;
+    }
+
+    .landscape-game-side .official-workshop-card {
+      padding: 13px;
+    }
+
+    .landscape-game-side .official-card-head {
+      align-items: center;
+    }
+
+    .landscape-game-side .official-icon {
+      width: 42px;
+      height: 42px;
+    }
+
+    .landscape-game-side .official-workshop-card > p {
+      display: none;
+    }
+
+    .landscape-game-side .official-card-foot {
+      margin-top: 10px;
+    }
+
+    .landscape-catalog-toolbar {
+      padding: 8px 14px;
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) 150px 150px;
+      gap: 8px;
+      flex: 0 0 auto;
+      border-bottom: 1px solid var(--border-soft);
+      background: var(--bg-primary);
+    }
+
+    .landscape-catalog-toolbar .search-field,
+    .landscape-catalog-toolbar .select-control {
+      min-height: 40px;
+    }
+
+    .landscape-catalog-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .landscape-catalog-body .catalog-scroll {
+      padding: 10px 14px 82px;
+    }
+
+    .landscape-catalog-body .catalog-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .landscape-catalog-body .mod-card {
+      grid-template-columns: 92px minmax(0, 1fr);
+      padding: 9px;
+      gap: 10px;
+      border-radius: var(--radius-lg);
+    }
+
+    .landscape-catalog-body .cover-art {
+      min-height: 100%;
+    }
+
+    .landscape-catalog-body .mod-card-description {
+      -webkit-line-clamp: 1;
+    }
+
+    .landscape-catalog-body .card-actions {
+      padding-top: 6px;
+    }
+
+    .landscape-catalog-body .card-button,
+    .landscape-catalog-body .enable-control {
+      min-height: 44px;
+    }
+
+    .landscape-detail {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(350px, 1.08fr);
+      overflow: hidden;
+    }
+
+    .landscape-detail-media {
+      position: relative;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border-soft);
+      background: #090b0e;
+    }
+
+    .landscape-detail-media .detail-cover {
+      min-height: 0;
+      flex: 1;
+      margin: 12px;
+      border-radius: var(--radius-xl);
+    }
+
+    .landscape-detail-media .detail-cover .cover-symbol .icon {
+      width: 88px;
+      height: 88px;
+    }
+
+    .landscape-preview-strip {
+      padding: 0 12px 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+    }
+
+    .preview-thumb {
+      min-width: 44px;
+      min-height: 44px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--text-muted);
+      font-size: 9px;
+    }
+
+    .preview-thumb.is-active {
+      border-color: rgba(255, 204, 67, 0.42);
+      color: var(--brand-gold);
+    }
+
+    .landscape-detail-info {
+      position: relative;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .landscape-detail-info .detail-scroll {
+      padding: 14px 16px 196px;
+    }
+
+    .landscape-detail-info .detail-content {
+      padding: 0;
+    }
+
+    .landscape-detail-info .detail-title-row h1 {
+      font-size: 20px;
+      line-height: 27px;
+    }
+
+    .landscape-detail-info .device-fact {
+      margin-top: 10px;
+      padding: 8px 10px;
+    }
+
+    .landscape-detail-info .detail-metrics {
+      margin-top: 10px;
+    }
+
+    .landscape-detail-info .metric-card {
+      min-height: 54px;
+      padding: 8px;
+    }
+
+    .landscape-detail-info .section-jump {
+      margin-top: 10px;
+    }
+
+    .landscape-detail-info .detail-section {
+      padding: 13px 0;
+    }
+
+    .landscape-detail-info .detail-action-bar {
+      left: auto;
+      min-height: 68px;
+      padding: 8px 12px;
+    }
+
+    .landscape-detail-info .detail-enable {
+      min-height: 48px;
+    }
+
+    .landscape-shell .task-dock {
+      right: 14px;
+      bottom: 78px;
+      left: auto;
+      width: min(420px, calc(54% - 44px));
+      padding: 9px 11px;
+    }
+
+    .landscape-shell .task-actions {
+      margin-top: 7px;
+    }
+
+    .landscape-shell .dialog-layer {
+      left: 54px;
+      align-items: center;
+    }
+
+    .landscape-shell .dialog-sheet {
+      width: min(520px, calc(100% - 32px));
+      max-height: calc(100% - 30px);
+      border-radius: var(--radius-2xl);
+    }
+
+    .landscape-shell .sheet-handle {
+      display: none;
+    }
+
+    .toast-region {
+      position: fixed;
+      z-index: 1000;
+      right: 22px;
+      bottom: 22px;
+      width: min(340px, calc(100vw - 44px));
+      display: grid;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      padding: 11px 13px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-lg);
+      background: rgba(31, 33, 38, 0.97);
+      color: var(--text-secondary);
+      box-shadow: var(--shadow-card);
+      font-size: 12px;
+      line-height: 18px;
+      animation: toast-in 180ms ease both;
+    }
+
+    .toast strong {
+      color: var(--text-primary);
+    }
+
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 1ms !important;
+      }
+    }
+
+    @media (max-width: 930px) {
+      body {
+        padding: 12px;
+      }
+
+      .device.landscape {
+        transform-origin: top center;
+      }
+
+      .review-toolbar {
+        margin-bottom: 12px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      body {
+        padding: 8px 0 20px;
+      }
+
+      .review-toolbar {
+        width: calc(100% - 16px);
+        padding: 10px;
+      }
+
+      .review-brand {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <svg class="svg-sprite" aria-hidden="true">
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/><path d="M9 12h10"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7V5Z"/></symbol>
+    <symbol id="i-game" viewBox="0 0 24 24"><path d="M8 9h8a5 5 0 0 1 4.8 6.4l-1 3a2 2 0 0 1-3.4.7L14.5 17h-5l-1.9 2.1a2 2 0 0 1-3.4-.7l-1-3A5 5 0 0 1 8 9Z"/><path d="M8 12v4M6 14h4M16 13h.01M18 15h.01"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></symbol>
+    <symbol id="i-library" viewBox="0 0 24 24"><path d="M4 4h6v16H4zM14 4h6v16h-6z"/><path d="M7 8h.01M17 8h.01"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2.8 20h18.4L12 3Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></symbol>
+    <symbol id="i-device" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/></symbol>
+    <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M4 8a8 8 0 0 1 13.6-3.6L20 7"/><path d="M20 3v4h-4"/><path d="M20 16a8 8 0 0 1-13.6 3.6L4 17"/><path d="M4 21v-4h4"/></symbol>
+    <symbol id="i-workshop" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></symbol>
+    <symbol id="i-mods" viewBox="0 0 24 24"><path d="m12 3 9 9-9 9-9-9 9-9Z"/><path d="m12 8 4 4-4 4-4-4 4-4Z"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z"/><path d="M9 3v15M15 6v15"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="m4 7 8-4 8 4-8 4-8-4Z"/><path d="m4 7 8 4 8-4v10l-8 4-8-4V7Z"/><path d="M12 11v10"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 5.8a5.5 5.5 0 0 0-7.8 0L12 6.9l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 22l8.8-8.4a5.5 5.5 0 0 0 0-7.8Z"/></symbol>
+    <symbol id="i-type" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M8 20h8"/></symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M20 4C11 4 5 9 5 16c0 2 1 4 3 4 7 0 12-7 12-16Z"/><path d="M5 20c3-5 7-8 12-11"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 6v5h-5"/><path d="M4 18v-5h5"/><path d="M18.5 9A7 7 0 0 0 6 6.5L4 9M5.5 15A7 7 0 0 0 18 17.5l2-2.5"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  </svg>
+
+  <header class="review-toolbar" data-review-toolbar aria-label="Demo 评审控制台">
+    <div class="review-brand">
+      <strong>DST MODS · APP 主 Demo</strong>
+      <span>评审控制台位于产品画布之外，不属于正式界面</span>
+    </div>
+    <div class="review-group" aria-label="方向">
+      <button class="review-button is-active" type="button" data-review-action="portrait">竖屏 390×844</button>
+      <button class="review-button" type="button" data-review-action="landscape">横屏 874×402</button>
+    </div>
+    <div class="review-group" aria-label="状态">
+      <button class="review-button" type="button" data-review-action="open-entry">打开 MODS 入口</button>
+      <button class="review-button" type="button" data-review-action="pause">系统暂停</button>
+      <button class="review-button" type="button" data-review-action="pause-fail">暂停并令续传失败</button>
+      <button class="review-button" type="button" data-review-action="foreground">回到前台</button>
+      <button class="review-button" type="button" data-review-action="update-fail">更新失败</button>
+      <button class="review-button" type="button" data-review-action="source-unknown">来源未知</button>
+      <button class="review-button is-danger" type="button" data-review-action="reset">重置</button>
+    </div>
+  </header>
+
+  <main class="app-stage">
+    <section
+      class="device portrait"
+      data-demo-root
+      data-orientation="portrait"
+      aria-label="盖世游戏 APP DST MODS Demo"
+    ></section>
+  </main>
+
+  <div class="toast-region" data-toast-region aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+    const DEMO_MODEL_VERSION = 'dst_mods_demo_v1';
+    const GAME_ID = 'steam:322330';
+    const APP_DEVICE_ID = 'app-device-local-01';
+    const TASK_ACTIVE_STATES = ['queued', 'downloading', 'paused_by_system', 'verifying', 'installing'];
+    const READING_SECTIONS = ['intro', 'install', 'dependencies', 'conflicts', 'changelog'];
+    const loaded_match = 'loaded_match';
+    const source_unknown = 'source_unknown';
+    const paused_by_system = 'paused_by_system';
+
+    const MOD_SEED = {
+      'dst-fast-travel': {
+        mod_id: 'dst-fast-travel',
+        name: '快捷传送标记',
+        author: 'MapleSeed',
+        source: 'Nexus Mods',
+        cover: 'map',
+        description: '在地图上设置共享标记，并为队伍提供清晰的路线提示。',
+        full_description: '为探索与团队协作优化地图信息密度，加入快捷标记、队友方向、危险区域提示和缩放层级。所有信息仅在本地渲染，不改变服务器规则。',
+        latest_version: '2.5.8',
+        installed_version: null,
+        installed_package_hash: null,
+        active_version_pointer: null,
+        size: '4.1 MB',
+        updated_at: '2026-07-26 20:40',
+        popularity: 98,
+        installation_fact: 'not_installed',
+        enabled_value: 'not_applicable',
+        update_fact: 'no_update',
+        install_gate: 'allowed',
+        compatibility: 'compatible',
+        dependency_count: 1,
+        dependencies: [
+          { name: 'DST 配置工具核心', type: '必要依赖', state: '可自动安装' }
+        ],
+        conflict_summary: '未发现已知硬冲突。',
+        install_note: '点击一次即可安装必要依赖与主 MOD。下载、校验和安装使用同一任务。',
+        changelog: 'v2.5.8：改进多人地图标记同步提示；修正雨季图标在深色地形上的对比度。',
+        soft_risk: false,
+        current_task_id: null
+      },
+      'item-stack': {
+        mod_id: 'item-stack',
+        name: '物品堆叠扩展',
+        author: 'CampBuilder',
+        source: 'GameBanana',
+        cover: 'box',
+        description: '提高常用物品堆叠上限，适合本地单人和私人世界。',
+        full_description: '为资源整理提供更高堆叠上限，并保留原始物品分类与拆分逻辑。修改仅作用于当前设备中的本地 MOD 文件。',
+        latest_version: '1.5.0',
+        installed_version: '1.4.2',
+        installed_package_hash: 'sha256:item-stack-142',
+        active_version_pointer: '1.4.2',
+        size: '980 KB',
+        updated_at: '2026-07-28 11:20',
+        popularity: 94,
+        installation_fact: 'installed',
+        enabled_value: 'enabled',
+        update_fact: 'update_available',
+        install_gate: 'allowed',
+        compatibility: 'compatible',
+        dependency_count: 0,
+        dependencies: [],
+        conflict_summary: '与修改容器容量的 MOD 可能存在软冲突。',
+        install_note: '更新会先保留 1.4.2 旧版。更新期间仍可启用或停用旧版。',
+        changelog: 'v1.5.0：新增自定义上限模板；修正联机房间重连后的显示问题。',
+        soft_risk: false,
+        current_task_id: null
+      },
+      'minimal-status': {
+        mod_id: 'minimal-status',
+        name: '极简状态栏',
+        author: 'WillowLab',
+        source: 'Nexus Mods',
+        cover: 'heart',
+        description: '重新排列生命、饥饿和理智状态，优化小屏显示。',
+        full_description: '减少重复装饰，将核心状态集中到更易扫视的位置。支持安全区与横屏布局，不改变实际数值。',
+        latest_version: '0.9.4',
+        installed_version: '0.9.4',
+        installed_package_hash: 'sha256:minimal-status-094',
+        active_version_pointer: '0.9.4',
+        size: '8.6 MB',
+        updated_at: '2026-07-20 09:15',
+        popularity: 89,
+        installation_fact: 'installed',
+        enabled_value: 'disabled',
+        update_fact: 'no_update',
+        install_gate: 'allowed',
+        compatibility: 'compatible',
+        dependency_count: 0,
+        dependencies: [],
+        conflict_summary: '与其他状态栏替换 MOD 同时启用时可能重叠。',
+        install_note: '启用值只保存在当前设备。停用不会卸载文件。',
+        changelog: 'v0.9.4：调整超宽屏间距；修复低理智提示遮挡。',
+        soft_risk: false,
+        current_task_id: null
+      },
+      'font-patch': {
+        mod_id: 'font-patch',
+        name: '高清字体修复',
+        author: 'TypeCamp',
+        source: 'Community Mirror',
+        cover: 'type',
+        description: '改善高分屏上的文字边缘和部分缺字问题。',
+        full_description: '替换部分界面字体资源，使常用中文字符在高分屏上保持清晰。来源当前无法确认是否有新版本，但已安装版本仍可继续使用。',
+        latest_version: '1.1.0',
+        installed_version: '1.1.0',
+        installed_package_hash: 'sha256:font-patch-110',
+        active_version_pointer: '1.1.0',
+        size: '18.3 MB',
+        updated_at: '2026-07-18 17:42',
+        popularity: 86,
+        installation_fact: 'installed',
+        enabled_value: 'enabled',
+        update_fact: 'source_unknown',
+        install_gate: 'allowed',
+        compatibility: 'source_not_provided',
+        dependency_count: 0,
+        dependencies: [],
+        conflict_summary: '来源未提供。',
+        install_note: '更新状态未知时不会使用缓存版本执行更新。',
+        changelog: '来源暂未提供更新记录。',
+        soft_risk: false,
+        current_task_id: null
+      },
+      'season-helper': {
+        mod_id: 'season-helper',
+        name: '季节生存助手',
+        author: 'WilsonWorks',
+        source: 'Nexus Mods',
+        cover: 'leaf',
+        description: '提供季节阶段、温度趋势和作物提示，兼容性待来源确认。',
+        full_description: '在世界界面增加季节阶段、温度趋势和作物提醒。来源尚未提供完整的 APP 兼容证明，安装前需要确认风险。',
+        latest_version: '3.2.1',
+        installed_version: null,
+        installed_package_hash: null,
+        active_version_pointer: null,
+        size: '6.2 MB',
+        updated_at: '2026-07-29 14:08',
+        popularity: 84,
+        installation_fact: 'not_installed',
+        enabled_value: 'not_applicable',
+        update_fact: 'no_update',
+        install_gate: 'allowed',
+        compatibility: 'unknown',
+        dependency_count: 0,
+        dependencies: [],
+        conflict_summary: '兼容性未知；来源未提供完整测试结果。',
+        install_note: '确认风险后才会创建任务。取消不会开始下载。',
+        changelog: 'v3.2.1：调整春季提示节奏；新增温度变化预览。',
+        soft_risk: true,
+        current_task_id: null
+      },
+      'world-tools': {
+        mod_id: 'world-tools',
+        name: '世界生成工具箱',
+        author: 'ArchiveFox',
+        source: 'GameBanana',
+        cover: 'gear',
+        description: '提供世界生成参数模板，但当前缺少一个必要依赖。',
+        full_description: '为本地世界创建提供可复用参数模板。当前必要依赖的 APP 包已失效，因此无法创建安装任务。',
+        latest_version: '4.0.0',
+        installed_version: null,
+        installed_package_hash: null,
+        active_version_pointer: null,
+        size: '12.8 MB',
+        updated_at: '2026-07-22 12:00',
+        popularity: 78,
+        installation_fact: 'not_installed',
+        enabled_value: 'not_applicable',
+        update_fact: 'no_update',
+        install_gate: 'dependency_blocked',
+        compatibility: 'compatible',
+        dependency_count: 2,
+        dependencies: [
+          { name: 'DST 配置工具核心', type: '必要依赖', state: '可自动安装' },
+          { name: '世界模板解析器', type: '必要依赖', state: '来源已失效' }
+        ],
+        conflict_summary: '阻塞原因：世界模板解析器 → APP 包来源已失效。',
+        install_note: '缺少必要依赖时不会创建下载任务。',
+        changelog: 'v4.0.0：重构世界模板；需要新版解析器。',
+        soft_risk: false,
+        current_task_id: null
+      }
+    };
+
+    function createInitialState() {
+      return {
+        contractVersion: DEMO_MODEL_VERSION,
+        game_id: GAME_ID,
+        device_installation_id: APP_DEVICE_ID,
+        platform: 'app',
+        orientation: 'portrait',
+        mods: clone(MOD_SEED),
+        tasks: {},
+        ui: {
+          screen: 'game_detail',
+          tab: 'available',
+          search: '',
+          searchText: '',
+          sort: 'popular',
+          sortKey: 'popular',
+          filter: 'all',
+          filterKey: 'all',
+          currentModId: null,
+          selectedPreviewId: 'preview-1',
+          readingSection: 'intro',
+          readingSectionId: 'intro',
+          listAnchorModId: 'dst-fast-travel',
+          detailAnchorSectionId: 'intro',
+          listAnchorOffset: 0,
+          detailAnchorOffset: 0,
+          activeDialog: null,
+          isForeground: true
+        },
+        launch: {
+          manifest_id: 'manifest-demo-app-001',
+          launch_id: 'launch-demo-app-001',
+          manifest_items: [],
+          preflight_result: 'not_started',
+          load_decision: 'not_started',
+          actual_load_evidence: [
+            { mod_id: 'item-stack', result: loaded_match }
+          ]
+        },
+        recovery: {
+          manifest_changed: false,
+          exit_type: 'normal',
+          recovery_action: null
+        },
+        metrics: {
+          taskCreateCount: 0,
+          taskSequence: 0,
+          detailRequestCount: 0
+        }
+      };
+    }
+
+    let state = createInitialState();
+    const root = document.querySelector('[data-demo-root]');
+    const toolbar = document.querySelector('[data-review-toolbar]');
+    const toastRegion = document.querySelector('[data-toast-region]');
+    const runnerRegistry = new Map();
+    let shouldRestoreAnchors = false;
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function icon(name, className = '') {
+      return `<svg class="icon ${className}" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
+    }
+
+    function cover(mod, detail = false) {
+      return `
+        <div class="cover-art cover-${mod.cover}${detail ? ' detail-cover' : ''}" aria-label="${escapeHtml(mod.name)} 封面插画">
+          <div class="cover-symbol">${icon(mod.cover)}</div>
+          <span class="cover-version">v${escapeHtml(mod.installed_version || mod.latest_version)}</span>
+        </div>
+      `;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function activeTaskForMod(current, mod) {
+      if (!mod?.current_task_id) return null;
+      return current.tasks[mod.current_task_id] || null;
+    }
+
+    function latestVisibleTask(current) {
+      const tasks = Object.values(current.tasks)
+        .filter(task => TASK_ACTIVE_STATES.includes(task.task_state) || task.task_state === 'failed')
+        .sort((a, b) => b.sequence - a.sequence);
+      return tasks[0] || null;
+    }
+
+    function deriveMod(current, mod) {
+      const task = activeTaskForMod(current, mod);
+      const installed = mod.installation_fact === 'installed';
+      const enabled = mod.enabled_value === 'enabled';
+      const taskActive = Boolean(task && TASK_ACTIVE_STATES.includes(task.task_state));
+      const deviceLabel = installed
+        ? `已安装 · ${enabled ? '已启用' : '未启用'} · 仅此设备`
+        : '未安装 · 当前设备';
+
+      let factTone = installed ? 'is-success' : '';
+      let secondaryFact = '';
+      if (mod.update_fact === 'update_available') secondaryFact = '有新版本';
+      if (mod.update_fact === 'source_unknown') secondaryFact = '更新状态未知';
+      if (mod.install_gate === 'dependency_blocked') {
+        secondaryFact = '缺少必要依赖';
+        factTone = 'is-error';
+      }
+      if (mod.compatibility === 'unknown') secondaryFact = '兼容性未知';
+
+      let primary = { action: 'open-detail', label: '查看详情', tone: '' };
+      if (!installed && mod.install_gate === 'allowed') {
+        primary = {
+          action: 'install',
+          label: mod.dependency_count ? `安装（含 ${mod.dependency_count} 个必要依赖）` : '安装',
+          tone: 'primary'
+        };
+      } else if (!installed && mod.install_gate === 'dependency_blocked') {
+        primary = { action: 'inspect-gate', label: '查看阻塞原因', tone: 'warning' };
+      } else if (installed && mod.update_fact === 'update_available') {
+        primary = { action: 'update', label: task?.task_state === 'failed' ? '重试更新' : '更新', tone: 'primary' };
+      } else if (installed && mod.update_fact === 'source_unknown') {
+        primary = { action: 'recheck-update', label: '重新检查更新', tone: '' };
+      }
+
+      if (taskActive) {
+        primary = {
+          action: 'open-detail',
+          label: taskStatusLabel(task),
+          tone: ''
+        };
+      }
+
+      return {
+        mod,
+        task,
+        installed,
+        enabled,
+        taskActive,
+        deviceLabel,
+        secondaryFact,
+        factTone,
+        primary
+      };
+    }
+
+    function derive(current = state) {
+      const query = current.ui.search.trim().toLowerCase();
+      let mods = Object.values(current.mods);
+
+      if (current.ui.tab === 'installed') {
+        mods = mods.filter(mod => mod.installation_fact === 'installed');
+        if (current.ui.filter === 'enabled') mods = mods.filter(mod => mod.enabled_value === 'enabled');
+        if (current.ui.filter === 'disabled') mods = mods.filter(mod => mod.enabled_value === 'disabled');
+        if (current.ui.filter === 'update') mods = mods.filter(mod => mod.update_fact === 'update_available');
+        if (current.ui.filter === 'exception') {
+          mods = mods.filter(mod => {
+            const task = activeTaskForMod(current, mod);
+            return mod.update_fact === 'source_unknown' || task?.task_state === 'failed';
+          });
+        }
+      }
+
+      if (query) {
+        mods = mods.filter(mod =>
+          `${mod.name} ${mod.author} ${mod.source}`.toLowerCase().includes(query)
+        );
+      }
+
+      mods.sort((a, b) => {
+        if (current.ui.sort === 'latest') {
+          return b.latest_version.localeCompare(a.latest_version, undefined, { numeric: true });
+        }
+        if (current.ui.sort === 'recent') return b.updated_at.localeCompare(a.updated_at);
+        return b.popularity - a.popularity || b.updated_at.localeCompare(a.updated_at);
+      });
+
+      const currentMod = current.ui.currentModId ? current.mods[current.ui.currentModId] : null;
+      const visibleTask = latestVisibleTask(current);
+      return {
+        state: current,
+        mods: mods.map(mod => deriveMod(current, mod)),
+        currentMod: currentMod ? deriveMod(current, currentMod) : null,
+        visibleTask,
+        installedCount: Object.values(current.mods).filter(mod => mod.installation_fact === 'installed').length,
+        enabledCount: Object.values(current.mods).filter(mod => mod.enabled_value === 'enabled').length
+      };
+    }
+
+    function taskStatusLabel(task) {
+      const labels = {
+        queued: '等待下载',
+        downloading: task.auto_resume_waiting ? '网络异常，等待恢复' : `下载中 ${task.progress_percent}%`,
+        paused_by_system: task.auto_resume_failed ? '下载已暂停' : '系统已暂停',
+        verifying: '正在校验',
+        installing: task.operation === 'update' ? '正在更新' : '正在安装',
+        succeeded: '已完成',
+        failed: task.operation === 'update' ? '更新失败，仍在使用旧版' : '安装失败',
+        cancelled: '已取消'
+      };
+      return labels[task.task_state] || task.task_state;
+    }
+
+    function finishTask(next, task, taskMod) {
+      if (task.fail_on_commit) {
+        task.task_state = 'failed';
+        task.failure_code = 'PACKAGE_HASH_MISMATCH';
+        task.failure_stage = task.operation === 'update' ? 'update' : 'install';
+        taskMod.current_task_id = task.task_id;
+        if (task.operation === 'update') taskMod.update_fact = 'update_available';
+        return;
+      }
+      task.task_state = 'succeeded';
+      task.progress_percent = 100;
+      taskMod.installation_fact = 'installed';
+      if (task.operation === 'install') taskMod.enabled_value = 'enabled';
+      taskMod.installed_version = taskMod.latest_version;
+      taskMod.installed_package_hash = `sha256:${taskMod.mod_id}-${taskMod.latest_version}`;
+      taskMod.active_version_pointer = taskMod.latest_version;
+      taskMod.update_fact = 'no_update';
+      taskMod.current_task_id = null;
+    }
+
+    function reducer(current, action) {
+      const next = clone(current);
+      const requestedModId = action.modId || action.mod_id || null;
+      const mod = requestedModId ? next.mods[requestedModId] : null;
+
+      switch (action.type) {
+        case 'ORIENTATION_CHANGED': {
+          next.orientation = action.orientation;
+          if (action.listAnchorModId) next.ui.listAnchorModId = action.listAnchorModId;
+          if (Number.isFinite(action.listAnchorOffset)) next.ui.listAnchorOffset = action.listAnchorOffset;
+          if (action.detailAnchorSectionId) next.ui.detailAnchorSectionId = action.detailAnchorSectionId;
+          if (Number.isFinite(action.detailAnchorOffset)) next.ui.detailAnchorOffset = action.detailAnchorOffset;
+          return next;
+        }
+        case 'ANCHORS_CAPTURED': {
+          if (action.listAnchorModId) next.ui.listAnchorModId = action.listAnchorModId;
+          if (action.detailAnchorSectionId) next.ui.detailAnchorSectionId = action.detailAnchorSectionId;
+          if (Number.isFinite(action.listAnchorOffset)) next.ui.listAnchorOffset = action.listAnchorOffset;
+          if (Number.isFinite(action.detailAnchorOffset)) next.ui.detailAnchorOffset = action.detailAnchorOffset;
+          return next;
+        }
+        case 'OPEN_MORE': {
+          next.ui.activeDialog = { type: 'more' };
+          return next;
+        }
+        case 'CLOSE_DIALOG': {
+          next.ui.activeDialog = null;
+          return next;
+        }
+        case 'OPEN_MODS':
+        case 'ENTER_MODS': {
+          next.ui.screen = 'mods_list';
+          next.ui.activeDialog = null;
+          return next;
+        }
+        case 'BACK_GAME':
+        case 'BACK_TO_GAME': {
+          next.ui.screen = 'game_detail';
+          next.ui.activeDialog = null;
+          return next;
+        }
+        case 'SET_TAB': {
+          next.ui.tab = action.tab;
+          next.ui.listAnchorModId = action.tab === 'installed' ? 'item-stack' : 'dst-fast-travel';
+          return next;
+        }
+        case 'SET_SEARCH': {
+          next.ui.search = action.value;
+          next.ui.searchText = action.value;
+          return next;
+        }
+        case 'SET_SORT': {
+          next.ui.sort = action.value;
+          next.ui.sortKey = action.value;
+          return next;
+        }
+        case 'SET_FILTER': {
+          next.ui.filter = action.value;
+          next.ui.filterKey = action.value;
+          return next;
+        }
+        case 'OPEN_DETAIL': {
+          if (!mod) return next;
+          next.ui.screen = 'mod_detail';
+          next.ui.currentModId = requestedModId;
+          next.ui.readingSection = action.keepSection ? next.ui.readingSection : 'intro';
+          next.ui.readingSectionId = next.ui.readingSection;
+          next.ui.detailAnchorSectionId = next.ui.readingSection;
+          next.ui.listAnchorModId = requestedModId;
+          next.metrics.detailRequestCount += 1;
+          return next;
+        }
+        case 'CLOSE_DETAIL': {
+          next.ui.screen = 'mods_list';
+          next.ui.activeDialog = null;
+          return next;
+        }
+        case 'SET_READING_SECTION': {
+          const section = action.section || action.sectionId || 'intro';
+          next.ui.readingSection = section;
+          next.ui.readingSectionId = section;
+          next.ui.detailAnchorSectionId = section;
+          next.ui.detailAnchorOffset = 0;
+          return next;
+        }
+        case 'SET_PREVIEW': {
+          next.ui.selectedPreviewId = action.previewId;
+          return next;
+        }
+        case 'INSTALL_REQUESTED': {
+          if (!mod || mod.installation_fact === 'installed') return next;
+          if (mod.install_gate !== 'allowed') {
+            next.ui.activeDialog = { type: 'gate', modId: requestedModId };
+            return next;
+          }
+          if (mod.soft_risk) {
+            next.ui.activeDialog = { type: 'risk', modId: requestedModId };
+            return next;
+          }
+          createOrReuseTask(next, requestedModId, 'install');
+          return next;
+        }
+        case 'INSTALL_CONFIRMED': {
+          if (!mod || mod.installation_fact === 'installed') return next;
+          next.ui.activeDialog = null;
+          createOrReuseTask(next, requestedModId, 'install');
+          return next;
+        }
+        case 'UPDATE_REQUESTED': {
+          if (!mod || mod.installation_fact !== 'installed') return next;
+          if (mod.update_fact !== 'update_available') return next;
+          createOrReuseTask(next, requestedModId, 'update');
+          return next;
+        }
+        case 'ENABLE_CHANGED':
+        case 'ENABLE_TOGGLED': {
+          if (!mod || mod.installation_fact !== 'installed') return next;
+          mod.enabled_value = action.value || (mod.enabled_value === 'enabled' ? 'disabled' : 'enabled');
+          return next;
+        }
+        case 'UNINSTALL_REQUESTED': {
+          if (!mod || mod.installation_fact !== 'installed') return next;
+          next.ui.activeDialog = { type: 'uninstall', modId: action.modId };
+          return next;
+        }
+        case 'UNINSTALL_CONFIRMED': {
+          if (!mod || mod.installation_fact !== 'installed') return next;
+          const task = activeTaskForMod(next, mod);
+          if (task && TASK_ACTIVE_STATES.includes(task.task_state)) return next;
+          mod.installation_fact = 'not_installed';
+          mod.enabled_value = 'not_applicable';
+          mod.installed_version = null;
+          mod.installed_package_hash = null;
+          mod.active_version_pointer = null;
+          mod.current_task_id = null;
+          mod.update_fact = 'no_update';
+          next.ui.activeDialog = null;
+          if (next.ui.tab === 'installed') next.ui.screen = 'mods_list';
+          return next;
+        }
+        case 'SOURCE_RECHECKED':
+        case 'RECHECK_UPDATE': {
+          if (!mod || mod.installation_fact !== 'installed') return next;
+          mod.update_fact = mod.latest_version === mod.installed_version ? 'no_update' : 'update_available';
+          return next;
+        }
+        case 'TASK_ADVANCE': {
+          const target = mod || next.mods[next.tasks[action.task_id]?.root_mod_id];
+          const task = target ? activeTaskForMod(next, target) : next.tasks[action.task_id];
+          if (!task || !TASK_ACTIVE_STATES.includes(task.task_state)) return next;
+          const taskMod = next.mods[task.root_mod_id];
+          if (!taskMod) return next;
+
+          if (task.task_state === 'queued') {
+            task.task_state = 'downloading';
+            task.progress_percent = 40;
+          } else if (task.task_state === 'downloading' && task.progress_percent < 80) {
+            task.progress_percent = Math.min(80, task.progress_percent + 40);
+            task.downloaded_bytes = Math.round(task.total_bytes * task.progress_percent / 100);
+          } else if (task.task_state === 'downloading') {
+            task.task_state = 'verifying';
+            task.progress_percent = 90;
+          } else if (task.task_state === 'verifying') {
+            task.task_state = 'installing';
+            task.progress_percent = 96;
+          } else if (task.task_state === 'installing') {
+            finishTask(next, task, taskMod);
+          }
+          task.updated_at = new Date().toISOString();
+          return next;
+        }
+        case 'TASK_TICK': {
+          const task = next.tasks[action.task_id];
+          if (!task || !TASK_ACTIVE_STATES.includes(task.task_state)) return next;
+          const taskMod = next.mods[task.root_mod_id];
+          if (!taskMod) return next;
+
+          if (task.task_state === 'queued') {
+            task.task_state = 'downloading';
+            task.progress_percent = Math.max(task.progress_percent, 6);
+          } else if (task.task_state === 'downloading') {
+            task.progress_percent = Math.min(100, task.progress_percent + 13);
+            task.downloaded_bytes = Math.round(task.total_bytes * task.progress_percent / 100);
+            if (task.progress_percent >= 100) task.task_state = 'verifying';
+          } else if (task.task_state === 'verifying') {
+            task.task_state = 'installing';
+          } else if (task.task_state === 'installing') {
+            finishTask(next, task, taskMod);
+          }
+          task.updated_at = new Date().toISOString();
+          return next;
+        }
+        case 'UPDATE_FAILED': {
+          if (!mod || mod.installation_fact !== 'installed') return next;
+          mod.update_fact = 'update_available';
+          let task = activeTaskForMod(next, mod);
+          if (!task || !TASK_ACTIVE_STATES.includes(task.task_state)) {
+            task = null;
+            const taskId = createOrReuseTask(next, requestedModId, 'update', true);
+            task = taskId ? next.tasks[taskId] : null;
+          }
+          if (task) {
+            task.task_state = 'failed';
+            task.failure_code = 'PACKAGE_HASH_MISMATCH';
+            task.failure_stage = 'update';
+            task.progress_percent = Math.max(84, task.progress_percent);
+            mod.installation_fact = 'installed';
+            mod.update_fact = 'update_available';
+          }
+          return next;
+        }
+        case 'SYSTEM_PAUSED': {
+          const task = next.tasks[action.task_id] || latestVisibleTask(next);
+          if (task && task.task_state === 'downloading') {
+            task.task_state = 'paused_by_system';
+            task.auto_resume_should_fail = Boolean(action.autoResumeShouldFail);
+            task.auto_resume_failed = false;
+          }
+          return next;
+        }
+        case 'APP_BACKGROUNDED': {
+          next.ui.isForeground = false;
+          const task = latestVisibleTask(next);
+          if (task && task.task_state === 'downloading') {
+            task.task_state = 'paused_by_system';
+            task.auto_resume_failed = false;
+          }
+          return next;
+        }
+        case 'APP_FOREGROUNDED': {
+          next.ui.isForeground = true;
+          const task = latestVisibleTask(next);
+          if (task && task.task_state === 'paused_by_system' && !task.auto_resume_used) {
+            task.auto_resume_used = true;
+            if (task.auto_resume_should_fail) {
+              task.auto_resume_failed = true;
+              task.failure_code = 'DOWNLOAD_INTERRUPTED';
+            } else {
+              task.task_state = 'downloading';
+              task.auto_resume_failed = false;
+            }
+          }
+          return next;
+        }
+        case 'CONTINUE_REQUESTED': {
+          const task = next.tasks[action.task_id];
+          if (task && (task.task_state === 'paused_by_system' || task.task_state === 'failed')) {
+            task.task_state = 'downloading';
+            task.auto_resume_failed = false;
+            task.failure_code = null;
+          }
+          return next;
+        }
+        case 'CANCEL_REQUESTED': {
+          const task = next.tasks[action.task_id];
+          if (task && ['queued', 'downloading', 'paused_by_system'].includes(task.task_state)) {
+            task.task_state = 'cancelled';
+            const taskMod = next.mods[task.root_mod_id];
+            if (taskMod) taskMod.current_task_id = null;
+          }
+          return next;
+        }
+        case 'FAIL_ACTIVE_UPDATE': {
+          let task = latestVisibleTask(next);
+          if (!task || task.operation !== 'update') {
+            const updateMod = Object.values(next.mods).find(item => item.update_fact === 'update_available');
+            if (updateMod) {
+              createOrReuseTask(next, updateMod.mod_id, 'update', true);
+              task = activeTaskForMod(next, next.mods[updateMod.mod_id]);
+            }
+          }
+          if (task && task.operation === 'update') task.fail_on_commit = true;
+          return next;
+        }
+        case 'SET_SOURCE_UNKNOWN': {
+          const target = mod || next.mods['font-patch'];
+          if (target?.installation_fact === 'installed') target.update_fact = 'source_unknown';
+          return next;
+        }
+        case 'CLEAR_FAILED_TASK': {
+          const task = next.tasks[action.task_id];
+          if (task?.task_state === 'failed') {
+            const taskMod = next.mods[task.root_mod_id];
+            if (taskMod) taskMod.current_task_id = null;
+          }
+          return next;
+        }
+        default:
+          return next;
+      }
+    }
+
+    function createOrReuseTask(next, modId, operation, failOnCommit = false) {
+      const mod = next.mods[modId];
+      if (!mod) return null;
+      const existing = activeTaskForMod(next, mod);
+      if (existing && TASK_ACTIVE_STATES.includes(existing.task_state)) return existing.task_id;
+
+      next.metrics.taskSequence += 1;
+      next.metrics.taskCreateCount += 1;
+      const task_id = `task-app-${String(next.metrics.taskSequence).padStart(3, '0')}-${modId}`;
+      next.tasks[task_id] = {
+        task_id,
+        root_mod_id: modId,
+        operation,
+        idempotency_key: `${next.device_installation_id}:${next.game_id}:${modId}`,
+        task_state: 'queued',
+        progress_percent: 0,
+        downloaded_bytes: 0,
+        total_bytes: operation === 'update' ? 9437184 : 12582912,
+        failure_code: null,
+        failure_stage: null,
+        operation_attempt: 1,
+        auto_resume_used: false,
+        auto_resume_failed: false,
+        auto_resume_should_fail: false,
+        fail_on_commit: failOnCommit,
+        sequence: next.metrics.taskSequence,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      mod.current_task_id = task_id;
+      return task_id;
+    }
+
+    function dispatch(action) {
+      if (!action || typeof action.type !== 'string') return getState();
+      const previous = state;
+      state = reducer(state, action);
+      render();
+      handleTaskSideEffects(previous, state, action);
+      return getState();
+    }
+
+    function handleTaskSideEffects(previous, current, action) {
+      const startable = new Set([
+        'INSTALL_REQUESTED',
+        'INSTALL_CONFIRMED',
+        'UPDATE_REQUESTED',
+        'CONTINUE_REQUESTED',
+        'APP_FOREGROUNDED',
+        'TASK_TICK',
+        'FAIL_ACTIVE_UPDATE'
+      ]);
+
+      if (action.type === 'SYSTEM_PAUSED' || action.type === 'APP_BACKGROUNDED' || action.type === 'CANCEL_REQUESTED') {
+        for (const [taskId, timer] of runnerRegistry.entries()) {
+          const task = current.tasks[taskId];
+          if (!task || task.task_state === 'paused_by_system' || task.task_state === 'cancelled') {
+            clearTimeout(timer);
+            runnerRegistry.delete(taskId);
+          }
+        }
+      }
+
+      if (!startable.has(action.type)) return;
+      for (const task of Object.values(current.tasks)) {
+        if (['queued', 'downloading', 'verifying', 'installing'].includes(task.task_state)) {
+          armTaskRunner(task.task_id);
+        }
+      }
+    }
+
+    function armTaskRunner(taskId) {
+      if (runnerRegistry.has(taskId)) return;
+      const task = state.tasks[taskId];
+      if (!task || !['queued', 'downloading', 'verifying', 'installing'].includes(task.task_state)) return;
+      const delay = task.task_state === 'downloading' ? 760 : 920;
+      const timer = setTimeout(() => {
+        runnerRegistry.delete(taskId);
+        dispatch({ type: 'TASK_TICK', task_id: taskId });
+      }, delay);
+      runnerRegistry.set(taskId, timer);
+    }
+
+    function reset() {
+      for (const timer of runnerRegistry.values()) clearTimeout(timer);
+      runnerRegistry.clear();
+      state = createInitialState();
+      shouldRestoreAnchors = false;
+      render();
+      showToast('<strong>Demo 已重置</strong>，已恢复 DST 游戏详情。');
+      return getState();
+    }
+
+    function getState() {
+      return clone(state);
+    }
+
+    function render() {
+      const viewModel = derive(state);
+      const focusSnapshot = captureFocus();
+      root.dataset.orientation = state.orientation;
+      root.className = `device ${state.orientation}`;
+      root.innerHTML = state.orientation === 'portrait'
+        ? renderPortrait(viewModel)
+        : renderLandscape(viewModel);
+      updateReviewToolbar();
+      restoreFocus(focusSnapshot);
+      if (shouldRestoreAnchors) {
+        restoreAnchors(state.ui);
+        shouldRestoreAnchors = false;
+      }
+    }
+
+    function renderPortrait(vm) {
+      const content = vm.state.ui.screen === 'game_detail'
+        ? renderPortraitGame(vm)
+        : vm.state.ui.screen === 'mod_detail'
+          ? renderPortraitDetail(vm)
+          : renderPortraitCatalog(vm);
+      return `
+        <div class="product-screen portrait-shell">
+          ${renderStatusBar(vm)}
+          ${content}
+          ${renderDialog(vm)}
+        </div>
+      `;
+    }
+
+    function renderLandscape(vm) {
+      const content = vm.state.ui.screen === 'game_detail'
+        ? renderLandscapeGame(vm)
+        : vm.state.ui.screen === 'mod_detail'
+          ? renderLandscapeDetail(vm)
+          : renderLandscapeCatalog(vm);
+      return `
+        <div class="product-screen landscape-shell">
+          ${renderLandscapeRail(vm)}
+          <div class="landscape-main">${content}</div>
+          ${renderDialog(vm)}
+        </div>
+      `;
+    }
+
+    function renderStatusBar(vm) {
+      return `
+        <div class="status-bar" aria-label="设备状态">
+          <span>9:41</span>
+          <span class="status-icons"><span>APP · 当前设备</span><span class="online-dot"></span><span>${vm.state.ui.isForeground ? '在线' : '后台'}</span></span>
+        </div>
+      `;
+    }
+
+    function renderLandscapeRail(vm) {
+      const inMods = vm.state.ui.screen !== 'game_detail';
+      return `
+        <nav class="landscape-rail" aria-label="APP 一级导航">
+          <div class="rail-logo" aria-label="盖世游戏">G</div>
+          <button class="rail-item is-active" type="button" aria-label="游戏">${icon('game')}</button>
+          <button class="rail-item" type="button" aria-label="发现">${icon('compass')}</button>
+          <button class="rail-item" type="button" aria-label="游戏库">${icon('library')}</button>
+          <span class="rail-spacer"></span>
+          <button class="rail-item" type="button" aria-label="我的">${icon('user')}</button>
+        </nav>
+      `;
+    }
+
+    function renderPortraitGame(vm) {
+      return `
+        <div class="game-page">
+          <div class="app-scroll" data-scroll-container="game">
+            ${renderGameHero()}
+            <div class="game-actions">
+              <button class="primary-button" type="button">${icon('play')}启动游戏</button>
+              <button class="secondary-button" type="button" data-action="open-more">${icon('more')}更多</button>
+            </div>
+            <section class="content-section">
+              <div class="section-heading">
+                <div><h2>官方扩展</h2><p>现有官方模块保持原有订阅语义</p></div>
+              </div>
+              ${renderWorkshopCard()}
+            </section>
+            <section class="content-section">
+              <div class="section-heading">
+                <div><h2>本机状态</h2><p>MODS 状态不会跨设备同步</p></div>
+              </div>
+              <div class="device-fact">
+                ${icon('device')}
+                <div>当前 APP 设备已安装 <strong>${vm.installedCount}</strong> 个、已启用 <strong>${vm.enabledCount}</strong> 个 MOD。进入 MODS 请点击上方“更多”。</div>
+              </div>
+            </section>
+          </div>
+          ${renderBottomNav()}
+        </div>
+      `;
+    }
+
+    function renderLandscapeGame(vm) {
+      return `
+        <div class="landscape-topbar">
+          <div class="header-title">
+            <strong>饥荒联机版</strong>
+            <span>STEAM APP 322330 · APP 当前设备</span>
+          </div>
+          <div class="topbar-status"><span class="online-dot"></span>${vm.state.ui.isForeground ? '在线' : '后台'}</div>
+        </div>
+        <div class="landscape-game">
+          ${renderGameHero()}
+          <aside class="landscape-game-side">
+            <div class="game-actions">
+              <button class="primary-button" type="button">${icon('play')}启动游戏</button>
+              <button class="secondary-button" type="button" data-action="open-more">${icon('more')}更多</button>
+            </div>
+            <section class="content-section">
+              <div class="section-heading">
+                <div><h2>官方扩展</h2><p>现有官方模块</p></div>
+              </div>
+              ${renderWorkshopCard()}
+            </section>
+            <div class="device-fact">
+              ${icon('device')}
+              <div>本机已安装 ${vm.installedCount} 个，已启用 ${vm.enabledCount} 个；仅此设备。</div>
+            </div>
+          </aside>
+        </div>
+      `;
+    }
+
+    function renderGameHero() {
+      return `
+        <section class="game-hero" aria-label="饥荒联机版游戏详情">
+          <div class="game-hero-fade"></div>
+          <div class="game-brand-mark">DON'T STARVE<br>TOGETHER</div>
+          <div class="game-hero-content">
+            <div class="eyebrow">STEAM APP 322330</div>
+            <h1>饥荒联机版</h1>
+            <p>在奇异而危险的荒野世界中探索、制作并生存，和朋友一起建立营地。</p>
+            <div class="tag-row"><span class="tag">生存</span><span class="tag">多人合作</span><span class="tag">官方支持创意工坊</span></div>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderWorkshopCard() {
+      return `
+        <article class="official-workshop-card">
+          <div class="official-card-head">
+            <div class="official-icon">${icon('workshop')}</div>
+            <div class="official-card-copy"><strong>创意工坊</strong><span>Steam Workshop</span></div>
+            <span class="channel-badge">官方渠道</span>
+          </div>
+          <p>浏览官方支持的创意工坊内容。订阅记录遵循既有官方规则，与本地 MODS 安装状态隔离。</p>
+          <div class="official-card-foot"><span>1 项已订阅</span><span>进入工坊 ${icon('chevron')}</span></div>
+        </article>
+      `;
+    }
+
+    function renderBottomNav() {
+      return `
+        <nav class="bottom-nav" aria-label="APP 一级导航">
+          <button class="nav-item is-active" type="button">${icon('game')}<span>游戏</span></button>
+          <button class="nav-item" type="button">${icon('compass')}<span>发现</span></button>
+          <button class="nav-item" type="button">${icon('library')}<span>游戏库</span></button>
+          <button class="nav-item" type="button">${icon('user')}<span>我的</span></button>
+        </nav>
+      `;
+    }
+
+    function renderPortraitCatalog(vm) {
+      return `
+        <div class="page-header">
+          <button class="icon-button" type="button" data-action="back-game" aria-label="返回游戏详情">${icon('back')}</button>
+          <div class="header-title"><strong>DST MODS</strong><span>非官方来源·当前设备本地管理</span></div>
+          <span class="source-badge">非官方来源</span>
+        </div>
+        ${renderTabs(vm)}
+        <div class="catalog-tools">
+          ${renderSearch(vm)}
+          <div class="select-row">${renderSort(vm)}${renderFilter(vm)}</div>
+        </div>
+        ${renderCatalogBody(vm)}
+        ${renderTaskDock(vm)}
+      `;
+    }
+
+    function renderLandscapeCatalog(vm) {
+      return `
+        <div class="landscape-topbar">
+          <button class="icon-button" type="button" data-action="back-game" aria-label="返回游戏详情">${icon('back')}</button>
+          <div class="header-title"><strong>饥荒联机版 · MODS</strong><span>非官方来源·当前设备本地管理</span></div>
+          ${renderTabs(vm, true)}
+          <span class="source-badge">仅此设备</span>
+        </div>
+        <div class="landscape-catalog-toolbar">
+          ${renderSearch(vm)}
+          ${renderSort(vm)}
+          ${renderFilter(vm)}
+        </div>
+        <div class="landscape-catalog-body">
+          ${renderCatalogBody(vm)}
+        </div>
+        ${renderTaskDock(vm)}
+      `;
+    }
+
+    function renderTabs(vm, compact = false) {
+      return `
+        <div class="tabs${compact ? ' tabs-compact' : ''}" role="tablist" aria-label="MODS 内容">
+          <button class="tab-button ${vm.state.ui.tab === 'available' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${vm.state.ui.tab === 'available'}" data-action="set-tab" data-tab="available">可用 MOD</button>
+          <button class="tab-button ${vm.state.ui.tab === 'installed' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${vm.state.ui.tab === 'installed'}" data-action="set-tab" data-tab="installed">已安装</button>
+        </div>
+      `;
+    }
+
+    function renderSearch(vm) {
+      return `
+        <label class="search-field">
+          ${icon('search')}
+          <input type="search" data-input="search" value="${escapeHtml(vm.state.ui.search)}" placeholder="搜索名称或作者" aria-label="搜索 MOD">
+        </label>
+      `;
+    }
+
+    function renderSort(vm) {
+      return `
+        <select class="select-control" data-input="sort" aria-label="排序方式">
+          <option value="popular" ${vm.state.ui.sort === 'popular' ? 'selected' : ''}>热门</option>
+          <option value="latest" ${vm.state.ui.sort === 'latest' ? 'selected' : ''}>最新</option>
+          <option value="recent" ${vm.state.ui.sort === 'recent' ? 'selected' : ''}>最近更新</option>
+        </select>
+      `;
+    }
+
+    function renderFilter(vm) {
+      const disabled = vm.state.ui.tab !== 'installed';
+      return `
+        <select class="select-control" data-input="filter" aria-label="已安装筛选" ${disabled ? 'disabled' : ''}>
+          <option value="all" ${vm.state.ui.filter === 'all' ? 'selected' : ''}>全部状态</option>
+          <option value="enabled" ${vm.state.ui.filter === 'enabled' ? 'selected' : ''}>已启用</option>
+          <option value="disabled" ${vm.state.ui.filter === 'disabled' ? 'selected' : ''}>未启用</option>
+          <option value="update" ${vm.state.ui.filter === 'update' ? 'selected' : ''}>有更新</option>
+          <option value="exception" ${vm.state.ui.filter === 'exception' ? 'selected' : ''}>异常</option>
+        </select>
+      `;
+    }
+
+    function renderCatalogBody(vm) {
+      const emptyCopy = vm.state.ui.tab === 'installed'
+        ? '当前设备没有符合条件的已安装 MOD'
+        : '未找到相关 MOD';
+      return `
+        <div class="catalog-scroll" data-scroll-container="list">
+          <div class="catalog-summary">
+            <span>${vm.state.ui.tab === 'installed' ? '当前设备已安装' : '适用于 DST 的外部非官方内容'}</span>
+            <strong>${vm.mods.length} 项</strong>
+          </div>
+          ${vm.mods.length
+            ? `<div class="catalog-grid">${vm.mods.map(renderModCard).join('')}</div>`
+            : `<div class="empty-state">${icon('search')}<div><strong>${emptyCopy}</strong><p>可清空搜索或筛选条件后重试。</p></div></div>`
+          }
+        </div>
+      `;
+    }
+
+    function renderModCard(item) {
+      const mod = item.mod;
+      const task = item.task;
+      return `
+        <article class="mod-card" data-list-anchor="${mod.mod_id}">
+          ${cover(mod)}
+          <div class="mod-card-main">
+            <div class="mod-card-head">
+              <div class="mod-card-title"><strong>${escapeHtml(mod.name)}</strong><span>${escapeHtml(mod.author)} · ${escapeHtml(mod.source)}</span></div>
+              ${mod.installation_fact === 'installed' ? '<span class="status-badge">本机</span>' : '<span class="source-badge">非官方</span>'}
+            </div>
+            <p class="mod-card-description">${escapeHtml(mod.description)}</p>
+            <div class="mod-meta"><span>v${escapeHtml(mod.installed_version || mod.latest_version)}</span><span>${escapeHtml(mod.size)}</span><span>${compatibilityLabel(mod.compatibility)}</span></div>
+            <div class="state-line ${item.factTone}">
+              <span>${escapeHtml(item.deviceLabel)}</span>
+              ${item.secondaryFact ? `<span class="${mod.update_fact === 'update_available' || mod.compatibility === 'unknown' ? 'is-warning' : mod.install_gate === 'dependency_blocked' ? 'is-error' : ''}">${escapeHtml(item.secondaryFact)}</span>` : ''}
+            </div>
+            ${task && TASK_ACTIVE_STATES.includes(task.task_state) ? `
+              <div class="progress-track" aria-label="${taskStatusLabel(task)}"><div class="progress-value" style="width:${task.progress_percent}%"></div></div>
+            ` : ''}
+            <div class="card-actions">
+              ${item.installed ? renderEnableControl(item) : ''}
+              <button class="card-button ${item.primary.tone}" type="button" data-action="${item.primary.action}" data-mod-id="${mod.mod_id}">${escapeHtml(item.primary.label)}</button>
+              <button class="card-button" type="button" data-action="open-detail" data-mod-id="${mod.mod_id}" aria-label="查看 ${escapeHtml(mod.name)} 详情">${icon('chevron')}</button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderEnableControl(item) {
+      return `
+        <button class="enable-control" type="button" data-action="toggle-enable" data-mod-id="${item.mod.mod_id}" aria-label="${item.enabled ? '停用' : '启用'} ${escapeHtml(item.mod.name)}">
+          <span class="switch ${item.enabled ? 'is-on' : ''}" aria-hidden="true"></span>
+          <span>${item.enabled ? '已启用' : '未启用'}</span>
+        </button>
+      `;
+    }
+
+    function compatibilityLabel(value) {
+      const labels = {
+        compatible: '当前设备兼容',
+        unknown: '兼容性未知',
+        source_not_provided: '来源未提供'
+      };
+      return labels[value] || value;
+    }
+
+    function renderPortraitDetail(vm) {
+      if (!vm.currentMod) return renderPortraitCatalog(vm);
+      const item = vm.currentMod;
+      return `
+        <div class="page-header">
+          <button class="icon-button" type="button" data-action="close-detail" aria-label="返回列表">${icon('back')}</button>
+          <div class="header-title"><strong>${escapeHtml(item.mod.name)}</strong><span>详情 · 仅此设备</span></div>
+          <span class="source-badge">非官方</span>
+        </div>
+        <div class="detail-scroll" data-scroll-container="detail">
+          ${cover(item.mod, true)}
+          ${renderDetailContent(item)}
+        </div>
+        ${renderDetailActionBar(item)}
+        ${renderTaskDock(vm)}
+      `;
+    }
+
+    function renderLandscapeDetail(vm) {
+      if (!vm.currentMod) return renderLandscapeCatalog(vm);
+      const item = vm.currentMod;
+      return `
+        <div class="landscape-topbar">
+          <button class="icon-button" type="button" data-action="close-detail" aria-label="返回列表">${icon('back')}</button>
+          <div class="header-title"><strong>${escapeHtml(item.mod.name)}</strong><span>DST MODS 详情 · 仅此设备</span></div>
+          <span class="source-badge">非官方来源</span>
+        </div>
+        <div class="landscape-detail">
+          <section class="landscape-detail-media">
+            ${cover(item.mod, true)}
+            <div class="landscape-preview-strip" aria-label="预览图">
+              ${['preview-1', 'preview-2', 'preview-3'].map((id, index) => `
+                <button class="preview-thumb ${vm.state.ui.selectedPreviewId === id ? 'is-active' : ''}" type="button" data-action="set-preview" data-preview-id="${id}">预览 ${index + 1}</button>
+              `).join('')}
+            </div>
+          </section>
+          <section class="landscape-detail-info">
+            <div class="detail-scroll" data-scroll-container="detail">
+              ${renderDetailContent(item)}
+            </div>
+            ${renderDetailActionBar(item)}
+          </section>
+        </div>
+        ${renderTaskDock(vm)}
+      `;
+    }
+
+    function renderDetailContent(item) {
+      const mod = item.mod;
+      return `
+        <div class="detail-content">
+          <div class="detail-title-row">
+            <div>
+              <h1>${escapeHtml(mod.name)}</h1>
+              <p class="detail-byline">来源：${escapeHtml(mod.source)} · 作者：${escapeHtml(mod.author)}</p>
+            </div>
+            <span class="source-badge">非官方来源</span>
+          </div>
+          <div class="device-fact">${icon('device')}<div><strong>${escapeHtml(item.deviceLabel)}</strong><br>非官方来源·当前设备本地管理</div></div>
+          <div class="detail-metrics">
+            <div class="metric-card"><span>版本</span><strong>${escapeHtml(mod.installed_version || mod.latest_version)}</strong></div>
+            <div class="metric-card"><span>文件大小</span><strong>${escapeHtml(mod.size)}</strong></div>
+            <div class="metric-card"><span>兼容性</span><strong>${compatibilityLabel(mod.compatibility)}</strong></div>
+          </div>
+          ${item.task && TASK_ACTIVE_STATES.includes(item.task.task_state) ? `
+            <div class="device-fact">${icon(item.task.task_state === 'paused_by_system' ? 'pause' : 'download')}<div><strong>${taskStatusLabel(item.task)}</strong><br>task_id：${escapeHtml(item.task.task_id)} · 进度 ${item.task.progress_percent}%</div></div>
+            <div class="progress-track"><div class="progress-value" style="width:${item.task.progress_percent}%"></div></div>
+          ` : ''}
+          <div class="section-jump" aria-label="详情章节">
+            ${READING_SECTIONS.map(section => `
+              <button class="section-chip ${state.ui.readingSection === section ? 'is-active' : ''}" type="button" data-action="reading-section" data-section="${section}">${sectionLabel(section)}</button>
+            `).join('')}
+          </div>
+          <section class="detail-section" data-detail-section="intro">
+            <h2>简介</h2><p>${escapeHtml(mod.full_description)}</p>
+          </section>
+          <section class="detail-section" data-detail-section="install">
+            <h2>安装说明</h2><p>${escapeHtml(mod.install_note)}</p>
+          </section>
+          <section class="detail-section" data-detail-section="dependencies">
+            <h2>依赖</h2>
+            ${mod.dependencies.length
+              ? `<div class="dependency-list">${mod.dependencies.map(dependency => `<div class="dependency-item"><span>${escapeHtml(dependency.name)} · ${escapeHtml(dependency.type)}</span><span class="${dependency.state.includes('失效') ? 'is-error' : 'is-success'}">${escapeHtml(dependency.state)}</span></div>`).join('')}</div>`
+              : '<p>没有必要依赖。</p>'
+            }
+          </section>
+          <section class="detail-section" data-detail-section="conflicts">
+            <h2>冲突与风险</h2><p>${escapeHtml(mod.conflict_summary)}</p>
+          </section>
+          <section class="detail-section" data-detail-section="changelog">
+            <h2>更新记录</h2><p>${escapeHtml(mod.changelog)}</p>
+          </section>
+        </div>
+      `;
+    }
+
+    function sectionLabel(section) {
+      return {
+        intro: '简介',
+        install: '安装',
+        dependencies: '依赖',
+        conflicts: '冲突',
+        changelog: '更新'
+      }[section];
+    }
+
+    function renderDetailActionBar(item) {
+      const mod = item.mod;
+      const task = item.task;
+      let action = item.primary;
+      if (task && task.task_state === 'failed') {
+        action = {
+          action: task.operation === 'update' ? 'update' : 'install',
+          label: task.operation === 'update' ? '重试更新' : '重试安装',
+          tone: 'primary'
+        };
+      }
+      return `
+        <div class="detail-action-bar">
+          ${item.installed ? `
+            <button class="detail-enable" type="button" data-action="toggle-enable" data-mod-id="${mod.mod_id}">
+              <span class="switch ${item.enabled ? 'is-on' : ''}"></span>
+              <span>${item.enabled ? '旧版已启用' : '旧版未启用'}</span>
+            </button>
+          ` : ''}
+          <button class="primary-button" type="button" data-action="${action.action}" data-mod-id="${mod.mod_id}" ${task && ['verifying', 'installing'].includes(task.task_state) ? 'disabled' : ''}>${task && TASK_ACTIVE_STATES.includes(task.task_state) ? icon('download') : icon(action.action === 'update' ? 'refresh' : action.action === 'inspect-gate' ? 'alert' : 'download')}${escapeHtml(action.label)}</button>
+          ${item.installed ? `<button class="icon-button" type="button" data-action="uninstall" data-mod-id="${mod.mod_id}" aria-label="卸载 ${escapeHtml(mod.name)}">${icon('trash')}</button>` : ''}
+        </div>
+      `;
+    }
+
+    function renderTaskDock(vm) {
+      const task = vm.visibleTask;
+      if (!task) return '';
+      const mod = vm.state.mods[task.root_mod_id];
+      if (!mod) return '';
+      const canCancel = ['queued', 'downloading', 'paused_by_system'].includes(task.task_state);
+      const canContinue = task.task_state === 'paused_by_system' && task.auto_resume_failed;
+      const failed = task.task_state === 'failed';
+      return `
+        <aside class="task-dock" aria-label="当前设备任务">
+          <div class="task-dock-head">
+            <div class="task-icon">${icon(task.task_state === 'paused_by_system' ? 'pause' : failed ? 'alert' : 'download')}</div>
+            <div class="task-copy">
+              <strong>${escapeHtml(mod.name)} · ${taskStatusLabel(task)}</strong>
+              <span>task_id：${escapeHtml(task.task_id)} · ${task.progress_percent}% · ${task.operation === 'update' ? '更新旧版仍可启停' : '安装后默认启用'}</span>
+            </div>
+          </div>
+          <div class="progress-track"><div class="progress-value" style="width:${task.progress_percent}%"></div></div>
+          ${(canCancel || canContinue || failed) ? `
+            <div class="task-actions">
+              ${canContinue ? `<button class="card-button primary" type="button" data-action="continue-task" data-task-id="${task.task_id}">继续</button>` : ''}
+              ${failed ? `<button class="card-button" type="button" data-action="clear-failed" data-task-id="${task.task_id}">保留旧版并关闭</button>` : ''}
+              ${canCancel ? `<button class="card-button" type="button" data-action="cancel-task" data-task-id="${task.task_id}">取消</button>` : ''}
+            </div>
+          ` : ''}
+        </aside>
+      `;
+    }
+
+    function renderDialog(vm) {
+      const dialog = vm.state.ui.activeDialog;
+      if (!dialog) return '';
+      if (dialog.type === 'more') return renderMoreDialog();
+      const mod = vm.state.mods[dialog.modId];
+      if (!mod) return '';
+      if (dialog.type === 'uninstall') return renderUninstallDialog(mod);
+      if (dialog.type === 'risk') return renderRiskDialog(mod);
+      if (dialog.type === 'gate') return renderGateDialog(mod);
+      return '';
+    }
+
+    function renderMoreDialog() {
+      return `
+        <div class="dialog-layer" role="dialog" aria-modal="true" aria-label="更多菜单">
+          <div class="dialog-sheet">
+            <div class="sheet-handle"></div>
+            <div class="dialog-title-row">
+              <div><h2>更多</h2><p>饥荒联机版 · 当前 APP 设备</p></div>
+              <button class="icon-button" type="button" data-action="close-dialog" aria-label="关闭">${icon('close')}</button>
+            </div>
+            <div class="menu-list">
+              <button class="menu-item is-mods" type="button" data-action="enter-mods">
+                <span class="menu-item-icon">${icon('mods')}</span>
+                <span class="menu-item-copy"><strong>MODS</strong><span>非官方来源·当前设备本地管理</span></span>
+                <span class="source-badge">仅此设备</span>
+                ${icon('chevron')}
+              </button>
+              <button class="menu-item" type="button">
+                <span class="menu-item-icon">${icon('gear')}</span>
+                <span class="menu-item-copy"><strong>游戏设置</strong><span>显示、控制与启动参数</span></span>
+                ${icon('chevron')}
+              </button>
+              <button class="menu-item" type="button">
+                <span class="menu-item-icon">${icon('info')}</span>
+                <span class="menu-item-copy"><strong>游戏信息</strong><span>版本、存储与兼容说明</span></span>
+                ${icon('chevron')}
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderUninstallDialog(mod) {
+      return `
+        <div class="dialog-layer" role="dialog" aria-modal="true" aria-label="卸载确认">
+          <div class="dialog-sheet">
+            <div class="sheet-handle"></div>
+            <div class="dialog-title-row">
+              <div><h2>卸载 ${escapeHtml(mod.name)}？</h2><p>危险操作需要二次确认</p></div>
+              <button class="icon-button" type="button" data-action="close-dialog" aria-label="关闭">${icon('close')}</button>
+            </div>
+            <div class="dialog-message">
+              <strong>只卸载当前设备中的 MOD 文件，不影响其他设备。</strong><br>
+              不删除游戏存档和用户 MOD 配置。受影响项：季节生存助手将在下一次启动检查中重新判断依赖。
+            </div>
+            <div class="dialog-actions">
+              <button class="secondary-button" type="button" data-action="close-dialog">取消</button>
+              <button class="danger-button" type="button" data-action="confirm-uninstall" data-mod-id="${mod.mod_id}">${icon('trash')}确认卸载</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderRiskDialog(mod) {
+      return `
+        <div class="dialog-layer" role="dialog" aria-modal="true" aria-label="安装风险确认">
+          <div class="dialog-sheet">
+            <div class="sheet-handle"></div>
+            <div class="dialog-title-row">
+              <div><h2>确认安装风险</h2><p>${escapeHtml(mod.name)} · 兼容性未知</p></div>
+              <button class="icon-button" type="button" data-action="close-dialog" aria-label="关闭">${icon('close')}</button>
+            </div>
+            <div class="dialog-message">${icon('alert')} 来源未提供完整的 APP 兼容证明。确认后才会创建安装任务；取消不会下载任何文件。</div>
+            <div class="dialog-actions">
+              <button class="secondary-button" type="button" data-action="close-dialog">取消</button>
+              <button class="primary-button" type="button" data-action="confirm-install" data-mod-id="${mod.mod_id}">仍要安装</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderGateDialog(mod) {
+      return `
+        <div class="dialog-layer" role="dialog" aria-modal="true" aria-label="安装阻塞原因">
+          <div class="dialog-sheet">
+            <div class="sheet-handle"></div>
+            <div class="dialog-title-row">
+              <div><h2>暂时无法安装</h2><p>${escapeHtml(mod.name)}</p></div>
+              <button class="icon-button" type="button" data-action="close-dialog" aria-label="关闭">${icon('close')}</button>
+            </div>
+            <div class="dialog-message"><strong>缺少必要依赖：</strong><br>${escapeHtml(mod.conflict_summary)}<br>系统不会创建下载任务，也不会修改本机状态。</div>
+            <div class="dialog-actions">
+              <button class="secondary-button" type="button" data-action="close-dialog">知道了</button>
+              <button class="primary-button" type="button" data-action="open-detail" data-mod-id="${mod.mod_id}">查看完整详情</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function captureFocus() {
+      const active = document.activeElement;
+      if (!active || !root.contains(active)) return null;
+      const key = active.dataset.input;
+      if (!key) return null;
+      return {
+        key,
+        selectionStart: typeof active.selectionStart === 'number' ? active.selectionStart : null
+      };
+    }
+
+    function restoreFocus(snapshot) {
+      if (!snapshot) return;
+      const target = root.querySelector(`[data-input="${snapshot.key}"]`);
+      if (!target) return;
+      target.focus({ preventScroll: true });
+      if (snapshot.selectionStart !== null && typeof target.setSelectionRange === 'function') {
+        target.setSelectionRange(snapshot.selectionStart, snapshot.selectionStart);
+      }
+    }
+
+    function captureAnchors() {
+      const listContainer = root.querySelector('[data-scroll-container="list"]');
+      const detailContainer = root.querySelector('[data-scroll-container="detail"]');
+      const listAnchor = nearestVisible(listContainer, '[data-list-anchor]');
+      let detailAnchor = null;
+      const selectedSection = detailContainer?.querySelector(
+        `[data-detail-section="${state.ui.readingSectionId}"]`
+      );
+      if (selectedSection) {
+        const bounds = detailContainer.getBoundingClientRect();
+        const rect = selectedSection.getBoundingClientRect();
+        if (rect.bottom > bounds.top + 8 && rect.top < bounds.bottom - 8) {
+          const offset = Math.round(rect.top - bounds.top);
+          const offsetDelta = offset - (state.ui.detailAnchorOffset || 0);
+          const maxScrollTop = detailContainer.scrollHeight - detailContainer.clientHeight;
+          const blockedByEnd = offsetDelta > 1 && detailContainer.scrollTop >= maxScrollTop - 1;
+          const blockedByStart = offsetDelta < -1 && detailContainer.scrollTop <= 1;
+          if (!blockedByEnd && !blockedByStart) {
+            detailAnchor = { element: selectedSection, offset };
+          }
+        }
+      }
+      if (!detailAnchor && state.ui.detailAnchorSectionId !== state.ui.readingSectionId) {
+        detailAnchor = nearestVisible(detailContainer, '[data-detail-section]');
+      }
+      return {
+        listAnchorModId: listAnchor?.element.dataset.listAnchor ?? state.ui.listAnchorModId,
+        listAnchorOffset: listAnchor?.offset ?? state.ui.listAnchorOffset,
+        detailAnchorSectionId: detailAnchor?.element.dataset.detailSection ?? state.ui.detailAnchorSectionId,
+        detailAnchorOffset: detailAnchor?.offset ?? state.ui.detailAnchorOffset
+      };
+    }
+
+    function nearestVisible(container, selector) {
+      if (!container) return null;
+      if (container.scrollHeight <= container.clientHeight + 1) return null;
+      const bounds = container.getBoundingClientRect();
+      const items = [...container.querySelectorAll(selector)];
+      const element = items
+        .filter(item => item.getBoundingClientRect().bottom > bounds.top + 8)
+        .sort((a, b) => Math.abs(a.getBoundingClientRect().top - bounds.top) - Math.abs(b.getBoundingClientRect().top - bounds.top))[0] || null;
+      return element
+        ? { element, offset: Math.round(element.getBoundingClientRect().top - bounds.top) }
+        : null;
+    }
+
+    function restoreAnchors(ui) {
+      if (ui.screen === 'mods_list' && ui.listAnchorModId) {
+        const target = root.querySelector(`[data-list-anchor="${ui.listAnchorModId}"]`);
+        const container = root.querySelector('[data-scroll-container="list"]');
+        if (target && container) {
+          const delta = target.getBoundingClientRect().top
+            - container.getBoundingClientRect().top
+            - (ui.listAnchorOffset || 0);
+          container.scrollTop += delta;
+        }
+      }
+      if (ui.screen === 'mod_detail' && ui.detailAnchorSectionId) {
+        const target = root.querySelector(`[data-detail-section="${ui.detailAnchorSectionId}"]`);
+        const container = root.querySelector('[data-scroll-container="detail"]');
+        if (target && container) {
+          const delta = target.getBoundingClientRect().top
+            - container.getBoundingClientRect().top
+            - (ui.detailAnchorOffset || 0);
+          container.scrollTop += delta;
+        }
+      }
+    }
+
+    function changeOrientation(orientation) {
+      if (!['portrait', 'landscape'].includes(orientation) || orientation === state.orientation) return;
+      const anchors = captureAnchors();
+      shouldRestoreAnchors = true;
+      dispatch({ type: 'ORIENTATION_CHANGED', orientation, ...anchors });
+      showToast(`<strong>${orientation === 'portrait' ? '已切换竖屏' : '已切换横屏'}</strong>，页面、任务与详情请求计数保持不变。`);
+    }
+
+    function updateReviewToolbar() {
+      toolbar.querySelectorAll('[data-review-action="portrait"], [data-review-action="landscape"]').forEach(button => {
+        button.classList.toggle('is-active', button.dataset.reviewAction === state.orientation);
+      });
+    }
+
+    function showToast(html) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = html;
+      toastRegion.appendChild(toast);
+      setTimeout(() => toast.remove(), 3600);
+    }
+
+    root.addEventListener('click', event => {
+      const control = event.target.closest('[data-action]');
+      if (!control) return;
+      const action = control.dataset.action;
+      const modId = control.dataset.modId;
+      const taskId = control.dataset.taskId;
+
+      if (action === 'open-more') dispatch({ type: 'OPEN_MORE' });
+      if (action === 'close-dialog') dispatch({ type: 'CLOSE_DIALOG' });
+      if (action === 'enter-mods') dispatch({ type: 'ENTER_MODS' });
+      if (action === 'back-game') dispatch({ type: 'BACK_TO_GAME' });
+      if (action === 'set-tab') dispatch({ type: 'SET_TAB', tab: control.dataset.tab });
+      if (action === 'open-detail') dispatch({ type: 'OPEN_DETAIL', modId });
+      if (action === 'close-detail') dispatch({ type: 'CLOSE_DETAIL' });
+      if (action === 'install') dispatch({ type: 'INSTALL_REQUESTED', modId });
+      if (action === 'confirm-install') dispatch({ type: 'INSTALL_CONFIRMED', modId });
+      if (action === 'update') dispatch({ type: 'UPDATE_REQUESTED', modId });
+      if (action === 'toggle-enable') {
+        dispatch({ type: 'ENABLE_TOGGLED', modId });
+        showToast('<strong>本机启用值已更新</strong>，进行中的更新任务不受影响。');
+      }
+      if (action === 'uninstall') dispatch({ type: 'UNINSTALL_REQUESTED', modId });
+      if (action === 'confirm-uninstall') {
+        dispatch({ type: 'UNINSTALL_CONFIRMED', modId });
+        showToast('<strong>已从当前设备卸载</strong>，存档和用户配置未修改。');
+      }
+      if (action === 'recheck-update') {
+        dispatch({ type: 'RECHECK_UPDATE', modId });
+        showToast('<strong>更新状态已重新检查</strong>，未使用缓存版本执行更新。');
+      }
+      if (action === 'inspect-gate') dispatch({ type: 'INSTALL_REQUESTED', modId });
+      if (action === 'reading-section') {
+        shouldRestoreAnchors = true;
+        dispatch({ type: 'SET_READING_SECTION', section: control.dataset.section });
+      }
+      if (action === 'set-preview') dispatch({ type: 'SET_PREVIEW', previewId: control.dataset.previewId });
+      if (action === 'continue-task') {
+        dispatch({ type: 'CONTINUE_REQUESTED', task_id: taskId });
+        showToast('<strong>继续原任务</strong>，task_id 与已下载字节保持不变。');
+      }
+      if (action === 'cancel-task') {
+        dispatch({ type: 'CANCEL_REQUESTED', task_id: taskId });
+        showToast('<strong>任务已取消</strong>，已安装旧版与启用值未改变。');
+      }
+      if (action === 'clear-failed') dispatch({ type: 'CLEAR_FAILED_TASK', task_id: taskId });
+    });
+
+    root.addEventListener('input', event => {
+      if (event.target.matches('[data-input="search"]')) {
+        dispatch({ type: 'SET_SEARCH', value: event.target.value });
+      }
+    });
+
+    root.addEventListener('change', event => {
+      if (event.target.matches('[data-input="sort"]')) dispatch({ type: 'SET_SORT', value: event.target.value });
+      if (event.target.matches('[data-input="filter"]')) dispatch({ type: 'SET_FILTER', value: event.target.value });
+    });
+
+    toolbar.addEventListener('click', event => {
+      const control = event.target.closest('[data-review-action]');
+      if (!control) return;
+      const action = control.dataset.reviewAction;
+
+      if (action === 'portrait' || action === 'landscape') changeOrientation(action);
+      if (action === 'open-entry') {
+        if (state.ui.screen !== 'game_detail') dispatch({ type: 'BACK_TO_GAME' });
+        dispatch({ type: 'OPEN_MORE' });
+      }
+      if (action === 'pause' || action === 'pause-fail') {
+        const task = latestVisibleTask(state);
+        if (!task || task.task_state !== 'downloading') {
+          showToast('请先开始一个安装或更新任务，等待进入下载状态后再暂停。');
+        } else {
+          dispatch({ type: 'SYSTEM_PAUSED', task_id: task.task_id, autoResumeShouldFail: action === 'pause-fail' });
+          showToast(`<strong>系统已暂停下载</strong>${action === 'pause-fail' ? '，下一次前台自动续传将失败。' : '。'}`);
+        }
+      }
+      if (action === 'foreground') {
+        dispatch({ type: 'APP_FOREGROUNDED' });
+        const task = latestVisibleTask(state);
+        showToast(task?.auto_resume_failed
+          ? '<strong>自动续传已尝试一次并失败</strong>，请使用“继续”或“取消”。'
+          : '<strong>已回到前台</strong>，暂停任务只自动续传一次。'
+        );
+      }
+      if (action === 'update-fail') {
+        dispatch({ type: 'FAIL_ACTIVE_UPDATE' });
+        showToast('<strong>已设置更新失败</strong>，旧版指针、启用值与“有新版本”将保留。');
+      }
+      if (action === 'source-unknown') {
+        dispatch({ type: 'SET_SOURCE_UNKNOWN', modId: 'font-patch' });
+        dispatch({ type: 'SET_TAB', tab: 'installed' });
+        if (state.ui.screen === 'game_detail') dispatch({ type: 'ENTER_MODS' });
+        showToast('<strong>更新状态未知</strong>，不会展示可执行更新入口。');
+      }
+      if (action === 'reset') reset();
+    });
+
+    window.__DST_MODS_DEMO__ = {
+      version: DEMO_MODEL_VERSION,
+      getState,
+      dispatch,
+      derive: () => clone(derive(state)),
+      reset
+    };
+
+    render();
+  </script>
+</body>
+</html>
