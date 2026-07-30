@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>盖世游戏 · 个性化推荐与来源采集</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-primary: #000000;
+      --bg-card: #1a1a1a;
+      --bg-elevated: #252525;
+      --bg-overlay: #28202a;
+      --text-primary: #ffffff;
+      --text-secondary: #e6e6e6;
+      --text-tertiary: #f2f2f2;
+      --text-muted: #7b7b7b;
+      --text-disabled: #646464;
+      --brand-gold: #ffcc43;
+      --brand-gold-light: #ffd98f;
+      --brand-green: #33d8a4;
+      --brand-blue: #338feb;
+      --brand-purple: #8174fa;
+      --border-default: #353d4e;
+      --danger: #ff5678;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-2xl: 20px;
+      --radius-full: 100px;
+      --font-primary: "MiSans VF", "MiSans", "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-number: "D-DIN-PRO", "MiSans VF", sans-serif;
+    }
+
+    html, body { min-height: 100%; }
+    body {
+      min-height: 100vh;
+      font-family: var(--font-primary);
+      color: var(--text-primary);
+      background:
+        radial-gradient(circle at 70% 10%, rgba(51, 143, 235, .13), transparent 28%),
+        radial-gradient(circle at 20% 86%, rgba(51, 216, 164, .08), transparent 30%),
+        #101217;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, select:focus-visible {
+      outline: 2px solid var(--brand-gold);
+      outline-offset: 2px;
+    }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+
+    .prototype-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+    }
+
+    .simulator-panel {
+      position: relative;
+      z-index: 20;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 24px;
+      background: rgba(13, 15, 20, .96);
+      border-right: 1px solid rgba(255,255,255,.08);
+      box-shadow: 16px 0 50px rgba(0,0,0,.25);
+    }
+    .panel-eyebrow {
+      color: var(--brand-gold);
+      font: 520 11px/16px var(--font-primary);
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .simulator-panel h1 {
+      margin-top: 8px;
+      font-size: 24px;
+      line-height: 32px;
+      font-weight: 520;
+      letter-spacing: -.02em;
+    }
+    .panel-summary {
+      margin-top: 8px;
+      color: #9299a4;
+      font-size: 13px;
+      line-height: 20px;
+    }
+    .panel-section {
+      margin-top: 24px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .panel-section h2 {
+      margin-bottom: 14px;
+      font-size: 13px;
+      line-height: 20px;
+      font-weight: 520;
+      color: var(--text-secondary);
+    }
+    .field { display: block; margin-top: 12px; }
+    .field > span {
+      display: block;
+      margin-bottom: 7px;
+      color: #8d95a1;
+      font-size: 12px;
+      line-height: 17px;
+    }
+    .field select {
+      width: 100%;
+      height: 42px;
+      padding: 0 34px 0 12px;
+      color: var(--text-primary);
+      background: #1c2028;
+      border: 1px solid #303641;
+      border-radius: var(--radius-md);
+      appearance: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, #848b95 50%),
+        linear-gradient(135deg, #848b95 50%, transparent 50%);
+      background-position: calc(100% - 17px) 17px, calc(100% - 12px) 17px;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+    }
+    .segmented {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      padding: 4px;
+      border-radius: var(--radius-lg);
+      background: #191c23;
+    }
+    .segmented button {
+      min-height: 36px;
+      padding: 0 10px;
+      color: #8c939e;
+      background: transparent;
+      border: 0;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+    }
+    .segmented button.active {
+      color: #131313;
+      background: var(--brand-gold);
+      font-weight: 520;
+    }
+    .panel-actions { display: grid; gap: 8px; }
+    .panel-button {
+      min-height: 42px;
+      padding: 0 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid #3b424e;
+      background: #22262e;
+      color: #f4f5f7;
+      font-size: 13px;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    }
+    .panel-button:hover { border-color: #69717e; background: #292e37; }
+    .panel-button:active { transform: scale(.985); }
+    .panel-button.primary {
+      color: #14120a;
+      border-color: var(--brand-gold);
+      background: var(--brand-gold);
+      font-weight: 520;
+    }
+    .panel-button.danger { color: #ff9cab; }
+    .simulator-status {
+      display: block;
+      min-height: 62px;
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255,204,67,.18);
+      background: rgba(255,204,67,.07);
+      color: #d9dce1;
+      font-size: 12px;
+      line-height: 18px;
+    }
+    .state-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .state-card {
+      min-width: 0;
+      padding: 10px;
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: var(--radius-lg);
+      background: #171a20;
+    }
+    .state-card span {
+      display: block;
+      color: #737b87;
+      font-size: 10px;
+      line-height: 14px;
+    }
+    .state-card strong {
+      display: block;
+      margin-top: 4px;
+      overflow: hidden;
+      color: #e8eaed;
+      font: 520 12px/18px var(--font-number);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .event-log { display: grid; gap: 8px; }
+    .event-item {
+      padding: 10px;
+      border-left: 2px solid #3e4652;
+      background: rgba(255,255,255,.025);
+    }
+    .event-item strong {
+      display: block;
+      color: #dfe2e7;
+      font: 520 11px/16px var(--font-number);
+    }
+    .event-item small {
+      display: block;
+      margin-top: 2px;
+      color: #727a86;
+      font-size: 10px;
+      line-height: 15px;
+    }
+
+    .device-stage {
+      min-width: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      overflow: auto;
+    }
+    .phone {
+      position: relative;
+      width: 390px;
+      height: 844px;
+      overflow: hidden;
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px;
+      box-shadow: 0 40px 110px rgba(0,0,0,.62), 0 0 0 8px #1a1d23;
+      transition: width .28s ease, height .28s ease;
+      isolation: isolate;
+    }
+    .phone.landscape {
+      width: 874px;
+      height: 402px;
+    }
+    .status-bar {
+      position: absolute;
+      z-index: 10;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 22px;
+      font: 600 13px/1 var(--font-number);
+      pointer-events: none;
+    }
+    .phone.landscape .status-bar {
+      height: 30px;
+      padding: 0 20px;
+      font-size: 11px;
+    }
+    .ambient {
+      position: absolute;
+      z-index: -1;
+      border-radius: 50%;
+      filter: blur(24px);
+      opacity: .74;
+      pointer-events: none;
+    }
+    .ambient-blue {
+      top: -110px;
+      right: -110px;
+      width: 270px;
+      height: 270px;
+      background: rgba(51,143,235,.32);
+    }
+    .ambient-green {
+      left: -120px;
+      bottom: 30px;
+      width: 230px;
+      height: 230px;
+      background: rgba(51,216,164,.17);
+    }
+
+    .wizard-page {
+      position: absolute;
+      inset: 44px 0 0;
+      display: none;
+      min-height: 0;
+      padding: 18px 22px max(24px, env(safe-area-inset-bottom));
+      background: linear-gradient(180deg, rgba(7,10,15,.5), rgba(0,0,0,.94) 72%);
+    }
+    .wizard-page.active { display: grid; }
+    .wizard-page[data-wizard-step="game"] {
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+    }
+    .wizard-page[data-wizard-step="source"] {
+      grid-template-rows: auto minmax(0, 1fr) auto;
+    }
+    .wizard-header { position: relative; min-width: 0; }
+    .wizard-progress {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .wizard-progress span {
+      height: 3px;
+      border-radius: var(--radius-full);
+      background: #252b34;
+    }
+    .wizard-progress span.is-active {
+      background: linear-gradient(90deg, #f4cf4a, #ffb600);
+      box-shadow: 0 0 12px rgba(255,204,67,.25);
+    }
+    .wizard-kicker {
+      margin-bottom: 5px;
+      color: var(--brand-gold);
+      font-size: 10px;
+      line-height: 14px;
+      font-weight: 520;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .wizard-header h2 {
+      font-size: 27px;
+      line-height: 36px;
+      font-weight: 520;
+      letter-spacing: -.025em;
+    }
+    .wizard-page[data-wizard-step="source"] .wizard-header h2 {
+      font-size: 25px;
+      line-height: 34px;
+    }
+    .wizard-description {
+      margin-top: 4px;
+      color: #8a929e;
+      font-size: 13px;
+      line-height: 20px;
+    }
+    .back-button {
+      position: absolute;
+      top: 38px;
+      left: -3px;
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      color: #e9ebee;
+      border: 0;
+      background: transparent;
+      font-size: 28px;
+      line-height: 1;
+    }
+    .back-button + .wizard-kicker,
+    .back-button ~ h2,
+    .back-button ~ .wizard-description { margin-left: 30px; }
+    .game-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 36px;
+      margin-top: 8px;
+    }
+    .game-toolbar span {
+      color: #737b87;
+      font-size: 11px;
+      line-height: 16px;
+    }
+    .game-toolbar button {
+      padding: 6px 9px;
+      color: var(--brand-gold);
+      border: 0;
+      border-radius: var(--radius-md);
+      background: rgba(255,204,67,.08);
+      font-size: 11px;
+    }
+    .game-grid {
+      min-height: 0;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-content: start;
+      gap: 12px 10px;
+      padding: 4px 0 18px;
+      overscroll-behavior: contain;
+    }
+    .game-card {
+      position: relative;
+      min-width: 0;
+      color: var(--text-primary);
+      border: 0;
+      background: transparent;
+      text-align: left;
+    }
+    .game-card:disabled { cursor: not-allowed; opacity: .38; }
+    .game-cover {
+      position: relative;
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1.12;
+      overflow: hidden;
+      border: 2px solid transparent;
+      border-radius: var(--radius-lg);
+      background: #1a1d23;
+      transition: transform .16s ease, border-color .16s ease;
+    }
+    .game-card:not(:disabled):active .game-cover { transform: scale(.97); }
+    .game-card.selected .game-cover {
+      border-color: var(--brand-gold);
+      box-shadow: 0 0 0 1px rgba(255,204,67,.16), 0 10px 24px rgba(0,0,0,.36);
+    }
+    .cover-art {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: flex-end;
+      padding: 10px;
+      background: var(--cover);
+    }
+    .cover-art::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.13), transparent 35%),
+        linear-gradient(0deg, rgba(0,0,0,.62), transparent 58%);
+    }
+    .cover-symbol {
+      position: relative;
+      z-index: 1;
+      color: rgba(255,255,255,.88);
+      font: 700 24px/1 var(--font-primary);
+      text-shadow: 0 2px 12px rgba(0,0,0,.45);
+    }
+    .selected-game-check {
+      position: absolute;
+      z-index: 3;
+      top: 7px;
+      right: 7px;
+      width: 22px;
+      height: 22px;
+      display: grid;
+      place-items: center;
+      color: #17130a;
+      border: 2px solid rgba(0,0,0,.24);
+      border-radius: 50%;
+      background: var(--brand-gold);
+      font-size: 12px;
+      font-weight: 700;
+      opacity: 0;
+      transform: scale(.6);
+      transition: opacity .16s ease, transform .16s ease;
+    }
+    .game-card.selected .selected-game-check { opacity: 1; transform: scale(1); }
+    .game-card strong {
+      display: block;
+      margin-top: 6px;
+      overflow: hidden;
+      font-size: 12px;
+      line-height: 17px;
+      font-weight: 520;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .game-card small {
+      display: block;
+      margin-top: 1px;
+      overflow: hidden;
+      color: #707885;
+      font-size: 10px;
+      line-height: 14px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .wizard-footer {
+      position: relative;
+      z-index: 4;
+      display: grid;
+      gap: 8px;
+      padding-top: 14px;
+      background: linear-gradient(180deg, transparent, #000 20%);
+    }
+    .primary-button {
+      width: 100%;
+      min-height: 50px;
+      padding: 0 16px;
+      color: #15130b;
+      border: 0;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, #ffdd72, var(--brand-gold));
+      font-size: 15px;
+      font-weight: 520;
+      box-shadow: 0 8px 24px rgba(255,204,67,.12);
+      transition: transform .15s ease, filter .15s ease;
+    }
+    .primary-button:not(:disabled):hover { filter: brightness(1.04); }
+    .primary-button:not(:disabled):active { transform: scale(.985); }
+    .primary-button:disabled {
+      color: var(--text-disabled);
+      background: #262b33;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+    .text-button {
+      justify-self: center;
+      min-height: 32px;
+      padding: 0 12px;
+      color: #939ba7;
+      border: 0;
+      background: transparent;
+      font-size: 12px;
+    }
+    .text-button:hover { color: var(--text-secondary); }
+
+    .acquisition-source-grid {
+      min-height: 0;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-content: start;
+      gap: 10px;
+      margin-top: 26px;
+      padding-bottom: 16px;
+    }
+    .acquisition-source-card {
+      position: relative;
+      min-height: 104px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 14px;
+      color: var(--text-primary);
+      border: 1px solid #2d333d;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(145deg, #1c2027, #14171c);
+      text-align: left;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    }
+    .acquisition-source-card:hover { border-color: #4e5663; }
+    .acquisition-source-card:active { transform: scale(.98); }
+    .acquisition-source-card.selected {
+      border-color: var(--brand-gold);
+      background: linear-gradient(145deg, rgba(255,204,67,.15), #18191a 58%);
+      box-shadow: inset 0 0 0 1px rgba(255,204,67,.08);
+    }
+    .source-icon {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      color: #f8f8f8;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px;
+      background: linear-gradient(145deg, #3e4653, #262b33);
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .acquisition-source-card strong {
+      max-width: calc(100% - 22px);
+      font-size: 13px;
+      line-height: 18px;
+      font-weight: 520;
+    }
+    .source-check {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      width: 20px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      color: #16130b;
+      border-radius: 50%;
+      background: var(--brand-gold);
+      font-size: 11px;
+      opacity: 0;
+      transform: scale(.6);
+      transition: opacity .15s ease, transform .15s ease;
+    }
+    .acquisition-source-card.selected .source-check { opacity: 1; transform: scale(1); }
+
+    .result-page {
+      place-items: center;
+      align-content: center;
+      padding: 48px 34px;
+      text-align: center;
+    }
+    .result-orbit {
+      position: relative;
+      width: 118px;
+      height: 118px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 28px;
+    }
+    .result-orbit::before, .result-orbit::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(255,204,67,.17);
+    }
+    .result-orbit::before { inset: 0; }
+    .result-orbit::after { inset: 16px; border-color: rgba(51,216,164,.2); }
+    .result-mark {
+      position: relative;
+      z-index: 1;
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      color: #17130b;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #ffe38a, var(--brand-gold));
+      font-size: 25px;
+      font-weight: 700;
+      box-shadow: 0 12px 40px rgba(255,204,67,.22);
+    }
+    .result-page h2 {
+      font-size: 24px;
+      line-height: 32px;
+      font-weight: 520;
+    }
+    .result-page p {
+      max-width: 300px;
+      margin-top: 9px;
+      color: #8a929e;
+      font-size: 13px;
+      line-height: 21px;
+    }
+    .result-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .result-meta span {
+      padding: 6px 10px;
+      color: #adb4be;
+      border: 1px solid #303640;
+      border-radius: var(--radius-full);
+      background: #171a20;
+      font-size: 10px;
+    }
+
+    .phone.landscape .wizard-page {
+      inset: 30px 0 0;
+      padding: 14px 28px 18px;
+    }
+    .phone.landscape .wizard-page[data-wizard-step="game"] {
+      grid-template-columns: 245px minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      column-gap: 24px;
+    }
+    .phone.landscape .wizard-page[data-wizard-step="source"] {
+      grid-template-columns: 250px minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr) auto;
+      column-gap: 28px;
+    }
+    .phone.landscape .wizard-header {
+      grid-row: 1 / span 3;
+      padding-top: 2px;
+    }
+    .phone.landscape .wizard-progress { margin-bottom: 28px; }
+    .phone.landscape .wizard-header h2 {
+      max-width: 220px;
+      font-size: 25px;
+      line-height: 34px;
+    }
+    .phone.landscape .wizard-description { max-width: 220px; }
+    .phone.landscape .game-toolbar {
+      min-height: 32px;
+      margin-top: 0;
+    }
+    .phone.landscape .game-grid {
+      grid-column: 2;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      padding: 0 0 6px;
+    }
+    .phone.landscape .game-cover { aspect-ratio: 1.22 / 1; }
+    .phone.landscape .game-card strong { margin-top: 4px; font-size: 10px; line-height: 14px; }
+    .phone.landscape .game-card small { display: none; }
+    .phone.landscape .wizard-footer {
+      grid-column: 2;
+      grid-template-columns: auto minmax(240px, 1fr);
+      align-items: center;
+      gap: 16px;
+      padding-top: 8px;
+      background: linear-gradient(180deg, transparent, #000 26%);
+    }
+    .phone.landscape .wizard-footer .primary-button { grid-column: 2; min-height: 42px; }
+    .phone.landscape .wizard-footer .text-button { grid-column: 1; grid-row: 1; }
+    .phone.landscape .acquisition-source-grid {
+      grid-column: 2;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 0;
+      padding-bottom: 8px;
+    }
+    .phone.landscape .acquisition-source-card {
+      min-height: 92px;
+      padding: 11px;
+    }
+    .phone.landscape .source-icon { width: 29px; height: 29px; }
+    .phone.landscape .back-button { top: 42px; }
+    .phone.landscape .result-page { padding: 26px; }
+    .phone.landscape .result-orbit {
+      width: 90px;
+      height: 90px;
+      margin-bottom: 16px;
+    }
+    .phone.landscape .result-mark { width: 48px; height: 48px; }
+
+    @media (max-width: 920px) {
+      .prototype-shell { display: block; }
+      .simulator-panel {
+        position: relative;
+        width: 100%;
+        height: auto;
+        max-height: none;
+        border-right: 0;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+      }
+      .device-stage { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="prototype-shell">
+    <aside class="simulator-panel" aria-label="触发与异常模拟">
+      <p class="panel-eyebrow">GameHub Product Demo</p>
+      <h1>个性化推荐与来源采集</h1>
+      <p class="panel-summary">新手引流保持独立；个性化选游戏与获客来源合并为两步全屏问卷。</p>
+
+      <section class="panel-section">
+        <h2>预览方向</h2>
+        <div class="segmented" aria-label="横竖屏切换">
+          <button type="button" class="active" data-orientation="portrait">竖屏 390×844</button>
+          <button type="button" data-orientation="landscape">横屏 874×402</button>
+        </div>
+      </section>
+
+      <section class="panel-section">
+        <h2>触发条件</h2>
+        <label class="field">
+          <span>用户场景</span>
+          <select id="personaSelect">
+            <option value="existing">非新用户 · 首次合格冷启动</option>
+            <option value="new_under_24h">新用户 · 完成引流未满24小时</option>
+            <option value="new_eligible">新用户 · 已满24小时</option>
+            <option value="source_resume">第一步已完成 · 恢复第二步</option>
+            <option value="completed">历史已完成 · 不再展示</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>市场</span>
+          <select id="marketSelect">
+            <option value="domestic">国内</option>
+            <option value="overseas">海外</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>网络</span>
+          <select id="networkSelect">
+            <option value="online">在线</option>
+            <option value="offline">离线</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="panel-section">
+        <h2>场景操作</h2>
+        <div class="panel-actions">
+          <button type="button" class="panel-button primary" data-action="simulate-cold-start">模拟冷启动</button>
+          <button type="button" class="panel-button" data-action="simulate-interrupt">模拟中断并恢复</button>
+          <button type="button" class="panel-button danger" data-action="reset-demo">重置演示数据</button>
+        </div>
+        <output class="simulator-status" id="simulatorStatus" aria-live="polite">当前为默认草稿，可直接在右侧操作问卷。</output>
+      </section>
+
+      <section class="panel-section">
+        <h2>当前状态</h2>
+        <div class="state-grid">
+          <div class="state-card"><span>状态机</span><strong id="stateStatus">game_step_in_progress</strong></div>
+          <div class="state-card"><span>当前步骤</span><strong id="stateStep">game</strong></div>
+          <div class="state-card"><span>已选游戏</span><strong id="stateGames">0</strong></div>
+          <div class="state-card"><span>来源</span><strong id="stateSource">—</strong></div>
+          <div class="state-card"><span>市场</span><strong id="stateMarket">domestic</strong></div>
+          <div class="state-card"><span>同步</span><strong id="stateSync">—</strong></div>
+        </div>
+      </section>
+
+      <section class="panel-section">
+        <h2>最近埋点</h2>
+        <div class="event-log" id="eventLog">
+          <div class="event-item"><strong>等待操作</strong><small>事件将在这里按时间倒序展示</small></div>
+        </div>
+      </section>
+    </aside>
+
+    <section class="device-stage">
+      <section class="phone portrait" aria-label="盖世游戏问卷预览">
+        <div class="status-bar"><span>9:41</span><span>5G&nbsp;&nbsp;▰</span></div>
+        <div class="ambient ambient-blue"></div>
+        <div class="ambient ambient-green"></div>
+
+        <section class="wizard-page active" data-wizard-step="game" aria-hidden="false">
+          <header class="wizard-header">
+            <div class="wizard-progress" aria-label="第1步，共2步">
+              <span class="is-active"></span><span></span>
+            </div>
+            <p class="wizard-kicker">Pick the games you love.</p>
+            <h2>挑选你感兴趣的游戏</h2>
+            <p class="wizard-description">选出喜欢的游戏，让推荐更懂你</p>
+          </header>
+          <div class="game-toolbar">
+            <span>至少3款，最多9款</span>
+            <button type="button" data-action="shuffle-games">换一批</button>
+          </div>
+          <div class="game-grid" id="gameGrid"></div>
+          <footer class="wizard-footer">
+            <button type="button" class="text-button" data-action="skip-games">暂不选择</button>
+            <button type="button" class="primary-button" data-action="submit-games" disabled>还需选择3款</button>
+          </footer>
+        </section>
+
+        <section class="wizard-page" data-wizard-step="source" aria-hidden="true">
+          <header class="wizard-header">
+            <div class="wizard-progress" aria-label="第2步，共2步">
+              <span class="is-active"></span><span class="is-active"></span>
+            </div>
+            <button type="button" class="back-button" data-action="back-to-games" aria-label="返回上一步">‹</button>
+            <p class="wizard-kicker">Where did you hear about us?</p>
+            <h2 id="sourceTitle">你最早是从哪里了解到盖世游戏的？</h2>
+            <p class="wizard-description" id="sourceDescription">请选择最符合实际情况的一项</p>
+          </header>
+          <div class="acquisition-source-grid" id="sourceGrid"></div>
+          <footer class="wizard-footer">
+            <button type="button" class="primary-button" data-action="submit-source" disabled>请选择一项</button>
+          </footer>
+        </section>
+
+        <section class="wizard-page result-page" data-wizard-step="result" aria-hidden="true">
+          <div class="result-orbit"><div class="result-mark" id="resultMark">✓</div></div>
+          <h2 id="resultTitle">设置完成</h2>
+          <p id="resultDescription">已进入首页，推荐会结合你的选择逐步优化。</p>
+          <div class="result-meta" id="resultMeta"></div>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const MIN_GAME_SELECTION = 3;
+    const MAX_GAME_SELECTION = 9;
+    const STORAGE_KEY = "gamehub_personalization_acquisition_v1";
+    const ONBOARDING_HANDOFF_KEY = "gamehub_onboarding_handoff_v1";
+
+    const WIZARD_STATES = Object.freeze({
+      NOT_ELIGIBLE: "not_eligible",
+      PENDING: "pending",
+      GAME_IN_PROGRESS: "game_step_in_progress",
+      GAME_COMPLETED: "game_completed",
+      GAME_SKIPPED: "game_skipped",
+      SOURCE_PENDING: "source_pending",
+      COMPLETED: "completed"
+    });
+
+    const gameCatalog = [
+      { id: "black_myth_wukong", name: "黑神话：悟空", type: "动作 RPG", symbol: "悟", cover: "linear-gradient(145deg,#6e3f1f,#1a1513 66%)" },
+      { id: "cyberpunk_2077", name: "赛博朋克 2077", type: "开放世界", symbol: "V", cover: "linear-gradient(145deg,#e3bc13,#24415a 72%)" },
+      { id: "elden_ring", name: "艾尔登法环", type: "魂系", symbol: "环", cover: "linear-gradient(145deg,#b9924b,#1d261f 70%)" },
+      { id: "resident_evil_4", name: "生化危机 4", type: "恐怖动作", symbol: "RE", cover: "linear-gradient(145deg,#762b28,#151819 72%)" },
+      { id: "witcher_3", name: "巫师 3：狂猎", type: "剧情 RPG", symbol: "Ⅲ", cover: "linear-gradient(145deg,#59616b,#181c23 70%)" },
+      { id: "hades_2", name: "哈迪斯 2", type: "Roguelike", symbol: "Ⅱ", cover: "linear-gradient(145deg,#6c274f,#132a2c 68%)" },
+      { id: "pubg", name: "绝地求生", type: "战术竞技", symbol: "P", cover: "linear-gradient(145deg,#c08123,#25251c 72%)" },
+      { id: "forza_horizon_5", name: "极限竞速：地平线 5", type: "竞速", symbol: "H5", cover: "linear-gradient(145deg,#c83f8b,#284ba3 68%)" },
+      { id: "it_takes_two", name: "双人成行", type: "合作冒险", symbol: "2", cover: "linear-gradient(145deg,#6cafbc,#714d86 68%)" },
+      { id: "baldurs_gate_3", name: "博德之门 3", type: "角色扮演", symbol: "B3", cover: "linear-gradient(145deg,#933b26,#201a25 72%)" },
+      { id: "monster_hunter_wilds", name: "怪物猎人：荒野", type: "共斗动作", symbol: "MH", cover: "linear-gradient(145deg,#8c7053,#244650 70%)" },
+      { id: "stardew_valley", name: "星露谷物语", type: "模拟经营", symbol: "星", cover: "linear-gradient(145deg,#3e91be,#4d8c44 68%)" },
+      { id: "gta_5", name: "GTA 5", type: "开放世界", symbol: "V", cover: "linear-gradient(145deg,#4086a4,#224f39 70%)" },
+      { id: "red_dead_redemption_2", name: "荒野大镖客：救赎 2", type: "西部冒险", symbol: "R2", cover: "linear-gradient(145deg,#bf2b20,#241511 74%)" },
+      { id: "hollow_knight", name: "空洞骑士", type: "银河城", symbol: "空", cover: "linear-gradient(145deg,#364c6b,#121824 70%)" }
+    ];
+
+    const SOURCE_OPTIONS = {
+      domestic: {
+        title: "你最早是从哪里了解到盖世游戏的？",
+        titleHtml: "你最早是从哪里了解到<br>盖世游戏的？",
+        description: "请选择最符合实际情况的一项",
+        optionVersion: "domestic_v1",
+        options: [
+          { code: "douyin", label: "抖音", icon: "抖" },
+          { code: "bilibili", label: "哔哩哔哩", icon: "哔" },
+          { code: "xiaohongshu", label: "小红书", icon: "红" },
+          { code: "app_store", label: "应用商店", icon: "商" },
+          { code: "friend_referral", label: "朋友推荐", icon: "友" },
+          { code: "other_or_unknown", label: "其他／不记得", icon: "…" }
+        ]
+      },
+      overseas: {
+        title: "Where did you first hear about GameHub?",
+        titleHtml: "Where did you first hear about GameHub?",
+        description: "Choose the option that best matches your experience.",
+        optionVersion: "overseas_v1",
+        options: [
+          { code: "youtube", label: "YouTube", icon: "▶" },
+          { code: "tiktok", label: "TikTok", icon: "♪" },
+          { code: "reddit", label: "Reddit", icon: "R" },
+          { code: "discord", label: "Discord", icon: "D" },
+          { code: "friend_referral", label: "Friends", icon: "F" },
+          { code: "other_or_unknown", label: "Other / I don’t remember", icon: "…" }
+        ]
+      }
+    };
+
+    const state = {
+      step: "game",
+      status: WIZARD_STATES.GAME_IN_PROGRESS,
+      selectedGameIds: new Set(),
+      visibleGameIds: gameCatalog.slice(0, 9).map(game => game.id),
+      sourceCode: null,
+      market: "domestic",
+      network: "online",
+      optionVersion: null,
+      sourceSavedAt: null,
+      syncStatus: null,
+      onboarding_completed_at: null,
+      identity: { installId: "demo-install", accountId: null },
+      events: []
+    };
+
+    function emitEvent(name, payload = {}) {
+      state.events.unshift({
+        name,
+        detail: Object.entries(payload).map(([key, value]) => `${key}=${Array.isArray(value) ? value.join(",") : value}`).join(" · "),
+        time: new Date().toLocaleTimeString("zh-CN", { hour12: false })
+      });
+      state.events = state.events.slice(0, 6);
+      renderEventLog();
+    }
+
+    function renderEventLog() {
+      const log = document.querySelector("#eventLog");
+      if (!state.events.length) {
+        log.innerHTML = '<div class="event-item"><strong>等待操作</strong><small>事件将在这里按时间倒序展示</small></div>';
+        return;
+      }
+      log.innerHTML = state.events.map(event => `
+        <div class="event-item">
+          <strong>${event.name}</strong>
+          <small>${event.time}${event.detail ? ` · ${event.detail}` : ""}</small>
+        </div>
+      `).join("");
+    }
+
+    function renderStatePanel() {
+      document.querySelector("#stateStatus").textContent = state.status;
+      document.querySelector("#stateStep").textContent = state.step;
+      document.querySelector("#stateGames").textContent = String(state.selectedGameIds.size);
+      document.querySelector("#stateSource").textContent = state.sourceCode || "—";
+      document.querySelector("#stateMarket").textContent = state.market;
+      document.querySelector("#stateSync").textContent = state.syncStatus || "—";
+      document.querySelector("#marketSelect").value = state.market;
+      document.querySelector("#networkSelect").value = state.network;
+    }
+
+    function serializableState() {
+      return {
+        status: state.status,
+        step: state.step,
+        selectedGameIds: [...state.selectedGameIds],
+        visibleGameIds: state.visibleGameIds,
+        sourceCode: state.sourceCode,
+        market: state.market,
+        network: state.network,
+        option_version: state.optionVersion,
+        optionVersion: state.optionVersion,
+        onboarding_completed_at: state.onboarding_completed_at,
+        sourceSavedAt: state.sourceSavedAt,
+        syncStatus: state.syncStatus,
+        identity: state.identity,
+        events: state.events
+      };
+    }
+
+    function saveWizardState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(serializableState()));
+      renderStatePanel();
+    }
+
+    function assignSavedState(saved) {
+      Object.assign(state, saved, {
+        selectedGameIds: new Set(saved.selectedGameIds || []),
+        events: saved.events || []
+      });
+      if (saved.option_version && !saved.optionVersion) state.optionVersion = saved.option_version;
+    }
+
+    function restoreWizardState() {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      if (!saved) return false;
+      assignSavedState(saved);
+      renderGameStep();
+      renderSourceStep();
+      showStep(saved.status === WIZARD_STATES.COMPLETED ? "result" : saved.step || "game", false);
+      renderEventLog();
+      renderStatePanel();
+      return true;
+    }
+
+    function mergeIdentityState(deviceState, accountState) {
+      if (!accountState) return deviceState;
+      if (!deviceState) return accountState;
+      if (accountState.status === WIZARD_STATES.COMPLETED) return accountState;
+      if (deviceState.status === WIZARD_STATES.COMPLETED) return deviceState;
+      if (accountState.sourceSavedAt) return accountState;
+      if (deviceState.sourceSavedAt) return deviceState;
+      return accountState.step === "source" ? accountState : deviceState;
+    }
+
+    function showStep(step, persist = true) {
+      state.step = step;
+      document.querySelectorAll("[data-wizard-step]").forEach(page => {
+        const active = page.dataset.wizardStep === step;
+        page.classList.toggle("active", active);
+        page.setAttribute("aria-hidden", String(!active));
+      });
+      if (step === "game") renderGameStep();
+      if (step === "source") renderSourceStep();
+      if (step === "result") renderResultStep();
+      if (persist) saveWizardState();
+      renderStatePanel();
+    }
+
+    function renderGameStep() {
+      const grid = document.querySelector("#gameGrid");
+      grid.innerHTML = state.visibleGameIds.map(id => {
+        const game = gameCatalog.find(item => item.id === id);
+        const selected = state.selectedGameIds.has(id);
+        const disabled = !selected && state.selectedGameIds.size >= MAX_GAME_SELECTION;
+        return `
+          <button class="game-card${selected ? " selected" : ""}" type="button"
+            data-game-id="${game.id}" aria-pressed="${selected}" ${disabled ? "disabled" : ""}>
+            <span class="game-cover">
+              <span class="cover-art" style="--cover:${game.cover}">
+                <span class="cover-symbol">${game.symbol}</span>
+              </span>
+              <span class="selected-game-check" aria-hidden="true">✓</span>
+            </span>
+            <strong>${game.name}</strong>
+            <small>${game.type}</small>
+          </button>`;
+      }).join("");
+
+      const count = state.selectedGameIds.size;
+      const submit = document.querySelector('[data-action="submit-games"]');
+      submit.disabled = count < MIN_GAME_SELECTION;
+      submit.textContent = count < MIN_GAME_SELECTION
+        ? `还需选择${MIN_GAME_SELECTION - count}款`
+        : `下一步 · 已选${count}款`;
+      renderStatePanel();
+    }
+
+    function toggleGameSelection(gameId) {
+      if (state.sourceSavedAt) return;
+      const selected = state.selectedGameIds.has(gameId);
+      if (selected) state.selectedGameIds.delete(gameId);
+      else if (state.selectedGameIds.size < MAX_GAME_SELECTION) state.selectedGameIds.add(gameId);
+      renderGameStep();
+      saveWizardState();
+      emitEvent("personalization_game_select", {
+        game_id: gameId,
+        selected_count: state.selectedGameIds.size
+      });
+    }
+
+    function shuffleGames() {
+      if (state.sourceSavedAt) return;
+      const selected = [...state.selectedGameIds];
+      const rest = gameCatalog.filter(game => !state.selectedGameIds.has(game.id));
+      const offset = Math.max(1, Math.floor(rest.length / 3));
+      const rotated = rest.slice(offset).concat(rest.slice(0, offset)).map(game => game.id);
+      state.visibleGameIds = [...selected, ...rotated].slice(0, 9);
+      renderGameStep();
+      saveWizardState();
+    }
+
+    function submitGames() {
+      if (state.selectedGameIds.size < MIN_GAME_SELECTION || state.sourceSavedAt) return;
+      state.status = WIZARD_STATES.GAME_COMPLETED;
+      saveWizardState();
+      emitEvent("personalization_game_submit", {
+        selected_count: state.selectedGameIds.size,
+        selected_ids: [...state.selectedGameIds]
+      });
+      state.status = WIZARD_STATES.SOURCE_PENDING;
+      showStep("source");
+      emitEvent("personalization_wizard_view", { step: "source", market: state.market });
+    }
+
+    function skipGames() {
+      if (state.sourceSavedAt) return;
+      state.selectedGameIds.clear();
+      state.status = WIZARD_STATES.GAME_SKIPPED;
+      saveWizardState();
+      emitEvent("personalization_game_skip", { selected_count: 0 });
+      state.status = WIZARD_STATES.SOURCE_PENDING;
+      showStep("source");
+      emitEvent("personalization_wizard_view", { step: "source", market: state.market });
+    }
+
+    function renderSourceStep() {
+      const config = SOURCE_OPTIONS[state.market];
+      const grid = document.querySelector("#sourceGrid");
+      document.querySelector("#sourceTitle").innerHTML = config.titleHtml;
+      document.querySelector("#sourceDescription").textContent = config.description;
+      grid.dataset.market = state.market;
+      grid.innerHTML = config.options.map(option => `
+        <button type="button"
+          class="acquisition-source-card${state.sourceCode === option.code ? " selected" : ""}"
+          data-source-code="${option.code}"
+          aria-pressed="${state.sourceCode === option.code}">
+          <span class="source-icon" aria-hidden="true">${option.icon}</span>
+          <strong>${option.label}</strong>
+          <span class="source-check" aria-hidden="true">✓</span>
+        </button>
+      `).join("");
+
+      const submit = document.querySelector('[data-action="submit-source"]');
+      submit.disabled = !state.sourceCode || Boolean(state.sourceSavedAt);
+      submit.textContent = state.sourceCode
+        ? (state.market === "domestic" ? "完成" : "Finish")
+        : (state.market === "domestic" ? "请选择一项" : "Choose one option");
+      renderStatePanel();
+    }
+
+    function selectSource(sourceCode) {
+      if (state.sourceSavedAt) return;
+      const allowed = SOURCE_OPTIONS[state.market].options.some(option => option.code === sourceCode);
+      if (!allowed) return;
+      state.sourceCode = sourceCode;
+      state.optionVersion = SOURCE_OPTIONS[state.market].optionVersion;
+      renderSourceStep();
+      saveWizardState();
+      emitEvent("acquisition_source_select", {
+        source_code: sourceCode,
+        option_version: state.optionVersion
+      });
+    }
+
+    function backToGames() {
+      if (state.sourceSavedAt) return;
+      showStep("game");
+      emitEvent("personalization_wizard_view", { step: "game", restored: true });
+    }
+
+    function completeWizard() {
+      if (!state.sourceCode || state.sourceSavedAt) return;
+      state.status = WIZARD_STATES.COMPLETED;
+      state.step = "result";
+      state.sourceSavedAt = new Date().toISOString();
+      state.syncStatus = state.network === "online" ? "synced" : "sync_pending";
+      saveWizardState();
+      emitEvent("acquisition_source_submit", {
+        source_code: state.sourceCode,
+        market: state.market,
+        option_version: state.optionVersion
+      });
+      showStep("result", false);
+    }
+
+    function retryPendingSync() {
+      if (state.network === "online" && state.syncStatus === "sync_pending") {
+        state.syncStatus = "synced";
+        saveWizardState();
+        emitEvent("personalization_wizard_sync_result", { result: "success", retry_count: 1 });
+        if (state.step === "result") renderResultStep();
+      }
+    }
+
+    function renderResultStep() {
+      const completed = state.status === WIZARD_STATES.COMPLETED;
+      const mark = document.querySelector("#resultMark");
+      const title = document.querySelector("#resultTitle");
+      const description = document.querySelector("#resultDescription");
+      const meta = document.querySelector("#resultMeta");
+
+      if (completed) {
+        mark.textContent = "✓";
+        title.textContent = state.market === "domestic" ? "设置完成" : "All set";
+        description.textContent = state.syncStatus === "sync_pending"
+          ? "答案已可靠保存在本机，你可以先进入首页，联网后会自动同步。"
+          : "已进入首页，推荐会结合你的选择逐步优化。";
+        meta.innerHTML = `
+          <span>${state.selectedGameIds.size ? `已选${state.selectedGameIds.size}款游戏` : "未手选游戏"}</span>
+          <span>${state.sourceCode}</span>
+          <span>${state.syncStatus}</span>`;
+      } else {
+        mark.textContent = "→";
+        title.textContent = "本次不展示问卷";
+        description.textContent = "未命中触发条件，按原流程进入首页。";
+        meta.innerHTML = '<span>保留原首页体验</span>';
+      }
+    }
+
+    function eligibleColdStart(input) {
+      if (!input.isColdStart) return false;
+      if (!input.complianceFinished || input.hasHigherPriorityLayer) return false;
+      if (!input.featureEnabled || !input.inVersionRange || !input.inRollout) return false;
+      if (input.status === WIZARD_STATES.COMPLETED) return false;
+      if (input.userType === "new") {
+        if (!input.onboardingCompletedAt) return false;
+        return input.serverNow - input.onboardingCompletedAt >= 24 * 60 * 60 * 1000;
+      }
+      return true;
+    }
+
+    function resetStateModel({ keepMarket = true, keepNetwork = true } = {}) {
+      const market = keepMarket ? state.market : "domestic";
+      const network = keepNetwork ? state.network : "online";
+      Object.assign(state, {
+        step: "game",
+        status: WIZARD_STATES.PENDING,
+        selectedGameIds: new Set(),
+        visibleGameIds: gameCatalog.slice(0, 9).map(game => game.id),
+        sourceCode: null,
+        market,
+        network,
+        optionVersion: null,
+        sourceSavedAt: null,
+        syncStatus: null,
+        onboarding_completed_at: null,
+        identity: { installId: "demo-install", accountId: null },
+        events: []
+      });
+    }
+
+    function readOnboardingHandoff() {
+      return JSON.parse(localStorage.getItem(ONBOARDING_HANDOFF_KEY) || "null");
+    }
+
+    function applyPersonaScenario(persona) {
+      resetStateModel();
+      const now = Date.now();
+      if (persona === "new_under_24h") {
+        state.onboarding_completed_at = new Date(now - 23 * 60 * 60 * 1000).toISOString();
+      } else if (persona === "new_eligible") {
+        const handoff = readOnboardingHandoff();
+        state.onboarding_completed_at = handoff?.onboarding_completed_at || new Date(now - 25 * 60 * 60 * 1000).toISOString();
+      } else if (persona === "source_resume") {
+        state.status = WIZARD_STATES.SOURCE_PENDING;
+        state.step = "source";
+        state.selectedGameIds = new Set(["black_myth_wukong", "elden_ring", "it_takes_two"]);
+        state.sourceCode = "friend_referral";
+        state.optionVersion = SOURCE_OPTIONS[state.market].optionVersion;
+      } else if (persona === "completed") {
+        state.status = WIZARD_STATES.COMPLETED;
+        state.step = "result";
+        state.selectedGameIds = new Set(["black_myth_wukong", "elden_ring", "it_takes_two"]);
+        state.sourceCode = "friend_referral";
+        state.optionVersion = SOURCE_OPTIONS[state.market].optionVersion;
+        state.sourceSavedAt = new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString();
+        state.syncStatus = "synced";
+      }
+      saveWizardState();
+    }
+
+    function simulateColdStart() {
+      const persona = document.querySelector("#personaSelect").value;
+      applyPersonaScenario(persona);
+      const serverNow = Date.now();
+      const onboardingCompletedAt = state.onboarding_completed_at
+        ? new Date(state.onboarding_completed_at).getTime()
+        : null;
+      const input = {
+        isColdStart: true,
+        complianceFinished: true,
+        hasHigherPriorityLayer: false,
+        featureEnabled: true,
+        inVersionRange: true,
+        inRollout: true,
+        userType: persona.startsWith("new_") ? "new" : "existing",
+        onboardingCompletedAt,
+        serverNow,
+        status: state.status
+      };
+
+      if (persona === "source_resume") {
+        showStep("source");
+        document.querySelector("#simulatorStatus").textContent = "恢复第二步：保留第一步结果和已选来源，不要求用户重新选游戏。";
+        emitEvent("personalization_wizard_interrupt", { step: "source", interrupt_type: "process_restart" });
+        return;
+      }
+
+      const eligible = eligibleColdStart(input);
+      if (eligible) {
+        state.status = WIZARD_STATES.GAME_IN_PROGRESS;
+        showStep("game");
+        document.querySelector("#simulatorStatus").textContent = persona === "new_eligible"
+          ? "已满足滚动24小时：在本次合格冷启动展示两步问卷。"
+          : "非新用户命中目标版本与灰度：本次合格冷启动展示两步问卷。";
+        emitEvent("personalization_wizard_view", {
+          step: "game",
+          market: state.market,
+          entry_group: persona
+        });
+      } else {
+        if (persona !== "completed") state.status = WIZARD_STATES.NOT_ELIGIBLE;
+        saveWizardState();
+        showStep("result", false);
+        document.querySelector("#simulatorStatus").textContent = persona === "new_under_24h"
+          ? "未满滚动24小时：本次不展示问卷，直接进入原首页。"
+          : "历史已完成：账号或设备去重，本次不重复展示。";
+      }
+    }
+
+    function simulateInterrupt() {
+      saveWizardState();
+      const savedStep = state.step;
+      state.selectedGameIds = new Set();
+      state.sourceCode = null;
+      state.events = [];
+      restoreWizardState();
+      document.querySelector("#simulatorStatus").textContent = `已模拟进程中断：从本地草稿恢复到 ${savedStep === "source" ? "第二步" : "第一步"}。`;
+      emitEvent("personalization_wizard_interrupt", {
+        step: savedStep,
+        interrupt_type: "process_restart"
+      });
+    }
+
+    function setMarket(market) {
+      if (state.sourceSavedAt) {
+        document.querySelector("#simulatorStatus").textContent = "首次有效来源已保存，不允许通过切换市场覆盖；重置演示后可重新选择。";
+        document.querySelector("#marketSelect").value = state.market;
+        return;
+      }
+      state.market = market === "overseas" ? "overseas" : "domestic";
+      state.sourceCode = null;
+      state.optionVersion = SOURCE_OPTIONS[state.market].optionVersion;
+      renderSourceStep();
+      saveWizardState();
+    }
+
+    function setNetwork(network) {
+      state.network = network === "offline" ? "offline" : "online";
+      retryPendingSync();
+      saveWizardState();
+      document.querySelector("#simulatorStatus").textContent = state.network === "offline"
+        ? "已切换离线：来源答案会先保存在本机，完成后不阻塞进入首页。"
+        : "网络在线：待补报答案将自动幂等同步。";
+    }
+
+    function setOrientation(orientation) {
+      const phone = document.querySelector(".phone");
+      const landscape = orientation === "landscape";
+      phone.classList.toggle("landscape", landscape);
+      phone.classList.toggle("portrait", !landscape);
+      document.querySelectorAll("[data-orientation]").forEach(button => {
+        button.classList.toggle("active", button.dataset.orientation === orientation);
+      });
+    }
+
+    function resetDemo() {
+      localStorage.removeItem(STORAGE_KEY);
+      resetStateModel({ keepMarket: false, keepNetwork: false });
+      renderGameStep();
+      renderSourceStep();
+      showStep("game", false);
+      renderEventLog();
+      renderStatePanel();
+      document.querySelector("#personaSelect").value = "existing";
+      document.querySelector("#simulatorStatus").textContent = "演示数据已重置，可重新选择场景。";
+    }
+
+    document.addEventListener("click", event => {
+      const gameCard = event.target.closest("[data-game-id]");
+      if (gameCard) toggleGameSelection(gameCard.dataset.gameId);
+
+      const sourceCard = event.target.closest("[data-source-code]");
+      if (sourceCard) selectSource(sourceCard.dataset.sourceCode);
+
+      const orientation = event.target.closest("[data-orientation]");
+      if (orientation) setOrientation(orientation.dataset.orientation);
+
+      if (event.target.closest('[data-action="shuffle-games"]')) shuffleGames();
+      if (event.target.closest('[data-action="submit-games"]')) submitGames();
+      if (event.target.closest('[data-action="skip-games"]')) skipGames();
+      if (event.target.closest('[data-action="back-to-games"]')) backToGames();
+      if (event.target.closest('[data-action="submit-source"]')) completeWizard();
+      if (event.target.closest('[data-action="simulate-cold-start"]')) simulateColdStart();
+      if (event.target.closest('[data-action="simulate-interrupt"]')) simulateInterrupt();
+      if (event.target.closest('[data-action="reset-demo"]')) resetDemo();
+    });
+
+    document.querySelector("#marketSelect").addEventListener("change", event => setMarket(event.target.value));
+    document.querySelector("#networkSelect").addEventListener("change", event => setNetwork(event.target.value));
+
+    window.PersonalizationWizard = {
+      state,
+      showStep,
+      simulateColdStart,
+      eligibleColdStart,
+      restoreWizardState,
+      mergeIdentityState,
+      setMarket,
+      setNetwork,
+      reset: resetDemo
+    };
+
+    const requestedPersona = new URLSearchParams(location.search).get("persona");
+    if (requestedPersona && document.querySelector(`#personaSelect option[value="${requestedPersona}"]`)) {
+      document.querySelector("#personaSelect").value = requestedPersona;
+      simulateColdStart();
+    } else if (!restoreWizardState()) {
+      renderGameStep();
+      renderSourceStep();
+      showStep("game", false);
+      renderEventLog();
+      renderStatePanel();
+    }
+  </script>
+</body>
+</html>
