@@ -110,7 +110,7 @@ assert.equal(await page.locator('.acquisition-source-card').count(), 6);
 assert((await page.locator('#sourceTitle').innerText()).includes('GameHub'));
 assert.equal((await page.locator('body').innerText()).includes('GaishiGame'), false);
 
-const under24Eligible = await page.evaluate(() => window.PersonalizationWizard.eligibleColdStart({
+const newUserEligible = await page.evaluate(() => window.PersonalizationWizard.eligibleColdStart({
   isColdStart: true,
   complianceFinished: true,
   hasHigherPriorityLayer: false,
@@ -118,25 +118,49 @@ const under24Eligible = await page.evaluate(() => window.PersonalizationWizard.e
   inVersionRange: true,
   inRollout: true,
   userType: 'new',
-  onboardingCompletedAt: Date.now() - 23 * 60 * 60 * 1000,
-  serverNow: Date.now(),
+  manualInterestExempt: true,
   status: 'pending',
 }));
-assert.equal(under24Eligible, false, 'new user must wait a rolling 24 hours');
+assert.equal(newUserEligible, false, 'new users must be handled only by onboarding');
 
-const after24Eligible = await page.evaluate(() => window.PersonalizationWizard.eligibleColdStart({
-  isColdStart: true,
-  complianceFinished: true,
-  hasHigherPriorityLayer: false,
-  featureEnabled: true,
-  inVersionRange: true,
-  inRollout: true,
-  userType: 'new',
-  onboardingCompletedAt: Date.now() - 25 * 60 * 60 * 1000,
-  serverNow: Date.now(),
-  status: 'pending',
-}));
-assert.equal(after24Eligible, true, 'new user must become eligible after a rolling 24 hours');
+await page.selectOption('#personaSelect', 'new_exempt');
+await page.locator('[data-action="simulate-cold-start"]').click();
+assert.equal(
+  await page.locator('[data-wizard-step="result"].active').count(),
+  1,
+  'new users must never enter the existing-user wizard'
+);
+assert.equal(
+  await page.evaluate(() => window.PersonalizationWizard.state.manualInterestExempt),
+  true,
+  'new users handled by onboarding must keep the permanent exemption'
+);
+
+await page.selectOption('#personaSelect', 'existing_source_only');
+await page.locator('[data-action="simulate-cold-start"]').click();
+assert.equal(
+  await page.locator('[data-wizard-step="source"].active').count(),
+  1,
+  'source-only users must open the source step'
+);
+assert.equal(
+  await page.evaluate(() => window.PersonalizationWizard.state.gameTerminal),
+  'historical_profile',
+  'source-only users must keep the existing game profile terminal'
+);
+
+await page.selectOption('#personaSelect', 'existing_game_only');
+await page.locator('[data-action="simulate-cold-start"]').click();
+assert.equal(
+  await page.locator('[data-wizard-step="game"].active').count(),
+  1,
+  'game-only users must open the game step'
+);
+assert.equal(
+  await page.evaluate(() => window.PersonalizationWizard.state.sourceTerminal),
+  true,
+  'game-only users must keep the existing source terminal'
+);
 
 const mergedState = await page.evaluate(() => window.PersonalizationWizard.mergeIdentityState(
   { status: 'source_pending', sourceCode: 'douyin' },
