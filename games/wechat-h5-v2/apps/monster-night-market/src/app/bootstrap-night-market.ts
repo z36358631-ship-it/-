@@ -41,6 +41,7 @@ export interface BootstrapDeps {
   readonly accessibility: AccessibilityController;
   readonly testHarness: TestHarness;
   readonly now: () => number;
+  readonly createRunId?: () => string;
 }
 
 export interface NightMarketAppSnapshot {
@@ -64,6 +65,8 @@ export interface BootstrappedNightMarket {
 export async function bootstrapNightMarket(
   deps: BootstrapDeps,
 ): Promise<BootstrappedNightMarket> {
+  const createRunId =
+    deps.createRunId ?? (() => crypto.randomUUID());
   await deps.assets.loadGroup("boot");
   const loaded = await deps.save.load();
   let flow = createFlow(loaded.payload);
@@ -71,6 +74,7 @@ export async function bootstrapNightMarket(
   let finishing = false;
   let committing = false;
   let pendingAction: ShiftAction | null = null;
+  let runStartedAt = 0;
 
   deps.view.setKeyArt(
     deps.assets.get<string>("concept.keyart"),
@@ -102,6 +106,10 @@ export async function bootstrapNightMarket(
     flow = finishRun(flow, summary);
     await deps.save.save(flow.save);
     deps.telemetry.endRun({
+      result:
+        finalSnapshot.servedOrderCount > 0
+          ? "won"
+          : "lost",
       score: summary.score,
       completedRecipeIds:
         summary.completedRecipeIds,
@@ -155,7 +163,8 @@ export async function bootstrapNightMarket(
     if (flow.screen === "tutorial") {
       flow = startRun(flow);
     }
-    deps.telemetry.beginRun(activeSeed);
+    runStartedAt = deps.now();
+    deps.telemetry.beginRun(createRunId());
     const unlockedStalls =
       flow.save.unlockedStallIds;
     const stallId =
@@ -189,6 +198,25 @@ export async function bootstrapNightMarket(
         if (flow.screen === "playing") {
           deps.view.updateRun(runSnapshot);
         }
+      },
+      onFirstInput: ({ action, moveCount }) => {
+        deps.telemetry.emit("first_input", {
+          kind: "shift",
+          axis: action.axis,
+          moveCount,
+          elapsedMs: Math.max(0, deps.now() - runStartedAt),
+        });
+      },
+      onFirstPayoff: ({
+        completedOrderCount,
+        servedOrderCount,
+      }) => {
+        deps.telemetry.emit("first_payoff", {
+          kind: "order_served",
+          completedOrderCount,
+          servedOrderCount,
+          elapsedMs: Math.max(0, deps.now() - runStartedAt),
+        });
       },
     });
     deps.view.renderPlaying(controller.snapshot());

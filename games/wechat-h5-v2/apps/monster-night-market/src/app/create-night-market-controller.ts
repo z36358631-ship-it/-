@@ -88,6 +88,16 @@ interface ControllerDeps {
   readonly onUpdate?: (
     snapshot: ControllerSnapshot,
   ) => void;
+  readonly onFirstInput?: (event: {
+    readonly action: ShiftAction;
+    readonly at: number;
+    readonly moveCount: number;
+  }) => void;
+  readonly onFirstPayoff?: (event: {
+    readonly at: number;
+    readonly completedOrderCount: number;
+    readonly servedOrderCount: number;
+  }) => void;
 }
 
 export function createNightMarketController(
@@ -101,6 +111,8 @@ export function createNightMarketController(
       : {}),
   });
   let settled: Promise<void> = Promise.resolve();
+  let firstInputReported = false;
+  let firstPayoffReported = false;
   const blind = new BlindSlideTracker({
     emit: (eventName, payload) => {
       deps.telemetry.emit(eventName, payload);
@@ -170,6 +182,26 @@ export function createNightMarketController(
       const preview = makePreview(action);
       const festivalBefore = run.festivalCount;
       run = applyShift(run, action);
+      if (!firstInputReported) {
+        firstInputReported = true;
+        deps.onFirstInput?.({
+          action,
+          at,
+          moveCount: run.moveCount,
+        });
+      }
+      if (
+        !firstPayoffReported &&
+        preview.completedOrderIds.length > 0
+      ) {
+        firstPayoffReported = true;
+        deps.onFirstPayoff?.({
+          at,
+          completedOrderCount:
+            preview.completedOrderIds.length,
+          servedOrderCount: run.servedOrderCount,
+        });
+      }
       const festivalTriggered =
         run.festivalCount > festivalBefore;
       blind.commit(at, {

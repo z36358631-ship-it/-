@@ -42,11 +42,23 @@ for (const gameId of [
   }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
-    await page.goto(`/${gameId}/?test=1&seed=17`, {
+    await page.goto(`/${gameId}/`, {
       waitUntil: "networkidle",
     });
     await expect(page.locator("#app")).toBeVisible();
     await expect(page.locator("canvas")).toHaveCount(1);
+    const cryptoCapability = await page.evaluate(() => ({
+      secureContext: window.isSecureContext,
+      randomUUIDType: typeof crypto.randomUUID,
+      sample: crypto.randomUUID(),
+    }));
+    expect(cryptoCapability).toMatchObject({
+      secureContext: true,
+      randomUUIDType: "function",
+    });
+    expect(cryptoCapability.sample).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u,
+    );
     expect(errors).toEqual([]);
   });
 }

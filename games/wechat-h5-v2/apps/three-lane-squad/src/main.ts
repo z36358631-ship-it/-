@@ -113,6 +113,12 @@ async function boot(): Promise<void> {
       telemetry.emit("strategy_changed", { kind });
       void audio.unlockFromGesture();
     },
+    onFirstInput: (payload) => {
+      telemetry.emit("first_input", payload);
+    },
+    onFirstPayoff: (payload) => {
+      telemetry.emit("first_payoff", payload);
+    },
     onRunStart: (runId, daily) => {
       telemetry.beginRun(runId);
       if (daily) telemetry.emit("daily_start");

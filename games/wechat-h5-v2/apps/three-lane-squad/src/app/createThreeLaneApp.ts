@@ -123,12 +123,24 @@ export function createThreeLaneApp(input: {
   persist: (save: ThreeLaneSave) => void;
   onScreenChange: (screen: AppScreen) => void;
   onMeaningfulInput: (kind: string) => void;
+  onFirstInput?: (payload: {
+    kind: string;
+    elapsedMs: number;
+  }) => void;
+  onFirstPayoff?: (payload: {
+    kind: "enemy_defeated";
+    enemyCount: number;
+    elapsedMs: number;
+  }) => void;
   onRunStart: (runId: string, daily: boolean) => void;
   onRunEnd: (result: "won" | "lost") => void;
   onPauseChange: (paused: boolean) => void;
   onMutedChange: (muted: boolean) => void;
   onReducedMotionChange: (reduced: boolean) => void;
+  createRunId?: () => string;
 }): ThreeLaneApp {
+  const createRunId =
+    input.createRunId ?? (() => crypto.randomUUID());
   const scene = new BattleScene(input.canvas);
   let screen: AppScreen = "home";
   let save = structuredClone(input.save);
@@ -141,6 +153,8 @@ export function createThreeLaneApp(input: {
   let lastEventSeq = 0;
   let transferPreview: TransferPreview | null = null;
   let recoveryUsedInSession = false;
+  let firstInputReported = false;
+  let firstPayoffReported = false;
   const reports: LocalRunReport[] = [];
 
   const setScreen = (next: AppScreen): void => {
@@ -263,7 +277,7 @@ export function createThreeLaneApp(input: {
     if (recoveryActive) recoveryUsedInSession = true;
     battle = createBattle({
       seed,
-      runId: `${mode}-${input.today}-${runOrdinal}-${seed}${recoveryActive ? "-recovery" : ""}`,
+      runId: createRunId(),
       runOrdinal,
       squad: SQUAD,
       mode,
@@ -280,6 +294,8 @@ export function createThreeLaneApp(input: {
           : `第 ${runOrdinal + 1} 局：${variantLabel(battle.variant)}`;
     lastDeployedId = null;
     lastEventSeq = 0;
+    firstInputReported = false;
+    firstPayoffReported = false;
     setScreen("battle");
     input.onRunStart(battle.runId, mode === "daily");
     renderHud();
@@ -306,6 +322,13 @@ export function createThreeLaneApp(input: {
       return;
     }
     battle = result.state;
+    if (!firstInputReported) {
+      firstInputReported = true;
+      input.onFirstInput?.({
+        kind: command.type,
+        elapsedMs: command.atMs,
+      });
+    }
     if (command.type === "deploy") {
       lastDeployedId = battle.heroes.at(-1)?.instanceId ?? null;
       selectedHeroId = null;
@@ -409,6 +432,17 @@ export function createThreeLaneApp(input: {
     let needsFullHud = false;
     for (const event of newEvents) {
       lastEventSeq = event.seq;
+      if (
+        event.type === "enemy_defeated" &&
+        !firstPayoffReported
+      ) {
+        firstPayoffReported = true;
+        input.onFirstPayoff?.({
+          kind: "enemy_defeated",
+          enemyCount: 1,
+          elapsedMs: event.atMs,
+        });
+      }
       if (event.type === "boss_charge") {
         message = "危险：Boss 蓄力！立即点按 Boss 集火";
         needsFullHud = true;
