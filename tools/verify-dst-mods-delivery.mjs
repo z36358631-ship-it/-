@@ -73,6 +73,11 @@ const rules = [
       /ATOMIC_SWITCH_FAILED/,
       /SOURCE_UNAVAILABLE/,
       /LOG_EVIDENCE_MISSING/
+    ],
+    forbidden: [
+      /compressed_size_bytes: Record<ClientPlatform, number>;/,
+      /unpacked_size_bytes: Record<ClientPlatform, number>;/,
+      /peak_staging_size_bytes: Record<ClientPlatform, number>;/
     ]
   }
 ];

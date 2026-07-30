@@ -140,9 +140,6 @@ interface ExternalModRecord {
   preview_images: string[];
   version: string;
   updated_at: Iso8601DateTime;
-  compressed_size_bytes: Record<ClientPlatform, number>;
-  unpacked_size_bytes: Record<ClientPlatform, number>;
-  peak_staging_size_bytes: Record<ClientPlatform, number>;
   packages: PlatformPackage[];
   dependencies: DependencyConstraint[];
   known_conflicts: KnownConflict[];
@@ -157,9 +154,9 @@ interface ExternalModRecord {
 
 1. `source_id + source_mod_id` 是来源同步键；同一来源记录改名、改简介或发新版本时保持 `mod_id` 不变。
 2. `mod_id` 是盖世游戏内部稳定 ID。不同来源记录只有经人工确认是同一 MOD 后才可合并为同一 `mod_id`。
-3. `packages` 中同一平台只能有一个当前版本包。目录响应必须包含请求平台对应的包，否则该平台为不兼容。
-4. `ExternalModRecord` 的三个平台映射字段必须与对应 `PlatformPackage` 的三个字节字段完全一致，用于列表展示和服务端闭包汇总校验。
-5. `compressed_size_bytes`、`unpacked_size_bytes`、`peak_staging_size_bytes` 均必填且为非负整数。任一根 MOD或硬依赖缺失、非法，或服务端闭包总量与逐包求和不一致，安装门禁返回 `SPACE_METADATA_MISSING`，不得创建任务。
+3. `PlatformPackage` 是各平台下载地址、包哈希和三项空间元数据的唯一权威；`ExternalModRecord` 及其他响应位置不得复制这些字段。
+4. 目录、详情和依赖闭包汇总必须从 `packages` 中读取 `platform` 与请求平台相同的唯一 `PlatformPackage`。没有匹配包时返回 `MOD_PLATFORM_INCOMPATIBLE`；匹配包多于一个时判定为上游合同错误，该记录不得提供安装操作，安装门禁返回 `SPACE_METADATA_MISSING` 并记录合同告警。
+5. `PlatformPackage.compressed_size_bytes`、`PlatformPackage.unpacked_size_bytes`、`PlatformPackage.peak_staging_size_bytes` 均必填且为非负整数。任一根 MOD或硬依赖缺失、非法，或服务端闭包总量与逐包求和不一致，安装门禁返回 `SPACE_METADATA_MISSING`，不得创建任务。
 6. `peak_staging_size_bytes` 只表示压缩包和最终版本目录以外的额外临时峰值，不得包含前两项。
 7. 依赖、兼容或冲突信息不完整时，客户端显示“来源未提供”。兼容性未知是风险项，不得伪装为已检测兼容。
 8. 来源文本均按不可执行文本处理；客户端不得执行安装说明、简介或更新记录中的命令、脚本和链接内容。
@@ -191,7 +188,7 @@ interface ModDirectoryResponse {
 }
 ```
 
-- 只返回 `source_status = active`、属于 DST 且请求平台存在包的记录。
+- 只返回 `source_status = active`、属于 DST 且请求平台存在唯一 `PlatformPackage` 的记录；列表大小和安装门禁空间数据均从该包读取。
 - 同一分页令牌同时只允许一个进行中的请求。客户端按 `mod_id` 去重，设备本地事实覆盖卡片缓存中的操作状态。
 - `next_page_token = null` 表示没有更多数据；接口不承诺总页数。
 - 默认热门排序；排序值相同则按 `updated_at` 倒序，再按 `mod_id` 升序保证稳定。
@@ -215,7 +212,7 @@ interface ModDetailResponse {
 }
 ```
 
-- 活跃且可用于请求平台的记录返回 HTTP `200`。
+- 活跃且请求平台存在唯一 `PlatformPackage` 的记录返回 HTTP `200`；详情大小、下载地址、哈希和空间数据均从该包读取。
 - 已删除、转移到其他游戏或从未存在的记录对新用户返回 HTTP `404`。
 - 下载源失效时返回 HTTP `410` 和 `SOURCE_UNAVAILABLE`，不得返回可执行的缓存下载地址。
 - 客户端可为已安装用户展示此前缓存的不可执行来源文本，但启停、启动和卸载始终基于本地事实。
