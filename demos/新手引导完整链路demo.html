@@ -341,6 +341,23 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 .import-btn:active{transform:scale(.97)}
 .manual-link{display:block;text-align:center;margin-top:12px;font-size:13px;color:var(--blue);cursor:pointer;border:none;background:none}
 
+/* Acquisition Source */
+.source-page-body{padding:72px 24px 32px;gap:18px}
+.source-header{display:flex;flex-direction:column;gap:8px}
+.source-back{width:32px;height:32px;border:1px solid var(--border-light);border-radius:50%;background:#141414;color:#fff;cursor:pointer}
+.source-kicker{color:var(--gold);font-size:11px;letter-spacing:1.1px;text-transform:uppercase}
+.source-title{font-size:24px;line-height:1.25;font-weight:650}
+.source-desc{font-size:14px;color:var(--muted)}
+.source-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.source-card{min-height:64px;padding:12px;border:1px solid var(--border);border-radius:var(--r-lg);background:rgba(22,22,22,.94);color:#fff;text-align:left;cursor:pointer;display:flex;align-items:center;gap:10px}
+.source-card[aria-pressed="true"]{border-color:var(--gold);background:var(--gold-dim);box-shadow:0 0 0 1px rgba(255,204,67,.18)}
+.source-icon{width:32px;height:32px;border-radius:10px;background:#242424;display:grid;place-items:center;font-weight:700;flex-shrink:0}
+.source-label{font-size:14px;font-weight:520}
+.source-footer{margin-top:auto}
+.source-submit{width:100%;height:48px;border:0;border-radius:var(--r-full);background:var(--gold);color:#111;font-weight:650;cursor:pointer}
+.source-submit:disabled{background:#252525;color:#666;cursor:not-allowed}
+.source-sync-note{min-height:20px;margin-top:10px;text-align:center;color:var(--muted);font-size:12px}
+
 /* Done Page */
 .done-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 32px}
 .done-icon{font-size:56px;margin-bottom:16px}
@@ -382,18 +399,38 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
       </div>
       <div class="gh-divider"></div>
       <div class="opt-list">
-        <div class="opt-card" onclick="goStep1()">
+        <div class="opt-card" onclick="startOnboarding('has_game')">
           <div class="opt-icon" style="background:linear-gradient(145deg,#1b2838,#2a4a6a)"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.04 2 11.04c0 3.9 2.87 7.22 6.84 8.38l2.62-3.75c-.34-.03-.69-.05-1.04-.05-.22 0-.44.01-.66.03L7.2 13.9a2.48 2.48 0 0 1 1.76-4.24c.2 0 .4.02.58.07l2.38-3.41A5.5 5.5 0 0 1 17.5 11c0 .18-.01.35-.03.52l3.53.88C21.64 6.52 17.28 2 12 2z"/></svg></div>
           <div class="opt-info"><div class="opt-title">我有游戏想玩</div><div class="opt-desc">已有Steam账号或游戏文件，想在手机上玩</div></div>
           <div class="opt-arrow">&#x203A;</div>
         </div>
-        <div class="opt-card" onclick="handleNewUser()">
+        <div class="opt-card" onclick="startOnboarding('new_user')">
           <div class="opt-icon" style="background:linear-gradient(145deg,#3d1a0e,#7a3a20);font-size:22px">&#x26A1;</div>
           <div class="opt-info"><div class="opt-title">我是新手，想看看有什么</div><div class="opt-desc">没玩过，想体验一下热门游戏</div></div>
           <div class="opt-arrow">&#x203A;</div>
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Step 1: 来源采集 -->
+<div class="page" id="pageSource">
+  <div class="page-body source-page-body">
+    <button type="button" class="source-back" data-action="source-back" aria-label="返回">←</button>
+    <div class="onboarding-progress" aria-label="新手引流来源采集，第2步，共3步">
+      <span class="is-active"></span><span class="is-active"></span><span></span>
+    </div>
+    <header class="source-header">
+      <p class="source-kicker">Where did you hear about us?</p>
+      <h2 class="source-title" id="onboardingSourceTitle">你最早是从哪里了解到盖世游戏的？</h2>
+      <p class="source-desc" id="onboardingSourceDesc">请选择最符合实际情况的一项</p>
+    </header>
+    <div class="source-grid" id="onboardingSourceGrid"></div>
+    <footer class="source-footer">
+      <button type="button" class="source-submit" data-action="submit-onboarding-source" disabled>请选择一项</button>
+      <p class="source-sync-note" id="onboardingSourceSyncNote"></p>
+    </footer>
   </div>
 </div>
 
@@ -517,7 +554,7 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
     <div class="done-title" id="doneTitle">准备就绪！</div>
     <div class="done-desc" id="doneDesc">已根据你的喜好配置推荐内容
 现在开始探索你的游戏世界</div>
-    <p class="handoff-note">独立新手引流已完成；个性化问卷将在满24小时后的首次合格冷启动展示。</p>
+    <p class="handoff-note">新手引流已完成；后续推荐将根据启动、导入和 Steam 游戏库等实际行为生成。</p>
     <button class="done-btn" onclick="resetAll()">进入探索页（重置）</button>
   </div>
 </div>
@@ -528,11 +565,11 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 <h4>Demo</h4>
 <button class="cp-btn" id="regionBtn" onclick="toggleRegion()" style="background:#FFE240;color:#000;font-weight:520">当前：国内版</button>
 <button class="cp-btn" onclick="resetAll()">重置</button>
-<button class="cp-btn" onclick="goStep1()">有游戏想玩</button>
-<button class="cp-btn" onclick="handleNewUser()">新手入口</button>
+<button class="cp-btn" onclick="startOnboarding('has_game')">有游戏想玩</button>
+<button class="cp-btn" onclick="startOnboarding('new_user')">新手入口</button>
+<button class="cp-btn" onclick="previewSourcePage()">来源采集页</button>
 <button class="cp-btn" onclick="showScan()">导入扫描</button>
 <button class="cp-btn" onclick="showDone('play')">完成页</button>
-<button class="cp-btn" onclick="location.href='用户与设置/个性化推荐采集demo.html?persona=new_eligible'">查看24小时后问卷</button>
 </div>
 
 <script>
@@ -575,9 +612,62 @@ function renderGameList(){
 }
 renderGameList();
 
+var ONBOARDING_SOURCE_KEY='gamehub_onboarding_source_v2';
+var ONBOARDING_FLOW_STATES={
+  USER_TYPE_PENDING:'onboarding_user_type_pending',
+  SOURCE_PENDING:'onboarding_source_pending',
+  SOURCE_SAVED:'onboarding_source_saved',
+  BRANCH_IN_PROGRESS:'onboarding_branch_in_progress',
+  COMPLETED:'onboarding_completed'
+};
+var ONBOARDING_SOURCE_OPTIONS={
+  domestic:{
+    title:'你最早是从哪里了解到盖世游戏的？',
+    description:'请选择最符合实际情况的一项',
+    optionVersion:'domestic_v1',
+    options:[
+      {code:'douyin',label:'抖音',icon:'抖'},
+      {code:'bilibili',label:'哔哩哔哩',icon:'哔'},
+      {code:'xiaohongshu',label:'小红书',icon:'红'},
+      {code:'app_store',label:'应用商店',icon:'商'},
+      {code:'friend_referral',label:'朋友推荐',icon:'友'},
+      {code:'other_or_unknown',label:'其他／不记得',icon:'…'}
+    ]
+  },
+  overseas:{
+    title:'Where did you first hear about GameHub?',
+    description:'Choose the option that best matches your experience.',
+    optionVersion:'overseas_v1',
+    options:[
+      {code:'youtube',label:'YouTube',icon:'▶'},
+      {code:'tiktok',label:'TikTok',icon:'♪'},
+      {code:'reddit',label:'Reddit',icon:'R'},
+      {code:'discord',label:'Discord',icon:'D'},
+      {code:'friend_referral',label:'Friends',icon:'F'},
+      {code:'other_or_unknown',label:'Other / I don’t remember',icon:'…'}
+    ]
+  }
+};
+var onboardingFlow={
+  state:ONBOARDING_FLOW_STATES.USER_TYPE_PENDING,
+  userType:null,
+  market:'domestic',
+  sourceCode:null,
+  optionVersion:null,
+  responseId:null,
+  sourceSavedAt:null,
+  syncStatus:null,
+  sourceReportedAt:null,
+  entryGroup:'new_user_onboarding',
+  manualInterestExempt:false
+};
 var isOverseas=false;
 function toggleRegion(){
   isOverseas=!isOverseas;
+  applyRegionPresentation();
+  resetAll();
+}
+function applyRegionPresentation(){
   var btn=document.getElementById('regionBtn');
   btn.textContent=isOverseas?'Current: Overseas':'当前：国内版';
   btn.style.background=isOverseas?'#90AAFF':'#FFE240';
@@ -615,26 +705,131 @@ function toggleRegion(){
     opts[1].querySelector('.opt-title').textContent='我是新手，想看看有什么';
     opts[1].querySelector('.opt-desc').textContent='没玩过，想体验一下热门游戏';
   }
-  resetAll();
+}
+
+function saveOnboardingFlow(){
+  localStorage.setItem(ONBOARDING_SOURCE_KEY,JSON.stringify(onboardingFlow));
+}
+
+function loadOnboardingFlow(){
+  var saved=null;
+  try{
+    saved=JSON.parse(localStorage.getItem(ONBOARDING_SOURCE_KEY)||'null');
+  }catch(error){
+    localStorage.removeItem(ONBOARDING_SOURCE_KEY);
+  }
+  if(saved) Object.assign(onboardingFlow,saved);
+  return Boolean(saved);
+}
+
+function renderOnboardingSource(){
+  var config=ONBOARDING_SOURCE_OPTIONS[isOverseas?'overseas':'domestic'];
+  onboardingFlow.market=isOverseas?'overseas':'domestic';
+  onboardingFlow.optionVersion=config.optionVersion;
+  document.getElementById('onboardingSourceTitle').textContent=config.title;
+  document.getElementById('onboardingSourceDesc').textContent=config.description;
+  document.getElementById('onboardingSourceGrid').innerHTML=config.options.map(function(option){
+    var selected=onboardingFlow.sourceCode===option.code;
+    return '<button type="button" class="source-card" data-onboarding-source-code="'+option.code+'" aria-pressed="'+selected+'">'+
+      '<span class="source-icon">'+option.icon+'</span><span class="source-label">'+option.label+'</span></button>';
+  }).join('');
+  var submit=document.querySelector('[data-action="submit-onboarding-source"]');
+  submit.disabled=!onboardingFlow.sourceCode;
+  submit.textContent=onboardingFlow.sourceCode?'继续':'请选择一项';
+  var note=document.getElementById('onboardingSourceSyncNote');
+  note.textContent=onboardingFlow.syncStatus==='sync_pending'?'已保存，将在联网后同步':'';
+}
+
+function startOnboarding(userType){
+  onboardingFlow.userType=userType;
+  onboardingFlow.state=ONBOARDING_FLOW_STATES.SOURCE_PENDING;
+  onboardingFlow.market=isOverseas?'overseas':'domestic';
+  onboardingFlow.entryGroup='new_user_onboarding';
+  saveOnboardingFlow();
+  renderOnboardingSource();
+  switchPage('pageSource');
+}
+
+function selectOnboardingSource(code){
+  var config=ONBOARDING_SOURCE_OPTIONS[isOverseas?'overseas':'domestic'];
+  var valid=config.options.some(function(option){return option.code===code});
+  if(!valid) return;
+  onboardingFlow.sourceCode=code;
+  saveOnboardingFlow();
+  renderOnboardingSource();
+}
+
+function syncOnboardingSource(){
+  if(!navigator.onLine||onboardingFlow.syncStatus!=='sync_pending'||!onboardingFlow.responseId) return false;
+  onboardingFlow.syncStatus='synced';
+  onboardingFlow.sourceReportedAt=onboardingFlow.sourceReportedAt||new Date().toISOString();
+  saveOnboardingFlow();
+  return true;
+}
+
+function submitOnboardingSource(){
+  if(!onboardingFlow.sourceCode) return;
+  onboardingFlow.state=ONBOARDING_FLOW_STATES.SOURCE_SAVED;
+  onboardingFlow.responseId=onboardingFlow.responseId||('source_'+Date.now());
+  onboardingFlow.sourceSavedAt=onboardingFlow.sourceSavedAt||new Date().toISOString();
+  onboardingFlow.syncStatus=navigator.onLine?'synced':'sync_pending';
+  onboardingFlow.sourceReportedAt=navigator.onLine?(onboardingFlow.sourceReportedAt||new Date().toISOString()):null;
+  onboardingFlow.manualInterestExempt=true;
+  saveOnboardingFlow();
+  continueOnboardingBranch();
+}
+
+function continueOnboardingBranch(){
+  onboardingFlow.state=ONBOARDING_FLOW_STATES.BRANCH_IN_PROGRESS;
+  saveOnboardingFlow();
+  if(onboardingFlow.userType==='has_game') goStep1Direct();
+  else if(isOverseas) goNewUserOverseasDirect();
+  else goNewUserDirect();
+}
+
+function restoreOnboardingFlow(){
+  if(!loadOnboardingFlow()) return false;
+  isOverseas=onboardingFlow.market==='overseas';
+  applyRegionPresentation();
+  if(onboardingFlow.syncStatus==='sync_pending') syncOnboardingSource();
+  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.USER_TYPE_PENDING){
+    switchPage('page0');
+    return true;
+  }
+  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.SOURCE_PENDING){
+    renderOnboardingSource();
+    switchPage('pageSource');
+    return true;
+  }
+  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.SOURCE_SAVED||onboardingFlow.state===ONBOARDING_FLOW_STATES.BRANCH_IN_PROGRESS){
+    continueOnboardingBranch();
+    return true;
+  }
+  return false;
 }
 
 function switchPage(id){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
   document.getElementById(id).classList.add('active');
 }
-function goStep1(){switchPage('page1')}
+function goStep1(){startOnboarding('has_game')}
+function handleNewUser(){startOnboarding('new_user')}
+function goStep1Direct(){switchPage('page1')}
 function goStep2(){switchPage('page2')}
-function goNewUser(){
+function goNewUserDirect(){
   switchPage('page2');
   var overlay=document.getElementById('giftOverlay');
   overlay.classList.add('show');
   setTimeout(function(){overlay.classList.remove('show')},2000);
 }
-
-function goNewUserOverseas(){switchPage('page2b')}
-
-function handleNewUser(){
-  if(isOverseas){goNewUserOverseas()}else{goNewUser()}
+function goNewUserOverseasDirect(){switchPage('page2b')}
+function previewSourcePage(){
+  onboardingFlow.userType=onboardingFlow.userType||'new_user';
+  onboardingFlow.state=ONBOARDING_FLOW_STATES.SOURCE_PENDING;
+  onboardingFlow.market=isOverseas?'overseas':'domestic';
+  saveOnboardingFlow();
+  renderOnboardingSource();
+  switchPage('pageSource');
 }
 
 var guideIdx=0;
@@ -668,10 +863,16 @@ function closeDetail(){
 
 var ONBOARDING_HANDOFF_KEY='gamehub_onboarding_handoff_v1';
 function recordOnboardingCompletion(path){
+  onboardingFlow.state=ONBOARDING_FLOW_STATES.COMPLETED;
+  onboardingFlow.manualInterestExempt=true;
+  saveOnboardingFlow();
   var handoff={
     onboarding_completed_at:new Date().toISOString(),
     onboarding_path:path,
-    next_rule:'满24小时后的首次合格冷启动'
+    source_code:onboardingFlow.sourceCode,
+    source_response_id:onboardingFlow.responseId,
+    manual_interest_exempt:true,
+    next_rule:'behavior_profile_only'
   };
   localStorage.setItem(ONBOARDING_HANDOFF_KEY,JSON.stringify(handoff));
   return handoff;
@@ -688,7 +889,39 @@ function showDone(type){
   document.getElementById('doneDesc').textContent=de[type]||'';
 }
 
-function resetAll(){switchPage('page0')}
+document.addEventListener('click',function(event){
+  var sourceCard=event.target.closest('[data-onboarding-source-code]');
+  if(sourceCard) selectOnboardingSource(sourceCard.dataset.onboardingSourceCode);
+  if(event.target.closest('[data-action="submit-onboarding-source"]')) submitOnboardingSource();
+  if(event.target.closest('[data-action="source-back"]')){
+    onboardingFlow.state=ONBOARDING_FLOW_STATES.USER_TYPE_PENDING;
+    saveOnboardingFlow();
+    switchPage('page0');
+  }
+});
+window.addEventListener('online',function(){
+  syncOnboardingSource();
+});
+
+function resetAll(){
+  localStorage.removeItem(ONBOARDING_SOURCE_KEY);
+  Object.assign(onboardingFlow,{
+    state:ONBOARDING_FLOW_STATES.USER_TYPE_PENDING,
+    userType:null,
+    market:isOverseas?'overseas':'domestic',
+    sourceCode:null,
+    optionVersion:null,
+    responseId:null,
+    sourceSavedAt:null,
+    syncStatus:null,
+    sourceReportedAt:null,
+    entryGroup:'new_user_onboarding',
+    manualInterestExempt:false
+  });
+  switchPage('page0');
+}
+
+restoreOnboardingFlow();
 </script>
 </body>
 </html>
