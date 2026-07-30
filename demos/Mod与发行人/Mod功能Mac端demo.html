@@ -1023,6 +1023,439 @@
       font-size: 20px;
       box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
     }
+
+    /* MODS 内容发现：沿用创意工坊的信息层级，但保持非官方本机安装语义。 */
+    .game-detail {
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+
+    .game-detail::-webkit-scrollbar {
+      display: none;
+    }
+
+    .mods-discovery-card {
+      position: absolute;
+      top: 823px;
+      left: 0;
+      width: 1300px;
+      height: 460px;
+      padding: 31px 33px 28px;
+      border: 2px solid rgba(255, 255, 255, 0.09);
+      border-radius: 28px;
+      background:
+        linear-gradient(125deg, rgba(255, 255, 255, 0.035), transparent 42%),
+        rgba(31, 30, 35, 0.82);
+      box-shadow: var(--shadow-card);
+    }
+
+    .mods-discovery-heading {
+      height: 72px;
+      display: flex;
+      align-items: center;
+    }
+
+    .mods-discovery-copy {
+      min-width: 0;
+      margin-left: 20px;
+    }
+
+    .mods-discovery-copy strong {
+      display: block;
+      color: #e1dfe2;
+      font-size: 28px;
+      font-weight: 560;
+      line-height: 36px;
+    }
+
+    .mods-discovery-copy span {
+      display: block;
+      margin-top: 6px;
+      color: #89878e;
+      font-size: 20px;
+      line-height: 26px;
+    }
+
+    .mods-discovery-all {
+      height: 50px;
+      margin-left: auto;
+      padding: 0 4px 0 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 13px;
+      border: 0;
+      background: transparent;
+      color: #c6c4c9;
+      font-size: 24px;
+    }
+
+    .mods-discovery-all:hover {
+      color: #f1eff2;
+    }
+
+    .mods-discovery-count {
+      padding: 8px 15px;
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      color: #929097;
+      font-size: 20px;
+      line-height: 24px;
+    }
+
+    .mods-featured-grid {
+      position: absolute;
+      right: 33px;
+      bottom: 28px;
+      left: 33px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
+    .featured-mod {
+      height: 307px;
+      min-width: 0;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: 208px 55px 44px;
+      border: 0;
+      border-radius: 20px;
+      background: #302f34;
+      color: #d9d7da;
+      text-align: left;
+      transition:
+        transform 150ms ease,
+        background-color 150ms ease;
+    }
+
+    .featured-mod:hover {
+      transform: translateY(-3px);
+      background: #37363b;
+    }
+
+    .featured-cover {
+      min-width: 0;
+      overflow: hidden;
+      display: block;
+      background: #202024;
+    }
+
+    .featured-cover > img,
+    .featured-cover > .placeholder-cover {
+      width: 100%;
+      height: 208px;
+      display: block;
+      object-fit: cover;
+      border-radius: 0;
+    }
+
+    .featured-mod > strong,
+    .featured-mod > span:last-child {
+      min-width: 0;
+      padding: 0 15px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .featured-mod > strong {
+      padding-top: 13px;
+      font-size: 22px;
+      font-weight: 430;
+      line-height: 30px;
+    }
+
+    .featured-mod > span:last-child {
+      padding-top: 3px;
+      color: #85838a;
+      font-size: 18px;
+      line-height: 27px;
+    }
+
+    .generated-cover,
+    .generated-detail-cover {
+      position: relative;
+      overflow: hidden;
+      align-content: center;
+      justify-items: center;
+      gap: 18px;
+      background:
+        radial-gradient(circle at 72% 24%, rgba(255, 255, 255, 0.18), transparent 28%),
+        linear-gradient(145deg, #3a3a43, #17171c);
+    }
+
+    .generated-cover::before,
+    .generated-detail-cover::before {
+      position: absolute;
+      width: 58%;
+      aspect-ratio: 1;
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      border-radius: 34%;
+      content: "";
+      transform: rotate(18deg);
+    }
+
+    .generated-cover-mark,
+    .generated-cover strong {
+      position: relative;
+      z-index: 1;
+    }
+
+    .generated-cover strong {
+      display: none;
+    }
+
+    .cover-stack {
+      background:
+        radial-gradient(circle at 26% 24%, rgba(255, 207, 101, 0.28), transparent 30%),
+        linear-gradient(145deg, #584d35, #1d1b1b);
+    }
+
+    .cover-clock {
+      background:
+        radial-gradient(circle at 70% 26%, rgba(120, 188, 255, 0.25), transparent 31%),
+        linear-gradient(145deg, #30465b, #171c22);
+    }
+
+    .cover-gather {
+      background:
+        radial-gradient(circle at 28% 24%, rgba(113, 213, 151, 0.26), transparent 30%),
+        linear-gradient(145deg, #2d503e, #161d19);
+    }
+
+    .cover-night {
+      background:
+        radial-gradient(circle at 72% 23%, rgba(165, 132, 255, 0.28), transparent 31%),
+        linear-gradient(145deg, #332d56, #171720);
+    }
+
+    .cover-archive {
+      background:
+        radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.055), transparent 27%),
+        linear-gradient(145deg, #34333a, #1c1b20);
+    }
+
+    .explore-title.discovery-layout {
+      top: 1332px;
+    }
+
+    .explore-card.discovery-layout {
+      top: 1421px;
+    }
+
+    /* 列表页的 Tab、排序和筛选。 */
+    .mods-tabs {
+      position: absolute;
+      top: 238px;
+      left: 207px;
+      width: 1300px;
+      height: 62px;
+      display: flex;
+      align-items: stretch;
+      gap: 8px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .mods-tabs button {
+      position: relative;
+      min-width: 174px;
+      padding: 0 28px;
+      border: 0;
+      background: transparent;
+      color: #88868d;
+      font-size: 23px;
+      font-weight: 430;
+    }
+
+    .mods-tabs button:hover {
+      color: #cac8cd;
+    }
+
+    .mods-tabs button.is-active {
+      color: #f1f0f2;
+      font-weight: 560;
+    }
+
+    .mods-tabs button.is-active::after {
+      position: absolute;
+      right: 25px;
+      bottom: -2px;
+      left: 25px;
+      height: 4px;
+      border-radius: 4px 4px 0 0;
+      background: #f1f0f2;
+      content: "";
+    }
+
+    .catalog-toolbar {
+      position: absolute;
+      top: 318px;
+      left: 207px;
+      width: 1300px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+    }
+
+    .catalog-toolbar > p {
+      color: #88868d;
+      font-size: 20px;
+      line-height: 28px;
+    }
+
+    .catalog-controls {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .sort-control {
+      height: 48px;
+      padding: 0 15px 0 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.09);
+      border-radius: 24px;
+      background: rgba(35, 34, 39, 0.8);
+      color: #817f86;
+      font-size: 18px;
+    }
+
+    .sort-control select {
+      min-width: 116px;
+      border: 0;
+      outline: 0;
+      background: #252429;
+      color: #c9c7cb;
+      font: inherit;
+      font-size: 19px;
+      cursor: pointer;
+    }
+
+    .installed-filters {
+      height: 48px;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      border-radius: 25px;
+      background: rgba(35, 34, 39, 0.76);
+    }
+
+    .installed-filters button {
+      height: 36px;
+      min-width: 78px;
+      padding: 0 13px;
+      border: 0;
+      border-radius: 19px;
+      background: transparent;
+      color: #85838a;
+      font-size: 17px;
+    }
+
+    .installed-filters button:hover {
+      color: #c9c7cb;
+    }
+
+    .installed-filters button.is-active {
+      background: rgba(255, 255, 255, 0.12);
+      color: #f0eff1;
+    }
+
+    .mods-grid {
+      top: 401px;
+      height: 1079px;
+      grid-auto-rows: 492px;
+    }
+
+    .mod-card {
+      height: 492px;
+      grid-template-rows: 320px 108px 64px;
+    }
+
+    .mod-copy {
+      padding: 14px 27px 9px;
+    }
+
+    .catalog-metrics {
+      display: block;
+      margin-top: 5px;
+      color: #8f8d94;
+      font-size: 16px;
+      line-height: 21px;
+    }
+
+    .mod-copy small {
+      margin-top: 5px;
+      font-size: 15px;
+      line-height: 20px;
+    }
+
+    .mod-copy strong.mod-state {
+      margin-top: 2px;
+      color: #8f8d94;
+      font-size: 15px;
+      line-height: 20px;
+    }
+
+    .mod-copy strong.mod-state.is-installed {
+      color: var(--success);
+    }
+
+    .mod-card footer {
+      padding: 0 27px;
+    }
+
+    .empty-list {
+      height: 492px;
+    }
+
+    /* 详情中的外部同步数据摘要。 */
+    .detail-metrics {
+      width: 1328px;
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: 0.9fr 1fr 0.9fr 0.8fr 1.55fr;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .detail-metrics span {
+      min-width: 0;
+      height: 92px;
+      padding: 17px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      border-right: 2px solid rgba(255, 255, 255, 0.07);
+      color: #85838a;
+      font-size: 16px;
+      line-height: 22px;
+    }
+
+    .detail-metrics span:last-child {
+      border-right: 0;
+    }
+
+    .detail-metrics strong {
+      overflow: hidden;
+      color: #d7d5d9;
+      font-size: 21px;
+      font-weight: 520;
+      line-height: 28px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .detail-metrics + .section-title {
+      margin-top: 24px;
+    }
   </style>
 </head>
 <body>
@@ -1101,15 +1534,22 @@
         latest_version: input.latest_version,
         file_size: input.file_size,
         cover: input.cover,
+        cover_theme: input.cover_theme || 'neutral',
         source_label: '非官方来源',
-        installation_fact: 'not_installed',
-        enabled_value: 'not_applicable',
-        update_fact: 'no_update',
+        download_count: input.download_count,
+        updated_at: input.updated_at,
+        popularity_rank: input.popularity_rank,
+        installed_at: input.installed_at || null,
+        compatibility_label: input.compatibility_label,
+        featured: Boolean(input.featured),
+        installation_fact: input.installation_fact || 'not_installed',
+        enabled_value: input.enabled_value || 'not_applicable',
+        update_fact: input.update_fact || 'no_update',
         install_gate: 'allowed',
-        installed_version: null,
-        installed_package_hash: null,
-        active_version_pointer: null,
-        current_task_id: null
+        installed_version: input.installed_version || null,
+        installed_package_hash: input.installed_package_hash || null,
+        active_version_pointer: input.active_version_pointer || null,
+        current_task_id: input.current_task_id || null
       };
     }
 
@@ -1127,7 +1567,12 @@
             summary: '1.1 GiB 分卷内容包，包含大型非官方扩展资源。',
             latest_version: '1.2.0',
             file_size: '1.1 GiB',
-            cover: 'placeholder'
+            cover: 'placeholder',
+            cover_theme: 'archive',
+            download_count: 63000,
+            updated_at: '2026-07-18T08:20:00.000Z',
+            popularity_rank: 5,
+            compatibility_label: '兼容当前游戏版本'
           }),
           'dst-large-a': createMod({
             mod_id: 'dst-large-a',
@@ -1135,7 +1580,12 @@
             summary: '1.1 GiB 分卷内容包，包含大型非官方扩展资源。',
             latest_version: '1.2.0',
             file_size: '1.1 GiB',
-            cover: 'placeholder'
+            cover: 'placeholder',
+            cover_theme: 'archive',
+            download_count: 58000,
+            updated_at: '2026-07-16T10:45:00.000Z',
+            popularity_rank: 6,
+            compatibility_label: '兼容当前游戏版本'
           }),
           'dst-fast-travel': createMod({
             mod_id: 'dst-fast-travel',
@@ -1143,7 +1593,18 @@
             summary: '在游戏 HUD 中添加功能完整的小地图，支持缩放、拖动、收起，并可独立保存小地图与大地图的缩放设置。',
             latest_version: '1.4.0',
             file_size: '18.6 MB',
-            cover: 'minimapHud'
+            cover: 'minimapHud',
+            download_count: 186000,
+            updated_at: '2026-07-24T09:30:00.000Z',
+            popularity_rank: 1,
+            compatibility_label: '兼容当前游戏版本',
+            featured: true,
+            installation_fact: 'installed',
+            enabled_value: 'enabled',
+            installed_at: '2026-07-30T08:00:00.000Z',
+            installed_version: '1.4.0',
+            installed_package_hash: 'sha256:dst-fast-travel:1.4.0',
+            active_version_pointer: '1.4.0'
           }),
           'dst-combined-status': createMod({
             mod_id: 'dst-combined-status',
@@ -1151,14 +1612,115 @@
             summary: '增强 HUD，显示玩家状态和世界信息，包括温度、季节、月相和世界天数。',
             latest_version: '2.3.1',
             file_size: '9.8 MB',
-            cover: 'combinedStatus'
+            cover: 'combinedStatus',
+            download_count: 142000,
+            updated_at: '2026-07-25T14:10:00.000Z',
+            popularity_rank: 2,
+            compatibility_label: '兼容当前游戏版本',
+            featured: true,
+            installation_fact: 'installed',
+            enabled_value: 'disabled',
+            update_fact: 'update_available',
+            installed_at: '2026-07-28T12:00:00.000Z',
+            installed_version: '2.2.0',
+            installed_package_hash: 'sha256:dst-combined-status:2.2.0',
+            active_version_pointer: '2.2.0'
+          }),
+          'dst-smart-stack': createMod({
+            mod_id: 'dst-smart-stack',
+            name: '智能堆叠',
+            summary: '自动整理同类物品与容器空间，让重复材料更快归位。',
+            latest_version: '3.1.0',
+            file_size: '7.4 MB',
+            cover: 'generated',
+            cover_theme: 'stack',
+            download_count: 98000,
+            updated_at: '2026-07-29T16:20:00.000Z',
+            popularity_rank: 3,
+            compatibility_label: '兼容当前游戏版本',
+            featured: true,
+            installation_fact: 'installed',
+            enabled_value: 'enabled',
+            installed_at: '2026-07-27T10:00:00.000Z',
+            installed_version: '3.1.0',
+            installed_package_hash: 'sha256:dst-smart-stack:3.1.0',
+            active_version_pointer: '3.1.0'
+          }),
+          'dst-season-clock': createMod({
+            mod_id: 'dst-season-clock',
+            name: '季节时钟',
+            summary: '在 HUD 中显示季节进度、昼夜长度与下一阶段倒计时。',
+            latest_version: '1.9.0',
+            file_size: '5.2 MB',
+            cover: 'generated',
+            cover_theme: 'clock',
+            download_count: 76000,
+            updated_at: '2026-07-27T07:40:00.000Z',
+            popularity_rank: 4,
+            compatibility_label: '兼容当前游戏版本',
+            installation_fact: 'installed',
+            enabled_value: 'disabled',
+            update_fact: 'update_available',
+            installed_at: '2026-07-26T09:00:00.000Z',
+            installed_version: '1.8.0',
+            installed_package_hash: 'sha256:dst-season-clock:1.8.0',
+            active_version_pointer: '1.8.0',
+            current_task_id: 'task-mac-device-local-01-dst-season-clock-update'
+          }),
+          'dst-fast-gather': createMod({
+            mod_id: 'dst-fast-gather',
+            name: '快速采集助手',
+            summary: '优化连续采集反馈，减少重复操作并保留原有掉落规则。',
+            latest_version: '1.6.2',
+            file_size: '4.6 MB',
+            cover: 'generated',
+            cover_theme: 'gather',
+            download_count: 41000,
+            updated_at: '2026-07-21T13:15:00.000Z',
+            popularity_rank: 7,
+            compatibility_label: '兼容当前游戏版本'
+          }),
+          'dst-night-light': createMod({
+            mod_id: 'dst-night-light',
+            name: '夜间照明优化',
+            summary: '改善夜晚环境亮度与光源层次，不改变角色视野判定。',
+            latest_version: '2.0.4',
+            file_size: '6.1 MB',
+            cover: 'generated',
+            cover_theme: 'night',
+            download_count: 37000,
+            updated_at: '2026-07-23T18:05:00.000Z',
+            popularity_rank: 8,
+            compatibility_label: '兼容当前游戏版本'
           })
         },
-        tasks: {},
+        tasks: {
+          'task-mac-device-local-01-dst-season-clock-update': {
+            task_id: 'task-mac-device-local-01-dst-season-clock-update',
+            root_mod_id: 'dst-season-clock',
+            operation: 'update',
+            task_state: 'failed',
+            progress_percent: 92,
+            operation_attempt: 1,
+            failure_code: 'PACKAGE_HASH_MISMATCH'
+          }
+        },
         ui: {
           screen: 'game-detail',
           currentModId: null,
-          searchText: '',
+          detailReturnScreen: 'game-detail',
+          activeTab: 'browse',
+          browseSort: 'popular',
+          installedSort: 'recent',
+          installedFilter: 'all',
+          searchByTab: {
+            browse: '',
+            installed: ''
+          },
+          scrollTopByTab: {
+            browse: 0,
+            installed: 0
+          },
           refreshing: false,
           activeDialog: null
         },
@@ -1174,22 +1736,56 @@
 
     function derive(current) {
       const allMods = Object.values(current.mods);
-      const search = current.ui.searchText.trim().toLowerCase();
+      const installedMods = allMods.filter(mod => mod.installation_fact === 'installed');
+      const featuredMods = allMods
+        .filter(mod => mod.featured)
+        .sort((a, b) => a.popularity_rank - b.popularity_rank)
+        .slice(0, 3);
+      const browseComparators = {
+        popular: (a, b) => a.popularity_rank - b.popularity_rank,
+        downloads: (a, b) => b.download_count - a.download_count,
+        updated: (a, b) => b.updated_at.localeCompare(a.updated_at),
+        name: (a, b) => a.name.localeCompare(b.name, 'zh-CN')
+      };
+      const installedComparators = {
+        recent: (a, b) => (b.installed_at || '').localeCompare(a.installed_at || ''),
+        name: (a, b) => a.name.localeCompare(b.name, 'zh-CN')
+      };
+      const installedFilters = {
+        all: () => true,
+        enabled: mod => mod.enabled_value === 'enabled',
+        disabled: mod => mod.enabled_value === 'disabled',
+        update: mod => mod.update_fact === 'update_available'
+          || activeTask(current, mod)?.task_state === 'failed'
+      };
+      const activeTab = current.ui.activeTab === 'installed' ? 'installed' : 'browse';
+      const searchText = current.ui.searchByTab[activeTab] || '';
+      const search = searchText.trim().toLowerCase();
+      const sourceMods = activeTab === 'installed'
+        ? installedMods
+            .filter(installedFilters[current.ui.installedFilter] || installedFilters.all)
+            .sort(installedComparators[current.ui.installedSort] || installedComparators.recent)
+        : [...allMods].sort(browseComparators[current.ui.browseSort] || browseComparators.popular);
       const visibleMods = search
-        ? allMods.filter(mod =>
-            `${mod.name} ${mod.summary}`.toLowerCase().includes(search)
+        ? sourceMods.filter(mod =>
+            `${mod.name} ${mod.summary} ${mod.compatibility_label}`.toLowerCase().includes(search)
           )
-        : allMods;
+        : sourceMods;
       const currentMod = current.ui.currentModId
         ? current.mods[current.ui.currentModId] ?? null
         : null;
       return {
         state: current,
         allMods,
+        installedMods,
+        featuredMods,
         visibleMods,
         currentMod,
-        searchText: current.ui.searchText,
-        installedCount: allMods.filter(mod => mod.installation_fact === 'installed').length,
+        activeTab,
+        searchText,
+        catalogTotal: 128,
+        catalogLoaded: allMods.length,
+        installedCount: installedMods.length,
         enabledCount: allMods.filter(mod => mod.enabled_value === 'enabled').length
       };
     }
@@ -1231,6 +1827,7 @@
       mod.installed_package_hash = `sha256:${mod.mod_id}:${mod.latest_version}`;
       mod.active_version_pointer = mod.latest_version;
       mod.update_fact = 'no_update';
+      if (task.operation === 'install') mod.installed_at = new Date().toISOString();
       mod.current_task_id = null;
     }
 
@@ -1244,6 +1841,7 @@
           return createInitialState();
         case 'OPEN_MODS':
           next.ui.screen = 'mods-list';
+          next.ui.activeTab = action.tab === 'installed' ? 'installed' : 'browse';
           next.ui.currentModId = null;
           next.ui.activeDialog = null;
           return next;
@@ -1255,6 +1853,15 @@
         case 'OPEN_DETAIL':
           if (!mod) return next;
           next.ui.screen = 'mods-list';
+          next.ui.detailReturnScreen = 'mods-list';
+          next.ui.currentModId = mod.mod_id;
+          next.ui.activeDialog = 'mod-detail';
+          next.metrics.detailRequestCount += 1;
+          return next;
+        case 'OPEN_FEATURED_DETAIL':
+          if (!mod) return next;
+          next.ui.screen = 'game-detail';
+          next.ui.detailReturnScreen = 'game-detail';
           next.ui.currentModId = mod.mod_id;
           next.ui.activeDialog = 'mod-detail';
           next.metrics.detailRequestCount += 1;
@@ -1263,8 +1870,28 @@
           next.ui.currentModId = null;
           next.ui.activeDialog = null;
           return next;
+        case 'SET_ACTIVE_TAB':
+          next.ui.activeTab = action.value === 'installed' ? 'installed' : 'browse';
+          return next;
+        case 'SET_BROWSE_SORT':
+          next.ui.browseSort = ['popular', 'downloads', 'updated', 'name'].includes(action.value)
+            ? action.value
+            : 'popular';
+          return next;
+        case 'SET_INSTALLED_SORT':
+          next.ui.installedSort = action.value === 'name' ? 'name' : 'recent';
+          return next;
+        case 'SET_INSTALLED_FILTER':
+          next.ui.installedFilter = ['all', 'enabled', 'disabled', 'update'].includes(action.value)
+            ? action.value
+            : 'all';
+          return next;
         case 'SET_SEARCH':
-          next.ui.searchText = String(action.value || '');
+          next.ui.searchByTab[next.ui.activeTab] = String(action.value || '');
+          return next;
+        case 'SAVE_SCROLL_TOP':
+          next.ui.scrollTopByTab[action.tab === 'installed' ? 'installed' : 'browse'] =
+            Math.max(0, Number(action.value) || 0);
           return next;
         case 'REFRESH_REQUESTED':
           next.ui.refreshing = true;
@@ -1335,6 +1962,7 @@
           mod.installed_package_hash = null;
           mod.active_version_pointer = null;
           mod.current_task_id = null;
+          mod.installed_at = null;
           next.ui.activeDialog = 'mod-detail';
           return next;
         default:
@@ -1362,6 +1990,25 @@
       return labels[task.task_state] || task.task_state;
     }
 
+    function formatDownloads(value) {
+      if (value >= 10000) {
+        return `${(value / 10000).toFixed(1).replace(/\.0$/, '')} 万`;
+      }
+      return String(value);
+    }
+
+    function formatDate(value) {
+      if (!value) return '-';
+      const date = new Date(value);
+      return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    function selectOptions(options, selected) {
+      return options.map(([value, label]) =>
+        `<option value="${value}" ${selected === value ? 'selected' : ''}>${label}</option>`
+      ).join('');
+    }
+
     function renderSideRail() {
       const items = [
         ['back', 'back', '返回'],
@@ -1380,7 +2027,6 @@
     }
 
     function renderGameDetail(viewModel) {
-      const previewMods = viewModel.allMods.slice(0, 3);
       return `
         <section class="game-detail reference-entry" data-screen="game-detail">
           <section class="compatibility-card" aria-label="兼容性评价">
@@ -1402,24 +2048,52 @@
               <article class="workshop-tile"><img src="${EMBEDDED_ASSETS.workshopLambris}" alt=""><strong>Lambris.exe</strong><span>283 订阅</span></article>
             </div>
           </section>
-          <button class="mods-entry-card" type="button" data-action="open-mods" data-reference-region="mods-entry">
-            <span class="mods-symbol">${icon('box')}</span>
-            <span class="mods-entry-copy"><strong>MODS</strong><span>4 个可用 MOD · ${viewModel.installedCount} 个已安装 · 仅此设备</span></span>
-            <span class="mods-entry-chevron">${icon('chevron', 'small')}</span>
-            ${previewMods.map(mod => mod.cover === 'placeholder'
-              ? `<span class="entry-preview placeholder">${icon('box', 'small')}</span>`
-              : `<span class="entry-preview"><img src="${EMBEDDED_ASSETS[mod.cover]}" alt=""></span>`
-            ).join('')}
-          </button>
-          <h2 class="explore-title">一起探索</h2>
-          <section class="explore-card" aria-hidden="true"><img src="${EMBEDDED_ASSETS.exploreStrip}" alt=""></section>
+          <section class="mods-discovery-card" data-reference-region="mods-entry" aria-label="MODS 非官方内容发现">
+            <div class="mods-discovery-heading">
+              <span class="mods-symbol">${icon('box')}</span>
+              <span class="mods-discovery-copy">
+                <strong>MODS</strong>
+                <span>非官方来源 · 热门推荐 · ${viewModel.installedCount} 个已安装 · 仅此设备</span>
+              </span>
+              <button class="mods-discovery-all" type="button" data-action="open-mods" data-tab="browse">
+                <span class="mods-discovery-count">${viewModel.catalogTotal} 个 MOD</span>
+                查看全部 ${icon('chevron', 'small')}
+              </button>
+            </div>
+            <div class="mods-featured-grid">
+              ${viewModel.featuredMods.map(renderFeaturedMod).join('')}
+            </div>
+          </section>
+          <h2 class="explore-title discovery-layout">一起探索</h2>
+          <section class="explore-card discovery-layout" aria-hidden="true"><img src="${EMBEDDED_ASSETS.exploreStrip}" alt=""></section>
         </section>
+      `;
+    }
+
+    function renderFeaturedMod(mod) {
+      return `
+        <button class="featured-mod" type="button"
+          data-featured-mod="${mod.mod_id}"
+          data-action="open-featured-detail"
+          data-mod-id="${mod.mod_id}">
+          <span class="featured-cover">${renderModCover(mod)}</span>
+          <strong>${escapeHtml(mod.name)}</strong>
+          <span>${formatDownloads(mod.download_count)} 次下载</span>
+        </button>
       `;
     }
 
     function renderModCover(mod, detail = false) {
       if (mod.cover === 'placeholder') {
-        return `<div class="${detail ? 'detail-placeholder' : 'placeholder-cover'}">${icon('box', 'large')}</div>`;
+        return `<div class="${detail ? 'detail-placeholder' : 'placeholder-cover'} cover-${mod.cover_theme}">${icon('box', 'large')}</div>`;
+      }
+      if (mod.cover === 'generated') {
+        return `
+          <div class="${detail ? 'detail-placeholder generated-detail-cover' : 'placeholder-cover generated-cover'} cover-${mod.cover_theme}">
+            <span class="generated-cover-mark">${icon(mod.cover_theme === 'clock' ? 'refresh' : 'box', 'large')}</span>
+            <strong>${escapeHtml(mod.name)}</strong>
+          </div>
+        `;
       }
       return `<img class="${detail ? 'detail-cover' : ''}" src="${EMBEDDED_ASSETS[mod.cover]}" alt="">`;
     }
@@ -1428,18 +2102,27 @@
       const installed = mod.installation_fact === 'installed';
       const task = activeTask(viewModel.state, mod);
       const running = task && ['queued', 'downloading', 'verifying', 'installing'].includes(task.task_state);
-      const status = installed
-        ? `已安装 · ${mod.enabled_value === 'enabled' ? '已启用' : '未启用'} · 仅此设备`
-        : '未安装 · 仅此设备';
-      const buttonLabel = running ? taskLabel(task) : installed ? '已安装' : '安装';
+      const enabledLabel = mod.enabled_value === 'enabled' ? '已启用' : '未启用';
+      const installedStatus = task?.task_state === 'failed'
+        ? `更新失败 · 保留旧版 v${mod.installed_version}`
+        : mod.update_fact === 'update_available'
+          ? `${enabledLabel} · 可更新`
+          : `${enabledLabel} · 已是最新`;
+      const status = viewModel.activeTab === 'installed' ? installedStatus : '';
+      const buttonLabel = running
+        ? taskLabel(task)
+        : installed
+          ? viewModel.activeTab === 'installed' ? '管理' : '已安装'
+          : '安装';
       return `
         <article class="mod-card" data-mod-card data-mod-id="${mod.mod_id}">
           <div class="mod-cover">${renderModCover(mod)}</div>
           <div class="mod-copy">
             <h2>${escapeHtml(mod.name)}</h2>
-            <p>${escapeHtml(mod.summary)}</p>
-            <small>${escapeHtml(mod.source_label)} · v${escapeHtml(mod.latest_version)} · ${escapeHtml(mod.file_size)}</small>
-            <strong class="${installed ? 'is-installed' : ''}">${escapeHtml(status)}${mod.update_fact === 'update_available' ? ' · 有新版本' : ''}</strong>
+            <span class="catalog-metrics">${formatDownloads(mod.download_count)} 次下载 · ${formatDate(mod.updated_at)} 更新</span>
+            ${status
+              ? `<strong class="mod-state ${installed ? 'is-installed' : ''}">${escapeHtml(status)}</strong>`
+              : ''}
           </div>
           <footer>
             <button class="install-button" type="button" data-action="${installed ? 'open-detail' : 'install'}" data-mod-id="${mod.mod_id}" ${running ? 'disabled' : ''}>
@@ -1454,18 +2137,77 @@
     function renderModsList(viewModel) {
       const cards = viewModel.visibleMods.length
         ? viewModel.visibleMods.map(mod => renderModCard(mod, viewModel)).join('')
-        : `<div class="empty-list">没有找到匹配的 MOD</div>`;
+        : `<div class="empty-list">${viewModel.activeTab === 'installed' && !viewModel.searchText
+            ? '没有符合当前筛选的已安装 MOD'
+            : '没有找到匹配的 MOD'}</div>`;
+      const browseControls = `
+        <label class="sort-control">
+          <span>排序</span>
+          <select data-input="browse-sort" aria-label="浏览排序">
+            ${selectOptions([
+              ['popular', '热门推荐'],
+              ['downloads', '下载量'],
+              ['updated', '最近更新'],
+              ['name', '名称']
+            ], viewModel.state.ui.browseSort)}
+          </select>
+        </label>
+      `;
+      const installedControls = `
+        <label class="sort-control">
+          <span>排序</span>
+          <select data-input="installed-sort" aria-label="已安装排序">
+            ${selectOptions([
+              ['recent', '最近安装'],
+              ['name', '名称']
+            ], viewModel.state.ui.installedSort)}
+          </select>
+        </label>
+        <div class="installed-filters" aria-label="已安装筛选">
+          ${[
+            ['all', '全部'],
+            ['enabled', '已启用'],
+            ['disabled', '未启用'],
+            ['update', '可更新']
+          ].map(([value, label]) => `
+            <button type="button"
+              class="${viewModel.state.ui.installedFilter === value ? 'is-active' : ''}"
+              data-action="set-installed-filter"
+              data-value="${value}">${label}</button>
+          `).join('')}
+        </div>
+      `;
       return `
         <section class="mods-list" data-screen="mods-list">
           <button class="back-detail" type="button" data-action="back-game">${icon('back', 'small')}返回详情</button>
           <header class="mods-list-header">
-            <div class="mods-list-title"><h1>MODS</h1><p>4 个可用 MOD，可安装到当前设备</p></div>
+            <div class="mods-list-title"><h1>MODS</h1><p>非官方来源 · 仅此设备</p></div>
             <div class="list-tools">
               <label class="search-field">${icon('search', 'small')}<input data-input="search" aria-label="搜索 MOD" placeholder="搜索 MOD" value="${escapeHtml(viewModel.searchText)}"></label>
               <button class="refresh-button ${viewModel.state.ui.refreshing ? 'is-refreshing' : ''}" type="button" data-action="refresh">${icon('refresh', 'small')}${viewModel.state.ui.refreshing ? '刷新中' : '刷新'}</button>
             </div>
           </header>
-          <div class="mods-grid">${cards}</div>
+          <div class="mods-tabs" role="tablist" aria-label="MODS 内容范围">
+            <button type="button" role="tab"
+              data-mod-tab="browse"
+              data-action="set-tab"
+              data-value="browse"
+              aria-selected="${viewModel.activeTab === 'browse'}"
+              class="${viewModel.activeTab === 'browse' ? 'is-active' : ''}">浏览 ${viewModel.catalogTotal}</button>
+            <button type="button" role="tab"
+              data-mod-tab="installed"
+              data-action="set-tab"
+              data-value="installed"
+              aria-selected="${viewModel.activeTab === 'installed'}"
+              class="${viewModel.activeTab === 'installed' ? 'is-active' : ''}">已安装 ${viewModel.installedCount}</button>
+          </div>
+          <div class="catalog-toolbar">
+            <p data-catalog-summary>${viewModel.activeTab === 'browse'
+              ? `共 ${viewModel.catalogTotal} 个，当前加载 ${viewModel.catalogLoaded} 个 · 下载量来自外部同步`
+              : `${viewModel.installedCount} 个已安装 · 仅此设备`}</p>
+            <div class="catalog-controls">${viewModel.activeTab === 'browse' ? browseControls : installedControls}</div>
+          </div>
+          <div class="mods-grid" data-mods-scroll>${cards}</div>
         </section>
       `;
     }
@@ -1482,8 +2224,10 @@
         <p>答：据作者所知，不可以。</p>
         <p style="margin-top:28px">问：该模组与其他模组兼容吗？</p>
         <p>答：应该兼容。</p>
+        <h4>兼容性：</h4>
+        <p>${escapeHtml(mod.compatibility_label)}。兼容信息来自外部同步源，实际运行状态仅保存在当前设备。</p>
         <h4>来源：</h4>
-        <p>外部非官方来源 · 当前设备本地管理</p>
+        <p>非官方来源 · 仅此设备</p>
         <p class="description-note">设置、启用状态和安装文件只保存在当前设备。卸载不会删除存档或用户 MOD 配置。</p>
       `;
     }
@@ -1536,6 +2280,13 @@
             </header>
             <div class="modal-scroll" data-detail-scroll>
               ${renderModCover(mod, true)}
+              <section class="detail-metrics" aria-label="MOD 数据摘要">
+                <span><strong>${formatDownloads(mod.download_count)}</strong> 次下载</span>
+                <span><strong>${formatDate(mod.updated_at)}</strong>最近更新</span>
+                <span><strong>v${escapeHtml(mod.latest_version)}</strong>最新版本</span>
+                <span><strong>${escapeHtml(mod.file_size)}</strong>文件大小</span>
+                <span><strong>${escapeHtml(mod.compatibility_label)}</strong>兼容性</span>
+              </section>
               <h3 class="section-title">说明</h3>
               <section class="description-card">${renderDescription(mod)}</section>
               ${renderTaskProgress(task)}
@@ -1590,6 +2341,10 @@
           input.setSelectionRange(focus.selectionStart, focus.selectionEnd);
         }
       }
+      const listScroll = root.querySelector('[data-mods-scroll]');
+      if (listScroll) {
+        listScroll.scrollTop = state.ui.scrollTopByTab[state.ui.activeTab] || 0;
+      }
     }
 
     function reset() {
@@ -1631,10 +2386,19 @@
       if (!control) return;
       const action = control.dataset.action;
       const modId = control.dataset.modId;
-      if (action === 'open-mods') dispatch({ type: 'OPEN_MODS' });
+      if (action === 'open-mods') dispatch({ type: 'OPEN_MODS', tab: control.dataset.tab || 'browse' });
       if (action === 'back-game') dispatch({ type: 'BACK_GAME' });
       if (action === 'open-detail') dispatch({ type: 'OPEN_DETAIL', modId });
+      if (action === 'open-featured-detail') dispatch({ type: 'OPEN_FEATURED_DETAIL', modId });
       if (action === 'close-detail') dispatch({ type: 'CLOSE_DETAIL' });
+      if (action === 'set-tab') {
+        const scroll = root.querySelector('[data-mods-scroll]');
+        if (scroll) dispatch({ type: 'SAVE_SCROLL_TOP', tab: state.ui.activeTab, value: scroll.scrollTop });
+        dispatch({ type: 'SET_ACTIVE_TAB', value: control.dataset.value });
+      }
+      if (action === 'set-installed-filter') {
+        dispatch({ type: 'SET_INSTALLED_FILTER', value: control.dataset.value });
+      }
       if (action === 'refresh') {
         dispatch({ type: 'REFRESH_REQUESTED' });
         setTimeout(() => {
@@ -1675,6 +2439,25 @@
         dispatch({ type: 'SET_SEARCH', value: event.target.value });
       }
     });
+
+    root.addEventListener('change', event => {
+      if (event.target.matches('[data-input="browse-sort"]')) {
+        dispatch({ type: 'SET_BROWSE_SORT', value: event.target.value });
+      }
+      if (event.target.matches('[data-input="installed-sort"]')) {
+        dispatch({ type: 'SET_INSTALLED_SORT', value: event.target.value });
+      }
+    });
+
+    root.addEventListener('scroll', event => {
+      if (event.target.matches('[data-mods-scroll]')) {
+        dispatch({
+          type: 'SAVE_SCROLL_TOP',
+          tab: state.ui.activeTab,
+          value: event.target.scrollTop
+        });
+      }
+    }, true);
 
     function fitCanvas() {
       const scale = Math.min(innerWidth / 2160, innerHeight / 1480);
