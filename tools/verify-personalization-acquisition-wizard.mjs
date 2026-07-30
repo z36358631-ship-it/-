@@ -87,8 +87,10 @@ function state() {
     'game_skipped',
     'source_pending',
     'completed',
-    'onboarding_completed_at',
-    'option_version',
+    'gameTerminal',
+    'sourceTerminal',
+    'manualInterestExempt',
+    'nextMissingStep',
     'saveWizardState',
     'restoreWizardState',
     'mergeIdentityState',
@@ -96,17 +98,29 @@ function state() {
     'eligibleColdStart',
     'window.PersonalizationWizard',
   ], 'state machine');
+  assert(!wizard.includes('new_under_24h'), 'obsolete new-user 24h persona remains');
+  assert(!wizard.includes('new_eligible'), 'obsolete new-user eligible persona remains');
   pass('state');
 }
 
-function onboardingBridge() {
+function onboardingSource() {
   requireTokens(onboarding, [
-    'onboarding_completed_at',
-    'recordOnboardingCompletion',
-    '独立新手引流',
-    '满24小时后的首次合格冷启动',
-  ], 'onboarding bridge');
-  pass('onboardingBridge');
+    'id="pageSource"',
+    'gamehub_onboarding_source_v2',
+    'onboarding_user_type_pending',
+    'onboarding_source_pending',
+    'onboarding_source_saved',
+    'onboarding_branch_in_progress',
+    'manual_interest_exempt',
+    'data-onboarding-source-code',
+    'submitOnboardingSource',
+    'restoreOnboardingFlow',
+    'other_or_unknown',
+    'Where did you first hear about GameHub?',
+  ], 'onboarding source');
+  assert(!onboarding.includes('查看24小时后问卷'), 'onboarding still links to delayed wizard');
+  assert(!onboarding.includes('满24小时后的首次合格冷启动'), 'obsolete delayed handoff remains');
+  pass('onboardingSource');
 }
 
 function syntax() {
@@ -118,7 +132,7 @@ function syntax() {
   pass('syntax');
 }
 
-const tasks = { shell, games, sources, state, onboardingBridge, syntax };
+const tasks = { shell, games, sources, state, onboardingSource, syntax };
 if (mode === 'all') Object.values(tasks).forEach(task => task());
 else if (tasks[mode]) tasks[mode]();
 else throw new Error(`Unknown mode: ${mode}`);
