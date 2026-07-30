@@ -87,7 +87,7 @@
 
 |模块名称|图示|展示\&交互说明|
 |---|---|---|
-|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">独立新手引流与24小时交接</span>|![图4.2-1：新手引流视觉统一与问卷交接](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@24e997afb287200748d7c0a5c1c9643aca0d6e1a/public/prd/personalization-acquisition-wizard/05-onboarding-style-alignment.png)|<span style="background-color: #FEF794;">① 新手引流继续独立承载“尽快玩上游戏”，不并入两步问卷；页面使用统一的深色引导框架，但进度和完成状态互不共用。<br>② 用户完成绑定Steam、导入、秒玩、免费游戏下载、查看更多、海外引导或主动跳过并进入目标页时，提交一次新手引流完成记录；中途关闭App、强杀或仍停留在流程内不记录完成。<br>③ 服务端首次确认完成时写入 `onboarding_completed_at`，重复完成或重复上报不得刷新时间；以该时间加24小时得到最早可触发时间，不按自然日零点计算。<br>④ 完成当次直接进入原目标页，不展示两步问卷；满24小时后也不主动唤起，只在下一次合格冷启动触发。后台回前台、Deep Link直达、推送直达、支付返回和游戏恢复不触发。<br>⑤ 断网完成时先在本机保存完成状态，避免新手引流重复出现；联网后补报，服务端以首次有效补报时间记为完成时间。补报完成前不触发两步问卷。<br>⑥ 隐私协议、强制升级、安全合规、新手引流、登录、授权、支付、下载、导入、Steam绑定、游戏恢复或更高优先级系统弹层存在时，问卷继续等待下一次合格冷启动。</span>|
+|<span style="color: #3370FF; font-weight: 700; background-color: #FEF794;">独立新手引流与24小时交接</span>|![图4.2-1：新手引流视觉统一与问卷交接](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@8d57a53c8deb06f9cb11e45610c6328e727e915c/public/prd/personalization-acquisition-wizard/05-onboarding-style-alignment.png)|<span style="background-color: #FEF794;">① 新手引流继续独立承载“尽快玩上游戏”，不并入两步问卷；页面使用统一的深色引导框架，但进度和完成状态互不共用。<br>② 用户完成绑定Steam、导入、秒玩、免费游戏下载、查看更多、海外引导或主动跳过并进入目标页时，提交一次新手引流完成记录；中途关闭App、强杀或仍停留在流程内不记录完成。<br>③ 服务端首次确认完成时写入 `onboarding_completed_at`，重复完成或重复上报不得刷新时间；以该时间加24小时得到最早可触发时间，不按自然日零点计算。<br>④ 完成当次直接进入原目标页，不展示两步问卷；满24小时后也不主动唤起，只在下一次合格冷启动触发。后台回前台、Deep Link直达、推送直达、支付返回和游戏恢复不触发。<br>⑤ 断网完成时先在本机保存完成状态，避免新手引流重复出现；联网后补报，服务端以首次有效补报时间记为完成时间。补报完成前不触发两步问卷。<br>⑥ 隐私协议、强制升级、安全合规、新手引流、登录、授权、支付、下载、导入、Steam绑定、游戏恢复或更高优先级系统弹层存在时，问卷继续等待下一次合格冷启动。</span>|
 
 #### ① 引导首屏（新老用户分流）
 
@@ -290,7 +290,7 @@
 |<span style="background-color: #FEF794;">触发与状态</span>|<span style="background-color: #FEF794;">已写完成点、首次完成时间、滚动24小时、合格冷启动、当次互斥和重复请求幂等。</span>|<span style="background-color: #FEF794;">4\.2 V1\.3、⑤触发条件与消失逻辑</span>|
 |<span style="background-color: #FEF794;">异常与边界</span>|<span style="background-color: #FEF794;">已覆盖中途退出、离线完成、补报失败、高优先级流程竞争和服务端记录失败。</span>|<span style="background-color: #FEF794;">五、七</span>|
 |<span style="background-color: #FEF794;">数据与验收</span>|<span style="background-color: #FEF794;">已补充完成时间、最早触发时间、同步状态、补报结果和8条交接验收用例。</span>|<span style="background-color: #FEF794;">六、七</span>|
-|<span style="background-color: #FEF794;">图示</span>|<span style="background-color: #FEF794;">V1\.3新增1张图示位于4\.2表格“图示”列，使用固定提交24e997afb287200748d7c0a5c1c9643aca0d6e1a。</span>|<span style="background-color: #FEF794;">4\.2 V1\.3</span>|
+|<span style="background-color: #FEF794;">图示</span>|<span style="background-color: #FEF794;">V1\.3新增1张图示位于4\.2表格“图示”列，使用固定提交8d57a53c8deb06f9cb11e45610c6328e727e915c。</span>|<span style="background-color: #FEF794;">4\.2 V1\.3</span>|
 
 **模拟评审结果：**
 
