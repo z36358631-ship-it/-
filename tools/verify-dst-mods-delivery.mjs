@@ -1,5 +1,8 @@
 import { pathToFileURL } from 'node:url';
-import { validateRules } from './lib/dst-mods-delivery-validator.mjs';
+import {
+  validateCsvHeader,
+  validateRules
+} from './lib/dst-mods-delivery-validator.mjs';
 
 const rules = [
   {
@@ -175,11 +178,70 @@ const rules = [
       /最近 7 个完整自然日/,
       /零容忍/
     ]
+  },
+  {
+    path: '测试用例/测试文件/盖世游戏-DST-MODS-跨端验收.csv',
+    required: [
+      /ENTRY-001/,
+      /ENTRY-002/,
+      /ISOLATION-001/,
+      /DEVICE-001/,
+      /DEVICE-002/,
+      /INSTALL-001/,
+      /INSTALL-002/,
+      /ENABLE-DEVICE-001/,
+      /DEPENDENCY-002/,
+      /DEPENDENCY-SAMEHASH-001/,
+      /DEPENDENCY-DIFFHASH-COMMITTED-001/,
+      /DEPENDENCY-DIFFHASH-UNCOMMITTED-001/,
+      /ROTATE-003/,
+      /BACKGROUND-001/,
+      /PROCESS-001/,
+      /UPDATE-002/,
+      /SOURCE-UNKNOWN-001/,
+      /SPACE-DOWNLOAD-001/,
+      /SPACE-UNPACK-001/,
+      /SPACE-COMMIT-001/,
+      /PATH-TRAVERSAL-001/,
+      /PATH-SYMLINK-001/,
+      /PATH-HARDLINK-001/,
+      /PREFLIGHT-003/,
+      /LOG-001/,
+      /LOG-MISSING-001/,
+      /RECOVERY-001/,
+      /BASELINE-001/,
+      /SAFETY-001/,
+      /PACKAGE-OFFICIAL-001/,
+      /PACKAGE-CHANNEL-001/,
+      /PACKAGE-GLOBAL-001/,
+      /PACKAGE-GOOGLEPLAY-001/,
+      /LANGUAGE-001/,
+      /steam:322330/,
+      /ActualLoadEvidence/,
+      /loaded_match/,
+      /DEPENDENCY_VERSION_CONFLICT/,
+      /available_capacity_bytes/,
+      /ARCHIVE_PATH_ESCAPE/,
+      /source_unknown/,
+      /paused_by_system/,
+      /Global/,
+      /GooglePlay/,
+      /zh-CN/,
+      /en-US/,
+      /ja-JP/,
+      /ru-RU/,
+      /pt-BR/
+    ]
   }
 ];
 
 export async function verifyDstModsDelivery(root = process.cwd()) {
-  return validateRules(root, rules);
+  const csvErrors = await validateCsvHeader(
+    root,
+    '测试用例/测试文件/盖世游戏-DST-MODS-跨端验收.csv',
+    ['用例ID', '优先级', '端', '屏幕方向', '前置条件', '操作步骤', '预期结果', '证据']
+  );
+  return [...await validateRules(root, rules), ...csvErrors];
 }
 
 async function main() {
