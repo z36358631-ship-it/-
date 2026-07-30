@@ -79,6 +79,46 @@ const rules = [
       /unpacked_size_bytes: Record<ClientPlatform, number>;/,
       /peak_staging_size_bytes: Record<ClientPlatform, number>;/
     ]
+  },
+  {
+    path: 'prd/mod功能/DST-MODS-技术Go-No-Go验证方案.md',
+    required: [
+      /^# DST MODS 技术 Go\/No-Go 验证方案$/m,
+      /状态：未执行/,
+      /game_id = steam:322330/,
+      /前置条件/,
+      /注入/,
+      /操作/,
+      /必须证据/,
+      /唯一通过条件/,
+      /执行记录字段/,
+      /GATE-MAC-001/,
+      /GATE-APP-001/,
+      /GATE-LOG-001/,
+      /GATE-ROTATE-001/,
+      /GATE-BG-001/,
+      /GATE-ROLLBACK-001/,
+      /GATE-BASELINE-001/,
+      /GATE-RECOVERY-001/,
+      /GATE-DEP-SAMEHASH-001/,
+      /GATE-DEP-DIFFHASH-COMMITTED-001/,
+      /GATE-DEP-DIFFHASH-UNCOMMITTED-001/,
+      /GATE-SPACE-DOWNLOAD-001/,
+      /GATE-SPACE-UNPACK-001/,
+      /GATE-SPACE-COMMIT-001/,
+      /GATE-PATH-ESCAPE-001/,
+      /GATE-PROCESS-001/,
+      /GATE-SOURCE-UNKNOWN-001/,
+      /DEPENDENCY_VERSION_CONFLICT/,
+      /available_capacity_bytes/,
+      /16 MiB/,
+      /ARCHIVE_PATH_ESCAPE/,
+      /paused_by_system/,
+      /source_unknown/,
+      /任何 P0 失败均为 No-Go/,
+      /无法用游戏或引擎日志证明实际加载均为 No-Go/,
+      /任何一项失败均为 No-Go/
+    ]
   }
 ];
 
