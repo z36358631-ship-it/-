@@ -625,6 +625,8 @@ var ONBOARDING_SOURCE_OPTIONS={
     title:'你最早是从哪里了解到盖世游戏的？',
     description:'请选择最符合实际情况的一项',
     optionVersion:'domestic_v1',
+    submitIdle:'请选择一项',
+    submitReady:'继续',
     options:[
       {code:'douyin',label:'抖音',icon:'抖'},
       {code:'bilibili',label:'哔哩哔哩',icon:'哔'},
@@ -638,6 +640,8 @@ var ONBOARDING_SOURCE_OPTIONS={
     title:'Where did you first hear about GameHub?',
     description:'Choose the option that best matches your experience.',
     optionVersion:'overseas_v1',
+    submitIdle:'Choose one option',
+    submitReady:'Continue',
     options:[
       {code:'youtube',label:'YouTube',icon:'▶'},
       {code:'tiktok',label:'TikTok',icon:'♪'},
@@ -735,7 +739,7 @@ function renderOnboardingSource(){
   }).join('');
   var submit=document.querySelector('[data-action="submit-onboarding-source"]');
   submit.disabled=!onboardingFlow.sourceCode;
-  submit.textContent=onboardingFlow.sourceCode?'继续':'请选择一项';
+  submit.textContent=onboardingFlow.sourceCode?config.submitReady:config.submitIdle;
   var note=document.getElementById('onboardingSourceSyncNote');
   note.textContent=onboardingFlow.syncStatus==='sync_pending'?'已保存，将在联网后同步':'';
 }
