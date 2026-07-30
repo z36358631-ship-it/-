@@ -124,8 +124,8 @@ DST 游戏详情
 ```javascript
 const state = {
   contractVersion: 'dst_mods_demo_v1',
-  gameId: 'steam:322330',
-  deviceInstallationId: '',
+  game_id: 'steam:322330',
+  device_installation_id: '',
   platform: 'mac',
   orientation: 'not_applicable',
   mods: {},
