@@ -63,6 +63,11 @@ assert.equal(
   1,
   'has-game users must continue to the existing import or Steam branch'
 );
+assert.equal(
+  await page.locator('#page1 .onboarding-progress').count(),
+  0,
+  'the has-game branch must not receive the beginner third-step progress'
+);
 const hasGameSaved = await page.evaluate(() =>
   JSON.parse(localStorage.getItem('gamehub_onboarding_source_v2'))
 );
@@ -86,6 +91,20 @@ assert.equal(
   await page.locator('#page2.active').count(),
   1,
   'domestic new users must continue to the domestic beginner branch'
+);
+assert.equal(
+  await page.locator('#page2 .onboarding-progress span').count(),
+  3,
+  'the domestic beginner landing page must show three progress segments'
+);
+assert.equal(
+  await page.locator('#page2 .onboarding-progress span.is-active').count(),
+  3,
+  'all domestic third-step progress segments must be active'
+);
+assert.equal(
+  await page.locator('#page2 .onboarding-progress').getAttribute('aria-label'),
+  '独立新手引流，第3步，共3步'
 );
 const domesticNewUserSaved = await page.evaluate(() =>
   JSON.parse(localStorage.getItem('gamehub_onboarding_source_v2'))
@@ -120,6 +139,25 @@ assert.equal(
   await page.locator('#page2b.active').count(),
   1,
   'overseas new users must continue to the overseas beginner branch'
+);
+assert.equal(
+  await page.locator('#page2b .gh-guide__progress').count(),
+  1,
+  'the overseas beginner landing page must use its dedicated progress safe area'
+);
+assert.equal(
+  await page.locator('#page2b .onboarding-progress span').count(),
+  3,
+  'the overseas beginner landing page must show three progress segments'
+);
+assert.equal(
+  await page.locator('#page2b .onboarding-progress span.is-active').count(),
+  3,
+  'all overseas third-step progress segments must be active'
+);
+assert.equal(
+  await page.locator('#page2b .onboarding-progress').getAttribute('aria-label'),
+  'GameHub onboarding, step 3 of 3'
 );
 const overseasSaved = await page.evaluate(() =>
   JSON.parse(localStorage.getItem('gamehub_onboarding_source_v2'))
