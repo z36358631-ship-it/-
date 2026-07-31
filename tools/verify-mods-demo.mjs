@@ -168,7 +168,57 @@ try {
     true,
     'detail enable control did not receive keyboard focus'
   );
-  await detailSwitch.locator('span').first().click();
+  const pageScrollBeforeKeyboard = await page.evaluate(() => window.scrollY);
+  await page.keyboard.press('Enter');
+  const enterLockSnapshot = await page.evaluate(() => {
+    const api = window.__DST_MODS_DEMO__;
+    const controlsBeforeRepeat = [
+      ...document.querySelectorAll(
+        '[data-action="toggle-enabled"][data-mod-id="dst-smart-stack"]'
+      )
+    ];
+    const beforeRepeat = controlsBeforeRepeat.map(control => ({
+      disabled: control.disabled,
+      ariaBusy: control.getAttribute('aria-busy')
+        || control.closest('.enabled-switch')?.getAttribute('aria-busy')
+    }));
+    controlsBeforeRepeat.forEach(control => {
+      control.click();
+      control.click();
+    });
+    api.dispatch({ type: 'CLOSE_DETAIL' });
+    api.dispatch({ type: 'SET_ACTIVE_TAB', value: 'browse' });
+    api.dispatch({ type: 'OPEN_DETAIL', modId: 'dst-smart-stack' });
+    const controlsAfterPageChange = [
+      ...document.querySelectorAll(
+        '[data-action="toggle-enabled"][data-mod-id="dst-smart-stack"]'
+      )
+    ];
+    controlsAfterPageChange.forEach(control => control.click());
+    const state = api.getState();
+    const snapshot = {
+      beforeRepeat,
+      afterPageChange: controlsAfterPageChange.map(control => ({
+        disabled: control.disabled,
+        ariaBusy: control.getAttribute('aria-busy')
+          || control.closest('.enabled-switch')?.getAttribute('aria-busy')
+      })),
+      enabledValue: state.mods['dst-smart-stack'].enabled_value,
+      pendingCount: Object.keys(state.ui.enableMutationByMod).length
+    };
+    api.dispatch({ type: 'SET_ACTIVE_TAB', value: 'installed' });
+    api.dispatch({ type: 'OPEN_DETAIL', modId: 'dst-smart-stack' });
+    return snapshot;
+  });
+  assert(enterLockSnapshot.beforeRepeat.length >= 2);
+  assert(enterLockSnapshot.afterPageChange.length >= 2);
+  assert(
+    [...enterLockSnapshot.beforeRepeat, ...enterLockSnapshot.afterPageChange]
+      .every(control => control.disabled && control.ariaBusy === 'true'),
+    `enable controls were not locked together: ${JSON.stringify(enterLockSnapshot)}`
+  );
+  assert.equal(enterLockSnapshot.pendingCount, 1);
+  assert.equal(enterLockSnapshot.enabledValue, 'enabled');
   await page.waitForTimeout(380);
   assert.equal(
     await page.evaluate(() => window.__DST_MODS_DEMO__.getState().mods['dst-smart-stack'].enabled_value),
@@ -181,6 +231,21 @@ try {
   );
   await capture('mac-mods-detail-enabled.png');
 
+  await detailSwitch.focus();
+  await page.keyboard.press('Space');
+  await page.waitForTimeout(380);
+  assert.equal(await page.evaluate(() => window.scrollY), pageScrollBeforeKeyboard);
+  assert.equal(
+    await page.evaluate(() => window.__DST_MODS_DEMO__.getState().mods['dst-smart-stack'].enabled_value),
+    'disabled',
+    'Space did not toggle the detail enable control exactly once'
+  );
+  assert.equal((await detailSwitch.textContent()).trim(), '已停用');
+  assert.equal(
+    await detailSwitch.evaluate(element => getComputedStyle(element).backgroundColor),
+    'rgb(84, 81, 88)'
+  );
+
   await page.locator(
     '[data-reference-region="mod-detail-modal"] .detail-enabled-control[role="switch"]'
   ).click();
@@ -188,10 +253,17 @@ try {
   await page.waitForTimeout(380);
   assert.equal(
     await page.evaluate(() => window.__DST_MODS_DEMO__.getState().mods['dst-smart-stack'].enabled_value),
-    'enabled',
+    'disabled',
     'failed enable mutation did not roll back'
   );
   assert.match(await page.locator('[data-toast-region]').textContent(), /启用状态修改失败/u);
+  await page.evaluate(() => {
+    window.__DST_MODS_DEMO__.dispatch({
+      type: 'ENABLE_CHANGED',
+      modId: 'dst-smart-stack',
+      value: 'enabled'
+    });
+  });
 
   await page.evaluate(() => {
     window.__DST_MODS_DEMO__.dispatch({ type: 'OPEN_DETAIL', modId: 'dst-season-clock' });
@@ -209,9 +281,82 @@ try {
       - Math.min(...failedActionBoxes.map(box => box.width)) <= 1,
     `failed detail action widths are not equal: ${JSON.stringify(failedActionBoxes)}`
   );
+  const failedActionContracts = await page.locator(
+    '[data-reference-region="mod-detail-modal"] .modal-action-bar > button'
+  ).evaluateAll(buttons => buttons.map(button => ({
+    text: button.textContent.trim(),
+    action: button.dataset.action || null,
+    disabled: button.disabled
+  })));
+  assert.deepEqual(
+    failedActionContracts.map(contract => contract.text),
+    ['已停用', '保留旧版 1.8.0', '重试更新', '卸载']
+  );
+  assert.deepEqual(
+    failedActionContracts.map(contract => contract.action),
+    ['toggle-enabled', null, 'update', 'uninstall']
+  );
+  assert.deepEqual(
+    failedActionContracts.map(contract => contract.disabled),
+    [false, true, false, false]
+  );
+  const failedDetailSwitch = page.locator(
+    '[data-reference-region="mod-detail-modal"] .detail-enabled-control[role="switch"]'
+  );
+  await failedDetailSwitch.click();
+  await page.waitForTimeout(380);
+  const failedOldVersionState = await page.evaluate(() => {
+    const state = window.__DST_MODS_DEMO__.getState();
+    const mod = state.mods['dst-season-clock'];
+    const task = state.tasks[mod.current_task_id];
+    return {
+      enabledValue: mod.enabled_value,
+      installedVersion: mod.installed_version,
+      updateFact: mod.update_fact,
+      taskState: task?.task_state
+    };
+  });
+  assert.deepEqual(failedOldVersionState, {
+    enabledValue: 'enabled',
+    installedVersion: '1.8.0',
+    updateFact: 'update_available',
+    taskState: 'failed'
+  });
+  await page.evaluate(() => {
+    window.__DST_MODS_DEMO__.dispatch({
+      type: 'ENABLE_CHANGED',
+      modId: 'dst-season-clock',
+      value: 'disabled'
+    });
+  });
+  await page.locator(
+    '[data-reference-region="mod-detail-modal"] [data-action="uninstall"]'
+  ).click();
+  assert.equal(
+    await page.evaluate(() => window.__DST_MODS_DEMO__.getState().ui.activeDialog),
+    'uninstall-confirm'
+  );
+  await page.evaluate(() => {
+    window.__DST_MODS_DEMO__.dispatch({ type: 'UNINSTALL_CANCELLED' });
+    window.__DST_MODS_DEMO__.dispatch({ type: 'OPEN_DETAIL', modId: 'dst-season-clock' });
+  });
+  assert.equal(
+    await page.locator(
+      '[data-reference-region="mod-detail-modal"] [data-action="update"]:not([disabled])'
+    ).count(),
+    1,
+    'retry update action was not available after keeping the old version'
+  );
 
   await page.evaluate(() => {
-    window.__DST_MODS_DEMO__.dispatch({ type: 'OPEN_DETAIL', modId: 'dst-fast-travel' });
+    const api = window.__DST_MODS_DEMO__;
+    api.dispatch({
+      type: 'ENABLE_CHANGE_REQUESTED',
+      modId: 'dst-smart-stack',
+      value: 'disabled'
+    });
+    api.failEnableChange('dst-smart-stack');
+    api.dispatch({ type: 'OPEN_DETAIL', modId: 'dst-fast-travel' });
   });
   const prdDetailModal = page.locator(
     '[data-reference-region="mod-detail-modal"]'
@@ -230,7 +375,8 @@ try {
   assert.deepEqual(pageErrors, []);
   assert.deepEqual(consoleErrors, []);
   console.log('PASS: sort options = trend, downloads, published; default = trend');
-  console.log('PASS: enabled switches synchronized, isolated and rollback-safe');
+  console.log('PASS: enabled controls support Enter/Space, request locking and rollback');
+  console.log('PASS: failed update keeps the old version and exposes four ordered actions');
   console.log(`PASS: captured ${path.relative(root, evidenceDir)}`);
 } finally {
   await context.close();
