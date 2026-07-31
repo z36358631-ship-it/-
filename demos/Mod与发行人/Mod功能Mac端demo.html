@@ -502,18 +502,21 @@
       top: 129px;
       left: 207px;
       width: 1300px;
-      height: 93px;
+      height: 94px;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.08);
     }
 
     .list-tools {
-      width: 100%;
+      width: auto;
+      flex: 0 0 auto;
       display: flex;
       align-items: center;
       justify-content: flex-end;
       gap: 14px;
-      padding-top: 17px;
+      padding-top: 0;
     }
 
     .compact-select {
@@ -1319,20 +1322,21 @@
 
     /* 列表页的 Tab、排序和筛选。 */
     .mods-tabs {
-      position: absolute;
-      top: 238px;
-      left: 207px;
-      width: 1300px;
-      height: 62px;
+      position: static;
+      width: auto;
+      height: 100%;
+      flex: 0 0 auto;
       display: flex;
       align-items: stretch;
       gap: 8px;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 0;
     }
 
     .mods-tabs button {
       position: relative;
       min-width: 174px;
+      height: 54px;
+      align-self: center;
       padding: 0 28px;
       border: 0;
       background: transparent;
@@ -1353,7 +1357,7 @@
     .mods-tabs button.is-active::after {
       position: absolute;
       right: 25px;
-      bottom: -2px;
+      bottom: -22px;
       left: 25px;
       height: 4px;
       border-radius: 4px 4px 0 0;
@@ -1363,7 +1367,7 @@
 
     .catalog-toolbar {
       position: absolute;
-      top: 318px;
+      top: 223px;
       left: 207px;
       width: 1300px;
       height: 64px;
@@ -1378,8 +1382,8 @@
     }
 
     .mods-grid {
-      top: 401px;
-      height: 1079px;
+      top: 287px;
+      height: 1193px;
       grid-auto-rows: 492px;
     }
 
@@ -2420,26 +2424,26 @@
         <section class="mods-list" data-screen="mods-list">
           <button class="back-detail" type="button" data-action="back-game">${icon('back', 'small')}返回详情</button>
           <header class="mods-list-header">
+            <div class="mods-tabs" role="tablist" aria-label="MODS 内容范围">
+              <button type="button" role="tab"
+                data-mod-tab="browse"
+                data-action="set-tab"
+                data-value="browse"
+                aria-selected="${viewModel.activeTab === 'browse'}"
+                class="${viewModel.activeTab === 'browse' ? 'is-active' : ''}">浏览 ${viewModel.catalogTotal}</button>
+              <button type="button" role="tab"
+                data-mod-tab="installed"
+                data-action="set-tab"
+                data-value="installed"
+                aria-selected="${viewModel.activeTab === 'installed'}"
+                class="${viewModel.activeTab === 'installed' ? 'is-active' : ''}">已安装 ${viewModel.installedCount}</button>
+            </div>
             <div class="list-tools">
               ${viewModel.activeTab === 'browse' ? browseControls : installedControls}
               <label class="search-field">${icon('search', 'small')}<input data-input="search" aria-label="搜索 MOD" placeholder="搜索 MOD" value="${escapeHtml(viewModel.searchText)}"></label>
               <button class="refresh-button ${viewModel.state.ui.refreshing ? 'is-refreshing' : ''}" type="button" data-action="refresh">${icon('refresh', 'small')}${viewModel.state.ui.refreshing ? '刷新中' : '刷新'}</button>
             </div>
           </header>
-          <div class="mods-tabs" role="tablist" aria-label="MODS 内容范围">
-            <button type="button" role="tab"
-              data-mod-tab="browse"
-              data-action="set-tab"
-              data-value="browse"
-              aria-selected="${viewModel.activeTab === 'browse'}"
-              class="${viewModel.activeTab === 'browse' ? 'is-active' : ''}">浏览 ${viewModel.catalogTotal}</button>
-            <button type="button" role="tab"
-              data-mod-tab="installed"
-              data-action="set-tab"
-              data-value="installed"
-              aria-selected="${viewModel.activeTab === 'installed'}"
-              class="${viewModel.activeTab === 'installed' ? 'is-active' : ''}">已安装 ${viewModel.installedCount}</button>
-          </div>
           <div class="catalog-toolbar">
             ${viewModel.activeTab === 'installed'
               ? `<p data-catalog-summary>${viewModel.installedCount} 个已安装 · 仅此设备</p>`

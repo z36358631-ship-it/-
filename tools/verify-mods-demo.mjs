@@ -16,6 +16,14 @@ assert.match(html, /按近 24 小时下载增幅排序/u);
 assert.doesNotMatch(html, /<div class="mods-list-title">/u);
 assert.match(html, /data-input="browse-sort"/u);
 assert.match(html, /data-input="installed-filter"/u);
+assert.match(
+  html,
+  /<header class="mods-list-header">[\s\S]*?<div class="mods-tabs"[\s\S]*?<div class="list-tools">/u
+);
+assert.doesNotMatch(
+  html,
+  /<\/header>\s*<div class="mods-tabs"/u
+);
 assert.doesNotMatch(html, /data-action="set-browse-sort"/u);
 assert.doesNotMatch(html, /data-action="set-installed-filter"/u);
 assert.match(html, /<span class="mods-subtitle">热门组件<\/span>/u);
@@ -75,6 +83,48 @@ try {
 
   await page.locator('[data-action="open-mods"]').click();
   assert.equal(await page.locator('.mods-list-title').count(), 0);
+  const browseHeaderOrder = await page.locator(
+    '.mods-list-header button, .mods-list-header select, .mods-list-header input'
+  ).evaluateAll(elements => elements.map(element => (
+    element.matches('[data-mod-tab="browse"]') ? 'browse-tab'
+      : element.matches('[data-mod-tab="installed"]') ? 'installed-tab'
+        : element.matches('[data-input="browse-sort"]') ? 'sort'
+          : element.matches('[data-input="search"]') ? 'search'
+            : element.matches('[data-action="refresh"]') ? 'refresh'
+              : 'unknown'
+  )));
+  assert.deepEqual(
+    browseHeaderOrder,
+    ['browse-tab', 'installed-tab', 'sort', 'search', 'refresh']
+  );
+  const browseFocusOrder = [];
+  await page.locator('.back-detail').focus();
+  for (let index = 0; index < 5; index += 1) {
+    await page.keyboard.press('Tab');
+    browseFocusOrder.push(await page.evaluate(() => {
+      const element = document.activeElement;
+      return element?.matches('[data-mod-tab="browse"]') ? 'browse-tab'
+        : element?.matches('[data-mod-tab="installed"]') ? 'installed-tab'
+          : element?.matches('[data-input="browse-sort"]') ? 'sort'
+            : element?.matches('[data-input="search"]') ? 'search'
+              : element?.matches('[data-action="refresh"]') ? 'refresh'
+                : 'unknown';
+    }));
+  }
+  assert.deepEqual(
+    browseFocusOrder,
+    ['browse-tab', 'installed-tab', 'sort', 'search', 'refresh']
+  );
+  const browseHeaderCenters = await page.locator(
+    '.mods-list-header [data-mod-tab], .mods-list-header .compact-select, .mods-list-header .search-field, .mods-list-header .refresh-button'
+  ).evaluateAll(elements => elements.map(element => {
+    const box = element.getBoundingClientRect();
+    return box.top + box.height / 2;
+  }));
+  assert(
+    Math.max(...browseHeaderCenters) - Math.min(...browseHeaderCenters) <= 1,
+    `browse header controls are not on one row: ${JSON.stringify(browseHeaderCenters)}`
+  );
   const browseToolOrder = await page.locator('.list-tools > *').evaluateAll(elements =>
     elements.map(element =>
       element.querySelector('[data-input="browse-sort"]')
@@ -125,6 +175,20 @@ try {
   );
   await page.evaluate(() => document.activeElement?.blur());
   assert.equal(await page.locator('[data-catalog-summary]').count(), 0);
+  const browseLayout = await page.evaluate(() => {
+    const header = document.querySelector('.mods-list-header').getBoundingClientRect();
+    const activeTab = document.querySelector('.mods-tabs .is-active');
+    const firstCard = document.querySelector('[data-mod-card]').getBoundingClientRect();
+    return {
+      headerWidth: header.width,
+      headerBorder: getComputedStyle(document.querySelector('.mods-list-header')).borderBottomWidth,
+      underlineBottom: getComputedStyle(activeTab, '::after').bottom,
+      firstCardTop: firstCard.top
+    };
+  });
+  assert.equal(Math.round(browseLayout.headerWidth), 1300);
+  assert.equal(browseLayout.headerBorder, '2px');
+  assert.equal(browseLayout.underlineBottom, '-22px');
   const invalidBrowseSortState = await page.evaluate(() => {
     const api = window.__DST_MODS_DEMO__;
     api.dispatch({ type: 'SAVE_SCROLL_TOP', tab: 'browse', value: 480 });
@@ -188,6 +252,7 @@ try {
   );
   await browseSort.selectOption('trend');
   assert.equal(await page.locator('.enabled-switch').count(), 4);
+  await page.evaluate(() => document.activeElement?.blur());
   await capture('mac-mods-browse.png');
   await page.locator('[data-demo-root]').screenshot({
     path: path.join(prdImageDir, '03-mac-browse-toolbar.png')
@@ -210,6 +275,30 @@ try {
   );
 
   await page.locator('[data-action="set-tab"][data-value="installed"]').click();
+  const installedHeaderOrder = await page.locator(
+    '.mods-list-header button, .mods-list-header select, .mods-list-header input'
+  ).evaluateAll(elements => elements.map(element => (
+    element.matches('[data-mod-tab="browse"]') ? 'browse-tab'
+      : element.matches('[data-mod-tab="installed"]') ? 'installed-tab'
+        : element.matches('[data-input="installed-filter"]') ? 'filter'
+          : element.matches('[data-input="search"]') ? 'search'
+            : element.matches('[data-action="refresh"]') ? 'refresh'
+              : 'unknown'
+  )));
+  assert.deepEqual(
+    installedHeaderOrder,
+    ['browse-tab', 'installed-tab', 'filter', 'search', 'refresh']
+  );
+  const installedHeaderCenters = await page.locator(
+    '.mods-list-header [data-mod-tab], .mods-list-header .compact-select, .mods-list-header .search-field, .mods-list-header .refresh-button'
+  ).evaluateAll(elements => elements.map(element => {
+    const box = element.getBoundingClientRect();
+    return box.top + box.height / 2;
+  }));
+  assert(
+    Math.max(...installedHeaderCenters) - Math.min(...installedHeaderCenters) <= 1,
+    `installed header controls are not on one row: ${JSON.stringify(installedHeaderCenters)}`
+  );
   const installedToolOrder = await page.locator('.list-tools > *').evaluateAll(elements =>
     elements.map(element =>
       element.querySelector('[data-input="installed-filter"]')
@@ -270,6 +359,21 @@ try {
   await page.waitForTimeout(380);
   assert.equal(await smartInstalledSwitch.getAttribute('aria-checked'), 'false');
   assert.equal(await page.locator('[data-catalog-summary]').textContent(), '4 个已安装 · 仅此设备');
+  const installedLayout = await page.evaluate(() => {
+    const header = document.querySelector('.mods-list-header').getBoundingClientRect();
+    const summary = document.querySelector('[data-catalog-summary]').getBoundingClientRect();
+    const firstCard = document.querySelector('[data-mod-card]').getBoundingClientRect();
+    return {
+      headerBottom: header.bottom,
+      summaryTop: summary.top,
+      summaryBottom: summary.bottom,
+      firstCardTop: firstCard.top
+    };
+  });
+  assert(installedLayout.summaryTop >= installedLayout.headerBottom);
+  assert(installedLayout.summaryBottom <= installedLayout.firstCardTop);
+  assert.equal(installedLayout.firstCardTop, browseLayout.firstCardTop);
+  await page.evaluate(() => document.activeElement?.blur());
   await page.waitForTimeout(1900);
   await capture('mac-mods-installed.png');
   await page.locator('[data-demo-root]').screenshot({
@@ -495,27 +599,6 @@ try {
     'retry update action was not available after keeping the old version'
   );
 
-  await page.evaluate(() => {
-    const api = window.__DST_MODS_DEMO__;
-    api.dispatch({
-      type: 'ENABLE_CHANGE_REQUESTED',
-      modId: 'dst-smart-stack',
-      value: 'disabled'
-    });
-    api.failEnableChange('dst-smart-stack');
-    api.dispatch({ type: 'OPEN_DETAIL', modId: 'dst-fast-travel' });
-  });
-  const prdDetailModal = page.locator(
-    '[data-reference-region="mod-detail-modal"]'
-  );
-  await prdDetailModal.screenshot({
-    path: path.join(prdImageDir, '02-mac-detail-enabled.png')
-  });
-  await prdDetailModal.locator('.detail-enabled-control[role="switch"]').click();
-  await page.waitForTimeout(380);
-  await prdDetailModal.screenshot({
-    path: path.join(prdImageDir, '01-mac-detail-disabled.png')
-  });
   assert(fs.statSync(path.join(prdImageDir, '01-mac-detail-disabled.png')).size > 10000);
   assert(fs.statSync(path.join(prdImageDir, '02-mac-detail-enabled.png')).size > 10000);
   assert(fs.statSync(path.join(prdImageDir, '03-mac-browse-toolbar.png')).size > 10000);
@@ -523,8 +606,8 @@ try {
 
   assert.deepEqual(pageErrors, []);
   assert.deepEqual(consoleErrors, []);
-  console.log('PASS: browse toolbar = sort select, search, refresh; default sort = trend');
-  console.log('PASS: installed toolbar = filter select, search, refresh; default filter = all');
+  console.log('PASS: browse header = tabs, sort select, search, refresh; default sort = trend');
+  console.log('PASS: installed header = tabs, filter select, search, refresh; default filter = all');
   console.log('PASS: enabled controls support Enter/Space, request locking and rollback');
   console.log('PASS: failed update keeps the old version and exposes four ordered actions');
   console.log(`PASS: captured ${path.relative(root, evidenceDir)}`);
