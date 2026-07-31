@@ -146,6 +146,20 @@ async function capture(page, fileName, targetPage, prepare) {
   if (prepare) await prepare(page);
   await page.waitForTimeout(150);
   await exposeCanvas(page);
+  const imageState = await page.evaluate(() => {
+    const images = [...document.querySelectorAll('#demoCanvas img')];
+    return {
+      total: images.length,
+      loaded: images.filter((image) => image.complete && image.naturalWidth > 0).length,
+      failedAlt: images
+        .filter((image) => !image.complete || image.naturalWidth <= 0)
+        .map((image) => image.alt || '(无 alt)'),
+    };
+  });
+  assert(
+    imageState.total === imageState.loaded,
+    `${fileName} 存在未加载图片：${imageState.failedAlt.join('、')}`,
+  );
   const outputPath = path.join(outputDir, fileName);
   await page.locator('#demoCanvas').screenshot({
     path: outputPath,
