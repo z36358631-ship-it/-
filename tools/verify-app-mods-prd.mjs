@@ -6,9 +6,10 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const prdPath = path.join(root, 'prd', 'ai生成', '【Prd】《盖世游戏》APP端MODS需求.md');
 const verifyRemote = process.argv.includes('--remote');
-const expectedSha = '739a3f8904982a8e6334d8b8f1761ff8074c2ce9';
+const expectedSha = 'af6221681c93d0e89ec0963255c2681046b0a738';
 const imageNames = [
   '01-game-more-menu-portrait.png',
+  '08-game-more-menu-landscape.png',
   '02-browse-portrait.png',
   '03-installed-portrait.png',
   '04-detail-portrait.png',
@@ -80,7 +81,7 @@ for (const imageName of imageNames) {
   assert(fs.statSync(localImage).size > 12000, `截图体积异常：${imageName}`);
 }
 
-console.log('PASS: APP MODS PRD 结构、页面、规则、验收与七张固定图片');
+console.log('PASS: APP MODS PRD 结构、页面、规则、验收与八张固定图片');
 
 if (verifyRemote) {
   for (const [, url] of imageUrls) {
