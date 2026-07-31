@@ -910,12 +910,17 @@
       justify-content: center;
       gap: 11px;
       flex: 1;
-      border: 0;
+      border: 2px solid transparent;
       border-radius: 36px;
       background: #f7f7f8;
       color: #111113;
       font-size: 24px;
       font-weight: 600;
+      transition:
+        filter 140ms ease,
+        transform 100ms ease,
+        border-color 140ms ease,
+        background-color 140ms ease;
     }
 
     .modal-action-bar > button.secondary,
@@ -927,6 +932,14 @@
 
     .modal-action-bar > button.danger {
       color: #ffaaa7;
+    }
+
+    .modal-action-bar > button:not(:disabled):hover {
+      filter: brightness(1.08);
+    }
+
+    .modal-action-bar > button:not(:disabled):active {
+      transform: translateY(1px);
     }
 
     .modal-action-bar > button:disabled {
@@ -1575,19 +1588,21 @@
       margin-top: 36px;
     }
 
-    .detail-enabled-control {
-      min-width: 196px;
-      display: flex;
-      align-items: center;
-      padding: 0 22px;
-      border: 2px solid rgba(255, 255, 255, 0.1);
-      border-radius: 36px;
-      background: rgba(255, 255, 255, 0.035);
+    .modal-action-bar > button.detail-enabled-control {
+      min-width: 0;
+      border-color: transparent;
+      background: #545158;
+      color: #f1f0f2;
     }
 
-    .detail-enabled-control .enabled-switch {
-      width: 100%;
-      justify-content: space-between;
+    .modal-action-bar > button.detail-enabled-control[aria-checked="true"] {
+      background: var(--success);
+      color: #10251e;
+    }
+
+    .modal-action-bar > button.detail-enabled-control:disabled {
+      cursor: wait;
+      opacity: 0.62;
     }
   </style>
 </head>
@@ -2317,6 +2332,26 @@
       `;
     }
 
+    function renderDetailEnabledControl(mod, viewModel) {
+      const enabled = mod.enabled_value === 'enabled';
+      const pending = Boolean(viewModel.state.ui.enableMutationByMod[mod.mod_id]);
+      const label = enabled ? '已启用' : '已停用';
+      return `
+        <button type="button"
+          class="secondary detail-enabled-control"
+          role="switch"
+          aria-label="${escapeHtml(mod.name)} ${label}"
+          aria-checked="${enabled}"
+          aria-busy="${pending}"
+          data-switch-context="detail"
+          data-action="toggle-enabled"
+          data-mod-id="${mod.mod_id}"
+          ${pending ? 'disabled' : ''}>
+          <span>${label}</span>
+        </button>
+      `;
+    }
+
     function renderModCard(mod, viewModel) {
       const installed = mod.installation_fact === 'installed';
       const task = activeTask(viewModel.state, mod);
@@ -2481,14 +2516,14 @@
       }
       if (task?.task_state === 'failed') {
         return `<footer class="modal-action-bar">
-          <div class="detail-enabled-control">${renderEnabledSwitch(mod, viewModel, 'detail')}</div>
+          ${renderDetailEnabledControl(mod, viewModel)}
           <button type="button" class="secondary" disabled>保留旧版 ${escapeHtml(mod.installed_version)}</button>
           <button type="button" data-action="update" data-mod-id="${mod.mod_id}">重试更新</button>
           <button type="button" class="danger" data-action="uninstall" data-mod-id="${mod.mod_id}">卸载</button>
         </footer>`;
       }
       return `<footer class="modal-action-bar">
-        <div class="detail-enabled-control">${renderEnabledSwitch(mod, viewModel, 'detail')}</div>
+        ${renderDetailEnabledControl(mod, viewModel)}
         <button type="button" data-action="update" data-mod-id="${mod.mod_id}">${mod.update_fact === 'update_available' ? '更新' : '检查更新'}</button>
         <button type="button" class="danger" data-action="uninstall" data-mod-id="${mod.mod_id}">卸载</button>
       </footer>`;

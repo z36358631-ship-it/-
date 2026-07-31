@@ -7,6 +7,7 @@ import { chromium } from 'playwright-core';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const demoPath = path.join(root, 'demos', 'Mod与发行人', 'Mod功能Mac端demo.html');
 const evidenceDir = path.join(root, '.tmp', 'mods-sort-toggle-evidence');
+const prdImageDir = path.join(root, 'public', 'prd', 'dst-mods');
 const html = fs.readFileSync(demoPath, 'utf8');
 
 assert.match(html, /\['trend', '热门趋势'\][\s\S]*\['downloads', '下载量'\][\s\S]*\['published', '最新发布'\]/u);
@@ -20,6 +21,8 @@ assert.doesNotMatch(html, /class="detail-metrics"/u);
 assert.doesNotMatch(html, /\.detail-title-meta span \+ span::before/u);
 assert.doesNotMatch(html, /<h4>兼容性：<\/h4>/u);
 assert.match(html, /function renderEnabledSwitch/u);
+assert.match(html, /function renderDetailEnabledControl/u);
+assert.doesNotMatch(html, /detail-switch-track/u);
 assert.match(html, /case 'ENABLE_CHANGE_FAILED'/u);
 console.log('PASS: static sort, copy, metadata and switch contracts');
 
@@ -31,6 +34,7 @@ const executablePath = [
 assert(executablePath, 'Local Chromium browser not found');
 
 fs.mkdirSync(evidenceDir, { recursive: true });
+fs.mkdirSync(prdImageDir, { recursive: true });
 const browser = await chromium.launch({
   executablePath,
   headless: true,
@@ -129,9 +133,27 @@ try {
     '[data-mod-card][data-mod-id="dst-smart-stack"] [data-card-detail]'
   ).click();
   const detailSwitch = page.locator(
-    '[data-reference-region="mod-detail-modal"] .detail-enabled-control [role="switch"]'
+    '[data-reference-region="mod-detail-modal"] .detail-enabled-control[role="switch"]'
   );
   assert.equal(await detailSwitch.getAttribute('aria-checked'), 'false');
+  assert.equal((await detailSwitch.textContent()).trim(), '已停用');
+  assert.equal(
+    await detailSwitch.evaluate(element => getComputedStyle(element).backgroundColor),
+    'rgb(84, 81, 88)'
+  );
+  assert.equal(await detailSwitch.locator('button').count(), 0);
+  const actionBoxes = await page.locator(
+    '[data-reference-region="mod-detail-modal"] .modal-action-bar > *'
+  ).evaluateAll(elements => elements.map(element => {
+    const box = element.getBoundingClientRect();
+    return { width: box.width, height: box.height };
+  }));
+  assert.equal(actionBoxes.length, 3);
+  assert(actionBoxes.every(box => Math.round(box.height) === 72));
+  assert(
+    Math.max(...actionBoxes.map(box => box.width)) - Math.min(...actionBoxes.map(box => box.width)) <= 1,
+    `detail action widths are not equal: ${JSON.stringify(actionBoxes)}`
+  );
   assert.equal(await page.locator('.detail-title-meta span').count(), 3);
   assert.deepEqual(
     (await page.locator('.detail-title-meta span').allTextContents()).map(text => text.trim()),
@@ -140,15 +162,27 @@ try {
   assert.equal(await page.locator('.detail-metrics').count(), 0);
   await capture('mac-mods-detail.png');
 
-  await detailSwitch.click();
+  await detailSwitch.focus();
+  assert.equal(
+    await detailSwitch.evaluate(element => document.activeElement === element),
+    true,
+    'detail enable control did not receive keyboard focus'
+  );
+  await detailSwitch.locator('span').first().click();
   await page.waitForTimeout(380);
   assert.equal(
     await page.evaluate(() => window.__DST_MODS_DEMO__.getState().mods['dst-smart-stack'].enabled_value),
     'enabled'
   );
+  assert.equal((await detailSwitch.textContent()).trim(), '已启用');
+  assert.equal(
+    await detailSwitch.evaluate(element => getComputedStyle(element).backgroundColor),
+    'rgb(100, 215, 172)'
+  );
+  await capture('mac-mods-detail-enabled.png');
 
   await page.locator(
-    '[data-reference-region="mod-detail-modal"] .detail-enabled-control [role="switch"]'
+    '[data-reference-region="mod-detail-modal"] .detail-enabled-control[role="switch"]'
   ).click();
   await page.evaluate(() => window.__DST_MODS_DEMO__.failEnableChange('dst-smart-stack'));
   await page.waitForTimeout(380);
@@ -158,6 +192,40 @@ try {
     'failed enable mutation did not roll back'
   );
   assert.match(await page.locator('[data-toast-region]').textContent(), /启用状态修改失败/u);
+
+  await page.evaluate(() => {
+    window.__DST_MODS_DEMO__.dispatch({ type: 'OPEN_DETAIL', modId: 'dst-season-clock' });
+  });
+  const failedActionBoxes = await page.locator(
+    '[data-reference-region="mod-detail-modal"] .modal-action-bar > *'
+  ).evaluateAll(elements => elements.map(element => {
+    const box = element.getBoundingClientRect();
+    return { width: box.width, height: box.height };
+  }));
+  assert.equal(failedActionBoxes.length, 4);
+  assert(failedActionBoxes.every(box => Math.round(box.height) === 72));
+  assert(
+    Math.max(...failedActionBoxes.map(box => box.width))
+      - Math.min(...failedActionBoxes.map(box => box.width)) <= 1,
+    `failed detail action widths are not equal: ${JSON.stringify(failedActionBoxes)}`
+  );
+
+  await page.evaluate(() => {
+    window.__DST_MODS_DEMO__.dispatch({ type: 'OPEN_DETAIL', modId: 'dst-fast-travel' });
+  });
+  const prdDetailModal = page.locator(
+    '[data-reference-region="mod-detail-modal"]'
+  );
+  await prdDetailModal.screenshot({
+    path: path.join(prdImageDir, '02-mac-detail-enabled.png')
+  });
+  await prdDetailModal.locator('.detail-enabled-control[role="switch"]').click();
+  await page.waitForTimeout(380);
+  await prdDetailModal.screenshot({
+    path: path.join(prdImageDir, '01-mac-detail-disabled.png')
+  });
+  assert(fs.statSync(path.join(prdImageDir, '01-mac-detail-disabled.png')).size > 10000);
+  assert(fs.statSync(path.join(prdImageDir, '02-mac-detail-enabled.png')).size > 10000);
 
   assert.deepEqual(pageErrors, []);
   assert.deepEqual(consoleErrors, []);
