@@ -18,7 +18,7 @@
 - Modify: `tools/verify-mods-demo.mjs`
 - Test: `tools/verify-mods-demo.mjs`
 
-- [ ] **Step 1: 增加已安装页 DOM 与焦点顺序断言**
+- [x] **Step 1: 增加已安装页 DOM 与焦点顺序断言**
 
 将已安装头部期望顺序改为：
 
@@ -42,7 +42,7 @@ assert.deepEqual(
 );
 ```
 
-- [ ] **Step 2: 增加状态隔离断言**
+- [x] **Step 2: 增加状态隔离断言**
 
 在浏览页写入搜索词后切换已安装页，断言搜索词不参与已安装列表：
 
@@ -56,7 +56,7 @@ assert.equal(
 );
 ```
 
-- [ ] **Step 3: 运行测试并确认当前实现失败**
+- [x] **Step 3: 运行测试并确认当前实现失败**
 
 Run:
 
@@ -72,7 +72,7 @@ Expected: FAIL，当前已安装头部仍渲染搜索输入，DOM 顺序多出 `
 - Modify: `demos/Mod与发行人/Mod功能Mac端demo.html`
 - Test: `tools/verify-mods-demo.mjs`
 
-- [ ] **Step 1: 让派生列表仅在浏览页读取搜索词**
+- [x] **Step 1: 让派生列表仅在浏览页读取搜索词**
 
 将：
 
@@ -88,7 +88,7 @@ const searchText = activeTab === 'browse'
   : '';
 ```
 
-- [ ] **Step 2: 只在浏览页渲染搜索输入**
+- [x] **Step 2: 只在浏览页渲染搜索输入**
 
 将统一搜索标签改为条件渲染：
 
@@ -100,7 +100,21 @@ ${viewModel.activeTab === 'browse'
 
 已安装页的筛选与刷新沿用现有结构，`.list-tools` 自然右对齐，不新增占位元素。
 
-- [ ] **Step 3: 运行完整 Demo 验证并生成已安装页截图**
+- [x] **Step 3: 增加重绘焦点恢复与主动移焦保护**
+
+按 `data-input`、`data-action`、`data-mod-id` 和 `data-switch-context` 记录原控件。同步重绘后立即恢复；启停控件禁用期间保存恢复目标，请求完成或失败后恢复：
+
+```js
+root.addEventListener('focusin', event => {
+  if (!deferredFocus) return;
+  const expectedControl = root.querySelector(deferredFocus.selector);
+  if (event.target !== expectedControl) deferredFocus = null;
+});
+```
+
+自动化覆盖 Tab、搜索和光标、筛选、刷新、列表启停、详情启停；用户在异步期间主动移焦时，完成回调不得抢回。
+
+- [x] **Step 4: 运行完整 Demo 验证并生成已安装页截图**
 
 Run:
 
@@ -128,7 +142,7 @@ PASS: failed update keeps the old version and exposes four ordered actions
 - Modify: `prd/mod功能/【PRD】《盖世游戏》DST本地MODS跨平台需求.md`
 - Modify: `tools/verify-mods-prd.mjs`
 
-- [ ] **Step 1: 发布 Demo 与截图固定提交**
+- [x] **Step 1: 发布 Demo 与截图固定提交**
 
 Run:
 
@@ -139,9 +153,9 @@ git push origin HEAD:main
 git rev-parse HEAD
 ```
 
-Expected: 远端 `main` 包含无搜索的已安装页；输出 40 位固定图片提交 SHA。
+Expected: 远端 `main` 包含无搜索的已安装页与焦点修正；固定图片提交 SHA 为 `51e26a5df89a6c53fc792861ae2c5168cb19666b`。
 
-- [ ] **Step 2: 追加 PRD 版本与规则**
+- [x] **Step 2: 追加 PRD 版本与规则**
 
 主 PRD 追加 V1.6，技术归档追加 V1.9；新增规则明确：
 
@@ -151,9 +165,9 @@ Expected: 远端 `main` 包含无搜索的已安装页；输出 40 位固定图�
 已安装结果不读取 searchByTab.installed。
 ```
 
-仅将 `04-mac-installed-toolbar.png` 更新为 Step 1 固定 SHA，对应图片 URL 必须返回 HTTP 200 且 `Content-Type` 为 `image/png`。
+4 张 PRD 图统一使用 Step 1 固定 SHA；每张图片 URL 必须返回 HTTP 200 且 `Content-Type` 为 `image/png`。
 
-- [ ] **Step 3: 提交 PRD 并验证在线预览**
+- [x] **Step 3: 提交 PRD 并验证在线预览**
 
 Run:
 
