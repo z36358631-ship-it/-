@@ -105,19 +105,30 @@ function state() {
 
 function onboardingSource() {
   requireTokens(onboarding, [
+    'id="pageWelcome"',
     'id="pageSource"',
+    'id="pageStartMethod"',
+    'id="pageHome"',
     'gamehub_onboarding_source_v2',
-    'onboarding_user_type_pending',
-    'onboarding_source_pending',
-    'onboarding_source_saved',
-    'onboarding_branch_in_progress',
+    'welcome_pending',
+    'source_pending',
+    'start_method_pending',
+    'destination_in_progress',
+    'completed',
     'manual_interest_exempt',
     'data-onboarding-source-code',
+    'data-start-method="has_game"',
+    'data-start-method="explore_first"',
+    'data-start-method="later"',
+    '以后再说',
+    'new_user_onboarding',
     'submitOnboardingSource',
     'restoreOnboardingFlow',
     'other_or_unknown',
     'Where did you first hear about GameHub?',
-  ], 'onboarding source');
+  ], 'onboarding acquisition flow');
+  assert(!onboarding.includes('class="skip-btn"'), 'new-user flow must not expose a floating skip action');
+  assert(!onboarding.includes('cdn.cloudflare.steamstatic.com'), 'single-file demo must not depend on Steam CDN covers');
   assert(!onboarding.includes('查看24小时后问卷'), 'onboarding still links to delayed wizard');
   assert(!onboarding.includes('满24小时后的首次合格冷启动'), 'obsolete delayed handoff remains');
   pass('onboardingSource');
