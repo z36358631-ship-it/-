@@ -130,13 +130,23 @@ Expected: FAIL，原因是 `.mods-tabs` 仍位于 `.mods-list-header` 外，Tab 
 ```html
 <header class="mods-list-header">
   <div class="mods-tabs" role="tablist" aria-label="MODS 内容范围">
-    <button type="button" role="tab" data-mod-tab="browse" data-action="set-tab" data-value="browse">...</button>
-    <button type="button" role="tab" data-mod-tab="installed" data-action="set-tab" data-value="installed">...</button>
+    <button type="button" role="tab"
+      data-mod-tab="browse"
+      data-action="set-tab"
+      data-value="browse"
+      aria-selected="${viewModel.activeTab === 'browse'}"
+      class="${viewModel.activeTab === 'browse' ? 'is-active' : ''}">浏览 ${viewModel.catalogTotal}</button>
+    <button type="button" role="tab"
+      data-mod-tab="installed"
+      data-action="set-tab"
+      data-value="installed"
+      aria-selected="${viewModel.activeTab === 'installed'}"
+      class="${viewModel.activeTab === 'installed' ? 'is-active' : ''}">已安装 ${viewModel.installedCount}</button>
   </div>
   <div class="list-tools">
     ${viewModel.activeTab === 'browse' ? browseControls : installedControls}
-    <label class="search-field">...</label>
-    <button class="refresh-button" type="button" data-action="refresh">...</button>
+    <label class="search-field">${icon('search', 'small')}<input data-input="search" aria-label="搜索 MOD" placeholder="搜索 MOD" value="${escapeHtml(viewModel.searchText)}"></label>
+    <button class="refresh-button ${viewModel.state.ui.refreshing ? 'is-refreshing' : ''}" type="button" data-action="refresh">${icon('refresh', 'small')}${viewModel.state.ui.refreshing ? '刷新中' : '刷新'}</button>
   </div>
 </header>
 ```
