@@ -353,9 +353,37 @@ async function main() {
       assert(result.assistantWidth <= 320 && result.passwordRight < result.assistantLeft, '登录助手尺寸过大或遮挡 Steam 密码输入框');
     });
 
+    await capture(page, 'c05-manual-login-credentials.png', 'library', async (currentPage) => {
+      const result = await currentPage.evaluate(async () => {
+        state.steamSession = 'rental';
+        state.activeRentalOrderId = 'GS20260713001';
+        renderApp();
+        await nextPaint();
+        document.querySelector('[data-action="open-library-steam-login"]')?.click();
+        await nextPaint();
+        dispatchAction('request-guard-stage', { dataset: { id: 'GS20260713001' } });
+        await nextPaint();
+        const dialog = document.querySelector('.manual-login-dialog');
+        return {
+          stage: dialog?.querySelector('.gamehub-login-assistant')?.dataset.stage,
+          hasGuardInput: Boolean(dialog?.querySelector('#steamGuardInput')),
+          hasAccountInput: Boolean(dialog?.querySelector('#steamAccountInput')),
+          hasPasswordInput: Boolean(dialog?.querySelector('#steamPasswordInput')),
+          guard: dialog?.querySelector('[data-guard-value]')?.textContent.trim(),
+          countdown: dialog?.querySelector('[data-guard-countdown]')?.textContent.trim(),
+          helperText: dialog?.querySelector('.gamehub-login-assistant')?.textContent,
+        };
+      });
+      assert(result.stage === 'guard' && result.hasGuardInput, '未进入 Steam Guard 阶段');
+      assert(!result.hasAccountInput && !result.hasPasswordInput, '验证码阶段仍展示账号密码输入框');
+      assert(/^[23456789BCDFGHJKMNPQRTVWXY]{5}$/.test(result.guard), 'Steam Guard 验证码未按需生成');
+      assert(result.countdown.includes('秒后失效'), 'Steam Guard 验证码缺少倒计时');
+      assert(!result.helperText.includes('Steam 账号') && !result.helperText.includes('Steam 密码'), '验证码阶段仍展示账号或密码');
+    });
+
     assert(pageErrors.length === 0, `截图页面脚本错误：${pageErrors.join(' | ')}`);
     await page.close();
-    process.stdout.write(`PASS smoke=${smokeCount}, screenshots=7\n`);
+    process.stdout.write(`PASS smoke=${smokeCount}, screenshots=8\n`);
   } finally {
     await browser.close();
   }
