@@ -361,3 +361,119 @@ git diff --check
 ```
 
 Expected: 本地校验全部 PASS；远程图片验证继续等待推送授权。
+
+### Task 10: 横屏搜索并入排序工具栏
+
+**Files:**
+- Modify: `docs/superpowers/specs/2026-07-31-app-mods-demo-prd-design.md`
+- Modify: `demos/Mod与发行人/APP端MODS功能demo.html`
+- Modify: `tools/verify-app-mods-demo.mjs`
+- Modify: `public/prd/app-mods/05-browse-landscape.png`
+- Modify: `prd/ai生成/【Prd】《盖世游戏》APP端MODS需求.md`
+- Modify: `tools/verify-app-mods-prd.mjs`
+
+- [ ] **Step 1: 先补横竖屏搜索布局和旋转断言**
+
+在 `tools/verify-app-mods-demo.mjs` 中保留竖屏独占行断言，并把横屏断言改为：
+
+```js
+assert.equal(await page.locator('[data-search]').count(), 1);
+assert.equal(await page.locator('.search-section').count(), 0);
+assert.equal(await page.locator('.sort-section [data-search]').count(), 1);
+assert.equal(await page.locator('.sort-tabs[role="tablist"] [data-sort]').count(), 3);
+assert.equal(layout.searchAndRefreshAligned, true);
+assert.equal(layout.searchBeforeRefresh, true);
+assert.equal(layout.listFollowsToolbar, true);
+assert.deepEqual(layout.focusOrder, ['hot', 'downloads', 'published', 'search', 'refresh']);
+```
+
+输入搜索词，将焦点和光标停在词中间后旋转，断言：
+
+```js
+assert.equal(await page.locator('[data-search]').inputValue(), '小地图');
+assert.equal(await page.evaluate(() => document.activeElement?.matches('[data-search]')), true);
+assert.deepEqual(
+  await page.locator('[data-search]').evaluate(input => [input.selectionStart, input.selectionEnd]),
+  [1, 1]
+);
+```
+
+- [ ] **Step 2: 运行测试并确认旧横屏布局失败**
+
+Run: `node tools/verify-app-mods-demo.mjs`
+
+Expected: FAIL，旧横屏仍存在 `.search-section`，搜索和刷新不在同一工具栏，列表起点仍按三层顶部区域计算。
+
+- [ ] **Step 3: 按方向互斥渲染同一个搜索框**
+
+在 `renderMods()` 中只生成一个 `data-search`：
+
+```js
+const searchField = `<label class="search-row">${icon('search')}<input data-search aria-label="搜索 MOD" placeholder="搜索 MOD 名称或作者" value="${state.search.replaceAll('"', '&quot;')}"></label>`;
+const sortTabs = [
+  ['hot', '热门'],
+  ['downloads', '下载最多'],
+  ['published', '最新发布']
+].map(([value, label]) => `<button class="sort-tab ${state.sort === value ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.sort === value}" data-sort="${value}">${label}</button>`).join('');
+
+${state.orientation === 'portrait' ? `<div class="search-section">${searchField}</div>` : ''}
+<div class="sort-section">
+  <div class="sort-tabs" role="tablist" aria-label="浏览排序">${sortTabs}</div>
+  ${state.orientation === 'landscape' ? searchField.replace('class="search-row"', 'class="search-row toolbar-search"') : ''}
+  <button class="refresh-small ${state.refreshing ? 'is-loading' : ''}" type="button" data-action="refresh" aria-label="刷新">${icon('refresh')}</button>
+</div>
+```
+
+横屏样式固定为排序、搜索、刷新同排，列表紧跟工具栏：
+
+```css
+.sort-tabs {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.device.landscape .toolbar-search {
+  width: 300px;
+  height: 38px;
+  margin-left: auto;
+  padding: 0 14px;
+}
+.device.landscape .sort-section .refresh-small { margin-left: 0; }
+.device.landscape .mods-scroll { top: 106px; }
+```
+
+`rotateTo()` 在重绘前记录搜索焦点和选区，重绘后恢复；输入法组合期间只更新状态，不重绘搜索框。
+
+- [ ] **Step 4: 运行 Demo 校验并更新横屏截图**
+
+Run: `node tools/verify-app-mods-demo.mjs --screenshots`
+
+Expected: Demo 测试 PASS；`05-browse-landscape.png` 显示“热门 / 下载最多 / 最新发布 → 搜索框 → 刷新”，列表紧接工具栏；其余截图没有回归。
+
+- [ ] **Step 5: 本地提交 Demo 与截图并取得固定 SHA**
+
+Run:
+
+```powershell
+git add -- "docs/superpowers/specs/2026-07-31-app-mods-demo-prd-design.md" "docs/superpowers/plans/2026-07-31-app-mods-demo-prd.md" "demos/Mod与发行人/APP端MODS功能demo.html" "tools/verify-app-mods-demo.mjs" "public/prd/app-mods/05-browse-landscape.png"
+git commit -m "fix(mods): move landscape search beside refresh"
+git rev-parse HEAD
+```
+
+Expected: 返回实际包含新版横屏截图的 40 位提交 SHA。
+
+- [ ] **Step 6: 同步 PRD 并完成本地校验**
+
+PRD 追加版本记录，更新 4.2.5、截图基线和 `AC-APP-BROWSE-01`；Demo 地址和 8 张图片统一替换为 Step 5 的固定 SHA，并同步 `tools/verify-app-mods-prd.mjs` 的 `expectedSha`。
+
+Run:
+
+```powershell
+node tools/verify-app-mods-demo.mjs
+node tools/verify-app-mods-prd.mjs
+git diff --check
+git add -- "prd/ai生成/【Prd】《盖世游戏》APP端MODS需求.md" "tools/verify-app-mods-prd.mjs"
+git commit -m "docs(mods): document landscape toolbar search"
+```
+
+Expected: Demo 和 PRD 本地校验 PASS。图片尚未推送时只报告本地完成，不声称飞书图片地址已远程通过。
