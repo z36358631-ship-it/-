@@ -1870,8 +1870,7 @@
           installedSort: 'recent',
           installedFilter: 'all',
           searchByTab: {
-            browse: '',
-            installed: ''
+            browse: ''
           },
           scrollTopByTab: {
             browse: 0,
@@ -1926,7 +1925,9 @@
           || activeTask(current, mod)?.task_state === 'failed'
       };
       const activeTab = current.ui.activeTab === 'installed' ? 'installed' : 'browse';
-      const searchText = current.ui.searchByTab[activeTab] || '';
+      const searchText = activeTab === 'browse'
+        ? current.ui.searchByTab.browse || ''
+        : '';
       const search = searchText.trim().toLowerCase();
       const sourceMods = activeTab === 'installed'
         ? installedMods
@@ -2056,7 +2057,9 @@
           next.ui.scrollTopByTab.installed = 0;
           return next;
         case 'SET_SEARCH':
-          next.ui.searchByTab[next.ui.activeTab] = String(action.value || '');
+          if (next.ui.activeTab === 'browse') {
+            next.ui.searchByTab.browse = String(action.value || '');
+          }
           return next;
         case 'SAVE_SCROLL_TOP':
           next.ui.scrollTopByTab[action.tab === 'installed' ? 'installed' : 'browse'] =
@@ -2440,7 +2443,9 @@
             </div>
             <div class="list-tools">
               ${viewModel.activeTab === 'browse' ? browseControls : installedControls}
-              <label class="search-field">${icon('search', 'small')}<input data-input="search" aria-label="搜索 MOD" placeholder="搜索 MOD" value="${escapeHtml(viewModel.searchText)}"></label>
+              ${viewModel.activeTab === 'browse'
+                ? `<label class="search-field">${icon('search', 'small')}<input data-input="search" aria-label="搜索 MOD" placeholder="搜索 MOD" value="${escapeHtml(viewModel.searchText)}"></label>`
+                : ''}
               <button class="refresh-button ${viewModel.state.ui.refreshing ? 'is-refreshing' : ''}" type="button" data-action="refresh">${icon('refresh', 'small')}${viewModel.state.ui.refreshing ? '刷新中' : '刷新'}</button>
             </div>
           </header>
@@ -2555,14 +2560,67 @@
       `;
     }
 
+    let deferredFocus = null;
+
+    function captureFocus() {
+      const active = document.activeElement;
+      if (!active || !root.contains(active)) return null;
+      const input = active.dataset.input;
+      const action = active.dataset.action;
+      let selector = '';
+      if (['search', 'browse-sort', 'installed-filter'].includes(input)) {
+        selector = `[data-input="${CSS.escape(input)}"]`;
+      } else if (['refresh', 'set-tab', 'toggle-enabled'].includes(action)) {
+        selector = `[data-action="${CSS.escape(action)}"]`;
+        if (active.dataset.value) {
+          selector += `[data-value="${CSS.escape(active.dataset.value)}"]`;
+        }
+        if (active.dataset.modId) {
+          selector += `[data-mod-id="${CSS.escape(active.dataset.modId)}"]`;
+        }
+        const ownSwitchContext = active.dataset.switchContext;
+        const ancestorSwitchContext = ownSwitchContext
+          ? null
+          : active.closest('[data-switch-context]')?.dataset.switchContext;
+        if (ownSwitchContext) {
+          selector += `[data-switch-context="${CSS.escape(ownSwitchContext)}"]`;
+        } else if (ancestorSwitchContext) {
+          selector = `[data-switch-context="${CSS.escape(ancestorSwitchContext)}"] ${selector}`;
+        }
+      }
+      if (!selector) return null;
+      return {
+        selector,
+        selectionStart: typeof active.selectionStart === 'number' ? active.selectionStart : null,
+        selectionEnd: typeof active.selectionEnd === 'number' ? active.selectionEnd : null
+      };
+    }
+
+    function restoreFocus(focus) {
+      if (!focus) return;
+      const control = root.querySelector(focus.selector);
+      if (!control) {
+        deferredFocus = null;
+        return;
+      }
+      if (control.disabled) {
+        deferredFocus = focus;
+        return;
+      }
+      control.focus();
+      if (
+        typeof control.setSelectionRange === 'function'
+        && focus.selectionStart !== null
+        && focus.selectionEnd !== null
+      ) {
+        control.setSelectionRange(focus.selectionStart, focus.selectionEnd);
+      }
+      deferredFocus = null;
+    }
+
     function render() {
       const viewModel = derive(state);
-      const focus = document.activeElement?.matches?.('[data-input="search"]')
-        ? {
-            selectionStart: document.activeElement.selectionStart,
-            selectionEnd: document.activeElement.selectionEnd
-          }
-        : null;
+      const focus = captureFocus() || deferredFocus;
       root.dataset.currentScreen = state.ui.screen;
       root.querySelector('[data-reference-region="side-rail"]').innerHTML = renderSideRail();
       viewRoot.innerHTML = state.ui.screen === 'mods-list'
@@ -2575,13 +2633,7 @@
         viewRoot.insertAdjacentHTML('beforeend', renderModDetail(viewModel));
         viewRoot.insertAdjacentHTML('beforeend', renderUninstallConfirm(viewModel));
       }
-      if (focus) {
-        const input = root.querySelector('[data-input="search"]');
-        if (input) {
-          input.focus();
-          input.setSelectionRange(focus.selectionStart, focus.selectionEnd);
-        }
-      }
+      restoreFocus(focus);
       const listScroll = root.querySelector('[data-mods-scroll]');
       if (listScroll) {
         listScroll.scrollTop = state.ui.scrollTopByTab[state.ui.activeTab] || 0;

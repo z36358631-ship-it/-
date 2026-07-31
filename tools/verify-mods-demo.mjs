@@ -254,9 +254,6 @@ try {
   assert.equal(await page.locator('.enabled-switch').count(), 4);
   await page.evaluate(() => document.activeElement?.blur());
   await capture('mac-mods-browse.png');
-  await page.locator('[data-demo-root]').screenshot({
-    path: path.join(prdImageDir, '03-mac-browse-toolbar.png')
-  });
 
   const smartBrowseSwitch = page.locator(
     '[data-mod-card][data-mod-id="dst-smart-stack"] [role="switch"]'
@@ -274,6 +271,9 @@ try {
     'disabled'
   );
 
+  await page.evaluate(() => {
+    window.__DST_MODS_DEMO__.dispatch({ type: 'SET_SEARCH', value: '小' });
+  });
   await page.locator('[data-action="set-tab"][data-value="installed"]').click();
   const installedHeaderOrder = await page.locator(
     '.mods-list-header button, .mods-list-header select, .mods-list-header input'
@@ -287,7 +287,28 @@ try {
   )));
   assert.deepEqual(
     installedHeaderOrder,
-    ['browse-tab', 'installed-tab', 'filter', 'search', 'refresh']
+    ['browse-tab', 'installed-tab', 'filter', 'refresh']
+  );
+  assert.equal(
+    await page.locator('.mods-list-header [data-input="search"]').count(),
+    0
+  );
+  const installedFocusOrder = [];
+  await page.locator('.back-detail').focus();
+  for (let index = 0; index < 4; index += 1) {
+    await page.keyboard.press('Tab');
+    installedFocusOrder.push(await page.evaluate(() => {
+      const element = document.activeElement;
+      return element?.matches('[data-mod-tab="browse"]') ? 'browse-tab'
+        : element?.matches('[data-mod-tab="installed"]') ? 'installed-tab'
+          : element?.matches('[data-input="installed-filter"]') ? 'filter'
+            : element?.matches('[data-action="refresh"]') ? 'refresh'
+              : 'unknown';
+    }));
+  }
+  assert.deepEqual(
+    installedFocusOrder,
+    ['browse-tab', 'installed-tab', 'filter', 'refresh']
   );
   const installedHeaderCenters = await page.locator(
     '.mods-list-header [data-mod-tab], .mods-list-header .compact-select, .mods-list-header .search-field, .mods-list-header .refresh-button'
@@ -310,8 +331,31 @@ try {
             : 'unknown'
     )
   );
-  assert.deepEqual(installedToolOrder, ['filter', 'search', 'refresh']);
+  assert.deepEqual(installedToolOrder, ['filter', 'refresh']);
   const installedFilter = page.locator('[data-input="installed-filter"]');
+  const installedSearchState = await page.evaluate(() => {
+    const api = window.__DST_MODS_DEMO__;
+    api.dispatch({ type: 'SET_SEARCH', value: '季节时钟' });
+    const state = api.getState();
+    return {
+      hasInstalledSearch: Object.hasOwn(state.ui.searchByTab, 'installed'),
+      browseSearch: state.ui.searchByTab.browse,
+      searchText: api.derive().searchText,
+      visibleCount: api.derive().visibleMods.length
+    };
+  });
+  assert.deepEqual(installedSearchState, {
+    hasInstalledSearch: false,
+    browseSearch: '小',
+    searchText: '',
+    visibleCount: 4
+  });
+  await page.evaluate(() => {
+    const api = window.__DST_MODS_DEMO__;
+    api.dispatch({ type: 'SET_ACTIVE_TAB', value: 'browse' });
+    api.dispatch({ type: 'SET_SEARCH', value: '' });
+    api.dispatch({ type: 'SET_ACTIVE_TAB', value: 'installed' });
+  });
   assert.deepEqual(
     await installedFilter.locator('option').evaluateAll(options =>
       options.map(option => ({ value: option.value, text: option.textContent.trim() }))
@@ -323,7 +367,13 @@ try {
   );
   assert.equal(await installedFilter.inputValue(), 'all');
   assert.equal((await page.locator('.compact-select > span').textContent()).trim(), '筛选');
+  await installedFilter.focus();
   await installedFilter.selectOption('update');
+  assert.equal(
+    await installedFilter.evaluate(element => document.activeElement === element),
+    true,
+    'installed filter lost focus after rerender'
+  );
   assert(
     await page.evaluate(() => {
       const visibleMods = window.__DST_MODS_DEMO__.derive().visibleMods;
@@ -343,12 +393,32 @@ try {
     };
   });
   assert.deepEqual(invalidInstalledFilterState, { filter: 'all', scrollTop: 0 });
+  const installedRefresh = page.locator('.mods-list-header [data-action="refresh"]');
+  await installedRefresh.focus();
+  await installedRefresh.click();
+  assert.equal(
+    await installedRefresh.evaluate(element => document.activeElement === element),
+    true,
+    'installed refresh lost focus when refresh started'
+  );
+  await page.waitForTimeout(780);
+  assert.equal(
+    await installedRefresh.evaluate(element => document.activeElement === element),
+    true,
+    'installed refresh lost focus when refresh finished'
+  );
   const smartInstalledSwitch = page.locator(
     '[data-mod-card][data-mod-id="dst-smart-stack"] [role="switch"]'
   );
   assert.equal(await smartInstalledSwitch.getAttribute('aria-checked'), 'false');
+  await smartInstalledSwitch.focus();
   await smartInstalledSwitch.click();
   await page.waitForTimeout(380);
+  assert.equal(
+    await smartInstalledSwitch.evaluate(element => document.activeElement === element),
+    true,
+    'installed enable switch did not regain focus after mutation finished'
+  );
   assert.equal(
     await page.evaluate(() => window.__DST_MODS_DEMO__.getState().ui.activeDialog),
     null,
@@ -521,6 +591,11 @@ try {
     'disabled',
     'Space did not toggle the detail enable control exactly once'
   );
+  assert.equal(
+    await detailSwitch.evaluate(element => document.activeElement === element),
+    true,
+    'detail enable switch did not regain focus after Space mutation finished'
+  );
   assert.equal((await detailSwitch.textContent()).trim(), '已停用');
   assert.equal(
     await detailSwitch.evaluate(element => getComputedStyle(element).backgroundColor),
@@ -637,7 +712,7 @@ try {
   assert.deepEqual(pageErrors, []);
   assert.deepEqual(consoleErrors, []);
   console.log('PASS: browse header = tabs, sort select, search, refresh; default sort = trend');
-  console.log('PASS: installed header = tabs, filter select, search, refresh; default filter = all');
+  console.log('PASS: installed header = tabs, filter select, refresh; no search; default filter = all');
   console.log('PASS: enabled controls support Enter/Space, request locking and rollback');
   console.log('PASS: failed update keeps the old version and exposes four ordered actions');
   console.log(`PASS: captured ${path.relative(root, evidenceDir)}`);
