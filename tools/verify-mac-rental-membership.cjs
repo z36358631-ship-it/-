@@ -330,18 +330,27 @@ async function main() {
           orderId: state.credentialView.orderId,
           title: dialog?.querySelector('.gamehub-login-assistant h3')?.textContent.trim(),
           hasSteamWindow: Boolean(dialog?.querySelector('.steam-native-login')),
-          steamInputs: dialog?.querySelectorAll('.steam-native-login input').length,
+          stage: dialog?.querySelector('.gamehub-login-assistant')?.dataset.stage,
+          collapsed: dialog?.querySelector('.gamehub-login-assistant')?.dataset.collapsed,
+          hasAccountInput: Boolean(dialog?.querySelector('#steamAccountInput')),
+          hasPasswordInput: Boolean(dialog?.querySelector('#steamPasswordInput')),
+          hasGuardInput: Boolean(dialog?.querySelector('#steamGuardInput')),
           labels: [...dialog?.querySelectorAll('.credential-row>span:first-child') || []].map((node) => node.textContent.trim()),
           guard: dialog?.querySelector('[data-guard-value]')?.textContent.trim(),
           countdown: dialog?.querySelector('[data-guard-countdown]')?.textContent.trim(),
+          assistantWidth: dialog?.querySelector('.gamehub-login-assistant')?.getBoundingClientRect().width,
+          assistantLeft: dialog?.querySelector('.gamehub-login-assistant')?.getBoundingClientRect().left,
+          passwordRight: dialog?.querySelector('#steamPasswordInput')?.getBoundingClientRect().right,
         };
       });
       assert(result.entryText.includes('登录 Steam'), '游戏库未显示 Steam 登录入口');
       assert(result.orderId === 'GS20260713001', '游戏库登录入口未绑定当前有效使用单');
-      assert(result.title === '盖世登录助手' && result.hasSteamWindow && result.steamInputs >= 4, '未打开 Steam 登录窗与盖世登录助手');
-      assert(result.labels.join(',') === 'Steam 账号,Steam 密码,令牌验证码', 'Steam 登录字段不完整');
-      assert(/^[23456789BCDFGHJKMNPQRTVWXY]{5}$/.test(result.guard), 'Steam Guard 授权码未生成');
-      assert(result.countdown.includes('秒后失效'), 'Steam Guard 授权码缺少倒计时');
+      assert(result.title === '盖世登录助手' && result.hasSteamWindow, '未打开 Steam 登录窗与盖世登录助手');
+      assert(result.stage === 'primary' && result.collapsed === 'false', '登录助手未从账号密码阶段展开');
+      assert(result.hasAccountInput && result.hasPasswordInput && !result.hasGuardInput, '账号密码阶段错误展示验证码输入框');
+      assert(result.labels.join(',') === 'Steam 账号,Steam 密码', '账号密码阶段字段不完整');
+      assert(!result.guard && !result.countdown, '账号密码阶段不应提前生成 Steam Guard 验证码');
+      assert(result.assistantWidth <= 320 && result.passwordRight < result.assistantLeft, '登录助手尺寸过大或遮挡 Steam 密码输入框');
     });
 
     assert(pageErrors.length === 0, `截图页面脚本错误：${pageErrors.join(' | ')}`);
