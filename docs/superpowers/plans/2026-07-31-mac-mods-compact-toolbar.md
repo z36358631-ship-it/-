@@ -10,6 +10,165 @@
 
 ---
 
+## V1.2 增量：移除已安装页搜索
+
+### Task 0A: 固化已安装页无搜索契约
+
+**Files:**
+- Modify: `tools/verify-mods-demo.mjs`
+- Test: `tools/verify-mods-demo.mjs`
+
+- [ ] **Step 1: 增加已安装页 DOM 与焦点顺序断言**
+
+将已安装头部期望顺序改为：
+
+```js
+assert.deepEqual(
+  installedHeaderOrder,
+  ['browse-tab', 'installed-tab', 'filter', 'refresh']
+);
+assert.equal(
+  await page.locator('.mods-list-header [data-input="search"]').count(),
+  0
+);
+```
+
+键盘焦点从返回按钮开始依次经过两个 Tab、筛选与刷新，不经过搜索：
+
+```js
+assert.deepEqual(
+  installedFocusOrder,
+  ['browse-tab', 'installed-tab', 'filter', 'refresh']
+);
+```
+
+- [ ] **Step 2: 增加状态隔离断言**
+
+在浏览页写入搜索词后切换已安装页，断言搜索词不参与已安装列表：
+
+```js
+await page.locator('[data-input="search"]').fill('小');
+await page.locator('[data-mod-tab="installed"]').click();
+assert.equal(await page.locator('[data-input="search"]').count(), 0);
+assert.equal(
+  await page.evaluate(() => window.__DST_MODS_DEMO__.derive().searchText),
+  ''
+);
+```
+
+- [ ] **Step 3: 运行测试并确认当前实现失败**
+
+Run:
+
+```powershell
+node tools/verify-mods-demo.mjs
+```
+
+Expected: FAIL，当前已安装头部仍渲染搜索输入，DOM 顺序多出 `search`。
+
+### Task 0B: 条件渲染搜索并清理已安装搜索状态
+
+**Files:**
+- Modify: `demos/Mod与发行人/Mod功能Mac端demo.html`
+- Test: `tools/verify-mods-demo.mjs`
+
+- [ ] **Step 1: 让派生列表仅在浏览页读取搜索词**
+
+将：
+
+```js
+const searchText = current.ui.searchByTab[activeTab] || '';
+```
+
+改为：
+
+```js
+const searchText = activeTab === 'browse'
+  ? current.ui.searchByTab.browse || ''
+  : '';
+```
+
+- [ ] **Step 2: 只在浏览页渲染搜索输入**
+
+将统一搜索标签改为条件渲染：
+
+```html
+${viewModel.activeTab === 'browse'
+  ? `<label class="search-field">${icon('search', 'small')}<input data-input="search" aria-label="搜索 MOD" placeholder="搜索 MOD" value="${escapeHtml(viewModel.searchText)}"></label>`
+  : ''}
+```
+
+已安装页的筛选与刷新沿用现有结构，`.list-tools` 自然右对齐，不新增占位元素。
+
+- [ ] **Step 3: 运行完整 Demo 验证并生成已安装页截图**
+
+Run:
+
+```powershell
+node tools/verify-mods-demo.mjs
+```
+
+Expected:
+
+```text
+PASS: static sort, copy, metadata and switch contracts
+PASS: browse header = tabs, sort select, search, refresh
+PASS: installed header = tabs, filter select, refresh; no search
+PASS: enabled controls support Enter/Space, request locking and rollback
+PASS: failed update keeps the old version and exposes four ordered actions
+```
+
+仅更新 `public/prd/dst-mods/04-mac-installed-toolbar.png`；浏览页和两张详情图不重新生成。
+
+### Task 0C: 更新 PRD 与发布
+
+**Files:**
+- Modify: `public/prd/dst-mods/04-mac-installed-toolbar.png`
+- Modify: `prd/ai生成/【Prd】《盖世游戏》DST本地MODS跨平台需求.md`
+- Modify: `prd/mod功能/【PRD】《盖世游戏》DST本地MODS跨平台需求.md`
+- Modify: `tools/verify-mods-prd.mjs`
+
+- [ ] **Step 1: 发布 Demo 与截图固定提交**
+
+Run:
+
+```powershell
+git add -- "demos/Mod与发行人/Mod功能Mac端demo.html" "tools/verify-mods-demo.mjs" "public/prd/dst-mods/04-mac-installed-toolbar.png"
+git commit -m "feat(mods): remove installed search"
+git push origin HEAD:main
+git rev-parse HEAD
+```
+
+Expected: 远端 `main` 包含无搜索的已安装页；输出 40 位固定图片提交 SHA。
+
+- [ ] **Step 2: 追加 PRD 版本与规则**
+
+主 PRD 追加 V1.6，技术归档追加 V1.9；新增规则明确：
+
+```text
+浏览页：排序、搜索、刷新。
+已安装页：筛选、刷新，不显示搜索或空占位。
+已安装结果不读取 searchByTab.installed。
+```
+
+仅将 `04-mac-installed-toolbar.png` 更新为 Step 1 固定 SHA，对应图片 URL 必须返回 HTTP 200 且 `Content-Type` 为 `image/png`。
+
+- [ ] **Step 3: 提交 PRD 并验证在线预览**
+
+Run:
+
+```powershell
+node tools/verify-mods-prd.mjs
+git diff --check
+git add -- "prd/ai生成/【Prd】《盖世游戏》DST本地MODS跨平台需求.md" "prd/mod功能/【PRD】《盖世游戏》DST本地MODS跨平台需求.md" "tools/verify-mods-prd.mjs" "docs/superpowers/specs/2026-07-31-mac-mods-compact-toolbar-design.md" "docs/superpowers/plans/2026-07-31-mac-mods-compact-toolbar.md"
+git commit -m "docs(mods): document installed search removal"
+git push origin HEAD:main
+```
+
+Expected: Demo、两份 PRD、自动验证和设计文档全部通过，固定提交图片与最终在线预览均返回 HTTP 200。
+
+---
+
 ### Task 1: 固化同排头部失败契约
 
 **Files:**
