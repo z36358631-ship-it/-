@@ -23,7 +23,7 @@
   --gh-surface-glass-strong:rgba(25,27,33,.94);
 }
 html{font-size:16px}
-body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(51,143,235,.14),transparent 28%),radial-gradient(circle at 20% 84%,rgba(51,216,164,.09),transparent 28%),#101217;color:var(--txt);-webkit-font-smoothing:antialiased;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:24px}
+body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(51,143,235,.14),transparent 28%),radial-gradient(circle at 20% 84%,rgba(51,216,164,.09),transparent 28%),#101217;color:var(--txt);-webkit-font-smoothing:antialiased;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:64px 24px 24px}
 
 .phone{
   width:390px;height:844px;background:radial-gradient(circle at 108% -8%,rgba(51,143,235,.24),transparent 30%),radial-gradient(circle at -18% 88%,rgba(51,216,164,.13),transparent 28%),var(--bg);border-radius:20px;
@@ -391,7 +391,7 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 .existing-game-card i{display:none;position:absolute;z-index:3;right:6px;top:6px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#111;font-size:13px;font-style:normal;line-height:22px;text-align:center}
 .existing-game-card.is-selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
 .existing-game-card.is-selected i{display:block}
-.existing-footer{position:sticky;bottom:0;margin-top:auto;padding:12px 0 4px;background:linear-gradient(transparent,#000 16%)}
+.existing-footer{position:sticky;bottom:0;margin-top:auto;padding:12px 0 20px;background:linear-gradient(transparent,#000 16%)}
 .existing-primary{width:100%;height:48px;border:0;border-radius:var(--r-full);background:var(--gold);color:#111;font-family:var(--font);font-weight:650;cursor:pointer}
 .existing-primary:disabled{background:#252525;color:#666;cursor:not-allowed}
 .existing-secondary{display:block;width:100%;margin-top:10px;border:0;background:transparent;color:var(--muted);font-family:var(--font);font-size:13px;cursor:pointer}
@@ -428,13 +428,13 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 
 /* Demo顶层视图 */
 [hidden]{display:none!important}
-.client-demo-shell{width:100%;min-height:calc(100vh - 48px);display:flex;align-items:center;justify-content:center}
+.client-demo-shell{width:100%;min-height:calc(100vh - 88px);display:flex;align-items:center;justify-content:center}
 .demo-view-switch{position:fixed;z-index:100;top:20px;right:250px;display:flex;gap:4px;padding:4px;border:1px solid #343434;border-radius:12px;background:rgba(14,14,14,.94);box-shadow:0 8px 28px rgba(0,0,0,.28);backdrop-filter:blur(14px)}
 .demo-view-switch button{height:30px;padding:0 14px;border:0;border-radius:8px;background:transparent;color:#888;font-family:var(--font);font-size:12px;cursor:pointer}
 .demo-view-switch button.is-active{background:var(--gold);color:#111;font-weight:650}
 
 /* 运营后台来源分析 */
-.admin-shell{display:none;width:min(1480px,calc(100vw - 48px));height:min(900px,calc(100vh - 48px));overflow:hidden;border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc;color:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;box-shadow:0 28px 80px rgba(0,0,0,.34)}
+.admin-shell{display:none;width:min(1480px,calc(100vw - 48px));height:min(900px,calc(100vh - 88px));overflow:hidden;border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc;color:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;box-shadow:0 28px 80px rgba(0,0,0,.34)}
 .admin-shell.active{display:flex}
 .admin-sidebar{width:220px;flex:0 0 220px;padding:20px 14px;background:#fff;border-right:1px solid #e2e8f0;display:flex;flex-direction:column}
 .admin-brand{display:flex;align-items:center;gap:10px;padding:0 8px 20px;font-size:15px;font-weight:700;color:#2563eb}
@@ -645,12 +645,12 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
     <div class="scan-result" id="scanResult">
       <div class="sr-title">找到 2 个游戏文件</div>
       <div class="sr-item">
-        <img class="sr-cover" src="https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg" alt="">
+        <img class="sr-cover" data-scan-cover="2" alt="">
         <div class="sr-info"><div class="sr-name">艾尔登法环</div><div class="sr-path">Download/EldenRing.apk</div></div>
         <div class="sr-check">&#x2713;</div>
       </div>
       <div class="sr-item">
-        <img class="sr-cover" src="https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg" alt="">
+        <img class="sr-cover" data-scan-cover="9" alt="">
         <div class="sr-info"><div class="sr-name">GTA5</div><div class="sr-path">GAME/GTA5_Setup.exe</div></div>
         <div class="sr-check">&#x2713;</div>
       </div>
@@ -812,20 +812,33 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 </section>
 
 <script>
+function makeCover(name,colorA,colorB){
+  var safeName=String(name).replace(/[<>&'"]/g,'');
+  var svg='<svg xmlns="http://www.w3.org/2000/svg" width="360" height="480" viewBox="0 0 360 480">'+
+    '<title>'+safeName+'</title>'+
+    '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+colorA+'"/><stop offset="1" stop-color="'+colorB+'"/></linearGradient></defs>'+
+    '<rect width="360" height="480" fill="url(#g)"/><circle cx="282" cy="92" r="94" fill="rgba(255,255,255,.09)"/>'+
+    '<path d="M-20 355 L180 170 L390 355 V500 H-20Z" fill="rgba(0,0,0,.3)"/>'+
+    '<text x="28" y="58" fill="rgba(255,255,255,.72)" font-size="16" font-family="Arial,sans-serif" font-weight="700">GAMEHUB</text></svg>';
+  return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
+}
 var games=[
-{name:"黑神话：悟空",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/header.jpg",tag:"动作RPG / 国风神话"},
-{name:"赛博朋克 2077",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg",tag:"开放世界 / 第一人称射击"},
-{name:"艾尔登法环",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg",tag:"魂系动作 / 开放世界"},
-{name:"生化危机4",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2050650/header.jpg",tag:"恐怖动作 / 第三人称",free:true},
-{name:"巫师3：狂猎",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/292030/header.jpg",tag:"史诗剧情 / 角色扮演",free:true},
-{name:"绝地求生",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/578080/header.jpg",tag:"战术竞技 / 多人射击"},
-{name:"极品飞车",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1551360/header.jpg",tag:"赛车竞速 / 街头改装",free:true},
-{name:"双人成行",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1426210/header.jpg",tag:"合作冒险 / 双人必备"},
-{name:"哈迪斯2",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1145350/header.jpg",tag:"Roguelike / 动作",free:true},
-{name:"GTA5",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg",tag:"开放世界 / 犯罪动作"},
-{name:"只狼：影逝二度",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/814380/header.jpg",tag:"魂系动作 / 忍者"},
-{name:"霍格沃茨之遗",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/990080/header.jpg",tag:"魔法世界 / 角色扮演"}
+{name:"黑神话：悟空",cover:makeCover("黑神话：悟空","#5d3a20","#17100b"),tag:"动作RPG / 国风神话"},
+{name:"赛博朋克 2077",cover:makeCover("赛博朋克 2077","#ffd919","#5d136c"),tag:"开放世界 / 第一人称射击"},
+{name:"艾尔登法环",cover:makeCover("艾尔登法环","#8f6c21","#111209"),tag:"魂系动作 / 开放世界"},
+{name:"生化危机4",cover:makeCover("生化危机4","#5a1515","#111"),tag:"恐怖动作 / 第三人称",free:true},
+{name:"巫师3：狂猎",cover:makeCover("巫师3：狂猎","#d5e8ef","#4f5b5f"),tag:"史诗剧情 / 角色扮演",free:true},
+{name:"绝地求生",cover:makeCover("绝地求生","#8b5d31","#1d2321"),tag:"战术竞技 / 多人射击"},
+{name:"极品飞车",cover:makeCover("极品飞车","#2991d4","#ef562e"),tag:"赛车竞速 / 街头改装",free:true},
+{name:"双人成行",cover:makeCover("双人成行","#e9b06a","#7d3b82"),tag:"合作冒险 / 双人必备"},
+{name:"哈迪斯2",cover:makeCover("哈迪斯2","#0a705e","#17172a"),tag:"Roguelike / 动作",free:true},
+{name:"GTA5",cover:makeCover("GTA5","#28935a","#1b343e"),tag:"开放世界 / 犯罪动作"},
+{name:"只狼：影逝二度",cover:makeCover("只狼：影逝二度","#a53422","#19100c"),tag:"魂系动作 / 忍者"},
+{name:"霍格沃茨之遗",cover:makeCover("霍格沃茨之遗","#365c8c","#251d4b"),tag:"魔法世界 / 角色扮演"}
 ];
+document.querySelectorAll('[data-scan-cover]').forEach(function(image){
+  image.src=games[Number(image.dataset.scanCover)].cover;
+});
 
 function renderGameList(){
   var instant=games.filter(function(g){return !g.free});

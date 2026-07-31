@@ -128,6 +128,7 @@ function onboardingSource() {
     'Where did you first hear about GameHub?',
   ], 'onboarding acquisition flow');
   assert(!onboarding.includes('class="skip-btn"'), 'new-user flow must not expose a floating skip action');
+  assert(!onboarding.includes('cdn.cloudflare.steamstatic.com'), 'single-file demo must not depend on Steam CDN covers');
   assert(!onboarding.includes('查看24小时后问卷'), 'onboarding still links to delayed wizard');
   assert(!onboarding.includes('满24小时后的首次合格冷启动'), 'obsolete delayed handoff remains');
   pass('onboardingSource');
