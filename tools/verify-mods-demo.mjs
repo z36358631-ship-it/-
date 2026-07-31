@@ -110,7 +110,32 @@ try {
   );
   assert.equal(await browseSort.inputValue(), 'trend');
   assert.equal((await page.locator('.compact-select > span').textContent()).trim(), '排序');
+  await browseSort.focus();
+  assert.notEqual(
+    await page.locator('.compact-select').evaluate(element => getComputedStyle(element).boxShadow),
+    'none',
+    'browse sort keyboard focus is not visible'
+  );
+  const searchInput = page.locator('[data-input="search"]');
+  await searchInput.focus();
+  assert.notEqual(
+    await page.locator('.search-field').evaluate(element => getComputedStyle(element).boxShadow),
+    'none',
+    'search keyboard focus is not visible'
+  );
+  await page.evaluate(() => document.activeElement?.blur());
   assert.equal(await page.locator('[data-catalog-summary]').count(), 0);
+  const invalidBrowseSortState = await page.evaluate(() => {
+    const api = window.__DST_MODS_DEMO__;
+    api.dispatch({ type: 'SAVE_SCROLL_TOP', tab: 'browse', value: 480 });
+    api.dispatch({ type: 'SET_BROWSE_SORT', value: 'invalid-sort' });
+    const state = api.getState();
+    return {
+      sort: state.ui.browseSort,
+      scrollTop: state.ui.scrollTopByTab.browse
+    };
+  });
+  assert.deepEqual(invalidBrowseSortState, { sort: 'trend', scrollTop: 0 });
 
   const trendOrder = await page.evaluate(() =>
     window.__DST_MODS_DEMO__.derive().visibleMods.map(mod => mod.mod_id)
@@ -193,10 +218,31 @@ try {
     }),
     'installed update filter returned a non-update item'
   );
-  await installedFilter.selectOption('all');
+  const invalidInstalledFilterState = await page.evaluate(() => {
+    const api = window.__DST_MODS_DEMO__;
+    api.dispatch({ type: 'SAVE_SCROLL_TOP', tab: 'installed', value: 480 });
+    api.dispatch({ type: 'SET_INSTALLED_FILTER', value: 'invalid-filter' });
+    const state = api.getState();
+    return {
+      filter: state.ui.installedFilter,
+      scrollTop: state.ui.scrollTopByTab.installed
+    };
+  });
+  assert.deepEqual(invalidInstalledFilterState, { filter: 'all', scrollTop: 0 });
   const smartInstalledSwitch = page.locator(
     '[data-mod-card][data-mod-id="dst-smart-stack"] [role="switch"]'
   );
+  assert.equal(await smartInstalledSwitch.getAttribute('aria-checked'), 'false');
+  await smartInstalledSwitch.click();
+  await page.waitForTimeout(380);
+  assert.equal(
+    await page.evaluate(() => window.__DST_MODS_DEMO__.getState().ui.activeDialog),
+    null,
+    'installed switch click opened the card detail'
+  );
+  assert.equal(await smartInstalledSwitch.getAttribute('aria-checked'), 'true');
+  await smartInstalledSwitch.click();
+  await page.waitForTimeout(380);
   assert.equal(await smartInstalledSwitch.getAttribute('aria-checked'), 'false');
   assert.equal(await page.locator('[data-catalog-summary]').textContent(), '4 个已安装 · 仅此设备');
   await page.waitForTimeout(1900);
