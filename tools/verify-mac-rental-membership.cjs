@@ -296,6 +296,35 @@ async function main() {
       assert(result.scrollTop > 0, '会员常见问题截图未滚动到列表底部');
     });
 
+    await openDemo(page);
+    await setBaseState(page, 'order-detail');
+    const orderCredentialResult = await page.evaluate(async () => {
+      state.selectedOrderId = 'GS20260713001';
+      navigate('mac', 'order-detail');
+      await nextPaint();
+      document.querySelector('[data-action="open-manual-login"]')?.click();
+      await nextPaint();
+      const dialog = document.querySelector('.standalone-credential-dialog');
+      return {
+        hasStandalone: Boolean(dialog),
+        hasSteamWindow: Boolean(document.querySelector('.steam-account-column')),
+        hasQrColumn: Boolean(document.querySelector('.steam-qr-column')),
+        title: dialog?.querySelector('h3')?.textContent.trim(),
+        hasAccountCopy: Boolean(dialog?.querySelector('[data-action="copy-login-account"]')),
+        hasPasswordCopy: Boolean(dialog?.querySelector('[data-action="copy-login-password"]')),
+      };
+    });
+    assert(orderCredentialResult.hasStandalone, '订单登录信息未打开独立凭据弹窗');
+    assert(
+      !orderCredentialResult.hasSteamWindow && !orderCredentialResult.hasQrColumn,
+      '订单登录信息错误拉起 Steam 双栏窗',
+    );
+    assert(orderCredentialResult.title === 'Steam 登录信息', '独立凭据弹窗标题不正确');
+    assert(
+      orderCredentialResult.hasAccountCopy && orderCredentialResult.hasPasswordCopy,
+      '独立凭据复制操作不完整',
+    );
+
     await capture(page, 'c06-game-library.png', 'library', async (currentPage) => {
       const result = await currentPage.evaluate(async () => {
         state.steamSession = 'rental';
