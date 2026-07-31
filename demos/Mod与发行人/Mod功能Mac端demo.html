@@ -903,7 +903,7 @@
       backdrop-filter: blur(22px);
     }
 
-    .modal-action-bar button {
+    .modal-action-bar > button {
       height: 72px;
       display: inline-flex;
       align-items: center;
@@ -918,18 +918,18 @@
       font-weight: 600;
     }
 
-    .modal-action-bar button.secondary,
-    .modal-action-bar button.danger {
+    .modal-action-bar > button.secondary,
+    .modal-action-bar > button.danger {
       border: 2px solid rgba(255, 255, 255, 0.12);
       background: rgba(255, 255, 255, 0.04);
       color: #d0ced2;
     }
 
-    .modal-action-bar button.danger {
+    .modal-action-bar > button.danger {
       color: #ffaaa7;
     }
 
-    .modal-action-bar button:disabled {
+    .modal-action-bar > button:disabled {
       cursor: default;
       background: #545158;
       color: #c1bec5;
@@ -1080,17 +1080,6 @@
       font-size: 28px;
       font-weight: 560;
       line-height: 36px;
-    }
-
-    .mods-source-badge {
-      padding: 3px 9px;
-      border: 2px solid rgba(255, 255, 255, 0.09);
-      border-radius: 12px;
-      color: #8f8d94;
-      font-size: 15px;
-      font-style: normal;
-      font-weight: 400;
-      line-height: 20px;
     }
 
     .mods-discovery-copy .mods-subtitle {
@@ -1433,12 +1422,12 @@
     }
 
     .mods-grid.is-installed-grid {
-      grid-auto-rows: 428px;
+      grid-auto-rows: 492px;
     }
 
     .mod-card.is-installed-view {
-      height: 428px;
-      grid-template-rows: 320px 108px;
+      height: 492px;
+      grid-template-rows: 320px 108px 64px;
     }
 
     .mod-copy {
@@ -1474,17 +1463,26 @@
       position: relative;
       z-index: 3;
       padding: 0 27px;
+      justify-content: flex-end;
+      gap: 16px;
       pointer-events: none;
     }
 
-    .mod-card footer .install-button {
-      margin-left: auto;
+    .mod-card footer .install-button,
+    .mod-card footer .card-installed-controls {
       pointer-events: auto;
+    }
+
+    .card-installed-controls {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 18px;
     }
 
     .installed-pill {
       height: 44px;
-      margin-left: auto;
       padding: 0 20px;
       display: inline-flex;
       align-items: center;
@@ -1496,52 +1494,100 @@
       font-size: 18px;
     }
 
+    .enabled-switch {
+      position: relative;
+      z-index: 4;
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      color: #b0aeb4;
+      font-size: 17px;
+      line-height: 24px;
+      white-space: nowrap;
+    }
+
+    .enabled-switch button {
+      position: relative;
+      width: 54px;
+      height: 30px;
+      flex: 0 0 54px;
+      border: 0;
+      border-radius: 16px;
+      background: #55535a;
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.05);
+      transition: background-color 140ms ease;
+    }
+
+    .enabled-switch button i {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #f2f1f3;
+      box-shadow: 0 2px 7px rgba(0, 0, 0, 0.32);
+      transition: transform 140ms ease;
+    }
+
+    .enabled-switch button[aria-checked="true"] {
+      background: var(--success);
+    }
+
+    .enabled-switch button[aria-checked="true"] i {
+      transform: translateX(24px);
+    }
+
+    .enabled-switch button:focus-visible {
+      outline: 3px solid rgba(255, 255, 255, 0.86);
+      outline-offset: 3px;
+    }
+
+    .enabled-switch button:disabled {
+      cursor: wait;
+      opacity: 0.58;
+    }
+
     .empty-list {
       height: 492px;
     }
 
-    /* 详情中的外部同步数据摘要。 */
-    .detail-metrics {
-      width: 1328px;
-      margin-top: 24px;
-      display: grid;
-      grid-template-columns: 0.9fr 1fr 0.9fr 0.8fr 1.55fr;
-      overflow: hidden;
-      border: 2px solid rgba(255, 255, 255, 0.08);
-      border-radius: 22px;
-      background: rgba(255, 255, 255, 0.025);
-    }
-
-    .detail-metrics span {
+    .detail-title-block {
       min-width: 0;
-      height: 92px;
-      padding: 17px 20px;
+    }
+
+    .detail-title-meta {
+      margin-top: 7px;
       display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 5px;
-      border-right: 2px solid rgba(255, 255, 255, 0.07);
-      color: #85838a;
-      font-size: 16px;
-      line-height: 22px;
-    }
-
-    .detail-metrics span:last-child {
-      border-right: 0;
-    }
-
-    .detail-metrics strong {
-      overflow: hidden;
-      color: #d7d5d9;
-      font-size: 21px;
-      font-weight: 520;
-      line-height: 28px;
-      text-overflow: ellipsis;
+      align-items: center;
+      gap: 36px;
+      color: #8f8d94;
+      font-size: 18px;
+      line-height: 24px;
       white-space: nowrap;
     }
 
-    .detail-metrics + .section-title {
-      margin-top: 24px;
+    .detail-title-meta span {
+      position: relative;
+    }
+
+    .modal-scroll > .section-title:first-of-type {
+      margin-top: 36px;
+    }
+
+    .detail-enabled-control {
+      min-width: 196px;
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 36px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .detail-enabled-control .enabled-switch {
+      width: 100%;
+      justify-content: space-between;
     }
   </style>
 </head>
@@ -1576,7 +1622,7 @@
   </main>
 
   <script>
-    const DEMO_MODEL_VERSION = 'dst_mods_demo_v1';
+    const DEMO_MODEL_VERSION = 'dst_mods_demo_v2';
     const GAME_ID = 'steam:322330';
     const DEVICE_ID = 'mac-device-local-01';
     // 共享静态合同兼容字面量：source_unknown、paused_by_system、loaded_match。
@@ -1626,6 +1672,8 @@
         source_label: '非官方来源',
         download_count: input.download_count,
         updated_at: input.updated_at,
+        published_at: input.published_at || input.updated_at,
+        trend_growth_24h: input.trend_growth_24h ?? 0,
         popularity_rank: input.popularity_rank,
         installed_at: input.installed_at || null,
         compatibility_label: input.compatibility_label,
@@ -1660,6 +1708,8 @@
             cover_theme: 'archive',
             download_count: 63000,
             updated_at: '2026-07-18T08:20:00.000Z',
+            published_at: '2026-07-18T08:20:00.000Z',
+            trend_growth_24h: 6.8,
             popularity_rank: 5,
             compatibility_label: '兼容当前游戏版本'
           }),
@@ -1674,6 +1724,8 @@
             cover_theme: 'archive',
             download_count: 58000,
             updated_at: '2026-07-16T10:45:00.000Z',
+            published_at: '2026-07-16T10:45:00.000Z',
+            trend_growth_24h: 4.9,
             popularity_rank: 6,
             compatibility_label: '兼容当前游戏版本'
           }),
@@ -1687,6 +1739,8 @@
             cover: 'minimapHud',
             download_count: 186000,
             updated_at: '2026-07-24T09:30:00.000Z',
+            published_at: '2026-05-12T09:30:00.000Z',
+            trend_growth_24h: 28.4,
             popularity_rank: 1,
             compatibility_label: '兼容当前游戏版本',
             featured: true,
@@ -1707,6 +1761,8 @@
             cover: 'combinedStatus',
             download_count: 142000,
             updated_at: '2026-07-25T14:10:00.000Z',
+            published_at: '2026-06-18T14:10:00.000Z',
+            trend_growth_24h: 21.7,
             popularity_rank: 2,
             compatibility_label: '兼容当前游戏版本',
             featured: true,
@@ -1729,6 +1785,8 @@
             cover_theme: 'stack',
             download_count: 98000,
             updated_at: '2026-07-29T16:20:00.000Z',
+            published_at: '2026-07-29T16:20:00.000Z',
+            trend_growth_24h: 38.6,
             popularity_rank: 3,
             compatibility_label: '兼容当前游戏版本',
             featured: true,
@@ -1750,6 +1808,8 @@
             cover_theme: 'clock',
             download_count: 76000,
             updated_at: '2026-07-27T07:40:00.000Z',
+            published_at: '2026-07-27T07:40:00.000Z',
+            trend_growth_24h: 15.2,
             popularity_rank: 4,
             compatibility_label: '兼容当前游戏版本',
             installation_fact: 'installed',
@@ -1772,6 +1832,8 @@
             cover_theme: 'gather',
             download_count: 41000,
             updated_at: '2026-07-21T13:15:00.000Z',
+            published_at: '2026-07-21T13:15:00.000Z',
+            trend_growth_24h: 9.4,
             popularity_rank: 7,
             compatibility_label: '兼容当前游戏版本'
           }),
@@ -1786,6 +1848,8 @@
             cover_theme: 'night',
             download_count: 37000,
             updated_at: '2026-07-23T18:05:00.000Z',
+            published_at: '2026-07-23T18:05:00.000Z',
+            trend_growth_24h: 12.6,
             popularity_rank: 8,
             compatibility_label: '兼容当前游戏版本'
           })
@@ -1806,7 +1870,7 @@
           currentModId: null,
           detailReturnScreen: 'game-detail',
           activeTab: 'browse',
-          browseSort: 'popular',
+          browseSort: 'trend',
           installedSort: 'recent',
           installedFilter: 'all',
           searchByTab: {
@@ -1818,6 +1882,7 @@
             installed: 0
           },
           refreshing: false,
+          enableMutationByMod: {},
           activeDialog: null
         },
         metrics: {
@@ -1835,13 +1900,26 @@
       const installedMods = allMods.filter(mod => mod.installation_fact === 'installed');
       const featuredMods = allMods
         .filter(mod => mod.featured)
-        .sort((a, b) => a.popularity_rank - b.popularity_rank)
+        .sort((a, b) =>
+          (b.trend_growth_24h ?? 0) - (a.trend_growth_24h ?? 0)
+          || (b.download_count ?? 0) - (a.download_count ?? 0)
+          || a.mod_id.localeCompare(b.mod_id)
+        )
         .slice(0, 3);
       const browseComparators = {
-        popular: (a, b) => a.popularity_rank - b.popularity_rank,
-        downloads: (a, b) => b.download_count - a.download_count,
-        updated: (a, b) => b.updated_at.localeCompare(a.updated_at),
-        name: (a, b) => a.name.localeCompare(b.name, 'zh-CN')
+        trend: (a, b) =>
+          (b.trend_growth_24h ?? 0) - (a.trend_growth_24h ?? 0)
+          || (b.download_count ?? 0) - (a.download_count ?? 0)
+          || (b.published_at || '').localeCompare(a.published_at || '')
+          || a.mod_id.localeCompare(b.mod_id),
+        downloads: (a, b) =>
+          (b.download_count ?? 0) - (a.download_count ?? 0)
+          || (b.published_at || '').localeCompare(a.published_at || '')
+          || a.mod_id.localeCompare(b.mod_id),
+        published: (a, b) =>
+          (b.published_at || '').localeCompare(a.published_at || '')
+          || (b.download_count ?? 0) - (a.download_count ?? 0)
+          || a.mod_id.localeCompare(b.mod_id)
       };
       const installedRecentComparator = (a, b) =>
         (b.installed_at || '').localeCompare(a.installed_at || '')
@@ -1858,7 +1936,7 @@
         ? installedMods
             .filter(installedFilters[current.ui.installedFilter] || installedFilters.all)
             .sort(installedRecentComparator)
-        : [...allMods].sort(browseComparators[current.ui.browseSort] || browseComparators.popular);
+        : [...allMods].sort(browseComparators[current.ui.browseSort] || browseComparators.trend);
       const visibleMods = search
         ? sourceMods.filter(mod =>
             `${mod.name} ${mod.author}`.toLowerCase().includes(search)
@@ -1967,9 +2045,9 @@
           next.ui.activeTab = action.value === 'installed' ? 'installed' : 'browse';
           return next;
         case 'SET_BROWSE_SORT':
-          next.ui.browseSort = ['popular', 'downloads', 'updated', 'name'].includes(action.value)
+          next.ui.browseSort = ['trend', 'downloads', 'published'].includes(action.value)
             ? action.value
-            : 'popular';
+            : 'trend';
           return next;
         case 'SET_INSTALLED_SORT':
           next.ui.installedSort = action.value === 'name' ? 'name' : 'recent';
@@ -2029,6 +2107,31 @@
           if (!mod || mod.installation_fact !== 'installed') return next;
           mod.enabled_value = action.value === 'enabled' ? 'enabled' : 'disabled';
           return next;
+        case 'ENABLE_CHANGE_REQUESTED':
+          if (!mod
+            || mod.installation_fact !== 'installed'
+            || next.ui.enableMutationByMod[mod.mod_id]) {
+            return next;
+          }
+          next.ui.enableMutationByMod[mod.mod_id] = {
+            previousValue: mod.enabled_value
+          };
+          mod.enabled_value = action.value === 'enabled' ? 'enabled' : 'disabled';
+          return next;
+        case 'ENABLE_CHANGE_SUCCEEDED':
+          if (!mod || !next.ui.enableMutationByMod[mod.mod_id]) return next;
+          delete next.ui.enableMutationByMod[mod.mod_id];
+          return next;
+        case 'ENABLE_CHANGE_FAILED': {
+          if (!mod || mod.installation_fact !== 'installed') return next;
+          const mutation = next.ui.enableMutationByMod[mod.mod_id];
+          const previousValue = action.previousValue || mutation?.previousValue;
+          if (previousValue === 'enabled' || previousValue === 'disabled') {
+            mod.enabled_value = previousValue;
+          }
+          delete next.ui.enableMutationByMod[mod.mod_id];
+          return next;
+        }
         case 'UPDATE_FAILED': {
           if (!mod || mod.installation_fact !== 'installed') return next;
           const task = activeTask(next, mod);
@@ -2148,9 +2251,8 @@
               <span class="mods-discovery-copy">
                 <span class="mods-title-row">
                   <strong>MODS</strong>
-                  <em class="mods-source-badge">非官方</em>
                 </span>
-                <span class="mods-subtitle">热门推荐</span>
+                <span class="mods-subtitle">热门组件</span>
               </span>
               <button class="mods-discovery-all" type="button" data-action="open-mods" data-tab="browse">
                 <span class="mods-discovery-count">${viewModel.catalogTotal} 个 MOD</span>
@@ -2195,25 +2297,46 @@
       return `<img class="${detail ? 'detail-cover' : ''}" src="${EMBEDDED_ASSETS[mod.cover]}" alt="">`;
     }
 
+    function renderEnabledSwitch(mod, viewModel, context) {
+      const enabled = mod.enabled_value === 'enabled';
+      const pending = Boolean(viewModel.state.ui.enableMutationByMod[mod.mod_id]);
+      const label = enabled ? '已启用' : '未启用';
+      return `
+        <div class="enabled-switch" data-switch-context="${context}" aria-busy="${pending}">
+          <span>${label}</span>
+          <button type="button"
+            role="switch"
+            aria-label="${escapeHtml(mod.name)} ${label}"
+            aria-checked="${enabled}"
+            data-action="toggle-enabled"
+            data-mod-id="${mod.mod_id}"
+            ${pending ? 'disabled' : ''}>
+            <i aria-hidden="true"></i>
+          </button>
+        </div>
+      `;
+    }
+
     function renderModCard(mod, viewModel) {
       const installed = mod.installation_fact === 'installed';
       const task = activeTask(viewModel.state, mod);
       const running = task && ['queued', 'downloading', 'verifying', 'installing'].includes(task.task_state);
-      const enabledLabel = mod.enabled_value === 'enabled' ? '已启用' : '未启用';
       const installedStatus = task?.task_state === 'failed'
-        ? `${enabledLabel} · 更新失败 · 保留旧版 v${mod.installed_version}`
+        ? `更新失败 · 保留旧版 v${mod.installed_version}`
         : mod.update_fact === 'update_available'
-          ? `${enabledLabel} · 可更新`
-          : `${enabledLabel} · 已是最新`;
+          ? '可更新'
+          : '已是最新';
       const status = viewModel.activeTab === 'installed' ? installedStatus : '';
-      const showBrowseFooter = viewModel.activeTab === 'browse';
-      const footerAction = !showBrowseFooter
-        ? ''
-        : installed
-          ? `<span class="installed-pill">${icon('box', 'small')}已安装</span>`
-          : `<button class="install-button" type="button" data-action="install" data-mod-id="${mod.mod_id}" ${running ? 'disabled' : ''}>
+      const footerAction = installed
+        ? `<div class="card-installed-controls">
+            <span class="installed-pill">${icon('box', 'small')}已安装</span>
+            ${renderEnabledSwitch(mod, viewModel, viewModel.activeTab)}
+          </div>`
+        : viewModel.activeTab === 'browse'
+          ? `<button class="install-button" type="button" data-action="install" data-mod-id="${mod.mod_id}" ${running ? 'disabled' : ''}>
               ${icon(running ? 'refresh' : 'download', 'small')}${escapeHtml(running ? taskLabel(task) : '安装')}
-            </button>`;
+            </button>`
+          : '';
       return `
         <article class="mod-card ${viewModel.activeTab === 'installed' ? 'is-installed-view' : ''}" data-mod-card data-mod-id="${mod.mod_id}">
           <button class="mod-card-hit-area" type="button"
@@ -2229,7 +2352,7 @@
               ? `<strong class="mod-state ${installed ? 'is-installed' : ''}">${escapeHtml(status)}</strong>`
               : ''}
           </div>
-          ${showBrowseFooter ? `<footer>${footerAction}</footer>` : ''}
+          ${footerAction ? `<footer>${footerAction}</footer>` : ''}
         </article>
       `;
     }
@@ -2257,15 +2380,15 @@
         <div class="browse-sort-options" role="group" aria-label="浏览排序">
           <span>排序</span>
           ${[
-            ['popular', '热门推荐'],
+            ['trend', '热门趋势'],
             ['downloads', '下载量'],
-            ['updated', '最近更新'],
-            ['name', '名称']
+            ['published', '最新发布']
           ].map(([value, label]) => `
             <button type="button"
               class="${viewModel.state.ui.browseSort === value ? 'is-active' : ''}"
               data-action="set-browse-sort"
-              data-value="${value}">${label}</button>
+              data-value="${value}"
+              ${value === 'trend' ? 'title="按近 24 小时下载增幅排序"' : ''}>${label}</button>
           `).join('')}
         </div>
       `;
@@ -2307,9 +2430,9 @@
               class="${viewModel.activeTab === 'installed' ? 'is-active' : ''}">已安装 ${viewModel.installedCount}</button>
           </div>
           <div class="catalog-toolbar">
-            <p data-catalog-summary>${viewModel.activeTab === 'browse'
-              ? `共 ${viewModel.catalogTotal} 个，当前加载 ${viewModel.catalogLoaded} 个 · 下载量来自外部同步`
-              : `${viewModel.installedCount} 个已安装 · 仅此设备`}</p>
+            ${viewModel.activeTab === 'installed'
+              ? `<p data-catalog-summary>${viewModel.installedCount} 个已安装 · 仅此设备</p>`
+              : ''}
             <div class="catalog-controls">${viewModel.activeTab === 'browse' ? browseControls : installedControls}</div>
           </div>
           <div class="mods-grid ${viewModel.activeTab === 'installed' ? 'is-installed-grid' : ''}" data-mods-scroll>${cards}</div>
@@ -2319,7 +2442,6 @@
 
     function renderDescription(mod) {
       return `
-        <p>作者：${escapeHtml(mod.author)}</p>
         <p>${mod.mod_id === 'dst-fast-travel' ? '在 HUD 中添加小地图。' : escapeHtml(mod.summary)}</p>
         <h4>功能：</h4>
         <p>- 可使用地图缩放按键缩放，并通过点击拖动平移视角。</p>
@@ -2330,8 +2452,6 @@
         <p>答：据作者所知，不可以。</p>
         <p style="margin-top:28px">问：该模组与其他模组兼容吗？</p>
         <p>答：应该兼容。</p>
-        <h4>兼容性：</h4>
-        <p>${escapeHtml(mod.compatibility_label)}。兼容信息来自外部同步源，实际运行状态仅保存在当前设备。</p>
         <h4>来源：</h4>
         <p>非官方来源 · 仅此设备</p>
         <p class="description-note">设置、启用状态和安装文件只保存在当前设备。卸载不会删除存档或用户 MOD 配置。</p>
@@ -2361,14 +2481,14 @@
       }
       if (task?.task_state === 'failed') {
         return `<footer class="modal-action-bar">
+          <div class="detail-enabled-control">${renderEnabledSwitch(mod, viewModel, 'detail')}</div>
           <button type="button" class="secondary" disabled>保留旧版 ${escapeHtml(mod.installed_version)}</button>
-          <button type="button" class="secondary" data-action="toggle-enabled" data-mod-id="${mod.mod_id}">${mod.enabled_value === 'enabled' ? '停用' : '启用'}</button>
           <button type="button" data-action="update" data-mod-id="${mod.mod_id}">重试更新</button>
           <button type="button" class="danger" data-action="uninstall" data-mod-id="${mod.mod_id}">卸载</button>
         </footer>`;
       }
       return `<footer class="modal-action-bar">
-        <button type="button" class="secondary" data-action="toggle-enabled" data-mod-id="${mod.mod_id}">${mod.enabled_value === 'enabled' ? '停用' : '启用'}</button>
+        <div class="detail-enabled-control">${renderEnabledSwitch(mod, viewModel, 'detail')}</div>
         <button type="button" data-action="update" data-mod-id="${mod.mod_id}">${mod.update_fact === 'update_available' ? '更新' : '检查更新'}</button>
         <button type="button" class="danger" data-action="uninstall" data-mod-id="${mod.mod_id}">卸载</button>
       </footer>`;
@@ -2382,18 +2502,18 @@
         <div class="modal-backdrop" data-modal-backdrop>
           <article class="mod-detail-modal" data-reference-region="mod-detail-modal" role="dialog" aria-modal="true" aria-labelledby="mod-detail-title">
             <header class="modal-header">
-              <h2 id="mod-detail-title">${escapeHtml(mod.name)}</h2>
+              <div class="detail-title-block">
+                <h2 id="mod-detail-title">${escapeHtml(mod.name)}</h2>
+                <p class="detail-title-meta" aria-label="MOD 基本信息">
+                  <span>作者 ${escapeHtml(mod.author)}</span>
+                  <span>${formatDownloads(mod.download_count)} 次下载</span>
+                  <span>${escapeHtml(mod.file_size)}</span>
+                </p>
+              </div>
               <button class="modal-close" type="button" data-action="close-detail" aria-label="关闭">${icon('close')}</button>
             </header>
             <div class="modal-scroll" data-detail-scroll>
               ${renderModCover(mod, true)}
-              <section class="detail-metrics" aria-label="MOD 数据摘要">
-                <span><strong>${formatDownloads(mod.download_count)}</strong> 次下载</span>
-                <span><strong>${formatDate(mod.updated_at)}</strong>最近更新</span>
-                <span><strong>v${escapeHtml(mod.latest_version)}</strong>最新版本</span>
-                <span><strong>${escapeHtml(mod.file_size)}</strong>文件大小</span>
-                <span><strong>${escapeHtml(mod.compatibility_label)}</strong>兼容性</span>
-              </section>
               <h3 class="section-title">说明</h3>
               <section class="description-card">${renderDescription(mod)}</section>
               ${renderTaskProgress(task)}
@@ -2522,11 +2642,21 @@
       }
       if (action === 'toggle-enabled') {
         const mod = state.mods[modId];
+        if (!mod || state.ui.enableMutationByMod[modId]) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const previousValue = mod.enabled_value;
+        const nextValue = previousValue === 'enabled' ? 'disabled' : 'enabled';
         dispatch({
-          type: 'ENABLE_CHANGED',
+          type: 'ENABLE_CHANGE_REQUESTED',
           modId,
-          value: mod?.enabled_value === 'enabled' ? 'disabled' : 'enabled'
+          value: nextValue
         });
+        setTimeout(() => {
+          if (!state.ui.enableMutationByMod[modId]) return;
+          dispatch({ type: 'ENABLE_CHANGE_SUCCEEDED', modId });
+          showToast(nextValue === 'enabled' ? '已在当前设备启用。' : '已在当前设备停用。');
+        }, 320);
       }
       if (action === 'update') {
         dispatch({ type: 'UPDATE_REQUESTED', modId });
@@ -2574,6 +2704,17 @@
       getState: () => clone(state),
       dispatch,
       derive: () => clone(derive(state)),
+      failEnableChange: modId => {
+        const mutation = state.ui.enableMutationByMod[modId];
+        if (!mutation) return clone(state);
+        dispatch({
+          type: 'ENABLE_CHANGE_FAILED',
+          modId,
+          previousValue: mutation.previousValue
+        });
+        showToast('启用状态修改失败，请重试。');
+        return clone(state);
+      },
       reset
     });
   </script>
