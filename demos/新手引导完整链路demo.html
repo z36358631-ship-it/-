@@ -426,6 +426,45 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 .home-card{height:126px;border-radius:var(--r-lg);padding:14px;display:flex;align-items:flex-end;font-size:13px;font-weight:520;background:linear-gradient(145deg,#3d1a0e,#151515)}
 .home-card:nth-child(2){background:linear-gradient(145deg,#163322,#151515)}
 
+/* Demo顶层视图 */
+[hidden]{display:none!important}
+.client-demo-shell{width:100%;min-height:calc(100vh - 48px);display:flex;align-items:center;justify-content:center}
+.demo-view-switch{position:fixed;z-index:100;top:20px;right:250px;display:flex;gap:4px;padding:4px;border:1px solid #343434;border-radius:12px;background:rgba(14,14,14,.94);box-shadow:0 8px 28px rgba(0,0,0,.28);backdrop-filter:blur(14px)}
+.demo-view-switch button{height:30px;padding:0 14px;border:0;border-radius:8px;background:transparent;color:#888;font-family:var(--font);font-size:12px;cursor:pointer}
+.demo-view-switch button.is-active{background:var(--gold);color:#111;font-weight:650}
+
+/* 运营后台来源分析 */
+.admin-shell{display:none;width:min(1480px,calc(100vw - 48px));height:min(900px,calc(100vh - 48px));overflow:hidden;border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc;color:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;box-shadow:0 28px 80px rgba(0,0,0,.34)}
+.admin-shell.active{display:flex}
+.admin-sidebar{width:220px;flex:0 0 220px;padding:20px 14px;background:#fff;border-right:1px solid #e2e8f0;display:flex;flex-direction:column}
+.admin-brand{display:flex;align-items:center;gap:10px;padding:0 8px 20px;font-size:15px;font-weight:700;color:#2563eb}
+.admin-brand__logo{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;font-weight:800}
+.admin-nav-group{margin-top:8px}.admin-nav-label{padding:8px 10px;color:#94a3b8;font-size:11px}
+.admin-nav-item{width:100%;height:40px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:#475569;text-align:left;font-size:13px;cursor:pointer}
+.admin-nav-item.is-active{background:#eff6ff;color:#2563eb;font-weight:650}
+.admin-user{margin-top:auto;padding:14px 10px 0;border-top:1px solid #e2e8f0;color:#64748b;font-size:12px}
+.admin-main{flex:1;min-width:0;overflow-y:auto;padding:28px}
+.admin-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.admin-header h1{font-size:24px;line-height:32px}.admin-header p{margin-top:4px;color:#64748b;font-size:13px}
+.admin-refresh{height:34px;padding:0 14px;border:1px solid #dbe3ee;border-radius:8px;background:#fff;color:#334155;font-size:12px}
+.analytics-filters{display:grid;grid-template-columns:repeat(5,minmax(132px,1fr));gap:10px;margin-top:22px;padding:14px;border:1px solid #e2e8f0;border-radius:12px;background:#fff}
+.analytics-filter label{display:block;margin-bottom:6px;color:#64748b;font-size:11px}
+.analytics-filter select{width:100%;height:36px;padding:0 10px;border:1px solid #dbe3ee;border-radius:8px;background:#fff;color:#0f172a;font-size:12px;outline:none}
+.analytics-filter select:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.analytics-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+.metric-card{padding:18px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.04)}
+.metric-label{color:#64748b;font-size:12px}.metric-value{margin-top:10px;font-family:var(--font-num);font-size:30px;font-weight:700}.metric-foot{margin-top:6px;color:#94a3b8;font-size:11px}
+.metric-foot strong{color:#10b981}
+.attribution-note{margin-top:12px;padding:10px 12px;border:1px solid #bfdbfe;border-radius:8px;background:#eff6ff;color:#1d4ed8;font-size:12px}
+.analytics-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(460px,.92fr);gap:14px;margin-top:14px}
+.analytics-panel{border:1px solid #e2e8f0;border-radius:12px;background:#fff;overflow:hidden}
+.analytics-panel__head{padding:16px 18px;border-bottom:1px solid #edf2f7;font-size:14px;font-weight:650}
+.source-distribution{padding:18px}.source-bar-row{display:grid;grid-template-columns:112px minmax(160px,1fr) 126px;align-items:center;gap:12px;margin-bottom:16px;font-size:12px}
+.source-bar-row:last-child{margin-bottom:0}.source-bar-row>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.source-bar-row>strong{text-align:right;font-family:var(--font-num);font-size:11px}
+.source-bar-track{height:10px;border-radius:100px;background:#eef2f7;overflow:hidden}.source-bar-track i{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,#3b82f6,#8b5cf6)}
+.source-table{width:100%;border-collapse:collapse;font-size:12px}.source-table th,.source-table td{padding:13px 14px;border-bottom:1px solid #edf2f7;text-align:left}.source-table th{color:#64748b;background:#f8fafc;font-weight:520}.source-table td:nth-child(n+2),.source-table th:nth-child(n+2){text-align:right}.source-table .is-up{color:#10b981}.source-table .is-down{color:#ef4444}
+@media(max-width:1050px){.analytics-filters{grid-template-columns:repeat(3,1fr)}.analytics-grid{grid-template-columns:1fr}.admin-sidebar{width:184px;flex-basis:184px}.demo-view-switch{right:20px}}
+
 /* Control Panel */
 .cp{position:fixed;top:20px;right:20px;max-height:calc(100vh - 40px);overflow-y:auto;background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:16px;width:210px;font-size:12px;color:#999}
 .cp::-webkit-scrollbar{width:4px}.cp::-webkit-scrollbar-thumb{background:#3a3a3a;border-radius:4px}
@@ -435,6 +474,11 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 </style>
 </head>
 <body>
+<nav class="demo-view-switch" aria-label="Demo视图">
+  <button type="button" class="is-active" data-view="client">用户端</button>
+  <button type="button" data-view="admin">运营后台</button>
+</nav>
+<section class="client-demo-shell">
 <div class="phone">
 <div class="sbar"><span>10:24</span><span>5G</span></div>
 
@@ -722,6 +766,50 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 <button class="cp-btn" onclick="showScan()">导入扫描</button>
 <button class="cp-btn" onclick="showDone('play')">完成页</button>
 </div>
+</section>
+
+<section class="admin-shell" id="sourceAnalyticsView" aria-label="盖世游戏运营后台来源分析">
+  <aside class="admin-sidebar">
+    <div class="admin-brand"><span class="admin-brand__logo">G</span><span>盖世游戏运营后台</span></div>
+    <div class="admin-nav-group">
+      <div class="admin-nav-label">数据分析</div>
+      <button type="button" class="admin-nav-item">运营概览</button>
+      <button type="button" class="admin-nav-item">用户分析</button>
+      <button type="button" class="admin-nav-item is-active">来源分析</button>
+      <button type="button" class="admin-nav-item">留存分析</button>
+    </div>
+    <div class="admin-user">运营管理员<br>数据分析组</div>
+  </aside>
+  <main class="admin-main">
+    <header class="admin-header">
+      <div><h1>来源分析</h1><p>查看不同市场与用户人群的主动填写来源分布</p></div>
+      <button type="button" class="admin-refresh">数据更新：10分钟前</button>
+    </header>
+    <section class="analytics-filters" aria-label="来源分析筛选">
+      <div class="analytics-filter"><label>日期范围</label><select data-analytics-filter="dateRange"><option value="7d">近7天</option><option value="30d" selected>近30天</option><option value="90d">近90天</option></select></div>
+      <div class="analytics-filter"><label>市场</label><select data-analytics-filter="market"><option value="domestic">国内</option><option value="overseas">海外</option></select></div>
+      <div class="analytics-filter"><label>用户人群</label><select data-analytics-filter="userGroup"><option value="new">新用户</option><option value="existing">非新用户</option></select></div>
+      <div class="analytics-filter"><label>分发渠道</label><select data-analytics-filter="channel"><option value="all">全部渠道</option><option value="official">官网</option><option value="store">应用商店</option></select></div>
+      <div class="analytics-filter"><label>App版本</label><select data-analytics-filter="version"><option value="all">全部版本</option><option value="6.1.0">6.1.0</option><option value="6.0.9">6.0.9</option></select></div>
+    </section>
+    <section class="analytics-metrics">
+      <article class="metric-card" data-metric="submissions"><div class="metric-label">来源提交人数</div><div class="metric-value">--</div><div class="metric-foot"><strong>↑ 8.6%</strong> 较上一等长周期</div></article>
+      <article class="metric-card" data-metric="completion"><div class="metric-label">来源填写完成率</div><div class="metric-value">--</div><div class="metric-foot">提交去重人数 ÷ 来源页曝光去重人数</div></article>
+      <article class="metric-card" data-metric="unknown"><div class="metric-label">“其他／不记得”占比</div><div class="metric-value">--</div><div class="metric-foot">计入完成，不计入可解释来源</div></article>
+    </section>
+    <p class="attribution-note" data-attribution-note></p>
+    <section class="analytics-grid">
+      <article class="analytics-panel">
+        <div class="analytics-panel__head">来源人数与占比分布</div>
+        <div class="source-distribution"></div>
+      </article>
+      <article class="analytics-panel">
+        <div class="analytics-panel__head">来源明细</div>
+        <table class="source-table"><thead><tr><th>来源</th><th>人数</th><th>占比</th><th>较上一周期</th></tr></thead><tbody></tbody></table>
+      </article>
+    </section>
+  </main>
+</section>
 
 <script>
 var games=[
@@ -937,6 +1025,73 @@ function submitExistingSource(){
   existingFlow.sourceTerminal='completed';
   saveExistingFlow();
   nextExistingStep();
+}
+
+var analyticsFilters={dateRange:'30d',market:'domestic',userGroup:'new',channel:'all',version:'all'};
+var sourceAnalyticsData={
+  domestic_new:{
+    submissions:12846,completionRate:86.4,unknownRate:9.8,
+    sources:[['朋友推荐',3540,27.6,3.2],['抖音／短视频',2960,23.0,1.8],['应用商店',2412,18.8,-.6],['社区／论坛',1850,14.4,2.1],['搜索引擎',825,6.4,-1],['其他／不记得',1259,9.8,.5]]
+  },
+  overseas_new:{
+    submissions:5268,completionRate:82.7,unknownRate:11.5,
+    sources:[['YouTube',1460,27.7,2.6],['Friends',1042,19.8,1.1],['Google Play',924,17.5,-.8],['Reddit',735,14.0,1.9],['Discord',501,9.5,-.4],['Other / Not sure',606,11.5,.3]]
+  },
+  domestic_existing:{
+    submissions:8642,completionRate:78.9,unknownRate:18.1,
+    sources:[['朋友推荐',2186,25.3,1.4],['抖音／短视频',1584,18.3,.7],['应用商店',1210,14.0,-1.1],['社区／论坛',1389,16.1,1.6],['搜索引擎',709,8.2,-.5],['其他／不记得',1564,18.1,-.2]]
+  },
+  overseas_existing:{
+    submissions:3416,completionRate:74.2,unknownRate:20.3,
+    sources:[['YouTube',785,23.0,1.2],['Friends',594,17.4,.8],['Google Play',468,13.7,-.9],['Reddit',517,15.1,1],['Discord',359,10.5,-.4],['Other / Not sure',693,20.3,.2]]
+  }
+};
+
+function getAnalyticsFactor(){
+  var rangeFactor={ '7d':.34,'30d':1,'90d':2.72 }[analyticsFilters.dateRange]||1;
+  var channelFactor=analyticsFilters.channel==='all'?1:.42;
+  var versionFactor=analyticsFilters.version==='all'?1:.58;
+  return rangeFactor*channelFactor*versionFactor;
+}
+
+function renderDistributionBars(sources,factor){
+  document.querySelector('.source-distribution').innerHTML=sources.map(function(item){
+    return '<div class="source-bar-row" data-source-bar><span>'+item[0]+'</span>'+
+      '<div class="source-bar-track"><i style="width:'+Math.min(100,item[2]*2.4)+'%"></i></div>'+
+      '<strong>'+Math.round(item[1]*factor).toLocaleString()+' · '+item[2]+'%</strong></div>';
+  }).join('');
+}
+
+function renderSourceRows(sources,factor){
+  document.querySelector('.source-table tbody').innerHTML=sources.map(function(item){
+    var change=item[3];
+    return '<tr data-source-row><td>'+item[0]+'</td><td>'+Math.round(item[1]*factor).toLocaleString()+'</td><td>'+item[2]+'%</td>'+
+      '<td class="'+(change>=0?'is-up':'is-down')+'">'+(change>=0?'+':'')+change+'%</td></tr>';
+  }).join('');
+}
+
+function renderSourceAnalytics(){
+  var key=analyticsFilters.market+'_'+analyticsFilters.userGroup;
+  var data=sourceAnalyticsData[key]||sourceAnalyticsData.domestic_new;
+  var factor=getAnalyticsFactor();
+  document.querySelector('[data-metric="submissions"] .metric-value').textContent=Math.round(data.submissions*factor).toLocaleString();
+  document.querySelector('[data-metric="completion"] .metric-value').textContent=data.completionRate+'%';
+  document.querySelector('[data-metric="unknown"] .metric-value').textContent=data.unknownRate+'%';
+  document.querySelector('[data-attribution-note]').textContent=analyticsFilters.userGroup==='existing'?
+    '非新用户来源为回忆口径，不代表客观安装归因':
+    '新用户来源为主动填写口径，不覆盖客观安装归因';
+  renderDistributionBars(data.sources,factor);
+  renderSourceRows(data.sources,factor);
+}
+
+function switchDemoView(view){
+  var showAdmin=view==='admin';
+  document.querySelector('.client-demo-shell').hidden=showAdmin;
+  document.getElementById('sourceAnalyticsView').classList.toggle('active',showAdmin);
+  document.querySelectorAll('[data-view]').forEach(function(button){
+    button.classList.toggle('is-active',button.dataset.view===view);
+  });
+  if(showAdmin) renderSourceAnalytics();
 }
 
 function toggleRegion(){
@@ -1222,6 +1377,8 @@ function showDone(type){
 }
 
 document.addEventListener('click',function(event){
+  var viewButton=event.target.closest('[data-view]');
+  if(viewButton) switchDemoView(viewButton.dataset.view);
   var scenarioButton=event.target.closest('[data-demo-scenario]');
   if(scenarioButton) startExistingScenario(scenarioButton.dataset.demoScenario);
   var existingGame=event.target.closest('[data-existing-game]');
@@ -1248,6 +1405,12 @@ document.addEventListener('click',function(event){
   }
   var methodCard=event.target.closest('[data-start-method]');
   if(methodCard) chooseStartMethod(methodCard.dataset.startMethod);
+});
+document.addEventListener('change',function(event){
+  var key=event.target.dataset.analyticsFilter;
+  if(!key) return;
+  analyticsFilters[key]=event.target.value;
+  renderSourceAnalytics();
 });
 window.addEventListener('online',function(){
   syncOnboardingSource();

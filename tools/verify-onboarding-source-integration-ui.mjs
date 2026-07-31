@@ -15,6 +15,7 @@ assert(executablePath, 'Local Chrome not found');
 
 const browser = await chromium.launch({ executablePath, headless: true });
 const page = await browser.newPage({ viewport: { width: 1180, height: 940 } });
+page.setDefaultTimeout(5000);
 const pageErrors = [];
 page.on('pageerror', error => pageErrors.push(error.message));
 
@@ -170,6 +171,29 @@ await page.locator('#regionBtn').click();
 await page.locator('[data-demo-scenario="existing_source_only"]').click();
 assert.equal(await page.locator('[data-existing-source="youtube"]').count(), 1);
 assert.equal((await page.locator('#existingSourceStep').innerText()).includes('GaishiGame'), false);
+
+await page.locator('[data-view="admin"]').click();
+assert.equal(await page.locator('#sourceAnalyticsView.active').count(), 1);
+assert.equal(await page.locator('.client-demo-shell').isHidden(), true);
+assert.equal(await page.locator('[data-analytics-filter]').count(), 5);
+assert.equal(await page.locator('[data-metric]').count(), 3);
+assert.equal(await page.locator('[data-source-bar]').count(), 6);
+assert.equal(await page.locator('[data-source-row]').count(), 6);
+
+const submissionsBefore = await page.locator('[data-metric="submissions"] .metric-value').innerText();
+await page.locator('[data-analytics-filter="market"]').selectOption('overseas');
+const submissionsAfter = await page.locator('[data-metric="submissions"] .metric-value').innerText();
+assert.notEqual(submissionsAfter, submissionsBefore, 'market filter must refresh analytics');
+
+await page.locator('[data-analytics-filter="userGroup"]').selectOption('existing');
+assert.equal(
+  await page.locator('[data-attribution-note]').innerText(),
+  '非新用户来源为回忆口径，不代表客观安装归因'
+);
+
+await page.locator('[data-view="client"]').click();
+assert.equal(await page.locator('.client-demo-shell').isVisible(), true);
+assert.equal(await page.locator('#sourceAnalyticsView.active').count(), 0);
 
 assert.deepEqual(pageErrors, [], `page errors: ${pageErrors.join('; ')}`);
 await browser.close();
