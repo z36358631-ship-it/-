@@ -324,6 +324,121 @@ async function main() {
       orderCredentialResult.hasAccountCopy && orderCredentialResult.hasPasswordCopy,
       '独立凭据复制操作不完整',
     );
+    const standaloneInteractionResult = await page.evaluate(async () => {
+      const orderId = 'GS20260713001';
+      const order = orders.find((item) => item.id === orderId);
+      const account = accounts.find((item) => item.id === order?.accountId);
+      const boundAccountId = order?.accountId;
+      dispatchAction('toggle-account-visibility', { dataset: { id: orderId } });
+      dispatchAction('toggle-password-visibility', { dataset: { id: orderId } });
+      await nextPaint();
+      const visibleText = document.querySelector('.standalone-credential-dialog')?.textContent || '';
+      dispatchAction('copy-login-account', { dataset: { id: orderId } });
+      dispatchAction('copy-login-password', { dataset: { id: orderId } });
+      const repeatableCopy = document.querySelector('.credential-copy-feedback')?.textContent.includes('密码已复制');
+      dispatchAction('request-guard-code', { dataset: { id: orderId } });
+      const guardLoading = document.querySelector('[data-action="request-guard-code"][disabled]')
+        ?.textContent.includes('正在获取');
+      await new Promise((resolve) => setTimeout(resolve, 260));
+      await nextPaint();
+      const firstGuard = account?.guardCode || '';
+      const guardVisible = document.querySelector('[data-guard-value]')?.textContent.includes(firstGuard);
+      dispatchAction('copy-guard-code', { dataset: { id: orderId } });
+      const guardCopied = document.querySelector('.credential-copy-feedback')?.textContent.includes('验证码已复制');
+      dispatchAction('request-guard-code', { dataset: { id: orderId } });
+      await new Promise((resolve) => setTimeout(resolve, 260));
+      await nextPaint();
+      const refreshedGuard = account?.guardCode || '';
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      const escapeClosed = !document.querySelector('.standalone-credential-dialog');
+      dispatchAction('open-manual-login', { dataset: { id: orderId } });
+      await nextPaint();
+      document.getElementById('confirmLayer').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      const outsideClosed = !document.querySelector('.standalone-credential-dialog');
+      dispatchAction('open-login-methods', { dataset: { id: orderId } });
+      dispatchAction('choose-manual-login', { dataset: { id: orderId } });
+      await nextPaint();
+      dispatchAction('open-credential-popover', { dataset: { id: orderId } });
+      await nextPaint();
+      const sharedGuard = document.querySelector('[data-guard-value]')?.textContent.trim();
+      const sceneEvents = state.rentalEvents
+        .filter((event) => ['rental_credential_view', 'rental_credential_copy', 'rental_guard_code_result'].includes(event.event))
+        .map((event) => event.scene);
+      return {
+        accountVisible: Boolean(account && visibleText.includes(account.loginName)),
+        passwordVisible: Boolean(account && visibleText.includes(account.loginPassword)),
+        repeatableCopy,
+        guardLoading,
+        firstGuard,
+        guardVisible,
+        guardCopied,
+        refreshedGuard,
+        escapeClosed,
+        outsideClosed,
+        hasSteamWindow: Boolean(document.querySelector('.manual-login-dialog .steam-account-column')),
+        sharedGuard,
+        sameAccount: order?.accountId === boundAccountId,
+        hasOrderScene: sceneEvents.includes('order'),
+        hasSteamScene: sceneEvents.includes('steam'),
+      };
+    });
+    assert(
+      standaloneInteractionResult.accountVisible && standaloneInteractionResult.passwordVisible,
+      '独立凭据查看/隐藏交互异常',
+    );
+    assert(standaloneInteractionResult.repeatableCopy, '独立凭据重复复制异常');
+    assert(
+      standaloneInteractionResult.guardLoading
+        && /^[23456789BCDFGHJKMNPQRTVWXY]{5}$/.test(standaloneInteractionResult.firstGuard)
+        && standaloneInteractionResult.guardVisible
+        && standaloneInteractionResult.guardCopied,
+      '独立凭据验证码获取或复制异常',
+    );
+    assert(
+      /^[23456789BCDFGHJKMNPQRTVWXY]{5}$/.test(standaloneInteractionResult.refreshedGuard),
+      '独立凭据验证码刷新异常',
+    );
+    assert(
+      standaloneInteractionResult.escapeClosed && standaloneInteractionResult.outsideClosed,
+      '独立凭据弹窗关闭交互异常',
+    );
+    assert(
+      standaloneInteractionResult.hasSteamWindow
+        && standaloneInteractionResult.sharedGuard === standaloneInteractionResult.refreshedGuard
+        && standaloneInteractionResult.sameAccount,
+      '订单入口与 Steam 手动登录未共用账号或有效验证码',
+    );
+    assert(
+      standaloneInteractionResult.hasOrderScene && standaloneInteractionResult.hasSteamScene,
+      '登录信息埋点未区分 order/steam 场景',
+    );
+
+    await capture(page, 'c07-order-login-information.png', 'order-detail', async (currentPage) => {
+      const result = await currentPage.evaluate(async () => {
+        state.selectedOrderId = 'GS20260713001';
+        navigate('mac', 'order-detail');
+        await nextPaint();
+        document.querySelector('[data-action="open-manual-login"]')?.click();
+        await nextPaint();
+        const dialog = document.querySelector('.standalone-credential-dialog');
+        const account = accounts.find((item) => item.id === orders.find(
+          (order) => order.id === state.selectedOrderId,
+        )?.accountId);
+        return {
+          hasDialog: Boolean(dialog),
+          title: dialog?.querySelector('h3')?.textContent.trim(),
+          hasSteamColumns: Boolean(dialog?.querySelector('.steam-account-column, .steam-qr-column')),
+          hasBottomAction: Boolean(dialog?.querySelector('.order-confirm-actions')),
+          accountMasked: Boolean(account && !dialog?.textContent.includes(account.loginName)),
+          passwordMasked: Boolean(account && !dialog?.textContent.includes(account.loginPassword)),
+          closeCount: dialog?.querySelectorAll('[data-action="confirm-no"]').length || 0,
+        };
+      });
+      assert(result.hasDialog && result.title === 'Steam 登录信息', '独立登录信息弹窗未正确展示');
+      assert(!result.hasSteamColumns, '独立登录信息弹窗错误包含 Steam 双栏');
+      assert(!result.hasBottomAction && result.closeCount === 1, '独立登录信息弹窗关闭操作不符合要求');
+      assert(result.accountMasked && result.passwordMasked, '独立登录信息弹窗默认未遮罩凭据');
+    });
 
     await capture(page, 'c06-game-library.png', 'library', async (currentPage) => {
       const result = await currentPage.evaluate(async () => {
@@ -459,7 +574,7 @@ async function main() {
 
     assert(pageErrors.length === 0, `截图页面脚本错误：${pageErrors.join(' | ')}`);
     await page.close();
-    process.stdout.write(`PASS smoke=${smokeCount}, screenshots=8\n`);
+    process.stdout.write(`PASS smoke=${smokeCount}, screenshots=9\n`);
   } finally {
     await browser.close();
   }
