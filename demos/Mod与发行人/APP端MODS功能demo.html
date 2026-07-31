@@ -461,6 +461,11 @@
       border-bottom: 1px solid rgba(255,255,255,.065);
       background: #151517;
     }
+    .sort-tabs {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
     .sort-tab, .filter-tab {
       position: relative;
       height: 38px;
@@ -718,12 +723,6 @@
     }
     .device.landscape .primary-tab { height: 42px; font-size: 17px; }
     .device.landscape .primary-tab.is-active::after { bottom: -4px; }
-    .device.landscape .search-section {
-      width: 100%;
-      height: 50px;
-      padding: 3px 38px;
-      background: #151517;
-    }
     .device.landscape .search-row { height: 44px; font-size: 16px; }
     .device.landscape .search-row input { font-size: 14px; }
     .device.landscape .sort-section {
@@ -731,8 +730,26 @@
       padding: 0 38px;
       gap: 28px;
     }
+    .device.landscape .mods-screen:not(.is-installed) .sort-section { gap: 12px; }
+    .device.landscape .sort-tabs { gap: 28px; }
+    .device.landscape .mods-screen:not(.is-installed) .sort-tab {
+      min-width: 44px;
+      height: 44px;
+    }
+    .device.landscape .mods-screen:not(.is-installed) .sort-tab.is-active::after { bottom: -3px; }
+    .device.landscape .toolbar-search {
+      width: 300px;
+      height: 44px;
+      margin-left: auto;
+      padding: 0 14px;
+    }
+    .device.landscape .mods-screen:not(.is-installed) .sort-section .refresh-small {
+      width: 44px;
+      height: 44px;
+      margin-left: 0;
+    }
     .device.landscape .mods-scroll {
-      top: 156px;
+      top: 106px;
       padding: 12px 38px 24px;
     }
     .device.landscape .mods-screen.is-installed .mods-scroll { top: 58px; }
@@ -1095,6 +1112,10 @@
     const taskTimers = new Map();
     let focusReturnSelector = '';
     let pendingFocusSelector = '';
+    let isSearchComposing = false;
+    let pendingOrientationSearchSelection = null;
+    let pendingOrientation = null;
+    let restoreCycle = 0;
     const root = document.querySelector('[data-demo-root]');
 
     function icon(name) {
@@ -1175,19 +1196,37 @@
       if (detail) state.detailScroll = detail.scrollTop;
     }
 
-    function restoreScroll(focusSearch = false) {
+    function activeSearchSelection() {
+      const input = root.querySelector('[data-search]');
+      if (!input || document.activeElement !== input) return null;
+      return {
+        start: input.selectionStart,
+        end: input.selectionEnd,
+        direction: input.selectionDirection
+      };
+    }
+
+    function restoreSearchInput(searchSelection = null) {
+      const input = root.querySelector('[data-search]');
+      if (!input) return;
+      input.focus();
+      const start = searchSelection?.start ?? input.value.length;
+      const end = searchSelection?.end ?? start;
+      input.setSelectionRange(
+        Math.min(start, input.value.length),
+        Math.min(end, input.value.length),
+        searchSelection?.direction || 'none'
+      );
+    }
+
+    function restoreScroll(focusSearch = false, searchSelection = null) {
+      const cycle = ++restoreCycle;
       requestAnimationFrame(() => {
         const list = root.querySelector('[data-mod-scroll]');
         if (list) list.scrollTop = state.scrollByTab[state.tab] || 0;
         const detail = root.querySelector('[data-detail-scroll]');
         if (detail) detail.scrollTop = state.detailScroll || 0;
-        if (focusSearch) {
-          const input = root.querySelector('[data-search]');
-          if (input) {
-            input.focus();
-            input.setSelectionRange(input.value.length, input.value.length);
-          }
-        }
+        if (focusSearch && cycle === restoreCycle) restoreSearchInput(searchSelection);
         if (pendingFocusSelector) {
           const target = root.querySelector(pendingFocusSelector);
           pendingFocusSelector = '';
@@ -1227,7 +1266,7 @@
           state.search = event.value;
           state.scrollByTab.browse = 0;
           render();
-          restoreScroll(true);
+          restoreScroll(true, event.selection || null);
           return cloneState();
         case 'SET_INSTALLED_FILTER':
           state.installedFilter = event.value === 'updates' ? 'updates' : 'all';
@@ -1282,6 +1321,9 @@
           taskTimers.forEach(timer => clearInterval(timer));
           taskTimers.clear();
           state = initialState();
+          isSearchComposing = false;
+          pendingOrientationSearchSelection = null;
+          pendingOrientation = null;
           break;
       }
       render();
@@ -1289,10 +1331,19 @@
       return cloneState();
     }
 
-    function rotateTo(orientation) {
+    function rotateTo(orientation, preservedSearchSelection = null) {
+      const nextOrientation = orientation === 'landscape' ? 'landscape' : 'portrait';
+      const searchSelection = preservedSearchSelection || activeSearchSelection();
+      if (isSearchComposing) {
+        pendingOrientation = nextOrientation === state.orientation
+          ? null
+          : { value: nextOrientation };
+        return cloneState();
+      }
       saveScroll();
-      state.orientation = orientation === 'landscape' ? 'landscape' : 'portrait';
+      state.orientation = nextOrientation;
       render();
+      if (searchSelection) restoreSearchInput(searchSelection);
       restoreScroll();
       return cloneState();
     }
@@ -1416,6 +1467,8 @@
     function renderMods() {
       const { visibleMods } = derive();
       const browse = state.tab === 'browse';
+      const searchField = `<label class="search-row">${icon('search')}<input data-search aria-label="搜索 MOD" placeholder="搜索 MOD 名称或作者" value="${state.search.replaceAll('"', '&quot;')}"></label>`;
+      const toolbarSearchField = searchField.replace('class="search-row"', 'class="search-row toolbar-search"');
       const noInstalledMods = state.installed.length === 0;
       const emptyTitle = browse
         ? '没有找到相关 MOD'
@@ -1440,15 +1493,16 @@
             <button class="primary-tab ${browse ? '' : 'is-active'}" type="button" role="tab" aria-selected="${!browse}" data-tab="installed">已安装</button>
           </nav>
           ${browse ? `
-            <div class="search-section">
-              <label class="search-row">${icon('search')}<input data-search aria-label="搜索 MOD" placeholder="搜索 MOD 名称或作者" value="${state.search.replaceAll('"', '&quot;')}"></label>
-            </div>
-            <div class="sort-section" role="tablist" aria-label="浏览排序">
-              ${[
-                ['hot', '热门'],
-                ['downloads', '下载最多'],
-                ['published', '最新发布']
-              ].map(([value, label]) => `<button class="sort-tab ${state.sort === value ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.sort === value}" data-sort="${value}">${label}</button>`).join('')}
+            ${state.orientation === 'portrait' ? `<div class="search-section">${searchField}</div>` : ''}
+            <div class="sort-section">
+              <div class="sort-tabs" role="tablist" aria-label="浏览排序">
+                ${[
+                  ['hot', '热门'],
+                  ['downloads', '下载最多'],
+                  ['published', '最新发布']
+                ].map(([value, label]) => `<button class="sort-tab ${state.sort === value ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.sort === value}" data-sort="${value}">${label}</button>`).join('')}
+              </div>
+              ${state.orientation === 'landscape' ? toolbarSearchField : ''}
               <button class="refresh-small ${state.refreshing ? 'is-loading' : ''}" type="button" data-action="refresh" aria-label="刷新">${icon('refresh')}</button>
             </div>
           ` : `
@@ -1545,8 +1599,46 @@
       if (event.target.matches('[data-detail-scroll]')) state.detailScroll = event.target.scrollTop;
     }, true);
 
+    root.addEventListener('compositionstart', event => {
+      if (event.target.matches('[data-search]')) isSearchComposing = true;
+    });
+
+    root.addEventListener('compositionend', event => {
+      if (!event.target.matches('[data-search]')) return;
+      const deferredOrientation = pendingOrientation;
+      pendingOrientation = null;
+      const selection = {
+        start: event.target.selectionStart,
+        end: event.target.selectionEnd,
+        direction: event.target.selectionDirection
+      };
+      isSearchComposing = false;
+      dispatch({
+        type: 'SET_SEARCH',
+        value: event.target.value,
+        selection
+      });
+      if (deferredOrientation) {
+        rotateTo(deferredOrientation.value, selection);
+      }
+    });
+
     root.addEventListener('input', event => {
-      if (event.target.matches('[data-search]')) dispatch({ type: 'SET_SEARCH', value: event.target.value });
+      if (!event.target.matches('[data-search]')) return;
+      if (isSearchComposing || event.isComposing) {
+        state.search = event.target.value;
+        state.scrollByTab.browse = 0;
+        return;
+      }
+      dispatch({
+        type: 'SET_SEARCH',
+        value: event.target.value,
+        selection: {
+          start: event.target.selectionStart,
+          end: event.target.selectionEnd,
+          direction: event.target.selectionDirection
+        }
+      });
     });
 
     root.addEventListener('keydown', event => {
@@ -1630,11 +1722,21 @@
       }
     });
 
+    document.addEventListener('pointerdown', event => {
+      const control = event.target.closest('[data-review-action="portrait"], [data-review-action="landscape"]');
+      if (!control) return;
+      pendingOrientationSearchSelection = activeSearchSelection();
+      if (pendingOrientationSearchSelection) event.preventDefault();
+    });
+
     document.addEventListener('click', event => {
       const control = event.target.closest('[data-review-action]');
       if (!control) return;
       const action = control.dataset.reviewAction;
-      if (action === 'portrait' || action === 'landscape') rotateTo(action);
+      if (action === 'portrait' || action === 'landscape') {
+        rotateTo(action, pendingOrientationSearchSelection);
+        pendingOrientationSearchSelection = null;
+      }
       if (action === 'game') dispatch({ type: 'BACK_GAME' });
       if (action === 'browse') {
         state.screen = 'mods';

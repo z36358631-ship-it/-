@@ -170,6 +170,114 @@ try {
 
   const search = page.locator('[data-search]');
   await search.fill('小地图');
+  await page.waitForTimeout(32);
+  await search.evaluate(input => {
+    input.focus();
+    input.setSelectionRange(1, 1);
+  });
+  assert.equal(
+    await page.evaluate(() => document.activeElement?.matches('[data-search]')),
+    true,
+    '旋转前搜索框未获得焦点'
+  );
+  await page.evaluate(() => window.__APP_MODS_DEMO__.rotateTo('landscape'));
+  await page.waitForTimeout(32);
+  assert.equal(await page.locator('[data-search]').inputValue(), '小地图');
+  assert.equal(
+    await page.evaluate(() => document.activeElement?.matches('[data-search]')),
+    true,
+    '竖屏切横屏后搜索焦点丢失'
+  );
+  assert.deepEqual(
+    await page.locator('[data-search]').evaluate(input => [input.selectionStart, input.selectionEnd]),
+    [1, 1],
+    '竖屏切横屏后搜索光标位置丢失'
+  );
+  await page.evaluate(() => window.__APP_MODS_DEMO__.rotateTo('portrait'));
+  await page.waitForTimeout(32);
+  assert.equal(await page.locator('[data-search]').inputValue(), '小地图');
+  assert.equal(
+    await page.evaluate(() => document.activeElement?.matches('[data-search]')),
+    true,
+    '横屏切竖屏后搜索焦点丢失'
+  );
+  assert.deepEqual(
+    await page.locator('[data-search]').evaluate(input => [input.selectionStart, input.selectionEnd]),
+    [1, 1],
+    '横屏切竖屏后搜索光标位置丢失'
+  );
+
+  await page.locator('[data-search]').evaluate(input => {
+    input.focus();
+    input.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }));
+    input.value = '生命';
+    input.dispatchEvent(new InputEvent('input', {
+      bubbles: true,
+      data: '生命',
+      inputType: 'insertCompositionText',
+      isComposing: true
+    }));
+    window.__APP_MODS_COMPOSING_INPUT__ = input;
+  });
+  await page.locator('[data-review-action="landscape"]').click();
+  assert.equal(
+    await page.evaluate(() => window.__APP_MODS_DEMO__.getState().orientation),
+    'portrait',
+    '输入法组词期间不应销毁输入框并立即旋转'
+  );
+  assert.equal(
+    await page.evaluate(() =>
+      document.querySelector('[data-search]') === window.__APP_MODS_COMPOSING_INPUT__
+    ),
+    true,
+    '输入法组词期间搜索输入框节点被替换'
+  );
+  await page.evaluate(() => {
+    const input = window.__APP_MODS_COMPOSING_INPUT__;
+    input.value = '生命条';
+    input.setSelectionRange(3, 3);
+    input.dispatchEvent(new InputEvent('input', {
+      bubbles: true,
+      data: '条',
+      inputType: 'insertCompositionText',
+      isComposing: true
+    }));
+    input.dispatchEvent(new CompositionEvent('compositionend', {
+      bubbles: true,
+      data: input.value
+    }));
+    delete window.__APP_MODS_COMPOSING_INPUT__;
+  });
+  await page.waitForFunction(() =>
+    window.__APP_MODS_DEMO__.getState().orientation === 'landscape'
+  );
+  assert.equal(
+    await page.evaluate(() => document.activeElement?.matches('[data-search]')),
+    true,
+    '延迟旋转后搜索焦点丢失'
+  );
+  assert.deepEqual(
+    await page.locator('[data-search]').evaluate(input => [input.selectionStart, input.selectionEnd]),
+    [3, 3],
+    '延迟旋转未恢复组词结束时的最终光标'
+  );
+  assert.deepEqual(
+    await page.locator('[data-mod-card]').evaluateAll(cards => cards.map(card => card.getAttribute('data-mod-id'))),
+    ['health-bar'],
+    '输入法组词结束后搜索筛选未生效'
+  );
+  await page.locator('[data-search]').fill('小地图');
+  assert.deepEqual(
+    await page.locator('[data-mod-card]').evaluateAll(cards => cards.map(card => card.getAttribute('data-mod-id'))),
+    ['minimap'],
+    '输入法组词结束后普通输入未恢复即时筛选'
+  );
+  await page.locator('[data-review-action="portrait"]').click();
+  assert.equal(
+    await page.evaluate(() => window.__APP_MODS_DEMO__.getState().orientation),
+    'portrait',
+    '输入法组词结束后真实方向按钮未恢复正常旋转'
+  );
   assert.deepEqual(
     await page.locator('[data-mod-card]').evaluateAll(cards => cards.map(card => card.getAttribute('data-mod-id'))),
     ['minimap']
@@ -263,6 +371,9 @@ try {
 
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('[data-detail]').count(), 0);
+  await page.waitForFunction(() =>
+    document.activeElement?.matches('[data-mod-card][data-mod-id="minimap"]')
+  );
   assert.equal(
     await page.evaluate(() => document.activeElement?.matches('[data-mod-card][data-mod-id="minimap"]')),
     true,
@@ -287,24 +398,47 @@ try {
   await page.locator('[data-tab="browse"]').click();
   await page.locator('[data-sort="hot"]').click();
   assert.equal(await page.locator('[data-search]').count(), 1);
+  assert.equal(await page.locator('.search-section').count(), 0);
+  assert.equal(await page.locator('.sort-section [data-search]').count(), 1);
+  assert.equal(await page.locator('.sort-tabs[role="tablist"] [data-sort]').count(), 3);
   const landscapeSearchLayout = await page.evaluate(() => {
-    const tabs = document.querySelector('.primary-tabs').getBoundingClientRect();
-    const section = document.querySelector('.search-section').getBoundingClientRect();
-    const sort = document.querySelector('.sort-section').getBoundingClientRect();
+    const toolbar = document.querySelector('.sort-section');
+    const toolbarBox = toolbar.getBoundingClientRect();
+    const searchBox = document.querySelector('.toolbar-search').getBoundingClientRect();
+    const refreshBox = document.querySelector('.refresh-small').getBoundingClientRect();
     const list = document.querySelector('.mods-scroll').getBoundingClientRect();
-    const device = document.querySelector('[data-demo-root]').getBoundingClientRect();
+    const touchTargets = [
+      ...toolbar.querySelectorAll('[data-sort]'),
+      toolbar.querySelector('.toolbar-search'),
+      toolbar.querySelector('.refresh-small')
+    ].map(item => {
+      const box = item.getBoundingClientRect();
+      return { width: Math.round(box.width), height: Math.round(box.height) };
+    });
+    const focusOrder = [...toolbar.querySelectorAll('button, input')].map(item => {
+      if (item.dataset.sort) return item.dataset.sort;
+      if (item.matches('[data-search]')) return 'search';
+      if (item.dataset.action === 'refresh') return 'refresh';
+      return 'unknown';
+    });
     return {
-      followsTabs: Math.abs(section.top - tabs.bottom) <= 1,
-      fillsDevice: Math.abs(section.left - device.left) <= 1 && Math.abs(section.right - device.right) <= 1,
-      sortFollowsSearch: Math.abs(sort.top - section.bottom) <= 1,
-      listFollowsSort: Math.abs(list.top - sort.bottom) <= 1
+      searchAndRefreshAligned: Math.abs(
+        (searchBox.top + searchBox.bottom) / 2 - (refreshBox.top + refreshBox.bottom) / 2
+      ) <= 1,
+      searchBeforeRefresh: searchBox.right <= refreshBox.left,
+      searchRefreshGap: Math.round(refreshBox.left - searchBox.right),
+      listFollowsToolbar: Math.abs(list.top - toolbarBox.bottom) <= 1,
+      focusOrder,
+      touchTargetsAtLeast44: touchTargets.every(item => item.width >= 44 && item.height >= 44)
     };
   });
   assert.deepEqual(landscapeSearchLayout, {
-    followsTabs: true,
-    fillsDevice: true,
-    sortFollowsSearch: true,
-    listFollowsSort: true
+    searchAndRefreshAligned: true,
+    searchBeforeRefresh: true,
+    searchRefreshGap: 12,
+    listFollowsToolbar: true,
+    focusOrder: ['hot', 'downloads', 'published', 'search', 'refresh'],
+    touchTargetsAtLeast44: true
   });
   assert.equal(await page.locator('[data-mod-card]').count(), 6);
   const metadataLayout = await page.locator('[data-mod-card] .card-meta').evaluateAll(elements =>

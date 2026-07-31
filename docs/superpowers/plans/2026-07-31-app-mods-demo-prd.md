@@ -385,6 +385,7 @@ assert.equal(layout.searchAndRefreshAligned, true);
 assert.equal(layout.searchBeforeRefresh, true);
 assert.equal(layout.listFollowsToolbar, true);
 assert.deepEqual(layout.focusOrder, ['hot', 'downloads', 'published', 'search', 'refresh']);
+assert.equal(layout.touchTargetsAtLeast44, true);
 ```
 
 输入搜索词，将焦点和光标停在词中间后旋转，断言：
@@ -434,15 +435,23 @@ ${state.orientation === 'portrait' ? `<div class="search-section">${searchField}
 }
 .device.landscape .toolbar-search {
   width: 300px;
-  height: 38px;
+  height: 44px;
   margin-left: auto;
   padding: 0 14px;
 }
-.device.landscape .sort-section .refresh-small { margin-left: 0; }
+.device.landscape .mods-screen:not(.is-installed) .sort-tab {
+  min-width: 44px;
+  height: 44px;
+}
+.device.landscape .mods-screen:not(.is-installed) .sort-section .refresh-small {
+  width: 44px;
+  height: 44px;
+  margin-left: 0;
+}
 .device.landscape .mods-scroll { top: 106px; }
 ```
 
-`rotateTo()` 在重绘前记录搜索焦点和选区，重绘后恢复；输入法组合期间只更新状态，不重绘搜索框。
+`rotateTo()` 在重绘前记录搜索焦点和选区，重绘后恢复；输入法组合期间只记录最后一个有效目标方向，不重绘搜索框，`compositionend` 提交搜索后再执行延迟旋转。
 
 - [ ] **Step 4: 运行 Demo 校验并更新横屏截图**
 
