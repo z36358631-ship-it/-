@@ -725,6 +725,28 @@
       font-size: 24px;
     }
 
+    .empty-list-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .empty-list-content button {
+      height: 48px;
+      padding: 0 24px;
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.07);
+      color: #d4d2d6;
+      font-size: 19px;
+    }
+
+    .empty-list-content button:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+
     .modal-backdrop {
       position: absolute;
       z-index: 50;
@@ -1813,11 +1835,10 @@
         name: (a, b) => a.name.localeCompare(b.name, 'zh-CN')
       };
       const installedRecentComparator = (a, b) =>
-        (b.installed_at || '').localeCompare(a.installed_at || '');
+        (b.installed_at || '').localeCompare(a.installed_at || '')
+        || a.name.localeCompare(b.name, 'zh-CN');
       const installedFilters = {
         all: () => true,
-        enabled: mod => mod.enabled_value === 'enabled',
-        disabled: mod => mod.enabled_value === 'disabled',
         update: mod => mod.update_fact === 'update_available'
           || activeTask(current, mod)?.task_state === 'failed'
       };
@@ -1945,9 +1966,10 @@
           next.ui.installedSort = action.value === 'name' ? 'name' : 'recent';
           return next;
         case 'SET_INSTALLED_FILTER':
-          next.ui.installedFilter = ['all', 'enabled', 'disabled', 'update'].includes(action.value)
+          next.ui.installedFilter = ['all', 'update'].includes(action.value)
             ? action.value
             : 'all';
+          next.ui.scrollTopByTab.installed = 0;
           return next;
         case 'SET_SEARCH':
           next.ui.searchByTab[next.ui.activeTab] = String(action.value || '');
@@ -2170,7 +2192,7 @@
       const running = task && ['queued', 'downloading', 'verifying', 'installing'].includes(task.task_state);
       const enabledLabel = mod.enabled_value === 'enabled' ? '已启用' : '未启用';
       const installedStatus = task?.task_state === 'failed'
-        ? `更新失败 · 保留旧版 v${mod.installed_version}`
+        ? `${enabledLabel} · 更新失败 · 保留旧版 v${mod.installed_version}`
         : mod.update_fact === 'update_available'
           ? `${enabledLabel} · 可更新`
           : `${enabledLabel} · 已是最新`;
@@ -2204,11 +2226,24 @@
     }
 
     function renderModsList(viewModel) {
+      const noInstalledMods = viewModel.activeTab === 'installed'
+        && viewModel.installedMods.length === 0
+        && !viewModel.searchText;
+      const emptyMessage = noInstalledMods
+        ? '当前设备尚未安装 MOD'
+        : viewModel.activeTab === 'installed' && !viewModel.searchText
+          ? '没有符合当前筛选的已安装 MOD'
+          : '没有找到匹配的 MOD';
       const cards = viewModel.visibleMods.length
         ? viewModel.visibleMods.map(mod => renderModCard(mod, viewModel)).join('')
-        : `<div class="empty-list">${viewModel.activeTab === 'installed' && !viewModel.searchText
-            ? '没有符合当前筛选的已安装 MOD'
-            : '没有找到匹配的 MOD'}</div>`;
+        : `<div class="empty-list">
+            <div class="empty-list-content">
+              <span>${emptyMessage}</span>
+              ${noInstalledMods
+                ? '<button type="button" data-action="set-tab" data-value="browse">浏览可用 MOD</button>'
+                : ''}
+            </div>
+          </div>`;
       const browseControls = `
         <div class="browse-sort-options" role="group" aria-label="浏览排序">
           <span>排序</span>
@@ -2229,8 +2264,6 @@
         <div class="installed-filters" aria-label="已安装筛选">
           ${[
             ['all', '全部'],
-            ['enabled', '已启用'],
-            ['disabled', '未启用'],
             ['update', '可更新']
           ].map(([value, label]) => `
             <button type="button"
@@ -2319,6 +2352,7 @@
       if (task?.task_state === 'failed') {
         return `<footer class="modal-action-bar">
           <button type="button" class="secondary" disabled>保留旧版 ${escapeHtml(mod.installed_version)}</button>
+          <button type="button" class="secondary" data-action="toggle-enabled" data-mod-id="${mod.mod_id}">${mod.enabled_value === 'enabled' ? '停用' : '启用'}</button>
           <button type="button" data-action="update" data-mod-id="${mod.mod_id}">重试更新</button>
           <button type="button" class="danger" data-action="uninstall" data-mod-id="${mod.mod_id}">卸载</button>
         </footer>`;
@@ -2508,7 +2542,7 @@
 
     root.addEventListener('scroll', event => {
       if (event.target.matches('[data-mods-scroll]')) {
-        dispatch({
+        state = reducer(state, {
           type: 'SAVE_SCROLL_TOP',
           tab: state.ui.activeTab,
           value: event.target.scrollTop
