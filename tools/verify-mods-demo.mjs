@@ -136,6 +136,31 @@ try {
     };
   });
   assert.deepEqual(invalidBrowseSortState, { sort: 'trend', scrollTop: 0 });
+  await browseSort.selectOption('downloads');
+  await searchInput.fill('小');
+  assert.deepEqual(
+    await page.evaluate(() => {
+      const api = window.__DST_MODS_DEMO__;
+      const state = api.getState();
+      return {
+        search: state.ui.searchByTab.browse,
+        sort: state.ui.browseSort,
+        visibleIds: api.derive().visibleMods.map(mod => mod.mod_id)
+      };
+    }),
+    {
+      search: '小',
+      sort: 'downloads',
+      visibleIds: ['dst-fast-travel']
+    }
+  );
+  await searchInput.fill('');
+  assert.equal(
+    await page.evaluate(() => window.__DST_MODS_DEMO__.getState().ui.browseSort),
+    'downloads',
+    'clearing search reset the selected browse sort'
+  );
+  await browseSort.selectOption('trend');
 
   const trendOrder = await page.evaluate(() =>
     window.__DST_MODS_DEMO__.derive().visibleMods.map(mod => mod.mod_id)
