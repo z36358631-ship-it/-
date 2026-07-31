@@ -7,7 +7,8 @@
 |2026.07.31|V1.0|产品|创建 Mac 与 APP 的 DST 本地 MODS 产品方案|仅 C 端|
 |2026.07.31|V1.1|产品|按页面重写 4.2；补充 Mac 最新 Demo 口径、APP 横竖屏、国内海外、状态、埋点和验收标准|本 PRD 无图示|
 |2026.07.31|V1.2|产品|<mark><strong><span style="color:#3370ff">Mac 排序收敛为热门趋势、下载量、最新发布；增加列表和详情启用开关；精简入口与详情信息</span></strong></mark>|本 PRD 无图示|
-|2026.07.31|V1.3|产品|<mark><strong><span style="color:#3370ff">Mac 详情移除滑块，改为整颗状态按钮；已启用为绿色背景，已停用为灰色背景；补充两张固定 Git 原图</span></strong></mark>|2 张图示，固定提交 `6ce96620ec497e00d34f865dc2bff38c45e98ba4`|
+|2026.07.31|V1.3|产品|<mark><strong><span style="color:#3370ff">Mac 详情移除滑块，改为整颗状态按钮；已启用为绿色背景，已停用为灰色背景；补充两张固定 Git 原图</span></strong></mark>|2 张历史图示，已由 V1.4 固定图示批次替换|
+|2026.07.31|V1.4|产品|<mark><strong><span style="color:#3370ff">删除 Mac 浏览页和已安装页的页面标题、副标题；浏览工具栏改为“排序下拉、搜索、刷新”，已安装工具栏改为“筛选下拉、搜索、刷新”；保留两类列表快捷启停和详情状态按钮</span></strong></mark>|4 张图示，固定提交 `28bb7a389673dfbc44f17e5cb2f7885dd674eea7`|
 
 ## 二、背景与目标
 
@@ -103,6 +104,8 @@
 |安装与更新|任务状态显示在原卡片和详情|任务脱离页面生命周期|旋转后复用同一任务|
 |卸载|二次确认弹窗|二次确认弹窗|二次确认弹窗|
 
+> <mark><strong><span style="color:#3370ff">V1.4 Mac 模块调整：</span></strong></mark>浏览页和已安装页不再显示页面标题、副标题。浏览页将排序改为下拉并与搜索、刷新同排；已安装页将“全部、可更新”改为下拉并与搜索、刷新同排。列表快捷启停与详情状态按钮不变。
+
 ### 4.2 详细设计（C端）
 
 功能 Demo：
@@ -134,7 +137,16 @@ Demo 定位：Mac Demo 是视觉和基础交互参考，不是完整服务端与
 
 |模块名称|图示|展示&交互说明|
 |---|---|---|
-|<mark><strong><span style="color:#3370ff">Mac－MOD 详情弹窗 V1.3</span></strong></mark>|![图4.2-1：Mac MOD 详情已停用](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6ce96620ec497e00d34f865dc2bff38c45e98ba4/public/prd/dst-mods/01-mac-detail-disabled.png)<br>![图4.2-2：Mac MOD 详情已启用](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6ce96620ec497e00d34f865dc2bff38c45e98ba4/public/prd/dst-mods/02-mac-detail-enabled.png)|1. **控件形态**：<mark><strong><span style="color:#3370ff">详情不显示滑块，整颗胶囊按钮就是启停控件</span></strong></mark>；与“检查更新、卸载”等高等宽，整块可点击并支持键盘聚焦与触发。<br>2. **停用态**：<mark><strong><span style="color:#3370ff">文案“已停用”，使用灰色背景</span></strong></mark>。<br>3. **启用态**：<mark><strong><span style="color:#3370ff">文案“已启用”，使用绿色背景</span></strong></mark>。<br>4. **列表差异**：浏览页和已安装页继续使用紧凑型小滑块；只移除详情滑块。<br>5. **状态同步**：详情状态按钮与两类列表小滑块读取同一设备启用值。点击任一控件后，锁定同一 MOD 的全部可见启停控件；成功后同步更新，失败后全部恢复操作前值并提示“启用状态修改失败，请重试”。<br>6. **更新失败**：底栏显示状态按钮、保留旧版、重试更新和卸载；四项等分排列，旧版仍可启停。<br>7. **国内海外**：国内外功能和状态一致；海外包将“已启用”“已停用”纳入中文、英语、日语、俄语、巴西葡萄牙语资源，产品名使用 `GameHub`，不依赖云游戏。|
+|<mark><strong><span style="color:#3370ff">Mac－MOD 详情弹窗 V1.3</span></strong></mark>|![图4.2-1：Mac MOD 详情已停用](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@28bb7a389673dfbc44f17e5cb2f7885dd674eea7/public/prd/dst-mods/01-mac-detail-disabled.png)<br>![图4.2-2：Mac MOD 详情已启用](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@28bb7a389673dfbc44f17e5cb2f7885dd674eea7/public/prd/dst-mods/02-mac-detail-enabled.png)|1. **控件形态**：<mark><strong><span style="color:#3370ff">详情不显示滑块，整颗胶囊按钮就是启停控件</span></strong></mark>；与“检查更新、卸载”等高等宽，整块可点击并支持键盘聚焦与触发。<br>2. **停用态**：<mark><strong><span style="color:#3370ff">文案“已停用”，使用灰色背景</span></strong></mark>。<br>3. **启用态**：<mark><strong><span style="color:#3370ff">文案“已启用”，使用绿色背景</span></strong></mark>。<br>4. **列表差异**：浏览页和已安装页继续使用紧凑型小滑块；只移除详情滑块。<br>5. **状态同步**：详情状态按钮与两类列表小滑块读取同一设备启用值。点击任一控件后，锁定同一 MOD 的全部可见启停控件；成功后同步更新，失败后全部恢复操作前值并提示“启用状态修改失败，请重试”。<br>6. **更新失败**：底栏显示状态按钮、保留旧版、重试更新和卸载；四项等分排列，旧版仍可启停。<br>7. **国内海外**：国内外功能和状态一致；海外包将“已启用”“已停用”纳入中文、英语、日语、俄语、巴西葡萄牙语资源，产品名使用 `GameHub`，不依赖云游戏。|
+
+#### 4.2.0.1 Mac 列表工具栏 V1.4 增量
+
+> <mark><strong><span style="color:#3370ff">本节覆盖 4.2“Mac－MODS 浏览页”和“Mac－MODS 已安装页”中与页面标题、副标题、平铺排序和筛选位置冲突的描述；未覆盖的卡片、分页、状态和设备规则继续执行。</span></strong></mark>
+
+|页面名称|图示|展示&交互说明|
+|---|---|---|
+|<mark><strong><span style="color:#3370ff">Mac－MODS 浏览页 V1.4</span></strong></mark>|![图4.2-3：Mac MODS 浏览页工具栏](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@28bb7a389673dfbc44f17e5cb2f7885dd674eea7/public/prd/dst-mods/03-mac-browse-toolbar.png)|1. **页面结构**：<mark><strong><span style="color:#3370ff">删除页面标题“MODS”和副标题“非官方来源 · 仅此设备”</span></strong></mark>；保留返回详情、浏览/已安装 Tab 和两列卡片。设备级安装边界继续按本 PRD“核心边界”和卡片、详情规则执行。<br>2. **工具栏**：同一行从左到右固定为<mark><strong><span style="color:#3370ff">排序下拉 → 搜索 → 刷新</span></strong></mark>；DOM 与键盘焦点顺序一致，三个控件均有可见焦点。<br>3. **排序下拉**：选项为“热门趋势、下载量、最新发布”，默认“热门趋势”；不再平铺。下拉直接显示当前选项；非法或旧值回退“热门趋势”。排序算法和空值规则不变；确认选项后回到列表顶部。<br>4. **搜索与刷新**：搜索继续与当前排序同时生效。刷新保留当前搜索词和排序，仅重读目录、更新信息和本机状态；刷新中禁止重复触发，失败保留原列表、条件和本机状态。<br>5. **列表启停**：已安装卡片右下角的小滑块保留；点击只修改当前设备启用值，不打开详情。|
+|<mark><strong><span style="color:#3370ff">Mac－MODS 已安装页 V1.4</span></strong></mark>|![图4.2-4：Mac MODS 已安装页工具栏](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@28bb7a389673dfbc44f17e5cb2f7885dd674eea7/public/prd/dst-mods/04-mac-installed-toolbar.png)|1. **页面结构**：与浏览页一致，<mark><strong><span style="color:#3370ff">不显示页面标题和副标题</span></strong></mark>；保留浏览/已安装 Tab、已安装数量摘要和两列卡片。<br>2. **工具栏**：同一行从左到右固定为<mark><strong><span style="color:#3370ff">筛选下拉 → 搜索 → 刷新</span></strong></mark>；不新增排序。下拉与浏览页排序控件等宽，切换 Tab 时搜索和刷新位置不跳动。<br>3. **筛选下拉**：选项为“全部、可更新”，默认“全部”；下拉直接显示当前选项。非法、旧筛选值回退“全部”；确认选项后回到列表顶部。<br>4. **搜索与刷新**：搜索与筛选取交集。刷新保留搜索词和筛选，重新读取当前设备安装、启用和更新事实；刷新中禁止重复触发，失败按本机状态读取规则处理。<br>5. **启停与详情**：每张已安装卡片的小滑块保留；详情继续使用无滑块的整颗“已启用/已停用”状态按钮。|
 
 #### 4.2.1 列表公共状态
 
@@ -286,8 +298,8 @@ Demo 定位：Mac Demo 是视觉和基础交互参考，不是完整服务端与
 |mods_entry_click|MODS 入口点击|点击热门卡片、查看全部或 APP 更多菜单 MODS|entry_type、mod_id|
 |mods_list_view|MODS 列表曝光|浏览或已安装页展示完成|tab_type、result_count、filter_type；浏览页另带 sort_type|
 |mods_search|MODS 搜索|提交或清空搜索|keyword_length、tab_type、result_count|
-|mods_sort_click|浏览排序点击|用户切换排序|sort_type、tab_type|
-|mods_filter_click|已安装筛选点击|用户切换筛选|filter_type、result_count|
+|mods_sort_click|<mark><strong><span style="color:#3370ff">浏览排序确认</span></strong></mark>|<mark><strong><span style="color:#3370ff">用户在排序下拉确认选项</span></strong></mark>|sort_type、tab_type|
+|mods_filter_click|<mark><strong><span style="color:#3370ff">已安装筛选确认</span></strong></mark>|<mark><strong><span style="color:#3370ff">用户在筛选下拉确认选项</span></strong></mark>|filter_type、result_count|
 |mods_card_click|MOD 卡片点击|整卡进入详情|mod_id、tab_type、card_position|
 |mods_detail_view|MOD 详情曝光|详情加载完成|mod_id、installation_status、update_status|
 |mods_install_click|安装点击|卡片或详情点击安装|mod_id、entry_page|
@@ -367,6 +379,8 @@ Demo 定位：Mac Demo 是视觉和基础交互参考，不是完整服务端与
 
 <mark><strong><span style="color:#3370ff">V1.3 覆盖声明：</span></strong></mark>自 V1.3 起，`AC-MAC-DETAIL-02`、`AC-MAC-ENABLE-01`、`AC-MAC-ENABLE-02` 中“详情开关、切换开关、三处开关”的历史措辞统一解释为：浏览页和已安装页使用小滑块，详情使用整颗状态按钮且不显示滑块。发生冲突时，以 `AC-MAC-DETAIL-05/06/07`、`AC-MAC-ENABLE-03/04` 为准；列表小滑块规则不变。
 
+<mark><strong><span style="color:#3370ff">V1.4 覆盖声明：</span></strong></mark>自 V1.4 起，`AC-MAC-BROWSE-01/02` 中“标题、副标题、平铺排序、点击排序项”和 `AC-MAC-INST-01/04` 中筛选位置的历史措辞不再执行。浏览页以“排序下拉、搜索、刷新”为同一行顺序；已安装页以“筛选下拉、搜索、刷新”为同一行顺序；冲突时以 `AC-MAC-V14-*` 用例为准。
+
 |编号|页面/场景|前置条件|操作|预期结果|
 |---|---|---|---|---|
 |AC-MAC-ENTRY-01|Mac 游戏详情入口|目录至少 3 个 MOD|打开 DST 游戏详情|MODS 与创意工坊分区展示；显示“热门组件”、总量、查看全部和 3 个热门 MOD；不显示“非官方”标签|
@@ -396,6 +410,12 @@ Demo 定位：Mac Demo 是视觉和基础交互参考，不是完整服务端与
 |<mark><strong><span style="color:#3370ff">AC-MAC-DETAIL-06</span></strong></mark>|详情状态按钮键盘操作|已安装 MOD 的详情状态按钮已聚焦|分别按 `Enter`、`Space`，每次操作后等待请求完成|两种按键均只触发一次启停请求；状态与文案各切换一次；不滚动页面、不打开详情外操作|
 |<mark><strong><span style="color:#3370ff">AC-MAC-ENABLE-04</span></strong></mark>|启停请求锁可见状态|同一 MOD 在浏览页、已安装页和详情均可见，启停写入延迟至少 320ms|点击任一启停控件后立即连续点击，并在请求完成前切换页面再次点击|三处所有可见启停控件立即进入不可重复操作状态并标记处理中；只产生一个请求；完成后统一解除锁定并显示同一结果；失败时统一回滚|
 |<mark><strong><span style="color:#3370ff">AC-MAC-DETAIL-07</span></strong></mark>|更新失败详情操作|旧版已安装、更新失败且旧版仍可用|打开详情，依次检查并操作底栏|按“状态按钮、保留旧版、重试更新、卸载”顺序显示四项且等分排列；状态按钮可启停旧版；“保留旧版”只说明当前结果；“重试更新”复用原 MOD 更新入口；“卸载”进入当前设备卸载确认|
+|<mark><strong><span style="color:#3370ff">AC-MAC-V14-BROWSE-01</span></strong></mark>|Mac V1.4 浏览工具栏|进入浏览页|检查页面和键盘焦点顺序|不显示页面标题、副标题；保留返回详情和浏览/已安装 Tab；同一行依次为排序下拉、搜索、刷新；下拉含热门趋势、下载量、最新发布且默认热门趋势；三个控件均有可见焦点|
+|<mark><strong><span style="color:#3370ff">AC-MAC-V14-BROWSE-02</span></strong></mark>|Mac V1.4 浏览排序与搜索|目录含排序同值、缺失值、多屏数据和多个可命中搜索项|滚动列表后选择“下载量”，输入并清空关键词；再确认“最新发布、热门趋势”，最后注入非法值|不显示平铺排序；搜索结果始终按当前所选排序，输入和清空关键词不重置排序；每次确认排序后按正文稳定规则排序并回到列表顶部；非法值回退热门趋势|
+|<mark><strong><span style="color:#3370ff">AC-MAC-V14-INSTALLED-01</span></strong></mark>|Mac V1.4 已安装工具栏|当前设备存在全部和可更新项|进入已安装页并切换筛选|不显示页面标题、副标题；保留 Tab 和已安装数量摘要；同一行依次为筛选下拉、搜索、刷新；下拉仅含全部、可更新且默认全部；不显示排序|
+|<mark><strong><span style="color:#3370ff">AC-MAC-V14-INSTALLED-02</span></strong></mark>|Mac V1.4 已安装筛选与快捷启停|已安装项含不同更新和启用状态|滚动后确认可更新，注入非法筛选值，再点击卡片小滑块|确认筛选后回到列表顶部；非法值回退全部；搜索与筛选取交集；小滑块可启停当前设备且不打开详情|
+|<mark><strong><span style="color:#3370ff">AC-MAC-V14-REFRESH-01</span></strong></mark>|Mac V1.4 条件保留|两页均已设置搜索和下拉条件|分别点击刷新并制造一次失败|刷新保留当前 Tab、搜索和排序/筛选；刷新中不可重复触发；失败保留原列表、条件和本机状态|
+|<mark><strong><span style="color:#3370ff">AC-MAC-V14-SCOPE-01</span></strong></mark>|Mac V1.4 范围回归|Mac、APP 和创意工坊均可访问|完成本轮修改后分别检查|仅 Mac 浏览页和已安装页调整标题与工具栏；两类 Mac 列表小滑块、详情整颗状态按钮、APP Demo、创意工坊和订阅语义不变；国内海外功能一致且海外不依赖云游戏|
 |AC-TASK-01|防重复|安装任务进行中|连续点击安装、关闭重开详情|只有一个任务；卡片和详情绑定同一任务进度|
 |AC-TASK-02|安装成功|MOD 未安装|完成安装|卡片变为已安装，当前设备默认启用，已安装数量刷新|
 |AC-TASK-03|更新失败|旧版已安装且有更新|让更新失败|旧版和启用值保留；仍显示可更新；详情提供重试更新|
@@ -466,13 +486,13 @@ Demo 定位：Mac Demo 是视觉和基础交互参考，不是完整服务端与
 
 V1.0–V1.2 历史记录：本 PRD 无图示，不涉及图片提交 SHA 和远程图片验证。
 
-<mark><strong><span style="color:#3370ff">V1.3 起，上句“无图示”不再适用。</span></strong></mark>
+<mark><strong><span style="color:#3370ff">V1.3 起，上句“无图示”不再适用；V1.4 使用最新一批固定图示。</span></strong></mark>
 
-- 图示数量：2。
-- 固定提交 SHA：`6ce96620ec497e00d34f865dc2bff38c45e98ba4`。
-- 图示位置：4.2.0“Mac 详情启停控件 V1.3 增量”的“图示”列，同一单元格使用 `<br>` 分隔。
+- 图示数量：4。
+- 固定提交 SHA：`28bb7a389673dfbc44f17e5cb2f7885dd674eea7`。
+- 图示位置：4.2.0“Mac 详情启停控件 V1.3 增量”和 4.2.0.1“Mac 列表工具栏 V1.4 增量”的“图示”列；同一单元格多图使用 `<br>` 分隔。
 - 地址格式：固定提交的 jsDelivr HTTPS 原图地址，不使用本地路径、分支名、GitHub blob 页面或临时签名。
-- 远程校验：2/2 返回 HTTP 200，`Content-Type` 均为 `image/png`；远程字节数分别为 665661、665545。
+- 远程校验：4/4 返回 HTTP 200，`Content-Type` 均为 `image/png`；远程字节数分别为 665656、665516、1018928、968991。
 
 ### 10.4 三角色评审记录
 
@@ -486,7 +506,7 @@ V1.0–V1.2 历史记录：本 PRD 无图示，不涉及图片提交 SHA 和远�
 
 - 明确 MODS 与创意工坊隔离，并区分安装与订阅语义。
 - 明确游戏详情展示 3 个热门 MOD、总量和查看全部。
-- 明确 Mac 浏览卡片整卡进入详情、安装在右下角、排序平铺。
+- 明确 Mac 浏览卡片整卡进入详情、安装在右下角；历史“排序平铺”口径由 <mark><strong><span style="color:#3370ff">V1.4 排序下拉</span></strong></mark>覆盖。
 - 明确 Mac 已安装页不提供排序，筛选只保留“全部、可更新”。
 - 明确 APP 维持现有排序和筛选，并支持横竖屏切换。
 - 明确安装跟随设备，其他设备需要自行安装。
@@ -527,5 +547,29 @@ V1.0–V1.2 历史记录：本 PRD 无图示，不涉及图片提交 SHA 和远�
 - 补充详情状态按钮 `Enter`、`Space` 单次触发、请求中锁定和统一解锁验收。
 - 补充更新失败时“状态按钮、保留旧版、重试更新、卸载”的文案、顺序、可用性和旧版启停结果。
 - 补充海外包中文、英语、日语、俄语、巴西葡萄牙语两种状态文案验收。
+
+待用户确认的建议：无。
+
+### 10.7 V1.4 自检补充
+
+- <mark><strong><span style="color:#3370ff">已覆盖 Mac 浏览页和已安装页的标题、副标题删除、单行工具栏顺序、下拉选项、默认值、非法值回退、切换回顶和键盘焦点。</span></strong></mark>
+- 已覆盖刷新保留搜索与排序/筛选、刷新中防重复和失败保留原列表与本机状态。
+- 已覆盖浏览和已安装列表快捷小滑块保留、详情整颗状态按钮不变。
+- 本次仅更新 Mac Demo、主 PRD 和技术归档；APP Demo、创意工坊、上传审核、海外商业化和国内海外业务边界不变。
+- 图片 Markdown 数、固定 HTTPS 地址数和远程校验通过数均为 4。
+
+### 10.8 V1.4 三角色增量评审
+
+|角色|结论|发现的问题与处理|
+|---|---|---|
+|前端开发|通过|已复用现有排序和筛选状态；下拉使用变更事件；DOM 顺序与视觉顺序一致；非法值回退和切换回顶有自动化验证|
+|测试工程师|通过|已补两页工具栏顺序、下拉选项、已安装页实际启停、键盘焦点、列表开关与详情按钮隔离回归|
+|运营/业务方|通过|调整仅影响 Mac 两个列表页；MODS 与创意工坊继续隔离；设备级安装、国内海外和 APP 规则未扩大|
+
+本轮已自动补齐的硬伤：
+
+- 补充下拉和搜索的键盘可见焦点。
+- 补充非法排序/筛选值回退和切换后回到列表顶部的自动化。
+- 补充已安装页快捷开关实际点击且不打开详情的自动化。
 
 待用户确认的建议：无。
