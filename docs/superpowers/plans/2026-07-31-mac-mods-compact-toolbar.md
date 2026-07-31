@@ -435,16 +435,13 @@ Expected: 本地 HEAD 与远端 `main` SHA 相同。
 
 - [ ] **Step 3: 验证在线预览**
 
-使用最终提交 SHA 构造：
-
-```text
-https://htmlpreview.github.io/?https://github.com/z36358631-ship-it/-/blob/<最终提交SHA>/demos/Mod%E4%B8%8E%E5%8F%91%E8%A1%8C%E4%BA%BA/Mod%E5%8A%9F%E8%83%BDMac%E7%AB%AFdemo.html
-```
-
 Run:
 
 ```powershell
-curl.exe -L -sS -o NUL -w "%{http_code} %{content_type}" "<在线预览地址>"
+$sha = git rev-parse HEAD
+$preview = "https://htmlpreview.github.io/?https://github.com/z36358631-ship-it/-/blob/$sha/demos/Mod%E4%B8%8E%E5%8F%91%E8%A1%8C%E4%BA%BA/Mod%E5%8A%9F%E8%83%BDMac%E7%AB%AFdemo.html"
+Write-Output $preview
+curl.exe -L -sS -o NUL -w "%{http_code} %{content_type}" $preview
 ```
 
 Expected: `200 text/html; charset=utf-8`。
