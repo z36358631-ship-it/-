@@ -1617,6 +1617,7 @@
       return {
         mod_id: input.mod_id,
         name: input.name,
+        author: input.author,
         summary: input.summary,
         latest_version: input.latest_version,
         file_size: input.file_size,
@@ -1651,6 +1652,7 @@
           'dst-large-b': createMod({
             mod_id: 'dst-large-b',
             name: 'DST Large Mod B 1782367551',
+            author: 'Archive Workshop',
             summary: '1.1 GiB 分卷内容包，包含大型非官方扩展资源。',
             latest_version: '1.2.0',
             file_size: '1.1 GiB',
@@ -1664,6 +1666,7 @@
           'dst-large-a': createMod({
             mod_id: 'dst-large-a',
             name: 'DST Large Mod A 1782367169',
+            author: 'Archive Workshop',
             summary: '1.1 GiB 分卷内容包，包含大型非官方扩展资源。',
             latest_version: '1.2.0',
             file_size: '1.1 GiB',
@@ -1677,6 +1680,7 @@
           'dst-fast-travel': createMod({
             mod_id: 'dst-fast-travel',
             name: '小地图 HUD',
+            author: 'Ryuu',
             summary: '在游戏 HUD 中添加功能完整的小地图，支持缩放、拖动、收起，并可独立保存小地图与大地图的缩放设置。',
             latest_version: '1.4.0',
             file_size: '18.6 MB',
@@ -1696,6 +1700,7 @@
           'dst-combined-status': createMod({
             mod_id: 'dst-combined-status',
             name: '组合状态',
+            author: 'Jascha',
             summary: '增强 HUD，显示玩家状态和世界信息，包括温度、季节、月相和世界天数。',
             latest_version: '2.3.1',
             file_size: '9.8 MB',
@@ -1716,6 +1721,7 @@
           'dst-smart-stack': createMod({
             mod_id: 'dst-smart-stack',
             name: '智能堆叠',
+            author: 'Moonlit Lab',
             summary: '自动整理同类物品与容器空间，让重复材料更快归位。',
             latest_version: '3.1.0',
             file_size: '7.4 MB',
@@ -1736,6 +1742,7 @@
           'dst-season-clock': createMod({
             mod_id: 'dst-season-clock',
             name: '季节时钟',
+            author: 'Clockwork Team',
             summary: '在 HUD 中显示季节进度、昼夜长度与下一阶段倒计时。',
             latest_version: '1.9.0',
             file_size: '5.2 MB',
@@ -1757,6 +1764,7 @@
           'dst-fast-gather': createMod({
             mod_id: 'dst-fast-gather',
             name: '快速采集助手',
+            author: 'Tinker',
             summary: '优化连续采集反馈，减少重复操作并保留原有掉落规则。',
             latest_version: '1.6.2',
             file_size: '4.6 MB',
@@ -1770,6 +1778,7 @@
           'dst-night-light': createMod({
             mod_id: 'dst-night-light',
             name: '夜间照明优化',
+            author: 'Aurora',
             summary: '改善夜晚环境亮度与光源层次，不改变角色视野判定。',
             latest_version: '2.0.4',
             file_size: '6.1 MB',
@@ -1852,7 +1861,7 @@
         : [...allMods].sort(browseComparators[current.ui.browseSort] || browseComparators.popular);
       const visibleMods = search
         ? sourceMods.filter(mod =>
-            `${mod.name} ${mod.summary} ${mod.compatibility_label}`.toLowerCase().includes(search)
+            `${mod.name} ${mod.author}`.toLowerCase().includes(search)
           )
         : sourceMods;
       const currentMod = current.ui.currentModId
@@ -2310,6 +2319,7 @@
 
     function renderDescription(mod) {
       return `
+        <p>作者：${escapeHtml(mod.author)}</p>
         <p>${mod.mod_id === 'dst-fast-travel' ? '在 HUD 中添加小地图。' : escapeHtml(mod.summary)}</p>
         <h4>功能：</h4>
         <p>- 可使用地图缩放按键缩放，并通过点击拖动平移视角。</p>
