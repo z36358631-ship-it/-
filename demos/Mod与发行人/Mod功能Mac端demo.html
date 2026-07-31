@@ -50,7 +50,8 @@
     }
 
     button,
-    input {
+    input,
+    select {
       color: inherit;
       font: inherit;
     }
@@ -60,7 +61,8 @@
     }
 
     button:focus-visible,
-    input:focus-visible {
+    input:focus-visible,
+    select:focus-visible {
       outline: 3px solid rgba(255, 255, 255, 0.86);
       outline-offset: 4px;
     }
@@ -505,24 +507,63 @@
       align-items: flex-start;
     }
 
-    .mods-list-title h1 {
-      font-size: 36px;
-      font-weight: 580;
-      line-height: 48px;
-    }
-
-    .mods-list-title p {
-      margin-top: 9px;
-      color: #95939a;
-      font-size: 21px;
-    }
-
     .list-tools {
-      margin-left: auto;
+      width: 100%;
       display: flex;
       align-items: center;
+      justify-content: flex-end;
       gap: 14px;
       padding-top: 17px;
+    }
+
+    .compact-select {
+      position: relative;
+      width: 242px;
+      height: 54px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.09);
+      border-radius: 28px;
+      background: rgba(35, 34, 39, 0.74);
+      color: #8b8990;
+      cursor: pointer;
+    }
+
+    .compact-select > span {
+      flex: 0 0 auto;
+      font-size: 18px;
+    }
+
+    .compact-select select {
+      min-width: 0;
+      flex: 1;
+      padding-right: 28px;
+      border: 0;
+      outline: 0;
+      appearance: none;
+      background: transparent;
+      color: #dbd9dd;
+      font-size: 19px;
+      cursor: pointer;
+    }
+
+    .compact-select option {
+      background: #242328;
+      color: #dbd9dd;
+    }
+
+    .compact-select::after {
+      position: absolute;
+      right: 17px;
+      top: 50%;
+      color: #8b8990;
+      font-size: 18px;
+      line-height: 1;
+      pointer-events: none;
+      content: "⌄";
+      transform: translateY(-58%);
     }
 
     .search-field {
@@ -1330,76 +1371,6 @@
       line-height: 28px;
     }
 
-    .catalog-controls {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .browse-sort-options {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .browse-sort-options > span {
-      margin-right: 5px;
-      color: #817f86;
-      font-size: 18px;
-    }
-
-    .browse-sort-options button {
-      height: 42px;
-      padding: 0 16px;
-      border: 2px solid rgba(255, 255, 255, 0.08);
-      border-radius: 22px;
-      background: rgba(35, 34, 39, 0.76);
-      color: #85838a;
-      font-size: 17px;
-    }
-
-    .browse-sort-options button:hover {
-      color: #c9c7cb;
-    }
-
-    .browse-sort-options button.is-active {
-      border-color: rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.12);
-      color: #f0eff1;
-    }
-
-    .installed-filters {
-      height: 48px;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      border: 2px solid rgba(255, 255, 255, 0.08);
-      border-radius: 25px;
-      background: rgba(35, 34, 39, 0.76);
-    }
-
-    .installed-filters button {
-      height: 36px;
-      min-width: 78px;
-      padding: 0 13px;
-      border: 0;
-      border-radius: 19px;
-      background: transparent;
-      color: #85838a;
-      font-size: 17px;
-    }
-
-    .installed-filters button:hover {
-      color: #c9c7cb;
-    }
-
-    .installed-filters button.is-active {
-      background: rgba(255, 255, 255, 0.12);
-      color: #f0eff1;
-    }
-
     .mods-grid {
       top: 401px;
       height: 1079px;
@@ -2063,6 +2034,7 @@
           next.ui.browseSort = ['trend', 'downloads', 'published'].includes(action.value)
             ? action.value
             : 'trend';
+          next.ui.scrollTopByTab.browse = 0;
           return next;
         case 'SET_INSTALLED_SORT':
           next.ui.installedSort = action.value === 'name' ? 'name' : 'recent';
@@ -2412,40 +2384,38 @@
             </div>
           </div>`;
       const browseControls = `
-        <div class="browse-sort-options" role="group" aria-label="浏览排序">
+        <label class="compact-select" title="按近 24 小时下载增幅排序">
           <span>排序</span>
-          ${[
-            ['trend', '热门趋势'],
-            ['downloads', '下载量'],
-            ['published', '最新发布']
-          ].map(([value, label]) => `
-            <button type="button"
-              class="${viewModel.state.ui.browseSort === value ? 'is-active' : ''}"
-              data-action="set-browse-sort"
-              data-value="${value}"
-              ${value === 'trend' ? 'title="按近 24 小时下载增幅排序"' : ''}>${label}</button>
-          `).join('')}
-        </div>
+          <select data-input="browse-sort" aria-label="浏览排序">
+            ${[
+              ['trend', '热门趋势'],
+              ['downloads', '下载量'],
+              ['published', '最新发布']
+            ].map(([value, label]) => `
+              <option value="${value}" ${viewModel.state.ui.browseSort === value ? 'selected' : ''}>${label}</option>
+            `).join('')}
+          </select>
+        </label>
       `;
       const installedControls = `
-        <div class="installed-filters" aria-label="已安装筛选">
-          ${[
-            ['all', '全部'],
-            ['update', '可更新']
-          ].map(([value, label]) => `
-            <button type="button"
-              class="${viewModel.state.ui.installedFilter === value ? 'is-active' : ''}"
-              data-action="set-installed-filter"
-              data-value="${value}">${label}</button>
-          `).join('')}
-        </div>
+        <label class="compact-select">
+          <span>筛选</span>
+          <select data-input="installed-filter" aria-label="已安装筛选">
+            ${[
+              ['all', '全部'],
+              ['update', '可更新']
+            ].map(([value, label]) => `
+              <option value="${value}" ${viewModel.state.ui.installedFilter === value ? 'selected' : ''}>${label}</option>
+            `).join('')}
+          </select>
+        </label>
       `;
       return `
         <section class="mods-list" data-screen="mods-list">
           <button class="back-detail" type="button" data-action="back-game">${icon('back', 'small')}返回详情</button>
           <header class="mods-list-header">
-            <div class="mods-list-title"><h1>MODS</h1><p>非官方来源 · 仅此设备</p></div>
             <div class="list-tools">
+              ${viewModel.activeTab === 'browse' ? browseControls : installedControls}
               <label class="search-field">${icon('search', 'small')}<input data-input="search" aria-label="搜索 MOD" placeholder="搜索 MOD" value="${escapeHtml(viewModel.searchText)}"></label>
               <button class="refresh-button ${viewModel.state.ui.refreshing ? 'is-refreshing' : ''}" type="button" data-action="refresh">${icon('refresh', 'small')}${viewModel.state.ui.refreshing ? '刷新中' : '刷新'}</button>
             </div>
@@ -2468,7 +2438,6 @@
             ${viewModel.activeTab === 'installed'
               ? `<p data-catalog-summary>${viewModel.installedCount} 个已安装 · 仅此设备</p>`
               : ''}
-            <div class="catalog-controls">${viewModel.activeTab === 'browse' ? browseControls : installedControls}</div>
           </div>
           <div class="mods-grid ${viewModel.activeTab === 'installed' ? 'is-installed-grid' : ''}" data-mods-scroll>${cards}</div>
         </section>
@@ -2658,12 +2627,6 @@
         if (scroll) dispatch({ type: 'SAVE_SCROLL_TOP', tab: state.ui.activeTab, value: scroll.scrollTop });
         dispatch({ type: 'SET_ACTIVE_TAB', value: control.dataset.value });
       }
-      if (action === 'set-installed-filter') {
-        dispatch({ type: 'SET_INSTALLED_FILTER', value: control.dataset.value });
-      }
-      if (action === 'set-browse-sort') {
-        dispatch({ type: 'SET_BROWSE_SORT', value: control.dataset.value });
-      }
       if (action === 'refresh') {
         dispatch({ type: 'REFRESH_REQUESTED' });
         setTimeout(() => {
@@ -2712,6 +2675,15 @@
     root.addEventListener('input', event => {
       if (event.target.matches('[data-input="search"]')) {
         dispatch({ type: 'SET_SEARCH', value: event.target.value });
+      }
+    });
+
+    root.addEventListener('change', event => {
+      if (event.target.matches('[data-input="browse-sort"]')) {
+        dispatch({ type: 'SET_BROWSE_SORT', value: event.target.value });
+      }
+      if (event.target.matches('[data-input="installed-filter"]')) {
+        dispatch({ type: 'SET_INSTALLED_FILTER', value: event.target.value });
       }
     });
 

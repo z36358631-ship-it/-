@@ -13,6 +13,11 @@ const html = fs.readFileSync(demoPath, 'utf8');
 assert.match(html, /\['trend', '热门趋势'\][\s\S]*\['downloads', '下载量'\][\s\S]*\['published', '最新发布'\]/u);
 assert.match(html, /browseSort: 'trend'/u);
 assert.match(html, /按近 24 小时下载增幅排序/u);
+assert.doesNotMatch(html, /<div class="mods-list-title">/u);
+assert.match(html, /data-input="browse-sort"/u);
+assert.match(html, /data-input="installed-filter"/u);
+assert.doesNotMatch(html, /data-action="set-browse-sort"/u);
+assert.doesNotMatch(html, /data-action="set-installed-filter"/u);
 assert.match(html, /<span class="mods-subtitle">热门组件<\/span>/u);
 assert.doesNotMatch(html, /mods-source-badge/u);
 assert.doesNotMatch(html, /共 \$\{viewModel\.catalogTotal\} 个，当前加载/u);
@@ -69,12 +74,42 @@ try {
   await capture('mac-mods-entry.png');
 
   await page.locator('[data-action="open-mods"]').click();
-  const sortLabels = await page.locator('.browse-sort-options button').allTextContents();
-  assert.deepEqual(sortLabels.map(text => text.trim()), ['热门趋势', '下载量', '最新发布']);
-  assert.equal(
-    await page.locator('.browse-sort-options button.is-active').textContent(),
-    '热门趋势'
+  assert.equal(await page.locator('.mods-list-title').count(), 0);
+  const browseToolOrder = await page.locator('.list-tools > *').evaluateAll(elements =>
+    elements.map(element =>
+      element.querySelector('[data-input="browse-sort"]')
+        ? 'sort'
+        : element.matches('.search-field')
+          ? 'search'
+          : element.matches('.refresh-button')
+            ? 'refresh'
+            : 'unknown'
+    )
   );
+  assert.deepEqual(browseToolOrder, ['sort', 'search', 'refresh']);
+  const browseToolCenters = await page.locator('.list-tools > *').evaluateAll(elements =>
+    elements.map(element => {
+      const box = element.getBoundingClientRect();
+      return box.top + box.height / 2;
+    })
+  );
+  assert(
+    Math.max(...browseToolCenters) - Math.min(...browseToolCenters) <= 1,
+    `browse tools are not on one row: ${JSON.stringify(browseToolCenters)}`
+  );
+  const browseSort = page.locator('[data-input="browse-sort"]');
+  assert.deepEqual(
+    await browseSort.locator('option').evaluateAll(options =>
+      options.map(option => ({ value: option.value, text: option.textContent.trim() }))
+    ),
+    [
+      { value: 'trend', text: '热门趋势' },
+      { value: 'downloads', text: '下载量' },
+      { value: 'published', text: '最新发布' }
+    ]
+  );
+  assert.equal(await browseSort.inputValue(), 'trend');
+  assert.equal((await page.locator('.compact-select > span').textContent()).trim(), '排序');
   assert.equal(await page.locator('[data-catalog-summary]').count(), 0);
 
   const trendOrder = await page.evaluate(() =>
@@ -91,19 +126,22 @@ try {
     'dst-large-a'
   ]);
 
-  await page.locator('[data-action="set-browse-sort"][data-value="downloads"]').click();
+  await browseSort.selectOption('downloads');
   assert.equal(
     await page.evaluate(() => window.__DST_MODS_DEMO__.derive().visibleMods[0].mod_id),
     'dst-fast-travel'
   );
-  await page.locator('[data-action="set-browse-sort"][data-value="published"]').click();
+  await browseSort.selectOption('published');
   assert.equal(
     await page.evaluate(() => window.__DST_MODS_DEMO__.derive().visibleMods[0].mod_id),
     'dst-smart-stack'
   );
-  await page.locator('[data-action="set-browse-sort"][data-value="trend"]').click();
+  await browseSort.selectOption('trend');
   assert.equal(await page.locator('.enabled-switch').count(), 4);
   await capture('mac-mods-browse.png');
+  await page.locator('[data-demo-root]').screenshot({
+    path: path.join(prdImageDir, '03-mac-browse-toolbar.png')
+  });
 
   const smartBrowseSwitch = page.locator(
     '[data-mod-card][data-mod-id="dst-smart-stack"] [role="switch"]'
@@ -122,12 +160,50 @@ try {
   );
 
   await page.locator('[data-action="set-tab"][data-value="installed"]').click();
+  const installedToolOrder = await page.locator('.list-tools > *').evaluateAll(elements =>
+    elements.map(element =>
+      element.querySelector('[data-input="installed-filter"]')
+        ? 'filter'
+        : element.matches('.search-field')
+          ? 'search'
+          : element.matches('.refresh-button')
+            ? 'refresh'
+            : 'unknown'
+    )
+  );
+  assert.deepEqual(installedToolOrder, ['filter', 'search', 'refresh']);
+  const installedFilter = page.locator('[data-input="installed-filter"]');
+  assert.deepEqual(
+    await installedFilter.locator('option').evaluateAll(options =>
+      options.map(option => ({ value: option.value, text: option.textContent.trim() }))
+    ),
+    [
+      { value: 'all', text: '全部' },
+      { value: 'update', text: '可更新' }
+    ]
+  );
+  assert.equal(await installedFilter.inputValue(), 'all');
+  assert.equal((await page.locator('.compact-select > span').textContent()).trim(), '筛选');
+  await installedFilter.selectOption('update');
+  assert(
+    await page.evaluate(() => {
+      const visibleMods = window.__DST_MODS_DEMO__.derive().visibleMods;
+      return visibleMods.length > 0
+        && visibleMods.every(mod => mod.update_fact === 'update_available');
+    }),
+    'installed update filter returned a non-update item'
+  );
+  await installedFilter.selectOption('all');
   const smartInstalledSwitch = page.locator(
     '[data-mod-card][data-mod-id="dst-smart-stack"] [role="switch"]'
   );
   assert.equal(await smartInstalledSwitch.getAttribute('aria-checked'), 'false');
   assert.equal(await page.locator('[data-catalog-summary]').textContent(), '4 个已安装 · 仅此设备');
+  await page.waitForTimeout(1900);
   await capture('mac-mods-installed.png');
+  await page.locator('[data-demo-root]').screenshot({
+    path: path.join(prdImageDir, '04-mac-installed-toolbar.png')
+  });
 
   await page.locator(
     '[data-mod-card][data-mod-id="dst-smart-stack"] [data-card-detail]'
@@ -371,10 +447,13 @@ try {
   });
   assert(fs.statSync(path.join(prdImageDir, '01-mac-detail-disabled.png')).size > 10000);
   assert(fs.statSync(path.join(prdImageDir, '02-mac-detail-enabled.png')).size > 10000);
+  assert(fs.statSync(path.join(prdImageDir, '03-mac-browse-toolbar.png')).size > 10000);
+  assert(fs.statSync(path.join(prdImageDir, '04-mac-installed-toolbar.png')).size > 10000);
 
   assert.deepEqual(pageErrors, []);
   assert.deepEqual(consoleErrors, []);
-  console.log('PASS: sort options = trend, downloads, published; default = trend');
+  console.log('PASS: browse toolbar = sort select, search, refresh; default sort = trend');
+  console.log('PASS: installed toolbar = filter select, search, refresh; default filter = all');
   console.log('PASS: enabled controls support Enter/Space, request locking and rollback');
   console.log('PASS: failed update keeps the old version and exposes four ordered actions');
   console.log(`PASS: captured ${path.relative(root, evidenceDir)}`);
