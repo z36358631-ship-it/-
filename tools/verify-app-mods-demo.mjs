@@ -123,6 +123,25 @@ try {
     ['热门', '下载最多', '最新发布']
   );
   assert.equal(await page.locator('[data-sort="hot"]').getAttribute('aria-selected'), 'true');
+  const portraitSearchLayout = await page.evaluate(() => {
+    const tabs = document.querySelector('.primary-tabs').getBoundingClientRect();
+    const section = document.querySelector('.search-section').getBoundingClientRect();
+    const sort = document.querySelector('.sort-section').getBoundingClientRect();
+    const list = document.querySelector('.mods-scroll').getBoundingClientRect();
+    const device = document.querySelector('[data-demo-root]').getBoundingClientRect();
+    return {
+      followsTabs: Math.abs(section.top - tabs.bottom) <= 1,
+      fillsDevice: Math.abs(section.left - device.left) <= 1 && Math.abs(section.right - device.right) <= 1,
+      sortFollowsSearch: Math.abs(sort.top - section.bottom) <= 1,
+      listFollowsSort: Math.abs(list.top - sort.bottom) <= 1
+    };
+  });
+  assert.deepEqual(portraitSearchLayout, {
+    followsTabs: true,
+    fillsDevice: true,
+    sortFollowsSearch: true,
+    listFollowsSort: true
+  });
   await capture('02-browse-portrait.png');
 
   const search = page.locator('[data-search]');
@@ -131,7 +150,7 @@ try {
     await page.locator('[data-mod-card]').evaluateAll(cards => cards.map(card => card.getAttribute('data-mod-id'))),
     ['minimap']
   );
-  await page.locator('[data-search]').fill('');
+  await page.evaluate(() => window.__APP_MODS_DEMO__.dispatch({ type: 'SET_SEARCH', value: '' }));
   assert.equal(await page.evaluate(() => window.__APP_MODS_DEMO__.getState().search), '');
   await page.locator('[data-sort="downloads"]').click();
   assert.deepEqual(
@@ -151,6 +170,19 @@ try {
     await page.locator('[data-installed-filter]').evaluateAll(items => items.map(item => item.textContent.trim())),
     ['全部', '可更新']
   );
+  const portraitInstalledLayout = await page.evaluate(() => {
+    const tabs = document.querySelector('.primary-tabs').getBoundingClientRect();
+    const filters = document.querySelector('.sort-section').getBoundingClientRect();
+    const list = document.querySelector('.mods-scroll').getBoundingClientRect();
+    return {
+      filtersFollowTabs: Math.abs(filters.top - tabs.bottom) <= 1,
+      listFollowsFilters: Math.abs(list.top - filters.bottom) <= 1
+    };
+  });
+  assert.deepEqual(portraitInstalledLayout, {
+    filtersFollowTabs: true,
+    listFollowsFilters: true
+  });
   await capture('03-installed-portrait.png');
 
   const firstSwitch = page.locator('[data-enable-switch][data-mod-id="minimap"]');
@@ -213,11 +245,43 @@ try {
     '详情关闭后未恢复到触发卡片'
   );
   await page.evaluate(() => document.activeElement?.blur());
+  const landscapeInstalledLayout = await page.evaluate(() => {
+    const header = document.querySelector('.mods-header').getBoundingClientRect();
+    const filters = document.querySelector('.sort-section').getBoundingClientRect();
+    const list = document.querySelector('.mods-scroll').getBoundingClientRect();
+    return {
+      filtersInsideHeader: filters.top >= header.top - 1 && filters.bottom <= header.bottom + 1,
+      listFollowsHeader: Math.abs(list.top - header.bottom) <= 1
+    };
+  });
+  assert.deepEqual(landscapeInstalledLayout, {
+    filtersInsideHeader: true,
+    listFollowsHeader: true
+  });
   await capture('07-installed-landscape.png');
 
   await page.locator('[data-tab="browse"]').click();
   await page.locator('[data-sort="hot"]').click();
   assert.equal(await page.locator('[data-search]').count(), 1);
+  const landscapeSearchLayout = await page.evaluate(() => {
+    const tabs = document.querySelector('.primary-tabs').getBoundingClientRect();
+    const section = document.querySelector('.search-section').getBoundingClientRect();
+    const sort = document.querySelector('.sort-section').getBoundingClientRect();
+    const list = document.querySelector('.mods-scroll').getBoundingClientRect();
+    const device = document.querySelector('[data-demo-root]').getBoundingClientRect();
+    return {
+      followsTabs: Math.abs(section.top - tabs.bottom) <= 1,
+      fillsDevice: Math.abs(section.left - device.left) <= 1 && Math.abs(section.right - device.right) <= 1,
+      sortFollowsSearch: Math.abs(sort.top - section.bottom) <= 1,
+      listFollowsSort: Math.abs(list.top - sort.bottom) <= 1
+    };
+  });
+  assert.deepEqual(landscapeSearchLayout, {
+    followsTabs: true,
+    fillsDevice: true,
+    sortFollowsSearch: true,
+    listFollowsSort: true
+  });
   assert.equal(await page.locator('[data-mod-card]').count(), 6);
   const metadataLayout = await page.locator('[data-mod-card] .card-meta').evaluateAll(elements =>
     elements.map(element => {
