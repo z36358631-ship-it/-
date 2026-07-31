@@ -133,6 +133,44 @@ assert.equal(
   'orientation changes must preserve the current source draft'
 );
 
+await page.locator('[data-demo-scenario="existing_full"]').click();
+assert.equal(await page.locator('#existingGameStep.active').count(), 1);
+assert.equal(await page.locator('[data-existing-game]').count(), 9);
+assert.equal(await page.locator('[data-action="submit-existing-games"]').isDisabled(), true);
+for (let index = 0; index < 3; index += 1) {
+  await page.locator('[data-existing-game]').nth(index).click();
+}
+assert.equal(await page.locator('[data-action="submit-existing-games"]').isEnabled(), true);
+await page.locator('[data-action="submit-existing-games"]').click();
+assert.equal(await page.locator('#existingSourceStep.active').count(), 1);
+assert.equal(await page.locator('[data-existing-source]').count(), 6);
+assert.equal(await page.locator('[data-action="skip-existing-source"]').count(), 0);
+await page.locator('[data-existing-source="friend_referral"]').click();
+await page.locator('[data-action="submit-existing-source"]').click();
+assert.equal(await page.locator('#existingCompleteState.active').count(), 1);
+const existingSaved = await page.evaluate(() =>
+  JSON.parse(localStorage.getItem('gamehub_existing_personalization_v2'))
+);
+assert.equal(existingSaved.gameTerminal, 'submitted');
+assert.equal(existingSaved.sourceTerminal, 'completed');
+assert.equal(existingSaved.entryGroup, 'existing_user_recall');
+
+await page.locator('[data-demo-scenario="existing_source_only"]').click();
+assert.equal(await page.locator('#existingSourceStep.active').count(), 1);
+
+await page.locator('[data-demo-scenario="existing_game_only"]').click();
+assert.equal(await page.locator('#existingGameStep.active').count(), 1);
+await page.locator('[data-action="skip-existing-games"]').click();
+assert.equal(await page.locator('#existingCompleteState.active').count(), 1);
+
+await page.locator('[data-demo-scenario="existing_completed"]').click();
+assert.equal(await page.locator('#existingCompleteState [data-bypass="true"]').count(), 1);
+
+await page.locator('#regionBtn').click();
+await page.locator('[data-demo-scenario="existing_source_only"]').click();
+assert.equal(await page.locator('[data-existing-source="youtube"]').count(), 1);
+assert.equal((await page.locator('#existingSourceStep').innerText()).includes('GaishiGame'), false);
+
 assert.deepEqual(pageErrors, [], `page errors: ${pageErrors.join('; ')}`);
 await browser.close();
 console.log('PASS onboardingSourceUi');
