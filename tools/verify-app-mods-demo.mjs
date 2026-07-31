@@ -114,6 +114,30 @@ try {
   assert.equal(menuRows.length, 2, `更多菜单不是两行：${menuRows.join(',')}`);
   await capture('01-game-more-menu-portrait.png');
 
+  await page.locator('[data-review-action="landscape"]').click();
+  const landscapeMenuLayout = await page.evaluate(() => {
+    const device = document.querySelector('[data-demo-root]').getBoundingClientRect();
+    const panel = document.querySelector('.more-panel').getBoundingClientRect();
+    const items = [...document.querySelectorAll('[data-menu-item]')];
+    const rows = [...new Set(items.map(item => Math.round(item.getBoundingClientRect().top)))];
+    const lastItemBottom = Math.max(...items.map(item => item.getBoundingClientRect().bottom));
+    return {
+      rows: rows.length,
+      centered: Math.abs((panel.top + panel.bottom - device.top - device.bottom) / 2) <= 1,
+      panelHeight: Math.round(panel.height),
+      bottomGap: Math.round(panel.bottom - lastItemBottom)
+    };
+  });
+  assert.equal(landscapeMenuLayout.rows, 2);
+  assert.equal(landscapeMenuLayout.centered, true);
+  assert(landscapeMenuLayout.panelHeight <= 250, JSON.stringify(landscapeMenuLayout));
+  assert(
+    landscapeMenuLayout.bottomGap >= 0 && landscapeMenuLayout.bottomGap <= 24,
+    JSON.stringify(landscapeMenuLayout)
+  );
+  await capture('08-game-more-menu-landscape.png');
+  await page.locator('[data-review-action="portrait"]').click();
+
   await page.locator('[data-action="enter-mods"]').click();
   assert.equal(await page.locator('[data-screen="mods"]').count(), 1);
   assert.equal(await page.locator('[data-search]').count(), 1);
@@ -376,7 +400,7 @@ try {
   assert.deepEqual(pageErrors, [], `页面异常：${pageErrors.join(' | ')}`);
   assert.deepEqual(consoleErrors, [], `控制台异常：${consoleErrors.join(' | ')}`);
   console.log('PASS: 5+4 入口、搜索排序、空态、键盘、焦点、并行任务与旋转状态');
-  if (shouldCapture) console.log('PASS: 七张 APP MODS PRD 截图已生成');
+  if (shouldCapture) console.log('PASS: 八张 APP MODS PRD 截图已生成');
 } finally {
   await browser.close();
 }

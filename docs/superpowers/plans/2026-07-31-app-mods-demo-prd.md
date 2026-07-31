@@ -306,3 +306,58 @@ git commit -m "docs(mods): add app mods prd"
 
 Expected: PRD 结构、内容、六张固定图片和远程响应全部 PASS。
 
+### Task 9: 收紧横屏更多菜单为两行内容高度
+
+**Files:**
+- Modify: `demos/Mod与发行人/APP端MODS功能demo.html`
+- Modify: `tools/verify-app-mods-demo.mjs`
+- Create: `public/prd/app-mods/08-game-more-menu-landscape.png`
+- Modify: `prd/ai生成/【Prd】《盖世游戏》APP端MODS需求.md`
+- Modify: `tools/verify-app-mods-prd.mjs`
+
+- [ ] **Step 1: 先补横屏菜单布局断言**
+
+在 `tools/verify-app-mods-demo.mjs` 中将 Demo 旋转到横屏并保持更多菜单打开，断言：
+
+```js
+assert.equal(menuRows.length, 2);
+assert.equal(Math.abs(panelCenterY - deviceCenterY) <= 1, true);
+assert.equal(panelHeight <= 250, true);
+assert.equal(panelBottomGap <= 24, true);
+```
+
+- [ ] **Step 2: 运行测试并确认旧布局失败**
+
+Run: `node tools/verify-app-mods-demo.mjs`
+
+Expected: FAIL，旧横屏弹层高度约 340px，底部空白超过一行。
+
+- [ ] **Step 3: 实现内容自适应居中弹层**
+
+在横屏 `.more-panel` 规则中移除上下同时固定的拉伸方式，保留横向安全区，并使用内容高度垂直居中：
+
+```css
+.device.landscape .more-panel {
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+```
+
+- [ ] **Step 4: 生成横屏菜单截图并更新 PRD**
+
+Run: `node tools/verify-app-mods-demo.mjs --screenshots`
+
+Expected: 新增 `08-game-more-menu-landscape.png`；PRD 的“游戏详情与更多菜单”图示同时包含竖屏和横屏，说明横屏仅 5+4 两行且无第三行空白。
+
+- [ ] **Step 5: 运行完整校验**
+
+Run:
+
+```powershell
+node tools/verify-app-mods-demo.mjs
+node tools/verify-app-mods-prd.mjs
+git diff --check
+```
+
+Expected: 本地校验全部 PASS；远程图片验证继续等待推送授权。
