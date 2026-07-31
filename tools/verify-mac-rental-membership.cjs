@@ -194,6 +194,20 @@ async function main() {
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
 
+    await capture(page, 'c01-rental-discovery-used-trial.png', 'explore', async (currentPage) => {
+      const result = await currentPage.evaluate(async () => {
+        state.trialEligible = false;
+        renderApp();
+        await nextPaint();
+        return {
+          label: document.querySelector('[data-anno-target="explore-rent-meta"] b')?.textContent.trim(),
+          hasPermanentAmount: /¥\d+\s*永久版/.test(document.querySelector('.mac-main')?.textContent || ''),
+        };
+      });
+      assert(result.label === '可租号', '首次体验使用后列表未显示“可租号”');
+      assert(!result.hasPermanentAmount, '首次体验使用后列表仍显示永久版金额');
+    });
+
     await capture(page, 'c02-package-and-checkout.png', 'checkout', async (currentPage) => {
       const layout = await currentPage.evaluate(() => {
         const row = document.querySelector('.option-row.periods');
@@ -208,6 +222,33 @@ async function main() {
       assert(layout.labels.length === 2, '确认订单应展示2个权益 SKU');
       assert(Math.abs(layout.widths[0] - layout.widths[1]) < 1, '2个权益 SKU 未等宽');
       assert(!layout.hasMembershipTab, '确认订单仍存在会员购买 Tab');
+    });
+
+    await capture(page, 'c02-permanent-only-checkout.png', 'checkout', async (currentPage) => {
+      const layout = await currentPage.evaluate(async () => {
+        state.trialEligible = false;
+        state.checkout.period = 'permanent';
+        renderApp();
+        await nextPaint();
+        const row = document.querySelector('.option-row.periods.single');
+        const button = row?.querySelector('.option-btn');
+        const rowRect = row?.getBoundingClientRect();
+        const buttonRect = button?.getBoundingClientRect();
+        return {
+          labels: [...row?.querySelectorAll('.period-name') || []].map((node) => node.textContent.trim()),
+          columns: row ? getComputedStyle(row).gridTemplateColumns.trim().split(/\s+/).length : 0,
+          rowWidth: rowRect?.width || 0,
+          buttonWidth: buttonRect?.width || 0,
+          leftAligned: Boolean(rowRect && buttonRect && Math.abs(rowRect.left - buttonRect.left) < 1),
+          hasEligibilityCopy: document.querySelector('.mac-main')?.textContent.includes('首次体验资格已使用'),
+          originalPrice: document.querySelector('.checkout-original-price')?.textContent.trim(),
+          payablePrice: document.querySelector('.checkout-payable-price')?.textContent.trim(),
+        };
+      });
+      assert(layout.labels.join(',') === '永久版', '单权益确认订单未只显示永久版');
+      assert(layout.columns === 2 && layout.buttonWidth < layout.rowWidth * 0.55 && layout.leftAligned, '永久版卡片未保持半行左对齐');
+      assert(!layout.hasEligibilityCopy, '确认订单仍显示首次体验资格说明');
+      assert(layout.originalPrice === '¥198' && layout.payablePrice === '¥59', '永久版原价或1.5–5折金额错误');
     });
 
     await capture(page, 'c02-membership-center-payment.png', 'membership', async (currentPage) => {
@@ -269,13 +310,13 @@ async function main() {
         const entry = document.querySelector('[data-action="open-library-steam-login"]');
         entry?.click();
         await nextPaint();
-        document.querySelector('[data-action="request-guard-code"]')?.click();
-        await nextPaint();
         const dialog = document.querySelector('.manual-login-dialog');
         return {
           entryText: entry?.textContent.trim(),
           orderId: state.credentialView.orderId,
-          title: dialog?.querySelector('h3')?.textContent.trim(),
+          title: dialog?.querySelector('.gamehub-login-assistant h3')?.textContent.trim(),
+          hasSteamWindow: Boolean(dialog?.querySelector('.steam-native-login')),
+          steamInputs: dialog?.querySelectorAll('.steam-native-login input').length,
           labels: [...dialog?.querySelectorAll('.credential-row>span:first-child') || []].map((node) => node.textContent.trim()),
           guard: dialog?.querySelector('[data-guard-value]')?.textContent.trim(),
           countdown: dialog?.querySelector('[data-guard-countdown]')?.textContent.trim(),
@@ -283,7 +324,7 @@ async function main() {
       });
       assert(result.entryText.includes('登录 Steam'), '游戏库未显示 Steam 登录入口');
       assert(result.orderId === 'GS20260713001', '游戏库登录入口未绑定当前有效使用单');
-      assert(result.title === 'Steam 登录信息', '未打开 Steam 登录助手');
+      assert(result.title === '盖世登录助手' && result.hasSteamWindow && result.steamInputs >= 4, '未打开 Steam 登录窗与盖世登录助手');
       assert(result.labels.join(',') === 'Steam 账号,Steam 密码,令牌验证码', 'Steam 登录字段不完整');
       assert(/^[23456789BCDFGHJKMNPQRTVWXY]{5}$/.test(result.guard), 'Steam Guard 授权码未生成');
       assert(result.countdown.includes('秒后失效'), 'Steam Guard 授权码缺少倒计时');
@@ -291,7 +332,7 @@ async function main() {
 
     assert(pageErrors.length === 0, `截图页面脚本错误：${pageErrors.join(' | ')}`);
     await page.close();
-    process.stdout.write(`PASS smoke=${smokeCount}, screenshots=5\n`);
+    process.stdout.write(`PASS smoke=${smokeCount}, screenshots=7\n`);
   } finally {
     await browser.close();
   }
