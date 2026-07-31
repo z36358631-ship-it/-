@@ -16,11 +16,11 @@ const archivePrdPath = path.join(
   'mod功能',
   '【PRD】《盖世游戏》DST本地MODS跨平台需求.md'
 );
-const expectedSha = '28bb7a389673dfbc44f17e5cb2f7885dd674eea7';
+const expectedSha = 'af71dbd8c03af3a9bc4e5ccb14bf5d4a03fab2ed';
 const mainPrd = fs.readFileSync(mainPrdPath, 'utf8');
 const archivePrd = fs.readFileSync(archivePrdPath, 'utf8');
 
-assert.match(mainPrd, /\|2026\.07\.31\|V1\.4\|/u);
+assert.match(mainPrd, /\|2026\.07\.31\|V1\.5\|/u);
 assert.match(mainPrd, /AC-MAC-DETAIL-05/u);
 assert.match(mainPrd, /V1\.4 覆盖声明/u);
 assert.match(mainPrd, /AC-MAC-DETAIL-06/u);
@@ -32,13 +32,23 @@ assert.match(mainPrd, /AC-MAC-V14-INSTALLED-01/u);
 assert.match(mainPrd, /AC-MAC-V14-INSTALLED-02/u);
 assert.match(mainPrd, /AC-MAC-V14-REFRESH-01/u);
 assert.match(mainPrd, /AC-MAC-V14-SCOPE-01/u);
+assert.match(mainPrd, /V1\.5 覆盖声明/u);
+assert.match(mainPrd, /AC-MAC-V15-HEADER-01/u);
+assert.match(mainPrd, /AC-MAC-V15-HEADER-02/u);
+assert.match(mainPrd, /AC-MAC-V15-HEADER-03/u);
+assert.match(mainPrd, /AC-MAC-V15-HEADER-04/u);
+assert.match(
+  mainPrd,
+  /返回详情 → 浏览 Tab → 已安装 Tab → 排序或筛选下拉 → 搜索 → 刷新 → 列表/u
+);
+assert.match(mainPrd, /两页首张卡片使用同一垂直起点/u);
 assert.match(mainPrd, /排序下拉 → 搜索 → 刷新/u);
 assert.match(mainPrd, /筛选下拉 → 搜索 → 刷新/u);
 assert.match(mainPrd, /用户在排序下拉确认选项/u);
 assert.match(mainPrd, /用户在筛选下拉确认选项/u);
 assert.match(mainPrd, /海外包中文、英语、日语、俄语、巴西葡萄牙语资源/u);
 assert.match(mainPrd, /已启用”为绿色背景，“已停用”为灰色背景/u);
-assert.match(archivePrd, /\|版本\|V1\.7\|/u);
+assert.match(archivePrd, /\|版本\|V1\.8\|/u);
 assert.match(archivePrd, /AC-MAC-V16-DETAIL-01/u);
 assert.match(archivePrd, /V1\.7 覆盖声明/u);
 assert.match(archivePrd, /AC-MAC-V16-KEYBOARD-01/u);
@@ -52,6 +62,12 @@ assert.match(archivePrd, /AC-MAC-V17-INSTALLED-01/u);
 assert.match(archivePrd, /AC-MAC-V17-INSTALLED-02/u);
 assert.match(archivePrd, /AC-MAC-V17-REFRESH-01/u);
 assert.match(archivePrd, /AC-MAC-V17-SCOPE-01/u);
+assert.match(archivePrd, /V1\.8 覆盖声明/u);
+assert.match(archivePrd, /AC-MAC-V18-HEADER-01/u);
+assert.match(archivePrd, /AC-MAC-V18-HEADER-02/u);
+assert.match(archivePrd, /AC-MAC-V18-HEADER-03/u);
+assert.match(archivePrd, /AC-MAC-V18-HEADER-04/u);
+assert.match(archivePrd, /两页首张卡片垂直起点一致/u);
 
 const imageMatches = [
   ...mainPrd.matchAll(/!\[[^\]]+\]\((https:\/\/[^)]+)\)/gu)
@@ -99,7 +115,7 @@ assert.doesNotMatch(
 
 assert.doesNotMatch(
   mainPrd,
-  /(?:6ce96620ec497e00d34f865dc2bff38c45e98ba4|928429e83ce85fa6b28b4691cc29153339100573|6ea661d0c0ff29c520a11fc6188e7ab66f0e5442)/u,
+  /(?:6ce96620ec497e00d34f865dc2bff38c45e98ba4|928429e83ce85fa6b28b4691cc29153339100573|6ea661d0c0ff29c520a11fc6188e7ab66f0e5442|28bb7a389673dfbc44f17e5cb2f7885dd674eea7)/u,
   'PRD still contains an old image commit SHA'
 );
 
@@ -116,4 +132,4 @@ for (const url of urls) {
   console.log(`PASS: ${response.status} ${response.headers.get('content-type')} ${bytes} ${url}`);
 }
 
-console.log('PASS: PRD has 4 fixed-SHA images and synchronized V1.4/V1.7 toolbar rules');
+console.log('PASS: PRD has 4 fixed-SHA images and synchronized V1.5/V1.8 unified header rules');

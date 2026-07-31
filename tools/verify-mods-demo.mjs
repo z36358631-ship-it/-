@@ -379,6 +379,36 @@ try {
   await page.locator('[data-demo-root]').screenshot({
     path: path.join(prdImageDir, '04-mac-installed-toolbar.png')
   });
+  await page.setViewportSize({ width: 1600, height: 1000 });
+  await page.waitForTimeout(50);
+  const compactViewportHeader = await page.evaluate(() => {
+    const header = document.querySelector('.mods-list-header').getBoundingClientRect();
+    const tabs = document.querySelector('.mods-tabs').getBoundingClientRect();
+    const tools = document.querySelector('.list-tools').getBoundingClientRect();
+    const centers = [
+      ...document.querySelectorAll(
+        '.mods-list-header [data-mod-tab], .mods-list-header .compact-select, .mods-list-header .search-field, .mods-list-header .refresh-button'
+      )
+    ].map(element => {
+      const box = element.getBoundingClientRect();
+      return box.top + box.height / 2;
+    });
+    return {
+      headerRight: header.right,
+      tabsRight: tabs.right,
+      toolsLeft: tools.left,
+      toolsRight: tools.right,
+      centerSpread: Math.max(...centers) - Math.min(...centers)
+    };
+  });
+  assert(compactViewportHeader.tabsRight <= compactViewportHeader.toolsLeft);
+  assert(compactViewportHeader.toolsRight <= compactViewportHeader.headerRight + 1);
+  assert(
+    compactViewportHeader.centerSpread <= 1,
+    `compact viewport header wrapped or misaligned: ${JSON.stringify(compactViewportHeader)}`
+  );
+  await page.setViewportSize({ width: 2160, height: 1480 });
+  await page.waitForTimeout(50);
 
   await page.locator(
     '[data-mod-card][data-mod-id="dst-smart-stack"] [data-card-detail]'
