@@ -201,7 +201,15 @@ try {
   });
   assert.deepEqual(invalidBrowseSortState, { sort: 'trend', scrollTop: 0 });
   await browseSort.selectOption('downloads');
-  await searchInput.fill('小');
+  await searchInput.fill('小地');
+  assert.deepEqual(
+    await searchInput.evaluate(element => ({
+      focused: document.activeElement === element,
+      selectionStart: element.selectionStart,
+      selectionEnd: element.selectionEnd
+    })),
+    { focused: true, selectionStart: 2, selectionEnd: 2 }
+  );
   assert.deepEqual(
     await page.evaluate(() => {
       const api = window.__DST_MODS_DEMO__;
@@ -213,12 +221,20 @@ try {
       };
     }),
     {
-      search: '小',
+      search: '小地',
       sort: 'downloads',
       visibleIds: ['dst-fast-travel']
     }
   );
   await searchInput.fill('');
+  assert.deepEqual(
+    await searchInput.evaluate(element => ({
+      focused: document.activeElement === element,
+      selectionStart: element.selectionStart,
+      selectionEnd: element.selectionEnd
+    })),
+    { focused: true, selectionStart: 0, selectionEnd: 0 }
+  );
   assert.equal(
     await page.evaluate(() => window.__DST_MODS_DEMO__.getState().ui.browseSort),
     'downloads',
@@ -275,6 +291,13 @@ try {
     window.__DST_MODS_DEMO__.dispatch({ type: 'SET_SEARCH', value: '小' });
   });
   await page.locator('[data-action="set-tab"][data-value="installed"]').click();
+  assert.equal(
+    await page.locator('[data-mod-tab="installed"]').evaluate(
+      element => document.activeElement === element
+    ),
+    true,
+    'installed tab did not keep focus after switching views'
+  );
   const installedHeaderOrder = await page.locator(
     '.mods-list-header button, .mods-list-header select, .mods-list-header input'
   ).evaluateAll(elements => elements.map(element => (
@@ -426,8 +449,14 @@ try {
   );
   assert.equal(await smartInstalledSwitch.getAttribute('aria-checked'), 'true');
   await smartInstalledSwitch.click();
+  await page.locator('.back-detail').focus();
   await page.waitForTimeout(380);
   assert.equal(await smartInstalledSwitch.getAttribute('aria-checked'), 'false');
+  assert.equal(
+    await smartInstalledSwitch.evaluate(element => document.activeElement === element),
+    false,
+    'enable completion stole focus after the user moved away'
+  );
   assert.equal(await page.locator('[data-catalog-summary]').textContent(), '4 个已安装 · 仅此设备');
   const installedLayout = await page.evaluate(() => {
     const header = document.querySelector('.mods-list-header').getBoundingClientRect();

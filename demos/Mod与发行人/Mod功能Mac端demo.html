@@ -2655,6 +2655,12 @@
       }, 2200);
     }
 
+    root.addEventListener('focusin', event => {
+      if (!deferredFocus) return;
+      const expectedControl = root.querySelector(deferredFocus.selector);
+      if (event.target !== expectedControl) deferredFocus = null;
+    });
+
     function armTaskRunner(taskId) {
       if (!taskId || runnerRegistry.has(taskId)) return;
       const tick = () => {
