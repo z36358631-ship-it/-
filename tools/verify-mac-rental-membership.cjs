@@ -328,29 +328,36 @@ async function main() {
         return {
           entryText: entry?.textContent.trim(),
           orderId: state.credentialView.orderId,
-          title: dialog?.querySelector('.gamehub-login-assistant h3')?.textContent.trim(),
           hasSteamWindow: Boolean(dialog?.querySelector('.steam-native-login')),
-          stage: dialog?.querySelector('.gamehub-login-assistant')?.dataset.stage,
-          collapsed: dialog?.querySelector('.gamehub-login-assistant')?.dataset.collapsed,
+          hasAccountColumn: Boolean(dialog?.querySelector('.steam-account-column')),
+          hasQrColumn: Boolean(dialog?.querySelector('.steam-qr-column')),
+          hasQrVisual: Boolean(dialog?.querySelector('.steam-qr-visual svg')),
+          hasCredentialEntry: Boolean(dialog?.querySelector('[data-action="open-credential-popover"]')),
+          entryExpanded: dialog?.querySelector('[data-action="open-credential-popover"]')?.getAttribute('aria-expanded'),
+          hasCredentialPopover: Boolean(dialog?.querySelector('.rental-credential-popover')),
           hasAccountInput: Boolean(dialog?.querySelector('#steamAccountInput')),
           hasPasswordInput: Boolean(dialog?.querySelector('#steamPasswordInput')),
-          hasGuardInput: Boolean(dialog?.querySelector('#steamGuardInput')),
-          labels: [...dialog?.querySelectorAll('.credential-row>span:first-child') || []].map((node) => node.textContent.trim()),
           guard: dialog?.querySelector('[data-guard-value]')?.textContent.trim(),
           countdown: dialog?.querySelector('[data-guard-countdown]')?.textContent.trim(),
-          assistantWidth: dialog?.querySelector('.gamehub-login-assistant')?.getBoundingClientRect().width,
-          assistantLeft: dialog?.querySelector('.gamehub-login-assistant')?.getBoundingClientRect().left,
-          passwordRight: dialog?.querySelector('#steamPasswordInput')?.getBoundingClientRect().right,
+          dialogWidth: dialog?.getBoundingClientRect().width,
+          dialogHeight: dialog?.getBoundingClientRect().height,
+          obsoleteText: /步骤\s*[12]\/2|盖世登录助手|验证中/.test(dialog?.textContent || ''),
         };
       });
       assert(result.entryText.includes('登录 Steam'), '游戏库未显示 Steam 登录入口');
       assert(result.orderId === 'GS20260713001', '游戏库登录入口未绑定当前有效使用单');
-      assert(result.title === '盖世登录助手' && result.hasSteamWindow, '未打开 Steam 登录窗与盖世登录助手');
-      assert(result.stage === 'primary' && result.collapsed === 'false', '登录助手未从账号密码阶段展开');
-      assert(result.hasAccountInput && result.hasPasswordInput && !result.hasGuardInput, '账号密码阶段错误展示验证码输入框');
-      assert(result.labels.join(',') === 'Steam 账号,Steam 密码', '账号密码阶段字段不完整');
-      assert(!result.guard && !result.countdown, '账号密码阶段不应提前生成 Steam Guard 验证码');
-      assert(result.assistantWidth <= 320 && result.passwordRight < result.assistantLeft, '登录助手尺寸过大或遮挡 Steam 密码输入框');
+      assert(
+        result.hasSteamWindow
+          && result.hasAccountColumn
+          && result.hasQrColumn
+          && result.hasQrVisual,
+        '未打开完整 Steam 双栏登录窗口',
+      );
+      assert(result.hasCredentialEntry && result.entryExpanded === 'false', '租号登录信息入口缺失或默认展开');
+      assert(result.hasAccountInput && result.hasPasswordInput, 'Steam 账号密码输入区不完整');
+      assert(!result.hasCredentialPopover && !result.guard && !result.countdown, '默认状态提前展示凭据或验证码');
+      assert(result.dialogWidth >= 900 && result.dialogHeight >= 600, 'Steam 登录窗口尺寸不足');
+      assert(!result.obsoleteText, 'Steam 登录窗口仍展示旧分步助手');
     });
 
     await capture(page, 'c05-manual-login-credentials.png', 'library', async (currentPage) => {
@@ -361,24 +368,64 @@ async function main() {
         await nextPaint();
         document.querySelector('[data-action="open-library-steam-login"]')?.click();
         await nextPaint();
-        dispatchAction('request-guard-stage', { dataset: { id: 'GS20260713001' } });
+        const accountInput = document.querySelector('#steamAccountInput');
+        const passwordInput = document.querySelector('#steamPasswordInput');
+        const rememberInput = document.querySelector('#steamRememberInput');
+        accountInput.value = 'typed-in-steam';
+        passwordInput.value = 'typed-password';
+        rememberInput.checked = false;
+        dispatchAction('open-credential-popover', { dataset: { id: 'GS20260713001' } });
+        await nextPaint();
+        dispatchAction('request-guard-code', { dataset: { id: 'GS20260713001' } });
+        await new Promise((resolve) => setTimeout(resolve, 260));
         await nextPaint();
         const dialog = document.querySelector('.manual-login-dialog');
+        const popover = dialog?.querySelector('.rental-credential-popover');
+        const popoverRect = popover?.getBoundingClientRect();
+        const accountColumnRect = dialog?.querySelector('.steam-account-column')?.getBoundingClientRect();
         return {
-          stage: dialog?.querySelector('.gamehub-login-assistant')?.dataset.stage,
-          hasGuardInput: Boolean(dialog?.querySelector('#steamGuardInput')),
+          hasPopover: Boolean(popover),
+          entryExpanded: dialog?.querySelector('[data-action="open-credential-popover"]')?.getAttribute('aria-expanded'),
           hasAccountInput: Boolean(dialog?.querySelector('#steamAccountInput')),
           hasPasswordInput: Boolean(dialog?.querySelector('#steamPasswordInput')),
           guard: dialog?.querySelector('[data-guard-value]')?.textContent.trim(),
           countdown: dialog?.querySelector('[data-guard-countdown]')?.textContent.trim(),
-          helperText: dialog?.querySelector('.gamehub-login-assistant')?.textContent,
+          popoverText: popover?.textContent,
+          passwordMasked: popover?.querySelector('.credential-password-value')?.textContent.trim(),
+          hasAccountCopy: Boolean(popover?.querySelector('[data-action="copy-login-account"]')),
+          hasPasswordCopy: Boolean(popover?.querySelector('[data-action="copy-login-password"]')),
+          hasGuardCopy: Boolean(popover?.querySelector('[data-action="copy-guard-code"]')),
+          hasGuardRefresh: Boolean(popover?.querySelector('[data-action="request-guard-code"]')),
+          popoverOverlapsAccountColumn: Boolean(
+            popoverRect
+              && accountColumnRect
+              && popoverRect.left < accountColumnRect.right,
+          ),
+          accountInputValue: accountInput.value,
+          passwordInputValue: passwordInput.value,
+          rememberChecked: rememberInput.checked,
         };
       });
-      assert(result.stage === 'guard' && result.hasGuardInput, '未进入 Steam Guard 阶段');
-      assert(!result.hasAccountInput && !result.hasPasswordInput, '验证码阶段仍展示账号密码输入框');
+      assert(result.hasPopover && result.entryExpanded === 'true', '租号登录信息浮层未打开');
+      assert(result.hasAccountInput && result.hasPasswordInput, '打开凭据浮层后 Steam 表单丢失');
       assert(/^[23456789BCDFGHJKMNPQRTVWXY]{5}$/.test(result.guard), 'Steam Guard 验证码未按需生成');
       assert(result.countdown.includes('秒后失效'), 'Steam Guard 验证码缺少倒计时');
-      assert(!result.helperText.includes('Steam 账号') && !result.helperText.includes('Steam 密码'), '验证码阶段仍展示账号或密码');
+      assert(result.passwordMasked === '••••••••••', '凭据浮层密码未默认遮罩');
+      assert(
+        result.hasAccountCopy
+          && result.hasPasswordCopy
+          && result.hasGuardCopy
+          && result.hasGuardRefresh,
+        '凭据复制或验证码刷新操作不完整',
+      );
+      assert(!result.popoverOverlapsAccountColumn, '凭据浮层遮挡 Steam 左侧账号登录区');
+      assert(
+        result.accountInputValue === 'typed-in-steam'
+          && result.passwordInputValue === 'typed-password'
+          && result.rememberChecked === false,
+        '凭据浮层局部更新导致 Steam 表单状态丢失',
+      );
+      assert(!/步骤\s*[12]\/2|返回账号密码|验证中|盖世登录助手/.test(result.popoverText || ''), '浮层仍展示旧分步助手文案');
     });
 
     assert(pageErrors.length === 0, `截图页面脚本错误：${pageErrors.join(' | ')}`);
