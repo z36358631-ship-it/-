@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const prdPath = path.join(root, 'prd', 'ai生成', '【Prd】《盖世游戏》APP端MODS需求.md');
 const verifyRemote = process.argv.includes('--remote');
-const expectedSha = 'af6221681c93d0e89ec0963255c2681046b0a738';
+const expectedSha = '4b32c64158bab42068aafe87a93542f934fb0492';
 const imageNames = [
   '01-game-more-menu-portrait.png',
   '08-game-more-menu-landscape.png',
@@ -41,7 +41,10 @@ assert.match(markdown, /国内包产品名显示“盖世游戏”/u);
 assert.match(markdown, /海外包产品名显示“GameHub”/u);
 assert.match(markdown, /热门 \/ 下载最多 \/ 最新发布/u);
 assert.match(markdown, /暂无可更新的 MOD/u);
-assert.match(markdown, /搜索框位于主 Tab 下方并独占一整行/u);
+assert.match(markdown, /横屏不再单独展示搜索行/u);
+assert.match(markdown, /排序、搜索、刷新在同一工具栏/u);
+assert.match(markdown, /搜索位于刷新左侧/u);
+assert.match(markdown, /至少完整显示 8 个全角字符或 16 个半角字符/u);
 assert.match(markdown, /列表紧跟顶部筛选区，不预留搜索框空位/u);
 assert.match(markdown, /卡片与内部按钮的键盘操作互不冲突/u);
 assert.match(markdown, /详情限制焦点、支持 Esc 关闭并恢复触发点/u);
@@ -53,12 +56,18 @@ assert.match(markdown, /MODS 页面无崩溃会话率≥99\.8%/u);
 assert.match(markdown, /app_mods_task_create_result/u);
 assert.match(markdown, /state_consistency_result/u);
 assert.match(markdown, /AC-APP-LOCK-01/u);
+assert.match(markdown, /AC-APP-BROWSE-04/u);
 assert.match(markdown, /AC-APP-NETWORK-03/u);
 assert.match(markdown, /AC-APP-ROTATE-03/u);
+assert.match(markdown, /AC-APP-ROTATE-05/u);
 assert.match(markdown, /AC-APP-REGION-02/u);
 assert.match(markdown, verifyRemote ? /前端开发\|✓ 通过/u : /前端开发\|(?:✓ 通过|⚠️ 条件通过)/u);
 assert.match(markdown, verifyRemote ? /测试工程师\|✓ 通过/u : /测试工程师\|(?:✓ 通过|⚠️ 条件通过)/u);
 assert.match(markdown, /运营\/业务方\|✓ 通过/u);
+
+const allPublishedShas = [...markdown.matchAll(/[0-9a-f]{40}/gu)].map(match => match[0]);
+assert(allPublishedShas.length >= imageNames.length + 1, 'PRD 固定提交 SHA 数量不足');
+assert(allPublishedShas.every(sha => sha === expectedSha), 'PRD 残留旧提交 SHA');
 
 const imageUrls = [...markdown.matchAll(/!\[[^\]]+\]\((https:\/\/cdn\.jsdelivr\.net\/gh\/z36358631-ship-it\/-@([0-9a-f]{40})\/public\/prd\/app-mods\/([^)]+\.png))\)/gu)];
 assert.equal(imageUrls.length, imageNames.length, `PRD 图片数量应为 ${imageNames.length}`);
@@ -70,10 +79,13 @@ assert.deepEqual(
 assert(imageUrls.every(match => match[2] === expectedSha), 'PRD 图片没有统一使用固定提交 SHA');
 
 const detailTableStart = markdown.indexOf('|模块名称|图示|展示&交互说明|');
-const detailTableEnd = markdown.indexOf('#### 4.2.1 入口与业务隔离');
+const detailTableEnd = markdown.indexOf('#### 4.2.8 入口与业务隔离');
 assert(detailTableStart >= 0 && detailTableEnd > detailTableStart, '4.2 页面表格范围缺失');
 const detailTable = markdown.slice(detailTableStart, detailTableEnd);
 assert.equal((detailTable.match(/!\[/gu) || []).length, imageNames.length, '图片没有全部放在 4.2 图示列');
+
+const detailRuleNumbers = [...markdown.matchAll(/^#### 4\.2\.(\d+) /gmu)].map(match => Number(match[1]));
+assert.deepEqual(detailRuleNumbers, [8, 9, 10, 11, 12, 13, 14, 15, 16], '4.2 规则章节编号不连续');
 
 for (const imageName of imageNames) {
   const localImage = path.join(root, 'public', 'prd', 'app-mods', imageName);

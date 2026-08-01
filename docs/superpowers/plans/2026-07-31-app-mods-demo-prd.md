@@ -372,7 +372,7 @@ Expected: 本地校验全部 PASS；远程图片验证继续等待推送授权�
 - Modify: `prd/ai生成/【Prd】《盖世游戏》APP端MODS需求.md`
 - Modify: `tools/verify-app-mods-prd.mjs`
 
-- [ ] **Step 1: 先补横竖屏搜索布局和旋转断言**
+- [x] **Step 1: 先补横竖屏搜索布局和旋转断言**
 
 在 `tools/verify-app-mods-demo.mjs` 中保留竖屏独占行断言，并把横屏断言改为：
 
@@ -399,13 +399,13 @@ assert.deepEqual(
 );
 ```
 
-- [ ] **Step 2: 运行测试并确认旧横屏布局失败**
+- [x] **Step 2: 运行测试并确认旧横屏布局失败**
 
 Run: `node tools/verify-app-mods-demo.mjs`
 
 Expected: FAIL，旧横屏仍存在 `.search-section`，搜索和刷新不在同一工具栏，列表起点仍按三层顶部区域计算。
 
-- [ ] **Step 3: 按方向互斥渲染同一个搜索框**
+- [x] **Step 3: 按方向互斥渲染同一个搜索框**
 
 在 `renderMods()` 中只生成一个 `data-search`：
 
@@ -453,13 +453,13 @@ ${state.orientation === 'portrait' ? `<div class="search-section">${searchField}
 
 `rotateTo()` 在重绘前记录搜索焦点和选区，重绘后恢复；输入法组合期间只记录最后一个有效目标方向，不重绘搜索框，`compositionend` 提交搜索后再执行延迟旋转。
 
-- [ ] **Step 4: 运行 Demo 校验并更新横屏截图**
+- [x] **Step 4: 运行 Demo 校验并更新横屏截图**
 
 Run: `node tools/verify-app-mods-demo.mjs --screenshots`
 
 Expected: Demo 测试 PASS；`05-browse-landscape.png` 显示“热门 / 下载最多 / 最新发布 → 搜索框 → 刷新”，列表紧接工具栏；其余截图没有回归。
 
-- [ ] **Step 5: 本地提交 Demo 与截图并取得固定 SHA**
+- [x] **Step 5: 本地提交 Demo 与截图并取得固定 SHA**
 
 Run:
 
@@ -471,7 +471,7 @@ git rev-parse HEAD
 
 Expected: 返回实际包含新版横屏截图的 40 位提交 SHA。
 
-- [ ] **Step 6: 同步 PRD 并完成本地校验**
+- [x] **Step 6: 同步 PRD 并完成本地校验**
 
 PRD 追加版本记录，更新 4.2.5、截图基线和 `AC-APP-BROWSE-01`；Demo 地址和 8 张图片统一替换为 Step 5 的固定 SHA，并同步 `tools/verify-app-mods-prd.mjs` 的 `expectedSha`。
 
