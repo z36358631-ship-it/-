@@ -170,6 +170,15 @@ try {
   assert.equal(profileTabsLayout.singleLine, true);
   assert.match(profileTabsLayout.overflowMode, /auto|scroll/u);
 
+  await capture('09-steam-profile-mods-portrait.png');
+  await page.locator('[data-review-action="landscape"]').click();
+  assert.equal(
+    await page.evaluate(() => window.__APP_MODS_DEMO__.getState().orientation),
+    'landscape'
+  );
+  await capture('10-steam-profile-mods-landscape.png');
+  await page.locator('[data-review-action="portrait"]').click();
+
   await page.locator('[data-profile-scroll]').evaluate(element => { element.scrollTop = 96; });
   await page.locator('[data-action="profile-view-all"][data-game-id="dst"]').click();
   const browseState = await page.evaluate(() => window.__APP_MODS_DEMO__.getState());
@@ -622,7 +631,7 @@ try {
   assert.deepEqual(pageErrors, [], `页面异常：${pageErrors.join(' | ')}`);
   assert.deepEqual(consoleErrors, [], `控制台异常：${consoleErrors.join(' | ')}`);
   console.log('PASS: 5+4 入口、搜索排序、空态、键盘、焦点、并行任务与旋转状态');
-  if (shouldCapture) console.log('PASS: 八张 APP MODS PRD 截图已生成');
+  if (shouldCapture) console.log('PASS: 十张 APP MODS PRD 截图已生成');
 } finally {
   await browser.close();
 }
