@@ -235,7 +235,7 @@
     }
 
     .real-media { position: relative; display: block; overflow: hidden; background: #11141a; }
-    .real-media > img { position: absolute; max-width: none; pointer-events: none; user-select: none; }
+    .real-media > img { position: absolute; max-width: none; object-fit: cover; pointer-events: none; user-select: none; }
     .hero-real { position: absolute; z-index: 0; inset: 0; }
     .hero-real::after { position: absolute; inset: 0; background: linear-gradient(180deg, rgb(5 7 10 / 18%) 0, rgb(5 7 10 / 44%) 45%, rgb(3 4 7 / 97%) 100%); content: ""; }
 
@@ -496,8 +496,9 @@
     .landscape-platform-tabs button,
     .landscape-play-tabs button {
       position: relative;
-      min-height: 35px;
-      padding: 0 0 8px;
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0 3px 8px;
       border: 0;
       background: transparent;
       color: #8a8d98;
@@ -510,8 +511,8 @@
     .landscape-platform-tabs button.active::after,
     .landscape-play-tabs button.active::after { position: absolute; bottom: 0; left: 50%; width: 18px; height: 3px; border-radius: 100px; background: #fff; content: ""; transform: translateX(-50%); }
     .landscape-tools { display: flex; align-items: center; gap: 6px; }
-    .landscape-tool-button { display: flex; min-height: 34px; align-items: center; gap: 6px; padding: 0 11px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 11px; background: rgb(255 255 255 / 6%); cursor: pointer; font-size: 10px; }
-    .landscape-tool-button.icon-only { width: 36px; justify-content: center; padding: 0; border-radius: 50%; background: transparent; }
+    .landscape-tool-button { display: flex; min-height: 44px; align-items: center; gap: 6px; padding: 0 11px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 11px; background: rgb(255 255 255 / 6%); cursor: pointer; font-size: 10px; }
+    .landscape-tool-button.icon-only { width: 44px; justify-content: center; padding: 0; border-radius: 50%; background: transparent; }
     .landscape-tool-button svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
 
     .landscape-game-wall { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
@@ -565,7 +566,7 @@
     .landscape-benefit h2 { margin: 18px 0 8px; font-size: 15px; }
     .benefit-list { display: grid; gap: 6px; color: #c4c5cb; font-size: 9px; }
     .benefit-list span::before { display: inline-block; width: 5px; height: 5px; margin-right: 7px; border-radius: 50%; background: #ff9be5; content: ""; vertical-align: 1px; }
-    .landscape-benefit .primary-action { min-width: 108px; min-height: 38px; margin-top: auto; align-self: flex-start; background: linear-gradient(135deg, #a862e9, #6d48be); color: #fff; }
+    .landscape-benefit .primary-action { min-width: 108px; min-height: 44px; margin-top: auto; align-self: flex-start; background: linear-gradient(135deg, #a862e9, #6d48be); color: #fff; }
     .landscape-recent, .landscape-hot { padding: 13px; }
     .landscape-recent-list { display: grid; gap: 9px; margin-top: 11px; }
     .landscape-recent-item { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 8px; }
@@ -589,8 +590,8 @@
     .landscape-profile-stats div + div { border-left: 1px solid rgb(255 255 255 / 8%); }
     .landscape-profile-actions { display: grid; min-width: 0; grid-template-rows: 1fr 1fr; gap: 10px; }
     .landscape-member-card, .landscape-order-card { position: relative; overflow: hidden; padding: 16px 18px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 18px; background: rgb(24 24 28 / 82%); }
-    .landscape-member-card { display: grid; grid-template-columns: 160px minmax(0, 1fr) auto; align-items: center; gap: 14px; }
-    .landscape-member-art { width: 160px; height: 62px; border-radius: 13px; }
+    .landscape-member-card { display: grid; grid-template-columns: 210px minmax(0, 1fr) auto; align-items: center; gap: 14px; }
+    .landscape-member-art { width: 210px; height: 36px; border-radius: 11px; }
     .landscape-member-copy strong, .landscape-order-copy strong { display: block; font-size: 14px; }
     .landscape-member-copy p, .landscape-order-copy p { margin: 5px 0 0; color: var(--text-muted); font-size: 9px; }
     .landscape-outline-button { min-height: 44px; padding: 0 14px; border: 1px solid rgb(255 218 123 / 27%); border-radius: 100px; background: rgb(255 204 67 / 9%); color: #ffda79; cursor: pointer; font-size: 10px; }
@@ -764,13 +765,28 @@
     function realCrop(assetKey, crop, alt, label = '', className = 'cover-art') {
       const [sourceWidth, sourceHeight] = ASSET_SIZES[assetKey];
       const [x, y, width, height] = crop;
-      const style = [
-        `width:${(sourceWidth / width * 100).toFixed(4)}%`,
-        `height:${(sourceHeight / height * 100).toFixed(4)}%`,
-        `left:${(-x / width * 100).toFixed(4)}%`,
-        `top:${(-y / height * 100).toFixed(4)}%`,
-      ].join(';');
-      return `<span class="real-media ${className}"><img data-real-asset="true" data-source-screen="${assetKey}" src="${ASSETS[assetKey]}" alt="${alt}" draggable="false" style="${style}">${label ? `<small>${label}</small>` : ''}</span>`;
+      return `<span class="real-media ${className}"><img data-real-asset="true" data-source-screen="${assetKey}" data-source-width="${sourceWidth}" data-source-height="${sourceHeight}" data-crop-x="${x}" data-crop-y="${y}" data-crop-width="${width}" data-crop-height="${height}" src="${ASSETS[assetKey]}" alt="${alt}" draggable="false">${label ? `<small>${label}</small>` : ''}</span>`;
+    }
+
+    function applyRealCrops(root) {
+      root.querySelectorAll('img[data-real-asset="true"]').forEach((image) => {
+        const frame = image.parentElement.getBoundingClientRect();
+        const sourceWidth = Number(image.dataset.sourceWidth);
+        const sourceHeight = Number(image.dataset.sourceHeight);
+        const cropX = Number(image.dataset.cropX);
+        const cropY = Number(image.dataset.cropY);
+        const cropWidth = Number(image.dataset.cropWidth);
+        const cropHeight = Number(image.dataset.cropHeight);
+        const scale = Math.max(frame.width / cropWidth, frame.height / cropHeight);
+        const renderedWidth = sourceWidth * scale;
+        const renderedHeight = sourceHeight * scale;
+        const cropCenterX = (cropX + cropWidth / 2) * scale;
+        const cropCenterY = (cropY + cropHeight / 2) * scale;
+        image.style.width = `${renderedWidth}px`;
+        image.style.height = `${renderedHeight}px`;
+        image.style.left = `${frame.width / 2 - cropCenterX}px`;
+        image.style.top = `${frame.height / 2 - cropCenterY}px`;
+      });
     }
 
     function statusBar() {
@@ -997,22 +1013,51 @@
 
     function renderLandscapePlay() {
       const tabLabel = { cloud: '秒玩', pc: '启动', retro: '畅玩' }[state.playTab];
-      const recentGames = [
-        ['极限竞速：地平线 6', [176, 957, 648, 159]],
-        ['怪物猎人：世界', [876, 957, 640, 159]],
-      ];
-      const hotGames = [
-        ['极限竞速：地平线 6', [176, 957, 648, 159]],
-        ['怪物猎人：世界', [876, 957, 640, 159]],
-        ['战神', [1569, 957, 658, 159]],
-        ['巫师 3：狂猎', [45, 1359, 189, 225], 'play'],
-      ];
+      const playCatalogs = {
+        cloud: {
+          recent: [
+            ['极限竞速：地平线 6', [176, 957, 648, 159], 'landscapePlay'],
+            ['怪物猎人：世界', [876, 957, 640, 159], 'landscapePlay'],
+          ],
+          hot: [
+            ['极限竞速：地平线 6', [176, 957, 648, 159], 'landscapePlay'],
+            ['怪物猎人：世界', [876, 957, 640, 159], 'landscapePlay'],
+            ['战神', [1569, 957, 658, 159], 'landscapePlay'],
+            ['巫师 3：狂猎', [45, 1359, 189, 225], 'play'],
+          ],
+        },
+        pc: {
+          recent: [
+            ['空洞骑士：丝之歌', [169, 297, 383, 224], 'landscapeLibrary'],
+            ['哈迪斯 2', [1049, 297, 390, 224], 'landscapeLibrary'],
+          ],
+          hot: [
+            ['空洞骑士', [606, 297, 390, 224], 'landscapeLibrary'],
+            ['GTA V', [169, 753, 383, 216], 'landscapeLibrary'],
+            ['极限竞速：地平线 6', [608, 753, 390, 216], 'landscapeLibrary'],
+            ['荒野大镖客：救赎 2', [1926, 297, 397, 224], 'landscapeLibrary'],
+          ],
+        },
+        retro: {
+          recent: [
+            ['茶杯头', [1049, 753, 390, 216], 'landscapeLibrary'],
+            ['星露谷物语', [1049, 753, 390, 216], 'landscapeSteamLibrary'],
+          ],
+          hot: [
+            ['饥荒', [1926, 297, 397, 224], 'landscapeSteamLibrary'],
+            ['Human Multiplayer Game', [326, 1260, 220, 250], 'home'],
+            ['Drillbert', [828, 1260, 215, 250], 'home'],
+            ['小小梦魇 2', [169, 753, 383, 216], 'landscapeSteamLibrary'],
+          ],
+        },
+      };
+      const { recent: recentGames, hot: hotGames } = playCatalogs[state.playTab] || playCatalogs.cloud;
       return `<section class="landscape-play">
         <div class="landscape-play-toolbar"><div class="landscape-play-tabs" role="tablist">${[['cloud', '云游戏'], ['pc', 'PC游戏'], ['retro', '复古游戏']].map(([value, label]) => `<button type="button" role="tab" aria-selected="${state.playTab === value}" class="${state.playTab === value ? 'active' : ''}" data-action="set-tab" data-group="playTab" data-value="${value}">${label}</button>`).join('')}</div><span class="rent-badge">会员游戏库已同步</span></div>
         <div class="landscape-play-grid">
           <section class="landscape-panel landscape-benefit"><div class="landscape-user-line">${realCrop('profile', [482, 302, 156, 158], '盖世玩家头像', '', 'avatar-small')}<div><strong>盖世玩家 0525</strong><span>${state.scenario === 'active-member' ? '畅玩会员生效中' : '登录后同步完整权益'}</span></div></div><h2>你的${tabLabel}权益</h2><div class="benefit-list"><span>极速启动，无需等待下载</span><span>支持云端存档与手柄</span><span>会员库游戏优先畅玩</span></div><button class="primary-action" type="button" data-primary-action="true" data-action="feedback">进入${tabLabel}</button></section>
-          <section class="landscape-panel landscape-recent"><div class="landscape-section-title"><h2>最近常玩</h2><span>继续游戏</span></div><div class="landscape-recent-list">${recentGames.map(([name, crop]) => `<article class="landscape-recent-item">${realCrop('landscapePlay', crop, `${name} 最近常玩封面`, '', 'landscape-cover')}<div><strong>${name}</strong><small>上次游玩 23 分钟前</small></div></article>`).join('')}</div></section>
-          <section class="landscape-panel landscape-hot"><div class="landscape-section-title"><h2>人气热游</h2><span>全部游戏</span></div><div class="landscape-hot-wall">${hotGames.map(([name, crop, asset]) => `<article class="landscape-hot-card">${realCrop(asset || 'landscapePlay', crop, `${name} 热游封面`, '', 'landscape-cover')}<strong>${name}</strong></article>`).join('')}</div></section>
+          <section class="landscape-panel landscape-recent"><div class="landscape-section-title"><h2>最近常玩</h2><span>继续游戏</span></div><div class="landscape-recent-list">${recentGames.map(([name, crop, asset]) => `<article class="landscape-recent-item">${realCrop(asset, crop, `${name} 最近常玩封面`, '', 'landscape-cover')}<div><strong>${name}</strong><small>上次游玩 23 分钟前</small></div></article>`).join('')}</div></section>
+          <section class="landscape-panel landscape-hot"><div class="landscape-section-title"><h2>人气热游</h2><span>全部游戏</span></div><div class="landscape-hot-wall">${hotGames.map(([name, crop, asset]) => `<article class="landscape-hot-card">${realCrop(asset, crop, `${name} 热游封面`, '', 'landscape-cover')}<strong>${name}</strong></article>`).join('')}</div></section>
         </div>
       </section>`;
     }
@@ -1067,9 +1112,11 @@
       root.dataset.screen = state.screen;
       if (state.orientation === 'portrait') {
         root.innerHTML = renderPortraitShell(renderPortraitContent(), state.screen);
+        applyRealCrops(root);
         return;
       }
       root.innerHTML = renderLandscapeShell(renderLandscapeContent(), state.screen);
+      applyRealCrops(root);
     }
 
     document.querySelector('#appRentalDemo').addEventListener('click', (event) => {
