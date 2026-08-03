@@ -43,6 +43,12 @@ assert.doesNotMatch(markdown, /__IMAGE_SHA__|file:\/\/|localhost|@main|@master/u
 for (const rule of [
   /Steam 个人中心新增独立一级 Tab“MODS”/u,
   /仅展示当前设备已安装 MOD/u,
+  /“全部 \/ 可更新”使用子 Tab/u,
+  /第二行左侧显示“全部 \/ 可更新”/u,
+  /刷新固定在第二行右侧/u,
+  /Steam 标题左对齐/u,
+  /好友、账号操作、电源/u,
+  /不显示“仅显示当前设备已安装的 MOD”提示文案/u,
   /“查看全部”进入对应游戏的 `MODS > 浏览`/u,
   /页面不提供搜索、排序、筛选、刷新和直接下载/u,
   /空态“查看支持 MODS 的游戏”进入现有游戏库的 MODS 支持列表/u,

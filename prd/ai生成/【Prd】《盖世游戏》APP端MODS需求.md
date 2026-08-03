@@ -13,6 +13,7 @@
 |2026.08.03|V1.6|产品团队|固定 Demo 与 8 张截图地址||
 |2026.08.03|V1.7|产品团队|新增 Steam 个人中心 MODS；精简重复说明||
 |2026.08.03|V1.8|产品团队|补充返回栈、更新状态、操作互斥和弱网验收；配图增至 10 张||
+|2026.08.03|V1.9|产品团队|已安装筛选改为左对齐子 Tab；横屏操作移至第二行；恢复 Steam 原页头部操作||
 
 ## 二、背景与目标
 
@@ -76,18 +77,18 @@ Mac 端已有 MOD 功能，APP 端尚无完整方案。APP 现有创意工坊采
 
 功能 Demo：
 
-`https://htmlpreview.github.io/?https://github.com/z36358631-ship-it/-/blob/b36668cb71b3d34704f488ea9c4cf11bd24ac554/demos/Mod%E4%B8%8E%E5%8F%91%E8%A1%8C%E4%BA%BA/APP%E7%AB%AFMODS%E5%8A%9F%E8%83%BDdemo.html`
+`https://htmlpreview.github.io/?https://github.com/z36358631-ship-it/-/blob/dafe0dc3e99fb84915a6f7297bbd96df3e0741ec/demos/Mod%E4%B8%8E%E5%8F%91%E8%A1%8C%E4%BA%BA/APP%E7%AB%AFMODS%E5%8A%9F%E8%83%BDdemo.html`
 
 |模块名称|图示|展示与交互|
 |---|---|---|
-|4.2.1 游戏详情与更多菜单|![竖屏更多菜单](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b36668cb71b3d34704f488ea9c4cf11bd24ac554/public/prd/app-mods/01-game-more-menu-portrait.png)<br>*图 4.2.1-1：竖屏游戏详情与更多菜单。*<br>![横屏更多菜单](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b36668cb71b3d34704f488ea9c4cf11bd24ac554/public/prd/app-mods/08-game-more-menu-landscape.png)<br>*图 4.2.1-2：横屏游戏详情与更多菜单。*|① 点击“更多”打开菜单。<br>② 菜单共 9 项，按 5+4 两行排列；横屏不预留第三行空白。<br>③ 创意工坊与 MODS 分开；点击 MODS 进入“饥荒 MODS”。<br>④ 进入失败时显示重试，可返回游戏详情。|
-|4.2.2 竖屏浏览|![竖屏浏览](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b36668cb71b3d34704f488ea9c4cf11bd24ac554/public/prd/app-mods/02-browse-portrait.png)<br>*图 4.2.2-1：竖屏 MODS 浏览。*|① 顶部为返回、标题和“浏览 / 已安装”。<br>② 搜索独占一行，下方为“热门 / 下载最多 / 最新发布”。<br>③ 单列卡片展示封面、名称、两行简介、作者、下载量和文件大小。<br>④ 整卡进入详情；未安装显示“安装”，已安装保留快捷启停。|
-|4.2.3 竖屏已安装|![竖屏已安装](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b36668cb71b3d34704f488ea9c4cf11bd24ac554/public/prd/app-mods/03-installed-portrait.png)<br>*图 4.2.3-1：竖屏已安装列表。*|① 不显示搜索。<br>② 显示“全部 / 可更新”和刷新，默认“全部”。<br>③ 仅展示当前设备已安装 MOD，卡片保留快捷启停。<br>④ 点击卡片进入详情。|
-|4.2.4 竖屏 MOD 详情|![竖屏 MOD 详情](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b36668cb71b3d34704f488ea9c4cf11bd24ac554/public/prd/app-mods/04-detail-portrait.png)<br>*图 4.2.4-1：竖屏 MOD 详情。*|① 使用覆盖式详情层，关闭后回到原列表位置。<br>② 展示封面、名称、作者、下载量、文件大小、简介、安装说明和更新记录。<br>③ 不显示兼容性、最新版本和“非官方”标签。<br>④ 未安装显示“下载安装”；已安装显示三个等宽操作按钮。|
-|4.2.5 横屏浏览|![横屏浏览](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b36668cb71b3d34704f488ea9c4cf11bd24ac554/public/prd/app-mods/05-browse-landscape.png)<br>*图 4.2.5-1：横屏 MODS 浏览。*|① 主 Tab 单独一行。<br>② 排序、搜索、刷新同一行，搜索在刷新左侧。<br>③ 列表双列展示，字段与操作同竖屏。|
-|4.2.6 横屏已安装|![横屏已安装](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b36668cb71b3d34704f488ea9c4cf11bd24ac554/public/prd/app-mods/07-installed-landscape.png)<br>*图 4.2.6-1：横屏已安装列表。*|① 双列卡片；显示“全部 / 可更新”、刷新和快捷启停。<br>② 不显示搜索或搜索占位。<br>③ 列表紧跟筛选区。|
-|4.2.7 横屏 MOD 详情|![横屏 MOD 详情](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b36668cb71b3d34704f488ea9c4cf11bd24ac554/public/prd/app-mods/06-detail-landscape.png)<br>*图 4.2.7-1：横屏 MOD 详情。*|① 左侧为预览图，右侧为信息和操作。<br>② 与竖屏读取同一 MOD、安装状态和任务。<br>③ 旋转不重复触发安装、更新、启停或卸载。|
-|4.2.8 Steam 个人中心 MODS|![竖屏个人中心 MODS](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b36668cb71b3d34704f488ea9c4cf11bd24ac554/public/prd/app-mods/09-steam-profile-mods-portrait.png)<br>*图 4.2.8-1：竖屏 Steam 个人中心 MODS。*<br>![横屏个人中心 MODS](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b36668cb71b3d34704f488ea9c4cf11bd24ac554/public/prd/app-mods/10-steam-profile-mods-landscape.png)<br>*图 4.2.8-2：横屏 Steam 个人中心 MODS。*|① Steam 个人中心新增独立一级 Tab“MODS”，与创意工坊并列。<br>② 仅展示当前设备已安装 MOD，按游戏分组；分组显示游戏名、已安装数量和“查看全部”。<br>③ 卡片进入现有 MOD 详情并保留快捷启停；不显示下载或详情按钮。<br>④ 页面不提供搜索、排序、筛选、刷新和直接下载。<br>⑤ “查看全部”进入对应游戏的 `MODS > 浏览`；浏览内详情返回浏览，浏览页返回操作直接回个人中心并恢复原分组和滚动位置。|
+|4.2.1 游戏详情与更多菜单|![竖屏更多菜单](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@dafe0dc3e99fb84915a6f7297bbd96df3e0741ec/public/prd/app-mods/01-game-more-menu-portrait.png)<br>*图 4.2.1-1：竖屏游戏详情与更多菜单。*<br>![横屏更多菜单](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@dafe0dc3e99fb84915a6f7297bbd96df3e0741ec/public/prd/app-mods/08-game-more-menu-landscape.png)<br>*图 4.2.1-2：横屏游戏详情与更多菜单。*|① 点击“更多”打开菜单。<br>② 菜单共 9 项，按 5+4 两行排列；横屏不预留第三行空白。<br>③ 创意工坊与 MODS 分开；点击 MODS 进入“饥荒 MODS”。<br>④ 进入失败时显示重试，可返回游戏详情。|
+|4.2.2 竖屏浏览|![竖屏浏览](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@dafe0dc3e99fb84915a6f7297bbd96df3e0741ec/public/prd/app-mods/02-browse-portrait.png)<br>*图 4.2.2-1：竖屏 MODS 浏览。*|① 顶部为返回、标题和“浏览 / 已安装”。<br>② 搜索独占一行，下方为“热门 / 下载最多 / 最新发布”。<br>③ 单列卡片展示封面、名称、两行简介、作者、下载量和文件大小。<br>④ 整卡进入详情；未安装显示“安装”，已安装保留快捷启停。|
+|4.2.3 竖屏已安装|![竖屏已安装](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@dafe0dc3e99fb84915a6f7297bbd96df3e0741ec/public/prd/app-mods/03-installed-portrait.png)<br>*图 4.2.3-1：竖屏已安装列表。*|① 不显示搜索。<br>② “全部 / 可更新”使用子 Tab，默认“全部”，左对齐。<br>③ 刷新位于同一行右侧。<br>④ 仅展示当前设备已安装 MOD，卡片保留快捷启停；点击卡片进入详情。|
+|4.2.4 竖屏 MOD 详情|![竖屏 MOD 详情](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@dafe0dc3e99fb84915a6f7297bbd96df3e0741ec/public/prd/app-mods/04-detail-portrait.png)<br>*图 4.2.4-1：竖屏 MOD 详情。*|① 使用覆盖式详情层，关闭后回到原列表位置。<br>② 展示封面、名称、作者、下载量、文件大小、简介、安装说明和更新记录。<br>③ 不显示兼容性、最新版本和“非官方”标签。<br>④ 未安装显示“下载安装”；已安装显示三个等宽操作按钮。|
+|4.2.5 横屏浏览|![横屏浏览](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@dafe0dc3e99fb84915a6f7297bbd96df3e0741ec/public/prd/app-mods/05-browse-landscape.png)<br>*图 4.2.5-1：横屏 MODS 浏览。*|① 主 Tab 单独一行。<br>② 排序、搜索、刷新同一行，搜索在刷新左侧。<br>③ 列表双列展示，字段与操作同竖屏。|
+|4.2.6 横屏已安装|![横屏已安装](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@dafe0dc3e99fb84915a6f7297bbd96df3e0741ec/public/prd/app-mods/07-installed-landscape.png)<br>*图 4.2.6-1：横屏已安装列表。*|① 第一行仅显示返回、标题和主 Tab。<br>② 第二行左侧显示“全部 / 可更新”筛选子 Tab，刷新固定在第二行右侧。<br>③ 不显示搜索或搜索占位；双列列表紧跟第二行，卡片保留快捷启停。|
+|4.2.7 横屏 MOD 详情|![横屏 MOD 详情](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@dafe0dc3e99fb84915a6f7297bbd96df3e0741ec/public/prd/app-mods/06-detail-landscape.png)<br>*图 4.2.7-1：横屏 MOD 详情。*|① 左侧为预览图，右侧为信息和操作。<br>② 与竖屏读取同一 MOD、安装状态和任务。<br>③ 旋转不重复触发安装、更新、启停或卸载。|
+|4.2.8 Steam 个人中心 MODS|![竖屏个人中心 MODS](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@dafe0dc3e99fb84915a6f7297bbd96df3e0741ec/public/prd/app-mods/09-steam-profile-mods-portrait.png)<br>*图 4.2.8-1：竖屏 Steam 个人中心 MODS。*<br>![横屏个人中心 MODS](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@dafe0dc3e99fb84915a6f7297bbd96df3e0741ec/public/prd/app-mods/10-steam-profile-mods-landscape.png)<br>*图 4.2.8-2：横屏 Steam 个人中心 MODS。*|① Steam 个人中心新增独立一级 Tab“MODS”，与创意工坊并列。<br>② Steam 标题左对齐，右侧保留好友、账号操作、电源三个原有入口。<br>③ 不显示“仅显示当前设备已安装的 MOD”提示文案；业务上仍仅展示当前设备已安装 MOD。<br>④ MOD 按游戏分组，分组显示游戏名、已安装数量和“查看全部”。<br>⑤ 卡片进入现有 MOD 详情并保留快捷启停；不显示下载或详情按钮。<br>⑥ 页面不提供搜索、排序、筛选、刷新和直接下载。<br>⑦ “查看全部”进入对应游戏的 `MODS > 浏览`；浏览内详情返回浏览，浏览页返回操作直接回个人中心并恢复原分组和滚动位置。|
 
 #### 4.2.9 创意工坊隔离
 
@@ -132,7 +133,7 @@ MODS 页面不得出现“订阅”“取消订阅”“我的订阅”。两套
 #### 4.2.11 已安装与个人中心
 
 - 安装状态、启用值和任务均以当前设备为准。
-- “全部”显示当前设备全部已安装 MOD；“可更新”仅显示已确认有更新的 MOD。
+- 已安装页“全部 / 可更新”使用子 Tab；“全部”显示当前设备全部已安装 MOD，“可更新”仅显示已确认有更新的 MOD。
 - 已安装页不读取浏览搜索词；切换 Tab 不清空浏览搜索词。
 - 卡片快捷启停成功后直接改变状态，不显示成功 Toast；失败时恢复原值并提示重试。
 - 个人中心按游戏分组，只显示有已安装 MOD 的游戏；安装、卸载或归属变化后同步数量和卡片。
@@ -305,13 +306,13 @@ MODS 页面不得出现“订阅”“取消订阅”“我的订阅”。两套
 |01-game-more-menu-portrait.png|9 个入口，5+4 两行|
 |08-game-more-menu-landscape.png|弹层仅包住两行入口，无第三行空白|
 |02-browse-portrait.png|主 Tab → 搜索 → 排序 → 单列卡片|
-|03-installed-portrait.png|无搜索；全部/可更新；快捷启停|
+|03-installed-portrait.png|无搜索；全部/可更新子 Tab 左对齐；刷新在右侧|
 |04-detail-portrait.png|覆盖层；底部三个等宽按钮|
 |05-browse-landscape.png|主 Tab → 排序/搜索/刷新 → 双列卡片|
 |06-detail-landscape.png|左右分栏；底部三个等宽按钮|
-|07-installed-landscape.png|无搜索空位，列表紧跟筛选区|
-|09-steam-profile-mods-portrait.png|个人中心 MODS；按游戏分组；查看全部；快捷启停|
-|10-steam-profile-mods-landscape.png|个人中心 MODS 横屏布局，信息和操作无缺失|
+|07-installed-landscape.png|筛选子 Tab 位于第二行左侧，刷新在右侧，列表紧跟筛选区|
+|09-steam-profile-mods-portrait.png|Steam 标题左对齐；右侧 3 个入口；无设备提示文案|
+|10-steam-profile-mods-landscape.png|标题、一级 Tab 和右侧 3 个入口无重叠|
 
 ### 9.2 功能验收
 
@@ -323,8 +324,8 @@ MODS 页面不得出现“订阅”“取消订阅”“我的订阅”。两套
 |AC-04|搜索和排序|搜索名称或作者并切换排序|模糊匹配；清空恢复；排序正确并回顶部|
 |AC-05|列表|滚动加载、返回列表、模拟图片失败|追加内容；恢复位置；图片失败显示占位图|
 |AC-06|卡片|查看字段并点击卡片|字段符合要求；卡片进入对应详情|
-|AC-07|已安装|进入横竖屏已安装|无搜索；显示全部/可更新、刷新和快捷启停|
-|AC-08|Steam 个人中心|进入 MODS Tab|仅展示当前设备已安装 MOD，并按游戏分组|
+|AC-07|已安装|进入横竖屏已安装|无搜索；全部/可更新子 Tab 左对齐，刷新在同一行右侧；横屏位于第二行|
+|AC-08|Steam 个人中心|进入 MODS Tab|Steam 标题左对齐；右侧保留好友、账号操作、电源；不显示设备提示文案；仅展示当前设备已安装 MOD 并按游戏分组|
 |AC-08B|个人中心空态|当前设备无已安装 MOD|显示空态；点击按钮进入游戏库的 MODS 支持列表；加载失败留在空态并可重试|
 |AC-09|个人中心查看全部|点击某游戏“查看全部”，进入详情后逐级返回|进入该游戏 `MODS > 浏览`；详情返回浏览；浏览返回直接回个人中心并恢复原分组和位置|
 |AC-10|业务隔离|安装、启停、更新或卸载同名 MODS 内容|创意工坊文件、订阅和启用状态不变|
@@ -339,3 +340,7 @@ MODS 页面不得出现“订阅”“取消订阅”“我的订阅”。两套
 |AC-18B|任务弱网|下载、更新、校验或安装中断网后恢复|下载和更新保留任务 ID 与进度并续传；校验和安装继续本地阶段；不新建任务|
 |AC-19|国内包|进入 MODS|显示“盖世游戏”，功能完整|
 |AC-20|海外包|进入 MODS|显示“GameHub”，功能完整，无云游戏依赖|
+
+### 9.3 自检记录
+
+已覆盖排序与加载、空态、文本截断、多语言、状态流转、弱网、任务互斥、国内与海外差异、横竖屏和固定图片地址。
