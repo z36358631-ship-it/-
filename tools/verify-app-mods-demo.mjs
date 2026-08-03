@@ -406,36 +406,38 @@ try {
   await page.locator('[data-tab="installed"]').click();
   assert.equal(await page.locator('[data-search]').count(), 0);
   assert.equal(await page.locator('[data-enable-switch]').count(), 4);
-  const installedFilter = page.locator('[data-installed-filter-select]');
-  assert.equal(await installedFilter.count(), 1);
+  const installedFilters = page.locator('[data-installed-filter]');
   assert.deepEqual(
-    await installedFilter.locator('option').evaluateAll(options => options.map(option => option.textContent.trim())),
+    await installedFilters.evaluateAll(items => items.map(item => item.textContent.trim())),
     ['全部', '可更新']
   );
-  assert.equal(await installedFilter.inputValue(), 'all');
-  assert.equal(await page.locator('.filter-tab').count(), 0);
-  await installedFilter.selectOption('updates');
+  assert.equal(await installedFilters.count(), 2);
+  assert.equal(await page.locator('[data-installed-filter="all"]').getAttribute('aria-selected'), 'true');
+  assert.equal(await page.locator('[data-installed-filter-select]').count(), 0);
+  await page.locator('[data-installed-filter="updates"]').click();
   assert.equal(await page.evaluate(() => window.__APP_MODS_DEMO__.getState().installedFilter), 'updates');
-  await installedFilter.selectOption('all');
+  await page.locator('[data-installed-filter="all"]').click();
   const portraitInstalledLayout = await page.evaluate(() => {
     const tabs = document.querySelector('.primary-tabs').getBoundingClientRect();
     const filters = document.querySelector('.sort-section').getBoundingClientRect();
-    const group = document.querySelector('.installed-controls');
-    const filter = group.querySelector('[data-installed-filter-select]').getBoundingClientRect();
-    const refresh = group.querySelector('.refresh-small').getBoundingClientRect();
+    const filterTabs = document.querySelector('.installed-filter-tabs').getBoundingClientRect();
+    const refresh = document.querySelector('.installed-controls .refresh-small').getBoundingClientRect();
+    const style = getComputedStyle(document.querySelector('.sort-section'));
     const list = document.querySelector('.mods-scroll').getBoundingClientRect();
     return {
       filtersFollowTabs: Math.abs(filters.top - tabs.bottom) <= 1,
       listFollowsFilters: Math.abs(list.top - filters.bottom) <= 1,
-      filterBeforeRefresh: filter.right <= refresh.left,
-      filterRefreshGap: Math.round(refresh.left - filter.right)
+      tabsLeftAligned: Math.abs(filterTabs.left - (filters.left + parseFloat(style.paddingLeft))) <= 1,
+      refreshRightAligned: Math.abs(refresh.right - (filters.right - parseFloat(style.paddingRight))) <= 1,
+      tabsBeforeRefresh: filterTabs.right <= refresh.left
     };
   });
   assert.deepEqual(portraitInstalledLayout, {
     filtersFollowTabs: true,
     listFollowsFilters: true,
-    filterBeforeRefresh: true,
-    filterRefreshGap: 8
+    tabsLeftAligned: true,
+    refreshRightAligned: true,
+    tabsBeforeRefresh: true
   });
   await capture('03-installed-portrait.png');
 
@@ -537,25 +539,24 @@ try {
     const header = document.querySelector('.mods-header').getBoundingClientRect();
     const filters = document.querySelector('.sort-section').getBoundingClientRect();
     const group = document.querySelector('.installed-controls');
-    const groupBox = group.getBoundingClientRect();
-    const filter = group.querySelector('[data-installed-filter-select]').getBoundingClientRect();
+    const filterTabs = group.querySelector('.installed-filter-tabs').getBoundingClientRect();
     const refresh = group.querySelector('.refresh-small').getBoundingClientRect();
     const list = document.querySelector('.mods-scroll').getBoundingClientRect();
     const device = document.querySelector('[data-demo-root]').getBoundingClientRect();
     return {
       filtersFollowHeader: Math.abs(filters.top - header.bottom) <= 1,
       listFollowsFilters: Math.abs(list.top - filters.bottom) <= 1,
-      controlsRightAligned: Math.abs(groupBox.right - (device.right - 38)) <= 1,
-      filterBeforeRefresh: filter.right <= refresh.left,
-      filterRefreshGap: Math.round(refresh.left - filter.right)
+      tabsLeftAligned: Math.abs(filterTabs.left - (device.left + 38)) <= 1,
+      refreshRightAligned: Math.abs(refresh.right - (device.right - 38)) <= 1,
+      tabsBeforeRefresh: filterTabs.right <= refresh.left
     };
   });
   assert.deepEqual(landscapeInstalledLayout, {
     filtersFollowHeader: true,
     listFollowsFilters: true,
-    controlsRightAligned: true,
-    filterBeforeRefresh: true,
-    filterRefreshGap: 8
+    tabsLeftAligned: true,
+    refreshRightAligned: true,
+    tabsBeforeRefresh: true
   });
   await capture('07-installed-landscape.png');
 

@@ -466,7 +466,7 @@
       align-items: center;
       gap: 24px;
     }
-    .sort-tab {
+    .sort-tab, .filter-tab {
       position: relative;
       height: 38px;
       color: #88868c;
@@ -475,8 +475,8 @@
       font-weight: 520;
       white-space: nowrap;
     }
-    .sort-tab.is-active { color: #fff; }
-    .sort-tab.is-active::after {
+    .sort-tab.is-active, .filter-tab.is-active { color: #fff; }
+    .sort-tab.is-active::after, .filter-tab.is-active::after {
       content: "";
       position: absolute;
       right: 2px;
@@ -486,6 +486,8 @@
       border-radius: 3px;
       background: #fff;
     }
+    .filter-tab { min-width: 44px; height: 44px; }
+    .filter-tab.is-active::after { bottom: -3px; }
     .refresh-small {
       width: 36px;
       height: 36px;
@@ -499,46 +501,17 @@
     }
     .refresh-small.is-loading svg { animation: spin .7s linear infinite; }
     .installed-controls {
+      width: 100%;
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-left: auto;
+      gap: 24px;
     }
-    .installed-controls .refresh-small { margin-left: 0; }
-    .installed-filter-wrap {
-      position: relative;
+    .installed-filter-tabs {
       display: flex;
       align-items: center;
+      gap: 24px;
     }
-    .installed-filter-wrap::after {
-      content: "⌄";
-      position: absolute;
-      top: 50%;
-      right: 12px;
-      color: #8e8c92;
-      font-size: 14px;
-      line-height: 1;
-      pointer-events: none;
-      transform: translateY(-58%);
-    }
-    .installed-filter-select {
-      width: 104px;
-      height: 36px;
-      padding: 0 30px 0 12px;
-      appearance: none;
-      border: 1px solid rgba(255,255,255,.1);
-      border-radius: var(--radius-full);
-      outline: 0;
-      color: #e6e6e6;
-      background: rgba(255,255,255,.06);
-      font-size: 14px;
-      cursor: pointer;
-    }
-    .installed-filter-select option { color: #e6e6e6; background: #252525; }
-    .installed-filter-wrap:focus-within {
-      border-radius: var(--radius-full);
-      box-shadow: 0 0 0 2px rgba(255,255,255,.2);
-    }
+    .installed-controls .refresh-small { margin-left: auto; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .mods-scroll {
       position: absolute;
@@ -1886,12 +1859,10 @@
           ` : `
             <div class="sort-section" aria-label="已安装工具">
               <div class="installed-controls">
-                <label class="installed-filter-wrap">
-                  <select class="installed-filter-select" data-installed-filter-select aria-label="已安装筛选">
-                    <option value="all" ${state.installedFilter === 'all' ? 'selected' : ''}>全部</option>
-                    <option value="updates" ${state.installedFilter === 'updates' ? 'selected' : ''}>可更新</option>
-                  </select>
-                </label>
+                <div class="installed-filter-tabs" role="tablist" aria-label="已安装筛选">
+                  <button class="filter-tab ${state.installedFilter === 'all' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.installedFilter === 'all'}" data-installed-filter="all">全部</button>
+                  <button class="filter-tab ${state.installedFilter === 'updates' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.installedFilter === 'updates'}" data-installed-filter="updates">可更新</button>
+                </div>
                 <button class="refresh-small ${state.refreshing ? 'is-loading' : ''}" type="button" data-action="refresh" aria-label="刷新">${icon('refresh')}</button>
               </div>
             </div>
@@ -2112,12 +2083,6 @@
           modId: control.dataset.modId,
           returnSelector: `[data-mod-card][data-mod-id="${control.dataset.modId}"]`
         });
-      }
-    });
-
-    root.addEventListener('change', event => {
-      if (event.target.matches('[data-installed-filter-select]')) {
-        dispatch({ type: 'SET_INSTALLED_FILTER', value: event.target.value });
       }
     });
 
