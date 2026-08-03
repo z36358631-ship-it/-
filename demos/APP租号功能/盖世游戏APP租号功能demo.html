@@ -937,6 +937,62 @@
     .landscape .steam-guard.has-code .steam-guard-code { gap: 8px; margin: 0; justify-self: end; }
     .landscape .steam-guard.has-code .steam-guard-actions { margin: 0; }
 
+    .expiry-reminder { position: absolute; z-index: 45; top: 42px; left: 50%; display: flex; width: min(356px, calc(100% - 28px)); min-height: 70px; align-items: center; gap: 10px; padding: 10px 11px 10px 14px; border: 1px solid rgb(255 218 121 / 30%); border-radius: 15px; background: rgb(35 31 23 / 96%); box-shadow: 0 12px 36px rgb(0 0 0 / 42%); transform: translateX(-50%); backdrop-filter: blur(18px); }
+    .device.landscape .expiry-reminder { top: 62px; width: 520px; min-height: 58px; }
+    .expiry-reminder[data-context="in-game"] { top: 14px; }
+    .expiry-reminder-copy { min-width: 0; flex: 1; }
+    .expiry-reminder-copy strong { display: block; font-size: 12px; line-height: 18px; }
+    .expiry-reminder-copy span { color: #b6ac95; font-size: 9px; }
+    .expiry-reminder-actions { display: flex; align-items: center; gap: 6px; }
+    .expiry-reminder button { min-width: 44px; min-height: 44px; padding: 0 10px; border: 1px solid rgb(255 255 255 / 11%); border-radius: 10px; background: rgb(255 255 255 / 6%); cursor: pointer; font-size: 9px; }
+    .expiry-reminder [data-action="continue-expiry"] { border: 0; background: #ffcc43; color: #181208; font-weight: 650; }
+    .rental-ended-dialog { max-width: 380px; padding: 20px; }
+    .rental-ended-dialog h2 { margin: 0; font-size: 20px; }
+    .rental-ended-dialog p { margin: 8px 0 16px; color: var(--text-muted); font-size: 11px; line-height: 18px; }
+    .ended-dialog-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .ended-dialog-actions button { min-height: 44px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 11px; background: rgb(255 255 255 / 6%); cursor: pointer; font-size: 10px; }
+    .ended-dialog-actions .ended-primary { border: 0; background: #ffcc43; color: #181208; font-weight: 650; }
+
+    .portrait-after-sales { display: grid; gap: 12px; }
+    .after-sales-panel { min-width: 0; padding: 15px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 17px; background: rgb(24 25 30 / 88%); }
+    .after-sales-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .after-sales-head h2 { margin: 0; font-size: 17px; }
+    .after-sales-head p { margin: 5px 0 0; color: var(--text-muted); font-size: 9px; }
+    .after-sales-types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+    .after-sales-types button { min-height: 44px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 10px; background: rgb(255 255 255 / 5%); cursor: pointer; font-size: 10px; }
+    .after-sales-types button.selected { border-color: rgb(255 204 67 / 44%); background: rgb(255 204 67 / 10%); color: #ffdc7d; }
+    .after-sales-description { display: grid; gap: 6px; margin-top: 12px; color: #c8c9ce; font-size: 10px; }
+    .after-sales-description textarea { width: 100%; min-height: 92px; resize: vertical; padding: 11px; border: 1px solid #363a44; border-radius: 11px; outline: 0; background: #16171b; color: #fff; font: inherit; line-height: 17px; }
+    .after-sales-description textarea:focus { border-color: #ffcc43; }
+    .after-sales-submit { width: 100%; min-height: 44px; margin-top: 11px; border: 0; border-radius: 11px; background: #ffcc43; color: #181208; cursor: pointer; font-size: 11px; font-weight: 650; }
+    .after-sales-result { display: grid; gap: 10px; }
+    .after-sales-result-card { padding: 12px; border-radius: 12px; background: rgb(51 216 164 / 9%); color: #b7f2df; font-size: 10px; }
+    .refund-progress { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+    .refund-progress span { padding: 8px 4px; border-radius: 8px; background: rgb(255 255 255 / 5%); color: var(--text-muted); font-size: 8px; text-align: center; }
+    .refund-progress span:first-child { background: rgb(51 216 164 / 12%); color: #79e8c6; }
+    .replacement-box { margin-top: 10px; padding: 11px; border: 1px solid rgb(255 255 255 / 8%); border-radius: 12px; background: rgb(0 0 0 / 14%); }
+    .replacement-box h3 { margin: 0; font-size: 12px; }
+    .replacement-box p { margin: 6px 0 9px; color: var(--text-muted); font-size: 9px; line-height: 15px; }
+    .replacement-actions { display: flex; gap: 7px; }
+    .replacement-actions button { min-height: 44px; flex: 1; border: 1px solid rgb(255 255 255 / 10%); border-radius: 9px; background: rgb(255 255 255 / 6%); cursor: pointer; font-size: 9px; }
+    .replacement-actions .replacement-primary { border: 0; background: #338feb; color: #fff; }
+    .landscape-after-sales { display: grid; height: 314px; grid-template-columns: 275px minmax(0, 1fr); gap: 12px; }
+    .landscape-after-sales .order-list-pane { padding: 12px; }
+    .landscape-after-sales .after-sales-panel { overflow-y: auto; padding: 12px; scrollbar-width: none; }
+    .landscape-after-sales .after-sales-panel::-webkit-scrollbar { display: none; }
+    .landscape-after-sales .after-sales-head { margin-bottom: 8px; }
+    .landscape-after-sales .after-sales-types { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .landscape-after-sales .after-sales-description { margin-top: 8px; }
+    .landscape-after-sales .after-sales-description textarea { min-height: 54px; }
+    .landscape-after-sales .after-sales-submit { margin-top: 7px; }
+    .landscape-after-sales .replacement-box { margin-top: 7px; }
+
+    .recovery-actions { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 8px; width: 100%; }
+    .recovery-actions button { min-height: 44px; border: 1px solid rgb(255 255 255 / 11%); border-radius: 11px; background: rgb(255 255 255 / 6%); cursor: pointer; font-size: 10px; }
+    .recovery-actions .recovery-primary { border: 0; background: #ffcc43; color: #181208; font-weight: 650; }
+    .network-alert strong { display: block; color: #fff; }
+    .network-alert span { display: block; margin-top: 3px; }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
     }
@@ -1004,7 +1060,23 @@
       guardIssued: false,
       accountAllocationCount: 0,
       toast: null,
-      expiry15Shown: false,
+      rentalUsage: null,
+      rentalUsageSequence: 0,
+      serverTime: null,
+      gameplayContext: false,
+      expiryReminderOpen: false,
+      expiryReminderCount: 0,
+      remindedUsageIds: [],
+      expiredLaunchDialogOpen: false,
+      expiredLaunchReason: 'ended',
+      postRentalEntitlement: null,
+      launchVerification: 'online',
+      afterSalesDraft: { orderId: null, type: 'login', description: '' },
+      afterSalesOrder: null,
+      afterSalesInventoryAvailable: true,
+      replacementRequest: null,
+      networkAvailable: true,
+      orderQueryError: false,
     };
 
     const SCENARIOS = {
@@ -1028,9 +1100,16 @@
       pending: { label: '待支付', note: '请在 30 分钟内完成支付', tone: 'warning' },
       allocating: { label: '取号中', note: '系统正在分配可用账号', tone: 'info' },
       active: { label: '租赁中', note: '账号已就绪，可继续游戏', tone: 'success' },
-      refunding: { label: '退款中', note: '取号失败，退款原路退回', tone: 'warning' },
+      refunding: { label: '退款中', note: '取号失败，正在自动退款', tone: 'warning' },
       ended: { label: '已结束', note: '本次租赁服务已结束', tone: 'muted' },
     });
+    const AFTER_SALES_TYPES = Object.freeze([
+      ['login', '无法登录'],
+      ['crash', '游戏闪退'],
+      ['save', '存档异常'],
+      ['refund', '申请退款'],
+      ['other', '其他问题'],
+    ]);
     const ORDER_FIXTURES = Object.freeze([
       { id: 'APP-20260803001', status: 'active', gameId: 'elden-ring', gameName: '艾尔登法环', version: 'Steam版本', durationLabel: '8小时', amount: 36, createdAt: 1785686400000 },
       { id: 'APP-20260803002', status: 'allocating', gameId: 'the-forest', gameName: 'The Forest', version: 'Steam版本', durationLabel: '2小时', amount: 9.9, createdAt: 1785682800000 },
@@ -1192,7 +1271,15 @@
     function createOrder({ sku, amount, priceVersion, ...snapshot }) {
       if (state.order && NON_TERMINAL_ORDER_STATUSES.has(state.order.status)) return null;
       const createdAt = Date.now();
+      const game = getSelectedGame();
+      const offer = getSelectedOffer();
       state.order = {
+        gameId: game.id,
+        gameName: game.name,
+        version: `${state.selectedVersion}版本`,
+        durationLabel: offer.durationLabel,
+        gameOriginalPrice: 298,
+        paymentMethod: state.selectedPayment,
         ...snapshot,
         id: nextOrderId(createdAt),
         status: 'pending',
@@ -1255,6 +1342,7 @@
 
     function setPriceChanged(value) {
       state.priceChanged = Boolean(value);
+      if (state.priceChanged && state.order) state.screen = 'checkout';
       renderApp();
     }
 
@@ -1292,6 +1380,28 @@
       };
       state.selectedOrderId = state.order.id;
       state.accountAllocationCount = 1;
+      if (!state.rentalUsage || state.rentalUsage.expiryHandled) {
+        const now = Date.now();
+        state.rentalUsageSequence += 1;
+        state.serverTime = now;
+        state.rentalUsage = {
+          id: `USAGE-APP-SCENARIO-ACTIVE-${state.rentalUsageSequence}`,
+          orderId: state.order.id,
+          expireAt: now + 8 * 60 * 60 * 1000,
+          sessionActive: true,
+          rentalSessionRevoked: false,
+          shortAuthValid: true,
+          accountReleased: false,
+          packageInstalled: true,
+          expiryHandled: false,
+          expiryExecutionCount: 0,
+          accountReleaseCount: 0,
+          takeover: null,
+        };
+        state.expiryReminderOpen = false;
+        state.expiredLaunchDialogOpen = false;
+        state.postRentalEntitlement = null;
+      }
       return cloneOrder(state.order);
     }
 
@@ -1455,19 +1565,25 @@
       return true;
     }
 
-    function clearSensitiveState(reason = 'manual') {
+    function wipeSensitiveState({ clearAccount = false, closePanels = true } = {}) {
       state.guardCode = null;
       state.guardExpiresAt = null;
       state.guardIssued = false;
+      if (clearAccount) state.steamForm.account = '';
       state.steamForm.password = '';
       state.steamForm.submitted = false;
       state.steamForm.requiresGuard = false;
       state.credentialAccountVisible = false;
       state.credentialPasswordVisible = false;
-      if (reason === 'background' || reason === 'order-ended') {
+      if (closePanels) {
         state.credentialPanelOpen = false;
         state.steamHelpOpen = false;
+        state.loginMethodOpen = false;
       }
+    }
+
+    function clearSensitiveState(reason = 'manual') {
+      wipeSensitiveState({ clearAccount: ['order-ended', 't0', 'after-sales'].includes(reason), closePanels: true });
       renderApp();
       return true;
     }
@@ -1476,6 +1592,215 @@
       if (!state.order || state.order.status !== 'active') return false;
       state.order.status = 'ended';
       clearSensitiveState('order-ended');
+      return true;
+    }
+
+    function setGameplayContext(value) {
+      state.gameplayContext = Boolean(value);
+      renderApp();
+      return state.gameplayContext;
+    }
+
+    function resolvePostRentalEntitlement() {
+      if (['personal-owned', 'permanent', 'membership'].includes(state.postRentalEntitlement)) return state.postRentalEntitlement;
+      if (['owned-installed', 'owned-uninstalled', 'permanent-owned'].includes(state.scenario)) return 'personal-owned';
+      if (['monthly-active', 'annual-active', 'permanent'].includes(state.membershipStatus) || state.scenario === 'active-member') return 'membership';
+      return null;
+    }
+
+    function setPostRentalEntitlement(value) {
+      state.postRentalEntitlement = ['personal-owned', 'permanent', 'membership'].includes(value) ? value : null;
+      renderApp();
+      return state.postRentalEntitlement;
+    }
+
+    function handleRentalT0() {
+      const usage = state.rentalUsage;
+      if (!usage || usage.expiryHandled || state.serverTime < usage.expireAt) return false;
+      usage.expiryHandled = true;
+      usage.expiryExecutionCount += 1;
+      usage.rentalSessionRevoked = true;
+      usage.shortAuthValid = false;
+      usage.accountReleased = true;
+      usage.accountReleaseCount += 1;
+      state.expiryReminderOpen = false;
+      if (state.order) state.order.status = 'ended';
+      wipeSensitiveState({ clearAccount: true, closePanels: true });
+      const takeover = resolvePostRentalEntitlement();
+      usage.takeover = takeover;
+      usage.sessionActive = Boolean(takeover);
+      state.expiredLaunchDialogOpen = !takeover;
+      state.expiredLaunchReason = 'ended';
+      state.screen = takeover ? 'detail' : 'order-detail';
+      renderApp();
+      return true;
+    }
+
+    function triggerExpiryMinutes(minutes) {
+      if (!state.rentalUsage || !Number.isFinite(Number(minutes))) return false;
+      const numericMinutes = Number(minutes);
+      state.serverTime = state.rentalUsage.expireAt - Math.max(0, numericMinutes) * 60 * 1000;
+      if (numericMinutes <= 0) return handleRentalT0();
+      const remaining = state.rentalUsage.expireAt - state.serverTime;
+      const alreadyShown = state.remindedUsageIds.includes(state.rentalUsage.id);
+      if (remaining > 0 && remaining <= 15 * 60 * 1000 && !alreadyShown) {
+        state.remindedUsageIds.push(state.rentalUsage.id);
+        state.expiryReminderCount += 1;
+        state.expiryReminderOpen = true;
+      }
+      renderApp();
+      return state.expiryReminderOpen;
+    }
+
+    function closeExpiryReminder() {
+      state.expiryReminderOpen = false;
+      renderApp();
+      return true;
+    }
+
+    function continueFromExpiryReminder() {
+      state.expiryReminderOpen = false;
+      state.screen = 'detail';
+      renderApp();
+      return true;
+    }
+
+    function setLaunchVerification(value) {
+      state.launchVerification = value === 'offline' ? 'offline' : 'online';
+      renderApp();
+      return state.launchVerification;
+    }
+
+    function attemptLaunchAfterExpiry() {
+      if (!state.rentalUsage?.expiryHandled) return false;
+      if (state.launchVerification !== 'online') {
+        state.expiredLaunchDialogOpen = true;
+        state.expiredLaunchReason = 'network';
+        renderApp();
+        return false;
+      }
+      const takeover = resolvePostRentalEntitlement();
+      if (!takeover) {
+        state.expiredLaunchDialogOpen = true;
+        state.expiredLaunchReason = 'ended';
+        state.rentalUsage.sessionActive = false;
+        renderApp();
+        return false;
+      }
+      state.rentalUsage.takeover = takeover;
+      state.rentalUsage.sessionActive = true;
+      state.expiredLaunchDialogOpen = false;
+      state.screen = 'detail';
+      renderApp();
+      return true;
+    }
+
+    function recheckEntitlement() {
+      return attemptLaunchAfterExpiry();
+    }
+
+    function closeExpiredLaunchDialog() {
+      state.expiredLaunchDialogOpen = false;
+      state.screen = 'orders';
+      renderApp();
+      return true;
+    }
+
+    function openAfterSales() {
+      const order = getSelectedOrder();
+      if (!order || !['active', 'refunding'].includes(order.status)) return false;
+      if (state.afterSalesDraft.orderId !== order.id) {
+        state.afterSalesDraft = { orderId: order.id, type: 'login', description: '' };
+        state.afterSalesOrder = null;
+        state.replacementRequest = null;
+      }
+      state.credentialPanelOpen = false;
+      state.steamHelpOpen = false;
+      state.screen = 'after-sales';
+      renderApp();
+      return true;
+    }
+
+    function setAfterSalesType(value) {
+      if (!AFTER_SALES_TYPES.some(([id]) => id === value)) return false;
+      state.afterSalesDraft.type = value;
+      renderApp();
+      return true;
+    }
+
+    function setAfterSalesDescription(value) {
+      state.afterSalesDraft.description = String(value || '');
+      return state.afterSalesDraft.description;
+    }
+
+    function submitAfterSales() {
+      if (state.afterSalesOrder?.orderId === state.afterSalesDraft.orderId) return cloneOrder(state.afterSalesOrder);
+      if (!state.afterSalesDraft.orderId || !state.afterSalesDraft.description.trim()) {
+        showToast('请填写问题描述');
+        return null;
+      }
+      state.afterSalesOrder = {
+        id: `AFTER-${state.afterSalesDraft.orderId}`,
+        orderId: state.afterSalesDraft.orderId,
+        type: state.afterSalesDraft.type,
+        description: state.afterSalesDraft.description.trim(),
+        status: 'submitted',
+        refundProgress: state.afterSalesDraft.type === 'refund' ? ['已提交', '审核中', '原路退款'] : [],
+      };
+      wipeSensitiveState({ clearAccount: true, closePanels: true });
+      renderApp();
+      return cloneOrder(state.afterSalesOrder);
+    }
+
+    function setAfterSalesInventory(value) {
+      state.afterSalesInventoryAvailable = Boolean(value);
+      renderApp();
+      return state.afterSalesInventoryAvailable;
+    }
+
+    function requestReplacement() {
+      const order = getOrderCollection().find(({ id }) => id === state.afterSalesDraft.orderId) || getSelectedOrder();
+      if (!order) return false;
+      wipeSensitiveState({ clearAccount: true, closePanels: true });
+      if (!state.afterSalesInventoryAvailable) {
+        state.replacementRequest = {
+          status: 'no-stock',
+          orderId: order.id,
+          gameId: order.gameId,
+          version: order.version,
+          originalBindingPreserved: true,
+        };
+        renderApp();
+        return false;
+      }
+      state.replacementRequest = {
+        status: 'success',
+        orderId: order.id,
+        gameId: order.gameId,
+        version: order.version,
+        originalBindingPreserved: false,
+      };
+      renderApp();
+      return true;
+    }
+
+    function setNetworkAvailable(value) {
+      state.networkAvailable = Boolean(value);
+      renderApp();
+      return state.networkAvailable;
+    }
+
+    function queryOrderStatus() {
+      if (!state.order) return false;
+      state.orderQueryError = !state.networkAvailable;
+      renderApp();
+      return !state.orderQueryError;
+    }
+
+    function retryInventoryCheck() {
+      state.inventoryAvailable = true;
+      state.orderQueryError = false;
+      renderApp();
       return true;
     }
 
@@ -1731,8 +2056,19 @@
     }
 
     function checkoutAlert() {
-      if (!state.inventoryAvailable) return '<div class="state-alert">当前套餐已售罄，请返回详情选择其他租期。</div>';
+      if (state.orderQueryError) return `<div class="state-alert network-alert"><strong>网络异常，暂未获取订单状态</strong><span>订单号 ${state.order?.id || '--'} 已保留，请恢复网络后重新查询。</span></div>`;
+      if (!state.inventoryAvailable) return '<div class="state-alert"><strong>当前套餐已售罄</strong><br>可重新查询库存，或返回详情选择其他租期。</div>';
       if (state.priceChanged) return '<div class="state-alert">价格已更新，请按新价格重新确认订单。</div>';
+      return '';
+    }
+
+    function renderCheckoutRecoveryActions() {
+      if (state.orderQueryError) {
+        return '<div class="recovery-actions"><button type="button" data-action="back-to-detail">返回详情</button><button class="recovery-primary" type="button" data-primary-action="true" data-action="requery-order">重新查询</button></div>';
+      }
+      if (!state.inventoryAvailable) {
+        return '<div class="recovery-actions"><button type="button" data-action="back-to-detail">返回详情</button><button class="recovery-primary" type="button" data-primary-action="true" data-action="retry-inventory">重新查询库存</button></div>';
+      }
       return '';
     }
 
@@ -1835,6 +2171,37 @@
       return `<section class="portrait-order-detail" data-layout="portrait-order-detail">${subpageHead('订单详情', 'orders')}${renderOrderDetailBody(getSelectedOrder())}</section>`;
     }
 
+    function renderAfterSalesResult() {
+      const ticket = state.afterSalesOrder;
+      const replacement = state.replacementRequest;
+      if (!ticket) return '';
+      const refundProgress = ticket.type === 'refund'
+        ? `<div class="refund-progress" aria-label="退款进度">${ticket.refundProgress.map((label, index) => `<span>${index === 2 ? `退款：${label}` : label}</span>`).join('')}</div>`
+        : '';
+      let replacementStatus = '';
+      if (replacement?.status === 'no-stock') {
+        replacementStatus = '<div class="replacement-status"><p>暂无同游戏同版本账号，已保留原绑定，不会影响当前售后处理。</p><div class="replacement-actions"><button type="button" data-action="contact-support">联系客服</button><button class="replacement-primary" type="button" data-action="request-replacement">重试换号</button></div></div>';
+      } else if (replacement?.status === 'success') {
+        replacementStatus = `<div class="replacement-status"><p>换号成功，已匹配同游戏同版本账号：${replacement.version}。</p><div class="replacement-actions"><button type="button" data-action="contact-support">联系客服</button><button class="replacement-primary" type="button" data-action="back-to-orders">查看订单</button></div></div>`;
+      }
+      return `<div class="after-sales-result"><div class="after-sales-result-card"><strong>售后单 ${ticket.id} 已提交</strong><br>我们会保留订单信息并同步处理进度。</div>${refundProgress}<section class="replacement-box"><h3>账号异常处理</h3><p>如登录或启动问题仍未解决，可申请同游戏同版本换号。</p>${replacementStatus || '<div class="replacement-actions"><button type="button" data-action="contact-support">联系客服</button><button class="replacement-primary" type="button" data-action="request-replacement">申请换号</button></div>'}</section></div>`;
+    }
+
+    function renderAfterSalesPanel() {
+      const order = getOrderCollection().find(({ id }) => id === state.afterSalesDraft.orderId) || getSelectedOrder();
+      return `<section class="after-sales-panel" aria-label="申请售后"><div class="after-sales-head"><div><h2>申请售后</h2><p>订单 ${order?.id || '--'} · ${order?.gameName || '当前游戏'}</p></div><span class="order-status-chip" data-tone="info">${state.afterSalesOrder ? '已提交' : '填写中'}</span></div><div class="after-sales-types" role="group" aria-label="问题类型">${AFTER_SALES_TYPES.map(([id, label]) => `<button class="${state.afterSalesDraft.type === id ? 'selected' : ''}" type="button" data-action="select-after-sales-type" data-after-sales-type="${id}" aria-pressed="${state.afterSalesDraft.type === id}">${label}</button>`).join('')}</div><label class="after-sales-description" for="after-sales-description"><span>问题描述（必填）</span><textarea id="after-sales-description" maxlength="300" placeholder="请描述出现问题的时间、操作步骤和现象">${escapeAttribute(state.afterSalesDraft.description)}</textarea></label><button class="after-sales-submit" type="button" data-primary-action="true" data-action="submit-after-sales">${state.afterSalesOrder ? '已提交售后申请' : '提交售后申请'}</button>${renderAfterSalesResult()}</section>`;
+    }
+
+    function renderPortraitAfterSales() {
+      return `<section class="portrait-after-sales" data-layout="portrait-after-sales">${subpageHead('申请售后', 'order-detail')}${renderAfterSalesPanel()}</section>`;
+    }
+
+    function renderLandscapeAfterSales() {
+      const order = getOrderCollection().find(({ id }) => id === state.afterSalesDraft.orderId) || getSelectedOrder();
+      const meta = ORDER_STATUS_META[order?.status] || ORDER_STATUS_META.ended;
+      return `<section class="landscape-after-sales" data-layout="landscape-after-sales"><aside class="order-list-pane"><div class="order-page-head"><div><h1>售后服务</h1><p>问题反馈与账号异常处理</p></div></div><button class="order-list-card selected" type="button" data-action="back-to-orders"><span class="order-game-icon" aria-hidden="true">${order?.gameName?.slice(0, 1) || '游'}</span><span class="order-list-copy"><strong>${order?.gameName || '当前游戏'}</strong><small>${order?.version || '--'} · ${order?.id || '--'}</small></span><span class="order-status-chip" data-tone="${meta.tone}">${meta.label}</span></button></aside>${renderAfterSalesPanel()}</section>`;
+    }
+
     function renderCredentialFields(closeAction) {
       const account = state.credentialAccountVisible ? RENTAL_CREDENTIAL.account : 'gh_****_2607';
       const password = state.credentialPasswordVisible ? RENTAL_CREDENTIAL.password : '••••••••••••';
@@ -1864,8 +2231,20 @@
       return `<div class="modal-backdrop" data-action="close-login-method" role="presentation"><section class="login-method-dialog" role="dialog" aria-modal="true" aria-label="选择登录方式"><div class="credential-head"><div><h2>选择登录方式</h2><p>两种方式使用当前订单分配的同一账号</p></div><button class="dialog-close" type="button" data-action="close-login-method" aria-label="关闭登录方式">×</button></div>${state.oneClickStatus === 'failed' ? '<div class="one-click-error"><strong>一键上号失败</strong><br>可重试连接，或切换手动登录继续。</div>' : ''}<div class="login-method-list"><button class="primary-action" type="button" data-primary-action="true" data-action="start-one-click">${state.oneClickStatus === 'failed' ? '重试一键上号' : '一键上号'}</button><button type="button" data-action="open-manual-login">手动登录</button></div></section></div>`;
     }
 
+    function renderExpiryReminder() {
+      if (!state.expiryReminderOpen || !state.rentalUsage) return '';
+      const context = state.gameplayContext ? 'in-game' : 'outside-game';
+      return `<aside class="expiry-reminder" data-context="${context}" role="status" aria-label="租用即将结束提醒"><div class="expiry-reminder-copy"><strong>租用时间快结束了，是否继续畅玩？</strong><span>继续后将进入游戏详情查看当前可用权益，租期不会自动延长。</span></div><div class="expiry-reminder-actions"><button type="button" data-action="close-expiry" aria-label="关闭提醒">关闭</button><button type="button" data-action="continue-expiry">继续畅玩</button></div></aside>`;
+    }
+
+    function renderRentalEndedDialog() {
+      if (!state.expiredLaunchDialogOpen) return '';
+      const networkIssue = state.expiredLaunchReason === 'network';
+      return `<div class="modal-backdrop" role="presentation"><section class="rental-ended-dialog" role="dialog" aria-modal="true" aria-label="租用已结束"><h2>租用已结束</h2><p>${networkIssue ? '当前网络异常，暂时无法校验最新游戏权益。恢复网络后可重新校验。' : '租用账号已安全释放。你可以校验个人拥有、永久或有效会员权益后继续畅玩，也可以立即结束。'}</p><div class="ended-dialog-actions"><button type="button" data-action="close-expired-launch">立即结束</button><button class="ended-primary" type="button" data-primary-action="true" data-action="recheck-entitlement">继续畅玩</button></div></section></div>`;
+    }
+
     function renderGlobalOverlays() {
-      return `${renderLoginMethodDialog()}${renderCredentialPanel()}${state.toast ? `<div class="demo-toast" role="status">${state.toast}</div>` : ''}`;
+      return `${renderExpiryReminder()}${renderRentalEndedDialog()}${renderLoginMethodDialog()}${renderCredentialPanel()}${state.toast ? `<div class="demo-toast" role="status">${state.toast}</div>` : ''}`;
     }
 
     function renderSteamGuard() {
@@ -1887,6 +2266,8 @@
         return `<footer class="portrait-fixed-footer"><div class="footer-summary"><strong>${meta.summary}</strong><span>权益与价格以当前页面为准</span></div><button class="primary-action" type="button" data-primary-action="true" data-action="${meta.action}" ${meta.screen ? `data-screen="${meta.screen}"` : ''}>${meta.label}</button></footer>`;
       }
       if (screen === 'checkout' && state.order) {
+        const recovery = renderCheckoutRecoveryActions();
+        if (recovery) return `<footer class="portrait-fixed-footer">${recovery}</footer>`;
         const disabled = !state.inventoryAvailable;
         const processing = state.order.status !== 'pending';
         return `<footer class="portrait-fixed-footer"><div class="footer-summary"><strong>应付 ¥${state.order.amount.toFixed(2)}</strong><span>${processing ? '支付已提交，正在处理' : state.priceChanged ? '请重新确认最新价格' : '请在倒计时结束前完成支付'}</span></div><button class="primary-action" type="button" data-primary-action="true" data-action="${state.priceChanged ? 'refresh-price' : 'pay-game-order'}" ${disabled || processing ? 'disabled' : ''}>${processing ? '支付处理中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : '确认支付'}</button></footer>`;
@@ -1920,6 +2301,7 @@
       if (state.screen === 'member-library') return renderPortraitMemberLibrary();
       if (state.screen === 'orders') return renderPortraitOrders();
       if (state.screen === 'order-detail') return renderPortraitOrderDetail();
+      if (state.screen === 'after-sales') return renderPortraitAfterSales();
       if (state.screen === 'steam-login') return renderSteamLogin('portrait');
       return renderStub(state.screen);
     }
@@ -2109,7 +2491,7 @@
       const processing = order.status !== 'pending';
       return `<section class="landscape-checkout" data-layout="landscape-checkout">
         <div class="landscape-checkout-main">${checkoutAlert()}<article class="checkout-product">${realCrop(game.asset, game.crop, `${order.gameName} 横屏订单封面`, '', 'checkout-cover')}<div><span class="rent-badge">${order.version}</span><h2>${order.gameName}</h2><p>订单号 ${order.id}</p></div></article><section class="checkout-panel"><div class="checkout-row"><span>套餐租期</span><strong>${order.durationLabel}</strong></div><div class="checkout-row game-original-row"><span class="price-label">游戏原价</span><strong class="game-original-amount">¥${order.gameOriginalPrice.toFixed(2)}</strong></div><div class="checkout-row total"><span>订单金额</span><strong class="order-total-amount">¥${order.amount.toFixed(2)}</strong></div></section></div>
-        <aside class="landscape-checkout-side"><div class="detail-section-head"><h2>支付方式</h2><span class="countdown" data-countdown="${order.paymentDeadline}">${formatCountdown(order.paymentDeadline)}</span></div><div class="game-payment-layout"><div class="payment-list">${renderPaymentMethods()}</div>${renderGamePaymentQr()}</div>${renderCheckoutAgreement()}<button class="primary-action" type="button" data-primary-action="true" data-action="${state.priceChanged ? 'refresh-price' : 'pay-game-order'}" ${disabled || processing ? 'disabled' : ''}>${processing ? '支付处理中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : `确认支付 ¥${order.amount.toFixed(2)}`}</button></aside>
+        <aside class="landscape-checkout-side"><div class="detail-section-head"><h2>支付方式</h2><span class="countdown" data-countdown="${order.paymentDeadline}">${formatCountdown(order.paymentDeadline)}</span></div><div class="game-payment-layout"><div class="payment-list">${renderPaymentMethods()}</div>${renderGamePaymentQr()}</div>${renderCheckoutAgreement()}${renderCheckoutRecoveryActions() || `<button class="primary-action" type="button" data-primary-action="true" data-action="${state.priceChanged ? 'refresh-price' : 'pay-game-order'}" ${disabled || processing ? 'disabled' : ''}>${processing ? '支付处理中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : `确认支付 ¥${order.amount.toFixed(2)}`}</button>`}</aside>
       </section>`;
     }
 
@@ -2144,6 +2526,7 @@
       if (state.screen === 'membership') return renderLandscapeMembership();
       if (state.screen === 'member-library') return renderLandscapeMemberLibrary();
       if (state.screen === 'orders' || state.screen === 'order-detail') return renderLandscapeOrders();
+      if (state.screen === 'after-sales') return renderLandscapeAfterSales();
       if (state.screen === 'steam-login') return renderSteamLogin('landscape');
       return renderLandscapeStub(state.screen);
     }
@@ -2285,12 +2668,60 @@
         copyGuardCode();
         return;
       }
+      if (action === 'close-expiry') {
+        closeExpiryReminder();
+        return;
+      }
+      if (action === 'continue-expiry') {
+        continueFromExpiryReminder();
+        return;
+      }
+      if (action === 'recheck-entitlement') {
+        recheckEntitlement();
+        return;
+      }
+      if (action === 'close-expired-launch') {
+        closeExpiredLaunchDialog();
+        return;
+      }
       if (action === 'continue-play') {
         showToast('已为当前订单打开续租入口');
         return;
       }
       if (action === 'after-sales') {
-        showToast('售后申请入口已打开');
+        openAfterSales();
+        return;
+      }
+      if (action === 'select-after-sales-type') {
+        setAfterSalesType(target.dataset.afterSalesType);
+        return;
+      }
+      if (action === 'submit-after-sales') {
+        submitAfterSales();
+        return;
+      }
+      if (action === 'request-replacement') {
+        requestReplacement();
+        return;
+      }
+      if (action === 'contact-support') {
+        showToast('已为你连接在线客服');
+        return;
+      }
+      if (action === 'back-to-orders') {
+        navigate(state.orientation === 'portrait' ? 'order-detail' : 'orders');
+        return;
+      }
+      if (action === 'retry-inventory') {
+        retryInventoryCheck();
+        return;
+      }
+      if (action === 'back-to-detail') {
+        navigate('detail');
+        return;
+      }
+      if (action === 'requery-order') {
+        queryOrderStatus();
         return;
       }
       if (action === 'toggle-more-duration') {
@@ -2355,6 +2786,7 @@
       const field = event.target.dataset.steamField;
       if (field === 'account' || field === 'password') state.steamForm[field] = event.target.value;
       if (field === 'remember') state.steamForm.remember = event.target.checked;
+      if (event.target.id === 'after-sales-description') setAfterSalesDescription(event.target.value);
     });
 
     document.addEventListener('keydown', (event) => {
@@ -2414,6 +2846,26 @@
       expireGuardCode,
       clearSensitiveState,
       endOrder,
+      setGameplayContext,
+      resolvePostRentalEntitlement,
+      handleRentalT0,
+      triggerExpiryMinutes,
+      closeExpiryReminder,
+      continueFromExpiryReminder,
+      setPostRentalEntitlement,
+      setLaunchVerification,
+      attemptLaunchAfterExpiry,
+      recheckEntitlement,
+      closeExpiredLaunchDialog,
+      openAfterSales,
+      setAfterSalesType,
+      setAfterSalesDescription,
+      submitAfterSales,
+      setAfterSalesInventory,
+      requestReplacement,
+      setNetworkAvailable,
+      queryOrderStatus,
+      retryInventoryCheck,
       setInventoryAvailable,
       setPriceChanged,
       snapshot: publicSnapshot,
