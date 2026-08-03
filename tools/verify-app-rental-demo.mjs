@@ -724,6 +724,209 @@ async function main() {
     assert(successfulTransaction.active === 'active', '分配成功后应为 active');
     assert(failedTransaction === 'refunding', '分配失败后应为 refunding');
     process.stdout.write('TRANSACTION 10/10 PASS\n');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    await page.evaluate(() => {
+      window.__appRentalDemo.setScenario('active-rental');
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.navigate('orders');
+    });
+    const portraitOrders = await page.evaluate(() => ({
+      tabs: [...document.querySelectorAll('.order-tabs [role="tab"]')].map((node) => node.textContent.trim()),
+      statuses: [...document.querySelectorAll('.order-list-card')].map((node) => node.dataset.status),
+      list: Boolean(document.querySelector('.portrait-order-list')),
+      detail: Boolean(document.querySelector('.portrait-order-detail')),
+      layout: document.querySelector('.portrait-orders')?.dataset.layout,
+      activeOrder: window.__appRentalDemo.snapshot().order,
+    }));
+    assert(portraitOrders.tabs.join('|') === '全部|租赁中|待支付', '订单中心必须且只能显示全部、租赁中、待支付三个 Tab');
+    assert(portraitOrders.list && !portraitOrders.detail && portraitOrders.layout === 'portrait-orders', '竖屏订单中心应先显示单列列表并提供稳定布局标识');
+    assert(portraitOrders.activeOrder?.status === 'active' && portraitOrders.activeOrder?.id === 'APP-SCENARIO-ACTIVE', 'active-rental 场景未确定性注入生效订单');
+    assert(['pending', 'allocating', 'active', 'refunding', 'ended'].every((status) => portraitOrders.statuses.includes(status)), '订单列表未覆盖五种订单状态');
+    await page.locator('.portrait-order-list .order-list-card[data-status="active"]').click();
+    const portraitOrderDetail = await page.evaluate(() => ({
+      screen: window.__appRentalDemo.snapshot().screen,
+      detail: Boolean(document.querySelector('.portrait-order-detail')),
+      steps: document.querySelectorAll('.order-progress [data-progress-step]').length,
+      actions: [...document.querySelectorAll('.active-order-actions button')].map((node) => node.textContent.trim()),
+    }));
+    assert(portraitOrderDetail.screen === 'order-detail' && portraitOrderDetail.detail, '竖屏订单列表未进入独立订单详情');
+    assert(portraitOrderDetail.steps === 4, '订单详情必须固定显示四步进度');
+    assert(['继续游戏', '登录信息', '继续畅玩', '申请售后'].every((label) => portraitOrderDetail.actions.includes(label)), '生效订单缺少四个规定操作');
+
+    await page.evaluate(() => {
+      window.__appRentalDemo.navigate('orders');
+      window.__appRentalDemo.setOrientation('landscape');
+    });
+    const landscapeOrders = await page.evaluate(() => ({
+      split: Boolean(document.querySelector('.landscape-orders .order-list-pane') && document.querySelector('.landscape-orders .order-detail-pane')),
+      tabs: [...document.querySelectorAll('.order-tabs [role="tab"]')].map((node) => node.textContent.trim()),
+    }));
+    assert(landscapeOrders.split, '横屏订单中心必须为左列表、右详情');
+    assert(landscapeOrders.tabs.join('|') === '全部|租赁中|待支付', '横屏订单 Tab 不一致');
+    await page.locator('.order-tabs [data-value="pending"]').click();
+    await page.evaluate(() => window.__appRentalDemo.setOrientation('portrait'));
+    const rotatedOrderTab = await page.evaluate(() => ({
+      tab: window.__appRentalDemo.snapshot().orderTab,
+      activeTab: document.querySelector('.order-tabs [aria-selected="true"]')?.textContent.trim(),
+      statuses: [...document.querySelectorAll('.order-list-card')].map((node) => node.dataset.status),
+    }));
+    assert(rotatedOrderTab.tab === 'pending' && rotatedOrderTab.activeTab === '待支付' && rotatedOrderTab.statuses.every((status) => status === 'pending'), '旋转后订单 Tab 或筛选结果未保留');
+    await page.locator('.order-tabs [data-value="all"]').click();
+    process.stdout.write('ORDERS 10/10 PASS\n');
+
+    await page.evaluate(() => {
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.navigate('orders');
+    });
+    await page.locator('.order-list-card[data-status="active"]').click();
+    await page.getByRole('button', { name: '继续游戏', exact: true }).click();
+    const loginMethod = await page.evaluate(() => ({
+      open: Boolean(document.querySelector('.login-method-dialog')),
+      primary: document.querySelector('.login-method-dialog [data-primary-action="true"]')?.textContent.trim(),
+      manual: Boolean(document.querySelector('.login-method-dialog [data-action="open-manual-login"]')),
+    }));
+    assert(loginMethod.open && loginMethod.primary === '一键上号' && loginMethod.manual, '继续游戏未打开以一键上号为主的登录方式选择');
+    await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
+    assert((await page.locator('.login-method-dialog').count()) === 1, '旋转后登录方式选择未保持打开');
+    await page.evaluate(() => window.__appRentalDemo.setOrientation('portrait'));
+    await page.getByRole('button', { name: '一键上号', exact: true }).click();
+    const oneClickFailure = await page.evaluate(() => ({
+      retry: Boolean(document.querySelector('[data-action="start-one-click"]')),
+      manual: Boolean(document.querySelector('[data-action="open-manual-login"]')),
+      text: document.querySelector('.login-method-dialog')?.textContent || '',
+    }));
+    assert(oneClickFailure.text.includes('一键上号失败') && oneClickFailure.retry && oneClickFailure.manual, '一键上号失败后必须可重试或切换手动登录');
+    await page.locator('.login-method-dialog [data-action="open-manual-login"]').click();
+    const steamPortrait = await page.evaluate(() => ({
+      screen: window.__appRentalDemo.snapshot().screen,
+      form: Boolean(document.querySelector('.steam-login-form')),
+      qr: Boolean(document.querySelector('.steam-qr-panel')),
+      layout: document.querySelector('.steam-login-page')?.dataset.layout,
+      helpBeforeClose: Boolean(document.querySelector('.steam-help-trigger')?.nextElementSibling?.classList.contains('steam-close')),
+    }));
+    assert(steamPortrait.screen === 'steam-login' && steamPortrait.form && steamPortrait.qr && steamPortrait.layout === 'portrait-steam-login', '竖屏 Steam 手动登录页缺失或未纵向重排');
+    assert(steamPortrait.helpBeforeClose, 'Steam 顶栏“租号登录信息”必须位于关闭按钮左侧');
+
+    await page.locator('#steam-account').fill('player@example.com');
+    await page.locator('#steam-password').fill('not-a-real-password');
+    await page.locator('#steam-remember').uncheck();
+    await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
+    const steamLandscape = await page.evaluate(() => ({
+      layout: document.querySelector('.steam-login-page')?.dataset.layout,
+      columns: getComputedStyle(document.querySelector('.steam-login-body')).gridTemplateColumns.split(' ').length,
+      account: document.querySelector('#steam-account')?.value,
+      password: document.querySelector('#steam-password')?.value,
+      remember: document.querySelector('#steam-remember')?.checked,
+    }));
+    assert(steamLandscape.layout === 'landscape-steam-login' && steamLandscape.columns === 2, '横屏 Steam 登录必须为账号密码与二维码双栏');
+    assert(steamLandscape.account === 'player@example.com' && steamLandscape.password === 'not-a-real-password' && !steamLandscape.remember, '旋转后 Steam 表单与记住我状态未保留');
+    process.stdout.write('LOGIN 8/8 PASS\n');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    await page.evaluate(() => {
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.navigate('orders');
+    });
+    const initialSecurity = await page.evaluate(() => ({
+      html: document.querySelector('#appRentalDemo').innerHTML,
+      snapshot: JSON.stringify(window.__appRentalDemo.snapshot()),
+    }));
+    assert(!initialSecurity.html.includes('gh_rental_2607') && !initialSecurity.html.includes('G@meHub#8291'), '默认 DOM 泄露租号凭据');
+    assert(!initialSecurity.snapshot.includes('gh_rental_2607') && !initialSecurity.snapshot.includes('G@meHub#8291'), '公开 snapshot 泄露租号凭据');
+    await page.locator('.order-list-card[data-status="active"]').click();
+    await page.getByRole('button', { name: '登录信息', exact: true }).click();
+    const portraitCredential = await page.evaluate(() => ({
+      sheet: Boolean(document.querySelector('.credential-panel--portrait')),
+      closeButtons: document.querySelectorAll('.credential-panel button[data-action="close-credential"]').length,
+      footerButtons: document.querySelectorAll('.credential-panel .dialog-footer button').length,
+      accountMasked: document.querySelector('[data-credential-field="account"]')?.textContent.trim(),
+      passwordMasked: document.querySelector('[data-credential-field="password"]')?.textContent.trim(),
+    }));
+    assert(portraitCredential.sheet && portraitCredential.closeButtons === 1 && portraitCredential.footerButtons === 0, '竖屏登录信息必须为仅带右上角 X 的底部面板');
+    assert(portraitCredential.accountMasked.includes('****') && /^•+$/.test(portraitCredential.passwordMasked), '登录信息默认遮罩不符合要求');
+    await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
+    assert((await page.locator('.credential-panel--landscape').count()) === 1, '旋转后登录信息面板未保持打开或未切换为居中小窗');
+    await page.evaluate(() => window.__appRentalDemo.setOrientation('portrait'));
+    await page.locator('[data-action="toggle-credential"][data-field="account"]').click();
+    assert((await page.locator('[data-credential-field="account"]').innerText()) === 'gh_rental_2607', '账号查看/隐藏不可用');
+    await page.locator('[data-action="copy-credential"][data-field="account"]').click();
+    const toastText = await page.locator('.demo-toast').innerText();
+    assert(toastText.includes('已复制') && !toastText.includes('gh_rental_2607'), '复制 Toast 不得包含真实凭据');
+    await page.keyboard.press('Escape');
+    assert((await page.locator('.credential-panel').count()) === 0, 'Esc 未关闭登录信息面板');
+    await page.getByRole('button', { name: '登录信息', exact: true }).click();
+    await page.locator('.modal-backdrop').evaluate((node) => node.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    assert((await page.locator('.credential-panel').count()) === 0, '点击遮罩未关闭登录信息面板');
+    await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
+    await page.getByRole('button', { name: '登录信息', exact: true }).click();
+    assert((await page.locator('.credential-panel--landscape').count()) === 1, '横屏登录信息必须为居中小窗');
+    process.stdout.write('CREDENTIAL 10/10 PASS\n');
+
+    await page.locator('button[data-action="close-credential"]').click();
+    await page.getByRole('button', { name: '继续游戏', exact: true }).click();
+    await page.locator('.login-method-dialog [data-action="open-manual-login"]').click();
+    assert((await page.locator('[data-action="request-guard"]').isDisabled()), '提交账号密码前不得获取 Guard');
+    await page.locator('#steam-account').fill('player@example.com');
+    await page.locator('#steam-password').fill('not-a-real-password');
+    await page.getByRole('button', { name: '登录', exact: true }).click();
+    const afterSubmit = await page.evaluate(() => ({
+      requiresGuard: document.querySelector('.steam-guard')?.textContent.includes('Steam 令牌'),
+      enabled: !document.querySelector('[data-action="request-guard"]')?.disabled,
+      snapshot: JSON.stringify(window.__appRentalDemo.snapshot()),
+    }));
+    assert(afterSubmit.requiresGuard && afterSubmit.enabled, 'Steam 未在提交账号密码后明确要求验证');
+    assert(!afterSubmit.snapshot.includes('not-a-real-password'), '公开 snapshot 泄露 Steam 表单密码');
+    await page.getByRole('button', { name: '获取验证码', exact: true }).click();
+    const firstGuard = await page.evaluate(() => ({
+      code: document.querySelector('[data-guard-code]')?.textContent.trim(),
+      remaining: Number(document.querySelector('[data-guard-remaining]')?.dataset.guardRemaining),
+      allocationCount: window.__appRentalDemo.snapshot().accountAllocationCount,
+      snapshot: JSON.stringify(window.__appRentalDemo.snapshot()),
+    }));
+    assert(firstGuard.code === '48291' && firstGuard.remaining > 0 && firstGuard.remaining <= 30, 'Guard 必须返回固定 5 位验证码并按 30 秒倒计时');
+    assert(!firstGuard.snapshot.includes('48291'), '公开 snapshot 泄露 Guard 验证码');
+    await page.locator('.steam-help-trigger').click();
+    const steamHelp = await page.evaluate(() => ({
+      overlay: Boolean(document.querySelector('.steam-qr-panel .steam-credential-overlay')),
+      formVisible: Boolean(document.querySelector('.steam-login-form')),
+      code: document.querySelector('.steam-credential-overlay [data-guard-code]')?.textContent.trim(),
+    }));
+    assert(steamHelp.overlay && steamHelp.formVisible && steamHelp.code === '48291', 'Steam 凭据浮层必须覆盖二维码区且复用同一码');
+    await page.locator('.steam-credential-overlay [data-action="close-steam-help"]').click();
+    assert((await page.locator('.steam-login-form').count()) === 1 && (await page.locator('.steam-credential-overlay').count()) === 0, '关闭 Steam 凭据浮层后未保留登录表单');
+    await page.evaluate(() => window.__appRentalDemo.setOrientation('portrait'));
+    const rotatedGuard = await page.evaluate(() => ({
+      account: document.querySelector('#steam-account')?.value,
+      code: document.querySelector('[data-guard-code]')?.textContent.trim(),
+      remember: document.querySelector('#steam-remember')?.checked,
+    }));
+    assert(rotatedGuard.account === 'player@example.com' && rotatedGuard.code === '48291' && rotatedGuard.remember, '旋转后 Steam 表单或 Guard 未连续保留');
+    await page.locator('.steam-close').click();
+    await page.locator('[data-action="open-credential"]').click();
+    assert((await page.locator('.credential-panel [data-guard-code]').innerText()) === '48291', '订单登录信息面板未复用 Steam 已获取的 Guard');
+    const guardRefresh = await page.evaluate(() => {
+      const before = window.__appRentalDemo.snapshot().accountAllocationCount;
+      window.__appRentalDemo.expireGuardCode();
+      const refreshed = window.__appRentalDemo.requestGuardCode();
+      return {
+        refreshed,
+        before,
+        after: window.__appRentalDemo.snapshot().accountAllocationCount,
+        code: document.querySelector('[data-guard-code]')?.textContent.trim(),
+      };
+    });
+    assert(guardRefresh.refreshed && guardRefresh.code === '48291' && guardRefresh.before === guardRefresh.after, 'Guard 过期刷新不得重复取号');
+    const forbiddenCopy = await page.locator('body').innerText();
+    assert(!forbiddenCopy.includes('操作过于频繁，30秒再试'), '页面出现禁用的频繁操作文案');
+    const cleanup = await page.evaluate(() => {
+      window.__appRentalDemo.clearSensitiveState('background');
+      return window.__appRentalDemo.snapshot();
+    });
+    assert(cleanup.guardCode === null && cleanup.steamForm.password === '', '退后台清理接口未清除敏感状态');
+    process.stdout.write('GUARD_SECURITY 12/12 PASS\n');
   } finally {
     await browser.close();
   }

@@ -779,6 +779,158 @@
     .landscape-stub h1 { margin: 0 0 7px; font-size: 21px; }
     .landscape-stub p { margin: 0; color: var(--text-muted); font-size: 11px; }
 
+    .order-page-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .order-page-head h1 { margin: 0; font-size: 22px; }
+    .order-page-head p { margin: 4px 0 0; color: var(--text-muted); font-size: 11px; }
+    .order-tabs { display: flex; min-height: 44px; align-items: center; gap: 6px; padding: 4px; border: 1px solid rgb(255 255 255 / 8%); border-radius: 14px; background: rgb(255 255 255 / 4%); }
+    .order-tabs button { min-height: 36px; padding: 0 14px; border: 0; border-radius: 10px; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 12px; }
+    .order-tabs button.active { background: rgb(255 255 255 / 10%); color: #fff; font-weight: 650; }
+    .portrait-order-list { display: grid; gap: 10px; }
+    .order-list-card { display: grid; width: 100%; min-height: 106px; grid-template-columns: 58px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 14px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 16px; background: linear-gradient(145deg, rgb(35 37 44 / 92%), rgb(18 19 23 / 92%)); color: #fff; cursor: pointer; text-align: left; }
+    .order-list-card.selected { border-color: rgb(255 204 67 / 40%); background: linear-gradient(145deg, rgb(53 46 28 / 92%), rgb(22 21 18 / 94%)); }
+    .order-game-icon { display: grid; width: 58px; height: 58px; place-items: center; border-radius: 15px; background: radial-gradient(circle at 32% 20%, #d69b3f, #563516 48%, #181a21 100%); color: #fff2c2; font-family: var(--font-number); font-size: 18px; font-weight: 700; }
+    .order-card-copy { min-width: 0; }
+    .order-card-copy strong { display: block; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+    .order-card-copy span { display: block; margin-top: 6px; color: var(--text-muted); font-size: 10px; }
+    .order-card-copy small { display: block; margin-top: 7px; color: rgb(255 255 255 / 60%); font-size: 9px; }
+    .order-status-chip { align-self: start; padding: 5px 8px; border-radius: 100px; background: rgb(255 255 255 / 8%); color: #b9bbc3; font-size: 9px; white-space: nowrap; }
+    .order-status-chip[data-tone="success"] { background: rgb(51 216 164 / 13%); color: #77e8c5; }
+    .order-status-chip[data-tone="warning"] { background: rgb(255 204 67 / 12%); color: #ffda79; }
+    .order-status-chip[data-tone="info"] { background: rgb(51 143 235 / 14%); color: #77b8f7; }
+    .portrait-order-detail { display: grid; gap: 12px; }
+    .order-detail-hero, .order-progress, .order-detail-summary { padding: 16px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 17px; background: rgb(24 25 30 / 86%); }
+    .order-detail-hero { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+    .order-detail-hero h2 { margin: 0 0 6px; font-size: 16px; }
+    .order-detail-hero p { margin: 0; color: var(--text-muted); font-size: 10px; }
+    .order-progress { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 18px 10px 15px; }
+    .order-progress-step { position: relative; min-width: 0; text-align: center; }
+    .order-progress-step::before { position: absolute; top: 9px; right: 50%; left: -50%; height: 2px; background: #343740; content: ""; }
+    .order-progress-step:first-child::before { display: none; }
+    .order-progress-step.done::before, .order-progress-step.current::before { background: #d9aa37; }
+    .order-progress-dot { position: relative; z-index: 1; display: grid; width: 20px; height: 20px; margin: 0 auto 8px; place-items: center; border: 2px solid #4b4e57; border-radius: 50%; background: #191a1f; color: transparent; font-size: 9px; }
+    .order-progress-step.done .order-progress-dot { border-color: #d9aa37; background: #d9aa37; color: #15120a; }
+    .order-progress-step.current .order-progress-dot { border-color: #ffcc43; box-shadow: 0 0 0 4px rgb(255 204 67 / 10%); }
+    .order-progress-step span:last-child { color: #777a83; font-size: 9px; }
+    .order-progress-step.done span:last-child, .order-progress-step.current span:last-child { color: #f2f2f4; }
+    .order-detail-summary { display: grid; gap: 10px; }
+    .order-summary-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; color: var(--text-muted); font-size: 11px; }
+    .order-summary-row strong { color: #fff; font-weight: 550; text-align: right; }
+    .active-order-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+    .active-order-actions button { min-height: 46px; border: 1px solid rgb(255 255 255 / 11%); border-radius: 13px; background: rgb(255 255 255 / 6%); cursor: pointer; font-size: 12px; }
+    .active-order-actions .order-primary { grid-column: 1 / -1; border: 0; background: linear-gradient(135deg, #ffe07a, #f0b928); box-shadow: 0 8px 22px rgb(240 185 40 / 18%); color: #18130a; font-weight: 700; }
+    .landscape-orders { display: grid; height: 314px; grid-template-columns: 300px minmax(0, 1fr); gap: 12px; }
+    .order-list-pane, .order-detail-pane { min-width: 0; overflow: hidden; border: 1px solid rgb(255 255 255 / 9%); border-radius: 17px; background: rgb(18 19 24 / 86%); }
+    .order-list-pane { padding: 12px; }
+    .order-list-pane .order-page-head { margin-bottom: 8px; }
+    .order-list-pane .order-page-head h1 { font-size: 17px; }
+    .order-list-pane .order-tabs { min-height: 38px; margin-bottom: 8px; }
+    .order-list-pane .order-tabs button { min-height: 30px; padding: 0 10px; font-size: 10px; }
+    .landscape-order-list { display: grid; max-height: 208px; gap: 7px; overflow-y: auto; scrollbar-width: none; }
+    .landscape-order-list::-webkit-scrollbar { display: none; }
+    .landscape-order-list .order-list-card { min-height: 64px; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 8px; padding: 8px; border-radius: 12px; }
+    .landscape-order-list .order-game-icon { width: 40px; height: 40px; border-radius: 10px; font-size: 13px; }
+    .landscape-order-list .order-card-copy strong { font-size: 10px; }
+    .landscape-order-list .order-card-copy span { margin-top: 3px; font-size: 8px; }
+    .landscape-order-list .order-card-copy small { display: none; }
+    .landscape-order-list .order-status-chip { padding: 3px 6px; font-size: 7px; }
+    .order-detail-pane { padding: 12px; }
+    .order-detail-pane .order-detail-hero { padding: 9px 11px; }
+    .order-detail-pane .order-detail-hero .order-game-icon { width: 45px; height: 45px; border-radius: 11px; font-size: 14px; }
+    .order-detail-pane .order-progress { margin-top: 8px; padding: 10px 6px 8px; }
+    .order-detail-pane .order-detail-summary { grid-template-columns: repeat(2, 1fr); gap: 6px 16px; margin-top: 8px; padding: 10px; }
+    .order-detail-pane .order-summary-row { font-size: 8px; }
+    .order-detail-pane .active-order-actions { grid-template-columns: 1.3fr repeat(3, 1fr); margin-top: 8px; }
+    .order-detail-pane .active-order-actions .order-primary { grid-column: auto; }
+    .order-detail-pane .active-order-actions button { min-height: 38px; font-size: 9px; }
+
+    .modal-backdrop { position: absolute; z-index: 50; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding: 14px; background: rgb(0 0 0 / 72%); backdrop-filter: blur(5px); }
+    .device.landscape .modal-backdrop { align-items: center; }
+    .credential-panel, .login-method-dialog { position: relative; width: 100%; max-width: 420px; border: 1px solid rgb(255 255 255 / 13%); border-radius: 22px; background: linear-gradient(160deg, #292b32, #17181d); box-shadow: 0 24px 60px rgb(0 0 0 / 52%); }
+    .credential-panel--portrait { padding: 20px 18px 22px; border-radius: 24px 24px 18px 18px; }
+    .credential-panel--landscape { max-width: 420px; padding: 16px 18px 18px; }
+    .credential-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .credential-head h2 { margin: 0; font-size: 18px; }
+    .credential-head p { margin: 5px 0 0; color: var(--text-muted); font-size: 10px; }
+    .dialog-close, .steam-close { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; border: 0; border-radius: 50%; background: rgb(255 255 255 / 7%); color: #dddfe5; cursor: pointer; font-size: 20px; line-height: 1; }
+    .credential-fields { display: grid; gap: 9px; }
+    .credential-field { display: grid; grid-template-columns: 54px minmax(0, 1fr) auto auto; align-items: center; gap: 7px; min-height: 52px; padding: 7px 8px 7px 12px; border: 1px solid rgb(255 255 255 / 8%); border-radius: 13px; background: rgb(0 0 0 / 18%); }
+    .credential-field > span:first-child { color: var(--text-muted); font-size: 10px; }
+    .credential-field code { overflow: hidden; color: #fff; font-family: var(--font-number); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .credential-field button { min-width: 44px; min-height: 38px; padding: 0 8px; border: 0; border-radius: 9px; background: rgb(255 255 255 / 7%); cursor: pointer; font-size: 9px; }
+    .credential-guard { display: flex; min-height: 44px; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: rgb(51 143 235 / 10%); color: #a9cdef; font-size: 10px; }
+    .credential-guard code { color: #fff; font-family: var(--font-number); font-size: 17px; letter-spacing: .15em; }
+    .login-method-dialog { max-width: 352px; padding: 20px; }
+    .login-method-dialog h2 { margin: 0; font-size: 20px; }
+    .login-method-dialog > p { margin: 7px 0 16px; color: var(--text-muted); font-size: 11px; line-height: 17px; }
+    .login-method-list { display: grid; gap: 9px; }
+    .login-method-list button { min-height: 54px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 14px; background: rgb(255 255 255 / 5%); cursor: pointer; font-size: 12px; }
+    .login-method-list .primary-action { border: 0; background: linear-gradient(135deg, #ffe078, #f3bc2c); color: #171208; font-weight: 700; }
+    .one-click-error { margin: 0 0 12px; padding: 11px; border: 1px solid rgb(255 110 110 / 18%); border-radius: 12px; background: rgb(168 39 39 / 12%); color: #ffb0b0; font-size: 10px; line-height: 16px; }
+    .demo-toast { position: absolute; z-index: 80; bottom: 92px; left: 50%; max-width: calc(100% - 40px); padding: 10px 14px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 100px; background: rgb(28 29 34 / 94%); box-shadow: 0 10px 30px rgb(0 0 0 / 35%); color: #fff; font-size: 11px; transform: translateX(-50%); white-space: nowrap; }
+    .device.landscape .demo-toast { bottom: 18px; }
+
+    .steam-login-page { min-height: 100%; overflow: hidden; border: 1px solid rgb(255 255 255 / 9%); border-radius: 18px; background: radial-gradient(circle at 80% 15%, rgb(28 91 127 / 34%), transparent 34%), linear-gradient(145deg, #1b2838, #171a21 60%); }
+    .steam-login-topbar { display: flex; min-height: 58px; align-items: center; gap: 8px; padding: 7px 10px 7px 18px; border-bottom: 1px solid rgb(255 255 255 / 8%); }
+    .steam-wordmark { margin-right: auto; font-size: 19px; font-weight: 650; letter-spacing: .08em; }
+    .steam-wordmark span { color: #66c0f4; }
+    .steam-help-trigger { min-height: 44px; padding: 0 11px; border: 0; background: transparent; color: rgb(255 255 255 / 54%); cursor: pointer; font-size: 10px; }
+    .steam-login-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(230px, .82fr); gap: 16px; padding: 18px; }
+    .steam-login-form { min-width: 0; }
+    .steam-login-form h1 { margin: 0 0 5px; font-size: 23px; font-weight: 450; text-transform: uppercase; }
+    .steam-login-form > p { margin: 0 0 15px; color: #8f98a0; font-size: 10px; }
+    .steam-field { display: grid; gap: 5px; margin-top: 10px; }
+    .steam-field label { color: #afc9db; font-size: 9px; font-weight: 650; letter-spacing: .08em; }
+    .steam-field input { width: 100%; height: 42px; padding: 0 12px; border: 1px solid #32353c; border-radius: 3px; outline: 0; background: #32353c; color: #fff; font-size: 12px; }
+    .steam-field input:focus { border-color: #66c0f4; box-shadow: 0 0 0 2px rgb(102 192 244 / 13%); }
+    .steam-remember { display: flex; min-height: 44px; align-items: center; gap: 8px; color: #a7adb3; font-size: 10px; }
+    .steam-remember input { width: 17px; height: 17px; accent-color: #1a9fff; }
+    .steam-login-submit { width: 100%; min-height: 44px; border: 0; border-radius: 3px; background: linear-gradient(90deg, #06bfff, #2d73ff); color: #fff; cursor: pointer; font-size: 12px; }
+    .steam-qr-panel { position: relative; display: grid; min-height: 220px; place-items: center; overflow: hidden; padding: 16px; border-radius: 10px; background: rgb(255 255 255 / 4%); text-align: center; }
+    .steam-qr-panel h2 { margin: 0 0 10px; font-size: 12px; font-weight: 500; }
+    .steam-qr { width: 126px; height: 126px; padding: 8px; border-radius: 7px; background-color: #fff; background-image: repeating-linear-gradient(0deg, transparent 0 7px, #17212d 7px 14px), repeating-linear-gradient(90deg, transparent 0 7px, #17212d 7px 14px); background-blend-mode: multiply; box-shadow: inset 0 0 0 8px #fff; }
+    .steam-qr-panel p { margin: 10px 0 0; color: #8f98a0; font-size: 9px; }
+    .steam-guard { margin-top: 10px; padding: 10px; border-radius: 6px; background: rgb(0 0 0 / 18%); }
+    .steam-guard-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .steam-guard-head strong { font-size: 10px; }
+    .steam-guard button { min-height: 36px; padding: 0 10px; border: 0; border-radius: 4px; background: #2b77c4; color: #fff; cursor: pointer; font-size: 9px; }
+    .steam-guard button:disabled { background: #343a40; color: #727a82; cursor: not-allowed; }
+    .steam-guard-code { display: flex; align-items: baseline; justify-content: space-between; margin-top: 8px; }
+    .steam-guard-code code { color: #fff; font-family: var(--font-number); font-size: 22px; letter-spacing: .16em; }
+    .steam-guard-code span { color: #66c0f4; font-size: 9px; }
+    .steam-credential-overlay { position: absolute; z-index: 3; inset: 0; overflow-y: auto; padding: 13px; background: linear-gradient(160deg, rgb(37 45 57 / 98%), rgb(21 27 35 / 99%)); text-align: left; }
+    .steam-credential-overlay .credential-head { margin-bottom: 8px; }
+    .steam-credential-overlay .credential-head h2 { font-size: 14px; }
+    .steam-credential-overlay .credential-head p { font-size: 8px; }
+    .steam-credential-overlay .dialog-close { width: 38px; height: 38px; }
+    .steam-credential-overlay .credential-field { grid-template-columns: 42px minmax(0, 1fr) auto; min-height: 44px; padding: 5px 6px 5px 9px; }
+    .steam-credential-overlay .credential-field button[data-action="copy-credential"] { display: none; }
+    .steam-credential-overlay .credential-field code { font-size: 9px; }
+    .steam-credential-overlay .credential-field button { min-width: 38px; min-height: 34px; padding: 0 5px; font-size: 8px; }
+    .steam-credential-overlay .credential-guard { min-height: 38px; margin-top: 7px; padding: 6px 9px; font-size: 8px; }
+    .steam-credential-overlay .credential-guard code { font-size: 14px; }
+    .portrait .steam-login-page { margin: -2px -4px 0; }
+    .portrait .steam-login-body { grid-template-columns: 1fr; padding: 17px; }
+    .portrait .steam-qr-panel { min-height: 210px; }
+    .portrait .steam-login-form h1 { font-size: 21px; }
+    .landscape .steam-login-page { height: 314px; }
+    .landscape .steam-login-topbar { min-height: 52px; padding-block: 4px; }
+    .landscape .steam-login-body { height: 260px; gap: 16px; padding: 9px 18px 11px; }
+    .landscape .steam-login-form h1 { margin-bottom: 2px; font-size: 20px; line-height: 23px; }
+    .landscape .steam-login-form > p { margin-bottom: 4px; }
+    .landscape .steam-field { gap: 2px; margin-top: 4px; }
+    .landscape .steam-field input { height: 34px; }
+    .landscape .steam-remember { min-height: 27px; }
+    .landscape .steam-login-submit { min-height: 34px; }
+    .landscape .steam-qr-panel { min-height: 0; }
+    .landscape .steam-qr { width: 108px; height: 108px; }
+    .landscape .steam-guard { margin-top: 5px; padding: 6px 8px; }
+    .landscape .steam-guard button { min-height: 30px; }
+    .landscape .steam-guard-code { margin-top: 3px; }
+    .landscape .steam-guard-code code { font-size: 18px; }
+    .landscape .steam-guard.has-code { display: flex; min-height: 42px; align-items: center; }
+    .landscape .steam-guard.has-code .steam-guard-head button { display: none; }
+    .landscape .steam-guard.has-code .steam-guard-code { gap: 8px; margin: 0 0 0 auto; }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
     }
@@ -826,8 +978,25 @@
       inventoryAvailable: true,
       priceChanged: false,
       selectedVersion: 'Steam',
-      credentialVisible: false,
+      orderTab: 'all',
+      selectedOrderId: null,
+      loginMethodOpen: false,
+      oneClickStatus: 'idle',
+      credentialPanelOpen: false,
+      credentialAccountVisible: false,
+      credentialPasswordVisible: false,
+      steamHelpOpen: false,
+      steamForm: {
+        account: '',
+        password: '',
+        remember: true,
+        submitted: false,
+        requiresGuard: false,
+      },
       guardCode: null,
+      guardExpiresAt: null,
+      accountAllocationCount: 0,
+      toast: null,
       expiry15Shown: false,
     };
 
@@ -844,6 +1013,24 @@
     };
 
     const NON_TERMINAL_ORDER_STATUSES = new Set(['pending', 'allocating', 'active']);
+    const RENTAL_CREDENTIAL = Object.freeze({
+      account: 'gh_rental_2607',
+      password: 'G@meHub#8291',
+    });
+    const ORDER_STATUS_META = Object.freeze({
+      pending: { label: '待支付', note: '请在 30 分钟内完成支付', tone: 'warning' },
+      allocating: { label: '取号中', note: '系统正在分配可用账号', tone: 'info' },
+      active: { label: '租赁中', note: '账号已就绪，可继续游戏', tone: 'success' },
+      refunding: { label: '退款中', note: '取号失败，退款原路退回', tone: 'warning' },
+      ended: { label: '已结束', note: '本次租赁服务已结束', tone: 'muted' },
+    });
+    const ORDER_FIXTURES = Object.freeze([
+      { id: 'APP-20260803001', status: 'active', gameId: 'elden-ring', gameName: '艾尔登法环', version: 'Steam版本', durationLabel: '8小时', amount: 36, createdAt: 1785686400000 },
+      { id: 'APP-20260803002', status: 'allocating', gameId: 'the-forest', gameName: 'The Forest', version: 'Steam版本', durationLabel: '2小时', amount: 9.9, createdAt: 1785682800000 },
+      { id: 'APP-20260803003', status: 'pending', gameId: 'hogwarts', gameName: '霍格沃茨之遗', version: 'Steam版本', durationLabel: '日租（24小时）', amount: 29.9, paymentDeadline: 1785800000000, createdAt: 1785679200000 },
+      { id: 'APP-20260803004', status: 'refunding', gameId: 'witcher-3', gameName: '巫师 3：狂猎', version: 'Steam版本', durationLabel: '2小时', amount: 9.9, createdAt: 1785592800000 },
+      { id: 'APP-20260803005', status: 'ended', gameId: 'stardew', gameName: '星露谷物语', version: 'Steam版本', durationLabel: '周租（7天）', amount: 99, createdAt: 1785420000000 },
+    ]);
     let lastOrderNumber = 0;
     let lastMembershipOrderNumber = 0;
 
@@ -1002,6 +1189,7 @@
         ...snapshot,
         id: nextOrderId(createdAt),
         status: 'pending',
+        createdAt,
         sku,
         amount,
         priceVersion,
@@ -1065,6 +1253,7 @@
 
     function navigate(screen) {
       if (screen === 'checkout') ensureGameOrder();
+      if (screen === 'orders') ensureSelectedOrder();
       state.screen = screen;
       renderApp();
     }
@@ -1079,8 +1268,210 @@
     function allocateAccount(success = true) {
       if (!state.order || state.order.status !== 'allocating') return false;
       state.order.status = success ? 'active' : 'refunding';
+      if (success) state.accountAllocationCount += 1;
       renderApp();
       return true;
+    }
+
+    function ensureScenarioOrder(scenario = state.scenario) {
+      if (scenario !== 'active-rental') return null;
+      if (state.order?.status === 'active') {
+        state.selectedOrderId = state.order.id;
+        return cloneOrder(state.order);
+      }
+      if (state.order && NON_TERMINAL_ORDER_STATUSES.has(state.order.status)) return cloneOrder(state.order);
+      state.order = {
+        ...ORDER_FIXTURES[0],
+        id: 'APP-SCENARIO-ACTIVE',
+        sku: 'hourly-8h',
+        priceVersion: 'APP-PRICE-2026-08-03',
+        paymentMethod: 'alipay',
+        scenarioSeed: true,
+      };
+      state.selectedOrderId = state.order.id;
+      state.accountAllocationCount = Math.max(1, state.accountAllocationCount);
+      return cloneOrder(state.order);
+    }
+
+    function getOrderCollection() {
+      const fixtures = ORDER_FIXTURES.map(cloneOrder);
+      if (!state.order) return fixtures;
+      let index = fixtures.findIndex(({ id }) => id === state.order.id);
+      if (index < 0) index = fixtures.findIndex(({ status }) => status === state.order.status);
+      if (index >= 0) fixtures.splice(index, 1);
+      return [cloneOrder(state.order), ...fixtures];
+    }
+
+    function getFilteredOrders() {
+      const orders = getOrderCollection();
+      if (state.orderTab === 'renting') return orders.filter(({ status }) => ['allocating', 'active'].includes(status));
+      if (state.orderTab === 'pending') return orders.filter(({ status }) => status === 'pending');
+      return orders;
+    }
+
+    function ensureSelectedOrder() {
+      const orders = getFilteredOrders();
+      if (!orders.some(({ id }) => id === state.selectedOrderId)) {
+        state.selectedOrderId = orders.find(({ status }) => status === 'active')?.id || orders[0]?.id || null;
+      }
+      return state.selectedOrderId;
+    }
+
+    function getSelectedOrder() {
+      ensureSelectedOrder();
+      return getOrderCollection().find(({ id }) => id === state.selectedOrderId) || null;
+    }
+
+    function selectOrder(orderId) {
+      if (!getOrderCollection().some(({ id }) => id === orderId)) return false;
+      state.selectedOrderId = orderId;
+      if (state.orientation === 'portrait') state.screen = 'order-detail';
+      renderApp();
+      return true;
+    }
+
+    function openLoginMethod() {
+      if (getSelectedOrder()?.status !== 'active') return false;
+      state.loginMethodOpen = true;
+      state.oneClickStatus = 'idle';
+      renderApp();
+      return true;
+    }
+
+    function closeLoginMethod() {
+      state.loginMethodOpen = false;
+      renderApp();
+    }
+
+    function startOneClickLogin() {
+      if (!state.loginMethodOpen || getSelectedOrder()?.status !== 'active') return false;
+      state.oneClickStatus = 'failed';
+      renderApp();
+      return true;
+    }
+
+    function openManualLogin() {
+      if (getSelectedOrder()?.status !== 'active') return false;
+      state.loginMethodOpen = false;
+      state.oneClickStatus = 'idle';
+      state.steamHelpOpen = false;
+      state.screen = 'steam-login';
+      renderApp();
+      return true;
+    }
+
+    function closeSteamLogin() {
+      state.steamHelpOpen = false;
+      state.screen = state.orientation === 'portrait' ? 'order-detail' : 'orders';
+      renderApp();
+    }
+
+    function openCredentialPanel() {
+      if (getSelectedOrder()?.status !== 'active') return false;
+      state.credentialPanelOpen = true;
+      state.credentialAccountVisible = false;
+      state.credentialPasswordVisible = false;
+      renderApp();
+      return true;
+    }
+
+    function closeCredentialPanel() {
+      state.credentialPanelOpen = false;
+      state.credentialAccountVisible = false;
+      state.credentialPasswordVisible = false;
+      renderApp();
+    }
+
+    function toggleCredential(field) {
+      if (field === 'account') state.credentialAccountVisible = !state.credentialAccountVisible;
+      if (field === 'password') state.credentialPasswordVisible = !state.credentialPasswordVisible;
+      renderApp();
+    }
+
+    function showToast(message) {
+      state.toast = message;
+      renderApp();
+      setTimeout(() => {
+        if (state.toast !== message) return;
+        state.toast = null;
+        document.querySelector('#appRentalDemo .demo-toast')?.remove();
+      }, 1800);
+    }
+
+    function copyCredential(field) {
+      if (!['account', 'password'].includes(field)) return false;
+      const value = RENTAL_CREDENTIAL[field];
+      if (navigator.clipboard?.writeText) navigator.clipboard.writeText(value).catch(() => {});
+      showToast(`${field === 'account' ? '账号' : '密码'}已复制`);
+      return true;
+    }
+
+    function submitSteamLogin() {
+      if (!state.steamForm.account.trim() || !state.steamForm.password) {
+        showToast('请输入 Steam 账号和密码');
+        return false;
+      }
+      state.steamForm.submitted = true;
+      state.steamForm.requiresGuard = true;
+      renderApp();
+      return true;
+    }
+
+    function guardRemainingSeconds() {
+      if (!state.guardCode || !state.guardExpiresAt) return 0;
+      return Math.max(0, Math.ceil((state.guardExpiresAt - Date.now()) / 1000));
+    }
+
+    function requestGuardCode() {
+      if (getSelectedOrder()?.status !== 'active' || !state.steamForm.requiresGuard) return false;
+      if (!state.guardCode || guardRemainingSeconds() <= 0) {
+        state.guardCode = '48291';
+        state.guardExpiresAt = Date.now() + 30 * 1000;
+      }
+      renderApp();
+      return true;
+    }
+
+    function expireGuardCode() {
+      if (!state.guardCode) return false;
+      state.guardExpiresAt = Date.now() - 1;
+      updateGuardDisplays(document.querySelector('#appRentalDemo'));
+      return true;
+    }
+
+    function clearSensitiveState(reason = 'manual') {
+      state.guardCode = null;
+      state.guardExpiresAt = null;
+      state.steamForm.password = '';
+      state.steamForm.submitted = false;
+      state.steamForm.requiresGuard = false;
+      state.credentialAccountVisible = false;
+      state.credentialPasswordVisible = false;
+      if (reason === 'background' || reason === 'order-ended') {
+        state.credentialPanelOpen = false;
+        state.steamHelpOpen = false;
+      }
+      renderApp();
+      return true;
+    }
+
+    function endOrder() {
+      if (!state.order || state.order.status !== 'active') return false;
+      state.order.status = 'ended';
+      clearSensitiveState('order-ended');
+      return true;
+    }
+
+    function publicSnapshot() {
+      const snapshot = JSON.parse(JSON.stringify(state));
+      snapshot.guardCode = state.guardCode ? '[REDACTED]' : null;
+      snapshot.steamForm.account = state.steamForm.account ? '[REDACTED]' : '';
+      snapshot.steamForm.password = state.steamForm.password ? '[REDACTED]' : '';
+      return snapshot;
+    }
+
+    function escapeAttribute(value) {
+      return String(value).replace(/[&"<>]/g, (character) => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' }[character]));
     }
 
     function icon(id) {
@@ -1372,6 +1763,99 @@
       return `<section class="portrait-member-library" data-layout="portrait-member-library">${subpageHead('会员游戏库', 'membership')}<div class="detail-section-head"><h2>本期畅玩</h2><span>${MEMBER_GAMES.length}款精选游戏</span></div>${renderMemberGameGrid()}<div class="section-head"><h2>常见问题</h2><span>FAQ</span></div>${renderMemberFaq()}</section>`;
     }
 
+    function renderOrderTabs() {
+      return `<div class="order-tabs" role="tablist" aria-label="订单筛选">${[
+        ['all', '全部'],
+        ['renting', '租赁中'],
+        ['pending', '待支付'],
+      ].map(([value, label]) => `<button type="button" role="tab" aria-selected="${state.orderTab === value}" class="${state.orderTab === value ? 'active' : ''}" data-action="set-order-tab" data-value="${value}">${label}</button>`).join('')}</div>`;
+    }
+
+    function renderOrderCard(order) {
+      const meta = ORDER_STATUS_META[order.status] || ORDER_STATUS_META.ended;
+      return `<button class="order-list-card ${state.selectedOrderId === order.id ? 'selected' : ''}" type="button" data-action="select-order" data-order-id="${order.id}" data-status="${order.status}" aria-label="查看 ${order.gameName} ${meta.label} 订单">
+        <span class="order-game-icon" aria-hidden="true">${order.gameName.slice(0, 1)}</span>
+        <span class="order-card-copy"><strong>${order.gameName}</strong><span>${order.durationLabel} · ¥${Number(order.amount).toFixed(2)}</span><small>${meta.note}</small></span>
+        <span class="order-status-chip" data-tone="${meta.tone}">${meta.label}</span>
+      </button>`;
+    }
+
+    function renderOrderProgress(order) {
+      const steps = ['提交订单', '完成支付', '分配账号', '开始畅玩'];
+      const current = { pending: 0, allocating: 2, active: 3, refunding: 2, ended: 4 }[order.status] ?? 0;
+      return `<div class="order-progress" aria-label="订单四步进度">${steps.map((label, index) => {
+        const done = index < current || order.status === 'ended';
+        const active = index === current && order.status !== 'ended';
+        return `<div class="order-progress-step ${done ? 'done' : active ? 'current' : ''}" data-progress-step="${index + 1}"><span class="order-progress-dot">✓</span><span>${label}</span></div>`;
+      }).join('')}</div>`;
+    }
+
+    function renderActiveOrderActions(order) {
+      if (order.status !== 'active') return '';
+      return `<div class="active-order-actions" aria-label="租赁中订单操作">
+        <button class="order-primary" type="button" data-primary-action="true" data-action="open-login-method">继续游戏</button>
+        <button type="button" data-action="open-credential">登录信息</button>
+        <button type="button" data-action="continue-play">继续畅玩</button>
+        <button type="button" data-action="after-sales">申请售后</button>
+      </div>`;
+    }
+
+    function renderOrderDetailBody(order) {
+      if (!order) return '<div class="stub-panel"><div><h2>暂无订单</h2><p>当前筛选下没有可查看的订单。</p></div></div>';
+      const meta = ORDER_STATUS_META[order.status] || ORDER_STATUS_META.ended;
+      return `<div class="order-detail-hero"><span class="order-game-icon" aria-hidden="true">${order.gameName.slice(0, 1)}</span><div><h2>${order.gameName}</h2><p>${order.version} · ${order.durationLabel}</p></div><span class="order-status-chip" data-tone="${meta.tone}">${meta.label}</span></div>
+        ${renderOrderProgress(order)}
+        <div class="order-detail-summary"><div class="order-summary-row"><span>订单编号</span><strong>${order.id}</strong></div><div class="order-summary-row"><span>订单金额</span><strong>¥${Number(order.amount).toFixed(2)}</strong></div><div class="order-summary-row"><span>当前状态</span><strong>${meta.note}</strong></div><div class="order-summary-row"><span>账号服务</span><strong>同一订单 · 同一账号</strong></div></div>
+        ${renderActiveOrderActions(order)}`;
+    }
+
+    function renderPortraitOrders() {
+      ensureSelectedOrder();
+      return `<section class="portrait-orders" data-layout="portrait-orders">${subpageHead('租号订单', 'profile')}<div class="order-page-head"><div><h1>订单中心</h1><p>查看支付、取号与租赁状态</p></div></div>${renderOrderTabs()}<div class="portrait-order-list">${getFilteredOrders().map(renderOrderCard).join('')}</div></section>`;
+    }
+
+    function renderPortraitOrderDetail() {
+      return `<section class="portrait-order-detail" data-layout="portrait-order-detail">${subpageHead('订单详情', 'orders')}${renderOrderDetailBody(getSelectedOrder())}</section>`;
+    }
+
+    function renderCredentialFields(closeAction) {
+      const account = state.credentialAccountVisible ? RENTAL_CREDENTIAL.account : 'gh_****_2607';
+      const password = state.credentialPasswordVisible ? RENTAL_CREDENTIAL.password : '••••••••••••';
+      const remaining = guardRemainingSeconds();
+      return `<div class="credential-head"><div><h2>租号登录信息</h2><p>仅限订单 ${getSelectedOrder()?.id || '--'} 使用，请勿修改账号资料</p></div><button class="dialog-close" type="button" data-action="${closeAction}" aria-label="关闭登录信息">×</button></div>
+        <div class="credential-fields">
+          <div class="credential-field"><span>账号</span><code data-credential-field="account">${account}</code><button type="button" data-action="toggle-credential" data-field="account">${state.credentialAccountVisible ? '隐藏' : '查看'}</button><button type="button" data-action="copy-credential" data-field="account">复制</button></div>
+          <div class="credential-field"><span>密码</span><code data-credential-field="password">${password}</code><button type="button" data-action="toggle-credential" data-field="password">${state.credentialPasswordVisible ? '隐藏' : '查看'}</button><button type="button" data-action="copy-credential" data-field="password">复制</button></div>
+        </div>
+        <div class="credential-guard"><span>Steam 令牌</span>${state.guardCode && remaining > 0 ? `<span><code data-guard-code>${state.guardCode}</code> · <span data-guard-remaining="${remaining}">${remaining}s</span></span>` : '<span>登录后按需获取</span>'}</div>`;
+    }
+
+    function renderCredentialPanel() {
+      if (!state.credentialPanelOpen) return '';
+      const variant = state.orientation === 'portrait' ? 'portrait' : 'landscape';
+      return `<div class="modal-backdrop" data-action="close-credential" role="presentation"><section class="credential-panel credential-panel--${variant}" role="dialog" aria-modal="true" aria-label="租号登录信息">${renderCredentialFields('close-credential')}</section></div>`;
+    }
+
+    function renderLoginMethodDialog() {
+      if (!state.loginMethodOpen) return '';
+      return `<div class="modal-backdrop" data-action="close-login-method" role="presentation"><section class="login-method-dialog" role="dialog" aria-modal="true" aria-label="选择登录方式"><div class="credential-head"><div><h2>选择登录方式</h2><p>两种方式使用当前订单分配的同一账号</p></div><button class="dialog-close" type="button" data-action="close-login-method" aria-label="关闭登录方式">×</button></div>${state.oneClickStatus === 'failed' ? '<div class="one-click-error"><strong>一键上号失败</strong><br>可重试连接，或切换手动登录继续。</div>' : ''}<div class="login-method-list"><button class="primary-action" type="button" data-primary-action="true" data-action="start-one-click">${state.oneClickStatus === 'failed' ? '重试一键上号' : '一键上号'}</button><button type="button" data-action="open-manual-login">手动登录</button></div></section></div>`;
+    }
+
+    function renderGlobalOverlays() {
+      return `${renderLoginMethodDialog()}${renderCredentialPanel()}${state.toast ? `<div class="demo-toast" role="status">${state.toast}</div>` : ''}`;
+    }
+
+    function renderSteamGuard() {
+      const remaining = guardRemainingSeconds();
+      const ready = state.steamForm.requiresGuard;
+      const hasCode = Boolean(state.guardCode && remaining > 0);
+      return `<section class="steam-guard ${hasCode ? 'has-code' : ''}" aria-label="Steam 令牌验证"><div class="steam-guard-head"><strong>${ready ? 'Steam 令牌验证' : '提交账号密码后获取令牌'}</strong><button type="button" data-action="request-guard" ${ready ? '' : 'disabled'}>获取验证码</button></div>${hasCode ? `<div class="steam-guard-code"><code data-guard-code>${state.guardCode}</code><span data-guard-remaining="${remaining}">${remaining}s 后失效</span></div>` : ''}</section>`;
+    }
+
+    function renderSteamLogin(orientation) {
+      return `<section class="steam-login-page" data-layout="${orientation}-steam-login" data-orientation="${orientation}"><header class="steam-login-topbar"><div class="steam-wordmark">STEAM <span>登录</span></div><button class="steam-help-trigger" type="button" data-action="open-steam-help">租号登录信息</button><button class="steam-close" type="button" data-action="close-steam-login" aria-label="关闭 Steam 登录">×</button></header><div class="steam-login-body"><form class="steam-login-form" onsubmit="return false"><h1>登录</h1><p>使用当前租赁订单分配的 Steam 账号继续</p><div class="steam-field"><label for="steam-account">用账户名称登录</label><input id="steam-account" data-steam-field="account" autocomplete="username" value="${escapeAttribute(state.steamForm.account)}" aria-label="Steam 账号"></div><div class="steam-field"><label for="steam-password">密码</label><input id="steam-password" data-steam-field="password" type="password" autocomplete="current-password" value="${escapeAttribute(state.steamForm.password)}" aria-label="Steam 密码"></div><label class="steam-remember" for="steam-remember"><input id="steam-remember" data-steam-field="remember" type="checkbox" ${state.steamForm.remember ? 'checked' : ''}>记住我</label><button class="steam-login-submit" type="button" data-action="submit-steam-login">登录</button>${renderSteamGuard()}</form><aside class="steam-qr-panel"><div><h2>使用 Steam 移动应用登录</h2><div class="steam-qr" aria-label="Steam 登录二维码"></div><p>打开 Steam 移动应用扫描二维码</p></div>${state.steamHelpOpen ? `<section class="steam-credential-overlay" role="dialog" aria-label="Steam 租号登录信息">${renderCredentialFields('close-steam-help')}</section>` : ''}</aside></div></section>`;
+    }
+
     function renderPortraitFooter(screen) {
       if (screen === 'detail') {
         const meta = detailPrimaryMeta();
@@ -1409,6 +1893,9 @@
       if (state.screen === 'checkout') return renderPortraitCheckout();
       if (state.screen === 'membership') return renderPortraitMembership();
       if (state.screen === 'member-library') return renderPortraitMemberLibrary();
+      if (state.screen === 'orders') return renderPortraitOrders();
+      if (state.screen === 'order-detail') return renderPortraitOrderDetail();
+      if (state.screen === 'steam-login') return renderSteamLogin('portrait');
       return renderStub(state.screen);
     }
 
@@ -1422,6 +1909,7 @@
         <main class="portrait-content ${hasFixedFooter ? 'portrait-content--subpage' : !isMainScreen ? 'portrait-content--plain' : ''}">${content}</main>
         ${renderPortraitFooter(active)}
         ${isMainScreen ? `<nav class="portrait-nav" aria-label="主导航">${nav.map(([id, label]) => `<button class="${active === id ? 'active' : ''}" type="button" data-action="navigate" data-screen="${id}" aria-current="${active === id ? 'page' : 'false'}">${icon(id)}<span>${label}</span></button>`).join('')}</nav>` : ''}
+        ${renderGlobalOverlays()}
       </section>`;
     }
 
@@ -1610,6 +2098,11 @@
       return `<section class="landscape-member-library" data-layout="landscape-member-library"><div class="landscape-member-library-layout"><div><div class="detail-section-head"><h2>会员游戏库</h2><span>${MEMBER_GAMES.length}款本期精选</span></div>${renderMemberGameGrid()}</div><aside><div class="detail-section-head"><h2>常见问题</h2><span>FAQ</span></div>${renderMemberFaq()}</aside></div></section>`;
     }
 
+    function renderLandscapeOrders() {
+      ensureSelectedOrder();
+      return `<section class="landscape-orders" data-layout="landscape-orders"><aside class="order-list-pane"><div class="order-page-head"><div><h1>租号订单</h1><p>订单状态与售后进度</p></div></div>${renderOrderTabs()}<div class="landscape-order-list">${getFilteredOrders().map(renderOrderCard).join('')}</div></aside><article class="order-detail-pane">${renderOrderDetailBody(getSelectedOrder())}</article></section>`;
+    }
+
     function renderLandscapeStub(screen) {
       const copy = { detail: ['游戏详情', '选择权益后继续订单流程。'], membership: ['会员中心', '查看会员套餐与会员游戏库。'], orders: ['租号订单', '查看待支付、进行中与已完成订单。'] }[screen] || ['功能页面', '当前入口已连通。'];
       return `<section class="landscape-stub landscape-${screen}"><div><h1>${copy[0]}</h1><p>${copy[1]}</p></div></section>`;
@@ -1625,6 +2118,8 @@
       if (state.screen === 'checkout') return renderLandscapeCheckout();
       if (state.screen === 'membership') return renderLandscapeMembership();
       if (state.screen === 'member-library') return renderLandscapeMemberLibrary();
+      if (state.screen === 'orders' || state.screen === 'order-detail') return renderLandscapeOrders();
+      if (state.screen === 'steam-login') return renderSteamLogin('landscape');
       return renderLandscapeStub(state.screen);
     }
 
@@ -1633,6 +2128,7 @@
       return `<section class="device landscape">
         <header class="landscape-top-nav"><nav aria-label="横屏主导航">${nav.map(([id, label]) => `<button class="${active === id ? 'active' : ''}" type="button" data-action="navigate" data-screen="${id}" aria-current="${active === id ? 'page' : 'false'}">${icon(id)}<span>${label}</span></button>`).join('')}</nav>${landscapeSystem()}</header>
         <main class="landscape-content">${content}</main>
+        ${renderGlobalOverlays()}
       </section>`;
     }
 
@@ -1640,6 +2136,19 @@
       root.querySelectorAll('[data-countdown]').forEach((node) => {
         node.textContent = formatCountdown(Number(node.dataset.countdown));
       });
+    }
+
+    function updateGuardDisplays(root) {
+      const remaining = guardRemainingSeconds();
+      if (state.guardCode && remaining <= 0) {
+        state.guardCode = null;
+        state.guardExpiresAt = null;
+      }
+      root.querySelectorAll('[data-guard-remaining]').forEach((node) => {
+        node.dataset.guardRemaining = String(remaining);
+        node.textContent = remaining > 0 ? `${remaining}s${node.closest('.steam-guard-code') ? ' 后失效' : ''}` : '已过期';
+      });
+      if (remaining <= 0) root.querySelectorAll('[data-guard-code]').forEach((node) => { node.textContent = '已过期'; });
     }
 
     function renderApp() {
@@ -1650,17 +2159,20 @@
         root.innerHTML = renderPortraitShell(renderPortraitContent(), state.screen);
         applyRealCrops(root);
         updateCountdownDisplay(root);
+        updateGuardDisplays(root);
         return;
       }
       root.innerHTML = renderLandscapeShell(renderLandscapeContent(), state.screen);
       applyRealCrops(root);
       updateCountdownDisplay(root);
+      updateGuardDisplays(root);
     }
 
     document.querySelector('#appRentalDemo').addEventListener('click', (event) => {
       const target = event.target.closest('[data-action]');
       if (!target) return;
       const action = target.dataset.action;
+      if (target.classList.contains('modal-backdrop') && event.target !== target) return;
       if (action === 'navigate') {
         navigate(target.dataset.screen);
         return;
@@ -1668,6 +2180,82 @@
       if (action === 'set-tab') {
         state[target.dataset.group] = target.dataset.value;
         renderApp();
+        return;
+      }
+      if (action === 'set-order-tab') {
+        state.orderTab = ['all', 'renting', 'pending'].includes(target.dataset.value) ? target.dataset.value : 'all';
+        ensureSelectedOrder();
+        renderApp();
+        return;
+      }
+      if (action === 'select-order') {
+        selectOrder(target.dataset.orderId);
+        return;
+      }
+      if (action === 'open-login-method') {
+        openLoginMethod();
+        return;
+      }
+      if (action === 'close-login-method') {
+        closeLoginMethod();
+        return;
+      }
+      if (action === 'start-one-click') {
+        startOneClickLogin();
+        return;
+      }
+      if (action === 'open-manual-login') {
+        openManualLogin();
+        return;
+      }
+      if (action === 'close-steam-login') {
+        closeSteamLogin();
+        return;
+      }
+      if (action === 'open-credential') {
+        openCredentialPanel();
+        return;
+      }
+      if (action === 'close-credential') {
+        closeCredentialPanel();
+        return;
+      }
+      if (action === 'toggle-credential') {
+        toggleCredential(target.dataset.field);
+        return;
+      }
+      if (action === 'copy-credential') {
+        copyCredential(target.dataset.field);
+        return;
+      }
+      if (action === 'open-steam-help') {
+        state.steamHelpOpen = true;
+        state.credentialAccountVisible = false;
+        state.credentialPasswordVisible = false;
+        renderApp();
+        return;
+      }
+      if (action === 'close-steam-help') {
+        state.steamHelpOpen = false;
+        state.credentialAccountVisible = false;
+        state.credentialPasswordVisible = false;
+        renderApp();
+        return;
+      }
+      if (action === 'submit-steam-login') {
+        submitSteamLogin();
+        return;
+      }
+      if (action === 'request-guard') {
+        requestGuardCode();
+        return;
+      }
+      if (action === 'continue-play') {
+        showToast('已为当前订单打开续租入口');
+        return;
+      }
+      if (action === 'after-sales') {
+        showToast('售后申请入口已打开');
         return;
       }
       if (action === 'toggle-more-duration') {
@@ -1728,13 +2316,39 @@
       }
     });
 
+    document.querySelector('#appRentalDemo').addEventListener('input', (event) => {
+      const field = event.target.dataset.steamField;
+      if (field === 'account' || field === 'password') state.steamForm[field] = event.target.value;
+      if (field === 'remember') state.steamForm.remember = event.target.checked;
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      if (state.credentialPanelOpen) closeCredentialPanel();
+      else if (state.loginMethodOpen) closeLoginMethod();
+      else if (state.steamHelpOpen) {
+        state.steamHelpOpen = false;
+        renderApp();
+      }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') clearSensitiveState('background');
+    });
+
     window.__appRentalDemo = {
       setOrientation(value) { state.orientation = value; renderApp(); },
       navigate,
       setScenario(value) {
+        if (value !== 'active-rental' && state.order?.scenarioSeed) {
+          state.order = null;
+          state.selectedOrderId = null;
+          state.accountAllocationCount = 0;
+        }
         state.scenario = value;
         state.membershipStatus = SCENARIOS[value]?.membershipStatus || 'none';
         normalizeSkuForScenario();
+        ensureScenarioOrder(value);
         renderApp();
       },
       setMembershipStatus,
@@ -1748,14 +2362,33 @@
       createMembershipOrder,
       payOrder,
       allocateAccount,
+      ensureScenarioOrder,
+      getOrderCollection,
+      getFilteredOrders,
+      getSelectedOrder,
+      selectOrder,
+      openLoginMethod,
+      startOneClickLogin,
+      openManualLogin,
+      openCredentialPanel,
+      closeCredentialPanel,
+      submitSteamLogin,
+      requestGuardCode,
+      expireGuardCode,
+      clearSensitiveState,
+      endOrder,
       setInventoryAvailable,
       setPriceChanged,
-      snapshot() { return JSON.parse(JSON.stringify(state)); },
+      snapshot: publicSnapshot,
       reset() { location.reload(); },
     };
 
     renderApp();
-    setInterval(() => updateCountdownDisplay(document.querySelector('#appRentalDemo')), 1000);
+    setInterval(() => {
+      const root = document.querySelector('#appRentalDemo');
+      updateCountdownDisplay(root);
+      updateGuardDisplays(root);
+    }, 1000);
   </script>
 </body>
 </html>
