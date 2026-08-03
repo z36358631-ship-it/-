@@ -4,14 +4,15 @@ import path from 'node:path';
 const root = path.resolve(import.meta.dirname, '..');
 const templatePath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.template.html');
 const outputPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.html');
+const sourceAssetDir = path.join(root, 'demos', 'APP租号功能', 'assets', 'source');
 const assets = {
-  APP_PORTRAIT_HOME: path.join(root, 'APP核心优化', '竞品对比', '盖世游戏APP', '20260618-120632.jpg'),
-  APP_PORTRAIT_PLAY: path.join(root, 'APP核心优化', '竞品对比', '盖世游戏APP', '20260521-152021.jpg'),
-  APP_PORTRAIT_LIBRARY: path.join(root, 'APP核心优化', '竞品对比', '盖世游戏APP', '20260521-152042.jpg'),
-  APP_PORTRAIT_PROFILE: path.join(root, 'APP核心优化', '竞品对比', '盖世游戏APP', '20260521-152054.jpg'),
-  APP_LANDSCAPE_LIBRARY: path.join(root, 'APP核心优化', '竞品对比', '盖世游戏APP', '20260521-152120.jpg'),
-  APP_LANDSCAPE_STEAM_LIBRARY: path.join(root, 'APP核心优化', '竞品对比', '盖世游戏APP', '20260521-152123.jpg'),
-  APP_LANDSCAPE_PLAY: path.join(root, 'APP核心优化', '竞品对比', '盖世游戏APP', '20260521-152127.jpg'),
+  APP_PORTRAIT_HOME: path.join(sourceAssetDir, 'portrait-home.jpg'),
+  APP_PORTRAIT_PLAY: path.join(sourceAssetDir, 'portrait-play.jpg'),
+  APP_PORTRAIT_LIBRARY: path.join(sourceAssetDir, 'portrait-library.jpg'),
+  APP_PORTRAIT_PROFILE: path.join(sourceAssetDir, 'portrait-profile.jpg'),
+  APP_LANDSCAPE_LIBRARY: path.join(sourceAssetDir, 'landscape-library.jpg'),
+  APP_LANDSCAPE_STEAM_LIBRARY: path.join(sourceAssetDir, 'landscape-steam-library.jpg'),
+  APP_LANDSCAPE_PLAY: path.join(sourceAssetDir, 'landscape-play.jpg'),
 };
 
 function dataUrl(filePath) {
