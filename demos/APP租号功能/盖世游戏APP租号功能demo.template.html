@@ -234,6 +234,11 @@
       box-shadow: 0 12px 32px rgb(0 0 0 / 24%);
     }
 
+    .real-media { position: relative; display: block; overflow: hidden; background: #11141a; }
+    .real-media > img { position: absolute; max-width: none; pointer-events: none; user-select: none; }
+    .hero-real { position: absolute; z-index: 0; inset: 0; }
+    .hero-real::after { position: absolute; inset: 0; background: linear-gradient(180deg, rgb(5 7 10 / 18%) 0, rgb(5 7 10 / 44%) 45%, rgb(3 4 7 / 97%) 100%); content: ""; }
+
     .hero-card::after {
       position: absolute;
       top: -36px;
@@ -351,6 +356,7 @@
     .icon-button svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
     .profile-identity { display: flex; flex-direction: column; align-items: center; margin-bottom: 23px; text-align: center; }
     .profile-avatar { width: 76px; height: 76px; margin-bottom: 12px; background: linear-gradient(145deg, #76524a, #342a3d); }
+    .profile-avatar.real-avatar { display: block; }
     .profile-name-row { display: flex; align-items: center; gap: 8px; }
     .profile-name-row h1 { margin: 0; font-size: 19px; font-weight: 650; }
     .member-chip { padding: 5px 9px; border: 1px solid rgb(255 218 123 / 22%); border-radius: 100px; background: rgb(255 204 67 / 13%); color: #ffda79; font-size: 10px; }
@@ -374,6 +380,7 @@
     .platform-stats div { color: #fff; font-family: var(--font-number); font-size: 17px; font-weight: 650; text-align: center; }
     .platform-stats div + div { border-left: 1px solid rgb(255 255 255 / 10%); }
     .platform-stats small { display: block; margin-top: 3px; color: var(--text-muted); font-family: var(--font-primary); font-size: 9px; font-weight: 400; }
+    .profile-promo { width: 100%; height: 60px; margin-bottom: 14px; border: 1px solid rgb(255 255 255 / 11%); border-radius: 16px; }
 
     .member-banner { display: flex; min-height: 92px; align-items: center; gap: 12px; padding: 16px; }
     .member-emblem { display: grid; width: 50px; height: 50px; flex: 0 0 auto; place-items: center; border-radius: 16px; background: linear-gradient(145deg, #ffe29c, #a97224); color: #2b210e; }
@@ -418,6 +425,22 @@
 <body>
   <main id="appRentalDemo" data-orientation="portrait" data-screen="home"></main>
   <script>
+    const ASSETS = Object.freeze({
+      home: '{{APP_PORTRAIT_HOME}}',
+      play: '{{APP_PORTRAIT_PLAY}}',
+      library: '{{APP_PORTRAIT_LIBRARY}}',
+      profile: '{{APP_PORTRAIT_PROFILE}}',
+      landscapeLibrary: '{{APP_LANDSCAPE_LIBRARY}}',
+    });
+
+    const ASSET_SIZES = Object.freeze({
+      home: [1116, 2480],
+      play: [1116, 2480],
+      library: [1116, 2480],
+      profile: [1116, 2480],
+      landscapeLibrary: [2480, 1116],
+    });
+
     const state = {
       orientation: 'portrait',
       screen: 'home',
@@ -536,6 +559,18 @@
       </span>`;
     }
 
+    function realCrop(assetKey, crop, alt, label = '', className = 'cover-art') {
+      const [sourceWidth, sourceHeight] = ASSET_SIZES[assetKey];
+      const [x, y, width, height] = crop;
+      const style = [
+        `width:${(sourceWidth / width * 100).toFixed(4)}%`,
+        `height:${(sourceHeight / height * 100).toFixed(4)}%`,
+        `left:${(-x / width * 100).toFixed(4)}%`,
+        `top:${(-y / height * 100).toFixed(4)}%`,
+      ].join(';');
+      return `<span class="real-media ${className}"><img data-real-asset="true" data-source-screen="${assetKey}" src="${ASSETS[assetKey]}" alt="${alt}" draggable="false" style="${style}">${label ? `<small>${label}</small>` : ''}</span>`;
+    }
+
     function statusBar() {
       return `<header class="mobile-status" aria-label="系统状态栏">
         <div class="status-left"><time>14:38</time><span class="status-rate">120Hz</span></div>
@@ -566,48 +601,77 @@
 
     function renderHome() {
       const badge = rentalBadge();
-      const actionLabel = badge || '查看游戏';
-      return `${searchRow('艾尔登法环')}
+      const actionLabel = badge === '¥1.99 首次体验' ? '立即体验' : badge || '查看游戏';
+      return `${searchRow('影之刃零')}
         <article class="hero-card">
+          ${realCrop('home', [584, 1656, 492, 240], '影之刃零游戏画面', '', 'hero-real')}
           <span class="hero-eyebrow">今日推荐 · 云端即刻开玩</span>
           <span class="hero-mark"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="36"/><circle cx="50" cy="50" r="20"/><path d="M50 5v22M50 73v22M5 50h22M73 50h22M18 18l16 16M66 66l16 16M82 18 66 34M34 66 18 82"/></svg></span>
           <div class="hero-copy">
             <div class="hero-meta">${badge ? `<span class="rent-badge">${badge}</span>` : ''}<span class="hero-score">9.5</span></div>
-            <h1 class="hero-title">艾尔登法环</h1>
+            <h1 class="hero-title">影之刃零</h1>
             <div class="hero-bottom"><span class="hero-subtitle">无需购买游戏，选择适合你的权益立即开始</span><button class="primary-action" type="button" data-primary-action="true" data-action="navigate" data-screen="detail">${actionLabel}</button></div>
           </div>
         </article>
         <div class="section-head"><h2>为你推荐</h2><span>发现更多</span></div>
-        <div class="mini-game-row">${GAMES.slice(1, 6).map((game) => `<article class="mini-game">${coverArt(game)}<strong>${game[1]}</strong></article>`).join('')}</div>
+        <div class="mini-game-row">${[
+          ['GTA V', [70, 1260, 215, 250]],
+          ['Human Multiplayer Game', [326, 1260, 220, 250]],
+          ['荒野大镖客：救赎 2', [575, 1260, 220, 250]],
+          ['Drillbert', [828, 1260, 215, 250]],
+        ].map(([name, crop]) => `<article class="mini-game">${realCrop('home', crop, `${name} 游戏封面`, '')}<strong>${name}</strong></article>`).join('')}</div>
         <div class="section-head"><h2>最新资讯</h2><span>每周更新</span></div>
-        <div class="feature-scroll">${GAMES.slice(3, 6).map((game, index) => `<article class="feature-card">${coverArt(game)}<div class="feature-info"><strong>${index === 0 ? '开放世界新作本周登场' : game[1] + ' 热门攻略'}</strong></div></article>`).join('')}</div>`;
+        <div class="feature-scroll">${[
+          ['龙之信条 2', [67, 1658, 492, 235], '开放世界新作本周登场'],
+          ['影之刃零', [584, 1658, 492, 235], '国产动作新作情报公开'],
+        ].map(([name, crop, title]) => `<article class="feature-card">${realCrop('home', crop, `${name} 资讯配图`, '')}<div class="feature-info"><strong>${title}</strong></div></article>`).join('')}</div>`;
     }
 
     function renderPlay() {
       const tabLabel = { cloud: '秒玩', pc: '启动', retro: '畅玩' }[state.playTab];
+      const featureGames = [
+        ['极限竞速：地平线 6', [53, 753, 642, 305]],
+        ['怪物猎人：世界', [756, 753, 350, 305]],
+      ];
+      const listGames = [
+        ['巫师 3：狂猎', [45, 1359, 189, 225]],
+        ['极限竞速：地平线 5', [45, 1630, 189, 238]],
+        ['刺客信条：起源', [45, 1904, 189, 238]],
+      ];
       return `${searchRow('搜索秒玩游戏')}
         ${pageTabs([['cloud', '云游戏'], ['pc', 'PC游戏'], ['retro', '复古游戏']], state.playTab, 'playTab')}
         <div class="account-card"><span class="avatar-small">${personIcon()}</span><div><strong>欢迎回来，玩家</strong><p>会员游戏库已为你同步</p></div></div>
         <div class="section-head"><h2>${tabLabel}人气热游</h2><span>精选</span></div>
-        <div class="feature-scroll">${GAMES.slice(0, 3).map((game) => `<article class="feature-card">${coverArt(game)}<div class="feature-info"><strong>${game[1]}</strong><button class="small-pill" type="button" data-action="feedback">${tabLabel}</button></div></article>`).join('')}</div>
+        <div class="feature-scroll">${featureGames.map(([name, crop]) => `<article class="feature-card">${realCrop('play', crop, `${name} 游戏画面`, '')}<div class="feature-info"><strong>${name}</strong><button class="small-pill" type="button" data-action="feedback">${tabLabel}</button></div></article>`).join('')}</div>
         <div class="section-head"><h2>全部${tabLabel}</h2><span>按热度</span></div>
-        <div class="game-list">${GAMES.slice(1, 6).map((game, index) => `<article class="game-list-item">${coverArt(game)}<div class="game-list-copy"><strong>${game[1]}</strong><p>沉浸式冒险 · 支持手柄</p><span class="rating">评分 ${(9.6 - index * .3).toFixed(1)}</span></div><button class="small-pill" type="button" data-action="feedback">${tabLabel}</button></article>`).join('')}</div>`;
+        <div class="game-list">${listGames.map(([name, crop], index) => `<article class="game-list-item">${realCrop('play', crop, `${name} 游戏封面`, '')}<div class="game-list-copy"><strong>${name}</strong><p>沉浸式冒险 · 支持手柄</p><span class="rating">评分 ${(9.6 - index * .3).toFixed(1)}</span></div><button class="small-pill" type="button" data-action="feedback">${tabLabel}</button></article>`).join('')}</div>`;
     }
 
     function renderLibrary() {
       const labels = { pc: 'PC', steam: 'Steam', epic: 'Epic', retro: '复古' };
+      const libraryGames = [
+        ['Slay the Spire 2', [57, 436, 472, 270]],
+        ['The Forest', [587, 436, 472, 270]],
+        ['中国式家长', [57, 896, 472, 270]],
+        ['Spiritfarer', [587, 896, 472, 270]],
+        ['饥荒', [57, 1353, 472, 270]],
+        ['小小梦魇 2', [587, 1353, 472, 270]],
+        ['霍格沃茨之遗', [57, 1808, 472, 270]],
+        ['星露谷物语', [587, 1808, 472, 270]],
+      ];
       return `${pageTabs([['pc', 'PC游戏'], ['steam', 'Steam游戏'], ['epic', 'Epic游戏'], ['retro', '复古游戏']], state.libraryTab, 'libraryTab')}
         <div class="library-tools"><div class="search-box" role="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.3 15.3 5 5"/></svg><span>搜索${labels[state.libraryTab]}游戏</span></div><button class="filter-button" type="button" data-action="feedback" aria-label="筛选"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button></div>
-        <div class="library-grid">${GAMES.map((game) => `<article class="library-card">${coverArt(game)}<strong>${game[1]}</strong><span>手柄适配 · 云端存档</span></article>`).join('')}</div>`;
+        <div class="library-grid">${libraryGames.map(([name, crop]) => `<article class="library-card">${realCrop('library', crop, `${name} 游戏封面`, '')}<strong>${name}</strong><span>手柄适配 · 云端存档</span></article>`).join('')}</div>`;
     }
 
     function renderProfile() {
       const isMember = state.scenario === 'active-member';
       const memberText = isMember ? '畅玩会员 · 有效期 326 天' : '畅玩会员 · 待开通';
       return `<div class="profile-tools"><button class="icon-button" type="button" data-action="feedback" aria-label="下载管理"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M5 20h14"/></svg></button><button class="icon-button" type="button" data-action="feedback" aria-label="设置"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m18.2 13.8 1.4 1-.9 1.6-1.6-.6a7 7 0 0 1-1.8 1l-.3 1.7h-1.8l-.3-1.7a7 7 0 0 1-1.8-1l-1.6.6-.9-1.6 1.4-1a7 7 0 0 1 0-2l-1.4-1 .9-1.6 1.6.6a7 7 0 0 1 1.8-1l.3-1.7H15l.3 1.7a7 7 0 0 1 1.8 1l1.6-.6.9 1.6-1.4 1a7 7 0 0 1 0 2Z"/></svg></button></div>
-        <section class="profile-identity"><span class="profile-avatar">${personIcon()}</span><div class="profile-name-row"><h1>盖世玩家 0525</h1><span class="member-chip">${isMember ? '会员生效中' : '会员未开通'}</span></div><p class="profile-uid">UID GH20260525</p></section>
+        <section class="profile-identity">${realCrop('profile', [482, 302, 156, 158], '盖世玩家用户头像', '', 'profile-avatar real-avatar')}<div class="profile-name-row"><h1>盖世玩家 0525</h1><span class="member-chip">${isMember ? '会员生效中' : '会员未开通'}</span></div><p class="profile-uid">UID GH20260525</p></section>
         <button class="profile-card member-banner" type="button" data-action="navigate" data-screen="membership"><span class="member-emblem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 7 3.5 3L12 4l4.5 6L20 7l-1.5 11h-13z"/><path d="M7 14h10"/></svg></span><span class="member-copy"><strong>盖世畅玩会员</strong><p>${memberText}</p></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
         <section class="platform-card"><div class="platform-head"><strong>Steam 个人信息</strong><span>已绑定</span></div><div class="platform-stats"><div>110<small>游玩时长（h）</small></div><div>26<small>游戏数量</small></div></div></section>
+        ${realCrop('profile', [46, 1341, 1024, 174], '新人见面礼活动横幅', '', 'profile-promo')}
         <div class="section-head"><h2>我的服务</h2><span>账号与权益</span></div>
         <div class="profile-menu">
           <button type="button" data-action="navigate" data-screen="orders"><span class="menu-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h12v17l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span><span class="menu-copy"><strong>租号订单</strong><small>查看进行中订单、登录信息与售后</small></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
