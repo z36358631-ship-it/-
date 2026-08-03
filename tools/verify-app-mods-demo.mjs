@@ -45,9 +45,15 @@ assert.match(html, /\['hot', '热门'\]/u);
 assert.match(html, /\['downloads', '下载最多'\]/u);
 assert.match(html, /\['published', '最新发布'\]/u);
 assert.match(html, /data-enable-switch/u);
+assert.match(html, /function renderInstalledActions/u);
+assert.match(html, /data-installed-actions/u);
+assert.match(html, /data-installed-update/u);
+assert.match(html, /action-update-dot/u);
 assert.match(html, /function rotateTo/u);
 assert.doesNotMatch(html, /订阅 MOD/u);
 assert.doesNotMatch(html, /非官方标签/u);
+assert.doesNotMatch(html, /class="update-dot"/u);
+assert.doesNotMatch(html, /检查更新/u);
 console.log('PASS: APP MODS 静态结构与文案契约');
 
 let chromium;
@@ -161,6 +167,12 @@ try {
   assert.equal(await page.locator('[data-profile-tab="mods"]').getAttribute('aria-selected'), 'true');
   assert.equal(await page.locator('[data-profile-search], [data-profile-sort], [data-profile-download]').count(), 0);
   assert.equal(await page.locator('[data-profile-group="dst"] [data-profile-mod-card]').count(), 4);
+  assert.equal(await page.locator('[data-installed-actions="steam-profile"]').count(), 4);
+  assert.equal(await page.locator('[data-installed-actions="steam-profile"] [data-installed-update]').count(), 4);
+  assert.equal(await page.locator('[data-installed-actions="steam-profile"] [data-action="open-uninstall"]').count(), 4);
+  assert.equal(await page.locator('[data-installed-actions="steam-profile"] [data-enable-switch]').count(), 4);
+  assert.equal(await page.locator('[data-installed-actions="steam-profile"] .action-update-dot').count(), 2);
+  assert.equal(await page.locator('.update-dot').count(), 0);
   assert.equal(await page.locator('[data-action="profile-view-all"]').textContent(), '查看全部');
   assert.equal(await page.locator('.profile-device-note').count(), 0);
   assert.deepEqual(
@@ -235,8 +247,7 @@ try {
   await page.evaluate(() => {
     const api = window.__APP_MODS_DEMO__;
     for (const modId of [...api.getState().installed]) {
-      api.dispatch({ type: 'OPEN_DETAIL', modId });
-      api.dispatch({ type: 'OPEN_UNINSTALL' });
+      api.dispatch({ type: 'OPEN_UNINSTALL', modId });
       api.dispatch({ type: 'CONFIRM_UNINSTALL' });
     }
     api.dispatch({ type: 'OPEN_STEAM_PROFILE' });
@@ -406,6 +417,12 @@ try {
   await page.locator('[data-tab="installed"]').click();
   assert.equal(await page.locator('[data-search]').count(), 0);
   assert.equal(await page.locator('[data-enable-switch]').count(), 4);
+  assert.equal(await page.locator('[data-installed-actions="installed-list"]').count(), 4);
+  assert.equal(await page.locator('[data-installed-actions="installed-list"] [data-installed-update]').count(), 4);
+  assert.equal(await page.locator('[data-installed-actions="installed-list"] [data-action="open-uninstall"]').count(), 4);
+  assert.equal(await page.locator('[data-installed-actions="installed-list"] .action-update-dot').count(), 2);
+  assert.equal(await page.locator('[data-installed-update][data-mod-id="minimap"]').isDisabled(), true);
+  assert.equal(await page.locator('[data-installed-update][data-mod-id="storage-box"]').isEnabled(), true);
   const installedFilters = page.locator('[data-installed-filter]');
   assert.deepEqual(
     await installedFilters.evaluateAll(items => items.map(item => item.textContent.trim())),
@@ -441,6 +458,16 @@ try {
   });
   await capture('03-installed-portrait.png');
 
+  await page.locator('[data-action="open-uninstall"][data-mod-id="storage-box"]').click();
+  assert.equal(await page.locator('[data-detail]').count(), 0, '卸载按钮误开详情');
+  assert.match(await page.locator('.confirm-card h3').textContent(), /智能储物箱/u);
+  await page.locator('[data-action="close-uninstall"]').click();
+  assert.equal(
+    await page.evaluate(() => window.__APP_MODS_DEMO__.getState().installed.includes('storage-box')),
+    true,
+    '取消卸载后 MOD 被移除'
+  );
+
   const firstSwitch = page.locator('[data-enable-switch][data-mod-id="minimap"]');
   assert.equal(await firstSwitch.getAttribute('aria-checked'), 'true');
   await firstSwitch.focus();
@@ -461,35 +488,38 @@ try {
     '详情打开后未聚焦关闭按钮'
   );
   assert.deepEqual(
-    await page.locator('.detail-actionbar .detail-action').evaluateAll(buttons =>
-      buttons.map(button => button.textContent.trim())
+    await page.locator('.detail-actionbar [data-installed-actions] > *').evaluateAll(items =>
+      items.map(item => item.textContent.trim())
     ),
-    ['检查更新', '卸载', '已停用']
+    ['更新', '卸载', '已停用']
   );
+  assert.equal(await page.locator('[data-installed-actions="detail"] [data-enable-switch]').getAttribute('role'), 'switch');
+  assert.equal(await page.locator('[data-installed-actions="detail"] [data-installed-update]').isDisabled(), true);
+  assert.equal(await page.locator('[data-installed-actions="detail"] .action-update-dot').count(), 0);
 
   const actionLayout = await page.locator('.detail-actionbar').evaluate(bar => {
-    const buttons = [...bar.querySelectorAll('.detail-action')];
-    const widths = buttons.map(button => button.getBoundingClientRect().width);
+    const actions = [...bar.querySelector('[data-installed-actions]').children];
+    const widths = actions.map(action => action.getBoundingClientRect().width);
     const barBox = bar.getBoundingClientRect();
-    const first = buttons[0].getBoundingClientRect();
-    const last = buttons.at(-1).getBoundingClientRect();
+    const first = actions[0].getBoundingClientRect();
+    const last = actions.at(-1).getBoundingClientRect();
     const style = getComputedStyle(bar);
     return {
       equalWidths: Math.max(...widths) - Math.min(...widths) <= 1,
       fillsRow: Math.abs(first.left - (barBox.left + parseFloat(style.paddingLeft))) <= 1
         && Math.abs(last.right - (barBox.right - parseFloat(style.paddingRight))) <= 1,
-      stateIsRightmost: buttons.at(-1).matches('[data-detail-enabled]')
+      switchIsRightmost: Boolean(actions.at(-1).querySelector('[data-enable-switch]'))
     };
   });
   assert.deepEqual(actionLayout, {
     equalWidths: true,
     fillsRow: true,
-    stateIsRightmost: true
+    switchIsRightmost: true
   });
 
   await page.keyboard.press('Shift+Tab');
   assert.equal(
-    await page.evaluate(() => document.activeElement?.matches('[data-detail-enabled]')),
+    await page.evaluate(() => document.activeElement?.matches('[data-installed-actions="detail"] [data-enable-switch]')),
     true,
     '详情焦点未在弹层内循环'
   );
@@ -499,16 +529,16 @@ try {
     true,
     '详情焦点循环未回到首控件'
   );
-  assert.equal(await page.locator('[data-detail-enabled]').textContent(), '已停用');
+  assert.equal(await page.locator('[data-installed-actions="detail"] .installed-switch span').textContent(), '已停用');
   assert.equal(await page.locator('[data-detail] *').filter({ hasText: '兼容性' }).count(), 0);
   assert.equal(await page.locator('[data-detail] *').filter({ hasText: '最新版本' }).count(), 0);
   assert.equal(await page.locator('[data-detail] *').filter({ hasText: '非官方' }).count(), 0);
   await page.waitForTimeout(1900);
   await capture('04-detail-portrait.png');
 
-  await page.locator('[data-detail-enabled]').click();
-  assert.equal(await page.locator('[data-detail-enabled]').textContent(), '已启用');
-  assert.match(await page.locator('[data-detail-enabled]').getAttribute('class'), /is-enabled/u);
+  await page.locator('[data-installed-actions="detail"] [data-enable-switch]').click();
+  assert.equal(await page.locator('[data-installed-actions="detail"] .installed-switch span').textContent(), '已启用');
+  assert.equal(await page.locator('[data-installed-actions="detail"] [data-enable-switch]').getAttribute('aria-checked'), 'true');
   assert.equal(await page.locator('.toast').count(), 0);
 
   await page.locator('[data-review-action="landscape"]').click();
@@ -559,6 +589,16 @@ try {
     tabsBeforeRefresh: true
   });
   await capture('07-installed-landscape.png');
+
+  const updateButton = page.locator('[data-installed-update][data-mod-id="storage-box"]');
+  await updateButton.click();
+  assert.equal(await page.locator('[data-detail]').count(), 0, '更新按钮误开详情');
+  assert.equal(await updateButton.isDisabled(), true);
+  assert.equal(await updateButton.locator('.action-update-dot').count(), 0);
+  assert.equal(
+    await page.evaluate(() => window.__APP_MODS_DEMO__.getState().availableUpdates.includes('storage-box')),
+    false
+  );
 
   await page.locator('[data-tab="browse"]').click();
   await page.locator('[data-sort="hot"]').click();
