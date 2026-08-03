@@ -21,8 +21,8 @@ const EXPECTED_DIMENSIONS = Object.freeze({
 const shots = [
   { name: '01-discovery-portrait.png', orientation: 'portrait', screen: 'home', scenario: 'member-library-trial' },
   { name: '01-discovery-landscape.png', orientation: 'landscape', screen: 'home', scenario: 'member-library-trial' },
-  { name: '02-detail-portrait.png', orientation: 'portrait', screen: 'detail', scenario: 'member-library-trial' },
-  { name: '02-detail-landscape.png', orientation: 'landscape', screen: 'detail', scenario: 'member-library-trial' },
+  { name: '02-detail-portrait.png', orientation: 'portrait', screen: 'detail', scenario: 'member-library-trial', gameId: 'shadow-blade-zero' },
+  { name: '02-detail-landscape.png', orientation: 'landscape', screen: 'detail', scenario: 'member-library-trial', gameId: 'spiritfarer' },
   { name: '03-checkout-portrait.png', orientation: 'portrait', screen: 'checkout', scenario: 'not-member-library', beforeNavigate: 'select-hourly-8h' },
   { name: '03-checkout-landscape.png', orientation: 'landscape', screen: 'checkout', scenario: 'not-member-library', beforeNavigate: 'select-hourly-8h' },
   { name: '04-membership-portrait.png', orientation: 'portrait', screen: 'membership', scenario: 'member-library-trial-used' },
@@ -200,10 +200,11 @@ async function runPreflight(browser) {
 }
 
 async function setShotState(page, shot) {
-  await page.evaluate(({ orientation, scenario, beforeNavigate, screen, afterNavigate }) => {
+  await page.evaluate(({ orientation, scenario, beforeNavigate, screen, afterNavigate, gameId }) => {
     const demo = window.__appRentalDemo;
     demo.setOrientation(orientation);
     demo.setScenario(scenario);
+    if (gameId) demo.setSelectedGame(gameId);
     if (beforeNavigate === 'select-hourly-8h') demo.selectRentalSku('hourly-8h');
     demo.navigate(screen);
     if (afterNavigate === 'open-manual-login') demo.openManualLogin();
