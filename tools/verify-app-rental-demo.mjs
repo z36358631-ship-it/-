@@ -316,9 +316,10 @@ async function main() {
     });
     const inventoryState = await page.evaluate(() => ({
       text: document.querySelector('#appRentalDemo').innerText,
-      disabled: Boolean(document.querySelector('[data-primary-action="true"]:disabled')),
+      retry: Boolean(document.querySelector('[data-primary-action="true"][data-action="retry-inventory"]')),
+      primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
     }));
-    assert(inventoryState.text.includes('当前套餐已售罄') && inventoryState.disabled, '无库存时未禁用购买并说明原因');
+    assert(inventoryState.text.includes('当前套餐已售罄') && inventoryState.retry && inventoryState.primaryCount === 1, '无库存时未收敛为库存重查主操作并说明原因');
     await page.evaluate(() => window.__appRentalDemo.setInventoryAvailable(true));
     process.stdout.write('CHECKOUT 8/8 PASS\n');
 
@@ -1039,6 +1040,306 @@ async function main() {
     const buildSource = fs.readFileSync(path.join(root, 'tools', 'build-app-rental-demo.mjs'), 'utf8');
     assert(buildSource.includes("'assets', 'source'") && !buildSource.includes("'APP核心优化'"), '构建脚本仍依赖工作区外部参考图路径');
     process.stdout.write('BUILD_SOURCE 2/2 PASS\n');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    await page.evaluate(() => {
+      window.__appRentalDemo.setScenario('not-member-library');
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.selectRentalSku('hourly-8h');
+      window.__appRentalDemo.navigate('checkout');
+    });
+    await page.locator('.payment-method[data-payment="wechat"]').click();
+    const checkoutContinuityBefore = await page.evaluate(() => window.__appRentalDemo.snapshot());
+    await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
+    const checkoutContinuityAfter = await page.evaluate(() => window.__appRentalDemo.snapshot());
+    assert(
+      checkoutContinuityAfter.screen === checkoutContinuityBefore.screen
+        && checkoutContinuityAfter.selectedGameId === checkoutContinuityBefore.selectedGameId
+        && checkoutContinuityAfter.selectedSku === checkoutContinuityBefore.selectedSku
+        && checkoutContinuityAfter.selectedHours === checkoutContinuityBefore.selectedHours
+        && checkoutContinuityAfter.selectedVersion === checkoutContinuityBefore.selectedVersion
+        && checkoutContinuityAfter.selectedPayment === checkoutContinuityBefore.selectedPayment
+        && JSON.stringify(checkoutContinuityAfter.order) === JSON.stringify(checkoutContinuityBefore.order),
+      '旋转后详情、SKU、版本、时长、支付方式或订单快照丢失',
+    );
+    assert(checkoutContinuityAfter.accountAllocationCount === checkoutContinuityBefore.accountAllocationCount, '旋转不得重复取号');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    await page.evaluate(() => {
+      window.__appRentalDemo.setScenario('active-rental');
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.navigate('orders');
+    });
+    await page.locator('.order-list-card[data-status="active"]').click();
+    await page.locator('[data-action="open-login-method"]').click();
+    await page.locator('[data-action="open-manual-login"]').click();
+    await page.locator('#steam-account').fill('continuity-user');
+    await page.locator('#steam-password').fill('continuity-secret');
+    await page.locator('#steam-remember').uncheck();
+    await page.locator('[data-action="submit-steam-login"]').click();
+    await page.locator('[data-action="request-guard"]').click();
+    await page.locator('.steam-help-trigger').click();
+    const steamContinuityBefore = await page.evaluate(() => window.__appRentalDemo.snapshot());
+    await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
+    const steamContinuityAfter = await page.evaluate(() => ({
+      snapshot: window.__appRentalDemo.snapshot(),
+      account: document.querySelector('#steam-account')?.value,
+      password: document.querySelector('#steam-password')?.value,
+      remember: document.querySelector('#steam-remember')?.checked,
+      help: Boolean(document.querySelector('.steam-credential-overlay')),
+      code: document.querySelector('[data-guard-code]')?.textContent.trim(),
+    }));
+    assert(
+      steamContinuityAfter.snapshot.screen === 'steam-login'
+        && steamContinuityAfter.account === 'continuity-user'
+        && steamContinuityAfter.password === 'continuity-secret'
+        && !steamContinuityAfter.remember
+        && steamContinuityAfter.help
+        && steamContinuityAfter.code === '48291',
+      '旋转后 Steam 表单、记住我、凭据浮层或 Guard 丢失',
+    );
+    assert(
+      steamContinuityAfter.snapshot.guardExpiresAt === steamContinuityBefore.guardExpiresAt
+        && steamContinuityAfter.snapshot.accountAllocationCount === steamContinuityBefore.accountAllocationCount,
+      '旋转不得重复取码或改变 Guard 失效时间',
+    );
+    process.stdout.write('CONTINUITY 4/4 PASS\n');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    await page.evaluate(() => {
+      window.__appRentalDemo.setScenario('active-rental');
+      window.__appRentalDemo.setOrientation('landscape');
+      window.__appRentalDemo.navigate('orders');
+      window.__appRentalDemo.setGameplayContext(false);
+      window.__appRentalDemo.triggerExpiryMinutes(15);
+    });
+    const expiryFirst = await page.evaluate(() => ({
+      text: document.querySelector('.expiry-reminder')?.textContent || '',
+      context: document.querySelector('.expiry-reminder')?.dataset.context,
+      backdrop: Boolean(document.querySelector('.expiry-reminder .modal-backdrop')),
+      expireAt: window.__appRentalDemo.snapshot().rentalUsage?.expireAt,
+      reminderCount: window.__appRentalDemo.snapshot().expiryReminderCount,
+    }));
+    assert(expiryFirst.text.includes('租用时间快结束了，是否继续畅玩？') && expiryFirst.context === 'outside-game', '15分钟提醒文案或游戏外位置错误');
+    assert(!expiryFirst.backdrop, '临期提醒不得使用全屏遮罩');
+    await page.evaluate(() => window.__appRentalDemo.setOrientation('portrait'));
+    assert((await page.locator('.expiry-reminder').count()) === 1, '旋转后临期提醒未保持');
+    await page.getByRole('button', { name: '关闭提醒', exact: true }).click();
+    await page.evaluate(() => {
+      window.__appRentalDemo.triggerExpiryMinutes(5);
+      window.__appRentalDemo.triggerExpiryMinutes(1);
+      window.__appRentalDemo.clearSensitiveState('background');
+      window.__appRentalDemo.triggerExpiryMinutes(14);
+    });
+    const expiryNoRepeat = await page.evaluate(() => ({
+      open: Boolean(document.querySelector('.expiry-reminder')),
+      count: window.__appRentalDemo.snapshot().expiryReminderCount,
+    }));
+    assert(!expiryNoRepeat.open && expiryNoRepeat.count === 1, '同一使用单在关闭、5/1分钟、前后台后不得重复提醒');
+    assert(
+      !/expiry(?:5|1)|(?:minutes|remaining)\s*={2,3}\s*(?:5|1)\b|case\s+(?:5|1)\s*:/.test(fs.readFileSync(path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.template.html'), 'utf8')),
+      '源码存在5分钟或1分钟提醒字段/正向分支',
+    );
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    await page.evaluate(() => {
+      window.__appRentalDemo.setScenario('active-rental');
+      window.__appRentalDemo.setGameplayContext(true);
+      window.__appRentalDemo.triggerExpiryMinutes(15);
+    });
+    const inGameExpiry = await page.evaluate(() => ({
+      context: document.querySelector('.expiry-reminder')?.dataset.context,
+      expireAt: window.__appRentalDemo.snapshot().rentalUsage?.expireAt,
+    }));
+    assert(inGameExpiry.context === 'in-game', '游戏内提醒未位于顶部安全区');
+    await page.getByRole('button', { name: '继续畅玩', exact: true }).click();
+    const expiryContinue = await page.evaluate(() => ({
+      screen: window.__appRentalDemo.snapshot().screen,
+      expireAt: window.__appRentalDemo.snapshot().rentalUsage?.expireAt,
+      open: Boolean(document.querySelector('.expiry-reminder')),
+    }));
+    assert(expiryContinue.screen === 'detail' && expiryContinue.expireAt === inGameExpiry.expireAt && !expiryContinue.open, '继续畅玩应进入最新权益且不得直接延时');
+    process.stdout.write('EXPIRY 7/7 PASS\n');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    await page.evaluate(() => {
+      window.__appRentalDemo.setScenario('active-rental');
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.navigate('orders');
+    });
+    await page.locator('.order-list-card[data-status="active"]').click();
+    await page.locator('[data-action="open-login-method"]').click();
+    await page.locator('[data-action="open-manual-login"]').click();
+    await page.locator('#steam-account').fill('t0-user');
+    await page.locator('#steam-password').fill('t0-secret');
+    await page.locator('[data-action="submit-steam-login"]').click();
+    await page.locator('[data-action="request-guard"]').click();
+    await page.locator('.steam-help-trigger').click();
+    await page.evaluate(() => window.__appRentalDemo.triggerExpiryMinutes(0));
+    const t0 = await page.evaluate(() => ({
+      snapshot: window.__appRentalDemo.snapshot(),
+      dialog: document.querySelector('.rental-ended-dialog')?.textContent || '',
+    }));
+    assert(t0.snapshot.order.status === 'ended' && !t0.snapshot.rentalUsage.sessionActive, 'T0 未立即结束订单和游戏会话');
+    assert(
+      t0.snapshot.rentalUsage.accountReleased
+        && !t0.snapshot.rentalUsage.shortAuthValid
+        && t0.snapshot.guardCode === null
+        && t0.snapshot.steamForm.account === ''
+        && t0.snapshot.steamForm.password === ''
+        && !t0.snapshot.credentialPanelOpen
+        && !t0.snapshot.steamHelpOpen,
+      'T0 未释放账号、撤销授权或清理敏感信息',
+    );
+    assert(t0.dialog.includes('租用已结束') && t0.dialog.includes('继续畅玩') && t0.dialog.includes('立即结束'), 'T0 缺少租用结束恢复弹窗');
+    const t0Counts = await page.evaluate(() => {
+      const before = window.__appRentalDemo.snapshot().rentalUsage;
+      window.__appRentalDemo.triggerExpiryMinutes(0);
+      const after = window.__appRentalDemo.snapshot().rentalUsage;
+      return { before, after };
+    });
+    assert(t0Counts.after.expiryExecutionCount === 1 && t0Counts.after.accountReleaseCount === 1 && JSON.stringify(t0Counts.before) === JSON.stringify(t0Counts.after), 'T0 处理必须幂等');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    const takeover = await page.evaluate(() => {
+      window.__appRentalDemo.setScenario('active-rental');
+      window.__appRentalDemo.setPostRentalEntitlement('permanent');
+      window.__appRentalDemo.triggerExpiryMinutes(0);
+      return window.__appRentalDemo.snapshot();
+    });
+    assert(takeover.order.status === 'ended' && takeover.rentalUsage.sessionActive && takeover.rentalUsage.takeover === 'permanent' && !takeover.expiredLaunchDialogOpen, '有效永久权益未在T0接管会话');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    const pendingMembershipT0 = await page.evaluate(() => {
+      window.__appRentalDemo.setScenario('active-rental');
+      window.__appRentalDemo.createMembershipOrder();
+      window.__appRentalDemo.triggerExpiryMinutes(0);
+      return window.__appRentalDemo.snapshot();
+    });
+    assert(!pendingMembershipT0.rentalUsage.sessionActive && pendingMembershipT0.membershipOrder.status === 'pending', '待支付会员不得接管T0会话');
+    const blockedLaunch = await page.evaluate(() => window.__appRentalDemo.attemptLaunchAfterExpiry());
+    assert(blockedLaunch === false && (await page.locator('.rental-ended-dialog').innerText()).includes('租用已结束'), '仅历史租赁到期时再次启动必须拦截进程');
+    const launchRecovery = await page.evaluate(() => {
+      window.__appRentalDemo.setLaunchVerification('offline');
+      const offline = window.__appRentalDemo.attemptLaunchAfterExpiry();
+      window.__appRentalDemo.setLaunchVerification('online');
+      window.__appRentalDemo.setPostRentalEntitlement('personal-owned');
+      const owned = window.__appRentalDemo.attemptLaunchAfterExpiry();
+      return { offline, owned, snapshot: window.__appRentalDemo.snapshot() };
+    });
+    assert(!launchRecovery.offline && launchRecovery.owned && launchRecovery.snapshot.rentalUsage.sessionActive, '离线校验应拦截，个人拥有或新权益应允许再次启动');
+    process.stdout.write('T0 8/8 PASS\n');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    await page.evaluate(() => {
+      window.__appRentalDemo.setScenario('active-rental');
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.navigate('orders');
+    });
+    await page.locator('.order-list-card[data-status="active"]').click();
+    await page.locator('[data-action="after-sales"]').click();
+    const portraitAfterSales = await page.evaluate(() => ({
+      layout: document.querySelector('[data-layout="portrait-after-sales"]')?.dataset.layout,
+      types: document.querySelectorAll('[data-after-sales-type]').length,
+      screen: window.__appRentalDemo.snapshot().screen,
+    }));
+    assert(portraitAfterSales.layout === 'portrait-after-sales' && portraitAfterSales.types === 5 && portraitAfterSales.screen === 'after-sales', '竖屏售后独立页或5类问题不完整');
+    assert((await page.evaluate(() => window.__appRentalDemo.submitAfterSales())) === null, '售后描述必填校验失效');
+    await page.locator('[data-after-sales-type="refund"]').click();
+    await page.locator('#after-sales-description').fill('游戏启动后持续闪退，需要协助退款。');
+    await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
+    const landscapeAfterSales = await page.evaluate(() => ({
+      layout: document.querySelector('[data-layout="landscape-after-sales"]')?.dataset.layout,
+      type: window.__appRentalDemo.snapshot().afterSalesDraft.type,
+      description: document.querySelector('#after-sales-description')?.value,
+    }));
+    assert(landscapeAfterSales.layout === 'landscape-after-sales' && landscapeAfterSales.type === 'refund' && landscapeAfterSales.description.includes('持续闪退'), '旋转后售后右侧面板或草稿丢失');
+    const afterSalesSubmit = await page.evaluate(() => {
+      const first = window.__appRentalDemo.submitAfterSales();
+      const second = window.__appRentalDemo.submitAfterSales();
+      return { first, second, snapshot: window.__appRentalDemo.snapshot() };
+    });
+    assert(afterSalesSubmit.first.id === afterSalesSubmit.second.id && afterSalesSubmit.snapshot.afterSalesOrder.id === afterSalesSubmit.first.id, '重复提交必须返回原售后单');
+    assert((await page.locator('.refund-progress').innerText()).includes('退款'), '退款售后缺少进度');
+    await page.evaluate(() => window.__appRentalDemo.setAfterSalesInventory(false));
+    const noReplacement = await page.evaluate(() => window.__appRentalDemo.requestReplacement());
+    const noReplacementUi = await page.locator('.replacement-status').innerText();
+    assert(!noReplacement && noReplacementUi.includes('暂无同游戏同版本账号') && noReplacementUi.includes('保留原绑定') && noReplacementUi.includes('重试'), '换号无库存未保留原绑定或缺少恢复动作');
+    const replacement = await page.evaluate(() => {
+      window.__appRentalDemo.setAfterSalesInventory(true);
+      window.__appRentalDemo.requestReplacement();
+      return window.__appRentalDemo.snapshot().replacementRequest;
+    });
+    assert(replacement.status === 'success' && replacement.gameId === 'elden-ring' && replacement.version === 'Steam版本', '换号必须保持同游戏同版本');
+    assert(afterSalesSubmit.snapshot.guardCode === null && afterSalesSubmit.snapshot.steamForm.password === '', '售后提交后必须清理凭据');
+    process.stdout.write('AFTER_SALES 8/8 PASS\n');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    await page.evaluate(() => {
+      window.__appRentalDemo.setScenario('not-member-library');
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.selectRentalSku('hourly-8h');
+      window.__appRentalDemo.navigate('checkout');
+      window.__appRentalDemo.setInventoryAvailable(false);
+    });
+    const noStockRecovery = await page.evaluate(() => ({
+      text: document.querySelector('#appRentalDemo').innerText,
+      primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
+      retry: Boolean(document.querySelector('[data-action="retry-inventory"]')),
+      back: Boolean(document.querySelector('[data-action="back-to-detail"]')),
+    }));
+    assert(noStockRecovery.text.includes('当前套餐已售罄') && noStockRecovery.retry && noStockRecovery.back && noStockRecovery.primaryCount === 1, '无库存必须禁用购买并提供返回/重查且仅一个主操作');
+    await page.locator('[data-action="retry-inventory"]').click();
+    assert((await page.locator('[data-action="pay-game-order"]').count()) === 1, '重新查询库存后未恢复购买');
+    await page.evaluate(() => window.__appRentalDemo.setPriceChanged(true));
+    const priceRecovery = await page.evaluate(() => ({
+      screen: window.__appRentalDemo.snapshot().screen,
+      text: document.querySelector('#appRentalDemo').innerText,
+      primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
+    }));
+    assert(priceRecovery.screen === 'checkout' && priceRecovery.text.includes('按新价格重新确认') && priceRecovery.primaryCount === 1, '改价必须回到checkout重新确认且仅一个主操作');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    const refundingRecovery = await page.evaluate(() => {
+      window.__appRentalDemo.createOrder({ sku: 'rent-2h', amount: 9.9, priceVersion: 'recovery' });
+      window.__appRentalDemo.payOrder();
+      window.__appRentalDemo.allocateAccount(false);
+      window.__appRentalDemo.navigate('orders');
+      return window.__appRentalDemo.snapshot().order;
+    });
+    await page.locator(`.order-list-card[data-order-id="${refundingRecovery.id}"]`).click();
+    assert((await page.locator('.portrait-order-detail').innerText()).includes('自动退款'), '分配失败后必须显示自动退款');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    const networkOrderId = await page.evaluate(() => {
+      const order = window.__appRentalDemo.createOrder({ sku: 'rent-2h', amount: 9.9, priceVersion: 'network' });
+      window.__appRentalDemo.navigate('checkout');
+      window.__appRentalDemo.setNetworkAvailable(false);
+      window.__appRentalDemo.queryOrderStatus();
+      return order.id;
+    });
+    const networkRecovery = await page.evaluate(() => ({
+      orderId: window.__appRentalDemo.snapshot().order.id,
+      text: document.querySelector('#appRentalDemo').innerText,
+      retry: Boolean(document.querySelector('[data-action="requery-order"]')),
+      primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
+    }));
+    assert(networkRecovery.orderId === networkOrderId && networkRecovery.text.includes(networkOrderId) && networkRecovery.retry && networkRecovery.primaryCount === 1, '网络异常必须保留订单号、提供重新查询且仅一个主操作');
+    await page.evaluate(() => window.__appRentalDemo.setNetworkAvailable(true));
+    await page.locator('[data-action="requery-order"]').click();
+    assert(!(await page.locator('#appRentalDemo').innerText()).includes('网络异常'), '网络恢复后重新查询未清除异常');
+    process.stdout.write('RECOVERY 6/6 PASS\n');
   } finally {
     await browser.close();
   }
