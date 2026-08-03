@@ -387,6 +387,168 @@ async function main() {
     assert(landscapeMemberLibrary.columns >= 4 && landscapeMemberLibrary.faq === 5, '横屏会员游戏库多列布局或5条FAQ不完整');
     process.stdout.write('MEMBERSHIP 10/10 PASS\n');
 
+    const faqSemantics = await page.evaluate(() => [...document.querySelectorAll('.member-faq-item')].map((node) => ({
+      topic: node.dataset.faqTopic,
+      text: node.textContent.trim(),
+    })));
+    const expectedFaqs = [
+      ['game-scope', '游戏范围'],
+      ['refund', '退款'],
+      ['support', '客服协助'],
+      ['library-update', '游戏库更新'],
+      ['shared-account', '共享账号'],
+    ];
+    for (const [topic, keyword] of expectedFaqs) {
+      const item = faqSemantics.find((entry) => entry.topic === topic);
+      assert(item?.text.includes(keyword), `FAQ 缺少${keyword}主题`);
+    }
+    process.stdout.write('FAQ 5/5 PASS\n');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    const membershipStatusCases = [
+      ['none', ['会员未开通', '去开通']],
+      ['monthly-active', ['月度会员', '有效期至', '续费']],
+      ['annual-active', ['年度会员', '有效期至', '续费']],
+      ['expired', ['会员已过期', '重新开通']],
+      ['permanent', ['永久会员', '永久有效', '查看权益']],
+    ];
+    let membershipStatusChecks = 0;
+    for (const orientation of ['portrait', 'landscape']) {
+      for (const [status, expectedCopy] of membershipStatusCases) {
+        await page.evaluate(({ orientation, status }) => {
+          window.__appRentalDemo.setOrientation(orientation);
+          window.__appRentalDemo.setMembershipStatus(status);
+          window.__appRentalDemo.navigate('profile');
+        }, { orientation, status });
+        const selector = orientation === 'portrait'
+          ? '.member-banner[data-screen="membership"]'
+          : '.landscape-profile [data-screen="membership"]';
+        const entry = page.locator(selector);
+        const text = orientation === 'portrait' ? await entry.innerText() : await page.locator('.landscape-member-card').innerText();
+        assert(expectedCopy.every((value) => text.includes(value)), `${orientation} ${status} 会员状态文案不完整`);
+        const membershipOrderBefore = await page.evaluate(() => window.__appRentalDemo.snapshot().membershipOrder);
+        await entry.click();
+        const afterEntry = await page.evaluate(() => ({
+          screen: window.__appRentalDemo.snapshot().screen,
+          membershipOrder: window.__appRentalDemo.snapshot().membershipOrder,
+        }));
+        assert(afterEntry.screen === 'membership', `${orientation} ${status} 未进入统一会员中心`);
+        assert(JSON.stringify(afterEntry.membershipOrder) === JSON.stringify(membershipOrderBefore), `${orientation} ${status} 入口不应直接创建会员订单`);
+        membershipStatusChecks += 1;
+      }
+    }
+    process.stdout.write(`MEMBER_STATUS ${membershipStatusChecks}/${membershipStatusChecks} PASS\n`);
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    await page.evaluate(() => {
+      window.__appRentalDemo.navigate('membership');
+      window.__appRentalDemo.createMembershipOrder();
+      window.__appRentalDemo.setScenario('not-member-library');
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.selectRentalSku('hourly-8h');
+      window.__appRentalDemo.navigate('checkout');
+    });
+    const checkoutReviewBefore = await page.evaluate(() => ({
+      gameOrder: window.__appRentalDemo.snapshot().order,
+      membershipOrder: window.__appRentalDemo.snapshot().membershipOrder,
+    }));
+    const readCheckoutReview = () => page.evaluate(() => {
+      const originalRow = document.querySelector('.game-original-row');
+      const label = originalRow?.querySelector('.price-label');
+      const amount = originalRow?.querySelector('.game-original-amount');
+      const total = document.querySelector('.checkout-row.total .order-total-amount');
+      const labelStyle = label ? getComputedStyle(label) : null;
+      const amountStyle = amount ? getComputedStyle(amount) : null;
+      const totalStyle = total ? getComputedStyle(total) : null;
+      const qr = document.querySelector('.game-payment-qr');
+      const agreement = document.querySelector('.checkout-agreement');
+      return {
+        qrPayment: qr?.dataset.payment,
+        qrText: qr?.textContent.trim(),
+        agreementText: agreement?.textContent.trim(),
+        originalBeforeTotal: Boolean(originalRow?.nextElementSibling?.classList.contains('total')),
+        labelColor: labelStyle?.color,
+        amountColor: amountStyle?.color,
+        amountDecoration: amountStyle?.textDecorationLine,
+        amountAlign: amountStyle?.textAlign,
+        totalAlign: totalStyle?.textAlign,
+        totalColor: totalStyle?.color,
+      };
+    });
+    const portraitCheckoutReview = await readCheckoutReview();
+    assert(
+      portraitCheckoutReview.qrPayment === 'alipay'
+        && portraitCheckoutReview.qrText.includes('支付宝扫码支付')
+        && portraitCheckoutReview.agreementText.includes('租号服务协议')
+        && portraitCheckoutReview.agreementText.includes('退款规则'),
+      '竖屏确认订单缺少支付宝二维码或协议区',
+    );
+    assert(
+      portraitCheckoutReview.originalBeforeTotal
+        && portraitCheckoutReview.labelColor === 'rgb(255, 255, 255)'
+        && portraitCheckoutReview.amountColor === 'rgb(139, 141, 149)'
+        && portraitCheckoutReview.amountDecoration === 'none'
+        && portraitCheckoutReview.amountAlign === 'right'
+        && portraitCheckoutReview.totalAlign === 'right'
+        && portraitCheckoutReview.totalColor === 'rgb(255, 204, 67)',
+      '竖屏游戏原价与订单金额视觉层级错误',
+    );
+    await page.locator('.payment-method[data-payment="wechat"]').click();
+    const portraitWechat = await readCheckoutReview();
+    const checkoutAfterWechat = await page.evaluate(() => ({
+      gameOrder: window.__appRentalDemo.snapshot().order,
+      membershipOrder: window.__appRentalDemo.snapshot().membershipOrder,
+    }));
+    assert(portraitWechat.qrPayment === 'wechat' && portraitWechat.qrText.includes('微信扫码支付'), '竖屏微信支付二维码未同步');
+    assert(
+      checkoutAfterWechat.gameOrder.id === checkoutReviewBefore.gameOrder.id
+        && checkoutAfterWechat.gameOrder.paymentDeadline === checkoutReviewBefore.gameOrder.paymentDeadline,
+      '切换游戏支付方式破坏30分钟订单快照',
+    );
+    assert(checkoutAfterWechat.membershipOrder.id === checkoutReviewBefore.membershipOrder.id, '游戏支付切换覆盖会员订单');
+
+    await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
+    const landscapeCheckoutReview = await readCheckoutReview();
+    assert(
+      landscapeCheckoutReview.qrPayment === 'wechat'
+        && landscapeCheckoutReview.qrText.includes('微信扫码支付')
+        && landscapeCheckoutReview.agreementText.includes('租号服务协议')
+        && landscapeCheckoutReview.agreementText.includes('退款规则'),
+      '横屏确认订单缺少同步二维码或协议区',
+    );
+    assert(
+      landscapeCheckoutReview.originalBeforeTotal
+        && landscapeCheckoutReview.labelColor === 'rgb(255, 255, 255)'
+        && landscapeCheckoutReview.amountColor === 'rgb(139, 141, 149)'
+        && landscapeCheckoutReview.amountDecoration === 'none'
+        && landscapeCheckoutReview.amountAlign === 'right'
+        && landscapeCheckoutReview.totalAlign === 'right'
+        && landscapeCheckoutReview.totalColor === 'rgb(255, 204, 67)',
+      '横屏游戏原价与订单金额视觉层级错误',
+    );
+    await page.locator('.payment-method[data-payment="alipay"]').click();
+    const landscapeAlipay = await readCheckoutReview();
+    const checkoutAfterAlipay = await page.evaluate(() => ({
+      gameOrder: window.__appRentalDemo.snapshot().order,
+      membershipOrder: window.__appRentalDemo.snapshot().membershipOrder,
+    }));
+    assert(
+      landscapeAlipay.qrPayment === 'alipay'
+        && landscapeAlipay.qrText.includes('支付宝扫码支付')
+        && checkoutAfterAlipay.gameOrder.id === checkoutReviewBefore.gameOrder.id
+        && checkoutAfterAlipay.gameOrder.paymentDeadline === checkoutReviewBefore.gameOrder.paymentDeadline
+        && checkoutAfterAlipay.membershipOrder.id === checkoutReviewBefore.membershipOrder.id,
+      '横屏支付宝切换或订单隔离错误',
+    );
+    process.stdout.write('CHECKOUT_REVIEW 8/8 PASS\n');
+
+    await page.evaluate(() => window.__appRentalDemo.navigate('membership'));
+    const landscapeLibraryEntryHeight = await page.locator('.landscape-member-library-entry').evaluate((node) => node.getBoundingClientRect().height);
+    assert(landscapeLibraryEntryHeight >= 44, '横屏会员中心会员游戏库入口小于44px');
+    process.stdout.write('MEMBERSHIP_ENTRY 1/1 PASS\n');
+
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));
     const negativeGuards = await page.evaluate(() => {
