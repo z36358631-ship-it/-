@@ -28,6 +28,21 @@ async function main() {
     assert(contract.screen === 'home', '默认页面应为 home');
     process.stdout.write('CONTRACT 3/3 PASS\n');
 
+    await page.evaluate(() => {
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.navigate('home');
+    });
+    const portrait = await page.evaluate(() => ({
+      frame: document.querySelector('.device.portrait')?.getBoundingClientRect().toJSON(),
+      nav: [...document.querySelectorAll('.portrait-nav button')].map((node) => node.textContent.trim()),
+      primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
+    }));
+    assert(Math.round(portrait.frame?.width ?? 0) === 390, '竖屏宽度不是390');
+    assert(Math.round(portrait.frame?.height ?? 0) === 844, '竖屏高度不是844');
+    assert(portrait.nav.join('|') === '首页|玩游戏|排行榜|游戏库|我的', '竖屏导航不一致');
+    assert(portrait.primaryCount === 1, '首页必须只有一个主操作');
+    process.stdout.write('PORTRAIT 4/4 PASS\n');
+
     const entitlementCases = [
       ['owned-installed', 'launch', []],
       ['owned-uninstalled', 'download', []],
