@@ -647,16 +647,6 @@
       font-weight: 600;
     }
     .install-button:hover { color: #17130a; background: var(--brand-gold); }
-    .enable-switch-wrap {
-      position: absolute;
-      right: 12px;
-      bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      color: #9a989e;
-      font-size: 11px;
-    }
     .enable-switch {
       position: relative;
       width: 42px;
@@ -1809,20 +1799,14 @@
 
     function renderCard(mod) {
       const installed = state.installed.includes(mod.id);
-      const enabled = state.enabled.includes(mod.id);
       const task = state.tasks[mod.id] || null;
       const action = installed
-        ? state.tab === 'installed'
-          ? renderInstalledActions(mod, 'installed-list')
-          : `<div class="enable-switch-wrap">
-              <span>${enabled ? '已启用' : '已停用'}</span>
-              <button class="enable-switch" type="button" role="switch" aria-checked="${enabled}" aria-label="${enabled ? '停用' : '启用'} ${mod.name}" data-enable-switch data-action="toggle-enabled" data-mod-id="${mod.id}"></button>
-            </div>`
+        ? renderInstalledActions(mod, state.tab === 'installed' ? 'installed-list' : 'browse-list')
         : `<button class="install-button" type="button" data-action="install" data-mod-id="${mod.id}">
             ${icon('download')}${task ? `${task.progress}%` : '安装'}
           </button>`;
       return `
-        <article class="mod-card ${installed ? 'card-has-switch' : 'card-has-action'}" tabindex="0" data-mod-card data-mod-id="${mod.id}">
+        <article class="mod-card ${installed ? 'card-is-installed' : 'card-has-action'}" tabindex="0" data-mod-card data-mod-id="${mod.id}">
           <div class="mod-art ${mod.art}"></div>
           <div class="card-content">
             <h2 class="card-title">${mod.name}</h2>

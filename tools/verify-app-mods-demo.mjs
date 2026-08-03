@@ -53,6 +53,7 @@ assert.match(html, /function rotateTo/u);
 assert.doesNotMatch(html, /订阅 MOD/u);
 assert.doesNotMatch(html, /非官方标签/u);
 assert.doesNotMatch(html, /class="card-desc"/u);
+assert.doesNotMatch(html, /enable-switch-wrap/u);
 assert.doesNotMatch(html, /class="update-dot"/u);
 assert.doesNotMatch(html, /检查更新/u);
 console.log('PASS: APP MODS 静态结构与文案契约');
@@ -261,6 +262,11 @@ try {
   await page.locator('[data-action="enter-mods"]').click();
   assert.equal(await page.locator('[data-screen="mods"]').count(), 1);
   assert.equal(await page.locator('[data-mod-card] .card-desc').count(), 0, '浏览列表不应显示简介');
+  assert.equal(await page.locator('[data-installed-actions="browse-list"]').count(), 4);
+  assert.equal(await page.locator('[data-installed-actions="browse-list"] [data-installed-update]').count(), 4);
+  assert.equal(await page.locator('[data-installed-actions="browse-list"] [data-action="open-uninstall"]').count(), 4);
+  assert.equal(await page.locator('[data-installed-actions="browse-list"] [data-enable-switch]').count(), 4);
+  assert.equal(await page.locator('[data-installed-actions="browse-list"] .action-update-dot').count(), 2);
   assert.equal(await page.locator('[data-search]').count(), 1);
   assert.equal(await page.locator('[data-search]').getAttribute('placeholder'), '搜索 MOD 名称或作者');
   assert.deepEqual(

@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 将已安装列表、Steam 个人中心和 MOD 详情的操作统一为“更新｜卸载｜启停开关”，去掉黄色圆点与断点续传规则。
+**Goal:** 将浏览列表中的已安装 MOD、已安装列表、Steam 个人中心和 MOD 详情的操作统一为“更新｜卸载｜启停开关”，去掉黄色圆点与断点续传规则。
 
-**Architecture:** 单文件 Demo 使用共用 `renderInstalledActions()` 生成三处操作，并将可更新状态从静态 MOD 数据拷贝到 `state.availableUpdates`。卸载弹窗按 `confirmUninstallModId` 绑定具体 MOD；更新和启停通过同一状态源重绘三处界面。自动化验证覆盖结构、操作隔离、卸载目标、横竖屏布局、PRD 规则和固定 Git 资产链接。
+**Architecture:** 单文件 Demo 使用共用 `renderInstalledActions()` 生成四处操作，并将可更新状态从静态 MOD 数据拷贝到 `state.availableUpdates`。卸载弹窗按 `confirmUninstallModId` 绑定具体 MOD；更新和启停通过同一状态源重绘四处界面。自动化验证覆盖结构、操作隔离、卸载目标、横竖屏布局、PRD 规则和固定 Git 资产链接。
 
 **Tech Stack:** HTML/CSS/Vanilla JavaScript, Node.js, Playwright Core, Markdown, GitHub raw/CDN links
 
@@ -109,7 +109,7 @@ function renderInstalledActions(mod, surface) {
 - [ ] **Step 4: Use the common renderer on installed cards, profile cards, and detail**
 
 ```js
-${installed ? renderInstalledActions(mod, 'installed-list') : installAction}
+${installed ? renderInstalledActions(mod, state.tab === 'installed' ? 'installed-list' : 'browse-list') : installAction}
 ${renderInstalledActions(mod, 'steam-profile')}
 ${installed ? renderInstalledActions(mod, 'detail') : installAction}
 ```
@@ -216,7 +216,7 @@ Expected: a 40-character SHA used by every PRD image and Demo URL.
 - [ ] **Step 2: Specify the same actions on all three surfaces**
 
 ```markdown
-已安装列表、Steam 个人中心和 MOD 详情统一展示“更新｜卸载｜启停开关”。操作按钮不触发卡片详情。Steam 个人中心不支持安装新 MOD，可更新当前设备已安装 MOD。
+浏览列表中的已安装 MOD、已安装列表、Steam 个人中心和 MOD 详情统一展示“更新｜卸载｜启停开关”。操作按钮不触发卡片详情。Steam 个人中心不支持安装新 MOD，可更新当前设备已安装 MOD。
 ```
 
 - [ ] **Step 3: Replace continuation with interruption rules**
