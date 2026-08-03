@@ -1107,8 +1107,10 @@
       backdrop-filter: blur(18px);
     }
     .detail-action {
+      flex: 1 1 0;
+      min-width: 0;
       height: 48px;
-      padding: 0 18px;
+      padding: 0 12px;
       border-radius: 12px;
       color: #fff;
       background: #3a393f;
@@ -1877,9 +1879,9 @@
               ${task ? `
                 <div class="task-status"><span>${task.stage} · ${task.progress}%</span><div class="task-track"><div class="task-progress" style="width:${task.progress}%"></div></div></div>
               ` : installed ? `
-                <button class="detail-action detail-state ${enabled ? 'is-enabled' : 'is-disabled'}" type="button" data-detail-enabled data-action="detail-toggle" data-mod-id="${mod.id}">${enabled ? '已启用' : '已停用'}</button>
                 <button class="detail-action" type="button" data-action="update" data-mod-id="${mod.id}">${mod.update ? '更新' : '检查更新'}</button>
                 <button class="detail-action danger" type="button" data-action="open-uninstall">卸载</button>
+                <button class="detail-action detail-state ${enabled ? 'is-enabled' : 'is-disabled'}" type="button" data-detail-enabled data-action="detail-toggle" data-mod-id="${mod.id}">${enabled ? '已启用' : '已停用'}</button>
               ` : `
                 <button class="detail-action primary" type="button" data-action="install" data-mod-id="${mod.id}">${icon('download')} 下载安装</button>
               `}
@@ -2029,11 +2031,9 @@
       if (action === 'toggle-enabled') {
         event.stopPropagation();
         dispatch({ type: 'TOGGLE_ENABLED', modId });
-        showToast(state.enabled.includes(modId) ? '已在当前设备启用' : '已在当前设备停用');
       }
       if (action === 'detail-toggle') {
         dispatch({ type: 'TOGGLE_ENABLED', modId });
-        showToast(state.enabled.includes(modId) ? '已在当前设备启用' : '已在当前设备停用');
       }
       if (action === 'install') {
         event.stopPropagation();
