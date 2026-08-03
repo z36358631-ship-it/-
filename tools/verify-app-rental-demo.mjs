@@ -105,6 +105,48 @@ async function main() {
     const libraryAfterTab = await page.locator('.landscape-library .game-card strong').allTextContents();
     assert(JSON.stringify(libraryBeforeTab) !== JSON.stringify(libraryAfterTab), '横屏平台Tab未切换游戏内容');
 
+    const proportionalImages = await page.evaluate(() => [...document.querySelectorAll('.landscape-library img[data-real-asset="true"]')].map((node) => {
+      const rect = node.getBoundingClientRect();
+      return {
+        objectFit: getComputedStyle(node).objectFit,
+        renderedRatio: rect.width / rect.height,
+        naturalRatio: node.naturalWidth / node.naturalHeight,
+      };
+    }));
+    assert(
+      proportionalImages.length >= 6
+        && proportionalImages.every(({ objectFit, renderedRatio, naturalRatio }) => objectFit === 'cover'
+          && Math.abs(renderedRatio / naturalRatio - 1) <= 0.01),
+      '真实素材存在非等比拉伸',
+    );
+
+    await page.evaluate(() => window.__appRentalDemo.navigate('play'));
+    const playTabContents = [];
+    for (const value of ['cloud', 'pc', 'retro']) {
+      await page.locator(`.landscape-play-tabs [data-value="${value}"]`).click();
+      playTabContents.push(await page.locator('.landscape-recent-item strong, .landscape-hot-card strong').allTextContents());
+    }
+    assert(new Set(playTabContents.map((items) => JSON.stringify(items))).size === 3, '横屏玩游戏Tab未切换真实内容');
+
+    const playTouchTargets = await page.evaluate(() => [
+      ...document.querySelectorAll('.landscape-play-tabs button'),
+      document.querySelector('.landscape-benefit .primary-action'),
+    ].filter(Boolean).map((node) => {
+      const rect = node.getBoundingClientRect();
+      return [rect.width, rect.height];
+    }));
+    assert(playTouchTargets.every(([width, height]) => width >= 44 && height >= 44), '横屏玩游戏触控区小于44×44');
+
+    await page.evaluate(() => window.__appRentalDemo.navigate('library'));
+    const libraryTouchTargets = await page.evaluate(() => [
+      ...document.querySelectorAll('.landscape-platform-tabs button'),
+      ...document.querySelectorAll('.landscape-tool-button'),
+    ].map((node) => {
+      const rect = node.getBoundingClientRect();
+      return [rect.width, rect.height];
+    }));
+    assert(libraryTouchTargets.every(([width, height]) => width >= 44 && height >= 44), '横屏游戏库触控区小于44×44');
+
     const landscapePages = {};
     for (const screen of ['home', 'play', 'library', 'profile']) {
       await page.evaluate((value) => window.__appRentalDemo.navigate(value), screen);
@@ -146,7 +188,7 @@ async function main() {
     await page.locator('.landscape-profile [data-screen="orders"]').click();
     const orderEntryScreen = await page.evaluate(() => window.__appRentalDemo.snapshot().screen);
     assert(orderEntryScreen === 'orders', '横屏租号订单入口不可用');
-    process.stdout.write('LANDSCAPE 21/21 PASS\n');
+    process.stdout.write('LANDSCAPE 25/25 PASS\n');
 
     const entitlementCases = [
       ['owned-installed', 'launch', []],
