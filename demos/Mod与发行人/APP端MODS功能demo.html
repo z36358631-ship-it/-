@@ -608,7 +608,7 @@
       border-radius: 10px 28px 10px 28px;
       box-shadow: 0 0 22px rgba(242,73,93,.38);
     }
-    .card-content { min-width: 0; padding-bottom: 40px; }
+    .card-content { min-width: 0; padding-bottom: 48px; }
     .card-title {
       display: -webkit-box;
       overflow: hidden;
@@ -689,15 +689,72 @@
     }
     .enable-switch[aria-checked="true"] { background: var(--brand-green); }
     .enable-switch[aria-checked="true"]::after { transform: translateX(18px); }
-    .update-dot {
+    .installed-actions {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+    }
+    .mod-card > .installed-actions,
+    .profile-mod-card > .installed-actions {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      width: 8px;
-      height: 8px;
+      right: 12px;
+      bottom: 10px;
+      left: 12px;
+    }
+    .installed-action,
+    .installed-switch {
+      position: relative;
+      min-width: 0;
+      height: 38px;
+      border-radius: 10px;
+      background: #3a393f;
+    }
+    .installed-action {
+      padding: 0 10px;
+      color: #f1f0f3;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .installed-action:hover:not(:disabled) { background: #47464d; }
+    .installed-action.danger { color: #ff91a2; background: rgba(255,86,120,.1); }
+    .installed-action.danger:hover { background: rgba(255,86,120,.17); }
+    .installed-action:disabled {
+      color: #6f6e74;
+      background: #302f34;
+      cursor: default;
+    }
+    .action-update-dot {
+      position: absolute;
+      top: 7px;
+      right: 8px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
-      background: var(--brand-gold);
-      box-shadow: 0 0 0 4px rgba(255,204,67,.12);
+      background: #ff4d67;
+      box-shadow: 0 0 0 3px rgba(255,77,103,.12);
+    }
+    .installed-switch {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 7px;
+      color: #aaa8ae;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+    .installed-switch .enable-switch {
+      width: 36px;
+      height: 22px;
+      flex: none;
+    }
+    .installed-switch .enable-switch::after {
+      width: 16px;
+      height: 16px;
+    }
+    .installed-switch .enable-switch[aria-checked="true"]::after {
+      transform: translateX(14px);
     }
     .empty-state {
       min-height: 360px;
@@ -959,7 +1016,7 @@
     }
     .profile-mod-card:hover { border-color: rgba(255,204,67,.3); }
     .profile-mod-card .mod-art { width: 104px; height: 82px; }
-    .profile-mod-content { min-width: 0; padding-bottom: 38px; }
+    .profile-mod-content { min-width: 0; padding-bottom: 46px; }
     .profile-mod-content h2 {
       display: -webkit-box;
       overflow: hidden;
@@ -1128,6 +1185,11 @@
       background: rgba(31,30,34,.96);
       backdrop-filter: blur(18px);
     }
+    .detail-actionbar .installed-actions { flex: 1; }
+    .detail-actionbar .installed-action,
+    .detail-actionbar .installed-switch { height: 48px; }
+    .detail-actionbar .installed-action { font-size: 14px; }
+    .detail-actionbar .installed-switch { font-size: 12px; }
     .detail-action {
       flex: 1 1 0;
       min-width: 0;
@@ -1141,8 +1203,6 @@
     }
     .detail-action.primary { color: #17130a; background: var(--brand-gold); }
     .detail-action.danger { color: #ff8d9e; background: rgba(255,86,120,.1); }
-    .detail-state.is-enabled { color: #0e241e; background: var(--brand-green); }
-    .detail-state.is-disabled { color: #e0dee3; background: #55545a; }
     .task-status {
       flex: 1;
       min-width: 0;
@@ -1355,11 +1415,12 @@
       activeModId: null,
       installed: ['minimap', 'health-bar', 'language-pack', 'storage-box'],
       enabled: ['minimap', 'health-bar', 'storage-box'],
+      availableUpdates: MODS.filter(mod => mod.update).map(mod => mod.id),
       scrollByTab: { browse: 0, installed: 0 },
       detailScroll: 0,
       refreshing: false,
       tasks: {},
-      confirmUninstall: false,
+      confirmUninstallModId: null,
       toast: ''
     });
 
@@ -1367,6 +1428,7 @@
     let toastTimer = null;
     const taskTimers = new Map();
     let focusReturnSelector = '';
+    let uninstallFocusReturnSelector = '';
     let pendingFocusSelector = '';
     let isSearchComposing = false;
     let pendingOrientationSearchSelection = null;
@@ -1429,7 +1491,7 @@
         }[state.sort];
         visibleMods.sort(sorter);
       } else if (state.installedFilter === 'updates') {
-        visibleMods = visibleMods.filter(mod => mod.update);
+        visibleMods = visibleMods.filter(mod => state.availableUpdates.includes(mod.id));
       }
       return { visibleMods };
     }
@@ -1568,7 +1630,7 @@
           break;
         case 'CLOSE_DETAIL':
           state.activeModId = null;
-          state.confirmUninstall = false;
+          state.confirmUninstallModId = null;
           pendingFocusSelector = focusReturnSelector;
           focusReturnSelector = '';
           break;
@@ -1590,21 +1652,31 @@
           }, 650);
           return cloneState();
         case 'OPEN_UNINSTALL':
-          state.confirmUninstall = true;
+          state.confirmUninstallModId = event.modId || state.activeModId;
+          uninstallFocusReturnSelector = event.returnSelector || '';
           pendingFocusSelector = '[data-action="close-uninstall"]';
           break;
         case 'CLOSE_UNINSTALL':
-          state.confirmUninstall = false;
-          pendingFocusSelector = '[data-action="open-uninstall"]';
+          state.confirmUninstallModId = null;
+          pendingFocusSelector = uninstallFocusReturnSelector;
+          uninstallFocusReturnSelector = '';
           break;
         case 'CONFIRM_UNINSTALL': {
-          const modId = state.activeModId;
+          const modId = state.confirmUninstallModId;
+          if (!modId) break;
           state.installed = state.installed.filter(id => id !== modId);
           state.enabled = state.enabled.filter(id => id !== modId);
-          state.confirmUninstall = false;
+          state.availableUpdates = state.availableUpdates.filter(id => id !== modId);
+          state.confirmUninstallModId = null;
+          uninstallFocusReturnSelector = '';
+          if (state.activeModId === modId) state.activeModId = null;
           showToast('已从当前设备卸载');
           return cloneState();
         }
+        case 'UPDATE':
+          if (!state.availableUpdates.includes(event.modId)) return cloneState();
+          state.availableUpdates = state.availableUpdates.filter(id => id !== event.modId);
+          break;
         case 'RESET':
           taskTimers.forEach(timer => clearInterval(timer));
           taskTimers.clear();
@@ -1613,6 +1685,7 @@
           isSearchComposing = false;
           pendingOrientationSearchSelection = null;
           pendingOrientation = null;
+          uninstallFocusReturnSelector = '';
           break;
       }
       render();
@@ -1727,15 +1800,34 @@
       `;
     }
 
+    function renderInstalledActions(mod, surface) {
+      const enabled = state.enabled.includes(mod.id);
+      const canUpdate = state.availableUpdates.includes(mod.id);
+      return `
+        <div class="installed-actions" data-installed-actions="${surface}">
+          <button class="installed-action" type="button" data-installed-update data-action="update" data-mod-id="${mod.id}" ${canUpdate ? '' : 'disabled'}>
+            更新${canUpdate ? '<i class="action-update-dot" aria-hidden="true"></i>' : ''}
+          </button>
+          <button class="installed-action danger" type="button" data-action="open-uninstall" data-mod-id="${mod.id}">卸载</button>
+          <div class="installed-switch">
+            <span>${enabled ? '已启用' : '已停用'}</span>
+            <button class="enable-switch" type="button" role="switch" aria-checked="${enabled}" aria-label="${enabled ? '停用' : '启用'} ${mod.name}" data-enable-switch data-action="toggle-enabled" data-mod-id="${mod.id}"></button>
+          </div>
+        </div>
+      `;
+    }
+
     function renderCard(mod) {
       const installed = state.installed.includes(mod.id);
       const enabled = state.enabled.includes(mod.id);
       const task = state.tasks[mod.id] || null;
       const action = installed
-        ? `<div class="enable-switch-wrap">
-            <span>${enabled ? '已启用' : '已停用'}</span>
-            <button class="enable-switch" type="button" role="switch" aria-checked="${enabled}" aria-label="${enabled ? '停用' : '启用'} ${mod.name}" data-enable-switch data-action="toggle-enabled" data-mod-id="${mod.id}"></button>
-          </div>`
+        ? state.tab === 'installed'
+          ? renderInstalledActions(mod, 'installed-list')
+          : `<div class="enable-switch-wrap">
+              <span>${enabled ? '已启用' : '已停用'}</span>
+              <button class="enable-switch" type="button" role="switch" aria-checked="${enabled}" aria-label="${enabled ? '停用' : '启用'} ${mod.name}" data-enable-switch data-action="toggle-enabled" data-mod-id="${mod.id}"></button>
+            </div>`
         : `<button class="install-button" type="button" data-action="install" data-mod-id="${mod.id}">
             ${icon('download')}${task ? `${task.progress}%` : '安装'}
           </button>`;
@@ -1747,14 +1839,12 @@
             <p class="card-desc">${mod.description}</p>
             <div class="card-meta"><span>${mod.author}</span><span>${formatDownloads(mod.downloads)} 次下载</span><span>${mod.size}</span></div>
           </div>
-          ${mod.update && installed ? '<i class="update-dot" aria-label="可更新"></i>' : ''}
           ${action}
         </article>
       `;
     }
 
     function renderProfileCard(mod) {
-      const enabled = state.enabled.includes(mod.id);
       return `
         <article class="profile-mod-card" tabindex="0" data-profile-mod-card data-mod-card data-mod-id="${mod.id}">
           <div class="mod-art ${mod.art}"></div>
@@ -1762,11 +1852,7 @@
             <h2>${mod.name}</h2>
             <div class="card-meta"><span>${mod.author}</span><span>${formatDownloads(mod.downloads)} 次下载</span><span>${mod.size}</span></div>
           </div>
-          ${mod.update ? '<i class="update-dot" aria-label="可更新"></i>' : ''}
-          <div class="enable-switch-wrap">
-            <span>${enabled ? '已启用' : '已停用'}</span>
-            <button class="enable-switch" type="button" role="switch" aria-checked="${enabled}" aria-label="${enabled ? '停用' : '启用'} ${mod.name}" data-enable-switch data-action="toggle-enabled" data-mod-id="${mod.id}"></button>
-          </div>
+          ${renderInstalledActions(mod, 'steam-profile')}
         </article>
       `;
     }
@@ -1810,6 +1896,7 @@
             `}
           </div>
           ${state.activeModId ? renderDetail() : ''}
+          ${state.confirmUninstallModId ? renderConfirm() : ''}
           ${state.toast ? `<div class="toast" role="status">${state.toast}</div>` : ''}
         </section>
       `;
@@ -1879,6 +1966,7 @@
             `}
           </div>
           ${state.activeModId ? renderDetail() : ''}
+          ${state.confirmUninstallModId ? renderConfirm() : ''}
           ${state.toast ? `<div class="toast" role="status">${state.toast}</div>` : ''}
         </section>
       `;
@@ -1888,7 +1976,6 @@
       const mod = currentMod();
       if (!mod) return '';
       const installed = state.installed.includes(mod.id);
-      const enabled = state.enabled.includes(mod.id);
       const task = state.tasks[mod.id] || null;
       return `
         <div class="detail-layer" data-detail data-orientation="${state.orientation}" role="dialog" aria-modal="true" aria-label="${mod.name} 详情">
@@ -1911,21 +1998,18 @@
             <footer class="detail-actionbar">
               ${task ? `
                 <div class="task-status"><span>${task.stage} · ${task.progress}%</span><div class="task-track"><div class="task-progress" style="width:${task.progress}%"></div></div></div>
-              ` : installed ? `
-                <button class="detail-action" type="button" data-action="update" data-mod-id="${mod.id}">${mod.update ? '更新' : '检查更新'}</button>
-                <button class="detail-action danger" type="button" data-action="open-uninstall">卸载</button>
-                <button class="detail-action detail-state ${enabled ? 'is-enabled' : 'is-disabled'}" type="button" data-detail-enabled data-action="detail-toggle" data-mod-id="${mod.id}">${enabled ? '已启用' : '已停用'}</button>
-              ` : `
+              ` : installed ? renderInstalledActions(mod, 'detail') : `
                 <button class="detail-action primary" type="button" data-action="install" data-mod-id="${mod.id}">${icon('download')} 下载安装</button>
               `}
             </footer>
           </article>
-          ${state.confirmUninstall ? renderConfirm(mod) : ''}
         </div>
       `;
     }
 
-    function renderConfirm(mod) {
+    function renderConfirm() {
+      const mod = MODS.find(item => item.id === state.confirmUninstallModId);
+      if (!mod) return '';
       return `
         <div class="confirm-layer" role="alertdialog" aria-modal="true" aria-label="确认卸载">
           <article class="confirm-card">
@@ -2017,15 +2101,14 @@
     });
 
     document.addEventListener('keydown', event => {
-      const detail = root.querySelector('[data-detail]');
       if (event.key === 'Escape') {
-        if (state.confirmUninstall) dispatch({ type: 'CLOSE_UNINSTALL' });
+        if (state.confirmUninstallModId) dispatch({ type: 'CLOSE_UNINSTALL' });
         else if (state.activeModId) dispatch({ type: 'CLOSE_DETAIL' });
         else if (state.menuOpen) dispatch({ type: 'CLOSE_MORE' });
         return;
       }
-      if (!detail || event.key !== 'Tab') return;
-      const trap = root.querySelector('.confirm-layer') || detail;
+      const trap = root.querySelector('.confirm-layer') || root.querySelector('[data-detail]');
+      if (!trap || event.key !== 'Tab') return;
       const focusable = [...trap.querySelectorAll('button:not([disabled]), input:not([disabled]), [tabindex="0"]')]
         .filter(element => element.getClientRects().length);
       if (!focusable.length) return;
@@ -2065,16 +2148,23 @@
         event.stopPropagation();
         dispatch({ type: 'TOGGLE_ENABLED', modId });
       }
-      if (action === 'detail-toggle') {
-        dispatch({ type: 'TOGGLE_ENABLED', modId });
-      }
       if (action === 'install') {
         event.stopPropagation();
         startInstall(modId);
       }
       if (action === 'close-detail') dispatch({ type: 'CLOSE_DETAIL' });
-      if (action === 'update') showToast('已开始检查当前设备的更新');
-      if (action === 'open-uninstall') dispatch({ type: 'OPEN_UNINSTALL' });
+      if (action === 'update') {
+        event.stopPropagation();
+        dispatch({ type: 'UPDATE', modId });
+      }
+      if (action === 'open-uninstall') {
+        event.stopPropagation();
+        dispatch({
+          type: 'OPEN_UNINSTALL',
+          modId,
+          returnSelector: `[data-action="open-uninstall"][data-mod-id="${modId}"]`
+        });
+      }
       if (action === 'close-uninstall') dispatch({ type: 'CLOSE_UNINSTALL' });
       if (action === 'confirm-uninstall') dispatch({ type: 'CONFIRM_UNINSTALL' });
       if (!action && control.matches('[data-mod-card]')) {
