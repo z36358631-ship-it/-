@@ -117,6 +117,9 @@
 
     .portrait-content::-webkit-scrollbar { display: none; }
 
+    .device.portrait.has-expiry-reminder .portrait-content { padding-top: 100px; }
+    .device.portrait.has-ingame-expiry .portrait-content { padding-top: 150px; }
+
     .portrait-nav {
       position: absolute;
       z-index: 10;
@@ -2311,7 +2314,7 @@
       const theme = active === 'library' ? 'theme-library' : active === 'profile' ? 'theme-profile' : active === 'home' ? 'theme-home' : '';
       const isMainScreen = nav.some(([id]) => id === active);
       const hasFixedFooter = ['detail', 'checkout', 'membership'].includes(active);
-      return `<section class="device portrait ${theme}">
+      return `<section class="device portrait ${theme} ${state.expiryReminderOpen ? `has-expiry-reminder ${state.gameplayContext ? 'has-ingame-expiry' : ''}` : ''}">
         ${statusBar()}
         <main class="portrait-content ${hasFixedFooter ? 'portrait-content--subpage' : !isMainScreen ? 'portrait-content--plain' : ''}">${content}</main>
         ${renderPortraitFooter(active)}
