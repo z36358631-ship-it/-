@@ -783,7 +783,7 @@
     .order-page-head h1 { margin: 0; font-size: 22px; }
     .order-page-head p { margin: 4px 0 0; color: var(--text-muted); font-size: 11px; }
     .order-tabs { display: flex; min-height: 44px; align-items: center; gap: 6px; padding: 4px; border: 1px solid rgb(255 255 255 / 8%); border-radius: 14px; background: rgb(255 255 255 / 4%); }
-    .order-tabs button { min-height: 36px; padding: 0 14px; border: 0; border-radius: 10px; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 12px; }
+    .order-tabs button { min-width: 44px; min-height: 44px; padding: 0 14px; border: 0; border-radius: 10px; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 12px; }
     .order-tabs button.active { background: rgb(255 255 255 / 10%); color: #fff; font-weight: 650; }
     .portrait-order-list { display: grid; gap: 10px; }
     .order-list-card { display: grid; width: 100%; min-height: 106px; grid-template-columns: 58px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 14px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 16px; background: linear-gradient(145deg, rgb(35 37 44 / 92%), rgb(18 19 23 / 92%)); color: #fff; cursor: pointer; text-align: left; }
@@ -823,9 +823,9 @@
     .order-list-pane { padding: 12px; }
     .order-list-pane .order-page-head { margin-bottom: 8px; }
     .order-list-pane .order-page-head h1 { font-size: 17px; }
-    .order-list-pane .order-tabs { min-height: 38px; margin-bottom: 8px; }
-    .order-list-pane .order-tabs button { min-height: 30px; padding: 0 10px; font-size: 10px; }
-    .landscape-order-list { display: grid; max-height: 208px; gap: 7px; overflow-y: auto; scrollbar-width: none; }
+    .order-list-pane .order-tabs { min-height: 52px; margin-bottom: 8px; }
+    .order-list-pane .order-tabs button { min-height: 44px; padding: 0 10px; font-size: 10px; }
+    .landscape-order-list { display: grid; max-height: 190px; gap: 7px; overflow-y: auto; scrollbar-width: none; }
     .landscape-order-list::-webkit-scrollbar { display: none; }
     .landscape-order-list .order-list-card { min-height: 64px; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 8px; padding: 8px; border-radius: 12px; }
     .landscape-order-list .order-game-icon { width: 40px; height: 40px; border-radius: 10px; font-size: 13px; }
@@ -841,7 +841,7 @@
     .order-detail-pane .order-summary-row { font-size: 8px; }
     .order-detail-pane .active-order-actions { grid-template-columns: 1.3fr repeat(3, 1fr); margin-top: 8px; }
     .order-detail-pane .active-order-actions .order-primary { grid-column: auto; }
-    .order-detail-pane .active-order-actions button { min-height: 38px; font-size: 9px; }
+    .order-detail-pane .active-order-actions button { min-height: 44px; font-size: 9px; }
 
     .modal-backdrop { position: absolute; z-index: 50; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding: 14px; background: rgb(0 0 0 / 72%); backdrop-filter: blur(5px); }
     .device.landscape .modal-backdrop { align-items: center; }
@@ -856,9 +856,12 @@
     .credential-field { display: grid; grid-template-columns: 54px minmax(0, 1fr) auto auto; align-items: center; gap: 7px; min-height: 52px; padding: 7px 8px 7px 12px; border: 1px solid rgb(255 255 255 / 8%); border-radius: 13px; background: rgb(0 0 0 / 18%); }
     .credential-field > span:first-child { color: var(--text-muted); font-size: 10px; }
     .credential-field code { overflow: hidden; color: #fff; font-family: var(--font-number); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-    .credential-field button { min-width: 44px; min-height: 38px; padding: 0 8px; border: 0; border-radius: 9px; background: rgb(255 255 255 / 7%); cursor: pointer; font-size: 9px; }
-    .credential-guard { display: flex; min-height: 44px; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: rgb(51 143 235 / 10%); color: #a9cdef; font-size: 10px; }
+    .credential-field button { min-width: 44px; min-height: 44px; padding: 0 8px; border: 0; border-radius: 9px; background: rgb(255 255 255 / 7%); cursor: pointer; font-size: 9px; }
+    .credential-guard { display: grid; min-height: 52px; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; margin-top: 10px; padding: 8px 10px; border-radius: 12px; background: rgb(51 143 235 / 10%); color: #a9cdef; font-size: 10px; }
     .credential-guard code { color: #fff; font-family: var(--font-number); font-size: 17px; letter-spacing: .15em; }
+    .credential-guard-value { justify-self: end; white-space: nowrap; }
+    .credential-guard-actions, .steam-guard-actions { display: flex; align-items: center; gap: 6px; }
+    .credential-guard button { min-width: 44px; min-height: 44px; padding: 0 9px; border: 0; border-radius: 9px; background: rgb(51 143 235 / 22%); color: #d8edff; cursor: pointer; font-size: 9px; }
     .login-method-dialog { max-width: 352px; padding: 20px; }
     .login-method-dialog h2 { margin: 0; font-size: 20px; }
     .login-method-dialog > p { margin: 7px 0 16px; color: var(--text-muted); font-size: 11px; line-height: 17px; }
@@ -892,21 +895,22 @@
     .steam-guard { margin-top: 10px; padding: 10px; border-radius: 6px; background: rgb(0 0 0 / 18%); }
     .steam-guard-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .steam-guard-head strong { font-size: 10px; }
-    .steam-guard button { min-height: 36px; padding: 0 10px; border: 0; border-radius: 4px; background: #2b77c4; color: #fff; cursor: pointer; font-size: 9px; }
+    .steam-guard button { min-width: 44px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 4px; background: #2b77c4; color: #fff; cursor: pointer; font-size: 9px; }
     .steam-guard button:disabled { background: #343a40; color: #727a82; cursor: not-allowed; }
     .steam-guard-code { display: flex; align-items: baseline; justify-content: space-between; margin-top: 8px; }
     .steam-guard-code code { color: #fff; font-family: var(--font-number); font-size: 22px; letter-spacing: .16em; }
     .steam-guard-code span { color: #66c0f4; font-size: 9px; }
+    .steam-guard.has-code .steam-guard-actions { margin-top: 8px; }
     .steam-credential-overlay { position: absolute; z-index: 3; inset: 0; overflow-y: auto; padding: 13px; background: linear-gradient(160deg, rgb(37 45 57 / 98%), rgb(21 27 35 / 99%)); text-align: left; }
     .steam-credential-overlay .credential-head { margin-bottom: 8px; }
     .steam-credential-overlay .credential-head h2 { font-size: 14px; }
     .steam-credential-overlay .credential-head p { font-size: 8px; }
-    .steam-credential-overlay .dialog-close { width: 38px; height: 38px; }
-    .steam-credential-overlay .credential-field { grid-template-columns: 42px minmax(0, 1fr) auto; min-height: 44px; padding: 5px 6px 5px 9px; }
-    .steam-credential-overlay .credential-field button[data-action="copy-credential"] { display: none; }
+    .steam-credential-overlay .dialog-close { width: 44px; height: 44px; }
+    .steam-credential-overlay .credential-field { grid-template-columns: 42px minmax(0, 1fr) 44px 44px; min-height: 52px; padding: 4px 5px 4px 8px; }
     .steam-credential-overlay .credential-field code { font-size: 9px; }
-    .steam-credential-overlay .credential-field button { min-width: 38px; min-height: 34px; padding: 0 5px; font-size: 8px; }
-    .steam-credential-overlay .credential-guard { min-height: 38px; margin-top: 7px; padding: 6px 9px; font-size: 8px; }
+    .steam-credential-overlay .credential-field button { min-width: 44px; min-height: 44px; padding: 0 5px; font-size: 8px; }
+    .steam-credential-overlay .credential-guard { min-height: 52px; margin-top: 7px; padding: 4px 6px; font-size: 8px; }
+    .steam-credential-overlay .credential-guard button { min-width: 44px; min-height: 44px; padding: 0 5px; font-size: 8px; }
     .steam-credential-overlay .credential-guard code { font-size: 14px; }
     .portrait .steam-login-page { margin: -2px -4px 0; }
     .portrait .steam-login-body { grid-template-columns: 1fr; padding: 17px; }
@@ -915,21 +919,23 @@
     .landscape .steam-login-page { height: 314px; }
     .landscape .steam-login-topbar { min-height: 52px; padding-block: 4px; }
     .landscape .steam-login-body { height: 260px; gap: 16px; padding: 9px 18px 11px; }
+    .landscape .steam-login-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; column-gap: 8px; }
+    .landscape .steam-login-form h1, .landscape .steam-login-form > p, .landscape .steam-guard { grid-column: 1 / -1; }
     .landscape .steam-login-form h1 { margin-bottom: 2px; font-size: 20px; line-height: 23px; }
-    .landscape .steam-login-form > p { margin-bottom: 4px; }
+    .landscape .steam-login-form > p { margin-bottom: 1px; }
     .landscape .steam-field { gap: 2px; margin-top: 4px; }
     .landscape .steam-field input { height: 34px; }
-    .landscape .steam-remember { min-height: 27px; }
-    .landscape .steam-login-submit { min-height: 34px; }
+    .landscape .steam-remember { min-height: 44px; }
+    .landscape .steam-login-submit { min-height: 44px; }
     .landscape .steam-qr-panel { min-height: 0; }
     .landscape .steam-qr { width: 108px; height: 108px; }
     .landscape .steam-guard { margin-top: 5px; padding: 6px 8px; }
-    .landscape .steam-guard button { min-height: 30px; }
+    .landscape .steam-guard button { min-height: 44px; }
     .landscape .steam-guard-code { margin-top: 3px; }
     .landscape .steam-guard-code code { font-size: 18px; }
-    .landscape .steam-guard.has-code { display: flex; min-height: 42px; align-items: center; }
-    .landscape .steam-guard.has-code .steam-guard-head button { display: none; }
-    .landscape .steam-guard.has-code .steam-guard-code { gap: 8px; margin: 0 0 0 auto; }
+    .landscape .steam-guard.has-code { display: grid; min-height: 52px; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+    .landscape .steam-guard.has-code .steam-guard-code { gap: 8px; margin: 0; justify-self: end; }
+    .landscape .steam-guard.has-code .steam-guard-actions { margin: 0; }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
@@ -995,6 +1001,7 @@
       },
       guardCode: null,
       guardExpiresAt: null,
+      guardIssued: false,
       accountAllocationCount: 0,
       toast: null,
       expiry15Shown: false,
@@ -1275,11 +1282,6 @@
 
     function ensureScenarioOrder(scenario = state.scenario) {
       if (scenario !== 'active-rental') return null;
-      if (state.order?.status === 'active') {
-        state.selectedOrderId = state.order.id;
-        return cloneOrder(state.order);
-      }
-      if (state.order && NON_TERMINAL_ORDER_STATUSES.has(state.order.status)) return cloneOrder(state.order);
       state.order = {
         ...ORDER_FIXTURES[0],
         id: 'APP-SCENARIO-ACTIVE',
@@ -1289,7 +1291,7 @@
         scenarioSeed: true,
       };
       state.selectedOrderId = state.order.id;
-      state.accountAllocationCount = Math.max(1, state.accountAllocationCount);
+      state.accountAllocationCount = 1;
       return cloneOrder(state.order);
     }
 
@@ -1424,24 +1426,39 @@
 
     function requestGuardCode() {
       if (getSelectedOrder()?.status !== 'active' || !state.steamForm.requiresGuard) return false;
-      if (!state.guardCode || guardRemainingSeconds() <= 0) {
-        state.guardCode = '48291';
-        state.guardExpiresAt = Date.now() + 30 * 1000;
-      }
+      if (!state.guardCode || guardRemainingSeconds() <= 0) return refreshGuardCode();
       renderApp();
       return true;
     }
 
+    function refreshGuardCode() {
+      if (getSelectedOrder()?.status !== 'active' || !state.steamForm.requiresGuard) return false;
+      state.guardCode = '48291';
+      state.guardExpiresAt = Date.now() + 30 * 1000;
+      state.guardIssued = true;
+      renderApp();
+      return true;
+    }
+
+    function copyGuardCode() {
+      if (!state.guardCode || guardRemainingSeconds() <= 0) return false;
+      if (navigator.clipboard?.writeText) navigator.clipboard.writeText(state.guardCode).catch(() => {});
+      showToast('验证码已复制');
+      return true;
+    }
+
     function expireGuardCode() {
-      if (!state.guardCode) return false;
-      state.guardExpiresAt = Date.now() - 1;
-      updateGuardDisplays(document.querySelector('#appRentalDemo'));
+      if (!state.guardCode && !state.guardIssued) return false;
+      state.guardCode = null;
+      state.guardExpiresAt = null;
+      renderApp();
       return true;
     }
 
     function clearSensitiveState(reason = 'manual') {
       state.guardCode = null;
       state.guardExpiresAt = null;
+      state.guardIssued = false;
       state.steamForm.password = '';
       state.steamForm.submitted = false;
       state.steamForm.requiresGuard = false;
@@ -1822,12 +1839,18 @@
       const account = state.credentialAccountVisible ? RENTAL_CREDENTIAL.account : 'gh_****_2607';
       const password = state.credentialPasswordVisible ? RENTAL_CREDENTIAL.password : '••••••••••••';
       const remaining = guardRemainingSeconds();
+      const hasCode = Boolean(state.guardCode && remaining > 0);
+      const ready = state.steamForm.requiresGuard;
+      const emptyLabel = state.guardIssued ? '验证码已过期' : '登录后按需获取';
+      const guardActions = hasCode
+        ? '<div class="credential-guard-actions"><button type="button" data-action="copy-guard">复制验证码</button><button type="button" data-action="refresh-guard">刷新验证码</button></div>'
+        : ready ? `<div class="credential-guard-actions"><button type="button" data-action="${state.guardIssued ? 'refresh-guard' : 'request-guard'}">${state.guardIssued ? '刷新验证码' : '获取验证码'}</button></div>` : '';
       return `<div class="credential-head"><div><h2>租号登录信息</h2><p>仅限订单 ${getSelectedOrder()?.id || '--'} 使用，请勿修改账号资料</p></div><button class="dialog-close" type="button" data-action="${closeAction}" aria-label="关闭登录信息">×</button></div>
         <div class="credential-fields">
           <div class="credential-field"><span>账号</span><code data-credential-field="account">${account}</code><button type="button" data-action="toggle-credential" data-field="account">${state.credentialAccountVisible ? '隐藏' : '查看'}</button><button type="button" data-action="copy-credential" data-field="account">复制</button></div>
           <div class="credential-field"><span>密码</span><code data-credential-field="password">${password}</code><button type="button" data-action="toggle-credential" data-field="password">${state.credentialPasswordVisible ? '隐藏' : '查看'}</button><button type="button" data-action="copy-credential" data-field="password">复制</button></div>
         </div>
-        <div class="credential-guard"><span>Steam 令牌</span>${state.guardCode && remaining > 0 ? `<span><code data-guard-code>${state.guardCode}</code> · <span data-guard-remaining="${remaining}">${remaining}s</span></span>` : '<span>登录后按需获取</span>'}</div>`;
+        <div class="credential-guard ${hasCode ? 'has-code' : ''}" data-guard-expires-at="${state.guardExpiresAt || ''}"><span>Steam 令牌</span><span class="credential-guard-value">${hasCode ? `<code data-guard-code>${state.guardCode}</code> · <span data-guard-remaining="${remaining}">${remaining}s</span>` : emptyLabel}</span>${guardActions}</div>`;
     }
 
     function renderCredentialPanel() {
@@ -1849,7 +1872,9 @@
       const remaining = guardRemainingSeconds();
       const ready = state.steamForm.requiresGuard;
       const hasCode = Boolean(state.guardCode && remaining > 0);
-      return `<section class="steam-guard ${hasCode ? 'has-code' : ''}" aria-label="Steam 令牌验证"><div class="steam-guard-head"><strong>${ready ? 'Steam 令牌验证' : '提交账号密码后获取令牌'}</strong><button type="button" data-action="request-guard" ${ready ? '' : 'disabled'}>获取验证码</button></div>${hasCode ? `<div class="steam-guard-code"><code data-guard-code>${state.guardCode}</code><span data-guard-remaining="${remaining}">${remaining}s 后失效</span></div>` : ''}</section>`;
+      const nextAction = state.guardIssued ? 'refresh-guard' : 'request-guard';
+      const nextLabel = state.guardIssued ? '刷新验证码' : '获取验证码';
+      return `<section class="steam-guard ${hasCode ? 'has-code' : ''}" data-guard-expires-at="${state.guardExpiresAt || ''}" aria-label="Steam 令牌验证"><div class="steam-guard-head"><strong>${ready ? 'Steam 令牌验证' : '提交账号密码后获取令牌'}</strong>${hasCode ? '' : `<button type="button" data-action="${nextAction}" ${ready ? '' : 'disabled'}>${nextLabel}</button>`}</div>${hasCode ? `<div class="steam-guard-code"><code data-guard-code>${state.guardCode}</code><span data-guard-remaining="${remaining}">${remaining}s 后失效</span></div><div class="steam-guard-actions"><button type="button" data-action="copy-guard">复制验证码</button><button type="button" data-action="refresh-guard">刷新验证码</button></div>` : ''}</section>`;
     }
 
     function renderSteamLogin(orientation) {
@@ -2143,6 +2168,8 @@
       if (state.guardCode && remaining <= 0) {
         state.guardCode = null;
         state.guardExpiresAt = null;
+        renderApp();
+        return;
       }
       root.querySelectorAll('[data-guard-remaining]').forEach((node) => {
         node.dataset.guardRemaining = String(remaining);
@@ -2248,6 +2275,14 @@
       }
       if (action === 'request-guard') {
         requestGuardCode();
+        return;
+      }
+      if (action === 'refresh-guard') {
+        refreshGuardCode();
+        return;
+      }
+      if (action === 'copy-guard') {
+        copyGuardCode();
         return;
       }
       if (action === 'continue-play') {
@@ -2374,6 +2409,8 @@
       closeCredentialPanel,
       submitSteamLogin,
       requestGuardCode,
+      refreshGuardCode,
+      copyGuardCode,
       expireGuardCode,
       clearSensitiveState,
       endOrder,

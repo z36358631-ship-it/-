@@ -727,6 +727,23 @@ async function main() {
 
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    const activeScenarioOverrides = [];
+    for (const startingStatus of ['pending', 'allocating', 'active']) {
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+      activeScenarioOverrides.push(await page.evaluate((status) => {
+        window.__appRentalDemo.createOrder({ sku: `dynamic-${status}`, amount: 1, priceVersion: 'review-red' });
+        if (status === 'allocating' || status === 'active') window.__appRentalDemo.payOrder();
+        if (status === 'active') window.__appRentalDemo.allocateAccount(true);
+        window.__appRentalDemo.setScenario('active-rental');
+        const snapshot = window.__appRentalDemo.snapshot();
+        return { id: snapshot.order?.id, status: snapshot.order?.status, allocationCount: snapshot.accountAllocationCount };
+      }, startingStatus));
+    }
+    assert(
+      activeScenarioOverrides.every(({ id, status, allocationCount }) => id === 'APP-SCENARIO-ACTIVE' && status === 'active' && allocationCount === 1),
+      'active-rental 必须覆盖 pending/allocating/active 动态订单并确定性注入场景订单',
+    );
     await page.evaluate(() => {
       window.__appRentalDemo.setScenario('active-rental');
       window.__appRentalDemo.setOrientation('portrait');
@@ -774,7 +791,7 @@ async function main() {
     }));
     assert(rotatedOrderTab.tab === 'pending' && rotatedOrderTab.activeTab === '待支付' && rotatedOrderTab.statuses.every((status) => status === 'pending'), '旋转后订单 Tab 或筛选结果未保留');
     await page.locator('.order-tabs [data-value="all"]').click();
-    process.stdout.write('ORDERS 10/10 PASS\n');
+    process.stdout.write('ORDERS 11/11 PASS\n');
 
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
@@ -888,13 +905,43 @@ async function main() {
     }));
     assert(firstGuard.code === '48291' && firstGuard.remaining > 0 && firstGuard.remaining <= 30, 'Guard 必须返回固定 5 位验证码并按 30 秒倒计时');
     assert(!firstGuard.snapshot.includes('48291'), '公开 snapshot 泄露 Guard 验证码');
+    assert(
+      (await page.locator('.steam-guard [data-action="copy-guard"]').count()) === 1
+        && (await page.locator('.steam-guard [data-action="refresh-guard"]').count()) === 1,
+      'Guard 生效后必须提供复制验证码与刷新验证码',
+    );
+    await page.locator('.steam-guard [data-action="copy-guard"]').click();
+    const guardCopyToast = await page.locator('.demo-toast').innerText();
+    assert(guardCopyToast.includes('验证码已复制') && !guardCopyToast.includes('48291'), '复制 Guard 的 Toast 不得泄露验证码');
+    const beforeLiveRefresh = await page.evaluate(() => ({
+      expiresAt: window.__appRentalDemo.snapshot().guardExpiresAt,
+      allocationCount: window.__appRentalDemo.snapshot().accountAllocationCount,
+    }));
+    await page.waitForTimeout(20);
+    await page.locator('.steam-guard [data-action="refresh-guard"]').click();
+    const afterLiveRefresh = await page.evaluate(() => ({
+      expiresAt: window.__appRentalDemo.snapshot().guardExpiresAt,
+      allocationCount: window.__appRentalDemo.snapshot().accountAllocationCount,
+      code: document.querySelector('.steam-guard [data-guard-code]')?.textContent.trim(),
+    }));
+    assert(
+      afterLiveRefresh.code === '48291'
+        && afterLiveRefresh.expiresAt > beforeLiveRefresh.expiresAt
+        && afterLiveRefresh.allocationCount === beforeLiveRefresh.allocationCount,
+      '点击刷新验证码必须只刷新验证码生命周期，不得重复取号',
+    );
     await page.locator('.steam-help-trigger').click();
     const steamHelp = await page.evaluate(() => ({
       overlay: Boolean(document.querySelector('.steam-qr-panel .steam-credential-overlay')),
       formVisible: Boolean(document.querySelector('.steam-login-form')),
       code: document.querySelector('.steam-credential-overlay [data-guard-code]')?.textContent.trim(),
     }));
-    assert(steamHelp.overlay && steamHelp.formVisible && steamHelp.code === '48291', 'Steam 凭据浮层必须覆盖二维码区且复用同一码');
+    assert(
+      steamHelp.overlay && steamHelp.formVisible && steamHelp.code === '48291'
+        && (await page.locator('.steam-credential-overlay [data-action="copy-guard"]').count()) === 1
+        && (await page.locator('.steam-credential-overlay [data-action="refresh-guard"]').count()) === 1,
+      'Steam 凭据浮层必须覆盖二维码区、复用同一码并提供复制/刷新操作',
+    );
     await page.locator('.steam-credential-overlay [data-action="close-steam-help"]').click();
     assert((await page.locator('.steam-login-form').count()) === 1 && (await page.locator('.steam-credential-overlay').count()) === 0, '关闭 Steam 凭据浮层后未保留登录表单');
     await page.evaluate(() => window.__appRentalDemo.setOrientation('portrait'));
@@ -906,19 +953,28 @@ async function main() {
     assert(rotatedGuard.account === 'player@example.com' && rotatedGuard.code === '48291' && rotatedGuard.remember, '旋转后 Steam 表单或 Guard 未连续保留');
     await page.locator('.steam-close').click();
     await page.locator('[data-action="open-credential"]').click();
-    assert((await page.locator('.credential-panel [data-guard-code]').innerText()) === '48291', '订单登录信息面板未复用 Steam 已获取的 Guard');
-    const guardRefresh = await page.evaluate(() => {
+    assert(
+      (await page.locator('.credential-panel [data-guard-code]').innerText()) === '48291'
+        && (await page.locator('.credential-panel [data-action="copy-guard"]').count()) === 1
+        && (await page.locator('.credential-panel [data-action="refresh-guard"]').count()) === 1,
+      '订单登录信息面板未复用 Guard 或缺少复制/刷新操作',
+    );
+    const expiredGuard = await page.evaluate(() => {
       const before = window.__appRentalDemo.snapshot().accountAllocationCount;
       window.__appRentalDemo.expireGuardCode();
-      const refreshed = window.__appRentalDemo.requestGuardCode();
       return {
-        refreshed,
         before,
-        after: window.__appRentalDemo.snapshot().accountAllocationCount,
-        code: document.querySelector('[data-guard-code]')?.textContent.trim(),
+        hasCodeClass: document.querySelector('.credential-guard')?.classList.contains('has-code'),
+        refreshVisible: Boolean(document.querySelector('.credential-panel [data-action="refresh-guard"]')?.getClientRects().length),
       };
     });
-    assert(guardRefresh.refreshed && guardRefresh.code === '48291' && guardRefresh.before === guardRefresh.after, 'Guard 过期刷新不得重复取号');
+    assert(!expiredGuard.hasCodeClass && expiredGuard.refreshVisible, 'Guard 过期后必须重新渲染为可点击刷新状态');
+    await page.locator('.credential-panel [data-action="refresh-guard"]').click();
+    const guardRefresh = await page.evaluate(() => ({
+      after: window.__appRentalDemo.snapshot().accountAllocationCount,
+      code: document.querySelector('.credential-panel [data-guard-code]')?.textContent.trim(),
+    }));
+    assert(guardRefresh.code === '48291' && expiredGuard.before === guardRefresh.after, 'Guard 过期后必须可通过 UI 刷新且不得重复取号');
     const forbiddenCopy = await page.locator('body').innerText();
     assert(!forbiddenCopy.includes('操作过于频繁，30秒再试'), '页面出现禁用的频繁操作文案');
     const cleanup = await page.evaluate(() => {
@@ -926,7 +982,63 @@ async function main() {
       return window.__appRentalDemo.snapshot();
     });
     assert(cleanup.guardCode === null && cleanup.steamForm.password === '', '退后台清理接口未清除敏感状态');
-    process.stdout.write('GUARD_SECURITY 12/12 PASS\n');
+    process.stdout.write('GUARD_SECURITY 16/16 PASS\n');
+
+    async function readTouchTargets(selector) {
+      return page.locator(selector).evaluateAll((nodes) => nodes.map((node) => {
+        const rect = node.getBoundingClientRect();
+        return { label: node.getAttribute('aria-label') || node.textContent.trim(), width: rect.width, height: rect.height };
+      }));
+    }
+    function assertTouchTargets(targets, label) {
+      const undersized = targets.filter(({ width, height }) => width < 44 || height < 44);
+      assert(targets.length > 0 && undersized.length === 0, `${label} 存在小于44×44的触控：${JSON.stringify(undersized)}`);
+    }
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    await page.evaluate(() => {
+      window.__appRentalDemo.setScenario('active-rental');
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.navigate('orders');
+    });
+    assertTouchTargets(await readTouchTargets('.order-tabs button'), '竖屏订单 Tab');
+    await page.locator('.order-list-card[data-status="active"]').click();
+    await page.locator('[data-action="open-credential"]').click();
+    assertTouchTargets(await readTouchTargets('.credential-panel .credential-field button, .credential-panel .dialog-close'), '竖屏凭据操作');
+    await page.locator('button[data-action="close-credential"]').click();
+    await page.evaluate(() => {
+      window.__appRentalDemo.navigate('orders');
+      window.__appRentalDemo.setOrientation('landscape');
+    });
+    assertTouchTargets(await readTouchTargets('.order-tabs button, .order-detail-pane .active-order-actions button'), '横屏订单操作');
+    await page.locator('.order-detail-pane [data-action="open-login-method"]').click();
+    await page.locator('.login-method-dialog [data-action="open-manual-login"]').click();
+    await page.locator('#steam-account').fill('touch-test');
+    await page.locator('#steam-password').fill('safe-test-value');
+    await page.locator('[data-action="submit-steam-login"]').click();
+    await page.locator('[data-action="request-guard"]').click();
+    await page.locator('.steam-help-trigger').click();
+    assertTouchTargets(
+      await readTouchTargets('.steam-login-submit, .steam-guard button, .steam-credential-overlay .dialog-close, .steam-credential-overlay .credential-field button, .steam-credential-overlay .credential-guard button'),
+      'Steam 与 Guard 操作',
+    );
+    process.stdout.write('TOUCH_TARGETS 4/4 PASS\n');
+
+    const sourceAssetNames = [
+      'portrait-home.jpg',
+      'portrait-play.jpg',
+      'portrait-library.jpg',
+      'portrait-profile.jpg',
+      'landscape-library.jpg',
+      'landscape-steam-library.jpg',
+      'landscape-play.jpg',
+    ];
+    const sourceAssetDir = path.join(root, 'demos', 'APP租号功能', 'assets', 'source');
+    assert(sourceAssetNames.every((name) => fs.existsSync(path.join(sourceAssetDir, name))), '独立构建缺少仓库内7张源 JPG');
+    const buildSource = fs.readFileSync(path.join(root, 'tools', 'build-app-rental-demo.mjs'), 'utf8');
+    assert(buildSource.includes("'assets', 'source'") && !buildSource.includes("'APP核心优化'"), '构建脚本仍依赖工作区外部参考图路径');
+    process.stdout.write('BUILD_SOURCE 2/2 PASS\n');
   } finally {
     await browser.close();
   }
