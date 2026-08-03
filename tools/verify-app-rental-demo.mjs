@@ -55,6 +55,99 @@ async function main() {
     }
     process.stdout.write('MATERIALS 5/5 PASS\n');
 
+    await page.evaluate(() => {
+      window.__appRentalDemo.setOrientation('landscape');
+      window.__appRentalDemo.navigate('library');
+    });
+    const landscape = await page.evaluate(() => {
+      const cards = [...document.querySelectorAll('.landscape .game-card')];
+      const contentRect = document.querySelector('.landscape-content')?.getBoundingClientRect();
+      const metrics = cards.map((node) => {
+        const rect = node.getBoundingClientRect();
+        const image = node.querySelector('img[data-real-asset="true"]');
+        return {
+          top: Math.round(rect.top),
+          left: Math.round(rect.left),
+          visible: rect.top < contentRect.bottom && rect.bottom > contentRect.top,
+          real: Boolean(image?.complete && image.naturalWidth > 0),
+        };
+      });
+      const firstTop = Math.min(...metrics.map(({ top }) => top));
+      const firstRow = metrics.filter(({ top }) => top === firstTop);
+      const secondRow = metrics.filter(({ top }) => top > firstTop);
+      return {
+        frame: document.querySelector('.device.landscape')?.getBoundingClientRect().toJSON(),
+        hasTopNav: Boolean(document.querySelector('.landscape-top-nav')),
+        hasBottomNav: Boolean(document.querySelector('.landscape .portrait-nav')),
+        nav: [...document.querySelectorAll('.landscape-top-nav nav button')].map((node) => node.textContent.trim()),
+        tabs: [...document.querySelectorAll('.landscape-platform-tabs button')].map((node) => node.textContent.trim()),
+        cards: cards.length,
+        rows: new Set(metrics.map(({ top }) => top)).size,
+        firstRowColumns: new Set(firstRow.map(({ left }) => left)).size,
+        secondRowVisible: secondRow.some(({ visible }) => visible),
+        secondRowReal: secondRow.some(({ visible, real }) => visible && real),
+      };
+    });
+    assert(Math.round(landscape.frame?.width ?? 0) === 874, '横屏宽度不是874');
+    assert(Math.round(landscape.frame?.height ?? 0) === 402, '横屏高度不是402');
+    assert(landscape.hasTopNav, '横屏缺少顶部导航');
+    assert(!landscape.hasBottomNav, '横屏不得出现底部导航');
+    assert(landscape.nav.join('|') === '游戏库|玩游戏|探索|排行榜|我的', '横屏导航顺序错误');
+    assert(landscape.cards >= 6, '横屏游戏墙密度不足');
+    assert(landscape.rows >= 2, '横屏游戏墙必须露出第二行');
+    assert(landscape.tabs.join('|') === 'PC游戏|Steam游戏|Epic游戏|复古游戏', '横屏平台Tab不完整');
+    assert(landscape.firstRowColumns === 5, '横屏游戏墙首行不是5列');
+    assert(landscape.secondRowVisible, '横屏游戏墙第二行未进入可视区');
+    assert(landscape.secondRowReal, '横屏游戏墙第二行缺少已加载真实封面');
+
+    const libraryBeforeTab = await page.locator('.landscape-library .game-card strong').allTextContents();
+    await page.locator('.landscape-platform-tabs [data-value="epic"]').click();
+    const libraryAfterTab = await page.locator('.landscape-library .game-card strong').allTextContents();
+    assert(JSON.stringify(libraryBeforeTab) !== JSON.stringify(libraryAfterTab), '横屏平台Tab未切换游戏内容');
+
+    const landscapePages = {};
+    for (const screen of ['home', 'play', 'library', 'profile']) {
+      await page.evaluate((value) => window.__appRentalDemo.navigate(value), screen);
+      landscapePages[screen] = await page.evaluate((value) => ({
+        layout: Boolean(document.querySelector(`.landscape-${value}`)),
+        primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
+        realAssets: [...document.querySelectorAll('img[data-real-asset="true"]')]
+          .filter((node) => node.complete && node.naturalWidth > 0 && node.getClientRects().length > 0).length,
+      }), screen);
+      assert(landscapePages[screen].layout, `${screen} 缺少独立横屏DOM`);
+    }
+    assert(Object.values(landscapePages).every(({ primaryCount }) => primaryCount <= 1), '横屏页面主操作超过1个');
+    assert(Object.values(landscapePages).every(({ realAssets }) => realAssets >= 1), '横屏页面缺少真实素材');
+    const touchTargets = await page.evaluate(() => [
+      ...document.querySelectorAll('.landscape-top-nav nav button'),
+      document.querySelector('.landscape-outline-button'),
+      document.querySelector('.landscape-order-entry'),
+    ].filter(Boolean).map((node) => node.getBoundingClientRect().height));
+    assert(touchTargets.every((height) => height >= 44), '横屏关键触控区小于44px');
+
+    await page.evaluate(() => {
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.navigate('play');
+      document.querySelector('[data-group="playTab"][data-value="pc"]')?.click();
+      window.__appRentalDemo.navigate('library');
+      document.querySelector('[data-group="libraryTab"][data-value="epic"]')?.click();
+      window.__appRentalDemo.setScenario('active-member');
+      window.__appRentalDemo.navigate('profile');
+      window.__appRentalDemo.setOrientation('landscape');
+    });
+    const rotationState = await page.evaluate(() => window.__appRentalDemo.snapshot());
+    assert(
+      rotationState.screen === 'profile'
+        && rotationState.scenario === 'active-member'
+        && rotationState.playTab === 'pc'
+        && rotationState.libraryTab === 'epic',
+      '横竖屏切换丢失共享状态',
+    );
+    await page.locator('.landscape-profile [data-screen="orders"]').click();
+    const orderEntryScreen = await page.evaluate(() => window.__appRentalDemo.snapshot().screen);
+    assert(orderEntryScreen === 'orders', '横屏租号订单入口不可用');
+    process.stdout.write('LANDSCAPE 21/21 PASS\n');
+
     const entitlementCases = [
       ['owned-installed', 'launch', []],
       ['owned-uninstalled', 'download', []],

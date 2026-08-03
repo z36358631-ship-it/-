@@ -10,6 +10,8 @@ const assets = {
   APP_PORTRAIT_LIBRARY: path.join(root, 'APP核心优化', '竞品对比', '盖世游戏APP', '20260521-152042.jpg'),
   APP_PORTRAIT_PROFILE: path.join(root, 'APP核心优化', '竞品对比', '盖世游戏APP', '20260521-152054.jpg'),
   APP_LANDSCAPE_LIBRARY: path.join(root, 'APP核心优化', '竞品对比', '盖世游戏APP', '20260521-152120.jpg'),
+  APP_LANDSCAPE_STEAM_LIBRARY: path.join(root, 'APP核心优化', '竞品对比', '盖世游戏APP', '20260521-152123.jpg'),
+  APP_LANDSCAPE_PLAY: path.join(root, 'APP核心优化', '竞品对比', '盖世游戏APP', '20260521-152127.jpg'),
 };
 
 function dataUrl(filePath) {

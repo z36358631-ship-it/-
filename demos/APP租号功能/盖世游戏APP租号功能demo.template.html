@@ -417,6 +417,204 @@
     .stub-panel h2 { margin: 0 0 7px; font-size: 18px; }
     .stub-panel p { max-width: 240px; margin: 0; color: var(--text-muted); font-size: 12px; line-height: 19px; }
 
+    .device.landscape {
+      width: 874px;
+      height: 402px;
+      background:
+        radial-gradient(circle at 12% 12%, rgb(49 64 118 / 62%), transparent 38%),
+        radial-gradient(circle at 78% 92%, rgb(78 47 19 / 27%), transparent 38%),
+        linear-gradient(112deg, #111528 0, #090b12 52%, #030303 100%);
+    }
+
+    .landscape-top-nav {
+      position: absolute;
+      z-index: 8;
+      top: 0;
+      right: 0;
+      left: 0;
+      display: flex;
+      height: 54px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 18px 3px 22px;
+      border-bottom: 1px solid rgb(255 255 255 / 8%);
+      background: linear-gradient(90deg, rgb(31 38 67 / 78%), rgb(5 6 9 / 76%));
+      backdrop-filter: blur(18px);
+    }
+
+    .landscape-top-nav nav { display: flex; height: 100%; align-items: center; gap: 5px; }
+    .landscape-top-nav nav button {
+      display: flex;
+      min-width: 88px;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 11px;
+      border: 0;
+      border-radius: 13px;
+      background: transparent;
+      color: #747782;
+      cursor: pointer;
+      font-size: 12px;
+      transition: color 150ms ease, background 150ms ease, transform 150ms ease;
+    }
+
+    .landscape-top-nav nav button:active { transform: scale(.97); }
+    .landscape-top-nav nav button.active { background: rgb(255 255 255 / 8%); color: #fff; }
+    .landscape-top-nav nav button svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+    .landscape-system { display: flex; align-items: center; gap: 9px; color: rgb(255 255 255 / 88%); font-family: var(--font-number); font-size: 11px; white-space: nowrap; }
+    .landscape-system svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+    .landscape-battery { padding: 2px 6px; border: 1px solid rgb(255 255 255 / 55%); border-radius: 5px; font-size: 9px; }
+
+    .landscape-content {
+      position: absolute;
+      inset: 54px 0 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding: 11px 16px 20px;
+      scrollbar-width: none;
+    }
+
+    .landscape-content::-webkit-scrollbar { display: none; }
+    .landscape-section-title { display: flex; align-items: center; justify-content: space-between; }
+    .landscape-section-title h2 { margin: 0; font-size: 15px; font-weight: 650; }
+    .landscape-section-title span { color: var(--text-muted); font-size: 9px; }
+
+    .landscape-library-toolbar,
+    .landscape-play-toolbar {
+      display: flex;
+      min-height: 38px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 9px;
+    }
+
+    .landscape-platform-tabs,
+    .landscape-play-tabs { display: flex; align-items: center; gap: 25px; }
+    .landscape-platform-tabs button,
+    .landscape-play-tabs button {
+      position: relative;
+      min-height: 35px;
+      padding: 0 0 8px;
+      border: 0;
+      background: transparent;
+      color: #8a8d98;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .landscape-platform-tabs button.active,
+    .landscape-play-tabs button.active { color: #fff; font-weight: 650; }
+    .landscape-platform-tabs button.active::after,
+    .landscape-play-tabs button.active::after { position: absolute; bottom: 0; left: 50%; width: 18px; height: 3px; border-radius: 100px; background: #fff; content: ""; transform: translateX(-50%); }
+    .landscape-tools { display: flex; align-items: center; gap: 6px; }
+    .landscape-tool-button { display: flex; min-height: 34px; align-items: center; gap: 6px; padding: 0 11px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 11px; background: rgb(255 255 255 / 6%); cursor: pointer; font-size: 10px; }
+    .landscape-tool-button.icon-only { width: 36px; justify-content: center; padding: 0; border-radius: 50%; background: transparent; }
+    .landscape-tool-button svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+
+    .landscape-game-wall { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+    .game-card {
+      min-width: 0;
+      height: 126px;
+      overflow: hidden;
+      border: 1px solid rgb(255 255 255 / 8%);
+      border-radius: 14px;
+      background: rgb(18 18 21 / 84%);
+      box-shadow: 0 6px 18px rgb(0 0 0 / 18%);
+    }
+
+    .game-card .landscape-cover { width: 100%; height: 77px; border-radius: 13px 13px 8px 8px; }
+    .landscape-card-copy { padding: 7px 9px 0; }
+    .landscape-card-copy strong { display: block; overflow: hidden; font-size: 11px; font-weight: 550; text-overflow: ellipsis; white-space: nowrap; }
+    .landscape-card-copy span { display: block; margin-top: 4px; color: #888b94; font-size: 8px; }
+
+    .landscape-home { min-height: 306px; }
+    .landscape-home-grid { display: grid; height: 314px; grid-template-columns: 1.28fr .92fr; gap: 12px; }
+    .landscape-home-hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgb(255 255 255 / 10%);
+      border-radius: 18px;
+      background: #0b0e13;
+    }
+
+    .landscape-hero-media { position: absolute; inset: 0; }
+    .landscape-hero-media::after { position: absolute; inset: 0; background: linear-gradient(90deg, rgb(4 6 9 / 92%) 0, rgb(4 6 9 / 44%) 52%, rgb(4 6 9 / 24%) 100%), linear-gradient(0deg, rgb(3 4 6 / 74%), transparent 60%); content: ""; }
+    .landscape-hero-copy { position: absolute; z-index: 2; top: 27px; bottom: 22px; left: 25px; display: flex; width: 260px; flex-direction: column; align-items: flex-start; }
+    .landscape-hero-copy .rent-badge { margin-bottom: 11px; }
+    .landscape-hero-copy h1 { margin: 0 0 7px; font-size: 28px; line-height: 34px; }
+    .landscape-hero-copy p { margin: 0; color: rgb(255 255 255 / 62%); font-size: 11px; line-height: 18px; }
+    .landscape-hero-copy .primary-action { min-width: 118px; margin-top: auto; }
+    .landscape-home-side { display: grid; min-width: 0; grid-template-rows: 26px 1fr; gap: 8px; }
+    .landscape-mini-wall { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+    .landscape-mini-card { min-width: 0; overflow: hidden; border: 1px solid rgb(255 255 255 / 8%); border-radius: 14px; background: rgb(17 18 21 / 82%); }
+    .landscape-mini-card .landscape-cover { width: 100%; height: 92px; border-radius: 13px 13px 8px 8px; }
+    .landscape-mini-card strong { display: block; overflow: hidden; padding: 8px 9px 0; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .landscape-mini-card span { display: block; padding: 4px 9px 0; color: var(--text-muted); font-size: 8px; }
+
+    .landscape-play { min-height: 306px; }
+    .landscape-play-grid { display: grid; height: 267px; grid-template-columns: 1.05fr .8fr 1.28fr; gap: 10px; }
+    .landscape-panel { min-width: 0; overflow: hidden; border: 1px solid rgb(255 255 255 / 9%); border-radius: 16px; background: rgb(21 21 25 / 78%); }
+    .landscape-benefit { position: relative; display: flex; flex-direction: column; padding: 16px; background: radial-gradient(circle at 20% 5%, rgb(128 60 116 / 36%), transparent 50%), rgb(22 18 27 / 88%); }
+    .landscape-user-line { display: flex; align-items: center; gap: 10px; }
+    .landscape-user-line .avatar-small { width: 42px; height: 42px; }
+    .landscape-user-line strong { display: block; font-size: 13px; }
+    .landscape-user-line span { color: var(--text-muted); font-size: 9px; }
+    .landscape-benefit h2 { margin: 18px 0 8px; font-size: 15px; }
+    .benefit-list { display: grid; gap: 6px; color: #c4c5cb; font-size: 9px; }
+    .benefit-list span::before { display: inline-block; width: 5px; height: 5px; margin-right: 7px; border-radius: 50%; background: #ff9be5; content: ""; vertical-align: 1px; }
+    .landscape-benefit .primary-action { min-width: 108px; min-height: 38px; margin-top: auto; align-self: flex-start; background: linear-gradient(135deg, #a862e9, #6d48be); color: #fff; }
+    .landscape-recent, .landscape-hot { padding: 13px; }
+    .landscape-recent-list { display: grid; gap: 9px; margin-top: 11px; }
+    .landscape-recent-item { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 8px; }
+    .landscape-recent-item .landscape-cover { width: 72px; height: 58px; border-radius: 10px; }
+    .landscape-recent-item strong { display: block; overflow: hidden; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+    .landscape-recent-item small { color: var(--text-muted); font-size: 8px; }
+    .landscape-hot-wall { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 11px; }
+    .landscape-hot-card { min-width: 0; overflow: hidden; border-radius: 11px; background: rgb(255 255 255 / 4%); }
+    .landscape-hot-card .landscape-cover { width: 100%; height: 70px; border-radius: 10px; }
+    .landscape-hot-card strong { display: block; overflow: hidden; padding: 6px 7px; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+
+    .landscape-profile { display: grid; height: 314px; grid-template-columns: .82fr 1.45fr; gap: 12px; }
+    .landscape-profile-user { display: flex; min-width: 0; flex-direction: column; align-items: center; padding: 20px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 18px; background: radial-gradient(circle at 50% 0, rgb(21 104 127 / 34%), transparent 53%), rgb(15 18 23 / 84%); text-align: center; }
+    .landscape-profile-user .profile-avatar { width: 66px; height: 66px; margin: 0 0 9px; }
+    .landscape-profile-user h1 { margin: 0; font-size: 17px; }
+    .landscape-profile-user .member-chip { margin-top: 7px; }
+    .landscape-profile-user .profile-uid { margin: 7px 0 16px; }
+    .landscape-profile-stats { display: grid; width: 100%; grid-template-columns: repeat(2, 1fr); margin-top: auto; padding-top: 13px; border-top: 1px solid rgb(255 255 255 / 8%); }
+    .landscape-profile-stats strong { display: block; font-family: var(--font-number); font-size: 16px; }
+    .landscape-profile-stats span { color: var(--text-muted); font-size: 8px; }
+    .landscape-profile-stats div + div { border-left: 1px solid rgb(255 255 255 / 8%); }
+    .landscape-profile-actions { display: grid; min-width: 0; grid-template-rows: 1fr 1fr; gap: 10px; }
+    .landscape-member-card, .landscape-order-card { position: relative; overflow: hidden; padding: 16px 18px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 18px; background: rgb(24 24 28 / 82%); }
+    .landscape-member-card { display: grid; grid-template-columns: 160px minmax(0, 1fr) auto; align-items: center; gap: 14px; }
+    .landscape-member-art { width: 160px; height: 62px; border-radius: 13px; }
+    .landscape-member-copy strong, .landscape-order-copy strong { display: block; font-size: 14px; }
+    .landscape-member-copy p, .landscape-order-copy p { margin: 5px 0 0; color: var(--text-muted); font-size: 9px; }
+    .landscape-outline-button { min-height: 44px; padding: 0 14px; border: 1px solid rgb(255 218 123 / 27%); border-radius: 100px; background: rgb(255 204 67 / 9%); color: #ffda79; cursor: pointer; font-size: 10px; }
+    .landscape-order-card { display: flex; align-items: center; gap: 13px; }
+    .landscape-order-icon { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; border-radius: 14px; background: rgb(255 255 255 / 6%); }
+    .landscape-order-icon svg { width: 23px; height: 23px; fill: none; stroke: #d8d9dd; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+    .landscape-order-copy { min-width: 0; flex: 1; }
+    .landscape-order-entry { display: flex; min-height: 44px; align-items: center; gap: 7px; padding: 0 14px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 100px; background: rgb(255 255 255 / 6%); cursor: pointer; font-size: 10px; }
+    .landscape-order-entry .chevron { width: 14px; height: 14px; }
+
+    .landscape-ranking { min-height: 306px; }
+    .landscape-ranking-head { display: flex; align-items: end; justify-content: space-between; margin: 4px 0 13px; }
+    .landscape-ranking-head h1 { margin: 0; font-size: 23px; }
+    .landscape-ranking-wall { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+    .landscape-ranking-card { position: relative; overflow: hidden; height: 244px; border: 1px solid rgb(255 255 255 / 8%); border-radius: 16px; background: rgb(17 18 21 / 84%); }
+    .landscape-ranking-card .landscape-cover { width: 100%; height: 154px; border-radius: 15px 15px 9px 9px; }
+    .landscape-ranking-card .rank-number { position: absolute; top: 7px; left: 8px; z-index: 2; padding: 3px 7px; border-radius: 100px; background: rgb(0 0 0 / 58%); }
+    .landscape-ranking-card strong { display: block; overflow: hidden; margin: 10px; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .landscape-ranking-card small { margin: 0 10px; color: var(--text-muted); font-size: 8px; }
+
+    .landscape-stub { display: grid; height: 314px; place-items: center; border: 1px solid rgb(255 255 255 / 8%); border-radius: 18px; background: rgb(255 255 255 / 4%); text-align: center; }
+    .landscape-stub h1 { margin: 0 0 7px; font-size: 21px; }
+    .landscape-stub p { margin: 0; color: var(--text-muted); font-size: 11px; }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
     }
@@ -431,6 +629,8 @@
       library: '{{APP_PORTRAIT_LIBRARY}}',
       profile: '{{APP_PORTRAIT_PROFILE}}',
       landscapeLibrary: '{{APP_LANDSCAPE_LIBRARY}}',
+      landscapeSteamLibrary: '{{APP_LANDSCAPE_STEAM_LIBRARY}}',
+      landscapePlay: '{{APP_LANDSCAPE_PLAY}}',
     });
 
     const ASSET_SIZES = Object.freeze({
@@ -439,6 +639,8 @@
       library: [1116, 2480],
       profile: [1116, 2480],
       landscapeLibrary: [2480, 1116],
+      landscapeSteamLibrary: [2480, 1116],
+      landscapePlay: [2480, 1116],
     });
 
     const state = {
@@ -713,6 +915,152 @@
       </section>`;
     }
 
+    function landscapeSystem() {
+      return `<div class="landscape-system" aria-label="系统状态">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9c5.6-4.7 12.4-4.7 18 0M6.5 12.5c3.6-3 7.4-3 11 0M10 16c1.4-1.1 2.6-1.1 4 0"/></svg>
+        <time>14:39</time><span class="landscape-battery">81%</span>
+      </div>`;
+    }
+
+    function renderLandscapeLibrary() {
+      const catalogs = {
+        pc: [
+          ['空洞骑士：丝之歌', [169, 297, 383, 224], 'landscapeLibrary'],
+          ['空洞骑士', [606, 297, 390, 224], 'landscapeLibrary'],
+          ['哈迪斯 2', [1049, 297, 390, 224], 'landscapeLibrary'],
+          ['荒野大镖客：救赎 2', [1926, 297, 397, 224], 'landscapeLibrary'],
+          ['GTA V', [169, 753, 383, 216], 'landscapeLibrary'],
+          ['极限竞速：地平线 6', [608, 753, 390, 216], 'landscapeLibrary'],
+          ['茶杯头', [1049, 753, 390, 216], 'landscapeLibrary'],
+          ['Spiritfarer', [1486, 297, 383, 224], 'landscapeSteamLibrary'],
+        ],
+        steam: [
+          ['Slay the Spire 2', [169, 297, 383, 224], 'landscapeSteamLibrary'],
+          ['The Forest', [606, 297, 390, 224], 'landscapeSteamLibrary'],
+          ['中国式家长', [1049, 297, 390, 224], 'landscapeSteamLibrary'],
+          ['Spiritfarer', [1486, 297, 383, 224], 'landscapeSteamLibrary'],
+          ['饥荒', [1926, 297, 397, 224], 'landscapeSteamLibrary'],
+          ['小小梦魇 2', [169, 753, 383, 216], 'landscapeSteamLibrary'],
+          ['霍格沃茨之遗', [608, 753, 390, 216], 'landscapeSteamLibrary'],
+          ['星露谷物语', [1049, 753, 390, 216], 'landscapeSteamLibrary'],
+        ],
+        epic: [
+          ['霍格沃茨之遗', [57, 1808, 472, 270], 'library'],
+          ['Spiritfarer', [587, 896, 472, 270], 'library'],
+          ['The Forest', [587, 436, 472, 270], 'library'],
+          ['小小梦魇 2', [587, 1353, 472, 270], 'library'],
+          ['Slay the Spire 2', [57, 436, 472, 270], 'library'],
+          ['中国式家长', [57, 896, 472, 270], 'library'],
+          ['星露谷物语', [587, 1808, 472, 270], 'library'],
+          ['饥荒', [57, 1353, 472, 270], 'library'],
+        ],
+        retro: [
+          ['GTA V', [70, 1260, 215, 250], 'home'],
+          ['Human Multiplayer Game', [326, 1260, 220, 250], 'home'],
+          ['荒野大镖客：救赎 2', [575, 1260, 220, 250], 'home'],
+          ['Drillbert', [828, 1260, 215, 250], 'home'],
+          ['茶杯头', [1049, 753, 390, 216], 'landscapeLibrary'],
+          ['空洞骑士', [606, 297, 390, 224], 'landscapeLibrary'],
+          ['星露谷物语', [1049, 753, 390, 216], 'landscapeSteamLibrary'],
+          ['饥荒', [1926, 297, 397, 224], 'landscapeSteamLibrary'],
+        ],
+      };
+      const games = catalogs[state.libraryTab] || catalogs.pc;
+      return `<section class="landscape-library">
+        <div class="landscape-library-toolbar">
+          <div class="landscape-platform-tabs" role="tablist">${[['pc', 'PC游戏'], ['steam', 'Steam游戏'], ['epic', 'Epic游戏'], ['retro', '复古游戏']].map(([value, label]) => `<button type="button" role="tab" aria-selected="${state.libraryTab === value}" class="${state.libraryTab === value ? 'active' : ''}" data-action="set-tab" data-group="libraryTab" data-value="${value}">${label}</button>`).join('')}</div>
+          <div class="landscape-tools"><button class="landscape-tool-button" type="button" data-action="feedback"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>导入游戏</button><button class="landscape-tool-button icon-only" type="button" data-action="feedback" aria-label="搜索"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.3 15.3 5 5"/></svg></button><button class="landscape-tool-button icon-only" type="button" data-action="feedback" aria-label="筛选"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button></div>
+        </div>
+        <div class="landscape-game-wall">${games.map(([name, crop, asset]) => `<article class="game-card">${realCrop(asset, crop, `${name} 横屏游戏封面`, '', 'landscape-cover')}<div class="landscape-card-copy"><strong>${name}</strong><span>手柄适配 · 云端存档</span></div></article>`).join('')}</div>
+      </section>`;
+    }
+
+    function renderLandscapeHome() {
+      const badge = rentalBadge();
+      const actionLabel = badge === '¥1.99 首次体验' ? '立即体验' : badge || '查看游戏';
+      const recommendations = [
+        ['Slay the Spire 2', [169, 297, 383, 224]],
+        ['The Forest', [606, 297, 390, 224]],
+        ['Spiritfarer', [1486, 297, 383, 224]],
+        ['饥荒', [1926, 297, 397, 224]],
+      ];
+      return `<section class="landscape-home">
+        <div class="landscape-home-grid">
+          <article class="landscape-home-hero">
+            ${realCrop('landscapeSteamLibrary', [1486, 297, 383, 224], 'Spiritfarer 横屏主视觉', '', 'landscape-hero-media')}
+            <div class="landscape-hero-copy">${badge ? `<span class="rent-badge">${badge}</span>` : ''}<h1>Spiritfarer</h1><p>在云端开启温暖而宁静的旅程，无需下载安装即可体验。</p><button class="primary-action" type="button" data-primary-action="true" data-action="navigate" data-screen="detail">${actionLabel}</button></div>
+          </article>
+          <aside class="landscape-home-side"><div class="landscape-section-title"><h2>本周热玩</h2><span>为你精选</span></div><div class="landscape-mini-wall">${recommendations.map(([name, crop]) => `<article class="landscape-mini-card">${realCrop('landscapeSteamLibrary', crop, `${name} 推荐封面`, '', 'landscape-cover')}<strong>${name}</strong><span>云端即刻开玩</span></article>`).join('')}</div></aside>
+        </div>
+      </section>`;
+    }
+
+    function renderLandscapePlay() {
+      const tabLabel = { cloud: '秒玩', pc: '启动', retro: '畅玩' }[state.playTab];
+      const recentGames = [
+        ['极限竞速：地平线 6', [176, 957, 648, 159]],
+        ['怪物猎人：世界', [876, 957, 640, 159]],
+      ];
+      const hotGames = [
+        ['极限竞速：地平线 6', [176, 957, 648, 159]],
+        ['怪物猎人：世界', [876, 957, 640, 159]],
+        ['战神', [1569, 957, 658, 159]],
+        ['巫师 3：狂猎', [45, 1359, 189, 225], 'play'],
+      ];
+      return `<section class="landscape-play">
+        <div class="landscape-play-toolbar"><div class="landscape-play-tabs" role="tablist">${[['cloud', '云游戏'], ['pc', 'PC游戏'], ['retro', '复古游戏']].map(([value, label]) => `<button type="button" role="tab" aria-selected="${state.playTab === value}" class="${state.playTab === value ? 'active' : ''}" data-action="set-tab" data-group="playTab" data-value="${value}">${label}</button>`).join('')}</div><span class="rent-badge">会员游戏库已同步</span></div>
+        <div class="landscape-play-grid">
+          <section class="landscape-panel landscape-benefit"><div class="landscape-user-line">${realCrop('profile', [482, 302, 156, 158], '盖世玩家头像', '', 'avatar-small')}<div><strong>盖世玩家 0525</strong><span>${state.scenario === 'active-member' ? '畅玩会员生效中' : '登录后同步完整权益'}</span></div></div><h2>你的${tabLabel}权益</h2><div class="benefit-list"><span>极速启动，无需等待下载</span><span>支持云端存档与手柄</span><span>会员库游戏优先畅玩</span></div><button class="primary-action" type="button" data-primary-action="true" data-action="feedback">进入${tabLabel}</button></section>
+          <section class="landscape-panel landscape-recent"><div class="landscape-section-title"><h2>最近常玩</h2><span>继续游戏</span></div><div class="landscape-recent-list">${recentGames.map(([name, crop]) => `<article class="landscape-recent-item">${realCrop('landscapePlay', crop, `${name} 最近常玩封面`, '', 'landscape-cover')}<div><strong>${name}</strong><small>上次游玩 23 分钟前</small></div></article>`).join('')}</div></section>
+          <section class="landscape-panel landscape-hot"><div class="landscape-section-title"><h2>人气热游</h2><span>全部游戏</span></div><div class="landscape-hot-wall">${hotGames.map(([name, crop, asset]) => `<article class="landscape-hot-card">${realCrop(asset || 'landscapePlay', crop, `${name} 热游封面`, '', 'landscape-cover')}<strong>${name}</strong></article>`).join('')}</div></section>
+        </div>
+      </section>`;
+    }
+
+    function renderLandscapeProfile() {
+      const isMember = state.scenario === 'active-member';
+      return `<section class="landscape-profile">
+        <aside class="landscape-profile-user">${realCrop('profile', [482, 302, 156, 158], '盖世玩家用户头像', '', 'profile-avatar real-avatar')}<h1>盖世玩家 0525</h1><span class="member-chip">${isMember ? '会员生效中' : '会员未开通'}</span><p class="profile-uid">UID GH20260525</p><div class="landscape-profile-stats"><div><strong>110h</strong><span>累计游玩</span></div><div><strong>26</strong><span>游戏数量</span></div></div></aside>
+        <div class="landscape-profile-actions">
+          <section class="landscape-member-card">${realCrop('profile', [46, 1341, 1024, 174], '新人会员活动横幅', '', 'landscape-member-art')}<div class="landscape-member-copy"><strong>盖世畅玩会员</strong><p>${isMember ? '有效期至 2027.06.18，可畅玩会员游戏库' : '开通后畅玩会员游戏库与专属权益'}</p></div><button class="landscape-outline-button" type="button" data-action="navigate" data-screen="membership">${isMember ? '查看权益' : '立即开通'}</button></section>
+          <section class="landscape-order-card"><span class="landscape-order-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h12v17l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span><div class="landscape-order-copy"><strong>租号订单</strong><p>查看进行中订单、登录信息、续租与售后进度</p></div><button class="landscape-order-entry" type="button" data-action="navigate" data-screen="orders">查看订单<svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button></section>
+        </div>
+      </section>`;
+    }
+
+    function renderLandscapeRanking() {
+      const games = [
+        ['Slay the Spire 2', [169, 297, 383, 224]],
+        ['The Forest', [606, 297, 390, 224]],
+        ['中国式家长', [1049, 297, 390, 224]],
+        ['Spiritfarer', [1486, 297, 383, 224]],
+        ['饥荒', [1926, 297, 397, 224]],
+      ];
+      return `<section class="landscape-ranking"><div class="landscape-ranking-head"><div><h1>排行榜</h1><span class="profile-uid">本周玩家热度</span></div><span class="rent-badge">实时更新</span></div><div class="landscape-ranking-wall">${games.map(([name, crop], index) => `<article class="landscape-ranking-card"><span class="rank-number">${index + 1}</span>${realCrop('landscapeSteamLibrary', crop, `${name} 排行榜封面`, '', 'landscape-cover')}<strong>${name}</strong><small>${9864 - index * 741} 人正在玩</small></article>`).join('')}</div></section>`;
+    }
+
+    function renderLandscapeStub(screen) {
+      const copy = { detail: ['游戏详情', '选择权益后继续订单流程。'], membership: ['会员中心', '查看会员套餐与会员游戏库。'], orders: ['租号订单', '查看待支付、进行中与已完成订单。'] }[screen] || ['功能页面', '当前入口已连通。'];
+      return `<section class="landscape-stub landscape-${screen}"><div><h1>${copy[0]}</h1><p>${copy[1]}</p></div></section>`;
+    }
+
+    function renderLandscapeContent() {
+      if (state.screen === 'home') return renderLandscapeHome();
+      if (state.screen === 'play') return renderLandscapePlay();
+      if (state.screen === 'library') return renderLandscapeLibrary();
+      if (state.screen === 'profile') return renderLandscapeProfile();
+      if (state.screen === 'ranking') return renderLandscapeRanking();
+      return renderLandscapeStub(state.screen);
+    }
+
+    function renderLandscapeShell(content, active = 'library') {
+      const nav = [['library', '游戏库'], ['play', '玩游戏'], ['home', '探索'], ['ranking', '排行榜'], ['profile', '我的']];
+      return `<section class="device landscape">
+        <header class="landscape-top-nav"><nav aria-label="横屏主导航">${nav.map(([id, label]) => `<button class="${active === id ? 'active' : ''}" type="button" data-action="navigate" data-screen="${id}" aria-current="${active === id ? 'page' : 'false'}">${icon(id)}<span>${label}</span></button>`).join('')}</nav>${landscapeSystem()}</header>
+        <main class="landscape-content">${content}</main>
+      </section>`;
+    }
+
     function renderApp() {
       const root = document.querySelector('#appRentalDemo');
       root.dataset.orientation = state.orientation;
@@ -721,7 +1069,7 @@
         root.innerHTML = renderPortraitShell(renderPortraitContent(), state.screen);
         return;
       }
-      root.innerHTML = '<section class="device"><div class="stub-panel"><div><h2>横屏布局</h2><p>横屏原生页面将在下一任务中完成。</p></div></div></section>';
+      root.innerHTML = renderLandscapeShell(renderLandscapeContent(), state.screen);
     }
 
     document.querySelector('#appRentalDemo').addEventListener('click', (event) => {
