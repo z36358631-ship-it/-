@@ -393,9 +393,36 @@ try {
     true,
     '详情打开后未聚焦关闭按钮'
   );
+  assert.deepEqual(
+    await page.locator('.detail-actionbar .detail-action').evaluateAll(buttons =>
+      buttons.map(button => button.textContent.trim())
+    ),
+    ['检查更新', '卸载', '已停用']
+  );
+
+  const actionLayout = await page.locator('.detail-actionbar').evaluate(bar => {
+    const buttons = [...bar.querySelectorAll('.detail-action')];
+    const widths = buttons.map(button => button.getBoundingClientRect().width);
+    const barBox = bar.getBoundingClientRect();
+    const first = buttons[0].getBoundingClientRect();
+    const last = buttons.at(-1).getBoundingClientRect();
+    const style = getComputedStyle(bar);
+    return {
+      equalWidths: Math.max(...widths) - Math.min(...widths) <= 1,
+      fillsRow: Math.abs(first.left - (barBox.left + parseFloat(style.paddingLeft))) <= 1
+        && Math.abs(last.right - (barBox.right - parseFloat(style.paddingRight))) <= 1,
+      stateIsRightmost: buttons.at(-1).matches('[data-detail-enabled]')
+    };
+  });
+  assert.deepEqual(actionLayout, {
+    equalWidths: true,
+    fillsRow: true,
+    stateIsRightmost: true
+  });
+
   await page.keyboard.press('Shift+Tab');
   assert.equal(
-    await page.evaluate(() => document.activeElement?.matches('[data-action="open-uninstall"]')),
+    await page.evaluate(() => document.activeElement?.matches('[data-detail-enabled]')),
     true,
     '详情焦点未在弹层内循环'
   );
@@ -415,6 +442,7 @@ try {
   await page.locator('[data-detail-enabled]').click();
   assert.equal(await page.locator('[data-detail-enabled]').textContent(), '已启用');
   assert.match(await page.locator('[data-detail-enabled]').getAttribute('class'), /is-enabled/u);
+  assert.equal(await page.locator('.toast').count(), 0);
 
   await page.locator('[data-review-action="landscape"]').click();
   const rotatedState = await page.evaluate(() => window.__APP_MODS_DEMO__.getState());
@@ -437,6 +465,9 @@ try {
     '详情关闭后未恢复到触发卡片'
   );
   await page.evaluate(() => document.activeElement?.blur());
+  await firstSwitch.click();
+  assert.equal(await firstSwitch.getAttribute('aria-checked'), 'false');
+  assert.equal(await page.locator('.toast').count(), 0);
   const landscapeInstalledLayout = await page.evaluate(() => {
     const header = document.querySelector('.mods-header').getBoundingClientRect();
     const filters = document.querySelector('.sort-section').getBoundingClientRect();
