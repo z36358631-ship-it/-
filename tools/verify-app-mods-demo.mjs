@@ -31,7 +31,6 @@ for (const copy of [
   '成就',
   '创意工坊',
   'MODS',
-  '仅显示当前设备已安装的 MOD',
   '已安装 4 个',
   '查看全部'
 ]) assert.match(html, new RegExp(copy, 'u'), `缺少个人中心文案：${copy}`);
@@ -39,6 +38,7 @@ for (const copy of [
 assert.match(html, /data-screen="steam-profile"/u);
 assert.match(html, /data-profile-tab="mods"/u);
 assert.match(html, /data-action="profile-view-all"/u);
+assert.doesNotMatch(html, /仅显示当前设备已安装的 MOD/u);
 
 assert.match(html, /data-search/u);
 assert.match(html, /\['hot', '热门'\]/u);
@@ -162,6 +162,33 @@ try {
   assert.equal(await page.locator('[data-profile-search], [data-profile-sort], [data-profile-download]').count(), 0);
   assert.equal(await page.locator('[data-profile-group="dst"] [data-profile-mod-card]').count(), 4);
   assert.equal(await page.locator('[data-action="profile-view-all"]').textContent(), '查看全部');
+  assert.equal(await page.locator('.profile-device-note').count(), 0);
+  assert.deepEqual(
+    await page.locator('[data-steam-profile-action]').evaluateAll(items =>
+      items.map(item => item.getAttribute('data-steam-profile-action'))
+    ),
+    ['friends', 'account', 'power']
+  );
+  assert.equal(
+    (await page.locator('[data-steam-profile-action="friends"]').textContent()).trim(),
+    '好友'
+  );
+
+  const profileHeaderLayout = await page.locator('.steam-profile-header').evaluate(header => {
+    const title = header.querySelector('h1');
+    const titleBox = title.getBoundingClientRect();
+    const actionsBox = header.querySelector('.steam-profile-actions').getBoundingClientRect();
+    return {
+      titleAlign: getComputedStyle(title).textAlign,
+      actionsAfterTitle: actionsBox.left >= titleBox.right,
+      actionCount: header.querySelectorAll('[data-steam-profile-action]').length
+    };
+  });
+  assert.deepEqual(profileHeaderLayout, {
+    titleAlign: 'left',
+    actionsAfterTitle: true,
+    actionCount: 3
+  });
 
   const profileTabsLayout = await page.locator('.steam-profile-tabs').evaluate(tabs => ({
     singleLine: [...tabs.children].every(item => item.getBoundingClientRect().top === tabs.firstElementChild.getBoundingClientRect().top),
@@ -176,6 +203,21 @@ try {
     await page.evaluate(() => window.__APP_MODS_DEMO__.getState().orientation),
     'landscape'
   );
+  const landscapeProfileHeaderLayout = await page.evaluate(() => {
+    const title = document.querySelector('.steam-profile-header h1').getBoundingClientRect();
+    const tabs = document.querySelector('.steam-profile-tabs').getBoundingClientRect();
+    const actions = document.querySelector('.steam-profile-actions').getBoundingClientRect();
+    return {
+      titleBeforeTabs: title.right <= tabs.left,
+      tabsBeforeActions: tabs.right <= actions.left,
+      actionsInsideDevice: actions.right <= document.querySelector('[data-demo-root]').getBoundingClientRect().right
+    };
+  });
+  assert.deepEqual(landscapeProfileHeaderLayout, {
+    titleBeforeTabs: true,
+    tabsBeforeActions: true,
+    actionsInsideDevice: true
+  });
   await capture('10-steam-profile-mods-landscape.png');
   await page.locator('[data-review-action="portrait"]').click();
 
@@ -364,22 +406,36 @@ try {
   await page.locator('[data-tab="installed"]').click();
   assert.equal(await page.locator('[data-search]').count(), 0);
   assert.equal(await page.locator('[data-enable-switch]').count(), 4);
+  const installedFilter = page.locator('[data-installed-filter-select]');
+  assert.equal(await installedFilter.count(), 1);
   assert.deepEqual(
-    await page.locator('[data-installed-filter]').evaluateAll(items => items.map(item => item.textContent.trim())),
+    await installedFilter.locator('option').evaluateAll(options => options.map(option => option.textContent.trim())),
     ['全部', '可更新']
   );
+  assert.equal(await installedFilter.inputValue(), 'all');
+  assert.equal(await page.locator('.filter-tab').count(), 0);
+  await installedFilter.selectOption('updates');
+  assert.equal(await page.evaluate(() => window.__APP_MODS_DEMO__.getState().installedFilter), 'updates');
+  await installedFilter.selectOption('all');
   const portraitInstalledLayout = await page.evaluate(() => {
     const tabs = document.querySelector('.primary-tabs').getBoundingClientRect();
     const filters = document.querySelector('.sort-section').getBoundingClientRect();
+    const group = document.querySelector('.installed-controls');
+    const filter = group.querySelector('[data-installed-filter-select]').getBoundingClientRect();
+    const refresh = group.querySelector('.refresh-small').getBoundingClientRect();
     const list = document.querySelector('.mods-scroll').getBoundingClientRect();
     return {
       filtersFollowTabs: Math.abs(filters.top - tabs.bottom) <= 1,
-      listFollowsFilters: Math.abs(list.top - filters.bottom) <= 1
+      listFollowsFilters: Math.abs(list.top - filters.bottom) <= 1,
+      filterBeforeRefresh: filter.right <= refresh.left,
+      filterRefreshGap: Math.round(refresh.left - filter.right)
     };
   });
   assert.deepEqual(portraitInstalledLayout, {
     filtersFollowTabs: true,
-    listFollowsFilters: true
+    listFollowsFilters: true,
+    filterBeforeRefresh: true,
+    filterRefreshGap: 8
   });
   await capture('03-installed-portrait.png');
 
@@ -480,15 +536,26 @@ try {
   const landscapeInstalledLayout = await page.evaluate(() => {
     const header = document.querySelector('.mods-header').getBoundingClientRect();
     const filters = document.querySelector('.sort-section').getBoundingClientRect();
+    const group = document.querySelector('.installed-controls');
+    const groupBox = group.getBoundingClientRect();
+    const filter = group.querySelector('[data-installed-filter-select]').getBoundingClientRect();
+    const refresh = group.querySelector('.refresh-small').getBoundingClientRect();
     const list = document.querySelector('.mods-scroll').getBoundingClientRect();
+    const device = document.querySelector('[data-demo-root]').getBoundingClientRect();
     return {
-      filtersInsideHeader: filters.top >= header.top - 1 && filters.bottom <= header.bottom + 1,
-      listFollowsHeader: Math.abs(list.top - header.bottom) <= 1
+      filtersFollowHeader: Math.abs(filters.top - header.bottom) <= 1,
+      listFollowsFilters: Math.abs(list.top - filters.bottom) <= 1,
+      controlsRightAligned: Math.abs(groupBox.right - (device.right - 38)) <= 1,
+      filterBeforeRefresh: filter.right <= refresh.left,
+      filterRefreshGap: Math.round(refresh.left - filter.right)
     };
   });
   assert.deepEqual(landscapeInstalledLayout, {
-    filtersInsideHeader: true,
-    listFollowsHeader: true
+    filtersFollowHeader: true,
+    listFollowsFilters: true,
+    controlsRightAligned: true,
+    filterBeforeRefresh: true,
+    filterRefreshGap: 8
   });
   await capture('07-installed-landscape.png');
 

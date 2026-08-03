@@ -466,7 +466,7 @@
       align-items: center;
       gap: 24px;
     }
-    .sort-tab, .filter-tab {
+    .sort-tab {
       position: relative;
       height: 38px;
       color: #88868c;
@@ -475,8 +475,8 @@
       font-weight: 520;
       white-space: nowrap;
     }
-    .sort-tab.is-active, .filter-tab.is-active { color: #fff; }
-    .sort-tab.is-active::after, .filter-tab.is-active::after {
+    .sort-tab.is-active { color: #fff; }
+    .sort-tab.is-active::after {
       content: "";
       position: absolute;
       right: 2px;
@@ -498,6 +498,47 @@
       font-size: 18px;
     }
     .refresh-small.is-loading svg { animation: spin .7s linear infinite; }
+    .installed-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+    .installed-controls .refresh-small { margin-left: 0; }
+    .installed-filter-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .installed-filter-wrap::after {
+      content: "⌄";
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      color: #8e8c92;
+      font-size: 14px;
+      line-height: 1;
+      pointer-events: none;
+      transform: translateY(-58%);
+    }
+    .installed-filter-select {
+      width: 104px;
+      height: 36px;
+      padding: 0 30px 0 12px;
+      appearance: none;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: var(--radius-full);
+      outline: 0;
+      color: #e6e6e6;
+      background: rgba(255,255,255,.06);
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .installed-filter-select option { color: #e6e6e6; background: #252525; }
+    .installed-filter-wrap:focus-within {
+      border-radius: var(--radius-full);
+      box-shadow: 0 0 0 2px rgba(255,255,255,.2);
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
     .mods-scroll {
       position: absolute;
@@ -752,7 +793,7 @@
       top: 106px;
       padding: 12px 38px 24px;
     }
-    .device.landscape .mods-screen.is-installed .mods-scroll { top: 58px; }
+    .device.landscape .mods-screen.is-installed .mods-scroll { top: 106px; }
     .device.landscape .mods-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
@@ -770,14 +811,15 @@
     .device.landscape .mods-screen.is-installed .primary-tabs { left: 238px; }
     .device.landscape .mods-screen.is-installed .sort-section {
       position: absolute;
-      top: 5px;
-      right: 30px;
+      top: 58px;
+      right: 0;
+      left: 0;
       z-index: 2;
-      width: 290px;
+      width: auto;
       height: 48px;
-      padding: 0;
-      border: 0;
-      background: transparent;
+      padding: 0 38px;
+      border-bottom: 1px solid rgba(255,255,255,.065);
+      background: #151517;
     }
 
     /* Steam 个人中心 MODS */
@@ -791,17 +833,46 @@
     .steam-profile-header {
       height: 70px;
       flex: none;
-      display: grid;
-      grid-template-columns: 44px 1fr 44px;
+      display: flex;
       align-items: center;
-      padding: 18px 12px 0;
+      padding: 18px 10px 0 12px;
       border-bottom: 1px solid rgba(255,255,255,.04);
     }
     .steam-profile-header h1 {
+      margin-left: 4px;
       font-size: 19px;
       font-weight: 600;
-      text-align: center;
+      text-align: left;
     }
+    .steam-profile-actions {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      margin-left: auto;
+    }
+    .steam-profile-action {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      flex: none;
+      border-radius: var(--radius-full);
+      color: #d8d9dd;
+      background: transparent;
+      font-size: 19px;
+    }
+    .steam-profile-action:hover { background: rgba(255,255,255,.08); }
+    .steam-profile-action.is-friends {
+      width: auto;
+      min-width: 58px;
+      padding: 0 7px;
+      font-size: 12px;
+    }
+    .steam-profile-action.is-friends svg { font-size: 18px; }
+    .steam-profile-action.is-friends span { white-space: nowrap; }
     .steam-profile-tabs {
       height: 58px;
       flex: none;
@@ -839,26 +910,6 @@
       height: 3px;
       border-radius: 3px;
       background: var(--brand-gold);
-    }
-    .profile-device-note {
-      height: 46px;
-      flex: none;
-      display: flex;
-      align-items: center;
-      padding: 0 18px;
-      color: #9c9da2;
-      background: rgba(18,19,21,.96);
-      font-size: 12px;
-    }
-    .profile-device-note::before {
-      content: "";
-      width: 7px;
-      height: 7px;
-      flex: none;
-      margin-right: 8px;
-      border-radius: 50%;
-      background: var(--brand-green);
-      box-shadow: 0 0 0 4px rgba(51,216,164,.09);
     }
     .steam-profile-scroll {
       min-height: 0;
@@ -968,18 +1019,20 @@
     }
     .device.landscape .steam-profile-header {
       height: 58px;
-      grid-template-columns: 42px 110px;
-      justify-content: start;
       padding: 0 24px 0 34px;
     }
     .device.landscape .steam-profile-header .icon-button { width: 38px; height: 38px; }
-    .device.landscape .steam-profile-header h1 { text-align: left; }
+    .device.landscape .steam-profile-header h1 { margin-left: 4px; text-align: left; }
+    .device.landscape .steam-profile-actions { gap: 4px; }
+    .device.landscape .steam-profile-action { width: 38px; height: 38px; }
+    .device.landscape .steam-profile-action.is-friends { width: auto; min-width: 58px; }
     .device.landscape .steam-profile-tabs {
       position: absolute;
       top: 0;
       left: 210px;
+      right: 184px;
       z-index: 2;
-      width: calc(100% - 230px);
+      width: auto;
       height: 58px;
       gap: 28px;
       padding: 0;
@@ -987,10 +1040,6 @@
       background: transparent;
     }
     .device.landscape .steam-profile-tabs button { font-size: 14px; }
-    .device.landscape .profile-device-note {
-      height: 42px;
-      padding: 0 38px;
-    }
     .device.landscape .steam-profile-scroll { padding: 12px 38px 24px; }
     .device.landscape .profile-game-group { padding: 12px; }
     .device.landscape .profile-game-header { min-height: 38px; margin-bottom: 8px; }
@@ -1363,6 +1412,9 @@
         pc: '<rect x="4" y="4" width="16" height="11" rx="2"/><path d="M9 20h6m-3-5v5"/>',
         workshop: '<path d="M5 8h14v11H5z"/><path d="M8 8V5h8v3m-6 4h4"/>',
         mods: '<path d="M9 3h6v5h5v6h-5v7H9v-7H4V8h5z"/>',
+        friends: '<path d="M9 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M2.5 20c.5-4 2.7-6 6.5-6s6 2 6.5 6"/><path d="M16 5.2a3.4 3.4 0 0 1 0 6.6M17 14c2.6.6 4 2.5 4.5 6"/>',
+        account: '<circle cx="12" cy="8" r="4"/><path d="M5 21c.5-4.7 2.8-7 7-7s6.5 2.3 7 7"/><path d="M18 4v4m-2-2h4"/>',
+        power: '<path d="M12 3v9"/><path d="M7.2 5.8a8 8 0 1 0 9.6 0"/>',
         share: '<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.5-4.4m-7.5 6.8 7.5 4.4"/>',
         desktop: '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="m12 8-3 4h3v4l3-4h-3z"/>',
         version: '<path d="M7 7h10v10H7z"/><path d="m4 10 3-3 3 3m10 4-3 3-3-3"/>',
@@ -1756,6 +1808,11 @@
           <header class="steam-profile-header">
             <button class="icon-button" type="button" data-action="profile-back" aria-label="返回">${icon('back')}</button>
             <h1>Steam</h1>
+            <div class="steam-profile-actions" aria-label="Steam 操作">
+              <button class="steam-profile-action is-friends" type="button" data-steam-profile-action="friends" aria-label="好友">${icon('friends')}<span>好友</span></button>
+              <button class="steam-profile-action" type="button" data-steam-profile-action="account" aria-label="账号操作">${icon('account')}</button>
+              <button class="steam-profile-action" type="button" data-steam-profile-action="power" aria-label="退出 Steam">${icon('power')}</button>
+            </div>
           </header>
           <nav class="steam-profile-tabs" role="tablist" aria-label="Steam 个人中心">
             <button type="button" data-profile-tab="data" role="tab" aria-selected="false">Steam数据</button>
@@ -1763,7 +1820,6 @@
             <button type="button" data-profile-tab="workshop" role="tab" aria-selected="false">创意工坊</button>
             <button type="button" data-profile-tab="mods" role="tab" aria-selected="true">MODS</button>
           </nav>
-          <div class="profile-device-note">仅显示当前设备已安装的 MOD</div>
           <div class="steam-profile-scroll" data-profile-scroll>
             ${installedMods.length ? `
               <section class="profile-game-group" data-profile-group="dst">
@@ -1828,10 +1884,16 @@
               <button class="refresh-small ${state.refreshing ? 'is-loading' : ''}" type="button" data-action="refresh" aria-label="刷新">${icon('refresh')}</button>
             </div>
           ` : `
-            <div class="sort-section" role="tablist" aria-label="已安装筛选">
-              <button class="filter-tab ${state.installedFilter === 'all' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.installedFilter === 'all'}" data-installed-filter="all">全部</button>
-              <button class="filter-tab ${state.installedFilter === 'updates' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.installedFilter === 'updates'}" data-installed-filter="updates">可更新</button>
-              <button class="refresh-small ${state.refreshing ? 'is-loading' : ''}" type="button" data-action="refresh" aria-label="刷新">${icon('refresh')}</button>
+            <div class="sort-section" aria-label="已安装工具">
+              <div class="installed-controls">
+                <label class="installed-filter-wrap">
+                  <select class="installed-filter-select" data-installed-filter-select aria-label="已安装筛选">
+                    <option value="all" ${state.installedFilter === 'all' ? 'selected' : ''}>全部</option>
+                    <option value="updates" ${state.installedFilter === 'updates' ? 'selected' : ''}>可更新</option>
+                  </select>
+                </label>
+                <button class="refresh-small ${state.refreshing ? 'is-loading' : ''}" type="button" data-action="refresh" aria-label="刷新">${icon('refresh')}</button>
+              </div>
             </div>
           `}
           <div class="mods-scroll" data-mod-scroll>
@@ -2050,6 +2112,12 @@
           modId: control.dataset.modId,
           returnSelector: `[data-mod-card][data-mod-id="${control.dataset.modId}"]`
         });
+      }
+    });
+
+    root.addEventListener('change', event => {
+      if (event.target.matches('[data-installed-filter-select]')) {
+        dispatch({ type: 'SET_INSTALLED_FILTER', value: event.target.value });
       }
     });
 

@@ -4,7 +4,7 @@
 
 **Goal:** 将已安装页“全部 / 可更新”两个平铺 Tab 改为一个紧贴刷新左侧的筛选下拉，并同步 Demo、截图和 PRD。
 
-**Architecture:** 保留现有 `installedFilter` 状态和 `SET_INSTALLED_FILTER` 事件，只替换控件和事件入口。横竖屏共用同一紧凑操作组，筛选器在前、刷新在后，间距固定 8px。
+**Architecture:** 保留现有 `installedFilter` 状态和 `SET_INSTALLED_FILTER` 事件，只替换控件和事件入口。横竖屏共用同一紧凑操作组，筛选器在前、刷新在后，间距固定 8px；横屏操作组位于标题下方第二行并右对齐。
 
 **Tech Stack:** 单文件 HTML/CSS/JavaScript、Node.js、Playwright Core、Markdown、Git。
 
@@ -42,6 +42,8 @@ const installedTools = await page.locator('.installed-controls').evaluate(group 
 });
 assert.deepEqual(installedTools, { filterBeforeRefresh: true, gap: 8 });
 ```
+
+横屏同时断言筛选区紧跟标题栏、列表紧跟筛选区，操作组右对齐。
 
 - [ ] **Step 3: 运行测试确认失败**
 
@@ -106,11 +108,11 @@ Expected: PASS，横竖屏均只有一个筛选器，且与刷新间距为 8px�
 
 Run: `node tools/verify-app-mods-demo.mjs --screenshots`
 
-Expected: `03`、`07` 显示单个筛选器，筛选器紧贴刷新左侧。
+Expected: `03`、`07` 显示单个筛选器，筛选器紧贴刷新左侧；`07` 的操作组位于标题下方第二行并右对齐。
 
 - [ ] **Step 2: 更新 PRD**
 
-将“全部 / 可更新”改为“单个下拉筛选器，选项为全部、可更新；筛选器紧贴刷新左侧”。
+将“全部 / 可更新”改为“单个下拉筛选器，选项为全部、可更新；筛选器紧贴刷新左侧；横屏操作组位于第二行右侧”。
 
 - [ ] **Step 3: 运行 PRD 校验**
 
