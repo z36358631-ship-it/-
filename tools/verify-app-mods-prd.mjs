@@ -6,7 +6,6 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const prdPath = path.join(root, 'prd', 'ai生成', '【Prd】《盖世游戏》APP端MODS需求.md');
 const verifyRemote = process.argv.includes('--remote');
-const expectedSha = '4b32c64158bab42068aafe87a93542f934fb0492';
 const imageNames = [
   '01-game-more-menu-portrait.png',
   '08-game-more-menu-landscape.png',
@@ -15,7 +14,9 @@ const imageNames = [
   '04-detail-portrait.png',
   '05-browse-landscape.png',
   '06-detail-landscape.png',
-  '07-installed-landscape.png'
+  '07-installed-landscape.png',
+  '09-steam-profile-mods-portrait.png',
+  '10-steam-profile-mods-landscape.png'
 ];
 
 assert.equal(fs.existsSync(prdPath), true, 'APP MODS PRD 缺失');
@@ -25,67 +26,77 @@ for (const heading of [
   '# 【Prd】《盖世游戏》APP端MODS需求',
   '## 一、版本信息',
   '## 二、背景与目标',
-  '## 三、故事介绍',
+  '## 三、使用场景',
   '## 四、概要设计',
   '### 4.2 详细设计（C端）',
   '## 五、非功能需求',
   '## 六、埋点需求',
-  '## 七、运营需求',
-  '## 九、验收标准',
-  '## 十一、自检记录'
+  '## 七、运营要求',
+  '## 八、灰度与回退',
+  '## 九、验收标准'
 ]) assert.match(markdown, new RegExp(heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'u'));
 
 assert.doesNotMatch(markdown, /### 4\.3 详细设计（B端）/u);
-assert.doesNotMatch(markdown, /__IMAGE_SHA__|file:\/\/|localhost|@main|@master|\/blob\/main\//u);
-assert.match(markdown, /国内包产品名显示“盖世游戏”/u);
-assert.match(markdown, /海外包产品名显示“GameHub”/u);
-assert.match(markdown, /热门 \/ 下载最多 \/ 最新发布/u);
-assert.match(markdown, /暂无可更新的 MOD/u);
-assert.match(markdown, /横屏不再单独展示搜索行/u);
-assert.match(markdown, /排序、搜索、刷新在同一工具栏/u);
-assert.match(markdown, /搜索位于刷新左侧/u);
-assert.match(markdown, /至少完整显示 8 个全角字符或 16 个半角字符/u);
-assert.match(markdown, /列表紧跟顶部筛选区，不预留搜索框空位/u);
-assert.match(markdown, /卡片与内部按钮的键盘操作互不冲突/u);
-assert.match(markdown, /详情限制焦点、支持 Esc 关闭并恢复触发点/u);
-assert.match(markdown, /同一设备、同一游戏、同一 MOD 同时只能存在一条安装或更新任务/u);
-assert.match(markdown, /安装、更新、启停和卸载共用一把设备操作锁/u);
-assert.match(markdown, /其他 MOD 可继续浏览/u);
-assert.match(markdown, /MOD ID 和区域单独隐藏/u);
-assert.match(markdown, /MODS 页面无崩溃会话率≥99\.8%/u);
-assert.match(markdown, /app_mods_task_create_result/u);
-assert.match(markdown, /state_consistency_result/u);
-assert.match(markdown, /AC-APP-LOCK-01/u);
-assert.match(markdown, /AC-APP-BROWSE-04/u);
-assert.match(markdown, /AC-APP-NETWORK-03/u);
-assert.match(markdown, /AC-APP-ROTATE-03/u);
-assert.match(markdown, /AC-APP-ROTATE-05/u);
-assert.match(markdown, /AC-APP-REGION-02/u);
-assert.match(markdown, verifyRemote ? /前端开发\|✓ 通过/u : /前端开发\|(?:✓ 通过|⚠️ 条件通过)/u);
-assert.match(markdown, verifyRemote ? /测试工程师\|✓ 通过/u : /测试工程师\|(?:✓ 通过|⚠️ 条件通过)/u);
-assert.match(markdown, /运营\/业务方\|✓ 通过/u);
+assert.doesNotMatch(markdown, /旨在|赋能|助力|沉浸式|提升体验|打造.{0,8}闭环|价值分析/u);
+assert.doesNotMatch(markdown, /__IMAGE_SHA__|file:\/\/|localhost|@main|@master/u);
 
-const allPublishedShas = [...markdown.matchAll(/[0-9a-f]{40}/gu)].map(match => match[0]);
-assert(allPublishedShas.length >= imageNames.length + 1, 'PRD 固定提交 SHA 数量不足');
-assert(allPublishedShas.every(sha => sha === expectedSha), 'PRD 残留旧提交 SHA');
+for (const rule of [
+  /Steam 个人中心新增独立一级 Tab“MODS”/u,
+  /仅展示当前设备已安装 MOD/u,
+  /“查看全部”进入对应游戏的 `MODS > 浏览`/u,
+  /页面不提供搜索、排序、筛选、刷新和直接下载/u,
+  /空态“查看支持 MODS 的游戏”进入现有游戏库的 MODS 支持列表/u,
+  /三个按钮等宽铺满/u,
+  /启停按钮固定在最右侧/u,
+  /不显示成功 Toast/u,
+  /国内包显示“盖世游戏”/u,
+  /海外包显示“GameHub”/u,
+  /不依赖云游戏/u,
+  /浏览页返回操作直接回个人中心并恢复原分组和滚动位置/u,
+  /未知或已是最新\|检查更新/u,
+  /更新中\|更新中\|三个操作按钮均禁用/u,
+  /同一设备、同一游戏、同一 MOD 同时只能有一条操作/u,
+  /独立 ID 命名空间、安装目录、任务和状态存储/u,
+  /下载和更新保留任务 ID 与进度并续传/u,
+  /app_mods_profile_view_all/u,
+  /AC-12\|详情操作栏/u,
+  /AC-20\|海外包/u
+]) assert.match(markdown, rule, `PRD 缺少规则：${rule}`);
 
-const imageUrls = [...markdown.matchAll(/!\[[^\]]+\]\((https:\/\/cdn\.jsdelivr\.net\/gh\/z36358631-ship-it\/-@([0-9a-f]{40})\/public\/prd\/app-mods\/([^)]+\.png))\)/gu)];
-assert.equal(imageUrls.length, imageNames.length, `PRD 图片数量应为 ${imageNames.length}`);
+const proseLines = markdown
+  .split(/\r?\n/u)
+  .map(line => line.trim())
+  .filter(line => line.length >= 24 && !line.startsWith('|') && !line.startsWith('![') && !line.startsWith('`'));
+assert.equal(new Set(proseLines).size, proseLines.length, 'PRD 存在整行重复说明');
+
+const imageRefs = [...markdown.matchAll(/!\[([^\]]+)\]\((https:\/\/[^)]+\/public\/prd\/app-mods\/([^)]+\.png))\)/gu)];
+assert.equal(imageRefs.length, imageNames.length, `PRD 图片数量应为 ${imageNames.length}`);
 assert.deepEqual(
-  imageUrls.map(match => match[3]).sort(),
+  imageRefs.map(match => match[3]).sort(),
   [...imageNames].sort(),
   'PRD 图片文件集合不正确'
 );
-assert(imageUrls.every(match => match[2] === expectedSha), 'PRD 图片没有统一使用固定提交 SHA');
+assert(imageRefs.every(match => !/^图\s*\d/u.test(match[1])), '图片标题不得包含图号');
+assert(imageRefs.every(match => !/[：:]/u.test(match[1])), '图片标题不得包含冒号');
+assert(imageRefs.every(match => match[1].length <= 20), '图片标题必须简短');
 
-const detailTableStart = markdown.indexOf('|模块名称|图示|展示&交互说明|');
-const detailTableEnd = markdown.indexOf('#### 4.2.8 入口与业务隔离');
+const imageShas = imageRefs.map(match => new URL(match[2]).pathname.match(/@([0-9a-f]{40})\//u)?.[1]);
+assert(imageShas.every(Boolean), '图片 URL 未固定到 40 位提交 SHA');
+assert.equal(new Set(imageShas).size, 1, '同一 PRD 图片必须使用同一资产提交 SHA');
+const expectedSha = imageShas[0];
+
+const demoMatch = markdown.match(/https:\/\/htmlpreview\.github\.io\/\?https:\/\/github\.com\/z36358631-ship-it\/-\/blob\/([0-9a-f]{40})\/demos\/[^`\s]+APP%E7%AB%AFMODS%E5%8A%9F%E8%83%BDdemo\.html/u);
+assert(demoMatch, 'Demo 必须使用固定提交的 htmlpreview 地址');
+assert.equal(demoMatch[1], expectedSha, 'Demo 与图片必须固定到同一资产提交');
+
+const detailTableStart = markdown.indexOf('|模块名称|图示|展示与交互|');
+const detailTableEnd = markdown.indexOf('#### 4.2.9 创意工坊隔离');
 assert(detailTableStart >= 0 && detailTableEnd > detailTableStart, '4.2 页面表格范围缺失');
 const detailTable = markdown.slice(detailTableStart, detailTableEnd);
 assert.equal((detailTable.match(/!\[/gu) || []).length, imageNames.length, '图片没有全部放在 4.2 图示列');
 
 const detailRuleNumbers = [...markdown.matchAll(/^#### 4\.2\.(\d+) /gmu)].map(match => Number(match[1]));
-assert.deepEqual(detailRuleNumbers, [8, 9, 10, 11, 12, 13, 14, 15, 16], '4.2 规则章节编号不连续');
+assert.deepEqual(detailRuleNumbers, [9, 10, 11, 12, 13, 14, 15], '4.2 规则章节编号不连续');
 
 for (const imageName of imageNames) {
   const localImage = path.join(root, 'public', 'prd', 'app-mods', imageName);
@@ -93,14 +104,25 @@ for (const imageName of imageNames) {
   assert(fs.statSync(localImage).size > 12000, `截图体积异常：${imageName}`);
 }
 
-console.log('PASS: APP MODS PRD 结构、页面、规则、验收与八张固定图片');
+console.log(`PASS: APP MODS PRD 结构、精简语言、规则与 ${imageNames.length} 张固定图片`);
 
 if (verifyRemote) {
-  for (const [, url] of imageUrls) {
-    const response = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
-    assert.equal(response.status, 200, `${url} HTTP ${response.status}`);
-    assert.equal(response.headers.get('content-type')?.split(';')[0], 'image/png', `${url} Content-Type 异常`);
-    await response.arrayBuffer();
-    console.log(`PASS: ${url} -> 200 image/png`);
-  }
+  const userAgents = [
+    ['default', 'Mozilla/5.0'],
+    ['feishu', 'Lark/7.0 FeishuDocsImageImporter']
+  ];
+  const checks = imageRefs.flatMap(([, , url]) => userAgents.map(async ([name, userAgent]) => {
+    const response = await fetch(url, {
+      headers: { 'user-agent': userAgent },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(20000)
+    });
+    assert.equal(response.status, 200, `${url} ${name} HTTP ${response.status}`);
+    assert.equal(response.headers.get('content-type')?.split(';')[0], 'image/png', `${url} ${name} Content-Type 异常`);
+    const bytes = await response.arrayBuffer();
+    assert(bytes.byteLength > 12000, `${url} ${name} 图片体积异常`);
+    return `${name} ${path.basename(new URL(url).pathname)}`;
+  }));
+  const results = await Promise.all(checks);
+  for (const result of results) console.log(`PASS: ${result} -> 200 image/png`);
 }
