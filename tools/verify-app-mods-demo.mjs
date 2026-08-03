@@ -26,6 +26,20 @@ for (const copy of [
   assert.match(html, new RegExp(copy, 'u'), `缺少关键文案：${copy}`);
 }
 
+for (const copy of [
+  'Steam数据',
+  '成就',
+  '创意工坊',
+  'MODS',
+  '仅显示当前设备已安装的 MOD',
+  '已安装 4 个',
+  '查看全部'
+]) assert.match(html, new RegExp(copy, 'u'), `缺少个人中心文案：${copy}`);
+
+assert.match(html, /data-screen="steam-profile"/u);
+assert.match(html, /data-profile-tab="mods"/u);
+assert.match(html, /data-action="profile-view-all"/u);
+
 assert.match(html, /data-search/u);
 assert.match(html, /\['hot', '热门'\]/u);
 assert.match(html, /\['downloads', '下载最多'\]/u);
@@ -137,6 +151,49 @@ try {
   );
   await capture('08-game-more-menu-landscape.png');
   await page.locator('[data-review-action="portrait"]').click();
+
+  await page.locator('[data-review-action="profile"]').click();
+  assert.equal(await page.locator('[data-screen="steam-profile"]').count(), 1);
+  assert.deepEqual(
+    await page.locator('[data-profile-tab]').evaluateAll(items => items.map(item => item.textContent.trim())),
+    ['Steam数据', '成就', '创意工坊', 'MODS']
+  );
+  assert.equal(await page.locator('[data-profile-tab="mods"]').getAttribute('aria-selected'), 'true');
+  assert.equal(await page.locator('[data-profile-search], [data-profile-sort], [data-profile-download]').count(), 0);
+  assert.equal(await page.locator('[data-profile-group="dst"] [data-profile-mod-card]').count(), 4);
+  assert.equal(await page.locator('[data-action="profile-view-all"]').textContent(), '查看全部');
+
+  const profileTabsLayout = await page.locator('.steam-profile-tabs').evaluate(tabs => ({
+    singleLine: [...tabs.children].every(item => item.getBoundingClientRect().top === tabs.firstElementChild.getBoundingClientRect().top),
+    overflowMode: getComputedStyle(tabs).overflowX
+  }));
+  assert.equal(profileTabsLayout.singleLine, true);
+  assert.match(profileTabsLayout.overflowMode, /auto|scroll/u);
+
+  await page.locator('[data-profile-scroll]').evaluate(element => { element.scrollTop = 96; });
+  await page.locator('[data-action="profile-view-all"][data-game-id="dst"]').click();
+  const browseState = await page.evaluate(() => window.__APP_MODS_DEMO__.getState());
+  assert.equal(browseState.screen, 'mods');
+  assert.equal(browseState.tab, 'browse');
+  assert.equal(browseState.activeGameId, 'dst');
+  assert.equal(browseState.modsReturnTarget, 'steam-profile');
+  await page.locator('[data-action="back-game"]').click();
+  assert.equal(await page.locator('[data-screen="steam-profile"]').count(), 1);
+  assert.equal(await page.locator('[data-profile-scroll]').evaluate(element => element.scrollTop), 96);
+
+  await page.evaluate(() => {
+    const api = window.__APP_MODS_DEMO__;
+    for (const modId of [...api.getState().installed]) {
+      api.dispatch({ type: 'OPEN_DETAIL', modId });
+      api.dispatch({ type: 'OPEN_UNINSTALL' });
+      api.dispatch({ type: 'CONFIRM_UNINSTALL' });
+    }
+    api.dispatch({ type: 'OPEN_STEAM_PROFILE' });
+  });
+  assert.equal(await page.locator('[data-profile-group]').count(), 0);
+  assert.equal(await page.locator('.profile-empty strong').textContent(), '当前设备暂未安装 MOD');
+  assert.equal(await page.locator('[data-action="profile-supported-games"]').textContent(), '查看支持 MODS 的游戏');
+  await page.evaluate(() => window.__APP_MODS_DEMO__.dispatch({ type: 'RESET' }));
 
   await page.locator('[data-action="enter-mods"]').click();
   assert.equal(await page.locator('[data-screen="mods"]').count(), 1);
