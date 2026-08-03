@@ -476,6 +476,9 @@ try {
   await firstSwitch.focus();
   await page.keyboard.press('Space');
   assert.equal(await page.locator('[data-detail]').count(), 0, '快捷开关键盘操作误开详情');
+  await page.waitForFunction(() =>
+    document.querySelector('[data-enable-switch][data-mod-id="minimap"]')?.getAttribute('aria-checked') === 'false'
+  );
   assert.equal(await firstSwitch.getAttribute('aria-checked'), 'false');
   assert.equal(
     await page.evaluate(() => window.__APP_MODS_DEMO__.getState().enabled.includes('minimap')),
