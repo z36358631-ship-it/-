@@ -780,6 +780,233 @@
       background: transparent;
     }
 
+    /* Steam 个人中心 MODS */
+    .steam-profile-screen {
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(circle at 78% 12%, rgba(56, 105, 148, .2), transparent 28%),
+        linear-gradient(180deg, #17191d, #101113 28%, #0b0c0e);
+    }
+    .steam-profile-header {
+      height: 70px;
+      flex: none;
+      display: grid;
+      grid-template-columns: 44px 1fr 44px;
+      align-items: center;
+      padding: 18px 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .steam-profile-header h1 {
+      font-size: 19px;
+      font-weight: 600;
+      text-align: center;
+    }
+    .steam-profile-tabs {
+      height: 58px;
+      flex: none;
+      display: flex;
+      align-items: stretch;
+      gap: 26px;
+      padding: 0 18px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      background: rgba(20,21,24,.94);
+      scrollbar-width: none;
+      overscroll-behavior-x: contain;
+    }
+    .steam-profile-tabs::-webkit-scrollbar,
+    .steam-profile-scroll::-webkit-scrollbar { display: none; }
+    .steam-profile-tabs button {
+      position: relative;
+      min-width: 66px;
+      min-height: 44px;
+      flex: 0 0 auto;
+      color: #85868b;
+      background: transparent;
+      font-size: 15px;
+      font-weight: 560;
+      white-space: nowrap;
+    }
+    .steam-profile-tabs button[aria-selected="true"] { color: #fff; }
+    .steam-profile-tabs button[aria-selected="true"]::after {
+      content: "";
+      position: absolute;
+      right: 8px;
+      bottom: 0;
+      left: 8px;
+      height: 3px;
+      border-radius: 3px;
+      background: var(--brand-gold);
+    }
+    .profile-device-note {
+      height: 46px;
+      flex: none;
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      color: #9c9da2;
+      background: rgba(18,19,21,.96);
+      font-size: 12px;
+    }
+    .profile-device-note::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      flex: none;
+      margin-right: 8px;
+      border-radius: 50%;
+      background: var(--brand-green);
+      box-shadow: 0 0 0 4px rgba(51,216,164,.09);
+    }
+    .steam-profile-scroll {
+      min-height: 0;
+      flex: 1;
+      padding: 16px 14px 28px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: none;
+    }
+    .profile-game-group {
+      padding: 15px;
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: var(--radius-xl);
+      background: rgba(31,32,36,.82);
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+    }
+    .profile-game-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding: 0 6px;
+      border-radius: 10px;
+      background: rgba(31,32,36,.96);
+    }
+    .profile-game-title {
+      min-width: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .profile-game-title strong {
+      min-width: 0;
+      overflow: hidden;
+      color: #f5f5f6;
+      font-size: 17px;
+      font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .profile-game-title span {
+      flex: none;
+      color: #8e8f94;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .profile-view-all {
+      min-width: 72px;
+      min-height: 44px;
+      flex: none;
+      color: var(--brand-gold-light);
+      background: transparent;
+      font-size: 13px;
+    }
+    .profile-mod-grid { display: grid; gap: 12px; }
+    .profile-mod-card {
+      position: relative;
+      min-height: 170px;
+      display: grid;
+      grid-template-columns: 104px minmax(0, 1fr);
+      gap: 12px;
+      padding: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.075);
+      border-radius: 14px;
+      color: #fff;
+      background: linear-gradient(145deg, #292a2e, #202125);
+      text-align: left;
+    }
+    .profile-mod-card:hover { border-color: rgba(255,204,67,.3); }
+    .profile-mod-card .mod-art { width: 104px; height: 82px; }
+    .profile-mod-content { min-width: 0; padding-bottom: 38px; }
+    .profile-mod-content h2 {
+      display: -webkit-box;
+      overflow: hidden;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.3;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+    .profile-mod-content .card-meta { margin-top: 9px; }
+    .profile-empty {
+      min-height: 410px;
+      display: grid;
+      place-content: center;
+      justify-items: center;
+      padding: 32px;
+      color: #898a8f;
+      text-align: center;
+    }
+    .profile-empty strong { color: #e2e2e4; font-size: 17px; }
+    .profile-empty button {
+      min-height: 44px;
+      margin-top: 20px;
+      padding: 0 18px;
+      border-radius: 11px;
+      color: #18140a;
+      background: var(--brand-gold);
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .device.landscape .steam-profile-header {
+      height: 58px;
+      grid-template-columns: 42px 110px;
+      justify-content: start;
+      padding: 0 24px 0 34px;
+    }
+    .device.landscape .steam-profile-header .icon-button { width: 38px; height: 38px; }
+    .device.landscape .steam-profile-header h1 { text-align: left; }
+    .device.landscape .steam-profile-tabs {
+      position: absolute;
+      top: 0;
+      left: 210px;
+      z-index: 2;
+      width: calc(100% - 230px);
+      height: 58px;
+      gap: 28px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+    .device.landscape .steam-profile-tabs button { font-size: 14px; }
+    .device.landscape .profile-device-note {
+      height: 42px;
+      padding: 0 38px;
+    }
+    .device.landscape .steam-profile-scroll { padding: 12px 38px 24px; }
+    .device.landscape .profile-game-group { padding: 12px; }
+    .device.landscape .profile-game-header { min-height: 38px; margin-bottom: 8px; }
+    .device.landscape .profile-mod-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .device.landscape .profile-mod-card {
+      min-height: 142px;
+      grid-template-columns: 98px minmax(0, 1fr);
+      padding: 10px;
+    }
+    .device.landscape .profile-mod-card .mod-art { width: 98px; height: 76px; }
+    .device.landscape .profile-mod-content h2 { font-size: 15px; -webkit-line-clamp: 1; }
+    .device.landscape .profile-mod-content .card-meta { margin-top: 6px; font-size: 10px; }
+
     /* 详情 */
     .detail-layer {
       position: absolute;
@@ -994,6 +1221,7 @@
         <span class="review-label">快速场景</span>
         <div class="review-actions">
           <button class="review-button" type="button" data-review-action="game">返回游戏详情</button>
+          <button class="review-button" type="button" data-review-action="profile">打开 Steam 个人中心</button>
           <button class="review-button" type="button" data-review-action="browse">打开 MODS 浏览</button>
           <button class="review-button" type="button" data-review-action="installed">打开已安装</button>
           <button class="review-button" type="button" data-review-action="reset">重置 Demo</button>
@@ -1096,6 +1324,10 @@
       sort: 'hot',
       search: '',
       installedFilter: 'all',
+      activeGameId: 'dst',
+      profileTab: 'mods',
+      profileScroll: 0,
+      modsReturnTarget: 'game',
       activeModId: null,
       installed: ['minimap', 'health-bar', 'language-pack', 'storage-box'],
       enabled: ['minimap', 'health-bar', 'storage-box'],
@@ -1192,6 +1424,8 @@
     function saveScroll() {
       const list = root.querySelector('[data-mod-scroll]');
       if (list) state.scrollByTab[state.tab] = list.scrollTop;
+      const profile = root.querySelector('[data-profile-scroll]');
+      if (profile) state.profileScroll = profile.scrollTop;
       const detail = root.querySelector('[data-detail-scroll]');
       if (detail) state.detailScroll = detail.scrollTop;
     }
@@ -1224,6 +1458,8 @@
       requestAnimationFrame(() => {
         const list = root.querySelector('[data-mod-scroll]');
         if (list) list.scrollTop = state.scrollByTab[state.tab] || 0;
+        const profile = root.querySelector('[data-profile-scroll]');
+        if (profile) profile.scrollTop = state.profileScroll || 0;
         const detail = root.querySelector('[data-detail-scroll]');
         if (detail) detail.scrollTop = state.detailScroll || 0;
         if (focusSearch && cycle === restoreCycle) restoreSearchInput(searchSelection);
@@ -1247,10 +1483,35 @@
         case 'ENTER_MODS':
           state.screen = 'mods';
           state.menuOpen = false;
+          state.activeGameId = 'dst';
+          state.modsReturnTarget = 'game';
           state.activeModId = null;
           break;
+        case 'OPEN_STEAM_PROFILE':
+          state.screen = 'steam-profile';
+          state.profileTab = 'mods';
+          state.menuOpen = false;
+          state.activeModId = null;
+          break;
+        case 'PROFILE_VIEW_ALL':
+          state.screen = 'mods';
+          state.tab = 'browse';
+          state.activeGameId = event.gameId;
+          state.modsReturnTarget = 'steam-profile';
+          state.menuOpen = false;
+          state.activeModId = null;
+          break;
+        case 'BACK_FROM_MODS':
         case 'BACK_GAME':
+          state.screen = state.modsReturnTarget === 'steam-profile' ? 'steam-profile' : 'game';
+          state.modsReturnTarget = 'game';
+          state.menuOpen = false;
+          state.activeModId = null;
+          break;
+        case 'CLOSE_STEAM_PROFILE':
+        case 'PROFILE_SUPPORTED_GAMES':
           state.screen = 'game';
+          state.modsReturnTarget = 'game';
           state.menuOpen = false;
           state.activeModId = null;
           break;
@@ -1321,6 +1582,7 @@
           taskTimers.forEach(timer => clearInterval(timer));
           taskTimers.clear();
           state = initialState();
+          state.menuOpen = true;
           isSearchComposing = false;
           pendingOrientationSearchSelection = null;
           pendingOrientation = null;
@@ -1464,6 +1726,64 @@
       `;
     }
 
+    function renderProfileCard(mod) {
+      const enabled = state.enabled.includes(mod.id);
+      return `
+        <article class="profile-mod-card" tabindex="0" data-profile-mod-card data-mod-card data-mod-id="${mod.id}">
+          <div class="mod-art ${mod.art}"></div>
+          <div class="profile-mod-content">
+            <h2>${mod.name}</h2>
+            <div class="card-meta"><span>${mod.author}</span><span>${formatDownloads(mod.downloads)} 次下载</span><span>${mod.size}</span></div>
+          </div>
+          ${mod.update ? '<i class="update-dot" aria-label="可更新"></i>' : ''}
+          <div class="enable-switch-wrap">
+            <span>${enabled ? '已启用' : '已停用'}</span>
+            <button class="enable-switch" type="button" role="switch" aria-checked="${enabled}" aria-label="${enabled ? '停用' : '启用'} ${mod.name}" data-enable-switch data-action="toggle-enabled" data-mod-id="${mod.id}"></button>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderSteamProfile() {
+      const installedMods = MODS.filter(mod => state.installed.includes(mod.id));
+      const installedCopy = installedMods.length === 4
+        ? '已安装 4 个'
+        : `已安装 ${installedMods.length} 个`;
+      return `
+        <section class="screen steam-profile-screen" data-screen="steam-profile">
+          <header class="steam-profile-header">
+            <button class="icon-button" type="button" data-action="profile-back" aria-label="返回">${icon('back')}</button>
+            <h1>Steam</h1>
+          </header>
+          <nav class="steam-profile-tabs" role="tablist" aria-label="Steam 个人中心">
+            <button type="button" data-profile-tab="data" role="tab" aria-selected="false">Steam数据</button>
+            <button type="button" data-profile-tab="achievements" role="tab" aria-selected="false">成就</button>
+            <button type="button" data-profile-tab="workshop" role="tab" aria-selected="false">创意工坊</button>
+            <button type="button" data-profile-tab="mods" role="tab" aria-selected="true">MODS</button>
+          </nav>
+          <div class="profile-device-note">仅显示当前设备已安装的 MOD</div>
+          <div class="steam-profile-scroll" data-profile-scroll>
+            ${installedMods.length ? `
+              <section class="profile-game-group" data-profile-group="dst">
+                <header class="profile-game-header">
+                  <div class="profile-game-title"><strong>饥荒联机版</strong><span>${installedCopy}</span></div>
+                  <button class="profile-view-all" type="button" data-action="profile-view-all" data-game-id="dst">查看全部</button>
+                </header>
+                <div class="profile-mod-grid">${installedMods.map(renderProfileCard).join('')}</div>
+              </section>
+            ` : `
+              <div class="profile-empty">
+                <strong>当前设备暂未安装 MOD</strong>
+                <button type="button" data-action="profile-supported-games">查看支持 MODS 的游戏</button>
+              </div>
+            `}
+          </div>
+          ${state.activeModId ? renderDetail() : ''}
+          ${state.toast ? `<div class="toast" role="status">${state.toast}</div>` : ''}
+        </section>
+      `;
+    }
+
     function renderMods() {
       const { visibleMods } = derive();
       const browse = state.tab === 'browse';
@@ -1588,7 +1908,14 @@
     function render() {
       root.className = `device ${state.orientation}`;
       root.dataset.orientation = state.orientation;
-      root.innerHTML = state.screen === 'game' ? renderGame() : renderMods();
+      const screens = {
+        game: renderGame,
+        mods: renderMods,
+        'steam-profile': renderSteamProfile
+      };
+      root.innerHTML = (screens[state.screen] || renderGame)();
+      const profile = root.querySelector('[data-profile-scroll]');
+      if (profile) profile.scrollTop = state.profileScroll || 0;
       document.querySelectorAll('[data-review-action="portrait"], [data-review-action="landscape"]').forEach(button => {
         button.classList.toggle('is-active', button.dataset.reviewAction === state.orientation);
       });
@@ -1596,6 +1923,7 @@
 
     root.addEventListener('scroll', event => {
       if (event.target.matches('[data-mod-scroll]')) state.scrollByTab[state.tab] = event.target.scrollTop;
+      if (event.target.matches('[data-profile-scroll]')) state.profileScroll = event.target.scrollTop;
       if (event.target.matches('[data-detail-scroll]')) state.detailScroll = event.target.scrollTop;
     }, true);
 
@@ -1690,6 +2018,9 @@
       if (action === 'close-more') dispatch({ type: 'CLOSE_MORE' });
       if (action === 'enter-mods') dispatch({ type: 'ENTER_MODS' });
       if (action === 'back-game') dispatch({ type: 'BACK_GAME' });
+      if (action === 'profile-back') dispatch({ type: 'CLOSE_STEAM_PROFILE' });
+      if (action === 'profile-supported-games') dispatch({ type: 'PROFILE_SUPPORTED_GAMES' });
+      if (action === 'profile-view-all') dispatch({ type: 'PROFILE_VIEW_ALL', gameId: control.dataset.gameId });
       if (control.dataset.tab) dispatch({ type: 'SET_TAB', value: control.dataset.tab });
       if (control.dataset.sort) dispatch({ type: 'SET_SORT', value: control.dataset.sort });
       if (control.dataset.installedFilter) dispatch({ type: 'SET_INSTALLED_FILTER', value: control.dataset.installedFilter });
@@ -1738,15 +2069,20 @@
         pendingOrientationSearchSelection = null;
       }
       if (action === 'game') dispatch({ type: 'BACK_GAME' });
+      if (action === 'profile') dispatch({ type: 'OPEN_STEAM_PROFILE' });
       if (action === 'browse') {
         state.screen = 'mods';
         state.tab = 'browse';
+        state.activeGameId = 'dst';
+        state.modsReturnTarget = 'game';
         state.activeModId = null;
         render();
       }
       if (action === 'installed') {
         state.screen = 'mods';
         state.tab = 'installed';
+        state.activeGameId = 'dst';
+        state.modsReturnTarget = 'game';
         state.activeModId = null;
         render();
       }
