@@ -1528,6 +1528,57 @@ async function main() {
       stageX: document.querySelector('#demoStage').scrollWidth - document.querySelector('#demoStage').clientWidth,
     }));
     assertAnnotation(annotationOverflow.workspaceX === 0 && annotationOverflow.workspaceY === 0 && annotationOverflow.stageX === 0, `标注版三栏发生非预期溢出：${JSON.stringify(annotationOverflow)}`);
+
+    const readResponsiveMetrics = () => annotationPage.evaluate(() => {
+      const stage = document.querySelector('#demoStage');
+      const device = document.querySelector('.device');
+      const frame = document.querySelector('#demoScaleFrame');
+      const stageRect = stage.getBoundingClientRect();
+      const deviceRect = device.getBoundingClientRect();
+      return {
+        orientation: document.querySelector('#appRentalDemo').dataset.orientation,
+        scale: Number(frame?.dataset.scale || 1),
+        width: Math.round(deviceRect.width),
+        height: Math.round(deviceRect.height),
+        inside: deviceRect.left >= stageRect.left && deviceRect.right <= stageRect.right && deviceRect.top >= stageRect.top && deviceRect.bottom <= stageRect.bottom,
+        stageX: stage.scrollWidth - stage.clientWidth,
+        stageY: stage.scrollHeight - stage.clientHeight,
+      };
+    });
+
+    await annotationPage.setViewportSize({ width: 1280, height: 800 });
+    await annotationPage.locator('[data-flow-group="discovery"]').click();
+    await annotationPage.locator('#orientationPortrait').click();
+    await annotationPage.waitForTimeout(260);
+    const compactPortrait = await readResponsiveMetrics();
+    assertAnnotation(compactPortrait.scale < 1 && compactPortrait.inside && compactPortrait.stageX <= 0 && compactPortrait.stageY <= 0, `1280×800 竖屏设备未完整缩放进舞台：${JSON.stringify(compactPortrait)}`);
+    await annotationPage.locator('.hero-card .primary-action').click();
+    await annotationPage.waitForFunction(() => window.__appRentalDemo.snapshot().screen === 'detail');
+    assertAnnotation((await annotationPage.evaluate(() => window.__appRentalDemo.snapshot().screen)) === 'detail', '缩放后中间 Demo 点击坐标不准确');
+
+    await annotationPage.locator('#orientationLandscape').click();
+    await annotationPage.waitForTimeout(260);
+    const compactLandscape = await readResponsiveMetrics();
+    assertAnnotation(compactLandscape.scale < 1 && compactLandscape.inside && compactLandscape.stageX <= 0 && compactLandscape.stageY <= 0, `1280×800 横屏设备未完整缩放进舞台：${JSON.stringify(compactLandscape)}`);
+    const compactOpenScale = compactLandscape.scale;
+    await annotationPage.locator('#collapseAnnotations').click();
+    await annotationPage.waitForTimeout(260);
+    const compactCollapsed = await readResponsiveMetrics();
+    await annotationPage.locator('#restoreAnnotations').click();
+    await annotationPage.waitForTimeout(260);
+    const compactRestored = await readResponsiveMetrics();
+    assertAnnotation(compactCollapsed.scale > compactOpenScale && compactCollapsed.inside && compactRestored.scale === compactOpenScale && compactRestored.inside, `折叠/恢复后设备缩放未重算：${JSON.stringify({ compactOpenScale, compactCollapsed, compactRestored })}`);
+
+    await annotationPage.setViewportSize({ width: 1680, height: 980 });
+    await annotationPage.locator('#orientationPortrait').click();
+    await annotationPage.waitForTimeout(260);
+    const fullPortrait = await readResponsiveMetrics();
+    assertAnnotation(fullPortrait.scale === 1 && fullPortrait.width === 390 && fullPortrait.height === 844 && fullPortrait.inside, `1680×980 竖屏不得缩小或裁切：${JSON.stringify(fullPortrait)}`);
+    await annotationPage.locator('#orientationLandscape').click();
+    await annotationPage.waitForTimeout(260);
+    const fullLandscape = await readResponsiveMetrics();
+    assertAnnotation(fullLandscape.scale === 1 && fullLandscape.width === 874 && fullLandscape.height === 402 && fullLandscape.inside, `1680×980 横屏不得缩小或裁切：${JSON.stringify(fullLandscape)}`);
+
     assertAnnotation(annotationIssues.length === 0, `标注版存在控制台或页面错误：${annotationIssues.join(' | ')}`);
     process.stdout.write(`ANNOTATION ${annotationChecks}/${annotationChecks} PASS\n`);
     await annotationPage.close();
