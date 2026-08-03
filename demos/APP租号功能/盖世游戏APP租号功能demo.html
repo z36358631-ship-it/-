@@ -176,7 +176,7 @@
     }
 
     .search-box svg { width: 21px; height: 21px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 2; }
-    .device-link { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border: 0; background: none; color: #fff; cursor: pointer; }
+    .device-link { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; border: 0; background: none; color: #fff; cursor: pointer; }
     .device-link svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.8; }
 
     .page-tabs {
@@ -939,7 +939,8 @@
 
     .expiry-reminder { position: absolute; z-index: 45; top: 42px; left: 50%; display: flex; width: min(356px, calc(100% - 28px)); min-height: 70px; align-items: center; gap: 10px; padding: 10px 11px 10px 14px; border: 1px solid rgb(255 218 121 / 30%); border-radius: 15px; background: rgb(35 31 23 / 96%); box-shadow: 0 12px 36px rgb(0 0 0 / 42%); transform: translateX(-50%); backdrop-filter: blur(18px); }
     .device.landscape .expiry-reminder { top: 62px; width: 520px; min-height: 58px; }
-    .expiry-reminder[data-context="in-game"] { top: 14px; }
+    .expiry-reminder[data-context="in-game"] { top: 96px; }
+    .device.landscape .expiry-reminder[data-context="in-game"] { top: 62px; }
     .expiry-reminder-copy { min-width: 0; flex: 1; }
     .expiry-reminder-copy strong { display: block; font-size: 12px; line-height: 18px; }
     .expiry-reminder-copy span { color: #b6ac95; font-size: 9px; }

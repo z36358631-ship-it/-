@@ -1024,7 +1024,12 @@ async function main() {
       await readTouchTargets('.steam-login-submit, .steam-guard button, .steam-credential-overlay .dialog-close, .steam-credential-overlay .credential-field button, .steam-credential-overlay .credential-guard button'),
       'Steam 与 Guard 操作',
     );
-    process.stdout.write('TOUCH_TARGETS 4/4 PASS\n');
+    await page.evaluate(() => {
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.navigate('home');
+    });
+    assertTouchTargets(await readTouchTargets('.device-link'), '连接设备');
+    process.stdout.write('TOUCH_TARGETS 5/5 PASS\n');
 
     const sourceAssetNames = [
       'portrait-home.jpg',
@@ -1177,8 +1182,25 @@ async function main() {
     const inGameExpiry = await page.evaluate(() => ({
       context: document.querySelector('.expiry-reminder')?.dataset.context,
       expireAt: window.__appRentalDemo.snapshot().rentalUsage?.expireAt,
+      geometry: (() => {
+        const reminder = document.querySelector('.expiry-reminder').getBoundingClientRect();
+        const status = document.querySelector('.mobile-status').getBoundingClientRect();
+        const device = document.querySelector('.device').getBoundingClientRect();
+        const critical = document.querySelector('.device-link')?.getBoundingClientRect();
+        const criticalClear = !critical || reminder.bottom <= critical.top || reminder.top >= critical.bottom || reminder.right <= critical.left || reminder.left >= critical.right;
+        return { gap: reminder.top - status.bottom, inside: reminder.top >= device.top && reminder.bottom <= device.bottom && reminder.left >= device.left && reminder.right <= device.right, criticalClear };
+      })(),
     }));
     assert(inGameExpiry.context === 'in-game', '游戏内提醒未位于顶部安全区');
+    assert(inGameExpiry.geometry.gap >= 8 && inGameExpiry.geometry.inside && inGameExpiry.geometry.criticalClear, `竖屏游戏内提醒未完整位于状态栏安全区下方或遮挡关键触控：${JSON.stringify(inGameExpiry.geometry)}`);
+    await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
+    const landscapeInGameGeometry = await page.evaluate(() => {
+      const reminder = document.querySelector('.expiry-reminder').getBoundingClientRect();
+      const topNav = document.querySelector('.landscape-top-nav').getBoundingClientRect();
+      const device = document.querySelector('.device').getBoundingClientRect();
+      return { gap: reminder.top - topNav.bottom, inside: reminder.top >= device.top && reminder.bottom <= device.bottom && reminder.left >= device.left && reminder.right <= device.right };
+    });
+    assert(landscapeInGameGeometry.gap >= 8 && landscapeInGameGeometry.inside, `横屏游戏内提醒未完整位于顶部安全区下方：${JSON.stringify(landscapeInGameGeometry)}`);
     await page.getByRole('button', { name: '继续畅玩', exact: true }).click();
     const expiryContinue = await page.evaluate(() => ({
       screen: window.__appRentalDemo.snapshot().screen,
@@ -1186,7 +1208,7 @@ async function main() {
       open: Boolean(document.querySelector('.expiry-reminder')),
     }));
     assert(expiryContinue.screen === 'detail' && expiryContinue.expireAt === inGameExpiry.expireAt && !expiryContinue.open, '继续畅玩应进入最新权益且不得直接延时');
-    process.stdout.write('EXPIRY 9/9 PASS\n');
+    process.stdout.write('EXPIRY 11/11 PASS\n');
 
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));
