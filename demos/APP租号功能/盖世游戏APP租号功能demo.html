@@ -72,6 +72,57 @@
       expiry15Shown: false,
     };
 
+    const SCENARIOS = {
+      'owned-installed': { owns: true, installed: true },
+      'owned-uninstalled': { owns: true, installed: false },
+      'active-rental': { activeRental: true },
+      'not-member-library': { memberLibrary: false },
+      'member-library-trial': { memberLibrary: true, trialEligible: true },
+      'member-library-trial-used': { memberLibrary: true, trialEligible: false },
+      'active-member': { memberLibrary: true, membershipActive: true },
+      'permanent-owned': { permanentEntitlement: true },
+    };
+
+    function resolveAction(input) {
+      if (input.owns && input.installed) return { primary: 'launch', secondary: [] };
+      if (input.owns) return { primary: 'download', secondary: [] };
+      if (input.permanentEntitlement) return { primary: 'launch', secondary: [] };
+      if (input.activeRental) return { primary: 'continue', secondary: ['credential', 'renew'] };
+      if (!input.memberLibrary) return { primary: 'rent-2h', secondary: ['more-duration'] };
+      if (input.membershipActive) return { primary: 'member-play', secondary: ['membership-status'] };
+      if (input.trialEligible) return { primary: 'trial', secondary: ['permanent', 'membership'] };
+      return { primary: 'permanent', secondary: ['membership'] };
+    }
+
+    function resolveCurrentAction() {
+      return resolveAction(SCENARIOS[state.scenario]);
+    }
+
+    function createOrder({ sku, amount, priceVersion }) {
+      state.order = {
+        id: `APP-${Date.now()}`,
+        status: 'pending',
+        sku,
+        amount,
+        priceVersion,
+        paymentDeadline: Date.now() + 30 * 60 * 1000,
+      };
+      renderApp();
+      return state.order;
+    }
+
+    function payOrder() {
+      if (!state.order || state.order.status !== 'pending') return false;
+      state.order.status = 'allocating';
+      renderApp();
+      return true;
+    }
+
+    function allocateAccount(success = true) {
+      state.order.status = success ? 'active' : 'refunding';
+      renderApp();
+    }
+
     function renderApp() {
       const root = document.querySelector('#appRentalDemo');
       root.dataset.orientation = state.orientation;
@@ -83,6 +134,11 @@
       setOrientation(value) { state.orientation = value; renderApp(); },
       navigate(screen) { state.screen = screen; renderApp(); },
       setScenario(value) { state.scenario = value; renderApp(); },
+      resolveAction,
+      resolveCurrentAction,
+      createOrder,
+      payOrder,
+      allocateAccount,
       snapshot() { return JSON.parse(JSON.stringify(state)); },
       reset() { location.reload(); },
     };
