@@ -575,6 +575,13 @@ assert.match(markdown, /查看全部.*MODS\s*>\s*浏览/u);
 assert.match(markdown, /更新.*卸载.*已启用/u);
 assert.match(markdown, /启停成功后.*不显示\s*Toast/u);
 assert.deepEqual(detailRuleNumbers, [9, 10, 11, 12, 13, 14, 15, 16, 17]);
+assert.doesNotMatch(markdown, /旨在|赋能|助力|沉浸式|提升体验|打造.{0,8}闭环/u);
+
+const proseLines = markdown
+  .split(/\r?\n/u)
+  .map(line => line.trim())
+  .filter(line => line.length >= 24 && !line.startsWith('|') && !line.startsWith('!['));
+assert.equal(new Set(proseLines).size, proseLines.length, 'PRD 存在整行重复说明');
 ```
 
 - [ ] **Step 2: 运行 PRD 校验确认失败**
@@ -664,6 +671,15 @@ markdown = markdown.replace(/https:\/\/(?:htmlpreview\.github\.io|raw\.githack\.
 - MOD 详情底部三个按钮等宽铺满，顺序为更新 / 卸载 / 启停，启停位于最右。
 - 国内包使用“盖世游戏”；海外包使用“GameHub”，MODS 能力一致且不依赖海外不存在的云游戏。
 - 增加空状态、读取失败、路由失败、返回滚动位置和横竖屏规则。
+
+精简现有正文时执行以下规则：
+
+- 背景只保留现状、问题和本期结论，不复述完整功能清单。
+- 故事介绍只保留“个人中心查看已安装 → 查看全部 → 游戏详情浏览”及现有安装管理两条核心路径。
+- 删除“提升体验、形成闭环、强化认知”等无验收结果的价值套话。
+- 4.2 页面表只写页面元素、用户动作、成功结果和异常；跨页面章节只写设备状态、任务互斥、横竖屏和国内海外等共用规则，不重复页面表内容。
+- 同一条规则只出现一次，验收表引用规则结论，不再复制长段背景。
+- 保留开发和测试必需的状态、异常、埋点、验收、固定图片地址及国内海外差异。
 
 在 4.2 图示表新增个人中心行；资产更新脚本使用真实 `sha` 生成完整图片链接和交互说明，避免临时占位链接。已有图片全部改成短标题。修改内容使用现有黄色背景和蓝色加粗标记规则。
 
