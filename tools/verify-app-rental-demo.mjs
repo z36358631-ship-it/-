@@ -5,6 +5,7 @@ import { chromium } from 'playwright-core';
 
 const root = path.resolve(import.meta.dirname, '..');
 const htmlPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.html');
+const annotationPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能-标注版.html');
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 
 function assert(condition, message) {
@@ -13,6 +14,19 @@ function assert(condition, message) {
 
 async function main() {
   assert(fs.existsSync(htmlPath), `找不到 Demo：${htmlPath}`);
+  let annotationChecks = 0;
+  const assertAnnotation = (condition, message) => {
+    assert(condition, message);
+    annotationChecks += 1;
+  };
+  assertAnnotation(fs.existsSync(annotationPath), `缺少标注版 Demo：${annotationPath}`);
+  const annotationSource = fs.readFileSync(annotationPath, 'utf8');
+  assertAnnotation(
+    !/<iframe\b/i.test(annotationSource)
+      && !/(?:<script[^>]+src|<link[^>]+href|(?:src|href)=["']https?:|url\(["']?https?:)/i.test(annotationSource),
+    '标注版不得使用 iframe 或外链资源',
+  );
+  assertAnnotation(annotationSource.includes('data:image/') && !/\{\{[^}]+\}\}/.test(annotationSource), '标注版必须内嵌真实 Data URL 素材且不得保留占位符');
   const browser = await chromium.launch({ executablePath: chromePath, headless: true });
   try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
@@ -1392,6 +1406,131 @@ async function main() {
     await page.locator('[data-action="requery-order"]').click();
     assert(!(await page.locator('#appRentalDemo').innerText()).includes('网络异常'), '网络恢复后重新查询未清除异常');
     process.stdout.write('RECOVERY 6/6 PASS\n');
+
+    const annotationPage = await browser.newPage({ viewport: { width: 1680, height: 980 } });
+    const annotationIssues = [];
+    annotationPage.on('console', (message) => {
+      if (['error', 'warning'].includes(message.type())) annotationIssues.push(`${message.type()}: ${message.text()}`);
+    });
+    annotationPage.on('pageerror', (error) => annotationIssues.push(`pageerror: ${error.message}`));
+    await annotationPage.goto(pathToFileURL(annotationPath).href, { waitUntil: 'domcontentloaded' });
+    await annotationPage.waitForFunction(() => Boolean(window.__appRentalDemo && window.__appRentalAnnotation));
+
+    const annotationStructure = await annotationPage.evaluate(() => ({
+      nav: Boolean(document.querySelector('#flowNav')),
+      stage: Boolean(document.querySelector('#demoStage')),
+      panel: Boolean(document.querySelector('#annotationPanel')),
+      navWidth: Math.round(document.querySelector('#flowNav').getBoundingClientRect().width),
+      panelWidth: Math.round(document.querySelector('#annotationPanel').getBoundingClientRect().width),
+      subtitle: document.querySelector('#flowNav .annotation-subtitle')?.textContent.trim(),
+    }));
+    assertAnnotation(annotationStructure.nav && annotationStructure.stage && annotationStructure.panel, '标注版缺少左侧导航、中间 Demo 或右侧标注面板');
+    assertAnnotation(annotationStructure.navWidth === 220 && annotationStructure.panelWidth === 400, `标注版侧栏尺寸错误：${JSON.stringify(annotationStructure)}`);
+    assertAnnotation(annotationStructure.subtitle === '交互标注文档', '左侧缺少“交互标注文档”副标题');
+
+    const navigationLabels = await annotationPage.locator('[data-flow-group] span:last-child').allTextContents();
+    assertAnnotation(navigationLabels.map((value) => value.trim()).join('|') === '发现|详情|订单|会员|登录|临期|售后|异常', '左侧八组页面导航不完整或顺序错误');
+    const tabLabels = await annotationPage.locator('[data-annotation-tab]').allTextContents();
+    assertAnnotation(tabLabels.map((value) => value.trim()).join('|') === '交互说明|异常边界|数据与状态', '右侧必须提供三个指定 Tab');
+
+    const annotationMatrix = await annotationPage.evaluate(() => {
+      const items = [...document.querySelectorAll('.anno-item')];
+      return {
+        total: items.length,
+        complete: items.every((item) => ['trigger', 'portrait', 'landscape', 'feedback', 'dependency', 'exception'].every((field) => item.querySelector(`[data-field="${field}"]`))),
+        interaction: document.querySelectorAll('.anno-badge--interaction').length,
+        global: document.querySelectorAll('.anno-badge--global').length,
+        exception: document.querySelectorAll('.anno-badge--exception').length,
+      };
+    });
+    assertAnnotation(annotationMatrix.total === 32 && annotationMatrix.complete, `标注矩阵数量或六字段不完整：${JSON.stringify(annotationMatrix)}`);
+    assertAnnotation(annotationMatrix.interaction === 16 && annotationMatrix.global === 8 && annotationMatrix.exception === 8, `数字/G/E 三类标注数量错误：${JSON.stringify(annotationMatrix)}`);
+    const annotationStateText = await annotationPage.locator('#panel-state').innerText();
+    assertAnnotation(!/(?:gh_rental_2607|G@meHub#8291|48291|guardCode|\btoken\b)/i.test(annotationStateText), '数据与状态 Tab 不得展示账号、密码、校验值或令牌字段');
+
+    await annotationPage.locator('#orientationLandscape').click();
+    await annotationPage.waitForFunction(() => document.querySelector('#appRentalDemo')?.dataset.orientation === 'landscape');
+    assertAnnotation((await annotationPage.locator('.device.landscape').count()) === 1, '左侧横屏切换未驱动中间 Demo');
+
+    const flowExpectations = [
+      ['discovery', 'home'],
+      ['detail', 'detail'],
+      ['membership', 'membership'],
+      ['login', 'steam-login'],
+      ['expiry', 'orders'],
+      ['after-sales', 'after-sales'],
+      ['recovery', 'checkout'],
+      ['orders', 'orders'],
+    ];
+    const flowScreens = [];
+    for (const [group, expectedScreen] of flowExpectations) {
+      await annotationPage.locator(`[data-flow-group="${group}"]`).click();
+      await annotationPage.waitForFunction((screen) => window.__appRentalDemo.snapshot().screen === screen, expectedScreen);
+      flowScreens.push((await annotationPage.evaluate(() => window.__appRentalDemo.snapshot().screen)) === expectedScreen);
+    }
+    assertAnnotation(flowScreens.every(Boolean), '左侧八组导航未逐一驱动预期业务页面');
+    const orderSync = await annotationPage.evaluate(() => ({
+      activeGroup: document.querySelector('[data-flow-group].active')?.dataset.flowGroup,
+      section: Boolean(document.querySelector('.anno-section[data-group="orders"].is-current')),
+      sectionOffset: (() => {
+        const section = document.querySelector('.anno-section[data-group="orders"][data-tab="interaction"]');
+        const panel = document.querySelector('#panel-interaction');
+        return Math.round(section.getBoundingClientRect().top - panel.getBoundingClientRect().top);
+      })(),
+      screen: window.__appRentalDemo.snapshot().screen,
+    }));
+    assertAnnotation(orderSync.activeGroup === 'orders' && orderSync.section && orderSync.sectionOffset >= 0 && orderSync.sectionOffset <= 24 && orderSync.screen === 'orders', `左侧导航未联动中间页面和右侧标注分组：${JSON.stringify(orderSync)}`);
+
+    await annotationPage.locator('[data-annotation-tab="boundary"]').click();
+    assertAnnotation((await annotationPage.locator('[data-annotation-tab="boundary"][aria-selected="true"]').count()) === 1 && (await annotationPage.locator('#panel-boundary:not([hidden])').count()) === 1, '异常边界 Tab 未切换');
+
+    const markerCount = await annotationPage.locator('.annotation-marker').count();
+    await annotationPage.locator('#toggleMarkers').click();
+    const markersHidden = await annotationPage.locator('body.markers-hidden').count();
+    await annotationPage.locator('#toggleMarkers').click();
+    assertAnnotation(markerCount > 0 && markersHidden === 1, '显示标号开关未隐藏或恢复中间角标');
+
+    await annotationPage.locator('#collapseAnnotations').click();
+    await annotationPage.waitForFunction(() => Math.round(document.querySelector('#annotationPanel').getBoundingClientRect().width) === 0);
+    const restoreVisible = await annotationPage.locator('#restoreAnnotations').isVisible();
+    await annotationPage.locator('#restoreAnnotations').click();
+    await annotationPage.waitForFunction(() => Math.round(document.querySelector('#annotationPanel').getBoundingClientRect().width) === 400);
+    assertAnnotation(restoreVisible, '右侧面板无法折叠或恢复');
+
+    await annotationPage.locator('.anno-section[data-group="orders"][data-tab="boundary"] .anno-item').first().click();
+    await annotationPage.waitForTimeout(50);
+    assertAnnotation((await annotationPage.locator('#appRentalDemo .annotation-focus').count()) > 0, '点击右侧标注未高亮中间对应元素');
+
+    await annotationPage.locator('[data-flow-group="expiry"]').click();
+    await annotationPage.waitForFunction(() => Boolean(document.querySelector('.expiry-reminder')));
+    await annotationPage.getByRole('button', { name: '关闭提醒', exact: true }).click();
+    assertAnnotation((await annotationPage.locator('.expiry-reminder').count()) === 0, '标注版临期提醒核心操作不可用');
+
+    await annotationPage.locator('[data-flow-group="after-sales"]').click();
+    await annotationPage.waitForFunction(() => window.__appRentalDemo.snapshot().screen === 'after-sales');
+    await annotationPage.locator('[data-after-sales-type="refund"]').click();
+    await annotationPage.locator('#after-sales-description').fill('标注版售后链路验证');
+    await annotationPage.locator('[data-action="submit-after-sales"]').click();
+    const annotatedAfterSales = await annotationPage.evaluate(() => ({
+      id: window.__appRentalDemo.snapshot().afterSalesOrder?.id,
+      stages: [...document.querySelectorAll('.refund-progress span')].map((node) => node.textContent.trim()),
+    }));
+    assertAnnotation(Boolean(annotatedAfterSales.id) && annotatedAfterSales.stages.join('|') === '申请中|人工审核|原路退款|完成', '标注版售后提交或退款四阶段不可用');
+
+    await annotationPage.locator('[data-flow-group="recovery"]').click();
+    await annotationPage.waitForFunction(() => Boolean(document.querySelector('[data-action="retry-inventory"]')));
+    await annotationPage.locator('[data-action="retry-inventory"]').click();
+    assertAnnotation((await annotationPage.locator('[data-action="pay-game-order"]').count()) === 1, '标注版异常恢复核心操作不可用');
+
+    const annotationOverflow = await annotationPage.evaluate(() => ({
+      workspaceX: document.querySelector('#annotationWorkspace').scrollWidth - document.querySelector('#annotationWorkspace').clientWidth,
+      workspaceY: document.querySelector('#annotationWorkspace').scrollHeight - document.querySelector('#annotationWorkspace').clientHeight,
+      stageX: document.querySelector('#demoStage').scrollWidth - document.querySelector('#demoStage').clientWidth,
+    }));
+    assertAnnotation(annotationOverflow.workspaceX === 0 && annotationOverflow.workspaceY === 0 && annotationOverflow.stageX === 0, `标注版三栏发生非预期溢出：${JSON.stringify(annotationOverflow)}`);
+    assertAnnotation(annotationIssues.length === 0, `标注版存在控制台或页面错误：${annotationIssues.join(' | ')}`);
+    process.stdout.write(`ANNOTATION ${annotationChecks}/${annotationChecks} PASS\n`);
+    await annotationPage.close();
   } finally {
     await browser.close();
   }
