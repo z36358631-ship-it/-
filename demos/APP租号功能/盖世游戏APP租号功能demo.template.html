@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>盖世游戏 APP 租号功能 Demo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --app-portrait-home: url("{{APP_PORTRAIT_HOME}}");
+      --app-portrait-library: url("{{APP_PORTRAIT_LIBRARY}}");
+      --app-landscape-library: url("{{APP_LANDSCAPE_LIBRARY}}");
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #080b10;
+      color: #f6f7f9;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    #appRentalDemo {
+      display: grid;
+      min-height: 100vh;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .boot-screen {
+      display: grid;
+      width: min(390px, 100%);
+      min-height: 240px;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: 28px;
+      background:
+        linear-gradient(180deg, rgb(8 11 16 / 42%), rgb(8 11 16 / 92%)),
+        var(--app-portrait-home) center 24% / cover;
+      box-shadow: 0 24px 80px rgb(0 0 0 / 45%);
+    }
+
+    .boot-screen strong {
+      padding: 10px 16px;
+      border: 1px solid rgb(255 255 255 / 18%);
+      border-radius: 999px;
+      background: rgb(10 13 19 / 72%);
+      font-size: 22px;
+      letter-spacing: .12em;
+    }
+  </style>
+</head>
+<body>
+  <main id="appRentalDemo" data-orientation="portrait" data-screen="home"></main>
+  <script>
+    const state = {
+      orientation: 'portrait',
+      screen: 'home',
+      scenario: 'member-library-trial',
+      selectedGameId: 'elden-ring',
+      selectedSku: 'trial',
+      selectedHours: 2,
+      order: null,
+      credentialVisible: false,
+      guardCode: null,
+      expiry15Shown: false,
+    };
+
+    function renderApp() {
+      const root = document.querySelector('#appRentalDemo');
+      root.dataset.orientation = state.orientation;
+      root.dataset.screen = state.screen;
+      root.innerHTML = '<section class="boot-screen"><strong>盖世游戏</strong></section>';
+    }
+
+    window.__appRentalDemo = {
+      setOrientation(value) { state.orientation = value; renderApp(); },
+      navigate(screen) { state.screen = screen; renderApp(); },
+      setScenario(value) { state.scenario = value; renderApp(); },
+      snapshot() { return JSON.parse(JSON.stringify(state)); },
+      reset() { location.reload(); },
+    };
+
+    renderApp();
+  </script>
+</body>
+</html>
