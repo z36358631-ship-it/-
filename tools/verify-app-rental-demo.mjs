@@ -1107,6 +1107,29 @@ async function main() {
     );
     process.stdout.write('CONTINUITY 4/4 PASS\n');
 
+    for (const minutes of [5, 1]) {
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+      const ignoredReminder = await page.evaluate((value) => {
+        window.__appRentalDemo.setScenario('active-rental');
+        const returned = window.__appRentalDemo.triggerExpiryMinutes(value);
+        const snapshot = window.__appRentalDemo.snapshot();
+        return {
+          returned,
+          open: snapshot.expiryReminderOpen,
+          count: snapshot.expiryReminderCount,
+          dom: Boolean(document.querySelector('.expiry-reminder')),
+        };
+      }, minutes);
+      assert(
+        ignoredReminder.returned === false
+          && ignoredReminder.open === false
+          && ignoredReminder.count === 0
+          && ignoredReminder.dom === false,
+        `全新使用单在${minutes}分钟不得返回或显示临期提醒`,
+      );
+    }
+
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));
     await page.evaluate(() => {
@@ -1163,7 +1186,7 @@ async function main() {
       open: Boolean(document.querySelector('.expiry-reminder')),
     }));
     assert(expiryContinue.screen === 'detail' && expiryContinue.expireAt === inGameExpiry.expireAt && !expiryContinue.open, '继续畅玩应进入最新权益且不得直接延时');
-    process.stdout.write('EXPIRY 7/7 PASS\n');
+    process.stdout.write('EXPIRY 9/9 PASS\n');
 
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));
@@ -1249,9 +1272,14 @@ async function main() {
     const portraitAfterSales = await page.evaluate(() => ({
       layout: document.querySelector('[data-layout="portrait-after-sales"]')?.dataset.layout,
       types: document.querySelectorAll('[data-after-sales-type]').length,
+      typeLabels: [...document.querySelectorAll('[data-after-sales-type]')].map((node) => node.textContent.trim()),
       screen: window.__appRentalDemo.snapshot().screen,
     }));
     assert(portraitAfterSales.layout === 'portrait-after-sales' && portraitAfterSales.types === 5 && portraitAfterSales.screen === 'after-sales', '竖屏售后独立页或5类问题不完整');
+    assert(
+      JSON.stringify(portraitAfterSales.typeLabels) === JSON.stringify(['3天无理由', '启动失败', 'Steam登录失败', '账号异常/频繁掉线', '其他问题']),
+      '售后五类问题名称或顺序不符合最终口径',
+    );
     assert((await page.evaluate(() => window.__appRentalDemo.submitAfterSales())) === null, '售后描述必填校验失效');
     await page.locator('[data-after-sales-type="refund"]').click();
     await page.locator('#after-sales-description').fill('游戏启动后持续闪退，需要协助退款。');
@@ -1269,6 +1297,8 @@ async function main() {
     });
     assert(afterSalesSubmit.first.id === afterSalesSubmit.second.id && afterSalesSubmit.snapshot.afterSalesOrder.id === afterSalesSubmit.first.id, '重复提交必须返回原售后单');
     assert((await page.locator('.refund-progress').innerText()).includes('退款'), '退款售后缺少进度');
+    const refundStages = await page.locator('.refund-progress span').allTextContents();
+    assert(JSON.stringify(refundStages) === JSON.stringify(['申请中', '人工审核', '原路退款', '完成']), '退款进度必须精确为申请中→人工审核→原路退款→完成');
     await page.evaluate(() => window.__appRentalDemo.setAfterSalesInventory(false));
     const noReplacement = await page.evaluate(() => window.__appRentalDemo.requestReplacement());
     const noReplacementUi = await page.locator('.replacement-status').innerText();
@@ -1280,7 +1310,7 @@ async function main() {
     });
     assert(replacement.status === 'success' && replacement.gameId === 'elden-ring' && replacement.version === 'Steam版本', '换号必须保持同游戏同版本');
     assert(afterSalesSubmit.snapshot.guardCode === null && afterSalesSubmit.snapshot.steamForm.password === '', '售后提交后必须清理凭据');
-    process.stdout.write('AFTER_SALES 8/8 PASS\n');
+    process.stdout.write('AFTER_SALES 10/10 PASS\n');
 
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));

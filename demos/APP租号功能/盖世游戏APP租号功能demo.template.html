@@ -967,7 +967,7 @@
     .after-sales-submit { width: 100%; min-height: 44px; margin-top: 11px; border: 0; border-radius: 11px; background: #ffcc43; color: #181208; cursor: pointer; font-size: 11px; font-weight: 650; }
     .after-sales-result { display: grid; gap: 10px; }
     .after-sales-result-card { padding: 12px; border-radius: 12px; background: rgb(51 216 164 / 9%); color: #b7f2df; font-size: 10px; }
-    .refund-progress { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+    .refund-progress { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
     .refund-progress span { padding: 8px 4px; border-radius: 8px; background: rgb(255 255 255 / 5%); color: var(--text-muted); font-size: 8px; text-align: center; }
     .refund-progress span:first-child { background: rgb(51 216 164 / 12%); color: #79e8c6; }
     .replacement-box { margin-top: 10px; padding: 11px; border: 1px solid rgb(255 255 255 / 8%); border-radius: 12px; background: rgb(0 0 0 / 14%); }
@@ -1071,7 +1071,7 @@
       expiredLaunchReason: 'ended',
       postRentalEntitlement: null,
       launchVerification: 'online',
-      afterSalesDraft: { orderId: null, type: 'login', description: '' },
+      afterSalesDraft: { orderId: null, type: 'refund', description: '' },
       afterSalesOrder: null,
       afterSalesInventoryAvailable: true,
       replacementRequest: null,
@@ -1104,10 +1104,10 @@
       ended: { label: '已结束', note: '本次租赁服务已结束', tone: 'muted' },
     });
     const AFTER_SALES_TYPES = Object.freeze([
-      ['login', '无法登录'],
-      ['crash', '游戏闪退'],
-      ['save', '存档异常'],
-      ['refund', '申请退款'],
+      ['refund', '3天无理由'],
+      ['launch', '启动失败'],
+      ['steam-login', 'Steam登录失败'],
+      ['account', '账号异常/频繁掉线'],
       ['other', '其他问题'],
     ]);
     const ORDER_FIXTURES = Object.freeze([
@@ -1641,9 +1641,8 @@
       const numericMinutes = Number(minutes);
       state.serverTime = state.rentalUsage.expireAt - Math.max(0, numericMinutes) * 60 * 1000;
       if (numericMinutes <= 0) return handleRentalT0();
-      const remaining = state.rentalUsage.expireAt - state.serverTime;
       const alreadyShown = state.remindedUsageIds.includes(state.rentalUsage.id);
-      if (remaining > 0 && remaining <= 15 * 60 * 1000 && !alreadyShown) {
+      if (numericMinutes === 15 && !alreadyShown) {
         state.remindedUsageIds.push(state.rentalUsage.id);
         state.expiryReminderCount += 1;
         state.expiryReminderOpen = true;
@@ -1710,7 +1709,7 @@
       const order = getSelectedOrder();
       if (!order || !['active', 'refunding'].includes(order.status)) return false;
       if (state.afterSalesDraft.orderId !== order.id) {
-        state.afterSalesDraft = { orderId: order.id, type: 'login', description: '' };
+        state.afterSalesDraft = { orderId: order.id, type: 'refund', description: '' };
         state.afterSalesOrder = null;
         state.replacementRequest = null;
       }
@@ -1745,7 +1744,7 @@
         type: state.afterSalesDraft.type,
         description: state.afterSalesDraft.description.trim(),
         status: 'submitted',
-        refundProgress: state.afterSalesDraft.type === 'refund' ? ['已提交', '审核中', '原路退款'] : [],
+        refundProgress: state.afterSalesDraft.type === 'refund' ? ['申请中', '人工审核', '原路退款', '完成'] : [],
       };
       wipeSensitiveState({ clearAccount: true, closePanels: true });
       renderApp();
@@ -2176,7 +2175,7 @@
       const replacement = state.replacementRequest;
       if (!ticket) return '';
       const refundProgress = ticket.type === 'refund'
-        ? `<div class="refund-progress" aria-label="退款进度">${ticket.refundProgress.map((label, index) => `<span>${index === 2 ? `退款：${label}` : label}</span>`).join('')}</div>`
+        ? `<div class="refund-progress" aria-label="退款进度">${ticket.refundProgress.map((label) => `<span>${label}</span>`).join('')}</div>`
         : '';
       let replacementStatus = '';
       if (replacement?.status === 'no-stock') {
