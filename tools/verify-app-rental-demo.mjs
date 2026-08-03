@@ -43,6 +43,18 @@ async function main() {
     assert(portrait.primaryCount === 1, '首页必须只有一个主操作');
     process.stdout.write('PORTRAIT 4/4 PASS\n');
 
+    const builtHtml = fs.readFileSync(htmlPath, 'utf8');
+    const inlineImageCount = (builtHtml.match(/data:image\/(?:jpeg|png|webp);base64,/g) || []).length;
+    assert(inlineImageCount >= 5, `真实内联素材不足：${inlineImageCount}/5`);
+    for (const screen of ['home', 'play', 'library', 'profile']) {
+      await page.evaluate((value) => window.__appRentalDemo.navigate(value), screen);
+      await page.waitForFunction(() => [...document.querySelectorAll('img[data-real-asset="true"]')]
+        .some((node) => node.complete && node.naturalWidth > 0 && node.getClientRects().length > 0));
+      const visibleAssets = await page.locator('img[data-real-asset="true"]:visible').count();
+      assert(visibleAssets >= 1, `${screen} 缺少可见真实素材`);
+    }
+    process.stdout.write('MATERIALS 5/5 PASS\n');
+
     const entitlementCases = [
       ['owned-installed', 'launch', []],
       ['owned-uninstalled', 'download', []],
