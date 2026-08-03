@@ -209,6 +209,186 @@ async function main() {
     }
     process.stdout.write(`ENTITLEMENTS ${entitlementCases.length}/${entitlementCases.length} PASS\n`);
 
+    const skuCases = [
+      ['not-member-library', ['2小时租用', '更多租期'], ['首次体验', '单游戏永久畅玩', '开通会员']],
+      ['member-library-trial', ['首次体验', '单游戏永久畅玩', '开通会员'], ['日租', '周租']],
+      ['member-library-trial-used', ['单游戏永久畅玩', '开通会员'], ['首次体验', '已使用', '日租', '周租']],
+      ['active-member', ['会员畅玩'], ['2小时租用', '首次体验', '单游戏永久畅玩', '开通会员']],
+    ];
+    for (const [scenario, present, absent] of skuCases) {
+      await page.evaluate(({ scenario }) => {
+        window.__appRentalDemo.setOrientation('portrait');
+        window.__appRentalDemo.setScenario(scenario);
+        window.__appRentalDemo.navigate('detail');
+      }, { scenario });
+      const text = await page.locator('#appRentalDemo').innerText();
+      for (const value of present) assert(text.includes(value), `${scenario} 缺少 ${value}`);
+      for (const value of absent) assert(!text.includes(value), `${scenario} 不应显示 ${value}`);
+    }
+    process.stdout.write(`SKU ${skuCases.length}/${skuCases.length} PASS\n`);
+
+    await page.evaluate(() => {
+      window.__appRentalDemo.setScenario('member-library-trial');
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.navigate('detail');
+    });
+    const portraitDetail = await page.evaluate(() => {
+      const frame = document.querySelector('.device.portrait')?.getBoundingClientRect();
+      const footer = document.querySelector('.portrait-fixed-footer')?.getBoundingClientRect();
+      return {
+        layout: Boolean(document.querySelector('.portrait-detail[data-layout="portrait-detail"]')),
+        hero: Boolean(document.querySelector('.portrait-detail-hero img[data-real-asset="true"]')),
+        primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
+        footerPinned: Boolean(frame && footer && Math.abs(frame.bottom - footer.bottom) <= 14),
+      };
+    });
+    assert(portraitDetail.layout, '竖屏详情缺少独立布局');
+    assert(portraitDetail.hero, '竖屏详情缺少真实主视觉');
+    assert(portraitDetail.primaryCount === 1 && portraitDetail.footerPinned, '竖屏详情主按钮未固定或不唯一');
+
+    await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
+    const landscapeDetail = await page.evaluate(() => ({
+      layout: Boolean(document.querySelector('.landscape-detail[data-layout="landscape-detail"]')),
+      left: Boolean(document.querySelector('.landscape-detail-game')),
+      right: Boolean(document.querySelector('.landscape-detail-benefits')),
+      primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
+    }));
+    assert(landscapeDetail.layout, '横屏详情缺少独立 DOM');
+    assert(landscapeDetail.left && landscapeDetail.right, '横屏详情未采用左游戏信息、右权益布局');
+    assert(landscapeDetail.primaryCount === 1, '横屏详情主操作不唯一');
+
+    const ownershipCases = [
+      ['owned-installed', '启动游戏'],
+      ['owned-uninstalled', '下载游戏'],
+      ['imported', '启动游戏'],
+    ];
+    for (const [scenario, label] of ownershipCases) {
+      await page.evaluate((value) => {
+        window.__appRentalDemo.setScenario(value);
+        window.__appRentalDemo.navigate('detail');
+      }, scenario);
+      const detailText = await page.locator('#appRentalDemo').innerText();
+      assert(detailText.includes(label), `${scenario} 缺少 ${label}`);
+      assert(!/2小时租用|更多租期|首次体验|单游戏永久畅玩|开通会员/.test(detailText), `${scenario} 不得显示租号购买入口`);
+    }
+    process.stdout.write('DETAIL 8/8 PASS\n');
+
+    await page.evaluate(() => {
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.setScenario('not-member-library');
+      window.__appRentalDemo.navigate('detail');
+      window.__appRentalDemo.toggleMoreDuration(true);
+    });
+    const durationOptions = await page.evaluate(() => ({
+      hours: document.querySelectorAll('[data-duration-hours]').length,
+      text: document.querySelector('#appRentalDemo').innerText,
+    }));
+    assert(durationOptions.hours === 21, `更多租期小时项应为21个，实际${durationOptions.hours}`);
+    assert(durationOptions.text.includes('日租') && durationOptions.text.includes('周租'), '更多租期缺少日租或周租');
+
+    await page.evaluate(() => {
+      window.__appRentalDemo.selectRentalSku('hourly-8h');
+      window.__appRentalDemo.navigate('checkout');
+    });
+    const checkoutText = await page.locator('#appRentalDemo').innerText();
+    assert(['艾尔登法环', 'Steam版本', '套餐租期', '游戏原价', '订单金额'].every((value) => checkoutText.includes(value)), '确认订单字段不完整');
+    assert(checkoutText.includes('支付宝') && checkoutText.includes('微信'), '确认订单缺少双支付方式');
+    assert(/\b(?:2\d|30):[0-5]\d\b/.test(checkoutText), '确认订单缺少30分钟 MM:SS 倒计时');
+
+    const checkoutBeforeRotation = await page.evaluate(() => window.__appRentalDemo.snapshot().order);
+    await page.evaluate(() => {
+      window.__appRentalDemo.setOrientation('landscape');
+      window.__appRentalDemo.navigate('checkout');
+    });
+    const checkoutAfterRotation = await page.evaluate(() => window.__appRentalDemo.snapshot().order);
+    assert(
+      checkoutBeforeRotation.id === checkoutAfterRotation.id
+        && checkoutBeforeRotation.sku === checkoutAfterRotation.sku
+        && checkoutBeforeRotation.amount === checkoutAfterRotation.amount
+        && checkoutBeforeRotation.paymentDeadline === checkoutAfterRotation.paymentDeadline,
+      '旋转或重渲染后订单快照发生变化',
+    );
+    await page.evaluate(() => window.__appRentalDemo.setPriceChanged(true));
+    assert((await page.locator('#appRentalDemo').innerText()).includes('价格已更新'), '缺少价格变化处理');
+    await page.evaluate(() => {
+      window.__appRentalDemo.setPriceChanged(false);
+      window.__appRentalDemo.setInventoryAvailable(false);
+    });
+    const inventoryState = await page.evaluate(() => ({
+      text: document.querySelector('#appRentalDemo').innerText,
+      disabled: Boolean(document.querySelector('[data-primary-action="true"]:disabled')),
+    }));
+    assert(inventoryState.text.includes('当前套餐已售罄') && inventoryState.disabled, '无库存时未禁用购买并说明原因');
+    await page.evaluate(() => window.__appRentalDemo.setInventoryAvailable(true));
+    process.stdout.write('CHECKOUT 8/8 PASS\n');
+
+    await page.evaluate(() => {
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.navigate('profile');
+    });
+    await page.locator('.member-banner[data-screen="membership"]').click();
+    assert((await page.evaluate(() => window.__appRentalDemo.snapshot().screen)) === 'membership', '个人中心会员卡未进入会员中心');
+    const membership = await page.evaluate(() => ({
+      names: [...document.querySelectorAll('.membership-plan-card .plan-name')].map((node) => node.textContent.trim()),
+      prices: [...document.querySelectorAll('.membership-plan-card .plan-price')].map((node) => node.textContent.trim()),
+      originals: [...document.querySelectorAll('.membership-plan-card .plan-original')].map((node) => node.textContent.trim()),
+      promotions: [...document.querySelectorAll('.membership-plan-card .plan-promotion')].map((node) => node.textContent.trim()),
+      text: document.querySelector('#appRentalDemo').innerText,
+      paymentMethods: document.querySelectorAll('.membership-payment-method').length,
+      qr: Boolean(document.querySelector('[aria-label="支付二维码"]')),
+      hasSelectionButton: [...document.querySelectorAll('button')].some((node) => node.textContent.trim() === '选择'),
+    }));
+    assert(membership.names.join('|') === '月度|年度|永久', '会员套餐顺序错误');
+    assert(membership.prices.join('|') === '¥129|¥499|¥399', '会员套餐价格错误');
+    assert(membership.originals.join('|') === '原价 ¥169|原价 ¥699|原价 ¥799', '会员套餐原价错误');
+    assert(membership.promotions.length === 3 && membership.promotions.every((value) => value === '试运营优惠'), '会员套餐优惠标识不完整');
+    await page.locator('.membership-plan-card[data-plan="annual"]').click();
+    assert((await page.evaluate(() => window.__appRentalDemo.snapshot().memberPlan)) === 'annual' && !membership.hasSelectionButton, '会员套餐未支持整卡切换或出现选择按钮');
+    assert(!/自动续费|一次性购买/.test(membership.text), '会员中心出现禁用文案');
+    assert(membership.paymentMethods === 2 && membership.qr && membership.text.includes('支付宝') && membership.text.includes('微信'), '会员支付方式或二维码不完整');
+
+    const orderIsolation = await page.evaluate(() => {
+      const gameOrder = window.__appRentalDemo.snapshot().order;
+      const membershipOrder = window.__appRentalDemo.createMembershipOrder();
+      const snapshot = window.__appRentalDemo.snapshot();
+      return { gameOrder, membershipOrder, snapshot };
+    });
+    assert(
+      orderIsolation.gameOrder.id === orderIsolation.snapshot.order.id
+        && orderIsolation.membershipOrder.id === orderIsolation.snapshot.membershipOrder.id
+        && orderIsolation.snapshot.order.id !== orderIsolation.snapshot.membershipOrder.id,
+      '游戏订单与会员订单相互覆盖',
+    );
+
+    await page.evaluate(() => window.__appRentalDemo.navigate('member-library'));
+    const portraitMemberLibrary = await page.evaluate(() => {
+      const cards = [...document.querySelectorAll('.portrait-member-library .member-game-card')];
+      return {
+        cards: cards.length,
+        columns: new Set(cards.slice(0, 2).map((node) => Math.round(node.getBoundingClientRect().left))).size,
+      };
+    });
+    assert(portraitMemberLibrary.cards >= 6 && portraitMemberLibrary.columns === 2, '竖屏会员游戏库不是两列');
+    await page.locator('.portrait-member-library .member-game-card').first().click();
+    assert((await page.evaluate(() => window.__appRentalDemo.snapshot().screen)) === 'detail', '会员游戏卡无法进入详情');
+
+    await page.evaluate(() => {
+      window.__appRentalDemo.navigate('member-library');
+      window.__appRentalDemo.setOrientation('landscape');
+    });
+    const landscapeMemberLibrary = await page.evaluate(() => {
+      const cards = [...document.querySelectorAll('.landscape-member-library .member-game-card')];
+      const firstTop = Math.min(...cards.map((node) => Math.round(node.getBoundingClientRect().top)));
+      return {
+        columns: cards.filter((node) => Math.round(node.getBoundingClientRect().top) === firstTop).length,
+        faq: document.querySelectorAll('.member-faq-item').length,
+      };
+    });
+    assert(landscapeMemberLibrary.columns >= 4 && landscapeMemberLibrary.faq === 5, '横屏会员游戏库多列布局或5条FAQ不完整');
+    process.stdout.write('MEMBERSHIP 10/10 PASS\n');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
     const negativeGuards = await page.evaluate(() => {
       let noOrderAllocation;
       let noOrderThrew = false;
