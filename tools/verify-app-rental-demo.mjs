@@ -47,7 +47,126 @@ async function main() {
     }
     process.stdout.write(`ENTITLEMENTS ${entitlementCases.length}/${entitlementCases.length} PASS\n`);
 
-    const transaction = await page.evaluate(() => {
+    const negativeGuards = await page.evaluate(() => {
+      let noOrderAllocation;
+      let noOrderThrew = false;
+      try {
+        noOrderAllocation = window.__appRentalDemo.allocateAccount();
+      } catch {
+        noOrderThrew = true;
+      }
+      const noOrderState = window.__appRentalDemo.snapshot().order;
+
+      const returnedOrder = window.__appRentalDemo.createOrder({
+        sku: 'rent-2h',
+        amount: 9.9,
+        priceVersion: '2026-08-03-v1',
+      });
+      const pendingBypass = window.__appRentalDemo.allocateAccount(true);
+      const pendingAfterBypass = window.__appRentalDemo.snapshot().order;
+      const pendingOverride = window.__appRentalDemo.createOrder({
+        sku: 'blocked-pending',
+        amount: 99,
+        priceVersion: 'blocked',
+      });
+      const pendingAfterOverride = window.__appRentalDemo.snapshot().order;
+
+      returnedOrder.status = 'tampered';
+      returnedOrder.sku = 'tampered';
+      const orderAfterReturnMutation = window.__appRentalDemo.snapshot().order;
+
+      window.__appRentalDemo.payOrder();
+      const allocatingOverride = window.__appRentalDemo.createOrder({
+        sku: 'blocked-allocating',
+        amount: 99,
+        priceVersion: 'blocked',
+      });
+      const allocatingAfterOverride = window.__appRentalDemo.snapshot().order;
+      window.__appRentalDemo.allocateAccount(true);
+      const activeReverse = window.__appRentalDemo.allocateAccount(false);
+      const activeAfterReverse = window.__appRentalDemo.snapshot().order;
+      const activeOverride = window.__appRentalDemo.createOrder({
+        sku: 'blocked-active',
+        amount: 99,
+        priceVersion: 'blocked',
+      });
+      const activeAfterOverride = window.__appRentalDemo.snapshot().order;
+
+      return {
+        noOrderAllocation,
+        noOrderThrew,
+        noOrderState,
+        pendingBypass,
+        pendingAfterBypass,
+        pendingOverride,
+        pendingAfterOverride,
+        orderAfterReturnMutation,
+        allocatingOverride,
+        allocatingAfterOverride,
+        activeReverse,
+        activeAfterReverse,
+        activeOverride,
+        activeAfterOverride,
+      };
+    });
+    assert(
+      !negativeGuards.noOrderThrew
+        && negativeGuards.noOrderAllocation === false
+        && negativeGuards.noOrderState === null,
+      '无订单时分配应安全拒绝',
+    );
+    assert(
+      negativeGuards.pendingBypass === false && negativeGuards.pendingAfterBypass.status === 'pending',
+      'pending 订单不得绕过支付直接分配',
+    );
+    assert(
+      negativeGuards.orderAfterReturnMutation.status === 'pending'
+        && negativeGuards.orderAfterReturnMutation.sku === 'rent-2h',
+      'createOrder 返回值不得泄露内部订单引用',
+    );
+    assert(
+      negativeGuards.pendingOverride === null
+        && negativeGuards.pendingAfterOverride.status === 'pending'
+        && negativeGuards.allocatingOverride === null
+        && negativeGuards.allocatingAfterOverride.status === 'allocating'
+        && negativeGuards.activeOverride === null
+        && negativeGuards.activeAfterOverride.status === 'active',
+      '非终态订单不得被新订单覆盖',
+    );
+    assert(
+      negativeGuards.activeReverse === false && negativeGuards.activeAfterReverse.status === 'active',
+      'active 订单不得逆向迁移为 refunding',
+    );
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    const uniqueIds = await page.evaluate(() => {
+      const originalNow = Date.now;
+      Date.now = () => 1785715200000;
+      try {
+        const first = window.__appRentalDemo.createOrder({
+          sku: 'rent-2h',
+          amount: 9.9,
+          priceVersion: '2026-08-03-v1',
+        });
+        window.__appRentalDemo.payOrder();
+        window.__appRentalDemo.allocateAccount(false);
+        const second = window.__appRentalDemo.createOrder({
+          sku: 'rent-2h',
+          amount: 9.9,
+          priceVersion: '2026-08-03-v1',
+        });
+        return [first?.id, second?.id];
+      } finally {
+        Date.now = originalNow;
+      }
+    });
+    assert(uniqueIds.every(Boolean) && uniqueIds[0] !== uniqueIds[1], '同毫秒订单号必须唯一');
+    process.stdout.write('NEGATIVE 6/6 PASS\n');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    const successfulTransaction = await page.evaluate(() => {
       const createdAt = Date.now();
       const created = window.__appRentalDemo.createOrder({
         sku: 'rent-2h',
@@ -60,16 +179,6 @@ async function main() {
       const duplicatePayment = window.__appRentalDemo.payOrder();
       window.__appRentalDemo.allocateAccount(true);
       const active = window.__appRentalDemo.snapshot().order.status;
-
-      window.__appRentalDemo.createOrder({
-        sku: 'rent-2h',
-        amount: 9.9,
-        priceVersion: '2026-08-03-v1',
-      });
-      window.__appRentalDemo.payOrder();
-      window.__appRentalDemo.allocateAccount(false);
-      const refunding = window.__appRentalDemo.snapshot().order.status;
-
       return {
         createdAt,
         created,
@@ -78,22 +187,38 @@ async function main() {
         allocating,
         duplicatePayment,
         active,
-        refunding,
       };
     });
-    assert(/^APP-\d+$/.test(transaction.created.id), '订单号格式错误');
-    assert(transaction.pending.status === 'pending', '创建订单后应为 pending');
-    assert(transaction.pending.sku === 'rent-2h', '订单 SKU 快照错误');
-    assert(transaction.pending.amount === 9.9, '订单金额快照错误');
-    assert(transaction.pending.priceVersion === '2026-08-03-v1', '价格版本快照错误');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    const failedTransaction = await page.evaluate(() => {
+      window.__appRentalDemo.createOrder({
+        sku: 'rent-2h',
+        amount: 9.9,
+        priceVersion: '2026-08-03-v1',
+      });
+      window.__appRentalDemo.payOrder();
+      window.__appRentalDemo.allocateAccount(false);
+      return window.__appRentalDemo.snapshot().order.status;
+    });
+
+    assert(/^APP-\d+$/.test(successfulTransaction.created.id), '订单号格式错误');
+    assert(successfulTransaction.pending.status === 'pending', '创建订单后应为 pending');
+    assert(successfulTransaction.pending.sku === 'rent-2h', '订单 SKU 快照错误');
+    assert(successfulTransaction.pending.amount === 9.9, '订单金额快照错误');
+    assert(successfulTransaction.pending.priceVersion === '2026-08-03-v1', '价格版本快照错误');
     assert(
-      transaction.pending.paymentDeadline - transaction.createdAt >= 30 * 60 * 1000,
+      successfulTransaction.pending.paymentDeadline - successfulTransaction.createdAt >= 30 * 60 * 1000,
       '支付截止时间不足 30 分钟',
     );
-    assert(transaction.firstPayment === true && transaction.allocating === 'allocating', '支付状态迁移错误');
-    assert(transaction.duplicatePayment === false, '重复支付应被拒绝');
-    assert(transaction.active === 'active', '分配成功后应为 active');
-    assert(transaction.refunding === 'refunding', '分配失败后应为 refunding');
+    assert(
+      successfulTransaction.firstPayment === true && successfulTransaction.allocating === 'allocating',
+      '支付状态迁移错误',
+    );
+    assert(successfulTransaction.duplicatePayment === false, '重复支付应被拒绝');
+    assert(successfulTransaction.active === 'active', '分配成功后应为 active');
+    assert(failedTransaction === 'refunding', '分配失败后应为 refunding');
     process.stdout.write('TRANSACTION 10/10 PASS\n');
   } finally {
     await browser.close();

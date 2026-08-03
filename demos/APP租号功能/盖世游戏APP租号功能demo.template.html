@@ -83,6 +83,18 @@
       'permanent-owned': { permanentEntitlement: true },
     };
 
+    const NON_TERMINAL_ORDER_STATUSES = new Set(['pending', 'allocating', 'active']);
+    let lastOrderNumber = 0;
+
+    function cloneOrder(order) {
+      return JSON.parse(JSON.stringify(order));
+    }
+
+    function nextOrderId(timestamp) {
+      lastOrderNumber = Math.max(timestamp, lastOrderNumber + 1);
+      return `APP-${lastOrderNumber}`;
+    }
+
     function resolveAction(input) {
       if (input.owns && input.installed) return { primary: 'launch', secondary: [] };
       if (input.owns) return { primary: 'download', secondary: [] };
@@ -99,16 +111,18 @@
     }
 
     function createOrder({ sku, amount, priceVersion }) {
+      if (state.order && NON_TERMINAL_ORDER_STATUSES.has(state.order.status)) return null;
+      const createdAt = Date.now();
       state.order = {
-        id: `APP-${Date.now()}`,
+        id: nextOrderId(createdAt),
         status: 'pending',
         sku,
         amount,
         priceVersion,
-        paymentDeadline: Date.now() + 30 * 60 * 1000,
+        paymentDeadline: createdAt + 30 * 60 * 1000,
       };
       renderApp();
-      return state.order;
+      return cloneOrder(state.order);
     }
 
     function payOrder() {
@@ -119,8 +133,10 @@
     }
 
     function allocateAccount(success = true) {
+      if (!state.order || state.order.status !== 'allocating') return false;
       state.order.status = success ? 'active' : 'refunding';
       renderApp();
+      return true;
     }
 
     function renderApp() {
