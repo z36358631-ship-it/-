@@ -1024,7 +1024,8 @@
     .annotation-legend span { display: flex; align-items: center; gap: 7px; }
 
     #demoStage { position: relative; display: flex; min-width: 0; height: 100vh; align-items: center; justify-content: center; overflow: auto; padding: 20px; background: #14161e; }
-    .annotation-body #appRentalDemo { display: block; width: auto; min-height: 0; padding: 0; }
+    #demoScaleFrame { position: relative; width: 390px; height: 844px; flex: 0 0 auto; }
+    .annotation-body #appRentalDemo { position: absolute; top: 0; left: 0; display: block; width: 390px; height: 844px; min-height: 0; padding: 0; transform: scale(1); transform-origin: 0 0; will-change: transform; }
     .annotation-body #appRentalDemo .device { box-shadow: 0 24px 80px rgb(0 0 0 / 46%); }
     #restoreAnnotations { position: fixed; z-index: 110; top: 18px; right: 18px; display: none; min-height: 40px; padding: 0 14px; border: 1px solid rgb(77 184 232 / 35%); border-radius: 9px; background: #202739; color: #8fd8f7; cursor: pointer; box-shadow: 0 8px 24px rgb(0 0 0 / 28%); }
     body.panel-collapsed #restoreAnnotations { display: inline-flex; align-items: center; }
@@ -1106,7 +1107,7 @@
       </div>
     </aside>
     <section id="demoStage" aria-label="可操作 APP 租号 Demo">
-      <main id="appRentalDemo" data-orientation="portrait" data-screen="home"></main>
+      <div id="demoScaleFrame" data-scale="1"><main id="appRentalDemo" data-orientation="portrait" data-screen="home"></main></div>
       <button id="restoreAnnotations" type="button">恢复标注面板</button>
     </section>
     <aside id="annotationPanel" aria-label="交互标注面板">
@@ -3057,7 +3058,7 @@
       { id: 'E8', type: 'exception', group: 'recovery', title: '四类异常闭环', portraitSelector: '.state-alert', landscapeSelector: '.state-alert', trigger: '售罄、价格变化、取号失败或网络异常。', portrait: '结算或订单详情显示原因与恢复动作。', landscape: '双栏结算或订单详情显示相同结果。', feedback: '库存重查、重新确认价格、自动退款或重新查询订单。', dependency: '依赖服务端返回的最新业务状态。', exception: '任何异常都不得丢失订单号或产生双主操作。' },
     ]);
 
-    const annotationState = { group: 'discovery', tab: 'interaction', markersVisible: true, markerFrame: 0 };
+    const annotationState = { group: 'discovery', tab: 'interaction', markersVisible: true, markerFrame: 0, scaleFrame: 0 };
     const annotationTypeToTab = Object.freeze({ interaction: 'interaction', exception: 'boundary', global: 'state' });
     const annotationTypeLabel = Object.freeze({ interaction: '交互说明', exception: '异常边界', global: '数据与状态' });
     const annotationFieldLabels = Object.freeze({ trigger: '触发条件', portrait: '竖屏位置', landscape: '横屏位置', feedback: '操作反馈', dependency: '状态依赖', exception: '异常结果' });
@@ -3087,6 +3088,33 @@
       const orientation = document.querySelector('#appRentalDemo').dataset.orientation;
       const selector = orientation === 'landscape' ? item.landscapeSelector : item.portraitSelector;
       return selector ? document.querySelector('#appRentalDemo').querySelector(selector) : null;
+    }
+
+    function updateDemoScale() {
+      annotationState.scaleFrame = 0;
+      const stage = document.querySelector('#demoStage');
+      const frame = document.querySelector('#demoScaleFrame');
+      const root = document.querySelector('#appRentalDemo');
+      const device = root.querySelector('.device');
+      if (!stage || !frame || !device) return;
+      const stageStyle = getComputedStyle(stage);
+      const availableWidth = Math.max(1, stage.clientWidth - parseFloat(stageStyle.paddingLeft) - parseFloat(stageStyle.paddingRight));
+      const availableHeight = Math.max(1, stage.clientHeight - parseFloat(stageStyle.paddingTop) - parseFloat(stageStyle.paddingBottom));
+      const deviceWidth = device.offsetWidth;
+      const deviceHeight = device.offsetHeight;
+      const scale = Math.min(1, availableWidth / deviceWidth, availableHeight / deviceHeight);
+      const normalizedScale = Number(scale.toFixed(6));
+      root.style.width = `${deviceWidth}px`;
+      root.style.height = `${deviceHeight}px`;
+      root.style.transform = `scale(${normalizedScale})`;
+      frame.style.width = `${deviceWidth * normalizedScale}px`;
+      frame.style.height = `${deviceHeight * normalizedScale}px`;
+      frame.dataset.scale = String(normalizedScale);
+    }
+
+    function scheduleDemoScale() {
+      if (annotationState.scaleFrame) cancelAnimationFrame(annotationState.scaleFrame);
+      annotationState.scaleFrame = requestAnimationFrame(updateDemoScale);
     }
 
     function renderAnnotationMarkers() {
@@ -3122,6 +3150,7 @@
         const section = panel?.querySelector(`.anno-section[data-group="${annotationState.group}"]`);
         if (panel && section) panel.scrollTop = Math.max(0, section.offsetTop - panel.offsetTop - 10);
       }
+      scheduleDemoScale();
       scheduleAnnotationMarkers();
     }
 
@@ -3200,12 +3229,14 @@
       if (orientationButton) {
         window.__appRentalDemo.setOrientation(orientationButton.dataset.orientationControl);
         document.querySelectorAll('[data-orientation-control]').forEach((button) => button.classList.toggle('active', button === orientationButton));
+        scheduleDemoScale();
         scheduleAnnotationMarkers();
         return;
       }
       const scenarioButton = event.target.closest('[data-annotation-scenario]');
       if (scenarioButton) {
         setAnnotationScenario(scenarioButton.dataset.annotationScenario);
+        scheduleDemoScale();
         scheduleAnnotationMarkers();
         return;
       }
@@ -3222,10 +3253,14 @@
       }
       if (event.target.closest('#collapseAnnotations')) {
         document.body.classList.add('panel-collapsed');
+        scheduleDemoScale();
+        setTimeout(scheduleDemoScale, 220);
         return;
       }
       if (event.target.closest('#restoreAnnotations')) {
         document.body.classList.remove('panel-collapsed');
+        scheduleDemoScale();
+        setTimeout(scheduleDemoScale, 220);
         return;
       }
       const itemNode = event.target.closest('.anno-item');
@@ -3242,12 +3277,19 @@
 
     const annotationObserver = new MutationObserver((mutations) => {
       const substantive = mutations.some((mutation) => [...mutation.addedNodes, ...mutation.removedNodes].some((node) => node.nodeType === 1 && !node.classList?.contains('annotation-marker')));
-      if (substantive) scheduleAnnotationMarkers();
+      if (substantive) {
+        scheduleDemoScale();
+        scheduleAnnotationMarkers();
+      }
     });
     annotationObserver.observe(document.querySelector('#appRentalDemo'), { childList: true, subtree: true });
+    const annotationStageObserver = new ResizeObserver(scheduleDemoScale);
+    annotationStageObserver.observe(document.querySelector('#demoStage'));
+    window.addEventListener('resize', scheduleDemoScale);
 
     renderAnnotationPanels();
     activateAnnotationFlow('discovery');
+    scheduleDemoScale();
     window.__appRentalAnnotation = Object.freeze({
       activateFlow: activateAnnotationFlow,
       setTab: setAnnotationTab,
