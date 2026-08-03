@@ -148,7 +148,7 @@ if (action === 'open-uninstall') dispatch({ type: 'OPEN_UNINSTALL', modId });
 .installed-action { position:relative; min-width:0; height:38px; border-radius:10px; color:#fff; background:#3a393f; }
 .installed-action:disabled { color:#77767c; background:#302f34; }
 .action-update-dot { position:absolute; top:7px; right:8px; width:6px; height:6px; border-radius:50%; background:#ff4d67; }
-.installed-switch { height:38px; display:flex; align-items:center; justify-content:center; gap:6px; border-radius:10px; background:#302f34; }
+.installed-switch { height:38px; display:flex; align-items:center; justify-content:flex-end; gap:6px; background:transparent; }
 ```
 
 - [ ] **Step 8: Run the Demo verification**
@@ -266,4 +266,3 @@ Verify: update clears its red dot, uninstall names the selected MOD, cancel pres
 Run: `git status --short`
 
 Expected: only the pre-existing untracked `.superpowers/` directory remains; all deliverable files are committed and pushed to `origin/main`.
-

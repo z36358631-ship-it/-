@@ -619,16 +619,6 @@
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 2;
     }
-    .card-desc {
-      display: -webkit-box;
-      margin-top: 6px;
-      overflow: hidden;
-      color: #a4a2a8;
-      font-size: 12.5px;
-      line-height: 1.4;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-    }
     .card-meta {
       display: flex;
       align-items: center;
@@ -708,11 +698,11 @@
       min-width: 0;
       height: 38px;
       border-radius: 10px;
-      background: #3a393f;
     }
     .installed-action {
       padding: 0 10px;
       color: #f1f0f3;
+      background: #3a393f;
       font-size: 12px;
       font-weight: 600;
     }
@@ -737,10 +727,11 @@
     .installed-switch {
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-end;
       gap: 6px;
-      padding: 0 7px;
+      padding: 0 4px;
       color: #aaa8ae;
+      background: transparent;
       font-size: 10px;
       white-space: nowrap;
     }
@@ -837,7 +828,6 @@
     .device.landscape .card-content { padding-bottom: 36px; }
     .device.landscape .card-meta { margin-top: 6px; font-size: 10px; }
     .device.landscape .card-title { font-size: 15px; -webkit-line-clamp: 1; }
-    .device.landscape .card-desc { font-size: 12px; }
     .device.landscape .mods-screen.is-installed .primary-tabs { left: 238px; }
     .device.landscape .mods-screen.is-installed .sort-section {
       position: absolute;
@@ -1836,7 +1826,6 @@
           <div class="mod-art ${mod.art}"></div>
           <div class="card-content">
             <h2 class="card-title">${mod.name}</h2>
-            <p class="card-desc">${mod.description}</p>
             <div class="card-meta"><span>${mod.author}</span><span>${formatDownloads(mod.downloads)} 次下载</span><span>${mod.size}</span></div>
           </div>
           ${action}

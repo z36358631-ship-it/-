@@ -52,6 +52,7 @@ assert.match(html, /action-update-dot/u);
 assert.match(html, /function rotateTo/u);
 assert.doesNotMatch(html, /订阅 MOD/u);
 assert.doesNotMatch(html, /非官方标签/u);
+assert.doesNotMatch(html, /class="card-desc"/u);
 assert.doesNotMatch(html, /class="update-dot"/u);
 assert.doesNotMatch(html, /检查更新/u);
 console.log('PASS: APP MODS 静态结构与文案契约');
@@ -259,6 +260,7 @@ try {
 
   await page.locator('[data-action="enter-mods"]').click();
   assert.equal(await page.locator('[data-screen="mods"]').count(), 1);
+  assert.equal(await page.locator('[data-mod-card] .card-desc').count(), 0, '浏览列表不应显示简介');
   assert.equal(await page.locator('[data-search]').count(), 1);
   assert.equal(await page.locator('[data-search]').getAttribute('placeholder'), '搜索 MOD 名称或作者');
   assert.deepEqual(
@@ -416,6 +418,7 @@ try {
 
   await page.locator('[data-tab="installed"]').click();
   assert.equal(await page.locator('[data-search]').count(), 0);
+  assert.equal(await page.locator('[data-mod-card] .card-desc').count(), 0, '已安装列表不应显示简介');
   assert.equal(await page.locator('[data-enable-switch]').count(), 4);
   assert.equal(await page.locator('[data-installed-actions="installed-list"]').count(), 4);
   assert.equal(await page.locator('[data-installed-actions="installed-list"] [data-installed-update]').count(), 4);
@@ -496,6 +499,7 @@ try {
   assert.equal(await page.locator('[data-installed-actions="detail"] [data-enable-switch]').getAttribute('role'), 'switch');
   assert.equal(await page.locator('[data-installed-actions="detail"] [data-installed-update]').isDisabled(), true);
   assert.equal(await page.locator('[data-installed-actions="detail"] .action-update-dot').count(), 0);
+  assert.match(await page.locator('.detail-copy').textContent(), /在游戏界面中加入可缩放小地图/u);
 
   const actionLayout = await page.locator('.detail-actionbar').evaluate(bar => {
     const actions = [...bar.querySelector('[data-installed-actions]').children];
@@ -508,13 +512,17 @@ try {
       equalWidths: Math.max(...widths) - Math.min(...widths) <= 1,
       fillsRow: Math.abs(first.left - (barBox.left + parseFloat(style.paddingLeft))) <= 1
         && Math.abs(last.right - (barBox.right - parseFloat(style.paddingRight))) <= 1,
-      switchIsRightmost: Boolean(actions.at(-1).querySelector('[data-enable-switch]'))
+      switchIsRightmost: Boolean(actions.at(-1).querySelector('[data-enable-switch]')),
+      switchContainerIsNotButton: actions.at(-1).tagName === 'DIV',
+      switchContainerIsTransparent: getComputedStyle(actions.at(-1)).backgroundColor === 'rgba(0, 0, 0, 0)'
     };
   });
   assert.deepEqual(actionLayout, {
     equalWidths: true,
     fillsRow: true,
-    switchIsRightmost: true
+    switchIsRightmost: true,
+    switchContainerIsNotButton: true,
+    switchContainerIsTransparent: true
   });
 
   await page.keyboard.press('Shift+Tab');
