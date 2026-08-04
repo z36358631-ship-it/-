@@ -8,6 +8,7 @@
 |2026.08.04|V1.1|郑群超|产品名称全局统一使用 Mac，不使用 MAC||
 |2026.08.04|V1.2|郑群超|英文官网新增 Google Play 下载入口||
 |2026.08.04|V1.3|郑群超|精简英文下载入口文案||
+|2026.08.04|V1.4|郑群超|<span style="background-color: #FEF794;"><strong><span style="color: #3370FF;">补充跨设备标题、Mac 下载入口、macOS 图标及手机端适配</span></strong></span>||
 
 ## 二、背景与目标
 
@@ -15,7 +16,7 @@
 
 - 盖世掌游已停止维护，小鸡官网需移除相关入口。
 - 小鸡官网当前缺少盖世游戏 APP、Mac 两个独立官网入口。
-- 盖世游戏 APP 官网需补充 APP / Mac 产品切换，并提供 Android、iOS 下载入口。
+- <span style="background-color: #FEF794;">盖世游戏 APP 官网需补充 APP / Mac 产品切换，并提供 <strong><span style="color: #3370FF;">Android、Google Play、iOS、Mac</span></strong> 下载入口。</span>
 
 ### 2.2 目标与成功指标
 
@@ -28,23 +29,24 @@
 
 |类型|内容|
 |---|---|
-|本期范围|小鸡官网移除盖世掌游；新增盖世游戏 APP、Mac 官网入口；盖世游戏 APP 官网新增产品 Tab、Android 下载、Google Play 下载、iOS 下载；同步中文、英文页面|
+|本期范围|<span style="background-color: #FEF794;">小鸡官网移除盖世掌游；新增盖世游戏 APP、Mac 官网入口；盖世游戏 APP 官网新增产品 Tab、Android、Google Play、iOS、<strong><span style="color: #3370FF;">Mac 下载</span></strong>；同步中文、英文及手机端页面。</span>|
 |不做事项|不重构官网其他模块；不调整 Mac 官网内容；不做三站 SEO；不迁移盖世掌游历史内容|
-|硬性约束|英文产品名统一使用 GameHub；Apple 产品名称全局统一使用 Mac，不使用 MAC；中文、英文 Android 下载包按国内包、海外包区分|
+|硬性约束|<span style="background-color: #FEF794;">英文产品名统一使用 GameHub；Apple 产品名称全局统一使用 Mac，不使用 MAC；中文、英文 Android 下载包按国内包、海外包区分；<strong><span style="color: #3370FF;">海外页面不展示云游戏内容</span></strong>。</span>|
 
 ## 三、故事介绍
 
 ### 3.1 用户场景
 
 - 用户在小鸡官网“服务与支持”页选择盖世游戏 APP 或 Mac，进入对应官网。
-- 用户进入盖世游戏 APP 官网后，可下载 Android 或 iOS 版本，也可进入 Mac 官网。
-- 海外用户进入英文官网后，看到英文内容并下载海外版本。
+- <span style="background-color: #FEF794;">用户进入盖世游戏 APP 官网后，可下载 Android、iOS 或 Mac 版本，也可通过 Mac Tab 进入 Mac 官网。</span>
+- <span style="background-color: #FEF794;">海外用户进入英文官网后，可选择 Android、Google Play、iOS 或 Mac；页面不展示云游戏内容。</span>
 
 ### 3.2 核心体验路径
 
-1. 小鸡官网“服务与支持” → 盖世游戏 APP → 盖世游戏 APP 官网 → Android / iOS 下载。
+1. <span style="background-color: #FEF794;">小鸡官网“服务与支持” → 盖世游戏 APP → 盖世游戏 APP 官网 → Android / iOS / Mac 下载。</span>
 2. 小鸡官网“服务与支持” → 盖世游戏 Mac → 盖世游戏 Mac 官网。
-3. 盖世游戏 APP 官网 → Mac Tab 或“Mac 下载” → 盖世游戏 Mac 官网。
+3. <span style="background-color: #FEF794;">盖世游戏 APP 官网 → Mac Tab → 对应语言的盖世游戏 Mac 官网。</span>
+4. <span style="background-color: #FEF794;">盖世游戏 APP 官网 → 顶部或首屏“Mac 下载” → 同一对应语言的 Mac 下载地址。</span>
 
 ## 四、概要设计
 
@@ -54,7 +56,7 @@
 |---|---|---|---|---|
 |小鸡官网产品入口|访问小鸡官网的用户|选择 APP 或 Mac 官网|目标官网地址|P0|
 |APP / Mac 产品 Tab|访问盖世游戏 APP 官网的用户|识别当前产品并进入 Mac 官网|Mac 官网地址|P0|
-|APP 下载区|需要安装盖世游戏 APP 的用户|下载 Android 或 iOS 版本|安装包及商店地址|P0|
+|APP 下载区|需要安装盖世游戏的用户|<span style="background-color: #FEF794;">下载 Android、Google Play、iOS 或 <strong><span style="color: #3370FF;">Mac</span></strong> 版本</span>|安装包及商店地址|P0|
 |中英文页面|国内、海外用户|展示对应语言及下载版本|语言路由、国内包、海外包|P0|
 
 ### 4.2 详细设计（C端）
@@ -62,17 +64,27 @@
 |模块名称|图示|展示&交互说明|
 |---|---|---|
 |小鸡官网“服务与支持”页|-|**位置**：在现有“小鸡游戏世界”区域下方增加“盖世游戏”区域。<br><br>**展示**：<br>- 移除顶部导航及页面内的“盖世掌游”入口。<br>- “盖世游戏”区域展示“盖世游戏 APP”“盖世游戏 Mac”两个入口。<br>- APP 入口说明支持 Android、iOS；Mac 入口说明支持 Apple 芯片 Mac。<br><br>**交互逻辑**：<br>- 点击“盖世游戏 APP”→进入 `https://gamehub.xiaoji.com/zh-cn/`。<br>- 点击“盖世游戏 Mac”→进入 `https://www.gamemac.com/zh-cn/`。<br>- 点击卡片或右侧箭头均可跳转。|
-|盖世游戏 APP 官网顶部区域|-|**位置**：产品 Tab 位于左上品牌名称右侧；右侧导航依次展示“Mac 下载”“首页”和语言切换。<br><br>**展示**：<br>- 品牌图标使用盖世游戏正式图标；中文名称显示“盖世游戏”，英文名称显示“GameHub”。<br>- 产品 Tab 包含“盖世游戏 APP / Mac 版”；英文显示“GameHub App / Mac”。<br>- 两个 Tab 使用独立圆角按钮，选中态与未选中态需明显区分。<br>- 进入 APP 官网时，APP 默认选中，Mac 未选中。<br><br>**交互逻辑**：<br>- 点击已选中的 APP Tab，不触发跳转。<br>- 点击 Mac Tab→进入对应语言的 Mac 官网。<br>- 点击“Mac 下载”→沿用现有跳转逻辑。<br>- 页面切换直接完成，不新增弹窗或 Toast。|
-|盖世游戏 APP 官网首屏下载区|-|**位置**：下载按钮位于首屏标题和副标题下方。<br><br>**展示**：<br>- 中文标题显示“在手机运行 3A 游戏”。<br>- 中文页展示 Android、iOS 两个下载入口。<br>- 英文页展示 Android、Google Play、iOS 三个下载入口。<br>- 各入口左侧展示对应平台图标。<br>- 中文按钮显示“Android 下载”“iOS 下载”；英文按钮显示“Download for Android”“Google Play”“iOS”。<br><br>**交互逻辑**：<br>- 中文页点击 Android 下载→下载国服官方包。<br>- 英文页点击 Android 下载→下载 Global 海外全量包。<br>- 英文页点击 Google Play→进入 Google Play 商店页。<br>- 点击 iOS 下载→进入对应 App Store 下载页。<br>- 点击后直接进入下载链路，不新增确认弹窗或 Toast。|
+|盖世游戏 APP 官网顶部区域|-|<span style="background-color: #FEF794;">**位置**：桌面端产品 Tab 位于品牌名称右侧；右侧依次展示“Mac 下载”“首页”和语言切换。手机端第一行展示品牌及右侧操作，第二行展示 APP / Mac Tab。<br><br>**展示**：<br>- 品牌图标使用盖世游戏正式图标；中文名称显示“盖世游戏”，英文名称显示“GameHub”。<br>- 产品 Tab 包含“盖世游戏 APP / Mac 版”；英文显示“GameHub App / Mac”。<br>- 进入 APP 官网时，APP 默认选中，Mac 未选中。<br><br>**交互逻辑**：<br>- 点击已选中的 APP Tab，不触发跳转。<br>- 点击 Mac Tab → 在当前窗口进入对应语言的 Mac 官网。<br>- 点击顶部“Mac 下载” → 在当前窗口进入对应语言的 Mac 下载地址，与首屏 Mac 下载使用同一地址。<br>- 页面切换直接完成，不新增弹窗或 Toast。</span>|
+|盖世游戏 APP 官网首屏下载区|-|<span style="background-color: #FEF794;">**位置**：下载按钮位于首屏标题和副标题下方。<br><br>**展示**：<br>- 中文标题显示“<strong><span style="color: #3370FF;">跨设备畅玩 3A 游戏</span></strong>”，副标题显示“手机与 Mac，随时畅玩你的 Steam 游戏库。”。<br>- 英文标题显示“Play AAA Games Across Devices”，副标题显示“Your Steam library on mobile and Mac.”。<br>- 中文页依次展示 Android、iOS、Mac；英文页依次展示 Android、Google Play、iOS、Mac。<br>- 各入口左侧展示对应平台图标；<strong><span style="color: #3370FF;">Mac 使用 Apple 标识，与现有 iOS 入口使用同一图形资产</span></strong>。<br>- 中文按钮显示“Android 下载”“iOS 下载”“Mac 下载”；英文按钮显示“Download for Android”“Google Play”“iOS”“Mac”。<br><br>**交互逻辑**：<br>- 中文页点击 Android 下载 → 下载国服官方包。<br>- 英文页点击 Android 下载 → 下载 Global 海外全量包。<br>- 英文页点击 Google Play → 进入 Google Play 商店页。<br>- 点击 iOS → 进入对应 App Store 下载页。<br>- 点击 Mac → 在当前窗口进入对应语言的 Mac 下载地址，与顶部 Mac 下载使用同一地址。<br>- 点击后直接进入下载链路，不新增确认弹窗或 Toast。<br><br>**手机端**：<br>- 保留品牌、APP / Mac Tab、Mac 下载、首页和语言切换。<br>- 顶部第一行展示品牌及右侧操作，第二行展示 APP / Mac Tab。<br>- 下载入口纵向展示；中文 3 个，英文 4 个。<br>- 内容不截断、不横向溢出。</span>|
+|英文页面云游戏内容处理|-|<span style="background-color: #FEF794;">**范围**：英文 APP 官网全页，包括导航、首屏、产品介绍、图片、下载区和页脚。<br><br>**规则**：<br>- 不展示云游戏、云游、秒玩、Cloud Gaming、Cloud Play、Streaming 等相关模块、文案、图片、按钮和链接。<br>- 本地运行 PC 游戏的内容保留，不新增替代模块。<br>- 中文页面不受本条影响。</span>|
 |中英文切换|-|**位置**：位于顶部导航最右侧。<br><br>**展示**：<br>- 中文页显示“EN”，英文页显示“中文”。<br>- 英文页面产品名仅使用“GameHub”，禁止使用 GaishiGame。<br>- 中文、英文页面结构及按钮顺序一致。<br><br>**交互逻辑**：<br>- 点击“EN”→进入英文 APP 官网。<br>- 点击“中文”→返回中文 APP 官网。<br>- 切换语言后保持在 APP 产品页。|
+
+### 4.2.1 Mac 入口跳转规则
+
+|入口|中文页面|英文页面|打开方式|
+|---|---|---|---|
+|Mac Tab|`https://www.gamemac.com/zh-cn/`|`https://www.gamemac.com/en-us/`|当前窗口|
+|顶部 Mac 下载|<span style="background-color: #FEF794;">中文 Mac 下载地址；未提供直链前默认进入中文 Mac 官网</span>|<span style="background-color: #FEF794;">英文 Mac 下载地址；未提供直链前默认进入英文 Mac 官网</span>|当前窗口|
+|首屏 Mac 下载|与顶部 Mac 下载相同|与顶部 Mac 下载相同|当前窗口|
 
 ## 五、非功能需求
 
 |需求类型|详细要求|验收方式|
 |---|---|---|
-|兼容性|沿用现有官网浏览器及响应式适配规则，本期不重构移动端布局|在现有支持范围内检查页面和按钮|
+|兼容性|<span style="background-color: #FEF794;">沿用现有官网浏览器规则，适配桌面端和手机端；标题、Tab、导航及下载入口不得截断或横向溢出。</span>|分别检查中英文桌面端和手机端|
 |多语言|中文、英文内容、跳转地址和下载包必须对应|分别验收中文、英文页面|
 |容错|跳转地址或下载地址不可用时，不得发布上线|上线前逐个请求目标地址|
+|运行时异常|<span style="background-color: #FEF794;">上线后遇到断网、超时、404、商店不可达或重定向失败时，沿用浏览器原生处理；页面不新增弹窗或 Toast。</span>|桌面端和手机端分别断网、使用失效测试地址检查|
 |安全与合规|安装包及商店地址由官方提供，不使用第三方下载地址|核对域名及文件来源|
 
 ## 六、埋点需求
@@ -83,7 +95,7 @@
 |---|---|---|---|---|
 |`website_product_entry_click`|小鸡官网产品入口点击|点击 APP 或 Mac 入口|`product`,`language`|统计入口分流|
 |`website_product_tab_click`|产品 Tab 点击|点击 APP 或 Mac Tab|`product`,`language`|统计产品切换|
-|`website_app_download_click`|APP 下载点击|点击 Android 或 iOS 下载|`platform`,`language`,`package_region`|统计下载转化|
+|`website_app_download_click`|APP 下载点击|点击 Android、Google Play、iOS 或 Mac 下载|`platform`,`language`,`package_region`|统计下载转化|
 |`website_language_switch_click`|语言切换点击|点击 EN 或中文|`from_language`,`to_language`|统计语言切换|
 
 ## 七、运营需求
@@ -94,6 +106,7 @@
 |P0|提供英文 Android Global 包地址|海外运营|地址可访问并可下载|上线前|
 |P0|提供英文 Google Play 商店地址|海外运营|地址可访问并可下载|上线前|
 |P0|提供中文、英文 iOS App Store 地址|运营|地址可访问并可下载|上线前|
+|P0|<span style="background-color: #FEF794;">提供中文、英文 <strong><span style="color: #3370FF;">Mac 下载地址</span></strong></span>|产品/运营|地址可访问且语言对应|上线前|
 |P0|确认中英文 Mac 官网地址|产品/运营|地址可访问且语言对应|上线前|
 
 ## 八、来自功能上线后的更新
@@ -111,6 +124,10 @@
 |Android 下载|分别打开中文、英文页面|点击 Android 下载|中文下载国服官方包；英文下载 Global 包|P0|
 |Google Play 下载|打开英文页面|点击 Google Play|进入盖世游戏 Google Play 商店页|P0|
 |iOS 下载|分别打开中文、英文页面|点击 iOS 下载|进入对应 App Store 页面|P0|
+|Mac Tab|分别打开中文、英文页面|点击 Mac Tab|当前窗口进入对应语言的 Mac 官网|P0|
+|Mac 下载|分别打开中文、英文页面|分别点击顶部、首屏 Mac 下载|两个入口进入同一对应语言的 Mac 下载地址；未配置直链时进入对应语言的 Mac 官网；图标使用 Apple 标识|P0|
+|手机端适配|分别用手机宽度打开中英文页面|检查顶部、Tab、文案及下载入口|功能与桌面端一致；中文 3 个、英文 4 个下载入口；无截断或横向溢出|P0|
+|海外无云游戏|打开英文 APP 官网并检查全页|检查导航、首屏、产品介绍、图片、下载区和页脚|不出现云游戏相关模块、文案、图片、按钮或链接；本地运行 PC 游戏内容正常展示|P0|
 |语言切换|打开中文或英文页面|点击语言切换|页面语言、产品名及下载文案正确切换|P0|
 |品牌展示|打开中英文 APP 官网|查看左上品牌区|展示正式盖世游戏图标；中文为“盖世游戏”，英文为“GameHub”|P0|
 
@@ -118,9 +135,9 @@
 
 #### 必须确认（阻塞上线）
 
-- `[待确认]` 中文 Android、英文 Android、Google Play、中文 iOS、英文 iOS 的最终下载地址。默认建议：由对应区域运营提供并逐个验收。影响上线。引用：4.2“首屏下载区”。
+- `[待确认]` 中文 Android、英文 Android、Google Play、中文 iOS、英文 iOS、中文 Mac、英文 Mac 的最终下载地址。默认建议：由对应区域运营提供并逐个验收。影响上线。引用：4.2“首屏下载区”。
 - `[待确认]` 英文 Mac 官网是否使用 `https://www.gamemac.com/en-us/`。默认建议：使用同语言页面。影响英文页跳转。引用：4.2“顶部区域”。
-- `[待确认]` 顶部“Mac 下载”现有跳转地址及打开方式。默认建议：保持现网逻辑，不随本期改动。影响回归测试。引用：4.2“顶部区域”。
+- `[待确认]` 中文、英文 Mac 下载是否提供安装包直链。默认建议：未提供前，顶部和首屏 Mac 下载均进入对应语言的 Mac 官网；后续提供直链时两个入口同步替换。影响上线配置与回归测试。引用：4.2.1“Mac 入口跳转规则”。
 
 #### 建议确认（影响数据评估）
 
@@ -129,17 +146,17 @@
 ## 自检记录
 
 - 已覆盖入口位置、展示元素、选中/未选中状态、跳转、下载、多语言及异常发布条件。
-- 国内外差异：中文 Android 下载国服官方包；英文 Android 下载 Global 海外全量包；英文产品名统一为 GameHub。
+- 国内外差异：中文 Android 下载国服官方包；英文 Android 下载 Global 海外全量包并增加 Google Play；英文产品名统一为 GameHub；海外页面不展示云游戏内容。
 - 本 PRD 无图示，不涉及图片发布及远程地址校验。
 
 ## 模拟评审结果
 
 |角色|结论|发现的问题|
 |---|---|---|
-|前端开发|✓|页面位置、状态和跳转逻辑已明确；实际地址需上线前配置|
-|测试工程师|✓|已补充中英文、选中状态、跳转及下载地址可用性验收|
-|运营/业务方|⚠️|五类 APP 下载地址和英文 Mac 官网地址需上线前提供|
+|前端开发|✓|已统一 Mac 三个入口规则，并补充手机端两行结构|
+|测试工程师|✓|已明确 Apple 图标、运行时异常和海外全页验收范围|
+|运营/业务方|⚠️|各地区下载地址仍需上线前提供并逐个验证|
 
-**已自动补充的硬伤：** 下载地址、Mac 官网地址及“Mac 下载”现有逻辑已列入必须确认项。
+**已自动补充的硬伤：** 已统一 Mac Tab、顶部 Mac 下载、首屏 Mac 下载的目标与打开方式；明确手机端顶部结构、Apple 图标资产、运行时异常处理及海外无云游戏验收范围。
 
 **待用户确认的建议：** 上线后采集 30 天数据，再确定下载点击率目标。
