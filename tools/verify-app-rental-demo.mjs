@@ -5,6 +5,7 @@ import { chromium } from 'playwright-core';
 
 const root = path.resolve(import.meta.dirname, '..');
 const htmlPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.html');
+const templatePath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.template.html');
 const annotationPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能-标注版.html');
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 
@@ -41,6 +42,400 @@ async function main() {
     assert(contract.orientation === 'portrait', '默认方向应为 portrait');
     assert(contract.screen === 'home', '默认页面应为 home');
     process.stdout.write('CONTRACT 3/3 PASS\n');
+
+    const refactorGateFailures = [];
+    let refactorGateChecks = 0;
+    const runRefactorGate = async (name, callback) => {
+      try {
+        await callback();
+        refactorGateChecks += 1;
+      } catch (error) {
+        refactorGateFailures.push(`${name}: ${error.message}`);
+      }
+    };
+    const reloadDemo = async () => {
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    };
+
+    await runRefactorGate('STATIC_ARCHITECTURE', async () => {
+      const violations = [];
+      for (const [label, sourcePath] of [['built', htmlPath], ['template', templatePath]]) {
+        const source = fs.readFileSync(sourcePath, 'utf8');
+        if (/state\.screen\s*===\s*['"]orders['"]\s*\|\|\s*state\.screen\s*===\s*['"]order-detail['"]/.test(source)) {
+          violations.push(`${label}: orders 与 order-detail 共用分支`);
+        }
+        if (/\b(?:numericMinutes|minutes|remainingMinutes)\s*={2,3}\s*15\b/.test(source)) {
+          violations.push(`${label}: 临期提醒仍依赖恰好等于15分钟`);
+        }
+      }
+      assert(violations.length === 0, violations.join('；'));
+    });
+
+    await runRefactorGate('SEARCH_COMMUNITY_ROUTES', async () => {
+      const results = [];
+      for (const orientation of ['portrait', 'landscape']) {
+        for (const screen of ['search', 'community']) {
+          results.push(await page.evaluate(({ orientation, screen }) => {
+            window.__appRentalDemo.setOrientation(orientation);
+            window.__appRentalDemo.navigate(screen);
+            const rootNode = document.querySelector('#appRentalDemo');
+            const stub = rootNode.querySelector('.stub-panel, .landscape-stub');
+            const dedicated = rootNode.querySelector(
+              `.${orientation}-${screen}, [data-layout="${orientation}-${screen}"], [data-route-screen="${screen}"]`,
+            );
+            return {
+              orientation,
+              screen,
+              actualScreen: window.__appRentalDemo.snapshot().screen,
+              stub: Boolean(stub),
+              dedicated: Boolean(dedicated),
+              placeholderCopy: /当前入口已连通|功能页面/.test(rootNode.innerText),
+            };
+          }, { orientation, screen }));
+        }
+      }
+      assert(
+        results.every(({ screen, actualScreen, stub, placeholderCopy }) => actualScreen === screen && !stub && !placeholderCopy),
+        `search/community 仍落入占位页：${JSON.stringify(results)}`,
+      );
+    });
+
+    await runRefactorGate('LANDSCAPE_ORDER_ROUTES', async () => {
+      await reloadDemo();
+      await page.evaluate(() => {
+        window.__appRentalDemo.setScenario('active-rental');
+        window.__appRentalDemo.setOrientation('landscape');
+        window.__appRentalDemo.navigate('orders');
+      });
+      const listState = await page.evaluate(() => ({
+        screen: window.__appRentalDemo.snapshot().screen,
+        list: Boolean(document.querySelector('.landscape-order-list, .order-list-pane')),
+        detail: Boolean(document.querySelector('.landscape-order-detail, [data-layout="landscape-order-detail"], .order-detail-pane')),
+      }));
+      await page.locator('.order-list-card[data-status="active"]').first().click();
+      const detailState = await page.evaluate(() => ({
+        screen: window.__appRentalDemo.snapshot().screen,
+        list: Boolean(document.querySelector('.landscape-order-list, .order-list-pane')),
+        detail: Boolean(document.querySelector('.landscape-order-detail, [data-layout="landscape-order-detail"], .order-detail-pane')),
+      }));
+      assert(
+        listState.screen === 'orders' && listState.list && !listState.detail
+          && detailState.screen === 'order-detail' && !detailState.list && detailState.detail,
+        `横屏订单列表与详情未拆成独立页面：${JSON.stringify({ listState, detailState })}`,
+      );
+    });
+
+    await runRefactorGate('CROSS_GAME_CHECKOUT', async () => {
+      await reloadDemo();
+      const checkoutContexts = await page.evaluate(() => {
+        const readCheckout = () => {
+          const snapshot = window.__appRentalDemo.snapshot();
+          const checkout = snapshot.checkoutDraft || snapshot.order;
+          const text = document.querySelector('#appRentalDemo').innerText;
+          return {
+            selectedGameId: snapshot.selectedGameId,
+            gameId: checkout?.gameId,
+            gameName: checkout?.gameName,
+            hasShadowBlade: text.includes('影之刃零'),
+            hasEldenRing: text.includes('艾尔登法环'),
+            coverSource: document.querySelector('.checkout-cover img')?.dataset.sourceScreen,
+            coverCrop: document.querySelector('.checkout-cover img')
+              ? [
+                  document.querySelector('.checkout-cover img').dataset.cropX,
+                  document.querySelector('.checkout-cover img').dataset.cropY,
+                  document.querySelector('.checkout-cover img').dataset.cropWidth,
+                  document.querySelector('.checkout-cover img').dataset.cropHeight,
+                ].join(',')
+              : null,
+          };
+        };
+        window.__appRentalDemo.setScenario('not-member-library');
+        window.__appRentalDemo.setOrientation('portrait');
+        window.__appRentalDemo.setSelectedGame('elden-ring');
+        window.__appRentalDemo.selectRentalSku('rent-2h');
+        window.__appRentalDemo.navigate('checkout');
+        const first = readCheckout();
+        window.__appRentalDemo.navigate('detail', { replaceTask: true });
+        window.__appRentalDemo.setSelectedGame('shadow-blade-zero');
+        window.__appRentalDemo.navigate('checkout');
+        return { first, second: readCheckout() };
+      });
+      assert(
+        checkoutContexts.first.gameId === 'elden-ring'
+          && checkoutContexts.first.coverSource === 'home'
+          && checkoutContexts.first.coverCrop === '67,1658,492,235'
+          && checkoutContexts.second.selectedGameId === 'shadow-blade-zero'
+          && checkoutContexts.second.gameId === 'shadow-blade-zero'
+          && checkoutContexts.second.gameName === '影之刃零'
+          && checkoutContexts.second.hasShadowBlade
+          && !checkoutContexts.second.hasEldenRing,
+        `跨游戏结算串单：${JSON.stringify(checkoutContexts)}`,
+      );
+    });
+
+    await runRefactorGate('GAME_TRANSACTION_COMPLETION', async () => {
+      await reloadDemo();
+      const transaction = await page.evaluate(() => {
+        window.__appRentalDemo.setScenario('not-member-library');
+        window.__appRentalDemo.setOrientation('portrait');
+        window.__appRentalDemo.setSelectedGame('elden-ring');
+        window.__appRentalDemo.selectRentalSku('rent-2h');
+        window.__appRentalDemo.navigate('checkout');
+        const paid = window.__appRentalDemo.payOrder();
+        const payment = {
+          status: (window.__appRentalDemo.snapshot().checkoutDraft || window.__appRentalDemo.snapshot().order)?.status,
+          screen: window.__appRentalDemo.snapshot().screen,
+          paymentComplete: /支付成功|支付完成|已完成支付/.test(document.querySelector('#appRentalDemo').innerText),
+          allocationInProgress: /分配账号|账号分配中|正在分配/.test(document.querySelector('#appRentalDemo').innerText),
+        };
+        const allocated = window.__appRentalDemo.allocateAccount(true);
+        const allocation = {
+          status: (window.__appRentalDemo.snapshot().activeUsage || window.__appRentalDemo.snapshot().order)?.status,
+          screen: window.__appRentalDemo.snapshot().screen,
+          allocationComplete: /账号已就绪|账号分配成功|开始畅玩|立即登录/.test(document.querySelector('#appRentalDemo').innerText),
+        };
+        return { paid, allocated, payment, allocation };
+      });
+      assert(
+        transaction.paid === true
+          && ['allocating', 'paid', 'succeeded', 'completed'].includes(transaction.payment.status)
+          && transaction.payment.paymentComplete
+          && transaction.payment.allocationInProgress
+          && transaction.allocated === true
+          && ['active', 'ready', 'completed'].includes(transaction.allocation.status)
+          && transaction.allocation.allocationComplete,
+        `游戏支付或账号分配缺少完成态：${JSON.stringify(transaction)}`,
+      );
+    });
+
+    await runRefactorGate('MEMBERSHIP_COMPLETION', async () => {
+      await reloadDemo();
+      const membership = await page.evaluate(() => {
+        const api = window.__appRentalDemo;
+        api.setOrientation('portrait');
+        api.navigate('membership');
+        const created = api.createMembershipOrder();
+        const complete = api.payMembershipOrder || api.completeMembershipPayment;
+        const completed = typeof complete === 'function' ? complete.call(api) : false;
+        const snapshot = api.snapshot();
+        return {
+          created: created?.status,
+          hasCompletionApi: typeof complete === 'function',
+          completed,
+          orderStatus: snapshot.membershipOrder?.status,
+          membershipStatus: snapshot.membershipStatus,
+          completionCopy: /开通成功|会员已生效|支付成功|支付完成/.test(document.querySelector('#appRentalDemo').innerText),
+        };
+      });
+      assert(
+        membership.created === 'pending'
+          && membership.hasCompletionApi
+          && membership.completed === true
+          && ['paid', 'active', 'completed', 'succeeded'].includes(membership.orderStatus)
+          && ['monthly-active', 'annual-active', 'permanent'].includes(membership.membershipStatus)
+          && membership.completionCopy,
+        `会员订单缺少支付完成与权益生效态：${JSON.stringify(membership)}`,
+      );
+    });
+
+    await runRefactorGate('EXPIRED_CREDENTIAL_GUARD', async () => {
+      await reloadDemo();
+      await page.evaluate(() => {
+        window.__appRentalDemo.setOrientation('portrait');
+        window.__appRentalDemo.navigate('orders');
+        window.__appRentalDemo.selectOrder('APP-20260803005');
+        window.__appRentalDemo.navigate('steam-login');
+      });
+      const apiGuards = await page.evaluate(() => ({
+        openCredential: window.__appRentalDemo.openCredentialPanel(),
+        openManual: window.__appRentalDemo.openManualLogin(),
+        requestGuard: window.__appRentalDemo.requestGuardCode(),
+      }));
+      const helpTrigger = page.locator('.steam-help-trigger');
+      if (await helpTrigger.count()) await helpTrigger.click();
+      const guarded = await page.evaluate(() => {
+        const rootNode = document.querySelector('#appRentalDemo');
+        return {
+          screen: window.__appRentalDemo.snapshot().screen,
+          credentialPanelOpen: window.__appRentalDemo.snapshot().credentialPanelOpen,
+          steamHelpOpen: window.__appRentalDemo.snapshot().steamHelpOpen,
+          overlay: Boolean(rootNode.querySelector('.steam-credential-overlay, .credential-panel')),
+          secretInDom: /gh_rental_2607|G@meHub#8291|48291/.test(rootNode.innerHTML),
+        };
+      });
+      assert(
+        apiGuards.openCredential === false && apiGuards.openManual === false && apiGuards.requestGuard === false
+          && !guarded.credentialPanelOpen && !guarded.steamHelpOpen && !guarded.overlay && !guarded.secretInDom,
+        `失效订单仍可访问凭据：${JSON.stringify({ apiGuards, guarded })}`,
+      );
+    });
+
+    await runRefactorGate('SENSITIVE_STATE_LIFECYCLE', async () => {
+      const seedSensitiveState = async () => {
+        await page.evaluate(() => {
+          window.__appRentalDemo.setScenario('active-rental');
+          window.__appRentalDemo.setOrientation('portrait');
+          window.__appRentalDemo.navigate('orders');
+          window.__appRentalDemo.selectOrder('APP-SCENARIO-ACTIVE');
+          window.__appRentalDemo.openManualLogin();
+        });
+        await page.locator('#steam-account').fill('sensitive-user');
+        await page.locator('#steam-password').fill('sensitive-password');
+        await page.locator('[data-action="submit-steam-login"]').click();
+        await page.locator('[data-action="request-guard"]').click();
+      };
+      await reloadDemo();
+      await seedSensitiveState();
+      await page.locator('.steam-close').click();
+      const readSensitiveState = () => page.evaluate(() => {
+        const snapshot = window.__appRentalDemo.snapshot();
+        return {
+          account: snapshot.steamForm.account,
+          password: snapshot.steamForm.password,
+          guardCode: snapshot.guardCode,
+          guardExpiresAt: snapshot.guardExpiresAt,
+          submitted: snapshot.steamForm.submitted,
+          requiresGuard: snapshot.steamForm.requiresGuard,
+          credentialPanelOpen: snapshot.credentialPanelOpen,
+          steamHelpOpen: snapshot.steamHelpOpen,
+          loginMethodOpen: snapshot.loginMethodOpen,
+        };
+      });
+      const afterExit = await readSensitiveState();
+      await reloadDemo();
+      await seedSensitiveState();
+      await page.evaluate(() => window.__appRentalDemo.clearSensitiveState('background'));
+      const afterBackground = await readSensitiveState();
+      const isClean = (snapshot) => snapshot.account === ''
+        && snapshot.password === ''
+        && snapshot.guardCode === null
+        && snapshot.guardExpiresAt === null
+        && !snapshot.submitted
+        && !snapshot.requiresGuard
+        && !snapshot.credentialPanelOpen
+        && !snapshot.steamHelpOpen
+        && !snapshot.loginMethodOpen;
+      assert(isClean(afterExit) && isClean(afterBackground), `退出或后台未清空敏感态：${JSON.stringify({ afterExit, afterBackground })}`);
+    });
+
+    await runRefactorGate('ROTATION_SCROLL_REGISTRY', async () => {
+      const results = [];
+      for (const [screen, requestedTop] of [['play', 35], ['library', 145], ['membership', 108], ['member-library', 180]]) {
+        await reloadDemo();
+        const before = await page.evaluate(({ screen, requestedTop }) => {
+          window.__appRentalDemo.setOrientation('portrait');
+          window.__appRentalDemo.navigate(screen);
+          const region = document.querySelector('.device.portrait .portrait-content');
+          const max = Math.max(0, region.scrollHeight - region.clientHeight);
+          region.scrollTop = Math.min(requestedTop, max);
+          region.dispatchEvent(new Event('scroll'));
+          return { top: region.scrollTop, max };
+        }, { screen, requestedTop });
+        await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
+        await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        const after = await page.evaluate(() => {
+          const candidates = [...document.querySelectorAll(
+            '[data-scroll-region="primary"], .landscape-membership-body, .landscape-member-library-layout, .device.landscape .landscape-content, .device.landscape .task-scroll-region',
+          )];
+          const region = candidates.find((node) => node.scrollHeight > node.clientHeight) || candidates[0];
+          return region ? { top: region.scrollTop, max: Math.max(0, region.scrollHeight - region.clientHeight) } : { top: 0, max: 0 };
+        });
+        await page.evaluate(() => window.__appRentalDemo.setOrientation('portrait'));
+        await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        const roundTrip = await page.evaluate(() => {
+          const region = document.querySelector('.device.portrait .portrait-content');
+          return { top: region?.scrollTop || 0, max: Math.max(0, (region?.scrollHeight || 0) - (region?.clientHeight || 0)) };
+        });
+        const expected = Math.min(before.top, after.max);
+        results.push({
+          screen,
+          before,
+          after,
+          roundTrip,
+          expected,
+          retained: before.top > 0 && Math.abs(after.top - expected) <= 2 && Math.abs(roundTrip.top - before.top) <= 2,
+        });
+      }
+      assert(results.every(({ retained }) => retained), `旋转后滚动位置丢失：${JSON.stringify(results)}`);
+    });
+
+    await runRefactorGate('EXPIRY_THRESHOLD_ONCE', async () => {
+      await reloadDemo();
+      const threshold = await page.evaluate(() => {
+        window.__appRentalDemo.setScenario('active-rental');
+        window.__appRentalDemo.triggerExpiryMinutes(16);
+        const before = window.__appRentalDemo.snapshot();
+        window.__appRentalDemo.triggerExpiryMinutes(14);
+        const crossed = window.__appRentalDemo.snapshot();
+        window.__appRentalDemo.closeExpiryReminder();
+        window.__appRentalDemo.triggerExpiryMinutes(10);
+        window.__appRentalDemo.triggerExpiryMinutes(5);
+        const after = window.__appRentalDemo.snapshot();
+        return {
+          before: { open: before.expiryReminderOpen, count: before.expiryReminderCount },
+          crossed: { open: crossed.expiryReminderOpen, count: crossed.expiryReminderCount },
+          after: { open: after.expiryReminderOpen, count: after.expiryReminderCount },
+        };
+      });
+      assert(
+        !threshold.before.open && threshold.before.count === 0
+          && threshold.crossed.open && threshold.crossed.count === 1
+          && !threshold.after.open && threshold.after.count === 1,
+        `15分钟跨阈值提醒次数错误：${JSON.stringify(threshold)}`,
+      );
+    });
+
+    await runRefactorGate('EXPIRY_RETURN_STACK', async () => {
+      await reloadDemo();
+      const takeover = await page.evaluate(() => {
+        window.__appRentalDemo.setOrientation('portrait');
+        window.__appRentalDemo.navigate('library');
+        window.__appRentalDemo.setScenario('active-rental');
+        window.__appRentalDemo.navigate('orders');
+        window.__appRentalDemo.selectOrder('APP-SCENARIO-ACTIVE');
+        window.__appRentalDemo.openManualLogin();
+        window.__appRentalDemo.setPostRentalEntitlement('permanent');
+        window.__appRentalDemo.triggerExpiryMinutes(0);
+        const atT0Snapshot = window.__appRentalDemo.snapshot();
+        const backTarget = window.__appRentalDemo.taskBack();
+        const afterBackSnapshot = window.__appRentalDemo.snapshot();
+        return {
+          atT0: { screen: atT0Snapshot.screen, stack: atT0Snapshot.routeContext.taskStack, source: atT0Snapshot.routeContext.sourceScreen },
+          backTarget,
+          afterBack: { screen: afterBackSnapshot.screen, stack: afterBackSnapshot.routeContext.taskStack, source: afterBackSnapshot.routeContext.sourceScreen },
+        };
+      });
+      await reloadDemo();
+      const ended = await page.evaluate(() => {
+        window.__appRentalDemo.setOrientation('portrait');
+        window.__appRentalDemo.navigate('library');
+        window.__appRentalDemo.setScenario('active-rental');
+        window.__appRentalDemo.navigate('orders');
+        window.__appRentalDemo.selectOrder('APP-SCENARIO-ACTIVE');
+        window.__appRentalDemo.openManualLogin();
+        window.__appRentalDemo.triggerExpiryMinutes(0);
+        window.__appRentalDemo.closeExpiredLaunchDialog();
+        const snapshot = window.__appRentalDemo.snapshot();
+        return { screen: snapshot.screen, stack: snapshot.routeContext.taskStack, source: snapshot.routeContext.sourceScreen };
+      });
+      assert(
+        takeover.atT0.screen === 'detail'
+          && takeover.backTarget === 'library'
+          && takeover.afterBack.screen === 'library'
+          && takeover.afterBack.stack.length === 0
+          && ended.screen === 'library'
+          && ended.stack.length === 0,
+        `到期后的来源返回栈错误：${JSON.stringify({ takeover, ended })}`,
+      );
+    });
+
+    for (const failure of refactorGateFailures) process.stdout.write(`REFACTOR_GATE_FAIL ${failure}\n`);
+    assert(
+      refactorGateFailures.length === 0,
+      `REFACTOR_GATES ${refactorGateChecks}/11 PASS，${refactorGateFailures.length} FAIL`,
+    );
+    process.stdout.write(`REFACTOR_GATES ${refactorGateChecks}/${refactorGateChecks} PASS\n`);
 
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
@@ -91,7 +486,7 @@ async function main() {
       const secondRow = metrics.filter(({ top }) => top > firstTop);
       return {
         frame: document.querySelector('.device.landscape')?.getBoundingClientRect().toJSON(),
-        hasTopNav: Boolean(document.querySelector('.landscape-top-nav')),
+        hasSideNav: Boolean(document.querySelector('.landscape-side-nav')),
         hasBottomNav: Boolean(document.querySelector('.landscape .portrait-nav')),
         nav: [...document.querySelectorAll('.landscape-top-nav nav button')].map((node) => node.textContent.trim()),
         tabs: [...document.querySelectorAll('.landscape-platform-tabs button')].map((node) => node.textContent.trim()),
@@ -104,9 +499,9 @@ async function main() {
     });
     assert(Math.round(landscape.frame?.width ?? 0) === 874, '横屏宽度不是874');
     assert(Math.round(landscape.frame?.height ?? 0) === 402, '横屏高度不是402');
-    assert(landscape.hasTopNav, '横屏缺少顶部导航');
+    assert(landscape.hasSideNav, '横屏缺少 APP 左侧导航');
     assert(!landscape.hasBottomNav, '横屏不得出现底部导航');
-    assert(landscape.nav.join('|') === '游戏库|玩游戏|探索|排行榜|我的', '横屏导航顺序错误');
+    assert(landscape.nav.join('|') === '游戏库|玩游戏|探索|社区|排行榜|我的', '横屏导航顺序错误');
     assert(landscape.cards >= 6, '横屏游戏墙密度不足');
     assert(landscape.rows >= 2, '横屏游戏墙必须露出第二行');
     assert(landscape.tabs.join('|') === 'PC游戏|Steam游戏|Epic游戏|复古游戏', '横屏平台Tab不完整');
@@ -792,11 +1187,27 @@ async function main() {
       window.__appRentalDemo.setOrientation('landscape');
     });
     const landscapeOrders = await page.evaluate(() => ({
-      split: Boolean(document.querySelector('.landscape-orders .order-list-pane') && document.querySelector('.landscape-orders .order-detail-pane')),
+      screen: window.__appRentalDemo.snapshot().screen,
+      list: Boolean(document.querySelector('.landscape-orders .landscape-order-list, .landscape-orders .order-list-pane')),
+      detail: Boolean(document.querySelector('.landscape-order-detail, [data-layout="landscape-order-detail"], .landscape-orders .order-detail-pane')),
       tabs: [...document.querySelectorAll('.order-tabs [role="tab"]')].map((node) => node.textContent.trim()),
     }));
-    assert(landscapeOrders.split, '横屏订单中心必须为左列表、右详情');
+    assert(landscapeOrders.screen === 'orders' && landscapeOrders.list && !landscapeOrders.detail, '横屏订单中心必须为独立列表页且不得预渲染详情');
     assert(landscapeOrders.tabs.join('|') === '全部|租赁中|待支付', '横屏订单 Tab 不一致');
+    await page.locator('.landscape-orders .order-list-card[data-status="active"]').first().click();
+    const landscapeOrderDetail = await page.evaluate(() => ({
+      screen: window.__appRentalDemo.snapshot().screen,
+      list: Boolean(document.querySelector('.landscape-order-list, .order-list-pane')),
+      detail: Boolean(document.querySelector('.landscape-order-detail, [data-layout="landscape-order-detail"], .order-detail-pane')),
+      steps: document.querySelectorAll('.order-progress [data-progress-step]').length,
+      actions: [...document.querySelectorAll('.active-order-actions button')].map((node) => node.textContent.trim()),
+    }));
+    assert(
+      landscapeOrderDetail.screen === 'order-detail' && !landscapeOrderDetail.list && landscapeOrderDetail.detail,
+      '横屏订单卡片未进入独立订单详情页',
+    );
+    assert(landscapeOrderDetail.steps === 4 && ['继续游戏', '登录信息', '继续畅玩', '申请售后'].every((label) => landscapeOrderDetail.actions.includes(label)), '横屏独立订单详情内容不完整');
+    await page.evaluate(() => window.__appRentalDemo.navigate('orders', { replaceTask: true }));
     await page.locator('.order-tabs [data-value="pending"]').click();
     await page.evaluate(() => window.__appRentalDemo.setOrientation('portrait'));
     const rotatedOrderTab = await page.evaluate(() => ({
@@ -806,7 +1217,7 @@ async function main() {
     }));
     assert(rotatedOrderTab.tab === 'pending' && rotatedOrderTab.activeTab === '待支付' && rotatedOrderTab.statuses.every((status) => status === 'pending'), '旋转后订单 Tab 或筛选结果未保留');
     await page.locator('.order-tabs [data-value="all"]').click();
-    process.stdout.write('ORDERS 11/11 PASS\n');
+    process.stdout.write('ORDERS 13/13 PASS\n');
 
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
@@ -966,8 +1377,7 @@ async function main() {
       remember: document.querySelector('#steam-remember')?.checked,
     }));
     assert(rotatedGuard.account === 'player@example.com' && rotatedGuard.code === '48291' && rotatedGuard.remember, '旋转后 Steam 表单或 Guard 未连续保留');
-    await page.locator('.steam-close').click();
-    await page.locator('[data-action="open-credential"]').click();
+    await page.evaluate(() => window.__appRentalDemo.openCredentialPanel());
     assert(
       (await page.locator('.credential-panel [data-guard-code]').innerText()) === '48291'
         && (await page.locator('.credential-panel [data-action="copy-guard"]').count()) === 1
@@ -1026,8 +1436,10 @@ async function main() {
       window.__appRentalDemo.navigate('orders');
       window.__appRentalDemo.setOrientation('landscape');
     });
-    assertTouchTargets(await readTouchTargets('.order-tabs button, .order-detail-pane .active-order-actions button'), '横屏订单操作');
-    await page.locator('.order-detail-pane [data-action="open-login-method"]').click();
+    assertTouchTargets(await readTouchTargets('.order-tabs button'), '横屏订单 Tab');
+    await page.locator('.landscape-orders .order-list-card[data-status="active"]').first().click();
+    assertTouchTargets(await readTouchTargets('.landscape-order-detail .active-order-actions button, [data-layout="landscape-order-detail"] .active-order-actions button, .order-detail-pane .active-order-actions button'), '横屏订单详情操作');
+    await page.locator('.landscape-order-detail [data-action="open-login-method"], [data-layout="landscape-order-detail"] [data-action="open-login-method"], .order-detail-pane [data-action="open-login-method"]').click();
     await page.locator('.login-method-dialog [data-action="open-manual-login"]').click();
     await page.locator('#steam-account').fill('touch-test');
     await page.locator('#steam-password').fill('safe-test-value');
@@ -1043,7 +1455,7 @@ async function main() {
       window.__appRentalDemo.navigate('home');
     });
     assertTouchTargets(await readTouchTargets('.device-link'), '连接设备');
-    process.stdout.write('TOUCH_TARGETS 5/5 PASS\n');
+    process.stdout.write('TOUCH_TARGETS 6/6 PASS\n');
 
     const sourceAssetNames = [
       'portrait-home.jpg',
@@ -1126,29 +1538,6 @@ async function main() {
     );
     process.stdout.write('CONTINUITY 4/4 PASS\n');
 
-    for (const minutes of [5, 1]) {
-      await page.reload({ waitUntil: 'domcontentloaded' });
-      await page.waitForFunction(() => Boolean(window.__appRentalDemo));
-      const ignoredReminder = await page.evaluate((value) => {
-        window.__appRentalDemo.setScenario('active-rental');
-        const returned = window.__appRentalDemo.triggerExpiryMinutes(value);
-        const snapshot = window.__appRentalDemo.snapshot();
-        return {
-          returned,
-          open: snapshot.expiryReminderOpen,
-          count: snapshot.expiryReminderCount,
-          dom: Boolean(document.querySelector('.expiry-reminder')),
-        };
-      }, minutes);
-      assert(
-        ignoredReminder.returned === false
-          && ignoredReminder.open === false
-          && ignoredReminder.count === 0
-          && ignoredReminder.dom === false,
-        `全新使用单在${minutes}分钟不得返回或显示临期提醒`,
-      );
-    }
-
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));
     await page.evaluate(() => {
@@ -1182,7 +1571,7 @@ async function main() {
     }));
     assert(!expiryNoRepeat.open && expiryNoRepeat.count === 1, '同一使用单在关闭、5/1分钟、前后台后不得重复提醒');
     assert(
-      !/expiry(?:5|1)|(?:minutes|remaining)\s*={2,3}\s*(?:5|1)\b|case\s+(?:5|1)\s*:/.test(fs.readFileSync(path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.template.html'), 'utf8')),
+      !/expiry(?:5|1)|(?:minutes|remaining)\s*={2,3}\s*(?:5|1)\b|case\s+(?:5|1)\s*:/.test(fs.readFileSync(templatePath, 'utf8')),
       '源码存在5分钟或1分钟提醒字段/正向分支',
     );
 
@@ -1210,9 +1599,10 @@ async function main() {
     await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
     const landscapeInGameGeometry = await page.evaluate(() => {
       const reminder = document.querySelector('.expiry-reminder').getBoundingClientRect();
-      const topNav = document.querySelector('.landscape-top-nav').getBoundingClientRect();
       const device = document.querySelector('.device').getBoundingClientRect();
-      return { gap: reminder.top - topNav.bottom, inside: reminder.top >= device.top && reminder.bottom <= device.bottom && reminder.left >= device.left && reminder.right <= device.right };
+      const system = document.querySelector('.landscape-system')?.getBoundingClientRect();
+      const safeBottom = system?.bottom || device.top + 24;
+      return { gap: reminder.top - safeBottom, inside: reminder.top >= device.top && reminder.bottom <= device.bottom && reminder.left >= device.left && reminder.right <= device.right };
     });
     assert(landscapeInGameGeometry.gap >= 8 && landscapeInGameGeometry.inside, `横屏游戏内提醒未完整位于顶部安全区下方：${JSON.stringify(landscapeInGameGeometry)}`);
     await page.getByRole('button', { name: '继续畅玩', exact: true }).click();
@@ -1222,7 +1612,7 @@ async function main() {
       open: Boolean(document.querySelector('.expiry-reminder')),
     }));
     assert(expiryContinue.screen === 'detail' && expiryContinue.expireAt === inGameExpiry.expireAt && !expiryContinue.open, '继续畅玩应进入最新权益且不得直接延时');
-    process.stdout.write('EXPIRY 11/11 PASS\n');
+    process.stdout.write('EXPIRY 9/9 PASS\n');
 
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));
@@ -1437,7 +1827,19 @@ async function main() {
       window.__appRentalDemo.setScenario('active-rental');
       window.__appRentalDemo.navigate('orders');
     });
-    checkLayout((await page.locator('.order-master-detail .order-list-pane').count()) === 1 && (await page.locator('.order-master-detail .order-detail-pane').count()) === 1, '横屏订单未使用35%列表与65%详情结构');
+    const landscapeOrderListLayout = await page.evaluate(() => ({
+      screen: window.__appRentalDemo.snapshot().screen,
+      list: Boolean(document.querySelector('.landscape-order-list, .order-list-pane')),
+      detail: Boolean(document.querySelector('.landscape-order-detail, [data-layout="landscape-order-detail"], .order-detail-pane')),
+    }));
+    checkLayout(landscapeOrderListLayout.screen === 'orders' && landscapeOrderListLayout.list && !landscapeOrderListLayout.detail, `横屏订单列表必须是独立页面：${JSON.stringify(landscapeOrderListLayout)}`);
+    await page.locator('.landscape-orders .order-list-card[data-status="active"]').first().click();
+    const landscapeOrderDetailLayout = await page.evaluate(() => ({
+      screen: window.__appRentalDemo.snapshot().screen,
+      list: Boolean(document.querySelector('.landscape-order-list, .order-list-pane')),
+      detail: Boolean(document.querySelector('.landscape-order-detail, [data-layout="landscape-order-detail"], .order-detail-pane')),
+    }));
+    checkLayout(landscapeOrderDetailLayout.screen === 'order-detail' && !landscapeOrderDetailLayout.list && landscapeOrderDetailLayout.detail, `横屏订单详情必须是独立页面：${JSON.stringify(landscapeOrderDetailLayout)}`);
     await page.evaluate(() => window.__appRentalDemo.openManualLogin());
     checkLayout((await page.locator('.steam-login-body .steam-login-form').count()) === 1 && (await page.locator('.steam-login-body .steam-qr-panel').count()) === 1, 'Steam 横屏未继承账号密码与二维码双栏');
     const readableMetrics = await page.evaluate(() => ({
@@ -1557,7 +1959,7 @@ async function main() {
     await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
     const landscapeExpirySpacing = await page.evaluate(() => {
       const reminder = document.querySelector('.expiry-reminder').getBoundingClientRect();
-      const content = document.querySelector('.order-master-detail').getBoundingClientRect();
+      const content = document.querySelector('.landscape-orders .order-page-head, .landscape-orders .order-list-pane, .landscape-orders .landscape-order-list').getBoundingClientRect();
       return { reminderBottom: Math.round(reminder.bottom), contentTop: Math.round(content.top) };
     });
     checkReviewFix(landscapeExpirySpacing.reminderBottom <= landscapeExpirySpacing.contentTop, `横屏临期提示仍遮挡订单正文：${JSON.stringify(landscapeExpirySpacing)}`);
@@ -1670,7 +2072,13 @@ async function main() {
     assertAnnotation(annotationMatrix.interaction === 16 && annotationMatrix.global === 8 && annotationMatrix.exception === 8, `数字/G/E 三类标注数量错误：${JSON.stringify(annotationMatrix)}`);
     const annotationStateText = await annotationPage.locator('#panel-state').innerText();
     assertAnnotation(!/(?:gh_rental_2607|G@meHub#8291|48291|guardCode|\btoken\b)/i.test(annotationStateText), '数据与状态 Tab 不得展示账号、密码、校验值或令牌字段');
-    assertAnnotation(annotationStateText.includes('五个核心页保留 APP 底部导航') && annotationStateText.includes('继承 Mac'), '标注版未明确核心页导航与 Mac 衍生布局规则');
+    assertAnnotation(
+      annotationStateText.includes('七个核心页沿用 APP 底部导航')
+        && annotationStateText.includes('七个核心页沿用 APP 左侧导航')
+        && annotationStateText.includes('订单列表与详情拆页')
+        && annotationStateText.includes('继承 Mac'),
+      '标注版未明确核心页导航、订单拆页与 Mac 衍生布局规则',
+    );
     assertAnnotation(annotationStateText.includes('任务页不显示全局导航') && annotationStateText.includes('旋转不重建'), '标注版未明确任务页壳层或旋转连续性规则');
 
     await annotationPage.locator('#orientationLandscape').click();

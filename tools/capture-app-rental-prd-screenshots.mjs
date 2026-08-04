@@ -21,20 +21,40 @@ const EXPECTED_DIMENSIONS = Object.freeze({
 const shots = [
   { name: '01-discovery-portrait.png', orientation: 'portrait', screen: 'home', scenario: 'member-library-trial' },
   { name: '01-discovery-landscape.png', orientation: 'landscape', screen: 'home', scenario: 'member-library-trial' },
+  { name: '09-play-portrait.png', orientation: 'portrait', screen: 'play', scenario: 'member-library-trial' },
+  { name: '09-play-landscape.png', orientation: 'landscape', screen: 'play', scenario: 'member-library-trial' },
+  { name: '10-community-portrait.png', orientation: 'portrait', screen: 'community', scenario: 'member-library-trial' },
+  { name: '10-community-landscape.png', orientation: 'landscape', screen: 'community', scenario: 'member-library-trial' },
+  { name: '11-ranking-portrait.png', orientation: 'portrait', screen: 'ranking', scenario: 'member-library-trial' },
+  { name: '11-ranking-landscape.png', orientation: 'landscape', screen: 'ranking', scenario: 'member-library-trial' },
+  { name: '12-library-portrait.png', orientation: 'portrait', screen: 'library', scenario: 'member-library-trial' },
+  { name: '12-library-landscape.png', orientation: 'landscape', screen: 'library', scenario: 'member-library-trial' },
+  { name: '13-profile-portrait.png', orientation: 'portrait', screen: 'profile', scenario: 'active-member' },
+  { name: '13-profile-landscape.png', orientation: 'landscape', screen: 'profile', scenario: 'active-member' },
+  { name: '14-search-portrait.png', orientation: 'portrait', screen: 'search', scenario: 'member-library-trial' },
+  { name: '14-search-landscape.png', orientation: 'landscape', screen: 'search', scenario: 'member-library-trial' },
   { name: '02-detail-portrait.png', orientation: 'portrait', screen: 'detail', scenario: 'member-library-trial', gameId: 'shadow-blade-zero' },
   { name: '02-detail-landscape.png', orientation: 'landscape', screen: 'detail', scenario: 'member-library-trial', gameId: 'spiritfarer' },
   { name: '03-checkout-portrait.png', orientation: 'portrait', screen: 'checkout', scenario: 'not-member-library', beforeNavigate: 'select-hourly-8h' },
   { name: '03-checkout-landscape.png', orientation: 'landscape', screen: 'checkout', scenario: 'not-member-library', beforeNavigate: 'select-hourly-8h' },
   { name: '04-membership-portrait.png', orientation: 'portrait', screen: 'membership', scenario: 'member-library-trial-used' },
   { name: '04-membership-landscape.png', orientation: 'landscape', screen: 'membership', scenario: 'member-library-trial-used' },
+  { name: '15-member-library-portrait.png', orientation: 'portrait', screen: 'member-library', scenario: 'member-library-trial-used' },
+  { name: '15-member-library-landscape.png', orientation: 'landscape', screen: 'member-library', scenario: 'member-library-trial-used' },
   { name: '05-orders-portrait.png', orientation: 'portrait', screen: 'orders', scenario: 'active-rental', sensitive: true },
   { name: '05-orders-landscape.png', orientation: 'landscape', screen: 'orders', scenario: 'active-rental', sensitive: true },
+  { name: '16-order-detail-portrait.png', orientation: 'portrait', screen: 'order-detail', scenario: 'active-rental', sensitive: true },
+  { name: '16-order-detail-landscape.png', orientation: 'landscape', screen: 'order-detail', scenario: 'active-rental', sensitive: true },
   { name: '06-steam-login-portrait.png', orientation: 'portrait', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-manual-login', expectedScreen: 'steam-login', sensitive: true },
   { name: '06-steam-login-landscape.png', orientation: 'landscape', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-manual-login', expectedScreen: 'steam-login', sensitive: true },
   { name: '07-expiry-15m-portrait.png', orientation: 'portrait', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-expiry-15m' },
   { name: '07-expiry-15m-landscape.png', orientation: 'landscape', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-expiry-15m' },
   { name: '08-after-sales-portrait.png', orientation: 'portrait', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-after-sales', expectedScreen: 'after-sales' },
   { name: '08-after-sales-landscape.png', orientation: 'landscape', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-after-sales', expectedScreen: 'after-sales' },
+  { name: '17-payment-success-portrait.png', orientation: 'portrait', screen: 'checkout', scenario: 'not-member-library', beforeNavigate: 'select-hourly-8h', afterNavigate: 'complete-game-payment' },
+  { name: '17-payment-success-landscape.png', orientation: 'landscape', screen: 'checkout', scenario: 'not-member-library', beforeNavigate: 'select-hourly-8h', afterNavigate: 'complete-game-payment' },
+  { name: '18-membership-success-portrait.png', orientation: 'portrait', screen: 'membership', scenario: 'member-library-trial-used', afterNavigate: 'complete-membership-payment' },
+  { name: '18-membership-success-landscape.png', orientation: 'landscape', screen: 'membership', scenario: 'member-library-trial-used', afterNavigate: 'complete-membership-payment' },
 ];
 
 assert(chromePath, 'Local Chrome not found');
@@ -213,6 +233,14 @@ async function setShotState(page, shot) {
       demo.triggerExpiryMinutes(15);
     }
     if (afterNavigate === 'open-after-sales') demo.openAfterSales();
+    if (afterNavigate === 'complete-game-payment') {
+      demo.payOrder();
+      demo.allocateAccount(true);
+    }
+    if (afterNavigate === 'complete-membership-payment') {
+      demo.createMembershipOrder();
+      demo.payMembershipOrder();
+    }
   }, shot);
 }
 
@@ -274,8 +302,8 @@ async function captureShots(browser) {
     });
     captured += 1;
   }
-  assert.equal(captured, 16, `Capture count mismatch: ${captured}/16`);
-  process.stdout.write(`CAPTURE ${captured}/16 PASS\n`);
+  assert.equal(captured, shots.length, `Capture count mismatch: ${captured}/${shots.length}`);
+  process.stdout.write(`CAPTURE ${captured}/${shots.length} PASS\n`);
 }
 
 const browser = await chromium.launch({ executablePath: chromePath, headless: true });
