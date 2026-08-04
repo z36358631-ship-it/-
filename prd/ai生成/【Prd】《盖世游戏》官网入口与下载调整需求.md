@@ -7,6 +7,7 @@
 |2026.08.04|V1.0|郑群超|新增盖世游戏 APP、Mac 官网入口及 APP 下载能力||
 |2026.08.04|V1.1|郑群超|产品名称全局统一使用 Mac，不使用 MAC||
 |2026.08.04|V1.2|郑群超|英文官网新增 Google Play 下载入口||
+|2026.08.04|V1.3|郑群超|精简英文下载入口文案||
 
 ## 二、背景与目标
 
@@ -62,7 +63,7 @@
 |---|---|---|
 |小鸡官网“服务与支持”页|-|**位置**：在现有“小鸡游戏世界”区域下方增加“盖世游戏”区域。<br><br>**展示**：<br>- 移除顶部导航及页面内的“盖世掌游”入口。<br>- “盖世游戏”区域展示“盖世游戏 APP”“盖世游戏 Mac”两个入口。<br>- APP 入口说明支持 Android、iOS；Mac 入口说明支持 Apple 芯片 Mac。<br><br>**交互逻辑**：<br>- 点击“盖世游戏 APP”→进入 `https://gamehub.xiaoji.com/zh-cn/`。<br>- 点击“盖世游戏 Mac”→进入 `https://www.gamemac.com/zh-cn/`。<br>- 点击卡片或右侧箭头均可跳转。|
 |盖世游戏 APP 官网顶部区域|-|**位置**：产品 Tab 位于左上品牌名称右侧；右侧导航依次展示“Mac 下载”“首页”和语言切换。<br><br>**展示**：<br>- 品牌图标使用盖世游戏正式图标；中文名称显示“盖世游戏”，英文名称显示“GameHub”。<br>- 产品 Tab 包含“盖世游戏 APP / Mac 版”；英文显示“GameHub App / Mac”。<br>- 两个 Tab 使用独立圆角按钮，选中态与未选中态需明显区分。<br>- 进入 APP 官网时，APP 默认选中，Mac 未选中。<br><br>**交互逻辑**：<br>- 点击已选中的 APP Tab，不触发跳转。<br>- 点击 Mac Tab→进入对应语言的 Mac 官网。<br>- 点击“Mac 下载”→沿用现有跳转逻辑。<br>- 页面切换直接完成，不新增弹窗或 Toast。|
-|盖世游戏 APP 官网首屏下载区|-|**位置**：下载按钮位于首屏标题和副标题下方。<br><br>**展示**：<br>- 中文标题显示“在手机运行 3A 游戏”。<br>- 中文页展示 Android、iOS 两个下载入口。<br>- 英文页展示 Android、Google Play、iOS 三个下载入口。<br>- 各入口左侧展示对应平台图标。<br>- 中文按钮显示“Android 下载”“iOS 下载”；英文按钮显示“Download for Android”“Google Play”“Download for iOS”。<br><br>**交互逻辑**：<br>- 中文页点击 Android 下载→下载国服官方包。<br>- 英文页点击 Android 下载→下载 Global 海外全量包。<br>- 英文页点击 Google Play→进入 Google Play 商店页。<br>- 点击 iOS 下载→进入对应 App Store 下载页。<br>- 点击后直接进入下载链路，不新增确认弹窗或 Toast。|
+|盖世游戏 APP 官网首屏下载区|-|**位置**：下载按钮位于首屏标题和副标题下方。<br><br>**展示**：<br>- 中文标题显示“在手机运行 3A 游戏”。<br>- 中文页展示 Android、iOS 两个下载入口。<br>- 英文页展示 Android、Google Play、iOS 三个下载入口。<br>- 各入口左侧展示对应平台图标。<br>- 中文按钮显示“Android 下载”“iOS 下载”；英文按钮显示“Download for Android”“Google Play”“iOS”。<br><br>**交互逻辑**：<br>- 中文页点击 Android 下载→下载国服官方包。<br>- 英文页点击 Android 下载→下载 Global 海外全量包。<br>- 英文页点击 Google Play→进入 Google Play 商店页。<br>- 点击 iOS 下载→进入对应 App Store 下载页。<br>- 点击后直接进入下载链路，不新增确认弹窗或 Toast。|
 |中英文切换|-|**位置**：位于顶部导航最右侧。<br><br>**展示**：<br>- 中文页显示“EN”，英文页显示“中文”。<br>- 英文页面产品名仅使用“GameHub”，禁止使用 GaishiGame。<br>- 中文、英文页面结构及按钮顺序一致。<br><br>**交互逻辑**：<br>- 点击“EN”→进入英文 APP 官网。<br>- 点击“中文”→返回中文 APP 官网。<br>- 切换语言后保持在 APP 产品页。|
 
 ## 五、非功能需求
