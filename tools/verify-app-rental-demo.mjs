@@ -131,7 +131,7 @@ async function main() {
       const checkoutContexts = await page.evaluate(() => {
         const readCheckout = () => {
           const snapshot = window.__appRentalDemo.snapshot();
-          const checkout = snapshot.checkoutDraft || snapshot.order;
+          const checkout = snapshot.checkoutQuote || snapshot.order;
           const text = document.querySelector('#appRentalDemo').innerText;
           return {
             selectedGameId: snapshot.selectedGameId,
@@ -172,6 +172,51 @@ async function main() {
           && !checkoutContexts.second.hasEldenRing,
         `跨游戏结算串单：${JSON.stringify(checkoutContexts)}`,
       );
+    });
+
+    await runRefactorGate('DETAIL_CHECKOUT_SELECTION', async () => {
+      await reloadDemo();
+      await page.evaluate(() => {
+        window.__appRentalDemo.setScenario('not-member-library');
+        window.__appRentalDemo.setOrientation('portrait');
+        window.__appRentalDemo.setSelectedGame('elden-ring');
+        window.__appRentalDemo.navigate('detail');
+      });
+      const portraitDetailFlow = await page.evaluate(() => ({
+        text: document.querySelector('#appRentalDemo').innerText,
+        rentEntry: Boolean(document.querySelector('[data-action="open-rental-checkout"]')),
+        detailSelector: Boolean(document.querySelector('.portrait-detail [data-checkout-selector], .portrait-detail .sku-card, .portrait-detail [data-duration-hours]')),
+      }));
+      assert(portraitDetailFlow.rentEntry, '竖屏详情缺少租号开玩入口');
+      assert(!portraitDetailFlow.detailSelector && !/版本选择|SKU选择|租期选择/.test(portraitDetailFlow.text), '竖屏详情仍承载版本、SKU或租期选择');
+
+      await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
+      const landscapeDetailFlow = await page.evaluate(() => ({
+        rentEntry: Boolean(document.querySelector('.landscape-detail [data-action="open-rental-checkout"]')),
+        detailSelector: Boolean(document.querySelector('.landscape-detail [data-checkout-selector], .landscape-detail .sku-card, .landscape-detail [data-duration-hours]')),
+      }));
+      assert(landscapeDetailFlow.rentEntry && !landscapeDetailFlow.detailSelector, '横屏详情未收敛为相邻租号入口');
+
+      await page.locator('.landscape-detail [data-action="open-rental-checkout"]').click();
+      const checkoutFlow = await page.evaluate(() => {
+        const snapshot = window.__appRentalDemo.snapshot();
+        return {
+          screen: snapshot.screen,
+          version: Boolean(document.querySelector('[data-checkout-selector="version"]')),
+          sku: Boolean(document.querySelector('[data-checkout-selector="sku"]')),
+          duration: Boolean(document.querySelector('[data-checkout-selector="duration"]')),
+          quote: snapshot.checkoutQuote,
+          order: snapshot.order,
+        };
+      });
+      assert(
+        checkoutFlow.screen === 'checkout'
+          && checkoutFlow.version
+          && checkoutFlow.sku
+          && checkoutFlow.duration,
+        `确认订单缺少版本、SKU或租期选择：${JSON.stringify(checkoutFlow)}`,
+      );
+      assert(checkoutFlow.quote && !checkoutFlow.order, '进入确认订单应生成报价，不应提前创建支付订单');
     });
 
     await runRefactorGate('GAME_TRANSACTION_COMPLETION', async () => {
@@ -433,7 +478,7 @@ async function main() {
     for (const failure of refactorGateFailures) process.stdout.write(`REFACTOR_GATE_FAIL ${failure}\n`);
     assert(
       refactorGateFailures.length === 0,
-      `REFACTOR_GATES ${refactorGateChecks}/11 PASS，${refactorGateFailures.length} FAIL`,
+      `REFACTOR_GATES ${refactorGateChecks - refactorGateFailures.length}/${refactorGateChecks} PASS，${refactorGateFailures.length} FAIL`,
     );
     process.stdout.write(`REFACTOR_GATES ${refactorGateChecks}/${refactorGateChecks} PASS\n`);
 
@@ -619,17 +664,17 @@ async function main() {
     process.stdout.write(`ENTITLEMENTS ${entitlementCases.length}/${entitlementCases.length} PASS\n`);
 
     const skuCases = [
-      ['not-member-library', ['2小时租用', '更多租期'], ['首次体验', '单游戏永久畅玩', '开通会员']],
-      ['member-library-trial', ['首次体验', '单游戏永久畅玩', '开通会员'], ['日租', '周租']],
-      ['member-library-trial-used', ['单游戏永久畅玩', '开通会员'], ['首次体验', '已使用', '日租', '周租']],
-      ['active-member', ['会员畅玩'], ['2小时租用', '首次体验', '单游戏永久畅玩', '开通会员']],
+      ['not-member-library', 'checkout', ['版本选择', 'SKU选择', '时租', '日租', '周租'], ['首次体验', '单游戏永久畅玩', '开通会员']],
+      ['member-library-trial', 'checkout', ['版本选择', 'SKU选择', '首次体验', '单游戏永久畅玩', '开通会员'], ['时租', '日租', '周租']],
+      ['member-library-trial-used', 'checkout', ['版本选择', 'SKU选择', '单游戏永久畅玩', '开通会员'], ['首次体验', '时租', '日租', '周租']],
+      ['active-member', 'detail', ['会员畅玩'], ['版本选择', 'SKU选择', '时租', '首次体验', '单游戏永久畅玩', '开通会员']],
     ];
-    for (const [scenario, present, absent] of skuCases) {
-      await page.evaluate(({ scenario }) => {
+    for (const [scenario, screen, present, absent] of skuCases) {
+      await page.evaluate(({ scenario, screen }) => {
         window.__appRentalDemo.setOrientation('portrait');
         window.__appRentalDemo.setScenario(scenario);
-        window.__appRentalDemo.navigate('detail');
-      }, { scenario });
+        window.__appRentalDemo.navigate(screen);
+      }, { scenario, screen });
       const text = await page.locator('#appRentalDemo').innerText();
       for (const value of present) assert(text.includes(value), `${scenario} 缺少 ${value}`);
       for (const value of absent) assert(!text.includes(value), `${scenario} 不应显示 ${value}`);
@@ -685,37 +730,43 @@ async function main() {
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
       window.__appRentalDemo.setScenario('not-member-library');
-      window.__appRentalDemo.navigate('detail');
-      window.__appRentalDemo.toggleMoreDuration(true);
-    });
-    const durationOptions = await page.evaluate(() => ({
-      hours: document.querySelectorAll('[data-duration-hours]').length,
-      text: document.querySelector('#appRentalDemo').innerText,
-    }));
-    assert(durationOptions.hours === 21, `更多租期小时项应为21个，实际${durationOptions.hours}`);
-    assert(durationOptions.text.includes('日租') && durationOptions.text.includes('周租'), '更多租期缺少日租或周租');
-
-    await page.evaluate(() => {
-      window.__appRentalDemo.selectRentalSku('hourly-8h');
       window.__appRentalDemo.navigate('checkout');
     });
+    const durationOptions = await page.evaluate(() => ({
+      hours: document.querySelectorAll('.checkout-duration-option').length,
+      text: document.querySelector('#appRentalDemo').innerText,
+    }));
+    assert(durationOptions.hours === 22, `确认订单小时项应为22个，实际${durationOptions.hours}`);
+    assert(durationOptions.text.includes('日租') && durationOptions.text.includes('周租'), '确认订单SKU缺少日租或周租');
+    const checkoutSelectorFit = await page.evaluate(() => {
+      const content = document.querySelector('.portrait-content');
+      const contentBox = content.getBoundingClientRect();
+      const selectors = [...document.querySelectorAll('.checkout-selector-group')].map((node) => node.getBoundingClientRect());
+      return {
+        noPageOverflow: content.scrollWidth <= content.clientWidth + 1,
+        selectorsInside: selectors.every((box) => box.left >= contentBox.left && box.right <= contentBox.right + 1),
+      };
+    });
+    assert(checkoutSelectorFit.noPageOverflow && checkoutSelectorFit.selectorsInside, '确认订单选择器横向撑出竖屏可视区');
+
+    await page.evaluate(() => window.__appRentalDemo.selectRentalDuration(8));
     const checkoutText = await page.locator('#appRentalDemo').innerText();
-    assert(['艾尔登法环', 'Steam版本', '套餐租期', '游戏原价', '订单金额'].every((value) => checkoutText.includes(value)), '确认订单字段不完整');
+    assert(['艾尔登法环', '版本选择', '套餐租期', '游戏原价', '订单金额'].every((value) => checkoutText.includes(value)), '确认订单字段不完整');
     assert(checkoutText.includes('支付宝') && checkoutText.includes('微信'), '确认订单缺少双支付方式');
     assert(/\b(?:2\d|30):[0-5]\d\b/.test(checkoutText), '确认订单缺少30分钟 MM:SS 倒计时');
 
-    const checkoutBeforeRotation = await page.evaluate(() => window.__appRentalDemo.snapshot().order);
+    const checkoutBeforeRotation = await page.evaluate(() => window.__appRentalDemo.snapshot().checkoutQuote);
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('landscape');
       window.__appRentalDemo.navigate('checkout');
     });
-    const checkoutAfterRotation = await page.evaluate(() => window.__appRentalDemo.snapshot().order);
+    const checkoutAfterRotation = await page.evaluate(() => window.__appRentalDemo.snapshot().checkoutQuote);
     assert(
-      checkoutBeforeRotation.id === checkoutAfterRotation.id
+      checkoutBeforeRotation.gameId === checkoutAfterRotation.gameId
         && checkoutBeforeRotation.sku === checkoutAfterRotation.sku
         && checkoutBeforeRotation.amount === checkoutAfterRotation.amount
-        && checkoutBeforeRotation.paymentDeadline === checkoutAfterRotation.paymentDeadline,
-      '旋转或重渲染后订单快照发生变化',
+        && checkoutBeforeRotation.validUntil === checkoutAfterRotation.validUntil,
+      '旋转或重渲染后报价快照发生变化',
     );
     await page.evaluate(() => window.__appRentalDemo.setPriceChanged(true));
     assert((await page.locator('#appRentalDemo').innerText()).includes('价格已更新'), '缺少价格变化处理');
@@ -730,7 +781,7 @@ async function main() {
     }));
     assert(inventoryState.text.includes('当前套餐已售罄') && inventoryState.retry && inventoryState.primaryCount === 1, '无库存时未收敛为库存重查主操作并说明原因');
     await page.evaluate(() => window.__appRentalDemo.setInventoryAvailable(true));
-    process.stdout.write('CHECKOUT 8/8 PASS\n');
+    process.stdout.write('CHECKOUT 9/9 PASS\n');
 
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
@@ -758,7 +809,7 @@ async function main() {
     assert(membership.paymentMethods === 2 && membership.qr && membership.text.includes('支付宝') && membership.text.includes('微信'), '会员支付方式或二维码不完整');
 
     const orderIsolation = await page.evaluate(() => {
-      const gameOrder = window.__appRentalDemo.snapshot().order;
+      const gameOrder = window.__appRentalDemo.ensureGameOrder();
       const membershipOrder = window.__appRentalDemo.createMembershipOrder();
       const snapshot = window.__appRentalDemo.snapshot();
       return { gameOrder, membershipOrder, snapshot };
@@ -861,7 +912,7 @@ async function main() {
       window.__appRentalDemo.navigate('checkout');
     });
     const checkoutReviewBefore = await page.evaluate(() => ({
-      gameOrder: window.__appRentalDemo.snapshot().order,
+      gameQuote: window.__appRentalDemo.snapshot().checkoutQuote,
       membershipOrder: window.__appRentalDemo.snapshot().membershipOrder,
     }));
     const readCheckoutReview = () => page.evaluate(() => {
@@ -908,14 +959,14 @@ async function main() {
     await page.locator('.payment-method[data-payment="wechat"]').click();
     const portraitWechat = await readCheckoutReview();
     const checkoutAfterWechat = await page.evaluate(() => ({
-      gameOrder: window.__appRentalDemo.snapshot().order,
+      gameQuote: window.__appRentalDemo.snapshot().checkoutQuote,
       membershipOrder: window.__appRentalDemo.snapshot().membershipOrder,
     }));
     assert(portraitWechat.qrPayment === 'wechat' && portraitWechat.qrText.includes('微信扫码支付'), '竖屏微信支付二维码未同步');
     assert(
-      checkoutAfterWechat.gameOrder.id === checkoutReviewBefore.gameOrder.id
-        && checkoutAfterWechat.gameOrder.paymentDeadline === checkoutReviewBefore.gameOrder.paymentDeadline,
-      '切换游戏支付方式破坏30分钟订单快照',
+      checkoutAfterWechat.gameQuote.gameId === checkoutReviewBefore.gameQuote.gameId
+        && checkoutAfterWechat.gameQuote.validUntil === checkoutReviewBefore.gameQuote.validUntil,
+      '切换游戏支付方式破坏30分钟报价快照',
     );
     assert(checkoutAfterWechat.membershipOrder.id === checkoutReviewBefore.membershipOrder.id, '游戏支付切换覆盖会员订单');
 
@@ -941,14 +992,14 @@ async function main() {
     await page.locator('.payment-method[data-payment="alipay"]').click();
     const landscapeAlipay = await readCheckoutReview();
     const checkoutAfterAlipay = await page.evaluate(() => ({
-      gameOrder: window.__appRentalDemo.snapshot().order,
+      gameQuote: window.__appRentalDemo.snapshot().checkoutQuote,
       membershipOrder: window.__appRentalDemo.snapshot().membershipOrder,
     }));
     assert(
       landscapeAlipay.qrPayment === 'alipay'
         && landscapeAlipay.qrText.includes('支付宝扫码支付')
-        && checkoutAfterAlipay.gameOrder.id === checkoutReviewBefore.gameOrder.id
-        && checkoutAfterAlipay.gameOrder.paymentDeadline === checkoutReviewBefore.gameOrder.paymentDeadline
+        && checkoutAfterAlipay.gameQuote.gameId === checkoutReviewBefore.gameQuote.gameId
+        && checkoutAfterAlipay.gameQuote.validUntil === checkoutReviewBefore.gameQuote.validUntil
         && checkoutAfterAlipay.membershipOrder.id === checkoutReviewBefore.membershipOrder.id,
       '横屏支付宝切换或订单隔离错误',
     );
@@ -1870,12 +1921,14 @@ async function main() {
       window.__appRentalDemo.setOrientation('landscape');
       const after = window.__appRentalDemo.snapshot();
       return {
-        sameOrder: before.order.id === after.order.id,
+        sameQuote: before.checkoutQuote.gameId === after.checkoutQuote.gameId
+          && before.checkoutQuote.sku === after.checkoutQuote.sku
+          && before.checkoutQuote.validUntil === after.checkoutQuote.validUntil,
         sameSource: before.routeContext.sourceScreen === after.routeContext.sourceScreen,
         sameStack: JSON.stringify(before.routeContext.taskStack) === JSON.stringify(after.routeContext.taskStack),
       };
     });
-    checkLayout(rotationContinuity.sameOrder && rotationContinuity.sameSource && rotationContinuity.sameStack, `旋转后订单或来源路由被重建：${JSON.stringify(rotationContinuity)}`);
+    checkLayout(rotationContinuity.sameQuote && rotationContinuity.sameSource && rotationContinuity.sameStack, `旋转后报价或来源路由被重建：${JSON.stringify(rotationContinuity)}`);
     const deepLinkFallback = await page.evaluate(() => {
       window.__appRentalDemo.navigate('home');
       window.__appRentalDemo.setRouteContext({ sourceScreen: null, taskStack: [] });

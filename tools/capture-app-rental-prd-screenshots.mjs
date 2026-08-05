@@ -182,6 +182,7 @@ async function runPreflight(browser) {
       window.__appRentalDemo.setScenario('not-member-library');
       window.__appRentalDemo.selectRentalSku('hourly-8h');
       window.__appRentalDemo.navigate('checkout');
+      window.__appRentalDemo.ensureGameOrder();
       window.__appRentalDemo.setNetworkAvailable(false);
       window.__appRentalDemo.queryOrderStatus();
       return window.__appRentalDemo.snapshot().order.id;

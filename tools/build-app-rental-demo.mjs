@@ -39,8 +39,8 @@ if (fs.existsSync(annotationPath)) {
 
   let annotation = fs.readFileSync(annotationPath, 'utf8');
   const styleMarker = '    /* 交互标注文档壳层：完整 Demo 直接内嵌，不使用 iframe。 */';
-  const scriptMarker = '  <script>\n    const ANNOTATION_GROUPS = Object.freeze([';
-  if (!annotation.includes(styleMarker) || !annotation.includes(scriptMarker)) throw new Error('标注版缺少稳定同步标记');
+  const scriptMarkerPattern = /<script>\r?\n\s*const ANNOTATION_GROUPS = Object\.freeze\(\[/;
+  if (!annotation.includes(styleMarker) || !scriptMarkerPattern.test(annotation)) throw new Error('标注版缺少稳定同步标记');
 
   annotation = annotation.replace(
     /<style>[\s\S]*?(?=    \/\* 交互标注文档壳层：完整 Demo 直接内嵌，不使用 iframe。 \*\/)/,

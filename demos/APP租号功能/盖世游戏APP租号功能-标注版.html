@@ -456,6 +456,10 @@
     .detail-section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px; }
     .detail-section-head h2 { margin: 0; font-size: 16px; }
     .detail-section-head span { color: var(--text-muted); font-size: 9px; }
+    .detail-info-list { display: grid; gap: 1px; overflow: hidden; border-radius: 12px; background: rgb(255 255 255 / 7%); }
+    .detail-info-list > span { display: flex; min-height: 42px; align-items: center; justify-content: space-between; gap: 12px; padding: 0 11px; background: #1c1c20; }
+    .detail-info-list small { color: var(--text-muted); font-size: 10px; }
+    .detail-info-list strong { font-size: 11px; font-weight: 520; }
     .detail-feature-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .detail-feature-list span { min-height: 52px; padding: 10px 8px; border-radius: 12px; background: rgb(255 255 255 / 5%); color: #c7c8ce; font-size: 9px; line-height: 15px; text-align: center; }
     .sku-list { display: grid; gap: 8px; }
@@ -479,11 +483,38 @@
     .duration-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 9px; }
     .duration-grid button { min-height: 44px; padding: 0 5px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 10px; background: rgb(255 255 255 / 4%); cursor: pointer; font-size: 10px; }
     .duration-grid button.selected { border-color: var(--brand-gold); color: var(--brand-gold); }
+    .detail-action-footer { min-height: 68px; padding: 8px; }
+    .detail-action-group { display: flex; width: 100%; align-items: center; gap: 8px; }
+    .detail-action-group button { min-width: 0; min-height: 46px; flex: 1; padding: 0 10px; border: 1px solid rgb(255 255 255 / 13%); border-radius: 12px; background: #303238; color: #f4f4f5; cursor: pointer; font-size: 12px; font-weight: 520; white-space: nowrap; }
+    .detail-action-group .detail-secondary-action { flex: .78; color: #d4d6da; }
+    .detail-action-group .detail-native-action { border-color: rgb(51 143 235 / 42%); background: rgb(51 143 235 / 12%); color: #8fc9ff; }
+    .detail-action-group .detail-rent-action { border-color: rgb(51 216 164 / 45%); background: linear-gradient(135deg, #23b789, #168965); color: #fff; }
 
     .checkout-product { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; margin-bottom: 12px; padding: 12px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 18px; background: rgb(255 255 255 / 4%); }
     .checkout-cover { width: 96px; height: 84px; border-radius: 13px; }
     .checkout-product h2 { margin: 5px 0 7px; font-size: 17px; }
     .checkout-product p { margin: 0; color: var(--text-muted); font-size: 10px; }
+    .checkout-selectors { display: grid; min-width: 0; gap: 9px; margin-bottom: 12px; }
+    .checkout-selector-group { min-width: 0; padding: 11px 12px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 14px; background: rgb(255 255 255 / 4%); }
+    .checkout-selector-label { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
+    .checkout-selector-label strong { font-size: 12px; }
+    .checkout-selector-label span { color: var(--text-muted); font-size: 9px; }
+    .checkout-option-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+    .checkout-option { display: flex; min-width: 0; min-height: 48px; flex-direction: column; align-items: flex-start; justify-content: center; padding: 7px 9px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 10px; background: #232429; color: #d5d6da; cursor: pointer; text-align: left; }
+    .checkout-option span { overflow: hidden; width: 100%; font-size: 10px; font-weight: 520; text-overflow: ellipsis; white-space: nowrap; }
+    .checkout-option small { overflow: hidden; width: 100%; margin-top: 4px; color: var(--text-muted); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+    .checkout-option.selected { border-color: rgb(51 143 235 / 70%); background: rgb(51 143 235 / 12%); color: #8fc9ff; }
+    .checkout-option.selected small { color: #77b9ef; }
+    .checkout-option-scroll { display: flex; min-width: 0; max-width: 100%; gap: 7px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+    .checkout-option-scroll::-webkit-scrollbar { display: none; }
+    .checkout-duration-option { display: flex; min-width: 54px; height: 46px; flex: 0 0 54px; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgb(255 255 255 / 10%); border-radius: 10px; background: #232429; color: #d5d6da; cursor: pointer; }
+    .checkout-duration-option strong { font-family: var(--font-number); font-size: 13px; }
+    .checkout-duration-option span { margin-top: 2px; color: var(--text-muted); font-size: 8px; }
+    .checkout-duration-option.selected { border-color: var(--brand-gold); background: rgb(255 204 67 / 11%); color: var(--brand-gold); }
+    .checkout-duration-option.selected span { color: #e7c467; }
+    .checkout-member-entry { display: flex; width: 100%; min-height: 52px; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 11px; border: 1px solid rgb(255 214 116 / 22%); border-radius: 12px; background: linear-gradient(135deg, rgb(255 204 67 / 10%), rgb(255 255 255 / 3%)); color: #f6d886; cursor: pointer; text-align: left; }
+    .checkout-member-entry strong { display: block; font-size: 11px; }
+    .checkout-member-entry small { display: block; margin-top: 4px; color: #a99672; font-size: 8px; }
     .checkout-panel { margin-bottom: 12px; padding: 13px 14px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 17px; background: rgb(255 255 255 / 4%); }
     .checkout-row { display: flex; min-height: 32px; align-items: center; justify-content: space-between; gap: 16px; color: #c7c8cd; font-size: 11px; }
     .checkout-row strong { color: #fff; font-family: var(--font-number); }
@@ -1086,11 +1117,15 @@
     .mac-derived-detail .landscape-detail-copy h1 { font-size: 30px; }
     .mac-derived-detail .landscape-detail-copy p { font-size: 14px; line-height: 21px; }
     .mac-derived-detail .landscape-detail-facts span { font-size: 12px; }
+    .mac-derived-detail .detail-action-group { margin-top: 16px; }
+    .mac-derived-detail .detail-action-group button { min-height: 42px; padding: 0 12px; font-size: 13px; }
     .mac-derived-detail .landscape-detail-benefits { padding: 14px; border-radius: 12px; background: #191b1d; }
-    .mac-derived-detail .sku-card { min-height: 54px; padding: 9px 11px; border-radius: 9px; }
-    .mac-derived-detail .sku-card strong { font-size: 14px; }
-    .mac-derived-detail .sku-card small { display: block; margin-top: 3px; font-size: 12px; }
-    .mac-derived-detail .primary-action { margin-top: auto; font-size: 14px; }
+    .landscape-detail-info-list { display: grid; gap: 1px; overflow: hidden; border-radius: 10px; background: rgb(255 255 255 / 8%); }
+    .landscape-detail-info-list > div { display: flex; min-height: 38px; align-items: center; justify-content: space-between; gap: 14px; padding: 0 10px; background: #222426; }
+    .landscape-detail-info-list span { color: var(--text-muted); font-size: 12px; }
+    .landscape-detail-info-list strong { overflow: hidden; font-size: 13px; font-weight: 520; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+    .landscape-compat-head { margin-top: 12px; }
+    .landscape-detail-note { margin: 0; color: #b5b7bd; font-size: 12px; line-height: 18px; }
 
     .mac-checkout-layout { display: grid; grid-template-columns: 1.03fr .97fr; gap: 14px; }
     .checkout-benefit-column,
@@ -1101,13 +1136,24 @@
     .checkout-benefit-column .checkout-product p { font-size: 12px; }
     .checkout-benefit-column .service-benefit-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .checkout-benefit-column .service-benefit-item { min-height: 52px; }
-    .checkout-purchase-column { position: relative; display: grid; min-height: 0; grid-template-rows: auto minmax(0, 1fr); gap: 8px; padding-bottom: 12px; }
+    .checkout-purchase-column { display: block; min-height: 0; overflow-y: auto; padding-bottom: 12px; }
+    .checkout-purchase-column .checkout-selectors { gap: 7px; margin-bottom: 8px; }
+    .checkout-purchase-column .checkout-selector-group { padding: 8px 10px; border-radius: 10px; }
+    .checkout-purchase-column .checkout-selector-label { margin-bottom: 6px; }
+    .checkout-purchase-column .checkout-selector-label strong { font-size: 13px; }
+    .checkout-purchase-column .checkout-selector-label span { font-size: 10px; }
+    .checkout-purchase-column .checkout-option { min-height: 42px; padding: 6px 8px; }
+    .checkout-purchase-column .checkout-option span { font-size: 11px; }
+    .checkout-purchase-column .checkout-option small { font-size: 9px; }
+    .checkout-purchase-column .checkout-duration-option { min-width: 50px; height: 42px; flex-basis: 50px; }
+    .checkout-purchase-column .checkout-member-entry { min-height: 46px; }
     .checkout-purchase-column .checkout-panel { margin: 0; padding: 8px 12px; border-radius: 10px; background: #222426; }
+    .checkout-purchase-column .price-summary { margin-bottom: 8px; }
     .checkout-purchase-column .checkout-panel .detail-section-head { margin-bottom: 4px; }
     .checkout-purchase-column .checkout-row { min-height: 24px; font-size: 13px; }
     .checkout-purchase-column .checkout-row.total { margin-top: 2px; padding-top: 6px; }
     .checkout-purchase-column .checkout-row.total strong { font-size: 23px; }
-    .payment-panel { display: flex; min-height: 0; flex-direction: column; padding: 8px 10px 56px; border-radius: 10px; background: #222426; }
+    .payment-panel { position: relative; display: flex; min-height: 0; flex-direction: column; padding: 8px 10px 10px; border-radius: 10px; background: #222426; }
     .payment-panel .detail-section-head { margin-bottom: 5px; }
     .payment-panel .game-payment-layout { grid-template-columns: minmax(0, 1fr) 88px; gap: 7px; }
     .payment-panel .game-payment-layout .payment-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
@@ -1118,7 +1164,7 @@
     .payment-panel .game-payment-qr small { display: none; }
     .payment-panel .checkout-agreement { margin-top: 4px; font-size: 10px; line-height: 14px; }
     .payment-panel .payment-primary,
-    .payment-panel > .recovery-actions { position: absolute; right: 12px; bottom: 12px; left: 12px; width: auto; margin: 0; }
+    .payment-panel > .recovery-actions { position: static; width: 100%; margin: 8px 0 0; }
     .payment-panel .payment-primary { min-height: 44px; font-size: 14px; }
 
     .landscape-membership { display: flex; height: 100%; }
@@ -3565,9 +3611,9 @@
       { id: 'G1', type: 'global', group: 'discovery', title: 'D1 · 核心页导航规则', portraitSelector: '.device', landscapeSelector: '.device', trigger: '进入主页、玩游戏、社区、排行榜、游戏库、我的或搜索。', portrait: '七个核心页沿用 APP 底部导航与原页面结构。', landscape: '七个核心页沿用 APP 左侧导航与原页面结构。', feedback: '核心页切换保持原 APP 导航结构，曝光标签与主按钮随权益重新计算。', dependency: 'screen 属于 CORE_SCREENS，并仅记录 scenario、selectedGameId、orientation 等脱敏状态。', exception: '详情、交易、会员、订单、Steam 登录和售后等任务页不得保留全局导航。' },
       { id: 'E1', type: 'exception', group: 'discovery', title: '已有游戏与重复曝光', portraitSelector: '.hero-card', landscapeSelector: '.landscape-home-hero', trigger: '游戏已拥有、已安装或已有永久权益。', portrait: '首页推荐卡片保持原位置。', landscape: '横屏主推荐区保持原布局。', feedback: '主操作改为启动或下载，避让重复售卖。', dependency: '依赖拥有状态、安装状态和永久权益。', exception: '状态冲突时已有权益优先于租号曝光。' },
 
-      { id: '3', type: 'interaction', group: 'detail', title: '权益与租期选择', portraitSelector: '.sku-card', landscapeSelector: '.sku-card', trigger: '在详情页选择体验、永久或租号 SKU。', portrait: '游戏主视觉下方权益列表。', landscape: '右侧权益面板。', feedback: '选中态、价格摘要和主操作同步更新。', dependency: 'SKU 互斥，小时租期记录 selectedHours。', exception: '不可售 SKU 不创建订单，保留当前可用选择。' },
-      { id: '4', type: 'interaction', group: 'detail', title: '详情主操作', portraitSelector: '.portrait-fixed-footer .primary-action', landscapeSelector: '.landscape-detail-benefits .primary-action', trigger: '完成权益选择后点击主按钮。', portrait: '底部固定操作栏。', landscape: '右侧权益面板底部。', feedback: '按权益进入启动、下载、结算或会员链路。', dependency: '由 resolveCurrentAction 与 selectedSku 决策。', exception: '无库存或状态变化在结算页提供恢复动作。' },
-      { id: 'G2', type: 'global', group: 'detail', title: 'D2 · Mac 衍生详情任务页', portraitSelector: '.portrait-detail', landscapeSelector: '.landscape-detail', trigger: '从任一核心页进入详情，或在详情内切换横竖屏。', portrait: '独立任务页按 Mac 信息顺序纵向适配，不显示 APP 底部导航。', landscape: '继承 Mac 左侧游戏主视觉、右侧权益决策的双栏骨架，不显示 APP 顶部导航。', feedback: '返回来源核心页并恢复滚动位置；旋转后保留游戏、SKU、租期和权益结果。', dependency: 'routeContext 保存 sourceScreen、sourceScrollTop、taskStack，并仅记录脱敏业务字段。', exception: '深链无来源时按详情页兜底路由返回；快照不完整时回退到当前场景默认 SKU。' },
+      { id: '3', type: 'interaction', group: 'detail', title: '确认订单统一选择', portraitSelector: '.checkout-selectors', landscapeSelector: '.checkout-selectors', trigger: '进入确认订单后选择游戏版本、SKU与租期。', portrait: '游戏信息下方依次选择版本、SKU与租期，小时租期可横向滑动。', landscape: '右侧购买区按相同顺序选择，区域可纵向滚动。', feedback: '切换任一选项后仅刷新报价、费用明细和支付金额，不创建订单。', dependency: 'SKU互斥；时租支持2—23小时；会员入口独立，不混入单游戏SKU。', exception: '不可售选项不生成订单；无库存或改价时保留当前选择并提供恢复动作。' },
+      { id: '4', type: 'interaction', group: 'detail', title: '详情租号入口', portraitSelector: '.portrait-fixed-footer [data-action="open-rental-checkout"]', landscapeSelector: '.landscape-detail [data-action="open-rental-checkout"]', trigger: '在详情页点击“租号开玩”。', portrait: '底部操作栏与“秒玩”“获取游戏”并列。', landscape: '左侧游戏主视觉下方与原操作并列。', feedback: '进入独立确认订单页并生成当前游戏报价，不提前创建订单。', dependency: '由当前游戏与权益场景决定确认订单可选SKU。', exception: '游戏不可租时不展示入口；无库存或状态变化在确认订单页说明原因。' },
+      { id: 'G2', type: 'global', group: 'detail', title: 'D2 · Mac 衍生详情任务页', portraitSelector: '.portrait-detail', landscapeSelector: '.landscape-detail', trigger: '从任一核心页进入详情，或在详情内切换横竖屏。', portrait: '独立任务页按游戏主视觉、游戏信息和体验信息纵向适配，不显示 APP 底部导航。', landscape: '继承 Mac 左侧游戏主视觉、右侧游戏信息的双栏骨架，不显示 APP 顶部导航。', feedback: '返回来源核心页并恢复滚动位置；旋转后保留当前游戏与权益场景。', dependency: 'routeContext 保存 sourceScreen、sourceScrollTop、taskStack，并仅记录脱敏业务字段。', exception: '详情页不承载版本、SKU或租期选择；深链无来源时按详情页兜底路由返回。' },
       { id: 'E2', type: 'exception', group: 'detail', title: 'SKU 互斥与会员边界', portraitSelector: '.sku-list', landscapeSelector: '.sku-list', trigger: '游戏不在会员库、首次体验已用或会员失效。', portrait: '权益列表中只展示合法组合。', landscape: '右侧面板使用同一决策。', feedback: '租号、体验、永久和会员入口不重复主导。', dependency: '依赖 memberLibrary、trialEligible、membershipActive。', exception: '待支付会员不视为有效会员权益。' },
 
       { id: '5', type: 'interaction', group: 'orders', title: '订单状态筛选', portraitSelector: '.order-tabs button', landscapeSelector: '.order-tabs button', trigger: '点击全部、租赁中或待支付 Tab。', portrait: '订单中心标题下方。', landscape: '左侧订单列表上方。', feedback: '列表即时筛选并保持有效选中项。', dependency: '依赖 orderTab 与订单状态集合。', exception: '筛选无结果时选中项置空并显示空状态。' },
@@ -3597,8 +3643,8 @@
 
       { id: '15', type: 'interaction', group: 'recovery', title: '重新查询库存', portraitSelector: '[data-action="retry-inventory"]', landscapeSelector: '[data-action="retry-inventory"]', trigger: '结算页当前套餐售罄。', portrait: '底部固定操作栏唯一主操作。', landscape: '右侧支付区唯一主操作。', feedback: '重新查询后恢复确认支付按钮。', dependency: '依赖 inventoryAvailable。', exception: '售罄时不得保留第二个购买主操作。' },
       { id: '16', type: 'interaction', group: 'recovery', title: '返回详情', portraitSelector: '[data-action="back-to-detail"]', landscapeSelector: '[data-action="back-to-detail"]', trigger: '库存或网络异常时选择退出结算。', portrait: '底部操作栏次操作。', landscape: '右侧恢复操作组次操作。', feedback: '返回详情重新选择权益或租期。', dependency: '保留已选游戏，不执行支付。', exception: '返回操作不创建新订单。' },
-      { id: 'G8', type: 'global', group: 'recovery', title: 'D8 · Mac 衍生结算任务页', portraitSelector: '.portrait-checkout', landscapeSelector: '.landscape-checkout', trigger: '从详情进入结算，或库存、价格、分配与网络状态变化。', portrait: '独立任务页按游戏信息、服务保障、费用和支付顺序纵向适配。', landscape: '继承 Mac 结算骨架，左侧游戏与服务保障、右侧费用与支付，主支付按钮保持首屏可见。', feedback: '返回详情并保留选择；旋转不重建订单，异常时保留订单号并只提供一个主恢复动作。', dependency: 'routeContext 保留详情来源，仅记录库存、改价、网络和订单状态等脱敏字段。', exception: '任务页不显示全局导航；恢复前不重复支付、不重复分配账号。' },
-      { id: 'E8', type: 'exception', group: 'recovery', title: '四类异常闭环', portraitSelector: '.state-alert', landscapeSelector: '.state-alert', trigger: '售罄、价格变化、取号失败或网络异常。', portrait: '结算或订单详情显示原因与恢复动作。', landscape: '双栏结算或订单详情显示相同结果。', feedback: '库存重查、重新确认价格、自动退款或重新查询订单。', dependency: '依赖服务端返回的最新业务状态。', exception: '任何异常都不得丢失订单号或产生双主操作。' },
+      { id: 'G8', type: 'global', group: 'recovery', title: 'D8 · Mac 衍生结算任务页', portraitSelector: '.portrait-checkout', landscapeSelector: '.landscape-checkout', trigger: '从详情进入确认订单，或版本、SKU、租期、库存、价格、分配与网络状态变化。', portrait: '独立任务页按游戏信息、版本、SKU、租期、费用、支付和服务保障顺序纵向适配。', landscape: '继承 Mac 结算骨架，左侧游戏与服务保障，右侧集中完成版本、SKU、租期、费用和支付选择。', feedback: '选择阶段只更新报价；点击确认支付后创建订单并锁价30分钟；旋转不重建报价或订单。', dependency: 'routeContext 保留详情来源，并分别记录报价与订单状态等脱敏字段。', exception: '任务页不显示全局导航；恢复前不重复支付、不重复分配账号。' },
+      { id: 'E8', type: 'exception', group: 'recovery', title: '四类异常闭环', portraitSelector: '.state-alert', landscapeSelector: '.state-alert', trigger: '售罄、价格变化、取号失败或网络异常。', portrait: '确认订单或订单详情显示原因与恢复动作。', landscape: '双栏确认订单或订单详情显示相同结果。', feedback: '库存重查、重新确认价格、自动退款或重新查询订单。', dependency: '依赖服务端返回的最新业务状态。', exception: '未支付只保留报价；已创建订单不得丢失订单号；任何异常不得产生双主操作。' },
     ]);
 
     const annotationState = { group: 'discovery', tab: 'interaction', markersVisible: true, markerFrame: 0, scaleFrame: 0 };
