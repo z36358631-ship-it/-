@@ -75,18 +75,12 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 .step-line.done{background:var(--green)}
 
 /* Features */
-.gh-features{
-  display:flex;flex-direction:column;gap:8px;
-  padding:0 0 8px;
-}
+.gh-features{display:flex;flex-direction:column;gap:9px;padding:0}
 .gh-features__title{
   font-size:14px;font-weight:520;color:var(--gh-color-text-primary);
   margin-bottom:6px;
 }
-.gh-feature-item{
-  font-size:13px;color:var(--gh-color-text-secondary);
-  font-weight:330;line-height:1.6;
-}
+.gh-feature-item{font-size:12px;color:rgba(255,255,255,.55);font-weight:330;line-height:1.55}
 
 /* Welcome Cover */
 .welcome-cover{
@@ -104,15 +98,17 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 .welcome-brand{position:relative;z-index:1}
 .welcome-kicker{color:var(--gold);font-size:10px;line-height:14px;font-weight:520;letter-spacing:.16em}
 .welcome-brand h1{margin-top:14px;font-size:32px;line-height:42px;font-weight:520;letter-spacing:-.5px}
-.welcome-brand p{margin-top:8px;color:var(--txt2);font-size:15px;line-height:22px}
+.welcome-brand p{margin-top:14px;color:rgba(255,255,255,.66);font-size:14px;line-height:21px;font-weight:360;letter-spacing:.02em}
+.welcome-brand p span{display:block}
+.welcome-brand p span+span{margin-top:2px}
 .welcome-features{
-  position:relative;z-index:1;margin-top:auto;padding:20px 18px;
-  border:1px solid rgba(255,255,255,.1);border-radius:var(--r-xl);
-  background:linear-gradient(145deg,rgba(31,31,31,.96),rgba(15,15,15,.88));
-  box-shadow:0 18px 46px rgba(0,0,0,.35);
+  position:relative;z-index:1;margin-top:auto;padding:17px 16px 16px;
+  border:1px solid rgba(255,255,255,.055);border-radius:var(--r-xl);
+  background:linear-gradient(145deg,rgba(255,255,255,.04),rgba(255,255,255,.018));
+  box-shadow:none;
 }
-.welcome-features h2{font-size:20px;line-height:28px;font-weight:520;margin-bottom:4px}
-.welcome-features__lead{color:var(--muted);font-size:12px;line-height:17px;margin-bottom:14px}
+.welcome-features h2{color:rgba(255,255,255,.9);font-size:18px;line-height:25px;font-weight:480;margin-bottom:4px}
+.welcome-features__lead{color:rgba(255,255,255,.42);font-size:12px;line-height:17px;margin-bottom:15px}
 .welcome-start{
   position:relative;z-index:1;width:100%;height:52px;margin-top:16px;border:0;border-radius:var(--r-full);
   background:linear-gradient(90deg,#ffe177,var(--gold));color:#111;font-family:var(--font);
@@ -463,6 +459,47 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 .source-bar-row:last-child{margin-bottom:0}.source-bar-row>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.source-bar-row>strong{text-align:right;font-family:var(--font-num);font-size:11px}
 .source-bar-track{height:10px;border-radius:100px;background:#eef2f7;overflow:hidden}.source-bar-track i{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,#3b82f6,#8b5cf6)}
 .source-table{width:100%;border-collapse:collapse;font-size:12px}.source-table th,.source-table td{padding:13px 14px;border-bottom:1px solid #edf2f7;text-align:left}.source-table th{color:#64748b;background:#f8fafc;font-weight:520}.source-table td:nth-child(n+2),.source-table th:nth-child(n+2){text-align:right}.source-table .is-up{color:#10b981}.source-table .is-down{color:#ef4444}
+
+/* 运营后台 · 字典管理 */
+.admin-panel{min-height:100%}
+.dictionary-header{align-items:center}.dictionary-header h1{margin:0}.dictionary-header p{margin:4px 0 0}
+.admin-primary,.admin-secondary,.admin-link,.admin-danger{border:0;background:none;font:inherit;cursor:pointer}
+.admin-primary{height:34px;padding:0 15px;border-radius:7px;background:#3b82f6;color:#fff;font-size:12px;font-weight:600;box-shadow:0 1px 2px rgba(37,99,235,.18)}
+.admin-primary:hover{background:#2563eb}.admin-primary:disabled{background:#bfdbfe;cursor:not-allowed}
+.admin-secondary{height:34px;padding:0 15px;border:1px solid #d8e0ea;border-radius:7px;background:#fff;color:#475569;font-size:12px}
+.admin-secondary:hover{border-color:#93c5fd;color:#2563eb}
+.admin-link{padding:0 5px;color:#2563eb;font-size:12px}.admin-danger{padding:0 5px;color:#ef4444;font-size:12px}
+.dictionary-filter-card{display:flex;align-items:flex-end;gap:14px;margin-top:20px;padding:18px 20px;border:1px solid #e2e8f0;border-radius:9px;background:#fff}
+.dictionary-filter{width:220px}.dictionary-filter label{display:block;margin-bottom:7px;color:#475569;font-size:12px}
+.admin-input,.admin-textarea,.admin-number{width:100%;border:1px solid #d8e0ea;border-radius:6px;background:#fff;color:#0f172a;font-family:inherit;font-size:12px;outline:none;transition:border-color .15s,box-shadow .15s}
+.admin-input,.admin-number{height:34px;padding:0 10px}.admin-textarea{min-height:74px;padding:9px 10px;resize:vertical;line-height:1.5}
+.admin-input:focus,.admin-textarea:focus,.admin-number:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.1)}
+.dictionary-filter-actions{display:flex;gap:8px;margin-left:auto}
+.dictionary-table-card{margin-top:14px;border:1px solid #e2e8f0;border-radius:9px;background:#fff;overflow:hidden}
+.dictionary-table-tools{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #edf2f7}
+.dictionary-table-tools strong{font-size:14px}.dictionary-table-tools span{color:#94a3b8;font-size:11px}
+.dictionary-table-wrap{overflow:auto}.dictionary-table{width:100%;min-width:1040px;border-collapse:collapse;font-size:12px}
+.dictionary-table th,.dictionary-table td{padding:13px 12px;border-bottom:1px solid #edf2f7;text-align:left;white-space:nowrap}
+.dictionary-table th{background:#f8fafc;color:#64748b;font-weight:520}.dictionary-table tr:last-child td{border-bottom:0}.dictionary-table td{color:#334155}
+.dictionary-table .description-cell{max-width:220px;overflow:hidden;text-overflow:ellipsis}.dictionary-actions{display:flex;align-items:center;gap:2px}
+.language-count{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:4px;background:#eff6ff;color:#2563eb;font-size:11px}
+.dictionary-empty{padding:54px 20px;text-align:center;color:#94a3b8;font-size:12px}
+.dictionary-pagination{display:flex;align-items:center;justify-content:flex-end;padding:12px 16px;border-top:1px solid #edf2f7;color:#64748b;font-size:11px}
+
+.admin-modal-layer{position:fixed;z-index:220;inset:0;display:grid;place-items:center;padding:24px;background:rgba(15,23,42,.46);backdrop-filter:blur(1px)}
+.admin-modal-layer[hidden]{display:none!important}.admin-modal{width:min(540px,calc(100vw - 48px));max-height:calc(100vh - 64px);display:flex;flex-direction:column;border-radius:8px;background:#fff;box-shadow:0 22px 60px rgba(15,23,42,.26);overflow:hidden}
+.admin-modal.is-wide{width:min(1240px,calc(100vw - 72px))}.admin-modal.is-language{width:min(620px,calc(100vw - 48px))}.admin-modal.is-confirm{width:min(420px,calc(100vw - 48px))}
+.admin-modal__header{display:flex;align-items:center;justify-content:space-between;min-height:54px;padding:0 20px;border-bottom:1px solid #edf2f7}
+.admin-modal__header h2{margin:0;color:#0f172a;font-size:16px;font-weight:650}.admin-modal__close{width:30px;height:30px;border:0;background:none;color:#94a3b8;font-size:22px;line-height:30px;cursor:pointer}
+.admin-modal__body{padding:20px;overflow:auto}.admin-modal__footer{display:flex;justify-content:flex-end;gap:9px;padding:14px 20px;border-top:1px solid #edf2f7;background:#fff}
+.admin-form-row{display:grid;grid-template-columns:100px minmax(0,1fr);align-items:start;gap:14px;margin-bottom:17px}.admin-form-row:last-child{margin-bottom:0}
+.admin-form-label{padding-top:9px;color:#475569;font-size:12px;text-align:right}.admin-form-label.is-required::before{content:'*';margin-right:4px;color:#ef4444}
+.admin-form-control{min-width:0}.admin-form-hint{margin-top:5px;color:#94a3b8;font-size:11px}.field-error{min-height:16px;margin-top:4px;color:#ef4444;font-size:11px}
+.language-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:38px;padding:0 11px;border:1px solid #d8e0ea;border-radius:6px;background:#f8fafc}
+.language-entry span{color:#64748b;font-size:12px}.language-entry button{border:0;background:none;color:#2563eb;font-size:12px;cursor:pointer}
+.item-manager-filter{display:flex;align-items:flex-end;gap:10px;margin-bottom:14px}.item-manager-filter .dictionary-filter{width:240px}.item-manager-filter [data-item-action="new"]{margin-left:auto}
+.language-grid{display:grid;gap:16px}.language-card{padding:14px;border:1px solid #e2e8f0;border-radius:7px;background:#f8fafc}.language-card h3{margin:0 0 10px;color:#334155;font-size:13px}
+.confirm-copy{color:#475569;font-size:13px;line-height:1.7}.confirm-copy strong{color:#0f172a}
 @media(max-width:1050px){.analytics-filters{grid-template-columns:repeat(3,1fr)}.analytics-grid{grid-template-columns:1fr}.admin-sidebar{width:184px;flex-basis:184px}.demo-view-switch{right:20px}}
 
 /* Control Panel */
@@ -491,13 +528,13 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
     <div class="welcome-brand">
       <span class="welcome-kicker">WELCOME TO GAMEHUB</span>
       <h1 id="welcomeTitle">欢迎来到盖世游戏</h1>
-      <p id="welcomeDesc">欢迎新朋友，开启你的 PC 游戏之旅</p>
+      <p><span id="welcomePromptTitle">为了您的绝佳体验</span><span id="welcomePromptDesc">请与我们分享您的游玩经验～</span></p>
     </div>
     <section class="welcome-features" id="featuresBox" aria-label="平台特色">
       <h2>手机上的 PC 游戏平台</h2>
       <p class="welcome-features__lead">从连接游戏库到立即开玩，一站式完成</p>
       <div class="gh-features">
-        <div class="gh-feature-item">&#x1F3AE; Steam 与 Epic 游戏数据互通，海量大作应有尽有</div>
+        <div class="gh-feature-item">&#x1F3AE; 与 Steam、Epic 数据互通，海量大作应有尽有</div>
         <div class="gh-feature-item" id="featureCloud">&#x26A1; 支持云游戏，无需下载，一键秒玩</div>
         <div class="gh-feature-item">&#x1F4A1; AI 超级插帧＋虚拟按键大神方案，一键套用</div>
       </div>
@@ -686,10 +723,10 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
     </div>
     <p class="existing-kicker">PERSONALIZE YOUR GAMEHUB</p>
     <h2 class="existing-title">选几款你喜欢的游戏</h2>
-    <p class="existing-desc">至少选择3款、最多9款，我们会据此优化推荐内容。</p>
+    <p class="existing-desc">最多选择9款，我们会据此优化推荐内容。</p>
     <div class="existing-game-grid" id="existingGameGrid"></div>
     <footer class="existing-footer">
-      <button type="button" class="existing-primary" data-action="submit-existing-games" disabled>选好了（0/9）</button>
+      <button type="button" class="existing-primary" data-action="submit-existing-games" disabled>选好了</button>
       <button type="button" class="existing-secondary" data-action="skip-existing-games">暂不选择</button>
     </footer>
   </div>
@@ -775,12 +812,18 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
       <div class="admin-nav-label">数据分析</div>
       <button type="button" class="admin-nav-item">运营概览</button>
       <button type="button" class="admin-nav-item">用户分析</button>
-      <button type="button" class="admin-nav-item is-active">来源分析</button>
+      <button type="button" class="admin-nav-item" data-admin-page="analytics">来源分析</button>
       <button type="button" class="admin-nav-item">留存分析</button>
+    </div>
+    <div class="admin-nav-group">
+      <div class="admin-nav-label">系统配置</div>
+      <button type="button" class="admin-nav-item">基础配置</button>
+      <button type="button" class="admin-nav-item is-active" data-admin-page="dictionary">字典管理</button>
     </div>
     <div class="admin-user">运营管理员<br>数据分析组</div>
   </aside>
   <main class="admin-main">
+    <section class="admin-panel" data-admin-panel="analytics" hidden>
     <header class="admin-header">
       <div><h1>来源分析</h1><p>查看不同市场与用户人群的主动填写来源分布</p></div>
       <button type="button" class="admin-refresh">数据更新：10分钟前</button>
@@ -808,8 +851,42 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
         <table class="source-table"><thead><tr><th>来源</th><th>人数</th><th>占比</th><th>较上一周期</th></tr></thead><tbody></tbody></table>
       </article>
     </section>
+    </section>
+
+    <section class="admin-panel" data-admin-panel="dictionary">
+      <header class="admin-header dictionary-header">
+        <div><h1>字典管理</h1><p>维护系统通用字典及多语言参数</p></div>
+        <button type="button" class="admin-primary" data-dictionary-action="new">新建字典</button>
+      </header>
+      <section class="dictionary-filter-card" aria-label="字典筛选">
+        <div class="dictionary-filter">
+          <label for="dictionaryNameFilter">字典名称</label>
+          <input class="admin-input" id="dictionaryNameFilter" type="text" placeholder="请输入字典名称">
+        </div>
+        <div class="dictionary-filter">
+          <label for="dictionaryCodeFilter">字典编码</label>
+          <input class="admin-input" id="dictionaryCodeFilter" type="text" placeholder="请输入字典编码">
+        </div>
+        <div class="dictionary-filter-actions">
+          <button type="button" class="admin-secondary" data-dictionary-action="reset">重置</button>
+          <button type="button" class="admin-primary" data-dictionary-action="query">查询</button>
+        </div>
+      </section>
+      <section class="dictionary-table-card">
+        <div class="dictionary-table-tools"><strong>字典列表</strong><span>支持维护字典、字典子项及多语言</span></div>
+        <div class="dictionary-table-wrap">
+          <table class="dictionary-table">
+            <thead><tr><th>ID</th><th>字典名称</th><th>字典编码</th><th>字典描述</th><th>多语言</th><th>创建时间</th><th>更新时间</th><th>操作</th></tr></thead>
+            <tbody id="dictionaryTableBody"></tbody>
+          </table>
+        </div>
+        <div class="dictionary-pagination" id="dictionaryPagination">共 0 条</div>
+      </section>
+    </section>
   </main>
 </section>
+
+<div class="admin-modal-layer" id="adminModalLayer" hidden aria-live="polite"></div>
 
 <script>
 function makeCover(name,colorA,colorB){
@@ -954,8 +1031,8 @@ function renderExistingGames(){
       '<img src="'+game.cover+'" alt=""><strong>'+game.name+'</strong><i>✓</i></button>';
   }).join('');
   var submit=document.querySelector('[data-action="submit-existing-games"]');
-  submit.disabled=existingFlow.selectedGames.length<3;
-  submit.textContent='选好了（'+existingFlow.selectedGames.length+'/9）';
+  submit.disabled=existingFlow.selectedGames.length===0;
+  submit.textContent='选好了';
 }
 
 function renderExistingSources(){
@@ -1013,7 +1090,7 @@ function toggleExistingGame(code){
 }
 
 function submitExistingGames(){
-  if(existingFlow.selectedGames.length<3||existingFlow.selectedGames.length>9) return;
+  if(existingFlow.selectedGames.length===0||existingFlow.selectedGames.length>9) return;
   existingFlow.gameTerminal='submitted';
   saveExistingFlow();
   nextExistingStep();
@@ -1038,6 +1115,378 @@ function submitExistingSource(){
   existingFlow.sourceTerminal='completed';
   saveExistingFlow();
   nextExistingStep();
+}
+
+var activeAdminPage='dictionary';
+var activeDictionaryEditor=null;
+var pendingDictionaryDelete=null;
+var dictionaryState={
+  dictionaries:[{
+    id:1001,
+    name:'用户来源',
+    code:'userSource',
+    description:'新手引导用户来源选项',
+    languageCount:2,
+    languages:{zh:'用户来源',en:'User Source'},
+    createdAt:'2026-08-05 10:24:00',
+    updatedAt:'2026-08-05 10:24:00'
+  }],
+  items:{
+    1001:[
+      ['抖音','douyin','国内短视频平台',10,'抖音','Douyin'],
+      ['哔哩哔哩','bilibili','国内视频社区',20,'哔哩哔哩','Bilibili'],
+      ['小红书','xiaohongshu','国内内容社区',30,'小红书','Xiaohongshu'],
+      ['应用商店','app_store','应用商店自然来源',40,'应用商店','App Store'],
+      ['YouTube','youtube','海外视频平台',50,'YouTube','YouTube'],
+      ['TikTok','tiktok','海外短视频平台',60,'TikTok','TikTok'],
+      ['Reddit','reddit','海外社区',70,'Reddit','Reddit'],
+      ['Discord','discord','海外社群',80,'Discord','Discord'],
+      ['朋友推荐','friend_referral','好友推荐',90,'朋友推荐','Friends'],
+      ['其他／不记得','other_or_unknown','其他或无法回忆',100,'其他／不记得','Other / I don’t remember']
+    ].map(function(item,index){
+      return {
+        id:2001+index,
+        name:item[0],
+        value:item[1],
+        description:item[2],
+        sort:item[3],
+        languageCount:2,
+        languages:{zh:item[4],en:item[5]},
+        createdAt:'2026-08-05 10:24:00',
+        updatedAt:'2026-08-05 10:24:00'
+      };
+    })
+  },
+  activeDictionaryId:1001,
+  filters:{name:'',code:'',itemValue:''}
+};
+
+function escapeAdminText(value){
+  return String(value==null?'':value).replace(/[&<>"']/g,function(char){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char];
+  });
+}
+
+function adminNow(){
+  var date=new Date();
+  function pad(value){return String(value).padStart(2,'0');}
+  return date.getFullYear()+'-'+pad(date.getMonth()+1)+'-'+pad(date.getDate())+' '+pad(date.getHours())+':'+pad(date.getMinutes())+':'+pad(date.getSeconds());
+}
+
+function getActiveDictionary(){
+  return dictionaryState.dictionaries.find(function(item){return item.id===dictionaryState.activeDictionaryId;})||null;
+}
+
+function renderDictionaryTable(){
+  var body=document.getElementById('dictionaryTableBody');
+  if(!body) return;
+  var nameFilter=dictionaryState.filters.name.trim().toLowerCase();
+  var codeFilter=dictionaryState.filters.code.trim().toLowerCase();
+  var rows=dictionaryState.dictionaries.filter(function(item){
+    return (!nameFilter||item.name.toLowerCase().indexOf(nameFilter)>=0)&&(!codeFilter||item.code.toLowerCase().indexOf(codeFilter)>=0);
+  });
+  if(!rows.length){
+    body.innerHTML='<tr><td colspan="8"><div class="dictionary-empty">暂无符合条件的字典</div></td></tr>';
+  }else{
+    body.innerHTML=rows.map(function(item){
+      return '<tr data-dictionary-row="'+item.id+'">'+
+        '<td>'+item.id+'</td><td>'+escapeAdminText(item.name)+'</td><td>'+escapeAdminText(item.code)+'</td>'+
+        '<td class="description-cell" title="'+escapeAdminText(item.description)+'">'+escapeAdminText(item.description||'--')+'</td>'+
+        '<td><span class="language-count">已配置 '+item.languageCount+' 种语言</span></td>'+
+        '<td>'+item.createdAt+'</td><td>'+item.updatedAt+'</td><td><div class="dictionary-actions">'+
+        '<button type="button" class="admin-link" data-dictionary-action="edit" data-dictionary-id="'+item.id+'">编辑</button>'+
+        '<button type="button" class="admin-link" data-dictionary-action="items" data-dictionary-id="'+item.id+'">字典项</button>'+
+        '<button type="button" class="admin-danger" data-dictionary-action="delete" data-dictionary-id="'+item.id+'">删除</button>'+
+        '</div></td></tr>';
+    }).join('');
+  }
+  document.getElementById('dictionaryPagination').textContent='共 '+rows.length+' 条';
+}
+
+function switchAdminPage(page){
+  if(page!=='analytics'&&page!=='dictionary') return;
+  activeAdminPage=page;
+  document.querySelectorAll('[data-admin-panel]').forEach(function(panel){panel.hidden=panel.dataset.adminPanel!==page;});
+  document.querySelectorAll('[data-admin-page]').forEach(function(button){button.classList.toggle('is-active',button.dataset.adminPage===page);});
+  if(page==='analytics') renderSourceAnalytics();
+  if(page==='dictionary') renderDictionaryTable();
+}
+
+function queryDictionaries(){
+  dictionaryState.filters.name=document.getElementById('dictionaryNameFilter').value;
+  dictionaryState.filters.code=document.getElementById('dictionaryCodeFilter').value;
+  renderDictionaryTable();
+}
+
+function resetDictionaryFilters(){
+  dictionaryState.filters.name='';
+  dictionaryState.filters.code='';
+  document.getElementById('dictionaryNameFilter').value='';
+  document.getElementById('dictionaryCodeFilter').value='';
+  renderDictionaryTable();
+}
+
+function showAdminModal(content){
+  var layer=document.getElementById('adminModalLayer');
+  layer.innerHTML=content;
+  layer.hidden=false;
+}
+
+function closeAdminModal(){
+  var layer=document.getElementById('adminModalLayer');
+  layer.hidden=true;
+  layer.innerHTML='';
+  activeDictionaryEditor=null;
+  pendingDictionaryDelete=null;
+}
+
+function languageCount(languages){
+  return ['zh','en'].filter(function(key){return String(languages[key]||'').trim();}).length;
+}
+
+function openDictionaryEditor(id){
+  var numericId=id==null?null:Number(id);
+  var source=dictionaryState.dictionaries.find(function(item){return item.id===numericId;});
+  activeDictionaryEditor={
+    type:'dictionary',
+    id:source?source.id:null,
+    values:{name:source?source.name:'',code:source?source.code:'',description:source?source.description:''},
+    languages:source?Object.assign({},source.languages):{zh:'',en:''}
+  };
+  renderDictionaryEditor();
+}
+
+function renderDictionaryEditor(){
+  var editor=activeDictionaryEditor;
+  if(!editor) return;
+  var values=editor.values;
+  showAdminModal('<div class="admin-modal" role="dialog" aria-modal="true" aria-label="'+(editor.id?'编辑字典':'新建字典')+'">'+
+    '<div class="admin-modal__header"><h2>'+(editor.id?'编辑字典':'新建字典')+'</h2><button type="button" class="admin-modal__close" data-modal-action="close" aria-label="关闭">×</button></div>'+
+    '<div class="admin-modal__body"><form data-editor-form="dictionary">'+
+    '<div class="admin-form-row"><label class="admin-form-label is-required" for="dictEditorName">字典名称</label><div class="admin-form-control"><input class="admin-input" id="dictEditorName" value="'+escapeAdminText(values.name)+'" placeholder="请输入字典名称"><div class="field-error" data-field-error="name"></div></div></div>'+
+    '<div class="admin-form-row"><label class="admin-form-label is-required" for="dictEditorCode">字典编码</label><div class="admin-form-control"><input class="admin-input" id="dictEditorCode" value="'+escapeAdminText(values.code)+'" placeholder="请输入字典编码"><div class="field-error" data-field-error="code"></div></div></div>'+
+    '<div class="admin-form-row"><label class="admin-form-label" for="dictEditorDescription">字典描述</label><div class="admin-form-control"><textarea class="admin-textarea" id="dictEditorDescription" placeholder="请输入字典描述">'+escapeAdminText(values.description)+'</textarea><div class="field-error"></div></div></div>'+
+    '<div class="admin-form-row"><span class="admin-form-label">多语言参数</span><div class="admin-form-control"><div class="language-entry"><span>已配置 '+languageCount(editor.languages)+' 种语言</span><button type="button" data-modal-action="languages">编辑多语言</button></div></div></div>'+
+    '</form></div><div class="admin-modal__footer"><button type="button" class="admin-secondary" data-modal-action="close">取消</button><button type="button" class="admin-primary" data-modal-action="save-dictionary">确定</button></div></div>');
+}
+
+function captureDictionaryEditor(){
+  if(!activeDictionaryEditor) return;
+  var name=document.getElementById('dictEditorName');
+  var code=document.getElementById('dictEditorCode');
+  var description=document.getElementById('dictEditorDescription');
+  if(name) activeDictionaryEditor.values.name=name.value;
+  if(code) activeDictionaryEditor.values.code=code.value;
+  if(description) activeDictionaryEditor.values.description=description.value;
+}
+
+function setAdminFieldError(field,message){
+  var node=document.querySelector('[data-field-error="'+field+'"]');
+  if(node) node.textContent=message||'';
+}
+
+function saveDictionaryEditor(){
+  captureDictionaryEditor();
+  var editor=activeDictionaryEditor;
+  var name=editor.values.name.trim();
+  var code=editor.values.code.trim();
+  setAdminFieldError('name','');
+  setAdminFieldError('code','');
+  var valid=true;
+  if(!name){setAdminFieldError('name','请输入字典名称');valid=false;}
+  if(!code){setAdminFieldError('code','请输入字典编码');valid=false;}
+  if(code&&!/^[A-Za-z][A-Za-z0-9_]*$/.test(code)){setAdminFieldError('code','编码须以字母开头，仅支持字母、数字和下划线');valid=false;}
+  var duplicated=dictionaryState.dictionaries.some(function(item){return item.id!==editor.id&&item.code.toLowerCase()===code.toLowerCase();});
+  if(duplicated){setAdminFieldError('code','字典编码已存在');valid=false;}
+  if(!valid) return;
+  var timestamp=adminNow();
+  if(editor.id){
+    var target=dictionaryState.dictionaries.find(function(item){return item.id===editor.id;});
+    target.name=name;
+    target.code=code;
+    target.description=editor.values.description.trim();
+    target.languages=Object.assign({},editor.languages);
+    target.languageCount=languageCount(editor.languages);
+    target.updatedAt=timestamp;
+  }else{
+    var newId=dictionaryState.dictionaries.reduce(function(max,item){return Math.max(max,item.id);},1000)+1;
+    dictionaryState.dictionaries.push({id:newId,name:name,code:code,description:editor.values.description.trim(),languages:Object.assign({},editor.languages),languageCount:languageCount(editor.languages),createdAt:timestamp,updatedAt:timestamp});
+    dictionaryState.items[newId]=[];
+  }
+  closeAdminModal();
+  renderDictionaryTable();
+}
+
+function openDictionaryItems(id){
+  dictionaryState.activeDictionaryId=Number(id);
+  dictionaryState.filters.itemValue='';
+  renderDictionaryItemsModal();
+}
+
+function renderDictionaryItemsModal(){
+  var dictionary=getActiveDictionary();
+  if(!dictionary){closeAdminModal();return;}
+  var items=(dictionaryState.items[dictionary.id]||[]).filter(function(item){
+    return !dictionaryState.filters.itemValue||item.value.toLowerCase().indexOf(dictionaryState.filters.itemValue.toLowerCase())>=0;
+  }).sort(function(a,b){return a.sort-b.sort||a.id-b.id;});
+  var rows=items.length?items.map(function(item){
+    return '<tr data-dictionary-item-row="'+item.id+'"><td>'+item.id+'</td><td>'+escapeAdminText(item.name)+'</td><td>'+escapeAdminText(item.value)+'</td><td class="description-cell" title="'+escapeAdminText(item.description)+'">'+escapeAdminText(item.description)+'</td><td><span class="language-count">已配置 '+item.languageCount+' 种语言</span></td><td>'+item.sort+'</td><td>'+item.createdAt+'</td><td>'+item.updatedAt+'</td><td><div class="dictionary-actions"><button type="button" class="admin-link" data-item-action="edit" data-item-id="'+item.id+'">编辑</button><button type="button" class="admin-danger" data-item-action="delete" data-item-id="'+item.id+'">删除</button></div></td></tr>';
+  }).join(''):'<tr><td colspan="9"><div class="dictionary-empty">暂无符合条件的字典子项</div></td></tr>';
+  showAdminModal('<div class="admin-modal is-wide" role="dialog" aria-modal="true" aria-label="字典子项管理">'+
+    '<div class="admin-modal__header"><h2>字典子项管理 - '+escapeAdminText(dictionary.name)+'('+escapeAdminText(dictionary.code)+')</h2><button type="button" class="admin-modal__close" data-modal-action="close" aria-label="关闭">×</button></div>'+
+    '<div class="admin-modal__body"><div class="item-manager-filter"><div class="dictionary-filter"><label for="dictItemValueFilter">字典子项值</label><input class="admin-input" id="dictItemValueFilter" value="'+escapeAdminText(dictionaryState.filters.itemValue)+'" placeholder="请输入字典子项值"></div><button type="button" class="admin-secondary" data-item-action="reset">重置</button><button type="button" class="admin-primary" data-item-action="query">查询</button><button type="button" class="admin-primary" data-item-action="new">新建字典子项</button></div>'+
+    '<div class="dictionary-table-card" style="margin-top:0"><div class="dictionary-table-wrap"><table class="dictionary-table"><thead><tr><th>ID</th><th>字典子项名</th><th>字典子项值</th><th>字典项描述</th><th>多语言</th><th>排序</th><th>创建时间</th><th>更新时间</th><th>操作</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="dictionary-pagination">共 '+items.length+' 条</div></div></div>'+
+    '<div class="admin-modal__footer"><button type="button" class="admin-secondary" data-modal-action="close">关闭</button></div></div>');
+}
+
+function queryDictionaryItems(){
+  var filter=document.getElementById('dictItemValueFilter');
+  dictionaryState.filters.itemValue=filter?filter.value.trim():'';
+  renderDictionaryItemsModal();
+}
+
+function resetDictionaryItemFilters(){
+  dictionaryState.filters.itemValue='';
+  renderDictionaryItemsModal();
+}
+
+function openDictionaryItemEditor(id){
+  var dictionary=getActiveDictionary();
+  var numericId=id==null?null:Number(id);
+  var source=(dictionaryState.items[dictionary.id]||[]).find(function(item){return item.id===numericId;});
+  activeDictionaryEditor={
+    type:'item',
+    id:source?source.id:null,
+    dictionaryId:dictionary.id,
+    values:{name:source?source.name:'',value:source?source.value:'',description:source?source.description:'',sort:source?source.sort:0},
+    languages:source?Object.assign({},source.languages):{zh:'',en:''}
+  };
+  renderDictionaryItemEditor();
+}
+
+function renderDictionaryItemEditor(){
+  var editor=activeDictionaryEditor;
+  var values=editor.values;
+  showAdminModal('<div class="admin-modal" role="dialog" aria-modal="true" aria-label="'+(editor.id?'编辑字典子项':'新建字典子项')+'">'+
+    '<div class="admin-modal__header"><h2>'+(editor.id?'编辑字典子项':'新建字典子项')+'</h2><button type="button" class="admin-modal__close" data-modal-action="back-items" aria-label="关闭">×</button></div>'+
+    '<div class="admin-modal__body"><form data-editor-form="item">'+
+    '<div class="admin-form-row"><label class="admin-form-label is-required" for="itemEditorName">字典子项名</label><div class="admin-form-control"><input class="admin-input" id="itemEditorName" value="'+escapeAdminText(values.name)+'" placeholder="请输入字典子项名"><div class="field-error" data-field-error="itemName"></div></div></div>'+
+    '<div class="admin-form-row"><label class="admin-form-label is-required" for="itemEditorValue">字典子项值</label><div class="admin-form-control"><input class="admin-input" id="itemEditorValue" value="'+escapeAdminText(values.value)+'" placeholder="请输入字典子项值"><div class="field-error" data-field-error="itemValue"></div></div></div>'+
+    '<div class="admin-form-row"><label class="admin-form-label is-required" for="itemEditorDescription">字典项描述</label><div class="admin-form-control"><textarea class="admin-textarea" id="itemEditorDescription" placeholder="请输入字典项描述">'+escapeAdminText(values.description)+'</textarea><div class="field-error" data-field-error="itemDescription"></div></div></div>'+
+    '<div class="admin-form-row"><label class="admin-form-label is-required" for="itemEditorSort">排序</label><div class="admin-form-control"><input class="admin-number" id="itemEditorSort" type="number" min="0" step="1" value="'+Number(values.sort||0)+'"><div class="field-error" data-field-error="itemSort"></div></div></div>'+
+    '<div class="admin-form-row"><span class="admin-form-label">多语言参数</span><div class="admin-form-control"><div class="language-entry"><span>已配置 '+languageCount(editor.languages)+' 种语言</span><button type="button" data-modal-action="languages">编辑多语言</button></div></div></div>'+
+    '</form></div><div class="admin-modal__footer"><button type="button" class="admin-secondary" data-modal-action="back-items">取消</button><button type="button" class="admin-primary" data-modal-action="save-item">确定</button></div></div>');
+}
+
+function captureDictionaryItemEditor(){
+  if(!activeDictionaryEditor) return;
+  var name=document.getElementById('itemEditorName');
+  var value=document.getElementById('itemEditorValue');
+  var description=document.getElementById('itemEditorDescription');
+  var sort=document.getElementById('itemEditorSort');
+  if(name) activeDictionaryEditor.values.name=name.value;
+  if(value) activeDictionaryEditor.values.value=value.value;
+  if(description) activeDictionaryEditor.values.description=description.value;
+  if(sort) activeDictionaryEditor.values.sort=sort.value;
+}
+
+function saveDictionaryItemEditor(){
+  captureDictionaryItemEditor();
+  var editor=activeDictionaryEditor;
+  var values=editor.values;
+  var name=values.name.trim();
+  var value=values.value.trim();
+  var description=values.description.trim();
+  var sort=Number(values.sort);
+  ['itemName','itemValue','itemDescription','itemSort'].forEach(function(field){setAdminFieldError(field,'');});
+  var valid=true;
+  if(!name){setAdminFieldError('itemName','请输入字典子项名');valid=false;}
+  if(!value){setAdminFieldError('itemValue','请输入字典子项值');valid=false;}
+  if(!description){setAdminFieldError('itemDescription','请输入字典项描述');valid=false;}
+  if(!Number.isInteger(sort)||sort<0){setAdminFieldError('itemSort','排序须为大于等于0的整数');valid=false;}
+  var items=dictionaryState.items[editor.dictionaryId]||[];
+  var duplicated=items.some(function(item){return item.id!==editor.id&&item.value.toLowerCase()===value.toLowerCase();});
+  if(duplicated){setAdminFieldError('itemValue','字典子项值已存在');valid=false;}
+  if(!valid) return;
+  var timestamp=adminNow();
+  if(editor.id){
+    var target=items.find(function(item){return item.id===editor.id;});
+    target.name=name;
+    target.value=value;
+    target.description=description;
+    target.sort=sort;
+    target.languages=Object.assign({},editor.languages);
+    target.languageCount=languageCount(editor.languages);
+    target.updatedAt=timestamp;
+  }else{
+    var allIds=Object.keys(dictionaryState.items).reduce(function(list,key){return list.concat(dictionaryState.items[key].map(function(item){return item.id;}));},[]);
+    var newId=allIds.reduce(function(max,idValue){return Math.max(max,idValue);},2000)+1;
+    items.push({id:newId,name:name,value:value,description:description,sort:sort,languages:Object.assign({},editor.languages),languageCount:languageCount(editor.languages),createdAt:timestamp,updatedAt:timestamp});
+    dictionaryState.items[editor.dictionaryId]=items;
+  }
+  activeDictionaryEditor=null;
+  renderDictionaryItemsModal();
+}
+
+function openLanguageEditor(){
+  if(!activeDictionaryEditor) return;
+  if(activeDictionaryEditor.type==='dictionary') captureDictionaryEditor();
+  else captureDictionaryItemEditor();
+  var languages=activeDictionaryEditor.languages;
+  showAdminModal('<div class="admin-modal is-language" role="dialog" aria-modal="true" aria-label="多语言配置">'+
+    '<div class="admin-modal__header"><h2>多语言配置</h2><button type="button" class="admin-modal__close" data-modal-action="cancel-languages" aria-label="关闭">×</button></div>'+
+    '<div class="admin-modal__body"><div class="language-grid">'+
+    '<section class="language-card"><h3>简体中文</h3><input class="admin-input" id="languageZh" value="'+escapeAdminText(languages.zh||'')+'" placeholder="请输入简体中文文案"></section>'+
+    '<section class="language-card"><h3>English</h3><input class="admin-input" id="languageEn" value="'+escapeAdminText(languages.en||'')+'" placeholder="Please enter English copy"></section>'+
+    '</div></div><div class="admin-modal__footer"><button type="button" class="admin-secondary" data-modal-action="cancel-languages">取消</button><button type="button" class="admin-primary" data-modal-action="save-languages">确定</button></div></div>');
+}
+
+function returnToActiveEditor(){
+  if(!activeDictionaryEditor) return;
+  if(activeDictionaryEditor.type==='dictionary') renderDictionaryEditor();
+  else renderDictionaryItemEditor();
+}
+
+function saveLanguageEditor(){
+  activeDictionaryEditor.languages={zh:document.getElementById('languageZh').value.trim(),en:document.getElementById('languageEn').value.trim()};
+  returnToActiveEditor();
+}
+
+function openDeleteConfirmation(type,id){
+  pendingDictionaryDelete={type:type,id:Number(id)};
+  var name='';
+  if(type==='dictionary'){
+    var dictionary=dictionaryState.dictionaries.find(function(item){return item.id===pendingDictionaryDelete.id;});
+    name=dictionary?dictionary.name:'';
+  }else{
+    var items=dictionaryState.items[dictionaryState.activeDictionaryId]||[];
+    var item=items.find(function(row){return row.id===pendingDictionaryDelete.id;});
+    name=item?item.name:'';
+  }
+  showAdminModal('<div class="admin-modal is-confirm" role="dialog" aria-modal="true" aria-label="删除确认"><div class="admin-modal__header"><h2>删除确认</h2><button type="button" class="admin-modal__close" data-modal-action="cancel-delete" aria-label="关闭">×</button></div><div class="admin-modal__body"><p class="confirm-copy">确定删除<strong>“'+escapeAdminText(name)+'”</strong>吗？删除后不可恢复。</p></div><div class="admin-modal__footer"><button type="button" class="admin-secondary" data-modal-action="cancel-delete">取消</button><button type="button" class="admin-primary" data-modal-action="confirm-delete">确定</button></div></div>');
+}
+
+function cancelDeleteConfirmation(){
+  var pending=pendingDictionaryDelete;
+  pendingDictionaryDelete=null;
+  if(pending&&pending.type==='item') renderDictionaryItemsModal();
+  else closeAdminModal();
+}
+
+function confirmDictionaryDelete(){
+  var pending=pendingDictionaryDelete;
+  if(!pending) return;
+  pendingDictionaryDelete=null;
+  if(pending.type==='dictionary'){
+    dictionaryState.dictionaries=dictionaryState.dictionaries.filter(function(item){return item.id!==pending.id;});
+    delete dictionaryState.items[pending.id];
+    closeAdminModal();
+    renderDictionaryTable();
+  }else{
+    var dictionaryId=dictionaryState.activeDictionaryId;
+    dictionaryState.items[dictionaryId]=(dictionaryState.items[dictionaryId]||[]).filter(function(item){return item.id!==pending.id;});
+    renderDictionaryItemsModal();
+  }
 }
 
 var analyticsFilters={dateRange:'30d',market:'domestic',userGroup:'new',channel:'all',version:'all'};
@@ -1104,7 +1553,7 @@ function switchDemoView(view){
   document.querySelectorAll('[data-view]').forEach(function(button){
     button.classList.toggle('is-active',button.dataset.view===view);
   });
-  if(showAdmin) renderSourceAnalytics();
+  if(showAdmin) switchAdminPage(activeAdminPage);
 }
 
 function toggleRegion(){
@@ -1124,11 +1573,12 @@ function applyRegionPresentation(){
     document.documentElement.lang='en';
     box.querySelector('h2').textContent='Your PC gaming platform on mobile';
     box.querySelector('.welcome-features__lead').textContent='Connect your library and start playing in one place.';
-    featureItems[0].innerHTML='&#x1F3AE; Sync Steam & Epic libraries and discover more PC games';
+    featureItems[0].innerHTML='&#x1F3AE; Sync your data with Steam and Epic and access more PC games';
     featureItems[1].innerHTML='&#x26A1; Play instantly with cloud gaming';
     featureItems[2].innerHTML='&#x1F4A1; AI frame generation and one-tap pro control layouts';
     document.getElementById('welcomeTitle').textContent='Welcome to GameHub';
-    document.getElementById('welcomeDesc').textContent='Welcome, friend. Your PC gaming journey starts here.';
+    document.getElementById('welcomePromptTitle').textContent='For Your Best Experience';
+    document.getElementById('welcomePromptDesc').textContent='Tell us about your gaming experience.';
     document.querySelector('[data-action="start-new-user"]').textContent='Start';
     document.getElementById('startMethodTitle').textContent='How would you like to start?';
     document.getElementById('startMethodDesc').textContent='Choose the option that best fits you right now.';
@@ -1142,11 +1592,12 @@ function applyRegionPresentation(){
     document.documentElement.lang='zh-CN';
     box.querySelector('h2').textContent='手机上的 PC 游戏平台';
     box.querySelector('.welcome-features__lead').textContent='从连接游戏库到立即开玩，一站式完成';
-    featureItems[0].innerHTML='&#x1F3AE; Steam 与 Epic 游戏数据互通，海量大作应有尽有';
+    featureItems[0].innerHTML='&#x1F3AE; 与 Steam、Epic 数据互通，海量大作应有尽有';
     featureItems[1].innerHTML='&#x26A1; 支持云游戏，无需下载，一键秒玩';
     featureItems[2].innerHTML='&#x1F4A1; AI 超级插帧＋虚拟按键大神方案，一键套用';
     document.getElementById('welcomeTitle').textContent='欢迎来到盖世游戏';
-    document.getElementById('welcomeDesc').textContent='欢迎新朋友，开启你的 PC 游戏之旅';
+    document.getElementById('welcomePromptTitle').textContent='为了您的绝佳体验';
+    document.getElementById('welcomePromptDesc').textContent='请与我们分享您的游玩经验～';
     document.querySelector('[data-action="start-new-user"]').textContent='开始';
     document.getElementById('startMethodTitle').textContent='你准备怎么开始？';
     document.getElementById('startMethodDesc').textContent='选择最符合你现在情况的方式';
@@ -1392,6 +1843,42 @@ function showDone(type){
 document.addEventListener('click',function(event){
   var viewButton=event.target.closest('[data-view]');
   if(viewButton) switchDemoView(viewButton.dataset.view);
+  var adminPageButton=event.target.closest('[data-admin-page]');
+  if(adminPageButton) switchAdminPage(adminPageButton.dataset.adminPage);
+  var dictionaryButton=event.target.closest('[data-dictionary-action]');
+  if(dictionaryButton){
+    var dictionaryAction=dictionaryButton.dataset.dictionaryAction;
+    var dictionaryId=dictionaryButton.dataset.dictionaryId;
+    if(dictionaryAction==='new') openDictionaryEditor();
+    if(dictionaryAction==='edit') openDictionaryEditor(dictionaryId);
+    if(dictionaryAction==='items') openDictionaryItems(dictionaryId);
+    if(dictionaryAction==='delete') openDeleteConfirmation('dictionary',dictionaryId);
+    if(dictionaryAction==='query') queryDictionaries();
+    if(dictionaryAction==='reset') resetDictionaryFilters();
+  }
+  var itemButton=event.target.closest('[data-item-action]');
+  if(itemButton){
+    var itemAction=itemButton.dataset.itemAction;
+    var itemId=itemButton.dataset.itemId;
+    if(itemAction==='new') openDictionaryItemEditor();
+    if(itemAction==='edit') openDictionaryItemEditor(itemId);
+    if(itemAction==='delete') openDeleteConfirmation('item',itemId);
+    if(itemAction==='query') queryDictionaryItems();
+    if(itemAction==='reset') resetDictionaryItemFilters();
+  }
+  var modalButton=event.target.closest('[data-modal-action]');
+  if(modalButton){
+    var modalAction=modalButton.dataset.modalAction;
+    if(modalAction==='close') closeAdminModal();
+    if(modalAction==='save-dictionary') saveDictionaryEditor();
+    if(modalAction==='save-item') saveDictionaryItemEditor();
+    if(modalAction==='languages') openLanguageEditor();
+    if(modalAction==='save-languages') saveLanguageEditor();
+    if(modalAction==='cancel-languages') returnToActiveEditor();
+    if(modalAction==='back-items'){activeDictionaryEditor=null;renderDictionaryItemsModal();}
+    if(modalAction==='cancel-delete') cancelDeleteConfirmation();
+    if(modalAction==='confirm-delete') confirmDictionaryDelete();
+  }
   var scenarioButton=event.target.closest('[data-demo-scenario]');
   if(scenarioButton) startExistingScenario(scenarioButton.dataset.demoScenario);
   var existingGame=event.target.closest('[data-existing-game]');
