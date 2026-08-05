@@ -93,24 +93,26 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 }
 .welcome-orbit{position:absolute;border-radius:50%;pointer-events:none;filter:saturate(1.12)}
 .welcome-orbit.one{width:16px;height:16px;top:112px;right:52px;background:var(--gold)}
-.welcome-orbit.two{width:11px;height:11px;top:206px;left:34px;background:var(--blue)}
-.welcome-orbit.three{width:13px;height:13px;top:326px;right:30px;background:var(--green)}
+.welcome-orbit.two{width:11px;height:11px;top:454px;left:34px;background:var(--blue)}
+.welcome-orbit.three{width:13px;height:13px;top:536px;right:30px;background:var(--green)}
+html[lang="en"] .welcome-orbit.one{top:84px;right:42px}
 .welcome-brand{position:relative;z-index:1}
 .welcome-kicker{color:var(--gold);font-size:10px;line-height:14px;font-weight:520;letter-spacing:.16em}
 .welcome-brand h1{margin-top:14px;font-size:32px;line-height:42px;font-weight:520;letter-spacing:-.5px}
-.welcome-brand p{margin-top:14px;color:rgba(255,255,255,.66);font-size:14px;line-height:21px;font-weight:360;letter-spacing:.02em}
-.welcome-brand p span{display:block}
-.welcome-brand p span+span{margin-top:2px}
 .welcome-features{
-  position:relative;z-index:1;margin-top:auto;padding:17px 16px 16px;
+  position:relative;z-index:1;margin-top:26px;padding:17px 16px 16px;
   border:1px solid rgba(255,255,255,.055);border-radius:var(--r-xl);
   background:linear-gradient(145deg,rgba(255,255,255,.04),rgba(255,255,255,.018));
   box-shadow:none;
 }
 .welcome-features h2{color:rgba(255,255,255,.9);font-size:18px;line-height:25px;font-weight:480;margin-bottom:4px}
-.welcome-features__lead{color:rgba(255,255,255,.42);font-size:12px;line-height:17px;margin-bottom:15px}
+.welcome-features__lead{color:var(--muted);font-size:12px;line-height:17px;margin-bottom:15px}
+.welcome-prompt{position:relative;z-index:1;margin-top:auto;letter-spacing:.02em}
+.welcome-prompt span{display:block}
+.welcome-prompt__reason{color:rgba(255,255,255,.5);font-size:13px;line-height:18px;font-weight:350}
+.welcome-prompt__action{margin-top:4px;color:rgba(255,255,255,.88);font-size:15px;line-height:22px;font-weight:420}
 .welcome-start{
-  position:relative;z-index:1;width:100%;height:52px;margin-top:16px;border:0;border-radius:var(--r-full);
+  position:relative;z-index:1;width:100%;height:52px;margin-top:14px;border:0;border-radius:var(--r-full);
   background:linear-gradient(90deg,#ffe177,var(--gold));color:#111;font-family:var(--font);
   font-size:16px;font-weight:650;cursor:pointer;box-shadow:0 10px 26px rgba(255,204,67,.2);
 }
@@ -528,7 +530,6 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
     <div class="welcome-brand">
       <span class="welcome-kicker">WELCOME TO GAMEHUB</span>
       <h1 id="welcomeTitle">欢迎来到盖世游戏</h1>
-      <p><span id="welcomePromptTitle">为了您的绝佳体验</span><span id="welcomePromptDesc">请与我们分享您的游玩经验～</span></p>
     </div>
     <section class="welcome-features" id="featuresBox" aria-label="平台特色">
       <h2>手机上的 PC 游戏平台</h2>
@@ -539,6 +540,10 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
         <div class="gh-feature-item">&#x1F4A1; AI 超级插帧＋虚拟按键大神方案，一键套用</div>
       </div>
     </section>
+    <p class="welcome-prompt">
+      <span class="welcome-prompt__reason" id="welcomePromptTitle">为了您的绝佳体验</span>
+      <span class="welcome-prompt__action" id="welcomePromptDesc">请与我们分享您的游玩经验～</span>
+    </p>
     <button type="button" class="welcome-start" data-action="start-new-user">开始</button>
   </div>
 </div>
