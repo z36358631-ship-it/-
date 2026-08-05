@@ -23,7 +23,7 @@
   --gh-surface-glass-strong:rgba(25,27,33,.94);
 }
 html{font-size:16px}
-body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(51,143,235,.14),transparent 28%),radial-gradient(circle at 20% 84%,rgba(51,216,164,.09),transparent 28%),#101217;color:var(--txt);-webkit-font-smoothing:antialiased;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:24px}
+body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(51,143,235,.14),transparent 28%),radial-gradient(circle at 20% 84%,rgba(51,216,164,.09),transparent 28%),#101217;color:var(--txt);-webkit-font-smoothing:antialiased;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:64px 24px 24px}
 
 .phone{
   width:390px;height:844px;background:radial-gradient(circle at 108% -8%,rgba(51,143,235,.24),transparent 30%),radial-gradient(circle at -18% 88%,rgba(51,216,164,.13),transparent 28%),var(--bg);border-radius:20px;
@@ -74,45 +74,53 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 .step-line{width:44px;height:2px;background:var(--border);margin:0 12px;border-radius:1px;transition:all .4s}
 .step-line.done{background:var(--green)}
 
-/* Skip */
-.skip-btn{
-  font-size:14px;color:var(--muted);cursor:pointer;
-  border:none;background:none;font-family:var(--font);
-  transition:color .2s;
-  display:block;text-align:right;padding:44px 24px 8px;
-}
-.skip-btn:hover{color:var(--txt2)}
-.skip-btn:active{color:var(--txt)}
-
 /* Features */
-.gh-features{
-  display:flex;flex-direction:column;gap:8px;
-  padding:0 0 8px;
-}
+.gh-features{display:flex;flex-direction:column;gap:9px;padding:0}
 .gh-features__title{
   font-size:14px;font-weight:520;color:var(--gh-color-text-primary);
   margin-bottom:6px;
 }
-.gh-feature-item{
-  font-size:13px;color:var(--gh-color-text-secondary);
-  font-weight:330;line-height:1.6;
-}
+.gh-feature-item{font-size:12px;color:rgba(255,255,255,.55);font-weight:330;line-height:1.55}
 
-/* Welcome Box */
-.gh-welcome-box{
-  padding:16px;
-  background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.014) 70%);
-  border:1px solid var(--gh-border-default);
-  border-radius:var(--gh-radius-2xl);
-  box-shadow:0 18px 44px rgba(0,0,0,.22);
+/* Welcome Cover */
+.welcome-cover{
+  min-height:100%;display:flex;flex-direction:column;padding:74px 24px 26px;
+  background:
+    radial-gradient(circle at 86% 12%,rgba(255,204,67,.22),transparent 25%),
+    radial-gradient(circle at 8% 42%,rgba(51,143,235,.2),transparent 28%),
+    radial-gradient(circle at 82% 76%,rgba(51,216,164,.12),transparent 24%),
+    #050505;
 }
-.gh-divider{
-  height:1px;background:var(--gh-border-default);margin:14px 0;
+.welcome-orbit{position:absolute;border-radius:50%;pointer-events:none;filter:saturate(1.12)}
+.welcome-orbit.one{width:16px;height:16px;top:112px;right:52px;background:var(--gold)}
+.welcome-orbit.two{width:11px;height:11px;top:454px;left:34px;background:var(--blue)}
+.welcome-orbit.three{width:13px;height:13px;top:536px;right:30px;background:var(--green)}
+html[lang="en"] .welcome-orbit.one{top:84px;right:42px}
+.welcome-brand{position:relative;z-index:1}
+.welcome-kicker{color:var(--gold);font-size:10px;line-height:14px;font-weight:520;letter-spacing:.16em}
+.welcome-brand h1{margin-top:14px;font-size:32px;line-height:42px;font-weight:520;letter-spacing:-.5px}
+.welcome-features{
+  position:relative;z-index:1;margin-top:26px;padding:17px 16px 16px;
+  border:1px solid rgba(255,255,255,.055);border-radius:var(--r-xl);
+  background:linear-gradient(145deg,rgba(255,255,255,.04),rgba(255,255,255,.018));
+  box-shadow:none;
 }
+.welcome-features h2{color:rgba(255,255,255,.9);font-size:18px;line-height:25px;font-weight:480;margin-bottom:4px}
+.welcome-features__lead{color:var(--muted);font-size:12px;line-height:17px;margin-bottom:15px}
+.welcome-prompt{position:relative;z-index:1;margin-top:auto;letter-spacing:.02em}
+.welcome-prompt span{display:block}
+.welcome-prompt__reason{color:rgba(255,255,255,.5);font-size:13px;line-height:18px;font-weight:350}
+.welcome-prompt__action{margin-top:4px;color:rgba(255,255,255,.88);font-size:15px;line-height:22px;font-weight:420}
+.welcome-start{
+  position:relative;z-index:1;width:100%;height:52px;margin-top:14px;border:0;border-radius:var(--r-full);
+  background:linear-gradient(90deg,#ffe177,var(--gold));color:#111;font-family:var(--font);
+  font-size:16px;font-weight:650;cursor:pointer;box-shadow:0 10px 26px rgba(255,204,67,.2);
+}
+.welcome-start:active{transform:scale(.98)}
 
 /* Page Content */
 .page-body{padding:0 24px;flex:1;display:flex;flex-direction:column;overflow-y:auto}
-#page0 .page-body{justify-content:center;padding:58px 24px 42px!important}
+.start-method-body{padding-top:54px}
 .page-body::-webkit-scrollbar{display:none}
 .page-title{font-size:22px;font-weight:600;letter-spacing:-.3px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
 .page-desc{font-size:14px;color:var(--muted);line-height:1.5;margin-bottom:16px}
@@ -172,7 +180,7 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
   background:var(--card);border:1.5px solid var(--border);
   border-radius:var(--r-xl);padding:24px 20px;
   cursor:pointer;display:flex;align-items:center;gap:16px;
-  transition:all .2s ease;
+  transition:all .2s ease;width:100%;color:var(--txt);font-family:var(--font);text-align:left;
 }
 .opt-card:hover{background:var(--card-hover);border-color:var(--border-light)}
 .opt-card:active{transform:scale(.97);border-color:var(--gold);box-shadow:var(--shadow-glow)}
@@ -365,6 +373,33 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 .source-submit:disabled{background:#252525;color:#666;cursor:not-allowed}
 .source-sync-note{min-height:20px;margin-top:10px;text-align:center;color:var(--muted);font-size:12px}
 
+/* 非新用户个性化与来源补采 */
+.existing-page-body{padding-top:54px}
+.existing-progress{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:22px}
+.existing-progress span{height:3px;border-radius:100px;background:#262c34}
+.existing-progress span.is-active{background:linear-gradient(90deg,#8b7cff,var(--purple))}
+.existing-kicker{color:#a69cff;font-size:10px;line-height:14px;font-weight:520;letter-spacing:.12em;text-transform:uppercase}
+.existing-title{margin-top:8px;font-size:24px;line-height:32px;font-weight:520}
+.existing-desc{margin-top:6px;color:var(--muted);font-size:13px;line-height:20px}
+.existing-game-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px;padding-bottom:16px}
+.existing-game-card{position:relative;min-width:0;aspect-ratio:3/4;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;background:#171717;color:#fff;font-family:var(--font);cursor:pointer}
+.existing-game-card img{width:100%;height:100%;object-fit:cover;display:block}
+.existing-game-card::after{content:'';position:absolute;inset:36% 0 0;background:linear-gradient(transparent,rgba(0,0,0,.96))}
+.existing-game-card strong{position:absolute;z-index:2;left:8px;right:8px;bottom:8px;font-size:11px;line-height:16px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.existing-game-card i{display:none;position:absolute;z-index:3;right:6px;top:6px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#111;font-size:13px;font-style:normal;line-height:22px;text-align:center}
+.existing-game-card.is-selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.existing-game-card.is-selected i{display:block}
+.existing-footer{position:sticky;bottom:0;margin-top:auto;padding:12px 0 20px;background:linear-gradient(transparent,#000 16%)}
+.existing-primary{width:100%;height:48px;border:0;border-radius:var(--r-full);background:var(--gold);color:#111;font-family:var(--font);font-weight:650;cursor:pointer}
+.existing-primary:disabled{background:#252525;color:#666;cursor:not-allowed}
+.existing-secondary{display:block;width:100%;margin-top:10px;border:0;background:transparent;color:var(--muted);font-family:var(--font);font-size:13px;cursor:pointer}
+.existing-source-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.existing-source-card{min-height:68px;padding:12px;border:1px solid var(--border);border-radius:var(--r-lg);background:var(--card);color:#fff;font-family:var(--font);font-size:13px;text-align:left;cursor:pointer}
+.existing-source-card.is-selected{border-color:var(--gold);background:var(--gold-dim)}
+.existing-complete{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center}
+.existing-complete__icon{width:60px;height:60px;border-radius:20px;display:grid;place-items:center;background:rgba(51,216,164,.14);color:var(--green);font-size:28px}
+.existing-complete strong{margin-top:18px;font-size:20px}.existing-complete p{margin-top:8px;color:var(--muted);font-size:13px;line-height:20px}
+
 /* Done Page */
 .done-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 32px}
 .done-icon{font-size:56px;margin-bottom:16px}
@@ -377,56 +412,148 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 }
 .done-btn:active{transform:scale(.97)}
 
+/* 首页结果 */
+.home-result{height:100%;padding:64px 20px 24px;background:linear-gradient(180deg,#111827 0,#050505 38%)}
+.home-result__eyebrow{font-size:12px;color:var(--gold);margin-bottom:8px}
+.home-result__title{font-size:28px;font-weight:520;line-height:38px}
+.home-result__sub{margin-top:6px;color:var(--muted);font-size:13px;line-height:20px}
+.home-hero{height:190px;margin-top:26px;border-radius:var(--r-xl);padding:20px;display:flex;flex-direction:column;justify-content:flex-end;background:radial-gradient(circle at 75% 20%,rgba(255,204,67,.38),transparent 34%),linear-gradient(135deg,#243b55,#141e30);box-shadow:var(--shadow-card)}
+.home-hero strong{font-size:20px}.home-hero span{margin-top:5px;color:#d7dce4;font-size:12px}
+.home-tabs{display:flex;gap:18px;margin-top:24px;color:var(--muted);font-size:14px}.home-tabs .is-active{color:#fff;font-weight:520}
+.home-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
+.home-card{height:126px;border-radius:var(--r-lg);padding:14px;display:flex;align-items:flex-end;font-size:13px;font-weight:520;background:linear-gradient(145deg,#3d1a0e,#151515)}
+.home-card:nth-child(2){background:linear-gradient(145deg,#163322,#151515)}
+
+/* Demo顶层视图 */
+[hidden]{display:none!important}
+.client-demo-shell{width:100%;min-height:calc(100vh - 88px);display:flex;align-items:center;justify-content:center}
+.demo-view-switch{position:fixed;z-index:100;top:20px;right:250px;display:flex;gap:4px;padding:4px;border:1px solid #343434;border-radius:12px;background:rgba(14,14,14,.94);box-shadow:0 8px 28px rgba(0,0,0,.28);backdrop-filter:blur(14px)}
+.demo-view-switch button{height:30px;padding:0 14px;border:0;border-radius:8px;background:transparent;color:#888;font-family:var(--font);font-size:12px;cursor:pointer}
+.demo-view-switch button.is-active{background:var(--gold);color:#111;font-weight:650}
+
+/* 运营后台来源分析 */
+.admin-shell{display:none;width:min(1480px,calc(100vw - 48px));height:min(900px,calc(100vh - 88px));overflow:hidden;border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc;color:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;box-shadow:0 28px 80px rgba(0,0,0,.34)}
+.admin-shell.active{display:flex}
+.admin-sidebar{width:220px;flex:0 0 220px;padding:20px 14px;background:#fff;border-right:1px solid #e2e8f0;display:flex;flex-direction:column}
+.admin-brand{display:flex;align-items:center;gap:10px;padding:0 8px 20px;font-size:15px;font-weight:700;color:#2563eb}
+.admin-brand__logo{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;font-weight:800}
+.admin-nav-group{margin-top:8px}.admin-nav-label{padding:8px 10px;color:#94a3b8;font-size:11px}
+.admin-nav-item{width:100%;height:40px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:#475569;text-align:left;font-size:13px;cursor:pointer}
+.admin-nav-item.is-active{background:#eff6ff;color:#2563eb;font-weight:650}
+.admin-user{margin-top:auto;padding:14px 10px 0;border-top:1px solid #e2e8f0;color:#64748b;font-size:12px}
+.admin-main{flex:1;min-width:0;overflow-y:auto;padding:28px}
+.admin-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.admin-header h1{font-size:24px;line-height:32px}.admin-header p{margin-top:4px;color:#64748b;font-size:13px}
+.admin-refresh{height:34px;padding:0 14px;border:1px solid #dbe3ee;border-radius:8px;background:#fff;color:#334155;font-size:12px}
+.analytics-filters{display:grid;grid-template-columns:repeat(5,minmax(132px,1fr));gap:10px;margin-top:22px;padding:14px;border:1px solid #e2e8f0;border-radius:12px;background:#fff}
+.analytics-filter label{display:block;margin-bottom:6px;color:#64748b;font-size:11px}
+.analytics-filter select{width:100%;height:36px;padding:0 10px;border:1px solid #dbe3ee;border-radius:8px;background:#fff;color:#0f172a;font-size:12px;outline:none}
+.analytics-filter select:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.analytics-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+.metric-card{padding:18px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.04)}
+.metric-label{color:#64748b;font-size:12px}.metric-value{margin-top:10px;font-family:var(--font-num);font-size:30px;font-weight:700}.metric-foot{margin-top:6px;color:#94a3b8;font-size:11px}
+.metric-foot strong{color:#10b981}
+.attribution-note{margin-top:12px;padding:10px 12px;border:1px solid #bfdbfe;border-radius:8px;background:#eff6ff;color:#1d4ed8;font-size:12px}
+.analytics-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(460px,.92fr);gap:14px;margin-top:14px}
+.analytics-panel{border:1px solid #e2e8f0;border-radius:12px;background:#fff;overflow:hidden}
+.analytics-panel__head{padding:16px 18px;border-bottom:1px solid #edf2f7;font-size:14px;font-weight:650}
+.source-distribution{padding:18px}.source-bar-row{display:grid;grid-template-columns:112px minmax(160px,1fr) 126px;align-items:center;gap:12px;margin-bottom:16px;font-size:12px}
+.source-bar-row:last-child{margin-bottom:0}.source-bar-row>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.source-bar-row>strong{text-align:right;font-family:var(--font-num);font-size:11px}
+.source-bar-track{height:10px;border-radius:100px;background:#eef2f7;overflow:hidden}.source-bar-track i{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,#3b82f6,#8b5cf6)}
+.source-table{width:100%;border-collapse:collapse;font-size:12px}.source-table th,.source-table td{padding:13px 14px;border-bottom:1px solid #edf2f7;text-align:left}.source-table th{color:#64748b;background:#f8fafc;font-weight:520}.source-table td:nth-child(n+2),.source-table th:nth-child(n+2){text-align:right}.source-table .is-up{color:#10b981}.source-table .is-down{color:#ef4444}
+
+/* 运营后台 · 字典管理 */
+.admin-panel{min-height:100%}
+.dictionary-header{align-items:center}.dictionary-header h1{margin:0}.dictionary-header p{margin:4px 0 0}
+.admin-primary,.admin-secondary,.admin-link,.admin-danger{border:0;background:none;font:inherit;cursor:pointer}
+.admin-primary{height:34px;padding:0 15px;border-radius:7px;background:#3b82f6;color:#fff;font-size:12px;font-weight:600;box-shadow:0 1px 2px rgba(37,99,235,.18)}
+.admin-primary:hover{background:#2563eb}.admin-primary:disabled{background:#bfdbfe;cursor:not-allowed}
+.admin-secondary{height:34px;padding:0 15px;border:1px solid #d8e0ea;border-radius:7px;background:#fff;color:#475569;font-size:12px}
+.admin-secondary:hover{border-color:#93c5fd;color:#2563eb}
+.admin-link{padding:0 5px;color:#2563eb;font-size:12px}.admin-danger{padding:0 5px;color:#ef4444;font-size:12px}
+.dictionary-filter-card{display:flex;align-items:flex-end;gap:14px;margin-top:20px;padding:18px 20px;border:1px solid #e2e8f0;border-radius:9px;background:#fff}
+.dictionary-filter{width:220px}.dictionary-filter label{display:block;margin-bottom:7px;color:#475569;font-size:12px}
+.admin-input,.admin-textarea,.admin-number{width:100%;border:1px solid #d8e0ea;border-radius:6px;background:#fff;color:#0f172a;font-family:inherit;font-size:12px;outline:none;transition:border-color .15s,box-shadow .15s}
+.admin-input,.admin-number{height:34px;padding:0 10px}.admin-textarea{min-height:74px;padding:9px 10px;resize:vertical;line-height:1.5}
+.admin-input:focus,.admin-textarea:focus,.admin-number:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.1)}
+.dictionary-filter-actions{display:flex;gap:8px;margin-left:auto}
+.dictionary-table-card{margin-top:14px;border:1px solid #e2e8f0;border-radius:9px;background:#fff;overflow:hidden}
+.dictionary-table-tools{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #edf2f7}
+.dictionary-table-tools strong{font-size:14px}.dictionary-table-tools span{color:#94a3b8;font-size:11px}
+.dictionary-table-wrap{overflow:auto}.dictionary-table{width:100%;min-width:1040px;border-collapse:collapse;font-size:12px}
+.dictionary-table th,.dictionary-table td{padding:13px 12px;border-bottom:1px solid #edf2f7;text-align:left;white-space:nowrap}
+.dictionary-table th{background:#f8fafc;color:#64748b;font-weight:520}.dictionary-table tr:last-child td{border-bottom:0}.dictionary-table td{color:#334155}
+.dictionary-table .description-cell{max-width:220px;overflow:hidden;text-overflow:ellipsis}.dictionary-actions{display:flex;align-items:center;gap:2px}
+.language-count{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:4px;background:#eff6ff;color:#2563eb;font-size:11px}
+.dictionary-empty{padding:54px 20px;text-align:center;color:#94a3b8;font-size:12px}
+.dictionary-pagination{display:flex;align-items:center;justify-content:flex-end;padding:12px 16px;border-top:1px solid #edf2f7;color:#64748b;font-size:11px}
+
+.admin-modal-layer{position:fixed;z-index:220;inset:0;display:grid;place-items:center;padding:24px;background:rgba(15,23,42,.46);backdrop-filter:blur(1px)}
+.admin-modal-layer[hidden]{display:none!important}.admin-modal{width:min(540px,calc(100vw - 48px));max-height:calc(100vh - 64px);display:flex;flex-direction:column;border-radius:8px;background:#fff;box-shadow:0 22px 60px rgba(15,23,42,.26);overflow:hidden}
+.admin-modal.is-wide{width:min(1240px,calc(100vw - 72px))}.admin-modal.is-language{width:min(620px,calc(100vw - 48px))}.admin-modal.is-confirm{width:min(420px,calc(100vw - 48px))}
+.admin-modal__header{display:flex;align-items:center;justify-content:space-between;min-height:54px;padding:0 20px;border-bottom:1px solid #edf2f7}
+.admin-modal__header h2{margin:0;color:#0f172a;font-size:16px;font-weight:650}.admin-modal__close{width:30px;height:30px;border:0;background:none;color:#94a3b8;font-size:22px;line-height:30px;cursor:pointer}
+.admin-modal__body{padding:20px;overflow:auto}.admin-modal__footer{display:flex;justify-content:flex-end;gap:9px;padding:14px 20px;border-top:1px solid #edf2f7;background:#fff}
+.admin-form-row{display:grid;grid-template-columns:100px minmax(0,1fr);align-items:start;gap:14px;margin-bottom:17px}.admin-form-row:last-child{margin-bottom:0}
+.admin-form-label{padding-top:9px;color:#475569;font-size:12px;text-align:right}.admin-form-label.is-required::before{content:'*';margin-right:4px;color:#ef4444}
+.admin-form-control{min-width:0}.admin-form-hint{margin-top:5px;color:#94a3b8;font-size:11px}.field-error{min-height:16px;margin-top:4px;color:#ef4444;font-size:11px}
+.language-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:38px;padding:0 11px;border:1px solid #d8e0ea;border-radius:6px;background:#f8fafc}
+.language-entry span{color:#64748b;font-size:12px}.language-entry button{border:0;background:none;color:#2563eb;font-size:12px;cursor:pointer}
+.item-manager-filter{display:flex;align-items:flex-end;gap:10px;margin-bottom:14px}.item-manager-filter .dictionary-filter{width:240px}.item-manager-filter [data-item-action="new"]{margin-left:auto}
+.language-grid{display:grid;gap:16px}.language-card{padding:14px;border:1px solid #e2e8f0;border-radius:7px;background:#f8fafc}.language-card h3{margin:0 0 10px;color:#334155;font-size:13px}
+.confirm-copy{color:#475569;font-size:13px;line-height:1.7}.confirm-copy strong{color:#0f172a}
+@media(max-width:1050px){.analytics-filters{grid-template-columns:repeat(3,1fr)}.analytics-grid{grid-template-columns:1fr}.admin-sidebar{width:184px;flex-basis:184px}.demo-view-switch{right:20px}}
+
 /* Control Panel */
-.cp{position:fixed;top:20px;right:20px;background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:16px;width:200px;font-size:12px;color:#999}
+.cp{position:fixed;top:20px;right:20px;max-height:calc(100vh - 40px);overflow-y:auto;background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:16px;width:210px;font-size:12px;color:#999}
+.cp::-webkit-scrollbar{width:4px}.cp::-webkit-scrollbar-thumb{background:#3a3a3a;border-radius:4px}
 .cp h4{font-size:12px;color:var(--gold);margin-bottom:10px;font-weight:520;text-transform:uppercase;letter-spacing:.5px}
 .cp-btn{width:100%;padding:8px;background:#1a1a1a;color:#aaa;border:1px solid #333;border-radius:var(--r-md);font-size:11px;cursor:pointer;margin-bottom:5px;transition:background .2s}
 .cp-btn:hover{background:#222}
 </style>
 </head>
 <body>
+<nav class="demo-view-switch" aria-label="Demo视图">
+  <button type="button" class="is-active" data-view="client">用户端</button>
+  <button type="button" data-view="admin">运营后台</button>
+</nav>
+<section class="client-demo-shell">
 <div class="phone">
 <div class="sbar"><span>10:24</span><span>5G</span></div>
 
-<!-- Step 0: 新老用户选择 -->
-<div class="page active" id="page0">
-  <div class="page-body" style="padding-top:44px;overflow:visible">
-    <div class="gh-welcome-box">
-      <div class="onboarding-progress" aria-label="独立新手引流，第1步，共3步">
-        <span class="is-active"></span><span></span><span></span>
-      </div>
-      <p class="guide-kicker">Start your GameHub journey.</p>
-      <div class="page-title" id="welcomeTitle" style="text-align:center;justify-content:center;font-size:20px;margin-bottom:6px">欢迎来到盖世游戏</div>
-      <div class="page-desc" id="welcomeDesc" style="text-align:center;margin-bottom:16px">手机上的 PC 游戏平台</div>
-      <div class="gh-features" id="featuresBox">
-        <div class="gh-features__title">平台特色介绍：</div>
-        <div class="gh-feature-item">&#x1F3AE; Steam 与 Epic 平台数据互通，海量大作应有尽有</div>
-        <div class="gh-feature-item" id="featureCloud">&#x26A1; 支持云游戏，无需下载一键秒玩</div>
-        <div class="gh-feature-item">&#x1F4A1; AI超级插帧 + 虚拟按键大神方案一键套用</div>
-      </div>
-      <div class="gh-divider"></div>
-      <div class="opt-list">
-        <div class="opt-card" onclick="startOnboarding('has_game')">
-          <div class="opt-icon" style="background:linear-gradient(145deg,#1b2838,#2a4a6a)"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.04 2 11.04c0 3.9 2.87 7.22 6.84 8.38l2.62-3.75c-.34-.03-.69-.05-1.04-.05-.22 0-.44.01-.66.03L7.2 13.9a2.48 2.48 0 0 1 1.76-4.24c.2 0 .4.02.58.07l2.38-3.41A5.5 5.5 0 0 1 17.5 11c0 .18-.01.35-.03.52l3.53.88C21.64 6.52 17.28 2 12 2z"/></svg></div>
-          <div class="opt-info"><div class="opt-title">我有游戏想玩</div><div class="opt-desc">已有Steam账号或游戏文件，想在手机上玩</div></div>
-          <div class="opt-arrow">&#x203A;</div>
-        </div>
-        <div class="opt-card" onclick="startOnboarding('new_user')">
-          <div class="opt-icon" style="background:linear-gradient(145deg,#3d1a0e,#7a3a20);font-size:22px">&#x26A1;</div>
-          <div class="opt-info"><div class="opt-title">我是新手，想看看有什么</div><div class="opt-desc">没玩过，想体验一下热门游戏</div></div>
-          <div class="opt-arrow">&#x203A;</div>
-        </div>
-      </div>
+<!-- 欢迎封面：不计入进度 -->
+<div class="page active" id="pageWelcome">
+  <div class="welcome-cover">
+    <span class="welcome-orbit one"></span>
+    <span class="welcome-orbit two"></span>
+    <span class="welcome-orbit three"></span>
+    <div class="welcome-brand">
+      <span class="welcome-kicker">WELCOME TO GAMEHUB</span>
+      <h1 id="welcomeTitle">欢迎来到盖世游戏</h1>
     </div>
+    <section class="welcome-features" id="featuresBox" aria-label="平台特色">
+      <h2>手机上的 PC 游戏平台</h2>
+      <p class="welcome-features__lead">从连接游戏库到立即开玩，一站式完成</p>
+      <div class="gh-features">
+        <div class="gh-feature-item">&#x1F3AE; 与 Steam、Epic 数据互通，海量大作应有尽有</div>
+        <div class="gh-feature-item" id="featureCloud">&#x26A1; 支持云游戏，无需下载，一键秒玩</div>
+        <div class="gh-feature-item">&#x1F4A1; AI 超级插帧＋虚拟按键大神方案，一键套用</div>
+      </div>
+    </section>
+    <p class="welcome-prompt">
+      <span class="welcome-prompt__reason" id="welcomePromptTitle">为了您的绝佳体验</span>
+      <span class="welcome-prompt__action" id="welcomePromptDesc">请与我们分享您的游玩经验～</span>
+    </p>
+    <button type="button" class="welcome-start" data-action="start-new-user">开始</button>
   </div>
 </div>
 
-<!-- Step 1: 来源采集 -->
+<!-- 第1步：来源采集 -->
 <div class="page" id="pageSource">
   <div class="page-body source-page-body">
     <button type="button" class="source-back" data-action="source-back" aria-label="返回">←</button>
-    <div class="onboarding-progress" aria-label="新手引流来源采集，第2步，共3步">
-      <span class="is-active"></span><span class="is-active"></span><span></span>
+    <div class="onboarding-progress" aria-label="新手引导，第1步，共3步">
+      <span class="is-active"></span><span></span><span></span>
     </div>
     <header class="source-header">
       <p class="source-kicker">Where did you hear about us?</p>
@@ -441,10 +568,41 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
   </div>
 </div>
 
-<!-- Step 1: 有游戏想玩 - 选择方式 -->
+<!-- 第2步：准备方式 -->
+<div class="page" id="pageStartMethod">
+  <div class="page-body start-method-body">
+    <button type="button" class="source-back" data-action="start-method-back" aria-label="返回">←</button>
+    <div class="onboarding-progress" aria-label="新手引导，第2步，共3步">
+      <span class="is-active"></span><span class="is-active"></span><span></span>
+    </div>
+    <div class="page-title" id="startMethodTitle" style="margin-bottom:8px">你准备怎么开始？</div>
+    <div class="page-desc" id="startMethodDesc">选择最符合你现在情况的方式</div>
+    <div class="opt-list">
+      <button type="button" class="opt-card" data-start-method="has_game">
+        <div class="opt-icon steam">&#x1F3AE;</div>
+        <div class="opt-info"><div class="opt-title">我有游戏想玩</div><div class="opt-desc">导入本地游戏，或绑定 Steam 游戏库</div></div>
+        <div class="opt-arrow">&#x203A;</div>
+      </button>
+      <button type="button" class="opt-card" data-start-method="explore_first">
+        <div class="opt-icon play">&#x26A1;</div>
+        <div class="opt-info"><div class="opt-title">我是新手，想先看看</div><div class="opt-desc">先体验热门游戏，再决定怎么玩</div></div>
+        <div class="opt-arrow">&#x203A;</div>
+      </button>
+      <button type="button" class="opt-card" data-start-method="later">
+        <div class="opt-icon" style="background:linear-gradient(145deg,#292929,#3a3a3a)">&#x23F3;</div>
+        <div class="opt-info"><div class="opt-title">以后再说</div><div class="opt-desc">先进入首页，之后可从游戏库继续</div></div>
+        <div class="opt-arrow">&#x203A;</div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 第3步：有游戏想玩 - 选择方式 -->
 <div class="page" id="page1">
-  <button class="skip-btn" onclick="showDone('library')">跳过</button>
-  <div class="page-body" style="padding-top:60px">
+  <div class="page-body" style="padding-top:54px">
+    <div class="onboarding-progress" aria-label="新手引导，第3步，共3步">
+      <span class="is-active"></span><span class="is-active"></span><span class="is-active"></span>
+    </div>
     <div class="page-title" style="margin-bottom:8px">你想怎么开始？</div>
     <div class="page-desc">选择你的游戏来源</div>
     <div class="opt-list">
@@ -529,12 +687,12 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
     <div class="scan-result" id="scanResult">
       <div class="sr-title">找到 2 个游戏文件</div>
       <div class="sr-item">
-        <img class="sr-cover" src="https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg" alt="">
+        <img class="sr-cover" data-scan-cover="2" alt="">
         <div class="sr-info"><div class="sr-name">艾尔登法环</div><div class="sr-path">Download/EldenRing.apk</div></div>
         <div class="sr-check">&#x2713;</div>
       </div>
       <div class="sr-item">
-        <img class="sr-cover" src="https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg" alt="">
+        <img class="sr-cover" data-scan-cover="9" alt="">
         <div class="sr-info"><div class="sr-name">GTA5</div><div class="sr-path">GAME/GTA5_Setup.exe</div></div>
         <div class="sr-check">&#x2713;</div>
       </div>
@@ -562,6 +720,48 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
   </div>
 </div>
 
+<!-- 非新用户：个性化选游戏 -->
+<div class="page" id="existingGameStep">
+  <div class="page-body existing-page-body">
+    <div class="existing-progress" aria-label="非新用户个性化，第1步，共2步">
+      <span class="is-active"></span><span></span>
+    </div>
+    <p class="existing-kicker">PERSONALIZE YOUR GAMEHUB</p>
+    <h2 class="existing-title">选几款你喜欢的游戏</h2>
+    <p class="existing-desc">最多选择9款，我们会据此优化推荐内容。</p>
+    <div class="existing-game-grid" id="existingGameGrid"></div>
+    <footer class="existing-footer">
+      <button type="button" class="existing-primary" data-action="submit-existing-games" disabled>选好了</button>
+      <button type="button" class="existing-secondary" data-action="skip-existing-games">暂不选择</button>
+    </footer>
+  </div>
+</div>
+
+<!-- 非新用户：来源采集 -->
+<div class="page" id="existingSourceStep">
+  <div class="page-body existing-page-body">
+    <div class="existing-progress" aria-label="非新用户个性化，第2步，共2步">
+      <span class="is-active"></span><span class="is-active"></span>
+    </div>
+    <p class="existing-kicker">ONE LAST QUESTION</p>
+    <h2 class="existing-title" id="existingSourceTitle">你最早是从哪里了解到盖世游戏的？</h2>
+    <p class="existing-desc" id="existingSourceDesc">请选择最符合实际情况的一项，该问题不可跳过。</p>
+    <div class="existing-source-grid" id="existingSourceGrid"></div>
+    <footer class="existing-footer">
+      <button type="button" class="existing-primary" data-action="submit-existing-source" disabled>请选择一项</button>
+    </footer>
+  </div>
+</div>
+
+<!-- 非新用户：实际产品直接放行，Demo保留评审说明 -->
+<div class="page" id="existingCompleteState">
+  <div class="existing-complete" data-bypass="true">
+    <div class="existing-complete__icon">✓</div>
+    <strong>无需再次展示问卷</strong>
+    <p>游戏偏好与来源均已有终态。实际产品直接进入首页，本页只用于评审状态。</p>
+  </div>
+</div>
+
 <!-- Step 4: 完成 -->
 <div class="page" id="page4">
   <div class="done-wrap">
@@ -573,6 +773,24 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
     <button class="done-btn" onclick="resetAll()">进入探索页（重置）</button>
   </div>
 </div>
+
+<!-- “以后再说”直接进入首页 -->
+<div class="page" id="pageHome">
+  <div class="home-result" data-result="later">
+    <p class="home-result__eyebrow">GAMEHUB · EXPLORE</p>
+    <h2 class="home-result__title">发现你的下一款游戏</h2>
+    <p class="home-result__sub">已进入盖世游戏首页，你可以稍后从游戏库继续导入或绑定 Steam。</p>
+    <div class="home-hero">
+      <strong>本周热门 PC 游戏</strong>
+      <span>云游戏可立即体验，无需等待下载</span>
+    </div>
+    <div class="home-tabs"><span class="is-active">推荐</span><span>云游戏</span><span>免费游戏</span></div>
+    <div class="home-cards">
+      <div class="home-card">黑神话：悟空</div>
+      <div class="home-card">艾尔登法环</div>
+    </div>
+  </div>
+</div>
 </div>
 
 <!-- 控制面板 -->
@@ -580,28 +798,129 @@ body{font-family:var(--font);background:radial-gradient(circle at 72% 16%,rgba(5
 <h4>Demo</h4>
 <button class="cp-btn" id="regionBtn" onclick="toggleRegion()" style="background:#FFE240;color:#000;font-weight:520">当前：国内版</button>
 <button class="cp-btn" onclick="resetAll()">重置</button>
-<button class="cp-btn" onclick="startOnboarding('has_game')">有游戏想玩</button>
-<button class="cp-btn" onclick="startOnboarding('new_user')">新手入口</button>
+<button class="cp-btn" onclick="switchPage('pageWelcome')">欢迎页</button>
 <button class="cp-btn" onclick="previewSourcePage()">来源采集页</button>
+<button class="cp-btn" onclick="previewStartMethod()">准备方式页</button>
+<button class="cp-btn" data-demo-scenario="existing_full">非新用户 · 完整两步</button>
+<button class="cp-btn" data-demo-scenario="existing_source_only">非新用户 · 仅来源</button>
+<button class="cp-btn" data-demo-scenario="existing_game_only">非新用户 · 仅选游戏</button>
+<button class="cp-btn" data-demo-scenario="existing_completed">非新用户 · 已完成</button>
 <button class="cp-btn" onclick="showScan()">导入扫描</button>
 <button class="cp-btn" onclick="showDone('play')">完成页</button>
 </div>
+</section>
+
+<section class="admin-shell" id="sourceAnalyticsView" aria-label="盖世游戏运营后台来源分析">
+  <aside class="admin-sidebar">
+    <div class="admin-brand"><span class="admin-brand__logo">G</span><span>盖世游戏运营后台</span></div>
+    <div class="admin-nav-group">
+      <div class="admin-nav-label">数据分析</div>
+      <button type="button" class="admin-nav-item">运营概览</button>
+      <button type="button" class="admin-nav-item">用户分析</button>
+      <button type="button" class="admin-nav-item" data-admin-page="analytics">来源分析</button>
+      <button type="button" class="admin-nav-item">留存分析</button>
+    </div>
+    <div class="admin-nav-group">
+      <div class="admin-nav-label">系统配置</div>
+      <button type="button" class="admin-nav-item">基础配置</button>
+      <button type="button" class="admin-nav-item is-active" data-admin-page="dictionary">字典管理</button>
+    </div>
+    <div class="admin-user">运营管理员<br>数据分析组</div>
+  </aside>
+  <main class="admin-main">
+    <section class="admin-panel" data-admin-panel="analytics" hidden>
+    <header class="admin-header">
+      <div><h1>来源分析</h1><p>查看不同市场与用户人群的主动填写来源分布</p></div>
+      <button type="button" class="admin-refresh">数据更新：10分钟前</button>
+    </header>
+    <section class="analytics-filters" aria-label="来源分析筛选">
+      <div class="analytics-filter"><label>日期范围</label><select data-analytics-filter="dateRange"><option value="7d">近7天</option><option value="30d" selected>近30天</option><option value="90d">近90天</option></select></div>
+      <div class="analytics-filter"><label>市场</label><select data-analytics-filter="market"><option value="domestic">国内</option><option value="overseas">海外</option></select></div>
+      <div class="analytics-filter"><label>用户人群</label><select data-analytics-filter="userGroup"><option value="new">新用户</option><option value="existing">非新用户</option></select></div>
+      <div class="analytics-filter"><label>分发渠道</label><select data-analytics-filter="channel"><option value="all">全部渠道</option><option value="official">官网</option><option value="store">应用商店</option></select></div>
+      <div class="analytics-filter"><label>App版本</label><select data-analytics-filter="version"><option value="all">全部版本</option><option value="6.1.0">6.1.0</option><option value="6.0.9">6.0.9</option></select></div>
+    </section>
+    <section class="analytics-metrics">
+      <article class="metric-card" data-metric="submissions"><div class="metric-label">来源提交人数</div><div class="metric-value">--</div><div class="metric-foot"><strong>↑ 8.6%</strong> 较上一等长周期</div></article>
+      <article class="metric-card" data-metric="completion"><div class="metric-label">来源填写完成率</div><div class="metric-value">--</div><div class="metric-foot">提交去重人数 ÷ 来源页曝光去重人数</div></article>
+      <article class="metric-card" data-metric="unknown"><div class="metric-label">“其他／不记得”占比</div><div class="metric-value">--</div><div class="metric-foot">计入完成，不计入可解释来源</div></article>
+    </section>
+    <p class="attribution-note" data-attribution-note></p>
+    <section class="analytics-grid">
+      <article class="analytics-panel">
+        <div class="analytics-panel__head">来源人数与占比分布</div>
+        <div class="source-distribution"></div>
+      </article>
+      <article class="analytics-panel">
+        <div class="analytics-panel__head">来源明细</div>
+        <table class="source-table"><thead><tr><th>来源</th><th>人数</th><th>占比</th><th>较上一周期</th></tr></thead><tbody></tbody></table>
+      </article>
+    </section>
+    </section>
+
+    <section class="admin-panel" data-admin-panel="dictionary">
+      <header class="admin-header dictionary-header">
+        <div><h1>字典管理</h1><p>维护系统通用字典及多语言参数</p></div>
+        <button type="button" class="admin-primary" data-dictionary-action="new">新建字典</button>
+      </header>
+      <section class="dictionary-filter-card" aria-label="字典筛选">
+        <div class="dictionary-filter">
+          <label for="dictionaryNameFilter">字典名称</label>
+          <input class="admin-input" id="dictionaryNameFilter" type="text" placeholder="请输入字典名称">
+        </div>
+        <div class="dictionary-filter">
+          <label for="dictionaryCodeFilter">字典编码</label>
+          <input class="admin-input" id="dictionaryCodeFilter" type="text" placeholder="请输入字典编码">
+        </div>
+        <div class="dictionary-filter-actions">
+          <button type="button" class="admin-secondary" data-dictionary-action="reset">重置</button>
+          <button type="button" class="admin-primary" data-dictionary-action="query">查询</button>
+        </div>
+      </section>
+      <section class="dictionary-table-card">
+        <div class="dictionary-table-tools"><strong>字典列表</strong><span>支持维护字典、字典子项及多语言</span></div>
+        <div class="dictionary-table-wrap">
+          <table class="dictionary-table">
+            <thead><tr><th>ID</th><th>字典名称</th><th>字典编码</th><th>字典描述</th><th>多语言</th><th>创建时间</th><th>更新时间</th><th>操作</th></tr></thead>
+            <tbody id="dictionaryTableBody"></tbody>
+          </table>
+        </div>
+        <div class="dictionary-pagination" id="dictionaryPagination">共 0 条</div>
+      </section>
+    </section>
+  </main>
+</section>
+
+<div class="admin-modal-layer" id="adminModalLayer" hidden aria-live="polite"></div>
 
 <script>
+function makeCover(name,colorA,colorB){
+  var safeName=String(name).replace(/[<>&'"]/g,'');
+  var svg='<svg xmlns="http://www.w3.org/2000/svg" width="360" height="480" viewBox="0 0 360 480">'+
+    '<title>'+safeName+'</title>'+
+    '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+colorA+'"/><stop offset="1" stop-color="'+colorB+'"/></linearGradient></defs>'+
+    '<rect width="360" height="480" fill="url(#g)"/><circle cx="282" cy="92" r="94" fill="rgba(255,255,255,.09)"/>'+
+    '<path d="M-20 355 L180 170 L390 355 V500 H-20Z" fill="rgba(0,0,0,.3)"/>'+
+    '<text x="28" y="58" fill="rgba(255,255,255,.72)" font-size="16" font-family="Arial,sans-serif" font-weight="700">GAMEHUB</text></svg>';
+  return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
+}
 var games=[
-{name:"黑神话：悟空",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/header.jpg",tag:"动作RPG / 国风神话"},
-{name:"赛博朋克 2077",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg",tag:"开放世界 / 第一人称射击"},
-{name:"艾尔登法环",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg",tag:"魂系动作 / 开放世界"},
-{name:"生化危机4",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/2050650/header.jpg",tag:"恐怖动作 / 第三人称",free:true},
-{name:"巫师3：狂猎",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/292030/header.jpg",tag:"史诗剧情 / 角色扮演",free:true},
-{name:"绝地求生",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/578080/header.jpg",tag:"战术竞技 / 多人射击"},
-{name:"极品飞车",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1551360/header.jpg",tag:"赛车竞速 / 街头改装",free:true},
-{name:"双人成行",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1426210/header.jpg",tag:"合作冒险 / 双人必备"},
-{name:"哈迪斯2",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/1145350/header.jpg",tag:"Roguelike / 动作",free:true},
-{name:"GTA5",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg",tag:"开放世界 / 犯罪动作"},
-{name:"只狼：影逝二度",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/814380/header.jpg",tag:"魂系动作 / 忍者"},
-{name:"霍格沃茨之遗",cover:"https://cdn.cloudflare.steamstatic.com/steam/apps/990080/header.jpg",tag:"魔法世界 / 角色扮演"}
+{name:"黑神话：悟空",cover:makeCover("黑神话：悟空","#5d3a20","#17100b"),tag:"动作RPG / 国风神话"},
+{name:"赛博朋克 2077",cover:makeCover("赛博朋克 2077","#ffd919","#5d136c"),tag:"开放世界 / 第一人称射击"},
+{name:"艾尔登法环",cover:makeCover("艾尔登法环","#8f6c21","#111209"),tag:"魂系动作 / 开放世界"},
+{name:"生化危机4",cover:makeCover("生化危机4","#5a1515","#111"),tag:"恐怖动作 / 第三人称",free:true},
+{name:"巫师3：狂猎",cover:makeCover("巫师3：狂猎","#d5e8ef","#4f5b5f"),tag:"史诗剧情 / 角色扮演",free:true},
+{name:"绝地求生",cover:makeCover("绝地求生","#8b5d31","#1d2321"),tag:"战术竞技 / 多人射击"},
+{name:"极品飞车",cover:makeCover("极品飞车","#2991d4","#ef562e"),tag:"赛车竞速 / 街头改装",free:true},
+{name:"双人成行",cover:makeCover("双人成行","#e9b06a","#7d3b82"),tag:"合作冒险 / 双人必备"},
+{name:"哈迪斯2",cover:makeCover("哈迪斯2","#0a705e","#17172a"),tag:"Roguelike / 动作",free:true},
+{name:"GTA5",cover:makeCover("GTA5","#28935a","#1b343e"),tag:"开放世界 / 犯罪动作"},
+{name:"只狼：影逝二度",cover:makeCover("只狼：影逝二度","#a53422","#19100c"),tag:"魂系动作 / 忍者"},
+{name:"霍格沃茨之遗",cover:makeCover("霍格沃茨之遗","#365c8c","#251d4b"),tag:"魔法世界 / 角色扮演"}
 ];
+document.querySelectorAll('[data-scan-cover]').forEach(function(image){
+  image.src=games[Number(image.dataset.scanCover)].cover;
+});
 
 function renderGameList(){
   var instant=games.filter(function(g){return !g.free});
@@ -628,12 +947,13 @@ function renderGameList(){
 renderGameList();
 
 var ONBOARDING_SOURCE_KEY='gamehub_onboarding_source_v2';
+var ONBOARDING_INSTALL_KEY='gamehub_install_id';
 var ONBOARDING_FLOW_STATES={
-  USER_TYPE_PENDING:'onboarding_user_type_pending',
-  SOURCE_PENDING:'onboarding_source_pending',
-  SOURCE_SAVED:'onboarding_source_saved',
-  BRANCH_IN_PROGRESS:'onboarding_branch_in_progress',
-  COMPLETED:'onboarding_completed'
+  WELCOME:'welcome_pending',
+  SOURCE:'source_pending',
+  START_METHOD:'start_method_pending',
+  DESTINATION:'destination_in_progress',
+  COMPLETED:'completed'
 };
 var ONBOARDING_SOURCE_OPTIONS={
   domestic:{
@@ -667,20 +987,580 @@ var ONBOARDING_SOURCE_OPTIONS={
     ]
   }
 };
-var onboardingFlow={
-  state:ONBOARDING_FLOW_STATES.USER_TYPE_PENDING,
-  userType:null,
-  market:'domestic',
-  sourceCode:null,
-  optionVersion:null,
-  responseId:null,
-  sourceSavedAt:null,
-  syncStatus:null,
-  sourceReportedAt:null,
-  entryGroup:'new_user_onboarding',
-  manualInterestExempt:false
-};
+function getOrCreateInstallId(){
+  var saved=localStorage.getItem(ONBOARDING_INSTALL_KEY);
+  if(saved) return saved;
+  var uuid=window.crypto&&window.crypto.randomUUID?window.crypto.randomUUID():String(Date.now())+'_'+Math.random().toString(16).slice(2);
+  var created='install_'+uuid;
+  localStorage.setItem(ONBOARDING_INSTALL_KEY,created);
+  return created;
+}
+function createDefaultOnboardingFlow(){
+  return {
+    state:ONBOARDING_FLOW_STATES.WELCOME,
+    market:'domestic',
+    sourceCode:null,
+    sourceTerminal:'pending',
+    optionVersion:null,
+    responseId:null,
+    sourceSavedAt:null,
+    syncStatus:null,
+    sourceReportedAt:null,
+    startMethod:null,
+    entryGroup:'new_user_onboarding',
+    installId:getOrCreateInstallId(),
+    manualInterestExempt:false
+  };
+}
+var onboardingFlow=createDefaultOnboardingFlow();
 var isOverseas=false;
+var EXISTING_FLOW_KEY='gamehub_existing_personalization_v2';
+var existingFlow={
+  gameTerminal:'pending',
+  sourceTerminal:'pending',
+  selectedGames:[],
+  sourceCode:null,
+  entryGroup:'existing_user_recall'
+};
+
+function saveExistingFlow(){
+  localStorage.setItem(EXISTING_FLOW_KEY,JSON.stringify(existingFlow));
+}
+
+function renderExistingGames(){
+  var grid=document.getElementById('existingGameGrid');
+  grid.innerHTML=games.slice(0,9).map(function(game,index){
+    var code='game_'+index;
+    var selected=existingFlow.selectedGames.includes(code);
+    return '<button type="button" class="existing-game-card'+(selected?' is-selected':'')+'" data-existing-game="'+code+'" aria-pressed="'+selected+'">'+
+      '<img src="'+game.cover+'" alt=""><strong>'+game.name+'</strong><i>✓</i></button>';
+  }).join('');
+  var submit=document.querySelector('[data-action="submit-existing-games"]');
+  submit.disabled=existingFlow.selectedGames.length===0;
+  submit.textContent='选好了';
+}
+
+function renderExistingSources(){
+  var config=ONBOARDING_SOURCE_OPTIONS[isOverseas?'overseas':'domestic'];
+  document.getElementById('existingSourceTitle').textContent=config.title;
+  document.getElementById('existingSourceDesc').textContent=isOverseas?
+    'Choose one option. This question is required.':
+    '请选择最符合实际情况的一项，该问题不可跳过。';
+  document.getElementById('existingSourceGrid').innerHTML=config.options.map(function(option){
+    var selected=existingFlow.sourceCode===option.code;
+    return '<button type="button" class="existing-source-card'+(selected?' is-selected':'')+'" data-existing-source="'+option.code+'" aria-pressed="'+selected+'">'+option.label+'</button>';
+  }).join('');
+  var submit=document.querySelector('[data-action="submit-existing-source"]');
+  submit.disabled=!existingFlow.sourceCode;
+  submit.textContent=existingFlow.sourceCode?(isOverseas?'Done':'完成'):(isOverseas?'Choose one option':'请选择一项');
+}
+
+function nextExistingStep(){
+  if(existingFlow.gameTerminal==='pending'){
+    renderExistingGames();
+    switchPage('existingGameStep');
+    return;
+  }
+  if(existingFlow.sourceTerminal==='pending'){
+    renderExistingSources();
+    switchPage('existingSourceStep');
+    return;
+  }
+  switchPage('existingCompleteState');
+}
+
+function startExistingScenario(scenario){
+  var states={
+    existing_full:['pending','pending'],
+    existing_source_only:['submitted','pending'],
+    existing_game_only:['pending','completed'],
+    existing_completed:['submitted','completed']
+  };
+  if(!states[scenario]) return;
+  existingFlow.gameTerminal=states[scenario][0];
+  existingFlow.sourceTerminal=states[scenario][1];
+  existingFlow.selectedGames=[];
+  existingFlow.sourceCode=null;
+  existingFlow.entryGroup='existing_user_recall';
+  saveExistingFlow();
+  nextExistingStep();
+}
+
+function toggleExistingGame(code){
+  var index=existingFlow.selectedGames.indexOf(code);
+  if(index>=0) existingFlow.selectedGames.splice(index,1);
+  else if(existingFlow.selectedGames.length<9) existingFlow.selectedGames.push(code);
+  saveExistingFlow();
+  renderExistingGames();
+}
+
+function submitExistingGames(){
+  if(existingFlow.selectedGames.length===0||existingFlow.selectedGames.length>9) return;
+  existingFlow.gameTerminal='submitted';
+  saveExistingFlow();
+  nextExistingStep();
+}
+
+function skipExistingGames(){
+  existingFlow.gameTerminal='skipped';
+  saveExistingFlow();
+  nextExistingStep();
+}
+
+function selectExistingSource(code){
+  var config=ONBOARDING_SOURCE_OPTIONS[isOverseas?'overseas':'domestic'];
+  if(!config.options.some(function(option){return option.code===code})) return;
+  existingFlow.sourceCode=code;
+  saveExistingFlow();
+  renderExistingSources();
+}
+
+function submitExistingSource(){
+  if(!existingFlow.sourceCode) return;
+  existingFlow.sourceTerminal='completed';
+  saveExistingFlow();
+  nextExistingStep();
+}
+
+var activeAdminPage='dictionary';
+var activeDictionaryEditor=null;
+var pendingDictionaryDelete=null;
+var dictionaryState={
+  dictionaries:[{
+    id:1001,
+    name:'用户来源',
+    code:'userSource',
+    description:'新手引导用户来源选项',
+    languageCount:2,
+    languages:{zh:'用户来源',en:'User Source'},
+    createdAt:'2026-08-05 10:24:00',
+    updatedAt:'2026-08-05 10:24:00'
+  }],
+  items:{
+    1001:[
+      ['抖音','douyin','国内短视频平台',10,'抖音','Douyin'],
+      ['哔哩哔哩','bilibili','国内视频社区',20,'哔哩哔哩','Bilibili'],
+      ['小红书','xiaohongshu','国内内容社区',30,'小红书','Xiaohongshu'],
+      ['应用商店','app_store','应用商店自然来源',40,'应用商店','App Store'],
+      ['YouTube','youtube','海外视频平台',50,'YouTube','YouTube'],
+      ['TikTok','tiktok','海外短视频平台',60,'TikTok','TikTok'],
+      ['Reddit','reddit','海外社区',70,'Reddit','Reddit'],
+      ['Discord','discord','海外社群',80,'Discord','Discord'],
+      ['朋友推荐','friend_referral','好友推荐',90,'朋友推荐','Friends'],
+      ['其他／不记得','other_or_unknown','其他或无法回忆',100,'其他／不记得','Other / I don’t remember']
+    ].map(function(item,index){
+      return {
+        id:2001+index,
+        name:item[0],
+        value:item[1],
+        description:item[2],
+        sort:item[3],
+        languageCount:2,
+        languages:{zh:item[4],en:item[5]},
+        createdAt:'2026-08-05 10:24:00',
+        updatedAt:'2026-08-05 10:24:00'
+      };
+    })
+  },
+  activeDictionaryId:1001,
+  filters:{name:'',code:'',itemValue:''}
+};
+
+function escapeAdminText(value){
+  return String(value==null?'':value).replace(/[&<>"']/g,function(char){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char];
+  });
+}
+
+function adminNow(){
+  var date=new Date();
+  function pad(value){return String(value).padStart(2,'0');}
+  return date.getFullYear()+'-'+pad(date.getMonth()+1)+'-'+pad(date.getDate())+' '+pad(date.getHours())+':'+pad(date.getMinutes())+':'+pad(date.getSeconds());
+}
+
+function getActiveDictionary(){
+  return dictionaryState.dictionaries.find(function(item){return item.id===dictionaryState.activeDictionaryId;})||null;
+}
+
+function renderDictionaryTable(){
+  var body=document.getElementById('dictionaryTableBody');
+  if(!body) return;
+  var nameFilter=dictionaryState.filters.name.trim().toLowerCase();
+  var codeFilter=dictionaryState.filters.code.trim().toLowerCase();
+  var rows=dictionaryState.dictionaries.filter(function(item){
+    return (!nameFilter||item.name.toLowerCase().indexOf(nameFilter)>=0)&&(!codeFilter||item.code.toLowerCase().indexOf(codeFilter)>=0);
+  });
+  if(!rows.length){
+    body.innerHTML='<tr><td colspan="8"><div class="dictionary-empty">暂无符合条件的字典</div></td></tr>';
+  }else{
+    body.innerHTML=rows.map(function(item){
+      return '<tr data-dictionary-row="'+item.id+'">'+
+        '<td>'+item.id+'</td><td>'+escapeAdminText(item.name)+'</td><td>'+escapeAdminText(item.code)+'</td>'+
+        '<td class="description-cell" title="'+escapeAdminText(item.description)+'">'+escapeAdminText(item.description||'--')+'</td>'+
+        '<td><span class="language-count">已配置 '+item.languageCount+' 种语言</span></td>'+
+        '<td>'+item.createdAt+'</td><td>'+item.updatedAt+'</td><td><div class="dictionary-actions">'+
+        '<button type="button" class="admin-link" data-dictionary-action="edit" data-dictionary-id="'+item.id+'">编辑</button>'+
+        '<button type="button" class="admin-link" data-dictionary-action="items" data-dictionary-id="'+item.id+'">字典项</button>'+
+        '<button type="button" class="admin-danger" data-dictionary-action="delete" data-dictionary-id="'+item.id+'">删除</button>'+
+        '</div></td></tr>';
+    }).join('');
+  }
+  document.getElementById('dictionaryPagination').textContent='共 '+rows.length+' 条';
+}
+
+function switchAdminPage(page){
+  if(page!=='analytics'&&page!=='dictionary') return;
+  activeAdminPage=page;
+  document.querySelectorAll('[data-admin-panel]').forEach(function(panel){panel.hidden=panel.dataset.adminPanel!==page;});
+  document.querySelectorAll('[data-admin-page]').forEach(function(button){button.classList.toggle('is-active',button.dataset.adminPage===page);});
+  if(page==='analytics') renderSourceAnalytics();
+  if(page==='dictionary') renderDictionaryTable();
+}
+
+function queryDictionaries(){
+  dictionaryState.filters.name=document.getElementById('dictionaryNameFilter').value;
+  dictionaryState.filters.code=document.getElementById('dictionaryCodeFilter').value;
+  renderDictionaryTable();
+}
+
+function resetDictionaryFilters(){
+  dictionaryState.filters.name='';
+  dictionaryState.filters.code='';
+  document.getElementById('dictionaryNameFilter').value='';
+  document.getElementById('dictionaryCodeFilter').value='';
+  renderDictionaryTable();
+}
+
+function showAdminModal(content){
+  var layer=document.getElementById('adminModalLayer');
+  layer.innerHTML=content;
+  layer.hidden=false;
+}
+
+function closeAdminModal(){
+  var layer=document.getElementById('adminModalLayer');
+  layer.hidden=true;
+  layer.innerHTML='';
+  activeDictionaryEditor=null;
+  pendingDictionaryDelete=null;
+}
+
+function languageCount(languages){
+  return ['zh','en'].filter(function(key){return String(languages[key]||'').trim();}).length;
+}
+
+function openDictionaryEditor(id){
+  var numericId=id==null?null:Number(id);
+  var source=dictionaryState.dictionaries.find(function(item){return item.id===numericId;});
+  activeDictionaryEditor={
+    type:'dictionary',
+    id:source?source.id:null,
+    values:{name:source?source.name:'',code:source?source.code:'',description:source?source.description:''},
+    languages:source?Object.assign({},source.languages):{zh:'',en:''}
+  };
+  renderDictionaryEditor();
+}
+
+function renderDictionaryEditor(){
+  var editor=activeDictionaryEditor;
+  if(!editor) return;
+  var values=editor.values;
+  showAdminModal('<div class="admin-modal" role="dialog" aria-modal="true" aria-label="'+(editor.id?'编辑字典':'新建字典')+'">'+
+    '<div class="admin-modal__header"><h2>'+(editor.id?'编辑字典':'新建字典')+'</h2><button type="button" class="admin-modal__close" data-modal-action="close" aria-label="关闭">×</button></div>'+
+    '<div class="admin-modal__body"><form data-editor-form="dictionary">'+
+    '<div class="admin-form-row"><label class="admin-form-label is-required" for="dictEditorName">字典名称</label><div class="admin-form-control"><input class="admin-input" id="dictEditorName" value="'+escapeAdminText(values.name)+'" placeholder="请输入字典名称"><div class="field-error" data-field-error="name"></div></div></div>'+
+    '<div class="admin-form-row"><label class="admin-form-label is-required" for="dictEditorCode">字典编码</label><div class="admin-form-control"><input class="admin-input" id="dictEditorCode" value="'+escapeAdminText(values.code)+'" placeholder="请输入字典编码"><div class="field-error" data-field-error="code"></div></div></div>'+
+    '<div class="admin-form-row"><label class="admin-form-label" for="dictEditorDescription">字典描述</label><div class="admin-form-control"><textarea class="admin-textarea" id="dictEditorDescription" placeholder="请输入字典描述">'+escapeAdminText(values.description)+'</textarea><div class="field-error"></div></div></div>'+
+    '<div class="admin-form-row"><span class="admin-form-label">多语言参数</span><div class="admin-form-control"><div class="language-entry"><span>已配置 '+languageCount(editor.languages)+' 种语言</span><button type="button" data-modal-action="languages">编辑多语言</button></div></div></div>'+
+    '</form></div><div class="admin-modal__footer"><button type="button" class="admin-secondary" data-modal-action="close">取消</button><button type="button" class="admin-primary" data-modal-action="save-dictionary">确定</button></div></div>');
+}
+
+function captureDictionaryEditor(){
+  if(!activeDictionaryEditor) return;
+  var name=document.getElementById('dictEditorName');
+  var code=document.getElementById('dictEditorCode');
+  var description=document.getElementById('dictEditorDescription');
+  if(name) activeDictionaryEditor.values.name=name.value;
+  if(code) activeDictionaryEditor.values.code=code.value;
+  if(description) activeDictionaryEditor.values.description=description.value;
+}
+
+function setAdminFieldError(field,message){
+  var node=document.querySelector('[data-field-error="'+field+'"]');
+  if(node) node.textContent=message||'';
+}
+
+function saveDictionaryEditor(){
+  captureDictionaryEditor();
+  var editor=activeDictionaryEditor;
+  var name=editor.values.name.trim();
+  var code=editor.values.code.trim();
+  setAdminFieldError('name','');
+  setAdminFieldError('code','');
+  var valid=true;
+  if(!name){setAdminFieldError('name','请输入字典名称');valid=false;}
+  if(!code){setAdminFieldError('code','请输入字典编码');valid=false;}
+  if(code&&!/^[A-Za-z][A-Za-z0-9_]*$/.test(code)){setAdminFieldError('code','编码须以字母开头，仅支持字母、数字和下划线');valid=false;}
+  var duplicated=dictionaryState.dictionaries.some(function(item){return item.id!==editor.id&&item.code.toLowerCase()===code.toLowerCase();});
+  if(duplicated){setAdminFieldError('code','字典编码已存在');valid=false;}
+  if(!valid) return;
+  var timestamp=adminNow();
+  if(editor.id){
+    var target=dictionaryState.dictionaries.find(function(item){return item.id===editor.id;});
+    target.name=name;
+    target.code=code;
+    target.description=editor.values.description.trim();
+    target.languages=Object.assign({},editor.languages);
+    target.languageCount=languageCount(editor.languages);
+    target.updatedAt=timestamp;
+  }else{
+    var newId=dictionaryState.dictionaries.reduce(function(max,item){return Math.max(max,item.id);},1000)+1;
+    dictionaryState.dictionaries.push({id:newId,name:name,code:code,description:editor.values.description.trim(),languages:Object.assign({},editor.languages),languageCount:languageCount(editor.languages),createdAt:timestamp,updatedAt:timestamp});
+    dictionaryState.items[newId]=[];
+  }
+  closeAdminModal();
+  renderDictionaryTable();
+}
+
+function openDictionaryItems(id){
+  dictionaryState.activeDictionaryId=Number(id);
+  dictionaryState.filters.itemValue='';
+  renderDictionaryItemsModal();
+}
+
+function renderDictionaryItemsModal(){
+  var dictionary=getActiveDictionary();
+  if(!dictionary){closeAdminModal();return;}
+  var items=(dictionaryState.items[dictionary.id]||[]).filter(function(item){
+    return !dictionaryState.filters.itemValue||item.value.toLowerCase().indexOf(dictionaryState.filters.itemValue.toLowerCase())>=0;
+  }).sort(function(a,b){return a.sort-b.sort||a.id-b.id;});
+  var rows=items.length?items.map(function(item){
+    return '<tr data-dictionary-item-row="'+item.id+'"><td>'+item.id+'</td><td>'+escapeAdminText(item.name)+'</td><td>'+escapeAdminText(item.value)+'</td><td class="description-cell" title="'+escapeAdminText(item.description)+'">'+escapeAdminText(item.description)+'</td><td><span class="language-count">已配置 '+item.languageCount+' 种语言</span></td><td>'+item.sort+'</td><td>'+item.createdAt+'</td><td>'+item.updatedAt+'</td><td><div class="dictionary-actions"><button type="button" class="admin-link" data-item-action="edit" data-item-id="'+item.id+'">编辑</button><button type="button" class="admin-danger" data-item-action="delete" data-item-id="'+item.id+'">删除</button></div></td></tr>';
+  }).join(''):'<tr><td colspan="9"><div class="dictionary-empty">暂无符合条件的字典子项</div></td></tr>';
+  showAdminModal('<div class="admin-modal is-wide" role="dialog" aria-modal="true" aria-label="字典子项管理">'+
+    '<div class="admin-modal__header"><h2>字典子项管理 - '+escapeAdminText(dictionary.name)+'('+escapeAdminText(dictionary.code)+')</h2><button type="button" class="admin-modal__close" data-modal-action="close" aria-label="关闭">×</button></div>'+
+    '<div class="admin-modal__body"><div class="item-manager-filter"><div class="dictionary-filter"><label for="dictItemValueFilter">字典子项值</label><input class="admin-input" id="dictItemValueFilter" value="'+escapeAdminText(dictionaryState.filters.itemValue)+'" placeholder="请输入字典子项值"></div><button type="button" class="admin-secondary" data-item-action="reset">重置</button><button type="button" class="admin-primary" data-item-action="query">查询</button><button type="button" class="admin-primary" data-item-action="new">新建字典子项</button></div>'+
+    '<div class="dictionary-table-card" style="margin-top:0"><div class="dictionary-table-wrap"><table class="dictionary-table"><thead><tr><th>ID</th><th>字典子项名</th><th>字典子项值</th><th>字典项描述</th><th>多语言</th><th>排序</th><th>创建时间</th><th>更新时间</th><th>操作</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="dictionary-pagination">共 '+items.length+' 条</div></div></div>'+
+    '<div class="admin-modal__footer"><button type="button" class="admin-secondary" data-modal-action="close">关闭</button></div></div>');
+}
+
+function queryDictionaryItems(){
+  var filter=document.getElementById('dictItemValueFilter');
+  dictionaryState.filters.itemValue=filter?filter.value.trim():'';
+  renderDictionaryItemsModal();
+}
+
+function resetDictionaryItemFilters(){
+  dictionaryState.filters.itemValue='';
+  renderDictionaryItemsModal();
+}
+
+function openDictionaryItemEditor(id){
+  var dictionary=getActiveDictionary();
+  var numericId=id==null?null:Number(id);
+  var source=(dictionaryState.items[dictionary.id]||[]).find(function(item){return item.id===numericId;});
+  activeDictionaryEditor={
+    type:'item',
+    id:source?source.id:null,
+    dictionaryId:dictionary.id,
+    values:{name:source?source.name:'',value:source?source.value:'',description:source?source.description:'',sort:source?source.sort:0},
+    languages:source?Object.assign({},source.languages):{zh:'',en:''}
+  };
+  renderDictionaryItemEditor();
+}
+
+function renderDictionaryItemEditor(){
+  var editor=activeDictionaryEditor;
+  var values=editor.values;
+  showAdminModal('<div class="admin-modal" role="dialog" aria-modal="true" aria-label="'+(editor.id?'编辑字典子项':'新建字典子项')+'">'+
+    '<div class="admin-modal__header"><h2>'+(editor.id?'编辑字典子项':'新建字典子项')+'</h2><button type="button" class="admin-modal__close" data-modal-action="back-items" aria-label="关闭">×</button></div>'+
+    '<div class="admin-modal__body"><form data-editor-form="item">'+
+    '<div class="admin-form-row"><label class="admin-form-label is-required" for="itemEditorName">字典子项名</label><div class="admin-form-control"><input class="admin-input" id="itemEditorName" value="'+escapeAdminText(values.name)+'" placeholder="请输入字典子项名"><div class="field-error" data-field-error="itemName"></div></div></div>'+
+    '<div class="admin-form-row"><label class="admin-form-label is-required" for="itemEditorValue">字典子项值</label><div class="admin-form-control"><input class="admin-input" id="itemEditorValue" value="'+escapeAdminText(values.value)+'" placeholder="请输入字典子项值"><div class="field-error" data-field-error="itemValue"></div></div></div>'+
+    '<div class="admin-form-row"><label class="admin-form-label is-required" for="itemEditorDescription">字典项描述</label><div class="admin-form-control"><textarea class="admin-textarea" id="itemEditorDescription" placeholder="请输入字典项描述">'+escapeAdminText(values.description)+'</textarea><div class="field-error" data-field-error="itemDescription"></div></div></div>'+
+    '<div class="admin-form-row"><label class="admin-form-label is-required" for="itemEditorSort">排序</label><div class="admin-form-control"><input class="admin-number" id="itemEditorSort" type="number" min="0" step="1" value="'+Number(values.sort||0)+'"><div class="field-error" data-field-error="itemSort"></div></div></div>'+
+    '<div class="admin-form-row"><span class="admin-form-label">多语言参数</span><div class="admin-form-control"><div class="language-entry"><span>已配置 '+languageCount(editor.languages)+' 种语言</span><button type="button" data-modal-action="languages">编辑多语言</button></div></div></div>'+
+    '</form></div><div class="admin-modal__footer"><button type="button" class="admin-secondary" data-modal-action="back-items">取消</button><button type="button" class="admin-primary" data-modal-action="save-item">确定</button></div></div>');
+}
+
+function captureDictionaryItemEditor(){
+  if(!activeDictionaryEditor) return;
+  var name=document.getElementById('itemEditorName');
+  var value=document.getElementById('itemEditorValue');
+  var description=document.getElementById('itemEditorDescription');
+  var sort=document.getElementById('itemEditorSort');
+  if(name) activeDictionaryEditor.values.name=name.value;
+  if(value) activeDictionaryEditor.values.value=value.value;
+  if(description) activeDictionaryEditor.values.description=description.value;
+  if(sort) activeDictionaryEditor.values.sort=sort.value;
+}
+
+function saveDictionaryItemEditor(){
+  captureDictionaryItemEditor();
+  var editor=activeDictionaryEditor;
+  var values=editor.values;
+  var name=values.name.trim();
+  var value=values.value.trim();
+  var description=values.description.trim();
+  var sort=Number(values.sort);
+  ['itemName','itemValue','itemDescription','itemSort'].forEach(function(field){setAdminFieldError(field,'');});
+  var valid=true;
+  if(!name){setAdminFieldError('itemName','请输入字典子项名');valid=false;}
+  if(!value){setAdminFieldError('itemValue','请输入字典子项值');valid=false;}
+  if(!description){setAdminFieldError('itemDescription','请输入字典项描述');valid=false;}
+  if(!Number.isInteger(sort)||sort<0){setAdminFieldError('itemSort','排序须为大于等于0的整数');valid=false;}
+  var items=dictionaryState.items[editor.dictionaryId]||[];
+  var duplicated=items.some(function(item){return item.id!==editor.id&&item.value.toLowerCase()===value.toLowerCase();});
+  if(duplicated){setAdminFieldError('itemValue','字典子项值已存在');valid=false;}
+  if(!valid) return;
+  var timestamp=adminNow();
+  if(editor.id){
+    var target=items.find(function(item){return item.id===editor.id;});
+    target.name=name;
+    target.value=value;
+    target.description=description;
+    target.sort=sort;
+    target.languages=Object.assign({},editor.languages);
+    target.languageCount=languageCount(editor.languages);
+    target.updatedAt=timestamp;
+  }else{
+    var allIds=Object.keys(dictionaryState.items).reduce(function(list,key){return list.concat(dictionaryState.items[key].map(function(item){return item.id;}));},[]);
+    var newId=allIds.reduce(function(max,idValue){return Math.max(max,idValue);},2000)+1;
+    items.push({id:newId,name:name,value:value,description:description,sort:sort,languages:Object.assign({},editor.languages),languageCount:languageCount(editor.languages),createdAt:timestamp,updatedAt:timestamp});
+    dictionaryState.items[editor.dictionaryId]=items;
+  }
+  activeDictionaryEditor=null;
+  renderDictionaryItemsModal();
+}
+
+function openLanguageEditor(){
+  if(!activeDictionaryEditor) return;
+  if(activeDictionaryEditor.type==='dictionary') captureDictionaryEditor();
+  else captureDictionaryItemEditor();
+  var languages=activeDictionaryEditor.languages;
+  showAdminModal('<div class="admin-modal is-language" role="dialog" aria-modal="true" aria-label="多语言配置">'+
+    '<div class="admin-modal__header"><h2>多语言配置</h2><button type="button" class="admin-modal__close" data-modal-action="cancel-languages" aria-label="关闭">×</button></div>'+
+    '<div class="admin-modal__body"><div class="language-grid">'+
+    '<section class="language-card"><h3>简体中文</h3><input class="admin-input" id="languageZh" value="'+escapeAdminText(languages.zh||'')+'" placeholder="请输入简体中文文案"></section>'+
+    '<section class="language-card"><h3>English</h3><input class="admin-input" id="languageEn" value="'+escapeAdminText(languages.en||'')+'" placeholder="Please enter English copy"></section>'+
+    '</div></div><div class="admin-modal__footer"><button type="button" class="admin-secondary" data-modal-action="cancel-languages">取消</button><button type="button" class="admin-primary" data-modal-action="save-languages">确定</button></div></div>');
+}
+
+function returnToActiveEditor(){
+  if(!activeDictionaryEditor) return;
+  if(activeDictionaryEditor.type==='dictionary') renderDictionaryEditor();
+  else renderDictionaryItemEditor();
+}
+
+function saveLanguageEditor(){
+  activeDictionaryEditor.languages={zh:document.getElementById('languageZh').value.trim(),en:document.getElementById('languageEn').value.trim()};
+  returnToActiveEditor();
+}
+
+function openDeleteConfirmation(type,id){
+  pendingDictionaryDelete={type:type,id:Number(id)};
+  var name='';
+  if(type==='dictionary'){
+    var dictionary=dictionaryState.dictionaries.find(function(item){return item.id===pendingDictionaryDelete.id;});
+    name=dictionary?dictionary.name:'';
+  }else{
+    var items=dictionaryState.items[dictionaryState.activeDictionaryId]||[];
+    var item=items.find(function(row){return row.id===pendingDictionaryDelete.id;});
+    name=item?item.name:'';
+  }
+  showAdminModal('<div class="admin-modal is-confirm" role="dialog" aria-modal="true" aria-label="删除确认"><div class="admin-modal__header"><h2>删除确认</h2><button type="button" class="admin-modal__close" data-modal-action="cancel-delete" aria-label="关闭">×</button></div><div class="admin-modal__body"><p class="confirm-copy">确定删除<strong>“'+escapeAdminText(name)+'”</strong>吗？删除后不可恢复。</p></div><div class="admin-modal__footer"><button type="button" class="admin-secondary" data-modal-action="cancel-delete">取消</button><button type="button" class="admin-primary" data-modal-action="confirm-delete">确定</button></div></div>');
+}
+
+function cancelDeleteConfirmation(){
+  var pending=pendingDictionaryDelete;
+  pendingDictionaryDelete=null;
+  if(pending&&pending.type==='item') renderDictionaryItemsModal();
+  else closeAdminModal();
+}
+
+function confirmDictionaryDelete(){
+  var pending=pendingDictionaryDelete;
+  if(!pending) return;
+  pendingDictionaryDelete=null;
+  if(pending.type==='dictionary'){
+    dictionaryState.dictionaries=dictionaryState.dictionaries.filter(function(item){return item.id!==pending.id;});
+    delete dictionaryState.items[pending.id];
+    closeAdminModal();
+    renderDictionaryTable();
+  }else{
+    var dictionaryId=dictionaryState.activeDictionaryId;
+    dictionaryState.items[dictionaryId]=(dictionaryState.items[dictionaryId]||[]).filter(function(item){return item.id!==pending.id;});
+    renderDictionaryItemsModal();
+  }
+}
+
+var analyticsFilters={dateRange:'30d',market:'domestic',userGroup:'new',channel:'all',version:'all'};
+var sourceAnalyticsData={
+  domestic_new:{
+    submissions:12846,completionRate:86.4,unknownRate:9.8,
+    sources:[['朋友推荐',3540,27.6,3.2],['抖音／短视频',2960,23.0,1.8],['应用商店',2412,18.8,-.6],['社区／论坛',1850,14.4,2.1],['搜索引擎',825,6.4,-1],['其他／不记得',1259,9.8,.5]]
+  },
+  overseas_new:{
+    submissions:5268,completionRate:82.7,unknownRate:11.5,
+    sources:[['YouTube',1460,27.7,2.6],['Friends',1042,19.8,1.1],['Google Play',924,17.5,-.8],['Reddit',735,14.0,1.9],['Discord',501,9.5,-.4],['Other / Not sure',606,11.5,.3]]
+  },
+  domestic_existing:{
+    submissions:8642,completionRate:78.9,unknownRate:18.1,
+    sources:[['朋友推荐',2186,25.3,1.4],['抖音／短视频',1584,18.3,.7],['应用商店',1210,14.0,-1.1],['社区／论坛',1389,16.1,1.6],['搜索引擎',709,8.2,-.5],['其他／不记得',1564,18.1,-.2]]
+  },
+  overseas_existing:{
+    submissions:3416,completionRate:74.2,unknownRate:20.3,
+    sources:[['YouTube',785,23.0,1.2],['Friends',594,17.4,.8],['Google Play',468,13.7,-.9],['Reddit',517,15.1,1],['Discord',359,10.5,-.4],['Other / Not sure',693,20.3,.2]]
+  }
+};
+
+function getAnalyticsFactor(){
+  var rangeFactor={ '7d':.34,'30d':1,'90d':2.72 }[analyticsFilters.dateRange]||1;
+  var channelFactor=analyticsFilters.channel==='all'?1:.42;
+  var versionFactor=analyticsFilters.version==='all'?1:.58;
+  return rangeFactor*channelFactor*versionFactor;
+}
+
+function renderDistributionBars(sources,factor){
+  document.querySelector('.source-distribution').innerHTML=sources.map(function(item){
+    return '<div class="source-bar-row" data-source-bar><span>'+item[0]+'</span>'+
+      '<div class="source-bar-track"><i style="width:'+Math.min(100,item[2]*2.4)+'%"></i></div>'+
+      '<strong>'+Math.round(item[1]*factor).toLocaleString()+' · '+item[2]+'%</strong></div>';
+  }).join('');
+}
+
+function renderSourceRows(sources,factor){
+  document.querySelector('.source-table tbody').innerHTML=sources.map(function(item){
+    var change=item[3];
+    return '<tr data-source-row><td>'+item[0]+'</td><td>'+Math.round(item[1]*factor).toLocaleString()+'</td><td>'+item[2]+'%</td>'+
+      '<td class="'+(change>=0?'is-up':'is-down')+'">'+(change>=0?'+':'')+change+'%</td></tr>';
+  }).join('');
+}
+
+function renderSourceAnalytics(){
+  var key=analyticsFilters.market+'_'+analyticsFilters.userGroup;
+  var data=sourceAnalyticsData[key]||sourceAnalyticsData.domestic_new;
+  var factor=getAnalyticsFactor();
+  document.querySelector('[data-metric="submissions"] .metric-value').textContent=Math.round(data.submissions*factor).toLocaleString();
+  document.querySelector('[data-metric="completion"] .metric-value').textContent=data.completionRate+'%';
+  document.querySelector('[data-metric="unknown"] .metric-value').textContent=data.unknownRate+'%';
+  document.querySelector('[data-attribution-note]').textContent=analyticsFilters.userGroup==='existing'?
+    '非新用户来源为回忆口径，不代表客观安装归因':
+    '新用户来源为主动填写口径，不覆盖客观安装归因';
+  renderDistributionBars(data.sources,factor);
+  renderSourceRows(data.sources,factor);
+}
+
+function switchDemoView(view){
+  var showAdmin=view==='admin';
+  document.querySelector('.client-demo-shell').hidden=showAdmin;
+  document.getElementById('sourceAnalyticsView').classList.toggle('active',showAdmin);
+  document.querySelectorAll('[data-view]').forEach(function(button){
+    button.classList.toggle('is-active',button.dataset.view===view);
+  });
+  if(showAdmin) switchAdminPage(activeAdminPage);
+}
+
 function toggleRegion(){
   isOverseas=!isOverseas;
   applyRegionPresentation();
@@ -691,38 +1571,47 @@ function applyRegionPresentation(){
   btn.textContent=isOverseas?'Current: Overseas':'当前：国内版';
   btn.style.background=isOverseas?'#90AAFF':'#FFE240';
   document.getElementById('featureCloud').style.display=isOverseas?'none':'block';
-  // 切换语言
   var box=document.getElementById('featuresBox');
+  var featureItems=box.querySelectorAll('.gh-feature-item');
+  var methodCards=document.querySelectorAll('#pageStartMethod [data-start-method]');
   if(isOverseas){
-    box.querySelector('.gh-features__title').textContent='Platform Highlights:';
-    var items=box.querySelectorAll('.gh-feature-item');
-    items[0].innerHTML='&#x1F3AE; Steam & Epic synced, massive AAA library';
-    items[1].innerHTML='&#x26A1; Cloud gaming, play instantly';
-    items[2].innerHTML='&#x1F4A1; AI frame interpolation + one-tap pro button layouts';
+    document.documentElement.lang='en';
+    box.querySelector('h2').textContent='Your PC gaming platform on mobile';
+    box.querySelector('.welcome-features__lead').textContent='Connect your library and start playing in one place.';
+    featureItems[0].innerHTML='&#x1F3AE; Sync your data with Steam and Epic and access more PC games';
+    featureItems[1].innerHTML='&#x26A1; Play instantly with cloud gaming';
+    featureItems[2].innerHTML='&#x1F4A1; AI frame generation and one-tap pro control layouts';
+    document.getElementById('welcomeTitle').textContent='Welcome to GameHub';
+    document.getElementById('welcomePromptTitle').textContent='For Your Best Experience';
+    document.getElementById('welcomePromptDesc').textContent='Tell us about your gaming experience.';
+    document.querySelector('[data-action="start-new-user"]').textContent='Start';
+    document.getElementById('startMethodTitle').textContent='How would you like to start?';
+    document.getElementById('startMethodDesc').textContent='Choose the option that best fits you right now.';
+    methodCards[0].querySelector('.opt-title').textContent='I have games to play';
+    methodCards[0].querySelector('.opt-desc').textContent='Import local games or connect your Steam library';
+    methodCards[1].querySelector('.opt-title').textContent="I'm new, show me around";
+    methodCards[1].querySelector('.opt-desc').textContent='Explore popular games before deciding';
+    methodCards[2].querySelector('.opt-title').textContent='Maybe later';
+    methodCards[2].querySelector('.opt-desc').textContent='Go to Home and continue from Library later';
   }else{
-    box.querySelector('.gh-features__title').textContent='平台特色介绍：';
-    var items=box.querySelectorAll('.gh-feature-item');
-    items[0].innerHTML='&#x1F3AE; Steam 与 Epic 平台数据互通，海量大作应有尽有';
-    items[1].innerHTML='&#x26A1; 支持云游戏，无需下载一键秒玩';
-    items[2].innerHTML='&#x1F4A1; AI超级插帧 + 虚拟按键大神方案一键套用';
-  }
-  // 切换首屏文案
-  var titleEl=document.getElementById('welcomeTitle');
-  var descEl=document.getElementById('welcomeDesc');
-  titleEl.textContent=isOverseas?'Welcome to GameHub':'欢迎来到盖世游戏';
-  descEl.textContent=isOverseas?'PC gaming platform on your phone':'手机上的 PC 游戏平台';
-  // 切换选项文案
-  var opts=document.querySelectorAll('#page0 .opt-card');
-  if(isOverseas){
-    opts[0].querySelector('.opt-title').textContent='I have games to play';
-    opts[0].querySelector('.opt-desc').textContent='Have Steam account or game files, want to play on phone';
-    opts[1].querySelector('.opt-title').textContent="I'm new, show me around";
-    opts[1].querySelector('.opt-desc').textContent='Never tried, want to explore popular games';
-  }else{
-    opts[0].querySelector('.opt-title').textContent='我有游戏想玩';
-    opts[0].querySelector('.opt-desc').textContent='已有Steam账号或游戏文件，想在手机上玩';
-    opts[1].querySelector('.opt-title').textContent='我是新手，想看看有什么';
-    opts[1].querySelector('.opt-desc').textContent='没玩过，想体验一下热门游戏';
+    document.documentElement.lang='zh-CN';
+    box.querySelector('h2').textContent='手机上的 PC 游戏平台';
+    box.querySelector('.welcome-features__lead').textContent='从连接游戏库到立即开玩，一站式完成';
+    featureItems[0].innerHTML='&#x1F3AE; 与 Steam、Epic 数据互通，海量大作应有尽有';
+    featureItems[1].innerHTML='&#x26A1; 支持云游戏，无需下载，一键秒玩';
+    featureItems[2].innerHTML='&#x1F4A1; AI 超级插帧＋虚拟按键大神方案，一键套用';
+    document.getElementById('welcomeTitle').textContent='欢迎来到盖世游戏';
+    document.getElementById('welcomePromptTitle').textContent='为了您的绝佳体验';
+    document.getElementById('welcomePromptDesc').textContent='请与我们分享您的游玩经验～';
+    document.querySelector('[data-action="start-new-user"]').textContent='开始';
+    document.getElementById('startMethodTitle').textContent='你准备怎么开始？';
+    document.getElementById('startMethodDesc').textContent='选择最符合你现在情况的方式';
+    methodCards[0].querySelector('.opt-title').textContent='我有游戏想玩';
+    methodCards[0].querySelector('.opt-desc').textContent='导入本地游戏，或绑定 Steam 游戏库';
+    methodCards[1].querySelector('.opt-title').textContent='我是新手，想先看看';
+    methodCards[1].querySelector('.opt-desc').textContent='先体验热门游戏，再决定怎么玩';
+    methodCards[2].querySelector('.opt-title').textContent='以后再说';
+    methodCards[2].querySelector('.opt-desc').textContent='先进入首页，之后可从游戏库继续';
   }
 }
 
@@ -737,8 +1626,16 @@ function loadOnboardingFlow(){
   }catch(error){
     localStorage.removeItem(ONBOARDING_SOURCE_KEY);
   }
-  if(saved) Object.assign(onboardingFlow,saved);
-  return Boolean(saved);
+  if(!saved) return false;
+  var validStates=Object.keys(ONBOARDING_FLOW_STATES).map(function(key){return ONBOARDING_FLOW_STATES[key]});
+  if(!validStates.includes(saved.state)){
+    localStorage.removeItem(ONBOARDING_SOURCE_KEY);
+    onboardingFlow=createDefaultOnboardingFlow();
+    return false;
+  }
+  Object.assign(onboardingFlow,saved);
+  onboardingFlow.installId=onboardingFlow.installId||getOrCreateInstallId();
+  return true;
 }
 
 function renderOnboardingSource(){
@@ -759,9 +1656,8 @@ function renderOnboardingSource(){
   note.textContent=onboardingFlow.syncStatus==='sync_pending'?'已保存，将在联网后同步':'';
 }
 
-function startOnboarding(userType){
-  onboardingFlow.userType=userType;
-  onboardingFlow.state=ONBOARDING_FLOW_STATES.SOURCE_PENDING;
+function startNewUserJourney(){
+  onboardingFlow.state=ONBOARDING_FLOW_STATES.SOURCE;
   onboardingFlow.market=isOverseas?'overseas':'domestic';
   onboardingFlow.entryGroup='new_user_onboarding';
   saveOnboardingFlow();
@@ -788,40 +1684,77 @@ function syncOnboardingSource(){
 
 function submitOnboardingSource(){
   if(!onboardingFlow.sourceCode) return;
-  onboardingFlow.state=ONBOARDING_FLOW_STATES.SOURCE_SAVED;
+  onboardingFlow.state=ONBOARDING_FLOW_STATES.START_METHOD;
+  onboardingFlow.sourceTerminal='completed';
   onboardingFlow.responseId=onboardingFlow.responseId||('source_'+Date.now());
   onboardingFlow.sourceSavedAt=onboardingFlow.sourceSavedAt||new Date().toISOString();
   onboardingFlow.syncStatus=navigator.onLine?'synced':'sync_pending';
   onboardingFlow.sourceReportedAt=navigator.onLine?(onboardingFlow.sourceReportedAt||new Date().toISOString()):null;
-  onboardingFlow.manualInterestExempt=true;
   saveOnboardingFlow();
-  continueOnboardingBranch();
+  switchPage('pageStartMethod');
 }
 
-function continueOnboardingBranch(){
-  onboardingFlow.state=ONBOARDING_FLOW_STATES.BRANCH_IN_PROGRESS;
+function chooseStartMethod(method){
+  if(!['has_game','explore_first','later'].includes(method)) return;
+  onboardingFlow.startMethod=method;
+  onboardingFlow.manualInterestExempt=true;
+  if(method==='later'){
+    onboardingFlow.state=ONBOARDING_FLOW_STATES.COMPLETED;
+    saveOnboardingFlow();
+    showHomeResult('later');
+    return;
+  }
+  onboardingFlow.state=ONBOARDING_FLOW_STATES.DESTINATION;
   saveOnboardingFlow();
-  if(onboardingFlow.userType==='has_game') goStep1Direct();
-  else if(isOverseas) goNewUserOverseasDirect();
-  else goNewUserDirect();
+  openNewUserDestination();
+}
+
+function openNewUserDestination(){
+  if(onboardingFlow.startMethod==='has_game'){
+    goStep1Direct();
+    return;
+  }
+  if(onboardingFlow.startMethod==='explore_first'){
+    if(isOverseas) goNewUserOverseasDirect();
+    else goNewUserDirect();
+    return;
+  }
+  showHomeResult('later');
+}
+
+function showHomeResult(reason){
+  var result=document.querySelector('#pageHome [data-result]');
+  result.dataset.result=reason;
+  switchPage('pageHome');
 }
 
 function restoreOnboardingFlow(){
-  if(!loadOnboardingFlow()) return false;
+  if(!loadOnboardingFlow()){
+    switchPage('pageWelcome');
+    return false;
+  }
   isOverseas=onboardingFlow.market==='overseas';
   applyRegionPresentation();
   if(onboardingFlow.syncStatus==='sync_pending') syncOnboardingSource();
-  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.USER_TYPE_PENDING){
-    switchPage('page0');
+  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.WELCOME){
+    switchPage('pageWelcome');
     return true;
   }
-  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.SOURCE_PENDING){
+  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.SOURCE){
     renderOnboardingSource();
     switchPage('pageSource');
     return true;
   }
-  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.SOURCE_SAVED||onboardingFlow.state===ONBOARDING_FLOW_STATES.BRANCH_IN_PROGRESS){
-    continueOnboardingBranch();
+  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.START_METHOD){
+    switchPage('pageStartMethod');
+    return true;
+  }
+  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.DESTINATION){
+    openNewUserDestination();
+    return true;
+  }
+  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.COMPLETED){
+    showHomeResult(onboardingFlow.startMethod||'later');
     return true;
   }
   return false;
@@ -831,8 +1764,6 @@ function switchPage(id){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
   document.getElementById(id).classList.add('active');
 }
-function goStep1(){startOnboarding('has_game')}
-function handleNewUser(){startOnboarding('new_user')}
 function goStep1Direct(){switchPage('page1')}
 function goStep2(){switchPage('page2')}
 function goNewUserDirect(){
@@ -843,12 +1774,18 @@ function goNewUserDirect(){
 }
 function goNewUserOverseasDirect(){switchPage('page2b')}
 function previewSourcePage(){
-  onboardingFlow.userType=onboardingFlow.userType||'new_user';
-  onboardingFlow.state=ONBOARDING_FLOW_STATES.SOURCE_PENDING;
+  onboardingFlow.state=ONBOARDING_FLOW_STATES.SOURCE;
   onboardingFlow.market=isOverseas?'overseas':'domestic';
   saveOnboardingFlow();
   renderOnboardingSource();
   switchPage('pageSource');
+}
+function previewStartMethod(){
+  onboardingFlow.state=ONBOARDING_FLOW_STATES.START_METHOD;
+  onboardingFlow.market=isOverseas?'overseas':'domestic';
+  onboardingFlow.sourceCode=onboardingFlow.sourceCode||'friend_referral';
+  saveOnboardingFlow();
+  switchPage('pageStartMethod');
 }
 
 var guideIdx=0;
@@ -909,14 +1846,76 @@ function showDone(type){
 }
 
 document.addEventListener('click',function(event){
+  var viewButton=event.target.closest('[data-view]');
+  if(viewButton) switchDemoView(viewButton.dataset.view);
+  var adminPageButton=event.target.closest('[data-admin-page]');
+  if(adminPageButton) switchAdminPage(adminPageButton.dataset.adminPage);
+  var dictionaryButton=event.target.closest('[data-dictionary-action]');
+  if(dictionaryButton){
+    var dictionaryAction=dictionaryButton.dataset.dictionaryAction;
+    var dictionaryId=dictionaryButton.dataset.dictionaryId;
+    if(dictionaryAction==='new') openDictionaryEditor();
+    if(dictionaryAction==='edit') openDictionaryEditor(dictionaryId);
+    if(dictionaryAction==='items') openDictionaryItems(dictionaryId);
+    if(dictionaryAction==='delete') openDeleteConfirmation('dictionary',dictionaryId);
+    if(dictionaryAction==='query') queryDictionaries();
+    if(dictionaryAction==='reset') resetDictionaryFilters();
+  }
+  var itemButton=event.target.closest('[data-item-action]');
+  if(itemButton){
+    var itemAction=itemButton.dataset.itemAction;
+    var itemId=itemButton.dataset.itemId;
+    if(itemAction==='new') openDictionaryItemEditor();
+    if(itemAction==='edit') openDictionaryItemEditor(itemId);
+    if(itemAction==='delete') openDeleteConfirmation('item',itemId);
+    if(itemAction==='query') queryDictionaryItems();
+    if(itemAction==='reset') resetDictionaryItemFilters();
+  }
+  var modalButton=event.target.closest('[data-modal-action]');
+  if(modalButton){
+    var modalAction=modalButton.dataset.modalAction;
+    if(modalAction==='close') closeAdminModal();
+    if(modalAction==='save-dictionary') saveDictionaryEditor();
+    if(modalAction==='save-item') saveDictionaryItemEditor();
+    if(modalAction==='languages') openLanguageEditor();
+    if(modalAction==='save-languages') saveLanguageEditor();
+    if(modalAction==='cancel-languages') returnToActiveEditor();
+    if(modalAction==='back-items'){activeDictionaryEditor=null;renderDictionaryItemsModal();}
+    if(modalAction==='cancel-delete') cancelDeleteConfirmation();
+    if(modalAction==='confirm-delete') confirmDictionaryDelete();
+  }
+  var scenarioButton=event.target.closest('[data-demo-scenario]');
+  if(scenarioButton) startExistingScenario(scenarioButton.dataset.demoScenario);
+  var existingGame=event.target.closest('[data-existing-game]');
+  if(existingGame) toggleExistingGame(existingGame.dataset.existingGame);
+  var existingSource=event.target.closest('[data-existing-source]');
+  if(existingSource) selectExistingSource(existingSource.dataset.existingSource);
+  if(event.target.closest('[data-action="submit-existing-games"]')) submitExistingGames();
+  if(event.target.closest('[data-action="skip-existing-games"]')) skipExistingGames();
+  if(event.target.closest('[data-action="submit-existing-source"]')) submitExistingSource();
+  if(event.target.closest('[data-action="start-new-user"]')) startNewUserJourney();
   var sourceCard=event.target.closest('[data-onboarding-source-code]');
   if(sourceCard) selectOnboardingSource(sourceCard.dataset.onboardingSourceCode);
   if(event.target.closest('[data-action="submit-onboarding-source"]')) submitOnboardingSource();
   if(event.target.closest('[data-action="source-back"]')){
-    onboardingFlow.state=ONBOARDING_FLOW_STATES.USER_TYPE_PENDING;
+    onboardingFlow.state=ONBOARDING_FLOW_STATES.WELCOME;
     saveOnboardingFlow();
-    switchPage('page0');
+    switchPage('pageWelcome');
   }
+  if(event.target.closest('[data-action="start-method-back"]')){
+    onboardingFlow.state=ONBOARDING_FLOW_STATES.SOURCE;
+    saveOnboardingFlow();
+    renderOnboardingSource();
+    switchPage('pageSource');
+  }
+  var methodCard=event.target.closest('[data-start-method]');
+  if(methodCard) chooseStartMethod(methodCard.dataset.startMethod);
+});
+document.addEventListener('change',function(event){
+  var key=event.target.dataset.analyticsFilter;
+  if(!key) return;
+  analyticsFilters[key]=event.target.value;
+  renderSourceAnalytics();
 });
 window.addEventListener('online',function(){
   syncOnboardingSource();
@@ -924,22 +1923,20 @@ window.addEventListener('online',function(){
 
 function resetAll(){
   localStorage.removeItem(ONBOARDING_SOURCE_KEY);
-  Object.assign(onboardingFlow,{
-    state:ONBOARDING_FLOW_STATES.USER_TYPE_PENDING,
-    userType:null,
-    market:isOverseas?'overseas':'domestic',
+  localStorage.removeItem(EXISTING_FLOW_KEY);
+  onboardingFlow=createDefaultOnboardingFlow();
+  onboardingFlow.market=isOverseas?'overseas':'domestic';
+  existingFlow={
+    gameTerminal:'pending',
+    sourceTerminal:'pending',
+    selectedGames:[],
     sourceCode:null,
-    optionVersion:null,
-    responseId:null,
-    sourceSavedAt:null,
-    syncStatus:null,
-    sourceReportedAt:null,
-    entryGroup:'new_user_onboarding',
-    manualInterestExempt:false
-  });
-  switchPage('page0');
+    entryGroup:'existing_user_recall'
+  };
+  switchPage('pageWelcome');
 }
 
+applyRegionPresentation();
 restoreOnboardingFlow();
 </script>
 </body>
