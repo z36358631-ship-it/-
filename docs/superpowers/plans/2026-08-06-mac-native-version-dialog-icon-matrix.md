@@ -22,7 +22,7 @@
 - Create: `tests/mac-native-version-demo.test.mjs`
 - Test: `tests/mac-native-version-demo.test.mjs`
 
-- [ ] **Step 1: 写入版本弹窗与 Icon 矩阵的失败测试**
+- [x] **Step 1: 写入版本弹窗与 Icon 矩阵的失败测试**
 
 ```js
 import test from 'node:test';
@@ -73,13 +73,13 @@ test('内联脚本语法正确', () => {
 });
 ```
 
-- [ ] **Step 2: 运行测试并确认新需求尚未实现**
+- [x] **Step 2: 运行测试并确认新需求尚未实现**
 
 Run: `node --test tests/mac-native-version-demo.test.mjs`
 
 Expected: FAIL，至少报告缺少 `installed-epic`、`versionSwitchOverlay` 或 `open-version-switch`。
 
-- [ ] **Step 3: 提交测试基线**
+- [x] **Step 3: 提交测试基线**
 
 ```powershell
 git add -- tests/mac-native-version-demo.test.mjs
@@ -92,7 +92,7 @@ git commit -m "test: cover Mac version dialog and icon matrix"
 - Modify: `demos/PC与Mac端/Mac原生游戏版本管理demo.html`
 - Test: `tests/mac-native-version-demo.test.mjs`
 
-- [ ] **Step 1: 增加 Epic 与 GOG 行内 SVG Symbol**
+- [x] **Step 1: 增加 Epic 与 GOG 行内 SVG Symbol**
 
 在 `i-steam` 与 `i-apple` 附近加入：
 
@@ -107,7 +107,7 @@ git commit -m "test: cover Mac version dialog and icon matrix"
 </symbol>
 ```
 
-- [ ] **Step 2: 统一封面 Icon 容器样式**
+- [x] **Step 2: 统一封面 Icon 容器样式**
 
 保留右下角 `platform-badges`，让平台 Icon 使用 `20×20px` 方形芯片、Mac 原生使用带文字芯片：
 
@@ -118,7 +118,7 @@ git commit -m "test: cover Mac version dialog and icon matrix"
 .platform-chip{display:flex}.native-chip{padding:0 6px;display:none;gap:4px;font-size:9px}.native-chip.show{display:flex}.native-chip svg{width:10px;height:12px;fill:currentColor}
 ```
 
-- [ ] **Step 3: 将已安装分组映射为可见示例矩阵**
+- [x] **Step 3: 将已安装分组映射为可见示例矩阵**
 
 在现有七张卡片上使用以下 `data-demo-case`，不增加说明条、角标或新文案：
 
@@ -132,7 +132,7 @@ git commit -m "test: cover Mac version dialog and icon matrix"
 <button class="game-card" data-action="open-detail" data-demo-case="installed-steam-native"><div class="game-cover crop c7"><span class="platform-badges"><span class="platform-chip" title="Steam" aria-label="Steam"><svg><use href="#i-steam"/></svg></span><span class="native-chip show" title="Mac 原生版" aria-label="Mac 原生版"><svg><use href="#i-apple"/></svg><span>Mac 原生</span></span></span></div><div class="game-name">星际战甲</div></button>
 ```
 
-- [ ] **Step 4: 将未安装分组映射为准备下载版本示例**
+- [x] **Step 4: 将未安装分组映射为准备下载版本示例**
 
 四张卡片分别使用：
 
@@ -145,13 +145,13 @@ git commit -m "test: cover Mac version dialog and icon matrix"
 
 以上卡片只展示平台与版本 Icon，不增加“未安装”封面角标。
 
-- [ ] **Step 5: 运行游戏库矩阵测试**
+- [x] **Step 5: 运行游戏库矩阵测试**
 
 Run: `node --test tests/mac-native-version-demo.test.mjs --test-name-pattern="游戏库"`
 
 Expected: PASS。
 
-- [ ] **Step 6: 提交游戏库 Icon 矩阵**
+- [x] **Step 6: 提交游戏库 Icon 矩阵**
 
 ```powershell
 git add -- "demos/PC与Mac端/Mac原生游戏版本管理demo.html"
@@ -164,7 +164,7 @@ git commit -m "feat: add platform icon examples to game library"
 - Modify: `demos/PC与Mac端/Mac原生游戏版本管理demo.html`
 - Test: `tests/mac-native-version-demo.test.mjs`
 
-- [ ] **Step 1: 增加版本切换弹窗样式**
+- [x] **Step 1: 增加版本切换弹窗样式**
 
 在现有 `.overlay` 和 `.version-card` 样式附近加入：
 
@@ -178,7 +178,7 @@ git commit -m "feat: add platform icon examples to game library"
 .version-switch-row.current{border-color:rgba(168,213,246,.34);background:rgba(132,187,226,.07)}
 ```
 
-- [ ] **Step 2: 增加弹窗 DOM**
+- [x] **Step 2: 增加弹窗 DOM**
 
 放在 `searchOverlay` 与 `installOverlay` 同级位置：
 
@@ -195,13 +195,13 @@ git commit -m "feat: add platform icon examples to game library"
 </div>
 ```
 
-- [ ] **Step 3: 将“…”菜单动作改为打开当前页弹窗**
+- [x] **Step 3: 将“…”菜单动作改为打开当前页弹窗**
 
 ```html
 <button class="detail-more-item" data-action="open-version-switch" role="menuitem">切换版本</button>
 ```
 
-- [ ] **Step 4: 增加弹窗渲染与开关函数**
+- [x] **Step 4: 增加弹窗渲染与开关函数**
 
 ```js
 function renderVersionSwitch(){
@@ -223,7 +223,7 @@ function closeVersionSwitch(){
 }
 ```
 
-- [ ] **Step 5: 增加选择版本的状态流**
+- [x] **Step 5: 增加选择版本的状态流**
 
 ```js
 function chooseVersion(id){
@@ -254,13 +254,13 @@ Escape 分支增加：
 if($('#versionSwitchOverlay').classList.contains('show'))closeVersionSwitch();
 ```
 
-- [ ] **Step 6: 运行版本弹窗结构与语法测试**
+- [x] **Step 6: 运行版本弹窗结构与语法测试**
 
 Run: `node --test tests/mac-native-version-demo.test.mjs --test-name-pattern="版本切换|内联脚本"`
 
 Expected: PASS。
 
-- [ ] **Step 7: 提交当前页版本弹窗**
+- [x] **Step 7: 提交当前页版本弹窗**
 
 ```powershell
 git add -- "demos/PC与Mac端/Mac原生游戏版本管理demo.html"
@@ -273,7 +273,7 @@ git commit -m "feat: switch game versions in detail modal"
 - Modify: `demos/PC与Mac端/Mac原生游戏版本管理demo.html`
 - Test: `tests/mac-native-version-demo.test.mjs`
 
-- [ ] **Step 1: 为搜索平台 Icon 增加统一可访问标签**
+- [x] **Step 1: 为搜索平台 Icon 增加统一可访问标签**
 
 每个结果继续使用右侧 `result-platforms`，单平台示例结构为：
 
@@ -294,7 +294,7 @@ Mac 原生组合结构为：
 </span>
 ```
 
-- [ ] **Step 2: 将七条搜索结果映射为完整组合**
+- [x] **Step 2: 将七条搜索结果映射为完整组合**
 
 用以下完整结构替换七条结果：
 
@@ -310,13 +310,13 @@ Mac 原生组合结构为：
 
 结果行中不出现“已安装”“未安装”“当前使用”。
 
-- [ ] **Step 3: 运行搜索矩阵测试**
+- [x] **Step 3: 运行搜索矩阵测试**
 
 Run: `node --test tests/mac-native-version-demo.test.mjs --test-name-pattern="搜索结果"`
 
 Expected: PASS。
 
-- [ ] **Step 4: 提交搜索 Icon 矩阵**
+- [x] **Step 4: 提交搜索 Icon 矩阵**
 
 ```powershell
 git add -- "demos/PC与Mac端/Mac原生游戏版本管理demo.html"
@@ -329,7 +329,7 @@ git commit -m "feat: add platform icon examples to search"
 - Modify: `demos/PC与Mac端/Mac原生游戏版本管理demo.html`
 - Test: `tests/mac-native-version-demo.test.mjs`
 
-- [ ] **Step 1: 运行全部自动检查**
+- [x] **Step 1: 运行全部自动检查**
 
 Run: `node --test tests/mac-native-version-demo.test.mjs`
 
@@ -339,7 +339,7 @@ Run: `$html=Get-Content -Raw -Encoding UTF8 "demos\PC与Mac端\Mac原生游戏�
 
 Expected: `External dependencies: none`。
 
-- [ ] **Step 2: 浏览器验收游戏库**
+- [x] **Step 2: 浏览器验收游戏库**
 
 在 `1076×734px` 逻辑画布下确认：
 
@@ -349,7 +349,7 @@ Expected: `External dependencies: none`。
 封面没有额外“已安装/未安装”角标，Icon 均位于右下角且不遮挡游戏名。
 ```
 
-- [ ] **Step 3: 浏览器验收当前页切换流程**
+- [x] **Step 3: 浏览器验收当前页切换流程**
 
 依次操作并保留截图证据：
 
@@ -361,15 +361,15 @@ Expected: `External dependencies: none`。
 再次下载并完成安装 → Mac 原生版成为当前版本，原 Steam 版本仍在已安装集合。
 ```
 
-- [ ] **Step 4: 浏览器验收搜索结果**
+- [x] **Step 4: 浏览器验收搜索结果**
 
 确认搜索结果具有 Steam、Epic、GOG、Steam＋Mac 原生、Epic＋Mac 原生组合，且没有安装状态文案。
 
-- [ ] **Step 5: 检查浏览器控制台**
+- [x] **Step 5: 检查浏览器控制台**
 
 Expected: error 数量为 `0`。
 
-- [ ] **Step 6: 提交最终回归修正**
+- [x] **Step 6: 提交最终回归修正**
 
 ```powershell
 git add -- "demos/PC与Mac端/Mac原生游戏版本管理demo.html" tests/mac-native-version-demo.test.mjs docs/superpowers/plans/2026-08-06-mac-native-version-dialog-icon-matrix.md
