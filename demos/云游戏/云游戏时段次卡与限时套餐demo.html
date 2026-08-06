@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>云游戏时段次卡与限时套餐 Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#000;--card:#1a1a1a;--elevated:#252525;--overlay:#28202a;
+  --text:#fff;--sub:#e6e6e6;--muted:#8b8b91;--disabled:#646464;
+  --gold:#ffcc43;--green:#33d8a4;--blue:#338feb;--red:#ff5d6c;--line:#353d4e;
+  --font:'MiSans VF','MiSans','PingFang SC',-apple-system,BlinkMacSystemFont,sans-serif;
+  --number:'D-DIN-PRO','MiSans VF',sans-serif;
+}
+body{min-width:1180px;min-height:100vh;background:#101117;color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.demo-toolbar{height:64px;padding:0 28px;display:flex;align-items:center;gap:10px;background:#191a21;border-bottom:1px solid #2a2c35;position:sticky;top:0;z-index:2000}
+.demo-title{font-size:16px;font-weight:600;margin-right:18px}.demo-group{display:flex;gap:6px}.demo-group+.demo-group{margin-left:10px;padding-left:16px;border-left:1px solid #333640}
+.scene-btn{height:34px;padding:0 13px;border:0;border-radius:8px;background:transparent;color:#9b9da7;font-size:13px}.scene-btn:hover{background:#242630;color:#fff}.scene-btn.active{background:#3b68ff;color:#fff}
+.demo-stage{min-height:calc(100vh - 64px);display:flex;align-items:center;justify-content:center;padding:28px}
+.scene{display:none}.scene.active{display:block}
+
+/* C端手机框架 */
+.phone{width:390px;height:844px;background:#000;border-radius:28px;overflow:hidden;position:relative;box-shadow:0 32px 100px rgba(0,0,0,.58),0 0 0 8px #272832}
+.statusbar{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 18px 0 22px;font-family:var(--number);font-size:12px;font-weight:600;position:relative;z-index:5}.island{position:absolute;top:8px;left:50%;width:96px;height:25px;border-radius:15px;background:#080808;transform:translateX(-50%)}
+.status-icons{display:flex;gap:5px;align-items:center}.signal{letter-spacing:-2px}.battery{width:22px;height:10px;border:1px solid #fff;border-radius:3px;position:relative}.battery:before{content:'';position:absolute;left:2px;top:2px;width:15px;height:4px;border-radius:1px;background:#fff}.battery:after{content:'';position:absolute;right:-3px;top:3px;width:2px;height:4px;background:#fff;border-radius:0 2px 2px 0}
+.app-header{height:52px;display:flex;align-items:center;padding:0 16px;position:relative;z-index:5}.back{width:32px;height:32px;border:0;background:transparent;color:#fff;font-size:25px;display:flex;align-items:center}.app-header h1{font-size:18px;font-weight:520;margin-left:5px}.app-header .header-link{margin-left:auto;border:0;background:transparent;color:#a4a6ae;font-size:13px}
+.screen-scroll{height:calc(100% - 90px);overflow-y:auto;scrollbar-width:none;padding:0 16px 112px}.screen-scroll::-webkit-scrollbar{display:none}
+.balance-card{height:126px;border-radius:18px;padding:18px 18px 16px;position:relative;overflow:hidden;background:radial-gradient(circle at 92% 5%,rgba(129,116,250,.85),transparent 36%),linear-gradient(145deg,#282a63 0%,#17192d 65%,#11121c 100%);box-shadow:0 14px 35px rgba(25,30,86,.35)}
+.balance-card:after{content:'';position:absolute;width:135px;height:135px;border:1px solid rgba(255,255,255,.12);border-radius:50%;right:-44px;bottom:-75px}.balance-label{font-size:12px;color:#bdc0d8}.balance-value{font-family:var(--number);font-size:30px;font-weight:700;margin-top:4px}.balance-value small{font-size:14px;font-weight:400;margin-left:3px}.queue-tag{position:absolute;right:15px;top:17px;padding:6px 9px;border-radius:7px;background:rgba(51,216,164,.13);color:#69e7bf;font-size:11px}.queue-expire{font-size:11px;color:#aeb1c8;margin-top:10px}.detail-entry{position:absolute;right:17px;bottom:18px;font-size:12px;color:#fff;background:transparent;border:0}
+.section-head{display:flex;align-items:flex-end;margin:22px 2px 11px}.section-head h2{font-size:18px;font-weight:600}.section-head span{font-size:11px;color:#777b86;margin-left:8px;margin-bottom:2px}
+.product-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.product-card{min-height:154px;border-radius:15px;padding:14px;background:#191a1f;border:1px solid transparent;position:relative;text-align:left;color:#fff;transition:.18s}.product-card:hover{transform:translateY(-1px)}.product-card.selected{border-color:#6978ff;background:linear-gradient(150deg,#222547,#191a22)}.product-card.selected:after{content:'✓';position:absolute;right:10px;top:10px;width:20px;height:20px;border-radius:50%;background:#5e70ff;display:grid;place-items:center;font-size:12px}.product-badge{display:inline-flex;height:20px;align-items:center;padding:0 7px;border-radius:4px;background:#ff5d6c;color:#fff;font-size:10px;margin-bottom:9px}.product-badge.blue{background:#3f6cff}.product-badge.gold{background:#6b5722;color:#ffe18a}.product-name{font-size:15px;font-weight:600;margin-bottom:5px}.product-desc{font-size:11px;line-height:17px;color:#999ca5;min-height:34px}.product-price{margin-top:9px;font-family:var(--number);font-size:23px;font-weight:700}.product-price em{font-style:normal;font-size:13px}.product-price del{font-size:11px;color:#62646b;font-weight:400;margin-left:6px}.product-tip{font-size:10px;color:#737681;margin-top:3px}.preheat{border-color:#3a3b43;background:#15161a}.preheat .product-price{font-family:var(--font);font-size:12px;color:#9497a0;margin-top:12px}.preheat:after{content:'预热中';position:absolute;right:9px;top:9px;color:#ffce57;font-size:10px}
+.notice-row{display:flex;gap:9px;align-items:flex-start;margin-top:12px;padding:11px 12px;border-radius:10px;background:#17181d;color:#858891;font-size:11px;line-height:17px}.notice-icon{color:#f5c64a}
+.pay-bar{position:absolute;bottom:0;left:0;right:0;padding:12px 16px 26px;background:linear-gradient(180deg,rgba(0,0,0,0),#000 22%);z-index:8}.pay-btn{width:100%;height:48px;border:0;border-radius:12px;color:#17120a;font-size:15px;font-weight:650;background:linear-gradient(90deg,#ffda66,#ffbd35);box-shadow:0 8px 30px rgba(255,196,62,.18)}.pay-btn:active{transform:scale(.99)}
+.toast{position:absolute;left:50%;bottom:92px;transform:translate(-50%,10px);padding:9px 14px;border-radius:8px;background:rgba(45,46,52,.96);font-size:12px;opacity:0;pointer-events:none;transition:.2s;white-space:nowrap;z-index:60}.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* 游戏详情与激活 */
+.game-page{height:100%;position:relative;background:linear-gradient(180deg,rgba(0,0,0,.1),#060606 64%),radial-gradient(circle at 75% 20%,#59444e,transparent 35%),linear-gradient(130deg,#263b50,#151820 60%)}
+.game-cover-art{height:370px;position:relative;overflow:hidden}.game-cover-art:before{content:'';position:absolute;inset:30px -50px 0;background:radial-gradient(circle at 52% 45%,#c7a168 0 8%,#6e584a 9% 18%,transparent 19%),radial-gradient(circle at 50% 58%,#424d56 0 18%,transparent 19%),radial-gradient(circle at 58% 40%,#627b8a,transparent 30%);filter:blur(1px);opacity:.8}.game-page .app-header{position:absolute;top:38px;left:0;right:0}.game-info{padding:0 18px;margin-top:-6px}.game-tags{display:flex;gap:6px;margin-bottom:9px}.game-tag{font-size:10px;color:#d3d5da;background:#ffffff12;border-radius:4px;padding:3px 6px}.game-info h2{font-size:25px;font-weight:650}.game-info p{font-size:12px;color:#8d9098;line-height:19px;margin-top:9px}.game-actions{position:absolute;left:16px;right:16px;bottom:29px;display:flex;gap:10px}.ghost-btn{width:48px;height:48px;border-radius:12px;border:1px solid #ffffff1f;background:#ffffff0c;color:#fff;font-size:18px}.play-btn{flex:1;border:0;border-radius:12px;background:#fff;color:#111;font-weight:650;font-size:15px}
+.mask{position:absolute;inset:0;background:rgba(0,0,0,.58);backdrop-filter:blur(5px);z-index:30;display:flex;align-items:flex-end}.bottom-sheet{width:100%;border-radius:24px 24px 0 0;background:#252328;padding:12px 20px 30px;box-shadow:0 -16px 50px rgba(0,0,0,.45)}.sheet-handle{width:36px;height:4px;border-radius:4px;background:#56545a;margin:0 auto 17px}.bottom-sheet h3{font-size:20px;text-align:center}.sheet-sub{text-align:center;font-size:12px;color:#95939b;line-height:18px;margin:7px 15px 17px}.pass-summary{border-radius:14px;padding:14px;background:#302e34;border:1px solid #3b3940}.pass-row{display:flex;justify-content:space-between;align-items:center}.pass-row+.pass-row{margin-top:10px}.pass-row span{font-size:12px;color:#a4a1a8}.pass-row strong{font-family:var(--number);font-size:13px}.pass-row .accent{color:#ffce57}.sheet-warning{font-size:11px;color:#8d8991;line-height:17px;margin:12px 2px}.sheet-actions{display:flex;gap:10px;margin-top:15px}.sheet-actions button{height:46px;border-radius:11px;font-size:14px}.cancel-btn{width:112px;border:1px solid #47454b;background:transparent;color:#d1cfd4}.confirm-btn{flex:1;border:0;background:#ffcc43;color:#1e1808;font-weight:650}
+
+/* 时长明细 */
+.detail-screen{height:100%;background:#000}.detail-list{height:calc(100% - 90px);padding:2px 16px 36px;overflow:auto;scrollbar-width:none}.detail-list::-webkit-scrollbar{display:none}.time-overview{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}.overview-box{padding:16px;border-radius:14px;background:#191a1f}.overview-box span{font-size:11px;color:#7f828b}.overview-box strong{display:block;font-family:var(--number);font-size:22px;margin-top:5px}.overview-box strong.gold{color:#ffd258}.list-title{font-size:16px;font-weight:600;margin:19px 2px 10px}.record-card{padding:14px;border-radius:14px;background:#191a1f;margin-bottom:10px;border:1px solid #262830}.record-top{display:flex;align-items:center}.record-top h3{font-size:14px}.state-pill{margin-left:auto;border-radius:4px;padding:3px 7px;font-size:10px;background:#21483d;color:#62dfb6}.state-pill.wait{background:#34323b;color:#c7c5cc}.state-pill.pre{background:#40371e;color:#ffd56c}.record-amount{font-family:var(--number);font-size:24px;margin-top:11px}.record-amount small{font-size:11px;color:#8a8d95;font-family:var(--font);margin-left:5px}.record-meta{font-size:11px;line-height:18px;color:#858891;margin-top:7px}.progress{height:4px;background:#303139;border-radius:4px;overflow:hidden;margin-top:11px}.progress i{display:block;height:100%;background:linear-gradient(90deg,#5574ff,#8a69ff);border-radius:4px}
+
+/* 游戏内提醒 */
+.cloud-game{height:100%;position:relative;overflow:hidden;background:radial-gradient(circle at 75% 26%,rgba(255,190,102,.52),transparent 16%),radial-gradient(circle at 35% 52%,rgba(58,106,120,.8),transparent 25%),linear-gradient(145deg,#2b5059 0%,#1d313b 44%,#17171c 100%)}.cloud-game:after{content:'';position:absolute;left:45px;right:45px;bottom:55px;height:380px;clip-path:polygon(0 58%,20% 35%,30% 58%,44% 26%,56% 52%,72% 20%,100% 62%,100% 100%,0 100%);background:linear-gradient(180deg,#546b6c,#192629);opacity:.8}.game-hud{position:absolute;z-index:3;left:0;right:0;top:40px;padding:0 17px;display:flex;justify-content:space-between;align-items:center}.hud-pill{height:30px;padding:0 10px;border-radius:15px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);display:flex;align-items:center;font-size:11px}.latency{color:#6ae5bd}.reminder{position:absolute;z-index:8;left:50%;top:56px;transform:translateX(-50%);min-width:304px;border-radius:10px;background:rgba(32,33,39,.92);backdrop-filter:blur(14px);box-shadow:0 10px 30px rgba(0,0,0,.28);padding:10px 12px;display:flex;align-items:center}.reminder-icon{width:30px;height:30px;border-radius:9px;background:#5a4a22;color:#ffd764;display:grid;place-items:center;margin-right:10px}.reminder h4{font-size:12px}.reminder p{font-size:10px;color:#aaaeb6;margin-top:2px}.reminder-controls{position:absolute;z-index:10;bottom:26px;left:50%;transform:translateX(-50%);display:flex;gap:8px}.reminder-controls button{border:1px solid #ffffff24;background:rgba(0,0,0,.48);color:#fff;border-radius:16px;padding:7px 10px;font-size:10px}.reminder-controls button.active{background:#fff;color:#111}
+
+/* B端后台 */
+.admin-shell{width:1366px;height:768px;border-radius:10px;overflow:hidden;background:#f4f6f8;box-shadow:0 32px 100px rgba(0,0,0,.44);color:#263238;display:flex;position:relative;font-family:'PingFang SC',-apple-system,sans-serif}
+.admin-side{width:220px;background:#182333;color:#d5dbe3;display:flex;flex-direction:column}.admin-logo{height:64px;display:flex;align-items:center;padding:0 20px;font-size:18px;font-weight:650;color:#fff;border-bottom:1px solid #ffffff0d}.admin-logo i{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#6d80ff,#4a58d3);display:grid;place-items:center;font-style:normal;font-size:12px;margin-right:10px}.side-group{padding:15px 10px 4px;font-size:11px;color:#75849a}.side-item{height:42px;margin:2px 8px;border-radius:6px;display:flex;align-items:center;padding:0 13px;font-size:13px;color:#aeb9c7}.side-item.active{background:#2e4057;color:#fff}.side-item .nav-icon{width:20px;margin-right:9px;color:#8191a5}.admin-main{flex:1;display:flex;flex-direction:column;min-width:0}.admin-top{height:64px;background:#fff;border-bottom:1px solid #e7eaee;display:flex;align-items:center;padding:0 24px}.crumb{font-size:13px;color:#7c8793}.top-user{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:12px}.avatar{width:30px;height:30px;border-radius:50%;background:#6078e8;color:#fff;display:grid;place-items:center}.admin-content{flex:1;padding:18px 22px;overflow:auto}.page-title-row{display:flex;align-items:center;margin-bottom:14px}.page-title-row h1{font-size:18px}.primary-admin{margin-left:auto;border:0;border-radius:5px;background:#3478f6;color:#fff;height:34px;padding:0 14px;font-size:12px}.panel{background:#fff;border:1px solid #e5e8ec;border-radius:6px}.filter-panel{padding:14px 14px 4px;display:grid;grid-template-columns:repeat(5,1fr);gap:10px 12px;margin-bottom:12px}.field label{display:block;color:#6d7783;font-size:11px;margin-bottom:6px}.admin-input,.admin-select{width:100%;height:32px;border:1px solid #d9dee5;border-radius:4px;background:#fff;padding:0 9px;font-size:11px;color:#33404d;outline:0}.admin-input:focus,.admin-select:focus{border-color:#4b86f7}.filter-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px;padding:2px 0 9px}.a-btn{height:30px;border-radius:4px;padding:0 13px;border:1px solid #d7dce3;background:#fff;color:#44515e;font-size:11px}.a-btn.blue{background:#3478f6;border-color:#3478f6;color:#fff}.a-btn.red{color:#e85252;border-color:#f0bcbc}.table-wrap{padding:0 0 8px;overflow:hidden}.data-table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}.data-table th{height:42px;background:#f7f8fa;color:#6d7885;font-weight:500;text-align:left;padding:0 10px;border-bottom:1px solid #e8ebee;white-space:nowrap}.data-table td{height:50px;padding:0 10px;border-bottom:1px solid #eef0f2;color:#34414e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.data-table tr:hover td{background:#fafcff}.type-tag{display:inline-flex;height:21px;align-items:center;padding:0 7px;border-radius:3px;background:#eaf2ff;color:#3478f6}.type-tag.gold{background:#fff4d7;color:#bb7817}.type-tag.purple{background:#f1ecff;color:#7654d6}.status-dot:before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#2fc57b;margin-right:5px}.op-link{border:0;background:transparent;color:#3478f6;font-size:11px;margin-right:8px}.pagination{height:46px;display:flex;justify-content:flex-end;align-items:center;padding:0 14px;color:#77828e;font-size:11px}.page-no{margin-left:10px;width:26px;height:26px;border-radius:4px;background:#3478f6;color:#fff;display:grid;place-items:center}
+.admin-modal-mask{position:absolute;inset:0;background:rgba(18,25,34,.48);z-index:30;display:flex;align-items:center;justify-content:center}.admin-modal{width:720px;max-height:680px;background:#fff;border-radius:7px;box-shadow:0 22px 70px rgba(0,0,0,.25);overflow:hidden;display:flex;flex-direction:column}.admin-modal.narrow{width:640px}.modal-head{height:52px;border-bottom:1px solid #e8ebef;display:flex;align-items:center;padding:0 20px}.modal-head h2{font-size:15px}.modal-x{margin-left:auto;border:0;background:transparent;font-size:20px;color:#87919c}.modal-body{padding:17px 20px;overflow:auto}.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}.modal-grid .span2{grid-column:1/-1}.modal-field label{display:block;font-size:11px;color:#5d6874;margin-bottom:6px}.required:before{content:'*';color:#ef5350;margin-right:3px}.help{font-size:10px;color:#929ba5;margin-top:4px;line-height:15px}.week-row{display:flex;gap:5px}.week{height:28px;min-width:37px;padding:0 7px;border:1px solid #d9dee5;border-radius:4px;background:#fff;color:#68737e;font-size:10px}.week.active{border-color:#3478f6;color:#3478f6;background:#eef5ff}.inline-inputs{display:flex;align-items:center;gap:7px}.inline-inputs .admin-input{flex:1}.modal-foot{height:58px;border-top:1px solid #e8ebef;display:flex;justify-content:flex-end;align-items:center;gap:9px;padding:0 20px}.section-line{grid-column:1/-1;font-size:12px;font-weight:600;color:#34414e;padding-top:2px;padding-bottom:2px;border-bottom:1px solid #eef0f2}.info-strip{grid-column:1/-1;background:#f3f7ff;border:1px solid #dce8ff;border-radius:5px;padding:9px 11px;color:#55708e;font-size:10px;line-height:16px}
+
+/* 后台用户时长 */
+.user-card{display:flex;align-items:center;padding:14px 16px;margin-bottom:12px}.user-card .avatar{width:38px;height:38px}.user-name{margin-left:10px}.user-name strong{font-size:13px}.user-name span{display:block;font-size:10px;color:#89939e;margin-top:3px}.metric-row{margin-left:auto;display:flex;gap:34px}.metric span{display:block;font-size:10px;color:#8b95a0}.metric strong{font-family:var(--number);font-size:18px;margin-top:3px;display:block}.record-table td{height:52px}.disabled-link{color:#adb4bc}.deduct-modal .record-summary{display:grid;grid-template-columns:1fr 1fr;gap:9px;background:#f7f8fa;border-radius:5px;padding:12px;margin-bottom:14px}.summary-item span{display:block;color:#8b95a0;font-size:10px}.summary-item strong{font-size:12px;margin-top:4px;display:block}.error-text{display:none;color:#e64e4e;font-size:10px;margin-top:4px}
+.admin-logo{padding:0 16px;font-size:16px;white-space:nowrap}.admin-logo i{width:26px;height:26px;border-radius:7px;font-size:11px;margin-right:8px;flex:none}
+/* V6.1.1 真实页面复刻层 */
+#capture-c-recharge{height:867px;border-radius:18px;background:#090509 url('./assets/cloud-time-pack-v611/15-portrait-recharge.png') center/100% 100% no-repeat}
+#capture-c-recharge>.statusbar,#capture-c-recharge>.app-header,#capture-c-recharge>.screen-scroll,#capture-c-recharge>.pay-bar{display:none}
+.v611-product-area{position:absolute;z-index:12;left:10px;right:10px;top:119px;height:112px;padding:7px 8px 8px;border-radius:13px;background:linear-gradient(145deg,rgba(65,31,46,.97),rgba(31,20,25,.97));border:1px solid rgba(255,255,255,.11);box-shadow:0 10px 24px rgba(0,0,0,.28)}
+.v611-product-head{height:20px;display:flex;align-items:center;font-size:11px;color:#f4e8ed}.v611-product-head strong{font-size:12px}.v611-product-head span{margin-left:auto;color:#a9949d;font-size:9px}
+.v611-product-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;height:76px}
+.v611-product{position:relative;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.055);color:#fff;padding:8px 9px;text-align:left}.v611-product.selected{border-color:#ff8ac0;background:linear-gradient(135deg,rgba(157,52,97,.32),rgba(65,45,79,.35))}.v611-product.disabled{opacity:.66;cursor:default}
+.v611-product h3{font-size:11px;margin-bottom:3px}.v611-product p{font-size:8px;color:#b9aab1;line-height:12px}.v611-product .mini-price{position:absolute;right:8px;bottom:7px;font-family:var(--number);font-size:14px;font-weight:700}.v611-product .mini-price em{font-size:9px;font-style:normal}.v611-product .mini-badge{position:absolute;right:7px;top:7px;padding:2px 4px;border-radius:3px;background:#c54479;color:#fff;font-size:7px}.v611-product.disabled .mini-badge{background:#6b4c5a;color:#edcedb}
+.v611-product .mini-price{left:9px;right:auto}.v611-buy{position:absolute;left:131px;bottom:14px;height:23px;padding:0 9px;border:0;border-radius:12px;background:linear-gradient(135deg,#de4c8c,#a73365);color:#fff;font-size:9px;font-weight:600}
+#capture-c-activation{height:867px;border-radius:18px}
+#capture-c-activation .game-page{background:#080709 url('./assets/cloud-time-pack-v611/10-portrait-game-detail.png') center/100% 100% no-repeat}
+#capture-c-activation .game-page>.statusbar,#capture-c-activation .game-page>.game-cover-art,#capture-c-activation .game-page>.app-header,#capture-c-activation .game-page>.game-info,#capture-c-activation .game-page>.game-actions{visibility:hidden}
+#capture-c-activation .mask{backdrop-filter:blur(3px);background:rgba(0,0,0,.48)}
+#capture-c-activation .bottom-sheet{background:linear-gradient(160deg,#30252b,#201b20);border:1px solid rgba(255,255,255,.09);box-shadow:0 -18px 50px rgba(0,0,0,.58)}
+#capture-c-activation .confirm-btn{background:linear-gradient(135deg,#f25c9e,#a93a72);color:#fff}
+#capture-c-detail{height:867px;border-radius:18px}
+#capture-c-detail .detail-screen{background:radial-gradient(circle at 8% 2%,#45152a 0,transparent 34%),linear-gradient(180deg,#19070e,#070506 55%,#000)}
+#capture-c-detail .statusbar{height:27px;padding:0 11px;font-size:10px;background:#0d0d0f}
+#capture-c-detail .statusbar .island{display:none}
+#capture-c-detail .app-header{height:48px;padding:0 12px;background:linear-gradient(90deg,#35101f,#150910 72%,#0b080a)}
+#capture-c-detail .app-header h1{font-size:17px}
+#capture-c-detail .detail-list{height:calc(100% - 75px);padding:16px 16px 34px}
+#capture-c-reminder{height:867px;border-radius:18px}
+#capture-c-reminder .cloud-game{background:#080709 url('./assets/cloud-time-pack-v611/10-portrait-game-detail.png') center/100% 100% no-repeat}
+#capture-c-reminder .cloud-game:after{display:none}
+#capture-c-reminder .statusbar{visibility:hidden}
+#capture-c-reminder .game-hud{display:none}
+#capture-c-reminder .reminder{top:50px;background:rgba(50,31,41,.94);border:1px solid rgba(255,255,255,.08)}
+#capture-c-reminder .reminder-icon{background:#7d2b51;color:#ffacd0}
+.reminder-clock{position:absolute;z-index:7;left:7px;top:2px;min-width:30px;height:14px;display:flex;align-items:center;background:#0d0d0f;color:#fff;font:600 10px var(--number)}
+.portrait-play-hotspot{position:absolute;z-index:20;left:20px;bottom:16px;width:190px;height:43px;border:0;background:transparent;cursor:pointer}
+.landscape-device{width:874px;height:393px;position:relative;overflow:hidden;border-radius:18px;box-shadow:0 28px 90px rgba(0,0,0,.56),0 0 0 7px #292931}
+.landscape-device.cloud-page{background:#170c12 url('./assets/cloud-time-pack-v611/37-landscape-cloud-games.png') center/100% 100% no-repeat}
+.landscape-device.detail-page{background:#110b0b url('./assets/cloud-time-pack-v611/44-landscape-game-detail.png') center/100% 100% no-repeat}
+.landscape-mask{position:absolute;inset:0;background:rgba(0,0,0,.48);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center}
+.landscape-modal{width:560px;border-radius:16px;background:linear-gradient(150deg,rgba(64,35,47,.98),rgba(25,22,27,.98));border:1px solid rgba(255,255,255,.12);box-shadow:0 22px 65px rgba(0,0,0,.5);padding:17px 19px;color:#fff}
+.landscape-modal-head{display:flex;align-items:center;margin-bottom:13px}.landscape-modal-head h2{font-size:17px}.landscape-modal-head p{margin-left:10px;color:#b19ca6;font-size:10px}.landscape-close{margin-left:auto;border:0;background:transparent;color:#c7b9bf;font-size:20px}
+.landscape-skus{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.landscape-sku{height:93px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);padding:10px;color:#fff;text-align:left;position:relative}.landscape-sku.selected{border-color:#ee70aa;background:linear-gradient(145deg,rgba(167,54,102,.34),rgba(69,49,90,.3))}.landscape-sku h3{font-size:12px}.landscape-sku p{font-size:9px;color:#bbaab1;line-height:14px;margin-top:4px}.landscape-sku strong{position:absolute;right:9px;bottom:8px;font-family:var(--number);font-size:18px}.landscape-sku.disabled{opacity:.58}
+.landscape-pay{width:100%;height:36px;border:0;border-radius:9px;background:linear-gradient(135deg,#ec599a,#9d3c82);color:#fff;font-weight:650;font-size:12px;margin-top:13px}
+.landscape-activation{width:460px}.landscape-activation .pass-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px 22px}.landscape-activation .pass-row{margin:0}.landscape-activation .sheet-actions{justify-content:flex-end}.landscape-activation .cancel-btn{height:36px}.landscape-activation .confirm-btn{height:36px;max-width:180px;background:linear-gradient(135deg,#f25c9e,#a93a72);color:#fff}
+.landscape-play-hotspot{position:absolute;z-index:10;left:56px;bottom:72px;width:60px;height:31px;border:0;background:transparent}
+.confirm-card{width:420px}.confirm-card .modal-body{padding:22px 24px}.confirm-symbol{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;margin:0 auto 12px;background:#fff0f0;color:#e24b4b;font-size:22px}.confirm-copy{text-align:center;color:#37424d;font-size:13px;line-height:21px}.confirm-copy strong{display:block;font-size:15px;margin-bottom:5px}.confirm-copy span{color:#7b8692;font-size:11px}
+@media(max-height:900px){.demo-stage{align-items:flex-start}.phone{transform:scale(.9);transform-origin:top center}.admin-shell{transform:scale(.9);transform-origin:top center}}
+</style>
+</head>
+<body>
+<div class="demo-toolbar">
+  <div class="demo-title">云游戏时段次卡与限时套餐</div>
+  <div class="demo-group">
+    <button class="scene-btn active" data-scene-target="c-recharge">C端·充值中心</button>
+    <button class="scene-btn" data-scene-target="c-activation">C端·激活次卡</button>
+    <button class="scene-btn" data-scene-target="c-detail">C端·时长明细</button>
+    <button class="scene-btn" data-scene-target="c-reminder">C端·到期提醒</button>
+    <button class="scene-btn" data-scene-target="c-landscape-recharge">掌机·充值中心</button>
+    <button class="scene-btn" data-scene-target="c-landscape-activation">掌机·激活次卡</button>
+  </div>
+  <div class="demo-group">
+    <button class="scene-btn" data-scene-target="b-list">B端·商品管理</button>
+    <button class="scene-btn" data-scene-target="b-slot">B端·次卡配置</button>
+    <button class="scene-btn" data-scene-target="b-limited">B端·限时包配置</button>
+    <button class="scene-btn" data-scene-target="b-deduct">B端·时长扣除</button>
+  </div>
+</div>
+<main class="demo-stage">
+  <section class="scene active" id="scene-c-recharge">
+    <div class="phone" id="capture-c-recharge">
+      <div class="statusbar"><span>9:41</span><span class="island"></span><span class="status-icons"><span class="signal">▂▄▆</span><span>⌁</span><span class="battery"></span></span></div>
+      <header class="app-header"><button class="back">‹</button><h1>充值中心</h1><button class="header-link" onclick="showScene('c-detail')">时长明细</button></header>
+      <div class="screen-scroll">
+        <section class="balance-card"><div class="balance-label">当前可用时长</div><div class="balance-value">12<small>小时</small> 36<small>分钟</small></div><div class="queue-tag">排队特权</div><div class="queue-expire">有效至 2026-08-30 18:20</div><button class="detail-entry" onclick="showScene('c-detail')">查看明细 ›</button></section>
+        <div class="section-head"><h2>充值套餐</h2><span>购买后立即到账</span></div>
+        <div class="product-grid">
+          <button class="product-card" data-price="18.00"><span class="product-badge blue">常规套餐</span><div class="product-name">6小时</div><div class="product-desc">永久有效<br>赠7天排队特权</div><div class="product-price"><em>¥</em>18<del>¥24</del></div><div class="product-tip">¥3.00/小时</div></button>
+          <button class="product-card selected" data-price="9.90"><span class="product-badge">闲时特惠</span><div class="product-name">午间畅玩卡</div><div class="product-desc">工作日 12:00—14:00<br>5次 · 30天内可激活</div><div class="product-price"><em>¥</em>9.9<del>¥15</del></div><div class="product-tip">每次激活畅玩至14:00</div></button>
+          <button class="product-card" data-price="15.00"><span class="product-badge gold">夜猫专享</span><div class="product-name">深夜畅玩卡</div><div class="product-desc">每日 00:00—08:30<br>5次 · 30天内可激活</div><div class="product-price"><em>¥</em>15</div><div class="product-tip">每次激活畅玩至08:30</div></button>
+          <button class="product-card preheat" data-price="29.90" data-preheat="1"><span class="product-badge gold">夏末返场</span><div class="product-name">20小时限时包</div><div class="product-desc">8月20日—9月9日可用<br>过期后剩余时长失效</div><div class="product-price" id="preheatText">2天 03:12后开售</div></button>
+        </div>
+        <div class="notice-row"><span class="notice-icon">ⓘ</span><span>时段次卡需在指定时段点击秒玩后激活；限时时长仅在标注的使用期内可用。</span></div>
+      </div>
+      <div class="pay-bar"><button class="pay-btn" id="rechargePay" onclick="paySelected()">确认支付 ¥9.90</button></div>
+      <div class="v611-product-area">
+        <div class="v611-product-head"><strong>时长套餐</strong><span>左右滑动查看更多</span></div>
+        <div class="v611-product-row">
+          <button class="v611-product selected" id="portraitSlotSku"><span class="mini-badge">闲时特惠</span><h3>午间畅玩卡</h3><p>工作日12:00—14:00<br>5次 · 30天内激活</p><span class="mini-price"><em>¥</em>9.9</span></button>
+          <button class="v611-product disabled" disabled><span class="mini-badge">2天后开售</span><h3>夏末20小时限时包</h3><p>8月20日—9月9日可用<br>预热期可见不可购买</p></button>
+        </div>
+        <button class="v611-buy" onclick="payPortraitSlot()">购买</button>
+      </div>
+      <div class="toast" id="rechargeToast">支付成功，午间畅玩卡已到账</div>
+    </div>
+  </section>
+
+  <section class="scene" id="scene-c-activation">
+    <div class="phone" id="capture-c-activation">
+      <div class="game-page">
+        <div class="statusbar"><span>12:18</span><span class="island"></span><span class="status-icons"><span class="signal">▂▄▆</span><span>⌁</span><span class="battery"></span></span></div>
+        <div class="game-cover-art"></div>
+        <header class="app-header"><button class="back">‹</button><button class="header-link">•••</button></header>
+        <div class="game-info"><div class="game-tags"><span class="game-tag">角色扮演</span><span class="game-tag">本机适配良好</span></div><h2>艾尔登法环</h2><p>踏上交界地，成为艾尔登之王。支持云游戏秒玩，无需等待下载。</p></div>
+        <div class="game-actions"><button class="ghost-btn">＋</button><button class="play-btn" onclick="openActivation()">秒玩</button></div>
+        <div class="mask" id="activationMask">
+          <div class="bottom-sheet">
+            <div class="sheet-handle"></div><h3>使用午间畅玩卡？</h3><p class="sheet-sub">消耗1次，本时段可畅玩任意云游戏</p>
+            <div class="pass-summary"><div class="pass-row"><span>本次可畅玩至</span><strong class="accent">14:00</strong></div><div class="pass-row"><span>当前时段剩余</span><strong>1小时42分钟</strong></div><div class="pass-row"><span>可用次数</span><strong id="activationRemaining">5/5次</strong></div><div class="pass-row"><span>整包有效期</span><strong>2026-09-04 18:20</strong></div></div>
+            <p class="sheet-warning">确认后立即扣1次。退出或切换其他云游戏不会重复扣次。</p>
+            <div class="sheet-actions"><button class="cancel-btn" onclick="closeActivation()">暂不使用</button><button class="confirm-btn" onclick="activatePass()">确认使用</button></div>
+          </div>
+        </div>
+        <button class="portrait-play-hotspot" aria-label="秒玩" onclick="openActivation()"></button>
+        <div class="toast" id="activationToast">午间畅玩卡已生效，可畅玩至14:00</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" id="scene-c-detail">
+    <div class="phone" id="capture-c-detail">
+      <div class="detail-screen">
+        <div class="statusbar"><span>9:41</span><span class="island"></span><span class="status-icons"><span class="signal">▂▄▆</span><span>⌁</span><span class="battery"></span></span></div>
+        <header class="app-header"><button class="back" onclick="showScene('c-recharge')">‹</button><h1>云游戏时长</h1></header>
+        <div class="detail-list">
+          <div class="time-overview"><div class="overview-box"><span>永久时长</span><strong>12h 36m</strong></div><div class="overview-box"><span>当前免扣</span><strong class="gold">至 14:00</strong></div></div>
+          <div class="list-title">时段次卡</div>
+          <div class="record-card"><div class="record-top"><h3>午间畅玩卡</h3><span class="state-pill">使用中</span></div><div class="record-amount">4/5<small>剩余次数</small></div><div class="record-meta">工作日 12:00—14:00<br>整包有效至 2026-09-04 18:20</div><div class="progress"><i style="width:80%"></i></div></div>
+          <div class="record-card"><div class="record-top"><h3>深夜畅玩卡</h3><span class="state-pill wait">未到时段</span></div><div class="record-amount">5/5<small>剩余次数</small></div><div class="record-meta">每日 00:00—08:30<br>整包有效至 2026-09-04 20:06</div><div class="progress"><i style="width:100%"></i></div></div>
+          <div class="list-title">限时时长</div>
+          <div class="record-card"><div class="record-top"><h3>夏末特惠20小时包</h3><span class="state-pill pre">未生效</span></div><div class="record-amount">20h 00m<small>剩余时长</small></div><div class="record-meta">可用时间 2026-08-20 00:00—2026-09-09 00:00<br>来源订单 CLOUD-260820-0188</div><div class="progress"><i style="width:100%;background:#d39a35"></i></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" id="scene-c-reminder">
+    <div class="phone" id="capture-c-reminder">
+      <div class="cloud-game">
+        <div class="statusbar"><span>13:57</span><span class="island"></span><span class="status-icons"><span class="signal">▂▄▆</span><span>⌁</span><span class="battery"></span></span></div>
+        <div class="game-hud"><span class="hud-pill">艾尔登法环</span><span class="hud-pill latency">28ms</span></div>
+        <div class="reminder-clock">13:57</div>
+        <div class="reminder" id="reminderBanner"><div class="reminder-icon">◷</div><div><h4 id="reminderTitle">本次午间畅玩卡还剩3分钟</h4><p id="reminderSub">14:00结束，有其他时长将自动续玩</p></div></div>
+        <div class="reminder-controls"><button class="active" onclick="setReminder('3m',this)">3分钟前</button><button onclick="setReminder('10s',this)">10秒前</button><button onclick="setReminder('ended',this)">有时长</button><button onclick="setReminder('no-time',this)">无时长</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" id="scene-c-landscape-recharge">
+    <div class="landscape-device cloud-page" id="capture-c-landscape-recharge">
+      <div class="landscape-mask" id="landscapeRechargeMask">
+        <div class="landscape-modal">
+          <div class="landscape-modal-head"><h2>充值中心</h2><p>剩余秒玩时长 0小时0分钟</p><button class="landscape-close" onclick="closeLandscapeRecharge()">×</button></div>
+          <div class="landscape-skus">
+            <button class="landscape-sku" data-price="18.00"><h3>6小时套餐</h3><p>永久有效<br>赠7天排队特权</p><strong>¥18</strong></button>
+            <button class="landscape-sku selected" data-price="9.90"><h3>午间畅玩卡</h3><p>工作日12:00—14:00<br>5次 · 30天内激活</p><strong>¥9.9</strong></button>
+            <button class="landscape-sku disabled" disabled><h3>夏末20小时包</h3><p>8月20日开售<br>预热期不可购买</p><strong>¥29.9</strong></button>
+          </div>
+          <button class="landscape-pay" onclick="payLandscapeSlot()">确认支付 ¥9.90</button>
+        </div>
+      </div>
+      <div class="toast" id="landscapePayToast">支付成功，午间畅玩卡已到账</div>
+    </div>
+  </section>
+
+  <section class="scene" id="scene-c-landscape-activation">
+    <div class="landscape-device detail-page" id="capture-c-landscape-activation">
+      <div class="landscape-mask" id="landscapeActivationMask">
+        <div class="landscape-modal landscape-activation">
+          <div class="landscape-modal-head"><h2>使用午间畅玩卡？</h2><p>消耗1次，本时段任意云游戏免扣</p></div>
+          <div class="pass-summary"><div class="pass-row"><span>本次可畅玩至</span><strong class="accent">14:00</strong></div><div class="pass-row"><span>当前时段剩余</span><strong>1小时42分钟</strong></div><div class="pass-row"><span>可用次数</span><strong id="landscapeActivationRemaining">5/5次</strong></div><div class="pass-row"><span>整包有效期</span><strong>2026-09-04 18:20</strong></div></div>
+          <div class="sheet-actions"><button class="cancel-btn" onclick="closeLandscapeActivation()">暂不使用</button><button class="confirm-btn" onclick="activateLandscapePass()">确认使用</button></div>
+        </div>
+      </div>
+      <button class="landscape-play-hotspot" aria-label="秒玩" onclick="openLandscapeActivation()"></button>
+      <div class="toast" id="landscapeActivationToast">午间畅玩卡已生效，可畅玩至14:00</div>
+    </div>
+  </section>
+
+  <section class="scene" id="scene-b-list">
+    <div class="admin-shell" id="capture-b-list">
+      <aside class="admin-side"><div class="admin-logo"><i>GH</i>GameHub运营平台</div><div class="side-group">小鸡云游戏</div><div class="side-item">⌂<span class="nav-icon"></span>云游戏数据</div><div class="side-item active"><span class="nav-icon">▤</span>新云游戏充值商品</div><div class="side-item"><span class="nav-icon">◫</span>云游戏订单</div><div class="side-item"><span class="nav-icon">◉</span>用户管理</div><div class="side-group">系统管理</div><div class="side-item"><span class="nav-icon">⌁</span>操作记录</div></aside>
+      <div class="admin-main"><header class="admin-top"><span class="crumb">小鸡云游戏 / 新云游戏充值商品</span><div class="top-user"><span class="avatar">运</span><span>运营管理员⌄</span></div></header><main class="admin-content">
+        <div class="page-title-row"><h1>新云游戏充值商品</h1><button class="primary-admin" onclick="showScene('b-slot')">＋ 新建商品</button></div>
+        <div class="panel filter-panel"><div class="field"><label>商品ID</label><input class="admin-input" placeholder="请输入商品ID"></div><div class="field"><label>APP协议</label><select class="admin-select"><option>全部</option><option>国内竖版</option></select></div><div class="field"><label>商品类型</label><select class="admin-select"><option>全部</option><option>时段次卡</option><option>限时包</option></select></div><div class="field"><label>标题/名称</label><input class="admin-input" placeholder="请输入标题或名称"></div><div class="field"><label>状态</label><select class="admin-select"><option>全部</option><option>已上架</option></select></div><div class="filter-actions"><button class="a-btn">重置</button><button class="a-btn blue">查询</button></div></div>
+        <div class="panel table-wrap"><table class="data-table"><colgroup><col style="width:58px"><col style="width:135px"><col style="width:98px"><col style="width:105px"><col style="width:120px"><col style="width:112px"><col style="width:105px"><col style="width:118px"><col style="width:82px"><col style="width:125px"></colgroup><thead><tr><th>ID</th><th>商品名称</th><th>商品类型</th><th>售价</th><th>权益内容</th><th>预热/售卖</th><th>使用时间</th><th>APP协议</th><th>状态</th><th>操作</th></tr></thead><tbody>
+          <tr><td>3108</td><td>午间畅玩卡</td><td><span class="type-tag gold">时段次卡</span></td><td>¥9.90</td><td>5次 / 30天</td><td>—</td><td>工作日 12:00—14:00</td><td>国内竖版</td><td><span class="status-dot">已上架</span></td><td><button class="op-link" onclick="showScene('b-slot')">编辑</button><button class="op-link">下架</button></td></tr>
+          <tr><td>3109</td><td>深夜畅玩卡</td><td><span class="type-tag gold">时段次卡</span></td><td>¥15.00</td><td>5次 / 30天</td><td>—</td><td>每日 00:00—08:30</td><td>国内竖版</td><td><span class="status-dot">已上架</span></td><td><button class="op-link" onclick="showScene('b-slot')">编辑</button><button class="op-link">下架</button></td></tr>
+          <tr><td>3120</td><td>夏末特惠20小时包</td><td><span class="type-tag purple">限时包</span></td><td>¥29.90</td><td>20小时限时</td><td>08-18 / 08-20</td><td>08-20—09-09</td><td>国内竖版</td><td><span class="type-tag">预热中</span></td><td><button class="op-link" onclick="showScene('b-limited')">编辑</button><button class="op-link">下架</button></td></tr>
+          <tr><td>3025</td><td>6小时套餐</td><td><span class="type-tag">普通时长包</span></td><td>¥18.00</td><td>6小时 / 排队7天</td><td>—</td><td>永久有效</td><td>国内竖版</td><td><span class="status-dot">已上架</span></td><td><button class="op-link" onclick="openQueueConfig()">编辑</button><button class="op-link">下架</button></td></tr>
+        </tbody></table><div class="pagination">共 48 条，每页20条 <span class="page-no">1</span></div></div>
+      </main></div>
+    </div>
+  </section>
+
+  <section class="scene" id="scene-b-slot">
+    <div class="admin-shell" id="capture-b-slot">
+      <aside class="admin-side"><div class="admin-logo"><i>GH</i>GameHub运营平台</div><div class="side-group">小鸡云游戏</div><div class="side-item active"><span class="nav-icon">▤</span>新云游戏充值商品</div><div class="side-item"><span class="nav-icon">◫</span>云游戏订单</div><div class="side-item"><span class="nav-icon">◉</span>用户管理</div></aside>
+      <div class="admin-main"><header class="admin-top"><span class="crumb">小鸡云游戏 / 新云游戏充值商品</span><div class="top-user"><span class="avatar">运</span><span>运营管理员⌄</span></div></header><main class="admin-content"><div class="page-title-row"><h1>新云游戏充值商品</h1></div><div class="panel" style="height:610px"></div></main></div>
+      <div class="admin-modal-mask"><div class="admin-modal"><div class="modal-head"><h2>编辑云游戏充值商品</h2><button class="modal-x" onclick="showScene('b-list')">×</button></div><div class="modal-body"><div class="modal-grid">
+        <div class="section-line">基础信息</div><div class="modal-field"><label class="required">商品类型</label><select class="admin-select" id="slotProductType"><option>时段次卡</option><option>普通时长包</option></select></div><div class="modal-field"><label class="required">APP协议</label><select class="admin-select"><option>国内竖版</option></select></div><div class="modal-field"><label class="required">商品名称</label><input class="admin-input" id="slotProductName" value="午间畅玩卡"></div><div class="modal-field"><label class="required">支付价格（元）</label><input class="admin-input" id="slotProductPrice" value="9.90"></div><div class="modal-field"><label>原价（元）</label><input class="admin-input" value="15.00"></div><div class="modal-field"><label class="required">排序权重</label><input class="admin-input" value="90"></div>
+        <div class="section-line" id="slotRuleTitle">时段次卡规则</div><div class="modal-field slot-rule"><label class="required">发放次数</label><input class="admin-input" id="slotCount" value="5"><div class="help">1—999的整数</div></div><div class="modal-field slot-rule"><label class="required">购买后有效天数</label><input class="admin-input" id="slotValidDays" value="30"><div class="help">1—365天；到期后不能发起新激活</div></div><div class="modal-field span2 slot-rule"><label class="required">适用星期</label><div class="week-row"><button class="week active" type="button">周一</button><button class="week active" type="button">周二</button><button class="week active" type="button">周三</button><button class="week active" type="button">周四</button><button class="week active" type="button">周五</button><button class="week" type="button">周六</button><button class="week" type="button">周日</button></div></div><div class="modal-field span2 slot-rule"><label class="required">每日可用时段</label><div class="inline-inputs"><input class="admin-input" id="slotStart" value="12:00"><span>至</span><input class="admin-input" id="slotEnd" value="14:00"></div><div class="help">精确到分钟；结束时间必须晚于开始时间；不支持跨日</div></div><div class="modal-field span2" id="queueDaysField" style="display:none"><label class="required">排队特权天数</label><input class="admin-input" id="queueDays" value="7"><div class="help">0—365天；0表示不赠送。每笔订单独立计算，不累计。</div></div><div class="info-strip" id="slotSnapshotTip">已有订单后修改价格、次数、有效天数或时段，只影响新订单；历史权益继续按购买快照执行。</div>
+      </div></div><div class="modal-foot"><button class="a-btn" onclick="showScene('b-list')">取消</button><button class="a-btn blue" onclick="saveAdmin('时段次卡商品已保存')">保存</button></div></div></div>
+      <div class="toast" id="adminSlotToast">时段次卡商品已保存</div>
+    </div>
+  </section>
+
+  <section class="scene" id="scene-b-limited">
+    <div class="admin-shell" id="capture-b-limited">
+      <aside class="admin-side"><div class="admin-logo"><i>GH</i>GameHub运营平台</div><div class="side-group">小鸡云游戏</div><div class="side-item active"><span class="nav-icon">▤</span>新云游戏充值商品</div><div class="side-item"><span class="nav-icon">◫</span>云游戏订单</div><div class="side-item"><span class="nav-icon">◉</span>用户管理</div></aside>
+      <div class="admin-main"><header class="admin-top"><span class="crumb">小鸡云游戏 / 新云游戏充值商品</span><div class="top-user"><span class="avatar">运</span><span>运营管理员⌄</span></div></header><main class="admin-content"><div class="page-title-row"><h1>新云游戏充值商品</h1></div><div class="panel" style="height:610px"></div></main></div>
+      <div class="admin-modal-mask"><div class="admin-modal"><div class="modal-head"><h2>编辑云游戏充值商品</h2><button class="modal-x" onclick="showScene('b-list')">×</button></div><div class="modal-body"><div class="modal-grid">
+        <div class="section-line">基础信息</div><div class="modal-field"><label class="required">商品类型</label><select class="admin-select"><option>限时包</option></select></div><div class="modal-field"><label class="required">APP协议</label><select class="admin-select"><option>国内竖版</option></select></div><div class="modal-field"><label class="required">商品名称</label><input class="admin-input" value="夏末特惠20小时包"></div><div class="modal-field"><label class="required">支付价格（元）</label><input class="admin-input" value="29.90"></div><div class="modal-field"><label class="required">包含时长（小时）</label><input class="admin-input" value="20"></div><div class="modal-field"><label class="required">限购次数</label><input class="admin-input" value="1"></div>
+        <div class="section-line">节点活动</div><div class="modal-field"><label>活动ID</label><input class="admin-input" value="ACT-20260820-01" disabled></div><div class="modal-field"><label class="required">活动名称</label><input class="admin-input" value="夏末优惠返场"></div><div class="modal-field"><label class="required">预热开始</label><input class="admin-input" value="2026-08-18 00:00"></div><div class="modal-field"><label class="required">售卖开始</label><input class="admin-input" value="2026-08-20 00:00"></div><div class="modal-field"><label class="required">售卖结束</label><input class="admin-input" value="2026-08-21 00:00"></div><div class="modal-field"><label class="required">使用开始</label><input class="admin-input" value="2026-08-20 00:00"></div><div class="modal-field"><label class="required">使用结束</label><input class="admin-input" value="2026-09-09 00:00"></div><div class="modal-field"><label>商品状态</label><select class="admin-select"><option>已上架</option><option>已下架</option></select></div><div class="info-strip">预热期商品可见不可买；支付时固化活动配置。支付时间不在售卖窗口时不发权益并自动退款。</div>
+      </div></div><div class="modal-foot"><button class="a-btn" onclick="showScene('b-list')">取消</button><button class="a-btn blue" onclick="saveAdmin('节点限时包已保存')">保存</button></div></div></div>
+      <div class="toast" id="adminLimitedToast">节点限时包已保存</div>
+    </div>
+  </section>
+
+  <section class="scene" id="scene-b-deduct">
+    <div class="admin-shell" id="capture-b-deduct">
+      <aside class="admin-side"><div class="admin-logo"><i>GH</i>GameHub运营平台</div><div class="side-group">小鸡云游戏</div><div class="side-item"><span class="nav-icon">▤</span>新云游戏充值商品</div><div class="side-item active"><span class="nav-icon">◉</span>用户管理</div><div class="side-item"><span class="nav-icon">⌁</span>操作记录</div></aside>
+      <div class="admin-main"><header class="admin-top"><span class="crumb">用户管理 / 用户详情 / 云游戏时长</span><div class="top-user"><span class="avatar">客</span><span>客服主管⌄</span></div></header><main class="admin-content">
+        <div class="page-title-row"><h1>扣除云游戏时长</h1><button class="a-btn" style="margin-left:auto">查看操作记录</button></div>
+        <div class="panel user-card"><span class="avatar">Q</span><div class="user-name"><strong>用户Q***8</strong><span>UID：21900048 · 国内竖版</span></div><div class="metric-row"><div class="metric"><span>永久时长</span><strong>12h 36m</strong></div><div class="metric"><span>限时时长</span><strong id="limitedTimeMetric">21h 42m</strong></div></div></div>
+        <div class="panel table-wrap"><table class="data-table record-table"><colgroup><col style="width:100px"><col style="width:150px"><col style="width:145px"><col style="width:92px"><col style="width:105px"><col style="width:170px"><col style="width:85px"><col style="width:80px"></colgroup><thead><tr><th>记录ID</th><th>套餐名称</th><th>来源订单</th><th>总时长</th><th>剩余时长</th><th>使用窗口</th><th>状态</th><th>操作</th></tr></thead><tbody>
+          <tr><td>LT-890121</td><td>夏末特惠20小时包</td><td>CLOUD-260820-0188</td><td>20小时</td><td id="deductListRemaining">18小时30分</td><td>08-20 00:00—09-09 00:00</td><td><span class="type-tag">可使用</span></td><td><button class="op-link" onclick="openDeduct()">扣除</button></td></tr>
+          <tr><td>LT-889430</td><td>周末限时2小时</td><td>CLOUD-260801-1036</td><td>2小时</td><td>1小时42分</td><td>08-06 00:00—08-08 00:00</td><td><span class="type-tag gold">使用中</span></td><td><span class="disabled-link">不可扣除</span></td></tr>
+          <tr><td>LT-872501</td><td>端午限时10小时</td><td>CLOUD-260605-0042</td><td>10小时</td><td>0</td><td>06-07 18:00—06-09 06:00</td><td><span class="type-tag">已过期</span></td><td><span class="disabled-link">—</span></td></tr>
+        </tbody></table><div class="pagination">共 3 条，每页20条 <span class="page-no">1</span></div></div>
+      </main></div>
+      <div class="admin-modal-mask" id="deductMask"><div class="admin-modal narrow deduct-modal"><div class="modal-head"><h2>扣除限时时长</h2><button class="modal-x" onclick="closeDeduct()">×</button></div><div class="modal-body"><div class="record-summary"><div class="summary-item"><span>用户UID</span><strong>21900048</strong></div><div class="summary-item"><span>限时时长记录</span><strong>LT-890121</strong></div><div class="summary-item"><span>套餐名称</span><strong>夏末特惠20小时包</strong></div><div class="summary-item"><span>当前剩余</span><strong id="deductSummaryRemaining">18小时30分</strong></div></div><div class="modal-grid">
+        <div class="modal-field"><label class="required">扣除分钟数</label><input class="admin-input" id="deductMinutes" value="60"><div class="help" id="deductHelp">正整数，不得超过1110分钟</div><div class="error-text" id="deductError">请输入1—1110的整数</div></div><div class="modal-field"><label class="required">原因类型</label><select class="admin-select" id="deductReason" onchange="updateDeductReason()"><option>退款回收</option><option>账号修正</option><option>违规处理</option><option>其他</option></select></div><div class="modal-field span2"><label class="required" id="relationLabel">关联订单号</label><input class="admin-input" id="relationNo" value="CLOUD-260820-0188"></div><div class="modal-field span2"><label id="noteLabel">补充说明</label><textarea class="admin-input" id="deductNote" style="height:72px;padding-top:8px;resize:none" placeholder="0—100字">活动订单退款，回收未使用时长</textarea><div class="error-text" id="noteError">选择“其他”时必须填写补充说明</div></div><div class="info-strip">提交时重新校验记录状态与余额。使用中记录不可扣除；与游戏消耗冲突时本次操作失败并刷新余额。</div>
+      </div></div><div class="modal-foot"><button class="a-btn" onclick="closeDeduct()">取消</button><button class="a-btn red" onclick="submitDeduct()">确认扣除</button></div></div></div>
+      <div class="admin-modal-mask" id="deductConfirmMask" style="display:none"><div class="admin-modal confirm-card"><div class="modal-head"><h2>确认扣除限时时长</h2><button class="modal-x" onclick="closeDeductConfirm()">×</button></div><div class="modal-body"><div class="confirm-symbol">!</div><div class="confirm-copy"><strong id="deductConfirmTitle">确认扣除60分钟？</strong><span>扣除后无法自动恢复，系统将记录操作人、原因和关联单号。</span></div></div><div class="modal-foot"><button class="a-btn" onclick="closeDeductConfirm()">返回修改</button><button class="a-btn red" onclick="confirmDeduct()">确认扣除</button></div></div></div>
+      <div class="toast" id="deductToast">已扣除60分钟，剩余17小时30分</div>
+    </div>
+  </section>
+</main>
+<script>
+function showScene(name){
+  document.querySelectorAll('.scene').forEach(function(el){el.classList.toggle('active',el.id==='scene-'+name)});
+  document.querySelectorAll('.scene-btn').forEach(function(el){el.classList.toggle('active',el.dataset.sceneTarget===name)});
+  if(name==='c-landscape-recharge')document.getElementById('landscapeRechargeMask').style.display='flex';
+  window.scrollTo({top:0,behavior:'instant'});
+}
+window.showScene=showScene;
+document.querySelectorAll('.scene-btn').forEach(function(btn){btn.addEventListener('click',function(){showScene(btn.dataset.sceneTarget)})});
+document.querySelectorAll('#scene-c-recharge .product-card').forEach(function(card){card.addEventListener('click',function(){
+  if(card.dataset.preheat)return;
+  document.querySelectorAll('#scene-c-recharge .product-card').forEach(function(x){x.classList.remove('selected')});card.classList.add('selected');
+  document.getElementById('rechargePay').textContent='确认支付 ¥'+Number(card.dataset.price).toFixed(2);
+})});
+function showToast(id,text){var el=document.getElementById(id);if(!el)return;if(text)el.textContent=text;el.classList.add('show');clearTimeout(el._timer);el._timer=setTimeout(function(){el.classList.remove('show')},1800)}
+function paySelected(){var card=document.querySelector('#scene-c-recharge .product-card.selected');showToast('rechargeToast',card&&card.querySelector('.product-name').textContent==='午间畅玩卡'?'支付成功，午间畅玩卡已到账':'支付成功，套餐已到账')}
+function payPortraitSlot(){showToast('rechargeToast','支付成功，午间畅玩卡已到账')}
+var portraitPassActivated=false,landscapePassActivated=false;
+function closeActivation(){document.getElementById('activationMask').style.display='none'}
+function openActivation(){if(portraitPassActivated){showToast('activationToast','本时段已生效，可畅玩至14:00');return}document.getElementById('activationMask').style.display='flex'}
+function activatePass(){portraitPassActivated=true;document.getElementById('activationRemaining').textContent='4/5次';document.getElementById('activationMask').style.display='none';showToast('activationToast','午间畅玩卡已生效，可畅玩至14:00')}
+function setReminder(type,btn){document.querySelectorAll('.reminder-controls button').forEach(function(x){x.classList.remove('active')});btn.classList.add('active');var t=document.getElementById('reminderTitle'),s=document.getElementById('reminderSub'),icon=document.querySelector('.reminder-icon');if(type==='3m'){t.textContent='本次午间畅玩卡还剩3分钟';s.textContent='14:00结束，有其他时长将自动续玩';icon.textContent='◷'}else if(type==='10s'){t.textContent='午间畅玩卡即将结束';s.textContent='继续游戏将消耗其他云游戏时长';icon.textContent='!'}else if(type==='ended'){t.textContent='午间畅玩卡已结束';s.textContent='已自动切换至永久时长';icon.textContent='✓'}else{t.textContent='午间畅玩卡已结束';s.textContent='可用时长不足，请充值后继续游戏';icon.textContent='!'}}
+function closeLandscapeRecharge(){document.getElementById('landscapeRechargeMask').style.display='none'}
+function payLandscapeSlot(){showToast('landscapePayToast','支付成功，午间畅玩卡已到账')}
+function closeLandscapeActivation(){document.getElementById('landscapeActivationMask').style.display='none'}
+function openLandscapeActivation(){if(landscapePassActivated){showToast('landscapeActivationToast','本时段已生效，可畅玩至14:00');return}document.getElementById('landscapeActivationMask').style.display='flex'}
+function activateLandscapePass(){landscapePassActivated=true;document.getElementById('landscapeActivationRemaining').textContent='4/5次';closeLandscapeActivation();showToast('landscapeActivationToast','午间畅玩卡已生效，可畅玩至14:00')}
+document.querySelectorAll('.landscape-sku[data-price]').forEach(function(card){card.addEventListener('click',function(){document.querySelectorAll('.landscape-sku[data-price]').forEach(function(x){x.classList.remove('selected')});card.classList.add('selected');document.querySelector('.landscape-pay').textContent='确认支付 ¥'+Number(card.dataset.price).toFixed(2)})});
+function saveAdmin(text){showToast(document.getElementById('scene-b-slot').classList.contains('active')?'adminSlotToast':'adminLimitedToast',text)}
+function configureProductMode(mode){var isQueue=mode==='queue';document.getElementById('slotProductType').value=isQueue?'普通时长包':'时段次卡';document.querySelector('#scene-b-slot .modal-head h2').textContent=isQueue?'编辑普通时长包':'编辑云游戏充值商品';document.getElementById('slotProductName').value=isQueue?'6小时套餐':'午间畅玩卡';document.getElementById('slotProductPrice').value=isQueue?'18.00':'9.90';document.getElementById('slotRuleTitle').textContent=isQueue?'排队特权规则':'时段次卡规则';document.querySelectorAll('.slot-rule').forEach(function(x){x.style.display=isQueue?'none':''});document.getElementById('queueDaysField').style.display=isQueue?'block':'none';document.getElementById('slotSnapshotTip').textContent=isQueue?'排队特权按每笔真实付费订单独立计算，不累计；用户取所有订单中最晚到期时间。':'已有订单后修改价格、次数、有效天数或时段，只影响新订单；历史权益继续按购买快照执行。'}
+function openQueueConfig(){showScene('b-slot');configureProductMode('queue')}
+document.getElementById('slotProductType').addEventListener('change',function(){configureProductMode(this.value==='普通时长包'?'queue':'slot')});
+document.querySelectorAll('.week').forEach(function(btn){btn.addEventListener('click',function(){btn.classList.toggle('active')})});
+function openDeduct(){document.getElementById('deductMask').style.display='flex'}
+function closeDeduct(){document.getElementById('deductMask').style.display='none'}
+var limitedMinutes=1110,pendingDeduct=0;
+function updateDeductReason(){var reason=document.getElementById('deductReason').value,isRefund=reason==='退款回收',isOther=reason==='其他';document.getElementById('relationLabel').textContent=isRefund?'关联订单号':'关联工单号';document.getElementById('relationNo').placeholder=isRefund?'请输入订单号':'请输入工单号';document.getElementById('noteLabel').className=isOther?'required':'';document.getElementById('noteError').style.display='none'}
+function formatMinutes(v){var h=Math.floor(v/60),m=v%60;return h?(h+'小时'+(m?m+'分':'')):(m+'分钟')}
+function submitDeduct(){var input=document.getElementById('deductMinutes'),v=Number(input.value),err=document.getElementById('deductError'),note=document.getElementById('deductNote'),noteErr=document.getElementById('noteError'),relation=document.getElementById('relationNo');if(!Number.isInteger(v)||v<1||v>limitedMinutes){err.textContent='请输入1—'+limitedMinutes+'的整数';err.style.display='block';input.style.borderColor='#e64e4e';return}err.style.display='none';input.style.borderColor='';if(!relation.value.trim()){relation.style.borderColor='#e64e4e';return}relation.style.borderColor='';if(document.getElementById('deductReason').value==='其他'&&!note.value.trim()){noteErr.style.display='block';note.style.borderColor='#e64e4e';return}noteErr.style.display='none';note.style.borderColor='';pendingDeduct=v;document.getElementById('deductConfirmTitle').textContent='确认扣除'+v+'分钟？';document.getElementById('deductConfirmMask').style.display='flex'}
+function closeDeductConfirm(){document.getElementById('deductConfirmMask').style.display='none'}
+function confirmDeduct(){limitedMinutes-=pendingDeduct;var text=formatMinutes(limitedMinutes);document.getElementById('deductListRemaining').textContent=text;document.getElementById('deductSummaryRemaining').textContent=text;document.getElementById('limitedTimeMetric').textContent=formatMinutes(limitedMinutes+192);document.getElementById('deductHelp').textContent='正整数，不得超过'+limitedMinutes+'分钟';document.getElementById('deductMinutes').value=Math.min(60,limitedMinutes);closeDeductConfirm();closeDeduct();showToast('deductToast','已扣除'+pendingDeduct+'分钟，剩余'+text);pendingDeduct=0}
+window.closeActivation=closeActivation;window.openActivation=openActivation;window.setReminder=setReminder;window.openDeduct=openDeduct;window.openQueueConfig=openQueueConfig;window.updateDeductReason=updateDeductReason;window.payLandscapeSlot=payLandscapeSlot;window.closeLandscapeActivation=closeLandscapeActivation;window.activateLandscapePass=activateLandscapePass;
+</script>
+</body>
+</html>
