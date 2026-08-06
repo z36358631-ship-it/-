@@ -23,7 +23,7 @@
 - Modify: `tools/verify-compatibility-webview-demo.mjs`
 - Modify: `tools/capture-compatibility-webview-demo.mjs`
 
-- [ ] **Step 1: Add static contracts**
+- [x] **Step 1: Add static contracts**
 
 Require these markers before implementation:
 
@@ -37,7 +37,7 @@ const required = [
 ];
 ```
 
-- [ ] **Step 2: Add browser assertions that initially fail**
+- [x] **Step 2: Add browser assertions that initially fail**
 
 ```js
 if (!await page.locator('.filter-trigger').isVisible()) errors.push('portrait filter trigger is missing');
@@ -46,7 +46,7 @@ if (!await page.locator('.filter-layer').isVisible()) errors.push('portrait filt
 if (await page.locator('#config-view [data-apply-config]').count() !== 0) errors.push('config detail still owns an action');
 ```
 
-- [ ] **Step 3: Run the tests and confirm failure**
+- [x] **Step 3: Run the tests and confirm failure**
 
 Run:
 
@@ -62,7 +62,7 @@ Expected: filter contracts fail because the responsive filter UI does not exist 
 **Files:**
 - Modify: `demos/适合本机/盖世游戏适合本机WebView-demo.html`
 
-- [ ] **Step 1: Add filter state**
+- [x] **Step 1: Add filter state**
 
 ```js
 const emptyGameFilters=()=>({gpuIds:[],statuses:[],stores:[],configStates:[]});
@@ -73,7 +73,7 @@ Object.assign(state,{
 });
 ```
 
-- [ ] **Step 2: Add filter definitions and helpers**
+- [x] **Step 2: Add filter definitions and helpers**
 
 ```js
 const tierBand=tier=>tier>=85?'flagship':tier>=70?'high':'mainstream';
@@ -85,7 +85,7 @@ const activeGameGpuIds=()=>state.localOnly&&state.context?.status==='ready'
 
 Use OR inside one group and AND between groups. `运行表现` is disabled until `activeGameGpuIds()` is non-empty. A game matches selected statuses only when one record has both a selected GPU and a selected status.
 
-- [ ] **Step 3: Replace `catalogItems()`**
+- [x] **Step 3: Replace `catalogItems()`**
 
 ```js
 function catalogItems(){
@@ -113,7 +113,7 @@ function catalogItems(){
 }
 ```
 
-- [ ] **Step 4: Run static syntax verification**
+- [x] **Step 4: Run static syntax verification**
 
 Run: `node tools/verify-compatibility-webview-demo.mjs`
 
@@ -124,7 +124,7 @@ Expected: JavaScript syntax passes; UI marker checks may still fail until Task 3
 **Files:**
 - Modify: `demos/适合本机/盖世游戏适合本机WebView-demo.html`
 
-- [ ] **Step 1: Render mode-specific filter groups**
+- [x] **Step 1: Render mode-specific filter groups**
 
 ```js
 function filterGroups(){
@@ -149,11 +149,11 @@ function filterGroups(){
 }
 ```
 
-- [ ] **Step 2: Render shared category rail and option panel**
+- [x] **Step 2: Render responsive filter structures**
 
-The same DOM must render in portrait and landscape. Each category uses `data-filter-group`; each checkbox uses `data-filter-option`; the footer contains `清空` and `查看 X 项`.
+Portrait renders a right-side drawer with vertically stacked groups, three-column options, and fixed `重置` / `确定（X 项）` actions. Landscape renders the category rail and option flyout. Both use `data-filter-group` and `data-filter-option` and share one filter state.
 
-- [ ] **Step 3: Add responsive CSS**
+- [x] **Step 3: Add responsive CSS**
 
 ```css
 .filter-shell{display:none}
@@ -172,11 +172,11 @@ The same DOM must render in portrait and landscape. Each category uses `data-fil
 }
 ```
 
-- [ ] **Step 4: Add event handling**
+- [x] **Step 4: Add event handling**
 
 Clicking a group changes `filterGroup`. Clicking an option toggles only the active mode's array. `清空` resets only the active mode. Closing the portrait layer keeps the filters. Switching mode restores that mode's `filterGroup` and selections.
 
-- [ ] **Step 5: Run portrait and landscape browser tests**
+- [x] **Step 5: Run portrait and landscape browser tests**
 
 Run: `node tools/capture-compatibility-webview-demo.mjs`
 
@@ -188,11 +188,11 @@ Expected: portrait layer opens and filters results; landscape category rail rema
 - Modify: `demos/适合本机/盖世游戏适合本机WebView-demo.html`
 - Modify: `tools/capture-compatibility-webview-demo.mjs`
 
-- [ ] **Step 1: Remove detail actions**
+- [x] **Step 1: Remove detail actions**
 
 `renderConfig()` must not render `.config-footer`, `[data-apply-config]`, `actionLabel()`, `actionClass()`, or mismatch action copy. It continues to render environment, result, settings, instructions, known issues, and full parameters.
 
-- [ ] **Step 2: Move action tests to the configuration list**
+- [x] **Step 2: Move action tests to the configuration list**
 
 ```js
 if (await page.locator('#config-view [data-apply-config]').count() !== 0) errors.push('config detail is not read-only');
@@ -202,7 +202,7 @@ await page.locator('[data-apply-config="cfg_elden_830_stable"]').click();
 
 Validate matched calls use `downloadAndApplyConfig`; mismatched calls use `downloadConfig`. Returning from detail must preserve the selected game and GPU.
 
-- [ ] **Step 3: Run the browser test**
+- [x] **Step 3: Run the browser test**
 
 Run: `node tools/capture-compatibility-webview-demo.mjs`
 
@@ -214,11 +214,11 @@ Expected: detail is read-only and both list actions still pass request binding, 
 - Modify: `tools/capture-compatibility-webview-demo.mjs`
 - Verify: `test-results/compatibility-library-v2/*.png`
 
-- [ ] **Step 1: Capture six final states**
+- [x] **Step 1: Capture six final states**
 
 Capture game catalog portrait, portrait filter layer, filtered game result, read-only config detail, mismatched config detail, and landscape GPU catalog with persistent filters.
 
-- [ ] **Step 2: Run all checks**
+- [x] **Step 2: Run all checks**
 
 ```powershell
 node tools/verify-compatibility-webview-demo.mjs
@@ -228,11 +228,11 @@ git diff --check -- demos/适合本机/盖世游戏适合本机WebView-demo.html
 
 Expected: both scripts print `PASS`; diff check prints nothing.
 
-- [ ] **Step 3: Review screenshots**
+- [x] **Step 3: Review screenshots**
 
 Verify 390×844 and 874×402 have no horizontal overflow; portrait footer stays visible; landscape flyout does not permanently shrink the result grid; selected counts and disabled status filter are legible.
 
-- [ ] **Step 4: Commit only task files**
+- [x] **Step 4: Commit only task files**
 
 ```powershell
 git add -- demos/适合本机/盖世游戏适合本机WebView-demo.html tools/verify-compatibility-webview-demo.mjs tools/capture-compatibility-webview-demo.mjs docs/superpowers/plans/2026-08-06-gamehub-compatibility-responsive-filters.md

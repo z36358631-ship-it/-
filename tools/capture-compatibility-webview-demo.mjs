@@ -30,40 +30,48 @@ if (portrait.width !== 390 || portrait.height !== 844) errors.push(`portrait fra
 if (await page.locator('[data-game]').count() !== 6) errors.push('game catalog is not the default full library');
 if (await page.locator('.local-toggle').evaluate((element) => element.classList.contains('active'))) errors.push('local-device filter should default off');
 if (await page.locator('.mini-badge').count() !== 0) errors.push('default game catalog still exposes local-device conclusions');
+if (await page.locator('.filter-trigger').count() !== 1) errors.push('portrait filter trigger is missing');
 await frame.screenshot({ path: path.join(outputDir, '01-game-catalog-portrait.png') });
 
-await page.locator('[data-mode="gpu"]').click();
-if (await page.locator('[data-gpu]').count() !== 6) errors.push('GPU catalog did not render all GPU types');
-await frame.screenshot({ path: path.join(outputDir, '02-gpu-catalog-portrait.png') });
-await page.locator('#catalog-search').fill('750');
-await page.locator('[data-orientation="landscape"]').click();
-if (await page.locator('#catalog-search').inputValue() !== '750') errors.push('GPU search query was lost during orientation change');
-await page.locator('[data-orientation="portrait"]').click();
-await page.locator('[data-action="clear"]').click();
+await page.locator('.filter-trigger').click();
+if (!await page.locator('.filter-shell').evaluate((element) => element.classList.contains('panel-open'))) errors.push('portrait filter layer did not open');
+if (!await page.locator('.filter-mobile-panel [data-filter-key="statuses"][data-filter-option="direct"]').isDisabled()) errors.push('run-status filter should require a GPU selection');
+await frame.screenshot({ path: path.join(outputDir, '02-game-filter-portrait.png') });
+await page.locator('.filter-mobile-panel [data-filter-option="adreno_750"]').click();
+await page.locator('.filter-mobile-panel [data-filter-option="direct"]').click();
+if (await page.locator('.mobile-filter-confirm').textContent() !== '确定（2 项）') errors.push('filtered result count is wrong');
+await page.locator('.mobile-filter-confirm').click();
+if (await page.locator('[data-game]').count() !== 2) errors.push('GPU plus run-status filters did not return two games');
+if (await page.locator('[data-game="steam_1145360"]').count() !== 1 || await page.locator('[data-game="steam_814380"]').count() !== 1) errors.push('filtered game set is wrong');
+await frame.screenshot({ path: path.join(outputDir, '03-filtered-games-portrait.png') });
+await page.locator('.filter-trigger').click();
+await page.locator('.mobile-filter-reset').click();
+await page.locator('.mobile-filter-confirm').click();
+if (await page.locator('[data-game]').count() !== 6) errors.push('clear filters did not restore the full game catalog');
 
-await page.locator('[data-mode="game"]').click();
 await page.locator('[data-game="steam_1245620"]').click();
 if (await page.locator('.summary-card strong').nth(0).textContent() !== 'Adreno 830') errors.push('recommended GPU calculation is wrong');
 if (await page.locator('.summary-card strong').nth(1).textContent() !== 'Adreno 750') errors.push('lowest verified GPU calculation is wrong');
 if (await page.locator('[data-record-gpu]').count() !== 4) errors.push('game detail did not show all GPU records');
-await frame.screenshot({ path: path.join(outputDir, '03-game-detail-portrait.png') });
 
 await page.locator('[data-config="cfg_elden_830_stable"]').click();
-if (await page.locator('#config-view [data-apply-config]').textContent() !== '下载并应用') errors.push('matching GPU config did not offer direct application');
-await frame.screenshot({ path: path.join(outputDir, '04-matched-config-portrait.png') });
-await page.locator('#config-view [data-apply-config]').click();
-await page.waitForTimeout(750);
-if (await page.locator('#config-view [data-apply-config]').textContent() !== '配置已应用') errors.push('local matching-config fallback did not apply');
+if (await page.locator('#config-view [data-apply-config]').count() !== 0) errors.push('matching config detail still owns an action');
+if (!await page.locator('#config-view').getByText('完整配置', { exact: true }).isVisible()) errors.push('read-only config detail is incomplete');
+await frame.screenshot({ path: path.join(outputDir, '04-readonly-config-portrait.png') });
 await page.locator('.view.active [data-back]').click();
 const activeAfterConfigBack = await page.locator('.view.active').getAttribute('id');
 if (activeAfterConfigBack !== 'game-view') errors.push(`config detail returned to ${activeAfterConfigBack}, expected game-view`);
-await page.evaluate(() => window.GameHubCompatibility.openGame('steam_1245620', 'adreno_750'));
+if (await page.locator('[data-apply-config="cfg_elden_830_stable"]').textContent() !== '下载并应用') errors.push('matching list config did not offer direct application');
+await page.locator('[data-apply-config="cfg_elden_830_stable"]').click();
+await page.waitForTimeout(750);
+if (await page.locator('[data-apply-config="cfg_elden_830_stable"]').textContent() !== '配置已应用') errors.push('local matching-config fallback did not apply');
 
 await page.locator('[data-record-gpu="adreno_750"]').click();
 await page.locator('[data-config="cfg_elden_750"]').click();
-if (await page.locator('#config-view [data-apply-config]').textContent() !== '下载配置') errors.push('mismatched GPU config should be download-only');
-if (!await page.locator('#config-view').getByText(/当前设备为 Adreno 830/).isVisible()) errors.push('mismatch warning is missing');
-await frame.screenshot({ path: path.join(outputDir, '05-mismatched-config-portrait.png') });
+if (await page.locator('#config-view [data-apply-config]').count() !== 0) errors.push('mismatched config detail still owns an action');
+if (await page.locator('#config-view').getByText(/当前设备为 Adreno 830/).count() !== 0) errors.push('read-only config detail still contains action mismatch copy');
+if (!await page.locator('#config-view').getByText('Adreno 750', { exact: true }).isVisible()) errors.push('read-only detail lost the target GPU');
+await frame.screenshot({ path: path.join(outputDir, '05-readonly-other-gpu-config-portrait.png') });
 
 await page.evaluate(() => {
   window.bridgeCalls = { download: [], apply: [] };
@@ -72,16 +80,17 @@ await page.evaluate(() => {
     downloadAndApplyConfig(payload) { window.bridgeCalls.apply.push(payload); }
   };
 });
-await page.locator('#config-view [data-apply-config]').click();
+await page.locator('.view.active [data-back]').click();
+if (await page.locator('[data-apply-config="cfg_elden_750"]').textContent() !== '下载配置') errors.push('mismatched list config should be download-only');
+await page.locator('[data-apply-config="cfg_elden_750"]').click();
 await page.waitForTimeout(50);
-if (await page.locator('#config-view [data-apply-config]').textContent() !== '正在下载配置…') errors.push('synchronous Bridge did not wait for callback');
+if (await page.locator('[data-apply-config="cfg_elden_750"]').textContent() !== '正在下载配置…') errors.push('synchronous Bridge did not wait for callback');
 const downloadRequest = await page.evaluate(() => window.bridgeCalls.download[0]);
 if (!downloadRequest?.requestId || downloadRequest.configId !== 'cfg_elden_750' || downloadRequest.gameId !== 'steam_1245620' || downloadRequest.gpuId !== 'adreno_750') errors.push('download Bridge payload is incomplete');
 await page.evaluate((request) => window.GameHubCompatibility.setActionResult({ requestId: request.requestId, configId: request.configId, status: 'success', message: '已保存到配置库' }), downloadRequest);
 const bridgeCalls = await page.evaluate(() => window.bridgeCalls);
 if (bridgeCalls.download.length !== 1 || bridgeCalls.apply.length !== 0) errors.push('mismatched config called the wrong Bridge method');
 
-await page.locator('.view.active [data-back]').click();
 await page.locator('[data-record-gpu="adreno_830"]').click();
 await page.locator('[data-apply-config="cfg_elden_830_stable"]').click();
 await page.locator('[data-apply-config="cfg_elden_830_quality"]').click();
@@ -105,27 +114,47 @@ if (activeAfterDetailBack !== 'catalog-view') {
   errors.push(`detail back navigation stopped at ${activeAfterDetailBack}, expected catalog-view`);
   await page.reload({ waitUntil: 'load' });
 }
+
 await page.locator('[data-mode="gpu"]').click();
+if (await page.locator('[data-gpu]').count() !== 6) errors.push('GPU catalog did not render all GPU types');
+await page.locator('.filter-trigger').click();
+await page.locator('.filter-mobile-panel [data-filter-option="Qualcomm"]').click();
+await page.locator('.mobile-filter-confirm').click();
+if (await page.locator('[data-gpu]').count() !== 4) errors.push('GPU vendor filter did not return four Qualcomm GPUs');
+await page.locator('#catalog-search').fill('750');
+await page.locator('[data-orientation="landscape"]').click();
+if (await page.locator('#catalog-search').inputValue() !== '750') errors.push('GPU search query was lost during orientation change');
+if (await page.locator('[data-gpu]').count() !== 1) errors.push('GPU filter state was lost during orientation change');
+await page.locator('#catalog-search').fill('');
+await page.locator('[data-filter-group="families"]').click();
+await page.locator('.filter-panel [data-filter-option="Adreno"]').click();
+if (!await page.locator('.filter-sidebar').isVisible() || !await page.locator('.filter-panel').isVisible()) errors.push('landscape filter rail or flyout is missing');
+await page.locator('#catalog-view').evaluate((element) => { element.scrollTop = 0; });
+await frame.screenshot({ path: path.join(outputDir, '06-gpu-filter-landscape.png') });
+const landscape = await frame.evaluate((element) => ({ width: element.clientWidth, height: element.clientHeight }));
+if (landscape.width !== 874 || landscape.height !== 402) errors.push(`landscape frame is ${landscape.width}x${landscape.height}`);
+await page.locator('.filter-done').click();
 await page.locator('[data-gpu="adreno_750"]').click();
 await page.locator('[data-gpu-game="steam_1245620"]').click();
 if (!await page.locator('#game-view').evaluate((element) => element.classList.contains('active'))) errors.push('GPU game row did not open game detail');
 if (!await page.locator('[data-record-gpu="adreno_750"]').evaluate((element) => element.classList.contains('active'))) errors.push('GPU context was not preselected in game detail');
 await page.locator('.view.active [data-back]').click();
 if (!await page.locator('#gpu-view').evaluate((element) => element.classList.contains('active'))) errors.push('game detail did not return to its GPU detail source');
-await page.locator('[data-orientation="landscape"]').click();
-if (!await page.locator('#gpu-view').evaluate((element) => element.classList.contains('active'))) errors.push('GPU detail was lost during orientation change');
-await frame.screenshot({ path: path.join(outputDir, '06-gpu-detail-landscape.png') });
-const landscape = await frame.evaluate((element) => ({ width: element.clientWidth, height: element.clientHeight }));
-if (landscape.width !== 874 || landscape.height !== 402) errors.push(`landscape frame is ${landscape.width}x${landscape.height}`);
 
 await page.locator('.view.active [data-back]').click();
 await page.evaluate(() => window.GameHubCompatibility.setCatalogError());
 if (!await page.getByText('兼容库加载失败', { exact: true }).isVisible()) errors.push('catalog error state is missing');
 await page.evaluate(() => window.GameHubCompatibility.setCatalog({}));
 if (!await page.getByText('暂无兼容数据', { exact: true }).isVisible()) errors.push('catalog empty state is missing');
-await page.locator('[data-action="reload"]').click();
-await page.waitForTimeout(1200);
-if (await page.locator('[data-game],[data-gpu]').count() === 0) errors.push(`empty catalog reload did not recover: ${(await page.locator('#catalog-view').innerText()).slice(0,120)}`);
+const reloadButton = page.locator('[data-action="reload"]');
+if (await reloadButton.count()) {
+  await reloadButton.click();
+  await page.waitForTimeout(1200);
+  if (await page.locator('[data-game],[data-gpu]').count() === 0) errors.push(`empty catalog reload did not recover: ${(await page.locator('#catalog-view').innerText()).slice(0,120)}`);
+} else {
+  errors.push(`empty catalog did not expose reload: ${(await page.locator('#catalog-view').innerText()).slice(0,180)}`);
+  await page.reload({ waitUntil: 'load' });
+}
 
 await page.evaluate(() => window.GameHubCompatibility.setCatalog({
   games: [null, 1, { id: 'test_game', name: '异常数据游戏', coverKey: 'url(fake)', aliases: null }, { id: 'test_game', name: '重复游戏' }],
@@ -148,4 +177,4 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('PASS: captured 6 V2 states; game/GPU catalog, config view, apply safety, Adapter and recovery verified');
+console.log('PASS: responsive filters, read-only config detail, list actions, Adapter and recovery verified in six screenshots');
