@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>盖世游戏 · APP MODS 功能 Demo</title>
+  <title>盖世游戏 · APP MOD 功能 Demo</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -386,7 +386,7 @@
     .device.landscape .menu-icon { width: 48px; height: 48px; }
     .device.landscape .menu-item { font-size: 11px; gap: 6px; }
 
-    /* MODS 列表 */
+    /* MOD 列表 */
     .mods-screen { background: #101011; }
     .mods-header {
       height: 66px;
@@ -630,7 +630,8 @@
       line-height: 1.35;
     }
     .card-meta span + span::before { content: "·"; margin-right: 6px; }
-    .install-button {
+    .install-button,
+    .card-quick-action {
       position: absolute;
       right: 12px;
       bottom: 10px;
@@ -645,97 +646,37 @@
       background: rgba(255,255,255,.08);
       font-size: 14px;
       font-weight: 600;
+      overflow: hidden;
     }
     .install-button:hover { color: #17130a; background: var(--brand-gold); }
-    .enable-switch {
-      position: relative;
-      width: 42px;
-      height: 24px;
-      border-radius: var(--radius-full);
-      background: #55545a;
-      transition: .18s ease;
-    }
-    .enable-switch::after {
-      content: "";
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 2px 5px rgba(0,0,0,.3);
-      transition: .18s ease;
-    }
-    .enable-switch[aria-checked="true"] { background: var(--brand-green); }
-    .enable-switch[aria-checked="true"]::after { transform: translateX(18px); }
-    .installed-actions {
-      min-width: 0;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 7px;
-    }
-    .mod-card > .installed-actions,
-    .profile-mod-card > .installed-actions {
-      position: absolute;
-      right: 12px;
-      bottom: 10px;
-      left: 12px;
-    }
-    .installed-action,
-    .installed-switch {
-      position: relative;
-      min-width: 0;
-      height: 38px;
-      border-radius: 10px;
-    }
-    .installed-action {
-      padding: 0 10px;
-      color: #f1f0f3;
+    .card-quick-action {
+      min-width: 94px;
+      justify-content: center;
+      color: #f4f3f6;
       background: #3a393f;
-      font-size: 12px;
-      font-weight: 600;
     }
-    .installed-action:hover:not(:disabled) { background: #47464d; }
-    .installed-action.danger { color: #ff91a2; background: rgba(255,86,120,.1); }
-    .installed-action.danger:hover { background: rgba(255,86,120,.17); }
-    .installed-action:disabled {
-      color: #6f6e74;
-      background: #302f34;
-      cursor: default;
+    .card-quick-action.is-enabled {
+      color: #47e6a9;
+      border-color: rgba(51,216,164,.32);
+      background: rgba(34,113,83,.46);
     }
+    .card-quick-action:hover { background: #48474d; }
+    .card-quick-action.is-enabled:hover { background: rgba(34,113,83,.62); }
+    .action-progress {
+      background:
+        linear-gradient(90deg, rgba(255,204,67,.82) 0 var(--progress), rgba(255,255,255,.08) var(--progress) 100%);
+    }
+    .action-progress:hover { color: #fff; background: linear-gradient(90deg, rgba(255,204,67,.82) 0 var(--progress), rgba(255,255,255,.08) var(--progress) 100%); }
     .action-update-dot {
       position: absolute;
-      top: 7px;
-      right: 8px;
-      width: 6px;
-      height: 6px;
+      top: 10px;
+      right: 10px;
+      z-index: 2;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: #ff4d67;
       box-shadow: 0 0 0 3px rgba(255,77,103,.12);
-    }
-    .installed-switch {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 6px;
-      padding: 0 4px;
-      color: #aaa8ae;
-      background: transparent;
-      font-size: 10px;
-      white-space: nowrap;
-    }
-    .installed-switch .enable-switch {
-      width: 36px;
-      height: 22px;
-      flex: none;
-    }
-    .installed-switch .enable-switch::after {
-      width: 16px;
-      height: 16px;
-    }
-    .installed-switch .enable-switch[aria-checked="true"]::after {
-      transform: translateX(14px);
     }
     .empty-state {
       min-height: 360px;
@@ -832,7 +773,7 @@
       background: #151517;
     }
 
-    /* Steam 个人中心 MODS */
+    /* Steam 个人中心 MOD */
     .steam-profile-screen {
       display: flex;
       flex-direction: column;
@@ -1006,6 +947,16 @@
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 2;
     }
+    .profile-mod-summary {
+      display: -webkit-box;
+      overflow: hidden;
+      margin-top: 6px;
+      color: #aaa8ae;
+      font-size: 11px;
+      line-height: 1.35;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
     .profile-mod-content .card-meta { margin-top: 9px; }
     .profile-empty {
       min-height: 410px;
@@ -1165,11 +1116,13 @@
       background: rgba(31,30,34,.96);
       backdrop-filter: blur(18px);
     }
-    .detail-actionbar .installed-actions { flex: 1; }
-    .detail-actionbar .installed-action,
-    .detail-actionbar .installed-switch { height: 48px; }
-    .detail-actionbar .installed-action { font-size: 14px; }
-    .detail-actionbar .installed-switch { font-size: 12px; }
+    .detail-three-actions {
+      min-width: 0;
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 9px;
+    }
     .detail-action {
       flex: 1 1 0;
       min-width: 0;
@@ -1183,6 +1136,12 @@
     }
     .detail-action.primary { color: #17130a; background: var(--brand-gold); }
     .detail-action.danger { color: #ff8d9e; background: rgba(255,86,120,.1); }
+    .detail-action.enable-active { color: #49e6ab; background: rgba(35,113,84,.52); }
+    .detail-action:disabled { color: #6f6e74; background: #302f34; cursor: default; }
+    .detail-action.action-progress {
+      color: #fff;
+      background: linear-gradient(90deg, rgba(255,204,67,.78) 0 var(--progress), #3a393f var(--progress) 100%);
+    }
     .task-status {
       flex: 1;
       min-width: 0;
@@ -1223,6 +1182,7 @@
     .device.landscape .detail-section { margin-top: 16px; }
     .device.landscape .detail-actionbar { height: 66px; }
     .device.landscape .detail-action { height: 44px; }
+    .device.landscape .detail-three-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
     /* 弹窗与提示 */
     .confirm-layer {
@@ -1246,6 +1206,33 @@
     .confirm-card h3 { font-size: 19px; }
     .confirm-card p { margin-top: 10px; color: #aaa8ae; font-size: 13px; line-height: 1.55; }
     .confirm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }
+    .dependency-card { width: min(560px, 100%); max-height: min(680px, calc(100% - 24px)); overflow: hidden; padding: 0; }
+    .dependency-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 22px 22px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .dependency-heading p { margin-top: 6px; }
+    .dependency-close { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border-radius: 50%; color: #fff; background: rgba(255,255,255,.08); }
+    .dependency-scroll { max-height: 440px; padding: 16px 22px; overflow-y: auto; scrollbar-width: none; }
+    .storage-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .storage-summary div { padding: 12px; border-radius: 12px; background: rgba(255,255,255,.055); }
+    .storage-summary span { display: block; color: #85838a; font-size: 11px; }
+    .storage-summary strong { display: block; margin-top: 4px; color: #f4f3f6; font: 600 16px var(--font-number); }
+    .dependency-list { display: grid; gap: 10px; margin-top: 16px; }
+    .dependency-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid rgba(255,255,255,.07); border-radius: 12px; background: rgba(255,255,255,.035); }
+    .dependency-item strong { display: block; font-size: 14px; }
+    .dependency-item span { display: block; margin-top: 4px; color: #85838a; font-size: 11px; }
+    .dependency-install { min-width: 82px; height: 36px; padding: 0 12px; overflow: hidden; border-radius: 10px; color: #fff; background: #3a393f; font-size: 12px; font-weight: 600; }
+    .dependency-install.is-installed { color: #49e6ab; background: rgba(35,113,84,.42); cursor: default; }
+    .dependency-install.is-failed { color: #ff98a8; background: rgba(126,42,57,.34); }
+    .dependency-footer { display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px; padding: 14px 22px 20px; border-top: 1px solid rgba(255,255,255,.08); }
+    .dependency-footer .detail-action { width: 100%; }
+    .device.landscape .dependency-card { max-height: calc(100% - 24px); }
+    .device.landscape .dependency-scroll { max-height: 210px; }
     .toast {
       position: absolute;
       z-index: 70;
@@ -1271,7 +1258,7 @@
 <body>
   <div class="review-layout">
     <aside class="review-panel">
-      <div class="review-eyebrow">APP MODS · V1</div>
+      <div class="review-eyebrow">APP MOD · V1.7</div>
       <h1>交互评审台</h1>
       <p>产品画布从《饥荒》详情开始。评审控制台不属于正式 APP 页面。</p>
       <section class="review-group">
@@ -1286,7 +1273,7 @@
         <div class="review-actions">
           <button class="review-button" type="button" data-review-action="game">返回游戏详情</button>
           <button class="review-button" type="button" data-review-action="profile">打开 Steam 个人中心</button>
-          <button class="review-button" type="button" data-review-action="browse">打开 MODS 浏览</button>
+          <button class="review-button" type="button" data-review-action="browse">打开 MOD 浏览</button>
           <button class="review-button" type="button" data-review-action="installed">打开已安装</button>
           <button class="review-button" type="button" data-review-action="reset">重置 Demo</button>
         </div>
@@ -1294,7 +1281,7 @@
       <div class="review-note">横竖屏切换保留当前页面、Tab、搜索、排序、MOD 详情、下载任务和本机启用值。</div>
     </aside>
     <main class="stage">
-      <section class="device portrait" data-demo-root data-orientation="portrait" aria-label="盖世游戏 APP MODS Demo"></section>
+      <section class="device portrait" data-demo-root data-orientation="portrait" aria-label="盖世游戏 APP MOD Demo"></section>
     </main>
   </div>
 
@@ -1336,7 +1323,7 @@
         published: '2026-07-22',
         art: 'art-storage',
         description: '自动整理附近储物箱，并为常用资源提供颜色标记和快速查找。',
-        instruction: '更新不会删除现有箱子标签；卸载不会删除存档中的物品。',
+        instruction: '更新不会删除现有箱子标签；删除 MOD 不会删除存档中的物品。',
         update: true
       },
       {
@@ -1380,6 +1367,25 @@
       }
     ];
 
+    const DEPENDENCIES = {
+      'gamehub-mod-api': {
+        id: 'gamehub-mod-api',
+        name: 'GameHub MOD API',
+        size: '12.4 MB',
+        sizeBytes: 13002342
+      },
+      'shared-config-core': {
+        id: 'shared-config-core',
+        name: 'Shared Config Core',
+        size: '6.8 MB',
+        sizeBytes: 7130317
+      }
+    };
+
+    const ROOT_DEPENDENCIES = {
+      'season-clock': ['gamehub-mod-api', 'shared-config-core']
+    };
+
     const initialState = () => ({
       orientation: 'portrait',
       screen: 'game',
@@ -1400,6 +1406,9 @@
       detailScroll: 0,
       refreshing: false,
       tasks: {},
+      updateTasks: {},
+      installedDependencies: [],
+      blockedInstall: null,
       confirmUninstallModId: null,
       toast: ''
     });
@@ -1447,6 +1456,21 @@
     function formatDownloads(value) {
       if (value >= 10000) return `${(value / 10000).toFixed(value >= 100000 ? 0 : 1)}万`;
       return value.toLocaleString('zh-CN');
+    }
+
+    function formatBytes(value) {
+      if (value >= 1024 ** 3) return `${(value / 1024 ** 3).toFixed(1)} GB`;
+      return `${(value / 1024 ** 2).toFixed(1)} MB`;
+    }
+
+    function truncateAuthor(value) {
+      const limit = /[\u3400-\u9fff]/.test(value) ? 10 : 20;
+      return value.length > limit ? `${value.slice(0, limit)}…` : value;
+    }
+
+    function dependenciesResolved(rootModId) {
+      const dependencyIds = ROOT_DEPENDENCIES[rootModId] || [];
+      return dependencyIds.every(id => state.installedDependencies.includes(id));
     }
 
     function currentMod() {
@@ -1650,13 +1674,25 @@
           state.confirmUninstallModId = null;
           uninstallFocusReturnSelector = '';
           if (state.activeModId === modId) state.activeModId = null;
-          showToast('已从当前设备卸载');
+          showToast('已从当前设备删除');
           return cloneState();
         }
         case 'UPDATE':
-          if (!state.availableUpdates.includes(event.modId)) return cloneState();
-          state.availableUpdates = state.availableUpdates.filter(id => id !== event.modId);
+          startUpdate(event.modId);
+          return cloneState();
+        case 'CLOSE_DEPENDENCY':
+          state.blockedInstall = null;
           break;
+        case 'INSTALL_DEPENDENCY':
+          startDependency(event.dependencyId);
+          return cloneState();
+        case 'CONTINUE_ROOT_INSTALL': {
+          const rootModId = state.blockedInstall?.rootModId;
+          if (!rootModId || !dependenciesResolved(rootModId)) return cloneState();
+          state.blockedInstall = null;
+          startInstall(rootModId);
+          return cloneState();
+        }
         case 'RESET':
           taskTimers.forEach(timer => clearInterval(timer));
           taskTimers.clear();
@@ -1706,6 +1742,27 @@
         saveScroll();
         task.progress = Math.min(100, task.progress + 14);
         task.stage = task.progress < 70 ? '正在下载' : task.progress < 92 ? '正在校验' : '正在安装';
+        if (ROOT_DEPENDENCIES[modId] && !dependenciesResolved(modId) && task.progress >= 50) {
+          clearInterval(timer);
+          taskTimers.delete(modId);
+          delete state.tasks[modId];
+          const dependencyIds = ROOT_DEPENDENCIES[modId];
+          state.blockedInstall = {
+            rootModId: modId,
+            reason: 'dependency_missing',
+            freeBytes: 1488977920,
+            dependencyIds,
+            dependencies: Object.fromEntries(dependencyIds.map(id => [id, {
+              state: state.installedDependencies.includes(id) ? 'installed' : 'idle',
+              progress: state.installedDependencies.includes(id) ? 100 : 0,
+              error: ''
+            }]))
+          };
+          pendingFocusSelector = '[data-action="install-dependency"]';
+          render();
+          restoreScroll();
+          return;
+        }
         if (task.progress >= 100) {
           clearInterval(timer);
           taskTimers.delete(modId);
@@ -1719,6 +1776,77 @@
         restoreScroll();
       }, 320);
       taskTimers.set(modId, timer);
+    }
+
+    function startUpdate(modId) {
+      const current = state.updateTasks[modId];
+      if (current?.state === 'updating' || !state.availableUpdates.includes(modId)) return;
+      const attempts = (current?.attempts || 0) + 1;
+      state.updateTasks[modId] = { state: 'updating', progress: 6, attempts, error: '' };
+      render();
+      restoreScroll();
+      const timerKey = `update:${modId}`;
+      const timer = setInterval(() => {
+        const task = state.updateTasks[modId];
+        if (!task || task.state !== 'updating') {
+          clearInterval(timer);
+          taskTimers.delete(timerKey);
+          return;
+        }
+        saveScroll();
+        task.progress = Math.min(100, task.progress + 13);
+        if (modId === 'storage-box' && task.attempts === 1 && task.progress >= 58) {
+          clearInterval(timer);
+          taskTimers.delete(timerKey);
+          task.state = 'failed';
+          task.error = '网络中断，旧版本仍可使用';
+        } else if (task.progress >= 100) {
+          clearInterval(timer);
+          taskTimers.delete(timerKey);
+          state.availableUpdates = state.availableUpdates.filter(id => id !== modId);
+          delete state.updateTasks[modId];
+        }
+        render();
+        restoreScroll();
+      }, 320);
+      taskTimers.set(timerKey, timer);
+    }
+
+    function startDependency(dependencyId) {
+      const blocked = state.blockedInstall;
+      const dependency = DEPENDENCIES[dependencyId];
+      const item = blocked?.dependencies?.[dependencyId];
+      if (!blocked || !dependency || !item || item.state === 'installing' || item.state === 'installed') return;
+      if (blocked.freeBytes < dependency.sizeBytes) {
+        item.state = 'space_insufficient';
+        item.error = '本机可用空间不足';
+        render();
+        return;
+      }
+      item.state = 'installing';
+      item.progress = 5;
+      item.error = '';
+      render();
+      const timerKey = `dependency:${dependencyId}`;
+      const timer = setInterval(() => {
+        const currentBlocked = state.blockedInstall;
+        const currentItem = currentBlocked?.dependencies?.[dependencyId];
+        if (!currentItem || currentItem.state !== 'installing') {
+          clearInterval(timer);
+          taskTimers.delete(timerKey);
+          return;
+        }
+        currentItem.progress = Math.min(100, currentItem.progress + 17);
+        if (currentItem.progress >= 100) {
+          clearInterval(timer);
+          taskTimers.delete(timerKey);
+          currentItem.state = 'installed';
+          state.installedDependencies = [...new Set([...state.installedDependencies, dependencyId])];
+          currentBlocked.freeBytes = Math.max(0, currentBlocked.freeBytes - dependency.sizeBytes);
+        }
+        render();
+      }, 300);
+      taskTimers.set(timerKey, timer);
     }
 
     function renderGame() {
@@ -1753,7 +1881,7 @@
       const items = [
         ['PC引擎设置', 'pc', 'noop'],
         ['创意工坊', 'workshop', 'noop'],
-        ['MODS', 'mods', 'enter-mods'],
+        ['MOD', 'mods', 'enter-mods'],
         ['分享', 'share', 'noop'],
         ['添加到桌面', 'desktop', 'noop'],
         ['版本切换', 'version', 'noop'],
@@ -1780,39 +1908,54 @@
       `;
     }
 
-    function renderInstalledActions(mod, surface) {
+    function renderInstallButton(mod, surface = 'card') {
+      const task = state.tasks[mod.id] || null;
+      const detail = surface === 'detail';
+      const className = detail ? 'detail-action primary' : 'install-button';
+      const progressClass = task ? ' action-progress' : '';
+      const label = task ? `${task.stage} ${task.progress}%` : detail ? '下载安装' : '安装';
+      return `<button class="${className}${progressClass}" type="button" data-action="install" data-mod-id="${mod.id}" ${task ? 'disabled' : ''} ${task ? `style="--progress:${task.progress}%"` : ''}>${task || !detail ? '' : icon('download')}${label}</button>`;
+    }
+
+    function renderCardQuickAction(mod) {
+      if (!state.installed.includes(mod.id)) return renderInstallButton(mod, 'card');
       const enabled = state.enabled.includes(mod.id);
-      const canUpdate = state.availableUpdates.includes(mod.id);
-      return `
-        <div class="installed-actions" data-installed-actions="${surface}">
-          <button class="installed-action" type="button" data-installed-update data-action="update" data-mod-id="${mod.id}" ${canUpdate ? '' : 'disabled'}>
-            更新${canUpdate ? '<i class="action-update-dot" aria-hidden="true"></i>' : ''}
-          </button>
-          <button class="installed-action danger" type="button" data-action="open-uninstall" data-mod-id="${mod.id}">卸载</button>
-          <div class="installed-switch">
-            <span>${enabled ? '已启用' : '已停用'}</span>
-            <button class="enable-switch" type="button" role="switch" aria-checked="${enabled}" aria-label="${enabled ? '停用' : '启用'} ${mod.name}" data-enable-switch data-action="toggle-enabled" data-mod-id="${mod.id}"></button>
-          </div>
-        </div>
-      `;
+      return `<button class="card-quick-action ${enabled ? 'is-enabled' : ''}" type="button" data-action="toggle-enabled" data-mod-id="${mod.id}">${enabled ? '停用' : '启用'}</button>`;
+    }
+
+    function renderUpdateAction(mod) {
+      const task = state.updateTasks[mod.id] || null;
+      const hasUpdate = state.availableUpdates.includes(mod.id);
+      if (task?.state === 'updating') {
+        return `<button class="detail-action action-progress" type="button" disabled style="--progress:${task.progress}%">更新中 ${task.progress}%</button>`;
+      }
+      if (task?.state === 'failed') {
+        return `<button class="detail-action" type="button" data-action="update" data-mod-id="${mod.id}" title="${task.error}">重试更新</button>`;
+      }
+      return `<button class="detail-action" type="button" data-action="update" data-mod-id="${mod.id}" ${hasUpdate ? '' : 'disabled'}>${hasUpdate ? '可更新' : '已是最新'}</button>`;
+    }
+
+    function renderDetailActions(mod) {
+      const enabled = state.enabled.includes(mod.id);
+      return `<div class="detail-three-actions">
+        <button class="detail-action danger" type="button" data-action="open-uninstall" data-mod-id="${mod.id}" aria-label="删除 ${mod.name}">删除</button>
+        ${renderUpdateAction(mod)}
+        <button class="detail-action ${enabled ? 'enable-active' : ''}" type="button" data-action="toggle-enabled" data-mod-id="${mod.id}">${enabled ? '停用' : '启用'}</button>
+      </div>`;
     }
 
     function renderCard(mod) {
       const installed = state.installed.includes(mod.id);
-      const task = state.tasks[mod.id] || null;
-      const action = installed
-        ? renderInstalledActions(mod, state.tab === 'installed' ? 'installed-list' : 'browse-list')
-        : `<button class="install-button" type="button" data-action="install" data-mod-id="${mod.id}">
-            ${icon('download')}${task ? `${task.progress}%` : '安装'}
-          </button>`;
+      const hasUpdate = installed && state.availableUpdates.includes(mod.id);
       return `
         <article class="mod-card ${installed ? 'card-is-installed' : 'card-has-action'}" tabindex="0" data-mod-card data-mod-id="${mod.id}">
+          ${hasUpdate ? '<i class="action-update-dot" aria-label="有可用更新"></i>' : ''}
           <div class="mod-art ${mod.art}"></div>
           <div class="card-content">
             <h2 class="card-title">${mod.name}</h2>
-            <div class="card-meta"><span>${mod.author}</span><span>${formatDownloads(mod.downloads)} 次下载</span><span>${mod.size}</span></div>
+            <div class="card-meta"><span>${truncateAuthor(mod.author)}</span><span>${formatDownloads(mod.downloads)} 次下载</span><span>${mod.size}</span></div>
           </div>
-          ${action}
+          ${renderCardQuickAction(mod)}
         </article>
       `;
     }
@@ -1823,15 +1966,16 @@
           <div class="mod-art ${mod.art}"></div>
           <div class="profile-mod-content">
             <h2>${mod.name}</h2>
-            <div class="card-meta"><span>${mod.author}</span><span>${formatDownloads(mod.downloads)} 次下载</span><span>${mod.size}</span></div>
+            <p class="profile-mod-summary">${mod.description}</p>
+            <div class="card-meta"><span>${truncateAuthor(mod.author)}</span><span>${formatDownloads(mod.downloads)} 次下载</span><span>${mod.size}</span></div>
           </div>
-          ${renderInstalledActions(mod, 'steam-profile')}
+          ${renderCardQuickAction(mod)}
         </article>
       `;
     }
 
     function renderSteamProfile() {
-      const installedMods = MODS.filter(mod => state.installed.includes(mod.id));
+      const installedMods = MODS.filter(mod => state.installed.includes(mod.id)).slice(0, 4);
       const installedCopy = installedMods.length === 4
         ? '已安装 4 个'
         : `已安装 ${installedMods.length} 个`;
@@ -1850,7 +1994,7 @@
             <button type="button" data-profile-tab="data" role="tab" aria-selected="false">Steam数据</button>
             <button type="button" data-profile-tab="achievements" role="tab" aria-selected="false">成就</button>
             <button type="button" data-profile-tab="workshop" role="tab" aria-selected="false">创意工坊</button>
-            <button type="button" data-profile-tab="mods" role="tab" aria-selected="true">MODS</button>
+            <button type="button" data-profile-tab="mods" role="tab" aria-selected="true">MOD</button>
           </nav>
           <div class="steam-profile-scroll" data-profile-scroll>
             ${installedMods.length ? `
@@ -1864,12 +2008,13 @@
             ` : `
               <div class="profile-empty">
                 <strong>当前设备暂未安装 MOD</strong>
-                <button type="button" data-action="profile-supported-games">查看支持 MODS 的游戏</button>
+                <button type="button" data-action="profile-supported-games">查看支持 MOD 的游戏</button>
               </div>
             `}
           </div>
           ${state.activeModId ? renderDetail() : ''}
           ${state.confirmUninstallModId ? renderConfirm() : ''}
+          ${state.blockedInstall ? renderDependencyDialog() : ''}
           ${state.toast ? `<div class="toast" role="status">${state.toast}</div>` : ''}
         </section>
       `;
@@ -1897,9 +2042,9 @@
         <section class="screen mods-screen ${browse ? '' : 'is-installed'}" data-screen="mods">
           <header class="mods-header">
             <button class="icon-button" type="button" data-action="back-game" aria-label="返回游戏详情">${icon('back')}</button>
-            <h1>饥荒 MODS</h1>
+            <h1>饥荒 MOD</h1>
           </header>
-          <nav class="primary-tabs" role="tablist" aria-label="MODS 内容">
+          <nav class="primary-tabs" role="tablist" aria-label="MOD 内容">
             <button class="primary-tab ${browse ? 'is-active' : ''}" type="button" role="tab" aria-selected="${browse}" data-tab="browse">浏览</button>
             <button class="primary-tab ${browse ? '' : 'is-active'}" type="button" role="tab" aria-selected="${!browse}" data-tab="installed">已安装</button>
           </nav>
@@ -1940,6 +2085,7 @@
           </div>
           ${state.activeModId ? renderDetail() : ''}
           ${state.confirmUninstallModId ? renderConfirm() : ''}
+          ${state.blockedInstall ? renderDependencyDialog() : ''}
           ${state.toast ? `<div class="toast" role="status">${state.toast}</div>` : ''}
         </section>
       `;
@@ -1949,7 +2095,6 @@
       const mod = currentMod();
       if (!mod) return '';
       const installed = state.installed.includes(mod.id);
-      const task = state.tasks[mod.id] || null;
       return `
         <div class="detail-layer" data-detail data-orientation="${state.orientation}" role="dialog" aria-modal="true" aria-label="${mod.name} 详情">
           <article class="detail-panel">
@@ -1969,11 +2114,7 @@
               </div>
             </div>
             <footer class="detail-actionbar">
-              ${task ? `
-                <div class="task-status"><span>${task.stage} · ${task.progress}%</span><div class="task-track"><div class="task-progress" style="width:${task.progress}%"></div></div></div>
-              ` : installed ? renderInstalledActions(mod, 'detail') : `
-                <button class="detail-action primary" type="button" data-action="install" data-mod-id="${mod.id}">${icon('download')} 下载安装</button>
-              `}
+              ${installed ? renderDetailActions(mod) : renderInstallButton(mod, 'detail')}
             </footer>
           </article>
         </div>
@@ -1984,14 +2125,56 @@
       const mod = MODS.find(item => item.id === state.confirmUninstallModId);
       if (!mod) return '';
       return `
-        <div class="confirm-layer" role="alertdialog" aria-modal="true" aria-label="确认卸载">
+        <div class="confirm-layer" role="alertdialog" aria-modal="true" aria-label="确认删除">
           <article class="confirm-card">
-            <h3>卸载“${mod.name}”？</h3>
+            <h3>删除“${mod.name}”？</h3>
             <p>将删除当前设备中的安装文件和启用状态，不影响其他设备，也不会删除游戏存档。</p>
             <div class="confirm-actions">
               <button class="detail-action" type="button" data-action="close-uninstall">取消</button>
-              <button class="detail-action danger" type="button" data-action="confirm-uninstall">确认卸载</button>
+              <button class="detail-action danger" type="button" data-action="confirm-uninstall">确认删除</button>
             </div>
+          </article>
+        </div>
+      `;
+    }
+
+    function renderDependencyDialog() {
+      const blocked = state.blockedInstall;
+      if (!blocked) return '';
+      const rootMod = MODS.find(mod => mod.id === blocked.rootModId);
+      const totalBytes = blocked.dependencyIds.reduce((sum, id) => sum + (DEPENDENCIES[id]?.sizeBytes || 0), 0);
+      const complete = dependenciesResolved(blocked.rootModId);
+      return `
+        <div class="confirm-layer" data-dependency-dialog role="dialog" aria-modal="true" aria-label="安装依赖组件">
+          <article class="confirm-card dependency-card">
+            <header class="dependency-heading">
+              <div><h3>缺少依赖组件</h3><p>“${rootMod?.name || '当前 MOD'}”安装未完成，请先安装以下组件。</p></div>
+              <button class="dependency-close" type="button" data-action="close-dependency" aria-label="关闭">${icon('close')}</button>
+            </header>
+            <div class="dependency-scroll">
+              <div class="storage-summary">
+                <div><span>本机可用空间</span><strong>${formatBytes(blocked.freeBytes)}</strong></div>
+                <div><span>依赖总大小</span><strong>${formatBytes(totalBytes)}</strong></div>
+              </div>
+              <div class="dependency-list">
+                ${blocked.dependencyIds.map(id => {
+                  const dependency = DEPENDENCIES[id];
+                  const item = blocked.dependencies[id];
+                  const installing = item.state === 'installing';
+                  const installed = item.state === 'installed';
+                  const failed = item.state === 'failed' || item.state === 'space_insufficient';
+                  const label = installed ? '已安装' : installing ? `安装中 ${item.progress}%` : failed ? '重试' : '安装';
+                  return `<div class="dependency-item">
+                    <div><strong>${dependency.name}</strong><span>${dependency.size}${item.error ? ` · ${item.error}` : ''}</span></div>
+                    <button class="dependency-install ${installed ? 'is-installed' : ''} ${failed ? 'is-failed' : ''} ${installing ? 'action-progress' : ''}" type="button" data-action="install-dependency" data-dependency-id="${id}" ${installed || installing ? 'disabled' : ''} ${installing ? `style="--progress:${item.progress}%"` : ''}>${label}</button>
+                  </div>`;
+                }).join('')}
+              </div>
+            </div>
+            <footer class="dependency-footer">
+              <button class="detail-action" type="button" data-action="close-dependency">取消</button>
+              <button class="detail-action primary" type="button" data-action="continue-root-install" ${complete ? '' : 'disabled'}>继续安装</button>
+            </footer>
           </article>
         </div>
       `;
@@ -2075,12 +2258,13 @@
 
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape') {
-        if (state.confirmUninstallModId) dispatch({ type: 'CLOSE_UNINSTALL' });
+        if (state.blockedInstall) dispatch({ type: 'CLOSE_DEPENDENCY' });
+        else if (state.confirmUninstallModId) dispatch({ type: 'CLOSE_UNINSTALL' });
         else if (state.activeModId) dispatch({ type: 'CLOSE_DETAIL' });
         else if (state.menuOpen) dispatch({ type: 'CLOSE_MORE' });
         return;
       }
-      const trap = root.querySelector('.confirm-layer') || root.querySelector('[data-detail]');
+      const trap = root.querySelector('[data-dependency-dialog]') || root.querySelector('.confirm-layer') || root.querySelector('[data-detail]');
       if (!trap || event.key !== 'Tab') return;
       const focusable = [...trap.querySelectorAll('button:not([disabled]), input:not([disabled]), [tabindex="0"]')]
         .filter(element => element.getClientRects().length);
@@ -2104,6 +2288,7 @@
       if (!control) return;
       const action = control.dataset.action;
       const modId = control.dataset.modId;
+      const dependencyId = control.dataset.dependencyId;
       if (action === 'noop') showToast('该入口保持现有能力，本 Demo 不展开');
       if (action === 'open-more') dispatch({ type: 'OPEN_MORE' });
       if (action === 'close-more') dispatch({ type: 'CLOSE_MORE' });
@@ -2140,6 +2325,9 @@
       }
       if (action === 'close-uninstall') dispatch({ type: 'CLOSE_UNINSTALL' });
       if (action === 'confirm-uninstall') dispatch({ type: 'CONFIRM_UNINSTALL' });
+      if (action === 'close-dependency') dispatch({ type: 'CLOSE_DEPENDENCY' });
+      if (action === 'install-dependency') dispatch({ type: 'INSTALL_DEPENDENCY', dependencyId });
+      if (action === 'continue-root-install') dispatch({ type: 'CONTINUE_ROOT_INSTALL' });
       if (!action && control.matches('[data-mod-card]')) {
         dispatch({
           type: 'OPEN_DETAIL',
