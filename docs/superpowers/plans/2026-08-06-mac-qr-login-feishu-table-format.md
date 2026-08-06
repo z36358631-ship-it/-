@@ -15,7 +15,7 @@
 **Files:**
 - Read: `docs/superpowers/specs/2026-08-06-mac-qr-login-feishu-table-format-design.md`
 - Read: `prd/【Prd】《盖世游戏》移动端扫码登录Mac端需求/【Prd】《盖世游戏》移动端扫码登录Mac端需求.md`
-- Test: `tools/verify-mac-qr-login-result-states.mjs`
+- Test: `demos/mac-qr-login-result-states.html`
 
 - [ ] **Step 1: 检查目标文件和工作区**
 
@@ -48,15 +48,15 @@ $section42=[regex]::Match($raw,'(?s)### 4\.2 .*?(?=### 4\.3 )').Value
 
 Expected: `FirstLine=# 【Prd】《盖世游戏》移动端扫码登录Mac端需求`、`H1=1`、`TableHeaders=9`、`PageRows=15`、`CircledTrigger=15`、`Images=14`。
 
-- [ ] **Step 3: 验证当前交互契约**
+- [ ] **Step 3: 验证发布 Demo 与已测版本一致**
 
 Run:
 
 ```powershell
-node tools/verify-mac-qr-login-result-states.mjs
+git hash-object -- demos/mac-qr-login-result-states.html
 ```
 
-Expected: `mac qr login result states: PASS`。
+Expected: 返回 `e6ab3580ca2d9f1d44598e06782b40c92a308b48`。该 blob 与提交 `59b18347` 中完成交互契约验证的 Demo 完全一致。
 
 ### Task 2: 修改 Markdown 内容格式
 
@@ -105,7 +105,7 @@ Expected: 仅删除首行 H1，并将 75 个带圈序号标签替换为 `1.` 至
 
 **Files:**
 - Test: `prd/【Prd】《盖世游戏》移动端扫码登录Mac端需求/【Prd】《盖世游戏》移动端扫码登录Mac端需求.md`
-- Test: `tools/verify-mac-qr-login-result-states.mjs`
+- Test: `demos/mac-qr-login-result-states.html`
 
 - [ ] **Step 1: 运行结构检查**
 
@@ -148,16 +148,16 @@ $urls | ForEach-Object {
 
 Expected: 14 张图片均返回 `200` 和 `image/png`；Demo 返回 `200` 和 `text/html`；不存在本地路径、`@master`、`@main` 或浮动分支链接。
 
-- [ ] **Step 3: 运行行为与 Markdown 检查**
+- [ ] **Step 3: 运行 Demo 同一性与 Markdown 检查**
 
 Run:
 
 ```powershell
-node tools/verify-mac-qr-login-result-states.mjs
+git hash-object -- demos/mac-qr-login-result-states.html
 git diff --check
 ```
 
-Expected: 行为契约 `PASS`；`git diff --check` 无输出。
+Expected: Demo blob 仍为 `e6ab3580ca2d9f1d44598e06782b40c92a308b48`；`git diff --check` 无输出。
 
 ### Task 4: 提交并推送 Git
 
@@ -288,7 +288,7 @@ Expected: 获得最新 `version`、状态和评论。
 Run:
 
 ```powershell
-taskctl.cmd comment add GUANWANGGAID-1 --body '飞书格式优化已完成：删除正文重复标题；4.2 改为自然编号、换行和加粗标签；全文 9 张表按内容调整列宽；产品逻辑、页面、Toast、弹窗、图片和协议未变。已验证 9 张表、15 个页面状态、14 张固定 SHA 图片、Demo、Markdown 和行为契约。Git 提交与飞书文档链接见本轮交付。' --json
+taskctl.cmd comment add GUANWANGGAID-1 --body '飞书格式优化已完成：删除正文重复标题；4.2 改为自然编号、换行和加粗标签；全文 9 张表按内容调整列宽；产品逻辑、页面、Toast、弹窗、图片和协议未变。已验证 9 张表、15 个页面状态、14 张固定 SHA 图片、Markdown 精确差异和已测 Demo blob 同一性。Git 提交与飞书文档链接见本轮交付。' --json
 ```
 
 Expected: 评论创建成功。
