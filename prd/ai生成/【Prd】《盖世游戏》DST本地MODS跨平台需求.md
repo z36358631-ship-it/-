@@ -12,6 +12,9 @@
 |2026.07.31|V1.5|产品|<mark><strong><span style="color:#3370ff">Mac 浏览页和已安装页将浏览/已安装 Tab 与排序或筛选、搜索、刷新合并到同一头部行；两页列表保持同一垂直起点</span></strong></mark>|4 张历史图示，已由 V1.6 固定图示批次替换|
 |2026.07.31|V1.6|产品|<mark><strong><span style="color:#3370ff">移除 Mac 已安装页搜索，仅保留筛选与刷新；浏览页搜索不变；补充重绘后的键盘焦点恢复</span></strong></mark>|4 张图示，固定提交 `51e26a5df89a6c53fc792861ae2c5168cb19666b`|
 |2026.08.06|V1.7|产品|<mark><strong><span style="color:#3370ff">同步 APP 与 Mac 评审结论：界面统一单数 MOD；列表操作收敛；详情固定删除、更新、启停；安装/更新按钮内进度；补充缺少依赖后的组件安装弹窗、Steam 个人中心和支持游戏准入</span></strong></mark>|C 端双端；APP 与 Mac Demo 已同步，图示待完成真实页面截图后固定提交|
+|2026.08.06|V1.8|产品|<mark><strong><span style="color:#3370ff">按评审要求将本文件调整为 Mac 独立执行文档；保留历史跨端内容用于追溯，当前仅执行文末 V1.8 Mac 修改规则</span></strong></mark>|<mark>本次需求评审修改；修改日期：2026.08.06</mark>|
+
+> <mark><strong><span style="color:#3370ff">V1.8 当前执行说明：</span></strong>本文件自 V1.8 起仅供 Mac 产品、开发和测试使用；正文中的 APP 横竖屏和 Steam 个人中心内容为历史记录，不再作为本文件执行范围。APP 当前规则在《APP端MODS需求》中维护。修改日期：2026.08.06。</mark>
 
 ## 二、背景与目标
 
@@ -519,3 +522,72 @@ V1.0–V1.2 历史记录：本 PRD 无图示，不涉及图片提交 SHA 和远�
 |测试|整改后通过|补齐详情三操作、按钮内进度、启停静默成功与失败回滚、依赖空间不足、依赖部分完成后关闭、手动继续、从 0 重试、APP 旋转和设备隔离验收|
 
 V1.7 待确认项：无。当前浏览器未连接，真实页面截图与固定 Commit 图片地址将在浏览器可用后补入 4.2“图示”列；在此之前不得把 Demo 文本占位视为已完成图示验收。
+
+## 十一、V1.8 Mac 需求评审修改（2026.08.06）
+
+> <mark><strong><span style="color:#3370ff">修改说明：</span></strong>以下内容为 2026.08.06 需求评审后的 Mac 增量修改，优先级高于正文中的 V1.7 及以前冲突规则；原文保留用于版本追溯。</mark>
+
+### 11.1 文档范围与页面修改
+
+1. <mark><strong><span style="color:#3370ff">文档范围：</span></strong>本文件只作为 Mac 端实现与验收依据；APP 入口、横竖屏、Steam 个人中心和 APP 验收不在本文件当前范围内。修改日期：2026.08.06。</mark>
+2. <mark><strong><span style="color:#3370ff">界面名称：</span></strong>Mac 用户界面统一使用单数“MOD”，不显示“MODS”；文件名和事件 ID 中的 `mods` 可保留技术兼容性。修改日期：2026.08.06。</mark>
+3. <mark><strong><span style="color:#3370ff">入口准入：</span></strong>只有游戏完成 Mac 端安装、依赖、启停、删除和启动生效验证，且存在 Mac 可安装数据时，游戏详情才显示 MOD 区；未验证或 0 条数据不显示整个入口。修改日期：2026.08.06。</mark>
+4. <mark><strong><span style="color:#3370ff">游戏详情 MOD 区：</span></strong>与创意工坊分区，显示热门组件、可用总量、查看全部和最多 3 张热门卡片；点击卡片打开详情，点击查看全部进入浏览。修改日期：2026.08.06。</mark>
+5. <mark><strong><span style="color:#3370ff">浏览卡片：</span></strong>未安装只显示“安装”；已安装只显示“启用/停用”；可更新仅显示红点；列表不显示简介。原列表更新、删除和小滑块组合废止。修改日期：2026.08.06。</mark>
+6. <mark><strong><span style="color:#3370ff">浏览搜索：</span></strong>只匹配客户端当前已加载分页中的名称和作者，不主动请求未加载页；搜索无结果表示“当前已加载内容无匹配”。修改日期：2026.08.06。</mark>
+7. <mark><strong><span style="color:#3370ff">已安装页：</span></strong>只保留“全部/可更新”筛选和刷新，不显示搜索和排序；卡片只显示启用/停用，可更新显示红点。修改日期：2026.08.06。</mark>
+8. <mark><strong><span style="color:#3370ff">详情弹窗：</span></strong>使用居中大弹窗，正文独立滚动，底部操作固定；未安装只显示安装，已安装固定一排“删除、更新、启用/停用”，启停最右，三按钮铺满整行。修改日期：2026.08.06。</mark>
+9. <mark><strong><span style="color:#3370ff">更新状态：</span></strong>更新按钮仅显示“可更新、已是最新、更新中 XX%、重试更新”；安装和更新进度均显示在对应按钮内。修改日期：2026.08.06。</mark>
+10. <mark><strong><span style="color:#3370ff">启停反馈：</span></strong>成功直接改变按钮状态，不显示 Toast；失败回滚并提示失败原因。修改日期：2026.08.06。</mark>
+11. <mark><strong><span style="color:#3370ff">删除确认：</span></strong>按钮文案统一为“删除/确认删除”；只删除当前 Mac 的安装文件和启用状态，不删除游戏存档、用户配置或其他设备文件。修改日期：2026.08.06。</mark>
+
+### 11.2 缺少依赖的安装失败处理
+
+1. <mark><strong><span style="color:#3370ff">触发条件：</span></strong>用户已经开始安装原 MOD，客户端取得清单后因缺少依赖组件失败；网络、空间、校验或写入失败不进入依赖弹窗。修改日期：2026.08.06。</mark>
+2. <mark><strong><span style="color:#3370ff">弹窗信息：</span></strong>显示失败原因、原 MOD 名称、本机可用空间、依赖总大小，以及每项依赖的名称、大小、状态和安装按钮。修改日期：2026.08.06。</mark>
+3. <mark><strong><span style="color:#3370ff">逐项安装：</span></strong>用户逐项点击安装；进度显示在依赖按钮内；安装中不可重复触发；完成项显示已安装；本机可用空间按成功安装的依赖大小扣减。修改日期：2026.08.06。</mark>
+4. <mark><strong><span style="color:#3370ff">空间不足：</span></strong>可用空间小于依赖大小时不创建任务，显示“本机可用空间不足”；空间满足后允许重新安装该依赖。修改日期：2026.08.06。</mark>
+5. <mark><strong><span style="color:#3370ff">继续安装：</span></strong>全部依赖完成前“继续安装”不可用；全部完成后仍不得自动重试，由用户主动点击，原 MOD 从 0 重新安装。修改日期：2026.08.06。</mark>
+6. <mark><strong><span style="color:#3370ff">关闭弹窗：</span></strong>原 MOD 保持未安装；已成功依赖保留为本机事实，未完成项不得伪造成功。修改日期：2026.08.06。</mark>
+
+### 11.3 状态与任务修改
+
+|状态|V1.8 当前列表操作|V1.8 当前详情操作|修改日期|
+|---|---|---|---|
+|未安装|<mark>安装</mark>|<mark>安装</mark>|<mark>2026.08.06</mark>|
+|安装中|<mark>安装按钮内显示进度</mark>|<mark>安装按钮内显示进度</mark>|<mark>2026.08.06</mark>|
+|已安装、已是最新|<mark>启用/停用</mark>|<mark>删除、已是最新、启用/停用</mark>|<mark>2026.08.06</mark>|
+|已安装、有更新|<mark>启用/停用，卡片红点</mark>|<mark>删除、可更新、启用/停用</mark>|<mark>2026.08.06</mark>|
+|更新失败、旧版可用|<mark>启用/停用，卡片红点</mark>|<mark>删除、重试更新、启用/停用</mark>|<mark>2026.08.06</mark>|
+|安装失败、缺依赖|<mark>安装或重试</mark>|<mark>进入依赖组件弹窗</mark>|<mark>2026.08.06</mark>|
+
+- <mark><strong><span style="color:#3370ff">任务互斥：</span></strong>同一 Mac、游戏、MOD 同时只能存在一个活动安装或更新任务；页面切换和关闭详情不得创建第二个任务。修改日期：2026.08.06。</mark>
+- <mark><strong><span style="color:#3370ff">无断点续传：</span></strong>下载中断后清理未完成字节，用户重试时从 0 开始；更新失败保留旧版和原启用值。修改日期：2026.08.06。</mark>
+- <mark><strong><span style="color:#3370ff">设备隔离：</span></strong>安装文件、安装状态和启用值只属于当前 Mac，不覆盖其他 Mac、手机或平板。修改日期：2026.08.06。</mark>
+
+### 11.4 埋点增量
+
+|事件 ID|新增/修改触发时机|修改日期|
+|---|---|---|
+|mods_search|<mark>提交或清空搜索；新增 `loaded_count`，明确当前已加载数据口径</mark>|<mark>2026.08.06</mark>|
+|mods_enable_change|<mark>列表或详情启停按钮写入完成；成功虽无 Toast 仍正常上报</mark>|<mark>2026.08.06</mark>|
+|mods_uninstall_result|<mark>用户确认删除后的结果；事件 ID 为兼容保留，用户文案统一为删除</mark>|<mark>2026.08.06</mark>|
+|mods_dependency_result|<mark>每项依赖组件安装成功或失败</mark>|<mark>2026.08.06</mark>|
+|mods_dependency_continue|<mark>全部依赖完成后用户点击继续安装原 MOD</mark>|<mark>2026.08.06</mark>|
+
+### 11.5 V1.8 增量验收
+
+|编号|修改后验收项|预期结果|修改日期|
+|---|---|---|---|
+|AC-V18-MAC-01|文档范围|<mark>只执行 Mac 页面、状态和验收；不执行正文历史 APP 条目</mark>|<mark>2026.08.06</mark>|
+|AC-V18-MAC-02|界面名称|<mark>所有 Mac 用户界面显示单数“MOD”</mark>|<mark>2026.08.06</mark>|
+|AC-V18-MAC-03|列表操作|<mark>未安装只安装；已安装只启停；可更新仅红点；无简介</mark>|<mark>2026.08.06</mark>|
+|AC-V18-MAC-04|详情三操作|<mark>删除、更新、启停一排铺满，启停最右，安装与更新进度在按钮内</mark>|<mark>2026.08.06</mark>|
+|AC-V18-MAC-05|启停反馈|<mark>成功无 Toast；失败回滚并提示</mark>|<mark>2026.08.06</mark>|
+|AC-V18-MAC-06|缺依赖失败|<mark>弹窗显示空间、依赖总大小和逐项信息；原 MOD 未安装</mark>|<mark>2026.08.06</mark>|
+|AC-V18-MAC-07|手动继续|<mark>依赖完成后不自动重试；主动继续后原 MOD 从 0 安装</mark>|<mark>2026.08.06</mark>|
+|AC-V18-MAC-08|删除与设备隔离|<mark>只删除当前 Mac，不影响存档、配置和其他设备</mark>|<mark>2026.08.06</mark>|
+
+### 11.6 图示说明
+
+<mark><strong><span style="color:#3370ff">V1.8 图示状态：</span></strong>V1.6 及以前截图的列表与详情操作和当前规则不一致，保留作历史对照，不再作为 V1.8 验收依据。当前交互以最新版 Mac Demo 和本章黄底修改内容为准；V1.8 真实截图及固定 Git Commit 图片地址待补。修改日期：2026.08.06。</mark>
