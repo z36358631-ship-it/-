@@ -531,35 +531,49 @@
     .score, .tags { display: none; }
     .benefit-column { top: 0; margin-top: 30px; }
     .benefit-card {
-      padding: 20px 20px 29px;
+      padding: 18px 18px 20px;
       border-color: #4a4e54;
       border-radius: 16px;
       background: linear-gradient(145deg, #353535, #303030 62%, #2e3135);
       box-shadow: 0 5px 16px rgba(0,0,0,.22);
     }
-    .user-row { gap: 12px; padding-bottom: 34px; border-color: #494948; }
+    .user-row { gap: 12px; padding-bottom: 16px; border-color: #494948; }
     .user-avatar { width: 48px; height: 48px; background: #20232b; font-size: 24px; }
     .nickname { font-size: 16px; font-weight: 560; }
     .uid { color: #929292; }
-    .time-block { padding: 18px 0 24px; }
-    .eyebrow { color: #a4a4a4; }
+    .time-block {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        "eyebrow action"
+        "value action"
+        "copy copy";
+      column-gap: 16px;
+      padding: 16px 0 17px;
+    }
+    .eyebrow { grid-area: eyebrow; color: #a4a4a4; }
+    .time-line { grid-area: value; }
     .time-value { margin-top: 5px; font-size: 31px; }
     .time-value span { color: #c5c5c5; font-size: 14px; }
     .time-detail-btn { width: 30px; height: 30px; margin-top: 5px; border-color: #555d67; background: #444a52; }
-    .benefit-copy { margin-top: 9px; color: #9a9a9a; font-size: 13px; line-height: 1.55; }
+    .benefit-copy { grid-area: copy; margin-top: 7px; color: #9a9a9a; font-size: 13px; line-height: 1.5; }
     .primary-btn {
-      height: 46px;
-      margin-top: 15px;
+      grid-area: action;
+      align-self: center;
+      justify-self: end;
+      width: 104px;
+      height: 38px;
+      margin-top: 0;
       background: var(--app-blue);
       color: var(--app-blue-text);
-      box-shadow: 0 0 0 6px rgba(205,225,243,.16);
+      box-shadow: none;
       font-size: 15px;
       font-weight: 560;
     }
-    .checkin-box { margin-top: 21px; padding-top: 21px; border-color: #494948; }
+    .checkin-box { margin-top: 0; padding-top: 17px; border-color: #494948; }
     .checkin-title { font-size: 16px; font-weight: 560; }
     .checkin-btn { height: 36px; padding: 0 17px; border-color: #59616a; background: #474c53; font-size: 14px; }
-    .checkin-sub { margin: 10px 0 0 16px; color: #969696; line-height: 1.55; }
+    .checkin-sub { margin: 7px 0 0 16px; color: #969696; line-height: 1.5; }
     .rule-note { display: none; }
     .overlay { background: rgba(0,0,0,.72); backdrop-filter: none; }
     .modal {
