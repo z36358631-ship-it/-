@@ -189,7 +189,7 @@
       top: 62px;
       right: 8px;
       z-index: 8;
-      gap: 4px;
+      gap: 14px;
     }
     .mine-page.figma-source .icon-button {
       width: 40px;
@@ -752,8 +752,6 @@
     .method-tab::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; border-radius: 2px; background: transparent; }
     .method-tab.active { color: #f4f5f7; }
     .method-tab.active::after { background: var(--brand-blue); }
-    .login-surface.account-state .login-methods { display: none; }
-    .login-surface.account-state { min-height: 500px; }
     .panel-header { margin-top: 24px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
     .panel-header h3 { color: #f4f5f7; font-size: 20px; line-height: 28px; font-weight: 520; }
     .panel-header p { margin-top: 4px; color: rgba(230,230,230,.42); font-size: 13px; line-height: 18px; }
@@ -784,7 +782,21 @@
       font-weight: 520;
     }
     .qr-overlay strong { font-size: 14px; line-height: 20px; font-weight: 600; }
-    .qr-overlay span { color: rgba(255,255,255,.72); font-size: 11px; line-height: 16px; font-weight: 400; }
+    .qr-overlay-action {
+      min-width: 112px;
+      height: 36px;
+      padding: 0 18px;
+      border: 1px solid rgba(85,189,240,.72);
+      border-radius: 10px;
+      color: #f4f8fb;
+      background: rgba(18,150,219,.28);
+      font-size: 12px;
+      line-height: 18px;
+      font-weight: 600;
+      transition: border-color .16s ease, background .16s ease, transform .16s ease;
+    }
+    .qr-overlay-action:hover { transform: translateY(-1px); border-color: #55bdf0; background: rgba(18,150,219,.42); }
+    .qr-overlay-action:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
     .qr-shell.invalid .qr-overlay { display: flex; }
     .qr-confirm-overlay {
       position: absolute;
@@ -832,8 +844,7 @@
     .qr-confirm-overlay small { position: relative; z-index: 2; display: block; }
     .qr-confirm-overlay strong { font-size: 14px; line-height: 20px; font-weight: 600; }
     .qr-confirm-overlay small { margin-top: 2px; color: rgba(255,255,255,.82); font-size: 11px; line-height: 16px; }
-    .qr-shell.invalid { cursor: pointer; }
-    .qr-shell.invalid:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 4px; }
+    .qr-shell.invalid { cursor: default; }
     .login-surface.confirm-state .qr-info { display: none; }
     .qr-info { width: 100%; margin-top: 20px; }
     .state-row { display: flex; align-items: center; justify-content: center; gap: 10px; color: #e8eaf0; font-size: 14px; line-height: 20px; font-weight: 520; }
@@ -854,6 +865,8 @@
     .app-download-link:focus-visible { outline: 2px solid rgba(56,169,239,.72); outline-offset: 3px; border-radius: 2px; }
     .login-surface.expired-state .app-download-link,
     .login-surface.cancelled-state .app-download-link { display: none; }
+    .login-surface.expired-state .qr-info,
+    .login-surface.expired-state .security-line { display: none; }
     .state-desc { margin-top: 6px; color: rgba(230,230,230,.42); font-size: 12px; line-height: 18px; }
     .state-desc:empty { display: none; }
     .panel-actions { display: flex; justify-content: center; gap: 10px; margin-top: 16px; }
@@ -899,48 +912,55 @@
     .guest-icon::before { content: ""; position: absolute; width: 7px; height: 7px; left: 8.5px; top: 4px; border-radius: 50%; background: #202530; }
     .guest-icon::after { content: ""; position: absolute; width: 13px; height: 7px; left: 5.5px; bottom: 4px; border-radius: 8px 8px 5px 5px; background: #202530; }
 
-    .account-view { display: none; margin-top: 34px; }
-    .account-view.show { display: block; }
-    .login-surface.dismissed { display: none; }
-    .success-close {
+    .login-surface.hidden { display: none; }
+    .mac-return-view {
       position: absolute;
-      top: 18px;
-      right: 18px;
+      inset: 0;
       z-index: 2;
-      width: 32px;
-      height: 32px;
-      display: grid;
-      place-items: center;
-      border: 1px solid rgba(255,255,255,.10);
-      border-radius: 6px;
-      color: rgba(255,255,255,.62);
-      background: rgba(255,255,255,.04);
-      font: 400 22px/1 Arial, sans-serif;
-      transition: color .16s ease, background .16s ease, border-color .16s ease;
+      display: none;
+      grid-template-columns: 72px minmax(0, 1fr);
+      color: #f4f5f7;
+      background:
+        radial-gradient(circle at 74% 18%, rgba(51,143,235,.16), transparent 34%),
+        linear-gradient(145deg, #0b1220, #080d17 55%, #070a11);
+      outline: 0;
     }
-    .success-close:hover {
-      color: #fff;
-      border-color: rgba(255,255,255,.20);
-      background: rgba(255,255,255,.09);
-    }
-    .success-close:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 2px; }
-    .success-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
-    .success-head h3 { color: #f4f5f7; font-size: 22px; line-height: 30px; font-weight: 520; }
-    .success-head p { margin-top: 4px; color: rgba(230,230,230,.42); font-size: 13px; line-height: 18px; }
-    .login-badge { height: 28px; margin-left: auto; padding: 0 10px; display: inline-flex; align-items: center; flex: 0 0 auto; border-radius: var(--radius-full); color: var(--brand-green); background: rgba(51,216,164,.11); font-size: 12px; }
-    .account-profile {
-      margin-top: 28px;
-      padding: 16px;
+    .mac-return-view.show { display: grid; }
+    .return-rail {
+      padding: 22px 12px 18px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       gap: 12px;
-      border-radius: 12px;
-      background: rgba(255,255,255,.055);
-      border: 1px solid rgba(255,255,255,.08);
+      border-right: 1px solid rgba(255,255,255,.07);
+      background: rgba(8,12,21,.72);
     }
-    .account-profile .profile-avatar { width: 48px; height: 48px; margin: 0; font-size: 15px; }
-    .account-profile h4 { color: #eff1f5; font-size: 15px; line-height: 20px; font-weight: 520; }
-    .account-platform-title { margin-top: 22px; color: rgba(255,255,255,.52); font-size: 12px; line-height: 18px; }
+    .return-brand,
+    .return-rail-icon,
+    .return-avatar { display: grid; place-items: center; border-radius: 14px; }
+    .return-brand { width: 42px; height: 42px; margin-bottom: 12px; color: #071018; background: var(--brand-gold); font-size: 18px; font-weight: 700; }
+    .return-rail-icon { width: 42px; height: 42px; color: rgba(255,255,255,.46); font-size: 17px; }
+    .return-rail-icon.active { color: #55bdf0; background: rgba(18,150,219,.14); box-shadow: inset 0 0 0 1px rgba(85,189,240,.18); }
+    .return-rail-spacer { flex: 1; }
+    .return-avatar { width: 36px; height: 36px; color: #fff; background: linear-gradient(145deg, #8174fa, #338feb); font-size: 12px; font-weight: 600; }
+    .return-workspace { min-width: 0; padding: 34px 38px 36px; overflow: hidden; }
+    .return-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .return-header small { color: rgba(255,255,255,.42); font-size: 11px; line-height: 16px; }
+    .return-header h2 { margin-top: 4px; font-size: 26px; line-height: 34px; font-weight: 600; }
+    .return-user { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,.62); font-size: 12px; }
+    .return-user i { width: 7px; height: 7px; border-radius: 50%; background: var(--brand-green); box-shadow: 0 0 0 4px rgba(51,216,164,.10); }
+    .return-toolbar { margin-top: 28px; padding-bottom: 14px; display: flex; gap: 22px; border-bottom: 1px solid rgba(255,255,255,.07); }
+    .return-toolbar span { color: rgba(255,255,255,.38); font-size: 13px; line-height: 20px; }
+    .return-toolbar span.active { color: #fff; }
+    .return-section-title { margin-top: 28px; display: flex; align-items: center; justify-content: space-between; }
+    .return-section-title h3 { font-size: 16px; line-height: 22px; font-weight: 600; }
+    .return-section-title span { color: rgba(255,255,255,.36); font-size: 11px; }
+    .return-game-grid { margin-top: 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .return-game-card { min-width: 0; overflow: hidden; border: 1px solid rgba(255,255,255,.08); border-radius: 14px; background: rgba(255,255,255,.045); }
+    .return-game-cover { aspect-ratio: 16 / 10; padding: 14px; display: flex; align-items: flex-end; color: rgba(255,255,255,.90); background: var(--cover); font-size: 13px; font-weight: 600; }
+    .return-game-meta { padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .return-game-meta strong { min-width: 0; overflow: hidden; color: rgba(255,255,255,.84); font-size: 12px; line-height: 18px; font-weight: 520; text-overflow: ellipsis; white-space: nowrap; }
+    .return-game-meta span { color: var(--brand-green); font-size: 10px; white-space: nowrap; }
     .confirm-platform-hint { margin: 12px 0 0; color: rgba(126,205,255,.88); font-size: 12px; line-height: 18px; }
     .platform-list { display: grid; gap: 10px; margin-top: 16px; }
     .platform-card {
@@ -963,11 +983,11 @@
     .status-pill.pending { color: #7ecfff; background: rgba(18,150,219,.14); }
     .status-pill.off { color: var(--text-muted); background: rgba(255,255,255,.06); }
     .toast {
-      position: fixed;
-      z-index: 100;
+      position: absolute;
+      z-index: 80;
       left: 50%;
-      bottom: 28px;
-      max-width: calc(100vw - 32px);
+      bottom: 92px;
+      max-width: calc(100% - 32px);
       padding: 10px 14px;
       border-radius: 10px;
       color: var(--text-secondary);
@@ -1084,10 +1104,6 @@
     .third-party-list { gap: 12px; }
     .third-party-button { width: 52px; height: 40px; border-radius: 8px; background: rgba(255,255,255,.06); }
     .guest-login { margin-top: 18px; color: rgba(18,150,219,.90); font-size: 13px; }
-    .account-view { margin-top: 28px; }
-    .success-head h3 { font-size: 18px; line-height: 25px; font-weight: 700; }
-    .success-head p { color: rgba(255,255,255,.42); font-size: 11px; }
-    .account-profile { margin-top: 22px; padding: 14px; border-radius: 14px; background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.10); }
     .platform-card { min-height: 66px; padding: 11px 12px; border-radius: 12px; background: rgba(17,20,27,.66); }
 
     @media (max-width: 760px) {
@@ -1700,12 +1716,6 @@
     .phone-login-view:not(.show) {
       display: block;
     }
-    .login-surface.account-state {
-      width: min(400px, 94%);
-      min-height: 0;
-      padding: 28px;
-    }
-    .login-surface.account-state .login-dual { display: none; }
     .panel-header,
     .phone-login-view h3 {
       margin-top: 0;
@@ -1725,29 +1735,6 @@
     }
     .third-party-title { margin-top: 16px; }
     .guest-login { margin-top: 14px; }
-    .qr-refresh-button {
-      display: none;
-      min-width: 112px;
-      height: 36px;
-      margin-top: 14px;
-      padding: 0 18px;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid rgba(18,150,219,.54);
-      border-radius: 10px;
-      color: #55bdf0;
-      background: rgba(18,150,219,.13);
-      font-size: 12px;
-      line-height: 18px;
-      font-weight: 600;
-      transition: border-color .16s ease, background .16s ease, transform .16s ease;
-    }
-    .qr-refresh-button:hover {
-      transform: translateY(-1px);
-      border-color: rgba(77,184,232,.84);
-      background: rgba(18,150,219,.20);
-    }
-    .login-surface.expired-state .qr-refresh-button { display: inline-flex; }
     .login-surface.confirm-state .qr-info { display: none; }
 
     /* 移动端设备授权确认 */
@@ -1918,16 +1905,16 @@
           <span class="state-index">6</span><span class="state-copy"><strong>待 Mac 领取</strong><small>会话包已就绪</small></span><span class="state-arrow">›</span>
         </button>
         <button class="state-nav scenario" data-scenario="success">
-          <span class="state-index">7</span><span class="state-copy"><strong>登录成功</strong><small>实际绑定平台已可用</small></span><span class="state-arrow">›</span>
+          <span class="state-index">7</span><span class="state-copy"><strong>登录成功</strong><small>Mac 直接返回扫码前页面</small></span><span class="state-arrow">›</span>
         </button>
         <button class="state-nav scenario" data-scenario="authorizationFailed">
-          <span class="state-index">8</span><span class="state-copy"><strong>授权失败</strong><small>全部会话已回收</small></span><span class="state-arrow">›</span>
+          <span class="state-index">8</span><span class="state-copy"><strong>授权失败</strong><small>二维码内提示并刷新</small></span><span class="state-arrow">›</span>
         </button>
         <button class="state-nav scenario" data-scenario="expired">
-          <span class="state-index">9</span><span class="state-copy"><strong>二维码过期</strong><small>点击二维码刷新</small></span><span class="state-arrow">›</span>
+          <span class="state-index">9</span><span class="state-copy"><strong>二维码过期</strong><small>二维码内提示并刷新</small></span><span class="state-arrow">›</span>
         </button>
         <button class="state-nav scenario" data-scenario="cancelled">
-          <span class="state-index">10</span><span class="state-copy"><strong>登录已取消</strong><small>当前二维码立即失效</small></span><span class="state-arrow">›</span>
+          <span class="state-index">10</span><span class="state-copy"><strong>登录已取消</strong><small>二维码内提示并刷新</small></span><span class="state-arrow">›</span>
         </button>
       </div>
       <div class="state-sidebar-note"><strong>操作提示</strong><br>点击状态可切换预览；在“等待扫码”状态点击手机右上角扫一扫，可演示扫码并进入“扫码确认”。</div>
@@ -2097,6 +2084,7 @@
               </div>
             </div>
           </div>
+          <div class="toast" id="toast" role="status" aria-live="polite">操作完成</div>
         </div>
       </section>
 
@@ -2121,12 +2109,14 @@
                   <div><h3 id="macTitle">扫码登录</h3><p id="macSubtitle"></p></div>
                 </div>
                 <div class="qr-layout">
-                  <div class="qr-shell" id="qrShell" role="button" tabindex="-1" aria-label="登录二维码">
+                  <div class="qr-shell" id="qrShell" data-challenge-id="QR-DEMO-1" aria-label="登录二维码">
                     <canvas id="qrCanvas" width="224" height="224" aria-label="登录二维码"></canvas>
-                    <div class="qr-overlay" id="qrOverlay"><strong>点击刷新</strong></div>
+                    <div class="qr-overlay" id="qrOverlay" aria-live="polite">
+                      <strong id="qrOverlayTitle">二维码已过期</strong>
+                      <button class="qr-overlay-action" id="refreshQrBtn" type="button">刷新二维码</button>
+                    </div>
                     <div class="qr-confirm-overlay" aria-live="polite"><img class="qr-confirm-check" src="data:image/png;base64,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" alt=""><strong>二维码已识别</strong><small>请尽快在手机上确认</small></div>
                   </div>
-                  <button class="qr-refresh-button" id="refreshQrBtn" type="button">刷新二维码</button>
                   <div class="qr-info">
                     <div class="state-row"><i class="state-dot" id="stateDot"></i><span id="stateTitle">等待手机扫一扫</span></div>
                     <a class="app-download-link" href="https://hub.xiaoji.com/" target="_blank" rel="noopener noreferrer">下载盖世游戏APP</a>
@@ -2163,19 +2153,30 @@
               </div>
               </div>
 
-              <div class="account-view" id="accountView">
-                <button class="success-close" id="successCloseBtn" type="button" aria-label="关闭登录成功弹窗" title="关闭">&times;</button>
-                <div class="success-head">
-                  <div><h3 id="successTitle">欢迎回来</h3><p id="successSubtitle">已通过移动端扫码登录</p></div>
-                  <span class="login-badge">已登录</span>
+            </div>
+            <div class="mac-return-view" id="macReturnView" tabindex="-1" aria-label="扫码前的游戏库页面">
+              <aside class="return-rail" aria-label="Mac 主导航">
+                <div class="return-brand" aria-hidden="true">G</div>
+                <div class="return-rail-icon" aria-label="探索">⌂</div>
+                <div class="return-rail-icon" aria-label="找游戏">⌕</div>
+                <div class="return-rail-icon active" aria-label="游戏库">▦</div>
+                <div class="return-rail-icon" aria-label="云游戏">☁</div>
+                <div class="return-rail-spacer"></div>
+                <div class="return-avatar" aria-label="盖世玩家 11837">盖</div>
+              </aside>
+              <section class="return-workspace" aria-labelledby="returnPageTitle">
+                <header class="return-header">
+                  <div><small>游戏库</small><h2 id="returnPageTitle">我的游戏</h2></div>
+                  <div class="return-user"><i aria-hidden="true"></i><span>盖世玩家 11837 · 已登录</span></div>
+                </header>
+                <div class="return-toolbar" aria-label="游戏库分类"><span class="active">全部游戏</span><span>已安装</span><span>最近游玩</span></div>
+                <div class="return-section-title"><h3>最近游玩</h3><span>登录态和用户数据已刷新</span></div>
+                <div class="return-game-grid">
+                  <article class="return-game-card"><div class="return-game-cover" style="--cover:linear-gradient(145deg,#1d5978,#14243a 62%,#0b111d)">艾尔登法环</div><div class="return-game-meta"><strong>艾尔登法环</strong><span>可启动</span></div></article>
+                  <article class="return-game-card"><div class="return-game-cover" style="--cover:linear-gradient(145deg,#67452d,#2e2733 58%,#11151d)">GTA V</div><div class="return-game-meta"><strong>GTA V</strong><span>可启动</span></div></article>
+                  <article class="return-game-card"><div class="return-game-cover" style="--cover:linear-gradient(145deg,#40337c,#1b2848 58%,#0f141f)">双人成行</div><div class="return-game-meta"><strong>双人成行</strong><span>可启动</span></div></article>
                 </div>
-                <div class="account-profile">
-                  <div class="profile-avatar">盖</div>
-                  <div><h4 id="accountNickname">盖世玩家 11837</h4></div>
-                </div>
-                <div class="account-platform-title">已在此 Mac 自动登录</div>
-                <div class="platform-list account-platform-list" id="macPlatforms"></div>
-              </div>
+              </section>
             </div>
           </div>
         </div>
@@ -2214,8 +2215,6 @@
     </aside>
   </div>
 
-  <div class="toast" id="toast">操作完成</div>
-
   <script>
     const stateLabels = {
       wait: ["等待手机扫一扫", "我的页扫一扫"],
@@ -2224,10 +2223,10 @@
       confirm: ["等待手机确认", "扫码确认"],
       authorizing: ["正在同步账号", "正在登录 Mac 端"],
       readyToClaim: ["会话已就绪", "等待 Mac 领取"],
-      success: ["登录成功", "登录结果"],
-      authorizationFailed: ["登录未完成", "重新扫码"],
-      expired: ["二维码已过期", "二维码过期"],
-      cancelled: ["登录已取消", "我的页"]
+      success: ["游戏库", "我的页 · 成功提示"],
+      authorizationFailed: ["二维码内提示", "我的页 · 失败提示"],
+      expired: ["二维码内提示", "我的页 · 过期提示"],
+      cancelled: ["二维码内提示", "我的页 · 取消提示"]
     };
 
     const detailContent = {
@@ -2263,7 +2262,7 @@
         boundary: [
           ["返回扫码入口页", "点击返回后进入“我的”页；Mac 端保持等待扫码，当前二维码在有效期内可继续使用。", "返回规则"],
           ["无效二维码", "识别非盖世登录二维码时，移动端显示 Toast“二维码无效”，并停留在扫码页。", "异常提示"],
-          ["二维码已过期", "识别已过期二维码时，移动端显示 Toast“二维码已过期”，并停留在扫码页；Mac 端过期二维码区域支持点击刷新。", "异常提示"],
+          ["二维码已过期", "识别已过期二维码时，App 返回“我的”页，仅显示一次 2 秒 Toast“二维码已过期，请重新扫码”；Mac 端仅在二维码遮罩内展示过期文案和“刷新二维码”按钮。", "异常提示"],
           ["多手机同时扫描", "同一二维码仅允许第一个有效扫码者进入确认流程；其他手机显示 Toast“二维码已被扫描”并停留扫码页。", "并发"],
           ["扫码网络异常", "移动端显示 Toast“网络异常，请重试”并停留扫码页；Mac 端保持等待扫码，二维码在原有效期内继续有效。", "容错"],
           ["扫码页进入后台", "扫码页退至后台时停止相机和本地识别；尚未完成有效扫码时不改变服务端状态，返回前台后重新进入扫码页。", "安全"],
@@ -2344,66 +2343,67 @@
       },
       success: {
         title: "登录成功",
-        summary: "Mac 已获得独立设备会话，盖世账号和全部已绑定平台均可用。",
+        summary: "服务端进入 used 后，App 回“我的”页提示一次；Mac 直接恢复扫码前页面并刷新登录态。",
         interaction: [
-          ["登录结果", "Mac 端展示登录成功弹窗；移动端显示“Mac 端登录成功”，并提示实际继承的平台已可用。", "状态呈现"],
-          ["盖世账号信息", "Mac 弹窗展示盖世账号昵称；“已登录”标签右边缘与下方账号卡片右边缘对齐。", "页面呈现"],
-          ["平台结果", "Mac 成功弹窗按实际账号关系列出本次继承成功的平台；无绑定平台时不展示平台列表。", "核心能力"],
-          ["弹窗尺寸", "成功弹窗按盖世账号结果信息的实际内容高度自适应。", "页面呈现"],
-          ["关闭弹窗", "点击右上角关闭按钮或弹窗外空白区域后收起成功弹窗，Mac 端保持当前登录状态。", "操作结果"]
+          ["App 结果", "App 返回“我的”页，仅显示一次 2 秒 Toast“Mac端登录成功”。", "状态呈现"],
+          ["成功时点", "只有 Mac 已持久化会话并完成 ACK、服务端状态进入 used 后，App 才显示成功 Toast；ready_to_claim 不提示成功。", "生命周期"],
+          ["Mac 结果", "Mac 关闭扫码登录界面，直接恢复扫码前的 returnTo 页面并刷新登录态和用户数据。", "操作结果"],
+          ["反馈范围", "Mac 不展示成功页、Toast、弹窗或平台继承结果；业务页中的正常已登录信息按原页面规则刷新。", "页面呈现"]
         ],
         boundary: [
-          ["信息范围", "成功页只展示平台昵称、平台名称和可用状态，不展示第三方账号 ID、Token 或密码。", "账号边界"],
           ["凭证边界", "Mac 通过私有领取凭证一次性领取会话包；移动端 Token 不进入 Mac。", "隐私安全"],
           ["凭证核销", "Mac 持久化并 ACK 后状态进入 used，领取凭证核销；重复扫描和领取返回已使用。", "安全"],
           ["Mac 结果同步异常", "Mac 端展示“同步中/重试中”，网络恢复后继续拉取结果；服务端判定请求失效时进入二维码失效刷新态。", "容错"],
-          ["关闭范围", "关闭操作仅收起成功弹窗，Mac 登录态及本次扫码结果保持有效。", "交互边界"]
+          ["返回目标兜底", "returnTo 缺失、失效或无权限时，进入默认登录后页面；不得停留在扫码登录界面。", "交互边界"],
+          ["Toast 去重", "App 按请求 ID 去重，同一登录请求的成功结果只提示一次。", "并发"]
         ]
       },
       authorizationFailed: {
         title: "授权失败",
         summary: "任一目标会话未能签发时整单失败，已签发的本次 Mac 会话全部回收。",
         interaction: [
-          ["移动端结果", "显示“登录未完成”和“平台登录状态未能全部同步，本次授权已撤销，请重新扫码”。", "异常"],
-          ["Mac 端结果", "Mac 保持未登录，二维码区域展示“登录未完成”和重新扫码入口。", "状态呈现"],
-          ["重新扫码", "点击“重新扫码”或刷新二维码后生成新 challenge，返回等待扫码。", "操作结果"]
+          ["App 结果", "App 返回“我的”页，仅显示一次 2 秒 Toast“登录未完成，请重新扫码”。", "异常"],
+          ["Mac 结果", "Mac 保持未登录，标题保持“扫码登录”；“登录未完成”和唯一“刷新二维码”按钮均在二维码遮罩内。", "状态呈现"],
+          ["重新扫码", "点击二维码遮罩内“刷新二维码”生成全新 challenge，返回等待扫码；二维码容器本身不可点击、不可聚焦。", "操作结果"]
         ],
         boundary: [
           ["禁止部分成功", "盖世账号或任一实际目标平台会话失败时均不向 Mac 返回会话包。", "安全"],
           ["补偿回收", "授权标识立即禁止鉴权；服务端通过 Outbox 回收预备会话，物理回收失败时持续重试并告警。", "容错"],
           ["失败隔离", "本次授权失败不影响移动端现有登录态，也不影响其他 Mac 的独立会话。", "账号边界"],
-          ["凭证失效", "原 challenge、确认 nonce 和领取凭证不可再次使用。", "安全"]
+          ["凭证失效", "原 challenge、确认 nonce 和领取凭证不可再次使用。", "安全"],
+          ["Toast 去重", "App 按请求 ID 去重，同一登录请求的失败结果只提示一次。", "并发"]
         ]
       },
       expired: {
         title: "二维码过期",
-        summary: "Mac 端二维码区域展示过期状态，并在二维码下方提供刷新按钮。",
+        summary: "App 回“我的”页提示过期；Mac 仅在二维码遮罩内展示过期信息和刷新按钮。",
         interaction: [
-          ["过期状态", "Mac 端页面标题与状态行展示“二维码已过期”，二维码遮罩中央展示单行“点击刷新”。", "页面呈现"],
-          ["安全说明", "“二维码仅用于本次登录，使用后立即失效”位于二维码状态下方。", "页面呈现"],
-          ["刷新二维码", "点击二维码区域或二维码下方“刷新二维码”按钮后生成新二维码，Mac 端进入“等待手机扫一扫”状态。", "操作结果"]
+          ["App 结果", "App 返回“我的”页，仅显示一次 2 秒 Toast“二维码已过期，请重新扫码”。", "异常提示"],
+          ["Mac 结果", "标题保持“扫码登录”；“二维码已过期”和唯一“刷新二维码”按钮均在二维码遮罩内，外部不重复展示结果。", "页面呈现"],
+          ["刷新二维码", "点击遮罩内“刷新二维码”生成全新 challenge，Mac 进入“等待手机扫一扫”；二维码容器本身不可点击、不可聚焦。", "操作结果"]
         ],
         boundary: [
-          ["移动端提示", "移动端识别已过期二维码时显示 Toast“二维码已过期”，并停留在扫码页。", "异常提示"],
-          ["确认页停留超时", "移动端确认弹窗停留超过有效期后，点击“确认登录”显示 Toast“登录请求已失效，请重新扫码”。", "异常提示"],
+          ["确认页停留超时", "移动端确认页停留超过有效期后，结束请求并回“我的”页，显示相同过期 Toast。", "异常提示"],
           ["旧二维码", "新二维码生成后，旧二维码的登录请求保持失效；旧二维码截图返回相同过期结果。", "安全"],
-          ["刷新幂等", "连续触发二维码区域或刷新按钮时，仅最新生成的二维码保持有效。", "并发"],
+          ["刷新幂等", "连续触发刷新按钮时，仅最新生成的二维码保持有效。", "并发"],
           ["状态范围", "二维码过期仅表示当前 Mac 登录请求失效。", "概念边界"],
-          ["失败记录", "服务端记录二维码标识、过期时间和失败原因，用于登录问题排查。", "埋点"]
+          ["失败记录", "服务端记录二维码标识、过期时间和失败原因，用于登录问题排查。", "埋点"],
+          ["Toast 去重", "App 按请求 ID 去重，同一登录请求的过期结果只提示一次。", "并发"]
         ]
       },
       cancelled: {
         title: "登录已取消",
-        summary: "移动端取消确认后返回“我的”页；Mac 端提示刷新二维码。",
+        summary: "App 取消后回“我的”页提示一次；Mac 仅在二维码遮罩内展示取消信息和刷新按钮。",
         interaction: [
-          ["移动端结果", "点击“取消授权”后关闭确认弹窗并返回“我的”页。", "操作结果"],
-          ["Mac 端状态", "Mac 端展示“本次登录已取消，请刷新二维码”，二维码遮罩中央展示“点击刷新”。", "状态呈现"],
-          ["重新发起", "点击二维码区域或二维码下方“刷新二维码”按钮生成新二维码。", "操作结果"]
+          ["App 结果", "点击“取消授权”后回“我的”页，仅显示一次 2 秒 Toast“登录已取消，请重新扫码”。", "操作结果"],
+          ["Mac 结果", "标题保持“扫码登录”；“登录已取消”和唯一“刷新二维码”按钮均在二维码遮罩内，外部不重复展示结果。", "状态呈现"],
+          ["重新发起", "点击遮罩内“刷新二维码”生成全新 challenge；二维码容器本身不可点击、不可聚焦。", "操作结果"]
         ],
         boundary: [
           ["请求结束", "取消操作使待确认请求进入 cancelled 状态，当前二维码立即失效。", "生命周期"],
           ["禁止复用", "已取消二维码不能再次扫码或确认；移动端确认操作返回“登录请求已失效，请重新扫码”。", "安全"],
-          ["刷新结果", "新二维码生成后进入 waiting_scan，旧二维码继续保持失效。", "状态流转"]
+          ["刷新结果", "新二维码生成后进入 waiting_scan，旧二维码继续保持失效。", "状态流转"],
+          ["Toast 去重", "App 按请求 ID 去重，同一登录请求的取消结果只提示一次。", "并发"]
         ]
       }
     };
@@ -2463,16 +2463,17 @@
     const loginSurface = document.getElementById("loginSurface");
     const qrView = document.getElementById("qrView");
     const phoneLoginView = document.getElementById("phoneLoginView");
-    const accountView = document.getElementById("accountView");
-    const accountNickname = document.getElementById("accountNickname");
+    const macReturnView = document.getElementById("macReturnView");
     const mobileResultCard = document.getElementById("mobileResultCard");
-    const macContent = document.querySelector(".mac-content");
     const qrShell = document.getElementById("qrShell");
     const mobilePlatforms = document.getElementById("mobilePlatforms");
-    const macPlatforms = document.getElementById("macPlatforms");
     const resultPlatforms = document.getElementById("resultPlatforms");
     const phone = document.querySelector(".phone");
     const qrConfirmCheck = document.querySelector(".qr-confirm-check");
+    const finalScenarios = new Set(["success", "authorizationFailed", "expired", "cancelled"]);
+    const notifiedResults = new Set();
+    let currentRequestId = 1;
+    let qrChallengeSeed = 1;
     qrConfirmCheck.src = document.getElementById("mobileResultMark").src;
 
     function showPhonePage(name) {
@@ -2486,7 +2487,20 @@
       el.textContent = message;
       el.classList.add("show");
       window.clearTimeout(toast.timer);
-      toast.timer = window.setTimeout(function() { el.classList.remove("show"); }, 1400);
+      toast.timer = window.setTimeout(function() { el.classList.remove("show"); }, 2000);
+    }
+
+    function hideToast() {
+      window.clearTimeout(toast.timer);
+      document.getElementById("toast").classList.remove("show");
+    }
+
+    function notifyResultOnce(type, message) {
+      const resultKey = currentRequestId + ":" + type;
+      showPhonePage("mine");
+      if (notifiedResults.has(resultKey)) return;
+      notifiedResults.add(resultKey);
+      toast(message);
     }
 
     function drawFinder(ctx, moduleSize, offset, x, y) {
@@ -2500,7 +2514,7 @@
       ctx.fillRect(px + 2 * moduleSize, py + 2 * moduleSize, 3 * moduleSize, 3 * moduleSize);
     }
 
-    function drawQr() {
+    function drawQr(seed) {
       const canvas = document.getElementById("qrCanvas");
       const ctx = canvas.getContext("2d");
       const count = 29;
@@ -2518,7 +2532,7 @@
       for (let y = 0; y < count; y++) {
         for (let x = 0; x < count; x++) {
           if (reserved(x, y)) continue;
-          const n = (x * 17 + y * 31 + x * y * 7 + (x ^ y) * 13) % 100;
+          const n = (x * 17 + y * 31 + x * y * 7 + (x ^ y) * 13 + seed * 19) % 100;
           if (n < 43) {
             ctx.fillStyle = "#111";
             ctx.fillRect(offset + x * size, offset + y * size, size, size);
@@ -2546,30 +2560,28 @@
     function setPlatforms(type) {
       const html = type === "bound" ? boundCards : "";
       mobilePlatforms.innerHTML = html;
-      macPlatforms.innerHTML = type === "bound" ? macBoundCards : "";
     }
 
-    function setScenario(type) {
+    function setScenario(type, options) {
+      const settings = options || {};
       scenarioButtons.forEach(function(button) {
         button.classList.toggle("active", button.dataset.scenario === type);
       });
+      if (!finalScenarios.has(type)) hideToast();
       document.getElementById("macState").textContent = stateLabels[type][0];
       document.getElementById("phoneState").textContent = stateLabels[type][1];
       document.getElementById("demoTitle").textContent = "Mac 端扫码登录与 Steam/Epic 会话自动继承";
       document.getElementById("demoSubtitle").textContent = "移动端确认后，服务端按账号实际绑定关系为 Mac 签发独立设备会话";
-      loginSurface.classList.remove("account-state", "confirm-state", "expired-state", "cancelled-state", "dismissed");
+      loginSurface.classList.remove("confirm-state", "expired-state", "cancelled-state", "hidden");
+      macReturnView.classList.remove("show");
       qrView.classList.remove("hidden");
       phoneLoginView.classList.remove("show");
-      accountView.classList.remove("show");
       phone.classList.remove("permission-denied-state");
       mobileResultCard.classList.remove("loading", "failure");
       resultPlatforms.innerHTML = "";
       qrShell.classList.remove("invalid", "confirmed");
-      qrShell.setAttribute("tabindex", "-1");
       document.getElementById("stateDot").className = "state-dot";
-      accountNickname.textContent = "盖世玩家 11837";
-      document.getElementById("successTitle").textContent = "欢迎回来";
-      document.getElementById("successSubtitle").textContent = "已通过移动端扫码登录";
+      document.getElementById("qrOverlayTitle").textContent = "二维码已过期";
       document.getElementById("mobileResultTitle").textContent = "Mac 端登录成功";
       document.getElementById("mobileResultDesc").textContent = "实际绑定平台已在此 Mac 可用";
       setPlatforms("bound");
@@ -2630,64 +2642,61 @@
         document.getElementById("mobileResultDesc").textContent = "Mac 正在领取并保存登录结果";
       }
       if (type === "expired") {
-        showPhonePage("mine");
+        notifyResultOnce("expired", "二维码已过期，请重新扫码");
         loginSurface.classList.add("expired-state");
         qrShell.classList.add("invalid");
-        qrShell.setAttribute("tabindex", "0");
         document.getElementById("stateDot").className = "state-dot fail";
-        document.getElementById("macTitle").textContent = "二维码已过期";
+        document.getElementById("macTitle").textContent = "扫码登录";
         document.getElementById("macSubtitle").textContent = "";
         document.getElementById("stateTitle").textContent = "二维码已过期";
         document.getElementById("stateDesc").textContent = "";
+        document.getElementById("qrOverlayTitle").textContent = "二维码已过期";
       }
       if (type === "cancelled") {
-        showPhonePage("mine");
+        notifyResultOnce("cancelled", "登录已取消，请重新扫码");
         loginSurface.classList.add("expired-state", "cancelled-state");
         qrShell.classList.add("invalid");
-        qrShell.setAttribute("tabindex", "0");
         document.getElementById("stateDot").className = "state-dot fail";
-        document.getElementById("macTitle").textContent = "本次登录已取消";
+        document.getElementById("macTitle").textContent = "扫码登录";
         document.getElementById("macSubtitle").textContent = "";
-        document.getElementById("stateTitle").textContent = "本次登录已取消，请刷新二维码";
+        document.getElementById("stateTitle").textContent = "登录已取消";
         document.getElementById("stateDesc").textContent = "";
+        document.getElementById("qrOverlayTitle").textContent = "登录已取消";
       }
       if (type === "success") {
-        qrView.classList.add("hidden");
-        phoneLoginView.classList.remove("show");
-        accountView.classList.add("show");
-        loginSurface.classList.add("account-state");
-        showPhonePage("result");
-        document.getElementById("successTitle").textContent = "欢迎回来";
-        document.getElementById("successSubtitle").textContent = "盖世账号及 2 个实际绑定平台已在此 Mac 可用";
-        document.getElementById("mobileResultTitle").textContent = "Mac 端登录成功";
-        document.getElementById("mobileResultDesc").textContent = "2 个实际绑定平台已在此 Mac 可用";
-        resultPlatforms.innerHTML = macBoundCards;
+        showPhonePage("mine");
+        if (settings.notifyMobile !== false) notifyResultOnce("success", "Mac端登录成功");
+        loginSurface.classList.add("hidden");
+        macReturnView.classList.add("show");
+        macReturnView.focus({ preventScroll: true });
       }
       if (type === "authorizationFailed") {
-        showPhonePage("result");
-        mobileResultCard.classList.add("failure");
+        notifyResultOnce("authorizationFailed", "登录未完成，请重新扫码");
         loginSurface.classList.add("expired-state", "cancelled-state");
         qrShell.classList.add("invalid");
-        qrShell.setAttribute("tabindex", "0");
         document.getElementById("stateDot").className = "state-dot fail";
-        document.getElementById("macTitle").textContent = "登录未完成";
-        document.getElementById("macSubtitle").textContent = "本次已签发会话已全部回收";
-        document.getElementById("stateTitle").textContent = "登录未完成，请重新扫码";
-        document.getElementById("stateDesc").textContent = "平台登录状态未能全部同步";
-        document.getElementById("mobileResultTitle").textContent = "登录未完成";
-        document.getElementById("mobileResultDesc").textContent = "平台登录状态未能全部同步，本次授权已撤销，请重新扫码";
+        document.getElementById("macTitle").textContent = "扫码登录";
+        document.getElementById("macSubtitle").textContent = "";
+        document.getElementById("stateTitle").textContent = "登录未完成";
+        document.getElementById("stateDesc").textContent = "";
+        document.getElementById("qrOverlayTitle").textContent = "登录未完成";
       }
       renderDetail(type);
     }
 
-    function closeSuccessDialog() {
-      if (!accountView.classList.contains("show")) return;
-      loginSurface.classList.add("dismissed");
+    function refreshQr() {
+      window.clearTimeout(autoLoginTimer);
+      currentRequestId += 1;
+      qrChallengeSeed += 1;
+      qrShell.dataset.challengeId = "QR-DEMO-" + qrChallengeSeed;
+      drawQr(qrChallengeSeed);
+      setScenario("wait");
     }
 
     scenarioButtons.forEach(function(button) {
       button.addEventListener("click", function() {
         window.clearTimeout(autoLoginTimer);
+        if (finalScenarios.has(button.dataset.scenario)) currentRequestId += 1;
         setScenario(button.dataset.scenario);
       });
     });
@@ -2723,28 +2732,21 @@
       }, 1000);
     });
     document.getElementById("cancelLoginBtn").addEventListener("click", function() { window.clearTimeout(autoLoginTimer); setScenario("cancelled"); });
-    document.getElementById("refreshQrBtn").addEventListener("click", function() { window.clearTimeout(autoLoginTimer); setScenario("wait"); });
-    document.getElementById("mobileRetryBtn").addEventListener("click", function() { window.clearTimeout(autoLoginTimer); setScenario("wait"); });
-    qrShell.addEventListener("click", function() { if (qrShell.classList.contains("invalid")) setScenario("wait"); });
-    qrShell.addEventListener("keydown", function(event) {
-      if (qrShell.classList.contains("invalid") && (event.key === "Enter" || event.key === " ")) {
-        event.preventDefault();
-        setScenario("wait");
-      }
-    });
+    document.getElementById("refreshQrBtn").addEventListener("click", refreshQr);
+    document.getElementById("mobileRetryBtn").addEventListener("click", refreshQr);
     document.getElementById("downloadBtn").addEventListener("click", function() { toast("下载管理"); });
     document.getElementById("settingsBtn").addEventListener("click", function() { toast("设置"); });
     document.getElementById("phoneForm").addEventListener("submit", function(event) {
       event.preventDefault();
-      setScenario("success");
+      setScenario("success", { notifyMobile: false });
     });
-    document.getElementById("successCloseBtn").addEventListener("click", closeSuccessDialog);
-    macContent.addEventListener("click", function(event) {
-      if (accountView.classList.contains("show") && !loginSurface.contains(event.target)) {
-        closeSuccessDialog();
-      }
-    });
-    drawQr();
+    window.__qrLoginDemo = {
+      setScenario: setScenario,
+      refreshQr: refreshQr,
+      getNotifiedResultCount: function() { return notifiedResults.size; },
+      getCurrentRequestId: function() { return currentRequestId; }
+    };
+    drawQr(qrChallengeSeed);
     const initialScenario = new URLSearchParams(window.location.search).get("state");
     setScenario(stateLabels[initialScenario] ? initialScenario : "wait");
   </script>
