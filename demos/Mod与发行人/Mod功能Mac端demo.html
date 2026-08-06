@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>盖世游戏 · 饥荒联机版 MODS</title>
+  <title>盖世游戏 · 饥荒联机版 MOD</title>
   <style>
     * {
       box-sizing: border-box;
@@ -1096,7 +1096,7 @@
       box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
     }
 
-    /* MODS 内容发现：沿用创意工坊的信息层级，但保持非官方本机安装语义。 */
+    /* MOD 内容发现：沿用创意工坊的信息层级，但保持非官方本机安装语义。 */
     .game-detail {
       overflow-y: auto;
       scrollbar-width: none;
@@ -1463,7 +1463,8 @@
     }
 
     .mod-card footer .install-button,
-    .mod-card footer .card-installed-controls {
+    .mod-card footer .card-installed-controls,
+    .mod-card footer .card-quick-action {
       pointer-events: auto;
     }
 
@@ -1585,6 +1586,78 @@
       cursor: wait;
       opacity: 0.62;
     }
+
+    .card-quick-action {
+      position: relative;
+      z-index: 4;
+      min-width: 130px;
+      height: 49px;
+      padding: 0 24px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 25px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #d7d5d9;
+      font-size: 19px;
+      font-weight: 560;
+    }
+
+    .card-quick-action.is-enabled {
+      border-color: rgba(61, 214, 158, 0.28);
+      background: rgba(43, 132, 100, 0.35);
+      color: #69e6b8;
+    }
+
+    .mod-update-dot {
+      position: absolute;
+      z-index: 5;
+      top: 18px;
+      right: 18px;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #ff536d;
+      box-shadow: 0 0 0 6px rgba(255, 83, 109, 0.14);
+      pointer-events: none;
+    }
+
+    .button-progress {
+      overflow: hidden;
+      background: linear-gradient(90deg, rgba(248, 213, 79, 0.9) 0 var(--progress), #545158 var(--progress) 100%) !important;
+      color: #17130a !important;
+    }
+
+    .dependency-dialog {
+      width: 880px;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .dependency-dialog-header {
+      min-height: 118px;
+      display: flex;
+      align-items: flex-start;
+      gap: 24px;
+      padding: 30px 34px 24px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .dependency-dialog-header > div { min-width: 0; }
+    .dependency-dialog-header p { margin-top: 10px; }
+    .dependency-dialog-header .modal-close { width: 48px; height: 48px; margin-left: auto; flex: none; }
+    .dependency-dialog-body { padding: 26px 34px; }
+    .dependency-space-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .dependency-space-summary div { padding: 18px 20px; border-radius: 18px; background: rgba(255,255,255,.05); }
+    .dependency-space-summary span { display: block; color: #8f8d94; font-size: 17px; }
+    .dependency-space-summary strong { display: block; margin-top: 7px; font-size: 25px; }
+    .dependency-list { display: grid; gap: 14px; margin-top: 22px; }
+    .dependency-item { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 20px; align-items: center; padding: 18px 20px; border: 2px solid rgba(255,255,255,.08); border-radius: 18px; background: rgba(255,255,255,.025); }
+    .dependency-item strong { display: block; font-size: 21px; }
+    .dependency-item span { display: block; margin-top: 7px; color: #95939a; font-size: 17px; }
+    .dependency-item button { height: 48px; border-radius: 24px; background: rgba(255,255,255,.08); color: #e0dee2; font-size: 18px; }
+    .dependency-item button.is-installed { color: #69e6b8; background: rgba(43,132,100,.35); }
+    .dependency-dialog .confirm-actions { margin: 0; padding: 22px 34px 30px; border-top: 2px solid rgba(255,255,255,.08); }
+    .dependency-dialog .confirm-actions button:last-child { border: 0; background: #f7f7f8; color: #151517; font-weight: 600; }
+    .dependency-dialog .confirm-actions button:disabled { cursor: default; opacity: .42; }
   </style>
 </head>
 <body>
@@ -1609,7 +1682,7 @@
   </svg>
 
   <main class="stage">
-    <section class="mac-canvas" data-demo-root data-current-screen="game-detail" aria-label="盖世游戏 Mac 端饥荒联机版 MODS Demo">
+    <section class="mac-canvas" data-demo-root data-current-screen="game-detail" aria-label="盖世游戏 Mac 端饥荒联机版 MOD Demo">
       <div class="traffic-lights" aria-hidden="true"><span></span><span></span><span></span></div>
       <aside class="side-rail" data-reference-region="side-rail" aria-label="主导航"></aside>
       <section class="product-view" data-view-root></section>
@@ -1621,6 +1694,13 @@
     const DEMO_MODEL_VERSION = 'dst_mods_demo_v2';
     const GAME_ID = 'steam:322330';
     const DEVICE_ID = 'mac-device-local-01';
+    const DEPENDENCY_CATALOG = Object.freeze({
+      'gamehub-mod-api': { id: 'gamehub-mod-api', name: 'GameHub MOD API', sizeBytes: 13002342 },
+      'shared-config-core': { id: 'shared-config-core', name: 'Shared Config Core', sizeBytes: 7130317 }
+    });
+    const ROOT_DEPENDENCIES = Object.freeze({
+      'dst-fast-gather': ['gamehub-mod-api', 'shared-config-core']
+    });
     // 共享静态合同兼容字面量：source_unknown、paused_by_system、loaded_match。
     // 本轮 Mac 外观 MVP 不把它们写入状态、不渲染，也不提供对应场景。
 
@@ -1861,6 +1941,9 @@
             failure_code: 'PACKAGE_HASH_MISMATCH'
           }
         },
+        installedDependencies: [],
+        blockedInstallsByRootId: {},
+        freeSpaceBytes: 1488977920,
         ui: {
           screen: 'game-detail',
           currentModId: null,
@@ -1889,6 +1972,15 @@
     }
 
     let state = createInitialState();
+
+    function formatBytes(value) {
+      if (value >= 1024 ** 3) return `${(value / 1024 ** 3).toFixed(1)} GB`;
+      return `${(value / 1024 ** 2).toFixed(1)} MB`;
+    }
+
+    function dependenciesResolved(current, rootModId) {
+      return (ROOT_DEPENDENCIES[rootModId] || []).every(id => current.installedDependencies.includes(id));
+    }
 
     function derive(current) {
       const allMods = Object.values(current.mods);
@@ -1967,7 +2059,7 @@
       const mod = next.mods[modId];
       if (!mod || mod.install_gate !== 'allowed') return null;
       const existing = activeTask(next, mod);
-      if (existing && !['succeeded', 'cancelled'].includes(existing.task_state)) {
+      if (existing && !['succeeded', 'cancelled', 'failed'].includes(existing.task_state)) {
         return existing.task_id;
       }
       next.metrics.taskSequence += 1;
@@ -1979,7 +2071,7 @@
         operation,
         task_state: 'queued',
         progress_percent: 0,
-        operation_attempt: 1,
+        operation_attempt: (existing?.operation_attempt || 0) + 1,
         failure_code: null
       };
       mod.current_task_id = taskId;
@@ -2087,6 +2179,29 @@
           }
           const taskMod = next.mods[task.root_mod_id];
           if (!taskMod) return next;
+          if (
+            task.operation === 'install'
+            && ROOT_DEPENDENCIES[task.root_mod_id]
+            && !dependenciesResolved(next, task.root_mod_id)
+            && task.task_state === 'downloading'
+            && task.progress_percent >= 42
+          ) {
+            task.task_state = 'failed';
+            task.failure_code = 'DEPENDENCY_MISSING';
+            const dependencyIds = ROOT_DEPENDENCIES[task.root_mod_id];
+            next.blockedInstallsByRootId[task.root_mod_id] = {
+              rootModId: task.root_mod_id,
+              dependencyIds,
+              dependencies: Object.fromEntries(dependencyIds.map(id => [id, {
+                state: next.installedDependencies.includes(id) ? 'installed' : 'idle',
+                progress: next.installedDependencies.includes(id) ? 100 : 0,
+                error: ''
+              }]))
+            };
+            next.ui.currentModId = task.root_mod_id;
+            next.ui.activeDialog = 'dependency-recovery';
+            return next;
+          }
           if (task.task_state === 'queued') {
             task.task_state = 'downloading';
             task.progress_percent = 42;
@@ -2162,6 +2277,50 @@
           mod.installed_at = null;
           next.ui.activeDialog = 'mod-detail';
           return next;
+        case 'CLOSE_DEPENDENCY':
+          next.ui.activeDialog = next.ui.currentModId ? 'mod-detail' : null;
+          return next;
+        case 'DEPENDENCY_INSTALL_REQUESTED': {
+          const rootModId = action.rootModId || next.ui.currentModId;
+          const blocked = next.blockedInstallsByRootId[rootModId];
+          const dependency = DEPENDENCY_CATALOG[action.dependencyId];
+          const item = blocked?.dependencies?.[action.dependencyId];
+          if (!blocked || !dependency || !item || ['installing', 'installed'].includes(item.state)) return next;
+          if (next.freeSpaceBytes < dependency.sizeBytes) {
+            item.state = 'space_insufficient';
+            item.error = '本机可用空间不足';
+            return next;
+          }
+          item.state = 'installing';
+          item.progress = 5;
+          item.error = '';
+          return next;
+        }
+        case 'DEPENDENCY_ADVANCE': {
+          const blocked = next.blockedInstallsByRootId[action.rootModId];
+          const dependency = DEPENDENCY_CATALOG[action.dependencyId];
+          const item = blocked?.dependencies?.[action.dependencyId];
+          if (!blocked || !dependency || !item || item.state !== 'installing') return next;
+          item.progress = Math.min(100, item.progress + 19);
+          if (item.progress >= 100) {
+            item.state = 'installed';
+            next.installedDependencies = [...new Set([...next.installedDependencies, action.dependencyId])];
+            next.freeSpaceBytes = Math.max(0, next.freeSpaceBytes - dependency.sizeBytes);
+          }
+          return next;
+        }
+        case 'CONTINUE_ROOT_INSTALL': {
+          const rootModId = action.rootModId || next.ui.currentModId;
+          const rootMod = next.mods[rootModId];
+          if (!rootMod || !dependenciesResolved(next, rootModId)) return next;
+          const previousTask = activeTask(next, rootMod);
+          if (previousTask) previousTask.task_state = 'cancelled';
+          rootMod.current_task_id = null;
+          delete next.blockedInstallsByRootId[rootModId];
+          next.ui.activeDialog = 'mod-detail';
+          ensureTask(next, rootModId, 'install');
+          return next;
+        }
         default:
           return next;
       }
@@ -2245,12 +2404,12 @@
               <article class="workshop-tile"><img src="${EMBEDDED_ASSETS.workshopLambris}" alt=""><strong>Lambris.exe</strong><span>283 订阅</span></article>
             </div>
           </section>
-          <section class="mods-discovery-card" data-reference-region="mods-entry" aria-label="MODS 非官方内容发现">
+          <section class="mods-discovery-card" data-reference-region="mods-entry" aria-label="MOD 非官方内容发现">
             <div class="mods-discovery-heading">
               <span class="mods-symbol">${icon('box')}</span>
               <span class="mods-discovery-copy">
                 <span class="mods-title-row">
-                  <strong>MODS</strong>
+                  <strong>MOD</strong>
                 </span>
                 <span class="mods-subtitle">热门组件</span>
               </span>
@@ -2320,7 +2479,7 @@
     function renderDetailEnabledControl(mod, viewModel) {
       const enabled = mod.enabled_value === 'enabled';
       const pending = Boolean(viewModel.state.ui.enableMutationByMod[mod.mod_id]);
-      const label = enabled ? '已启用' : '已停用';
+      const label = enabled ? '停用' : '启用';
       return `
         <button type="button"
           class="secondary detail-enabled-control"
@@ -2337,28 +2496,24 @@
       `;
     }
 
-    function renderModCard(mod, viewModel) {
+    function renderCardQuickAction(mod, viewModel) {
       const installed = mod.installation_fact === 'installed';
       const task = activeTask(viewModel.state, mod);
       const running = task && ['queued', 'downloading', 'verifying', 'installing'].includes(task.task_state);
-      const installedStatus = task?.task_state === 'failed'
-        ? `更新失败 · 保留旧版 v${mod.installed_version}`
-        : mod.update_fact === 'update_available'
-          ? '可更新'
-          : '已是最新';
-      const status = viewModel.activeTab === 'installed' ? installedStatus : '';
-      const footerAction = installed
-        ? `<div class="card-installed-controls">
-            <span class="installed-pill">${icon('box', 'small')}已安装</span>
-            ${renderEnabledSwitch(mod, viewModel, viewModel.activeTab)}
-          </div>`
-        : viewModel.activeTab === 'browse'
-          ? `<button class="install-button" type="button" data-action="install" data-mod-id="${mod.mod_id}" ${running ? 'disabled' : ''}>
-              ${icon(running ? 'refresh' : 'download', 'small')}${escapeHtml(running ? taskLabel(task) : '安装')}
-            </button>`
-          : '';
+      if (!installed) {
+        return `<button class="install-button ${running ? 'button-progress' : ''}" type="button" data-action="install" data-mod-id="${mod.mod_id}" ${running ? 'disabled' : ''} ${running ? `style="--progress:${task.progress_percent}%"` : ''}>${escapeHtml(running ? taskLabel(task) : '安装')}</button>`;
+      }
+      const enabled = mod.enabled_value === 'enabled';
+      const pending = Boolean(viewModel.state.ui.enableMutationByMod[mod.mod_id]);
+      return `<button class="card-quick-action ${enabled ? 'is-enabled' : ''}" type="button" data-action="toggle-enabled" data-mod-id="${mod.mod_id}" ${pending ? 'disabled' : ''}>${enabled ? '停用' : '启用'}</button>`;
+    }
+
+    function renderModCard(mod, viewModel) {
+      const installed = mod.installation_fact === 'installed';
+      const hasUpdate = installed && mod.update_fact === 'update_available';
       return `
         <article class="mod-card ${viewModel.activeTab === 'installed' ? 'is-installed-view' : ''}" data-mod-card data-mod-id="${mod.mod_id}">
+          ${hasUpdate ? '<i class="mod-update-dot" aria-label="有可用更新"></i>' : ''}
           <button class="mod-card-hit-area" type="button"
             data-card-detail
             data-action="open-detail"
@@ -2368,11 +2523,8 @@
           <div class="mod-copy">
             <h2>${escapeHtml(mod.name)}</h2>
             <span class="catalog-metrics">${formatDownloads(mod.download_count)} 次下载 · ${formatDate(mod.updated_at)} 更新</span>
-            ${status
-              ? `<strong class="mod-state ${installed ? 'is-installed' : ''}">${escapeHtml(status)}</strong>`
-              : ''}
           </div>
-          ${footerAction ? `<footer>${footerAction}</footer>` : ''}
+          <footer>${renderCardQuickAction(mod, viewModel)}</footer>
         </article>
       `;
     }
@@ -2427,7 +2579,7 @@
         <section class="mods-list" data-screen="mods-list">
           <button class="back-detail" type="button" data-action="back-game">${icon('back', 'small')}返回详情</button>
           <header class="mods-list-header">
-            <div class="mods-tabs" role="tablist" aria-label="MODS 内容范围">
+            <div class="mods-tabs" role="tablist" aria-label="MOD 内容范围">
               <button type="button" role="tab"
                 data-mod-tab="browse"
                 data-action="set-tab"
@@ -2473,7 +2625,7 @@
         <p>答：应该兼容。</p>
         <h4>来源：</h4>
         <p>非官方来源 · 仅此设备</p>
-        <p class="description-note">设置、启用状态和安装文件只保存在当前设备。卸载不会删除存档或用户 MOD 配置。</p>
+        <p class="description-note">设置、启用状态和安装文件只保存在当前设备。删除 MOD 不会删除存档或用户 MOD 配置。</p>
       `;
     }
 
@@ -2492,24 +2644,24 @@
       if (mod.install_gate !== 'allowed') {
         return `<footer class="modal-action-bar"><button type="button" disabled>当前不可安装</button></footer>`;
       }
-      if (task && ['queued', 'downloading', 'verifying', 'installing'].includes(task.task_state)) {
-        return `<footer class="modal-action-bar"><button type="button" disabled>${escapeHtml(taskLabel(task))}</button></footer>`;
-      }
       if (mod.installation_fact !== 'installed') {
-        return `<footer class="modal-action-bar"><button type="button" data-action="install" data-mod-id="${mod.mod_id}">${icon('download', 'small')}安装到此设备</button></footer>`;
+        const running = task && ['queued', 'downloading', 'verifying', 'installing'].includes(task.task_state);
+        return `<footer class="modal-action-bar"><button type="button" class="${running ? 'button-progress' : ''}" data-action="install" data-mod-id="${mod.mod_id}" ${running ? 'disabled' : ''} ${running ? `style="--progress:${task.progress_percent}%"` : ''}>${running ? escapeHtml(taskLabel(task)) : `${icon('download', 'small')}安装到此设备`}</button></footer>`;
       }
-      if (task?.task_state === 'failed') {
-        return `<footer class="modal-action-bar">
-          ${renderDetailEnabledControl(mod, viewModel)}
-          <button type="button" class="secondary" disabled>保留旧版 ${escapeHtml(mod.installed_version)}</button>
-          <button type="button" data-action="update" data-mod-id="${mod.mod_id}">重试更新</button>
-          <button type="button" class="danger" data-action="uninstall" data-mod-id="${mod.mod_id}">卸载</button>
-        </footer>`;
-      }
+      const updating = task && task.operation === 'update' && ['queued', 'downloading', 'verifying', 'installing'].includes(task.task_state);
+      const failed = task?.operation === 'update' && task.task_state === 'failed';
+      const updateLabel = updating
+        ? `更新中 ${task.progress_percent}%`
+        : failed
+          ? '重试更新'
+          : mod.update_fact === 'update_available'
+            ? '可更新'
+            : '已是最新';
+      const updateDisabled = updating || (!failed && mod.update_fact !== 'update_available');
       return `<footer class="modal-action-bar">
+        <button type="button" class="danger" data-action="uninstall" data-mod-id="${mod.mod_id}">删除</button>
+        <button type="button" class="${updating ? 'button-progress' : ''}" data-action="update" data-mod-id="${mod.mod_id}" ${updateDisabled ? 'disabled' : ''} ${updating ? `style="--progress:${task.progress_percent}%"` : ''}>${updateLabel}</button>
         ${renderDetailEnabledControl(mod, viewModel)}
-        <button type="button" data-action="update" data-mod-id="${mod.mod_id}">${mod.update_fact === 'update_available' ? '更新' : '检查更新'}</button>
-        <button type="button" class="danger" data-action="uninstall" data-mod-id="${mod.mod_id}">卸载</button>
       </footer>`;
     }
 
@@ -2535,7 +2687,6 @@
               ${renderModCover(mod, true)}
               <h3 class="section-title">说明</h3>
               <section class="description-card">${renderDescription(mod)}</section>
-              ${renderTaskProgress(task)}
             </div>
             ${renderDetailActionBar(mod, viewModel)}
           </article>
@@ -2549,11 +2700,54 @@
       return `
         <div class="confirm-backdrop">
           <section class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
-            <h3 id="confirm-title">仅从当前设备卸载“${escapeHtml(mod.name)}”</h3>
+            <h3 id="confirm-title">仅从当前设备删除“${escapeHtml(mod.name)}”</h3>
             <p>存档和用户 MOD 配置不会被删除。该操作只移除当前设备上的安装文件。</p>
             <div class="confirm-actions">
               <button type="button" data-action="cancel-uninstall">取消</button>
-              <button type="button" class="confirm-danger" data-action="confirm-uninstall" data-mod-id="${mod.mod_id}">确认卸载</button>
+              <button type="button" class="confirm-danger" data-action="confirm-uninstall" data-mod-id="${mod.mod_id}">确认删除</button>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderDependencyDialog(viewModel) {
+      const rootModId = viewModel.state.ui.currentModId;
+      const rootMod = viewModel.state.mods[rootModId];
+      const blocked = viewModel.state.blockedInstallsByRootId[rootModId];
+      if (!rootMod || !blocked) return '';
+      const totalBytes = blocked.dependencyIds.reduce((sum, id) => sum + (DEPENDENCY_CATALOG[id]?.sizeBytes || 0), 0);
+      const complete = dependenciesResolved(viewModel.state, rootModId);
+      return `
+        <div class="confirm-backdrop" data-dependency-dialog>
+          <section class="confirm-dialog dependency-dialog" role="dialog" aria-modal="true" aria-labelledby="dependency-title">
+            <header class="dependency-dialog-header">
+              <div><h3 id="dependency-title">缺少依赖组件</h3><p>“${escapeHtml(rootMod.name)}”安装未完成，请先安装以下组件。</p></div>
+              <button class="modal-close" type="button" data-action="close-dependency" aria-label="关闭">${icon('close')}</button>
+            </header>
+            <div class="dependency-dialog-body">
+              <div class="dependency-space-summary">
+                <div><span>本机可用空间</span><strong>${formatBytes(viewModel.state.freeSpaceBytes)}</strong></div>
+                <div><span>依赖总大小</span><strong>${formatBytes(totalBytes)}</strong></div>
+              </div>
+              <div class="dependency-list">
+                ${blocked.dependencyIds.map(id => {
+                  const dependency = DEPENDENCY_CATALOG[id];
+                  const item = blocked.dependencies[id];
+                  const installing = item.state === 'installing';
+                  const installed = item.state === 'installed';
+                  const failed = item.state === 'space_insufficient' || item.state === 'failed';
+                  const label = installed ? '已安装' : installing ? `安装中 ${item.progress}%` : failed ? '重试' : '安装';
+                  return `<div class="dependency-item">
+                    <div><strong>${escapeHtml(dependency.name)}</strong><span>${formatBytes(dependency.sizeBytes)}${item.error ? ` · ${escapeHtml(item.error)}` : ''}</span></div>
+                    <button type="button" class="${installed ? 'is-installed' : ''} ${installing ? 'button-progress' : ''}" data-action="install-dependency" data-root-mod-id="${rootModId}" data-dependency-id="${id}" ${installed || installing ? 'disabled' : ''} ${installing ? `style="--progress:${item.progress}%"` : ''}>${label}</button>
+                  </div>`;
+                }).join('')}
+              </div>
+            </div>
+            <div class="confirm-actions">
+              <button type="button" data-action="close-dependency">取消</button>
+              <button type="button" data-action="continue-root-install" data-root-mod-id="${rootModId}" ${complete ? '' : 'disabled'}>继续安装</button>
             </div>
           </section>
         </div>
@@ -2633,6 +2827,10 @@
         viewRoot.insertAdjacentHTML('beforeend', renderModDetail(viewModel));
         viewRoot.insertAdjacentHTML('beforeend', renderUninstallConfirm(viewModel));
       }
+      if (state.ui.activeDialog === 'dependency-recovery') {
+        viewRoot.insertAdjacentHTML('beforeend', renderModDetail(viewModel));
+        viewRoot.insertAdjacentHTML('beforeend', renderDependencyDialog(viewModel));
+      }
       restoreFocus(focus);
       const listScroll = root.querySelector('[data-mods-scroll]');
       if (listScroll) {
@@ -2680,11 +2878,31 @@
       runnerRegistry.set(taskId, timer);
     }
 
+    function armDependencyRunner(rootModId, dependencyId) {
+      const runnerKey = `dependency:${rootModId}:${dependencyId}`;
+      if (runnerRegistry.has(runnerKey)) return;
+      const tick = () => {
+        runnerRegistry.delete(runnerKey);
+        const item = state.blockedInstallsByRootId[rootModId]?.dependencies?.[dependencyId];
+        if (!item || item.state !== 'installing') return;
+        dispatch({ type: 'DEPENDENCY_ADVANCE', rootModId, dependencyId });
+        const nextItem = state.blockedInstallsByRootId[rootModId]?.dependencies?.[dependencyId];
+        if (nextItem?.state === 'installing') {
+          const timer = setTimeout(tick, 420);
+          runnerRegistry.set(runnerKey, timer);
+        }
+      };
+      const timer = setTimeout(tick, 320);
+      runnerRegistry.set(runnerKey, timer);
+    }
+
     root.addEventListener('click', event => {
       const control = event.target.closest('[data-action]');
       if (!control) return;
       const action = control.dataset.action;
       const modId = control.dataset.modId;
+      const rootModId = control.dataset.rootModId;
+      const dependencyId = control.dataset.dependencyId;
       if (action === 'open-mods') dispatch({ type: 'OPEN_MODS', tab: control.dataset.tab || 'browse' });
       if (action === 'back-game') dispatch({ type: 'BACK_GAME' });
       if (action === 'open-detail') dispatch({ type: 'OPEN_DETAIL', modId });
@@ -2721,7 +2939,6 @@
         setTimeout(() => {
           if (!state.ui.enableMutationByMod[modId]) return;
           dispatch({ type: 'ENABLE_CHANGE_SUCCEEDED', modId });
-          showToast(nextValue === 'enabled' ? '已在当前设备启用。' : '已在当前设备停用。');
         }, 320);
       }
       if (action === 'update') {
@@ -2732,7 +2949,43 @@
       if (action === 'cancel-uninstall') dispatch({ type: 'UNINSTALL_CANCELLED' });
       if (action === 'confirm-uninstall') {
         dispatch({ type: 'UNINSTALL_CONFIRMED', modId });
-        showToast('已从当前设备卸载，存档和用户配置未删除。');
+        showToast('已从当前设备删除，存档和用户配置未删除。');
+      }
+      if (action === 'close-dependency') dispatch({ type: 'CLOSE_DEPENDENCY' });
+      if (action === 'install-dependency') {
+        dispatch({ type: 'DEPENDENCY_INSTALL_REQUESTED', rootModId, dependencyId });
+        armDependencyRunner(rootModId, dependencyId);
+      }
+      if (action === 'continue-root-install') {
+        dispatch({ type: 'CONTINUE_ROOT_INSTALL', rootModId });
+        armTaskRunner(state.mods[rootModId]?.current_task_id);
+      }
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        if (state.ui.activeDialog === 'dependency-recovery') dispatch({ type: 'CLOSE_DEPENDENCY' });
+        else if (state.ui.activeDialog === 'uninstall-confirm') dispatch({ type: 'UNINSTALL_CANCELLED' });
+        else if (state.ui.activeDialog === 'mod-detail') dispatch({ type: 'CLOSE_DETAIL' });
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const dialog = root.querySelector('[data-dependency-dialog]') || root.querySelector('.confirm-dialog') || root.querySelector('.mod-detail-modal');
+      if (!dialog) return;
+      const controls = [...dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex="0"]')]
+        .filter(control => control.getClientRects().length);
+      if (!controls.length) return;
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (!dialog.contains(document.activeElement)) {
+        event.preventDefault();
+        first.focus();
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     });
 
