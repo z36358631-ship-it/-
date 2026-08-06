@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 将扫码登录 PRD 从 536 行压缩到 180–220 行，把全部 App、Mac 页面与结果状态统一归入 4.2 表格，同时保留开发、测试所需规则。
+**Goal:** 将扫码登录 PRD 压缩到必要信息，把全部 App、Mac 页面与结果状态统一归入符合 `to-prd` 模板的 4.2 三列表格，同时保留开发、测试所需规则。
 
 **Architecture:** 只修改 PRD 和本次实施计划，不改 Demo、截图和产品逻辑。PRD 按“范围 → 流程 → 4.2 C 端主表 → 服务端关键规则 → 非功能 → 埋点 → 发布 → 验收”组织，所有内容以当前 V1.2 最终规则为准。
 
@@ -58,14 +58,14 @@ Expected: `mac qr login result states: PASS`。
 
 - [ ] **Step 2: 将全部 C 端页面与状态归入 4.2**
 
-4.2 使用统一表头：
+4.2 使用 `to-prd` 标准表头：
 
 ```markdown
-|端|页面或状态|图示|触发条件|展示与交互|异常处理|
-|---|---|---|---|---|---|
+|模块名称|图示|展示&交互说明|
+|---|---|---|
 ```
 
-按以下 15 行写入最终规则：Mac 等待扫码、App 扫码入口、App 相机权限、App 扫码页、App 登录确认、Mac 等待确认、App 授权中与待领取、App 成功、App 失败、App 取消、App 过期、Mac 成功返回、Mac 失败、Mac 取消、Mac 过期。
+按以下 15 行写入最终规则：Mac 等待扫码、App 扫码入口、App 相机权限、App 扫码页、App 登录确认、Mac 等待确认、App 授权中与待领取、App 成功、App 失败、App 取消、App 过期、Mac 成功返回、Mac 失败、Mac 取消、Mac 过期。模块名称合并端和页面或状态并加粗；第三列用 `<br>` 换行，固定包含 `**① 触发条件：**`、`**② 页面展示：**`、`**③ 操作流程：**`、`**④ 状态反馈：**`、`**⑤ 异常处理：**`。
 
 13 张页面图必须放在对应表格行，一张流程图放在第三章。
 
@@ -104,7 +104,9 @@ $prd='prd/【Prd】《盖世游戏》移动端扫码登录Mac端需求/【Prd】
 $raw=Get-Content -Raw -LiteralPath $prd -Encoding utf8
 $section42=[regex]::Match($raw,'(?s)### 4\.2 .*?(?=### 4\.3 )').Value
 [pscustomobject]@{
-  PageRows=([regex]::Matches($section42,'^\|(?:App|Mac)\|','Multiline')).Count
+  PageRows=([regex]::Matches($section42,'^\|\*\*(?:App|Mac)','Multiline')).Count
+  ThreeColumnHeader=([regex]::Matches($section42,'^\|模块名称\|图示\|展示&交互说明\|$','Multiline')).Count
+  StructuredRows=([regex]::Matches($section42,'^\|\*\*(?:App|Mac).*?\*\*① 触发条件：\*\*.*?<br>\*\*② 页面展示：\*\*.*?<br>\*\*③ 操作流程：\*\*.*?<br>\*\*④ 状态反馈：\*\*.*?<br>\*\*⑤ 异常处理：\*\*.*?\|$','Multiline')).Count
   PageImages=([regex]::Matches($section42,'!\[[^\]]*\]\(https://[^)]+\)')).Count
   FlowImages=([regex]::Matches($raw,'14-qr-login-flow\.png')).Count
   TotalImageRefs=([regex]::Matches($raw,'!\[[^\]]*\]\(https://[^)]+\)')).Count
@@ -112,7 +114,7 @@ $section42=[regex]::Match($raw,'(?s)### 4\.2 .*?(?=### 4\.3 )').Value
 }
 ```
 
-Expected: `PageRows=15`、`PageImages=13`、`FlowImages=1`、`TotalImageRefs=14`、`UniqueImages=14`。
+Expected: `PageRows=15`、`ThreeColumnHeader=1`、`StructuredRows=15`、`PageImages=13`、`FlowImages=1`、`TotalImageRefs=14`、`UniqueImages=14`。
 
 - [ ] **Step 3: 运行行为契约与 Markdown 检查**
 
