@@ -58,12 +58,18 @@ button{cursor:pointer}
 /* V6.1.1 真实页面复刻层 */
 #capture-c-recharge{height:867px;border-radius:18px;background:#090509 url('./assets/cloud-time-pack-v611/15-portrait-recharge.png') center/100% 100% no-repeat}
 #capture-c-recharge>.statusbar,#capture-c-recharge>.app-header,#capture-c-recharge>.screen-scroll,#capture-c-recharge>.pay-bar{display:none}
-.v611-product-area{position:absolute;z-index:12;left:10px;right:10px;top:119px;height:112px;padding:7px 8px 8px;border-radius:13px;background:linear-gradient(145deg,rgba(65,31,46,.97),rgba(31,20,25,.97));border:1px solid rgba(255,255,255,.11);box-shadow:0 10px 24px rgba(0,0,0,.28)}
-.v611-product-head{height:20px;display:flex;align-items:center;font-size:11px;color:#f4e8ed}.v611-product-head strong{font-size:12px}.v611-product-head span{margin-left:auto;color:#a9949d;font-size:9px}
-.v611-product-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;height:76px}
-.v611-product{position:relative;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.055);color:#fff;padding:8px 9px;text-align:left}.v611-product.selected{border-color:#ff8ac0;background:linear-gradient(135deg,rgba(157,52,97,.32),rgba(65,45,79,.35))}.v611-product.disabled{opacity:.66;cursor:default}
-.v611-product h3{font-size:11px;margin-bottom:3px}.v611-product p{font-size:8px;color:#b9aab1;line-height:12px}.v611-product .mini-price{position:absolute;right:8px;bottom:7px;font-family:var(--number);font-size:14px;font-weight:700}.v611-product .mini-price em{font-size:9px;font-style:normal}.v611-product .mini-badge{position:absolute;right:7px;top:7px;padding:2px 4px;border-radius:3px;background:#c54479;color:#fff;font-size:7px}.v611-product.disabled .mini-badge{background:#6b4c5a;color:#edcedb}
-.v611-product .mini-price{left:9px;right:auto}.v611-buy{position:absolute;left:131px;bottom:14px;height:23px;padding:0 9px;border:0;border-radius:12px;background:linear-gradient(135deg,#de4c8c,#a73365);color:#fff;font-size:9px;font-weight:600}
+.v611-recharge-extension{position:absolute;z-index:11;left:0;right:0;top:119px;bottom:0;padding:0 10px 28px;overflow-y:auto;scrollbar-width:none;background:radial-gradient(circle at 100% 0,rgba(91,29,51,.48),transparent 36%),linear-gradient(180deg,#230b14 0,#11070b 48%,#030203 100%)}
+.v611-recharge-extension::-webkit-scrollbar{display:none}
+.v611-product-area{position:relative;padding:13px 12px 12px;border-radius:18px;background:linear-gradient(145deg,rgba(69,33,47,.98),rgba(37,22,28,.98));border:1px solid rgba(255,255,255,.13);box-shadow:0 12px 28px rgba(0,0,0,.28)}
+.v611-product-head{height:26px;display:flex;align-items:flex-start;color:#f8edf2}.v611-product-head strong{font-size:15px;line-height:20px}.v611-product-head span{margin-left:auto;color:#b9a6af;font-size:10px;line-height:18px}
+.v611-product-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;height:128px}
+.v611-product{position:relative;border:1px solid rgba(255,255,255,.14);border-radius:13px;background:rgba(255,255,255,.055);color:#fff;padding:13px 12px;text-align:left}.v611-product.selected{border-color:#ff7eb9;background:linear-gradient(145deg,rgba(160,48,96,.38),rgba(69,44,80,.36));box-shadow:inset 0 0 0 1px rgba(255,126,185,.12)}.v611-product.disabled{opacity:.72;cursor:default}
+.v611-product h3{max-width:112px;font-size:14px;line-height:20px;margin-bottom:7px}.v611-product p{font-size:10.5px;color:#c2afb8;line-height:16px}.v611-product .mini-price{position:absolute;left:12px;bottom:13px;font-family:var(--number);font-size:20px;font-weight:700}.v611-product .mini-price em{font-size:12px;font-style:normal}.v611-product .mini-badge{position:absolute;right:9px;top:10px;padding:3px 6px;border-radius:4px;background:#c8447b;color:#fff;font-size:8px}.v611-product.disabled .mini-badge{background:#694856;color:#f1d5df}
+.v611-buy{position:absolute;left:120px;bottom:21px;width:52px;height:30px;border:0;border-radius:16px;background:linear-gradient(135deg,#e95798,#aa386b);box-shadow:0 5px 15px rgba(210,58,124,.28);color:#fff;font-size:11px;font-weight:650}
+.v611-benefits{height:132px;margin-top:12px;padding:14px 16px 13px;border-radius:18px;background:linear-gradient(145deg,rgba(85,54,67,.94),rgba(61,38,48,.94));border:1px solid rgba(255,255,255,.12)}
+.v611-benefits-title{height:27px;display:flex;align-items:flex-start;justify-content:center;color:#f6dfe9;font-size:15px;font-weight:650}.v611-benefits-title:before,.v611-benefits-title:after{content:'';width:54px;height:1px;margin:10px 9px 0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.26))}.v611-benefits-title:after{transform:rotate(180deg)}
+.v611-benefit-row{height:72px;display:grid;grid-template-columns:repeat(3,1fr);align-items:center}.v611-benefit{text-align:center;color:#f1e7eb;font-size:12px}.v611-benefit i{width:34px;height:34px;margin:0 auto 7px;border-radius:50%;display:grid;place-items:center;background:#694253;color:#ff8dc0;font-style:normal;font-size:15px}
+.v611-time-note{padding:18px 5px 0;color:#8f8187}.v611-time-note h3{font-size:14px;color:#b9aab0;margin-bottom:9px}.v611-time-note p{font-size:11px;line-height:18px}
 #capture-c-activation{height:867px;border-radius:18px}
 #capture-c-activation .game-page{background:#080709 url('./assets/cloud-time-pack-v611/10-portrait-game-detail.png') center/100% 100% no-repeat}
 #capture-c-activation .game-page>.statusbar,#capture-c-activation .game-page>.game-cover-art,#capture-c-activation .game-page>.app-header,#capture-c-activation .game-page>.game-info,#capture-c-activation .game-page>.game-actions{visibility:hidden}
@@ -135,13 +141,20 @@ button{cursor:pointer}
         <div class="notice-row"><span class="notice-icon">ⓘ</span><span>时段次卡需在指定时段点击秒玩后激活；限时时长仅在标注的使用期内可用。</span></div>
       </div>
       <div class="pay-bar"><button class="pay-btn" id="rechargePay" onclick="paySelected()">确认支付 ¥9.90</button></div>
-      <div class="v611-product-area">
-        <div class="v611-product-head"><strong>时长套餐</strong><span>左右滑动查看更多</span></div>
-        <div class="v611-product-row">
-          <button class="v611-product selected" id="portraitSlotSku"><span class="mini-badge">闲时特惠</span><h3>午间畅玩卡</h3><p>工作日12:00—14:00<br>5次 · 30天内激活</p><span class="mini-price"><em>¥</em>9.9</span></button>
-          <button class="v611-product disabled" disabled><span class="mini-badge">2天后开售</span><h3>夏末20小时限时包</h3><p>8月20日—9月9日可用<br>预热期可见不可购买</p></button>
+      <div class="v611-recharge-extension">
+        <div class="v611-product-area">
+          <div class="v611-product-head"><strong>时长套餐</strong><span>选择套餐后购买</span></div>
+          <div class="v611-product-row">
+            <button class="v611-product selected" id="portraitSlotSku"><span class="mini-badge">闲时特惠</span><h3>午间畅玩卡</h3><p>工作日 12:00—14:00<br>5次 · 购买后30天有效</p><span class="mini-price"><em>¥</em>9.9</span></button>
+            <button class="v611-product disabled" disabled><span class="mini-badge">2天后开售</span><h3>夏末20小时包</h3><p>8月20日开售<br>9月9日到期</p><span class="mini-price"><em>¥</em>29.9</span></button>
+          </div>
+          <button class="v611-buy" onclick="payPortraitSlot()">购买</button>
         </div>
-        <button class="v611-buy" onclick="payPortraitSlot()">购买</button>
+        <div class="v611-benefits">
+          <div class="v611-benefits-title">专享权益</div>
+          <div class="v611-benefit-row"><div class="v611-benefit"><i>ϟ</i>极速启动</div><div class="v611-benefit"><i>◷</i>超长时长</div><div class="v611-benefit"><i>HD</i>专属高画质</div></div>
+        </div>
+        <div class="v611-time-note"><h3>时长说明</h3><p>1. 云游戏时长属于虚拟商品，充值成功后不支持退款和时长转移。<br>2. 可在「玩游戏」—「秒玩时长」查看剩余时长和使用明细。</p></div>
       </div>
       <div class="toast" id="rechargeToast">支付成功，午间畅玩卡已到账</div>
     </div>
