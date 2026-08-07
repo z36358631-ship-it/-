@@ -179,6 +179,11 @@ test('Steam 图标使用标准单路径轮廓并继承场景颜色', () => {
   assert.strictEqual((symbol.match(/<path\b/g) ?? []).length, 1, 'Steam 图形不是单一路径');
   assert.strictEqual(/<circle\b|--steam-cut/.test(symbol), false, '仍使用圆形与线段近似图标');
   assert.strictEqual(symbol.includes(`d="${expectedPath}"`), true, 'Steam 标准轮廓数据不一致');
+  assert.strictEqual((html.match(/<symbol id="i-steam"/g) ?? []).length, 1, 'Steam Symbol 数量错误');
+  assert.strictEqual(html.includes('--steam-cut'), false, '仍保留旧 Steam 切割色配置');
+  const localUses = html.match(/<use href="#i-steam"\/>/g) ?? [];
+  assert.ok(localUses.length > 0, 'Steam Symbol 没有调用位置');
+  assert.strictEqual((html.match(/#i-steam/g) ?? []).length, localUses.length, '存在非本地 Symbol 的 Steam 图标调用');
 });
 
 test('游戏库覆盖全部平台与原生组合示例', () => {
