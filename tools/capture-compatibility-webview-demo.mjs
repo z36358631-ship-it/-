@@ -1,12 +1,19 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import { pathToFileURL, fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { chromium } from 'playwright-core';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const demoPath = path.join(root, 'demos', '适合本机', '盖世游戏适合本机WebView-demo.html');
-const outputDir = path.join(root, 'test-results', 'compatibility-library-v2');
+const outputDir = path.join(root, 'test-results', 'compatibility-reference-redesign');
+const screenshotNames = [
+  '01-desktop-initial.png',
+  '02-desktop-results.png',
+  '03-mobile-initial.png',
+  '04-mobile-results.png',
+  '05-empty-results.png'
+];
 fs.mkdirSync(outputDir, { recursive: true });
 
 const executablePath = [
@@ -17,164 +24,199 @@ const executablePath = [
 if (!executablePath) throw new Error('No Chromium-compatible browser executable found');
 
 const browser = await chromium.launch({ headless: true, executablePath });
-const page = await browser.newPage({ viewport: { width: 1100, height: 980 }, deviceScaleFactor: 1 });
+const page = await browser.newPage({ viewport: { width: 1280, height: 960 }, deviceScaleFactor: 1 });
 const errors = [];
-page.on('console', (message) => { if (message.type() === 'error') errors.push(`console: ${message.text()}`); });
+const externalRequests = [];
+
+function check(condition, message) {
+  if (!condition) errors.push(message);
+}
+
+page.on('console', (message) => {
+  if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+});
 page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
-page.on('request', (request) => { if (!request.url().startsWith('file:') && !request.url().startsWith('data:')) errors.push(`unexpected network request: ${request.url()}`); });
+page.on('request', (request) => {
+  if (!request.url().startsWith('file:') && !request.url().startsWith('data:')) {
+    externalRequests.push(request.url());
+  }
+});
+
+async function resultIds(selector) {
+  return page.locator(selector).evaluateAll((elements) => elements.map((element) => {
+    return element.dataset.resultRow || element.dataset.resultCard;
+  }));
+}
+
+async function assertNoHorizontalOverflow(label) {
+  const dimensions = await page.evaluate(() => {
+    const frame = document.querySelector('.frame');
+    const app = document.querySelector('#compatibility-app');
+    return {
+      frameClientWidth: frame.clientWidth,
+      frameScrollWidth: frame.scrollWidth,
+      appClientWidth: app.clientWidth,
+      appScrollWidth: app.scrollWidth
+    };
+  });
+  if (dimensions.frameScrollWidth > dimensions.frameClientWidth) {
+    errors.push(`${label} frame has horizontal overflow: ${dimensions.frameScrollWidth} > ${dimensions.frameClientWidth}`);
+  }
+  if (dimensions.appScrollWidth > dimensions.appClientWidth) {
+    errors.push(`${label} app has horizontal overflow: ${dimensions.appScrollWidth} > ${dimensions.appClientWidth}`);
+  }
+}
 
 await page.goto(pathToFileURL(demoPath).href, { waitUntil: 'load' });
 const frame = page.locator('.frame');
-const portrait = await frame.evaluate((element) => ({ width: element.clientWidth, height: element.clientHeight }));
-if (portrait.width !== 390 || portrait.height !== 844) errors.push(`portrait frame is ${portrait.width}x${portrait.height}`);
-if (await page.locator('[data-game]').count() !== 6) errors.push('game catalog is not the default full library');
-if (await page.locator('.local-toggle').evaluate((element) => element.classList.contains('active'))) errors.push('local-device filter should default off');
-if (await page.locator('.mini-badge').count() !== 0) errors.push('default game catalog still exposes local-device conclusions');
-if (await page.locator('.filter-trigger').count() !== 1) errors.push('portrait filter trigger is missing');
-await frame.screenshot({ path: path.join(outputDir, '01-game-catalog-portrait.png') });
 
-await page.locator('.filter-trigger').click();
-if (!await page.locator('.filter-shell').evaluate((element) => element.classList.contains('panel-open'))) errors.push('portrait filter layer did not open');
-if (!await page.locator('.filter-mobile-panel [data-filter-key="statuses"][data-filter-option="direct"]').isDisabled()) errors.push('run-status filter should require a GPU selection');
-await frame.screenshot({ path: path.join(outputDir, '02-game-filter-portrait.png') });
-await page.locator('.filter-mobile-panel [data-filter-option="adreno_750"]').click();
-await page.locator('.filter-mobile-panel [data-filter-option="direct"]').click();
-if (await page.locator('.mobile-filter-confirm').textContent() !== '确定（2 项）') errors.push('filtered result count is wrong');
-await page.locator('.mobile-filter-confirm').click();
-if (await page.locator('[data-game]').count() !== 2) errors.push('GPU plus run-status filters did not return two games');
-if (await page.locator('[data-game="steam_1145360"]').count() !== 1 || await page.locator('[data-game="steam_814380"]').count() !== 1) errors.push('filtered game set is wrong');
-await frame.screenshot({ path: path.join(outputDir, '03-filtered-games-portrait.png') });
-await page.locator('.filter-trigger').click();
-await page.locator('.mobile-filter-reset').click();
-await page.locator('.mobile-filter-confirm').click();
-if (await page.locator('[data-game]').count() !== 6) errors.push('clear filters did not restore the full game catalog');
+// Desktop initial state.
+check(await page.locator('[data-popular-game]').count() === 6, 'initial popular games count is not six');
+check(await page.locator('[data-result-row]').count() === 0, 'initial page rendered desktop result rows without filters');
+check(await page.locator('[data-result-card]').count() === 0, 'initial page rendered mobile result cards without filters');
+check(await page.locator('#game-select').count() === 1, 'game selector is missing');
+check(await page.locator('#target-select').count() === 1, 'device / GPU selector is missing');
+check(await page.locator('#rating-select').count() === 1, 'rating selector is missing');
+await assertNoHorizontalOverflow('desktop initial');
+await frame.screenshot({ path: path.join(outputDir, screenshotNames[0]) });
 
-await page.locator('[data-game="steam_1245620"]').click();
-if (await page.locator('.summary-card strong').nth(0).textContent() !== 'Adreno 830') errors.push('recommended GPU calculation is wrong');
-if (await page.locator('.summary-card strong').nth(1).textContent() !== 'Adreno 750') errors.push('lowest verified GPU calculation is wrong');
-if (await page.locator('[data-record-gpu]').count() !== 4) errors.push('game detail did not show all GPU records');
+// Popular-game direct query and a meaningful two-row sort toggle.
+await page.locator('[data-popular-game="steam_1245620"]').click();
+check(await page.locator('[data-result-row]').count() === 2, 'Elden Ring popular entry did not return two rows');
+check((await page.locator('#game-select span').first().textContent())?.trim() === '艾尔登法环', 'popular-game entry did not synchronize the game selector');
 
-await page.locator('[data-config="cfg_elden_830_stable"]').click();
-if (await page.locator('#config-view [data-apply-config]').count() !== 0) errors.push('matching config detail still owns an action');
-if (!await page.locator('#config-view').getByText('完整配置', { exact: true }).isVisible()) errors.push('read-only config detail is incomplete');
-await frame.screenshot({ path: path.join(outputDir, '04-readonly-config-portrait.png') });
-await page.locator('.view.active [data-back]').click();
-const activeAfterConfigBack = await page.locator('.view.active').getAttribute('id');
-if (activeAfterConfigBack !== 'game-view') errors.push(`config detail returned to ${activeAfterConfigBack}, expected game-view`);
-if (await page.locator('[data-apply-config="cfg_elden_830_stable"]').textContent() !== '下载并应用') errors.push('matching list config did not offer direct application');
-await page.locator('[data-apply-config="cfg_elden_830_stable"]').click();
-await page.waitForTimeout(750);
-if (await page.locator('[data-apply-config="cfg_elden_830_stable"]').textContent() !== '配置已应用') errors.push('local matching-config fallback did not apply');
+await page.locator('[data-sort-field="verifiedAt"]').click();
+const descendingIds = await resultIds('[data-result-row]');
+check(descendingIds.join(',') === 'run_elden_13,run_elden_14', `verification-time descending sort is wrong: ${descendingIds.join(',')}`);
+await page.locator('[data-sort-field="verifiedAt"]').click();
+const ascendingIds = await resultIds('[data-result-row]');
+check(ascendingIds.join(',') === 'run_elden_14,run_elden_13', `verification-time ascending sort is wrong: ${ascendingIds.join(',')}`);
 
-await page.locator('[data-record-gpu="adreno_750"]').click();
-await page.locator('[data-config="cfg_elden_750"]').click();
-if (await page.locator('#config-view [data-apply-config]').count() !== 0) errors.push('mismatched config detail still owns an action');
-if (await page.locator('#config-view').getByText(/当前设备为 Adreno 830/).count() !== 0) errors.push('read-only config detail still contains action mismatch copy');
-if (!await page.locator('#config-view').getByText('Adreno 750', { exact: true }).isVisible()) errors.push('read-only detail lost the target GPU');
-await frame.screenshot({ path: path.join(outputDir, '05-readonly-other-gpu-config-portrait.png') });
+// Device filter, rating filter, and single-field clear.
+await page.locator('#target-select').click();
+await page.locator('[data-picker-input="target"]').fill('小米 14');
+await page.locator('[data-select-target="xiaomi_14"]').click();
+check((await resultIds('[data-result-row]')).join(',') === 'run_elden_14', 'game plus device filters did not return the Xiaomi 14 row');
 
-await page.evaluate(() => {
-  window.bridgeCalls = { download: [], apply: [] };
-  window.GameHubBridge = {
-    downloadConfig(payload) { window.bridgeCalls.download.push(payload); },
-    downloadAndApplyConfig(payload) { window.bridgeCalls.apply.push(payload); }
-  };
-});
-await page.locator('.view.active [data-back]').click();
-if (await page.locator('[data-apply-config="cfg_elden_750"]').textContent() !== '下载配置') errors.push('mismatched list config should be download-only');
-await page.locator('[data-apply-config="cfg_elden_750"]').click();
-await page.waitForTimeout(50);
-if (await page.locator('[data-apply-config="cfg_elden_750"]').textContent() !== '正在下载配置…') errors.push('synchronous Bridge did not wait for callback');
-const downloadRequest = await page.evaluate(() => window.bridgeCalls.download[0]);
-if (!downloadRequest?.requestId || downloadRequest.configId !== 'cfg_elden_750' || downloadRequest.gameId !== 'steam_1245620' || downloadRequest.gpuId !== 'adreno_750') errors.push('download Bridge payload is incomplete');
-await page.evaluate((request) => window.GameHubCompatibility.setActionResult({ requestId: request.requestId, configId: request.configId, status: 'success', message: '已保存到配置库' }), downloadRequest);
-const bridgeCalls = await page.evaluate(() => window.bridgeCalls);
-if (bridgeCalls.download.length !== 1 || bridgeCalls.apply.length !== 0) errors.push('mismatched config called the wrong Bridge method');
+await page.locator('#rating-select').selectOption('5');
+check(await page.getByText('暂无符合条件的兼容记录', { exact: true }).isVisible(), 'empty combined-filter state is missing');
+check(await page.locator('[data-state-action="clear"]').count() === 1, 'empty state clear action is missing');
+await page.locator('[data-clear-field="rating"]').click();
+check((await resultIds('[data-result-row]')).join(',') === 'run_elden_14', 'clearing only the rating did not restore the device result');
 
-await page.locator('[data-record-gpu="adreno_830"]').click();
-await page.locator('[data-apply-config="cfg_elden_830_stable"]').click();
-await page.locator('[data-apply-config="cfg_elden_830_quality"]').click();
-const applyRequests = await page.evaluate(() => window.bridgeCalls.apply);
-if (applyRequests.length !== 2 || applyRequests.some((request) => !request.requestId || request.configId == null)) errors.push('apply Bridge requests are incomplete');
-const invalidStatusAccepted = await page.evaluate((requests) => window.GameHubCompatibility.setActionResult({ requestId: requests[1].requestId, configId: requests[1].configId, status: 'pending', message: '非法状态' }), applyRequests);
-if (invalidStatusAccepted !== false) errors.push('invalid callback status was accepted');
-const staleAccepted = await page.evaluate((requests) => window.GameHubCompatibility.setActionResult({ requestId: requests[0].requestId, configId: requests[0].configId, status: 'success', message: '旧请求错误覆盖' }), applyRequests);
-if (staleAccepted !== false) errors.push('stale callback was accepted');
-if (await page.locator('[data-apply-config="cfg_elden_830_quality"]').textContent() !== '正在下载配置…') errors.push('stale callback overwrote the active request');
-await page.evaluate((requests) => window.GameHubCompatibility.setActionResult({ requestId: requests[1].requestId, configId: requests[1].configId, status: 'success', message: '配置已应用' }), applyRequests);
-if (await page.locator('[data-apply-config="cfg_elden_830_quality"]').textContent() !== '配置已应用') errors.push('active callback did not complete the matching request');
-await page.evaluate(() => { delete window.GameHubBridge; delete window.bridgeCalls; });
+// GPU filter uses the same target selector but matches all records by GPU name.
+await page.locator('[data-clear-field="target"]').click();
+check(await page.locator('[data-result-row]').count() === 2, 'clearing only the device did not restore both game rows');
+await page.locator('#target-select').click();
+await page.locator('[data-picker-input="target"]').fill('Adreno 830');
+await page.locator('[data-select-target="adreno_830"]').click();
+check((await resultIds('[data-result-row]')).join(',') === 'run_elden_13', 'GPU filter did not return the Adreno 830 row');
+await assertNoHorizontalOverflow('desktop results');
+await frame.screenshot({ path: path.join(outputDir, screenshotNames[1]) });
 
-for (let index = 0; index < 3; index += 1) {
-  if (await page.locator('.view.active').getAttribute('id') === 'catalog-view') break;
-  await page.locator('.view.active [data-back]').click();
+// Mobile preview keeps exactly the same filter state and source record.
+const desktopFilteredIds = await resultIds('[data-result-row]');
+await page.locator('[data-preview="mobile"]').click();
+await page.waitForTimeout(350);
+const mobileBox = await frame.boundingBox();
+check(Boolean(mobileBox), 'mobile frame has no bounding box');
+if (mobileBox) {
+  check(Math.round(mobileBox.width) === 390 && Math.round(mobileBox.height) === 844, `mobile frame outer box is ${mobileBox.width}x${mobileBox.height}`);
 }
-const activeAfterDetailBack = await page.locator('.view.active').getAttribute('id');
-if (activeAfterDetailBack !== 'catalog-view') {
-  errors.push(`detail back navigation stopped at ${activeAfterDetailBack}, expected catalog-view`);
-  await page.reload({ waitUntil: 'load' });
-}
+const mobileClientSize = await frame.evaluate((element) => ({ width: element.clientWidth, height: element.clientHeight }));
+check(mobileClientSize.width === 388 && mobileClientSize.height === 842, `mobile frame client box is ${mobileClientSize.width}x${mobileClientSize.height}`);
+const mobileFilteredIds = await resultIds('[data-result-card]');
+check(mobileFilteredIds.join(',') === desktopFilteredIds.join(','), `mobile data ${mobileFilteredIds.join(',')} differs from desktop data ${desktopFilteredIds.join(',')}`);
+check((await resultIds('[data-result-row]')).join(',') === desktopFilteredIds.join(','), 'desktop result DOM lost shared data during preview change');
+await assertNoHorizontalOverflow('mobile results');
+await frame.screenshot({ path: path.join(outputDir, screenshotNames[3]) });
 
-await page.locator('[data-mode="gpu"]').click();
-if (await page.locator('[data-gpu]').count() !== 6) errors.push('GPU catalog did not render all GPU types');
-await page.locator('.filter-trigger').click();
-await page.locator('.filter-mobile-panel [data-filter-option="Qualcomm"]').click();
-await page.locator('.mobile-filter-confirm').click();
-if (await page.locator('[data-gpu]').count() !== 4) errors.push('GPU vendor filter did not return four Qualcomm GPUs');
-await page.locator('#catalog-search').fill('750');
-await page.locator('[data-orientation="landscape"]').click();
-if (await page.locator('#catalog-search').inputValue() !== '750') errors.push('GPU search query was lost during orientation change');
-if (await page.locator('[data-gpu]').count() !== 1) errors.push('GPU filter state was lost during orientation change');
-await page.locator('#catalog-search').fill('');
-await page.locator('[data-filter-group="families"]').click();
-await page.locator('.filter-panel [data-filter-option="Adreno"]').click();
-if (!await page.locator('.filter-sidebar').isVisible() || !await page.locator('.filter-panel').isVisible()) errors.push('landscape filter rail or flyout is missing');
-await page.locator('#catalog-view').evaluate((element) => { element.scrollTop = 0; });
-await frame.screenshot({ path: path.join(outputDir, '06-gpu-filter-landscape.png') });
-const landscape = await frame.evaluate((element) => ({ width: element.clientWidth, height: element.clientHeight }));
-if (landscape.width !== 874 || landscape.height !== 402) errors.push(`landscape frame is ${landscape.width}x${landscape.height}`);
-await page.locator('.filter-done').click();
-await page.locator('[data-gpu="adreno_750"]').click();
-await page.locator('[data-gpu-game="steam_1245620"]').click();
-if (!await page.locator('#game-view').evaluate((element) => element.classList.contains('active'))) errors.push('GPU game row did not open game detail');
-if (!await page.locator('[data-record-gpu="adreno_750"]').evaluate((element) => element.classList.contains('active'))) errors.push('GPU context was not preselected in game detail');
-await page.locator('.view.active [data-back]').click();
-if (!await page.locator('#gpu-view').evaluate((element) => element.classList.contains('active'))) errors.push('game detail did not return to its GPU detail source');
+// Clear-all restores the mobile initial state.
+await page.locator('[data-clear-all]').click();
+check(await page.locator('[data-popular-game]').count() === 6, 'clear all did not restore six popular games');
+check(await page.locator('[data-result-row]').count() === 0, 'clear all left desktop result rows behind');
+check(await page.locator('[data-result-card]').count() === 0, 'clear all left mobile result cards behind');
+await assertNoHorizontalOverflow('mobile initial');
+await frame.screenshot({ path: path.join(outputDir, screenshotNames[2]) });
 
-await page.locator('.view.active [data-back]').click();
+// No-result recovery uses the state-panel clear action (there is no data-clear-all here).
+await page.locator('#rating-select').selectOption('5');
+await page.locator('#game-select').click();
+await page.locator('[data-picker-input="game"]').fill('星空');
+await page.locator('[data-select-game="steam_1716740"]').click();
+check(await page.getByText('暂无符合条件的兼容记录', { exact: true }).isVisible(), 'no-result state is missing');
+check(await page.locator('[data-clear-all]').count() === 0, 'no-result state unexpectedly exposes the result-summary clear button');
+check(await page.locator('[data-state-action="clear"]').count() === 1, 'no-result state does not expose its clear action');
+await assertNoHorizontalOverflow('mobile empty results');
+await frame.screenshot({ path: path.join(outputDir, screenshotNames[4]) });
+await page.locator('[data-state-action="clear"]').click();
+check(await page.locator('[data-popular-game]').count() === 6, 'no-result clear action did not restore popular games');
+
+// Adapter context, error state, and local reload recovery.
+await page.evaluate(() => window.GameHubCompatibility.setContext({ targetId: 'oneplus_13' }));
+check((await page.locator('#target-select span').first().textContent())?.trim() === '一加 13', 'recognized local device was not selected');
+check(await page.locator('[data-result-row]').count() === 6, 'local-device context did not return six desktop records');
+check(await page.locator('[data-result-card]').count() === 6, 'local-device context did not return six mobile records');
+
 await page.evaluate(() => window.GameHubCompatibility.setCatalogError());
-if (!await page.getByText('兼容库加载失败', { exact: true }).isVisible()) errors.push('catalog error state is missing');
-await page.evaluate(() => window.GameHubCompatibility.setCatalog({}));
-if (!await page.getByText('暂无兼容数据', { exact: true }).isVisible()) errors.push('catalog empty state is missing');
-const reloadButton = page.locator('[data-action="reload"]');
-if (await reloadButton.count()) {
-  await reloadButton.click();
-  await page.waitForTimeout(1200);
-  if (await page.locator('[data-game],[data-gpu]').count() === 0) errors.push(`empty catalog reload did not recover: ${(await page.locator('#catalog-view').innerText()).slice(0,120)}`);
-} else {
-  errors.push(`empty catalog did not expose reload: ${(await page.locator('#catalog-view').innerText()).slice(0,180)}`);
-  await page.reload({ waitUntil: 'load' });
-}
+check(await page.getByText('兼容数据加载失败', { exact: true }).isVisible(), 'catalog error state is missing');
+await page.locator('[data-state-action="reload"]').click();
+check(await page.getByText('正在加载兼容数据', { exact: true }).isVisible(), 'reload did not enter the loading state');
+await page.waitForTimeout(700);
+check((await page.locator('#target-select span').first().textContent())?.trim() === '一加 13', 'reload did not preserve the injected local-device selection');
+check(await page.locator('[data-result-row]').count() === 6, 'reload did not recover the filtered local-device desktop results');
+check(await page.locator('[data-result-card]').count() === 6, 'reload did not recover the filtered local-device mobile results');
+await page.locator('[data-clear-all]').click();
+check(await page.locator('[data-popular-game]').count() === 6, 'clearing the recovered local-device filter did not restore popular games');
 
+// Malformed, duplicate, unsafe, and out-of-range Adapter data degrades safely.
 await page.evaluate(() => window.GameHubCompatibility.setCatalog({
-  games: [null, 1, { id: 'test_game', name: '异常数据游戏', coverKey: 'url(fake)', aliases: null }, { id: 'test_game', name: '重复游戏' }],
-  gpus: [null, 'bad', { id: 'test_gpu', name: '测试 GPU', family: 'bad', tier: -1 }, { id: 'test_gpu', name: '重复 GPU' }, { id: 'other_gpu', name: '其他 GPU', family: 'Adreno', tier: 1 }],
-  records: [null, { gameId: 'missing', gpuId: 'test_gpu' }, { gameId: 'test_game', gpuId: 'test_gpu', status: 'bad', evidenceLevel: 'bad', configIds: ['test_config', 'wrong_config'] }, { gameId: 'test_game', gpuId: 'test_gpu', status: 'direct', evidenceLevel: 'exact_device', configIds: [] }],
-  configs: [null, { id: 'test_config', gameId: 'test_game', gpuId: 'test_gpu', settings: null, steps: null, knownIssues: null, fullConfig: null }, { id: 'test_config', gameId: 'test_game', gpuId: 'test_gpu', name: '重复配置' }, { id: 'wrong_config', gameId: 'test_game', gpuId: 'other_gpu', name: '错误关联配置' }]
+  games: [
+    null,
+    { id: 'g1', name: '异常游戏', aliases: null, coverKey: 'https://bad.example/cover.jpg' },
+    { id: 'g1', name: '重复游戏' }
+  ],
+  targets: [
+    null,
+    { id: 't1', type: 'bad', displayName: '异常设备', aliases: null, gpu: 'Adreno Test' },
+    { id: 't1', displayName: '重复设备' }
+  ],
+  runs: [
+    null,
+    { id: 'r1', gameId: 'missing', targetId: 't1' },
+    {
+      id: 'r2',
+      gameId: 'g1',
+      targetId: 't1',
+      gpu: 'Adreno Test',
+      rating: 99,
+      avgFps: 999,
+      tags: null,
+      notes: '<img src=x onerror=alert(1)>',
+      verifiedAt: 'bad'
+    }
+  ]
 }));
-await page.locator('[data-mode="game"]').click();
-if (await page.locator('[data-game="test_game"]').count() !== 1) errors.push('duplicate game IDs were not removed');
-await page.locator('[data-mode="gpu"]').click();
-if (await page.locator('[data-gpu="test_gpu"]').count() !== 1) errors.push('duplicate GPU IDs were not removed');
-await page.evaluate(() => window.GameHubCompatibility.openGame('test_game', 'test_gpu'));
-if (!await page.getByText('暂无结论', { exact: true }).isVisible()) errors.push('invalid record enums did not degrade safely');
-if (await page.locator('[data-record-gpu="test_gpu"]').count() !== 1) errors.push('duplicate game/GPU records were not removed');
-if (await page.locator('[data-config]').count() !== 1) errors.push('duplicate or mismatched configs were not filtered from the record');
-if (await page.locator('[data-config="wrong_config"]').count() !== 0) errors.push('mismatched game/GPU config remained visible');
+check(await page.locator('[data-popular-game="g1"]').count() === 1, 'duplicate game IDs were not normalized to one popular entry');
+await page.locator('[data-popular-game="g1"]').click();
+check(await page.locator('[data-result-row]').count() === 1, 'invalid and duplicate catalog data did not normalize to one desktop row');
+check(await page.locator('[data-result-card]').count() === 1, 'invalid and duplicate catalog data did not normalize to one mobile card');
+check(await page.locator('.rating').first().getAttribute('aria-label') === '5 分', 'rating 99 was not clamped to five');
+check((await page.locator('[data-result-row]').first().innerText()).includes('<img src=x onerror=alert(1)>'), 'unsafe notes were not rendered as inert text');
+check(await page.locator('[data-result-row] img').count() === 0, 'unsafe notes created an executable image element');
+check((await page.locator('[data-result-row]').first().innerText()).includes('240 FPS'), 'out-of-range FPS was not clamped to 240');
+check((await page.locator('[data-result-row]').first().innerText()).includes('未记录'), 'invalid verification date did not degrade to 未记录');
+await assertNoHorizontalOverflow('mobile malformed data');
+
+check(externalRequests.length === 0, `unexpected external requests: ${externalRequests.join(', ')}`);
+for (const screenshotName of screenshotNames) {
+  const screenshotPath = path.join(outputDir, screenshotName);
+  check(fs.existsSync(screenshotPath) && fs.statSync(screenshotPath).size > 0, `${screenshotName} was not created or is empty`);
+}
 
 await browser.close();
 if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('PASS: responsive filters, read-only config detail, list actions, Adapter and recovery verified in six screenshots');
+console.log('PASS: compatibility reference redesign interactions, responsive rendering, Adapter, recovery, and five screenshots');
