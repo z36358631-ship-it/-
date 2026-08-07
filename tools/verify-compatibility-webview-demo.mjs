@@ -18,61 +18,68 @@ if (!fs.existsSync(demoPath)) {
 
 const html = fs.readFileSync(demoPath, 'utf8');
 const required = [
-  'id="catalog-view"',
-  'id="game-view"',
-  'id="gpu-view"',
-  'id="config-view"',
+  'id="compatibility-app"',
+  'id="game-select"',
+  'id="target-select"',
+  'id="rating-select"',
+  'data-popular-game',
+  'data-result-row',
+  'data-result-card',
+  'data-sort-field="rating"',
+  'data-sort-field="verifiedAt"',
   'window.GameHubCompatibility',
   'setContext(context)',
   'setCatalog(catalog)',
   'setCatalogLoading()',
   'setCatalogError()',
-  'setActionResult(result',
-  'openGame(gameId,gpuId)',
-  'openGpu(gpuId)',
-  'openConfig(configId)',
-  'downloadAndApplyConfig',
-  'downloadConfig',
-  'requestId',
-  'activeRequestId',
-  'finishAction',
-  'filter-trigger',
-  'filter-sidebar',
-  'filter-panel',
-  'data-filter-group',
-  'data-filter-option',
-  'gameFilters',
-  'gpuFilters',
-  'clearFilters',
-  'reloadCompatibilityCatalog',
+  'filteredRuns()',
+  'renderPopularGames()',
+  'renderResults()',
+  '选择游戏',
+  '设备 / GPU',
+  '最低评价（可选）',
+  '热门游戏',
+  '平均 FPS',
+  '验证时间'
+];
+
+const legacy = [
+  'id="game-view"',
+  'id="gpu-view"',
+  'id="config-view"',
   '按游戏查',
   '按 GPU 查',
-  '只看本机',
-  'GPU 型号',
-  '运行表现',
-  '游戏平台',
-  '配置状态',
-  'GPU 厂商',
-  'GPU 系列',
-  '性能档位',
-  '验证状态',
-  '推荐 GPU',
-  '最低已验证 GPU',
-  '查看配置',
-  '下载并应用',
-  '下载配置',
-  '可直接玩',
-  '调整后可玩',
-  '暂不建议',
-  '暂无结论',
-  '当前设备已验证',
-  '同 GPU 已验证',
-  '同类 GPU 参考',
-  '样本较少'
+  'filter-sidebar',
+  'filter-panel',
+  'downloadAndApplyConfig',
+  'downloadConfig',
+  'openGame(gameId',
+  'openGpu(gpuId',
+  'openConfig(configId'
+];
+
+const covers = [
+  'black-myth-wukong.jpg',
+  'elden-ring.jpg',
+  'hades.jpg',
+  'sekiro.jpg',
+  'cyberpunk-2077.jpg',
+  'starfield.jpg'
 ];
 
 for (const contract of required) {
   if (!html.includes(contract)) fail(`missing contract: ${contract}`);
+}
+
+for (const marker of legacy) {
+  if (html.includes(marker)) fail(`legacy contract remains: ${marker}`);
+}
+
+const coverDir = path.join(path.dirname(demoPath), 'assets', 'compatibility');
+for (const cover of covers) {
+  const coverPath = path.join(coverDir, cover);
+  if (!fs.existsSync(coverPath)) fail(`cover not found: ${cover}`);
+  else if (fs.statSync(coverPath).size < 20_000) fail(`cover is too small: ${cover}`);
 }
 
 const forbidden = [
@@ -100,4 +107,4 @@ if (scriptMatches.length === 0) {
 
 if (process.exitCode) process.exit();
 
-console.log('PASS: compatibility WebView demo contracts, offline policy, and JavaScript syntax');
+console.log('PASS: compatibility reference redesign contracts, local assets, offline policy, and JavaScript syntax');
