@@ -6,6 +6,7 @@
 |---|---|---|---|
 | 2026.08.06 | V1.0 | 郑群超 | 新增时段次卡、节点限时包预热、套餐排队特权、限时时长查询与扣除；补充竖版及掌机模式 |
 | 2026.08.07 | V1.1 | 郑群超 | 限时时长扣除沿用用户时长管理，不关联订单或工单；保留永久时长展示与扣除 |
+| 2026.08.07 | V1.2 | 郑群超 | 在原“扣除云游戏时长”弹窗中增加限时时长展示与扣除；适用星期增加工作日、周末快捷选择 |
 
 ## 二、背景与目标
 
@@ -23,7 +24,7 @@
 
 1. 时段次卡：充值中心购买 → 次数到账 → 指定时段点击秒玩 → 确认扣1次 → 本时段任意云游戏免扣 → 到期切换其他时长或进入现有无时长流程。
 2. 节点限时包：预热期查看 → 开售后购买 → 限时时长到账 → 使用窗口内消耗 → 耗尽或到期。
-3. 后台扣除：用户详情 → 选择一条限时时长 → 填写扣除量与原因 → 二次确认 → 更新余额并记录日志。
+3. 后台扣除：用户列表 → 打开原“扣除云游戏时长”弹窗 → 填写永久时长和/或限时时长扣除量 → 确定 → 更新当前用户余额。
 
 ## 四、概要设计
 
@@ -31,10 +32,10 @@
 
 | 功能 | 图示 | 规则与交互 |
 |---|---|---|
-| 充值中心与商品购买 | ![竖版充值中心](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba112afec051fea6cbe0019863ac6522b3e61a69/public/prd/cloud-time-pack/01-recharge-products.png)<br>![掌机模式充值中心](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba112afec051fea6cbe0019863ac6522b3e61a69/public/prd/cloud-time-pack/05-landscape-recharge.png) | 沿用现有充值中心，不新增入口。<br>时段次卡展示名称、价格、次数、有效天数、适用星期和每日时段；支付成功只发放次数，不立即激活。每笔订单单独生成记录，未使用次数自支付成功起N天有效。<br>节点限时包展示包含时长和使用期限；预热期可见但不可点击，不额外提示；开售后自动恢复购买；售卖结束后下架。<br>竖版和掌机模式展示同一商品、价格和状态，沿用各自现有页面结构。 |
-| 时段次卡激活 | ![竖版次卡激活](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba112afec051fea6cbe0019863ac6522b3e61a69/public/prd/cloud-time-pack/02-slot-pass-activation.png)<br>![掌机模式次卡激活](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba112afec051fea6cbe0019863ac6522b3e61a69/public/prd/cloud-time-pack/06-landscape-activation.png) | 用户在适用星期和时段点击秒玩，且没有正在生效的免扣权益时，展示激活确认。弹窗说明扣1次、本次可玩至几点、当前时段剩余时间、剩余次数和整包有效期。<br>确认后按“用户＋当前时段”原子扣1次；同一时段退出、重进、切换游戏或重复点击均复用当前激活结果，不重复扣次。多条可用记录先扣最早到期的一条。<br>记录到期只限制发起新激活；用户在到期前成功激活，本次权益仍持续至当前时段结束。 |
-| 时长明细与扣费 | ![云游戏时长明细](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba112afec051fea6cbe0019863ac6522b3e61a69/public/prd/cloud-time-pack/03-time-detail.png) | 永久时长、时段次卡和限时时长分区展示。次卡按记录展示剩余/总次数、适用时段、到期时间和状态；限时时长按记录展示套餐、剩余时长和使用窗口。<br>扣费顺序：包天卡/包夜卡/已激活次卡免扣 → 兑换时长 → 有效限时时长 → 永久时长。同类限时时长先扣使用结束时间更早的记录。 |
-| 到期提醒与续玩 | ![次卡到期提醒](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba112afec051fea6cbe0019863ac6522b3e61a69/public/prd/cloud-time-pack/04-slot-pass-reminder.png) | 时段结束前3分钟和10秒各展示一次顶部横幅，3秒后收起。<br>到期只结束次卡免扣：有其他时长时按原扣费顺序无感切换；没有时长时进入现有充值/退出流程，不新增流程。 |
+| 充值中心与商品购买 | ![竖版充值中心](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@fe406f821054624b9a97037b35ae0dcaf44d027b/public/prd/cloud-time-pack/01-recharge-products.png)<br>![掌机模式充值中心](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@fe406f821054624b9a97037b35ae0dcaf44d027b/public/prd/cloud-time-pack/05-landscape-recharge.png) | 沿用现有充值中心，不新增入口。<br>时段次卡展示名称、价格、次数、有效天数、适用星期和每日时段；支付成功只发放次数，不立即激活。每笔订单单独生成记录，未使用次数自支付成功起N天有效。<br>节点限时包展示包含时长和使用期限；预热期可见但不可点击，不额外提示；开售后自动恢复购买；售卖结束后下架。<br>竖版和掌机模式展示同一商品、价格和状态，沿用各自现有页面结构。 |
+| 时段次卡激活 | ![竖版次卡激活](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@fe406f821054624b9a97037b35ae0dcaf44d027b/public/prd/cloud-time-pack/02-slot-pass-activation.png)<br>![掌机模式次卡激活](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@fe406f821054624b9a97037b35ae0dcaf44d027b/public/prd/cloud-time-pack/06-landscape-activation.png) | 用户在适用星期和时段点击秒玩，且没有正在生效的免扣权益时，展示激活确认。弹窗说明扣1次、本次可玩至几点、当前时段剩余时间、剩余次数和整包有效期。<br>确认后按“用户＋当前时段”原子扣1次；同一时段退出、重进、切换游戏或重复点击均复用当前激活结果，不重复扣次。多条可用记录先扣最早到期的一条。<br>记录到期只限制发起新激活；用户在到期前成功激活，本次权益仍持续至当前时段结束。 |
+| 时长明细与扣费 | ![云游戏时长明细](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@fe406f821054624b9a97037b35ae0dcaf44d027b/public/prd/cloud-time-pack/03-time-detail.png) | 永久时长、时段次卡和限时时长分区展示。次卡按记录展示剩余/总次数、适用时段、到期时间和状态；限时时长按记录展示套餐、剩余时长和使用窗口。<br>扣费顺序：包天卡/包夜卡/已激活次卡免扣 → 兑换时长 → 有效限时时长 → 永久时长。同类限时时长先扣使用结束时间更早的记录。 |
+| 到期提醒与续玩 | ![次卡到期提醒](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@fe406f821054624b9a97037b35ae0dcaf44d027b/public/prd/cloud-time-pack/04-slot-pass-reminder.png) | 时段结束前3分钟和10秒各展示一次顶部横幅，3秒后收起。<br>到期只结束次卡免扣：有其他时长时按原扣费顺序无感切换；没有时长时进入现有充值/退出流程，不新增流程。 |
 | 节点限时包时间与支付 | — | 商品包含预热、售卖和使用三个窗口，均以服务端北京时间为准。预热期只展示；支付时间在售卖窗口内才发放权益。支付回调晚到但实际支付时间有效，正常发放；实际支付时间越界，不发权益并自动原路退款。<br>支付成功时固化商品、活动、价格、时长、限购、协议和三个时间窗口，后续修改不影响历史订单。使用窗口结束后剩余时长作废。 |
 | 排队特权 | — | 用户购买配置了排队特权天数的普通时长套餐后生效。每笔订单单独计算，不累计，当前展示所有有效订单中最晚的到期时间；退款、撤销或拒付后撤销对应权益并重新计算。到期后按普通用户排队，不中断已启动游戏。 |
 
@@ -42,11 +43,11 @@
 
 | 功能 | 图示 | 规则与交互 |
 |---|---|---|
-| 商品列表 | ![云游戏充值商品列表](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba112afec051fea6cbe0019863ac6522b3e61a69/public/prd/cloud-time-pack/07-product-list.png) | 沿用“小鸡云游戏－新云游戏充值商品”，商品类型新增“时段次卡”，列表补充权益内容、预热/售卖时间、使用时间和排队特权天数；支持按商品ID、APP协议、类型、名称和状态筛选。 |
-| 时段次卡配置 | ![时段次卡配置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba112afec051fea6cbe0019863ac6522b3e61a69/public/prd/cloud-time-pack/08-slot-pass-config.png) | 复用现有商品基础字段，新增发放次数1—999、购买后有效天数1—365、适用星期和每日开始/结束时间。星期至少选1天；时间精确到分钟，结束时间必须晚于开始时间，不支持跨日。<br>已有订单后修改配置只影响新订单，历史权益按购买快照执行；有订单的商品只允许下架，不硬删除。 |
-| 节点限时包配置 | ![节点限时包配置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba112afec051fea6cbe0019863ac6522b3e61a69/public/prd/cloud-time-pack/09-limited-pack-config.png) | 复用现有限时包，新增活动ID、活动名称、预热开始、售卖开始和售卖结束。活动ID自动生成。时间满足：预热开始≤售卖开始＜售卖结束、使用开始＜使用结束、售卖结束≤使用结束。<br>商品状态分未预热、预热中、售卖中、售卖结束、已下架；用户权益状态分未生效、可使用、使用中、已耗尽、已过期、已撤销。 |
-| 排队特权配置与旧权益切换 | ![排队特权配置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba112afec051fea6cbe0019863ac6522b3e61a69/public/prd/cloud-time-pack/10-queue-privilege-config.png) | 普通时长套餐新增“排队特权天数”，范围0—365，0表示不赠送。新订单按支付时套餐快照生成订单级权益。<br>上线设统一切换时间T：全部用户停止读取旧永久权益，不保留老用户权益；T前用户取最后一笔有效真实付费时长订单，按T时该SKU最新配置计算到期时间。免费兑换、人工赠送、退款、撤销和拒付订单不参与。已过期、SKU无法匹配或配置为0均不生成权益。迁移按“用户＋批次”幂等执行，失败可重跑，但失败期间也不恢复旧权益。 |
-| 用户时长查询与扣除 | ![用户限时时长扣除](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba112afec051fea6cbe0019863ac6522b3e61a69/public/prd/cloud-time-pack/11-limited-time-deduct.png) | 沿用现有用户时长管理，保留永久时长展示及按用户扣除永久时长；新增限时时长汇总和分条记录。限时时长仅“可使用”记录支持扣除，“使用中”、已耗尽、已过期和已撤销不可操作。<br>永久时长从用户总余额进入扣除；限时时长从具体记录进入扣除。表单填写正整数分钟、原因和补充说明，不要求订单号或工单号；原因含运营调整、账号修正、违规处理、其他，其中“其他”必填说明。提交前二次确认，服务端重新校验余额并原子扣除；成功后刷新对应余额、记录和最大可扣值。<br>日志记录用户、时长类型、限时记录ID（限时时长时）、扣前/扣除/扣后、原因、说明、操作人和时间，不支持人工发放限时时长。 |
+| 商品列表 | ![云游戏充值商品列表](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@fe406f821054624b9a97037b35ae0dcaf44d027b/public/prd/cloud-time-pack/07-product-list.png) | 沿用“小鸡云游戏－新云游戏充值商品”，商品类型新增“时段次卡”，列表补充权益内容、预热/售卖时间、使用时间和排队特权天数；支持按商品ID、APP协议、类型、名称和状态筛选。 |
+| 时段次卡配置 | ![时段次卡配置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@fe406f821054624b9a97037b35ae0dcaf44d027b/public/prd/cloud-time-pack/08-slot-pass-config.png) | 复用现有商品基础字段，新增发放次数1—999、购买后有效天数1—365、适用星期和每日开始/结束时间。适用星期支持“工作日、周末”快捷选择及周一至周日单独选择：工作日联动周一至周五，周末联动周六、周日，最终至少选择1天。时间精确到分钟，结束时间必须晚于开始时间，不支持跨日。<br>已有订单后修改配置只影响新订单，历史权益按购买快照执行；有订单的商品只允许下架，不硬删除。 |
+| 节点限时包配置 | ![节点限时包配置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@fe406f821054624b9a97037b35ae0dcaf44d027b/public/prd/cloud-time-pack/09-limited-pack-config.png) | 复用现有限时包，新增活动ID、活动名称、预热开始、售卖开始和售卖结束。活动ID自动生成。时间满足：预热开始≤售卖开始＜售卖结束、使用开始＜使用结束、售卖结束≤使用结束。<br>商品状态分未预热、预热中、售卖中、售卖结束、已下架；用户权益状态分未生效、可使用、使用中、已耗尽、已过期、已撤销。 |
+| 排队特权配置与旧权益切换 | ![排队特权配置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@fe406f821054624b9a97037b35ae0dcaf44d027b/public/prd/cloud-time-pack/10-queue-privilege-config.png) | 普通时长套餐新增“排队特权天数”，范围0—365，0表示不赠送。新订单按支付时套餐快照生成订单级权益。<br>上线设统一切换时间T：全部用户停止读取旧永久权益，不保留老用户权益；T前用户取最后一笔有效真实付费时长订单，按T时该SKU最新配置计算到期时间。免费兑换、人工赠送、退款、撤销和拒付订单不参与。已过期、SKU无法匹配或配置为0均不生成权益。迁移按“用户＋批次”幂等执行，失败可重跑，但失败期间也不恢复旧权益。 |
+| 用户时长显示与扣除 | ![用户限时时长扣除](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@fe406f821054624b9a97037b35ae0dcaf44d027b/public/prd/cloud-time-pack/11-limited-time-deduct.png) | 沿用原“扣除云游戏时长”弹窗及样式，保留“云游戏永久时长、扣除云游戏永久时长”两项，在其下新增“云游戏限时时长、扣除云游戏限时时长”两项，不新增独立列表或详情页。<br>两种扣除量默认0，单位沿用现有小时口径，可单独或同时填写；至少一项大于0，均不得小于0或超过当前对应余额。点击“确定”后直接针对当前用户扣除，不要求订单号、工单号、原因或二次确认；服务端重新校验两类余额并原子更新，结果沿用现有操作记录。 |
 
 ## 五、通用规则
 
@@ -70,7 +71,7 @@
 | `slot_pass_end` | 当前时段权益结束 | `record_id`,`used_seconds`,`fallback_type`,`game_id` |
 | `limited_time_consume` | 限时时长扣费落账 | `activity_id`,`record_id`,`consume_seconds`,`remaining_seconds`,`game_id` |
 | `queue_privilege_change` | 发放、迁移、到期或撤销 | `user_id`,`order_id`,`source`,`expire_time`,`change_reason` |
-| `limited_time_manual_deduct` | 后台扣除返回结果 | `user_id`,`record_id`,`before_seconds`,`deduct_seconds`,`after_seconds`,`result`,`operator_role` |
+| `limited_time_manual_deduct` | 后台扣除返回结果 | `user_id`,`permanent_before_seconds`,`permanent_deduct_seconds`,`permanent_after_seconds`,`limited_before_seconds`,`limited_deduct_seconds`,`limited_after_seconds`,`result`,`operator_role` |
 
 ## 七、运营准备
 
