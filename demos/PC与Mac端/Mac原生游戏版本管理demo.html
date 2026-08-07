@@ -168,18 +168,20 @@
   <script>
     const icons={steam:'<svg class="platform-icon" viewBox="0 0 24 24" title="Steam" aria-label="Steam"><use href="#i-steam"/></svg>',nativeIcon:'<svg class="platform-icon" viewBox="0 0 24 24" title="Mac 原生版" aria-label="Mac 原生版"><use href="#i-apple"/></svg>',nativeLabel:'<span class="mac-native-label" title="Mac 原生版" aria-label="Mac 原生版"><svg viewBox="0 0 24 24"><use href="#i-apple"/></svg><span>Mac 原生</span></span>'};
     const versions={steam:{id:'steam',name:'Steam',size:'250.3 MB',native:false},native:{id:'native',name:'Mac 原生版',size:'284.6 MB',native:true}};
-    const state={page:'library',activeVersion:'steam',targetVersion:'steam',selectedInstallVersion:'steam',installedVersions:new Set(['steam']),installPath:'valid',downloadState:'idle',downloadProgress:0,downloadTimer:null};
+    const state={page:'library',activeVersion:'steam',selectedVersion:'steam',selectedInstallVersion:'steam',installedVersions:new Set(['steam']),installPath:'valid',downloadState:'idle',downloadProgress:0,downloadTimer:null};
     const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+    let installReturnFocus=null;
+    function focusIfVisible(element){if(element?.isConnected&&!element.disabled&&element.offsetParent!==null)element.focus()}
     function fit(){const scale=Math.min((innerWidth-24)/1076,(innerHeight-24)/734,1);$('#app').style.setProperty('--scale',scale.toFixed(4))}
     function versionIcon(id){return versions[id].native?icons.nativeIcon:icons.steam}
     function showPage(page){state.page=page;$$('.page').forEach(el=>el.classList.toggle('active',el.id===`page-${page}`));$$('.rail-btn[data-page]').forEach(el=>el.classList.toggle('active',el.dataset.page===page));render()}
     function openSearch(){$('#searchOverlay').classList.add('show')}
     function closeSearch(){$('#searchOverlay').classList.remove('show')}
     function render(){
-      const target=versions[state.targetVersion],active=versions[state.activeVersion],targetInstalled=state.installedVersions.has(target.id);
-      $('#detailSize').textContent=target.size;
-      $('#detailPlatform').innerHTML=target.native?`${icons.steam}${icons.nativeLabel}`:icons.steam;
-      $('#detailCta').innerHTML=targetInstalled?`${versionIcon(target.id)}<span>开始游戏</span>`:`${versionIcon(target.id)}<span>下载 ${target.size}</span>`;
+      const selected=versions[state.selectedVersion],selectedInstalled=state.installedVersions.has(selected.id);
+      $('#detailSize').textContent=selected.size;
+      $('#detailPlatform').innerHTML=selected.native?`${icons.steam}${icons.nativeLabel}`:icons.steam;
+      $('#detailCta').innerHTML=selectedInstalled?`${versionIcon(selected.id)}<span>开始游戏</span>`:`${versionIcon(selected.id)}<span>下载 ${selected.size}</span>`;
       $('#installedCount').textContent='(7)';
       $('#managedNativeChip').classList.toggle('show',state.activeVersion==='native');
       renderSettings();renderInstall();
@@ -189,11 +191,29 @@
       $('#storageList').innerHTML=Object.values(versions).filter(v=>state.installedVersions.has(v.id)).map(v=>`<div class="storage-row"><span>${v.name}</span><span>${v.size}　·　已保留</span></div>`).join('');
     }
     function renderVersionSwitch(){
-      $('#versionSwitchList').innerHTML=Object.values(versions).map(v=>{const installed=state.installedVersions.has(v.id),current=v.id===state.activeVersion,icon=v.native?'<svg><use href="#i-apple"/></svg>':'<svg><use href="#i-steam"/></svg>';return `<div class="version-switch-row ${current?'current':''}"><span class="version-icon ${v.native?'native':''}">${icon}</span><span class="version-copy"><strong>${v.name}${current?'<span class="current-tag">当前使用</span>':''}</strong><p>${installed?`已安装 · ${v.size}`:`未安装 · 下载 ${v.size}`}</p></span><button class="version-action ${!installed?'primary':''}" data-action="choose-version" data-version="${v.id}" ${current?'disabled':''}>${current?'当前使用':installed?'切换':'下载并切换'}</button></div>`}).join('');
+      $('#versionSwitchList').innerHTML=Object.values(versions).map(v=>{
+        const selected=v.id===state.selectedVersion;
+        const icon=v.native?'<svg><use href="#i-apple"/></svg>':'<svg><use href="#i-steam"/></svg>';
+        const action=selected
+          ? '<span class="version-switch-check" aria-label="当前选择">✓</span>'
+          : `<button class="version-switch-action" data-action="choose-version" data-version="${v.id}"><span>切换</span></button>`;
+        return `<div class="version-switch-row ${selected?'selected':''}"><span class="version-switch-icon ${v.native?'native':''}">${icon}</span><span class="version-switch-name">${v.name}</span>${action}</div>`;
+      }).join('');
     }
-    function openVersionSwitch(){closeDetailMore();renderVersionSwitch();$('#versionSwitchOverlay').classList.add('show');setTimeout(()=>$('#versionSwitchOverlay .version-action:not(:disabled)')?.focus(),0)}
-    function closeVersionSwitch(returnFocus=true){$('#versionSwitchOverlay').classList.remove('show');if(returnFocus)$('#detailMoreBtn').focus()}
-    function chooseVersion(id){if(state.installedVersions.has(id)){state.activeVersion=id;state.targetVersion=id;closeVersionSwitch(false);render();return}state.targetVersion=id;closeVersionSwitch(false);openInstall(id)}
+    function openVersionSwitch(){
+      closeDetailMore();
+      renderVersionSwitch();
+      $('#versionSwitchOverlay').classList.add('show');
+      setTimeout(()=>{$('#versionSwitchOverlay').classList.contains('show')&&$('#versionSwitchOverlay .version-switch-action')?.focus()},0);
+    }
+    function closeVersionSwitch(returnFocus=true){$('#versionSwitchOverlay').classList.remove('show');if(returnFocus)focusIfVisible($('#detailMoreBtn'))}
+    function chooseVersion(id){
+      if(!versions[id]||!$('#versionSwitchOverlay').classList.contains('show')||id===state.selectedVersion)return;
+      state.selectedVersion=id;
+      if(state.installedVersions.has(id))state.activeVersion=id;
+      closeVersionSwitch();
+      render();
+    }
     function renderInstall(){
       const selected=versions[state.selectedInstallVersion];
       $('#summarySize').textContent=selected.size;$('#summaryPlatform').innerHTML=selected.native?`${icons.steam}${icons.nativeLabel}`:icons.steam;
@@ -202,14 +222,25 @@
       $('#versionMenu').innerHTML=Object.values(versions).map(v=>`<button class="version-option ${v.id===selected.id?'selected':''}" data-action="select-install-version" data-version="${v.id}"><span class="version-icon ${v.native?'native':''}">${v.native?'<svg><use href="#i-apple"/></svg>':'<svg><use href="#i-steam"/></svg>'}</span><strong>${v.name}</strong><small>${v.size}${state.installedVersions.has(v.id)?' · 已安装':''}</small></button>`).join('');
       const installed=state.installedVersions.has(selected.id),downloading=state.downloadState==='downloading';$('#installBtn').textContent=downloading?'取消下载':installed?(selected.id===state.activeVersion?'当前使用':'切换版本'):'安装游戏';$('#installBtn').disabled=!downloading&&installed&&selected.id===state.activeVersion;
     }
-    function openInstall(id){state.selectedInstallVersion=id;state.downloadState='idle';state.downloadProgress=0;$('#installError').textContent='';$('#progress').classList.remove('show');$('#progressBar').style.width='0';$('#installOverlay').classList.add('show');renderInstall()}
+    function openInstall(id){if(!versions[id])return;installReturnFocus=$('#detailCta');state.selectedInstallVersion=id;state.downloadState='idle';state.downloadProgress=0;$('#installError').textContent='';$('#progress').classList.remove('show');$('#progressBar').style.width='0';$('#installOverlay').classList.add('show');renderInstall();setTimeout(()=>{$('#installOverlay').classList.contains('show')&&$('#installOverlay .modal-close')?.focus()},0)}
     function cancelDownload(){if(state.downloadTimer){clearInterval(state.downloadTimer);state.downloadTimer=null}state.downloadState='cancelled';$('#installError').textContent='已取消下载，当前版本保持不变';$('#progress').classList.remove('show');renderInstall()}
-    function closeInstall(){if(state.downloadState==='downloading')cancelDownload();$('#installOverlay').classList.remove('show');$('#versionField').classList.remove('open');render()}
+    function closeInstall(){if(state.downloadState==='downloading')cancelDownload();$('#installOverlay').classList.remove('show');$('#versionField').classList.remove('open');const returnFocus=installReturnFocus;installReturnFocus=null;render();focusIfVisible(returnFocus)}
     function cyclePath(){const order=['valid','missing','small'];state.installPath=order[(order.indexOf(state.installPath)+1)%order.length];const content={valid:['/Applications/GameHub/','GameHub · Applications · 可用空间 128 GB'],missing:['/Volumes/external_disk/Gamehub/','GameHub · external_disk · 文件路径不存在'],small:['/Volumes/SmallDisk/Gamehub/','GameHub · SmallDisk · 可用空间 128 MB']}[state.installPath];$('#pathLabel').textContent=content[0];$('#pathText').textContent=content[1];$('#pathField').classList.toggle('error',state.installPath!=='valid');$('#installError').textContent=''}
-    function switchVersion(id){if(state.installedVersions.has(id)){state.activeVersion=id;state.targetVersion=id;render();return}state.targetVersion=id;showPage('detail');openInstall(id)}
-    function install(){const selected=versions[state.selectedInstallVersion];if(state.installedVersions.has(selected.id)){state.activeVersion=selected.id;state.targetVersion=selected.id;closeInstall();return}if(state.installPath==='missing'){$('#installError').textContent='安装位置不可用，请重新选择路径';return}if(state.installPath==='small'){$('#installError').textContent=`存储空间不足，安装至少需要 ${selected.size}`;return}state.downloadState='downloading';state.downloadProgress=0;$('#installError').textContent=`正在下载 ${selected.name}…`;$('#progress').classList.add('show');renderInstall();state.downloadTimer=setInterval(()=>{state.downloadProgress+=10;$('#progressBar').style.width=`${state.downloadProgress}%`;if(state.downloadProgress>=100){clearInterval(state.downloadTimer);state.downloadTimer=null;state.installedVersions.add(selected.id);state.activeVersion=selected.id;state.targetVersion=selected.id;state.downloadState='success';$('#installError').textContent='安装完成，已设为默认启动版本；原版本已保留';render();setTimeout(()=>{$('#installOverlay').classList.remove('show');showPage('detail')},700)}},500)}
+    function switchVersion(id){
+      if(!versions[id])return;
+      if(state.installedVersions.has(id)){
+        state.activeVersion=id;
+        state.selectedVersion=id;
+        render();
+        return;
+      }
+      state.selectedVersion=id;
+      showPage('detail');
+      render();
+    }
+    function install(){const selected=versions[state.selectedInstallVersion];if(!selected)return;if(state.installedVersions.has(selected.id)){state.activeVersion=selected.id;state.selectedVersion=selected.id;closeInstall();return}if(state.installPath==='missing'){$('#installError').textContent='安装位置不可用，请重新选择路径';return}if(state.installPath==='small'){$('#installError').textContent=`存储空间不足，安装至少需要 ${selected.size}`;return}state.downloadState='downloading';state.downloadProgress=0;$('#installError').textContent=`正在下载 ${selected.name}…`;$('#progress').classList.add('show');renderInstall();state.downloadTimer=setInterval(()=>{state.downloadProgress+=10;$('#progressBar').style.width=`${state.downloadProgress}%`;if(state.downloadProgress>=100){clearInterval(state.downloadTimer);state.downloadTimer=null;state.installedVersions.add(selected.id);state.activeVersion=selected.id;state.selectedVersion=selected.id;state.downloadState='success';$('#installError').textContent='安装完成，已设为默认启动版本；原版本已保留';render();setTimeout(()=>{showPage('detail');closeInstall()},700)}},500)}
     function closeDetailMore(returnFocus=false){$('#detailMoreMenu').classList.remove('show');$('#detailMoreBtn').setAttribute('aria-expanded','false');if(returnFocus)$('#detailMoreBtn').focus()}
-    document.addEventListener('click',e=>{const t=e.target.closest('[data-action],[data-page]');if(!e.target.closest('.detail-more-wrap'))closeDetailMore();if(!t){if(!e.target.closest('#versionField'))$('#versionField').classList.remove('open');return}if(t.dataset.page){closeDetailMore();showPage(t.dataset.page);return}const a=t.dataset.action;if(a==='open-search')openSearch();if(a==='close-search')closeSearch();if(a==='open-detail'){closeSearch();showPage('detail')}if(a==='detail-primary'){state.installedVersions.has(state.targetVersion)?null:openInstall(state.targetVersion)}if(a==='toggle-detail-more'){const menu=$('#detailMoreMenu'),open=!menu.classList.contains('show');menu.classList.toggle('show',open);$('#detailMoreBtn').setAttribute('aria-expanded',String(open));if(open)setTimeout(()=>$('.detail-more-item').focus(),0)}if(a==='open-version-switch')openVersionSwitch();if(a==='close-version-switch')closeVersionSwitch();if(a==='choose-version')chooseVersion(t.dataset.version);if(a==='close-install')closeInstall();if(a==='toggle-version')$('#versionField').classList.toggle('open');if(a==='select-install-version'){state.selectedInstallVersion=t.dataset.version;$('#versionField').classList.remove('open');renderInstall()}if(a==='cycle-path')cyclePath();if(a==='install'){state.downloadState==='downloading'?cancelDownload():install()}if(a==='switch-version')switchVersion(t.dataset.version)});
+    document.addEventListener('click',e=>{const t=e.target.closest('[data-action],[data-page]');if(!e.target.closest('.detail-more-wrap'))closeDetailMore();if(!t){if(!e.target.closest('#versionField'))$('#versionField').classList.remove('open');return}if(t.dataset.page){closeDetailMore();showPage(t.dataset.page);return}const a=t.dataset.action;if(a==='open-search')openSearch();if(a==='close-search')closeSearch();if(a==='open-detail'){closeSearch();showPage('detail')}if(a==='detail-primary'){state.installedVersions.has(state.selectedVersion)?null:openInstall(state.selectedVersion)}if(a==='toggle-detail-more'){const menu=$('#detailMoreMenu'),open=!menu.classList.contains('show');menu.classList.toggle('show',open);$('#detailMoreBtn').setAttribute('aria-expanded',String(open));if(open)setTimeout(()=>$('.detail-more-item').focus(),0)}if(a==='open-version-switch')openVersionSwitch();if(a==='close-version-switch')closeVersionSwitch();if(a==='choose-version')chooseVersion(t.dataset.version);if(a==='close-install')closeInstall();if(a==='toggle-version')$('#versionField').classList.toggle('open');if(a==='select-install-version'&&versions[t.dataset.version]){state.selectedInstallVersion=t.dataset.version;$('#versionField').classList.remove('open');renderInstall()}if(a==='cycle-path')cyclePath();if(a==='install'){state.downloadState==='downloading'?cancelDownload():install()}if(a==='switch-version')switchVersion(t.dataset.version)});
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('#searchOverlay').classList.remove('show');if($('#detailMoreMenu').classList.contains('show'))closeDetailMore(true);if($('#versionSwitchOverlay').classList.contains('show'))closeVersionSwitch();if($('#installOverlay').classList.contains('show'))closeInstall()}});window.addEventListener('resize',fit);fit();render();
   </script>
 </body>
