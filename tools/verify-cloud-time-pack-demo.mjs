@@ -59,32 +59,27 @@ if (await page.locator('#landscapeActivationRemaining').textContent() !== '4/5�
 await page.locator('.landscape-play-hotspot').click();
 if (await page.locator('#landscapeActivationMask').isVisible()) throw new Error('掌机同一时段重复弹出激活确认');
 
+await page.evaluate(() => window.showScene('b-slot'));
+await page.locator('[data-week-group="weekend"]').click();
+if (!await page.locator('[data-week-group="weekend"]').evaluate(el => el.classList.contains('active'))) throw new Error('周末快捷选择未同步选中态');
+if (!await page.locator('[data-week-day="6"]').evaluate(el => el.classList.contains('active')) || !await page.locator('[data-week-day="7"]').evaluate(el => el.classList.contains('active'))) throw new Error('周末快捷选择未联动周六、周日');
 await page.evaluate(() => window.openQueueConfig());
 if (await page.locator('#slotProductType').inputValue() !== '普通时长包') throw new Error('普通时长包编辑模式未切换');
 if (!await page.locator('#queueDaysField').isVisible()) throw new Error('排队特权配置未显示');
 if (await page.locator('.slot-rule').first().isVisible()) throw new Error('普通时长包错误显示次卡字段');
 
 await page.evaluate(() => window.showScene('b-deduct'));
-await page.locator('#deductMinutes').fill('1200');
-await page.locator('.deduct-modal .a-btn.red').click();
-if (!await page.locator('#deductError').isVisible()) throw new Error('扣除上限校验未触发');
-await page.locator('#deductMinutes').fill('60');
-await page.locator('#deductReason').selectOption({ label: '其他' });
-await page.locator('#deductNote').fill('');
-await page.locator('.deduct-modal .a-btn.red').click();
-if (!await page.locator('#noteError').isVisible()) throw new Error('其他原因补充说明校验未触发');
-await page.locator('#deductNote').fill('用户申诉工单核对后修正');
-await page.locator('.deduct-modal .a-btn.red').click();
-if (!await page.locator('#deductConfirmMask').isVisible()) throw new Error('扣除二次确认未显示');
-await page.locator('#deductConfirmMask .a-btn.red').click();
-if (await page.locator('#deductListRemaining').textContent() !== '17小时30分') throw new Error('扣除后列表余额未更新');
-if (await page.locator('#limitedTimeMetric').textContent() !== '19小时12分') throw new Error('扣除后限时时长汇总未更新');
-if (await page.locator('#relationNo').count()) throw new Error('用户时长扣除不应要求订单号或工单号');
-await page.locator('.metric-action').click();
-await page.locator('#deductMinutes').fill('60');
-await page.locator('.deduct-modal .a-btn.red').click();
-await page.locator('#deductConfirmMask .a-btn.red').click();
-if (await page.locator('#permanentTimeMetric').textContent() !== '11小时36分') throw new Error('永久时长扣除能力回归异常');
+if (await page.locator('#legacyPermanentCurrent').inputValue() !== '57小时8分') throw new Error('原永久时长展示未保留');
+if (await page.locator('#legacyLimitedCurrent').inputValue() !== '20小时12分') throw new Error('限时时长展示未新增');
+if (await page.locator('#relationNo').count() || await page.getByText('关联订单号').count()) throw new Error('用户时长扣除不应要求订单号');
+await page.locator('#legacyLimitedDeduct').fill('30');
+await page.locator('.legacy-confirm').click();
+if (!await page.locator('#legacyDeductError').isVisible()) throw new Error('限时时长扣除上限校验未触发');
+await page.locator('#legacyPermanentDeduct').fill('1');
+await page.locator('#legacyLimitedDeduct').fill('2');
+await page.locator('.legacy-confirm').click();
+if (await page.locator('#legacyPermanentCurrent').inputValue() !== '56小时8分') throw new Error('永久时长扣除能力回归异常');
+if (await page.locator('#legacyLimitedCurrent').inputValue() !== '18小时12分') throw new Error('限时时长扣除能力异常');
 
 await page.evaluate(() => window.showScene('c-detail'));
 const phoneBox = await page.locator('#capture-c-detail').boundingBox();
