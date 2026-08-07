@@ -78,7 +78,13 @@ await page.locator('.deduct-modal .a-btn.red').click();
 if (!await page.locator('#deductConfirmMask').isVisible()) throw new Error('扣除二次确认未显示');
 await page.locator('#deductConfirmMask .a-btn.red').click();
 if (await page.locator('#deductListRemaining').textContent() !== '17小时30分') throw new Error('扣除后列表余额未更新');
-if (await page.locator('#limitedTimeMetric').textContent() !== '20小时42分') throw new Error('扣除后汇总余额未更新');
+if (await page.locator('#limitedTimeMetric').textContent() !== '19小时12分') throw new Error('扣除后限时时长汇总未更新');
+if (await page.locator('#relationNo').count()) throw new Error('用户时长扣除不应要求订单号或工单号');
+await page.locator('.metric-action').click();
+await page.locator('#deductMinutes').fill('60');
+await page.locator('.deduct-modal .a-btn.red').click();
+await page.locator('#deductConfirmMask .a-btn.red').click();
+if (await page.locator('#permanentTimeMetric').textContent() !== '11小时36分') throw new Error('永久时长扣除能力回归异常');
 
 await page.evaluate(() => window.showScene('c-detail'));
 const phoneBox = await page.locator('#capture-c-detail').boundingBox();
