@@ -241,6 +241,31 @@ test('选择未安装版本不会直接打开安装弹窗', () => {
   assert.strictEqual(/state\.targetVersion/.test(`${choose}\n${settingsSwitch}\n${click}`), false, '仍使用 state.targetVersion');
 });
 
+test('设置页选择未安装版本不承诺立即下载', () => {
+  const settings = functionSource('renderSettings');
+  const settingsSwitch = functionSource('switchVersion');
+
+  assert.strictEqual(/选择版本/.test(settings), true, '缺少设置页选择版本文案');
+  assert.strictEqual(/下载并切换/.test(settings), false, '设置页仍承诺立即下载');
+  assert.strictEqual(/\bopenInstall\s*\(/.test(settingsSwitch), false, '设置页选择版本触发安装');
+  assert.strictEqual(/showPage\s*\(\s*['"]detail['"]\s*\)/.test(settingsSwitch), true, '设置页未返回详情');
+});
+
+test('下载期间锁定安装选项且取消后清空进度', () => {
+  const render = functionSource('renderInstall');
+  const cancel = functionSource('cancelDownload');
+  const cyclePath = functionSource('cyclePath');
+  const click = listenerSource('click');
+
+  assert.strictEqual(/#pathField['"]\)\.disabled\s*=\s*downloading/.test(render), true, '下载期间未锁定安装位置');
+  assert.strictEqual(/#versionField['"]\)\.classList\.toggle\(\s*['"]disabled['"]\s*,\s*downloading/.test(render), true, '下载期间未锁定版本入口');
+  assert.strictEqual(/version-option[^`]*disabled/.test(render), true, '下载期间未禁用版本选项');
+  assert.strictEqual(/downloadState\s*===\s*['"]downloading['"]/.test(cyclePath), true, '路径切换缺少下载状态保护');
+  assert.strictEqual(/select-install-version[^\n]*downloadState\s*!==\s*['"]downloading['"]/.test(click), true, '版本选择缺少下载状态保护');
+  assert.strictEqual(/downloadProgress\s*=\s*0/.test(cancel), true, '取消后未清空进度状态');
+  assert.strictEqual(/#progressBar['"]\)\.style\.width\s*=\s*['"]0%['"]/.test(cancel), true, '取消后未清空进度条');
+});
+
 test('版本弹窗只有明确按钮可点击且热区达标', () => {
   const render = functionSource('renderVersionSwitch');
   const scriptWithoutRender = removeFunctionSource(script, 'renderVersionSwitch');
