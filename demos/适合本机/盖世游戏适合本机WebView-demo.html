@@ -1,219 +1,894 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>盖世游戏｜游戏兼容库</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>盖世游戏｜游戏兼容性</title>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    :root{
-      --bg:#000;--card:#1a1a1a;--raised:#252525;--overlay:#2b2830;--line:#353d4e;
-      --text:#fff;--sub:#e6e6e6;--muted:#85878c;--disabled:#646464;
-      --gold:#ffcc43;--gold-soft:#ffd98f;--green:#33d8a4;--blue:#338feb;--red:#ff667f;
-      --r4:4px;--r8:8px;--r12:12px;--r16:16px;--pill:100px;
-      --font:'MiSans VF','MiSans','PingFang SC',-apple-system,BlinkMacSystemFont,sans-serif;
-      --num:'D-DIN-PRO','MiSans VF',sans-serif
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #050505;
+      --bg-card: #141414;
+      --bg-elevated: #1d1d1f;
+      --bg-workbench: #0d0e10;
+      --border-default: #343434;
+      --text-primary: #ffffff;
+      --text-secondary: #d8d8dc;
+      --text-muted: #85878c;
+      --brand-gold: #ffcc43;
+      --brand-gold-light: #ffd98f;
+      --brand-green: #33d8a4;
+      --brand-orange: #ffb54a;
+      --brand-red: #ff667f;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-2xl: 20px;
+      --radius-full: 100px;
+      --font-primary: "MiSans VF", "MiSans", "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-number: "D-DIN-PRO", "MiSans VF", sans-serif;
     }
-    html,body{min-height:100%}body{font-family:var(--font);color:var(--text);background:#101113;-webkit-font-smoothing:antialiased}
-    button,input{font:inherit}button{border:0;color:inherit;cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-    .workbench{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;background:radial-gradient(circle at 20% 20%,rgba(255,204,67,.08),transparent 28%),radial-gradient(circle at 80% 80%,rgba(51,143,235,.08),transparent 30%),#101113}
-    .demo-bar{width:min(874px,calc(100vw - 32px));min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px 8px 14px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(30,31,34,.9);backdrop-filter:blur(18px)}
-    .demo-name{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:520}.demo-mark{width:24px;height:24px;display:grid;place-items:center;border-radius:7px;color:#171717;background:var(--gold);font-size:11px;font-weight:700}
-    .demo-controls,.control-group{display:flex;align-items:center;gap:6px}.control-group{padding:3px;border-radius:9px;background:#111214}.control{height:30px;padding:0 10px;border-radius:7px;color:#9ea0a4;background:transparent;font-size:12px}.control:hover{color:#fff;background:#2a2c30}.control.active{color:#171717;background:var(--gold);font-weight:520}
-    .frame{position:relative;overflow:hidden;border-radius:20px;background:#000;box-shadow:0 24px 70px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.09);transition:width .22s,height .22s}.frame[data-orientation=portrait]{width:390px;height:844px}.frame[data-orientation=landscape]{width:874px;height:402px}
-    .app{width:100%;height:100%;position:relative;overflow:hidden;background:var(--bg);container:app/inline-size}.view{display:none;position:relative;width:100%;height:100%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}.view::-webkit-scrollbar{display:none}.view.active{display:block}.view.filtering{overflow:hidden}
-    .page{min-height:100%;padding:12px 16px calc(24px + env(safe-area-inset-bottom))}.nav{position:sticky;top:0;z-index:30;min-height:48px;display:grid;grid-template-columns:40px 1fr 40px;align-items:center;margin:-12px -16px 6px;padding:8px 16px 4px;background:linear-gradient(#000 78%,rgba(0,0,0,0))}.nav h1{text-align:center;font-size:20px;line-height:28px;font-weight:520}.nav.detail h1{font-size:16px}
-    .icon-btn{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:transparent}.icon-btn:hover{background:var(--raised)}.icon-btn svg,.search-icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8}
-    .tabs{display:flex;gap:4px;margin-top:8px;padding:4px;border-radius:11px;background:var(--card)}.tab{flex:1;height:38px;border-radius:8px;color:#8c8e92;background:transparent;font-size:14px}.tab.active{color:#181510;background:var(--gold);font-weight:600}
-    .search{position:relative;margin-top:10px}.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#8c8e92;pointer-events:none}.search input{width:100%;height:44px;padding:0 40px;border:1px solid transparent;border-radius:12px;color:#fff;caret-color:var(--gold);background:var(--card);font-size:14px}.search input:focus{border-color:rgba(255,204,67,.5);background:#202020}.search input::placeholder{color:#77797e}.clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;display:grid;place-items:center;border-radius:50%;color:#aaa;background:#303236;font-size:17px}
-    .tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;min-height:32px}.filters{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.filters::-webkit-scrollbar{display:none}.chip{flex:0 0 auto;min-height:30px;padding:0 11px;border-radius:var(--pill);color:#aeb0b4;background:var(--raised);font-size:11px}.chip.active{color:#181510;background:var(--gold);font-weight:520}
-    .local-toggle{display:flex;align-items:center;gap:7px;color:#b8b9bc;background:transparent;font-size:11px;white-space:nowrap}.switch{width:34px;height:20px;padding:2px;border-radius:var(--pill);background:#34363a;transition:.15s}.switch::after{content:'';display:block;width:16px;height:16px;border-radius:50%;background:#a3a5a9;transition:.15s}.local-toggle.active .switch{background:rgba(255,204,67,.45)}.local-toggle.active .switch::after{transform:translateX(14px);background:var(--gold)}
-    .filter-trigger{min-height:32px;display:flex;align-items:center;gap:6px;padding:0 11px;border-radius:8px;color:#e5e5e7;background:var(--raised);font-size:11px}.filter-trigger svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8}.filter-trigger.active{color:#181510;background:var(--gold);font-weight:520}.filter-count{min-width:17px;height:17px;display:grid;place-items:center;padding:0 4px;border-radius:var(--pill);color:#171717;background:var(--gold);font:600 9px var(--num)}.filter-trigger.active .filter-count{color:#fff;background:#171717}
-    .catalog-layout{min-width:0}.catalog-results{min-width:0}.filter-shell{position:absolute;inset:0;z-index:45;visibility:hidden;background:rgba(0,0,0,.72);opacity:0;transition:opacity .18s ease,visibility .18s}.filter-shell.panel-open{visibility:visible;opacity:1}.filter-mobile-panel{position:absolute;top:0;right:0;bottom:0;left:34px;display:flex;flex-direction:column;border-radius:18px 0 0 18px;background:#111214;box-shadow:-16px 0 34px rgba(0,0,0,.45);overflow:hidden;transform:translateX(100%);transition:transform .2s ease}.filter-shell.panel-open .filter-mobile-panel{transform:translateX(0)}.mobile-filter-head{flex:0 0 auto;min-height:58px;display:flex;align-items:center;justify-content:space-between;padding:10px 15px;border-bottom:1px solid rgba(255,255,255,.06)}.mobile-filter-head strong{font-size:18px;font-weight:520}.filter-close{width:32px;height:32px;display:grid;place-items:center;border-radius:8px;color:#bfc1c5;background:#202124;font-size:22px}.filter-close:hover{color:#fff;background:#303236}.mobile-filter-scroll{flex:1;min-height:0;padding:0 12px 88px;overflow-y:auto;scrollbar-width:none}.mobile-filter-scroll::-webkit-scrollbar{display:none}.mobile-filter-section{margin-top:12px;padding:14px 12px;border-radius:12px;background:#1a1b1d}.mobile-filter-title{display:flex;align-items:center;justify-content:space-between;gap:8px}.mobile-filter-title strong{font-size:14px;font-weight:520}.mobile-filter-title span{color:#85878c;font-size:9px}.mobile-filter-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.mobile-filter-option{min-width:0;min-height:44px;padding:5px 6px;border:1px solid transparent;border-radius:8px;color:#d1d2d5;background:#252629;font-size:10px;line-height:14px}.mobile-filter-option.selected{border-color:var(--gold);color:#181510;background:var(--gold);font-weight:520}.mobile-filter-option:disabled{color:#5f6165;background:#202123;cursor:not-allowed}.mobile-filter-hint{margin-top:10px;color:#77797e;font-size:9px;line-height:14px}.mobile-filter-footer{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:.9fr 1.4fr;gap:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.07);background:rgba(17,18,20,.96);backdrop-filter:blur(16px)}.mobile-filter-reset,.mobile-filter-confirm{min-height:46px;border:1px solid var(--gold);font-size:13px;font-weight:520}.mobile-filter-reset{border-radius:9px 0 0 9px;color:var(--gold);background:transparent}.mobile-filter-confirm{border-radius:0 9px 9px 0;color:#181510;background:var(--gold)}.filter-sidebar,.filter-panel{display:none}.filter-sidebar{min-width:0;padding:14px 0 76px;background:#202123;border-right:1px solid rgba(255,255,255,.06)}.filter-sidebar-head{display:flex;align-items:center;justify-content:space-between;min-height:36px;padding:0 12px 8px}.filter-sidebar-head strong{font-size:13px;font-weight:520}.filter-subtitle{padding:13px 12px 6px;color:#707277;font-size:9px}.filter-group{width:100%;min-height:45px;display:grid;grid-template-columns:minmax(0,1fr) 20px;align-items:center;gap:4px;padding:0 12px;text-align:left;color:#b7b9bd;background:transparent;font-size:11px}.filter-group:hover{background:#28292b}.filter-group.active{color:#fff;background:#2e3032}.filter-group.disabled{color:#5e6064;cursor:not-allowed}.filter-group span:first-child{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.filter-group-meta{display:flex;align-items:center;justify-content:flex-end;gap:4px;font:600 9px var(--num)}.filter-group-meta::after{content:'›';color:#a1a3a7;font-size:17px;font-weight:330}.filter-panel{position:relative;min-width:0;padding:15px 13px 78px;background:#2a2b2d;overflow-y:auto}.filter-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.06)}.filter-panel-title strong{display:block;font-size:14px;font-weight:520}.filter-panel-title span{display:block;margin-top:3px;color:#85878c;font-size:9px}.filter-clear-group{color:#d3b45e;background:transparent;font-size:10px}.filter-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 8px;margin-top:9px}.filter-option{min-width:0;min-height:42px;display:grid;grid-template-columns:4px minmax(0,1fr) 17px;align-items:center;gap:7px;padding:0 5px;text-align:left;color:#b8babd;background:transparent;font-size:10px}.filter-option:hover{color:#fff;background:#303134}.option-mark{width:3px;height:18px;border-radius:3px;background:var(--mark,#6572ff)}.option-label{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.option-check{width:15px;height:15px;display:grid;place-items:center;border:1px solid #a2a4a8;border-radius:4px;color:transparent;font-size:9px}.filter-option.selected{color:#fff}.filter-option.selected .option-check{border-color:var(--gold);color:#171717;background:var(--gold)}.filter-option:disabled{color:#626469;cursor:not-allowed}.filter-empty-hint{margin-top:12px;padding:10px;border-radius:8px;color:#a5a7ab;background:#222325;font-size:10px;line-height:15px}.filter-footer{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:108px minmax(0,1fr);min-height:64px;padding-bottom:env(safe-area-inset-bottom);border-top:1px solid rgba(255,255,255,.08);background:#202123}.filter-clear-all{color:#c7c9cc;background:#28292b;font-size:11px}.filter-done{margin:10px 12px;min-height:42px;border-radius:8px;color:#171717;background:var(--gold);font-size:12px;font-weight:600}
-    .section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:18px 0 10px}.section-head h2{font-size:18px;line-height:26px;font-weight:520}.section-head p{margin-top:2px;color:var(--muted);font-size:10px;line-height:15px}.count{color:#9d9fa3;font-family:var(--num);font-size:11px;white-space:nowrap}
-    .game-grid,.gpu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px}.game-card,.gpu-card{min-width:0;text-align:left;background:transparent}.cover{position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:12px;background:var(--cover);box-shadow:0 4px 12px rgba(0,0,0,.3)}.cover::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 74% 18%,rgba(255,255,255,.26),transparent 19%),linear-gradient(transparent 56%,rgba(0,0,0,.82))}.cover::after{content:'';position:absolute;width:92%;height:52%;left:-34%;top:10%;border:1px solid rgba(255,255,255,.17);transform:rotate(-28deg);border-radius:50%}.symbol{position:absolute;inset:0;display:grid;place-items:center;padding-bottom:26%;color:rgba(255,255,255,.93);font-size:40px;font-weight:700;text-shadow:0 4px 18px rgba(0,0,0,.45)}
-    .store,.mini-badge{position:absolute;top:8px;padding:3px 6px;border-radius:4px;color:#eee;background:rgba(0,0,0,.58);backdrop-filter:blur(8px);font-size:9px;line-height:13px}.store{left:8px}.mini-badge{right:8px;color:#1a1710;background:var(--gold)}
-    .card-info{padding:7px 2px 0}.card-title{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:14px;line-height:20px;font-weight:520}.card-meta{margin-top:2px;color:#8d8f94;font-size:10px;line-height:15px}.card-note{margin-top:1px;color:#65676b;font-size:9px;line-height:14px}
-    .gpu-card{padding:13px;border:1px solid rgba(255,255,255,.06);border-radius:12px;background:linear-gradient(145deg,rgba(51,143,235,.08),transparent 54%),var(--card)}.gpu-top{display:flex;align-items:center;gap:10px}.gpu-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;color:#cfe6ff;background:linear-gradient(145deg,#24415d,#18232d);font-family:var(--num);font-size:11px;font-weight:700}.gpu-copy{min-width:0}.gpu-name{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:14px;font-weight:520}.gpu-vendor{margin-top:3px;color:var(--muted);font-size:10px}.self-badge{margin-left:auto;padding:2px 4px;border-radius:4px;color:#181510;background:var(--gold);font-size:8px}.gpu-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin-top:12px;overflow:hidden;border-radius:8px;background:#303236}.gpu-stat{padding:8px 4px;text-align:center;background:#232326}.gpu-stat strong{display:block;font-family:var(--num);font-size:13px}.gpu-stat span{display:block;margin-top:2px;color:#73757a;font-size:8px}
-    .state{min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:28px;text-align:center}.state-icon{width:52px;height:52px;display:grid;place-items:center;border-radius:18px;color:var(--gold);background:var(--card)}.state h3{font-size:16px;font-weight:520}.state p{max-width:280px;color:var(--muted);font-size:11px;line-height:17px}.secondary{min-height:36px;padding:0 14px;border-radius:8px;color:#eee;background:var(--raised);font-size:11px}
-    .detail-page{min-height:100%;padding-bottom:calc(24px + env(safe-area-inset-bottom))}.detail-body{padding:8px 16px 20px}.hero{display:grid;grid-template-columns:96px minmax(0,1fr);gap:13px}.hero .cover{width:96px}.hero-copy{min-width:0;padding-top:2px}.hero h2{font-size:20px;line-height:28px;font-weight:520}.hero-sub{margin-top:3px;color:var(--muted);font-size:10px;line-height:15px}.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.badge{padding:5px 8px;border-radius:6px;font-size:10px;line-height:14px;font-weight:520}.direct{color:#b6ffe7;background:rgba(15,108,82,.78)}.adjusted{color:#ffecad;background:rgba(123,88,0,.82)}.not_recommended{color:#ffd0d7;background:rgba(126,36,51,.82)}.unknown{color:#e0e0e0;background:#49494d}.evidence{color:#d4d4d6;background:var(--raised)}
-    .summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}.summary-card{min-width:0;padding:11px;border-radius:10px;background:var(--card)}.summary-card span{display:block;color:var(--muted);font-size:9px}.summary-card strong{display:block;margin-top:4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:13px;line-height:18px}.summary-card p{margin-top:2px;color:#797b80;font-size:9px;line-height:13px}
-    .module{margin-top:14px;padding:13px;border-radius:12px;background:var(--card)}.module-head{display:flex;align-items:start;justify-content:space-between;gap:10px}.module h3{font-size:15px;line-height:22px;font-weight:520}.caption{margin-top:2px;color:var(--muted);font-size:9px;line-height:14px}
-    .record-list,.config-list,.verified-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}.record,.verified-row{width:100%;display:grid;align-items:center;gap:9px;padding:10px;border:1px solid transparent;border-radius:10px;text-align:left;background:#242426}.record{grid-template-columns:minmax(82px,1.1fr) minmax(72px,.9fr) 44px 18px}.record.active{border-color:rgba(255,204,67,.55);background:rgba(255,204,67,.07)}.record-name{min-width:0}.record-name strong{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px}.record-name span,.record-proof{display:block;margin-top:2px;color:var(--muted);font-size:8px;line-height:12px}.record-status{justify-self:start}.record-fps{text-align:right;font-family:var(--num);font-size:10px}.arrow{color:#777;font-size:18px}
-    .config-card{padding:12px;border-radius:10px;background:#242426}.config-top{display:flex;align-items:start;justify-content:space-between;gap:10px}.config-title{min-width:0}.config-title strong{display:block;font-size:12px;line-height:18px}.config-title span{display:block;margin-top:2px;color:var(--muted);font-size:8px;line-height:13px}.version{padding:3px 6px;border-radius:4px;color:#b9b9bd;background:#313135;font-family:var(--num);font-size:8px}.config-result{margin-top:9px;padding:8px 9px;border-left:3px solid var(--gold);border-radius:0 7px 7px 0;color:#fff0bf;background:rgba(255,204,67,.07);font-size:10px;line-height:15px}.config-meta{display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:8px;color:#818388;font-size:8px;line-height:13px}.config-actions{display:grid;grid-template-columns:1fr 1.25fr;gap:7px;margin-top:10px}.outline-btn,.primary-btn{min-height:36px;padding:0 9px;border-radius:8px;font-size:10px}.outline-btn{color:#dedede;background:#343438}.primary-btn{color:#181510;background:var(--gold);font-weight:600}.primary-btn.loading{color:#766326;background:#cbb052}.primary-btn.success{color:#d0fff0;background:#175e4a}.primary-btn.error{color:#ffe0e5;background:#7d2837}.primary-btn:disabled{cursor:wait}
-    .verified-row{grid-template-columns:48px minmax(0,1fr) 78px 18px}.verified-cover{width:48px;aspect-ratio:3/4;display:grid;place-items:center;border-radius:7px;color:#fff;background:var(--cover);font-size:18px;font-weight:700}.verified-copy{min-width:0}.verified-copy strong{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px}.verified-copy span{display:block;margin-top:2px;color:var(--muted);font-size:8px}.verified-result{text-align:right}.verified-result .badge{display:inline-block;padding:4px 6px;font-size:8px}.verified-result small{display:block;margin-top:3px;color:#8c8e92;font-family:var(--num);font-size:8px}
-    .gpu-hero{padding:15px;border-radius:14px;background:linear-gradient(145deg,rgba(51,143,235,.18),transparent 50%),var(--card)}.gpu-hero-top{display:flex;align-items:center;gap:12px}.gpu-hero .gpu-icon{width:56px;height:56px;font-size:14px}.gpu-hero h2{font-size:20px;font-weight:520}.gpu-hero p{margin-top:4px;color:var(--muted);font-size:10px}.metric-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin-top:13px;overflow:hidden;border-radius:9px;background:#303236}.metric{padding:10px 5px;text-align:center;background:#232326}.metric strong{display:block;font-family:var(--num);font-size:15px}.metric span{display:block;margin-top:2px;color:#77797e;font-size:8px}
-    .config-hero{padding:14px;border-radius:13px;background:linear-gradient(135deg,rgba(255,204,67,.10),transparent 55%),var(--card)}.config-hero h2{font-size:18px;line-height:25px;font-weight:520}.config-hero p{margin-top:4px;color:var(--muted);font-size:10px}.env-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}.env{padding:9px;border-radius:8px;background:#242426}.env span{display:block;color:#77797e;font-size:8px}.env strong{display:block;margin-top:3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:10px;font-weight:380}.result-box{margin-top:12px;padding:10px;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;background:rgba(255,204,67,.07)}.result-box span{color:#968c6b;font-size:8px}.result-box strong{display:block;margin-top:3px;color:#fff0be;font-size:12px}
-    .settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}.setting{padding:9px;border-radius:8px;background:#242426}.setting span{display:block;color:#77797e;font-size:8px}.setting strong{display:block;margin-top:3px;font-size:10px;font-weight:380}.steps{list-style:none;margin-top:9px}.step{display:grid;grid-template-columns:22px minmax(0,1fr);gap:9px;padding:7px 0}.step+.step{border-top:1px solid rgba(255,255,255,.06)}.step-index{width:22px;height:22px;display:grid;place-items:center;border-radius:50%;color:#171717;background:var(--gold);font-family:var(--num);font-size:9px;font-weight:700}.step strong{display:block;font-size:10px;line-height:15px}.step p{margin-top:2px;color:#8c8e92;font-size:9px;line-height:14px}
-    .issue{padding:9px 0}.issue+.issue{border-top:1px solid rgba(255,255,255,.06)}.issue strong{display:block;color:#e7e7e7;font-size:10px}.issue p{margin-top:3px;color:#8e9094;font-size:9px;line-height:14px}.config-table{width:100%;margin-top:6px;border-collapse:collapse;font-size:9px}.config-table td{padding:7px 0;border-top:1px solid rgba(255,255,255,.06)}.config-table td:first-child{width:42%;color:#77797e}.config-table td:last-child{text-align:right;color:#d5d5d6}
-    @container app (min-width:600px){
-      .page{padding:8px max(28px,env(safe-area-inset-left)) 20px max(28px,env(safe-area-inset-right))}.nav{position:static;margin:0;padding:0;background:transparent}.nav h1{text-align:left}.catalog-controls{display:grid;grid-template-columns:270px minmax(260px,1fr);gap:10px;align-items:start;margin-top:4px}.tabs,.search{margin-top:0}.tools{grid-column:1/-1;margin-top:0}.filter-trigger{display:none}.catalog-layout{display:grid;grid-template-columns:142px minmax(0,1fr);gap:14px;margin-top:8px}.filter-shell{position:relative;inset:auto;z-index:20;display:block;visibility:visible;opacity:1;background:transparent;transition:none}.filter-mobile-panel{display:none}.filter-sidebar{display:block;min-height:270px;padding:10px 0;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:#202123}.filter-sidebar-head{padding:0 12px 5px}.filter-sidebar-head .filter-close{display:none}.filter-group{min-height:39px}.filter-subtitle{padding-top:10px}.filter-panel{position:absolute;left:142px;top:0;width:270px;max-height:292px;display:none;padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:0 10px 10px 0;box-shadow:18px 16px 38px rgba(0,0,0,.42);overflow-y:auto}.filter-shell.panel-open .filter-panel{display:block}.filter-options{gap:2px 10px}.filter-footer{position:static;display:grid;grid-template-columns:88px minmax(0,1fr);margin:12px -14px -14px;min-height:54px;padding:0;border-radius:0 0 10px 0}.filter-done{min-height:34px;margin:9px 10px}.filter-clear-all{font-size:10px}.section-head{margin:0 0 7px}.game-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.gpu-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.symbol{font-size:29px}.card-title{font-size:10px;line-height:15px}.card-meta,.card-note{font-size:8px;line-height:12px}.detail-body{display:grid;grid-template-columns:minmax(240px,.78fr) minmax(0,1.7fr);gap:16px;padding:6px max(28px,env(safe-area-inset-left)) 18px max(28px,env(safe-area-inset-right))}.detail-left{position:sticky;top:8px;align-self:start}.detail-right .module:first-child{margin-top:0}.detail-page .nav{padding:4px max(24px,env(safe-area-inset-left));position:sticky;background:rgba(0,0,0,.88);backdrop-filter:blur(16px)}.record-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.record{grid-template-columns:minmax(76px,1fr) minmax(65px,.8fr) 40px 14px}.config-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.verified-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.config-detail-body{grid-template-columns:minmax(260px,.9fr) minmax(0,1.6fr)}
+
+    html { color-scheme: dark; }
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--text-primary);
+      background: var(--bg-workbench);
+      font-family: var(--font-primary);
+      -webkit-font-smoothing: antialiased;
     }
-    @media(max-width:920px){.workbench{justify-content:flex-start;padding:12px}.demo-bar{width:100%}.frame[data-orientation=landscape]{width:min(874px,calc(100vw - 24px));height:min(402px,calc((100vw - 24px)*.46));min-height:360px}}
-    @media(max-width:470px){.workbench{padding:0;gap:0;background:#000}.demo-bar{position:fixed;z-index:100;left:8px;right:8px;bottom:8px;width:auto;opacity:.94}.demo-name{display:none}.frame,.frame[data-orientation=portrait],.frame[data-orientation=landscape]{width:100vw;height:100vh;min-height:0;border-radius:0}}
+
+    button, input, select { font: inherit; }
+    button { border: 0; color: inherit; cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid var(--brand-gold);
+      outline-offset: 2px;
+    }
+
+    .workbench {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--bg-workbench);
+    }
+
+    .demo-bar {
+      width: min(1150px, calc(100vw - 48px));
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+      padding: 7px 10px 7px 14px;
+      border: 1px solid #2e2e31;
+      border-radius: var(--radius-lg);
+      background: #17181b;
+    }
+
+    .demo-name, .demo-controls { display: flex; align-items: center; gap: 8px; }
+    .demo-name { font-size: 14px; }
+    .demo-mark {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 7px;
+      color: #171717;
+      background: var(--brand-gold);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .control {
+      min-height: 32px;
+      padding: 0 11px;
+      border-radius: var(--radius-md);
+      color: #9b9da2;
+      background: transparent;
+    }
+    .control:hover { color: var(--text-primary); background: #242529; }
+    .control.active { color: #171717; background: var(--brand-gold); font-weight: 650; }
+
+    .frame {
+      width: min(1150px, calc(100vw - 48px));
+      height: min(780px, calc(100vh - 116px));
+      min-height: 560px;
+      overflow: hidden;
+      border: 1px solid #2e2e31;
+      border-radius: var(--radius-2xl);
+      background: var(--bg-primary);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .38);
+      transition: width .2s ease, height .2s ease;
+    }
+    .frame[data-preview="mobile"] { width: 390px; height: 844px; min-height: 0; }
+
+    .app {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: var(--bg-primary);
+      scrollbar-width: thin;
+      scrollbar-color: #3b3b3e transparent;
+    }
+
+    .page {
+      width: min(100%, 1150px);
+      min-height: 100%;
+      margin: auto;
+      padding: 24px 28px 40px;
+    }
+
+    .page-header { padding: 8px 0 24px; }
+    .back-button {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 18px;
+      color: var(--brand-gold);
+      background: transparent;
+      font-size: 14px;
+    }
+    .back-button:hover { color: var(--brand-gold-light); }
+    .page-header h1 { font-size: 32px; font-weight: 520; line-height: 42px; }
+    .page-header p { margin-top: 6px; color: var(--text-muted); font-size: 14px; line-height: 20px; }
+
+    .filter-card, .result-card {
+      border: 1px solid var(--border-default);
+      border-radius: 14px;
+      background: rgba(20, 20, 20, .96);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
+    }
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      padding: 20px;
+    }
+    .filter-field { position: relative; min-width: 0; }
+    .filter-field label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 330;
+      line-height: 17px;
+    }
+    .select-trigger, .filter-field select {
+      width: 100%;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 0 12px;
+      border: 1px solid var(--border-default);
+      border-radius: 9px;
+      color: var(--text-muted);
+      background: #0d0d0e;
+      text-align: left;
+    }
+    .select-trigger:hover, .filter-field select:hover { border-color: #555559; }
+    .select-trigger.selected { color: var(--text-primary); }
+    .select-trigger > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .select-chevron { color: var(--text-muted); font-size: 16px; transition: transform .16s ease; }
+    .select-trigger[aria-expanded="true"] .select-chevron { transform: rotate(180deg); }
+    .filter-field select { appearance: none; cursor: pointer; }
+    .rating-wrap { position: relative; }
+    .rating-wrap::after {
+      content: "⌄";
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      color: var(--text-muted);
+      pointer-events: none;
+      transform: translateY(-54%);
+    }
+    .field-clear {
+      min-height: 25px;
+      display: block;
+      margin: 5px 0 -5px auto;
+      padding: 0 2px;
+      color: var(--text-muted);
+      background: transparent;
+      font-size: 11px;
+    }
+    .field-clear:hover { color: var(--brand-gold); }
+
+    .picker {
+      position: absolute;
+      z-index: 30;
+      top: 76px;
+      left: 0;
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--border-default);
+      border-radius: 10px;
+      background: #171719;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, .5);
+    }
+    .picker input {
+      width: 100%;
+      height: 38px;
+      padding: 0 10px;
+      border: 1px solid var(--border-default);
+      border-radius: 7px;
+      color: var(--text-primary);
+      background: #0d0d0e;
+    }
+    .picker input::placeholder { color: #6d6f74; }
+    .picker-list {
+      max-height: 280px;
+      margin-top: 7px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #3b3b3e transparent;
+    }
+    .picker-option {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px;
+      border-radius: 7px;
+      background: transparent;
+      text-align: left;
+    }
+    .picker-option:hover { background: var(--bg-elevated); }
+    .picker-cover {
+      position: relative;
+      width: 32px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      overflow: hidden;
+      border-radius: 5px;
+      color: var(--brand-gold);
+      background: #27272a;
+      font-size: 9px;
+      font-weight: 700;
+    }
+    .picker-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .picker-option > span:last-child, .picker-option strong, .picker-option small { min-width: 0; display: block; }
+    .picker-option strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+    .picker-option small { margin-top: 3px; color: var(--text-muted); font-size: 10px; line-height: 14px; }
+    .picker-empty { padding: 18px; text-align: center; color: var(--text-muted); font-size: 12px; }
+
+    .popular-section, .result-section { margin-top: 18px; padding: 20px; }
+    .section-head, .result-summary {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .section-head h2, .result-summary h2 { font-size: 20px; font-weight: 520; line-height: 28px; }
+    .section-head p, .result-summary p { margin-top: 3px; color: var(--text-muted); font-size: 12px; line-height: 17px; }
+    .popular-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
+    .popular-game { min-width: 0; padding: 0; background: transparent; text-align: left; }
+    .popular-game:hover .game-cover { border-color: rgba(255, 204, 67, .72); transform: translateY(-2px); }
+    .popular-game:active .game-cover { transform: translateY(0); }
+    .game-cover {
+      position: relative;
+      display: block;
+      overflow: hidden;
+      aspect-ratio: 2 / 3;
+      border: 1px solid #303034;
+      border-radius: 10px;
+      background: var(--bg-elevated);
+      transition: transform .16s ease, border-color .16s ease;
+    }
+    .game-cover img { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; }
+    .cover-fallback { position: absolute; inset: 0; display: grid; place-items: center; color: var(--brand-gold); font-weight: 700; }
+    .popular-game strong {
+      display: block;
+      margin-top: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 14px;
+      font-weight: 520;
+      line-height: 20px;
+    }
+    .popular-game > span:last-child { display: block; margin-top: 2px; color: var(--text-muted); font-size: 10px; line-height: 14px; }
+
+    .result-summary > button, .state-panel button {
+      min-height: 34px;
+      padding: 0 12px;
+      border-radius: var(--radius-md);
+      color: #171717;
+      background: var(--brand-gold);
+      font-size: 11px;
+      font-weight: 650;
+    }
+    .result-summary > button:hover, .state-panel button:hover { background: var(--brand-gold-light); }
+    .result-desktop { overflow-x: auto; }
+    .result-mobile { display: none; }
+    .result-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .result-table th, .result-table td {
+      padding: 12px 9px;
+      border-bottom: 1px solid #29292c;
+      text-align: left;
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    .result-table tbody tr:last-child td { border-bottom: 0; }
+    .result-table tbody tr:hover { background: rgba(255, 255, 255, .025); }
+    .result-table th { color: #bbbcc0; font-weight: 600; white-space: nowrap; }
+    .result-table th button { display: inline-flex; align-items: center; gap: 4px; color: inherit; background: transparent; }
+    .result-table th button:hover { color: var(--brand-gold); }
+    .result-table small { display: block; margin-top: 3px; color: var(--text-muted); }
+    .game-cell { min-width: 128px; display: flex; align-items: center; gap: 8px; }
+    .cell-cover {
+      position: relative;
+      width: 34px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      overflow: hidden;
+      border-radius: 5px;
+      color: var(--brand-gold);
+      background: var(--bg-elevated);
+      font-size: 9px;
+      font-weight: 700;
+    }
+    .cell-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .game-cell > span, .game-cell strong { min-width: 0; display: block; }
+    .rating { color: var(--brand-gold); white-space: nowrap; letter-spacing: 1px; }
+    .fps { color: var(--text-primary); font-family: var(--font-number); font-weight: 600; white-space: nowrap; }
+    .tag {
+      display: inline-flex;
+      margin: 0 4px 4px 0;
+      padding: 3px 6px;
+      border-radius: var(--radius-full);
+      color: #ffd977;
+      background: rgba(255, 204, 67, .1);
+      white-space: nowrap;
+    }
+
+    .mobile-run { padding: 13px; border: 1px solid #303034; border-radius: 11px; background: #18181a; }
+    .mobile-run-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .mobile-run-head > div:last-child { flex: 0 0 auto; text-align: right; }
+    .mobile-run-head > div:last-child strong { display: block; margin-top: 4px; font-family: var(--font-number); }
+    .mobile-run dl { margin-top: 12px; }
+    .mobile-run dl > div { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 8px; padding: 7px 0; border-top: 1px solid #29292c; }
+    .mobile-run dt { color: var(--text-muted); font-size: 10px; line-height: 14px; }
+    .mobile-run dd { min-width: 0; color: var(--text-secondary); font-size: 10px; line-height: 1.5; overflow-wrap: anywhere; }
+
+    .state-panel {
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: 18px;
+      padding: 28px;
+      text-align: center;
+    }
+    .state-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 12px;
+      border: 1px solid #38383b;
+      border-radius: 50%;
+      color: var(--brand-gold);
+      background: var(--bg-elevated);
+      font-size: 18px;
+    }
+    .state-panel h2 { font-size: 20px; font-weight: 520; line-height: 28px; }
+    .state-panel p { max-width: 360px; margin: 7px 0 14px; color: var(--text-muted); font-size: 12px; line-height: 1.6; }
+    .loading-dot { animation: pulse 1.1s ease-in-out infinite; }
+    @keyframes pulse { 50% { opacity: .35; transform: scale(.9); } }
+
+    .frame[data-preview="mobile"] .page { padding: 16px 14px 28px; }
+    .frame[data-preview="mobile"] .page-header { padding-bottom: 18px; }
+    .frame[data-preview="mobile"] .page-header h1 { font-size: 26px; line-height: 34px; }
+    .frame[data-preview="mobile"] .page-header p { font-size: 12px; line-height: 17px; }
+    .frame[data-preview="mobile"] .back-button { margin-bottom: 12px; }
+    .frame[data-preview="mobile"] .filter-grid { grid-template-columns: 1fr; padding: 16px; }
+    .frame[data-preview="mobile"] .picker { position: absolute; top: 76px; right: 0; left: 0; width: auto; }
+    .frame[data-preview="mobile"] .popular-section, .frame[data-preview="mobile"] .result-section { padding: 15px; }
+    .frame[data-preview="mobile"] .popular-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .frame[data-preview="mobile"] .result-desktop { display: none; }
+    .frame[data-preview="mobile"] .result-mobile { display: grid; gap: 10px; }
+
+    @media (max-width: 520px) {
+      .workbench { display: block; padding: 0; }
+      .demo-bar {
+        position: fixed;
+        z-index: 80;
+        right: 8px;
+        bottom: max(8px, env(safe-area-inset-bottom));
+        width: auto;
+        min-height: 40px;
+        margin: 0;
+        padding: 4px;
+        border-radius: 10px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, .55);
+      }
+      .demo-name { display: none; }
+      .frame, .frame[data-preview="desktop"], .frame[data-preview="mobile"] { width: 100vw; height: 100vh; min-height: 0; border: 0; border-radius: 0; }
+      .frame .page { padding: 16px 14px 84px; }
+      .frame .page-header { padding-bottom: 18px; }
+      .frame .page-header h1 { font-size: 26px; line-height: 34px; }
+      .frame .page-header p { font-size: 12px; line-height: 17px; }
+      .frame .back-button { margin-bottom: 12px; }
+      .frame .filter-grid { grid-template-columns: 1fr; padding: 16px; }
+      .frame .picker { position: fixed; top: 78px; right: 12px; left: 12px; width: auto; }
+      .frame .popular-section, .frame .result-section { padding: 15px; }
+      .frame .popular-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+      .frame .result-desktop { display: none; }
+      .frame .result-mobile { display: grid; gap: 10px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
   </style>
 </head>
 <body>
   <div class="workbench">
     <div class="demo-bar">
-      <div class="demo-name"><span class="demo-mark">GH</span><span>游戏兼容库 · WebView Demo</span></div>
-      <div class="demo-controls">
-        <div class="control-group"><button class="control active" data-demo-context="ready">有本机</button><button class="control" data-demo-context="unavailable">无本机</button></div>
-        <div class="control-group"><button class="control active" data-orientation="portrait">竖屏</button><button class="control" data-orientation="landscape">横屏</button></div>
+      <div class="demo-name"><span class="demo-mark">GH</span><span>游戏兼容性 · Web Demo</span></div>
+      <div class="demo-controls" aria-label="预览尺寸">
+        <button class="control active" data-preview="desktop" type="button">桌面</button>
+        <button class="control" data-preview="mobile" type="button">移动</button>
       </div>
     </div>
-    <div class="frame" data-orientation="portrait">
-      <main class="app">
-        <section id="catalog-view" class="view active"></section>
-        <section id="game-view" class="view"></section>
-        <section id="gpu-view" class="view"></section>
-        <section id="config-view" class="view"></section>
-      </main>
+    <div class="frame" data-preview="desktop">
+      <main id="compatibility-app" class="app"></main>
     </div>
   </div>
+
   <script>
-    const icons={back:'<svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16.2 16.2 4 4"/></svg>',alert:'<svg viewBox="0 0 24 24"><path d="M12 3 2.8 20h18.4L12 3Z"/><path d="M12 9v5M12 17h.01"/></svg>'};
-    const coverMap={default:'linear-gradient(145deg,#50545b,#25282d 58%,#090a0c)',wukong:'linear-gradient(145deg,#785235,#1e2522 58%,#080909)',elden:'linear-gradient(145deg,#8e7445,#343123 54%,#0d0d0b)',hades:'linear-gradient(145deg,#a72b34,#3c171c 58%,#10090a)',sekiro:'linear-gradient(145deg,#825432,#29302e 58%,#0c0d0d)',cyberpunk:'linear-gradient(145deg,#e6c52c,#50654c 55%,#101312)',starfield:'linear-gradient(145deg,#6e8290,#30383f 58%,#080a0d)'};
-    const statusMap={direct:{label:'可直接玩',className:'direct',rank:4},adjusted:{label:'调整后可玩',className:'adjusted',rank:3},not_recommended:{label:'暂不建议',className:'not_recommended',rank:2},unknown:{label:'暂无结论',className:'unknown',rank:1}};
-    const evidenceMap={exact_device:'当前设备已验证',same_gpu:'同 GPU 已验证',similar_gpu:'同类 GPU 参考',limited:'样本较少'};
-    const evidenceRank={exact_device:4,same_gpu:3,similar_gpu:2,limited:1};
-    const readyContext={status:'ready',deviceName:'一加 13',gpuId:'adreno_830',gpuName:'Adreno 830',androidVersion:'15',appVersion:'6.1.0',kernelVersion:'Wine 9.2 · GS3'};
-    const mockCatalog={
-      games:[
-        {id:'steam_2358720',name:'黑神话：悟空',aliases:['BLACK MYTH WUKONG','悟空'],store:'Steam',version:'1.0.15',coverKey:'wukong',symbol:'悟'},
-        {id:'steam_1245620',name:'艾尔登法环',aliases:['ELDEN RING','老头环'],store:'Steam',version:'1.16.1',coverKey:'elden',symbol:'环'},
-        {id:'steam_1145360',name:'哈迪斯',aliases:['HADES','黑帝斯'],store:'Steam',version:'1.38290',coverKey:'hades',symbol:'冥'},
-        {id:'steam_814380',name:'只狼：影逝二度',aliases:['SEKIRO','只狼'],store:'Steam',version:'1.06',coverKey:'sekiro',symbol:'忍'},
-        {id:'gog_1091500',name:'赛博朋克 2077',aliases:['CYBERPUNK 2077','赛博朋克'],store:'GOG',version:'2.31',coverKey:'cyberpunk',symbol:'2077'},
-        {id:'steam_1716740',name:'星空',aliases:['STARFIELD'],store:'Steam',version:'1.15.222',coverKey:'starfield',symbol:'星'}
-      ],
-      gpus:[
-        {id:'adreno_830',name:'Adreno 830',vendor:'Qualcomm',family:'Adreno',architecture:'8 系列',tier:100,representativeDevices:['一加 13','小米 15']},
-        {id:'adreno_750',name:'Adreno 750',vendor:'Qualcomm',family:'Adreno',architecture:'7 系列',tier:86,representativeDevices:['一加 12','小米 14']},
-        {id:'adreno_740',name:'Adreno 740',vendor:'Qualcomm',family:'Adreno',architecture:'7 系列',tier:74,representativeDevices:['一加 11','小米 13']},
-        {id:'adreno_730',name:'Adreno 730',vendor:'Qualcomm',family:'Adreno',architecture:'7 系列',tier:62,representativeDevices:['小米 12S','一加 10 Pro']},
-        {id:'mali_g720',name:'Mali-G720',vendor:'Arm',family:'Mali',architecture:'Valhall 5',tier:78,representativeDevices:['天玑 9300 设备']},
-        {id:'mali_g715',name:'Mali-G715',vendor:'Arm',family:'Mali',architecture:'Valhall 4',tier:66,representativeDevices:['天玑 9200 设备']}
-      ],
-      records:[
-        {gameId:'steam_2358720',gpuId:'adreno_830',status:'direct',fpsMin:34,fpsMax:45,evidenceLevel:'exact_device',validUsers:96,configIds:['cfg_wukong_830'],updatedAt:'2026-08-04'},
-        {gameId:'steam_2358720',gpuId:'adreno_750',status:'adjusted',fpsMin:27,fpsMax:36,evidenceLevel:'same_gpu',validUsers:63,configIds:['cfg_wukong_750'],updatedAt:'2026-08-02'},
-        {gameId:'steam_2358720',gpuId:'adreno_740',status:'not_recommended',fpsMin:18,fpsMax:23,evidenceLevel:'same_gpu',validUsers:24,configIds:[],updatedAt:'2026-07-30'},
-        {gameId:'steam_2358720',gpuId:'mali_g720',status:'unknown',fpsMin:null,fpsMax:null,evidenceLevel:'limited',validUsers:2,configIds:[],updatedAt:'2026-07-28'},
-        {gameId:'steam_1245620',gpuId:'adreno_830',status:'adjusted',fpsMin:30,fpsMax:40,evidenceLevel:'exact_device',validUsers:52,configIds:['cfg_elden_830_stable','cfg_elden_830_quality'],updatedAt:'2026-08-03'},
-        {gameId:'steam_1245620',gpuId:'adreno_750',status:'adjusted',fpsMin:27,fpsMax:35,evidenceLevel:'same_gpu',validUsers:41,configIds:['cfg_elden_750'],updatedAt:'2026-08-01'},
-        {gameId:'steam_1245620',gpuId:'adreno_740',status:'not_recommended',fpsMin:18,fpsMax:23,evidenceLevel:'same_gpu',validUsers:18,configIds:['cfg_elden_740_test'],updatedAt:'2026-07-29'},
-        {gameId:'steam_1245620',gpuId:'mali_g720',status:'unknown',fpsMin:null,fpsMax:null,evidenceLevel:'limited',validUsers:3,configIds:[],updatedAt:'2026-07-25'},
-        {gameId:'steam_1145360',gpuId:'adreno_830',status:'direct',fpsMin:58,fpsMax:60,evidenceLevel:'exact_device',validUsers:83,configIds:['cfg_hades_830'],updatedAt:'2026-08-02'},
-        {gameId:'steam_1145360',gpuId:'adreno_750',status:'direct',fpsMin:58,fpsMax:60,evidenceLevel:'same_gpu',validUsers:71,configIds:['cfg_hades_750'],updatedAt:'2026-08-01'},
-        {gameId:'steam_1145360',gpuId:'adreno_740',status:'direct',fpsMin:55,fpsMax:60,evidenceLevel:'same_gpu',validUsers:56,configIds:['cfg_hades_740'],updatedAt:'2026-07-31'},
-        {gameId:'steam_1145360',gpuId:'adreno_730',status:'direct',fpsMin:48,fpsMax:60,evidenceLevel:'same_gpu',validUsers:39,configIds:['cfg_hades_730'],updatedAt:'2026-07-30'},
-        {gameId:'steam_1145360',gpuId:'mali_g720',status:'direct',fpsMin:55,fpsMax:60,evidenceLevel:'same_gpu',validUsers:34,configIds:['cfg_hades_g720'],updatedAt:'2026-07-29'},
-        {gameId:'steam_1145360',gpuId:'mali_g715',status:'adjusted',fpsMin:42,fpsMax:55,evidenceLevel:'similar_gpu',validUsers:19,configIds:['cfg_hades_g715'],updatedAt:'2026-07-27'},
-        {gameId:'steam_814380',gpuId:'adreno_830',status:'direct',fpsMin:45,fpsMax:58,evidenceLevel:'exact_device',validUsers:64,configIds:['cfg_sekiro_830'],updatedAt:'2026-08-01'},
-        {gameId:'steam_814380',gpuId:'adreno_750',status:'direct',fpsMin:40,fpsMax:52,evidenceLevel:'same_gpu',validUsers:48,configIds:['cfg_sekiro_750'],updatedAt:'2026-07-31'},
-        {gameId:'steam_814380',gpuId:'adreno_740',status:'adjusted',fpsMin:29,fpsMax:40,evidenceLevel:'same_gpu',validUsers:31,configIds:['cfg_sekiro_740'],updatedAt:'2026-07-29'},
-        {gameId:'gog_1091500',gpuId:'adreno_830',status:'adjusted',fpsMin:26,fpsMax:36,evidenceLevel:'exact_device',validUsers:41,configIds:['cfg_cp_830'],updatedAt:'2026-07-31'},
-        {gameId:'gog_1091500',gpuId:'adreno_750',status:'not_recommended',fpsMin:19,fpsMax:26,evidenceLevel:'same_gpu',validUsers:22,configIds:['cfg_cp_750_test'],updatedAt:'2026-07-28'},
-        {gameId:'steam_1716740',gpuId:'adreno_830',status:'unknown',fpsMin:null,fpsMax:null,evidenceLevel:'limited',validUsers:2,configIds:[],updatedAt:'2026-07-26'}
-      ],
-      configs:[]
+    const coverMap = {
+      wukong: "assets/compatibility/black-myth-wukong.jpg",
+      elden: "assets/compatibility/elden-ring.jpg",
+      hades: "assets/compatibility/hades.jpg",
+      sekiro: "assets/compatibility/sekiro.jpg",
+      cyberpunk: "assets/compatibility/cyberpunk-2077.jpg",
+      starfield: "assets/compatibility/starfield.jpg"
     };
-    const config=(id,gameId,gpuId,name,version,expected,users,size,downloads,updatedAt,settings,issues=[])=>({id,gameId,gpuId,name,version,gameVersion:mockCatalog.games.find(game=>game.id===gameId)?.version||'版本未知',androidVersion:'14～15',appVersion:'6.1.0',kernelVersion:'Wine 9.2 · GS3',expectedResult:expected,verifiedUsers:users,fileSize:size,downloads,updatedAt,settings,steps:[{title:'下载并载入配置',description:'盖世完成环境校验后自动写入参数。'},{title:'首次启动耐心等待',description:'首次编译着色器约需 2～4 分钟。'}],knownIssues:issues,fullConfig:[['容器内存','4096 MB'],['DXVK','2.5.1'],['同步方式','Esync'],['CPU 模式','性能优先']]});
-    mockCatalog.configs=[
-      config('cfg_wukong_830','steam_2358720','adreno_830','720P 稳定方案','3.1','34～45 FPS，基本流畅',96,'18 KB',3280,'2026-08-04',[['分辨率','1280 × 720'],['画质','低'],['FSR','质量']],['个别过场动画可能短暂掉帧']),
-      config('cfg_wukong_750','steam_2358720','adreno_750','性能优先方案','2.4','27～36 FPS，可游玩',63,'17 KB',1840,'2026-08-02',[['分辨率','1280 × 720'],['画质','低'],['FSR','性能']],['新区域首次加载可能卡顿']),
-      config('cfg_elden_830_stable','steam_1245620','adreno_830','720P 稳定方案','2.0','30～40 FPS，基本流畅',52,'18 KB',1280,'2026-08-03',[['分辨率','1280 × 720'],['画质','中'],['光线追踪','关闭']],['首次进入新区域可能短暂卡顿']),
-      config('cfg_elden_830_quality','steam_1245620','adreno_830','画质优先方案','1.3','26～34 FPS，画面更清晰',31,'19 KB',720,'2026-08-01',[['分辨率','1600 × 900'],['画质','中'],['光线追踪','关闭']],['大型战斗场景帧率可能降至 25']),
-      config('cfg_elden_750','steam_1245620','adreno_750','低画质流畅方案','1.8','27～35 FPS，可游玩',41,'18 KB',960,'2026-08-01',[['分辨率','1280 × 720'],['画质','低'],['光线追踪','关闭']],['开放世界偶尔掉帧']),
-      config('cfg_elden_740_test','steam_1245620','adreno_740','实验性启动方案','0.8','18～23 FPS，不建议长时间游玩',18,'16 KB',230,'2026-07-29',[['分辨率','960 × 540'],['画质','低'],['光线追踪','关闭']],['帧率较低，仅供测试']),
-      config('cfg_hades_830','steam_1145360','adreno_830','高画质 60 帧方案','2.0','稳定 60 FPS',83,'12 KB',2560,'2026-08-02',[['分辨率','1920 × 1080'],['画质','高']],[]),
-      config('cfg_hades_750','steam_1145360','adreno_750','高画质方案','1.9','58～60 FPS',71,'12 KB',1880,'2026-08-01',[['分辨率','1920 × 1080'],['画质','高']],[]),
-      config('cfg_hades_740','steam_1145360','adreno_740','稳定方案','1.6','55～60 FPS',56,'12 KB',1320,'2026-07-31',[['分辨率','1600 × 900'],['画质','高']],[]),
-      config('cfg_hades_730','steam_1145360','adreno_730','兼容方案','1.4','48～60 FPS',39,'11 KB',880,'2026-07-30',[['分辨率','1280 × 720'],['画质','中']],[]),
-      config('cfg_hades_g720','steam_1145360','mali_g720','Mali 稳定方案','1.2','55～60 FPS',34,'12 KB',760,'2026-07-29',[['分辨率','1600 × 900'],['画质','中']],[]),
-      config('cfg_hades_g715','steam_1145360','mali_g715','Mali 性能方案','1.0','42～55 FPS',19,'11 KB',340,'2026-07-27',[['分辨率','1280 × 720'],['画质','中']],['个别房间切换时短暂卡顿']),
-      config('cfg_sekiro_830','steam_814380','adreno_830','中画质流畅方案','1.4','45～58 FPS',64,'14 KB',1460,'2026-08-01',[['分辨率','1280 × 720'],['画质','中']],[]),
-      config('cfg_sekiro_750','steam_814380','adreno_750','稳定方案','1.3','40～52 FPS',48,'14 KB',990,'2026-07-31',[['分辨率','1280 × 720'],['画质','中']],[]),
-      config('cfg_sekiro_740','steam_814380','adreno_740','性能方案','1.1','29～40 FPS',31,'13 KB',610,'2026-07-29',[['分辨率','1280 × 720'],['画质','低']],['部分过场动画掉帧']),
-      config('cfg_cp_830','gog_1091500','adreno_830','城市性能方案','4.2','26～36 FPS，可游玩',41,'22 KB',1180,'2026-07-31',[['分辨率','1280 × 720'],['画质','低'],['FSR','性能']],['市中心驾驶时可能掉至 25 FPS']),
-      config('cfg_cp_750_test','gog_1091500','adreno_750','实验性低画质方案','0.9','19～26 FPS，仅供测试',22,'20 KB',280,'2026-07-28',[['分辨率','960 × 540'],['画质','低'],['FSR','性能']],['体验不稳定，不建议长时间游玩'])
-    ];
-    const emptyGameFilters=()=>({gpuIds:[],statuses:[],stores:[],configStates:[]});
-    const emptyGpuFilters=()=>({vendors:[],families:[],tiers:[],verifiedStates:[]});
-    const state={view:'catalog',mode:'game',query:'',detailFamily:'all',localOnly:false,context:readyContext,catalogStatus:'ready',games:[],gpus:[],records:[],configs:[],gameFilters:emptyGameFilters(),gpuFilters:emptyGpuFilters(),filterOpen:false,filterGroupByMode:{game:'gpuIds',gpu:'vendors'},selectedGameId:null,selectedGpuId:null,selectedConfigId:null,gameReturnView:'catalog',returnView:'game',actionState:'idle',actionMessage:'',actionConfigId:null,activeRequestId:null};
-    let actionTimer=null,requestSequence=0;
-    const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-    const str=(v,f='')=>(typeof v==='string'||typeof v==='number')?String(v).slice(0,200):f;
-    const num=(v,f=0,min=0,max=1000000)=>Number.isFinite(Number(v))?Math.min(max,Math.max(min,Number(v))):f;
-    const arr=v=>Array.isArray(v)?v:[];
-    const uniqueBy=(list,keyOf)=>{const seen=new Set();return list.filter(item=>{const key=keyOf(item);if(seen.has(key))return false;seen.add(key);return true})};
-    const uniqueById=list=>uniqueBy(list,item=>item.id);
-    function normalizeCatalog(raw={}){
-      raw=raw&&typeof raw==='object'?raw:{};
-      const games=uniqueById(arr(raw.games).filter(x=>x&&typeof x==='object').map((x,i)=>({id:str(x.id,`game_${i}`),name:str(x.name,'未命名游戏'),aliases:arr(x.aliases).slice(0,10).map(v=>str(v)).filter(Boolean),store:str(x.store,'未知来源'),version:str(x.version,'版本未知'),coverKey:Object.hasOwn(coverMap,x.coverKey)?x.coverKey:'default',symbol:str(x.symbol,'游').slice(0,4)})));
-      const gpus=uniqueById(arr(raw.gpus).filter(x=>x&&typeof x==='object').map((x,i)=>({id:str(x.id,`gpu_${i}`),name:str(x.name,'未知 GPU'),vendor:str(x.vendor,'未知厂商'),family:['Adreno','Mali'].includes(x.family)?x.family:'Other',architecture:str(x.architecture,'未知架构'),tier:num(x.tier,0),representativeDevices:arr(x.representativeDevices).slice(0,5).map(v=>str(v)).filter(Boolean)})));
-      const gameIds=new Set(games.map(x=>x.id)),gpuIds=new Set(gpus.map(x=>x.id));
-      const records=uniqueBy(arr(raw.records).filter(x=>x&&typeof x==='object'&&gameIds.has(str(x.gameId))&&gpuIds.has(str(x.gpuId))).map(x=>({gameId:str(x.gameId),gpuId:str(x.gpuId),status:Object.hasOwn(statusMap,x.status)?x.status:'unknown',fpsMin:x.fpsMin==null?null:num(x.fpsMin,0,0,240),fpsMax:x.fpsMax==null?null:num(x.fpsMax,0,0,240),evidenceLevel:Object.hasOwn(evidenceMap,x.evidenceLevel)?x.evidenceLevel:'limited',validUsers:num(x.validUsers),configIds:arr(x.configIds).slice(0,20).map(v=>str(v)).filter(Boolean),updatedAt:str(x.updatedAt)})),x=>`${x.gameId}\u0000${x.gpuId}`);
-      const recordKeys=new Set(records.map(x=>`${x.gameId}\u0000${x.gpuId}`));
-      const configs=uniqueById(arr(raw.configs).filter(x=>x&&typeof x==='object'&&gameIds.has(str(x.gameId))&&gpuIds.has(str(x.gpuId))&&recordKeys.has(`${str(x.gameId)}\u0000${str(x.gpuId)}`)).map((x,i)=>({id:str(x.id,`config_${i}`),gameId:str(x.gameId),gpuId:str(x.gpuId),name:str(x.name,'未命名配置'),version:str(x.version,'—'),gameVersion:str(x.gameVersion,'版本未知'),androidVersion:str(x.androidVersion,'未注明'),appVersion:str(x.appVersion,'未注明'),kernelVersion:str(x.kernelVersion,'未注明'),expectedResult:str(x.expectedResult,'暂无预估'),verifiedUsers:num(x.verifiedUsers),fileSize:str(x.fileSize,'—'),downloads:num(x.downloads),updatedAt:str(x.updatedAt),settings:arr(x.settings).filter(r=>Array.isArray(r)&&r.length>1).slice(0,10).map(r=>[str(r[0]),str(r[1])]),steps:arr(x.steps).filter(s=>s&&typeof s==='object').slice(0,3).map(s=>({title:str(s.title,'操作步骤'),description:str(s.description)})),knownIssues:arr(x.knownIssues).slice(0,6).map(v=>str(v)).filter(Boolean),fullConfig:arr(x.fullConfig).filter(r=>Array.isArray(r)&&r.length>1).slice(0,20).map(r=>[str(r[0]),str(r[1])])})));
-      const configMap=new Map(configs.map(config=>[config.id,config]));records.forEach(record=>record.configIds=record.configIds.filter(id=>{const config=configMap.get(id);return config&&config.gameId===record.gameId&&config.gpuId===record.gpuId}));
-      return{games,gpus,records,configs};
+
+    const state = {
+      gameId: null,
+      targetType: null,
+      targetId: null,
+      ratingMin: null,
+      sortField: "rating",
+      sortDirection: "desc",
+      openPicker: null,
+      gameQuery: "",
+      targetQuery: "",
+      context: null,
+      catalogStatus: "ready",
+      games: [],
+      targets: [],
+      runs: []
+    };
+
+    const mockCatalog = {
+      games: [
+        { id: "steam_2358720", name: "黑神话：悟空", aliases: ["BLACK MYTH WUKONG", "悟空"], version: "1.0.15", coverKey: "wukong", popular: 1 },
+        { id: "steam_1245620", name: "艾尔登法环", aliases: ["ELDEN RING", "老头环"], version: "1.16.1", coverKey: "elden", popular: 2 },
+        { id: "steam_1145360", name: "哈迪斯", aliases: ["HADES", "黑帝斯"], version: "1.38290", coverKey: "hades", popular: 3 },
+        { id: "steam_814380", name: "只狼：影逝二度", aliases: ["SEKIRO", "只狼"], version: "1.06", coverKey: "sekiro", popular: 4 },
+        { id: "gog_1091500", name: "赛博朋克 2077", aliases: ["CYBERPUNK 2077", "赛博朋克"], version: "2.31", coverKey: "cyberpunk", popular: 5 },
+        { id: "steam_1716740", name: "星空", aliases: ["STARFIELD"], version: "1.15.222", coverKey: "starfield", popular: 6 }
+      ],
+      targets: [
+        { id: "oneplus_13", type: "device", displayName: "一加 13", aliases: ["OnePlus 13", "骁龙 8 至尊版", "Adreno 830"], deviceModel: "一加 13", soc: "骁龙 8 至尊版", gpu: "Adreno 830" },
+        { id: "xiaomi_14", type: "device", displayName: "小米 14", aliases: ["Xiaomi 14", "骁龙 8 Gen 3", "Adreno 750"], deviceModel: "小米 14", soc: "骁龙 8 Gen 3", gpu: "Adreno 750" },
+        { id: "oneplus_11", type: "device", displayName: "一加 11", aliases: ["OnePlus 11", "骁龙 8 Gen 2", "Adreno 740"], deviceModel: "一加 11", soc: "骁龙 8 Gen 2", gpu: "Adreno 740" },
+        { id: "adreno_830", type: "gpu", displayName: "Adreno 830", aliases: ["骁龙 8 至尊版"], deviceModel: "多款旗舰设备", soc: "Qualcomm", gpu: "Adreno 830" },
+        { id: "mali_g720", type: "gpu", displayName: "Mali-G720", aliases: ["天玑 9300"], deviceModel: "多款天玑设备", soc: "MediaTek", gpu: "Mali-G720" }
+      ],
+      runs: [
+        { id: "run_wukong_13", gameId: "steam_2358720", targetId: "oneplus_13", gpu: "Adreno 830", androidVersion: "15", appVersion: "6.1.0", kernelVersion: "Wine 9.2 · GS3", rating: 5, avgFps: 39, tags: ["基本流畅"], notes: "首次进入新区域会短暂编译着色器。", sampleCount: 96, verifiedAt: "2026-08-04" },
+        { id: "run_wukong_14", gameId: "steam_2358720", targetId: "xiaomi_14", gpu: "Adreno 750", androidVersion: "15", appVersion: "6.1.0", kernelVersion: "Wine 9.2 · GS3", rating: 4, avgFps: 31, tags: ["需调低画质"], notes: "建议 720P 低画质。", sampleCount: 63, verifiedAt: "2026-08-02" },
+        { id: "run_elden_13", gameId: "steam_1245620", targetId: "oneplus_13", gpu: "Adreno 830", androidVersion: "15", appVersion: "6.1.0", kernelVersion: "Wine 9.2 · GS3", rating: 4, avgFps: 35, tags: ["基本流畅"], notes: "开放世界偶尔出现帧时间波动。", sampleCount: 52, verifiedAt: "2026-08-03" },
+        { id: "run_elden_14", gameId: "steam_1245620", targetId: "xiaomi_14", gpu: "Adreno 750", androidVersion: "15", appVersion: "6.1.0", kernelVersion: "Wine 9.2 · GS3", rating: 4, avgFps: 30, tags: ["需调低画质"], notes: "关闭光线追踪后更稳定。", sampleCount: 41, verifiedAt: "2026-08-01" },
+        { id: "run_hades_13", gameId: "steam_1145360", targetId: "oneplus_13", gpu: "Adreno 830", androidVersion: "15", appVersion: "6.1.0", kernelVersion: "Wine 9.2 · GS3", rating: 5, avgFps: 60, tags: ["稳定运行"], notes: "高画质可稳定运行。", sampleCount: 83, verifiedAt: "2026-08-02" },
+        { id: "run_hades_11", gameId: "steam_1145360", targetId: "oneplus_11", gpu: "Adreno 740", androidVersion: "14", appVersion: "6.1.0", kernelVersion: "Wine 9.1 · GS3", rating: 5, avgFps: 57, tags: ["稳定运行"], notes: "中高画质表现稳定。", sampleCount: 56, verifiedAt: "2026-07-31" },
+        { id: "run_sekiro_13", gameId: "steam_814380", targetId: "oneplus_13", gpu: "Adreno 830", androidVersion: "15", appVersion: "6.1.0", kernelVersion: "Wine 9.2 · GS3", rating: 5, avgFps: 52, tags: ["基本流畅"], notes: "过场动画可能短暂掉帧。", sampleCount: 64, verifiedAt: "2026-08-01" },
+        { id: "run_sekiro_14", gameId: "steam_814380", targetId: "xiaomi_14", gpu: "Adreno 750", androidVersion: "15", appVersion: "6.1.0", kernelVersion: "Wine 9.2 · GS3", rating: 4, avgFps: 46, tags: ["基本流畅"], notes: "建议中画质。", sampleCount: 48, verifiedAt: "2026-07-31" },
+        { id: "run_cp_13", gameId: "gog_1091500", targetId: "oneplus_13", gpu: "Adreno 830", androidVersion: "15", appVersion: "6.1.0", kernelVersion: "Wine 9.2 · GS3", rating: 3, avgFps: 31, tags: ["可运行", "波动明显"], notes: "市中心驾驶场景可能降至 25 FPS。", sampleCount: 41, verifiedAt: "2026-07-31" },
+        { id: "run_cp_14", gameId: "gog_1091500", targetId: "xiaomi_14", gpu: "Adreno 750", androidVersion: "15", appVersion: "6.1.0", kernelVersion: "Wine 9.2 · GS3", rating: 2, avgFps: 22, tags: ["不建议"], notes: "当前体验不稳定。", sampleCount: 22, verifiedAt: "2026-07-28" },
+        { id: "run_star_13", gameId: "steam_1716740", targetId: "oneplus_13", gpu: "Adreno 830", androidVersion: "15", appVersion: "6.1.0", kernelVersion: "Wine 9.2 · GS3", rating: 2, avgFps: 19, tags: ["样本较少"], notes: "仅完成启动与短时测试。", sampleCount: 2, verifiedAt: "2026-07-26" },
+        { id: "run_hades_mali", gameId: "steam_1145360", targetId: "mali_g720", gpu: "Mali-G720", androidVersion: "14", appVersion: "6.1.0", kernelVersion: "Wine 9.1 · GS3", rating: 4, avgFps: 55, tags: ["基本流畅"], notes: "个别房间切换会短暂卡顿。", sampleCount: 34, verifiedAt: "2026-07-29" }
+      ]
+    };
+
+    const esc = value => String(value ?? "").replace(/[&<>'"]/g, character => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", "\"": "&quot;"
+    })[character]);
+    const text = (value, fallback = "") => (typeof value === "string" || typeof value === "number")
+      ? String(value).slice(0, 240)
+      : fallback;
+    const list = value => Array.isArray(value) ? value : [];
+    const uniqueBy = (items, keyOf) => {
+      const seen = new Set();
+      return items.filter(item => {
+        const key = keyOf(item);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    };
+    const finiteNumber = value => {
+      if (value === "" || value == null) return null;
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    function normalizeCatalog(raw = {}) {
+      raw = raw && typeof raw === "object" ? raw : {};
+
+      const games = uniqueBy(list(raw.games).filter(Boolean).map(item => ({
+        id: text(item.id).trim(),
+        name: text(item.name).trim(),
+        aliases: list(item.aliases).slice(0, 10).map(value => text(value).trim()).filter(Boolean),
+        version: text(item.version, "未记录").trim() || "未记录",
+        coverKey: Object.prototype.hasOwnProperty.call(coverMap, item.coverKey) ? item.coverKey : "",
+        popular: Math.min(999, Math.max(1, finiteNumber(item.popular) ?? 999))
+      })).filter(item => item.id && item.name), item => item.id);
+
+      const targets = uniqueBy(list(raw.targets).filter(Boolean).map(item => ({
+        id: text(item.id).trim(),
+        type: ["device", "gpu"].includes(item.type) ? item.type : "gpu",
+        displayName: text(item.displayName).trim(),
+        aliases: list(item.aliases).slice(0, 10).map(value => text(value).trim()).filter(Boolean),
+        deviceModel: text(item.deviceModel, "未记录").trim() || "未记录",
+        soc: text(item.soc, "未记录").trim() || "未记录",
+        gpu: text(item.gpu, "未记录").trim() || "未记录"
+      })).filter(item => item.id && item.displayName), item => item.id);
+
+      const gameIds = new Set(games.map(item => item.id));
+      const targetIds = new Set(targets.map(item => item.id));
+      const runs = uniqueBy(list(raw.runs).filter(Boolean).map(item => {
+        const rating = finiteNumber(item.rating);
+        const fps = finiteNumber(item.avgFps);
+        return {
+          id: text(item.id).trim(),
+          gameId: text(item.gameId).trim(),
+          targetId: text(item.targetId).trim(),
+          gpu: text(item.gpu, "未记录").trim() || "未记录",
+          androidVersion: text(item.androidVersion, "未记录").trim() || "未记录",
+          appVersion: text(item.appVersion, "未记录").trim() || "未记录",
+          kernelVersion: text(item.kernelVersion, "未记录").trim() || "未记录",
+          rating: rating == null ? null : Math.min(5, Math.max(1, rating)),
+          avgFps: fps == null ? null : Math.min(240, Math.max(0, fps)),
+          tags: list(item.tags).slice(0, 5).map(value => text(value).trim()).filter(Boolean),
+          notes: text(item.notes, "—").trim() || "—",
+          sampleCount: Math.min(1000000, Math.max(0, finiteNumber(item.sampleCount) ?? 0)),
+          verifiedAt: /^\d{4}-\d{2}-\d{2}$/.test(text(item.verifiedAt)) ? text(item.verifiedAt) : "未记录"
+        };
+      }).filter(item => item.id && gameIds.has(item.gameId) && targetIds.has(item.targetId) && item.rating != null), item => item.id);
+
+      return { games, targets, runs };
     }
-    const gameBy=id=>state.games.find(x=>x.id===id),gpuBy=id=>state.gpus.find(x=>x.id===id),configBy=id=>state.configs.find(x=>x.id===id);
-    const recordFor=(gameId,gpuId)=>state.records.find(x=>x.gameId===gameId&&x.gpuId===gpuId);
-    const recordsForGame=id=>state.records.filter(x=>x.gameId===id);
-    const recordsForGpu=id=>state.records.filter(x=>x.gpuId===id);
-    const statusOf=r=>statusMap[r?.status]||statusMap.unknown;
-    const fps=r=>r&&r.fpsMin!=null&&r.fpsMax!=null?`${r.fpsMin}～${r.fpsMax} FPS`:'暂无预估';
-    const androidMatches=(range,current)=>{const values=str(range).match(/\d+/g)?.map(Number)||[];const value=Number(current);if(!Number.isFinite(value)||!values.length)return false;return values.length===1?value===values[0]:value>=Math.min(...values)&&value<=Math.max(...values)};
-    const isMatch=c=>{const game=gameBy(c.gameId),context=state.context;return context?.status==='ready'&&context.gpuId===c.gpuId&&game?.version===c.gameVersion&&androidMatches(c.androidVersion,context.androidVersion)&&context.appVersion===c.appVersion&&context.kernelVersion===c.kernelVersion};
-    const mismatchMessage=c=>{const gpu=gpuBy(c.gpuId),context=state.context;if(context?.status!=='ready')return`当前设备未识别。可以下载到配置库，但暂不应用。`;if(context.gpuId!==c.gpuId)return`当前设备为 ${context.gpuName}，此配置适用 ${gpu?.name||'其他 GPU'}。可以下载到配置库，但不会应用到当前设备。`;return`当前游戏或运行环境与配置版本不一致。可以下载到配置库，环境匹配后再应用。`};
-    const cover=g=>coverMap[g?.coverKey]||coverMap.default;
-    const configCountForGame=id=>new Set(recordsForGame(id).flatMap(r=>r.configIds)).size;
-    const configCountForGpu=id=>new Set(recordsForGpu(id).flatMap(r=>r.configIds)).size;
-    const tierBand=tier=>tier>=85?'flagship':tier>=70?'high':'mainstream';
-    const includesAny=(selected,value)=>!selected.length||selected.includes(value);
-    const toggleValue=(list,value)=>list.includes(value)?list.filter(x=>x!==value):[...list,value];
-    const activeFilters=()=>state.mode==='game'?state.gameFilters:state.gpuFilters;
-    const activeGameGpuIds=()=>state.localOnly&&state.context?.status==='ready'?[state.context.gpuId]:state.gameFilters.gpuIds;
-    const activeFilterCount=()=>Object.values(activeFilters()).reduce((sum,list)=>sum+list.length,0);
-    function nav(title,back=true){return`<header class="nav ${back?'detail':''}">${back?`<button class="icon-btn" data-back aria-label="返回">${icons.back}</button>`:'<span></span>'}<h1>${esc(title)}</h1><span></span></header>`}
-    function statePanel(title,copy,action='',label=''){return`<div class="state"><div class="state-icon">${icons.alert}</div><h3>${esc(title)}</h3><p>${esc(copy)}</p>${action?`<button class="secondary" data-action="${action}">${esc(label)}</button>`:''}</div>`}
-    function gameCard(g){const rs=recordsForGame(g.id),configs=configCountForGame(g.id),local=state.localOnly&&state.context?.status==='ready'?recordFor(g.id,state.context.gpuId):null;return`<button class="game-card" data-game="${esc(g.id)}"><div class="cover" style="--cover:${cover(g)}"><span class="symbol">${esc(g.symbol)}</span><span class="store">${esc(g.store)}</span>${local?`<span class="mini-badge">${statusOf(local).label}</span>`:''}</div><div class="card-info"><div class="card-title">${esc(g.name)}</div><div class="card-meta">已验证 ${rs.length} 种 GPU · ${configs} 个配置</div><div class="card-note">${local?`本机 ${fps(local)}`:`${esc(g.store)} · ${esc(g.version)}`}</div></div></button>`}
-    function gpuStats(g){const rs=recordsForGpu(g.id);return{games:new Set(rs.map(r=>r.gameId)).size,direct:rs.filter(r=>r.status==='direct').length,configs:configCountForGpu(g.id)}}
-    function gpuCard(g){const s=gpuStats(g),self=state.context?.status==='ready'&&state.context.gpuId===g.id;return`<button class="gpu-card" data-gpu="${esc(g.id)}"><div class="gpu-top"><span class="gpu-icon">GPU</span><div class="gpu-copy"><div class="gpu-name">${esc(g.name)}</div><div class="gpu-vendor">${esc(g.vendor)} · ${esc(g.architecture)}</div></div>${self?'<span class="self-badge">本机</span>':''}</div><div class="gpu-stats"><div class="gpu-stat"><strong>${s.games}</strong><span>已验证游戏</span></div><div class="gpu-stat"><strong>${s.direct}</strong><span>可直接玩</span></div><div class="gpu-stat"><strong>${s.configs}</strong><span>配置</span></div></div></button>`}
-    function filterGroups(){return state.mode==='game'?[{key:'gpuIds',label:'GPU 型号',options:state.gpus.map(g=>({value:g.id,label:g.name}))},{key:'statuses',label:'运行表现',disabled:!activeGameGpuIds().length,options:Object.entries(statusMap).map(([value,item])=>({value,label:item.label}))},{key:'stores',label:'游戏平台',options:[...new Set(state.games.map(g=>g.store))].map(value=>({value,label:value}))},{key:'configStates',label:'配置状态',options:[{value:'has',label:'有可用配置'},{value:'none',label:'暂无配置'}]}]:[{key:'vendors',label:'GPU 厂商',options:[...new Set(state.gpus.map(g=>g.vendor))].map(value=>({value,label:value}))},{key:'families',label:'GPU 系列',options:[...new Set(state.gpus.map(g=>g.family))].map(value=>({value,label:value}))},{key:'tiers',label:'性能档位',options:[{value:'flagship',label:'旗舰'},{value:'high',label:'高端'},{value:'mainstream',label:'主流'}]},{key:'verifiedStates',label:'验证状态',options:[{value:'configured',label:'有可用配置'},{value:'verified',label:'已有验证记录'}]}]}
-    function clearFilters(mode=state.mode){if(mode==='game'){state.gameFilters=emptyGameFilters();state.localOnly=false}else state.gpuFilters=emptyGpuFilters()}
-    function catalogItems(){const q=state.query.trim().toLowerCase();if(state.mode==='game'){const f=state.gameFilters,gpuIds=activeGameGpuIds();return state.games.filter(game=>{const records=recordsForGame(game.id),queryMatch=!q||[game.name,...game.aliases].some(v=>v.toLowerCase().includes(q)),storeMatch=includesAny(f.stores,game.store),gpuMatch=!gpuIds.length||records.some(record=>gpuIds.includes(record.gpuId)),statusMatch=!f.statuses.length||records.some(record=>gpuIds.includes(record.gpuId)&&f.statuses.includes(record.status)),hasConfig=configCountForGame(game.id)>0,configMatch=!f.configStates.length||f.configStates.includes(hasConfig?'has':'none');return queryMatch&&storeMatch&&gpuMatch&&statusMatch&&configMatch})}const f=state.gpuFilters;return state.gpus.filter(gpu=>!q||gpu.name.toLowerCase().includes(q)).filter(gpu=>includesAny(f.vendors,gpu.vendor)).filter(gpu=>includesAny(f.families,gpu.family)).filter(gpu=>includesAny(f.tiers,tierBand(gpu.tier))).filter(gpu=>!f.verifiedStates.length||f.verifiedStates.some(value=>value==='configured'?configCountForGpu(gpu.id)>0:value==='verified'?recordsForGpu(gpu.id).length>0:false))}
-    function filterMarkup(itemCount){const groups=filterGroups();if(!groups.some(group=>group.key===state.filterGroupByMode[state.mode]))state.filterGroupByMode[state.mode]=groups[0]?.key||'';const activeKey=state.filterGroupByMode[state.mode],activeGroup=groups.find(group=>group.key===activeKey)||groups[0],filters=activeFilters(),selected=filters[activeGroup?.key]||[],marks=['#ffcc43','#ff667f','#a862e9','#6572ff','#40a5ff','#33d8a4'];const mobileSections=groups.map(group=>{const values=filters[group.key]||[];return`<section class="mobile-filter-section"><div class="mobile-filter-title"><strong>${esc(group.label)}</strong><span>${group.disabled?'请先选择 GPU':values.length?`已选 ${values.length} 项`:'可多选'}</span></div><div class="mobile-filter-options">${group.options.map(option=>`<button class="mobile-filter-option ${values.includes(option.value)?'selected':''}" data-filter-key="${group.key}" data-filter-option="${esc(option.value)}" ${group.disabled?'disabled':''}>${esc(option.label)}</button>`).join('')}</div>${group.disabled?'<p class="mobile-filter-hint">运行表现必须对应具体 GPU，请先选择 GPU 型号或开启“只看本机”。</p>':''}</section>`}).join('');return`<div class="filter-shell ${state.filterOpen?'panel-open':''}"><section class="filter-mobile-panel"><header class="mobile-filter-head"><strong>筛选</strong><button class="filter-close" data-filter-action="close" aria-label="关闭筛选">×</button></header><div class="mobile-filter-scroll">${mobileSections}</div><footer class="mobile-filter-footer"><button class="mobile-filter-reset" data-filter-action="clear-all">重置</button><button class="mobile-filter-confirm" data-filter-action="close">确定（${itemCount} 项）</button></footer></section><aside class="filter-sidebar"><div class="filter-sidebar-head"><strong>筛选</strong></div><div class="filter-subtitle">基础筛选</div>${groups.map((group,index)=>`${index===3?'<div class="filter-subtitle">更多筛选</div>':''}<button class="filter-group ${activeKey===group.key?'active':''} ${group.disabled?'disabled':''}" data-filter-group="${group.key}" ${group.disabled?'disabled':''}><span>${esc(group.label)}</span><span class="filter-group-meta">${filters[group.key]?.length||''}</span></button>`).join('')}</aside><section class="filter-panel"><div class="filter-panel-head"><div class="filter-panel-title"><strong>${esc(activeGroup?.label||'筛选')}</strong><span>${activeGroup?.disabled?'请先选择 GPU 型号':'可多选，结果即时更新'}</span></div>${selected.length?'<button class="filter-clear-group" data-filter-action="clear-group">清空本组</button>':''}</div>${activeGroup?.disabled?'<div class="filter-empty-hint">运行表现必须对应具体 GPU。请先选择一个或多个 GPU 型号，或开启“只看本机”。</div>':`<div class="filter-options">${(activeGroup?.options||[]).map((option,index)=>`<button class="filter-option ${selected.includes(option.value)?'selected':''}" data-filter-key="${activeGroup.key}" data-filter-option="${esc(option.value)}" style="--mark:${marks[index%marks.length]}"><span class="option-mark"></span><span class="option-label">${esc(option.label)}</span><span class="option-check">✓</span></button>`).join('')}</div>`}<div class="filter-footer"><button class="filter-clear-all" data-filter-action="clear-all">清空</button><button class="filter-done" data-filter-action="close">查看 ${itemCount} 项</button></div></section></div>`}
-    function renderCatalog(){const root=document.getElementById('catalog-view'),items=catalogItems(),searching=!!state.query.trim(),filtering=activeFilterCount()>0||state.localOnly;let content='';if(state.catalogStatus==='loading')content=statePanel('正在加载兼容库','正在获取游戏、GPU 和配置数据');else if(state.catalogStatus==='error')content=statePanel('兼容库加载失败','暂时没有获取到兼容数据','reload','重新加载');else if(items.length)content=state.mode==='game'?`<div class="game-grid">${items.map(gameCard).join('')}</div>`:`<div class="gpu-grid">${items.map(gpuCard).join('')}</div>`;else if(searching||filtering)content=statePanel('暂无符合条件的结果','可以调整搜索词或清空当前筛选','clear-filters','清空条件');else content=statePanel('暂无兼容数据','这不代表不兼容，只是暂时没有验证记录','reload','重新加载');const filterCount=activeFilterCount();root.classList.toggle('filtering',state.filterOpen);root.innerHTML=`<div class="page">${nav('游戏兼容库',false)}<div class="catalog-controls"><div class="tabs"><button class="tab ${state.mode==='game'?'active':''}" data-mode="game">按游戏查</button><button class="tab ${state.mode==='gpu'?'active':''}" data-mode="gpu">按 GPU 查</button></div><div class="search"><span class="search-icon">${icons.search}</span><input id="catalog-search" value="${esc(state.query)}" placeholder="${state.mode==='game'?'搜索游戏名称':'搜索 GPU 型号'}">${state.query?'<button class="clear" data-action="clear">×</button>':''}</div><div class="tools"><button class="filter-trigger ${filterCount?'active':''}" data-filter-action="open">筛选${filterCount?`<span class="filter-count">${filterCount}</span>`:''}</button>${state.mode==='game'&&state.context?.status==='ready'?`<button class="local-toggle ${state.localOnly?'active':''}" data-action="local"><span class="switch"></span>只看本机</button>`:'<span></span>'}</div></div><div class="catalog-layout">${filterMarkup(items.length)}<div class="catalog-results"><div class="section-head"><div><h2>${state.mode==='game'?'全部游戏':'GPU 兼容库'}</h2><p>${state.mode==='game'?'查看每款游戏已验证的 GPU 与配置':'按 GPU 查找已验证可玩的游戏'}</p></div><span class="count">${items.length} ${state.mode==='game'?'款':'种'}</span></div>${content}</div></div></div>`}
-    function gameSummary(records){const valid=records.filter(r=>['direct','adjusted'].includes(r.status)&&r.validUsers>0&&r.configIds.length>0&&evidenceRank[r.evidenceLevel]>=evidenceRank.same_gpu);const recommended=[...valid].sort((a,b)=>statusOf(b).rank-statusOf(a).rank||evidenceRank[b.evidenceLevel]-evidenceRank[a.evidenceLevel]||(b.fpsMax||0)-(a.fpsMax||0)||b.validUsers-a.validUsers||String(b.updatedAt).localeCompare(String(a.updatedAt)))[0];const lowest=[...valid].sort((a,b)=>(gpuBy(a.gpuId)?.tier||0)-(gpuBy(b.gpuId)?.tier||0)||evidenceRank[b.evidenceLevel]-evidenceRank[a.evidenceLevel])[0];return{recommended,lowest}}
-    function recordRow(r){const g=gpuBy(r.gpuId),s=statusOf(r),active=state.selectedGpuId===r.gpuId;return`<button class="record ${active?'active':''}" data-record-gpu="${esc(r.gpuId)}"><div class="record-name"><strong>${esc(g?.name||'未知 GPU')}</strong><span>${fps(r)} · ${evidenceMap[r.evidenceLevel]} · ${r.validUsers} 人</span></div><span class="badge ${s.className} record-status">${s.label}</span><span class="record-fps">${r.configIds.length} 配置</span><span class="arrow">›</span></button>`}
-    function actionLabel(c){if(state.actionConfigId===c.id&&state.actionState!=='idle')return state.actionMessage;return isMatch(c)?'下载并应用':'下载配置'}
-    function actionClass(c){return state.actionConfigId===c.id?state.actionState:''}
-    function configCard(c){const g=gpuBy(c.gpuId),match=isMatch(c);return`<article class="config-card"><div class="config-top"><div class="config-title"><strong>${esc(c.name)}</strong><span>游戏 ${esc(c.gameVersion)} · ${esc(g?.name)} · Android ${esc(c.androidVersion)} · 盖世 ${esc(c.appVersion)} · ${esc(c.kernelVersion)}</span></div><span class="version">v${esc(c.version)}</span></div><div class="config-result">${esc(c.expectedResult)}</div><div class="config-meta"><span>${c.verifiedUsers} 人验证</span><span>${esc(c.updatedAt)}</span><span>${esc(c.fileSize)}</span><span>${c.downloads} 次下载</span></div><div class="config-actions"><button class="outline-btn" data-config="${esc(c.id)}">查看配置</button><button class="primary-btn ${actionClass(c)}" data-apply-config="${esc(c.id)}" ${state.actionConfigId===c.id&&state.actionState==='loading'?'disabled':''}>${esc(actionLabel(c))}</button></div>${!match?`<p class="caption" style="margin-top:7px">${esc(mismatchMessage(c))}</p>`:''}</article>`}
-    function gameHero(g){return`<section class="hero"><div class="cover" style="--cover:${cover(g)}"><span class="symbol">${esc(g.symbol)}</span><span class="store">${esc(g.store)}</span></div><div class="hero-copy"><h2>${esc(g.name)}</h2><p class="hero-sub">${esc(g.store)} · ${esc(g.version)}</p><div class="badges"><span class="badge evidence">已验证 ${recordsForGame(g.id).length} 种 GPU</span><span class="badge evidence">${configCountForGame(g.id)} 个配置</span></div></div></section>`}
-    function renderGame(){const root=document.getElementById('game-view'),g=gameBy(state.selectedGameId);if(!g){root.innerHTML=`<div class="detail-page">${nav('游戏详情')}${statePanel('游戏数据已失效','请返回兼容库重新查找','back','返回兼容库')}</div>`;return}let records=recordsForGame(g.id).filter(r=>state.detailFamily==='all'||gpuBy(r.gpuId)?.family===state.detailFamily);if(!records.some(r=>r.gpuId===state.selectedGpuId))state.selectedGpuId=(records.find(r=>r.gpuId===state.context?.gpuId)||records[0])?.gpuId||null;const selected=recordFor(g.id,state.selectedGpuId),configs=selected?selected.configIds.map(configBy).filter(Boolean):[],summary=gameSummary(recordsForGame(g.id));const recGpu=gpuBy(summary.recommended?.gpuId),lowGpu=gpuBy(summary.lowest?.gpuId);root.innerHTML=`<div class="detail-page">${nav('游戏详情')}<div class="detail-body"><div class="detail-left">${gameHero(g)}<div class="summary-grid"><div class="summary-card"><span>推荐 GPU</span><strong>${esc(recGpu?.name||'暂无推荐')}</strong><p>${summary.recommended?`${fps(summary.recommended)} · ${summary.recommended.validUsers} 人验证`:'暂无足够证据'}</p></div><div class="summary-card"><span>最低已验证 GPU</span><strong>${esc(lowGpu?.name||'暂无数据')}</strong><p>仅代表已有有效运行记录</p></div></div></div><div class="detail-right"><section class="module"><div class="module-head"><div><h3>GPU 运行记录</h3><p class="caption">选择 GPU 查看对应配置</p></div><span class="count">${records.length} 种</span></div><div class="filters" style="margin-top:9px">${['all','Adreno','Mali'].map(v=>`<button class="chip ${state.detailFamily===v?'active':''}" data-detail-family="${v}">${v==='all'?'全部':v}</button>`).join('')}</div><div class="record-list">${records.map(recordRow).join('')||'<p class="caption">暂无该类型 GPU 记录</p>'}</div></section><section class="module"><div class="module-head"><div><h3>${esc(gpuBy(state.selectedGpuId)?.name||'当前 GPU')} 可用配置</h3><p class="caption">配置可查看、下载；匹配本机时下载后直接应用</p></div><span class="count">${configs.length} 个</span></div><div class="config-list">${configs.length?configs.map(configCard).join(''):'<p class="caption">当前 GPU 暂无可用配置</p>'}</div></section></div></div></div>`}
-    function verifiedRow(r){const g=gameBy(r.gameId),s=statusOf(r);return`<button class="verified-row" data-gpu-game="${esc(r.gameId)}" data-from-gpu="${esc(r.gpuId)}"><span class="verified-cover" style="--cover:${cover(g)}">${esc(g?.symbol||'游')}</span><span class="verified-copy"><strong>${esc(g?.name||'未知游戏')}</strong><span>${esc(g?.store)} · ${evidenceMap[r.evidenceLevel]} · ${r.validUsers} 人</span></span><span class="verified-result"><span class="badge ${s.className}">${s.label}</span><small>${fps(r)} · ${r.configIds.length} 配置</small></span><span class="arrow">›</span></button>`}
-    function renderGpu(){const root=document.getElementById('gpu-view'),g=gpuBy(state.selectedGpuId);if(!g){root.innerHTML=`<div class="detail-page">${nav('GPU 详情')}${statePanel('GPU 数据已失效','请返回兼容库重新查找','back','返回兼容库')}</div>`;return}const rs=recordsForGpu(g.id),stats=gpuStats(g),self=state.context?.status==='ready'&&state.context.gpuId===g.id;root.innerHTML=`<div class="detail-page">${nav('GPU 详情')}<div class="detail-body"><div class="detail-left"><section class="gpu-hero"><div class="gpu-hero-top"><span class="gpu-icon">GPU</span><div><h2>${esc(g.name)} ${self?'<span class="self-badge">本机</span>':''}</h2><p>${esc(g.vendor)} · ${esc(g.architecture)}</p><p>代表设备：${esc(g.representativeDevices.join('、')||'暂无')}</p></div></div><div class="metric-row"><div class="metric"><strong>${stats.games}</strong><span>已验证游戏</span></div><div class="metric"><strong>${stats.direct}</strong><span>可直接玩</span></div><div class="metric"><strong>${stats.configs}</strong><span>可用配置</span></div></div></section></div><div class="detail-right"><section class="module"><div class="module-head"><div><h3>已验证游戏</h3><p class="caption">点击游戏查看该 GPU 的运行记录与配置</p></div><span class="count">${rs.length} 款</span></div><div class="verified-list">${rs.map(verifiedRow).join('')||'<p class="caption">暂无游戏记录</p>'}</div></section></div></div></div>`}
-    function renderConfig(){const root=document.getElementById('config-view'),c=configBy(state.selectedConfigId);if(!c){root.innerHTML=`<div class="detail-page">${nav('配置详情')}${statePanel('配置已失效','请返回重新选择配置','back','返回')}</div>`;return}const g=gameBy(c.gameId),gpu=gpuBy(c.gpuId),r=recordFor(c.gameId,c.gpuId),s=statusOf(r);root.innerHTML=`<div class="detail-page">${nav('配置详情')}<div class="detail-body config-detail-body"><div class="detail-left"><section class="config-hero"><h2>${esc(c.name)}</h2><p>${esc(g?.name)} · ${esc(gpu?.name)} · v${esc(c.version)}</p><div class="badges"><span class="badge ${s.className}">${s.label}</span><span class="badge evidence">${evidenceMap[r?.evidenceLevel]||'样本较少'}</span></div><div class="result-box"><span>预计表现</span><strong>${esc(c.expectedResult)}</strong></div><div class="env-grid"><div class="env"><span>游戏版本</span><strong>${esc(c.gameVersion)}</strong></div><div class="env"><span>适用 GPU</span><strong>${esc(gpu?.name)}</strong></div><div class="env"><span>Android</span><strong>${esc(c.androidVersion)}</strong></div><div class="env"><span>盖世版本</span><strong>${esc(c.appVersion)}</strong></div><div class="env"><span>运行内核</span><strong>${esc(c.kernelVersion)}</strong></div><div class="env"><span>配置文件</span><strong>${esc(c.fileSize)} · ${c.downloads} 次下载</strong></div></div></section></div><div class="detail-right"><section class="module"><h3>推荐设置</h3><div class="settings">${c.settings.map(([k,v])=>`<div class="setting"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('')}</div></section><section class="module"><h3>使用说明</h3><ol class="steps">${c.steps.map((x,i)=>`<li class="step"><span class="step-index">${i+1}</span><div><strong>${esc(x.title)}</strong><p>${esc(x.description)}</p></div></li>`).join('')}</ol></section><section class="module"><h3>已知问题与处理</h3>${c.knownIssues.length?c.knownIssues.map(x=>`<div class="issue"><strong>${esc(x)}</strong><p>如遇该问题，请恢复本配置并重新启动；仍未解决时查看游戏运行记录。</p></div>`).join(''):'<p class="caption" style="margin-top:8px">暂无影响游玩的已知问题</p>'}</section><section class="module"><h3>完整配置</h3><table class="config-table"><tbody>${[...c.settings,...c.fullConfig].map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</tbody></table></section></div></div></div>`}
-    function render(){['catalog','game','gpu','config'].forEach(v=>document.getElementById(`${v}-view`).classList.toggle('active',state.view===v));if(state.view==='catalog')renderCatalog();if(state.view==='game')renderGame();if(state.view==='gpu')renderGpu();if(state.view==='config')renderConfig()}
-    function openGame(gameId,gpuId,from='catalog'){if(!gameBy(gameId))return;state.selectedGameId=gameId;state.selectedGpuId=gpuId&&recordFor(gameId,gpuId)?gpuId:(recordFor(gameId,state.context?.gpuId)?.gpuId||recordsForGame(gameId)[0]?.gpuId||null);state.gameReturnView=from;state.view='game';state.detailFamily='all';resetAction();render();document.getElementById('game-view').scrollTop=0}
-    function openGpu(gpuId){if(!gpuBy(gpuId))return;state.selectedGpuId=gpuId;state.view='gpu';resetAction();render();document.getElementById('gpu-view').scrollTop=0}
-    function openConfig(configId,from='game'){const c=configBy(configId);if(!c)return;state.selectedConfigId=configId;state.returnView=from;state.view='config';resetAction();render();document.getElementById('config-view').scrollTop=0}
-    function resetAction(){clearTimeout(actionTimer);state.actionState='idle';state.actionMessage='';state.actionConfigId=null;state.activeRequestId=null}
-    function actionUpdate(kind,message){state.actionState=kind;state.actionMessage=message;render()}
-    function finishAction(requestId,configId,kind,message){if(state.activeRequestId!==requestId||state.actionConfigId!==configId)return false;clearTimeout(actionTimer);state.activeRequestId=null;actionUpdate(kind,message);return true}
-    async function runConfigAction(id){const c=configBy(id);if(!c)return;clearTimeout(actionTimer);const requestId=`compat_${Date.now()}_${++requestSequence}`;state.actionConfigId=id;state.activeRequestId=requestId;actionUpdate('loading','正在下载配置…');const match=isMatch(c),methodName=match?'downloadAndApplyConfig':'downloadConfig',method=window.GameHubBridge?.[methodName],success=match?'配置已应用':'已保存到配置库',payload={requestId,configId:c.id,gameId:c.gameId,gpuId:c.gpuId};if(typeof method!=='function'){actionTimer=setTimeout(()=>finishAction(requestId,c.id,'success',success),650);return}try{const result=method(payload);if(result&&typeof result.then==='function'){await Promise.race([result,new Promise((_,reject)=>{actionTimer=setTimeout(()=>reject(new Error('timeout')),8000)})]);finishAction(requestId,c.id,'success',success)}else actionTimer=setTimeout(()=>finishAction(requestId,c.id,'error','操作超时，点击重试'),8000)}catch(e){finishAction(requestId,c.id,'error','操作失败，点击重试')}}
-    function reconcileFilters(){const gpuIds=new Set(state.gpus.map(g=>g.id)),stores=new Set(state.games.map(g=>g.store)),vendors=new Set(state.gpus.map(g=>g.vendor)),families=new Set(state.gpus.map(g=>g.family));state.gameFilters.gpuIds=state.gameFilters.gpuIds.filter(id=>gpuIds.has(id));state.gameFilters.stores=state.gameFilters.stores.filter(value=>stores.has(value));state.gpuFilters.vendors=state.gpuFilters.vendors.filter(value=>vendors.has(value));state.gpuFilters.families=state.gpuFilters.families.filter(value=>families.has(value));if(!activeGameGpuIds().length)state.gameFilters.statuses=[]}
-    function setCatalog(raw){resetAction();const c=normalizeCatalog(raw);state.games=c.games;state.gpus=c.gpus;state.records=c.records;state.configs=c.configs;reconcileFilters();state.catalogStatus='ready';if(state.view==='game'&&!gameBy(state.selectedGameId))state.view='catalog';if(state.view==='gpu'&&!gpuBy(state.selectedGpuId))state.view='catalog';if(state.view==='config'&&!configBy(state.selectedConfigId))state.view='catalog';render()}
-    window.GameHubCompatibility={setContext(context){resetAction();state.context=context&&typeof context==='object'?{...readyContext,...context,status:context.status||'ready'}:{status:'unavailable'};if(state.context.status!=='ready')state.localOnly=false;if(!activeGameGpuIds().length)state.gameFilters.statuses=[];render()},setCatalog(catalog){setCatalog(catalog)},setCatalogLoading(){resetAction();state.catalogStatus='loading';state.view='catalog';render()},setCatalogError(){resetAction();state.catalogStatus='error';state.view='catalog';render()},openGame(gameId,gpuId){openGame(gameId,gpuId)},openGpu(gpuId){openGpu(gpuId)},openConfig(configId){openConfig(configId)},setActionResult(result={}){if(!['success','error'].includes(result.status))return false;return finishAction(str(result.requestId),str(result.configId),result.status,str(result.message,result.status==='error'?'操作失败，点击重试':'操作已完成'))}};
-    document.addEventListener('input',e=>{if(e.target.id!=='catalog-search')return;state.query=e.target.value;renderCatalog();const input=document.getElementById('catalog-search');input.focus();input.setSelectionRange(input.value.length,input.value.length)});
-    document.addEventListener('click',e=>{const reload=e.target.closest('[data-action="reload"]');if(!reload)return;e.stopPropagation();state.catalogStatus='loading';renderCatalog();if(typeof window.GameHubBridge?.reloadCompatibilityCatalog==='function')window.GameHubBridge.reloadCompatibilityCatalog();else setTimeout(()=>setCatalog(mockCatalog),650)},true);
-    document.addEventListener('click',e=>{const back=e.target.closest('[data-back],[data-action="back"]');if(back){if(state.view==='config')state.view=state.returnView;else if(state.view==='game'&&state.gameReturnView==='gpu')state.view='gpu';else state.view='catalog';resetAction();render();return}const filterAction=e.target.closest('[data-filter-action]')?.dataset.filterAction;if(filterAction){if(filterAction==='open')state.filterOpen=true;if(filterAction==='close')state.filterOpen=false;if(filterAction==='clear-all')clearFilters();if(filterAction==='clear-group'){const key=state.filterGroupByMode[state.mode];activeFilters()[key]=[]}renderCatalog();return}const filterGroup=e.target.closest('[data-filter-group]');if(filterGroup){state.filterGroupByMode[state.mode]=filterGroup.dataset.filterGroup;state.filterOpen=true;renderCatalog();return}const filterOption=e.target.closest('[data-filter-option]');if(filterOption){const filterKey=filterOption.dataset.filterKey||state.filterGroupByMode[state.mode],group=filterGroups().find(item=>item.key===filterKey);if(!group||group.disabled||!group.options.some(option=>option.value===filterOption.dataset.filterOption))return;state.filterGroupByMode[state.mode]=group.key;const filters=activeFilters();filters[group.key]=toggleValue(filters[group.key],filterOption.dataset.filterOption);if(state.mode==='game'&&group.key==='gpuIds'&&!activeGameGpuIds().length)filters.statuses=[];renderCatalog();return}const mode=e.target.closest('[data-mode]');if(mode){state.mode=mode.dataset.mode;state.query='';state.filterOpen=false;renderCatalog();return}const detailFamily=e.target.closest('[data-detail-family]');if(detailFamily){state.detailFamily=detailFamily.dataset.detailFamily;renderGame();return}const game=e.target.closest('[data-game]');if(game){openGame(game.dataset.game);return}const gpu=e.target.closest('[data-gpu]');if(gpu){openGpu(gpu.dataset.gpu);return}const record=e.target.closest('[data-record-gpu]');if(record){state.selectedGpuId=record.dataset.recordGpu;resetAction();renderGame();return}const gpuGame=e.target.closest('[data-gpu-game]');if(gpuGame){openGame(gpuGame.dataset.gpuGame,gpuGame.dataset.fromGpu,'gpu');return}const configLink=e.target.closest('[data-config]');if(configLink){openConfig(configLink.dataset.config,state.view);return}const apply=e.target.closest('[data-apply-config]');if(apply){runConfigAction(apply.dataset.applyConfig);return}const orientation=e.target.closest('[data-orientation]');if(orientation){document.querySelector('.frame').dataset.orientation=orientation.dataset.orientation;document.querySelectorAll('[data-orientation]').forEach(b=>b.classList.toggle('active',b===orientation));return}const demoContext=e.target.closest('[data-demo-context]');if(demoContext){state.context=demoContext.dataset.demoContext==='ready'?{...readyContext}:{status:'unavailable'};if(state.context.status!=='ready')state.localOnly=false;if(!activeGameGpuIds().length)state.gameFilters.statuses=[];document.querySelectorAll('[data-demo-context]').forEach(b=>b.classList.toggle('active',b===demoContext));render();return}const action=e.target.closest('[data-action]')?.dataset.action;if(action==='clear'){state.query='';renderCatalog()}if(action==='clear-filters'){state.query='';clearFilters();renderCatalog()}if(action==='local'){state.localOnly=!state.localOnly;if(!activeGameGpuIds().length)state.gameFilters.statuses=[];renderCatalog()}if(action==='reload'){state.catalogStatus='loading';renderCatalog();if(typeof window.GameHubBridge?.reloadCompatibilityCatalog==='function')window.GameHubBridge.reloadCompatibilityCatalog();else location.reload()}});
+
+    const gameBy = id => state.games.find(item => item.id === id);
+    const targetBy = id => state.targets.find(item => item.id === id);
+    const coverFor = game => coverMap[game?.coverKey] || "";
+    const normalizeQuery = value => String(value || "").toLocaleLowerCase().replace(/\s+/g, " ").trim();
+    const matches = (query, values) => !query || values.some(value => normalizeQuery(value).includes(query));
+
+    function coverMarkup(game, className, alternative = "") {
+      const source = coverFor(game);
+      return `<span class="${className}"><span aria-hidden="true">GH</span>${source ? `<img src="${esc(source)}" alt="${esc(alternative)}">` : ""}</span>`;
+    }
+
+    function selector({ id, label, placeholder, value, query, items, type }) {
+      const open = state.openPicker === type;
+      const triggerIdentity = type === "game" ? 'id="game-select"' : 'id="target-select"';
+      const options = items.map(item => {
+        const name = type === "game" ? item.name : item.displayName;
+        const details = type === "target" ? `${item.deviceModel} · ${item.soc} · ${item.gpu}` : "";
+        return `<button class="picker-option" data-select-${type}="${esc(item.id)}" type="button">${type === "game" ? coverMarkup(item, "picker-cover", "") : ""}<span><strong>${esc(name)}</strong>${details ? `<small>${esc(details)}</small>` : ""}</span></button>`;
+      }).join("") || `<p class="picker-empty">没有匹配项</p>`;
+
+      return `<div class="filter-field"><label id="${id}-label" for="${id}">${label}</label><button ${triggerIdentity} class="select-trigger ${value ? "selected" : ""}" data-open-picker="${type}" aria-expanded="${open}" aria-labelledby="${id}-label ${id}" type="button"><span>${esc(value || placeholder)}</span><span class="select-chevron" aria-hidden="true">⌄</span></button>${open ? `<div class="picker"><input data-picker-input="${type}" value="${esc(query)}" placeholder="搜索${esc(label)}" aria-label="搜索${esc(label)}"><div class="picker-list">${options}</div></div>` : ""}${value ? `<button class="field-clear" data-clear-field="${type}" type="button">清除</button>` : ""}</div>`;
+    }
+
+    function renderFilters() {
+      const gameQuery = normalizeQuery(state.gameQuery);
+      const targetQuery = normalizeQuery(state.targetQuery);
+      const games = state.games.filter(game => matches(gameQuery, [game.name, ...game.aliases]));
+      const targets = state.targets.filter(target => matches(targetQuery, [
+        target.displayName, target.deviceModel, target.soc, target.gpu, ...target.aliases
+      ]));
+
+      return `<div class="filter-grid">${selector({
+        id: "game-select",
+        label: "选择游戏",
+        placeholder: "搜索游戏名称",
+        value: gameBy(state.gameId)?.name,
+        query: state.gameQuery,
+        items: games,
+        type: "game"
+      })}${selector({
+        id: "target-select",
+        label: "设备 / GPU",
+        placeholder: "搜索手机型号或 GPU",
+        value: targetBy(state.targetId)?.displayName,
+        query: state.targetQuery,
+        items: targets,
+        type: "target"
+      })}<div class="filter-field"><label for="rating-select">最低评价（可选）</label><div class="rating-wrap"><select id="rating-select" aria-label="最低评价"><option value="">全部评价</option><option value="5">5 分</option><option value="4">4 分及以上</option><option value="3">3 分及以上</option><option value="2">2 分及以上</option><option value="1">1 分及以上</option></select></div>${state.ratingMin ? `<button class="field-clear" data-clear-field="rating" type="button">清除</button>` : ""}</div></div>`;
+    }
+
+    function hasFilters() {
+      return Boolean(state.gameId || state.targetId || state.ratingMin);
+    }
+
+    function filteredRuns() {
+      const direction = state.sortDirection === "asc" ? 1 : -1;
+      const selectedTarget = targetBy(state.targetId);
+      return state.runs
+        .filter(run => !state.gameId || run.gameId === state.gameId)
+        .filter(run => {
+          if (!selectedTarget) return true;
+          return selectedTarget.type === "gpu"
+            ? normalizeQuery(run.gpu) === normalizeQuery(selectedTarget.gpu)
+            : run.targetId === selectedTarget.id;
+        })
+        .filter(run => state.ratingMin == null || run.rating >= state.ratingMin)
+        .sort((left, right) => {
+          const primary = state.sortField === "verifiedAt"
+            ? String(left.verifiedAt).localeCompare(String(right.verifiedAt))
+            : left.rating - right.rating;
+          if (primary) return primary * direction;
+          return String(right.verifiedAt).localeCompare(String(left.verifiedAt));
+        });
+    }
+
+    function renderPopularGames() {
+      const popular = [...state.games].sort((left, right) => left.popular - right.popular).slice(0, 6);
+      return `<section class="result-card popular-section"><div class="section-head"><div><h2>热门游戏</h2><p>选择游戏，立即查看已验证的设备表现</p></div></div><div class="popular-grid">${popular.map(game => `<button class="popular-game" data-popular-game="${esc(game.id)}" type="button">${coverMarkup(game, "game-cover", `${game.name}封面`)}<strong>${esc(game.name)}</strong><span>查看兼容性</span></button>`).join("")}</div></section>`;
+    }
+
+    const stars = rating => `<span class="rating" aria-label="${rating} 分">${"★".repeat(rating)}${"☆".repeat(5 - rating)}</span>`;
+    const environment = run => `Android ${run.androidVersion} · 盖世 ${run.appVersion} · ${run.kernelVersion}`;
+    const gameCell = game => `<div class="game-cell">${coverMarkup(game, "cell-cover", "")}<span><strong>${esc(game?.name || "未知游戏")}</strong><small>v${esc(game?.version || "未记录")}</small></span></div>`;
+
+    function desktopRow(run) {
+      const game = gameBy(run.gameId);
+      const target = targetBy(run.targetId);
+      return `<tr data-result-row="${esc(run.id)}"><td>${gameCell(game)}</td><td><strong>${esc(target?.displayName || "未知设备 / GPU")}</strong><small>${esc(run.gpu)}</small></td><td>${esc(environment(run))}</td><td>${stars(run.rating)}</td><td><span class="fps">${run.avgFps == null ? "—" : `${run.avgFps} FPS`}</span></td><td>${run.tags.map(tag => `<span class="tag">${esc(tag)}</span>`).join("") || "—"}</td><td>${esc(run.notes)}</td><td>${run.sampleCount} 个样本<br><small>${esc(run.verifiedAt)}</small></td></tr>`;
+    }
+
+    function mobileCard(run) {
+      const game = gameBy(run.gameId);
+      const target = targetBy(run.targetId);
+      return `<article class="mobile-run" data-result-card="${esc(run.id)}"><div class="mobile-run-head">${gameCell(game)}<div>${stars(run.rating)}<strong>${run.avgFps == null ? "—" : `${run.avgFps} FPS`}</strong></div></div><dl><div><dt>设备 / GPU</dt><dd>${esc(target?.displayName || "未知设备 / GPU")} · ${esc(run.gpu)}</dd></div><div><dt>运行环境</dt><dd>${esc(environment(run))}</dd></div><div><dt>问题与备注</dt><dd>${run.tags.map(tag => `<span class="tag">${esc(tag)}</span>`).join("") || "—"} ${esc(run.notes)}</dd></div><div><dt>验证信息</dt><dd>${run.sampleCount} 个样本 · ${esc(run.verifiedAt)}</dd></div></dl></article>`;
+    }
+
+    function renderResults() {
+      const runs = filteredRuns();
+      if (!runs.length) return statePanel("暂无符合条件的兼容记录", "可以调整条件或清空筛选后重新查看。", "clear");
+      const head = field => {
+        const sortAttribute = field === "rating" ? 'data-sort-field="rating"' : 'data-sort-field="verifiedAt"';
+        return `<button ${sortAttribute} type="button">${field === "rating" ? "兼容评价" : "验证时间"}${state.sortField === field ? (state.sortDirection === "desc" ? " ↓" : " ↑") : ""}</button>`;
+      };
+      return `<section class="result-card result-section"><div class="result-summary"><div><h2>兼容结果</h2><p>共 ${runs.length} 条已验证记录</p></div><button data-clear-all type="button">清空筛选</button></div><div class="result-desktop"><table class="result-table"><thead><tr><th>游戏</th><th>设备 / GPU</th><th>运行环境</th><th>${head("rating")}</th><th>平均 FPS</th><th>问题标签</th><th>备注</th><th>${head("verifiedAt")}</th></tr></thead><tbody>${runs.map(desktopRow).join("")}</tbody></table></div><div class="result-mobile">${runs.map(mobileCard).join("")}</div></section>`;
+    }
+
+    function statePanel(title, copy, action = "") {
+      const loading = state.catalogStatus === "loading";
+      const icon = loading ? "…" : action === "reload" ? "↻" : "—";
+      const label = action === "reload" ? "重新加载" : "清空筛选";
+      return `<section class="result-card state-panel"><span class="state-icon ${loading ? "loading-dot" : ""}" aria-hidden="true">${icon}</span><h2>${esc(title)}</h2><p>${esc(copy)}</p>${action ? `<button data-state-action="${action}" type="button">${label}</button>` : ""}</section>`;
+    }
+
+    function render() {
+      let content = "";
+      if (state.catalogStatus === "loading") {
+        content = statePanel("正在加载兼容数据", "正在获取游戏、设备和验证记录。");
+      } else if (state.catalogStatus === "error") {
+        content = statePanel("兼容数据加载失败", "暂时无法获取兼容记录，请稍后重试。", "reload");
+      } else if (!state.games.length || !state.targets.length) {
+        content = statePanel("暂无兼容数据", "当前没有可展示的游戏或设备记录。", "reload");
+      } else {
+        content = hasFilters() ? renderResults() : renderPopularGames();
+      }
+
+      document.getElementById("compatibility-app").innerHTML = `<div class="page"><header class="page-header"><button class="back-button" data-back type="button" aria-label="返回">← 返回</button><h1>游戏兼容性</h1><p>查看你的游戏能否在当前设备上流畅运行</p></header><section class="filter-card">${renderFilters()}</section>${content}</div>`;
+      const rating = document.getElementById("rating-select");
+      if (rating) rating.value = state.ratingMin == null ? "" : String(state.ratingMin);
+    }
+
+    function reconcile() {
+      if (state.gameId && !gameBy(state.gameId)) state.gameId = null;
+      if (state.targetId && !targetBy(state.targetId)) {
+        state.targetId = null;
+        state.targetType = null;
+      }
+    }
+
+    function setCatalog(raw) {
+      const catalog = normalizeCatalog(raw);
+      state.games = catalog.games;
+      state.targets = catalog.targets;
+      state.runs = catalog.runs;
+      state.catalogStatus = "ready";
+      reconcile();
+      render();
+    }
+
+    function clearAllFilters() {
+      Object.assign(state, {
+        gameId: null,
+        targetType: null,
+        targetId: null,
+        ratingMin: null,
+        openPicker: null,
+        gameQuery: "",
+        targetQuery: ""
+      });
+      render();
+    }
+
+    document.addEventListener("input", event => {
+      if (event.target.matches('[data-picker-input="game"]')) state.gameQuery = event.target.value;
+      else if (event.target.matches('[data-picker-input="target"]')) state.targetQuery = event.target.value;
+      else return;
+      render();
+      const input = document.querySelector(`[data-picker-input="${state.openPicker}"]`);
+      input?.focus();
+      input?.setSelectionRange(input.value.length, input.value.length);
+    });
+
+    document.addEventListener("change", event => {
+      if (event.target.id !== "rating-select") return;
+      state.ratingMin = event.target.value ? Number(event.target.value) : null;
+      render();
+    });
+
+    document.addEventListener("click", event => {
+      const preview = event.target.closest(".demo-controls [data-preview]");
+      if (preview) {
+        document.querySelector(".frame").dataset.preview = preview.dataset.preview;
+        document.querySelectorAll(".demo-controls [data-preview]").forEach(button => {
+          button.classList.toggle("active", button === preview);
+        });
+        return;
+      }
+
+      const popular = event.target.closest("[data-popular-game]");
+      if (popular) {
+        state.gameId = popular.dataset.popularGame;
+        state.openPicker = null;
+        render();
+        return;
+      }
+
+      const open = event.target.closest("[data-open-picker]");
+      if (open) {
+        state.openPicker = state.openPicker === open.dataset.openPicker ? null : open.dataset.openPicker;
+        render();
+        if (state.openPicker) requestAnimationFrame(() => document.querySelector(`[data-picker-input="${state.openPicker}"]`)?.focus());
+        return;
+      }
+
+      const game = event.target.closest("[data-select-game]");
+      if (game) {
+        state.gameId = game.dataset.selectGame;
+        state.gameQuery = "";
+        state.openPicker = null;
+        render();
+        return;
+      }
+
+      const target = event.target.closest("[data-select-target]");
+      if (target) {
+        state.targetId = target.dataset.selectTarget;
+        state.targetType = targetBy(state.targetId)?.type || null;
+        state.targetQuery = "";
+        state.openPicker = null;
+        render();
+        return;
+      }
+
+      const clear = event.target.closest("[data-clear-field]");
+      if (clear) {
+        if (clear.dataset.clearField === "game") state.gameId = null;
+        if (clear.dataset.clearField === "target") {
+          state.targetId = null;
+          state.targetType = null;
+        }
+        if (clear.dataset.clearField === "rating") state.ratingMin = null;
+        render();
+        return;
+      }
+
+      if (event.target.closest("[data-clear-all]")) {
+        clearAllFilters();
+        return;
+      }
+
+      const sort = event.target.closest("[data-sort-field]");
+      if (sort) {
+        const field = sort.dataset.sortField;
+        if (state.sortField === field) state.sortDirection = state.sortDirection === "desc" ? "asc" : "desc";
+        else {
+          state.sortField = field;
+          state.sortDirection = "desc";
+        }
+        render();
+        return;
+      }
+
+      const stateAction = event.target.closest("[data-state-action]");
+      if (stateAction?.dataset.stateAction === "clear") {
+        clearAllFilters();
+        return;
+      }
+      if (stateAction?.dataset.stateAction === "reload") {
+        state.catalogStatus = "loading";
+        render();
+        if (typeof window.GameHubBridge?.reloadCompatibilityCatalog === "function") {
+          window.GameHubBridge.reloadCompatibilityCatalog();
+        } else {
+          setTimeout(() => setCatalog(mockCatalog), 500);
+        }
+        return;
+      }
+
+      if (event.target.closest("[data-back]")) {
+        window.history.back();
+        return;
+      }
+
+      if (state.openPicker && !event.target.closest(".picker")) {
+        state.openPicker = null;
+        render();
+      }
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key !== "Escape" || !state.openPicker) return;
+      const picker = state.openPicker;
+      state.openPicker = null;
+      render();
+      document.querySelector(`[data-open-picker="${picker}"]`)?.focus();
+    });
+
+    window.GameHubCompatibility = {
+      setContext(context) {
+        state.context = context && typeof context === "object" ? context : null;
+        const targetId = text(context?.targetId).trim();
+        if (targetId && targetBy(targetId)) {
+          state.targetId = targetId;
+          state.targetType = targetBy(targetId).type;
+        }
+        render();
+      },
+      setCatalog(catalog) { setCatalog(catalog); },
+      setCatalogLoading() {
+        state.catalogStatus = "loading";
+        render();
+      },
+      setCatalogError() {
+        state.catalogStatus = "error";
+        render();
+      }
+    };
+
     setCatalog(mockCatalog);
-    const params=new URLSearchParams(location.search);if(params.get('config_id'))openConfig(params.get('config_id'));else if(params.get('gpu_id'))openGpu(params.get('gpu_id'));else if(params.get('game_id'))openGame(params.get('game_id'),params.get('gpu'));
   </script>
 </body>
 </html>
