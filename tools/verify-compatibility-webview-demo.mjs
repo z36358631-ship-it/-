@@ -100,6 +100,26 @@ for (const contract of platformContracts) {
   if (!html.includes(contract)) fail(`missing platform contract: ${contract}`);
 }
 
+const dataContracts = [
+  'hardware: [',
+  'hardwareIds:',
+  'filters: {',
+  'gameId: null',
+  'hardwareId: null',
+  'ratingMin: null',
+  'queries: {',
+  'openFilter: null',
+  'viewer: {',
+  'recordId: null',
+  'filterRecords()',
+  'sortRecords(records)',
+  '最低评分（≥）'
+];
+
+for (const contract of dataContracts) {
+  if (!html.includes(contract)) fail(`missing data contract: ${contract}`);
+}
+
 const coverDir = path.join(path.dirname(demoPath), 'assets', 'compatibility');
 for (const cover of covers) {
   const coverPath = path.join(coverDir, cover);
