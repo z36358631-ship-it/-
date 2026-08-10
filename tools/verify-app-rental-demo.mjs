@@ -515,6 +515,7 @@ async function main() {
       );
 
       const orderVisual = await readCommerceVisual('orders', '.order-card-actions button.primary:not(:disabled), [data-primary-action]:not(:disabled)');
+      const orderDetailVisual = await readCommerceVisual('order-detail', '.active-order-actions .order-primary:not(:disabled)');
       const orderCenter = await page.evaluate(() => {
         const api = window.__appRentalDemo;
         api.setOrientation('portrait');
@@ -526,24 +527,55 @@ async function main() {
         const searchBox = search?.getBoundingClientRect();
         const usableBox = usable?.getBoundingClientRect();
         const orders = api.getOrderCollection();
+        const cards = [...rootNode.querySelectorAll('.order-list-card[data-status]')];
         return {
           tabLabels: tabs.map((node) => node.textContent.trim()),
           searchRightOfUsable: Boolean(searchBox && usableBox && searchBox.left >= usableBox.right - 2),
           typeLabels: /租号订单|CDKEY订单|游戏购买/i.test(rootNode.innerText),
           allRentalFixtures: orders.every(({ orderType }) => !orderType || orderType === 'rental'),
           forbiddenFixture: /"(?:cd.?key|redeemCode|activationKey)"\s*:/i.test(JSON.stringify(orders)),
+          statusVisuals: Object.fromEntries(cards.map((card) => {
+            const chip = card.querySelector('.order-status-chip');
+            return [card.dataset.status, {
+              tone: chip?.dataset.tone || '',
+              color: chip ? getComputedStyle(chip).color : '',
+            }];
+          })),
+          primaryBackgrounds: [...rootNode.querySelectorAll('.order-card-actions button.primary')]
+            .map((button) => getComputedStyle(button).backgroundImage),
+          secondaryBackgrounds: [...rootNode.querySelectorAll('.order-card-actions button.secondary')]
+            .map((button) => getComputedStyle(button).backgroundColor),
         };
       });
+      const expectedOrderStatusVisuals = {
+        pending: { tone: 'danger', color: 'rgb(241, 92, 99)' },
+        allocating: { tone: 'info', color: 'rgb(103, 185, 247)' },
+        active: { tone: 'success', color: 'rgb(91, 212, 238)' },
+        refunding: { tone: 'refund', color: 'rgb(242, 161, 77)' },
+        refunded: { tone: 'muted', color: 'rgb(143, 146, 154)' },
+        ended: { tone: 'muted', color: 'rgb(143, 146, 154)' },
+      };
       checkVisual(
         orderCenter.tabLabels.join('|') === '全部订单|待支付|可使用'
           && orderCenter.searchRightOfUsable
           && !orderCenter.typeLabels
           && orderCenter.allRentalFixtures
           && !orderCenter.forbiddenFixture
+          && Object.entries(expectedOrderStatusVisuals).every(([status, expected]) => (
+            orderCenter.statusVisuals[status]?.tone === expected.tone
+              && orderCenter.statusVisuals[status]?.color === expected.color
+          ))
+          && orderCenter.primaryBackgrounds.length === 6
+          && orderCenter.primaryBackgrounds.every((background) => background.includes('gradient') && background.includes('rgb(34, 169, 255)'))
+          && orderCenter.secondaryBackgrounds.length === 2
+          && orderCenter.secondaryBackgrounds.every((background) => background === 'rgb(42, 45, 51)')
           && orderVisual.every(({ primaryBackground, primaryHasBlue, forbiddenBusinessCopy }) => (
             primaryBackground.includes('gradient') && primaryHasBlue && !forbiddenBusinessCopy
+          ))
+          && orderDetailVisual.every(({ primaryBackground, primaryHasBlue, forbiddenBusinessCopy }) => (
+            primaryBackground.includes('gradient') && primaryHasBlue && !forbiddenBusinessCopy
           )),
-        `订单中心 Tab/搜索/租号边界或蓝色主按钮不符合要求：${JSON.stringify({ orderCenter, orderVisual })}`,
+        `订单中心 Tab/搜索/租号边界、状态色或主次按钮不符合要求：${JSON.stringify({ orderCenter, orderVisual, orderDetailVisual })}`,
       );
 
       assert(visualChecks === 14, `CDKEY 视觉收敛契约数量错误：${visualChecks}/14`);
@@ -664,6 +696,7 @@ async function main() {
         const searchBox = search?.getBoundingClientRect();
         const usableBox = usableTab?.getBoundingClientRect();
         const cardText = [...document.querySelectorAll('.order-list-card')].map((node) => node.innerText).join('\n');
+        const cards = [...document.querySelectorAll('.order-list-card[data-status]')];
         const serializedOrders = JSON.stringify(orders);
         return {
           labels: tabNodes.map((node) => node.textContent.trim()),
@@ -677,6 +710,17 @@ async function main() {
           typeLabels: /\u6e38\u620f\u8d2d\u4e70|\u79df\u53f7\u7545\u73a9|CDKEY/i.test(cardText),
           purchaseFixture: orders.some(({ orderType }) => orderType && orderType !== 'rental'),
           cdkeyFixture: /"(?:cd.?key|redeemCode|activationKey)"\s*:/i.test(serializedOrders),
+          statusVisuals: Object.fromEntries(cards.map((card) => {
+            const chip = card.querySelector('.order-status-chip');
+            return [card.dataset.status, {
+              tone: chip?.dataset.tone || '',
+              color: chip ? getComputedStyle(chip).color : '',
+            }];
+          })),
+          primaryBackgrounds: [...document.querySelectorAll('.order-card-actions button.primary')]
+            .map((button) => getComputedStyle(button).backgroundImage),
+          secondaryBackgrounds: [...document.querySelectorAll('.order-card-actions button.secondary')]
+            .map((button) => getComputedStyle(button).backgroundColor),
         };
       });
       assert(!initial.apiMissing, `订单中心缺少测试接口：${initial.apiMissing}`);
@@ -686,7 +730,28 @@ async function main() {
       assert(initial.searchRightOfUsable, '订单搜索未位于“可使用”右侧');
       assert(initial.statuses.join('|') === [...EXPECTED_RENTAL_STATUSES].sort().join('|'), `全部订单未覆盖6种租号状态：${JSON.stringify(initial.statuses)}`);
       assert(initial.orderTypes.every((value) => value === null || value === 'rental'), `出现非租号订单 fixture：${JSON.stringify(initial.orderTypes)}`);
-      assert(!initial.typeLabels && !initial.purchaseFixture && !initial.cdkeyFixture, `订单卡或 fixture 泄漏类型/CDKEY：${JSON.stringify(initial)}`);
+      const expectedOrderStatusVisuals = {
+        pending: { tone: 'danger', color: 'rgb(241, 92, 99)' },
+        allocating: { tone: 'info', color: 'rgb(103, 185, 247)' },
+        active: { tone: 'success', color: 'rgb(91, 212, 238)' },
+        refunding: { tone: 'refund', color: 'rgb(242, 161, 77)' },
+        refunded: { tone: 'muted', color: 'rgb(143, 146, 154)' },
+        ended: { tone: 'muted', color: 'rgb(143, 146, 154)' },
+      };
+      assert(
+        !initial.typeLabels
+          && !initial.purchaseFixture
+          && !initial.cdkeyFixture
+          && Object.entries(expectedOrderStatusVisuals).every(([status, expected]) => (
+            initial.statusVisuals[status]?.tone === expected.tone
+              && initial.statusVisuals[status]?.color === expected.color
+          ))
+          && initial.primaryBackgrounds.length === 6
+          && initial.primaryBackgrounds.every((background) => background.includes('gradient') && background.includes('rgb(34, 169, 255)'))
+          && initial.secondaryBackgrounds.length === 2
+          && initial.secondaryBackgrounds.every((background) => background === 'rgb(42, 45, 51)'),
+        `订单卡类型边界、状态色或主次按钮层级错误：${JSON.stringify(initial)}`,
+      );
 
       const tabSelector = (id) => `[data-order-tab="${id}"], .order-tabs [data-value="${id}"]`;
       const selectTab = async (id) => {
@@ -1140,7 +1205,7 @@ async function main() {
     assert(Math.round(portrait.frame?.width ?? 0) === 390, '竖屏宽度不是390');
     assert(Math.round(portrait.frame?.height ?? 0) === 844, '竖屏高度不是844');
     assert(portrait.nav.join('|') === '首页|玩游戏|排行榜|游戏库|我的', '竖屏导航不一致');
-    assert(portrait.primaryCount === 1, '首页必须只有一个主操作');
+    assert(portrait.primaryCount === 0, '首页不得存在独立主操作，游戏卡应整卡进入详情');
     process.stdout.write('PORTRAIT 4/4 PASS\n');
 
     const builtHtml = fs.readFileSync(htmlPath, 'utf8');
@@ -1311,8 +1376,8 @@ async function main() {
 
     const skuCases = [
       ['not-member-library', ['2小时租用', '更多租期'], ['首次体验', '单游戏永久畅玩', '开通会员']],
-      ['member-library-trial', ['首次体验', '更多租期', '开通会员'], ['单游戏永久畅玩', '日租', '周租']],
-      ['member-library-trial-used', ['2小时租用', '更多租期', '开通会员'], ['首次体验', '单游戏永久畅玩', '日租', '周租']],
+      ['member-library-trial', ['首次体验', '更多租期', '开通会员'], ['单游戏永久畅玩']],
+      ['member-library-trial-used', ['2小时租用', '更多租期', '开通会员'], ['首次体验', '单游戏永久畅玩']],
       ['active-member', ['可畅玩'], ['2小时租用', '首次体验', '单游戏永久畅玩', '开通会员']],
     ];
     for (const [scenario, present, absent] of skuCases) {
@@ -1327,6 +1392,10 @@ async function main() {
       const text = await page.locator('#appRentalDemo').innerText();
       for (const value of present) assert(text.includes(value), `${scenario} 缺少 ${value}`);
       for (const value of absent) assert(!text.includes(value), `${scenario} 不应显示 ${value}`);
+      if (scenario !== 'active-member') {
+        const expandedDurationButtons = await page.locator('[data-sku="daily"], [data-sku="weekly"], [data-duration-hours]').count();
+        assert(expandedDurationButtons === 0, `${scenario} 首次展开不应直接铺开详细租期按钮`);
+      }
     }
     process.stdout.write(`SKU ${skuCases.length}/${skuCases.length} PASS\n`);
 
@@ -1451,10 +1520,11 @@ async function main() {
     });
     const inventoryState = await page.evaluate(() => ({
       text: document.querySelector('#appRentalDemo').innerText,
-      retry: Boolean(document.querySelector('[data-primary-action="true"][data-action="retry-inventory"]')),
+      retry: Boolean(document.querySelector('[data-action="retry-inventory"]')),
+      disabled: Boolean(document.querySelector('[data-primary-action="true"]:disabled')),
       primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
     }));
-    assert(inventoryState.text.includes('当前套餐已售罄') && inventoryState.retry && inventoryState.primaryCount === 1, '无库存时未收敛为库存重查主操作并说明原因');
+    assert(inventoryState.text.includes('当前套餐已售罄') && inventoryState.text.includes('暂不可购买') && inventoryState.retry && inventoryState.disabled && inventoryState.primaryCount === 1, '无库存时必须禁用购买并显示“暂不可购买”，同时保留库存重查');
     await page.evaluate(() => window.__appRentalDemo.setInventoryAvailable(true));
     process.stdout.write('CHECKOUT 8/8 PASS\n');
 
@@ -1600,10 +1670,11 @@ async function main() {
       const totalStyle = total ? getComputedStyle(total) : null;
       const qr = document.querySelector('.game-payment-qr');
       const agreement = document.querySelector('.checkout-agreement');
+      const policies = document.querySelector('.checkout-policy-list');
       return {
         qrPayment: qr?.dataset.payment,
         qrText: qr?.textContent.trim(),
-        agreementText: agreement?.textContent.trim(),
+        agreementText: `${agreement?.textContent.trim() || ''} ${policies?.textContent.trim() || ''}`,
         originalBeforeTotal: Boolean(originalRow?.nextElementSibling?.classList.contains('total')),
         labelColor: labelStyle?.color,
         amountColor: amountStyle?.color,
@@ -1618,7 +1689,8 @@ async function main() {
       portraitCheckoutReview.qrPayment === 'alipay'
         && portraitCheckoutReview.qrText.includes('支付宝扫码支付')
         && portraitCheckoutReview.agreementText.includes('租号服务协议')
-        && portraitCheckoutReview.agreementText.includes('退款规则'),
+        && portraitCheckoutReview.agreementText.includes('退款规则')
+        && portraitCheckoutReview.agreementText.includes('支付有效期'),
       '竖屏确认订单缺少支付宝二维码或协议区',
     );
     assert(
@@ -1629,7 +1701,7 @@ async function main() {
         && portraitCheckoutReview.amountAlign === 'right'
         && portraitCheckoutReview.totalAlign === 'right'
         && portraitCheckoutReview.totalColor === 'rgb(255, 204, 67)',
-      '竖屏游戏原价与订单金额视觉层级错误',
+      '竖屏原价与实付视觉层级错误',
     );
     await page.locator('.payment-method[data-payment="wechat"]').click();
     const portraitWechat = await readCheckoutReview();
@@ -1651,7 +1723,8 @@ async function main() {
       landscapeCheckoutReview.qrPayment === 'wechat'
         && landscapeCheckoutReview.qrText.includes('微信扫码支付')
         && landscapeCheckoutReview.agreementText.includes('租号服务协议')
-        && landscapeCheckoutReview.agreementText.includes('退款规则'),
+        && landscapeCheckoutReview.agreementText.includes('退款规则')
+        && landscapeCheckoutReview.agreementText.includes('支付有效期'),
       '横屏确认订单缺少同步二维码或协议区',
     );
     assert(
@@ -1662,7 +1735,7 @@ async function main() {
         && landscapeCheckoutReview.amountAlign === 'right'
         && landscapeCheckoutReview.totalAlign === 'right'
         && landscapeCheckoutReview.totalColor === 'rgb(255, 204, 67)',
-      '横屏游戏原价与订单金额视觉层级错误',
+      '横屏原价与实付视觉层级错误',
     );
     await page.locator('.payment-method[data-payment="alipay"]').click();
     const landscapeAlipay = await readCheckoutReview();
@@ -2624,7 +2697,7 @@ async function main() {
       window.__appRentalDemo.setScenario('member-library-trial');
       window.__appRentalDemo.navigate('home');
     });
-    await page.locator('.hero-card .primary-action').click();
+    await page.locator('.hero-card[data-game-id="shadow-blade-zero"]').click();
     const portraitRecommendation = await page.evaluate(() => ({
       selectedGameId: window.__appRentalDemo.snapshot().selectedGameId,
       title: document.querySelector('.portrait-detail-hero h2')?.textContent.trim(),
@@ -2635,12 +2708,12 @@ async function main() {
       window.__appRentalDemo.setOrientation('landscape');
       window.__appRentalDemo.navigate('home');
     });
-    await page.locator('.landscape-home-hero .primary-action').click();
+    await page.locator('.landscape-home-hero[data-game-id="shadow-blade-zero"]').click();
     const landscapeRecommendation = await page.evaluate(() => ({
       selectedGameId: window.__appRentalDemo.snapshot().selectedGameId,
       title: document.querySelector('.mac-derived-detail .landscape-detail-copy h1')?.textContent.trim(),
     }));
-    checkReviewFix(landscapeRecommendation.selectedGameId === 'spiritfarer' && landscapeRecommendation.title === 'Spiritfarer', `横屏推荐未进入同一游戏详情：${JSON.stringify(landscapeRecommendation)}`);
+    checkReviewFix(landscapeRecommendation.selectedGameId === 'shadow-blade-zero' && landscapeRecommendation.title === '影之刃零', `横屏推荐未进入同一游戏详情：${JSON.stringify(landscapeRecommendation)}`);
 
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
@@ -2698,7 +2771,7 @@ async function main() {
       window.__appRentalDemo.navigate('checkout');
       window.__appRentalDemo.setInventoryAvailable(false);
     });
-    await page.locator('[data-action="back-to-detail"]').click();
+    await page.locator('.portrait-checkout .task-back').click();
     const checkoutReturn = await page.evaluate(() => ({
       screen: window.__appRentalDemo.snapshot().screen,
       nextBack: window.__appRentalDemo.taskBack(),
@@ -2927,7 +3000,7 @@ async function main() {
     await annotationPage.waitForTimeout(260);
     const compactPortrait = await readResponsiveMetrics();
     assertAnnotation(compactPortrait.scale < 1 && compactPortrait.inside && compactPortrait.stageX <= 0 && compactPortrait.stageY <= 0, `1280×800 竖屏设备未完整缩放进舞台：${JSON.stringify(compactPortrait)}`);
-    await annotationPage.locator('.hero-card .primary-action').click();
+    await annotationPage.locator('.hero-card[data-game-id="shadow-blade-zero"]').click();
     await annotationPage.waitForFunction(() => window.__appRentalDemo.snapshot().screen === 'detail');
     assertAnnotation((await annotationPage.evaluate(() => window.__appRentalDemo.snapshot().screen)) === 'detail', '缩放后中间 Demo 点击坐标不准确');
 

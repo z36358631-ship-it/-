@@ -826,10 +826,12 @@
     .order-card-copy strong { display: block; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
     .order-card-copy span { display: block; margin-top: 6px; color: var(--text-muted); font-size: 10px; }
     .order-card-copy small { display: block; margin-top: 7px; color: rgb(255 255 255 / 60%); font-size: 9px; }
-    .order-status-chip { align-self: start; padding: 5px 8px; border-radius: 100px; background: rgb(255 255 255 / 8%); color: #b9bbc3; font-size: 9px; white-space: nowrap; }
-    .order-status-chip[data-tone="success"] { background: rgb(51 216 164 / 13%); color: #77e8c5; }
-    .order-status-chip[data-tone="warning"] { background: rgb(255 204 67 / 12%); color: #ffda79; }
-    .order-status-chip[data-tone="info"] { background: rgb(51 143 235 / 14%); color: #77b8f7; }
+    .order-status-chip { align-self: start; padding: 5px 8px; border-radius: 100px; background: rgb(143 146 154 / 12%); color: #8f929a; font-size: 9px; white-space: nowrap; }
+    .order-status-chip[data-tone="danger"] { background: rgb(241 92 99 / 13%); color: #f15c63; }
+    .order-status-chip[data-tone="info"] { background: rgb(103 185 247 / 14%); color: #67b9f7; }
+    .order-status-chip[data-tone="success"] { background: rgb(91 212 238 / 13%); color: #5bd4ee; }
+    .order-status-chip[data-tone="refund"] { background: rgb(242 161 77 / 13%); color: #f2a14d; }
+    .order-status-chip[data-tone="muted"] { background: rgb(143 146 154 / 12%); color: #8f929a; }
     .portrait-order-detail { display: grid; gap: 12px; }
     .order-detail-hero, .order-progress, .order-detail-summary { padding: 16px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 17px; background: rgb(24 25 30 / 86%); }
     .order-detail-hero { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: 12px; }
@@ -850,8 +852,8 @@
     .order-summary-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; color: var(--text-muted); font-size: 11px; }
     .order-summary-row strong { color: #fff; font-weight: 550; text-align: right; }
     .active-order-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
-    .active-order-actions button { min-height: 46px; border: 1px solid rgb(255 255 255 / 11%); border-radius: 13px; background: rgb(255 255 255 / 6%); cursor: pointer; font-size: 12px; }
-    .active-order-actions .order-primary { grid-column: 1 / -1; border: 0; background: linear-gradient(135deg, #ffe07a, #f0b928); box-shadow: 0 8px 22px rgb(240 185 40 / 18%); color: #18130a; font-weight: 700; }
+    .active-order-actions button { min-height: 46px; border: 1px solid var(--commerce-secondary-border); border-radius: 13px; background: var(--commerce-secondary-bg); color: #fff; cursor: pointer; font-size: 12px; }
+    .active-order-actions .order-primary { grid-column: 1 / -1; border: 0; background: linear-gradient(135deg, var(--commerce-primary-start), var(--commerce-primary-end)); box-shadow: 0 8px 22px rgb(34 169 255 / 18%); color: var(--commerce-primary-text); font-weight: 700; }
     .landscape-orders { display: grid; height: 314px; grid-template-columns: 300px minmax(0, 1fr); gap: 12px; }
     .order-list-pane, .order-detail-pane { min-width: 0; overflow: hidden; border: 1px solid rgb(255 255 255 / 9%); border-radius: 17px; background: rgb(18 19 24 / 86%); }
     .order-list-pane { padding: 12px; }
@@ -1478,12 +1480,14 @@
     .order-card-foot { align-items: flex-end; justify-content: space-between; gap: 8px; }
     .order-card-foot > small { min-width: 0; flex: 1; color: #ec5b61; font-size: 9px; line-height: 14px; }
     .order-card-actions { display: flex; flex: 0 0 auto; gap: 7px; }
-    .order-card-actions button { min-height: 38px; padding: 0 12px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 12px; background: rgb(255 255 255 / 7%); color: #aaadb4; cursor: pointer; font-size: 10px; }
-    .order-card-actions button.primary { border-color: rgb(52 196 242 / 52%); background: linear-gradient(135deg, #0caee2, #087dc0); color: #fff; box-shadow: 0 0 14px rgb(31 192 244 / 18%); }
+    .order-card-actions button { min-height: 38px; padding: 0 12px; border: 1px solid var(--commerce-secondary-border); border-radius: 12px; background: var(--commerce-secondary-bg); color: #fff; cursor: pointer; font-size: 10px; }
+    .order-card-actions button.primary { border-color: transparent; background: linear-gradient(135deg, var(--commerce-primary-start), var(--commerce-primary-end)); color: var(--commerce-primary-text); box-shadow: 0 0 14px rgb(34 169 255 / 18%); }
     .order-status-chip { align-self: auto; border-radius: 0; background: none !important; font-size: 10px; }
-    .order-status-chip[data-tone="success"] { color: #5bd4ee; }
-    .order-status-chip[data-tone="warning"] { color: #f15c63; }
+    .order-status-chip[data-tone="danger"] { color: #f15c63; }
     .order-status-chip[data-tone="info"] { color: #67b9f7; }
+    .order-status-chip[data-tone="success"] { color: #5bd4ee; }
+    .order-status-chip[data-tone="refund"] { color: #f2a14d; }
+    .order-status-chip[data-tone="muted"] { color: #8f929a; }
     .landscape-orders .order-toolbar { justify-content: flex-start; }
     .landscape-orders .order-toolbar .order-search { margin-left: auto; }
     .landscape-orders .landscape-order-list { max-height: none; flex: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 8px; }
@@ -1806,10 +1810,10 @@
       password: 'G@meHub#8291',
     });
     const ORDER_STATUS_META = Object.freeze({
-      pending: { label: '待支付', note: '请在 30 分钟内完成支付', tone: 'warning' },
+      pending: { label: '待支付', note: '请在 30 分钟内完成支付', tone: 'danger' },
       allocating: { label: '分配中', note: '系统正在分配可用账号', tone: 'info' },
       active: { label: '租用中', note: '账号已就绪，可继续游戏', tone: 'success' },
-      refunding: { label: '退款中', note: '取号失败，正在自动退款', tone: 'warning' },
+      refunding: { label: '退款中', note: '取号失败，正在自动退款', tone: 'refund' },
       refunded: { label: '已退款', note: '退款已原路返回', tone: 'muted' },
       ended: { label: '已结束', note: '本次租赁服务已结束', tone: 'muted' },
     });
