@@ -891,7 +891,7 @@ document.addEventListener("input", (event) => {
 });
 
 document.addEventListener("click", (event) => {
-  const preview = event.target.closest("[data-preview]");
+  const preview = event.target.closest(".demo-controls [data-preview]");
   if (preview) {
     document.querySelector(".frame").dataset.preview = preview.dataset.preview;
     document.querySelectorAll("[data-preview]").forEach((button) => {
@@ -1413,7 +1413,8 @@ Switch the original page to desktop:
 ~~~js
 await page.locator('[data-result-back]').click();
 await page.locator('[data-preview="desktop"]').click();
-await assertNoHorizontalOverflow('desktop web');
+await page.waitForTimeout(300);
+await assertNoHorizontalOverflow(page, 'desktop web');
 await frame.screenshot({ path: path.join(outputDir, screenshotNames[6]) });
 ~~~
 
@@ -1466,6 +1467,100 @@ git add -- tools/capture-compatibility-webview-demo.mjs test-results/compatibili
 git diff --cached --check
 git commit -m "test: verify platform-aware compatibility H5"
 ~~~
+
+## Task 5A: Apply final three-role review corrections
+
+**Files:**
+
+- Modify: demos/适合本机/盖世游戏适合本机WebView-demo.html
+- Modify: tools/verify-compatibility-webview-demo.mjs
+- Modify: tools/capture-compatibility-webview-demo.mjs
+
+- [ ] **Step 1: Add explicit configuration applicability**
+
+Every normalized configuration must contain applicability.gameVersion, applicability.hardware, and applicability.systemRange. Render them in data-config-applicability before tunable fields, using “适用 GPU” for Android and “适用芯片” for Mac.
+
+~~~js
+applicability: {
+  gameVersion: text(sourceApplicability.gameVersion, 40) || "未记录",
+  hardware: text(sourceApplicability.hardware, 60) || "未记录",
+  systemRange: text(sourceApplicability.systemRange, 60) || "未记录"
+}
+~~~
+
+- [ ] **Step 2: Reject internally cross-wired platform configurations**
+
+Use containsCrossPlatformConfig(platform, values). Android configurations reject macOS, Apple hardware, Mac models, and Game Porting Toolkit; Mac configurations reject Android, Adreno, Snapdragon/骁龙, phone, and Wine tokens. Reject the whole configuration instead of hiding individual foreign fields.
+
+~~~js
+function containsCrossPlatformConfig(platform, values) {
+  const joined = values.flat(Infinity).map((value) => text(value, 120)).join(" ");
+  const forbidden = platform === "android"
+    ? /macOS|Apple|MacBook|Mac mini|Mac Studio|Game Porting Toolkit/i
+    : /Android|Adreno|骁龙|Snapdragon|手机|Wine/i;
+  return forbidden.test(joined);
+}
+~~~
+
+- [ ] **Step 3: Add the ready-but-empty catalog state**
+
+When filteredCatalog().games.length is zero and catalogStatus is ready, render “当前 Android/Mac 暂无兼容数据” with data-state-action="reload". Keep this state distinct from loading, request failure, and search-no-result.
+
+~~~js
+} else if (filteredCatalog().games.length === 0) {
+  content = renderState(
+    "当前" + platformLabel() + "暂无兼容数据",
+    "当前平台暂时没有可展示的游戏，请重新加载。",
+    "reload"
+  );
+}
+~~~
+
+- [ ] **Step 4: Make Web download feedback conservative**
+
+After anchor.click(), report “已发起下载，请查看浏览器下载列表；若未出现文件，请重试”. Do not claim the browser completed the download because policy blocking may be silent.
+
+~~~js
+setDownloadResult(
+  requestId,
+  true,
+  "已发起下载，请查看浏览器下载列表；若未出现文件，请重试"
+);
+~~~
+
+- [ ] **Step 5: Preserve the platform label in a real phone viewport**
+
+Do not hide .candidate-platform below 420px. Add a 390×844 Playwright page that fills “艾尔登”, asserts the platform label remains visible, and checks horizontal overflow.
+
+~~~js
+const phonePage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+await phonePage.goto(pathToFileURL(demoPath).href, { waitUntil: "load" });
+await phonePage.locator("#game-search").fill("艾尔登");
+check(
+  await phonePage.locator('[data-search-result="steam_1245620"] .candidate-platform').isVisible(),
+  "Real 390px viewport hides the search platform label"
+);
+~~~
+
+- [ ] **Step 6: Cover recovery and isolation regressions**
+
+The browser verifier must inject a Mac configuration whose top-level platform is correct but whose summary/applicability/fields contain Android/Adreno/Wine values, then assert it is rejected. It must also verify empty-catalog reload, local-cover failure fallback, App path zero Blob calls, and duplicate/late callback rejection.
+
+~~~js
+check(await queryPage.locator("[data-config-toggle]").count() === 0, "Cross-wired Mac config survived");
+check(await queryPage.locator('[data-state-action="reload"]').count() === 1, "Empty catalog cannot reload");
+check(await bridgePage.evaluate(() => window.__blobCalls) === 0, "App path triggered a Blob download");
+check(lateCallbackAccepted === false, "Late callback was accepted");
+~~~
+
+- [ ] **Step 7: Rerun both verifiers**
+
+~~~powershell
+node tools/verify-compatibility-webview-demo.mjs
+node tools/capture-compatibility-webview-demo.mjs
+~~~
+
+Expected: both commands print PASS; the capture command regenerates all seven screenshots.
 
 ## Task 6: Perform visual, accessibility, and regression review
 

@@ -28,6 +28,8 @@ const required = [
   'data-compatibility-result',
   'data-config-toggle',
   'data-config-download',
+  'data-config-applicability',
+  'data-cover-image',
   'window.GameHubCompatibility',
   'setContext(context)',
   'setCatalog(catalog)',
@@ -36,6 +38,7 @@ const required = [
   'onDownloadResult(result)',
   'resolvePlatform(context)',
   'filteredCatalog()',
+  'containsCrossPlatformConfig(',
   'renderSearchPanel()',
   'renderPopularGames()',
   'renderCompatibilityResult()',
@@ -47,7 +50,9 @@ const required = [
   'Mac',
   '搜索游戏名称',
   '启动配置',
-  '下载配置'
+  '下载配置',
+  '暂无兼容数据',
+  '已发起下载'
 ];
 
 const legacy = [

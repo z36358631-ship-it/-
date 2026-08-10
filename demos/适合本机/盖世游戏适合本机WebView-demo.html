@@ -491,7 +491,35 @@
       font-size: 14px;
       line-height: 20px;
     }
-    .config-summary span { color: var(--text-muted); font-size: 11px; white-space: nowrap; }
+    .config-summary span { color: var(--text-muted); font-size: 12px; white-space: nowrap; }
+    .config-applicability {
+      margin-bottom: 12px;
+      padding: 12px;
+      border: 1px solid rgba(255, 204, 67, .14);
+      border-radius: var(--radius-md);
+      background: rgba(255, 204, 67, .045);
+    }
+    .config-applicability > strong {
+      display: block;
+      margin-bottom: 9px;
+      color: var(--brand-gold-light);
+      font-size: 12px;
+      font-weight: 520;
+    }
+    .config-applicability-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .config-applicability-grid div { display: grid; gap: 4px; min-width: 0; }
+    .config-applicability-grid span { color: var(--text-muted); font-size: 10px; line-height: 14px; }
+    .config-applicability-grid b {
+      overflow-wrap: anywhere;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 520;
+      line-height: 17px;
+    }
     .config-fields {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -515,7 +543,7 @@
     .config-meta {
       margin: 12px 0;
       color: var(--text-muted);
-      font-size: 11px;
+      font-size: 12px;
       line-height: 16px;
     }
     .download-button {
@@ -621,10 +649,6 @@
     .frame[data-preview="mobile"] .metric-row { min-height: 68px; padding: 11px 12px; }
     .frame[data-preview="mobile"] .config-section { margin-top: 20px; }
     .frame[data-preview="mobile"] .config-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    @media (max-width: 420px) {
-      .search-result { grid-template-columns: 48px 1fr; }
-      .candidate-platform { display: none; }
-    }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
     }
@@ -897,6 +921,11 @@
           downloadCount: 1280,
           updatedAt: "2026-08-08",
           summary: "Adreno 830 · 35～45 FPS",
+          applicability: {
+            gameVersion: "1.16.1",
+            hardware: "Adreno 830",
+            systemRange: "Android 14～15"
+          },
           fields: [
             ["分辨率", "1280 × 720"],
             ["画质", "中"],
@@ -915,6 +944,11 @@
           downloadCount: 864,
           updatedAt: "2026-08-07",
           summary: "Adreno 830 · 28～35 FPS",
+          applicability: {
+            gameVersion: "1.0.12",
+            hardware: "Adreno 830",
+            systemRange: "Android 14～15"
+          },
           fields: [
             ["分辨率", "1280 × 720"],
             ["画质", "低"],
@@ -933,6 +967,11 @@
           downloadCount: 742,
           updatedAt: "2026-08-09",
           summary: "Adreno 830 · 稳定 60 FPS",
+          applicability: {
+            gameVersion: "1.38290",
+            hardware: "Adreno 830",
+            systemRange: "Android 13～15"
+          },
           fields: [
             ["分辨率", "1920 × 1080"],
             ["画质", "高"],
@@ -951,6 +990,11 @@
           downloadCount: 526,
           updatedAt: "2026-08-09",
           summary: "Apple M4 Pro · 45～60 FPS",
+          applicability: {
+            gameVersion: "1.16.1",
+            hardware: "Apple M4 Pro",
+            systemRange: "macOS 15～26"
+          },
           fields: [
             ["显示模式", "1920 × 1080"],
             ["画质", "中"],
@@ -969,6 +1013,11 @@
           downloadCount: 342,
           updatedAt: "2026-08-09",
           summary: "Apple M4 · 稳定 60 FPS",
+          applicability: {
+            gameVersion: "1.38290",
+            hardware: "Apple M4",
+            systemRange: "macOS 15～26"
+          },
           fields: [
             ["显示模式", "2560 × 1440"],
             ["画质", "高"],
@@ -987,6 +1036,11 @@
           downloadCount: 198,
           updatedAt: "2026-08-08",
           summary: "Apple M3 Max · 30～42 FPS",
+          applicability: {
+            gameVersion: "2.3",
+            hardware: "Apple M3 Max",
+            systemRange: "macOS 15～26"
+          },
           fields: [
             ["显示模式", "1920 × 1080"],
             ["画质", "低"],
@@ -1026,6 +1080,14 @@
     function normalizePlatform(value) {
       const normalized = text(value, 16).toLowerCase();
       return normalized === "android" || normalized === "mac" ? normalized : null;
+    }
+
+    function containsCrossPlatformConfig(platform, values) {
+      const joined = values.flat(Infinity).map((value) => text(value, 120)).join(" ");
+      const forbidden = platform === "android"
+        ? /macOS|Apple|MacBook|Mac mini|Mac Studio|Game Porting Toolkit/i
+        : /Android|Adreno|骁龙|Snapdragon|手机|Wine/i;
+      return forbidden.test(joined);
     }
 
     function queryPlatform() {
@@ -1126,6 +1188,18 @@
           .map(([label, value]) => [text(label, 30), text(value, 80)])
           .filter(([label, value]) => label && value)
           .slice(0, 6);
+        const sourceApplicability = item.applicability && typeof item.applicability === "object"
+          ? item.applicability : {};
+        const applicability = {
+          gameVersion: text(sourceApplicability.gameVersion, 40) || "未记录",
+          hardware: text(sourceApplicability.hardware, 60) || "未记录",
+          systemRange: text(sourceApplicability.systemRange, 60) || "未记录"
+        };
+        const summary = text(item.summary, 80) || "适用于当前平台";
+        if (containsCrossPlatformConfig(
+          platform,
+          [summary, ...Object.values(applicability), ...fields.flat()]
+        )) return null;
         const rawFileName = text(item.fileName, 100).replace(/[^a-zA-Z0-9._-]/g, "-");
         return {
           id,
@@ -1137,7 +1211,8 @@
           fileSize: text(item.fileSize, 20) || "未记录",
           downloadCount: number(item.downloadCount, 0),
           updatedAt: text(item.updatedAt, 10) || "未记录",
-          summary: text(item.summary, 80) || "适用于当前平台",
+          summary,
+          applicability,
           fields
         };
       }).filter(Boolean));
@@ -1160,7 +1235,8 @@
       if (!src) {
         return '<div class="' + esc(className) + ' cover-fallback" aria-label="封面占位">GH</div>';
       }
-      return '<img class="' + esc(className) + '" src="' + esc(src) + '" alt="' + esc(game.name + "封面") + '">';
+      return '<img class="' + esc(className) + '" data-cover-image src="' + esc(src) +
+        '" alt="' + esc(game.name + "封面") + '">';
     }
 
     function clearDownloadTimer() {
@@ -1311,6 +1387,15 @@
           '<strong>' + esc(config.summary) + '</strong>' +
           '<span>v' + esc(config.version) + ' · ' + esc(config.fileSize) + '</span>' +
         '</div>' +
+        '<div class="config-applicability" data-config-applicability>' +
+          '<strong>适用范围</strong>' +
+          '<div class="config-applicability-grid">' +
+            '<div><span>游戏版本</span><b>' + esc(config.applicability.gameVersion) + '</b></div>' +
+            '<div><span>' + (state.platform === "android" ? "适用 GPU" : "适用芯片") + '</span>' +
+              '<b>' + esc(config.applicability.hardware) + '</b></div>' +
+            '<div><span>系统范围</span><b>' + esc(config.applicability.systemRange) + '</b></div>' +
+          '</div>' +
+        '</div>' +
         '<div class="config-fields">' +
           config.fields.map(([label, value]) =>
             '<div class="config-field"><span>' + esc(label) + '</span>' +
@@ -1393,6 +1478,12 @@
         content = renderState("正在加载兼容数据", "正在获取游戏、兼容记录和配置。", "");
       } else if (state.catalogStatus === "error") {
         content = renderState("兼容数据加载失败", "暂时无法获取数据，请重试。", "reload");
+      } else if (filteredCatalog().games.length === 0) {
+        content = renderState(
+          "当前" + platformLabel() + "暂无兼容数据",
+          "当前平台暂时没有可展示的游戏，请重新加载。",
+          "reload"
+        );
       } else if (state.selectedGameId) {
         content = renderCompatibilityResult();
       } else {
@@ -1443,7 +1534,11 @@
       anchor.click();
       anchor.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 0);
-      setDownloadResult(requestId, true, "模拟配置已下载");
+      setDownloadResult(
+        requestId,
+        true,
+        "已发起下载，请查看浏览器下载列表；若未出现文件，请重试"
+      );
     }
 
     function startDownload(configId) {
@@ -1515,6 +1610,16 @@
       }
     }
 
+    document.addEventListener("error", (event) => {
+      const image = event.target;
+      if (!(image instanceof HTMLImageElement) || !image.matches("[data-cover-image]")) return;
+      const fallback = document.createElement("div");
+      fallback.className = image.className + " cover-fallback";
+      fallback.setAttribute("aria-label", "封面加载失败");
+      fallback.textContent = "GH";
+      image.replaceWith(fallback);
+    }, true);
+
     document.addEventListener("input", (event) => {
       if (event.target.id !== "game-search") return;
       state.gameQuery = event.target.value;
@@ -1527,7 +1632,7 @@
     });
 
     document.addEventListener("click", (event) => {
-      const preview = event.target.closest("[data-preview]");
+      const preview = event.target.closest(".demo-controls [data-preview]");
       if (preview) {
         document.querySelector(".frame").dataset.preview = preview.dataset.preview;
         document.querySelectorAll("[data-preview]").forEach((button) => {
