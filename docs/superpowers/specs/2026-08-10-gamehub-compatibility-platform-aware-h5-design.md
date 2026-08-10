@@ -329,7 +329,7 @@ Bridge / query / Demo 默认
   games: [{ id, platform, name, englishName, aliases, coverKey }],
   hardware: [{ id, platform, type, displayName, aliases, deviceModel, soc, gpu, chip }],
   records: [{
-    id, platform, gameId, hardwareId, gameVersion, osVersion,
+    id, platform, gameId, hardwareIds, gameVersion, osVersion,
     appVersion, runtime, driver, resolution, rating, avgFps,
     stability, tags, notes, verifiedAt, configIds
   }],
@@ -345,7 +345,8 @@ Bridge / query / Demo 默认
 
 - `rating` 只接受 1～5。
 - `avgFps` 只接受 0～240；缺失时显示“—”。
-- 运行记录必须关联当前平台的有效游戏与硬件。
+- `hardwareIds` 同时关联具体设备/机型和 GPU/芯片，使任一硬件候选都能命中同一运行记录。
+- 运行记录必须关联至少一个当前平台的有效硬件。
 - 配置必须同时匹配当前平台、游戏和运行记录，否则拒绝查看和下载。
 - 封面只接受受控本地资源键，失败时使用本地占位图。
 - 名称、标签、备注和启动参数在渲染前转义并限制长度。
