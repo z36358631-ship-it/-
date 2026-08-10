@@ -295,298 +295,192 @@
       color: var(--brand-gold);
       font-size: 12px;
     }
-    .search-section { position: relative; z-index: 4; }
-    .search-box {
-      display: grid;
-      grid-template-columns: 24px 1fr auto;
+    .query-prompt, .no-results {
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      min-height: 58px;
-      padding: 0 12px 0 16px;
-      border: 1px solid #3a3b3f;
+      justify-content: center;
+      gap: 8px;
+      min-height: 230px;
+      margin-top: 16px;
+      padding: 30px;
+      border: 1px solid var(--border-default);
       border-radius: var(--radius-xl);
-      background: rgba(27, 27, 29, .94);
-      box-shadow: inset 0 1px rgba(255, 255, 255, .035), 0 12px 30px rgba(0, 0, 0, .24);
-      transition: border-color .18s ease, box-shadow .18s ease;
-    }
-    .search-box:focus-within {
-      border-color: rgba(255, 204, 67, .72);
-      box-shadow: 0 0 0 3px rgba(255, 204, 67, .09), 0 16px 36px rgba(0, 0, 0, .28);
-    }
-    .search-icon {
-      color: var(--brand-gold);
-      font-size: 23px;
-      line-height: 1;
-      transform: rotate(-18deg);
-    }
-    .search-box input {
-      width: 100%;
-      min-height: 56px;
-      border: 0;
-      outline: 0;
-      background: transparent;
-      color: var(--text-primary);
-      font-size: 16px;
-    }
-    .search-box input::placeholder { color: #777980; }
-    .clear-search {
-      width: 44px;
-      min-height: 44px;
-      border-radius: var(--radius-full);
-      background: transparent;
-      color: var(--text-muted);
-      font-size: 22px;
-    }
-    .clear-search:hover { color: #fff; }
-    .search-results {
-      display: grid;
-      gap: 2px;
-      margin-top: 8px;
-      padding: 6px;
-      border: 1px solid #37383d;
-      border-radius: var(--radius-xl);
-      background: rgba(26, 26, 28, .98);
-      box-shadow: 0 18px 44px rgba(0, 0, 0, .46);
-    }
-    .search-result {
-      display: grid;
-      grid-template-columns: 48px 1fr auto;
-      align-items: center;
-      min-height: 70px;
-      gap: 12px;
-      padding: 8px;
-      border-radius: 11px;
-      background: transparent;
-      text-align: left;
-    }
-    .search-result:hover, .search-result:active { background: var(--bg-elevated); }
-    .search-result .game-cover { width: 48px; height: 54px; }
-    .search-result-copy { min-width: 0; display: grid; gap: 3px; }
-    .search-result-copy strong, .popular-copy strong {
-      overflow: hidden;
-      color: #fff;
-      font-size: 15px;
-      font-weight: 520;
-      line-height: 21px;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .search-result-copy small, .popular-copy small {
-      overflow: hidden;
-      color: var(--text-muted);
-      font-size: 12px;
-      line-height: 17px;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .candidate-platform {
-      padding: 4px 8px;
-      border-radius: var(--radius-full);
-      background: rgba(51, 216, 164, .1);
-      color: var(--brand-green);
-      font-size: 10px;
-    }
-    .empty-inline {
-      padding: 24px 16px;
-      color: var(--text-muted);
-      font-size: 14px;
+      background: var(--bg-card);
       text-align: center;
     }
-    .popular-section, .compatibility-result, .state-card {
-      margin-top: 18px;
-      border: 1px solid #2f3034;
-      border-radius: var(--radius-xl);
-      background: rgba(20, 20, 21, .92);
-      box-shadow: inset 0 1px rgba(255, 255, 255, .025);
-    }
-    .popular-section { padding: 18px; }
-    .section-heading {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 15px;
-    }
-    .section-heading h2 {
+    .query-prompt h2, .no-results h2 {
       font-size: 20px;
-      font-weight: 520;
+      font-weight: 560;
       line-height: 28px;
     }
-    .section-heading p {
-      margin-top: 2px;
-      color: var(--text-muted);
-      font-size: 12px;
-      line-height: 17px;
-    }
-    .section-kicker {
-      padding: 5px 9px;
-      border-radius: var(--radius-full);
-      background: rgba(255, 204, 67, .1);
-      color: var(--brand-gold);
-      font-size: 10px;
-      white-space: nowrap;
-    }
-    .popular-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-    }
-    .popular-game {
-      overflow: hidden;
-      border: 1px solid #303136;
-      border-radius: var(--radius-lg);
-      background: var(--bg-card);
-      text-align: left;
-      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-    }
-    .popular-game:hover {
-      transform: translateY(-2px);
-      border-color: rgba(255, 204, 67, .42);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, .3);
-    }
-    .popular-game > img, .popular-cover {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      object-fit: cover;
-      object-position: center 28%;
-      background:
-        linear-gradient(135deg, rgba(255, 204, 67, .18), transparent),
-        var(--bg-elevated);
-    }
-    .popular-copy { display: grid; gap: 2px; padding: 11px 12px 12px; }
-    .compatibility-result { padding: 18px; }
-    .result-back {
-      min-height: 44px;
-      margin-bottom: 10px;
-      background: transparent;
-      color: var(--brand-gold);
-      font-size: 13px;
-    }
-    .result-hero {
-      display: grid;
-      grid-template-columns: 112px 1fr;
-      align-items: end;
-      gap: 18px;
-      min-height: 190px;
-      padding: 18px;
-      overflow: hidden;
-      border-radius: var(--radius-xl);
-      background:
-        linear-gradient(110deg, rgba(255, 204, 67, .15), transparent 48%),
-        linear-gradient(180deg, #2a281e, #151516);
-      box-shadow: inset 0 1px rgba(255, 255, 255, .055);
-    }
-    .hero-cover {
-      width: 112px;
-      height: 156px;
-      object-fit: cover;
-      border-radius: var(--radius-lg);
-      box-shadow: 0 14px 28px rgba(0, 0, 0, .42);
-      background: var(--bg-elevated);
-    }
-    .result-hero-copy { min-width: 0; padding-bottom: 4px; }
-    .result-hero h2 {
-      margin-top: 12px;
-      font-size: 26px;
-      font-weight: 620;
-      line-height: 34px;
-    }
-    .result-hero p {
-      margin-top: 3px;
+    .query-prompt p, .no-results p {
+      max-width: 440px;
       color: var(--text-muted);
       font-size: 13px;
-      line-height: 18px;
-    }
-    .verdict-card {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: center;
-      gap: 18px;
-      margin-top: 14px;
-      padding: 17px 18px;
-      border: 1px solid rgba(255, 204, 67, .19);
-      border-radius: var(--radius-lg);
-      background:
-        linear-gradient(100deg, rgba(255, 204, 67, .14), rgba(255, 204, 67, .025)),
-        #1b1a18;
-    }
-    .verdict-copy { display: grid; gap: 5px; }
-    .verdict-copy > span, .metric-row > span, .config-field span {
-      color: var(--text-muted);
-      font-size: 12px;
-      line-height: 17px;
-    }
-    .verdict-copy strong { font-size: 19px; font-weight: 620; }
-    .verdict-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
-    .verdict-tags span {
-      padding: 4px 7px;
-      border-radius: var(--radius-sm);
-      background: rgba(51, 216, 164, .1);
-      color: var(--brand-green);
-      font-size: 10px;
-    }
-    .fps {
-      display: flex;
-      align-items: baseline;
-      gap: 4px;
-      color: var(--brand-gold);
-    }
-    .fps strong { font: 700 34px/1 var(--font-number); }
-    .fps span { font-size: 11px; }
-    .environment-card {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1px;
-      margin-top: 14px;
-      overflow: hidden;
-      border: 1px solid #303136;
-      border-radius: var(--radius-lg);
-      background: #303136;
-    }
-    .metric-row {
-      display: grid;
-      gap: 6px;
-      min-height: 72px;
-      padding: 13px 15px;
-      background: #1b1b1d;
-    }
-    .metric-row strong {
-      overflow-wrap: anywhere;
-      color: var(--text-secondary);
-      font-size: 14px;
-      font-weight: 520;
       line-height: 20px;
     }
-    .metric-row-wide { grid-column: 1 / -1; }
-    .config-section { margin-top: 24px; }
-    .config-card {
-      overflow: hidden;
-      border: 1px solid #313238;
-      border-radius: var(--radius-lg);
-      background: #19191b;
+    .no-results button {
+      min-height: 44px;
+      margin-top: 8px;
+      padding: 0 18px;
+      border-radius: var(--radius-md);
+      background: var(--brand-gold);
+      color: #16120a;
+      font-size: 13px;
+      font-weight: 620;
     }
-    .config-card + .config-card { margin-top: 10px; }
-    .config-toggle {
-      display: grid;
-      grid-template-columns: 1fr auto;
+    .record-results { margin-top: 16px; }
+    .result-heading {
+      display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .result-heading h2 { font-size: 20px; font-weight: 560; line-height: 28px; }
+    .result-heading strong {
+      color: var(--brand-gold-light);
+      font-size: 13px;
+      font-weight: 520;
+      white-space: nowrap;
+    }
+    .record-table-wrap {
       width: 100%;
-      min-height: 72px;
-      gap: 14px;
-      padding: 12px 14px;
-      background: transparent;
+      overflow-x: auto;
+      border: 1px solid var(--border-default);
+      border-radius: 18px;
+      background: var(--bg-card);
+    }
+    .record-table {
+      width: 100%;
+      min-width: 1180px;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .record-table th, .record-table td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--border-default);
+      vertical-align: top;
       text-align: left;
     }
-    .config-toggle:hover { background: rgba(255, 255, 255, .025); }
-    .config-toggle-copy { display: grid; gap: 4px; min-width: 0; }
-    .config-toggle-copy strong { font-size: 15px; font-weight: 520; }
-    .config-toggle-copy small {
+    .record-table th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #181818;
+      color: var(--text-muted);
+      font-weight: 520;
+      white-space: nowrap;
+    }
+    .record-table tbody tr:last-child td { border-bottom: 0; }
+    .record-table th button {
+      min-width: 44px;
+      min-height: 44px;
+      margin: -12px -10px;
+      padding: 0 10px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 520;
+    }
+    .record-table th button:hover { color: var(--brand-gold); }
+    .record-game {
+      min-width: 170px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .record-cover {
+      width: 44px;
+      height: 60px;
+      flex: 0 0 auto;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    .record-game span { min-width: 0; display: grid; gap: 4px; }
+    .record-game strong { font-weight: 560; line-height: 18px; }
+    .record-game small {
       overflow: hidden;
       color: var(--text-muted);
-      font-size: 12px;
+      line-height: 16px;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .config-toggle-state { color: var(--brand-gold); font-size: 12px; }
+    .rating { white-space: nowrap; color: var(--brand-gold); letter-spacing: 1px; }
+    .rating i { color: #454545; font-style: normal; }
+    .record-tag {
+      display: inline-flex;
+      margin: 0 4px 4px 0;
+      padding: 4px 7px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 204, 67, .12);
+      color: var(--brand-gold);
+      line-height: 16px;
+      white-space: nowrap;
+    }
+    .record-notes { min-width: 150px; color: var(--text-secondary); line-height: 18px; }
+    .record-cards { display: none; gap: 12px; }
+    .record-card {
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid var(--border-default);
+      border-radius: 18px;
+      background: var(--bg-card);
+    }
+    .record-card-head, .record-primary, .record-card footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .record-card-head { align-items: flex-start; }
+    .record-card .record-game { min-width: 0; flex: 1 1 auto; }
+    .record-primary {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-default);
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 19px;
+    }
+    .record-primary > span { min-width: 0; }
+    .record-primary > strong { flex: 0 0 auto; color: var(--brand-gold); }
+    .record-card dl {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .record-card dl div { min-width: 0; padding: 9px; border-radius: 10px; background: var(--bg-elevated); }
+    .record-card dt { color: var(--text-muted); font-size: 11px; line-height: 16px; }
+    .record-card dd {
+      margin: 4px 0 0;
+      overflow-wrap: anywhere;
+      color: var(--text-secondary);
+      font-size: 12px;
+      line-height: 18px;
+    }
+    .record-tags { margin-top: 12px; }
+    .record-card > p { margin-top: 7px; color: var(--text-secondary); font-size: 12px; line-height: 18px; }
+    .record-card footer {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-default);
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+    [data-config-open] {
+      min-height: 44px;
+      padding: 0 12px;
+      border: 1px solid rgba(255, 204, 67, .34);
+      border-radius: var(--radius-md);
+      background: rgba(255, 204, 67, .1);
+      color: var(--brand-gold-light);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .no-config { color: var(--text-disabled); white-space: nowrap; }
     .config-detail {
       padding: 0 14px 14px;
       border-top: 1px solid #2e2f33;
@@ -684,7 +578,11 @@
       display: grid;
       place-items: center;
       min-height: 220px;
+      margin-top: 18px;
       padding: 32px;
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      background: var(--bg-card);
       text-align: center;
     }
     .state-card h2, .state-card h3 { font-size: 20px; font-weight: 520; }
@@ -724,6 +622,10 @@
       font-size: 11px;
       text-align: center;
     }
+    .frame[data-preview="mobile"] .record-table-wrap { display: none; }
+    .frame[data-preview="mobile"] .record-cards { display: grid; }
+    .frame[data-preview="desktop"] .record-table-wrap { display: block; }
+    .frame[data-preview="desktop"] .record-cards { display: none; }
     @media (max-width: 720px) {
       .workbench { padding: 0; display: block; }
       .demo-bar { display: none; }
@@ -739,6 +641,8 @@
     @media (max-width: 700px) {
       .filter-grid { grid-template-columns: 1fr; }
       .filter-menu { position: static; margin-top: 8px; }
+      .record-table-wrap { display: none; }
+      .record-cards { display: grid; }
     }
     .frame[data-preview="mobile"] .page { padding: 16px 14px 30px; }
     .frame[data-preview="mobile"] .page-header { padding-bottom: 18px; }
@@ -747,25 +651,11 @@
     .frame[data-preview="mobile"] .page-header > p { font-size: 12px; line-height: 17px; }
     .frame[data-preview="mobile"] .filter-grid { grid-template-columns: 1fr; }
     .frame[data-preview="mobile"] .filter-menu { position: static; margin-top: 8px; }
-    .frame[data-preview="mobile"] .search-box { min-height: 56px; }
-    .frame[data-preview="mobile"] .popular-section,
-    .frame[data-preview="mobile"] .compatibility-result { padding: 14px; margin-top: 14px; }
-    .frame[data-preview="mobile"] .popular-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-    .frame[data-preview="mobile"] .popular-game > img,
-    .frame[data-preview="mobile"] .popular-cover { aspect-ratio: 16 / 10; }
-    .frame[data-preview="mobile"] .result-hero {
-      grid-template-columns: 86px 1fr;
-      min-height: 154px;
-      gap: 14px;
-      padding: 14px;
-    }
-    .frame[data-preview="mobile"] .hero-cover { width: 86px; height: 124px; }
-    .frame[data-preview="mobile"] .result-hero h2 { margin-top: 9px; font-size: 21px; line-height: 28px; }
-    .frame[data-preview="mobile"] .verdict-card { padding: 14px; }
-    .frame[data-preview="mobile"] .fps strong { font-size: 30px; }
-    .frame[data-preview="mobile"] .environment-card { grid-template-columns: 1fr 1fr; }
-    .frame[data-preview="mobile"] .metric-row { min-height: 68px; padding: 11px 12px; }
-    .frame[data-preview="mobile"] .config-section { margin-top: 20px; }
+    .frame[data-preview="mobile"] .filter-panel { margin-top: 12px; padding: 14px; border-radius: 18px; }
+    .frame[data-preview="mobile"] .query-prompt,
+    .frame[data-preview="mobile"] .no-results { min-height: 210px; padding: 24px 18px; }
+    .frame[data-preview="mobile"] .record-card-head { gap: 8px; }
+    .frame[data-preview="mobile"] .record-card footer { align-items: center; }
     .frame[data-preview="mobile"] .config-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
@@ -831,9 +721,6 @@
         recordId: null,
         configId: null
       },
-      gameQuery: "",
-      selectedGameId: null,
-      expandedConfigId: null,
       catalogStatus: "ready",
       download: {
         requestId: null,
@@ -1613,7 +1500,7 @@
 
     function filterDefinitions() {
       return [
-        { key: "game", label: "游戏", placeholder: "搜索游戏" },
+        { key: "game", label: "游戏", placeholder: "搜索游戏名称" },
         {
           key: "hardware",
           label: state.platform === "android" ? "设备或 GPU" : "Mac 机型或 Apple 芯片",
@@ -1753,6 +1640,108 @@
         '" alt="' + esc(game.name + "封面") + '">';
     }
 
+    function recordGame(record) {
+      return activeCatalog().games.find((game) => game.id === record.gameId);
+    }
+
+    function recordHardware(record) {
+      const items = activeCatalog().hardware.filter((item) => record.hardwareIds.includes(item.id));
+      const primaryTypes = state.platform === "android" ? ["device", "gpu"] : ["model", "chip"];
+      return primaryTypes.map((type) => items.find((item) => item.type === type)).filter(Boolean);
+    }
+
+    function ratingStars(rating) {
+      const score = Math.round(number(rating, 1, 5));
+      return '<span class="rating" aria-label="' + score + ' 分">' + '★'.repeat(score) +
+        '<i>' + '★'.repeat(5 - score) + '</i></span>';
+    }
+
+    function configAction(record) {
+      const count = activeCatalog().configs.filter((config) => record.configIds.includes(config.id)).length;
+      return count
+        ? '<button data-config-open="' + esc(record.id) + '" type="button">查看配置（' + count + '）</button>'
+        : '<span class="no-config">暂无配置</span>';
+    }
+
+    function recordCells(record) {
+      const game = recordGame(record);
+      const hardware = recordHardware(record);
+      const environment = record.environment;
+      return {
+        game: renderCover(game, "record-cover") + '<span><strong>' + esc(game.name) +
+          '</strong><small>' + esc(game.englishName) + '</small></span>',
+        hardware: hardware.map((item) => esc(item.displayName)).join('<small> / </small>'),
+        gameVersion: esc(record.gameVersion),
+        os: esc(state.platform === "android" ? environment.androidVersion : environment.macosVersion),
+        runtime: esc(state.platform === "android" ? environment.runtime : environment.compatibilityLayer),
+        appVersion: esc(environment.appVersion),
+        rating: ratingStars(record.rating),
+        fps: '<strong>' + formatNumber(record.avgFps) + '</strong> FPS',
+        tags: record.tags.map((tag) => '<span class="record-tag">' + esc(tag) + '</span>').join(""),
+        notes: esc(record.notes),
+        config: configAction(record),
+        verifiedAt: esc(record.verifiedAt)
+      };
+    }
+
+    function renderRecordTable(records) {
+      const ratingDirection = state.sort.field === "rating"
+        ? (state.sort.direction === "desc" ? " ↓" : " ↑") : "";
+      const verifiedDirection = state.sort.field === "verifiedAt"
+        ? (state.sort.direction === "desc" ? " ↓" : " ↑") : "";
+      return '<div class="record-table-wrap" data-record-table><table class="record-table">' +
+        '<thead><tr><th>游戏</th><th>' +
+        (state.platform === "android" ? '设备 / GPU' : '机型 / 芯片') + '</th>' +
+        '<th>游戏版本</th><th>' + (state.platform === "android" ? 'Android' : 'macOS') + '</th>' +
+        '<th>运行环境</th><th>盖世版本</th>' +
+        '<th><button data-sort-field="rating" type="button" aria-label="按评分排序">评分' +
+          ratingDirection + '</button></th>' +
+        '<th>平均 FPS</th><th>标签</th><th>备注</th><th>配置</th>' +
+        '<th><button data-sort-field="verifiedAt" type="button" aria-label="按验证时间排序">验证时间' +
+          verifiedDirection + '</button></th></tr></thead><tbody>' +
+        records.map((record) => {
+          const cell = recordCells(record);
+          return '<tr data-record-row="' + esc(record.id) + '">' +
+            '<td class="record-game">' + cell.game + '</td><td>' + cell.hardware + '</td>' +
+            '<td>' + cell.gameVersion + '</td><td>' + cell.os + '</td><td>' + cell.runtime + '</td>' +
+            '<td>' + cell.appVersion + '</td><td>' + cell.rating + '</td><td>' + cell.fps + '</td>' +
+            '<td>' + cell.tags + '</td><td class="record-notes">' + cell.notes + '</td>' +
+            '<td>' + cell.config + '</td><td>' + cell.verifiedAt + '</td></tr>';
+        }).join("") + '</tbody></table></div>';
+    }
+
+    function renderRecordCards(records) {
+      return '<div class="record-cards" data-record-cards>' + records.map((record) => {
+        const cell = recordCells(record);
+        return '<article class="record-card" data-record-row="' + esc(record.id) + '">' +
+          '<div class="record-card-head"><div class="record-game">' + cell.game + '</div>' +
+            cell.rating + '</div>' +
+          '<div class="record-primary"><span>' + cell.hardware + '</span><strong>' + cell.fps + '</strong></div>' +
+          '<dl><div><dt>游戏版本</dt><dd>' + cell.gameVersion + '</dd></div>' +
+          '<div><dt>' + (state.platform === "android" ? 'Android' : 'macOS') + '</dt><dd>' + cell.os + '</dd></div>' +
+          '<div><dt>运行环境</dt><dd>' + cell.runtime + '</dd></div>' +
+          '<div><dt>盖世版本</dt><dd>' + cell.appVersion + '</dd></div></dl>' +
+          '<div class="record-tags">' + cell.tags + '</div><p>' + cell.notes + '</p>' +
+          '<footer><span>验证于 ' + cell.verifiedAt + '</span>' + cell.config + '</footer></article>';
+      }).join("") + '</div>';
+    }
+
+    function renderRecordResults() {
+      const hasFilter = state.filters.gameId || state.filters.hardwareId || state.filters.ratingMin != null;
+      if (!hasFilter) {
+        return '<section class="query-prompt"><h2>添加筛选条件开始查询</h2>' +
+          '<p>可按游戏、硬件或最低评分独立查询，也可以组合筛选。</p></section>';
+      }
+      const records = filterRecords();
+      if (!records.length) {
+        return '<section class="no-results"><h2>暂无符合条件的兼容记录</h2>' +
+          '<p>当前筛选条件会继续保留。</p><button data-clear-filters type="button">清空筛选</button></section>';
+      }
+      return '<section class="record-results"><div class="result-heading">' +
+        '<h2>兼容记录</h2><strong data-result-count>共 ' + records.length + ' 条兼容记录</strong></div>' +
+        renderRecordTable(records) + renderRecordCards(records) + '</section>';
+    }
+
     function clearDownloadTimer() {
       if (downloadTimer) window.clearTimeout(downloadTimer);
       downloadTimer = 0;
@@ -1777,9 +1766,6 @@
       state.queries = { game: "", hardware: "", rating: "" };
       state.openFilter = null;
       state.viewer = { recordId: null, configId: null };
-      state.gameQuery = "";
-      state.selectedGameId = null;
-      state.expandedConfigId = null;
       clearDownloadState();
       render();
     }
@@ -1799,103 +1785,15 @@
     function setCatalog(raw) {
       catalog = normalizeCatalog(raw);
       state.catalogStatus = "ready";
-      if (!filteredCatalog().games.some((game) => game.id === state.selectedGameId)) {
-        state.selectedGameId = null;
-        state.expandedConfigId = null;
-        clearDownloadState();
+      const current = activeCatalog();
+      if (!current.games.some((game) => game.id === state.filters.gameId)) state.filters.gameId = null;
+      if (!current.hardware.some((item) => item.id === state.filters.hardwareId)) {
+        state.filters.hardwareId = null;
       }
+      state.openFilter = null;
+      state.viewer = { recordId: null, configId: null };
+      clearDownloadState();
       render();
-    }
-
-    function matchingGames() {
-      const { games } = filteredCatalog();
-      const query = state.gameQuery.trim().toLowerCase();
-      if (!query) return [];
-      return games.filter((game) => {
-        return [game.name, game.englishName, ...game.aliases]
-          .join(" ").toLowerCase().includes(query);
-      }).slice(0, 6);
-    }
-
-    function renderSearchPanel() {
-      const candidates = matchingGames();
-      let candidateHtml = "";
-      if (state.gameQuery) {
-        candidateHtml = '<div class="search-results">';
-        if (candidates.length) {
-          candidateHtml += candidates.map((game) =>
-            '<button class="search-result" data-search-result="' + esc(game.id) + '" type="button">' +
-              renderCover(game, "game-cover") +
-              '<span class="search-result-copy">' +
-                '<strong>' + esc(game.name) + '</strong>' +
-                '<small>' + esc(game.englishName || game.aliases[0] || "已验证游戏") + '</small>' +
-              '</span>' +
-              '<span class="candidate-platform">' + platformLabel() + '</span>' +
-            '</button>'
-          ).join("");
-        } else {
-          candidateHtml += '<div class="empty-inline">没有找到当前平台可用的游戏</div>';
-        }
-        candidateHtml += '</div>';
-      }
-      return '<section class="search-section">' +
-        '<label class="search-box" for="game-search">' +
-          '<span class="search-icon" aria-hidden="true">⌕</span>' +
-          '<input id="game-search" autocomplete="off" placeholder="搜索游戏名称" value="' +
-            esc(state.gameQuery) + '">' +
-          (state.gameQuery
-            ? '<button class="clear-search" data-clear-search type="button" aria-label="清除搜索">×</button>'
-            : '<span></span>') +
-        '</label>' +
-        candidateHtml +
-      '</section>';
-    }
-
-    function renderPopularGames() {
-      const games = filteredCatalog().games
-        .filter((game) => game.popularOn.includes(state.platform))
-        .slice(0, 4);
-      return '<section class="popular-section">' +
-        '<div class="section-heading">' +
-          '<div><h2>' + platformLabel() + ' 热门游戏</h2>' +
-            '<p>查看已验证的运行表现与启动配置</p></div>' +
-          '<span class="section-kicker">' + games.length + ' 款推荐</span>' +
-        '</div>' +
-        '<div class="popular-grid">' +
-          games.map((game) =>
-            '<button class="popular-game" data-popular-game="' + esc(game.id) + '" type="button">' +
-              renderCover(game, "popular-cover") +
-              '<span class="popular-copy"><strong>' + esc(game.name) + '</strong>' +
-                '<small>' + esc(game.englishName) + '</small></span>' +
-            '</button>'
-          ).join("") +
-        '</div>' +
-      '</section>';
-    }
-
-    function renderEnvironment(record) {
-      const environment = record.environment;
-      const rows = state.platform === "android"
-        ? [
-            ["设备", environment.deviceModel],
-            ["SoC / GPU", [environment.soc, environment.mobileGpu].filter(Boolean).join(" · ")],
-            ["系统", environment.androidVersion],
-            ["运行环境", environment.runtime],
-            ["盖世版本", environment.appVersion]
-          ]
-        : [
-            ["设备", [environment.macModel, environment.appleChip].filter(Boolean).join(" · ")],
-            ["系统", environment.macosVersion],
-            ["兼容层", environment.compatibilityLayer],
-            ["显示模式", environment.displayMode],
-            ["盖世版本", environment.appVersion]
-          ];
-      return rows.map(([label, value], index) =>
-        '<div class="metric-row' + (index === rows.length - 1 ? ' metric-row-wide' : '') + '">' +
-          '<span>' + esc(label) + '</span>' +
-          '<strong>' + esc(value || "未记录") + '</strong>' +
-        '</div>'
-      ).join("");
     }
 
     function renderConfigDetail(config) {
@@ -1932,55 +1830,6 @@
       '</div>';
     }
 
-    function renderCompatibilityResult() {
-      const { games, records, configs } = filteredCatalog();
-      const game = games.find((item) => item.id === state.selectedGameId);
-      if (!game) return renderPopularGames();
-      const record = records.find((item) => item.gameId === game.id);
-      const gameConfigs = configs.filter((item) => item.gameId === game.id);
-      let recordHtml = '<div class="empty-subcard"><h3>暂无验证记录</h3>' +
-        '<p>当前平台还没有可靠的运行数据。</p></div>';
-      if (record) {
-        recordHtml = '<div class="verdict-card">' +
-          '<div class="verdict-copy"><span>兼容结论 · 验证于 ' + esc(record.verifiedAt) + '</span>' +
-            '<strong>' + esc(record.verdict) + '</strong>' +
-            '<div class="verdict-tags">' +
-              record.tags.map((tag) => '<span>' + esc(tag) + '</span>').join("") +
-            '</div>' +
-          '</div>' +
-          '<div class="fps"><strong>' + formatNumber(record.avgFps) + '</strong><span>FPS</span></div>' +
-        '</div>' +
-        '<div class="environment-card">' + renderEnvironment(record) + '</div>';
-      }
-      const configHtml = gameConfigs.length
-        ? gameConfigs.map((config) =>
-            '<article class="config-card">' +
-              '<button class="config-toggle" data-config-toggle="' + esc(config.id) + '" type="button">' +
-                '<span class="config-toggle-copy"><strong>' + esc(config.name) + '</strong>' +
-                  '<small>' + esc(config.summary) + '</small></span>' +
-                '<span class="config-toggle-state">' +
-                  (state.expandedConfigId === config.id ? "收起" : "查看") + '</span>' +
-              '</button>' +
-              (state.expandedConfigId === config.id ? renderConfigDetail(config) : '') +
-            '</article>'
-          ).join("")
-        : '<div class="empty-subcard"><h3>暂无可下载配置</h3>' +
-            '<p>当前平台未提供已验证配置。</p></div>';
-      return '<section class="compatibility-result" data-compatibility-result="' + esc(game.id) + '">' +
-        '<button class="result-back" data-result-back type="button">← 返回' + platformLabel() + '游戏</button>' +
-        '<div class="result-hero">' +
-          renderCover(game, "hero-cover") +
-          '<div class="result-hero-copy"><span class="platform-badge">' + platformLabel() + '</span>' +
-            '<h2>' + esc(game.name) + '</h2><p>' + esc(game.englishName) + '</p></div>' +
-        '</div>' +
-        recordHtml +
-        '<div class="config-section"><div class="section-heading">' +
-          '<div><h2>启动配置</h2><p>确认适用环境后再下载</p></div>' +
-          '<span class="section-kicker">' + gameConfigs.length + ' 个方案</span>' +
-        '</div>' + configHtml + '</div>' +
-      '</section>';
-    }
-
     function renderState(title, copy, action) {
       return '<section class="state-card"><h2>' + esc(title) + '</h2>' +
         '<p>' + esc(copy) + '</p>' +
@@ -2002,13 +1851,8 @@
           "当前平台暂时没有可展示的游戏，请重新加载。",
           "reload"
         );
-      } else if (state.selectedGameId) {
-        content = renderCompatibilityResult();
       } else {
-        content = renderSearchPanel() + renderPopularGames();
-      }
-      if (state.catalogStatus === "ready" && filteredCatalog().games.length > 0) {
-        content = renderFilterBar() + content;
+        content = renderFilterBar() + renderRecordResults();
       }
       document.getElementById("compatibility-app").innerHTML =
         '<div class="page"><header class="page-header">' +
@@ -2065,9 +1909,7 @@
     function startDownload(configId) {
       if (state.download.status === "pending") return;
       const config = filteredCatalog().configs.find((item) => item.id === configId);
-      if (!config ||
-          config.platform !== state.platform ||
-          config.gameId !== state.selectedGameId) {
+      if (!config || config.platform !== state.platform) {
         state.download = {
           requestId: null,
           configId,
@@ -2149,30 +1991,18 @@
       state.queries[key] = "";
       state.openFilter = null;
       state.viewer = { recordId: null, configId: null };
-      state.selectedGameId = null;
-      state.expandedConfigId = null;
       clearDownloadState();
     }
 
     document.addEventListener("input", (event) => {
       const key = event.target.dataset.filterQuery;
-      if (key && key in state.queries) {
-        state.queries[key] = event.target.value;
-        render();
-        const filterInput = document.querySelector('[data-filter-query="' + key + '"]');
-        if (filterInput) {
-          filterInput.focus();
-          filterInput.setSelectionRange(state.queries[key].length, state.queries[key].length);
-        }
-        return;
-      }
-      if (event.target.id !== "game-search") return;
-      state.gameQuery = event.target.value;
+      if (!key || !(key in state.queries)) return;
+      state.queries[key] = event.target.value;
       render();
-      const input = document.getElementById("game-search");
-      if (input) {
-        input.focus();
-        input.setSelectionRange(state.gameQuery.length, state.gameQuery.length);
+      const filterInput = document.querySelector('[data-filter-query="' + key + '"]');
+      if (filterInput) {
+        filterInput.focus();
+        filterInput.setSelectionRange(state.queries[key].length, state.queries[key].length);
       }
     });
 
@@ -2197,6 +2027,19 @@
           button.classList.toggle("active", button === preview);
         });
         if (closedFilterFromOutside) render();
+        return;
+      }
+
+      const sortButton = event.target.closest("[data-sort-field]");
+      if (sortButton) {
+        const field = sortButton.dataset.sortField;
+        if (!['rating', 'verifiedAt'].includes(field)) return;
+        if (state.sort.field === field) {
+          state.sort.direction = state.sort.direction === "desc" ? "asc" : "desc";
+        } else {
+          state.sort = { field, direction: "desc" };
+        }
+        render();
         return;
       }
 
@@ -2231,8 +2074,6 @@
         state.queries[key] = "";
         state.openFilter = null;
         state.viewer = { recordId: null, configId: null };
-        state.selectedGameId = null;
-        state.expandedConfigId = null;
         clearDownloadState();
         render();
         return;
@@ -2250,55 +2091,6 @@
         state.queries = { game: "", hardware: "", rating: "" };
         state.openFilter = null;
         state.viewer = { recordId: null, configId: null };
-        state.selectedGameId = null;
-        state.expandedConfigId = null;
-        clearDownloadState();
-        render();
-        return;
-      }
-
-      const popularGame = event.target.closest("[data-popular-game]");
-      if (popularGame) {
-        const gameId = popularGame.dataset.popularGame;
-        state.filters.gameId = gameId;
-        state.queries.game = "";
-        state.openFilter = null;
-        state.viewer = { recordId: null, configId: null };
-        state.selectedGameId = gameId;
-        state.expandedConfigId = null;
-        clearDownloadState();
-        render();
-        return;
-      }
-
-      const selectedSearchResult = event.target.closest("[data-search-result]");
-      if (selectedSearchResult) {
-        state.selectedGameId = selectedSearchResult.dataset.searchResult;
-        state.gameQuery = "";
-        state.expandedConfigId = null;
-        clearDownloadState();
-        render();
-        return;
-      }
-
-      if (event.target.closest("[data-clear-search]")) {
-        state.gameQuery = "";
-        render();
-        return;
-      }
-
-      if (event.target.closest("[data-result-back]")) {
-        state.selectedGameId = null;
-        state.expandedConfigId = null;
-        clearDownloadState();
-        render();
-        return;
-      }
-
-      const configToggle = event.target.closest("[data-config-toggle]");
-      if (configToggle) {
-        const configId = configToggle.dataset.configToggle;
-        state.expandedConfigId = state.expandedConfigId === configId ? null : configId;
         clearDownloadState();
         render();
         return;
@@ -2319,12 +2111,7 @@
       }
 
       if (event.target.closest("[data-back]")) {
-        if (state.selectedGameId) {
-          state.selectedGameId = null;
-          state.expandedConfigId = null;
-          clearDownloadState();
-          render();
-        } else if (window.GameHubBridge && typeof window.GameHubBridge.goBack === "function") {
+        if (window.GameHubBridge && typeof window.GameHubBridge.goBack === "function") {
           window.GameHubBridge.goBack();
         } else if (history.length > 1) {
           history.back();
