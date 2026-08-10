@@ -113,6 +113,369 @@ async function main() {
       await page.waitForFunction(() => Boolean(window.__appRentalDemo));
     };
 
+    await runRefactorGate('DISCOVERY_DISPLAY_MODEL', async () => {
+      await reloadDemo();
+      const contexts = {
+        rented: {
+          activeRental: true,
+          playable: true,
+          playableReason: 'owned',
+          region: 'CN',
+          version: 'Steam',
+          firstRentalEligible: true,
+          priceResolved: true,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        },
+        playable: {
+          activeRental: false,
+          playable: true,
+          playableReason: 'membership',
+          region: 'CN',
+          version: 'Steam',
+          firstRentalEligible: false,
+          priceResolved: true,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        },
+        rentalPrice: {
+          activeRental: false,
+          playable: false,
+          playableReason: null,
+          region: 'CN',
+          version: 'Steam',
+          firstRentalEligible: false,
+          priceResolved: true,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        },
+        unresolved: {
+          activeRental: false,
+          playable: false,
+          playableReason: null,
+          region: 'CN',
+          version: 'Steam',
+          firstRentalEligible: false,
+          priceResolved: false,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        },
+      };
+      const discovery = await page.evaluate((input) => {
+        const api = window.__appRentalDemo;
+        const surface = {
+          resolve: typeof api?.resolveGameDisplayModel === 'function',
+          get: typeof api?.getDiscoveryDisplay === 'function',
+          set: typeof api?.setDiscoveryContext === 'function',
+        };
+        if (!surface.resolve || !surface.get || !surface.set) return { surface };
+
+        const models = Object.fromEntries(
+          Object.entries(input).map(([key, context]) => [key, api.resolveGameDisplayModel('shadow-blade-zero', context)]),
+        );
+        const base = {
+          activeOrderStatus: null,
+          expireAt: null,
+          refundActive: false,
+          owned: false,
+          installed: false,
+          imported: false,
+          permanent: false,
+          membershipActive: false,
+          memberLibrary: false,
+          region: 'CN',
+          version: 'Steam',
+          firstRentalEligible: false,
+          priceResolved: true,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        };
+        const future = Date.now() + 60 * 60 * 1000;
+        const inactiveRentalStates = Object.fromEntries(
+          ['pending', 'allocating', 'refunding', 'refunded', 'ended'].map((status) => [
+            status,
+            api.setDiscoveryContext('shadow-blade-zero', { ...base, activeOrderStatus: status, expireAt: future }),
+          ]),
+        );
+        const expiredRental = api.setDiscoveryContext('shadow-blade-zero', {
+          ...base,
+          activeOrderStatus: 'active',
+          expireAt: Date.now(),
+        });
+        const playableSources = Object.fromEntries([
+          ['owned', { owned: true }],
+          ['installed', { installed: true }],
+          ['imported', { imported: true }],
+          ['permanent', { permanent: true }],
+          ['membership', { membershipActive: true, memberLibrary: true }],
+        ].map(([reason, patch]) => [
+          reason,
+          api.setDiscoveryContext('shadow-blade-zero', { ...base, ...patch }),
+        ]));
+        const eligibleFirstPrice = api.setDiscoveryContext('shadow-blade-zero', {
+          ...base,
+          firstRentalEligible: true,
+        });
+        const ineligibleFirstPrice = api.setDiscoveryContext('shadow-blade-zero', {
+          ...base,
+          firstRentalEligible: false,
+        });
+        const rotationBefore = api.getDiscoveryDisplay('shadow-blade-zero');
+        api.setOrientation('landscape');
+        const rotationLandscape = api.getDiscoveryDisplay('shadow-blade-zero');
+        api.setOrientation('portrait');
+        const rotationPortrait = api.getDiscoveryDisplay('shadow-blade-zero');
+        return {
+          surface,
+          models,
+          inactiveRentalStates,
+          expiredRental,
+          playableSources,
+          eligibleFirstPrice,
+          ineligibleFirstPrice,
+          rotationBefore,
+          rotationLandscape,
+          rotationPortrait,
+        };
+      }, contexts);
+
+      let discoveryChecks = 0;
+      const checkDiscovery = (condition, message) => {
+        assert(condition, message);
+        discoveryChecks += 1;
+      };
+      checkDiscovery(
+        discovery.surface.resolve && discovery.surface.get && discovery.surface.set,
+        `缺少统一发现展示模型公开接口：${JSON.stringify(discovery.surface)}`,
+      );
+      checkDiscovery(
+        discovery.models.rented.displayType === 'rented'
+          && discovery.models.rented.displayText === '已租号'
+          && discovery.models.rented.reason === 'active-rental',
+        `有效租赁未优先显示“已租号”：${JSON.stringify(discovery.models.rented)}`,
+      );
+      checkDiscovery(
+        discovery.models.playable.displayType === 'playable'
+          && discovery.models.playable.displayText === '可畅玩'
+          && discovery.models.playable.reason === 'membership',
+        `可直接游玩权益未统一显示“可畅玩”：${JSON.stringify(discovery.models.playable)}`,
+      );
+      checkDiscovery(
+        discovery.models.rentalPrice.displayType === 'rental-price'
+          && discovery.models.rentalPrice.displayText === '¥9.9 · 租号',
+        `无权益时租号价格文案错误：${JSON.stringify(discovery.models.rentalPrice)}`,
+      );
+      checkDiscovery(
+        discovery.models.rentalPrice.rawAmount === 9.9
+          && discovery.models.rentalPrice.formattedAmount === '9.9',
+        `租号原始金额或一位小数展示金额错误：${JSON.stringify(discovery.models.rentalPrice)}`,
+      );
+      checkDiscovery(
+        discovery.models.unresolved.displayType === 'none'
+          && discovery.models.unresolved.displayText === '',
+        `价格不可判定时仍展示租号信息：${JSON.stringify(discovery.models.unresolved)}`,
+      );
+      checkDiscovery(
+        Object.entries(discovery.inactiveRentalStates).every(([, model]) => model.displayType !== 'rented'),
+        `非生效订单被误判为“已租号”：${JSON.stringify(discovery.inactiveRentalStates)}`,
+      );
+      checkDiscovery(
+        discovery.expiredRental.displayType !== 'rented',
+        `已过期 active 订单被误判为“已租号”：${JSON.stringify(discovery.expiredRental)}`,
+      );
+      for (const reason of ['owned', 'installed', 'imported', 'permanent', 'membership']) {
+        const model = discovery.playableSources[reason];
+        checkDiscovery(
+          model.displayType === 'playable' && model.displayText === '可畅玩' && model.reason === reason,
+          `${reason} 权益未统一为“可畅玩”：${JSON.stringify(model)}`,
+        );
+      }
+      checkDiscovery(
+        discovery.eligibleFirstPrice.rawAmount === 1.99
+          && discovery.eligibleFirstPrice.displayText === '¥2.0 · 租号'
+          && discovery.eligibleFirstPrice.reason === 'eligible-first-rental-price',
+        `首次资格有效时未选中原始最低价 1.99：${JSON.stringify(discovery.eligibleFirstPrice)}`,
+      );
+      checkDiscovery(
+        discovery.ineligibleFirstPrice.rawAmount === 9.9
+          && discovery.ineligibleFirstPrice.displayText === '¥9.9 · 租号'
+          && discovery.ineligibleFirstPrice.reason === 'eligible-rental-price',
+        `首次资格失效时仍使用首次价：${JSON.stringify(discovery.ineligibleFirstPrice)}`,
+      );
+      checkDiscovery(
+        ['displayType', 'displayText', 'rawAmount', 'formattedAmount'].every((key) => (
+          discovery.rotationBefore[key] === discovery.rotationLandscape[key]
+          && discovery.rotationBefore[key] === discovery.rotationPortrait[key]
+        )),
+        `横竖屏旋转改变发现展示结果：${JSON.stringify({ before: discovery.rotationBefore, landscape: discovery.rotationLandscape, portrait: discovery.rotationPortrait })}`,
+      );
+      assert(discoveryChecks === 16, `统一发现展示模型契约数量错误：${discoveryChecks}/16`);
+      process.stdout.write('DISCOVERY_DISPLAY_MODEL 16/16 PASS\n');
+    });
+
+    await runRefactorGate('CDKEY_VISUAL_CONVERGENCE', async () => {
+      const templateSource = fs.readFileSync(templatePath, 'utf8');
+      let visualChecks = 0;
+      const visualFailures = [];
+      const checkVisual = (condition, message) => {
+        visualChecks += 1;
+        if (!condition) visualFailures.push(message);
+      };
+      const readDiscoveryDom = async (pageId, orientation) => {
+        await reloadDemo();
+        return page.evaluate(({ pageId: nextPageId, orientation: nextOrientation }) => {
+          const api = window.__appRentalDemo;
+          api.setOrientation(nextOrientation);
+          api.openCaptureState(nextPageId);
+          const rootNode = document.querySelector('#appRentalDemo');
+          const searchCards = [...rootNode.querySelectorAll('.search-result-card')];
+          const homeCards = [...rootNode.querySelectorAll('.hero-card, .landscape-home-hero')];
+          return {
+            displayTexts: [...rootNode.querySelectorAll('[data-discovery-display]')].map((node) => node.textContent.trim()),
+            displayTypes: [...rootNode.querySelectorAll('[data-discovery-display]')].map((node) => node.dataset.discoveryDisplay),
+            searchCards: searchCards.length,
+            searchCardDisplayCounts: searchCards.map((node) => node.querySelectorAll('[data-discovery-display]').length),
+            searchInlineActions: rootNode.querySelectorAll('.search-result-card [data-primary-action], .search-result-card .primary-action').length,
+            searchCardsClickable: searchCards.every((node) => node.matches('button, a, [role="button"]')),
+            homeCards: homeCards.length,
+            homeInlineActions: rootNode.querySelectorAll('.hero-card [data-primary-action], .landscape-home-hero [data-primary-action]').length,
+            homeCardsClickable: homeCards.every((node) => node.matches('button, a, [role="button"]')),
+            legacyCopy: /首次体验|会员畅玩|租\/购可选|购\s*¥|继续游戏|租用中/.test(rootNode.innerText),
+          };
+        }, { pageId, orientation });
+      };
+      const readCommerceVisual = async (pageId, primarySelector) => {
+        const results = [];
+        for (const orientation of ['portrait', 'landscape']) {
+          await reloadDemo();
+          results.push(await page.evaluate(({ pageId: nextPageId, orientation: nextOrientation, primarySelector: selector }) => {
+            const api = window.__appRentalDemo;
+            api.setOrientation(nextOrientation);
+            api.openCaptureState(nextPageId);
+            const rootNode = document.querySelector('#appRentalDemo');
+            const primary = rootNode.querySelector(selector);
+            const primaryBackground = primary ? getComputedStyle(primary).backgroundImage : '';
+            return {
+              orientation: nextOrientation,
+              primaryBackground,
+              primaryHasBlue: /rgb\((?:3[0-9]|4[0-9]|5[0-9]),\s*(?:9[0-9]|1[0-6][0-9]),\s*(?:2[0-5][0-9])\)/.test(primaryBackground),
+              forbiddenBusinessCopy: /CDKEY|CDK|卡密|激活|发货|收货账号|永久拥有/i.test(rootNode.innerText),
+            };
+          }, { pageId, orientation, primarySelector }));
+        }
+        return results;
+      };
+      const allowedDiscoveryCopy = /^(?:已租号|可畅玩|¥\d+\.\d · 租号)$/;
+      const expectedDiscoveryTexts = ['已租号', '可畅玩'];
+      const unifiedDiscoverySource = /const\s+DISCOVERY_DISPLAY_TYPES\s*=/.test(templateSource)
+        && /function\s+resolveGameDisplayModel\s*\(/.test(templateSource)
+        && /function\s+renderDiscoveryDisplay\s*\(/.test(templateSource);
+      checkVisual(unifiedDiscoverySource, '发现页缺少统一展示模型/渲染器，仍保留旧 resolvePricePresentation 或硬编码状态');
+
+      const portraitHome = await readDiscoveryDom('home', 'portrait');
+      checkVisual(
+        expectedDiscoveryTexts.every((text) => portraitHome.displayTexts.includes(text))
+          && portraitHome.displayTexts.some((text) => /^¥\d+\.\d · 租号$/.test(text))
+          && portraitHome.displayTexts.every((text) => allowedDiscoveryCopy.test(text)),
+        `竖屏首页未只展示三类统一结果：${JSON.stringify(portraitHome)}`,
+      );
+      checkVisual(!portraitHome.legacyCopy, `竖屏首页仍出现旧租购/权益来源文案：${JSON.stringify(portraitHome)}`);
+      checkVisual(
+        portraitHome.homeCards > 0 && portraitHome.homeInlineActions === 0 && portraitHome.homeCardsClickable,
+        `竖屏首页仍有卡内租号按钮或整卡不可点击：${JSON.stringify(portraitHome)}`,
+      );
+
+      const landscapeHome = await readDiscoveryDom('home', 'landscape');
+      checkVisual(
+        expectedDiscoveryTexts.every((text) => landscapeHome.displayTexts.includes(text))
+          && landscapeHome.displayTexts.some((text) => /^¥\d+\.\d · 租号$/.test(text))
+          && landscapeHome.displayTexts.every((text) => allowedDiscoveryCopy.test(text)),
+        `横屏首页未只展示三类统一结果：${JSON.stringify(landscapeHome)}`,
+      );
+      checkVisual(!landscapeHome.legacyCopy, `横屏首页仍出现旧租购/权益来源文案：${JSON.stringify(landscapeHome)}`);
+      checkVisual(
+        landscapeHome.homeCards > 0 && landscapeHome.homeInlineActions === 0 && landscapeHome.homeCardsClickable,
+        `横屏首页仍有卡内租号按钮或整卡不可点击：${JSON.stringify(landscapeHome)}`,
+      );
+
+      const portraitSearch = await readDiscoveryDom('search', 'portrait');
+      checkVisual(
+        portraitSearch.searchCards === 3
+          && portraitSearch.searchCardDisplayCounts.every((count) => count === 1)
+          && portraitSearch.displayTexts.length === 3
+          && portraitSearch.displayTexts.every((text) => allowedDiscoveryCopy.test(text)),
+        `竖屏搜索卡未做到每卡唯一统一结果：${JSON.stringify(portraitSearch)}`,
+      );
+      checkVisual(
+        portraitSearch.searchInlineActions === 0 && portraitSearch.searchCardsClickable,
+        `竖屏搜索卡存在独立 CTA 或整卡不可点击：${JSON.stringify(portraitSearch)}`,
+      );
+      checkVisual(!portraitSearch.legacyCopy, `竖屏搜索仍出现旧租购/权益来源文案：${JSON.stringify(portraitSearch)}`);
+
+      const landscapeSearch = await readDiscoveryDom('search', 'landscape');
+      checkVisual(
+        landscapeSearch.searchCards === 3
+          && landscapeSearch.searchCardDisplayCounts.every((count) => count === 1)
+          && landscapeSearch.displayTexts.length === 3
+          && landscapeSearch.displayTexts.every((text) => allowedDiscoveryCopy.test(text))
+          && landscapeSearch.searchInlineActions === 0
+          && landscapeSearch.searchCardsClickable
+          && !landscapeSearch.legacyCopy,
+        `横屏搜索未满足唯一结果、无 CTA、整卡点击和旧文案清理：${JSON.stringify(landscapeSearch)}`,
+      );
+
+      const detailVisual = await readCommerceVisual('detail', '[data-primary-action]:not(:disabled)');
+      checkVisual(
+        detailVisual.every(({ primaryBackground, primaryHasBlue, forbiddenBusinessCopy }) => (
+          primaryBackground.includes('gradient') && primaryHasBlue && !forbiddenBusinessCopy
+        )),
+        `详情页未使用 CDKEY 蓝色渐变主按钮或出现禁止业务语义：${JSON.stringify(detailVisual)}`,
+      );
+      const checkoutVisual = await readCommerceVisual('checkout', '[data-primary-action]:not(:disabled)');
+      checkVisual(
+        checkoutVisual.every(({ primaryBackground, primaryHasBlue, forbiddenBusinessCopy }) => (
+          primaryBackground.includes('gradient') && primaryHasBlue && !forbiddenBusinessCopy
+        )),
+        `确认订单未使用 CDKEY 蓝色渐变主按钮或出现禁止业务语义：${JSON.stringify(checkoutVisual)}`,
+      );
+
+      const orderVisual = await readCommerceVisual('orders', '.order-card-actions button.primary:not(:disabled), [data-primary-action]:not(:disabled)');
+      const orderCenter = await page.evaluate(() => {
+        const api = window.__appRentalDemo;
+        api.setOrientation('portrait');
+        api.openCaptureState('orders');
+        const rootNode = document.querySelector('#appRentalDemo');
+        const tabs = [...rootNode.querySelectorAll('[data-order-tab], .order-tabs [role="tab"]')];
+        const search = rootNode.querySelector('[data-order-search]');
+        const usable = tabs.find((node) => (node.dataset.orderTab || node.dataset.value) === 'usable');
+        const searchBox = search?.getBoundingClientRect();
+        const usableBox = usable?.getBoundingClientRect();
+        const orders = api.getOrderCollection();
+        return {
+          tabLabels: tabs.map((node) => node.textContent.trim()),
+          searchRightOfUsable: Boolean(searchBox && usableBox && searchBox.left >= usableBox.right - 2),
+          typeLabels: /租号订单|CDKEY订单|游戏购买/i.test(rootNode.innerText),
+          allRentalFixtures: orders.every(({ orderType }) => !orderType || orderType === 'rental'),
+          forbiddenFixture: /"(?:cd.?key|redeemCode|activationKey)"\s*:/i.test(JSON.stringify(orders)),
+        };
+      });
+      checkVisual(
+        orderCenter.tabLabels.join('|') === '全部订单|待支付|可使用'
+          && orderCenter.searchRightOfUsable
+          && !orderCenter.typeLabels
+          && orderCenter.allRentalFixtures
+          && !orderCenter.forbiddenFixture
+          && orderVisual.every(({ primaryBackground, primaryHasBlue, forbiddenBusinessCopy }) => (
+            primaryBackground.includes('gradient') && primaryHasBlue && !forbiddenBusinessCopy
+          )),
+        `订单中心 Tab/搜索/租号边界或蓝色主按钮不符合要求：${JSON.stringify({ orderCenter, orderVisual })}`,
+      );
+
+      assert(visualChecks === 14, `CDKEY 视觉收敛契约数量错误：${visualChecks}/14`);
+      assert(visualFailures.length === 0, visualFailures.join('；'));
+      process.stdout.write('CDKEY_VISUAL_CONVERGENCE 14/14 PASS\n');
+    });
+
     await runRefactorGate('STATIC_ARCHITECTURE', async () => {
       const violations = [];
       for (const [label, sourcePath] of [['built', htmlPath], ['template', templatePath]]) {
