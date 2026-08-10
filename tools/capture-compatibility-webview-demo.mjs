@@ -6,6 +6,17 @@ import { chromium } from 'playwright-core';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const demoPath = path.join(root, 'demos', '适合本机', '盖世游戏适合本机WebView-demo.html');
+const outputDir = path.join(root, 'test-results', 'compatibility-platform-aware-h5');
+const screenshotNames = [
+  '01-android-filters-portrait.png',
+  '02-android-multi-records-portrait.png',
+  '03-android-config-fullscreen.png',
+  '04-mac-filters-portrait.png',
+  '05-mac-multi-records-portrait.png',
+  '06-mac-config-fullscreen.png',
+  '07-desktop-record-table.png',
+  '08-desktop-config-dialog.png'
+];
 
 const executablePath = [
   chromium.executablePath(),
@@ -92,6 +103,23 @@ async function assertTouchTargets(targetPage, label) {
     undersized.length === 0,
     label + ' undersized touch targets: ' + JSON.stringify(undersized)
   );
+}
+
+async function assertScreenshotLayout(targetPage, label) {
+  await assertNoHorizontalOverflow(targetPage, label);
+  await assertTouchTargets(targetPage, label);
+}
+
+async function screenshotPage(targetPage, fileName, label, fullPage) {
+  await assertScreenshotLayout(targetPage, label + ' before screenshot');
+  await targetPage.screenshot({ path: path.join(outputDir, fileName), fullPage });
+  await assertScreenshotLayout(targetPage, label + ' after screenshot');
+}
+
+async function screenshotFrame(targetPage, fileName, label) {
+  await assertScreenshotLayout(targetPage, label + ' before screenshot');
+  await targetPage.locator('.frame').screenshot({ path: path.join(outputDir, fileName) });
+  await assertScreenshotLayout(targetPage, label + ' after screenshot');
 }
 
 const page = await browser.newPage({ viewport: { width: 1280, height: 960 }, deviceScaleFactor: 1 });
@@ -886,11 +914,193 @@ check(
 );
 check(expectedMissingCoverError === false, 'Missing-cover error was not observed');
 
-check(externalRequests.length === 0, 'Unexpected external requests: ' + externalRequests.join(', '));
 await queryPage.close();
 await bridgePage.close();
 await phonePage.close();
 await page.close();
+
+fs.mkdirSync(outputDir, { recursive: true });
+
+const androidShotPage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+observePage(androidShotPage, 'android-shot');
+await androidShotPage.goto(pathToFileURL(demoPath).href, { waitUntil: 'load' });
+check(await androidShotPage.locator('[data-filter-select]').count() === 3, 'Android screenshot has no three filters');
+check(await androidShotPage.locator('[data-filter-query]').count() === 0, 'Android initial screenshot has an open filter');
+check(
+  await androidShotPage.getByText('添加筛选条件开始查询', { exact: true }).isVisible(),
+  'Android initial screenshot is missing the query prompt'
+);
+await screenshotPage(androidShotPage, screenshotNames[0], 'Android initial filters', true);
+
+await androidShotPage.locator('[data-filter-trigger="game"]').click();
+await androidShotPage.locator('[data-filter-query="game"]').fill('艾尔登');
+await androidShotPage.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+await androidShotPage.locator('[data-filter-trigger="hardware"]').click();
+await androidShotPage.locator('[data-filter-query="hardware"]').fill('Adreno 830');
+await androidShotPage.locator(
+  '[data-filter-option="hardware"][data-option-value="android_gpu_adreno830"]'
+).click();
+await androidShotPage.locator('[data-filter-trigger="rating"]').click();
+await androidShotPage.locator('[data-filter-query="rating"]').fill('4');
+await androidShotPage.locator('[data-filter-option="rating"][data-option-value="4"]').click();
+check(
+  sameIds(await visibleRecordIds(androidShotPage), ['android_elden_redmagic', 'android_elden_oneplus']),
+  'Android screenshot filters did not produce the two Elden records'
+);
+check(await androidShotPage.locator('[data-record-cards]').isVisible(), 'Android screenshot cards are hidden');
+check(await androidShotPage.locator('[data-record-table]').isHidden(), 'Android screenshot table is visible');
+const androidFilterSummary = await androidShotPage.locator('[data-filter-trigger]').allTextContents();
+check(
+  androidFilterSummary.some((value) => value.includes('艾尔登法环')) &&
+    androidFilterSummary.some((value) => value.includes('Adreno 830')) &&
+    androidFilterSummary.some((value) => value.includes('4 分及以上')),
+  'Android screenshot does not preserve all three selected filter values'
+);
+await androidShotPage.locator('.record-results').evaluate((element) => element.scrollIntoView({ block: 'start' }));
+await screenshotPage(androidShotPage, screenshotNames[1], 'Android multi-record results', true);
+
+await androidShotPage.locator('[data-config-open="android_elden_oneplus"]:visible').click();
+const androidShotViewer = androidShotPage.locator('[data-config-viewer]');
+const androidShotViewerBox = await androidShotViewer.boundingBox();
+const androidShotViewerText = await androidShotViewer.innerText();
+check(
+  Boolean(androidShotViewerBox) && Math.round(androidShotViewerBox.width) === 390 &&
+    Math.round(androidShotViewerBox.height) === 844,
+  'Android screenshot viewer is not full-screen'
+);
+check(
+  androidShotViewerText.includes('适用范围') && androidShotViewerText.includes('下载配置'),
+  'Android screenshot viewer is missing applicability or download action'
+);
+check(
+  !androidShotViewerText.includes('Apple') && !androidShotViewerText.includes('macOS'),
+  'Mac fields leaked into Android viewer screenshot'
+);
+await screenshotPage(androidShotPage, screenshotNames[2], 'Android full-screen config viewer', false);
+await androidShotPage.locator('[data-config-close]').first().click();
+
+const macShotPage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+observePage(macShotPage, 'mac-shot');
+await macShotPage.goto(pathToFileURL(demoPath).href + '?platform=mac', { waitUntil: 'load' });
+check(await macShotPage.locator('[data-filter-select]').count() === 3, 'Mac screenshot has no three filters');
+check(await macShotPage.locator('[data-filter-query]').count() === 0, 'Mac initial screenshot has an open filter');
+const macFilterLabels = await macShotPage.locator('[data-filter-select] .filter-label').allTextContents();
+check(
+  sameIds(macFilterLabels, ['游戏', 'Mac 机型或 Apple 芯片', '最低评分（≥）']),
+  'Mac screenshot filter labels are wrong: ' + JSON.stringify(macFilterLabels)
+);
+check(
+  await macShotPage.getByText('添加筛选条件开始查询', { exact: true }).isVisible(),
+  'Mac initial screenshot is missing the query prompt'
+);
+await screenshotPage(macShotPage, screenshotNames[3], 'Mac initial filters', true);
+
+await macShotPage.locator('[data-filter-trigger="game"]').click();
+await macShotPage.locator('[data-filter-query="game"]').fill('艾尔登');
+await macShotPage.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+check(
+  sameIds(await visibleRecordIds(macShotPage), ['mac_elden_mbp_m4pro', 'mac_elden_macmini_m4']),
+  'Mac screenshot did not produce the two Elden records'
+);
+check(await macShotPage.locator('[data-record-cards]').isVisible(), 'Mac screenshot cards are hidden');
+check(await macShotPage.locator('[data-record-table]').isHidden(), 'Mac screenshot table is visible');
+const macShotRowsText = (await macShotPage.locator('[data-record-row]:visible').allTextContents()).join(' ');
+check(
+  !macShotRowsText.includes('Android') && !macShotRowsText.includes('Adreno') &&
+    !macShotRowsText.includes('一加') && !macShotRowsText.includes('红魔'),
+  'Android or phone fields leaked into Mac multi-record screenshot'
+);
+await macShotPage.locator('.record-results').evaluate((element) => element.scrollIntoView({ block: 'start' }));
+await screenshotPage(macShotPage, screenshotNames[4], 'Mac multi-record results', true);
+
+await macShotPage.locator('[data-config-open="mac_elden_mbp_m4pro"]:visible').click();
+const macShotViewer = macShotPage.locator('[data-config-viewer]');
+const macShotViewerBox = await macShotViewer.boundingBox();
+const macShotViewerText = await macShotViewer.innerText();
+check(
+  Boolean(macShotViewerBox) && Math.round(macShotViewerBox.width) === 390 &&
+    Math.round(macShotViewerBox.height) === 844,
+  'Mac screenshot viewer is not full-screen'
+);
+check(
+  macShotViewerText.includes('Apple M4 Pro') && macShotViewerText.includes('macOS 15～26'),
+  'Mac screenshot viewer is missing Apple chip or macOS range'
+);
+check(
+  !macShotViewerText.includes('Android') && !macShotViewerText.includes('Adreno'),
+  'Android fields leaked into Mac viewer screenshot'
+);
+await screenshotPage(macShotPage, screenshotNames[5], 'Mac full-screen config viewer', false);
+await macShotPage.locator('[data-config-close]').first().click();
+
+const desktopShotPage = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 });
+observePage(desktopShotPage, 'desktop-shot');
+await desktopShotPage.goto(pathToFileURL(demoPath).href, { waitUntil: 'load' });
+await desktopShotPage.locator('[data-preview="desktop"]').click();
+await desktopShotPage.addStyleTag({
+  content: [
+    '.frame[data-preview="desktop"] { width: 1280px !important; }',
+    '.frame[data-preview="desktop"] #compatibility-app > .page { width: 100% !important; max-width: none !important; }'
+  ].join('\n')
+});
+await desktopShotPage.locator('[data-filter-trigger="game"]').click();
+await desktopShotPage.locator('[data-filter-query="game"]').fill('艾尔登');
+await desktopShotPage.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+check(await desktopShotPage.locator('[data-record-table]').isVisible(), 'Desktop screenshot table is hidden');
+check(await desktopShotPage.locator('[data-record-cards]').isHidden(), 'Desktop screenshot cards are visible');
+check(
+  sameIds(await visibleRecordIds(desktopShotPage), ['android_elden_redmagic', 'android_elden_oneplus']),
+  'Desktop screenshot table does not contain both Elden records'
+);
+const desktopHeaders = await desktopShotPage.locator('[data-record-table] th').allTextContents();
+check(
+  ['游戏', '设备 / GPU', '游戏版本', 'Android', '运行环境', '盖世版本', '评分',
+    '平均 FPS', '标签', '备注', '配置', '验证时间']
+    .every((label) => desktopHeaders.some((value) => value.includes(label))),
+  'Desktop screenshot table is missing competitor fields: ' + JSON.stringify(desktopHeaders)
+);
+const desktopTableDimensions = await desktopShotPage.locator('[data-record-table]').evaluate((tableWrap) => ({
+  clientWidth: tableWrap.clientWidth,
+  scrollWidth: tableWrap.scrollWidth
+}));
+check(
+  desktopTableDimensions.scrollWidth <= desktopTableDimensions.clientWidth,
+  'Desktop screenshot table is horizontally clipped: ' + JSON.stringify(desktopTableDimensions)
+);
+await desktopShotPage.locator('.record-results').evaluate((element) => element.scrollIntoView({ block: 'start' }));
+await screenshotFrame(desktopShotPage, screenshotNames[6], 'Desktop record table');
+
+const desktopRowsBeforeViewer = await desktopShotPage.locator('[data-record-row]:visible').count();
+await desktopShotPage.locator('[data-config-open="android_elden_oneplus"]:visible').click();
+const desktopShotViewer = desktopShotPage.locator('[data-config-viewer]');
+const desktopShotFrameBox = await desktopShotPage.locator('.frame').boundingBox();
+const desktopShotPanelBox = await desktopShotViewer.locator('.config-viewer-panel').boundingBox();
+check(
+  desktopRowsBeforeViewer === 2 && await desktopShotPage.locator('[data-record-row]:visible').count() === 2,
+  'Desktop screenshot viewer did not preserve the result table'
+);
+check(
+  Boolean(desktopShotFrameBox && desktopShotPanelBox) &&
+    Math.abs(
+      (desktopShotPanelBox.x + desktopShotPanelBox.width / 2) -
+      (desktopShotFrameBox.x + desktopShotFrameBox.width / 2)
+    ) <= 2,
+  'Desktop screenshot config dialog is not centered'
+);
+await screenshotFrame(desktopShotPage, screenshotNames[7], 'Desktop centered config dialog');
+
+for (const screenshotName of screenshotNames) {
+  const screenshotPath = path.join(outputDir, screenshotName);
+  check(fs.existsSync(screenshotPath), 'Screenshot is missing: ' + screenshotName);
+  if (fs.existsSync(screenshotPath)) {
+    check(fs.statSync(screenshotPath).size > 0, 'Screenshot is empty: ' + screenshotName);
+  }
+}
+
+await androidShotPage.close();
+await macShotPage.close();
+await desktopShotPage.close();
+check(externalRequests.length === 0, 'Unexpected external requests: ' + externalRequests.join(', '));
 await browser.close();
 
 if (errors.length) {
@@ -898,4 +1108,7 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log('PASS: filter combinations, platform isolation, recovery states, and responsive config viewer');
+console.log(
+  'PASS: three searchable filters, multi-record results, Android/Mac isolation, responsive config viewer, ' +
+  'Web/App downloads, recovery, and eight screenshots'
+);
