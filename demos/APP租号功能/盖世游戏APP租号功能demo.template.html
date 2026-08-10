@@ -1645,6 +1645,59 @@
       },
       scenario: 'member-library-trial',
       selectedGameId: 'elden-ring',
+      discoveryContexts: {
+        'shadow-blade-zero': {
+          activeOrderStatus: 'active',
+          expireAt: Date.now() + 2 * 60 * 60 * 1000,
+          refundActive: false,
+          owned: false,
+          installed: false,
+          imported: false,
+          permanent: false,
+          membershipActive: false,
+          memberLibrary: false,
+          region: 'CN',
+          version: 'Steam',
+          firstRentalEligible: false,
+          priceResolved: true,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        },
+        'elden-ring': {
+          activeOrderStatus: null,
+          expireAt: null,
+          refundActive: false,
+          owned: false,
+          installed: false,
+          imported: false,
+          permanent: true,
+          membershipActive: false,
+          memberLibrary: true,
+          region: 'CN',
+          version: 'Steam',
+          firstRentalEligible: false,
+          priceResolved: true,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        },
+        spiritfarer: {
+          activeOrderStatus: null,
+          expireAt: null,
+          refundActive: false,
+          owned: false,
+          installed: false,
+          imported: false,
+          permanent: false,
+          membershipActive: false,
+          memberLibrary: false,
+          region: 'CN',
+          version: 'Steam',
+          firstRentalEligible: false,
+          priceResolved: true,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        },
+      },
       selectedSku: 'trial',
       selectedHours: 2,
       playTab: 'cloud',
@@ -1782,6 +1835,13 @@
       { id: 'spiritfarer', name: 'Spiritfarer', asset: 'landscapeSteamLibrary', crop: [1486, 297, 383, 224], rentalSkus: [{ id: 'rent-2h', price: 7.9, enabled: true, inStock: true, region: 'CN' }], purchaseSkus: [{ id: 'standard', price: 68, enabled: true, inStock: true, region: 'CN', version: 'Steam' }] },
     ]);
 
+    const DISCOVERY_DISPLAY_TYPES = Object.freeze({
+      RENTED: 'rented',
+      PLAYABLE: 'playable',
+      RENTAL_PRICE: 'rental-price',
+      NONE: 'none',
+    });
+
     const MEMBER_FAQ = Object.freeze([
       { topic: 'game-scope', question: '会员游戏范围包含哪些内容？', answer: '仅限会员游戏库中标注“会员畅玩”的游戏；单游戏永久权益和普通租号商品不计入会员范围。' },
       { topic: 'refund', question: '会员与租号退款规则是什么？', answer: '未开始使用的订单可按规则申请退款；已产生游玩时长或权益已生效的订单，按实际使用情况审核。' },
@@ -1860,12 +1920,15 @@
     }
 
     function lowestEligibleRentalSku(game, context = {}) {
+      if (!game) return null;
       const source = game.rentalSkus || [
         { id: 'rent-2h', price: 9.9, enabled: true, inStock: true, region: 'CN' },
       ];
       return source
         .filter((sku) => sku.enabled && sku.inStock && sku.region === (context.region || 'CN'))
+        .filter((sku) => !sku.version || sku.version === (context.version || 'Steam'))
         .filter((sku) => !sku.firstOnly || context.firstRentalEligible)
+        .filter((sku) => Number.isFinite(Number(sku.price)))
         .sort((left, right) => left.price - right.price)[0] || null;
     }
 
@@ -1895,6 +1958,84 @@
       if (rental) return { label: `${rental.firstOnly ? '首次租' : '租 2小时'} ¥${rental.price}${rental.firstOnly ? '' : '起'}`, kind: 'rental' };
       if (purchase) return { label: `购 ¥${purchase.price}起`, kind: 'purchase' };
       return { label: '', kind: 'none' };
+    }
+
+    function normalizeGameUserContext(gameId, input = {}) {
+      const activeRental = input.activeOrderStatus === 'active'
+        && Number(input.expireAt) > Date.now()
+        && !input.refundActive;
+      const playable = Boolean(
+        input.owned || input.installed || input.imported || input.permanent
+        || (input.membershipActive && input.memberLibrary),
+      );
+      const playableReason = input.owned ? 'owned'
+        : input.installed ? 'installed'
+          : input.imported ? 'imported'
+            : input.permanent ? 'permanent'
+              : input.membershipActive && input.memberLibrary ? 'membership' : null;
+      return {
+        gameId,
+        ...input,
+        activeRental,
+        playable,
+        playableReason,
+      };
+    }
+
+    function getDiscoveryUserContext(gameId) {
+      return normalizeGameUserContext(gameId, state.discoveryContexts[gameId] || {});
+    }
+
+    function resolveGameDisplayModel(gameId, userContext = {}) {
+      if (userContext.activeRental) {
+        return {
+          displayType: DISCOVERY_DISPLAY_TYPES.RENTED,
+          displayText: '已租号',
+          rawAmount: null,
+          formattedAmount: null,
+          reason: 'active-rental',
+        };
+      }
+      if (userContext.playable) {
+        return {
+          displayType: DISCOVERY_DISPLAY_TYPES.PLAYABLE,
+          displayText: '可畅玩',
+          rawAmount: null,
+          formattedAmount: null,
+          reason: userContext.playableReason,
+        };
+      }
+      const rental = lowestEligibleRentalSku(getGameContext(gameId), userContext);
+      if (!rental || !userContext.priceResolved || !userContext.inventoryResolved || !userContext.eligibilityResolved) {
+        return {
+          displayType: DISCOVERY_DISPLAY_TYPES.NONE,
+          displayText: '',
+          rawAmount: null,
+          formattedAmount: null,
+          reason: 'unresolved-or-unavailable',
+        };
+      }
+      const formattedAmount = Number(rental.price).toFixed(1);
+      return {
+        displayType: DISCOVERY_DISPLAY_TYPES.RENTAL_PRICE,
+        displayText: `¥${formattedAmount} · 租号`,
+        rawAmount: rental.price,
+        formattedAmount,
+        reason: rental.firstOnly ? 'eligible-first-rental-price' : 'eligible-rental-price',
+      };
+    }
+
+    function getDiscoveryDisplay(gameId) {
+      return resolveGameDisplayModel(gameId, getDiscoveryUserContext(gameId));
+    }
+
+    function setDiscoveryContext(gameId, patch = {}) {
+      state.discoveryContexts[gameId] = {
+        ...(state.discoveryContexts[gameId] || {}),
+        ...patch,
+      };
+      renderApp();
+      return getDiscoveryDisplay(gameId);
     }
 
     function getMembershipStatusModel() {
@@ -4038,6 +4179,11 @@
       setScenario,
       setMembershipStatus,
       setSelectedGame,
+      normalizeGameUserContext,
+      getDiscoveryUserContext,
+      resolveGameDisplayModel,
+      getDiscoveryDisplay,
+      setDiscoveryContext,
       resolveAction,
       resolveCurrentAction,
       getDetailModel,
