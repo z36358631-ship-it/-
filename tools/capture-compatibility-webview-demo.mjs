@@ -423,6 +423,7 @@ check(
 );
 check(
   pendingDownloadPayload?.platform === 'android' &&
+    pendingDownloadPayload?.recordId === 'android_elden_oneplus' &&
     pendingDownloadPayload?.configId === 'cfg_android_elden',
   'Pending Bridge download payload is wrong'
 );
@@ -441,11 +442,29 @@ await page.evaluate(() => {
   delete window.GameHubBridge;
   delete window.__capturedDownloadPayload;
 });
-await page.locator('[data-demo-platform="android"]').click();
+await page.reload({ waitUntil: 'load' });
+check(
+  await page.evaluate(() => typeof window.GameHubBridge === 'undefined'),
+  'Web download page retained the Task 5 Bridge spy after reload'
+);
 await page.locator('[data-filter-trigger="game"]').click();
 await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
 await page.locator('[data-config-open="android_elden_oneplus"]:visible').click();
 check(await page.locator('.download-message').count() === 0, 'Reopened viewer restored stale download feedback');
+const webDownloadPromise = page.waitForEvent('download');
+await page.locator('[data-config-download="cfg_android_elden"]').click();
+const webDownload = await webDownloadPromise;
+check(
+  webDownload.suggestedFilename() === 'elden-ring-android-720p.gamehub.json',
+  'Web download filename is wrong: ' + webDownload.suggestedFilename()
+);
+await page.locator('[data-config-viewer] .download-message.success').waitFor();
+check(
+  (await page.locator('[data-config-viewer] .download-message.success').innerText()).includes('已发起下载'),
+  'Web download feedback is missing inside viewer'
+);
+check(await page.locator('[data-config-viewer]').count() === 1, 'Web download closed the config viewer');
+await webDownload.delete();
 await page.locator('[data-config-close]').first().click();
 
 const phonePage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
@@ -531,6 +550,21 @@ check(
   (await visibleRecordIds(bridgePage)).every((id) => id.startsWith('mac_')),
   'Android record ID leaked into Mac Elden results'
 );
+await bridgePage.evaluate(() => {
+  window.__bridgeCalls = [];
+  window.__blobCalls = 0;
+  const originalCreateObjectURL = URL.createObjectURL.bind(URL);
+  URL.createObjectURL = (...args) => {
+    window.__blobCalls += 1;
+    return originalCreateObjectURL(...args);
+  };
+  window.GameHubBridge = {
+    downloadConfig(payload) {
+      window.__bridgeCalls.push(JSON.parse(payload));
+      return Promise.resolve({ ok: true, message: 'App 已接收下载任务' });
+    }
+  };
+});
 await bridgePage.locator('[data-config-open="mac_elden_mbp_m4pro"]:visible').click();
 const macViewerText = await bridgePage.locator('[data-config-viewer]').innerText();
 check(macViewerText.includes('Apple M4 Pro'), 'Mac viewer is missing Apple hardware');
@@ -539,6 +573,121 @@ check(macViewerText.includes('Game Porting Toolkit 2'), 'Mac viewer is missing G
 check(!macViewerText.includes('Adreno'), 'Adreno field leaked into Mac viewer');
 check(!macViewerText.includes('Android'), 'Android field leaked into Mac viewer');
 check(!macViewerText.includes('Wine'), 'Wine field leaked into Mac viewer');
+
+// Downloads must stay bound to the record whose viewer is currently open.
+await bridgePage.evaluate(() => startDownload('cfg_mac_hades'));
+check(await bridgePage.evaluate(() => window.__bridgeCalls.length) === 0, 'Cross-record config reached App Bridge');
+check(
+  (await bridgePage.locator('[data-config-viewer] .download-message.error').innerText())
+    .includes('配置与当前兼容记录不一致'),
+  'Cross-record config rejection is missing inside viewer'
+);
+await bridgePage.evaluate(() => {
+  const raw = structuredClone(mockCatalog);
+  const sourceConfig = raw.configs.find((config) => config.id === 'cfg_mac_elden');
+  raw.configs.push({
+    ...sourceConfig,
+    id: 'cfg_mac_elden_unlisted',
+    name: '未关联配置',
+    fileName: 'unlisted.gamehub.json'
+  });
+  setCatalog(raw);
+  startDownload('cfg_mac_elden_unlisted');
+});
+check(await bridgePage.evaluate(() => window.__bridgeCalls.length) === 0, 'Unlisted record config reached App Bridge');
+check(
+  (await bridgePage.locator('[data-config-viewer] .download-message.error').innerText())
+    .includes('配置与当前兼容记录不一致'),
+  'Unlisted record config rejection is missing inside viewer'
+);
+
+await bridgePage.locator('[data-config-download="cfg_mac_elden"]').click();
+await bridgePage.locator('[data-config-viewer] .download-message.success').waitFor();
+check(await bridgePage.evaluate(() => window.__bridgeCalls.length) === 1, 'App Bridge call count is not one');
+check(await bridgePage.evaluate(() => window.__blobCalls) === 0, 'App download also triggered Web Blob download');
+const firstBridgePayload = await bridgePage.evaluate(() => window.__bridgeCalls[0]);
+check(firstBridgePayload.platform === 'mac', 'App Bridge payload platform is not Mac');
+check(firstBridgePayload.recordId === 'mac_elden_mbp_m4pro', 'App Bridge payload record ID is wrong');
+check(firstBridgePayload.configId === 'cfg_mac_elden', 'App Bridge payload config ID is wrong');
+check(
+  (await bridgePage.locator('[data-config-viewer] .download-message.success').innerText())
+    .includes('App 已接收下载任务'),
+  'Promise success feedback is missing inside viewer'
+);
+check(await bridgePage.locator('[data-config-viewer]').count() === 1, 'Promise success closed the config viewer');
+
+const promiseSuccessText = await bridgePage.locator('[data-config-viewer] .download-message.success').innerText();
+const duplicateSuccessAccepted = await bridgePage.evaluate((requestId) => {
+  return window.GameHubCompatibility.onDownloadResult({
+    requestId,
+    ok: false,
+    message: '重复回调'
+  });
+}, firstBridgePayload.requestId);
+check(duplicateSuccessAccepted === false, 'Duplicate callback after Promise success was accepted');
+check(
+  (await bridgePage.locator('[data-config-viewer] .download-message.success').innerText()) === promiseSuccessText,
+  'Duplicate callback changed the Promise success state'
+);
+
+await bridgePage.evaluate(() => {
+  window.__bridgeCalls = [];
+  window.GameHubBridge.downloadConfig = (payload) => {
+    window.__bridgeCalls.push(JSON.parse(payload));
+    return { ok: true, message: 'App 已同步接收下载任务' };
+  };
+});
+await bridgePage.locator('[data-config-download="cfg_mac_elden"]').click();
+await bridgePage.locator('[data-config-viewer] .download-message.success').waitFor();
+check(await bridgePage.evaluate(() => window.__bridgeCalls.length) === 1, 'Synchronous Bridge call count is not one');
+check(
+  (await bridgePage.locator('[data-config-viewer] .download-message.success').innerText())
+    .includes('App 已同步接收下载任务'),
+  'Synchronous object success feedback is missing inside viewer'
+);
+check(await bridgePage.locator('[data-config-viewer]').count() === 1, 'Synchronous success closed the config viewer');
+
+await bridgePage.evaluate(() => {
+  window.GameHubBridge.downloadConfig = () => {
+    throw new Error('bridge unavailable');
+  };
+});
+await bridgePage.locator('[data-config-download="cfg_mac_elden"]').click();
+check(
+  (await bridgePage.locator('[data-config-viewer] .download-message.error').innerText())
+    .includes('App 连接不可用'),
+  'Bridge exception feedback is missing inside viewer'
+);
+check(await bridgePage.locator('[data-config-viewer]').count() === 1, 'Bridge exception closed the config viewer');
+
+await bridgePage.evaluate(() => {
+  window.__bridgeCalls = [];
+  window.GameHubBridge.downloadConfig = (payload) => {
+    window.__bridgeCalls.push(JSON.parse(payload));
+    return undefined;
+  };
+  document.querySelector('[data-config-download="cfg_mac_elden"]').click();
+  document.querySelector('[data-config-download="cfg_mac_elden"]').click();
+});
+check(await bridgePage.evaluate(() => window.__bridgeCalls.length) === 1, 'Pending download was submitted twice');
+const timedOutRequestId = await bridgePage.evaluate(() => window.__bridgeCalls[0].requestId);
+await bridgePage.waitForTimeout(3200);
+const timeoutText = await bridgePage.locator('[data-config-viewer] .download-message.error').innerText();
+check(timeoutText.includes('App 响应超时'), 'Pending download did not time out inside viewer');
+check(await bridgePage.locator('[data-config-viewer]').count() === 1, 'Download timeout closed the config viewer');
+const lateCallbackAccepted = await bridgePage.evaluate((requestId) => {
+  return window.GameHubCompatibility.onDownloadResult({
+    requestId,
+    ok: true,
+    message: '迟到成功'
+  });
+}, timedOutRequestId);
+check(lateCallbackAccepted === false, 'Late callback was accepted');
+check(
+  (await bridgePage.locator('[data-config-viewer] .download-message.error').innerText()) === timeoutText,
+  'Late callback overwrote the timeout state'
+);
+check(await bridgePage.evaluate(() => window.__blobCalls) === 0, 'App regression cases triggered Web Blob download');
 await bridgePage.locator('[data-config-close]').first().click();
 await bridgePage.locator('[data-filter-clear="game"]').click();
 

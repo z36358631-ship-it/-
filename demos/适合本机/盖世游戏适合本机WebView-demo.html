@@ -2076,6 +2076,7 @@
       const payload = {
         demo: true,
         platform: config.platform,
+        recordId: config.recordId,
         gameId: config.gameId,
         configId: config.id,
         version: config.version,
@@ -2099,13 +2100,15 @@
 
     function startDownload(configId) {
       if (state.download.status === "pending") return;
-      const config = filteredCatalog().configs.find((item) => item.id === configId);
-      if (!config || config.platform !== state.platform) {
+      const current = activeCatalog();
+      const config = current.configs.find((item) => item.id === configId);
+      const record = current.records.find((item) => item.id === state.viewer.recordId);
+      if (!config || !record || config.recordId !== record.id || !record.configIds.includes(config.id)) {
         state.download = {
           requestId: null,
-          configId,
+          configId: state.viewer.configId || configId,
           status: "error",
-          message: "配置与当前平台不一致，请重新选择"
+          message: "配置与当前兼容记录不一致，请重新选择"
         };
         render();
         return;
@@ -2141,7 +2144,8 @@
       const payload = JSON.stringify({
         requestId,
         platform: state.platform,
-        gameId: config.gameId,
+        recordId: record.id,
+        gameId: record.gameId,
         configId: config.id,
         fileName: config.fileName
       });
