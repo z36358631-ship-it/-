@@ -172,6 +172,16 @@ if (await recordTable.count()) {
     const androidViewerCount = await androidViewer.count();
     check(androidViewerCount === 1 && await androidViewer.isVisible(), 'Android config viewer did not open');
     if (androidViewerCount) {
+      const backgroundPage = page.locator('#compatibility-app > .page');
+      check(
+        await page.locator('#compatibility-app > [data-config-viewer]').count() === 1,
+        'Config viewer is not a sibling of the background page'
+      );
+      check(await backgroundPage.getAttribute('inert') !== null, 'Open viewer did not make the page inert');
+      check(
+        await backgroundPage.getAttribute('aria-hidden') === 'true',
+        'Open viewer did not hide the background page from assistive technology'
+      );
       check(await androidViewer.getAttribute('role') === 'dialog', 'Config viewer has no dialog role');
       const viewerText = await androidViewer.innerText();
       check(viewerText.includes('适用范围'), 'Config applicability is missing');
@@ -182,6 +192,25 @@ if (await recordTable.count()) {
         await page.evaluate(() => document.activeElement?.matches('[data-config-close]')),
         'Opening viewer did not move focus to its close control'
       );
+      const viewerFocusables = androidViewer.locator(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), ' +
+          'textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      check(await viewerFocusables.count() >= 2, 'Config viewer has too few focusable controls');
+      if (await viewerFocusables.count() >= 2) {
+        await viewerFocusables.last().focus();
+        await page.keyboard.press('Tab');
+        check(
+          await viewerFocusables.first().evaluate((element) => document.activeElement === element),
+          'Tab did not wrap from the last viewer control to the first'
+        );
+        await viewerFocusables.first().focus();
+        await page.keyboard.press('Shift+Tab');
+        check(
+          await viewerFocusables.last().evaluate((element) => document.activeElement === element),
+          'Shift+Tab did not wrap from the first viewer control to the last'
+        );
+      }
       const viewerBox = await androidViewer.boundingBox();
       const panelBox = await androidViewer.locator('.config-viewer-panel').boundingBox();
       check(Boolean(viewerBox && panelBox), 'Desktop config viewer has no measurable panel');
@@ -195,6 +224,11 @@ if (await recordTable.count()) {
       await assertTouchTargets(page, 'Android desktop config viewer');
       await page.locator('[data-config-close]').last().click();
       check(await page.locator('[data-config-viewer]').count() === 0, 'Config viewer did not close');
+      check(await backgroundPage.getAttribute('inert') === null, 'Closing viewer kept the page inert');
+      check(
+        await backgroundPage.getAttribute('aria-hidden') === null,
+        'Closing viewer kept the background page aria-hidden'
+      );
       check(
         await page.locator('[data-record-row]:visible').count() === beforeViewerCount,
         'Closing viewer changed result count'

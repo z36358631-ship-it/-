@@ -1863,6 +1863,23 @@
       );
     }
 
+    function viewerFocusableControls() {
+      const viewer = document.querySelector("[data-config-viewer]");
+      if (!viewer) return [];
+      const selector = [
+        "button:not([disabled])",
+        "[href]",
+        "input:not([disabled])",
+        "select:not([disabled])",
+        "textarea:not([disabled])",
+        '[tabindex]:not([tabindex="-1"])'
+      ].join(",");
+      return [...viewer.querySelectorAll(selector)].filter((element) => {
+        const style = window.getComputedStyle(element);
+        return element.getClientRects().length > 0 && style.visibility !== "hidden" && style.display !== "none";
+      });
+    }
+
     function openConfigViewer(recordId) {
       const configs = recordConfigs(recordId);
       if (!configs.length) return false;
@@ -2013,17 +2030,19 @@
           "reload"
         );
       } else {
-        content = renderFilterBar() + renderRecordResults() + renderConfigViewer();
+        content = renderFilterBar() + renderRecordResults();
       }
+      const viewer = state.catalogStatus === "ready" ? renderConfigViewer() : "";
+      const pageAccessibility = viewer ? ' inert aria-hidden="true"' : "";
       document.getElementById("compatibility-app").innerHTML =
-        '<div class="page"><header class="page-header">' +
+        '<div class="page"' + pageAccessibility + '><header class="page-header">' +
           '<div class="header-topline">' +
             '<button class="back-button" data-back type="button" aria-label="返回">← 返回</button>' +
             '<span class="platform-pill" data-platform-badge>' + platformLabel() + '</span>' +
           '</div>' +
           '<h1>游戏兼容性</h1>' +
           '<p>查看当前平台的运行表现与启动配置</p>' +
-        '</header>' + content + '</div>';
+        '</header>' + content + '</div>' + viewer;
       document.querySelectorAll("[data-demo-platform]").forEach((button) => {
         button.classList.toggle("active", button.dataset.demoPlatform === state.platform);
         button.disabled = state.platformSource === "bridge";
@@ -2168,12 +2187,32 @@
     });
 
     document.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape") return;
       if (state.viewer.recordId) {
-        event.preventDefault();
-        closeConfigViewer();
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closeConfigViewer();
+          return;
+        }
+        if (event.key === "Tab") {
+          const controls = viewerFocusableControls();
+          if (!controls.length) {
+            event.preventDefault();
+            return;
+          }
+          const first = controls[0];
+          const last = controls[controls.length - 1];
+          const active = document.activeElement;
+          if (event.shiftKey && (active === first || !active?.closest?.("[data-config-viewer]"))) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && (active === last || !active?.closest?.("[data-config-viewer]"))) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
         return;
       }
+      if (event.key !== "Escape") return;
       if (!state.openFilter) return;
       const key = state.openFilter;
       state.openFilter = null;
