@@ -106,6 +106,17 @@ check(
 
 // Task 2 keyboard behavior remains part of the multi-record checkpoint.
 await page.locator('[data-filter-trigger="hardware"]').click();
+const allAndroidHardwareIds = await page.locator('[data-filter-option="hardware"]')
+  .evaluateAll((options) => options.map((option) => option.dataset.optionValue));
+check(allAndroidHardwareIds.length > 0, 'Android hardware dropdown is empty');
+check(
+  allAndroidHardwareIds.every((id) => id.startsWith('android_')),
+  'Non-Android hardware ID leaked into Android dropdown'
+);
+check(
+  !allAndroidHardwareIds.some((id) => id.startsWith('mac_')),
+  'Mac hardware ID leaked into Android dropdown'
+);
 await page.keyboard.press('Escape');
 check(
   await page.evaluate(() => document.activeElement?.matches('[data-filter-trigger="hardware"]')),
@@ -204,6 +215,10 @@ if (await recordTable.count()) {
       check(viewerText.includes('Android 14～15'), 'Android config OS range is missing');
       check(!viewerText.includes('Apple'), 'Apple field leaked into Android config viewer');
       check(!viewerText.includes('macOS'), 'macOS field leaked into Android config viewer');
+      check(
+        !viewerText.includes('Game Porting Toolkit'),
+        'Game Porting Toolkit field leaked into Android config viewer'
+      );
       check(!viewerText.includes('应用配置'), 'Config viewer exposed an apply action');
       check(
         await page.evaluate(() => document.activeElement?.matches('[data-config-close]')),
@@ -382,24 +397,50 @@ check(
   'Platform switch did not restore the initial prompt'
 );
 
-// Existing Web download success state is cleared by the next platform reset.
+// A real pending Bridge request becomes stale when the platform reset clears download state.
 await page.locator('[data-demo-platform="android"]').click();
 await page.locator('[data-filter-trigger="game"]').click();
 await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
 const downloadResetOpen = page.locator('[data-config-open="android_elden_oneplus"]:visible');
 await downloadResetOpen.click();
-const safeDownloadPromise = page.waitForEvent('download');
+await page.evaluate(() => {
+  window.__capturedDownloadPayload = null;
+  window.GameHubBridge = {
+    downloadConfig(payload) {
+      window.__capturedDownloadPayload = payload;
+      return undefined;
+    }
+  };
+});
 await page.locator('[data-config-download="cfg_android_elden"]').click();
-const safeDownload = await safeDownloadPromise;
-await page.locator('[data-config-viewer] .download-message.success').waitFor();
+await page.locator('[data-config-viewer] .download-message.pending').waitFor();
+const pendingDownloadPayload = await page.evaluate(() => {
+  return window.__capturedDownloadPayload ? JSON.parse(window.__capturedDownloadPayload) : null;
+});
 check(
-  (await page.locator('[data-config-viewer] .download-message.success').innerText()).includes('已发起下载'),
-  'Download reset setup did not reach success'
+  Boolean(pendingDownloadPayload?.requestId),
+  'Pending Bridge download did not expose a requestId'
 );
-await safeDownload.delete();
+check(
+  pendingDownloadPayload?.platform === 'android' &&
+    pendingDownloadPayload?.configId === 'cfg_android_elden',
+  'Pending Bridge download payload is wrong'
+);
 await page.locator('[data-demo-platform="mac"]').click();
 check(await page.locator('[data-config-viewer]').count() === 0, 'Download reset kept the viewer open');
 check(await page.locator('.download-message').count() === 0, 'Platform switch kept download feedback');
+const acceptedStaleDownloadResult = pendingDownloadPayload?.requestId
+  ? await page.evaluate((requestId) => window.GameHubCompatibility.onDownloadResult({
+      requestId,
+      ok: true,
+      message: 'stale result'
+    }), pendingDownloadPayload.requestId)
+  : null;
+check(acceptedStaleDownloadResult === false, 'Platform reset accepted a stale Bridge download result');
+await page.evaluate(() => {
+  delete window.GameHubBridge;
+  delete window.__capturedDownloadPayload;
+});
 await page.locator('[data-demo-platform="android"]').click();
 await page.locator('[data-filter-trigger="game"]').click();
 await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
@@ -571,8 +612,8 @@ if (await invalidReload.count()) {
 check(await queryPage.locator('[data-filter-select]').count() === 3, 'Reload did not restore the Mac filter catalog');
 check(await queryPage.locator('[data-clear-filters]').count() === 0, 'Reload retained invalid selected filters');
 
-// Invalid config record references are removed without hiding the otherwise valid Mac record.
-await queryPage.evaluate(() => window.GameHubCompatibility.setCatalog({
+// Invalid config record references are removed by normalization without hiding the valid Mac record.
+const invalidConfigCatalog = {
   games: [{
     id: 'hybrid-game', name: '跨平台测试游戏', englishName: 'Hybrid Test', aliases: [],
     coverKey: '', platforms: ['android', 'mac'], popularOn: []
@@ -623,7 +664,16 @@ await queryPage.evaluate(() => window.GameHubCompatibility.setCatalog({
       fields: [['兼容层', 'GPTK Test']]
     }
   ]
-}));
+};
+const normalizedInvalidConfigIds = await queryPage.evaluate((raw) => {
+  return normalizeCatalog(raw).configs.map((config) => config.id);
+}, invalidConfigCatalog);
+check(
+  sameIds(normalizedInvalidConfigIds, []),
+  'normalizeCatalog retained cross-platform or missing-record configs: ' +
+    JSON.stringify(normalizedInvalidConfigIds)
+);
+await queryPage.evaluate((raw) => window.GameHubCompatibility.setCatalog(raw), invalidConfigCatalog);
 await queryPage.locator('[data-filter-trigger="game"]').click();
 await queryPage.locator('[data-filter-option="game"][data-option-value="hybrid-game"]').click();
 const validMacRow = queryPage.locator('[data-record-row="valid-mac-record"]:visible');
