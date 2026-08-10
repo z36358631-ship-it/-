@@ -183,6 +183,118 @@
       font-size: 14px;
       line-height: 20px;
     }
+    .filter-panel {
+      margin-top: 20px;
+      padding: 18px;
+      border: 1px solid var(--border-default);
+      border-radius: 22px;
+      background: var(--bg-card);
+    }
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .filter-select { position: relative; min-width: 0; }
+    .filter-label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .filter-control { position: relative; display: flex; }
+    .filter-control > [data-filter-trigger] {
+      width: 100%;
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 0 44px 0 14px;
+      border: 1px solid var(--border-default);
+      border-radius: 14px;
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      text-align: left;
+    }
+    .filter-control > [data-filter-trigger] strong {
+      min-width: 0;
+      overflow: hidden;
+      font-weight: 520;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .filter-clear {
+      position: absolute;
+      right: 4px;
+      top: 4px;
+      width: 44px;
+      height: 44px;
+      border: 0;
+      background: transparent;
+      color: var(--text-muted);
+    }
+    .filter-menu {
+      position: absolute;
+      z-index: 30;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      padding: 10px;
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      background: #171717;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .45);
+    }
+    .filter-menu input {
+      width: 100%;
+      min-height: 46px;
+      padding: 0 12px;
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      background: #0f0f0f;
+      color: var(--text-primary);
+    }
+    .filter-options { max-height: 280px; margin-top: 8px; overflow-y: auto; }
+    .filter-option {
+      width: 100%;
+      min-height: 54px;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text-primary);
+      text-align: left;
+    }
+    .filter-option:hover, .filter-option:focus-visible { background: rgba(255, 255, 255, .06); }
+    .filter-option span { min-width: 0; display: grid; gap: 3px; }
+    .filter-option small, .filter-option em {
+      color: var(--text-muted);
+      font-size: 12px;
+      font-style: normal;
+    }
+    .filter-option-cover { width: 42px; height: 56px; object-fit: cover; border-radius: 7px; }
+    .filter-empty { padding: 18px 8px; color: var(--text-muted); text-align: center; }
+    .filter-summary {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .filter-summary button {
+      min-height: 44px;
+      padding: 0 8px;
+      background: transparent;
+      color: var(--brand-gold);
+      font-size: 12px;
+    }
     .search-section { position: relative; z-index: 4; }
     .search-box {
       display: grid;
@@ -624,11 +736,17 @@
         border-radius: 0;
       }
     }
+    @media (max-width: 700px) {
+      .filter-grid { grid-template-columns: 1fr; }
+      .filter-menu { position: static; margin-top: 8px; }
+    }
     .frame[data-preview="mobile"] .page { padding: 16px 14px 30px; }
     .frame[data-preview="mobile"] .page-header { padding-bottom: 18px; }
     .frame[data-preview="mobile"] .header-topline { margin-bottom: 14px; }
     .frame[data-preview="mobile"] .page-header h1 { font-size: 28px; line-height: 36px; }
     .frame[data-preview="mobile"] .page-header > p { font-size: 12px; line-height: 17px; }
+    .frame[data-preview="mobile"] .filter-grid { grid-template-columns: 1fr; }
+    .frame[data-preview="mobile"] .filter-menu { position: static; margin-top: 8px; }
     .frame[data-preview="mobile"] .search-box { min-height: 56px; }
     .frame[data-preview="mobile"] .popular-section,
     .frame[data-preview="mobile"] .compatibility-result { padding: 14px; margin-top: 14px; }
@@ -1493,6 +1611,129 @@
       }));
     }
 
+    function filterDefinitions() {
+      return [
+        { key: "game", label: "游戏", placeholder: "搜索游戏" },
+        {
+          key: "hardware",
+          label: state.platform === "android" ? "设备或 GPU" : "Mac 机型或 Apple 芯片",
+          placeholder: state.platform === "android" ? "搜索设备、芯片或 GPU" : "搜索机型或 Apple 芯片"
+        },
+        { key: "rating", label: ratingFilterLabel, placeholder: "搜索评分" }
+      ];
+    }
+
+    function includesQuery(values, query) {
+      const normalized = text(query, 80).toLocaleLowerCase("zh-CN");
+      if (!normalized) return true;
+      return values.some((value) => text(value, 100).toLocaleLowerCase("zh-CN").includes(normalized));
+    }
+
+    function filterOptions(key) {
+      const current = activeCatalog();
+      if (key === "game") {
+        return current.games.filter((game) => includesQuery(
+          [game.name, game.englishName, ...game.aliases],
+          state.queries.game
+        )).map((game) => ({
+          value: game.id,
+          label: game.name,
+          subtitle: game.englishName,
+          game
+        }));
+      }
+      if (key === "hardware") {
+        return current.hardware.filter((item) => includesQuery(
+          [item.displayName, item.subtitle, ...item.aliases],
+          state.queries.hardware
+        )).map((item) => ({
+          value: item.id,
+          label: item.displayName,
+          subtitle: item.subtitle
+        }));
+      }
+      return ratingOptions.filter((item) => includesQuery(
+        [item.label, item.value == null ? "全部" : String(item.value)],
+        state.queries.rating
+      ));
+    }
+
+    function selectedFilterLabel(key) {
+      const current = activeCatalog();
+      if (key === "game") {
+        return current.games.find((game) => game.id === state.filters.gameId)?.name || "全部游戏";
+      }
+      if (key === "hardware") {
+        return current.hardware.find((item) => item.id === state.filters.hardwareId)?.displayName ||
+          (state.platform === "android" ? "全部设备 / GPU" : "全部机型 / 芯片");
+      }
+      return ratingOptions.find((item) => item.value === state.filters.ratingMin)?.label || "全部";
+    }
+
+    function renderFilterOption(key, option) {
+      const cover = key === "game" ? renderCover(option.game, "filter-option-cover") : "";
+      const selectedValue = key === "game" ? state.filters.gameId
+        : key === "hardware" ? state.filters.hardwareId
+        : state.filters.ratingMin;
+      return '<button class="filter-option" data-filter-option="' + esc(key) +
+        '" data-option-value="' + esc(option.value == null ? "all" : option.value) +
+        '" type="button" role="option" aria-selected="' + (selectedValue === option.value) + '">' +
+          cover + '<span><strong>' + esc(option.label) + '</strong>' +
+          (option.subtitle ? '<small>' + esc(option.subtitle) + '</small>' : '') + '</span>' +
+          (key === "game" ? '<em>' + platformLabel() + '</em>' : '') +
+        '</button>';
+    }
+
+    function renderSearchableFilter(definition) {
+      const key = definition.key;
+      const isOpen = state.openFilter === key;
+      const options = filterOptions(key);
+      const hasSelection = key === "game" ? state.filters.gameId
+        : key === "hardware" ? state.filters.hardwareId
+        : state.filters.ratingMin != null;
+      const selectAttribute = key === "game" ? ' data-filter-select="game"'
+        : key === "hardware" ? ' data-filter-select="hardware"'
+        : ' data-filter-select="rating"';
+      return '<section class="filter-select' + (isOpen ? ' open' : '') + '"' + selectAttribute + '>' +
+          '<span class="filter-label">' + esc(definition.label) + '</span>' +
+          '<div class="filter-control">' +
+            '<button data-filter-trigger="' + esc(key) + '" type="button" aria-haspopup="listbox"' +
+              ' aria-expanded="' + isOpen + '" aria-label="' + esc(
+                definition.label + "：" + selectedFilterLabel(key)
+              ) + '">' +
+              '<strong>' + esc(selectedFilterLabel(key)) + '</strong><span>⌄</span>' +
+            '</button>' +
+            (hasSelection ? '<button class="filter-clear" data-filter-clear="' + esc(key) +
+              '" type="button" aria-label="清除' + esc(definition.label) + '">×</button>' : '') +
+          '</div>' +
+          (isOpen ? '<div class="filter-menu">' +
+            '<input data-filter-query="' + esc(key) + '" value="' + esc(state.queries[key]) +
+              '" aria-label="' + esc(definition.label) +
+              '" placeholder="' + esc(definition.placeholder) + '" autocomplete="off">' +
+            '<div class="filter-options" role="listbox" aria-label="' +
+              esc(definition.label + "选项") + '">' +
+              (options.length ? options.map((option) => renderFilterOption(key, option)).join("")
+                : '<p class="filter-empty">暂无匹配选项</p>') +
+            '</div></div>' : '') +
+        '</section>';
+    }
+
+    function renderSearchableSelect(definition) {
+      return renderSearchableFilter(definition);
+    }
+
+    function renderFilterBar() {
+      const selectedCount = [state.filters.gameId, state.filters.hardwareId, state.filters.ratingMin]
+        .filter((value) => value != null).length;
+      return '<section class="filter-panel">' +
+        '<div class="filter-grid">' +
+          filterDefinitions().map(renderSearchableSelect).join("") +
+        '</div>' +
+        '<div class="filter-summary"><span>' + selectedCount + ' 个筛选条件</span>' +
+          (selectedCount ? '<button data-clear-filters type="button">清空筛选</button>' : '') +
+        '</div></section>';
+    }
+
     function platformLabel() {
       return state.platform === "mac" ? "Mac" : "Android";
     }
@@ -1532,6 +1773,10 @@
       if (next === state.platform && source === state.platformSource) return;
       state.platform = next;
       state.platformSource = source;
+      state.filters = { gameId: null, hardwareId: null, ratingMin: null };
+      state.queries = { game: "", hardware: "", rating: "" };
+      state.openFilter = null;
+      state.viewer = { recordId: null, configId: null };
       state.gameQuery = "";
       state.selectedGameId = null;
       state.expandedConfigId = null;
@@ -1762,6 +2007,9 @@
       } else {
         content = renderSearchPanel() + renderPopularGames();
       }
+      if (state.catalogStatus === "ready" && filteredCatalog().games.length > 0) {
+        content = renderFilterBar() + content;
+      }
       document.getElementById("compatibility-app").innerHTML =
         '<div class="page"><header class="page-header">' +
           '<div class="header-topline">' +
@@ -1893,7 +2141,31 @@
       image.replaceWith(fallback);
     }, true);
 
+    function clearFilter(key) {
+      if (!(key in state.queries)) return;
+      if (key === "game") state.filters.gameId = null;
+      if (key === "hardware") state.filters.hardwareId = null;
+      if (key === "rating") state.filters.ratingMin = null;
+      state.queries[key] = "";
+      state.openFilter = null;
+      state.viewer = { recordId: null, configId: null };
+      state.selectedGameId = null;
+      state.expandedConfigId = null;
+      clearDownloadState();
+    }
+
     document.addEventListener("input", (event) => {
+      const key = event.target.dataset.filterQuery;
+      if (key && key in state.queries) {
+        state.queries[key] = event.target.value;
+        render();
+        const filterInput = document.querySelector('[data-filter-query="' + key + '"]');
+        if (filterInput) {
+          filterInput.focus();
+          filterInput.setSelectionRange(state.queries[key].length, state.queries[key].length);
+        }
+        return;
+      }
       if (event.target.id !== "game-search") return;
       state.gameQuery = event.target.value;
       render();
@@ -1904,13 +2176,25 @@
       }
     });
 
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || !state.openFilter) return;
+      state.openFilter = null;
+      render();
+    });
+
     document.addEventListener("click", (event) => {
+      const closedFilterFromOutside = Boolean(
+        state.openFilter && !event.target.closest("[data-filter-select]")
+      );
+      if (closedFilterFromOutside) state.openFilter = null;
+
       const preview = event.target.closest(".demo-controls [data-preview]");
       if (preview) {
         document.querySelector(".frame").dataset.preview = preview.dataset.preview;
         document.querySelectorAll("[data-preview]").forEach((button) => {
           button.classList.toggle("active", button === preview);
         });
+        if (closedFilterFromOutside) render();
         return;
       }
 
@@ -1918,13 +2202,75 @@
       if (demoPlatform) {
         if (state.platformSource !== "bridge") {
           applyPlatform(normalizePlatform(demoPlatform.dataset.demoPlatform), "demo");
+        } else if (closedFilterFromOutside) {
+          render();
         }
         return;
       }
 
-      const selected = event.target.closest("[data-popular-game], [data-search-result]");
-      if (selected) {
-        state.selectedGameId = selected.dataset.popularGame || selected.dataset.searchResult;
+      const trigger = event.target.closest("[data-filter-trigger]");
+      if (trigger) {
+        const key = trigger.dataset.filterTrigger;
+        if (!(key in state.queries)) return;
+        state.openFilter = state.openFilter === key ? null : key;
+        render();
+        document.querySelector('[data-filter-query="' + key + '"]')?.focus();
+        return;
+      }
+
+      const option = event.target.closest("[data-filter-option]");
+      if (option) {
+        const key = option.dataset.filterOption;
+        const value = option.dataset.optionValue;
+        if (!(key in state.queries)) return;
+        if (key === "game") state.filters.gameId = value;
+        if (key === "hardware") state.filters.hardwareId = value;
+        if (key === "rating") state.filters.ratingMin = value === "all" ? null : Number(value);
+        state.queries[key] = "";
+        state.openFilter = null;
+        state.viewer = { recordId: null, configId: null };
+        state.selectedGameId = null;
+        state.expandedConfigId = null;
+        clearDownloadState();
+        render();
+        return;
+      }
+
+      const clear = event.target.closest("[data-filter-clear]");
+      if (clear) {
+        clearFilter(clear.dataset.filterClear);
+        render();
+        return;
+      }
+
+      if (event.target.closest("[data-clear-filters]")) {
+        state.filters = { gameId: null, hardwareId: null, ratingMin: null };
+        state.queries = { game: "", hardware: "", rating: "" };
+        state.openFilter = null;
+        state.viewer = { recordId: null, configId: null };
+        state.selectedGameId = null;
+        state.expandedConfigId = null;
+        clearDownloadState();
+        render();
+        return;
+      }
+
+      const popularGame = event.target.closest("[data-popular-game]");
+      if (popularGame) {
+        state.filters.gameId = popularGame.dataset.popularGame;
+        state.queries.game = "";
+        state.openFilter = null;
+        state.viewer = { recordId: null, configId: null };
+        state.selectedGameId = null;
+        state.expandedConfigId = null;
+        clearDownloadState();
+        render();
+        return;
+      }
+
+      const selectedSearchResult = event.target.closest("[data-search-result]");
+      if (selectedSearchResult) {
+        state.selectedGameId = selectedSearchResult.dataset.searchResult;
         state.gameQuery = "";
         state.expandedConfigId = null;
         clearDownloadState();
@@ -1980,7 +2326,10 @@
         } else if (history.length > 1) {
           history.back();
         }
+        return;
       }
+
+      if (closedFilterFromOutside) render();
     });
 
     window.GameHubCompatibility = {

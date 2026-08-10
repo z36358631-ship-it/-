@@ -120,6 +120,10 @@ const frame = page.locator('.frame');
 check(await page.locator('[data-platform-badge]').textContent() === 'Android', 'Demo default is not Android');
 check(await page.locator('[data-popular-game]').count() === 4, 'Android popular games count is not four');
 check(await page.locator('[data-popular-game="steam_1716740"]').count() === 0, 'Mac-only Starfield leaked into Android');
+check(await page.locator('[data-filter-select]').count() === 3, 'Android does not render three top filters');
+check(await page.locator('[data-filter-select="game"]').count() === 1, 'Android game filter is missing');
+check(await page.locator('[data-filter-select="hardware"]').count() === 1, 'Android hardware filter is missing');
+check(await page.locator('[data-filter-select="rating"]').count() === 1, 'Android rating filter is missing');
 const mobileBox = await frame.boundingBox();
 check(Boolean(mobileBox), 'Android mobile frame has no bounding box');
 if (mobileBox) {
@@ -128,6 +132,96 @@ if (mobileBox) {
     'Android mobile frame is ' + mobileBox.width + 'x' + mobileBox.height
   );
 }
+check(
+  (await page.locator('[data-filter-select="game"] .filter-label').innerText()) === '游戏',
+  'Android game filter label is wrong'
+);
+check(
+  (await page.locator('[data-filter-select="hardware"] .filter-label').innerText()) === '设备或 GPU',
+  'Android hardware filter label is wrong'
+);
+check(
+  (await page.locator('[data-filter-select="rating"] .filter-label').innerText()) === '最低评分（≥）',
+  'Android rating filter label is wrong'
+);
+check(
+  await page.locator('[data-filter-query]').count() === 0,
+  'A filter menu is open before interaction'
+);
+
+// The three filters are searchable, composable, individually clearable, and keyboard dismissible.
+await page.locator('[data-filter-trigger="game"]').click();
+await page.locator('[data-filter-query="game"]').fill('艾尔登');
+check(
+  await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').count() === 1,
+  'Searchable game filter did not find Elden Ring'
+);
+await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+
+await page.locator('[data-filter-trigger="hardware"]').click();
+await page.locator('[data-filter-query="hardware"]').fill('Adreno 830');
+check(
+  await page.locator('[data-filter-option="hardware"][data-option-value="android_gpu_adreno830"]').count() === 1,
+  'Searchable hardware filter did not find Adreno 830'
+);
+await page.locator('[data-filter-option="hardware"][data-option-value="android_gpu_adreno830"]').click();
+
+await page.locator('[data-filter-trigger="rating"]').click();
+const ratingOptionTexts = (await page.locator('[data-filter-option="rating"]').allTextContents())
+  .map((value) => value.trim());
+check(ratingOptionTexts.includes('全部'), 'Rating filter has no all option');
+check(
+  ratingOptionTexts.filter((value) => value !== '全部').every((value) => /^[1-5] 分及以上$/.test(value)),
+  'Rating options are not consistently labeled as X 分及以上: ' + ratingOptionTexts.join(', ')
+);
+await assertTouchTargets(page, 'Android rating menu');
+await page.locator('[data-filter-option="rating"][data-option-value="4"]').click();
+check(
+  (await page.locator('[data-filter-trigger="game"]').innerText()).includes('艾尔登法环'),
+  'Selected game filter label is missing'
+);
+check(
+  (await page.locator('[data-filter-trigger="hardware"]').innerText()).includes('Adreno 830'),
+  'Selected hardware filter label is missing'
+);
+check(
+  (await page.locator('[data-filter-trigger="rating"]').innerText()).includes('4 分及以上'),
+  'Selected rating filter label is missing'
+);
+check(
+  (await page.locator('.filter-summary').innerText()).includes('3 个筛选条件'),
+  'Three-filter summary is missing'
+);
+
+await page.locator('[data-filter-clear="rating"]').click();
+check(
+  (await page.locator('.filter-summary').innerText()).includes('2 个筛选条件'),
+  'Single rating clear did not preserve the other filters'
+);
+await page.locator('[data-clear-filters]').click();
+check(
+  (await page.locator('.filter-summary').innerText()).includes('0 个筛选条件'),
+  'Clear-all did not reset the filters'
+);
+
+await page.locator('[data-filter-trigger="game"]').click();
+await page.locator('[data-filter-query="game"]').fill('艾尔登');
+await page.keyboard.press('Escape');
+check(await page.locator('[data-filter-query]').count() === 0, 'Escape did not close the open filter');
+await page.locator('[data-filter-trigger="hardware"]').click();
+await page.locator('.page-header h1').click();
+check(await page.locator('[data-filter-query]').count() === 0, 'Outside click did not close the open filter');
+
+await page.locator('[data-popular-game="steam_1245620"]').click();
+check(
+  (await page.locator('[data-filter-trigger="game"]').innerText()).includes('艾尔登法环'),
+  'Popular game did not migrate into the game filter'
+);
+check(
+  await page.locator('[data-compatibility-result]').count() === 0,
+  'Popular game still opened the legacy single-result renderer'
+);
+await page.locator('[data-filter-clear="game"]').click();
 await assertNoHorizontalOverflow(page, 'Android home');
 await assertTouchTargets(page, 'Android home');
 await screenshotFrame(page, screenshotNames[0]);
@@ -196,6 +290,12 @@ await bridgePage.goto(pathToFileURL(demoPath).href + '?platform=android', { wait
 await bridgePage.evaluate(() => window.GameHubCompatibility.setContext({ platform: 'mac' }));
 check(await bridgePage.locator('[data-platform-badge]').textContent() === 'Mac', 'Bridge did not override Android query');
 check(await bridgePage.locator('[data-popular-game]').count() === 4, 'Mac popular games count is not four');
+check(await bridgePage.locator('[data-filter-select]').count() === 3, 'Mac does not render three top filters');
+check(
+  (await bridgePage.locator('[data-filter-select="hardware"] .filter-label').innerText()) ===
+    'Mac 机型或 Apple 芯片',
+  'Mac hardware filter label is wrong'
+);
 check(
   await bridgePage.locator('[data-popular-game="steam_2358720"]').count() === 0,
   'Android-only Wukong leaked into Mac'
@@ -206,6 +306,12 @@ check(
 );
 await bridgePage.locator('[data-demo-platform="android"]').evaluate((button) => button.click());
 check(await bridgePage.locator('[data-platform-badge]').textContent() === 'Mac', 'Locked Demo switch overrode Bridge');
+await bridgePage.locator('[data-filter-trigger="hardware"]').click();
+await bridgePage.locator('[data-filter-query="hardware"]').fill('M4 Pro');
+const macHardwareOptions = await bridgePage.locator('[data-filter-option="hardware"]').allTextContents();
+check(macHardwareOptions.some((value) => value.includes('Apple M4 Pro')), 'Mac M4 Pro filter option is missing');
+check(!macHardwareOptions.some((value) => value.includes('Adreno')), 'Android hardware leaked into Mac filter');
+await bridgePage.keyboard.press('Escape');
 await assertNoHorizontalOverflow(bridgePage, 'Mac home');
 await assertTouchTargets(bridgePage, 'Mac home');
 await screenshotFrame(bridgePage, screenshotNames[3]);
@@ -380,6 +486,13 @@ await queryPage.evaluate(() => window.GameHubCompatibility.setCatalog({
   ]
 }));
 await queryPage.locator('[data-popular-game="cross-game"]').click();
+check(
+  (await queryPage.locator('[data-filter-trigger="game"]').innerText()).includes('跨平台异常游戏'),
+  'Custom popular game did not migrate into the game filter'
+);
+await queryPage.locator('[data-filter-clear="game"]').click();
+await queryPage.locator('#game-search').fill('跨平台');
+await queryPage.locator('[data-search-result="cross-game"]').click();
 const malformedText = await queryPage.locator('[data-compatibility-result]').innerText();
 check(malformedText.includes('暂无验证记录'), 'Cross-platform record was not rejected');
 check(malformedText.includes('暂无可下载配置'), 'Cross-platform config was not rejected');
@@ -487,6 +600,6 @@ if (errors.length) {
 }
 
 console.log(
-  'PASS: platform priority, Android/Mac isolation, image search, config details, ' +
+  'PASS: three searchable filters, platform priority, Android/Mac isolation, image search, config details, ' +
   'Web/App downloads, recovery, responsive rendering, and seven screenshots'
 );
