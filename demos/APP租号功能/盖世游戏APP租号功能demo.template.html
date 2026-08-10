@@ -251,30 +251,21 @@
     .real-media { position: relative; display: block; overflow: hidden; background: #11141a; }
     .real-media > img { position: absolute; max-width: none; object-fit: cover; pointer-events: none; user-select: none; }
     .hero-real { position: absolute; z-index: 0; inset: 0; }
-    .hero-real::after { position: absolute; inset: 0; background: linear-gradient(180deg, rgb(5 7 10 / 18%) 0, rgb(5 7 10 / 44%) 45%, rgb(3 4 7 / 97%) 100%); content: ""; }
-
-    .hero-card::after {
-      position: absolute;
-      top: -36px;
-      right: -10px;
-      width: 190px;
-      height: 190px;
-      border: 1px solid rgb(255 212 113 / 27%);
-      border-radius: 50%;
-      box-shadow: inset 0 0 0 24px rgb(0 0 0 / 16%), inset 0 0 0 25px rgb(255 255 255 / 5%);
-      content: "";
-    }
-
-    .hero-mark { position: absolute; z-index: 1; top: 40px; right: 33px; width: 94px; height: 94px; color: rgb(255 235 189 / 76%); }
-    .hero-mark svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.3; }
-    .hero-eyebrow { position: relative; z-index: 2; color: rgb(255 255 255 / 68%); font-size: 11px; letter-spacing: .11em; }
-    .hero-copy { position: absolute; z-index: 2; right: 16px; bottom: 15px; left: 16px; }
-    .hero-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+    .hero-real::after { position: absolute; inset: 0; background: linear-gradient(180deg, rgb(5 7 10 / 35%) 0, rgb(5 7 10 / 8%) 35%, rgb(3 4 7 / 22%) 52%, rgb(3 4 7 / 98%) 100%), linear-gradient(90deg, rgb(3 4 7 / 44%), transparent 56%); content: ""; }
+    .hero-card::after { content: none; }
+    .hero-topline { position: absolute; z-index: 2; top: 15px; right: 16px; left: 16px; display: flex; align-items: center; gap: 7px; }
+    .hero-recommendation { color: #fff; font-size: 13px; font-weight: 720; text-shadow: 0 2px 8px rgb(0 0 0 / 72%); }
+    .hero-date { padding: 3px 6px; border-radius: 5px; background: rgb(255 255 255 / 92%); color: #151515; font-family: var(--font-number); font-size: 11px; font-weight: 760; line-height: 15px; }
+    .hero-bottomline { position: absolute; z-index: 2; right: 16px; bottom: 15px; left: 16px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+    .hero-game-copy { min-width: 0; flex: 1; }
+    .hero-game-copy h1 { overflow: hidden; margin: 0 0 7px; font-size: 24px; font-weight: 720; line-height: 30px; text-overflow: ellipsis; text-shadow: 0 2px 9px rgb(0 0 0 / 76%); white-space: nowrap; }
+    .hero-game-copy p { display: flex; min-width: 0; align-items: center; gap: 7px; margin: 0; font-size: 10px; line-height: 15px; white-space: nowrap; }
+    .hero-game-copy p b { color: #ff9b43; font-family: var(--font-number); font-size: 12px; }
+    .hero-game-copy p span { overflow: hidden; color: rgb(255 255 255 / 68%); text-overflow: ellipsis; }
+    .hero-rental-offer { display: flex; flex: 0 0 auto; flex-direction: column; align-items: flex-end; padding-bottom: 1px; text-shadow: 0 2px 9px rgb(0 0 0 / 80%); }
+    .hero-rental-price { color: #fff; font-family: var(--font-number); font-size: 19px; font-weight: 760; line-height: 23px; }
+    .hero-rental-demand { margin-top: 3px; color: rgb(255 255 255 / 70%); font-size: 10px; line-height: 14px; }
     .rent-badge { padding: 4px 8px; border: 1px solid rgb(255 215 115 / 25%); border-radius: 100px; background: rgb(255 204 67 / 14%); color: #ffda78; font-size: 10px; }
-    .hero-score { margin-left: auto; color: #ffb14b; font-family: var(--font-number); font-size: 14px; font-weight: 650; }
-    .hero-title { margin: 0 0 10px; font-size: 23px; font-weight: 680; letter-spacing: .02em; }
-    .hero-bottom { display: flex; align-items: center; gap: 10px; }
-    .hero-subtitle { flex: 1; color: var(--text-muted); font-size: 11px; line-height: 16px; }
     .primary-action {
       min-width: 112px;
       min-height: 44px;
@@ -295,6 +286,8 @@
     .mini-game .cover-art { width: 84px; height: 84px; }
     .mini-game strong { display: block; overflow: hidden; margin-top: 7px; font-size: 11px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
     .mini-game .discovery-display { margin-top: 4px; font-size: 9px; }
+    .mini-game .mini-rental-offer { display: block; margin-top: 4px; color: #fff; font-family: var(--font-number); font-size: 10px; font-weight: 720; line-height: 14px; }
+    .mini-game .mini-rental-demand { display: block; margin-top: 1px; color: var(--text-muted); font-size: 8px; line-height: 12px; }
 
     .cover-art {
       position: relative;
@@ -759,18 +752,24 @@
 
     .landscape-hero-media { position: absolute; inset: 0; }
     .landscape-hero-media::after { position: absolute; inset: 0; background: linear-gradient(90deg, rgb(4 6 9 / 92%) 0, rgb(4 6 9 / 44%) 52%, rgb(4 6 9 / 24%) 100%), linear-gradient(0deg, rgb(3 4 6 / 74%), transparent 60%); content: ""; }
-    .landscape-hero-copy { position: absolute; z-index: 2; top: 27px; bottom: 22px; left: 25px; display: flex; width: 260px; flex-direction: column; align-items: flex-start; }
-    .landscape-hero-copy .discovery-display { margin-bottom: 11px; }
-    .landscape-hero-copy h1 { margin: 0 0 7px; font-size: 28px; line-height: 34px; }
-    .landscape-hero-copy p { margin: 0; color: rgb(255 255 255 / 62%); font-size: 11px; line-height: 18px; }
-    .landscape-hero-copy .home-card-hint { margin-top: auto; color: rgb(255 255 255 / 72%); font-size: 10px; }
+    .landscape-home-hero .hero-topline { top: 20px; right: 22px; left: 24px; }
+    .landscape-home-hero .hero-recommendation { font-size: 14px; }
+    .landscape-home-hero .hero-date { font-size: 12px; }
+    .landscape-home-hero .hero-bottomline { right: 23px; bottom: 21px; left: 24px; gap: 24px; }
+    .landscape-home-hero .hero-game-copy h1 { margin-bottom: 9px; font-size: 29px; line-height: 35px; }
+    .landscape-home-hero .hero-game-copy p { gap: 9px; font-size: 11px; }
+    .landscape-home-hero .hero-game-copy p b { font-size: 14px; }
+    .landscape-home-hero .hero-rental-price { font-size: 24px; line-height: 29px; }
+    .landscape-home-hero .hero-rental-demand { font-size: 11px; }
     .landscape-home-side { display: grid; min-width: 0; grid-template-rows: 26px 1fr; gap: 8px; }
     .landscape-mini-wall { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
     .landscape-mini-card { min-width: 0; overflow: hidden; padding: 0 0 7px; border: 1px solid rgb(255 255 255 / 8%); border-radius: 14px; background: rgb(17 18 21 / 82%); color: inherit; cursor: pointer; font: inherit; text-align: left; }
-    .landscape-mini-card .landscape-cover { width: 100%; height: 92px; border-radius: 13px 13px 8px 8px; }
+    .landscape-mini-card .landscape-cover { width: 100%; height: 70px; border-radius: 13px 13px 8px 8px; }
     .landscape-mini-card strong { display: block; overflow: hidden; padding: 8px 9px 0; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
     .landscape-mini-card span { display: block; padding: 4px 9px 0; color: var(--text-muted); font-size: 8px; }
     .landscape-mini-card .discovery-display { font-size: 9px; font-weight: 650; }
+    .landscape-mini-card .mini-rental-offer { padding: 3px 9px 0; color: #fff; font-family: var(--font-number); font-size: 9px; font-weight: 720; line-height: 12px; }
+    .landscape-mini-card .mini-rental-demand { padding: 1px 9px 0; color: var(--text-muted); font-size: 7px; line-height: 10px; }
 
     .landscape-play { min-height: 306px; }
     .landscape-play-grid { display: grid; height: 267px; grid-template-columns: 1.05fr .8fr 1.28fr; gap: 10px; }
@@ -1777,7 +1776,7 @@
           memberLibrary: false,
           region: 'CN',
           version: 'Steam',
-          firstRentalEligible: false,
+          firstRentalEligible: true,
           priceResolved: true,
           inventoryResolved: true,
           eligibilityResolved: true,
@@ -1958,8 +1957,9 @@
     const DISCOVERY_GAME_CONTEXTS = Object.freeze([
       {
         id: 'shadow-blade-zero', name: '影之刃零', asset: 'home', crop: [584, 1656, 492, 240],
-        saleMode: GAME_SALE_MODES.TIME_RENTAL, defaultSku: 'rent-2h',
+        saleMode: GAME_SALE_MODES.TIME_RENTAL, defaultSku: 'first-rent-2h',
         rentalSkus: [
+          { id: 'first-rent-2h', label: '首租2小时', packageName: '首租体验套餐', durationLabel: '2小时', price: 1.9, originalPrice: 9.9, enabled: true, inStock: true, region: 'CN', firstOnly: true },
           { id: 'rent-2h', label: '2小时', packageName: '标准租号套餐', durationLabel: '2小时', price: 9.9, originalPrice: 9.9, enabled: true, inStock: true, region: 'CN' },
           { id: 'hourly-8h', label: '8小时', packageName: '按时租号套餐', durationLabel: '8小时', price: 36, originalPrice: 36, enabled: true, inStock: true, region: 'CN' },
           { id: 'daily', label: '日租', packageName: '日租套餐', durationLabel: '1天', price: 29.9, originalPrice: 29.9, enabled: true, inStock: true, region: 'CN' },
@@ -2228,7 +2228,8 @@
     function renderHomeRentalPrice(gameId) {
       const model = getDiscoveryDisplay(gameId);
       if (model.displayType !== DISCOVERY_DISPLAY_TYPES.RENTAL_PRICE) return renderDiscoveryDisplay(gameId);
-      return `<span class="discovery-display home-rental-price" data-discovery-display="${model.displayType}">¥${model.formattedAmount} · 可租号</span>`;
+      const suffix = model.reason === 'eligible-first-rental-price' ? '首租' : '租号';
+      return `<strong class="hero-rental-price" data-discovery-display="${model.displayType}">¥${model.formattedAmount}${suffix}</strong>`;
     }
 
     function setDiscoveryContext(gameId, patch = {}) {
@@ -3050,7 +3051,7 @@
       Object.assign(state.discoveryContexts['shadow-blade-zero'], {
         activeOrderStatus: null, expireAt: null, refundActive: false,
         owned: false, installed: false, imported: false, permanent: false,
-        membershipActive: false, memberLibrary: false, firstRentalEligible: false,
+        membershipActive: false, memberLibrary: false, firstRentalEligible: true,
         priceResolved: true, inventoryResolved: true, eligibilityResolved: true,
       });
       Object.assign(state.discoveryContexts['elden-ring'], {
@@ -3301,16 +3302,11 @@
       return `${searchRow('影之刃零')}
         <button class="hero-card" type="button" data-action="navigate" data-screen="detail" data-game-id="shadow-blade-zero" data-rental-increment="home-entry" aria-label="查看影之刃零详情">
           ${realCrop('home', [584, 1656, 492, 240], '影之刃零游戏画面', '', 'hero-real')}
-          <span class="hero-eyebrow">今日推荐 · 云端即刻开玩</span>
-          <span class="hero-mark"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="36"/><circle cx="50" cy="50" r="20"/><path d="M50 5v22M50 73v22M5 50h22M73 50h22M18 18l16 16M66 66l16 16M82 18 66 34M34 66 18 82"/></svg></span>
-          <div class="hero-copy">
-            <div class="hero-meta">${renderHomeRentalPrice('shadow-blade-zero')}<span class="hero-score">9.5</span></div>
-            <h1 class="hero-title">影之刃零</h1>
-            <div class="hero-bottom"><span class="hero-subtitle">Steam版本 · 手柄适配</span><span aria-hidden="true">›</span></div>
-          </div>
+          <div class="hero-topline"><span class="hero-recommendation">今日推荐</span><time class="hero-date" datetime="2026-08-10">8/10</time></div>
+          <div class="hero-bottomline"><div class="hero-game-copy"><h1>影之刃零</h1><p><b>★ 9.5</b><span>动作 · 冒险</span></p></div><div class="hero-rental-offer">${renderHomeRentalPrice('shadow-blade-zero')}<span class="hero-rental-demand">99+ 在租</span></div></div>
         </button>
         <div class="section-head"><h2>为你推荐</h2><span>发现更多</span></div>
-        <div class="mini-game-row">${recommendations.map(([name, id, asset, crop]) => `<button class="mini-game" type="button" data-action="navigate" data-screen="detail" data-game-id="${id}" data-rental-increment="home-recommendation">${realCrop(asset, crop, `${name} 游戏封面`, '')}<strong>${name}</strong>${renderDiscoveryDisplay(id)}</button>`).join('')}</div>
+        <div class="mini-game-row">${recommendations.map(([name, id, asset, crop]) => `<button class="mini-game" type="button" data-action="navigate" data-screen="detail" data-game-id="${id}" data-rental-increment="home-recommendation">${realCrop(asset, crop, `${name} 游戏封面`, '')}<strong>${name}</strong><span class="mini-rental-offer">¥9.9租号</span><span class="mini-rental-demand">在租99+</span></button>`).join('')}</div>
         <div class="section-head"><h2>最新资讯</h2><span>每周更新</span></div>
         <div class="feature-scroll">${[
           ['龙之信条 2', [67, 1658, 492, 235], '开放世界新作本周登场'],
@@ -3934,9 +3930,10 @@
         <div class="landscape-home-grid">
           <button class="landscape-home-hero" type="button" data-action="navigate" data-screen="detail" data-game-id="shadow-blade-zero" data-rental-increment="home-entry" aria-label="查看影之刃零详情">
             ${realCrop('home', [584, 1656, 492, 240], '影之刃零横屏主视觉', '', 'landscape-hero-media')}
-            <div class="landscape-hero-copy">${renderHomeRentalPrice('shadow-blade-zero')}<h1>影之刃零</h1><p>Steam版本 · 手柄适配</p><span class="home-card-hint">查看游戏详情　›</span></div>
+            <div class="hero-topline"><span class="hero-recommendation">今日推荐</span><time class="hero-date" datetime="2026-08-10">8/10</time></div>
+            <div class="hero-bottomline"><div class="hero-game-copy"><h1>影之刃零</h1><p><b>★ 9.5</b><span>动作 · 冒险</span></p></div><div class="hero-rental-offer">${renderHomeRentalPrice('shadow-blade-zero')}<span class="hero-rental-demand">99+ 在租</span></div></div>
           </button>
-          <aside class="landscape-home-side"><div class="landscape-section-title"><h2>本周热玩</h2><span>为你精选</span></div><div class="landscape-mini-wall">${recommendations.map(([name, id, crop, asset]) => `<button class="landscape-mini-card" type="button" data-action="navigate" data-screen="detail" data-game-id="${id}" data-rental-increment="home-recommendation">${realCrop(asset, crop, `${name} 推荐封面`, '', 'landscape-cover')}<strong>${name}</strong>${renderDiscoveryDisplay(id)}</button>`).join('')}</div></aside>
+          <aside class="landscape-home-side"><div class="landscape-section-title"><h2>本周热玩</h2><span>为你精选</span></div><div class="landscape-mini-wall">${recommendations.map(([name, id, crop, asset]) => `<button class="landscape-mini-card" type="button" data-action="navigate" data-screen="detail" data-game-id="${id}" data-rental-increment="home-recommendation">${realCrop(asset, crop, `${name} 推荐封面`, '', 'landscape-cover')}<strong>${name}</strong><span class="mini-rental-offer">¥9.9租号</span><span class="mini-rental-demand">在租99+</span></button>`).join('')}</div></aside>
         </div>
       </section>`;
     }

@@ -320,13 +320,23 @@ async function verifyShotState(page, shot) {
       const rootNode = document.querySelector('#appRentalDemo');
       const cards = [...rootNode.querySelectorAll('.hero-card, .mini-game, .landscape-home-hero, .landscape-home-grid button')];
       return {
-        bannerPrice: rootNode.querySelector('.home-rental-price')?.textContent.trim(),
-        perCardDisplayCounts: cards.map((node) => node.querySelectorAll('[data-discovery-display]').length),
+        recommendation: rootNode.querySelector('.hero-recommendation')?.textContent.trim(),
+        date: rootNode.querySelector('.hero-date')?.textContent.trim(),
+        bannerPrice: rootNode.querySelector('.hero-rental-price')?.textContent.trim(),
+        bannerDemand: rootNode.querySelector('.hero-rental-demand')?.textContent.trim(),
+        miniOffers: [...rootNode.querySelectorAll('.mini-rental-offer')].map((node) => node.textContent.trim()),
+        miniDemands: [...rootNode.querySelectorAll('.mini-rental-demand')].map((node) => node.textContent.trim()),
         clickable: cards.every((node) => node.matches('button, a, [role="button"]')),
       };
     });
-    assert.equal(home.bannerPrice, '¥9.9 · 可租号', `${shot.name} home banner rental price mismatch`);
-    assert(home.perCardDisplayCounts.every((count) => count <= 1), `${shot.name} renders more than one result on a home card`);
+    assert.equal(home.recommendation, '今日推荐', `${shot.name} home recommendation mismatch`);
+    assert(/^\d{1,2}\/\d{1,2}$/.test(home.date), `${shot.name} home date mismatch`);
+    assert.equal(home.bannerPrice, '¥1.9首租', `${shot.name} home banner first-rental price mismatch`);
+    assert.equal(home.bannerDemand, '99+ 在租', `${shot.name} home banner rental demand mismatch`);
+    assert.equal(home.miniOffers.length, 4, `${shot.name} home mini rental offer count mismatch`);
+    assert(home.miniOffers.every((text) => text === '¥9.9租号'), `${shot.name} home mini rental offer mismatch`);
+    assert.equal(home.miniDemands.length, 4, `${shot.name} home mini rental demand count mismatch`);
+    assert(home.miniDemands.every((text) => text === '在租99+'), `${shot.name} home mini rental demand mismatch`);
     assert(home.clickable, `${shot.name} contains a non-clickable home game card`);
   }
 
@@ -370,7 +380,7 @@ async function verifyShotState(page, shot) {
     assert.equal(state.selectedHours, 8, `${shot.name} checkout selected hours mismatch`);
     assert.equal(state.order?.durationLabel, '8小时', `${shot.name} checkout order duration mismatch`);
     assert.equal(await page.locator('[data-sale-mode="time-rental"]').count(), 1, `${shot.name} checkout sale mode mismatch`);
-    assert.equal(await page.locator('[data-sku-kind="time-rental"]').count(), 4, `${shot.name} time-rental SKU count mismatch`);
+    assert.equal(await page.locator('[data-sku-kind="time-rental"]').count(), 5, `${shot.name} time-rental SKU count mismatch`);
     for (const label of ['游戏', '版本', '租赁套餐', '租期', '原价', '实付', '支付方式', '协议', '退款', '支付有效期']) {
       assert(checkoutText.includes(label), `${shot.name} checkout is missing ${label}`);
     }

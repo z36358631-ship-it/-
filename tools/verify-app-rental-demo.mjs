@@ -76,7 +76,7 @@ async function main() {
     ['详情一次进入确认订单', /label:\s*'租号开玩',\s*action:\s*'begin-checkout'/.test(templateSource)],
     ['搜索真实 Tab 状态', templateSource.includes('SEARCH_TABS') && templateSource.includes('data-search-tab')],
     ['会员价值与权益', templateSource.includes('MEMBERSHIP_BENEFITS') && templateSource.includes('membership-benefit-item')],
-    ['首页 Banner 租号价', templateSource.includes('home-rental-price') && templateSource.includes('· 可租号')],
+    ['首页 Banner 首租与在租信息', templateSource.includes('hero-rental-price') && templateSource.includes("id: 'first-rent-2h'") && templateSource.includes('price: 1.9') && templateSource.includes('hero-rental-demand') && templateSource.includes('99+ 在租')],
     ['售后四项且无无理由原因', !templateSource.includes("['refund', '3天无理由']")],
   ];
   const failedThirdReviewSourceChecks = thirdReviewSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
@@ -343,6 +343,7 @@ async function main() {
           const rootNode = document.querySelector('#appRentalDemo');
           const searchCards = [...rootNode.querySelectorAll('.search-result-card')];
           const homeCards = [...rootNode.querySelectorAll('.hero-card, .landscape-home-hero')];
+          const heroCard = rootNode.querySelector('.hero-card, .landscape-home-hero');
           return {
             displayTexts: [...rootNode.querySelectorAll('[data-discovery-display]')].map((node) => node.textContent.trim()),
             displayTypes: [...rootNode.querySelectorAll('[data-discovery-display]')].map((node) => node.dataset.discoveryDisplay),
@@ -353,6 +354,16 @@ async function main() {
             homeCards: homeCards.length,
             homeInlineActions: rootNode.querySelectorAll('.hero-card [data-primary-action], .landscape-home-hero [data-primary-action]').length,
             homeCardsClickable: homeCards.every((node) => node.matches('button, a, [role="button"]')),
+            heroRecommendation: rootNode.querySelector('.hero-recommendation')?.textContent.trim() || '',
+            heroDate: rootNode.querySelector('.hero-date')?.textContent.trim() || '',
+            heroTitle: rootNode.querySelector('.hero-game-copy h1')?.textContent.trim() || '',
+            heroMeta: rootNode.querySelector('.hero-game-copy p')?.textContent.replace(/\s+/g, ' ').trim() || '',
+            heroPrice: rootNode.querySelector('.hero-rental-price')?.textContent.trim() || '',
+            heroDemand: rootNode.querySelector('.hero-rental-demand')?.textContent.trim() || '',
+            heroMarkCount: rootNode.querySelectorAll('.hero-mark').length,
+            heroPseudoContent: heroCard ? getComputedStyle(heroCard, '::after').content : '',
+            miniOffers: [...rootNode.querySelectorAll('.mini-rental-offer')].map((node) => node.textContent.trim()),
+            miniDemands: [...rootNode.querySelectorAll('.mini-rental-demand')].map((node) => node.textContent.trim()),
             legacyCopy: /首次体验|会员畅玩|租\/购可选|购\s*¥|继续游戏|租用中/.test(rootNode.innerText),
           };
         }, { pageId, orientation });
@@ -386,10 +397,20 @@ async function main() {
 
       const portraitHome = await readDiscoveryDom('home', 'portrait');
       checkVisual(
-        portraitHome.displayTexts.includes('可畅玩')
-          && portraitHome.displayTexts.some((text) => /^¥\d+\.\d · 可租号$/.test(text))
-          && portraitHome.displayTexts.every((text) => allowedDiscoveryCopy.test(text)),
-        `竖屏首页未只展示三类统一结果：${JSON.stringify(portraitHome)}`,
+        portraitHome.heroRecommendation === '今日推荐'
+          && /^\d{1,2}\/\d{1,2}$/.test(portraitHome.heroDate)
+          && portraitHome.heroTitle === '影之刃零'
+          && portraitHome.heroMeta.includes('9.5')
+          && portraitHome.heroMeta.includes('动作 · 冒险')
+          && portraitHome.heroPrice === '¥1.9首租'
+          && portraitHome.heroDemand === '99+ 在租'
+          && portraitHome.heroMarkCount === 0
+          && portraitHome.heroPseudoContent === 'none'
+          && portraitHome.miniOffers.length === 4
+          && portraitHome.miniOffers.every((text) => text === '¥9.9租号')
+          && portraitHome.miniDemands.length === 4
+          && portraitHome.miniDemands.every((text) => text === '在租99+'),
+        `竖屏首页租号卡信息层级错误：${JSON.stringify(portraitHome)}`,
       );
       checkVisual(!portraitHome.legacyCopy, `竖屏首页仍出现旧租购/权益来源文案：${JSON.stringify(portraitHome)}`);
       checkVisual(
@@ -399,10 +420,18 @@ async function main() {
 
       const landscapeHome = await readDiscoveryDom('home', 'landscape');
       checkVisual(
-        landscapeHome.displayTexts.includes('可畅玩')
-          && landscapeHome.displayTexts.some((text) => /^¥\d+\.\d · 可租号$/.test(text))
-          && landscapeHome.displayTexts.every((text) => allowedDiscoveryCopy.test(text)),
-        `横屏首页未只展示三类统一结果：${JSON.stringify(landscapeHome)}`,
+        landscapeHome.heroRecommendation === '今日推荐'
+          && /^\d{1,2}\/\d{1,2}$/.test(landscapeHome.heroDate)
+          && landscapeHome.heroTitle === '影之刃零'
+          && landscapeHome.heroMeta.includes('9.5')
+          && landscapeHome.heroMeta.includes('动作 · 冒险')
+          && landscapeHome.heroPrice === '¥1.9首租'
+          && landscapeHome.heroDemand === '99+ 在租'
+          && landscapeHome.miniOffers.length === 4
+          && landscapeHome.miniOffers.every((text) => text === '¥9.9租号')
+          && landscapeHome.miniDemands.length === 4
+          && landscapeHome.miniDemands.every((text) => text === '在租99+'),
+        `横屏首页租号卡信息层级错误：${JSON.stringify(landscapeHome)}`,
       );
       checkVisual(!landscapeHome.legacyCopy, `横屏首页仍出现旧租购/权益来源文案：${JSON.stringify(landscapeHome)}`);
       checkVisual(
@@ -496,9 +525,9 @@ async function main() {
           && detailInitial.label === '租号开玩' && !detailInitial.panel && !detailInitial.order
           && detailConfirmed.snapshot.screen === 'checkout' && !detailConfirmed.panel
           && detailConfirmed.snapshot.order?.durationLabel === '2小时'
-          && detailConfirmed.snapshot.order?.rawAmount === 9.9
+          && detailConfirmed.snapshot.order?.rawAmount === 1.9
           && detailConfirmed.saleMode === 'time-rental'
-          && detailConfirmed.skuKinds.filter((kind) => kind === 'time-rental').length === 4
+          && detailConfirmed.skuKinds.filter((kind) => kind === 'time-rental').length === 5
           && !detailConfirmed.skuKinds.some((kind) => ['trial', 'permanent', 'membership'].includes(kind))
           && detailSelected.snapshot.order?.durationLabel === '8小时'
           && detailSelected.snapshot.order?.rawAmount === 36
@@ -1474,6 +1503,7 @@ async function main() {
       assert(!/2小时租用|更多租期|首次体验|单游戏永久畅玩|开通会员/.test(detailText), `${scenario} 不得显示租号购买入口`);
     }
     await page.evaluate(() => {
+      window.__appRentalDemo.setDiscoveryContext('shadow-blade-zero', { firstRentalEligible: true });
       window.__appRentalDemo.setScenario('not-member-library');
       window.__appRentalDemo.setSelectedGame('shadow-blade-zero');
       window.__appRentalDemo.setOrientation('portrait');
@@ -1506,6 +1536,7 @@ async function main() {
     process.stdout.write('DETAIL 14/14 PASS\n');
 
     await page.evaluate(() => {
+      window.__appRentalDemo.setDiscoveryContext('shadow-blade-zero', { firstRentalEligible: true });
       window.__appRentalDemo.setOrientation('portrait');
       window.__appRentalDemo.setScenario('not-member-library');
       window.__appRentalDemo.setSelectedGame('shadow-blade-zero');
@@ -1513,7 +1544,7 @@ async function main() {
     });
     await page.getByRole('button', { name: '租号开玩', exact: true }).click();
     const durationOptions = await page.locator('[data-action="select-checkout-sku"]').evaluateAll((nodes) => nodes.map((node) => node.textContent.trim()));
-    assert(durationOptions.length === 4 && ['2小时', '8小时', '日租', '周租'].every((label) => durationOptions.some((text) => text.includes(label))), `确认订单时租选项不完整：${JSON.stringify(durationOptions)}`);
+    assert(durationOptions.length === 5 && ['首租2小时', '2小时', '8小时', '日租', '周租'].every((label) => durationOptions.some((text) => text.includes(label))), `确认订单时租选项不完整：${JSON.stringify(durationOptions)}`);
     await page.locator('[data-action="select-checkout-sku"][data-sku="hourly-8h"]').click();
     const checkoutText = await page.locator('#appRentalDemo').innerText();
     assert(['影之刃零', '版本', '租赁套餐', '租期', '原价', '实付', '支付方式', '租号服务协议', '退款规则', '支付有效期'].every((value) => checkoutText.includes(value)), '确认订单字段不完整');
