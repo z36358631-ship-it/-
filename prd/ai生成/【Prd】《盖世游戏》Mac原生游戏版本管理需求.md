@@ -36,17 +36,17 @@
 
 |功能|图示|规则|
 |---|---|---|
-|详情平台标识与下载入口|![图4.1-1：Mac 原生版下载入口](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@18b9a6decae00f9e7c68eaa0e831ee44131d9a93/public/prd/mac-native-version-management/02-native-download-entry.png)|搜索和详情保留 Steam、Epic、GOG 等现有产品结构。支持 Mac 原生版时增加 Mac 原生标识。游戏库仅在当前启动版本为 Mac 原生版时显示该标识。选择未安装版本后，详情主按钮显示目标版本和下载大小；只有点击该按钮才打开安装弹窗。|
-|版本选择|![图4.1-2：版本选择](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@18b9a6decae00f9e7c68eaa0e831ee44131d9a93/public/prd/mac-native-version-management/01-version-switch.png)|点击详情主按钮右侧“…”→“切换版本”打开弹窗。弹窗只显示版本图标、名称、选中态和“切换”。版本行留白不可点击；选择未安装版本只更新详情下载主按钮，不自动下载。设置页的未安装版本显示“选择版本”，点击后返回详情并更新下载主按钮。|
-|已安装版本切换|![图4.1-3：Mac 原生版已安装](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@18b9a6decae00f9e7c68eaa0e831ee44131d9a93/public/prd/mac-native-version-management/03-native-installed.png)|两个版本均已安装时，点击“切换”直接更新当前启动版本，不重复下载，也不删除另一版本。|
+|详情平台标识与下载入口|![图4.1-1：Mac 原生版下载入口](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba8f5133f1dfae12205157c896efdd9fe2808ec6/public/prd/mac-native-version-management/02-native-download-entry.png)|搜索和详情保留 Steam、Epic、GOG 等现有产品结构。支持 Mac 原生版时增加 Mac 原生标识。游戏库仅在当前启动版本为 Mac 原生版时显示该标识。选择未安装版本后，详情主按钮显示目标版本和下载大小；只有点击该按钮才打开安装弹窗。|
+|版本选择|![图4.1-2：版本选择](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba8f5133f1dfae12205157c896efdd9fe2808ec6/public/prd/mac-native-version-management/01-version-switch.png)|点击详情主按钮右侧“…”→“切换版本”打开弹窗。弹窗只显示版本图标、名称、选中态和“切换”。版本行留白不可点击；选择未安装版本只更新详情下载主按钮，不自动下载。设置页的未安装版本显示“选择版本”，点击后返回详情并更新下载主按钮。|
+|已安装版本切换|![图4.1-3：Mac 原生版已安装](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba8f5133f1dfae12205157c896efdd9fe2808ec6/public/prd/mac-native-version-management/03-native-installed.png)|两个版本均已安装时，点击“切换”直接更新当前启动版本，不重复下载，也不删除另一版本。|
 
 ### 4.2 安装路径
 
 |功能|图示|规则|
 |---|---|---|
-|路径选择|![图4.2-1：默认选择最大空间路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@18b9a6decae00f9e7c68eaa0e831ee44131d9a93/public/prd/mac-native-version-management/04-path-largest-default.png)|平铺全部候选路径，每项显示完整绝对路径和可用空间。路径存在、可写且空间足够时才可选择。合格路径按可用空间从大到小排列并默认选择第一项；空间不足项随后排列；不可用项置底。容量相同时保持固定顺序。|
-|无可用路径|![图4.2-2：无合格安装路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@18b9a6decae00f9e7c68eaa0e831ee44131d9a93/public/prd/mac-native-version-management/05-no-eligible-path.png)|空间不足和路径不可用项禁用并标明原因。没有合格路径时不默认选择，显示“没有可用且空间足够的安装位置”，安装按钮不可点击。|
-|下载中锁定|![图4.2-3：下载中锁定路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@18b9a6decae00f9e7c68eaa0e831ee44131d9a93/public/prd/mac-native-version-management/06-download-locked.png)|开始下载后锁定路径和版本。取消下载后清空进度并恢复选择；原路径仍合格则保留，否则选择空间最大的合格路径。当前启动版本不变。|
+|路径选择|![图4.2-1：默认选择最大空间路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba8f5133f1dfae12205157c896efdd9fe2808ec6/public/prd/mac-native-version-management/04-path-largest-default.png)|平铺全部候选路径，每项显示完整绝对路径和可用空间。路径存在、可写且空间足够时才可选择。合格路径按可用空间从大到小排列并默认选择第一项；空间不足项随后排列；不可用项置底。容量相同时保持固定顺序。|
+|无可用路径|![图4.2-2：无合格安装路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba8f5133f1dfae12205157c896efdd9fe2808ec6/public/prd/mac-native-version-management/05-no-eligible-path.png)|空间不足和路径不可用项禁用并标明原因。没有合格路径时不默认选择，显示“没有可用且空间足够的安装位置”，安装按钮不可点击。|
+|下载中锁定|![图4.2-3：下载中锁定路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba8f5133f1dfae12205157c896efdd9fe2808ec6/public/prd/mac-native-version-management/06-download-locked.png)|开始下载后锁定路径和版本。取消下载后清空进度并恢复选择；原路径仍合格则保留，否则选择空间最大的合格路径。当前启动版本不变。|
 
 补充规则：
 
@@ -93,24 +93,24 @@
 
 1. 游戏详情：展示当前发行平台；支持 Mac 原生版时同步显示 Mac 原生标识，选择后主按钮更新为对应版本下载入口。
 
-![群同步图1：Mac 原生版下载入口](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@18b9a6decae00f9e7c68eaa0e831ee44131d9a93/public/prd/mac-native-version-management/02-native-download-entry.png)
+![群同步图1：Mac 原生版下载入口](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba8f5133f1dfae12205157c896efdd9fe2808ec6/public/prd/mac-native-version-management/02-native-download-entry.png)
 
 2. 版本选择：点击“…”进入版本弹窗，只有“切换”和关闭按钮可操作；选择未安装版本不会自动下载。
 
-![群同步图2：版本选择](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@18b9a6decae00f9e7c68eaa0e831ee44131d9a93/public/prd/mac-native-version-management/01-version-switch.png)
+![群同步图2：版本选择](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba8f5133f1dfae12205157c896efdd9fe2808ec6/public/prd/mac-native-version-management/01-version-switch.png)
 
 3. 已安装版本：两个版本可同时保留，切换已安装版本不重复下载，也不删除另一版本。
 
-![群同步图3：Mac 原生版已安装](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@18b9a6decae00f9e7c68eaa0e831ee44131d9a93/public/prd/mac-native-version-management/03-native-installed.png)
+![群同步图3：Mac 原生版已安装](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba8f5133f1dfae12205157c896efdd9fe2808ec6/public/prd/mac-native-version-management/03-native-installed.png)
 
 4. 安装路径：完整路径平铺展示，合格路径按可用空间从大到小排列，默认选择空间最大项。
 
-![群同步图4：默认选择最大空间路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@18b9a6decae00f9e7c68eaa0e831ee44131d9a93/public/prd/mac-native-version-management/04-path-largest-default.png)
+![群同步图4：默认选择最大空间路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba8f5133f1dfae12205157c896efdd9fe2808ec6/public/prd/mac-native-version-management/04-path-largest-default.png)
 
 5. 异常路径：空间不足和路径不可用项禁用；没有合格路径时禁止安装并提示原因。
 
-![群同步图5：无合格安装路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@18b9a6decae00f9e7c68eaa0e831ee44131d9a93/public/prd/mac-native-version-management/05-no-eligible-path.png)
+![群同步图5：无合格安装路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba8f5133f1dfae12205157c896efdd9fe2808ec6/public/prd/mac-native-version-management/05-no-eligible-path.png)
 
 6. 下载与安装：下载中锁定路径和版本；取消后当前版本不变；安装成功后切换到目标版本并保留原版本。
 
-![群同步图6：下载中锁定路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@18b9a6decae00f9e7c68eaa0e831ee44131d9a93/public/prd/mac-native-version-management/06-download-locked.png)
+![群同步图6：下载中锁定路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ba8f5133f1dfae12205157c896efdd9fe2808ec6/public/prd/mac-native-version-management/06-download-locked.png)
