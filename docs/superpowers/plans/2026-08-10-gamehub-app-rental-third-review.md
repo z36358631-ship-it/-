@@ -683,12 +683,101 @@ git commit -m "fix(app-rental): complete third review corrections"
 
 读取 `GUANWANGGAID-3` 最新 issue 与 comments；添加一条包含改动、自动验证、36 张截图、人工目检、提交号和剩余公网发布风险的评论。随后使用最新 `version` 将状态从 `in_progress` 移到 `in_review`，不得直接移到 `done`。
 
+### Task 8: 修正探索页 Banner 与小游戏租号信息层级
+
+**Files:**
+- Modify: `demos/APP租号功能/盖世游戏APP租号功能demo.template.html`
+- Modify: `tools/verify-app-rental-demo.mjs`
+- Modify: `tools/capture-app-rental-prd-screenshots.mjs`
+- Modify: `prd/【盖世游戏APP】游戏租号需求/【Prd】《盖世游戏APP》游戏租号需求.md`
+- Regenerate: `demos/APP租号功能/盖世游戏APP租号功能demo.html`
+- Regenerate: `demos/APP租号功能/盖世游戏APP租号功能-标注版.html`
+- Replace: `public/prd/app-rental/01-discovery-portrait.png`
+- Replace: `public/prd/app-rental/01-discovery-landscape.png`
+- Update: `test-results/app-rental-verification/contract-results.json`
+- Update: `test-results/app-rental-capture/capture-results.json`
+
+- [ ] **Step 1: 先增加失败契约**
+
+在探索页检查中增加以下断言：
+
+```js
+assert.equal((await page.locator('.hero-recommendation').innerText()).trim(), '今日推荐');
+assert.match((await page.locator('.hero-date').innerText()).trim(), /^\d{1,2}\/\d{1,2}$/);
+assert.equal((await page.locator('.hero-rental-price').innerText()).trim(), '¥1.9首租');
+assert.equal((await page.locator('.hero-rental-demand').innerText()).trim(), '99+ 在租');
+assert.equal(await page.locator('.hero-mark').count(), 0);
+assert.equal(await page.locator('.hero-card').evaluate((card) => getComputedStyle(card, '::after').content), 'none');
+assert.equal(await page.locator('.mini-rental-offer').count(), 4);
+assert.equal(await page.locator('.mini-rental-demand').count(), 4);
+```
+
+Run: `node tools/verify-app-rental-demo.mjs`
+
+Expected: FAIL，当前 Banner 仍使用混合定位、`¥9.9 · 可租号` 与装饰圆环，小游戏卡仍使用统一状态文本。
+
+- [ ] **Step 2: 增加真实首租 SKU 与演示资格**
+
+在 `shadow-blade-zero.rentalSkus` 首项增加：
+
+```js
+{ id: 'first-rent-2h', label: '首租2小时', packageName: '首租体验套餐', durationLabel: '2小时', price: 1.9, originalPrice: 9.9, enabled: true, inStock: true, region: 'CN', firstOnly: true }
+```
+
+并把探索页截图种子的 `discoveryContexts['shadow-blade-zero'].firstRentalEligible` 设为 `true`，保证 Banner、详情进入确认订单和确认订单默认 SKU 使用同一资格与价格。
+
+- [ ] **Step 3: 重建竖屏 Banner DOM**
+
+使用明确的上下安全区，不再混用普通文档流和底部绝对定位：
+
+```html
+<div class="hero-topline"><span class="hero-recommendation">今日推荐</span><time class="hero-date">5/25</time></div>
+<div class="hero-bottomline">
+  <div class="hero-game-copy"><h1>影之刃零</h1><p><b>★ 9.5</b><span>动作 · 冒险</span></p></div>
+  <div class="hero-rental-offer"><strong class="hero-rental-price">¥1.9首租</strong><span class="hero-rental-demand">99+ 在租</span></div>
+</div>
+```
+
+删除 `.hero-mark` 节点、`.hero-card::after` 圆环和旧 `.hero-eyebrow/.hero-meta/.hero-bottom` 布局。底部遮罩加强，左右信息块保留至少 16px 边距与 12px 间距。
+
+- [ ] **Step 4: 替换图 2 类型小游戏卡的商品信息**
+
+保留封面、游戏名和整卡进入详情，使用固定演示字段替换旧 CDKEY 价格/标签或统一状态文本：
+
+```html
+<span class="mini-rental-offer">¥9.9租号</span>
+<span class="mini-rental-demand">在租99+</span>
+```
+
+竖屏与横屏小游戏卡使用相同文案与语义；搜索结果仍使用既有“已租号 / 可畅玩 / 租号价”状态模型，不受本步骤影响。
+
+- [ ] **Step 5: 运行构建、契约与截图**
+
+Run: `node tools/build-app-rental-demo.mjs`
+
+Run: `node tools/verify-app-rental-demo.mjs`
+
+Expected: 全部分组 PASS，Banner 首租价格与确认订单同源，小卡各有两行租号信息，无 CDKEY 标签。
+
+Run: `node tools/capture-app-rental-prd-screenshots.mjs`
+
+Expected: `PREFLIGHT 7/7 PASS`、`CAPTURE 36/36 PASS`。
+
+- [ ] **Step 6: 原尺寸目检并提交**
+
+目检 `01-discovery-portrait.png` 与 `01-discovery-landscape.png`：顶部推荐和日期、左下游戏名与评分类型、右下首租价与在租人数均无遮挡；小游戏卡两行信息完整可读。
+
+Run: `git diff --check`
+
+仅暂存本任务列出的 APP 租号文件，提交后重新读取 `GUANWANGGAID-3` 最新版本，补充验证评论并移回 `in_review`；不 push、不 publish。
+
 ## 计划自查
 
-- 规格覆盖：详情、两类 SKU、确认订单、Steam、售后、搜索游戏 Tab、会员中心、Banner、横竖屏、PRD、标注和截图均有对应任务。
+- 规格覆盖：详情、两类 SKU、确认订单、Steam、售后、搜索游戏 Tab、会员中心、Banner、小游戏卡、横竖屏、PRD、标注和截图均有对应任务。
 - 类型一致：统一使用 `GAME_SALE_MODES`、`saleMode`、`eligibleCheckoutSkus()`、`SEARCH_TABS`、`searchTab` 和 `MEMBERSHIP_BENEFITS`。
 - 页面职责：首页与搜索只发现游戏，详情只解释游戏，确认订单承担全部 SKU 选择与支付。
-- 价格口径：Banner 与确认订单读取同一 SKU 原始数据；Banner 一位小数，结算两位小数。
+- 价格口径：符合资格时 Banner 与确认订单读取同一 `first-rent-2h` SKU；Banner 展示 `¥1.9首租`，结算金额继续保留两位小数。
+- 小卡口径：图 2 类型小游戏卡固定使用 `¥9.9租号 / 在租99+`，不恢复 CDKEY 价格或促销标签；搜索结果状态模型不变。
 - 权益边界：3天无理由只在订单权益说明；售后原因固定四项；自动退款状态机保留。
 - 会员边界：保留月129、年499、永久399，永久推荐；不新增套餐、价格、倒计时或页面。
 - 截图范围：继续 18 个页面 × 横竖屏 = 36 张；非热门确认订单由交互契约覆盖。
