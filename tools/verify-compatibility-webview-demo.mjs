@@ -19,43 +19,48 @@ if (!fs.existsSync(demoPath)) {
 const html = fs.readFileSync(demoPath, 'utf8');
 const required = [
   'id="compatibility-app"',
-  'id="game-select"',
-  'id="target-select"',
-  'id="rating-select"',
+  'id="game-search"',
+  'data-platform-badge',
+  'data-demo-platform="android"',
+  'data-demo-platform="mac"',
   'data-popular-game',
-  'data-result-row',
-  'data-result-card',
-  'data-sort-field="rating"',
-  'data-sort-field="verifiedAt"',
+  'data-search-result',
+  'data-compatibility-result',
+  'data-config-toggle',
+  'data-config-download',
   'window.GameHubCompatibility',
   'setContext(context)',
   'setCatalog(catalog)',
   'setCatalogLoading()',
   'setCatalogError()',
-  'filteredRuns()',
+  'onDownloadResult(result)',
+  'resolvePlatform(context)',
+  'filteredCatalog()',
+  'renderSearchPanel()',
   'renderPopularGames()',
-  'renderResults()',
-  '选择游戏',
-  '设备 / GPU',
-  '最低评价（可选）',
-  '热门游戏',
-  '平均 FPS',
-  '验证时间'
+  'renderCompatibilityResult()',
+  'renderConfigDetail(',
+  'startDownload(configId)',
+  'GameHubBridge.downloadConfig',
+  'URL.createObjectURL',
+  'Android',
+  'Mac',
+  '搜索游戏名称',
+  '启动配置',
+  '下载配置'
 ];
 
 const legacy = [
-  'id="game-view"',
-  'id="gpu-view"',
-  'id="config-view"',
-  '按游戏查',
-  '按 GPU 查',
-  'filter-sidebar',
-  'filter-panel',
+  'id="game-select"',
+  'id="target-select"',
+  'id="rating-select"',
+  '最低评价（可选）',
+  'data-sort-field="rating"',
+  'data-sort-field="verifiedAt"',
   'downloadAndApplyConfig',
-  'downloadConfig',
+  '下载并应用',
   'openGame(gameId',
-  'openGpu(gpuId',
-  'openConfig(configId'
+  'openGpu(gpuId'
 ];
 
 const covers = [
@@ -73,6 +78,21 @@ for (const contract of required) {
 
 for (const marker of legacy) {
   if (html.includes(marker)) fail(`legacy contract remains: ${marker}`);
+}
+
+const platformContracts = [
+  'platform: "android"',
+  'platform: "mac"',
+  'platformSource',
+  'Bridge > query > Demo',
+  'androidVersion',
+  'macosVersion',
+  'appleChip',
+  'mobileGpu'
+];
+
+for (const contract of platformContracts) {
+  if (!html.includes(contract)) fail(`missing platform contract: ${contract}`);
 }
 
 const coverDir = path.join(path.dirname(demoPath), 'assets', 'compatibility');
@@ -107,4 +127,4 @@ if (scriptMatches.length === 0) {
 
 if (process.exitCode) process.exit();
 
-console.log('PASS: compatibility reference redesign contracts, local assets, offline policy, and JavaScript syntax');
+console.log('PASS: platform-aware compatibility H5 contracts, local assets, download API, offline policy, and JavaScript syntax');
