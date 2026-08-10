@@ -2,7 +2,7 @@
 
 ## 结论
 
-PRD V1.6 已完成内容、Demo、浏览器交互和图片提交校验；待推送后执行远程图片复验与任务板送审。
+PRD V1.6 已完成内容、Demo、浏览器交互、Git 推送和远程图片校验。
 
 ## PRD 检查
 
@@ -11,7 +11,7 @@ PRD V1.6 已完成内容、Demo、浏览器交互和图片提交校验；待推�
 - 汇总表包含7个功能模块，每个模块均按“规则”和“交互”分组编号。
 - 共14处图片引用，对应7张唯一功能图。
 - 7张图片均使用固定提交 `a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d`。
-- 推送后逐张验证 HTTP 200 和 `Content-Type: image/png`。
+- 7/7 图片返回 HTTP 200，`Content-Type` 均为 `image/png`。
 - `file://`、`localhost`、`@main`、`@master` 和 GitHub blob 图片地址均为0处。
 - 埋点事件引用的参数与参数说明表完全对应，无缺漏和多余参数。
 
@@ -38,5 +38,6 @@ git diff --check
 
 - 当前分支：`codex/guanwanggaid-5-prd-feishu-20260810`
 - 图片固定提交：`a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d`
-- 待发布文件：PRD V1.6、验证报告和实施计划。
+- PRD 与 Demo 提交：`2545bb29ac0e39caccbcc8eaf77c8411d084bfeb`
+- 分支已推送，任务板进入评审状态。
 - 飞书文档入口：https://gamesirworld.feishu.cn/wiki/O2tyw3e0tiWLYokQzQLcUUeRn2c
