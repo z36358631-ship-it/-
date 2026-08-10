@@ -425,18 +425,93 @@ async function main() {
       );
 
       const detailVisual = await readCommerceVisual('detail', '[data-primary-action]:not(:disabled)');
+      await reloadDemo();
+      await page.evaluate(() => {
+        window.__appRentalDemo.setOrientation('portrait');
+        window.__appRentalDemo.setScenario('not-member-library');
+        window.__appRentalDemo.navigate('detail');
+      });
+      const detailInitial = await page.evaluate(() => ({
+        label: document.querySelector('[data-primary-action="true"]')?.textContent.trim(),
+        panel: Boolean(document.querySelector('[data-entitlement-panel]')),
+        order: window.__appRentalDemo.snapshot().order,
+      }));
+      await page.getByRole('button', { name: '租号开玩', exact: true }).click();
+      const detailExpanded = await page.evaluate(() => ({
+        panel: Boolean(document.querySelector('[data-entitlement-panel]')),
+        order: window.__appRentalDemo.snapshot().order,
+      }));
+      await page.locator('[data-action="toggle-more-duration"]').click();
+      await page.locator('[data-duration-hours="8"]').click();
+      const detailSelected = await page.evaluate(() => ({
+        label: document.querySelector('[data-primary-action="true"]')?.textContent.trim(),
+        order: window.__appRentalDemo.snapshot().order,
+      }));
+      await page.getByRole('button', { name: '确认8小时租用', exact: true }).click();
+      const detailConfirmed = await page.evaluate(() => ({
+        snapshot: window.__appRentalDemo.snapshot(),
+        text: document.querySelector('#appRentalDemo').innerText,
+      }));
+      await page.evaluate(() => {
+        window.__appRentalDemo.setScenario('active-rental');
+        window.__appRentalDemo.navigate('detail');
+      });
+      const activeRentalDetail = await page.evaluate(() => ({
+        label: document.querySelector('[data-primary-action="true"]')?.textContent.trim(),
+        text: document.querySelector('#appRentalDemo').innerText,
+      }));
+      await page.evaluate(() => {
+        window.__appRentalDemo.setScenario('owned-installed');
+        window.__appRentalDemo.navigate('detail');
+      });
+      const playableDetail = await page.evaluate(() => ({
+        label: document.querySelector('[data-primary-action="true"]')?.textContent.trim(),
+        panel: Boolean(document.querySelector('[data-entitlement-panel]')),
+        text: document.querySelector('#appRentalDemo').innerText,
+      }));
       checkVisual(
         detailVisual.every(({ primaryBackground, primaryHasBlue, forbiddenBusinessCopy }) => (
           primaryBackground.includes('gradient') && primaryHasBlue && !forbiddenBusinessCopy
-        )),
-        `详情页未使用 CDKEY 蓝色渐变主按钮或出现禁止业务语义：${JSON.stringify(detailVisual)}`,
+        ))
+          && detailInitial.label === '租号开玩' && !detailInitial.panel && !detailInitial.order
+          && detailExpanded.panel && !detailExpanded.order
+          && detailSelected.label === '确认8小时租用' && !detailSelected.order
+          && detailConfirmed.snapshot.screen === 'checkout'
+          && detailConfirmed.snapshot.order?.durationLabel === '8小时'
+          && detailConfirmed.snapshot.order?.rawAmount === 36
+          && detailConfirmed.text.includes('¥36.00')
+          && activeRentalDetail.label === '继续游戏' && !activeRentalDetail.text.includes('剩余')
+          && playableDetail.label === '可畅玩' && !playableDetail.panel && !playableDetail.text.includes('租号开玩'),
+        `详情页视觉或“展开租期后再确认”状态路径错误：${JSON.stringify({ detailVisual, detailInitial, detailExpanded, detailSelected, detailConfirmed, activeRentalDetail, playableDetail })}`,
       );
       const checkoutVisual = await readCommerceVisual('checkout', '[data-primary-action]:not(:disabled)');
+      const checkoutFields = await page.evaluate(() => {
+        const rootNode = document.querySelector('#appRentalDemo');
+        const text = rootNode.innerText;
+        return {
+          text,
+          fields: ['游戏', '版本', '租赁套餐', '租期', '原价', '实付', '支付方式', '租号服务协议', '退款规则', '支付有效期'].every((field) => text.includes(field)),
+          twoDecimalAmount: /¥\d+\.\d{2}/.test(text),
+        };
+      });
+      await page.evaluate(() => window.__appRentalDemo.setPriceChanged(true));
+      const changedPriceLabel = await page.locator('[data-primary-action="true"]').textContent();
+      await page.evaluate(() => {
+        window.__appRentalDemo.setPriceChanged(false);
+        window.__appRentalDemo.setInventoryAvailable(false);
+      });
+      const unavailableCheckout = await page.evaluate(() => ({
+        label: document.querySelector('[data-primary-action="true"]')?.textContent.trim(),
+        disabled: Boolean(document.querySelector('[data-primary-action="true"]:disabled')),
+      }));
       checkVisual(
         checkoutVisual.every(({ primaryBackground, primaryHasBlue, forbiddenBusinessCopy }) => (
           primaryBackground.includes('gradient') && primaryHasBlue && !forbiddenBusinessCopy
-        )),
-        `确认订单未使用 CDKEY 蓝色渐变主按钮或出现禁止业务语义：${JSON.stringify(checkoutVisual)}`,
+        ))
+          && checkoutFields.fields && checkoutFields.twoDecimalAmount
+          && changedPriceLabel?.trim() === '按新价格重新确认'
+          && unavailableCheckout.label === '暂不可购买' && unavailableCheckout.disabled,
+        `确认订单视觉、租号字段、改价或库存状态错误：${JSON.stringify({ checkoutVisual, checkoutFields, changedPriceLabel, unavailableCheckout })}`,
       );
 
       const orderVisual = await readCommerceVisual('orders', '.order-card-actions button.primary:not(:disabled), [data-primary-action]:not(:disabled)');
@@ -1220,8 +1295,8 @@ async function main() {
       ['owned-uninstalled', 'download', []],
       ['active-rental', 'continue', ['credential', 'renew']],
       ['not-member-library', 'rent-2h', ['more-duration']],
-      ['member-library-trial', 'trial', ['permanent', 'membership']],
-      ['member-library-trial-used', 'permanent', ['membership']],
+      ['member-library-trial', 'trial', ['more-duration', 'membership']],
+      ['member-library-trial-used', 'rent-2h', ['more-duration', 'membership']],
       ['active-member', 'member-play', ['membership-status']],
       ['permanent-owned', 'launch', []],
     ];
@@ -1236,15 +1311,18 @@ async function main() {
 
     const skuCases = [
       ['not-member-library', ['2小时租用', '更多租期'], ['首次体验', '单游戏永久畅玩', '开通会员']],
-      ['member-library-trial', ['首次体验', '单游戏永久畅玩', '开通会员'], ['日租', '周租']],
-      ['member-library-trial-used', ['单游戏永久畅玩', '开通会员'], ['首次体验', '已使用', '日租', '周租']],
-      ['active-member', ['会员畅玩'], ['2小时租用', '首次体验', '单游戏永久畅玩', '开通会员']],
+      ['member-library-trial', ['首次体验', '更多租期', '开通会员'], ['单游戏永久畅玩', '日租', '周租']],
+      ['member-library-trial-used', ['2小时租用', '更多租期', '开通会员'], ['首次体验', '单游戏永久畅玩', '日租', '周租']],
+      ['active-member', ['可畅玩'], ['2小时租用', '首次体验', '单游戏永久畅玩', '开通会员']],
     ];
     for (const [scenario, present, absent] of skuCases) {
       await page.evaluate(({ scenario }) => {
         window.__appRentalDemo.setOrientation('portrait');
         window.__appRentalDemo.setScenario(scenario);
         window.__appRentalDemo.navigate('detail');
+        const rentalEntry = [...document.querySelectorAll('[data-primary-action="true"]')]
+          .find((node) => node.textContent.trim() === '租号开玩');
+        rentalEntry?.click();
       }, { scenario });
       const text = await page.locator('#appRentalDemo').innerText();
       for (const value of present) assert(text.includes(value), `${scenario} 缺少 ${value}`);
@@ -1283,9 +1361,9 @@ async function main() {
     assert(landscapeDetail.primaryCount === 1, '横屏详情主操作不唯一');
 
     const ownershipCases = [
-      ['owned-installed', '启动游戏'],
+      ['owned-installed', '可畅玩'],
       ['owned-uninstalled', '下载游戏'],
-      ['imported', '启动游戏'],
+      ['imported', '可畅玩'],
     ];
     for (const [scenario, label] of ownershipCases) {
       await page.evaluate((value) => {
@@ -1296,7 +1374,38 @@ async function main() {
       assert(detailText.includes(label), `${scenario} 缺少 ${label}`);
       assert(!/2小时租用|更多租期|首次体验|单游戏永久畅玩|开通会员/.test(detailText), `${scenario} 不得显示租号购买入口`);
     }
-    process.stdout.write('DETAIL 8/8 PASS\n');
+    await page.evaluate(() => {
+      window.__appRentalDemo.setScenario('not-member-library');
+      window.__appRentalDemo.setOrientation('portrait');
+      window.__appRentalDemo.navigate('detail');
+    });
+    const initialRentalDetail = await page.evaluate(() => ({
+      label: document.querySelector('[data-primary-action="true"]')?.textContent.trim(),
+      panel: Boolean(document.querySelector('[data-entitlement-panel]')),
+      order: window.__appRentalDemo.snapshot().order,
+    }));
+    assert(initialRentalDetail.label === '租号开玩' && !initialRentalDetail.panel && !initialRentalDetail.order, '无权益详情必须先显示“租号开玩”，且不得提前展开租期或创单');
+    await page.getByRole('button', { name: '租号开玩', exact: true }).click();
+    const expandedRentalDetail = await page.evaluate(() => ({
+      panel: Boolean(document.querySelector('[data-entitlement-panel]')),
+      order: window.__appRentalDemo.snapshot().order,
+    }));
+    assert(expandedRentalDetail.panel && !expandedRentalDetail.order, '首次点击“租号开玩”必须只展开租期，不得创建订单');
+    await page.locator('[data-action="toggle-more-duration"]').click();
+    await page.locator('[data-duration-hours="8"]').click();
+    assert((await page.getByRole('button', { name: '确认8小时租用', exact: true }).count()) === 1, '选择8小时后未显示对应确认操作');
+    assert(!(await page.evaluate(() => window.__appRentalDemo.snapshot().order)), '选择租期时不得提前创建订单');
+    await page.getByRole('button', { name: '确认8小时租用', exact: true }).click();
+    const confirmedRentalDetail = await page.evaluate(() => window.__appRentalDemo.snapshot());
+    assert(confirmedRentalDetail.screen === 'checkout' && confirmedRentalDetail.order?.durationLabel === '8小时' && confirmedRentalDetail.order?.amount === 36, '确认租期后未按原始金额进入确认订单');
+
+    await page.evaluate(() => {
+      window.__appRentalDemo.setScenario('active-rental');
+      window.__appRentalDemo.navigate('detail');
+    });
+    const activeRentalDetailText = await page.locator('#appRentalDemo').innerText();
+    assert(activeRentalDetailText.includes('继续游戏') && !activeRentalDetailText.includes('剩余'), '有效租赁详情必须显示继续游戏且不显示剩余时长');
+    process.stdout.write('DETAIL 14/14 PASS\n');
 
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
@@ -1316,7 +1425,8 @@ async function main() {
       window.__appRentalDemo.navigate('checkout');
     });
     const checkoutText = await page.locator('#appRentalDemo').innerText();
-    assert(['艾尔登法环', 'Steam版本', '套餐租期', '游戏原价', '订单金额'].every((value) => checkoutText.includes(value)), '确认订单字段不完整');
+    assert(['艾尔登法环', '版本', '租赁套餐', '租期', '原价', '实付', '支付方式', '租号服务协议', '退款规则', '支付有效期'].every((value) => checkoutText.includes(value)), '确认订单字段不完整');
+    assert(checkoutText.includes('¥36.00'), '确认订单实付金额必须保留两位小数');
     assert(checkoutText.includes('支付宝') && checkoutText.includes('微信'), '确认订单缺少双支付方式');
     assert(/\b(?:2\d|30):[0-5]\d\b/.test(checkoutText), '确认订单缺少30分钟 MM:SS 倒计时');
 
@@ -2368,9 +2478,9 @@ async function main() {
       text: document.querySelector('#appRentalDemo').innerText,
       primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
       retry: Boolean(document.querySelector('[data-action="retry-inventory"]')),
-      back: Boolean(document.querySelector('[data-action="back-to-detail"]')),
+      disabled: Boolean(document.querySelector('[data-primary-action="true"]:disabled')),
     }));
-    assert(noStockRecovery.text.includes('当前套餐已售罄') && noStockRecovery.retry && noStockRecovery.back && noStockRecovery.primaryCount === 1, '无库存必须禁用购买并提供返回/重查且仅一个主操作');
+    assert(noStockRecovery.text.includes('当前套餐已售罄') && noStockRecovery.text.includes('暂不可购买') && noStockRecovery.retry && noStockRecovery.disabled && noStockRecovery.primaryCount === 1, '无库存必须禁用购买并显示“暂不可购买”，同时保留库存重查');
     await page.locator('[data-action="retry-inventory"]').click();
     assert((await page.locator('[data-action="pay-game-order"]').count()) === 1, '重新查询库存后未恢复购买');
     await page.evaluate(() => window.__appRentalDemo.setPriceChanged(true));
