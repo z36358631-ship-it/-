@@ -179,11 +179,11 @@ async function runPreflight(browser) {
     const result = await page.evaluate(() => ({
       text: document.querySelector('#appRentalDemo').innerText,
       retry: Boolean(document.querySelector('[data-action="retry-inventory"]')),
-      back: Boolean(document.querySelector('[data-action="back-to-detail"]')),
+      disabled: Boolean(document.querySelector('[data-action="pay-game-order"]:disabled')),
       primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
     }));
     assert(result.text.includes('当前套餐已售罄'), 'No-inventory state is missing sold-out copy');
-    assert(result.retry && result.back, 'No-inventory state is missing retry or back recovery');
+    assert(result.retry && result.disabled, 'No-inventory state must keep retry and disable payment');
     assert.equal(result.primaryCount, 1, 'No-inventory state must have one primary action');
   });
   passed += 1;
@@ -315,6 +315,70 @@ async function verifyShotState(page, shot) {
     assert.equal(await page.locator('.expiry-reminder').count(), 1, `${shot.name} reminder is not visible`);
   }
 
+  if (['home', 'search'].includes(shot.pageId)) {
+    const discovery = await page.evaluate((pageId) => {
+      const rootNode = document.querySelector('#appRentalDemo');
+      const displays = [...rootNode.querySelectorAll('[data-discovery-display]')];
+      const cards = pageId === 'search'
+        ? [...rootNode.querySelectorAll('.search-result-card')]
+        : [...rootNode.querySelectorAll('.hero-card, .mini-game, .landscape-home-hero, .landscape-home-grid button')];
+      return {
+        texts: displays.map((node) => node.textContent.trim()),
+        types: displays.map((node) => node.dataset.discoveryDisplay),
+        cardCount: cards.length,
+        perCardDisplayCounts: cards.map((node) => node.querySelectorAll('[data-discovery-display]').length),
+        inlineActionCount: pageId === 'search'
+          ? rootNode.querySelectorAll('.search-result-card [data-primary-action], .search-result-card .primary-action').length
+          : 0,
+        clickable: cards.every((node) => node.matches('button, a, [role="button"]')),
+      };
+    }, shot.pageId);
+    assert.equal(discovery.texts.length, 3, `${shot.name} must show exactly three unified discovery results`);
+    assert.deepEqual([...new Set(discovery.types)].sort(), ['playable', 'rental-price', 'rented'], `${shot.name} discovery result types mismatch`);
+    assert(discovery.texts.includes('已租号') && discovery.texts.includes('可畅玩'), `${shot.name} is missing rented or playable state`);
+    assert(discovery.texts.some((text) => /^¥\d+\.\d · 租号$/.test(text)), `${shot.name} is missing a one-decimal rental price`);
+    assert(discovery.cardCount > 0 && discovery.perCardDisplayCounts.every((count) => count <= 1), `${shot.name} renders more than one result on a card`);
+    assert(discovery.clickable, `${shot.name} contains a non-clickable game card`);
+    if (shot.pageId === 'search') {
+      assert.equal(discovery.cardCount, 3, `${shot.name} search result card count mismatch`);
+      assert(discovery.perCardDisplayCounts.every((count) => count === 1), `${shot.name} search card must contain exactly one result`);
+      assert.equal(discovery.inlineActionCount, 0, `${shot.name} search card still contains an independent action`);
+    }
+  }
+
+  if (shot.pageId === 'detail') {
+    assert.equal(state.scenario, 'not-member-library', `${shot.name} detail scenario must be rentable without an active entitlement`);
+    assert.equal(state.entitlementPanelOpen, false, `${shot.name} detail rental period must be collapsed initially`);
+    assert.equal(state.order, null, `${shot.name} detail capture must not create an order`);
+    assert((await device.innerText()).includes('租号开玩'), `${shot.name} detail is missing the rental entry`);
+  }
+
+  if (shot.pageId === 'checkout') {
+    const checkoutText = await device.innerText();
+    assert.equal(state.selectedSku, 'hourly-8h', `${shot.name} checkout SKU must be fixed to 8 hours`);
+    assert.equal(state.selectedHours, 8, `${shot.name} checkout selected hours mismatch`);
+    assert.equal(state.order?.durationLabel, '8小时', `${shot.name} checkout order duration mismatch`);
+    for (const label of ['游戏', '版本', '租赁套餐', '租期', '原价', '实付', '支付方式', '协议', '退款', '支付有效期']) {
+      assert(checkoutText.includes(label), `${shot.name} checkout is missing ${label}`);
+    }
+  }
+
+  if (shot.pageId === 'orders') {
+    const orderToolbar = await page.evaluate(() => {
+      const tabs = [...document.querySelectorAll('#appRentalDemo .order-tabs button')];
+      const search = document.querySelector('#appRentalDemo .order-search');
+      const statuses = [...document.querySelectorAll('#appRentalDemo .order-list-card')].map((node) => node.dataset.status);
+      return {
+        tabs: tabs.map((node) => node.textContent.trim()),
+        searchRightOfUsable: Boolean(search && tabs[2] && search.getBoundingClientRect().left >= tabs[2].getBoundingClientRect().right),
+        statusCount: new Set(statuses).size,
+      };
+    });
+    assert.deepEqual(orderToolbar.tabs, ['全部订单', '待支付', '可使用'], `${shot.name} order tabs mismatch`);
+    assert(orderToolbar.searchRightOfUsable, `${shot.name} order search is not right of usable tab`);
+    assert(orderToolbar.statusCount >= 4, `${shot.name} does not show enough rental order states`);
+  }
+
   const visible = await device.innerText();
   const publicState = JSON.stringify(state);
   for (const secret of KNOWN_SECRETS) {
@@ -323,6 +387,9 @@ async function verifyShotState(page, shot) {
   assert(!CDKEY_VALUE_PATTERN.test(visible), `${shot.name} exposes a CDKEY-shaped value`);
   assert(!/(?:cd.?key|redeemCode|activationKey)"\s*:/i.test(publicState), `${shot.name} snapshot contains a CDKEY field`);
   assert(!/CDKEY/i.test(visible), `${shot.name} unexpectedly displays CDKEY content`);
+  if (['detail', 'checkout', 'orders', 'order-detail'].includes(shot.pageId)) {
+    assert(!/CDKEY|CDK|卡密|激活|发货|收货账号|永久拥有/i.test(visible), `${shot.name} contains forbidden CDKEY business copy`);
+  }
 
   if (['orders', 'order-detail'].includes(shot.pageId)) {
     const orderSafety = await page.evaluate(() => {

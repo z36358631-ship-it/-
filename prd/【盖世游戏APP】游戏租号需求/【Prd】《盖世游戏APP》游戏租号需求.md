@@ -8,7 +8,7 @@
 | 2026.08.03 | V1.1 | 郑群超 | <span style="background-color: #FEF794;">横屏继承 Mac 已确认任务页骨架，竖屏复用同一组件、内容顺序和业务状态；补充核心页/任务页导航边界、来源返回、任务栈、推荐游戏一致性、售后资格及临期占位规则</span> | <span style="background-color: #FEF794;">Demo、标注版和16张横竖屏截图已同步；自动验证271项通过</span> |
 | 2026.08.04 | V1.2 | 郑群超 | <span style="background-color: #FEF794;">全量重构 APP 横竖屏链路；补齐社区、排行榜、个人中心、搜索、订单详情、支付成功和会员生效页面；横屏核心页恢复 APP 左侧导航，订单列表与详情拆为独立页面；15分钟提醒改为跨阈值触发一次</span> | <span style="background-color: #FEF794;">普通版、标注版和36张横竖屏截图已同步；自动验证284项通过</span> |
 | 2026.08.10 | V1.3 | 郑群超 | <span style="background-color: #FEF794;"><span style="color:#3370FF;"><strong>按 V6.1.1 全量返工18个页面/关键状态；统一订单中心；拆分支付、分配、租期和退款状态；补充租购价格、异常恢复、非功能、埋点与可执行验收</strong></span></span> | <span style="background-color: #FEF794;">V6.1.1 普通 Demo、标注版和36张新截图已完成本地验收；固定 SHA 公网发布与 HTTP 校验待发布授权</span> |
-| 2026.08.10 | V1.4 | 郑群超 | <span style="background-color: #FEF794;"><span style="color:#3370FF;"><strong>收敛首页与搜索为统一租号展示模型；搜索取消卡内按钮与剩余时长；详情、确认订单和订单中心对齐 CDKEY 信息骨架、状态色与按钮层级，但仅保留租号业务语义</strong></span></span> | <span style="background-color: #FEF794;"><span style="color:#3370FF;"><strong>本期 Demo 只演示租号状态；CDKEY 业务继续在其独立需求完成。发现页金额一位小数，订单结算保持原始金额和两位小数</strong></span></span> |
+| 2026.08.10 | V1.4 | 郑群超 | <span style="background-color: #FEF794;"><span style="color:#3370FF;"><strong>收敛首页与搜索为统一租号展示模型；搜索取消卡内按钮与剩余时长；详情、确认订单和订单中心对齐 CDKEY 信息骨架、状态色与按钮层级，但仅保留租号业务语义</strong></span></span> | <span style="background-color: #FEF794;"><span style="color:#3370FF;"><strong>本期 Demo 只演示租号状态；CDKEY 业务继续在其独立需求完成。发现页金额一位小数，订单结算保持原始金额和两位小数；普通 Demo、标注版和36张截图已完成本地验收</strong></span></span> |
 
 > 当前普通 Demo：**[盖世游戏 APP 租号功能 Demo](../../demos/APP租号功能/盖世游戏APP租号功能demo.html)**
 >
@@ -124,7 +124,7 @@
 
 ### 4.2 详细设计（C端）
 
-> 下表共18个页面/关键状态。每行包含竖屏与横屏目标文件名，共36张。截图尚未生成，不使用旧截图或可变分支地址；生成后需上传、替换为同一固定提交 SHA 的公开 HTTPS 地址并逐张验证。
+> 下表共18个页面/关键状态。每行包含竖屏与横屏目标文件名，共36张。<span style="background-color: #FEF794;"><span style="color:#3370FF;"><strong>本地截图已重建并通过尺寸、格式与原尺寸人工检查</strong></span></span>；正式导入飞书前仍需获得发布授权，上传到同一固定提交 SHA 的公开 HTTPS 地址并逐张验证 HTTP 200 与 `image/png`。
 
 | 模块名称 | 图示 | 展示&交互说明 |
 |---|---|---|

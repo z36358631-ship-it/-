@@ -2882,6 +2882,24 @@
       state.routeContext = { sourceScreen: 'home', sourceScrollTop: 0, taskStack: [] };
       state.scenario = 'member-library-trial';
       state.selectedGameId = 'elden-ring';
+      Object.assign(state.discoveryContexts['shadow-blade-zero'], {
+        activeOrderStatus: 'active', expireAt: Date.now() + 2 * 60 * 60 * 1000, refundActive: false,
+        owned: false, installed: false, imported: false, permanent: false,
+        membershipActive: false, memberLibrary: false, firstRentalEligible: false,
+        priceResolved: true, inventoryResolved: true, eligibilityResolved: true,
+      });
+      Object.assign(state.discoveryContexts['elden-ring'], {
+        activeOrderStatus: null, expireAt: null, refundActive: false,
+        owned: false, installed: false, imported: false, permanent: true,
+        membershipActive: false, memberLibrary: true, firstRentalEligible: false,
+        priceResolved: true, inventoryResolved: true, eligibilityResolved: true,
+      });
+      Object.assign(state.discoveryContexts.spiritfarer, {
+        activeOrderStatus: null, expireAt: null, refundActive: false,
+        owned: false, installed: false, imported: false, permanent: false,
+        membershipActive: false, memberLibrary: false, firstRentalEligible: false,
+        priceResolved: true, inventoryResolved: true, eligibilityResolved: true,
+      });
       state.selectedSku = 'trial';
       state.selectedHours = 2;
       state.selectedPayment = 'alipay';
@@ -2941,14 +2959,17 @@
       profile: () => navigate('profile'),
       search: () => navigate('search'),
       detail: () => {
-        setScenario('member-library-trial', { shouldRender: false });
+        setScenario('not-member-library', { shouldRender: false });
         setSelectedGame('shadow-blade-zero', { shouldRender: false });
+        state.selectedSku = 'rent-2h';
+        state.entitlementPanelOpen = false;
         navigate('detail');
       },
       checkout: () => {
         setScenario('not-member-library', { shouldRender: false });
         setSelectedGame('elden-ring', { shouldRender: false });
-        state.selectedSku = 'rent-2h';
+        state.selectedSku = 'hourly-8h';
+        state.selectedHours = 8;
         navigate('checkout');
       },
       membership: () => {
