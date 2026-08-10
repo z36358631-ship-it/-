@@ -69,6 +69,19 @@ async function main() {
   };
   assertAnnotation(fs.existsSync(annotationPath), `缺少标注版 Demo：${annotationPath}`);
   const annotationSource = fs.readFileSync(annotationPath, 'utf8');
+  const templateSource = fs.readFileSync(templatePath, 'utf8');
+  const thirdReviewSourceChecks = [
+    ['稳定游戏售卖模式', templateSource.includes('GAME_SALE_MODES') && templateSource.includes("TIME_RENTAL: 'time-rental'") && templateSource.includes("ENTITLEMENT: 'entitlement'")],
+    ['确认订单内选择 SKU', templateSource.includes('renderCheckoutSkuOptions') && templateSource.includes('select-checkout-sku')],
+    ['详情一次进入确认订单', /label:\s*'租号开玩',\s*action:\s*'begin-checkout'/.test(templateSource)],
+    ['搜索真实 Tab 状态', templateSource.includes('SEARCH_TABS') && templateSource.includes('data-search-tab')],
+    ['会员价值与权益', templateSource.includes('MEMBERSHIP_BENEFITS') && templateSource.includes('membership-benefit-item')],
+    ['首页 Banner 租号价', templateSource.includes('home-rental-price') && templateSource.includes('· 可租号')],
+    ['售后四项且无无理由原因', !templateSource.includes("['refund', '3天无理由']")],
+  ];
+  const failedThirdReviewSourceChecks = thirdReviewSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
+  assert(failedThirdReviewSourceChecks.length === 0, `THIRD_REVIEW 源码契约未通过：${failedThirdReviewSourceChecks.join('、')}`);
+  process.stdout.write(`THIRD_REVIEW_SOURCE ${thirdReviewSourceChecks.length}/${thirdReviewSourceChecks.length} PASS\n`);
   assertAnnotation(
     !/<iframe\b/i.test(annotationSource)
       && !/(?:<script[^>]+src|<link[^>]+href|(?:src|href)=["']https?:|url\(["']?https?:)/i.test(annotationSource),
