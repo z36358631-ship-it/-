@@ -1,185 +1,156 @@
-# GameHub Platform-Aware Compatibility H5 Implementation Plan
+# 盖世游戏跨平台兼容性 H5 多参数查询返工 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rebuild GUANWANGGAID-4 as one high-fidelity responsive H5 that automatically isolates Android and Mac content, supports image-and-text game search, and lets users inspect and download platform-specific launch configurations.
+**Goal:** 把当前“单游戏搜索 + 单个详情”H5 返工为 GameNative Compatibility 式的三参数即时查询页，支持 Android/Mac 专属硬件映射、多条运行记录、桌面表格、手机卡片及响应式配置详情。
 
-**Architecture:** Keep the established offline Demo shape: one HTML entry point plus local cover assets. A PlatformContext resolves Bridge > query > Demo default, a normalized catalog filters every game, compatibility record, and configuration by platform, and one render pipeline serves portrait WebView and desktop layouts. DownloadController routes mutually exclusively to a local Blob download on the web or GameHubBridge.downloadConfig in App WebView.
+**Architecture:** 保留现有离线单文件 H5 和本地封面资源。`PlatformContext` 先确定平台，`CatalogAdapter` 标准化游戏、硬件、运行记录和配置；三个 `SearchableSelect` 只更新统一筛选状态，`filterRecords()` 负责 AND 过滤和排序，`RecordResults` 将同一结果集合渲染为桌面表格或手机卡片，`ConfigViewer` 使用同一 DOM 在桌面变为弹窗、手机变为全屏浮层。现有 `DownloadController` 继续互斥路由 Web Blob 与 `GameHubBridge.downloadConfig`。
 
-**Tech Stack:** HTML5, CSS, vanilla JavaScript, local JPEG assets, Blob downloads, App WebView Bridge, Node.js built-ins, Playwright Core, taskctl CLI.
+**Tech Stack:** 单文件 HTML/CSS/原生 JavaScript、Node.js、Playwright Core、`taskctl` Delivery CLI、Git
 
 ---
 
-## Scope and file map
+## Scope check
 
-This is one testable subsystem and does not require a new backend or a second H5.
+该规格是一个单一查询体验，不包含可独立发布的后台、登录、上传或配置应用子系统，无需拆成多个实施计划。现有 HTML 已采用单文件离线架构，本次不引入构建工具或框架，也不拆出运行时外链文件。
 
-- Modify demos/适合本机/盖世游戏适合本机WebView-demo.html: platform context, catalog, high-fidelity responsive UI, image-and-text search, compatibility result, inline configuration detail, and download state machine.
-- Reuse demos/适合本机/assets/compatibility/*.jpg: six existing local game covers; do not add runtime network assets.
-- Modify tools/verify-compatibility-webview-demo.mjs: replace the old three-filter/no-config contract with the platform/search/config/download contract.
-- Replace tools/capture-compatibility-webview-demo.mjs: verify platform priority, cross-platform isolation, search, inline details, Web download, App Bridge results, recovery, responsiveness, and screenshots.
-- Create test-results/compatibility-platform-aware-h5/*.png: seven current-review screenshots.
-- Use docs/superpowers/specs/2026-08-10-gamehub-compatibility-platform-aware-h5-design.md as the accepted design source.
-- Create .tmp/GUANWANGGAID-4-platform-aware-delivery.json only for Delivery submission; do not commit it.
+## File structure
 
-## Data and interface contract
+- Modify: `demos/适合本机/盖世游戏适合本机WebView-demo.html`
+  - 唯一可操作 H5；负责目录 Mock、平台隔离、三筛选、多记录结果、配置浮层和下载。
+- Modify: `tools/verify-compatibility-webview-demo.mjs`
+  - 静态契约、本地资源、离线依赖和 JavaScript 语法验证。
+- Modify: `tools/capture-compatibility-webview-demo.mjs`
+  - Playwright 交互、平台隔离、筛选组合、浮层、下载、恢复和响应式验证。
+- Replace evidence in: `test-results/compatibility-platform-aware-h5/`
+  - 生成 8 张本轮可呈现验收截图；旧 7 张单游戏流程截图不再作为返工验收依据。
+- Keep updated: `docs/superpowers/specs/2026-08-10-gamehub-compatibility-platform-aware-h5-design.md`
+  - 已确认的需求事实来源，不在实现阶段改变产品范围。
+- Update only when execution deviations are required: `docs/superpowers/plans/2026-08-10-gamehub-compatibility-platform-aware-h5.md`
+  - 本计划；若实现接口必须调整，先同步计划再写代码。
 
-The HTML must expose this public API:
+## Selector contract
 
-~~~js
-window.GameHubCompatibility = {
-  setContext(context),
-  setCatalog(catalog),
-  setCatalogLoading(),
-  setCatalogError(),
-  onDownloadResult(result)
-};
-~~~
+后续任务和测试统一使用以下 DOM 契约，不创建同义选择器：
 
-The App download call is:
+```text
+data-filter-select="game|hardware|rating"
+data-filter-trigger="game|hardware|rating"
+data-filter-query="game|hardware|rating"
+data-filter-option="game|hardware|rating"
+data-option-value="<catalog id or rating>"
+data-filter-clear="game|hardware|rating"
+data-clear-filters
+data-result-count
+data-record-row="<record id>"
+data-record-table
+data-record-cards
+data-config-open="<record id>"
+data-config-viewer
+data-config-choice="<config id>"
+data-config-detail="<config id>"
+data-config-close
+data-config-download="<config id>"
+```
 
-~~~js
-window.GameHubBridge.downloadConfig(JSON.stringify({
-  requestId,
-  platform,
-  gameId,
-  configId,
-  fileName
-}));
-~~~
-
-The callback accepts:
-
-~~~js
-window.GameHubCompatibility.onDownloadResult({
-  requestId,
-  ok: true,
-  message: "配置已开始下载"
-});
-~~~
-
-## Task 1: Replace the static contract with a failing platform-aware specification
+### Task 0: Reconfirm the scoped execution context
 
 **Files:**
+- Read only: Taskboard issue `4ade1ed5-07b1-474f-9f53-f8e6b8ba034b`
+- Read only: repository status for the task files listed above
 
-- Modify: tools/verify-compatibility-webview-demo.mjs
-- Test: demos/适合本机/盖世游戏适合本机WebView-demo.html
+- [ ] **Step 1: Read the latest issue and all comments**
 
-- [ ] **Step 1: Replace required and legacy markers**
+```powershell
+taskctl.cmd issue get 4ade1ed5-07b1-474f-9f53-f8e6b8ba034b --json
+taskctl.cmd comment list 4ade1ed5-07b1-474f-9f53-f8e6b8ba034b --json
+```
 
-Replace the current required and legacy arrays with:
+Expected: identifier `GUANWANGGAID-4`, project `guanwang-gaidong`, status `in_progress`, and the latest comments contain no newer rework requirement than this plan. If status or requirements changed, stop before editing.
 
-~~~js
-const required = [
-  'id="compatibility-app"',
-  'id="game-search"',
-  'data-platform-badge',
-  'data-demo-platform="android"',
-  'data-demo-platform="mac"',
-  'data-popular-game',
-  'data-search-result',
-  'data-compatibility-result',
-  'data-config-toggle',
-  'data-config-download',
-  'window.GameHubCompatibility',
-  'setContext(context)',
-  'setCatalog(catalog)',
-  'setCatalogLoading()',
-  'setCatalogError()',
-  'onDownloadResult(result)',
-  'resolvePlatform(context)',
-  'filteredCatalog()',
-  'renderSearchPanel()',
-  'renderCompatibilityResult()',
-  'renderConfigDetail(',
-  'startDownload(configId)',
-  'GameHubBridge.downloadConfig',
-  'URL.createObjectURL',
-  'Android',
-  'Mac',
-  '搜索游戏名称',
-  '启动配置',
-  '下载配置'
+- [ ] **Step 2: Honor any newly bound development context**
+
+Read `developmentContext` from the issue response. If it is a branch, switch to that branch; if it is a worktree, change the working directory to that exact worktree and verify its branch. If it is `null`, stay in `C:\Users\z3635\官网改动`. Do not create another context.
+
+- [ ] **Step 3: Confirm the task files have no overlapping user edits**
+
+```powershell
+git status --short -- "demos/适合本机/盖世游戏适合本机WebView-demo.html" "tools/verify-compatibility-webview-demo.mjs" "tools/capture-compatibility-webview-demo.mjs" "docs/superpowers/specs/2026-08-10-gamehub-compatibility-platform-aware-h5-design.md" "docs/superpowers/plans/2026-08-10-gamehub-compatibility-platform-aware-h5.md" "test-results/compatibility-platform-aware-h5"
+```
+
+Expected: no uncommitted changes in these task paths. Ignore unrelated dirty-worktree files; do not stage, revert or commit them.
+
+### Task 1: Define the catalog and filtering contract
+
+**Files:**
+- Modify: `tools/verify-compatibility-webview-demo.mjs`
+- Modify: `demos/适合本机/盖世游戏适合本机WebView-demo.html:694-1227`
+
+- [ ] **Step 1: Write the failing static data-contract test**
+
+In `tools/verify-compatibility-webview-demo.mjs`, replace the old single-game data markers with these exact contracts:
+
+```js
+const dataContracts = [
+  'hardware: [',
+  'hardwareIds:',
+  'filters: {',
+  'gameId: null',
+  'hardwareId: null',
+  'ratingMin: null',
+  'queries: {',
+  'openFilter: null',
+  'viewer: {',
+  'recordId: null',
+  'filterRecords()',
+  'sortRecords(records)',
+  '最低评分（≥）'
 ];
 
-const legacy = [
-  'id="game-select"',
-  'id="target-select"',
-  'id="rating-select"',
-  '最低评价（可选）',
-  'data-sort-field="rating"',
-  'data-sort-field="verifiedAt"',
-  'downloadAndApplyConfig',
-  '下载并应用',
-  'openGame(gameId',
-  'openGpu(gpuId'
-];
-~~~
-
-Keep the six existing cover checks and the external script, external stylesheet, iframe, network URL, and inline JavaScript syntax checks.
-
-- [ ] **Step 2: Add platform isolation source checks**
-
-After the legacy loop, add:
-
-~~~js
-const platformContracts = [
-  'platform: "android"',
-  'platform: "mac"',
-  'platformSource',
-  'Bridge > query > Demo',
-  'androidVersion',
-  'macosVersion',
-  'appleChip',
-  'mobileGpu'
-];
-
-for (const contract of platformContracts) {
-  if (!html.includes(contract)) fail(`missing platform contract: ${contract}`);
+for (const contract of dataContracts) {
+  if (!html.includes(contract)) fail(`missing data contract: ${contract}`);
 }
-~~~
+```
 
-Change the success output to:
+Do not reject the old renderer in this task. It remains temporarily so the H5 is still operable while the new data layer is introduced; Task 3 removes it together with the replacement result renderer.
 
-~~~js
-console.log('PASS: platform-aware compatibility H5 contracts, local assets, download API, offline policy, and JavaScript syntax');
-~~~
-
-- [ ] **Step 3: Run the static verifier and confirm red**
+- [ ] **Step 2: Run the static test and verify the new contract fails**
 
 Run:
 
-~~~powershell
+```powershell
 node tools/verify-compatibility-webview-demo.mjs
-~~~
+```
 
-Expected: exit code 1 with missing contract messages for id="game-search", data-platform-badge, and startDownload(configId).
+Expected: exit code `1` and at least `missing data contract: hardware: [`.
 
-- [ ] **Step 4: Commit only the failing contract**
+- [ ] **Step 3: Replace the single-game state with multi-filter state**
 
-~~~powershell
-git add -- tools/verify-compatibility-webview-demo.mjs
-git diff --cached --check
-git commit -m "test: define platform-aware compatibility H5 contract"
-~~~
+In the H5, extend the current `state` object with the new fields below. Temporarily keep `gameQuery`, `selectedGameId` and `expandedConfigId` until Task 3 removes the old renderer:
 
-## Task 2: Build the normalized platform catalog and deterministic context
-
-**Files:**
-
-- Modify: demos/适合本机/盖世游戏适合本机WebView-demo.html
-- Test: tools/verify-compatibility-webview-demo.mjs
-
-- [ ] **Step 1: Replace the old state with the platform-aware state**
-
-Use this exact state shape:
-
-~~~js
-const PLATFORM_PRIORITY = "Bridge > query > Demo";
-const DOWNLOAD_TIMEOUT_MS = 3000;
+```js
 const state = {
   platform: "android",
   platformSource: "demo",
+  filters: {
+    gameId: null,
+    hardwareId: null,
+    ratingMin: null
+  },
+  queries: {
+    game: "",
+    hardware: "",
+    rating: ""
+  },
+  openFilter: null,
+  sort: {
+    field: "rating",
+    direction: "desc"
+  },
+  viewer: {
+    recordId: null,
+    configId: null
+  },
   gameQuery: "",
   selectedGameId: null,
   expandedConfigId: null,
@@ -192,1107 +163,1480 @@ const state = {
   }
 };
 
-function clearDownloadState() {
-  state.download = {
-    requestId: null,
-    configId: null,
-    status: "idle",
-    message: ""
-  };
+const ratingOptions = [
+  { value: null, label: "全部" },
+  { value: 5, label: "5 分及以上" },
+  { value: 4, label: "4 分及以上" },
+  { value: 3, label: "3 分及以上" },
+  { value: 2, label: "2 分及以上" },
+  { value: 1, label: "1 分及以上" }
+];
+```
+
+- [ ] **Step 4: Add hardware references and duplicate-game records to the Mock catalog**
+
+Add a top-level `hardware` array. Every record must reference both the concrete device/model and its GPU/chip so either type can filter the same run:
+
+```js
+hardware: [
+  {
+    id: "android_device_oneplus13",
+    platform: "android",
+    type: "device",
+    displayName: "一加 13",
+    aliases: ["OnePlus 13", "骁龙 8 至尊版", "Adreno 830"],
+    subtitle: "骁龙 8 至尊版 · Adreno 830"
+  },
+  {
+    id: "android_device_redmagic10pro",
+    platform: "android",
+    type: "device",
+    displayName: "红魔 10 Pro",
+    aliases: ["RedMagic 10 Pro", "骁龙 8 至尊版", "Adreno 830"],
+    subtitle: "骁龙 8 至尊版 · Adreno 830"
+  },
+  {
+    id: "android_gpu_adreno830",
+    platform: "android",
+    type: "gpu",
+    displayName: "Adreno 830",
+    aliases: ["骁龙 8 至尊版 GPU"],
+    subtitle: "移动 GPU"
+  },
+  {
+    id: "android_device_xiaomi15",
+    platform: "android",
+    type: "device",
+    displayName: "小米 15",
+    aliases: ["Xiaomi 15", "骁龙 8 至尊版", "Adreno 830"],
+    subtitle: "骁龙 8 至尊版 · Adreno 830"
+  },
+  {
+    id: "mac_model_mbp_m4pro",
+    platform: "mac",
+    type: "model",
+    displayName: "MacBook Pro",
+    aliases: ["MBP", "Apple M4 Pro"],
+    subtitle: "Apple M4 Pro · macOS 15～26"
+  },
+  {
+    id: "mac_model_macmini_m4",
+    platform: "mac",
+    type: "model",
+    displayName: "Mac mini",
+    aliases: ["Apple M4"],
+    subtitle: "Apple M4 · macOS 15～26"
+  },
+  {
+    id: "mac_chip_m4pro",
+    platform: "mac",
+    type: "chip",
+    displayName: "Apple M4 Pro",
+    aliases: ["M4 Pro"],
+    subtitle: "Apple 芯片"
+  },
+  {
+    id: "mac_chip_m4",
+    platform: "mac",
+    type: "chip",
+    displayName: "Apple M4",
+    aliases: ["M4"],
+    subtitle: "Apple 芯片"
+  },
+  {
+    id: "mac_model_macstudio_m3max",
+    platform: "mac",
+    type: "model",
+    displayName: "Mac Studio",
+    aliases: ["Apple M3 Max"],
+    subtitle: "Apple M3 Max · macOS 15～26"
+  },
+  {
+    id: "mac_model_mbp_m4max",
+    platform: "mac",
+    type: "model",
+    displayName: "MacBook Pro M4 Max",
+    aliases: ["MBP M4 Max", "Apple M4 Max"],
+    subtitle: "Apple M4 Max · macOS 15～26"
+  },
+  {
+    id: "mac_chip_m3max",
+    platform: "mac",
+    type: "chip",
+    displayName: "Apple M3 Max",
+    aliases: ["M3 Max"],
+    subtitle: "Apple 芯片"
+  },
+  {
+    id: "mac_chip_m4max",
+    platform: "mac",
+    type: "chip",
+    displayName: "Apple M4 Max",
+    aliases: ["M4 Max"],
+    subtitle: "Apple 芯片"
+  }
+],
+```
+
+Replace the existing Elden Ring records with these four records:
+
+```js
+{
+  id: "android_elden_oneplus",
+  platform: "android",
+  gameId: "steam_1245620",
+  hardwareIds: ["android_device_oneplus13", "android_gpu_adreno830"],
+  gameVersion: "1.16.1",
+  verdict: "调优后流畅",
+  rating: 4,
+  avgFps: 38,
+  verifiedAt: "2026-08-08",
+  tags: ["基本流畅", "偶发卡顿"],
+  notes: "中画质下可稳定游玩，首次进入场景会短暂编译着色器。",
+  configIds: ["cfg_android_elden"],
+  environment: {
+    deviceModel: "一加 13",
+    soc: "骁龙 8 至尊版",
+    mobileGpu: "Adreno 830",
+    androidVersion: "Android 15",
+    appVersion: "盖世游戏 6.1.0",
+    runtime: "Wine 9.2 · GS3"
+  }
+},
+{
+  id: "android_elden_redmagic",
+  platform: "android",
+  gameId: "steam_1245620",
+  hardwareIds: ["android_device_redmagic10pro", "android_gpu_adreno830"],
+  gameVersion: "1.16.1",
+  verdict: "稳定流畅",
+  rating: 5,
+  avgFps: 46,
+  verifiedAt: "2026-08-10",
+  tags: ["稳定帧率", "需主动散热"],
+  notes: "开启主动散热后大部分场景保持 40 FPS 以上。",
+  configIds: [],
+  environment: {
+    deviceModel: "红魔 10 Pro",
+    soc: "骁龙 8 至尊版",
+    mobileGpu: "Adreno 830",
+    androidVersion: "Android 15",
+    appVersion: "盖世游戏 6.1.0",
+    runtime: "Wine 9.2 · GS3"
+  }
+},
+{
+  id: "mac_elden_mbp_m4pro",
+  platform: "mac",
+  gameId: "steam_1245620",
+  hardwareIds: ["mac_model_mbp_m4pro", "mac_chip_m4pro"],
+  gameVersion: "1.16.1",
+  verdict: "稳定运行",
+  rating: 4,
+  avgFps: 52,
+  verifiedAt: "2026-08-09",
+  tags: ["1080P", "中画质"],
+  notes: "默认分辨率下战斗和开放世界帧率稳定。",
+  configIds: ["cfg_mac_elden"],
+  environment: {
+    macModel: "MacBook Pro",
+    appleChip: "Apple M4 Pro",
+    macosVersion: "macOS 26",
+    appVersion: "盖世游戏 Mac 2.3.0",
+    compatibilityLayer: "Game Porting Toolkit 2",
+    displayMode: "1920 × 1080"
+  }
+},
+{
+  id: "mac_elden_macmini_m4",
+  platform: "mac",
+  gameId: "steam_1245620",
+  hardwareIds: ["mac_model_macmini_m4", "mac_chip_m4"],
+  gameVersion: "1.16.1",
+  verdict: "基本流畅",
+  rating: 4,
+  avgFps: 41,
+  verifiedAt: "2026-08-08",
+  tags: ["1080P", "低画质"],
+  notes: "大型场景需要降低阴影与植被质量。",
+  configIds: [],
+  environment: {
+    macModel: "Mac mini",
+    appleChip: "Apple M4",
+    macosVersion: "macOS 26",
+    appVersion: "盖世游戏 Mac 2.3.0",
+    compatibilityLayer: "Game Porting Toolkit 2",
+    displayMode: "1920 × 1080"
+  }
 }
-~~~
+```
 
-- [ ] **Step 2: Replace targets/runs with one platform-tagged catalog**
+Add these exact fields to the remaining records:
 
-The catalog must contain these exact, valid objects for both platforms:
+```js
+// android_wukong
+hardwareIds: ["android_device_redmagic10pro", "android_gpu_adreno830"],
+gameVersion: "1.0.12",
+notes: "需要低画质和 30 FPS 上限，首次启动时间较长。",
+configIds: ["cfg_android_wukong"]
 
-~~~js
-const mockCatalog = {
-  games: [
-    {
-      id: "steam_1245620",
-      name: "艾尔登法环",
-      englishName: "ELDEN RING",
-      aliases: ["老头环"],
-      coverKey: "elden-ring.jpg",
-      platforms: ["android", "mac"],
-      popularOn: ["android", "mac"]
-    },
-    {
-      id: "steam_2358720",
-      name: "黑神话：悟空",
-      englishName: "Black Myth: Wukong",
-      aliases: ["黑神话"],
-      coverKey: "black-myth-wukong.jpg",
-      platforms: ["android"],
-      popularOn: ["android"]
-    },
-    {
-      id: "steam_1145360",
-      name: "哈迪斯",
-      englishName: "Hades",
-      aliases: ["HADES"],
-      coverKey: "hades.jpg",
-      platforms: ["android", "mac"],
-      popularOn: ["android", "mac"]
-    },
-    {
-      id: "steam_1091500",
-      name: "赛博朋克 2077",
-      englishName: "Cyberpunk 2077",
-      aliases: ["2077"],
-      coverKey: "cyberpunk-2077.jpg",
-      platforms: ["android", "mac"],
-      popularOn: ["mac"]
-    },
-    {
-      id: "steam_814380",
-      name: "只狼：影逝二度",
-      englishName: "Sekiro",
-      aliases: ["只狼"],
-      coverKey: "sekiro.jpg",
-      platforms: ["android"],
-      popularOn: ["android"]
-    },
-    {
-      id: "steam_1716740",
-      name: "星空",
-      englishName: "Starfield",
-      aliases: ["STARFIELD"],
-      coverKey: "starfield.jpg",
-      platforms: ["mac"],
-      popularOn: ["mac"]
-    }
-  ],
-  records: [
-    {
-      id: "android_elden",
-      platform: "android",
-      gameId: "steam_1245620",
-      verdict: "调优后流畅",
-      rating: 4,
-      avgFps: 38,
-      verifiedAt: "2026-08-08",
-      tags: ["基本流畅", "偶发卡顿"],
-      environment: {
-        deviceModel: "一加 13",
-        soc: "骁龙 8 至尊版",
-        mobileGpu: "Adreno 830",
-        androidVersion: "Android 15",
-        appVersion: "盖世游戏 6.1.0",
-        runtime: "Wine 9.2 · GS3"
-      }
-    },
-    {
-      id: "android_wukong",
-      platform: "android",
-      gameId: "steam_2358720",
-      verdict: "可进入游戏",
-      rating: 3,
-      avgFps: 31,
-      verifiedAt: "2026-08-07",
-      tags: ["需降画质", "首启较慢"],
-      environment: {
-        deviceModel: "红魔 10 Pro",
-        soc: "骁龙 8 至尊版",
-        mobileGpu: "Adreno 830",
-        androidVersion: "Android 15",
-        appVersion: "盖世游戏 6.1.0",
-        runtime: "Wine 9.2 · GS3"
-      }
-    },
-    {
-      id: "mac_elden",
-      platform: "mac",
-      gameId: "steam_1245620",
-      verdict: "稳定运行",
-      rating: 4,
-      avgFps: 52,
-      verifiedAt: "2026-08-09",
-      tags: ["1080P", "中画质"],
-      environment: {
-        macModel: "MacBook Pro",
-        appleChip: "Apple M4 Pro",
-        macosVersion: "macOS 26",
-        appVersion: "盖世游戏 Mac 2.3.0",
-        compatibilityLayer: "Game Porting Toolkit 2",
-        displayMode: "1920 × 1080"
-      }
-    },
-    {
-      id: "mac_hades",
-      platform: "mac",
-      gameId: "steam_1145360",
-      verdict: "原生级流畅",
-      rating: 5,
-      avgFps: 60,
-      verifiedAt: "2026-08-09",
-      tags: ["稳定 60 FPS", "低功耗"],
-      environment: {
-        macModel: "Mac mini",
-        appleChip: "Apple M4",
-        macosVersion: "macOS 26",
-        appVersion: "盖世游戏 Mac 2.3.0",
-        compatibilityLayer: "Game Porting Toolkit 2",
-        displayMode: "2560 × 1440"
-      }
-    }
-  ],
-  configs: [
-    {
-      id: "cfg_android_elden",
-      platform: "android",
-      gameId: "steam_1245620",
-      name: "720P 稳定方案",
-      version: "2.1",
-      fileName: "elden-ring-android-720p.gamehub.json",
-      fileSize: "18 KB",
-      downloadCount: 1280,
-      updatedAt: "2026-08-08",
-      summary: "Adreno 830 · 35～45 FPS",
-      fields: [
-        ["分辨率", "1280 × 720"],
-        ["画质", "中"],
-        ["运行环境", "Wine 9.2 · GS3"],
-        ["光线追踪", "关闭"]
-      ]
-    },
-    {
-      id: "cfg_android_wukong",
-      platform: "android",
-      gameId: "steam_2358720",
-      name: "低画质启动方案",
-      version: "1.3",
-      fileName: "wukong-android-low.gamehub.json",
-      fileSize: "16 KB",
-      downloadCount: 864,
-      updatedAt: "2026-08-07",
-      summary: "Adreno 830 · 28～35 FPS",
-      fields: [
-        ["分辨率", "1280 × 720"],
-        ["画质", "低"],
-        ["运行环境", "Wine 9.2 · GS3"],
-        ["帧率上限", "30 FPS"]
-      ]
-    },
-    {
-      id: "cfg_mac_elden",
-      platform: "mac",
-      gameId: "steam_1245620",
-      name: "M4 Pro 1080P 方案",
-      version: "1.4",
-      fileName: "elden-ring-mac-m4pro.gamehub.json",
-      fileSize: "14 KB",
-      downloadCount: 526,
-      updatedAt: "2026-08-09",
-      summary: "Apple M4 Pro · 45～60 FPS",
-      fields: [
-        ["显示模式", "1920 × 1080"],
-        ["画质", "中"],
-        ["兼容层", "Game Porting Toolkit 2"],
-        ["帧率上限", "60 FPS"]
-      ]
-    },
-    {
-      id: "cfg_mac_hades",
-      platform: "mac",
-      gameId: "steam_1145360",
-      name: "M4 高分辨率方案",
-      version: "1.1",
-      fileName: "hades-mac-m4.gamehub.json",
-      fileSize: "12 KB",
-      downloadCount: 342,
-      updatedAt: "2026-08-09",
-      summary: "Apple M4 · 稳定 60 FPS",
-      fields: [
-        ["显示模式", "2560 × 1440"],
-        ["画质", "高"],
-        ["兼容层", "Game Porting Toolkit 2"],
-        ["垂直同步", "开启"]
-      ]
-    }
-  ]
-};
-~~~
+// android_hades
+hardwareIds: ["android_device_xiaomi15", "android_gpu_adreno830"],
+gameVersion: "1.38290",
+notes: "高画质下可稳定 60 FPS。",
+configIds: ["cfg_android_hades"]
 
-- [ ] **Step 3: Add normalization and platform resolution**
+// android_sekiro
+hardwareIds: ["android_device_oneplus13", "android_gpu_adreno830"],
+gameVersion: "1.06",
+notes: "中画质战斗稳定，少数区域有短暂掉帧。",
+configIds: []
 
-Add these functions before rendering:
+// mac_hades
+hardwareIds: ["mac_model_macmini_m4", "mac_chip_m4"],
+gameVersion: "1.38290",
+notes: "高分辨率下可稳定 60 FPS。",
+configIds: ["cfg_mac_hades"]
 
-~~~js
-function normalizePlatform(value) {
-  const normalized = String(value || "").trim().toLowerCase();
-  return normalized === "android" || normalized === "mac" ? normalized : null;
-}
+// mac_cyberpunk
+hardwareIds: ["mac_model_macstudio_m3max", "mac_chip_m3max"],
+gameVersion: "2.3",
+notes: "关闭光追并降低画质后可稳定游玩。",
+configIds: ["cfg_mac_cyberpunk"]
 
-function queryPlatform() {
-  return normalizePlatform(new URLSearchParams(location.search).get("platform"));
-}
+// mac_starfield
+hardwareIds: ["mac_model_mbp_m4max", "mac_chip_m4max"],
+gameVersion: "1.15.216",
+notes: "实验方案，复杂场景帧率波动明显。",
+configIds: []
+```
 
-function resolvePlatform(context) {
-  const bridgePlatform = normalizePlatform(context && context.platform);
-  if (bridgePlatform) return { platform: bridgePlatform, source: "bridge" };
-  const queryValue = queryPlatform();
-  if (queryValue) return { platform: queryValue, source: "query" };
-  return { platform: "android", source: "demo" };
-}
+Add a `recordId` property inside every config object according to this exact mapping:
 
-function applyPlatform(next, source) {
-  if (next === state.platform && source === state.platformSource) return;
-  state.platform = next;
-  state.platformSource = source;
-  state.gameQuery = "";
-  state.selectedGameId = null;
-  state.expandedConfigId = null;
-  clearDownloadState();
-  render();
-}
+| Config `id` | Config `recordId` |
+|---|---|
+| `cfg_android_elden` | `android_elden_oneplus` |
+| `cfg_android_wukong` | `android_wukong` |
+| `cfg_android_hades` | `android_hades` |
+| `cfg_mac_elden` | `mac_elden_mbp_m4pro` |
+| `cfg_mac_hades` | `mac_hades` |
+| `cfg_mac_cyberpunk` | `mac_cyberpunk` |
 
-function filteredCatalog() {
-  const games = catalog.games.filter((game) => game.platforms.includes(state.platform));
-  const gameIds = new Set(games.map((game) => game.id));
+For example, the existing `cfg_android_elden` config object receives `recordId: "android_elden_oneplus"` immediately after its `gameId`; do not create a separate runtime mapping object.
+
+- [ ] **Step 5: Normalize hardware references and record fields**
+
+Inside `normalizeCatalog(raw)`, normalize hardware before records and reject cross-platform references:
+
+```js
+const hardware = uniqueById((Array.isArray(raw.hardware) ? raw.hardware : []).map((item) => {
+  if (!item || typeof item !== "object") return null;
+  const id = text(item.id, 60);
+  const platform = normalizePlatform(item.platform);
+  const type = text(item.type, 16);
+  const displayName = text(item.displayName, 80);
+  if (!id || !platform || !["device", "gpu", "model", "chip"].includes(type) || !displayName) {
+    return null;
+  }
   return {
-    games,
-    records: catalog.records.filter((record) => record.platform === state.platform && gameIds.has(record.gameId)),
-    configs: catalog.configs.filter((config) => config.platform === state.platform && gameIds.has(config.gameId))
+    id,
+    platform,
+    type,
+    displayName,
+    aliases: (Array.isArray(item.aliases) ? item.aliases : [])
+      .map((value) => text(value, 60)).filter(Boolean),
+    subtitle: text(item.subtitle, 100)
+  };
+}).filter(Boolean));
+
+const hardwareById = new Map(hardware.map((item) => [item.id, item]));
+```
+
+In record normalization, add:
+
+```js
+const hardwareIds = [...new Set((Array.isArray(item.hardwareIds) ? item.hardwareIds : [])
+  .map((value) => text(value, 60))
+  .filter((id) => hardwareById.get(id)?.platform === platform))];
+if (hardwareIds.length === 0) return null;
+
+return {
+  id: text(item.id, 60),
+  platform,
+  gameId,
+  hardwareIds,
+  gameVersion: text(item.gameVersion, 40) || "未记录",
+  verdict: text(item.verdict, 40),
+  rating: number(item.rating, 1, 5),
+  avgFps: number(item.avgFps, 0, 240),
+  verifiedAt: /^\d{4}-\d{2}-\d{2}$/.test(text(item.verifiedAt, 10))
+    ? text(item.verifiedAt, 10) : "未记录",
+  tags: (Array.isArray(item.tags) ? item.tags : [])
+    .map((value) => text(value, 30)).filter(Boolean).slice(0, 4),
+  notes: text(item.notes, 180) || "—",
+  configIds: (Array.isArray(item.configIds) ? item.configIds : [])
+    .map((value) => text(value, 60)).filter(Boolean),
+  environment
+};
+```
+
+After records are normalized and before configs are normalized, add:
+
+```js
+const recordById = new Map(records.map((record) => [record.id, record]));
+```
+
+Inside config normalization, validate and retain `recordId`:
+
+```js
+const recordId = text(item.recordId, 60);
+const record = recordById.get(recordId);
+if (!record || record.platform !== platform || record.gameId !== gameId) return null;
+
+return {
+  id,
+  platform,
+  gameId,
+  recordId,
+  name: text(item.name, 80),
+  version: text(item.version, 30),
+  fileName: text(item.fileName, 100),
+  fileSize: text(item.fileSize, 30),
+  downloadCount: number(item.downloadCount),
+  updatedAt: text(item.updatedAt, 10),
+  summary: text(item.summary, 120),
+  applicability,
+  fields
+};
+```
+
+Return `{ games, hardware, records, configs }` and initialize `catalog` with all four arrays.
+
+- [ ] **Step 6: Implement the single filtering and sorting functions**
+
+Add these functions after catalog normalization:
+
+```js
+function activeCatalog() {
+  return {
+    games: catalog.games.filter((game) => game.platforms.includes(state.platform)),
+    hardware: catalog.hardware.filter((item) => item.platform === state.platform),
+    records: catalog.records.filter((record) => record.platform === state.platform),
+    configs: catalog.configs.filter((config) => config.platform === state.platform)
   };
 }
-~~~
 
-On startup use:
-
-~~~js
-const initialPlatform = resolvePlatform(null);
-state.platform = initialPlatform.platform;
-state.platformSource = initialPlatform.source;
-setCatalog(mockCatalog);
-~~~
-
-- [ ] **Step 4: Add catalog validation**
-
-Use these helpers and the complete normalizer. Configuration URLs are intentionally not part of the normalized object:
-
-~~~js
-const allowedCovers = new Set([
-  "black-myth-wukong.jpg",
-  "elden-ring.jpg",
-  "hades.jpg",
-  "sekiro.jpg",
-  "cyberpunk-2077.jpg",
-  "starfield.jpg"
-]);
-
-function text(value, max = 100) {
-  return String(value == null ? "" : value).trim().slice(0, max);
-}
-
-function esc(value) {
-  return String(value == null ? "" : value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function number(value, min = 0, max = Number.MAX_SAFE_INTEGER) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return min;
-  return Math.min(max, Math.max(min, parsed));
-}
-
-function uniqueById(items) {
-  const seen = new Set();
-  return items.filter((item) => {
-    if (!item || !item.id || seen.has(item.id)) return false;
-    seen.add(item.id);
-    return true;
+function sortRecords(records) {
+  const direction = state.sort.direction === "asc" ? 1 : -1;
+  return [...records].sort((left, right) => {
+    const primary = state.sort.field === "verifiedAt"
+      ? left.verifiedAt.localeCompare(right.verifiedAt)
+      : left.rating - right.rating;
+    if (primary !== 0) return primary * direction;
+    return right.verifiedAt.localeCompare(left.verifiedAt);
   });
 }
 
-function normalizeCatalog(raw = {}) {
-  const games = uniqueById((Array.isArray(raw.games) ? raw.games : []).map((item) => {
-    if (!item || typeof item !== "object") return null;
-    const id = text(item.id, 60);
-    const name = text(item.name, 60);
-    const platforms = [...new Set((Array.isArray(item.platforms) ? item.platforms : [])
-      .map(normalizePlatform).filter(Boolean))];
-    if (!id || !name || platforms.length === 0) return null;
-    const coverKey = text(item.coverKey, 80);
-    return {
-      id,
-      name,
-      englishName: text(item.englishName, 80),
-      aliases: (Array.isArray(item.aliases) ? item.aliases : []).map((value) => text(value, 50)).filter(Boolean),
-      coverKey: allowedCovers.has(coverKey) ? coverKey : "",
-      platforms,
-      popularOn: (Array.isArray(item.popularOn) ? item.popularOn : [])
-        .map(normalizePlatform).filter((platform) => platforms.includes(platform))
-    };
-  }).filter(Boolean));
-
-  const gameIds = new Set(games.map((game) => game.id));
-  const records = uniqueById((Array.isArray(raw.records) ? raw.records : []).map((item) => {
-    if (!item || typeof item !== "object") return null;
-    const platform = normalizePlatform(item.platform);
-    const gameId = text(item.gameId, 60);
-    if (!platform || !gameIds.has(gameId)) return null;
-    const source = item.environment && typeof item.environment === "object" ? item.environment : {};
-    const environment = platform === "android"
-      ? {
-          deviceModel: text(source.deviceModel),
-          soc: text(source.soc),
-          mobileGpu: text(source.mobileGpu),
-          androidVersion: text(source.androidVersion),
-          appVersion: text(source.appVersion),
-          runtime: text(source.runtime)
-        }
-      : {
-          macModel: text(source.macModel),
-          appleChip: text(source.appleChip),
-          macosVersion: text(source.macosVersion),
-          appVersion: text(source.appVersion),
-          compatibilityLayer: text(source.compatibilityLayer),
-          displayMode: text(source.displayMode)
-        };
-    return {
-      id: text(item.id, 60),
-      platform,
-      gameId,
-      verdict: text(item.verdict, 40),
-      rating: number(item.rating, 1, 5),
-      avgFps: number(item.avgFps, 0, 240),
-      verifiedAt: /^\d{4}-\d{2}-\d{2}$/.test(text(item.verifiedAt, 10)) ? text(item.verifiedAt, 10) : "未记录",
-      tags: (Array.isArray(item.tags) ? item.tags : []).map((value) => text(value, 30)).filter(Boolean).slice(0, 4),
-      environment
-    };
-  }).filter(Boolean));
-
-  const configs = uniqueById((Array.isArray(raw.configs) ? raw.configs : []).map((item) => {
-    if (!item || typeof item !== "object") return null;
-    const platform = normalizePlatform(item.platform);
-    const gameId = text(item.gameId, 60);
-    if (!platform || !gameIds.has(gameId)) return null;
-    const fields = (Array.isArray(item.fields) ? item.fields : [])
-      .filter((pair) => Array.isArray(pair) && pair.length === 2)
-      .map(([label, value]) => [text(label, 30), text(value, 80)])
-      .filter(([label, value]) => label && value)
-      .slice(0, 6);
-    return {
-      id: text(item.id, 60),
-      platform,
-      gameId,
-      name: text(item.name, 60),
-      version: text(item.version, 20),
-      fileName: text(item.fileName, 100).replace(/[^a-zA-Z0-9._-]/g, "-"),
-      fileSize: text(item.fileSize, 20),
-      downloadCount: number(item.downloadCount, 0),
-      updatedAt: text(item.updatedAt, 10),
-      summary: text(item.summary, 80),
-      fields
-    };
-  }).filter(Boolean));
-
-  return { games, records, configs };
+function filterRecords() {
+  const { records } = activeCatalog();
+  return sortRecords(records.filter((record) => {
+    if (state.filters.gameId && record.gameId !== state.filters.gameId) return false;
+    if (state.filters.hardwareId && !record.hardwareIds.includes(state.filters.hardwareId)) return false;
+    if (state.filters.ratingMin != null && record.rating < state.filters.ratingMin) return false;
+    return true;
+  }));
 }
+```
 
-let catalog = normalizeCatalog(mockCatalog);
+- [ ] **Step 7: Run the static test and commit the data layer**
 
-function setCatalog(raw) {
-  catalog = normalizeCatalog(raw);
-  state.catalogStatus = "ready";
-  if (!filteredCatalog().games.some((game) => game.id === state.selectedGameId)) {
-    state.selectedGameId = null;
-    state.expandedConfigId = null;
-    clearDownloadState();
-  }
-  render();
-}
-~~~
+Run:
 
-- [ ] **Step 5: Run the static verifier**
-
-~~~powershell
+```powershell
 node tools/verify-compatibility-webview-demo.mjs
-~~~
+git diff --check -- demos/适合本机/盖世游戏适合本机WebView-demo.html tools/verify-compatibility-webview-demo.mjs
+```
 
-Expected: it still fails because the new UI and download markers do not exist yet, while JavaScript remains syntactically valid.
+Expected: the static test passes the new data contracts, JavaScript syntax passes, and `git diff --check` reports no whitespace errors.
 
-## Task 3: Rebuild the high-fidelity portrait-first UI and search flow
+Commit only the two task files:
+
+```powershell
+git add -- "demos/适合本机/盖世游戏适合本机WebView-demo.html" "tools/verify-compatibility-webview-demo.mjs"
+git commit -m "refactor: add compatibility filter data model"
+```
+
+### Task 2: Build the three searchable dropdown filters
 
 **Files:**
+- Modify: `tools/verify-compatibility-webview-demo.mjs`
+- Modify: `demos/适合本机/盖世游戏适合本机WebView-demo.html:121-687,1233-1733`
 
-- Modify: demos/适合本机/盖世游戏适合本机WebView-demo.html
-- Test: tools/verify-compatibility-webview-demo.mjs
+- [ ] **Step 1: Add failing UI-contract assertions**
 
-- [ ] **Step 1: Replace the workbench toolbar**
+Add these entries to the verifier `required` list:
 
-Keep desktop/mobile preview controls and add platform controls outside the H5 frame:
+```js
+'data-filter-select="game"',
+'data-filter-select="hardware"',
+'data-filter-select="rating"',
+'data-filter-trigger=',
+'data-filter-query=',
+'data-filter-option=',
+'data-filter-clear=',
+'data-clear-filters',
+'renderFilterBar()',
+'renderSearchableSelect('
+```
 
-~~~html
-<div class="demo-bar">
-  <div class="demo-name">
-    <span class="demo-mark">GH</span>
-    <span>跨平台兼容性 · H5 Demo</span>
-  </div>
-  <div class="demo-toolbar">
-    <div class="demo-controls" aria-label="预览平台">
-      <button class="control active" data-demo-platform="android" type="button">Android</button>
-      <button class="control" data-demo-platform="mac" type="button">Mac</button>
-    </div>
-    <div class="demo-controls" aria-label="预览尺寸">
-      <button class="control" data-preview="desktop" type="button">网页</button>
-      <button class="control active" data-preview="mobile" type="button">竖屏</button>
-    </div>
-  </div>
-</div>
-<div class="frame" data-preview="mobile">
-  <main id="compatibility-app" class="app"></main>
-</div>
-~~~
+Do not add the old search/result markers to `legacy` yet; Task 3 removes the old renderer atomically with its replacement.
 
-- [ ] **Step 2: Apply the GameHub design tokens and portrait hierarchy**
+- [ ] **Step 2: Run the verifier and confirm the filter UI is missing**
 
-Use the UI-spec tokens:
+Run:
 
-~~~css
-:root {
-  --bg-primary: #000000;
-  --bg-card: #1a1a1a;
-  --bg-elevated: #252525;
-  --text-primary: #ffffff;
-  --text-secondary: #e6e6e6;
-  --text-muted: #7b7b7b;
-  --brand-gold: #ffcc43;
-  --brand-gold-light: #ffd98f;
-  --brand-green: #33d8a4;
-  --brand-blue: #338feb;
-  --border-default: #353d4e;
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-full: 100px;
-  --font-primary: "MiSans VF", "MiSans", "PingFang SC", sans-serif;
-  --font-number: "D-DIN-PRO", "MiSans VF", sans-serif;
+```powershell
+node tools/verify-compatibility-webview-demo.mjs
+```
+
+Expected: exit code `1` with `missing contract: data-filter-select="game"`.
+
+- [ ] **Step 3: Add reusable filter definitions and candidate matching**
+
+Add:
+
+```js
+function filterDefinitions() {
+  return [
+    { key: "game", label: "游戏", placeholder: "搜索游戏" },
+    {
+      key: "hardware",
+      label: state.platform === "android" ? "设备或 GPU" : "Mac 机型或 Apple 芯片",
+      placeholder: state.platform === "android" ? "搜索设备、芯片或 GPU" : "搜索机型或 Apple 芯片"
+    },
+    { key: "rating", label: "最低评分（≥）", placeholder: "搜索评分" }
+  ];
 }
 
-.frame[data-preview="mobile"] {
-  width: 390px;
-  height: 844px;
+function includesQuery(values, query) {
+  const normalized = text(query, 80).toLocaleLowerCase("zh-CN");
+  if (!normalized) return true;
+  return values.some((value) => text(value, 100).toLocaleLowerCase("zh-CN").includes(normalized));
 }
 
-.page {
-  width: min(100%, 1120px);
-  min-height: 100%;
-  margin: 0 auto;
-  padding: 28px;
-}
-
-.frame[data-preview="mobile"] .page {
-  padding: 16px 14px 32px;
-}
-
-button,
-input {
-  min-height: 44px;
-  font: inherit;
-}
-
-.game-cover {
-  width: 64px;
-  aspect-ratio: 2 / 3;
-  object-fit: cover;
-  border-radius: var(--radius-md);
-  background: var(--bg-elevated);
-}
-~~~
-
-Use 32/20/16/14/12px type roles from the UI spec. Do not introduce purple/cyan branding, iframe, CDN, external script, or runtime URL.
-
-- [ ] **Step 3: Implement the platform header and image-and-text search**
-
-Add these render functions:
-
-~~~js
-function platformLabel() {
-  return state.platform === "mac" ? "Mac" : "Android";
-}
-
-function coverUrl(game) {
-  return game.coverKey
-    ? "assets/compatibility/" + encodeURIComponent(game.coverKey)
-    : "";
-}
-
-function matchingGames() {
-  const { games } = filteredCatalog();
-  const query = state.gameQuery.trim().toLowerCase();
-  if (!query) return [];
-  return games.filter((game) => {
-    return [game.name, game.englishName, ...game.aliases]
-      .join(" ")
-      .toLowerCase()
-      .includes(query);
-  }).slice(0, 6);
-}
-
-function renderSearchPanel() {
-  const candidates = matchingGames();
-  const candidateHtml = state.gameQuery
-    ? '<div class="search-results">' + (candidates.length
-      ? candidates.map((game) => '<button class="search-result" data-search-result="' + esc(game.id) + '" type="button">' +
-          '<img class="game-cover" src="' + esc(coverUrl(game)) + '" alt="">' +
-          '<span><strong>' + esc(game.name) + '</strong><small>' + esc(game.englishName) + ' · ' + platformLabel() + '</small></span>' +
-        '</button>').join("")
-      : '<div class="empty-inline">没有找到当前平台可用的游戏</div>') + '</div>'
-    : "";
-  return '<section class="search-section">' +
-    '<label class="search-box" for="game-search"><span aria-hidden="true">⌕</span>' +
-      '<input id="game-search" autocomplete="off" placeholder="搜索游戏名称" value="' + esc(state.gameQuery) + '">' +
-      (state.gameQuery ? '<button data-clear-search type="button" aria-label="清除搜索">×</button>' : '') +
-    '</label>' + candidateHtml +
-  '</section>';
-}
-~~~
-
-- [ ] **Step 4: Implement platform-specific popular games**
-
-~~~js
-function renderPopularGames() {
-  const games = filteredCatalog().games
-    .filter((game) => game.popularOn.includes(state.platform))
-    .slice(0, 4);
-  return '<section class="popular-section">' +
-    '<div class="section-heading"><div><h2>' + platformLabel() + ' 热门游戏</h2><p>查看已验证的运行表现与启动配置</p></div></div>' +
-    '<div class="popular-grid">' +
-      games.map((game) => '<button class="popular-game" data-popular-game="' + esc(game.id) + '" type="button">' +
-        '<img src="' + esc(coverUrl(game)) + '" alt="">' +
-        '<span><strong>' + esc(game.name) + '</strong><small>' + esc(game.englishName) + '</small></span>' +
-      '</button>').join("") +
-    '</div>' +
-  '</section>';
-}
-~~~
-
-- [ ] **Step 5: Implement compatibility result and inline config details**
-
-~~~js
-function renderEnvironment(record) {
-  const environment = record.environment;
-  const rows = state.platform === "android"
-    ? [
-        ["设备", environment.deviceModel],
-        ["SoC / GPU", environment.soc + " · " + environment.mobileGpu],
-        ["系统", environment.androidVersion],
-        ["运行环境", environment.runtime],
-        ["盖世版本", environment.appVersion]
-      ]
-    : [
-        ["设备", environment.macModel + " · " + environment.appleChip],
-        ["系统", environment.macosVersion],
-        ["兼容层", environment.compatibilityLayer],
-        ["显示模式", environment.displayMode],
-        ["盖世版本", environment.appVersion]
-      ];
-  return rows.map(([label, value]) =>
-    '<div class="metric-row"><span>' + esc(label) + '</span><strong>' + esc(value || "未记录") + '</strong></div>'
-  ).join("");
-}
-
-function renderConfigDetail(config) {
-  const download = state.download.configId === config.id ? state.download : null;
-  return '<div class="config-detail" data-config-detail="' + esc(config.id) + '">' +
-    '<div class="config-summary"><strong>' + esc(config.summary) + '</strong><span>v' + esc(config.version) + ' · ' + esc(config.fileSize) + '</span></div>' +
-    '<div class="config-fields">' +
-      config.fields.map(([label, value]) => '<div><span>' + esc(label) + '</span><strong>' + esc(value) + '</strong></div>').join("") +
-    '</div>' +
-    '<div class="config-meta">更新于 ' + esc(config.updatedAt) + ' · ' + number(config.downloadCount) + ' 次下载</div>' +
-    '<button class="download-button" data-config-download="' + esc(config.id) + '" type="button"' +
-      (download && download.status === "pending" ? ' disabled' : '') + '>' +
-      (download && download.status === "pending" ? "正在下载…" : "下载配置") +
-    '</button>' +
-    (download && download.message ? '<p class="download-message ' + esc(download.status) + '" role="status">' + esc(download.message) + '</p>' : '') +
-  '</div>';
-}
-
-function renderCompatibilityResult() {
-  const { games, records, configs } = filteredCatalog();
-  const game = games.find((item) => item.id === state.selectedGameId);
-  if (!game) return renderPopularGames();
-  const record = records.find((item) => item.gameId === game.id);
-  const gameConfigs = configs.filter((item) => item.gameId === game.id);
-  return '<section class="compatibility-result" data-compatibility-result="' + esc(game.id) + '">' +
-    '<button class="result-back" data-result-back type="button">← 返回' + platformLabel() + '游戏</button>' +
-    '<div class="result-hero"><img src="' + esc(coverUrl(game)) + '" alt=""><div><span class="platform-badge">' + platformLabel() + '</span><h2>' + esc(game.name) + '</h2><p>' + esc(game.englishName) + '</p></div></div>' +
-    (record
-      ? '<div class="verdict-card"><div><span>兼容结论</span><strong>' + esc(record.verdict) + '</strong></div><div class="fps"><strong>' + number(record.avgFps) + '</strong><span>FPS</span></div></div>' +
-        '<div class="environment-card">' + renderEnvironment(record) + '</div>'
-      : '<div class="state-card"><h3>暂无验证记录</h3><p>当前平台还没有可靠的运行数据。</p></div>') +
-    '<div class="config-section"><div class="section-heading"><div><h2>启动配置</h2><p>查看适用环境后再下载</p></div></div>' +
-      (gameConfigs.length
-        ? gameConfigs.map((config) => '<article class="config-card">' +
-            '<button data-config-toggle="' + esc(config.id) + '" type="button"><span><strong>' + esc(config.name) + '</strong><small>' + esc(config.summary) + '</small></span><span>' + (state.expandedConfigId === config.id ? "收起" : "查看") + '</span></button>' +
-            (state.expandedConfigId === config.id ? renderConfigDetail(config) : '') +
-          '</article>').join("")
-        : '<div class="state-card"><h3>暂无可下载配置</h3><p>当前平台未提供已验证配置。</p></div>') +
-    '</div>' +
-  '</section>';
-}
-~~~
-
-- [ ] **Step 6: Use one render pipeline**
-
-~~~js
-function render() {
-  let content = "";
-  if (state.catalogStatus === "loading") {
-    content = renderState("正在加载兼容数据", "正在获取游戏、兼容记录和配置。", "");
-  } else if (state.catalogStatus === "error") {
-    content = renderState("兼容数据加载失败", "暂时无法获取数据，请重试。", "reload");
-  } else if (state.selectedGameId) {
-    content = renderCompatibilityResult();
-  } else {
-    content = renderSearchPanel() + renderPopularGames();
+function filterOptions(key) {
+  const current = activeCatalog();
+  if (key === "game") {
+    return current.games.filter((game) => includesQuery(
+      [game.name, game.englishName, ...game.aliases],
+      state.queries.game
+    )).map((game) => ({
+      value: game.id,
+      label: game.name,
+      subtitle: game.englishName,
+      game
+    }));
   }
-  document.getElementById("compatibility-app").innerHTML =
-    '<div class="page"><header class="page-header">' +
-      '<button class="back-button" data-back type="button">← 返回</button>' +
-      '<span class="platform-pill" data-platform-badge>' + platformLabel() + '</span>' +
-      '<h1>游戏兼容性</h1><p>查看当前平台的运行表现与启动配置</p>' +
-    '</header>' + content + '</div>';
-  document.querySelectorAll("[data-demo-platform]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.demoPlatform === state.platform);
-    button.disabled = state.platformSource === "bridge";
-  });
+  if (key === "hardware") {
+    return current.hardware.filter((item) => includesQuery(
+      [item.displayName, item.subtitle, ...item.aliases],
+      state.queries.hardware
+    )).map((item) => ({
+      value: item.id,
+      label: item.displayName,
+      subtitle: item.subtitle
+    }));
+  }
+  return ratingOptions.filter((item) => includesQuery(
+    [item.label, item.value == null ? "全部" : String(item.value)],
+    state.queries.rating
+  ));
+}
+```
+
+- [ ] **Step 4: Render the shared dropdown component and filter bar**
+
+Add:
+
+```js
+function selectedFilterLabel(key) {
+  const current = activeCatalog();
+  if (key === "game") {
+    return current.games.find((game) => game.id === state.filters.gameId)?.name || "全部游戏";
+  }
+  if (key === "hardware") {
+    return current.hardware.find((item) => item.id === state.filters.hardwareId)?.displayName ||
+      (state.platform === "android" ? "全部设备 / GPU" : "全部机型 / 芯片");
+  }
+  return ratingOptions.find((item) => item.value === state.filters.ratingMin)?.label || "全部";
 }
 
-function renderState(title, copy, action) {
-  return '<section class="state-card"><h2>' + esc(title) + '</h2><p>' + esc(copy) + '</p>' +
-    (action ? '<button data-state-action="' + esc(action) + '" type="button">重新加载</button>' : '') +
-  '</section>';
+function renderFilterOption(key, option) {
+  const cover = key === "game" ? renderCover(option.game, "filter-option-cover") : "";
+  return '<button class="filter-option" data-filter-option="' + esc(key) +
+    '" data-option-value="' + esc(option.value == null ? "all" : option.value) + '" type="button">' +
+      cover + '<span><strong>' + esc(option.label) + '</strong>' +
+      (option.subtitle ? '<small>' + esc(option.subtitle) + '</small>' : '') + '</span>' +
+      (key === "game" ? '<em>' + platformLabel() + '</em>' : '') +
+    '</button>';
 }
-~~~
 
-- [ ] **Step 7: Add event handling without extra dialogs**
+function renderSearchableSelect(definition) {
+  const key = definition.key;
+  const isOpen = state.openFilter === key;
+  const options = filterOptions(key);
+  const hasSelection = key === "game" ? state.filters.gameId
+    : key === "hardware" ? state.filters.hardwareId
+    : state.filters.ratingMin != null;
+  return '<section class="filter-select' + (isOpen ? ' open' : '') +
+    '" data-filter-select="' + esc(key) + '">' +
+      '<span class="filter-label">' + esc(definition.label) + '</span>' +
+      '<div class="filter-control">' +
+        '<button data-filter-trigger="' + esc(key) + '" type="button" aria-expanded="' + isOpen + '">' +
+          '<strong>' + esc(selectedFilterLabel(key)) + '</strong><span>⌄</span>' +
+        '</button>' +
+        (hasSelection ? '<button class="filter-clear" data-filter-clear="' + esc(key) +
+          '" type="button" aria-label="清除' + esc(definition.label) + '">×</button>' : '') +
+      '</div>' +
+      (isOpen ? '<div class="filter-menu">' +
+        '<input data-filter-query="' + esc(key) + '" value="' + esc(state.queries[key]) +
+          '" placeholder="' + esc(definition.placeholder) + '" autocomplete="off">' +
+        '<div class="filter-options">' +
+          (options.length ? options.map((option) => renderFilterOption(key, option)).join("")
+            : '<p class="filter-empty">暂无匹配选项</p>') +
+        '</div></div>' : '') +
+    '</section>';
+}
 
-Use these exact handlers:
+function renderFilterBar() {
+  const selectedCount = [state.filters.gameId, state.filters.hardwareId, state.filters.ratingMin]
+    .filter((value) => value != null).length;
+  return '<section class="filter-panel">' +
+    '<div class="filter-grid">' + filterDefinitions().map(renderSearchableSelect).join("") + '</div>' +
+    '<div class="filter-summary"><span>' + selectedCount + ' 个筛选条件</span>' +
+      (selectedCount ? '<button data-clear-filters type="button">清空筛选</button>' : '') +
+    '</div></section>';
+}
+```
 
-~~~js
+- [ ] **Step 5: Replace the old search listeners with filter listeners**
+
+Add the new filter input branch before the existing `#game-search` branch. Keep the old branch until Task 3 deletes the old renderer:
+
+```js
 document.addEventListener("input", (event) => {
-  if (event.target.id !== "game-search") return;
-  state.gameQuery = event.target.value;
+  const key = event.target.dataset.filterQuery;
+  if (!key || !(key in state.queries)) return;
+  state.queries[key] = event.target.value;
   render();
-  const input = document.getElementById("game-search");
+  const input = document.querySelector('[data-filter-query="' + key + '"]');
   if (input) {
     input.focus();
-    input.setSelectionRange(state.gameQuery.length, state.gameQuery.length);
+    input.setSelectionRange(state.queries[key].length, state.queries[key].length);
   }
 });
 
-document.addEventListener("click", (event) => {
-  const preview = event.target.closest(".demo-controls [data-preview]");
-  if (preview) {
-    document.querySelector(".frame").dataset.preview = preview.dataset.preview;
-    document.querySelectorAll("[data-preview]").forEach((button) => {
-      button.classList.toggle("active", button === preview);
-    });
-    return;
-  }
+function clearFilter(key) {
+  if (key === "game") state.filters.gameId = null;
+  if (key === "hardware") state.filters.hardwareId = null;
+  if (key === "rating") state.filters.ratingMin = null;
+  state.queries[key] = "";
+  state.viewer = { recordId: null, configId: null };
+  clearDownloadState();
+}
+```
 
-  const demoPlatform = event.target.closest("[data-demo-platform]");
-  if (demoPlatform) {
-    if (state.platformSource !== "bridge") {
-      applyPlatform(normalizePlatform(demoPlatform.dataset.demoPlatform), "demo");
-    }
-    document.querySelectorAll("[data-demo-platform]").forEach((button) => {
-      button.classList.toggle("active", button.dataset.demoPlatform === state.platform);
-      button.disabled = state.platformSource === "bridge";
-    });
-    return;
-  }
+Inside the click listener, add these branches before config/download handling:
 
-  const selected = event.target.closest("[data-popular-game], [data-search-result]");
-  if (selected) {
-    state.selectedGameId = selected.dataset.popularGame || selected.dataset.searchResult;
-    state.gameQuery = "";
-    state.expandedConfigId = null;
-    clearDownloadState();
-    render();
-    return;
-  }
+```js
+const trigger = event.target.closest("[data-filter-trigger]");
+if (trigger) {
+  const key = trigger.dataset.filterTrigger;
+  state.openFilter = state.openFilter === key ? null : key;
+  render();
+  document.querySelector('[data-filter-query="' + key + '"]')?.focus();
+  return;
+}
 
-  if (event.target.closest("[data-clear-search]")) {
-    state.gameQuery = "";
-    render();
-    return;
-  }
+const option = event.target.closest("[data-filter-option]");
+if (option) {
+  const key = option.dataset.filterOption;
+  const value = option.dataset.optionValue;
+  if (key === "game") state.filters.gameId = value;
+  if (key === "hardware") state.filters.hardwareId = value;
+  if (key === "rating") state.filters.ratingMin = value === "all" ? null : Number(value);
+  state.queries[key] = "";
+  state.openFilter = null;
+  state.viewer = { recordId: null, configId: null };
+  clearDownloadState();
+  render();
+  return;
+}
 
-  if (event.target.closest("[data-result-back]")) {
-    state.selectedGameId = null;
-    state.expandedConfigId = null;
-    clearDownloadState();
-    render();
-    return;
-  }
+const clear = event.target.closest("[data-filter-clear]");
+if (clear) {
+  clearFilter(clear.dataset.filterClear);
+  render();
+  return;
+}
 
-  const configToggle = event.target.closest("[data-config-toggle]");
-  if (configToggle) {
-    const configId = configToggle.dataset.configToggle;
-    state.expandedConfigId = state.expandedConfigId === configId ? null : configId;
-    clearDownloadState();
-    render();
-    return;
-  }
+if (event.target.closest("[data-clear-filters]")) {
+  state.filters = { gameId: null, hardwareId: null, ratingMin: null };
+  state.queries = { game: "", hardware: "", rating: "" };
+  state.openFilter = null;
+  state.viewer = { recordId: null, configId: null };
+  clearDownloadState();
+  render();
+  return;
+}
+```
 
-  const configDownload = event.target.closest("[data-config-download]");
-  if (configDownload) {
-    startDownload(configDownload.dataset.configDownload);
-    return;
-  }
+For this intermediate green checkpoint, render `renderFilterBar()` above the existing search/popular/result content. Task 3 replaces that content completely and removes the old event branches.
 
-  const stateAction = event.target.closest("[data-state-action]");
-  if (stateAction && stateAction.dataset.stateAction === "reload") {
-    state.catalogStatus = "loading";
-    render();
-    window.setTimeout(() => setCatalog(mockCatalog), 400);
-  }
-});
-~~~
+- [ ] **Step 6: Add filter bar and dropdown styles**
 
-- [ ] **Step 8: Run the static verifier**
+Add CSS with the exact responsive behavior:
 
-~~~powershell
+```css
+.filter-panel { margin-top: 20px; padding: 18px; border: 1px solid var(--line); border-radius: 22px; background: var(--panel); }
+.filter-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.filter-select { position: relative; min-width: 0; }
+.filter-label { display: block; margin-bottom: 8px; color: var(--muted); font-size: 12px; }
+.filter-control { position: relative; display: flex; }
+.filter-control > [data-filter-trigger] { width: 100%; min-height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 44px 0 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--text); text-align: left; }
+.filter-clear { position: absolute; right: 4px; top: 4px; width: 44px; height: 44px; border: 0; background: transparent; color: var(--muted); }
+.filter-menu { position: absolute; z-index: 30; top: calc(100% + 8px); left: 0; right: 0; padding: 10px; border: 1px solid var(--line); border-radius: 16px; background: #171717; box-shadow: 0 18px 50px rgba(0,0,0,.45); }
+.filter-menu input { width: 100%; min-height: 46px; padding: 0 12px; border: 1px solid var(--line); border-radius: 12px; background: #0f0f0f; color: var(--text); }
+.filter-options { max-height: 280px; margin-top: 8px; overflow-y: auto; }
+.filter-option { width: 100%; min-height: 54px; display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 10px; padding: 8px; border: 0; border-radius: 10px; background: transparent; color: var(--text); text-align: left; }
+.filter-option:hover, .filter-option:focus-visible { background: rgba(255,255,255,.06); }
+.filter-option span { min-width: 0; display: grid; gap: 3px; }
+.filter-option small, .filter-option em { color: var(--muted); font-size: 12px; font-style: normal; }
+.filter-option-cover { width: 42px; height: 56px; object-fit: cover; border-radius: 7px; }
+.filter-empty { padding: 18px 8px; color: var(--muted); text-align: center; }
+.filter-summary { min-height: 44px; display: flex; align-items: center; justify-content: space-between; margin-top: 10px; color: var(--muted); font-size: 12px; }
+
+@media (max-width: 700px) {
+  .filter-grid { grid-template-columns: 1fr; }
+  .filter-menu { position: static; margin-top: 8px; }
+}
+```
+
+Mirror the mobile rule under `.frame[data-preview="mobile"]` so Demo preview and real 390px viewport behave identically.
+
+- [ ] **Step 7: Verify the filter contracts and commit**
+
+Run:
+
+```powershell
 node tools/verify-compatibility-webview-demo.mjs
-~~~
+git diff --check -- demos/适合本机/盖世游戏适合本机WebView-demo.html tools/verify-compatibility-webview-demo.mjs
+```
 
-Expected: PASS for platform-aware contracts, local assets, download API, offline policy, and JavaScript syntax after Task 4 adds the download controller.
+Expected: PASS and no whitespace errors.
 
-## Task 4: Add mutually exclusive Web and App download paths
+Commit:
+
+```powershell
+git add -- "demos/适合本机/盖世游戏适合本机WebView-demo.html" "tools/verify-compatibility-webview-demo.mjs"
+git commit -m "feat: add searchable compatibility filters"
+```
+
+### Task 3: Render multiple compatibility records
 
 **Files:**
+- Modify: `tools/capture-compatibility-webview-demo.mjs`
+- Modify: `tools/verify-compatibility-webview-demo.mjs`
+- Modify: `demos/适合本机/盖世游戏适合本机WebView-demo.html`
 
-- Modify: demos/适合本机/盖世游戏适合本机WebView-demo.html
-- Test: tools/verify-compatibility-webview-demo.mjs
+- [ ] **Step 1: Add failing result-contract assertions**
 
-- [ ] **Step 1: Replace the initial download-state helper with timer-aware helpers**
+Add to the verifier `required` list:
 
-~~~js
-let downloadTimer = 0;
+```js
+'data-result-count',
+'data-record-table',
+'data-record-cards',
+'data-record-row=',
+'data-sort-field="rating"',
+'data-sort-field="verifiedAt"',
+'renderRecordResults()',
+'renderRecordTable(',
+'renderRecordCards('
+```
 
-function clearDownloadTimer() {
-  if (downloadTimer) window.clearTimeout(downloadTimer);
-  downloadTimer = 0;
+Add to `legacy`:
+
+```js
+'selectedGameId',
+'expandedConfigId',
+'renderPopularGames()',
+'renderCompatibilityResult()',
+'id="game-search"',
+'data-popular-game',
+'data-search-result',
+'data-compatibility-result',
+'result-hero',
+'verdict-card',
+'返回Android游戏',
+'返回Mac游戏'
+```
+
+- [ ] **Step 2: Replace the opening browser assertions with failing multi-record tests**
+
+In the capture script, replace the old popular-game and single-result flow with:
+
+```js
+check(await page.locator('[data-filter-select]').count() === 3, 'Android filter count is not three');
+check(
+  await page.getByText('添加筛选条件开始查询', { exact: true }).isVisible(),
+  'Initial filter prompt is missing'
+);
+
+await page.locator('[data-filter-trigger="game"]').click();
+await page.locator('[data-filter-query="game"]').fill('艾尔登');
+const gameOption = page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]');
+check(await gameOption.count() === 1, 'Elden Ring game option is missing');
+check(await gameOption.locator('img').count() === 1, 'Game option has no local cover');
+check((await gameOption.innerText()).includes('ELDEN RING'), 'Game option has no English name');
+check((await gameOption.innerText()).includes('Android'), 'Game option has no platform label');
+await gameOption.click();
+
+check(await page.locator('[data-record-row]:visible').count() === 2, 'Game filter did not return two Android records');
+check((await page.locator('[data-result-count]').innerText()).includes('2 条兼容记录'), 'Android result count is wrong');
+check(await page.locator('[data-record-row="android_elden_redmagic"]:visible').count() === 1, 'Higher-rated Android record is missing');
+check(await page.locator('[data-record-row="android_elden_oneplus"]:visible').count() === 1, 'Second Android record is missing');
+```
+
+For this checkpoint, delete the remaining old single-game, inline-config, old screenshot and old platform-switch assertions below this block. Keep the shared helpers at the top and finish the script with this green checkpoint tail; later tasks insert new viewer, isolation, download and screenshot cases immediately before this tail:
+
+```js
+check(externalRequests.length === 0, 'Unexpected external requests: ' + externalRequests.join(', '));
+await page.close();
+await browser.close();
+
+if (errors.length) {
+  console.error(errors.join('\n'));
+  process.exit(1);
 }
 
-function clearDownloadState() {
-  clearDownloadTimer();
-  state.download = {
-    requestId: null,
-    configId: null,
-    status: "idle",
-    message: ""
+console.log('PASS: three searchable filters and multi-record Android results');
+```
+
+Run:
+
+```powershell
+node tools/capture-compatibility-webview-demo.mjs
+```
+
+Expected: exit code `1`; the current page lacks three filters and multi-record rows.
+
+- [ ] **Step 3: Implement shared record presentation helpers**
+
+Add:
+
+```js
+function recordGame(record) {
+  return activeCatalog().games.find((game) => game.id === record.gameId);
+}
+
+function recordHardware(record) {
+  const items = activeCatalog().hardware.filter((item) => record.hardwareIds.includes(item.id));
+  const primaryTypes = state.platform === "android" ? ["device", "gpu"] : ["model", "chip"];
+  return primaryTypes.map((type) => items.find((item) => item.type === type)).filter(Boolean);
+}
+
+function ratingStars(rating) {
+  return '<span class="rating" aria-label="' + rating + ' 分">' + '★'.repeat(rating) +
+    '<i>' + '★'.repeat(5 - rating) + '</i></span>';
+}
+
+function configAction(record) {
+  const count = activeCatalog().configs.filter((config) => record.configIds.includes(config.id)).length;
+  return count
+    ? '<button data-config-open="' + esc(record.id) + '" type="button">查看配置（' + count + '）</button>'
+    : '<span class="no-config">暂无配置</span>';
+}
+
+function recordCells(record) {
+  const game = recordGame(record);
+  const hardware = recordHardware(record);
+  const environment = record.environment;
+  return {
+    game: renderCover(game, "record-cover") + '<span><strong>' + esc(game.name) +
+      '</strong><small>' + esc(game.englishName) + '</small></span>',
+    hardware: hardware.map((item) => esc(item.displayName)).join('<small> · </small>'),
+    gameVersion: esc(record.gameVersion),
+    os: esc(state.platform === "android" ? environment.androidVersion : environment.macosVersion),
+    runtime: esc(state.platform === "android" ? environment.runtime : environment.compatibilityLayer),
+    appVersion: esc(environment.appVersion),
+    rating: ratingStars(record.rating),
+    fps: '<strong>' + formatNumber(record.avgFps) + '</strong> FPS',
+    tags: record.tags.map((tag) => '<span class="record-tag">' + esc(tag) + '</span>').join(''),
+    notes: esc(record.notes),
+    config: configAction(record),
+    verifiedAt: esc(record.verifiedAt)
   };
 }
+```
 
-function setDownloadResult(requestId, ok, message) {
-  if (!requestId || requestId !== state.download.requestId) return false;
-  clearDownloadTimer();
-  state.download.status = ok ? "success" : "error";
-  state.download.message = text(message) || (ok ? "配置已开始下载" : "下载失败，请重试");
+- [ ] **Step 4: Render desktop table and mobile cards from the same array**
+
+Add:
+
+```js
+function renderRecordTable(records) {
+  return '<div class="record-table-wrap" data-record-table><table class="record-table"><thead><tr>' +
+    '<th>游戏</th><th>' + (state.platform === "android" ? '设备 / GPU' : '机型 / 芯片') + '</th>' +
+    '<th>游戏版本</th><th>' + (state.platform === "android" ? 'Android' : 'macOS') + '</th>' +
+    '<th>运行环境</th><th>盖世版本</th><th><button data-sort-field="rating" type="button">评分</button></th>' +
+    '<th>平均 FPS</th><th>标签</th><th>备注</th><th>配置</th>' +
+    '<th><button data-sort-field="verifiedAt" type="button">验证时间</button></th>' +
+    '</tr></thead><tbody>' + records.map((record) => {
+      const cell = recordCells(record);
+      return '<tr data-record-row="' + esc(record.id) + '">' +
+        '<td class="record-game">' + cell.game + '</td><td>' + cell.hardware + '</td>' +
+        '<td>' + cell.gameVersion + '</td><td>' + cell.os + '</td><td>' + cell.runtime + '</td>' +
+        '<td>' + cell.appVersion + '</td>' +
+        '<td>' + cell.rating + '</td><td>' + cell.fps + '</td><td>' + cell.tags + '</td>' +
+        '<td class="record-notes">' + cell.notes + '</td><td>' + cell.config + '</td>' +
+        '<td>' + cell.verifiedAt + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+}
+
+function renderRecordCards(records) {
+  return '<div class="record-cards" data-record-cards>' + records.map((record) => {
+    const cell = recordCells(record);
+    return '<article class="record-card" data-record-row="' + esc(record.id) + '">' +
+      '<div class="record-card-head"><div class="record-game">' + cell.game + '</div>' + cell.rating + '</div>' +
+      '<div class="record-primary"><span>' + cell.hardware + '</span><strong>' + cell.fps + '</strong></div>' +
+      '<dl><div><dt>游戏版本</dt><dd>' + cell.gameVersion + '</dd></div>' +
+      '<div><dt>' + (state.platform === "android" ? 'Android' : 'macOS') + '</dt><dd>' + cell.os + '</dd></div>' +
+      '<div><dt>运行环境</dt><dd>' + cell.runtime + '</dd></div>' +
+      '<div><dt>盖世版本</dt><dd>' + esc(record.environment.appVersion) + '</dd></div></dl>' +
+      '<div class="record-tags">' + cell.tags + '</div><p>' + cell.notes + '</p>' +
+      '<footer><span>验证于 ' + cell.verifiedAt + '</span>' + cell.config + '</footer></article>';
+  }).join('') + '</div>';
+}
+
+function renderRecordResults() {
+  const hasFilter = state.filters.gameId || state.filters.hardwareId || state.filters.ratingMin != null;
+  if (!hasFilter) {
+    return '<section class="query-prompt"><h2>添加筛选条件开始查询</h2>' +
+      '<p>可按游戏、硬件或最低评分独立查询，也可以组合筛选。</p></section>';
+  }
+  const records = filterRecords();
+  if (!records.length) {
+    return '<section class="no-results"><h2>暂无符合条件的兼容记录</h2>' +
+      '<p>当前筛选条件会继续保留。</p><button data-clear-filters type="button">清空筛选</button></section>';
+  }
+  return '<section class="record-results"><div class="result-heading">' +
+    '<h2>兼容记录</h2><strong data-result-count>共 ' + records.length + ' 条兼容记录</strong></div>' +
+    renderRecordTable(records) + renderRecordCards(records) + '</section>';
+}
+```
+
+In `render()`, replace the single-game branch with:
+
+```js
+content = renderFilterBar() + renderRecordResults();
+```
+
+Delete the old `renderSearchPanel()`, `renderPopularGames()`, `renderCompatibilityResult()`, `selectedGameId`, `expandedConfigId`, `gameQuery` and their click/input branches in this same step so the new legacy assertions pass.
+
+- [ ] **Step 5: Add result table/card styles and sort handling**
+
+Add CSS:
+
+```css
+.record-results { margin-top: 16px; }
+.result-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.record-table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); }
+.record-table { width: 100%; min-width: 1180px; border-collapse: collapse; font-size: 12px; }
+.record-table th, .record-table td { padding: 12px 10px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
+.record-table th { position: sticky; top: 0; z-index: 1; background: #181818; color: var(--muted); }
+.record-game { min-width: 170px; display: flex; align-items: center; gap: 10px; }
+.record-cover { width: 44px; height: 60px; border-radius: 8px; object-fit: cover; }
+.record-game span { min-width: 0; display: grid; gap: 4px; }
+.record-game small { color: var(--muted); }
+.rating { white-space: nowrap; color: var(--gold); }
+.rating i { color: #454545; font-style: normal; }
+.record-tag { display: inline-flex; margin: 0 4px 4px 0; padding: 4px 7px; border-radius: 999px; background: rgba(255,190,46,.12); color: var(--gold); }
+.record-cards { display: none; gap: 12px; }
+.record-card { padding: 14px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); }
+.record-card-head, .record-primary, .record-card footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.record-card dl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.record-card dl div { padding: 9px; border-radius: 10px; background: var(--surface); }
+.record-card dt { color: var(--muted); font-size: 11px; }
+.record-card dd { margin: 4px 0 0; font-size: 12px; }
+
+@media (max-width: 700px) {
+  .record-table-wrap { display: none; }
+  .record-cards { display: grid; }
+}
+```
+
+Mirror table/card visibility under `.frame[data-preview="mobile"]` and `.frame[data-preview="desktop"]`.
+
+Add sort handling:
+
+```js
+const sortButton = event.target.closest("[data-sort-field]");
+if (sortButton) {
+  const field = sortButton.dataset.sortField;
+  if (state.sort.field === field) {
+    state.sort.direction = state.sort.direction === "desc" ? "asc" : "desc";
+  } else {
+    state.sort = { field, direction: "desc" };
+  }
+  render();
+  return;
+}
+```
+
+- [ ] **Step 6: Run multi-record tests and commit**
+
+Run:
+
+```powershell
+node tools/verify-compatibility-webview-demo.mjs
+node tools/capture-compatibility-webview-demo.mjs
+```
+
+Expected at this checkpoint: static verifier and the reduced capture checkpoint both pass. Task 4 then extends the same script before its final cleanup block.
+
+Commit:
+
+```powershell
+git add -- "demos/适合本机/盖世游戏适合本机WebView-demo.html" "tools/verify-compatibility-webview-demo.mjs" "tools/capture-compatibility-webview-demo.mjs"
+git commit -m "feat: render multi-record compatibility results"
+```
+
+### Task 4: Add desktop dialog and mobile full-screen config viewer
+
+**Files:**
+- Modify: `tools/capture-compatibility-webview-demo.mjs`
+- Modify: `tools/verify-compatibility-webview-demo.mjs`
+- Modify: `demos/适合本机/盖世游戏适合本机WebView-demo.html`
+
+- [ ] **Step 1: Add failing viewer-contract assertions**
+
+Add to the static verifier:
+
+```js
+'data-config-open=',
+'data-config-viewer',
+'data-config-choice=',
+'data-config-close',
+'role="dialog"',
+'aria-modal="true"',
+'renderConfigViewer()',
+'openConfigViewer(recordId)',
+'closeConfigViewer()'
+```
+
+Add to `legacy`:
+
+```js
+'data-config-toggle',
+'config-toggle-state',
+'收起'
+```
+
+- [ ] **Step 2: Add failing desktop and mobile viewer tests**
+
+After selecting the Android Elden Ring game, add:
+
+```js
+await page.locator('[data-config-open="android_elden_oneplus"]:visible').click();
+const androidViewer = page.locator('[data-config-viewer]');
+check(await androidViewer.isVisible(), 'Android config viewer did not open');
+check(await androidViewer.getAttribute('role') === 'dialog', 'Config viewer has no dialog role');
+check((await androidViewer.innerText()).includes('适用范围'), 'Config applicability is missing');
+check((await androidViewer.innerText()).includes('Adreno 830'), 'Android config hardware is missing');
+check((await androidViewer.innerText()).includes('Android 14～15'), 'Android config OS range is missing');
+
+const beforeCloseCount = await page.locator('[data-record-row]:visible').count();
+await page.locator('[data-config-close]').click();
+check(await page.locator('[data-config-viewer]').count() === 0, 'Config viewer did not close');
+check(await page.locator('[data-record-row]:visible').count() === beforeCloseCount, 'Closing viewer changed result count');
+```
+
+On a real `390×844` page, add:
+
+```js
+const phonePage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+observePage(phonePage, 'phone');
+await phonePage.goto(pathToFileURL(demoPath).href, { waitUntil: 'load' });
+await phonePage.locator('[data-filter-trigger="game"]').click();
+await phonePage.locator('[data-filter-query="game"]').fill('艾尔登');
+await phonePage.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+await phonePage.locator('[data-config-open="android_elden_oneplus"]:visible').click();
+const phoneViewerBox = await phonePage.locator('[data-config-viewer]').boundingBox();
+check(Boolean(phoneViewerBox), 'Phone config viewer has no bounding box');
+check(Math.round(phoneViewerBox.width) === 390, 'Phone config viewer is not full width');
+check(Math.round(phoneViewerBox.height) === 844, 'Phone config viewer is not full height');
+```
+
+Run capture and expect failure because the current config still expands inline.
+
+- [ ] **Step 3: Implement viewer state and configuration selection**
+
+Add:
+
+```js
+function recordConfigs(recordId) {
+  const record = activeCatalog().records.find((item) => item.id === recordId);
+  if (!record) return [];
+  return activeCatalog().configs.filter((config) =>
+    record.configIds.includes(config.id) && config.recordId === record.id
+  );
+}
+
+function openConfigViewer(recordId) {
+  const configs = recordConfigs(recordId);
+  if (!configs.length) return false;
+  state.viewer = { recordId, configId: configs[0].id };
+  clearDownloadState();
   render();
   return true;
 }
-~~~
 
-- [ ] **Step 2: Add the controlled Web Blob download**
-
-~~~js
-function webDownload(config, requestId) {
-  const payload = {
-    demo: true,
-    platform: config.platform,
-    gameId: config.gameId,
-    configId: config.id,
-    version: config.version,
-    fields: Object.fromEntries(config.fields)
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = config.fileName;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 0);
-  setDownloadResult(requestId, true, "模拟配置已下载");
-}
-~~~
-
-- [ ] **Step 3: Add App Bridge routing and request protection**
-
-~~~js
-function startDownload(configId) {
-  if (state.download.status === "pending") return;
-  const config = filteredCatalog().configs.find((item) => item.id === configId);
-  if (!config || config.platform !== state.platform || config.gameId !== state.selectedGameId) {
-    state.download = {
-      requestId: "invalid",
-      configId,
-      status: "error",
-      message: "配置与当前平台不一致，请重新选择"
-    };
-    render();
-    return;
-  }
-
-  const requestId = "download-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
-  state.download = { requestId, configId, status: "pending", message: "正在准备配置…" };
+function closeConfigViewer() {
+  state.viewer = { recordId: null, configId: null };
+  clearDownloadState();
   render();
-
-  const bridge = window.GameHubBridge;
-  if (!bridge || typeof bridge.downloadConfig !== "function") {
-    if (state.platformSource === "bridge") {
-      setDownloadResult(requestId, false, "App 连接不可用，请重试");
-      return;
-    }
-    try {
-      webDownload(config, requestId);
-    } catch (error) {
-      setDownloadResult(requestId, false, "浏览器未能下载配置，请重试");
-    }
-    return;
-  }
-
-  downloadTimer = window.setTimeout(() => {
-    setDownloadResult(requestId, false, "App 响应超时，请重试");
-  }, DOWNLOAD_TIMEOUT_MS);
-
-  const payload = JSON.stringify({
-    requestId,
-    platform: state.platform,
-    gameId: config.gameId,
-    configId: config.id,
-    fileName: config.fileName
-  });
-
-  try {
-    const result = bridge.downloadConfig(payload);
-    if (result && typeof result.then === "function") {
-      result.then((value) => {
-        if (value && typeof value === "object") {
-          setDownloadResult(requestId, value.ok !== false, value.message);
-        }
-      }).catch(() => setDownloadResult(requestId, false, "App 下载失败，请重试"));
-    } else if (result && typeof result === "object") {
-      setDownloadResult(requestId, result.ok !== false, result.message);
-    }
-  } catch (error) {
-    setDownloadResult(requestId, false, "App 连接不可用，请重试");
-  }
 }
-~~~
+```
 
-- [ ] **Step 4: Replace the public API**
+- [ ] **Step 4: Render one shared dialog/full-screen DOM**
 
-~~~js
-window.GameHubCompatibility = {
-  setContext(context) {
-    const resolved = resolvePlatform(context);
-    applyPlatform(resolved.platform, resolved.source);
-  },
-  setCatalog(nextCatalog) {
-    setCatalog(nextCatalog);
-  },
-  setCatalogLoading() {
-    state.catalogStatus = "loading";
-    render();
-  },
-  setCatalogError() {
-    state.catalogStatus = "error";
-    render();
-  },
-  onDownloadResult(result) {
-    if (!result || typeof result !== "object") return false;
-    return setDownloadResult(text(result.requestId), result.ok === true, result.message);
-  }
-};
-~~~
+Replace inline `renderConfigDetail()` usage with:
 
-- [ ] **Step 5: Run and pass the static verifier**
+```js
+function renderConfigViewer() {
+  const configs = recordConfigs(state.viewer.recordId);
+  if (!configs.length) return "";
+  const selected = configs.find((config) => config.id === state.viewer.configId) || configs[0];
+  return '<div class="config-viewer-backdrop" data-config-viewer role="dialog" aria-modal="true"' +
+    ' aria-labelledby="config-viewer-title">' +
+    '<section class="config-viewer-panel">' +
+      '<header><button data-config-close type="button" aria-label="关闭配置详情">←</button>' +
+        '<div><span>启动配置</span><h2 id="config-viewer-title">' + esc(selected.name) + '</h2></div>' +
+        '<button data-config-close type="button" aria-label="关闭">×</button></header>' +
+      (configs.length > 1 ? '<nav class="config-choice-list">' + configs.map((config) =>
+        '<button data-config-choice="' + esc(config.id) + '" type="button"' +
+          (config.id === selected.id ? ' class="active"' : '') + '>' + esc(config.name) + '</button>'
+      ).join('') + '</nav>' : '') +
+      '<div class="config-viewer-body">' + renderConfigDetail(selected) + '</div>' +
+    '</section></div>';
+}
+```
 
-~~~powershell
+Keep `renderConfigDetail(selected)` responsible only for applicability, fields, metadata, download button and download feedback; remove the inline collapse language.
+
+Append the viewer to the ready-state render branch:
+
+```js
+content = renderFilterBar() + renderRecordResults() + renderConfigViewer();
+```
+
+- [ ] **Step 5: Wire open, choice, close, Escape and backdrop interactions**
+
+Add click branches:
+
+```js
+const configOpen = event.target.closest("[data-config-open]");
+if (configOpen) {
+  openConfigViewer(configOpen.dataset.configOpen);
+  return;
+}
+
+const configChoice = event.target.closest("[data-config-choice]");
+if (configChoice) {
+  state.viewer.configId = configChoice.dataset.configChoice;
+  clearDownloadState();
+  render();
+  return;
+}
+
+if (event.target.closest("[data-config-close]") ||
+    (event.target.matches("[data-config-viewer]") && !event.target.closest(".config-viewer-panel"))) {
+  closeConfigViewer();
+  return;
+}
+```
+
+Add keyboard close:
+
+```js
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && state.viewer.recordId) closeConfigViewer();
+});
+```
+
+- [ ] **Step 6: Add responsive viewer styles**
+
+Add:
+
+```css
+.config-viewer-backdrop { position: fixed; z-index: 80; inset: 0; display: grid; place-items: center; padding: 24px; background: rgba(0,0,0,.72); }
+.config-viewer-panel { width: min(760px, 100%); max-height: calc(100vh - 48px); display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 24px; background: #151515; box-shadow: 0 28px 80px rgba(0,0,0,.6); }
+.config-viewer-panel > header { min-height: 72px; display: grid; grid-template-columns: 44px minmax(0,1fr) 44px; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+.config-viewer-panel > header button { width: 44px; height: 44px; border: 0; border-radius: 12px; background: var(--surface); color: var(--text); }
+.config-viewer-panel > header div { min-width: 0; }
+.config-viewer-panel > header span { color: var(--gold); font-size: 12px; }
+.config-viewer-panel > header h2 { margin: 3px 0 0; font-size: 20px; }
+.config-choice-list { display: flex; gap: 8px; padding: 12px 16px 0; overflow-x: auto; }
+.config-choice-list button { min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--muted); }
+.config-choice-list button.active { border-color: var(--gold); color: var(--gold); }
+.config-viewer-body { min-height: 0; padding: 16px; overflow-y: auto; }
+
+@media (max-width: 700px) {
+  .config-viewer-backdrop { display: block; padding: 0; }
+  .config-viewer-panel { width: 100%; height: 100%; max-height: none; border: 0; border-radius: 0; }
+}
+```
+
+Apply the same full-screen rules to `.frame[data-preview="mobile"] .config-viewer-backdrop` using `position: absolute` so the Demo’s 390×844 frame is fully covered without covering the external preview toolbar.
+
+- [ ] **Step 7: Run viewer tests and commit**
+
+Run:
+
+```powershell
 node tools/verify-compatibility-webview-demo.mjs
-~~~
+node tools/capture-compatibility-webview-demo.mjs
+git diff --check -- demos/适合本机/盖世游戏适合本机WebView-demo.html tools/verify-compatibility-webview-demo.mjs tools/capture-compatibility-webview-demo.mjs
+```
 
-Expected:
+Expected: viewer opens, closes, preserves results, uses dialog semantics, and occupies the full real 390×844 viewport.
 
-~~~text
-PASS: platform-aware compatibility H5 contracts, local assets, download API, offline policy, and JavaScript syntax
-~~~
+Commit:
 
-- [ ] **Step 6: Commit the complete H5**
+```powershell
+git add -- "demos/适合本机/盖世游戏适合本机WebView-demo.html" "tools/verify-compatibility-webview-demo.mjs" "tools/capture-compatibility-webview-demo.mjs"
+git commit -m "feat: add responsive config viewer"
+```
 
-~~~powershell
-git add -- demos/适合本机/盖世游戏适合本机WebView-demo.html
-git diff --cached --check
-git commit -m "feat: build platform-aware compatibility H5"
-~~~
-
-## Task 5: Replace browser verification and capture current evidence
+### Task 5: Cover filter combinations, platform isolation and recovery
 
 **Files:**
+- Modify: `tools/capture-compatibility-webview-demo.mjs`
+- Modify: `demos/适合本机/盖世游戏适合本机WebView-demo.html`
 
-- Replace: tools/capture-compatibility-webview-demo.mjs
-- Create: test-results/compatibility-platform-aware-h5/01-android-home-portrait.png
-- Create: test-results/compatibility-platform-aware-h5/02-android-search-portrait.png
-- Create: test-results/compatibility-platform-aware-h5/03-android-config-portrait.png
-- Create: test-results/compatibility-platform-aware-h5/04-mac-home-portrait.png
-- Create: test-results/compatibility-platform-aware-h5/05-mac-search-portrait.png
-- Create: test-results/compatibility-platform-aware-h5/06-mac-config-portrait.png
-- Create: test-results/compatibility-platform-aware-h5/07-desktop-web.png
+- [ ] **Step 1: Add failing Android filter-combination tests**
 
-- [ ] **Step 1: Replace the screenshot directory and names**
+After the Android game-only assertion, add:
 
-~~~js
-import fs from 'node:fs';
-import path from 'node:path';
-import process from 'node:process';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { chromium } from 'playwright-core';
+```js
+await page.locator('[data-filter-clear="game"]').click();
+await page.locator('[data-filter-trigger="hardware"]').click();
+await page.locator('[data-filter-query="hardware"]').fill('Adreno 830');
+await page.locator('[data-filter-option="hardware"][data-option-value="android_gpu_adreno830"]').click();
+check(await page.locator('[data-record-row]:visible').count() >= 4, 'GPU-only filter did not return multiple Android records');
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const demoPath = path.join(root, 'demos', '适合本机', '盖世游戏适合本机WebView-demo.html');
-const outputDir = path.join(root, 'test-results', 'compatibility-platform-aware-h5');
-const screenshotNames = [
-  '01-android-home-portrait.png',
-  '02-android-search-portrait.png',
-  '03-android-config-portrait.png',
-  '04-mac-home-portrait.png',
-  '05-mac-search-portrait.png',
-  '06-mac-config-portrait.png',
-  '07-desktop-web.png'
-];
-fs.mkdirSync(outputDir, { recursive: true });
+await page.locator('[data-filter-trigger="rating"]').click();
+await page.locator('[data-filter-query="rating"]').fill('4');
+await page.locator('[data-filter-option="rating"][data-option-value="4"]').click();
+const ratedRows = await page.locator('[data-record-row]:visible').allTextContents();
+check(ratedRows.length >= 3, 'GPU + rating filter returned too few records');
+check(ratedRows.every((text) => text.includes('★★★★')), 'Rating ≥4 retained a lower-rated record');
 
-const executablePath = [
-  chromium.executablePath(),
-  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-  'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'
-].find((candidate) => fs.existsSync(candidate));
-if (!executablePath) throw new Error('No Chromium-compatible browser executable found');
+await page.locator('[data-filter-trigger="game"]').click();
+await page.locator('[data-filter-query="game"]').fill('艾尔登');
+await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+check(await page.locator('[data-record-row]:visible').count() === 2, 'Three-filter AND result is not two Elden records');
+```
 
-const browser = await chromium.launch({ headless: true, executablePath });
-const page = await browser.newPage({ viewport: { width: 1280, height: 960 }, deviceScaleFactor: 1 });
-const errors = [];
-const externalRequests = [];
+- [ ] **Step 2: Add failing Mac mapping and platform-reset tests**
 
-function check(condition, message) {
-  if (!condition) errors.push(message);
-}
+On the Bridge-controlled Mac page, add:
 
-function observePage(targetPage) {
-  targetPage.on('console', (message) => {
-    if (message.type() === 'error') errors.push('console: ' + message.text());
-  });
-  targetPage.on('pageerror', (error) => errors.push('pageerror: ' + error.message));
-  targetPage.on('request', (request) => {
-    if (!request.url().startsWith('file:') &&
-        !request.url().startsWith('data:') &&
-        !request.url().startsWith('blob:')) {
-      externalRequests.push(request.url());
-    }
-  });
-}
-
-async function assertNoHorizontalOverflow(targetPage, label) {
-  const dimensions = await targetPage.evaluate(() => {
-    const frame = document.querySelector('.frame');
-    const app = document.querySelector('#compatibility-app');
-    return {
-      frameClientWidth: frame.clientWidth,
-      frameScrollWidth: frame.scrollWidth,
-      appClientWidth: app.clientWidth,
-      appScrollWidth: app.scrollWidth
-    };
-  });
-  check(dimensions.frameScrollWidth <= dimensions.frameClientWidth, label + ' frame overflow');
-  check(dimensions.appScrollWidth <= dimensions.appClientWidth, label + ' app overflow');
-}
-
-observePage(page);
-~~~
-
-- [ ] **Step 2: Verify Android default and image-and-text search**
-
-~~~js
-await page.goto(pathToFileURL(demoPath).href, { waitUntil: 'load' });
-const frame = page.locator('.frame');
-await page.locator('[data-preview="mobile"]').click();
-check(await page.locator('[data-platform-badge]').textContent() === 'Android', 'Demo default is not Android');
-check(await page.locator('[data-popular-game]').count() >= 3, 'Android popular games are incomplete');
-check(await page.locator('[data-popular-game="steam_1716740"]').count() === 0, 'Mac-only Starfield leaked into Android');
-await frame.screenshot({ path: path.join(outputDir, screenshotNames[0]) });
-
-await page.locator('#game-search').fill('艾尔登');
-const androidCandidate = page.locator('[data-search-result="steam_1245620"]');
-check(await androidCandidate.count() === 1, 'Android image-and-text candidate is missing');
-check(await androidCandidate.locator('img').count() === 1, 'Search candidate has no cover');
-check((await androidCandidate.innerText()).includes('ELDEN RING'), 'Search candidate has no English name');
-await frame.screenshot({ path: path.join(outputDir, screenshotNames[1]) });
-await androidCandidate.click();
-check((await page.locator('[data-compatibility-result]').innerText()).includes('Android 15'), 'Android version is missing');
-check((await page.locator('[data-compatibility-result]').innerText()).includes('Adreno 830'), 'Android GPU is missing');
-check(!(await page.locator('[data-compatibility-result]').innerText()).includes('macOS'), 'Mac fields leaked into Android result');
-~~~
-
-- [ ] **Step 3: Verify Android configuration and real Web download**
-
-~~~js
-await page.locator('[data-config-toggle="cfg_android_elden"]').click();
-check(await page.locator('[data-config-detail="cfg_android_elden"]').isVisible(), 'Android config detail did not expand');
-await frame.screenshot({ path: path.join(outputDir, screenshotNames[2]) });
-const downloadPromise = page.waitForEvent('download');
-await page.locator('[data-config-download="cfg_android_elden"]').click();
-const webDownload = await downloadPromise;
-check(webDownload.suggestedFilename() === 'elden-ring-android-720p.gamehub.json', 'Web download filename is wrong');
-check((await page.locator('.download-message').innerText()).includes('模拟配置已下载'), 'Web download success feedback is missing');
-~~~
-
-- [ ] **Step 4: Verify Bridge beats query and isolates Mac content**
-
-Open a second page with ?platform=android, inject a Mac Bridge context, and assert Mac wins:
-
-~~~js
+```js
 const bridgePage = await browser.newPage({ viewport: { width: 1280, height: 960 }, deviceScaleFactor: 1 });
-observePage(bridgePage);
+observePage(bridgePage, 'bridge');
 await bridgePage.goto(pathToFileURL(demoPath).href + '?platform=android', { waitUntil: 'load' });
 await bridgePage.evaluate(() => window.GameHubCompatibility.setContext({ platform: 'mac' }));
 check(await bridgePage.locator('[data-platform-badge]').textContent() === 'Mac', 'Bridge did not override Android query');
-check(await bridgePage.locator('[data-popular-game="steam_2358720"]').count() === 0, 'Android-only Wukong leaked into Mac');
-await bridgePage.locator('[data-preview="mobile"]').click();
-const bridgeFrame = bridgePage.locator('.frame');
-await bridgeFrame.screenshot({ path: path.join(outputDir, screenshotNames[3]) });
+check(await bridgePage.locator('[data-demo-platform="android"]').isDisabled(), 'Bridge did not lock Demo platform switch');
 
-await bridgePage.locator('#game-search').fill('艾尔登');
-const macCandidate = bridgePage.locator('[data-search-result="steam_1245620"]');
-check(await macCandidate.count() === 1, 'Mac image-and-text candidate is missing');
-await bridgeFrame.screenshot({ path: path.join(outputDir, screenshotNames[4]) });
-await macCandidate.click();
-const macResultText = await bridgePage.locator('[data-compatibility-result]').innerText();
-check(macResultText.includes('Apple M4 Pro'), 'Mac chip is missing');
-check(macResultText.includes('macOS 26'), 'macOS version is missing');
-check(!macResultText.includes('Android 15'), 'Android fields leaked into Mac result');
-~~~
+check(
+  (await bridgePage.locator('[data-filter-select="hardware"] .filter-label').innerText()) ===
+    'Mac 机型或 Apple 芯片',
+  'Mac hardware filter label is wrong'
+);
+await bridgePage.locator('[data-filter-trigger="hardware"]').click();
+await bridgePage.locator('[data-filter-query="hardware"]').fill('M4 Pro');
+check(
+  await bridgePage.locator('[data-filter-option="hardware"][data-option-value="mac_chip_m4pro"]').count() === 1,
+  'Mac chip option is missing'
+);
+check(
+  await bridgePage.locator('[data-filter-option="hardware"][data-option-value="android_gpu_adreno830"]').count() === 0,
+  'Android GPU leaked into Mac candidates'
+);
+await bridgePage.locator('[data-filter-option="hardware"][data-option-value="mac_chip_m4pro"]').click();
+const macRowsText = (await bridgePage.locator('[data-record-row]:visible').allTextContents()).join(' ');
+check(macRowsText.includes('Apple M4 Pro'), 'Mac chip filter returned no M4 Pro record');
+check(!macRowsText.includes('Android'), 'Android field leaked into Mac results');
+check(!macRowsText.includes('Adreno'), 'Android GPU leaked into Mac results');
+```
 
-- [ ] **Step 5: Verify App Bridge success, duplicate protection, failure, and timeout**
+On the Demo-controlled page, select filters, open a config, then switch platform:
 
-Before clicking Mac download, inject:
+```js
+await page.locator('[data-config-open="android_elden_oneplus"]:visible').click();
+await page.locator('[data-demo-platform="mac"]').click();
+check(await page.locator('[data-platform-badge]').textContent() === 'Mac', 'Demo platform did not switch to Mac');
+check(await page.locator('[data-config-viewer]').count() === 0, 'Platform switch kept config viewer');
+check(await page.locator('[data-record-row]:visible').count() === 0, 'Platform switch kept Android results');
+check(await page.locator('[data-clear-filters]').count() === 0, 'Platform switch kept Android filters');
+```
 
-~~~js
+- [ ] **Step 3: Add invalid-reference, no-candidate and no-result tests**
+
+Use `setCatalog()` with one Mac game, one Mac chip, an Android-linked record, and a Mac record whose `hardwareIds` reference a missing ID. Assert both records are rejected and the platform empty state remains recoverable.
+
+Create the query page before injecting the invalid catalog:
+
+```js
+const queryPage = await browser.newPage({ viewport: { width: 900, height: 900 }, deviceScaleFactor: 1 });
+observePage(queryPage, 'query');
+await queryPage.goto(pathToFileURL(demoPath).href + '?platform=mac', { waitUntil: 'load' });
+check(await queryPage.locator('[data-platform-badge]').textContent() === 'Mac', 'Mac query fallback failed');
+```
+
+Inject this exact invalid catalog:
+
+```js
+await queryPage.evaluate(() => window.GameHubCompatibility.setCatalog({
+  games: [{
+    id: 'cross-game', name: '跨平台异常游戏', englishName: 'Cross Invalid', aliases: [],
+    coverKey: 'invalid-cover.jpg', platforms: ['mac'], popularOn: []
+  }],
+  hardware: [{
+    id: 'mac_chip_test', platform: 'mac', type: 'chip', displayName: 'Apple M4', aliases: [], subtitle: 'Apple 芯片'
+  }],
+  records: [
+    {
+      id: 'wrong-platform-record', platform: 'android', gameId: 'cross-game',
+      hardwareIds: ['mac_chip_test'], rating: 5, environment: { androidVersion: 'Android 15' }
+    },
+    {
+      id: 'missing-hardware-record', platform: 'mac', gameId: 'cross-game',
+      hardwareIds: ['missing-chip'], rating: 5, environment: { macosVersion: 'macOS 26' }
+    }
+  ],
+  configs: []
+}));
+
+check(await queryPage.locator('[data-record-row]:visible').count() === 0, 'Invalid records survived normalization');
+check(
+  await queryPage.getByText('当前Mac暂无兼容数据', { exact: true }).isVisible(),
+  'Invalid-record catalog did not enter the recoverable Mac empty state'
+);
+check(await queryPage.locator('[data-state-action="reload"]').count() === 1, 'Invalid catalog has no reload action');
+```
+
+For UI states, add:
+
+```js
+await queryPage.locator('[data-state-action="reload"]').click();
+await queryPage.waitForTimeout(500);
+check(await queryPage.locator('[data-filter-select]').count() === 3, 'Reload did not restore the Mac filter catalog');
+
+await queryPage.locator('[data-filter-trigger="game"]').click();
+await queryPage.locator('[data-filter-query="game"]').fill('不存在');
+check(await queryPage.getByText('暂无匹配选项', { exact: true }).isVisible(), 'No-candidate state is missing');
+
+await queryPage.locator('[data-filter-query="game"]').fill('艾尔登');
+await queryPage.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+await queryPage.locator('[data-filter-trigger="rating"]').click();
+await queryPage.locator('[data-filter-query="rating"]').fill('5');
+await queryPage.locator('[data-filter-option="rating"][data-option-value="5"]').click();
+check(
+  await queryPage.getByText('暂无符合条件的兼容记录', { exact: true }).isVisible(),
+  'Mac game + rating no-result state is missing'
+);
+check(await queryPage.locator('[data-record-row]:visible').count() === 0, 'No-result combination rendered records');
+check(
+  (await queryPage.locator('[data-filter-trigger="game"]').innerText()).includes('艾尔登法环') &&
+    (await queryPage.locator('[data-filter-trigger="rating"]').innerText()).includes('5 分及以上'),
+  'No-result state did not retain selected filters'
+);
+```
+
+Then cover empty-catalog reload and the local-cover fallback explicitly:
+
+```js
+await queryPage.evaluate(() => window.GameHubCompatibility.setCatalog({
+  games: [],
+  hardware: [],
+  records: [],
+  configs: []
+}));
+check(
+  await queryPage.getByText('当前Mac暂无兼容数据', { exact: true }).isVisible(),
+  'Empty Mac catalog state is missing'
+);
+check(await queryPage.locator('[data-state-action="reload"]').count() === 1, 'Empty Mac catalog has no reload action');
+await queryPage.locator('[data-state-action="reload"]').click();
+await queryPage.waitForTimeout(500);
+check(await queryPage.locator('[data-filter-select]').count() === 3, 'Empty Mac catalog did not recover');
+
+await queryPage.locator('[data-filter-trigger="game"]').click();
+const queryCover = queryPage.locator('[data-filter-option="game"] img').first();
+expectedMissingCoverError = true;
+await queryCover.evaluate((image) => {
+  image.src = 'assets/compatibility/missing-local-cover.jpg';
+});
+await queryPage.locator('[aria-label="封面加载失败"]').first().waitFor();
+check(
+  await queryPage.locator('[aria-label="封面加载失败"]').count() === 1,
+  'Broken local cover did not render the fallback'
+);
+check(expectedMissingCoverError === false, 'Missing-cover error was not observed');
+```
+
+In `render()`, treat a platform catalog with no valid compatibility records as empty even if orphan games or hardware survived normalization:
+
+```js
+} else if (activeCatalog().records.length === 0) {
+  content = renderState(
+    "当前" + platformLabel() + "暂无兼容数据",
+    "当前平台暂时没有可展示的兼容记录，请重新加载。",
+    "reload"
+  );
+```
+
+This replaces the old `filteredCatalog().games.length === 0` condition and keeps invalid-reference catalogs recoverable.
+
+- [ ] **Step 4: Reset every dependent state in `applyPlatform()`**
+
+Replace the old single-game reset with:
+
+```js
+function resetQueryState() {
+  state.filters = { gameId: null, hardwareId: null, ratingMin: null };
+  state.queries = { game: "", hardware: "", rating: "" };
+  state.openFilter = null;
+  state.sort = { field: "rating", direction: "desc" };
+  state.viewer = { recordId: null, configId: null };
+  clearDownloadState();
+}
+
+function applyPlatform(platform, source) {
+  const nextPlatform = normalizePlatform(platform) || "android";
+  const changed = state.platform !== nextPlatform || state.platformSource !== source;
+  state.platform = nextPlatform;
+  state.platformSource = source;
+  if (changed) resetQueryState();
+  render();
+}
+```
+
+In `setCatalog`, close an invalid viewer and clear selected filters whose IDs no longer exist:
+
+```js
+const current = activeCatalog();
+if (!current.games.some((game) => game.id === state.filters.gameId)) state.filters.gameId = null;
+if (!current.hardware.some((item) => item.id === state.filters.hardwareId)) state.filters.hardwareId = null;
+if (!current.records.some((record) => record.id === state.viewer.recordId)) {
+  state.viewer = { recordId: null, configId: null };
+  clearDownloadState();
+}
+```
+
+- [ ] **Step 5: Run all interaction and recovery tests**
+
+Run:
+
+```powershell
+node tools/verify-compatibility-webview-demo.mjs
+node tools/capture-compatibility-webview-demo.mjs
+```
+
+Expected: PASS for Android game/GPU/rating combinations, Mac chip mapping, platform reset, invalid references, no-candidate, no-result, empty catalog, reload and local-cover fallback.
+
+- [ ] **Step 6: Commit platform and recovery behavior**
+
+```powershell
+git add -- "demos/适合本机/盖世游戏适合本机WebView-demo.html" "tools/capture-compatibility-webview-demo.mjs"
+git commit -m "test: cover compatibility filter isolation"
+```
+
+### Task 6: Preserve Web/App downloads inside the viewer
+
+**Files:**
+- Modify: `tools/capture-compatibility-webview-demo.mjs`
+- Modify: `demos/适合本机/盖世游戏适合本机WebView-demo.html`
+
+- [ ] **Step 1: Move the existing Web download test into the open viewer flow**
+
+Use:
+
+```js
+await page.locator('[data-demo-platform="android"]').click();
+await page.locator('[data-filter-trigger="game"]').click();
+await page.locator('[data-filter-query="game"]').fill('艾尔登');
+await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+await page.locator('[data-config-open="android_elden_oneplus"]:visible').click();
+const downloadPromise = page.waitForEvent('download');
+await page.locator('[data-config-download="cfg_android_elden"]').click();
+const webDownload = await downloadPromise;
+check(
+  webDownload.suggestedFilename() === 'elden-ring-android-720p.gamehub.json',
+  'Web download filename is wrong: ' + webDownload.suggestedFilename()
+);
+check(
+  (await page.locator('[data-config-viewer] .download-message.success').innerText()).includes('已发起下载'),
+  'Web download feedback is missing inside viewer'
+);
+await webDownload.delete();
+```
+
+Expected before implementation adjustment: FAIL if download lookup still assumes a selected game or inline config.
+
+- [ ] **Step 2: Resolve downloads only through the active viewer record**
+
+Update `startDownload(configId)` lookup:
+
+```js
+const config = activeCatalog().configs.find((item) => item.id === configId);
+const record = activeCatalog().records.find((item) => item.id === state.viewer.recordId);
+if (!config || !record || config.recordId !== record.id || !record.configIds.includes(config.id)) {
+  setDownloadResult("", false, "配置与当前兼容记录不一致，请重新选择");
+  return;
+}
+```
+
+Keep the existing payload fields and add `recordId`:
+
+```js
+const payload = JSON.stringify({
+  requestId,
+  platform: state.platform,
+  recordId: record.id,
+  gameId: record.gameId,
+  configId: config.id,
+  fileName: config.fileName
+});
+```
+
+- [ ] **Step 3: Keep the existing App Bridge safety assertions**
+
+Recreate the Bridge/Blob spies because Task 2 replaced the old capture-script body:
+
+```js
 await bridgePage.evaluate(() => {
   window.__bridgeCalls = [];
+  window.__blobCalls = 0;
+  const originalCreateObjectURL = URL.createObjectURL.bind(URL);
+  URL.createObjectURL = (...args) => {
+    window.__blobCalls += 1;
+    return originalCreateObjectURL(...args);
+  };
   window.GameHubBridge = {
     downloadConfig(payload) {
       window.__bridgeCalls.push(JSON.parse(payload));
@@ -1300,12 +1644,53 @@ await bridgePage.evaluate(() => {
     }
   };
 });
-await bridgePage.locator('[data-config-toggle="cfg_mac_elden"]').click();
-await bridgeFrame.screenshot({ path: path.join(outputDir, screenshotNames[5]) });
+
+await bridgePage.locator('[data-config-open="mac_elden_mbp_m4pro"]:visible').click();
 await bridgePage.locator('[data-config-download="cfg_mac_elden"]').click();
-await bridgePage.locator('.download-message.success').waitFor();
+await bridgePage.locator('[data-config-viewer] .download-message.success').waitFor();
 check(await bridgePage.evaluate(() => window.__bridgeCalls.length) === 1, 'App Bridge call count is not one');
-check((await bridgePage.locator('.download-message').innerText()).includes('App 已接收下载任务'), 'App success feedback is missing');
+check(await bridgePage.evaluate(() => window.__blobCalls) === 0, 'App download also triggered Web Blob download');
+const firstBridgePayload = await bridgePage.evaluate(() => window.__bridgeCalls[0]);
+check(firstBridgePayload.platform === 'mac', 'App Bridge payload platform is not Mac');
+check(firstBridgePayload.recordId === 'mac_elden_mbp_m4pro', 'App Bridge payload record ID is wrong');
+check(firstBridgePayload.configId === 'cfg_mac_elden', 'App Bridge payload config ID is wrong');
+check(
+  (await bridgePage.locator('[data-config-viewer] .download-message.success').innerText()).includes('App 已接收下载任务'),
+  'Promise success feedback is missing inside viewer'
+);
+```
+
+Add the duplicate-callback, synchronous-return, exception, timeout, duplicate-click and late-callback cases immediately after the Promise-success case:
+
+```js
+const promiseSuccessText = await bridgePage.locator('[data-config-viewer] .download-message.success').innerText();
+const duplicateSuccessAccepted = await bridgePage.evaluate((requestId) => {
+  return window.GameHubCompatibility.onDownloadResult({
+    requestId,
+    ok: false,
+    message: '重复回调'
+  });
+}, firstBridgePayload.requestId);
+check(duplicateSuccessAccepted === false, 'Duplicate callback after Promise success was accepted');
+check(
+  (await bridgePage.locator('[data-config-viewer] .download-message.success').innerText()) === promiseSuccessText,
+  'Duplicate callback changed the Promise success state'
+);
+
+await bridgePage.evaluate(() => {
+  window.__bridgeCalls = [];
+  window.GameHubBridge.downloadConfig = (payload) => {
+    window.__bridgeCalls.push(JSON.parse(payload));
+    return { ok: true, message: 'App 已同步接收下载任务' };
+  };
+});
+await bridgePage.locator('[data-config-download="cfg_mac_elden"]').click();
+await bridgePage.locator('[data-config-viewer] .download-message.success').waitFor();
+check(await bridgePage.evaluate(() => window.__bridgeCalls.length) === 1, 'Synchronous Bridge call count is not one');
+check(
+  (await bridgePage.locator('[data-config-viewer] .download-message.success').innerText()).includes('App 已同步接收下载任务'),
+  'Synchronous object success feedback is missing inside viewer'
+);
 
 await bridgePage.evaluate(() => {
   window.GameHubBridge.downloadConfig = () => {
@@ -1313,389 +1698,314 @@ await bridgePage.evaluate(() => {
   };
 });
 await bridgePage.locator('[data-config-download="cfg_mac_elden"]').click();
-check((await bridgePage.locator('.download-message.error').innerText()).includes('App 连接不可用'), 'Bridge exception feedback is missing');
+check(
+  (await bridgePage.locator('[data-config-viewer] .download-message.error').innerText()).includes('App 连接不可用'),
+  'Bridge exception feedback is missing inside viewer'
+);
 
-await bridgePage.evaluate(() => {
-  window.GameHubBridge.downloadConfig = () => undefined;
-});
-await bridgePage.locator('[data-config-download="cfg_mac_elden"]').click();
-await bridgePage.waitForTimeout(3200);
-check((await bridgePage.locator('.download-message.error').innerText()).includes('App 响应超时'), 'Bridge timeout feedback is missing');
-~~~
-
-Use this exact duplicate/late-callback test:
-
-~~~js
 await bridgePage.evaluate(() => {
   window.__bridgeCalls = [];
   window.GameHubBridge.downloadConfig = (payload) => {
     window.__bridgeCalls.push(JSON.parse(payload));
     return undefined;
   };
-});
-await bridgePage.evaluate(() => {
   document.querySelector('[data-config-download="cfg_mac_elden"]').click();
   document.querySelector('[data-config-download="cfg_mac_elden"]').click();
 });
 check(await bridgePage.evaluate(() => window.__bridgeCalls.length) === 1, 'Pending download was submitted twice');
 const timedOutRequestId = await bridgePage.evaluate(() => window.__bridgeCalls[0].requestId);
 await bridgePage.waitForTimeout(3200);
-const timeoutText = await bridgePage.locator('.download-message.error').innerText();
-check(timeoutText.includes('App 响应超时'), 'Pending download did not time out');
-await bridgePage.evaluate((requestId) => {
-  window.GameHubCompatibility.onDownloadResult({
+const timeoutText = await bridgePage.locator('[data-config-viewer] .download-message.error').innerText();
+check(timeoutText.includes('App 响应超时'), 'Pending download did not time out inside viewer');
+const lateCallbackAccepted = await bridgePage.evaluate((requestId) => {
+  return window.GameHubCompatibility.onDownloadResult({
     requestId,
     ok: true,
     message: '迟到成功'
   });
 }, timedOutRequestId);
-check((await bridgePage.locator('.download-message.error').innerText()) === timeoutText, 'Late callback overwrote timeout state');
-~~~
-
-- [ ] **Step 6: Verify query fallback, demo switching, malformed data, and desktop**
-
-Use this exact query and malformed-data test:
-
-~~~js
-const queryPage = await browser.newPage({ viewport: { width: 900, height: 900 }, deviceScaleFactor: 1 });
-observePage(queryPage);
-await queryPage.goto(pathToFileURL(demoPath).href + '?platform=mac', { waitUntil: 'load' });
-check(await queryPage.locator('[data-platform-badge]').textContent() === 'Mac', 'Mac query fallback failed');
-await queryPage.evaluate(() => window.GameHubCompatibility.setCatalog({
-  games: [
-    {
-      id: 'cross-game',
-      name: '跨平台异常游戏',
-      englishName: 'Cross Platform Invalid',
-      aliases: [],
-      coverKey: 'https://invalid.example/cover.jpg',
-      platforms: ['mac'],
-      popularOn: ['mac']
-    }
-  ],
-  records: [
-    {
-      id: 'wrong-record',
-      platform: 'android',
-      gameId: 'cross-game',
-      verdict: '错误串线',
-      environment: { androidVersion: 'Android 15' }
-    }
-  ],
-  configs: [
-    {
-      id: 'wrong-config',
-      platform: 'android',
-      gameId: 'cross-game',
-      name: '错误配置',
-      fileName: 'wrong.json',
-      fields: []
-    }
-  ]
-}));
-await queryPage.locator('[data-popular-game="cross-game"]').click();
-const malformedText = await queryPage.locator('[data-compatibility-result]').innerText();
-check(malformedText.includes('暂无验证记录'), 'Cross-platform record was not rejected');
-check(malformedText.includes('暂无可下载配置'), 'Cross-platform config was not rejected');
-check(await queryPage.locator('[data-compatibility-result] img[src*="invalid.example"]').count() === 0, 'Unsafe cover URL survived normalization');
-
-await page.locator('[data-result-back]').click();
-await page.locator('[data-demo-platform="mac"]').click();
-check(await page.locator('[data-platform-badge]').textContent() === 'Mac', 'Demo platform did not switch to Mac');
-check(await page.locator('[data-compatibility-result]').count() === 0, 'Platform switch kept the old game selection');
-check(await page.locator('.download-message').count() === 0, 'Platform switch kept old download state');
-await page.locator('[data-demo-platform="android"]').click();
-check(await page.locator('[data-platform-badge]').textContent() === 'Android', 'Demo platform did not switch back to Android');
-~~~
-
-Switch the original page to desktop:
-
-~~~js
-await page.locator('[data-result-back]').click();
-await page.locator('[data-preview="desktop"]').click();
-await page.waitForTimeout(300);
-await assertNoHorizontalOverflow(page, 'desktop web');
-await frame.screenshot({ path: path.join(outputDir, screenshotNames[6]) });
-~~~
-
-Close queryPage and bridgePage after all assertions:
-
-~~~js
-await queryPage.close();
-await bridgePage.close();
-~~~
-
-- [ ] **Step 7: Assert evidence and offline behavior**
-
-Use the exact closing assertions:
-
-~~~js
-check(externalRequests.length === 0, 'Unexpected external requests: ' + externalRequests.join(', '));
-for (const screenshotName of screenshotNames) {
-  const screenshotPath = path.join(outputDir, screenshotName);
-  check(
-    fs.existsSync(screenshotPath) && fs.statSync(screenshotPath).size > 0,
-    screenshotName + ' was not created or is empty'
-  );
-}
-await assertNoHorizontalOverflow(page, 'final desktop');
-await browser.close();
-if (errors.length) {
-  console.error(errors.join('\n'));
-  process.exit(1);
-}
-~~~
-
-Success output:
-
-~~~js
-console.log('PASS: platform priority, Android/Mac isolation, image search, config details, Web/App downloads, recovery, responsive rendering, and seven screenshots');
-~~~
-
-- [ ] **Step 8: Run the browser verifier**
-
-~~~powershell
-node tools/capture-compatibility-webview-demo.mjs
-~~~
-
-Expected: PASS with seven screenshots.
-
-- [ ] **Step 9: Commit the verifier and screenshots**
-
-~~~powershell
-git add -- tools/capture-compatibility-webview-demo.mjs test-results/compatibility-platform-aware-h5
-git diff --cached --check
-git commit -m "test: verify platform-aware compatibility H5"
-~~~
-
-## Task 5A: Apply final three-role review corrections
-
-**Files:**
-
-- Modify: demos/适合本机/盖世游戏适合本机WebView-demo.html
-- Modify: tools/verify-compatibility-webview-demo.mjs
-- Modify: tools/capture-compatibility-webview-demo.mjs
-
-- [ ] **Step 1: Add explicit configuration applicability**
-
-Every normalized configuration must contain applicability.gameVersion, applicability.hardware, and applicability.systemRange. Render them in data-config-applicability before tunable fields, using “适用 GPU” for Android and “适用芯片” for Mac.
-
-~~~js
-applicability: {
-  gameVersion: text(sourceApplicability.gameVersion, 40) || "未记录",
-  hardware: text(sourceApplicability.hardware, 60) || "未记录",
-  systemRange: text(sourceApplicability.systemRange, 60) || "未记录"
-}
-~~~
-
-- [ ] **Step 2: Reject internally cross-wired platform configurations**
-
-Use containsCrossPlatformConfig(platform, values). Android configurations reject macOS, Apple hardware, Mac models, and Game Porting Toolkit; Mac configurations reject Android, Adreno, Snapdragon/骁龙, phone, and Wine tokens. Reject the whole configuration instead of hiding individual foreign fields.
-
-~~~js
-function containsCrossPlatformConfig(platform, values) {
-  const joined = values.flat(Infinity).map((value) => text(value, 120)).join(" ");
-  const forbidden = platform === "android"
-    ? /macOS|Apple|MacBook|Mac mini|Mac Studio|Game Porting Toolkit/i
-    : /Android|Adreno|骁龙|Snapdragon|手机|Wine/i;
-  return forbidden.test(joined);
-}
-~~~
-
-- [ ] **Step 3: Add the ready-but-empty catalog state**
-
-When filteredCatalog().games.length is zero and catalogStatus is ready, render “当前 Android/Mac 暂无兼容数据” with data-state-action="reload". Keep this state distinct from loading, request failure, and search-no-result.
-
-~~~js
-} else if (filteredCatalog().games.length === 0) {
-  content = renderState(
-    "当前" + platformLabel() + "暂无兼容数据",
-    "当前平台暂时没有可展示的游戏，请重新加载。",
-    "reload"
-  );
-}
-~~~
-
-- [ ] **Step 4: Make Web download feedback conservative**
-
-After anchor.click(), report “已发起下载，请查看浏览器下载列表；若未出现文件，请重试”. Do not claim the browser completed the download because policy blocking may be silent.
-
-~~~js
-setDownloadResult(
-  requestId,
-  true,
-  "已发起下载，请查看浏览器下载列表；若未出现文件，请重试"
-);
-~~~
-
-- [ ] **Step 5: Preserve the platform label in a real phone viewport**
-
-Do not hide .candidate-platform below 420px. Add a 390×844 Playwright page that fills “艾尔登”, asserts the platform label remains visible, and checks horizontal overflow.
-
-~~~js
-const phonePage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
-await phonePage.goto(pathToFileURL(demoPath).href, { waitUntil: "load" });
-await phonePage.locator("#game-search").fill("艾尔登");
+check(lateCallbackAccepted === false, 'Late callback was accepted');
 check(
-  await phonePage.locator('[data-search-result="steam_1245620"] .candidate-platform').isVisible(),
-  "Real 390px viewport hides the search platform label"
+  (await bridgePage.locator('[data-config-viewer] .download-message.error').innerText()) === timeoutText,
+  'Late callback overwrote the timeout state'
 );
-~~~
+check(await bridgePage.evaluate(() => window.__blobCalls) === 0, 'App regression cases triggered Web Blob download');
+```
 
-- [ ] **Step 6: Cover recovery and isolation regressions**
+All Promise success, synchronous object success, exception, timeout, duplicate click, duplicate callback and late callback messages must be located inside `[data-config-viewer]`.
 
-The browser verifier must inject a Mac configuration whose top-level platform is correct but whose summary/applicability/fields contain Android/Adreno/Wine values, then assert it is rejected. It must also verify empty-catalog reload, local-cover failure fallback, App path zero Blob calls, and duplicate/late callback rejection.
+- [ ] **Step 4: Run download regression and commit**
 
-~~~js
-check(await queryPage.locator("[data-config-toggle]").count() === 0, "Cross-wired Mac config survived");
-check(await queryPage.locator('[data-state-action="reload"]').count() === 1, "Empty catalog cannot reload");
-check(await bridgePage.evaluate(() => window.__blobCalls) === 0, "App path triggered a Blob download");
-check(lateCallbackAccepted === false, "Late callback was accepted");
-~~~
+Run:
 
-- [ ] **Step 7: Rerun both verifiers**
-
-~~~powershell
+```powershell
 node tools/verify-compatibility-webview-demo.mjs
 node tools/capture-compatibility-webview-demo.mjs
-~~~
+```
 
-Expected: both commands print PASS; the capture command regenerates all seven screenshots.
+Expected: Web Blob and App Bridge are mutually exclusive; viewer stays open through pending/success/error states; repeated or late callbacks do not alter terminal state.
 
-## Task 6: Perform visual, accessibility, and regression review
+Commit:
+
+```powershell
+git add -- "demos/适合本机/盖世游戏适合本机WebView-demo.html" "tools/capture-compatibility-webview-demo.mjs"
+git commit -m "fix: route config downloads through record viewer"
+```
+
+### Task 7: Generate the final eight screenshot artifacts
 
 **Files:**
+- Modify: `tools/capture-compatibility-webview-demo.mjs`
+- Replace: `test-results/compatibility-platform-aware-h5/*.png`
 
-- Verify: demos/适合本机/盖世游戏适合本机WebView-demo.html
-- Verify: tools/verify-compatibility-webview-demo.mjs
-- Verify: tools/capture-compatibility-webview-demo.mjs
-- Verify: test-results/compatibility-platform-aware-h5/*.png
+- [ ] **Step 1: Replace screenshot names with the new review set**
 
-- [ ] **Step 1: Run both automated verifiers**
+Use exactly:
 
-~~~powershell
+```js
+const screenshotNames = [
+  '01-android-filters-portrait.png',
+  '02-android-multi-records-portrait.png',
+  '03-android-config-fullscreen.png',
+  '04-mac-filters-portrait.png',
+  '05-mac-multi-records-portrait.png',
+  '06-mac-config-fullscreen.png',
+  '07-desktop-record-table.png',
+  '08-desktop-config-dialog.png'
+];
+```
+
+Before capture, remove only the previous seven task screenshot filenames through PowerShell `Remove-Item -LiteralPath` after resolving each exact path inside `test-results/compatibility-platform-aware-h5`; do not delete the directory recursively.
+
+- [ ] **Step 2: Capture each required state**
+
+Capture these exact states:
+
+```text
+01 Android 390×844: three closed filter controls and initial prompt
+02 Android 390×844: Elden Ring + Adreno 830 + ≥4, two record cards visible
+03 Android 390×844: config viewer full-screen with applicability and download action
+04 Mac 390×844: Game / Mac model or Apple chip / minimum rating controls
+05 Mac 390×844: Elden Ring multi-record cards without Android fields
+06 Mac 390×844: config viewer full-screen with Apple chip and macOS range
+07 Desktop ≥1180px: result table with multiple rows and all competitor fields
+08 Desktop ≥1180px: centered config dialog over preserved result table
+```
+
+Use `screenshotFrame()` for Demo preview states and `page.screenshot()` for the real 390×844 full-screen viewer so the evidence matches what the user sees.
+
+Implement the screenshot sequence exactly as follows:
+
+```js
+const androidShotPage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+observePage(androidShotPage, 'android-shot');
+await androidShotPage.goto(pathToFileURL(demoPath).href, { waitUntil: 'load' });
+await androidShotPage.screenshot({ path: path.join(outputDir, screenshotNames[0]), fullPage: true });
+
+await androidShotPage.locator('[data-filter-trigger="game"]').click();
+await androidShotPage.locator('[data-filter-query="game"]').fill('艾尔登');
+await androidShotPage.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+await androidShotPage.locator('[data-filter-trigger="hardware"]').click();
+await androidShotPage.locator('[data-filter-query="hardware"]').fill('Adreno 830');
+await androidShotPage.locator('[data-filter-option="hardware"][data-option-value="android_gpu_adreno830"]').click();
+await androidShotPage.locator('[data-filter-trigger="rating"]').click();
+await androidShotPage.locator('[data-filter-query="rating"]').fill('4');
+await androidShotPage.locator('[data-filter-option="rating"][data-option-value="4"]').click();
+await androidShotPage.screenshot({ path: path.join(outputDir, screenshotNames[1]), fullPage: true });
+
+await androidShotPage.locator('[data-config-open="android_elden_oneplus"]:visible').click();
+await androidShotPage.screenshot({ path: path.join(outputDir, screenshotNames[2]), fullPage: false });
+await androidShotPage.locator('[data-config-close]').first().click();
+
+const macShotPage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+observePage(macShotPage, 'mac-shot');
+await macShotPage.goto(pathToFileURL(demoPath).href + '?platform=mac', { waitUntil: 'load' });
+await macShotPage.screenshot({ path: path.join(outputDir, screenshotNames[3]), fullPage: true });
+await macShotPage.locator('[data-filter-trigger="game"]').click();
+await macShotPage.locator('[data-filter-query="game"]').fill('艾尔登');
+await macShotPage.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+await macShotPage.screenshot({ path: path.join(outputDir, screenshotNames[4]), fullPage: true });
+await macShotPage.locator('[data-config-open="mac_elden_mbp_m4pro"]:visible').click();
+await macShotPage.screenshot({ path: path.join(outputDir, screenshotNames[5]), fullPage: false });
+await macShotPage.locator('[data-config-close]').first().click();
+
+const desktopShotPage = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 });
+observePage(desktopShotPage, 'desktop-shot');
+await desktopShotPage.goto(pathToFileURL(demoPath).href, { waitUntil: 'load' });
+await desktopShotPage.locator('[data-preview="desktop"]').click();
+await desktopShotPage.locator('[data-filter-trigger="game"]').click();
+await desktopShotPage.locator('[data-filter-query="game"]').fill('艾尔登');
+await desktopShotPage.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+await desktopShotPage.locator('.frame').screenshot({ path: path.join(outputDir, screenshotNames[6]) });
+await desktopShotPage.locator('[data-config-open="android_elden_oneplus"]:visible').click();
+await desktopShotPage.locator('.frame').screenshot({ path: path.join(outputDir, screenshotNames[7]) });
+```
+
+Close the evidence pages before `browser.close()`:
+
+```js
+await androidShotPage.close();
+await macShotPage.close();
+await desktopShotPage.close();
+```
+
+- [ ] **Step 3: Strengthen responsive assertions**
+
+For every screenshot state, call `assertNoHorizontalOverflow()` and `assertTouchTargets()` where buttons/inputs are visible. Add:
+
+```js
+check(await page.locator('[data-record-table]').isVisible(), 'Desktop record table is hidden');
+check(await page.locator('[data-record-cards]').isHidden(), 'Desktop record cards are visible');
+check(await phonePage.locator('[data-record-cards]').isVisible(), 'Phone record cards are hidden');
+check(await phonePage.locator('[data-record-table]').isHidden(), 'Phone record table is visible');
+```
+
+- [ ] **Step 4: Run the complete capture**
+
+Run:
+
+```powershell
+node tools/capture-compatibility-webview-demo.mjs
+```
+
+Expected final line:
+
+```text
+PASS: three searchable filters, multi-record results, Android/Mac isolation, responsive config viewer, Web/App downloads, recovery, and eight screenshots
+```
+
+- [ ] **Step 5: Inspect all eight images against a fixed checklist**
+
+Open every PNG with the available image viewer and verify:
+
+```text
+- No clipped dropdown, record card, table cell, dialog header or download button
+- Three filters have clear labels and visible current values
+- Minimum rating says “分及以上”
+- Same game visibly appears in more than one record
+- Android images contain no Mac/Apple/macOS fields
+- Mac images contain no Android/Adreno/phone fields
+- Mobile config viewer fills the frame; desktop config viewer is centered
+- Text hierarchy, black/gold palette, spacing and local covers remain consistent
+```
+
+Any failed checklist item keeps this task incomplete; correct the H5 or capture state and rerun Step 4 before committing.
+
+- [ ] **Step 6: Commit final screenshots and capture script**
+
+```powershell
+git add -- "tools/capture-compatibility-webview-demo.mjs" "test-results/compatibility-platform-aware-h5"
+git commit -m "test: capture multi-filter compatibility H5"
+```
+
+### Task 8: Final regression and Delivery submission
+
+**Files:**
+- Verify: `demos/适合本机/盖世游戏适合本机WebView-demo.html`
+- Verify: `tools/verify-compatibility-webview-demo.mjs`
+- Verify: `tools/capture-compatibility-webview-demo.mjs`
+- Verify: `test-results/compatibility-platform-aware-h5/*.png`
+- Create with `apply_patch`: `.tmp/GUANWANGGAID-4-multi-filter-delivery.json`
+
+- [ ] **Step 1: Re-read the scoped task and all comments**
+
+Run:
+
+```powershell
+taskctl.cmd issue get 4ade1ed5-07b1-474f-9f53-f8e6b8ba034b --json
+taskctl.cmd comment list 4ade1ed5-07b1-474f-9f53-f8e6b8ba034b --json
+```
+
+Expected before continuing: project `guanwang-gaidong`, identifier `GUANWANGGAID-4`, status `in_progress`, development context still matches Task 0, and no new unimplemented rework comment. If status, context or requirements changed, stop without submitting.
+
+- [ ] **Step 2: Run the final regression suite**
+
+```powershell
 node tools/verify-compatibility-webview-demo.mjs
 node tools/capture-compatibility-webview-demo.mjs
-~~~
+git diff --check -- "demos/适合本机/盖世游戏适合本机WebView-demo.html" "tools/verify-compatibility-webview-demo.mjs" "tools/capture-compatibility-webview-demo.mjs" "docs/superpowers/specs/2026-08-10-gamehub-compatibility-platform-aware-h5-design.md" "docs/superpowers/plans/2026-08-10-gamehub-compatibility-platform-aware-h5.md"
+```
 
-Expected: both commands print PASS and exit 0.
+Expected: both scripts pass and `git diff --check` is silent.
 
-- [ ] **Step 2: Check task files for whitespace errors**
+- [ ] **Step 3: Verify only task files are committed or staged**
 
-~~~powershell
-git diff --check -- demos/适合本机/盖世游戏适合本机WebView-demo.html tools/verify-compatibility-webview-demo.mjs tools/capture-compatibility-webview-demo.mjs docs/superpowers/specs/2026-08-10-gamehub-compatibility-platform-aware-h5-design.md docs/superpowers/plans/2026-08-10-gamehub-compatibility-platform-aware-h5.md
-~~~
+```powershell
+git status --short -- "demos/适合本机/盖世游戏适合本机WebView-demo.html" "tools/verify-compatibility-webview-demo.mjs" "tools/capture-compatibility-webview-demo.mjs" "docs/superpowers/specs/2026-08-10-gamehub-compatibility-platform-aware-h5-design.md" "docs/superpowers/plans/2026-08-10-gamehub-compatibility-platform-aware-h5.md" "test-results/compatibility-platform-aware-h5"
+git log -8 --oneline -- "demos/适合本机/盖世游戏适合本机WebView-demo.html"
+```
 
-Expected: no output.
+Expected: no uncommitted task files remain; unrelated dirty-worktree files are untouched.
 
-- [ ] **Step 3: Review all seven screenshots**
+- [ ] **Step 4: Create the UTF-8 ready manifest with `apply_patch`**
 
-Open every current screenshot and verify:
+Write exactly this structure to `.tmp/GUANWANGGAID-4-multi-filter-delivery.json`:
 
-- Android and Mac platform pills are immediately visible.
-- Android screenshots contain Android/device/GPU content and no Apple/macOS content.
-- Mac screenshots contain Apple/macOS/compatibility-layer content and no Android/mobile-GPU content.
-- Search candidates show a sharp local cover plus Chinese and English names.
-- 390×844 first screens show title, platform, full search field, and useful game content.
-- Configuration details have readable grouping and a visible download action.
-- Type sizes, spacing, card radii, black/gray/gold colors, and 44px touch targets follow the GameHub UI spec.
-- No screenshot contains clipped text, horizontal overflow, overlapping controls, or browser error states.
-
-- [ ] **Step 4: Run the three-role Demo review**
-
-Use product, interaction, and development viewpoints:
-
-- Product: every accepted requirement appears in a demonstrable state.
-- Interaction: search → result → config detail → download is understandable without an extra dialog.
-- Development: platform isolation, Bridge/download state, and test hooks have no contradictory paths.
-
-Fix every must-fix issue and rerun Steps 1–3. Record optional suggestions only in Delivery attentionItems if they materially affect review.
-
-- [ ] **Step 5: Confirm only task files changed**
-
-~~~powershell
-git -c core.quotepath=false status --short -- demos/适合本机/盖世游戏适合本机WebView-demo.html tools/verify-compatibility-webview-demo.mjs tools/capture-compatibility-webview-demo.mjs test-results/compatibility-platform-aware-h5 docs/superpowers/specs/2026-08-10-gamehub-compatibility-platform-aware-h5-design.md docs/superpowers/plans/2026-08-10-gamehub-compatibility-platform-aware-h5.md
-~~~
-
-Expected: no unstaged task-file changes after commits. Leave every unrelated dirty file untouched.
-
-## Task 7: Create and submit the structured Taskboard Delivery
-
-**Files:**
-
-- Create temporary manifest: .tmp/GUANWANGGAID-4-platform-aware-delivery.json
-- Register Demo: demos/适合本机
-- Register Markdown: docs/superpowers/specs/2026-08-10-gamehub-compatibility-platform-aware-h5-design.md
-- Register seven images: test-results/compatibility-platform-aware-h5/*.png
-
-- [ ] **Step 1: Write the ready manifest**
-
-Create UTF-8 JSON with exactly:
-
-~~~json
+```json
 {
   "conclusion": "ready",
   "summaryItems": [
-    "将兼容性页面重构为自动识别 Android 与 Mac 的单一高保真 H5",
-    "完成带真实封面、中文名和英文名的图文游戏搜索",
-    "按平台隔离热门游戏、兼容字段、运行记录和启动配置",
-    "支持配置原位查看，以及浏览器与 App Bridge 两种下载路径",
-    "补齐竖屏、桌面、异常恢复和跨平台防串线验证"
+    "将单游戏查询返工为游戏、硬件和最低评分三个可搜索快捷筛选",
+    "支持单项查询、AND 组合过滤及同一游戏的多条兼容运行记录",
+    "按平台映射 Android 设备或 GPU 与 Mac 机型或 Apple 芯片",
+    "使用桌面表格、手机卡片以及响应式启动配置详情",
+    "保留浏览器与 App 配置下载，并补齐异常恢复和平台防串线"
   ],
   "acceptanceSteps": [
-    "打开可操作 Demo，在竖屏预览中分别切换 Android 和 Mac，确认页面内容随平台变化且不串线",
-    "输入“艾尔登”，确认搜索候选同时显示封面、中文名、英文名和当前平台",
-    "进入游戏结果，检查 Android 的设备与 GPU 字段、Mac 的 Apple 芯片与 macOS 字段",
-    "展开启动配置并点击下载，确认浏览器下载与 App Bridge 成功、失败和超时反馈",
-    "查看七张验收截图，确认 390×844 竖屏和桌面网页均无溢出或布局异常"
+    "打开可操作 H5，分别使用游戏、硬件和最低评分三个下拉框搜索并选择候选",
+    "单独或组合选择筛选条件，确认结果即时变化且同一游戏可出现多条运行记录",
+    "切换 Android 与 Mac，确认硬件候选、结果字段和配置不会跨平台串线",
+    "在桌面打开配置居中弹窗，在手机打开配置全屏浮层，关闭后确认筛选和结果仍保留",
+    "查看八张验收截图，并验证浏览器 Blob 与 App Bridge 下载反馈"
   ],
   "attentionItems": [
-    "Demo 使用少量本地模拟游戏、兼容记录和配置，用于验证体验闭环，不代表正式全量目录",
-    "浏览器下载的是明确标记的模拟配置；正式 App 下载需接入 GameHubBridge"
+    "Demo 使用本地模拟目录验证完整体验，不代表正式全量兼容数据库",
+    "正式 App 下载仍需接入 GameHubBridge.downloadConfig，页面不提供一键应用"
   ],
-  "technicalDetails": "静态验证：node tools/verify-compatibility-webview-demo.mjs；交互与视觉验证：node tools/capture-compatibility-webview-demo.mjs。平台优先级固定为 Bridge > query > Demo，下载使用 requestId 防止重复和迟到回调，页面与全部封面离线运行且无外部请求。"
+  "technicalDetails": "验证命令：node tools/verify-compatibility-webview-demo.mjs；node tools/capture-compatibility-webview-demo.mjs；git diff --check -- <本任务文件>。结果必须覆盖三项可搜索筛选、AND 组合、多运行记录、Android/Mac 隔离、桌面表格、手机卡片、配置弹窗/全屏浮层、Web/App 下载互斥、异常恢复和八张截图。"
 }
-~~~
+```
 
-- [ ] **Step 2: Create the Delivery**
+- [ ] **Step 5: Create the Delivery**
 
-~~~powershell
-$deliveryResponse = taskctl.cmd delivery create GUANWANGGAID-4 --manifest-file ".tmp\GUANWANGGAID-4-platform-aware-delivery.json" --json | ConvertFrom-Json
+```powershell
+$deliveryResponse = taskctl.cmd delivery create GUANWANGGAID-4 --manifest-file ".tmp\GUANWANGGAID-4-multi-filter-delivery.json" --json | ConvertFrom-Json
 $deliveryId = $deliveryResponse.delivery.id
 if ([string]::IsNullOrWhiteSpace($deliveryId)) { throw "Delivery ID missing" }
-~~~
+```
 
-- [ ] **Step 3: Register the operable Demo**
+- [ ] **Step 6: Register the operable Demo and both Markdown sources**
 
-~~~powershell
-taskctl.cmd delivery artifact add $deliveryId --title "跨平台兼容性可操作 H5 Demo" --kind demo --path "demos/适合本机" --entry "盖世游戏适合本机WebView-demo.html" --content-type "text/html" --json
-~~~
+```powershell
+taskctl.cmd delivery artifact add $deliveryId --title "跨平台兼容性多参数查询 H5" --kind demo --path "demos/适合本机" --entry "盖世游戏适合本机WebView-demo.html" --content-type "text/html" --json
+taskctl.cmd delivery artifact add $deliveryId --title "多参数查询改版设计规格" --kind markdown --path "docs/superpowers/specs/2026-08-10-gamehub-compatibility-platform-aware-h5-design.md" --content-type "text/markdown" --json
+taskctl.cmd delivery artifact add $deliveryId --title "多参数查询实施计划" --kind markdown --path "docs/superpowers/plans/2026-08-10-gamehub-compatibility-platform-aware-h5.md" --content-type "text/markdown" --json
+```
 
-- [ ] **Step 4: Register the Markdown and every current screenshot**
+Expected: every response has `validationStatus: "ready"`.
 
-~~~powershell
-taskctl.cmd delivery artifact add $deliveryId --title "跨平台兼容性 H5 设计规格" --kind markdown --path "docs/superpowers/specs/2026-08-10-gamehub-compatibility-platform-aware-h5-design.md" --content-type "text/markdown" --json
-taskctl.cmd delivery artifact add $deliveryId --title "Android 竖屏首页" --kind image --path "test-results/compatibility-platform-aware-h5/01-android-home-portrait.png" --content-type "image/png" --json
-taskctl.cmd delivery artifact add $deliveryId --title "Android 图文搜索" --kind image --path "test-results/compatibility-platform-aware-h5/02-android-search-portrait.png" --content-type "image/png" --json
-taskctl.cmd delivery artifact add $deliveryId --title "Android 配置详情" --kind image --path "test-results/compatibility-platform-aware-h5/03-android-config-portrait.png" --content-type "image/png" --json
-taskctl.cmd delivery artifact add $deliveryId --title "Mac 竖屏首页" --kind image --path "test-results/compatibility-platform-aware-h5/04-mac-home-portrait.png" --content-type "image/png" --json
-taskctl.cmd delivery artifact add $deliveryId --title "Mac 图文搜索" --kind image --path "test-results/compatibility-platform-aware-h5/05-mac-search-portrait.png" --content-type "image/png" --json
-taskctl.cmd delivery artifact add $deliveryId --title "Mac 配置详情" --kind image --path "test-results/compatibility-platform-aware-h5/06-mac-config-portrait.png" --content-type "image/png" --json
-taskctl.cmd delivery artifact add $deliveryId --title "桌面网页响应式效果" --kind image --path "test-results/compatibility-platform-aware-h5/07-desktop-web.png" --content-type "image/png" --json
-~~~
+- [ ] **Step 7: Register all eight image artifacts one by one**
 
-Every artifact command must succeed. Do not submit if any source is missing or cannot preview.
+```powershell
+taskctl.cmd delivery artifact add $deliveryId --title "Android 三筛选初始态" --kind image --path "test-results/compatibility-platform-aware-h5/01-android-filters-portrait.png" --content-type "image/png" --json
+taskctl.cmd delivery artifact add $deliveryId --title "Android 多条兼容记录" --kind image --path "test-results/compatibility-platform-aware-h5/02-android-multi-records-portrait.png" --content-type "image/png" --json
+taskctl.cmd delivery artifact add $deliveryId --title "Android 配置全屏浮层" --kind image --path "test-results/compatibility-platform-aware-h5/03-android-config-fullscreen.png" --content-type "image/png" --json
+taskctl.cmd delivery artifact add $deliveryId --title "Mac 三筛选初始态" --kind image --path "test-results/compatibility-platform-aware-h5/04-mac-filters-portrait.png" --content-type "image/png" --json
+taskctl.cmd delivery artifact add $deliveryId --title "Mac 多条兼容记录" --kind image --path "test-results/compatibility-platform-aware-h5/05-mac-multi-records-portrait.png" --content-type "image/png" --json
+taskctl.cmd delivery artifact add $deliveryId --title "Mac 配置全屏浮层" --kind image --path "test-results/compatibility-platform-aware-h5/06-mac-config-fullscreen.png" --content-type "image/png" --json
+taskctl.cmd delivery artifact add $deliveryId --title "桌面多记录表格" --kind image --path "test-results/compatibility-platform-aware-h5/07-desktop-record-table.png" --content-type "image/png" --json
+taskctl.cmd delivery artifact add $deliveryId --title "桌面配置居中弹窗" --kind image --path "test-results/compatibility-platform-aware-h5/08-desktop-config-dialog.png" --content-type "image/png" --json
+```
 
-- [ ] **Step 5: Re-read the issue and submit with its latest version**
+Expected: every image is readable and returns `previewKind: "image"`.
 
-~~~powershell
+- [ ] **Step 8: Re-read the latest version and submit once**
+
+```powershell
 $issueResponse = taskctl.cmd issue get 4ade1ed5-07b1-474f-9f53-f8e6b8ba034b --json | ConvertFrom-Json
-if ($issueResponse.task.identifier -ne "GUANWANGGAID-4") { throw "Unexpected issue" }
-if ($issueResponse.task.status -ne "in_progress") { throw ("Unexpected issue status: " + $issueResponse.task.status) }
-$latestVersion = [int]$issueResponse.task.version
+if ($issueResponse.task.status -ne "in_progress") { throw "Task status changed: $($issueResponse.task.status)" }
+$latestVersion = $issueResponse.task.version
 taskctl.cmd delivery submit $deliveryId --if-version $latestVersion --json
-~~~
+```
 
-Before submit, verify identifier is GUANWANGGAID-4 and status is still in_progress. On conflict or status change, stop and do not retry automatically.
-
-Expected: Delivery enters submitted state and GUANWANGGAID-4 moves to in_review. Never call issue move --status in_review and never move the issue to done.
+Expected: Delivery status becomes `submitted`, issue status becomes `in_review`, and issue version increments exactly once. Do not use `issue move --status in_review`; do not move the issue to `done`.
