@@ -266,16 +266,75 @@ test('设置页选择未安装版本不承诺立即下载', () => {
   assert.strictEqual(/showPage\s*\(\s*['"]detail['"]\s*\)/.test(settingsSwitch), true, '设置页未返回详情');
 });
 
+test('安装位置平铺完整路径并默认选择最大合格空间', () => {
+  const model = script.match(/const installPaths=\[([\s\S]*?)\];/)?.[1] ?? '';
+  const stateDeclaration = script.match(/const state=\{([\s\S]*?)\};/)?.[1] ?? '';
+  const sorter = functionSource('sortedInstallPaths');
+  const defaultSelector = functionSource('ensureSelectedPath');
+
+  assert.strictEqual(html.includes('id="installPathList"'), true, '缺少安装路径平铺列表');
+  assert.strictEqual(html.includes('role="radiogroup"'), true, '路径列表缺少单选语义');
+  assert.match(html, /id="installOverlay"[^>]*aria-labelledby="installDialogTitle"/, '安装弹窗缺少标题关联');
+  assert.match(html, /<h2 id="installDialogTitle">安装路径<\/h2>/, '安装弹窗标题缺少 id');
+  assert.match(html, /id="installPathMessage"[^>]*aria-live="polite"/, '路径状态缺少 polite live region');
+  assert.match(html, /id="installError"[^>]*aria-live="assertive"/, '安装结果缺少 assertive live region');
+  assert.match(html, /id="installError"[^>]*tabindex="-1"/, '安装错误摘要不可编程聚焦');
+  assert.strictEqual(html.includes('id="pathField"'), false, '仍保留单路径字段');
+  assert.strictEqual(/cyclePath|state\.installPath/.test(script), false, '仍使用循环路径状态');
+  assert.match(model, /path:\s*['"]\/Volumes\/external_disk\/Gamehub\/['"]/);
+  assert.match(model, /path:\s*['"]\/Applications\/GameHub\/['"]/);
+  assert.match(model, /availableBytes:\s*512000000000/);
+  assert.match(stateDeclaration, /selectedPathId:\s*null/);
+  assert.match(sorter, /availableBytes/);
+  assert.match(defaultSelector, /selectedPathId/);
+});
+
+test('异常路径禁用且无合格路径时不能安装', () => {
+  const eligibility = functionSource('pathEligibility');
+  const renderPaths = functionSource('renderInstallPaths');
+  const install = functionSource('install');
+
+  assert.match(eligibility, /status\s*!==\s*['"]available['"]/);
+  assert.match(eligibility, /availableBytes\s*<\s*version\.requiredBytes/);
+  assert.match(renderPaths, /路径不可用/);
+  assert.match(renderPaths, /空间不足/);
+  assert.match(renderPaths, /disabled/);
+  assert.match(install, /pathEligibility/);
+  assert.match(install, /selectedPathId\s*=\s*null/);
+  assert.match(install, /renderInstall\s*\(\)[\s\S]*?sortedInstallPaths[\s\S]*?focus\s*\(/, '复验失败后未恢复弹窗内焦点');
+});
+
+test('安装消息使用状态 tone 且下载锁定不双重衰减', () => {
+  const info = cssDeclarations('.install-error.info');
+  const neutral = cssDeclarations('.install-error.neutral');
+  const locked = cssDeclarations('.install-path-list.locked');
+  const lockedOption = cssDeclarations('.install-path-list.locked .install-path-option:disabled');
+  const lockedSelected = cssDeclarations('.install-path-list.locked .install-path-option.selected:disabled');
+  const install = functionSource('install');
+  const cancel = functionSource('cancelDownload');
+
+  assert.notStrictEqual(info.color, '#ff8585', '下载中仍使用错误红色');
+  assert.notStrictEqual(neutral.color, '#ff8585', '取消提示仍使用错误红色');
+  assert.strictEqual(locked.opacity, '1', '锁定列表仍整体衰减');
+  assert.ok(Number(lockedOption.opacity) >= 0.6, '锁定路径可读性过低');
+  assert.ok(Number(lockedSelected.opacity) > Number(lockedOption.opacity), '已选下载路径未保持重点');
+  assert.match(install, /正在下载[\s\S]*?['"]info['"]/, '下载提示未使用 info tone');
+  assert.match(cancel, /已取消下载[\s\S]*?['"]neutral['"]/, '取消提示未使用 neutral tone');
+});
+
 test('下载期间锁定安装选项且取消后清空进度', () => {
   const render = functionSource('renderInstall');
+  const renderPaths = functionSource('renderInstallPaths');
+  const selectPath = functionSource('selectInstallPath');
   const cancel = functionSource('cancelDownload');
-  const cyclePath = functionSource('cyclePath');
   const click = listenerSource('click');
 
-  assert.strictEqual(/#pathField['"]\)\.disabled\s*=\s*downloading/.test(render), true, '下载期间未锁定安装位置');
+  assert.strictEqual(/downloading\s*\|\|\s*!result\.eligible\s*\?\s*['"]disabled['"]/.test(renderPaths), true, '下载期间未锁定安装位置');
   assert.strictEqual(/#versionField['"]\)\.classList\.toggle\(\s*['"]disabled['"]\s*,\s*downloading/.test(render), true, '下载期间未锁定版本入口');
   assert.strictEqual(/version-option[^`]*disabled/.test(render), true, '下载期间未禁用版本选项');
-  assert.strictEqual(/downloadState\s*===\s*['"]downloading['"]/.test(cyclePath), true, '路径切换缺少下载状态保护');
+  assert.strictEqual(/downloadState\s*===\s*['"]downloading['"]/.test(selectPath), true, '路径选择缺少下载状态保护');
+  assert.strictEqual(/renderInstall\s*\(\)[\s\S]*?data-path-id[\s\S]*?focus\s*\(/.test(selectPath), true, '路径重绘后未恢复键盘焦点');
+  assert.strictEqual(/select-install-path[\s\S]*?selectInstallPath\s*\(/.test(click), true, '路径选项未接入点击处理');
   assert.strictEqual(/select-install-version[^\n]*downloadState\s*!==\s*['"]downloading['"]/.test(click), true, '版本选择缺少下载状态保护');
   assert.strictEqual(/downloadProgress\s*=\s*0/.test(cancel), true, '取消后未清空进度状态');
   assert.strictEqual(/#progressBar['"]\)\.style\.width\s*=\s*['"]0%['"]/.test(cancel), true, '取消后未清空进度条');
