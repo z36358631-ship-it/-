@@ -23,6 +23,15 @@ function check(condition, message) {
   if (!condition) errors.push(message);
 }
 
+function sameIds(actual, expected) {
+  return JSON.stringify([...actual].sort()) === JSON.stringify([...expected].sort());
+}
+
+async function visibleRecordIds(targetPage) {
+  return targetPage.locator('[data-record-row]:visible')
+    .evaluateAll((rows) => rows.map((row) => row.dataset.recordRow));
+}
+
 function observePage(targetPage, label) {
   targetPage.on('console', (message) => {
     if (message.type() !== 'error') return;
@@ -158,7 +167,7 @@ if (simulatedMobileFrameBox && simulatedMobileViewerBox) {
 }
 await page.locator('[data-config-close]').first().click();
 
-await page.locator('[data-preview="desktop"]').click();
+await page.locator('.demo-controls [data-preview="desktop"]').click();
 check(await page.locator('[data-record-table]').isVisible(), 'Desktop record table is hidden');
 check(await page.locator('[data-record-cards]').isHidden(), 'Desktop record cards are visible');
 const recordTable = page.locator('[data-record-table]');
@@ -193,6 +202,8 @@ if (await recordTable.count()) {
       check(viewerText.includes('适用范围'), 'Config applicability is missing');
       check(viewerText.includes('Adreno 830'), 'Android config hardware is missing');
       check(viewerText.includes('Android 14～15'), 'Android config OS range is missing');
+      check(!viewerText.includes('Apple'), 'Apple field leaked into Android config viewer');
+      check(!viewerText.includes('macOS'), 'macOS field leaked into Android config viewer');
       check(!viewerText.includes('应用配置'), 'Config viewer exposed an apply action');
       check(
         await page.evaluate(() => document.activeElement?.matches('[data-config-close]')),
@@ -280,47 +291,84 @@ check(
   'Clear filters did not restore the initial prompt'
 );
 
-// Android game, GPU, rating and three-filter AND combinations.
+// Device-level filters must narrow the real record IDs, not just keep a broad GPU match.
 await page.locator('[data-filter-trigger="game"]').click();
 await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
-check(await page.locator('[data-record-row]:visible').count() === 2, 'Game-only filter lost Android records');
-await page.locator('[data-filter-clear="game"]').click();
+check(
+  sameIds(await visibleRecordIds(page), ['android_elden_redmagic', 'android_elden_oneplus']),
+  'Game-only Elden filter did not return the exact two Android records'
+);
 
 await page.locator('[data-filter-trigger="hardware"]').click();
-await page.locator('[data-filter-query="hardware"]').fill('Adreno 830');
-await page.locator('[data-filter-option="hardware"][data-option-value="android_gpu_adreno830"]').click();
+await page.locator('[data-filter-query="hardware"]').fill('OnePlus 13');
+await page.locator('[data-filter-option="hardware"][data-option-value="android_device_oneplus13"]').click();
 check(
-  await page.locator('[data-record-row]:visible').count() >= 4,
-  'GPU-only filter did not return multiple Android records'
+  sameIds(await visibleRecordIds(page), ['android_elden_oneplus']),
+  'Elden + OnePlus device filter did not narrow to the OnePlus record'
 );
-await page.locator('[data-filter-clear="hardware"]').click();
+
+await page.locator('[data-filter-clear="game"]').click();
+await page.locator('[data-filter-trigger="hardware"]').click();
+await page.locator('[data-filter-query="hardware"]').fill('红魔');
+await page.locator(
+  '[data-filter-option="hardware"][data-option-value="android_device_redmagic10pro"]'
+).click();
+check(
+  sameIds(await visibleRecordIds(page), ['android_elden_redmagic', 'android_wukong']),
+  'RedMagic device filter did not return the exact two device records'
+);
 
 await page.locator('[data-filter-trigger="rating"]').click();
 await page.locator('[data-filter-query="rating"]').fill('4');
 await page.locator('[data-filter-option="rating"][data-option-value="4"]').click();
-const ratingOnlyRows = page.locator('[data-record-row]:visible');
-check(await ratingOnlyRows.count() >= 3, 'Rating-only filter returned too few Android records');
 check(
-  await page.locator('[data-record-row]:visible .rating[aria-label="3 分"]').count() === 0,
-  'Rating-only filter retained a lower-rated record'
+  sameIds(await visibleRecordIds(page), ['android_elden_redmagic']),
+  'RedMagic + rating filter retained an unexpected record'
 );
-
-await page.locator('[data-filter-trigger="hardware"]').click();
-await page.locator('[data-filter-query="hardware"]').fill('Adreno 830');
-await page.locator('[data-filter-option="hardware"][data-option-value="android_gpu_adreno830"]').click();
-const ratedRows = await page.locator('[data-record-row]:visible').allTextContents();
-check(ratedRows.length >= 3, 'GPU + rating filter returned too few records');
-check(ratedRows.every((text) => text.includes('★★★★')), 'Rating ≥4 retained a lower-rated record');
 
 await page.locator('[data-filter-trigger="game"]').click();
 await page.locator('[data-filter-query="game"]').fill('艾尔登');
 await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
 check(
-  await page.locator('[data-record-row]:visible').count() === 2,
-  'Three-filter AND result is not two Elden records'
+  sameIds(await visibleRecordIds(page), ['android_elden_redmagic']),
+  'Game + RedMagic + rating AND did not return the exact record'
 );
 
-// Demo platform changes clear filters, results and the open viewer.
+// Switching while a filter query is open clears both the open state and its draft query.
+await page.locator('[data-clear-filters]').click();
+await page.locator('[data-filter-trigger="hardware"]').click();
+await page.locator('[data-filter-query="hardware"]').fill('OnePlus');
+check(await page.locator('[data-filter-query="hardware"]').inputValue() === 'OnePlus', 'Query reset setup failed');
+await page.locator('[data-demo-platform="mac"]').click();
+check(await page.locator('[data-platform-badge]').textContent() === 'Mac', 'Query reset did not switch to Mac');
+check(await page.locator('[data-filter-query]').count() === 0, 'Platform switch kept an open filter');
+check(await page.locator('[data-clear-filters]').count() === 0, 'Platform switch kept selected filters');
+await page.locator('[data-demo-platform="android"]').click();
+await page.locator('[data-filter-trigger="hardware"]').click();
+check(await page.locator('[data-filter-query="hardware"]').inputValue() === '', 'Platform round-trip kept filter query');
+await page.keyboard.press('Escape');
+
+// A non-default ascending sort resets to rating-desc after a platform round-trip.
+await page.locator('[data-filter-trigger="game"]').click();
+await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+await page.locator('.demo-controls [data-preview="desktop"]').click();
+await page.locator('[data-sort-field="rating"]').click();
+check(
+  await page.locator('[data-record-table] [data-record-row]').first().getAttribute('data-record-row') ===
+    'android_elden_oneplus',
+  'Sort reset setup did not reach rating ascending'
+);
+await page.locator('[data-demo-platform="mac"]').click();
+await page.locator('[data-demo-platform="android"]').click();
+await page.locator('[data-filter-trigger="game"]').click();
+await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+check(
+  await page.locator('[data-record-table] [data-record-row]').first().getAttribute('data-record-row') ===
+    'android_elden_redmagic',
+  'Platform round-trip did not restore rating-desc sort'
+);
+
+// Switching with a viewer open closes it and clears filters and results.
 await page.locator('[data-preview="mobile"]').click();
 await page.locator('[data-config-open="android_elden_oneplus"]:visible').click();
 check(await page.locator('[data-config-viewer]').count() === 1, 'Platform-reset setup did not open viewer');
@@ -333,6 +381,31 @@ check(
   await page.getByText('添加筛选条件开始查询', { exact: true }).isVisible(),
   'Platform switch did not restore the initial prompt'
 );
+
+// Existing Web download success state is cleared by the next platform reset.
+await page.locator('[data-demo-platform="android"]').click();
+await page.locator('[data-filter-trigger="game"]').click();
+await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+const downloadResetOpen = page.locator('[data-config-open="android_elden_oneplus"]:visible');
+await downloadResetOpen.click();
+const safeDownloadPromise = page.waitForEvent('download');
+await page.locator('[data-config-download="cfg_android_elden"]').click();
+const safeDownload = await safeDownloadPromise;
+await page.locator('[data-config-viewer] .download-message.success').waitFor();
+check(
+  (await page.locator('[data-config-viewer] .download-message.success').innerText()).includes('已发起下载'),
+  'Download reset setup did not reach success'
+);
+await safeDownload.delete();
+await page.locator('[data-demo-platform="mac"]').click();
+check(await page.locator('[data-config-viewer]').count() === 0, 'Download reset kept the viewer open');
+check(await page.locator('.download-message').count() === 0, 'Platform switch kept download feedback');
+await page.locator('[data-demo-platform="android"]').click();
+await page.locator('[data-filter-trigger="game"]').click();
+await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+await page.locator('[data-config-open="android_elden_oneplus"]:visible').click();
+check(await page.locator('.download-message').count() === 0, 'Reopened viewer restored stale download feedback');
+await page.locator('[data-config-close]').first().click();
 
 const phonePage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
 observePage(phonePage, 'phone');
@@ -388,6 +461,11 @@ check(
   'Mac hardware filter label is wrong'
 );
 await bridgePage.locator('[data-filter-trigger="hardware"]').click();
+const allMacHardwareIds = await bridgePage.locator('[data-filter-option="hardware"]')
+  .evaluateAll((options) => options.map((option) => option.dataset.optionValue));
+check(allMacHardwareIds.length > 0, 'Mac hardware dropdown is empty');
+check(allMacHardwareIds.every((id) => id.startsWith('mac_')), 'Non-Mac hardware ID leaked into Mac dropdown');
+check(!allMacHardwareIds.some((id) => id.startsWith('android_')), 'Android hardware ID leaked into Mac dropdown');
 await bridgePage.locator('[data-filter-query="hardware"]').fill('M4 Pro');
 check(
   await bridgePage.locator('[data-filter-option="hardware"][data-option-value="mac_chip_m4pro"]').count() === 1,
@@ -399,7 +477,37 @@ check(
   ).count() === 0,
   'Android GPU leaked into Mac candidates'
 );
+await bridgePage.keyboard.press('Escape');
+
+await bridgePage.locator('[data-filter-trigger="game"]').click();
+await bridgePage.locator('[data-filter-query="game"]').fill('艾尔登');
+await bridgePage.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+check(
+  sameIds(await visibleRecordIds(bridgePage), ['mac_elden_mbp_m4pro', 'mac_elden_macmini_m4']),
+  'Mac Elden game filter did not return the exact two Mac records'
+);
+check(
+  (await visibleRecordIds(bridgePage)).every((id) => id.startsWith('mac_')),
+  'Android record ID leaked into Mac Elden results'
+);
+await bridgePage.locator('[data-config-open="mac_elden_mbp_m4pro"]:visible').click();
+const macViewerText = await bridgePage.locator('[data-config-viewer]').innerText();
+check(macViewerText.includes('Apple M4 Pro'), 'Mac viewer is missing Apple hardware');
+check(macViewerText.includes('macOS 15～26'), 'Mac viewer is missing macOS range');
+check(macViewerText.includes('Game Porting Toolkit 2'), 'Mac viewer is missing GPTK');
+check(!macViewerText.includes('Adreno'), 'Adreno field leaked into Mac viewer');
+check(!macViewerText.includes('Android'), 'Android field leaked into Mac viewer');
+check(!macViewerText.includes('Wine'), 'Wine field leaked into Mac viewer');
+await bridgePage.locator('[data-config-close]').first().click();
+await bridgePage.locator('[data-filter-clear="game"]').click();
+
+await bridgePage.locator('[data-filter-trigger="hardware"]').click();
+await bridgePage.locator('[data-filter-query="hardware"]').fill('M4 Pro');
 await bridgePage.locator('[data-filter-option="hardware"][data-option-value="mac_chip_m4pro"]').click();
+check(
+  sameIds(await visibleRecordIds(bridgePage), ['mac_elden_mbp_m4pro']),
+  'M4 Pro chip filter did not narrow to the exact Mac record'
+);
 const macRowsText = (await bridgePage.locator('[data-record-row]:visible').allTextContents()).join(' ');
 check(macRowsText.includes('Apple M4 Pro'), 'Mac chip filter returned no M4 Pro record');
 check(!macRowsText.includes('Android'), 'Android field leaked into Mac results');
@@ -422,15 +530,21 @@ check(await queryPage.locator('[data-config-viewer]').count() === 1, 'Invalid-ca
 await queryPage.evaluate(() => window.GameHubCompatibility.setCatalog({
   games: [{
     id: 'cross-game', name: '跨平台异常游戏', englishName: 'Cross Invalid', aliases: [],
-    coverKey: 'invalid-cover.jpg', platforms: ['mac'], popularOn: []
+    coverKey: 'invalid-cover.jpg', platforms: ['android', 'mac'], popularOn: []
   }],
-  hardware: [{
-    id: 'mac_chip_test', platform: 'mac', type: 'chip', displayName: 'Apple M4', aliases: [], subtitle: 'Apple 芯片'
-  }],
+  hardware: [
+    {
+      id: 'android_device_test', platform: 'android', type: 'device',
+      displayName: 'Android Test Device', aliases: [], subtitle: 'Android hardware'
+    },
+    {
+      id: 'mac_chip_test', platform: 'mac', type: 'chip', displayName: 'Apple M4', aliases: [], subtitle: 'Apple 芯片'
+    }
+  ],
   records: [
     {
-      id: 'wrong-platform-record', platform: 'android', gameId: 'cross-game',
-      hardwareIds: ['mac_chip_test'], rating: 5, environment: { androidVersion: 'Android 15' }
+      id: 'cross-hardware-record', platform: 'mac', gameId: 'cross-game',
+      hardwareIds: ['android_device_test'], rating: 5, environment: { macosVersion: 'macOS 26' }
     },
     {
       id: 'missing-hardware-record', platform: 'mac', gameId: 'cross-game',
@@ -456,6 +570,72 @@ if (await invalidReload.count()) {
 }
 check(await queryPage.locator('[data-filter-select]').count() === 3, 'Reload did not restore the Mac filter catalog');
 check(await queryPage.locator('[data-clear-filters]').count() === 0, 'Reload retained invalid selected filters');
+
+// Invalid config record references are removed without hiding the otherwise valid Mac record.
+await queryPage.evaluate(() => window.GameHubCompatibility.setCatalog({
+  games: [{
+    id: 'hybrid-game', name: '跨平台测试游戏', englishName: 'Hybrid Test', aliases: [],
+    coverKey: '', platforms: ['android', 'mac'], popularOn: []
+  }],
+  hardware: [
+    {
+      id: 'android_device_valid', platform: 'android', type: 'device',
+      displayName: 'Android Valid Device', aliases: [], subtitle: 'Android hardware'
+    },
+    {
+      id: 'mac_chip_valid', platform: 'mac', type: 'chip',
+      displayName: 'Apple Test Chip', aliases: [], subtitle: 'Apple 芯片'
+    }
+  ],
+  records: [
+    {
+      id: 'valid-mac-record', platform: 'mac', gameId: 'hybrid-game', hardwareIds: ['mac_chip_valid'],
+      gameVersion: '1.0', verdict: '可运行', rating: 4, avgFps: 45, verifiedAt: '2026-08-10',
+      tags: ['测试'], notes: '有效 Mac 记录', configIds: ['bad-cross-config', 'bad-missing-config'],
+      environment: {
+        macModel: 'Mac Test', appleChip: 'Apple Test Chip', macosVersion: 'macOS 26',
+        appVersion: '盖世游戏 Mac Test', compatibilityLayer: 'GPTK Test', displayMode: '1920 × 1080'
+      }
+    },
+    {
+      id: 'valid-android-record', platform: 'android', gameId: 'hybrid-game',
+      hardwareIds: ['android_device_valid'], gameVersion: '1.0', verdict: '可运行', rating: 4,
+      avgFps: 40, verifiedAt: '2026-08-10', tags: [], notes: '有效 Android 记录', configIds: [],
+      environment: {
+        deviceModel: 'Android Valid Device', soc: 'Test SoC', mobileGpu: 'Test GPU',
+        androidVersion: 'Android 15', appVersion: '盖世游戏 Test', runtime: 'Test Runtime'
+      }
+    }
+  ],
+  configs: [
+    {
+      id: 'bad-cross-config', platform: 'mac', gameId: 'hybrid-game', recordId: 'valid-android-record',
+      name: '错误跨平台配置', version: '1.0', fileName: 'bad-cross.json', fileSize: '1 KB',
+      downloadCount: 0, updatedAt: '2026-08-10', summary: 'Apple Test Chip',
+      applicability: { gameVersion: '1.0', hardware: 'Apple Test Chip', systemRange: 'macOS 26' },
+      fields: [['兼容层', 'GPTK Test']]
+    },
+    {
+      id: 'bad-missing-config', platform: 'mac', gameId: 'hybrid-game', recordId: 'missing-record',
+      name: '错误缺失配置', version: '1.0', fileName: 'bad-missing.json', fileSize: '1 KB',
+      downloadCount: 0, updatedAt: '2026-08-10', summary: 'Apple Test Chip',
+      applicability: { gameVersion: '1.0', hardware: 'Apple Test Chip', systemRange: 'macOS 26' },
+      fields: [['兼容层', 'GPTK Test']]
+    }
+  ]
+}));
+await queryPage.locator('[data-filter-trigger="game"]').click();
+await queryPage.locator('[data-filter-option="game"][data-option-value="hybrid-game"]').click();
+const validMacRow = queryPage.locator('[data-record-row="valid-mac-record"]:visible');
+check(await validMacRow.count() === 1, 'Valid Mac record was discarded with invalid configs');
+if (await validMacRow.count()) {
+  check((await validMacRow.innerText()).includes('暂无配置'), 'Invalid configs remained attached to valid Mac row');
+  check(await validMacRow.locator('[data-config-open]').count() === 0, 'Invalid config exposed a viewer trigger');
+}
+
+await queryPage.reload({ waitUntil: 'load' });
+check(await queryPage.locator('[data-platform-badge]').textContent() === 'Mac', 'Catalog reset lost Mac query platform');
+check(await queryPage.locator('[data-filter-select]').count() === 3, 'Catalog reset did not restore Mac filters');
 
 await queryPage.locator('[data-filter-trigger="game"]').click();
 await queryPage.locator('[data-filter-query="game"]').fill('不存在');
