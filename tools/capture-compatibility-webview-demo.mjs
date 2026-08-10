@@ -208,6 +208,10 @@ await page.locator('[data-filter-trigger="game"]').click();
 await page.locator('[data-filter-query="game"]').fill('艾尔登');
 await page.keyboard.press('Escape');
 check(await page.locator('[data-filter-query]').count() === 0, 'Escape did not close the open filter');
+check(
+  await page.evaluate(() => document.activeElement?.matches('[data-filter-trigger="game"]')),
+  'Escape did not restore focus to the game filter trigger'
+);
 await page.locator('[data-filter-trigger="hardware"]').click();
 await page.locator('.page-header h1').click();
 check(await page.locator('[data-filter-query]').count() === 0, 'Outside click did not close the open filter');
@@ -217,10 +221,16 @@ check(
   (await page.locator('[data-filter-trigger="game"]').innerText()).includes('艾尔登法环'),
   'Popular game did not migrate into the game filter'
 );
+const popularLegacyResult = page.locator('[data-compatibility-result="steam_1245620"]');
+const popularLegacyResultCount = await popularLegacyResult.count();
 check(
-  await page.locator('[data-compatibility-result]').count() === 0,
-  'Popular game still opened the legacy single-result renderer'
+  popularLegacyResultCount === 1,
+  'Popular game did not open the legacy single-result renderer'
 );
+if (popularLegacyResultCount === 1) {
+  await page.locator('[data-result-back]').click();
+  check(await page.locator('[data-compatibility-result]').count() === 0, 'Legacy result back did not return home');
+}
 await page.locator('[data-filter-clear="game"]').click();
 await assertNoHorizontalOverflow(page, 'Android home');
 await assertTouchTargets(page, 'Android home');
@@ -490,10 +500,13 @@ check(
   (await queryPage.locator('[data-filter-trigger="game"]').innerText()).includes('跨平台异常游戏'),
   'Custom popular game did not migrate into the game filter'
 );
-await queryPage.locator('[data-filter-clear="game"]').click();
-await queryPage.locator('#game-search').fill('跨平台');
-await queryPage.locator('[data-search-result="cross-game"]').click();
-const malformedText = await queryPage.locator('[data-compatibility-result]').innerText();
+const customLegacyResult = queryPage.locator('[data-compatibility-result="cross-game"]');
+const customLegacyResultCount = await customLegacyResult.count();
+check(
+  customLegacyResultCount === 1,
+  'Custom popular game did not open the legacy single-result renderer'
+);
+const malformedText = customLegacyResultCount === 1 ? await customLegacyResult.innerText() : '';
 check(malformedText.includes('暂无验证记录'), 'Cross-platform record was not rejected');
 check(malformedText.includes('暂无可下载配置'), 'Cross-platform config was not rejected');
 check(

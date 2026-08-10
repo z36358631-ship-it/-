@@ -2178,8 +2178,10 @@
 
     document.addEventListener("keydown", (event) => {
       if (event.key !== "Escape" || !state.openFilter) return;
+      const key = state.openFilter;
       state.openFilter = null;
       render();
+      document.querySelector('[data-filter-trigger="' + key + '"]')?.focus();
     });
 
     document.addEventListener("click", (event) => {
@@ -2257,11 +2259,12 @@
 
       const popularGame = event.target.closest("[data-popular-game]");
       if (popularGame) {
-        state.filters.gameId = popularGame.dataset.popularGame;
+        const gameId = popularGame.dataset.popularGame;
+        state.filters.gameId = gameId;
         state.queries.game = "";
         state.openFilter = null;
         state.viewer = { recordId: null, configId: null };
-        state.selectedGameId = null;
+        state.selectedGameId = gameId;
         state.expandedConfigId = null;
         clearDownloadState();
         render();
