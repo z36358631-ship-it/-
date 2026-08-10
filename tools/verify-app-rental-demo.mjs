@@ -5,8 +5,56 @@ import { chromium } from 'playwright-core';
 
 const root = path.resolve(import.meta.dirname, '..');
 const htmlPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.html');
+const templatePath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.template.html');
 const annotationPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能-标注版.html');
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const verificationEvidencePath = path.join(root, 'test-results', 'app-rental-verification', 'contract-results.json');
+
+const EXPECTED_DEVICE_DIMENSIONS = Object.freeze({
+  portrait: Object.freeze({ width: 390, height: 844 }),
+  landscape: Object.freeze({ width: 874, height: 402 }),
+});
+
+const FULL_PAGE_MATRIX = Object.freeze([
+  { pageId: 'home', screen: 'home', baselineSource: 'app-v611' },
+  { pageId: 'play', screen: 'play', baselineSource: 'app-v611' },
+  { pageId: 'community', screen: 'community', baselineSource: 'app-v611' },
+  { pageId: 'ranking', screen: 'ranking', baselineSource: 'app-v611' },
+  { pageId: 'library', screen: 'library', baselineSource: 'app-v611' },
+  { pageId: 'profile', screen: 'profile', baselineSource: 'app-v611' },
+  { pageId: 'search', screen: 'search', baselineSource: 'app-v611' },
+  { pageId: 'detail', screen: 'detail', baselineSource: 'app-v611' },
+  { pageId: 'checkout', screen: 'checkout', baselineSource: 'mac-rental' },
+  { pageId: 'membership', screen: 'membership', baselineSource: 'mac-rental' },
+  { pageId: 'member-library', screen: 'member-library', baselineSource: 'mac-rental' },
+  { pageId: 'orders', screen: 'orders', baselineSource: 'mac-rental' },
+  { pageId: 'order-detail', screen: 'order-detail', baselineSource: 'mac-rental' },
+  { pageId: 'steam-login', screen: 'steam-login', baselineSource: 'mac-rental' },
+  { pageId: 'expiry-15m', screen: 'orders', baselineSource: 'mac-rental' },
+  { pageId: 'after-sales', screen: 'after-sales', baselineSource: 'mac-rental' },
+  { pageId: 'payment-success', screen: 'checkout', baselineSource: 'mac-rental' },
+  { pageId: 'membership-success', screen: 'membership', baselineSource: 'mac-rental' },
+]);
+
+const EXPECTED_ORDER_TABS = Object.freeze([
+  { id: 'all', label: '全部订单' },
+  { id: 'pending', label: '待支付' },
+  { id: 'usable', label: '可使用' },
+]);
+
+const EXPECTED_RENTAL_STATUSES = Object.freeze([
+  'pending',
+  'allocating',
+  'active',
+  'refunding',
+  'refunded',
+  'ended',
+]);
+
+function writeJsonEvidence(filePath, payload) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+}
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -30,6 +78,11 @@ async function main() {
   const browser = await chromium.launch({ executablePath: chromePath, headless: true });
   try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    const demoIssues = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') demoIssues.push(`console: ${message.text()}`);
+    });
+    page.on('pageerror', (error) => demoIssues.push(`pageerror: ${error.message}`));
     await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));
     const contract = await page.evaluate(() => ({
@@ -41,6 +94,601 @@ async function main() {
     assert(contract.orientation === 'portrait', '默认方向应为 portrait');
     assert(contract.screen === 'home', '默认页面应为 home');
     process.stdout.write('CONTRACT 3/3 PASS\n');
+
+    const refactorGateFailures = [];
+    const refactorGateResults = [];
+    let refactorGateChecks = 0;
+    const runRefactorGate = async (name, callback) => {
+      try {
+        await callback();
+        refactorGateChecks += 1;
+        refactorGateResults.push({ name, status: 'pass' });
+      } catch (error) {
+        refactorGateFailures.push(`${name}: ${error.message}`);
+        refactorGateResults.push({ name, status: 'fail', message: error.message });
+      }
+    };
+    const reloadDemo = async () => {
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.waitForFunction(() => Boolean(window.__appRentalDemo));
+    };
+
+    await runRefactorGate('STATIC_ARCHITECTURE', async () => {
+      const violations = [];
+      for (const [label, sourcePath] of [['built', htmlPath], ['template', templatePath]]) {
+        const source = fs.readFileSync(sourcePath, 'utf8');
+        if (/state\.screen\s*===\s*['"]orders['"]\s*\|\|\s*state\.screen\s*===\s*['"]order-detail['"]/.test(source)) {
+          violations.push(`${label}: orders 与 order-detail 共用分支`);
+        }
+        if (/\b(?:numericMinutes|minutes|remainingMinutes)\s*={2,3}\s*15\b/.test(source)) {
+          violations.push(`${label}: 临期提醒仍依赖恰好等于15分钟`);
+        }
+      }
+      assert(violations.length === 0, violations.join('；'));
+    });
+
+    await runRefactorGate('SEARCH_COMMUNITY_ROUTES', async () => {
+      const results = [];
+      for (const orientation of ['portrait', 'landscape']) {
+        for (const screen of ['search', 'community']) {
+          results.push(await page.evaluate(({ orientation, screen }) => {
+            window.__appRentalDemo.setOrientation(orientation);
+            window.__appRentalDemo.navigate(screen);
+            const rootNode = document.querySelector('#appRentalDemo');
+            const stub = rootNode.querySelector('.stub-panel, .landscape-stub');
+            const dedicated = rootNode.querySelector(
+              `.${orientation}-${screen}, [data-layout="${orientation}-${screen}"], [data-route-screen="${screen}"]`,
+            );
+            return {
+              orientation,
+              screen,
+              actualScreen: window.__appRentalDemo.snapshot().screen,
+              stub: Boolean(stub),
+              dedicated: Boolean(dedicated),
+              placeholderCopy: /当前入口已连通|功能页面/.test(rootNode.innerText),
+            };
+          }, { orientation, screen }));
+        }
+      }
+      assert(
+        results.every(({ screen, actualScreen, stub, placeholderCopy }) => actualScreen === screen && !stub && !placeholderCopy),
+        `search/community 仍落入占位页：${JSON.stringify(results)}`,
+      );
+    });
+
+    await runRefactorGate('FULL_PAGE_MATRIX', async () => {
+      assert(FULL_PAGE_MATRIX.length === 18, `页面矩阵应为18项，实际${FULL_PAGE_MATRIX.length}项`);
+      const failures = [];
+      for (const orientation of ['portrait', 'landscape']) {
+        for (const contractItem of FULL_PAGE_MATRIX) {
+          await reloadDemo();
+          const issueStart = demoIssues.length;
+          const result = await page.evaluate(({ orientation: nextOrientation, contractItem: expected }) => {
+            const api = window.__appRentalDemo;
+            if (typeof api?.openCaptureState !== 'function') {
+              return { ...expected, orientation: nextOrientation, apiMissing: true };
+            }
+            api.setOrientation(nextOrientation);
+            api.openCaptureState(expected.pageId);
+            const rootNode = document.querySelector('#appRentalDemo');
+            const markerNode = rootNode?.dataset.pageId === expected.pageId
+              ? rootNode
+              : rootNode?.querySelector(`[data-page-id="${expected.pageId}"]`);
+            const device = rootNode?.querySelector('.device') || document.querySelector('.device');
+            const box = device?.getBoundingClientRect();
+            const snapshot = api.snapshot();
+            return {
+              ...expected,
+              orientation: nextOrientation,
+              actualOrientation: snapshot.orientation,
+              actualScreen: snapshot.screen,
+              actualPageId: markerNode?.dataset.pageId || rootNode?.dataset.pageId || null,
+              actualBaselineSource: markerNode?.dataset.baselineSource || rootNode?.dataset.baselineSource || null,
+              width: Math.round(box?.width || 0),
+              height: Math.round(box?.height || 0),
+              stub: Boolean(rootNode?.querySelector('.stub-panel, .landscape-stub')),
+              placeholderCopy: /\u5f53\u524d\u5165\u53e3\u5df2\u8fde\u901a|\u540e\u7eed\u8865\u9f50|\u529f\u80fd\u9875\u9762/.test(rootNode?.innerText || ''),
+              copyLength: (rootNode?.innerText || '').trim().length,
+            };
+          }, { orientation, contractItem });
+          const expectedDimensions = EXPECTED_DEVICE_DIMENSIONS[orientation];
+          result.runtimeIssues = demoIssues.slice(issueStart);
+          const passed = !result.apiMissing
+            && result.actualOrientation === orientation
+            && result.actualScreen === contractItem.screen
+            && result.actualPageId === contractItem.pageId
+            && result.actualBaselineSource === contractItem.baselineSource
+            && result.width === expectedDimensions.width
+            && result.height === expectedDimensions.height
+            && !result.stub
+            && !result.placeholderCopy
+            && result.copyLength >= 20
+            && result.runtimeIssues.length === 0;
+          if (!passed) failures.push(result);
+        }
+      }
+      assert(failures.length === 0, `18页横竖屏契约未完成：${JSON.stringify(failures)}`);
+      process.stdout.write('FULL_PAGE_MATRIX 36/36 PASS\n');
+    });
+
+    await runRefactorGate('ORDER_CENTER_V2', async () => {
+      await reloadDemo();
+      const initial = await page.evaluate(() => {
+        const api = window.__appRentalDemo;
+        if (typeof api?.openCaptureState !== 'function') return { apiMissing: 'openCaptureState' };
+        api.setOrientation('portrait');
+        api.openCaptureState('orders');
+        const snapshot = api.snapshot();
+        const orders = typeof api.getOrderCollection === 'function' ? api.getOrderCollection() : (snapshot.orders || []);
+        const tabNodes = [...document.querySelectorAll('[data-order-tab], .order-tabs [role="tab"]')];
+        const search = document.querySelector('[data-order-search]');
+        const usableTab = tabNodes.find((node) => (node.dataset.orderTab || node.dataset.value) === 'usable');
+        const searchBox = search?.getBoundingClientRect();
+        const usableBox = usableTab?.getBoundingClientRect();
+        const cardText = [...document.querySelectorAll('.order-list-card')].map((node) => node.innerText).join('\n');
+        const serializedOrders = JSON.stringify(orders);
+        return {
+          labels: tabNodes.map((node) => node.textContent.trim()),
+          ids: tabNodes.map((node) => node.dataset.orderTab || node.dataset.value),
+          search: Boolean(search),
+          searchAria: search?.querySelector('input')?.getAttribute('aria-label') || '',
+          searchRightOfUsable: Boolean(searchBox && usableBox && searchBox.left >= usableBox.right - 2),
+          orders,
+          statuses: [...new Set(orders.map(({ status }) => status))].sort(),
+          orderTypes: orders.map(({ orderType }) => orderType || null),
+          typeLabels: /\u6e38\u620f\u8d2d\u4e70|\u79df\u53f7\u7545\u73a9|CDKEY/i.test(cardText),
+          purchaseFixture: orders.some(({ orderType }) => orderType && orderType !== 'rental'),
+          cdkeyFixture: /"(?:cd.?key|redeemCode|activationKey)"\s*:/i.test(serializedOrders),
+        };
+      });
+      assert(!initial.apiMissing, `订单中心缺少测试接口：${initial.apiMissing}`);
+      assert(initial.labels.join('|') === EXPECTED_ORDER_TABS.map(({ label }) => label).join('|'), `订单 Tab 文案错误：${JSON.stringify(initial.labels)}`);
+      assert(initial.ids.join('|') === EXPECTED_ORDER_TABS.map(({ id }) => id).join('|'), `订单 Tab 口径错误：${JSON.stringify(initial.ids)}`);
+      assert(initial.search && initial.searchAria.includes('当前') && initial.searchAria.includes('订单'), `缺少当前 Tab 订单搜索：${JSON.stringify(initial)}`);
+      assert(initial.searchRightOfUsable, '订单搜索未位于“可使用”右侧');
+      assert(initial.statuses.join('|') === [...EXPECTED_RENTAL_STATUSES].sort().join('|'), `全部订单未覆盖6种租号状态：${JSON.stringify(initial.statuses)}`);
+      assert(initial.orderTypes.every((value) => value === null || value === 'rental'), `出现非租号订单 fixture：${JSON.stringify(initial.orderTypes)}`);
+      assert(!initial.typeLabels && !initial.purchaseFixture && !initial.cdkeyFixture, `订单卡或 fixture 泄漏类型/CDKEY：${JSON.stringify(initial)}`);
+
+      const tabSelector = (id) => `[data-order-tab="${id}"], .order-tabs [data-value="${id}"]`;
+      const selectTab = async (id) => {
+        const locator = page.locator(tabSelector(id)).first();
+        assert(await locator.count(), `找不到订单 Tab：${id}`);
+        await locator.click();
+      };
+      const setSearch = (value) => page.evaluate((keyword) => window.__appRentalDemo.setOrderSearch(keyword), value);
+      const readOrderView = () => page.evaluate(() => ({
+        screen: window.__appRentalDemo.snapshot().screen,
+        tab: window.__appRentalDemo.snapshot().orderTab,
+        keyword: window.__appRentalDemo.snapshot().orderSearch,
+        ids: [...document.querySelectorAll('.order-list-card')].map((node) => node.dataset.orderId),
+        statuses: [...document.querySelectorAll('.order-list-card')].map((node) => node.dataset.status),
+        emptyCopy: document.querySelector('#appRentalDemo')?.innerText.includes('未找到相关订单'),
+        clearAction: Boolean(document.querySelector('[data-action="clear-order-search"]')),
+      }));
+
+      await selectTab('pending');
+      await setSearch('');
+      const pendingView = await readOrderView();
+      assert(pendingView.ids.length > 0 && pendingView.statuses.every((status) => status === 'pending'), `待支付 Tab 混入其他状态：${JSON.stringify(pendingView)}`);
+      const pendingOrder = initial.orders.find(({ id }) => pendingView.ids.includes(id));
+      assert(pendingOrder, '待支付 Tab 没有可用的搜索样例');
+
+      await setSearch(pendingOrder.gameName);
+      const gameSearch = await readOrderView();
+      assert(gameSearch.ids.includes(pendingOrder.id) && gameSearch.ids.length > 0, `按游戏名搜索失败：${JSON.stringify(gameSearch)}`);
+      await setSearch(pendingOrder.id);
+      const idSearch = await readOrderView();
+      assert(idSearch.ids.join('|') === pendingOrder.id, `按订单号搜索失败：${JSON.stringify(idSearch)}`);
+      await setSearch('__NO_MATCHING_ORDER__');
+      const emptySearch = await readOrderView();
+      assert(emptySearch.ids.length === 0 && emptySearch.emptyCopy && emptySearch.clearAction, `订单搜索空态不完整：${JSON.stringify(emptySearch)}`);
+
+      await setSearch('');
+      await selectTab('usable');
+      const usableView = await readOrderView();
+      const usableOrders = initial.orders.filter(({ status, expireAt }) => status === 'active' && Number(expireAt) > Date.now());
+      assert(usableView.ids.length > 0 && usableView.ids.every((id) => usableOrders.some((order) => order.id === id)), `可使用 Tab 口径错误：${JSON.stringify({ usableView, usableOrders })}`);
+
+      await selectTab('pending');
+      await setSearch(pendingOrder.gameName);
+      await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
+      const rotatedContext = await readOrderView();
+      assert(rotatedContext.tab === 'pending' && rotatedContext.keyword === pendingOrder.gameName && rotatedContext.ids.includes(pendingOrder.id), `横竖屏切换丢失 Tab/搜索：${JSON.stringify(rotatedContext)}`);
+      await page.evaluate(() => window.__appRentalDemo.setOrientation('portrait'));
+      await page.locator('.order-list-card [data-action="select-order"], .order-list-card[data-action="select-order"]').first().click();
+      const detailReturn = await page.evaluate(() => {
+        const before = window.__appRentalDemo.snapshot();
+        const target = window.__appRentalDemo.taskBack();
+        const after = window.__appRentalDemo.snapshot();
+        return {
+          beforeScreen: before.screen,
+          target,
+          afterScreen: after.screen,
+          tab: after.orderTab,
+          keyword: after.orderSearch,
+        };
+      });
+      assert(detailReturn.beforeScreen === 'order-detail' && detailReturn.afterScreen === 'orders' && detailReturn.tab === 'pending' && detailReturn.keyword === pendingOrder.gameName, `详情返回丢失订单上下文：${JSON.stringify(detailReturn)}`);
+
+      const expiryResult = await page.evaluate(() => {
+        const api = window.__appRentalDemo;
+        api.openCaptureState('orders');
+        const orders = api.getOrderCollection();
+        const active = orders.find(({ status, expireAt }) => status === 'active' && Number(expireAt) > Date.now());
+        if (!active) return { missingActive: true };
+        api.selectOrder(active.id);
+        const handled = api.triggerExpiryMinutes(0);
+        api.navigate('orders', { rememberSource: false, replaceTask: true });
+        api.setOrderSearch('');
+        const usableTab = document.querySelector('[data-order-tab="usable"], .order-tabs [data-value="usable"]');
+        usableTab?.click();
+        return {
+          handled,
+          expiredId: active.id,
+          visibleIds: [...document.querySelectorAll('.order-list-card')].map((node) => node.dataset.orderId),
+          current: api.getOrderCollection().find(({ id }) => id === active.id),
+        };
+      });
+      assert(!expiryResult.missingActive && expiryResult.handled !== false && !expiryResult.visibleIds.includes(expiryResult.expiredId) && expiryResult.current?.status === 'ended', `租期到期未从可使用移除：${JSON.stringify(expiryResult)}`);
+      process.stdout.write('ORDER_CENTER_V2 14/14 PASS\n');
+    });
+
+    await runRefactorGate('PRICE_SEMANTICS', async () => {
+      const source = fs.readFileSync(templatePath, 'utf8');
+      assert(/function\s+lowestEligibleRentalSku\s*\(/.test(source) && /game\.rentalSkus/.test(source), '缺少租号 SKU 的独立最低价算法');
+      assert(/function\s+lowestEligiblePurchaseSku\s*\(/.test(source) && /game\.purchaseSkus/.test(source), '缺少购买 SKU 的独立最低价算法');
+      assert(!/Math\.min\([^)]*(?:rental|rent)[^)]*(?:cdkey|purchase)|Math\.min\([^)]*(?:cdkey|purchase)[^)]*(?:rental|rent)/is.test(source), '租号与购买价格不得跨类型取最低值');
+      assert(source.includes('租 2小时') && source.includes('租/购可选') && /\u8d2d\s*\u00a5?\$\{/.test(source), '缺少租号价、购买价与紧凑共存文案');
+      process.stdout.write('PRICE_SEMANTICS 4/4 PASS\n');
+    });
+
+    await runRefactorGate('LANDSCAPE_ORDER_ROUTES', async () => {
+      await reloadDemo();
+      await page.evaluate(() => {
+        window.__appRentalDemo.setScenario('active-rental');
+        window.__appRentalDemo.setOrientation('landscape');
+        window.__appRentalDemo.navigate('orders');
+      });
+      const listState = await page.evaluate(() => ({
+        screen: window.__appRentalDemo.snapshot().screen,
+        list: Boolean(document.querySelector('.landscape-order-list, .order-list-pane')),
+        detail: Boolean(document.querySelector('.landscape-order-detail, [data-layout="landscape-order-detail"], .order-detail-pane')),
+      }));
+      await page.locator('.order-list-card[data-status="active"]').first().click();
+      const detailState = await page.evaluate(() => ({
+        screen: window.__appRentalDemo.snapshot().screen,
+        list: Boolean(document.querySelector('.landscape-order-list, .order-list-pane')),
+        detail: Boolean(document.querySelector('.landscape-order-detail, [data-layout="landscape-order-detail"], .order-detail-pane')),
+      }));
+      assert(
+        listState.screen === 'orders' && listState.list && !listState.detail
+          && detailState.screen === 'order-detail' && !detailState.list && detailState.detail,
+        `横屏订单列表与详情未拆成独立页面：${JSON.stringify({ listState, detailState })}`,
+      );
+    });
+
+    await runRefactorGate('CROSS_GAME_CHECKOUT', async () => {
+      await reloadDemo();
+      const checkoutContexts = await page.evaluate(() => {
+        const readCheckout = () => {
+          const snapshot = window.__appRentalDemo.snapshot();
+          const checkout = snapshot.checkoutDraft || snapshot.order;
+          const text = document.querySelector('#appRentalDemo').innerText;
+          return {
+            selectedGameId: snapshot.selectedGameId,
+            gameId: checkout?.gameId,
+            gameName: checkout?.gameName,
+            hasShadowBlade: text.includes('影之刃零'),
+            hasEldenRing: text.includes('艾尔登法环'),
+            coverSource: document.querySelector('.checkout-cover img')?.dataset.sourceScreen,
+            coverCrop: document.querySelector('.checkout-cover img')
+              ? [
+                  document.querySelector('.checkout-cover img').dataset.cropX,
+                  document.querySelector('.checkout-cover img').dataset.cropY,
+                  document.querySelector('.checkout-cover img').dataset.cropWidth,
+                  document.querySelector('.checkout-cover img').dataset.cropHeight,
+                ].join(',')
+              : null,
+          };
+        };
+        window.__appRentalDemo.setScenario('not-member-library');
+        window.__appRentalDemo.setOrientation('portrait');
+        window.__appRentalDemo.setSelectedGame('elden-ring');
+        window.__appRentalDemo.selectRentalSku('rent-2h');
+        window.__appRentalDemo.navigate('checkout');
+        const first = readCheckout();
+        window.__appRentalDemo.navigate('detail', { replaceTask: true });
+        window.__appRentalDemo.setSelectedGame('shadow-blade-zero');
+        window.__appRentalDemo.navigate('checkout');
+        return { first, second: readCheckout() };
+      });
+      assert(
+        checkoutContexts.first.gameId === 'elden-ring'
+          && checkoutContexts.first.coverSource === 'home'
+          && checkoutContexts.first.coverCrop === '67,1658,492,235'
+          && checkoutContexts.second.selectedGameId === 'shadow-blade-zero'
+          && checkoutContexts.second.gameId === 'shadow-blade-zero'
+          && checkoutContexts.second.gameName === '影之刃零'
+          && checkoutContexts.second.hasShadowBlade
+          && !checkoutContexts.second.hasEldenRing,
+        `跨游戏结算串单：${JSON.stringify(checkoutContexts)}`,
+      );
+    });
+
+    await runRefactorGate('GAME_TRANSACTION_COMPLETION', async () => {
+      await reloadDemo();
+      const transaction = await page.evaluate(() => {
+        window.__appRentalDemo.setScenario('not-member-library');
+        window.__appRentalDemo.setOrientation('portrait');
+        window.__appRentalDemo.setSelectedGame('elden-ring');
+        window.__appRentalDemo.selectRentalSku('rent-2h');
+        window.__appRentalDemo.navigate('checkout');
+        const paid = window.__appRentalDemo.payOrder();
+        const payment = {
+          status: (window.__appRentalDemo.snapshot().checkoutDraft || window.__appRentalDemo.snapshot().order)?.status,
+          screen: window.__appRentalDemo.snapshot().screen,
+          paymentComplete: /支付成功|支付完成|已完成支付/.test(document.querySelector('#appRentalDemo').innerText),
+          allocationInProgress: /分配账号|账号分配中|正在分配/.test(document.querySelector('#appRentalDemo').innerText),
+        };
+        const allocated = window.__appRentalDemo.allocateAccount(true);
+        const allocation = {
+          status: (window.__appRentalDemo.snapshot().activeUsage || window.__appRentalDemo.snapshot().order)?.status,
+          screen: window.__appRentalDemo.snapshot().screen,
+          allocationComplete: /账号已就绪|账号分配成功|开始畅玩|立即登录/.test(document.querySelector('#appRentalDemo').innerText),
+        };
+        return { paid, allocated, payment, allocation };
+      });
+      assert(
+        transaction.paid === true
+          && ['allocating', 'paid', 'succeeded', 'completed'].includes(transaction.payment.status)
+          && transaction.payment.paymentComplete
+          && transaction.payment.allocationInProgress
+          && transaction.allocated === true
+          && ['active', 'ready', 'completed'].includes(transaction.allocation.status)
+          && transaction.allocation.allocationComplete,
+        `游戏支付或账号分配缺少完成态：${JSON.stringify(transaction)}`,
+      );
+    });
+
+    await runRefactorGate('MEMBERSHIP_COMPLETION', async () => {
+      await reloadDemo();
+      const membership = await page.evaluate(() => {
+        const api = window.__appRentalDemo;
+        api.setOrientation('portrait');
+        api.navigate('membership');
+        const created = api.createMembershipOrder();
+        const complete = api.payMembershipOrder || api.completeMembershipPayment;
+        const completed = typeof complete === 'function' ? complete.call(api) : false;
+        const snapshot = api.snapshot();
+        return {
+          created: created?.status,
+          hasCompletionApi: typeof complete === 'function',
+          completed,
+          orderStatus: snapshot.membershipOrder?.status,
+          membershipStatus: snapshot.membershipStatus,
+          completionCopy: /开通成功|会员已生效|支付成功|支付完成/.test(document.querySelector('#appRentalDemo').innerText),
+        };
+      });
+      assert(
+        membership.created === 'pending'
+          && membership.hasCompletionApi
+          && membership.completed === true
+          && ['paid', 'active', 'completed', 'succeeded'].includes(membership.orderStatus)
+          && ['monthly-active', 'annual-active', 'permanent'].includes(membership.membershipStatus)
+          && membership.completionCopy,
+        `会员订单缺少支付完成与权益生效态：${JSON.stringify(membership)}`,
+      );
+    });
+
+    await runRefactorGate('EXPIRED_CREDENTIAL_GUARD', async () => {
+      await reloadDemo();
+      await page.evaluate(() => {
+        window.__appRentalDemo.setOrientation('portrait');
+        window.__appRentalDemo.navigate('orders');
+        window.__appRentalDemo.selectOrder('APP-20260803005');
+        window.__appRentalDemo.navigate('steam-login');
+      });
+      const apiGuards = await page.evaluate(() => ({
+        openCredential: window.__appRentalDemo.openCredentialPanel(),
+        openManual: window.__appRentalDemo.openManualLogin(),
+        requestGuard: window.__appRentalDemo.requestGuardCode(),
+      }));
+      const helpTrigger = page.locator('.steam-help-trigger');
+      if (await helpTrigger.count()) await helpTrigger.click();
+      const guarded = await page.evaluate(() => {
+        const rootNode = document.querySelector('#appRentalDemo');
+        return {
+          screen: window.__appRentalDemo.snapshot().screen,
+          credentialPanelOpen: window.__appRentalDemo.snapshot().credentialPanelOpen,
+          steamHelpOpen: window.__appRentalDemo.snapshot().steamHelpOpen,
+          overlay: Boolean(rootNode.querySelector('.steam-credential-overlay, .credential-panel')),
+          secretInDom: /gh_rental_2607|G@meHub#8291|48291/.test(rootNode.innerHTML),
+        };
+      });
+      assert(
+        apiGuards.openCredential === false && apiGuards.openManual === false && apiGuards.requestGuard === false
+          && !guarded.credentialPanelOpen && !guarded.steamHelpOpen && !guarded.overlay && !guarded.secretInDom,
+        `失效订单仍可访问凭据：${JSON.stringify({ apiGuards, guarded })}`,
+      );
+    });
+
+    await runRefactorGate('SENSITIVE_STATE_LIFECYCLE', async () => {
+      const seedSensitiveState = async () => {
+        await page.evaluate(() => {
+          window.__appRentalDemo.setScenario('active-rental');
+          window.__appRentalDemo.setOrientation('portrait');
+          window.__appRentalDemo.navigate('orders');
+          window.__appRentalDemo.selectOrder('APP-SCENARIO-ACTIVE');
+          window.__appRentalDemo.openManualLogin();
+        });
+        await page.locator('#steam-account').fill('sensitive-user');
+        await page.locator('#steam-password').fill('sensitive-password');
+        await page.locator('[data-action="submit-steam-login"]').click();
+        await page.locator('[data-action="request-guard"]').click();
+      };
+      await reloadDemo();
+      await seedSensitiveState();
+      await page.locator('.steam-close').click();
+      const readSensitiveState = () => page.evaluate(() => {
+        const snapshot = window.__appRentalDemo.snapshot();
+        return {
+          account: snapshot.steamForm.account,
+          password: snapshot.steamForm.password,
+          guardCode: snapshot.guardCode,
+          guardExpiresAt: snapshot.guardExpiresAt,
+          submitted: snapshot.steamForm.submitted,
+          requiresGuard: snapshot.steamForm.requiresGuard,
+          credentialPanelOpen: snapshot.credentialPanelOpen,
+          steamHelpOpen: snapshot.steamHelpOpen,
+          loginMethodOpen: snapshot.loginMethodOpen,
+        };
+      });
+      const afterExit = await readSensitiveState();
+      await reloadDemo();
+      await seedSensitiveState();
+      await page.evaluate(() => window.__appRentalDemo.clearSensitiveState('background'));
+      const afterBackground = await readSensitiveState();
+      const isClean = (snapshot) => snapshot.account === ''
+        && snapshot.password === ''
+        && snapshot.guardCode === null
+        && snapshot.guardExpiresAt === null
+        && !snapshot.submitted
+        && !snapshot.requiresGuard
+        && !snapshot.credentialPanelOpen
+        && !snapshot.steamHelpOpen
+        && !snapshot.loginMethodOpen;
+      assert(isClean(afterExit) && isClean(afterBackground), `退出或后台未清空敏感态：${JSON.stringify({ afterExit, afterBackground })}`);
+    });
+
+    await runRefactorGate('ROTATION_SCROLL_REGISTRY', async () => {
+      const results = [];
+      for (const [screen, requestedTop] of [['play', 35], ['library', 145], ['membership', 108], ['member-library', 180]]) {
+        await reloadDemo();
+        const before = await page.evaluate(({ screen, requestedTop }) => {
+          window.__appRentalDemo.setOrientation('portrait');
+          window.__appRentalDemo.navigate(screen);
+          const region = document.querySelector('.device.portrait .portrait-content');
+          const max = Math.max(0, region.scrollHeight - region.clientHeight);
+          region.scrollTop = Math.min(requestedTop, max);
+          region.dispatchEvent(new Event('scroll'));
+          return { top: region.scrollTop, max };
+        }, { screen, requestedTop });
+        await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
+        await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        const after = await page.evaluate(() => {
+          const candidates = [...document.querySelectorAll(
+            '[data-scroll-region="primary"], .landscape-membership-body, .landscape-member-library-layout, .device.landscape .landscape-content, .device.landscape .task-scroll-region',
+          )];
+          const region = candidates.find((node) => node.scrollHeight > node.clientHeight) || candidates[0];
+          return region ? { top: region.scrollTop, max: Math.max(0, region.scrollHeight - region.clientHeight) } : { top: 0, max: 0 };
+        });
+        await page.evaluate(() => window.__appRentalDemo.setOrientation('portrait'));
+        await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        const roundTrip = await page.evaluate(() => {
+          const region = document.querySelector('.device.portrait .portrait-content');
+          return { top: region?.scrollTop || 0, max: Math.max(0, (region?.scrollHeight || 0) - (region?.clientHeight || 0)) };
+        });
+        const expected = Math.min(before.top, after.max);
+        results.push({
+          screen,
+          before,
+          after,
+          roundTrip,
+          expected,
+          retained: before.top > 0 && Math.abs(after.top - expected) <= 2 && Math.abs(roundTrip.top - before.top) <= 2,
+        });
+      }
+      assert(results.every(({ retained }) => retained), `旋转后滚动位置丢失：${JSON.stringify(results)}`);
+    });
+
+    await runRefactorGate('EXPIRY_THRESHOLD_ONCE', async () => {
+      await reloadDemo();
+      const threshold = await page.evaluate(() => {
+        window.__appRentalDemo.setScenario('active-rental');
+        window.__appRentalDemo.triggerExpiryMinutes(16);
+        const before = window.__appRentalDemo.snapshot();
+        window.__appRentalDemo.triggerExpiryMinutes(14);
+        const crossed = window.__appRentalDemo.snapshot();
+        window.__appRentalDemo.closeExpiryReminder();
+        window.__appRentalDemo.triggerExpiryMinutes(10);
+        window.__appRentalDemo.triggerExpiryMinutes(5);
+        const after = window.__appRentalDemo.snapshot();
+        return {
+          before: { open: before.expiryReminderOpen, count: before.expiryReminderCount },
+          crossed: { open: crossed.expiryReminderOpen, count: crossed.expiryReminderCount },
+          after: { open: after.expiryReminderOpen, count: after.expiryReminderCount },
+        };
+      });
+      assert(
+        !threshold.before.open && threshold.before.count === 0
+          && threshold.crossed.open && threshold.crossed.count === 1
+          && !threshold.after.open && threshold.after.count === 1,
+        `15分钟跨阈值提醒次数错误：${JSON.stringify(threshold)}`,
+      );
+    });
+
+    await runRefactorGate('EXPIRY_RETURN_STACK', async () => {
+      await reloadDemo();
+      const takeover = await page.evaluate(() => {
+        window.__appRentalDemo.setOrientation('portrait');
+        window.__appRentalDemo.navigate('library');
+        window.__appRentalDemo.setScenario('active-rental');
+        window.__appRentalDemo.navigate('orders');
+        window.__appRentalDemo.selectOrder('APP-SCENARIO-ACTIVE');
+        window.__appRentalDemo.openManualLogin();
+        window.__appRentalDemo.setPostRentalEntitlement('permanent');
+        window.__appRentalDemo.triggerExpiryMinutes(0);
+        const atT0Snapshot = window.__appRentalDemo.snapshot();
+        const backTarget = window.__appRentalDemo.taskBack();
+        const afterBackSnapshot = window.__appRentalDemo.snapshot();
+        return {
+          atT0: { screen: atT0Snapshot.screen, stack: atT0Snapshot.routeContext.taskStack, source: atT0Snapshot.routeContext.sourceScreen },
+          backTarget,
+          afterBack: { screen: afterBackSnapshot.screen, stack: afterBackSnapshot.routeContext.taskStack, source: afterBackSnapshot.routeContext.sourceScreen },
+        };
+      });
+      await reloadDemo();
+      const ended = await page.evaluate(() => {
+        window.__appRentalDemo.setOrientation('portrait');
+        window.__appRentalDemo.navigate('library');
+        window.__appRentalDemo.setScenario('active-rental');
+        window.__appRentalDemo.navigate('orders');
+        window.__appRentalDemo.selectOrder('APP-SCENARIO-ACTIVE');
+        window.__appRentalDemo.openManualLogin();
+        window.__appRentalDemo.triggerExpiryMinutes(0);
+        window.__appRentalDemo.closeExpiredLaunchDialog();
+        const snapshot = window.__appRentalDemo.snapshot();
+        return { screen: snapshot.screen, stack: snapshot.routeContext.taskStack, source: snapshot.routeContext.sourceScreen };
+      });
+      assert(
+        takeover.atT0.screen === 'detail'
+          && takeover.backTarget === 'library'
+          && takeover.afterBack.screen === 'library'
+          && takeover.afterBack.stack.length === 0
+          && ended.screen === 'library'
+          && ended.stack.length === 0,
+        `到期后的来源返回栈错误：${JSON.stringify({ takeover, ended })}`,
+      );
+    });
+
+    for (const failure of refactorGateFailures) process.stdout.write(`REFACTOR_GATE_FAIL ${failure}\n`);
+    writeJsonEvidence(verificationEvidencePath, {
+      generatedAt: new Date().toISOString(),
+      demo: path.relative(root, htmlPath),
+      template: path.relative(root, templatePath),
+      pageMatrixContracts: FULL_PAGE_MATRIX.length * 2,
+      gateCount: refactorGateResults.length,
+      passed: refactorGateChecks,
+      failed: refactorGateFailures.length,
+      results: refactorGateResults,
+      runtimeIssues: demoIssues,
+    });
+    assert(
+      refactorGateFailures.length === 0,
+      `REFACTOR_GATES ${refactorGateChecks}/${refactorGateResults.length} PASS，${refactorGateFailures.length} FAIL；证据：${verificationEvidencePath}`,
+    );
+    process.stdout.write(`REFACTOR_GATES ${refactorGateChecks}/${refactorGateChecks} PASS\n`);
 
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
@@ -91,7 +739,7 @@ async function main() {
       const secondRow = metrics.filter(({ top }) => top > firstTop);
       return {
         frame: document.querySelector('.device.landscape')?.getBoundingClientRect().toJSON(),
-        hasTopNav: Boolean(document.querySelector('.landscape-top-nav')),
+        hasSideNav: Boolean(document.querySelector('.landscape-side-nav')),
         hasBottomNav: Boolean(document.querySelector('.landscape .portrait-nav')),
         nav: [...document.querySelectorAll('.landscape-top-nav nav button')].map((node) => node.textContent.trim()),
         tabs: [...document.querySelectorAll('.landscape-platform-tabs button')].map((node) => node.textContent.trim()),
@@ -104,9 +752,9 @@ async function main() {
     });
     assert(Math.round(landscape.frame?.width ?? 0) === 874, '横屏宽度不是874');
     assert(Math.round(landscape.frame?.height ?? 0) === 402, '横屏高度不是402');
-    assert(landscape.hasTopNav, '横屏缺少顶部导航');
+    assert(landscape.hasSideNav, '横屏缺少 APP 左侧导航');
     assert(!landscape.hasBottomNav, '横屏不得出现底部导航');
-    assert(landscape.nav.join('|') === '游戏库|玩游戏|探索|排行榜|我的', '横屏导航顺序错误');
+    assert(landscape.nav.join('|') === '游戏库|玩游戏|探索|社区|排行榜|我的', '横屏导航顺序错误');
     assert(landscape.cards >= 6, '横屏游戏墙密度不足');
     assert(landscape.rows >= 2, '横屏游戏墙必须露出第二行');
     assert(landscape.tabs.join('|') === 'PC游戏|Steam游戏|Epic游戏|复古游戏', '横屏平台Tab不完整');
@@ -772,10 +1420,10 @@ async function main() {
       layout: document.querySelector('.portrait-orders')?.dataset.layout,
       activeOrder: window.__appRentalDemo.snapshot().order,
     }));
-    assert(portraitOrders.tabs.join('|') === '全部|租赁中|待支付', '订单中心必须且只能显示全部、租赁中、待支付三个 Tab');
+    assert(portraitOrders.tabs.join('|') === '全部订单|待支付|可使用', '订单中心必须且只能显示全部订单、待支付、可使用三个 Tab');
     assert(portraitOrders.list && !portraitOrders.detail && portraitOrders.layout === 'portrait-orders', '竖屏订单中心应先显示单列列表并提供稳定布局标识');
     assert(portraitOrders.activeOrder?.status === 'active' && portraitOrders.activeOrder?.id === 'APP-SCENARIO-ACTIVE', 'active-rental 场景未确定性注入生效订单');
-    assert(['pending', 'allocating', 'active', 'refunding', 'ended'].every((status) => portraitOrders.statuses.includes(status)), '订单列表未覆盖五种订单状态');
+    assert(EXPECTED_RENTAL_STATUSES.every((status) => portraitOrders.statuses.includes(status)), '订单列表未覆盖六种租号订单状态');
     await page.locator('.portrait-order-list .order-list-card[data-status="active"]').click();
     const portraitOrderDetail = await page.evaluate(() => ({
       screen: window.__appRentalDemo.snapshot().screen,
@@ -792,11 +1440,27 @@ async function main() {
       window.__appRentalDemo.setOrientation('landscape');
     });
     const landscapeOrders = await page.evaluate(() => ({
-      split: Boolean(document.querySelector('.landscape-orders .order-list-pane') && document.querySelector('.landscape-orders .order-detail-pane')),
+      screen: window.__appRentalDemo.snapshot().screen,
+      list: Boolean(document.querySelector('.landscape-orders .landscape-order-list, .landscape-orders .order-list-pane')),
+      detail: Boolean(document.querySelector('.landscape-order-detail, [data-layout="landscape-order-detail"], .landscape-orders .order-detail-pane')),
       tabs: [...document.querySelectorAll('.order-tabs [role="tab"]')].map((node) => node.textContent.trim()),
     }));
-    assert(landscapeOrders.split, '横屏订单中心必须为左列表、右详情');
-    assert(landscapeOrders.tabs.join('|') === '全部|租赁中|待支付', '横屏订单 Tab 不一致');
+    assert(landscapeOrders.screen === 'orders' && landscapeOrders.list && !landscapeOrders.detail, '横屏订单中心必须为独立列表页且不得预渲染详情');
+    assert(landscapeOrders.tabs.join('|') === '全部订单|待支付|可使用', '横屏订单 Tab 不一致');
+    await page.locator('.landscape-orders .order-list-card[data-status="active"]').first().click();
+    const landscapeOrderDetail = await page.evaluate(() => ({
+      screen: window.__appRentalDemo.snapshot().screen,
+      list: Boolean(document.querySelector('.landscape-order-list, .order-list-pane')),
+      detail: Boolean(document.querySelector('.landscape-order-detail, [data-layout="landscape-order-detail"], .order-detail-pane')),
+      steps: document.querySelectorAll('.order-progress [data-progress-step]').length,
+      actions: [...document.querySelectorAll('.active-order-actions button')].map((node) => node.textContent.trim()),
+    }));
+    assert(
+      landscapeOrderDetail.screen === 'order-detail' && !landscapeOrderDetail.list && landscapeOrderDetail.detail,
+      '横屏订单卡片未进入独立订单详情页',
+    );
+    assert(landscapeOrderDetail.steps === 4 && ['继续游戏', '登录信息', '继续畅玩', '申请售后'].every((label) => landscapeOrderDetail.actions.includes(label)), '横屏独立订单详情内容不完整');
+    await page.evaluate(() => window.__appRentalDemo.navigate('orders', { replaceTask: true }));
     await page.locator('.order-tabs [data-value="pending"]').click();
     await page.evaluate(() => window.__appRentalDemo.setOrientation('portrait'));
     const rotatedOrderTab = await page.evaluate(() => ({
@@ -806,7 +1470,7 @@ async function main() {
     }));
     assert(rotatedOrderTab.tab === 'pending' && rotatedOrderTab.activeTab === '待支付' && rotatedOrderTab.statuses.every((status) => status === 'pending'), '旋转后订单 Tab 或筛选结果未保留');
     await page.locator('.order-tabs [data-value="all"]').click();
-    process.stdout.write('ORDERS 11/11 PASS\n');
+    process.stdout.write('ORDERS 13/13 PASS\n');
 
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
@@ -966,8 +1630,7 @@ async function main() {
       remember: document.querySelector('#steam-remember')?.checked,
     }));
     assert(rotatedGuard.account === 'player@example.com' && rotatedGuard.code === '48291' && rotatedGuard.remember, '旋转后 Steam 表单或 Guard 未连续保留');
-    await page.locator('.steam-close').click();
-    await page.locator('[data-action="open-credential"]').click();
+    await page.evaluate(() => window.__appRentalDemo.openCredentialPanel());
     assert(
       (await page.locator('.credential-panel [data-guard-code]').innerText()) === '48291'
         && (await page.locator('.credential-panel [data-action="copy-guard"]').count()) === 1
@@ -1026,8 +1689,10 @@ async function main() {
       window.__appRentalDemo.navigate('orders');
       window.__appRentalDemo.setOrientation('landscape');
     });
-    assertTouchTargets(await readTouchTargets('.order-tabs button, .order-detail-pane .active-order-actions button'), '横屏订单操作');
-    await page.locator('.order-detail-pane [data-action="open-login-method"]').click();
+    assertTouchTargets(await readTouchTargets('.order-tabs button'), '横屏订单 Tab');
+    await page.locator('.landscape-orders .order-list-card[data-status="active"]').first().click();
+    assertTouchTargets(await readTouchTargets('.landscape-order-detail .active-order-actions button, [data-layout="landscape-order-detail"] .active-order-actions button, .order-detail-pane .active-order-actions button'), '横屏订单详情操作');
+    await page.locator('.landscape-order-detail [data-action="open-login-method"], [data-layout="landscape-order-detail"] [data-action="open-login-method"], .order-detail-pane [data-action="open-login-method"]').click();
     await page.locator('.login-method-dialog [data-action="open-manual-login"]').click();
     await page.locator('#steam-account').fill('touch-test');
     await page.locator('#steam-password').fill('safe-test-value');
@@ -1043,7 +1708,7 @@ async function main() {
       window.__appRentalDemo.navigate('home');
     });
     assertTouchTargets(await readTouchTargets('.device-link'), '连接设备');
-    process.stdout.write('TOUCH_TARGETS 5/5 PASS\n');
+    process.stdout.write('TOUCH_TARGETS 6/6 PASS\n');
 
     const sourceAssetNames = [
       'portrait-home.jpg',
@@ -1126,29 +1791,6 @@ async function main() {
     );
     process.stdout.write('CONTINUITY 4/4 PASS\n');
 
-    for (const minutes of [5, 1]) {
-      await page.reload({ waitUntil: 'domcontentloaded' });
-      await page.waitForFunction(() => Boolean(window.__appRentalDemo));
-      const ignoredReminder = await page.evaluate((value) => {
-        window.__appRentalDemo.setScenario('active-rental');
-        const returned = window.__appRentalDemo.triggerExpiryMinutes(value);
-        const snapshot = window.__appRentalDemo.snapshot();
-        return {
-          returned,
-          open: snapshot.expiryReminderOpen,
-          count: snapshot.expiryReminderCount,
-          dom: Boolean(document.querySelector('.expiry-reminder')),
-        };
-      }, minutes);
-      assert(
-        ignoredReminder.returned === false
-          && ignoredReminder.open === false
-          && ignoredReminder.count === 0
-          && ignoredReminder.dom === false,
-        `全新使用单在${minutes}分钟不得返回或显示临期提醒`,
-      );
-    }
-
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));
     await page.evaluate(() => {
@@ -1182,7 +1824,7 @@ async function main() {
     }));
     assert(!expiryNoRepeat.open && expiryNoRepeat.count === 1, '同一使用单在关闭、5/1分钟、前后台后不得重复提醒');
     assert(
-      !/expiry(?:5|1)|(?:minutes|remaining)\s*={2,3}\s*(?:5|1)\b|case\s+(?:5|1)\s*:/.test(fs.readFileSync(path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.template.html'), 'utf8')),
+      !/expiry(?:5|1)|(?:minutes|remaining)\s*={2,3}\s*(?:5|1)\b|case\s+(?:5|1)\s*:/.test(fs.readFileSync(templatePath, 'utf8')),
       '源码存在5分钟或1分钟提醒字段/正向分支',
     );
 
@@ -1210,9 +1852,10 @@ async function main() {
     await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
     const landscapeInGameGeometry = await page.evaluate(() => {
       const reminder = document.querySelector('.expiry-reminder').getBoundingClientRect();
-      const topNav = document.querySelector('.landscape-top-nav').getBoundingClientRect();
       const device = document.querySelector('.device').getBoundingClientRect();
-      return { gap: reminder.top - topNav.bottom, inside: reminder.top >= device.top && reminder.bottom <= device.bottom && reminder.left >= device.left && reminder.right <= device.right };
+      const system = document.querySelector('.landscape-system')?.getBoundingClientRect();
+      const safeBottom = system?.bottom || device.top + 24;
+      return { gap: reminder.top - safeBottom, inside: reminder.top >= device.top && reminder.bottom <= device.bottom && reminder.left >= device.left && reminder.right <= device.right };
     });
     assert(landscapeInGameGeometry.gap >= 8 && landscapeInGameGeometry.inside, `横屏游戏内提醒未完整位于顶部安全区下方：${JSON.stringify(landscapeInGameGeometry)}`);
     await page.getByRole('button', { name: '继续畅玩', exact: true }).click();
@@ -1222,7 +1865,7 @@ async function main() {
       open: Boolean(document.querySelector('.expiry-reminder')),
     }));
     assert(expiryContinue.screen === 'detail' && expiryContinue.expireAt === inGameExpiry.expireAt && !expiryContinue.open, '继续畅玩应进入最新权益且不得直接延时');
-    process.stdout.write('EXPIRY 11/11 PASS\n');
+    process.stdout.write('EXPIRY 9/9 PASS\n');
 
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));
@@ -1437,7 +2080,19 @@ async function main() {
       window.__appRentalDemo.setScenario('active-rental');
       window.__appRentalDemo.navigate('orders');
     });
-    checkLayout((await page.locator('.order-master-detail .order-list-pane').count()) === 1 && (await page.locator('.order-master-detail .order-detail-pane').count()) === 1, '横屏订单未使用35%列表与65%详情结构');
+    const landscapeOrderListLayout = await page.evaluate(() => ({
+      screen: window.__appRentalDemo.snapshot().screen,
+      list: Boolean(document.querySelector('.landscape-order-list, .order-list-pane')),
+      detail: Boolean(document.querySelector('.landscape-order-detail, [data-layout="landscape-order-detail"], .order-detail-pane')),
+    }));
+    checkLayout(landscapeOrderListLayout.screen === 'orders' && landscapeOrderListLayout.list && !landscapeOrderListLayout.detail, `横屏订单列表必须是独立页面：${JSON.stringify(landscapeOrderListLayout)}`);
+    await page.locator('.landscape-orders .order-list-card[data-status="active"]').first().click();
+    const landscapeOrderDetailLayout = await page.evaluate(() => ({
+      screen: window.__appRentalDemo.snapshot().screen,
+      list: Boolean(document.querySelector('.landscape-order-list, .order-list-pane')),
+      detail: Boolean(document.querySelector('.landscape-order-detail, [data-layout="landscape-order-detail"], .order-detail-pane')),
+    }));
+    checkLayout(landscapeOrderDetailLayout.screen === 'order-detail' && !landscapeOrderDetailLayout.list && landscapeOrderDetailLayout.detail, `横屏订单详情必须是独立页面：${JSON.stringify(landscapeOrderDetailLayout)}`);
     await page.evaluate(() => window.__appRentalDemo.openManualLogin());
     checkLayout((await page.locator('.steam-login-body .steam-login-form').count()) === 1 && (await page.locator('.steam-login-body .steam-qr-panel').count()) === 1, 'Steam 横屏未继承账号密码与二维码双栏');
     const readableMetrics = await page.evaluate(() => ({
@@ -1557,7 +2212,7 @@ async function main() {
     await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
     const landscapeExpirySpacing = await page.evaluate(() => {
       const reminder = document.querySelector('.expiry-reminder').getBoundingClientRect();
-      const content = document.querySelector('.order-master-detail').getBoundingClientRect();
+      const content = document.querySelector('.landscape-orders .order-page-head, .landscape-orders .order-list-pane, .landscape-orders .landscape-order-list').getBoundingClientRect();
       return { reminderBottom: Math.round(reminder.bottom), contentTop: Math.round(content.top) };
     });
     checkReviewFix(landscapeExpirySpacing.reminderBottom <= landscapeExpirySpacing.contentTop, `横屏临期提示仍遮挡订单正文：${JSON.stringify(landscapeExpirySpacing)}`);
@@ -1670,7 +2325,22 @@ async function main() {
     assertAnnotation(annotationMatrix.interaction === 16 && annotationMatrix.global === 8 && annotationMatrix.exception === 8, `数字/G/E 三类标注数量错误：${JSON.stringify(annotationMatrix)}`);
     const annotationStateText = await annotationPage.locator('#panel-state').innerText();
     assertAnnotation(!/(?:gh_rental_2607|G@meHub#8291|48291|guardCode|\btoken\b)/i.test(annotationStateText), '数据与状态 Tab 不得展示账号、密码、校验值或令牌字段');
-    assertAnnotation(annotationStateText.includes('五个核心页保留 APP 底部导航') && annotationStateText.includes('继承 Mac'), '标注版未明确核心页导航与 Mac 衍生布局规则');
+    assertAnnotation(
+      annotationStateText.includes('七个核心页沿用 APP 底部导航')
+        && annotationStateText.includes('七个核心页沿用 APP 左侧导航')
+        && annotationStateText.includes('订单列表与详情拆页')
+        && annotationStateText.includes('继承 Mac'),
+      '标注版未明确核心页导航、订单拆页与 Mac 衍生布局规则',
+    );
+    assertAnnotation(
+      annotationStateText.includes('全部订单')
+        && annotationStateText.includes('待支付')
+        && annotationStateText.includes('可使用')
+        && /当前\s*Tab.*搜索|搜索.*当前\s*Tab/i.test(annotationStateText)
+        && /不显示.*订单类型标签|无订单类型标签/.test(annotationStateText)
+        && /CDKEY.*(?:不进入|不展示|既有需求)/i.test(annotationStateText),
+      '标注版未明确订单中心三 Tab、当前页搜索、无类型标签或 CDKEY 范围',
+    );
     assertAnnotation(annotationStateText.includes('任务页不显示全局导航') && annotationStateText.includes('旋转不重建'), '标注版未明确任务页壳层或旋转连续性规则');
 
     await annotationPage.locator('#orientationLandscape').click();

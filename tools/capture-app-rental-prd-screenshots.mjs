@@ -7,6 +7,9 @@ import { chromium } from 'playwright-core';
 const root = path.resolve(import.meta.dirname, '..');
 const demoPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.html');
 const outputDir = path.join(root, 'public', 'prd', 'app-rental');
+const evidenceDir = path.join(root, 'test-results', 'app-rental-capture');
+const stagingDir = path.join(evidenceDir, 'staging');
+const reportPath = path.join(evidenceDir, 'capture-results.json');
 const chromePath = [
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
   'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
@@ -18,28 +21,87 @@ const EXPECTED_DIMENSIONS = Object.freeze({
   landscape: { width: 874, height: 402 },
 });
 
-const shots = [
-  { name: '01-discovery-portrait.png', orientation: 'portrait', screen: 'home', scenario: 'member-library-trial' },
-  { name: '01-discovery-landscape.png', orientation: 'landscape', screen: 'home', scenario: 'member-library-trial' },
-  { name: '02-detail-portrait.png', orientation: 'portrait', screen: 'detail', scenario: 'member-library-trial', gameId: 'shadow-blade-zero' },
-  { name: '02-detail-landscape.png', orientation: 'landscape', screen: 'detail', scenario: 'member-library-trial', gameId: 'spiritfarer' },
-  { name: '03-checkout-portrait.png', orientation: 'portrait', screen: 'checkout', scenario: 'not-member-library', beforeNavigate: 'select-hourly-8h' },
-  { name: '03-checkout-landscape.png', orientation: 'landscape', screen: 'checkout', scenario: 'not-member-library', beforeNavigate: 'select-hourly-8h' },
-  { name: '04-membership-portrait.png', orientation: 'portrait', screen: 'membership', scenario: 'member-library-trial-used' },
-  { name: '04-membership-landscape.png', orientation: 'landscape', screen: 'membership', scenario: 'member-library-trial-used' },
-  { name: '05-orders-portrait.png', orientation: 'portrait', screen: 'orders', scenario: 'active-rental', sensitive: true },
-  { name: '05-orders-landscape.png', orientation: 'landscape', screen: 'orders', scenario: 'active-rental', sensitive: true },
-  { name: '06-steam-login-portrait.png', orientation: 'portrait', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-manual-login', expectedScreen: 'steam-login', sensitive: true },
-  { name: '06-steam-login-landscape.png', orientation: 'landscape', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-manual-login', expectedScreen: 'steam-login', sensitive: true },
-  { name: '07-expiry-15m-portrait.png', orientation: 'portrait', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-expiry-15m' },
-  { name: '07-expiry-15m-landscape.png', orientation: 'landscape', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-expiry-15m' },
-  { name: '08-after-sales-portrait.png', orientation: 'portrait', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-after-sales', expectedScreen: 'after-sales' },
-  { name: '08-after-sales-landscape.png', orientation: 'landscape', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-after-sales', expectedScreen: 'after-sales' },
-];
+const PAGE_CONTRACTS = Object.freeze({
+  home: Object.freeze({ screen: 'home', baselineSource: 'app-v611' }),
+  play: Object.freeze({ screen: 'play', baselineSource: 'app-v611' }),
+  community: Object.freeze({ screen: 'community', baselineSource: 'app-v611' }),
+  ranking: Object.freeze({ screen: 'ranking', baselineSource: 'app-v611' }),
+  library: Object.freeze({ screen: 'library', baselineSource: 'app-v611' }),
+  profile: Object.freeze({ screen: 'profile', baselineSource: 'app-v611' }),
+  search: Object.freeze({ screen: 'search', baselineSource: 'app-v611' }),
+  detail: Object.freeze({ screen: 'detail', baselineSource: 'app-v611' }),
+  checkout: Object.freeze({ screen: 'checkout', baselineSource: 'mac-rental' }),
+  membership: Object.freeze({ screen: 'membership', baselineSource: 'mac-rental' }),
+  'member-library': Object.freeze({ screen: 'member-library', baselineSource: 'mac-rental' }),
+  orders: Object.freeze({ screen: 'orders', baselineSource: 'mac-rental' }),
+  'order-detail': Object.freeze({ screen: 'order-detail', baselineSource: 'mac-rental' }),
+  'steam-login': Object.freeze({ screen: 'steam-login', baselineSource: 'mac-rental' }),
+  'expiry-15m': Object.freeze({ screen: 'orders', baselineSource: 'mac-rental' }),
+  'after-sales': Object.freeze({ screen: 'after-sales', baselineSource: 'mac-rental' }),
+  'payment-success': Object.freeze({ screen: 'checkout', baselineSource: 'mac-rental' }),
+  'membership-success': Object.freeze({ screen: 'membership', baselineSource: 'mac-rental' }),
+});
+
+const shots = Object.freeze([
+  { name: '01-discovery-portrait.png', pageId: 'home', orientation: 'portrait' },
+  { name: '01-discovery-landscape.png', pageId: 'home', orientation: 'landscape' },
+  { name: '02-detail-portrait.png', pageId: 'detail', orientation: 'portrait' },
+  { name: '02-detail-landscape.png', pageId: 'detail', orientation: 'landscape' },
+  { name: '03-checkout-portrait.png', pageId: 'checkout', orientation: 'portrait' },
+  { name: '03-checkout-landscape.png', pageId: 'checkout', orientation: 'landscape' },
+  { name: '04-membership-portrait.png', pageId: 'membership', orientation: 'portrait' },
+  { name: '04-membership-landscape.png', pageId: 'membership', orientation: 'landscape' },
+  { name: '05-orders-portrait.png', pageId: 'orders', orientation: 'portrait', sensitive: true },
+  { name: '05-orders-landscape.png', pageId: 'orders', orientation: 'landscape', sensitive: true },
+  { name: '06-steam-login-portrait.png', pageId: 'steam-login', orientation: 'portrait', sensitive: true },
+  { name: '06-steam-login-landscape.png', pageId: 'steam-login', orientation: 'landscape', sensitive: true },
+  { name: '07-expiry-15m-portrait.png', pageId: 'expiry-15m', orientation: 'portrait' },
+  { name: '07-expiry-15m-landscape.png', pageId: 'expiry-15m', orientation: 'landscape' },
+  { name: '08-after-sales-portrait.png', pageId: 'after-sales', orientation: 'portrait' },
+  { name: '08-after-sales-landscape.png', pageId: 'after-sales', orientation: 'landscape' },
+  { name: '09-play-portrait.png', pageId: 'play', orientation: 'portrait' },
+  { name: '09-play-landscape.png', pageId: 'play', orientation: 'landscape' },
+  { name: '10-community-portrait.png', pageId: 'community', orientation: 'portrait' },
+  { name: '10-community-landscape.png', pageId: 'community', orientation: 'landscape' },
+  { name: '11-ranking-portrait.png', pageId: 'ranking', orientation: 'portrait' },
+  { name: '11-ranking-landscape.png', pageId: 'ranking', orientation: 'landscape' },
+  { name: '12-library-portrait.png', pageId: 'library', orientation: 'portrait' },
+  { name: '12-library-landscape.png', pageId: 'library', orientation: 'landscape' },
+  { name: '13-profile-portrait.png', pageId: 'profile', orientation: 'portrait' },
+  { name: '13-profile-landscape.png', pageId: 'profile', orientation: 'landscape' },
+  { name: '14-search-portrait.png', pageId: 'search', orientation: 'portrait' },
+  { name: '14-search-landscape.png', pageId: 'search', orientation: 'landscape' },
+  { name: '15-member-library-portrait.png', pageId: 'member-library', orientation: 'portrait' },
+  { name: '15-member-library-landscape.png', pageId: 'member-library', orientation: 'landscape' },
+  { name: '16-order-detail-portrait.png', pageId: 'order-detail', orientation: 'portrait', sensitive: true },
+  { name: '16-order-detail-landscape.png', pageId: 'order-detail', orientation: 'landscape', sensitive: true },
+  { name: '17-payment-success-portrait.png', pageId: 'payment-success', orientation: 'portrait' },
+  { name: '17-payment-success-landscape.png', pageId: 'payment-success', orientation: 'landscape' },
+  { name: '18-membership-success-portrait.png', pageId: 'membership-success', orientation: 'portrait' },
+  { name: '18-membership-success-landscape.png', pageId: 'membership-success', orientation: 'landscape' },
+]);
+
+const KNOWN_SECRETS = Object.freeze(['gh_rental_2607', 'G@meHub#8291', '48291']);
+const CDKEY_VALUE_PATTERN = /\b(?:[A-Z0-9]{4,6}-){2,4}[A-Z0-9]{4,6}\b/i;
+
+function writeCaptureReport(payload) {
+  fs.mkdirSync(evidenceDir, { recursive: true });
+  fs.writeFileSync(reportPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+}
 
 assert(chromePath, 'Local Chrome not found');
 assert(fs.existsSync(demoPath), `Demo not found: ${demoPath}`);
+assert.equal(shots.length, 36, `Screenshot matrix must contain 36 explicit files, received ${shots.length}`);
+assert.equal(new Set(shots.map(({ name }) => name)).size, 36, 'Screenshot filenames must be unique');
+assert.equal(Object.keys(PAGE_CONTRACTS).length, 18, 'Page contract matrix must contain 18 page IDs');
+for (const pageId of Object.keys(PAGE_CONTRACTS)) {
+  const orientations = shots.filter((shot) => shot.pageId === pageId).map(({ orientation }) => orientation).sort();
+  assert.deepEqual(orientations, ['landscape', 'portrait'], `${pageId} must have one portrait and one landscape screenshot`);
+}
+assert(shots.every(({ name, pageId, orientation }) => PAGE_CONTRACTS[pageId]
+  && name.endsWith(`-${orientation}.png`)), 'Screenshot name, page ID, or orientation contract is invalid');
 fs.mkdirSync(outputDir, { recursive: true });
+fs.mkdirSync(stagingDir, { recursive: true });
 
 async function openFreshPage(browser) {
   const page = await browser.newPage({
@@ -47,6 +109,9 @@ async function openFreshPage(browser) {
     deviceScaleFactor: 1,
   });
   const pageErrors = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') pageErrors.push(`console: ${message.text()}`);
+  });
   page.on('pageerror', (error) => pageErrors.push(error.message));
   await page.goto(pathToFileURL(demoPath).href, { waitUntil: 'load' });
   await page.waitForFunction(() => Boolean(window.__appRentalDemo));
@@ -200,26 +265,42 @@ async function runPreflight(browser) {
 }
 
 async function setShotState(page, shot) {
-  await page.evaluate(({ orientation, scenario, beforeNavigate, screen, afterNavigate, gameId }) => {
+  const result = await page.evaluate(({ pageId, orientation }) => {
     const demo = window.__appRentalDemo;
+    if (typeof demo?.openCaptureState !== 'function') return { apiMissing: true };
     demo.setOrientation(orientation);
-    demo.setScenario(scenario);
-    if (gameId) demo.setSelectedGame(gameId);
-    if (beforeNavigate === 'select-hourly-8h') demo.selectRentalSku('hourly-8h');
-    demo.navigate(screen);
-    if (afterNavigate === 'open-manual-login') demo.openManualLogin();
-    if (afterNavigate === 'open-expiry-15m') {
-      demo.setGameplayContext(false);
-      demo.triggerExpiryMinutes(15);
-    }
-    if (afterNavigate === 'open-after-sales') demo.openAfterSales();
+    const snapshot = demo.openCaptureState(pageId);
+    return {
+      apiMissing: false,
+      orientation: snapshot?.orientation ?? demo.snapshot().orientation,
+      screen: snapshot?.screen ?? demo.snapshot().screen,
+    };
   }, shot);
+  assert(!result.apiMissing, `${shot.name} requires window.__appRentalDemo.openCaptureState(pageId)`);
 }
 
 async function verifyShotState(page, shot) {
   const state = await page.evaluate(() => window.__appRentalDemo.snapshot());
+  const contract = PAGE_CONTRACTS[shot.pageId];
   assert.equal(state.orientation, shot.orientation, `${shot.name} orientation mismatch`);
-  assert.equal(state.screen, shot.expectedScreen || shot.screen, `${shot.name} screen mismatch`);
+  assert.equal(state.screen, contract.screen, `${shot.name} screen mismatch`);
+
+  const pageMarker = await page.evaluate((pageId) => {
+    const rootNode = document.querySelector('#appRentalDemo');
+    const markerNode = rootNode?.dataset.pageId === pageId
+      ? rootNode
+      : rootNode?.querySelector(`[data-page-id="${pageId}"]`);
+    return {
+      pageId: markerNode?.dataset.pageId || rootNode?.dataset.pageId || null,
+      baselineSource: markerNode?.dataset.baselineSource || rootNode?.dataset.baselineSource || null,
+      stub: Boolean(rootNode?.querySelector('.stub-panel, .landscape-stub')),
+      placeholderCopy: /当前入口已连通|后续补齐|功能页面/.test(rootNode?.innerText || ''),
+    };
+  }, shot.pageId);
+  assert.equal(pageMarker.pageId, shot.pageId, `${shot.name} data-page-id mismatch`);
+  assert.equal(pageMarker.baselineSource, contract.baselineSource, `${shot.name} baseline source mismatch`);
+  assert.equal(pageMarker.stub, false, `${shot.name} still renders a stub page`);
+  assert.equal(pageMarker.placeholderCopy, false, `${shot.name} contains placeholder copy`);
 
   const device = page.locator('.device');
   await device.waitFor({ state: 'visible' });
@@ -229,16 +310,35 @@ async function verifyShotState(page, shot) {
   assert.equal(Math.round(box.width), expected.width, `${shot.name} device width mismatch`);
   assert.equal(Math.round(box.height), expected.height, `${shot.name} device height mismatch`);
 
-  if (shot.afterNavigate === 'open-expiry-15m') {
+  if (shot.pageId === 'expiry-15m') {
     assert.equal(state.expiryReminderCount, 1, `${shot.name} reminder count mismatch`);
     assert.equal(await page.locator('.expiry-reminder').count(), 1, `${shot.name} reminder is not visible`);
   }
 
+  const visible = await device.innerText();
+  const publicState = JSON.stringify(state);
+  for (const secret of KNOWN_SECRETS) {
+    assert(!visible.includes(secret), `${shot.name} exposes sensitive value ${secret}`);
+  }
+  assert(!CDKEY_VALUE_PATTERN.test(visible), `${shot.name} exposes a CDKEY-shaped value`);
+  assert(!/(?:cd.?key|redeemCode|activationKey)"\s*:/i.test(publicState), `${shot.name} snapshot contains a CDKEY field`);
+  assert(!/CDKEY/i.test(visible), `${shot.name} unexpectedly displays CDKEY content`);
+
+  if (['orders', 'order-detail'].includes(shot.pageId)) {
+    const orderSafety = await page.evaluate(() => {
+      const demo = window.__appRentalDemo;
+      const orders = typeof demo.getOrderCollection === 'function' ? demo.getOrderCollection() : (demo.snapshot().orders || []);
+      const cardText = [...document.querySelectorAll('.order-list-card')].map((node) => node.innerText).join('\n');
+      return {
+        purchaseFixture: orders.some(({ orderType }) => orderType && orderType !== 'rental'),
+        typeLabel: /游戏购买|租号畅玩|CDKEY/i.test(cardText),
+      };
+    });
+    assert.equal(orderSafety.purchaseFixture, false, `${shot.name} contains a purchase/CDKEY fixture`);
+    assert.equal(orderSafety.typeLabel, false, `${shot.name} contains a forbidden order type label`);
+  }
+
   if (shot.sensitive) {
-    const visible = await page.locator('.device').innerText();
-    for (const secret of ['gh_rental_2607', 'G@meHub#8291', '48291']) {
-      assert(!visible.includes(secret), `${shot.name} exposes sensitive value ${secret}`);
-    }
     assert.equal(state.guardCode, null, `${shot.name} unexpectedly contains a Guard code`);
     assert.equal(state.steamForm.account, '', `${shot.name} unexpectedly contains a Steam account`);
     assert.equal(state.steamForm.password, '', `${shot.name} unexpectedly contains a Steam password`);
@@ -254,28 +354,72 @@ function verifyPng(filePath, shot) {
   const expected = EXPECTED_DIMENSIONS[shot.orientation];
   assert.equal(width, expected.width, `${shot.name} PNG width mismatch`);
   assert.equal(height, expected.height, `${shot.name} PNG height mismatch`);
-  return buffer.length;
+  const byteDiversity = new Set(buffer.subarray(24, Math.min(buffer.length, 64 * 1024))).size;
+  assert(byteDiversity >= 64, `${shot.name} PNG appears blank or corrupt (byte diversity ${byteDiversity})`);
+  return { bytes: buffer.length, width, height, byteDiversity };
 }
 
 async function captureShots(browser) {
-  let captured = 0;
+  const results = [];
   for (const shot of shots) {
-    await withFreshPage(browser, shot.name, async (page) => {
-      await setShotState(page, shot);
-      await waitForAssets(page);
-      await verifyShotState(page, shot);
-      const outputPath = path.join(outputDir, shot.name);
-      await page.locator('.device').screenshot({
-        path: outputPath,
-        animations: 'disabled',
+    try {
+      await withFreshPage(browser, shot.name, async (page) => {
+        await setShotState(page, shot);
+        await waitForAssets(page);
+        await verifyShotState(page, shot);
+        const stagingPath = path.join(stagingDir, shot.name);
+        await page.locator('.device').screenshot({
+          path: stagingPath,
+          animations: 'disabled',
+        });
+        const png = verifyPng(stagingPath, shot);
+        results.push({ ...shot, status: 'pass', ...png, stagingPath: path.relative(root, stagingPath) });
+        process.stdout.write(`CAPTURED ${shot.name} ${png.bytes} bytes\n`);
       });
-      const bytes = verifyPng(outputPath, shot);
-      process.stdout.write(`CAPTURED ${shot.name} ${bytes} bytes\n`);
-    });
-    captured += 1;
+    } catch (error) {
+      results.push({ ...shot, status: 'fail', message: error.message });
+      writeCaptureReport({
+        generatedAt: new Date().toISOString(),
+        demo: path.relative(root, demoPath),
+        outputDir: path.relative(root, outputDir),
+        stagingDir: path.relative(root, stagingDir),
+        expected: shots.length,
+        passed: results.filter(({ status }) => status === 'pass').length,
+        failed: results.filter(({ status }) => status === 'fail').length,
+        published: false,
+        results,
+      });
+      throw new Error(`${shot.name} capture failed: ${error.message}; evidence: ${reportPath}`);
+    }
   }
-  assert.equal(captured, 16, `Capture count mismatch: ${captured}/16`);
-  process.stdout.write(`CAPTURE ${captured}/16 PASS\n`);
+
+  assert.equal(results.length, shots.length, `Capture count mismatch: ${results.length}/${shots.length}`);
+  assert(results.every(({ status }) => status === 'pass'), 'At least one staged screenshot failed validation');
+
+  for (const shot of shots) {
+    const stagingPath = path.join(stagingDir, shot.name);
+    const outputPath = path.join(outputDir, shot.name);
+    fs.copyFileSync(stagingPath, outputPath);
+    verifyPng(outputPath, shot);
+  }
+
+  const publishedNames = fs.readdirSync(outputDir)
+    .filter((name) => shots.some((shot) => shot.name === name))
+    .sort();
+  assert.deepEqual(publishedNames, shots.map(({ name }) => name).sort(), 'Published PRD screenshot set is incomplete');
+  writeCaptureReport({
+    generatedAt: new Date().toISOString(),
+    demo: path.relative(root, demoPath),
+    outputDir: path.relative(root, outputDir),
+    stagingDir: path.relative(root, stagingDir),
+    expected: shots.length,
+    passed: results.length,
+    failed: 0,
+    published: true,
+    results,
+  });
+  process.stdout.write(`CAPTURE ${results.length}/${shots.length} PASS\n`);
+  process.stdout.write(`CAPTURE_REPORT ${reportPath}\n`);
 }
 
 const browser = await chromium.launch({ executablePath: chromePath, headless: true });

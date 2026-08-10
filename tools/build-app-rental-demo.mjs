@@ -6,6 +6,7 @@ const templatePath = path.join(root, 'demos', 'APP租号功能', '盖世游戏AP
 const outputPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.html');
 const annotationPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能-标注版.html');
 const sourceAssetDir = path.join(root, 'demos', 'APP租号功能', 'assets', 'source');
+const referenceAssetDir = path.join(root, 'demos', 'APP租号功能', 'assets', 'reference');
 const assets = {
   APP_PORTRAIT_HOME: path.join(sourceAssetDir, 'portrait-home.jpg'),
   APP_PORTRAIT_PLAY: path.join(sourceAssetDir, 'portrait-play.jpg'),
@@ -14,6 +15,20 @@ const assets = {
   APP_LANDSCAPE_LIBRARY: path.join(sourceAssetDir, 'landscape-library.jpg'),
   APP_LANDSCAPE_STEAM_LIBRARY: path.join(sourceAssetDir, 'landscape-steam-library.jpg'),
   APP_LANDSCAPE_PLAY: path.join(sourceAssetDir, 'landscape-play.jpg'),
+  V611_PORTRAIT_HOME: path.join(referenceAssetDir, '08-portrait-home.png'),
+  V611_PORTRAIT_SEARCH: path.join(referenceAssetDir, '09-portrait-search.png'),
+  V611_PORTRAIT_DETAIL: path.join(referenceAssetDir, '10-portrait-detail.png'),
+  V611_PORTRAIT_PLAY: path.join(referenceAssetDir, '12-portrait-play-pc.png'),
+  V611_PORTRAIT_RANKING: path.join(referenceAssetDir, '16-portrait-ranking.png'),
+  V611_PORTRAIT_LIBRARY: path.join(referenceAssetDir, '18-portrait-library.png'),
+  V611_PORTRAIT_PROFILE: path.join(referenceAssetDir, '30-portrait-profile.png'),
+  V611_LANDSCAPE_HOME: path.join(referenceAssetDir, '36-landscape-home.png'),
+  V611_LANDSCAPE_PLAY: path.join(referenceAssetDir, '38-landscape-play-pc.png'),
+  V611_LANDSCAPE_LIBRARY: path.join(referenceAssetDir, '41-landscape-library.png'),
+  V611_LANDSCAPE_RANKING: path.join(referenceAssetDir, '42-landscape-ranking.png'),
+  V611_LANDSCAPE_SEARCH: path.join(referenceAssetDir, '43-landscape-search.png'),
+  V611_LANDSCAPE_DETAIL: path.join(referenceAssetDir, '44-landscape-detail.png'),
+  ORDER_CENTER_REFERENCE: path.join(referenceAssetDir, 'profile-order-center-user-reference.png'),
 };
 
 function dataUrl(filePath) {
@@ -47,7 +62,7 @@ if (fs.existsSync(annotationPath)) {
     `<style>${normalStyle}\n\n`,
   );
   annotation = annotation.replace(
-    /  <script>\s*const ASSETS[\s\S]*?  <\/script>(?=\s*<script>\s*const ANNOTATION_GROUPS)/,
+    /\s*<script>\s*const ASSETS[\s\S]*?<\/script>(?=\s*<script>\s*const ANNOTATION_GROUPS)/,
     `  <script>${normalScript}</script>`,
   );
   fs.writeFileSync(annotationPath, annotation);
