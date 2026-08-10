@@ -133,6 +133,25 @@ check(await page.locator('[data-record-table]').isHidden(), 'Mobile record table
 await assertNoHorizontalOverflow(page, 'Android mobile records');
 await assertTouchTargets(page, 'Android mobile records');
 
+const simulatedMobileFrameBox = await page.locator('.frame').boundingBox();
+const simulatedMobileOpen = page.locator('[data-config-open="android_elden_oneplus"]:visible');
+await simulatedMobileOpen.scrollIntoViewIfNeeded();
+await simulatedMobileOpen.click();
+const simulatedMobileViewerBox = await page.locator('[data-config-viewer]').boundingBox();
+check(Boolean(simulatedMobileFrameBox && simulatedMobileViewerBox), 'Simulated mobile viewer has no bounding box');
+if (simulatedMobileFrameBox && simulatedMobileViewerBox) {
+  check(
+    Math.abs(simulatedMobileViewerBox.width - simulatedMobileFrameBox.width) <= 2 &&
+      Math.abs(simulatedMobileViewerBox.height - simulatedMobileFrameBox.height) <= 2,
+    'Simulated mobile viewer did not cover the preview frame'
+  );
+  check(
+    simulatedMobileViewerBox.y >= simulatedMobileFrameBox.y - 1,
+    'Simulated mobile viewer covered the external preview toolbar'
+  );
+}
+await page.locator('[data-config-close]').first().click();
+
 await page.locator('[data-preview="desktop"]').click();
 check(await page.locator('[data-record-table]').isVisible(), 'Desktop record table is hidden');
 check(await page.locator('[data-record-cards]').isHidden(), 'Desktop record cards are visible');
@@ -141,6 +160,65 @@ if (await recordTable.count()) {
   const tableText = await recordTable.innerText();
   check(tableText.includes('游戏版本'), 'Desktop table is missing the game version column');
   check(tableText.includes('盖世版本'), 'Desktop table is missing the GameHub version column');
+
+  const desktopConfigOpen = page.locator('[data-config-open="android_elden_oneplus"]:visible');
+  check(await desktopConfigOpen.count() === 1, 'Desktop Android config trigger is missing');
+  if (await desktopConfigOpen.count()) {
+    const beforeViewerCount = await page.locator('[data-record-row]:visible').count();
+    const beforeViewerScroll = await page.locator('#compatibility-app').evaluate((app) => app.scrollTop);
+    await desktopConfigOpen.focus();
+    await desktopConfigOpen.click();
+    const androidViewer = page.locator('[data-config-viewer]');
+    const androidViewerCount = await androidViewer.count();
+    check(androidViewerCount === 1 && await androidViewer.isVisible(), 'Android config viewer did not open');
+    if (androidViewerCount) {
+      check(await androidViewer.getAttribute('role') === 'dialog', 'Config viewer has no dialog role');
+      const viewerText = await androidViewer.innerText();
+      check(viewerText.includes('适用范围'), 'Config applicability is missing');
+      check(viewerText.includes('Adreno 830'), 'Android config hardware is missing');
+      check(viewerText.includes('Android 14～15'), 'Android config OS range is missing');
+      check(!viewerText.includes('应用配置'), 'Config viewer exposed an apply action');
+      check(
+        await page.evaluate(() => document.activeElement?.matches('[data-config-close]')),
+        'Opening viewer did not move focus to its close control'
+      );
+      const viewerBox = await androidViewer.boundingBox();
+      const panelBox = await androidViewer.locator('.config-viewer-panel').boundingBox();
+      check(Boolean(viewerBox && panelBox), 'Desktop config viewer has no measurable panel');
+      if (viewerBox && panelBox) {
+        check(panelBox.width < viewerBox.width, 'Desktop config viewer panel is not a centered dialog');
+        check(
+          Math.abs((panelBox.x + panelBox.width / 2) - (viewerBox.x + viewerBox.width / 2)) <= 2,
+          'Desktop config viewer panel is not horizontally centered'
+        );
+      }
+      await assertTouchTargets(page, 'Android desktop config viewer');
+      await page.locator('[data-config-close]').last().click();
+      check(await page.locator('[data-config-viewer]').count() === 0, 'Config viewer did not close');
+      check(
+        await page.locator('[data-record-row]:visible').count() === beforeViewerCount,
+        'Closing viewer changed result count'
+      );
+      check(
+        await page.evaluate(() => document.activeElement?.dataset.configOpen === 'android_elden_oneplus'),
+        'Closing viewer did not restore focus to its trigger'
+      );
+      check(
+        await page.locator('#compatibility-app').evaluate((app) => app.scrollTop) === beforeViewerScroll,
+        'Closing viewer changed the result scroll position'
+      );
+
+      await desktopConfigOpen.click();
+      await page.keyboard.press('Escape');
+      check(await page.locator('[data-config-viewer]').count() === 0, 'Escape did not close the config viewer');
+
+      await desktopConfigOpen.click();
+      const viewerBackdrop = page.locator('[data-config-viewer]');
+      await viewerBackdrop.click({ position: { x: 4, y: 4 } });
+      check(await page.locator('[data-config-viewer]').count() === 0, 'Backdrop did not close the config viewer');
+    }
+  }
+
   await page.locator('[data-sort-field="rating"]').click();
   check(
     await page.locator('[data-record-table] [data-record-row]').first().getAttribute('data-record-row') ===
@@ -167,7 +245,46 @@ await page.locator('[data-filter-trigger="game"]').click();
 await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
 check(await page.locator('[data-record-row]:visible').count() === 2, 'Final Android checkpoint lost records');
 
+const phonePage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+observePage(phonePage, 'phone');
+await phonePage.goto(pathToFileURL(demoPath).href, { waitUntil: 'load' });
+await phonePage.locator('[data-filter-trigger="game"]').click();
+await phonePage.locator('[data-filter-query="game"]').fill('艾尔登');
+await phonePage.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+const phoneConfigOpen = phonePage.locator('[data-config-open="android_elden_oneplus"]:visible');
+check(await phoneConfigOpen.count() === 1, 'Phone Android config trigger is missing');
+if (await phoneConfigOpen.count()) {
+  await phoneConfigOpen.scrollIntoViewIfNeeded();
+  const phoneScrollBefore = await phonePage.locator('#compatibility-app').evaluate((app) => app.scrollTop);
+  await phoneConfigOpen.focus();
+  await phoneConfigOpen.click();
+  const phoneViewer = phonePage.locator('[data-config-viewer]');
+  const phoneViewerCount = await phoneViewer.count();
+  check(phoneViewerCount === 1 && await phoneViewer.isVisible(), 'Phone config viewer did not open');
+  const phoneViewerBox = phoneViewerCount ? await phoneViewer.boundingBox() : null;
+  check(Boolean(phoneViewerBox), 'Phone config viewer has no bounding box');
+  if (phoneViewerBox) {
+    check(Math.round(phoneViewerBox.width) === 390, 'Phone config viewer is not full width');
+    check(Math.round(phoneViewerBox.height) === 844, 'Phone config viewer is not full height');
+  }
+  if (await phoneViewer.count()) {
+    await assertNoHorizontalOverflow(phonePage, 'Phone config viewer');
+    await assertTouchTargets(phonePage, 'Phone config viewer');
+    await phonePage.locator('[data-config-close]').first().click();
+    check(await phonePage.locator('[data-config-viewer]').count() === 0, 'Phone config viewer did not close');
+    check(
+      Math.abs(await phonePage.locator('#compatibility-app').evaluate((app) => app.scrollTop) - phoneScrollBefore) <= 2,
+      'Phone config viewer did not preserve result scroll position'
+    );
+    check(
+      await phonePage.evaluate(() => document.activeElement?.dataset.configOpen === 'android_elden_oneplus'),
+      'Phone config viewer did not restore trigger focus'
+    );
+  }
+}
+
 check(externalRequests.length === 0, 'Unexpected external requests: ' + externalRequests.join(', '));
+await phonePage.close();
 await page.close();
 await browser.close();
 
@@ -176,4 +293,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log('PASS: three searchable filters and multi-record Android results');
+console.log('PASS: searchable filters, multi-record results, and responsive config viewer');

@@ -109,6 +109,7 @@
       color: var(--brand-gold);
     }
     .frame {
+      position: relative;
       width: min(1120px, calc(100vw - 40px));
       height: min(810px, calc(100vh - 92px));
       overflow: hidden;
@@ -481,6 +482,75 @@
       white-space: nowrap;
     }
     .no-config { color: var(--text-disabled); white-space: nowrap; }
+    .config-viewer-backdrop {
+      position: fixed;
+      z-index: 80;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(0, 0, 0, .72);
+    }
+    .config-viewer-panel {
+      width: min(760px, 100%);
+      max-height: calc(100vh - 48px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--border-default);
+      border-radius: 24px;
+      background: #151515;
+      box-shadow: 0 28px 80px rgba(0, 0, 0, .6);
+    }
+    .config-viewer-panel > header {
+      min-height: 72px;
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) 44px;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-default);
+    }
+    .config-viewer-panel > header button {
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      font-size: 20px;
+    }
+    .config-viewer-panel > header button:hover { color: var(--brand-gold); }
+    .config-viewer-panel > header div { min-width: 0; }
+    .config-viewer-panel > header span { color: var(--brand-gold); font-size: 12px; }
+    .config-viewer-panel > header h2 {
+      margin: 3px 0 0;
+      overflow: hidden;
+      font-size: 20px;
+      font-weight: 560;
+      line-height: 27px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .config-choice-list {
+      display: flex;
+      max-width: 100%;
+      gap: 8px;
+      padding: 12px 16px 0;
+      overflow-x: auto;
+    }
+    .config-choice-list button {
+      min-height: 44px;
+      flex: 0 0 auto;
+      padding: 0 14px;
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-full);
+      background: var(--bg-elevated);
+      color: var(--text-muted);
+    }
+    .config-choice-list button.active { border-color: var(--brand-gold); color: var(--brand-gold); }
+    .config-viewer-body { min-height: 0; padding: 16px; overflow-y: auto; }
+    .config-viewer-body .config-detail { padding: 0; border-top: 0; }
     .config-detail {
       padding: 0 14px 14px;
       border-top: 1px solid #2e2f33;
@@ -626,6 +696,18 @@
     .frame[data-preview="mobile"] .record-cards { display: grid; }
     .frame[data-preview="desktop"] .record-table-wrap { display: block; }
     .frame[data-preview="desktop"] .record-cards { display: none; }
+    .frame[data-preview="mobile"] .config-viewer-backdrop {
+      position: absolute;
+      display: block;
+      padding: 0;
+    }
+    .frame[data-preview="mobile"] .config-viewer-panel {
+      width: 100%;
+      height: 100%;
+      max-height: none;
+      border: 0;
+      border-radius: 0;
+    }
     @media (max-width: 720px) {
       .workbench { padding: 0; display: block; }
       .demo-bar { display: none; }
@@ -643,6 +725,14 @@
       .filter-menu { position: static; margin-top: 8px; }
       .record-table-wrap { display: none; }
       .record-cards { display: grid; }
+      .config-viewer-backdrop { display: block; padding: 0; }
+      .config-viewer-panel {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+        border: 0;
+        border-radius: 0;
+      }
     }
     .frame[data-preview="mobile"] .page { padding: 16px 14px 30px; }
     .frame[data-preview="mobile"] .page-header { padding-bottom: 18px; }
@@ -1267,6 +1357,8 @@
 
     let catalog = { games: [], hardware: [], records: [], configs: [] };
     let downloadTimer = 0;
+    let viewerReturnFocusRecordId = null;
+    let viewerScrollTop = 0;
 
     function text(value, max = 100) {
       return String(value == null ? "" : value).trim().slice(0, max);
@@ -1657,10 +1749,18 @@
     }
 
     function configAction(record) {
-      const count = activeCatalog().configs.filter((config) => record.configIds.includes(config.id)).length;
+      const count = recordConfigs(record.id).length;
       return count
         ? '<button data-config-open="' + esc(record.id) + '" type="button">查看配置（' + count + '）</button>'
         : '<span class="no-config">暂无配置</span>';
+    }
+
+    function recordConfigs(recordId) {
+      const record = activeCatalog().records.find((item) => item.id === recordId);
+      if (!record) return [];
+      return activeCatalog().configs.filter((config) =>
+        record.configIds.includes(config.id) && config.recordId === record.id
+      );
     }
 
     function recordCells(record) {
@@ -1757,6 +1857,44 @@
       };
     }
 
+    function visibleConfigTrigger(recordId) {
+      return [...document.querySelectorAll("[data-config-open]")].find((button) =>
+        button.dataset.configOpen === recordId && button.getClientRects().length > 0
+      );
+    }
+
+    function openConfigViewer(recordId) {
+      const configs = recordConfigs(recordId);
+      if (!configs.length) return false;
+      const app = document.getElementById("compatibility-app");
+      viewerReturnFocusRecordId = recordId;
+      viewerScrollTop = app ? app.scrollTop : 0;
+      state.viewer = { recordId, configId: configs[0].id };
+      state.openFilter = null;
+      clearDownloadState();
+      render();
+      document.getElementById("compatibility-app").scrollTop = 0;
+      document.querySelector("[data-config-close]")?.focus({ preventScroll: true });
+      return true;
+    }
+
+    function closeConfigViewer() {
+      if (!state.viewer.recordId) return false;
+      const recordId = viewerReturnFocusRecordId || state.viewer.recordId;
+      const scrollTop = viewerScrollTop;
+      state.viewer = { recordId: null, configId: null };
+      clearDownloadState();
+      render();
+      const app = document.getElementById("compatibility-app");
+      if (app) app.scrollTop = scrollTop;
+      const trigger = visibleConfigTrigger(recordId);
+      if (trigger) trigger.focus({ preventScroll: true });
+      if (app) app.scrollTop = scrollTop;
+      viewerReturnFocusRecordId = null;
+      viewerScrollTop = 0;
+      return true;
+    }
+
     function applyPlatform(next, source) {
       if (!normalizePlatform(next)) return;
       if (next === state.platform && source === state.platformSource) return;
@@ -1830,6 +1968,29 @@
       '</div>';
     }
 
+    function renderConfigChoice(config, selectedId) {
+      return '<button data-config-choice="' + esc(config.id) + '" type="button" aria-pressed="' +
+        (config.id === selectedId) + '"' + (config.id === selectedId ? ' class="active"' : '') + '>' +
+        esc(config.name) + '</button>';
+    }
+
+    function renderConfigViewer() {
+      const configs = recordConfigs(state.viewer.recordId);
+      if (!configs.length) return "";
+      const selected = configs.find((config) => config.id === state.viewer.configId) || configs[0];
+      return '<div class="config-viewer-backdrop" data-config-viewer role="dialog" aria-modal="true"' +
+        ' aria-labelledby="config-viewer-title">' +
+        '<section class="config-viewer-panel">' +
+          '<header><button data-config-close type="button" aria-label="返回兼容记录">←</button>' +
+            '<div><span>启动配置 · 仅查看</span><h2 id="config-viewer-title">' +
+              esc(selected.name) + '</h2></div>' +
+            '<button data-config-close type="button" aria-label="关闭配置详情">×</button></header>' +
+          (configs.length > 1 ? '<nav class="config-choice-list" aria-label="配置方案">' +
+            configs.map((config) => renderConfigChoice(config, selected.id)).join("") + '</nav>' : '') +
+          '<div class="config-viewer-body">' + renderConfigDetail(selected) + '</div>' +
+        '</section></div>';
+    }
+
     function renderState(title, copy, action) {
       return '<section class="state-card"><h2>' + esc(title) + '</h2>' +
         '<p>' + esc(copy) + '</p>' +
@@ -1852,7 +2013,7 @@
           "reload"
         );
       } else {
-        content = renderFilterBar() + renderRecordResults();
+        content = renderFilterBar() + renderRecordResults() + renderConfigViewer();
       }
       document.getElementById("compatibility-app").innerHTML =
         '<div class="page"><header class="page-header">' +
@@ -2007,7 +2168,13 @@
     });
 
     document.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape" || !state.openFilter) return;
+      if (event.key !== "Escape") return;
+      if (state.viewer.recordId) {
+        event.preventDefault();
+        closeConfigViewer();
+        return;
+      }
+      if (!state.openFilter) return;
       const key = state.openFilter;
       state.openFilter = null;
       render();
@@ -2093,6 +2260,31 @@
         state.viewer = { recordId: null, configId: null };
         clearDownloadState();
         render();
+        return;
+      }
+
+      const configOpen = event.target.closest("[data-config-open]");
+      if (configOpen) {
+        openConfigViewer(configOpen.dataset.configOpen);
+        return;
+      }
+
+      const configChoice = event.target.closest("[data-config-choice]");
+      if (configChoice) {
+        const configId = configChoice.dataset.configChoice;
+        if (recordConfigs(state.viewer.recordId).some((config) => config.id === configId)) {
+          state.viewer.configId = configId;
+          clearDownloadState();
+          render();
+          document.getElementById("compatibility-app").scrollTop = 0;
+          document.querySelector('[data-config-choice="' + configId + '"]')?.focus({ preventScroll: true });
+        }
+        return;
+      }
+
+      if (event.target.closest("[data-config-close]") ||
+          (event.target.matches("[data-config-viewer]") && !event.target.closest(".config-viewer-panel"))) {
+        closeConfigViewer();
         return;
       }
 
