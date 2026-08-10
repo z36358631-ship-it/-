@@ -17,6 +17,7 @@ if (!executablePath) throw new Error('No Chromium-compatible browser executable 
 const browser = await chromium.launch({ headless: true, executablePath });
 const errors = [];
 const externalRequests = [];
+let expectedMissingCoverError = false;
 
 function check(condition, message) {
   if (!condition) errors.push(message);
@@ -24,7 +25,12 @@ function check(condition, message) {
 
 function observePage(targetPage, label) {
   targetPage.on('console', (message) => {
-    if (message.type() === 'error') errors.push(label + ' console: ' + message.text());
+    if (message.type() !== 'error') return;
+    if (label === 'query' && expectedMissingCoverError && message.text().includes('ERR_FILE_NOT_FOUND')) {
+      expectedMissingCoverError = false;
+      return;
+    }
+    errors.push(label + ' console: ' + message.text());
   });
   targetPage.on('pageerror', (error) => errors.push(label + ' pageerror: ' + error.message));
   targetPage.on('request', (request) => {
@@ -274,10 +280,59 @@ check(
   'Clear filters did not restore the initial prompt'
 );
 
-// Leave the checkpoint on the required two-record Android result.
+// Android game, GPU, rating and three-filter AND combinations.
 await page.locator('[data-filter-trigger="game"]').click();
 await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
-check(await page.locator('[data-record-row]:visible').count() === 2, 'Final Android checkpoint lost records');
+check(await page.locator('[data-record-row]:visible').count() === 2, 'Game-only filter lost Android records');
+await page.locator('[data-filter-clear="game"]').click();
+
+await page.locator('[data-filter-trigger="hardware"]').click();
+await page.locator('[data-filter-query="hardware"]').fill('Adreno 830');
+await page.locator('[data-filter-option="hardware"][data-option-value="android_gpu_adreno830"]').click();
+check(
+  await page.locator('[data-record-row]:visible').count() >= 4,
+  'GPU-only filter did not return multiple Android records'
+);
+await page.locator('[data-filter-clear="hardware"]').click();
+
+await page.locator('[data-filter-trigger="rating"]').click();
+await page.locator('[data-filter-query="rating"]').fill('4');
+await page.locator('[data-filter-option="rating"][data-option-value="4"]').click();
+const ratingOnlyRows = page.locator('[data-record-row]:visible');
+check(await ratingOnlyRows.count() >= 3, 'Rating-only filter returned too few Android records');
+check(
+  await page.locator('[data-record-row]:visible .rating[aria-label="3 分"]').count() === 0,
+  'Rating-only filter retained a lower-rated record'
+);
+
+await page.locator('[data-filter-trigger="hardware"]').click();
+await page.locator('[data-filter-query="hardware"]').fill('Adreno 830');
+await page.locator('[data-filter-option="hardware"][data-option-value="android_gpu_adreno830"]').click();
+const ratedRows = await page.locator('[data-record-row]:visible').allTextContents();
+check(ratedRows.length >= 3, 'GPU + rating filter returned too few records');
+check(ratedRows.every((text) => text.includes('★★★★')), 'Rating ≥4 retained a lower-rated record');
+
+await page.locator('[data-filter-trigger="game"]').click();
+await page.locator('[data-filter-query="game"]').fill('艾尔登');
+await page.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+check(
+  await page.locator('[data-record-row]:visible').count() === 2,
+  'Three-filter AND result is not two Elden records'
+);
+
+// Demo platform changes clear filters, results and the open viewer.
+await page.locator('[data-preview="mobile"]').click();
+await page.locator('[data-config-open="android_elden_oneplus"]:visible').click();
+check(await page.locator('[data-config-viewer]').count() === 1, 'Platform-reset setup did not open viewer');
+await page.locator('[data-demo-platform="mac"]').click();
+check(await page.locator('[data-platform-badge]').textContent() === 'Mac', 'Demo platform did not switch to Mac');
+check(await page.locator('[data-config-viewer]').count() === 0, 'Platform switch kept config viewer');
+check(await page.locator('[data-record-row]:visible').count() === 0, 'Platform switch kept Android results');
+check(await page.locator('[data-clear-filters]').count() === 0, 'Platform switch kept Android filters');
+check(
+  await page.getByText('添加筛选条件开始查询', { exact: true }).isVisible(),
+  'Platform switch did not restore the initial prompt'
+);
 
 const phonePage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
 observePage(phonePage, 'phone');
@@ -317,7 +372,144 @@ if (await phoneConfigOpen.count()) {
   }
 }
 
+// Bridge context outranks the Android query and isolates Mac hardware and record fields.
+const bridgePage = await browser.newPage({ viewport: { width: 1280, height: 960 }, deviceScaleFactor: 1 });
+observePage(bridgePage, 'bridge');
+await bridgePage.goto(pathToFileURL(demoPath).href + '?platform=android', { waitUntil: 'load' });
+await bridgePage.evaluate(() => window.GameHubCompatibility.setContext({ platform: 'mac' }));
+check(await bridgePage.locator('[data-platform-badge]').textContent() === 'Mac', 'Bridge did not override Android query');
+check(
+  await bridgePage.locator('[data-demo-platform="android"]').isDisabled(),
+  'Bridge did not lock the Demo platform switch'
+);
+check(
+  (await bridgePage.locator('[data-filter-select="hardware"] .filter-label').innerText()) ===
+    'Mac 机型或 Apple 芯片',
+  'Mac hardware filter label is wrong'
+);
+await bridgePage.locator('[data-filter-trigger="hardware"]').click();
+await bridgePage.locator('[data-filter-query="hardware"]').fill('M4 Pro');
+check(
+  await bridgePage.locator('[data-filter-option="hardware"][data-option-value="mac_chip_m4pro"]').count() === 1,
+  'Mac chip option is missing'
+);
+check(
+  await bridgePage.locator(
+    '[data-filter-option="hardware"][data-option-value="android_gpu_adreno830"]'
+  ).count() === 0,
+  'Android GPU leaked into Mac candidates'
+);
+await bridgePage.locator('[data-filter-option="hardware"][data-option-value="mac_chip_m4pro"]').click();
+const macRowsText = (await bridgePage.locator('[data-record-row]:visible').allTextContents()).join(' ');
+check(macRowsText.includes('Apple M4 Pro'), 'Mac chip filter returned no M4 Pro record');
+check(!macRowsText.includes('Android'), 'Android field leaked into Mac results');
+check(!macRowsText.includes('Adreno'), 'Android GPU leaked into Mac results');
+
+// Invalid references produce a recoverable empty state and catalog reload clears invalid UI state.
+const queryPage = await browser.newPage({ viewport: { width: 900, height: 900 }, deviceScaleFactor: 1 });
+observePage(queryPage, 'query');
+await queryPage.goto(pathToFileURL(demoPath).href + '?platform=mac', { waitUntil: 'load' });
+check(await queryPage.locator('[data-platform-badge]').textContent() === 'Mac', 'Mac query fallback failed');
+await queryPage.locator('[data-filter-trigger="game"]').click();
+await queryPage.locator('[data-filter-query="game"]').fill('艾尔登');
+await queryPage.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+await queryPage.locator('[data-filter-trigger="hardware"]').click();
+await queryPage.locator('[data-filter-query="hardware"]').fill('M4 Pro');
+await queryPage.locator('[data-filter-option="hardware"][data-option-value="mac_chip_m4pro"]').click();
+await queryPage.locator('[data-config-open="mac_elden_mbp_m4pro"]:visible').click();
+check(await queryPage.locator('[data-config-viewer]').count() === 1, 'Invalid-catalog setup did not open Mac viewer');
+
+await queryPage.evaluate(() => window.GameHubCompatibility.setCatalog({
+  games: [{
+    id: 'cross-game', name: '跨平台异常游戏', englishName: 'Cross Invalid', aliases: [],
+    coverKey: 'invalid-cover.jpg', platforms: ['mac'], popularOn: []
+  }],
+  hardware: [{
+    id: 'mac_chip_test', platform: 'mac', type: 'chip', displayName: 'Apple M4', aliases: [], subtitle: 'Apple 芯片'
+  }],
+  records: [
+    {
+      id: 'wrong-platform-record', platform: 'android', gameId: 'cross-game',
+      hardwareIds: ['mac_chip_test'], rating: 5, environment: { androidVersion: 'Android 15' }
+    },
+    {
+      id: 'missing-hardware-record', platform: 'mac', gameId: 'cross-game',
+      hardwareIds: ['missing-chip'], rating: 5, environment: { macosVersion: 'macOS 26' }
+    }
+  ],
+  configs: []
+}));
+
+check(await queryPage.locator('[data-config-viewer]').count() === 0, 'Invalid catalog kept the old viewer');
+check(await queryPage.locator('[data-record-row]:visible').count() === 0, 'Invalid records survived normalization');
+check(
+  await queryPage.getByText('当前Mac暂无兼容数据', { exact: true }).isVisible(),
+  'Invalid-record catalog did not enter the recoverable Mac empty state'
+);
+const invalidReload = queryPage.locator('[data-state-action="reload"]');
+check(await invalidReload.count() === 1, 'Invalid catalog has no reload action');
+if (await invalidReload.count()) {
+  await invalidReload.click();
+  await queryPage.waitForTimeout(500);
+} else {
+  await queryPage.reload({ waitUntil: 'load' });
+}
+check(await queryPage.locator('[data-filter-select]').count() === 3, 'Reload did not restore the Mac filter catalog');
+check(await queryPage.locator('[data-clear-filters]').count() === 0, 'Reload retained invalid selected filters');
+
+await queryPage.locator('[data-filter-trigger="game"]').click();
+await queryPage.locator('[data-filter-query="game"]').fill('不存在');
+check(await queryPage.getByText('暂无匹配选项', { exact: true }).isVisible(), 'No-candidate state is missing');
+await queryPage.locator('[data-filter-query="game"]').fill('艾尔登');
+await queryPage.locator('[data-filter-option="game"][data-option-value="steam_1245620"]').click();
+await queryPage.locator('[data-filter-trigger="rating"]').click();
+await queryPage.locator('[data-filter-query="rating"]').fill('5');
+await queryPage.locator('[data-filter-option="rating"][data-option-value="5"]').click();
+check(
+  await queryPage.getByText('暂无符合条件的兼容记录', { exact: true }).isVisible(),
+  'Mac game + rating no-result state is missing'
+);
+check(await queryPage.locator('[data-record-row]:visible').count() === 0, 'No-result combination rendered records');
+check(
+  (await queryPage.locator('[data-filter-trigger="game"]').innerText()).includes('艾尔登法环') &&
+    (await queryPage.locator('[data-filter-trigger="rating"]').innerText()).includes('5 分及以上'),
+  'No-result state did not retain selected filters'
+);
+
+await queryPage.evaluate(() => window.GameHubCompatibility.setCatalog({
+  games: [],
+  hardware: [],
+  records: [],
+  configs: []
+}));
+check(
+  await queryPage.getByText('当前Mac暂无兼容数据', { exact: true }).isVisible(),
+  'Empty Mac catalog state is missing'
+);
+check(
+  await queryPage.locator('[data-state-action="reload"]').count() === 1,
+  'Empty Mac catalog has no reload action'
+);
+await queryPage.locator('[data-state-action="reload"]').click();
+await queryPage.waitForTimeout(500);
+check(await queryPage.locator('[data-filter-select]').count() === 3, 'Empty Mac catalog did not recover');
+
+await queryPage.locator('[data-filter-trigger="game"]').click();
+const queryCover = queryPage.locator('[data-filter-option="game"] img').first();
+expectedMissingCoverError = true;
+await queryCover.evaluate((image) => {
+  image.src = 'assets/compatibility/missing-local-cover.jpg';
+});
+await queryPage.locator('[aria-label="封面加载失败"]').first().waitFor();
+check(
+  await queryPage.locator('[aria-label="封面加载失败"]').count() === 1,
+  'Broken local cover did not render the fallback'
+);
+check(expectedMissingCoverError === false, 'Missing-cover error was not observed');
+
 check(externalRequests.length === 0, 'Unexpected external requests: ' + externalRequests.join(', '));
+await queryPage.close();
+await bridgePage.close();
 await phonePage.close();
 await page.close();
 await browser.close();
@@ -327,4 +519,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log('PASS: searchable filters, multi-record results, and responsive config viewer');
+console.log('PASS: filter combinations, platform isolation, recovery states, and responsive config viewer');
