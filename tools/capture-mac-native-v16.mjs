@@ -1,0 +1,120 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { chromium } from 'playwright-core';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const demo = path.join(root, 'demos', 'PC与Mac端', 'Mac原生游戏版本管理demo.html');
+const outputDir = path.join(root, 'public', 'prd', 'mac-native-version-management');
+const reportPath = path.join(root, 'test-results', 'mac-native-v16-browser-report.json');
+const executableCandidates = [
+  'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+  'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
+  'C:/Program Files/Google/Chrome/Application/chrome.exe',
+];
+const executablePath = executableCandidates.find(fs.existsSync);
+
+assert(executablePath, '未找到可用于截图的 Edge 或 Chrome');
+fs.mkdirSync(outputDir, { recursive: true });
+fs.mkdirSync(path.dirname(reportPath), { recursive: true });
+
+const browser = await chromium.launch({ executablePath, headless: true });
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+page.setDefaultTimeout(6000);
+
+const pageErrors = [];
+const consoleErrors = [];
+page.on('pageerror', error => pageErrors.push(error.message));
+page.on('console', message => {
+  if (message.type() === 'error') consoleErrors.push(message.text());
+});
+
+async function resetDemo() {
+  await page.goto(pathToFileURL(demo).href);
+  await page.evaluate(() => {
+    localStorage.clear();
+    localStorage.setItem('gamehub-last-install-path', 'applications');
+  });
+  await page.reload();
+  await page.locator('#page-library.active').waitFor();
+}
+
+async function chooseNativeVersion() {
+  await page.locator('[data-action="open-detail"]').first().click();
+  await page.locator('#page-detail.active').waitFor();
+  await page.locator('[data-action="toggle-detail-more"]').click();
+  await page.locator('[data-action="open-version-switch"]').click();
+  await page.locator('#versionSwitchOverlay.show').waitFor();
+  await page.locator('[data-action="choose-version"][data-version="native"]').click();
+  await page.locator('#versionSwitchOverlay').waitFor({ state: 'hidden' });
+  await page.locator('#detailCta').click();
+  await page.locator('#installOverlay.show').waitFor();
+}
+
+async function capture(filename) {
+  await page.waitForTimeout(250);
+  await page.screenshot({ path: path.join(outputDir, filename) });
+}
+
+const checks = {};
+
+await resetDemo();
+const visibleNativeChips = page.locator('.native-chip.show');
+checks.libraryNativeChipCount = await visibleNativeChips.count();
+checks.libraryNativeChipTexts = await visibleNativeChips.allTextContents();
+assert(checks.libraryNativeChipCount >= 3, '游戏库应展示至少 3 个苹果图标示例');
+assert(checks.libraryNativeChipTexts.every(text => text.trim() === ''), '苹果图标内不应显示“Mac 原生”文字');
+await capture('07-game-library-platform-badges.png');
+
+await chooseNativeVersion();
+const selectedPath = page.locator('.install-path-option.selected');
+checks.defaultInstallPath = (await selectedPath.locator('.install-path-value').textContent())?.trim();
+checks.installProgressElementCount = await page.locator('#progress, #progressBar').count();
+assert.equal(checks.defaultInstallPath, '/Applications/GameHub/', '应默认恢复上一次成功安装路径');
+assert.equal(checks.installProgressElementCount, 0, '安装弹窗不得显示下载进度条');
+await capture('04-path-largest-default.png');
+
+await page.locator('#installBtn').click();
+await page.locator('#installOverlay').waitFor({ state: 'hidden' });
+checks.dialogClosedAfterInstall = await page.locator('#installOverlay.show').count() === 0;
+checks.progressBeforeLeave = (await page.locator('#detailCta').textContent())?.trim();
+assert.match(checks.progressBeforeLeave, /正在下载\s+\d+%/, '详情主按钮应展示后台下载进度');
+await page.waitForTimeout(650);
+await capture('06-download-locked.png');
+
+await page.locator('button[data-page="library"]').nth(1).click();
+await page.locator('#page-library.active').waitFor();
+await page.waitForTimeout(650);
+await page.locator('button[data-page="detail"]').first().click();
+await page.locator('#page-detail.active').waitFor();
+checks.progressAfterReturn = (await page.locator('#detailCta').textContent())?.trim();
+assert.match(checks.progressAfterReturn, /正在下载\s+\d+%|开始游戏/, '离开详情后下载应继续');
+
+await page.getByText('开始游戏', { exact: true }).waitFor({ timeout: 7000 });
+checks.finalDetailAction = (await page.locator('#detailCta').textContent())?.trim();
+checks.managedNativeChipVisible = await page.locator('#managedNativeChip.show').count() === 1;
+assert.match(checks.finalDetailAction, /开始游戏/, '安装完成后应恢复开始游戏');
+assert.equal(checks.managedNativeChipVisible, true, '安装完成后游戏库应同步苹果图标');
+assert.deepEqual(pageErrors, [], `页面脚本错误：${pageErrors.join('; ')}`);
+assert.deepEqual(consoleErrors, [], `控制台错误：${consoleErrors.join('; ')}`);
+
+const report = {
+  generatedAt: new Date().toISOString(),
+  demo: pathToFileURL(demo).href,
+  executablePath,
+  screenshots: [
+    '04-path-largest-default.png',
+    '06-download-locked.png',
+    '07-game-library-platform-badges.png',
+  ],
+  checks,
+  pageErrors,
+  consoleErrors,
+};
+
+fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+await browser.close();
+
+console.log(`Captured ${report.screenshots.length} Mac native V1.6 screenshots`);
+console.log(`Report: ${reportPath}`);

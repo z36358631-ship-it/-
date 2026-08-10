@@ -15,7 +15,7 @@ function sectionBetween(startHeading, endHeading) {
   return prd.slice(start, end);
 }
 
-test('V1.5 使用标准九章结构并仅输出 C 端详细设计', () => {
+test('V1.6 使用标准九章结构并仅输出 C 端详细设计', () => {
   for (const heading of [
     '## 一、版本信息',
     '## 二、背景与目标',
@@ -30,6 +30,7 @@ test('V1.5 使用标准九章结构并仅输出 C 端详细设计', () => {
 
   assert.match(prd, /\|2026-08-10\|V1\.4\|/);
   assert.match(prd, /\|2026-08-10\|V1\.5\|/);
+  assert.match(prd, /\|2026-08-10\|V1\.6\|/);
   assert.match(prd, /### 4\.2 详细设计（C端）/);
   assert.doesNotMatch(prd, /### 4\.3 详细设计（B端）/);
 });
@@ -45,7 +46,7 @@ test('C 端功能汇总在单个三列表格中且规则交互分组编号', () 
     '已安装版本切换',
     '安装路径与默认选择',
     '无合格路径',
-    '下载中锁定与安装结果',
+    '后台下载与安装结果',
   ]) assert.match(section, new RegExp(`\\|${moduleName}\\|`));
   assert.equal((section.match(/\*\*规则：\*\*/g) ?? []).length, 7);
   assert.equal((section.match(/\*\*交互：\*\*/g) ?? []).length, 7);
