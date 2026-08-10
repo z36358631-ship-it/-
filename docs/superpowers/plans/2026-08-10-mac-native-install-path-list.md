@@ -513,7 +513,7 @@ node --test tests/mac-native-version-demo.test.mjs tests/mac-native-version-demo
 git diff --check -- "prd/ai生成/【Prd】《盖世游戏》Mac原生游戏版本管理需求.md" "tests/mac-native-prd.test.mjs"
 ```
 
-Expected: `16/16` PASS，PRD 无不可交付图片链接，`git diff --check` 无输出。
+Expected: `19/19` PASS，PRD 无不可交付图片链接，`git diff --check` 无输出。
 
 Commit:
 
@@ -539,7 +539,7 @@ node --test tests/mac-native-version-demo.test.mjs tests/mac-native-version-demo
 git diff --check
 ```
 
-Expected: `16/16` PASS；真实 Chrome/Edge `pageerror` 为 0；相关差异无空白错误。
+Expected: `19/19` PASS；真实 Chrome/Edge `pageerror` 为 0；相关差异无空白错误。
 
 - [ ] **Step 2: 逐张检查截图**
 
@@ -596,7 +596,7 @@ Expected: 只解释和提交上述范围文件；工作区其他脏文件保持�
     "Demo 的容量、磁盘状态和下载进度均为本地模拟，不读取真实磁盘",
     "本次不包含目录浏览、路径创建、空间清理或其他空间管理能力"
   ],
-  "technicalDetails": "容量统一使用十进制字节口径；状态模型采用 installPaths、selectedPathId 和 requiredBytes。验证命令：node --test tests/mac-native-version-demo.test.mjs tests/mac-native-version-demo.browser.test.mjs tests/mac-native-prd.test.mjs，预期 16/16 通过；真实浏览器 pageerror 为 0；git diff --check 通过。"
+  "technicalDetails": "容量统一使用十进制字节口径；状态模型采用 installPaths、selectedPathId 和 requiredBytes。验证命令：node --test tests/mac-native-version-demo.test.mjs tests/mac-native-version-demo.browser.test.mjs tests/mac-native-prd.test.mjs，19/19 通过；真实浏览器 pageerror 为 0；git diff --check 通过。"
 }
 ```
 
