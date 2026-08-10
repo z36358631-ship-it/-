@@ -315,22 +315,34 @@ async function verifyShotState(page, shot) {
     assert.equal(await page.locator('.expiry-reminder').count(), 1, `${shot.name} reminder is not visible`);
   }
 
-  if (['home', 'search'].includes(shot.pageId)) {
+  if (shot.pageId === 'home') {
+    const home = await page.evaluate(() => {
+      const rootNode = document.querySelector('#appRentalDemo');
+      const cards = [...rootNode.querySelectorAll('.hero-card, .mini-game, .landscape-home-hero, .landscape-home-grid button')];
+      return {
+        bannerPrice: rootNode.querySelector('.home-rental-price')?.textContent.trim(),
+        perCardDisplayCounts: cards.map((node) => node.querySelectorAll('[data-discovery-display]').length),
+        clickable: cards.every((node) => node.matches('button, a, [role="button"]')),
+      };
+    });
+    assert.equal(home.bannerPrice, '¥9.9 · 可租号', `${shot.name} home banner rental price mismatch`);
+    assert(home.perCardDisplayCounts.every((count) => count <= 1), `${shot.name} renders more than one result on a home card`);
+    assert(home.clickable, `${shot.name} contains a non-clickable home game card`);
+  }
+
+  if (shot.pageId === 'search') {
     const discovery = await page.evaluate((pageId) => {
       const rootNode = document.querySelector('#appRentalDemo');
       const displays = [...rootNode.querySelectorAll('[data-discovery-display]')];
-      const cards = pageId === 'search'
-        ? [...rootNode.querySelectorAll('.search-result-card')]
-        : [...rootNode.querySelectorAll('.hero-card, .mini-game, .landscape-home-hero, .landscape-home-grid button')];
+      const cards = [...rootNode.querySelectorAll('.search-result-card')];
       return {
         texts: displays.map((node) => node.textContent.trim()),
         types: displays.map((node) => node.dataset.discoveryDisplay),
         cardCount: cards.length,
         perCardDisplayCounts: cards.map((node) => node.querySelectorAll('[data-discovery-display]').length),
-        inlineActionCount: pageId === 'search'
-          ? rootNode.querySelectorAll('.search-result-card [data-primary-action], .search-result-card .primary-action').length
-          : 0,
+        inlineActionCount: rootNode.querySelectorAll('.search-result-card [data-primary-action], .search-result-card .primary-action').length,
         clickable: cards.every((node) => node.matches('button, a, [role="button"]')),
+        gamesTabSelected: rootNode.querySelector('[data-search-tab="games"]')?.getAttribute('aria-selected'),
       };
     }, shot.pageId);
     assert.equal(discovery.texts.length, 3, `${shot.name} must show exactly three unified discovery results`);
@@ -339,16 +351,15 @@ async function verifyShotState(page, shot) {
     assert(discovery.texts.some((text) => /^¥\d+\.\d · 租号$/.test(text)), `${shot.name} is missing a one-decimal rental price`);
     assert(discovery.cardCount > 0 && discovery.perCardDisplayCounts.every((count) => count <= 1), `${shot.name} renders more than one result on a card`);
     assert(discovery.clickable, `${shot.name} contains a non-clickable game card`);
-    if (shot.pageId === 'search') {
-      assert.equal(discovery.cardCount, 3, `${shot.name} search result card count mismatch`);
-      assert(discovery.perCardDisplayCounts.every((count) => count === 1), `${shot.name} search card must contain exactly one result`);
-      assert.equal(discovery.inlineActionCount, 0, `${shot.name} search card still contains an independent action`);
-    }
+    assert.equal(discovery.gamesTabSelected, 'true', `${shot.name} games tab is not selected`);
+    assert.equal(discovery.cardCount, 3, `${shot.name} search result card count mismatch`);
+    assert(discovery.perCardDisplayCounts.every((count) => count === 1), `${shot.name} search card must contain exactly one result`);
+    assert.equal(discovery.inlineActionCount, 0, `${shot.name} search card still contains an independent action`);
   }
 
   if (shot.pageId === 'detail') {
     assert.equal(state.scenario, 'not-member-library', `${shot.name} detail scenario must be rentable without an active entitlement`);
-    assert.equal(state.entitlementPanelOpen, false, `${shot.name} detail rental period must be collapsed initially`);
+    assert.equal(await page.locator('[data-entitlement-panel]').count(), 0, `${shot.name} detail must not render a SKU panel`);
     assert.equal(state.order, null, `${shot.name} detail capture must not create an order`);
     assert((await device.innerText()).includes('租号开玩'), `${shot.name} detail is missing the rental entry`);
   }
@@ -358,9 +369,34 @@ async function verifyShotState(page, shot) {
     assert.equal(state.selectedSku, 'hourly-8h', `${shot.name} checkout SKU must be fixed to 8 hours`);
     assert.equal(state.selectedHours, 8, `${shot.name} checkout selected hours mismatch`);
     assert.equal(state.order?.durationLabel, '8小时', `${shot.name} checkout order duration mismatch`);
+    assert.equal(await page.locator('[data-sale-mode="time-rental"]').count(), 1, `${shot.name} checkout sale mode mismatch`);
+    assert.equal(await page.locator('[data-sku-kind="time-rental"]').count(), 4, `${shot.name} time-rental SKU count mismatch`);
     for (const label of ['游戏', '版本', '租赁套餐', '租期', '原价', '实付', '支付方式', '协议', '退款', '支付有效期']) {
       assert(checkoutText.includes(label), `${shot.name} checkout is missing ${label}`);
     }
+  }
+
+  if (shot.pageId === 'membership') {
+    assert.equal(await page.locator('.membership-benefit-item').count(), 4, `${shot.name} membership benefit count mismatch`);
+    assert.equal(await page.locator('.membership-preview .member-game-card').count(), 8, `${shot.name} membership preview count mismatch`);
+    assert.equal((await page.locator('.membership-plan-card[data-plan="permanent"] .plan-recommend').innerText()).trim(), '推荐 · 长期有效', `${shot.name} permanent recommendation mismatch`);
+    assert.equal(await page.locator('.membership-plan-card[data-plan="permanent"].selected').count(), 1, `${shot.name} permanent plan must be selected by default`);
+  }
+
+  if (shot.pageId === 'steam-login') {
+    const steamOrder = await page.evaluate(() => {
+      const form = document.querySelector('.steam-login-form')?.getBoundingClientRect();
+      const qr = document.querySelector('.steam-qr-panel')?.getBoundingClientRect();
+      return { formTop: form?.top, formLeft: form?.left, qrTop: qr?.top, qrLeft: qr?.left };
+    });
+    if (shot.orientation === 'portrait') assert(steamOrder.qrTop < steamOrder.formTop, `${shot.name} QR must be above the account form`);
+    else assert(steamOrder.formLeft < steamOrder.qrLeft, `${shot.name} account form must stay left of QR`);
+  }
+
+  if (shot.pageId === 'after-sales') {
+    const afterSalesLabels = await page.locator('[data-after-sales-type]').allTextContents();
+    assert.deepEqual(afterSalesLabels.map((value) => value.trim()), ['启动失败', 'Steam登录失败', '账号异常/频繁掉线', '其他问题'], `${shot.name} after-sales types mismatch`);
+    assert(!(await device.innerText()).includes('3天无理由'), `${shot.name} exposes 3-day no-reason as an after-sales type`);
   }
 
   if (shot.pageId === 'orders') {

@@ -53,6 +53,13 @@ const requiredBusinessSignatures = Object.freeze([
   'getDiscoveryUserContext',
   'renderDiscoveryDisplay',
   'ORDER_TABS',
+  'GAME_SALE_MODES',
+  'eligibleCheckoutSkus',
+  'renderCheckoutSkuOptions',
+  'SEARCH_TABS',
+  'renderSearchTabs',
+  'MEMBERSHIP_BENEFITS',
+  'renderMembershipPreview',
 ]);
 
 function assertBusinessScriptSignatures(label, source) {
@@ -62,6 +69,12 @@ function assertBusinessScriptSignatures(label, source) {
   const legacyPricePresentationReferences = source.match(/resolvePricePresentation\s*\(/g) || [];
   if (legacyPricePresentationReferences.length > 1) {
     throw new Error(`${label} 首页或搜索仍调用旧 resolvePricePresentation`);
+  }
+  if (source.includes("['refund', '3天无理由']")) {
+    throw new Error(`${label} 售后仍把3天无理由作为问题类型`);
+  }
+  if (source.includes('toggle-more-duration') || source.includes('toggle-entitlement-panel')) {
+    throw new Error(`${label} 详情仍保留旧SKU展开路径`);
   }
 }
 
