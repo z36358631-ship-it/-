@@ -47,6 +47,39 @@ if (/\{\{[A-Z0-9_]+\}\}/.test(html)) throw new Error('模板仍存在未替换�
 fs.writeFileSync(outputPath, html);
 process.stdout.write(`BUILD ${path.relative(root, outputPath)} ${Buffer.byteLength(html)} bytes\n`);
 
+const requiredBusinessSignatures = Object.freeze([
+  'DISCOVERY_DISPLAY_TYPES',
+  'resolveGameDisplayModel',
+  'getDiscoveryUserContext',
+  'renderDiscoveryDisplay',
+  'ORDER_TABS',
+]);
+
+function assertBusinessScriptSignatures(label, source) {
+  for (const signature of requiredBusinessSignatures) {
+    if (!source.includes(signature)) throw new Error(`${label} 业务脚本缺少统一签名：${signature}`);
+  }
+  const legacyPricePresentationReferences = source.match(/resolvePricePresentation\s*\(/g) || [];
+  if (legacyPricePresentationReferences.length > 1) {
+    throw new Error(`${label} 首页或搜索仍调用旧 resolvePricePresentation`);
+  }
+}
+
+function assertCommercePrimaryStyle(label, style) {
+  const primaryRule = style.match(/\.primary-action\s*\{([\s\S]*?)\}/)?.[1] || '';
+  if (!/commerce-primary-start/.test(primaryRule) || !/commerce-primary-end/.test(primaryRule)) {
+    throw new Error(`${label} 主按钮未使用统一蓝色商业渐变`);
+  }
+  if (/(?:#ffcc43|#ffe078|#f3bc2c|brand-gold)/i.test(primaryRule)) {
+    throw new Error(`${label} 主按钮仍保留旧黄色规则`);
+  }
+}
+
+const outputStyle = html.match(/<style>([\s\S]*?)<\/style>/)?.[1] || '';
+const outputBusinessScript = html.match(/<script>([\s\S]*?)<\/script>\s*<\/body>/)?.[1] || '';
+assertBusinessScriptSignatures('普通 Demo', outputBusinessScript);
+assertCommercePrimaryStyle('普通 Demo', outputStyle);
+
 if (fs.existsSync(annotationPath)) {
   const normalStyle = html.match(/<style>([\s\S]*?)<\/style>/)?.[1].trimEnd();
   const normalScript = html.match(/<script>([\s\S]*?)<\/script>\s*<\/body>/)?.[1].trim();
@@ -66,5 +99,11 @@ if (fs.existsSync(annotationPath)) {
     `  <script>${normalScript}</script>`,
   );
   fs.writeFileSync(annotationPath, annotation);
+
+  const annotationBusinessScript = annotation.match(/<script>\s*(const ASSETS[\s\S]*?)<\/script>\s*<script>\s*const ANNOTATION_GROUPS/)?.[1] || '';
+  const annotationStyle = annotation.match(/<style>([\s\S]*?)(?=    \/\* 交互标注文档壳层：完整 Demo 直接内嵌，不使用 iframe。 \*\/)/)?.[1] || '';
+  if (!annotationBusinessScript) throw new Error('标注版缺少可验证的业务脚本');
+  assertBusinessScriptSignatures('标注版', annotationBusinessScript);
+  assertCommercePrimaryStyle('标注版', annotationStyle);
   process.stdout.write(`SYNC ${path.relative(root, annotationPath)} ${Buffer.byteLength(annotation)} bytes\n`);
 }
