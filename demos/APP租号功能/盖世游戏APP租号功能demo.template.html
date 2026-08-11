@@ -487,8 +487,8 @@
 
     .checkout-product { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; margin-bottom: 12px; padding: 12px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 18px; background: rgb(255 255 255 / 4%); }
     .checkout-cover { width: 96px; height: 84px; border-radius: 13px; }
-    .checkout-product h2 { margin: 5px 0 7px; font-size: 17px; }
-    .checkout-product p { margin: 0; color: var(--text-muted); font-size: 10px; }
+    .checkout-product h2 { margin: 0 0 6px; font-size: 17px; }
+    .checkout-product p { margin: 0; color: var(--text-muted); font-size: 11px; }
     .checkout-panel { margin-bottom: 12px; padding: 13px 14px; border: 1px solid var(--commerce-secondary-border); border-radius: 17px; background: var(--commerce-panel-bg); }
     .checkout-sku-section .detail-section-head { align-items: flex-start; }
     .checkout-sku-section .detail-section-head p { margin: 4px 0 0; color: var(--text-muted); font-size: 9px; line-height: 14px; }
@@ -516,8 +516,8 @@
     .countdown { color: var(--brand-gold); font-family: var(--font-number); font-size: 16px; font-weight: 700; }
     .state-alert { margin-bottom: 11px; padding: 10px 12px; border: 1px solid rgb(255 183 74 / 28%); border-radius: 12px; background: rgb(255 155 45 / 9%); color: #ffd69a; font-size: 10px; line-height: 16px; }
     .state-alert-action { min-height: 32px; margin-top: 7px; padding: 0 10px; border: 1px solid var(--commerce-secondary-border); border-radius: 9px; background: var(--commerce-secondary-bg); color: #fff; cursor: pointer; }
-    .game-payment-layout { display: grid; grid-template-columns: minmax(0, 1fr) 104px; align-items: stretch; gap: 9px; }
-    .game-payment-layout .payment-list { grid-template-columns: 1fr; }
+    .game-payment-layout { display: block; }
+    .game-payment-layout .payment-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .game-payment-qr { display: grid; min-height: 104px; place-items: center; padding: 8px; border-radius: 12px; background: #f8f8f8; color: #121212; text-align: center; }
     .game-payment-qr[data-payment="alipay"] { box-shadow: inset 0 0 0 2px rgb(35 133 221 / 22%); }
     .game-payment-qr[data-payment="wechat"] { background: #effff5; box-shadow: inset 0 0 0 2px rgb(34 173 102 / 24%); }
@@ -944,6 +944,20 @@
     .login-method-list button { min-height: 54px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 14px; background: rgb(255 255 255 / 5%); cursor: pointer; font-size: 12px; }
     .login-method-list .primary-action { border: 0; background: linear-gradient(135deg, #ffe078, #f3bc2c); color: #171208; font-weight: 700; }
     .one-click-error { margin: 0 0 12px; padding: 11px; border: 1px solid rgb(255 110 110 / 18%); border-radius: 12px; background: rgb(168 39 39 / 12%); color: #ffb0b0; font-size: 10px; line-height: 16px; }
+    .refund-progress-dialog { width: min(100%, 390px); padding: 20px; border: 1px solid rgb(255 255 255 / 13%); border-radius: 22px; background: linear-gradient(160deg, #292b32, #17181d); box-shadow: 0 24px 60px rgb(0 0 0 / 52%); }
+    .refund-progress-dialog h2 { margin: 0; font-size: 20px; }
+    .refund-progress-summary { margin: 4px 0 14px; padding: 12px; border-radius: 13px; background: rgb(242 161 77 / 9%); }
+    .refund-progress-summary strong, .refund-progress-summary span { display: block; }
+    .refund-progress-summary strong { color: #f2b66f; font-size: 13px; }
+    .refund-progress-summary span { margin-top: 5px; color: #9598a1; font-size: 10px; line-height: 16px; }
+    .refund-progress-timeline { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 14px; }
+    .refund-progress-timeline span { position: relative; min-height: 54px; padding: 28px 4px 6px; border-radius: 10px; background: rgb(255 255 255 / 4%); color: #777b84; font-size: 8px; text-align: center; }
+    .refund-progress-timeline span::before { position: absolute; top: 8px; left: 50%; display: grid; width: 16px; height: 16px; place-items: center; border: 1px solid #555a64; border-radius: 50%; content: ''; transform: translateX(-50%); }
+    .refund-progress-timeline span.done { color: #79e8c6; }
+    .refund-progress-timeline span.done::before { border-color: #33d8a4; background: #33d8a4; color: #102a22; content: '✓'; }
+    .refund-progress-timeline span.current { color: #f2b66f; }
+    .refund-progress-timeline span.current::before { border-color: #f2a14d; box-shadow: 0 0 0 4px rgb(242 161 77 / 10%); }
+    .refund-progress-dialog > .primary-action { width: 100%; min-height: 46px; border: 0; }
     .demo-toast { position: absolute; z-index: 80; bottom: 92px; left: 50%; max-width: calc(100% - 40px); padding: 10px 14px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 100px; background: rgb(28 29 34 / 94%); box-shadow: 0 10px 30px rgb(0 0 0 / 35%); color: #fff; font-size: 11px; transform: translateX(-50%); white-space: nowrap; }
     .device.landscape .demo-toast { bottom: 18px; }
 
@@ -1578,7 +1592,7 @@
     .order-page-content-anchor { height: 0; min-height: 0; margin: 0; }
     .order-toolbar { justify-content: flex-start; }
     .order-toolbar .order-search { margin-left: auto; }
-    .portrait-orders .order-tabs button { min-width: 0; padding: 0 8px; }
+    .portrait-orders .order-tabs button { min-width: 48px; padding: 0; }
     .order-list-card { display: flex; min-height: 142px; flex-direction: column; gap: 9px; padding: 11px 12px; border-radius: 17px; background: linear-gradient(145deg, rgb(31 32 35 / 98%), rgb(17 18 21 / 98%)); }
     .order-list-card.selected { border-color: rgb(55 192 245 / 38%); background: linear-gradient(145deg, rgb(34 39 43 / 98%), rgb(17 19 22 / 98%)); }
     .order-card-head, .order-card-main, .order-card-foot { display: flex; width: 100%; min-width: 0; }
@@ -1663,9 +1677,12 @@
     .mac-derived-detail .landscape-detail-game { position: absolute; inset: 0; border: 0; border-radius: 0; }
     .mac-derived-detail .landscape-detail-game::after { background: linear-gradient(90deg, rgb(5 6 8 / 86%) 0, rgb(7 8 10 / 44%) 48%, rgb(7 8 10 / 5%) 72%), linear-gradient(0deg, rgb(5 6 8 / 72%), transparent 58%); }
     .landscape-detail-back { position: absolute; z-index: 4; top: 12px; left: 18px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgb(0 0 0 / 28%); color: #fff; cursor: pointer; font-size: 28px; }
-    .mac-derived-detail .landscape-detail-copy { z-index: 3; top: 138px; bottom: auto; left: 54px; width: 380px; }
-    .mac-derived-detail .landscape-detail-copy h1 { margin: 10px 0 8px; font-size: 29px; }
-    .mac-derived-detail .landscape-detail-copy p { max-width: 420px; font-size: 12px; line-height: 18px; }
+    .mac-derived-detail .landscape-detail-copy { z-index: 3; top: 96px; bottom: auto; left: 54px; width: min(600px, calc(100% - 108px)); gap: 0; }
+    .mac-derived-detail .landscape-detail-copy h1 { order: 1; margin: 0 0 7px; font-size: 29px; }
+    .mac-derived-detail .landscape-detail-copy p { order: 2; max-width: 520px; margin: 0 0 9px; font-size: 12px; line-height: 18px; }
+    .landscape-detail-genre { order: 3; display: flex; gap: 6px; margin-bottom: 10px; }
+    .landscape-detail-genre span { min-height: 24px; padding: 0 9px; border-radius: 999px; background: rgb(255 255 255 / 9%); color: #c5c8cf; font-size: 9px; line-height: 24px; }
+    .mac-derived-detail .landscape-detail-copy .detail-action-set { order: 4; }
     .mac-derived-detail .landscape-detail-facts { position: absolute; z-index: 4; right: 32px; bottom: 16px; left: 32px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin: 0; }
     .mac-derived-detail .landscape-detail-facts span { display: grid; gap: 4px; padding: 4px 18px; border-radius: 0; border-left: 1px solid rgb(255 255 255 / 12%); background: none; }
     .mac-derived-detail .landscape-detail-facts span:first-child { border-left: 0; }
@@ -1692,23 +1709,23 @@
 
     .detail-action-set { display: flex; width: 100%; min-width: 0; align-items: stretch; gap: 6px; }
     .detail-action { display: inline-flex; min-width: 0; min-height: 48px; align-items: center; justify-content: center; gap: 4px; padding: 0 9px; border-radius: 13px; cursor: pointer; font-size: 10px; white-space: nowrap; }
-    .detail-action-light { flex: 0 0 58px; border: 1px solid rgb(255 255 255 / 10%); background: rgb(255 255 255 / 5%); color: #d9dbe1; }
-    .detail-action[data-detail-action="more"] { flex-basis: 44px; padding: 0; font-size: 18px; letter-spacing: .08em; }
-    .detail-action[data-detail-action="quick-play"] { flex-basis: 64px; padding: 0 6px; }
-    .detail-action-icon { width: 16px; height: 16px; flex: 0 0 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+    .detail-action-light { flex: 0 0 54px; flex-direction: column; gap: 3px; padding: 0 4px; border: 0; border-radius: 0; background: transparent; color: #d9dbe1; }
+    .detail-action[data-detail-action="more"] { flex-basis: 48px; font-size: 9px; letter-spacing: 0; }
+    .detail-action[data-detail-action="quick-play"] { flex-basis: 58px; }
+    .detail-action-icon { width: 18px; height: 18px; flex: 0 0 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
     .detail-action-secondary { flex: 1 1 100px; border: 1px solid var(--commerce-secondary-border); background: var(--commerce-secondary-bg); color: #fff; }
     .detail-action-primary { flex: 1.18 1 112px; border: 0; background: linear-gradient(135deg, var(--commerce-primary-start), var(--commerce-primary-end)); box-shadow: 0 8px 22px rgb(34 169 255 / 18%); color: var(--commerce-primary-text); font-weight: 720; }
     .detail-action:disabled { cursor: not-allowed; opacity: .48; }
     .detail-fixed-footer { display: block; }
     .landscape-detail-action-row { display: flex; grid-template-columns: none; width: min(540px, 100%); }
-    .landscape-detail-action-row .detail-action-light { flex-basis: 82px; }
+    .landscape-detail-action-row .detail-action-light { flex-basis: 58px; }
     .landscape-detail-action-row .detail-action[data-detail-action="more"] { flex-basis: 52px; }
     .landscape-detail-action-row .detail-action-secondary { flex-basis: 122px; }
     .landscape-detail-action-row .detail-action-primary { flex-basis: 140px; }
 
     .checkout-sku-section { display: grid; gap: 9px; }
     .checkout-option-row { display: grid; min-height: 44px; grid-template-columns: 68px minmax(0, 1fr); align-items: center; gap: 8px; }
-    .checkout-option-row > label { color: #c9cbd1; font-size: 10px; font-weight: 620; white-space: nowrap; }
+    .checkout-option-row > label { color: #fff; font-size: 13px; font-weight: 700; white-space: nowrap; }
     .checkout-option-buttons { display: grid; min-width: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
     .checkout-option { min-width: 0; min-height: 44px; padding: 0 5px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 11px; background: rgb(255 255 255 / 4%); color: #d3d5da; cursor: pointer; font-size: 9px; }
     .checkout-option.selected { border-color: rgb(42 157 247 / 68%); background: linear-gradient(135deg, rgb(34 169 255 / 17%), rgb(79 99 255 / 9%)); color: #fff; box-shadow: inset 0 0 0 1px rgb(44 151 245 / 10%); }
@@ -1721,7 +1738,7 @@
     .hour-stepper input::-webkit-outer-spin-button, .hour-stepper input::-webkit-inner-spin-button { margin: 0; appearance: none; }
     .hour-shortcuts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
     .hour-shortcuts button { min-height: 36px; padding: 0 3px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 9px; background: rgb(255 255 255 / 4%); color: #b9bbc2; cursor: pointer; font-size: 8px; }
-    .hour-price { grid-column: 1 / -1; color: #72c8ff; font-family: var(--font-number); font-size: 9px; text-align: right; }
+    .hour-price { display: none; }
 
     .service-benefits { margin-bottom: 10px; padding: 11px 12px; border: 1px solid rgb(255 255 255 / 8%); border-radius: 16px; background: rgb(255 255 255 / 3%); }
     .service-benefits .detail-section-head { margin-bottom: 8px; }
@@ -1745,18 +1762,26 @@
     .plan-original { font-size: 7px; }
     .membership-faq-preview { margin-bottom: 14px; padding: 14px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 18px; background: rgb(255 255 255 / 3%); }
 
-    .order-toolbar { position: relative; justify-content: space-between; gap: 6px; }
-    .order-tabs { min-height: 44px; gap: 16px; padding: 0; border: 0; border-radius: 0; background: transparent; }
-    .order-tabs button { position: relative; min-width: 44px; min-height: 44px; padding: 0 1px; border-radius: 0; font-size: 11px; }
+    .order-toolbar { position: relative; justify-content: flex-start; gap: 6px; overflow: visible; }
+    .order-tabs { min-width: max-content; min-height: 44px; flex: 0 0 auto; gap: 10px; padding: 0; border: 0; border-radius: 0; background: transparent; }
+    .order-tabs button { position: relative; min-width: 48px; min-height: 44px; flex: 0 0 48px; padding: 0; border-radius: 0; font-size: 11px; white-space: nowrap; }
     .order-tabs button.active { background: transparent; color: #fff; font-weight: 680; }
     .order-tabs button.active::after { position: absolute; right: 2px; bottom: 0; left: 2px; height: 2px; border-radius: 2px; background: #fff; content: ''; }
     .order-search-trigger { display: grid; width: 44px; height: 44px; flex: 0 0 44px; place-items: center; border: 0; border-radius: 0; background: transparent; color: #e3e5e9; cursor: pointer; font-size: 20px; }
     .order-search-trigger:active { color: #70c8ff; transform: scale(.94); }
-    .order-search.expanded { display: grid; width: min(178px, 48%); min-width: 130px; min-height: 44px; flex: 0 1 178px; grid-template-columns: minmax(0, 1fr) 44px; align-items: center; overflow: hidden; border: 1px solid rgb(255 255 255 / 10%); border-radius: 12px; background: rgb(255 255 255 / 5%); animation: order-search-expand 160ms ease-out; }
+    .order-search.expanded { display: grid; width: 162px; min-width: 0; min-height: 44px; flex: 0 0 162px; grid-template-columns: minmax(0, 1fr) 38px; align-items: center; overflow: hidden; border: 1px solid rgb(255 255 255 / 10%); border-radius: 12px; background: rgb(255 255 255 / 5%); animation: order-search-expand 160ms ease-out; }
     .order-search.expanded input { width: 100%; min-width: 0; height: 42px; padding: 0 4px 0 12px; border: 0; outline: 0; background: transparent; color: #fff; font-size: 9px; }
-    .order-search.expanded button { width: 44px; height: 42px; border: 0; background: transparent; color: #9da0a7; cursor: pointer; font-size: 17px; }
+    .order-search.expanded button { width: 38px; height: 42px; border: 0; background: transparent; color: #9da0a7; cursor: pointer; font-size: 17px; }
     .order-search.expanded > span { display: none; }
-    @keyframes order-search-expand { from { width: 44px; opacity: .4; } to { width: min(178px, 48%); opacity: 1; } }
+    @keyframes order-search-expand { from { width: 44px; opacity: .4; } to { width: 162px; opacity: 1; } }
+
+    .checkout-payment-methods { padding: 12px 14px; }
+    .checkout-payment-row { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px; }
+    .checkout-payment-row h2 { margin: 0; color: #fff; font-size: 14px; font-weight: 700; white-space: nowrap; }
+    .checkout-payment-row .payment-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+    .checkout-bottom-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .checkout-bottom-bar strong { color: #fff; font-family: var(--font-number); font-size: 15px; white-space: nowrap; }
+    .checkout-bottom-bar .primary-action { min-width: 148px; }
 
     .order-list-card { display: grid; min-height: 0; grid-template-columns: 1fr; gap: 9px; padding: 12px; }
     .order-card-head, .order-card-main, .order-card-foot { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 10px; }
@@ -1809,7 +1834,7 @@
     .landscape-checkout .checkout-benefit-column { padding: 8px; overflow: hidden; }
     .landscape-checkout .checkout-benefit-column .game-context-card { min-height: 58px; grid-template-columns: 78px minmax(0, 1fr); gap: 8px; margin-bottom: 6px; padding: 7px; }
     .landscape-checkout .checkout-benefit-column .checkout-cover { width: 78px; height: 48px; }
-    .landscape-checkout .checkout-benefit-column .checkout-product h2 { margin: 2px 0; font-size: 13px; }
+    .landscape-checkout .checkout-benefit-column .checkout-product h2 { margin: 0 0 3px; font-size: 13px; }
     .landscape-checkout .checkout-benefit-column .checkout-product p { font-size: 8px; }
     .landscape-checkout .checkout-benefit-column .checkout-product p:last-child { display: none; }
     .landscape-checkout .service-benefits { margin-bottom: 6px; padding: 7px; }
@@ -1824,13 +1849,56 @@
     .landscape-checkout .service-benefit-item > b { display: none; }
     .landscape-checkout .checkout-sku-section { gap: 4px; margin: 0; padding: 7px 8px; }
     .landscape-checkout .checkout-option-row { min-height: 34px; grid-template-columns: 58px minmax(0, 1fr); gap: 5px; }
-    .landscape-checkout .checkout-option-row > label { font-size: 8px; }
+    .landscape-checkout .checkout-option-row > label { font-size: 10px; }
     .landscape-checkout .checkout-option { min-height: 34px; font-size: 8px; }
-    .landscape-checkout .hourly-picker { grid-template-columns: 108px minmax(0, 1fr) auto; gap: 5px; padding-top: 4px; }
+    .landscape-checkout .hourly-picker { grid-template-columns: 108px minmax(0, 1fr); gap: 5px; padding-top: 4px; }
     .landscape-checkout .hour-stepper { grid-template-columns: 32px minmax(0, 1fr) 32px; }
     .landscape-checkout .hour-stepper button, .landscape-checkout .hour-stepper input { height: 34px; }
     .landscape-checkout .hour-shortcuts button { min-height: 34px; }
-    .landscape-checkout .hour-price { grid-column: auto; font-size: 8px; }
+    .landscape-checkout .hour-price { display: none; }
+    .landscape-checkout .checkout-purchase-column { display: block; }
+    .landscape-checkout .payment-panel { position: relative; height: 100%; padding: 12px; }
+    .landscape-checkout .payment-panel .checkout-payment-row { grid-template-columns: 68px minmax(0, 1fr); }
+    .landscape-checkout .payment-panel .checkout-bottom-bar { position: absolute; right: 12px; bottom: 12px; left: 12px; }
+
+    .search-game-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .search-result-card.search-game-card,
+    .portrait .search-result-card.search-game-card { display: block; min-width: 0; min-height: 0; overflow: hidden; padding: 0 0 11px; border: 1px solid rgb(255 255 255 / 8%); border-radius: 16px; background: rgb(255 255 255 / 4%); color: inherit; cursor: pointer; text-align: left; }
+    .search-game-card .search-result-media,
+    .portrait .search-game-card .search-result-media { display: block; width: 100%; height: 116px; border-radius: 15px 15px 9px 9px; }
+    .search-game-card > strong { display: -webkit-box; min-height: 34px; margin: 9px 10px 0; overflow: hidden; font-size: 12px; line-height: 17px; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+    .search-game-card .discovery-display { display: block; min-height: 16px; margin: 5px 10px 0; overflow: hidden; color: var(--text-muted); font-size: 10px; line-height: 16px; text-overflow: ellipsis; white-space: nowrap; }
+
+    .checkout-amount-summary { padding: 11px 14px; }
+    .checkout-amount-row { display: flex; min-height: 30px; align-items: center; justify-content: space-between; gap: 12px; color: var(--text-muted); font-size: 12px; }
+    .checkout-amount-row strong { color: #aeb6c4; font-family: var(--font-number); font-size: 13px; font-weight: 500; }
+    .checkout-amount-row.order strong { color: #ff4b5f; font-size: 24px; font-weight: 800; }
+    .landscape-checkout .checkout-purchase-column { display: block; overflow: hidden; }
+    .landscape-checkout .payment-panel { display: flex; height: 100%; min-height: 0; overflow-y: auto; flex-direction: column; gap: 7px; padding: 8px 10px 10px; scrollbar-width: none; }
+    .landscape-checkout .payment-panel::-webkit-scrollbar { display: none; }
+    .landscape-checkout .payment-panel .checkout-amount-summary { flex: 0 0 auto; }
+    .landscape-checkout .payment-panel .checkout-amount-row { min-height: 24px; font-size: 10px; }
+    .landscape-checkout .payment-panel .checkout-amount-row.order strong { font-size: 20px; }
+    .landscape-checkout .payment-panel .checkout-payment-row { flex: 0 0 auto; }
+    .landscape-checkout .payment-panel .checkout-bottom-bar { position: sticky; right: auto; bottom: 0; left: auto; z-index: 2; flex: 0 0 auto; margin-top: auto; padding-top: 8px; background: #222426; }
+    .landscape-checkout .payment-panel .payment-primary { position: static; width: auto; min-height: 44px; margin: 0; }
+    .landscape-checkout .checkout-benefit-column .checkout-product p.checkout-product-edition { display: block; }
+
+    .membership-intro-dialog { width: min(100%, 520px); max-height: calc(100% - 28px); overflow-y: auto; padding: 20px; border: 1px solid rgb(255 255 255 / 13%); border-radius: 22px; background: linear-gradient(160deg, #292b32, #17181d); box-shadow: 0 24px 60px rgb(0 0 0 / 52%); }
+    .membership-intro-dialog header { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; margin-bottom: 14px; }
+    .membership-intro-dialog header h2 { grid-column: 2; margin: 0; text-align: center; }
+    .membership-intro-dialog header button { grid-column: 3; width: 44px; height: 44px; border: 0; background: transparent; color: #fff; cursor: pointer; font-size: 28px; }
+    .membership-intro-dialog ol { display: grid; gap: 10px; margin: 0 0 16px; padding-left: 24px; color: #d7d9df; font-size: 11px; line-height: 18px; }
+    .membership-intro-dialog > .primary-action { width: 100%; min-height: 48px; border: 0; border-radius: 13px; }
+    .device.landscape .membership-intro-dialog { width: min(680px, calc(100% - 80px)); max-height: calc(100% - 40px); }
+    .device.landscape .membership-intro-dialog ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .launch-guard-dialog .guard-game-pair { display: grid; grid-template-columns: 1fr 24px 1fr; align-items: center; gap: 8px; margin: 14px 0; }
+    .launch-guard-dialog .guard-game-pair div { min-width: 0; padding: 10px; border-radius: 11px; background: rgb(255 255 255 / 5%); }
+    .launch-guard-dialog .guard-game-pair span { display: block; color: var(--text-muted); font-size: 9px; }
+    .launch-guard-dialog .guard-game-pair strong { display: block; overflow: hidden; margin-top: 4px; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .launch-guard-dialog .guard-game-pair > b { color: #6d727e; text-align: center; }
+    .launch-guard-dialog .guard-unavailable { display: block; min-height: 46px; padding: 0 14px; border-radius: 12px; background: rgb(255 255 255 / 5%); color: #aeb2bc; font-size: 12px; line-height: 46px; text-align: center; }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
@@ -2009,6 +2077,8 @@
       memberPlan: 'quarterly',
       memberPayment: 'alipay',
       membershipStatus: 'none',
+      membershipIntroSeen: false,
+      membershipIntroOpen: false,
       order: null,
       membershipOrder: null,
       moreDurationOpen: false,
@@ -2018,13 +2088,22 @@
       orderSearch: '',
       orderSearchOpen: false,
       noReasonPolicyOpen: false,
+      rentalRiskDecision: {
+        extraNoReasonRestricted: false,
+        ruleVersion: 'RISK-20260811-01',
+      },
+      riskReminderOpen: false,
+      pendingRentalIntent: null,
+      pendingRiskSnapshot: null,
+      nonTargetLaunchGuard: null,
+      launchRequestResults: {},
+      refundProgressOrderId: null,
       confirmDeleteOrderId: null,
       hiddenOrderIds: [],
       selectedOrderId: null,
       capturePageId: 'home',
       entitlementPanelOpen: false,
       loginMethodOpen: false,
-      oneClickStatus: 'idle',
       credentialPanelOpen: false,
       credentialAccountVisible: false,
       credentialPasswordVisible: false,
@@ -2113,8 +2192,8 @@
       allocating: Object.freeze([['refresh', '刷新状态', 'primary']]),
       active: Object.freeze([['after-sales', '申请售后', 'secondary'], ['credentials', '登录信息', 'secondary'], ['login', '登录游戏', 'primary']]),
       refunding: Object.freeze([['progress', '退款进度', 'primary']]),
-      refunded: Object.freeze([['progress', '退款进度', 'secondary'], ['resume', '继续畅玩', 'secondary'], ['delete', '删除订单', 'danger']]),
-      ended: Object.freeze([['resume', '继续畅玩', 'secondary'], ['delete', '删除订单', 'danger']]),
+      refunded: Object.freeze([['progress', '退款进度', 'secondary'], ['delete', '删除订单', 'danger']]),
+      ended: Object.freeze([['delete', '删除订单', 'danger']]),
     });
     const AFTER_SALES_TYPES = Object.freeze([
       ['launch', '启动失败'],
@@ -2177,6 +2256,11 @@
     const GAME_SALE_MODES = Object.freeze({
       TIME_RENTAL: 'time-rental',
       ENTITLEMENT: 'entitlement',
+    });
+
+    const GAME_ORIGINAL_AMOUNTS = Object.freeze({
+      'shadow-blade-zero': 298,
+      spiritfarer: 108,
     });
 
     const DISCOVERY_GAME_CONTEXTS = Object.freeze([
@@ -2676,6 +2760,108 @@
       return selected;
     }
 
+    function setRentalRiskDecision(value = {}) {
+      state.rentalRiskDecision = {
+        extraNoReasonRestricted: false,
+        ruleVersion: '',
+        ...value,
+      };
+      return { ...state.rentalRiskDecision };
+    }
+
+    function requestRentalCheckout(gameId = state.selectedGameId) {
+      const game = getGameContext(gameId);
+      if (!game) return { allowed: false, reason: 'game-not-found' };
+      state.pendingRentalIntent = { gameId };
+      state.pendingRiskSnapshot = null;
+      const decision = state.rentalRiskDecision || {};
+      if (decision.extraNoReasonRestricted) {
+        state.riskReminderOpen = true;
+        renderApp();
+        return { allowed: false, reason: 'extra-no-reason-restricted' };
+      }
+      state.pendingRiskSnapshot = {
+        extraNoReasonRestricted: false,
+        extraNoReasonApplicable: true,
+        ruleVersion: decision.ruleVersion || '',
+        acceptedAt: null,
+      };
+      return continueRentalCheckout();
+    }
+
+    function continueRentalCheckout() {
+      const gameId = state.pendingRentalIntent?.gameId || state.selectedGameId;
+      if (!getGameContext(gameId)) return { allowed: false, reason: 'game-not-found' };
+      setSelectedGame(gameId, { shouldRender: false });
+      prepareCheckoutForSelectedGame();
+      state.pendingRentalIntent = null;
+      state.riskReminderOpen = false;
+      navigate('checkout');
+      return { allowed: true, reason: 'checkout-opened', gameId };
+    }
+
+    function confirmRentalRisk() {
+      state.pendingRiskSnapshot = {
+        extraNoReasonRestricted: true,
+        extraNoReasonApplicable: false,
+        ruleVersion: state.rentalRiskDecision?.ruleVersion || '',
+        acceptedAt: Date.now(),
+      };
+      state.riskReminderOpen = false;
+      return continueRentalCheckout();
+    }
+
+    function closeRentalRisk() {
+      state.riskReminderOpen = false;
+      state.pendingRentalIntent = null;
+      state.pendingRiskSnapshot = null;
+      renderApp();
+      return true;
+    }
+
+    function attemptRentalAccountLaunch(targetGameId, { launchRequestId = '' } = {}) {
+      const requestId = launchRequestId || `LAUNCH-${targetGameId}-${Date.now()}`;
+      const cached = state.launchRequestResults[requestId];
+      if (cached) return { ...cached };
+      const activeOrder = getOrderCollection().find((order) => order.status === 'active' && order.credentialAvailable);
+      if (!activeOrder || activeOrder.gameId === targetGameId) {
+        const result = { allowed: true, reason: 'owned-or-rented-game' };
+        state.launchRequestResults[requestId] = result;
+        return { ...result };
+      }
+      const game = getGameContext(targetGameId);
+      const context = getCheckoutEligibilityContext(targetGameId);
+      const hasExplicitRentalCatalog = DISCOVERY_GAME_CONTEXTS.some(({ id }) => id === targetGameId);
+      const rentable = Boolean(game && hasExplicitRentalCatalog) && (getGameSaleMode(targetGameId) === GAME_SALE_MODES.TIME_RENTAL
+        ? Boolean(lowestEligibleRentalSku(game, context))
+        : eligibleCheckoutSkus(game, context).length > 0);
+      state.nonTargetLaunchGuard = {
+        currentGameId: activeOrder.gameId,
+        currentGameName: activeOrder.gameName,
+        targetGameId,
+        targetGameName: game?.name || targetGameId,
+        rentable,
+        launchRequestId: requestId,
+      };
+      const result = { allowed: false, reason: 'non-rented-game', rentable };
+      state.launchRequestResults[requestId] = result;
+      renderApp();
+      return { ...result };
+    }
+
+    function closeNonTargetLaunchGuard() {
+      state.nonTargetLaunchGuard = null;
+      renderApp();
+      return true;
+    }
+
+    function viewTargetRental() {
+      const gameId = state.nonTargetLaunchGuard?.targetGameId;
+      state.nonTargetLaunchGuard = null;
+      if (!gameId) return { allowed: false, reason: 'target-game-missing' };
+      return requestRentalCheckout(gameId);
+    }
+
     function createOrder({ sku, amount, priceVersion, ...snapshot }) {
       if (state.order && NON_TERMINAL_ORDER_STATUSES.has(state.order.status)) return null;
       const createdAt = Date.now();
@@ -2686,24 +2872,35 @@
         saleMode: getGameSaleMode(game.id),
         gameId: game.id,
         gameName: game.name,
+        gameOriginalAmount: Number(GAME_ORIGINAL_AMOUNTS[game.id] || 0),
+        currency: 'CNY',
         platform: state.selectedPlatform,
         editionId: 'standard',
         version: `${state.selectedPlatform} · 标准版`,
         packageName: offer.packageName,
         durationLabel: offer.durationLabel,
         originalAmount: offer.originalAmount,
-        rawAmount: amount,
+        rawAmount: Number(amount),
         paymentMethod: state.selectedPayment,
+        riskSnapshot: state.pendingRiskSnapshot
+          ? { ...state.pendingRiskSnapshot }
+          : {
+              extraNoReasonRestricted: false,
+              extraNoReasonApplicable: true,
+              ruleVersion: state.rentalRiskDecision?.ruleVersion || '',
+              acceptedAt: null,
+            },
         ...snapshot,
         id: nextOrderId(createdAt),
         status: 'pending',
         createdAt,
         updatedAt: createdAt,
         sku,
-        amount,
+        amount: Number(amount),
         priceVersion,
         paymentDeadline: createdAt + 30 * 60 * 1000,
       };
+      state.pendingRiskSnapshot = null;
       renderApp();
       return cloneOrder(state.order);
     }
@@ -2784,9 +2981,17 @@
       });
     }
 
+    function dismissMembershipIntro() {
+      state.membershipIntroSeen = true;
+      state.membershipIntroOpen = false;
+      renderApp();
+      return true;
+    }
+
     function navigate(screen, { rememberSource = true, replaceTask = false } = {}) {
       if (screen === 'checkout') ensureGameOrder();
       if (screen === 'orders') ensureSelectedOrder();
+      if (screen === 'membership' && !state.membershipIntroSeen) state.membershipIntroOpen = true;
       const current = state.screen;
       state.capturePageId = screen;
       if (screen === current) return renderApp();
@@ -3011,11 +3216,15 @@
         return openAfterSales();
       }
       if (action === 'progress') {
-        return selectOrder(order.id);
+        state.selectedOrderId = order.id;
+        state.refundProgressOrderId = order.id;
+        renderApp();
+        return true;
       }
-      if (action === 'resume') {
+      if (action === 'rent') return requestRentalCheckout(order.gameId);
+      if (action === 'playable') {
         const gameId = getGameContext(order.gameId) ? order.gameId : 'elden-ring';
-        setScenario('not-member-library', { shouldRender: false });
+        setScenario('permanent-owned', { shouldRender: false });
         setSelectedGame(gameId, { shouldRender: false });
         navigate('detail');
         return true;
@@ -3032,7 +3241,6 @@
     function openLoginMethod() {
       if (getSelectedOrder()?.status !== 'active') return false;
       state.loginMethodOpen = true;
-      state.oneClickStatus = 'idle';
       renderApp();
       return true;
     }
@@ -3044,15 +3252,16 @@
 
     function startOneClickLogin() {
       if (!state.loginMethodOpen || getSelectedOrder()?.status !== 'active') return false;
-      state.oneClickStatus = 'failed';
-      renderApp();
+      state.loginMethodOpen = false;
+      state.libraryTab = 'steam';
+      state.toast = '登录成功，已返回游戏库';
+      navigate('library', { rememberSource: false });
       return true;
     }
 
     function openManualLogin() {
       if (getSelectedOrder()?.status !== 'active') return false;
       state.loginMethodOpen = false;
-      state.oneClickStatus = 'idle';
       state.steamHelpOpen = false;
       navigate('steam-login');
       return true;
@@ -3547,6 +3756,8 @@
       state.memberPlan = 'quarterly';
       state.memberPayment = 'alipay';
       state.membershipStatus = 'none';
+      state.membershipIntroSeen = false;
+      state.membershipIntroOpen = false;
       state.order = null;
       state.membershipOrder = null;
       state.moreDurationOpen = false;
@@ -3556,13 +3767,19 @@
       state.orderSearch = '';
       state.orderSearchOpen = false;
       state.noReasonPolicyOpen = false;
+      state.rentalRiskDecision = { extraNoReasonRestricted: false, ruleVersion: 'RISK-20260811-01' };
+      state.riskReminderOpen = false;
+      state.pendingRentalIntent = null;
+      state.pendingRiskSnapshot = null;
+      state.nonTargetLaunchGuard = null;
+      state.launchRequestResults = {};
+      state.refundProgressOrderId = null;
       state.confirmDeleteOrderId = null;
       state.hiddenOrderIds = [];
       state.selectedOrderId = null;
       state.capturePageId = 'home';
       state.entitlementPanelOpen = false;
       state.loginMethodOpen = false;
-      state.oneClickStatus = 'idle';
       state.credentialPanelOpen = false;
       state.credentialAccountVisible = false;
       state.credentialPasswordVisible = false;
@@ -3634,6 +3851,8 @@
       membership: () => {
         setScenario('member-library-trial-used', { shouldRender: false });
         navigate('membership');
+        state.membershipIntroSeen = true;
+        state.membershipIntroOpen = false;
       },
       'member-library': () => {
         setScenario('member-library-trial-used', { shouldRender: false });
@@ -3677,6 +3896,8 @@
       'membership-success': () => {
         setScenario('member-library-trial-used', { shouldRender: false });
         navigate('membership');
+        state.membershipIntroSeen = true;
+        state.membershipIntroOpen = false;
         createMembershipOrder();
         payMembershipOrder();
       },
@@ -3875,7 +4096,7 @@
     }
 
     function renderSearchGameResults(results) {
-      return `<div class="search-result-list" data-search-view="games">${results.map(([name, id, asset, crop]) => `<button class="search-result-card" type="button" data-action="navigate" data-screen="detail" data-game-id="${id}" data-rental-increment="search-entry">${realCrop(asset, crop, `${name}游戏画面`, '', 'search-result-media')}<span><strong>${name}</strong><small>Steam版本 · 手柄适配</small>${renderDiscoveryDisplay(id)}</span><b>›</b></button>`).join('')}</div>`;
+      return `<div class="search-game-grid" data-search-view="games">${results.map(([name, id, asset, crop]) => `<button class="search-result-card search-game-card" type="button" data-action="navigate" data-screen="detail" data-game-id="${id}" data-rental-increment="search-entry">${realCrop(asset, crop, `${name}游戏封面`, '', 'search-result-media')}<strong>${name}</strong>${renderDiscoveryDisplay(id)}</button>`).join('')}</div>`;
     }
 
     function renderSearchCommunityResults(posts) {
@@ -3920,12 +4141,14 @@
       const mode = getGameSaleMode(game.id);
       const context = getCheckoutEligibilityContext(game.id);
       if (mode === GAME_SALE_MODES.TIME_RENTAL) {
-        const quote = quoteRentalOffer(state.rentalPlan, state.selectedHours, 'standard', context);
-        const hourControls = state.rentalPlan === 'hourly' ? `<div class="hourly-picker" data-hourly-picker><div class="hour-stepper"><button type="button" data-action="change-rental-hours" data-delta="-1" aria-label="减少1小时">−</button><input type="number" min="2" max="23" step="1" value="${state.selectedHours}" data-rental-hours-input aria-label="租赁小时"><button type="button" data-action="change-rental-hours" data-delta="1" aria-label="增加1小时">＋</button></div><div class="hour-shortcuts"><button type="button" data-action="set-rental-hours" data-hour-shortcut="6">6小时</button><button type="button" data-action="set-rental-hours" data-hour-shortcut="12">12小时</button><button type="button" data-action="set-rental-hours" data-hour-shortcut="23">23小时</button></div><span class="hour-price">当前报价 ¥${quote.price.toFixed(2)}</span></div>` : '';
+        const hourControls = state.rentalPlan === 'hourly' ? `<div class="hourly-picker" data-hourly-picker><div class="hour-stepper"><button type="button" data-action="change-rental-hours" data-delta="-1" aria-label="减少1小时">−</button><input type="number" min="2" max="23" step="1" value="${state.selectedHours}" data-rental-hours-input aria-label="租赁小时"><button type="button" data-action="change-rental-hours" data-delta="1" aria-label="增加1小时">＋</button></div><div class="hour-shortcuts"><button type="button" data-action="set-rental-hours" data-hour-shortcut="6">6小时</button><button type="button" data-action="set-rental-hours" data-hour-shortcut="12">12小时</button><button type="button" data-action="set-rental-hours" data-hour-shortcut="23">23小时</button></div></div>` : '';
         return `<section class="checkout-sku-section checkout-panel" data-sale-mode="${mode}"><div class="checkout-option-row" data-checkout-field="rental-plan"><label>租赁套餐</label><div class="checkout-option-buttons">${[['hourly', '按小时'], ['daily', '日租'], ['weekly', '周租']].map(([id, label]) => `<button class="checkout-option ${state.rentalPlan === id ? 'selected' : ''}" type="button" data-action="select-rental-plan" data-rental-plan="${id}">${label}</button>`).join('')}</div></div>${hourControls}</section>`;
       }
       const skus = eligibleCheckoutSkus(game, context);
-      const optionButtons = skus.map((sku) => `<button class="checkout-option ${state.selectedSku === sku.id ? 'selected' : ''}" type="button" data-action="select-checkout-sku" data-sku="${sku.id}" data-sku-kind="${sku.id}" aria-pressed="${state.selectedSku === sku.id}">${sku.id === 'permanent' ? '单游永久' : sku.label}</button>`).join('');
+      const optionButtons = skus.map((sku) => {
+        const label = sku.id === 'trial' ? '首次体验 · 2小时' : sku.id === 'permanent' ? '单游戏永久' : sku.label;
+        return `<button class="checkout-option ${state.selectedSku === sku.id ? 'selected' : ''}" type="button" data-action="select-checkout-sku" data-sku="${sku.id}" data-sku-kind="${sku.id}" aria-pressed="${state.selectedSku === sku.id}">${label}</button>`;
+      }).join('');
       const membership = '<button class="checkout-option" type="button" data-action="open-membership-from-checkout" data-sku-kind="membership">开会员</button>';
       return `<section class="checkout-sku-section checkout-panel" data-sale-mode="${mode}"><div class="checkout-option-row" data-checkout-field="entitlement"><label>权益方案</label><div class="checkout-option-buttons">${optionButtons}${membership}</div></div>${skus.length ? '' : '<div class="state-alert">当前没有可购买的畅玩方式，请返回详情。</div>'}</section>`;
     }
@@ -3944,7 +4167,7 @@
       const game = getSelectedGame();
       const { primary } = getDetailModel().action;
       const base = [
-        { id: 'more', label: '•••', ariaLabel: '查看更多', action: 'feedback', tone: 'light' },
+        { id: 'more', label: '更多', icon: 'more', ariaLabel: '更多', action: 'feedback', tone: 'light' },
         { id: 'quick-play', label: '秒玩', icon: 'quick-play', action: 'feedback', tone: 'light' },
       ];
       if (primary === 'continue') return [...base, { id: 'login', label: '登录游戏', action: 'open-login-method', tone: 'primary' }];
@@ -3963,7 +4186,11 @@
     }
 
     function renderDetailActions(className = '') {
-      const renderIcon = (iconName) => iconName === 'quick-play' ? '<svg class="detail-action-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M6.5 14.5h7a3.5 3.5 0 0 0 .8-6.9A4.8 4.8 0 0 0 5.2 8.9 2.9 2.9 0 0 0 6.5 14.5Z"/><path d="m10.5 7.5-2 3h2l-1 3 3-4h-2l1-2Z"/></svg>' : '';
+      const renderIcon = (iconName) => {
+        if (iconName === 'more') return '<svg class="detail-action-icon detail-more-icon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="4" r="1.2"/><circle cx="10" cy="10" r="1.2"/><circle cx="10" cy="16" r="1.2"/></svg>';
+        if (iconName === 'quick-play') return '<svg class="detail-action-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M6.5 14.5h7a3.5 3.5 0 0 0 .8-6.9A4.8 4.8 0 0 0 5.2 8.9 2.9 2.9 0 0 0 6.5 14.5Z"/><path d="m10.5 7.5-2 3h2l-1 3 3-4h-2l1-2Z"/></svg>';
+        return '';
+      };
       return `<div class="detail-action-set ${className}">${resolveDetailActions().map((item) => `<button class="detail-action detail-action-${item.tone}" type="button" aria-label="${item.ariaLabel || item.label}" data-detail-action="${item.id}" data-action="${item.action}" ${item.tone === 'primary' ? 'data-primary-action="true"' : ''} ${item.disabled ? 'disabled' : ''}>${renderIcon(item.icon)}<span>${item.label}</span></button>`).join('')}</div>`;
     }
 
@@ -3986,21 +4213,31 @@
       return [['alipay', '支付宝', '支'], ['wechat', '微信', '微']].map(([id, label, mark]) => `<button class="${className} ${selected === id ? 'selected' : ''}" type="button" data-action="${action}" data-payment="${id}"><span class="pay-mark">${mark}</span>${label}</button>`).join('');
     }
 
-    function renderGamePaymentQr() {
-      const payment = state.selectedPayment === 'wechat'
-        ? { id: 'wechat', label: '微信', tip: '请使用微信扫描二维码' }
-        : { id: 'alipay', label: '支付宝', tip: '请使用支付宝扫描二维码' };
-      return `<div class="game-payment-qr" role="img" aria-label="${payment.label}游戏订单支付二维码" data-payment="${payment.id}"><span class="qr-pattern"></span><strong>${payment.label}扫码支付</strong><small>${payment.tip}</small></div>`;
+    function renderCheckoutPaymentMethods() {
+      return `<section class="checkout-panel checkout-payment-methods"><div class="checkout-payment-row"><h2>支付方式</h2><div class="payment-list">${renderPaymentMethods()}</div></div></section>`;
     }
 
-    function renderCheckoutAgreement(order) {
-      return `<div class="checkout-agreement"><span class="agreement-check" aria-hidden="true">✓</span><span>我已阅读并同意租号交易约定</span></div><div class="checkout-policy-list"><div class="checkout-row"><span>租号服务协议</span><strong>已阅读并同意</strong></div><div class="checkout-row"><span>退款规则</span><strong>按实际使用情况审核</strong></div><div class="checkout-row"><span>支付有效期</span><strong class="countdown" data-countdown="${order.paymentDeadline}">${formatCountdown(order.paymentDeadline)}</strong></div></div>`;
+    function getCheckoutAmountModel(order = state.order) {
+      const gameOriginalAmount = Number(order?.gameOriginalAmount || 0);
+      const orderAmount = Number(order?.rawAmount ?? order?.amount ?? 0);
+      const amount = orderAmount.toFixed(2);
+      return {
+        gameOriginalAmount,
+        orderAmount,
+        originalText: `¥${Number.isInteger(gameOriginalAmount) ? gameOriginalAmount : gameOriginalAmount.toFixed(2)}`,
+        orderText: `¥${amount}`,
+        dueText: `需支付 ¥${amount}`,
+      };
+    }
+
+    function renderCheckoutAmountSummary(order) {
+      const model = getCheckoutAmountModel(order);
+      return `<section class="checkout-panel checkout-amount-summary" data-checkout-amount-summary><div class="checkout-amount-row" data-checkout-amount-row><span>游戏原价</span><strong data-checkout-amount="game-original">${model.originalText}</strong></div><div class="checkout-amount-row order" data-checkout-amount-row><span>订单金额</span><strong data-checkout-amount="order">${model.orderText}</strong></div></section>`;
     }
 
     function renderGameContextCard(game, order = null) {
       const gameName = order?.gameName || game.name;
-      const saleLabel = getGameSaleMode(game.id) === GAME_SALE_MODES.TIME_RENTAL ? '热门游戏 · 仅时租' : '非热门游戏';
-      return `<article class="game-context-card checkout-product">${realCrop(game.asset, game.crop, `${gameName} 游戏封面`, '', 'checkout-cover')}<div><small>${saleLabel}</small><h2 class="checkout-product-name">${gameName} - 标准版</h2>${order ? `<p>订单号 ${order.id}</p>` : ''}</div></article>`;
+      return `<article class="game-context-card checkout-product">${realCrop(game.asset, game.crop, `${gameName} 游戏封面`, '', 'checkout-cover')}<div><h2 class="checkout-product-name">${gameName}</h2><p class="checkout-product-edition">标准版</p></div></article>`;
     }
 
     function renderServiceBenefits() {
@@ -4014,17 +4251,13 @@
       return `<section class="service-benefits"><div class="detail-section-head"><h2>租号权益</h2><span>5项保障</span></div><div class="service-benefit-list">${benefits.map(([title, note]) => title === '3天无理由' ? `<button class="service-benefit-item policy-entry" type="button" data-action="open-no-reason-policy"><span class="benefit-check">✓</span><span><strong>${title}</strong><small>${note}</small></span><b>›</b></button>` : `<div class="service-benefit-item"><span class="benefit-check">✓</span><span><strong>${title}</strong><small>${note}</small></span></div>`).join('')}</div></section>`;
     }
 
-    function renderPriceSummary(order) {
-      const originalAmount = Number(order.originalAmount ?? order.amount);
-      return `<section class="price-summary checkout-panel"><div class="detail-section-head"><h2>租赁信息</h2><span>金额以订单快照为准</span></div><div class="checkout-row"><span>租赁套餐</span><strong>${order.packageName || '标准租号套餐'}</strong></div><div class="checkout-row"><span>租期</span><strong>${order.durationLabel}</strong></div><div class="checkout-row game-original-row"><span class="price-label">原价</span><strong class="game-original-amount">¥${originalAmount.toFixed(2)}</strong></div><div class="checkout-row total"><span>实付</span><strong class="order-total-amount">¥${Number(order.rawAmount ?? order.amount).toFixed(2)}</strong></div></section>`;
-    }
-
-    function renderGamePaymentPanel(order) {
+    function renderGamePaymentPanel(game, order) {
+      const model = getCheckoutAmountModel(order);
       const disabled = !state.inventoryAvailable;
       const processing = order.status !== 'pending';
       const ready = order.status === 'active';
       const recovery = renderCheckoutRecoveryActions();
-      return `<section class="payment-panel"><div class="detail-section-head"><h2>支付方式</h2><span>安全支付</span></div><div class="game-payment-layout"><div class="payment-list">${renderPaymentMethods()}</div>${renderGamePaymentQr()}</div>${renderCheckoutAgreement(order)}${recovery || `<button class="primary-action payment-primary" type="button" data-primary-action="true" data-action="${ready ? 'open-login-method' : state.priceChanged ? 'refresh-price' : 'pay-game-order'}" ${disabled || (processing && !ready) ? 'disabled' : ''}>${ready ? '立即登录' : processing ? '账号分配中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : `立即支付 ¥${Number(order.rawAmount ?? order.amount).toFixed(2)}`}</button>`}</section>`;
+      return `<section class="payment-panel">${renderCheckoutSkuOptions(game)}${renderCheckoutAmountSummary(order)}<div class="checkout-payment-row"><h2>支付方式</h2><div class="payment-list">${renderPaymentMethods()}</div></div>${recovery || `<div class="checkout-bottom-bar"><strong>${ready ? '账号已就绪' : model.dueText}</strong><button class="primary-action payment-primary" type="button" data-primary-action="true" data-action="${ready ? 'open-login-method' : state.priceChanged ? 'refresh-price' : 'pay-game-order'}" ${disabled || (processing && !ready) ? 'disabled' : ''}>${ready ? '立即登录' : processing ? '账号分配中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : '立即购买'}</button></div>`}</section>`;
     }
 
     function checkoutAlert() {
@@ -4054,8 +4287,8 @@
         ${renderGameContextCard(game, order)}
         ${renderServiceBenefits()}
         ${renderCheckoutSkuOptions(game)}
-        ${renderPriceSummary(order)}
-        <section class="checkout-panel"><div class="detail-section-head"><h2>支付方式</h2><span>安全支付</span></div><div class="game-payment-layout"><div class="payment-list">${renderPaymentMethods()}</div>${renderGamePaymentQr()}</div>${renderCheckoutAgreement(order)}</section>
+        ${renderCheckoutAmountSummary(order)}
+        ${renderCheckoutPaymentMethods()}
       </section>`;
     }
 
@@ -4155,13 +4388,26 @@
       return includeMinutes && minutes ? `${hourCopy}${minutes}分钟` : hourCopy;
     }
 
-    function getOrderActions(order) {
-      const actions = ORDER_ACTIONS_BY_STATUS[order?.status] || [];
-      return actions.filter(([id]) => id !== 'credentials' || order.credentialAvailable !== false);
+    function hasDirectGameEntitlement(gameId) {
+      return getDiscoveryUserContext(gameId).playable;
+    }
+
+    function getOrderActions(order, { surface = 'list' } = {}) {
+      let actions = [...(ORDER_ACTIONS_BY_STATUS[order?.status] || [])];
+      if (surface === 'list') actions = actions.filter(([id]) => id !== 'after-sales');
+      actions = actions.filter(([id]) => id !== 'credentials' || order.credentialAvailable !== false);
+      if (['refunded', 'ended'].includes(order?.status)) {
+        const next = hasDirectGameEntitlement(order.gameId)
+          ? ['playable', '可畅玩', 'primary']
+          : ['rent', '租号开玩', 'primary'];
+        actions = actions.filter(([id]) => !['resume', 'playable', 'rent'].includes(id));
+        actions.unshift(next);
+      }
+      return actions;
     }
 
     function renderOrderActions(order, surface = 'list') {
-      return `<div class="order-actions-set" data-order-actions-surface="${surface}">${getOrderActions(order).map(([id, label, tone]) => `<button class="${tone}" type="button" data-action="order-card-action" data-order-card-action="${id}" data-order-id="${order.id}" ${tone === 'primary' ? 'data-primary-action="true"' : ''}>${label}</button>`).join('')}</div>`;
+      return `<div class="order-actions-set" data-order-actions-surface="${surface}">${getOrderActions(order, { surface }).map(([id, label, tone]) => `<button class="${tone}" type="button" data-action="order-card-action" data-order-card-action="${id}" data-order-id="${order.id}" ${tone === 'primary' ? 'data-primary-action="true"' : ''}>${label}</button>`).join('')}</div>`;
     }
 
     function renderOrderCardActions(order) {
@@ -4276,7 +4522,7 @@
 
     function renderLoginMethodDialog() {
       if (!state.loginMethodOpen) return '';
-      return `<div class="modal-backdrop" data-action="close-login-method" role="presentation"><section class="login-method-dialog" role="dialog" aria-modal="true" aria-label="选择登录方式"><div class="credential-head"><div><h2>选择登录方式</h2><p>两种方式使用当前订单分配的同一账号</p></div><button class="dialog-close" type="button" data-action="close-login-method" aria-label="关闭登录方式">×</button></div>${state.oneClickStatus === 'failed' ? '<div class="one-click-error"><strong>一键上号失败</strong><br>可重试连接，或切换手动登录继续。</div>' : ''}<div class="login-method-list"><button class="primary-action" type="button" data-primary-action="true" data-action="start-one-click">${state.oneClickStatus === 'failed' ? '重试一键上号' : '一键上号'}</button><button type="button" data-action="open-manual-login">手动登录</button></div></section></div>`;
+      return `<div class="modal-backdrop" data-action="close-login-method" role="presentation"><section class="login-method-dialog" role="dialog" aria-modal="true" aria-label="选择登录方式"><div class="credential-head"><div><h2>选择登录方式</h2><p>两种方式使用当前订单分配的同一账号</p></div><button class="dialog-close" type="button" data-action="close-login-method" aria-label="关闭登录方式">×</button></div><div class="login-method-list"><button class="primary-action" type="button" data-primary-action="true" data-action="start-one-click">一键上号</button><button type="button" data-action="open-manual-login">手动登录</button></div></section></div>`;
     }
 
     function renderExpiryReminder() {
@@ -4301,17 +4547,56 @@
       return `<div class="modal-backdrop" role="presentation"><section class="policy-dialog delete-order-dialog" role="alertdialog" aria-modal="true" aria-label="删除订单确认"><h2>删除订单记录？</h2><p>删除后列表中不再显示该订单记录，进行中的订单不可删除。</p><div class="dialog-action-row"><button type="button" data-action="cancel-delete-order">取消</button><button class="danger" type="button" data-action="confirm-delete-order">删除订单</button></div></section></div>`;
     }
 
+    function renderRefundProgressDialog() {
+      if (!state.refundProgressOrderId) return '';
+      const order = getOrderCollection().find(({ id }) => id === state.refundProgressOrderId);
+      if (!order || !['refunding', 'refunded'].includes(order.status)) return '';
+      const completed = order.status === 'refunded';
+      const steps = [
+        ['退款申请已提交', 'done'],
+        ['支付渠道处理中', completed ? 'done' : 'current'],
+        ['退款原路到账', completed ? 'done' : ''],
+      ];
+      return `<div class="modal-backdrop" data-action="close-refund-progress" role="presentation"><section class="refund-progress-dialog" role="dialog" aria-modal="true" aria-label="退款进度"><div class="credential-head"><div><h2>退款进度</h2><p>订单 ${order.id}</p></div><button class="dialog-close" type="button" data-action="close-refund-progress" aria-label="关闭退款进度">×</button></div><div class="refund-progress-summary"><strong>${completed ? '退款已完成' : '退款处理中'}</strong><span>退款金额 ¥${Number(order.amount).toFixed(2)}，${completed ? '已按原支付方式退回。' : '正在由原支付渠道处理，到账时间以支付平台为准。'}</span></div><div class="refund-progress-timeline">${steps.map(([label, status]) => `<span class="${status}">${label}</span>`).join('')}</div><button class="primary-action" type="button" data-action="close-refund-progress">我知道了</button></section></div>`;
+    }
+
+    function renderMembershipIntroDialog() {
+      if (!state.membershipIntroOpen) return '';
+      const items = [
+        '开通会员可畅玩会员游戏，总价值30w+的正版游戏库存（标准版或默认版本）。启动游戏后绝不顶号、挤号。',
+        '会员属于特殊虚拟商品，开通后无法退款。',
+        '会员游戏库定期更新，但并非所有游戏均能第一时间加入会员游戏库，请理解。',
+        '会员游戏账号池共享，非个人所有。一号一游戏，均为Steam正版账号；非盗版、非假入库、非离线。',
+      ];
+      return `<div class="modal-backdrop membership-intro-backdrop" role="presentation" data-membership-intro><section class="membership-intro-dialog" role="dialog" aria-modal="true" aria-labelledby="membershipIntroTitle"><header><h2 id="membershipIntroTitle">关于会员</h2><button type="button" data-action="close-membership-intro" aria-label="关闭关于会员">×</button></header><ol>${items.map((item) => `<li>${item}</li>`).join('')}</ol><button class="primary-action" type="button" data-action="close-membership-intro">我已了解</button></section></div>`;
+    }
+
+    function renderRentalRiskDialog() {
+      if (!state.riskReminderOpen) return '';
+      return `<div class="modal-backdrop" role="presentation"><section class="policy-dialog rental-risk-dialog" role="alertdialog" aria-modal="true" aria-label="退款权益提醒"><h2>退款权益提醒</h2><p>本单不适用平台额外“3天无理由”承诺。法定退款权利，以及 Steam 登录失败、启动失败、账号异常等履约售后不受影响。</p><div class="dialog-action-row"><button type="button" data-action="close-rental-risk">暂不购买</button><button class="primary-action" type="button" data-action="confirm-rental-risk">确认继续</button></div></section></div>`;
+    }
+
+    function renderNonTargetLaunchGuard() {
+      const guard = state.nonTargetLaunchGuard;
+      if (!guard) return '';
+      const action = guard.rentable
+        ? '<div class="dialog-action-row"><button type="button" data-action="close-non-target-guard">取消</button><button class="primary-action" type="button" data-action="view-target-rental">查看租号方案</button></div>'
+        : '<div><span class="guard-unavailable">暂不可租用</span><button class="primary-action" type="button" data-action="close-non-target-guard" style="width:100%;margin-top:8px">我知道了</button></div>';
+      return `<div class="modal-backdrop" role="presentation"><section class="policy-dialog launch-guard-dialog non-target-launch-guard" role="alertdialog" aria-modal="true" aria-label="当前账号游戏范围提醒"><h2>当前账号仅限本次租用游戏</h2><p>目标游戏不属于本次租赁，不能直接启动。</p><div class="guard-game-pair"><div><span>当前租用游戏</span><strong>${guard.currentGameName}</strong></div><b>→</b><div><span>目标游戏</span><strong>${guard.targetGameName}</strong></div></div>${action}</section></div>`;
+    }
+
     function renderGlobalOverlays() {
-      return `${renderExpiryReminder()}${renderRentalEndedDialog()}${renderNoReasonPolicyDialog()}${renderDeleteOrderConfirm()}${renderLoginMethodDialog()}${renderCredentialPanel()}${state.toast ? `<div class="demo-toast" role="status">${state.toast}</div>` : ''}`;
+      return `${renderExpiryReminder()}${renderRentalEndedDialog()}${renderNoReasonPolicyDialog()}${renderDeleteOrderConfirm()}${renderRefundProgressDialog()}${renderMembershipIntroDialog()}${renderRentalRiskDialog()}${renderNonTargetLaunchGuard()}${renderLoginMethodDialog()}${renderCredentialPanel()}${state.toast ? `<div class="demo-toast" role="status">${state.toast}</div>` : ''}`;
     }
 
     function renderSteamGuard() {
       const remaining = guardRemainingSeconds();
       const ready = state.steamForm.requiresGuard;
+      if (!ready) return '';
       const hasCode = Boolean(state.guardCode && remaining > 0);
       const nextAction = state.guardIssued ? 'refresh-guard' : 'request-guard';
       const nextLabel = state.guardIssued ? '刷新验证码' : '获取验证码';
-      return `<section class="steam-guard ${hasCode ? 'has-code' : ''}" data-guard-expires-at="${state.guardExpiresAt || ''}" aria-label="Steam 令牌验证"><div class="steam-guard-head"><strong>${ready ? 'Steam 令牌验证' : '提交账号密码后获取令牌'}</strong>${hasCode ? '' : `<button type="button" data-action="${nextAction}" ${ready ? '' : 'disabled'}>${nextLabel}</button>`}</div>${hasCode ? `<div class="steam-guard-code"><code data-guard-code>${state.guardCode}</code><span data-guard-remaining="${remaining}">${remaining}s 后失效</span></div><div class="steam-guard-actions"><button type="button" data-action="copy-guard">复制验证码</button><button type="button" data-action="refresh-guard">刷新验证码</button></div>` : ''}</section>`;
+      return `<section class="steam-guard ${hasCode ? 'has-code' : ''}" data-guard-expires-at="${state.guardExpiresAt || ''}" aria-label="Steam 令牌验证"><div class="steam-guard-head"><strong>Steam 令牌验证</strong>${hasCode ? '' : `<button type="button" data-action="${nextAction}">${nextLabel}</button>`}</div>${hasCode ? `<div class="steam-guard-code"><code data-guard-code>${state.guardCode}</code><span data-guard-remaining="${remaining}">${remaining}s 后失效</span></div><div class="steam-guard-actions"><button type="button" data-action="copy-guard">复制验证码</button><button type="button" data-action="refresh-guard">刷新验证码</button></div>` : ''}</section>`;
     }
 
     function renderSteamForm() {
@@ -4336,10 +4621,11 @@
       if (screen === 'checkout' && state.order) {
         const recovery = renderCheckoutRecoveryActions();
         if (recovery) return `<footer class="portrait-fixed-footer">${recovery}</footer>`;
+        const model = getCheckoutAmountModel(state.order);
         const disabled = !state.inventoryAvailable;
         const processing = state.order.status !== 'pending';
         const ready = state.order.status === 'active';
-        return `<footer class="portrait-fixed-footer"><div class="footer-summary"><strong>${ready ? '账号已就绪' : `应付 ¥${Number(state.order.rawAmount ?? state.order.amount).toFixed(2)}`}</strong><span>${ready ? '可立即登录开始游戏' : processing ? '支付成功，正在分配账号' : state.priceChanged ? '请重新确认最新价格' : '请在支付有效期内完成支付'}</span></div><button class="primary-action payment-primary" type="button" data-primary-action="true" data-action="${ready ? 'open-login-method' : state.priceChanged ? 'refresh-price' : 'pay-game-order'}" ${disabled || (processing && !ready) ? 'disabled' : ''}>${ready ? '立即登录' : processing ? '账号分配中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : '立即支付'}</button></footer>`;
+        return `<footer class="portrait-fixed-footer checkout-bottom-bar"><strong>${ready ? '账号已就绪' : model.dueText}</strong><button class="primary-action payment-primary" type="button" data-primary-action="true" data-action="${ready ? 'open-login-method' : state.priceChanged ? 'refresh-price' : 'pay-game-order'}" ${disabled || (processing && !ready) ? 'disabled' : ''}>${ready ? '立即登录' : processing ? '账号分配中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : '立即购买'}</button></footer>`;
       }
       if (screen === 'membership') {
         const plan = MEMBER_PLANS.find(({ id }) => id === state.memberPlan) || MEMBER_PLANS[0];
@@ -4553,8 +4839,7 @@
       const game = getSelectedGame();
       return `<section class="landscape-task-page landscape-detail mac-derived-detail" data-layout="landscape-detail">
         <div class="mac-detail-layout">
-          <article class="landscape-detail-game">${realCrop(game.asset, game.crop, `${game.name} 横屏沉浸主视觉`, '', 'landscape-detail-media')}<button class="landscape-detail-back" type="button" data-action="task-back" aria-label="返回">‹</button><div class="landscape-detail-copy"><span class="rent-badge">动作　冒险游戏</span><h1>${game.name}</h1><p>开放世界冒险体验，以极致画面和沉浸操作呈现精彩旅程。</p></div><div class="landscape-detail-facts"><span><b>3.8　兼容性评价</b><em>★★★★☆</em></span><span><b>☁　云存档</b><em>—</em></span><span><b>◷　游玩时长</b><em>暂无</em></span><span><b>8.3　玩家评分</b><em>特别好评</em></span></div></article>
-          <aside class="landscape-detail-benefits">${renderDetailActions('landscape-detail-action-row')}</aside>
+          <article class="landscape-detail-game">${realCrop(game.asset, game.crop, `${game.name} 横屏沉浸主视觉`, '', 'landscape-detail-media')}<button class="landscape-detail-back" type="button" data-action="task-back" aria-label="返回">‹</button><div class="landscape-detail-copy"><h1>${game.name}</h1><p>开放世界冒险体验，以极致画面和沉浸操作呈现精彩旅程。</p><div class="landscape-detail-genre"><span>动作</span><span>冒险游戏</span></div>${renderDetailActions('landscape-detail-action-row')}</div><div class="landscape-detail-facts"><span><b>3.8　兼容性评价</b><em>★★★★☆</em></span><span><b>☁　云存档</b><em>—</em></span><span><b>◷　游玩时长</b><em>暂无</em></span><span><b>8.3　玩家评分</b><em>特别好评</em></span></div></article>
         </div>
       </section>`;
     }
@@ -4566,8 +4851,8 @@
       return `<section class="landscape-task-page landscape-checkout mac-derived-checkout" data-layout="landscape-checkout">
         ${renderTaskHeader('确认订单')}
         <div class="mac-checkout-layout">
-          <section class="checkout-benefit-column task-scroll-region">${checkoutAlert()}${renderGameContextCard(game, order)}${renderServiceBenefits()}${renderCheckoutSkuOptions(game)}</section>
-          <section class="checkout-purchase-column">${renderPriceSummary(order)}${renderGamePaymentPanel(order)}</section>
+          <section class="checkout-benefit-column task-scroll-region">${checkoutAlert()}${renderGameContextCard(game, order)}${renderServiceBenefits()}</section>
+          <section class="checkout-purchase-column">${renderGamePaymentPanel(game, order)}</section>
         </div>
       </section>`;
     }
@@ -4709,6 +4994,34 @@
       if (action === 'open-membership-from-checkout') {
         if (state.order?.status === 'pending') state.order = null;
         navigate('membership');
+        return;
+      }
+      if (action === 'close-membership-intro') {
+        dismissMembershipIntro();
+        return;
+      }
+      if (action === 'request-rental-checkout') {
+        requestRentalCheckout(target.dataset.gameId || state.selectedGameId);
+        return;
+      }
+      if (action === 'confirm-rental-risk') {
+        confirmRentalRisk();
+        return;
+      }
+      if (action === 'close-rental-risk') {
+        closeRentalRisk();
+        return;
+      }
+      if (action === 'launch-steam-library-game') {
+        attemptRentalAccountLaunch(target.dataset.gameId, { launchRequestId: target.dataset.launchRequestId });
+        return;
+      }
+      if (action === 'view-target-rental') {
+        viewTargetRental();
+        return;
+      }
+      if (action === 'close-non-target-guard') {
+        closeNonTargetLaunchGuard();
         return;
       }
       if (action === 'task-back') {
@@ -4935,6 +5248,11 @@
         renderApp();
         return;
       }
+      if (action === 'close-refund-progress') {
+        state.refundProgressOrderId = null;
+        renderApp();
+        return;
+      }
       if (action === 'cancel-delete-order') {
         state.confirmDeleteOrderId = null;
         renderApp();
@@ -4981,8 +5299,7 @@
         return;
       }
       if (action === 'begin-checkout') {
-        prepareCheckoutForSelectedGame();
-        navigate('checkout');
+        requestRentalCheckout(state.selectedGameId);
         return;
       }
       if (action === 'refresh-price') {
@@ -5043,8 +5360,17 @@
 
     document.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape') return;
-      if (state.noReasonPolicyOpen) {
+      if (state.membershipIntroOpen) {
+        dismissMembershipIntro();
+      } else if (state.riskReminderOpen) {
+        closeRentalRisk();
+      } else if (state.nonTargetLaunchGuard) {
+        closeNonTargetLaunchGuard();
+      } else if (state.noReasonPolicyOpen) {
         state.noReasonPolicyOpen = false;
+        renderApp();
+      } else if (state.refundProgressOrderId) {
+        state.refundProgressOrderId = null;
         renderApp();
       } else if (state.confirmDeleteOrderId) {
         state.confirmDeleteOrderId = null;
@@ -5127,6 +5453,12 @@
       selectRentalPlan,
       setRentalHours,
       quoteRentalOffer,
+      getCheckoutAmountModel,
+      requestRentalCheckout,
+      confirmRentalRisk,
+      setRentalRiskDecision,
+      attemptRentalAccountLaunch,
+      closeNonTargetLaunchGuard,
       createOrder,
       ensureGameOrder,
       createMembershipOrder,
