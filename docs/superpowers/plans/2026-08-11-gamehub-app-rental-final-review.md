@@ -89,7 +89,7 @@ await runRefactorGate('FINAL_SCOPE_PAYMENT_AND_GUARDS', async () => {
     };
   });
   assert.deepEqual(landscapeCheckout, {
-    leftHasProduct: true, leftHasBenefits: true, leftHasPackage: false,
+    leftHasProduct: true, leftHasBenefits: false, leftHasPackage: false,
     rightHasPackage: true, rightHasAmounts: true, rightHasPayment: true, rightHasPurchase: true,
   });
 
@@ -293,7 +293,7 @@ function renderCheckoutAmountSummary(order) {
 
 - [ ] **Step 3: 按确认结构重排横竖屏确认订单**
 
-竖屏在 `renderCheckoutSkuOptions(game)` 与 `renderCheckoutPaymentMethods()` 之间插入 `renderCheckoutAmountSummary(order)`。横屏左栏移除套餐，只保留 `renderGameContextCard()` 和 `renderServiceBenefits()`；右栏的 `renderGamePaymentPanel(game, order)` 按套餐、金额、支付方式、底部支付操作顺序渲染：
+竖屏在 `renderCheckoutSkuOptions(game)` 与 `renderCheckoutPaymentMethods()` 之间插入 `renderCheckoutAmountSummary(order)`。删除确认订单五项权益区；横屏左栏只保留 `renderGameContextCard()`，右栏的 `renderGamePaymentPanel(game, order)` 按套餐、金额、支付方式、底部支付操作顺序渲染：
 
 ```js
 function renderGamePaymentPanel(game, order) {
@@ -322,7 +322,7 @@ function renderGamePaymentPanel(game, order) {
 .landscape-checkout .payment-panel .checkout-bottom-bar { position: sticky; right: auto; bottom: 0; left: auto; z-index: 2; margin-top: auto; padding-top: 10px; background: #222426; }
 ```
 
-`renderPortraitCheckout()` 与横屏布局都不得渲染版本选择器；商品卡继续只读显示游戏名和灰色 `标准版` 副标题。
+`renderPortraitCheckout()` 与横屏布局都不得渲染版本选择器；商品卡继续只读显示游戏名和灰色 `标准版` 副标题。标题栏右上角使用无背景纯文字 `租号介绍`，不显示问号；点击打开功能介绍弹窗，关闭后不得改变套餐、金额与支付方式。`权益方案` 使用独立标题，SKU 按钮另起一行。详情点击、返回重进与标注导航直达确认订单时，统一先创建或复用当前游戏的待支付草稿；正常可售场景不得出现“订单创建失败”。
 
 - [ ] **Step 4: 增加会员中心首次说明弹窗并删除远程协助条款**
 
@@ -1000,7 +1000,7 @@ rg -n "单游永久|首次启动|账号分配中|继续畅玩|列表与详情.*�
 - 周卡未过期从当前到期时间顺延7天，已过期从本次 paidAt 重算；回调按交易号幂等。
 - 订单列表过滤申请售后，详情保留；终态无权益显示租号开玩，有权益显示可畅玩。
 - 非本次租用游戏启动前阻断；退款风险只限制平台额外3天无理由。
-- 确认订单竖屏按“套餐→游戏原价/订单金额→支付方式”展示；横屏左侧商品与权益、右侧套餐/金额/支付；订单金额与需支付同源。
+- 确认订单竖屏按“套餐→游戏原价/订单金额→支付方式”展示；横屏左侧只展示商品、右侧展示套餐/金额/支付；订单金额与需支付同源，右上角纯文字“租号介绍”可打开说明弹窗。
 - 首次进入会员中心展示“关于会员”四点说明；关闭后本次会话不重复出现；不包含远程协助条款。
 - 后台7模块复用 Mac；6页独立 APP/Mac Tab、默认 APP；操作记录不加 Tab。
 ```
@@ -1079,7 +1079,7 @@ Expected: 客户端 `36/36 PASS`，后台 `13/13 PASS`，总计 49 个关键状�
 
 - [ ] **Step 5: 原尺寸人工目检关键图**
 
-至少检查：搜索横竖屏、确认订单横竖屏、会员中心横屏、订单中心横竖屏、Steam 登录横竖屏、6 个 APP 后台页、1 个 Mac 页面和统一操作记录。确认订单重点检查横屏左侧只有商品与权益、右侧依次出现套餐/游戏原价/订单金额/支付方式/支付按钮，低高度下可滚动且按钮可操作；同时检查其他页面的重叠、越界、端别选中、字段错误、敏感信息和后台表格可读性。
+至少检查：搜索横竖屏、确认订单横竖屏、会员中心横屏、订单中心横竖屏、Steam 登录横竖屏、6 个 APP 后台页、1 个 Mac 页面和统一操作记录。确认订单重点检查横屏左侧只有商品、右侧依次出现套餐/游戏原价/订单金额/支付方式/支付按钮，右上角只显示“租号介绍”，低高度下可滚动且按钮可操作；同时检查其他页面的重叠、越界、端别选中、字段错误、敏感信息和后台表格可读性。
 
 - [ ] **Step 6: 提交截图与脚本**
 
@@ -1149,7 +1149,7 @@ Expected: 看板保持完整历史，状态为 `in_review`，不直接置为 `do
 - 首次体验 2 小时严格从服务端 `paidAt` 计时，支付成功消耗资格并隐藏 SKU。
 - 首次体验无用户可见账号分配态，每次启动后台幂等准备账号。
 - 搜索游戏 Tab 双列竖卡；订单列表无申请售后；终态入口按真实权益显示。
-- 确认订单竖屏在套餐与支付方式之间展示游戏原价和订单金额；横屏左侧为商品与权益、右侧为套餐/金额/支付；无版本选择器，订单金额与需支付完全一致。
+- 确认订单竖屏在套餐与支付方式之间展示游戏原价和订单金额；横屏左侧只展示商品、右侧为套餐/金额/支付；无版本选择器和五项权益区，订单金额与需支付完全一致，右上角纯文字“租号介绍”可点击。
 - 首次进入会员中心展示 4 点“关于会员”说明，关闭后本次会话不再展示，任何交付物均无远程协助条款。
 - 非本次租用游戏与退款风险均在进入启动/下单前正确拦截。
 - 周卡续费按未过期顺延、已过期重算，重复回调不重复延长。

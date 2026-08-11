@@ -1093,8 +1093,10 @@
     .task-scroll-region { min-height: 0; overflow-y: auto; scrollbar-width: none; }
     .task-scroll-region::-webkit-scrollbar { display: none; }
     .task-page-head { display: flex; height: 58px; flex: 0 0 auto; align-items: center; gap: 12px; margin: 0; }
-    .task-page-head h1 { margin: 0; color: #fff; font-size: 22px; font-weight: 650; line-height: 1.2; }
+    .task-page-head h1 { min-width: 0; flex: 1 1 auto; margin: 0; color: #fff; font-size: 22px; font-weight: 650; line-height: 1.2; }
     .task-page-head .task-back { width: 44px; height: 44px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 11px; background: rgb(255 255 255 / 5%); }
+    .task-page-action { min-width: 44px; min-height: 44px; flex: 0 0 auto; padding: 0; border: 0; background: transparent; color: #aeb9ca; cursor: pointer; font-size: 12px; font-weight: 520; white-space: nowrap; }
+    .task-page-action:active { color: #fff; }
 
     .device.portrait.task-shell .portrait-content { inset: 34px 0 0; padding: 0 16px 104px; }
     .device.portrait.task-shell .portrait-content--plain { padding-bottom: 24px; }
@@ -1726,6 +1728,7 @@
     .checkout-sku-section { display: grid; gap: 9px; }
     .checkout-option-row { display: grid; min-height: 44px; grid-template-columns: 68px minmax(0, 1fr); align-items: center; gap: 8px; }
     .checkout-option-row > label { color: #fff; font-size: 13px; font-weight: 700; white-space: nowrap; }
+    .checkout-entitlement-section > h2 { margin: 0; color: #fff; font-size: 13px; font-weight: 700; line-height: 20px; }
     .checkout-option-buttons { display: grid; min-width: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
     .checkout-option { min-width: 0; min-height: 44px; padding: 0 5px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 11px; background: rgb(255 255 255 / 4%); color: #d3d5da; cursor: pointer; font-size: 9px; }
     .checkout-option.selected { border-color: rgb(42 157 247 / 68%); background: linear-gradient(135deg, rgb(34 169 255 / 17%), rgb(79 99 255 / 9%)); color: #fff; box-shadow: inset 0 0 0 1px rgb(44 151 245 / 10%); }
@@ -1848,6 +1851,7 @@
     .landscape-checkout .service-benefit-item small { display: none; }
     .landscape-checkout .service-benefit-item > b { display: none; }
     .landscape-checkout .checkout-sku-section { gap: 4px; margin: 0; padding: 7px 8px; }
+    .landscape-checkout .checkout-entitlement-section > h2 { font-size: 10px; line-height: 16px; }
     .landscape-checkout .checkout-option-row { min-height: 34px; grid-template-columns: 58px minmax(0, 1fr); gap: 5px; }
     .landscape-checkout .checkout-option-row > label { font-size: 10px; }
     .landscape-checkout .checkout-option { min-height: 34px; font-size: 8px; }
@@ -2079,6 +2083,7 @@
       membershipStatus: 'none',
       membershipIntroSeen: false,
       membershipIntroOpen: false,
+      rentalIntroOpen: false,
       order: null,
       membershipOrder: null,
       moreDurationOpen: false,
@@ -2756,7 +2761,7 @@
       }
       const selected = defaultCheckoutSku(game, getCheckoutEligibilityContext(game.id));
       state.selectedSku = selected?.id || null;
-      if (state.order?.status === 'pending') state.order = null;
+      state.order = null;
       return selected;
     }
 
@@ -2793,7 +2798,14 @@
       const gameId = state.pendingRentalIntent?.gameId || state.selectedGameId;
       if (!getGameContext(gameId)) return { allowed: false, reason: 'game-not-found' };
       setSelectedGame(gameId, { shouldRender: false });
-      prepareCheckoutForSelectedGame();
+      const selected = prepareCheckoutForSelectedGame();
+      if (!selected || !ensureGameOrder()) {
+        state.pendingRentalIntent = null;
+        state.pendingRiskSnapshot = null;
+        state.riskReminderOpen = false;
+        showToast('当前暂无可用租号套餐');
+        return { allowed: false, reason: 'sku-unavailable' };
+      }
       state.pendingRentalIntent = null;
       state.riskReminderOpen = false;
       navigate('checkout');
@@ -2989,10 +3001,21 @@
     }
 
     function navigate(screen, { rememberSource = true, replaceTask = false } = {}) {
-      if (screen === 'checkout') ensureGameOrder();
+      const current = state.screen;
+      if (screen === 'checkout') {
+        if (current !== 'checkout' && state.order?.status !== 'pending') state.order = null;
+        let checkoutOrder = ensureGameOrder();
+        if (!checkoutOrder) {
+          prepareCheckoutForSelectedGame();
+          checkoutOrder = ensureGameOrder();
+        }
+        if (!checkoutOrder) {
+          showToast('当前暂无可用租号套餐');
+          return false;
+        }
+      }
       if (screen === 'orders') ensureSelectedOrder();
       if (screen === 'membership' && !state.membershipIntroSeen) state.membershipIntroOpen = true;
-      const current = state.screen;
       state.capturePageId = screen;
       if (screen === current) return renderApp();
       if (rememberSource && isCoreScreen(current) && !isCoreScreen(screen)) {
@@ -3011,6 +3034,7 @@
       state.screen = screen;
       renderApp();
       restoreSourceScrollIfNeeded(screen);
+      return true;
     }
 
     function taskBack() {
@@ -3758,6 +3782,7 @@
       state.membershipStatus = 'none';
       state.membershipIntroSeen = false;
       state.membershipIntroOpen = false;
+      state.rentalIntroOpen = false;
       state.order = null;
       state.membershipOrder = null;
       state.moreDurationOpen = false;
@@ -4129,12 +4154,16 @@
       </section>`;
     }
 
-    function renderTaskHeader(title) {
-      return `<header class="task-page-head"><button class="task-back back-button" type="button" data-action="task-back" aria-label="返回"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><h1>${title}</h1></header>`;
+    function renderTaskHeader(title, trailingAction = '') {
+      return `<header class="task-page-head"><button class="task-back back-button" type="button" data-action="task-back" aria-label="返回"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><h1>${title}</h1>${trailingAction}</header>`;
     }
 
     function subpageHead(title) {
       return renderTaskHeader(title);
+    }
+
+    function renderCheckoutHeader() {
+      return renderTaskHeader('确认订单', '<button class="task-page-action rental-intro-entry" type="button" data-action="open-rental-intro">租号介绍</button>');
     }
 
     function renderCheckoutSkuOptions(game) {
@@ -4150,7 +4179,7 @@
         return `<button class="checkout-option ${state.selectedSku === sku.id ? 'selected' : ''}" type="button" data-action="select-checkout-sku" data-sku="${sku.id}" data-sku-kind="${sku.id}" aria-pressed="${state.selectedSku === sku.id}">${label}</button>`;
       }).join('');
       const membership = '<button class="checkout-option" type="button" data-action="open-membership-from-checkout" data-sku-kind="membership">开会员</button>';
-      return `<section class="checkout-sku-section checkout-panel" data-sale-mode="${mode}"><div class="checkout-option-row" data-checkout-field="entitlement"><label>权益方案</label><div class="checkout-option-buttons">${optionButtons}${membership}</div></div>${skus.length ? '' : '<div class="state-alert">当前没有可购买的畅玩方式，请返回详情。</div>'}</section>`;
+      return `<section class="checkout-sku-section checkout-entitlement-section checkout-panel" data-sale-mode="${mode}"><h2>权益方案</h2><div class="checkout-option-buttons" data-checkout-field="entitlement">${optionButtons}${membership}</div>${skus.length ? '' : '<div class="state-alert">当前没有可购买的畅玩方式，请返回详情。</div>'}</section>`;
     }
 
     function detailPrimaryMeta() {
@@ -4240,17 +4269,6 @@
       return `<article class="game-context-card checkout-product">${realCrop(game.asset, game.crop, `${gameName} 游戏封面`, '', 'checkout-cover')}<div><h2 class="checkout-product-name">${gameName}</h2><p class="checkout-product-edition">标准版</p></div></article>`;
     }
 
-    function renderServiceBenefits() {
-      const benefits = [
-        ['100% 正版', '家庭共享官方正版'],
-        ['一键启动', '开始游戏仅需一键'],
-        ['永不顶号', '游戏期间独占不限制'],
-        ['存档无忧', '自动同步个人存档'],
-        ['3天无理由', '符合规则可申请退款'],
-      ];
-      return `<section class="service-benefits"><div class="detail-section-head"><h2>租号权益</h2><span>5项保障</span></div><div class="service-benefit-list">${benefits.map(([title, note]) => title === '3天无理由' ? `<button class="service-benefit-item policy-entry" type="button" data-action="open-no-reason-policy"><span class="benefit-check">✓</span><span><strong>${title}</strong><small>${note}</small></span><b>›</b></button>` : `<div class="service-benefit-item"><span class="benefit-check">✓</span><span><strong>${title}</strong><small>${note}</small></span></div>`).join('')}</div></section>`;
-    }
-
     function renderGamePaymentPanel(game, order) {
       const model = getCheckoutAmountModel(order);
       const disabled = !state.inventoryAvailable;
@@ -4280,12 +4298,11 @@
     function renderPortraitCheckout() {
       const game = getSelectedGame();
       const order = state.order;
-      if (!order) return `${subpageHead('确认订单', 'detail')}<div class="state-alert">订单创建失败，请返回详情重新选择。</div>`;
+      if (!order) return `${renderCheckoutHeader()}<div class="state-alert">当前暂无可用租号套餐，请返回游戏详情。</div>`;
       return `<section class="portrait-checkout" data-layout="portrait-checkout">
-        ${subpageHead('确认订单', 'detail')}
+        ${renderCheckoutHeader()}
         ${checkoutAlert()}
         ${renderGameContextCard(game, order)}
-        ${renderServiceBenefits()}
         ${renderCheckoutSkuOptions(game)}
         ${renderCheckoutAmountSummary(order)}
         ${renderCheckoutPaymentMethods()}
@@ -4571,6 +4588,11 @@
       return `<div class="modal-backdrop membership-intro-backdrop" role="presentation" data-membership-intro><section class="membership-intro-dialog" role="dialog" aria-modal="true" aria-labelledby="membershipIntroTitle"><header><h2 id="membershipIntroTitle">关于会员</h2><button type="button" data-action="close-membership-intro" aria-label="关闭关于会员">×</button></header><ol>${items.map((item) => `<li>${item}</li>`).join('')}</ol><button class="primary-action" type="button" data-action="close-membership-intro">我已了解</button></section></div>`;
     }
 
+    function renderRentalIntroDialog() {
+      if (!state.rentalIntroOpen) return '';
+      return `<div class="modal-backdrop" data-action="close-rental-intro" role="presentation" data-rental-intro><section class="policy-dialog rental-intro-dialog" role="dialog" aria-modal="true" aria-labelledby="rentalIntroTitle"><div class="credential-head"><div><h2 id="rentalIntroTitle">租号功能介绍</h2><p>购买前请确认以下使用规则</p></div><button class="dialog-close" type="button" data-action="close-rental-intro" aria-label="关闭租号介绍">×</button></div><div class="policy-rule-list"><p><strong>限时使用</strong><span>租号服务提供游戏账号的限时使用权，不代表购买游戏所有权。</span></p><p><strong>体验计时</strong><span>首次体验固定 2 小时，从服务端支付成功时间开始计时。</span></p><p><strong>终身一次</strong><span>每位用户在整个游戏平台终身只能使用 1 次首次体验，使用后其他游戏不再展示该方案。</span></p></div><button class="primary-action" type="button" data-action="close-rental-intro">我已了解</button></section></div>`;
+    }
+
     function renderRentalRiskDialog() {
       if (!state.riskReminderOpen) return '';
       return `<div class="modal-backdrop" role="presentation"><section class="policy-dialog rental-risk-dialog" role="alertdialog" aria-modal="true" aria-label="退款权益提醒"><h2>退款权益提醒</h2><p>本单不适用平台额外“3天无理由”承诺。法定退款权利，以及 Steam 登录失败、启动失败、账号异常等履约售后不受影响。</p><div class="dialog-action-row"><button type="button" data-action="close-rental-risk">暂不购买</button><button class="primary-action" type="button" data-action="confirm-rental-risk">确认继续</button></div></section></div>`;
@@ -4586,7 +4608,7 @@
     }
 
     function renderGlobalOverlays() {
-      return `${renderExpiryReminder()}${renderRentalEndedDialog()}${renderNoReasonPolicyDialog()}${renderDeleteOrderConfirm()}${renderRefundProgressDialog()}${renderMembershipIntroDialog()}${renderRentalRiskDialog()}${renderNonTargetLaunchGuard()}${renderLoginMethodDialog()}${renderCredentialPanel()}${state.toast ? `<div class="demo-toast" role="status">${state.toast}</div>` : ''}`;
+      return `${renderExpiryReminder()}${renderRentalEndedDialog()}${renderNoReasonPolicyDialog()}${renderDeleteOrderConfirm()}${renderRefundProgressDialog()}${renderMembershipIntroDialog()}${renderRentalIntroDialog()}${renderRentalRiskDialog()}${renderNonTargetLaunchGuard()}${renderLoginMethodDialog()}${renderCredentialPanel()}${state.toast ? `<div class="demo-toast" role="status">${state.toast}</div>` : ''}`;
     }
 
     function renderSteamGuard() {
@@ -4847,11 +4869,11 @@
     function renderLandscapeCheckout() {
       const game = getSelectedGame();
       const order = state.order;
-      if (!order) return '<section class="landscape-stub landscape-checkout"><div><h1>确认订单</h1><p>订单创建失败，请返回详情重新选择。</p></div></section>';
+      if (!order) return `<section class="landscape-task-page landscape-checkout mac-derived-checkout" data-layout="landscape-checkout">${renderCheckoutHeader()}<div class="state-alert">当前暂无可用租号套餐，请返回游戏详情。</div></section>`;
       return `<section class="landscape-task-page landscape-checkout mac-derived-checkout" data-layout="landscape-checkout">
-        ${renderTaskHeader('确认订单')}
+        ${renderCheckoutHeader()}
         <div class="mac-checkout-layout">
-          <section class="checkout-benefit-column task-scroll-region">${checkoutAlert()}${renderGameContextCard(game, order)}${renderServiceBenefits()}</section>
+          <section class="checkout-benefit-column task-scroll-region">${checkoutAlert()}${renderGameContextCard(game, order)}</section>
           <section class="checkout-purchase-column">${renderGamePaymentPanel(game, order)}</section>
         </div>
       </section>`;
@@ -5248,6 +5270,16 @@
         renderApp();
         return;
       }
+      if (action === 'open-rental-intro') {
+        state.rentalIntroOpen = true;
+        renderApp();
+        return;
+      }
+      if (action === 'close-rental-intro') {
+        state.rentalIntroOpen = false;
+        renderApp();
+        return;
+      }
       if (action === 'close-refund-progress') {
         state.refundProgressOrderId = null;
         renderApp();
@@ -5362,6 +5394,9 @@
       if (event.key !== 'Escape') return;
       if (state.membershipIntroOpen) {
         dismissMembershipIntro();
+      } else if (state.rentalIntroOpen) {
+        state.rentalIntroOpen = false;
+        renderApp();
       } else if (state.riskReminderOpen) {
         closeRentalRisk();
       } else if (state.nonTargetLaunchGuard) {

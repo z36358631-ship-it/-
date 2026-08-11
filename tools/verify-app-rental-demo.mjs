@@ -1003,14 +1003,14 @@ async function main() {
       checkCheckout(landscapeCheckout.columnsSeparated, '横屏确认订单没有形成真实左右两栏');
       checkCheckout(
         landscapeCheckout.leftHasProduct
-          && landscapeCheckout.leftHasBenefits
-          && landscapeCheckout.leftBenefitCount === 5
+          && !landscapeCheckout.leftHasBenefits
+          && landscapeCheckout.leftBenefitCount === 0
           && !landscapeCheckout.leftHasPackage
           && !landscapeCheckout.leftHasAmounts
           && !landscapeCheckout.leftHasPayment
           && !landscapeCheckout.rightHasProduct
           && !landscapeCheckout.rightHasBenefits,
-        `横屏左栏不是仅商品与五项权益：${JSON.stringify(landscapeCheckout)}`,
+        `横屏左栏不是仅商品：${JSON.stringify(landscapeCheckout)}`,
       );
       checkCheckout(
         landscapeCheckout.rightHasPackage
@@ -1057,6 +1057,140 @@ async function main() {
       );
       assert(failures.length === 0, `确认订单金额与布局契约失败：${failures.join('；')}`);
       process.stdout.write('FINAL_CHECKOUT_AMOUNT_LAYOUT 39/39 PASS\n');
+    });
+
+    await runRefactorGate('FINAL_CHECKOUT_RENTAL_INTRO', async () => {
+      const failures = [];
+      const checkCheckoutEntry = (condition, message) => {
+        if (!condition) failures.push(message);
+      };
+      checkCheckoutEntry(!templateSource.includes('订单创建失败'), '确认订单仍保留“订单创建失败”死路文案');
+      checkCheckoutEntry(!templateSource.includes('renderServiceBenefits'), '确认订单仍渲染旧五项租号权益区');
+
+      for (const orientation of ['portrait', 'landscape']) {
+        await reloadDemo();
+        const entry = await page.evaluate((nextOrientation) => {
+          const api = window.__appRentalDemo;
+          api.openCaptureState('detail');
+          api.setOrientation(nextOrientation);
+          document.querySelector('[data-action="begin-checkout"]')?.click();
+          const snapshot = api.snapshot();
+          const rootNode = document.querySelector('#appRentalDemo');
+          return {
+            orientation: nextOrientation,
+            screen: snapshot.screen,
+            orderId: snapshot.order?.id || null,
+            orderStatus: snapshot.order?.status || null,
+            selectedSku: snapshot.selectedSku,
+            amount: snapshot.order?.rawAmount,
+            paymentMethod: snapshot.order?.paymentMethod,
+            failureVisible: rootNode?.innerText.includes('订单创建失败') || false,
+            headerAction: rootNode?.querySelector('[data-action="open-rental-intro"]')?.textContent.trim() || '',
+            benefits: rootNode?.querySelectorAll('.service-benefits').length || 0,
+            product: Boolean(rootNode?.querySelector('.checkout-product')),
+            packagePanel: Boolean(rootNode?.querySelector('.checkout-sku-section')),
+            amountPanel: Boolean(rootNode?.querySelector('[data-checkout-amount-summary]')),
+            paymentPanel: Boolean(rootNode?.querySelector('.checkout-payment-row')),
+          };
+        }, orientation);
+        checkCheckoutEntry(
+          entry.screen === 'checkout'
+            && Boolean(entry.orderId)
+            && entry.orderStatus === 'pending'
+            && !entry.failureVisible,
+          `${orientation} 详情进入确认订单未稳定创建待支付草稿：${JSON.stringify(entry)}`,
+        );
+        checkCheckoutEntry(
+          entry.headerAction === '租号介绍'
+            && !entry.headerAction.includes('?')
+            && entry.benefits === 0
+            && entry.product
+            && entry.packagePanel
+            && entry.amountPanel
+            && entry.paymentPanel,
+          `${orientation} 确认订单入口、旧权益清理或基础结构错误：${JSON.stringify(entry)}`,
+        );
+
+        const intro = await page.evaluate(() => {
+          const api = window.__appRentalDemo;
+          const before = api.snapshot();
+          document.querySelector('[data-action="open-rental-intro"]')?.click();
+          const dialog = document.querySelector('[data-rental-intro]');
+          const text = dialog?.textContent.replace(/\s+/g, ' ').trim() || '';
+          const visible = Boolean(dialog && dialog.getBoundingClientRect().width > 0 && dialog.getBoundingClientRect().height > 0);
+          document.querySelector('[data-action="close-rental-intro"]')?.click();
+          const after = api.snapshot();
+          return {
+            visible,
+            text,
+            closed: !document.querySelector('[data-rental-intro]'),
+            before: {
+              selectedSku: before.selectedSku,
+              amount: before.order?.rawAmount,
+              paymentMethod: before.order?.paymentMethod,
+            },
+            after: {
+              selectedSku: after.selectedSku,
+              amount: after.order?.rawAmount,
+              paymentMethod: after.order?.paymentMethod,
+            },
+          };
+        });
+        checkCheckoutEntry(
+          intro.visible
+            && intro.closed
+            && intro.text.includes('限时使用权')
+            && intro.text.includes('不代表购买游戏所有权')
+            && intro.text.includes('支付成功时间')
+            && intro.text.includes('整个游戏平台终身只能使用 1 次首次体验'),
+          `${orientation} 租号介绍弹窗内容或关闭交互错误：${JSON.stringify(intro)}`,
+        );
+        checkCheckoutEntry(
+          JSON.stringify(intro.before) === JSON.stringify(intro.after),
+          `${orientation} 关闭租号介绍后套餐、金额或支付方式被改动：${JSON.stringify(intro)}`,
+        );
+
+        const repeatEntry = await page.evaluate(() => {
+          const api = window.__appRentalDemo;
+          api.taskBack();
+          document.querySelector('[data-action="begin-checkout"]')?.click();
+          const snapshot = api.snapshot();
+          return {
+            screen: snapshot.screen,
+            orderId: snapshot.order?.id || null,
+            orderStatus: snapshot.order?.status || null,
+            failureVisible: document.querySelector('#appRentalDemo')?.innerText.includes('订单创建失败') || false,
+          };
+        });
+        checkCheckoutEntry(
+          repeatEntry.screen === 'checkout'
+            && Boolean(repeatEntry.orderId)
+            && repeatEntry.orderStatus === 'pending'
+            && !repeatEntry.failureVisible,
+          `${orientation} 返回详情后再次进入确认订单失败：${JSON.stringify(repeatEntry)}`,
+        );
+
+        const directEntry = await page.evaluate(() => {
+          const api = window.__appRentalDemo;
+          const snapshot = api.openCaptureState('checkout');
+          return {
+            screen: snapshot.screen,
+            orderId: snapshot.order?.id || null,
+            orderStatus: snapshot.order?.status || null,
+            failureVisible: document.querySelector('#appRentalDemo')?.innerText.includes('订单创建失败') || false,
+          };
+        });
+        checkCheckoutEntry(
+          directEntry.screen === 'checkout'
+            && Boolean(directEntry.orderId)
+            && directEntry.orderStatus === 'pending'
+            && !directEntry.failureVisible,
+          `${orientation} 标注导航直达确认订单失败：${JSON.stringify(directEntry)}`,
+        );
+      }
+
+      assert(failures.length === 0, `确认订单入口与租号介绍契约失败：${failures.join('；')}`);
+      process.stdout.write('FINAL_CHECKOUT_RENTAL_INTRO 18/18 PASS\n');
     });
 
     await runRefactorGate('FINAL_ORDER_ACTIONS', async () => {
@@ -3801,8 +3935,11 @@ async function main() {
       window.__appRentalDemo.setScenario('not-member-library');
       window.__appRentalDemo.navigate('checkout');
     });
-    const benefitCopy = await page.locator('.service-benefits').innerText();
-    checkReviewFix(benefitCopy.includes('永不顶号') && !benefitCopy.includes('永久账号'), '服务保障必须使用“永不顶号”，不得承诺“永久账号”');
+    const checkoutIntroEntry = await page.evaluate(() => ({
+      benefits: document.querySelectorAll('.service-benefits').length,
+      entry: document.querySelector('[data-action="open-rental-intro"]')?.textContent.trim() || '',
+    }));
+    checkReviewFix(checkoutIntroEntry.benefits === 0 && checkoutIntroEntry.entry === '租号介绍', `确认订单必须移除五项权益并显示纯文字租号介绍：${JSON.stringify(checkoutIntroEntry)}`);
 
     await page.evaluate(() => window.__appRentalDemo.navigate('membership'));
     const portraitMembershipOrder = await page.evaluate(() => {

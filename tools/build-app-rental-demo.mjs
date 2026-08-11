@@ -79,7 +79,8 @@ const requiredBusinessSignatures = Object.freeze([
   'getCheckoutEligibilityContext',
   'setRentalHours',
   'resolveDetailActions',
-  "label: '•••'",
+  "label: '更多'",
+  "icon: 'more'",
   "icon: 'quick-play'",
   "acquisitionMode: 'free'",
   'renderMembershipValue',
@@ -95,6 +96,13 @@ const requiredBusinessSignatures = Object.freeze([
   'THIRD_PARTY_LOGIN_CONFIGS',
   'requestThirdPartyCode',
   'steam-credential-sheet',
+  'checkout-product-edition',
+  'checkout-payment-row',
+  'detail-more-icon',
+  'renderRefundProgressDialog',
+  'data-action="open-rental-intro"',
+  'data-rental-intro',
+  "state.toast = '登录成功，已返回游戏库'",
 ]);
 
 function assertBusinessScriptSignatures(label, source) {
@@ -119,6 +127,12 @@ function assertBusinessScriptSignatures(label, source) {
   }
   if (source.includes("memberPlan: 'permanent'") || source.includes('data-plan="permanent"')) {
     throw new Error(`${label} 会员中心仍提供永久套餐`);
+  }
+  if (source.includes('renderGamePaymentQr') || source.includes('renderCheckoutAgreement') || source.includes('renderPriceSummary') || source.includes('一键上号失败') || source.includes('提交账号密码后获取令牌')) {
+    throw new Error(`${label} 仍保留第八轮已删除的确认订单或一键上号失败结构`);
+  }
+  if (source.includes('renderServiceBenefits') || source.includes('订单创建失败')) {
+    throw new Error(`${label} 仍保留已删除的五项权益区或确认订单失败死路`);
   }
 }
 
@@ -166,6 +180,26 @@ if (fs.existsSync(annotationPath)) {
   annotation = annotation.replace(
     '受首屏高度限制预览前4款，完整8款通过“查看全部”进入会员游戏库；预览卡同步显示云存档支持标识。',
     '受首屏高度限制预览前4款，完整8款通过“查看全部”进入会员游戏库；云存档支持标识位于封面下方信息区，不叠加在封面上。',
+  );
+  annotation = annotation.replace(
+    '商品卡在游戏名下用灰色副标题只读显示“标准版”；顺序为商品、五项权益、套餐、游戏原价/订单金额、支付方式和固定支付栏。',
+    '商品卡在游戏名下用灰色副标题只读显示“标准版”；顺序为商品、套餐、游戏原价/订单金额、支付方式和固定支付栏；右上角只显示纯文字“租号介绍”。',
+  );
+  annotation = annotation.replaceAll(
+    '左栏只放商品与五项权益；右栏按套餐、游戏原价/订单金额、支付方式、需支付与立即购买排列，低高度时右栏内部滚动。',
+    '左栏只放商品；右栏按套餐、游戏原价/订单金额、支付方式、需支付与立即购买排列，低高度时右栏内部滚动。',
+  );
+  annotation = annotation.replace(
+    '套餐变化后重建草稿；订单金额、需支付与支付请求精确读取同一订单快照。',
+    '进入页面前先创建或复用待支付草稿；套餐变化后重建草稿；租号介绍弹窗关闭后保留套餐、金额和支付方式。',
+  );
+  annotation = annotation.replace(
+    '不显示版本选择器；开会员清除游戏待支付草稿并进入会员中心，不生成游戏订单；首次资格失效时移除首次体验。',
+    '不显示版本选择器和五项权益区；正常可售场景不得出现订单创建失败；开会员清除游戏待支付草稿并进入会员中心，不生成游戏订单；首次资格失效时移除首次体验。',
+  );
+  annotation = annotation.replace(
+    '左侧仅商品和五项权益；右侧按套餐、游戏原价/订单金额、支付方式和支付栏排列，并允许低高度内部滚动。',
+    '左侧仅商品；右侧按套餐、游戏原价/订单金额、支付方式和支付栏排列，并允许低高度内部滚动。',
   );
   writeTextWithRetry(annotationPath, annotation);
 
