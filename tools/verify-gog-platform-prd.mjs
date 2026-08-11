@@ -58,6 +58,7 @@ const requiredRules = [
   '切换启动平台',
   '搜索结果',
   'sourcePlatform',
+  'sourcePlatform=gog',
   'gameId',
   'platformAppId',
   'Steam > EPIC > GOG',
@@ -75,6 +76,7 @@ const requiredRules = [
 for (const token of requiredRules) {
   assert(prd.includes(token), `Missing PRD rule: ${token}`);
 }
+assert(!prd.includes('sourcePlatform=GOG'), 'sourcePlatform enum must use lowercase gog');
 console.log('PASS rules');
 
 const forbiddenPlaceholders = [
