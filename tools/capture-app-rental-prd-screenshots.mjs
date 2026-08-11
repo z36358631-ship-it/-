@@ -429,14 +429,18 @@ async function verifyShotState(page, shot) {
     assert.equal((await page.locator('.checkout-product-edition').innerText()).trim(), '标准版', `${shot.name} product edition subtitle mismatch`);
     assert.equal(await page.locator('[data-checkout-field="rental-plan"] .checkout-option').count(), 3, `${shot.name} rental-plan count mismatch`);
     assert.equal(await page.locator('[data-hour-shortcut]').count(), 3, `${shot.name} hour shortcut count mismatch`);
-    assert.equal(await page.locator('.service-benefit-item').count(), 0, `${shot.name} must not restore the removed five generic benefits`);
-    assert.equal(await page.locator('[data-checkout-entitlement-copy][data-entitlement-kind="time-rental"]').count(), 1, `${shot.name} dynamic rental entitlement copy mismatch`);
-    assert((await page.locator('[data-checkout-entitlement-copy]').innerText()).includes('限时使用权'), `${shot.name} rental entitlement copy is incomplete`);
+    assert.equal(await page.locator('.service-benefit-item').count(), 5, `${shot.name} must keep the previous five rental benefits`);
+    assert.deepEqual(
+      await page.locator('.service-benefit-item strong').allInnerTexts(),
+      ['100% 正版', '一键启动', '永不顶号', '存档无忧', '3天无理由'],
+      `${shot.name} rental benefits mismatch`,
+    );
+    assert.equal(await page.locator('[data-checkout-entitlement-copy]').count(), 0, `${shot.name} must not show the replacement dynamic entitlement card`);
     if (shot.orientation === 'landscape') {
       const firstScreen = await page.evaluate(() => {
         const left = document.querySelector('.checkout-benefit-column')?.getBoundingClientRect();
         const right = document.querySelector('.checkout-purchase-column')?.getBoundingClientRect();
-        const benefits = document.querySelector('[data-checkout-entitlement-copy]')?.getBoundingClientRect();
+        const benefits = document.querySelector('.service-benefits')?.getBoundingClientRect();
         const options = document.querySelector('.checkout-sku-section')?.getBoundingClientRect();
         return Boolean(left && right && benefits && options
           && benefits.top >= left.top && benefits.bottom <= left.bottom + 1

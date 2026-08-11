@@ -1892,21 +1892,6 @@
     .landscape-checkout .payment-panel .payment-primary { position: static; width: auto; min-height: 44px; margin: 0; }
     .landscape-checkout .checkout-benefit-column .checkout-product p.checkout-product-edition { display: block; }
 
-    .checkout-entitlement-copy { margin-bottom: 12px; padding: 12px 14px; border: 1px solid rgb(58 157 239 / 20%); border-radius: 17px; background: linear-gradient(135deg, rgb(37 118 190 / 10%), rgb(255 255 255 / 3%)); }
-    .checkout-entitlement-copy header { display: grid; grid-template-columns: 24px minmax(0, 1fr); align-items: start; gap: 9px; }
-    .checkout-entitlement-mark { display: grid; width: 24px; height: 24px; place-items: center; border-radius: 8px; background: rgb(42 157 247 / 14%); color: #72c8ff; font-size: 12px; font-weight: 700; }
-    .checkout-entitlement-copy strong { display: block; color: #fff; font-size: 13px; line-height: 20px; }
-    .checkout-entitlement-copy p { margin: 3px 0 0; color: #959aa5; font-size: 10px; line-height: 16px; }
-    .checkout-entitlement-facts { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
-    .checkout-entitlement-facts span { min-height: 24px; padding: 0 8px; border-radius: 999px; background: rgb(255 255 255 / 5%); color: #c9ccd4; font-size: 8px; line-height: 24px; white-space: nowrap; }
-    .landscape-checkout .checkout-entitlement-copy { margin: 0; padding: 9px 10px; border-radius: 11px; }
-    .landscape-checkout .checkout-entitlement-copy header { grid-template-columns: 20px minmax(0, 1fr); gap: 7px; }
-    .landscape-checkout .checkout-entitlement-mark { width: 20px; height: 20px; border-radius: 6px; font-size: 9px; }
-    .landscape-checkout .checkout-entitlement-copy strong { font-size: 10px; line-height: 15px; }
-    .landscape-checkout .checkout-entitlement-copy p { margin-top: 2px; font-size: 8px; line-height: 12px; }
-    .landscape-checkout .checkout-entitlement-facts { gap: 4px; margin-top: 6px; }
-    .landscape-checkout .checkout-entitlement-facts span { min-height: 20px; padding: 0 6px; font-size: 7px; line-height: 20px; }
-
     .membership-status-stack { display: grid; flex: 0 0 auto; justify-items: end; gap: 4px; }
     .membership-validity { color: #a5a8b0; font-family: var(--font-number); font-size: 8px; white-space: nowrap; }
     .membership-checkout-bar strong { color: #fff; }
@@ -4461,34 +4446,15 @@
       return `<article class="game-context-card checkout-product">${realCrop(game.asset, game.crop, `${gameName} 游戏封面`, '', 'checkout-cover')}<div><h2 class="checkout-product-name">${gameName}</h2><p class="checkout-product-edition">标准版</p></div></article>`;
     }
 
-    function getCheckoutEntitlementCopy(order = state.order) {
-      if (order?.saleMode === GAME_SALE_MODES.TIME_RENTAL) {
-        return {
-          kind: 'time-rental',
-          title: `${order.durationLabel || '当前租期'}租号权益`,
-          description: '获得所选租期内的游戏账号限时使用权，不包含游戏所有权。',
-          facts: [order.durationLabel || '当前租期', '限所购租期使用', '租期结束自动失效'],
-        };
-      }
-      if (order?.sku === 'trial' || state.selectedSku === 'trial') {
-        return {
-          kind: 'trial',
-          title: '首次体验 · 2小时',
-          description: '用于首次了解游戏，支付成功即生效并消耗首次体验资格。',
-          facts: ['固定2小时', '从支付成功开始计时', '整个游戏平台终身仅可体验1次'],
-        };
-      }
-      return {
-        kind: 'permanent',
-        title: '单游戏永久',
-        description: '获得当前游戏标准版的长期畅玩权益，购买后持续有效。',
-        facts: ['仅限当前游戏', '标准版', '购买后长期有效'],
-      };
-    }
-
-    function renderCheckoutEntitlementCopy(order = state.order) {
-      const copy = getCheckoutEntitlementCopy(order);
-      return `<section class="checkout-entitlement-copy" data-checkout-entitlement-copy data-entitlement-kind="${copy.kind}"><header><span class="checkout-entitlement-mark">✓</span><div><strong>${copy.title}</strong><p>${copy.description}</p></div></header><div class="checkout-entitlement-facts">${copy.facts.map((item) => `<span>${item}</span>`).join('')}</div></section>`;
+    function renderServiceBenefits() {
+      const benefits = [
+        ['100% 正版', '家庭共享官方正版'],
+        ['一键启动', '开始游戏仅需一键'],
+        ['永不顶号', '游戏期间独占不限制'],
+        ['存档无忧', '自动同步个人存档'],
+        ['3天无理由', '符合规则可申请退款'],
+      ];
+      return `<section class="service-benefits"><div class="detail-section-head"><h2>租号权益</h2><span>5项保障</span></div><div class="service-benefit-list">${benefits.map(([title, note]) => title === '3天无理由' ? `<button class="service-benefit-item policy-entry" type="button" data-action="open-no-reason-policy"><span class="benefit-check">✓</span><span><strong>${title}</strong><small>${note}</small></span><b>›</b></button>` : `<div class="service-benefit-item"><span class="benefit-check">✓</span><span><strong>${title}</strong><small>${note}</small></span></div>`).join('')}</div></section>`;
     }
 
     function getCheckoutCompletionMeta(order) {
@@ -4535,7 +4501,7 @@
         ${renderCheckoutHeader()}
         ${checkoutAlert()}
         ${renderGameContextCard(game, order)}
-        ${renderCheckoutEntitlementCopy(order)}
+        ${renderServiceBenefits()}
         ${renderCheckoutSkuOptions(game)}
         ${renderCheckoutAmountSummary(order)}
         ${renderCheckoutPaymentMethods()}
@@ -5133,7 +5099,7 @@
       return `<section class="landscape-task-page landscape-checkout mac-derived-checkout" data-layout="landscape-checkout">
         ${renderCheckoutHeader()}
         <div class="mac-checkout-layout">
-          <section class="checkout-benefit-column task-scroll-region">${checkoutAlert()}${renderGameContextCard(game, order)}${renderCheckoutEntitlementCopy(order)}</section>
+          <section class="checkout-benefit-column task-scroll-region">${checkoutAlert()}${renderGameContextCard(game, order)}${renderServiceBenefits()}</section>
           <section class="checkout-purchase-column">${renderGamePaymentPanel(game, order)}</section>
         </div>
       </section>`;

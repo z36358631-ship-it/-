@@ -1014,14 +1014,14 @@ async function main() {
       checkCheckout(landscapeCheckout.columnsSeparated, '横屏确认订单没有形成真实左右两栏');
       checkCheckout(
         landscapeCheckout.leftHasProduct
-          && !landscapeCheckout.leftHasBenefits
-          && landscapeCheckout.leftBenefitCount === 0
+          && landscapeCheckout.leftHasBenefits
+          && landscapeCheckout.leftBenefitCount === 5
           && !landscapeCheckout.leftHasPackage
           && !landscapeCheckout.leftHasAmounts
           && !landscapeCheckout.leftHasPayment
           && !landscapeCheckout.rightHasProduct
           && !landscapeCheckout.rightHasBenefits,
-        `横屏左栏不是仅商品：${JSON.stringify(landscapeCheckout)}`,
+        `横屏左栏不是商品加上一版五项租号权益：${JSON.stringify(landscapeCheckout)}`,
       );
       checkCheckout(
         landscapeCheckout.rightHasPackage
@@ -1076,7 +1076,7 @@ async function main() {
         if (!condition) failures.push(message);
       };
       checkCheckoutEntry(!templateSource.includes('订单创建失败'), '确认订单仍保留“订单创建失败”死路文案');
-      checkCheckoutEntry(!templateSource.includes('renderServiceBenefits'), '确认订单仍渲染旧五项租号权益区');
+      checkCheckoutEntry(templateSource.includes('renderServiceBenefits'), '确认订单未恢复上一版五项租号权益区');
 
       for (const orientation of ['portrait', 'landscape']) {
         await reloadDemo();
@@ -1114,12 +1114,12 @@ async function main() {
         checkCheckoutEntry(
           entry.headerAction === '租号介绍'
             && !entry.headerAction.includes('?')
-            && entry.benefits === 0
+            && entry.benefits === 1
             && entry.product
             && entry.packagePanel
             && entry.amountPanel
             && entry.paymentPanel,
-          `${orientation} 确认订单入口、旧权益清理或基础结构错误：${JSON.stringify(entry)}`,
+          `${orientation} 确认订单入口、上一版租号权益或基础结构错误：${JSON.stringify(entry)}`,
         );
 
         const intro = await page.evaluate(() => {
@@ -1208,42 +1208,55 @@ async function main() {
       process.stdout.write('FINAL_CHECKOUT_RENTAL_INTRO 18/18 PASS\n');
     });
 
-    await runRefactorGate('FINAL_DYNAMIC_ENTITLEMENT_COPY', async () => {
+    await runRefactorGate('FINAL_RENTAL_BENEFITS', async () => {
       await reloadDemo();
       const result = await page.evaluate(() => {
         const api = window.__appRentalDemo;
-        const readCopy = () => {
-          const node = document.querySelector('[data-checkout-entitlement-copy]');
+        const readBenefits = () => {
+          const node = document.querySelector('.service-benefits');
           return {
-            kind: node?.dataset.entitlementKind || '',
+            title: node?.querySelector('h2')?.textContent.trim() || '',
+            summary: node?.querySelector('.detail-section-head span')?.textContent.trim() || '',
+            items: [...(node?.querySelectorAll('.service-benefit-item strong') || [])].map((item) => item.textContent.trim()),
             text: node?.innerText.replace(/\s+/g, ' ').trim() || '',
             visible: Boolean(node && node.getBoundingClientRect().width > 0 && node.getBoundingClientRect().height > 0),
-            oldBenefits: document.querySelectorAll('.service-benefits').length,
+            policyButton: Boolean(node?.querySelector('[data-action="open-no-reason-policy"]')),
+            dynamicCopy: document.querySelectorAll('[data-checkout-entitlement-copy]').length,
           };
         };
         api.openCaptureState('checkout');
         api.setOrientation('portrait');
-        const timeRental = readCopy();
+        const timeRental = readBenefits();
 
         api.openCaptureState('home');
         api.setOrientation('portrait');
         api.setScenario('member-library-trial');
         api.setSelectedGame('spiritfarer');
         api.navigate('checkout');
-        const trial = readCopy();
+        const trial = readBenefits();
         api.selectRentalSku('permanent');
-        const permanent = readCopy();
+        const permanent = readBenefits();
 
         api.setOrientation('landscape');
-        const landscape = readCopy();
-        const landscapeLeft = Boolean(document.querySelector('.checkout-benefit-column > [data-checkout-entitlement-copy]'));
-        return { timeRental, trial, permanent, landscape, landscapeLeft };
+        const landscape = readBenefits();
+        const landscapeLeft = Boolean(document.querySelector('.checkout-benefit-column > .service-benefits'));
+        document.querySelector('[data-action="open-no-reason-policy"]')?.click();
+        const policy = {
+          visible: Boolean(document.querySelector('[aria-label="3天无理由规则"]')),
+          text: document.querySelector('[aria-label="3天无理由规则"]')?.textContent.replace(/\s+/g, ' ').trim() || '',
+        };
+        document.querySelector('[data-action="close-no-reason-policy"]')?.click();
+        policy.closed = !document.querySelector('[aria-label="3天无理由规则"]');
+        return { timeRental, trial, permanent, landscape, landscapeLeft, policy };
       });
-      assert(result.timeRental.visible && result.timeRental.kind === 'time-rental' && result.timeRental.text.includes('限时使用权') && result.timeRental.text.includes('租期结束自动失效'), `时租权益说明错误：${JSON.stringify(result.timeRental)}`);
-      assert(result.trial.visible && result.trial.kind === 'trial' && result.trial.text.includes('固定2小时') && result.trial.text.includes('从支付成功开始计时') && result.trial.text.includes('整个游戏平台终身仅可体验1次'), `首次体验权益说明错误：${JSON.stringify(result.trial)}`);
-      assert(result.permanent.visible && result.permanent.kind === 'permanent' && result.permanent.text.includes('单游戏永久') && result.permanent.text.includes('购买后长期有效'), `单游戏永久权益说明错误：${JSON.stringify(result.permanent)}`);
-      assert(result.landscape.visible && result.landscapeLeft && result.landscape.kind === 'permanent' && [result.timeRental, result.trial, result.permanent, result.landscape].every(({ oldBenefits }) => oldBenefits === 0), `横屏权益说明位置错误或恢复了旧五项权益：${JSON.stringify(result)}`);
-      process.stdout.write('FINAL_DYNAMIC_ENTITLEMENT_COPY 12/12 PASS\n');
+      const expected = ['100% 正版', '一键启动', '永不顶号', '存档无忧', '3天无理由'];
+      assert(result.timeRental.visible && result.timeRental.title === '租号权益' && result.timeRental.summary === '5项保障' && JSON.stringify(result.timeRental.items) === JSON.stringify(expected), `时租未恢复上一版五项租号权益：${JSON.stringify(result.timeRental)}`);
+      assert(result.trial.visible && JSON.stringify(result.trial.items) === JSON.stringify(expected), `首次体验错误替换了通用租号权益：${JSON.stringify(result.trial)}`);
+      assert(result.permanent.visible && JSON.stringify(result.permanent.items) === JSON.stringify(expected), `单游戏永久错误替换了通用租号权益：${JSON.stringify(result.permanent)}`);
+      assert(result.landscape.visible && result.landscapeLeft && JSON.stringify(result.landscape.items) === JSON.stringify(expected), `横屏五项租号权益位置或内容错误：${JSON.stringify(result.landscape)}`);
+      assert([result.timeRental, result.trial, result.permanent, result.landscape].every(({ policyButton, dynamicCopy }) => policyButton && dynamicCopy === 0), `3天无理由入口缺失或仍存在动态权益卡：${JSON.stringify(result)}`);
+      assert(result.policy.visible && result.policy.closed && result.policy.text.includes('72小时') && result.policy.text.includes('30分钟') && result.policy.text.includes('原路退回'), `3天无理由规则弹窗错误：${JSON.stringify(result.policy)}`);
+      process.stdout.write('FINAL_RENTAL_BENEFITS 12/12 PASS\n');
     });
 
     await runRefactorGate('FINAL_ORDER_ACTIONS', async () => {
@@ -2704,7 +2717,7 @@ async function main() {
     assert(['影之刃零', '标准版', '租赁套餐', '支付方式', '需支付 ¥36.00', '立即购买'].every((value) => checkoutText.includes(value)), '确认订单核心字段不完整');
     assert(['当前报价', '租赁信息', '租号服务协议', '支付有效期', '扫码支付'].every((value) => !checkoutText.includes(value)), '确认订单仍存在已移除的重复付款信息');
     assert(checkoutText.includes('支付宝') && checkoutText.includes('微信'), '确认订单缺少双支付方式');
-    assert(!(await page.locator('[data-action="open-no-reason-policy"]').count()), '确认订单不应恢复已移除的3天无理由权益入口');
+    assert(await page.locator('[data-action="open-no-reason-policy"]').count() === 1, '确认订单应保留上一版3天无理由权益入口');
 
     const checkoutBeforeRotation = await page.evaluate(() => window.__appRentalDemo.snapshot().order);
     await page.evaluate(() => {
@@ -4110,7 +4123,7 @@ async function main() {
       benefits: document.querySelectorAll('.service-benefits').length,
       entry: document.querySelector('[data-action="open-rental-intro"]')?.textContent.trim() || '',
     }));
-    checkReviewFix(checkoutIntroEntry.benefits === 0 && checkoutIntroEntry.entry === '租号介绍', `确认订单必须移除五项权益并显示纯文字租号介绍：${JSON.stringify(checkoutIntroEntry)}`);
+    checkReviewFix(checkoutIntroEntry.benefits === 1 && checkoutIntroEntry.entry === '租号介绍', `确认订单必须保留上一版五项租号权益并显示纯文字租号介绍：${JSON.stringify(checkoutIntroEntry)}`);
 
     await page.evaluate(() => window.__appRentalDemo.navigate('membership'));
     const portraitMembershipOrder = await page.evaluate(() => {
