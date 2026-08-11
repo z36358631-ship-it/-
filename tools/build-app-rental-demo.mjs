@@ -5,6 +5,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const templatePath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.template.html');
 const outputPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.html');
 const annotationPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能-标注版.html');
+const adminFragmentPath = path.join(root, 'demos', 'APP租号功能', 'app-rental-admin.fragment.html');
 const sourceAssetDir = path.join(root, 'demos', 'APP租号功能', 'assets', 'source');
 const referenceAssetDir = path.join(root, 'demos', 'APP租号功能', 'assets', 'reference');
 const assets = {
@@ -156,7 +157,25 @@ if (fs.existsSync(annotationPath)) {
   const normalScript = html.match(/<script>([\s\S]*?)<\/script>\s*<\/body>/)?.[1].trim();
   if (!normalStyle || !normalScript) throw new Error('普通 Demo 缺少可同步的样式或业务脚本');
 
+  if (!fs.existsSync(adminFragmentPath)) throw new Error(`后台片段不存在：${adminFragmentPath}`);
+  const adminFragment = fs.readFileSync(adminFragmentPath, 'utf8').trim();
+  if (!adminFragment.includes('APP_RENTAL_ADMIN_FRAGMENT_START') || !adminFragment.includes('window.__appRentalAdminDemo')) {
+    throw new Error('后台片段缺少稳定标记或测试 API');
+  }
+
   let annotation = fs.readFileSync(annotationPath, 'utf8');
+  if (!annotation.includes('data-annotation-surface="admin"')) {
+    annotation = annotation.replace(
+      '<div class="annotation-brand"><strong>APP 租号全链路</strong><span class="annotation-subtitle">交互标注文档</span></div>',
+      '<div class="annotation-brand"><strong>APP 租号全链路</strong><span class="annotation-subtitle">交互标注文档</span><div class="annotation-surface-switch"><button class="active" type="button" data-annotation-surface="client">APP（安卓端）客户端</button><button type="button" data-annotation-surface="admin">运营后台</button></div></div><nav class="admin-module-nav" aria-label="运营后台模块"><button class="active" type="button" data-admin-page="products">租号商品管理</button><button type="button" data-admin-page="member-library">会员游戏库管理</button><button type="button" data-admin-page="member-plans">会员套餐管理</button><button type="button" data-admin-page="accounts">账号资源管理</button><button type="button" data-admin-page="admin-orders">订单与售后</button><button type="button" data-admin-page="stats">效果统计</button><button type="button" data-admin-page="audit">操作记录</button></nav>',
+    );
+  }
+  if (!annotation.includes('id="appRentalAdminDemo"')) {
+    annotation = annotation.replace(
+      '<div id="demoScaleFrame" data-scale="1"><main id="appRentalDemo" data-orientation="portrait" data-screen="home"></main></div>',
+      '<div id="demoScaleFrame" data-scale="1"><main id="appRentalDemo" data-orientation="portrait" data-screen="home"></main></div><main id="appRentalAdminDemo" hidden></main><!-- APP_RENTAL_ADMIN_INJECT -->',
+    );
+  }
   const styleMarker = '    /* 交互标注文档壳层：完整 Demo 直接内嵌，不使用 iframe。 */';
   const scriptMarker = '  <script>\n    const ANNOTATION_GROUPS = Object.freeze([';
   if (!annotation.includes(styleMarker) || !annotation.includes(scriptMarker)) throw new Error('标注版缺少稳定同步标记');
@@ -221,6 +240,26 @@ if (fs.existsSync(annotationPath)) {
     '左侧仅商品；右侧按套餐、游戏原价/订单金额、支付方式和支付栏排列，并允许低高度内部滚动。',
     '左侧展示商品与当前 SKU 权益说明；右侧按套餐、游戏原价/订单金额、支付方式和支付栏排列，并允许低高度内部滚动。',
   );
+  annotation = annotation.replace(
+    /<!-- APP_RENTAL_ADMIN_FRAGMENT_START -->[\s\S]*?<!-- APP_RENTAL_ADMIN_FRAGMENT_END -->|<!-- APP_RENTAL_ADMIN_INJECT -->/,
+    adminFragment,
+  );
+  const requiredAdminSignatures = [
+    'APP（安卓端）客户端',
+    '运营后台',
+    '租号商品管理',
+    '会员游戏库管理',
+    '会员套餐管理',
+    '账号资源管理',
+    '订单与售后',
+    '效果统计',
+    '操作记录',
+    'data-admin-client-tab="android"',
+    'data-admin-client-tab="mac"',
+    'window.__appRentalAdminDemo',
+  ];
+  const missingAdminSignatures = requiredAdminSignatures.filter((signature) => !annotation.includes(signature));
+  if (missingAdminSignatures.length) throw new Error(`标注版缺少后台签名：${missingAdminSignatures.join('、')}`);
   writeTextWithRetry(annotationPath, annotation);
 
   const annotationBusinessScript = annotation.match(/<script>\s*(const ASSETS[\s\S]*?)<\/script>\s*<script>\s*const ANNOTATION_GROUPS/)?.[1] || '';
