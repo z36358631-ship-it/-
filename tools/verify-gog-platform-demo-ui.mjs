@@ -162,14 +162,113 @@ async function libraryFlow() {
   console.log('PASS libraryFlow');
 }
 
+async function searchRows(screen) {
+  return page.locator(`[data-screen="${screen}"] [data-search-result]`).evaluateAll(elements => elements.map(element => ({
+    gameId:element.dataset.gameId,
+    platformAppId:element.dataset.platformAppId,
+    platform:element.dataset.platform,
+    score:element.querySelector('[data-score]')?.textContent.trim() ?? null,
+  })));
+}
+
+async function detailSearchFlow() {
+  await resetDemo();
+
+  await page.click('[data-page="search-portrait"]');
+  const portraitRows = await searchRows('search-portrait');
+  assert.deepEqual(portraitRows, [
+    { gameId:'cyberpunk-2077', platformAppId:'epic-cyberpunk', platform:'epic', score:'8.8' },
+    { gameId:'cyberpunk-2077', platformAppId:'gog-1423049311', platform:'gog', score:null },
+    { gameId:'the-witcher-3', platformAppId:'epic-witcher-3', platform:'epic', score:'9.4' },
+    { gameId:'the-witcher-3', platformAppId:'gog-1495134320', platform:'gog', score:null },
+  ], 'portrait search results must keep each EPIC/GOG platform edition separate');
+  assert.equal(await page.locator('[data-search-result][data-platform="epic"]').count(), 2);
+  assert.equal(await page.locator('[data-search-result][data-platform="gog"]').count(), 2);
+
+  assert.equal(await page.evaluate(() => window.GogDemoApp.convertEpicScore(4.4)), 8.8);
+  assert.equal(await page.evaluate(() => window.GogDemoApp.convertEpicScore(0)), 0);
+  assert.equal(await page.evaluate(() => window.GogDemoApp.convertEpicScore(5)), 10);
+  assert.equal(await page.evaluate(() => window.GogDemoApp.convertEpicScore(-0.5)), 0);
+  assert.equal(await page.evaluate(() => window.GogDemoApp.convertEpicScore(5.5)), 10);
+
+  await page.click('[data-search-result][data-game-id="cyberpunk-2077"][data-platform="gog"]');
+  assert.deepEqual(
+    await page.evaluate(() => ({
+      sourcePlatform:window.GogDemoApp.state.sourcePlatform,
+      selectedPlatform:window.GogDemoApp.state.selectedPlatform,
+      selectedGame:window.GogDemoApp.state.selectedGame,
+    })),
+    {
+      sourcePlatform:'gog',
+      selectedPlatform:'gog',
+      selectedGame:{ gameId:'cyberpunk-2077', platformAppId:'gog-1423049311', platform:'gog' },
+    },
+    'GOG search result did not preserve the GOG detail context'
+  );
+  assert.equal((await page.locator('[data-detail-hours]').innerText()).trim(), '74 小时');
+  assert.equal((await page.locator('[data-detail-cloud]').innerText()).trim(), '云存档已同步');
+  assert.equal((await page.locator('[data-detail-platform-logo]').innerText()).trim(), 'GOG');
+  assert((await page.locator('[data-launch-platform]').innerText()).includes('GOG 启动'));
+
+  await page.click('[data-action="open-platform-switch"]');
+  assert.equal(await page.locator('[data-platform-switch]').count(), 1, 'platform switch did not open');
+  await page.click('[data-action="select-detail-platform"][data-platform="epic"]');
+  assert.deepEqual(
+    await page.evaluate(() => ({
+      sourcePlatform:window.GogDemoApp.state.sourcePlatform,
+      selectedPlatform:window.GogDemoApp.state.selectedPlatform,
+    })),
+    { sourcePlatform:'gog', selectedPlatform:'epic' },
+    'manual switch should change only the selected platform'
+  );
+  assert.equal((await page.locator('[data-detail-hours]').innerText()).trim(), '96 小时');
+  assert.equal((await page.locator('[data-detail-cloud]').innerText()).trim(), '云存档正常');
+  assert.equal((await page.locator('[data-detail-platform-logo]').innerText()).trim(), 'EPIC');
+  assert((await page.locator('[data-launch-platform]').innerText()).includes('EPIC 启动'));
+
+  await page.click('[data-page="search-landscape"]');
+  const landscapeRows = await searchRows('search-landscape');
+  assert.deepEqual(landscapeRows, portraitRows, 'landscape and portrait search must share one result model');
+  await page.click('[data-search-result][data-game-id="the-witcher-3"][data-platform="gog"]');
+  assert.equal(await page.evaluate(() => window.GogDemoApp.state.sourcePlatform), 'gog');
+  assert.equal(await page.evaluate(() => window.GogDemoApp.state.selectedPlatform), 'gog');
+  assert((await page.locator('[data-launch-platform]').innerText()).includes('GOG 启动'));
+
+  assert.equal(
+    await page.evaluate(() => window.GogDemoApp.resolveSelectedPlatform({
+      sourcePlatform:null,
+      ownedPlatforms:window.GogDemoApp.state.ownedPlatforms,
+      accountByPlatform:window.GogDemoApp.state.accountByPlatform,
+    })),
+    'steam',
+    'a platform-neutral entry must use Steam > EPIC > GOG priority'
+  );
+
+  await page.click('[data-page="search-portrait"]');
+  await page.evaluate(() => {
+    window.GogDemoApp.state.accountByPlatform.gog = {
+      bindStatus:'expired', tokenStatus:'expired', account:null,
+    };
+  });
+  await page.click('[data-search-result][data-game-id="cyberpunk-2077"][data-platform="gog"]');
+  assert.equal(await page.evaluate(() => window.GogDemoApp.state.sourcePlatform), 'gog');
+  assert.equal(await page.evaluate(() => window.GogDemoApp.state.selectedPlatform), 'gog');
+  const unavailableText = await page.locator('[data-source-unavailable]').innerText();
+  assert(unavailableText.includes('重新登录 GOG'));
+  assert(unavailableText.includes('切换平台'));
+  assert(!(await page.locator('[data-launch-platform]').innerText()).includes('Steam 启动'));
+  console.log('PASS detailSearchFlow');
+}
+
 async function browserRuntime() {
   await profileFlow();
   await libraryFlow();
+  await detailSearchFlow();
   assert.deepEqual(pageErrors, [], `page errors: ${pageErrors.join(' | ')}`);
   console.log('PASS browserRuntime');
 }
 
-const checks = { profile:profileFlow, library:libraryFlow, all:browserRuntime };
+const checks = { profile:profileFlow, library:libraryFlow, detailSearch:detailSearchFlow, all:browserRuntime };
 
 try {
   if (!checks[mode]) throw new Error(`Unknown mode: ${mode}`);

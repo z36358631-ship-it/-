@@ -791,6 +791,260 @@
       text-align: right;
     }
 
+    .product-screen.detail-screen { width: min(100%, 720px); }
+
+    .product-screen.search-screen.landscape-screen {
+      width: min(100%, 900px);
+      min-height: 540px;
+    }
+
+    .detail-hero {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background:
+        radial-gradient(circle at 88% 12%, rgba(132, 94, 247, 0.2), transparent 36%),
+        linear-gradient(145deg, #252a3c, #1c202e);
+    }
+
+    .detail-title-row,
+    .detail-platform-row,
+    .search-heading,
+    .search-result-meta,
+    .platform-option {
+      display: flex;
+      align-items: center;
+    }
+
+    .detail-title-row,
+    .detail-platform-row,
+    .search-heading,
+    .platform-option { justify-content: space-between; }
+
+    .detail-title-row { gap: 18px; }
+
+    .detail-title-row h3 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .detail-title-row p,
+    .search-heading p,
+    .source-unavailable p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .detail-platform-row {
+      gap: 16px;
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .platform-identity {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .platform-logo {
+      display: grid;
+      min-width: 48px;
+      height: 48px;
+      padding: 0 10px;
+      place-items: center;
+      border-radius: 13px;
+      background: linear-gradient(145deg, #8f6cff, #5c35cd);
+      color: white;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .platform-identity strong,
+    .platform-identity span { display: block; }
+
+    .platform-identity span {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .detail-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .detail-metric {
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .detail-metric span,
+    .detail-metric strong { display: block; }
+
+    .detail-metric span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .detail-metric strong {
+      margin-top: 8px;
+      font-size: 15px;
+    }
+
+    .detail-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .source-unavailable {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 184, 94, 0.24);
+      border-radius: 13px;
+      background: rgba(255, 174, 66, 0.07);
+    }
+
+    .source-unavailable strong {
+      color: #ffd09a;
+      font-size: 13px;
+    }
+
+    .platform-switch {
+      margin-top: 16px;
+      padding: 16px;
+      border: 1px solid rgba(155, 121, 255, 0.24);
+      border-radius: 16px;
+      background: rgba(132, 94, 247, 0.08);
+    }
+
+    .platform-switch h4 { margin: 0 0 12px; }
+
+    .platform-options { display: grid; gap: 8px; }
+
+    .platform-option {
+      min-height: 46px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.035);
+      color: #dce1ed;
+      cursor: pointer;
+    }
+
+    .platform-option.active {
+      border-color: rgba(155, 121, 255, 0.38);
+      background: rgba(132, 94, 247, 0.16);
+      color: #f2edff;
+    }
+
+    .platform-option small {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .search-heading { gap: 18px; }
+
+    .search-heading h3 { margin: 0; }
+
+    .search-count {
+      flex: 0 0 auto;
+      color: #bba9ff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .search-results {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .landscape-screen .search-results {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .search-result {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr);
+      min-height: 96px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.035);
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .search-cover {
+      display: grid;
+      height: 74px;
+      place-items: end start;
+      padding: 8px;
+      border-radius: 10px;
+      background:
+        linear-gradient(155deg, transparent 15%, rgba(0, 0, 0, 0.7)),
+        linear-gradient(135deg, var(--cover-a), var(--cover-b));
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .search-result-body {
+      min-width: 0;
+      padding: 6px 3px 3px 12px;
+    }
+
+    .search-result-body > strong {
+      display: block;
+      overflow: hidden;
+      font-size: 13px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .search-result-meta {
+      gap: 8px;
+      margin-top: 11px;
+    }
+
+    .platform-pill,
+    .score-pill {
+      display: inline-flex;
+      min-height: 22px;
+      align-items: center;
+      padding: 0 7px;
+      border-radius: 7px;
+      font-size: 9px;
+      font-style: normal;
+      font-weight: 800;
+    }
+
+    .platform-pill {
+      background: rgba(132, 94, 247, 0.15);
+      color: #cbbbff;
+    }
+
+    .score-pill {
+      background: rgba(87, 202, 144, 0.11);
+      color: #87e1b5;
+    }
+
+    .no-score {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
     @media (max-height: 820px) {
       .product-screen { min-height: 590px; }
       .demo-canvas { padding: 18px; }
@@ -828,7 +1082,7 @@
       sourcePlatform:null, selectedPlatform:'gog',
       selectedGame:null, loginOrigin:null, authorizationMode:null, loginError:null,
       gogRefreshInFlight:false, gogRefreshRequestCount:0, gogLastSyncAt:'10 分钟前',
-      showLogoutConfirm:false,
+      showLogoutConfirm:false, showPlatformSwitch:false,
       ownedPlatforms:['steam','epic','gog'],
       accountByPlatform:{
         steam:{ bindStatus:'bound', tokenStatus:'valid' },
@@ -872,6 +1126,24 @@
       { gameId:'disco-elysium', platformAppId:'gog-1962937292', name:'极乐迪斯科', hours:31, colors:['#c97955','#3e4167'] },
       { gameId:'frostpunk', platformAppId:'gog-1440162894', name:'冰汽时代', hours:19, colors:['#446473','#171d28'] },
     ];
+
+    const DETAIL_BY_PLATFORM = {
+      steam:{ label:'Steam', hours:'212 小时', cloud:'云存档正常', launch:'Steam 启动' },
+      epic:{ label:'EPIC', hours:'96 小时', cloud:'云存档正常', launch:'EPIC 启动' },
+      gog:{ label:'GOG', hours:'74 小时', cloud:'云存档已同步', launch:'GOG 启动' },
+    };
+
+    const SEARCH_RESULTS = [
+      { gameId:'cyberpunk-2077', platform:'epic', platformAppId:'epic-cyberpunk', name:'赛博朋克 2077', rawScore:4.4, colors:['#d7c91f','#4b4225'] },
+      { gameId:'cyberpunk-2077', platform:'gog', platformAppId:'gog-1423049311', name:'赛博朋克 2077', rawScore:null, colors:['#ead722','#5a4425'] },
+      { gameId:'the-witcher-3', platform:'epic', platformAppId:'epic-witcher-3', name:'巫师 3：狂猎', rawScore:4.7, colors:['#5b7274','#a45838'] },
+      { gameId:'the-witcher-3', platform:'gog', platformAppId:'gog-1495134320', name:'巫师 3：狂猎', rawScore:null, colors:['#395d63','#bc6b3c'] },
+    ];
+
+    function convertEpicScore(score) {
+      const converted = Math.round(Number(score) * 20) / 10;
+      return Math.min(10, Math.max(0, converted));
+    }
 
     function resolveSelectedPlatform({ sourcePlatform, ownedPlatforms, accountByPlatform }) {
       if (sourcePlatform) return sourcePlatform;
@@ -1079,6 +1351,119 @@
       `;
     }
 
+    function isPlatformAvailable(platform) {
+      const account = state.accountByPlatform[platform];
+      return account?.bindStatus === 'bound' && account?.tokenStatus === 'valid';
+    }
+
+    function getSelectedGameName() {
+      const selected = state.selectedGame;
+      if (!selected) return '赛博朋克 2077';
+      return SEARCH_RESULTS.find(game => game.gameId === selected.gameId)?.name ||
+        GOG_GAMES.find(game => game.gameId === selected.gameId)?.name ||
+        'PC 游戏';
+    }
+
+    function renderDetail() {
+      const platform = state.selectedPlatform || resolveSelectedPlatform(state) || 'steam';
+      const detail = DETAIL_BY_PLATFORM[platform];
+      const available = isPlatformAvailable(platform);
+      const sourceLabel = DETAIL_BY_PLATFORM[state.sourcePlatform]?.label || '无指定来源';
+      const switchPlatforms = PLATFORM_PRIORITY.filter(item =>
+        state.ownedPlatforms.includes(item) || item === state.sourcePlatform
+      );
+      return `
+        <article class="product-screen detail-screen" data-screen="${state.showPlatformSwitch ? 'detail-switch' : 'detail-gog'}"
+          data-game-id="${state.selectedGame?.gameId || ''}"
+          data-platform-app-id="${state.selectedGame?.platformAppId || ''}">
+          ${renderProductHeader('游戏详情', `来源平台：${sourceLabel}`, detail.label)}
+          <div class="product-body">
+            <section class="detail-hero">
+              <div class="detail-title-row">
+                <div><h3>${getSelectedGameName()}</h3><p>平台版本独立展示 · 当前启动上下文不会静默切换</p></div>
+                <span class="state-chip">${available ? '可启动' : '需恢复'}</span>
+              </div>
+              <div class="detail-platform-row">
+                <div class="platform-identity">
+                  <span class="platform-logo" data-detail-platform-logo>${detail.label}</span>
+                  <div><strong>${detail.label} 版本</strong><span>当前选择的平台版本</span></div>
+                </div>
+                <span class="product-header-badge">${state.sourcePlatform === platform ? '来源平台' : '手动切换'}</span>
+              </div>
+              <div class="detail-metrics">
+                <div class="detail-metric"><span>游玩时长</span><strong data-detail-hours>${detail.hours}</strong></div>
+                <div class="detail-metric"><span>云存档</span><strong data-detail-cloud>${detail.cloud}</strong></div>
+              </div>
+              ${available ? '' : `
+                <div class="source-unavailable" data-source-unavailable>
+                  <strong>${detail.label} 来源当前不可用</strong>
+                  <p>请重新登录 ${detail.label}，或打开“切换平台”并由你主动选择其他已拥有版本；不会自动改用 Steam。</p>
+                </div>
+              `}
+              <div class="detail-actions">
+                <button class="secondary-button" data-action="open-platform-switch">切换平台</button>
+                <button class="primary-button" data-launch-platform data-action="${available ? 'launch-selected' : 'reauthorize-source'}">
+                  ${available ? detail.launch : `重新登录 ${detail.label}`}
+                </button>
+              </div>
+              ${state.showPlatformSwitch ? `
+                <section class="platform-switch" data-platform-switch>
+                  <h4>选择启动平台</h4>
+                  <div class="platform-options">
+                    ${switchPlatforms.map(item => {
+                      const option = DETAIL_BY_PLATFORM[item];
+                      return `
+                        <button class="platform-option${item === platform ? ' active' : ''}"
+                          data-action="select-detail-platform" data-platform="${item}">
+                          <span>${option.label}</span>
+                          <small>${isPlatformAvailable(item) ? `${option.hours} · ${option.cloud}` : '需要绑定或重新登录'}</small>
+                        </button>
+                      `;
+                    }).join('')}
+                  </div>
+                </section>
+              ` : ''}
+            </section>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderSearch(orientation) {
+      const isLandscape = orientation === 'landscape';
+      return `
+        <article class="product-screen search-screen${isLandscape ? ' landscape-screen' : ''}"
+          data-screen="search-${orientation}">
+          ${renderProductHeader('搜索结果', '“赛博朋克 / 巫师 3” · 平台版本分条展示', isLandscape ? '横屏' : '竖屏')}
+          <div class="product-body">
+            <div class="search-heading">
+              <div><h3>PC 游戏</h3><p>点击结果后携带 gameId、platformAppId 与来源平台进入详情。</p></div>
+              <span class="search-count">4 条平台结果</span>
+            </div>
+            <div class="search-results">
+              ${SEARCH_RESULTS.map((game, index) => `
+                <button class="search-result" data-search-result
+                  data-game-id="${game.gameId}"
+                  data-platform-app-id="${game.platformAppId}"
+                  data-platform="${game.platform}">
+                  <span class="search-cover" style="--cover-a:${game.colors[0]};--cover-b:${game.colors[1]}">#${String(index + 1).padStart(2, '0')}</span>
+                  <span class="search-result-body">
+                    <strong>${game.name}</strong>
+                    <span class="search-result-meta">
+                      <em class="platform-pill">${DETAIL_BY_PLATFORM[game.platform].label}</em>
+                      ${game.platform === 'epic'
+                        ? `<em class="score-pill" data-score>${convertEpicScore(game.rawScore).toFixed(1)}</em>`
+                        : '<span class="no-score">暂无评分</span>'}
+                    </span>
+                  </span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
     function renderPlaceholder(page) {
       const selected = state.selectedGame;
       const selectedName = GOG_GAMES.find(game => game.gameId === selected?.gameId)?.name;
@@ -1111,6 +1496,10 @@
         'profile-bound':renderProfileBound,
         'library-unbound':renderLibraryUnbound,
         'library-bound':renderLibraryBound,
+        'detail-gog':renderDetail,
+        'detail-switch':renderDetail,
+        'search-portrait':() => renderSearch('portrait'),
+        'search-landscape':() => renderSearch('landscape'),
       };
       canvas.innerHTML = renderers[page.id] ? renderers[page.id]() : renderPlaceholder(page);
     }
@@ -1157,11 +1546,14 @@
 
     function completeGogAuthorization() {
       const nextAccount = state.authorizationMode === 'switch' ? SWITCHED_GOG_ACCOUNT : GOG_ACCOUNT;
+      const returnScreen = returnScreenForLogin();
       state.accountByPlatform.gog = {
         bindStatus:'bound', tokenStatus:'valid', account:{ ...nextAccount },
       };
       state.gogLastSyncAt = '刚刚';
-      state.screen = returnScreenForLogin().startsWith('library') ? 'library-bound' : 'profile-bound';
+      state.screen = returnScreen.startsWith('library')
+        ? 'library-bound'
+        : returnScreen.startsWith('detail') ? 'detail-gog' : 'profile-bound';
       state.authorizationMode = null;
       state.loginOrigin = null;
       state.loginError = null;
@@ -1188,16 +1580,37 @@
       }, 120);
     }
 
-    function openGogGame(card) {
+    function openPlatformGame(card) {
       state.selectedGame = {
         gameId:card.dataset.gameId,
         platformAppId:card.dataset.platformAppId,
         platform:card.dataset.platform,
       };
-      state.sourcePlatform = 'gog';
-      state.selectedPlatform = 'gog';
+      state.sourcePlatform = card.dataset.platform;
+      state.selectedPlatform = resolveSelectedPlatform(state);
+      state.showPlatformSwitch = false;
       state.screen = 'detail-gog';
       render();
+    }
+
+    function preparePageScenario(pageId) {
+      if (pageId.startsWith('search') || pageId.startsWith('detail')) {
+        if (state.accountByPlatform.gog.bindStatus === 'unbound') {
+          state.accountByPlatform.gog = {
+            bindStatus:'bound', tokenStatus:'valid', account:{ ...GOG_ACCOUNT },
+          };
+        }
+      }
+      if (pageId.startsWith('detail')) {
+        state.selectedGame ||= {
+          gameId:'cyberpunk-2077', platformAppId:'gog-1423049311', platform:'gog',
+        };
+        state.sourcePlatform ||= 'gog';
+        state.selectedPlatform = pageId === 'detail-switch'
+          ? (state.selectedPlatform || 'gog')
+          : 'gog';
+      }
+      state.showPlatformSwitch = pageId === 'detail-switch';
     }
 
     document.addEventListener('click', event => {
@@ -1205,13 +1618,20 @@
       if (pageButton) {
         state.screen = pageButton.dataset.page;
         state.showLogoutConfirm = false;
+        preparePageScenario(state.screen);
         render();
         return;
       }
 
       const gameCard = event.target.closest('[data-game-card]');
       if (gameCard) {
-        openGogGame(gameCard);
+        openPlatformGame(gameCard);
+        return;
+      }
+
+      const searchResult = event.target.closest('[data-search-result]');
+      if (searchResult) {
+        openPlatformGame(searchResult);
         return;
       }
 
@@ -1250,9 +1670,26 @@
         state.accountByPlatform.gog = { bindStatus:'unbound', tokenStatus:'none', account:null };
         state.selectedGame = null;
         state.sourcePlatform = null;
+        state.selectedPlatform = resolveSelectedPlatform(state);
         state.showLogoutConfirm = false;
         state.screen = 'profile-unbound';
         render();
+        return;
+      } else if (actionButton.dataset.action === 'open-platform-switch') {
+        state.showPlatformSwitch = true;
+        state.screen = 'detail-switch';
+        render();
+        return;
+      } else if (actionButton.dataset.action === 'select-detail-platform') {
+        state.selectedPlatform = actionButton.dataset.platform;
+        state.showPlatformSwitch = false;
+        state.screen = 'detail-gog';
+        render();
+        return;
+      } else if (actionButton.dataset.action === 'reauthorize-source') {
+        if (state.selectedPlatform === 'gog') beginAuthorization('bind');
+        return;
+      } else if (actionButton.dataset.action === 'launch-selected') {
         return;
       } else if (actionButton.dataset.action === 'anno-tab') {
         state.annotationTab = actionButton.dataset.value;
@@ -1273,7 +1710,10 @@
       }
     });
 
-    window.GogDemoApp = { state, GOG_GAMES, resolveSelectedPlatform, render };
+    window.GogDemoApp = {
+      state, GOG_GAMES, SEARCH_RESULTS, DETAIL_BY_PLATFORM,
+      convertEpicScore, resolveSelectedPlatform, openPlatformGame, render,
+    };
     render();
   </script>
 </body>
