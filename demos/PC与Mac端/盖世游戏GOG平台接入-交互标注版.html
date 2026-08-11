@@ -403,6 +403,399 @@
     }
 
     .gog-demo-shell.markers-visible .marker-preview { display: block; }
+
+    .product-screen {
+      width: min(100%, 620px);
+      min-height: 680px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      border-radius: 28px;
+      background: #171a25;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.38);
+    }
+
+    .product-screen.library-screen { width: min(100%, 760px); }
+
+    .product-header {
+      display: flex;
+      min-height: 70px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(29, 33, 47, 0.96);
+    }
+
+    .product-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .product-header small {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .product-header-badge {
+      padding: 7px 10px;
+      border: 1px solid rgba(177, 147, 255, 0.24);
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: #cdbfff;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .product-body { padding: 24px; }
+
+    .platform-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .platform-tab {
+      height: 42px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: #858fa4;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .platform-tab.active {
+      background: rgba(132, 94, 247, 0.2);
+      color: #f2edff;
+    }
+
+    .account-hero,
+    .empty-state,
+    .official-login-card {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background:
+        radial-gradient(circle at 90% 10%, rgba(132, 94, 247, 0.17), transparent 32%),
+        linear-gradient(145deg, #24293a, #1d2130);
+    }
+
+    .account-hero { padding: 24px; }
+
+    .account-identity {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .gog-logo {
+      display: grid;
+      width: 50px;
+      height: 50px;
+      flex: 0 0 50px;
+      place-items: center;
+      border-radius: 15px;
+      background: linear-gradient(145deg, #9e72ff, #5e31d9);
+      box-shadow: 0 12px 28px rgba(94, 49, 217, 0.32);
+      color: white;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .account-identity h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .account-identity p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .metric-card {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .metric-card span,
+    .metric-card strong { display: block; }
+
+    .metric-card span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .metric-card strong {
+      margin-top: 8px;
+      font-size: 17px;
+    }
+
+    .account-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .primary-button,
+    .secondary-button,
+    .danger-button {
+      min-height: 42px;
+      padding: 0 15px;
+      border-radius: 11px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .primary-button {
+      border: 0;
+      background: linear-gradient(135deg, #9270ff, #6b3ce0);
+      color: white;
+      box-shadow: 0 10px 24px rgba(107, 60, 224, 0.25);
+    }
+
+    .secondary-button {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.04);
+      color: #dce1ed;
+    }
+
+    .danger-button {
+      border: 1px solid rgba(255, 112, 128, 0.28);
+      background: rgba(255, 90, 110, 0.08);
+      color: #ff9aa7;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.52;
+    }
+
+    .empty-state {
+      display: grid;
+      min-height: 360px;
+      padding: 48px 30px;
+      place-items: center;
+      text-align: center;
+    }
+
+    .empty-state-content { max-width: 360px; }
+
+    .empty-state h3 {
+      margin: 18px 0 9px;
+      font-size: 22px;
+    }
+
+    .empty-state p,
+    .security-note,
+    .login-domain,
+    .logout-confirm p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .empty-state .primary-button { margin-top: 22px; }
+
+    .official-login-card {
+      max-width: 480px;
+      margin: 28px auto 0;
+      padding: 28px;
+    }
+
+    .official-login-card h3 {
+      margin: 20px 0 8px;
+      font-size: 24px;
+    }
+
+    .login-domain {
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.16);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
+    .security-note {
+      margin: 15px 0;
+      padding: 12px 14px;
+      border-left: 3px solid #8f6cff;
+      background: rgba(132, 94, 247, 0.08);
+      color: #cbc4df;
+    }
+
+    .login-preview {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .masked-field {
+      height: 44px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.14);
+      color: #70798d;
+      line-height: 42px;
+      font-size: 12px;
+    }
+
+    .login-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .login-error {
+      margin-top: 14px;
+      padding: 11px 13px;
+      border: 1px solid rgba(255, 112, 128, 0.24);
+      border-radius: 10px;
+      background: rgba(255, 90, 110, 0.08);
+      color: #ffadb8;
+      font-size: 12px;
+    }
+
+    .login-test-tools {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .login-test-tools button {
+      border: 0;
+      background: transparent;
+      color: #8f98ad;
+      cursor: pointer;
+      font-size: 11px;
+      text-decoration: underline;
+    }
+
+    .library-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 20px 0 14px;
+    }
+
+    .library-heading h3 { margin: 0; }
+
+    .library-heading span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .game-card {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr);
+      min-height: 100px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.035);
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .game-cover {
+      display: grid;
+      height: 78px;
+      place-items: end start;
+      padding: 8px;
+      border-radius: 10px;
+      background:
+        linear-gradient(155deg, transparent 20%, rgba(0, 0, 0, 0.68)),
+        linear-gradient(135deg, var(--cover-a), var(--cover-b));
+      color: white;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .game-meta {
+      min-width: 0;
+      padding: 8px 4px 4px 12px;
+    }
+
+    .game-meta strong,
+    .game-meta span { display: block; }
+
+    .game-meta strong {
+      overflow: hidden;
+      font-size: 13px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .game-meta span {
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .gog-pill {
+      display: inline-block;
+      margin-top: 9px;
+      padding: 3px 6px;
+      border-radius: 6px;
+      background: rgba(132, 94, 247, 0.15);
+      color: #cbbbff;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .logout-confirm {
+      margin-top: 14px;
+      padding: 16px;
+      border: 1px solid rgba(255, 112, 128, 0.22);
+      border-radius: 14px;
+      background: rgba(255, 90, 110, 0.055);
+    }
+
+    .logout-confirm strong { font-size: 13px; }
+
+    .logout-confirm p { margin: 7px 0 12px; }
+
+    .confirm-actions { display: flex; gap: 8px; }
+
+    .sync-line {
+      margin-top: 13px;
+      color: var(--muted);
+      font-size: 11px;
+      text-align: right;
+    }
+
+    @media (max-height: 820px) {
+      .product-screen { min-height: 590px; }
+      .demo-canvas { padding: 18px; }
+      .product-body { padding: 18px; }
+    }
   </style>
 </head>
 <body>
@@ -433,11 +826,14 @@
       screen:'profile-unbound', orientation:'portrait', annotationTab:'interaction',
       showMarkers:false, panelHidden:false, simulation:'normal',
       sourcePlatform:null, selectedPlatform:'gog',
+      selectedGame:null, loginOrigin:null, authorizationMode:null, loginError:null,
+      gogRefreshInFlight:false, gogRefreshRequestCount:0, gogLastSyncAt:'10 分钟前',
+      showLogoutConfirm:false,
       ownedPlatforms:['steam','epic','gog'],
       accountByPlatform:{
         steam:{ bindStatus:'bound', tokenStatus:'valid' },
         epic:{ bindStatus:'bound', tokenStatus:'valid' },
-        gog:{ bindStatus:'unbound', tokenStatus:'none' },
+        gog:{ bindStatus:'unbound', tokenStatus:'none', account:null },
       },
       lowConfidenceNoMerge:true,
     };
@@ -455,11 +851,27 @@
     ];
 
     const SIMULATIONS = ['normal','loading','empty','error','expired','cancelled','cached'];
-    const PLACEHOLDER_GAME = { gameId:null, platformAppId:null };
     const SIMULATION_LABELS = {
       normal:'正常', loading:'加载中', empty:'空数据', error:'加载失败',
       expired:'授权过期', cancelled:'用户取消', cached:'缓存降级',
     };
+
+    const GOG_ACCOUNT = {
+      username:'GalaxyRider', value:'¥6.8k', hours:'438h', games:126,
+    };
+
+    const SWITCHED_GOG_ACCOUNT = {
+      username:'GalaxyRider_New', value:'¥4.2k', hours:'287h', games:84,
+    };
+
+    const GOG_GAMES = [
+      { gameId:'the-witcher-3', platformAppId:'gog-1495134320', name:'巫师 3：狂猎', hours:168, colors:['#395d63','#bc6b3c'] },
+      { gameId:'cyberpunk-2077', platformAppId:'gog-1423049311', name:'赛博朋克 2077', hours:74, colors:['#ead722','#5a4425'] },
+      { gameId:'control', platformAppId:'gog-1808684453', name:'Control', hours:26, colors:['#9b1e2e','#261d29'] },
+      { gameId:'baldurs-gate-3', platformAppId:'gog-1456460669', name:'博德之门 3', hours:52, colors:['#71483c','#201a27'] },
+      { gameId:'disco-elysium', platformAppId:'gog-1962937292', name:'极乐迪斯科', hours:31, colors:['#c97955','#3e4167'] },
+      { gameId:'frostpunk', platformAppId:'gog-1440162894', name:'冰汽时代', hours:19, colors:['#446473','#171d28'] },
+    ];
 
     function resolveSelectedPlatform({ sourcePlatform, ownedPlatforms, accountByPlatform }) {
       if (sourcePlatform) return sourcePlatform;
@@ -505,7 +917,7 @@
       document.getElementById('stageToolbar').innerHTML = `
         <div class="stage-heading">
           <h1>${page.group} / ${page.label}</h1>
-          <p>${state.orientation === 'landscape' ? '横屏画布' : '竖屏画布'} · 壳层占位阶段</p>
+          <p>${state.orientation === 'landscape' ? '横屏画布' : '竖屏画布'} · GOG 账号与游戏资产流程</p>
         </div>
         <label class="simulation-control">状态模拟
           <select id="simulationSelect" data-action="simulation">
@@ -515,19 +927,171 @@
       `;
     }
 
-    function renderCanvas(page) {
-      const canvas = document.getElementById('demoCanvas');
-      canvas.dataset.orientation = state.orientation;
-      canvas.innerHTML = `
+    function renderPlatformTabs() {
+      return `
+        <div class="platform-tabs" aria-label="第三方游戏平台">
+          <button class="platform-tab" type="button">STEAM</button>
+          <button class="platform-tab" type="button">EPIC</button>
+          <button class="platform-tab active" type="button" aria-current="true">GOG</button>
+        </div>
+      `;
+    }
+
+    function renderProductHeader(title, subtitle, badge='GOG') {
+      return `
+        <header class="product-header">
+          <div><h2>${title}</h2><small>${subtitle}</small></div>
+          <span class="product-header-badge">${badge}</span>
+        </header>
+      `;
+    }
+
+    function renderProfileUnbound() {
+      return `
+        <article class="product-screen" data-screen="profile-unbound">
+          ${renderProductHeader('我的', '管理第三方平台账号与游戏资产')}
+          <div class="product-body">
+            ${renderPlatformTabs()}
+            <section class="empty-state">
+              <div class="empty-state-content">
+                <span class="gog-logo" style="margin:auto">G</span>
+                <h3>GOG 数据同步功能</h3>
+                <p>绑定账号后可查看个人游戏库数据，包括账号价值、游玩时长和游戏数量。</p>
+                <button class="primary-button" data-action="bind-gog">绑定 GOG 账号</button>
+              </div>
+            </section>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderGogLogin() {
+      const actionName = state.authorizationMode === 'switch' ? '切换账号' : '绑定账号';
+      return `
+        <article class="product-screen" data-screen="gog-login">
+          ${renderProductHeader('GOG 官方登录', `${actionName} · 授权结果返回盖世游戏`, '安全授权')}
+          <div class="product-body">
+            <section class="official-login-card">
+              <span class="gog-logo">G</span>
+              <h3>GOG 官方登录</h3>
+              <p class="login-domain">https://login.gog.com/</p>
+              <div class="security-note">此页面由 GOG 官方提供。盖世游戏只接收授权结果，不读取、不保存邮箱或密码。</div>
+              <div class="login-preview" aria-label="GOG 官方页面示意">
+                <div class="masked-field">GOG 官方账号输入区域</div>
+                <div class="masked-field">••••••••••••••••</div>
+              </div>
+              ${state.loginError ? `<div class="login-error" data-login-error>${state.loginError}</div>` : ''}
+              <div class="login-actions">
+                <button class="secondary-button" data-action="gog-authorize-cancel">取消并返回</button>
+                <button class="primary-button" data-action="gog-authorize-success">模拟授权成功</button>
+              </div>
+              <div class="login-test-tools">
+                <button data-action="gog-authorize-failure">模拟${actionName}失败</button>
+              </div>
+            </section>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderProfileBound() {
+      const account = state.accountByPlatform.gog.account || GOG_ACCOUNT;
+      return `
+        <article class="product-screen" data-screen="profile-bound">
+          ${renderProductHeader('我的', 'GOG 账号已绑定', '已同步')}
+          <div class="product-body">
+            ${renderPlatformTabs()}
+            <section class="account-hero">
+              <div class="account-identity">
+                <span class="gog-logo">G</span>
+                <div><h3>${account.username}</h3><p>GOG 账号 · 数据独立同步</p></div>
+              </div>
+              <div class="metric-grid">
+                <div class="metric-card"><span>账号价值</span><strong>${account.value}</strong></div>
+                <div class="metric-card"><span>游玩时长</span><strong>${account.hours}</strong></div>
+                <div class="metric-card"><span>游戏数量</span><strong>${account.games}</strong></div>
+              </div>
+              <div class="sync-line">最近同步：${state.gogRefreshInFlight ? '正在刷新…' : state.gogLastSyncAt}</div>
+            </section>
+            <div class="account-actions" aria-label="GOG 账号管理">
+              <button class="secondary-button" data-action="refresh-gog"${state.gogRefreshInFlight ? ' disabled' : ''}>${state.gogRefreshInFlight ? '刷新中…' : '更新刷新'}</button>
+              <button class="secondary-button" data-action="switch-gog">切换账号</button>
+              <button class="danger-button" data-action="logout-gog">退出账号</button>
+            </div>
+            ${state.showLogoutConfirm ? `
+              <section class="logout-confirm" data-logout-confirm>
+                <strong>只退出当前 GOG 账号？</strong>
+                <p>将清除 GOG 授权和账号缓存，不影响已绑定的 Steam 与 EPIC。</p>
+                <div class="confirm-actions">
+                  <button class="danger-button" data-action="confirm-logout-gog">确认退出</button>
+                  <button class="secondary-button" data-action="cancel-logout-gog">取消</button>
+                </div>
+              </section>
+            ` : ''}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderLibraryUnbound() {
+      return `
+        <article class="product-screen library-screen" data-screen="library-unbound">
+          ${renderProductHeader('游戏库', '查看已拥有的第三方平台游戏', 'GOG 游戏')}
+          <div class="product-body">
+            ${renderPlatformTabs()}
+            <section class="empty-state">
+              <div class="empty-state-content">
+                <span class="gog-logo" style="margin:auto">G</span>
+                <h3>绑定后查看 GOG 游戏</h3>
+                <p>完成 GOG 官方授权后，游戏库会回到当前入口并展示已同步的游戏。</p>
+                <button class="primary-button" data-action="bind-gog">绑定 GOG 账号</button>
+              </div>
+            </section>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderLibraryBound() {
+      return `
+        <article class="product-screen library-screen" data-screen="library-bound">
+          ${renderProductHeader('游戏库', 'GOG 游戏列表', '已同步 6 款')}
+          <div class="product-body">
+            ${renderPlatformTabs()}
+            <div class="library-heading"><h3>我的 GOG 游戏</h3><span>点击进入对应平台详情</span></div>
+            <div class="game-grid">
+              ${GOG_GAMES.map((game, index) => `
+                <button class="game-card" data-game-card
+                  data-game-id="${game.gameId}"
+                  data-platform-app-id="${game.platformAppId}"
+                  data-platform="gog">
+                  <span class="game-cover" style="--cover-a:${game.colors[0]};--cover-b:${game.colors[1]}">#${String(index + 1).padStart(2, '0')}</span>
+                  <span class="game-meta">
+                    <strong>${game.name}</strong>
+                    <span>已游玩 ${game.hours} 小时</span>
+                    <em class="gog-pill">GOG</em>
+                  </span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderPlaceholder(page) {
+      const selected = state.selectedGame;
+      const selectedName = GOG_GAMES.find(game => game.gameId === selected?.gameId)?.name;
+      return `
         <article class="screen-placeholder" data-screen="${page.id}"
-          data-game-id="${PLACEHOLDER_GAME.gameId ?? ''}"
-          data-platform-app-id="${PLACEHOLDER_GAME.platformAppId ?? ''}">
+          data-game-id="${selected?.gameId || ''}"
+          data-platform-app-id="${selected?.platformAppId || ''}">
           <div class="screen-topline">
             <span class="screen-kicker">${page.group}</span>
             <span class="state-chip">${SIMULATION_LABELS[state.simulation]}</span>
           </div>
           <h2>${page.label}</h2>
-          <p>当前为可切换的页面占位渲染。账户绑定、游戏库、详情路由与搜索业务将在后续任务中接入。</p>
+          <p>${selectedName ? `已从 GOG 游戏库进入《${selectedName}》详情，来源与当前启动平台均保留为 GOG。` : '详情路由与搜索业务将在后续任务中接入。'}</p>
           <div class="placeholder-grid">
             <div class="placeholder-card"><span>页面标识</span><strong>${page.id}</strong></div>
             <div class="placeholder-card"><span>画布方向</span><strong>${state.orientation}</strong></div>
@@ -536,6 +1100,19 @@
           </div>
         </article>
       `;
+    }
+
+    function renderCanvas(page) {
+      const canvas = document.getElementById('demoCanvas');
+      canvas.dataset.orientation = state.orientation;
+      const renderers = {
+        'profile-unbound':renderProfileUnbound,
+        'gog-login':renderGogLogin,
+        'profile-bound':renderProfileBound,
+        'library-unbound':renderLibraryUnbound,
+        'library-bound':renderLibraryBound,
+      };
+      canvas.innerHTML = renderers[page.id] ? renderers[page.id]() : renderPlaceholder(page);
     }
 
     function renderAnnotations(page) {
@@ -566,17 +1143,118 @@
       renderAnnotations(page);
     }
 
+    function beginAuthorization(mode) {
+      state.loginOrigin = state.screen;
+      state.authorizationMode = mode;
+      state.loginError = null;
+      state.screen = 'gog-login';
+      render();
+    }
+
+    function returnScreenForLogin() {
+      return state.loginOrigin || (state.accountByPlatform.gog.bindStatus === 'bound' ? 'profile-bound' : 'profile-unbound');
+    }
+
+    function completeGogAuthorization() {
+      const nextAccount = state.authorizationMode === 'switch' ? SWITCHED_GOG_ACCOUNT : GOG_ACCOUNT;
+      state.accountByPlatform.gog = {
+        bindStatus:'bound', tokenStatus:'valid', account:{ ...nextAccount },
+      };
+      state.gogLastSyncAt = '刚刚';
+      state.screen = returnScreenForLogin().startsWith('library') ? 'library-bound' : 'profile-bound';
+      state.authorizationMode = null;
+      state.loginOrigin = null;
+      state.loginError = null;
+      render();
+    }
+
+    function cancelGogAuthorization() {
+      state.screen = returnScreenForLogin();
+      state.authorizationMode = null;
+      state.loginOrigin = null;
+      state.loginError = null;
+      render();
+    }
+
+    function refreshGogAccount() {
+      if (state.gogRefreshInFlight) return;
+      state.gogRefreshInFlight = true;
+      state.gogRefreshRequestCount += 1;
+      render();
+      setTimeout(() => {
+        state.gogRefreshInFlight = false;
+        state.gogLastSyncAt = '刚刚';
+        render();
+      }, 120);
+    }
+
+    function openGogGame(card) {
+      state.selectedGame = {
+        gameId:card.dataset.gameId,
+        platformAppId:card.dataset.platformAppId,
+        platform:card.dataset.platform,
+      };
+      state.sourcePlatform = 'gog';
+      state.selectedPlatform = 'gog';
+      state.screen = 'detail-gog';
+      render();
+    }
+
     document.addEventListener('click', event => {
       const pageButton = event.target.closest('[data-page]');
       if (pageButton) {
         state.screen = pageButton.dataset.page;
+        state.showLogoutConfirm = false;
         render();
+        return;
+      }
+
+      const gameCard = event.target.closest('[data-game-card]');
+      if (gameCard) {
+        openGogGame(gameCard);
         return;
       }
 
       const actionButton = event.target.closest('[data-action]');
       if (!actionButton) return;
-      if (actionButton.dataset.action === 'anno-tab') {
+      if (actionButton.dataset.action === 'bind-gog') {
+        beginAuthorization('bind');
+        return;
+      } else if (actionButton.dataset.action === 'switch-gog') {
+        beginAuthorization('switch');
+        return;
+      } else if (actionButton.dataset.action === 'gog-authorize-success') {
+        completeGogAuthorization();
+        return;
+      } else if (actionButton.dataset.action === 'gog-authorize-cancel') {
+        cancelGogAuthorization();
+        return;
+      } else if (actionButton.dataset.action === 'gog-authorize-failure') {
+        state.loginError = state.authorizationMode === 'switch'
+          ? '切换失败，原账号 GalaxyRider 已保留。可重试或取消返回。'
+          : '授权失败，未保存任何账号输入。可重试或取消返回。';
+        render();
+        return;
+      } else if (actionButton.dataset.action === 'refresh-gog') {
+        refreshGogAccount();
+        return;
+      } else if (actionButton.dataset.action === 'logout-gog') {
+        state.showLogoutConfirm = true;
+        render();
+        return;
+      } else if (actionButton.dataset.action === 'cancel-logout-gog') {
+        state.showLogoutConfirm = false;
+        render();
+        return;
+      } else if (actionButton.dataset.action === 'confirm-logout-gog') {
+        state.accountByPlatform.gog = { bindStatus:'unbound', tokenStatus:'none', account:null };
+        state.selectedGame = null;
+        state.sourcePlatform = null;
+        state.showLogoutConfirm = false;
+        state.screen = 'profile-unbound';
+        render();
+        return;
+      } else if (actionButton.dataset.action === 'anno-tab') {
         state.annotationTab = actionButton.dataset.value;
       } else if (actionButton.dataset.action === 'toggle-markers') {
         state.showMarkers = !state.showMarkers;
@@ -595,7 +1273,7 @@
       }
     });
 
-    window.GogDemoApp = { state, resolveSelectedPlatform, render };
+    window.GogDemoApp = { state, GOG_GAMES, resolveSelectedPlatform, render };
     render();
   </script>
 </body>
