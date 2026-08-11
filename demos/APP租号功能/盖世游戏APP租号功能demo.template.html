@@ -1730,7 +1730,7 @@
     .checkout-option-row > label { color: #fff; font-size: 13px; font-weight: 700; white-space: nowrap; }
     .checkout-entitlement-section > h2 { margin: 0; color: #fff; font-size: 13px; font-weight: 700; line-height: 20px; }
     .checkout-option-buttons { display: grid; min-width: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-    .checkout-option { min-width: 0; min-height: 44px; padding: 0 5px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 11px; background: rgb(255 255 255 / 4%); color: #d3d5da; cursor: pointer; font-size: 9px; }
+    .checkout-option { min-width: 0; min-height: 44px; padding: 0 5px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 11px; background: rgb(255 255 255 / 4%); color: #d3d5da; cursor: pointer; font-size: 9px; white-space: nowrap; }
     .checkout-option.selected { border-color: rgb(42 157 247 / 68%); background: linear-gradient(135deg, rgb(34 169 255 / 17%), rgb(79 99 255 / 9%)); color: #fff; box-shadow: inset 0 0 0 1px rgb(44 151 245 / 10%); }
     .checkout-option:disabled { cursor: not-allowed; opacity: .42; }
     .hourly-picker { display: grid; grid-template-columns: 128px minmax(0, 1fr); align-items: center; gap: 8px; padding-top: 7px; border-top: 1px solid rgb(255 255 255 / 7%); }
@@ -2248,7 +2248,7 @@
       'permanent-owned': { permanentEntitlement: true },
     };
 
-    const NON_TERMINAL_ORDER_STATUSES = new Set(['pending', 'allocating', 'active']);
+    const NON_TERMINAL_ORDER_STATUSES = new Set(['pending', 'active']);
     const NON_DELETABLE_ORDER_STATUSES = new Set([...NON_TERMINAL_ORDER_STATUSES, 'refunding']);
     const RENTAL_CREDENTIAL = Object.freeze({
       account: 'gh_rental_2607',
@@ -2268,7 +2268,6 @@
     });
     const ORDER_STATUS_META = Object.freeze({
       pending: { label: '待支付', note: '请在 30 分钟内完成支付', tone: 'danger' },
-      allocating: { label: '分配中', note: '系统正在分配可用账号', tone: 'info' },
       active: { label: '租赁中', note: '账号已就绪，可登录游戏', tone: 'success' },
       refunding: { label: '退款中', note: '取号失败，正在自动退款', tone: 'refund' },
       refunded: { label: '已退款', note: '退款已原路返回', tone: 'muted' },
@@ -2276,7 +2275,6 @@
     });
     const ORDER_ACTIONS_BY_STATUS = Object.freeze({
       pending: Object.freeze([['cancel', '取消订单', 'secondary'], ['pay', '继续支付', 'primary']]),
-      allocating: Object.freeze([['refresh', '刷新状态', 'primary']]),
       active: Object.freeze([['after-sales', '申请售后', 'secondary'], ['credentials', '登录信息', 'secondary'], ['login', '登录游戏', 'primary']]),
       refunding: Object.freeze([['progress', '退款进度', 'primary']]),
       refunded: Object.freeze([['progress', '退款进度', 'secondary'], ['delete', '删除订单', 'danger']]),
@@ -2290,7 +2288,6 @@
     ]);
     const ORDER_FIXTURES = Object.freeze([
       { id: 'APP-20260803001', orderType: 'rental', status: 'active', gameId: 'red-dead-2', gameName: '荒野大镖客：救赎 2', version: 'Steam · 标准版', editionId: 'standard', durationLabel: '8小时', amount: 36, credentialAvailable: true, createdAt: Date.now() - 2 * 60 * 60 * 1000, updatedAt: Date.now() - 10 * 60 * 1000, paidAt: Date.now() - 90 * 60 * 1000, expireAt: Date.now() + 6 * 60 * 60 * 1000, playedMinutes: 18, refundRuleVersion: 'REFUND-72H-30M-V1' },
-      { id: 'APP-20260803002', orderType: 'rental', status: 'allocating', gameId: 'the-forest', gameName: 'The Forest', version: 'Steam · 标准版', editionId: 'standard', durationLabel: '2小时', amount: 9.9, credentialAvailable: false, createdAt: Date.now() - 45 * 60 * 1000, updatedAt: Date.now() - 3 * 60 * 1000 },
       { id: 'APP-20260803003', orderType: 'rental', status: 'pending', gameId: 'hogwarts', gameName: '霍格沃茨之遗', version: 'Steam · 增强版', editionId: 'enhanced', durationLabel: '24小时', amount: 29.9, credentialAvailable: false, paymentDeadline: Date.now() + 24 * 60 * 1000, createdAt: Date.now() - 6 * 60 * 1000, updatedAt: Date.now() - 2 * 60 * 1000 },
       { id: 'APP-20260803004', orderType: 'rental', status: 'refunding', gameId: 'witcher-3', gameName: '巫师 3：狂猎', version: 'Steam · 标准版', editionId: 'standard', durationLabel: '2小时', amount: 9.9, credentialAvailable: false, createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000, updatedAt: Date.now() - 30 * 60 * 1000 },
       { id: 'APP-20260803005', orderType: 'rental', status: 'ended', gameId: 'stardew', gameName: '星露谷物语', version: 'Steam · 豪华版', editionId: 'deluxe', durationLabel: '7天', amount: 99, credentialAvailable: false, createdAt: Date.now() - 9 * 24 * 60 * 60 * 1000, updatedAt: Date.now() - 2 * 24 * 60 * 60 * 1000, endedAt: Date.now() - 2 * 24 * 60 * 60 * 1000 },
@@ -3163,7 +3160,7 @@
       return Math.max(2, hours) * 60 * 60 * 1000;
     }
 
-    function payOrder({ paidAt = nowFromServer(), transactionId = state.order?.id } = {}) {
+    function payOrder({ paidAt = nowFromServer(), transactionId = state.order?.id, accountPrepared = true } = {}) {
       if (!state.order || !transactionId) return false;
       if (state.processedPaymentTransactions[transactionId]) return cloneOrder(state.order);
       if (state.order.status !== 'pending') return false;
@@ -3192,28 +3189,20 @@
         }
         state.transactionNotice = 'entitlement-active';
       } else {
-        state.order.status = 'allocating';
-        state.transactionNotice = 'payment-complete';
+        const rentalReady = accountPrepared !== false;
+        state.order.status = rentalReady ? 'active' : 'refunding';
+        state.order.credentialAvailable = rentalReady;
+        if (rentalReady) {
+          state.accountAllocationCount += 1;
+          state.order.expireAt = Number(paidAt) + orderDurationMs(state.order);
+          state.order.expiresAt = state.order.expireAt;
+        }
+        state.transactionNotice = rentalReady ? 'rental-active' : 'rental-refunding';
       }
       state.selectedOrderId = state.order.id;
       state.processedPaymentTransactions[transactionId] = state.order.id;
       renderApp();
       return cloneOrder(state.order);
-    }
-
-    function allocateAccount(success = true) {
-      if (!state.order || state.order.status !== 'allocating') return false;
-      state.order.status = success ? 'active' : 'refunding';
-      state.order.updatedAt = nowFromServer();
-      if (success) {
-        state.accountAllocationCount += 1;
-        state.selectedOrderId = state.order.id;
-        state.order.expireAt = Number(state.order.paidAt || nowFromServer()) + orderDurationMs(state.order);
-        state.order.expiresAt = state.order.expireAt;
-      }
-      state.transactionNotice = success ? 'allocation-complete' : 'allocation-failed';
-      renderApp();
-      return true;
     }
 
     function prepareAccountForLaunch({ orderId, launchRequestId }) {
@@ -3427,8 +3416,7 @@
         renderApp();
         return true;
       }
-      showToast('订单状态已刷新');
-      return true;
+      return false;
     }
 
     function openLoginMethod() {
@@ -4355,7 +4343,7 @@
         const label = sku.id === 'trial' ? '首次体验 · 2小时' : sku.id === 'permanent' ? '单游戏永久' : sku.label;
         return `<button class="checkout-option ${state.selectedSku === sku.id ? 'selected' : ''}" type="button" data-action="select-checkout-sku" data-sku="${sku.id}" data-sku-kind="${sku.id}" aria-pressed="${state.selectedSku === sku.id}">${label}</button>`;
       }).join('');
-      const membership = '<button class="checkout-option" type="button" data-action="open-membership-from-checkout" data-sku-kind="membership">开会员</button>';
+      const membership = '<button class="checkout-option" type="button" data-action="open-membership-from-checkout" data-sku-kind="membership">开会员畅玩</button>';
       return `<section class="checkout-sku-section checkout-entitlement-section checkout-panel" data-sale-mode="${mode}"><h2>权益方案</h2><div class="checkout-option-buttons" data-checkout-field="entitlement">${optionButtons}${membership}</div>${skus.length ? '' : '<div class="state-alert">当前没有可购买的畅玩方式，请返回详情。</div>'}</section>`;
     }
 
@@ -4472,14 +4460,13 @@
       const completion = getCheckoutCompletionMeta(order);
       const ready = Boolean(completion);
       const recovery = renderCheckoutRecoveryActions();
-      return `<section class="payment-panel">${renderCheckoutSkuOptions(game)}${renderCheckoutAmountSummary(order)}<div class="checkout-payment-row"><h2>支付方式</h2><div class="payment-list">${renderPaymentMethods()}</div></div>${recovery || `<div class="checkout-bottom-bar"><strong>${completion?.summary || model.dueText}</strong><button class="primary-action payment-primary" type="button" data-primary-action="true" data-action="${completion?.action || (state.priceChanged ? 'refresh-price' : 'pay-game-order')}" ${disabled || (processing && !ready) ? 'disabled' : ''}>${completion?.label || (processing ? '账号分配中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : '立即购买')}</button></div>`}</section>`;
+      return `<section class="payment-panel">${renderCheckoutSkuOptions(game)}${renderCheckoutAmountSummary(order)}<div class="checkout-payment-row"><h2>支付方式</h2><div class="payment-list">${renderPaymentMethods()}</div></div>${recovery || `<div class="checkout-bottom-bar"><strong>${completion?.summary || model.dueText}</strong><button class="primary-action payment-primary" type="button" data-primary-action="true" data-action="${completion?.action || (state.priceChanged ? 'refresh-price' : 'pay-game-order')}" ${disabled || (processing && !ready) ? 'disabled' : ''}>${completion?.label || (processing ? (order.status === 'refunding' ? '退款处理中' : '暂不可购买') : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : '立即购买')}</button></div>`}</section>`;
     }
 
     function checkoutAlert() {
       if (state.transactionNotice === 'entitlement-active') return '<div class="state-alert success-alert"><strong>支付成功，权益已生效</strong><span>首次体验从支付成功时间开始计时，可直接开始畅玩。</span></div>';
-      if (state.transactionNotice === 'payment-complete') return '<div class="state-alert success-alert"><strong>支付成功</strong><span>正在分配账号，请稍候。</span></div>';
-      if (state.transactionNotice === 'allocation-complete') return '<div class="state-alert success-alert"><strong>账号分配成功</strong><span>账号已就绪，可立即登录开始畅玩。</span></div>';
-      if (state.transactionNotice === 'allocation-failed') return '<div class="state-alert"><strong>账号分配失败</strong><span>订单已进入自动退款流程。</span></div>';
+      if (state.transactionNotice === 'rental-active') return '<div class="state-alert success-alert"><strong>支付成功，租赁已生效</strong><span>账号已就绪，可立即登录开始畅玩。</span></div>';
+      if (state.transactionNotice === 'rental-refunding') return '<div class="state-alert"><strong>支付成功，正在退款</strong><span>当前无可用账号，订单已进入自动退款流程。</span></div>';
       if (state.orderQueryError) return `<div class="state-alert network-alert"><strong>网络异常，暂未获取订单状态</strong><span>订单号 ${state.order?.id || '--'} 已保留，请恢复网络后重新查询。</span></div>`;
       if (!state.inventoryAvailable) return '<div class="state-alert"><strong>当前套餐已售罄</strong><br>可重新查询库存，或返回详情选择其他租期。<br><button class="state-alert-action" type="button" data-action="retry-inventory">重新查询库存</button></div>';
       if (state.priceChanged) return '<div class="state-alert">价格已更新，请按新价格重新确认订单。</div>';
@@ -4665,10 +4652,13 @@
     }
 
     function renderOrderProgress(order) {
-      const steps = order.saleMode === GAME_SALE_MODES.ENTITLEMENT
-        ? ['提交订单', '完成支付', '权益生效', '开始畅玩']
-        : ['提交订单', '完成支付', '分配账号', '开始畅玩'];
-      const current = { pending: 0, allocating: 2, active: 3, refunding: 2, ended: 4 }[order.status] ?? 0;
+      const refundOrder = ['refunding', 'refunded'].includes(order.status);
+      const steps = refundOrder
+        ? ['提交订单', '完成支付', '发起退款', '退款完成']
+        : order.saleMode === GAME_SALE_MODES.ENTITLEMENT
+          ? ['提交订单', '完成支付', '权益生效', '开始畅玩']
+          : ['提交订单', '完成支付', '租赁生效', '开始畅玩'];
+      const current = { pending: 0, active: 3, refunding: 2, refunded: 4, ended: 4 }[order.status] ?? 0;
       return `<div class="order-progress" aria-label="订单四步进度">${steps.map((label, index) => {
         const done = index < current || order.status === 'ended';
         const active = index === current && order.status !== 'ended';
@@ -4874,7 +4864,7 @@
         const processing = state.order.status !== 'pending';
         const completion = getCheckoutCompletionMeta(state.order);
         const ready = Boolean(completion);
-        return `<footer class="portrait-fixed-footer checkout-bottom-bar"><strong>${completion?.summary || model.dueText}</strong><button class="primary-action payment-primary" type="button" data-primary-action="true" data-action="${completion?.action || (state.priceChanged ? 'refresh-price' : 'pay-game-order')}" ${disabled || (processing && !ready) ? 'disabled' : ''}>${completion?.label || (processing ? '账号分配中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : '立即购买')}</button></footer>`;
+        return `<footer class="portrait-fixed-footer checkout-bottom-bar"><strong>${completion?.summary || model.dueText}</strong><button class="primary-action payment-primary" type="button" data-primary-action="true" data-action="${completion?.action || (state.priceChanged ? 'refresh-price' : 'pay-game-order')}" ${disabled || (processing && !ready) ? 'disabled' : ''}>${completion?.label || (processing ? (order.status === 'refunding' ? '退款处理中' : '暂不可购买') : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : '立即购买')}</button></footer>`;
       }
       if (screen === 'membership') {
         const plan = MEMBER_PLANS.find(({ id }) => id === state.memberPlan) || MEMBER_PLANS[0];
@@ -5740,8 +5730,6 @@
       completeMembershipPayment: payMembershipOrder,
       payOrder,
       confirmGamePayment: payOrder,
-      allocateAccount,
-      resolveAllocation: allocateAccount,
       setServerNow(value) {
         state.serverNow = Number(value);
         return state.serverNow;

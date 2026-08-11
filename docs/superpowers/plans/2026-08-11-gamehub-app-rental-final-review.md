@@ -306,7 +306,7 @@ function renderGamePaymentPanel(game, order) {
     ${renderCheckoutSkuOptions(game)}
     ${renderCheckoutAmountSummary(order)}
     <div class="checkout-payment-row"><h2>支付方式</h2><div class="payment-list">${renderPaymentMethods()}</div></div>
-    ${recovery || `<div class="checkout-bottom-bar"><strong>${ready ? '账号已就绪' : model.dueText}</strong><button class="primary-action payment-primary" type="button" data-primary-action="true" data-action="${ready ? 'open-login-method' : state.priceChanged ? 'refresh-price' : 'pay-game-order'}" ${disabled || (processing && !ready) ? 'disabled' : ''}>${ready ? '立即登录' : processing ? '账号分配中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : '立即购买'}</button></div>`}
+    ${recovery || `<div class="checkout-bottom-bar"><strong>${ready ? '账号已就绪' : model.dueText}</strong><button class="primary-action payment-primary" type="button" data-primary-action="true" data-action="${ready ? 'open-login-method' : state.priceChanged ? 'refresh-price' : 'pay-game-order'}" ${disabled || (processing && !ready) ? 'disabled' : ''}>${ready ? '立即登录' : processing ? '退款处理中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : '立即购买'}</button></div>`}
   </section>`;
 }
 ```
@@ -542,8 +542,8 @@ function nowFromServer() {
 替换 `payOrder()` 的核心状态流：
 
 ```js
-function payOrder({ paidAt = nowFromServer(), transactionId = state.order?.id } = {}) {
-  if (!state.order || !['pending', 'active', 'allocating'].includes(state.order.status)) return false;
+function payOrder({ paidAt = nowFromServer(), transactionId = state.order?.id, accountPrepared = true } = {}) {
+  if (!state.order || state.order.status !== 'pending') return false;
   if (state.processedPaymentTransactions[transactionId]) return cloneOrder(state.order);
   const entitlementOrder = state.order.saleMode === GAME_SALE_MODES.ENTITLEMENT;
   state.order.paidAt = paidAt;
@@ -562,8 +562,13 @@ function payOrder({ paidAt = nowFromServer(), transactionId = state.order?.id } 
     }
     state.transactionNotice = 'entitlement-active';
   } else {
-    state.order.status = 'allocating';
-    state.transactionNotice = 'payment-complete';
+    state.order.status = accountPrepared ? 'active' : 'refunding';
+    state.order.credentialAvailable = accountPrepared;
+    if (accountPrepared) {
+      state.order.expiresAt = paidAt + orderDurationMs(state.order);
+      state.order.expireAt = state.order.expiresAt;
+    }
+    state.transactionNotice = accountPrepared ? 'rental-active' : 'rental-refunding';
   }
   state.processedPaymentTransactions[transactionId] = state.order.id;
   renderApp();
@@ -571,11 +576,11 @@ function payOrder({ paidAt = nowFromServer(), transactionId = state.order?.id } 
 }
 ```
 
-时租账号分配成功后的到期时间必须从 `order.paidAt` 计算，而不是从分配完成时间计算；首次体验不进入 `allocateAccount()`。
+时租账号准备成功后的到期时间必须从 `order.paidAt` 计算，而不是从内部准备完成时间计算。客户端不暴露账号准备接口或中间状态。
 
-- [ ] **Step 3: 支付后隐藏首次体验并移除用户可见分配态**
+- [ ] **Step 3: 支付后隐藏首次体验并移除客户端账号准备中间态**
 
-`getCheckoutEligibilityContext()` 和 `getDiscoveryUserContext()` 必须同时读取平台级 `platformTrialEligibility.eligible` 与游戏目录资格；任一游戏首次体验支付成功后，所有游戏的确认订单、搜索和首页都立即失去首次体验 SKU/首体验价，回退各自普通租价。`checkoutAlert()` 对权益型订单显示“支付成功，权益已生效”，`renderGamePaymentPanel()` 不显示“账号分配中”。`renderOrderProgress()` 对权益型订单使用 `提交订单 / 完成支付 / 权益生效 / 开始畅玩`。
+`getCheckoutEligibilityContext()` 和 `getDiscoveryUserContext()` 必须同时读取平台级 `platformTrialEligibility.eligible` 与游戏目录资格；任一游戏首次体验支付成功后，所有游戏的确认订单、搜索和首页都立即失去首次体验 SKU/首体验价，回退各自普通租价。`checkoutAlert()` 对权益型订单显示“支付成功，权益已生效”；时租账号可用时直接进入租赁中，不可用时直接进入退款中。`renderOrderProgress()` 对权益型订单使用 `提交订单 / 完成支付 / 权益生效 / 开始畅玩`，对时租使用 `提交订单 / 完成支付 / 租赁生效 / 开始畅玩`。
 
 - [ ] **Step 4: 增加每次启动后台幂等准备账号**
 
@@ -593,7 +598,7 @@ function prepareAccountForLaunch({ orderId, launchRequestId }) {
 }
 ```
 
-该函数不渲染“账号分配中”；重复 `launchRequestId` 不增加 `accountAllocationCount`。
+该函数不渲染账号准备过程；重复 `launchRequestId` 不增加 `accountAllocationCount`。
 
 - [ ] **Step 5: 实现周卡未过期顺延、已过期重算和回调幂等**
 
@@ -656,7 +661,7 @@ node tools/build-app-rental-demo.mjs
 node tools/verify-app-rental-demo.mjs
 ```
 
-Expected: `FINAL_SCOPE_PAYMENT_AND_GUARDS` 全部通过；旧的“首次成功启动计时”“首次体验账号分配中”和重复回调延长时间断言不存在。
+Expected: `FINAL_SCOPE_PAYMENT_AND_GUARDS` 全部通过；旧的“首次成功启动计时”、客户端账号准备中间态和重复回调延长时间断言不存在。
 
 - [ ] **Step 7: 提交计时与续费**
 
@@ -986,7 +991,7 @@ git commit -m "feat: add dual-client rental operations"
 搜索并替换：
 
 ```powershell
-rg -n "单游永久|首次启动|账号分配中|继续畅玩|列表与详情.*一致|月度|年度|永久会员|游戏名 - 标准版" 'demos/APP租号功能/盖世游戏APP租号功能-标注版.html'
+rg -n "单游永久|首次启动|继续畅玩|列表与详情.*一致|月度|年度|永久会员|游戏名 - 标准版" 'demos/APP租号功能/盖世游戏APP租号功能-标注版.html'
 ```
 
 只保留必要的否定性边界说明；正向标注统一为 `首次体验 · 2小时`、`单游戏永久`、支付成功计时、列表无申请售后、终态按权益显示可畅玩或租号开玩、商品名/灰色标准版两级信息。
@@ -1001,12 +1006,12 @@ rg -n "单游永久|首次启动|账号分配中|继续畅玩|列表与详情.*�
 
 ```markdown
 - 首次体验 SKU：首次体验 · 2小时；startsAt=paidAt，expiresAt=paidAt+2小时。
-- 支付成功即消耗首次资格并隐藏 SKU；客户端不显示账号分配中。
+- 支付成功即消耗首次资格并隐藏 SKU；客户端不设置账号准备中间态。
 - 启动时后台幂等准备账号；重复 launchRequestId 返回同一结果。
 - 周卡未过期从当前到期时间顺延7天，已过期从本次 paidAt 重算；回调按交易号幂等。
 - 订单列表过滤申请售后，详情保留；终态无权益显示租号开玩，有权益显示可畅玩。
 - 非本次租用游戏启动前阻断；退款风险只限制平台额外3天无理由。
-- 确认订单竖屏按“商品→上一版五项租号权益→套餐→游戏原价/订单金额→支付方式”展示；横屏左侧展示商品与五项租号权益、右侧展示套餐/金额/支付；订单金额与需支付同源，3天无理由仍可打开规则弹窗，右上角纯文字“租号介绍”打开三组常见问题问答。
+- 确认订单竖屏按“商品→上一版五项租号权益→套餐→游戏原价/订单金额→支付方式”展示；非热门权益方案第三个按钮文案为“开会员畅玩”且不换行；横屏左侧展示商品与五项租号权益、右侧展示套餐/金额/支付；订单金额与需支付同源，3天无理由仍可打开规则弹窗，右上角纯文字“租号介绍”打开三组常见问题问答。
 - 首次进入会员中心展示“关于会员”四点说明；关闭后本次会话不重复出现；不包含远程协助条款。
 - 后台7模块复用 Mac；6页独立 APP/Mac Tab、默认 APP；操作记录不加 Tab。
 ```
@@ -1031,7 +1036,7 @@ rg -n "单游永久|首次启动|账号分配中|继续畅玩|列表与详情.*�
 'data-admin-client-tab', 'clientType', 'APP（安卓端）',
 ```
 
-构建必须拒绝正向旧逻辑：首次体验从首次启动计时、首次体验支付后进入分配中、订单列表申请售后、后台全局端别 Tab、操作记录端别 Tab。
+构建必须拒绝正向旧逻辑：首次体验从首次启动计时、客户端展示账号准备过程、订单列表申请售后、后台全局端别 Tab、操作记录端别 Tab。
 
 - [ ] **Step 5: 构建、验证并提交文档同步**
 

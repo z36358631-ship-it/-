@@ -236,17 +236,16 @@ async function runPreflight(browser) {
   });
   passed += 1;
 
-  await withFreshPage(browser, 'preflight-allocation-failure', async (page) => {
+  await withFreshPage(browser, 'preflight-account-unavailable', async (page) => {
     const orderId = await page.evaluate(() => {
-      const order = window.__appRentalDemo.createOrder({ sku: 'rent-2h', amount: 9.9, priceVersion: 'preflight-allocation' });
-      window.__appRentalDemo.payOrder();
-      window.__appRentalDemo.allocateAccount(false);
+      const order = window.__appRentalDemo.createOrder({ sku: 'rent-2h', amount: 9.9, priceVersion: 'preflight-account-unavailable' });
+      window.__appRentalDemo.payOrder({ accountPrepared: false });
       window.__appRentalDemo.navigate('orders');
       window.__appRentalDemo.selectOrder(order.id);
       return order.id;
     });
-    assert(orderId, 'Allocation-failure preflight did not create an order');
-    assert((await page.locator('.portrait-order-detail').innerText()).includes('自动退款'), 'Allocation failure is missing automatic-refund copy');
+    assert(orderId, 'Account-unavailable preflight did not create an order');
+    assert((await page.locator('.portrait-order-detail').innerText()).includes('自动退款'), 'Account-unavailable state is missing automatic-refund copy');
   });
   passed += 1;
 

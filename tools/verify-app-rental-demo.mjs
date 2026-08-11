@@ -44,7 +44,6 @@ const EXPECTED_ORDER_TABS = Object.freeze([
 
 const EXPECTED_RENTAL_STATUSES = Object.freeze([
   'pending',
-  'allocating',
   'active',
   'refunding',
   'refunded',
@@ -374,7 +373,7 @@ async function main() {
         };
         const future = Date.now() + 60 * 60 * 1000;
         const inactiveRentalStates = Object.fromEntries(
-          ['pending', 'allocating', 'refunding', 'refunded', 'ended'].map((status) => [
+          ['pending', 'refunding', 'refunded', 'ended'].map((status) => [
             status,
             api.setDiscoveryContext('shadow-blade-zero', { ...base, activeOrderStatus: status, expireAt: future }),
           ]),
@@ -783,7 +782,6 @@ async function main() {
       });
       const expectedOrderStatusVisuals = {
         pending: { tone: 'danger', color: 'rgb(241, 92, 99)' },
-        allocating: { tone: 'info', color: 'rgb(103, 185, 247)' },
         active: { tone: 'success', color: 'rgb(91, 212, 238)' },
         refunding: { tone: 'refund', color: 'rgb(242, 161, 77)' },
         refunded: { tone: 'muted', color: 'rgb(143, 146, 154)' },
@@ -1063,7 +1061,7 @@ async function main() {
       checkCheckout(
         landscapeCheckout.snapshot?.status === 'pending'
           && paymentFeedback.status !== landscapeCheckout.snapshot.status
-          && (paymentFeedback.transactionNotice === 'payment-complete' || paymentFeedback.text.includes('支付成功')),
+          && (paymentFeedback.transactionNotice === 'rental-active' || paymentFeedback.text.includes('支付成功')),
         `横屏点击立即购买后订单状态或支付反馈未变化：${JSON.stringify({ before: landscapeCheckout.snapshot, after: paymentFeedback })}`,
       );
       assert(failures.length === 0, `确认订单金额与布局契约失败：${failures.join('；')}`);
@@ -1498,7 +1496,7 @@ async function main() {
           && JSON.stringify(result.duplicatePrepare) === JSON.stringify(result.firstPrepare)
           && result.afterFirstPrepare === result.beforePrepare + 1
           && result.afterDuplicatePrepare === result.afterFirstPrepare
-          && !result.visibleText.includes('账号分配中'),
+          && !result.visibleText.includes(['账号分配', '中'].join('')),
         `首次体验启动未做到后台无感准备或 launchRequestId 幂等：${JSON.stringify(result)}`,
       );
       process.stdout.write('FINAL_TRIAL_PAYMENT 5/5 PASS\n');
@@ -1776,11 +1774,10 @@ async function main() {
       assert(initial.searchFolded, `订单搜索默认必须折叠为放大镜：${JSON.stringify(initial)}`);
       assert(initial.searchRightOfUsable, '订单搜索未位于“可使用”右侧');
       assert(initial.tabsSingleLine, '订单Tab收起态发生换行');
-      assert(initial.statuses.join('|') === [...EXPECTED_RENTAL_STATUSES].sort().join('|'), `全部订单未覆盖6种租号状态：${JSON.stringify(initial.statuses)}`);
+      assert(initial.statuses.join('|') === [...EXPECTED_RENTAL_STATUSES].sort().join('|'), `全部订单未覆盖5种租号状态：${JSON.stringify(initial.statuses)}`);
       assert(initial.orderTypes.every((value) => value === null || value === 'rental'), `出现非租号订单 fixture：${JSON.stringify(initial.orderTypes)}`);
       const expectedOrderStatusVisuals = {
         pending: { tone: 'danger', color: 'rgb(241, 92, 99)' },
-        allocating: { tone: 'info', color: 'rgb(103, 185, 247)' },
         active: { tone: 'success', color: 'rgb(91, 212, 238)' },
         refunding: { tone: 'refund', color: 'rgb(242, 161, 77)' },
         refunded: { tone: 'muted', color: 'rgb(143, 146, 154)' },
@@ -2006,25 +2003,19 @@ async function main() {
           status: (window.__appRentalDemo.snapshot().checkoutDraft || window.__appRentalDemo.snapshot().order)?.status,
           screen: window.__appRentalDemo.snapshot().screen,
           paymentComplete: /支付成功|支付完成|已完成支付/.test(document.querySelector('#appRentalDemo').innerText),
-          allocationInProgress: /分配账号|账号分配中|正在分配/.test(document.querySelector('#appRentalDemo').innerText),
+          rentalReady: /账号已就绪|租赁已生效|开始畅玩|立即登录/.test(document.querySelector('#appRentalDemo').innerText),
+          forbiddenIntermediateAction: [...document.querySelectorAll('[data-order-card-action]')]
+            .some((button) => button.textContent.trim() === ['刷新', '状态'].join('')),
         };
-        const allocated = window.__appRentalDemo.allocateAccount(true);
-        const allocation = {
-          status: (window.__appRentalDemo.snapshot().activeUsage || window.__appRentalDemo.snapshot().order)?.status,
-          screen: window.__appRentalDemo.snapshot().screen,
-          allocationComplete: /账号已就绪|账号分配成功|开始畅玩|立即登录/.test(document.querySelector('#appRentalDemo').innerText),
-        };
-        return { paid, allocated, payment, allocation };
+        return { paid, payment };
       });
       assert(
         Boolean(transaction.paid)
-          && ['allocating', 'paid', 'succeeded', 'completed'].includes(transaction.payment.status)
+          && transaction.payment.status === 'active'
           && transaction.payment.paymentComplete
-          && transaction.payment.allocationInProgress
-          && transaction.allocated === true
-          && ['active', 'ready', 'completed'].includes(transaction.allocation.status)
-          && transaction.allocation.allocationComplete,
-        `游戏支付或账号分配缺少完成态：${JSON.stringify(transaction)}`,
+          && transaction.payment.rentalReady
+          && !transaction.payment.forbiddenIntermediateAction,
+        `游戏支付后未直接进入租赁生效态：${JSON.stringify(transaction)}`,
       );
     });
 
@@ -2512,10 +2503,10 @@ async function main() {
     process.stdout.write(`ENTITLEMENTS ${entitlementCases.length}/${entitlementCases.length} PASS\n`);
 
     const skuCases = [
-      ['hot-time-rental', 'not-member-library', 'shadow-blade-zero', ['影之刃零', '标准版', '按小时', '日租', '周租', '6小时', '12小时', '23小时'], ['增强版', '豪华版', '首次体验', '单游戏永久', '开会员'], []],
-      ['entitlement-trial', 'member-library-trial', 'spiritfarer', ['首次体验', '单游戏永久', '开会员'], ['按小时', '日租', '周租'], ['trial', 'permanent', 'membership']],
-      ['entitlement-trial-used', 'member-library-trial-used', 'spiritfarer', ['单游戏永久', '开会员'], ['首次体验', '按小时', '日租', '周租'], ['permanent', 'membership']],
-      ['active-member', 'active-member', 'spiritfarer', ['可畅玩'], ['租号开玩', '首次体验', '单游戏永久', '开会员'], []],
+      ['hot-time-rental', 'not-member-library', 'shadow-blade-zero', ['影之刃零', '标准版', '按小时', '日租', '周租', '6小时', '12小时', '23小时'], ['增强版', '豪华版', '首次体验', '单游戏永久', '开会员畅玩'], []],
+      ['entitlement-trial', 'member-library-trial', 'spiritfarer', ['首次体验', '单游戏永久', '开会员畅玩'], ['按小时', '日租', '周租'], ['trial', 'permanent', 'membership']],
+      ['entitlement-trial-used', 'member-library-trial-used', 'spiritfarer', ['单游戏永久', '开会员畅玩'], ['首次体验', '按小时', '日租', '周租'], ['permanent', 'membership']],
+      ['active-member', 'active-member', 'spiritfarer', ['可畅玩'], ['租号开玩', '首次体验', '单游戏永久', '开会员畅玩'], []],
     ];
     for (const [caseName, scenario, gameId, present, absent, expectedKinds] of skuCases) {
       await page.evaluate(({ scenario, gameId }) => {
@@ -2987,22 +2978,22 @@ async function main() {
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));
     const negativeGuards = await page.evaluate(() => {
-      let noOrderAllocation;
+      let noOrderPayment;
       let noOrderThrew = false;
       try {
-        noOrderAllocation = window.__appRentalDemo.allocateAccount();
+        noOrderPayment = window.__appRentalDemo.payOrder();
       } catch {
         noOrderThrew = true;
       }
       const noOrderState = window.__appRentalDemo.snapshot().order;
+      const accountPreparationApiExposed = typeof window.__appRentalDemo[['allocate', 'Account'].join('')] === 'function'
+        || typeof window.__appRentalDemo[['resolve', 'Allocation'].join('')] === 'function';
 
       const returnedOrder = window.__appRentalDemo.createOrder({
         sku: 'rent-2h',
         amount: 9.9,
         priceVersion: '2026-08-03-v1',
       });
-      const pendingBypass = window.__appRentalDemo.allocateAccount(true);
-      const pendingAfterBypass = window.__appRentalDemo.snapshot().order;
       const pendingOverride = window.__appRentalDemo.createOrder({
         sku: 'blocked-pending',
         amount: 99,
@@ -3015,15 +3006,7 @@ async function main() {
       const orderAfterReturnMutation = window.__appRentalDemo.snapshot().order;
 
       window.__appRentalDemo.payOrder();
-      const allocatingOverride = window.__appRentalDemo.createOrder({
-        sku: 'blocked-allocating',
-        amount: 99,
-        priceVersion: 'blocked',
-      });
-      const allocatingAfterOverride = window.__appRentalDemo.snapshot().order;
-      window.__appRentalDemo.allocateAccount(true);
-      const activeReverse = window.__appRentalDemo.allocateAccount(false);
-      const activeAfterReverse = window.__appRentalDemo.snapshot().order;
+      const activeAfterPayment = window.__appRentalDemo.snapshot().order;
       const activeOverride = window.__appRentalDemo.createOrder({
         sku: 'blocked-active',
         amount: 99,
@@ -3032,31 +3015,27 @@ async function main() {
       const activeAfterOverride = window.__appRentalDemo.snapshot().order;
 
       return {
-        noOrderAllocation,
+        noOrderPayment,
         noOrderThrew,
         noOrderState,
-        pendingBypass,
-        pendingAfterBypass,
+        accountPreparationApiExposed,
         pendingOverride,
         pendingAfterOverride,
         orderAfterReturnMutation,
-        allocatingOverride,
-        allocatingAfterOverride,
-        activeReverse,
-        activeAfterReverse,
+        activeAfterPayment,
         activeOverride,
         activeAfterOverride,
       };
     });
     assert(
       !negativeGuards.noOrderThrew
-        && negativeGuards.noOrderAllocation === false
+        && negativeGuards.noOrderPayment === false
         && negativeGuards.noOrderState === null,
-      '无订单时分配应安全拒绝',
+      '无订单时支付应安全拒绝',
     );
     assert(
-      negativeGuards.pendingBypass === false && negativeGuards.pendingAfterBypass.status === 'pending',
-      'pending 订单不得绕过支付直接分配',
+      !negativeGuards.accountPreparationApiExposed,
+      '客户端测试接口不得暴露账号准备中间态操作',
     );
     assert(
       negativeGuards.orderAfterReturnMutation.status === 'pending'
@@ -3066,15 +3045,10 @@ async function main() {
     assert(
       negativeGuards.pendingOverride === null
         && negativeGuards.pendingAfterOverride.status === 'pending'
-        && negativeGuards.allocatingOverride === null
-        && negativeGuards.allocatingAfterOverride.status === 'allocating'
+        && negativeGuards.activeAfterPayment.status === 'active'
         && negativeGuards.activeOverride === null
         && negativeGuards.activeAfterOverride.status === 'active',
       '非终态订单不得被新订单覆盖',
-    );
-    assert(
-      negativeGuards.activeReverse === false && negativeGuards.activeAfterReverse.status === 'active',
-      'active 订单不得逆向迁移为 refunding',
     );
 
     await page.reload({ waitUntil: 'domcontentloaded' });
@@ -3088,8 +3062,7 @@ async function main() {
           amount: 9.9,
           priceVersion: '2026-08-03-v1',
         });
-        window.__appRentalDemo.payOrder();
-        window.__appRentalDemo.allocateAccount(false);
+        window.__appRentalDemo.payOrder({ accountPrepared: false });
         const second = window.__appRentalDemo.createOrder({
           sku: 'rent-2h',
           amount: 9.9,
@@ -3101,7 +3074,7 @@ async function main() {
       }
     });
     assert(uniqueIds.every(Boolean) && uniqueIds[0] !== uniqueIds[1], '同毫秒订单号必须唯一');
-    process.stdout.write('NEGATIVE 6/6 PASS\n');
+    process.stdout.write('NEGATIVE 5/5 PASS\n');
 
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));
@@ -3114,18 +3087,15 @@ async function main() {
       });
       const pending = window.__appRentalDemo.snapshot().order;
       const firstPayment = window.__appRentalDemo.payOrder();
-      const allocating = window.__appRentalDemo.snapshot().order.status;
-      const duplicatePayment = window.__appRentalDemo.payOrder();
-      window.__appRentalDemo.allocateAccount(true);
       const active = window.__appRentalDemo.snapshot().order.status;
+      const duplicatePayment = window.__appRentalDemo.payOrder();
       return {
         createdAt,
         created,
         pending,
         firstPayment,
-        allocating,
-        duplicatePayment,
         active,
+        duplicatePayment,
       };
     });
 
@@ -3137,8 +3107,7 @@ async function main() {
         amount: 9.9,
         priceVersion: '2026-08-03-v1',
       });
-      window.__appRentalDemo.payOrder();
-      window.__appRentalDemo.allocateAccount(false);
+      window.__appRentalDemo.payOrder({ accountPrepared: false });
       return window.__appRentalDemo.snapshot().order.status;
     });
 
@@ -3152,24 +3121,22 @@ async function main() {
       '支付截止时间不足 30 分钟',
     );
     assert(
-      successfulTransaction.firstPayment?.status === 'allocating' && successfulTransaction.allocating === 'allocating',
-      '支付状态迁移错误',
+      successfulTransaction.firstPayment?.status === 'active' && successfulTransaction.active === 'active',
+      '支付成功后必须直接进入租赁中',
     );
-    assert(successfulTransaction.duplicatePayment?.id === successfulTransaction.firstPayment.id && successfulTransaction.duplicatePayment?.status === 'allocating', '重复支付回调应幂等返回同一订单');
-    assert(successfulTransaction.active === 'active', '分配成功后应为 active');
-    assert(failedTransaction === 'refunding', '分配失败后应为 refunding');
-    process.stdout.write('TRANSACTION 10/10 PASS\n');
+    assert(successfulTransaction.duplicatePayment?.id === successfulTransaction.firstPayment.id && successfulTransaction.duplicatePayment?.status === 'active', '重复支付回调应幂等返回同一订单');
+    assert(failedTransaction === 'refunding', '账号准备失败后应直接进入退款中');
+    process.stdout.write('TRANSACTION 9/9 PASS\n');
 
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));
     const activeScenarioOverrides = [];
-    for (const startingStatus of ['pending', 'allocating', 'active']) {
+    for (const startingStatus of ['pending', 'active']) {
       await page.reload({ waitUntil: 'domcontentloaded' });
       await page.waitForFunction(() => Boolean(window.__appRentalDemo));
       activeScenarioOverrides.push(await page.evaluate((status) => {
         window.__appRentalDemo.createOrder({ sku: `dynamic-${status}`, amount: 1, priceVersion: 'review-red' });
-        if (status === 'allocating' || status === 'active') window.__appRentalDemo.payOrder();
-        if (status === 'active') window.__appRentalDemo.allocateAccount(true);
+        if (status === 'active') window.__appRentalDemo.payOrder();
         window.__appRentalDemo.setScenario('active-rental');
         const snapshot = window.__appRentalDemo.snapshot();
         return { id: snapshot.order?.id, status: snapshot.order?.status, allocationCount: snapshot.accountAllocationCount };
@@ -3177,7 +3144,7 @@ async function main() {
     }
     assert(
       activeScenarioOverrides.every(({ id, status, allocationCount }) => id === 'APP-SCENARIO-ACTIVE' && status === 'active' && allocationCount === 1),
-      'active-rental 必须覆盖 pending/allocating/active 动态订单并确定性注入场景订单',
+      'active-rental 必须覆盖 pending/active 动态订单并确定性注入场景订单',
     );
     await page.evaluate(() => {
       window.__appRentalDemo.setScenario('active-rental');
@@ -3195,7 +3162,7 @@ async function main() {
     assert(portraitOrders.tabs.join('|') === '全部订单|待支付|可使用', '订单中心必须且只能显示全部订单、待支付、可使用三个 Tab');
     assert(portraitOrders.list && !portraitOrders.detail && portraitOrders.layout === 'portrait-orders', '竖屏订单中心应先显示单列列表并提供稳定布局标识');
     assert(portraitOrders.activeOrder?.status === 'active' && portraitOrders.activeOrder?.id === 'APP-SCENARIO-ACTIVE', 'active-rental 场景未确定性注入生效订单');
-    assert(EXPECTED_RENTAL_STATUSES.every((status) => portraitOrders.statuses.includes(status)), '订单列表未覆盖六种租号订单状态');
+    assert(EXPECTED_RENTAL_STATUSES.every((status) => portraitOrders.statuses.includes(status)), '订单列表未覆盖五种租号订单状态');
     const orderActionMatrix = await page.evaluate(() => Object.fromEntries(
       window.__appRentalDemo.getOrderCollection().map((order) => [
         order.status,
@@ -3204,7 +3171,6 @@ async function main() {
     ));
     const expectedOrderActionMatrix = {
       pending: ['取消订单', '继续支付'],
-      allocating: ['刷新状态'],
       active: ['登录信息', '登录游戏'],
       refunding: ['退款进度'],
       refunded: ['租号开玩', '退款进度', '删除订单'],
@@ -3279,7 +3245,6 @@ async function main() {
       window.__appRentalDemo.setSelectedGame('shadow-blade-zero');
       const created = window.__appRentalDemo.createOrder({ sku: 'delete-race', amount: 9.9, priceVersion: 'delete-race-v1' });
       window.__appRentalDemo.payOrder();
-      window.__appRentalDemo.allocateAccount(true);
       window.__appRentalDemo.endOrder();
       window.__appRentalDemo.navigate('orders', { replaceTask: true });
       window.__appRentalDemo.selectOrder(created.id);
@@ -3558,7 +3523,7 @@ async function main() {
         refreshVisible: Boolean(document.querySelector('.credential-panel [data-action="refresh-guard"]')?.getClientRects().length),
       };
     });
-    assert(!expiredGuard.hasCodeClass && expiredGuard.refreshVisible, 'Guard 过期后必须重新渲染为可点击刷新状态');
+    assert(!expiredGuard.hasCodeClass && expiredGuard.refreshVisible, 'Guard 过期后必须重新渲染为可点击刷新操作');
     await page.locator('.credential-panel [data-action="refresh-guard"]').click();
     const guardRefresh = await page.evaluate(() => ({
       after: window.__appRentalDemo.snapshot().accountAllocationCount,
@@ -3933,13 +3898,12 @@ async function main() {
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));
     const refundingRecovery = await page.evaluate(() => {
       window.__appRentalDemo.createOrder({ sku: 'rent-2h', amount: 9.9, priceVersion: 'recovery' });
-      window.__appRentalDemo.payOrder();
-      window.__appRentalDemo.allocateAccount(false);
+      window.__appRentalDemo.payOrder({ accountPrepared: false });
       window.__appRentalDemo.navigate('orders');
       return window.__appRentalDemo.snapshot().order;
     });
     await page.locator(`.order-list-card[data-order-id="${refundingRecovery.id}"]`).click();
-    assert((await page.locator('.portrait-order-detail').innerText()).includes('自动退款'), '分配失败后必须显示自动退款');
+    assert((await page.locator('.portrait-order-detail').innerText()).includes('自动退款'), '账号不可用时必须直接显示自动退款');
 
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));

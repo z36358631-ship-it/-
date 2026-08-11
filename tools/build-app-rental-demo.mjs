@@ -137,6 +137,18 @@ function assertBusinessScriptSignatures(label, source) {
   if (source.includes('订单创建失败')) {
     throw new Error(`${label} 仍保留确认订单失败死路`);
   }
+  const removedClientState = ['alloc', 'ating'].join('');
+  const removedClientCopies = [
+    ['分配', '中'].join(''),
+    ['刷新', '状态'].join(''),
+    ['账号分配', '中'].join(''),
+  ];
+  const removedClientApi = ['allocate', 'Account'].join('');
+  if (source.includes(removedClientState)
+    || removedClientCopies.some((copy) => source.includes(copy))
+    || source.includes(removedClientApi)) {
+    throw new Error(`${label} 仍暴露已删除的账号准备中间状态`);
+  }
 }
 
 function assertCommercePrimaryStyle(label, style) {
@@ -236,16 +248,19 @@ if (fs.existsSync(annotationPath)) {
   );
   annotation = annotation.replace(
     '不显示版本选择器；开会员清除游戏待支付草稿并进入会员中心，不生成游戏订单；首次资格失效时移除首次体验。',
-    '不显示版本选择器；正常可售场景不得出现订单创建失败；开会员清除游戏待支付草稿并进入会员中心，不生成游戏订单；首次资格失效时移除首次体验。',
+    '不显示版本选择器；正常可售场景不得出现订单创建失败；开会员畅玩清除游戏待支付草稿并进入会员中心，不生成游戏订单；首次资格失效时移除首次体验。',
   );
   annotation = annotation.replace(
     '不显示版本选择器和五项权益区；正常可售场景不得出现订单创建失败；开会员清除游戏待支付草稿并进入会员中心，不生成游戏订单；首次资格失效时移除首次体验。',
-    '不显示版本选择器；正常可售场景不得出现订单创建失败；开会员清除游戏待支付草稿并进入会员中心，不生成游戏订单；首次资格失效时移除首次体验。',
+    '不显示版本选择器；正常可售场景不得出现订单创建失败；开会员畅玩清除游戏待支付草稿并进入会员中心，不生成游戏订单；首次资格失效时移除首次体验。',
   );
   annotation = annotation.replace(
     '不显示版本选择器和五项通用权益区；正常可售场景不得出现订单创建失败；开会员清除游戏待支付草稿并进入会员中心，不生成游戏订单；首次资格失效时移除首次体验。',
-    '不显示版本选择器；正常可售场景不得出现订单创建失败；开会员清除游戏待支付草稿并进入会员中心，不生成游戏订单；首次资格失效时移除首次体验。',
+    '不显示版本选择器；正常可售场景不得出现订单创建失败；开会员畅玩清除游戏待支付草稿并进入会员中心，不生成游戏订单；首次资格失效时移除首次体验。',
   );
+  annotation = annotation.replaceAll('开会员清除游戏待支付草稿', '开会员畅玩清除游戏待支付草稿');
+  annotation = annotation.replaceAll('非热门游戏仅首次体验、单游戏永久与开会员。', '非热门游戏仅首次体验、单游戏永久与开会员畅玩。');
+  annotation = annotation.replaceAll('非热门游戏只显示首次体验、单游戏永久和开会员。', '非热门游戏只显示首次体验、单游戏永久和开会员畅玩，三个按钮同一行且不换行。');
   annotation = annotation.replace(
     '左侧仅商品和五项权益；右侧按套餐、游戏原价/订单金额、支付方式和支付栏排列，并允许低高度内部滚动。',
     '左侧展示商品与上一版五项租号权益；右侧按套餐、游戏原价/订单金额、支付方式和支付栏排列，并允许低高度内部滚动。',
