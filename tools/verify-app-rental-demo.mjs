@@ -109,8 +109,6 @@ async function main() {
     ['标注缩放不污染图片裁切', templateSource.includes('const frameWidth = image.parentElement.clientWidth') && templateSource.includes('const frameHeight = image.parentElement.clientHeight')],
   ];
   const failedFinalReviewSourceChecks = finalReviewSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
-  assert(failedFinalReviewSourceChecks.length === 0, `FINAL_REVIEW 源码契约未通过：${failedFinalReviewSourceChecks.join('、')}`);
-  process.stdout.write(`FINAL_REVIEW_SOURCE ${finalReviewSourceChecks.length}/${finalReviewSourceChecks.length} PASS\n`);
   const sixthReviewSourceChecks = [
     ['订单标题与Tab紧凑', templateSource.includes('.portrait-orders .task-page-head { margin-bottom: 0; }')],
     ['订单搜索透明图标', templateSource.includes('data-order-search-collapsed') && /\.order-search-trigger\s*\{[^}]*background:\s*transparent/s.test(templateSource)],
@@ -121,8 +119,6 @@ async function main() {
     ['首期仅标准版', !templateSource.includes('data-checkout-field="edition"') && templateSource.includes('checkout-product-name') && templateSource.includes("editionId: 'standard'")],
   ];
   const failedSixthReviewSourceChecks = sixthReviewSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
-  assert(failedSixthReviewSourceChecks.length === 0, `SIXTH_REVIEW 源码契约未通过：${failedSixthReviewSourceChecks.join('、')}`);
-  process.stdout.write(`SIXTH_REVIEW_SOURCE ${sixthReviewSourceChecks.length}/${sixthReviewSourceChecks.length} PASS\n`);
   const eighthReviewSourceChecks = [
     ['商品名称与版本分层', templateSource.includes('checkout-product-edition') && !templateSource.includes('${gameName} - 标准版')],
     ['确认订单删除冗余付款信息', !templateSource.includes('renderGamePaymentQr') && !templateSource.includes('renderCheckoutAgreement') && !templateSource.includes('renderPriceSummary') && !templateSource.includes('当前报价')],
@@ -134,8 +130,6 @@ async function main() {
     ['Steam登录前移除令牌占位提示', templateSource.includes("if (!ready) return ''") && !templateSource.includes('提交账号密码后获取令牌')],
   ];
   const failedEighthReviewSourceChecks = eighthReviewSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
-  assert(failedEighthReviewSourceChecks.length === 0, `EIGHTH_REVIEW 源码契约未通过：${failedEighthReviewSourceChecks.join('、')}`);
-  process.stdout.write(`EIGHTH_REVIEW_SOURCE ${eighthReviewSourceChecks.length}/${eighthReviewSourceChecks.length} PASS\n`);
   assertAnnotation(
     !/<iframe\b/i.test(annotationSource)
       && !/(?:<script[^>]+src|<link[^>]+href|(?:src|href)=["']https?:|url\(["']?https?:)/i.test(annotationSource),
@@ -179,6 +173,21 @@ async function main() {
       await page.reload({ waitUntil: 'domcontentloaded' });
       await page.waitForFunction(() => Boolean(window.__appRentalDemo));
     };
+
+    await runRefactorGate('FINAL_REVIEW_SOURCE', async () => {
+      assert(failedFinalReviewSourceChecks.length === 0, `FINAL_REVIEW 源码契约未通过：${failedFinalReviewSourceChecks.join('、')}`);
+      process.stdout.write(`FINAL_REVIEW_SOURCE ${finalReviewSourceChecks.length}/${finalReviewSourceChecks.length} PASS\n`);
+    });
+
+    await runRefactorGate('SIXTH_REVIEW_SOURCE', async () => {
+      assert(failedSixthReviewSourceChecks.length === 0, `SIXTH_REVIEW 源码契约未通过：${failedSixthReviewSourceChecks.join('、')}`);
+      process.stdout.write(`SIXTH_REVIEW_SOURCE ${sixthReviewSourceChecks.length}/${sixthReviewSourceChecks.length} PASS\n`);
+    });
+
+    await runRefactorGate('EIGHTH_REVIEW_SOURCE', async () => {
+      assert(failedEighthReviewSourceChecks.length === 0, `EIGHTH_REVIEW 源码契约未通过：${failedEighthReviewSourceChecks.join('、')}`);
+      process.stdout.write(`EIGHTH_REVIEW_SOURCE ${eighthReviewSourceChecks.length}/${eighthReviewSourceChecks.length} PASS\n`);
+    });
 
     await runRefactorGate('CATALOG_INTEGRITY', async () => {
       await reloadDemo();
@@ -876,7 +885,6 @@ async function main() {
         const inside = (inner, outer) => Boolean(inner && outer
           && inner.left >= outer.left - 1 && inner.right <= outer.right + 1
           && inner.top >= outer.top - 1 && inner.bottom <= outer.bottom + 1);
-        const parseAmount = (value) => Number(String(value || '').replace(/[^0-9.-]/g, ''));
         const deviceRect = rect(device);
         const packageRect = rect(packagePanel);
         const summaryRect = rect(summary);
@@ -893,9 +901,6 @@ async function main() {
           originalText,
           orderText,
           dueText,
-          originalValue: parseAmount(originalText),
-          orderValue: parseAmount(orderText),
-          dueValue: parseAmount(dueText),
           packageBeforeAmount: Boolean(packageRect && summaryRect && packageRect.bottom <= summaryRect.top + 1),
           amountBeforePayment: Boolean(summaryRect && paymentRect && summaryRect.bottom <= paymentRect.top + 1),
           paymentBeforeFooter: Boolean(paymentRect && footerRect && paymentRect.bottom <= footerRect.top + 1),
@@ -915,11 +920,12 @@ async function main() {
       for (const [index, stateView] of portraitStates.entries()) {
         const rawAmount = Number(stateView.snapshot?.rawAmount);
         const gameOriginalAmount = Number(stateView.snapshot?.gameOriginalAmount);
-        checkCheckout(Number.isFinite(rawAmount) && rawAmount >= 0, `竖屏状态${index + 1} rawAmount 非有限非负数`);
-        checkCheckout(Number.isFinite(gameOriginalAmount) && gameOriginalAmount >= 0, `竖屏状态${index + 1} gameOriginalAmount 非有限非负数`);
+        checkCheckout(Number.isFinite(rawAmount) && rawAmount > 0, `竖屏状态${index + 1} rawAmount 必须为有限正数`);
+        checkCheckout(Number.isFinite(gameOriginalAmount) && gameOriginalAmount > 0, `竖屏状态${index + 1} gameOriginalAmount 必须为有限正数`);
         checkCheckout(stateView.labels.join('|') === '游戏原价|订单金额', `竖屏状态${index + 1} 金额标签错误`);
-        checkCheckout(stateView.originalValue === gameOriginalAmount, `竖屏状态${index + 1} 游戏原价未读取快照`);
-        checkCheckout(stateView.orderValue === rawAmount && stateView.dueValue === rawAmount, `竖屏状态${index + 1} 订单金额、需支付与 rawAmount 不一致`);
+        checkCheckout(gameOriginalAmount === 298 && stateView.originalText === '¥298', `竖屏状态${index + 1} 影之刃零游戏原价不是精确 ¥298`);
+        checkCheckout(stateView.orderText === `¥${rawAmount.toFixed(2)}`, `竖屏状态${index + 1} 订单金额未精确格式化 rawAmount`);
+        checkCheckout(stateView.dueText === `需支付 ¥${rawAmount.toFixed(2)}`, `竖屏状态${index + 1} 需支付未精确格式化 rawAmount`);
         checkCheckout(stateView.packageBeforeAmount && stateView.amountBeforePayment && stateView.paymentBeforeFooter, `竖屏状态${index + 1} 未按套餐→金额→支付→底栏排列`);
         checkCheckout(stateView.footerPinned && stateView.footerInsideDevice && stateView.actionOperable, `竖屏状态${index + 1} 固定底栏越界、遮挡或不可操作`);
         checkCheckout(stateView.versionControls === 0, `竖屏状态${index + 1} 仍有版本选择器`);
@@ -928,13 +934,13 @@ async function main() {
       checkCheckout(new Set(selectedAmounts).size === 3, `默认2小时、6小时、日租金额未随选择变化：${JSON.stringify(selectedAmounts)}`);
 
       const landscapeCheckout = await page.evaluate(() => {
-        window.__appRentalDemo.setOrientation('landscape');
+        const api = window.__appRentalDemo;
+        api.setOrientation('landscape');
         const rootNode = document.querySelector('#appRentalDemo');
         const device = rootNode.querySelector('.device.landscape');
         const left = rootNode.querySelector('.checkout-benefit-column');
         const right = rootNode.querySelector('.checkout-purchase-column');
         const paymentPanel = right?.querySelector('.payment-panel') || right;
-        if (paymentPanel) paymentPanel.scrollTop = paymentPanel.scrollHeight;
         const packagePanel = right?.querySelector('.checkout-sku-section');
         const summary = right?.querySelector('[data-checkout-amount-summary]');
         const paymentRow = right?.querySelector('.checkout-payment-row');
@@ -947,11 +953,20 @@ async function main() {
         const deviceRect = rect(device);
         const leftRect = rect(left);
         const rightRect = rect(right);
-        const packageRect = rect(packagePanel);
-        const summaryRect = rect(summary);
+        if (paymentPanel) paymentPanel.scrollTop = 0;
+        const topPackageRect = rect(packagePanel);
+        const topSummaryRect = rect(summary);
+        const topPackageInsideRight = inside(topPackageRect, rightRect) && inside(topPackageRect, deviceRect);
+        const topSummaryInsideRight = inside(topSummaryRect, rightRect) && inside(topSummaryRect, deviceRect);
+        const topPackageBeforeSummary = Boolean(topPackageRect && topSummaryRect && topPackageRect.bottom <= topSummaryRect.top + 1);
+        if (paymentPanel) paymentPanel.scrollTop = paymentPanel.scrollHeight;
         const paymentRect = rect(paymentRow);
         const bottomRect = rect(bottomBar);
         const actionRect = rect(action);
+        const snapshot = api.snapshot().order;
+        const orderText = summary?.querySelector('[data-checkout-amount="order"]')?.textContent.trim() || '';
+        const dueText = bottomBar?.querySelector('strong')?.textContent.trim() || '';
+        const domOrder = [packagePanel, summary, paymentRow, bottomBar];
         return {
           device: deviceRect ? { width: Math.round(deviceRect.width), height: Math.round(deviceRect.height) } : null,
           columnsSeparated: Boolean(leftRect && rightRect && leftRect.width > 0 && rightRect.width > 0 && leftRect.right <= rightRect.left + 1 && Math.abs(leftRect.top - rightRect.top) <= 2),
@@ -967,14 +982,21 @@ async function main() {
           rightHasAmounts: Boolean(summary),
           rightHasPayment: Boolean(paymentRow),
           rightHasPurchase: Boolean(action),
-          ordered: Boolean(packageRect && summaryRect && paymentRect && bottomRect
-            && packageRect.bottom <= summaryRect.top + 1
-            && summaryRect.bottom <= paymentRect.top + 1
-            && paymentRect.bottom <= bottomRect.top + 1),
+          topPackagePositive: Boolean(topPackageRect && topPackageRect.width > 0 && topPackageRect.height > 0),
+          topSummaryPositive: Boolean(topSummaryRect && topSummaryRect.width > 0 && topSummaryRect.height > 0),
+          topPackageInsideRight,
+          topSummaryInsideRight,
+          topPackageBeforeSummary,
+          domOrdered: domOrder.every((node, index) => index === domOrder.length - 1
+            || Boolean(node && domOrder[index + 1] && (node.compareDocumentPosition(domOrder[index + 1]) & Node.DOCUMENT_POSITION_FOLLOWING))),
+          bottomPaymentBeforeAction: Boolean(paymentRect && bottomRect && paymentRect.bottom <= bottomRect.top + 1),
           paymentInsideDevice: inside(paymentRect, deviceRect),
           bottomInsideDevice: inside(bottomRect, deviceRect) && inside(bottomRect, rightRect),
           actionOperable: Boolean(action && actionRect && inside(actionRect, deviceRect) && !action.disabled && getComputedStyle(action).pointerEvents !== 'none'),
           versionControls: rootNode.querySelectorAll('[data-checkout-field="edition"], [data-action="select-edition"]').length,
+          orderText,
+          dueText,
+          snapshot,
         };
       });
       checkCheckout(landscapeCheckout.device?.width === 874 && landscapeCheckout.device?.height === 402, `横屏设备尺寸错误：${JSON.stringify(landscapeCheckout.device)}`);
@@ -995,9 +1017,19 @@ async function main() {
           && landscapeCheckout.rightHasAmounts
           && landscapeCheckout.rightHasPayment
           && landscapeCheckout.rightHasPurchase
-          && landscapeCheckout.ordered,
+          && landscapeCheckout.topPackagePositive
+          && landscapeCheckout.topSummaryPositive
+          && landscapeCheckout.topPackageInsideRight
+          && landscapeCheckout.topSummaryInsideRight
+          && landscapeCheckout.topPackageBeforeSummary
+          && landscapeCheckout.domOrdered
+          && landscapeCheckout.bottomPaymentBeforeAction,
         `横屏右栏未按套餐→金额→支付方式→支付栏排列：${JSON.stringify(landscapeCheckout)}`,
       );
+      const landscapeRawAmount = Number(landscapeCheckout.snapshot?.rawAmount);
+      checkCheckout(Number.isFinite(landscapeRawAmount) && landscapeRawAmount > 0, `横屏 rawAmount 必须为有限正数：${JSON.stringify(landscapeCheckout.snapshot)}`);
+      checkCheckout(landscapeCheckout.orderText === `¥${landscapeRawAmount.toFixed(2)}`, `横屏订单金额未精确格式化 rawAmount：${JSON.stringify(landscapeCheckout)}`);
+      checkCheckout(landscapeCheckout.dueText === `需支付 ¥${landscapeRawAmount.toFixed(2)}`, `横屏需支付未精确格式化 rawAmount：${JSON.stringify(landscapeCheckout)}`);
       checkCheckout(
         landscapeCheckout.paymentInsideDevice
           && landscapeCheckout.bottomInsideDevice
@@ -1005,8 +1037,26 @@ async function main() {
           && landscapeCheckout.versionControls === 0,
         `横屏支付方式或支付栏越界、不可操作或仍有版本选择器：${JSON.stringify(landscapeCheckout)}`,
       );
+      const paymentButton = page.locator('.landscape-checkout .payment-primary').first();
+      const paymentButtonExists = await paymentButton.count();
+      checkCheckout(paymentButtonExists === 1, '横屏缺少可点击的立即购买按钮');
+      if (paymentButtonExists === 1) await paymentButton.click();
+      const paymentFeedback = await page.evaluate(() => {
+        const snapshot = window.__appRentalDemo.snapshot();
+        return {
+          status: snapshot.order?.status,
+          transactionNotice: snapshot.transactionNotice,
+          text: document.querySelector('#appRentalDemo')?.innerText || '',
+        };
+      });
+      checkCheckout(
+        landscapeCheckout.snapshot?.status === 'pending'
+          && paymentFeedback.status !== landscapeCheckout.snapshot.status
+          && (paymentFeedback.transactionNotice === 'payment-complete' || paymentFeedback.text.includes('支付成功')),
+        `横屏点击立即购买后订单状态或支付反馈未变化：${JSON.stringify({ before: landscapeCheckout.snapshot, after: paymentFeedback })}`,
+      );
       assert(failures.length === 0, `确认订单金额与布局契约失败：${failures.join('；')}`);
-      process.stdout.write('FINAL_CHECKOUT_AMOUNT_LAYOUT 31/31 PASS\n');
+      process.stdout.write('FINAL_CHECKOUT_AMOUNT_LAYOUT 39/39 PASS\n');
     });
 
     await runRefactorGate('FINAL_ORDER_ACTIONS', async () => {
@@ -1229,15 +1279,31 @@ async function main() {
           paidAt: paymentTime,
           transactionId: 'WX-RENEW-001',
         });
-        return { renewal, duplicate };
+        api.setMembershipEntitlement({
+          planId: 'weekly',
+          startsAt: paymentTime - 8 * 86_400_000,
+          expiresAt: paymentTime - 86_400_000,
+        });
+        const expiredRenewal = api.simulateMembershipPayment({
+          planId: 'weekly',
+          paidAt: paymentTime,
+          transactionId: 'WX-RENEW-EXPIRED-001',
+        });
+        return { renewal, duplicate, expiredRenewal };
       }, paidAt);
       assert(!result.missing?.length, `会员续费测试 API 缺失：${result.missing?.join('、')}`);
       assert(result.renewal.expiresAt === paidAt + 86_400_000 + 7 * 86_400_000, `未过期周卡未从原到期时间顺延7天：${JSON.stringify(result.renewal)}`);
       assert(result.duplicate.expiresAt === result.renewal.expiresAt, `重复支付回调重复延长周卡：${JSON.stringify(result)}`);
-      process.stdout.write('FINAL_MEMBERSHIP_RENEWAL 2/2 PASS\n');
+      assert(result.expiredRenewal.startsAt === paidAt, `已过期周卡续费未从本次 paidAt 开始：${JSON.stringify(result.expiredRenewal)}`);
+      assert(result.expiredRenewal.expiresAt === paidAt + 7 * 86_400_000, `已过期周卡续费未从 paidAt 重算7天：${JSON.stringify(result.expiredRenewal)}`);
+      process.stdout.write('FINAL_MEMBERSHIP_RENEWAL 4/4 PASS\n');
     });
 
     await runRefactorGate('FINAL_MEMBER_INTRO', async () => {
+      const failures = [];
+      const checkMemberIntro = (condition, message) => {
+        if (!condition) failures.push(message);
+      };
       await reloadDemo();
       const firstVisit = await page.evaluate(() => {
         const api = window.__appRentalDemo;
@@ -1251,11 +1317,11 @@ async function main() {
           closeActions: dialog?.querySelectorAll('[data-action="close-membership-intro"]').length || 0,
         };
       });
-      assert(firstVisit.exists, '当前会话首次进入会员中心未展示关于会员弹窗');
-      assert(firstVisit.title === '关于会员' && firstVisit.items.length === 4, `关于会员标题或条目数量错误：${JSON.stringify(firstVisit)}`);
-      assert(!/远程协助|联系客服[^。；]*远程/.test(firstVisit.fullText), `关于会员仍包含远程协助条款：${firstVisit.fullText}`);
-      assert(firstVisit.closeActions >= 2, `关于会员缺少关闭与我已了解操作：${JSON.stringify(firstVisit)}`);
-      await page.locator('[data-action="close-membership-intro"]').last().click();
+      checkMemberIntro(firstVisit.exists, '当前会话首次进入会员中心未展示关于会员弹窗');
+      checkMemberIntro(firstVisit.title === '关于会员' && firstVisit.items.length === 4, `关于会员标题或条目数量错误：${JSON.stringify(firstVisit)}`);
+      checkMemberIntro(!/远程协助|联系客服[^。；]*远程/.test(firstVisit.fullText), `关于会员仍包含远程协助条款：${firstVisit.fullText}`);
+      checkMemberIntro(firstVisit.closeActions >= 2, `关于会员缺少关闭与我已了解操作：${JSON.stringify(firstVisit)}`);
+      if (firstVisit.closeActions > 0) await page.locator('[data-action="close-membership-intro"]').last().click();
       const repeatVisit = await page.evaluate(() => {
         const api = window.__appRentalDemo;
         const afterClose = api.snapshot();
@@ -1268,7 +1334,7 @@ async function main() {
           dialogCount: document.querySelectorAll('[data-membership-intro]').length,
         };
       });
-      assert(
+      checkMemberIntro(
         repeatVisit.afterClose.screen === 'membership'
           && repeatVisit.afterClose.membershipIntroSeen === true
           && repeatVisit.afterClose.membershipIntroOpen === false
@@ -1276,7 +1342,40 @@ async function main() {
           && repeatVisit.dialogCount === 0,
         `关闭后当前会话再次进入仍展示会员说明：${JSON.stringify(repeatVisit)}`,
       );
-      process.stdout.write('FINAL_MEMBER_INTRO 5/5 PASS\n');
+
+      await reloadDemo();
+      const escapeFirstVisit = await page.evaluate(() => {
+        window.__appRentalDemo.navigate('membership');
+        return document.querySelectorAll('[data-membership-intro]').length;
+      });
+      checkMemberIntro(escapeFirstVisit === 1, `独立会话首次进入缺少 Escape 测试弹窗：${escapeFirstVisit}`);
+      await page.keyboard.press('Escape');
+      const escapeResult = await page.evaluate(() => {
+        const api = window.__appRentalDemo;
+        const afterEscape = api.snapshot();
+        const afterEscapeDialogCount = document.querySelectorAll('[data-membership-intro]').length;
+        api.navigate('home');
+        api.navigate('membership');
+        const repeated = api.snapshot();
+        return {
+          afterEscape,
+          afterEscapeDialogCount,
+          repeated,
+          repeatedDialogCount: document.querySelectorAll('[data-membership-intro]').length,
+        };
+      });
+      checkMemberIntro(
+        escapeResult.afterEscape.membershipIntroSeen === true
+          && escapeResult.afterEscape.membershipIntroOpen === false
+          && escapeResult.afterEscapeDialogCount === 0,
+        `Escape 未设置 seen=true/open=false 或未关闭弹窗：${JSON.stringify(escapeResult)}`,
+      );
+      checkMemberIntro(
+        escapeResult.repeated.screen === 'membership' && escapeResult.repeatedDialogCount === 0,
+        `Escape 关闭后当前会话再次进入仍展示弹窗：${JSON.stringify(escapeResult)}`,
+      );
+      assert(failures.length === 0, `会员首次说明契约失败：${failures.join('；')}`);
+      process.stdout.write('FINAL_MEMBER_INTRO 8/8 PASS\n');
     });
 
     await runRefactorGate('STATIC_ARCHITECTURE', async () => {
