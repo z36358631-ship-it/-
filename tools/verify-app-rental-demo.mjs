@@ -95,7 +95,7 @@ async function main() {
   assert(failedThirdReviewSourceChecks.length === 0, `THIRD_REVIEW 源码契约未通过：${failedThirdReviewSourceChecks.join('、')}`);
   process.stdout.write(`THIRD_REVIEW_SOURCE ${thirdReviewSourceChecks.length}/${thirdReviewSourceChecks.length} PASS\n`);
   const finalReviewSourceChecks = [
-    ['详情F操作模型', templateSource.includes('resolveDetailActions') && templateSource.includes('查看更多') && templateSource.includes('立即购买')],
+    ['详情F操作模型', templateSource.includes('resolveDetailActions') && templateSource.includes("label: '更多'") && templateSource.includes('立即购买')],
     ['平台与游戏版本分离', templateSource.includes('selectedPlatform') && templateSource.includes('selectedEditionId') && !templateSource.includes('selectedVersion') && !templateSource.includes('GAME_EDITIONS')],
     ['商品独立过滤平台与版本', templateSource.includes('sku.platform') && templateSource.includes('sku.editionId') && templateSource.includes('edition?.entitlementSkus')],
     ['免费获取互斥样例', templateSource.includes("acquisitionMode: 'free'") && templateSource.includes("label: '获取游戏'")],
@@ -114,7 +114,7 @@ async function main() {
   const sixthReviewSourceChecks = [
     ['订单标题与Tab紧凑', templateSource.includes('.portrait-orders .task-page-head { margin-bottom: 0; }')],
     ['订单搜索透明图标', templateSource.includes('data-order-search-collapsed') && /\.order-search-trigger\s*\{[^}]*background:\s*transparent/s.test(templateSource)],
-    ['详情四槽动作', templateSource.includes("label: '•••'") && templateSource.includes("icon: 'quick-play'") && templateSource.includes('detail-action-icon')],
+    ['详情四槽动作', templateSource.includes("label: '更多'") && templateSource.includes("icon: 'more'") && templateSource.includes("icon: 'quick-play'") && templateSource.includes('detail-action-icon')],
     ['具体第三方平台配置', templateSource.includes('THIRD_PARTY_LOGIN_CONFIGS') && templateSource.includes('Rockstar Games 登录') && templateSource.includes('platformApproved')],
     ['第三方验证码生命周期', templateSource.includes('requestThirdPartyCode') && templateSource.includes('thirdPartyCodeExpiresAt') && templateSource.includes('thirdPartyCodeCooldownUntil')],
     ['Steam登录信息使用完整内容宽度', templateSource.includes('steam-credential-sheet') && !templateSource.includes('.steam-qr-panel .steam-credential-overlay')],
@@ -123,6 +123,19 @@ async function main() {
   const failedSixthReviewSourceChecks = sixthReviewSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
   assert(failedSixthReviewSourceChecks.length === 0, `SIXTH_REVIEW 源码契约未通过：${failedSixthReviewSourceChecks.join('、')}`);
   process.stdout.write(`SIXTH_REVIEW_SOURCE ${sixthReviewSourceChecks.length}/${sixthReviewSourceChecks.length} PASS\n`);
+  const eighthReviewSourceChecks = [
+    ['商品名称与版本分层', templateSource.includes('checkout-product-edition') && !templateSource.includes('${gameName} - 标准版')],
+    ['确认订单删除冗余付款信息', !templateSource.includes('renderGamePaymentQr') && !templateSource.includes('renderCheckoutAgreement') && !templateSource.includes('renderPriceSummary') && !templateSource.includes('当前报价')],
+    ['确认订单底部支付栏', templateSource.includes('需支付 ¥${amount}') && templateSource.includes("'立即购买'")],
+    ['详情轻操作无背景且竖向图标文字', templateSource.includes('detail-more-icon') && /\.detail-action-light\s*\{[^}]*flex-direction:\s*column[^}]*background:\s*transparent/s.test(templateSource)],
+    ['横屏详情主信息顺序', /landscape-detail-copy"><h1>\$\{game\.name\}<\/h1><p>.*landscape-detail-genre.*renderDetailActions/s.test(templateSource)],
+    ['订单搜索Tab单行', /\.order-tabs button\s*\{[^}]*white-space:\s*nowrap/s.test(templateSource) && templateSource.includes('width: 162px')],
+    ['一键上号成功返回游戏库', templateSource.includes("state.toast = '登录成功，已返回游戏库'") && templateSource.includes("navigate('library', { rememberSource: false })") && !templateSource.includes('一键上号失败')],
+    ['Steam登录前移除令牌占位提示', templateSource.includes("if (!ready) return ''") && !templateSource.includes('提交账号密码后获取令牌')],
+  ];
+  const failedEighthReviewSourceChecks = eighthReviewSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
+  assert(failedEighthReviewSourceChecks.length === 0, `EIGHTH_REVIEW 源码契约未通过：${failedEighthReviewSourceChecks.join('、')}`);
+  process.stdout.write(`EIGHTH_REVIEW_SOURCE ${eighthReviewSourceChecks.length}/${eighthReviewSourceChecks.length} PASS\n`);
   assertAnnotation(
     !/<iframe\b/i.test(annotationSource)
       && !/(?:<script[^>]+src|<link[^>]+href|(?:src|href)=["']https?:|url\(["']?https?:)/i.test(annotationSource),
@@ -190,6 +203,7 @@ async function main() {
         const standardOrder = api.snapshot().order;
         const checkoutEditionControls = document.querySelectorAll('[data-checkout-field="edition"], [data-action="select-edition"]').length;
         const checkoutProductName = document.querySelector('.checkout-product-name')?.textContent.trim();
+        const checkoutProductEdition = document.querySelector('.checkout-product-edition')?.textContent.trim();
 
         api.setScenario('not-member-library', { shouldRender: false });
         api.setSelectedGame('stardew', { shouldRender: false });
@@ -226,6 +240,7 @@ async function main() {
           standardOrder,
           checkoutEditionControls,
           checkoutProductName,
+          checkoutProductEdition,
           freeActions,
           cloudBadges,
           unsupportedBadges,
@@ -246,8 +261,8 @@ async function main() {
       checkCatalog(catalog.standardPurchase?.id === 'purchase-standard', `标准版购买 SKU 过滤错误：${JSON.stringify(catalog.standardPurchase)}`);
       checkCatalog(catalog.enhancedSelected === false && catalog.checkoutContext.editionId === 'standard', `首期不应允许切换非标准版：${JSON.stringify({ selected: catalog.enhancedSelected, context: catalog.checkoutContext })}`);
       checkCatalog(catalog.standardOrder?.platform === 'Steam' && catalog.standardOrder?.editionId === 'standard' && catalog.standardOrder?.version === 'Steam · 标准版', `订单快照未固化标准版：${JSON.stringify(catalog.standardOrder)}`);
-      checkCatalog(catalog.checkoutEditionControls === 0 && catalog.checkoutProductName === '影之刃零 - 标准版', `确认订单仍出现版本选择或商品名未标标准版：${JSON.stringify({ controls: catalog.checkoutEditionControls, name: catalog.checkoutProductName })}`);
-      checkCatalog(catalog.freeActions.map(({ label }) => label).join('|') === '•••|秒玩|获取游戏' && !catalog.freeActions.some(({ id }) => id === 'rent'), `免费获取场景没有正确隐藏租号：${JSON.stringify(catalog.freeActions)}`);
+      checkCatalog(catalog.checkoutEditionControls === 0 && catalog.checkoutProductName === '影之刃零' && catalog.checkoutProductEdition === '标准版', `确认订单商品名与标准版副标题未分层：${JSON.stringify({ controls: catalog.checkoutEditionControls, name: catalog.checkoutProductName, edition: catalog.checkoutProductEdition })}`);
+      checkCatalog(catalog.freeActions.map(({ label }) => label).join('|') === '更多|秒玩|获取游戏' && !catalog.freeActions.some(({ id }) => id === 'rent'), `免费获取场景没有正确隐藏租号：${JSON.stringify(catalog.freeActions)}`);
       checkCatalog(catalog.cloudBadges.length === 6 && catalog.unsupportedBadges === 0, `会员游戏云存档标识与配置不一致：${JSON.stringify(catalog.cloudBadges)}`);
       checkCatalog(catalog.cloudBadgesInsidePreview, '横屏会员游戏预览的云存档标识发生裁切或溢出');
       checkCatalog(catalog.firstRentalText === '¥1.9首租' && catalog.regularRentalText === '¥9.9租号', `首页首租资格失效后未回退普通租号：${JSON.stringify({ first: catalog.firstRentalText, regular: catalog.regularRentalText })}`);
@@ -661,7 +676,8 @@ async function main() {
           && detailConfirmed.snapshot.order?.durationLabel === '2小时'
           && detailConfirmed.snapshot.order?.rawAmount === 1.9
           && detailConfirmed.saleMode === 'time-rental'
-          && detailConfirmed.text.includes('影之刃零 - 标准版')
+          && detailConfirmed.text.includes('影之刃零')
+          && detailConfirmed.text.includes('标准版')
           && !detailConfirmed.text.includes('增强版')
           && !detailConfirmed.text.includes('豪华版')
           && detailConfirmed.text.includes('按小时')
@@ -685,7 +701,8 @@ async function main() {
         const text = rootNode.innerText;
         return {
           text,
-          fields: ['标准版', '租赁套餐', '租期', '原价', '实付', '支付方式', '租号服务协议', '退款规则', '支付有效期'].every((field) => text.includes(field)),
+          fields: ['影之刃零', '标准版', '租赁套餐', '游戏原价', '订单金额', '支付方式', '需支付', '立即购买'].every((field) => text.includes(field)),
+          removed: ['当前报价', '租赁信息', '租号服务协议', '支付有效期', '扫码支付'].every((field) => !text.includes(field)),
           editionControls: rootNode.querySelectorAll('[data-checkout-field="edition"], [data-action="select-edition"]').length,
           twoDecimalAmount: /¥\d+\.\d{2}/.test(text),
         };
@@ -704,7 +721,7 @@ async function main() {
         checkoutVisual.every(({ primaryBackground, primaryHasBlue, forbiddenBusinessCopy }) => (
           primaryBackground.includes('gradient') && primaryHasBlue && !forbiddenBusinessCopy
         ))
-          && checkoutFields.fields && checkoutFields.editionControls === 0 && checkoutFields.twoDecimalAmount
+          && checkoutFields.fields && checkoutFields.removed && checkoutFields.editionControls === 0 && checkoutFields.twoDecimalAmount
           && changedPriceLabel?.trim() === '按新价格重新确认'
           && unavailableCheckout.label === '暂不可购买' && unavailableCheckout.disabled,
         `确认订单视觉、租号字段、改价或库存状态错误：${JSON.stringify({ checkoutVisual, checkoutFields, changedPriceLabel, unavailableCheckout })}`,
@@ -778,6 +795,199 @@ async function main() {
       assert(visualChecks === 14, `CDKEY 视觉收敛契约数量错误：${visualChecks}/14`);
       assert(visualFailures.length === 0, visualFailures.join('；'));
       process.stdout.write('CDKEY_VISUAL_CONVERGENCE 14/14 PASS\n');
+    });
+
+    await runRefactorGate('FINAL_SCOPE_PAYMENT_AND_GUARDS', async () => {
+      let finalScopeChecks = 0;
+      const checkFinalScope = (condition, message) => {
+        assert(condition, message);
+        finalScopeChecks += 1;
+      };
+      const amountLayoutSourceChecks = [
+        ['确认订单金额明细', templateSource.includes('renderCheckoutAmountSummary') && templateSource.includes('gameOriginalAmount')],
+        ['金额与支付同源', templateSource.includes('getCheckoutAmountModel') && templateSource.includes('dueText')],
+      ];
+      checkFinalScope(
+        amountLayoutSourceChecks.every(([, passed]) => passed),
+        `确认订单金额源码契约失败：${JSON.stringify(amountLayoutSourceChecks)}`,
+      );
+
+      await reloadDemo();
+      await page.evaluate(() => {
+        const api = window.__appRentalDemo;
+        api.setOrientation('portrait');
+        api.setSelectedGame('spiritfarer', { shouldRender: false });
+        api.setScenario('member-library-trial', { shouldRender: false });
+        api.setSearchTab('games');
+        api.navigate('search');
+      });
+
+      const searchCards = await page.locator('[data-search-view="games"] .search-game-card').evaluateAll((nodes) => nodes.map((node) => {
+        const rect = node.getBoundingClientRect();
+        return {
+          left: Math.round(rect.left),
+          top: Math.round(rect.top),
+          primaryActions: node.querySelectorAll('[data-primary-action]').length,
+        };
+      }));
+      checkFinalScope(searchCards.length === 3, `搜索游戏 Tab 应展示 3 张竖卡：${JSON.stringify(searchCards)}`);
+      checkFinalScope(searchCards.every(({ primaryActions }) => primaryActions === 0), `搜索游戏卡内不得出现独立按钮：${JSON.stringify(searchCards)}`);
+      checkFinalScope(
+        searchCards[0].top === searchCards[1].top
+          && searchCards[1].left > searchCards[0].left
+          && searchCards[2].left === searchCards[0].left
+          && searchCards[2].top > searchCards[0].top,
+        `搜索游戏 Tab 未按一排两个的双列网格展示：${JSON.stringify(searchCards)}`,
+      );
+
+      const checkoutAmounts = await page.evaluate(() => {
+        const api = window.__appRentalDemo;
+        api.setSelectedGame('shadow-blade-zero', { shouldRender: false });
+        api.setScenario('not-member-library', { shouldRender: false });
+        api.setOrientation('portrait');
+        api.navigate('checkout');
+        const rootNode = document.querySelector('#appRentalDemo');
+        const device = rootNode.querySelector('.device.portrait');
+        const summary = rootNode.querySelector('[data-checkout-amount-summary]');
+        const packagePanel = rootNode.querySelector('.checkout-sku-section');
+        const paymentPanel = rootNode.querySelector('.checkout-payment-methods');
+        const footer = rootNode.querySelector('.portrait-fixed-footer');
+        const snapshot = api.snapshot().order;
+        const rect = (node) => node?.getBoundingClientRect() || null;
+        const deviceRect = rect(device);
+        const packageRect = rect(packagePanel);
+        const summaryRect = rect(summary);
+        const paymentRect = rect(paymentPanel);
+        const footerRect = rect(footer);
+        return {
+          labels: summary ? [...summary.querySelectorAll('[data-checkout-amount-row]')].map((node) => node.firstElementChild?.textContent.trim()) : [],
+          original: summary?.querySelector('[data-checkout-amount="game-original"]')?.textContent.trim() || '',
+          orderAmount: summary?.querySelector('[data-checkout-amount="order"]')?.textContent.trim() || '',
+          due: footer?.querySelector('strong')?.textContent.trim() || '',
+          packageBeforeAmount: Boolean(packageRect && summaryRect && packageRect.bottom <= summaryRect.top),
+          amountBeforePayment: Boolean(summaryRect && paymentRect && summaryRect.bottom <= paymentRect.top),
+          paymentBeforeFooter: Boolean(paymentRect && footerRect && paymentRect.bottom <= footerRect.top),
+          footerPinned: Boolean(deviceRect && footerRect && Math.abs(deviceRect.bottom - footerRect.bottom) <= 14),
+          snapshot,
+        };
+      });
+      checkFinalScope(checkoutAmounts.labels.join('|') === '游戏原价|订单金额', `确认订单金额摘要标签错误：${JSON.stringify(checkoutAmounts)}`);
+      checkFinalScope(checkoutAmounts.original === `¥${checkoutAmounts.snapshot.gameOriginalAmount}`, `游戏原价未使用订单快照：${JSON.stringify(checkoutAmounts)}`);
+      checkFinalScope(checkoutAmounts.orderAmount === `¥${Number(checkoutAmounts.snapshot.rawAmount).toFixed(2)}`, `订单金额未使用订单快照 rawAmount：${JSON.stringify(checkoutAmounts)}`);
+      checkFinalScope(checkoutAmounts.due === `需支付 ¥${Number(checkoutAmounts.snapshot.rawAmount).toFixed(2)}`, `需支付金额未使用订单快照 rawAmount：${JSON.stringify(checkoutAmounts)}`);
+      checkFinalScope(
+        checkoutAmounts.packageBeforeAmount && checkoutAmounts.amountBeforePayment && checkoutAmounts.paymentBeforeFooter,
+        `竖屏确认订单必须按套餐→金额摘要→支付方式→底部支付栏排列：${JSON.stringify(checkoutAmounts)}`,
+      );
+      checkFinalScope(checkoutAmounts.footerPinned, `竖屏需支付与立即购买未固定在底部：${JSON.stringify(checkoutAmounts)}`);
+
+      const landscapeCheckout = await page.evaluate(() => {
+        window.__appRentalDemo.setOrientation('landscape');
+        const rootNode = document.querySelector('#appRentalDemo');
+        const left = rootNode.querySelector('.checkout-benefit-column');
+        const right = rootNode.querySelector('.checkout-purchase-column');
+        return {
+          leftHasProduct: Boolean(left?.querySelector('.checkout-product')),
+          leftHasBenefits: Boolean(left?.querySelector('.service-benefits')),
+          leftBenefitCount: left?.querySelectorAll('.service-benefit-item').length || 0,
+          leftHasPackage: Boolean(left?.querySelector('.checkout-sku-section')),
+          leftHasAmounts: Boolean(left?.querySelector('[data-checkout-amount-summary]')),
+          leftHasPayment: Boolean(left?.querySelector('.checkout-payment-row')),
+          rightHasProduct: Boolean(right?.querySelector('.checkout-product')),
+          rightHasBenefits: Boolean(right?.querySelector('.service-benefits')),
+          rightHasPackage: Boolean(right?.querySelector('.checkout-sku-section')),
+          rightHasAmounts: Boolean(right?.querySelector('[data-checkout-amount-summary]')),
+          rightHasPayment: Boolean(right?.querySelector('.checkout-payment-row')),
+          rightHasPurchase: Boolean(right?.querySelector('.payment-primary')),
+          versionControls: rootNode.querySelectorAll('[data-checkout-field="edition"], [data-action="select-edition"]').length,
+        };
+      });
+      checkFinalScope(
+        landscapeCheckout.leftHasProduct
+          && landscapeCheckout.leftHasBenefits
+          && landscapeCheckout.leftBenefitCount === 5
+          && !landscapeCheckout.leftHasPackage
+          && !landscapeCheckout.leftHasAmounts
+          && !landscapeCheckout.leftHasPayment
+          && !landscapeCheckout.rightHasProduct
+          && !landscapeCheckout.rightHasBenefits
+          && landscapeCheckout.rightHasPackage
+          && landscapeCheckout.rightHasAmounts
+          && landscapeCheckout.rightHasPayment
+          && landscapeCheckout.rightHasPurchase
+          && landscapeCheckout.versionControls === 0,
+        `横屏确认订单必须左侧仅商品与五项权益、右侧展示套餐金额支付：${JSON.stringify(landscapeCheckout)}`,
+      );
+
+      const orderActions = await page.evaluate(() => {
+        const api = window.__appRentalDemo;
+        const activeOrder = api.getOrderCollection().find((order) => order.status === 'active');
+        return {
+          list: api.getOrderActions(activeOrder, { surface: 'list' }).map(([id]) => id),
+          detail: api.getOrderActions(activeOrder, { surface: 'detail' }).map(([id]) => id),
+        };
+      });
+      checkFinalScope(!orderActions.list.includes('after-sales'), `订单列表不得显示申请售后：${JSON.stringify(orderActions.list)}`);
+      checkFinalScope(orderActions.detail.includes('after-sales'), `订单详情必须保留申请售后：${JSON.stringify(orderActions.detail)}`);
+
+      const apiAvailability = await page.evaluate(() => {
+        const api = window.__appRentalDemo;
+        const required = [
+          'simulateTrialPayment',
+          'attemptRentalAccountLaunch',
+          'setRentalRiskDecision',
+          'setMembershipEntitlement',
+          'simulateMembershipPayment',
+        ];
+        return required.filter((name) => typeof api[name] !== 'function');
+      });
+      checkFinalScope(apiAvailability.length === 0, `客户端最终范围测试 API 尚未实现：${apiAvailability.join('、')}`);
+
+      const paidAt = 1_786_400_000_000;
+      const trial = await page.evaluate((paymentTime) => window.__appRentalDemo.simulateTrialPayment(paymentTime), paidAt);
+      checkFinalScope(trial.startsAt === trial.paidAt, `首次体验必须从服务端支付成功时间开始计时：${JSON.stringify(trial)}`);
+      checkFinalScope(trial.expiresAt - trial.paidAt === 2 * 60 * 60 * 1000, `首次体验必须固定为 2 小时：${JSON.stringify(trial)}`);
+      checkFinalScope(trial.status === 'active', `首次体验支付成功后必须立即生效：${JSON.stringify(trial)}`);
+      checkFinalScope(trial.firstRentalEligible === false, `首次体验支付成功后必须立即消耗资格：${JSON.stringify(trial)}`);
+
+      const guard = await page.evaluate(() => window.__appRentalDemo.attemptRentalAccountLaunch('hogwarts'));
+      checkFinalScope(guard.allowed === false && guard.reason === 'non-rented-game', `租号账号启动非本次租用游戏时必须拦截：${JSON.stringify(guard)}`);
+
+      const risk = await page.evaluate(() => window.__appRentalDemo.setRentalRiskDecision({
+        extraNoReasonRestricted: true,
+        ruleVersion: 'RISK-20260811-01',
+      }));
+      checkFinalScope(
+        risk.extraNoReasonRestricted === true && risk.ruleVersion === 'RISK-20260811-01',
+        `退款风险必须使用服务端规则结果及版本：${JSON.stringify(risk)}`,
+      );
+
+      const renewal = await page.evaluate((paymentTime) => {
+        const api = window.__appRentalDemo;
+        api.setMembershipEntitlement({
+          planId: 'weekly',
+          startsAt: paymentTime - 86_400_000,
+          expiresAt: paymentTime + 86_400_000,
+        });
+        return api.simulateMembershipPayment({
+          planId: 'weekly',
+          paidAt: paymentTime,
+          transactionId: 'WX-RENEW-001',
+        });
+      }, paidAt);
+      checkFinalScope(
+        renewal.expiresAt === paidAt + 86_400_000 + 7 * 86_400_000,
+        `未过期周卡续费必须从原到期时间顺延 7 天：${JSON.stringify(renewal)}`,
+      );
+      const duplicate = await page.evaluate((paymentTime) => window.__appRentalDemo.simulateMembershipPayment({
+        planId: 'weekly',
+        paidAt: paymentTime,
+        transactionId: 'WX-RENEW-001',
+      }), paidAt);
+      checkFinalScope(duplicate.expiresAt === renewal.expiresAt, `重复支付回调不得重复延长周卡：${JSON.stringify({ renewal, duplicate })}`);
+
+      assert(finalScopeChecks === 22, `客户端最终范围契约数量错误：${finalScopeChecks}/22`);
+      process.stdout.write('FINAL_SCOPE_PAYMENT_AND_GUARDS 22/22 PASS\n');
     });
 
     await runRefactorGate('STATIC_ARCHITECTURE', async () => {
@@ -898,6 +1108,11 @@ async function main() {
         return {
           labels: tabNodes.map((node) => node.textContent.trim()),
           ids: tabNodes.map((node) => node.dataset.orderTab || node.dataset.value),
+          tabRects: tabNodes.map((node) => {
+            const rect = node.getBoundingClientRect();
+            return { left: Math.round(rect.left), top: Math.round(rect.top), width: Math.round(rect.width), height: Math.round(rect.height) };
+          }),
+          tabsSingleLine: tabNodes.every((node) => node.scrollHeight <= node.clientHeight + 1 && getComputedStyle(node).whiteSpace === 'nowrap'),
           searchFolded: Boolean(trigger) && !document.querySelector('[data-order-search]'),
           searchRightOfUsable: Boolean(triggerBox && usableBox && triggerBox.left >= usableBox.right - 2),
           orders,
@@ -924,6 +1139,7 @@ async function main() {
       assert(initial.ids.join('|') === EXPECTED_ORDER_TABS.map(({ id }) => id).join('|'), `订单 Tab 口径错误：${JSON.stringify(initial.ids)}`);
       assert(initial.searchFolded, `订单搜索默认必须折叠为放大镜：${JSON.stringify(initial)}`);
       assert(initial.searchRightOfUsable, '订单搜索未位于“可使用”右侧');
+      assert(initial.tabsSingleLine, '订单Tab收起态发生换行');
       assert(initial.statuses.join('|') === [...EXPECTED_RENTAL_STATUSES].sort().join('|'), `全部订单未覆盖6种租号状态：${JSON.stringify(initial.statuses)}`);
       assert(initial.orderTypes.every((value) => value === null || value === 'rental'), `出现非租号订单 fixture：${JSON.stringify(initial.orderTypes)}`);
       const expectedOrderStatusVisuals = {
@@ -971,8 +1187,26 @@ async function main() {
         open: Boolean(document.querySelector('[data-order-search]')),
         aria: document.querySelector('[data-order-search-input]')?.getAttribute('aria-label') || '',
         focused: document.activeElement?.matches('[data-order-search-input]') || false,
+        tabRects: [...document.querySelectorAll('[data-order-tab], .order-tabs [role="tab"]')].map((node) => {
+          const rect = node.getBoundingClientRect();
+          return { left: Math.round(rect.left), top: Math.round(rect.top), width: Math.round(rect.width), height: Math.round(rect.height) };
+        }),
+        tabsSingleLine: [...document.querySelectorAll('[data-order-tab], .order-tabs [role="tab"]')].every((node) => node.scrollHeight <= node.clientHeight + 1 && getComputedStyle(node).whiteSpace === 'nowrap'),
+        searchRightOfUsable: (() => {
+          const search = document.querySelector('[data-order-search]')?.getBoundingClientRect();
+          const usable = document.querySelector('[data-order-tab="usable"], .order-tabs [data-value="usable"]')?.getBoundingClientRect();
+          return Boolean(search && usable && search.left >= usable.right - 1);
+        })(),
       }));
-      assert(expandedSearch.open && expandedSearch.aria.includes('当前') && expandedSearch.focused, `订单搜索未向左展开或聚焦：${JSON.stringify(expandedSearch)}`);
+      assert(
+        expandedSearch.open
+          && expandedSearch.aria.includes('当前')
+          && expandedSearch.focused
+          && expandedSearch.tabsSingleLine
+          && expandedSearch.searchRightOfUsable
+          && JSON.stringify(expandedSearch.tabRects) === JSON.stringify(initial.tabRects),
+        `订单搜索展开导致Tab换行、位移或覆盖：${JSON.stringify({ initial: initial.tabRects, expanded: expandedSearch })}`,
+      );
 
       await selectTab('pending');
       await setSearch('');
@@ -1579,7 +1813,7 @@ async function main() {
     process.stdout.write(`ENTITLEMENTS ${entitlementCases.length}/${entitlementCases.length} PASS\n`);
 
     const skuCases = [
-      ['hot-time-rental', 'not-member-library', 'shadow-blade-zero', ['影之刃零 - 标准版', '按小时', '日租', '周租', '6小时', '12小时', '23小时'], ['增强版', '豪华版', '首次体验', '单游永久', '开会员'], []],
+      ['hot-time-rental', 'not-member-library', 'shadow-blade-zero', ['影之刃零', '标准版', '按小时', '日租', '周租', '6小时', '12小时', '23小时'], ['增强版', '豪华版', '首次体验', '单游永久', '开会员'], []],
       ['entitlement-trial', 'member-library-trial', 'spiritfarer', ['首次体验', '单游永久', '开会员'], ['按小时', '日租', '周租'], ['trial', 'permanent', 'membership']],
       ['entitlement-trial-used', 'member-library-trial-used', 'spiritfarer', ['单游永久', '开会员'], ['首次体验', '按小时', '日租', '周租'], ['permanent', 'membership']],
       ['active-member', 'active-member', 'spiritfarer', ['可畅玩'], ['租号开玩', '首次体验', '单游永久', '开会员'], []],
@@ -1618,21 +1852,45 @@ async function main() {
         hero: Boolean(document.querySelector('.portrait-detail-hero img[data-real-asset="true"]')),
         primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
         footerPinned: Boolean(frame && footer && Math.abs(frame.bottom - footer.bottom) <= 14),
+        lightActions: [...document.querySelectorAll('.portrait-detail-actions .detail-action-light')].map((node) => {
+          const icon = node.querySelector('svg')?.getBoundingClientRect();
+          const label = node.querySelector('span')?.getBoundingClientRect();
+          const style = getComputedStyle(node);
+          return { background: style.backgroundColor, border: style.borderTopWidth, direction: style.flexDirection, iconAboveLabel: Boolean(icon && label && icon.bottom <= label.top + 1) };
+        }),
       };
     });
     assert(portraitDetail.layout, '竖屏详情缺少独立布局');
     assert(portraitDetail.hero, '竖屏详情缺少真实主视觉');
     assert(portraitDetail.primaryCount === 1 && portraitDetail.footerPinned, '竖屏详情主按钮未固定或不唯一');
+    assert(portraitDetail.lightActions.length === 2 && portraitDetail.lightActions.every(({ background, border, direction, iconAboveLabel }) => background === 'rgba(0, 0, 0, 0)' && border === '0px' && direction === 'column' && iconAboveLabel), `更多/秒玩必须为无背景的上图标下文字：${JSON.stringify(portraitDetail.lightActions)}`);
 
     await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
-    const landscapeDetail = await page.evaluate(() => ({
-      layout: Boolean(document.querySelector('.landscape-detail[data-layout="landscape-detail"]')),
-      left: Boolean(document.querySelector('.landscape-detail-game')),
-      right: Boolean(document.querySelector('.landscape-detail-benefits')),
-      primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
-    }));
+    const landscapeDetail = await page.evaluate(() => {
+      const rect = (selector) => {
+        const box = document.querySelector(selector)?.getBoundingClientRect();
+        return box ? { top: box.top, bottom: box.bottom, left: box.left, right: box.right } : null;
+      };
+      return {
+        layout: Boolean(document.querySelector('.landscape-detail[data-layout="landscape-detail"]')),
+        game: Boolean(document.querySelector('.landscape-detail-game')),
+        title: rect('.landscape-detail-copy h1'),
+        intro: rect('.landscape-detail-copy > p'),
+        tags: rect('.landscape-detail-genre'),
+        actions: rect('.landscape-detail-copy .detail-action-set'),
+        facts: rect('.landscape-detail-facts'),
+        primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
+      };
+    });
     assert(landscapeDetail.layout, '横屏详情缺少独立 DOM');
-    assert(landscapeDetail.left && landscapeDetail.right, '横屏详情未采用左游戏信息、右权益布局');
+    assert(landscapeDetail.game && landscapeDetail.title && landscapeDetail.intro && landscapeDetail.tags && landscapeDetail.actions, '横屏详情主信息结构不完整');
+    assert(
+      landscapeDetail.title.bottom <= landscapeDetail.intro.top + 1
+        && landscapeDetail.intro.bottom <= landscapeDetail.tags.top + 1
+        && landscapeDetail.tags.bottom <= landscapeDetail.actions.top + 1
+        && landscapeDetail.actions.bottom <= landscapeDetail.facts.top + 1,
+      `横屏详情必须按游戏名→简介→标签→按钮排列且不重叠：${JSON.stringify(landscapeDetail)}`,
+    );
     assert(landscapeDetail.primaryCount === 1, '横屏详情主操作不唯一');
 
     const ownershipCases = [
@@ -1755,10 +2013,9 @@ async function main() {
       `确认订单标准版、套餐与小时快照不一致：${JSON.stringify(checkoutSelectionMatrix)}`,
     );
     const checkoutText = await page.locator('#appRentalDemo').innerText();
-    assert(['影之刃零 - 标准版', '租赁套餐', '租期', '原价', '实付', '支付方式', '租号服务协议', '退款规则', '支付有效期'].every((value) => checkoutText.includes(value)), '确认订单字段不完整');
-    assert(checkoutText.includes('¥36.00'), '确认订单实付金额必须保留两位小数');
+    assert(['影之刃零', '标准版', '租赁套餐', '支付方式', '需支付 ¥36.00', '立即购买'].every((value) => checkoutText.includes(value)), '确认订单核心字段不完整');
+    assert(['当前报价', '租赁信息', '租号服务协议', '支付有效期', '扫码支付'].every((value) => !checkoutText.includes(value)), '确认订单仍存在已移除的重复付款信息');
     assert(checkoutText.includes('支付宝') && checkoutText.includes('微信'), '确认订单缺少双支付方式');
-    assert(/\b(?:2\d|30):[0-5]\d\b/.test(checkoutText), '确认订单缺少30分钟 MM:SS 倒计时');
     await page.locator('[data-action="open-no-reason-policy"]').click();
     const noReasonPolicy = await page.locator('.policy-dialog').innerText();
     assert(noReasonPolicy.includes('72 小时') && noReasonPolicy.includes('30 分钟') && noReasonPolicy.includes('原路退回'), '3天无理由规则弹窗口径不完整');
@@ -1935,47 +2192,41 @@ async function main() {
       membershipOrder: window.__appRentalDemo.snapshot().membershipOrder,
     }));
     const readCheckoutReview = () => page.evaluate(() => {
-      const originalRow = document.querySelector('.game-original-row');
-      const label = originalRow?.querySelector('.price-label');
-      const amount = originalRow?.querySelector('.game-original-amount');
-      const total = document.querySelector('.checkout-row.total .order-total-amount');
-      const labelStyle = label ? getComputedStyle(label) : null;
-      const amountStyle = amount ? getComputedStyle(amount) : null;
-      const totalStyle = total ? getComputedStyle(total) : null;
-      const qr = document.querySelector('.game-payment-qr');
-      const agreement = document.querySelector('.checkout-agreement');
-      const policies = document.querySelector('.checkout-policy-list');
+      const rootNode = document.querySelector('#appRentalDemo');
+      const paymentRow = rootNode.querySelector('.checkout-payment-row');
+      const title = paymentRow?.querySelector('h2')?.getBoundingClientRect();
+      const methods = [...(paymentRow?.querySelectorAll('.payment-method') || [])];
+      const methodRects = methods.map((node) => node.getBoundingClientRect());
+      const bottomBar = rootNode.querySelector('.checkout-bottom-bar');
       return {
-        qrPayment: qr?.dataset.payment,
-        qrText: qr?.textContent.trim(),
-        agreementText: `${agreement?.textContent.trim() || ''} ${policies?.textContent.trim() || ''}`,
-        originalBeforeTotal: Boolean(originalRow?.nextElementSibling?.classList.contains('total')),
-        labelColor: labelStyle?.color,
-        amountColor: amountStyle?.color,
-        amountDecoration: amountStyle?.textDecorationLine,
-        amountAlign: amountStyle?.textAlign,
-        totalAlign: totalStyle?.textAlign,
-        totalColor: totalStyle?.color,
+        name: rootNode.querySelector('.checkout-product-name')?.textContent.trim(),
+        edition: rootNode.querySelector('.checkout-product-edition')?.textContent.trim(),
+        selectedPayment: methods.find((node) => node.classList.contains('selected'))?.dataset.payment,
+        payments: methods.map((node) => node.dataset.payment),
+        paymentRowAligned: Boolean(title && methodRects.length === 2 && methodRects.every((rect) => Math.abs(((rect.top + rect.bottom) / 2) - ((title.top + title.bottom) / 2)) <= 2)),
+        paymentButtonsSameRow: methodRects.length === 2 && Math.abs(methodRects[0].top - methodRects[1].top) <= 1,
+        amount: bottomBar?.querySelector('strong')?.textContent.trim(),
+        action: bottomBar?.querySelector('[data-primary-action="true"]')?.textContent.trim(),
+        removedCount: rootNode.querySelectorAll('.game-payment-qr, .checkout-agreement, .checkout-policy-list, .price-summary, .game-original-row, .checkout-row.total').length,
+        forbiddenText: ['当前报价', '租赁信息', '租号服务协议', '支付有效期', '扫码支付'].filter((value) => rootNode.innerText.includes(value)),
       };
     });
     const portraitCheckoutReview = await readCheckoutReview();
     assert(
-      portraitCheckoutReview.qrPayment === 'alipay'
-        && portraitCheckoutReview.qrText.includes('支付宝扫码支付')
-        && portraitCheckoutReview.agreementText.includes('租号服务协议')
-        && portraitCheckoutReview.agreementText.includes('退款规则')
-        && portraitCheckoutReview.agreementText.includes('支付有效期'),
-      '竖屏确认订单缺少支付宝二维码或协议区',
+      portraitCheckoutReview.name === '影之刃零'
+        && portraitCheckoutReview.edition === '标准版'
+        && portraitCheckoutReview.selectedPayment === 'alipay'
+        && portraitCheckoutReview.payments.join('|') === 'alipay|wechat'
+        && portraitCheckoutReview.paymentRowAligned
+        && portraitCheckoutReview.paymentButtonsSameRow,
+      `竖屏商品信息或支付方式同行双按钮错误：${JSON.stringify(portraitCheckoutReview)}`,
     );
     assert(
-      portraitCheckoutReview.originalBeforeTotal
-        && portraitCheckoutReview.labelColor === 'rgb(255, 255, 255)'
-        && portraitCheckoutReview.amountColor === 'rgb(139, 141, 149)'
-        && portraitCheckoutReview.amountDecoration === 'none'
-        && portraitCheckoutReview.amountAlign === 'right'
-        && portraitCheckoutReview.totalAlign === 'right'
-        && portraitCheckoutReview.totalColor === 'rgb(255, 204, 67)',
-      '竖屏原价与实付视觉层级错误',
+      portraitCheckoutReview.amount === '需支付 ¥36.00'
+        && portraitCheckoutReview.action === '立即购买'
+        && portraitCheckoutReview.removedCount === 0
+        && portraitCheckoutReview.forbiddenText.length === 0,
+      `竖屏底部支付或冗余信息清理错误：${JSON.stringify(portraitCheckoutReview)}`,
     );
     await page.locator('.payment-method[data-payment="wechat"]').click();
     const portraitWechat = await readCheckoutReview();
@@ -1983,7 +2234,7 @@ async function main() {
       gameOrder: window.__appRentalDemo.snapshot().order,
       membershipOrder: window.__appRentalDemo.snapshot().membershipOrder,
     }));
-    assert(portraitWechat.qrPayment === 'wechat' && portraitWechat.qrText.includes('微信扫码支付'), '竖屏微信支付二维码未同步');
+    assert(portraitWechat.selectedPayment === 'wechat', '竖屏微信支付选择未同步');
     assert(
       checkoutAfterWechat.gameOrder.id === checkoutReviewBefore.gameOrder.id
         && checkoutAfterWechat.gameOrder.paymentDeadline === checkoutReviewBefore.gameOrder.paymentDeadline,
@@ -1994,22 +2245,18 @@ async function main() {
     await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
     const landscapeCheckoutReview = await readCheckoutReview();
     assert(
-      landscapeCheckoutReview.qrPayment === 'wechat'
-        && landscapeCheckoutReview.qrText.includes('微信扫码支付')
-        && landscapeCheckoutReview.agreementText.includes('租号服务协议')
-        && landscapeCheckoutReview.agreementText.includes('退款规则')
-        && landscapeCheckoutReview.agreementText.includes('支付有效期'),
-      '横屏确认订单缺少同步二维码或协议区',
+      landscapeCheckoutReview.selectedPayment === 'wechat'
+        && landscapeCheckoutReview.payments.join('|') === 'alipay|wechat'
+        && landscapeCheckoutReview.paymentRowAligned
+        && landscapeCheckoutReview.paymentButtonsSameRow,
+      `横屏支付方式未与标题同行展示双按钮：${JSON.stringify(landscapeCheckoutReview)}`,
     );
     assert(
-      landscapeCheckoutReview.originalBeforeTotal
-        && landscapeCheckoutReview.labelColor === 'rgb(255, 255, 255)'
-        && landscapeCheckoutReview.amountColor === 'rgb(139, 141, 149)'
-        && landscapeCheckoutReview.amountDecoration === 'none'
-        && landscapeCheckoutReview.amountAlign === 'right'
-        && landscapeCheckoutReview.totalAlign === 'right'
-        && landscapeCheckoutReview.totalColor === 'rgb(255, 204, 67)',
-      '横屏原价与实付视觉层级错误',
+      landscapeCheckoutReview.amount === '需支付 ¥36.00'
+        && landscapeCheckoutReview.action === '立即购买'
+        && landscapeCheckoutReview.removedCount === 0
+        && landscapeCheckoutReview.forbiddenText.length === 0,
+      `横屏底部支付或冗余信息清理错误：${JSON.stringify(landscapeCheckoutReview)}`,
     );
     await page.locator('.payment-method[data-payment="alipay"]').click();
     const landscapeAlipay = await readCheckoutReview();
@@ -2018,8 +2265,7 @@ async function main() {
       membershipOrder: window.__appRentalDemo.snapshot().membershipOrder,
     }));
     assert(
-      landscapeAlipay.qrPayment === 'alipay'
-        && landscapeAlipay.qrText.includes('支付宝扫码支付')
+      landscapeAlipay.selectedPayment === 'alipay'
         && checkoutAfterAlipay.gameOrder.id === checkoutReviewBefore.gameOrder.id
         && checkoutAfterAlipay.gameOrder.paymentDeadline === checkoutReviewBefore.gameOrder.paymentDeadline
         && checkoutAfterAlipay.membershipOrder.id === checkoutReviewBefore.membershipOrder.id,
@@ -2262,6 +2508,14 @@ async function main() {
       Object.entries(expectedOrderActionMatrix).every(([status, labels]) => orderActionMatrix[status]?.join('|') === labels.join('|')),
       `订单状态动作矩阵不完整：${JSON.stringify(orderActionMatrix)}`,
     );
+    await page.locator('.portrait-order-list .order-list-card[data-status="refunding"] [data-order-card-action="progress"]').click();
+    const refundingProgress = await page.locator('.refund-progress-dialog').innerText();
+    assert(refundingProgress.includes('退款处理中') && refundingProgress.includes('退款金额 ¥9.90') && refundingProgress.includes('支付渠道处理中'), '退款中订单点击退款进度后未展示渠道处理阶段');
+    await page.locator('.refund-progress-dialog [data-action="close-refund-progress"]').last().click();
+    await page.locator('.portrait-order-list .order-list-card[data-status="refunded"] [data-order-card-action="progress"]').click();
+    const refundedProgress = await page.locator('.refund-progress-dialog').innerText();
+    assert(refundedProgress.includes('退款已完成') && refundedProgress.includes('已按原支付方式退回') && refundedProgress.includes('退款原路到账'), '已退款订单点击退款进度后未展示完成结果');
+    await page.locator('.refund-progress-dialog [data-action="close-refund-progress"]').last().click();
     await page.locator('.portrait-order-list .order-list-card[data-status="active"]').click();
     const portraitOrderDetail = await page.evaluate(() => ({
       screen: window.__appRentalDemo.snapshot().screen,
@@ -2272,6 +2526,12 @@ async function main() {
     assert(portraitOrderDetail.screen === 'order-detail' && portraitOrderDetail.detail, '竖屏订单列表未进入独立订单详情');
     assert(portraitOrderDetail.steps === 4, '订单详情必须固定显示四步进度');
     assert(portraitOrderDetail.actions.join('|') === '申请售后|登录信息|登录游戏', `生效订单操作映射错误：${JSON.stringify(portraitOrderDetail.actions)}`);
+
+    await page.evaluate(() => window.__appRentalDemo.navigate('orders'));
+    await page.locator('.portrait-order-list .order-list-card[data-status="refunding"]').click();
+    await page.locator('.order-detail-actions-dock [data-order-card-action="progress"]').click();
+    assert(await page.locator('.refund-progress-dialog').isVisible(), '订单详情退款进度按钮点击后无可见反馈');
+    await page.locator('.refund-progress-dialog [data-action="close-refund-progress"]').last().click();
 
     await page.evaluate(() => {
       window.__appRentalDemo.navigate('orders');
@@ -2350,12 +2610,16 @@ async function main() {
     assert((await page.locator('.login-method-dialog').count()) === 1, '旋转后登录方式选择未保持打开');
     await page.evaluate(() => window.__appRentalDemo.setOrientation('portrait'));
     await page.getByRole('button', { name: '一键上号', exact: true }).click();
-    const oneClickFailure = await page.evaluate(() => ({
-      retry: Boolean(document.querySelector('[data-action="start-one-click"]')),
-      manual: Boolean(document.querySelector('[data-action="open-manual-login"]')),
-      text: document.querySelector('.login-method-dialog')?.textContent || '',
+    const oneClickSuccess = await page.evaluate(() => ({
+      screen: window.__appRentalDemo.snapshot().screen,
+      libraryTab: window.__appRentalDemo.snapshot().libraryTab,
+      dialogOpen: Boolean(document.querySelector('.login-method-dialog')),
+      toast: document.querySelector('.demo-toast')?.textContent.trim(),
     }));
-    assert(oneClickFailure.text.includes('一键上号失败') && oneClickFailure.retry && oneClickFailure.manual, '一键上号失败后必须可重试或切换手动登录');
+    assert(oneClickSuccess.screen === 'library' && oneClickSuccess.libraryTab === 'steam' && !oneClickSuccess.dialogOpen && oneClickSuccess.toast === '登录成功，已返回游戏库', `一键上号后未成功返回Steam游戏库：${JSON.stringify(oneClickSuccess)}`);
+    await page.evaluate(() => window.__appRentalDemo.navigate('orders'));
+    await page.locator('.order-list-card[data-status="active"]').click();
+    await page.getByRole('button', { name: '登录游戏', exact: true }).click();
     await page.locator('.login-method-dialog [data-action="open-manual-login"]').click();
     const steamPortrait = await page.evaluate(() => ({
       screen: window.__appRentalDemo.snapshot().screen,
@@ -2454,7 +2718,15 @@ async function main() {
     await page.locator('button[data-action="close-credential"]').click();
     await page.getByRole('button', { name: '登录游戏', exact: true }).click();
     await page.locator('.login-method-dialog [data-action="open-manual-login"]').click();
-    assert((await page.locator('[data-action="request-guard"]').isDisabled()), '提交账号密码前不得获取 Guard');
+    const guardBeforeLogin = await page.evaluate(() => ({
+      sectionCount: document.querySelectorAll('.steam-login-form .steam-guard').length,
+      requestCount: document.querySelectorAll('.steam-login-form [data-action="request-guard"]').length,
+      legacyHint: document.querySelector('.steam-login-form')?.textContent.includes('提交账号密码后获取令牌') || false,
+    }));
+    assert(
+      guardBeforeLogin.sectionCount === 0 && guardBeforeLogin.requestCount === 0 && !guardBeforeLogin.legacyHint,
+      `Steam 登录前不应展示令牌提示或禁用按钮：${JSON.stringify(guardBeforeLogin)}`,
+    );
     await page.locator('#steam-account').fill('player@example.com');
     await page.locator('#steam-password').fill('not-a-real-password');
     await page.getByRole('button', { name: '登录', exact: true }).click();
