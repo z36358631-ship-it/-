@@ -15,7 +15,7 @@ function sectionBetween(startHeading, endHeading) {
   return prd.slice(start, end);
 }
 
-test('V1.7 使用标准九章结构并仅输出 C 端详细设计', () => {
+test('V1.8 使用标准九章结构并仅输出 C 端详细设计', () => {
   for (const heading of [
     '## 一、版本信息',
     '## 二、背景与目标',
@@ -32,6 +32,7 @@ test('V1.7 使用标准九章结构并仅输出 C 端详细设计', () => {
   assert.match(prd, /\|2026-08-10\|V1\.5\|/);
   assert.match(prd, /\|2026-08-10\|V1\.6\|/);
   assert.match(prd, /\|2026-08-11\|V1\.7\|/);
+  assert.match(prd, /\|2026-08-11\|V1\.8\|/);
   assert.match(prd, /### 4\.2 详细设计（C端）/);
   assert.doesNotMatch(prd, /### 4\.3 详细设计（B端）/);
 });
@@ -60,7 +61,7 @@ test('8 张功能图均为固定提交公开地址且表格内外各引用一次
   const urls = matches.map(match => match[1]);
   assert.equal(matches.length, 16);
   assert.equal(new Set(urls).size, 8);
-  assert.deepEqual(new Set(matches.map(match => match[2])), new Set(['06184f828c1d80e158a14bf0dc025fee9e6aa98e']));
+  assert.deepEqual(new Set(matches.map(match => match[2])), new Set(['81398b512a0fa4b540e1b7314ec579c1a57c7711']));
   assert.doesNotMatch(prd, /file:\/\/|localhost|@main|@master|github\.com\/[^\s)]+\/blob\//i);
 });
 

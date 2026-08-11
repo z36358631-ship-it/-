@@ -91,10 +91,12 @@ checks.pathHint = (await page.locator('.install-path-hint').textContent())?.trim
 const pathCopyBox = await page.locator('#installPathTrigger .install-path-copy').boundingBox();
 const pathHintBox = await page.locator('.install-path-hint').boundingBox();
 checks.pathHintOnSeparateLine = pathHintBox.y >= pathCopyBox.y + pathCopyBox.height - 1;
+checks.pathHintRightAligned = Math.abs((pathHintBox.x + pathHintBox.width) - (pathCopyBox.x + pathCopyBox.width)) < 2;
 checks.installProgressElementCount = await page.locator('#progress, #progressBar').count();
 assert.equal(checks.defaultInstallPath, '/Applications/GameHub/', '应默认恢复上一次成功安装路径');
 assert.equal(checks.pathHint, '安装到其他位置', '收起态应常驻显示其他位置引导');
 assert.equal(checks.pathHintOnSeparateLine, true, '其他位置引导应在控件内另起一行');
+assert.equal(checks.pathHintRightAligned, true, '其他位置引导应在第二行右对齐');
 assert.equal(checks.installProgressElementCount, 0, '安装弹窗不得显示下载进度条');
 await capture('04-path-largest-default.png');
 
