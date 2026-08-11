@@ -111,6 +111,18 @@ async function main() {
   const failedFinalReviewSourceChecks = finalReviewSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
   assert(failedFinalReviewSourceChecks.length === 0, `FINAL_REVIEW 源码契约未通过：${failedFinalReviewSourceChecks.join('、')}`);
   process.stdout.write(`FINAL_REVIEW_SOURCE ${finalReviewSourceChecks.length}/${finalReviewSourceChecks.length} PASS\n`);
+  const sixthReviewSourceChecks = [
+    ['订单标题与Tab紧凑', templateSource.includes('.portrait-orders .task-page-head { margin-bottom: 0; }')],
+    ['订单搜索透明图标', templateSource.includes('data-order-search-collapsed') && /\.order-search-trigger\s*\{[^}]*background:\s*transparent/s.test(templateSource)],
+    ['详情四槽动作', templateSource.includes("label: '•••'") && templateSource.includes("icon: 'quick-play'") && templateSource.includes('detail-action-icon')],
+    ['具体第三方平台配置', templateSource.includes('THIRD_PARTY_LOGIN_CONFIGS') && templateSource.includes('Rockstar Games 登录') && templateSource.includes('platformApproved')],
+    ['第三方验证码生命周期', templateSource.includes('requestThirdPartyCode') && templateSource.includes('thirdPartyCodeExpiresAt') && templateSource.includes('thirdPartyCodeCooldownUntil')],
+    ['Steam登录信息使用完整内容宽度', templateSource.includes('steam-credential-sheet') && !templateSource.includes('.steam-qr-panel .steam-credential-overlay')],
+    ['首期仅标准版', !templateSource.includes('data-checkout-field="edition"') && templateSource.includes('checkout-product-name') && templateSource.includes("editionId: 'standard'")],
+  ];
+  const failedSixthReviewSourceChecks = sixthReviewSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
+  assert(failedSixthReviewSourceChecks.length === 0, `SIXTH_REVIEW 源码契约未通过：${failedSixthReviewSourceChecks.join('、')}`);
+  process.stdout.write(`SIXTH_REVIEW_SOURCE ${sixthReviewSourceChecks.length}/${sixthReviewSourceChecks.length} PASS\n`);
   assertAnnotation(
     !/<iframe\b/i.test(annotationSource)
       && !/(?:<script[^>]+src|<link[^>]+href|(?:src|href)=["']https?:|url\(["']?https?:)/i.test(annotationSource),
@@ -172,12 +184,12 @@ async function main() {
         const standardQuote = api.quoteRentalOffer('hourly', 2, 'standard', standardContext);
         const standardPurchase = api.lowestEligiblePurchaseSku('shadow-blade-zero', standardContext);
         const editions = api.getGameEditions('shadow-blade-zero', 'Steam').map(({ id, name, enabled, inStock }) => ({ id, name, enabled, inStock }));
-        api.selectEdition('enhanced');
-        const enhancedContext = api.getCheckoutEligibilityContext('shadow-blade-zero');
-        const enhancedQuote = api.quoteRentalOffer('hourly', 2, 'enhanced', enhancedContext);
-        const enhancedPurchase = api.lowestEligiblePurchaseSku('shadow-blade-zero', enhancedContext);
+        const enhancedSelected = api.selectEdition('enhanced');
+        const checkoutContext = api.getCheckoutEligibilityContext('shadow-blade-zero');
         api.navigate('checkout');
-        const enhancedOrder = api.snapshot().order;
+        const standardOrder = api.snapshot().order;
+        const checkoutEditionControls = document.querySelectorAll('[data-checkout-field="edition"], [data-action="select-edition"]').length;
+        const checkoutProductName = document.querySelector('.checkout-product-name')?.textContent.trim();
 
         api.setScenario('not-member-library', { shouldRender: false });
         api.setSelectedGame('stardew', { shouldRender: false });
@@ -209,10 +221,11 @@ async function main() {
           standardQuote,
           standardPurchase,
           editions,
-          enhancedContext,
-          enhancedQuote,
-          enhancedPurchase,
-          enhancedOrder,
+          enhancedSelected,
+          checkoutContext,
+          standardOrder,
+          checkoutEditionControls,
+          checkoutProductName,
           freeActions,
           cloudBadges,
           unsupportedBadges,
@@ -228,13 +241,13 @@ async function main() {
         catalogChecks += 1;
       };
       checkCatalog(catalog.standardContext.platform === 'Steam' && catalog.standardContext.editionId === 'standard' && !('version' in catalog.standardContext), `平台与版本上下文仍混用：${JSON.stringify(catalog.standardContext)}`);
-      checkCatalog(catalog.editions.map(({ id }) => id).join('|') === 'standard|enhanced|deluxe', `游戏未声明自己的三个可售版本：${JSON.stringify(catalog.editions)}`);
-      checkCatalog(catalog.standardQuote.price === 1.9 && catalog.standardQuote.platform === 'Steam' && catalog.standardQuote.editionId === 'standard', `普通版首租报价上下文错误：${JSON.stringify(catalog.standardQuote)}`);
-      checkCatalog(catalog.standardPurchase?.id === 'purchase-standard', `普通版购买 SKU 过滤错误：${JSON.stringify(catalog.standardPurchase)}`);
-      checkCatalog(catalog.enhancedContext.editionId === 'enhanced' && catalog.enhancedQuote.price > 9.9 && catalog.enhancedQuote.editionId === 'enhanced', `增强版报价未独立切换：${JSON.stringify({ context: catalog.enhancedContext, quote: catalog.enhancedQuote })}`);
-      checkCatalog(catalog.enhancedPurchase?.id === 'purchase-enhanced', `增强版购买 SKU 过滤错误：${JSON.stringify(catalog.enhancedPurchase)}`);
-      checkCatalog(catalog.enhancedOrder?.platform === 'Steam' && catalog.enhancedOrder?.editionId === 'enhanced' && catalog.enhancedOrder?.version === 'Steam · 增强版', `订单快照未分别固化平台与版本：${JSON.stringify(catalog.enhancedOrder)}`);
-      checkCatalog(catalog.freeActions.map(({ label }) => label).join('|') === '查看更多|秒玩|获取游戏' && !catalog.freeActions.some(({ id }) => id === 'rent'), `免费获取场景没有正确隐藏租号：${JSON.stringify(catalog.freeActions)}`);
+      checkCatalog(catalog.editions.some(({ id, name }) => id === 'standard' && name === '标准版'), `游戏缺少标准版商品配置：${JSON.stringify(catalog.editions)}`);
+      checkCatalog(catalog.standardQuote.price === 1.9 && catalog.standardQuote.platform === 'Steam' && catalog.standardQuote.editionId === 'standard', `标准版首租报价上下文错误：${JSON.stringify(catalog.standardQuote)}`);
+      checkCatalog(catalog.standardPurchase?.id === 'purchase-standard', `标准版购买 SKU 过滤错误：${JSON.stringify(catalog.standardPurchase)}`);
+      checkCatalog(catalog.enhancedSelected === false && catalog.checkoutContext.editionId === 'standard', `首期不应允许切换非标准版：${JSON.stringify({ selected: catalog.enhancedSelected, context: catalog.checkoutContext })}`);
+      checkCatalog(catalog.standardOrder?.platform === 'Steam' && catalog.standardOrder?.editionId === 'standard' && catalog.standardOrder?.version === 'Steam · 标准版', `订单快照未固化标准版：${JSON.stringify(catalog.standardOrder)}`);
+      checkCatalog(catalog.checkoutEditionControls === 0 && catalog.checkoutProductName === '影之刃零 - 标准版', `确认订单仍出现版本选择或商品名未标标准版：${JSON.stringify({ controls: catalog.checkoutEditionControls, name: catalog.checkoutProductName })}`);
+      checkCatalog(catalog.freeActions.map(({ label }) => label).join('|') === '•••|秒玩|获取游戏' && !catalog.freeActions.some(({ id }) => id === 'rent'), `免费获取场景没有正确隐藏租号：${JSON.stringify(catalog.freeActions)}`);
       checkCatalog(catalog.cloudBadges.length === 6 && catalog.unsupportedBadges === 0, `会员游戏云存档标识与配置不一致：${JSON.stringify(catalog.cloudBadges)}`);
       checkCatalog(catalog.cloudBadgesInsidePreview, '横屏会员游戏预览的云存档标识发生裁切或溢出');
       checkCatalog(catalog.firstRentalText === '¥1.9首租' && catalog.regularRentalText === '¥9.9租号', `首页首租资格失效后未回退普通租号：${JSON.stringify({ first: catalog.firstRentalText, regular: catalog.regularRentalText })}`);
@@ -648,9 +661,9 @@ async function main() {
           && detailConfirmed.snapshot.order?.durationLabel === '2小时'
           && detailConfirmed.snapshot.order?.rawAmount === 1.9
           && detailConfirmed.saleMode === 'time-rental'
-          && detailConfirmed.text.includes('普通版')
-          && detailConfirmed.text.includes('增强版')
-          && detailConfirmed.text.includes('豪华版')
+          && detailConfirmed.text.includes('影之刃零 - 标准版')
+          && !detailConfirmed.text.includes('增强版')
+          && !detailConfirmed.text.includes('豪华版')
           && detailConfirmed.text.includes('按小时')
           && detailConfirmed.text.includes('日租')
           && detailConfirmed.text.includes('周租')
@@ -672,7 +685,8 @@ async function main() {
         const text = rootNode.innerText;
         return {
           text,
-          fields: ['游戏', '版本', '租赁套餐', '租期', '原价', '实付', '支付方式', '租号服务协议', '退款规则', '支付有效期'].every((field) => text.includes(field)),
+          fields: ['标准版', '租赁套餐', '租期', '原价', '实付', '支付方式', '租号服务协议', '退款规则', '支付有效期'].every((field) => text.includes(field)),
+          editionControls: rootNode.querySelectorAll('[data-checkout-field="edition"], [data-action="select-edition"]').length,
           twoDecimalAmount: /¥\d+\.\d{2}/.test(text),
         };
       });
@@ -690,7 +704,7 @@ async function main() {
         checkoutVisual.every(({ primaryBackground, primaryHasBlue, forbiddenBusinessCopy }) => (
           primaryBackground.includes('gradient') && primaryHasBlue && !forbiddenBusinessCopy
         ))
-          && checkoutFields.fields && checkoutFields.twoDecimalAmount
+          && checkoutFields.fields && checkoutFields.editionControls === 0 && checkoutFields.twoDecimalAmount
           && changedPriceLabel?.trim() === '按新价格重新确认'
           && unavailableCheckout.label === '暂不可购买' && unavailableCheckout.disabled,
         `确认订单视觉、租号字段、改价或库存状态错误：${JSON.stringify({ checkoutVisual, checkoutFields, changedPriceLabel, unavailableCheckout })}`,
@@ -1168,7 +1182,7 @@ async function main() {
           && membership.hasCompletionApi
           && membership.completed === true
           && ['paid', 'active', 'completed', 'succeeded'].includes(membership.orderStatus)
-          && ['monthly-active', 'annual-active', 'permanent'].includes(membership.membershipStatus)
+          && ['weekly-active', 'monthly-active', 'quarterly-active'].includes(membership.membershipStatus)
           && membership.completionCopy,
         `会员订单缺少支付完成与权益生效态：${JSON.stringify(membership)}`,
       );
@@ -1195,7 +1209,7 @@ async function main() {
           screen: window.__appRentalDemo.snapshot().screen,
           credentialPanelOpen: window.__appRentalDemo.snapshot().credentialPanelOpen,
           steamHelpOpen: window.__appRentalDemo.snapshot().steamHelpOpen,
-          overlay: Boolean(rootNode.querySelector('.steam-credential-overlay, .credential-panel')),
+          overlay: Boolean(rootNode.querySelector('.steam-credential-sheet, .credential-panel')),
           secretInDom: /gh_rental_2607|G@meHub#8291|48291/.test(rootNode.innerHTML),
         };
       });
@@ -1565,7 +1579,7 @@ async function main() {
     process.stdout.write(`ENTITLEMENTS ${entitlementCases.length}/${entitlementCases.length} PASS\n`);
 
     const skuCases = [
-      ['hot-time-rental', 'not-member-library', 'shadow-blade-zero', ['普通版', '增强版', '豪华版', '按小时', '日租', '周租', '6小时', '12小时', '23小时'], ['首次体验', '单游永久', '开会员'], []],
+      ['hot-time-rental', 'not-member-library', 'shadow-blade-zero', ['影之刃零 - 标准版', '按小时', '日租', '周租', '6小时', '12小时', '23小时'], ['增强版', '豪华版', '首次体验', '单游永久', '开会员'], []],
       ['entitlement-trial', 'member-library-trial', 'spiritfarer', ['首次体验', '单游永久', '开会员'], ['按小时', '日租', '周租'], ['trial', 'permanent', 'membership']],
       ['entitlement-trial-used', 'member-library-trial-used', 'spiritfarer', ['单游永久', '开会员'], ['首次体验', '按小时', '日租', '周租'], ['permanent', 'membership']],
       ['active-member', 'active-member', 'spiritfarer', ['可畅玩'], ['租号开玩', '首次体验', '单游永久', '开会员'], []],
@@ -1714,29 +1728,34 @@ async function main() {
         });
       };
       record('hourly-8-standard');
-      window.__appRentalDemo.selectEdition('enhanced');
-      record('hourly-8-enhanced');
+      const enhancedRejected = window.__appRentalDemo.selectEdition('enhanced');
+      record('enhanced-rejected');
       window.__appRentalDemo.selectRentalPlan('daily');
-      record('daily-enhanced');
+      record('daily-standard');
       window.__appRentalDemo.selectRentalPlan('weekly');
-      record('weekly-enhanced');
+      record('weekly-standard');
       window.__appRentalDemo.setRentalHours(23);
-      record('hourly-23-enhanced');
-      window.__appRentalDemo.selectEdition('standard');
+      record('hourly-23-standard');
       window.__appRentalDemo.setRentalHours(8);
-      return rows;
+      return { rows, enhancedRejected };
     });
-    assert(new Set(checkoutSelectionMatrix.map(({ id }) => id)).size === checkoutSelectionMatrix.length, `版本、套餐或小时切换后未逐次重建草稿：${JSON.stringify(checkoutSelectionMatrix)}`);
+    const selectionRows = checkoutSelectionMatrix.rows;
     assert(
-      checkoutSelectionMatrix[1].editionId === 'enhanced'
-        && checkoutSelectionMatrix[2].durationLabel === '24小时'
-        && checkoutSelectionMatrix[3].durationLabel === '7天'
-        && checkoutSelectionMatrix[4].plan === 'hourly'
-        && checkoutSelectionMatrix[4].hours === 23,
-      `确认订单版本、套餐与小时快照不一致：${JSON.stringify(checkoutSelectionMatrix)}`,
+      checkoutSelectionMatrix.enhancedRejected === false
+        && selectionRows[0].id === selectionRows[1].id
+        && new Set([selectionRows[0].id, ...selectionRows.slice(2).map(({ id }) => id)]).size === 4,
+      `非标准版应拒绝且套餐或小时切换后应重建草稿：${JSON.stringify(checkoutSelectionMatrix)}`,
+    );
+    assert(
+      selectionRows.every(({ editionId }) => editionId === 'standard')
+        && selectionRows[2].durationLabel === '24小时'
+        && selectionRows[3].durationLabel === '7天'
+        && selectionRows[4].plan === 'hourly'
+        && selectionRows[4].hours === 23,
+      `确认订单标准版、套餐与小时快照不一致：${JSON.stringify(checkoutSelectionMatrix)}`,
     );
     const checkoutText = await page.locator('#appRentalDemo').innerText();
-    assert(['影之刃零', '版本', '租赁套餐', '租期', '原价', '实付', '支付方式', '租号服务协议', '退款规则', '支付有效期'].every((value) => checkoutText.includes(value)), '确认订单字段不完整');
+    assert(['影之刃零 - 标准版', '租赁套餐', '租期', '原价', '实付', '支付方式', '租号服务协议', '退款规则', '支付有效期'].every((value) => checkoutText.includes(value)), '确认订单字段不完整');
     assert(checkoutText.includes('¥36.00'), '确认订单实付金额必须保留两位小数');
     assert(checkoutText.includes('支付宝') && checkoutText.includes('微信'), '确认订单缺少双支付方式');
     assert(/\b(?:2\d|30):[0-5]\d\b/.test(checkoutText), '确认订单缺少30分钟 MM:SS 倒计时');
@@ -1784,8 +1803,8 @@ async function main() {
       names: [...document.querySelectorAll('.membership-plan-card .plan-name')].map((node) => node.textContent.trim()),
       prices: [...document.querySelectorAll('.membership-plan-card .plan-price')].map((node) => node.textContent.trim()),
       originals: [...document.querySelectorAll('.membership-plan-card .plan-original')].map((node) => node.textContent.trim()),
-      recommendation: document.querySelector('.membership-plan-card[data-plan="permanent"] .plan-recommend')?.textContent.trim(),
-      permanentSelected: document.querySelector('.membership-plan-card[data-plan="permanent"]')?.classList.contains('selected'),
+      recommendation: document.querySelector('.membership-plan-card[data-plan="quarterly"] .plan-recommend')?.textContent.trim(),
+      quarterlySelected: document.querySelector('.membership-plan-card[data-plan="quarterly"]')?.classList.contains('selected'),
       valueHero: document.querySelector('.membership-value-hero')?.textContent.trim() || '',
       benefitTitles: [...document.querySelectorAll('.membership-benefit-item strong')].map((node) => node.textContent.trim()),
       previewCards: document.querySelectorAll('.membership-preview .member-game-card').length,
@@ -1795,18 +1814,18 @@ async function main() {
       qr: Boolean(document.querySelector('[aria-label="支付二维码"]')),
       hasSelectionButton: [...document.querySelectorAll('button')].some((node) => node.textContent.trim() === '选择'),
     }));
-    assert(membership.names.join('|') === '月度|年度|永久', '会员套餐顺序错误');
-    assert(membership.prices.join('|') === '¥129|¥499|¥399', '会员套餐价格错误');
-    assert(membership.originals.join('|') === '原价 ¥169|原价 ¥699|原价 ¥799', '会员套餐原价错误');
-    assert(membership.recommendation === '推荐 · 长期有效' && membership.permanentSelected && membership.primaryLabel === '开通永久会员 · ¥399', '永久会员未作为默认推荐套餐或支付主操作不一致');
+    assert(membership.names.join('|') === '周卡|月卡|季卡', '会员套餐顺序错误');
+    assert(membership.prices.join('|') === '¥39|¥129|¥299', '会员套餐演示价格错误');
+    assert(membership.originals.length === 0, '会员套餐不应展示未确认的划线原价');
+    assert(membership.recommendation === '推荐 · 更划算' && membership.quarterlySelected && membership.primaryLabel === '开通季卡会员 · ¥299', '季卡未作为默认推荐套餐或支付主操作不一致');
     assert(
       membership.valueHero.includes('一个会员，畅玩本期精选游戏')
         && membership.benefitTitles.join('|') === '会员库内畅玩|游戏持续更新|PC引擎与手柄适配|个人云存档同步'
         && membership.previewCards === 8,
       `会员中心未恢复原四项权益介绍：${JSON.stringify(membership)}`,
     );
-    await page.locator('.membership-plan-card[data-plan="annual"]').click();
-    assert((await page.evaluate(() => window.__appRentalDemo.snapshot().memberPlan)) === 'annual' && !membership.hasSelectionButton, '会员套餐未支持整卡切换或出现选择按钮');
+    await page.locator('.membership-plan-card[data-plan="weekly"]').click();
+    assert((await page.evaluate(() => window.__appRentalDemo.snapshot().memberPlan)) === 'weekly' && !membership.hasSelectionButton, '会员套餐未支持整卡切换或出现选择按钮');
     assert(!/自动续费|一次性购买/.test(membership.text), '会员中心出现禁用文案');
     assert(membership.paymentMethods === 2 && membership.qr && membership.text.includes('支付宝') && membership.text.includes('微信'), '会员支付方式或二维码不完整');
 
@@ -1869,10 +1888,10 @@ async function main() {
     await page.waitForFunction(() => Boolean(window.__appRentalDemo));
     const membershipStatusCases = [
       ['none', '会员未开通'],
-      ['monthly-active', '月度会员'],
-      ['annual-active', '年度会员'],
+      ['weekly-active', '周卡会员'],
+      ['monthly-active', '月卡会员'],
+      ['quarterly-active', '季卡会员'],
       ['expired', '会员已过期'],
-      ['permanent', '永久会员'],
     ];
     let membershipStatusChecks = 0;
     for (const orientation of ['portrait', 'landscape']) {
@@ -2401,7 +2420,35 @@ async function main() {
     assert((await page.locator('.credential-panel').count()) === 0, '点击遮罩未关闭登录信息面板');
     await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
     await page.getByRole('button', { name: '登录信息', exact: true }).click();
-    assert((await page.locator('.credential-panel--landscape').count()) === 1, '横屏登录信息必须为居中小窗');
+    const landscapeCredential = await page.evaluate(() => ({
+      count: document.querySelectorAll('.credential-panel--landscape').length,
+      width: document.querySelector('.credential-panel--landscape')?.getBoundingClientRect().width || 0,
+      thirdPartyTitle: document.querySelector('.credential-panel--landscape [data-third-party-platform]')?.textContent.trim() || '',
+      guardRatio: (() => {
+        const panel = document.querySelector('.credential-panel--landscape');
+        const guard = panel?.querySelector('.credential-guard');
+        if (!panel || !guard) return 0;
+        const style = getComputedStyle(panel);
+        const usableWidth = panel.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+        return guard.getBoundingClientRect().width / usableWidth;
+      })(),
+      thirdPartyCodeRatio: (() => {
+        const panel = document.querySelector('.credential-panel--landscape');
+        const code = panel?.querySelector('.third-party-code');
+        if (!panel || !code) return 0;
+        const style = getComputedStyle(panel);
+        const usableWidth = panel.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+        return code.getBoundingClientRect().width / usableWidth;
+      })(),
+    }));
+    assert(
+      landscapeCredential.count === 1
+        && landscapeCredential.width >= 680
+        && landscapeCredential.guardRatio >= 0.45 && landscapeCredential.guardRatio <= 0.52
+        && landscapeCredential.thirdPartyCodeRatio >= 0.45 && landscapeCredential.thirdPartyCodeRatio <= 0.52
+        && landscapeCredential.thirdPartyTitle.includes('Rockstar Games 登录'),
+      `横屏登录信息弹窗宽度或第三方平台信息不完整：${JSON.stringify(landscapeCredential)}`,
+    );
     process.stdout.write('CREDENTIAL 10/10 PASS\n');
 
     await page.locator('button[data-action="close-credential"]').click();
@@ -2454,18 +2501,62 @@ async function main() {
     );
     await page.locator('.steam-help-trigger').click();
     const steamHelp = await page.evaluate(() => ({
-      overlay: Boolean(document.querySelector('.steam-qr-panel .steam-credential-overlay')),
+      sheet: Boolean(document.querySelector('.steam-login-page > .steam-credential-sheet')),
       formVisible: Boolean(document.querySelector('.steam-login-form')),
-      code: document.querySelector('.steam-credential-overlay [data-guard-code]')?.textContent.trim(),
+      code: document.querySelector('.steam-credential-sheet [data-guard-code]')?.textContent.trim(),
+      title: document.querySelector('.steam-credential-sheet [data-third-party-platform]')?.textContent.trim(),
+      guardRatio: (() => {
+        const content = document.querySelector('.steam-credential-sheet .credential-content')?.getBoundingClientRect();
+        const guard = document.querySelector('.steam-credential-sheet .credential-guard')?.getBoundingClientRect();
+        return content && guard ? guard.width / content.width : 0;
+      })(),
+      thirdPartyCodeRatio: (() => {
+        const content = document.querySelector('.steam-credential-sheet .credential-content')?.getBoundingClientRect();
+        const code = document.querySelector('.steam-credential-sheet .third-party-code')?.getBoundingClientRect();
+        return content && code ? code.width / content.width : 0;
+      })(),
+      bounds: (() => {
+        const pageNode = document.querySelector('.steam-login-page');
+        const sheetNode = document.querySelector('.steam-credential-sheet');
+        if (!pageNode || !sheetNode) return null;
+        const pageRect = pageNode.getBoundingClientRect();
+        const sheetRect = sheetNode.getBoundingClientRect();
+        return { pageLeft: pageRect.left, pageRight: pageRect.right, sheetLeft: sheetRect.left, sheetRight: sheetRect.right };
+      })(),
     }));
     assert(
-      steamHelp.overlay && steamHelp.formVisible && steamHelp.code === '48291'
-        && (await page.locator('.steam-credential-overlay [data-action="copy-guard"]').count()) === 1
-        && (await page.locator('.steam-credential-overlay [data-action="refresh-guard"]').count()) === 1,
-      'Steam 凭据浮层必须覆盖二维码区、复用同一码并提供复制/刷新操作',
+      steamHelp.sheet && steamHelp.formVisible && steamHelp.code === '48291'
+        && steamHelp.title?.includes('Rockstar Games 登录')
+        && Math.abs(steamHelp.bounds.sheetLeft - steamHelp.bounds.pageLeft) <= 1
+        && Math.abs(steamHelp.bounds.sheetRight - steamHelp.bounds.pageRight) <= 1
+        && steamHelp.guardRatio >= 0.45 && steamHelp.guardRatio <= 0.52
+        && steamHelp.thirdPartyCodeRatio >= 0.45 && steamHelp.thirdPartyCodeRatio <= 0.52
+        && (await page.locator('.steam-credential-sheet [data-action="copy-guard"]').count()) === 1
+        && (await page.locator('.steam-credential-sheet [data-action="refresh-guard"]').count()) === 1,
+      'Steam 登录信息必须使用完整内容宽度、复用同一码并展示具体第三方平台',
     );
-    await page.locator('.steam-credential-overlay [data-action="close-steam-help"]').click();
-    assert((await page.locator('.steam-login-form').count()) === 1 && (await page.locator('.steam-credential-overlay').count()) === 0, '关闭 Steam 凭据浮层后未保留登录表单');
+    await page.locator('.steam-credential-sheet [data-action="request-third-party-code"]').click();
+    const thirdPartyCodeState = await page.evaluate(() => ({
+      code: document.querySelector('.steam-credential-sheet [data-third-party-code]')?.textContent.trim(),
+      remaining: Number(document.querySelector('.steam-credential-sheet [data-third-party-code-remaining]')?.dataset.thirdPartyCodeRemaining),
+      refreshDisabled: Boolean(document.querySelector('.steam-credential-sheet [data-action="refresh-third-party-code"]')?.disabled),
+      snapshot: JSON.stringify(window.__appRentalDemo.snapshot()),
+    }));
+    assert(
+      thirdPartyCodeState.code === '739204'
+        && thirdPartyCodeState.remaining > 0
+        && thirdPartyCodeState.refreshDisabled
+        && !thirdPartyCodeState.snapshot.includes('739204'),
+      `第三方验证码生命周期或公开快照脱敏错误：${JSON.stringify(thirdPartyCodeState)}`,
+    );
+    await page.locator('.steam-credential-sheet [data-action="close-steam-help"]').click();
+    const staleThirdPartyCode = await page.evaluate(() => window.__appRentalDemo.expireThirdPartyCode());
+    assert(
+      (await page.locator('.steam-login-form').count()) === 1
+        && (await page.locator('.steam-credential-sheet').count()) === 0
+        && staleThirdPartyCode === false,
+      '关闭 Steam 登录信息后未保留登录表单或未清除第三方验证码',
+    );
     await page.evaluate(() => window.__appRentalDemo.setOrientation('portrait'));
     const rotatedGuard = await page.evaluate(() => ({
       account: document.querySelector('#steam-account')?.value,
@@ -2543,7 +2634,7 @@ async function main() {
     await page.locator('[data-action="request-guard"]').click();
     await page.locator('.steam-help-trigger').click();
     assertTouchTargets(
-      await readTouchTargets('.steam-login-submit, .steam-guard button, .steam-credential-overlay .dialog-close, .steam-credential-overlay .credential-field button, .steam-credential-overlay .credential-guard button'),
+      await readTouchTargets('.steam-login-submit, .steam-guard button, .steam-credential-sheet .dialog-close, .steam-credential-sheet .credential-field button, .steam-credential-sheet .credential-guard button, .steam-credential-sheet .third-party-code button'),
       'Steam 与 Guard 操作',
     );
     await page.evaluate(() => {
@@ -2616,7 +2707,7 @@ async function main() {
       account: document.querySelector('#steam-account')?.value,
       password: document.querySelector('#steam-password')?.value,
       remember: document.querySelector('#steam-remember')?.checked,
-      help: Boolean(document.querySelector('.steam-credential-overlay')),
+      help: Boolean(document.querySelector('.steam-credential-sheet')),
       code: document.querySelector('[data-guard-code]')?.textContent.trim(),
     }));
     assert(
@@ -2626,7 +2717,7 @@ async function main() {
         && !steamContinuityAfter.remember
         && steamContinuityAfter.help
         && steamContinuityAfter.code === '48291',
-      '旋转后 Steam 表单、记住我、凭据浮层或 Guard 丢失',
+      '旋转后 Steam 表单、记住我、全宽登录信息或 Guard 丢失',
     );
     assert(
       steamContinuityAfter.snapshot.guardExpiresAt === steamContinuityBefore.guardExpiresAt
@@ -2830,7 +2921,7 @@ async function main() {
       window.__appRentalDemo.requestReplacement();
       return window.__appRentalDemo.snapshot().replacementRequest;
     });
-    assert(replacement.status === 'success' && replacement.gameId === 'elden-ring' && replacement.version === 'Steam · 普通版', '换号必须保持同游戏同版本');
+    assert(replacement.status === 'success' && replacement.gameId === 'red-dead-2' && replacement.version === 'Steam · 标准版', '换号必须保持同游戏同版本');
     assert(afterSalesSubmit.snapshot.guardCode === null && afterSalesSubmit.snapshot.steamForm.password === '', '售后提交后必须清理凭据');
     process.stdout.write('AFTER_SALES 10/10 PASS\n');
 
@@ -2917,7 +3008,28 @@ async function main() {
     checkLayout((await page.locator('.mac-derived-checkout .checkout-purchase-column').count()) === 1, '横屏订单缺少 Mac 右侧购买区');
     checkLayout(await page.locator('.mac-derived-checkout .payment-primary').isVisible(), '横屏订单主支付按钮必须在首屏可见');
     await page.evaluate(() => window.__appRentalDemo.navigate('membership'));
-    checkLayout((await page.locator('.landscape-membership .membership-plan-card').count()) === 3, '横屏会员套餐必须完整显示月度、年度、永久三张卡');
+    checkLayout((await page.locator('.landscape-membership .membership-plan-card').count()) === 3, '横屏会员套餐必须完整显示周卡、月卡、季卡三张卡');
+    const membershipPreviewBadgeGeometry = await page.evaluate(() => [...document.querySelectorAll('.landscape-membership .membership-preview .member-game-card')]
+      .map((card) => {
+        const cover = card.querySelector('.member-game-cover')?.getBoundingClientRect();
+        const badge = card.querySelector('.cloud-save-badge')?.getBoundingClientRect();
+        if (!cover || !badge || badge.width === 0 || badge.height === 0) return null;
+        const overlaps = badge.left < cover.right && badge.right > cover.left && badge.top < cover.bottom && badge.bottom > cover.top;
+        return { overlaps, badgeTop: Math.round(badge.top), coverBottom: Math.round(cover.bottom) };
+      })
+      .filter(Boolean));
+    checkLayout(membershipPreviewBadgeGeometry.length > 0 && membershipPreviewBadgeGeometry.every(({ overlaps, badgeTop, coverBottom }) => !overlaps && badgeTop >= coverBottom - 1), `横屏会员中心云存档标识覆盖封面：${JSON.stringify(membershipPreviewBadgeGeometry)}`);
+    await page.evaluate(() => window.__appRentalDemo.navigate('member-library'));
+    const memberLibraryBadgeGeometry = await page.evaluate(() => [...document.querySelectorAll('.landscape-member-library .member-game-card')]
+      .map((card) => {
+        const cover = card.querySelector('.member-game-cover')?.getBoundingClientRect();
+        const badge = card.querySelector('.cloud-save-badge')?.getBoundingClientRect();
+        if (!cover || !badge || badge.width === 0 || badge.height === 0) return null;
+        const overlaps = badge.left < cover.right && badge.right > cover.left && badge.top < cover.bottom && badge.bottom > cover.top;
+        return { overlaps, badgeTop: Math.round(badge.top), coverBottom: Math.round(cover.bottom) };
+      })
+      .filter(Boolean));
+    checkLayout(memberLibraryBadgeGeometry.length > 0 && memberLibraryBadgeGeometry.every(({ overlaps, badgeTop, coverBottom }) => !overlaps && badgeTop >= coverBottom - 1), `横屏会员游戏库云存档标识覆盖封面：${JSON.stringify(memberLibraryBadgeGeometry)}`);
     await page.evaluate(() => {
       window.__appRentalDemo.setScenario('active-rental');
       window.__appRentalDemo.navigate('orders');
@@ -2926,8 +3038,21 @@ async function main() {
       screen: window.__appRentalDemo.snapshot().screen,
       list: Boolean(document.querySelector('.landscape-order-list, .order-list-pane')),
       detail: Boolean(document.querySelector('.landscape-order-detail, [data-layout="landscape-order-detail"], .order-detail-pane')),
+      actionBounds: [...document.querySelectorAll('.landscape-orders .order-list-card')].map((card) => {
+        const cardRect = card.getBoundingClientRect();
+        const buttons = [...card.querySelectorAll('.order-actions-set button')];
+        return {
+          status: card.dataset.status,
+          buttonCount: buttons.length,
+          contained: buttons.every((button) => {
+            const rect = button.getBoundingClientRect();
+            return rect.left >= cardRect.left - 1 && rect.right <= cardRect.right + 1 && rect.top >= cardRect.top - 1 && rect.bottom <= cardRect.bottom + 1;
+          }),
+        };
+      }),
     }));
     checkLayout(landscapeOrderListLayout.screen === 'orders' && landscapeOrderListLayout.list && !landscapeOrderListLayout.detail, `横屏订单列表必须是独立页面：${JSON.stringify(landscapeOrderListLayout)}`);
+    checkLayout(landscapeOrderListLayout.actionBounds.every(({ contained }) => contained), `横屏订单卡操作按钮越出卡片：${JSON.stringify(landscapeOrderListLayout.actionBounds)}`);
     await page.locator('.landscape-orders .order-list-card[data-status="active"]').first().click();
     const landscapeOrderDetailLayout = await page.evaluate(() => ({
       screen: window.__appRentalDemo.snapshot().screen,

@@ -71,19 +71,30 @@ const requiredBusinessSignatures = Object.freeze([
   'GAME_SALE_MODES',
   'eligibleCheckoutSkus',
   'renderCheckoutSkuOptions',
+  'checkout-product-name',
+  "editionId: 'standard'",
   'SEARCH_TABS',
   'renderSearchTabs',
   'getGameEditions',
   'getCheckoutEligibilityContext',
   'setRentalHours',
   'resolveDetailActions',
+  "label: '•••'",
+  "icon: 'quick-play'",
   "acquisitionMode: 'free'",
   'renderMembershipValue',
   'MEMBERSHIP_BENEFITS',
+  'MEMBER_PLANS',
+  "id: 'weekly'",
+  "id: 'quarterly'",
   'renderMembershipPreview',
   'cloudSaveSupported',
   'ORDER_ACTIONS_BY_STATUS',
   'getOrderActions',
+  'data-order-search-collapsed',
+  'THIRD_PARTY_LOGIN_CONFIGS',
+  'requestThirdPartyCode',
+  'steam-credential-sheet',
 ]);
 
 function assertBusinessScriptSignatures(label, source) {
@@ -102,6 +113,12 @@ function assertBusinessScriptSignatures(label, source) {
   }
   if (source.includes('renderActiveOrderActions')) {
     throw new Error(`${label} 订单详情仍使用独立动作映射`);
+  }
+  if (source.includes('data-checkout-field="edition"')) {
+    throw new Error(`${label} 首期确认订单仍显示版本选择`);
+  }
+  if (source.includes("memberPlan: 'permanent'") || source.includes('data-plan="permanent"')) {
+    throw new Error(`${label} 会员中心仍提供永久套餐`);
   }
 }
 
@@ -137,6 +154,18 @@ if (fs.existsSync(annotationPath)) {
   annotation = annotation.replace(
     /\s*<script>\s*const ASSETS[\s\S]*?<\/script>(?=\s*<script>\s*const ANNOTATION_GROUPS)/,
     `  <script>${normalScript}</script>`,
+  );
+  annotation = annotation.replace(
+    '订单列表与详情分别使用独立任务页。',
+    '订单列表与详情拆页，分别使用独立任务页；所有状态操作按钮完整收在订单卡片边界内。',
+  );
+  annotation = annotation.replace(
+    '滚动页展示8款会员游戏；仅支持的游戏显示“支持云存档”。',
+    '滚动页展示8款会员游戏；仅支持的游戏在封面下方信息区显示“支持云存档”。',
+  );
+  annotation = annotation.replace(
+    '受首屏高度限制预览前4款，完整8款通过“查看全部”进入会员游戏库；预览卡同步显示云存档支持标识。',
+    '受首屏高度限制预览前4款，完整8款通过“查看全部”进入会员游戏库；云存档支持标识位于封面下方信息区，不叠加在封面上。',
   );
   writeTextWithRetry(annotationPath, annotation);
 
