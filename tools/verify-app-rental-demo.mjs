@@ -1153,9 +1153,11 @@ async function main() {
             && intro.text.includes('租号有什么作用？')
             && intro.text.includes('如何使用租号？')
             && intro.text.includes('使用时要注意什么？')
-            && intro.text.includes('不代表购买游戏所有权')
+            && intro.text.includes('不代表购买游戏或账号所有权')
+            && intro.text.includes('系统会自动准备账号')
+            && intro.text.includes('租期到期后使用权失效')
             && intro.text.includes('从支付成功开始计时')
-            && intro.text.includes('整个游戏平台终身仅可体验 1 次'),
+            && intro.text.includes('整个游戏平台终身仅可使用 1 次'),
           `${orientation} 租号介绍弹窗内容或关闭交互错误：${JSON.stringify(intro)}`,
         );
         checkCheckoutEntry(
