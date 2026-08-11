@@ -31,6 +31,21 @@ const assets = {
   ORDER_CENTER_REFERENCE: path.join(referenceAssetDir, 'profile-order-center-user-reference.png'),
 };
 
+function writeTextWithRetry(filePath, content) {
+  let lastError;
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    try {
+      fs.writeFileSync(filePath, content);
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!['UNKNOWN', 'EBUSY', 'EPERM', 'EACCES'].includes(error?.code)) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 120);
+    }
+  }
+  throw lastError;
+}
+
 function dataUrl(filePath) {
   const ext = path.extname(filePath).slice(1).toLowerCase();
   return `data:image/${ext === 'jpg' ? 'jpeg' : ext};base64,${fs.readFileSync(filePath).toString('base64')}`;
@@ -44,7 +59,7 @@ for (const [key, filePath] of Object.entries(assets)) {
   html = html.replaceAll(placeholder, dataUrl(filePath));
 }
 if (/\{\{[A-Z0-9_]+\}\}/.test(html)) throw new Error('模板仍存在未替换素材');
-fs.writeFileSync(outputPath, html);
+writeTextWithRetry(outputPath, html);
 process.stdout.write(`BUILD ${path.relative(root, outputPath)} ${Buffer.byteLength(html)} bytes\n`);
 
 const requiredBusinessSignatures = Object.freeze([
@@ -58,8 +73,17 @@ const requiredBusinessSignatures = Object.freeze([
   'renderCheckoutSkuOptions',
   'SEARCH_TABS',
   'renderSearchTabs',
+  'getGameEditions',
+  'getCheckoutEligibilityContext',
+  'setRentalHours',
+  'resolveDetailActions',
+  "acquisitionMode: 'free'",
+  'renderMembershipValue',
   'MEMBERSHIP_BENEFITS',
   'renderMembershipPreview',
+  'cloudSaveSupported',
+  'ORDER_ACTIONS_BY_STATUS',
+  'getOrderActions',
 ]);
 
 function assertBusinessScriptSignatures(label, source) {
@@ -75,6 +99,9 @@ function assertBusinessScriptSignatures(label, source) {
   }
   if (source.includes('toggle-more-duration') || source.includes('toggle-entitlement-panel')) {
     throw new Error(`${label} 详情仍保留旧SKU展开路径`);
+  }
+  if (source.includes('renderActiveOrderActions')) {
+    throw new Error(`${label} 订单详情仍使用独立动作映射`);
   }
 }
 
@@ -111,7 +138,7 @@ if (fs.existsSync(annotationPath)) {
     /\s*<script>\s*const ASSETS[\s\S]*?<\/script>(?=\s*<script>\s*const ANNOTATION_GROUPS)/,
     `  <script>${normalScript}</script>`,
   );
-  fs.writeFileSync(annotationPath, annotation);
+  writeTextWithRetry(annotationPath, annotation);
 
   const annotationBusinessScript = annotation.match(/<script>\s*(const ASSETS[\s\S]*?)<\/script>\s*<script>\s*const ANNOTATION_GROUPS/)?.[1] || '';
   const annotationStyle = annotation.match(/<style>([\s\S]*?)(?=    \/\* 交互标注文档壳层：完整 Demo 直接内嵌，不使用 iframe。 \*\/)/)?.[1] || '';

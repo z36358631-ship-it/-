@@ -86,7 +86,34 @@ const CDKEY_VALUE_PATTERN = /\b(?:[A-Z0-9]{4,6}-){2,4}[A-Z0-9]{4,6}\b/i;
 
 function writeCaptureReport(payload) {
   fs.mkdirSync(evidenceDir, { recursive: true });
-  fs.writeFileSync(reportPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+  const content = `${JSON.stringify(payload, null, 2)}\n`;
+  let lastError;
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    try {
+      fs.writeFileSync(reportPath, content, 'utf8');
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!['UNKNOWN', 'EBUSY', 'EPERM', 'EACCES'].includes(error?.code)) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 120);
+    }
+  }
+  throw lastError;
+}
+
+function copyFileWithRetry(sourcePath, targetPath) {
+  let lastError;
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    try {
+      fs.copyFileSync(sourcePath, targetPath);
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!['UNKNOWN', 'EBUSY', 'EPERM', 'EACCES'].includes(error?.code)) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 120);
+    }
+  }
+  throw lastError;
 }
 
 assert(chromePath, 'Local Chrome not found');
@@ -172,7 +199,7 @@ async function runPreflight(browser) {
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
       window.__appRentalDemo.setScenario('not-member-library');
-      window.__appRentalDemo.selectRentalSku('hourly-8h');
+      window.__appRentalDemo.setRentalHours(8);
       window.__appRentalDemo.navigate('checkout');
       window.__appRentalDemo.setInventoryAvailable(false);
     });
@@ -192,7 +219,7 @@ async function runPreflight(browser) {
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
       window.__appRentalDemo.setScenario('not-member-library');
-      window.__appRentalDemo.selectRentalSku('hourly-8h');
+      window.__appRentalDemo.setRentalHours(8);
       window.__appRentalDemo.navigate('checkout');
       window.__appRentalDemo.setPriceChanged(true);
     });
@@ -225,7 +252,7 @@ async function runPreflight(browser) {
     const orderId = await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
       window.__appRentalDemo.setScenario('not-member-library');
-      window.__appRentalDemo.selectRentalSku('hourly-8h');
+      window.__appRentalDemo.setRentalHours(8);
       window.__appRentalDemo.navigate('checkout');
       window.__appRentalDemo.setNetworkAvailable(false);
       window.__appRentalDemo.queryOrderStatus();
@@ -372,23 +399,43 @@ async function verifyShotState(page, shot) {
     assert.equal(await page.locator('[data-entitlement-panel]').count(), 0, `${shot.name} detail must not render a SKU panel`);
     assert.equal(state.order, null, `${shot.name} detail capture must not create an order`);
     assert((await device.innerText()).includes('租号开玩'), `${shot.name} detail is missing the rental entry`);
+    const detailActions = await page.locator('.detail-action-set [data-detail-action]').allTextContents();
+    assert.deepEqual(detailActions.map((value) => value.trim()), ['查看更多', '秒玩', '立即购买', '租号开玩'], `${shot.name} detail F action layout mismatch`);
   }
 
   if (shot.pageId === 'checkout') {
     const checkoutText = await device.innerText();
-    assert.equal(state.selectedSku, 'hourly-8h', `${shot.name} checkout SKU must be fixed to 8 hours`);
+    assert.equal(state.selectedSku, 'hourly-8h-standard', `${shot.name} checkout quote must use standard-edition 8-hour SKU`);
     assert.equal(state.selectedHours, 8, `${shot.name} checkout selected hours mismatch`);
     assert.equal(state.order?.durationLabel, '8小时', `${shot.name} checkout order duration mismatch`);
     assert.equal(await page.locator('[data-sale-mode="time-rental"]').count(), 1, `${shot.name} checkout sale mode mismatch`);
-    assert.equal(await page.locator('[data-sku-kind="time-rental"]').count(), 5, `${shot.name} time-rental SKU count mismatch`);
+    assert.equal(await page.locator('[data-checkout-field="edition"] .checkout-option').count(), 3, `${shot.name} edition count mismatch`);
+    assert.equal(await page.locator('[data-checkout-field="rental-plan"] .checkout-option').count(), 3, `${shot.name} rental-plan count mismatch`);
+    assert.equal(await page.locator('[data-hour-shortcut]').count(), 3, `${shot.name} hour shortcut count mismatch`);
+    assert.equal(await page.locator('.service-benefit-item').count(), 5, `${shot.name} rental benefit count mismatch`);
+    if (shot.orientation === 'landscape') {
+      const firstScreen = await page.evaluate(() => {
+        const column = document.querySelector('.checkout-benefit-column')?.getBoundingClientRect();
+        const benefits = document.querySelector('.service-benefits')?.getBoundingClientRect();
+        const options = document.querySelector('.checkout-sku-section')?.getBoundingClientRect();
+        return Boolean(column && benefits && options && benefits.top >= column.top && options.bottom <= column.bottom + 1);
+      });
+      assert(firstScreen, `${shot.name} must show benefits, edition, plan, and hour SKU in the first screen`);
+    }
     for (const label of ['游戏', '版本', '租赁套餐', '租期', '原价', '实付', '支付方式', '协议', '退款', '支付有效期']) {
       assert(checkoutText.includes(label), `${shot.name} checkout is missing ${label}`);
     }
   }
 
   if (shot.pageId === 'membership') {
-    assert.equal(await page.locator('.membership-benefit-item').count(), 4, `${shot.name} membership benefit count mismatch`);
+    assert.deepEqual(
+      await page.locator('.membership-benefit-item strong').allInnerTexts(),
+      ['会员库内畅玩', '游戏持续更新', 'PC引擎与手柄适配', '个人云存档同步'],
+      `${shot.name} original membership benefits mismatch`,
+    );
+    assert((await page.locator('.membership-value-hero').innerText()).includes('一个会员，畅玩本期精选游戏'), `${shot.name} membership value hero mismatch`);
     assert.equal(await page.locator('.membership-preview .member-game-card').count(), 8, `${shot.name} membership preview count mismatch`);
+    assert.equal(await page.locator('.membership-faq-preview .member-faq-item').count(), 3, `${shot.name} membership FAQ count mismatch`);
     assert.equal((await page.locator('.membership-plan-card[data-plan="permanent"] .plan-recommend').innerText()).trim(), '推荐 · 长期有效', `${shot.name} permanent recommendation mismatch`);
     assert.equal(await page.locator('.membership-plan-card[data-plan="permanent"].selected').count(), 1, `${shot.name} permanent plan must be selected by default`);
   }
@@ -412,7 +459,7 @@ async function verifyShotState(page, shot) {
   if (shot.pageId === 'orders') {
     const orderToolbar = await page.evaluate(() => {
       const tabs = [...document.querySelectorAll('#appRentalDemo .order-tabs button')];
-      const search = document.querySelector('#appRentalDemo .order-search');
+      const search = document.querySelector('#appRentalDemo .order-search-trigger');
       const statuses = [...document.querySelectorAll('#appRentalDemo .order-list-card')].map((node) => node.dataset.status);
       return {
         tabs: tabs.map((node) => node.textContent.trim()),
@@ -423,6 +470,11 @@ async function verifyShotState(page, shot) {
     assert.deepEqual(orderToolbar.tabs, ['全部订单', '待支付', '可使用'], `${shot.name} order tabs mismatch`);
     assert(orderToolbar.searchRightOfUsable, `${shot.name} order search is not right of usable tab`);
     assert(orderToolbar.statusCount >= 4, `${shot.name} does not show enough rental order states`);
+  }
+
+  if (shot.pageId === 'order-detail') {
+    const actions = await page.locator('.order-actions-set[data-order-actions-surface="detail"] button').allTextContents();
+    assert.deepEqual(actions.map((value) => value.trim()), ['申请售后', '登录信息', '登录游戏'], `${shot.name} active order detail actions mismatch`);
   }
 
   const visible = await device.innerText();
@@ -512,7 +564,7 @@ async function captureShots(browser) {
   for (const shot of shots) {
     const stagingPath = path.join(stagingDir, shot.name);
     const outputPath = path.join(outputDir, shot.name);
-    fs.copyFileSync(stagingPath, outputPath);
+    copyFileWithRetry(stagingPath, outputPath);
     verifyPng(outputPath, shot);
   }
 
