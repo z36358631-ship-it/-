@@ -93,6 +93,23 @@ await runRefactorGate('FINAL_SCOPE_PAYMENT_AND_GUARDS', async () => {
     rightHasPackage: true, rightHasAmounts: true, rightHasPayment: true, rightHasPurchase: true,
   });
 
+  await reloadDemo();
+  await page.evaluate(() => window.__appRentalDemo.navigate('membership'));
+  const memberIntro = await page.locator('[data-membership-intro]').evaluate((dialog) => ({
+    title: dialog.querySelector('h2')?.textContent.trim(),
+    items: [...dialog.querySelectorAll('ol > li')].map((item) => item.textContent.replace(/\s+/g, ' ').trim()),
+    fullText: dialog.textContent.replace(/\s+/g, ' ').trim(),
+  }));
+  assert.equal(memberIntro.title, '关于会员');
+  assert.equal(memberIntro.items.length, 4);
+  assert(!memberIntro.fullText.includes('远程协助'));
+  await page.locator('[data-action="close-membership-intro"]').last().click();
+  await page.evaluate(() => {
+    window.__appRentalDemo.navigate('home');
+    window.__appRentalDemo.navigate('membership');
+  });
+  assert.equal(await page.locator('[data-membership-intro]').count(), 0);
+
   const listActions = await page.evaluate(() => window.__appRentalDemo.getOrderActions(
     window.__appRentalDemo.getOrderCollection().find((order) => order.status === 'active'),
     { surface: 'list' },
@@ -307,7 +324,74 @@ function renderGamePaymentPanel(game, order) {
 
 `renderPortraitCheckout()` 与横屏布局都不得渲染版本选择器；商品卡继续只读显示游戏名和灰色 `标准版` 副标题。
 
-- [ ] **Step 4: 将订单动作改为“共享动作源、按页面过滤”**
+- [ ] **Step 4: 增加会员中心首次说明弹窗并删除远程协助条款**
+
+在 `state` 增加：
+
+```js
+membershipIntroSeen: false,
+membershipIntroOpen: false,
+```
+
+`navigate()` 在当前会话首次进入会员中心时打开弹窗；关闭后保留页面并在本次会话内不再展示：
+
+```js
+function navigate(screen, { rememberSource = true, replaceTask = false } = {}) {
+  if (screen === 'checkout') ensureGameOrder();
+  if (screen === 'orders') ensureSelectedOrder();
+  if (screen === 'membership' && !state.membershipIntroSeen) state.membershipIntroOpen = true;
+  const current = state.screen;
+  state.capturePageId = screen;
+  if (screen === current) return renderApp();
+  if (rememberSource && isCoreScreen(current) && !isCoreScreen(screen)) {
+    state.routeContext.sourceScreen = current;
+    state.routeContext.sourceScrollTop = readCurrentScrollTop();
+    state.routeContext.taskStack = [];
+  } else if (replaceTask && !isCoreScreen(current) && !isCoreScreen(screen)) {
+    const stack = state.routeContext.taskStack;
+    if (stack[stack.length - 1] === screen) stack.pop();
+  } else if (!isCoreScreen(current) && !isCoreScreen(screen)) {
+    const stack = state.routeContext.taskStack;
+    if (stack[stack.length - 1] !== current) stack.push(current);
+  } else if (isCoreScreen(screen)) {
+    state.routeContext.taskStack = [];
+  }
+  state.screen = screen;
+  renderApp();
+  restoreSourceScrollIfNeeded(screen);
+}
+
+function dismissMembershipIntro() {
+  state.membershipIntroSeen = true;
+  state.membershipIntroOpen = false;
+  renderApp();
+}
+```
+
+复用现有 `.modal-backdrop`，新增弹窗渲染器并挂到 `renderOverlays()`；正文不得包含“远程协助”或同义替代：
+
+```js
+function renderMembershipIntroDialog() {
+  if (!state.membershipIntroOpen) return '';
+  const items = [
+    '开通会员可畅玩会员游戏，总价值30w+的正版游戏库存（标准版或默认版本）。启动游戏后绝不顶号、挤号。',
+    '会员属于特殊虚拟商品，开通后无法退款。',
+    '会员游戏库定期更新，但并非所有游戏均能第一时间加入会员游戏库，请理解。',
+    '会员游戏账号池共享，非个人所有。一号一游戏，均为Steam正版账号；非盗版、非假入库、非离线。',
+  ];
+  return `<div class="modal-backdrop membership-intro-backdrop" role="presentation" data-membership-intro>
+    <section class="membership-intro-dialog" role="dialog" aria-modal="true" aria-labelledby="membershipIntroTitle">
+      <header><h2 id="membershipIntroTitle">关于会员</h2><button type="button" data-action="close-membership-intro" aria-label="关闭关于会员">×</button></header>
+      <ol>${items.map((item) => `<li>${item}</li>`).join('')}</ol>
+      <button class="primary-action" type="button" data-action="close-membership-intro">我已了解</button>
+    </section>
+  </div>`;
+}
+```
+
+事件路由中 `close-membership-intro` 调用 `dismissMembershipIntro()`；Esc 关闭时也必须设置 `membershipIntroSeen=true`。`openCaptureState('membership')` 和截图脚本进入会员页后主动关闭弹窗，确保原 36 张页面基线仍展示会员中心正文。
+
+- [ ] **Step 5: 将订单动作改为“共享动作源、按页面过滤”**
 
 ```js
 function hasDirectGameEntitlement(gameId) {
@@ -331,7 +415,7 @@ function getOrderActions(order, { surface = 'list' } = {}) {
 
 `renderOrderActions()` 必须传入 `{ surface }`，订单列表不得再出现 `申请售后`；详情保留。
 
-- [ ] **Step 5: 增加服务端退款风险结果和确认快照**
+- [ ] **Step 6: 增加服务端退款风险结果和确认快照**
 
 在 `state` 中增加 `rentalRiskDecision`、`riskReminderOpen`、`pendingRentalIntent`、`pendingRiskSnapshot`。详情和终态订单的 `租号开玩` 统一调用：
 
@@ -369,7 +453,7 @@ function confirmRentalRisk() {
 
 `createOrder()` 将 `pendingRiskSnapshot` 写入 `riskSnapshot`，未命中时写明额外承诺正常适用。弹层只提供 `暂不购买 / 确认继续`，不得影响四类履约售后。
 
-- [ ] **Step 6: 增加非本次租用游戏启动拦截**
+- [ ] **Step 7: 增加非本次租用游戏启动拦截**
 
 ```js
 function attemptRentalAccountLaunch(targetGameId) {
@@ -394,7 +478,7 @@ function attemptRentalAccountLaunch(targetGameId) {
 
 弹层必须同时展示当前租用游戏和目标游戏；`rentable=true` 时主操作为 `查看租号方案` 并继续走退款风险检查，反之只显示 `暂不可租用`。启动请求增加 `launchRequestId` 集合，重复请求返回原结果。
 
-- [ ] **Step 7: 补齐事件路由和测试 API**
+- [ ] **Step 8: 补齐事件路由和测试 API**
 
 增加 `request-rental-checkout`、`confirm-rental-risk`、`close-rental-risk`、`launch-steam-library-game`、`view-target-rental`、`close-non-target-guard` 事件，并在 `window.__appRentalDemo` 暴露：
 
@@ -411,7 +495,7 @@ Object.assign(window.__appRentalDemo, {
 });
 ```
 
-- [ ] **Step 8: 运行客户端契约**
+- [ ] **Step 9: 运行客户端契约**
 
 ```powershell
 node tools/build-app-rental-demo.mjs
@@ -420,7 +504,7 @@ node tools/verify-app-rental-demo.mjs
 
 Expected: 搜索、列表/详情动作、终态入口与两类拦截断言通过；支付计时和后台分组仍可失败。
 
-- [ ] **Step 9: 提交客户端发现、确认订单金额与拦截**
+- [ ] **Step 10: 提交客户端发现、确认订单金额、会员说明与拦截**
 
 ```powershell
 git add -- 'demos/APP租号功能/盖世游戏APP租号功能demo.template.html' 'demos/APP租号功能/盖世游戏APP租号功能demo.html' 'demos/APP租号功能/盖世游戏APP租号功能-标注版.html'
@@ -917,6 +1001,7 @@ rg -n "单游永久|首次启动|账号分配中|继续畅玩|列表与详情.*�
 - 订单列表过滤申请售后，详情保留；终态无权益显示租号开玩，有权益显示可畅玩。
 - 非本次租用游戏启动前阻断；退款风险只限制平台额外3天无理由。
 - 确认订单竖屏按“套餐→游戏原价/订单金额→支付方式”展示；横屏左侧商品与权益、右侧套餐/金额/支付；订单金额与需支付同源。
+- 首次进入会员中心展示“关于会员”四点说明；关闭后本次会话不重复出现；不包含远程协助条款。
 - 后台7模块复用 Mac；6页独立 APP/Mac Tab、默认 APP；操作记录不加 Tab。
 ```
 
@@ -929,7 +1014,8 @@ rg -n "单游永久|首次启动|账号分配中|继续畅玩|列表与详情.*�
 ```js
 'requestRentalCheckout', 'attemptRentalAccountLaunch', 'riskSnapshot',
 'prepareAccountForLaunch', 'membershipEntitlement', 'processedPaymentTransactions',
-'search-game-grid', 'renderCheckoutAmountSummary', 'gameOriginalAmount', 'dueText', "surface = 'list'",
+'search-game-grid', 'renderCheckoutAmountSummary', 'gameOriginalAmount', 'dueText',
+'renderMembershipIntroDialog', 'membershipIntroSeen', 'close-membership-intro', "surface = 'list'",
 ```
 
 后台签名增加：
@@ -963,7 +1049,7 @@ Expected: 构建和全部契约通过，`git diff --check` 无错误。
 
 - [ ] **Step 1: 保留客户端 18×2 截图矩阵并增加关键运行时检查**
 
-搜索页检查双列几何、名称两行上限和无独立 CTA；确认订单检查竖屏套餐/金额/支付顺序、横屏左右分栏、订单金额与需支付一致且无版本选择器；订单列表检查无申请售后、按钮不越卡；会员横屏检查支付区首屏可见且无二维码；Steam 登录检查敏感信息遮罩。
+搜索页检查双列几何、名称两行上限和无独立 CTA；确认订单检查竖屏套餐/金额/支付顺序、横屏左右分栏、订单金额与需支付一致且无版本选择器；订单列表检查无申请售后、按钮不越卡；会员中心截图前关闭首次说明弹窗，并检查横屏支付区首屏可见且无二维码；Steam 登录检查敏感信息遮罩。
 
 - [ ] **Step 2: 增加后台 13 状态矩阵**
 
@@ -1064,6 +1150,7 @@ Expected: 看板保持完整历史，状态为 `in_review`，不直接置为 `do
 - 首次体验无用户可见账号分配态，每次启动后台幂等准备账号。
 - 搜索游戏 Tab 双列竖卡；订单列表无申请售后；终态入口按真实权益显示。
 - 确认订单竖屏在套餐与支付方式之间展示游戏原价和订单金额；横屏左侧为商品与权益、右侧为套餐/金额/支付；无版本选择器，订单金额与需支付完全一致。
+- 首次进入会员中心展示 4 点“关于会员”说明，关闭后本次会话不再展示，任何交付物均无远程协助条款。
 - 非本次租用游戏与退款风险均在进入启动/下单前正确拦截。
 - 周卡续费按未过期顺延、已过期重算，重复回调不重复延长。
 - 运营后台 7 个 Mac 模块已接入；6 页默认 APP 且可切 Mac，操作记录无端别 Tab。
