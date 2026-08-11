@@ -41,7 +41,7 @@ const page = await browser.newPage({
   viewport: { width: 1920, height: 1080 },
   deviceScaleFactor: 1,
 });
-page.setDefaultTimeout(3000);
+page.setDefaultTimeout(10000);
 await page.emulateMedia({ reducedMotion: 'reduce' });
 
 const pageErrors = [];
@@ -49,7 +49,7 @@ page.on('pageerror', error => pageErrors.push(error.message));
 
 async function settle() {
   await page.waitForFunction(() => document.fonts?.status === 'loaded');
-  await page.waitForFunction(() => Array.from(document.images).every(image => image.complete));
+  await page.waitForFunction(() => Array.from(document.images).every(image => image.complete && image.naturalWidth > 0));
   await page.evaluate(() => {
     document.querySelector('#demoCanvas')?.scrollTo(0, 0);
     document.querySelector('#annoScroll')?.scrollTo(0, 0);
@@ -63,11 +63,26 @@ async function captureCanvas(name, screen) {
   await settle();
 
   const target = path.join(output, `${name}.png`);
-  await page.locator('#demoCanvas').screenshot({
+  const viewport = page.locator(`.app-viewport[data-screen="${screen}"]`);
+  const box = await viewport.boundingBox();
+  assert(box, `Viewport not found for ${screen}`);
+  const expected = screen.endsWith('landscape') ? { width: 874, height: 402 } : { width: 402, height: 874 };
+  assert.equal(Math.round(box.width), expected.width, `${name} viewport width mismatch`);
+  assert.equal(Math.round(box.height), expected.height, `${name} viewport height mismatch`);
+  await page.screenshot({
     path: target,
     animations: 'disabled',
+    clip: {
+      x: Math.round(box.x),
+      y: Math.round(box.y),
+      width: expected.width,
+      height: expected.height,
+    },
   });
   const size = fs.statSync(target).size;
+  const png = fs.readFileSync(target);
+  assert.equal(png.readUInt32BE(16), expected.width, `${name}.png width mismatch`);
+  assert.equal(png.readUInt32BE(20), expected.height, `${name}.png height mismatch`);
   assert(size > 20 * 1024, `${name}.png is unexpectedly small (${size} bytes)`);
   console.log(`CAPTURED ${name}.png (${size} bytes)`);
 }
