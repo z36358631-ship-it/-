@@ -81,13 +81,13 @@
 
 |模块名称|图示|展示&交互说明|
 |---|---|---|
-|游戏库与搜索平台标识|![游戏库平台标识](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/07-game-library-platform-badges.png)|**规则：**<br>1. 游戏库和搜索结果显示 Steam、Epic 或 GOG 平台标识。<br>2. 搜索结果中，产品支持 Mac 原生版时同时显示 Mac 原生标识。<br>3. 游戏库中，仅当前启动版本为 Mac 原生版时显示 Mac 原生标识。<br>4. Mac 原生标识仅显示苹果图标，不显示“Mac 原生”文字。<br>5. <span style="background-color: #FEF794;"><span style="color: #3370FF; font-weight: 700;">Steam、Epic、GOG 与 Apple 图标分别使用独立图标容器，不合并为共同胶囊。</span></span><br>6. 平台版不增加“Windows”“转译”等标识。<br>7. 版本数据加载失败时不展示无法确认的 Mac 原生标识，保留平台版能力。<br><br>**交互：**<br>1. 鼠标悬停平台标识时显示平台名称；搜索中的苹果图标说明“支持 Mac 原生版”，游戏库中的苹果图标说明“当前使用 Mac 原生版”。<br>2. 点击游戏卡片或搜索结果进入详情；标识本身不触发操作。|
-|版本选择|![版本选择](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/01-version-switch.png)|**规则：**<br>1. 弹窗显示版本图标、名称、选中态和“切换”。<br>2. 版本行留白不可点击。<br>3. 未安装版本只改变待下载版本，不改变当前启动版本。<br>4. 设置页未安装版本的按钮文案为“选择版本”。<br><br>**交互：**<br>1. 点击详情主按钮右侧“…”→“切换版本”，打开版本弹窗。<br>2. 点击未安装版本的“切换”，关闭弹窗并更新详情下载主按钮。<br>3. 在设置页点击“选择版本”，返回详情并更新下载主按钮，不自动下载。|
-|详情下载入口|![Mac原生版下载入口](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/02-native-download-entry.png)|**规则：**<br>1. 详情保留当前发行平台标识；支持 Mac 原生版时增加 Mac 原生标识。<br>2. 选择未安装版本后，主按钮显示目标版本图标和下载大小。<br>3. 选择版本不自动开始下载。<br><br>**交互：**<br>1. 点击详情下载主按钮，打开安装弹窗并选中目标版本。<br>2. 关闭安装弹窗后保留已选版本。|
-|已安装版本切换|![Mac原生版已安装](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/03-native-installed.png)|**规则：**<br>1. 平台版和 Mac 原生版可同时保留。<br>2. 切换已安装版本不重复下载，也不删除另一版本。<br>3. 切换失败时继续使用原版本。<br><br>**交互：**<br>1. 打开版本弹窗，点击另一已安装版本的“切换”。<br>2. 切换成功后更新当前启动版本，并同步更新详情和游戏库标识。<br>3. 切换失败时提示重试，详情和游戏库保持原状态。|
-|安装路径与默认选择|![安装位置收起态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/04-path-largest-default.png)<br>![安装位置展开态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/08-path-dropdown-expanded.png)|**规则：**<br>1. <span style="background-color: #FEF794;"><span style="color: #3370FF; font-weight: 700;">安装位置使用单路径下拉框；收起态第一行显示当前路径和状态，第二行常驻显示“安装到其他位置”，右侧保留一个下拉箭头。</span></span><br>2. “安装到其他位置”不是独立按钮，与路径、状态和箭头共用同一个下拉控件及点击区域。<br>3. 展开后显示候选路径、可用空间和状态；路径存在、可写且空间足够时才可选择。<br>4. 合格路径按可用空间从大到小排列；空间不足项随后排列，不可用项置底；容量相同时保持固定顺序。<br>5. 默认选中用户上一次成功安装时使用的路径；该路径不合格、无历史记录时，回退到可用空间最大的合格路径。<br>6. 容量按十进制换算：1 MB = 1,000,000 bytes，1 GB = 1,000,000,000 bytes。<br><br>**交互：**<br>1. 点击下拉框任意位置，包括路径、“安装到其他位置”文案和箭头，均展开同一候选菜单。<br>2. 点击候选路径后更新当前安装位置并收起菜单。<br>3. <span style="background-color: #FEF794;"><span style="color: #3370FF; font-weight: 700;">点击菜单底部“安装到其他位置”，拉起 macOS 文件夹选择器；用户确认目录后更新当前路径并收起菜单，取消选择则保持原路径。</span></span><br>4. 切换游戏版本时，当前路径仍合格则保留；否则重新按“上次安装路径 → 最大可用空间”选择。|
-|无合格路径|![无合格安装路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/05-no-eligible-path.png)|**规则：**<br>1. 空间不足项禁用并标明“空间不足”。<br>2. 路径不存在或不可写时禁用并标明“路径不可用”。<br>3. 没有合格路径时不默认选择，显示“没有可用且空间足够的安装位置，可选择其他位置”，安装按钮不可点击。<br><br>**交互：**<br>1. 点击禁用路径不改变当前选择。<br>2. <span style="background-color: #FEF794;"><span style="color: #3370FF; font-weight: 700;">用户仍可点击菜单底部“安装到其他位置”，通过 macOS 文件夹选择器重新指定目录。</span></span><br>3. 修复磁盘或路径状态后重新打开弹窗，客户端重新计算排序和默认项。|
-|后台下载与安装结果|![详情后台下载状态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/06-download-locked.png)|**规则：**<br>1. 点击安装前再次检查路径和空间；不合格时清空选择并提示重新选择。<br>2. <span style="background-color: #FEF794;"><span style="color: #3370FF; font-weight: 700;">复验通过后记录本次安装路径，立即关闭安装弹窗并开始后台下载；安装弹窗不显示下载进度条。</span></span><br>3. 后台下载中，详情主按钮显示“正在下载 X%”并禁止重复提交。<br>4. 下载失败不改变当前启动版本和已安装版本，详情恢复下载入口。<br>5. 安装成功后目标版本成为当前启动版本，原版本继续保留。<br><br>**交互：**<br>1. 点击“安装”→复验通过→关闭弹窗→详情主按钮显示后台下载进度。<br>2. 用户离开详情后下载继续；再次进入详情时恢复当前下载状态。<br>3. 安装完成后详情主按钮更新为“开始游戏”，并同步更新游戏库苹果图标。|
+|游戏库与搜索平台标识|![游戏库平台标识](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/07-game-library-platform-badges.png)|**规则：**<br>1. 游戏库和搜索结果显示 Steam、Epic 或 GOG 平台标识。<br>2. 搜索结果中，产品支持 Mac 原生版时同时显示 Mac 原生标识。<br>3. 游戏库中，仅当前启动版本为 Mac 原生版时显示 Mac 原生标识。<br>4. Mac 原生标识仅显示苹果图标，不显示“Mac 原生”文字。<br>5. <span style="background-color: #FEF794;"><span style="color: #3370FF; font-weight: 700;">Steam、Epic、GOG 与 Apple 图标分别使用独立图标容器，不合并为共同胶囊。</span></span><br>6. 平台版不增加“Windows”“转译”等标识。<br>7. 版本数据加载失败时不展示无法确认的 Mac 原生标识，保留平台版能力。<br><br>**交互：**<br>1. 鼠标悬停平台标识时显示平台名称；搜索中的苹果图标说明“支持 Mac 原生版”，游戏库中的苹果图标说明“当前使用 Mac 原生版”。<br>2. 点击游戏卡片或搜索结果进入详情；标识本身不触发操作。|
+|版本选择|![版本选择](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/01-version-switch.png)|**规则：**<br>1. 弹窗显示版本图标、名称、选中态和“切换”。<br>2. 版本行留白不可点击。<br>3. 未安装版本只改变待下载版本，不改变当前启动版本。<br>4. 设置页未安装版本的按钮文案为“选择版本”。<br><br>**交互：**<br>1. 点击详情主按钮右侧“…”→“切换版本”，打开版本弹窗。<br>2. 点击未安装版本的“切换”，关闭弹窗并更新详情下载主按钮。<br>3. 在设置页点击“选择版本”，返回详情并更新下载主按钮，不自动下载。|
+|详情下载入口|![Mac原生版下载入口](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/02-native-download-entry.png)|**规则：**<br>1. 详情保留当前发行平台标识；支持 Mac 原生版时增加 Mac 原生标识。<br>2. 选择未安装版本后，主按钮显示目标版本图标和下载大小。<br>3. 选择版本不自动开始下载。<br><br>**交互：**<br>1. 点击详情下载主按钮，打开安装弹窗并选中目标版本。<br>2. 关闭安装弹窗后保留已选版本。|
+|已安装版本切换|![Mac原生版已安装](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/03-native-installed.png)|**规则：**<br>1. 平台版和 Mac 原生版可同时保留。<br>2. 切换已安装版本不重复下载，也不删除另一版本。<br>3. 切换失败时继续使用原版本。<br><br>**交互：**<br>1. 打开版本弹窗，点击另一已安装版本的“切换”。<br>2. 切换成功后更新当前启动版本，并同步更新详情和游戏库标识。<br>3. 切换失败时提示重试，详情和游戏库保持原状态。|
+|安装路径与默认选择|![安装位置收起态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/04-path-largest-default.png)<br>![安装位置展开态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/08-path-dropdown-expanded.png)|**规则：**<br>1. <span style="background-color: #FEF794;"><span style="color: #3370FF; font-weight: 700;">安装位置使用单路径下拉框；收起态第一行显示当前路径和状态，第二行常驻显示“安装到其他位置”，右侧保留一个下拉箭头。</span></span><br>2. “安装到其他位置”不是独立按钮，与路径、状态和箭头共用同一个下拉控件及点击区域。<br>3. 展开后显示候选路径、可用空间和状态；路径存在、可写且空间足够时才可选择。<br>4. 合格路径按可用空间从大到小排列；空间不足项随后排列，不可用项置底；容量相同时保持固定顺序。<br>5. 默认选中用户上一次成功安装时使用的路径；该路径不合格、无历史记录时，回退到可用空间最大的合格路径。<br>6. 容量按十进制换算：1 MB = 1,000,000 bytes，1 GB = 1,000,000,000 bytes。<br><br>**交互：**<br>1. 点击下拉框任意位置，包括路径、“安装到其他位置”文案和箭头，均展开同一候选菜单。<br>2. 点击候选路径后更新当前安装位置并收起菜单。<br>3. <span style="background-color: #FEF794;"><span style="color: #3370FF; font-weight: 700;">点击菜单底部“安装到其他位置”，拉起 macOS 文件夹选择器；用户确认目录后更新当前路径并收起菜单，取消选择则保持原路径。</span></span><br>4. 切换游戏版本时，当前路径仍合格则保留；否则重新按“上次安装路径 → 最大可用空间”选择。|
+|无合格路径|![无合格安装路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/05-no-eligible-path.png)|**规则：**<br>1. 空间不足项禁用并标明“空间不足”。<br>2. 路径不存在或不可写时禁用并标明“路径不可用”。<br>3. 没有合格路径时不默认选择，显示“没有可用且空间足够的安装位置，可选择其他位置”，安装按钮不可点击。<br><br>**交互：**<br>1. 点击禁用路径不改变当前选择。<br>2. <span style="background-color: #FEF794;"><span style="color: #3370FF; font-weight: 700;">用户仍可点击菜单底部“安装到其他位置”，通过 macOS 文件夹选择器重新指定目录。</span></span><br>3. 修复磁盘或路径状态后重新打开弹窗，客户端重新计算排序和默认项。|
+|后台下载与安装结果|![详情后台下载状态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/06-download-locked.png)|**规则：**<br>1. 点击安装前再次检查路径和空间；不合格时清空选择并提示重新选择。<br>2. <span style="background-color: #FEF794;"><span style="color: #3370FF; font-weight: 700;">复验通过后记录本次安装路径，立即关闭安装弹窗并开始后台下载；安装弹窗不显示下载进度条。</span></span><br>3. 后台下载中，详情主按钮显示“正在下载 X%”并禁止重复提交。<br>4. 下载失败不改变当前启动版本和已安装版本，详情恢复下载入口。<br>5. 安装成功后目标版本成为当前启动版本，原版本继续保留。<br><br>**交互：**<br>1. 点击“安装”→复验通过→关闭弹窗→详情主按钮显示后台下载进度。<br>2. 用户离开详情后下载继续；再次进入详情时恢复当前下载状态。<br>3. 安装完成后详情主按钮更新为“开始游戏”，并同步更新游戏库苹果图标。|
 
 ## 五、非功能需求
 
@@ -186,33 +186,33 @@
 
 1. 游戏库平台标识：游戏卡片显示 Steam、Epic 或 GOG；支持或当前使用 Mac 原生版时仅增加苹果图标，不显示文字标签。
 
-![游戏库平台标识](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/07-game-library-platform-badges.png)
+![游戏库平台标识](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/07-game-library-platform-badges.png)
 
 2. 游戏详情：展示当前发行平台；支持 Mac 原生版时同步显示苹果图标，选择后主按钮更新为对应版本下载入口。
 
-![Mac原生版下载入口](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/02-native-download-entry.png)
+![Mac原生版下载入口](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/02-native-download-entry.png)
 
 3. 版本选择：点击“…”进入版本弹窗，只有“切换”和关闭按钮可操作；选择未安装版本不会自动下载。
 
-![版本选择](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/01-version-switch.png)
+![版本选择](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/01-version-switch.png)
 
 4. 已安装版本：两个版本可同时保留，切换已安装版本不重复下载，也不删除另一版本。
 
-![Mac原生版已安装](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/03-native-installed.png)
+![Mac原生版已安装](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/03-native-installed.png)
 
 5. 安装路径：收起态显示默认路径，“安装到其他位置”在同一控件内另起一行；展开后可选择候选路径或调用 macOS 文件夹选择器。
 
-![安装位置收起态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/04-path-largest-default.png)
+![安装位置收起态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/04-path-largest-default.png)
 
-![安装位置展开态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/08-path-dropdown-expanded.png)
+![安装位置展开态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/08-path-dropdown-expanded.png)
 
 6. 异常路径：空间不足和路径不可用项禁用；没有合格路径时禁止安装并提示原因。
 
-![无合格安装路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/05-no-eligible-path.png)
+![无合格安装路径](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/05-no-eligible-path.png)
 
 7. 下载与安装：点击安装后弹窗立即关闭，详情显示后台下载状态；安装成功后切换到目标版本并保留原版本。
 
-![详情后台下载状态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d/public/prd/mac-native-version-management/06-download-locked.png)
+![详情后台下载状态](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@06184f828c1d80e158a14bf0dc025fee9e6aa98e/public/prd/mac-native-version-management/06-download-locked.png)
 
 ## 自检记录
 

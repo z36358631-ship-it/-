@@ -60,7 +60,7 @@ test('8 张功能图均为固定提交公开地址且表格内外各引用一次
   const urls = matches.map(match => match[1]);
   assert.equal(matches.length, 16);
   assert.equal(new Set(urls).size, 8);
-  assert.deepEqual(new Set(matches.map(match => match[2])), new Set(['a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d']));
+  assert.deepEqual(new Set(matches.map(match => match[2])), new Set(['06184f828c1d80e158a14bf0dc025fee9e6aa98e']));
   assert.doesNotMatch(prd, /file:\/\/|localhost|@main|@master|github\.com\/[^\s)]+\/blob\//i);
 });
 
