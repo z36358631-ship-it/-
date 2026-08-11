@@ -15,7 +15,7 @@ function sectionBetween(startHeading, endHeading) {
   return prd.slice(start, end);
 }
 
-test('V1.6 使用标准九章结构并仅输出 C 端详细设计', () => {
+test('V1.7 使用标准九章结构并仅输出 C 端详细设计', () => {
   for (const heading of [
     '## 一、版本信息',
     '## 二、背景与目标',
@@ -31,6 +31,7 @@ test('V1.6 使用标准九章结构并仅输出 C 端详细设计', () => {
   assert.match(prd, /\|2026-08-10\|V1\.4\|/);
   assert.match(prd, /\|2026-08-10\|V1\.5\|/);
   assert.match(prd, /\|2026-08-10\|V1\.6\|/);
+  assert.match(prd, /\|2026-08-11\|V1\.7\|/);
   assert.match(prd, /### 4\.2 详细设计（C端）/);
   assert.doesNotMatch(prd, /### 4\.3 详细设计（B端）/);
 });
@@ -54,11 +55,11 @@ test('C 端功能汇总在单个三列表格中且规则交互分组编号', () 
   assert.match(section, /<br><br>\*\*交互：\*\*<br>1\./);
 });
 
-test('7 张功能图均为固定提交公开地址且表格内外各引用一次', () => {
+test('8 张功能图均为固定提交公开地址且表格内外各引用一次', () => {
   const matches = [...prd.matchAll(/!\[[^\]]*\]\((https:\/\/cdn\.jsdelivr\.net\/gh\/z36358631-ship-it\/-@([0-9a-f]{40})\/public\/prd\/mac-native-version-management\/[^)]+\.png)\)/g)];
   const urls = matches.map(match => match[1]);
-  assert.equal(matches.length, 14);
-  assert.equal(new Set(urls).size, 7);
+  assert.equal(matches.length, 16);
+  assert.equal(new Set(urls).size, 8);
   assert.deepEqual(new Set(matches.map(match => match[2])), new Set(['a50f0a54bd16fc0b728e83843bcf7a0c5f02e36d']));
   assert.doesNotMatch(prd, /file:\/\/|localhost|@main|@master|github\.com\/[^\s)]+\/blob\//i);
 });
