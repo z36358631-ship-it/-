@@ -9,6 +9,18 @@ const html = fs.readFileSync(htmlPath, 'utf8');
 const mode = process.argv[2] || 'all';
 const assert = (ok, message) => { if (!ok) throw new Error(message); };
 const pass = name => console.log(`PASS ${name}`);
+const realPages = [
+  'profile-portrait',
+  'gog-login',
+  'library-home-portrait',
+  'library-home-landscape',
+  'gog-library-portrait',
+  'gog-library-landscape',
+  'search-portrait',
+  'search-landscape',
+  'detail-portrait',
+  'detail-landscape',
+];
 
 function shell() {
   for (const token of ['gogDemoShell','leftNav','demoCanvas','annoPanel','interactionTab','edgeTab','toggleMarkers','togglePanel'])
@@ -16,9 +28,24 @@ function shell() {
   pass('shell');
 }
 function pages() {
-  for (const id of ['profile-unbound','gog-login','profile-bound','library-unbound','library-bound','detail-gog','detail-switch','search-portrait','search-landscape'])
+  for (const id of realPages)
     assert(html.includes(`id:'${id}'`) || html.includes(`id: '${id}'`), `Missing page: ${id}`);
   pass('pages');
+}
+function realPageStructure() {
+  for (const token of [
+    'renderProfilePortrait', 'renderLibraryHomePortrait', 'renderLibraryHomeLandscape',
+    'renderGogLibraryPortrait', 'renderGogLibraryLandscape',
+    'renderSearchPortrait', 'renderSearchLandscape',
+    'renderDetailPortrait', 'renderDetailLandscape',
+  ]) assert(html.includes(token), `Missing real-page renderer: ${token}`);
+  pass('realPageStructure');
+}
+function gogCapabilities() {
+  assert(/supportsAccountValue\s*:\s*false/.test(html), 'GOG must explicitly disable account value');
+  assert(/accountValue\s*:\s*null/.test(html), 'GOG account value must be null');
+  assert(!html.includes('¥6.8k'), 'Legacy fabricated GOG value remains');
+  pass('gogCapabilities');
 }
 function platformModel() {
   for (const token of ['sourcePlatform','selectedPlatform','ownedPlatforms','platformAppId','gameId','resolveSelectedPlatform','lowConfidenceNoMerge'])
@@ -43,7 +70,7 @@ function syntax() {
   scripts.forEach((code, index) => new vm.Script(code, { filename: `gog-inline-${index}.js` }));
   pass('syntax');
 }
-const tasks = { shell, pages, platformModel, states, security, syntax };
+const tasks = { shell, pages, realPageStructure, gogCapabilities, platformModel, states, security, syntax };
 if (mode === 'all') Object.values(tasks).forEach(task => task());
 else if (tasks[mode]) tasks[mode]();
 else throw new Error(`Unknown mode: ${mode}`);

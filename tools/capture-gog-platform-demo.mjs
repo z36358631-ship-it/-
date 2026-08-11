@@ -24,14 +24,16 @@ for (const entry of fs.readdirSync(output, { withFileTypes: true })) {
 }
 
 const captures = [
-  ['01-profile-unbound', 'profile-unbound'],
+  ['01-profile-portrait', 'profile-portrait'],
   ['02-gog-login', 'gog-login'],
-  ['03-profile-bound', 'profile-bound'],
-  ['04-library-bound', 'library-bound'],
-  ['05-detail-gog', 'detail-gog'],
-  ['06-detail-switch', 'detail-switch'],
+  ['03-library-home-portrait', 'library-home-portrait'],
+  ['04-library-home-landscape', 'library-home-landscape'],
+  ['05-gog-library-portrait', 'gog-library-portrait'],
+  ['06-gog-library-landscape', 'gog-library-landscape'],
   ['07-search-portrait', 'search-portrait'],
   ['08-search-landscape', 'search-landscape'],
+  ['09-detail-portrait', 'detail-portrait'],
+  ['10-detail-landscape', 'detail-landscape'],
 ];
 
 const browser = await chromium.launch({ executablePath, headless: true });
@@ -85,30 +87,32 @@ try {
   }
   await settle();
 
-  const shellTarget = path.join(output, '09-full-annotation-shell.png');
+  const shellTarget = path.join(output, '11-full-annotation-shell.png');
   await page.screenshot({
     path: shellTarget,
     animations: 'disabled',
   });
   const shellSize = fs.statSync(shellTarget).size;
-  assert(shellSize > 40 * 1024, `09-full-annotation-shell.png is unexpectedly small (${shellSize} bytes)`);
-  console.log(`CAPTURED 09-full-annotation-shell.png (${shellSize} bytes)`);
+  assert(shellSize > 40 * 1024, `11-full-annotation-shell.png is unexpectedly small (${shellSize} bytes)`);
+  console.log(`CAPTURED 11-full-annotation-shell.png (${shellSize} bytes)`);
 
   assert.deepEqual(pageErrors, [], `Browser runtime errors: ${pageErrors.join(' | ')}`);
   const files = fs.readdirSync(output)
     .filter(file => file.toLowerCase().endsWith('.png'))
     .sort();
-  assert.equal(files.length, 9, `Expected exactly 9 PNG captures, found ${files.length}`);
+  assert.equal(files.length, 11, `Expected exactly 11 PNG captures, found ${files.length}`);
   assert.deepEqual(files, [
-    '01-profile-unbound.png',
+    '01-profile-portrait.png',
     '02-gog-login.png',
-    '03-profile-bound.png',
-    '04-library-bound.png',
-    '05-detail-gog.png',
-    '06-detail-switch.png',
+    '03-library-home-portrait.png',
+    '04-library-home-landscape.png',
+    '05-gog-library-portrait.png',
+    '06-gog-library-landscape.png',
     '07-search-portrait.png',
     '08-search-landscape.png',
-    '09-full-annotation-shell.png',
+    '09-detail-portrait.png',
+    '10-detail-landscape.png',
+    '11-full-annotation-shell.png',
   ]);
   console.log(`PASS visualCaptures (${files.length} PNG files)`);
 } finally {
