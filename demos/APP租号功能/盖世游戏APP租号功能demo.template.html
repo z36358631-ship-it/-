@@ -1814,6 +1814,10 @@
     .policy-rule-list { display: grid; gap: 8px; margin-bottom: 14px; }
     .policy-rule-list p { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 9px; margin: 0; padding: 10px; border-radius: 11px; background: rgb(255 255 255 / 4%); font-size: 9px; line-height: 15px; }
     .policy-rule-list span { color: var(--text-muted); }
+    .rental-intro-faq { display: grid; gap: 8px; margin-bottom: 14px; }
+    .rental-intro-faq article { padding: 11px 12px; border-radius: 12px; background: rgb(255 255 255 / 4%); }
+    .rental-intro-faq strong { display: block; color: #fff; font-size: 10px; line-height: 16px; }
+    .rental-intro-faq p { margin: 5px 0 0; color: var(--text-muted); font-size: 9px; line-height: 15px; }
     .policy-dialog > .primary-action { width: 100%; min-height: 48px; border: 0; border-radius: 12px; }
     .dialog-action-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
     .dialog-action-row button { min-height: 46px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 12px; background: rgb(255 255 255 / 5%); color: #fff; cursor: pointer; }
@@ -1887,6 +1891,94 @@
     .landscape-checkout .payment-panel .checkout-bottom-bar { position: sticky; right: auto; bottom: 0; left: auto; z-index: 2; flex: 0 0 auto; margin-top: auto; padding-top: 8px; background: #222426; }
     .landscape-checkout .payment-panel .payment-primary { position: static; width: auto; min-height: 44px; margin: 0; }
     .landscape-checkout .checkout-benefit-column .checkout-product p.checkout-product-edition { display: block; }
+
+    .checkout-entitlement-copy { margin-bottom: 12px; padding: 12px 14px; border: 1px solid rgb(58 157 239 / 20%); border-radius: 17px; background: linear-gradient(135deg, rgb(37 118 190 / 10%), rgb(255 255 255 / 3%)); }
+    .checkout-entitlement-copy header { display: grid; grid-template-columns: 24px minmax(0, 1fr); align-items: start; gap: 9px; }
+    .checkout-entitlement-mark { display: grid; width: 24px; height: 24px; place-items: center; border-radius: 8px; background: rgb(42 157 247 / 14%); color: #72c8ff; font-size: 12px; font-weight: 700; }
+    .checkout-entitlement-copy strong { display: block; color: #fff; font-size: 13px; line-height: 20px; }
+    .checkout-entitlement-copy p { margin: 3px 0 0; color: #959aa5; font-size: 10px; line-height: 16px; }
+    .checkout-entitlement-facts { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
+    .checkout-entitlement-facts span { min-height: 24px; padding: 0 8px; border-radius: 999px; background: rgb(255 255 255 / 5%); color: #c9ccd4; font-size: 8px; line-height: 24px; white-space: nowrap; }
+    .landscape-checkout .checkout-entitlement-copy { margin: 0; padding: 9px 10px; border-radius: 11px; }
+    .landscape-checkout .checkout-entitlement-copy header { grid-template-columns: 20px minmax(0, 1fr); gap: 7px; }
+    .landscape-checkout .checkout-entitlement-mark { width: 20px; height: 20px; border-radius: 6px; font-size: 9px; }
+    .landscape-checkout .checkout-entitlement-copy strong { font-size: 10px; line-height: 15px; }
+    .landscape-checkout .checkout-entitlement-copy p { margin-top: 2px; font-size: 8px; line-height: 12px; }
+    .landscape-checkout .checkout-entitlement-facts { gap: 4px; margin-top: 6px; }
+    .landscape-checkout .checkout-entitlement-facts span { min-height: 20px; padding: 0 6px; font-size: 7px; line-height: 20px; }
+
+    .membership-status-stack { display: grid; flex: 0 0 auto; justify-items: end; gap: 4px; }
+    .membership-validity { color: #a5a8b0; font-family: var(--font-number); font-size: 8px; white-space: nowrap; }
+    .membership-checkout-bar strong { color: #fff; }
+
+    .landscape-membership { padding: 0 18px 14px; }
+    .landscape-membership-scroll { min-height: 0; flex: 1; overflow-y: auto; padding-right: 2px; scrollbar-width: none; }
+    .landscape-membership-scroll::-webkit-scrollbar { display: none; }
+    .landscape-member-profilebar { display: flex; min-height: 46px; align-items: center; gap: 8px; }
+    .landscape-member-profilebar .back-button { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 11px; }
+    .landscape-member-profilebar .membership-avatar { width: 34px; height: 34px; }
+    .landscape-member-profilecopy { min-width: 0; flex: 1; }
+    .landscape-member-profilecopy strong { display: block; font-size: 13px; }
+    .landscape-member-profilecopy span { display: block; margin-top: 3px; color: var(--text-muted); font-size: 8px; }
+    .landscape-member-profilebar .membership-status-stack { min-width: 104px; }
+    .landscape-member-profilebar .member-chip { padding: 5px 9px; font-size: 8px; }
+    .landscape-member-profilebar .membership-validity { font-size: 7px; }
+    .landscape-membership-scroll > .membership-value-hero { min-height: 74px; grid-template-columns: minmax(0, 1fr) 276px; margin: 0 0 6px; padding: 8px 16px; border-radius: 13px; }
+    .landscape-membership-scroll > .membership-value-hero .membership-value-copy > span { font-size: 7px; }
+    .landscape-membership-scroll > .membership-value-hero .membership-value-copy h2 { margin: 3px 0 2px; font-size: 18px; line-height: 22px; }
+    .landscape-membership-scroll > .membership-value-hero .membership-value-copy p { font-size: 7px; line-height: 11px; }
+    .landscape-membership-scroll > .membership-value-hero .membership-hero-covers { height: 58px; }
+    .landscape-membership-scroll > .membership-value-hero .membership-hero-cover { top: 9px; left: 68px; width: 112px; height: 50px; }
+    .landscape-membership-scroll > .membership-value-hero .membership-hero-cover:nth-child(1) { top: 14px; left: 12px; }
+    .landscape-membership-scroll > .membership-value-hero .membership-hero-cover:nth-child(3) { top: 2px; left: 126px; }
+    .landscape-membership-scroll > .membership-benefit-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 8px; }
+    .landscape-membership-scroll > .membership-benefit-grid .membership-benefit-item { min-height: 36px; grid-template-columns: 16px minmax(0, 1fr); column-gap: 5px; padding: 5px 7px; border-radius: 9px; }
+    .landscape-membership-scroll > .membership-benefit-grid .membership-benefit-item > span { width: 16px; height: 16px; border-radius: 5px; font-size: 7px; }
+    .landscape-membership-scroll > .membership-benefit-grid .membership-benefit-item strong { font-size: 9px; line-height: 12px; }
+    .landscape-membership-scroll > .membership-benefit-grid .membership-benefit-item small { display: none; }
+    .landscape-membership-commerce { display: grid; min-height: 204px; grid-template-columns: minmax(0, 1fr) 252px; align-items: stretch; gap: 12px; margin-bottom: 12px; }
+    .landscape-membership-plan-panel,
+    .landscape-membership-payment-card { min-width: 0; padding: 11px 12px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 14px; background: #181a1c; }
+    .landscape-membership-plan-panel .detail-section-head { min-height: 28px; margin-bottom: 7px; }
+    .landscape-membership-plan-panel .detail-section-head h2 { font-size: 14px; }
+    .landscape-membership-plan-panel .detail-section-head p { margin: 2px 0 0; color: var(--text-muted); font-size: 7px; }
+    .landscape-membership-plan-panel .detail-section-head > span { font-size: 8px; }
+    .landscape-membership-plan-panel .membership-plan-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin: 0; }
+    .landscape-membership-plan-panel .membership-plan-card { min-height: 145px; grid-template-columns: 1fr; align-content: space-between; gap: 8px; padding: 12px 10px; border-radius: 11px; }
+    .landscape-membership-plan-panel .membership-plan-card.recommended { padding-top: 34px; }
+    .landscape-membership-plan-panel .plan-recommend { top: 8px; left: 9px; font-size: 7px; }
+    .landscape-membership-plan-panel .plan-name { font-size: 14px; }
+    .landscape-membership-plan-panel .plan-note { min-height: 26px; font-size: 7px; line-height: 12px; }
+    .landscape-membership-plan-panel .plan-money { text-align: left; }
+    .landscape-membership-plan-panel .plan-price { color: #fff; font-size: 21px; }
+    .landscape-membership-payment-card { display: flex; flex: initial; flex-direction: column; gap: 8px; margin: 0; }
+    .membership-payment-head { display: flex; min-height: 36px; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .membership-payment-head span { display: block; color: #fff; font-size: 13px; font-weight: 700; }
+    .membership-payment-head small { display: block; margin-top: 3px; color: var(--text-muted); font-size: 7px; }
+    .membership-payment-head strong { color: #ff5767; font-family: var(--font-number); font-size: 20px; }
+    .landscape-membership-payment-card .membership-pay-layout { grid-template-columns: minmax(0, 1fr) 68px; gap: 7px; }
+    .landscape-membership-payment-card .membership-payment-method { min-height: 38px; margin-bottom: 6px; padding: 0 8px; border-radius: 9px; font-size: 8px; }
+    .landscape-membership-payment-card .pay-mark { width: 20px; height: 20px; border-radius: 6px; font-size: 8px; }
+    .landscape-membership-payment-card .qr-code { min-height: 82px; padding: 5px; border-radius: 9px; }
+    .landscape-membership-payment-card .qr-pattern { width: 42px; height: 42px; border-width: 3px; }
+    .landscape-membership-payment-card .qr-code small { font-size: 6px; }
+    .landscape-membership-payment-card .membership-checkout-bar { min-height: 44px; margin-top: auto; padding-top: 8px; border-top: 1px solid rgb(255 255 255 / 8%); }
+    .landscape-membership-payment-card .membership-checkout-bar strong { font-size: 10px; }
+    .landscape-membership-payment-card .membership-checkout-bar .primary-action { width: auto; min-width: 102px; min-height: 40px; margin: 0; padding: 0 12px; font-size: 10px; }
+    .landscape-membership-scroll > .membership-preview,
+    .landscape-membership-scroll > .membership-faq-preview { margin-bottom: 12px; }
+    .landscape-membership-scroll > .membership-preview { min-height: 0; padding: 12px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 14px; background: #181a1c; }
+    .landscape-membership-scroll > .membership-preview .detail-section-head { min-height: 30px; margin-bottom: 8px; }
+    .landscape-membership-scroll > .membership-preview .detail-section-head h2 { font-size: 15px; }
+    .landscape-membership-scroll > .membership-preview .detail-section-head p { display: block; font-size: 8px; }
+    .landscape-membership-scroll > .membership-preview .detail-section-head button { min-height: 44px; font-size: 8px; }
+    .landscape-membership-scroll > .membership-preview .member-game-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .landscape-membership-scroll > .membership-preview .member-game-card { display: block; padding-bottom: 7px; border-radius: 10px; }
+    .landscape-membership-scroll > .membership-preview .member-game-card:nth-child(n+5) { display: none; }
+    .landscape-membership-scroll > .membership-preview .member-game-cover { height: 76px; border-radius: 9px 9px 5px 5px; }
+    .landscape-membership-scroll > .membership-preview .member-game-card strong { margin: 6px 7px 0; font-size: 9px; }
+    .landscape-membership-scroll > .membership-preview .cloud-save-badge { position: static; display: inline-flex; max-width: calc(100% - 14px); margin: 4px 7px 0; padding: 2px 5px; font-size: 6px; line-height: 11px; }
+    .landscape-membership-scroll > .membership-faq-preview { padding: 12px; border-radius: 14px; }
 
     .membership-intro-dialog { width: min(100%, 520px); max-height: calc(100% - 28px); overflow-y: auto; padding: 20px; border: 1px solid rgb(255 255 255 / 13%); border-radius: 22px; background: linear-gradient(160deg, #292b32, #17181d); box-shadow: 0 24px 60px rgb(0 0 0 / 52%); }
     .membership-intro-dialog header { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; margin-bottom: 14px; }
@@ -2130,6 +2222,11 @@
       guardExpiresAt: null,
       guardIssued: false,
       accountAllocationCount: 0,
+      serverNow: null,
+      processedPaymentTransactions: {},
+      preparedLaunchRequests: {},
+      platformTrialEligibility: { eligible: true, consumedAt: null, orderId: null },
+      membershipEntitlement: { planId: null, startsAt: null, expiresAt: null },
       toast: null,
       rentalUsage: null,
       rentalUsageSequence: 0,
@@ -2233,6 +2330,7 @@
       { id: 'monthly', name: '月卡', price: 129, note: '30天会员游戏库畅玩' },
       { id: 'quarterly', name: '季卡', price: 299, note: '90天会员游戏库畅玩', recommended: true },
     ]);
+    const MEMBER_PLAN_DAYS = Object.freeze({ weekly: 7, monthly: 30, quarterly: 90 });
 
     function createSteamPlatform({ standard = true, enhanced = true, deluxe = true } = {}) {
       return Object.freeze([{
@@ -2479,7 +2577,10 @@
         region: context.region || 'CN',
         platform: context.platform || state.selectedPlatform,
         editionId: 'standard',
-        firstRentalEligible: Boolean(context.firstRentalEligible || SCENARIOS[state.scenario]?.trialEligible),
+        firstRentalEligible: Boolean(
+          state.platformTrialEligibility.eligible
+            && (context.firstRentalEligible || SCENARIOS[state.scenario]?.trialEligible),
+        ),
       };
     }
 
@@ -2580,7 +2681,11 @@
     }
 
     function getDiscoveryUserContext(gameId) {
-      return normalizeGameUserContext(gameId, state.discoveryContexts[gameId] || {});
+      const context = normalizeGameUserContext(gameId, state.discoveryContexts[gameId] || {});
+      return {
+        ...context,
+        firstRentalEligible: Boolean(state.platformTrialEligibility.eligible && context.firstRentalEligible),
+      };
     }
 
     function resolveGameDisplayModel(gameId, userContext = {}) {
@@ -2941,8 +3046,9 @@
     function createMembershipOrder() {
       if (state.membershipOrder?.status === 'pending') return cloneOrder(state.membershipOrder);
       const plan = MEMBER_PLANS.find(({ id }) => id === state.memberPlan) || MEMBER_PLANS[0];
-      const createdAt = Date.now();
+      const createdAt = nowFromServer();
       lastMembershipOrderNumber = Math.max(createdAt, lastMembershipOrderNumber + 1);
+      state.membershipNotice = null;
       state.membershipOrder = {
         id: `MEMBER-${lastMembershipOrderNumber}`,
         status: 'pending',
@@ -3016,6 +3122,7 @@
       }
       if (screen === 'orders') ensureSelectedOrder();
       if (screen === 'membership' && !state.membershipIntroSeen) state.membershipIntroOpen = true;
+      if (screen !== 'membership') state.membershipIntroOpen = false;
       state.capturePageId = screen;
       if (screen === current) return renderApp();
       if (rememberSource && isCoreScreen(current) && !isCoreScreen(screen)) {
@@ -3056,36 +3163,113 @@
       return JSON.parse(JSON.stringify(state.routeContext));
     }
 
-    function payOrder() {
-      if (!state.order || state.order.status !== 'pending') return false;
-      state.order.status = 'allocating';
-      state.order.updatedAt = Date.now();
-      state.order.paidAt = Date.now();
+    function nowFromServer() {
+      return state.serverNow !== null && Number.isFinite(Number(state.serverNow))
+        ? Number(state.serverNow)
+        : Date.now();
+    }
+
+    function orderDurationMs(order) {
+      if (order?.sku === 'trial') return 2 * 60 * 60 * 1000;
+      const label = String(order?.durationLabel || '');
+      const days = Number(label.match(/(\d+)天/)?.[1] || 0);
+      if (days > 0) return days * 24 * 60 * 60 * 1000;
+      const hours = Number(label.match(/(\d+)小时/)?.[1] || state.selectedHours || 2);
+      return Math.max(2, hours) * 60 * 60 * 1000;
+    }
+
+    function payOrder({ paidAt = nowFromServer(), transactionId = state.order?.id } = {}) {
+      if (!state.order || !transactionId) return false;
+      if (state.processedPaymentTransactions[transactionId]) return cloneOrder(state.order);
+      if (state.order.status !== 'pending') return false;
+      const entitlementOrder = state.order.saleMode === GAME_SALE_MODES.ENTITLEMENT;
+      const riskRestricted = Boolean(state.order.riskSnapshot?.extraNoReasonRestricted);
+      state.order.paidAt = Number(paidAt);
+      state.order.startsAt = Number(paidAt);
+      state.order.updatedAt = Number(paidAt);
       state.order.playedMinutes = 0;
-      state.order.refundRuleVersion = 'REFUND-72H-30M-V1';
-      state.transactionNotice = 'payment-complete';
+      state.order.refundRuleVersion = riskRestricted ? null : 'REFUND-72H-30M-V1';
+      if (entitlementOrder) {
+        state.order.status = 'active';
+        state.order.credentialAvailable = false;
+        if (state.order.sku === 'trial') {
+          state.order.expiresAt = Number(paidAt) + 2 * 60 * 60 * 1000;
+          state.order.expireAt = state.order.expiresAt;
+          state.platformTrialEligibility = {
+            eligible: false,
+            consumedAt: Number(paidAt),
+            orderId: state.order.id,
+          };
+          if (state.discoveryContexts[state.order.gameId]) {
+            state.discoveryContexts[state.order.gameId].firstRentalEligible = false;
+          }
+          setScenario('member-library-trial-used', { shouldRender: false });
+        }
+        state.transactionNotice = 'entitlement-active';
+      } else {
+        state.order.status = 'allocating';
+        state.transactionNotice = 'payment-complete';
+      }
+      state.selectedOrderId = state.order.id;
+      state.processedPaymentTransactions[transactionId] = state.order.id;
       renderApp();
-      return true;
+      return cloneOrder(state.order);
     }
 
     function allocateAccount(success = true) {
       if (!state.order || state.order.status !== 'allocating') return false;
       state.order.status = success ? 'active' : 'refunding';
-      state.order.updatedAt = Date.now();
+      state.order.updatedAt = nowFromServer();
       if (success) {
         state.accountAllocationCount += 1;
         state.selectedOrderId = state.order.id;
-        state.order.expireAt = Date.now() + Math.max(2, Number(state.selectedHours || 2)) * 60 * 60 * 1000;
+        state.order.expireAt = Number(state.order.paidAt || nowFromServer()) + orderDurationMs(state.order);
+        state.order.expiresAt = state.order.expireAt;
       }
       state.transactionNotice = success ? 'allocation-complete' : 'allocation-failed';
       renderApp();
       return true;
     }
 
-    function payMembershipOrder() {
+    function prepareAccountForLaunch({ orderId, launchRequestId }) {
+      if (!orderId || !launchRequestId) return { ok: false, reason: 'request-invalid' };
+      if (state.preparedLaunchRequests[launchRequestId]) return { ...state.preparedLaunchRequests[launchRequestId] };
+      const order = getOrderCollection().find((item) => item.id === orderId);
+      const expiresAt = Number(order?.expiresAt || order?.expireAt || 0);
+      const valid = order?.status === 'active' && (!expiresAt || expiresAt > nowFromServer());
+      const result = valid
+        ? { ok: true, orderId, launchRequestId, prepared: true }
+        : { ok: false, orderId, launchRequestId, reason: 'entitlement-expired' };
+      state.preparedLaunchRequests[launchRequestId] = result;
+      if (result.ok) state.accountAllocationCount += 1;
+      return { ...result };
+    }
+
+    function applyMembershipPayment({ planId, paidAt = nowFromServer(), transactionId }) {
+      if (!MEMBER_PLAN_DAYS[planId] || !transactionId) return null;
+      if (state.processedPaymentTransactions[transactionId]) return { ...state.membershipEntitlement };
+      const duration = MEMBER_PLAN_DAYS[planId] * 86_400_000;
+      const currentExpiry = Number(state.membershipEntitlement.expiresAt || 0);
+      const active = currentExpiry > Number(paidAt);
+      const startsAt = active ? Number(state.membershipEntitlement.startsAt || paidAt) : Number(paidAt);
+      const base = active ? currentExpiry : Number(paidAt);
+      state.membershipEntitlement = { planId, startsAt, expiresAt: base + duration };
+      state.processedPaymentTransactions[transactionId] = `membership:${planId}`;
+      return { ...state.membershipEntitlement };
+    }
+
+    function payMembershipOrder({ paidAt = nowFromServer() } = {}) {
       if (!state.membershipOrder || state.membershipOrder.status !== 'pending') return false;
+      const entitlement = applyMembershipPayment({
+        planId: state.membershipOrder.planId,
+        paidAt,
+        transactionId: state.membershipOrder.id,
+      });
+      if (!entitlement) return false;
       state.membershipOrder.status = 'paid';
-      state.membershipOrder.paidAt = Date.now();
+      state.membershipOrder.paidAt = Number(paidAt);
+      state.membershipOrder.startsAt = entitlement.startsAt;
+      state.membershipOrder.expiresAt = entitlement.expiresAt;
       state.membershipStatus = state.memberPlan === 'weekly'
         ? 'weekly-active'
         : state.memberPlan === 'monthly'
@@ -3093,7 +3277,7 @@
           : 'quarterly-active';
       state.membershipNotice = '会员支付成功，会员已生效';
       renderApp();
-      return true;
+      return cloneOrder(state.membershipOrder);
     }
 
     function ensureScenarioOrder(scenario = state.scenario) {
@@ -3629,6 +3813,9 @@
 
     function getNoReasonEligibility(order) {
       if (!order) return { eligible: false, reason: '订单信息不可用' };
+      if (order.riskSnapshot?.extraNoReasonRestricted) {
+        return { eligible: false, reason: '本单不适用平台额外3天无理由；履约售后仍可正常申请' };
+      }
       const paidAt = Number(order.paidAt);
       const playedMinutes = Number(order.playedMinutes);
       const within72Hours = Number.isFinite(paidAt) && Date.now() >= paidAt && Date.now() - paidAt <= 72 * 60 * 60 * 1000;
@@ -3820,6 +4007,11 @@
       state.guardExpiresAt = null;
       state.guardIssued = false;
       state.accountAllocationCount = 0;
+      state.serverNow = null;
+      state.processedPaymentTransactions = {};
+      state.preparedLaunchRequests = {};
+      state.platformTrialEligibility = { eligible: true, consumedAt: null, orderId: null };
+      state.membershipEntitlement = { planId: null, startsAt: null, expiresAt: null };
       state.toast = null;
       state.rentalUsage = null;
       state.serverTime = null;
@@ -4269,16 +4461,56 @@
       return `<article class="game-context-card checkout-product">${realCrop(game.asset, game.crop, `${gameName} 游戏封面`, '', 'checkout-cover')}<div><h2 class="checkout-product-name">${gameName}</h2><p class="checkout-product-edition">标准版</p></div></article>`;
     }
 
+    function getCheckoutEntitlementCopy(order = state.order) {
+      if (order?.saleMode === GAME_SALE_MODES.TIME_RENTAL) {
+        return {
+          kind: 'time-rental',
+          title: `${order.durationLabel || '当前租期'}租号权益`,
+          description: '获得所选租期内的游戏账号限时使用权，不包含游戏所有权。',
+          facts: [order.durationLabel || '当前租期', '限所购租期使用', '租期结束自动失效'],
+        };
+      }
+      if (order?.sku === 'trial' || state.selectedSku === 'trial') {
+        return {
+          kind: 'trial',
+          title: '首次体验 · 2小时',
+          description: '用于首次了解游戏，支付成功即生效并消耗首次体验资格。',
+          facts: ['固定2小时', '从支付成功开始计时', '整个游戏平台终身仅可体验1次'],
+        };
+      }
+      return {
+        kind: 'permanent',
+        title: '单游戏永久',
+        description: '获得当前游戏标准版的长期畅玩权益，购买后持续有效。',
+        facts: ['仅限当前游戏', '标准版', '购买后长期有效'],
+      };
+    }
+
+    function renderCheckoutEntitlementCopy(order = state.order) {
+      const copy = getCheckoutEntitlementCopy(order);
+      return `<section class="checkout-entitlement-copy" data-checkout-entitlement-copy data-entitlement-kind="${copy.kind}"><header><span class="checkout-entitlement-mark">✓</span><div><strong>${copy.title}</strong><p>${copy.description}</p></div></header><div class="checkout-entitlement-facts">${copy.facts.map((item) => `<span>${item}</span>`).join('')}</div></section>`;
+    }
+
+    function getCheckoutCompletionMeta(order) {
+      if (order?.status !== 'active') return null;
+      if (order.saleMode === GAME_SALE_MODES.ENTITLEMENT) {
+        return { summary: '权益已生效', label: '开始畅玩', action: 'launch-entitlement-game' };
+      }
+      return { summary: '账号已就绪', label: '立即登录', action: 'open-login-method' };
+    }
+
     function renderGamePaymentPanel(game, order) {
       const model = getCheckoutAmountModel(order);
       const disabled = !state.inventoryAvailable;
       const processing = order.status !== 'pending';
-      const ready = order.status === 'active';
+      const completion = getCheckoutCompletionMeta(order);
+      const ready = Boolean(completion);
       const recovery = renderCheckoutRecoveryActions();
-      return `<section class="payment-panel">${renderCheckoutSkuOptions(game)}${renderCheckoutAmountSummary(order)}<div class="checkout-payment-row"><h2>支付方式</h2><div class="payment-list">${renderPaymentMethods()}</div></div>${recovery || `<div class="checkout-bottom-bar"><strong>${ready ? '账号已就绪' : model.dueText}</strong><button class="primary-action payment-primary" type="button" data-primary-action="true" data-action="${ready ? 'open-login-method' : state.priceChanged ? 'refresh-price' : 'pay-game-order'}" ${disabled || (processing && !ready) ? 'disabled' : ''}>${ready ? '立即登录' : processing ? '账号分配中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : '立即购买'}</button></div>`}</section>`;
+      return `<section class="payment-panel">${renderCheckoutSkuOptions(game)}${renderCheckoutAmountSummary(order)}<div class="checkout-payment-row"><h2>支付方式</h2><div class="payment-list">${renderPaymentMethods()}</div></div>${recovery || `<div class="checkout-bottom-bar"><strong>${completion?.summary || model.dueText}</strong><button class="primary-action payment-primary" type="button" data-primary-action="true" data-action="${completion?.action || (state.priceChanged ? 'refresh-price' : 'pay-game-order')}" ${disabled || (processing && !ready) ? 'disabled' : ''}>${completion?.label || (processing ? '账号分配中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : '立即购买')}</button></div>`}</section>`;
     }
 
     function checkoutAlert() {
+      if (state.transactionNotice === 'entitlement-active') return '<div class="state-alert success-alert"><strong>支付成功，权益已生效</strong><span>首次体验从支付成功时间开始计时，可直接开始畅玩。</span></div>';
       if (state.transactionNotice === 'payment-complete') return '<div class="state-alert success-alert"><strong>支付成功</strong><span>正在分配账号，请稍候。</span></div>';
       if (state.transactionNotice === 'allocation-complete') return '<div class="state-alert success-alert"><strong>账号分配成功</strong><span>账号已就绪，可立即登录开始畅玩。</span></div>';
       if (state.transactionNotice === 'allocation-failed') return '<div class="state-alert"><strong>账号分配失败</strong><span>订单已进入自动退款流程。</span></div>';
@@ -4303,10 +4535,36 @@
         ${renderCheckoutHeader()}
         ${checkoutAlert()}
         ${renderGameContextCard(game, order)}
+        ${renderCheckoutEntitlementCopy(order)}
         ${renderCheckoutSkuOptions(game)}
         ${renderCheckoutAmountSummary(order)}
         ${renderCheckoutPaymentMethods()}
       </section>`;
+    }
+
+    function formatMembershipValidity(expiresAt = state.membershipEntitlement.expiresAt) {
+      if (!Number(expiresAt) || Number(expiresAt) <= nowFromServer()) return '';
+      const parts = new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(Number(expiresAt)));
+      const value = Object.fromEntries(parts.map(({ type, value: part }) => [type, part]));
+      return `有效期至 ${value.year}.${value.month}.${value.day}`;
+    }
+
+    function renderMembershipStatusStack(membership = getMembershipStatusModel()) {
+      const validity = formatMembershipValidity();
+      return `<span class="membership-status-stack"><span class="member-chip">${membership.chip}</span>${validity ? `<small class="membership-validity">${validity}</small>` : ''}</span>`;
+    }
+
+    function getMembershipPurchaseModel(plan = MEMBER_PLANS.find(({ id }) => id === state.memberPlan) || MEMBER_PLANS[0]) {
+      return {
+        amount: Number(plan.price).toFixed(2),
+        dueText: `需支付 ¥${Number(plan.price).toFixed(2)}`,
+        action: state.membershipOrder?.status === 'pending' ? 'pay-membership-order' : 'create-membership-order',
+      };
+    }
+
+    function renderMembershipCheckoutBar(plan, className = '') {
+      const purchase = getMembershipPurchaseModel(plan);
+      return `<div class="checkout-bottom-bar membership-checkout-bar ${className}"><strong>${purchase.dueText}</strong><button class="primary-action" type="button" data-primary-action="true" data-action="${purchase.action}">立即购买</button></div>`;
     }
 
     function renderMembershipPlans() {
@@ -4333,7 +4591,7 @@
       const membership = getMembershipStatusModel();
       return `<section class="portrait-membership" data-layout="portrait-membership">
         ${subpageHead('会员中心', 'profile')}
-        <section class="membership-identity">${realCrop('profile', [482, 302, 156, 158], '盖世玩家用户头像', '', 'membership-avatar real-avatar')}<div><strong>盖世玩家 0525</strong><span>UID GH20260525</span></div><span class="member-chip">${membership.chip}</span></section>
+        <section class="membership-identity">${realCrop('profile', [482, 302, 156, 158], '盖世玩家用户头像', '', 'membership-avatar real-avatar')}<div><strong>盖世玩家 0525</strong><span>UID GH20260525</span></div>${renderMembershipStatusStack(membership)}</section>
         ${renderMembershipValue()}
         ${state.membershipNotice ? `<div class="state-alert success-alert"><strong>${state.membershipNotice}</strong></div>` : state.membershipOrder?.status === 'pending' ? `<div class="state-alert">会员订单 ${state.membershipOrder.id} 已创建，请使用所选方式扫码完成支付。</div>` : ''}
         <div class="detail-section-head membership-plan-head"><div><h2>选择会员套餐</h2><p>可按7天、30天或90天开通，有效期按所选套餐计算</p></div><span>季卡推荐</span></div>
@@ -4441,7 +4699,9 @@
     }
 
     function renderOrderProgress(order) {
-      const steps = ['提交订单', '完成支付', '分配账号', '开始畅玩'];
+      const steps = order.saleMode === GAME_SALE_MODES.ENTITLEMENT
+        ? ['提交订单', '完成支付', '权益生效', '开始畅玩']
+        : ['提交订单', '完成支付', '分配账号', '开始畅玩'];
       const current = { pending: 0, allocating: 2, active: 3, refunding: 2, ended: 4 }[order.status] ?? 0;
       return `<div class="order-progress" aria-label="订单四步进度">${steps.map((label, index) => {
         const done = index < current || order.status === 'ended';
@@ -4590,7 +4850,7 @@
 
     function renderRentalIntroDialog() {
       if (!state.rentalIntroOpen) return '';
-      return `<div class="modal-backdrop" data-action="close-rental-intro" role="presentation" data-rental-intro><section class="policy-dialog rental-intro-dialog" role="dialog" aria-modal="true" aria-labelledby="rentalIntroTitle"><div class="credential-head"><div><h2 id="rentalIntroTitle">租号功能介绍</h2><p>购买前请确认以下使用规则</p></div><button class="dialog-close" type="button" data-action="close-rental-intro" aria-label="关闭租号介绍">×</button></div><div class="policy-rule-list"><p><strong>限时使用</strong><span>租号服务提供游戏账号的限时使用权，不代表购买游戏所有权。</span></p><p><strong>体验计时</strong><span>首次体验固定 2 小时，从服务端支付成功时间开始计时。</span></p><p><strong>终身一次</strong><span>每位用户在整个游戏平台终身只能使用 1 次首次体验，使用后其他游戏不再展示该方案。</span></p></div><button class="primary-action" type="button" data-action="close-rental-intro">我已了解</button></section></div>`;
+      return `<div class="modal-backdrop" data-action="close-rental-intro" role="presentation" data-rental-intro><section class="policy-dialog rental-intro-dialog" role="dialog" aria-modal="true" aria-labelledby="rentalIntroTitle"><div class="credential-head"><div><h2 id="rentalIntroTitle">租号功能介绍</h2><p>常见问题</p></div><button class="dialog-close" type="button" data-action="close-rental-intro" aria-label="关闭租号介绍">×</button></div><div class="rental-intro-faq"><article><strong>租号有什么作用？</strong><p>无需先购买游戏，可按所选租期获得目标游戏账号的限时使用权；租号不代表购买游戏所有权。</p></article><article><strong>如何使用租号？</strong><p>选择租号套餐并完成支付后，系统会准备账号；随后可一键上号或使用页面提供的登录信息进入游戏。</p></article><article><strong>使用时要注意什么？</strong><p>请勿修改账号资料，仅在租期内游玩目标游戏。首次体验固定 2 小时，从支付成功开始计时，且每位用户在整个游戏平台终身仅可体验 1 次。</p></article></div><button class="primary-action" type="button" data-action="close-rental-intro">我已了解</button></section></div>`;
     }
 
     function renderRentalRiskDialog() {
@@ -4646,14 +4906,14 @@
         const model = getCheckoutAmountModel(state.order);
         const disabled = !state.inventoryAvailable;
         const processing = state.order.status !== 'pending';
-        const ready = state.order.status === 'active';
-        return `<footer class="portrait-fixed-footer checkout-bottom-bar"><strong>${ready ? '账号已就绪' : model.dueText}</strong><button class="primary-action payment-primary" type="button" data-primary-action="true" data-action="${ready ? 'open-login-method' : state.priceChanged ? 'refresh-price' : 'pay-game-order'}" ${disabled || (processing && !ready) ? 'disabled' : ''}>${ready ? '立即登录' : processing ? '账号分配中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : '立即购买'}</button></footer>`;
+        const completion = getCheckoutCompletionMeta(state.order);
+        const ready = Boolean(completion);
+        return `<footer class="portrait-fixed-footer checkout-bottom-bar"><strong>${completion?.summary || model.dueText}</strong><button class="primary-action payment-primary" type="button" data-primary-action="true" data-action="${completion?.action || (state.priceChanged ? 'refresh-price' : 'pay-game-order')}" ${disabled || (processing && !ready) ? 'disabled' : ''}>${completion?.label || (processing ? '账号分配中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : '立即购买')}</button></footer>`;
       }
       if (screen === 'membership') {
         const plan = MEMBER_PLANS.find(({ id }) => id === state.memberPlan) || MEMBER_PLANS[0];
-        const created = state.membershipOrder?.status === 'pending';
-        const completed = ['paid', 'active', 'completed', 'succeeded'].includes(state.membershipOrder?.status);
-        return `<footer class="portrait-fixed-footer"><div class="footer-summary"><strong>${plan.name}会员 · ¥${plan.price}</strong><span>${completed ? '会员已生效' : created ? '订单已创建，请完成支付' : plan.recommended ? '推荐 · 更划算' : plan.note}</span></div><button class="primary-action" type="button" data-primary-action="true" data-action="${created ? 'pay-membership-order' : 'create-membership-order'}" ${completed ? 'disabled' : ''}>${completed ? '开通成功' : created ? '模拟完成支付' : `开通${plan.name}会员 · ¥${plan.price}`}</button></footer>`;
+        const purchase = getMembershipPurchaseModel(plan);
+        return `<footer class="portrait-fixed-footer checkout-bottom-bar membership-checkout-bar"><strong>${purchase.dueText}</strong><button class="primary-action" type="button" data-primary-action="true" data-action="${purchase.action}">立即购买</button></footer>`;
       }
       if (screen === 'order-detail') {
         const order = getSelectedOrder();
@@ -4873,7 +5133,7 @@
       return `<section class="landscape-task-page landscape-checkout mac-derived-checkout" data-layout="landscape-checkout">
         ${renderCheckoutHeader()}
         <div class="mac-checkout-layout">
-          <section class="checkout-benefit-column task-scroll-region">${checkoutAlert()}${renderGameContextCard(game, order)}</section>
+          <section class="checkout-benefit-column task-scroll-region">${checkoutAlert()}${renderGameContextCard(game, order)}${renderCheckoutEntitlementCopy(order)}</section>
           <section class="checkout-purchase-column">${renderGamePaymentPanel(game, order)}</section>
         </div>
       </section>`;
@@ -4883,15 +5143,18 @@
       const plan = MEMBER_PLANS.find(({ id }) => id === state.memberPlan) || MEMBER_PLANS[0];
       const created = state.membershipOrder?.status === 'pending';
       const membership = getMembershipStatusModel();
-      const completed = ['paid', 'active', 'completed', 'succeeded'].includes(state.membershipOrder?.status);
+      const purchase = getMembershipPurchaseModel(plan);
+      const validity = formatMembershipValidity();
       return `<section class="landscape-task-page landscape-membership" data-layout="landscape-membership">
-        ${renderTaskHeader('会员中心')}
-        <div class="landscape-membership-body">
-          <div class="membership-shell-layout membership-cloud-layout">
-            <section class="landscape-membership-value">${renderMembershipValue()}<section class="landscape-membership-plans"><div class="detail-section-head"><div><h2>选择会员套餐</h2><p>周卡、月卡、季卡</p></div><span>季卡推荐</span></div>${renderMembershipPlans()}</section></section>
-            <aside class="landscape-membership-offer">${renderMembershipPreview()}${renderMembershipFaqPreview()}</aside>
+        <div class="landscape-membership-scroll task-scroll-region">
+          <header class="landscape-member-profilebar"><button class="task-back back-button" type="button" data-action="task-back" aria-label="返回"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>${realCrop('profile', [482, 302, 156, 158], '盖世玩家用户头像', '', 'membership-avatar real-avatar')}<div class="landscape-member-profilecopy"><strong>盖世玩家 0525</strong><span>UID GH20260525</span></div>${renderMembershipStatusStack(membership)}</header>
+          ${renderMembershipValue()}
+          <div class="landscape-membership-commerce">
+            <section class="landscape-membership-plan-panel"><div class="detail-section-head"><div><h2>选择会员套餐</h2><p>会员权益与会员游戏库在有效期内持续生效</p></div><span>季卡推荐</span></div>${renderMembershipPlans()}</section>
+            <aside class="landscape-membership-payment-card landscape-membership-pay"><div class="membership-payment-head"><div><span>支付方式</span><small>${validity || (created ? '订单已创建，请完成支付' : `${plan.name}会员 · ${plan.note}`)}</small></div><strong>¥${plan.price}</strong></div>${renderMembershipPayment()}<div class="checkout-bottom-bar membership-checkout-bar"><strong>${purchase.dueText}</strong><button class="primary-action" type="button" data-primary-action="true" data-action="${purchase.action}">立即购买</button></div></aside>
           </div>
-          <section class="landscape-membership-pay">${state.membershipNotice ? `<div class="state-alert success-alert"><strong>${state.membershipNotice}</strong></div>` : created ? `<div class="state-alert">会员订单 ${state.membershipOrder.id} 已创建，请完成支付</div>` : ''}<div class="detail-section-head"><h2>支付方式</h2><span>${plan.name}会员 · ¥${plan.price}</span></div>${renderMembershipPayment()}<button class="primary-action" type="button" data-primary-action="true" data-action="${created ? 'pay-membership-order' : 'create-membership-order'}" ${completed ? 'disabled' : ''}>${completed ? '开通成功' : created ? '模拟完成支付' : `开通${plan.name}会员 · ¥${plan.price}`}</button></section>
+          ${renderMembershipPreview()}
+          ${renderMembershipFaqPreview()}
         </div>
       </section>`;
     }
@@ -5345,6 +5608,16 @@
         payOrder();
         return;
       }
+      if (action === 'launch-entitlement-game') {
+        const order = state.order;
+        if (!order) return;
+        const result = prepareAccountForLaunch({
+          orderId: order.id,
+          launchRequestId: `ENTITLEMENT-${order.id}-${nowFromServer()}`,
+        });
+        if (result.ok) navigate('library', { rememberSource: false });
+        return;
+      }
       if (action === 'create-membership-order') {
         createMembershipOrder();
         return;
@@ -5503,6 +5776,38 @@
       confirmGamePayment: payOrder,
       allocateAccount,
       resolveAllocation: allocateAccount,
+      setServerNow(value) {
+        state.serverNow = Number(value);
+        return state.serverNow;
+      },
+      simulateTrialPayment(paidAt) {
+        state.serverNow = Number(paidAt);
+        state.platformTrialEligibility = { eligible: true, consumedAt: null, orderId: null };
+        state.discoveryContexts.spiritfarer.firstRentalEligible = true;
+        state.discoveryContexts['shadow-blade-zero'].firstRentalEligible = true;
+        setScenario('member-library-trial', { shouldRender: false });
+        setSelectedGame('spiritfarer', { shouldRender: false });
+        prepareCheckoutForSelectedGame();
+        state.selectedSku = 'trial';
+        const order = ensureGameOrder();
+        if (!order) return null;
+        const paid = payOrder({ paidAt: Number(paidAt), transactionId: `TRIAL-${paidAt}` });
+        return {
+          ...paid,
+          firstRentalEligible: getCheckoutEligibilityContext('spiritfarer').firstRentalEligible,
+          platformTrialEligible: state.platformTrialEligibility.eligible,
+        };
+      },
+      prepareAccountForLaunch,
+      setMembershipEntitlement(value = {}) {
+        state.membershipEntitlement = {
+          planId: value.planId || null,
+          startsAt: Number(value.startsAt || 0) || null,
+          expiresAt: Number(value.expiresAt || 0) || null,
+        };
+        return { ...state.membershipEntitlement };
+      },
+      simulateMembershipPayment: applyMembershipPayment,
       ensureScenarioOrder,
       getOrderCollection,
       getFilteredOrders,

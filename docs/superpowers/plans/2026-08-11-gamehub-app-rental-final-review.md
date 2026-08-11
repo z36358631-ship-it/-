@@ -293,7 +293,7 @@ function renderCheckoutAmountSummary(order) {
 
 - [ ] **Step 3: 按确认结构重排横竖屏确认订单**
 
-竖屏在 `renderCheckoutSkuOptions(game)` 与 `renderCheckoutPaymentMethods()` 之间插入 `renderCheckoutAmountSummary(order)`。删除确认订单五项权益区；横屏左栏只保留 `renderGameContextCard()`，右栏的 `renderGamePaymentPanel(game, order)` 按套餐、金额、支付方式、底部支付操作顺序渲染：
+竖屏在商品下渲染与当前 SKU 同源的 `renderCheckoutEntitlementCopy(order)`，并在 `renderCheckoutSkuOptions(game)` 与 `renderCheckoutPaymentMethods()` 之间插入 `renderCheckoutAmountSummary(order)`。删除确认订单五项通用权益区；横屏左栏保留 `renderGameContextCard()` 与动态 SKU 权益说明，右栏的 `renderGamePaymentPanel(game, order)` 按套餐、金额、支付方式、底部支付操作顺序渲染：
 
 ```js
 function renderGamePaymentPanel(game, order) {
@@ -322,7 +322,7 @@ function renderGamePaymentPanel(game, order) {
 .landscape-checkout .payment-panel .checkout-bottom-bar { position: sticky; right: auto; bottom: 0; left: auto; z-index: 2; margin-top: auto; padding-top: 10px; background: #222426; }
 ```
 
-`renderPortraitCheckout()` 与横屏布局都不得渲染版本选择器；商品卡继续只读显示游戏名和灰色 `标准版` 副标题。标题栏右上角使用无背景纯文字 `租号介绍`，不显示问号；点击打开功能介绍弹窗，关闭后不得改变套餐、金额与支付方式。`权益方案` 使用独立标题，SKU 按钮另起一行。详情点击、返回重进与标注导航直达确认订单时，统一先创建或复用当前游戏的待支付草稿；正常可售场景不得出现“订单创建失败”。
+`renderPortraitCheckout()` 与横屏布局都不得渲染版本选择器；商品卡继续只读显示游戏名和灰色 `标准版` 副标题。标题栏右上角使用无背景纯文字 `租号介绍`，不显示问号；点击后以常见问题逐项展示“租号有什么作用 / 如何使用租号 / 使用时要注意什么”三组一问一答，关闭后不得改变套餐、金额与支付方式。`权益方案` 使用独立标题，SKU 按钮另起一行。详情点击、返回重进与标注导航直达确认订单时，统一先创建或复用当前游戏的待支付草稿；正常可售场景不得出现“订单创建失败”。
 
 - [ ] **Step 4: 增加会员中心首次说明弹窗并删除远程协助条款**
 
@@ -525,6 +525,7 @@ git commit -m "feat: complete app rental checkout and guards"
 serverNow: null,
 processedPaymentTransactions: {},
 preparedLaunchRequests: {},
+platformTrialEligibility: { eligible: true, consumedAt: null, orderId: null },
 membershipEntitlement: { planId: null, startsAt: null, expiresAt: null },
 ```
 
@@ -556,7 +557,7 @@ function payOrder({ paidAt = nowFromServer(), transactionId = state.order?.id } 
     if (state.order.sku === 'trial') {
       state.order.expiresAt = paidAt + 2 * 60 * 60 * 1000;
       state.order.expireAt = state.order.expiresAt;
-      state.discoveryContexts[state.order.gameId].firstRentalEligible = false;
+      state.platformTrialEligibility = { eligible: false, consumedAt: paidAt, orderId: state.order.id };
       setScenario('member-library-trial-used', { shouldRender: false });
     }
     state.transactionNotice = 'entitlement-active';
@@ -574,7 +575,7 @@ function payOrder({ paidAt = nowFromServer(), transactionId = state.order?.id } 
 
 - [ ] **Step 3: 支付后隐藏首次体验并移除用户可见分配态**
 
-`eligibleCheckoutSkus()` 继续依据 `firstRentalEligible` 过滤；首次支付后所有入口重算。`checkoutAlert()` 对权益型订单显示“支付成功，权益已生效”，`renderGamePaymentPanel()` 不显示“账号分配中”。`renderOrderProgress()` 对权益型订单使用 `提交订单 / 完成支付 / 权益生效 / 开始畅玩`。
+`getCheckoutEligibilityContext()` 和 `getDiscoveryUserContext()` 必须同时读取平台级 `platformTrialEligibility.eligible` 与游戏目录资格；任一游戏首次体验支付成功后，所有游戏的确认订单、搜索和首页都立即失去首次体验 SKU/首体验价，回退各自普通租价。`checkoutAlert()` 对权益型订单显示“支付成功，权益已生效”，`renderGamePaymentPanel()` 不显示“账号分配中”。`renderOrderProgress()` 对权益型订单使用 `提交订单 / 完成支付 / 权益生效 / 开始畅玩`。
 
 - [ ] **Step 4: 增加每次启动后台幂等准备账号**
 
@@ -621,6 +622,7 @@ Object.assign(window.__appRentalDemo, {
   simulateTrialPayment(paidAt) {
     setSelectedGame('spiritfarer', { shouldRender: false });
     setScenario('member-library-trial', { shouldRender: false });
+    state.platformTrialEligibility = { eligible: true, consumedAt: null, orderId: null };
     state.discoveryContexts.spiritfarer.firstRentalEligible = true;
     state.selectedSku = 'trial';
     state.order = null;
@@ -635,7 +637,11 @@ Object.assign(window.__appRentalDemo, {
       paymentMethod: state.selectedPayment,
     });
     const order = payOrder({ paidAt, transactionId: `TRIAL-${paidAt}` });
-    return { ...order, firstRentalEligible: state.discoveryContexts.spiritfarer.firstRentalEligible };
+    return {
+      ...order,
+      firstRentalEligible: getCheckoutEligibilityContext('spiritfarer').firstRentalEligible,
+      platformTrialEligible: state.platformTrialEligibility.eligible,
+    };
   },
   prepareAccountForLaunch,
   setMembershipEntitlement(value) { state.membershipEntitlement = { ...value }; return { ...state.membershipEntitlement }; },
@@ -1149,7 +1155,7 @@ Expected: 看板保持完整历史，状态为 `in_review`，不直接置为 `do
 - 首次体验 2 小时严格从服务端 `paidAt` 计时，支付成功消耗资格并隐藏 SKU。
 - 首次体验无用户可见账号分配态，每次启动后台幂等准备账号。
 - 搜索游戏 Tab 双列竖卡；订单列表无申请售后；终态入口按真实权益显示。
-- 确认订单竖屏在套餐与支付方式之间展示游戏原价和订单金额；横屏左侧只展示商品、右侧为套餐/金额/支付；无版本选择器和五项权益区，订单金额与需支付完全一致，右上角纯文字“租号介绍”可点击。
+- 确认订单竖屏在商品下展示当前 SKU 权益说明，并在套餐与支付方式之间展示游戏原价和订单金额；横屏左侧展示商品与当前 SKU 权益说明、右侧为套餐/金额/支付；无版本选择器和五项通用权益区，订单金额与需支付完全一致，右上角纯文字“租号介绍”打开三组常见问题问答。
 - 首次进入会员中心展示 4 点“关于会员”说明，关闭后本次会话不再展示，任何交付物均无远程协助条款。
 - 非本次租用游戏与退款风险均在进入启动/下单前正确拦截。
 - 周卡续费按未过期顺延、已过期重算，重复回调不重复延长。

@@ -306,6 +306,7 @@ async function setShotState(page, shot) {
     };
   }, shot);
   assert(!result.apiMissing, `${shot.name} requires window.__appRentalDemo.openCaptureState(pageId)`);
+  if (shot.pageId === 'orders') await page.locator('[data-action="toggle-order-search"]').click();
 }
 
 async function verifyShotState(page, shot) {
@@ -402,7 +403,19 @@ async function verifyShotState(page, shot) {
     assert.equal(state.order, null, `${shot.name} detail capture must not create an order`);
     assert((await device.innerText()).includes('租号开玩'), `${shot.name} detail is missing the rental entry`);
     const detailActions = await page.locator('.detail-action-set [data-detail-action]').allTextContents();
-    assert.deepEqual(detailActions.map((value) => value.trim()), ['•••', '秒玩', '立即购买', '租号开玩'], `${shot.name} detail F action layout mismatch`);
+    assert.deepEqual(detailActions.map((value) => value.trim()), ['更多', '秒玩', '立即购买', '租号开玩'], `${shot.name} detail F action layout mismatch`);
+    if (shot.orientation === 'landscape') {
+      const sequence = await page.evaluate(() => {
+        const rect = (selector) => document.querySelector(selector)?.getBoundingClientRect();
+        const title = rect('.landscape-detail-copy h1');
+        const intro = rect('.landscape-detail-copy > p');
+        const tags = rect('.landscape-detail-genre');
+        const actions = rect('.landscape-detail-copy .detail-action-set');
+        const facts = rect('.landscape-detail-facts');
+        return Boolean(title && intro && tags && actions && facts && title.bottom <= intro.top + 1 && intro.bottom <= tags.top + 1 && tags.bottom <= actions.top + 1 && actions.bottom <= facts.top + 1);
+      });
+      assert(sequence, `${shot.name} detail content sequence overlaps`);
+    }
   }
 
   if (shot.pageId === 'checkout') {
@@ -412,25 +425,41 @@ async function verifyShotState(page, shot) {
     assert.equal(state.order?.durationLabel, '8小时', `${shot.name} checkout order duration mismatch`);
     assert.equal(await page.locator('[data-sale-mode="time-rental"]').count(), 1, `${shot.name} checkout sale mode mismatch`);
     assert.equal(await page.locator('[data-checkout-field="edition"], [data-action="select-edition"]').count(), 0, `${shot.name} must not render edition controls`);
-    assert.equal((await page.locator('.checkout-product-name').innerText()).trim(), '影之刃零 - 标准版', `${shot.name} product name must include standard edition`);
+    assert.equal((await page.locator('.checkout-product-name').innerText()).trim(), '影之刃零', `${shot.name} product name mismatch`);
+    assert.equal((await page.locator('.checkout-product-edition').innerText()).trim(), '标准版', `${shot.name} product edition subtitle mismatch`);
     assert.equal(await page.locator('[data-checkout-field="rental-plan"] .checkout-option').count(), 3, `${shot.name} rental-plan count mismatch`);
     assert.equal(await page.locator('[data-hour-shortcut]').count(), 3, `${shot.name} hour shortcut count mismatch`);
-    assert.equal(await page.locator('.service-benefit-item').count(), 5, `${shot.name} rental benefit count mismatch`);
+    assert.equal(await page.locator('.service-benefit-item').count(), 0, `${shot.name} must not restore the removed five generic benefits`);
+    assert.equal(await page.locator('[data-checkout-entitlement-copy][data-entitlement-kind="time-rental"]').count(), 1, `${shot.name} dynamic rental entitlement copy mismatch`);
+    assert((await page.locator('[data-checkout-entitlement-copy]').innerText()).includes('限时使用权'), `${shot.name} rental entitlement copy is incomplete`);
     if (shot.orientation === 'landscape') {
       const firstScreen = await page.evaluate(() => {
-        const column = document.querySelector('.checkout-benefit-column')?.getBoundingClientRect();
-        const benefits = document.querySelector('.service-benefits')?.getBoundingClientRect();
+        const left = document.querySelector('.checkout-benefit-column')?.getBoundingClientRect();
+        const right = document.querySelector('.checkout-purchase-column')?.getBoundingClientRect();
+        const benefits = document.querySelector('[data-checkout-entitlement-copy]')?.getBoundingClientRect();
         const options = document.querySelector('.checkout-sku-section')?.getBoundingClientRect();
-        return Boolean(column && benefits && options && benefits.top >= column.top && options.bottom <= column.bottom + 1);
+        return Boolean(left && right && benefits && options
+          && benefits.top >= left.top && benefits.bottom <= left.bottom + 1
+          && options.top >= right.top && options.bottom <= right.bottom + 1);
       });
-      assert(firstScreen, `${shot.name} must show benefits, plan, and hour SKU in the first screen`);
+      assert(firstScreen, `${shot.name} must show dynamic benefits and package selection in the first screen`);
     }
-    for (const label of ['标准版', '租赁套餐', '租期', '原价', '实付', '支付方式', '协议', '退款', '支付有效期']) {
+    for (const label of ['标准版', '租赁套餐', '游戏原价', '订单金额', '支付方式', '需支付', '立即购买']) {
       assert(checkoutText.includes(label), `${shot.name} checkout is missing ${label}`);
     }
+    for (const removed of ['当前报价', '租赁信息', '实付', '协议', '支付有效期', '扫码支付']) {
+      assert(!checkoutText.includes(removed), `${shot.name} checkout still contains removed ${removed}`);
+    }
+    const paymentGeometry = await page.evaluate(() => {
+      const row = document.querySelector('.checkout-payment-row');
+      const title = row?.querySelector('h2')?.getBoundingClientRect();
+      const buttons = [...(row?.querySelectorAll('.payment-method') || [])].map((node) => node.getBoundingClientRect());
+      return Boolean(title && buttons.length === 2 && Math.abs(buttons[0].top - buttons[1].top) <= 1 && buttons.every((rect) => Math.abs(((rect.top + rect.bottom) / 2) - ((title.top + title.bottom) / 2)) <= 2));
+    });
+    assert(paymentGeometry, `${shot.name} payment methods must be two buttons on the title row`);
   }
 
-  if (shot.pageId === 'membership') {
+  if (['membership', 'membership-success'].includes(shot.pageId)) {
     assert.deepEqual(
       await page.locator('.membership-benefit-item strong').allInnerTexts(),
       ['会员库内畅玩', '游戏持续更新', 'PC引擎与手柄适配', '个人云存档同步'],
@@ -443,6 +472,24 @@ async function verifyShotState(page, shot) {
     assert.equal((await page.locator('.membership-plan-card[data-plan="quarterly"] .plan-recommend').innerText()).trim(), '推荐 · 更划算', `${shot.name} quarterly recommendation mismatch`);
     assert.equal(await page.locator('.membership-plan-card[data-plan="quarterly"].selected').count(), 1, `${shot.name} quarterly plan must be selected by default`);
     assert.equal(await page.locator('.membership-plan-card[data-plan="permanent"], .membership-plan-card[data-plan="annual"]').count(), 0, `${shot.name} must not expose annual or permanent membership plans`);
+    assert.equal((await page.locator('.membership-checkout-bar strong').first().innerText()).trim(), '需支付 ¥299.00', `${shot.name} membership amount summary mismatch`);
+    assert.equal((await page.locator('.membership-checkout-bar [data-primary-action="true"]').first().innerText()).trim(), '立即购买', `${shot.name} membership primary action mismatch`);
+    if (shot.orientation === 'landscape') {
+      const structure = await page.evaluate(() => {
+        const profile = document.querySelector('.landscape-member-profilebar')?.getBoundingClientRect();
+        const plans = document.querySelector('.landscape-membership-plan-panel')?.getBoundingClientRect();
+        const payment = document.querySelector('.landscape-membership-payment-card')?.getBoundingClientRect();
+        const library = document.querySelector('.landscape-membership-scroll > .membership-preview')?.getBoundingClientRect();
+        return Boolean(profile && plans && payment && library
+          && Math.abs(plans.top - payment.top) <= 1
+          && plans.right <= payment.left + 1
+          && library.top >= Math.max(plans.bottom, payment.bottom) - 1);
+      });
+      assert(structure, `${shot.name} landscape membership hierarchy mismatch`);
+    }
+    if (shot.pageId === 'membership-success') {
+      assert(/有效期至\s*\d{4}\.\d{2}\.\d{2}/.test(await device.innerText()), `${shot.name} membership validity date is missing after payment`);
+    }
     const cloudBadgeGeometry = await page.evaluate(() => [...document.querySelectorAll('.member-game-card')]
       .map((card) => {
         const cover = card.querySelector('.member-game-cover')?.getBoundingClientRect();
@@ -460,10 +507,19 @@ async function verifyShotState(page, shot) {
     const steamOrder = await page.evaluate(() => {
       const form = document.querySelector('.steam-login-form')?.getBoundingClientRect();
       const qr = document.querySelector('.steam-qr-panel')?.getBoundingClientRect();
-      return { formTop: form?.top, formLeft: form?.left, qrTop: qr?.top, qrLeft: qr?.left };
+      return {
+        formTop: form?.top,
+        formLeft: form?.left,
+        qrTop: qr?.top,
+        qrLeft: qr?.left,
+        guardBeforeLogin: document.querySelectorAll('.steam-login-form .steam-guard').length,
+        legacyHint: document.querySelector('.steam-login-form')?.textContent.includes('提交账号密码后获取令牌') || false,
+      };
     });
     if (shot.orientation === 'portrait') assert(steamOrder.qrTop < steamOrder.formTop, `${shot.name} QR must be above the account form`);
     else assert(steamOrder.formLeft < steamOrder.qrLeft, `${shot.name} account form must stay left of QR`);
+    assert.equal(steamOrder.guardBeforeLogin, 0, `${shot.name} must not render a Guard placeholder before login`);
+    assert.equal(steamOrder.legacyHint, false, `${shot.name} still renders the removed Guard hint`);
   }
 
   if (shot.pageId === 'after-sales') {
@@ -475,7 +531,7 @@ async function verifyShotState(page, shot) {
   if (shot.pageId === 'orders') {
     const orderToolbar = await page.evaluate(() => {
       const tabs = [...document.querySelectorAll('#appRentalDemo .order-tabs button')];
-      const search = document.querySelector('#appRentalDemo .order-search-trigger');
+      const search = document.querySelector('#appRentalDemo [data-order-search]');
       const statuses = [...document.querySelectorAll('#appRentalDemo .order-list-card')].map((node) => node.dataset.status);
       const cardActionBounds = [...document.querySelectorAll('#appRentalDemo .order-list-card')].map((card) => {
         const cardRect = card.getBoundingClientRect();
@@ -492,12 +548,14 @@ async function verifyShotState(page, shot) {
       return {
         tabs: tabs.map((node) => node.textContent.trim()),
         searchRightOfUsable: Boolean(search && tabs[2] && search.getBoundingClientRect().left >= tabs[2].getBoundingClientRect().right),
+        tabsSingleLine: tabs.every((node) => node.scrollHeight <= node.clientHeight + 1 && getComputedStyle(node).whiteSpace === 'nowrap'),
         statusCount: new Set(statuses).size,
         cardActionBounds,
       };
     });
     assert.deepEqual(orderToolbar.tabs, ['全部订单', '待支付', '可使用'], `${shot.name} order tabs mismatch`);
     assert(orderToolbar.searchRightOfUsable, `${shot.name} order search is not right of usable tab`);
+    assert(orderToolbar.tabsSingleLine, `${shot.name} order tabs wrap after search expansion`);
     assert(orderToolbar.statusCount >= 4, `${shot.name} does not show enough rental order states`);
     assert(orderToolbar.cardActionBounds.every(({ contained }) => contained), `${shot.name} renders order actions outside their cards: ${JSON.stringify(orderToolbar.cardActionBounds)}`);
   }

@@ -1139,10 +1139,12 @@ async function main() {
         checkCheckoutEntry(
           intro.visible
             && intro.closed
-            && intro.text.includes('限时使用权')
+            && intro.text.includes('租号有什么作用？')
+            && intro.text.includes('如何使用租号？')
+            && intro.text.includes('使用时要注意什么？')
             && intro.text.includes('不代表购买游戏所有权')
-            && intro.text.includes('支付成功时间')
-            && intro.text.includes('整个游戏平台终身只能使用 1 次首次体验'),
+            && intro.text.includes('从支付成功开始计时')
+            && intro.text.includes('整个游戏平台终身仅可体验 1 次'),
           `${orientation} 租号介绍弹窗内容或关闭交互错误：${JSON.stringify(intro)}`,
         );
         checkCheckoutEntry(
@@ -1191,6 +1193,44 @@ async function main() {
 
       assert(failures.length === 0, `确认订单入口与租号介绍契约失败：${failures.join('；')}`);
       process.stdout.write('FINAL_CHECKOUT_RENTAL_INTRO 18/18 PASS\n');
+    });
+
+    await runRefactorGate('FINAL_DYNAMIC_ENTITLEMENT_COPY', async () => {
+      await reloadDemo();
+      const result = await page.evaluate(() => {
+        const api = window.__appRentalDemo;
+        const readCopy = () => {
+          const node = document.querySelector('[data-checkout-entitlement-copy]');
+          return {
+            kind: node?.dataset.entitlementKind || '',
+            text: node?.innerText.replace(/\s+/g, ' ').trim() || '',
+            visible: Boolean(node && node.getBoundingClientRect().width > 0 && node.getBoundingClientRect().height > 0),
+            oldBenefits: document.querySelectorAll('.service-benefits').length,
+          };
+        };
+        api.openCaptureState('checkout');
+        api.setOrientation('portrait');
+        const timeRental = readCopy();
+
+        api.openCaptureState('home');
+        api.setOrientation('portrait');
+        api.setScenario('member-library-trial');
+        api.setSelectedGame('spiritfarer');
+        api.navigate('checkout');
+        const trial = readCopy();
+        api.selectRentalSku('permanent');
+        const permanent = readCopy();
+
+        api.setOrientation('landscape');
+        const landscape = readCopy();
+        const landscapeLeft = Boolean(document.querySelector('.checkout-benefit-column > [data-checkout-entitlement-copy]'));
+        return { timeRental, trial, permanent, landscape, landscapeLeft };
+      });
+      assert(result.timeRental.visible && result.timeRental.kind === 'time-rental' && result.timeRental.text.includes('限时使用权') && result.timeRental.text.includes('租期结束自动失效'), `时租权益说明错误：${JSON.stringify(result.timeRental)}`);
+      assert(result.trial.visible && result.trial.kind === 'trial' && result.trial.text.includes('固定2小时') && result.trial.text.includes('从支付成功开始计时') && result.trial.text.includes('整个游戏平台终身仅可体验1次'), `首次体验权益说明错误：${JSON.stringify(result.trial)}`);
+      assert(result.permanent.visible && result.permanent.kind === 'permanent' && result.permanent.text.includes('单游戏永久') && result.permanent.text.includes('购买后长期有效'), `单游戏永久权益说明错误：${JSON.stringify(result.permanent)}`);
+      assert(result.landscape.visible && result.landscapeLeft && result.landscape.kind === 'permanent' && [result.timeRental, result.trial, result.permanent, result.landscape].every(({ oldBenefits }) => oldBenefits === 0), `横屏权益说明位置错误或恢复了旧五项权益：${JSON.stringify(result)}`);
+      process.stdout.write('FINAL_DYNAMIC_ENTITLEMENT_COPY 12/12 PASS\n');
     });
 
     await runRefactorGate('FINAL_ORDER_ACTIONS', async () => {
@@ -1379,15 +1419,63 @@ async function main() {
       const paidAt = 1_786_400_000_000;
       const result = await page.evaluate((paymentTime) => {
         const api = window.__appRentalDemo;
-        if (typeof api.simulateTrialPayment !== 'function') return { missing: ['simulateTrialPayment'] };
-        return { trial: api.simulateTrialPayment(paymentTime) };
+        const missing = ['simulateTrialPayment', 'prepareAccountForLaunch']
+          .filter((name) => typeof api[name] !== 'function');
+        if (missing.length) return { missing };
+        const trial = api.simulateTrialPayment(paymentTime);
+        const beforePrepare = api.snapshot().accountAllocationCount;
+        const firstPrepare = api.prepareAccountForLaunch({ orderId: trial.id, launchRequestId: 'TRIAL-LAUNCH-001' });
+        const afterFirstPrepare = api.snapshot().accountAllocationCount;
+        const duplicatePrepare = api.prepareAccountForLaunch({ orderId: trial.id, launchRequestId: 'TRIAL-LAUNCH-001' });
+        const afterDuplicatePrepare = api.snapshot().accountAllocationCount;
+        api.setSelectedGame('spiritfarer', { shouldRender: false });
+        const spiritfarerContext = api.getCheckoutEligibilityContext('spiritfarer');
+        const spiritfarerSkus = api.eligibleCheckoutSkus('spiritfarer', spiritfarerContext).map(({ id }) => id);
+        api.setSelectedGame('shadow-blade-zero', { shouldRender: false });
+        const shadowContext = api.getCheckoutEligibilityContext('shadow-blade-zero');
+        const shadowSkus = api.eligibleCheckoutSkus('shadow-blade-zero', shadowContext)
+          .map(({ id, price, firstOnly }) => ({ id, price, firstOnly: Boolean(firstOnly) }));
+        const shadowDisplay = api.getDiscoveryDisplay('shadow-blade-zero');
+        const visibleText = document.querySelector('#appRentalDemo')?.innerText || '';
+        return {
+          trial,
+          firstPrepare,
+          duplicatePrepare,
+          beforePrepare,
+          afterFirstPrepare,
+          afterDuplicatePrepare,
+          spiritfarerContext,
+          spiritfarerSkus,
+          shadowContext,
+          shadowSkus,
+          shadowDisplay,
+          visibleText,
+        };
       }, paidAt);
       assert(!result.missing?.length, `首次体验测试 API 缺失：${result.missing?.join('、')}`);
       const trial = result.trial;
       assert(Number.isFinite(Number(trial.paidAt)) && trial.paidAt === paidAt && trial.startsAt === trial.paidAt, `首次体验未从服务端 paidAt 开始：${JSON.stringify(trial)}`);
       assert(trial.expiresAt - trial.paidAt === 2 * 60 * 60 * 1000 && trial.status === 'active', `首次体验不是支付成功后立即生效2小时：${JSON.stringify(trial)}`);
-      assert(trial.firstRentalEligible === false, `首次体验支付成功后未立即消耗资格：${JSON.stringify(trial)}`);
-      process.stdout.write('FINAL_TRIAL_PAYMENT 3/3 PASS\n');
+      assert(
+        trial.firstRentalEligible === false
+          && trial.platformTrialEligible === false
+          && result.spiritfarerContext.firstRentalEligible === false
+          && !result.spiritfarerSkus.includes('trial')
+          && result.shadowContext.firstRentalEligible === false
+          && result.shadowSkus.every(({ firstOnly }) => !firstOnly)
+          && result.shadowSkus.some(({ price }) => Number(price) === 9.9)
+          && result.shadowDisplay.displayText === '¥9.9 · 租号',
+        `首次体验支付成功后未消耗平台级终身资格或其他游戏仍展示首体验价：${JSON.stringify(result)}`,
+      );
+      assert(
+        result.firstPrepare.ok === true
+          && JSON.stringify(result.duplicatePrepare) === JSON.stringify(result.firstPrepare)
+          && result.afterFirstPrepare === result.beforePrepare + 1
+          && result.afterDuplicatePrepare === result.afterFirstPrepare
+          && !result.visibleText.includes('账号分配中'),
+        `首次体验启动未做到后台无感准备或 launchRequestId 幂等：${JSON.stringify(result)}`,
+      );
+      process.stdout.write('FINAL_TRIAL_PAYMENT 5/5 PASS\n');
     });
 
     await runRefactorGate('FINAL_MEMBERSHIP_RENEWAL', async () => {
@@ -1903,7 +1991,7 @@ async function main() {
         return { paid, allocated, payment, allocation };
       });
       assert(
-        transaction.paid === true
+        Boolean(transaction.paid)
           && ['allocating', 'paid', 'succeeded', 'completed'].includes(transaction.payment.status)
           && transaction.payment.paymentComplete
           && transaction.payment.allocationInProgress
@@ -1931,15 +2019,17 @@ async function main() {
           orderStatus: snapshot.membershipOrder?.status,
           membershipStatus: snapshot.membershipStatus,
           completionCopy: /开通成功|会员已生效|支付成功|支付完成/.test(document.querySelector('#appRentalDemo').innerText),
+          validityCopy: /有效期至\s*\d{4}\.\d{2}\.\d{2}/.test(document.querySelector('#appRentalDemo').innerText),
         };
       });
       assert(
         membership.created === 'pending'
           && membership.hasCompletionApi
-          && membership.completed === true
+          && Boolean(membership.completed)
           && ['paid', 'active', 'completed', 'succeeded'].includes(membership.orderStatus)
           && ['weekly-active', 'monthly-active', 'quarterly-active'].includes(membership.membershipStatus)
-          && membership.completionCopy,
+          && membership.completionCopy
+          && membership.validityCopy,
         `会员订单缺少支付完成与权益生效态：${JSON.stringify(membership)}`,
       );
     });
@@ -2335,18 +2425,20 @@ async function main() {
     process.stdout.write(`ENTITLEMENTS ${entitlementCases.length}/${entitlementCases.length} PASS\n`);
 
     const skuCases = [
-      ['hot-time-rental', 'not-member-library', 'shadow-blade-zero', ['影之刃零', '标准版', '按小时', '日租', '周租', '6小时', '12小时', '23小时'], ['增强版', '豪华版', '首次体验', '单游永久', '开会员'], []],
-      ['entitlement-trial', 'member-library-trial', 'spiritfarer', ['首次体验', '单游永久', '开会员'], ['按小时', '日租', '周租'], ['trial', 'permanent', 'membership']],
-      ['entitlement-trial-used', 'member-library-trial-used', 'spiritfarer', ['单游永久', '开会员'], ['首次体验', '按小时', '日租', '周租'], ['permanent', 'membership']],
-      ['active-member', 'active-member', 'spiritfarer', ['可畅玩'], ['租号开玩', '首次体验', '单游永久', '开会员'], []],
+      ['hot-time-rental', 'not-member-library', 'shadow-blade-zero', ['影之刃零', '标准版', '按小时', '日租', '周租', '6小时', '12小时', '23小时'], ['增强版', '豪华版', '首次体验', '单游戏永久', '开会员'], []],
+      ['entitlement-trial', 'member-library-trial', 'spiritfarer', ['首次体验', '单游戏永久', '开会员'], ['按小时', '日租', '周租'], ['trial', 'permanent', 'membership']],
+      ['entitlement-trial-used', 'member-library-trial-used', 'spiritfarer', ['单游戏永久', '开会员'], ['首次体验', '按小时', '日租', '周租'], ['permanent', 'membership']],
+      ['active-member', 'active-member', 'spiritfarer', ['可畅玩'], ['租号开玩', '首次体验', '单游戏永久', '开会员'], []],
     ];
     for (const [caseName, scenario, gameId, present, absent, expectedKinds] of skuCases) {
       await page.evaluate(({ scenario, gameId }) => {
-        window.__appRentalDemo.setOrientation('portrait');
-        window.__appRentalDemo.setScenario(scenario);
-        window.__appRentalDemo.setDiscoveryContext(gameId, { firstRentalEligible: scenario === 'member-library-trial' });
-        window.__appRentalDemo.setSelectedGame(gameId);
-        window.__appRentalDemo.navigate('detail');
+        const api = window.__appRentalDemo;
+        api.openCaptureState('home');
+        api.setOrientation('portrait');
+        api.setScenario(scenario);
+        api.setDiscoveryContext(gameId, { firstRentalEligible: scenario === 'member-library-trial' });
+        api.setSelectedGame(gameId);
+        api.navigate('detail');
         const rentalEntry = [...document.querySelectorAll('[data-primary-action="true"]')]
           .find((node) => node.textContent.trim() === '租号开玩');
         rentalEntry?.click();
@@ -2538,10 +2630,7 @@ async function main() {
     assert(['影之刃零', '标准版', '租赁套餐', '支付方式', '需支付 ¥36.00', '立即购买'].every((value) => checkoutText.includes(value)), '确认订单核心字段不完整');
     assert(['当前报价', '租赁信息', '租号服务协议', '支付有效期', '扫码支付'].every((value) => !checkoutText.includes(value)), '确认订单仍存在已移除的重复付款信息');
     assert(checkoutText.includes('支付宝') && checkoutText.includes('微信'), '确认订单缺少双支付方式');
-    await page.locator('[data-action="open-no-reason-policy"]').click();
-    const noReasonPolicy = await page.locator('.policy-dialog').innerText();
-    assert(noReasonPolicy.includes('72 小时') && noReasonPolicy.includes('30 分钟') && noReasonPolicy.includes('原路退回'), '3天无理由规则弹窗口径不完整');
-    await page.locator('.policy-dialog [data-action="close-no-reason-policy"]').last().click();
+    assert(!(await page.locator('[data-action="open-no-reason-policy"]').count()), '确认订单不应恢复已移除的3天无理由权益入口');
 
     const checkoutBeforeRotation = await page.evaluate(() => window.__appRentalDemo.snapshot().order);
     await page.evaluate(() => {
@@ -2578,6 +2667,9 @@ async function main() {
     });
     await page.locator('.profile-inline-member[data-screen="membership"]').click();
     assert((await page.evaluate(() => window.__appRentalDemo.snapshot().screen)) === 'membership', '个人中心同行会员状态未进入会员中心');
+    if (await page.locator('[data-membership-intro]').count()) {
+      await page.locator('[data-membership-intro] [data-action="close-membership-intro"]').last().click();
+    }
     const membership = await page.evaluate(() => ({
       names: [...document.querySelectorAll('.membership-plan-card .plan-name')].map((node) => node.textContent.trim()),
       prices: [...document.querySelectorAll('.membership-plan-card .plan-price')].map((node) => node.textContent.trim()),
@@ -2588,6 +2680,7 @@ async function main() {
       benefitTitles: [...document.querySelectorAll('.membership-benefit-item strong')].map((node) => node.textContent.trim()),
       previewCards: document.querySelectorAll('.membership-preview .member-game-card').length,
       primaryLabel: document.querySelector('[data-primary-action="true"]')?.textContent.trim(),
+      dueText: document.querySelector('.membership-checkout-bar strong')?.textContent.trim(),
       text: document.querySelector('#appRentalDemo').innerText,
       paymentMethods: document.querySelectorAll('.membership-payment-method').length,
       qr: Boolean(document.querySelector('[aria-label="支付二维码"]')),
@@ -2596,7 +2689,7 @@ async function main() {
     assert(membership.names.join('|') === '周卡|月卡|季卡', '会员套餐顺序错误');
     assert(membership.prices.join('|') === '¥39|¥129|¥299', '会员套餐演示价格错误');
     assert(membership.originals.length === 0, '会员套餐不应展示未确认的划线原价');
-    assert(membership.recommendation === '推荐 · 更划算' && membership.quarterlySelected && membership.primaryLabel === '开通季卡会员 · ¥299', '季卡未作为默认推荐套餐或支付主操作不一致');
+    assert(membership.recommendation === '推荐 · 更划算' && membership.quarterlySelected && membership.primaryLabel === '立即购买' && membership.dueText === '需支付 ¥299.00', '季卡未作为默认推荐套餐或底部结算信息不一致');
     assert(
       membership.valueHero.includes('一个会员，畅玩本期精选游戏')
         && membership.benefitTitles.join('|') === '会员库内畅玩|游戏持续更新|PC引擎与手柄适配|个人云存档同步'
@@ -2605,6 +2698,7 @@ async function main() {
     );
     await page.locator('.membership-plan-card[data-plan="weekly"]').click();
     assert((await page.evaluate(() => window.__appRentalDemo.snapshot().memberPlan)) === 'weekly' && !membership.hasSelectionButton, '会员套餐未支持整卡切换或出现选择按钮');
+    assert((await page.locator('.membership-checkout-bar strong').first().textContent())?.trim() === '需支付 ¥39.00', '切换周卡后底部需支付金额未同步');
     assert(!/自动续费|一次性购买/.test(membership.text), '会员中心出现禁用文案');
     assert(membership.paymentMethods === 2 && membership.qr && membership.text.includes('支付宝') && membership.text.includes('微信'), '会员支付方式或二维码不完整');
 
@@ -2694,6 +2788,9 @@ async function main() {
         }));
         assert(afterEntry.screen === 'membership', `${orientation} ${status} 未进入统一会员中心`);
         assert(JSON.stringify(afterEntry.membershipOrder) === JSON.stringify(membershipOrderBefore), `${orientation} ${status} 入口不应直接创建会员订单`);
+        if (await page.locator('[data-membership-intro]').count()) {
+          await page.locator('[data-membership-intro] [data-action="close-membership-intro"]').last().click();
+        }
         membershipStatusChecks += 1;
       }
     }
@@ -2968,10 +3065,10 @@ async function main() {
       '支付截止时间不足 30 分钟',
     );
     assert(
-      successfulTransaction.firstPayment === true && successfulTransaction.allocating === 'allocating',
+      successfulTransaction.firstPayment?.status === 'allocating' && successfulTransaction.allocating === 'allocating',
       '支付状态迁移错误',
     );
-    assert(successfulTransaction.duplicatePayment === false, '重复支付应被拒绝');
+    assert(successfulTransaction.duplicatePayment?.id === successfulTransaction.firstPayment.id && successfulTransaction.duplicatePayment?.status === 'allocating', '重复支付回调应幂等返回同一订单');
     assert(successfulTransaction.active === 'active', '分配成功后应为 active');
     assert(failedTransaction === 'refunding', '分配失败后应为 refunding');
     process.stdout.write('TRANSACTION 10/10 PASS\n');
@@ -4107,7 +4204,11 @@ async function main() {
         && /CDKEY.*(?:不进入|不展示|既有需求)/i.test(annotationStateText),
       '标注版未明确订单中心三 Tab、当前页搜索、无类型标签或 CDKEY 范围',
     );
-    assertAnnotation(annotationStateText.includes('任务页不显示全局导航') && annotationStateText.includes('旋转不重建'), '标注版未明确任务页壳层或旋转连续性规则');
+    assertAnnotation(
+      annotationStateText.includes('任务页不显示全局导航')
+        && /旋转后保留|方向切换不丢|旋转不重复展示/.test(annotationStateText),
+      '标注版未明确任务页壳层或旋转连续性规则',
+    );
 
     await annotationPage.locator('#orientationLandscape').click();
     await annotationPage.waitForFunction(() => document.querySelector('#appRentalDemo')?.dataset.orientation === 'landscape');
