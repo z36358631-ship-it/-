@@ -392,29 +392,128 @@
       line-height: 1.65;
     }
 
-    .marker-preview {
-      display: none;
+    .anno-list {
+      display: grid;
+      gap: 10px;
       margin-top: 14px;
-      padding: 12px;
-      border-left: 2px solid var(--accent);
-      background: rgba(132, 94, 247, 0.08);
-      color: #cabbff;
-      font-size: 12px;
     }
 
-    .gog-demo-shell.markers-visible .marker-preview { display: block; }
+    .anno-item {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.028);
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+
+    .anno-item:hover,
+    .anno-item:focus-visible {
+      border-color: rgba(155, 121, 255, 0.38);
+      outline: none;
+      background: rgba(132, 94, 247, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .anno-head {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .anno-badge,
+    .annotation-marker {
+      display: inline-grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgb(250, 173, 20);
+      color: #17120a;
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .anno-badge {
+      width: 25px;
+      height: 25px;
+      flex: 0 0 25px;
+    }
+
+    .anno-badge.global,
+    .annotation-marker.global {
+      background: #1296db;
+      color: white;
+    }
+
+    .anno-badge.edge,
+    .annotation-marker.edge {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .anno-title {
+      color: #eef1f8;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .anno-body {
+      display: grid;
+      gap: 5px;
+      margin-top: 11px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .anno-body span strong {
+      color: #c8cfdd;
+      font-weight: 700;
+    }
+
+    [data-annotation-ref] { position: relative; }
+
+    .annotation-marker {
+      position: absolute;
+      z-index: 8;
+      top: -10px;
+      right: -10px;
+      display: none;
+      width: 23px;
+      height: 23px;
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 5px 16px rgba(0, 0, 0, 0.42);
+      pointer-events: none;
+    }
+
+    .annotation-marker + .annotation-marker { transform: translateX(-27px); }
+
+    .gog-demo-shell.markers-visible .annotation-marker { display: inline-grid; }
+
+    @keyframes annotationFlash {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(250, 173, 20, 0); }
+      35% { box-shadow: 0 0 0 6px rgba(250, 173, 20, 0.42), 0 0 0 12px rgba(250, 173, 20, 0.13); }
+    }
+
+    .annotation-flash {
+      animation: annotationFlash 760ms ease-out;
+      outline: 2px solid rgb(250, 173, 20);
+      outline-offset: 3px;
+    }
 
     .product-screen {
-      width: min(100%, 620px);
-      min-height: 680px;
-      overflow: hidden;
+      width: 402px;
+      min-width: 402px;
+      height: 874px;
+      min-height: 874px;
+      overflow: auto;
       border: 1px solid rgba(255, 255, 255, 0.11);
       border-radius: 28px;
       background: #171a25;
       box-shadow: 0 30px 80px rgba(0, 0, 0, 0.38);
     }
 
-    .product-screen.library-screen { width: min(100%, 760px); }
+    .product-screen.library-screen { width: 402px; }
 
     .product-header {
       display: flex;
@@ -791,11 +890,13 @@
       text-align: right;
     }
 
-    .product-screen.detail-screen { width: min(100%, 720px); }
+    .product-screen.detail-screen { width: 402px; }
 
     .product-screen.search-screen.landscape-screen {
-      width: min(100%, 900px);
-      min-height: 540px;
+      width: 874px;
+      min-width: 874px;
+      height: 402px;
+      min-height: 402px;
     }
 
     .detail-hero {
@@ -1045,8 +1146,95 @@
       font-size: 10px;
     }
 
+    .simulation-state {
+      display: grid;
+      min-height: 640px;
+      padding: 34px 24px;
+      align-content: center;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .simulation-state h3 {
+      margin: 18px 0 8px;
+      font-size: 22px;
+    }
+
+    .simulation-state > p {
+      max-width: 310px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .simulation-state .primary-button,
+    .simulation-state .secondary-button { margin-top: 20px; }
+
+    .state-symbol {
+      display: grid;
+      width: 54px;
+      height: 54px;
+      place-items: center;
+      border: 1px solid rgba(155, 121, 255, 0.26);
+      border-radius: 17px;
+      background: var(--accent-soft);
+      color: #cabdff;
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .skeleton-list {
+      display: grid;
+      width: 100%;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .skeleton {
+      height: 68px;
+      overflow: hidden;
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.055);
+    }
+
+    .skeleton::after {
+      display: block;
+      width: 45%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.09), transparent);
+      content: "";
+      animation: shimmer 1.1s infinite;
+    }
+
+    @keyframes shimmer { to { transform: translateX(240%); } }
+
+    .cached-list {
+      display: grid;
+      width: 100%;
+      gap: 8px;
+      margin: 18px 0 0;
+    }
+
+    .cached-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 13px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.035);
+      color: #dce1ed;
+      font-size: 12px;
+    }
+
+    .cache-timestamp {
+      margin-top: 12px;
+      color: #f6c778;
+      font-size: 11px;
+    }
+
     @media (max-height: 820px) {
-      .product-screen { min-height: 590px; }
       .demo-canvas { padding: 18px; }
       .product-body { padding: 18px; }
     }
@@ -1083,6 +1271,7 @@
       selectedGame:null, loginOrigin:null, authorizationMode:null, loginError:null,
       gogRefreshInFlight:false, gogRefreshRequestCount:0, gogLastSyncAt:'10 分钟前',
       showLogoutConfirm:false, showPlatformSwitch:false,
+      simulationOrigin:null, cacheTimestamp:'2026-08-11 10:32',
       ownedPlatforms:['steam','epic','gog'],
       accountByPlatform:{
         steam:{ bindStatus:'bound', tokenStatus:'valid' },
@@ -1108,6 +1297,108 @@
     const SIMULATION_LABELS = {
       normal:'正常', loading:'加载中', empty:'空数据', error:'加载失败',
       expired:'授权过期', cancelled:'用户取消', cached:'缓存降级',
+    };
+
+    const ANNOTATIONS = {
+      'profile-unbound': {
+        interaction:[
+          { id:'1', ref:'platform-tabs', title:'平台卡片切换', trigger:'点击 GOG 平台标签', display:'在现有 Steam / EPIC 並列区域中展示 GOG 状态', interaction:'仅切换当前平台卡片，不改变其他平台数据' },
+          { id:'2', ref:'bind-gog', title:'绑定 GOG', trigger:'点击“绑定 GOG 账号”', display:'打开 GOG 官方登录页', interaction:'授权成功后回到当前入口' },
+          { id:'G', ref:'platform-card', title:'账号状态隔离', trigger:'任一 GOG 账号操作', display:'只更新 GOG 卡片和数据', interaction:'Steam / EPIC 绑定状态始终保持不变' },
+        ],
+        edge:[
+          { id:'E1', ref:'bind-gog', title:'授权页不可达', trigger:'官方页超时或无法打开', display:'显示失败说明与重试入口', interaction:'留在未绑定状态，不创建账号记录' },
+          { id:'E2', ref:'platform-card', title:'其他平台不受影响', trigger:'GOG 授权失败或取消', display:'Steam / EPIC 卡片保持原状', interaction:'不清空、不刷新其他平台缓存' },
+        ],
+      },
+      'gog-login': {
+        interaction:[
+          { id:'1', ref:'official-login', title:'GOG 官方登录', trigger:'从绑定或切换账号入口进入', display:'展示 login.gog.com 官方授权上下文', interaction:'盖世游戏仅接收授权结果' },
+          { id:'2', ref:'authorization-actions', title:'授权结果返回', trigger:'用户授权成功或取消', display:'回到发起授权的原入口', interaction:'成功后更新 GOG；取消时不替换原账号' },
+          { id:'G', ref:'security-note', title:'凭证安全边界', trigger:'用户输入 GOG 账号信息', display:'输入区域由 GOG 官方提供', interaction:'盖世游戏不读取、不保存邮箱或密码' },
+        ],
+        edge:[
+          { id:'E1', ref:'authorization-actions', title:'授权失败', trigger:'GOG 返回失败或网络中断', display:'原页显示失败原因和重试方式', interaction:'切换账号场景保留旧账号' },
+          { id:'E2', ref:'official-login', title:'用户取消', trigger:'点击“取消并返回”', display:'恢复发起授权前的页面', interaction:'不写入新的绑定状态' },
+        ],
+      },
+      'profile-bound': {
+        interaction:[
+          { id:'1', ref:'account-summary', title:'GOG 账号摘要', trigger:'授权成功或刷新成功', display:'显示用户名、价值、时长和游戏数', interaction:'指标只使用 GOG 数据口径' },
+          { id:'2', ref:'account-actions', title:'账号管理', trigger:'点击刷新、切换或退出', display:'三个动作复用现有平台卡片模式', interaction:'刷新中禁止重复提交' },
+          { id:'G', ref:'platform-tabs', title:'平台数据隔离', trigger:'切换平台或退出 GOG', display:'每个平台维护独立绑定和缓存', interaction:'退出 GOG 不影响 Steam / EPIC' },
+        ],
+        edge:[
+          { id:'E1', ref:'account-actions', title:'刷新并发与失败', trigger:'重复点击或请求失败', display:'第一个请求期间禁用刷新', interaction:'有缓存时显示时间戳并允许重试' },
+          { id:'E2', ref:'account-summary', title:'授权过期', trigger:'GOG token 失效', display:'显示重新登录，保留 Steam / EPIC', interaction:'不使用其他平台 token 替代' },
+        ],
+      },
+      'library-unbound': {
+        interaction:[
+          { id:'1', ref:'platform-tabs', title:'游戏库平台筛选', trigger:'选择 GOG', display:'在现有游戏库平台卡片中显示未绑定态', interaction:'不合并或隐藏 Steam / EPIC 游戏' },
+          { id:'2', ref:'library-bind-gog', title:'从游戏库绑定', trigger:'点击绑定按钮', display:'打开 GOG 官方登录', interaction:'成功后返回游戏库并展示 GOG 列表' },
+          { id:'G', ref:'library-empty', title:'原入口返回', trigger:'从游戏库发起授权', display:'记录 library-unbound 为返回目标', interaction:'不默认跳到“我的”页' },
+        ],
+        edge:[
+          { id:'E1', ref:'library-bind-gog', title:'绑定取消', trigger:'用户在 GOG 页取消', display:'回到游戏库 GOG 未绑定态', interaction:'不展示任何伪造游戏数据' },
+          { id:'E2', ref:'library-empty', title:'空账号', trigger:'绑定成功但拥有 0 款游戏', display:'显示 0 游戏空态与刷新入口', interaction:'不将未绑定和空账号混为一个状态' },
+        ],
+      },
+      'library-bound': {
+        interaction:[
+          { id:'1', ref:'library-heading', title:'GOG 游戏列表', trigger:'授权后首次同步成功', display:'显示 GOG 平台游戏数和列表', interaction:'每个条目保留独立平台标识' },
+          { id:'2', ref:'game-grid', title:'进入 GOG 来源详情', trigger:'点击任一 GOG 游戏', display:'携带 gameId、platformAppId 和 sourcePlatform=gog', interaction:'详情首选 GOG，不按默认优先级覆盖' },
+          { id:'G', ref:'platform-tabs', title:'稳定游戏映射', trigger:'同一名称存在多平台版本', display:'用 gameId + platformAppId 作为稳定标识', interaction:'低置信度名称匹配不自动合并' },
+        ],
+        edge:[
+          { id:'E1', ref:'library-heading', title:'列表加载失败', trigger:'无可用缓存且接口失败', display:'显示“无缓存”失败页和重试', interaction:'不降级到其他平台列表' },
+          { id:'E2', ref:'game-grid', title:'缓存降级', trigger:'接口失败但存在本地缓存', display:'展示缓存内容和最后更新时间', interaction:'允许用户手动重试' },
+        ],
+      },
+      'detail-gog': {
+        interaction:[
+          { id:'1', ref:'detail-context', title:'保留来源上下文', trigger:'从 GOG 列表或搜索结果进入', display:'详情显示来源平台为 GOG', interaction:'sourcePlatform 明确时不执行默认优先级' },
+          { id:'2', ref:'launch-actions', title:'GOG 启动', trigger:'点击主启动按钮', display:'同步展示 GOG 时长、云存档和启动文案', interaction:'当来源不可用时要求重新登录或手动切换' },
+          { id:'G', ref:'detail-platform', title:'平台字段联动', trigger:'selectedPlatform 变更', display:'Logo、时长、云存档和启动按钮同步更新', interaction:'禁止只换文案而保留旧平台数据' },
+        ],
+        edge:[
+          { id:'E1', ref:'launch-actions', title:'GOG 来源不可用', trigger:'GOG 未绑定或 token 过期', display:'主操作改为“重新登录 GOG”', interaction:'不静默切换到 Steam' },
+          { id:'E2', ref:'detail-context', title:'无明确来源', trigger:'sourcePlatform 为空', display:'按 Steam > EPIC > GOG 选择可用平台', interaction:'仅无来源入口使用该优先级' },
+        ],
+      },
+      'detail-switch': {
+        interaction:[
+          { id:'1', ref:'platform-switch', title:'手动选择启动平台', trigger:'点击“切换平台”', display:'展示已拥有的 Steam / EPIC / GOG 版本', interaction:'用户点击后才更改 selectedPlatform' },
+          { id:'2', ref:'launch-actions', title:'返回已选平台详情', trigger:'选择某一可用平台', display:'收起平台列表并更新启动数据', interaction:'sourcePlatform 继续保留原始来源' },
+          { id:'G', ref:'detail-context', title:'来源与选择分离', trigger:'手动切换启动平台', display:'sourcePlatform 不变，selectedPlatform 更新', interaction:'便于返回原列表与后续埋点归因' },
+        ],
+        edge:[
+          { id:'E1', ref:'platform-switch', title:'候选平台不可用', trigger:'未绑定或授权过期', display:'列表标记“需要绑定或重新登录”', interaction:'不直接发起启动' },
+          { id:'E2', ref:'launch-actions', title:'放弃切换', trigger:'未选择其他平台', display:'保留当前 GOG 选择', interaction:'不自动回退到优先级首位' },
+        ],
+      },
+      'search-portrait': {
+        interaction:[
+          { id:'1', ref:'search-heading', title:'竖屏搜索结果', trigger:'在竖屏中搜索游戏', display:'EPIC 与 GOG 版本分条展示', interaction:'不用名称强制合并不同平台版本' },
+          { id:'2', ref:'search-results', title:'携带平台来源进入详情', trigger:'点击 GOG 结果', display:'详情展示 GOG 版本并提供 GOG 启动', interaction:'携带 gameId + platformAppId + sourcePlatform' },
+          { id:'G', ref:'search-orientation', title:'横竖屏共享数据', trigger:'设备方向变化', display:'仅调整排版，结果顺序和字段不变', interaction:'使用同一 SEARCH_RESULTS 数据源' },
+        ],
+        edge:[
+          { id:'E1', ref:'search-results', title:'GOG 无评分', trigger:'GOG 没有可用评分字段', display:'显示“暂无评分”', interaction:'不伪造评分，不复用 EPIC 分数' },
+          { id:'E2', ref:'search-heading', title:'EPIC 评分换算', trigger:'展示 EPIC 5 分制评分', display:'换算为 10 分制并限制在 0–10', interaction:'4.4 显示为 8.8，口径在横竖屏一致' },
+        ],
+      },
+      'search-landscape': {
+        interaction:[
+          { id:'1', ref:'search-heading', title:'横屏搜索结果', trigger:'设备切换为横屏', display:'结果列表改为双列，平台条目保持分开', interaction:'不改变搜索结果数据口径' },
+          { id:'2', ref:'search-results', title:'横屏结果进入详情', trigger:'点击 EPIC 或 GOG 条目', display:'详情沿用被点击条目的平台上下文', interaction:'交互和竖屏使用同一处理器' },
+          { id:'G', ref:'search-orientation', title:'874 × 402 横屏画布', trigger:'进入横屏搜索页', display:'中心 Demo 使用标准横屏尺寸', interaction:'左导航和右标注面板保持独立不覆盖' },
+        ],
+        edge:[
+          { id:'E1', ref:'search-results', title:'横屏空间不足', trigger:'壳层可用宽度小于画布', display:'中心区域独立滚动', interaction:'不伸入左右固定栏' },
+          { id:'E2', ref:'search-heading', title:'平台评分缺失', trigger:'GOG 条目无 rawScore', display:'保留“暂无评分”文案', interaction:'不因横屏布局而隐藏该信息' },
+        ],
+      },
     };
 
     const GOG_ACCOUNT = {
@@ -1201,7 +1492,7 @@
 
     function renderPlatformTabs() {
       return `
-        <div class="platform-tabs" aria-label="第三方游戏平台">
+        <div class="platform-tabs" aria-label="第三方游戏平台" data-annotation-ref="platform-tabs">
           <button class="platform-tab" type="button">STEAM</button>
           <button class="platform-tab" type="button">EPIC</button>
           <button class="platform-tab active" type="button" aria-current="true">GOG</button>
@@ -1224,12 +1515,12 @@
           ${renderProductHeader('我的', '管理第三方平台账号与游戏资产')}
           <div class="product-body">
             ${renderPlatformTabs()}
-            <section class="empty-state">
+            <section class="empty-state" data-annotation-ref="platform-card">
               <div class="empty-state-content">
                 <span class="gog-logo" style="margin:auto">G</span>
                 <h3>GOG 数据同步功能</h3>
                 <p>绑定账号后可查看个人游戏库数据，包括账号价值、游玩时长和游戏数量。</p>
-                <button class="primary-button" data-action="bind-gog">绑定 GOG 账号</button>
+                <button class="primary-button" data-action="bind-gog" data-annotation-ref="bind-gog">绑定 GOG 账号</button>
               </div>
             </section>
           </div>
@@ -1243,17 +1534,17 @@
         <article class="product-screen" data-screen="gog-login">
           ${renderProductHeader('GOG 官方登录', `${actionName} · 授权结果返回盖世游戏`, '安全授权')}
           <div class="product-body">
-            <section class="official-login-card">
+            <section class="official-login-card" data-annotation-ref="official-login">
               <span class="gog-logo">G</span>
               <h3>GOG 官方登录</h3>
               <p class="login-domain">https://login.gog.com/</p>
-              <div class="security-note">此页面由 GOG 官方提供。盖世游戏只接收授权结果，不读取、不保存邮箱或密码。</div>
+              <div class="security-note" data-annotation-ref="security-note">此页面由 GOG 官方提供。盖世游戏只接收授权结果，不读取、不保存邮箱或密码。</div>
               <div class="login-preview" aria-label="GOG 官方页面示意">
                 <div class="masked-field">GOG 官方账号输入区域</div>
                 <div class="masked-field">••••••••••••••••</div>
               </div>
               ${state.loginError ? `<div class="login-error" data-login-error>${state.loginError}</div>` : ''}
-              <div class="login-actions">
+              <div class="login-actions" data-annotation-ref="authorization-actions">
                 <button class="secondary-button" data-action="gog-authorize-cancel">取消并返回</button>
                 <button class="primary-button" data-action="gog-authorize-success">模拟授权成功</button>
               </div>
@@ -1273,7 +1564,7 @@
           ${renderProductHeader('我的', 'GOG 账号已绑定', '已同步')}
           <div class="product-body">
             ${renderPlatformTabs()}
-            <section class="account-hero">
+            <section class="account-hero" data-annotation-ref="account-summary">
               <div class="account-identity">
                 <span class="gog-logo">G</span>
                 <div><h3>${account.username}</h3><p>GOG 账号 · 数据独立同步</p></div>
@@ -1285,7 +1576,7 @@
               </div>
               <div class="sync-line">最近同步：${state.gogRefreshInFlight ? '正在刷新…' : state.gogLastSyncAt}</div>
             </section>
-            <div class="account-actions" aria-label="GOG 账号管理">
+            <div class="account-actions" aria-label="GOG 账号管理" data-annotation-ref="account-actions">
               <button class="secondary-button" data-action="refresh-gog"${state.gogRefreshInFlight ? ' disabled' : ''}>${state.gogRefreshInFlight ? '刷新中…' : '更新刷新'}</button>
               <button class="secondary-button" data-action="switch-gog">切换账号</button>
               <button class="danger-button" data-action="logout-gog">退出账号</button>
@@ -1311,12 +1602,12 @@
           ${renderProductHeader('游戏库', '查看已拥有的第三方平台游戏', 'GOG 游戏')}
           <div class="product-body">
             ${renderPlatformTabs()}
-            <section class="empty-state">
+            <section class="empty-state" data-annotation-ref="library-empty">
               <div class="empty-state-content">
                 <span class="gog-logo" style="margin:auto">G</span>
                 <h3>绑定后查看 GOG 游戏</h3>
                 <p>完成 GOG 官方授权后，游戏库会回到当前入口并展示已同步的游戏。</p>
-                <button class="primary-button" data-action="bind-gog">绑定 GOG 账号</button>
+                <button class="primary-button" data-action="bind-gog" data-annotation-ref="library-bind-gog">绑定 GOG 账号</button>
               </div>
             </section>
           </div>
@@ -1330,8 +1621,8 @@
           ${renderProductHeader('游戏库', 'GOG 游戏列表', '已同步 6 款')}
           <div class="product-body">
             ${renderPlatformTabs()}
-            <div class="library-heading"><h3>我的 GOG 游戏</h3><span>点击进入对应平台详情</span></div>
-            <div class="game-grid">
+            <div class="library-heading" data-annotation-ref="library-heading"><h3>我的 GOG 游戏</h3><span>点击进入对应平台详情</span></div>
+            <div class="game-grid" data-annotation-ref="game-grid">
               ${GOG_GAMES.map((game, index) => `
                 <button class="game-card" data-game-card
                   data-game-id="${game.gameId}"
@@ -1378,12 +1669,12 @@
           data-platform-app-id="${state.selectedGame?.platformAppId || ''}">
           ${renderProductHeader('游戏详情', `来源平台：${sourceLabel}`, detail.label)}
           <div class="product-body">
-            <section class="detail-hero">
+            <section class="detail-hero" data-annotation-ref="detail-context">
               <div class="detail-title-row">
                 <div><h3>${getSelectedGameName()}</h3><p>平台版本独立展示 · 当前启动上下文不会静默切换</p></div>
                 <span class="state-chip">${available ? '可启动' : '需恢复'}</span>
               </div>
-              <div class="detail-platform-row">
+              <div class="detail-platform-row" data-annotation-ref="detail-platform">
                 <div class="platform-identity">
                   <span class="platform-logo" data-detail-platform-logo>${detail.label}</span>
                   <div><strong>${detail.label} 版本</strong><span>当前选择的平台版本</span></div>
@@ -1400,14 +1691,14 @@
                   <p>请重新登录 ${detail.label}，或打开“切换平台”并由你主动选择其他已拥有版本；不会自动改用 Steam。</p>
                 </div>
               `}
-              <div class="detail-actions">
+              <div class="detail-actions" data-annotation-ref="launch-actions">
                 <button class="secondary-button" data-action="open-platform-switch">切换平台</button>
                 <button class="primary-button" data-launch-platform data-action="${available ? 'launch-selected' : 'reauthorize-source'}">
                   ${available ? detail.launch : `重新登录 ${detail.label}`}
                 </button>
               </div>
               ${state.showPlatformSwitch ? `
-                <section class="platform-switch" data-platform-switch>
+                <section class="platform-switch" data-platform-switch data-annotation-ref="platform-switch">
                   <h4>选择启动平台</h4>
                   <div class="platform-options">
                     ${switchPlatforms.map(item => {
@@ -1433,14 +1724,14 @@
       const isLandscape = orientation === 'landscape';
       return `
         <article class="product-screen search-screen${isLandscape ? ' landscape-screen' : ''}"
-          data-screen="search-${orientation}">
+          data-screen="search-${orientation}" data-annotation-ref="search-orientation">
           ${renderProductHeader('搜索结果', '“赛博朋克 / 巫师 3” · 平台版本分条展示', isLandscape ? '横屏' : '竖屏')}
           <div class="product-body">
-            <div class="search-heading">
+            <div class="search-heading" data-annotation-ref="search-heading">
               <div><h3>PC 游戏</h3><p>点击结果后携带 gameId、platformAppId 与来源平台进入详情。</p></div>
               <span class="search-count">4 条平台结果</span>
             </div>
-            <div class="search-results">
+            <div class="search-results" data-annotation-ref="search-results">
               ${SEARCH_RESULTS.map((game, index) => `
                 <button class="search-result" data-search-result
                   data-game-id="${game.gameId}"
@@ -1487,6 +1778,66 @@
       `;
     }
 
+    function renderSimulationState(page) {
+      const landscapeClass = page.id === 'search-landscape' ? ' search-screen landscape-screen' : '';
+      const stateViews = {
+        loading: `
+          <div class="simulation-state" data-simulation-state="loading" data-annotation-ref="simulation-status">
+            <div class="skeleton-list" aria-label="GOG 数据加载中">
+              <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+            </div>
+            <h3>正在同步 GOG 数据</h3>
+            <p>请求完成前暂停绑定、刷新和启动等重复操作。</p>
+            <button class="primary-button" disabled>同步中…</button>
+          </div>`,
+        empty: `
+          <div class="simulation-state" data-simulation-state="empty" data-game-count="0" data-annotation-ref="simulation-status">
+            <span class="state-symbol">0</span>
+            <h3>GOG 游戏 0 款</h3>
+            <p>账号已绑定，但当前未同步到已拥有游戏。可手动刷新。</p>
+            <button class="primary-button" data-action="simulation-refresh" data-annotation-ref="simulation-recovery">刷新 GOG 游戏</button>
+          </div>`,
+        error: `
+          <div class="simulation-state" data-simulation-state="error" data-annotation-ref="simulation-status">
+            <span class="state-symbol">!</span>
+            <h3>GOG 数据加载失败</h3>
+            <p>当前无缓存内容可展示，不使用 Steam / EPIC 数据代替。</p>
+            <button class="primary-button" data-action="simulation-retry" data-annotation-ref="simulation-recovery">重试</button>
+          </div>`,
+        expired: `
+          <div class="simulation-state" data-simulation-state="expired" data-annotation-ref="simulation-status">
+            <span class="state-symbol">⌛</span>
+            <h3>GOG 授权已过期</h3>
+            <p>请重新登录 GOG 恢复同步。Steam 与 EPIC 的账号状态保持不变。</p>
+            <button class="primary-button" data-action="simulation-reauthorize" data-annotation-ref="simulation-recovery">重新登录 GOG</button>
+          </div>`,
+        cancelled: `
+          <div class="simulation-state" data-simulation-state="cancelled" data-annotation-ref="simulation-status">
+            <span class="state-symbol">←</span>
+            <h3>已取消 GOG 授权</h3>
+            <p>未写入新账号数据，可直接恢复到发起操作的原入口。</p>
+            <button class="secondary-button" data-action="restore-original-entry" data-annotation-ref="simulation-recovery">返回原入口</button>
+          </div>`,
+        cached: `
+          <div class="simulation-state" data-simulation-state="cached" data-annotation-ref="simulation-status">
+            <span class="state-symbol">C</span>
+            <h3>已展示 GOG 缓存内容</h3>
+            <p>实时请求失败，下方内容来自最近一次成功同步。</p>
+            <div class="cached-list" data-cached-content>
+              ${GOG_GAMES.slice(0, 2).map(game => `<div class="cached-row"><strong>${game.name}</strong><span>${game.hours}h</span></div>`).join('')}
+            </div>
+            <div class="cache-timestamp" data-cache-timestamp>缓存时间：${state.cacheTimestamp}</div>
+            <button class="primary-button" data-action="simulation-retry" data-annotation-ref="simulation-recovery">重试实时同步</button>
+          </div>`,
+      };
+      return `
+        <article class="product-screen${landscapeClass}" data-screen="${page.id}">
+          ${renderProductHeader(page.label, `状态模拟 · ${SIMULATION_LABELS[state.simulation]}`, 'GOG')}
+          ${stateViews[state.simulation]}
+        </article>
+      `;
+    }
+
     function renderCanvas(page) {
       const canvas = document.getElementById('demoCanvas');
       canvas.dataset.orientation = state.orientation;
@@ -1501,10 +1852,36 @@
         'search-portrait':() => renderSearch('portrait'),
         'search-landscape':() => renderSearch('landscape'),
       };
-      canvas.innerHTML = renderers[page.id] ? renderers[page.id]() : renderPlaceholder(page);
+      canvas.innerHTML = state.simulation === 'normal'
+        ? (renderers[page.id] ? renderers[page.id]() : renderPlaceholder(page))
+        : renderSimulationState(page);
+    }
+
+    function annotationBadgeClass(id) {
+      if (id === 'G') return ' global';
+      if (id.startsWith('E')) return ' edge';
+      return '';
+    }
+
+    function renderAnnotationMarkers(page) {
+      document.querySelectorAll('.annotation-marker').forEach(marker => marker.remove());
+      const groups = ANNOTATIONS[page.id] || { interaction:[], edge:[] };
+      [...groups.interaction, ...groups.edge].forEach(annotation => {
+        const target = document.querySelector(`[data-annotation-ref="${annotation.ref}"]`);
+        if (!target) return;
+        const marker = document.createElement('span');
+        marker.className = `annotation-marker${annotationBadgeClass(annotation.id)}`;
+        marker.textContent = annotation.id;
+        marker.dataset.markerId = annotation.id;
+        marker.dataset.ref = annotation.ref;
+        marker.setAttribute('aria-hidden', 'true');
+        target.appendChild(marker);
+      });
     }
 
     function renderAnnotations(page) {
+      const pageAnnotations = ANNOTATIONS[page.id] || { interaction:[], edge:[] };
+      const annotations = pageAnnotations[state.annotationTab] || [];
       document.getElementById('interactionTab').classList.toggle('active', state.annotationTab === 'interaction');
       document.getElementById('edgeTab').classList.toggle('active', state.annotationTab === 'edge');
       document.getElementById('toggleMarkers').textContent = state.showMarkers ? '隐藏标号' : '显示标号';
@@ -1512,10 +1889,26 @@
         <section class="anno-context">
           <small>${state.annotationTab === 'interaction' ? 'INTERACTION' : 'EDGE CASE'}</small>
           <h3>${page.group} · ${page.label}</h3>
-          <p>已切换到当前页面的${state.annotationTab === 'interaction' ? '交互说明' : '异常与边界'}标注组。结构化标注内容将在 Task 5 完成。</p>
-          <div class="marker-preview">标号显示已开启 · 当前为壳层预览</div>
+          <p>${state.annotationTab === 'interaction' ? '页面主要操作、展示反馈与全局规则。' : '异常、降级与恢复操作的边界。'}点击任一标注可定位中心元素。</p>
+          <div class="anno-list">
+            ${annotations.map(annotation => `
+              <div class="anno-item" data-annotation-item data-id="${annotation.id}" data-page="${page.id}"
+                data-ref="${annotation.ref}" role="button" tabindex="0">
+                <div class="anno-head">
+                  <span class="anno-badge${annotationBadgeClass(annotation.id)}">${annotation.id}</span>
+                  <span class="anno-title">${annotation.title}</span>
+                </div>
+                <div class="anno-body">
+                  <span><strong>触发：</strong>${annotation.trigger}</span>
+                  <span><strong>展示：</strong>${annotation.display}</span>
+                  <span><strong>交互：</strong>${annotation.interaction}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
         </section>
       `;
+      renderAnnotationMarkers(page);
     }
 
     function render() {
@@ -1613,7 +2006,34 @@
       state.showPlatformSwitch = pageId === 'detail-switch';
     }
 
+    function flashAnnotationTarget(ref) {
+      const target = document.querySelector(`[data-annotation-ref="${ref}"]`);
+      if (!target) return;
+      target.classList.remove('annotation-flash');
+      void target.offsetWidth;
+      target.classList.add('annotation-flash');
+      target.scrollIntoView({ behavior:'smooth', block:'center', inline:'center' });
+      setTimeout(() => target.classList.remove('annotation-flash'), 760);
+    }
+
+    function recoverSimulation() {
+      state.simulation = 'loading';
+      render();
+      setTimeout(() => {
+        state.simulation = 'normal';
+        state.simulationOrigin = null;
+        state.gogLastSyncAt = '刚刚';
+        render();
+      }, 120);
+    }
+
     document.addEventListener('click', event => {
+      const annotationItem = event.target.closest('[data-annotation-item]');
+      if (annotationItem) {
+        flashAnnotationTarget(annotationItem.dataset.ref);
+        return;
+      }
+
       const pageButton = event.target.closest('[data-page]');
       if (pageButton) {
         state.screen = pageButton.dataset.page;
@@ -1691,6 +2111,20 @@
         return;
       } else if (actionButton.dataset.action === 'launch-selected') {
         return;
+      } else if (actionButton.dataset.action === 'simulation-refresh' || actionButton.dataset.action === 'simulation-retry') {
+        recoverSimulation();
+        return;
+      } else if (actionButton.dataset.action === 'simulation-reauthorize') {
+        state.simulation = 'normal';
+        state.simulationOrigin = null;
+        beginAuthorization('bind');
+        return;
+      } else if (actionButton.dataset.action === 'restore-original-entry') {
+        state.screen = state.simulationOrigin || state.screen;
+        state.simulation = 'normal';
+        state.simulationOrigin = null;
+        render();
+        return;
       } else if (actionButton.dataset.action === 'anno-tab') {
         state.annotationTab = actionButton.dataset.value;
       } else if (actionButton.dataset.action === 'toggle-markers') {
@@ -1705,13 +2139,26 @@
 
     document.addEventListener('change', event => {
       if (event.target.matches('[data-action="simulation"]')) {
-        state.simulation = event.target.value;
+        const nextSimulation = event.target.value;
+        if (nextSimulation !== 'normal' && state.simulation === 'normal') {
+          state.simulationOrigin = state.screen;
+        }
+        state.simulation = nextSimulation;
+        if (nextSimulation === 'normal') state.simulationOrigin = null;
         render();
       }
     });
 
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      const annotationItem = event.target.closest('[data-annotation-item]');
+      if (!annotationItem) return;
+      event.preventDefault();
+      flashAnnotationTarget(annotationItem.dataset.ref);
+    });
+
     window.GogDemoApp = {
-      state, GOG_GAMES, SEARCH_RESULTS, DETAIL_BY_PLATFORM,
+      state, ANNOTATIONS, GOG_GAMES, SEARCH_RESULTS, DETAIL_BY_PLATFORM,
       convertEpicScore, resolveSelectedPlatform, openPlatformGame, render,
     };
     render();

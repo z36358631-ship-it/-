@@ -260,15 +260,147 @@ async function detailSearchFlow() {
   console.log('PASS detailSearchFlow');
 }
 
+async function selectSimulation(value) {
+  await page.selectOption('[data-action="simulation"]', value);
+  await page.waitForFunction(expected => window.GogDemoApp.state.simulation === expected, value);
+}
+
+async function assertShellDoesNotOverlap(context) {
+  const boxes = await page.evaluate(() => {
+    const rect = selector => {
+      const box = document.querySelector(selector)?.getBoundingClientRect();
+      return box ? { left:box.left, right:box.right, top:box.top, bottom:box.bottom, width:box.width, height:box.height } : null;
+    };
+    return { nav:rect('#leftNav'), stage:rect('.demo-stage'), panel:rect('#annoPanel') };
+  });
+  assert(boxes.nav && boxes.stage, `${context}: shell columns missing`);
+  assert(boxes.nav.right <= boxes.stage.left + 0.5, `${context}: navigation overlaps stage`);
+  if (boxes.panel?.width) {
+    assert(boxes.stage.right <= boxes.panel.left + 0.5, `${context}: stage overlaps annotation panel`);
+  }
+}
+
+async function annotationsFlow() {
+  await resetDemo();
+  assert.equal(await page.locator('.nav-item[data-page]').count(), 9, 'the annotated demo must expose nine pages');
+  await assertShellDoesNotOverlap('expanded shell');
+
+  for (const screen of [
+    'profile-unbound', 'gog-login', 'profile-bound', 'library-unbound', 'library-bound',
+    'detail-gog', 'detail-switch', 'search-portrait', 'search-landscape',
+  ]) {
+    await page.click(`[data-page="${screen}"]`);
+    assert.equal(await page.locator(`[data-screen="${screen}"]`).count(), 1, `${screen}: canvas did not render`);
+
+    await page.click('#interactionTab');
+    const interactionBadges = await page.locator('[data-annotation-item] .anno-badge').allTextContents();
+    assert(interactionBadges.some(value => /^\d+$/.test(value.trim())), `${screen}: numeric annotation missing`);
+    assert(interactionBadges.includes('G'), `${screen}: global G annotation missing`);
+
+    const interactionRefs = await page.locator('[data-annotation-item]').evaluateAll(items => items.map(item => item.dataset.ref));
+    for (const targetRef of interactionRefs) {
+      assert.equal(await page.locator(`[data-annotation-ref="${targetRef}"]`).count(), 1, `${screen}: interaction target ${targetRef} missing`);
+    }
+
+    const firstAnnotation = page.locator('[data-annotation-item]').first();
+    const ref = await firstAnnotation.getAttribute('data-ref');
+    assert(ref, `${screen}: annotation reference missing`);
+    assert.equal(await page.locator(`[data-annotation-ref="${ref}"]`).count(), 1, `${screen}: annotation target ${ref} missing`);
+    await firstAnnotation.click();
+    assert.equal(await page.locator(`[data-annotation-ref="${ref}"].annotation-flash`).count(), 1, `${screen}: annotation target did not flash`);
+
+    await page.click('#edgeTab');
+    const edgeBadges = await page.locator('[data-annotation-item] .anno-badge').allTextContents();
+    assert(edgeBadges.includes('E1'), `${screen}: E1 annotation missing`);
+    const edgeRefs = await page.locator('[data-annotation-item]').evaluateAll(items => items.map(item => item.dataset.ref));
+    for (const targetRef of edgeRefs) {
+      assert.equal(await page.locator(`[data-annotation-ref="${targetRef}"]`).count(), 1, `${screen}: edge target ${targetRef} missing`);
+    }
+
+    const brokenMarkers = await page.locator('.annotation-marker').evaluateAll(markers => markers
+      .filter(marker => !document.querySelector(`[data-annotation-ref="${marker.dataset.ref}"]`))
+      .map(marker => `${marker.dataset.markerId}:${marker.dataset.ref}`));
+    assert.deepEqual(brokenMarkers, [], `${screen}: markers point to missing targets`);
+  }
+
+  await page.click('[data-page="profile-unbound"]');
+  assert.equal(await page.locator('.annotation-marker').first().isVisible(), false, 'markers should start hidden');
+  await page.click('#toggleMarkers');
+  assert.equal(await page.locator('.annotation-marker').first().isVisible(), true, 'marker toggle did not reveal markers');
+  await page.click('#toggleMarkers');
+  assert.equal(await page.locator('.annotation-marker').first().isVisible(), false, 'marker toggle did not hide markers');
+
+  const stageWidthBeforeCollapse = (await page.locator('.demo-stage').boundingBox()).width;
+  await page.click('#togglePanel');
+  assert.equal(await page.locator('#annoPanel').isVisible(), false, 'annotation panel did not collapse');
+  assert.equal(await page.locator('#panelRestore').isVisible(), true, 'annotation panel restore control missing');
+  const stageWidthAfterCollapse = (await page.locator('.demo-stage').boundingBox()).width;
+  assert(stageWidthAfterCollapse > stageWidthBeforeCollapse + 300, 'center stage did not expand after panel collapse');
+  await assertShellDoesNotOverlap('collapsed shell');
+  await page.click('#panelRestore');
+  assert.equal(await page.locator('#annoPanel').isVisible(), true, 'annotation panel did not restore');
+
+  await page.click('[data-page="library-bound"]');
+  const stateHandle = await page.evaluateHandle(() => window.GogDemoApp.state);
+  await selectSimulation('loading');
+  assert((await page.locator('[data-simulation-state="loading"] .skeleton').count()) >= 3, 'loading skeleton missing');
+  assert.equal(await page.locator('[data-simulation-state="loading"] button:not(:disabled)').count(), 0, 'loading actions must be disabled');
+
+  await selectSimulation('empty');
+  assert.equal(await page.locator('[data-simulation-state="empty"][data-game-count="0"]').count(), 1, 'empty state must report zero games');
+  await page.click('[data-action="simulation-refresh"]');
+  await page.waitForFunction(() => window.GogDemoApp.state.simulation === 'normal');
+
+  await selectSimulation('error');
+  assert((await page.locator('[data-simulation-state="error"]').innerText()).includes('无缓存'));
+  await page.click('[data-action="simulation-retry"]');
+  await page.waitForFunction(() => window.GogDemoApp.state.simulation === 'normal');
+
+  const steamBefore = await platformSnapshot('steam');
+  const epicBefore = await platformSnapshot('epic');
+  await selectSimulation('expired');
+  assert((await page.locator('[data-simulation-state="expired"]').innerText()).includes('重新登录'));
+  await assertCorePlatformsUnchanged(steamBefore, epicBefore, 'expired simulation');
+  await page.click('[data-action="simulation-reauthorize"]');
+  assert.equal(await page.locator('[data-screen="gog-login"]').count(), 1, 'expired recovery did not open login');
+  await assertCorePlatformsUnchanged(steamBefore, epicBefore, 'expired recovery');
+
+  await page.click('[data-page="library-bound"]');
+  await selectSimulation('cancelled');
+  const originalScreen = await page.evaluate(() => window.GogDemoApp.state.screen);
+  await page.click('[data-action="restore-original-entry"]');
+  assert.equal(await page.evaluate(() => window.GogDemoApp.state.screen), originalScreen, 'cancelled recovery changed the original entry');
+  assert.equal(await page.evaluate(() => window.GogDemoApp.state.simulation), 'normal');
+
+  await selectSimulation('cached');
+  assert.equal(await page.locator('[data-cache-timestamp]').count(), 1, 'cached state timestamp missing');
+  assert((await page.locator('[data-simulation-state="cached"] [data-cached-content]').count()) > 0, 'cached content missing');
+  await page.click('[data-action="simulation-retry"]');
+  await page.waitForFunction(() => window.GogDemoApp.state.simulation === 'normal');
+  assert.equal(await page.evaluate(stateRef => stateRef === window.GogDemoApp.state, stateHandle), true, 'normal recovery reloaded the document state');
+
+  await page.click('[data-page="search-portrait"]');
+  const portraitBox = await page.locator('[data-screen="search-portrait"]').boundingBox();
+  assert(Math.abs(portraitBox.width - 402) < 1 && Math.abs(portraitBox.height - 874) < 1, `portrait canvas must be 402x874, got ${portraitBox.width}x${portraitBox.height}`);
+  await assertShellDoesNotOverlap('portrait shell');
+  await page.click('[data-page="search-landscape"]');
+  const landscapeBox = await page.locator('[data-screen="search-landscape"]').boundingBox();
+  assert(Math.abs(landscapeBox.width - 874) < 1 && Math.abs(landscapeBox.height - 402) < 1, `landscape canvas must be 874x402, got ${landscapeBox.width}x${landscapeBox.height}`);
+  await assertShellDoesNotOverlap('landscape shell');
+  assert.deepEqual(pageErrors, [], `annotation page errors: ${pageErrors.join(' | ')}`);
+  console.log('PASS annotations');
+}
+
 async function browserRuntime() {
   await profileFlow();
   await libraryFlow();
   await detailSearchFlow();
+  await annotationsFlow();
   assert.deepEqual(pageErrors, [], `page errors: ${pageErrors.join(' | ')}`);
   console.log('PASS browserRuntime');
 }
 
-const checks = { profile:profileFlow, library:libraryFlow, detailSearch:detailSearchFlow, all:browserRuntime };
+const checks = { profile:profileFlow, library:libraryFlow, detailSearch:detailSearchFlow, annotations:annotationsFlow, all:browserRuntime };
 
 try {
   if (!checks[mode]) throw new Error(`Unknown mode: ${mode}`);
