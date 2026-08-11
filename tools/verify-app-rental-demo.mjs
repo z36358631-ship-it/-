@@ -136,7 +136,7 @@ async function main() {
     ['详情轻操作无背景且竖向图标文字', templateSource.includes('detail-more-icon') && /\.detail-action-light\s*\{[^}]*flex-direction:\s*column[^}]*background:\s*transparent/s.test(templateSource)],
     ['横屏详情主信息顺序', /landscape-detail-copy"><h1>\$\{game\.name\}<\/h1><p>.*landscape-detail-genre.*renderDetailActions/s.test(templateSource)],
     ['订单搜索Tab单行', /\.order-tabs button\s*\{[^}]*white-space:\s*nowrap/s.test(templateSource) && templateSource.includes('width: 162px')],
-    ['一键上号成功返回游戏库', templateSource.includes("state.toast = '登录成功，已返回游戏库'") && templateSource.includes("navigate('library', { rememberSource: false })") && !templateSource.includes('一键上号失败')],
+    ['一键上号成功返回游戏库', templateSource.includes("showToast('登录成功，已返回游戏库')") && templateSource.includes("navigate('library', { rememberSource: false })") && !templateSource.includes('一键上号失败')],
     ['Steam登录前移除令牌占位提示', templateSource.includes("if (!ready) return ''") && !templateSource.includes('提交账号密码后获取令牌')],
   ];
   const failedEighthReviewSourceChecks = eighthReviewSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
@@ -3288,6 +3288,13 @@ async function main() {
       toast: document.querySelector('.demo-toast')?.textContent.trim(),
     }));
     assert(oneClickSuccess.screen === 'library' && oneClickSuccess.libraryTab === 'steam' && !oneClickSuccess.dialogOpen && oneClickSuccess.toast === '登录成功，已返回游戏库', `一键上号后未成功返回Steam游戏库：${JSON.stringify(oneClickSuccess)}`);
+    await page.waitForTimeout(2000);
+    const oneClickToastCleared = await page.evaluate(() => ({
+      stateToast: window.__appRentalDemo.snapshot().toast,
+      visibleToast: document.querySelector('.demo-toast')?.textContent.trim() || null,
+      screen: window.__appRentalDemo.snapshot().screen,
+    }));
+    assert(oneClickToastCleared.stateToast === null && oneClickToastCleared.visibleToast === null && oneClickToastCleared.screen === 'library', `一键上号成功 Toast 未自动消失或离开游戏库：${JSON.stringify(oneClickToastCleared)}`);
     await page.evaluate(() => window.__appRentalDemo.navigate('orders'));
     await page.locator('.order-list-card[data-status="active"]').click();
     await page.getByRole('button', { name: '登录游戏', exact: true }).click();

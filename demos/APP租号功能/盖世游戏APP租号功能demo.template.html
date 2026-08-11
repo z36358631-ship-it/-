@@ -3435,8 +3435,8 @@
       if (!state.loginMethodOpen || getSelectedOrder()?.status !== 'active') return false;
       state.loginMethodOpen = false;
       state.libraryTab = 'steam';
-      state.toast = '登录成功，已返回游戏库';
       navigate('library', { rememberSource: false });
+      showToast('登录成功，已返回游戏库');
       return true;
     }
 
@@ -3502,13 +3502,17 @@
       return true;
     }
 
+    let toastTimer = null;
+
     function showToast(message) {
+      if (toastTimer) clearTimeout(toastTimer);
       state.toast = message;
       renderApp();
-      setTimeout(() => {
+      toastTimer = setTimeout(() => {
+        toastTimer = null;
         if (state.toast !== message) return;
         state.toast = null;
-        document.querySelector('#appRentalDemo .demo-toast')?.remove();
+        renderApp();
       }, 1800);
     }
 

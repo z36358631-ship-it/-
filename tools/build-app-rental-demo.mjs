@@ -105,7 +105,7 @@ const requiredBusinessSignatures = Object.freeze([
   'data-rental-intro',
   'renderServiceBenefits',
   'data-action="open-no-reason-policy"',
-  "state.toast = '登录成功，已返回游戏库'",
+  "showToast('登录成功，已返回游戏库')",
 ]);
 
 function assertBusinessScriptSignatures(label, source) {
