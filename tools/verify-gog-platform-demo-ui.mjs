@@ -137,6 +137,17 @@ async function realLibraryFlow() {
   for (const [screen, orientation] of [['gog-library-portrait','portrait'],['gog-library-landscape','landscape']]) {
     await selectScreen(screen);
     await assertViewport(screen, orientation);
+    const root = page.locator(`[data-screen="${screen}"]`);
+    const accountTopbar = root.locator('[data-platform-account-topbar]');
+    assert.equal(await accountTopbar.count(), 1, `${screen}: platform account topbar missing`);
+    assert.equal(await accountTopbar.getByRole('heading', { name:'GOG' }).count(), 1, `${screen}: GOG title missing`);
+    assert.equal(await accountTopbar.getByRole('button', { name:'返回' }).count(), 1, `${screen}: back action missing`);
+    assert.equal(await accountTopbar.locator('[data-action="switch-gog"]').count(), 1, `${screen}: switch-account action missing`);
+    assert.equal(await accountTopbar.locator('[data-action="logout-gog"]').count(), 1, `${screen}: logout action missing`);
+    assert.equal(await accountTopbar.locator('[data-action="open-search"]').count(), 0, `${screen}: search must not render in account topbar`);
+    for (const tool of ['search','sort','menu']) {
+      assert.equal(await root.locator(`.platform-library-title [data-library-tool="${tool}"]`).count(), 1, `${screen}: ${tool} library tool missing`);
+    }
     const text = await page.locator('#demoCanvas').innerText();
     assert(!text.includes('账号价值'), `${screen}: account value label must not render`);
     assert(!text.includes('¥6.8k'), `${screen}: fabricated account value must not render`);
@@ -145,6 +156,15 @@ async function realLibraryFlow() {
       assert.equal(await page.locator(`[data-account-metric="${metric}"]`).count(), 1, `${screen}: ${metric} missing`);
     }
     assert.equal(await page.locator('[data-game-card][data-platform="gog"]').count(), 6);
+
+    await accountTopbar.locator('[data-action="switch-gog"]').click();
+    assert.equal(await page.locator('[data-screen="gog-login"]').count(), 1, `${screen}: switch-account must open GOG authorization`);
+    await page.click('[data-action="gog-authorize-cancel"]');
+    assert.equal(await page.locator(`[data-screen="${screen}"]`).count(), 1, `${screen}: cancel switch must return to library`);
+    await page.locator(`[data-screen="${screen}"] [data-platform-account-topbar] [data-action="logout-gog"]`).click();
+    assert.equal(await page.locator(`[data-screen="${screen}"] [data-logout-confirm]`).count(), 1, `${screen}: logout confirmation missing`);
+    await page.locator(`[data-screen="${screen}"] [data-action="cancel-logout-gog"]`).click();
+    assert.equal(await page.locator('[data-logout-confirm]').count(), 0, `${screen}: logout confirmation did not close`);
   }
 
   await selectScreen('library-home-portrait');
