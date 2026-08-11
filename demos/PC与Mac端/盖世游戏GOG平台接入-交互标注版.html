@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>盖世游戏 GOG 平台接入 · 交互标注 Demo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --nav-width: 220px;
+      --anno-width: 400px;
+      --shell-bg: #14161e;
+      --nav-bg: #1e2235;
+      --panel-bg: #1a1e2a;
+      --canvas-bg: #0f1118;
+      --card-bg: #202536;
+      --line: rgba(255, 255, 255, 0.09);
+      --muted: #8f98ad;
+      --text: #f4f6fb;
+      --accent: #845ef7;
+      --accent-soft: rgba(132, 94, 247, 0.16);
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      min-width: 1080px;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--shell-bg);
+      color: var(--text);
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    }
+
+    button,
+    select { font: inherit; }
+
+    button { color: inherit; }
+
+    .gog-demo-shell {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      background: var(--shell-bg);
+    }
+
+    .left-nav {
+      flex: 0 0 var(--nav-width);
+      width: var(--nav-width);
+      padding: 24px 14px;
+      overflow: auto;
+      border-right: 1px solid var(--line);
+      background: var(--nav-bg);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 10px 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 10px;
+      background: linear-gradient(145deg, #9b79ff, #5d36d7);
+      box-shadow: 0 8px 20px rgba(93, 54, 215, 0.32);
+      font-weight: 800;
+    }
+
+    .brand strong,
+    .brand small { display: block; }
+
+    .brand strong { font-size: 14px; }
+
+    .brand small {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .nav-group { margin-top: 22px; }
+
+    .nav-group-title {
+      margin: 0 10px 8px;
+      color: #7f899f;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-item {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 11px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: #b8c0d1;
+      text-align: left;
+      cursor: pointer;
+      transition: background 160ms ease, color 160ms ease;
+    }
+
+    .nav-item:hover { background: rgba(255, 255, 255, 0.05); }
+
+    .nav-item.active {
+      background: var(--accent-soft);
+      color: #eee8ff;
+    }
+
+    .nav-dot {
+      width: 7px;
+      height: 7px;
+      flex: 0 0 7px;
+      border-radius: 50%;
+      background: #596177;
+    }
+
+    .nav-item.active .nav-dot {
+      background: #9b79ff;
+      box-shadow: 0 0 0 4px rgba(155, 121, 255, 0.12);
+    }
+
+    .demo-stage {
+      position: relative;
+      display: flex;
+      min-width: 0;
+      flex: 1 1 auto;
+      flex-direction: column;
+      background: var(--shell-bg);
+    }
+
+    .stage-toolbar {
+      display: flex;
+      min-height: 64px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(20, 22, 30, 0.96);
+    }
+
+    .stage-heading { min-width: 0; }
+
+    .stage-heading h1 {
+      margin: 0;
+      overflow: hidden;
+      font-size: 15px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .stage-heading p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .simulation-control {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .simulation-control select {
+      height: 34px;
+      padding: 0 32px 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      outline: none;
+      background: var(--card-bg);
+      color: var(--text);
+    }
+
+    .demo-canvas {
+      display: grid;
+      min-height: 0;
+      flex: 1 1 auto;
+      overflow: auto;
+      place-items: center;
+      padding: 28px;
+      background:
+        radial-gradient(circle at 50% 38%, rgba(132, 94, 247, 0.08), transparent 34%),
+        var(--canvas-bg);
+    }
+
+    .screen-placeholder {
+      width: min(100%, 560px);
+      min-height: 480px;
+      padding: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      background: linear-gradient(155deg, rgba(37, 42, 59, 0.98), rgba(25, 29, 41, 0.98));
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.34);
+      transition: width 180ms ease, min-height 180ms ease;
+    }
+
+    .demo-canvas[data-orientation="landscape"] .screen-placeholder {
+      width: min(100%, 840px);
+      min-height: 420px;
+    }
+
+    .screen-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .screen-kicker,
+    .state-chip {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .screen-kicker { color: #a991ff; }
+
+    .state-chip {
+      padding: 6px 9px;
+      border: 1px solid rgba(155, 121, 255, 0.24);
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: #cabbff;
+    }
+
+    .screen-placeholder h2 {
+      margin: 42px 0 10px;
+      font-size: 30px;
+      line-height: 1.25;
+    }
+
+    .screen-placeholder > p {
+      max-width: 440px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .placeholder-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 42px;
+    }
+
+    .placeholder-card {
+      min-height: 82px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .placeholder-card span,
+    .placeholder-card strong { display: block; }
+
+    .placeholder-card span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .placeholder-card strong {
+      margin-top: 8px;
+      overflow: hidden;
+      font-size: 13px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .panel-restore {
+      position: absolute;
+      z-index: 3;
+      top: 14px;
+      right: 18px;
+      display: none;
+      height: 36px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--card-bg);
+      cursor: pointer;
+    }
+
+    .gog-demo-shell.panel-hidden .panel-restore { display: block; }
+
+    .gog-demo-shell.panel-hidden .stage-toolbar { padding-right: 132px; }
+
+    .anno-panel {
+      display: flex;
+      width: var(--anno-width);
+      flex: 0 0 var(--anno-width);
+      flex-direction: column;
+      border-left: 1px solid var(--line);
+      background: var(--panel-bg);
+    }
+
+    .gog-demo-shell.panel-hidden .anno-panel { display: none; }
+
+    .anno-header {
+      display: flex;
+      min-height: 64px;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .anno-header h2 {
+      flex: 1;
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .anno-header button,
+    .anno-tabs button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: transparent;
+      color: #aab3c5;
+      cursor: pointer;
+    }
+
+    .anno-header button {
+      height: 32px;
+      padding: 0 10px;
+      font-size: 11px;
+    }
+
+    .anno-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 14px 18px 0;
+    }
+
+    .anno-tabs button {
+      height: 38px;
+      font-size: 12px;
+    }
+
+    .anno-tabs button.active {
+      border-color: rgba(155, 121, 255, 0.32);
+      background: var(--accent-soft);
+      color: #eee8ff;
+    }
+
+    .anno-scroll {
+      min-height: 0;
+      flex: 1;
+      overflow: auto;
+      padding: 18px;
+    }
+
+    .anno-context {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .anno-context small {
+      color: #a991ff;
+      font-weight: 700;
+    }
+
+    .anno-context h3 {
+      margin: 9px 0 8px;
+      font-size: 16px;
+    }
+
+    .anno-context p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .marker-preview {
+      display: none;
+      margin-top: 14px;
+      padding: 12px;
+      border-left: 2px solid var(--accent);
+      background: rgba(132, 94, 247, 0.08);
+      color: #cabbff;
+      font-size: 12px;
+    }
+
+    .gog-demo-shell.markers-visible .marker-preview { display: block; }
+  </style>
+</head>
+<body>
+  <main class="gog-demo-shell" id="gogDemoShell">
+    <aside class="left-nav" id="leftNav"></aside>
+    <section class="demo-stage">
+      <div class="stage-toolbar" id="stageToolbar"></div>
+      <div class="demo-canvas" id="demoCanvas"></div>
+      <button class="panel-restore" id="panelRestore" data-action="toggle-panel">展开标注</button>
+    </section>
+    <aside class="anno-panel" id="annoPanel">
+      <header class="anno-header">
+        <h2>交互标注</h2>
+        <button id="toggleMarkers" data-action="toggle-markers">显示标号</button>
+        <button id="togglePanel" data-action="toggle-panel">收起</button>
+      </header>
+      <nav class="anno-tabs">
+        <button id="interactionTab" data-action="anno-tab" data-value="interaction">交互说明</button>
+        <button id="edgeTab" data-action="anno-tab" data-value="edge">异常&amp;边界</button>
+      </nav>
+      <div class="anno-scroll" id="annoScroll"></div>
+    </aside>
+  </main>
+
+  <script>
+    const PLATFORM_PRIORITY = ['steam','epic','gog'];
+    const state = {
+      screen:'profile-unbound', orientation:'portrait', annotationTab:'interaction',
+      showMarkers:false, panelHidden:false, simulation:'normal',
+      sourcePlatform:null, selectedPlatform:'gog',
+      ownedPlatforms:['steam','epic','gog'],
+      accountByPlatform:{
+        steam:{ bindStatus:'bound', tokenStatus:'valid' },
+        epic:{ bindStatus:'bound', tokenStatus:'valid' },
+        gog:{ bindStatus:'unbound', tokenStatus:'none' },
+      },
+      lowConfidenceNoMerge:true,
+    };
+
+    const FLOW = [
+      { id:'profile-unbound', group:'我的页', label:'GOG 未绑定' },
+      { id:'gog-login', group:'我的页', label:'GOG 官方登录' },
+      { id:'profile-bound', group:'我的页', label:'GOG 已绑定' },
+      { id:'library-unbound', group:'游戏库', label:'GOG 未绑定' },
+      { id:'library-bound', group:'游戏库', label:'GOG 游戏列表' },
+      { id:'detail-gog', group:'游戏详情', label:'GOG 来源详情' },
+      { id:'detail-switch', group:'游戏详情', label:'切换启动平台' },
+      { id:'search-portrait', group:'搜索结果', label:'搜索结果 · 竖屏' },
+      { id:'search-landscape', group:'搜索结果', label:'搜索结果 · 横屏' },
+    ];
+
+    const SIMULATIONS = ['normal','loading','empty','error','expired','cancelled','cached'];
+    const PLACEHOLDER_GAME = { gameId:null, platformAppId:null };
+    const SIMULATION_LABELS = {
+      normal:'正常', loading:'加载中', empty:'空数据', error:'加载失败',
+      expired:'授权过期', cancelled:'用户取消', cached:'缓存降级',
+    };
+
+    function resolveSelectedPlatform({ sourcePlatform, ownedPlatforms, accountByPlatform }) {
+      if (sourcePlatform) return sourcePlatform;
+      return PLATFORM_PRIORITY.find(platform =>
+        ownedPlatforms.includes(platform) &&
+        accountByPlatform[platform]?.bindStatus === 'bound' &&
+        accountByPlatform[platform]?.tokenStatus === 'valid'
+      ) || null;
+    }
+
+    function getCurrentPage() {
+      return FLOW.find(page => page.id === state.screen) || FLOW[0];
+    }
+
+    function renderNavigation() {
+      const groups = FLOW.reduce((result, page) => {
+        (result[page.group] ||= []).push(page);
+        return result;
+      }, {});
+
+      const groupMarkup = Object.entries(groups).map(([group, pages]) => `
+        <section class="nav-group">
+          <h2 class="nav-group-title">${group}</h2>
+          ${pages.map(page => `
+            <button class="nav-item${page.id === state.screen ? ' active' : ''}"
+              data-page="${page.id}" aria-current="${page.id === state.screen ? 'page' : 'false'}">
+              <span class="nav-dot"></span><span>${page.label}</span>
+            </button>
+          `).join('')}
+        </section>
+      `).join('');
+
+      document.getElementById('leftNav').innerHTML = `
+        <div class="brand">
+          <span class="brand-mark">G</span>
+          <span><strong>GOG 接入</strong><small>交互标注 Demo</small></span>
+        </div>
+        ${groupMarkup}
+      `;
+    }
+
+    function renderToolbar(page) {
+      document.getElementById('stageToolbar').innerHTML = `
+        <div class="stage-heading">
+          <h1>${page.group} / ${page.label}</h1>
+          <p>${state.orientation === 'landscape' ? '横屏画布' : '竖屏画布'} · 壳层占位阶段</p>
+        </div>
+        <label class="simulation-control">状态模拟
+          <select id="simulationSelect" data-action="simulation">
+            ${SIMULATIONS.map(item => `<option value="${item}"${item === state.simulation ? ' selected' : ''}>${SIMULATION_LABELS[item]}</option>`).join('')}
+          </select>
+        </label>
+      `;
+    }
+
+    function renderCanvas(page) {
+      const canvas = document.getElementById('demoCanvas');
+      canvas.dataset.orientation = state.orientation;
+      canvas.innerHTML = `
+        <article class="screen-placeholder" data-screen="${page.id}"
+          data-game-id="${PLACEHOLDER_GAME.gameId ?? ''}"
+          data-platform-app-id="${PLACEHOLDER_GAME.platformAppId ?? ''}">
+          <div class="screen-topline">
+            <span class="screen-kicker">${page.group}</span>
+            <span class="state-chip">${SIMULATION_LABELS[state.simulation]}</span>
+          </div>
+          <h2>${page.label}</h2>
+          <p>当前为可切换的页面占位渲染。账户绑定、游戏库、详情路由与搜索业务将在后续任务中接入。</p>
+          <div class="placeholder-grid">
+            <div class="placeholder-card"><span>页面标识</span><strong>${page.id}</strong></div>
+            <div class="placeholder-card"><span>画布方向</span><strong>${state.orientation}</strong></div>
+            <div class="placeholder-card"><span>来源平台</span><strong>${state.sourcePlatform || '未指定'}</strong></div>
+            <div class="placeholder-card"><span>当前平台</span><strong>${state.selectedPlatform}</strong></div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderAnnotations(page) {
+      document.getElementById('interactionTab').classList.toggle('active', state.annotationTab === 'interaction');
+      document.getElementById('edgeTab').classList.toggle('active', state.annotationTab === 'edge');
+      document.getElementById('toggleMarkers').textContent = state.showMarkers ? '隐藏标号' : '显示标号';
+      document.getElementById('annoScroll').innerHTML = `
+        <section class="anno-context">
+          <small>${state.annotationTab === 'interaction' ? 'INTERACTION' : 'EDGE CASE'}</small>
+          <h3>${page.group} · ${page.label}</h3>
+          <p>已切换到当前页面的${state.annotationTab === 'interaction' ? '交互说明' : '异常与边界'}标注组。结构化标注内容将在 Task 5 完成。</p>
+          <div class="marker-preview">标号显示已开启 · 当前为壳层预览</div>
+        </section>
+      `;
+    }
+
+    function render() {
+      const page = getCurrentPage();
+      state.screen = page.id;
+      state.orientation = page.id === 'search-landscape' ? 'landscape' : 'portrait';
+
+      const shell = document.getElementById('gogDemoShell');
+      shell.classList.toggle('panel-hidden', state.panelHidden);
+      shell.classList.toggle('markers-visible', state.showMarkers);
+      renderNavigation();
+      renderToolbar(page);
+      renderCanvas(page);
+      renderAnnotations(page);
+    }
+
+    document.addEventListener('click', event => {
+      const pageButton = event.target.closest('[data-page]');
+      if (pageButton) {
+        state.screen = pageButton.dataset.page;
+        render();
+        return;
+      }
+
+      const actionButton = event.target.closest('[data-action]');
+      if (!actionButton) return;
+      if (actionButton.dataset.action === 'anno-tab') {
+        state.annotationTab = actionButton.dataset.value;
+      } else if (actionButton.dataset.action === 'toggle-markers') {
+        state.showMarkers = !state.showMarkers;
+      } else if (actionButton.dataset.action === 'toggle-panel') {
+        state.panelHidden = !state.panelHidden;
+      } else {
+        return;
+      }
+      render();
+    });
+
+    document.addEventListener('change', event => {
+      if (event.target.matches('[data-action="simulation"]')) {
+        state.simulation = event.target.value;
+        render();
+      }
+    });
+
+    window.GogDemoApp = { state, resolveSelectedPlatform, render };
+    render();
+  </script>
+</body>
+</html>
