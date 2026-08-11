@@ -51,6 +51,17 @@ const EXPECTED_RENTAL_STATUSES = Object.freeze([
   'ended',
 ]);
 
+const ADMIN_PAGE_MATRIX = Object.freeze([
+  'products',
+  'member-library',
+  'member-plans',
+  'accounts',
+  'admin-orders',
+  'stats',
+  'audit',
+]);
+const ADMIN_DUAL_CLIENT_PAGES = Object.freeze(ADMIN_PAGE_MATRIX.filter((pageId) => pageId !== 'audit'));
+
 function writeJsonEvidence(filePath, payload) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   const content = `${JSON.stringify(payload, null, 2)}\n`;
@@ -2223,6 +2234,67 @@ async function main() {
           && ended.stack.length === 0,
         `到期后的来源返回栈错误：${JSON.stringify({ takeover, ended })}`,
       );
+    });
+
+    await runRefactorGate('ADMIN_DUAL_CLIENT', async () => {
+      assert(
+        annotationSource.includes('APP（安卓端）客户端')
+          && annotationSource.includes('运营后台')
+          && annotationSource.includes('APP_RENTAL_ADMIN_FRAGMENT_START')
+          && annotationSource.includes('window.__appRentalAdminDemo'),
+        '标注版缺少客户端/运营后台一级切换、后台片段标记或测试 API',
+      );
+      const adminPage = await browser.newPage({ viewport: { width: 1680, height: 980 } });
+      const adminIssues = [];
+      adminPage.on('console', (message) => {
+        if (message.type() === 'error') adminIssues.push(`console: ${message.text()}`);
+      });
+      adminPage.on('pageerror', (error) => adminIssues.push(`pageerror: ${error.message}`));
+      try {
+        await adminPage.goto(pathToFileURL(annotationPath).href, { waitUntil: 'domcontentloaded' });
+        await adminPage.locator('[data-annotation-surface="admin"]').click();
+        await adminPage.waitForFunction(() => Boolean(window.__appRentalAdminDemo));
+        const states = [];
+        for (const pageId of ADMIN_PAGE_MATRIX) {
+          await adminPage.evaluate((id) => window.__appRentalAdminDemo.navigate(id), pageId);
+          const snapshot = await adminPage.evaluate(() => window.__appRentalAdminDemo.snapshot());
+          const tabCount = await adminPage.locator('#appRentalAdminDemo [data-admin-client-tab]').count();
+          states.push({ pageId, snapshot, tabCount });
+        }
+        assert(
+          states.every(({ pageId, snapshot, tabCount }) => snapshot.page === pageId
+            && tabCount === (pageId === 'audit' ? 0 : 2)
+            && snapshot.clientType === (pageId === 'audit' ? 'all' : 'android')),
+          `后台页面默认端别或 Tab 数错误：${JSON.stringify(states)}`,
+        );
+
+        const macStates = [];
+        for (const pageId of ADMIN_DUAL_CLIENT_PAGES) {
+          await adminPage.evaluate((id) => window.__appRentalAdminDemo.navigate(id), pageId);
+          await adminPage.locator('[data-admin-client-tab="mac"]').click();
+          macStates.push(await adminPage.evaluate(() => window.__appRentalAdminDemo.snapshot()));
+        }
+        assert(
+          macStates.every(({ page, clientType }, index) => page === ADMIN_DUAL_CLIENT_PAGES[index] && clientType === 'mac'),
+          `后台 Mac Tab 切换失败：${JSON.stringify(macStates)}`,
+        );
+
+        await adminPage.evaluate(() => window.__appRentalAdminDemo.navigate('member-plans'));
+        const androidPlans = await adminPage.locator('#appRentalAdminDemo').innerText();
+        assert(androidPlans.includes('周卡') && androidPlans.includes('月卡') && androidPlans.includes('季卡') && !androidPlans.includes('永久会员'), `APP 会员套餐口径错误：${androidPlans}`);
+        await adminPage.locator('[data-admin-client-tab="mac"]').click();
+        const macPlans = await adminPage.locator('#appRentalAdminDemo').innerText();
+        assert(macPlans.includes('永久会员'), `Mac 会员套餐未保留原数据：${macPlans}`);
+
+        await adminPage.evaluate(() => window.__appRentalAdminDemo.navigate('audit'));
+        const auditText = await adminPage.locator('#appRentalAdminDemo').innerText();
+        const auditTabs = await adminPage.locator('#appRentalAdminDemo [data-admin-client-tab]').count();
+        assert(auditTabs === 0 && auditText.includes('clientType'), `操作记录错误增加端别 Tab 或缺少 clientType：${auditText}`);
+        assert(adminIssues.length === 0, `后台存在控制台或页面错误：${adminIssues.join(' | ')}`);
+        process.stdout.write('ADMIN_DUAL_CLIENT 13/13 PASS\n');
+      } finally {
+        await adminPage.close();
+      }
     });
 
     for (const failure of refactorGateFailures) process.stdout.write(`REFACTOR_GATE_FAIL ${failure}\n`);
