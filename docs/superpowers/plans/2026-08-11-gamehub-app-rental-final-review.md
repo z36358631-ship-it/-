@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 在保留现有 APP V6.1.1 高保真客户端的基础上，完成最终租号业务规则，并把 Mac 租号运营后台接入 APP 标注 Demo，形成客户端 36 个横竖屏状态与后台 13 个桌面状态的一致交付。
+**Goal:** 在保留现有 APP V6.1.1 高保真客户端的基础上，完成最终租号业务规则与确认订单金额布局，并把 Mac 租号运营后台接入 APP 标注 Demo，形成客户端 36 个横竖屏状态与后台 13 个桌面状态的一致交付。
 
 **Architecture:** 客户端继续以 `盖世游戏APP租号功能demo.template.html` 作为唯一业务源码，构建脚本生成普通版并同步进标注版。后台从现有 Mac 标注 Demo 复用 7 个模块，抽成独立可内联片段；标注版同时承载 APP 客户端和运营后台，后台前 6 页通过页面局部 `clientType` Tab 隔离 APP/Mac 数据，操作记录保持统一。所有时间、资格、风险和续费规则通过显式状态模型暴露给 Playwright 验证 API。
 
@@ -46,6 +46,53 @@ await runRefactorGate('FINAL_SCOPE_PAYMENT_AND_GUARDS', async () => {
   assert.equal(await page.locator('[data-search-view="games"] .search-game-card').count(), 3);
   assert.equal(await page.locator('[data-search-view="games"] .search-game-card [data-primary-action]').count(), 0);
 
+  const checkoutAmounts = await page.evaluate(() => {
+    const api = window.__appRentalDemo;
+    api.setSelectedGame('shadow-blade-zero', { shouldRender: false });
+    api.setScenario('not-member-library', { shouldRender: false });
+    api.setOrientation('portrait');
+    api.navigate('checkout');
+    const root = document.querySelector('#appRentalDemo');
+    const summary = root.querySelector('[data-checkout-amount-summary]');
+    const packagePanel = root.querySelector('.checkout-sku-section');
+    const paymentPanel = root.querySelector('.checkout-payment-methods');
+    const snapshot = api.snapshot().order;
+    return {
+      labels: [...summary.querySelectorAll('[data-checkout-amount-row]')].map((node) => node.firstElementChild.textContent.trim()),
+      original: summary.querySelector('[data-checkout-amount="game-original"]')?.textContent.trim(),
+      orderAmount: summary.querySelector('[data-checkout-amount="order"]')?.textContent.trim(),
+      due: root.querySelector('.portrait-fixed-footer strong')?.textContent.trim(),
+      packageBeforeAmount: packagePanel.getBoundingClientRect().bottom <= summary.getBoundingClientRect().top,
+      amountBeforePayment: summary.getBoundingClientRect().bottom <= paymentPanel.getBoundingClientRect().top,
+      snapshot,
+    };
+  });
+  assert.deepEqual(checkoutAmounts.labels, ['游戏原价', '订单金额']);
+  assert.equal(checkoutAmounts.original, `¥${checkoutAmounts.snapshot.gameOriginalAmount}`);
+  assert.equal(checkoutAmounts.orderAmount, `¥${Number(checkoutAmounts.snapshot.rawAmount).toFixed(2)}`);
+  assert.equal(checkoutAmounts.due, `需支付 ¥${Number(checkoutAmounts.snapshot.rawAmount).toFixed(2)}`);
+  assert(checkoutAmounts.packageBeforeAmount && checkoutAmounts.amountBeforePayment);
+
+  const landscapeCheckout = await page.evaluate(() => {
+    window.__appRentalDemo.setOrientation('landscape');
+    const root = document.querySelector('#appRentalDemo');
+    const left = root.querySelector('.checkout-benefit-column');
+    const right = root.querySelector('.checkout-purchase-column');
+    return {
+      leftHasProduct: Boolean(left.querySelector('.checkout-product')),
+      leftHasBenefits: Boolean(left.querySelector('.service-benefits')),
+      leftHasPackage: Boolean(left.querySelector('.checkout-sku-section')),
+      rightHasPackage: Boolean(right.querySelector('.checkout-sku-section')),
+      rightHasAmounts: Boolean(right.querySelector('[data-checkout-amount-summary]')),
+      rightHasPayment: Boolean(right.querySelector('.checkout-payment-row')),
+      rightHasPurchase: Boolean(right.querySelector('.payment-primary')),
+    };
+  });
+  assert.deepEqual(landscapeCheckout, {
+    leftHasProduct: true, leftHasBenefits: true, leftHasPackage: false,
+    rightHasPackage: true, rightHasAmounts: true, rightHasPayment: true, rightHasPurchase: true,
+  });
+
   const listActions = await page.evaluate(() => window.__appRentalDemo.getOrderActions(
     window.__appRentalDemo.getOrderCollection().find((order) => order.status === 'active'),
     { surface: 'list' },
@@ -73,6 +120,26 @@ await runRefactorGate('FINAL_SCOPE_PAYMENT_AND_GUARDS', async () => {
   }));
   assert.equal(risk.extraNoReasonRestricted, true);
 });
+```
+
+同步修订现有 `EIGHTH_REVIEW_SOURCE` 与 `CDKEY_VISUAL_CONVERGENCE` 的旧“唯一底部金额”口径，禁止项不得再用宽泛的 `原价` 匹配：
+
+```js
+const amountLayoutSourceChecks = [
+  ['确认订单金额明细', templateSource.includes('renderCheckoutAmountSummary') && templateSource.includes('gameOriginalAmount')],
+  ['金额与支付同源', templateSource.includes('getCheckoutAmountModel') && templateSource.includes('dueText')],
+];
+assert(amountLayoutSourceChecks.every(([, passed]) => passed), `确认订单金额源码契约失败：${JSON.stringify(amountLayoutSourceChecks)}`);
+
+const removedLegacyCheckoutCopy = ['当前报价', '租赁信息', '租号服务协议', '支付有效期', '扫码支付'];
+assert(
+  removedLegacyCheckoutCopy.every((field) => !checkoutFields.text.includes(field)),
+  `确认订单仍有已删除字段：${JSON.stringify(removedLegacyCheckoutCopy.filter((field) => checkoutFields.text.includes(field)))}`,
+);
+assert(
+  ['游戏原价', '订单金额', '支付方式', '需支付', '立即购买'].every((field) => checkoutFields.text.includes(field)),
+  `确认订单缺少金额或支付字段：${checkoutFields.text}`,
+);
 ```
 
 - [ ] **Step 2: 增加首次体验、终态入口和周卡续费的纯状态断言**
@@ -108,7 +175,7 @@ git add -- tools/verify-app-rental-demo.mjs
 git commit -m "test: define final app rental behavior"
 ```
 
-### Task 2: 完成搜索、订单动作和两类启动前拦截
+### Task 2: 完成搜索、确认订单金额、订单动作和两类启动前拦截
 
 **Files:**
 - Modify: `demos/APP租号功能/盖世游戏APP租号功能demo.template.html`
@@ -138,7 +205,109 @@ function renderSearchGameResults(results) {
 }
 ```
 
-- [ ] **Step 2: 将订单动作改为“共享动作源、按页面过滤”**
+- [ ] **Step 2: 增加确认订单游戏原价与订单金额快照**
+
+在两个演示游戏目录项增加标准版游戏本体原价，并在创建草稿订单时固化；该值只做信息展示，不参与租号金额计算：
+
+```js
+const GAME_ORIGINAL_AMOUNTS = Object.freeze({
+  'shadow-blade-zero': 298,
+  spiritfarer: 108,
+});
+
+function createOrder({ sku, amount, priceVersion, ...snapshot }) {
+  if (state.order && NON_TERMINAL_ORDER_STATUSES.has(state.order.status)) return null;
+  const createdAt = Date.now();
+  const game = getSelectedGame();
+  const offer = getSelectedOffer();
+  state.order = {
+    orderType: 'rental',
+    saleMode: getGameSaleMode(game.id),
+    gameId: game.id,
+    gameName: game.name,
+    gameOriginalAmount: Number(GAME_ORIGINAL_AMOUNTS[game.id] || 0),
+    currency: 'CNY',
+    platform: state.selectedPlatform,
+    editionId: 'standard',
+    version: `${state.selectedPlatform} · 标准版`,
+    packageName: offer.packageName,
+    durationLabel: offer.durationLabel,
+    originalAmount: offer.originalAmount,
+    rawAmount: Number(amount),
+    paymentMethod: state.selectedPayment,
+    ...snapshot,
+    id: nextOrderId(createdAt),
+    status: 'pending',
+    createdAt,
+    updatedAt: createdAt,
+    sku,
+    amount: Number(amount),
+    priceVersion,
+    paymentDeadline: createdAt + 30 * 60 * 1000,
+  };
+  renderApp();
+  return cloneOrder(state.order);
+}
+```
+
+渲染金额明细时只读取订单快照，保证套餐切换重建草稿后金额同步：
+
+```js
+function getCheckoutAmountModel(order = state.order) {
+  const gameOriginalAmount = Number(order?.gameOriginalAmount || 0);
+  const orderAmount = Number(order?.rawAmount ?? order?.amount ?? 0);
+  return {
+    gameOriginalAmount,
+    orderAmount,
+    originalText: `¥${Number.isInteger(gameOriginalAmount) ? gameOriginalAmount : gameOriginalAmount.toFixed(2)}`,
+    orderText: `¥${orderAmount.toFixed(2)}`,
+    dueText: `需支付 ¥${orderAmount.toFixed(2)}`,
+  };
+}
+
+function renderCheckoutAmountSummary(order) {
+  const model = getCheckoutAmountModel(order);
+  return `<section class="checkout-panel checkout-amount-summary" data-checkout-amount-summary>
+    <div class="checkout-amount-row" data-checkout-amount-row><span>游戏原价</span><strong data-checkout-amount="game-original">${model.originalText}</strong></div>
+    <div class="checkout-amount-row order" data-checkout-amount-row><span>订单金额</span><strong data-checkout-amount="order">${model.orderText}</strong></div>
+  </section>`;
+}
+```
+
+- [ ] **Step 3: 按确认结构重排横竖屏确认订单**
+
+竖屏在 `renderCheckoutSkuOptions(game)` 与 `renderCheckoutPaymentMethods()` 之间插入 `renderCheckoutAmountSummary(order)`。横屏左栏移除套餐，只保留 `renderGameContextCard()` 和 `renderServiceBenefits()`；右栏的 `renderGamePaymentPanel(game, order)` 按套餐、金额、支付方式、底部支付操作顺序渲染：
+
+```js
+function renderGamePaymentPanel(game, order) {
+  const model = getCheckoutAmountModel(order);
+  const disabled = !state.inventoryAvailable;
+  const processing = order.status !== 'pending';
+  const ready = order.status === 'active';
+  const recovery = renderCheckoutRecoveryActions();
+  return `<section class="payment-panel">
+    ${renderCheckoutSkuOptions(game)}
+    ${renderCheckoutAmountSummary(order)}
+    <div class="checkout-payment-row"><h2>支付方式</h2><div class="payment-list">${renderPaymentMethods()}</div></div>
+    ${recovery || `<div class="checkout-bottom-bar"><strong>${ready ? '账号已就绪' : model.dueText}</strong><button class="primary-action payment-primary" type="button" data-primary-action="true" data-action="${ready ? 'open-login-method' : state.priceChanged ? 'refresh-price' : 'pay-game-order'}" ${disabled || (processing && !ready) ? 'disabled' : ''}>${ready ? '立即登录' : processing ? '账号分配中' : disabled ? '暂不可购买' : state.priceChanged ? '按新价格重新确认' : '立即购买'}</button></div>`}
+  </section>`;
+}
+```
+
+增加样式：
+
+```css
+.checkout-amount-summary { padding: 11px 14px; }
+.checkout-amount-row { display: flex; min-height: 30px; align-items: center; justify-content: space-between; color: var(--text-muted); font-size: 12px; }
+.checkout-amount-row strong { color: #aeb6c4; font-size: 13px; font-weight: 500; }
+.checkout-amount-row.order strong { color: #ff4b5f; font-size: 24px; font-weight: 800; }
+.landscape-checkout .payment-panel { overflow-y: auto; padding-bottom: 12px; }
+.landscape-checkout .payment-panel .checkout-bottom-bar { position: sticky; right: auto; bottom: 0; left: auto; z-index: 2; margin-top: auto; padding-top: 10px; background: #222426; }
+```
+
+`renderPortraitCheckout()` 与横屏布局都不得渲染版本选择器；商品卡继续只读显示游戏名和灰色 `标准版` 副标题。
+
+- [ ] **Step 4: 将订单动作改为“共享动作源、按页面过滤”**
 
 ```js
 function hasDirectGameEntitlement(gameId) {
@@ -162,7 +331,7 @@ function getOrderActions(order, { surface = 'list' } = {}) {
 
 `renderOrderActions()` 必须传入 `{ surface }`，订单列表不得再出现 `申请售后`；详情保留。
 
-- [ ] **Step 3: 增加服务端退款风险结果和确认快照**
+- [ ] **Step 5: 增加服务端退款风险结果和确认快照**
 
 在 `state` 中增加 `rentalRiskDecision`、`riskReminderOpen`、`pendingRentalIntent`、`pendingRiskSnapshot`。详情和终态订单的 `租号开玩` 统一调用：
 
@@ -200,7 +369,7 @@ function confirmRentalRisk() {
 
 `createOrder()` 将 `pendingRiskSnapshot` 写入 `riskSnapshot`，未命中时写明额外承诺正常适用。弹层只提供 `暂不购买 / 确认继续`，不得影响四类履约售后。
 
-- [ ] **Step 4: 增加非本次租用游戏启动拦截**
+- [ ] **Step 6: 增加非本次租用游戏启动拦截**
 
 ```js
 function attemptRentalAccountLaunch(targetGameId) {
@@ -225,7 +394,7 @@ function attemptRentalAccountLaunch(targetGameId) {
 
 弹层必须同时展示当前租用游戏和目标游戏；`rentable=true` 时主操作为 `查看租号方案` 并继续走退款风险检查，反之只显示 `暂不可租用`。启动请求增加 `launchRequestId` 集合，重复请求返回原结果。
 
-- [ ] **Step 5: 补齐事件路由和测试 API**
+- [ ] **Step 7: 补齐事件路由和测试 API**
 
 增加 `request-rental-checkout`、`confirm-rental-risk`、`close-rental-risk`、`launch-steam-library-game`、`view-target-rental`、`close-non-target-guard` 事件，并在 `window.__appRentalDemo` 暴露：
 
@@ -242,7 +411,7 @@ Object.assign(window.__appRentalDemo, {
 });
 ```
 
-- [ ] **Step 6: 运行客户端契约**
+- [ ] **Step 8: 运行客户端契约**
 
 ```powershell
 node tools/build-app-rental-demo.mjs
@@ -251,11 +420,11 @@ node tools/verify-app-rental-demo.mjs
 
 Expected: 搜索、列表/详情动作、终态入口与两类拦截断言通过；支付计时和后台分组仍可失败。
 
-- [ ] **Step 7: 提交客户端发现与拦截**
+- [ ] **Step 9: 提交客户端发现、确认订单金额与拦截**
 
 ```powershell
 git add -- 'demos/APP租号功能/盖世游戏APP租号功能demo.template.html' 'demos/APP租号功能/盖世游戏APP租号功能demo.html' 'demos/APP租号功能/盖世游戏APP租号功能-标注版.html'
-git commit -m "feat: complete app rental discovery and guards"
+git commit -m "feat: complete app rental checkout and guards"
 ```
 
 ### Task 3: 实现支付成功计时、无感启动与周卡续费
@@ -747,6 +916,7 @@ rg -n "单游永久|首次启动|账号分配中|继续畅玩|列表与详情.*�
 - 周卡未过期从当前到期时间顺延7天，已过期从本次 paidAt 重算；回调按交易号幂等。
 - 订单列表过滤申请售后，详情保留；终态无权益显示租号开玩，有权益显示可畅玩。
 - 非本次租用游戏启动前阻断；退款风险只限制平台额外3天无理由。
+- 确认订单竖屏按“套餐→游戏原价/订单金额→支付方式”展示；横屏左侧商品与权益、右侧套餐/金额/支付；订单金额与需支付同源。
 - 后台7模块复用 Mac；6页独立 APP/Mac Tab、默认 APP；操作记录不加 Tab。
 ```
 
@@ -759,7 +929,7 @@ rg -n "单游永久|首次启动|账号分配中|继续畅玩|列表与详情.*�
 ```js
 'requestRentalCheckout', 'attemptRentalAccountLaunch', 'riskSnapshot',
 'prepareAccountForLaunch', 'membershipEntitlement', 'processedPaymentTransactions',
-'search-game-grid', "surface = 'list'",
+'search-game-grid', 'renderCheckoutAmountSummary', 'gameOriginalAmount', 'dueText', "surface = 'list'",
 ```
 
 后台签名增加：
@@ -793,7 +963,7 @@ Expected: 构建和全部契约通过，`git diff --check` 无错误。
 
 - [ ] **Step 1: 保留客户端 18×2 截图矩阵并增加关键运行时检查**
 
-搜索页检查双列几何、名称两行上限和无独立 CTA；订单列表检查无申请售后、按钮不越卡；会员横屏检查支付区首屏可见且无二维码；Steam 登录检查敏感信息遮罩。
+搜索页检查双列几何、名称两行上限和无独立 CTA；确认订单检查竖屏套餐/金额/支付顺序、横屏左右分栏、订单金额与需支付一致且无版本选择器；订单列表检查无申请售后、按钮不越卡；会员横屏检查支付区首屏可见且无二维码；Steam 登录检查敏感信息遮罩。
 
 - [ ] **Step 2: 增加后台 13 状态矩阵**
 
@@ -823,7 +993,7 @@ Expected: 客户端 `36/36 PASS`，后台 `13/13 PASS`，总计 49 个关键状�
 
 - [ ] **Step 5: 原尺寸人工目检关键图**
 
-至少检查：搜索横竖屏、确认订单横竖屏、会员中心横屏、订单中心横竖屏、Steam 登录横竖屏、6 个 APP 后台页、1 个 Mac 页面和统一操作记录。检查重叠、越界、端别选中、字段错误、敏感信息和后台表格可读性。
+至少检查：搜索横竖屏、确认订单横竖屏、会员中心横屏、订单中心横竖屏、Steam 登录横竖屏、6 个 APP 后台页、1 个 Mac 页面和统一操作记录。确认订单重点检查横屏左侧只有商品与权益、右侧依次出现套餐/游戏原价/订单金额/支付方式/支付按钮，低高度下可滚动且按钮可操作；同时检查其他页面的重叠、越界、端别选中、字段错误、敏感信息和后台表格可读性。
 
 - [ ] **Step 6: 提交截图与脚本**
 
@@ -893,6 +1063,7 @@ Expected: 看板保持完整历史，状态为 `in_review`，不直接置为 `do
 - 首次体验 2 小时严格从服务端 `paidAt` 计时，支付成功消耗资格并隐藏 SKU。
 - 首次体验无用户可见账号分配态，每次启动后台幂等准备账号。
 - 搜索游戏 Tab 双列竖卡；订单列表无申请售后；终态入口按真实权益显示。
+- 确认订单竖屏在套餐与支付方式之间展示游戏原价和订单金额；横屏左侧为商品与权益、右侧为套餐/金额/支付；无版本选择器，订单金额与需支付完全一致。
 - 非本次租用游戏与退款风险均在进入启动/下单前正确拦截。
 - 周卡续费按未过期顺延、已过期重算，重复回调不重复延长。
 - 运营后台 7 个 Mac 模块已接入；6 页默认 APP 且可切 Mac，操作记录无端别 Tab。
