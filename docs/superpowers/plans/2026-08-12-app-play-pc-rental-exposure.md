@@ -14,7 +14,7 @@
 
 - 修改 `demos/APP租号功能/盖世游戏APP租号功能demo.template.html`：新增 PC 游戏展示目录、摘要/人数渲染、卡片交互和横竖屏样式。
 - 生成 `demos/APP租号功能/盖世游戏APP租号功能demo.html`：由构建脚本从模板生成，不手工维护业务代码。
-- 修改并生成 `demos/APP租号功能/盖世游戏APP租号功能-标注版.html`：同步普通 Demo 业务代码，并补充 PC游戏租号卡标注。
+- 修改并生成 `demos/APP租号功能/盖世游戏APP租号功能-标注版.html`：同步普通 Demo 业务代码、补充 PC游戏租号卡标注，并链接统一 Mac 租号后台。
 - 修改 `tools/build-app-rental-demo.mjs`：把新摘要、事件和标注签名加入构建一致性门禁。
 - 修改 `tools/verify-app-rental-demo.mjs`：增加四类状态、价格格式、降级、点击隔离与返回恢复的自动化验收。
 - 修改 `tools/capture-app-rental-prd-screenshots.mjs`：保证「玩游戏」截图固定打开 PC游戏 Tab。
@@ -270,6 +270,20 @@ git commit -m "test: verify APP PC游戏租号露出"
   exception: '价格、库存、资格或摘要失败时隐藏新增信息，不影响原列表和操作。' },
 ```
 
+- [ ] **Step 1A: 将后台入口链接到统一 Mac 后台**
+
+APP 标注版不再嵌入一套独立、交互残缺的后台。把“运营后台”入口改为可访问链接：
+
+```html
+<a href="../../Mac端demo/mac端租号功能/Mac端租号功能-标注版.html?mode=admin&amp;page=products"
+   target="_blank" rel="noopener" data-admin-demo-link>
+  打开统一租号后台
+</a>
+<span>复用 Mac 后台；前 6 个页面仅新增 APP（安卓端）Tab，操作记录无端别 Tab</span>
+```
+
+查询、新建、编辑、上下架、批量与导出等操作均在统一后台完成。不得继续展示点击后只写日志或 Toast、但没有完成对应业务动作的独立 APP 后台按钮。
+
 - [ ] **Step 2: 追加 PRD V2.7 版本记录**
 
 新增版本行，使用黄色背景和蓝色加粗标记：
@@ -393,9 +407,9 @@ test-results/app-rental-admin-review/audit-all.png
 每个页面至少写明：
 
 ```text
-触发入口：角色从哪个后台菜单进入，前6页默认 APP（安卓端），操作记录无端别 Tab。
+触发入口：角色从统一 Mac 租号后台的哪个菜单进入；前6页在原页面新增并默认选择 APP（安卓端）Tab，操作记录无端别 Tab。
 展示：核心字段、筛选、列表、端别与 APP 生效页面。
-交互：查询、重置、编辑、上下架、批量、导出或详情动作，以及生效时机。
+交互：复用统一后台既有的查询、重置、新建、编辑、上下架、批量、导出或详情动作，以及生效时机；不得另建交互残缺的 APP 后台。
 异常情况：切端清理选择、并发更新、弱网、空结果、权限不足和敏感字段保护。
 ```
 
@@ -436,13 +450,15 @@ assert(appImageUrls.length >= 10);
 assert(!section43.includes('| — |'));
 assert(section43.includes('无直接 APP 页面'));
 assert(section44.includes('R01') && section44.includes('R10'));
+assert(annotationSource.includes('data-admin-demo-link'));
+assert(annotationSource.includes('仅新增 APP（安卓端）Tab'));
 ```
 
 - [ ] **Step 7: 运行 PRD 自检并提交本地结构**
 
 Run: `git diff --check`
 
-Expected: 4.3 只有 7 个后台页面；7/7 后台图与关联 APP 图位置齐全；四段标题和小序号完整；共用规则在 4.4 只维护一份。
+Expected: 4.3 只有 7 个后台页面；7/7 后台图与关联 APP 图位置齐全；四段标题和小序号完整；共用规则在 4.4 只维护一份；APP 标注版能打开统一 Mac 后台，且清楚说明只增加 APP（安卓端）Tab。
 
 ```powershell
 git add -- prd/【盖世游戏APP】游戏租号需求/【Prd】《盖世游戏APP》游戏租号需求.md public/prd/app-rental-admin
@@ -475,6 +491,8 @@ Expected: `CAPTURE 36/36 PASS`，`09-play-portrait.png` 为 390×844，`09-play-
 如发现溢出、按钮越界、信息重复或租号摘要像按钮，先修模板再重跑构建、验证与截图。
 
 同时检查 7 张后台截图：标题与 APP（安卓端）Tab 可读、表格无横向截断、操作按钮位于页面框架内；操作记录截图应同时出现 APP 与 Mac 的 `clientType`。
+
+从 APP 标注版点击“打开统一租号后台”，确认进入 Mac 后台商品管理页；抽查查询、新建、编辑和上下架，必须产生对应页面、弹窗或状态变化，不能只有 Toast 或无响应。
 
 - [ ] **Step 3: 提交截图证据**
 
