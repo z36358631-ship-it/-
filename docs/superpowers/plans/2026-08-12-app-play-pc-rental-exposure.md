@@ -18,6 +18,7 @@
 - 修改 `tools/build-app-rental-demo.mjs`：把新摘要、事件和标注签名加入构建一致性门禁。
 - 修改 `tools/verify-app-rental-demo.mjs`：增加四类状态、价格格式、降级、点击隔离与返回恢复的自动化验收。
 - 修改 `tools/capture-app-rental-prd-screenshots.mjs`：保证「玩游戏」截图固定打开 PC游戏 Tab。
+- 创建 `public/prd/app-rental-admin/` 下 7 张后台页面截图：使用默认 APP（安卓端）Tab，供 APP PRD 4.3 逐页引用。
 - 修改 `prd/【盖世游戏APP】游戏租号需求/【Prd】《盖世游戏APP》游戏租号需求.md`：追加 V2.7，并更新 4.2「2. 玩游戏」和 9.1 验收规则。
 - 更新 `public/prd/app-rental/09-play-portrait.png` 与 `public/prd/app-rental/09-play-landscape.png`：发布本轮 PC游戏横竖屏证据。
 
@@ -327,7 +328,128 @@ git add -- demos/APP租号功能/盖世游戏APP租号功能-标注版.html prd/
 git commit -m "docs: specify APP PC游戏租号卡"
 ```
 
-### Task 5: 截图、视觉复核、发布与任务板回填
+### Task 5: 将 B 端按后台页面逐页编排并补齐 APP 截图映射
+
+**Files:**
+- Modify: `prd/【盖世游戏APP】游戏租号需求/【Prd】《盖世游戏APP》游戏租号需求.md`
+- Create: `public/prd/app-rental-admin/01-products-android.png`
+- Create: `public/prd/app-rental-admin/02-member-library-android.png`
+- Create: `public/prd/app-rental-admin/03-member-plans-android.png`
+- Create: `public/prd/app-rental-admin/04-accounts-android.png`
+- Create: `public/prd/app-rental-admin/05-orders-after-sales-android.png`
+- Create: `public/prd/app-rental-admin/06-stats-android.png`
+- Create: `public/prd/app-rental-admin/07-audit-all.png`
+- Test: `tools/verify-app-rental-demo.mjs`
+
+- [ ] **Step 1: 从已验收后台截图复制 7 张发布资产**
+
+源文件与目标文件固定映射如下，不重新生成不一致的后台状态：
+
+```text
+test-results/app-rental-admin-review/products-android.png
+→ public/prd/app-rental-admin/01-products-android.png
+
+test-results/app-rental-admin-review/member-library-android.png
+→ public/prd/app-rental-admin/02-member-library-android.png
+
+test-results/app-rental-admin-review/member-plans-android.png
+→ public/prd/app-rental-admin/03-member-plans-android.png
+
+test-results/app-rental-admin-review/accounts-android.png
+→ public/prd/app-rental-admin/04-accounts-android.png
+
+test-results/app-rental-admin-review/admin-orders-android.png
+→ public/prd/app-rental-admin/05-orders-after-sales-android.png
+
+test-results/app-rental-admin-review/stats-android.png
+→ public/prd/app-rental-admin/06-stats-android.png
+
+test-results/app-rental-admin-review/audit-all.png
+→ public/prd/app-rental-admin/07-audit-all.png
+```
+
+复制后检查 7 张均为 PNG、非空且可解析；后台前 6 页必须处于 APP（安卓端）Tab，操作记录为统一记录页。
+
+- [ ] **Step 2: 将 4.3 改为 7 个真实后台页面**
+
+4.3 标题改为 `详细设计（B端）`，删除当前混排的 1—10 个抽象服务端模块和 11—17 重复后台页面，改用：
+
+```markdown
+| 后台页面 | 后台页面截图 | 关联 APP 结果截图 | 展示与交互规则 |
+|---|---|---|---|
+| 1. 租号商品管理 | 后台 APP 图 | PC游戏、搜索、确认订单 | 四段规则 |
+| 2. 会员游戏库管理 | 后台 APP 图 | 会员中心、会员游戏库 | 四段规则 |
+| 3. 会员套餐管理 | 后台 APP 图 | 会员中心、会员支付成功 | 四段规则 |
+| 4. 账号资源管理 | 后台 APP 图 | Steam 登录与登录信息 | 四段规则 |
+| 5. 订单与售后 | 后台 APP 图 | 订单中心、订单详情、售后进度 | 四段规则 |
+| 6. 效果统计 | 后台 APP 图 | 首页、PC游戏、搜索 | 四段规则 |
+| 7. 操作记录 | 统一操作记录图 | 无直接 APP 页面 | 四段规则 |
+```
+
+每页 `展示与交互规则` 固定使用「触发入口 / 展示 / 交互 / 异常情况」，每段规则从①重新编号。后台截图列只放对应后台页；关联 APP 结果截图列把多张图片用 `<br>` 分隔。
+
+- [ ] **Step 3: 逐页写清页面特有规则**
+
+每个页面至少写明：
+
+```text
+触发入口：角色从哪个后台菜单进入，前6页默认 APP（安卓端），操作记录无端别 Tab。
+展示：核心字段、筛选、列表、端别与 APP 生效页面。
+交互：查询、重置、编辑、上下架、批量、导出或详情动作，以及生效时机。
+异常情况：切端清理选择、并发更新、弱网、空结果、权限不足和敏感字段保护。
+```
+
+操作记录的关联 APP 结果截图单元格写 `无直接 APP 页面；关联商品、会员、账号、订单与售后后台写操作`，不得填入无关用户页。
+
+- [ ] **Step 4: 把共用规则移回 4.4 唯一维护**
+
+将原 4.3 中的外放灰度、商品/SKU、权益价格、订单快照、支付履约、使用单凭据、到期回收、售后退款、订单聚合、统计审计等共用规则按现有 4.4 结构补入，并增加可引用的规则编号：
+
+```text
+R01 外放与灰度
+R02 商品、标准版与 SKU
+R03 权益与价格
+R04 订单快照与锁价
+R05 支付、履约与幂等
+R06 使用单与短时凭据
+R07 到期回收
+R08 售后、换号与退款
+R09 订单聚合
+R10 统计与审计
+```
+
+4.3 页面内只引用相关规则编号并补充页面差异，不复制完整共用规则。
+
+- [ ] **Step 5: 保留角色权限并修正重复编号**
+
+后台角色权限作为 4.3.1 保留；原重复的 `4.3.1 边界条件-内容侧`、`4.3.2 边界条件-用户侧` 移到 4.4 的异常边界小节或改为不冲突的连续编号。角色权限覆盖商品运营、账号运营、客服、数据运营和审计管理员。
+
+- [ ] **Step 6: 增加 B 端页面化文档验收**
+
+验证脚本或独立检查必须断言：
+
+```js
+assert(backOfficeRows.length === 7);
+assert(backOfficeRows.every((row) => ['触发入口', '展示', '交互', '异常情况'].every((heading) => row.includes(heading))));
+assert(adminImageUrls.length === 7);
+assert(appImageUrls.length >= 10);
+assert(!section43.includes('| — |'));
+assert(section43.includes('无直接 APP 页面'));
+assert(section44.includes('R01') && section44.includes('R10'));
+```
+
+- [ ] **Step 7: 运行 PRD 自检并提交本地结构**
+
+Run: `git diff --check`
+
+Expected: 4.3 只有 7 个后台页面；7/7 后台图与关联 APP 图位置齐全；四段标题和小序号完整；共用规则在 4.4 只维护一份。
+
+```powershell
+git add -- prd/【盖世游戏APP】游戏租号需求/【Prd】《盖世游戏APP》游戏租号需求.md public/prd/app-rental-admin
+git commit -m "docs: rewrite APP租号B端PRD by page"
+```
+
+### Task 6: 截图、视觉复核、发布与任务板回填
 
 **Files:**
 - Modify: `public/prd/app-rental/09-play-portrait.png`
@@ -352,6 +474,8 @@ Expected: `CAPTURE 36/36 PASS`，`09-play-portrait.png` 为 390×844，`09-play-
 
 如发现溢出、按钮越界、信息重复或租号摘要像按钮，先修模板再重跑构建、验证与截图。
 
+同时检查 7 张后台截图：标题与 APP（安卓端）Tab 可读、表格无横向截断、操作按钮位于页面框架内；操作记录截图应同时出现 APP 与 Mac 的 `clientType`。
+
 - [ ] **Step 3: 提交截图证据**
 
 ```powershell
@@ -365,7 +489,7 @@ git commit -m "test: capture APP PC游戏租号卡"
 
 - [ ] **Step 5: 固定 PRD 图片地址并远程验收**
 
-把 APP PRD 中本轮截图地址替换为实际新 SHA；逐个请求全部 PRD 图片，要求 HTTP 200 且 PNG 返回 `image/png`。线上普通 Demo、标注版和 PRD 文件都要求 HTTP 200。
+把 APP PRD 中本轮 PC游戏图、7 张后台图及所有关联 APP 图地址替换为实际新 SHA；逐个请求全部 PRD 图片，要求 HTTP 200 且 PNG 返回 `image/png`。Markdown 图片数、固定 SHA 地址数和验证通过数必须一致；线上普通 Demo、标注版和 PRD 文件都要求 HTTP 200。
 
 - [ ] **Step 6: 最终全量回归**
 
@@ -381,7 +505,7 @@ Expected: 新增 PC游戏契约、原 36 页面矩阵、标注版、订单、会
 
 ## 自检结果
 
-- 规格覆盖：状态优先级、一位小数、人数降级、点击隔离、返回恢复、横竖屏、非目标 Tab、埋点验收均已映射到任务。
+- 规格覆盖：状态优先级、一位小数、人数降级、点击隔离、返回恢复、横竖屏、非目标 Tab、埋点验收、B端7页与后台/APP截图映射均已映射到任务。
 - 占位扫描：无待补内容、延后实现或引用其他任务代替具体步骤的语句。
 - 类型一致性：统一使用 `PLAY_PC_GAMES`、`renderPlayRentalSummary()`、`play-card-action`、`data-play-rental-summary`，测试与实现命名一致。
-- 范围控制：不新增租号按钮、弹窗、订单状态或新页面；不修改云游戏、复古游戏和游戏库业务。
+- 范围控制：不新增租号按钮、弹窗、订单状态或新后台页面；只重排 PRD B端结构，不修改云游戏、复古游戏和游戏库业务。
