@@ -85,14 +85,14 @@
       { id: 'APP-PROD-RDR2-STD', game: '荒野大镖客：救赎 2', edition: '标准版', mode: '时租', sku: '2—23小时 / 日租 / 周租', price: '¥7.90起', stock: 76, status: '已上架' },
     ]),
     memberLibrary: Object.freeze([
-      { id: 'APP-LIB-001', game: 'Spiritfarer', edition: '标准版', cloud: '支持云存档', stock: 26, status: '会员可用' },
-      { id: 'APP-LIB-002', game: '双人成行', edition: '标准版', cloud: '支持云存档', stock: 41, status: '会员可用' },
-      { id: 'APP-LIB-003', game: '霍格沃茨之遗', edition: '标准版', cloud: '—', stock: 18, status: '会员可用' },
+      { id: 'APP-LIB-001', game: 'Spiritfarer', edition: '标准版', stock: 26, status: '会员可用' },
+      { id: 'APP-LIB-002', game: '双人成行', edition: '标准版', stock: 41, status: '会员可用' },
+      { id: 'APP-LIB-003', game: '霍格沃茨之遗', edition: '标准版', stock: 18, status: '会员可用' },
     ]),
     memberPlans: Object.freeze([
       { id: 'weekly', name: '周卡', days: '7天', price: '¥39.00', recommend: '—', status: '已上架' },
       { id: 'monthly', name: '月卡', days: '30天', price: '¥129.00', recommend: '—', status: '已上架' },
-      { id: 'quarterly', name: '季卡', days: '90天', price: '¥299.00', recommend: '推荐', status: '已上架' },
+      { id: 'quarterly', name: '季卡', days: '90天', price: '¥299.00', recommend: '—', status: '已上架' },
     ]),
     accounts: Object.freeze([
       { id: 'APP-ACC-001', game: 'GTA 6', platform: 'Steam / Rockstar Games', account: 'gh_app_***_001', status: '可出租', order: '—', health: '正常' },
@@ -108,17 +108,17 @@
   });
   const MAC_DATA = Object.freeze({
     products: Object.freeze([
-      { id: 'MAC-PROD-GTA6', game: 'GTA 6', edition: '普通版 / 增强版 / 豪华版', mode: '时租', sku: '小时 / 日租 / 周租', price: '¥12.00起', stock: 92, status: '已上架' },
-      { id: 'MAC-PROD-RDR2', game: '荒野大镖客：救赎 2', edition: '标准版', mode: '时租', sku: '小时 / 日租 / 周租', price: '¥9.90起', stock: 55, status: '已上架' },
+      { id: 'MAC-PROD-GTA6', clientType: 'mac', game: 'GTA 6', edition: '标准版', editionId: 'standard', saleMode: 'time-rental', mode: '时租', sku: '2—23小时 / 日租 / 周租', price: '¥12.00起', stock: 92, status: '已上架' },
+      { id: 'MAC-PROD-SPIRIT', clientType: 'mac', game: 'Spiritfarer', edition: '标准版', editionId: 'standard', saleMode: 'entitlement', mode: '权益方案', sku: '首次体验2小时 / 单游戏永久 / 开会员畅玩', price: '¥1.99起', stock: 20, status: '已上架' },
     ]),
     memberLibrary: Object.freeze([
-      { id: 'MAC-LIB-001', game: 'Spiritfarer', edition: '标准版', cloud: '支持云存档', stock: 20, status: '会员可用' },
-      { id: 'MAC-LIB-002', game: '双人成行', edition: '标准版', cloud: '—', stock: 34, status: '会员可用' },
+      { id: 'MAC-LIB-001', game: 'Spiritfarer', edition: '标准版', stock: 20, status: '会员可用' },
+      { id: 'MAC-LIB-002', game: '双人成行', edition: '标准版', stock: 34, status: '会员可用' },
     ]),
     memberPlans: Object.freeze([
-      { id: 'mac-monthly', name: '月度会员', days: '30天', price: '¥129.00', recommend: '—', status: '已上架' },
-      { id: 'mac-yearly', name: '年度会员', days: '365天', price: '¥499.00', recommend: '推荐', status: '已上架' },
-      { id: 'mac-permanent', name: '永久会员', days: '长期有效', price: '¥399.00', recommend: '—', status: '已上架' },
+      { id: 'mac-weekly', name: '周卡', days: '7天', price: '¥39.00', recommend: '—', status: '已上架' },
+      { id: 'mac-monthly', name: '月卡', days: '30天', price: '¥129.00', recommend: '—', status: '已上架' },
+      { id: 'mac-quarterly', name: '季卡', days: '90天', price: '¥299.00', recommend: '—', status: '已上架' },
     ]),
     accounts: Object.freeze([
       { id: 'MAC-ACC-001', game: 'GTA 6', platform: 'Steam / Rockstar Games', account: 'gh_mac_***_001', status: '可出租', order: '—', health: '正常' },
@@ -145,8 +145,8 @@
   };
   const pageMeta = Object.freeze({
     products: ['租号商品管理', '配置游戏、版本、售卖模式、价格和上下架状态'],
-    'member-library': ['会员游戏库管理', '维护会员可畅玩游戏、版本、库存和云存档能力'],
-    'member-plans': ['会员套餐管理', '配置各客户端独立套餐、有效期与推荐状态'],
+    'member-library': ['会员游戏库管理', '维护会员可畅玩游戏、版本、库存和上下架状态'],
+    'member-plans': ['会员套餐管理', '配置各客户端独立套餐、有效期与上下架状态'],
     accounts: ['账号资源管理', '查看账号库存、健康状态、占用关系和平台信息'],
     'admin-orders': ['订单与售后', '查询订单、设备环境、履约状态和售后进度'],
     stats: ['效果统计', '查看租号漏斗、支付结果和履约质量'],
@@ -167,8 +167,8 @@
     return toolbar('搜索游戏名称或商品ID') + table(['游戏 / 商品ID', '版本', '售卖模式', 'SKU', '最低价', '库存', '状态', '操作'], rows);
   }
   function renderMemberLibrary() {
-    const rows = currentData().memberLibrary.map((item) => `<tr><td><strong>${item.game}</strong><span class="subline">${item.id}</span></td><td>${item.edition}</td><td>${item.cloud}</td><td>${item.stock}</td><td><span class="status">${item.status}</span></td><td><button class="a-btn" data-admin-action="edit" data-object-id="${item.id}">编辑</button></td></tr>`).join('');
-    return toolbar('搜索会员游戏') + table(['游戏 / 配置ID', '版本', '云存档', '可用库存', '状态', '操作'], rows);
+    const rows = currentData().memberLibrary.map((item) => `<tr><td><strong>${item.game}</strong><span class="subline">${item.id}</span></td><td>${item.edition}</td><td>${item.stock}</td><td><span class="status">${item.status}</span></td><td><button class="a-btn" data-admin-action="edit" data-object-id="${item.id}">编辑</button></td></tr>`).join('');
+    return toolbar('搜索会员游戏') + table(['游戏 / 配置ID', '版本', '可用库存', '状态', '操作'], rows);
   }
   function renderMemberPlans() {
     const rows = currentData().memberPlans.map((item) => `<tr><td><strong>${item.name}</strong><span class="subline">${item.id}</span></td><td>${item.days}</td><td>${item.price}</td><td>${item.recommend}</td><td><span class="status">${item.status}</span></td><td><button class="a-btn" data-admin-action="edit" data-object-id="${item.id}">编辑</button></td></tr>`).join('');

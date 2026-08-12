@@ -180,8 +180,8 @@ async function runPreflight(browser) {
     });
     await page.locator('#steam-account').fill('preflight-user');
     await page.locator('#steam-password').fill('preflight-secret');
-    await page.locator('[data-action="submit-steam-login"]').click();
-    await page.locator('[data-action="request-guard"]').click();
+    await page.evaluate(() => window.__appRentalDemo.openCredentialPanel());
+    await page.locator('.credential-panel [data-action="request-guard"]').click();
     const before = await page.evaluate(() => window.__appRentalDemo.snapshot());
     assert.equal(before.guardCode, '[REDACTED]', 'T0 preflight did not issue a Guard code');
     await page.evaluate(() => window.__appRentalDemo.triggerExpiryMinutes(0));
@@ -465,17 +465,17 @@ async function verifyShotState(page, shot) {
   if (['membership', 'membership-success'].includes(shot.pageId)) {
     assert.deepEqual(
       await page.locator('.membership-benefit-item strong').allInnerTexts(),
-      ['会员库内畅玩', '游戏持续更新', 'PC引擎与手柄适配', '个人云存档同步'],
-      `${shot.name} original membership benefits mismatch`,
+      ['会员库内畅玩', '游戏持续更新', '个人云存档同步'],
+      `${shot.name} membership benefits mismatch`,
     );
     assert((await page.locator('.membership-value-hero').innerText()).includes('一个会员，畅玩本期精选游戏'), `${shot.name} membership value hero mismatch`);
-    assert.equal(await page.locator('.membership-preview .member-game-card').count(), 8, `${shot.name} membership preview count mismatch`);
+    assert.equal(await page.locator('.membership-preview .member-game-card').count(), 4, `${shot.name} membership preview count mismatch`);
     assert.equal(await page.locator('.membership-faq-preview .member-faq-item').count(), 3, `${shot.name} membership FAQ count mismatch`);
     assert.deepEqual(await page.locator('.membership-plan-card .plan-name').allInnerTexts(), ['周卡', '月卡', '季卡'], `${shot.name} membership plan order mismatch`);
-    assert.equal((await page.locator('.membership-plan-card[data-plan="quarterly"] .plan-recommend').innerText()).trim(), '推荐 · 更划算', `${shot.name} quarterly recommendation mismatch`);
-    assert.equal(await page.locator('.membership-plan-card[data-plan="quarterly"].selected').count(), 1, `${shot.name} quarterly plan must be selected by default`);
+    assert.equal(await page.locator('.membership-plan-card .plan-recommend').count(), 0, `${shot.name} must not expose a recommendation badge`);
+    assert.equal(await page.locator('.membership-plan-card[data-plan="weekly"].selected').count(), 1, `${shot.name} weekly plan must be selected by default`);
     assert.equal(await page.locator('.membership-plan-card[data-plan="permanent"], .membership-plan-card[data-plan="annual"]').count(), 0, `${shot.name} must not expose annual or permanent membership plans`);
-    assert.equal((await page.locator('.membership-checkout-bar strong').first().innerText()).trim(), '需支付 ¥299.00', `${shot.name} membership amount summary mismatch`);
+    assert.equal((await page.locator('.membership-checkout-bar strong').first().innerText()).trim(), '需支付 ¥39.00', `${shot.name} membership amount summary mismatch`);
     assert.equal((await page.locator('.membership-checkout-bar [data-primary-action="true"]').first().innerText()).trim(), '立即购买', `${shot.name} membership primary action mismatch`);
     if (shot.orientation === 'landscape') {
       const structure = await page.evaluate(() => {
@@ -493,17 +493,7 @@ async function verifyShotState(page, shot) {
     if (shot.pageId === 'membership-success') {
       assert(/有效期至\s*\d{4}\.\d{2}\.\d{2}/.test(await device.innerText()), `${shot.name} membership validity date is missing after payment`);
     }
-    const cloudBadgeGeometry = await page.evaluate(() => [...document.querySelectorAll('.member-game-card')]
-      .map((card) => {
-        const cover = card.querySelector('.member-game-cover')?.getBoundingClientRect();
-        const badge = card.querySelector('.cloud-save-badge')?.getBoundingClientRect();
-        if (!cover || !badge || badge.width === 0 || badge.height === 0) return null;
-        const overlaps = badge.left < cover.right && badge.right > cover.left && badge.top < cover.bottom && badge.bottom > cover.top;
-        return { overlaps, badgeTop: Math.round(badge.top), coverBottom: Math.round(cover.bottom) };
-      })
-      .filter(Boolean));
-    assert(cloudBadgeGeometry.length > 0, `${shot.name} is missing visible cloud-save badges`);
-    assert(cloudBadgeGeometry.every(({ overlaps, badgeTop, coverBottom }) => !overlaps && badgeTop >= coverBottom - 1), `${shot.name} renders a cloud-save badge on top of a cover: ${JSON.stringify(cloudBadgeGeometry)}`);
+    assert.equal(await page.locator('.member-game-card .cloud-save-badge').count(), 0, `${shot.name} must not expose cloud-save badges`);
   }
 
   if (shot.pageId === 'steam-login') {

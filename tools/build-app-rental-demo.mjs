@@ -105,7 +105,7 @@ const requiredBusinessSignatures = Object.freeze([
   'data-rental-intro',
   'renderServiceBenefits',
   'data-action="open-no-reason-policy"',
-  "showToast('登录成功，已返回游戏库')",
+  "showToast('登录成功，已进入游戏详情')",
 ]);
 
 function assertBusinessScriptSignatures(label, source) {
@@ -206,14 +206,22 @@ if (fs.existsSync(annotationPath)) {
     '订单列表与详情分别使用独立任务页。',
     '订单列表与详情拆页，分别使用独立任务页；所有状态操作按钮完整收在订单卡片边界内。',
   );
-  annotation = annotation.replace(
-    '滚动页展示8款会员游戏；仅支持的游戏显示“支持云存档”。',
-    '滚动页展示8款会员游戏；仅支持的游戏在封面下方信息区显示“支持云存档”。',
+  annotation = annotation.replaceAll(
+    /滚动页展示8款会员游戏；[^']*支持云存档[^']*。/g,
+    '滚动页展示8款会员游戏；卡片只显示游戏名称和灰色“标准版”副标题。',
   );
-  annotation = annotation.replace(
-    '受首屏高度限制预览前4款，完整8款通过“查看全部”进入会员游戏库；预览卡同步显示云存档支持标识。',
-    '受首屏高度限制预览前4款，完整8款通过“查看全部”进入会员游戏库；云存档支持标识位于封面下方信息区，不叠加在封面上。',
+  annotation = annotation.replaceAll(
+    /受首屏高度限制预览前4款，完整8款通过“查看全部”进入会员游戏库；[^']*云存档[^']*。/g,
+    '受首屏高度限制预览前4款，完整8款通过“查看更多”进入可搜索的完整会员游戏库。',
   );
+  annotation = annotation.replaceAll('原四项会员权益', '三项会员权益');
+  annotation = annotation.replaceAll('四项权益', '三项权益');
+  annotation = annotation.replaceAll('PC引擎与手柄适配、', '');
+  annotation = annotation.replaceAll('季卡保持推荐锚点。', '默认选中周卡，不显示推荐角标。');
+  annotation = annotation.replaceAll('Demo 暂用周卡¥39、月卡¥129、季卡¥299并推荐季卡；周卡/季卡正式价格与推荐档待运营确认，待支付订单切换套餐时重建。', 'Demo 暂用周卡¥39、月卡¥129、季卡¥299并默认选中周卡；待支付订单切换套餐时重建。');
+  annotation = annotation.replaceAll('个人云存档同步只是三项权益之一', '个人云存档同步是三项权益之一');
+  annotation = annotation.replaceAll('关闭登录方式弹窗，显示登录成功反馈并返回游戏库。', '关闭登录方式弹窗，显示登录成功反馈并进入对应游戏详情。');
+  annotation = annotation.replaceAll('使用相同成功路径并返回横版游戏库。', '使用相同成功路径并进入对应游戏详情。');
   annotation = annotation.replace(
     '商品卡在游戏名下用灰色副标题只读显示“标准版”；顺序为商品、五项权益、套餐、游戏原价/订单金额、支付方式和固定支付栏。',
     '商品卡在游戏名下用灰色副标题只读显示“标准版”，下方保留上一版五项租号权益；顺序为商品、租号权益、套餐、游戏原价/订单金额、支付方式和固定支付栏；右上角只显示纯文字“租号介绍”。',
