@@ -7,6 +7,8 @@ const root = path.resolve(import.meta.dirname, '..');
 const htmlPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.html');
 const templatePath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.template.html');
 const annotationPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能-标注版.html');
+const macRentalAdminPath = path.join(root, 'Mac端demo', 'mac端租号功能', 'Mac端租号功能-标注版.html');
+const macRentalAdminHref = '../../Mac端demo/mac端租号功能/Mac端租号功能-标注版.html?mode=admin&page=products';
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const verificationEvidencePath = path.join(root, 'test-results', 'app-rental-verification', 'contract-results.json');
 
@@ -142,6 +144,16 @@ async function main() {
     ['Steam登录前移除令牌占位提示', templateSource.includes("if (!ready) return ''") && !templateSource.includes('提交账号密码后获取令牌')],
   ];
   const failedEighthReviewSourceChecks = eighthReviewSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
+  const playPcRentalSourceChecks = [
+    ['PC游戏统一目录', templateSource.includes('PLAY_PC_GAMES')],
+    ['复用统一租号摘要', templateSource.includes('renderPlayRentalSummary') && templateSource.includes('getDiscoveryDisplay(gameId)')],
+    ['仅PC游戏展示', templateSource.includes("state.playTab === 'pc'")],
+    ['独立操作热区', templateSource.includes('data-action="play-card-action"')],
+    ['截图默认PC游戏', templateSource.includes("state.playTab = 'pc'")],
+  ];
+  const failedPlayPcRentalSourceChecks = playPcRentalSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
+  assert(failedPlayPcRentalSourceChecks.length === 0, `PLAY_PC_RENTAL 源码契约未通过：${failedPlayPcRentalSourceChecks.join('、')}`);
+  process.stdout.write(`PLAY_PC_RENTAL_SOURCE ${playPcRentalSourceChecks.length}/${playPcRentalSourceChecks.length} PASS\n`);
   assertAnnotation(
     !/<iframe\b/i.test(annotationSource)
       && !/(?:<script[^>]+src|<link[^>]+href|(?:src|href)=["']https?:|url\(["']?https?:)/i.test(annotationSource),
@@ -494,6 +506,91 @@ async function main() {
       );
       assert(discoveryChecks === 16, `统一发现展示模型契约数量错误：${discoveryChecks}/16`);
       process.stdout.write('DISCOVERY_DISPLAY_MODEL 16/16 PASS\n');
+    });
+
+    await runRefactorGate('PLAY_PC_RENTAL', async () => {
+      await reloadDemo();
+      await page.evaluate(() => {
+        window.__appRentalDemo.setOrientation('portrait');
+        window.__appRentalDemo.openCaptureState('play');
+      });
+      const portraitStates = await page.evaluate(() => ({
+        playTab: window.__appRentalDemo.snapshot().playTab,
+        screen: window.__appRentalDemo.snapshot().screen,
+        types: [...document.querySelectorAll('[data-play-rental-summary]')].map((node) => node.dataset.playRentalSummary).sort(),
+        texts: [...document.querySelectorAll('[data-play-rental-summary]')].map((node) => node.textContent.trim()),
+        playText: document.querySelector('#appRentalDemo')?.innerText || '',
+        witcherSummaries: document.querySelectorAll('[data-play-game-id="witcher-3"] [data-play-rental-summary]').length,
+        witcherCards: document.querySelectorAll('[data-play-game-id="witcher-3"]').length,
+        actionCount: document.querySelectorAll('[data-play-game-id] [data-action="play-card-action"]').length,
+      }));
+      assert(portraitStates.screen === 'play' && portraitStates.playTab === 'pc', `PC游戏截图态错误：${JSON.stringify(portraitStates)}`);
+      assert(JSON.stringify(portraitStates.types) === JSON.stringify(['playable', 'rental-price', 'rented']), `竖屏四类摘要错误：${JSON.stringify(portraitStates)}`);
+      assert(portraitStates.texts.some((text) => text.includes('已租号')) && portraitStates.texts.some((text) => text.includes('可畅玩')) && portraitStates.texts.some((text) => text.includes('¥9.9 · 租号')), `竖屏摘要文案错误：${JSON.stringify(portraitStates.texts)}`);
+      assert(!portraitStates.playText.includes('剩余') && !portraitStates.playText.includes('账号分配'), `PC游戏卡暴露了禁用信息：${portraitStates.playText}`);
+      assert(portraitStates.witcherCards === 1 && portraitStates.witcherSummaries === 0 && portraitStates.actionCount === 4, `无摘要卡片或操作区错误：${JSON.stringify(portraitStates)}`);
+
+      await page.locator('[data-play-game-id="hogwarts"] [data-action="play-card-action"]').click();
+      const afterAction = await page.evaluate(() => window.__appRentalDemo.snapshot());
+      assert(afterAction.screen === 'play' && afterAction.toast === '下载操作已触发', `下载操作误进详情：${JSON.stringify(afterAction)}`);
+
+      const scrollBefore = await page.evaluate(() => {
+        const testStyle = document.createElement('style');
+        testStyle.dataset.verifyScrollRestore = 'true';
+        testStyle.textContent = '.device.portrait .portrait-content::after { content: ""; display: block; height: 1000px; pointer-events: none; }';
+        document.head.appendChild(testStyle);
+        const region = document.querySelector('.device.portrait .portrait-content');
+        region.scrollTop = Math.max(1, region.scrollHeight - region.clientHeight);
+        return region.scrollTop;
+      });
+      assert(scrollBefore > 0, `PC游戏竖屏列表不可滚动：${scrollBefore}`);
+      await page.locator('[data-play-game-id="hogwarts"] .play-game-copy').click();
+      assert((await page.evaluate(() => window.__appRentalDemo.snapshot().screen)) === 'detail', '点击PC游戏卡非操作区未进入详情');
+      await page.locator('[data-action="task-back"]').click();
+      await page.waitForFunction(() => (document.querySelector('.device.portrait .portrait-content')?.scrollTop || 0) > 0);
+      const restored = await page.evaluate(() => ({
+        snapshot: window.__appRentalDemo.snapshot(),
+        scrollTop: document.querySelector('.device.portrait .portrait-content')?.scrollTop || 0,
+      }));
+      assert(restored.snapshot.screen === 'play' && restored.snapshot.playTab === 'pc' && restored.scrollTop > 0, `返回未恢复PC Tab或列表位置：${JSON.stringify(restored)}`);
+
+      await page.evaluate(() => window.__appRentalDemo.setDiscoveryContext('hogwarts', { priceResolved: false }));
+      const degraded = await page.evaluate(() => ({
+        card: document.querySelectorAll('[data-play-game-id="hogwarts"]').length,
+        action: document.querySelectorAll('[data-play-game-id="hogwarts"] [data-action="play-card-action"]').length,
+        summary: document.querySelectorAll('[data-play-game-id="hogwarts"] [data-play-rental-summary]').length,
+      }));
+      assert(degraded.card === 1 && degraded.action === 1 && degraded.summary === 0, `价格失败未只收起摘要：${JSON.stringify(degraded)}`);
+      for (const value of ['cloud', 'retro']) {
+        await page.locator(`[data-group="playTab"][data-value="${value}"]`).click();
+        assert((await page.locator('[data-play-rental-summary]').count()) === 0, `${value} Tab 错误展示PC租号摘要`);
+      }
+
+      await page.evaluate(() => {
+        window.__appRentalDemo.openCaptureState('play');
+        window.__appRentalDemo.setOrientation('landscape');
+      });
+      const landscapeGeometry = await page.evaluate(() => {
+        const inside = (child, parent) => child.left >= parent.left - 1 && child.top >= parent.top - 1 && child.right <= parent.right + 1 && child.bottom <= parent.bottom + 1;
+        const device = document.querySelector('.device.landscape').getBoundingClientRect();
+        const cards = [...document.querySelectorAll('.landscape-play [data-play-game-id]')];
+        return cards.map((card) => {
+          const cardRect = card.getBoundingClientRect();
+          const actionRect = card.querySelector('[data-action="play-card-action"]')?.getBoundingClientRect();
+          const summaryRect = card.querySelector('[data-play-rental-summary]')?.getBoundingClientRect();
+          const nameRect = card.querySelector('.play-game-copy > strong')?.getBoundingClientRect();
+          return {
+            cardInsideDevice: inside(cardRect, device),
+            actionInsideCard: Boolean(actionRect && inside(actionRect, cardRect)),
+            actionWidth: actionRect?.width || 0,
+            actionHeight: actionRect?.height || 0,
+            summaryInsideCard: !summaryRect || inside(summaryRect, cardRect),
+            nameSummarySeparated: !summaryRect || !nameRect || nameRect.bottom <= summaryRect.top + 1,
+          };
+        });
+      });
+      assert(landscapeGeometry.length === 4 && landscapeGeometry.every((item) => item.cardInsideDevice && item.actionInsideCard && item.actionWidth >= 44 && item.actionHeight >= 44 && item.summaryInsideCard && item.nameSummarySeparated), `横屏卡片越界、热区不足或文字重叠：${JSON.stringify(landscapeGeometry)}`);
+      process.stdout.write('PLAY_PC_RENTAL 22/22 PASS\n');
     });
 
     await runRefactorGate('CDKEY_VISUAL_CONVERGENCE', async () => {
@@ -2247,10 +2344,13 @@ async function main() {
     await runRefactorGate('ADMIN_DUAL_CLIENT', async () => {
       assert(
         annotationSource.includes('APP（安卓端）客户端')
-          && annotationSource.includes('运营后台')
+          && annotationSource.includes('后台只读预览')
           && annotationSource.includes('APP_RENTAL_ADMIN_FRAGMENT_START')
-          && annotationSource.includes('window.__appRentalAdminDemo'),
-        '标注版缺少客户端/运营后台一级切换、后台片段标记或测试 API',
+          && annotationSource.includes('window.__appRentalAdminDemo')
+          && annotationSource.includes(macRentalAdminHref)
+          && annotationSource.includes('查询、新建、编辑、上下架等交互全部复用 Mac 后台')
+          && fs.existsSync(macRentalAdminPath),
+        '标注版缺少客户端/后台只读预览切换、Mac后台链接、复用说明、后台片段标记或测试 API',
       );
       const adminPage = await browser.newPage({ viewport: { width: 1680, height: 980 } });
       const adminIssues = [];
@@ -2260,6 +2360,12 @@ async function main() {
       adminPage.on('pageerror', (error) => adminIssues.push(`pageerror: ${error.message}`));
       try {
         await adminPage.goto(pathToFileURL(annotationPath).href, { waitUntil: 'domcontentloaded' });
+        const macAdminLink = await adminPage.locator('.annotation-admin-link').getAttribute('href');
+        assert(
+          macAdminLink === macRentalAdminHref
+            && path.resolve(path.dirname(annotationPath), macAdminLink.split('?')[0]) === macRentalAdminPath,
+          `Mac 后台相对链接无效：${macAdminLink}`,
+        );
         await adminPage.locator('[data-annotation-surface="admin"]').click();
         await adminPage.waitForFunction(() => Boolean(window.__appRentalAdminDemo));
         const states = [];
@@ -2305,8 +2411,71 @@ async function main() {
         const auditText = await adminPage.locator('#appRentalAdminDemo').innerText();
         const auditTabs = await adminPage.locator('#appRentalAdminDemo [data-admin-client-tab]').count();
         assert(auditTabs === 0 && auditText.includes('clientType'), `操作记录错误增加端别 Tab 或缺少 clientType：${auditText}`);
+        const falseInteractionCount = await adminPage.locator('#appRentalAdminDemo button[data-admin-action]').count();
+        const readonlyControlCount = await adminPage.locator('#appRentalAdminDemo .admin-readonly-control').count();
+        assert(falseInteractionCount === 0 && readonlyControlCount > 0, `后台只读预览仍存在假交互：${JSON.stringify({ falseInteractionCount, readonlyControlCount })}`);
+
+        const unifiedPage = await browser.newPage({ viewport: { width: 1680, height: 980 } });
+        const unifiedIssues = [];
+        unifiedPage.on('console', (message) => {
+          if (message.type() === 'error') unifiedIssues.push(`console: ${message.text()}`);
+        });
+        unifiedPage.on('pageerror', (error) => unifiedIssues.push(`pageerror: ${error.message}`));
+        try {
+          await unifiedPage.goto(new URL(macAdminLink, pathToFileURL(annotationPath).href).href, { waitUntil: 'domcontentloaded' });
+          const unifiedStates = [];
+          for (const pageId of ADMIN_PAGE_MATRIX) {
+            await unifiedPage.locator(`.admin-nav[data-mode="admin"][data-page="${pageId}"]`).click();
+            const tabs = unifiedPage.locator('[data-admin-client-tab]');
+            const tabCount = await tabs.count();
+            const activeClient = tabCount ? await unifiedPage.locator('[data-admin-client-tab].active').getAttribute('data-admin-client-tab') : 'all';
+            unifiedStates.push({ pageId, tabCount, activeClient });
+          }
+          assert(
+            unifiedStates.every(({ pageId, tabCount, activeClient }) => tabCount === (pageId === 'audit' ? 0 : 2)
+              && activeClient === (pageId === 'audit' ? 'all' : 'android')),
+            `统一后台默认端别或 Tab 数错误：${JSON.stringify(unifiedStates)}`,
+          );
+
+          for (const pageId of ADMIN_DUAL_CLIENT_PAGES) {
+            await unifiedPage.locator(`.admin-nav[data-mode="admin"][data-page="${pageId}"]`).click();
+            await unifiedPage.locator('[data-admin-client-tab="mac"]').click();
+            assert(
+              await unifiedPage.locator('[data-admin-client-tab="mac"].active').count() === 1,
+              `统一后台 ${pageId} 无法切换到 Mac`,
+            );
+          }
+          await unifiedPage.locator('.admin-nav[data-mode="admin"][data-page="products"]').click();
+          assert(
+            await unifiedPage.locator('[data-admin-client-tab="mac"].active').count() === 1,
+            '统一后台未保持商品管理页的端别选择',
+          );
+          await unifiedPage.locator('[data-action="toggle-product"]').first().click();
+          const unifiedProductControls = await unifiedPage.evaluate(() => ({
+            query: document.querySelectorAll('[data-input="product-query"]').length,
+            create: document.querySelectorAll('[data-action="new-product"]').length,
+            edit: document.querySelectorAll('[data-action="edit-supplier-price"]').length,
+            offline: document.querySelectorAll('[data-action="single-product-offline"]').length,
+            text: document.querySelector('#demoCanvas')?.innerText.slice(0, 500) || '',
+          }));
+          assert(
+            unifiedProductControls.query === 1
+              && unifiedProductControls.create === 1
+              && unifiedProductControls.edit > 0
+              && unifiedProductControls.offline > 0,
+            `统一后台未复用查询、新建、编辑或上下架真实交互：${JSON.stringify(unifiedProductControls)}`,
+          );
+          const unifiedSmoke = await unifiedPage.evaluate(() => window.__demoSmoke());
+          assert(
+            unifiedSmoke.pass,
+            `统一后台原交互 smoke 回归失败：${JSON.stringify(unifiedSmoke.results.filter((item) => !item.pass))}`,
+          );
+          assert(unifiedIssues.length === 0, `统一后台存在控制台或页面错误：${unifiedIssues.join(' | ')}`);
+        } finally {
+          await unifiedPage.close();
+        }
         assert(adminIssues.length === 0, `后台存在控制台或页面错误：${adminIssues.join(' | ')}`);
-        process.stdout.write('ADMIN_DUAL_CLIENT 13/13 PASS\n');
+        process.stdout.write('ADMIN_DUAL_CLIENT 27/27 PASS\n');
       } finally {
         await adminPage.close();
       }
@@ -4282,8 +4451,8 @@ async function main() {
         exception: document.querySelectorAll('.anno-badge--exception').length,
       };
     });
-    assertAnnotation(annotationMatrix.total === 32 && annotationMatrix.complete, `标注矩阵数量或六字段不完整：${JSON.stringify(annotationMatrix)}`);
-    assertAnnotation(annotationMatrix.interaction === 16 && annotationMatrix.global === 8 && annotationMatrix.exception === 8, `数字/G/E 三类标注数量错误：${JSON.stringify(annotationMatrix)}`);
+    assertAnnotation(annotationMatrix.total === 33 && annotationMatrix.complete, `标注矩阵数量或六字段不完整：${JSON.stringify(annotationMatrix)}`);
+    assertAnnotation(annotationMatrix.interaction === 17 && annotationMatrix.global === 8 && annotationMatrix.exception === 8, `数字/G/E 三类标注数量错误：${JSON.stringify(annotationMatrix)}`);
     const annotationStateText = await annotationPage.locator('#panel-state').innerText();
     assertAnnotation(!/(?:gh_rental_2607|G@meHub#8291|48291|guardCode|\btoken\b)/i.test(annotationStateText), '数据与状态 Tab 不得展示账号、密码、校验值或令牌字段');
     assertAnnotation(

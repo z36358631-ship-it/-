@@ -160,9 +160,10 @@ function assertNoPageErrors(pageErrors, label) {
 async function withFreshPage(browser, label, run) {
   const { page, pageErrors } = await openFreshPage(browser);
   try {
-    await run(page);
+    const result = await run(page);
     await page.waitForTimeout(0);
     assertNoPageErrors(pageErrors, label);
+    return result;
   } finally {
     await page.close();
   }
@@ -302,9 +303,11 @@ async function setShotState(page, shot) {
       apiMissing: false,
       orientation: snapshot?.orientation ?? demo.snapshot().orientation,
       screen: snapshot?.screen ?? demo.snapshot().screen,
+      playTab: snapshot?.playTab ?? demo.snapshot().playTab,
     };
   }, shot);
   assert(!result.apiMissing, `${shot.name} requires window.__appRentalDemo.openCaptureState(pageId)`);
+  if (shot.pageId === 'play') assert.equal(result.playTab, 'pc', `${shot.name} must open the PC game tab`);
   if (shot.pageId === 'orders') await page.locator('[data-action="toggle-order-search"]').click();
 }
 
@@ -666,11 +669,12 @@ async function captureShots(browser) {
   });
   process.stdout.write(`CAPTURE ${results.length}/${shots.length} PASS\n`);
   process.stdout.write(`CAPTURE_REPORT ${reportPath}\n`);
+  return results;
 }
 
 async function captureLandscapeLoginInfoEvidence(browser) {
   const shot = { name: 'steam-login-info-landscape.png', pageId: 'steam-login', orientation: 'landscape', sensitive: true };
-  await withFreshPage(browser, shot.name, async (page) => {
+  return withFreshPage(browser, shot.name, async (page) => {
     await setShotState(page, shot);
     await page.locator('.steam-help-trigger').click();
     await waitForAssets(page);
@@ -702,6 +706,67 @@ async function captureLandscapeLoginInfoEvidence(browser) {
     await page.locator('.device').screenshot({ path: outputPath, animations: 'disabled' });
     const png = verifyPng(outputPath, shot);
     process.stdout.write(`LANDSCAPE_REVIEW ${shot.name} ${png.bytes} bytes PASS\n`);
+    return { ...shot, status: 'pass', ...png, outputPath: path.relative(root, outputPath) };
+  });
+}
+
+async function captureAfterSalesProgressEvidence(browser) {
+  const results = [];
+  for (const orientation of ['portrait', 'landscape']) {
+    const shot = {
+      name: `19-after-sales-progress-${orientation}.png`,
+      pageId: 'after-sales-progress',
+      orientation,
+      sensitive: true,
+    };
+    await withFreshPage(browser, shot.name, async (page) => {
+      await page.evaluate(({ targetOrientation }) => {
+        const demo = window.__appRentalDemo;
+        demo.setScenario('active-rental');
+        demo.setOrientation(targetOrientation);
+        demo.navigate('orders');
+      }, { targetOrientation: orientation });
+      await page.locator('.order-list-card[data-status="active"]').click();
+      await page.getByRole('button', { name: '申请售后', exact: true }).click();
+      await page.locator('[data-after-sales-type="launch"]').click();
+      await page.locator('#after-sales-description').fill('游戏启动后持续闪退，需要协助排查。');
+      await page.evaluate(() => window.__appRentalDemo.submitAfterSales());
+      await page.locator('[data-order-card-action="after-sales-detail"]').click();
+      await waitForAssets(page);
+      const evidence = await page.evaluate(() => {
+        const dialog = document.querySelector('[aria-label="售后进度"]');
+        const steps = [...document.querySelectorAll('.after-sales-progress-dialog .refund-progress-timeline span')];
+        return {
+          dialogVisible: Boolean(dialog),
+          processing: dialog?.textContent.includes('售后处理中') || false,
+          steps: steps.map((node) => ({ text: node.textContent.trim(), className: node.className })),
+          withdraw: dialog?.querySelector('[data-action="withdraw-after-sales"]')?.textContent.trim() || '',
+          text: dialog?.innerText || '',
+        };
+      });
+      assert(evidence.dialogVisible && evidence.processing, `${shot.name} after-sales progress dialog is not visible`);
+      assert.equal(evidence.steps.length, 3, `${shot.name} after-sales progress must contain three stages`);
+      assert(evidence.steps[0].className.includes('done') && evidence.steps[1].className.includes('current'), `${shot.name} after-sales progress stage state mismatch`);
+      assert.equal(evidence.withdraw, '撤销售后', `${shot.name} after-sales progress must allow withdrawal while processing`);
+      for (const secret of KNOWN_SECRETS) assert(!evidence.text.includes(secret), `${shot.name} exposes sensitive value ${secret}`);
+      const outputPath = path.join(outputDir, shot.name);
+      await page.locator('.device').screenshot({ path: outputPath, animations: 'disabled' });
+      const png = verifyPng(outputPath, shot);
+      results.push({ ...shot, status: 'pass', ...png, outputPath: path.relative(root, outputPath) });
+      process.stdout.write(`SUPPLEMENTAL_CAPTURED ${shot.name} ${png.bytes} bytes\n`);
+    });
+  }
+  return results;
+}
+
+function appendAdditionalEvidence(additionalEvidence) {
+  const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  writeCaptureReport({
+    ...report,
+    additionalEvidence,
+    evidenceExpected: additionalEvidence.length,
+    evidencePassed: additionalEvidence.filter(({ status }) => status === 'pass').length,
+    evidenceFailed: additionalEvidence.filter(({ status }) => status === 'fail').length,
   });
 }
 
@@ -709,7 +774,12 @@ const browser = await chromium.launch({ executablePath: chromePath, headless: tr
 try {
   await runPreflight(browser);
   await captureShots(browser);
-  await captureLandscapeLoginInfoEvidence(browser);
+  const additionalEvidence = [
+    await captureLandscapeLoginInfoEvidence(browser),
+    ...await captureAfterSalesProgressEvidence(browser),
+  ];
+  appendAdditionalEvidence(additionalEvidence);
+  process.stdout.write(`SUPPLEMENTAL_CAPTURE ${additionalEvidence.length}/${additionalEvidence.length} PASS\n`);
 } finally {
   await browser.close();
 }

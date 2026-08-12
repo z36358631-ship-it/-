@@ -341,6 +341,16 @@
     .feature-info { display: flex; min-height: 57px; align-items: center; gap: 8px; padding: 9px 11px; }
     .feature-info strong { overflow: hidden; flex: 1; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
     .small-pill { min-height: 36px; padding: 0 14px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 100px; background: rgb(255 255 255 / 7%); cursor: pointer; font-size: 11px; }
+    .play-game-card { cursor: pointer; }
+    .play-game-card .small-pill { min-width: 44px; min-height: 44px; flex: 0 0 auto; }
+    .play-game-copy { min-width: 0; }
+    .feature-info.play-game-copy { align-items: flex-start; }
+    .play-game-copy > div { min-width: 0; flex: 1; }
+    .play-game-copy > div > strong { display: block; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+    .play-game-meta { display: block; overflow: hidden; margin-top: 3px; color: var(--text-muted); font-size: 10px; line-height: 14px; text-overflow: ellipsis; white-space: nowrap; }
+    .play-rental-summary { display: flex; min-width: 0; flex-direction: column; gap: 1px; margin-top: 5px; }
+    .play-rental-summary > strong { display: block; overflow: hidden; color: #ff9c42; font-family: var(--font-number); font-size: 12px; line-height: 16px; text-overflow: ellipsis; white-space: nowrap; }
+    .play-rental-demand { color: var(--text-muted); font-size: 9px; line-height: 13px; }
 
     .game-list { display: grid; gap: 12px; }
     .game-list-item { display: grid; min-height: 76px; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: 11px; }
@@ -799,6 +809,19 @@
     .landscape-hot-card { min-width: 0; overflow: hidden; border-radius: 11px; background: rgb(255 255 255 / 4%); }
     .landscape-hot-card .landscape-cover { width: 100%; height: 70px; border-radius: 10px; }
     .landscape-hot-card strong { display: block; overflow: hidden; padding: 6px 7px; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+    .landscape-recent-item.play-game-card { grid-template-columns: 72px minmax(0, 1fr) 44px; }
+    .landscape-recent-item .play-game-copy > strong { padding: 0; font-size: 9px; }
+    .landscape-recent-item .play-game-meta { font-size: 8px; line-height: 11px; }
+    .landscape-recent-item .play-rental-summary { margin-top: 2px; }
+    .landscape-recent-item .play-rental-summary > strong { padding: 0; font-size: 9px; line-height: 12px; }
+    .landscape-hot-card.play-game-card { display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: end; }
+    .landscape-hot-card.play-game-card .landscape-cover { grid-column: 1 / -1; }
+    .landscape-hot-card .play-game-copy { align-self: stretch; padding: 6px 7px 7px; }
+    .landscape-hot-card .play-game-copy > strong { padding: 0; }
+    .landscape-hot-card .play-game-meta { font-size: 8px; line-height: 11px; }
+    .landscape-hot-card .play-rental-summary { margin-top: 2px; }
+    .landscape-hot-card .play-rental-summary > strong { padding: 0; font-size: 9px; line-height: 12px; }
+    .landscape-hot-card.play-game-card .small-pill { margin: 0 6px 7px 0; padding: 0 8px; }
 
     .landscape-profile { display: grid; height: 314px; grid-template-columns: .82fr 1.45fr; gap: 12px; }
     .landscape-profile-user { display: flex; min-width: 0; flex-direction: column; align-items: center; padding: 20px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 18px; background: radial-gradient(circle at 50% 0, rgb(21 104 127 / 34%), transparent 53%), rgb(15 18 23 / 84%); text-align: center; }
@@ -2162,6 +2185,74 @@
           inventoryResolved: true,
           eligibilityResolved: true,
         },
+        'red-dead-2': {
+          activeOrderStatus: 'active',
+          expireAt: Date.now() + 6 * 60 * 60 * 1000,
+          refundActive: false,
+          owned: false,
+          installed: false,
+          imported: false,
+          permanent: false,
+          membershipActive: false,
+          memberLibrary: false,
+          region: 'CN',
+          platform: 'Steam',
+          firstRentalEligible: false,
+          priceResolved: true,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        },
+        'forza-5': {
+          activeOrderStatus: null,
+          expireAt: null,
+          refundActive: false,
+          owned: true,
+          installed: true,
+          imported: false,
+          permanent: false,
+          membershipActive: false,
+          memberLibrary: false,
+          region: 'CN',
+          platform: 'Steam',
+          firstRentalEligible: false,
+          priceResolved: true,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        },
+        hogwarts: {
+          activeOrderStatus: null,
+          expireAt: null,
+          refundActive: false,
+          owned: false,
+          installed: false,
+          imported: false,
+          permanent: false,
+          membershipActive: false,
+          memberLibrary: false,
+          region: 'CN',
+          platform: 'Steam',
+          firstRentalEligible: false,
+          priceResolved: true,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        },
+        'witcher-3': {
+          activeOrderStatus: null,
+          expireAt: null,
+          refundActive: false,
+          owned: false,
+          installed: false,
+          imported: false,
+          permanent: false,
+          membershipActive: false,
+          memberLibrary: false,
+          region: 'CN',
+          platform: 'Steam',
+          firstRentalEligible: false,
+          priceResolved: false,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        },
       },
       selectedSku: 'trial',
       selectedHours: 2,
@@ -2330,6 +2421,13 @@
       ['spiritfarer', 'Spiritfarer', 'blue', 'SPIRITFARER'],
       ['dont-starve', '饥荒', 'ember', 'DON’T STARVE'],
     ];
+
+    const PLAY_PC_GAMES = Object.freeze([
+      { id: 'red-dead-2', name: '荒野大镖客：救赎 2', action: '启动', demand: '在租 99+', meta: '动作冒险 · 评分 9.6', asset: 'landscapeLibrary', crop: [1926, 297, 397, 224] },
+      { id: 'forza-5', name: '极限竞速：地平线 5', action: '启动', demand: '', meta: '竞速驾驶 · 评分 9.3', asset: 'play', crop: [45, 1630, 189, 238] },
+      { id: 'hogwarts', name: '霍格沃茨之遗', action: '下载', demand: '在租 36+', meta: '开放世界 · 评分 9.0', asset: 'landscapeSteamLibrary', crop: [608, 753, 390, 216] },
+      { id: 'witcher-3', name: '巫师 3：狂猎', action: '启动', demand: '', meta: '角色扮演 · 评分 8.7', asset: 'play', crop: [45, 1359, 189, 225] },
+    ]);
 
     const MEMBER_PLANS = Object.freeze([
       { id: 'weekly', name: '周卡', price: 39, note: '7天会员游戏库畅玩' },
@@ -2746,6 +2844,13 @@
       if (model.displayType === DISCOVERY_DISPLAY_TYPES.NONE) return '';
       const classes = ['discovery-display', className].filter(Boolean).join(' ');
       return `<span class="${classes}" data-discovery-display="${model.displayType}">${model.displayText}</span>`;
+    }
+
+    function renderPlayRentalSummary(gameId, demand = '') {
+      const model = getDiscoveryDisplay(gameId);
+      if (model.displayType === DISCOVERY_DISPLAY_TYPES.NONE) return '';
+      const demandLine = demand ? `<span class="play-rental-demand">${demand}</span>` : '';
+      return `<div class="play-rental-summary" data-play-rental-summary="${model.displayType}"><strong>${model.displayText}</strong>${demandLine}</div>`;
     }
 
     function renderHomeRentalPrice(gameId) {
@@ -4057,6 +4162,30 @@
         membershipActive: false, memberLibrary: false, firstRentalEligible: true,
         priceResolved: true, inventoryResolved: true, eligibilityResolved: true,
       });
+      Object.assign(state.discoveryContexts['red-dead-2'], {
+        activeOrderStatus: 'active', expireAt: Date.now() + 6 * 60 * 60 * 1000, refundActive: false,
+        owned: false, installed: false, imported: false, permanent: false,
+        membershipActive: false, memberLibrary: false, firstRentalEligible: false,
+        priceResolved: true, inventoryResolved: true, eligibilityResolved: true,
+      });
+      Object.assign(state.discoveryContexts['forza-5'], {
+        activeOrderStatus: null, expireAt: null, refundActive: false,
+        owned: true, installed: true, imported: false, permanent: false,
+        membershipActive: false, memberLibrary: false, firstRentalEligible: false,
+        priceResolved: true, inventoryResolved: true, eligibilityResolved: true,
+      });
+      Object.assign(state.discoveryContexts.hogwarts, {
+        activeOrderStatus: null, expireAt: null, refundActive: false,
+        owned: false, installed: false, imported: false, permanent: false,
+        membershipActive: false, memberLibrary: false, firstRentalEligible: false,
+        priceResolved: true, inventoryResolved: true, eligibilityResolved: true,
+      });
+      Object.assign(state.discoveryContexts['witcher-3'], {
+        activeOrderStatus: null, expireAt: null, refundActive: false,
+        owned: false, installed: false, imported: false, permanent: false,
+        membershipActive: false, memberLibrary: false, firstRentalEligible: false,
+        priceResolved: false, inventoryResolved: true, eligibilityResolved: true,
+      });
       state.selectedSku = 'trial';
       state.selectedHours = 2;
       state.selectedPlatform = 'Steam';
@@ -4138,7 +4267,10 @@
 
     const CAPTURE_STATE_SETUPS = Object.freeze({
       home: () => navigate('home'),
-      play: () => navigate('play'),
+      play: () => {
+        state.playTab = 'pc';
+        navigate('play');
+      },
       community: () => navigate('community'),
       ranking: () => navigate('ranking'),
       library: () => navigate('library'),
@@ -4342,6 +4474,17 @@
 
     function renderPlay() {
       const tabLabel = { cloud: '秒玩', pc: '启动', retro: '畅玩' }[state.playTab];
+      if (state.playTab === 'pc') {
+        const featureGames = PLAY_PC_GAMES.slice(0, 2);
+        const listGames = PLAY_PC_GAMES.slice(2);
+        return `${searchRow('搜索PC游戏')}
+          ${pageTabs([['cloud', '云游戏'], ['pc', 'PC游戏'], ['retro', '复古游戏']], state.playTab, 'playTab')}
+          <div class="account-card"><span class="avatar-small">${personIcon()}</span><div><strong>欢迎回来，玩家</strong><p>会员游戏库已为你同步</p></div></div>
+          <div class="section-head"><h2>启动人气热游</h2><span>精选</span></div>
+          <div class="feature-scroll">${featureGames.map((game) => `<article class="feature-card play-game-card" data-action="navigate" data-screen="detail" data-game-id="${game.id}" data-play-game-id="${game.id}">${realCrop(game.asset, game.crop, `${game.name} 游戏画面`, '')}<div class="feature-info play-game-copy"><div><strong>${game.name}</strong><span class="play-game-meta">${game.meta}</span>${renderPlayRentalSummary(game.id, game.demand)}</div><button class="small-pill" type="button" data-action="play-card-action" data-play-action="${game.action}">${game.action}</button></div></article>`).join('')}</div>
+          <div class="section-head"><h2>全部启动</h2><span>按热度</span></div>
+          <div class="game-list">${listGames.map((game) => `<article class="game-list-item play-game-card" data-action="navigate" data-screen="detail" data-game-id="${game.id}" data-play-game-id="${game.id}">${realCrop(game.asset, game.crop, `${game.name} 游戏封面`, '')}<div class="game-list-copy play-game-copy"><strong>${game.name}</strong><span class="play-game-meta">${game.meta}</span>${renderPlayRentalSummary(game.id, game.demand)}</div><button class="small-pill" type="button" data-action="play-card-action" data-play-action="${game.action}">${game.action}</button></article>`).join('')}</div>`;
+      }
       const featureGames = [
         ['极限竞速：地平线 6', [53, 753, 642, 305]],
         ['怪物猎人：世界', [756, 753, 350, 305]],
@@ -5207,13 +5350,15 @@
           ],
         },
       };
-      const { recent: recentGames, hot: hotGames } = playCatalogs[state.playTab] || playCatalogs.cloud;
+      const showRentalSummary = state.playTab === 'pc';
+      const recentGames = showRentalSummary ? PLAY_PC_GAMES.slice(0, 2) : (playCatalogs[state.playTab] || playCatalogs.cloud).recent;
+      const hotGames = showRentalSummary ? PLAY_PC_GAMES.slice(2) : (playCatalogs[state.playTab] || playCatalogs.cloud).hot;
       return `<section class="landscape-play">
         <div class="landscape-play-toolbar"><div class="landscape-play-tabs" role="tablist">${[['cloud', '云游戏'], ['pc', 'PC游戏'], ['retro', '复古游戏']].map(([value, label]) => `<button type="button" role="tab" aria-selected="${state.playTab === value}" class="${state.playTab === value ? 'active' : ''}" data-action="set-tab" data-group="playTab" data-value="${value}">${label}</button>`).join('')}</div><span class="rent-badge">会员游戏库已同步</span></div>
         <div class="landscape-play-grid">
           <section class="landscape-panel landscape-benefit"><div class="landscape-user-line">${realCrop('profile', [482, 302, 156, 158], '盖世玩家头像', '', 'avatar-small')}<div><strong>盖世玩家 0525</strong><span>${state.scenario === 'active-member' ? '畅玩会员生效中' : '登录后同步完整权益'}</span></div></div><h2>你的${tabLabel}权益</h2><div class="benefit-list"><span>极速启动，无需等待下载</span><span>支持云端存档与手柄</span><span>会员库游戏优先畅玩</span></div><button class="primary-action" type="button" data-primary-action="true" data-action="feedback">进入${tabLabel}</button></section>
-          <section class="landscape-panel landscape-recent"><div class="landscape-section-title"><h2>最近常玩</h2><span>继续游戏</span></div><div class="landscape-recent-list">${recentGames.map(([name, crop, asset]) => `<article class="landscape-recent-item">${realCrop(asset, crop, `${name} 最近常玩封面`, '', 'landscape-cover')}<div><strong>${name}</strong><small>上次游玩 23 分钟前</small></div></article>`).join('')}</div></section>
-          <section class="landscape-panel landscape-hot"><div class="landscape-section-title"><h2>人气热游</h2><span>全部游戏</span></div><div class="landscape-hot-wall">${hotGames.map(([name, crop, asset]) => `<article class="landscape-hot-card">${realCrop(asset, crop, `${name} 热游封面`, '', 'landscape-cover')}<strong>${name}</strong></article>`).join('')}</div></section>
+          <section class="landscape-panel landscape-recent"><div class="landscape-section-title"><h2>最近常玩</h2><span>继续游戏</span></div><div class="landscape-recent-list">${showRentalSummary ? recentGames.map((game) => `<article class="landscape-recent-item play-game-card" data-action="navigate" data-screen="detail" data-game-id="${game.id}" data-play-game-id="${game.id}">${realCrop(game.asset, game.crop, `${game.name} 最近常玩封面`, '', 'landscape-cover')}<div class="play-game-copy"><strong>${game.name}</strong><span class="play-game-meta">${game.meta}</span>${renderPlayRentalSummary(game.id, game.demand)}</div><button class="small-pill" type="button" data-action="play-card-action" data-play-action="${game.action}">${game.action}</button></article>`).join('') : recentGames.map(([name, crop, asset]) => `<article class="landscape-recent-item">${realCrop(asset, crop, `${name} 最近常玩封面`, '', 'landscape-cover')}<div><strong>${name}</strong><small>上次游玩 23 分钟前</small></div></article>`).join('')}</div></section>
+          <section class="landscape-panel landscape-hot"><div class="landscape-section-title"><h2>人气热游</h2><span>全部游戏</span></div><div class="landscape-hot-wall">${showRentalSummary ? hotGames.map((game) => `<article class="landscape-hot-card play-game-card" data-action="navigate" data-screen="detail" data-game-id="${game.id}" data-play-game-id="${game.id}">${realCrop(game.asset, game.crop, `${game.name} 热游封面`, '', 'landscape-cover')}<div class="play-game-copy"><strong>${game.name}</strong><span class="play-game-meta">${game.meta}</span>${renderPlayRentalSummary(game.id, game.demand)}</div><button class="small-pill" type="button" data-action="play-card-action" data-play-action="${game.action}">${game.action}</button></article>`).join('') : hotGames.map(([name, crop, asset]) => `<article class="landscape-hot-card">${realCrop(asset, crop, `${name} 热游封面`, '', 'landscape-cover')}<strong>${name}</strong></article>`).join('')}</div></section>
         </div>
       </section>`;
     }
@@ -5395,6 +5540,12 @@
       if (!target) return;
       const action = target.dataset.action;
       if (target.classList.contains('modal-backdrop') && event.target !== target) return;
+      if (action === 'play-card-action') {
+        event.preventDefault();
+        event.stopPropagation();
+        showToast(`${target.dataset.playAction || '启动'}操作已触发`);
+        return;
+      }
       if (action === 'navigate') {
         if (target.dataset.gameId) setSelectedGame(target.dataset.gameId, { shouldRender: false });
         navigate(target.dataset.screen);

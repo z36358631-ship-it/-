@@ -68,6 +68,10 @@ const requiredBusinessSignatures = Object.freeze([
   'resolveGameDisplayModel',
   'getDiscoveryUserContext',
   'renderDiscoveryDisplay',
+  'PLAY_PC_GAMES',
+  'renderPlayRentalSummary',
+  'play-card-action',
+  'data-play-rental-summary',
   'ORDER_TABS',
   'GAME_SALE_MODES',
   'eligibleCheckoutSkus',
@@ -176,6 +180,20 @@ if (fs.existsSync(annotationPath)) {
   if (!adminFragment.includes('APP_RENTAL_ADMIN_FRAGMENT_START') || !adminFragment.includes('window.__appRentalAdminDemo')) {
     throw new Error('后台片段缺少稳定标记或测试 API');
   }
+  const adminPreviewFragment = adminFragment
+    .replace(
+      '</style>',
+      `  .annotation-admin-link { display: flex; min-height: 38px; align-items: center; padding: 0 10px; border: 1px solid rgb(77 184 232 / 45%); border-radius: 9px; background: rgb(77 184 232 / 14%); color: #9fe2ff; font-size: 11px; text-decoration: none; }
+  .annotation-admin-link:hover { background: rgb(77 184 232 / 22%); color: #c8f0ff; }
+  .annotation-admin-note { margin: 10px 0 0; color: rgb(255 255 255 / 52%); font-size: 10px; line-height: 16px; }
+  #appRentalAdminDemo .admin-readonly-control { border-color: transparent; background: transparent; color: #8c96a5; cursor: default; }
+  #appRentalAdminDemo .admin-toolbar input[readonly],
+  #appRentalAdminDemo .admin-toolbar select:disabled { border-color: #e7eaf0; background: #f7f8fa; color: #9aa3b1; cursor: default; opacity: 1; }
+</style>`,
+    )
+    .replace(/<button class="a-btn([^"]*)" data-admin-action="[^"]+"([^>]*)>([\s\S]*?)<\/button>/g, '<span class="a-btn$1 admin-readonly-control"$2>$3</span>')
+    .replace(/<input([^>]*?)>/g, '<input$1 readonly tabindex="-1">')
+    .replace(/<select([^>]*?)>/g, '<select$1 disabled tabindex="-1">');
 
   let annotation = fs.readFileSync(annotationPath, 'utf8');
   if (!annotation.includes('data-annotation-surface="admin"')) {
@@ -190,6 +208,10 @@ if (fs.existsSync(annotationPath)) {
       '<div id="demoScaleFrame" data-scale="1"><main id="appRentalDemo" data-orientation="portrait" data-screen="home"></main></div><main id="appRentalAdminDemo" hidden></main><!-- APP_RENTAL_ADMIN_INJECT -->',
     );
   }
+  annotation = annotation.replace(
+    /<div class="annotation-surface-switch">[\s\S]*?<\/div><\/div><nav class="admin-module-nav"/,
+    '<div class="annotation-surface-switch"><button class="active" type="button" data-annotation-surface="client">APP（安卓端）客户端</button><button type="button" data-annotation-surface="admin">后台只读预览</button><a class="annotation-admin-link" href="../../Mac端demo/mac端租号功能/Mac端租号功能-标注版.html?mode=admin&page=products" target="_blank" rel="noopener">打开完整统一租号后台 ↗</a></div><p class="annotation-admin-note">前 6 个后台页仅在 Mac 后台基础上新增“APP（安卓端）”Tab；操作记录无端别 Tab。查询、新建、编辑、上下架等交互全部复用 Mac 后台。</p></div><nav class="admin-module-nav"',
+  );
   const styleMarker = '    /* 交互标注文档壳层：完整 Demo 直接内嵌，不使用 iframe。 */';
   const scriptMarker = '  <script>\n    const ANNOTATION_GROUPS = Object.freeze([';
   if (!annotation.includes(styleMarker) || !annotation.includes(scriptMarker)) throw new Error('标注版缺少稳定同步标记');
@@ -283,11 +305,17 @@ if (fs.existsSync(annotationPath)) {
   );
   annotation = annotation.replace(
     /<!-- APP_RENTAL_ADMIN_FRAGMENT_START -->[\s\S]*?<!-- APP_RENTAL_ADMIN_FRAGMENT_END -->|<!-- APP_RENTAL_ADMIN_INJECT -->/,
-    adminFragment,
+    adminPreviewFragment,
   );
+  if (!annotation.includes("id: '2A'")) {
+    annotation = annotation.replace(
+      /({ id: '2', type: 'interaction', group: 'discovery',[^\n]+\n)/,
+      `$1      { id: '2A', type: 'interaction', group: 'discovery', title: 'PC游戏卡租号摘要', portraitSelector: '.play-game-card[data-play-game-id]', landscapeSelector: '.landscape-hot-card[data-play-game-id]', trigger: '进入玩游戏并切换到PC游戏。', portrait: '游戏名和原类型/评分下方展示一条租号摘要；有真实人数时再显示在租人数。', landscape: '最近常玩与人气热游复用同一摘要，卡片按内容自然增高。', feedback: '点击卡片非操作区进入详情；点击启动或下载仍执行原操作。', dependency: '优先级为已租号→可畅玩→最低有效租号价→无新增信息。', exception: '价格、库存、资格或摘要失败时隐藏新增信息，不影响原列表和操作。' },\n`,
+    );
+  }
   const requiredAdminSignatures = [
     'APP（安卓端）客户端',
-    '运营后台',
+    '后台只读预览',
     '租号商品管理',
     '会员游戏库管理',
     '会员套餐管理',
@@ -298,6 +326,10 @@ if (fs.existsSync(annotationPath)) {
     'data-admin-client-tab="android"',
     'data-admin-client-tab="mac"',
     'window.__appRentalAdminDemo',
+    '../../Mac端demo/mac端租号功能/Mac端租号功能-标注版.html?mode=admin&page=products',
+    '后台只读预览',
+    '查询、新建、编辑、上下架等交互全部复用 Mac 后台',
+    "id: '2A'",
   ];
   const missingAdminSignatures = requiredAdminSignatures.filter((signature) => !annotation.includes(signature));
   if (missingAdminSignatures.length) throw new Error(`标注版缺少后台签名：${missingAdminSignatures.join('、')}`);
