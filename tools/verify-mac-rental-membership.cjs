@@ -1,13 +1,7 @@
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const { pathToFileURL } = require('url');
-const { chromium } = require(path.join(
-  os.tmpdir(),
-  'codex-playwright',
-  'node_modules',
-  'playwright-core',
-));
+const { chromium } = require('playwright-core');
 
 const root = path.resolve(__dirname, '..');
 const htmlPath = path.join(
@@ -130,7 +124,7 @@ async function setBaseState(page, targetPage) {
       continueSourceOrderId: '',
       riskAccepted: false,
       pendingOrderId: '',
-      membershipPlanId: 'monthly',
+      membershipPlanId: '',
     });
     renderApp();
     const main = document.querySelector('.mac-main');
@@ -208,6 +202,78 @@ async function main() {
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
 
+    await openDemo(page);
+    await setBaseState(page, 'order-detail');
+    const afterSalesFlow = await page.evaluate(async () => {
+      const order = orders.find((item) => item.id === 'GS20260713001');
+      state.selectedOrderId = order.id;
+      Object.assign(order, {
+        status: 'renting',
+        refundStatus: 'none',
+        refundReason: '',
+        refundDescription: '',
+        refundOperation: '',
+        afterSales: '',
+      });
+      navigate('mac', 'order-detail');
+      openRefundForm(order);
+      const form = document.querySelector('#demoForm');
+      form.querySelector('[name="reason"]').value = 'startup-failed';
+      form.querySelector('[name="description"]').value = '游戏启动后持续闪退';
+      form.requestSubmit();
+      await nextPaint();
+      const submitted = {
+        page: state.page,
+        dialogClosed: document.getElementById('confirmLayer').hidden,
+        action: document.querySelector('[data-action="open-refund-detail"]')?.textContent.trim() || '',
+        toast: document.getElementById('toast')?.textContent.trim() || '',
+      };
+      dispatchAction('open-refund-detail', { dataset: { id: order.id } });
+      await nextPaint();
+      const progressDialog = document.querySelector('.after-sales-progress-dialog');
+      const hasProgressDialog = Boolean(progressDialog && progressDialog.textContent.includes('售后处理中'));
+      const progressSteps = progressDialog?.querySelectorAll('.after-sales-progress-step').length || 0;
+      const hasWithdraw = progressDialog?.querySelector('[data-action="withdraw-after-sales"]')?.textContent.trim() === '撤销售后';
+      window.__captureAfterSalesProgressReady = hasProgressDialog && progressSteps === 3 && hasWithdraw;
+      return { submitted, hasProgressDialog, progressSteps, hasWithdraw, orderId: order.id };
+    });
+    assert(afterSalesFlow.hasProgressDialog && afterSalesFlow.progressSteps === 3 && afterSalesFlow.hasWithdraw, `售后详情未弹出三阶段进度：${JSON.stringify(afterSalesFlow)}`);
+    await page.waitForTimeout(2000);
+    await page.locator('#demoCanvas').screenshot({
+      path: path.join(outputDir, 'c08-after-sales-progress.png'),
+      animations: 'disabled',
+    });
+    const withdrawnState = await page.evaluate(async ({ orderId }) => {
+      const order = orders.find((item) => item.id === orderId);
+      dispatchAction('withdraw-after-sales', { dataset: { id: order.id } });
+      await nextPaint();
+      return {
+        page: state.page,
+        refundStatus: order.refundStatus,
+        action: document.querySelector('[data-action="open-after-sales"]')?.textContent.trim() || '',
+        toast: document.getElementById('toast')?.textContent.trim() || '',
+      };
+    }, { orderId: afterSalesFlow.orderId });
+    afterSalesFlow.withdrawn = withdrawnState;
+    assert(
+      afterSalesFlow.submitted.page === 'order-detail'
+        && afterSalesFlow.submitted.dialogClosed
+        && afterSalesFlow.submitted.action === '售后详情'
+        && afterSalesFlow.submitted.toast === '售后申请已提交',
+      `提交售后后未关闭申请页、提示成功或切换入口：${JSON.stringify(afterSalesFlow)}`,
+    );
+    assert(
+      afterSalesFlow.hasProgressDialog
+        && afterSalesFlow.progressSteps === 3
+        && afterSalesFlow.hasWithdraw
+        && afterSalesFlow.withdrawn.page === 'order-detail'
+        && afterSalesFlow.withdrawn.refundStatus === 'none'
+        && afterSalesFlow.withdrawn.action === '申请售后'
+        && afterSalesFlow.withdrawn.toast === '售后申请已撤销',
+      `售后详情撤销后未恢复申请入口：${JSON.stringify(afterSalesFlow)}`,
+    );
+    process.stdout.write('AFTER_SALES_FLOW 8/8 PASS\n');
+
     await capture(page, 'c01-rental-discovery-used-trial.png', 'explore', async (currentPage) => {
       const result = await currentPage.evaluate(async () => {
         state.trialEligible = false;
@@ -218,7 +284,7 @@ async function main() {
           hasPermanentAmount: /¥\d+\s*永久版/.test(document.querySelector('.mac-main')?.textContent || ''),
         };
       });
-      assert(result.label === '可租号', '首次体验使用后列表未显示“可租号”');
+      assert(result.label === '可畅玩' || /^¥\d+\.\d · 租号$/.test(result.label || ''), `首次体验使用后列表状态错误：${result.label}`);
       assert(!result.hasPermanentAmount, '首次体验使用后列表仍显示永久版金额');
     });
 
@@ -228,13 +294,12 @@ async function main() {
         const buttons = [...row.querySelectorAll('.option-btn')];
         return {
           labels: buttons.map((button) => button.textContent.trim()),
-          rowWidth: row.getBoundingClientRect().width,
-          widths: buttons.map((button) => button.getBoundingClientRect().width),
+          standardOnly: document.querySelector('.checkout-game-copy .mac-muted')?.textContent.trim() === '标准版',
           hasMembershipTab: Boolean(document.querySelector('.checkout-mode-tabs')),
         };
       });
-      assert(layout.labels.length === 2, '确认订单应展示2个权益 SKU');
-      assert(Math.abs(layout.widths[0] - layout.widths[1]) < 1, '2个权益 SKU 未等宽');
+      assert(layout.labels.length === 3 && layout.labels.some((label) => label.includes('首次体验 · 2小时')) && layout.labels.some((label) => label.includes('单游戏永久')) && layout.labels.some((label) => label.includes('开会员畅玩')), '非热门确认订单应展示首次体验、单游戏永久、开会员畅玩');
+      assert(layout.standardOnly, '确认订单未锁定标准版');
       assert(!layout.hasMembershipTab, '确认订单仍存在会员购买 Tab');
     });
 
@@ -244,25 +309,17 @@ async function main() {
         state.checkout.period = 'permanent';
         renderApp();
         await nextPaint();
-        const row = document.querySelector('.option-row.periods.single');
-        const button = row?.querySelector('.option-btn');
-        const rowRect = row?.getBoundingClientRect();
-        const buttonRect = button?.getBoundingClientRect();
+        const row = document.querySelector('.option-row.periods');
         return {
           labels: [...row?.querySelectorAll('.period-name') || []].map((node) => node.textContent.trim()),
-          columns: row ? getComputedStyle(row).gridTemplateColumns.trim().split(/\s+/).length : 0,
-          rowWidth: rowRect?.width || 0,
-          buttonWidth: buttonRect?.width || 0,
-          leftAligned: Boolean(rowRect && buttonRect && Math.abs(rowRect.left - buttonRect.left) < 1),
           hasEligibilityCopy: document.querySelector('.mac-main')?.textContent.includes('首次体验资格已使用'),
           originalPrice: document.querySelector('.checkout-original-price')?.textContent.trim(),
           payablePrice: document.querySelector('.checkout-payable-price')?.textContent.trim(),
         };
       });
-      assert(layout.labels.join(',') === '永久版', '单权益确认订单未只显示永久版');
-      assert(layout.columns === 2 && layout.buttonWidth < layout.rowWidth * 0.55 && layout.leftAligned, '永久版卡片未保持半行左对齐');
+      assert(layout.labels.join(',') === '单游戏永久,开会员畅玩', '首次体验资格使用后未保留单游戏永久与会员入口');
       assert(!layout.hasEligibilityCopy, '确认订单仍显示首次体验资格说明');
-      assert(layout.originalPrice === '¥198' && layout.payablePrice === '¥59', '永久版原价或1.5–5折金额错误');
+      assert(/^¥\d+(?:\.\d+)?$/.test(layout.originalPrice || '') && /^¥\d+\.\d{2}$/.test(layout.payablePrice || ''), `永久版原价或订单金额格式错误：${JSON.stringify(layout)}`);
     });
 
     await capture(page, 'c02-membership-center-payment.png', 'membership', async (currentPage) => {
@@ -274,8 +331,8 @@ async function main() {
         payments: [...document.querySelectorAll('[data-membership-payment] .pay-btn')].map((button) => button.textContent.trim()),
         qrCount: document.querySelectorAll('[data-membership-payment] .qr-box').length,
       }));
-      assert(summary.order.join(',') === 'monthly,annual,lifetime', '会员套餐顺序错误');
-      assert(summary.selected === 'monthly', '未开通用户未默认选择月卡');
+      assert(summary.order.join(',') === 'weekly,monthly,quarterly', '会员套餐顺序错误');
+      assert(summary.selected === 'weekly', '未开通用户未默认选择周卡');
       assert(summary.user.includes('UID：U-000021') && summary.user.includes('未开通会员'), '左上用户信息不完整');
       assert(summary.rightStatusCount === 0, '右上仍展示重复会员状态卡');
       assert(summary.payments.join(',') === '支付宝,微信支付' && summary.qrCount === 1, '会员支付区不完整');

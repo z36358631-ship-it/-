@@ -7,6 +7,10 @@ import { chromium } from 'playwright-core';
 const root = path.resolve(import.meta.dirname, '..');
 const demoPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.html');
 const outputDir = path.join(root, 'public', 'prd', 'app-rental');
+const evidenceDir = path.join(root, 'test-results', 'app-rental-capture');
+const stagingDir = path.join(evidenceDir, 'staging');
+const reportPath = path.join(evidenceDir, 'capture-results.json');
+const landscapeReviewDir = path.join(root, 'test-results', 'app-rental-landscape-review');
 const chromePath = [
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
   'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
@@ -18,48 +22,115 @@ const EXPECTED_DIMENSIONS = Object.freeze({
   landscape: { width: 874, height: 402 },
 });
 
-const shots = [
-  { name: '01-discovery-portrait.png', orientation: 'portrait', screen: 'home', scenario: 'member-library-trial' },
-  { name: '01-discovery-landscape.png', orientation: 'landscape', screen: 'home', scenario: 'member-library-trial' },
-  { name: '09-play-portrait.png', orientation: 'portrait', screen: 'play', scenario: 'member-library-trial' },
-  { name: '09-play-landscape.png', orientation: 'landscape', screen: 'play', scenario: 'member-library-trial' },
-  { name: '10-community-portrait.png', orientation: 'portrait', screen: 'community', scenario: 'member-library-trial' },
-  { name: '10-community-landscape.png', orientation: 'landscape', screen: 'community', scenario: 'member-library-trial' },
-  { name: '11-ranking-portrait.png', orientation: 'portrait', screen: 'ranking', scenario: 'member-library-trial' },
-  { name: '11-ranking-landscape.png', orientation: 'landscape', screen: 'ranking', scenario: 'member-library-trial' },
-  { name: '12-library-portrait.png', orientation: 'portrait', screen: 'library', scenario: 'member-library-trial' },
-  { name: '12-library-landscape.png', orientation: 'landscape', screen: 'library', scenario: 'member-library-trial' },
-  { name: '13-profile-portrait.png', orientation: 'portrait', screen: 'profile', scenario: 'active-member' },
-  { name: '13-profile-landscape.png', orientation: 'landscape', screen: 'profile', scenario: 'active-member' },
-  { name: '14-search-portrait.png', orientation: 'portrait', screen: 'search', scenario: 'member-library-trial' },
-  { name: '14-search-landscape.png', orientation: 'landscape', screen: 'search', scenario: 'member-library-trial' },
-  { name: '02-detail-portrait.png', orientation: 'portrait', screen: 'detail', scenario: 'member-library-trial', gameId: 'shadow-blade-zero' },
-  { name: '02-detail-landscape.png', orientation: 'landscape', screen: 'detail', scenario: 'member-library-trial', gameId: 'spiritfarer' },
-  { name: '03-checkout-portrait.png', orientation: 'portrait', screen: 'checkout', scenario: 'not-member-library', beforeNavigate: 'select-hourly-8h' },
-  { name: '03-checkout-landscape.png', orientation: 'landscape', screen: 'checkout', scenario: 'not-member-library', beforeNavigate: 'select-hourly-8h' },
-  { name: '04-membership-portrait.png', orientation: 'portrait', screen: 'membership', scenario: 'member-library-trial-used' },
-  { name: '04-membership-landscape.png', orientation: 'landscape', screen: 'membership', scenario: 'member-library-trial-used' },
-  { name: '15-member-library-portrait.png', orientation: 'portrait', screen: 'member-library', scenario: 'member-library-trial-used' },
-  { name: '15-member-library-landscape.png', orientation: 'landscape', screen: 'member-library', scenario: 'member-library-trial-used' },
-  { name: '05-orders-portrait.png', orientation: 'portrait', screen: 'orders', scenario: 'active-rental', sensitive: true },
-  { name: '05-orders-landscape.png', orientation: 'landscape', screen: 'orders', scenario: 'active-rental', sensitive: true },
-  { name: '16-order-detail-portrait.png', orientation: 'portrait', screen: 'order-detail', scenario: 'active-rental', sensitive: true },
-  { name: '16-order-detail-landscape.png', orientation: 'landscape', screen: 'order-detail', scenario: 'active-rental', sensitive: true },
-  { name: '06-steam-login-portrait.png', orientation: 'portrait', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-manual-login', expectedScreen: 'steam-login', sensitive: true },
-  { name: '06-steam-login-landscape.png', orientation: 'landscape', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-manual-login', expectedScreen: 'steam-login', sensitive: true },
-  { name: '07-expiry-15m-portrait.png', orientation: 'portrait', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-expiry-15m' },
-  { name: '07-expiry-15m-landscape.png', orientation: 'landscape', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-expiry-15m' },
-  { name: '08-after-sales-portrait.png', orientation: 'portrait', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-after-sales', expectedScreen: 'after-sales' },
-  { name: '08-after-sales-landscape.png', orientation: 'landscape', screen: 'orders', scenario: 'active-rental', afterNavigate: 'open-after-sales', expectedScreen: 'after-sales' },
-  { name: '17-payment-success-portrait.png', orientation: 'portrait', screen: 'checkout', scenario: 'not-member-library', beforeNavigate: 'select-hourly-8h', afterNavigate: 'complete-game-payment' },
-  { name: '17-payment-success-landscape.png', orientation: 'landscape', screen: 'checkout', scenario: 'not-member-library', beforeNavigate: 'select-hourly-8h', afterNavigate: 'complete-game-payment' },
-  { name: '18-membership-success-portrait.png', orientation: 'portrait', screen: 'membership', scenario: 'member-library-trial-used', afterNavigate: 'complete-membership-payment' },
-  { name: '18-membership-success-landscape.png', orientation: 'landscape', screen: 'membership', scenario: 'member-library-trial-used', afterNavigate: 'complete-membership-payment' },
-];
+const PAGE_CONTRACTS = Object.freeze({
+  home: Object.freeze({ screen: 'home', baselineSource: 'app-v611' }),
+  play: Object.freeze({ screen: 'play', baselineSource: 'app-v611' }),
+  community: Object.freeze({ screen: 'community', baselineSource: 'app-v611' }),
+  ranking: Object.freeze({ screen: 'ranking', baselineSource: 'app-v611' }),
+  library: Object.freeze({ screen: 'library', baselineSource: 'app-v611' }),
+  profile: Object.freeze({ screen: 'profile', baselineSource: 'app-v611' }),
+  search: Object.freeze({ screen: 'search', baselineSource: 'app-v611' }),
+  detail: Object.freeze({ screen: 'detail', baselineSource: 'app-v611' }),
+  checkout: Object.freeze({ screen: 'checkout', baselineSource: 'mac-rental' }),
+  membership: Object.freeze({ screen: 'membership', baselineSource: 'mac-rental' }),
+  'member-library': Object.freeze({ screen: 'member-library', baselineSource: 'mac-rental' }),
+  orders: Object.freeze({ screen: 'orders', baselineSource: 'mac-rental' }),
+  'order-detail': Object.freeze({ screen: 'order-detail', baselineSource: 'mac-rental' }),
+  'steam-login': Object.freeze({ screen: 'steam-login', baselineSource: 'mac-rental' }),
+  'expiry-15m': Object.freeze({ screen: 'orders', baselineSource: 'mac-rental' }),
+  'after-sales': Object.freeze({ screen: 'after-sales', baselineSource: 'mac-rental' }),
+  'payment-success': Object.freeze({ screen: 'checkout', baselineSource: 'mac-rental' }),
+  'membership-success': Object.freeze({ screen: 'membership', baselineSource: 'mac-rental' }),
+});
+
+const shots = Object.freeze([
+  { name: '01-discovery-portrait.png', pageId: 'home', orientation: 'portrait' },
+  { name: '01-discovery-landscape.png', pageId: 'home', orientation: 'landscape' },
+  { name: '02-detail-portrait.png', pageId: 'detail', orientation: 'portrait' },
+  { name: '02-detail-landscape.png', pageId: 'detail', orientation: 'landscape' },
+  { name: '03-checkout-portrait.png', pageId: 'checkout', orientation: 'portrait' },
+  { name: '03-checkout-landscape.png', pageId: 'checkout', orientation: 'landscape' },
+  { name: '04-membership-portrait.png', pageId: 'membership', orientation: 'portrait' },
+  { name: '04-membership-landscape.png', pageId: 'membership', orientation: 'landscape' },
+  { name: '05-orders-portrait.png', pageId: 'orders', orientation: 'portrait', sensitive: true },
+  { name: '05-orders-landscape.png', pageId: 'orders', orientation: 'landscape', sensitive: true },
+  { name: '06-steam-login-portrait.png', pageId: 'steam-login', orientation: 'portrait', sensitive: true },
+  { name: '06-steam-login-landscape.png', pageId: 'steam-login', orientation: 'landscape', sensitive: true },
+  { name: '07-expiry-15m-portrait.png', pageId: 'expiry-15m', orientation: 'portrait' },
+  { name: '07-expiry-15m-landscape.png', pageId: 'expiry-15m', orientation: 'landscape' },
+  { name: '08-after-sales-portrait.png', pageId: 'after-sales', orientation: 'portrait' },
+  { name: '08-after-sales-landscape.png', pageId: 'after-sales', orientation: 'landscape' },
+  { name: '09-play-portrait.png', pageId: 'play', orientation: 'portrait' },
+  { name: '09-play-landscape.png', pageId: 'play', orientation: 'landscape' },
+  { name: '10-community-portrait.png', pageId: 'community', orientation: 'portrait' },
+  { name: '10-community-landscape.png', pageId: 'community', orientation: 'landscape' },
+  { name: '11-ranking-portrait.png', pageId: 'ranking', orientation: 'portrait' },
+  { name: '11-ranking-landscape.png', pageId: 'ranking', orientation: 'landscape' },
+  { name: '12-library-portrait.png', pageId: 'library', orientation: 'portrait' },
+  { name: '12-library-landscape.png', pageId: 'library', orientation: 'landscape' },
+  { name: '13-profile-portrait.png', pageId: 'profile', orientation: 'portrait' },
+  { name: '13-profile-landscape.png', pageId: 'profile', orientation: 'landscape' },
+  { name: '14-search-portrait.png', pageId: 'search', orientation: 'portrait' },
+  { name: '14-search-landscape.png', pageId: 'search', orientation: 'landscape' },
+  { name: '15-member-library-portrait.png', pageId: 'member-library', orientation: 'portrait' },
+  { name: '15-member-library-landscape.png', pageId: 'member-library', orientation: 'landscape' },
+  { name: '16-order-detail-portrait.png', pageId: 'order-detail', orientation: 'portrait', sensitive: true },
+  { name: '16-order-detail-landscape.png', pageId: 'order-detail', orientation: 'landscape', sensitive: true },
+  { name: '17-payment-success-portrait.png', pageId: 'payment-success', orientation: 'portrait' },
+  { name: '17-payment-success-landscape.png', pageId: 'payment-success', orientation: 'landscape' },
+  { name: '18-membership-success-portrait.png', pageId: 'membership-success', orientation: 'portrait' },
+  { name: '18-membership-success-landscape.png', pageId: 'membership-success', orientation: 'landscape' },
+]);
+
+const KNOWN_SECRETS = Object.freeze(['gh_rental_2607', 'G@meHub#8291', '48291', 'rdr2.rental@gamehub.example', 'Rockstar#2607', '739204']);
+const CDKEY_VALUE_PATTERN = /\b(?:[A-Z0-9]{4,6}-){2,4}[A-Z0-9]{4,6}\b/i;
+
+function writeCaptureReport(payload) {
+  fs.mkdirSync(evidenceDir, { recursive: true });
+  const content = `${JSON.stringify(payload, null, 2)}\n`;
+  let lastError;
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    try {
+      fs.writeFileSync(reportPath, content, 'utf8');
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!['UNKNOWN', 'EBUSY', 'EPERM', 'EACCES'].includes(error?.code)) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 120);
+    }
+  }
+  throw lastError;
+}
+
+function copyFileWithRetry(sourcePath, targetPath) {
+  let lastError;
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    try {
+      fs.copyFileSync(sourcePath, targetPath);
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!['UNKNOWN', 'EBUSY', 'EPERM', 'EACCES'].includes(error?.code)) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 120);
+    }
+  }
+  throw lastError;
+}
 
 assert(chromePath, 'Local Chrome not found');
 assert(fs.existsSync(demoPath), `Demo not found: ${demoPath}`);
+assert.equal(shots.length, 36, `Screenshot matrix must contain 36 explicit files, received ${shots.length}`);
+assert.equal(new Set(shots.map(({ name }) => name)).size, 36, 'Screenshot filenames must be unique');
+assert.equal(Object.keys(PAGE_CONTRACTS).length, 18, 'Page contract matrix must contain 18 page IDs');
+for (const pageId of Object.keys(PAGE_CONTRACTS)) {
+  const orientations = shots.filter((shot) => shot.pageId === pageId).map(({ orientation }) => orientation).sort();
+  assert.deepEqual(orientations, ['landscape', 'portrait'], `${pageId} must have one portrait and one landscape screenshot`);
+}
+assert(shots.every(({ name, pageId, orientation }) => PAGE_CONTRACTS[pageId]
+  && name.endsWith(`-${orientation}.png`)), 'Screenshot name, page ID, or orientation contract is invalid');
 fs.mkdirSync(outputDir, { recursive: true });
+fs.mkdirSync(stagingDir, { recursive: true });
+fs.mkdirSync(landscapeReviewDir, { recursive: true });
 
 async function openFreshPage(browser) {
   const page = await browser.newPage({
@@ -67,6 +138,9 @@ async function openFreshPage(browser) {
     deviceScaleFactor: 1,
   });
   const pageErrors = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') pageErrors.push(`console: ${message.text()}`);
+  });
   page.on('pageerror', (error) => pageErrors.push(error.message));
   await page.goto(pathToFileURL(demoPath).href, { waitUntil: 'load' });
   await page.waitForFunction(() => Boolean(window.__appRentalDemo));
@@ -106,8 +180,8 @@ async function runPreflight(browser) {
     });
     await page.locator('#steam-account').fill('preflight-user');
     await page.locator('#steam-password').fill('preflight-secret');
-    await page.locator('[data-action="submit-steam-login"]').click();
-    await page.locator('[data-action="request-guard"]').click();
+    await page.evaluate(() => window.__appRentalDemo.openCredentialPanel());
+    await page.locator('.credential-panel [data-action="request-guard"]').click();
     const before = await page.evaluate(() => window.__appRentalDemo.snapshot());
     assert.equal(before.guardCode, '[REDACTED]', 'T0 preflight did not issue a Guard code');
     await page.evaluate(() => window.__appRentalDemo.triggerExpiryMinutes(0));
@@ -127,18 +201,18 @@ async function runPreflight(browser) {
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
       window.__appRentalDemo.setScenario('not-member-library');
-      window.__appRentalDemo.selectRentalSku('hourly-8h');
+      window.__appRentalDemo.setRentalHours(8);
       window.__appRentalDemo.navigate('checkout');
       window.__appRentalDemo.setInventoryAvailable(false);
     });
     const result = await page.evaluate(() => ({
       text: document.querySelector('#appRentalDemo').innerText,
       retry: Boolean(document.querySelector('[data-action="retry-inventory"]')),
-      back: Boolean(document.querySelector('[data-action="back-to-detail"]')),
+      disabled: Boolean(document.querySelector('[data-action="pay-game-order"]:disabled')),
       primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
     }));
     assert(result.text.includes('当前套餐已售罄'), 'No-inventory state is missing sold-out copy');
-    assert(result.retry && result.back, 'No-inventory state is missing retry or back recovery');
+    assert(result.retry && result.disabled, 'No-inventory state must keep retry and disable payment');
     assert.equal(result.primaryCount, 1, 'No-inventory state must have one primary action');
   });
   passed += 1;
@@ -147,7 +221,7 @@ async function runPreflight(browser) {
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
       window.__appRentalDemo.setScenario('not-member-library');
-      window.__appRentalDemo.selectRentalSku('hourly-8h');
+      window.__appRentalDemo.setRentalHours(8);
       window.__appRentalDemo.navigate('checkout');
       window.__appRentalDemo.setPriceChanged(true);
     });
@@ -162,17 +236,16 @@ async function runPreflight(browser) {
   });
   passed += 1;
 
-  await withFreshPage(browser, 'preflight-allocation-failure', async (page) => {
+  await withFreshPage(browser, 'preflight-account-unavailable', async (page) => {
     const orderId = await page.evaluate(() => {
-      const order = window.__appRentalDemo.createOrder({ sku: 'rent-2h', amount: 9.9, priceVersion: 'preflight-allocation' });
-      window.__appRentalDemo.payOrder();
-      window.__appRentalDemo.allocateAccount(false);
+      const order = window.__appRentalDemo.createOrder({ sku: 'rent-2h', amount: 9.9, priceVersion: 'preflight-account-unavailable' });
+      window.__appRentalDemo.payOrder({ accountPrepared: false });
       window.__appRentalDemo.navigate('orders');
       window.__appRentalDemo.selectOrder(order.id);
       return order.id;
     });
-    assert(orderId, 'Allocation-failure preflight did not create an order');
-    assert((await page.locator('.portrait-order-detail').innerText()).includes('自动退款'), 'Allocation failure is missing automatic-refund copy');
+    assert(orderId, 'Account-unavailable preflight did not create an order');
+    assert((await page.locator('.portrait-order-detail').innerText()).includes('自动退款'), 'Account-unavailable state is missing automatic-refund copy');
   });
   passed += 1;
 
@@ -180,9 +253,8 @@ async function runPreflight(browser) {
     const orderId = await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
       window.__appRentalDemo.setScenario('not-member-library');
-      window.__appRentalDemo.selectRentalSku('hourly-8h');
+      window.__appRentalDemo.setRentalHours(8);
       window.__appRentalDemo.navigate('checkout');
-      window.__appRentalDemo.ensureGameOrder();
       window.__appRentalDemo.setNetworkAvailable(false);
       window.__appRentalDemo.queryOrderStatus();
       return window.__appRentalDemo.snapshot().order.id;
@@ -221,34 +293,43 @@ async function runPreflight(browser) {
 }
 
 async function setShotState(page, shot) {
-  await page.evaluate(({ orientation, scenario, beforeNavigate, screen, afterNavigate, gameId }) => {
+  const result = await page.evaluate(({ pageId, orientation }) => {
     const demo = window.__appRentalDemo;
+    if (typeof demo?.openCaptureState !== 'function') return { apiMissing: true };
     demo.setOrientation(orientation);
-    demo.setScenario(scenario);
-    if (gameId) demo.setSelectedGame(gameId);
-    if (beforeNavigate === 'select-hourly-8h') demo.selectRentalSku('hourly-8h');
-    demo.navigate(screen);
-    if (afterNavigate === 'open-manual-login') demo.openManualLogin();
-    if (afterNavigate === 'open-expiry-15m') {
-      demo.setGameplayContext(false);
-      demo.triggerExpiryMinutes(15);
-    }
-    if (afterNavigate === 'open-after-sales') demo.openAfterSales();
-    if (afterNavigate === 'complete-game-payment') {
-      demo.payOrder();
-      demo.allocateAccount(true);
-    }
-    if (afterNavigate === 'complete-membership-payment') {
-      demo.createMembershipOrder();
-      demo.payMembershipOrder();
-    }
+    const snapshot = demo.openCaptureState(pageId);
+    return {
+      apiMissing: false,
+      orientation: snapshot?.orientation ?? demo.snapshot().orientation,
+      screen: snapshot?.screen ?? demo.snapshot().screen,
+    };
   }, shot);
+  assert(!result.apiMissing, `${shot.name} requires window.__appRentalDemo.openCaptureState(pageId)`);
+  if (shot.pageId === 'orders') await page.locator('[data-action="toggle-order-search"]').click();
 }
 
 async function verifyShotState(page, shot) {
   const state = await page.evaluate(() => window.__appRentalDemo.snapshot());
+  const contract = PAGE_CONTRACTS[shot.pageId];
   assert.equal(state.orientation, shot.orientation, `${shot.name} orientation mismatch`);
-  assert.equal(state.screen, shot.expectedScreen || shot.screen, `${shot.name} screen mismatch`);
+  assert.equal(state.screen, contract.screen, `${shot.name} screen mismatch`);
+
+  const pageMarker = await page.evaluate((pageId) => {
+    const rootNode = document.querySelector('#appRentalDemo');
+    const markerNode = rootNode?.dataset.pageId === pageId
+      ? rootNode
+      : rootNode?.querySelector(`[data-page-id="${pageId}"]`);
+    return {
+      pageId: markerNode?.dataset.pageId || rootNode?.dataset.pageId || null,
+      baselineSource: markerNode?.dataset.baselineSource || rootNode?.dataset.baselineSource || null,
+      stub: Boolean(rootNode?.querySelector('.stub-panel, .landscape-stub')),
+      placeholderCopy: /当前入口已连通|后续补齐|功能页面/.test(rootNode?.innerText || ''),
+    };
+  }, shot.pageId);
+  assert.equal(pageMarker.pageId, shot.pageId, `${shot.name} data-page-id mismatch`);
+  assert.equal(pageMarker.baselineSource, contract.baselineSource, `${shot.name} baseline source mismatch`);
+  assert.equal(pageMarker.stub, false, `${shot.name} still renders a stub page`);
+  assert.equal(pageMarker.placeholderCopy, false, `${shot.name} contains placeholder copy`);
 
   const device = page.locator('.device');
   await device.waitFor({ state: 'visible' });
@@ -258,16 +339,252 @@ async function verifyShotState(page, shot) {
   assert.equal(Math.round(box.width), expected.width, `${shot.name} device width mismatch`);
   assert.equal(Math.round(box.height), expected.height, `${shot.name} device height mismatch`);
 
-  if (shot.afterNavigate === 'open-expiry-15m') {
+  if (shot.pageId === 'expiry-15m') {
     assert.equal(state.expiryReminderCount, 1, `${shot.name} reminder count mismatch`);
     assert.equal(await page.locator('.expiry-reminder').count(), 1, `${shot.name} reminder is not visible`);
   }
 
-  if (shot.sensitive) {
-    const visible = await page.locator('.device').innerText();
-    for (const secret of ['gh_rental_2607', 'G@meHub#8291', '48291']) {
-      assert(!visible.includes(secret), `${shot.name} exposes sensitive value ${secret}`);
+  if (shot.pageId === 'home') {
+    const home = await page.evaluate(() => {
+      const rootNode = document.querySelector('#appRentalDemo');
+      const cards = [...rootNode.querySelectorAll('.hero-card, .mini-game, .landscape-home-hero, .landscape-home-grid button')];
+      return {
+        recommendation: rootNode.querySelector('.hero-recommendation')?.textContent.trim(),
+        date: rootNode.querySelector('.hero-date')?.textContent.trim(),
+        bannerPrice: rootNode.querySelector('.hero-rental-price')?.textContent.trim(),
+        bannerDemand: rootNode.querySelector('.hero-rental-demand')?.textContent.trim(),
+        miniOffers: [...rootNode.querySelectorAll('.mini-rental-offer')].map((node) => node.textContent.trim()),
+        miniDemands: [...rootNode.querySelectorAll('.mini-rental-demand')].map((node) => node.textContent.trim()),
+        clickable: cards.every((node) => node.matches('button, a, [role="button"]')),
+      };
+    });
+    assert.equal(home.recommendation, '今日推荐', `${shot.name} home recommendation mismatch`);
+    assert(/^\d{1,2}\/\d{1,2}$/.test(home.date), `${shot.name} home date mismatch`);
+    assert.equal(home.bannerPrice, '¥1.9首租', `${shot.name} home banner first-rental price mismatch`);
+    assert.equal(home.bannerDemand, '99+ 在租', `${shot.name} home banner rental demand mismatch`);
+    assert.equal(home.miniOffers.length, 4, `${shot.name} home mini rental offer count mismatch`);
+    assert(home.miniOffers.every((text) => text === '¥9.9租号'), `${shot.name} home mini rental offer mismatch`);
+    assert.equal(home.miniDemands.length, 4, `${shot.name} home mini rental demand count mismatch`);
+    assert(home.miniDemands.every((text) => text === '在租99+'), `${shot.name} home mini rental demand mismatch`);
+    assert(home.clickable, `${shot.name} contains a non-clickable home game card`);
+  }
+
+  if (shot.pageId === 'search') {
+    const discovery = await page.evaluate((pageId) => {
+      const rootNode = document.querySelector('#appRentalDemo');
+      const displays = [...rootNode.querySelectorAll('[data-discovery-display]')];
+      const cards = [...rootNode.querySelectorAll('.search-result-card')];
+      return {
+        texts: displays.map((node) => node.textContent.trim()),
+        types: displays.map((node) => node.dataset.discoveryDisplay),
+        cardCount: cards.length,
+        perCardDisplayCounts: cards.map((node) => node.querySelectorAll('[data-discovery-display]').length),
+        inlineActionCount: rootNode.querySelectorAll('.search-result-card [data-primary-action], .search-result-card .primary-action').length,
+        clickable: cards.every((node) => node.matches('button, a, [role="button"]')),
+        gamesTabSelected: rootNode.querySelector('[data-search-tab="games"]')?.getAttribute('aria-selected'),
+      };
+    }, shot.pageId);
+    assert.equal(discovery.texts.length, 3, `${shot.name} must show exactly three unified discovery results`);
+    assert.deepEqual([...new Set(discovery.types)].sort(), ['playable', 'rental-price', 'rented'], `${shot.name} discovery result types mismatch`);
+    assert(discovery.texts.includes('已租号') && discovery.texts.includes('可畅玩'), `${shot.name} is missing rented or playable state`);
+    assert(discovery.texts.some((text) => /^¥\d+\.\d · 租号$/.test(text)), `${shot.name} is missing a one-decimal rental price`);
+    assert(discovery.cardCount > 0 && discovery.perCardDisplayCounts.every((count) => count <= 1), `${shot.name} renders more than one result on a card`);
+    assert(discovery.clickable, `${shot.name} contains a non-clickable game card`);
+    assert.equal(discovery.gamesTabSelected, 'true', `${shot.name} games tab is not selected`);
+    assert.equal(discovery.cardCount, 3, `${shot.name} search result card count mismatch`);
+    assert(discovery.perCardDisplayCounts.every((count) => count === 1), `${shot.name} search card must contain exactly one result`);
+    assert.equal(discovery.inlineActionCount, 0, `${shot.name} search card still contains an independent action`);
+  }
+
+  if (shot.pageId === 'detail') {
+    assert.equal(state.scenario, 'not-member-library', `${shot.name} detail scenario must be rentable without an active entitlement`);
+    assert.equal(await page.locator('[data-entitlement-panel]').count(), 0, `${shot.name} detail must not render a SKU panel`);
+    assert.equal(state.order, null, `${shot.name} detail capture must not create an order`);
+    assert((await device.innerText()).includes('租号开玩'), `${shot.name} detail is missing the rental entry`);
+    const detailActions = await page.locator('.detail-action-set [data-detail-action]').allTextContents();
+    assert.deepEqual(detailActions.map((value) => value.trim()), ['更多', '秒玩', '立即购买', '租号开玩'], `${shot.name} detail F action layout mismatch`);
+    if (shot.orientation === 'landscape') {
+      const sequence = await page.evaluate(() => {
+        const rect = (selector) => document.querySelector(selector)?.getBoundingClientRect();
+        const title = rect('.landscape-detail-copy h1');
+        const intro = rect('.landscape-detail-copy > p');
+        const tags = rect('.landscape-detail-genre');
+        const actions = rect('.landscape-detail-copy .detail-action-set');
+        const facts = rect('.landscape-detail-facts');
+        return Boolean(title && intro && tags && actions && facts && title.bottom <= intro.top + 1 && intro.bottom <= tags.top + 1 && tags.bottom <= actions.top + 1 && actions.bottom <= facts.top + 1);
+      });
+      assert(sequence, `${shot.name} detail content sequence overlaps`);
     }
+  }
+
+  if (shot.pageId === 'checkout') {
+    const checkoutText = await device.innerText();
+    assert.equal(state.selectedSku, 'hourly-8h-standard', `${shot.name} checkout quote must use standard-edition 8-hour SKU`);
+    assert.equal(state.selectedHours, 8, `${shot.name} checkout selected hours mismatch`);
+    assert.equal(state.order?.durationLabel, '8小时', `${shot.name} checkout order duration mismatch`);
+    assert.equal(await page.locator('[data-sale-mode="time-rental"]').count(), 1, `${shot.name} checkout sale mode mismatch`);
+    assert.equal(await page.locator('[data-checkout-field="edition"], [data-action="select-edition"]').count(), 0, `${shot.name} must not render edition controls`);
+    assert.equal((await page.locator('.checkout-product-name').innerText()).trim(), '影之刃零', `${shot.name} product name mismatch`);
+    assert.equal((await page.locator('.checkout-product-edition').innerText()).trim(), '标准版', `${shot.name} product edition subtitle mismatch`);
+    assert.equal(await page.locator('[data-checkout-field="rental-plan"] .checkout-option').count(), 3, `${shot.name} rental-plan count mismatch`);
+    assert.equal(await page.locator('[data-hour-shortcut]').count(), 3, `${shot.name} hour shortcut count mismatch`);
+    assert.equal(await page.locator('.service-benefit-item').count(), 5, `${shot.name} must keep the previous five rental benefits`);
+    assert.deepEqual(
+      await page.locator('.service-benefit-item strong').allInnerTexts(),
+      ['100% 正版', '一键启动', '永不顶号', '存档无忧', '3天无理由'],
+      `${shot.name} rental benefits mismatch`,
+    );
+    assert.equal(await page.locator('[data-checkout-entitlement-copy]').count(), 0, `${shot.name} must not show the replacement dynamic entitlement card`);
+    if (shot.orientation === 'landscape') {
+      const firstScreen = await page.evaluate(() => {
+        const left = document.querySelector('.checkout-benefit-column')?.getBoundingClientRect();
+        const right = document.querySelector('.checkout-purchase-column')?.getBoundingClientRect();
+        const benefits = document.querySelector('.service-benefits')?.getBoundingClientRect();
+        const options = document.querySelector('.checkout-sku-section')?.getBoundingClientRect();
+        return Boolean(left && right && benefits && options
+          && benefits.top >= left.top && benefits.bottom <= left.bottom + 1
+          && options.top >= right.top && options.bottom <= right.bottom + 1);
+      });
+      assert(firstScreen, `${shot.name} must show dynamic benefits and package selection in the first screen`);
+    }
+    for (const label of ['标准版', '租赁套餐', '游戏原价', '订单金额', '支付方式', '需支付', '立即购买']) {
+      assert(checkoutText.includes(label), `${shot.name} checkout is missing ${label}`);
+    }
+    for (const removed of ['当前报价', '租赁信息', '实付', '协议', '支付有效期', '扫码支付']) {
+      assert(!checkoutText.includes(removed), `${shot.name} checkout still contains removed ${removed}`);
+    }
+    const paymentGeometry = await page.evaluate(() => {
+      const row = document.querySelector('.checkout-payment-row');
+      const title = row?.querySelector('h2')?.getBoundingClientRect();
+      const buttons = [...(row?.querySelectorAll('.payment-method') || [])].map((node) => node.getBoundingClientRect());
+      return Boolean(title && buttons.length === 2 && Math.abs(buttons[0].top - buttons[1].top) <= 1 && buttons.every((rect) => Math.abs(((rect.top + rect.bottom) / 2) - ((title.top + title.bottom) / 2)) <= 2));
+    });
+    assert(paymentGeometry, `${shot.name} payment methods must be two buttons on the title row`);
+  }
+
+  if (['membership', 'membership-success'].includes(shot.pageId)) {
+    assert.deepEqual(
+      await page.locator('.membership-benefit-item strong').allInnerTexts(),
+      ['会员库内畅玩', '游戏持续更新', '个人云存档同步'],
+      `${shot.name} membership benefits mismatch`,
+    );
+    assert((await page.locator('.membership-value-hero').innerText()).includes('一个会员，畅玩本期精选游戏'), `${shot.name} membership value hero mismatch`);
+    assert.equal(await page.locator('.membership-preview .member-game-card').count(), 4, `${shot.name} membership preview count mismatch`);
+    assert.equal(await page.locator('.membership-faq-preview .member-faq-item').count(), 3, `${shot.name} membership FAQ count mismatch`);
+    assert.deepEqual(await page.locator('.membership-plan-card .plan-name').allInnerTexts(), ['周卡', '月卡', '季卡'], `${shot.name} membership plan order mismatch`);
+    assert.equal(await page.locator('.membership-plan-card .plan-recommend').count(), 0, `${shot.name} must not expose a recommendation badge`);
+    assert.equal(await page.locator('.membership-plan-card[data-plan="weekly"].selected').count(), 1, `${shot.name} weekly plan must be selected by default`);
+    assert.equal(await page.locator('.membership-plan-card[data-plan="permanent"], .membership-plan-card[data-plan="annual"]').count(), 0, `${shot.name} must not expose annual or permanent membership plans`);
+    assert.equal((await page.locator('.membership-checkout-bar strong').first().innerText()).trim(), '需支付 ¥39.00', `${shot.name} membership amount summary mismatch`);
+    assert.equal((await page.locator('.membership-checkout-bar [data-primary-action="true"]').first().innerText()).trim(), '立即购买', `${shot.name} membership primary action mismatch`);
+    if (shot.orientation === 'landscape') {
+      const structure = await page.evaluate(() => {
+        const profile = document.querySelector('.landscape-member-profilebar')?.getBoundingClientRect();
+        const plans = document.querySelector('.landscape-membership-plan-panel')?.getBoundingClientRect();
+        const payment = document.querySelector('.landscape-membership-payment-card')?.getBoundingClientRect();
+        const library = document.querySelector('.landscape-membership-scroll > .membership-preview')?.getBoundingClientRect();
+        return Boolean(profile && plans && payment && library
+          && Math.abs(plans.top - payment.top) <= 1
+          && plans.right <= payment.left + 1
+          && library.top >= Math.max(plans.bottom, payment.bottom) - 1);
+      });
+      assert(structure, `${shot.name} landscape membership hierarchy mismatch`);
+    }
+    if (shot.pageId === 'membership-success') {
+      assert(/有效期至\s*\d{4}\.\d{2}\.\d{2}/.test(await device.innerText()), `${shot.name} membership validity date is missing after payment`);
+    }
+    assert.equal(await page.locator('.member-game-card .cloud-save-badge').count(), 0, `${shot.name} must not expose cloud-save badges`);
+  }
+
+  if (shot.pageId === 'steam-login') {
+    const steamOrder = await page.evaluate(() => {
+      const form = document.querySelector('.steam-login-form')?.getBoundingClientRect();
+      const qr = document.querySelector('.steam-qr-panel')?.getBoundingClientRect();
+      return {
+        formTop: form?.top,
+        formLeft: form?.left,
+        qrTop: qr?.top,
+        qrLeft: qr?.left,
+        guardBeforeLogin: document.querySelectorAll('.steam-login-form .steam-guard').length,
+        legacyHint: document.querySelector('.steam-login-form')?.textContent.includes('提交账号密码后获取令牌') || false,
+      };
+    });
+    if (shot.orientation === 'portrait') assert(steamOrder.qrTop < steamOrder.formTop, `${shot.name} QR must be above the account form`);
+    else assert(steamOrder.formLeft < steamOrder.qrLeft, `${shot.name} account form must stay left of QR`);
+    assert.equal(steamOrder.guardBeforeLogin, 0, `${shot.name} must not render a Guard placeholder before login`);
+    assert.equal(steamOrder.legacyHint, false, `${shot.name} still renders the removed Guard hint`);
+  }
+
+  if (shot.pageId === 'after-sales') {
+    const afterSalesLabels = await page.locator('[data-after-sales-type]').allTextContents();
+    assert.deepEqual(afterSalesLabels.map((value) => value.trim()), ['启动失败', 'Steam登录失败', '账号异常/频繁掉线', '其他问题'], `${shot.name} after-sales types mismatch`);
+    assert(!(await device.innerText()).includes('3天无理由'), `${shot.name} exposes 3-day no-reason as an after-sales type`);
+  }
+
+  if (shot.pageId === 'orders') {
+    const orderToolbar = await page.evaluate(() => {
+      const tabs = [...document.querySelectorAll('#appRentalDemo .order-tabs button')];
+      const search = document.querySelector('#appRentalDemo [data-order-search]');
+      const statuses = [...document.querySelectorAll('#appRentalDemo .order-list-card')].map((node) => node.dataset.status);
+      const cardActionBounds = [...document.querySelectorAll('#appRentalDemo .order-list-card')].map((card) => {
+        const cardRect = card.getBoundingClientRect();
+        const buttons = [...card.querySelectorAll('.order-actions-set button')];
+        return {
+          status: card.dataset.status,
+          buttonCount: buttons.length,
+          contained: buttons.every((button) => {
+            const rect = button.getBoundingClientRect();
+            return rect.left >= cardRect.left - 1 && rect.right <= cardRect.right + 1 && rect.top >= cardRect.top - 1 && rect.bottom <= cardRect.bottom + 1;
+          }),
+        };
+      });
+      return {
+        tabs: tabs.map((node) => node.textContent.trim()),
+        searchRightOfUsable: Boolean(search && tabs[2] && search.getBoundingClientRect().left >= tabs[2].getBoundingClientRect().right),
+        tabsSingleLine: tabs.every((node) => node.scrollHeight <= node.clientHeight + 1 && getComputedStyle(node).whiteSpace === 'nowrap'),
+        statusCount: new Set(statuses).size,
+        cardActionBounds,
+      };
+    });
+    assert.deepEqual(orderToolbar.tabs, ['全部订单', '待支付', '可使用'], `${shot.name} order tabs mismatch`);
+    assert(orderToolbar.searchRightOfUsable, `${shot.name} order search is not right of usable tab`);
+    assert(orderToolbar.tabsSingleLine, `${shot.name} order tabs wrap after search expansion`);
+    assert(orderToolbar.statusCount >= 4, `${shot.name} does not show enough rental order states`);
+    assert(orderToolbar.cardActionBounds.every(({ contained }) => contained), `${shot.name} renders order actions outside their cards: ${JSON.stringify(orderToolbar.cardActionBounds)}`);
+  }
+
+  if (shot.pageId === 'order-detail') {
+    const actions = await page.locator('.order-actions-set[data-order-actions-surface="detail"] button').allTextContents();
+    assert.deepEqual(actions.map((value) => value.trim()), ['申请售后', '登录信息', '登录游戏'], `${shot.name} active order detail actions mismatch`);
+  }
+
+  const visible = await device.innerText();
+  const publicState = JSON.stringify(state);
+  for (const secret of KNOWN_SECRETS) {
+    assert(!visible.includes(secret), `${shot.name} exposes sensitive value ${secret}`);
+  }
+  assert(!CDKEY_VALUE_PATTERN.test(visible), `${shot.name} exposes a CDKEY-shaped value`);
+  assert(!/(?:cd.?key|redeemCode|activationKey)"\s*:/i.test(publicState), `${shot.name} snapshot contains a CDKEY field`);
+  assert(!/CDKEY/i.test(visible), `${shot.name} unexpectedly displays CDKEY content`);
+  if (['detail', 'checkout', 'orders', 'order-detail'].includes(shot.pageId)) {
+    assert(!/CDKEY|CDK|卡密|激活|发货|收货账号|永久拥有/i.test(visible), `${shot.name} contains forbidden CDKEY business copy`);
+  }
+
+  if (['orders', 'order-detail'].includes(shot.pageId)) {
+    const orderSafety = await page.evaluate(() => {
+      const demo = window.__appRentalDemo;
+      const orders = typeof demo.getOrderCollection === 'function' ? demo.getOrderCollection() : (demo.snapshot().orders || []);
+      const cardText = [...document.querySelectorAll('.order-list-card')].map((node) => node.innerText).join('\n');
+      return {
+        purchaseFixture: orders.some(({ orderType }) => orderType && orderType !== 'rental'),
+        typeLabel: /游戏购买|租号畅玩|CDKEY/i.test(cardText),
+      };
+    });
+    assert.equal(orderSafety.purchaseFixture, false, `${shot.name} contains a purchase/CDKEY fixture`);
+    assert.equal(orderSafety.typeLabel, false, `${shot.name} contains a forbidden order type label`);
+  }
+
+  if (shot.sensitive) {
     assert.equal(state.guardCode, null, `${shot.name} unexpectedly contains a Guard code`);
     assert.equal(state.steamForm.account, '', `${shot.name} unexpectedly contains a Steam account`);
     assert.equal(state.steamForm.password, '', `${shot.name} unexpectedly contains a Steam password`);
@@ -283,34 +600,116 @@ function verifyPng(filePath, shot) {
   const expected = EXPECTED_DIMENSIONS[shot.orientation];
   assert.equal(width, expected.width, `${shot.name} PNG width mismatch`);
   assert.equal(height, expected.height, `${shot.name} PNG height mismatch`);
-  return buffer.length;
+  const byteDiversity = new Set(buffer.subarray(24, Math.min(buffer.length, 64 * 1024))).size;
+  assert(byteDiversity >= 64, `${shot.name} PNG appears blank or corrupt (byte diversity ${byteDiversity})`);
+  return { bytes: buffer.length, width, height, byteDiversity };
 }
 
 async function captureShots(browser) {
-  let captured = 0;
+  const results = [];
   for (const shot of shots) {
-    await withFreshPage(browser, shot.name, async (page) => {
-      await setShotState(page, shot);
-      await waitForAssets(page);
-      await verifyShotState(page, shot);
-      const outputPath = path.join(outputDir, shot.name);
-      await page.locator('.device').screenshot({
-        path: outputPath,
-        animations: 'disabled',
+    try {
+      await withFreshPage(browser, shot.name, async (page) => {
+        await setShotState(page, shot);
+        await waitForAssets(page);
+        await verifyShotState(page, shot);
+        const stagingPath = path.join(stagingDir, shot.name);
+        await page.locator('.device').screenshot({
+          path: stagingPath,
+          animations: 'disabled',
+        });
+        const png = verifyPng(stagingPath, shot);
+        results.push({ ...shot, status: 'pass', ...png, stagingPath: path.relative(root, stagingPath) });
+        process.stdout.write(`CAPTURED ${shot.name} ${png.bytes} bytes\n`);
       });
-      const bytes = verifyPng(outputPath, shot);
-      process.stdout.write(`CAPTURED ${shot.name} ${bytes} bytes\n`);
-    });
-    captured += 1;
+    } catch (error) {
+      results.push({ ...shot, status: 'fail', message: error.message });
+      writeCaptureReport({
+        generatedAt: new Date().toISOString(),
+        demo: path.relative(root, demoPath),
+        outputDir: path.relative(root, outputDir),
+        stagingDir: path.relative(root, stagingDir),
+        expected: shots.length,
+        passed: results.filter(({ status }) => status === 'pass').length,
+        failed: results.filter(({ status }) => status === 'fail').length,
+        published: false,
+        results,
+      });
+      throw new Error(`${shot.name} capture failed: ${error.message}; evidence: ${reportPath}`);
+    }
   }
-  assert.equal(captured, shots.length, `Capture count mismatch: ${captured}/${shots.length}`);
-  process.stdout.write(`CAPTURE ${captured}/${shots.length} PASS\n`);
+
+  assert.equal(results.length, shots.length, `Capture count mismatch: ${results.length}/${shots.length}`);
+  assert(results.every(({ status }) => status === 'pass'), 'At least one staged screenshot failed validation');
+
+  for (const shot of shots) {
+    const stagingPath = path.join(stagingDir, shot.name);
+    const outputPath = path.join(outputDir, shot.name);
+    copyFileWithRetry(stagingPath, outputPath);
+    verifyPng(outputPath, shot);
+  }
+
+  const publishedNames = fs.readdirSync(outputDir)
+    .filter((name) => shots.some((shot) => shot.name === name))
+    .sort();
+  assert.deepEqual(publishedNames, shots.map(({ name }) => name).sort(), 'Published PRD screenshot set is incomplete');
+  writeCaptureReport({
+    generatedAt: new Date().toISOString(),
+    demo: path.relative(root, demoPath),
+    outputDir: path.relative(root, outputDir),
+    stagingDir: path.relative(root, stagingDir),
+    expected: shots.length,
+    passed: results.length,
+    failed: 0,
+    published: true,
+    results,
+  });
+  process.stdout.write(`CAPTURE ${results.length}/${shots.length} PASS\n`);
+  process.stdout.write(`CAPTURE_REPORT ${reportPath}\n`);
+}
+
+async function captureLandscapeLoginInfoEvidence(browser) {
+  const shot = { name: 'steam-login-info-landscape.png', pageId: 'steam-login', orientation: 'landscape', sensitive: true };
+  await withFreshPage(browser, shot.name, async (page) => {
+    await setShotState(page, shot);
+    await page.locator('.steam-help-trigger').click();
+    await waitForAssets(page);
+    const evidence = await page.evaluate(() => {
+      const login = document.querySelector('.steam-login-page')?.getBoundingClientRect();
+      const sheet = document.querySelector('.steam-credential-sheet')?.getBoundingClientRect();
+      const contentNode = document.querySelector('.steam-credential-sheet .credential-content');
+      const content = contentNode?.getBoundingClientRect();
+      const guard = document.querySelector('.steam-credential-sheet .credential-guard')?.getBoundingClientRect();
+      const thirdPartyCode = document.querySelector('.steam-credential-sheet .third-party-code')?.getBoundingClientRect();
+      const text = document.querySelector('.steam-credential-sheet')?.innerText || '';
+      return {
+        fullWidth: Boolean(login && sheet && Math.abs(login.left - sheet.left) <= 1 && Math.abs(login.right - sheet.right) <= 1),
+        guardRatio: content && guard ? guard.width / content.width : 0,
+        thirdPartyCodeRatio: content && thirdPartyCode ? thirdPartyCode.width / content.width : 0,
+        thirdParty: text.includes('Rockstar Games 登录'),
+        accountMasked: text.includes('rdr****@gamehub.example'),
+        passwordMasked: text.includes('••••••••••••'),
+      };
+    });
+    assert(
+      evidence.fullWidth
+        && evidence.guardRatio >= 0.45 && evidence.guardRatio <= 0.52
+        && evidence.thirdPartyCodeRatio >= 0.45 && evidence.thirdPartyCodeRatio <= 0.52
+        && evidence.thirdParty && evidence.accountMasked && evidence.passwordMasked,
+      `Landscape Steam login info evidence mismatch: ${JSON.stringify(evidence)}`,
+    );
+    const outputPath = path.join(landscapeReviewDir, shot.name);
+    await page.locator('.device').screenshot({ path: outputPath, animations: 'disabled' });
+    const png = verifyPng(outputPath, shot);
+    process.stdout.write(`LANDSCAPE_REVIEW ${shot.name} ${png.bytes} bytes PASS\n`);
+  });
 }
 
 const browser = await chromium.launch({ executablePath: chromePath, headless: true });
 try {
   await runPreflight(browser);
   await captureShots(browser);
+  await captureLandscapeLoginInfoEvidence(browser);
 } finally {
   await browser.close();
 }

@@ -1,0 +1,268 @@
+<!-- APP_RENTAL_ADMIN_FRAGMENT_START -->
+<style data-app-rental-admin-style>
+  body.admin-surface #annotationWorkspace { grid-template-columns: 220px minmax(0, 1fr) 0; }
+  body.admin-surface #annotationPanel,
+  body.admin-surface #restoreAnnotations,
+  body.admin-surface #flowNav > .annotation-nav-heading,
+  body.admin-surface #flowNav > .flow-list,
+  body.admin-surface #flowNav > .page-matrix-nav,
+  body.admin-surface #flowNav > .annotation-controls,
+  body.admin-surface #flowNav > .scenario-list,
+  body.admin-surface #flowNav > .annotation-legend { display: none !important; }
+  body.admin-surface #demoStage { align-items: stretch; justify-content: stretch; padding: 0; overflow: hidden; background: #f3f5f9; }
+  body.admin-surface #demoScaleFrame { display: none !important; }
+  .annotation-surface-switch { display: grid; grid-template-columns: 1fr; gap: 6px; margin: 14px 0 0; }
+  .annotation-surface-switch button { min-height: 38px; padding: 0 10px; border: 1px solid rgb(255 255 255 / 8%); border-radius: 9px; background: rgb(255 255 255 / 4%); color: rgb(255 255 255 / 58%); cursor: pointer; font-size: 11px; text-align: left; }
+  .annotation-surface-switch button.active { border-color: rgb(77 184 232 / 45%); background: rgb(77 184 232 / 14%); color: #9fe2ff; }
+  .admin-module-nav { display: none; gap: 4px; margin-top: 18px; }
+  body.admin-surface .admin-module-nav { display: grid; }
+  .admin-module-nav button { min-height: 42px; padding: 0 11px; border: 0; border-radius: 9px; background: transparent; color: rgb(255 255 255 / 58%); cursor: pointer; font-size: 12px; text-align: left; }
+  .admin-module-nav button.active,
+  .admin-module-nav button:hover { background: rgb(255 255 255 / 9%); color: #fff; }
+
+  #appRentalAdminDemo { width: 100%; min-width: 0; min-height: 100%; color: #20293a; background: #f3f5f9; font-family: var(--font-primary); }
+  #appRentalAdminDemo[hidden] { display: none !important; }
+  #appRentalAdminDemo * { box-sizing: border-box; }
+  #appRentalAdminDemo button,
+  #appRentalAdminDemo input,
+  #appRentalAdminDemo select { font: inherit; }
+  #appRentalAdminDemo .admin-app { height: 100vh; overflow: auto; padding: 26px 30px 42px; }
+  #appRentalAdminDemo .admin-page { width: min(1320px, 100%); margin: 0 auto; }
+  #appRentalAdminDemo .admin-header { display: flex; min-height: 68px; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
+  #appRentalAdminDemo .admin-header h1 { margin: 0; color: #162032; font-size: 25px; line-height: 34px; }
+  #appRentalAdminDemo .admin-header p { margin: 5px 0 0; color: #8c96a5; font-size: 12px; line-height: 18px; }
+  #appRentalAdminDemo .admin-header-actions { display: flex; align-items: center; gap: 8px; }
+  #appRentalAdminDemo .admin-client-tabs { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid #e0e4ec; border-radius: 10px; background: #fff; box-shadow: 0 3px 12px rgb(29 42 67 / 5%); }
+  #appRentalAdminDemo [data-admin-client-tab] { min-height: 36px; padding: 0 14px; border: 0; border-radius: 7px; color: #7d8798; background: transparent; cursor: pointer; }
+  #appRentalAdminDemo [data-admin-client-tab].active { color: #fff; background: #4d57d8; }
+  #appRentalAdminDemo .a-btn { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; gap: 6px; padding: 0 15px; border: 1px solid #d9dee8; border-radius: 7px; background: #fff; color: #4c5667; cursor: pointer; }
+  #appRentalAdminDemo .a-btn.primary { border-color: #4d57d8; background: #4d57d8; color: #fff; }
+  #appRentalAdminDemo .admin-toolbar { display: flex; min-height: 56px; align-items: center; gap: 9px; margin-bottom: 14px; padding: 9px 12px; border: 1px solid #e5e8ee; border-radius: 10px; background: #fff; }
+  #appRentalAdminDemo .admin-toolbar input,
+  #appRentalAdminDemo .admin-toolbar select { min-height: 36px; padding: 0 11px; border: 1px solid #d9dee8; border-radius: 7px; background: #fff; color: #4c5667; }
+  #appRentalAdminDemo .admin-toolbar input { width: 220px; }
+  #appRentalAdminDemo .admin-toolbar .spacer { flex: 1; }
+  #appRentalAdminDemo .data-card { overflow: hidden; border: 1px solid #e5e8ee; border-radius: 11px; background: #fff; box-shadow: 0 5px 20px rgb(29 42 67 / 5%); }
+  #appRentalAdminDemo .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  #appRentalAdminDemo .data-table th { height: 43px; padding: 0 13px; background: #f8f9fc; color: #8490a2; font-weight: 600; text-align: left; white-space: nowrap; }
+  #appRentalAdminDemo .data-table td { height: 55px; padding: 8px 13px; border-top: 1px solid #edf0f4; color: #404b5e; vertical-align: middle; }
+  #appRentalAdminDemo .data-table strong { display: block; color: #222d40; font-size: 12px; }
+  #appRentalAdminDemo .subline { display: block; margin-top: 3px; color: #97a0af; font-size: 10px; }
+  #appRentalAdminDemo .status { display: inline-flex; min-height: 24px; align-items: center; padding: 0 8px; border-radius: 999px; background: #edf8f4; color: #159466; font-size: 10px; }
+  #appRentalAdminDemo .status.warn { background: #fff5e8; color: #d17d14; }
+  #appRentalAdminDemo .status.off { background: #f2f3f6; color: #8c96a5; }
+  #appRentalAdminDemo .kpi-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+  #appRentalAdminDemo .kpi-card { min-height: 104px; padding: 17px; border: 1px solid #e5e8ee; border-radius: 11px; background: #fff; box-shadow: 0 5px 20px rgb(29 42 67 / 5%); }
+  #appRentalAdminDemo .kpi-card span { color: #8b95a4; font-size: 11px; }
+  #appRentalAdminDemo .kpi-card strong { display: block; margin-top: 12px; color: #202b3d; font-size: 25px; }
+  #appRentalAdminDemo .kpi-card em { display: block; margin-top: 7px; color: #1eaa74; font-size: 10px; font-style: normal; }
+  #appRentalAdminDemo .funnel-card { margin-bottom: 14px; padding: 17px; border: 1px solid #e5e8ee; border-radius: 11px; background: #fff; }
+  #appRentalAdminDemo .funnel-card h3 { margin: 0 0 16px; font-size: 14px; }
+  #appRentalAdminDemo .funnel { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+  #appRentalAdminDemo .funnel-step { padding: 13px 10px; border-radius: 8px; background: linear-gradient(135deg, #5b65e4, #4651c5); color: #fff; text-align: center; }
+  #appRentalAdminDemo .funnel-step strong { display: block; font-size: 18px; }
+  #appRentalAdminDemo .funnel-step span { display: block; margin-top: 5px; color: rgb(255 255 255 / 72%); font-size: 9px; }
+  #appRentalAdminDemo .audit-client { display: inline-flex; min-height: 24px; align-items: center; padding: 0 8px; border-radius: 5px; background: #eef1ff; color: #4d57d8; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 10px; }
+  #appRentalAdminDemo .admin-empty { padding: 42px; color: #9aa3b1; text-align: center; }
+  #appRentalAdminDemo .admin-toast { position: fixed; right: 26px; bottom: 26px; z-index: 5; padding: 12px 16px; border-radius: 9px; background: #20293a; color: #fff; box-shadow: 0 10px 32px rgb(0 0 0 / 20%); font-size: 12px; }
+</style>
+<script data-app-rental-admin-script>
+(() => {
+  const ADMIN_PAGES = Object.freeze([
+    ['products', '租号商品管理'],
+    ['member-library', '会员游戏库管理'],
+    ['member-plans', '会员套餐管理'],
+    ['accounts', '账号资源管理'],
+    ['admin-orders', '订单与售后'],
+    ['stats', '效果统计'],
+    ['audit', '操作记录'],
+  ]);
+  const ADMIN_DUAL_CLIENT_PAGES = Object.freeze(ADMIN_PAGES.filter(([id]) => id !== 'audit').map(([id]) => id));
+  const ANDROID_DATA = Object.freeze({
+    products: Object.freeze([
+      { id: 'APP-PROD-GTA6-STD', game: 'GTA 6', edition: '标准版', mode: '时租', sku: '2—23小时 / 日租 / 周租', price: '¥9.90起', stock: 128, status: '已上架' },
+      { id: 'APP-PROD-SPIRIT-STD', game: 'Spiritfarer', edition: '标准版', mode: '权益方案', sku: '首次体验2小时 / 单游戏永久', price: '¥1.99起', stock: '自动分配', status: '已上架' },
+      { id: 'APP-PROD-RDR2-STD', game: '荒野大镖客：救赎 2', edition: '标准版', mode: '时租', sku: '2—23小时 / 日租 / 周租', price: '¥7.90起', stock: 76, status: '已上架' },
+    ]),
+    memberLibrary: Object.freeze([
+      { id: 'APP-LIB-001', game: 'Spiritfarer', edition: '标准版', stock: 26, status: '会员可用' },
+      { id: 'APP-LIB-002', game: '双人成行', edition: '标准版', stock: 41, status: '会员可用' },
+      { id: 'APP-LIB-003', game: '霍格沃茨之遗', edition: '标准版', stock: 18, status: '会员可用' },
+    ]),
+    memberPlans: Object.freeze([
+      { id: 'weekly', name: '周卡', days: '7天', price: '¥39.00', recommend: '—', status: '已上架' },
+      { id: 'monthly', name: '月卡', days: '30天', price: '¥129.00', recommend: '—', status: '已上架' },
+      { id: 'quarterly', name: '季卡', days: '90天', price: '¥299.00', recommend: '—', status: '已上架' },
+    ]),
+    accounts: Object.freeze([
+      { id: 'APP-ACC-001', game: 'GTA 6', platform: 'Steam / Rockstar Games', account: 'gh_app_***_001', status: '可出租', order: '—', health: '正常' },
+      { id: 'APP-ACC-002', game: '荒野大镖客：救赎 2', platform: 'Steam / Rockstar Games', account: 'gh_app_***_018', status: '租用中', order: 'APP-ORDER-26081101', health: '正常' },
+      { id: 'APP-ACC-003', game: 'Spiritfarer', platform: 'Steam', account: 'gh_app_***_026', status: '隔离', order: '—', health: '待复核' },
+    ]),
+    orders: Object.freeze([
+      { id: 'APP-ORDER-26081101', game: '荒野大镖客：救赎 2', status: '租赁中', amount: '¥15.80', device: 'GameHub 6.1.1 / Android 15 / AYANEO Pocket S', detail: 'CPU 骁龙G3x Gen2 · GPU Adreno A32 · 16GB' },
+      { id: 'APP-ORDER-26081102', game: 'Spiritfarer', status: '已支付', amount: '¥1.99', device: 'GameHub 6.1.1 / Android 14 / OnePlus 12', detail: 'CPU 骁龙8 Gen3 · GPU Adreno 750 · 12GB' },
+      { id: 'APP-ORDER-26081103', game: 'GTA 6', status: '退款中', amount: '¥19.80', device: 'GameHub 6.1.1 / Android 15 / REDMAGIC 10 Pro', detail: 'CPU 骁龙8 Elite · GPU Adreno 830 · 16GB' },
+    ]),
+    stats: Object.freeze({ kpis: [['支付订单量', '8,426', '↑ 18.6%'], ['支付金额', '¥128,940', '↑ 21.3%'], ['付费用户数', '6,304', '↑ 15.4%'], ['一键上号成功率', '96.8%', '↑ 1.2%'], ['退款率', '2.1%', '↓ 0.5%']], funnel: [['租号曝光', '86,420'], ['点击租号', '24,680'], ['提交订单', '11,932'], ['支付成功', '8,426'], ['一键上号成功', '8,156']] }),
+  });
+  const MAC_DATA = Object.freeze({
+    products: Object.freeze([
+      { id: 'MAC-PROD-GTA6', clientType: 'mac', game: 'GTA 6', edition: '标准版', editionId: 'standard', saleMode: 'time-rental', mode: '时租', sku: '2—23小时 / 日租 / 周租', price: '¥12.00起', stock: 92, status: '已上架' },
+      { id: 'MAC-PROD-SPIRIT', clientType: 'mac', game: 'Spiritfarer', edition: '标准版', editionId: 'standard', saleMode: 'entitlement', mode: '权益方案', sku: '首次体验2小时 / 单游戏永久 / 开会员畅玩', price: '¥1.99起', stock: 20, status: '已上架' },
+    ]),
+    memberLibrary: Object.freeze([
+      { id: 'MAC-LIB-001', game: 'Spiritfarer', edition: '标准版', stock: 20, status: '会员可用' },
+      { id: 'MAC-LIB-002', game: '双人成行', edition: '标准版', stock: 34, status: '会员可用' },
+    ]),
+    memberPlans: Object.freeze([
+      { id: 'mac-weekly', name: '周卡', days: '7天', price: '¥39.00', recommend: '—', status: '已上架' },
+      { id: 'mac-monthly', name: '月卡', days: '30天', price: '¥129.00', recommend: '—', status: '已上架' },
+      { id: 'mac-quarterly', name: '季卡', days: '90天', price: '¥299.00', recommend: '—', status: '已上架' },
+    ]),
+    accounts: Object.freeze([
+      { id: 'MAC-ACC-001', game: 'GTA 6', platform: 'Steam / Rockstar Games', account: 'gh_mac_***_001', status: '可出租', order: '—', health: '正常' },
+      { id: 'MAC-ACC-002', game: 'Spiritfarer', platform: 'Steam', account: 'gh_mac_***_017', status: '租用中', order: 'MAC-ORDER-26081102', health: '正常' },
+    ]),
+    orders: Object.freeze([
+      { id: 'MAC-ORDER-26081101', game: 'GTA 6', status: '租赁中', amount: '¥24.00', device: 'GameHub Mac 6.1.1 / macOS 15.6 / MacBook Pro', detail: 'Apple M4 Pro · 24GB' },
+      { id: 'MAC-ORDER-26081102', game: 'Spiritfarer', status: '已退款', amount: '¥9.90', device: 'GameHub Mac 6.1.1 / macOS 15.5 / Mac mini', detail: 'Apple M2 · 16GB' },
+    ]),
+    stats: Object.freeze({ kpis: [['支付订单量', '5,208', '↑ 9.4%'], ['支付金额', '¥96,480', '↑ 12.1%'], ['付费用户数', '3,986', '↑ 8.7%'], ['一键上号成功率', '97.4%', '↑ 0.8%'], ['退款率', '1.8%', '↓ 0.3%']], funnel: [['租号曝光', '54,900'], ['点击租号', '15,840'], ['提交订单', '7,206'], ['支付成功', '5,208'], ['一键上号成功', '5,073']] }),
+  });
+  const BASE_AUDIT_LOGS = Object.freeze([
+    { id: 'AUD-260811-001', time: '2026-08-11 20:48:12', operator: '运营-林晓', module: '租号商品', action: '更新价格', objectId: 'APP-PROD-GTA6-STD', clientType: 'android', result: '成功' },
+    { id: 'AUD-260811-002', time: '2026-08-11 20:32:04', operator: '运营-周宁', module: '账号资源', action: '隔离账号', objectId: 'MAC-ACC-019', clientType: 'mac', result: '成功' },
+    { id: 'AUD-260811-003', time: '2026-08-11 19:56:30', operator: '客服-陈琪', module: '订单与售后', action: '同意退款', objectId: 'APP-ORDER-26081089', clientType: 'android', result: '成功' },
+  ]);
+  const adminState = {
+    page: 'products',
+    clientByPage: Object.fromEntries(ADMIN_DUAL_CLIENT_PAGES.map((pageId) => [pageId, 'android'])),
+    selectedIds: { android: {}, mac: {} },
+    filters: { android: {}, mac: {} },
+    auditLogs: [...BASE_AUDIT_LOGS],
+    toast: '',
+  };
+  const pageMeta = Object.freeze({
+    products: ['租号商品管理', '配置游戏、版本、售卖模式、价格和上下架状态'],
+    'member-library': ['会员游戏库管理', '维护会员可畅玩游戏、版本、库存和上下架状态'],
+    'member-plans': ['会员套餐管理', '配置各客户端独立套餐、有效期与上下架状态'],
+    accounts: ['账号资源管理', '查看账号库存、健康状态、占用关系和平台信息'],
+    'admin-orders': ['订单与售后', '查询订单、设备环境、履约状态和售后进度'],
+    stats: ['效果统计', '查看租号漏斗、支付结果和履约质量'],
+    audit: ['操作记录', '统一查询 APP 与 Mac 后台关键操作和变更快照'],
+  });
+  const root = () => document.getElementById('appRentalAdminDemo');
+  const currentClientType = (pageId = adminState.page) => pageId === 'audit' ? 'all' : adminState.clientByPage[pageId] || 'android';
+  const currentData = () => currentClientType() === 'mac' ? MAC_DATA : ANDROID_DATA;
+  const dataKeyForPage = (pageId) => ({ 'member-library': 'memberLibrary', 'member-plans': 'memberPlans', 'admin-orders': 'orders' }[pageId] || pageId);
+  const clientLabel = (clientType = currentClientType()) => clientType === 'mac' ? 'Mac' : 'APP（安卓端）';
+  const statusTone = (value) => /退款|隔离|待复核/.test(value) ? 'warn' : /下架|关闭/.test(value) ? 'off' : '';
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+  const renderClientTabs = (pageId) => pageId === 'audit' ? '' : `<div class="admin-client-tabs" role="tablist" aria-label="客户端数据"><button class="${currentClientType(pageId) === 'android' ? 'active' : ''}" data-admin-client-tab="android">APP（安卓端）</button><button class="${currentClientType(pageId) === 'mac' ? 'active' : ''}" data-admin-client-tab="mac">Mac</button></div>`;
+  const table = (headers, rows) => `<div class="data-card"><table class="data-table"><thead><tr>${headers.map((header) => `<th>${header}</th>`).join('')}</tr></thead><tbody>${rows || `<tr><td class="admin-empty" colspan="${headers.length}">暂无数据</td></tr>`}</tbody></table></div>`;
+  const toolbar = (placeholder, actionLabel = '导出当前数据') => `<div class="admin-toolbar"><input aria-label="搜索当前模块" placeholder="${placeholder}"><select aria-label="状态筛选"><option>全部状态</option><option>已上架</option><option>租用中</option></select><span class="spacer"></span><button class="a-btn" data-admin-action="export">${actionLabel}</button><button class="a-btn primary" data-admin-action="create">新建配置</button></div>`;
+  function renderProducts() {
+    const rows = currentData().products.map((item) => `<tr><td><strong>${item.game}</strong><span class="subline">${item.id}</span></td><td>${item.edition}</td><td>${item.mode}</td><td>${item.sku}</td><td>${item.price}</td><td>${item.stock}</td><td><span class="status ${statusTone(item.status)}">${item.status}</span></td><td><button class="a-btn" data-admin-action="edit" data-object-id="${item.id}">编辑</button></td></tr>`).join('');
+    return toolbar('搜索游戏名称或商品ID') + table(['游戏 / 商品ID', '版本', '售卖模式', 'SKU', '最低价', '库存', '状态', '操作'], rows);
+  }
+  function renderMemberLibrary() {
+    const rows = currentData().memberLibrary.map((item) => `<tr><td><strong>${item.game}</strong><span class="subline">${item.id}</span></td><td>${item.edition}</td><td>${item.stock}</td><td><span class="status">${item.status}</span></td><td><button class="a-btn" data-admin-action="edit" data-object-id="${item.id}">编辑</button></td></tr>`).join('');
+    return toolbar('搜索会员游戏') + table(['游戏 / 配置ID', '版本', '可用库存', '状态', '操作'], rows);
+  }
+  function renderMemberPlans() {
+    const rows = currentData().memberPlans.map((item) => `<tr><td><strong>${item.name}</strong><span class="subline">${item.id}</span></td><td>${item.days}</td><td>${item.price}</td><td>${item.recommend}</td><td><span class="status">${item.status}</span></td><td><button class="a-btn" data-admin-action="edit" data-object-id="${item.id}">编辑</button></td></tr>`).join('');
+    return toolbar('搜索套餐名称') + table(['套餐 / ID', '有效期', '售价', '推荐状态', '状态', '操作'], rows);
+  }
+  function renderAccounts() {
+    const rows = currentData().accounts.map((item) => `<tr><td><strong>${item.game}</strong><span class="subline">${item.id}</span></td><td>${item.platform}</td><td>${item.account}</td><td><span class="status ${statusTone(item.status)}">${item.status}</span></td><td>${item.order}</td><td>${item.health}</td><td><button class="a-btn" data-admin-action="inspect" data-object-id="${item.id}">查看</button></td></tr>`).join('');
+    return toolbar('搜索游戏、账号资源ID或订单号') + table(['游戏 / 资源ID', '登录平台', '账号（脱敏）', '资源状态', '当前订单', '健康状态', '操作'], rows);
+  }
+  function renderOrders() {
+    const rows = currentData().orders.map((item) => `<tr><td><strong>${item.id}</strong><span class="subline">clientType: ${currentClientType()}</span></td><td>${item.game}</td><td><span class="status ${statusTone(item.status)}">${item.status}</span></td><td>${item.amount}</td><td><strong>${item.device}</strong><span class="subline">${item.detail}</span></td><td><button class="a-btn" data-admin-action="inspect" data-object-id="${item.id}">查看详情</button></td></tr>`).join('');
+    return toolbar('搜索订单号或游戏名称') + table(['订单号', '游戏', '状态', '实付', currentClientType() === 'android' ? 'APP / Android / 设备环境' : 'Mac 客户端 / 设备环境', '操作'], rows);
+  }
+  function renderStats() {
+    const stats = currentData().stats;
+    const kpis = stats.kpis.map(([label, value, trend]) => `<article class="kpi-card"><span>${label}</span><strong>${value}</strong><em>${trend}</em></article>`).join('');
+    const funnel = stats.funnel.map(([label, value]) => `<div class="funnel-step"><strong>${value}</strong><span>${label}</span></div>`).join('');
+    const rows = currentData().products.map((item, index) => `<tr><td><strong>${item.game}</strong><span class="subline">${item.edition}</span></td><td>${1320 - index * 187}</td><td>${(96.8 - index * 1.1).toFixed(1)}%</td><td>${item.stock}</td><td>${(2.1 + index * .4).toFixed(1)}%</td></tr>`).join('');
+    return `<div class="admin-toolbar"><strong>${clientLabel()} · 近30天</strong><span class="spacer"></span><button class="a-btn" data-admin-action="export">导出报表</button></div><div class="kpi-grid">${kpis}</div><section class="funnel-card"><h3>租号转化漏斗</h3><div class="funnel">${funnel}</div></section>${table(['游戏 / 版本', '支付订单', '上号成功率', '库存', '退款率'], rows)}`;
+  }
+  function renderAudit() {
+    const rows = adminState.auditLogs.map((log) => `<tr><td><strong>${log.time}</strong><span class="subline">${log.id}</span></td><td>${log.operator}</td><td>${log.module}</td><td>${log.action}</td><td>${log.objectId}</td><td><span class="audit-client">clientType: ${log.clientType}</span></td><td><span class="status">${log.result}</span></td><td><button class="a-btn" data-admin-action="audit-detail" data-object-id="${log.id}">查看详情</button></td></tr>`).join('');
+    return `<div class="admin-toolbar"><input aria-label="搜索操作记录" placeholder="日志ID / 对象ID / 操作人"><select><option>全部 clientType</option><option>android</option><option>mac</option></select><span class="spacer"></span><button class="a-btn" data-admin-action="export-audit">导出当前筛选</button></div>${table(['操作时间 / 日志ID', '操作人', '模块', '动作', '对象ID', '端别快照', '结果', '详情'], rows)}`;
+  }
+  const ADMIN_RENDERERS = Object.freeze({ products: renderProducts, 'member-library': renderMemberLibrary, 'member-plans': renderMemberPlans, accounts: renderAccounts, 'admin-orders': renderOrders, stats: renderStats, audit: renderAudit });
+  function renderAdminApp() {
+    const target = root();
+    if (!target) return;
+    const meta = pageMeta[adminState.page];
+    const renderer = ADMIN_RENDERERS[adminState.page];
+    target.dataset.adminPage = adminState.page;
+    target.dataset.adminClientType = currentClientType();
+    target.innerHTML = `<div class="admin-app"><section class="admin-page" data-admin-page-id="${adminState.page}"><header class="admin-header"><div><h1>${meta[0]}</h1><p>${meta[1]}</p></div><div class="admin-header-actions">${renderClientTabs(adminState.page)}</div></header>${renderer()}</section>${adminState.toast ? `<div class="admin-toast">${escapeHtml(adminState.toast)}</div>` : ''}</div>`;
+    document.querySelectorAll('[data-admin-page]').forEach((button) => button.classList.toggle('active', button.dataset.adminPage === adminState.page));
+  }
+  function setSurface(surface) {
+    const admin = surface === 'admin';
+    document.body.classList.toggle('admin-surface', admin);
+    document.querySelectorAll('[data-annotation-surface]').forEach((button) => button.classList.toggle('active', button.dataset.annotationSurface === surface));
+    const adminRoot = root();
+    const clientFrame = document.getElementById('demoScaleFrame');
+    if (adminRoot) adminRoot.hidden = !admin;
+    if (clientFrame) clientFrame.hidden = admin;
+    if (admin) {
+      adminState.page = 'products';
+      adminState.clientByPage.products = 'android';
+      renderAdminApp();
+    } else {
+      requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+    }
+  }
+  function navigate(pageId) {
+    if (!ADMIN_RENDERERS[pageId]) throw new Error(`Unknown admin page: ${pageId}`);
+    adminState.page = pageId;
+    if (pageId !== 'audit') adminState.clientByPage[pageId] = 'android';
+    renderAdminApp();
+    return window.__appRentalAdminDemo.snapshot();
+  }
+  function setClientType(clientType) {
+    if (adminState.page === 'audit') throw new Error('Audit page has no client tab');
+    if (!['android', 'mac'].includes(clientType)) throw new Error(`Unknown client type: ${clientType}`);
+    const pageId = adminState.page;
+    const previous = currentClientType(pageId);
+    adminState.selectedIds[previous][pageId] = [];
+    adminState.filters[previous][pageId] = {};
+    adminState.clientByPage[pageId] = clientType;
+    renderAdminApp();
+    return window.__appRentalAdminDemo.snapshot();
+  }
+  function addAudit(action, objectId = '-') {
+    const clientType = currentClientType();
+    adminState.auditLogs.unshift({ id: `AUD-${Date.now()}`, time: new Date().toLocaleString('zh-CN', { hour12: false }), operator: '当前管理员', module: pageMeta[adminState.page][0], action, objectId, clientType, result: '成功' });
+    adminState.toast = `${clientLabel(clientType)} · ${action} 已记录`;
+    renderAdminApp();
+    setTimeout(() => { adminState.toast = ''; renderAdminApp(); }, 1600);
+  }
+  document.addEventListener('click', (event) => {
+    const surfaceButton = event.target.closest('[data-annotation-surface]');
+    if (surfaceButton) { setSurface(surfaceButton.dataset.annotationSurface); return; }
+    const navButton = event.target.closest('.admin-module-nav [data-admin-page]');
+    if (navButton) { navigate(navButton.dataset.adminPage); return; }
+    const clientButton = event.target.closest('[data-admin-client-tab]');
+    if (clientButton) { setClientType(clientButton.dataset.adminClientTab); return; }
+    const actionButton = event.target.closest('#appRentalAdminDemo [data-admin-action]');
+    if (actionButton) addAudit(actionButton.textContent.trim(), actionButton.dataset.objectId || currentClientType());
+  });
+  window.__appRentalAdminDemo = Object.freeze({
+    navigate,
+    setClientType,
+    setSurface,
+    adminRequest(scope, payload = {}) { return { scope, clientType: currentClientType(), payload }; },
+    snapshot() { return { page: adminState.page, clientType: currentClientType(), auditCount: adminState.auditLogs.length, dataCount: adminState.page === 'audit' ? adminState.auditLogs.length : (currentData()[dataKeyForPage(adminState.page)]?.length || 0) }; },
+    reset() { adminState.page = 'products'; ADMIN_DUAL_CLIENT_PAGES.forEach((pageId) => { adminState.clientByPage[pageId] = 'android'; }); adminState.selectedIds = { android: {}, mac: {} }; adminState.filters = { android: {}, mac: {} }; adminState.auditLogs = [...BASE_AUDIT_LOGS]; adminState.toast = ''; renderAdminApp(); return this.snapshot(); },
+  });
+})();
+</script>
+<!-- APP_RENTAL_ADMIN_FRAGMENT_END -->
