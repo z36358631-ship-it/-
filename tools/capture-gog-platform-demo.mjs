@@ -73,11 +73,50 @@ async function settle() {
   });
 }
 
+async function verifyScreenContract(screen) {
+  if (screen === 'search-portrait' || screen === 'search-landscape') {
+    const result = await page.evaluate(currentScreen => {
+      const viewport = document.querySelector(`[data-screen="${currentScreen}"]`);
+      const grid = viewport.querySelector('.search-results');
+      const cards = [...grid.querySelectorAll('.search-result')];
+      return {
+        columns:getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length,
+        cardCount:cards.length,
+        labelsInsideCover:cards.every(card => card.querySelector('.search-result__cover-wrap .search-result__platform')),
+        labelsOutsideCover:cards.some(card => card.querySelector('.search-result__body .search-result__platform')),
+      };
+    }, screen);
+    assert.equal(result.columns, 2, `${screen}: expected two search-result columns`);
+    assert.equal(result.cardCount, 4, `${screen}: expected four search-result cards`);
+    assert.equal(result.labelsInsideCover, true, `${screen}: platform label must be inside every cover`);
+    assert.equal(result.labelsOutsideCover, false, `${screen}: platform label must not appear below the cover`);
+  }
+  if (screen === 'detail-portrait' || screen === 'detail-landscape') {
+    const result = await page.evaluate(currentScreen => {
+      const viewport = document.querySelector(`[data-screen="${currentScreen}"]`);
+      const obtain = viewport.querySelector('[data-obtain-platforms]');
+      return {
+        obtainCopy:getComputedStyle(obtain, '::before').content.replaceAll('"',''),
+        hasLegacyCopy:viewport.textContent.includes('获得游戏'),
+        hasEngineCopy:viewport.textContent.includes('PC游戏引擎') || currentScreen === 'detail-landscape',
+        hasCloudCopy:viewport.textContent.includes('云存档'),
+        hasHoursCopy:viewport.textContent.includes('游戏时长'),
+      };
+    }, screen);
+    assert.equal(result.obtainCopy, '获取游戏', `${screen}: obtain copy mismatch`);
+    assert.equal(result.hasLegacyCopy, false, `${screen}: legacy obtain copy remains`);
+    assert.equal(result.hasEngineCopy, true, `${screen}: PC game engine copy missing`);
+    assert.equal(result.hasCloudCopy, true, `${screen}: cloud-save copy missing`);
+    assert.equal(result.hasHoursCopy, true, `${screen}: playtime copy missing`);
+  }
+}
+
 async function captureCanvas(name, screen, prepare = null) {
   await page.click(`[data-page="${screen}"]`);
   await page.waitForSelector(`[data-screen="${screen}"]`);
   if (prepare) await prepare();
   await settle();
+  await verifyScreenContract(screen);
 
   const target = path.join(output, `${name}.png`);
   const viewport = page.locator(`.app-viewport[data-screen="${screen}"]`);
