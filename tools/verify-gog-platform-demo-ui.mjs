@@ -99,26 +99,53 @@ async function profileFlow() {
   assert(!text.includes('账号价值'));
   assert(!text.includes('¥6.8k'));
 
-  const beforeRefresh = await page.evaluate(() => window.GogDemoApp.state.gogRefreshRequestCount);
-  await page.click('[data-action="refresh-gog"]');
-  assert.equal(await page.locator('[data-action="refresh-gog"]').isDisabled(), true);
-  await page.evaluate(() => document.querySelector('[data-action="refresh-gog"]').click());
-  assert.equal(await page.evaluate(() => window.GogDemoApp.state.gogRefreshRequestCount), beforeRefresh + 1);
-  await page.waitForFunction(() => !window.GogDemoApp.state.gogRefreshInFlight);
+  assert.equal(await page.locator('[data-account-menu]').count(), 0);
+  await page.click('[data-action="toggle-account-menu"]');
+  assert.equal(await page.locator('[data-account-menu]').count(), 1);
+  for (const action of ['refresh-platform','switch-platform','logout-platform']) {
+    assert.equal(await page.locator(`[data-account-menu] [data-action="${action}"]`).count(), 1);
+  }
+  assert.equal(await page.locator('[data-action="open-free-games"]').count(), 0);
+  const menuBox = await page.locator('[data-account-menu]').boundingBox();
+  const profileBox = await page.locator('[data-screen="profile-portrait"]').boundingBox();
+  assert(menuBox.right <= profileBox.right, 'GOG account menu is clipped on the right');
+  await page.locator('.profile-page').click({ position:{ x:10, y:500 } });
+  assert.equal(await page.locator('[data-account-menu]').count(), 0);
 
-  await page.click('[data-action="switch-gog"]');
+  await page.click('[data-action="toggle-account-menu"]');
+  const beforeRefresh = await page.evaluate(() => window.GogDemoApp.state.accountRefreshRequestCount);
+  await page.click('[data-action="refresh-platform"]');
+  assert.equal(await page.locator('[data-action="toggle-account-menu"]').isDisabled(), true);
+  await page.evaluate(() => window.GogDemoApp.refreshCurrentPlatform());
+  assert.equal(await page.evaluate(() => window.GogDemoApp.state.accountRefreshRequestCount), beforeRefresh + 1);
+  await page.waitForFunction(() => !window.GogDemoApp.state.accountRefreshInFlight);
+
+  await page.click('[data-action="toggle-account-menu"]');
+  await page.click('[data-action="switch-platform"]');
   await page.click('[data-action="gog-authorize-failure"]');
   assert((await page.locator('[data-login-error]').innerText()).includes('旧账号'));
   assert.equal(await page.evaluate(() => window.GogDemoApp.state.accountByPlatform.gog.account.username), 'GalaxyRider');
   await page.click('[data-action="gog-authorize-cancel"]');
   assert.equal(await page.locator('[data-screen="profile-portrait"]').count(), 1);
 
-  await page.click('[data-action="logout-gog"]');
+  await page.click('[data-action="toggle-account-menu"]');
+  await page.click('[data-action="logout-platform"]');
   assert.equal(await page.locator('[data-logout-confirm]').count(), 1);
   await page.click('[data-action="confirm-logout-gog"]');
   assert.deepEqual(await platformSnapshot('gog'), { bindStatus:'unbound', tokenStatus:'none', account:null });
   await assertCorePlatformsUnchanged(steamBefore, epicBefore, 'profile GOG operations');
   await assertNoCredentialState();
+
+  await page.evaluate(() => {
+    window.GogDemoApp.state.accountByPlatform.gog = { bindStatus:'bound', tokenStatus:'valid', account:{ ...window.GogDemoApp.GOG_ACCOUNT } };
+    window.GogDemoApp.selectProfilePlatform('epic');
+  });
+  assert.equal(await page.locator('[data-action="open-free-games"]').count(), 1);
+  assert.equal((await page.locator('[data-action="open-free-games"]').innerText()).trim(), '喜加一');
+  assert.equal(await page.locator('.profile-primary-actions').count(), 1);
+  await page.click('[data-profile-platform="gog"]');
+  assert.equal(await page.locator('[data-action="open-free-games"]').count(), 0);
+  assert.equal(await page.locator('.profile-primary-actions').count(), 0);
   console.log('PASS profileFlow');
 }
 
@@ -204,6 +231,8 @@ async function detailSearchFlow() {
     assert.equal(rows.filter(row => row.platform === 'epic').length, 2);
     assert.equal(rows.filter(row => row.platform === 'gog').length, 2);
     assert(rows.filter(row => row.platform === 'gog').every(row => row.score === null));
+    const sameGameRows = rows.filter(row => row.gameId === 'cyberpunk-2077');
+    assert.deepEqual(sameGameRows.map(row => row.platform), ['epic','gog']);
     await page.click('[data-search-result][data-platform="gog"]');
     assert.equal(await page.locator(`[data-screen="detail-${orientation}"]`).count(), 1);
     assert.equal(await page.evaluate(() => window.GogDemoApp.state.sourcePlatform), 'gog');
@@ -217,7 +246,25 @@ async function detailSearchFlow() {
     assert.equal(await page.evaluate(() => window.GogDemoApp.state.sourcePlatform), 'gog');
     assert.equal(await page.evaluate(() => window.GogDemoApp.state.selectedPlatform), 'epic');
     assert((await page.locator('[data-launch-platform]').innerText()).includes('EPIC 启动'));
+    assert.equal((await page.locator('[data-detail-hours]').innerText()).trim(), '96 小时');
+    assert.equal((await page.locator('[data-detail-cloud]').innerText()).trim(), '云存档正常');
+    await page.click('[data-launch-platform]');
+    assert.deepEqual(await page.evaluate(() => window.GogDemoApp.state.lastLaunchRequest), {
+      gameId:'cyberpunk-2077',
+      platform:'epic',
+      platformAppId:'epic-cyberpunk',
+    });
+    for (const platform of ['steam','epic','gog']) {
+      assert.equal(await page.locator(`[data-obtain-platform="${platform}"]`).count(), 1);
+    }
   }
+  const mapping = await page.evaluate(() => ({
+    same:window.GogDemoApp.matchGameCandidate('赛博朋克 2077','Cyberpunk 2077'),
+    ambiguous:window.GogDemoApp.matchGameCandidate('Control','Control Ultimate Edition'),
+  }));
+  assert.equal(mapping.same.matched, true);
+  assert.equal(mapping.same.gameId, 'cyberpunk-2077');
+  assert.equal(mapping.ambiguous.matched, false);
   assert.equal(await page.evaluate(() => window.GogDemoApp.convertEpicScore(4.4)), 8.8);
   assert.equal(await page.evaluate(() => window.GogDemoApp.resolveSelectedPlatform({
     sourcePlatform:null,

@@ -47,11 +47,40 @@ function gogCapabilities() {
   assert(!html.includes('¥6.8k'), 'Legacy fabricated GOG value remains');
   pass('gogCapabilities');
 }
+function accountMenu() {
+  for (const token of [
+    'data-action="toggle-account-menu"',
+    'data-account-menu',
+    '更新数据',
+    '切换账号',
+    '退出账号',
+    'data-action="open-free-games"',
+    '喜加一',
+  ]) assert(html.includes(token), `Missing account-menu token: ${token}`);
+  assert(/supportsFreeGames\s*:\s*false/.test(html), 'GOG must disable free-games entry');
+  pass('accountMenu');
+}
 function platformModel() {
   for (const token of ['sourcePlatform','selectedPlatform','ownedPlatforms','platformAppId','gameId','resolveSelectedPlatform','lowConfidenceNoMerge'])
     assert(html.includes(token), `Missing model token: ${token}`);
   assert(html.includes("['steam','epic','gog']"), 'Default platform priority missing');
   pass('platformModel');
+}
+function fullGameplayScope() {
+  for (const token of [
+    'normalizeGameName',
+    'matchGameCandidate',
+    'sourcePlatform',
+    'selectedPlatform',
+    'renderPlatformSwitch',
+    'data-detail-hours',
+    'data-detail-cloud',
+    'data-launch-platform',
+    'launchSelectedPlatform',
+    'platformAppId',
+  ]) assert(html.includes(token), `Missing complete GOG token: ${token}`);
+  assert(html.includes("['steam','epic','gog']"), 'Steam > EPIC > GOG priority missing');
+  pass('fullGameplayScope');
 }
 function states() {
   for (const token of ['loading','empty','error','expired','cancelled','cached'])
@@ -70,7 +99,7 @@ function syntax() {
   scripts.forEach((code, index) => new vm.Script(code, { filename: `gog-inline-${index}.js` }));
   pass('syntax');
 }
-const tasks = { shell, pages, realPageStructure, gogCapabilities, platformModel, states, security, syntax };
+const tasks = { shell, pages, realPageStructure, gogCapabilities, accountMenu, platformModel, fullGameplayScope, states, security, syntax };
 if (mode === 'all') Object.values(tasks).forEach(task => task());
 else if (tasks[mode]) tasks[mode]();
 else throw new Error(`Unknown mode: ${mode}`);
