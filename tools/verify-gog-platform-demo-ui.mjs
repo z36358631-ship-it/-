@@ -85,7 +85,7 @@ async function profileFlow() {
     window.GogDemoApp.state.accountByPlatform.gog = { bindStatus:'unbound', tokenStatus:'none', account:null };
     window.GogDemoApp.render();
   });
-  await page.click('[data-action="bind-gog"]');
+  await page.click('[data-action="bind-platform"]');
   assert.equal(await page.locator('[data-screen="gog-login"]').count(), 1);
   const loginText = await page.locator('#demoCanvas').innerText();
   assert(loginText.includes('GOG 官方登录'));
@@ -108,7 +108,9 @@ async function profileFlow() {
   assert.equal(await page.locator('[data-action="open-free-games"]').count(), 0);
   const menuBox = await page.locator('[data-account-menu]').boundingBox();
   const profileBox = await page.locator('[data-screen="profile-portrait"]').boundingBox();
-  assert(menuBox.right <= profileBox.right, 'GOG account menu is clipped on the right');
+  const menuRight = menuBox.x + menuBox.width;
+  const profileRight = profileBox.x + profileBox.width;
+  assert(menuRight <= profileRight + 1, `GOG account menu is clipped on the right (${menuRight} > ${profileRight})`);
   await page.locator('.profile-page').click({ position:{ x:10, y:500 } });
   assert.equal(await page.locator('[data-account-menu]').count(), 0);
 
