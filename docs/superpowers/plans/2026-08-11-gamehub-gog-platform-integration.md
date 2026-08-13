@@ -1,570 +1,317 @@
-# 盖世游戏 GOG 平台真实页面返修 Implementation Plan
+# 盖世游戏 GOG 平台完整接入返修 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 把现有 GOG 标注 Demo 返修为基于盖世游戏现行页面的横竖双版高保真 Demo，并同步修正验证脚本与 PRD，确保 GOG 账号库参照 EPIC 且完全没有账号价值。
+**Goal:** 在现行盖世游戏真实横竖页面中完成完整 GOG 账号、游戏库、搜索、详情切换与启动链路，同时把账号低频操作收进 `…` 菜单并保留 EPIC 专属“喜加一”。
 
-**Architecture:** 保留单文件三栏标注壳，将中间 APP 拆成独立的竖屏与横屏布局渲染器；账号、来源路由、异常状态和事件处理器共用同一状态模型。先冻结真实页面截图并建立失败契约，再依次完成游戏库/账号库、我的页/授权、搜索/详情、标注/异常、视觉取证和 PRD 对齐。
+**Architecture:** 保持单文件三栏交互标注 Demo，横竖布局独立渲染，共享平台账号、游戏映射、入口来源、当前平台和异常状态。静态契约负责结构与禁用规则，Playwright 负责真实交互和路由，截图工具负责固定视口证据，PRD 验证器负责最终业务口径一致性。
 
-**Tech Stack:** HTML5、CSS、Vanilla JavaScript、Node.js 24、`node:vm`、`playwright-core` 1.61.1、本地 Google Chrome、Markdown、PowerShell、`taskctl`。
+**Tech Stack:** 单文件 HTML/CSS/JavaScript、Node.js ESM、`node:assert`、`vm`、`playwright-core`、Markdown、`taskctl.cmd`
 
 ---
 
 ## 文件结构
 
-- Create: `assets/reference/gog-platform-real-pages/01-library-home-portrait.png` — 新版竖屏游戏库首页基准。
-- Create: `assets/reference/gog-platform-real-pages/02-library-home-landscape.png` — 新版横屏游戏库首页基准。
-- Create: `assets/reference/gog-platform-real-pages/03-epic-library-landscape.png` — 横屏 EPIC 账号库结构基准。
-- Create: `assets/reference/gog-platform-real-pages/04-epic-library-portrait.png` — 竖屏 EPIC 账号库结构基准。
-- Modify: `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html` — 三栏标注壳、10 个真实页面视图、共享状态和全部交互。
-- Modify: `tools/verify-gog-platform-demo.mjs` — 静态结构、页面、平台能力、安全和语法契约。
-- Modify: `tools/verify-gog-platform-demo-ui.mjs` — Playwright 交互、布局、账号价值缺失、异常和回归检查。
-- Modify: `tools/capture-gog-platform-demo.mjs` — 10 个中间页面及 1 张完整标注壳截图。
-- Modify: `prd/ai生成/【Prd】《盖世游戏》GOG平台接入需求.md` — 新版游戏库与“无账号价值”唯一口径。
-- Modify: `tools/verify-gog-platform-prd.mjs` — PRD 页面范围、视觉基准和禁用口径检查。
-- Preserve: `demos/PC与Mac端/epic接入demo.html` — 只读参考，禁止修改。
-- Reference: `demos/首页与探索/游戏库demo.html` — 新版游戏库行为和布局参考。
-- Reference: `_outputs/盖世游戏V6.1.1使用说明手册/图片和附件/30-我的.png`。
-- Reference: `_outputs/盖世游戏V6.1.1使用说明手册/图片和附件/09-竖版搜索默认页.png`。
-- Reference: `_outputs/盖世游戏V6.1.1使用说明手册/图片和附件/10-竖版游戏详情.png`。
-- Reference: `_outputs/盖世游戏V6.1.1使用说明手册/图片和附件/43-掌机模式-搜索.png`。
-- Reference: `_outputs/盖世游戏V6.1.1使用说明手册/图片和附件/44-掌机模式-游戏详情.png`。
+- `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html`：10 个真实页面、共享业务状态、账号菜单、平台路由、游戏归类、交互标注和异常模拟。
+- `tools/verify-gog-platform-demo.mjs`：Demo 的静态结构、语法、能力和禁用规则契约。
+- `tools/verify-gog-platform-demo-ui.mjs`：账号菜单、授权、游戏库、搜索、详情、平台切换、启动和标注的浏览器验收。
+- `tools/capture-gog-platform-demo.mjs`：固定视口页面、账号菜单、平台切换弹窗和完整标注壳截图。
+- `prd/ai生成/【Prd】《盖世游戏》GOG平台接入需求.md`：最终 C 端 PRD。
+- `tools/verify-gog-platform-prd.mjs`：PRD 结构、最终范围、禁用能力和占位符检查。
+- `C:/Users/z3635/.codex/skills/pm-image2proto/references/learning_log.jsonl`：截图还原与返修经验记录。
+- `.tmp/gog-platform-demo-captures/`：自动生成的视觉证据，不作为产品代码提交。
 
-## Task 1: 冻结真实页面基准并建立失败契约
+## Task 1: 先建立最终范围的失败契约
 
 **Files:**
+- Modify: `tools/verify-gog-platform-demo.mjs`
+- Modify: `tools/verify-gog-platform-demo-ui.mjs`
 
-- Create: `assets/reference/gog-platform-real-pages/*.png`
-- Modify: `tools/verify-gog-platform-demo.mjs:1-48`
-- Test: `tools/verify-gog-platform-demo.mjs`
+- [ ] **Step 1: 在静态验证器增加账号菜单与完整详情能力契约**
 
-- [ ] **Step 1: 将 4 张临时截图复制为稳定只读参考资产**
-
-```powershell
-New-Item -ItemType Directory -Force 'assets/reference/gog-platform-real-pages' | Out-Null
-Copy-Item -LiteralPath 'C:\Users\z3635\AppData\Local\Temp\codex-clipboard-84d9ec4d-d299-4d62-a95a-0b2ca10e4fdb.png' -Destination 'assets/reference/gog-platform-real-pages/01-library-home-portrait.png'
-Copy-Item -LiteralPath 'C:\Users\z3635\AppData\Local\Temp\codex-clipboard-5c8cfe74-533a-4b8d-8555-68a67c8bbeac.png' -Destination 'assets/reference/gog-platform-real-pages/02-library-home-landscape.png'
-Copy-Item -LiteralPath 'C:\Users\z3635\AppData\Local\Temp\codex-clipboard-12048fd2-9313-4f4e-bdd3-529a34aed612.png' -Destination 'assets/reference/gog-platform-real-pages/03-epic-library-landscape.png'
-Copy-Item -LiteralPath 'C:\Users\z3635\AppData\Local\Temp\codex-clipboard-8a7363ff-b599-46e3-a058-9ea0127d6234.png' -Destination 'assets/reference/gog-platform-real-pages/04-epic-library-portrait.png'
-```
-
-Expected dimensions, in file-name order: `395×800`、`822×487`、`941×443`、`416×813`。
-
-- [ ] **Step 2: 用实际页面清单替换旧九页契约**
-
-Add these constants and checks to `tools/verify-gog-platform-demo.mjs`:
+在 `tools/verify-gog-platform-demo.mjs` 增加并注册以下检查：
 
 ```js
-const realPages = [
-  'profile-portrait',
-  'gog-login',
-  'library-home-portrait',
-  'library-home-landscape',
-  'gog-library-portrait',
-  'gog-library-landscape',
-  'search-portrait',
-  'search-landscape',
-  'detail-portrait',
-  'detail-landscape',
-];
-
-function pages() {
-  for (const id of realPages) {
-    assert(html.includes(`id:'${id}'`) || html.includes(`id: '${id}'`), `Missing page: ${id}`);
-  }
-  pass('pages');
-}
-
-function realPageStructure() {
+function accountMenu() {
   for (const token of [
-    'renderProfilePortrait', 'renderLibraryHomePortrait', 'renderLibraryHomeLandscape',
-    'renderGogLibraryPortrait', 'renderGogLibraryLandscape',
-    'renderSearchPortrait', 'renderSearchLandscape',
-    'renderDetailPortrait', 'renderDetailLandscape',
-  ]) assert(html.includes(token), `Missing real-page renderer: ${token}`);
-  pass('realPageStructure');
+    'data-action="toggle-account-menu"',
+    'data-account-menu',
+    '更新数据',
+    '切换账号',
+    '退出账号',
+    'data-action="open-free-games"',
+    '喜加一',
+  ]) assert(html.includes(token), `Missing account-menu token: ${token}`);
+  assert(html.includes('supportsFreeGames:false'), 'GOG must disable free-games entry');
+  pass('accountMenu');
 }
 
-function gogCapabilities() {
-  assert(/supportsAccountValue\s*:\s*false/.test(html), 'GOG must explicitly disable account value');
-  assert(/accountValue\s*:\s*null/.test(html), 'GOG account value must be null');
-  assert(!html.includes('¥6.8k'), 'Legacy fabricated GOG value remains');
-  pass('gogCapabilities');
+function fullGameplayScope() {
+  for (const token of [
+    'normalizeGameName',
+    'matchGameCandidate',
+    'sourcePlatform',
+    'selectedPlatform',
+    'renderPlatformSwitch',
+    'data-detail-hours',
+    'data-detail-cloud',
+    'data-launch-platform',
+    'launchSelectedPlatform',
+    'platformAppId',
+  ]) assert(html.includes(token), `Missing complete GOG token: ${token}`);
+  assert(html.includes("['steam','epic','gog']"), 'Steam > EPIC > GOG priority missing');
+  pass('fullGameplayScope');
 }
 ```
 
-Register `realPageStructure` and `gogCapabilities` in `tasks`.
+把 `accountMenu` 和 `fullGameplayScope` 加入 `tasks`。保留 `supportsAccountValue:false`、`accountValue:null`、安全边界和 10 页面检查。
 
-- [ ] **Step 3: 运行契约并确认旧实现失败**
+- [ ] **Step 2: 在 UI 验证器写入账号菜单失败测试**
+
+用以下断言替换账号卡三按钮直出断言：
+
+```js
+await selectScreen('profile-portrait');
+await page.click('[data-profile-platform="gog"]');
+assert.equal(await page.locator('[data-account-menu]').count(), 0);
+await page.click('[data-action="toggle-account-menu"]');
+assert.equal(await page.locator('[data-account-menu]').count(), 1);
+for (const action of ['refresh-platform','switch-platform','logout-platform']) {
+  assert.equal(await page.locator(`[data-account-menu] [data-action="${action}"]`).count(), 1);
+}
+assert.equal(await page.locator('[data-action="open-free-games"]').count(), 0);
+await page.locator('.profile-page').click({ position:{ x:10, y:500 } });
+assert.equal(await page.locator('[data-account-menu]').count(), 0);
+
+await page.click('[data-profile-platform="epic"]');
+assert.equal(await page.locator('[data-action="open-free-games"]').count(), 1);
+```
+
+- [ ] **Step 3: 增加完整平台链路与归类失败测试**
+
+在 `detailSearchFlow()` 增加：
+
+```js
+const sameGameRows = rows.filter(row => row.gameId === 'cyberpunk-2077');
+assert.deepEqual(sameGameRows.map(row => row.platform), ['epic', 'gog']);
+
+const mapping = await page.evaluate(() => ({
+  same: window.GogDemoApp.matchGameCandidate('赛博朋克 2077', 'Cyberpunk 2077'),
+  ambiguous: window.GogDemoApp.matchGameCandidate('Control', 'Control Ultimate Edition'),
+}));
+assert.equal(mapping.same.matched, true);
+assert.equal(mapping.ambiguous.matched, false);
+
+await page.click('[data-action="select-detail-platform"][data-platform="epic"]');
+await page.click('[data-launch-platform]');
+assert.deepEqual(await page.evaluate(() => window.GogDemoApp.state.lastLaunchRequest), {
+  gameId:'cyberpunk-2077',
+  platform:'epic',
+  platformAppId:'epic-cyberpunk',
+});
+```
+
+- [ ] **Step 4: 运行契约并确认旧账号卡实现失败**
 
 Run:
 
 ```powershell
-node tools/verify-gog-platform-demo.mjs pages
-node tools/verify-gog-platform-demo.mjs realPageStructure
-node tools/verify-gog-platform-demo.mjs gogCapabilities
+node tools/verify-gog-platform-demo.mjs accountMenu
+node tools/verify-gog-platform-demo-ui.mjs profile
 ```
 
-Expected: three commands fail, respectively reporting a missing real page, missing renderer, and missing/legacy GOG capability.
+Expected: `accountMenu` 因缺少 `…` 菜单与 EPIC“喜加一”失败；`profile` 因旧三按钮直出失败。
 
-- [ ] **Step 4: 提交参考资产和失败契约**
+- [ ] **Step 5: 提交失败契约**
 
 ```powershell
-git add -- 'assets/reference/gog-platform-real-pages' tools/verify-gog-platform-demo.mjs
-git commit -m 'test: define real-page GOG rebuild contract'
+git add -- tools/verify-gog-platform-demo.mjs tools/verify-gog-platform-demo-ui.mjs
+git commit -m "test: define final GOG integration contract"
 ```
 
-## Task 2: 重构共享状态与 10 页面注册表
+## Task 2: 实现账号卡平台差异与 `…` 菜单
 
 **Files:**
-
-- Modify: `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html:1273-1453`
-- Modify: `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html:1847-2175`
+- Modify: `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html`
 - Test: `tools/verify-gog-platform-demo.mjs`
+- Test: `tools/verify-gog-platform-demo-ui.mjs`
 
-- [ ] **Step 1: 用方向明确的页面注册表替换旧 `FLOW`**
+- [ ] **Step 1: 建立 Steam、EPIC、GOG 账号展示能力模型**
 
-```js
-const FLOW = [
-  { id:'profile-portrait', group:'我的页', label:'我的 · 竖屏', orientation:'portrait' },
-  { id:'gog-login', group:'我的页', label:'GOG 官方授权', orientation:'portrait' },
-  { id:'library-home-portrait', group:'游戏库', label:'首页 · 竖屏', orientation:'portrait' },
-  { id:'library-home-landscape', group:'游戏库', label:'首页 · 横屏', orientation:'landscape' },
-  { id:'gog-library-portrait', group:'游戏库', label:'GOG 账号库 · 竖屏', orientation:'portrait' },
-  { id:'gog-library-landscape', group:'游戏库', label:'GOG 账号库 · 横屏', orientation:'landscape' },
-  { id:'search-portrait', group:'搜索', label:'搜索 · 竖屏', orientation:'portrait' },
-  { id:'search-landscape', group:'搜索', label:'搜索 · 横屏', orientation:'landscape' },
-  { id:'detail-portrait', group:'详情', label:'详情 · 竖屏', orientation:'portrait' },
-  { id:'detail-landscape', group:'详情', label:'详情 · 横屏', orientation:'landscape' },
-];
-```
-
-- [ ] **Step 2: 把 GOG 的“无账号价值”写入共享状态**
+在 Demo 数据区加入：
 
 ```js
-const GOG_ACCOUNT = {
-  platform:'gog',
-  supportsAccountValue:false,
-  accountValue:null,
-  username:'GalaxyRider',
-  gogId:'gog_20876491',
-  avatar:'G',
-  gameCount:126,
-  totalPlaytime:'438 小时',
-  lastSyncedAt:'今天 14:32',
+const PLATFORM_CAPABILITIES = {
+  steam:{ label:'STEAM', supportsAccountValue:true, supportsFreeGames:false },
+  epic:{ label:'EPIC', supportsAccountValue:true, supportsFreeGames:true },
+  gog:{ label:'GOG', supportsAccountValue:false, supportsFreeGames:false },
 };
 
-const state = {
-  screen:'profile-portrait',
-  orientation:'portrait',
-  annotationTab:'interaction',
-  showMarkers:false,
-  panelHidden:false,
-  simulation:'normal',
-  platformSwitchOpen:false,
+Object.assign(state, {
   profilePlatform:'gog',
-  sourcePlatform:null,
-  selectedPlatform:'gog',
-  selectedGame:null,
-  ownedPlatforms:['steam','epic','gog'],
-  accountByPlatform:{
-    steam:{ bindStatus:'bound', tokenStatus:'valid' },
-    epic:{ bindStatus:'bound', tokenStatus:'valid' },
-    gog:{ bindStatus:'bound', tokenStatus:'valid', account:{ ...GOG_ACCOUNT } },
-  },
-};
+  accountMenuOpen:false,
+  accountRefreshInFlight:false,
+  accountRefreshRequestCount:0,
+  showLogoutConfirm:false,
+});
 ```
 
-- [ ] **Step 3: 让方向只由页面注册表决定**
+Steam、EPIC 沿用现有展示字段；GOG 继续使用 `GOG ID`、游戏数、总时长和最近同步时间，不渲染账号价值。
+
+- [ ] **Step 2: 将账号卡常驻三按钮替换为菜单和平台专属主操作**
+
+账号卡头部增加：
+
+```html
+<button type="button" class="account-more" data-action="toggle-account-menu" aria-label="更多账号操作">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="5" cy="12" r="1.5"></circle>
+    <circle cx="12" cy="12" r="1.5"></circle>
+    <circle cx="19" cy="12" r="1.5"></circle>
+  </svg>
+</button>
+```
+
+菜单使用：
+
+```html
+<div class="account-menu" data-account-menu role="menu">
+  <button type="button" role="menuitem" data-action="refresh-platform">更新数据</button>
+  <button type="button" role="menuitem" data-action="switch-platform">切换账号</button>
+  <button type="button" role="menuitem" data-action="logout-platform">退出账号</button>
+</div>
+```
+
+只有 `PLATFORM_CAPABILITIES[platform].supportsFreeGames` 为 `true` 时渲染：
+
+```html
+<button type="button" class="profile-primary-action" data-action="open-free-games">喜加一</button>
+```
+
+GOG 不渲染主操作容器；不得用 `visibility:hidden` 或固定高度保留空白。
+
+- [ ] **Step 3: 实现菜单关闭与账号操作状态**
+
+事件规则：
 
 ```js
-function selectPage(pageId) {
-  const next = FLOW.find(page => page.id === pageId);
-  if (!next) throw new Error(`Unknown page: ${pageId}`);
-  state.screen = next.id;
-  state.orientation = next.orientation;
+function closeAccountMenu() {
+  state.accountMenuOpen = false;
+}
+
+function selectProfilePlatform(platform) {
+  state.profilePlatform = platform;
+  closeAccountMenu();
+  state.showLogoutConfirm = false;
   render();
 }
-```
 
-All navigation clicks must call `selectPage(pageId)`. Remove the old special case that only treats `search-landscape` as landscape.
-
-Add one dispatcher; the renderer functions are implemented in Tasks 3–4:
-
-```js
-function renderRealPage(page) {
-  const renderers = {
-    'profile-portrait':renderProfilePortrait,
-    'gog-login':renderGogLogin,
-    'library-home-portrait':renderLibraryHomePortrait,
-    'library-home-landscape':renderLibraryHomeLandscape,
-    'gog-library-portrait':renderGogLibraryPortrait,
-    'gog-library-landscape':renderGogLibraryLandscape,
-    'search-portrait':renderSearchPortrait,
-    'search-landscape':renderSearchLandscape,
-    'detail-portrait':renderDetailPortrait,
-    'detail-landscape':renderDetailLandscape,
-  };
-  const renderer = renderers[page.id];
-  if (!renderer) throw new Error(`Missing renderer: ${page.id}`);
-  return renderer();
+function refreshCurrentPlatform() {
+  if (state.accountRefreshInFlight) return;
+  state.accountRefreshInFlight = true;
+  state.accountRefreshRequestCount += 1;
+  closeAccountMenu();
+  render();
+  setTimeout(() => {
+    state.accountRefreshInFlight = false;
+    const account = state.accountByPlatform[state.profilePlatform]?.account;
+    if (account) account.lastSyncedAt = '刚刚';
+    render();
+  }, 120);
 }
 ```
 
-- [ ] **Step 4: 运行静态契约**
+文档级点击监听最后增加外部关闭判断：点击不在 `[data-account-menu]` 与 `[data-action="toggle-account-menu"]` 内时关闭菜单。切换失败复用官方授权页并保留旧账号；退出复用现有二次确认，只清除当前平台。
+
+- [ ] **Step 4: 调整账号菜单 CSS 并验证 402px 不裁切**
+
+使用相对定位卡片和右对齐菜单：
+
+```css
+.profile-platform-card{position:relative;min-height:0}
+.account-more{position:absolute;top:14px;right:14px;width:32px;height:32px}
+.account-more svg{width:20px;height:20px;fill:currentColor}
+.account-menu{position:absolute;z-index:9;top:50px;right:12px;width:132px;padding:6px;border-radius:11px;background:#292a2f;box-shadow:0 14px 40px rgba(0,0,0,.42)}
+.account-menu button{display:block;width:100%;height:36px;padding:0 12px;text-align:left}
+.profile-primary-action{width:100%;height:36px;margin-top:13px;border-radius:18px;background:#55555a}
+```
+
+- [ ] **Step 5: 运行账号菜单与静态检查**
 
 Run:
 
 ```powershell
-node tools/verify-gog-platform-demo.mjs pages
-node tools/verify-gog-platform-demo.mjs platformModel
-node tools/verify-gog-platform-demo.mjs syntax
+node tools/verify-gog-platform-demo.mjs accountMenu
+node tools/verify-gog-platform-demo.mjs gogCapabilities
+node tools/verify-gog-platform-demo-ui.mjs profile
 ```
 
-Expected: `PASS pages`、`PASS platformModel`、`PASS syntax`。
+Expected: 三项均输出 `PASS`；GOG 无账号价值和“喜加一”；EPIC 仅一个“喜加一”；菜单外部点击关闭。
 
-- [ ] **Step 5: 提交页面注册表和状态模型**
+- [ ] **Step 6: 提交账号卡返修**
 
 ```powershell
 git add -- 'demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html'
-git commit -m 'refactor: share GOG state across real portrait and landscape pages'
+git commit -m "feat: compact platform account actions"
 ```
 
-## Task 3: 先还原游戏库首页与 GOG 账号库
+## Task 3: 完整实现游戏库、搜索、平台路由与游戏归类
 
 **Files:**
-
-- Modify: `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html:43-1160`
-- Modify: `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html:1605-1650`
-- Modify: `tools/verify-gog-platform-demo-ui.mjs:1-360`
+- Modify: `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html`
 - Test: `tools/verify-gog-platform-demo.mjs`
 - Test: `tools/verify-gog-platform-demo-ui.mjs`
 
-- [ ] **Step 1: 先写失败的结构、顺序和账号价值测试**
+- [ ] **Step 1: 补全平台版本与归类数据**
 
-Add `realLibraryFlow()` to `tools/verify-gog-platform-demo-ui.mjs`:
-
-```js
-async function realLibraryFlow() {
-  await resetDemo();
-  for (const screen of ['library-home-portrait','library-home-landscape']) {
-    await page.click(`[data-page="${screen}"]`);
-    const order = await page.locator('[data-library-entry]').evaluateAll(nodes => nodes.map(node => node.dataset.libraryEntry));
-    const epic = order.indexOf('epic');
-    assert(epic >= 0, `${screen}: EPIC entry missing`);
-    assert.deepEqual(order.slice(epic, epic + 3), ['epic','gog','import'], `${screen}: GOG entry order is wrong`);
-  }
-
-  for (const screen of ['gog-library-portrait','gog-library-landscape']) {
-    await page.click(`[data-page="${screen}"]`);
-    const text = await page.locator('#demoCanvas').innerText();
-    assert(!text.includes('账号价值'), `${screen}: account value label must not render`);
-    assert(!text.includes('¥6.8k'), `${screen}: fabricated account value must not render`);
-    assert.equal(await page.locator('[data-account-metric="account-value"]').count(), 0);
-    for (const metric of ['gog-id','game-count','total-playtime']) {
-      assert.equal(await page.locator(`[data-account-metric="${metric}"]`).count(), 1, `${screen}: ${metric} missing`);
-    }
-  }
-  console.log('PASS realLibraryFlow');
-}
-```
-
-Register mode `realLibrary` and run it. Expected: failure on missing `library-home-portrait`.
-
-- [ ] **Step 2: 建立不靠截图底图的横竖 APP 画布**
-
-Use these stable layout contracts in the HTML CSS:
-
-```css
-.app-viewport[data-orientation="portrait"] { width:402px; height:874px; }
-.app-viewport[data-orientation="landscape"] { width:874px; height:402px; }
-.app-viewport { position:relative; overflow:hidden; background:#0d0f15; color:#f5f7fb; }
-.app-scroll { height:100%; overflow:auto; scrollbar-width:none; }
-.app-scroll::-webkit-scrollbar { display:none; }
-.portrait-layout, .landscape-layout { min-height:100%; background:#0d0f15; }
-```
-
-Do not add `background-image:url(...reference...)` to `.app-viewport` or page roots.
-
-- [ ] **Step 3: 实现竖屏和横屏游戏库首页**
-
-Build the shared navigation, top bars, content section and entry function before the two layout renderers:
+为搜索和游戏库数据统一使用以下字段：
 
 ```js
-const CURRENT_LIBRARY_GAMES = [
-  { name:'黑神话：悟空', meta:'最近游玩 2 小时前' },
-  { name:'艾尔登法环', meta:'最近游玩 昨天' },
-  { name:'赛博朋克 2077', meta:'最近游玩 3 天前' },
-  { name:'博德之门 3', meta:'最近游玩 1 周前' },
-];
-
-const LIBRARY_ENTRIES = [
-  { id:'pc', label:'PC 游戏' },
-  { id:'steam', label:'Steam' },
-  { id:'epic', label:'EPIC' },
-  { id:'gog', label:'GOG' },
-  { id:'import', label:'导入游戏' },
-];
-
-function renderLibraryEntry(entry) {
-  return `<button class="library-entry library-entry--${entry.id}" data-library-entry="${entry.id}" data-action="open-library-entry">
-    <span class="library-entry__icon" aria-hidden="true"></span>
-    <span class="library-entry__copy"><strong>${entry.label}</strong><small>${entry.id === 'import' ? '手动添加' : '查看游戏'}</small></span>
-  </button>`;
-}
-
-function renderPortraitTopBar(title) {
-  return `<header class="mobile-topbar"><button aria-label="返回">‹</button><h1>${title}</h1><button aria-label="搜索" data-action="open-search">⌕</button></header>`;
-}
-
-function renderLandscapeTopBar(title) {
-  return `<header class="handheld-topbar"><h1>${title}</h1><button aria-label="搜索" data-action="open-search">⌕</button></header>`;
-}
-
-function renderPortraitBottomNav(active) {
-  return `<nav class="mobile-bottom-nav" aria-label="主导航">
-    ${['home','explore','library','profile'].map(id => `<button class="${id === active ? 'active' : ''}" data-nav="${id}">${{home:'首页',explore:'探索',library:'游戏库',profile:'我的'}[id]}</button>`).join('')}
-  </nav>`;
-}
-
-function renderLandscapeSideNav(active) {
-  return `<nav class="handheld-side-nav" aria-label="掌机主导航">
-    ${['home','explore','library','profile'].map(id => `<button class="${id === active ? 'active' : ''}" data-nav="${id}">${{home:'首页',explore:'探索',library:'游戏库',profile:'我的'}[id]}</button>`).join('')}
-  </nav>`;
-}
-
-function renderCurrentLibrarySections(orientation) {
-  return `<section class="current-library current-library--${orientation}" data-annotation-ref="current-library">
-    <header><h2>我的游戏</h2><button data-action="open-all-games">查看全部</button></header>
-    <div class="current-library__grid">${CURRENT_LIBRARY_GAMES.map(game => `<article class="current-game"><div class="current-game__cover" aria-hidden="true"></div><strong>${game.name}</strong><span>${game.meta}</span></article>`).join('')}</div>
-  </section>`;
-}
-
-function renderLibraryHomePortrait() {
-  return `<section class="app-viewport" data-screen="library-home-portrait" data-orientation="portrait">
-    <div class="app-scroll portrait-layout library-home library-home--portrait">
-      ${renderPortraitTopBar('游戏库')}
-      <div class="library-entry-row">${LIBRARY_ENTRIES.map(renderLibraryEntry).join('')}</div>
-      ${renderCurrentLibrarySections('portrait')}
-      ${renderPortraitBottomNav('library')}
-    </div>
-  </section>`;
-}
-
-function renderLibraryHomeLandscape() {
-  return `<section class="app-viewport" data-screen="library-home-landscape" data-orientation="landscape">
-    <div class="landscape-layout library-home library-home--landscape">
-      ${renderLandscapeSideNav('library')}
-      <main class="app-scroll landscape-content">
-        ${renderLandscapeTopBar('游戏库')}
-        <div class="library-entry-row">${LIBRARY_ENTRIES.map(renderLibraryEntry).join('')}</div>
-        ${renderCurrentLibrarySections('landscape')}
-      </main>
-    </div>
-  </section>`;
+{
+  gameId:'cyberpunk-2077',
+  platform:'gog',
+  platformAppId:'gog-1423049311',
+  name:'赛博朋克 2077',
+  localizedNames:['赛博朋克 2077','Cyberpunk 2077'],
+  aliases:[],
+  hours:74,
+  cloud:'云存档已同步',
+  launch:'GOG 启动'
 }
 ```
 
-Match the corresponding reference screenshot for entry dimensions, header height, content density, navigation position, card radius and spacing before adding GOG-specific colors.
+同一游戏的 EPIC/GOG 版本共用 `gameId`，分别保留 `platformAppId`。增加明确的歧义示例，使 `Control` 与 `Control Ultimate Edition` 保持不同详情。
 
-Follow the required two-phase sequence inside this step:
-
-1. Render the screenshot baseline with the red-frame position kept as an empty reserved slot; capture `.tmp/gog-platform-baseline-library-portrait.png` and `.tmp/gog-platform-baseline-library-landscape.png`.
-2. Compare header/content heights and navigation anchors with the two real screenshots.
-3. Replace only the reserved slot with the final `gog` entry shown in `LIBRARY_ENTRIES`; do not move the EPIC or import entries.
-
-Route the new entry without creating a second account state:
+- [ ] **Step 2: 实现可测试的归类候选函数**
 
 ```js
-function openLibraryEntry(entryId) {
-  if (entryId !== 'gog') return;
-  const suffix = state.orientation === 'landscape' ? 'landscape' : 'portrait';
-  const gog = state.accountByPlatform.gog;
-  if (gog.bindStatus !== 'bound' || gog.tokenStatus !== 'valid') {
-    beginAuthorization('bind');
-    return;
-  }
-  selectPage(`gog-library-${suffix}`);
+const CONFIRMED_GAME_ALIASES = new Map([
+  ['赛博朋克2077|cyberpunk2077', 'cyberpunk-2077'],
+  ['巫师3狂猎|thewitcher3wildhunt', 'the-witcher-3'],
+]);
+
+function normalizeGameName(value) {
+  return value.toLocaleLowerCase('zh-CN')
+    .replace(/[\s·:：—_\-™®©]/g, '')
+    .replace(/终极版|ultimateedition/g, '');
+}
+
+function matchGameCandidate(left, right) {
+  const a = normalizeGameName(left);
+  const b = normalizeGameName(right);
+  const confirmed = [...CONFIRMED_GAME_ALIASES.entries()]
+    .find(([key]) => key.split('|').includes(a) && key.split('|').includes(b));
+  return confirmed
+    ? { matched:true, gameId:confirmed[1], confidence:'confirmed' }
+    : { matched:false, gameId:null, confidence:'low' };
 }
 ```
 
-- [ ] **Step 4: 实现参照 EPIC 的 GOG 横竖账号库**
+名称只生成候选；没有确认映射时返回 `matched:false`，不自动合并。
 
-```js
-function renderGogAccountSummary(orientation) {
-  return `<section class="platform-account platform-account--${orientation}" data-annotation-ref="account-summary">
-    <span class="platform-account__avatar" aria-hidden="true">${GOG_ACCOUNT.avatar}</span>
-    <div class="platform-account__identity"><strong>${GOG_ACCOUNT.username}</strong><span data-account-metric="gog-id">GOG ID ${GOG_ACCOUNT.gogId}</span></div>
-    <div class="platform-account__metric" data-account-metric="game-count"><span>游戏</span><strong>${GOG_ACCOUNT.gameCount}</strong></div>
-    <div class="platform-account__metric" data-account-metric="total-playtime"><span>总时长</span><strong>${GOG_ACCOUNT.totalPlaytime}</strong></div>
-  </section>`;
-}
+- [ ] **Step 3: 保持横竖搜索多平台分条并验证入口上下文**
 
-function renderPlatformLibrary({ orientation, screen, platform, account, games }) {
-  const body = `<main class="app-scroll platform-library__content">
-    ${orientation === 'portrait' ? renderPortraitTopBar('GOG 游戏') : renderLandscapeTopBar('GOG 游戏')}
-    ${account}
-    <section class="platform-game-grid" data-annotation-ref="game-grid">
-      ${games.map(game => `<button class="platform-game-card" data-game-card data-platform="${platform}" data-game-id="${game.gameId}" data-platform-app-id="${game.platformAppId}"><span class="platform-game-card__cover" aria-hidden="true"></span><strong>${game.name}</strong><small>${game.hours} 小时</small><em>GOG</em></button>`).join('')}
-    </section>
-  </main>`;
-  const navigation = orientation === 'portrait' ? renderPortraitBottomNav('library') : renderLandscapeSideNav('library');
-  return `<section class="app-viewport platform-library platform-library--${orientation}" data-screen="${screen}" data-orientation="${orientation}">${orientation === 'landscape' ? navigation : ''}${body}${orientation === 'portrait' ? navigation : ''}</section>`;
-}
-
-function renderGogLibraryPortrait() {
-  return renderPlatformLibrary({ orientation:'portrait', screen:'gog-library-portrait', platform:'gog', account:renderGogAccountSummary('portrait'), games:GOG_GAMES });
-}
-
-function renderGogLibraryLandscape() {
-  return renderPlatformLibrary({ orientation:'landscape', screen:'gog-library-landscape', platform:'gog', account:renderGogAccountSummary('landscape'), games:GOG_GAMES });
-}
-```
-
-The account summary must have exactly three metrics: GOG ID, game count and total playtime. Username/avatar are identity fields, not metrics.
-
-- [ ] **Step 5: 运行游戏库契约并提交**
-
-Run:
-
-```powershell
-node tools/verify-gog-platform-demo.mjs realPageStructure
-node tools/verify-gog-platform-demo.mjs gogCapabilities
-node tools/verify-gog-platform-demo-ui.mjs realLibrary
-```
-
-Expected: `PASS realPageStructure`、`PASS gogCapabilities`、`PASS realLibraryFlow`。
-
-```powershell
-git add -- 'demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html' tools/verify-gog-platform-demo-ui.mjs
-git commit -m 'feat: rebuild current game library pages with GOG'
-```
-
-## Task 4: 还原我的页、授权、搜索和详情横竖版
-
-**Files:**
-
-- Modify: `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html:1518-1786`
-- Modify: `tools/verify-gog-platform-demo-ui.mjs:20-250`
-- Test: `tools/verify-gog-platform-demo-ui.mjs`
-
-- [ ] **Step 1: 把旧 UI 流程断言改为“无账号价值”和新页面 ID**
-
-Replace the legacy profile values assertion with:
-
-```js
-await page.click('[data-page="profile-portrait"]');
-await page.evaluate(() => {
-  window.GogDemoApp.state.accountByPlatform.gog = { bindStatus:'unbound', tokenStatus:'none', account:null };
-  window.GogDemoApp.render();
-});
-await page.click('[data-action="bind-gog"]');
-assert.equal(await page.locator('[data-screen="gog-login"]').count(), 1);
-assert((await page.locator('#demoCanvas').innerText()).includes('不保存邮箱或密码'));
-await page.click('[data-action="gog-authorize-success"]');
-assert.equal(await page.locator('[data-screen="profile-portrait"]').count(), 1);
-const profileText = await page.locator('#demoCanvas').innerText();
-for (const value of ['GalaxyRider', 'GOG ID', '126', '438 小时']) {
-  assert(profileText.includes(value), `bound profile missing ${value}`);
-}
-assert(!profileText.includes('账号价值'));
-assert(!profileText.includes('¥6.8k'));
-```
-
-Add an orientation loop for search/detail:
-
-```js
-for (const orientation of ['portrait','landscape']) {
-  await page.click(`[data-page="search-${orientation}"]`);
-  await page.click('[data-search-result][data-platform="gog"]');
-  assert.equal(await page.locator(`[data-screen="detail-${orientation}"]`).count(), 1);
-  assert.equal(await page.evaluate(() => window.GogDemoApp.state.sourcePlatform), 'gog');
-  assert((await page.locator('[data-launch-platform]').innerText()).includes('GOG 启动'));
-}
-```
-
-Run `node tools/verify-gog-platform-demo-ui.mjs profile` and `node tools/verify-gog-platform-demo-ui.mjs detailSearch`.
-
-Expected: both fail against the old page IDs or old value assertion.
-
-- [ ] **Step 2: 按真实我的页实现 GOG 绑定态**
-
-Implement `renderProfilePortrait()` using the structure of `30-我的.png`. Keep Steam/EPIC/GOG in the existing platform area. The GOG state uses:
-
-```js
-const PROFILE_GOG_FIELDS = [
-  ['GOG ID', GOG_ACCOUNT.gogId],
-  ['游戏', String(GOG_ACCOUNT.gameCount)],
-  ['总时长', GOG_ACCOUNT.totalPlaytime],
-];
-
-function renderProfilePortrait() {
-  const gog = state.accountByPlatform.gog;
-  const body = gog.bindStatus === 'bound' && gog.account
-    ? `<section class="profile-platform-card" data-annotation-ref="account-summary"><header><span class="profile-avatar">${GOG_ACCOUNT.avatar}</span><div><strong>${GOG_ACCOUNT.username}</strong><small>GOG</small></div></header><dl>${PROFILE_GOG_FIELDS.map(([label,value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join('')}</dl><footer><button data-action="refresh-gog">更新刷新</button><button data-action="switch-gog">切换账号</button><button data-action="logout-gog">退出账号</button></footer></section>`
-    : `<section class="profile-platform-card profile-platform-card--unbound" data-annotation-ref="account-summary"><h2>GOG 数据同步功能</h2><p>绑定账号后可查看个人游戏库数据</p><button data-action="bind-gog">绑定 GOG 账号</button></section>`;
-  return `<section class="app-viewport profile-page" data-screen="profile-portrait" data-orientation="portrait"><div class="app-scroll portrait-layout">${renderProfileHeader()}<section class="profile-platform-tabs" data-annotation-ref="platform-tabs"><button>Steam</button><button>EPIC</button><button class="active">GOG</button></section>${body}${renderProfileBaseSections()}${renderPortraitBottomNav('profile')}</div></section>`;
-}
-
-function renderProfileHeader() {
-  return `<header class="profile-header"><div class="profile-header__tools"><button aria-label="下载">⇩</button><button aria-label="设置">⬡</button></div><span class="profile-header__avatar">😊</span><h1>哈哈11他还好哈 <em>未实名</em></h1><p>UID jxgz1ws2s5k</p></header>`;
-}
-
-function renderProfileBaseSections() {
-  return `<a class="official-community-banner" href="#" aria-label="加入盖世游戏官方游戏圈"><strong>加入盖世游戏官方游戏圈</strong><span>更多玩家资讯等你来</span></a><section class="profile-devices"><h2>我的设备</h2><button class="profile-device-empty" data-action="add-device"><span aria-hidden="true">🎮</span><strong>添加设备</strong></button></section>`;
-}
-```
-
-Match the proportions and order in `30-我的.png`: profile identity → platform card → official community banner → 我的设备 → bottom navigation. Do not render an account-value field, divider, skeleton or empty placeholder. Keep refresh, switch and logout scoped to `accountByPlatform.gog`.
-
-- [ ] **Step 3: 保留 GOG 官方授权安全边界**
-
-`renderGogLogin()` must show the GOG official page context and these application-side actions only:
-
-```html
-<button data-action="gog-authorize-success">模拟授权成功</button>
-<button data-action="gog-authorize-failure">模拟授权失败</button>
-<button data-action="gog-authorize-cancel">取消并返回</button>
-```
-
-State must contain no key matching `/email|password/i`. Successful authorization returns to the exact originating page and orientation; cancellation/failure does not replace the previous GOG account.
-
-- [ ] **Step 4: 分别实现真实搜索和详情布局**
-
-Expose separate renderers with shared data:
-
-```js
-function renderSearchLayout({ orientation, screen }) {
-  const rows = SEARCH_RESULTS.map(result => {
-    const score = result.platform === 'epic' && result.rawScore != null
-      ? `<span data-score>${convertEpicScore(result.rawScore)}</span>`
-      : '<span class="search-result__no-score">暂无评分</span>';
-    return `<button class="search-result" data-search-result data-game-id="${result.gameId}" data-platform-app-id="${result.platformAppId}" data-platform="${result.platform}"><span class="search-result__cover" aria-hidden="true"></span><span class="search-result__body"><strong>${result.name}</strong><small>${result.platform.toUpperCase()}</small>${score}</span></button>`;
-  }).join('');
-  const nav = orientation === 'portrait' ? renderPortraitBottomNav('explore') : renderLandscapeSideNav('explore');
-  return `<section class="app-viewport search-page search-page--${orientation}" data-screen="${screen}" data-orientation="${orientation}">${orientation === 'landscape' ? nav : ''}<main class="app-scroll search-page__content">${orientation === 'portrait' ? renderPortraitTopBar('搜索') : renderLandscapeTopBar('搜索')}<label class="search-box"><span>⌕</span><input value="赛博朋克" readonly aria-label="搜索词"></label><section class="search-results" data-annotation-ref="search-results">${rows}</section></main>${orientation === 'portrait' ? nav : ''}</section>`;
-}
-
-function renderDetailLayout({ orientation, screen }) {
-  const platform = state.selectedPlatform || resolveSelectedPlatform(state);
-  const detail = DETAIL_BY_PLATFORM[platform];
-  const nav = orientation === 'portrait' ? renderPortraitBottomNav('explore') : renderLandscapeSideNav('explore');
-  return `<section class="app-viewport detail-page detail-page--${orientation}" data-screen="${screen}" data-orientation="${orientation}">${orientation === 'landscape' ? nav : ''}<main class="app-scroll detail-page__content">${orientation === 'portrait' ? renderPortraitTopBar('游戏详情') : renderLandscapeTopBar('游戏详情')}<section class="detail-hero" aria-label="${getSelectedGameName()}"></section><section class="detail-summary" data-annotation-ref="detail-context"><h1>${getSelectedGameName()}</h1><button data-action="open-platform-switch" data-detail-platform-logo>${detail.label}</button><dl><div><dt>游玩时长</dt><dd data-detail-hours>${detail.hours}</dd></div><div><dt>云存档</dt><dd data-detail-cloud>${detail.cloud}</dd></div></dl><button class="detail-launch" data-launch-platform>${detail.launch}</button></section>${state.platformSwitchOpen ? renderPlatformSwitch() : ''}</main>${orientation === 'portrait' ? nav : ''}</section>`;
-}
-
-function renderPlatformSwitch() {
-  return `<section class="platform-switch" data-platform-switch data-annotation-ref="platform-switch"><header><strong>选择启动平台</strong><button data-action="close-platform-switch">关闭</button></header>${state.ownedPlatforms.map(platform => `<button data-action="select-detail-platform" data-platform="${platform}" class="${platform === state.selectedPlatform ? 'active' : ''}">${DETAIL_BY_PLATFORM[platform].label}</button>`).join('')}</section>`;
-}
-
-function renderSearchPortrait() { return renderSearchLayout({ orientation:'portrait', screen:'search-portrait' }); }
-function renderSearchLandscape() { return renderSearchLayout({ orientation:'landscape', screen:'search-landscape' }); }
-function renderDetailPortrait() { return renderDetailLayout({ orientation:'portrait', screen:'detail-portrait' }); }
-function renderDetailLandscape() { return renderDetailLayout({ orientation:'landscape', screen:'detail-landscape' }); }
-```
-
-Portrait search/detail must match `09`/`10`; landscape search/detail must match `43`/`44`. Both search renderers use one `SEARCH_RESULTS`; both detail renderers use one `DETAIL_BY_PLATFORM` and the same `sourcePlatform`/`selectedPlatform` rules.
-
-Update the shared game-opening handler so both library cards and search results preserve the current orientation:
+`renderSearchRows()` 必须为每个平台版本生成独立 `[data-search-result]`。点击结果调用：
 
 ```js
 function openPlatformGame(card) {
@@ -575,312 +322,406 @@ function openPlatformGame(card) {
   };
   state.sourcePlatform = card.dataset.platform;
   state.selectedPlatform = card.dataset.platform;
-  const suffix = state.orientation === 'landscape' ? 'landscape' : 'portrait';
-  selectPage(`detail-${suffix}`);
-}
-
-function openPlatformSwitch() { state.platformSwitchOpen = true; render(); }
-function closePlatformSwitch() { state.platformSwitchOpen = false; render(); }
-function selectDetailPlatform(platform) {
-  state.selectedPlatform = platform;
   state.platformSwitchOpen = false;
-  render();
+  selectPage(`detail-${state.orientation}`);
 }
 ```
 
-- [ ] **Step 5: 运行流程检查并提交**
+保持 EPIC 评分换算和 GOG“暂无评分”。
 
-```powershell
-node tools/verify-gog-platform-demo.mjs security
-node tools/verify-gog-platform-demo-ui.mjs profile
-node tools/verify-gog-platform-demo-ui.mjs detailSearch
-node tools/verify-gog-platform-demo-ui.mjs realLibrary
-```
+- [ ] **Step 4: 保持 GOG 游戏库绑定与已登录链路**
 
-Expected: four commands pass。
+游戏库入口顺序继续为 `EPIC → GOG → 导入游戏`。未绑定时调用 `beginAuthorization('bind')`；已绑定进入对应方向的 GOG 账号库。账号库游戏卡保留封面、名称、GOG 标识、时长和 `gameId/platformAppId/sourcePlatform` 路由。
 
-```powershell
-git add -- 'demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html' tools/verify-gog-platform-demo-ui.mjs
-git commit -m 'feat: rebuild GOG profile search and detail in both orientations'
-```
-
-## Task 5: 对齐 10 页面标注与六类恢复状态
-
-**Files:**
-
-- Modify: `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html:1308-1408`
-- Modify: `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html:1787-2165`
-- Modify: `tools/verify-gog-platform-demo-ui.mjs:250-520`
-- Test: `tools/verify-gog-platform-demo-ui.mjs`
-
-- [ ] **Step 1: 把标注测试从 9 页改为 10 页**
-
-```js
-const expectedScreens = [
-  'profile-portrait','gog-login','library-home-portrait','library-home-landscape',
-  'gog-library-portrait','gog-library-landscape','search-portrait','search-landscape',
-  'detail-portrait','detail-landscape',
-];
-assert.equal(await page.locator('.nav-item[data-page]').count(), expectedScreens.length);
-```
-
-For every screen, assert at least one numeric annotation, one `G`, one `E1`, and every `data-ref` resolves to exactly one `data-annotation-ref` target.
-
-- [ ] **Step 2: 用明确蓝图生成 10 页面结构化标注**
-
-Use an explicit blueprint so every page has its own target and wording without duplicating renderer logic:
-
-```js
-const ANNOTATION_BLUEPRINTS = {
-  'profile-portrait':{ ref:'account-summary', title:'GOG 账号', display:'复用现有平台卡，不展示账号价值', edge:'刷新或切换失败时保留旧账号' },
-  'gog-login':{ ref:'official-login', title:'官方授权', display:'凭证只在 GOG 官方页面输入', edge:'取消或失败返回发起入口' },
-  'library-home-portrait':{ ref:'gog-entry', title:'竖屏 GOG 入口', display:'位于 EPIC 与导入游戏之间', edge:'未绑定时进入官方授权' },
-  'library-home-landscape':{ ref:'gog-entry', title:'横屏 GOG 入口', display:'位于 EPIC 与导入游戏之间', edge:'未绑定时保持横屏返回目标' },
-  'gog-library-portrait':{ ref:'account-summary', title:'竖屏 GOG 账号库', display:'显示 GOG ID、游戏数和总时长', edge:'空库与加载失败必须区分' },
-  'gog-library-landscape':{ ref:'account-summary', title:'横屏 GOG 账号库', display:'与 EPIC 横屏结构一致', edge:'无账号价值及其占位' },
-  'search-portrait':{ ref:'search-results', title:'竖屏搜索来源', display:'EPIC 与 GOG 分条展示', edge:'GOG 无评分时显示暂无评分' },
-  'search-landscape':{ ref:'search-results', title:'横屏搜索来源', display:'与竖屏共用结果模型', edge:'方向切换不丢失搜索上下文' },
-  'detail-portrait':{ ref:'detail-context', title:'竖屏 GOG 详情', display:'来源、数据和启动按钮一致', edge:'来源不可用时不静默切换' },
-  'detail-landscape':{ ref:'detail-context', title:'横屏 GOG 详情', display:'使用真实掌机详情结构', edge:'平台切换只改变 selectedPlatform' },
-};
-
-const ANNOTATIONS = Object.fromEntries(Object.entries(ANNOTATION_BLUEPRINTS).map(([pageId, item]) => [pageId, {
-  interaction:[
-    { id:'1', ref:item.ref, title:item.title, trigger:'进入当前页面', display:item.display, interaction:'点击对应元素执行当前页面操作' },
-    { id:'G', ref:item.ref, title:'跨页面平台规则', trigger:'绑定、跳转或切换方向', display:'保留 GOG 账号与 sourcePlatform', interaction:'Steam、EPIC 状态不变' },
-  ],
-  edge:[
-    { id:'E1', ref:item.ref, title:'异常与恢复', trigger:'接口、授权或来源不可用', display:item.edge, interaction:'按当前页面提供重试、返回或重新登录' },
-  ],
-}]));
-```
-
-- [ ] **Step 3: 让异常状态复用当前页面与方向**
-
-```js
-const SIMULATIONS = ['normal','loading','empty','error','expired','cancelled','cached'];
-
-function renderSimulationState(page) {
-  const view = {
-    loading:renderLoadingState,
-    empty:renderEmptyState,
-    error:renderErrorState,
-    expired:renderExpiredState,
-    cancelled:renderCancelledState,
-    cached:renderCachedState,
-  }[state.simulation];
-  return view ? view(page) : renderRealPage(page);
-}
-```
-
-`recoverSimulation()` must return `state.simulation` to `normal` without changing `state.screen`, `state.orientation`, Steam or EPIC state.
-
-Define all six renderers in the same task so `renderSimulationState()` has no undeclared dependency:
-
-```js
-function renderStateFrame(page, kind, title, copy, action) {
-  return `<section class="app-viewport state-page state-page--${kind}" data-screen="${page.id}" data-orientation="${page.orientation}"><main class="state-page__body" data-annotation-ref="simulation-recovery"><span class="state-page__icon" aria-hidden="true"></span><h2>${title}</h2><p>${copy}</p>${action ? `<button data-action="${action.id}">${action.label}</button>` : ''}</main></section>`;
-}
-function renderLoadingState(page) { return renderStateFrame(page, 'loading', '正在同步 GOG 数据', '请稍候，当前操作不可重复提交。', null); }
-function renderEmptyState(page) { return renderStateFrame(page, 'empty', '暂无 GOG 游戏', '账号已绑定，可重新同步游戏库。', { id:'simulation-refresh', label:'重新同步' }); }
-function renderErrorState(page) { return renderStateFrame(page, 'error', 'GOG 数据加载失败', '绑定状态和其他平台数据均已保留。', { id:'simulation-retry', label:'重试' }); }
-function renderExpiredState(page) { return renderStateFrame(page, 'expired', 'GOG 授权已过期', '重新登录后返回当前页面。', { id:'simulation-reauthorize', label:'重新登录 GOG' }); }
-function renderCancelledState(page) { return renderStateFrame(page, 'cancelled', '已取消 GOG 授权', '未写入新的绑定记录。', { id:'simulation-return', label:'返回原页面' }); }
-function renderCachedState(page) { return renderStateFrame(page, 'cached', '正在展示缓存内容', '网络恢复后可重新同步。', { id:'simulation-retry', label:'重新同步' }); }
-```
-
-- [ ] **Step 4: 验证并提交标注/异常**
-
-```powershell
-node tools/verify-gog-platform-demo.mjs all
-node tools/verify-gog-platform-demo-ui.mjs annotations
-node tools/verify-gog-platform-demo-ui.mjs all
-```
-
-Expected: static suite passes, then `PASS annotationsFlow` and `PASS browserRuntime`。
-
-```powershell
-git add -- 'demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html' tools/verify-gog-platform-demo-ui.mjs
-git commit -m 'feat: align GOG annotations and recovery states with real pages'
-```
-
-## Task 6: 更新视觉截图并做逐页对照
-
-**Files:**
-
-- Modify: `tools/capture-gog-platform-demo.mjs:26-118`
-- Test output: `.tmp/gog-platform-demo-captures/*.png`
-
-- [ ] **Step 1: 把截图清单改为 10 页面加完整标注壳**
-
-```js
-const captures = [
-  ['01-profile-portrait','profile-portrait'],
-  ['02-gog-login','gog-login'],
-  ['03-library-home-portrait','library-home-portrait'],
-  ['04-library-home-landscape','library-home-landscape'],
-  ['05-gog-library-portrait','gog-library-portrait'],
-  ['06-gog-library-landscape','gog-library-landscape'],
-  ['07-search-portrait','search-portrait'],
-  ['08-search-landscape','search-landscape'],
-  ['09-detail-portrait','detail-portrait'],
-  ['10-detail-landscape','detail-landscape'],
-];
-```
-
-Update the final expected count to `11` and the final shell filename to `11-full-annotation-shell.png`.
-
-- [ ] **Step 2: 生成稳定截图**
+- [ ] **Step 5: 运行游戏库、搜索与平台模型检查**
 
 Run:
 
 ```powershell
-node tools/capture-gog-platform-demo.mjs
+node tools/verify-gog-platform-demo.mjs platformModel
+node tools/verify-gog-platform-demo.mjs fullGameplayScope
+node tools/verify-gog-platform-demo-ui.mjs library
+node tools/verify-gog-platform-demo-ui.mjs detailSearch
 ```
 
-Expected: ten `CAPTURED` canvas lines plus `CAPTURED 11-full-annotation-shell.png`, ending in `PASS visualCaptures (11 PNG files)`。
+Expected: 四项均输出 `PASS`；横竖结果模型一致；同一游戏 EPIC/GOG 分条；入口来源写入详情；低置信度不归类。
 
-- [ ] **Step 3: 按映射逐页视觉复核**
+- [ ] **Step 6: 提交游戏库、搜索和归类实现**
 
-Use these pairs at original aspect ratio:
+```powershell
+git add -- 'demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html'
+git commit -m "feat: complete GOG discovery and mapping flow"
+```
 
-- `03-library-home-portrait.png` ↔ `01-library-home-portrait.png`
-- `04-library-home-landscape.png` ↔ `02-library-home-landscape.png`
-- `05-gog-library-portrait.png` ↔ `04-epic-library-portrait.png`
-- `06-gog-library-landscape.png` ↔ `03-epic-library-landscape.png`
-- `01-profile-portrait.png` ↔ `30-我的.png`
-- `07-search-portrait.png` ↔ `09-竖版搜索默认页.png`
-- `08-search-landscape.png` ↔ `43-掌机模式-搜索.png`
-- `09-detail-portrait.png` ↔ `10-竖版游戏详情.png`
-- `10-detail-landscape.png` ↔ `44-掌机模式-游戏详情.png`
+## Task 4: 完成详情平台切换、获得游戏与启动事件
 
-Required checks: vertical section heights, navigation placement, first-content baseline, platform-entry order, card density, type hierarchy, no clipping/overlap, and no GOG account-value label or blank gap.
+**Files:**
+- Modify: `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html`
+- Test: `tools/verify-gog-platform-demo-ui.mjs`
 
-- [ ] **Step 4: 修正视觉差异后重跑全量 UI**
+- [ ] **Step 1: 将详情数据按当前游戏和平台版本解析**
+
+用 `getPlatformVersion(gameId, platform)` 替代只按平台读取固定数据：
+
+```js
+function getPlatformVersion(gameId, platform) {
+  return GAME_PLATFORM_VERSIONS.find(item =>
+    item.gameId === gameId && item.platform === platform
+  ) || null;
+}
+```
+
+无来源时调用既有 `resolveSelectedPlatform()`，确保只在已拥有且账号有效的平台中按 Steam、EPIC、GOG 选择。
+
+- [ ] **Step 2: 让切换弹窗只显示当前游戏可用的平台版本**
+
+```js
+function availablePlatformsForGame(gameId) {
+  return PLATFORM_PRIORITY.filter(platform =>
+    state.ownedPlatforms.includes(platform) &&
+    getPlatformVersion(gameId, platform) &&
+    isPlatformAvailable(platform)
+  );
+}
+```
+
+`renderPlatformSwitch()` 使用此列表；选择平台后更新 `selectedPlatform`，但保持 `sourcePlatform` 不变。点击弹窗外部关闭时不改变选择。
+
+- [ ] **Step 3: 同步平台标识、时长、云存档、启动 icon 和获得游戏平台**
+
+横竖详情都从当前 `gameId + selectedPlatform` 版本渲染：
+
+```html
+<button type="button" data-action="open-platform-switch" data-detail-platform-logo></button>
+<dd data-detail-hours></dd>
+<dd data-detail-cloud></dd>
+<button type="button" class="detail-launch" data-launch-platform></button>
+<div class="obtain-platforms" data-obtain-platforms>
+  <span data-obtain-platform="steam">Steam</span>
+  <span data-obtain-platform="epic">EPIC</span>
+  <span data-obtain-platform="gog">GOG</span>
+</div>
+```
+
+获得游戏平台只做来源说明，不绑定启动事件；启动按钮使用平台 icon 与平台名。
+
+- [ ] **Step 4: 把启动按钮从空操作改为可验证事件**
+
+```js
+function launchSelectedPlatform() {
+  const gameId = state.selectedGame?.gameId || 'cyberpunk-2077';
+  const version = getPlatformVersion(gameId, state.selectedPlatform);
+  if (!version || !isPlatformAvailable(state.selectedPlatform)) return;
+  state.lastLaunchRequest = {
+    gameId,
+    platform:state.selectedPlatform,
+    platformAppId:version.platformAppId,
+  };
+}
+```
+
+`data-action="launch-selected"` 调用该函数。Demo 不新增 Toast；测试通过 `state.lastLaunchRequest` 验证启动参数。
+
+- [ ] **Step 5: 覆盖来源不可用、云存档缺失和切换取消**
+
+- 明确来源不可用时保留 `sourcePlatform` 与 `selectedPlatform`，显示现有重新登录/切换入口。
+- 云存档缺失统一渲染“未获取”。
+- 切换取消或点击弹窗外部只关闭弹窗。
+- 启动失败模拟不清空详情与选择，不新增页面。
+
+- [ ] **Step 6: 运行详情完整链路验证**
+
+Run:
+
+```powershell
+node tools/verify-gog-platform-demo.mjs fullGameplayScope
+node tools/verify-gog-platform-demo-ui.mjs detailSearch
+```
+
+Expected: 两项均输出 `PASS`；来源优先、默认优先级、平台切换和启动参数正确。
+
+- [ ] **Step 7: 提交详情完整链路**
+
+```powershell
+git add -- 'demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html'
+git commit -m "feat: complete GOG detail switching and launch"
+```
+
+## Task 5: 对齐交互标注与异常边界
+
+**Files:**
+- Modify: `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html`
+- Test: `tools/verify-gog-platform-demo-ui.mjs`
+
+- [ ] **Step 1: 更新账号卡标注**
+
+我的页交互标注明确：
+
+- `…` 菜单三项及外部关闭。
+- 更新中禁止重复提交。
+- 切换失败保留旧账号。
+- 退出二次确认。
+- EPIC 专属“喜加一”。
+- GOG 无账号价值和“喜加一”，不留空白。
+
+- [ ] **Step 2: 更新搜索、游戏库和详情标注**
+
+搜索标注明确多平台分条与来源参数；游戏库标注明确未绑定/已绑定；详情标注明确来源优先级、切换弹窗、时长、云存档、启动参数、获得游戏平台与启动平台的语义差异。
+
+全局 `G` 标注使用：
+
+```js
+{
+  id:'G',
+  title:'平台路由与游戏归类',
+  trigger:'从搜索、游戏库进入详情或主动切换平台',
+  display:'入口来源优先；无来源按 Steam > EPIC > GOG；低置信度游戏不合并',
+  interaction:'横竖屏保留 sourcePlatform、selectedPlatform 与当前游戏'
+}
+```
+
+- [ ] **Step 3: 对齐异常模拟**
+
+保留 `loading / empty / error / expired / cancelled / cached`；详情异常补充来源不可用、云存档“未获取”、启动失败和切换取消，均复用当前页面，不增加新导航页。
+
+- [ ] **Step 4: 运行标注和恢复测试**
+
+Run:
+
+```powershell
+node tools/verify-gog-platform-demo-ui.mjs annotations
+node tools/verify-gog-platform-demo.mjs all
+```
+
+Expected: UI 标注输出 `PASS annotationsFlow`；静态检查全部通过且无 JavaScript 语法错误。
+
+- [ ] **Step 5: 提交标注与异常规则**
+
+```powershell
+git add -- 'demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html'
+git commit -m "docs: align GOG interaction annotations"
+```
+
+## Task 6: 生成并复核最终视觉证据
+
+**Files:**
+- Modify: `tools/capture-gog-platform-demo.mjs`
+- Modify: `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html`
+- Generate: `.tmp/gog-platform-demo-captures/*.png`
+
+- [ ] **Step 1: 扩展截图清单**
+
+保留原 10 页面和完整标注壳，并增加：
+
+```js
+const stateCaptures = [
+  ['11-profile-gog-menu', 'profile-portrait', async page => {
+    await page.click('[data-profile-platform="gog"]');
+    await page.click('[data-action="toggle-account-menu"]');
+  }],
+  ['12-profile-epic-free-games', 'profile-portrait', async page => {
+    await page.click('[data-profile-platform="epic"]');
+  }],
+  ['13-detail-switch-portrait', 'detail-portrait', async page => {
+    await page.click('[data-action="open-platform-switch"]');
+  }],
+  ['14-detail-switch-landscape', 'detail-landscape', async page => {
+    await page.click('[data-action="open-platform-switch"]');
+  }],
+];
+```
+
+完整标注壳改名为 `15-full-annotation-shell.png`，最终精确生成 15 张 PNG。
+
+- [ ] **Step 2: 运行 UI 与截图工具**
+
+Run:
 
 ```powershell
 node tools/verify-gog-platform-demo-ui.mjs all
 node tools/capture-gog-platform-demo.mjs
 ```
 
-Expected: `PASS browserRuntime` and `PASS visualCaptures (11 PNG files)`。
+Expected: UI 输出 5 个流程 `PASS` 和 `PASS browserRuntime`；截图输出 `PASS visualCaptures (15 PNG files)`。
+
+- [ ] **Step 3: 逐张视觉复核**
+
+用 `view_image` 检查 15 张截图，重点对照：
+
+- GOG `…` 菜单与参考图层级、位置、宽度。
+- EPIC 只有一个“喜加一”，GOG 无按钮空位。
+- 游戏库入口顺序和 GOG 账号库横竖布局。
+- 搜索 EPIC/GOG 分条、平台标识与内容不截断。
+- 详情平台数据与切换弹窗横竖不重叠。
+- 402×874 和 874×402 均无裁切。
+
+- [ ] **Step 4: 修正视觉差异并重新生成全部证据**
+
+每次 CSS 或 DOM 修正后重新执行：
+
+```powershell
+node tools/verify-gog-platform-demo-ui.mjs all
+node tools/capture-gog-platform-demo.mjs
+```
+
+Expected: 所有交互和 15 张截图仍通过。
 
 - [ ] **Step 5: 提交截图工具与视觉修正**
 
 ```powershell
 git add -- tools/capture-gog-platform-demo.mjs 'demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html'
-git commit -m 'test: capture real-page GOG portrait and landscape views'
+git commit -m "test: capture final GOG integration states"
 ```
 
-Do not add `.tmp/gog-platform-demo-captures/*.png` to Git.
-
-## Task 7: 同步返修 PRD 与 PRD 验证器
+## Task 7: 同步最终 PRD 与验证器
 
 **Files:**
-
 - Modify: `prd/ai生成/【Prd】《盖世游戏》GOG平台接入需求.md`
 - Modify: `tools/verify-gog-platform-prd.mjs`
-- Test: `tools/verify-gog-platform-prd.mjs`
 
-- [ ] **Step 1: 先增加“无账号价值”和 10 页面失败契约**
+- [ ] **Step 1: 先更新 PRD 最终范围契约**
 
-Add to `tools/verify-gog-platform-prd.mjs`:
+`requiredRules` 增加：
 
 ```js
-function currentPageRules() {
-  for (const token of [
-    '新版游戏库', 'EPIC → GOG → 导入游戏',
-    '游戏库首页：竖屏', '游戏库首页：横屏',
-    'GOG 账号游戏库：竖屏', 'GOG 账号游戏库：横屏',
-    'GOG 不展示账号价值',
-  ]) assert(prd.includes(token), `Missing current-page rule: ${token}`);
-
-  for (const forbidden of [
-    '用户名、账号价值', '账号价值不可计算', '账号价值缺失显示',
-    'GOG 可返回的账号价值', '账号价值模型是否覆盖 GOG', '¥6.8k',
-  ]) assert(!prd.includes(forbidden), `Forbidden legacy value rule: ${forbidden}`);
-  pass('currentPageRules');
-}
+const finalScopeRules = [
+  '同一个 PC 游戏存在多个平台时，每个平台版本展示为独立结果',
+  '更新数据 / 切换账号 / 退出账号',
+  '喜加一',
+  '游戏时长',
+  '云存档',
+  '启动 icon',
+  '切换启动平台',
+  'sourcePlatform=gog',
+  'Steam > EPIC > GOG',
+  '中英文名称',
+  '无法归类',
+];
 ```
 
-Register the check and run it. Expected: failure on the first missing current-page rule.
+新增禁用规则：GOG 不显示账号价值或“喜加一”；不允许将 GOG 绑定按钮描述为跳转 EPIC 授权；不允许写“仅显示平台标识、不支持详情启动”。
 
-- [ ] **Step 2: 把 PRD 的旧九页和账号价值口径全部改写**
+- [ ] **Step 2: 运行 PRD 契约并确认当前旧口径不完整**
 
-The final PRD must state:
+Run:
 
-```markdown
-- GOG 不展示账号价值；页面不渲染标题、数值、骨架或占位空间，也不以 0 或“--”代替。
-- 新版游戏库入口顺序固定为：EPIC → GOG → 导入游戏。
-- GOG 账号游戏库参照 EPIC 的横竖版结构，保留头像、用户名、GOG ID、游戏数和总时长。
-- Demo 共 10 个页面视图：我的页、GOG 授权、游戏库首页横竖版、GOG 账号库横竖版、搜索横竖版、详情横竖版。
+```powershell
+node tools/verify-gog-platform-prd.mjs rules
+node tools/verify-gog-platform-prd.mjs currentPageRules
 ```
 
-Remove every positive GOG account-value statement from user stories, page tables, field tables, acceptance cases, pending items and self-review. Replace “九个页面”/“9 个页面” with the 10-view scope.
+Expected: 至少一项因缺少最终账号菜单或精确完整范围文案失败。
 
-- [ ] **Step 3: 运行 PRD 自检并提交**
+- [ ] **Step 3: 更新 PRD 页面需求与验收**
+
+PRD 必须统一写清：
+
+- 我的页 `…` 菜单三项、外部关闭、更新防重、切换失败保留旧账号、退出确认。
+- 仅 EPIC 显示“喜加一”；GOG 无账号价值与“喜加一”。
+- EPIC/GOG 未绑定和已绑定游戏库链路。
+- 横竖搜索按平台版本分条。
+- 详情来源优先、无来源默认优先级、平台切换、时长、云存档和启动。
+- 中英文名/别名生成候选，无法可靠归类时不同详情。
+- 授权、接口字段、云存档和启动能力属于正式开发前置验证。
+- Demo 与 PRD 使用相同字段名和异常口径。
+
+- [ ] **Step 4: 删除旧口径冲突并运行 PRD 自检**
+
+Run:
 
 ```powershell
 node tools/verify-gog-platform-prd.mjs all
-rg -n '用户名、账号价值|账号价值不可计算|账号价值缺失显示|GOG 可返回的账号价值|账号价值模型是否覆盖 GOG|¥6\.8k|九个页面|9 个页面' 'prd/ai生成/【Prd】《盖世游戏》GOG平台接入需求.md'
+rg -n '仅平台标识|不提供详情启动|GOG.*喜加一|GOG.*账号价值.*显示' 'prd/ai生成/【Prd】《盖世游戏》GOG平台接入需求.md'
 ```
 
-Expected: verifier ends in all `PASS` lines; `rg` returns no matches。
+Expected: PRD 验证器全部 `PASS`；`rg` 只允许命中明确的禁止或范围外说明，不得出现正向承诺 GOG 账号价值或“喜加一”。
+
+- [ ] **Step 5: 提交 PRD 与验证器**
 
 ```powershell
 git add -- 'prd/ai生成/【Prd】《盖世游戏》GOG平台接入需求.md' tools/verify-gog-platform-prd.mjs
-git commit -m 'docs: align GOG PRD with current game library pages'
+git commit -m "docs: finalize full GOG integration PRD"
 ```
 
-## Task 8: 全量验收并回写 GUANWANGGAID-26
+## Task 8: 更新学习记录、全量验收并回写任务板
 
 **Files:**
+- Modify: `C:/Users/z3635/.codex/skills/pm-image2proto/references/learning_log.jsonl`
+- Verify: all files from Tasks 1–7
 
-- Verify: all files above
-- Preserve: `demos/PC与Mac端/epic接入demo.html`
-- External tracking: `GUANWANGGAID-26`
+- [ ] **Step 1: 追加 pm-image2proto 学习记录**
 
-- [ ] **Step 1: 运行静态、UI、截图和 PRD 全量检查**
+在 `learning_log.jsonl` 追加一行合法 JSON，记录：
+
+```json
+{"date":"2026-08-13","project":"GameHub GOG platform integration","observation":"Existing product pages must remain the visual baseline while account operations collapse into an overflow menu and full platform routing remains explicit.","rule":"For platform integrations, separate account capabilities, search result versions, sourcePlatform, selectedPlatform, game mapping confidence, obtain-platform labels, and launch actions; never infer one capability from another."}
+```
+
+- [ ] **Step 2: 运行全量验收**
+
+Run:
 
 ```powershell
 node tools/verify-gog-platform-demo.mjs all
 node tools/verify-gog-platform-demo-ui.mjs all
 node tools/capture-gog-platform-demo.mjs
 node tools/verify-gog-platform-prd.mjs all
-git diff --exit-code HEAD -- 'demos/PC与Mac端/epic接入demo.html'
+(Get-FileHash -Algorithm SHA256 -LiteralPath 'demos/PC与Mac端/epic平台接入demo.html').Hash
 ```
 
-Expected: all suites pass, 11 captures are regenerated, and EPIC demo diff is empty。
+Expected:
 
-- [ ] **Step 2: 检查工作区只包含本任务的预期提交**
+- Static：全部 `PASS`。
+- UI：全部流程 `PASS` 且无 `pageerror`。
+- Screenshots：15/15。
+- PRD：全部 `PASS`。
+- EPIC 原 Demo SHA-256：`514577A7B777D516A683CE3610DD7C0894C5E60F9093AB780BDDE226ADC91B1C`。
+
+- [ ] **Step 3: 检查本任务目标文件差异**
+
+Run:
 
 ```powershell
-git log --oneline -8
-git status --short
+git status --short -- `
+  'demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html' `
+  'prd/ai生成/【Prd】《盖世游戏》GOG平台接入需求.md' `
+  'tools/verify-gog-platform-demo.mjs' `
+  'tools/verify-gog-platform-demo-ui.mjs' `
+  'tools/capture-gog-platform-demo.mjs' `
+  'tools/verify-gog-platform-prd.mjs'
+git diff --check -- `
+  'demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html' `
+  'prd/ai生成/【Prd】《盖世游戏》GOG平台接入需求.md' `
+  'tools/verify-gog-platform-demo.mjs' `
+  'tools/verify-gog-platform-demo-ui.mjs' `
+  'tools/capture-gog-platform-demo.mjs' `
+  'tools/verify-gog-platform-prd.mjs'
 ```
 
-Expected: the new commits match Tasks 1–7; unrelated pre-existing dirty files remain unstaged and are not included in these commits。
+Expected: 无空白错误；不修改或恢复工作区中的其他用户文件。
 
-- [ ] **Step 3: 将验证证据追加到任务板并移到评审**
+- [ ] **Step 4: 提交学习记录允许的本地变更并读取任务板最新版本**
+
+学习记录位于用户技能目录，不与仓库提交混合。随后执行：
 
 ```powershell
-$issue = taskctl.cmd issue get GUANWANGGAID-26 --json | ConvertFrom-Json
-$body = @'
-已按确认设计完成真实页面返修：
-- 游戏库使用新版横竖页面，GOG 位于 EPIC 与导入游戏之间；
-- GOG 账号库参照 EPIC 横竖结构，完全移除账号价值及占位；
-- 我的页、搜索、详情按真实截图重建，横竖布局独立、业务状态共用；
-- sourcePlatform、账号隔离和六类异常恢复保留；
-- 静态、Playwright、11 张视觉截图与 PRD 校验全部通过；EPIC 原 Demo 未修改。
-请评审。
-'@
-taskctl.cmd comment add GUANWANGGAID-26 --body $body --json
-$latest = taskctl.cmd issue get GUANWANGGAID-26 --json | ConvertFrom-Json
-taskctl.cmd issue move GUANWANGGAID-26 --status in_review --if-version $latest.task.version --json
+taskctl.cmd issue get GUANWANGGAID-26 --json
+taskctl.cmd comment list GUANWANGGAID-26 --json
 ```
 
-Expected: comment creation succeeds; final issue JSON has `status: "in_review"`。Do not move the issue to `done` until the user explicitly accepts the finished Demo.
+Expected: Issue 仍为 `in_progress`，读取到最新 `version` 和最终范围评论。
 
-- [ ] **Step 4: 交付最终文件与验证结果**
+- [ ] **Step 5: 添加完成评论并移到待评审**
 
-Provide clickable links to the Demo, PRD, design and plan; report the exact commit SHAs and test outputs. Open the Demo in the in-app browser for user review.
+评论必须包含：账号菜单、EPIC/GOG 平台差异、搜索分条、游戏库绑定态、平台路由、游戏归类、详情切换、启动事件、四类验证结果、截图数、EPIC 哈希和仍需正式接口验证的风险。然后使用最新版本：
+
+```powershell
+taskctl.cmd comment add GUANWANGGAID-26 --body '<完成摘要与验证证据>' --json
+taskctl.cmd issue move GUANWANGGAID-26 --status in_review --if-version <最新版本号> --json
+```
+
+Expected: Issue 状态为 `in_review`；不得移到 `done`。
+
+- [ ] **Step 6: 交付文件和验证结果**
+
+最终说明必须提供 Demo、PRD、设计说明和实施计划的可点击路径，列出验证结果和正式开发前置风险；用户明确验收后才能将 Issue 移到 `done`。
