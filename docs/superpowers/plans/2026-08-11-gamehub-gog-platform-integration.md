@@ -21,6 +21,250 @@
 - `C:/Users/z3635/.codex/skills/pm-image2proto/references/learning_log.jsonl`：截图还原与返修经验记录。
 - `.tmp/gog-platform-demo-captures/`：自动生成的视觉证据，不作为产品代码提交。
 
+## 2026-08-13 搜索卡片与详情文案返修
+
+### Task A: 先建立本轮返修失败契约
+
+**Files:**
+- Modify: `tools/verify-gog-platform-demo.mjs`
+- Modify: `tools/verify-gog-platform-demo-ui.mjs`
+- Modify: `tools/verify-gog-platform-prd.mjs`
+
+- [ ] **Step 1: 增加静态结构和文案断言**
+
+在 `verify-gog-platform-demo.mjs` 的搜索与详情检查中增加：
+
+```js
+for (const token of [
+  'search-result__cover-wrap',
+  'search-result__platform',
+  '获取游戏',
+  'PC游戏引擎',
+  '云存档',
+  '游戏时长',
+]) assert(html.includes(token), `Missing search/detail correction: ${token}`);
+assert(!html.includes('content:"获得游戏"'), 'Legacy detail copy must be removed');
+```
+
+- [ ] **Step 2: 增加浏览器布局断言**
+
+在 `detailSearchFlow()` 进入 `search-portrait` 后增加：
+
+```js
+const portraitLayout = await page.evaluate(() => {
+  const grid = document.querySelector('[data-screen="search-portrait"] .search-results');
+  const cards = [...grid.querySelectorAll('.search-result')];
+  return {
+    columns:getComputedStyle(grid).gridTemplateColumns.split(' ').length,
+    platformOutsideCover:cards.some(card =>
+      card.querySelector('.search-result__body .search-result__platform')
+    ),
+    platformInsideCover:cards.every(card =>
+      card.querySelector('.search-result__cover-wrap .search-result__platform')
+    ),
+  };
+});
+assert.equal(portraitLayout.columns, 2);
+assert.equal(portraitLayout.platformOutsideCover, false);
+assert.equal(portraitLayout.platformInsideCover, true);
+```
+
+再分别进入横竖详情断言：
+
+```js
+for (const screen of ['detail-portrait', 'detail-landscape']) {
+  await selectScreen(screen);
+  assert.equal(await page.getByText('获取游戏', { exact:true }).count(), 1);
+  assert.equal(await page.getByText('获得游戏', { exact:true }).count(), 0);
+}
+```
+
+- [ ] **Step 3: 增加 PRD 最终文案契约**
+
+在 `verify-gog-platform-prd.mjs` 的 `finalScope()` 增加：
+
+```js
+for (const token of [
+  '竖屏结果区固定为一行两张竖向游戏卡',
+  '平台标识叠加在封面左下角',
+  '“获取游戏”区域',
+  'PC游戏引擎',
+]) assert(prd.includes(token), `Missing correction rule: ${token}`);
+assert(!prd.includes('“获得游戏”区域'), 'Legacy detail copy remains in PRD');
+```
+
+- [ ] **Step 4: 运行契约并确认旧实现失败**
+
+Run:
+
+```powershell
+node tools/verify-gog-platform-demo.mjs all
+node tools/verify-gog-platform-demo-ui.mjs detailSearch
+node tools/verify-gog-platform-prd.mjs all
+```
+
+Expected: 静态、UI、PRD 至少各有一项因旧搜索布局、封面外平台文字或“获得游戏”旧文案失败。
+
+- [ ] **Step 5: 提交失败契约**
+
+```powershell
+git add -- tools/verify-gog-platform-demo.mjs tools/verify-gog-platform-demo-ui.mjs tools/verify-gog-platform-prd.mjs
+git commit -m "test: define GOG search card and copy corrections"
+```
+
+### Task B: 修改搜索卡片与详情文案
+
+**Files:**
+- Modify: `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html`
+- Test: `tools/verify-gog-platform-demo.mjs`
+- Test: `tools/verify-gog-platform-demo-ui.mjs`
+
+- [ ] **Step 1: 将平台标识移入封面容器**
+
+把搜索卡片结构改为：
+
+```js
+function renderSearchRows() {
+  return SEARCH_RESULTS.map(result => `
+    <button type="button" class="search-result" data-search-result
+      data-game-id="${result.gameId}"
+      data-platform-app-id="${result.platformAppId}"
+      data-platform="${result.platform}">
+      <span class="search-result__cover-wrap">
+        <img class="search-result__cover" src="${result.cover}" alt="">
+        <span class="search-result__platform">${result.platform.toUpperCase()}</span>
+      </span>
+      <span class="search-result__body">
+        <strong>${result.name}</strong>
+        ${result.platform === 'epic' && result.rawScore != null
+          ? `<span class="search-result__score" data-score>★ ${convertEpicScore(result.rawScore).toFixed(1)}</span>`
+          : '<span class="search-result__no-score">暂无评分</span>'}
+      </span>
+    </button>`).join('');
+}
+```
+
+- [ ] **Step 2: 将竖屏搜索改为一行两卡**
+
+使用以下样式，不改变横屏搜索外层分区：
+
+```css
+.search-page--portrait .search-results{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.search-page--portrait .search-result{
+  display:block;
+  min-width:0;
+  min-height:0;
+  padding:0;
+  overflow:hidden;
+  text-align:left;
+}
+.search-result__cover-wrap{
+  position:relative;
+  display:block;
+  aspect-ratio:4/3;
+  overflow:hidden;
+  border-radius:12px;
+}
+.search-result__cover{width:100%;height:100%;object-fit:cover}
+.search-result__platform{
+  position:absolute;
+  left:7px;
+  bottom:7px;
+  padding:3px 6px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:5px;
+  background:rgba(12,13,17,.82);
+  color:#d9cbff;
+  font-size:8px;
+  line-height:1;
+}
+.search-page--portrait .search-result__body{display:block;padding:9px 8px 10px}
+```
+
+横屏 `.search-result` 仍可使用横向卡片，但必须复用 `.search-result__cover-wrap` 和封面左下角平台标识。
+
+- [ ] **Step 3: 校准详情文案**
+
+把 CSS 生成文案：
+
+```css
+.obtain-platforms::before{content:"获取游戏"}
+```
+
+同时确认横竖详情仍显示 `PC游戏引擎`，指标标题为 `云存档` 与 `游戏时长`，不得新增同义替换。
+
+- [ ] **Step 4: 同步右侧交互标注**
+
+搜索标注改为“竖屏一行两卡；EPIC/GOG 标识位于封面左下角”；详情标注统一使用“获取游戏平台标识”，并说明其不等同于启动入口。
+
+- [ ] **Step 5: 运行 Demo 验证**
+
+Run:
+
+```powershell
+node tools/verify-gog-platform-demo.mjs all
+node tools/verify-gog-platform-demo-ui.mjs detailSearch
+node tools/verify-gog-platform-demo-ui.mjs annotations
+```
+
+Expected: 静态全部 `PASS`；`detailSearchFlow`、`annotationsFlow` 通过；搜索点击仍传递原 `sourcePlatform`。
+
+- [ ] **Step 6: 提交 Demo 返修**
+
+```powershell
+git add -- 'demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html'
+git commit -m "fix: align GOG search cards and detail copy"
+```
+
+### Task C: 同步 PRD、截图与最终验收
+
+**Files:**
+- Modify: `prd/ai生成/【Prd】《盖世游戏》GOG平台接入需求.md`
+- Modify: `tools/capture-gog-platform-demo.mjs`
+- Modify: `C:/Users/z3635/.codex/skills/pm-image2proto/references/learning_log.jsonl`
+- Generate: `.tmp/gog-platform-demo-captures/*.png`
+
+- [ ] **Step 1: 更新 PRD**
+
+版本表追加 V1.3；搜索章节与验收写明“竖屏一行两张竖向卡、平台标识叠加在封面左下角，横屏也使用封面内标识”；详情全文将“获得游戏”改为“获取游戏”，保留“PC游戏引擎 / 云存档 / 游戏时长”。
+
+- [ ] **Step 2: 更新截图验证**
+
+在截图工具生成结果后，对 `07-search-portrait.png` 增加布局检查：页面包含 4 张结果卡、两列网格、每张卡封面内存在一个平台标识；`09-detail-portrait.png` 和 `10-detail-landscape.png` 必须包含“获取游戏”且不包含“获得游戏”。
+
+- [ ] **Step 3: 追加学习记录**
+
+记录本轮明确偏好：竖屏搜索使用一行两卡；平台标识贴在封面而非标题下；详情严格沿用现行产品“获取游戏 / PC游戏引擎 / 云存档 / 游戏时长”文案。
+
+- [ ] **Step 4: 运行全量验收**
+
+Run:
+
+```powershell
+node tools/verify-gog-platform-demo.mjs all
+node tools/verify-gog-platform-demo-ui.mjs all
+node tools/capture-gog-platform-demo.mjs
+node tools/verify-gog-platform-prd.mjs all
+```
+
+Expected: Static 10/10、UI 5/5、截图 15/15、PRD 全部通过。
+
+- [ ] **Step 5: 人工复核关键截图**
+
+使用 `view_image` 检查 `07-search-portrait.png`、`08-search-landscape.png`、`09-detail-portrait.png`、`10-detail-landscape.png`，确认两列、平台角标位置、文字无截断和详情文案正确。
+
+- [ ] **Step 6: 提交 PRD 与截图工具并回写任务板**
+
+```powershell
+git add -- 'prd/ai生成/【Prd】《盖世游戏》GOG平台接入需求.md' tools/capture-gog-platform-demo.mjs
+git commit -m "docs: finalize GOG search and detail corrections"
+```
+
+读取 `GUANWANGGAID-26` 最新版本与全部评论，添加返修完成证据并移到 `in_review`；不得直接移到 `done`。
+
 ## Task 1: 先建立最终范围的失败契约
 
 **Files:**
