@@ -36,6 +36,22 @@ const captures = [
   ['10-detail-landscape', 'detail-landscape'],
 ];
 
+const stateCaptures = [
+  ['11-profile-gog-menu', 'profile-portrait', async () => {
+    await page.click('[data-profile-platform="gog"]');
+    await page.click('[data-action="toggle-account-menu"]');
+  }],
+  ['12-profile-epic-free-games', 'profile-portrait', async () => {
+    await page.click('[data-profile-platform="epic"]');
+  }],
+  ['13-detail-switch-portrait', 'detail-portrait', async () => {
+    await page.click('[data-action="open-platform-switch"]');
+  }],
+  ['14-detail-switch-landscape', 'detail-landscape', async () => {
+    await page.click('[data-action="open-platform-switch"]');
+  }],
+];
+
 const browser = await chromium.launch({ executablePath, headless: true });
 const page = await browser.newPage({
   viewport: { width: 1920, height: 1080 },
@@ -57,9 +73,10 @@ async function settle() {
   });
 }
 
-async function captureCanvas(name, screen) {
+async function captureCanvas(name, screen, prepare = null) {
   await page.click(`[data-page="${screen}"]`);
   await page.waitForSelector(`[data-screen="${screen}"]`);
+  if (prepare) await prepare();
   await settle();
 
   const target = path.join(output, `${name}.png`);
@@ -96,26 +113,30 @@ try {
     await captureCanvas(name, screen);
   }
 
+  for (const [name, screen, prepare] of stateCaptures) {
+    await captureCanvas(name, screen, prepare);
+  }
+
   await page.click('#interactionTab');
   if ((await page.locator('.annotation-marker:visible').count()) === 0) {
     await page.click('#toggleMarkers');
   }
   await settle();
 
-  const shellTarget = path.join(output, '11-full-annotation-shell.png');
+  const shellTarget = path.join(output, '15-full-annotation-shell.png');
   await page.screenshot({
     path: shellTarget,
     animations: 'disabled',
   });
   const shellSize = fs.statSync(shellTarget).size;
-  assert(shellSize > 40 * 1024, `11-full-annotation-shell.png is unexpectedly small (${shellSize} bytes)`);
-  console.log(`CAPTURED 11-full-annotation-shell.png (${shellSize} bytes)`);
+  assert(shellSize > 40 * 1024, `15-full-annotation-shell.png is unexpectedly small (${shellSize} bytes)`);
+  console.log(`CAPTURED 15-full-annotation-shell.png (${shellSize} bytes)`);
 
   assert.deepEqual(pageErrors, [], `Browser runtime errors: ${pageErrors.join(' | ')}`);
   const files = fs.readdirSync(output)
     .filter(file => file.toLowerCase().endsWith('.png'))
     .sort();
-  assert.equal(files.length, 11, `Expected exactly 11 PNG captures, found ${files.length}`);
+  assert.equal(files.length, 15, `Expected exactly 15 PNG captures, found ${files.length}`);
   assert.deepEqual(files, [
     '01-profile-portrait.png',
     '02-gog-login.png',
@@ -127,7 +148,11 @@ try {
     '08-search-landscape.png',
     '09-detail-portrait.png',
     '10-detail-landscape.png',
-    '11-full-annotation-shell.png',
+    '11-profile-gog-menu.png',
+    '12-profile-epic-free-games.png',
+    '13-detail-switch-portrait.png',
+    '14-detail-switch-landscape.png',
+    '15-full-annotation-shell.png',
   ]);
   console.log(`PASS visualCaptures (${files.length} PNG files)`);
 } finally {

@@ -244,6 +244,11 @@ async function detailSearchFlow() {
     assert.equal((await page.locator('[data-detail-cloud]').innerText()).trim(), '云存档已同步');
     await page.click('[data-action="open-platform-switch"]');
     assert.equal(await page.locator('[data-platform-switch]').count(), 1);
+    const beforeCancel = await page.evaluate(() => window.GogDemoApp.state.selectedPlatform);
+    await page.click('.detail-title-row, .landscape-detail-content h1');
+    assert.equal(await page.locator('[data-platform-switch]').count(), 0);
+    assert.equal(await page.evaluate(() => window.GogDemoApp.state.selectedPlatform), beforeCancel);
+    await page.click('[data-action="open-platform-switch"]');
     await page.click('[data-action="select-detail-platform"][data-platform="epic"]');
     assert.equal(await page.evaluate(() => window.GogDemoApp.state.sourcePlatform), 'gog');
     assert.equal(await page.evaluate(() => window.GogDemoApp.state.selectedPlatform), 'epic');
