@@ -1,0 +1,21 @@
+:root {
+  --gh-black:#09090b; --gh-bg:#111113; --gh-surface:#1a1a1d; --gh-raised:#252529; --gh-hover:#34343a;
+  --gh-text:#f5f5f7; --gh-text-2:#a4a4ac; --gh-text-3:#6d6d75; --gh-line:rgba(255,255,255,.1);
+  --gh-yellow:#ffc928; --gh-cyan:#12a8e8; --gh-violet:#8b68ff; --gh-orange:#ff8a24; --gh-green:#00c777; --gh-red:#ff5c64;
+  --gh-s4:4px; --gh-s8:8px; --gh-s12:12px; --gh-s16:16px; --gh-s20:20px; --gh-s24:24px; --gh-s32:32px; --gh-s40:40px;
+  --gh-r8:8px; --gh-r12:12px; --gh-r16:16px; --gh-r20:20px; --gh-r28:28px; --gh-pill:999px;
+  --gh-font:Inter,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  --gh-body:14px; --gh-title:20px; --gh-page-title:28px;
+  --gh-portrait-w:402px; --gh-portrait-h:874px; --gh-landscape-w:874px; --gh-landscape-h:402px;
+  --gh-button-h:44px; --gh-bottom-nav-h:68px; --gh-top-nav-h:54px;
+  --gh-shadow:0 14px 44px rgba(0,0,0,.35); --gh-focus:0 0 0 3px rgba(255,201,40,.55);
+}
+.gh-button{height:var(--gh-button-h);border:0;border-radius:var(--gh-r12);padding:0 18px;font:600 14px var(--gh-font);cursor:pointer}
+.gh-button--primary{background:var(--gh-yellow);color:#15130b}.gh-button--secondary{background:var(--gh-raised);color:var(--gh-text);border:1px solid var(--gh-line)}
+.gh-button--danger{background:rgba(255,92,100,.14);color:#ff7a81}.gh-button:disabled{background:var(--gh-raised);color:var(--gh-text-3);cursor:not-allowed}
+.gh-button:focus-visible,.gh-focus:focus-visible{outline:0;box-shadow:var(--gh-focus)}
+.gh-chip{display:inline-flex;align-items:center;height:30px;padding:0 12px;border:1px solid var(--gh-line);border-radius:var(--gh-pill);color:var(--gh-text-2);background:var(--gh-surface)}
+.gh-chip[aria-selected="true"]{background:var(--gh-text);color:var(--gh-black)}
+.gh-card{background:var(--gh-surface);border:1px solid var(--gh-line);border-radius:var(--gh-r16)}
+.gh-platform{display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:20px;padding:0 6px;border-radius:5px;background:rgba(0,0,0,.72);color:#fff;font:700 9px var(--gh-font);letter-spacing:.04em}
+.gh-platform--steam{color:#b9e4ff}.gh-platform--epic{color:#fff}.gh-platform--gog{color:#d8b8ff}
