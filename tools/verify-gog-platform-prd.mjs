@@ -100,7 +100,7 @@ function currentPageRules() {
     '搜索结果：横屏',
     '游戏详情：竖屏',
     '游戏详情：横屏',
-    'GOG 不展示账号价值；页面不渲染标题、数值、骨架或占位空间，也不以 0 或“--”代替。',
+    'GOG 不展示账号价值或“喜加一”；页面不渲染对应标题、数值、按钮、骨架或占位空间，也不以 0 或“--”代替，账号卡按实际内容自然收缩。',
   ];
   for (const token of requiredCurrentPageRules) {
     assert(prd.includes(token), `Missing current-page rule: ${token}`);
@@ -120,6 +120,46 @@ function currentPageRules() {
     assert(!prd.includes(token), `Forbidden legacy value or page rule: ${token}`);
   }
   pass('currentPageRules');
+}
+
+function finalScope() {
+  const requiredFinalRules = [
+    '更新数据 / 切换账号 / 退出账号',
+    '点击菜单外部关闭',
+    '更新进行中禁用重复提交',
+    '切换取消、授权失败或首次同步失败时保留旧账号',
+    '退出需二次确认',
+    '仅 EPIC 账号卡在原三项操作所在位置显示一个“喜加一”按钮',
+    'GOG 不展示账号价值或“喜加一”',
+    '同一个 PC 游戏存在多个平台时，每个平台版本展示为独立结果',
+    '游戏时长',
+    '云存档',
+    '启动 icon',
+    'sourcePlatform=gog',
+    'Steam > EPIC > GOG',
+    '英文名称、中文名称、别名',
+    '无法可靠归类或低置信度时进入不同详情',
+    '点击弹窗外部或取消则保持原平台',
+    '“获得游戏”区域的平台标识仅表示可获取渠道，不等同于详情启动按钮',
+    '启动失败时提示失败并保留当前详情数据与平台选择',
+  ];
+  for (const token of requiredFinalRules) {
+    assert(prd.includes(token), `Missing final-scope rule: ${token}`);
+  }
+
+  const forbiddenPositiveRules = [
+    'GOG 显示账号价值',
+    'GOG 显示“喜加一”',
+    'GOG 显示喜加一',
+    'GOG 仅展示平台标识',
+    '仅平台标识、不支持详情启动',
+    'GOG 绑定跳转 EPIC 授权',
+    '绑定 GOG 账号后跳转 EPIC 授权',
+  ];
+  for (const token of forbiddenPositiveRules) {
+    assert(!prd.includes(token), `Forbidden final-scope rule: ${token}`);
+  }
+  pass('finalScope');
 }
 
 function placeholders() {
@@ -145,7 +185,7 @@ function images() {
   pass('images');
 }
 
-const checks = { structure, rules, currentPageRules, placeholders, images };
+const checks = { structure, rules, currentPageRules, finalScope, placeholders, images };
 const mode = process.argv[2] || 'all';
 if (mode === 'all') {
   Object.values(checks).forEach(check => check());
