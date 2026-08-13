@@ -227,6 +227,24 @@ async function detailSearchFlow() {
   for (const orientation of ['portrait','landscape']) {
     await selectScreen(`search-${orientation}`);
     await assertViewport(`search-${orientation}`, orientation);
+    const layout = await page.evaluate(({ screen, orientation }) => {
+      const grid = document.querySelector(`[data-screen="${screen}"] .search-results`);
+      const cards = [...grid.querySelectorAll('.search-result')];
+      return {
+        columns:getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length,
+        platformOutsideCover:cards.some(card => card.querySelector('.search-result__body .search-result__platform')),
+        platformInsideCover:cards.every(card => card.querySelector('.search-result__cover-wrap .search-result__platform')),
+        rows:cards.map(card => ({
+          cardWidth:card.getBoundingClientRect().width,
+          coverWidth:card.querySelector('.search-result__cover-wrap')?.getBoundingClientRect().width ?? 0,
+        })),
+        orientation,
+      };
+    }, { screen:`search-${orientation}`, orientation });
+    assert.equal(layout.columns, 2, `${orientation}: search results must use two columns`);
+    assert.equal(layout.platformOutsideCover, false, `${orientation}: platform label remains outside cover`);
+    assert.equal(layout.platformInsideCover, true, `${orientation}: platform label is not inside every cover`);
+    assert(layout.rows.every(row => row.coverWidth > 0 && row.coverWidth <= row.cardWidth + 0.5), `${orientation}: invalid cover width`);
     const rows = await searchRows(`search-${orientation}`);
     if (!sharedRows) sharedRows = rows;
     else assert.deepEqual(rows, sharedRows, 'search layouts must share one result model');
@@ -264,6 +282,9 @@ async function detailSearchFlow() {
     for (const platform of ['steam','epic','gog']) {
       assert.equal(await page.locator(`[data-obtain-platform="${platform}"]`).count(), 1);
     }
+    const detailCopy = await page.locator(`[data-screen="detail-${orientation}"] [data-obtain-platforms]`).evaluate(node => getComputedStyle(node, '::before').content.replaceAll('"',''));
+    assert.equal(detailCopy, '获取游戏', `${orientation}: detail obtain copy mismatch`);
+    assert.equal(await page.locator(`[data-screen="detail-${orientation}"]`).getByText('获得游戏', { exact:true }).count(), 0);
   }
   const mapping = await page.evaluate(() => ({
     same:window.GogDemoApp.matchGameCandidate('赛博朋克 2077','Cyberpunk 2077'),

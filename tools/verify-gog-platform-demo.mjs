@@ -82,6 +82,18 @@ function fullGameplayScope() {
   assert(html.includes("['steam','epic','gog']"), 'Steam > EPIC > GOG priority missing');
   pass('fullGameplayScope');
 }
+function searchAndDetailCopy() {
+  for (const token of [
+    'search-result__cover-wrap',
+    'search-result__platform',
+    '获取游戏',
+    'PC游戏引擎',
+    '云存档',
+    '游戏时长',
+  ]) assert(html.includes(token), `Missing search/detail correction: ${token}`);
+  assert(!html.includes('content:"获得游戏"'), 'Legacy detail copy must be removed');
+  pass('searchAndDetailCopy');
+}
 function states() {
   for (const token of ['loading','empty','error','expired','cancelled','cached'])
     assert(html.includes(token), `Missing recovery state: ${token}`);
@@ -99,7 +111,7 @@ function syntax() {
   scripts.forEach((code, index) => new vm.Script(code, { filename: `gog-inline-${index}.js` }));
   pass('syntax');
 }
-const tasks = { shell, pages, realPageStructure, gogCapabilities, accountMenu, platformModel, fullGameplayScope, states, security, syntax };
+const tasks = { shell, pages, realPageStructure, gogCapabilities, accountMenu, platformModel, fullGameplayScope, searchAndDetailCopy, states, security, syntax };
 if (mode === 'all') Object.values(tasks).forEach(task => task());
 else if (tasks[mode]) tasks[mode]();
 else throw new Error(`Unknown mode: ${mode}`);

@@ -142,6 +142,10 @@ function finalScope() {
     '点击弹窗外部或取消则保持原平台',
     '“获得游戏”区域的平台标识仅表示可获取渠道，不等同于详情启动按钮',
     '启动失败时提示失败并保留当前详情数据与平台选择',
+    '竖屏结果区固定为一行两张竖向游戏卡',
+    '平台标识叠加在封面左下角',
+    '“获取游戏”区域',
+    'PC游戏引擎',
   ];
   for (const token of requiredFinalRules) {
     assert(prd.includes(token), `Missing final-scope rule: ${token}`);
@@ -159,6 +163,7 @@ function finalScope() {
   for (const token of forbiddenPositiveRules) {
     assert(!prd.includes(token), `Forbidden final-scope rule: ${token}`);
   }
+  assert(!prd.includes('“获得游戏”区域'), 'Legacy detail copy remains in PRD');
   pass('finalScope');
 }
 
