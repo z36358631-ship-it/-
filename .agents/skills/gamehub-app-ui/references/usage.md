@@ -18,7 +18,7 @@ Skill 位于工作区：
 demos/UI规范/盖世游戏APP-UI模板与页面配方预览.html
 ```
 
-预览无需联网，左侧切换展厅/页面配方，中间操作真实 DOM，右侧查看用途、状态、来源与调用示例。顶部可切换横竖方向和组件状态。
+预览无需联网。左侧切换代表页，中间展示页面，右侧查看来源、组件和自动评分。顶部可切换“原稿 / 实现 / 差异图”；实现视图中的导航、按钮、文字、卡片、Tab、账号区和状态区都是真实 DOM。
 
 重新生成：
 
@@ -70,8 +70,10 @@ node .agents/skills/gamehub-app-ui/scripts/build-preview.mjs
 2. 页面与组件效果清单。
 3. 横竖版和状态覆盖清单。
 4. 来源引用与冲突记录。
-5. 验证命令和结果。
-6. 已知限制，不把静态图无法证明的行为写成事实。
+5. 页面级原稿、实现、差异图和组件级差异证据。
+6. 从 `assets/visual-report.json` 读取的页面/组件自动评分；任一项低于 95% 必须明确标为失败。
+7. 验证命令和结果。
+8. 已知限制，不把静态图无法证明的行为写成事实。
 
 ## 6. 五个回归 Prompt
 
@@ -85,12 +87,23 @@ node .agents/skills/gamehub-app-ui/scripts/build-preview.mjs
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .agents/skills/gamehub-app-ui/scripts/build-manifest.ps1
+python .agents/skills/gamehub-app-ui/scripts/build-visual-assets.py
+node .agents/skills/gamehub-app-ui/scripts/build-preview.mjs
+node .agents/skills/gamehub-app-ui/scripts/capture-visuals.mjs
+python .agents/skills/gamehub-app-ui/scripts/compare-visuals.py
 node .agents/skills/gamehub-app-ui/scripts/build-preview.mjs
 node .agents/skills/gamehub-app-ui/scripts/validate.mjs all
 python C:/Users/z3635/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/gamehub-app-ui
 ```
 
-期望看到 Figma `11/11`、实机图 `45/45`、来源、组件、配方、方向、冲突、离线预览、浏览器运行和前向 Prompt 全部 `PASS`。
+期望看到 Figma `11/11`、实机图 `45/45`、视觉资产、视觉截图、组件 DOM 覆盖、视觉保真、来源、组件、配方、方向、冲突、离线预览、浏览器运行和前向 Prompt 全部 `PASS`。视觉证据位于：
+
+```text
+.tmp/gamehub-app-ui/visual-captures/
+.tmp/gamehub-app-ui/visual-diffs/
+.tmp/gamehub-app-ui/component-captures/
+.tmp/gamehub-app-ui/component-diffs/
+```
 
 ## 8. 常见问题
 
@@ -99,4 +112,5 @@ python C:/Users/z3635/.codex/skills/.system/skill-creator/scripts/quick_validate
 - Figma 无法读取：使用当前登录浏览器或用户导出，不要把 Token 写进 Skill。
 - 页面看起来像新产品：检查是否跳过了真实页面配方，恢复原骨架再加入需求。
 - 横屏像压扁竖屏：改用 C-SHELL-L 与横屏页面配方重新排版。
-
+- 页面或组件低于 95%：打开对应差异图，优先修正大块媒体、布局坐标和背景色，再校正字体、边框与阴影；不要手改评分。
+- 横屏右侧变黑或组件缺失：确保截图视口能完整容纳 2400px 画布与预览侧栏，再重新运行 `capture-visuals.mjs`。

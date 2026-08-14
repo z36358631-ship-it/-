@@ -61,11 +61,23 @@ description: 为盖世游戏（GameHub）APP 创建或修改高保真 UI Demo。
 
 - 不要擅自新增页面、弹窗、Toast、流程、字段、入口或产品能力。
 - 不要用整页截图作为背景并叠加热区冒充可编辑页面。
+- 有原稿时不要用渐变色块、随机图片或通用占位图替代原稿中的 Hero、封面、Banner、头像等复杂媒体。
+- 实现视图禁止绘制、嵌入或 Canvas 重放整页原稿；原稿只能出现在独立的“原稿”证据视图。
+- 导航、按钮、文字、卡片、Tab、账号区、状态区必须由真实可复用 DOM 构成，并使用稳定的 `data-component-id`。
 - 不要把缺失数据渲染成 `0`；使用“暂无数据”“暂无评分”或对应空态。
 - 不要用 Emoji 代替产品图标；使用内联 SVG 或项目内图标。
 - 不要引用 CDN、远程字体、远程图片、iframe 或需要联网的运行时。
 - 不要复制实机图中的渲染异常、内容越界、文本硬裁切和未确认空白状态。
 - 不要保存 Figma Token；使用当前授权浏览器、用户导出或公开数据。
+
+## 视觉保真硬门槛
+
+1. 原稿、实现和差异图必须使用相同画布尺寸；竖屏与横屏分别取各自原生布局，不允许旋转或整体缩放复用。
+2. Hero、封面、Banner、头像等媒体只能使用 `assets/visual-baselines.json` 显式登记的局部裁片；裁片不得等于整页，也不得把可复用 UI 当作图片展示。
+3. 每个代表页必须生成页面级“原稿 / 实现 / 差异图”，每个登记组件必须生成组件级实现图与差异图。
+4. 页面和组件的感知相似度均不得低于 `95%`。任一项低于门槛即为 `FAIL`，不得写成已完成或可交付。
+5. 所有分数必须由 `scripts/compare-visuals.py` 计算并写入 `assets/visual-report.json`；禁止手填、估算或在 HTML 中覆盖分数。
+6. 交付前人工检查差异图，排除整页截图复用、文字重影、裁片接缝、横竖屏压缩和浏览器侧栏遮挡。
 
 ## 验收与交付
 
@@ -73,6 +85,10 @@ description: 为盖世游戏（GameHub）APP 创建或修改高保真 UI Demo。
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .agents/skills/gamehub-app-ui/scripts/build-manifest.ps1
+python .agents/skills/gamehub-app-ui/scripts/build-visual-assets.py
+node .agents/skills/gamehub-app-ui/scripts/build-preview.mjs
+node .agents/skills/gamehub-app-ui/scripts/capture-visuals.mjs
+python .agents/skills/gamehub-app-ui/scripts/compare-visuals.py
 node .agents/skills/gamehub-app-ui/scripts/build-preview.mjs
 node .agents/skills/gamehub-app-ui/scripts/validate.mjs all
 python C:/Users/z3635/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/gamehub-app-ui
