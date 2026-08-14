@@ -1,102 +1,120 @@
 # 核心组件契约
 
+所有组件均使用稳定 `data-component-id`；默认状态需要原尺寸回归，其他状态至少完成可见反馈、键盘/手柄路径与异常边界。
+
 ## C-SHELL-P：竖屏应用框架
 
 - Anatomy：状态安全区、顶部工具栏、滚动正文、底部五栏导航。
-- Variants：普通、沉浸媒体、无底栏流程页。
-- States：默认、滚动收缩、弹层锁定。
+- Variants：standard / immersive / flow。
+- States：default / scroll-collapsed / modal-locked。
 - Events：底栏切页、返回、搜索、滚动。
-- Source refs：screen-08, screen-18, screen-30, screen-45。
-- 约束：底栏不能遮挡正文；业务流程页才可移除底栏。
+- Source refs：screen-08、screen-18、screen-20、screen-30。
+- 约束：业务流程页才可移除底栏；底栏不得遮挡正文。
 
-## C-SHELL-L：掌机横屏框架
+## C-SHELL-L：掌机横屏应用框架
 
 - Anatomy：顶部导航、状态区、内容轨道、手柄提示。
-- Variants：目录、双面板、沉浸详情。
-- States：默认、焦点、滚动、遮罩。
+- Variants：catalog / split / immersive。
+- States：default / focused / modal-locked。
 - Events：LB/RB 切页、方向键移动、A 确认、B 返回。
-- Source refs：screen-36 至 screen-44。
-- 约束：不得通过旋转或整体缩放 C-SHELL-P 实现。
+- Source refs：screen-36、screen-41、screen-44。
+- 约束：不能旋转或整体缩放 C-SHELL-P。
 
 ## C-TOPBAR：顶部栏
 
-- Anatomy：返回/品牌、标题或搜索、右侧操作。
-- Variants：标准、透明沉浸、搜索、滚动收缩。
-- States：默认、吸顶、输入中。
-- Events：返回、搜索、更多。
-- Source refs：screen-09, screen-10, screen-16, screen-25, figma-09 (`5504-639`)。
+- Anatomy：状态区、标题/平台 Tab、右侧设备或页面操作。
+- Variants：standard / transparent / search / collapsed。
+- States：default / sticky / input。
+- Events：返回、搜索、更多、设备切换。
+- Source refs：screen-09、screen-10、screen-16、screen-20、figma-09 `5504-639`。
+- 回归登记：`epic-unbound-portrait/C-TOPBAR`。
 
-## C-NAV：导航
+## C-NAV-P：竖屏五栏导航
 
-- Anatomy：图标、标签、选中指示、可选角标。
-- Variants：竖屏底栏、横屏顶栏、二级 Tab。
-- States：默认、选中、聚焦、禁用、带提醒。
-- Events：选择后切换页面或同页内容，不额外弹 Toast。
-- Source refs：screen-08, screen-11, screen-18, screen-36, figma-09 (`5504-639`)。
+- Anatomy：5 个图标、标签和选中态。
+- Variants：首页 / 玩游戏 / 排行榜 / 游戏库 / 我的。
+- States：default / selected。
+- Events：切换一级页面，不额外触发 Toast。
+- Source refs：screen-08、screen-20、screen-30、figma-09 `5504-639`。
+- 源尺寸：`1080×148`，单栏 216px。
+- 回归登记：`epic-unbound-portrait/C-NAV-P`。
 
-## C-BUTTON：按钮
+## C-NAV-L：掌机顶部导航
 
-- Anatomy：可选前图标、标签、可选后状态。
-- Variants：品牌主按钮、业务青蓝按钮、次按钮、文字按钮、危险按钮、图标按钮。
-- States：默认、悬停/按下、聚焦、加载、禁用。
-- Events：点击、键盘/手柄确认；加载时防重复提交。
-- Source refs：screen-01, screen-05, screen-19, screen-26, figma-09 (`5504-639`)。
-- 约束：一组操作只保留一个主按钮；不得用 Emoji 作图标。
+- Anatomy：一级入口、当前标题、设备/手柄、时间、网络和电量。
+- Variants：catalog / detail。
+- States：default / selected / focused。
+- Events：LB/RB 切换、方向键聚焦、A 确认。
+- Source refs：screen-36、screen-41、screen-43。
+- 回归登记：`library-landscape/C-NAV-L`。
 
-## C-TAB-CHIP：Tab 与筛选 Chip
+## C-BUTTON-GLOW：青蓝流光主按钮
 
-- Anatomy：文本、选中指示，可选数量。
-- Variants：平台 Tab、内容 Tab、胶囊 Chip。
-- States：默认、选中、聚焦、禁用。
-- Events：切换数据或视图；保持焦点与滚动位置可预测。
-- Source refs：screen-09, screen-16, screen-18, screen-29, screen-42。
+- Anatomy：来源化边框、纵向渐变、标签、可选平台图标。
+- Variants：primary / platform-login / start。
+- States：default / pressed / focused / loading / disabled。
+- Events：点击、Enter、A 键；loading 时防重复提交。
+- Source refs：screen-20、screen-44、figma-09 `5504-639`。
+- 源尺寸：竖屏 `270×71`；实测边框约 `rgb(43,195,223)`。
+- 回归登记：`epic-unbound-portrait/C-BUTTON-GLOW`。
 
-## C-SECTION：区块标题与内容容器
+## C-BUTTON-SECONDARY：深色次按钮
 
-- Anatomy：标题、可选说明、可选“查看全部”、内容槽位。
-- Variants：普通、紧凑、沉浸叠加。
-- States：默认、加载、空、失败。
-- Events：查看全部。
-- Source refs：screen-08, screen-11, screen-30, screen-37。
+- Anatomy：深色表面、文字或图标、可见焦点。
+- Variants：secondary / icon / danger。
+- States：default / pressed / focused / disabled。
+- Events：点击、Enter、A 键。
+- Source refs：screen-10、screen-22、screen-41、screen-44、figma-09。
+- 回归登记：`library-landscape/C-BUTTON-SECONDARY`。
+
+## C-TAB：文字 Tab
+
+- Anatomy：文本和选中指示条。
+- Variants：platform / content。
+- States：default / selected / focused / disabled。
+- Events：切换同一页面的数据集，保留滚动与焦点语义。
+- Source refs：screen-18、screen-19、screen-20、screen-21。
+- 源尺寸：竖屏高度 71px，指示条 `24×4`。
+
+## C-INPUT-SEARCH：搜索输入
+
+- Anatomy：搜索图标、输入区、清除按钮、可选错误说明。
+- Variants：portrait / landscape。
+- States：default / focused / filled / error / disabled。
+- Events：输入、提交、清除。
+- Source refs：screen-08、screen-09、screen-43、figma-09。
 
 ## C-DIALOG：居中弹窗
 
-- Anatomy：遮罩、容器、标题、说明、正文、操作组。
-- Variants：确认、危险确认、双入口选择。
-- States：打开、提交中、失败。
-- Events：确认、取消、遮罩关闭（高风险弹窗禁用遮罩关闭）。
-- Source refs：screen-01, screen-22, screen-27, figma-09 (`5504-639`)。
+- Anatomy：遮罩、容器、标题、正文、操作组。
+- Variants：confirm / danger / two-entry。
+- States：open / submitting / failed。
+- Events：确认、取消；高风险弹窗禁止点遮罩关闭。
+- Source refs：screen-01、screen-22、screen-27、figma-09 `5504-639`。
+- 已取得 Figma 组件组“流光边框菜单-弹窗按钮”外框 `130×265`；该值不是所有弹窗的页面尺寸。
 
 ## C-SHEET：底部操作面板
 
 - Anatomy：遮罩、圆角容器、标题/拖拽区、内容、固定操作。
-- Variants：登录、更多菜单、单选确认、模式选择。
-- States：打开、选中、禁用、加载。
+- Variants：login / menu / radio-confirm / mode。
+- States：open / selected / loading / disabled。
 - Events：取消、确认、菜单项选择。
-- Source refs：screen-05, screen-06, screen-24, screen-26, screen-35。
-
-## C-MENU：更多菜单
-
-- Anatomy：触发按钮、菜单、图标项、危险项。
-- Variants：下拉、底部宫格。
-- States：关闭、打开、聚焦、禁用。
-- Events：打开、选择、关闭；低频账号操作收纳在此。
-- Source refs：screen-24, figma-02 (`51374-15897`), figma-09 (`5504-639`)。
+- Source refs：screen-05、screen-06、screen-24、screen-26、screen-35。
 
 ## C-FEEDBACK：反馈状态
 
 - Anatomy：状态图形、标题、说明、主/次操作。
-- Variants：加载骨架、空、失败、禁用、同步中、冲突。
-- States：与变体一致；支持重试和去绑定等业务动作。
+- Variants：loading / empty / failed / disabled / syncing / conflict。
+- States：visible。
 - Events：重试、绑定、刷新、解决冲突。
-- Source refs：screen-19, screen-20, screen-21, screen-34, figma-09 (`5504-639`)。
-- 约束：未知值不得显示为 0；空白不能代替状态说明。
+- Source refs：screen-19、screen-20、screen-21、screen-34、figma-09。
+- 约束：未知值不显示 0；空白不能代替状态说明。
+- 回归登记：`epic-unbound-portrait/C-FEEDBACK`。
 
-## C-INPUT：输入与搜索
+## 组件使用规则
 
-- Anatomy：标签/占位、输入区、前图标、清除、错误说明。
-- Variants：文本、验证码、搜索、带筛选。
-- States：默认、聚焦、已填、错误、禁用。
-- Events：输入、提交、清除。
-- Source refs：screen-05, screen-06, screen-09, screen-28, screen-43。
-
+- `measured`：已有可复核尺寸/像素，可直接用作基准。
+- `derived`：从页面或混合证据推导，必须保留来源和置信度。
+- `missing-source`：不得生成近似图标或宣称完成。
+- 组件展厅左栏是原稿，右栏是实现；两者不能互换。
+- 组件结果查看 `assets/visual-report.json`，不以整页分数替代。

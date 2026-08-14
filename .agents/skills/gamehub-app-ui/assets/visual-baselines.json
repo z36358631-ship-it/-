@@ -1,92 +1,15 @@
 {
-  "schemaVersion": 2,
-  "pageThreshold": 0.95,
-  "componentThreshold": 0.95,
-  "scoringPolicy": "All scores are computed from same-size browser captures. Reusable UI is rendered as DOM; source screenshots may only supply explicitly registered media crops such as hero art, covers, banners and avatars.",
+  "schemaVersion": 4,
+  "legacyReportsInvalidBeforeSchemaVersion": 4,
+  "thresholds": {
+    "rgb": 0.95,
+    "edge": 0.95,
+    "structure": 0.95,
+    "geometryTolerancePx": 2,
+    "deltaE2000P95": 3
+  },
+  "scoringPolicy": "Compare exact-size images at full source resolution. Do not blur or downsample. Every gate must pass independently; averages never override a failed gate. Manual review may veto automatic pass.",
   "pages": [
-    {
-      "id": "screen-08",
-      "key": "home-portrait",
-      "name": "竖版首页",
-      "orientation": "portrait",
-      "width": 1080,
-      "height": 2400,
-      "source": "_outputs/盖世游戏V6.1.1使用说明手册/图片和附件/08-竖版首页.png",
-      "mode": "dom-with-media-crops",
-      "media": {
-        "hero": [20, 230, 1060, 720],
-        "recommend-strip": [45, 973, 1080, 1127],
-        "news-a": [46, 1219, 534, 1469],
-        "news-b": [556, 1219, 1048, 1469],
-        "game-a": [33, 1648, 416, 1858],
-        "game-b": [443, 1648, 830, 1858],
-        "game-c": [857, 1648, 1080, 1858],
-        "rank-a": [27, 2136, 140, 2270],
-        "rank-b": [604, 2136, 716, 2270]
-      },
-      "components": [
-        {"id": "C-TOPBAR", "label": "搜索框", "box": [20, 45, 1010, 125]},
-        {"id": "D-DETAIL-HERO", "label": "每日推荐 Hero", "box": [13, 145, 1067, 855]},
-        {"id": "D-GAME-CARD", "label": "内容卡片区", "box": [22, 900, 1070, 2030]},
-        {"id": "C-NAV", "label": "竖屏底部导航", "box": [0, 2275, 1080, 2400]}
-      ]
-    },
-    {
-      "id": "screen-09",
-      "key": "search-portrait",
-      "name": "竖版搜索默认页",
-      "orientation": "portrait",
-      "width": 1080,
-      "height": 2400,
-      "source": "_outputs/盖世游戏V6.1.1使用说明手册/图片和附件/09-竖版搜索默认页.png",
-      "mode": "dom-with-media-crops",
-      "media": {
-        "result-strip": [953, 248, 1052, 1038]
-      },
-      "components": [
-        {"id": "C-TOPBAR", "label": "返回与搜索框", "box": [20, 42, 1050, 120]},
-        {"id": "C-TAB-CHIP", "label": "搜索 Tab", "box": [20, 120, 355, 205]},
-        {"id": "D-SEARCH-RESULT", "label": "热搜与推荐结果", "box": [20, 215, 1080, 1060]}
-      ]
-    },
-    {
-      "id": "screen-10",
-      "key": "detail-portrait",
-      "name": "竖版游戏详情",
-      "orientation": "portrait",
-      "width": 1080,
-      "height": 2400,
-      "source": "_outputs/盖世游戏V6.1.1使用说明手册/图片和附件/10-竖版游戏详情.png",
-      "mode": "dom-with-media-crops",
-      "media": {
-        "video": [201, 79, 879, 385]
-      },
-      "components": [
-        {"id": "C-TOPBAR", "label": "返回", "box": [15, 40, 80, 95]},
-        {"id": "D-DETAIL-HERO", "label": "视频媒体区", "box": [0, 42, 1080, 420]},
-        {"id": "D-ENGINE-META", "label": "游戏信息与引擎卡", "box": [20, 420, 1060, 970]},
-        {"id": "C-BUTTON", "label": "详情固定操作栏", "box": [20, 2285, 1060, 2400]}
-      ]
-    },
-    {
-      "id": "screen-18",
-      "key": "library-portrait",
-      "name": "游戏库-PC",
-      "orientation": "portrait",
-      "width": 1080,
-      "height": 2400,
-      "source": "_outputs/盖世游戏V6.1.1使用说明手册/图片和附件/18-游戏库-PC.png",
-      "mode": "dom-with-media-crops",
-      "media": {
-        "cover": [32, 320, 526, 598]
-      },
-      "components": [
-        {"id": "C-TAB-CHIP", "label": "游戏平台 Tab", "box": [20, 45, 625, 120]},
-        {"id": "C-TOPBAR", "label": "搜索与导入工具", "box": [20, 135, 1060, 300]},
-        {"id": "D-GAME-CARD", "label": "游戏库卡片", "box": [22, 310, 535, 690]},
-        {"id": "C-NAV", "label": "竖屏底部导航", "box": [0, 2275, 1080, 2400]}
-      ]
-    },
     {
       "id": "screen-20",
       "key": "epic-unbound-portrait",
@@ -95,54 +18,34 @@
       "width": 1080,
       "height": 2400,
       "source": "_outputs/盖世游戏V6.1.1使用说明手册/图片和附件/20-游戏库-Epic.png",
-      "mode": "dom-only",
-      "media": {},
-      "components": [
-        {"id": "C-TAB-CHIP", "label": "游戏平台 Tab", "box": [20, 45, 625, 120]},
-        {"id": "C-FEEDBACK", "label": "未绑定空态", "box": [250, 1190, 830, 1380]},
-        {"id": "C-BUTTON", "label": "登录 Epic", "box": [405, 1265, 675, 1355]},
-        {"id": "C-NAV", "label": "竖屏底部导航", "box": [0, 2275, 1080, 2400]}
-      ]
-    },
-    {
-      "id": "screen-30",
-      "key": "profile-portrait",
-      "name": "我的",
-      "orientation": "portrait",
-      "width": 1080,
-      "height": 2400,
-      "source": "_outputs/盖世游戏V6.1.1使用说明手册/图片和附件/30-我的.png",
-      "mode": "dom-with-media-crops",
+      "mode": "dom-with-source-icons",
       "media": {
-        "avatar": [485, 142, 585, 242],
-        "community-banner": [28, 806, 1052, 985]
+        "status-left": [8, 4, 100, 37],
+        "status-settings": [66, 4, 100, 37],
+        "status-wifi": [954, 5, 989, 36],
+        "status-signal": [982, 5, 1011, 35],
+        "status-battery": [1014, 4, 1037, 35],
+        "device": [1008, 60, 1054, 102],
+        "component-topbar": [0, 0, 1080, 128],
+        "component-feedback": [357, 1198, 723, 1240],
+        "component-button": [405, 1271, 675, 1342],
+        "component-nav": [0, 2252, 1080, 2400],
+        "nav-home": [86, 2303, 142, 2355],
+        "nav-game": [297, 2303, 358, 2353],
+        "nav-rank": [515, 2303, 566, 2354],
+        "nav-grid": [727, 2303, 784, 2353],
+        "nav-user": [938, 2303, 995, 2355]
+      },
+      "manualReview": {
+        "status": "pending",
+        "reviewer": "Codex",
+        "criteria": "原始尺寸检查结构、字体、图标、间距、边框、渐变与阴影"
       },
       "components": [
-        {"id": "C-TOPBAR", "label": "个人工具栏", "box": [0, 0, 1080, 335]},
-        {"id": "D-ACCOUNT-CARD", "label": "平台账号卡", "box": [22, 340, 1058, 780]},
-        {"id": "D-GAME-CARD", "label": "社区与设备区", "box": [22, 800, 1058, 1550]},
-        {"id": "C-NAV", "label": "竖屏底部导航", "box": [0, 2245, 1080, 2400]}
-      ]
-    },
-    {
-      "id": "screen-36",
-      "key": "home-landscape",
-      "name": "掌机模式-首页",
-      "orientation": "landscape",
-      "width": 2400,
-      "height": 1080,
-      "source": "_outputs/盖世游戏V6.1.1使用说明手册/图片和附件/36-掌机模式-首页.png",
-      "mode": "dom-with-media-crops",
-      "media": {
-        "hero-a": [108, 108, 1183, 600],
-        "hero-b": [1218, 108, 2293, 600],
-        "recommend-strip": [105, 958, 1945, 1080]
-      },
-      "components": [
-        {"id": "C-NAV", "label": "掌机顶部导航", "box": [95, 15, 2295, 90]},
-        {"id": "D-DETAIL-HERO", "label": "双 Hero", "box": [95, 95, 2305, 845]},
-        {"id": "D-GAME-CARD", "label": "横向推荐轨道", "box": [95, 885, 1980, 1080]},
-        {"id": "C-FEEDBACK", "label": "手柄快捷提示", "box": [2070, 990, 2400, 1075]}
+        {"id": "C-TOPBAR", "label": "状态栏与游戏平台 Tab", "box": [0, 0, 1080, 128], "expectedBox": [0, 0, 1080, 128]},
+        {"id": "C-FEEDBACK", "label": "Epic 未绑定文案", "box": [357, 1198, 723, 1240], "expectedBox": [357, 1198, 723, 1240]},
+        {"id": "C-BUTTON-GLOW", "label": "登录 Epic 主按钮", "box": [405, 1271, 675, 1342], "expectedBox": [405, 1271, 675, 1342]},
+        {"id": "C-NAV-P", "label": "竖屏五栏底部导航", "box": [0, 2252, 1080, 2400], "expectedBox": [0, 2252, 1080, 2400]}
       ]
     },
     {
@@ -153,39 +56,23 @@
       "width": 2400,
       "height": 1080,
       "source": "_outputs/盖世游戏V6.1.1使用说明手册/图片和附件/41-掌机模式-游戏库.png",
-      "mode": "dom-with-media-crops",
+      "mode": "dom-with-source-media",
       "media": {
-        "cover": [357, 108, 548, 392]
+        "cover": [357, 108, 548, 392],
+        "placeholder": [100, 108, 336, 460],
+        "component-nav": [100, 20, 2300, 82],
+        "component-card": [95, 105, 575, 470],
+        "component-secondary": [95, 500, 465, 580]
+      },
+      "manualReview": {
+        "status": "pending",
+        "reviewer": "Codex",
+        "criteria": "原始尺寸检查横屏原生布局、顶部导航、游戏卡、按钮、媒体裁切与黑色空间"
       },
       "components": [
-        {"id": "C-NAV", "label": "掌机顶部导航", "box": [95, 15, 2295, 90]},
-        {"id": "D-GAME-CARD", "label": "横屏游戏卡", "box": [95, 105, 610, 480]},
-        {"id": "C-BUTTON", "label": "查看详情与视图切换", "box": [95, 495, 560, 585]}
-      ]
-    },
-    {
-      "id": "screen-44",
-      "key": "detail-landscape",
-      "name": "掌机模式-游戏详情",
-      "orientation": "landscape",
-      "width": 2400,
-      "height": 1080,
-      "source": "_outputs/盖世游戏V6.1.1使用说明手册/图片和附件/44-掌机模式-游戏详情.png",
-      "mode": "dom-with-media-crops",
-      "media": {
-        "hero-left-cap": [0, 0, 80, 80],
-        "hero-left-edge": [0, 80, 160, 570],
-        "hero-left-top": [160, 0, 700, 570],
-        "hero-top": [700, 0, 2400, 570],
-        "hero-left-mid-bg": [0, 520, 820, 570],
-        "hero-mid": [820, 570, 2400, 930],
-        "hero-meta-bg": [0, 1040, 2400, 1080]
-      },
-      "components": [
-        {"id": "C-TOPBAR", "label": "沉浸式返回", "box": [90, 15, 160, 80]},
-        {"id": "D-DETAIL-HERO", "label": "详情标题与标签", "box": [145, 570, 820, 770]},
-        {"id": "C-BUTTON", "label": "详情操作区", "box": [145, 795, 770, 910]},
-        {"id": "D-ENGINE-META", "label": "详情元数据", "box": [145, 930, 2000, 1080]}
+        {"id": "C-NAV-L", "label": "掌机顶部导航与状态", "box": [100, 20, 2300, 82], "expectedBox": [100, 20, 2300, 82]},
+        {"id": "D-GAME-CARD", "label": "横屏游戏卡与名称", "box": [95, 105, 575, 470], "expectedBox": [95, 105, 575, 470]},
+        {"id": "C-BUTTON-SECONDARY", "label": "查看详情与视图切换", "box": [95, 500, 465, 580], "expectedBox": [95, 500, 465, 580]}
       ]
     }
   ]

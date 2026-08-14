@@ -82,3 +82,17 @@
 - 静态图不能证明动画、滚动阈值、手柄焦点移动或异步时序；使用时标为推断。
 - 任何新版本截图或用户确认都应更新 Manifest、注册表和冲突记录后再覆盖旧结论。
 
+## 机器可读事实库
+
+- `assets/source-manifest.json`：11 个 Figma 页签、45 张实机图及 SHA-256。
+- `assets/screen-catalog.json`：45 页的页面族、配方、Shell、状态、已知异常和 `implementationClaim:false`。
+- `assets/figma-components.json`：16 个来源化组件，状态为 `measured`、`derived` 或 `missing-source`。
+- `assets/visual-baselines.json`：严格页面、局部资产、组件边界和人工审图状态。
+- `assets/visual-sources/media-manifest.json`：每个不可变局部裁片的来源、裁切框和 SHA-256。
+- `assets/visual-report.json`：全分辨率机器指标、几何结果、人工状态和失败原因。
+
+## 当前组件目录
+
+`C-SHELL-P`、`C-SHELL-L`、`C-TOPBAR`、`C-NAV-P`、`C-NAV-L`、`C-BUTTON-GLOW`、`C-BUTTON-SECONDARY`、`C-TAB`、`C-INPUT-SEARCH`、`C-DIALOG`、`C-SHEET`、`C-FEEDBACK`、`D-GAME-CARD`、`D-PLATFORM-BADGE`、`D-ACCOUNT-CARD`、`D-ENGINE-META`。
+
+`D-PLATFORM-BADGE` 当前为 `missing-source`；取得 Steam/EPIC/GOG 原始 SVG 前不得标记完成。
