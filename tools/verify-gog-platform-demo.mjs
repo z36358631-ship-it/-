@@ -105,13 +105,31 @@ function security() {
   assert(!html.includes("localStorage.setItem('gogPassword'"), 'GOG password must not be stored');
   pass('security');
 }
+function offlineAssets() {
+  assert(!/(?:src|href)=["']https?:\/\//i.test(html), 'Runtime remote asset remains');
+  assert(!/https:\/\/cdn\.cloudflare\.steamstatic\.com\//i.test(html), 'Remote Steam media remains');
+  assert(!/@import\s+url\(/i.test(html), 'Remote CSS import remains');
+  assert(!/<(?:iframe|canvas)\b/i.test(html), 'iframe/canvas is forbidden');
+  pass('offlineAssets');
+}
+function visualSourceContracts() {
+  for (const token of [
+    'data-source-status="measured"',
+    'data-source-status="derived"',
+    'data-source-status="missing-source"',
+    'portrait-app-shell',
+    'handheld-app-shell',
+  ]) assert(html.includes(token), `Missing visual source token: ${token}`);
+  assert(!/class="[^"]*platform-icon[^"]*"[^>]*>[SEG]</.test(html), 'Text platform icon remains');
+  pass('visualSourceContracts');
+}
 function syntax() {
   const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(match => match[1]);
   assert(scripts.length === 1, `Expected one inline script, found ${scripts.length}`);
   scripts.forEach((code, index) => new vm.Script(code, { filename: `gog-inline-${index}.js` }));
   pass('syntax');
 }
-const tasks = { shell, pages, realPageStructure, gogCapabilities, accountMenu, platformModel, fullGameplayScope, searchAndDetailCopy, states, security, syntax };
+const tasks = { shell, pages, realPageStructure, gogCapabilities, accountMenu, platformModel, fullGameplayScope, searchAndDetailCopy, states, security, offlineAssets, visualSourceContracts, syntax };
 if (mode === 'all') Object.values(tasks).forEach(task => task());
 else if (tasks[mode]) tasks[mode]();
 else throw new Error(`Unknown mode: ${mode}`);

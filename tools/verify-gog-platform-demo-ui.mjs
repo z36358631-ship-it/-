@@ -70,10 +70,11 @@ async function selectSimulation(value) {
 
 async function assertViewport(screen, orientation) {
   const box = await page.locator(`[data-screen="${screen}"]`).boundingBox();
-  const expected = orientation === 'portrait' ? { width:402, height:874 } : { width:874, height:402 };
+  const expected = orientation === 'portrait' ? { width:405, height:900 } : { width:880, height:396 };
   assert(Math.abs(box.width - expected.width) < 1, `${screen}: width ${box.width} != ${expected.width}`);
   assert(Math.abs(box.height - expected.height) < 1, `${screen}: height ${box.height} != ${expected.height}`);
   assert.equal(await page.locator(`[data-screen="${screen}"][data-orientation="${orientation}"]`).count(), 1);
+  assert.equal(await page.locator(`[data-screen="${screen}"] .${orientation === 'portrait' ? 'handheld-app-shell' : 'portrait-bottom-nav'}`).count(), 0, `${screen}: cross-orientation shell leaked`);
 }
 
 async function profileFlow() {
@@ -209,6 +210,16 @@ async function realLibraryFlow() {
     sourcePlatform:window.GogDemoApp.state.sourcePlatform,
     selectedPlatform:window.GogDemoApp.state.selectedPlatform,
   })), { sourcePlatform:'gog', selectedPlatform:'gog' });
+
+  await resetDemo();
+  await selectScreen('gog-library-portrait');
+  await page.click('[data-action="switch-gog"]');
+  await page.click('[data-action="gog-authorize-success"]');
+  assert.equal((await page.locator('[data-account-metric="gog-id"]').innerText()).includes('gog_53910277'), true, 'switched GOG account did not render');
+  await page.click('[data-action="logout-gog"]');
+  await page.click('[data-action="confirm-logout-gog"]');
+  assert.equal(await page.locator('[data-game-card][data-platform="gog"]').count(), 0, 'logged-out GOG library still renders games');
+  assert.equal(await page.locator('[data-action="bind-gog"]').count(), 1, 'logged-out GOG library bind action missing');
   console.log('PASS realLibraryFlow');
 }
 
@@ -222,6 +233,9 @@ async function searchRows(screen) {
 }
 
 async function detailSearchFlow() {
+  await resetDemo();
+  await selectScreen('detail-portrait');
+  assert.equal(await page.evaluate(() => window.GogDemoApp.state.selectedPlatform), 'steam', 'no-source detail must default to Steam');
   await resetDemo();
   let sharedRows = null;
   for (const orientation of ['portrait','landscape']) {
@@ -241,7 +255,7 @@ async function detailSearchFlow() {
         orientation,
       };
     }, { screen:`search-${orientation}`, orientation });
-    assert.equal(layout.columns, 2, `${orientation}: search results must use two columns`);
+    assert.equal(layout.columns, orientation === 'portrait' ? 2 : 1, `${orientation}: search result columns mismatch`);
     assert.equal(layout.platformOutsideCover, false, `${orientation}: platform label remains outside cover`);
     assert.equal(layout.platformInsideCover, true, `${orientation}: platform label is not inside every cover`);
     assert(layout.rows.every(row => row.coverWidth > 0 && row.coverWidth <= row.cardWidth + 0.5), `${orientation}: invalid cover width`);
@@ -260,6 +274,8 @@ async function detailSearchFlow() {
     assert((await page.locator('[data-launch-platform]').innerText()).includes('GOG 启动'));
     assert.equal((await page.locator('[data-detail-hours]').innerText()).trim(), '74 小时');
     assert.equal((await page.locator('[data-detail-cloud]').innerText()).trim(), '云存档已同步');
+    if (orientation === 'portrait') assert((await page.locator('.detail-title-row').innerText()).includes('暂无评分'), 'portrait GOG rating must be unavailable');
+    else assert((await page.locator('.landscape-metrics').innerText()).includes('暂无评分'), 'landscape GOG rating must be unavailable');
     await page.click('[data-action="open-platform-switch"]');
     assert.equal(await page.locator('[data-platform-switch]').count(), 1);
     const beforeCancel = await page.evaluate(() => window.GogDemoApp.state.selectedPlatform);
@@ -309,6 +325,11 @@ async function detailSearchFlow() {
   assert(unavailable.includes('重新登录 GOG'));
   assert(unavailable.includes('手动切换'));
   assert(!(await page.locator('[data-launch-platform]').innerText()).includes('Steam 启动'));
+
+  await resetDemo();
+  await selectScreen('gog-library-portrait');
+  await page.locator('[data-game-card][data-game-id="control"]').click();
+  assert.deepEqual(await page.locator('[data-obtain-platform]').evaluateAll(nodes => nodes.map(node => node.dataset.obtainPlatform)), ['gog'], 'Control must only expose its real GOG acquisition channel');
   console.log('PASS detailSearchFlow');
 }
 

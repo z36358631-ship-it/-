@@ -7,6 +7,7 @@ import { chromium } from 'playwright-core';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const demo = path.join(root, 'demos', 'PC与Mac端', '盖世游戏GOG平台接入-交互标注版.html');
 const output = path.join(root, '.tmp', 'gog-platform-demo-captures');
+const sourceOutput = path.join(root, '.tmp', 'gog-platform-demo-source-captures');
 const chromeCandidates = [
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
   'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
@@ -16,10 +17,13 @@ const executablePath = chromeCandidates.find(fs.existsSync);
 assert(executablePath, 'Local Chrome not found');
 assert(fs.existsSync(demo), `Demo not found: ${demo}`);
 fs.mkdirSync(output, { recursive: true });
+fs.mkdirSync(sourceOutput, { recursive: true });
 
-for (const entry of fs.readdirSync(output, { withFileTypes: true })) {
-  if (entry.isFile() && entry.name.toLowerCase().endsWith('.png')) {
-    fs.unlinkSync(path.join(output, entry.name));
+for (const directory of [output, sourceOutput]) {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    if (entry.isFile() && entry.name.toLowerCase().endsWith('.png')) {
+      fs.unlinkSync(path.join(directory, entry.name));
+    }
   }
 }
 
@@ -61,7 +65,12 @@ page.setDefaultTimeout(10000);
 await page.emulateMedia({ reducedMotion: 'reduce' });
 
 const pageErrors = [];
+const remoteRequests = [];
+const layoutSnapshots = {};
 page.on('pageerror', error => pageErrors.push(error.message));
+page.on('request', request => {
+  if (/^https?:/i.test(request.url())) remoteRequests.push(request.url());
+});
 
 async function settle() {
   await page.waitForFunction(() => document.fonts?.status === 'loaded');
@@ -86,7 +95,7 @@ async function verifyScreenContract(screen) {
         labelsOutsideCover:cards.some(card => card.querySelector('.search-result__body .search-result__platform')),
       };
     }, screen);
-    assert.equal(result.columns, 2, `${screen}: expected two search-result columns`);
+    assert.equal(result.columns, screen === 'search-portrait' ? 2 : 1, `${screen}: search-result columns mismatch`);
     assert.equal(result.cardCount, 4, `${screen}: expected four search-result cards`);
     assert.equal(result.labelsInsideCover, true, `${screen}: platform label must be inside every cover`);
     assert.equal(result.labelsOutsideCover, false, `${screen}: platform label must not appear below the cover`);
@@ -122,7 +131,7 @@ async function captureCanvas(name, screen, prepare = null) {
   const viewport = page.locator(`.app-viewport[data-screen="${screen}"]`);
   const box = await viewport.boundingBox();
   assert(box, `Viewport not found for ${screen}`);
-  const expected = screen.endsWith('landscape') ? { width: 874, height: 402 } : { width: 402, height: 874 };
+  const expected = screen.endsWith('landscape') ? { width: 880, height: 396 } : { width: 405, height: 900 };
   assert.equal(Math.round(box.width), expected.width, `${name} viewport width mismatch`);
   assert.equal(Math.round(box.height), expected.height, `${name} viewport height mismatch`);
   await page.screenshot({
@@ -140,7 +149,75 @@ async function captureCanvas(name, screen, prepare = null) {
   assert.equal(png.readUInt32BE(16), expected.width, `${name}.png width mismatch`);
   assert.equal(png.readUInt32BE(20), expected.height, `${name}.png height mismatch`);
   assert(size > 20 * 1024, `${name}.png is unexpectedly small (${size} bytes)`);
+  layoutSnapshots[screen] = await viewport.evaluate(root => {
+    const selectors = [
+      '.portrait-status','.mobile-topbar','.mobile-bottom-nav','.handheld-nav',
+      '.library-tabs','.library-entry-row','.current-library','.hero-track',
+      '.landscape-game-summary','.landscape-entry-row','.platform-account-topbar',
+      '.platform-account','.platform-library-title','.platform-game-grid',
+      '.search-top','.landscape-search-body','.search-results','.detail-media',
+      '.detail-summary','.detail-engine','.detail-actions','.landscape-detail-content',
+      '.landscape-metrics',
+    ];
+    const rootBox = root.getBoundingClientRect();
+    const rect = node => {
+      const box = node.getBoundingClientRect();
+      return {
+        x:Math.round((box.x-rootBox.x)*100)/100,
+        y:Math.round((box.y-rootBox.y)*100)/100,
+        width:Math.round(box.width*100)/100,
+        height:Math.round(box.height*100)/100,
+      };
+    };
+    return Object.fromEntries(selectors.flatMap(selector => {
+      const node = root.querySelector(selector);
+      return node ? [[selector, rect(node)]] : [];
+    }));
+  });
   console.log(`CAPTURED ${name}.png (${size} bytes)`);
+}
+
+async function captureSourceResolutions() {
+  const configurations = [
+    { orientation:'portrait', css:{ width:405, height:900 }, pixels:{ width:1080, height:2400 } },
+    { orientation:'landscape', css:{ width:880, height:396 }, pixels:{ width:2400, height:1080 } },
+  ];
+  for (const configuration of configurations) {
+    const deviceScaleFactor = configuration.pixels.width / configuration.css.width;
+    const context = await browser.newContext({ viewport:{ width:1920, height:1080 }, deviceScaleFactor });
+    const sourcePage = await context.newPage();
+    const requests = [];
+    sourcePage.on('request', request => { if (/^https?:/i.test(request.url())) requests.push(request.url()); });
+    await sourcePage.goto(pathToFileURL(demo).href, { waitUntil:'load' });
+    await sourcePage.waitForSelector('#gogDemoShell');
+    const orientationCaptures = captures.filter(([, value]) => configuration.orientation === 'portrait' ? !value.endsWith('landscape') : value.endsWith('landscape'));
+    for (const [name, screen] of orientationCaptures) {
+      await sourcePage.click(`[data-page="${screen}"]`);
+      await sourcePage.waitForSelector(`[data-screen="${screen}"]`);
+      await sourcePage.waitForFunction(() => Array.from(document.images).every(image => image.complete && image.naturalWidth > 0));
+      const viewport = sourcePage.locator(`.app-viewport[data-screen="${screen}"]`);
+      const box = await viewport.boundingBox();
+      assert(box, `Source viewport not found for ${screen}`);
+      const target = path.join(sourceOutput, `${name}.png`);
+      await sourcePage.screenshot({
+        path:target,
+        animations:'disabled',
+        scale:'device',
+        clip:{
+          x:box.x,
+          y:box.y,
+          width:configuration.css.width,
+          height:configuration.css.height,
+        },
+      });
+      const png = fs.readFileSync(target);
+      assert.equal(png.readUInt32BE(16), configuration.pixels.width, `${name} source width mismatch`);
+      assert.equal(png.readUInt32BE(20), configuration.pixels.height, `${name} source height mismatch`);
+      console.log(`SOURCE ${name}.png (${configuration.pixels.width}x${configuration.pixels.height})`);
+    }
+    assert.deepEqual(requests, [], `Source captures made remote requests: ${requests.join(' | ')}`);
+    await context.close();
+  }
 }
 
 try {
@@ -172,6 +249,9 @@ try {
   console.log(`CAPTURED 15-full-annotation-shell.png (${shellSize} bytes)`);
 
   assert.deepEqual(pageErrors, [], `Browser runtime errors: ${pageErrors.join(' | ')}`);
+  assert.deepEqual(remoteRequests, [], `Runtime remote requests: ${remoteRequests.join(' | ')}`);
+  fs.writeFileSync(path.join(output, 'computed-layout.json'), `${JSON.stringify(layoutSnapshots, null, 2)}\n`, 'utf8');
+  await captureSourceResolutions();
   const files = fs.readdirSync(output)
     .filter(file => file.toLowerCase().endsWith('.png'))
     .sort();
@@ -193,6 +273,7 @@ try {
     '14-detail-switch-landscape.png',
     '15-full-annotation-shell.png',
   ]);
+  assert.equal(fs.readdirSync(sourceOutput).filter(file => file.endsWith('.png')).length, 10, 'Expected 10 source-resolution captures');
   console.log(`PASS visualCaptures (${files.length} PNG files)`);
 } finally {
   await browser.close();

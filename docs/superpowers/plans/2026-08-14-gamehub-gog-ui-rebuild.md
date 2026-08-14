@@ -15,7 +15,7 @@
 - `demos/PC与Mac端/盖世游戏GOG平台接入-交互标注版.html`：10 个页面、共享状态、离线媒体、可访问组件和交互标注的唯一运行文件。
 - `tools/verify-gog-platform-demo.mjs`：静态结构、离线依赖、禁止伪图标、页面来源标记和 JavaScript 语法契约。
 - `tools/verify-gog-platform-demo-ui.mjs`：浏览器中的页面几何、横竖 Shell、账号操作、授权、平台路由、搜索、详情与异常恢复契约。
-- `tools/capture-gog-platform-demo.mjs`：固定 `402 × 874` 与 `874 × 402` 视口的 10 页、关键弹层和标注工作台截图。
+- `tools/capture-gog-platform-demo.mjs`：固定 `405 × 900` 与 `880 × 396` 预览视口的 10 页、关键弹层和标注工作台截图，并按源画布输出 `1080 × 2400` 与 `2400 × 1080` 原尺寸证据。
 - `tools/compare-gog-platform-visuals.py`：读取真实基准和截图，生成同尺寸实现、50% 叠加、绝对差异、热图及 JSON 指标；不改写产品媒体。
 - `.tmp/gog-platform-demo-captures/`：运行时截图。
 - `.tmp/gog-platform-demo-visual-report/`：运行时视觉证据与报告。
@@ -58,16 +58,16 @@ function visualSourceContracts() {
 
 ```js
 const visualContracts = {
-  'profile-portrait': { orientation:'portrait', width:402, height:874 },
-  'gog-login': { orientation:'portrait', width:402, height:874 },
-  'library-home-portrait': { orientation:'portrait', width:402, height:874 },
-  'library-home-landscape': { orientation:'landscape', width:874, height:402 },
-  'gog-library-portrait': { orientation:'portrait', width:402, height:874 },
-  'gog-library-landscape': { orientation:'landscape', width:874, height:402 },
-  'search-portrait': { orientation:'portrait', width:402, height:874 },
-  'search-landscape': { orientation:'landscape', width:874, height:402 },
-  'detail-portrait': { orientation:'portrait', width:402, height:874 },
-  'detail-landscape': { orientation:'landscape', width:874, height:402 },
+  'profile-portrait': { orientation:'portrait', width:405, height:900 },
+  'gog-login': { orientation:'portrait', width:405, height:900 },
+  'library-home-portrait': { orientation:'portrait', width:405, height:900 },
+  'library-home-landscape': { orientation:'landscape', width:880, height:396 },
+  'gog-library-portrait': { orientation:'portrait', width:405, height:900 },
+  'gog-library-landscape': { orientation:'landscape', width:880, height:396 },
+  'search-portrait': { orientation:'portrait', width:405, height:900 },
+  'search-landscape': { orientation:'landscape', width:880, height:396 },
+  'detail-portrait': { orientation:'portrait', width:405, height:900 },
+  'detail-landscape': { orientation:'landscape', width:880, height:396 },
 };
 ```
 
@@ -106,7 +106,7 @@ git commit -m "test: lock GOG demo visual contracts"
   --gh-bg:#0b0b0d;--gh-surface:#171719;--gh-elevated:#242427;
   --gh-line:rgba(255,255,255,.11);--gh-text:#f5f5f5;--gh-muted:#8d8d92;
   --gh-cyan:#03bff2;--gh-orange:#ff8c24;--gh-radius-card:12px;
-  --portrait-w:402px;--portrait-h:874px;--landscape-w:874px;--landscape-h:402px;
+  --portrait-w:405px;--portrait-h:900px;--landscape-w:880px;--landscape-h:396px;
 }
 .app-viewport[data-orientation="portrait"]{width:var(--portrait-w);height:var(--portrait-h)}
 .app-viewport[data-orientation="landscape"]{width:var(--landscape-w);height:var(--landscape-h)}
@@ -263,7 +263,7 @@ EPIC/GOG 角标在封面左下角，同一游戏的不同平台版本分别渲�
 
 - [ ] **Step 2: 重建横屏搜索结果**
 
-按 `43-掌机模式-搜索.png` 实现横向搜索框、左侧历史/热门搜索和右侧结果列表；平台标识仍位于封面左下角，结果数据与竖屏一致。
+按 `43-掌机模式-搜索.png` 实现横向搜索框、约 `2.3:1` 的左右分栏、左侧 Top 10 搜索榜和右侧单列结果；平台标识仍位于封面左下角，结果数据与竖屏一致。
 
 - [ ] **Step 3: 重建竖屏详情**
 
@@ -334,7 +334,7 @@ git commit -m "refactor: integrate GOG states into real page shells"
 
 - [ ] **Step 1: 扩展截图脚本**
 
-继续输出 10 页和 4 个关键状态，新增每页 `computed-layout.json`，记录画布、导航、标题、入口、网格、卡片和固定操作的边界框。页面截图仍严格为 `402 × 874` 或 `874 × 402`。
+继续输出 10 页和 4 个关键状态，新增每页 `computed-layout.json`，记录画布、导航、标题、入口、网格、卡片和固定操作的边界框。预览截图严格为 `405 × 900` 或 `880 × 396`，源分辨率截图严格为 `1080 × 2400` 或 `2400 × 1080`。
 
 - [ ] **Step 2: 创建视觉比较脚本**
 
@@ -425,4 +425,3 @@ git commit -m "feat: deliver high-fidelity GameHub GOG demo"
 ```
 
 只提交以上 GOG 任务路径；工作区其他用户改动全部保留且不纳入提交。
-
