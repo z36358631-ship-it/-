@@ -110,8 +110,19 @@ assert(await page.getByText(/正在安装第/).isVisible(), '文件夹勾选确�
 await page.waitForTimeout(4200);
 assert(await page.locator('.phone .game-grid').isVisible(), '文件夹批量安装完成后自动返回主机游戏库');
 
+await open('library');
+await page.getByRole('button', { name: '启动' }).first().click();
+assert(await page.getByText('正在准备游戏环境').isVisible(), '游戏卡启动进入必要组件流程');
+await page.getByRole('button', { name: '启动游戏' }).click();
+assert(await page.locator('.landscape .game-world').isVisible(), '必要组件完成后进入横屏游戏');
+
 await open('more');
 assert(await page.getByRole('button', { name: '存档管理', exact: true }).isVisible(), '更多菜单提供存档管理入口');
+await page.getByRole('button', { name: '移除游戏' }).click();
+assert(await page.getByText('移除游戏？').isVisible(), '移除游戏弹出二次确认');
+await page.locator('.confirm-card').getByRole('button', { name: '取消' }).click();
+assert(await page.locator('.phone .game-card').count() === 2, '取消移除后保留游戏卡');
+await open('more');
 await page.getByRole('button', { name: '安装更新/DLC' }).click();
 assert(await page.getByRole('button', { name: /选择 PKG/ }).isVisible(), '安装更新和 DLC 复用导入入口');
 await page.getByRole('button', { name: '×' }).click();
@@ -119,6 +130,12 @@ await open('more');
 await page.getByRole('button', { name: '存档管理', exact: true }).click();
 assert(await page.getByRole('button', { name: /导入存档/ }).isVisible(), '存档导入位于页面右上角');
 assert(await page.getByRole('button', { name: '刷新' }).count() === 0, '存档页不显示刷新按钮');
+const saveScroll = page.locator('#saveScroll');
+await saveScroll.dispatchEvent('pointerdown', { clientY: 10, pointerId: 1 });
+await saveScroll.dispatchEvent('pointermove', { clientY: 90, pointerId: 1 });
+await saveScroll.dispatchEvent('pointerup', { clientY: 90, pointerId: 1 });
+await page.waitForTimeout(800);
+assert(await page.getByText('刷新完成').isVisible(), '存档列表下拉并松开后完成刷新');
 await page.getByRole('button', { name: '删除' }).first().click();
 assert(await page.getByText('删除存档？').isVisible(), '删除存档弹出二次确认');
 await page.getByRole('button', { name: '取消' }).click();
