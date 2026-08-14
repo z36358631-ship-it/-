@@ -17,17 +17,23 @@ const output = path.join(root, 'public', 'prd', 'ps4-emulator');
 await fs.mkdir(output, { recursive: true });
 
 const scenes = [
-  ['01-library', 'library', '.phone'],
-  ['02-import-method', 'import', '.phone'],
-  ['03-scan-confirm', 'scan', '.phone'],
-  ['04-install-progress', 'install', '.phone'],
-  ['05-game-management', 'more', '.phone'],
-  ['06-save-management', 'saves', '.phone'],
-  ['07-emulator-settings', 'settings', '.phone'],
-  ['08-unsupported-device', 'unsupported', '.phone'],
-  ['09-required-components', 'component', '.phone'],
-  ['10-landscape-running', 'playing', '.landscape'],
-  ['11-plugin-admin', 'admin', '.admin-shell']
+  ['01-library-portrait', 'library', '.phone'],
+  ['02-library-landscape', 'library_landscape', '.landscape'],
+  ['03-import-method', 'import', '.phone'],
+  ['04-pkg-file-picker', 'pkgPicker', '.phone'],
+  ['05-pkg-recognize', 'pkgRecognize', '.phone'],
+  ['06-folder-scan', 'folderScan', '.phone'],
+  ['07-folder-select', 'folderSelect', '.phone'],
+  ['08-install-progress', 'folderInstall', '.phone'],
+  ['09-game-management', 'more', '.phone'],
+  ['10-save-management', 'saves', '.phone'],
+  ['11-save-delete-confirm', 'saves_delete', '.phone'],
+  ['12-emulator-settings', 'settings', '.phone'],
+  ['13-unsupported-device', 'unsupported', '.phone'],
+  ['14-required-components', 'component', '.phone'],
+  ['15-landscape-running', 'playing', '.landscape'],
+  ['16-exit-confirm', 'playing_exit', '.landscape'],
+  ['17-plugin-admin', 'admin', '.admin-shell']
 ];
 
 const chromeCandidates = [
