@@ -90,6 +90,37 @@
     .stat { background: linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.025)); border: 1px solid var(--line); border-radius: 12px; padding: 10px 8px; min-height: 66px; }
     .stat b { display: block; color: #f3f3f6; font-size: 12px; font-family: "D-DIN-PRO", var(--font); }
     .stat span { display: block; margin-top: 5px; color: var(--muted); font-size: 9px; line-height: 1.25; }
+    .query-row { display: flex; gap: 8px; }
+    .query-row input { min-width: 0; flex: 1; height: 42px; padding: 0 12px; border: 1px solid rgba(255,255,255,.18); border-radius: 12px; outline: none; background: #17191e; color: #f2f2f4; font-size: 12px; }
+    .query-row input::placeholder { color: #6f7078; }
+    .query-row input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(43,195,223,.13); }
+    .query-row .btn { min-width: 76px; min-height: 42px; padding: 0 12px; }
+    .query-result { display: grid; grid-template-columns: 10px 1fr; column-gap: 8px; align-items: center; margin-top: 10px; padding: 12px; border: 1px solid rgba(0,199,119,.26); border-radius: 12px; background: rgba(0,199,119,.08); }
+    .query-dot { width: 8px; height: 8px; grid-row: span 2; border-radius: 50%; background: var(--green, #00c777); box-shadow: 0 0 10px rgba(0,199,119,.8); }
+    .query-result b { color: #b7f6db; font-size: 12px; }
+    .query-result small { color: #83baa4; font-size: 9px; }
+    .query-result.warn { border-color: rgba(255,185,96,.3); background: rgba(255,185,96,.08); }
+    .query-result.warn .query-dot { background: #f1c46d; box-shadow: 0 0 10px rgba(241,196,109,.8); }
+    .query-result.warn b { color: #ffe0a0; }
+    .query-result.warn small { color: #c5a87c; }
+    .config-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; color: var(--muted); font-size: 10px; }
+    .config-row b { color: #ececf0; font-weight: 600; }
+    .copy-btn { height: 30px; padding: 0 12px; border: 1px solid rgba(43,195,223,.55); border-radius: 8px; background: rgba(43,195,223,.08); color: #b8f5ff; cursor: pointer; font-size: 10px; }
+    .copy-btn:hover { background: rgba(43,195,223,.18); }
+    .info-tabs { display: flex; border-bottom: 1px solid var(--line); }
+    .info-tab { flex: 1; height: 40px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); cursor: pointer; font-size: 12px; }
+    .info-tab.active { border-bottom-color: var(--gold); color: #f4f4f7; }
+    .info-panel { min-height: 145px; padding: 14px 12px; border: 1px solid var(--line); border-top: 0; border-radius: 0 0 14px 14px; background: rgba(255,255,255,.025); }
+    .info-panel.hidden { display: none; }
+    .info-panel h3 { margin: 0; color: #f0f0f3; font-size: 13px; }
+    .device-list { display: flex; gap: 7px; margin-top: 10px; overflow-x: auto; scrollbar-width: none; }
+    .device-list::-webkit-scrollbar { width: 0; }
+    .device-list span { flex: 0 0 150px; display: block; padding: 10px 9px; border-radius: 8px; background: #1b1c20; color: #d1d1d7; font-size: 10px; }
+    .usage-steps { display: grid; gap: 8px; margin-top: 10px; }
+    .usage-step { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; padding: 9px; border-radius: 9px; background: #1b1c20; color: #d1d1d7; font-size: 10px; line-height: 1.45; }
+    .usage-step b { display: grid; place-items: center; width: 21px; height: 21px; border-radius: 50%; background: rgba(43,195,223,.16); color: #a9eeff; font-family: "D-DIN-PRO", var(--font); font-size: 11px; }
+    .info-panel p { margin: 10px 0 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
+    .inline-link { margin-top: 12px; padding: 0; border: 0; background: transparent; color: #9edfff; cursor: pointer; font-size: 11px; }
     .games { display: flex; gap: 9px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
     .games::-webkit-scrollbar { width: 0; }
     .game-card { flex: 0 0 156px; min-height: 165px; padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: #19191d; text-align: left; cursor: pointer; transition: transform .18s ease, border-color .18s ease; }
@@ -154,7 +185,7 @@
 </head>
 <body>
   <main class="demo-wrap">
-    <div class="demo-tools"><span><strong>GameHub H5 Demo</strong> · 暗黑系列首发适配</span><button class="demo-link" id="openActivityTop">打开现有运营活动 Demo ↗</button></div>
+    <div class="demo-tools"><span><strong>GameHub H5 Demo</strong> · 暗黑系列首发适配</span><button class="demo-link" id="openActivityTop">打开暗黑系列活动 Demo ↗</button></div>
     <section class="phone" aria-label="暗黑系列首发适配落地页">
       <div class="app">
         <div class="status"><span>9:41</span><span class="status-right"><span>5G</span><span>▰</span><span class="battery"><i></i></span></span></div>
@@ -193,6 +224,13 @@
             </div>
           </section>
 
+          <section class="section" id="querySection">
+            <div class="section-head"><h2>查询当前设备</h2><p>输入机型或芯片</p></div>
+            <div class="query-row"><input id="deviceInput" aria-label="输入手机型号或芯片" placeholder="例如：骁龙 8 Gen 3 / 一加 12"><button class="btn btn-primary" id="queryBtn">查询</button></div>
+            <div class="query-result" id="queryResult"><span class="query-dot"></span><b>当前机型可完美适配</b><small>已匹配《暗黑破坏神 IV》推荐配置</small></div>
+            <div class="config-row"><span>配置方案：<b id="configName">稳定画质 · 30–45 FPS</b></span><button class="copy-btn" id="copyConfig">复制</button></div>
+          </section>
+
           <section class="section" id="gamesSection">
             <div class="section-head"><h2>暗黑系列</h2><p>选择一款查看流程</p></div>
             <div class="games" id="games"></div>
@@ -222,7 +260,7 @@
               <h3 id="activityTitle">暗黑系列游玩活动</h3>
               <p id="activityCopy">完成首次有效启动与 30 分钟游玩任务，查看当前游戏对应的权益和移动PC装备奖池。</p>
               <div class="prize-row" id="prizeRow" aria-label="活动奖品预览"><div class="prize">标准版<br>权益</div><div class="prize">游戏<br>手柄</div><div class="prize">手机<br>散热</div><div class="prize">快充<br>配件</div></div>
-              <button class="btn btn-primary" id="activityBtn2">进入现有运营活动 Demo</button>
+              <button class="btn btn-primary" id="activityBtn2">进入暗黑系列游玩活动</button>
             </div>
           </section>
 
@@ -234,6 +272,11 @@
               <div class="faq-item"><button class="faq-q">游戏安装后为什么要回到盖世启动？</button><div class="faq-a">Battle.net 负责账号、下载和安装；盖世游戏负责兼容配置和本地启动，两者分工不同。</div></div>
               <div class="faq-item"><button class="faq-q">没有游戏权益可以参加活动吗？</button><div class="faq-a">可以查看落地页并参加符合资格的新人活动；标准版游戏权益是否发放，以活动奖池和地区规则为准。</div></div>
             </div>
+          </section>
+          <section class="section" id="infoSection">
+            <div class="info-tabs"><button class="info-tab active" data-info="devices">更多适配机型</button><button class="info-tab" data-info="guide">使用说明</button></div>
+            <div class="info-panel" id="infoDevices"><h3>首发已验证 · 横向浏览更多机型</h3><div class="device-list"><span>一加 12<br>骁龙 8 Gen 3</span><span>红魔 9 Pro<br>骁龙 8 Gen 3</span><span>小米 14<br>骁龙 8 Gen 3</span><span>ROG 8<br>骁龙 8 Gen 3</span><span>拯救者 Y900<br>骁龙平台</span></div><p>未列机型暂不代表无法运行，查询结果与实机验证记录持续更新。</p></div>
+            <div class="info-panel hidden" id="infoGuide"><h3>从 Battle.net 到盖世启动</h3><div class="usage-steps"><div class="usage-step"><b>1</b><span><strong>下载</strong><br>安装 Battle.net 客户端并准备账号。</span></div><div class="usage-step"><b>2</b><span><strong>导入</strong><br>回到盖世游戏，在对应游戏详情页导入 Battle.net 游戏。</span></div><div class="usage-step"><b>3</b><span><strong>使用配置方案</strong><br>登录、下载并安装游戏后，回到盖世使用推荐配置启动。</span></div></div><button class="inline-link" id="guideJump">查看七步游玩流程 ›</button></div>
           </section>
           <p class="foot">本页面为盖世游戏首发适配 Demo。游戏名称、商标及版权归各自权利人所有。本产品与相关游戏发行方无关联。兼容结论以页面列出的设备、版本和运行环境为准。</p>
         </div>
@@ -273,9 +316,9 @@
       immortal: { label: '暗黑破坏神：不朽', platform: '流程预览', fps: '暂无数据', device: '暂无数据', version: '暂无数据' },
       d2r: { label: '《暗黑破坏神2》重制版', platform: '流程预览', fps: '暂无数据', device: '暂无数据', version: '暂无数据' }
     };
-    const activityUrl = '../后台管理/运营活动demo.html';
+    const activityUrl = '暗黑系列运营活动demo.html';
     const $ = (selector) => document.querySelector(selector);
-    function openActivity() { window.open(activityUrl, '_blank', 'noopener'); }
+    function openActivity() { window.open(`${activityUrl}?game=${selected.id}`, '_blank', 'noopener'); }
     function renderVideo() {
       const slide = videoSlides[videoIndex];
       $('#videoShell').innerHTML = `<div class="video-scene ${slide.scene}"><div class="video-topline"><span class="video-tag">首发游玩录屏</span><span>${videoIndex + 1} / ${videoSlides.length}</span></div><div class="play-ring" aria-label="录屏占位">录屏预览</div><div class="video-bottom"><div><div class="video-title">${slide.title}</div><div class="video-meta">${slide.meta}</div></div><span class="video-duration">${slide.duration}</span></div></div>`;
@@ -313,6 +356,10 @@
     $('#activityBtn2').addEventListener('click', openActivity);
     $('#openActivityTop').addEventListener('click', openActivity);
     $('#backBtn').addEventListener('click', () => { $('#scroll').scrollTo({ top: 0, behavior: 'smooth' }); });
+    $('#queryBtn').addEventListener('click', () => { const value = $('#deviceInput').value.trim(); const result = $('#queryResult'); if (!value) { result.classList.add('warn'); result.querySelector('b').textContent = '请输入机型或芯片'; result.querySelector('small').textContent = '例如：骁龙 8 Gen 3 / 一加 12'; return; } const matched = /8\s*gen\s*3|一加\s*12|红魔\s*9|小米\s*14|rog\s*8/i.test(value); result.classList.toggle('warn', !matched); result.querySelector('b').textContent = matched ? '当前机型可完美适配' : '暂无对应适配记录'; result.querySelector('small').textContent = matched ? `已匹配${selected.name}推荐配置` : '查看下方已支持机型，未列机型暂不代表无法运行'; });
+    $('#copyConfig').addEventListener('click', () => { const button = $('#copyConfig'); button.textContent = '已复制'; try { navigator.clipboard?.writeText($('#configName').textContent); } catch (e) {} setTimeout(() => { button.textContent = '复制'; }, 1400); });
+    document.querySelectorAll('.info-tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.info-tab').forEach(item => item.classList.toggle('active', item === tab)); $('#infoDevices').classList.toggle('hidden', tab.dataset.info !== 'devices'); $('#infoGuide').classList.toggle('hidden', tab.dataset.info !== 'guide'); }));
+    $('#guideJump').addEventListener('click', () => $('#guideSection').scrollIntoView({ behavior: 'smooth', block: 'start' }));
     document.querySelectorAll('.faq-q').forEach(button => button.addEventListener('click', () => button.parentElement.classList.toggle('open')));
   </script>
 </body>
