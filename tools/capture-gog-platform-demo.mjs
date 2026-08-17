@@ -41,11 +41,15 @@ const captures = [
 ];
 
 const stateCaptures = [
-  ['11-profile-gog-menu', 'profile-portrait', async () => {
+  ['11-profile-gog-logout-dialog', 'profile-portrait', async () => {
     await page.click('[data-profile-platform="gog"]');
     await page.click('[data-action="toggle-account-menu"]');
+    await page.click('[data-action="logout-platform"]');
   }],
   ['12-profile-epic-free-games', 'profile-portrait', async () => {
+    if (await page.locator('[data-action="close-logout-gog"]').count()) {
+      await page.click('[data-action="close-logout-gog"]');
+    }
     await page.click('[data-profile-platform="epic"]');
   }],
   ['13-detail-switch-portrait', 'detail-portrait', async () => {
@@ -276,7 +280,7 @@ try {
     '08-search-landscape.png',
     '09-detail-portrait.png',
     '10-detail-landscape.png',
-    '11-profile-gog-menu.png',
+    '11-profile-gog-logout-dialog.png',
     '12-profile-epic-free-games.png',
     '13-detail-switch-portrait.png',
     '14-detail-switch-landscape.png',

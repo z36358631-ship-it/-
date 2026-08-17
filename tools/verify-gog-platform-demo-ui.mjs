@@ -92,6 +92,24 @@ async function assertGogLogoutDialog(screen) {
   ]);
   assert(Math.abs((rootBox.x + rootBox.width / 2) - (dialogBox.x + dialogBox.width / 2)) <= 2, `${screen}: dialog is not horizontally centered`);
   assert(Math.abs((rootBox.y + rootBox.height / 2) - (dialogBox.y + dialogBox.height / 2)) <= 2, `${screen}: dialog is not vertically centered`);
+  const dialogLayout = await dialog.evaluate(node => {
+    const box = selector => {
+      const rect = node.querySelector(selector).getBoundingClientRect();
+      return { top:rect.top, right:rect.right, bottom:rect.bottom, left:rect.left, width:rect.width, height:rect.height };
+    };
+    return {
+      header:box('header'),
+      copy:box('.logout-confirm__dialog > p'),
+      footer:box('footer'),
+      close:box('[data-action="close-logout-gog"]'),
+      cancel:box('[data-action="cancel-logout-gog"]'),
+      confirm:box('[data-action="confirm-logout-gog"]'),
+    };
+  });
+  assert(dialogLayout.header.bottom <= dialogLayout.copy.top, `${screen}: dialog title overlaps copy`);
+  assert(dialogLayout.copy.bottom <= dialogLayout.footer.top, `${screen}: dialog copy overlaps actions`);
+  assert(Math.abs(dialogLayout.cancel.top - dialogLayout.confirm.top) <= 1, `${screen}: dialog actions are not aligned`);
+  assert(dialogLayout.close.left > dialogLayout.header.left + dialogLayout.header.width / 2, `${screen}: close button is not on the right`);
 }
 
 async function profileFlow() {
