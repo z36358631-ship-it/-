@@ -77,6 +77,23 @@ async function assertViewport(screen, orientation) {
   assert.equal(await page.locator(`[data-screen="${screen}"] .${orientation === 'portrait' ? 'handheld-app-shell' : 'portrait-bottom-nav'}`).count(), 0, `${screen}: cross-orientation shell leaked`);
 }
 
+async function assertGogLogoutDialog(screen) {
+  const root = page.locator(`[data-screen="${screen}"]`);
+  const dialog = root.locator('[data-logout-confirm]');
+  assert.equal(await dialog.count(), 1, `${screen}: logout dialog missing`);
+  assert.equal((await dialog.getByRole('heading').innerText()).trim(), '提示');
+  assert((await dialog.innerText()).includes('是否退出该 GOG 账号？'));
+  assert.equal(await dialog.getByRole('button', { name:'关闭' }).count(), 1);
+  assert.equal(await dialog.getByRole('button', { name:'取消' }).count(), 1);
+  assert.equal(await dialog.getByRole('button', { name:'确认' }).count(), 1);
+  const [rootBox, dialogBox] = await Promise.all([
+    root.boundingBox(),
+    dialog.locator('.logout-confirm__dialog').boundingBox(),
+  ]);
+  assert(Math.abs((rootBox.x + rootBox.width / 2) - (dialogBox.x + dialogBox.width / 2)) <= 2, `${screen}: dialog is not horizontally centered`);
+  assert(Math.abs((rootBox.y + rootBox.height / 2) - (dialogBox.y + dialogBox.height / 2)) <= 2, `${screen}: dialog is not vertically centered`);
+}
+
 async function profileFlow() {
   await resetDemo();
   const steamBefore = await platformSnapshot('steam');
@@ -99,6 +116,12 @@ async function profileFlow() {
   for (const value of ['GalaxyRider','GOG ID','gog_20876491','126','438 小时']) assert(text.includes(value), `profile missing ${value}`);
   assert(!text.includes('账号价值'));
   assert(!text.includes('¥6.8k'));
+  const gogMarkRatios = await page.locator('.profile-platform-tabs [data-profile-platform="gog"] .platform-mark--gog, .profile-avatar .platform-mark--gog').evaluateAll(images => images.map(image => ({
+    rendered:image.getBoundingClientRect().width / image.getBoundingClientRect().height,
+    natural:image.naturalWidth / image.naturalHeight,
+  })));
+  assert.equal(gogMarkRatios.length, 2, 'profile GOG marks missing');
+  assert(gogMarkRatios.every(({ rendered, natural }) => Math.abs(rendered - natural) <= 0.02), 'profile GOG mark is stretched');
 
   assert.equal(await page.locator('[data-account-menu]').count(), 0);
   await page.click('[data-action="toggle-account-menu"]');
@@ -133,7 +156,18 @@ async function profileFlow() {
 
   await page.click('[data-action="toggle-account-menu"]');
   await page.click('[data-action="logout-platform"]');
-  assert.equal(await page.locator('[data-logout-confirm]').count(), 1);
+  const gogBeforeLogout = await platformSnapshot('gog');
+  await assertGogLogoutDialog('profile-portrait');
+  await page.click('[data-action="cancel-logout-gog"]');
+  assert.deepEqual(await platformSnapshot('gog'), gogBeforeLogout, 'cancel logout changed GOG state');
+  await page.click('[data-action="toggle-account-menu"]');
+  await page.click('[data-action="logout-platform"]');
+  await assertGogLogoutDialog('profile-portrait');
+  await page.click('[data-action="close-logout-gog"]');
+  assert.deepEqual(await platformSnapshot('gog'), gogBeforeLogout, 'close logout changed GOG state');
+  await page.click('[data-action="toggle-account-menu"]');
+  await page.click('[data-action="logout-platform"]');
+  await assertGogLogoutDialog('profile-portrait');
   await page.click('[data-action="confirm-logout-gog"]');
   assert.deepEqual(await platformSnapshot('gog'), { bindStatus:'unbound', tokenStatus:'none', account:null });
   await assertCorePlatformsUnchanged(steamBefore, epicBefore, 'profile GOG operations');
@@ -192,7 +226,7 @@ async function realLibraryFlow() {
     await page.click('[data-action="gog-authorize-cancel"]');
     assert.equal(await page.locator(`[data-screen="${screen}"]`).count(), 1, `${screen}: cancel switch must return to library`);
     await page.locator(`[data-screen="${screen}"] [data-platform-account-topbar] [data-action="logout-gog"]`).click();
-    assert.equal(await page.locator(`[data-screen="${screen}"] [data-logout-confirm]`).count(), 1, `${screen}: logout confirmation missing`);
+    await assertGogLogoutDialog(screen);
     await page.locator(`[data-screen="${screen}"] [data-action="cancel-logout-gog"]`).click();
     assert.equal(await page.locator('[data-logout-confirm]').count(), 0, `${screen}: logout confirmation did not close`);
   }
@@ -276,16 +310,23 @@ async function detailSearchFlow() {
     assert.equal((await page.locator('[data-detail-cloud]').innerText()).trim(), '云存档已同步');
     if (orientation === 'portrait') assert((await page.locator('.detail-title-row').innerText()).includes('暂无评分'), 'portrait GOG rating must be unavailable');
     else assert((await page.locator('.landscape-metrics').innerText()).includes('暂无评分'), 'landscape GOG rating must be unavailable');
-    await page.click('[data-action="open-platform-switch"]');
-    assert.equal(await page.locator('[data-platform-switch]').count(), 1);
-    const beforeCancel = await page.evaluate(() => window.GogDemoApp.state.selectedPlatform);
-    await page.click('.detail-title-row, .landscape-detail-content h1');
-    assert.equal(await page.locator('[data-platform-switch]').count(), 0);
-    assert.equal(await page.evaluate(() => window.GogDemoApp.state.selectedPlatform), beforeCancel);
-    await page.click('[data-action="open-platform-switch"]');
-    await page.click('[data-action="select-detail-platform"][data-platform="epic"]');
+    const root = page.locator(`[data-screen="detail-${orientation}"]`);
+    const tabs = root.locator('[data-detail-platform-tabs]');
+    assert.equal(await tabs.count(), 1);
+    assert.deepEqual(
+      await tabs.locator('[data-detail-platform-tab]').evaluateAll(nodes => nodes.map(node => node.dataset.platform)),
+      ['steam','epic','gog'],
+    );
+    const [tabsBox, tagsBox] = await Promise.all([
+      tabs.boundingBox(),
+      root.locator('.detail-tags').boundingBox(),
+    ]);
+    assert(tabsBox.y + tabsBox.height <= tagsBox.y + 1, `${orientation}: platform tabs must precede genre tags`);
+    assert.equal(await root.locator('[data-platform-switch]').count(), 0);
+    await tabs.locator('[data-detail-platform-tab][data-platform="epic"]').click();
     assert.equal(await page.evaluate(() => window.GogDemoApp.state.sourcePlatform), 'gog');
     assert.equal(await page.evaluate(() => window.GogDemoApp.state.selectedPlatform), 'epic');
+    assert.equal(await root.locator('[data-detail-platform-tab][data-platform="epic"].active').count(), 1);
     assert((await page.locator('[data-launch-platform]').innerText()).includes('EPIC 启动'));
     assert.equal((await page.locator('[data-detail-hours]').innerText()).trim(), '96 小时');
     assert.equal((await page.locator('[data-detail-cloud]').innerText()).trim(), '云存档正常');
@@ -296,11 +337,9 @@ async function detailSearchFlow() {
       platformAppId:'epic-cyberpunk',
     });
     for (const platform of ['steam','epic','gog']) {
-      assert.equal(await page.locator(`[data-obtain-platform="${platform}"]`).count(), 1);
+      assert.equal(await root.locator(`[data-detail-platform-tab][data-platform="${platform}"]`).count(), 1);
     }
-    const detailCopy = await page.locator(`[data-screen="detail-${orientation}"] [data-obtain-platforms]`).evaluate(node => getComputedStyle(node, '::before').content.replaceAll('"',''));
-    assert.equal(detailCopy, '获取游戏', `${orientation}: detail obtain copy mismatch`);
-    assert.equal(await page.locator(`[data-screen="detail-${orientation}"]`).getByText('获得游戏', { exact:true }).count(), 0);
+    assert.equal(await root.locator('[data-obtain-platforms]').count(), 0, `${orientation}: legacy obtain row remains`);
   }
   const mapping = await page.evaluate(() => ({
     same:window.GogDemoApp.matchGameCandidate('赛博朋克 2077','Cyberpunk 2077'),
@@ -329,7 +368,7 @@ async function detailSearchFlow() {
   await resetDemo();
   await selectScreen('gog-library-portrait');
   await page.locator('[data-game-card][data-game-id="control"]').click();
-  assert.deepEqual(await page.locator('[data-obtain-platform]').evaluateAll(nodes => nodes.map(node => node.dataset.obtainPlatform)), ['gog'], 'Control must only expose its real GOG acquisition channel');
+  assert.deepEqual(await page.locator('[data-detail-platform-tab]').evaluateAll(nodes => nodes.map(node => node.dataset.platform)), ['gog'], 'Control must only expose its real GOG platform channel');
   console.log('PASS detailSearchFlow');
 }
 

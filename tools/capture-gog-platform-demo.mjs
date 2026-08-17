@@ -49,10 +49,10 @@ const stateCaptures = [
     await page.click('[data-profile-platform="epic"]');
   }],
   ['13-detail-switch-portrait', 'detail-portrait', async () => {
-    await page.click('[data-action="open-platform-switch"]');
+    await page.click('[data-detail-platform-tab][data-platform="epic"]');
   }],
   ['14-detail-switch-landscape', 'detail-landscape', async () => {
-    await page.click('[data-action="open-platform-switch"]');
+    await page.click('[data-detail-platform-tab][data-platform="epic"]');
   }],
 ];
 
@@ -103,17 +103,26 @@ async function verifyScreenContract(screen) {
   if (screen === 'detail-portrait' || screen === 'detail-landscape') {
     const result = await page.evaluate(currentScreen => {
       const viewport = document.querySelector(`[data-screen="${currentScreen}"]`);
-      const obtain = viewport.querySelector('[data-obtain-platforms]');
+      const tabs = viewport.querySelector('[data-detail-platform-tabs]');
+      const tags = viewport.querySelector('.detail-tags');
+      const tabBox = tabs?.getBoundingClientRect();
+      const tagsBox = tags?.getBoundingClientRect();
       return {
-        obtainCopy:getComputedStyle(obtain, '::before').content.replaceAll('"',''),
-        hasLegacyCopy:viewport.textContent.includes('获得游戏'),
+        platforms:[...tabs.querySelectorAll('[data-detail-platform-tab]')].map(node => node.dataset.platform),
+        selected:[...tabs.querySelectorAll('[data-detail-platform-tab].active')].map(node => node.dataset.platform),
+        tabsBeforeTags:Boolean(tabBox && tagsBox && tabBox.bottom <= tagsBox.top + 1),
+        hasDuplicateSwitch:Boolean(viewport.querySelector('[data-platform-switch]')),
+        hasLegacyObtain:Boolean(viewport.querySelector('[data-obtain-platforms]')),
         hasEngineCopy:viewport.textContent.includes('PC游戏引擎') || currentScreen === 'detail-landscape',
         hasCloudCopy:viewport.textContent.includes('云存档'),
         hasHoursCopy:viewport.textContent.includes('游戏时长'),
       };
     }, screen);
-    assert.equal(result.obtainCopy, '获取游戏', `${screen}: obtain copy mismatch`);
-    assert.equal(result.hasLegacyCopy, false, `${screen}: legacy obtain copy remains`);
+    assert.deepEqual(result.platforms, ['steam','epic','gog'], `${screen}: platform tab order mismatch`);
+    assert.equal(result.selected.length, 1, `${screen}: expected one selected platform tab`);
+    assert.equal(result.tabsBeforeTags, true, `${screen}: platform tabs must precede genre tags`);
+    assert.equal(result.hasDuplicateSwitch, false, `${screen}: duplicate platform switch remains`);
+    assert.equal(result.hasLegacyObtain, false, `${screen}: legacy obtain row remains`);
     assert.equal(result.hasEngineCopy, true, `${screen}: PC game engine copy missing`);
     assert.equal(result.hasCloudCopy, true, `${screen}: cloud-save copy missing`);
     assert.equal(result.hasHoursCopy, true, `${screen}: playtime copy missing`);
@@ -156,7 +165,7 @@ async function captureCanvas(name, screen, prepare = null) {
       '.landscape-game-summary','.landscape-entry-row','.platform-account-topbar',
       '.platform-account','.platform-library-title','.platform-game-grid',
       '.search-top','.landscape-search-body','.search-results','.detail-media',
-      '.detail-summary','.detail-engine','.detail-actions','.landscape-detail-content',
+      '.detail-summary','.detail-platform-tabs','.detail-tags','.detail-engine','.detail-actions','.landscape-detail-content',
       '.landscape-metrics',
     ];
     const rootBox = root.getBoundingClientRect();
