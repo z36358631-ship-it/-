@@ -112,6 +112,12 @@ function gogUiCorrections() {
     'data-action="open-platform-switch"',
     'data-action="select-detail-platform"',
     'compatibility-score',
+    'profile-gog-card__title',
+    'profile-gog-card__identity',
+    'profile-gog-card__metrics',
+    'GOG个人信息',
+    '游玩时长',
+    '游戏数量',
   ]) assert(html.includes(token), `Missing GOG UI correction: ${token}`);
   assert(!html.includes('renderObtainPlatforms'), 'Legacy obtain-platform row remains');
   assert(/function renderDetailPlatformTabs\(\)[\s\S]*?data-action="open-platform-switch"/.test(html), 'Detail platform tabs must open the switch dialog');

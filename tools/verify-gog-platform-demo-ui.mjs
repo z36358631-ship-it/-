@@ -145,9 +145,19 @@ async function profileFlow() {
   await page.click('[data-action="gog-authorize-success"]');
   assert.equal(await page.locator('[data-screen="profile-portrait"]').count(), 1);
   const text = await page.locator('#demoCanvas').innerText();
-  for (const value of ['GalaxyRider','GOG ID','gog_20876491','126','438 小时']) assert(text.includes(value), `profile missing ${value}`);
-  assert(!text.includes('账号价值'));
-  assert(!text.includes('¥6.8k'));
+  for (const value of ['GOG个人信息','GalaxyRider','游玩时长','438 小时','游戏数量','126']) {
+    assert(text.includes(value), `profile missing ${value}`);
+  }
+  for (const forbidden of ['GOG ID','gog_20876491','今天 14:32','账号价值','¥6.8k']) {
+    assert(!text.includes(forbidden), `profile leaked ${forbidden}`);
+  }
+  const gogCard = page.locator('.profile-gog-card');
+  assert.equal((await gogCard.locator('.profile-gog-card__title').innerText()).trim(), 'GOG个人信息');
+  assert.equal((await gogCard.locator('.profile-gog-card__identity strong').innerText()).trim(), 'GalaxyRider');
+  assert.equal(await gogCard.locator('.profile-gog-card__identity small').count(), 0);
+  assert.equal(await gogCard.locator('.profile-gog-card__title-row [data-action="toggle-account-menu"]').count(), 1);
+  assert.deepEqual(await gogCard.locator('.profile-gog-card__metrics dt').allTextContents(), ['游玩时长','游戏数量']);
+  assert.deepEqual(await gogCard.locator('.profile-gog-card__metrics dd').allTextContents(), ['438 小时','126']);
   const gogMarkRatios = await page.locator('.profile-platform-tabs [data-profile-platform="gog"] .platform-mark--gog, .profile-avatar .platform-mark--gog').evaluateAll(images => images.map(image => ({
     rendered:image.getBoundingClientRect().width / image.getBoundingClientRect().height,
     natural:image.naturalWidth / image.naturalHeight,
