@@ -102,9 +102,21 @@ function gogUiCorrections() {
     'data-detail-platform-tabs',
     'data-detail-platform-tab',
     'renderDetailPlatformTabs',
+    'accountSwitchOpen',
+    'renderAccountSwitchDialog',
+    'data-account-switch-dialog',
+    'data-action="open-account-switch"',
+    'data-action="use-new-gog-credentials"',
+    'renderPlatformSwitch',
+    'data-platform-switch',
+    'data-action="open-platform-switch"',
+    'data-action="select-detail-platform"',
+    'compatibility-score',
   ]) assert(html.includes(token), `Missing GOG UI correction: ${token}`);
   assert(!html.includes('renderObtainPlatforms'), 'Legacy obtain-platform row remains');
-  assert(!html.includes('renderPlatformSwitch'), 'Duplicate platform switch dialog remains');
+  assert(/function renderDetailPlatformTabs\(\)[\s\S]*?data-action="open-platform-switch"/.test(html), 'Detail platform tabs must open the switch dialog');
+  assert(!/data-detail-platform-tab[^>]*data-action="select-detail-platform"/.test(html), 'Detail platform tab switches too early');
+  assert(!html.includes('data-detail-platform-logo'), 'Engine heading platform pill remains');
   pass('gogUiCorrections');
 }
 function states() {

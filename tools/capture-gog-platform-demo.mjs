@@ -46,17 +46,14 @@ const stateCaptures = [
     await page.click('[data-action="toggle-account-menu"]');
     await page.click('[data-action="logout-platform"]');
   }],
-  ['12-profile-epic-free-games', 'profile-portrait', async () => {
-    if (await page.locator('[data-action="close-logout-gog"]').count()) {
-      await page.click('[data-action="close-logout-gog"]');
-    }
-    await page.click('[data-profile-platform="epic"]');
+  ['12-gog-account-switch-dialog', 'gog-library-portrait', async () => {
+    await page.click('[data-action="open-account-switch"]');
   }],
   ['13-detail-switch-portrait', 'detail-portrait', async () => {
-    await page.click('[data-detail-platform-tab][data-platform="epic"]');
+    await page.click('[data-detail-platform-tab]');
   }],
   ['14-detail-switch-landscape', 'detail-landscape', async () => {
-    await page.click('[data-detail-platform-tab][data-platform="epic"]');
+    await page.click('[data-detail-platform-tab]');
   }],
 ];
 
@@ -86,7 +83,7 @@ async function settle() {
   });
 }
 
-async function verifyScreenContract(screen) {
+async function verifyScreenContract(screen, expectPlatformDialog = false) {
   if (screen === 'search-portrait' || screen === 'search-landscape') {
     const result = await page.evaluate(currentScreen => {
       const viewport = document.querySelector(`[data-screen="${currentScreen}"]`);
@@ -125,7 +122,7 @@ async function verifyScreenContract(screen) {
     assert.deepEqual(result.platforms, ['steam','epic','gog'], `${screen}: platform tab order mismatch`);
     assert.equal(result.selected.length, 1, `${screen}: expected one selected platform tab`);
     assert.equal(result.tabsBeforeTags, true, `${screen}: platform tabs must precede genre tags`);
-    assert.equal(result.hasDuplicateSwitch, false, `${screen}: duplicate platform switch remains`);
+    assert.equal(result.hasDuplicateSwitch, expectPlatformDialog, `${screen}: platform switch dialog state mismatch`);
     assert.equal(result.hasLegacyObtain, false, `${screen}: legacy obtain row remains`);
     assert.equal(result.hasEngineCopy, true, `${screen}: PC game engine copy missing`);
     assert.equal(result.hasCloudCopy, true, `${screen}: cloud-save copy missing`);
@@ -138,7 +135,7 @@ async function captureCanvas(name, screen, prepare = null) {
   await page.waitForSelector(`[data-screen="${screen}"]`);
   if (prepare) await prepare();
   await settle();
-  await verifyScreenContract(screen);
+  await verifyScreenContract(screen, name.startsWith('13-') || name.startsWith('14-'));
 
   const target = path.join(output, `${name}.png`);
   const viewport = page.locator(`.app-viewport[data-screen="${screen}"]`);
@@ -281,7 +278,7 @@ try {
     '09-detail-portrait.png',
     '10-detail-landscape.png',
     '11-profile-gog-logout-dialog.png',
-    '12-profile-epic-free-games.png',
+    '12-gog-account-switch-dialog.png',
     '13-detail-switch-portrait.png',
     '14-detail-switch-landscape.png',
     '15-full-annotation-shell.png',

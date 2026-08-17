@@ -112,6 +112,20 @@ async function assertGogLogoutDialog(screen) {
   assert(dialogLayout.close.left > dialogLayout.header.left + dialogLayout.header.width / 2, `${screen}: close button is not on the right`);
 }
 
+async function assertAccountSwitchDialog(screen) {
+  const root = page.locator(`[data-screen="${screen}"]`);
+  const dialog = root.locator('[data-account-switch-dialog]');
+  assert.equal(await dialog.count(), 1, `${screen}: account switch dialog missing`);
+  for (const value of ['切换账号','GalaxyRider','GOG ID','当前使用']) {
+    assert((await dialog.innerText()).includes(value), `${screen}: account dialog missing ${value}`);
+  }
+  assert.equal(await dialog.getByRole('button', { name:'关闭' }).count(), 1);
+  assert.equal(await dialog.locator('[data-action="use-new-gog-credentials"]').count(), 1);
+  assert.equal(await dialog.locator('[data-action="remove-gog-account"]').isDisabled(), true);
+  assert.equal(await dialog.locator('[data-action="select-current-gog-account"]').count(), 1);
+  return dialog;
+}
+
 async function profileFlow() {
   await resetDemo();
   const steamBefore = await platformSnapshot('steam');
@@ -224,7 +238,8 @@ async function realLibraryFlow() {
     assert.equal(await accountTopbar.count(), 1, `${screen}: platform account topbar missing`);
     assert.equal(await accountTopbar.getByRole('heading', { name:'GOG' }).count(), 1, `${screen}: GOG title missing`);
     assert.equal(await accountTopbar.getByRole('button', { name:'返回' }).count(), 1, `${screen}: back action missing`);
-    assert.equal(await accountTopbar.locator('[data-action="switch-gog"]').count(), 1, `${screen}: switch-account action missing`);
+    assert.equal(await accountTopbar.locator('[data-action="open-account-switch"]').count(), 1, `${screen}: switch-account action missing`);
+    assert.equal(await accountTopbar.locator('[data-action="switch-gog"]').count(), 0, `${screen}: legacy direct-login action remains`);
     assert.equal(await accountTopbar.locator('[data-action="logout-gog"]').count(), 1, `${screen}: logout action missing`);
     assert.equal(await accountTopbar.locator('[data-action="open-search"]').count(), 0, `${screen}: search must not render in account topbar`);
     for (const tool of ['search','sort','menu']) {
@@ -239,8 +254,22 @@ async function realLibraryFlow() {
     }
     assert.equal(await page.locator('[data-game-card][data-platform="gog"]').count(), 6);
 
-    await accountTopbar.locator('[data-action="switch-gog"]').click();
-    assert.equal(await page.locator('[data-screen="gog-login"]').count(), 1, `${screen}: switch-account must open GOG authorization`);
+    const beforeSwitch = await platformSnapshot('gog');
+    await accountTopbar.locator('[data-action="open-account-switch"]').click();
+    let accountDialog = await assertAccountSwitchDialog(screen);
+    await accountDialog.locator('[data-action="select-current-gog-account"]').click();
+    assert.deepEqual(await platformSnapshot('gog'), beforeSwitch, `${screen}: selecting current account changed state`);
+    assert.equal(await root.locator('[data-account-switch-dialog]').count(), 0, `${screen}: current account did not close dialog`);
+
+    await accountTopbar.locator('[data-action="open-account-switch"]').click();
+    accountDialog = await assertAccountSwitchDialog(screen);
+    await accountDialog.getByRole('button', { name:'关闭' }).click();
+    assert.deepEqual(await platformSnapshot('gog'), beforeSwitch, `${screen}: closing account dialog changed state`);
+
+    await accountTopbar.locator('[data-action="open-account-switch"]').click();
+    accountDialog = await assertAccountSwitchDialog(screen);
+    await accountDialog.locator('[data-action="use-new-gog-credentials"]').click();
+    assert.equal(await page.locator('[data-screen="gog-login"]').count(), 1, `${screen}: new credentials must open GOG authorization`);
     await page.click('[data-action="gog-authorize-cancel"]');
     assert.equal(await page.locator(`[data-screen="${screen}"]`).count(), 1, `${screen}: cancel switch must return to library`);
     await page.locator(`[data-screen="${screen}"] [data-platform-account-topbar] [data-action="logout-gog"]`).click();
@@ -265,7 +294,8 @@ async function realLibraryFlow() {
 
   await resetDemo();
   await selectScreen('gog-library-portrait');
-  await page.click('[data-action="switch-gog"]');
+  await page.click('[data-action="open-account-switch"]');
+  await page.click('[data-action="use-new-gog-credentials"]');
   await page.click('[data-action="gog-authorize-success"]');
   assert.equal((await page.locator('[data-account-metric="gog-id"]').innerText()).includes('gog_53910277'), true, 'switched GOG account did not render');
   await page.click('[data-action="logout-gog"]');
@@ -340,10 +370,38 @@ async function detailSearchFlow() {
       root.locator('.detail-tags').boundingBox(),
     ]);
     assert(tabsBox.y + tabsBox.height <= tagsBox.y + 1, `${orientation}: platform tabs must precede genre tags`);
-    assert.equal(await root.locator('[data-platform-switch]').count(), 0);
+    if (orientation === 'portrait') {
+      const score = root.locator('.compatibility-score');
+      const [numberBox, starBox] = await Promise.all([
+        score.locator('[data-compatibility-value]').boundingBox(),
+        score.locator('.ui-icon').boundingBox(),
+      ]);
+      assert(Math.abs(numberBox.y - starBox.y) <= 2, 'compatibility star is not beside 3.8');
+      assert(starBox.x > numberBox.x + numberBox.width, 'compatibility star must be on the right');
+      assert.equal(await root.locator('.detail-engine__heading [data-detail-platform-logo]').count(), 0, 'engine heading platform pill remains');
+    }
+
+    const beforeOpen = await page.evaluate(() => window.GogDemoApp.state.selectedPlatform);
     await tabs.locator('[data-detail-platform-tab][data-platform="epic"]').click();
+    assert.equal(await page.evaluate(() => window.GogDemoApp.state.selectedPlatform), beforeOpen, `${orientation}: tab click switched too early`);
+    let switchDialog = root.locator('[data-platform-switch]');
+    assert.equal(await switchDialog.count(), 1);
+    assert.equal((await switchDialog.getByRole('heading').innerText()).trim(), '切换平台');
+    assert.deepEqual(
+      await switchDialog.locator('[data-action="select-detail-platform"]').evaluateAll(nodes => nodes.map(node => node.dataset.platform)),
+      ['steam','epic','gog'],
+    );
+    assert.equal(await switchDialog.locator('[data-platform-option="gog"] [data-current-platform-check]').count(), 1);
+    await switchDialog.locator('[data-action="close-platform-switch"]').click();
+    assert.equal(await page.evaluate(() => window.GogDemoApp.state.selectedPlatform), beforeOpen);
+    assert.equal(await root.locator('[data-platform-switch]').count(), 0);
+
+    await tabs.locator('[data-detail-platform-tab]').first().click();
+    switchDialog = root.locator('[data-platform-switch]');
+    await switchDialog.locator('[data-platform-option="epic"]').click();
     assert.equal(await page.evaluate(() => window.GogDemoApp.state.sourcePlatform), 'gog');
     assert.equal(await page.evaluate(() => window.GogDemoApp.state.selectedPlatform), 'epic');
+    assert.equal(await root.locator('[data-platform-switch]').count(), 0);
     assert.equal(await root.locator('[data-detail-platform-tab][data-platform="epic"].active').count(), 1);
     assert((await page.locator('[data-launch-platform]').innerText()).includes('EPIC 启动'));
     assert.equal((await page.locator('[data-detail-hours]').innerText()).trim(), '96 小时');
