@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>暗黑系列首发适配｜盖世游戏</title>
+  <style>
+    :root {
+      --canvas: #0e0e10;
+      --surface: #171719;
+      --raised: #242426;
+      --control: #29292d;
+      --text: #f2f2f2;
+      --muted: #9b9ba2;
+      --muted-2: #707078;
+      --cyan: #2bc3df;
+      --cyan-deep: #006eb2;
+      --gold: #ffc928;
+      --purple: #8d58ff;
+      --purple-deep: #5426a7;
+      --red: #a91f2f;
+      --line: rgba(255,255,255,.10);
+      --font: "MiSans VF", "MiSans", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #070708; color: var(--text); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+    body { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 14px 0; overflow: auto; }
+    button { font: inherit; color: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    .demo-wrap { width: min(100vw - 28px, 560px); display: grid; gap: 10px; justify-items: center; }
+    .demo-tools { width: 100%; display: flex; justify-content: space-between; align-items: center; color: #b7b7bd; font-size: 11px; letter-spacing: .02em; }
+    .demo-tools strong { color: #fff; font-weight: 650; }
+    .demo-link { border: 1px solid rgba(255,255,255,.14); background: #19191d; color: #e7e7eb; border-radius: 999px; padding: 7px 11px; cursor: pointer; }
+    .demo-link:hover { border-color: var(--cyan); color: #fff; }
+    .phone { width: 390px; height: min(844px, calc(100vh - 52px)); max-width: 100%; min-height: 610px; border-radius: 30px; overflow: hidden; background: var(--canvas); box-shadow: 0 0 0 8px #26262b, 0 28px 80px rgba(0,0,0,.65); position: relative; }
+    .app { position: absolute; inset: 0; overflow: hidden; background: radial-gradient(circle at 88% 0%, rgba(128,39,76,.18), transparent 30%), var(--canvas); }
+    .status { height: 28px; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; color: #e2e2e4; font-size: 10px; letter-spacing: .03em; }
+    .status-right { display: flex; gap: 7px; align-items: center; color: #b4b4bb; }
+    .battery { width: 19px; height: 9px; border: 1px solid #8d8d95; border-radius: 2px; padding: 1px; position: relative; }
+    .battery::after { content: ""; position: absolute; right: -3px; top: 2px; width: 2px; height: 4px; background: #8d8d95; border-radius: 0 1px 1px 0; }
+    .battery i { display: block; width: 70%; height: 100%; background: var(--gold); border-radius: 1px; }
+    .scroll { height: calc(100% - 28px); overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
+    .scroll::-webkit-scrollbar { width: 0; }
+    .topbar { height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid rgba(255,255,255,.06); background: rgba(14,14,16,.86); backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 4; }
+    .back { width: 34px; height: 34px; border: 0; border-radius: 50%; background: transparent; cursor: pointer; color: #e5e5e8; font-size: 22px; }
+    .back:hover { background: rgba(255,255,255,.08); }
+    .top-title { font-size: 14px; font-weight: 650; letter-spacing: .03em; }
+    .top-meta { font-size: 10px; color: var(--muted); }
+    .hero { min-height: 300px; position: relative; overflow: hidden; padding: 26px 20px 22px; display: flex; flex-direction: column; justify-content: flex-end; background: radial-gradient(circle at 80% 18%, rgba(224,63,46,.52), transparent 25%), radial-gradient(circle at 42% 62%, rgba(91,16,31,.84), transparent 48%), linear-gradient(135deg, #171318 0%, #35151c 47%, #0f1015 100%); }
+    .hero::before { content: ""; position: absolute; inset: 0; opacity: .30; background: repeating-linear-gradient(128deg, transparent 0 20px, rgba(255,255,255,.035) 21px 22px), radial-gradient(ellipse at 35% 15%, rgba(255,104,39,.18), transparent 40%); mix-blend-mode: screen; }
+    .hero::after { content: ""; position: absolute; width: 240px; height: 240px; right: -68px; top: 18px; border: 1px solid rgba(255,150,120,.16); border-radius: 50%; box-shadow: 0 0 0 18px rgba(255,77,55,.04), 0 0 70px rgba(255,47,35,.28); transform: rotate(18deg) skew(-7deg); }
+    .hero-art { position: absolute; right: 28px; top: 30px; width: 142px; height: 142px; transform: rotate(10deg); opacity: .9; filter: drop-shadow(0 0 22px rgba(255,49,35,.56)); }
+    .hero-art::before, .hero-art::after { content: ""; position: absolute; inset: 18px; border: 5px solid #e34039; transform: rotate(45deg); }
+    .hero-art::after { inset: 43px; border-width: 3px; border-color: #f7b95c; transform: rotate(0deg); }
+    .hero-copy { position: relative; z-index: 1; max-width: 285px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 6px; color: #ffd88f; border: 1px solid rgba(255,201,40,.38); background: rgba(47,24,16,.7); border-radius: 999px; padding: 5px 9px; font-size: 10px; margin-bottom: 12px; }
+    .eyebrow i { width: 6px; height: 6px; background: #ff6047; border-radius: 50%; box-shadow: 0 0 12px #ff6047; }
+    .hero h1 { margin: 0; font-size: 27px; line-height: 1.18; letter-spacing: -.03em; font-weight: 750; }
+    .hero h1 span { color: var(--gold); }
+    .hero p { margin: 9px 0 0; color: #d0c7c9; font-size: 13px; line-height: 1.55; }
+    .hero-actions { position: relative; z-index: 1; display: flex; gap: 8px; margin-top: 18px; }
+    .btn { min-height: 42px; padding: 0 14px; border-radius: 12px; border: 1px solid transparent; cursor: pointer; font-size: 13px; font-weight: 700; transition: transform .16s ease, filter .16s ease, border-color .16s ease; }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: linear-gradient(180deg, #17a3c9, #006eb2); border-color: #2bc3df; box-shadow: inset 0 1px 3px rgba(255,255,255,.2), 0 8px 22px rgba(0,110,178,.24); }
+    .btn-primary:hover { filter: brightness(1.12); }
+    .btn-secondary { background: rgba(36,36,38,.88); border-color: rgba(255,255,255,.16); color: #ececf0; }
+    .btn-secondary:hover { border-color: rgba(255,201,40,.66); }
+    .section { padding: 18px 16px 0; }
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .section-head h2 { margin: 0; font-size: 17px; font-weight: 700; }
+    .section-head p { margin: 0; color: var(--muted); font-size: 10px; }
+    .video-shell { position: relative; min-height: 192px; overflow: hidden; border: 1px solid rgba(255,255,255,.12); border-radius: 16px; background: #14151a; }
+    .video-scene { min-height: 192px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; background: radial-gradient(circle at 78% 24%, rgba(255,178,58,.62), transparent 18%), radial-gradient(circle at 26% 70%, rgba(131,25,41,.82), transparent 38%), linear-gradient(135deg, #3b111d, #11131a 68%); }
+    .video-scene.scene-2 { background: radial-gradient(circle at 25% 32%, rgba(67,174,255,.5), transparent 22%), radial-gradient(circle at 80% 72%, rgba(151,30,48,.78), transparent 38%), linear-gradient(135deg, #172536, #121218 68%); }
+    .video-scene.scene-3 { background: radial-gradient(circle at 76% 30%, rgba(255,97,50,.66), transparent 20%), radial-gradient(circle at 24% 66%, rgba(91,27,56,.88), transparent 42%), linear-gradient(135deg, #351523, #101217 70%); }
+    .video-scene.scene-4 { background: radial-gradient(circle at 26% 27%, rgba(77,195,114,.48), transparent 20%), radial-gradient(circle at 80% 70%, rgba(117,34,45,.76), transparent 40%), linear-gradient(135deg, #152820, #111217 70%); }
+    .video-topline { display: flex; justify-content: space-between; color: rgba(255,255,255,.74); font-size: 10px; }
+    .video-tag { display: inline-flex; align-items: center; gap: 5px; color: #fbd59c; }
+    .video-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #ff5d4d; box-shadow: 0 0 10px #ff5d4d; }
+    .play-ring { position: absolute; left: 50%; top: 50%; width: 64px; height: 34px; transform: translate(-50%, -50%); display: grid; place-items: center; border: 1px solid rgba(255,255,255,.5); border-radius: 999px; background: rgba(0,0,0,.35); color: #fff; font-size: 10px; }
+    .video-bottom { display: flex; align-items: end; justify-content: space-between; gap: 8px; }
+    .video-title { color: #fff; font-size: 14px; font-weight: 700; }
+    .video-meta { margin-top: 4px; color: rgba(255,255,255,.7); font-size: 10px; }
+    .video-duration { color: #fff; font-family: "D-DIN-PRO", var(--font); font-size: 12px; }
+    .video-controls { display: flex; justify-content: center; align-items: center; gap: 8px; padding: 10px 12px; border-top: 1px solid rgba(255,255,255,.1); background: rgba(0,0,0,.28); }
+    .video-arrow { width: 24px; height: 24px; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; background: rgba(255,255,255,.05); color: #e7e7eb; cursor: pointer; }
+    .video-dot { width: 6px; height: 6px; border: 0; border-radius: 50%; background: #5c5c65; cursor: pointer; padding: 0; }
+    .video-dot.active { width: 18px; border-radius: 999px; background: var(--gold); }
+    .evidence { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+    .stat { background: linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.025)); border: 1px solid var(--line); border-radius: 12px; padding: 10px 8px; min-height: 66px; }
+    .stat b { display: block; color: #f3f3f6; font-size: 12px; font-family: "D-DIN-PRO", var(--font); }
+    .stat span { display: block; margin-top: 5px; color: var(--muted); font-size: 9px; line-height: 1.25; }
+    .games { display: flex; gap: 9px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+    .games::-webkit-scrollbar { width: 0; }
+    .game-card { flex: 0 0 156px; min-height: 165px; padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: #19191d; text-align: left; cursor: pointer; transition: transform .18s ease, border-color .18s ease; }
+    .game-card:hover, .game-card.selected { transform: translateY(-2px); border-color: rgba(43,195,223,.8); }
+    .game-cover { height: 88px; position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 10px; background: radial-gradient(circle at 76% 18%, rgba(255,175,68,.72), transparent 24%), linear-gradient(145deg, #310d18, #14151b 72%); }
+    .game-cover.d3 { background: radial-gradient(circle at 25% 12%, rgba(173,67,52,.75), transparent 28%), linear-gradient(145deg, #1e1516, #12141a 72%); }
+    .game-cover.immortal { background: radial-gradient(circle at 74% 20%, rgba(84,180,255,.68), transparent 25%), linear-gradient(145deg, #111b2e, #17141c 74%); }
+    .game-cover.d2 { background: radial-gradient(circle at 74% 20%, rgba(255,178,42,.7), transparent 25%), linear-gradient(145deg, #311a0c, #151219 74%); }
+    .game-mark { width: 39px; height: 39px; border: 3px solid #df4b3b; transform: rotate(45deg); display: grid; place-items: center; color: #ffd28a; font-family: Georgia, serif; font-size: 20px; font-weight: 800; text-shadow: 0 0 10px rgba(255,175,92,.9); }
+    .game-mark span { transform: rotate(-45deg); }
+    .game-name { padding: 10px 10px 5px; color: #f3f3f4; font-size: 12px; font-weight: 700; line-height: 1.35; }
+    .game-status { padding: 0 10px 10px; color: var(--muted); font-size: 10px; }
+    .game-status em { color: #75dfb8; font-style: normal; }
+    .game-status em.pending { color: #f1c46d; }
+    .guide-card { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.02)); }
+    .guide-tabs { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid var(--line); }
+    .step-tab { border: 0; background: transparent; color: var(--muted-2); padding: 10px 2px; cursor: pointer; font-size: 9px; line-height: 1.25; }
+    .step-tab span { display: block; color: #d9d9df; font-family: "D-DIN-PRO", var(--font); font-size: 12px; margin-bottom: 3px; }
+    .step-tab.active { color: #dffaff; background: rgba(43,195,223,.1); }
+    .step-tab.active span { color: var(--cyan); }
+    .guide-body { padding: 14px; min-height: 104px; }
+    .guide-body h3 { margin: 0; color: #f1f1f5; font-size: 14px; }
+    .guide-body p { margin: 6px 0 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .guide-note { display: inline-flex; margin-top: 9px; padding: 4px 7px; border-radius: 5px; background: rgba(255,201,40,.1); color: #f6d98b; font-size: 9px; }
+    .activity-teaser { border: 1px solid rgba(141,88,255,.48); border-radius: 16px; padding: 15px; background: radial-gradient(circle at 85% 0%, rgba(141,88,255,.32), transparent 35%), linear-gradient(135deg, #22162e, #171719 70%); position: relative; overflow: hidden; }
+    .activity-teaser::after { content: ""; position: absolute; right: -34px; top: -38px; width: 118px; height: 118px; border: 1px solid rgba(255,201,40,.28); transform: rotate(45deg); box-shadow: 0 0 0 12px rgba(255,201,40,.03); }
+    .activity-teaser h3 { margin: 0; position: relative; z-index: 1; font-size: 15px; }
+    .activity-teaser p { margin: 5px 0 0; position: relative; z-index: 1; color: #c4b9d4; font-size: 11px; line-height: 1.5; max-width: 270px; }
+    .prize-row { display: flex; gap: 6px; margin: 12px 0; position: relative; z-index: 1; }
+    .prize { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; background: #19151e; border: 1px solid rgba(255,255,255,.13); color: #ffd26f; font-size: 10px; text-align: center; }
+    .faq { display: grid; gap: 7px; padding-bottom: 28px; }
+    .faq-item { border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.025); overflow: hidden; }
+    .faq-q { width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; border: 0; background: transparent; padding: 12px; color: #e8e8ed; cursor: pointer; font-size: 12px; }
+    .faq-q::after { content: "+"; color: var(--gold); font-size: 16px; }
+    .faq-item.open .faq-q::after { content: "−"; }
+    .faq-a { display: none; padding: 0 12px 12px; color: var(--muted); font-size: 10px; line-height: 1.55; }
+    .faq-item.open .faq-a { display: block; }
+    .foot { padding: 0 16px 28px; color: #65656c; font-size: 9px; line-height: 1.6; }
+    .popup-backdrop { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(0,0,0,.9); }
+    .popup-backdrop.hidden { display: none; }
+    .popup { width: 100%; max-width: 340px; position: relative; text-align: center; padding: 22px 18px 24px; border: 1px solid rgba(154,86,255,.28); border-radius: 24px; background: radial-gradient(circle at 50% 44%, rgba(117,38,226,.18), transparent 46%), rgba(10,10,13,.92); box-shadow: 0 0 40px rgba(102,44,205,.24); }
+    .popup-close { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; border: 0; border-radius: 50%; background: #303034; color: #b9b9bf; cursor: pointer; font-size: 18px; line-height: 1; }
+    .popup-close:hover { background: #46464c; color: #fff; }
+    .popup h2 { margin: 3px 0 6px; font-size: 26px; line-height: 1.1; font-style: italic; font-weight: 800; letter-spacing: -.05em; background: linear-gradient(180deg, #fff 8%, #dbb4ff 38%, #7c2cff 82%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 17px rgba(153,74,255,.85); }
+    .popup p { margin: 0; color: #fff; font-size: 13px; font-weight: 700; text-shadow: 0 0 10px rgba(203,145,255,.7); }
+    .evidence-scene { height: 176px; position: relative; margin: 12px auto 3px; overflow: hidden; border: 1px solid rgba(255,115,80,.45); border-radius: 16px; background: radial-gradient(circle at 74% 30%, rgba(255,90,49,.45), transparent 24%), radial-gradient(circle at 24% 66%, rgba(86,26,57,.82), transparent 43%), linear-gradient(135deg, #34121d, #111218 72%); }
+    .evidence-scene::before { content: ""; position: absolute; inset: 0; opacity: .36; background: repeating-linear-gradient(122deg, transparent 0 16px, rgba(255,255,255,.05) 17px 18px); }
+    .evidence-sigil { position: absolute; left: 50%; top: 25px; width: 94px; height: 94px; transform: translateX(-50%) rotate(45deg); border: 5px solid #e34d3d; box-shadow: 0 0 26px rgba(255,65,44,.55), inset 0 0 16px rgba(255,167,72,.28); }
+    .evidence-sigil::after { content: "D"; position: absolute; inset: 17px; display: grid; place-items: center; transform: rotate(-45deg); color: #ffd28c; font-family: Georgia, serif; font-size: 42px; font-weight: 800; }
+    .evidence-label { position: absolute; left: 12px; top: 12px; z-index: 1; color: #ffd89a; font-size: 10px; }
+    .evidence-device { position: absolute; left: 12px; bottom: 13px; z-index: 1; color: #fff; font-size: 11px; font-weight: 700; }
+    .evidence-device span { display: block; margin-top: 4px; color: rgba(255,255,255,.68); font-size: 9px; font-weight: 400; }
+    .spark { position: absolute; width: 7px; height: 7px; background: #ffbd6b; transform: rotate(45deg); box-shadow: 0 0 12px #ff8b5d; }
+    .spark.s1 { left: 36px; top: 83px; } .spark.s2 { right: 34px; top: 52px; background: #ffc85c; } .spark.s3 { left: 66px; top: 32px; background: #e9a8ff; } .spark.s4 { right: 75px; top: 107px; background: #ff84bd; }
+    .popup-cta { width: 190px; min-height: 44px; border: 1px solid #d3a0ff; border-radius: 999px; background: linear-gradient(180deg, #a665ff, #6c27df); color: #fff; font-size: 15px; font-weight: 750; cursor: pointer; box-shadow: 0 0 18px rgba(138,62,255,.62), inset 0 1px 2px rgba(255,255,255,.48); }
+    .popup-cta:hover { filter: brightness(1.13); }
+    .popup-foot { margin: 10px 0 0; color: #77727f; font-size: 9px; }
+    @media (max-height: 730px) { body { align-items: flex-start; padding-top: 12px; } .hero { min-height: 260px; } }
+    @media (min-width: 700px) { .phone { width: 430px; height: 932px; } }
+    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main class="demo-wrap">
+    <div class="demo-tools"><span><strong>GameHub H5 Demo</strong> · 暗黑系列首发适配</span><button class="demo-link" id="openActivityTop">打开现有运营活动 Demo ↗</button></div>
+    <section class="phone" aria-label="暗黑系列首发适配落地页">
+      <div class="app">
+        <div class="status"><span>9:41</span><span class="status-right"><span>5G</span><span>▰</span><span class="battery"><i></i></span></span></div>
+        <div class="scroll" id="scroll">
+          <header class="topbar">
+            <button class="back" id="backBtn" aria-label="返回">‹</button>
+            <div class="top-title">盖世首发适配</div>
+            <span class="top-meta">暗黑系列</span>
+          </header>
+          <section class="hero" id="hero">
+            <div class="hero-art" aria-hidden="true"></div>
+            <div class="hero-copy">
+              <div class="eyebrow"><i></i>盖世首发适配 · PC版</div>
+              <h1>暗黑系列<br><span>本地开战</span></h1>
+              <p>通过 Battle.net 获取游戏，回到盖世游戏启动。非云游戏、非串流。</p>
+              <div class="hero-actions">
+                <button class="btn btn-primary" id="playBtn">查看游玩方法</button>
+                <button class="btn btn-secondary" id="activityBtn">参加活动</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-head"><h2>首发游玩视频</h2><p>实机录屏轮播</p></div>
+            <div class="video-shell" id="videoShell"></div>
+            <div class="video-controls" id="videoControls"></div>
+          </section>
+
+          <section class="section">
+            <div class="section-head"><h2>推荐适配参数</h2><p id="paramLabel">《暗黑破坏神 IV》</p></div>
+            <div class="evidence">
+              <div class="stat"><b id="paramPlatform">PC版</b><span>本地运行方式</span></div>
+              <div class="stat"><b id="paramFps">30–45</b><span>推荐 FPS 区间</span></div>
+              <div class="stat"><b id="paramDevice">8 Gen 3</b><span>示例验证设备</span></div>
+              <div class="stat"><b id="paramVersion">7.18</b><span>最近验证版本</span></div>
+            </div>
+          </section>
+
+          <section class="section" id="gamesSection">
+            <div class="section-head"><h2>暗黑系列</h2><p>选择一款查看流程</p></div>
+            <div class="games" id="games"></div>
+          </section>
+
+          <section class="section" id="guideSection">
+            <div class="section-head"><h2 id="guideTitle">Battle.net 游玩流程</h2><p id="guideGameLabel">《暗黑破坏神 IV》</p></div>
+            <div class="guide-card">
+              <div class="guide-tabs" id="guideTabs"></div>
+              <div class="guide-body"><h3 id="guideStepTitle"></h3><p id="guideStepCopy"></p><span class="guide-note" id="guideNote"></span></div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-head"><h2>移动游玩攻略</h2><p>让本地开战更稳定</p></div>
+            <div class="guide-card">
+              <div class="guide-body">
+                <h3 id="tipsTitle">手柄与画质设置</h3>
+                <p id="tipsCopy">推荐连接手柄操作，先以稳定帧率为优先；连续运行时保持散热，安装完成后回到盖世游戏启动。</p>
+                <span class="guide-note">已知问题与解决方式见游戏详情</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="activity-teaser">
+              <h3 id="activityTitle">暗黑系列游玩活动</h3>
+              <p id="activityCopy">完成首次有效启动与 30 分钟游玩任务，查看当前游戏对应的权益和移动PC装备奖池。</p>
+              <div class="prize-row" id="prizeRow" aria-label="活动奖品预览"><div class="prize">标准版<br>权益</div><div class="prize">游戏<br>手柄</div><div class="prize">手机<br>散热</div><div class="prize">快充<br>配件</div></div>
+              <button class="btn btn-primary" id="activityBtn2">进入现有运营活动 Demo</button>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-head"><h2>常见问题</h2><p>先看懂再开始</p></div>
+            <div class="faq" id="faq">
+              <div class="faq-item open"><button class="faq-q">需要先安装什么？</button><div class="faq-a">先安装 Battle.net 客户端，再回到盖世游戏导入当前暗黑游戏；账号登录和游戏下载都在 Battle.net 官方客户端完成。</div></div>
+              <div class="faq-item"><button class="faq-q">盖世游戏会保存 Battle.net 密码吗？</button><div class="faq-a">不会。盖世游戏不提供 Battle.net 密码输入框，也不采集或保存账号密码。</div></div>
+              <div class="faq-item"><button class="faq-q">游戏安装后为什么要回到盖世启动？</button><div class="faq-a">Battle.net 负责账号、下载和安装；盖世游戏负责兼容配置和本地启动，两者分工不同。</div></div>
+              <div class="faq-item"><button class="faq-q">没有游戏权益可以参加活动吗？</button><div class="faq-a">可以查看落地页并参加符合资格的新人活动；标准版游戏权益是否发放，以活动奖池和地区规则为准。</div></div>
+            </div>
+          </section>
+          <p class="foot">本页面为盖世游戏首发适配 Demo。游戏名称、商标及版权归各自权利人所有。本产品与相关游戏发行方无关联。兼容结论以页面列出的设备、版本和运行环境为准。</p>
+        </div>
+
+        <div class="popup-backdrop" id="popup" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
+          <div class="popup">
+            <button class="popup-close" id="popupClose" aria-label="关闭">×</button>
+            <h2 id="popupTitle">暗黑系列 PC版<br>盖世游戏首发适配</h2>
+            <p>本地运行 · 非云游戏 · Battle.net完整游玩攻略</p>
+            <div class="evidence-scene" aria-label="首发实机证据预览"><span class="evidence-label">首发游玩录屏 · 实机验证</span><div class="evidence-sigil"></div><span class="evidence-device">骁龙 8 Gen 3 · 30–45 FPS<span>本地 PC 版运行 · Battle.net 流程已整理</span></span><div class="spark s1"></div><div class="spark s2"></div><div class="spark s3"></div><div class="spark s4"></div></div>
+            <button class="popup-cta" id="popupCta">查看游玩方法 ›</button>
+            <p class="popup-foot">查看已验证作品、实机效果与活动入口</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const games = [
+      { id: 'd4', name: '《暗黑破坏神 IV》', status: '已验证', verified: true, cover: '', tips: '推荐手柄操作；先以稳定帧率为优先，连续运行时保持散热。', guideNote: '已验证内容', prizes: ['标准版权益', '游戏手柄', '手机散热', '快充配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑4》。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑4》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] },
+      { id: 'd3', name: '《暗黑破坏神 III》', status: '流程预览', verified: false, cover: 'd3', tips: '当前仅展示 Battle.net 游玩流程；实机参数和支持状态待独立验证。', guideNote: '暂无实机参数', prizes: ['游戏权益', '游戏手柄', '手机散热', '移动配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑3》。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑3》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] },
+      { id: 'immortal', name: '暗黑破坏神：不朽', status: '流程预览', verified: false, cover: 'immortal', tips: '当前仅展示 Battle.net 游玩流程；PC版实机参数和支持状态待独立验证。', guideNote: '暂无实机参数', prizes: ['游戏权益', '游戏手柄', '手机散热', '移动配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑不朽》PC版。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑不朽》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] },
+      { id: 'd2r', name: '《暗黑破坏神2》重制版', status: '流程预览', verified: false, cover: 'd2', tips: '当前仅展示 Battle.net 游玩流程；实机参数和支持状态待独立验证。', guideNote: '暂无实机参数', prizes: ['游戏权益', '游戏手柄', '手机散热', '移动配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑2》重制版。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑2》重制版。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] }
+    ];
+    let selected = games[0];
+    let stepIndex = 0;
+    let videoIndex = 0;
+    const videoSlides = [
+      { title: '《暗黑破坏神 IV》主城与战斗', meta: '骁龙 8 Gen 3 · 30–45 FPS · 连续运行录屏', duration: '01:24', scene: '' },
+      { title: '《暗黑破坏神：不朽》PC版启动', meta: 'Battle.net 登录后下载 · 回到盖世启动', duration: '00:58', scene: 'scene-2' },
+      { title: '《暗黑破坏神 III》实机录屏待补充', meta: '当前为系列流程预览 · 暂无实机参数', duration: '--:--', scene: 'scene-3' },
+      { title: '《暗黑破坏神2》重制版画面设置', meta: '推荐参数待验证 · 已知问题说明', duration: '01:12', scene: 'scene-4' }
+    ];
+    const paramMap = {
+      d4: { label: '《暗黑破坏神 IV》', platform: 'PC版', fps: '30–45', device: '8 Gen 3', version: '7.18' },
+      d3: { label: '《暗黑破坏神 III》', platform: '流程预览', fps: '暂无数据', device: '暂无数据', version: '暂无数据' },
+      immortal: { label: '暗黑破坏神：不朽', platform: '流程预览', fps: '暂无数据', device: '暂无数据', version: '暂无数据' },
+      d2r: { label: '《暗黑破坏神2》重制版', platform: '流程预览', fps: '暂无数据', device: '暂无数据', version: '暂无数据' }
+    };
+    const activityUrl = '../后台管理/运营活动demo.html';
+    const $ = (selector) => document.querySelector(selector);
+    function openActivity() { window.open(activityUrl, '_blank', 'noopener'); }
+    function renderVideo() {
+      const slide = videoSlides[videoIndex];
+      $('#videoShell').innerHTML = `<div class="video-scene ${slide.scene}"><div class="video-topline"><span class="video-tag">首发游玩录屏</span><span>${videoIndex + 1} / ${videoSlides.length}</span></div><div class="play-ring" aria-label="录屏占位">录屏预览</div><div class="video-bottom"><div><div class="video-title">${slide.title}</div><div class="video-meta">${slide.meta}</div></div><span class="video-duration">${slide.duration}</span></div></div>`;
+      $('#videoControls').innerHTML = `<button class="video-arrow" id="videoPrev" aria-label="上一个视频">‹</button>${videoSlides.map((_, i) => `<button class="video-dot ${i === videoIndex ? 'active' : ''}" data-video="${i}" aria-label="第${i + 1}个视频"></button>`).join('')}<button class="video-arrow" id="videoNext" aria-label="下一个视频">›</button>`;
+      $('#videoPrev').addEventListener('click', () => { videoIndex = (videoIndex - 1 + videoSlides.length) % videoSlides.length; renderVideo(); });
+      $('#videoNext').addEventListener('click', () => { videoIndex = (videoIndex + 1) % videoSlides.length; renderVideo(); });
+      document.querySelectorAll('.video-dot').forEach(dot => dot.addEventListener('click', () => { videoIndex = Number(dot.dataset.video); renderVideo(); }));
+    }
+    function renderGames() {
+      $('#games').innerHTML = games.map((game, index) => `<button class="game-card ${index === 0 ? 'selected' : ''}" data-game="${game.id}"><div class="game-cover ${game.cover}"><div class="game-mark"><span>D</span></div></div><div class="game-name">${game.name}</div><div class="game-status"><em class="${game.verified ? '' : 'pending'}">${game.status}</em> · 查看流程</div></button>`).join('');
+      document.querySelectorAll('.game-card').forEach(card => card.addEventListener('click', () => selectGame(card.dataset.game)));
+    }
+    function renderGuide() {
+      $('#guideGameLabel').textContent = selected.name;
+      $('#guideTabs').innerHTML = selected.guide.map((step, i) => `<button class="step-tab ${i === stepIndex ? 'active' : ''}" data-step="${i}"><span>0${i + 1}</span>${['下载','导入','启动','登录','下载游戏','安装','回到盖世'][i]}</button>`).join('');
+      document.querySelectorAll('.step-tab').forEach(tab => tab.addEventListener('click', () => { stepIndex = Number(tab.dataset.step); renderGuide(); }));
+      $('#guideStepTitle').textContent = `${String(stepIndex + 1).padStart(2, '0')} · ${['下载 Battle.net 客户端','导入当前游戏','启动 Battle.net','登录账号','下载自己的游戏','完成安装','回到盖世启动'][stepIndex]}`;
+      $('#guideStepCopy').textContent = !selected.verified && stepIndex === 6 ? '当前仅展示 Battle.net 到盖世的流程预览；对应游戏完成兼容验证后，再开放正式启动入口。' : selected.guide[stepIndex];
+      $('#guideNote').textContent = selected.guideNote;
+      $('#tipsTitle').textContent = selected.id === 'd4' ? '手柄与画质设置' : '版本与设备设置';
+      $('#tipsCopy').textContent = selected.tips;
+    }
+    function renderActivity() {
+      $('#activityTitle').textContent = `${selected.name} 游玩活动`;
+      $('#activityCopy').textContent = selected.verified ? '完成首次有效启动与 30 分钟游玩任务，查看当前游戏对应的权益和移动PC装备奖池。' : '当前为流程预览，活动奖品与开放状态以对应游戏正式验证后的活动页配置为准。';
+      $('#prizeRow').innerHTML = selected.prizes.map(prize => `<div class="prize">${prize.replace(' ', '<br>')}</div>`).join('');
+    }
+    function selectGame(id) { selected = games.find(game => game.id === id) || games[0]; stepIndex = 0; const params = paramMap[selected.id]; $('#paramLabel').textContent = params.label; $('#paramPlatform').textContent = params.platform; $('#paramFps').textContent = params.fps; $('#paramDevice').textContent = params.device; $('#paramVersion').textContent = params.version; document.querySelectorAll('.game-card').forEach(card => card.classList.toggle('selected', card.dataset.game === selected.id)); renderGuide(); renderActivity(); $('#guideSection').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    function closePopup() { $('#popup').classList.add('hidden'); }
+    renderGames(); renderGuide(); renderVideo(); renderActivity();
+    $('#popupClose').addEventListener('click', closePopup);
+    $('#popupCta').addEventListener('click', () => { closePopup(); $('#guideSection').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    $('#playBtn').addEventListener('click', () => $('#guideSection').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    $('#activityBtn').addEventListener('click', openActivity);
+    $('#activityBtn2').addEventListener('click', openActivity);
+    $('#openActivityTop').addEventListener('click', openActivity);
+    $('#backBtn').addEventListener('click', () => { $('#scroll').scrollTo({ top: 0, behavior: 'smooth' }); });
+    document.querySelectorAll('.faq-q').forEach(button => button.addEventListener('click', () => button.parentElement.classList.toggle('open')));
+  </script>
+</body>
+</html>
