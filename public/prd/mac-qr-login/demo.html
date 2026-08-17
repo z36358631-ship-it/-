@@ -1795,143 +1795,196 @@
 
     /* 移动端设备授权确认 */
     .confirm-page {
-      padding: 62px 18px 24px;
+      padding: 54px 14px 16px;
       background:
-        radial-gradient(circle at 50% 24%, rgba(28,76,118,.18), transparent 38%),
+        radial-gradient(circle at 50% 20%, rgba(28,76,118,.16), transparent 36%),
         #050505;
     }
     .confirm-dialog {
       width: 100%;
-      padding: 24px 18px 18px;
-      border-color: rgba(255,255,255,.15);
+      padding: 18px 14px 14px;
+      border: 1px solid rgba(255,255,255,.14);
       border-radius: 18px;
-      background: rgba(26,28,34,.98);
+      background: rgba(22,24,29,.98);
       text-align: left;
+      outline: 0;
     }
     .confirm-heading { text-align: center; }
     .confirm-heading > span {
       color: #55bdf0;
-      font-size: 11px;
-      line-height: 16px;
+      font-size: 10px;
+      line-height: 14px;
       font-weight: 600;
     }
     .confirm-dialog .confirm-heading h2 {
-      margin-top: 6px;
+      margin-top: 4px;
       color: #f2f3f6;
       font-size: 20px;
-      line-height: 28px;
+      line-height: 26px;
       font-weight: 600;
     }
-    .confirm-dialog .confirm-heading p {
-      margin-top: 5px;
-      color: rgba(230,230,230,.42);
-      font-size: 12px;
-      line-height: 18px;
-    }
-    .confirm-device-info {
-      margin-top: 20px;
-      padding: 2px 14px;
-      border: 1px solid rgba(255,255,255,.08);
+    .confirm-device-card {
+      min-height: 66px;
+      margin-top: 14px;
+      padding: 10px 12px;
+      display: grid;
+      grid-template-columns: 46px 1fr;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid rgba(255,255,255,.10);
       border-radius: 12px;
       background: rgba(255,255,255,.035);
     }
-    .confirm-info-row {
-      min-height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      border-bottom: 1px solid rgba(255,255,255,.065);
-    }
-    .confirm-info-row:last-child { border-bottom: 0; }
-    .confirm-info-row span {
-      color: rgba(230,230,230,.42);
-      font-size: 12px;
-      line-height: 18px;
-    }
-    .confirm-info-row strong {
-      color: rgba(242,242,242,.88);
-      font-size: 13px;
-      line-height: 18px;
-      font-weight: 520;
-      text-align: right;
-    }
-    .confirm-platform-block { margin-top: 18px; }
-    .confirm-section-title {
-      color: rgba(230,230,230,.42);
-      font-size: 11px;
-      line-height: 16px;
-    }
-    .confirm-platform-list {
-      gap: 8px;
-      margin-top: 8px;
-      max-height: 322px;
-      overflow-y: auto;
-      padding-right: 2px;
-      scrollbar-width: thin;
-    }
-    .confirm-platform-list .platform-card {
-      min-height: 58px;
-      padding: 8px 10px;
-      grid-template-columns: 38px 1fr auto;
-      gap: 10px;
+    .confirm-device-icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
       border-radius: 10px;
+      color: rgba(242,242,242,.76);
+      background: rgba(255,255,255,.055);
     }
-    .confirm-platform-list .platform-card .platform-logo {
-      width: 38px;
-      height: 38px;
-      border-radius: 9px;
-      font-size: 13px;
+    .confirm-device-icon svg { width: 30px; height: 30px; }
+    .confirm-device-copy strong {
+      display: block;
+      color: rgba(242,242,242,.92);
+      font-size: 14px;
+      line-height: 20px;
+      font-weight: 600;
     }
-    .confirm-platform-list .platform-card strong {
-      font-size: 13px;
-      line-height: 18px;
-    }
-    .confirm-platform-list .platform-card small {
-      margin-top: 2px;
+    .confirm-device-copy small {
+      display: block;
+      margin-top: 3px;
+      color: rgba(230,230,230,.46);
       font-size: 11px;
       line-height: 15px;
     }
-    .selectable-account { cursor: pointer; }
-    .selectable-account:focus-within {
-      border-color: rgba(85,189,240,.72);
-      box-shadow: 0 0 0 2px rgba(85,189,240,.14);
-    }
-    .selectable-account.is-unselected { opacity: .58; }
-    .account-choice {
-      width: 20px;
-      height: 20px;
-      accent-color: #1296db;
-      cursor: pointer;
-    }
-    .account-selection-summary {
-      margin-top: 10px !important;
-      color: rgba(126,205,255,.88) !important;
-      font-size: 12px !important;
-      line-height: 18px !important;
-      text-align: left;
-    }
-    .confirm-dialog .confirm-warning {
-      margin-top: 16px;
-      color: rgba(230,230,230,.48);
+    .gamehub-account-block { margin-top: 12px; }
+    .confirm-section-title {
+      color: rgba(230,230,230,.46);
       font-size: 11px;
       line-height: 16px;
-      text-align: center;
     }
-    .confirm-actions {
-      margin-top: 16px;
-      gap: 9px;
-    }
-    .confirm-primary,
-    .confirm-secondary {
-      height: 44px;
+    .required-account-row {
+      min-height: 52px;
+      margin-top: 6px;
+      padding: 7px 10px;
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid rgba(255,255,255,.08);
       border-radius: 10px;
-      font-size: 14px;
+      background: rgba(255,255,255,.035);
     }
-    .confirm-primary {
-      background: #0073e6;
-      box-shadow: 0 8px 22px rgba(0,115,230,.20);
+    .required-account-logo {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      color: #fff;
+      background: linear-gradient(145deg, #255f9f, #338feb);
+      font-size: 13px;
+      font-weight: 700;
     }
+    .required-account-row strong { display: block; color: #eff1f5; font-size: 13px; line-height: 17px; font-weight: 600; }
+    .required-account-row small { display: block; margin-top: 2px; color: rgba(230,230,230,.42); font-size: 10px; line-height: 14px; }
+    .required-badge { padding: 4px 7px; border: 1px solid rgba(255,255,255,.10); border-radius: 7px; color: rgba(230,230,230,.52); font-size: 10px; }
+    .confirm-platform-block { margin-top: 12px; }
+    .confirm-platform-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .select-all-accounts {
+      min-width: 44px;
+      min-height: 32px;
+      padding: 0 6px;
+      color: #4db8e8;
+      background: transparent;
+      font-size: 11px;
+      line-height: 16px;
+    }
+    .select-all-accounts:focus-visible { outline: 2px solid #4db8e8; outline-offset: 2px; border-radius: 6px; }
+    .confirm-platform-list {
+      gap: 6px;
+      margin-top: 6px;
+      max-height: 288px;
+      overflow-y: auto;
+      padding: 1px 5px 1px 1px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 11px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.34) rgba(255,255,255,.04);
+    }
+    .confirm-platform-list .platform-card {
+      min-height: 52px;
+      padding: 6px 9px;
+      grid-template-columns: 36px 1fr auto;
+      gap: 9px;
+      border-radius: 9px;
+    }
+    .confirm-platform-list .platform-card .platform-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      font-size: 12px;
+    }
+    .confirm-platform-list .platform-card strong { font-size: 12px; line-height: 16px; }
+    .confirm-platform-list .platform-card small { margin-top: 1px; font-size: 10px; line-height: 14px; }
+    .selectable-account { cursor: pointer; }
+    .selectable-account:focus-within { border-color: rgba(85,189,240,.72); box-shadow: 0 0 0 2px rgba(85,189,240,.14); }
+    .selectable-account:not(.is-unselected) { border-color: rgba(51,143,235,.72); }
+    .selectable-account:not(.is-unselected) small { color: #4db8e8; }
+    .selectable-account.is-unselected { opacity: .64; }
+    .account-choice { width: 19px; height: 19px; accent-color: #1296db; cursor: pointer; }
+    .confirm-trust-block { margin-top: 10px; text-align: center; }
+    .confirm-encryption-note { color: rgba(230,230,230,.55); font-size: 10px; line-height: 15px; }
+    .confirm-risk-note { margin-top: 2px; color: #ff6b6b; font-size: 11px; line-height: 16px; font-weight: 600; }
+    .data-protection-trigger {
+      margin-top: 3px;
+      color: #4db8e8;
+      background: transparent;
+      font-size: 11px;
+      line-height: 16px;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .confirm-actions { margin-top: 8px; gap: 7px; }
+    .confirm-primary,
+    .confirm-secondary { height: 40px; border-radius: 9px; font-size: 13px; }
+    .confirm-primary { background: #0073e6; box-shadow: 0 8px 22px rgba(0,115,230,.20); }
+
+    /* 数据保护半屏 */
+    .data-protection-sheet {
+      position: absolute;
+      z-index: 95;
+      inset: 0;
+      display: none;
+      align-items: flex-end;
+      background: rgba(0,0,0,.70);
+    }
+    .data-protection-sheet.show { display: flex; }
+    .data-protection-panel {
+      width: 100%;
+      height: auto;
+      max-height: 78%;
+      padding: 10px 18px 16px;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 22px 22px 0 0;
+      background: #17191f;
+      box-shadow: 0 -24px 60px rgba(0,0,0,.48);
+      outline: 0;
+    }
+    .protection-handle { width: 44px; height: 4px; margin: 0 auto 8px; border-radius: 4px; background: rgba(255,255,255,.30); }
+    .protection-header { position: relative; padding: 0 34px; text-align: center; }
+    .protection-header h2 { color: #f2f3f6; font-size: 20px; line-height: 28px; font-weight: 650; }
+    .protection-header p { margin-top: 3px; color: rgba(230,230,230,.48); font-size: 11px; line-height: 16px; }
+    .protection-close { position: absolute; top: -2px; right: 0; width: 34px; height: 34px; border-radius: 50%; color: #fff; background: rgba(255,255,255,.08); font-size: 22px; line-height: 30px; }
+    .protection-body { flex: 0 1 auto; min-height: 0; margin-top: 12px; overflow-y: auto; }
+    .protection-item { padding: 11px 0; border-top: 1px solid rgba(255,255,255,.07); }
+    .protection-item h3 { color: rgba(242,242,242,.92); font-size: 13px; line-height: 18px; font-weight: 600; }
+    .protection-item p { margin-top: 3px; color: rgba(230,230,230,.54); font-size: 11px; line-height: 17px; }
+    .protection-ack { width: 100%; height: 42px; margin-top: 10px; border-radius: 9px; color: #fff; background: #0073e6; font-size: 13px; font-weight: 600; }
     @media (max-width: 1460px) {
       .login-surface:not(.account-state) {
         width: min(740px, 96%);
@@ -2144,25 +2197,58 @@
             <div class="confirm-dialog" id="confirmDialog" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmDesc" tabindex="-1">
               <div class="confirm-heading">
                 <span>安全登录确认</span>
-                <h2 id="confirmTitle">登录至MacOS设备</h2>
-                <p id="confirmDesc">请确认本次登录设备及账号信息</p>
+                <h2 id="confirmTitle">登录至一台新设备？</h2>
               </div>
-              <div class="confirm-device-info">
-                <div class="confirm-info-row"><span>设备名称</span><strong>MacBook Air</strong></div>
-                <div class="confirm-info-row"><span>登录位置</span><strong>广东省广州市</strong></div>
+              <div class="confirm-device-card" id="confirmDesc">
+                <div class="confirm-device-icon" aria-hidden="true">
+                  <svg viewBox="0 0 32 32"><rect x="6" y="6" width="20" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 24h26l-2 3H5z" fill="currentColor"/></svg>
+                </div>
+                <div class="confirm-device-copy"><strong>MacBook Air</strong><small>美国</small></div>
+              </div>
+              <div class="gamehub-account-block">
+                <div class="confirm-section-title">本次登录账号</div>
+                <div class="required-account-row">
+                  <span class="required-account-logo" aria-hidden="true">G</span>
+                  <span><strong>盖世账号</strong><small>用户名11837 · 必须</small></span>
+                  <span class="required-badge">必须</span>
+                </div>
               </div>
               <div class="confirm-platform-block">
-                <div class="confirm-section-title">本次登录账号</div>
+                <div class="confirm-platform-head">
+                  <div class="confirm-section-title" id="accountSelectionSummary" aria-live="polite">平台账号（已选 1/7）</div>
+                  <button class="select-all-accounts" id="selectAllAccountsBtn" type="button">全选</button>
+                </div>
                 <div class="platform-list confirm-platform-list" id="mobilePlatforms"></div>
-                <p class="account-selection-summary" id="accountSelectionSummary" aria-live="polite">本次将登录 7 个平台账号</p>
               </div>
-              <p class="confirm-warning">若非本人操作，请点击取消授权</p>
+              <div class="confirm-trust-block">
+                <p class="confirm-encryption-note">仅所选账号会加密发送至新设备</p>
+                <p class="confirm-risk-note">非本人操作，请取消登录</p>
+                <button class="data-protection-trigger" id="dataProtectionBtn" type="button">了解数据保护详情</button>
+              </div>
               <div class="confirm-actions">
-                <button class="confirm-primary" id="confirmLoginBtn">确认登录</button>
-                <button class="confirm-secondary" id="cancelLoginBtn">取消授权</button>
+                <button class="confirm-primary" id="confirmLoginBtn">登录盖世账号及 1 个平台账号</button>
+                <button class="confirm-secondary" id="cancelLoginBtn">取消登录</button>
               </div>
             </div>
           </section>
+
+          <div class="data-protection-sheet" id="dataProtectionSheet" aria-hidden="true">
+            <section class="data-protection-panel" id="dataProtectionPanel" role="dialog" aria-modal="true" aria-labelledby="dataProtectionTitle" tabindex="-1">
+              <div class="protection-handle" aria-hidden="true"></div>
+              <header class="protection-header">
+                <h2 id="dataProtectionTitle">数据如何保护</h2>
+                <p>本次登录只处理你选择的账号</p>
+                <button class="protection-close" id="dataProtectionCloseBtn" type="button" aria-label="关闭数据保护详情">×</button>
+              </header>
+              <div class="protection-body">
+                <article class="protection-item"><h3>传输内容</h3><p>盖世账号登录状态，以及你主动选择的 Steam / Epic 账号登录信息；不会传输平台密码。</p></article>
+                <article class="protection-item"><h3>加密与读取</h3><p>登录信息将针对本次新设备加密，只有该设备可以读取；盖世游戏服务器无法查看其中内容。</p></article>
+                <article class="protection-item"><h3>保存时间</h3><p>登录成功、取消或超时后，临时加密数据会被删除；安全日志不记录账号密码或登录凭证。</p></article>
+                <article class="protection-item"><h3>本次影响</h3><p>未选择的账号不会传输，本次选择不改变 App 内绑定。</p></article>
+              </div>
+              <button class="protection-ack" id="dataProtectionAckBtn" type="button">我知道了</button>
+            </section>
+          </div>
 
           <section class="phone-page result-page" id="resultPage">
             <div class="result-card" id="mobileResultCard">
@@ -2418,16 +2504,17 @@
       },
       pending_confirm: {
         title: "扫码确认",
-        summary: "移动端核对设备、位置及账号信息后确认授权；Mac 端二维码区域展示等待手机确认状态。",
+        summary: "移动端核对目标设备、国家/地区及本次账号范围后确认登录；Mac 端二维码区域展示等待手机确认状态。",
         interaction: [
           ["Mac 端呈现", "二维码容器覆盖完整的黑色半透明遮罩，内部展示“二维码已识别”和“请尽快在手机上确认”。", "页面呈现"],
-          ["移动端弹窗", "弹窗标题为“登录至MacOS设备”，展示设备名称、登录位置、“本次登录账号”分区及授权操作。", "页面呈现"],
-          ["设备与位置", "设备名称展示“MacBook Air”，登录位置按 IP 粗定位至市级；登录时间在能力支持时展示。", "信息呈现"],
-          ["平台账号选择", "Steam、Epic 的每个具体账号默认全部选中，用户可取消任意部分或全部平台账号；盖世账号固定登录且不可取消。", "账号呈现"],
-          ["列表与摘要", "账号容器最多可见 5 行，超过后内部滚动；摘要显示本次将登录的平台账号数，选中 0 个时显示“本次仅登录盖世账号”。", "信息呈现"],
-          ["安全提示", "授权操作上方展示“若非本人操作，请点击取消授权”。", "安全提示"],
+          ["移动端弹窗", "弹窗标题为“登录至一台新设备？”，先展示目标设备，再展示盖世账号与可选择的平台账号。", "页面呈现"],
+          ["设备与地区", "设备名称展示型号；地区按 Mac 公网 IP 粗定位，国内版展示到市级，海外版只展示国家/地区，并标注为“大致地区”。不使用 GPS，不展示 IP。", "信息呈现"],
+          ["平台账号选择", "盖世账号固定登录；平台账号默认只选中当前使用的 Steam 账号，其他账号默认不传输，用户可逐项调整。", "账号呈现"],
+          ["列表与摘要", "账号容器首屏完整展示 5 行，另外 2 个账号在同一容器内下滑查看；标题实时显示“平台账号（已选 X/7）”，右侧“全选/取消全选”批量切换平台账号，不提供展开入口。", "信息呈现"],
+          ["安全提示", "确认按钮上方合并展示“仅所选账号会加密发送至新设备”和“非本人操作，请取消登录”。", "安全提示"],
+          ["数据保护详情", "点击“了解数据保护详情”打开 App 内半屏，说明传输内容、加密读取、删除时点及本次影响；关闭后保留账号选择。详情不展示《隐私政策》链接和远程撤销能力。", "信息呈现"],
           ["确认登录", "点击“确认登录”后进入授权中；服务端为 Mac 签发盖世账号设备会话，并中转本次选中平台账号的端到端加密凭证包。", "操作结果"],
-          ["取消授权", "点击“取消授权”后移动端返回“我的”页，Mac 端展示“本次登录已取消，请刷新二维码”。", "操作结果"]
+          ["取消登录", "点击“取消登录”后移动端返回“我的”页，Mac 端展示“本次登录已取消，请刷新二维码”。", "操作结果"]
         ],
         boundary: [
           ["待确认有效期", "首次有效同地区扫码进入 pending_confirm 时重新计算 2 分钟，不展示倒计时数字。", "生命周期"],
@@ -2570,7 +2657,7 @@
       { id: "epic-alt", platform: "Epic", nickname: "EpicAlt_02" },
       { id: "steam-test", platform: "Steam", nickname: "Steam_Test_05" }
     ];
-    let selectedPlatformAccountIds = new Set(platformAccounts.map(function(account) { return account.id; }));
+    let selectedPlatformAccountIds = new Set(["steam-main"]);
     let submittedPlatformAccountIds = [];
 
     const pages = {
@@ -2633,11 +2720,31 @@
       }
     }
 
+    function openDataProtectionSheet() {
+      const sheet = document.getElementById("dataProtectionSheet");
+      const panel = document.getElementById("dataProtectionPanel");
+      lastModalTrigger = document.activeElement;
+      activeModal = panel;
+      sheet.classList.add("show");
+      sheet.setAttribute("aria-hidden", "false");
+      window.requestAnimationFrame(function() { panel.focus({ preventScroll: true }); });
+    }
+
+    function closeDataProtectionSheet() {
+      const sheet = document.getElementById("dataProtectionSheet");
+      sheet.classList.remove("show");
+      sheet.setAttribute("aria-hidden", "true");
+      activeModal = document.getElementById("confirmDialog");
+      lastModalTrigger = null;
+      document.getElementById("dataProtectionBtn").focus({ preventScroll: true });
+    }
+
     function trapModalFocus(event) {
       if (!activeModal) return;
       if (event.key === "Escape") {
         event.preventDefault();
         if (activeModal.id === "confirmDialog") document.getElementById("cancelLoginBtn").click();
+        else if (activeModal.id === "dataProtectionPanel") closeDataProtectionSheet();
         else document.getElementById("permissionCancelBtn").click();
         return;
       }
@@ -2736,9 +2843,14 @@
 
     function updateAccountSelectionSummary() {
       const count = selectedPlatformAccountIds.size;
-      document.getElementById("accountSelectionSummary").textContent = count
-        ? "本次将登录 " + count + " 个平台账号"
-        : "本次仅登录盖世账号";
+      document.getElementById("accountSelectionSummary").textContent = "平台账号（已选 " + count + "/" + platformAccounts.length + "）";
+      const selectAllButton = document.getElementById("selectAllAccountsBtn");
+      const allSelected = count === platformAccounts.length;
+      selectAllButton.textContent = allSelected ? "取消全选" : "全选";
+      selectAllButton.setAttribute("aria-pressed", allSelected ? "true" : "false");
+      document.getElementById("confirmLoginBtn").textContent = count
+        ? "登录盖世账号及 " + count + " 个平台账号"
+        : "仅登录盖世账号";
     }
 
     function bindAccountChoices() {
@@ -2746,7 +2858,12 @@
         checkbox.addEventListener("change", function() {
           if (checkbox.checked) selectedPlatformAccountIds.add(checkbox.value);
           else selectedPlatformAccountIds.delete(checkbox.value);
-          checkbox.closest(".selectable-account").classList.toggle("is-unselected", !checkbox.checked);
+          const row = checkbox.closest(".selectable-account");
+          const account = platformAccounts.find(function(item) { return item.id === checkbox.value; });
+          row.classList.toggle("is-unselected", !checkbox.checked);
+          row.querySelector("small").textContent = account.id === "steam-main"
+            ? (checkbox.checked ? "当前使用 · 已选择" : "当前使用 · 不会传输")
+            : (checkbox.checked ? "已选择" : "不会传输");
           updateAccountSelectionSummary();
         });
       });
@@ -2767,7 +2884,11 @@
         const nickname = document.createElement("strong");
         nickname.textContent = account.nickname;
         const status = document.createElement("small");
-        status.textContent = account.platform + " 已绑定";
+        if (account.id === "steam-main") {
+          status.textContent = isChecked ? "当前使用 · 已选择" : "当前使用 · 不会传输";
+        } else {
+          status.textContent = isChecked ? "已选择" : "不会传输";
+        }
         accountText.append(nickname, status);
 
         const checkbox = document.createElement("input");
@@ -2785,7 +2906,14 @@
     }
 
     function resetPlatformAccountSelection() {
-      selectedPlatformAccountIds = new Set(platformAccounts.map(function(account) { return account.id; }));
+      selectedPlatformAccountIds = new Set(["steam-main"]);
+      renderSelectableAccounts();
+    }
+
+    function toggleAllPlatformAccounts() {
+      selectedPlatformAccountIds = selectedPlatformAccountIds.size === platformAccounts.length
+        ? new Set()
+        : new Set(platformAccounts.map(function(account) { return account.id; }));
       renderSelectableAccounts();
     }
 
@@ -2847,6 +2975,8 @@
       const settings = options || {};
       const previousRequestState = currentRequestState;
       if (activeModal) deactivateModal(false);
+      document.getElementById("dataProtectionSheet").classList.remove("show");
+      document.getElementById("dataProtectionSheet").setAttribute("aria-hidden", "true");
       scenarioButtons.forEach(function(button) {
         button.classList.toggle("active", button.dataset.scenario === type);
       });
@@ -3066,6 +3196,10 @@
     document.getElementById("permissionSettingsBtn").addEventListener("click", function() {
       toast("请在系统设置中开启摄像头权限");
     });
+    document.getElementById("dataProtectionBtn").addEventListener("click", openDataProtectionSheet);
+    document.getElementById("dataProtectionCloseBtn").addEventListener("click", closeDataProtectionSheet);
+    document.getElementById("dataProtectionAckBtn").addEventListener("click", closeDataProtectionSheet);
+    document.getElementById("selectAllAccountsBtn").addEventListener("click", toggleAllPlatformAccounts);
     document.getElementById("confirmLoginBtn").addEventListener("click", function() {
       submittedPlatformAccountIds = platformAccounts
         .filter(function(account) { return selectedPlatformAccountIds.has(account.id); })
