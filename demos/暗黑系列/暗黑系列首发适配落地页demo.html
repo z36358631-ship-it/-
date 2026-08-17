@@ -86,6 +86,28 @@
     .video-arrow { width: 24px; height: 24px; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; background: rgba(255,255,255,.05); color: #e7e7eb; cursor: pointer; }
     .video-dot { width: 6px; height: 6px; border: 0; border-radius: 50%; background: #5c5c65; cursor: pointer; padding: 0; }
     .video-dot.active { width: 18px; border-radius: 999px; background: var(--gold); }
+    .video-info { padding: 10px 2px 0; }
+    .video-info b { display: block; color: #f2f2f5; font-size: 13px; line-height: 1.35; }
+    .video-info span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .main-tabs { display: grid; grid-template-columns: repeat(4,1fr); border-bottom: 1px solid var(--line); position: sticky; top: 52px; z-index: 3; background: rgba(14,14,16,.96); backdrop-filter: blur(14px); }
+    .main-tab { min-width: 0; height: 44px; padding: 0 2px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); cursor: pointer; font-size: 10px; white-space: nowrap; }
+    .main-tab.active { color: #fff; border-bottom-color: var(--gold); }
+    .tab-panel { padding-top: 14px; }
+    .tab-panel.hidden { display: none; }
+    .flat-guide { display: grid; gap: 8px; }
+    .flat-step { display: grid; grid-template-columns: 76px 1fr; gap: 10px; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.025); }
+    .flat-step b { position: absolute; left: 6px; top: 6px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: rgba(43,195,223,.9); color: #071318; font-family: "D-DIN-PRO",var(--font); font-size: 11px; z-index: 1; }
+    .step-visual { position: relative; height: 54px; overflow: hidden; border: 1px solid rgba(255,255,255,.14); border-radius: 8px; background: linear-gradient(145deg,#27303a,#15161b); }
+    .step-visual::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 11px; height: 8px; border-radius: 4px; background: rgba(255,255,255,.18); box-shadow: 0 -14px 0 rgba(255,255,255,.1); }
+    .step-visual.step-1 { background: radial-gradient(circle at 76% 25%,rgba(43,195,223,.45),transparent 25%),linear-gradient(145deg,#172d3c,#17181d); }
+    .step-visual.step-2 { background: radial-gradient(circle at 25% 28%,rgba(255,201,40,.38),transparent 22%),linear-gradient(145deg,#39251b,#17181d); }
+    .step-visual.step-3 { background: radial-gradient(circle at 74% 26%,rgba(0,199,119,.36),transparent 22%),linear-gradient(145deg,#18352e,#17181d); }
+    .step-visual.step-4 { background: radial-gradient(circle at 26% 27%,rgba(141,88,255,.46),transparent 23%),linear-gradient(145deg,#29203d,#17181d); }
+    .step-visual.step-5 { background: radial-gradient(circle at 76% 30%,rgba(255,92,100,.44),transparent 23%),linear-gradient(145deg,#3a2028,#17181d); }
+    .step-visual.step-6 { background: radial-gradient(circle at 30% 30%,rgba(255,201,40,.4),transparent 22%),linear-gradient(145deg,#3a321c,#17181d); }
+    .step-visual.step-7 { background: radial-gradient(circle at 70% 27%,rgba(43,195,223,.42),transparent 22%),linear-gradient(145deg,#172f3b,#17181d); }
+    .flat-step strong { display: block; color: #eeeef2; font-size: 12px; }
+    .flat-step span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.5; }
     .evidence { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
     .stat { background: linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.025)); border: 1px solid var(--line); border-radius: 12px; padding: 10px 8px; min-height: 66px; }
     .stat b { display: block; color: #f3f3f6; font-size: 12px; font-family: "D-DIN-PRO", var(--font); }
@@ -103,13 +125,14 @@
     .query-result.warn .query-dot { background: #f1c46d; box-shadow: 0 0 10px rgba(241,196,109,.8); }
     .query-result.warn b { color: #ffe0a0; }
     .query-result.warn small { color: #c5a87c; }
+    .query-result.pending { border-color: rgba(255,255,255,.14); background: rgba(255,255,255,.035); }
+    .query-result.pending .query-dot { background: #8c8c94; box-shadow: 0 0 8px rgba(140,140,148,.45); }
+    .query-result.pending b { color: #dedee3; }
+    .query-result.pending small { color: #85858c; }
     .config-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; color: var(--muted); font-size: 10px; }
     .config-row b { color: #ececf0; font-weight: 600; }
     .copy-btn { height: 30px; padding: 0 12px; border: 1px solid rgba(43,195,223,.55); border-radius: 8px; background: rgba(43,195,223,.08); color: #b8f5ff; cursor: pointer; font-size: 10px; }
     .copy-btn:hover { background: rgba(43,195,223,.18); }
-    .info-tabs { display: flex; border-bottom: 1px solid var(--line); }
-    .info-tab { flex: 1; height: 40px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); cursor: pointer; font-size: 12px; }
-    .info-tab.active { border-bottom-color: var(--gold); color: #f4f4f7; }
     .info-panel { min-height: 145px; padding: 14px 12px; border: 1px solid var(--line); border-top: 0; border-radius: 0 0 14px 14px; background: rgba(255,255,255,.025); }
     .info-panel.hidden { display: none; }
     .info-panel h3 { margin: 0; color: #f0f0f3; font-size: 13px; }
@@ -121,13 +144,21 @@
     .usage-step b { display: grid; place-items: center; width: 21px; height: 21px; border-radius: 50%; background: rgba(43,195,223,.16); color: #a9eeff; font-family: "D-DIN-PRO", var(--font); font-size: 11px; }
     .info-panel p { margin: 10px 0 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
     .inline-link { margin-top: 12px; padding: 0; border: 0; background: transparent; color: #9edfff; cursor: pointer; font-size: 11px; }
+    .config-guide { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .config-guide h3 { margin: 0; color: #f0f0f3; font-size: 14px; }
+    .guide-visual { height: 94px; margin-top: 9px; position: relative; overflow: hidden; border: 1px solid rgba(43,195,223,.28); border-radius: 12px; background: radial-gradient(circle at 78% 26%, rgba(43,195,223,.22), transparent 25%), linear-gradient(135deg,#182833,#111419); }
+    .guide-visual::before { content: "配置方案"; position: absolute; left: 13px; top: 12px; color: #a9edff; font-size: 10px; }
+    .guide-visual::after { content: "分辨率 1280×720     FPS 30–45     画质 低"; position: absolute; left: 13px; bottom: 15px; color: #fff; font-family: "D-DIN-PRO",var(--font); font-size: 10px; letter-spacing: .02em; }
+    .config-table { display: grid; grid-template-columns: 1fr 1.25fr; gap: 6px 10px; margin-top: 10px; }
+    .config-table span { padding: 7px 8px; border-radius: 7px; background: rgba(255,255,255,.035); color: var(--muted); font-size: 10px; }
+    .config-table span:nth-child(even) { color: #e5e5e9; }
+    .config-empty { margin-top: 9px; padding: 12px; border: 1px dashed rgba(255,255,255,.16); border-radius: 10px; color: var(--muted); font-size: 10px; line-height: 1.5; }
     .games { display: flex; gap: 9px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
     .games::-webkit-scrollbar { width: 0; }
     .game-card { flex: 0 0 156px; min-height: 165px; padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: #19191d; text-align: left; cursor: pointer; transition: transform .18s ease, border-color .18s ease; }
     .game-card:hover, .game-card.selected { transform: translateY(-2px); border-color: rgba(43,195,223,.8); }
     .game-cover { height: 88px; position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 10px; background: radial-gradient(circle at 76% 18%, rgba(255,175,68,.72), transparent 24%), linear-gradient(145deg, #310d18, #14151b 72%); }
     .game-cover.d3 { background: radial-gradient(circle at 25% 12%, rgba(173,67,52,.75), transparent 28%), linear-gradient(145deg, #1e1516, #12141a 72%); }
-    .game-cover.immortal { background: radial-gradient(circle at 74% 20%, rgba(84,180,255,.68), transparent 25%), linear-gradient(145deg, #111b2e, #17141c 74%); }
     .game-cover.d2 { background: radial-gradient(circle at 74% 20%, rgba(255,178,42,.7), transparent 25%), linear-gradient(145deg, #311a0c, #151219 74%); }
     .game-mark { width: 39px; height: 39px; border: 3px solid #df4b3b; transform: rotate(45deg); display: grid; place-items: center; color: #ffd28a; font-family: Georgia, serif; font-size: 20px; font-weight: 800; text-shadow: 0 0 10px rgba(255,175,92,.9); }
     .game-mark span { transform: rotate(-45deg); }
@@ -162,7 +193,7 @@
     .popup-backdrop { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(0,0,0,.9); }
     .popup-backdrop.hidden { display: none; }
     .popup { width: 100%; max-width: 340px; position: relative; text-align: center; padding: 22px 18px 24px; border: 1px solid rgba(154,86,255,.28); border-radius: 24px; background: radial-gradient(circle at 50% 44%, rgba(117,38,226,.18), transparent 46%), rgba(10,10,13,.92); box-shadow: 0 0 40px rgba(102,44,205,.24); }
-    .popup-close { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; border: 0; border-radius: 50%; background: #303034; color: #b9b9bf; cursor: pointer; font-size: 18px; line-height: 1; }
+    .popup-close { position: absolute; top: -14px; right: -14px; width: 30px; height: 30px; border: 0; border-radius: 50%; background: #303034; color: #b9b9bf; cursor: pointer; font-size: 18px; line-height: 1; box-shadow: 0 4px 14px rgba(0,0,0,.45); }
     .popup-close:hover { background: #46464c; color: #fff; }
     .popup h2 { margin: 3px 0 6px; font-size: 26px; line-height: 1.1; font-style: italic; font-weight: 800; letter-spacing: -.05em; background: linear-gradient(180deg, #fff 8%, #dbb4ff 38%, #7c2cff 82%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 17px rgba(153,74,255,.85); }
     .popup p { margin: 0; color: #fff; font-size: 13px; font-weight: 700; text-shadow: 0 0 10px rgba(203,145,255,.7); }
@@ -170,14 +201,10 @@
     .evidence-scene::before { content: ""; position: absolute; inset: 0; opacity: .36; background: repeating-linear-gradient(122deg, transparent 0 16px, rgba(255,255,255,.05) 17px 18px); }
     .evidence-sigil { position: absolute; left: 50%; top: 25px; width: 94px; height: 94px; transform: translateX(-50%) rotate(45deg); border: 5px solid #e34d3d; box-shadow: 0 0 26px rgba(255,65,44,.55), inset 0 0 16px rgba(255,167,72,.28); }
     .evidence-sigil::after { content: "D"; position: absolute; inset: 17px; display: grid; place-items: center; transform: rotate(-45deg); color: #ffd28c; font-family: Georgia, serif; font-size: 42px; font-weight: 800; }
-    .evidence-label { position: absolute; left: 12px; top: 12px; z-index: 1; color: #ffd89a; font-size: 10px; }
-    .evidence-device { position: absolute; left: 12px; bottom: 13px; z-index: 1; color: #fff; font-size: 11px; font-weight: 700; }
-    .evidence-device span { display: block; margin-top: 4px; color: rgba(255,255,255,.68); font-size: 9px; font-weight: 400; }
     .spark { position: absolute; width: 7px; height: 7px; background: #ffbd6b; transform: rotate(45deg); box-shadow: 0 0 12px #ff8b5d; }
     .spark.s1 { left: 36px; top: 83px; } .spark.s2 { right: 34px; top: 52px; background: #ffc85c; } .spark.s3 { left: 66px; top: 32px; background: #e9a8ff; } .spark.s4 { right: 75px; top: 107px; background: #ff84bd; }
     .popup-cta { width: 190px; min-height: 44px; border: 1px solid #d3a0ff; border-radius: 999px; background: linear-gradient(180deg, #a665ff, #6c27df); color: #fff; font-size: 15px; font-weight: 750; cursor: pointer; box-shadow: 0 0 18px rgba(138,62,255,.62), inset 0 1px 2px rgba(255,255,255,.48); }
     .popup-cta:hover { filter: brightness(1.13); }
-    .popup-foot { margin: 10px 0 0; color: #77727f; font-size: 9px; }
     @media (max-height: 730px) { body { align-items: flex-start; padding-top: 12px; } .hero { min-height: 260px; } }
     @media (min-width: 700px) { .phone { width: 430px; height: 932px; } }
     @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
@@ -185,7 +212,7 @@
 </head>
 <body>
   <main class="demo-wrap">
-    <div class="demo-tools"><span><strong>GameHub H5 Demo</strong> · 暗黑系列首发适配</span><button class="demo-link" id="openActivityTop">打开暗黑系列活动 Demo ↗</button></div>
+    <div class="demo-tools"><span><strong>GameHub H5 Demo</strong> · 暗黑系列首发适配</span></div>
     <section class="phone" aria-label="暗黑系列首发适配落地页">
       <div class="app">
         <div class="status"><span>9:41</span><span class="status-right"><span>5G</span><span>▰</span><span class="battery"><i></i></span></span></div>
@@ -193,7 +220,6 @@
           <header class="topbar">
             <button class="back" id="backBtn" aria-label="返回">‹</button>
             <div class="top-title">盖世首发适配</div>
-            <span class="top-meta">暗黑系列</span>
           </header>
           <section class="hero" id="hero">
             <div class="hero-art" aria-hidden="true"></div>
@@ -201,82 +227,31 @@
               <div class="eyebrow"><i></i>盖世首发适配 · PC版</div>
               <h1>暗黑系列<br><span>本地开战</span></h1>
               <p>通过 Battle.net 获取游戏，回到盖世游戏启动。非云游戏、非串流。</p>
-              <div class="hero-actions">
-                <button class="btn btn-primary" id="playBtn">查看游玩方法</button>
-                <button class="btn btn-secondary" id="activityBtn">参加活动</button>
-              </div>
             </div>
           </section>
 
           <section class="section">
-            <div class="section-head"><h2>首发游玩视频</h2><p>实机录屏轮播</p></div>
             <div class="video-shell" id="videoShell"></div>
             <div class="video-controls" id="videoControls"></div>
+            <div class="video-info"><b id="videoInfoTitle">《暗黑破坏神 IV》主城与战斗</b><span id="videoInfoMeta">骁龙 8 Gen 3 · 30–45 FPS · 连续运行录屏</span></div>
           </section>
 
-          <section class="section">
-            <div class="section-head"><h2>推荐适配参数</h2><p id="paramLabel">《暗黑破坏神 IV》</p></div>
-            <div class="evidence">
-              <div class="stat"><b id="paramPlatform">PC版</b><span>本地运行方式</span></div>
-              <div class="stat"><b id="paramFps">30–45</b><span>推荐 FPS 区间</span></div>
-              <div class="stat"><b id="paramDevice">8 Gen 3</b><span>示例验证设备</span></div>
-              <div class="stat"><b id="paramVersion">7.18</b><span>最近验证版本</span></div>
+          <section class="section" id="contentTabs">
+            <div class="main-tabs"><button class="main-tab active" data-tab="config">推荐配置</button><button class="main-tab" data-tab="start">启动方法</button><button class="main-tab" data-tab="activity">游玩活动</button><button class="main-tab" data-tab="faq">常见问题</button></div>
+            <div class="tab-panel" data-panel="config">
+              <div class="games" id="games"></div>
+              <div class="section-head"><h2>推荐适配参数</h2><p id="paramLabel">《暗黑破坏神 IV》</p></div>
+              <div class="evidence"><div class="stat"><b id="paramPlatform">PC版</b><span>本地运行方式</span></div><div class="stat"><b id="paramFps">30–45</b><span>推荐 FPS 区间</span></div><div class="stat"><b id="paramDevice">8 Gen 3</b><span>示例验证设备</span></div><div class="stat"><b id="paramVersion">7.18</b><span>最近验证版本</span></div></div>
+              <div class="query-row"><input id="deviceInput" aria-label="输入手机型号或芯片" placeholder="例如：骁龙 8 Gen 3 / 一加 12"><button class="btn btn-primary" id="queryBtn">查询</button></div>
+            <div class="query-result pending" id="queryResult"><span class="query-dot"></span><b>输入机型后查询适配结果</b><small>我们不会自动读取当前设备信息</small></div>
+              <div class="config-row"><span>配置方案：<b id="configName">稳定画质 · 30–45 FPS</b></span><button class="copy-btn" id="copyConfig">复制</button></div>
+              <div class="section-head compact"><h2>更多适配机型</h2></div>
+              <div class="device-list"><span>一加 12<br>骁龙 8 Gen 3</span><span>红魔 9 Pro<br>骁龙 8 Gen 3</span><span>小米 14<br>骁龙 8 Gen 3</span><span>ROG 8<br>骁龙 8 Gen 3</span><span>拯救者 Y900<br>骁龙平台</span></div>
+              <div class="config-guide"><h3>配置指引</h3><div class="guide-visual" id="configGuideVisual"></div><div class="config-table" id="configTable"></div></div>
             </div>
-          </section>
-
-          <section class="section" id="querySection">
-            <div class="section-head"><h2>查询当前设备</h2><p>输入机型或芯片</p></div>
-            <div class="query-row"><input id="deviceInput" aria-label="输入手机型号或芯片" placeholder="例如：骁龙 8 Gen 3 / 一加 12"><button class="btn btn-primary" id="queryBtn">查询</button></div>
-            <div class="query-result" id="queryResult"><span class="query-dot"></span><b>当前机型可完美适配</b><small>已匹配《暗黑破坏神 IV》推荐配置</small></div>
-            <div class="config-row"><span>配置方案：<b id="configName">稳定画质 · 30–45 FPS</b></span><button class="copy-btn" id="copyConfig">复制</button></div>
-          </section>
-
-          <section class="section" id="gamesSection">
-            <div class="section-head"><h2>暗黑系列</h2><p>选择一款查看流程</p></div>
-            <div class="games" id="games"></div>
-          </section>
-
-          <section class="section" id="guideSection">
-            <div class="section-head"><h2 id="guideTitle">Battle.net 游玩流程</h2><p id="guideGameLabel">《暗黑破坏神 IV》</p></div>
-            <div class="guide-card">
-              <div class="guide-tabs" id="guideTabs"></div>
-              <div class="guide-body"><h3 id="guideStepTitle"></h3><p id="guideStepCopy"></p><span class="guide-note" id="guideNote"></span></div>
-            </div>
-          </section>
-
-          <section class="section">
-            <div class="section-head"><h2>移动游玩攻略</h2><p>让本地开战更稳定</p></div>
-            <div class="guide-card">
-              <div class="guide-body">
-                <h3 id="tipsTitle">手柄与画质设置</h3>
-                <p id="tipsCopy">推荐连接手柄操作，先以稳定帧率为优先；连续运行时保持散热，安装完成后回到盖世游戏启动。</p>
-                <span class="guide-note">已知问题与解决方式见游戏详情</span>
-              </div>
-            </div>
-          </section>
-
-          <section class="section">
-            <div class="activity-teaser">
-              <h3 id="activityTitle">暗黑系列游玩活动</h3>
-              <p id="activityCopy">完成首次有效启动与 30 分钟游玩任务，查看当前游戏对应的权益和移动PC装备奖池。</p>
-              <div class="prize-row" id="prizeRow" aria-label="活动奖品预览"><div class="prize">标准版<br>权益</div><div class="prize">游戏<br>手柄</div><div class="prize">手机<br>散热</div><div class="prize">快充<br>配件</div></div>
-              <button class="btn btn-primary" id="activityBtn2">进入暗黑系列游玩活动</button>
-            </div>
-          </section>
-
-          <section class="section">
-            <div class="section-head"><h2>常见问题</h2><p>先看懂再开始</p></div>
-            <div class="faq" id="faq">
-              <div class="faq-item open"><button class="faq-q">需要先安装什么？</button><div class="faq-a">先安装 Battle.net 客户端，再回到盖世游戏导入当前暗黑游戏；账号登录和游戏下载都在 Battle.net 官方客户端完成。</div></div>
-              <div class="faq-item"><button class="faq-q">盖世游戏会保存 Battle.net 密码吗？</button><div class="faq-a">不会。盖世游戏不提供 Battle.net 密码输入框，也不采集或保存账号密码。</div></div>
-              <div class="faq-item"><button class="faq-q">游戏安装后为什么要回到盖世启动？</button><div class="faq-a">Battle.net 负责账号、下载和安装；盖世游戏负责兼容配置和本地启动，两者分工不同。</div></div>
-              <div class="faq-item"><button class="faq-q">没有游戏权益可以参加活动吗？</button><div class="faq-a">可以查看落地页并参加符合资格的新人活动；标准版游戏权益是否发放，以活动奖池和地区规则为准。</div></div>
-            </div>
-          </section>
-          <section class="section" id="infoSection">
-            <div class="info-tabs"><button class="info-tab active" data-info="devices">更多适配机型</button><button class="info-tab" data-info="guide">使用说明</button></div>
-            <div class="info-panel" id="infoDevices"><h3>首发已验证 · 横向浏览更多机型</h3><div class="device-list"><span>一加 12<br>骁龙 8 Gen 3</span><span>红魔 9 Pro<br>骁龙 8 Gen 3</span><span>小米 14<br>骁龙 8 Gen 3</span><span>ROG 8<br>骁龙 8 Gen 3</span><span>拯救者 Y900<br>骁龙平台</span></div><p>未列机型暂不代表无法运行，查询结果与实机验证记录持续更新。</p></div>
-            <div class="info-panel hidden" id="infoGuide"><h3>从 Battle.net 到盖世启动</h3><div class="usage-steps"><div class="usage-step"><b>1</b><span><strong>下载</strong><br>安装 Battle.net 客户端并准备账号。</span></div><div class="usage-step"><b>2</b><span><strong>导入</strong><br>回到盖世游戏，在对应游戏详情页导入 Battle.net 游戏。</span></div><div class="usage-step"><b>3</b><span><strong>使用配置方案</strong><br>登录、下载并安装游戏后，回到盖世使用推荐配置启动。</span></div></div><button class="inline-link" id="guideJump">查看七步游玩流程 ›</button></div>
+            <div class="tab-panel hidden" data-panel="start" id="guideSection"><div class="section-head"><h2>Battle.net 启动流程</h2><p id="guideGameLabel">《暗黑破坏神 IV》</p></div><div class="flat-guide" id="flatGuide"></div><div class="guide-card"><div class="guide-body"><h3 id="tipsTitle">手柄与画质设置</h3><p id="tipsCopy"></p><span class="guide-note" id="guideNote"></span></div></div></div>
+            <div class="tab-panel hidden" data-panel="activity"><div class="activity-teaser"><h3 id="activityTitle">暗黑系列游玩活动</h3><p id="activityCopy">完成首次有效启动与 30 分钟游玩任务，查看当前游戏对应奖池。</p><div class="prize-row" id="prizeRow"></div><button class="btn btn-primary" id="activityBtn2">进入暗黑系列游玩活动</button></div></div>
+            <div class="tab-panel hidden" data-panel="faq"><div class="faq" id="faq"><div class="faq-item open"><button class="faq-q">需要先安装什么？</button><div class="faq-a">先安装 Battle.net 客户端，再回到盖世游戏导入当前暗黑游戏。</div></div><div class="faq-item"><button class="faq-q">盖世游戏会保存 Battle.net 密码吗？</button><div class="faq-a">不会。账号登录和游戏下载都在 Battle.net 官方客户端完成。</div></div><div class="faq-item"><button class="faq-q">安装后为什么要回到盖世启动？</button><div class="faq-a">Battle.net负责下载和安装，盖世游戏负责兼容配置和本地启动。</div></div></div></div>
           </section>
           <p class="foot">本页面为盖世游戏首发适配 Demo。游戏名称、商标及版权归各自权利人所有。本产品与相关游戏发行方无关联。兼容结论以页面列出的设备、版本和运行环境为准。</p>
         </div>
@@ -284,11 +259,10 @@
         <div class="popup-backdrop" id="popup" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
           <div class="popup">
             <button class="popup-close" id="popupClose" aria-label="关闭">×</button>
-            <h2 id="popupTitle">暗黑系列 PC版<br>盖世游戏首发适配</h2>
+            <h2 id="popupTitle">暗黑系列 PC版首发适配</h2>
             <p>本地运行 · 非云游戏 · Battle.net完整游玩攻略</p>
-            <div class="evidence-scene" aria-label="首发实机证据预览"><span class="evidence-label">首发游玩录屏 · 实机验证</span><div class="evidence-sigil"></div><span class="evidence-device">骁龙 8 Gen 3 · 30–45 FPS<span>本地 PC 版运行 · Battle.net 流程已整理</span></span><div class="spark s1"></div><div class="spark s2"></div><div class="spark s3"></div><div class="spark s4"></div></div>
+            <div class="evidence-scene" aria-label="暗黑系列首发适配主视觉"><div class="evidence-sigil"></div><div class="spark s1"></div><div class="spark s2"></div><div class="spark s3"></div><div class="spark s4"></div></div>
             <button class="popup-cta" id="popupCta">查看游玩方法 ›</button>
-            <p class="popup-foot">查看已验证作品、实机效果与活动入口</p>
           </div>
         </div>
       </div>
@@ -296,33 +270,31 @@
   </main>
   <script>
     const games = [
-      { id: 'd4', name: '《暗黑破坏神 IV》', status: '已验证', verified: true, cover: '', tips: '推荐手柄操作；先以稳定帧率为优先，连续运行时保持散热。', guideNote: '已验证内容', prizes: ['标准版权益', '游戏手柄', '手机散热', '快充配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑4》。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑4》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] },
-      { id: 'd3', name: '《暗黑破坏神 III》', status: '流程预览', verified: false, cover: 'd3', tips: '当前仅展示 Battle.net 游玩流程；实机参数和支持状态待独立验证。', guideNote: '暂无实机参数', prizes: ['游戏权益', '游戏手柄', '手机散热', '移动配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑3》。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑3》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] },
-      { id: 'immortal', name: '暗黑破坏神：不朽', status: '流程预览', verified: false, cover: 'immortal', tips: '当前仅展示 Battle.net 游玩流程；PC版实机参数和支持状态待独立验证。', guideNote: '暂无实机参数', prizes: ['游戏权益', '游戏手柄', '手机散热', '移动配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑不朽》PC版。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑不朽》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] },
-      { id: 'd2r', name: '《暗黑破坏神2》重制版', status: '流程预览', verified: false, cover: 'd2', tips: '当前仅展示 Battle.net 游玩流程；实机参数和支持状态待独立验证。', guideNote: '暂无实机参数', prizes: ['游戏权益', '游戏手柄', '手机散热', '移动配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑2》重制版。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑2》重制版。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] }
+      { id: 'd4', name: '《暗黑破坏神 IV》', status: '已验证', verified: true, cover: '', tips: '推荐手柄操作；先以稳定帧率为优先，连续运行时保持散热。', guideNote: '已验证内容', prizes: ['30分钟时长', '游戏手柄', '手机散热', '快充配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑4》。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑4》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] },
+      { id: 'd3', name: '《暗黑破坏神 III》', status: '流程预览', verified: false, cover: 'd3', tips: '当前仅展示 Battle.net 游玩流程；实机参数和支持状态待独立验证。', guideNote: '暂无实机参数', prizes: ['30分钟时长', '游戏手柄', '手机散热', '快充配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑3》。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑3》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] },
+      { id: 'd2r', name: '《暗黑破坏神2》重制版', status: '流程预览', verified: false, cover: 'd2', tips: '当前仅展示 Battle.net 游玩流程；实机参数和支持状态待独立验证。', guideNote: '暂无实机参数', prizes: ['30分钟时长', '游戏手柄', '手机散热', '快充配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑2》重制版。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑2》重制版。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] }
     ];
     let selected = games[0];
-    let stepIndex = 0;
     let videoIndex = 0;
     const videoSlides = [
       { title: '《暗黑破坏神 IV》主城与战斗', meta: '骁龙 8 Gen 3 · 30–45 FPS · 连续运行录屏', duration: '01:24', scene: '' },
-      { title: '《暗黑破坏神：不朽》PC版启动', meta: 'Battle.net 登录后下载 · 回到盖世启动', duration: '00:58', scene: 'scene-2' },
       { title: '《暗黑破坏神 III》实机录屏待补充', meta: '当前为系列流程预览 · 暂无实机参数', duration: '--:--', scene: 'scene-3' },
       { title: '《暗黑破坏神2》重制版画面设置', meta: '推荐参数待验证 · 已知问题说明', duration: '01:12', scene: 'scene-4' }
     ];
     const paramMap = {
-      d4: { label: '《暗黑破坏神 IV》', platform: 'PC版', fps: '30–45', device: '8 Gen 3', version: '7.18' },
-      d3: { label: '《暗黑破坏神 III》', platform: '流程预览', fps: '暂无数据', device: '暂无数据', version: '暂无数据' },
-      immortal: { label: '暗黑破坏神：不朽', platform: '流程预览', fps: '暂无数据', device: '暂无数据', version: '暂无数据' },
-      d2r: { label: '《暗黑破坏神2》重制版', platform: '流程预览', fps: '暂无数据', device: '暂无数据', version: '暂无数据' }
+      d4: { label: '《暗黑破坏神 IV》', platform: 'PC版', fps: '30–45', device: '8 Gen 3', version: '7.18', config: '稳定画质 · 30–45 FPS', rows: [['分辨率','1280×720'],['帧率','30–45 FPS'],['画质','低 · 阴影关闭'],['操控','手柄推荐'],['运行环境','盖世 PC 引擎'] ] },
+      d3: { label: '《暗黑破坏神 III》', platform: '流程预览', fps: '暂无数据', device: '暂无数据', version: '暂无数据', config: '', rows: [] },
+      d2r: { label: '《暗黑破坏神2》重制版', platform: '流程预览', fps: '暂无数据', device: '暂无数据', version: '暂无数据', config: '', rows: [] }
     };
     const activityUrl = '暗黑系列运营活动demo.html';
     const $ = (selector) => document.querySelector(selector);
     function openActivity() { window.open(`${activityUrl}?game=${selected.id}`, '_blank', 'noopener'); }
     function renderVideo() {
       const slide = videoSlides[videoIndex];
-      $('#videoShell').innerHTML = `<div class="video-scene ${slide.scene}"><div class="video-topline"><span class="video-tag">首发游玩录屏</span><span>${videoIndex + 1} / ${videoSlides.length}</span></div><div class="play-ring" aria-label="录屏占位">录屏预览</div><div class="video-bottom"><div><div class="video-title">${slide.title}</div><div class="video-meta">${slide.meta}</div></div><span class="video-duration">${slide.duration}</span></div></div>`;
+      $('#videoShell').innerHTML = `<div class="video-scene ${slide.scene}"><div class="play-ring" aria-label="录屏占位">录屏预览</div></div>`;
       $('#videoControls').innerHTML = `<button class="video-arrow" id="videoPrev" aria-label="上一个视频">‹</button>${videoSlides.map((_, i) => `<button class="video-dot ${i === videoIndex ? 'active' : ''}" data-video="${i}" aria-label="第${i + 1}个视频"></button>`).join('')}<button class="video-arrow" id="videoNext" aria-label="下一个视频">›</button>`;
+      $('#videoInfoTitle').textContent = slide.title;
+      $('#videoInfoMeta').textContent = slide.meta;
       $('#videoPrev').addEventListener('click', () => { videoIndex = (videoIndex - 1 + videoSlides.length) % videoSlides.length; renderVideo(); });
       $('#videoNext').addEventListener('click', () => { videoIndex = (videoIndex + 1) % videoSlides.length; renderVideo(); });
       document.querySelectorAll('.video-dot').forEach(dot => dot.addEventListener('click', () => { videoIndex = Number(dot.dataset.video); renderVideo(); }));
@@ -333,10 +305,8 @@
     }
     function renderGuide() {
       $('#guideGameLabel').textContent = selected.name;
-      $('#guideTabs').innerHTML = selected.guide.map((step, i) => `<button class="step-tab ${i === stepIndex ? 'active' : ''}" data-step="${i}"><span>0${i + 1}</span>${['下载','导入','启动','登录','下载游戏','安装','回到盖世'][i]}</button>`).join('');
-      document.querySelectorAll('.step-tab').forEach(tab => tab.addEventListener('click', () => { stepIndex = Number(tab.dataset.step); renderGuide(); }));
-      $('#guideStepTitle').textContent = `${String(stepIndex + 1).padStart(2, '0')} · ${['下载 Battle.net 客户端','导入当前游戏','启动 Battle.net','登录账号','下载自己的游戏','完成安装','回到盖世启动'][stepIndex]}`;
-      $('#guideStepCopy').textContent = !selected.verified && stepIndex === 6 ? '当前仅展示 Battle.net 到盖世的流程预览；对应游戏完成兼容验证后，再开放正式启动入口。' : selected.guide[stepIndex];
+      const titles=['下载 Battle.net','导入当前游戏','启动 Battle.net','登录账号','下载自己的游戏','完成安装','回到盖世启动'];
+      $('#flatGuide').innerHTML = selected.guide.map((copy,i)=>`<div class="flat-step"><div class="step-visual step-${i+1}"><b>${i+1}</b></div><div><strong>${titles[i]}</strong><span>${!selected.verified&&i===6?'当前仅为流程预览；完成兼容验证后开放正式启动入口。':copy}</span></div></div>`).join('');
       $('#guideNote').textContent = selected.guideNote;
       $('#tipsTitle').textContent = selected.id === 'd4' ? '手柄与画质设置' : '版本与设备设置';
       $('#tipsCopy').textContent = selected.tips;
@@ -346,20 +316,18 @@
       $('#activityCopy').textContent = selected.verified ? '完成首次有效启动与 30 分钟游玩任务，查看当前游戏对应的权益和移动PC装备奖池。' : '当前为流程预览，活动奖品与开放状态以对应游戏正式验证后的活动页配置为准。';
       $('#prizeRow').innerHTML = selected.prizes.map(prize => `<div class="prize">${prize.replace(' ', '<br>')}</div>`).join('');
     }
-    function selectGame(id) { selected = games.find(game => game.id === id) || games[0]; stepIndex = 0; const params = paramMap[selected.id]; $('#paramLabel').textContent = params.label; $('#paramPlatform').textContent = params.platform; $('#paramFps').textContent = params.fps; $('#paramDevice').textContent = params.device; $('#paramVersion').textContent = params.version; document.querySelectorAll('.game-card').forEach(card => card.classList.toggle('selected', card.dataset.game === selected.id)); renderGuide(); renderActivity(); $('#guideSection').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    function renderConfigGuide(){ const params=paramMap[selected.id]; $('#configName').textContent=params.config||'暂无推荐配置'; if(!params.rows.length){$('#configGuideVisual').style.display='none';$('#configTable').innerHTML='<div class="config-empty">当前仅展示游玩流程，尚未形成可复制的实机配置方案。完成独立兼容验证后补充具体参数。</div>';return;} $('#configGuideVisual').style.display='block'; $('#configTable').innerHTML=params.rows.map(row=>`<span>${row[0]}</span><span>${row[1]}</span>`).join(''); }
+    function selectGame(id) { selected = games.find(game => game.id === id) || games[0]; const params = paramMap[selected.id]; $('#paramLabel').textContent = params.label; $('#paramPlatform').textContent = params.platform; $('#paramFps').textContent = params.fps; $('#paramDevice').textContent = params.device; $('#paramVersion').textContent = params.version; document.querySelectorAll('.game-card').forEach(card => card.classList.toggle('selected', card.dataset.game === selected.id)); renderGuide(); renderActivity(); renderConfigGuide(); }
+    function activateMainTab(id){ document.querySelectorAll('.main-tab').forEach(tab=>tab.classList.toggle('active',tab.dataset.tab===id)); document.querySelectorAll('.tab-panel').forEach(panel=>panel.classList.toggle('hidden',panel.dataset.panel!==id)); }
     function closePopup() { $('#popup').classList.add('hidden'); }
-    renderGames(); renderGuide(); renderVideo(); renderActivity();
+    renderGames(); renderGuide(); renderVideo(); renderActivity(); renderConfigGuide();
     $('#popupClose').addEventListener('click', closePopup);
-    $('#popupCta').addEventListener('click', () => { closePopup(); $('#guideSection').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
-    $('#playBtn').addEventListener('click', () => $('#guideSection').scrollIntoView({ behavior: 'smooth', block: 'start' }));
-    $('#activityBtn').addEventListener('click', openActivity);
+    $('#popupCta').addEventListener('click', () => { closePopup(); activateMainTab('start'); $('#contentTabs').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     $('#activityBtn2').addEventListener('click', openActivity);
-    $('#openActivityTop').addEventListener('click', openActivity);
     $('#backBtn').addEventListener('click', () => { $('#scroll').scrollTo({ top: 0, behavior: 'smooth' }); });
-    $('#queryBtn').addEventListener('click', () => { const value = $('#deviceInput').value.trim(); const result = $('#queryResult'); if (!value) { result.classList.add('warn'); result.querySelector('b').textContent = '请输入机型或芯片'; result.querySelector('small').textContent = '例如：骁龙 8 Gen 3 / 一加 12'; return; } const matched = /8\s*gen\s*3|一加\s*12|红魔\s*9|小米\s*14|rog\s*8/i.test(value); result.classList.toggle('warn', !matched); result.querySelector('b').textContent = matched ? '当前机型可完美适配' : '暂无对应适配记录'; result.querySelector('small').textContent = matched ? `已匹配${selected.name}推荐配置` : '查看下方已支持机型，未列机型暂不代表无法运行'; });
+    $('#queryBtn').addEventListener('click', () => { const value = $('#deviceInput').value.trim(); const result = $('#queryResult'); result.classList.remove('pending'); if (!value) { result.classList.add('warn'); result.querySelector('b').textContent = '请输入机型或芯片'; result.querySelector('small').textContent = '例如：骁龙 8 Gen 3 / 一加 12'; return; } const matched = /8\s*gen\s*3|一加\s*12|红魔\s*9|小米\s*14|rog\s*8/i.test(value); result.classList.toggle('warn', !matched); result.querySelector('b').textContent = matched ? '当前机型可完美适配' : '暂无对应适配记录'; result.querySelector('small').textContent = matched ? `已匹配${selected.name}推荐配置` : '查看下方已支持机型，未列机型暂不代表无法运行'; });
     $('#copyConfig').addEventListener('click', () => { const button = $('#copyConfig'); button.textContent = '已复制'; try { navigator.clipboard?.writeText($('#configName').textContent); } catch (e) {} setTimeout(() => { button.textContent = '复制'; }, 1400); });
-    document.querySelectorAll('.info-tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.info-tab').forEach(item => item.classList.toggle('active', item === tab)); $('#infoDevices').classList.toggle('hidden', tab.dataset.info !== 'devices'); $('#infoGuide').classList.toggle('hidden', tab.dataset.info !== 'guide'); }));
-    $('#guideJump').addEventListener('click', () => $('#guideSection').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    document.querySelectorAll('.main-tab').forEach(tab=>tab.addEventListener('click',()=>activateMainTab(tab.dataset.tab)));
     document.querySelectorAll('.faq-q').forEach(button => button.addEventListener('click', () => button.parentElement.classList.toggle('open')));
   </script>
 </body>
