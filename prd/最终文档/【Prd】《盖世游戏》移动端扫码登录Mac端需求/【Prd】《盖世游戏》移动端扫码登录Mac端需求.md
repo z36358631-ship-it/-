@@ -56,7 +56,7 @@
 
 ### 4\.2 C 端页面与状态
 
-demo:[扫码登录 Mac 端交互 Demo](https://htmlpreview.github.io/?https://raw.githubusercontent.com/z36358631-ship-it/-/a1aa690333ce09972aa42c2611498a2e1cda613e/public/prd/mac-qr-login/demo.html)
+demo:[扫码登录 Mac 端交互 Demo](https://htmlpreview.github.io/?https://raw.githubusercontent.com/z36358631-ship-it/-/65cb55ec4b83c257960da78edbbd52a6c63c9e4f/public/prd/mac-qr-login/demo.html)
 
 |模块名称|图示|展示\&交互说明|
 |---|---|---|
