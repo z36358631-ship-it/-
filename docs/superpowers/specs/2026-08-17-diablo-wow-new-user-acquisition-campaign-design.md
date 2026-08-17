@@ -8,6 +8,8 @@
 
 **关联设计：** `docs/superpowers/specs/2026-08-17-diablo-wow-compatibility-launch-campaign-design.md`
 
+> **当前阶段说明：** 本文为前期双作新用户拉新探索稿。本期仅实施《暗黑破坏神 IV》的首发适配落地页与现有运营活动 H5，当前口径以 `2026-08-17-diablo4-h5-landing-and-activity-design.md` 为准。
+
 ## 1. 结论
 
 本活动只参考既有新人方案的“注册后 7 天关键期”和站内投放位置，不照搬 27.5 小时秒玩时长奖励。
