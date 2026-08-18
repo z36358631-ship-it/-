@@ -41,7 +41,7 @@
     .battery i { display: block; width: 70%; height: 100%; background: var(--gold); border-radius: 1px; }
     .scroll { height: calc(100% - 28px); overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
     .scroll::-webkit-scrollbar { width: 0; }
-    .topbar { height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid rgba(255,255,255,.06); background: rgba(14,14,16,.86); backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 4; }
+    .topbar { height: 52px; display: flex; align-items: center; justify-content: flex-start; gap: 4px; padding: 0 16px; border-bottom: 1px solid rgba(255,255,255,.06); background: rgba(14,14,16,.86); backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 4; }
     .back { width: 34px; height: 34px; border: 0; border-radius: 50%; background: transparent; cursor: pointer; color: #e5e5e8; font-size: 22px; }
     .back:hover { background: rgba(255,255,255,.08); }
     .top-title { font-size: 14px; font-weight: 650; letter-spacing: .03em; }
@@ -90,8 +90,9 @@
     .video-info b { display: block; color: #f2f2f5; font-size: 13px; line-height: 1.35; }
     .video-info span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.4; }
     .main-tabs { display: grid; grid-template-columns: repeat(4,1fr); border-bottom: 1px solid var(--line); position: sticky; top: 52px; z-index: 3; background: rgba(14,14,16,.96); backdrop-filter: blur(14px); }
-    .main-tab { min-width: 0; height: 44px; padding: 0 2px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); cursor: pointer; font-size: 10px; white-space: nowrap; }
+    .main-tab { min-width: 0; height: 44px; padding: 0 2px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); cursor: pointer; font-size: 16px; white-space: nowrap; }
     .main-tab.active { color: #fff; border-bottom-color: var(--gold); }
+    #guideSection > .section-head h2 { font-size: 10px; }
     .tab-panel { padding-top: 14px; }
     .tab-panel.hidden { display: none; }
     .flat-guide { display: grid; gap: 8px; }
@@ -244,7 +245,7 @@
         <div class="scroll" id="scroll">
           <header class="topbar">
             <button class="back" id="backBtn" aria-label="返回">‹</button>
-            <div class="top-title">盖世首发适配</div>
+            <div class="top-title">暗黑系游戏畅玩合集</div>
           </header>
           <section class="hero" id="hero">
             <div class="hero-art" aria-hidden="true"></div>
@@ -345,7 +346,7 @@
     function closePopup() { $('#popup').classList.add('hidden'); }
     renderGames(); renderGuide(); renderVideo(); renderActivity(); renderConfigGuide();
     $('#popupClose').addEventListener('click', closePopup);
-    $('#popupCta').addEventListener('click', () => { closePopup(); activateMainTab('start'); $('#contentTabs').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    $('#popupCta').addEventListener('click', () => { closePopup(); activateMainTab('config'); $('#scroll').scrollTo({ top: 0, behavior: 'smooth' }); });
     $('#activityBtn2').addEventListener('click', openActivity);
     $('#backBtn').addEventListener('click', () => { $('#scroll').scrollTo({ top: 0, behavior: 'smooth' }); });
     document.querySelectorAll('.main-tab').forEach(tab=>tab.addEventListener('click',()=>activateMainTab(tab.dataset.tab)));
