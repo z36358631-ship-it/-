@@ -108,6 +108,13 @@
     .step-visual.step-7 { background: radial-gradient(circle at 70% 27%,rgba(43,195,223,.42),transparent 22%),linear-gradient(145deg,#172f3b,#17181d); }
     .flat-step strong { display: block; color: #eeeef2; font-size: 12px; }
     .flat-step span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .guide-hero { min-height: 118px; position: relative; overflow: hidden; display: flex; align-items: end; padding: 14px; border: 1px solid rgba(255,115,80,.42); border-radius: 14px; background: radial-gradient(circle at 78% 23%,rgba(255,177,57,.55),transparent 25%),linear-gradient(135deg,#3b101a,#111319 70%); }
+    .guide-hero.d3 { background: radial-gradient(circle at 25% 26%,rgba(181,74,55,.64),transparent 25%),linear-gradient(135deg,#2d1518,#111319 70%); }
+    .guide-hero::after { content: ""; position:absolute; right:-30px; top:-32px; width:138px; height:138px; border:2px solid rgba(240,80,54,.52); transform:rotate(45deg); box-shadow:0 0 28px rgba(231,55,39,.35); }
+    .guide-hero-copy { position:relative; z-index:1; }
+    .guide-hero-copy b { display:block; color:#fff4d5; font-size:17px; }
+    .guide-hero-copy span { display:block; margin-top:5px; color:#f4bf86; font-size:10px; }
+    .guide-intro { margin:10px 2px 12px; color:var(--muted); font-size:11px; line-height:1.55; }
     .evidence { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
     .stat { background: linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.025)); border: 1px solid var(--line); border-radius: 12px; padding: 10px 8px; min-height: 66px; }
     .stat b { display: block; color: #f3f3f6; font-size: 12px; font-family: "D-DIN-PRO", var(--font); }
@@ -264,7 +271,7 @@
               <div class="section-head compact"><h2>已验证机型</h2></div>
               <div class="device-list"><span>一加 12<br>骁龙 8 Gen 3</span><span>红魔 9 Pro<br>骁龙 8 Gen 3</span><span>小米 14<br>骁龙 8 Gen 3</span><span>ROG 8<br>骁龙 8 Gen 3</span><span>拯救者 Y900<br>骁龙平台</span></div>
             </div>
-            <div class="tab-panel hidden" data-panel="start" id="guideSection"><div class="section-head"><h2>Battle.net 启动流程</h2><p id="guideGameLabel">《暗黑破坏神 IV》</p></div><div class="flat-guide" id="flatGuide"></div><div class="guide-card"><div class="guide-body"><h3 id="tipsTitle">手柄与画质设置</h3><p id="tipsCopy"></p><span class="guide-note" id="guideNote"></span></div></div></div>
+            <div class="tab-panel hidden" data-panel="start" id="guideSection"><div class="section-head"><h2>Battle.net 启动流程</h2><p id="guideGameLabel">《暗黑破坏神 IV》</p></div><div class="guide-hero" id="guideHero"><div class="guide-hero-copy"><b id="guideBannerLabel">《暗黑破坏神 IV》</b><span id="guideBannerStatus">首发游玩攻略 · PC版</span></div></div><p class="guide-intro" id="guideIntro"></p><div class="flat-guide" id="flatGuide"></div><div class="guide-card"><div class="guide-body"><h3 id="tipsTitle">手柄与画质设置</h3><p id="tipsCopy"></p><span class="guide-note" id="guideNote"></span></div></div></div>
             <div class="tab-panel hidden" data-panel="activity"><div class="activity-teaser"><h3 id="activityTitle">暗黑系列游玩活动</h3><p id="activityCopy">完成首次有效启动与 30 分钟游玩任务，查看当前游戏对应奖池。</p><div class="prize-row" id="prizeRow"></div><button class="btn btn-primary" id="activityBtn2">进入暗黑系列游玩活动</button></div></div>
             <div class="tab-panel hidden" data-panel="faq"><div class="faq-list" id="faq"><div class="faq-row"><b>01</b><div><strong>需要先安装什么？</strong><p>先安装 Battle.net 客户端，再回到盖世游戏导入当前暗黑游戏。</p></div></div><div class="faq-row"><b>02</b><div><strong>Battle.net 登录在哪里完成？</strong><p>在 Battle.net 官方客户端内完成登录，盖世游戏不提供账号密码输入框。</p></div></div><div class="faq-row"><b>03</b><div><strong>游戏从哪里下载？</strong><p>登录 Battle.net 后，在游戏库中下载你拥有的对应暗黑游戏。</p></div></div><div class="faq-row"><b>04</b><div><strong>为什么安装后要回到盖世启动？</strong><p>Battle.net 负责账号、下载和安装；盖世游戏负责兼容配置和本地启动。</p></div></div><div class="faq-row"><b>05</b><div><strong>盖世游戏会保存 Battle.net 密码吗？</strong><p>不会。登录过程在 Battle.net 官方客户端内完成，盖世游戏不会采集或保存密码。</p></div></div><div class="faq-row"><b>06</b><div><strong>当前机型没有适配记录怎么办？</strong><p>可以先查看已支持机型和推荐配置，未列机型暂不代表无法运行，最终以实测结果为准。</p></div></div><div class="faq-row"><b>07</b><div><strong>没有游戏权益可以参加活动吗？</strong><p>可以查看攻略并参加符合资格的活动；游戏权益奖品按活动奖池、地区和激活规则发放。</p></div></div></div></div>
           </section>
@@ -285,21 +292,19 @@
   </main>
   <script>
     const games = [
-      { id: 'd4', name: '《暗黑破坏神 IV》', status: '已验证', verified: true, cover: '', tips: '推荐手柄操作；先以稳定帧率为优先，连续运行时保持散热。', guideNote: '已验证内容', prizes: ['30分钟时长', '游戏手柄', '手机散热', '快充配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑4》。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑4》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] },
-      { id: 'd3', name: '《暗黑破坏神 III》', status: '流程预览', verified: false, cover: 'd3', tips: '当前仅展示 Battle.net 游玩流程；实机参数和支持状态待独立验证。', guideNote: '暂无实机参数', prizes: ['30分钟时长', '游戏手柄', '手机散热', '快充配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑3》。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑3》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] },
-      { id: 'd2r', name: '《暗黑破坏神2》重制版', status: '流程预览', verified: false, cover: 'd2', tips: '当前仅展示 Battle.net 游玩流程；实机参数和支持状态待独立验证。', guideNote: '暂无实机参数', prizes: ['30分钟时长', '游戏手柄', '手机散热', '快充配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑2》重制版。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑2》重制版。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] }
+      { id: 'd4', name: '《暗黑破坏神 IV》', status: '已验证', verified: true, cover: '', guideBanner: '暗黑 IV · 本地 PC 版', guideIntro: '从 Battle.net 获取自己的游戏，回到盖世游戏导入并使用推荐配置启动；手柄操作和稳定画质方案优先保障连续游玩。', tips: '推荐手柄操作；先以稳定帧率为优先，连续运行时保持散热。', guideNote: '已验证内容', prizes: ['30分钟时长', '游戏手柄', '手机散热', '快充配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑4》。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑4》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] },
+      { id: 'd3', name: '《暗黑破坏神 III》', status: '流程预览', verified: false, cover: 'd3', guideBanner: '暗黑 III · 游玩流程预览', guideIntro: '当前先展示完整 Battle.net 游玩链路和配置处理方式，实机参数与正式启动入口待独立兼容验证完成后补充。', tips: '当前仅展示 Battle.net 游玩流程；实机参数和支持状态待独立验证。', guideNote: '暂无实机参数', prizes: ['30分钟时长', '游戏手柄', '手机散热', '快充配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑3》。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑3》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] }
     ];
     let selected = games[0];
     let videoIndex = 0;
     const videoSlides = [
       { title: '《暗黑破坏神 IV》主城与战斗', meta: '骁龙 8 Gen 3 · 30–45 FPS · 连续运行录屏', duration: '01:24', scene: '' },
       { title: '《暗黑破坏神 III》实机录屏待补充', meta: '当前为系列流程预览 · 暂无实机参数', duration: '--:--', scene: 'scene-3' },
-      { title: '《暗黑破坏神2》重制版画面设置', meta: '推荐参数待验证 · 已知问题说明', duration: '01:12', scene: 'scene-4' }
+      { title: '《暗黑破坏神 III》配置流程预览', meta: 'Battle.net导入、下载、安装与回到盖世启动', duration: '--:--', scene: 'scene-3' }
     ];
     const paramMap = {
       d4: { label: '《暗黑破坏神 IV》', platform: 'PC版', fps: '30–45', device: '8 Gen 3', version: '7.18', config: '稳定画质 · 30–45 FPS', rows: [['分辨率','1280×720'],['帧率','30–45 FPS'],['画质','低 · 阴影关闭'],['操控','手柄推荐'],['运行环境','盖世 PC 引擎'] ] },
       d3: { label: '《暗黑破坏神 III》', platform: '流程预览', fps: '暂无数据', device: '暂无数据', version: '暂无数据', config: '', rows: [] },
-      d2r: { label: '《暗黑破坏神2》重制版', platform: '流程预览', fps: '暂无数据', device: '暂无数据', version: '暂无数据', config: '', rows: [] }
     };
     const activityUrl = '暗黑系列运营活动demo.html';
     const $ = (selector) => document.querySelector(selector);
@@ -320,6 +325,9 @@
     }
     function renderGuide() {
       $('#guideGameLabel').textContent = selected.name;
+      $('#guideHero').classList.toggle('d3', selected.id === 'd3');
+      $('#guideBannerLabel').textContent = selected.guideBanner;
+      $('#guideIntro').textContent = selected.guideIntro;
       const titles=['下载 Battle.net','导入当前游戏','启动 Battle.net','登录账号','下载自己的游戏','完成安装','回到盖世启动'];
       $('#flatGuide').innerHTML = selected.guide.map((copy,i)=>`<div class="flat-step"><div class="step-visual step-${i+1}"><b>${i+1}</b></div><div><strong>${titles[i]}</strong><span>${!selected.verified&&i===6?'当前仅为流程预览；完成兼容验证后开放正式启动入口。':copy}</span></div></div>`).join('');
       $('#guideNote').textContent = selected.guideNote;
