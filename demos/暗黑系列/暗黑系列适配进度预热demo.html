@@ -97,7 +97,7 @@
     let videoIndex=0;
     function renderVideo(){const slide=videoSlides[videoIndex];document.querySelector('#videoScene').className=`video-scene ${slide.scene}`;document.querySelector('#videoInfoTitle').textContent=slide.title;document.querySelector('#videoInfoMeta').textContent=slide.meta;document.querySelector('#videoControls').innerHTML=`<button class="video-arrow" id="videoPrev" aria-label="上一个视频">‹</button>${videoSlides.map((_,i)=>`<button class="video-dot ${i===videoIndex?'active':''}" data-video="${i}" aria-label="第${i+1}个视频"></button>`).join('')}<button class="video-arrow" id="videoNext" aria-label="下一个视频">›</button>`;document.querySelector('#videoPrev').addEventListener('click',()=>{videoIndex=(videoIndex-1+videoSlides.length)%videoSlides.length;renderVideo()});document.querySelector('#videoNext').addEventListener('click',()=>{videoIndex=(videoIndex+1)%videoSlides.length;renderVideo()});document.querySelectorAll('.video-dot').forEach(dot=>dot.addEventListener('click',()=>{videoIndex=Number(dot.dataset.video);renderVideo()}))}
     document.querySelector('#popupClose').addEventListener('click',()=>document.querySelector('#popup').style.display='none');
-    document.querySelector('#popupCta').addEventListener('click',()=>{document.querySelector('#popup').style.display='none';document.querySelector('#progressSection').scrollIntoView({behavior:'smooth'})});
+    document.querySelector('#popupCta').addEventListener('click',()=>{document.querySelector('#popup').style.display='none'});
     renderVideo();
   </script>
 </body>
