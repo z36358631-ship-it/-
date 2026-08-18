@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>暗黑系列适配进度｜盖世游戏</title>
+  <style>
+    :root{--bg:#09090b;--surface:#151519;--surface-2:#1d1d22;--text:#f4f4f5;--muted:#a2a2aa;--muted-2:#72727b;--gold:#ffc928;--cyan:#2bc3df;--red:#c93c3c;--line:rgba(255,255,255,.11);--font:"MiSans VF","MiSans","PingFang SC","Microsoft YaHei",sans-serif}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#050506;color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased}body{display:flex;justify-content:center;padding:14px 0;overflow:auto}.demo-wrap{width:min(100vw - 28px,560px);display:grid;gap:10px;justify-items:center}.demo-tools{width:100%;display:flex;justify-content:space-between;align-items:center;color:#b7b7bd;font-size:11px}.demo-tools strong{color:#fff;font-weight:700}.phone{width:390px;max-width:100%;min-height:760px;border-radius:30px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 8px #25252a,0 28px 80px rgba(0,0,0,.66);position:relative}.app{position:absolute;inset:0;overflow:hidden;background:radial-gradient(circle at 90% 0%,rgba(131,32,47,.2),transparent 30%),var(--bg)}.status{height:28px;display:flex;justify-content:space-between;align-items:center;padding:0 16px;color:#e6e6e8;font-size:10px}.status-right{display:flex;gap:7px;align-items:center;color:#b4b4bb}.battery{width:19px;height:9px;border:1px solid #8d8d95;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:2px;width:2px;height:4px;background:#8d8d95}.battery i{display:block;width:70%;height:100%;background:var(--gold);border-radius:1px}.scroll{height:calc(100% - 28px);overflow-y:auto;scrollbar-width:none}.scroll::-webkit-scrollbar{width:0}.topbar{height:52px;display:flex;align-items:center;gap:4px;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(14,14,16,.86);backdrop-filter:blur(16px);position:sticky;top:0;z-index:5}.back{width:34px;height:34px;border:0;border-radius:50%;background:transparent;color:#e5e5e8;font-size:22px;cursor:pointer}.top-title{font-size:14px;font-weight:700;letter-spacing:.02em}.hero{min-height:330px;position:relative;overflow:hidden;padding:24px 20px 20px;display:flex;align-items:flex-end;background-image:linear-gradient(90deg,rgba(8,8,10,.98) 0%,rgba(8,8,10,.72) 45%,rgba(8,8,10,.08) 100%),url('assets/暗黑系列即将支持预热主视觉-v1.png');background-size:cover;background-position:center}.hero:after{content:"";position:absolute;inset:auto 0 0;height:100px;background:linear-gradient(transparent,var(--bg));pointer-events:none}.hero-copy{position:relative;z-index:1;max-width:285px}.eyebrow{display:inline-flex;align-items:center;gap:6px;color:#ffd88f;border:1px solid rgba(255,201,40,.4);background:rgba(47,24,16,.75);border-radius:999px;padding:5px 9px;font-size:10px;margin-bottom:13px}.eyebrow i{width:6px;height:6px;background:#ff6047;border-radius:50%;box-shadow:0 0 12px #ff6047}.hero h1{margin:0;font-size:27px;line-height:1.18;letter-spacing:-.03em;font-weight:800}.hero h1 span{color:var(--gold)}.hero p{margin:9px 0 0;color:#d4cfd0;font-size:12px;line-height:1.55}.hero-actions{display:flex;gap:8px;margin-top:16px}.btn{min-height:40px;padding:0 13px;border-radius:11px;border:1px solid transparent;cursor:pointer;font-size:12px;font-weight:750}.btn-primary{background:linear-gradient(180deg,#17a3c9,#006eb2);border-color:var(--cyan);box-shadow:inset 0 1px 3px rgba(255,255,255,.2),0 8px 22px rgba(0,110,178,.24)}.btn-secondary{background:rgba(36,36,38,.9);border-color:rgba(255,255,255,.17);color:#ececf0}.section{padding:18px 16px 0}.section-head{display:flex;align-items:end;justify-content:space-between;gap:8px;margin-bottom:10px}.section-head h2{margin:0;font-size:17px}.section-head p{margin:0;color:var(--muted);font-size:10px}.notice{display:flex;gap:9px;align-items:flex-start;padding:11px 12px;border:1px solid rgba(255,201,40,.24);border-radius:12px;background:rgba(255,201,40,.06);color:#e7d9a1;font-size:11px;line-height:1.5}.notice b{color:var(--gold);white-space:nowrap}.progress-list{display:grid;gap:8px}.progress-card{padding:12px;border:1px solid var(--line);border-radius:13px;background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.02))}.progress-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.progress-top strong{font-size:13px}.status-pill{padding:4px 7px;border-radius:999px;font-size:9px;color:#ffdca2;background:rgba(255,201,40,.1);border:1px solid rgba(255,201,40,.25)}.progress-card p{margin:7px 0 0;color:var(--muted);font-size:10px;line-height:1.5}.progress-line{height:5px;margin-top:9px;border-radius:999px;background:#2a2a2f;overflow:hidden}.progress-line i{display:block;width:42%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#9a3a3f,#ffc928)}.progress-card:nth-child(2) .progress-line i{width:28%;background:linear-gradient(90deg,#6e3c58,#b65d70)}.progress-card:nth-child(3) .progress-line i{width:18%;background:linear-gradient(90deg,#3e4e68,#6d88ad)}.game-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.game-card{min-height:98px;padding:11px;border:1px solid var(--line);border-radius:13px;background:linear-gradient(145deg,#271a20,#151519);position:relative;overflow:hidden}.game-card.d3{background:linear-gradient(145deg,#211b2a,#151519)}.game-card:after{content:"";position:absolute;right:-18px;top:-20px;width:74px;height:74px;border:1px solid rgba(255,201,40,.24);transform:rotate(45deg)}.game-card b{display:block;font-size:22px;color:#ffd477;font-family:Georgia,serif}.game-card.d3 b{color:#c5a4ff}.game-card strong{display:block;margin-top:4px;font-size:12px}.game-card span{display:inline-flex;margin-top:8px;padding:4px 7px;border-radius:999px;background:rgba(255,255,255,.08);color:#d6d6da;font-size:9px}.flow{display:grid;gap:8px}.flow-step{display:grid;grid-template-columns:30px 1fr;gap:9px;align-items:start;padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.flow-no{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:rgba(43,195,223,.16);border:1px solid rgba(43,195,223,.5);color:#9eeaf7;font-size:11px;font-weight:800}.flow-step strong{display:block;font-size:12px}.flow-step p{margin:4px 0 0;color:var(--muted);font-size:10px;line-height:1.45}.faq-list{display:grid;gap:8px;padding-bottom:28px}.faq-row{padding:11px 10px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.025)}.faq-row strong{display:block;color:#eeeef2;font-size:11px}.faq-row p{margin:5px 0 0;color:var(--muted);font-size:10px;line-height:1.5}.foot{padding:0 16px 26px;color:#5f5f66;font-size:9px;line-height:1.5}.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,12px);opacity:0;pointer-events:none;padding:9px 13px;border-radius:999px;background:#27272d;color:#f5f5f7;font-size:11px;transition:.2s ease;z-index:20}.toast.show{opacity:1;transform:translate(-50%,0)}
+  </style>
+</head>
+<body>
+  <main class="demo-wrap">
+    <div class="demo-tools"><span><strong>GameHub H5 Demo</strong> · 暗黑系列适配进度预热</span></div>
+    <section class="phone" aria-label="暗黑系列适配进度预热落地页">
+      <div class="app">
+        <div class="status"><span>9:41</span><span class="status-right"><span>5G</span><span>▰</span><span class="battery"><i></i></span></span></div>
+        <div class="scroll" id="scroll">
+          <header class="topbar"><button class="back" id="backBtn" aria-label="返回">‹</button><div class="top-title">暗黑系列适配进度</div></header>
+          <section class="hero">
+            <div class="hero-copy">
+              <div class="eyebrow"><i></i>首发适配进行中 · PC版</div>
+              <h1>暗黑系列<br><span>即将登陆盖世游戏</span></h1>
+              <p>基础链路已跑通，正在完成登录、游戏下载和虚拟手柄兼容。正式支持后，我们会第一时间通知你。</p>
+              <div class="hero-actions"><button class="btn btn-primary" data-toast="已记录关注，支持后将通过盖世游戏通知">下载并关注</button><button class="btn btn-secondary" id="progressBtn">查看进度</button></div>
+            </div>
+          </section>
+          <section class="section">
+            <div class="notice"><b>当前状态</b><span>测试人员已跑通基础游玩链路，普通用户版本仍在兼容优化中，暂不开放正式游玩入口。</span></div>
+          </section>
+          <section class="section" id="progressSection">
+            <div class="section-head"><h2>适配进度</h2><p>三项关卡收口中</p></div>
+            <div class="progress-list">
+              <article class="progress-card"><div class="progress-top"><strong>Battle.net 登录</strong><span class="status-pill">兼容优化中</span></div><p>解决虚拟桌面运行后的黑屏问题，并补齐字体包等补丁文件。</p><div class="progress-line"><i></i></div></article>
+              <article class="progress-card"><div class="progress-top"><strong>游戏下载稳定性</strong><span class="status-pill">问题定位中</span></div><p>优化 Battle.net 下载任务，解决游戏下载过程中客户端卡死的问题。</p><div class="progress-line"><i></i></div></article>
+              <article class="progress-card"><div class="progress-top"><strong>虚拟手柄支持</strong><span class="status-pill">待完成</span></div><p>补齐游戏内虚拟手柄识别和按键映射，保证移动端可以完整操作。</p><div class="progress-line"><i></i></div></article>
+            </div>
+          </section>
+          <section class="section">
+            <div class="section-head"><h2>首发适配范围</h2><p>暗黑系列</p></div>
+            <div class="game-grid"><article class="game-card"><b>IV</b><strong>暗黑破坏神4</strong><span>首发适配中</span></article><article class="game-card d3"><b>III</b><strong>暗黑破坏神3</strong><span>首发适配中</span></article></div>
+          </section>
+          <section class="section">
+            <div class="section-head"><h2>预计游玩流程</h2><p>正式支持后开放</p></div>
+            <div class="flow">
+              <div class="flow-step"><div class="flow-no">1</div><div><strong>下载 Battle.net 客户端</strong><p>先准备官方客户端，再进入盖世游戏。</p></div></div>
+              <div class="flow-step"><div class="flow-no">2</div><div><strong>导入并安装战网</strong><p>在游戏库导入 Battle.net，运行后完成安装。</p></div></div>
+              <div class="flow-step"><div class="flow-no">3</div><div><strong>虚拟桌面登录账号</strong><p>通过 PC 引擎设置打开容器-虚拟桌面，运行战网并登录。</p></div></div>
+              <div class="flow-step"><div class="flow-no">4</div><div><strong>下载自己的游戏客户端</strong><p>登录成功后，在战网游戏库下载已拥有的暗黑游戏。</p></div></div>
+              <div class="flow-step"><div class="flow-no">5</div><div><strong>回到盖世游戏启动</strong><p>安装完成后使用兼容配置和虚拟手柄启动游玩。</p></div></div>
+            </div>
+          </section>
+          <section class="section">
+            <div class="section-head"><h2>常见问题</h2><p>预热阶段说明</p></div>
+            <div class="faq-list">
+              <div class="faq-row"><strong>现在可以直接玩吗？</strong><p>目前还不建议普通用户直接尝试，正式开放时间以盖世游戏通知为准。</p></div>
+              <div class="faq-row"><strong>为什么需要等待？</strong><p>当前还在解决战网登录、游戏下载卡死和虚拟手柄三项兼容问题。</p></div>
+              <div class="faq-row"><strong>支持后如何收到通知？</strong><p>下载盖世游戏并关注适配进度，正式支持后会通过 App 推送通知。</p></div>
+            </div>
+          </section>
+          <p class="foot">本页面为暗黑系列首发适配预热 Demo。当前内容代表研发适配进展，不等同于正式支持承诺；具体开放时间和兼容结论以盖世游戏最终公告为准。</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast"></div>
+  <script>
+    const scroll=document.querySelector('#scroll');
+    document.querySelector('#backBtn').addEventListener('click',()=>scroll.scrollTo({top:0,behavior:'smooth'}));
+    document.querySelector('#progressBtn').addEventListener('click',()=>document.querySelector('#progressSection').scrollIntoView({behavior:'smooth'}));
+    const toast=document.querySelector('#toast');
+    document.querySelectorAll('[data-toast]').forEach(btn=>btn.addEventListener('click',()=>{toast.textContent=btn.dataset.toast;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2200)}));
+  </script>
+</body>
+</html>
