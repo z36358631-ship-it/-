@@ -277,7 +277,7 @@
             <h2 id="popupTitle">暗黑系列 PC版首发适配</h2>
             <p>本地运行 · 非云游戏 · Battle.net完整游玩攻略</p>
             <div class="evidence-scene" aria-label="暗黑系列首发适配主视觉"><div class="evidence-sigil"></div><div class="spark s1"></div><div class="spark s2"></div><div class="spark s3"></div><div class="spark s4"></div></div>
-            <button class="popup-cta" id="popupCta">查看游玩方法 ›</button>
+            <button class="popup-cta" id="popupCta">立即参与 ›</button>
           </div>
         </div>
       </div>
@@ -331,7 +331,7 @@
       $('#activityCopy').textContent = selected.verified ? '完成首次有效启动与 30 分钟游玩任务，查看当前游戏对应的权益和移动PC装备奖池。' : '当前为流程预览，活动奖品与开放状态以对应游戏正式验证后的活动页配置为准。';
       $('#prizeRow').innerHTML = selected.prizes.map(prize => `<div class="prize">${prize.replace(' ', '<br>')}</div>`).join('');
     }
-    function renderConfigGuide(){ const params=paramMap[selected.id]; $('#configName').textContent=params.config||'暂无推荐配置'; if(!params.rows.length){$('#configGuideVisual').style.display='none';$('#configTable').innerHTML='<div class="config-empty">当前仅展示游玩流程，尚未形成可复制的实机配置方案。完成独立兼容验证后补充具体参数。</div>';return;} $('#configGuideVisual').style.display='block'; $('#configTable').innerHTML=params.rows.map(row=>`<span>${row[0]}</span><span>${row[1]}</span>`).join(''); }
+    function renderConfigGuide(){ const params=paramMap[selected.id]; $('#configName').textContent=params.config||'暂无推荐配置'; if(!params.rows.length){$('#configHowto').innerHTML='<div class="config-empty">当前仅展示游玩流程，尚未形成可复制的实机配置方案。完成独立兼容验证后补充具体参数。</div>';$('#configTable').innerHTML='';return;} const steps=[['进入游戏详情','打开当前暗黑游戏详情页，进入 PC 引擎设置。'],['选择推荐方案','选择稳定画质方案，确认分辨率、帧率和画质参数。'],['返回并启动','保存配置后返回游戏详情，使用推荐方案启动。']]; $('#configHowto').innerHTML=steps.map((step,i)=>`<div class="config-step"><div class="config-step-visual"><b>0${i+1}</b></div><div><strong>${step[0]}</strong><p>${step[1]}</p></div></div>`).join(''); $('#configTable').innerHTML=params.rows.map(row=>`<span>${row[0]}</span><span>${row[1]}</span>`).join(''); }
     function selectGame(id) { selected = games.find(game => game.id === id) || games[0]; const params = paramMap[selected.id]; $('#paramLabel').textContent = params.label; $('#paramPlatform').textContent = params.platform; $('#paramFps').textContent = params.fps; $('#paramDevice').textContent = params.device; $('#paramVersion').textContent = params.version; document.querySelectorAll('.game-card').forEach(card => card.classList.toggle('selected', card.dataset.game === selected.id)); renderGuide(); renderActivity(); renderConfigGuide(); }
     function activateMainTab(id){ document.querySelectorAll('.main-tab').forEach(tab=>tab.classList.toggle('active',tab.dataset.tab===id)); document.querySelectorAll('.tab-panel').forEach(panel=>panel.classList.toggle('hidden',panel.dataset.panel!==id)); }
     function closePopup() { $('#popup').classList.add('hidden'); }
