@@ -340,8 +340,6 @@
     $('#popupCta').addEventListener('click', () => { closePopup(); activateMainTab('start'); $('#contentTabs').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     $('#activityBtn2').addEventListener('click', openActivity);
     $('#backBtn').addEventListener('click', () => { $('#scroll').scrollTo({ top: 0, behavior: 'smooth' }); });
-    $('#queryBtn').addEventListener('click', () => { const value = $('#deviceInput').value.trim(); const result = $('#queryResult'); result.classList.remove('pending'); if (!value) { result.classList.add('warn'); result.querySelector('b').textContent = '请输入机型或芯片'; result.querySelector('small').textContent = '例如：骁龙 8 Gen 3 / 一加 12'; return; } const matched = /8\s*gen\s*3|一加\s*12|红魔\s*9|小米\s*14|rog\s*8/i.test(value); result.classList.toggle('warn', !matched); result.querySelector('b').textContent = matched ? '当前机型可完美适配' : '暂无对应适配记录'; result.querySelector('small').textContent = matched ? `已匹配${selected.name}推荐配置` : '查看下方已支持机型，未列机型暂不代表无法运行'; });
-    $('#copyConfig').addEventListener('click', () => { const button = $('#copyConfig'); button.textContent = '已复制'; try { navigator.clipboard?.writeText($('#configName').textContent); } catch (e) {} setTimeout(() => { button.textContent = '复制'; }, 1400); });
     document.querySelectorAll('.main-tab').forEach(tab=>tab.addEventListener('click',()=>activateMainTab(tab.dataset.tab)));
   </script>
 </body>
