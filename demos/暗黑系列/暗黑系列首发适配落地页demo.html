@@ -270,8 +270,8 @@
 
           <section class="section">
             <div class="video-shell" id="videoShell"></div>
-            <div class="video-controls" id="videoControls"></div>
             <div class="video-info"><b id="videoInfoTitle">《暗黑破坏神 IV》主城与战斗</b><span id="videoInfoMeta">骁龙 8 Gen 3 · 30–45 FPS · 连续运行录屏</span></div>
+            <div class="video-controls" id="videoControls"></div>
           </section>
 
           <section class="section" id="contentTabs">
@@ -280,7 +280,7 @@
               <div class="games" id="games"></div>
               <div class="section-head"><h2>推荐配置方案</h2><p id="paramLabel">《暗黑破坏神 IV》</p></div>
               <div class="plan-card"><div class="plan-head"><b id="configName">稳定画质方案</b><span id="planStatus">已验证</span></div><div class="plan-grid"><div><small>运行方式</small><strong id="paramPlatform">PC版</strong></div><div><small>推荐帧率</small><strong id="paramFps">30–45 FPS</strong></div><div><small>推荐设备</small><strong id="paramDevice">骁龙 8 Gen 3</strong></div><div><small>盖世版本</small><strong id="paramVersion">7.18</strong></div></div></div>
-              <div class="config-guide"><h3>如何使用配置方案</h3><div class="config-howto" id="configHowto"></div><div class="config-table" id="configTable"></div></div>
+              <div class="config-guide"><h3>如何使用配置方案</h3><div class="config-howto" id="configHowto"></div></div>
               <div class="section-head compact"><h2>已验证机型</h2></div>
               <div class="device-list"><span>一加 12<br>骁龙 8 Gen 3</span><span>红魔 9 Pro<br>骁龙 8 Gen 3</span><span>小米 14<br>骁龙 8 Gen 3</span><span>ROG 8<br>骁龙 8 Gen 3</span><span>拯救者 Y900<br>骁龙平台</span></div>
             </div>
@@ -352,7 +352,7 @@
       $('#activityCopy').textContent = selected.verified ? '完成首次有效启动与 30 分钟游玩任务，查看当前游戏对应的权益和移动PC装备奖池。' : '当前为流程预览，活动奖品与开放状态以对应游戏正式验证后的活动页配置为准。';
       $('#prizeRow').innerHTML = selected.prizes.map(prize => `<div class="prize">${prize.replace(' ', '<br>')}</div>`).join('');
     }
-    function renderConfigGuide(){ const params=paramMap[selected.id]; $('#configName').textContent=params.config||'暂无推荐配置'; if(!params.rows.length){$('#configHowto').innerHTML='<div class="config-empty">当前仅展示游玩流程，尚未形成可复制的实机配置方案。完成独立兼容验证后补充具体参数。</div>';$('#configTable').innerHTML='';return;} const steps=[['进入游戏详情','打开当前暗黑游戏详情页，进入 PC 引擎设置。'],['选择推荐方案','选择稳定画质方案，确认分辨率、帧率和画质参数。'],['返回并启动','保存配置后返回游戏详情，使用推荐方案启动。']]; $('#configHowto').innerHTML=steps.map((step,i)=>`<div class="config-step"><div class="config-step-visual"><b>0${i+1}</b></div><div><strong>${step[0]}</strong><p>${step[1]}</p></div></div>`).join(''); $('#configTable').innerHTML=params.rows.map(row=>`<span>${row[0]}</span><span>${row[1]}</span>`).join(''); }
+    function renderConfigGuide(){ const params=paramMap[selected.id]; $('#configName').textContent=params.config||'暂无推荐配置'; if(!params.rows.length){$('#configHowto').innerHTML='<div class="config-empty">当前仅展示游玩流程，尚未形成可复制的实机配置方案。完成独立兼容验证后补充具体参数。</div>';return;} const steps=[['进入游戏详情','打开当前暗黑游戏详情页，进入 PC 引擎设置。'],['选择推荐方案','选择稳定画质方案，确认推荐方案。'],['返回并启动','保存配置后回到游戏详情，使用推荐方案启动。'],['设置分辨率','进入游戏画面设置，分辨率调整为 1280×720。'],['设置帧率与画质','帧率保持 30–45 FPS，画质选择低，关闭阴影；手柄作为推荐操控方式。']]; $('#configHowto').innerHTML=steps.map((step,i)=>`<div class="config-step"><div class="config-step-visual"><b>0${i+1}</b></div><div><strong>${step[0]}</strong><p>${step[1]}</p></div></div>`).join(''); }
     function selectGame(id) { selected = games.find(game => game.id === id) || games[0]; const params = paramMap[selected.id]; $('#paramLabel').textContent = params.label; $('#paramPlatform').textContent = params.platform; $('#paramFps').textContent = params.fps; $('#paramDevice').textContent = params.device; $('#paramVersion').textContent = params.version; document.querySelectorAll('.game-card').forEach(card => card.classList.toggle('selected', card.dataset.game === selected.id)); renderGuide(); renderActivity(); renderConfigGuide(); }
     function activateMainTab(id){ document.querySelectorAll('.main-tab').forEach(tab=>tab.classList.toggle('active',tab.dataset.tab===id)); document.querySelectorAll('.tab-panel').forEach(panel=>panel.classList.toggle('hidden',panel.dataset.panel!==id)); }
     function closePopup() { $('#popup').classList.add('hidden'); }
