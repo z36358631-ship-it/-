@@ -287,10 +287,10 @@
         <div class="popup-backdrop" id="popup" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
           <div class="popup">
             <button class="popup-close" id="popupClose" aria-label="关闭">×</button>
-            <h2 id="popupTitle">暗黑系列即将支持</h2>
-            <p>首发适配进行中，支持后第一时间通知</p>
+            <h2 id="popupTitle">暗黑系列现已支持</h2>
+            <p>暗黑4、暗黑3均已完成适配，打开盖世游戏开始游玩</p>
             <div class="evidence-scene" aria-label="暗黑系列适配预热主视觉"></div>
-            <button class="popup-cta" id="popupCta">立即参与 ›</button>
+            <button class="popup-cta" id="popupCta">查看详情 ›</button>
           </div>
         </div>
       </div>
@@ -343,7 +343,7 @@
     function closePopup() { $('#popup').classList.add('hidden'); }
     renderGames(); renderGuide(); renderVideo(); renderConfigGuide();
     $('#popupClose').addEventListener('click', closePopup);
-    $('#popupCta').textContent = '查看适配详情 ›';
+    $('#popupCta').textContent = '查看详情 ›';
     $('#popupCta').addEventListener('click', () => { closePopup(); activateMainTab('config'); $('#scroll').scrollTo({ top: 0, behavior: 'smooth' }); });
     $('#backBtn').addEventListener('click', () => { $('#scroll').scrollTo({ top: 0, behavior: 'smooth' }); });
     document.querySelectorAll('.main-tab').forEach(tab=>tab.addEventListener('click',()=>activateMainTab(tab.dataset.tab)));
