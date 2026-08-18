@@ -22,7 +22,6 @@
               <div class="eyebrow"><i></i>首发适配进行中 · PC版</div>
               <h1>暗黑系列<br><span>即将登陆盖世游戏</span></h1>
               <p>基础链路已跑通，正在完成登录、游戏下载和虚拟手柄兼容。正式支持后，我们会第一时间通知你。</p>
-              <div class="hero-actions"><button class="btn btn-primary" data-toast="已记录关注，支持后将通过盖世游戏通知">下载并关注</button><button class="btn btn-secondary" id="progressBtn">查看进度</button></div>
             </div>
           </section>
           <section class="section">
@@ -63,13 +62,9 @@
       </div>
     </section>
   </main>
-  <div class="toast" id="toast"></div>
   <script>
     const scroll=document.querySelector('#scroll');
     document.querySelector('#backBtn').addEventListener('click',()=>scroll.scrollTo({top:0,behavior:'smooth'}));
-    document.querySelector('#progressBtn').addEventListener('click',()=>document.querySelector('#progressSection').scrollIntoView({behavior:'smooth'}));
-    const toast=document.querySelector('#toast');
-    document.querySelectorAll('[data-toast]').forEach(btn=>btn.addEventListener('click',()=>{toast.textContent=btn.dataset.toast;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2200)}));
   </script>
 </body>
 </html>

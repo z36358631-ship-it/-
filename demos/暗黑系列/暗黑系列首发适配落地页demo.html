@@ -224,12 +224,12 @@
     .foot { padding: 0 16px 28px; color: #65656c; font-size: 9px; line-height: 1.6; }
     .popup-backdrop { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(0,0,0,.9); }
     .popup-backdrop.hidden { display: none; }
-    .popup { width: 100%; max-width: 340px; position: relative; text-align: center; padding: 22px 18px 24px; border: 1px solid rgba(154,86,255,.28); border-radius: 24px; background: radial-gradient(circle at 50% 44%, rgba(117,38,226,.18), transparent 46%), rgba(10,10,13,.92); box-shadow: 0 0 40px rgba(102,44,205,.24); }
-    .popup-close { position: absolute; top: -14px; right: -14px; width: 30px; height: 30px; border: 0; border-radius: 50%; background: #303034; color: #b9b9bf; cursor: pointer; font-size: 18px; line-height: 1; box-shadow: 0 4px 14px rgba(0,0,0,.45); }
+    .popup { width: 100%; max-width: 320px; position: relative; text-align: center; padding: 20px 16px 20px; border: 1px solid rgba(154,86,255,.28); border-radius: 22px; background: radial-gradient(circle at 50% 44%, rgba(117,38,226,.18), transparent 46%), rgba(10,10,13,.95); box-shadow: 0 0 40px rgba(102,44,205,.24); }
+    .popup-close { position: absolute; top: -16px; right: -16px; width: 32px; height: 32px; border: 0; border-radius: 50%; background: #303034; color: #b9b9bf; cursor: pointer; font-size: 18px; line-height: 1; box-shadow: 0 4px 14px rgba(0,0,0,.45); }
     .popup-close:hover { background: #46464c; color: #fff; }
-    .popup h2 { margin: 3px 0 6px; font-size: 26px; line-height: 1.1; font-style: italic; font-weight: 800; letter-spacing: -.05em; background: linear-gradient(180deg, #fff 8%, #dbb4ff 38%, #7c2cff 82%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 17px rgba(153,74,255,.85); }
-    .popup p { margin: 0; color: #fff; font-size: 13px; font-weight: 700; text-shadow: 0 0 10px rgba(203,145,255,.7); }
-    .evidence-scene { height: 176px; position: relative; margin: 12px auto 3px; overflow: hidden; border: 1px solid rgba(255,115,80,.45); border-radius: 16px; background: radial-gradient(circle at 74% 30%, rgba(255,90,49,.45), transparent 24%), radial-gradient(circle at 24% 66%, rgba(86,26,57,.82), transparent 43%), linear-gradient(135deg, #34121d, #111218 72%); }
+    .popup h2 { margin: 3px 0 6px; font-size: 20px; line-height: 1.2; white-space: nowrap; font-style: italic; font-weight: 800; letter-spacing: -.04em; background: linear-gradient(180deg, #fff 8%, #dbb4ff 38%, #7c2cff 82%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 17px rgba(153,74,255,.85); }
+    .popup p { margin: 0; color: #fff; font-size: 11px; font-weight: 650; white-space: nowrap; text-shadow: 0 0 10px rgba(203,145,255,.7); }
+    .evidence-scene { height: 150px; position: relative; margin: 12px auto 15px; overflow: hidden; border: 1px solid rgba(255,115,80,.45); border-radius: 15px; background: linear-gradient(90deg, rgba(11,10,14,.18), rgba(11,10,14,.02)), url('assets/暗黑系列即将支持预热主视觉-v1.png') center/cover; }
     .evidence-scene::before { content: ""; position: absolute; inset: 0; opacity: .36; background: repeating-linear-gradient(122deg, transparent 0 16px, rgba(255,255,255,.05) 17px 18px); }
     .evidence-sigil { position: absolute; left: 50%; top: 25px; width: 94px; height: 94px; transform: translateX(-50%) rotate(45deg); border: 5px solid #e34d3d; box-shadow: 0 0 26px rgba(255,65,44,.55), inset 0 0 16px rgba(255,167,72,.28); }
     .evidence-sigil::after { content: "D"; position: absolute; inset: 17px; display: grid; place-items: center; transform: rotate(-45deg); color: #ffd28c; font-family: Georgia, serif; font-size: 42px; font-weight: 800; }
@@ -287,9 +287,9 @@
         <div class="popup-backdrop" id="popup" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
           <div class="popup">
             <button class="popup-close" id="popupClose" aria-label="关闭">×</button>
-            <h2 id="popupTitle">暗黑系列 PC版首发适配</h2>
-            <p>本地运行 · 非云游戏 · Battle.net完整游玩攻略</p>
-            <div class="evidence-scene" aria-label="暗黑系列首发适配主视觉"><div class="evidence-sigil"></div><div class="spark s1"></div><div class="spark s2"></div><div class="spark s3"></div><div class="spark s4"></div></div>
+            <h2 id="popupTitle">暗黑系列即将支持</h2>
+            <p>首发适配进行中，支持后第一时间通知</p>
+            <div class="evidence-scene" aria-label="暗黑系列适配预热主视觉"></div>
             <button class="popup-cta" id="popupCta">立即参与 ›</button>
           </div>
         </div>
@@ -343,7 +343,7 @@
     function closePopup() { $('#popup').classList.add('hidden'); }
     renderGames(); renderGuide(); renderVideo(); renderConfigGuide();
     $('#popupClose').addEventListener('click', closePopup);
-    $('#popupCta').textContent = '查看适配进度 ›';
+    $('#popupCta').textContent = '查看适配详情 ›';
     $('#popupCta').addEventListener('click', () => { closePopup(); activateMainTab('config'); $('#scroll').scrollTo({ top: 0, behavior: 'smooth' }); });
     $('#backBtn').addEventListener('click', () => { $('#scroll').scrollTo({ top: 0, behavior: 'smooth' }); });
     document.querySelectorAll('.main-tab').forEach(tab=>tab.addEventListener('click',()=>activateMainTab(tab.dataset.tab)));
