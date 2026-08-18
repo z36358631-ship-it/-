@@ -82,7 +82,7 @@
     .video-title { color: #fff; font-size: 14px; font-weight: 700; }
     .video-meta { margin-top: 4px; color: rgba(255,255,255,.7); font-size: 10px; }
     .video-duration { color: #fff; font-family: "D-DIN-PRO", var(--font); font-size: 12px; }
-    .video-controls { display: flex; justify-content: center; align-items: center; gap: 8px; padding: 10px 12px; border-top: 1px solid rgba(255,255,255,.1); background: rgba(0,0,0,.28); }
+    .video-controls { display: flex; justify-content: center; align-items: center; gap: 8px; padding: 10px 12px; border-top: 0; background: transparent; }
     .video-arrow { width: 24px; height: 24px; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; background: rgba(255,255,255,.05); color: #e7e7eb; cursor: pointer; }
     .video-dot { width: 6px; height: 6px; border: 0; border-radius: 50%; background: #5c5c65; cursor: pointer; padding: 0; }
     .video-dot.active { width: 18px; border-radius: 999px; background: var(--gold); }
@@ -214,7 +214,7 @@
     .activity-teaser h3 { margin: 0; position: relative; z-index: 1; font-size: 15px; }
     .activity-teaser p { margin: 5px 0 0; position: relative; z-index: 1; color: #c4b9d4; font-size: 11px; line-height: 1.5; max-width: 270px; }
     .prize-row { display: flex; gap: 6px; margin: 12px 0; position: relative; z-index: 1; }
-    .prize { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; background: #19151e; border: 1px solid rgba(255,255,255,.13); color: #ffd26f; font-size: 10px; text-align: center; }
+    .prize { display: grid; place-items: center; min-width: 88px; width: auto; height: 36px; padding: 0 10px; border-radius: 12px; background: #19151e; border: 1px solid rgba(255,255,255,.13); color: #ffd26f; font-size: 10px; text-align: center; white-space: nowrap; }
     .faq { display: grid; gap: 7px; padding-bottom: 28px; }
     .faq-list { display: grid; gap: 8px; padding-bottom: 28px; }
     .faq-row { display: grid; grid-template-columns: 28px 1fr; gap: 9px; padding: 11px 10px; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,255,255,.025); }
@@ -305,19 +305,18 @@
   </main>
   <script>
     const games = [
-      { id: 'd4', name: '《暗黑破坏神 IV》', status: '已验证', verified: true, cover: '', guideBanner: '暗黑 IV · 本地 PC 版', guideIntro: '从 Battle.net 获取自己的游戏，回到盖世游戏导入并使用推荐配置启动；手柄操作和稳定画质方案优先保障连续游玩。', tips: '推荐手柄操作；先以稳定帧率为优先，连续运行时保持散热。', guideNote: '已验证内容', prizes: ['30分钟时长', '游戏手柄', '手机散热', '快充配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑4》。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑4》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] },
-      { id: 'd3', name: '《暗黑破坏神 III》', status: '流程预览', verified: false, cover: 'd3', guideBanner: '暗黑 III · 游玩流程预览', guideIntro: '当前先展示完整 Battle.net 游玩链路和配置处理方式，实机参数与正式启动入口待独立兼容验证完成后补充。', tips: '当前仅展示 Battle.net 游玩流程；实机参数和支持状态待独立验证。', guideNote: '暂无实机参数', prizes: ['30分钟时长', '游戏手柄', '手机散热', '快充配件'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑3》。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑3》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] }
+      { id: 'd4', name: '《暗黑破坏神 IV》', status: '已验证', verified: true, cover: '', guideBanner: '暗黑 IV · 本地 PC 版', guideIntro: '从 Battle.net 获取自己的游戏，回到盖世游戏导入并使用推荐配置启动；手柄操作和稳定画质方案优先保障连续游玩。', tips: '推荐手柄操作；先以稳定帧率为优先，连续运行时保持散热。', guideNote: '已验证内容', prizes: ['小鸡手柄', '手机散热器'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑4》。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑4》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] },
+      { id: 'd3', name: '《暗黑破坏神 III》', status: '推荐配置', verified: true, cover: 'd3', guideBanner: '暗黑 III · 本地 PC 版', guideIntro: '通过 Battle.net 下载并安装暗黑3，回到盖世游戏导入后使用兼容优先方案启动；推荐先使用720P与稳定帧率设置。', tips: '推荐720P、30 FPS与低画质方案，完成导入后回到盖世游戏启动。', guideNote: '已提供推荐配置', prizes: ['小鸡手柄', '手机散热器'], guide: ['先安装 Battle.net 客户端。', '回到盖世游戏导入《暗黑3》。', '点击导入后等待 Battle.net 启动。', '在 Battle.net 官方客户端登录。', '在游戏库下载自己的《暗黑3》。', '等待 Battle.net 安装完成。', '回到盖世游戏使用兼容配置启动。'] }
     ];
     let selected = games[0];
     let videoIndex = 0;
     const videoSlides = [
       { title: '《暗黑破坏神 IV》主城与战斗', meta: '骁龙 8 Gen 3 · 30–45 FPS · 连续运行录屏', duration: '01:24', scene: '' },
-      { title: '《暗黑破坏神 III》实机录屏待补充', meta: '当前为系列流程预览 · 暂无实机参数', duration: '--:--', scene: 'scene-3' },
-      { title: '《暗黑破坏神 III》配置流程预览', meta: 'Battle.net导入、下载、安装与回到盖世启动', duration: '--:--', scene: 'scene-3' }
+      { title: '《暗黑破坏神 III》战斗与配置演示', meta: '720P · 30 FPS · Battle.net导入与启动流程', duration: '01:06', scene: 'scene-3' }
     ];
     const paramMap = {
       d4: { label: '《暗黑破坏神 IV》', platform: 'PC版', fps: '30–45', device: '8 Gen 3', version: '7.18', config: '稳定画质 · 30–45 FPS', rows: [['分辨率','1280×720'],['帧率','30–45 FPS'],['画质','低 · 阴影关闭'],['操控','手柄推荐'],['运行环境','盖世 PC 引擎'] ] },
-      d3: { label: '《暗黑破坏神 III》', platform: '流程预览', fps: '暂无数据', device: '暂无数据', version: '暂无数据', config: '', rows: [] },
+      d3: { label: '《暗黑破坏神 III》', platform: 'PC版', fps: '30', device: '8 Gen 2+', version: '7.18', config: '兼容优先 · 30 FPS', rows: [['分辨率','1280×720'],['帧率','30 FPS'],['画质','低 · 特效关闭'],['操控','手柄推荐'],['运行环境','盖世 PC 引擎'] ] },
     };
     const activityUrl = '暗黑系列运营活动demo.html';
     const $ = (selector) => document.querySelector(selector);
@@ -352,7 +351,7 @@
       $('#activityCopy').textContent = selected.verified ? '完成首次有效启动与 30 分钟游玩任务，查看当前游戏对应的权益和移动PC装备奖池。' : '当前为流程预览，活动奖品与开放状态以对应游戏正式验证后的活动页配置为准。';
       $('#prizeRow').innerHTML = selected.prizes.map(prize => `<div class="prize">${prize.replace(' ', '<br>')}</div>`).join('');
     }
-    function renderConfigGuide(){ const params=paramMap[selected.id]; $('#configName').textContent=params.config||'暂无推荐配置'; if(!params.rows.length){$('#configHowto').innerHTML='<div class="config-empty">当前仅展示游玩流程，尚未形成可复制的实机配置方案。完成独立兼容验证后补充具体参数。</div>';return;} const steps=[['进入游戏详情','打开当前暗黑游戏详情页，进入 PC 引擎设置。'],['选择推荐方案','选择稳定画质方案，确认推荐方案。'],['返回并启动','保存配置后回到游戏详情，使用推荐方案启动。'],['设置分辨率','进入游戏画面设置，分辨率调整为 1280×720。'],['设置帧率与画质','帧率保持 30–45 FPS，画质选择低，关闭阴影；手柄作为推荐操控方式。']]; $('#configHowto').innerHTML=steps.map((step,i)=>`<div class="config-step"><div class="config-step-visual"><b>0${i+1}</b></div><div><strong>${step[0]}</strong><p>${step[1]}</p></div></div>`).join(''); }
+    function renderConfigGuide(){ const params=paramMap[selected.id]; $('#configName').textContent=params.config||'暂无推荐配置'; if(!params.rows.length){$('#configHowto').innerHTML='<div class="config-empty">当前仅展示游玩流程，尚未形成可复制的实机配置方案。完成独立兼容验证后补充具体参数。</div>';return;} const values=Object.fromEntries(params.rows); const steps=[['进入游戏详情','打开当前暗黑游戏详情页，进入 PC 引擎设置。'],['选择推荐方案',`选择“${params.config}”方案，确认推荐值。`],['返回并启动','保存配置后回到游戏详情，使用推荐方案启动。'],['设置分辨率',`进入游戏画面设置，将分辨率调整为 ${values['分辨率']}。`],['设置帧率与画质',`帧率设置为 ${values['帧率']}，画质选择 ${values['画质']}；${values['操控']}。`]]; $('#configHowto').innerHTML=steps.map((step,i)=>`<div class="config-step"><div class="config-step-visual"><b>0${i+1}</b></div><div><strong>${step[0]}</strong><p>${step[1]}</p></div></div>`).join(''); }
     function selectGame(id) { selected = games.find(game => game.id === id) || games[0]; const params = paramMap[selected.id]; $('#paramLabel').textContent = params.label; $('#paramPlatform').textContent = params.platform; $('#paramFps').textContent = params.fps; $('#paramDevice').textContent = params.device; $('#paramVersion').textContent = params.version; document.querySelectorAll('.game-card').forEach(card => card.classList.toggle('selected', card.dataset.game === selected.id)); renderGuide(); renderActivity(); renderConfigGuide(); }
     function activateMainTab(id){ document.querySelectorAll('.main-tab').forEach(tab=>tab.classList.toggle('active',tab.dataset.tab===id)); document.querySelectorAll('.tab-panel').forEach(panel=>panel.classList.toggle('hidden',panel.dataset.panel!==id)); }
     function closePopup() { $('#popup').classList.add('hidden'); }
