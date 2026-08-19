@@ -3,8 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const toolsDir = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(toolsDir, '..');
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const prdPath = path.join(
   repoRoot,
   'prd',
@@ -13,189 +12,141 @@ const prdPath = path.join(
 );
 const prd = fs.readFileSync(prdPath, 'utf8');
 
-function pass(name) {
+function includesAll(name, values) {
+  for (const value of values) {
+    assert(prd.includes(value), `${name}: missing ${value}`);
+  }
   console.log(`PASS ${name}`);
 }
 
 function structure() {
-  const requiredStructure = [
+  includesAll('structure', [
     '# 【Prd】《盖世游戏》GOG平台接入需求',
     '## 一、版本信息',
-    '## 二、背景与目标',
-    '### 2.1 需求背景',
-    '### 2.2 目标与成功指标',
-    '### 2.3 范围与不做事项',
-    '## 三、故事介绍',
-    '### 3.1 用户与运营场景',
-    '### 3.2 价值分析',
-    '### 3.3 核心体验路径',
-    '### 3.4 产品指标预测',
-    '### 3.5 路径规划',
-    '## 四、概要设计',
-    '### 4.1 模块设计',
+    '## 二、背景、目标与范围',
+    '## 三、用户与核心流程',
+    '## 四、概要与详细设计',
+    '### 4.1 公共规则',
     '### 4.2 详细设计（C端）',
-    '## 五、非功能需求',
-    '## 六、埋点需求',
-    '### 6.1 埋点事件表',
-    '### 6.2 埋点参数表',
-    '## 七、运营需求',
-    '## 八、来自功能上线后的更新',
-    '## 九、验收与待确认项',
-    '### 9.1 验收标准',
-    '### 9.2 待确认项',
-    '## 十、自检记录',
-    '## 十一、模拟评审结果',
-  ];
-  for (const heading of requiredStructure) {
-    assert(prd.includes(heading), `Missing PRD heading: ${heading}`);
-  }
-  assert(
-    !prd.includes('### 4.3 详细设计（B端）'),
-    'C-side-only PRD must not contain an empty B-side chapter',
-  );
-  pass('structure');
+    '### 4.3 状态与恢复',
+    '## 五、横竖屏与包体差异',
+    '## 六、数据、埋点与非功能要求',
+    '## 七、上线准备',
+    '## 八、验收标准',
+    '## 九、待确认项',
+  ]);
+  assert(!prd.includes('详细设计（B端）'), 'C-side-only PRD contains B-side section');
 }
 
-function rules() {
-  const requiredRules = [
-    '我的页',
-    'GOG 官方登录',
-    '游戏库',
-    '游戏详情',
-    '切换启动平台',
-    '搜索结果',
-    'sourcePlatform',
-    'sourcePlatform=gog',
-    'gameId',
-    'platformAppId',
-    'Steam > EPIC > GOG',
-    '不保存 GOG 邮箱或密码',
-    '国内包',
-    '海外包',
-    'loading',
-    'empty',
-    'error',
-    'expired',
-    'cancelled',
-    'cached',
-    '本 PRD 无图示；交互与页面状态以同目录交付的单文件标注 Demo 为准。',
-  ];
-  for (const token of requiredRules) {
-    assert(prd.includes(token), `Missing PRD rule: ${token}`);
+function concise() {
+  const lineCount = prd.split(/\r?\n/).length;
+  assert(lineCount <= 220, `PRD is still too long: ${lineCount} lines`);
+  for (const token of [
+    '自检记录',
+    '模拟评审',
+    '已自动补充',
+    'V1.4 最新生效口径',
+    '字段覆盖清单',
+    '本 PRD 无图示',
+    '高风险假设',
+  ]) {
+    assert(!prd.includes(token), `process-style copy remains: ${token}`);
   }
-  assert(!prd.includes('sourcePlatform=GOG'), 'sourcePlatform enum must use lowercase gog');
-  pass('rules');
+  for (const token of ['GOG ID', '同步时间', '账号价值']) {
+    assert.equal(prd.split(token).length - 1, 1, `duplicated rule: ${token}`);
+  }
+  console.log('PASS concise');
 }
 
-function currentPageRules() {
-  const requiredCurrentPageRules = [
-    '新版游戏库',
+function productRules() {
+  includesAll('productRules', [
     'EPIC → GOG → 导入游戏',
-    'Demo 共 10 个页面视图',
-    '游戏库首页：竖屏',
-    '游戏库首页：横屏',
-    'GOG 账号游戏库：竖屏',
-    'GOG 账号游戏库：横屏',
-    '搜索结果：竖屏',
-    '搜索结果：横屏',
-    '游戏详情：竖屏',
-    '游戏详情：横屏',
-    'GOG 不展示账号价值或“喜加一”；页面不渲染对应标题、数值、按钮、骨架或占位空间，也不以 0 或“--”代替，账号卡按实际内容自然收缩。',
-  ];
-  for (const token of requiredCurrentPageRules) {
-    assert(prd.includes(token), `Missing current-page rule: ${token}`);
-  }
-
-  const forbiddenLegacyRules = [
-    '用户名、账号价值',
-    '账号价值不可计算',
-    '账号价值缺失显示',
-    'GOG 可返回的账号价值',
-    '账号价值模型是否覆盖 GOG',
-    '¥6.8k',
-    '九个页面',
-    '9 个页面',
-  ];
-  for (const token of forbiddenLegacyRules) {
-    assert(!prd.includes(token), `Forbidden legacy value or page rule: ${token}`);
-  }
-  pass('currentPageRules');
-}
-
-function finalScope() {
-  const requiredFinalRules = [
-    '更新数据 / 切换账号 / 退出账号',
-    '点击菜单外部关闭',
-    '更新进行中禁用重复提交',
-    '切换取消、授权失败或首次同步失败时保留旧账号',
-    '退出需二次确认',
-    '仅 EPIC 账号卡在原三项操作所在位置显示一个“喜加一”按钮',
-    'GOG 不展示账号价值或“喜加一”',
-    '同一个 PC 游戏存在多个平台时，每个平台版本展示为独立结果',
-    '游戏时长',
-    '云存档',
-    '启动 icon',
     'sourcePlatform=gog',
     'Steam > EPIC > GOG',
-    '英文名称、中文名称、别名',
-    '无法可靠归类或低置信度时进入不同详情',
-    '点击弹窗外部或取消则保持原平台',
-    '“获取游戏”区域的平台标识仅表示可获取渠道，不等同于详情启动按钮',
-    '启动失败时提示失败并保留当前详情数据与平台选择',
-    '竖屏结果区固定为一行两张竖向游戏卡',
+    '中英文名称和别名只用于候选匹配',
+    '搜索结果始终按平台版本分条展示',
+    '竖屏一行两张游戏卡',
     '平台标识叠加在封面左下角',
-    '“获取游戏”区域',
-    'PC游戏引擎',
-  ];
-  for (const token of requiredFinalRules) {
-    assert(prd.includes(token), `Missing final-scope rule: ${token}`);
+    'GOG 没有评分时显示“暂无评分”',
+    '“获取游戏”的平台标识表示获取渠道',
+    'PC 游戏引擎标题右侧不展示平台胶囊',
+    '`3.8` 与星星同行',
+    '点击详情中的任一平台图标只打开“切换平台”弹窗',
+    '点击“+”进入 GOG 官方授权',
+    '“移除账号”为禁用态',
+    '不保存、不上报邮箱、密码',
+    '国内包“盖世游戏”',
+    '海外包“GameHub”',
+  ]);
+  for (const state of ['loading', 'empty', 'error', 'expired', 'cancelled', 'cached']) {
+    assert(prd.includes(`\`${state}\``), `missing state: ${state}`);
   }
-
-  const forbiddenPositiveRules = [
-    'GOG 显示账号价值',
-    'GOG 显示“喜加一”',
-    'GOG 显示喜加一',
-    'GOG 仅展示平台标识',
-    '仅平台标识、不支持详情启动',
-    'GOG 绑定跳转 EPIC 授权',
-    '绑定 GOG 账号后跳转 EPIC 授权',
-  ];
-  for (const token of forbiddenPositiveRules) {
-    assert(!prd.includes(token), `Forbidden final-scope rule: ${token}`);
-  }
-  assert(!prd.includes('“获得游戏”区域'), 'Legacy detail copy remains in PRD');
-  pass('finalScope');
-}
-
-function placeholders() {
-  const forbiddenPlaceholders = [
-    'T' + 'BD',
-    'T' + 'ODO',
-    '待补充',
-    '稍后完善',
-  ];
-  for (const token of forbiddenPlaceholders) {
-    assert(!prd.includes(token), `PRD contains prohibited placeholder: ${token}`);
-  }
-  pass('placeholders');
+  assert(!prd.includes('sourcePlatform=GOG'), 'platform enum must use lowercase gog');
 }
 
 function images() {
-  const markdownImage = /!\[[^\]]*\]\([^)]*\)/;
-  const htmlImage = /<img\b/i;
-  const localUrl = /(?:file:\/\/|localhost|127\.0\.0\.1|data:image|[A-Za-z]:\\)/i;
-  assert(!markdownImage.test(prd), 'PRD must not contain Markdown images');
-  assert(!htmlImage.test(prd), 'PRD must not contain HTML images');
-  assert(!localUrl.test(prd), 'PRD contains a prohibited local URL or path');
-  pass('images');
+  const imagePattern = /!\[([^\]]+)\]\((https:\/\/[^)]+)\)/g;
+  const images = [...prd.matchAll(imagePattern)];
+  assert.equal(images.length, 12, `expected 12 images, got ${images.length}`);
+  assert.equal(new Set(images.map(([, , url]) => url)).size, 12, 'image URLs must be unique');
+  const sha = '4d14ee8045ca536301f177d9f68ca3d6c6857db4';
+  for (const [, title, url] of images) {
+    assert(title.length > 0 && title.length <= 12, `image title is not concise: ${title}`);
+    assert(
+      url.startsWith(`https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@${sha}/public/prd/gog-platform-integration/`),
+      `image URL is not pinned: ${url}`,
+    );
+    assert(url.endsWith('.png'), `image is not PNG: ${url}`);
+  }
+  assert(!/(?:file:\/\/|localhost|127\.0\.0\.1|data:image|[A-Za-z]:\\)/i.test(prd));
+  console.log('PASS images');
 }
 
-const checks = { structure, rules, currentPageRules, finalScope, placeholders, images };
-const mode = process.argv[2] || 'all';
-if (mode === 'all') {
-  Object.values(checks).forEach(check => check());
-} else if (checks[mode]) {
-  checks[mode]();
-} else {
-  throw new Error(`Unknown mode: ${mode}`);
+function tracking() {
+  const events = [
+    'gog_entry_view',
+    'gog_authorization_result',
+    'gog_initial_sync_result',
+    'gog_library_view',
+    'search_platform_result_click',
+    'platform_switch_result',
+    'platform_launch_result',
+  ];
+  const parameters = [
+    'entry_page',
+    'orientation',
+    'app_package',
+    'bind_status',
+    'result',
+    'failure_type',
+    'duration_ms',
+    'game_count',
+    'request_state',
+    'game_id',
+    'platform_app_id',
+    'platform',
+    'from_platform',
+    'source_platform',
+    'selected_platform',
+  ];
+  includesAll('trackingEvents', events.map(value => `\`${value}\``));
+  for (const parameter of parameters) {
+    const count = prd.split(`\`${parameter}\``).length - 1;
+    assert(count >= 2, `tracking parameter lacks event or definition: ${parameter}`);
+  }
+  console.log('PASS trackingParameters');
 }
+
+function acceptance() {
+  for (let i = 1; i <= 12; i += 1) {
+    assert(prd.includes(`AC${String(i).padStart(2, '0')}`), `missing acceptance case AC${i}`);
+  }
+  includesAll('acceptance', ['| M1 |', '| M2 |', '| M3 |', '| M4 |']);
+}
+
+structure();
+concise();
+productRules();
+images();
+tracking();
+acceptance();
