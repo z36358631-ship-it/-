@@ -24,7 +24,7 @@
 
 | GameHub：信息服务领先 | GameHub：默认启动失败 | 233：同文件进入可玩场景 |
 |---|---|---|
-| ![GameHub Neon Abyss 详情页](./evidence/03-import/gamehub-neon-detail.png) | ![GameHub Neon Abyss 失败后返回详情页](./evidence/05-launch/gamehub-neon-return-16s.png) | ![233 Neon Abyss 可玩场景](./evidence/05-launch/233-neon-playable.png) |
+| ![GameHub Neon Abyss 详情页](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/01-gamehub-neon-detail.png) | ![GameHub Neon Abyss 失败后返回详情页](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/02-gamehub-neon-return.png) | ![233 Neon Abyss 可玩场景](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/03-233-neon-playable.png) |
 | 自动补全中文名、简介、标签、玩家评分；但兼容性仍为 `--`。 | 两次启动约 12—16 秒回到详情页；日志为 `returnCode=139`，用户端无失败原因。 | 安装 Bionic 后约 20 秒进入可玩酒吧场景，二次启动约 10 秒到标题页。 |
 
 > **一句话结论：** GameHub 的“看起来像游戏库”已经领先，但 233 在本轮 Neon Abyss 默认路径上兑现了“能玩”；下一阶段优先级必须从信息包装转向启动确定性。
@@ -33,10 +33,10 @@
 
 | 需求阶段 | 需求主题 | 现状与问题 | 首期建设范围 | 非首期/明确边界 | 用户价值 | 业务价值 |
 |---|---|---|---|---|---|---|
-| P0 | 游戏可玩标记与快速筛选 | GameHub 元数据完整，但 Neon 的 PC 引擎兼容性显示 `--`；233 信息较少却能启动同一文件。<br><br>![兼容性信息为空](./evidence/03-import/gamehub-neon-detail.png) | 建立“本机一键可玩 / 需要配置 / 暂不建议本地运行 / 待验证”统一口径；在游戏库、搜索结果、详情页同时展示。 | 不承诺所有游戏都能启动；未验证游戏不得默认标记为可玩；先覆盖真实有数据的游戏×机型组合。 | 用户在点击启动前知道预期，减少试错和错误选择。 | 减少无效启动与负向反馈，提升从浏览、筛选到启动的转化。 |
-| P0 | 启动失败自愈与异常恢复 | GameHub Neon 两次以 `returnCode=139` 结束，却被记录为 `normalExit=true`，详情页没有错误原因、重试或恢复入口。<br><br>![启动失败后静默返回](./evidence/05-launch/gamehub-neon-return-16s.png) | 识别异常退出；自动尝试候选配置 A/B/C；展示失败阶段、已尝试方案、重试和替代模式；记录真实失败原因。 | 不在首期做覆盖所有错误码的 AI 诊断；不把失败简单转为付费墙或强制云游戏。 | 不必盲目重复点击，知道下一步怎么恢复。 | 提升 `game_launch_click → game_machine_enter`，减少客服和无效启动成本，为兼容性数据飞轮提供干净样本。 |
-| P1 | 导入信息与环境准备透明 | GameHub 导入后信息丰富；233 首次需确认 EXE、安装 Bionic，但成功后会记住选择；GameNative 0.9.0 参数透明但认知负担高。<br><br>![233 Neon 导入列表](./evidence/03-import/233-neon-imported-list.png) | 保留 GameHub 元数据优势；将 EXE、组件、空间、预计耗时和当前阶段集中说明；成功配置自动记忆。 | 不把 Wine、容器、GPU 等底层参数放入默认流程；高级模式再开放。 | 更少理解文件结构和模拟器术语，首次启动更顺。 | 降低配置页停留和首次流失，提升导入到启动的转化。 |
-| P1 | 体验后退出、存档与恢复 | GameHub 有明确退出和未保存提示；233 返回/侧栏语义不清；历史材料还有云存档冲突风险。<br><br>![GameHub 退出确认](./evidence/06-exit/gamehub-exit-confirm.png) | 统一主动退出、异常退出、系统终止三类状态；补齐重试、本地/云端选择和冲突恢复。 | 不在首期扩展社区、好友、创意工坊等留存功能；先保证游戏资产安全。 | 退出和再次进入可预期，减少存档损失。 | 降低流失和投诉，保护会员、云存档和长期资产价值。 |
+| P0 | 游戏可玩标记与快速筛选 | GameHub 元数据完整，但 Neon 的 PC 引擎兼容性显示 `--`；233 信息较少却能启动同一文件。<br><br>![兼容性信息为空](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/01-gamehub-neon-detail.png) | 建立“本机一键可玩 / 需要配置 / 暂不建议本地运行 / 待验证”统一口径；在游戏库、搜索结果、详情页同时展示。 | 不承诺所有游戏都能启动；未验证游戏不得默认标记为可玩；先覆盖真实有数据的游戏×机型组合。 | 用户在点击启动前知道预期，减少试错和错误选择。 | 减少无效启动与负向反馈，提升从浏览、筛选到启动的转化。 |
+| P0 | 启动失败自愈与异常恢复 | GameHub Neon 两次以 `returnCode=139` 结束，却被记录为 `normalExit=true`，详情页没有错误原因、重试或恢复入口。<br><br>![启动失败后静默返回](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/02-gamehub-neon-return.png) | 识别异常退出；自动尝试候选配置 A/B/C；展示失败阶段、已尝试方案、重试和替代模式；记录真实失败原因。 | 不在首期做覆盖所有错误码的 AI 诊断；不把失败简单转为付费墙或强制云游戏。 | 不必盲目重复点击，知道下一步怎么恢复。 | 提升 `game_launch_click → game_machine_enter`，减少客服和无效启动成本，为兼容性数据飞轮提供干净样本。 |
+| P1 | 导入信息与环境准备透明 | GameHub 导入后信息丰富；233 首次需确认 EXE、安装 Bionic，但成功后会记住选择；GameNative 0.9.0 参数透明但认知负担高。<br><br>![233 Neon 导入列表](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/04-233-neon-imported-list.png) | 保留 GameHub 元数据优势；将 EXE、组件、空间、预计耗时和当前阶段集中说明；成功配置自动记忆。 | 不把 Wine、容器、GPU 等底层参数放入默认流程；高级模式再开放。 | 更少理解文件结构和模拟器术语，首次启动更顺。 | 降低配置页停留和首次流失，提升导入到启动的转化。 |
+| P1 | 体验后退出、存档与恢复 | GameHub 有明确退出和未保存提示；233 返回/侧栏语义不清；历史材料还有云存档冲突风险。<br><br>![GameHub 退出确认](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/05-gamehub-exit-confirm.png) | 统一主动退出、异常退出、系统终止三类状态；补齐重试、本地/云端选择和冲突恢复。 | 不在首期扩展社区、好友、创意工坊等留存功能；先保证游戏资产安全。 | 退出和再次进入可预期，减少存档损失。 | 降低流失和投诉，保护会员、云存档和长期资产价值。 |
 | P2 | 数据 × 手柄差异化 | GameHub 已有元数据、兼容性入口和硬件基础，但配置结果没有沉淀为用户资产。 | 记录游戏×机型×引擎×配置×结果；盖世手柄连接后自动加载验证过的映射。 | 不在启动成功率未稳定前投入大规模社区和社交玩法。 | 越用越省心，插上手柄即可继续玩。 | 形成竞品较难复制的数据与硬件协同壁垒。 |
 
 ### 1.4 模板定位：标准化程度与适用边界
@@ -137,7 +137,7 @@ GameHub 已经解决“这是什么游戏”，却没有充分解决“这台手
 
 | 导入时自动识别 | 导入后正式游戏卡片 | 详情中的信息与兼容性断层 |
 |---|---|---|
-| ![GameHub Neon Abyss 导入信息](./evidence/03-import/gamehub-neon-metadata.png) | ![GameHub 游戏库中的 Neon Abyss](./evidence/03-import/gamehub-library-with-neon.png) | ![GameHub Neon Abyss 详情页兼容性为空](./evidence/03-import/gamehub-neon-detail.png) |
+| ![GameHub Neon Abyss 导入信息](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/06-gamehub-neon-import.png) | ![GameHub 游戏库中的 Neon Abyss](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/07-gamehub-library-neon.png) | ![GameHub Neon Abyss 详情页兼容性为空](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/01-gamehub-neon-detail.png) |
 | 自动带出封面、中文名和 EXE。 | 已导入游戏与其他游戏统一进入游戏库。 | 玩家评分为 8.5，但“PC 游戏引擎兼容性评价”仍为 `--`。 |
 
 ### 4.2 233 乐园
@@ -157,7 +157,7 @@ GameHub 已经解决“这是什么游戏”，却没有充分解决“这台手
 
 | Neon Abyss 导入列表 | Prodeus 扫描结果 |
 |---|---|
-| ![233 Neon Abyss 导入列表](./evidence/03-import/233-neon-imported-list.png) | ![233 Prodeus 扫描结果](./evidence/03-import/233-scan-result.png) |
+| ![233 Neon Abyss 导入列表](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/04-233-neon-imported-list.png) | ![233 Prodeus 扫描结果](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/08-233-prodeus-scan-result.png) |
 | 使用通用图标与文件名，信息密度较低。 | 可扫描到本地游戏目录，但仍是文件导向展示。 |
 
 ### 4.3 GameNative（0.9.0 口径）
@@ -177,7 +177,7 @@ GameHub 已经解决“这是什么游戏”，却没有充分解决“这台手
 
 | 搜索无结果后的 Unknown 条目 | 手工容器配置 |
 |---|---|
-| ![GameNative Unknown 条目详情](./evidence/03-import/gamenative-unknown-detail.png) | ![GameNative 手工容器配置](./evidence/04-config/gamenative-edit-container.png) |
+| ![GameNative Unknown 条目详情](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/09-gamenative-unknown-detail.png) | ![GameNative 手工容器配置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/10-gamenative-container-settings.png) |
 | 没有识别为具体游戏，用户需要自行判断文件和启动方式。 | EXE、容器、Wine、语言、分辨率、音频都需要理解和确认。 |
 
 ## 5. 体验中：启动、组件、控制与异常
@@ -196,7 +196,7 @@ GameHub 已经解决“这是什么游戏”，却没有充分解决“这台手
 
 | GameHub Prodeus 运行 | GameHub 二次启动约 5 秒 | 233 Prodeus 运行 |
 |---|---|---|
-| ![GameHub Prodeus 标题页](./evidence/05-launch/gamehub-prodeus-title.png) | ![GameHub Prodeus 二次启动](./evidence/05-launch/gamehub-warm-5s.png) | ![233 Prodeus 运行页](./evidence/05-launch/233-prodeus-running.png) |
+| ![GameHub Prodeus 标题页](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/11-gamehub-prodeus-title.png) | ![GameHub Prodeus 二次启动](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/12-gamehub-prodeus-warm-start.png) | ![233 Prodeus 运行页](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/13-233-prodeus-running.png) |
 | 成功进入游戏，HUD 瞬时约 59.9—60 FPS。 | 已准备环境能复用。 | 同样可进入可交互画面。 |
 
 ### 5.2 Neon Abyss 对比
@@ -235,7 +235,7 @@ skip user_game_event ... durationSeconds=0
 
 | GameHub：检查环境 | GameHub：启动后静默返回 | 233：Bionic 安装完成 | 233：进入可玩场景 |
 |---|---|---|---|
-| ![GameHub Neon Abyss 检查环境](./evidence/05-launch/gamehub-neon-checking-1s.png) | ![GameHub Neon Abyss 返回详情页](./evidence/05-launch/gamehub-neon-return-12s.png) | ![233 Neon Abyss Bionic 安装 100%](./evidence/05-launch/233-neon-bionic-100.png) | ![233 Neon Abyss 可玩酒吧场景](./evidence/05-launch/233-neon-playable.png) |
+| ![GameHub Neon Abyss 检查环境](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/14-gamehub-neon-environment-check.png) | ![GameHub Neon Abyss 返回详情页](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/15-gamehub-neon-return-12s.png) | ![233 Neon Abyss Bionic 安装 100%](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/16-233-neon-bionic-ready.png) | ![233 Neon Abyss 可玩酒吧场景](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/03-233-neon-playable.png) |
 | 用户只看到环境检查。 | 约 12 秒回到详情，未呈现失败原因。 | 组件准备过程对用户可见。 | 成功进入可接收输入的实际场景。 |
 
 日志原文：[GameHub Neon Abyss `returnCode=139` 完整日志](./evidence/07-logs/gamehub-neon-returncode-139.log)。更多过程图见：[启动证据目录](./evidence/05-launch/)。
@@ -264,7 +264,7 @@ skip user_game_event ... durationSeconds=0
 
 | 游戏内侧栏 | 退出风险确认 |
 |---|---|
-| ![GameHub 游戏内侧栏](./evidence/06-exit/gamehub-sidebar.png) | ![GameHub 退出确认](./evidence/06-exit/gamehub-exit-confirm.png) |
+| ![GameHub 游戏内侧栏](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/17-gamehub-sidebar.png) | ![GameHub 退出确认](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/05-gamehub-exit-confirm.png) |
 | 提供明确“退出”入口。 | 清楚提示未保存数据可能丢失。 |
 
 ### 6.2 233 乐园
@@ -279,7 +279,7 @@ skip user_game_event ... durationSeconds=0
 
 | 233 侧栏 | Android 返回键响应 |
 |---|---|
-| ![233 游戏内侧栏](./evidence/06-exit/233-side-menu.png) | ![233 Neon Abyss 返回键响应](./evidence/06-exit/233-neon-back-response.png) |
+| ![233 游戏内侧栏](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/18-233-sidebar.png) | ![233 Neon Abyss 返回键响应](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75a104bb07793ffc912fbde9b36983db9fa3ce54/public/prd/guanwanggaid-32-pc-emulator/19-233-neon-back-response.png) |
 | 侧栏存在，但退出与返回的关系不够直观。 | 返回主要改变侧栏/遮罩状态，缺少明确退出语义。 |
 
 ### 6.3 GameNative
