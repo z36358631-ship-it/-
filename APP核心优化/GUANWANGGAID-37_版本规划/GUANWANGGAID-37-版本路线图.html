@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>GUANWANGGAID-37｜盖世游戏版本路线图</title>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f4f6f8;color:#172033;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.6}
+    :root{--ink:#172033;--muted:#667085;--line:#e4e7ec;--blue:#2563eb;--blue2:#dbeafe;--green:#15803d;--green2:#dcfce7;--amber:#b45309;--amber2:#fef3c7;--red:#b42318;--red2:#fee4e2;--purple:#7e22ce;--purple2:#f3e8ff;--card:#fff;--shadow:0 10px 30px rgba(16,24,40,.06)}
+    .roadmap{max-width:1240px;margin:0 auto;padding:36px 40px 84px}.hero{position:relative;overflow:hidden;padding:34px;border-radius:20px;background:linear-gradient(135deg,#101828 0%,#172554 58%,#1d4ed8 100%);color:#fff;box-shadow:0 18px 44px rgba(29,78,216,.18)}
+    .hero:after{content:"";position:absolute;width:390px;height:390px;border:70px solid rgba(255,255,255,.06);border-radius:50%;right:-160px;top:-230px}.eyebrow{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#bfdbfe}.hero h1{margin:8px 0 8px;font-size:32px;line-height:1.25}.hero p{margin:0;max-width:860px;color:#dbeafe;font-size:16px}.meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.meta span{padding:5px 10px;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:rgba(255,255,255,.08);font-size:12px}
+    .kpi-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0 24px}.kpi-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow)}.kpi-value{font-size:26px;font-weight:800;color:var(--blue);line-height:1.2}.kpi-label{margin-top:6px;color:var(--muted);font-size:13px}.kpi-note{margin-top:8px;font-size:11px;color:#98a2b3}
+    .section-nav{position:sticky;top:0;z-index:20;display:flex;gap:4px;flex-wrap:wrap;margin:0 0 22px;padding:10px 4px;background:rgba(244,246,248,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}.section-nav a{padding:6px 11px;border-radius:8px;color:#475467;text-decoration:none;font-size:13px;font-weight:600}.section-nav a:hover{background:#fff;color:var(--blue)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;margin:0 0 20px;box-shadow:var(--shadow)}.card h2{margin:0 0 6px;font-size:20px}.section-desc{margin:0 0 18px;color:var(--muted);font-size:14px}.callout{display:flex;gap:14px;align-items:flex-start;border-radius:12px;padding:16px;background:#eff6ff;border:1px solid #bfdbfe}.callout strong{display:block;color:#1d4ed8}.callout p{margin:3px 0 0;color:#475467;font-size:14px}.num{display:grid;place-items:center;flex:0 0 28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-weight:800;font-size:13px}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.data-table{width:100%;border-collapse:collapse;font-size:13px}.data-table th{padding:10px 12px;text-align:left;color:#475467;background:#f8fafc;border-bottom:1px solid var(--line);white-space:nowrap}.data-table td{padding:11px 12px;border-bottom:1px solid #f0f2f5;vertical-align:top}.data-table tr:last-child td{border-bottom:0}.data-table tr:hover td{background:#fafcff}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+    .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}.p0{background:var(--red2);color:var(--red)}.p1{background:var(--blue2);color:#1d4ed8}.p2{background:#f2f4f7;color:#475467}.must{background:var(--amber2);color:var(--amber)}.good{background:var(--green2);color:var(--green)}
+    .evidence-list{list-style:none;margin:0;padding:0}.evidence-list li{display:grid;grid-template-columns:42px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid #f0f2f5}.evidence-list li:last-child{border:0}.rank{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:#f2f4f7;color:#344054;font-weight:800}.evidence-list strong{font-size:14px}.evidence-list small{display:block;color:var(--muted)}
+    .bars{display:grid;gap:11px}.bar-row{display:grid;grid-template-columns:122px 1fr 42px;gap:10px;align-items:center;font-size:12px}.bar-track{height:10px;background:#eef2f6;border-radius:999px;overflow:hidden}.bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#60a5fa)}.bar-fill.red{background:linear-gradient(90deg,#d92d20,#f97066)}
+    .path-shell{padding:20px;border-radius:16px;background:#101828;color:#fff}.path-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.path-head h3{margin:0}.path-head span{font-size:12px;color:#98a2b3}.path-card{position:relative;padding:16px;border:1px solid #344054;border-radius:12px;background:#1d2939}.path-card .icon{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:#344054;font-size:18px}.path-card h4{margin:12px 0 4px;font-size:16px}.path-card p{margin:0;color:#cbd5e1;font-size:12px;min-height:58px}.path-card button{margin-top:13px;width:100%;border:0;border-radius:9px;padding:9px 10px;background:#fff;color:#101828;font-weight:700}.path-card.cloud{border-color:#2563eb;background:linear-gradient(180deg,#172554,#1e293b)}.path-card.cloud .icon{background:#1d4ed8}.path-card .pre{display:block;margin-top:9px;color:#93c5fd;font-size:11px}.skip{margin-top:14px;text-align:center;color:#98a2b3;font-size:12px}.rules{margin:16px 0 0;padding-left:18px;color:#475467;font-size:13px}.rules li{margin:6px 0}
+    .phase-line{position:relative;margin-left:18px;padding-left:30px}.phase-line:before{content:"";position:absolute;left:4px;top:12px;bottom:12px;width:2px;background:#d0d5dd}.phase{position:relative;margin:0 0 16px;padding:18px;border:1px solid var(--line);border-radius:14px;background:#fff}.phase:before{content:"";position:absolute;left:-36px;top:23px;width:14px;height:14px;border:4px solid #fff;border-radius:50%;background:var(--blue);box-shadow:0 0 0 2px var(--blue)}.phase.t0:before{background:var(--red);box-shadow:0 0 0 2px var(--red)}.phase h3{margin:0 0 4px;font-size:16px}.phase .problem{margin:0 0 10px;color:var(--muted);font-size:13px}.phase-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:14px}.phase-box{padding:11px;border-radius:10px;background:#f8fafc;font-size:12px}.phase-box b{display:block;margin-bottom:4px;color:#344054}.phase-box ul{margin:0;padding-left:16px}.phase-box li{margin:3px 0}.gate{margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--green2);color:var(--green);font-size:12px;font-weight:700}
+    .score{font-variant-numeric:tabular-nums;font-weight:700}.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.metric-card{padding:16px;border-radius:12px;border:1px solid var(--line)}.metric-card h3{margin:0 0 7px;font-size:14px}.metric-card p{margin:0;color:var(--muted);font-size:12px}.formula{margin-top:10px;padding:9px;border-radius:8px;background:#f2f4f7;color:#344054;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}
+    .buffer-bar{display:flex;height:42px;overflow:hidden;border-radius:10px;margin:14px 0}.seg{display:grid;place-items:center;color:#fff;font-weight:800;font-size:12px}.seg.main{width:70%;background:#2563eb}.seg.bug{width:20%;background:#d97706}.seg.discovery{width:10%;background:#16a34a}.risk{padding:13px;border-left:4px solid #f04438;background:#fff5f4;border-radius:8px}.risk b{font-size:13px}.risk p{margin:3px 0 0;color:#667085;font-size:12px}.source{font-size:12px;color:#667085}.source code{font-size:11px;color:#344054;word-break:break-all}.footer{text-align:center;color:#98a2b3;font-size:12px;padding-top:8px}
+    .fab{position:fixed;right:28px;bottom:28px;z-index:40;border:0;border-radius:999px;padding:12px 16px;background:#101828;color:#fff;font-weight:700;box-shadow:0 10px 30px rgba(16,24,40,.25);cursor:pointer}.overlay{display:none;position:fixed;inset:0;z-index:49;background:rgba(16,24,40,.36)}.panel{position:fixed;right:-560px;top:0;z-index:50;width:min(560px,92vw);height:100vh;background:#fff;box-shadow:-12px 0 40px rgba(16,24,40,.18);transition:right .25s;display:flex;flex-direction:column}.panel.open{right:0}.overlay.open{display:block}.panel-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}.panel-head h3{margin:0}.panel-actions{display:flex;gap:8px}.panel button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 10px;cursor:pointer}.panel pre{margin:0;padding:20px;overflow:auto;white-space:pre-wrap;font:12px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;color:#344054}
+    @media(max-width:860px){.roadmap{padding:18px}.kpi-bar,.grid-3,.metric-grid{grid-template-columns:repeat(2,1fr)}.grid-2,.phase-grid{grid-template-columns:1fr}.hero{padding:26px}.hero h1{font-size:26px}.bar-row{grid-template-columns:100px 1fr 34px}}@media(max-width:560px){.kpi-bar,.grid-3,.metric-grid{grid-template-columns:1fr}.roadmap{padding:12px}.card{padding:18px}.phase-line{margin-left:8px}.section-nav{display:none}}
+    @media print{body{background:#fff}.roadmap{padding:10px}.hero,.card,.kpi-card{box-shadow:none}.section-nav,.fab,.panel,.overlay{display:none!important}.card,.phase{break-inside:avoid}}
+  </style>
+</head>
+<body>
+  <main class="roadmap">
+    <header class="hero">
+      <div class="eyebrow">GUANWANGGAID-37 · outcome roadmap</div>
+      <h1>从“需求堆叠”转向“新用户成功开玩”</h1>
+      <p>先让新用户理解导入、Steam、秒玩分别适合谁，再把选择变成稳定、可恢复、值得长期使用的游戏体验。人力不作为边界，版本以问题和验证门槛推进。</p>
+      <div class="meta"><span>v1.0</span><span>2026-08-21</span><span>R1—R4 为顺序代号</span><span>主线：理解 → 启动 → 资产 → 云游戏</span></div>
+    </header>
+
+    <section class="kpi-bar" aria-label="证据摘要">
+      <div class="kpi-card"><div class="kpi-value">277 万</div><div class="kpi-label">7 月新增用户</div><div class="kpi-note">新用户值得独立成版</div></div>
+      <div class="kpi-card"><div class="kpi-value">20.1%</div><div class="kpi-label">7 月次日留存</div><div class="kpi-note">价值到达仍未根本改善</div></div>
+      <div class="kpi-card"><div class="kpi-value">12,145</div><div class="kpi-label">近月反馈记录</div><div class="kpi-note">7.22—8.20，存在断档</div></div>
+      <div class="kpi-card"><div class="kpi-value">365</div><div class="kpi-label">启动/黑屏/崩溃反馈</div><div class="kpi-note">最高频可行动问题</div></div>
+    </section>
+
+    <nav class="section-nav">
+      <a href="#decision">规划结论</a><a href="#competitor">竞品汇总</a><a href="#feedback">用户反馈</a><a href="#new-user">新用户方案</a><a href="#roadmap">版本路线图</a><a href="#metrics">指标</a><a href="#priority">优先级</a><a href="#governance">治理</a><a href="#risks">风险</a>
+    </nav>
+
+    <section class="card" id="decision">
+      <h2>规划结论</h2>
+      <p class="section-desc">旧路线图的问题不是需求少，而是每个版本没有共同回答“用户是否真正玩上”。</p>
+      <div class="callout"><div class="num">1</div><div><strong>唯一主线：让新用户从看懂入口，到形成 5 分钟有效游戏体验。</strong><p>T0 先处理最新线上异常；R1 解决理解与选择；R2 解决本地启动确定性；R3 保护账号、存档、下载和权益；R4 再验证云游戏供给与商业化。</p></div></div>
+    </section>
+
+    <section class="card" id="competitor">
+      <h2>PC 模拟器竞品分析汇总</h2>
+      <p class="section-desc">来源：GUANWANGGAID-32 全目录；同一 NX729J / Android 15 / 同一 Prodeus、Neon Abyss 文件。结论评价默认路径，不是全平台性能排名。</p>
+      <div class="table-wrap"><table class="data-table">
+        <thead><tr><th>环节</th><th>GameHub</th><th>233 乐园</th><th>GameNative</th><th>规划动作</th></tr></thead>
+        <tbody>
+          <tr><td><b>新手入口</b></td><td>内容完整，但默认用户已懂“继续、游戏库”</td><td>“导入 PC 游戏”是最明确第一动作</td><td>Unknown、兼容、容器等术语门槛高</td><td><span class="tag p0">R1</span> 用用户资产和目标分流</td></tr>
+          <tr><td><b>导入信息</b></td><td>封面、中文名、简介、评分最完整；兼容性为 <code>--</code></td><td>通用图标与文件名，资产感弱</td><td>0.9.0 搜索失败后需手工配置</td><td>保留 GameHub 元数据，并转成可玩决策</td></tr>
+          <tr><td><b>默认启动</b></td><td>Prodeus 成功；Neon 两次 <code>returnCode=139</code> 静默返回</td><td>两款均成功；Neon 约 20 秒进入可玩场景</td><td>新版 Steam 会话未获授权，不能比较</td><td><span class="tag p0">R2</span> 自动换配置并记住成功组合</td></tr>
+          <tr><td><b>过程与恢复</b></td><td>环境检查存在；失败原因和动作缺失</td><td>Bionic/Loading 可见，成功后不再选 EXE</td><td>参数透明，适合高级用户</td><td>阶段可见；高级参数只放高级模式</td></tr>
+          <tr><td><b>退出与资产</b></td><td>主动退出和未保存提示更清楚</td><td>返回/侧栏/退出语义不清</td><td>缺同版本证据</td><td>保留优势，补异常退出和存档恢复</td></tr>
+        </tbody>
+      </table></div>
+      <div class="grid-2" style="margin-top:16px">
+        <div class="callout" style="background:#ecfdf3;border-color:#abefc6"><div class="num" style="background:#15803d">✓</div><div><strong style="color:#15803d">可借鉴</strong><p>首屏明确第一动作；组件阶段可见；成功后记忆 EXE/环境；候选配置自动切换；高级诊断可导出。</p></div></div>
+        <div class="callout" style="background:#fff6ed;border-color:#fedf89"><div class="num" style="background:#b54708">!</div><div><strong style="color:#b54708">不可照搬</strong><p>文件名式游戏库；要求普通用户理解 EXE/Wine/容器；含糊退出；本地失败后直接强推付费云游戏。</p></div></div>
+      </div>
+    </section>
+
+    <section class="card" id="feedback">
+      <h2>近一个月用户反馈汇总</h2>
+      <p class="section-desc">12,145 条记录；高置信可行动样本 1,215 条。频次是反馈记录数，不是去重用户数，也不是故障率。</p>
+      <div class="grid-2">
+        <ol class="evidence-list">
+          <li><span class="rank">1</span><div><strong>崩溃、黑屏、无法启动 · 365</strong><small>8.14—8.20 占比升至 8.4%</small></div></li>
+          <li><span class="rank">2</span><div><strong>存档丢失、云同步冲突 · 161</strong><small>最新周 75 条，占 4.8%</small></div></li>
+          <li><span class="rank">3</span><div><strong>Steam 登录、绑定、验证 · 127</strong><small>最新周 85 条，占 5.4%</small></div></li>
+          <li><span class="rank">4</span><div><strong>键鼠、键位和映射 · 111</strong><small>进入 20% 稳定性通道</small></div></li>
+          <li><span class="rank">5</span><div><strong>芯片、系统、机型兼容 · 106</strong><small>需按设备组合分群</small></div></li>
+        </ol>
+        <div>
+          <div class="bars">
+            <div class="bar-row"><span>启动/黑屏</span><div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div><b>365</b></div>
+            <div class="bar-row"><span>存档/云同步</span><div class="bar-track"><div class="bar-fill" style="width:44%"></div></div><b>161</b></div>
+            <div class="bar-row"><span>Steam 登录</span><div class="bar-track"><div class="bar-fill" style="width:35%"></div></div><b>127</b></div>
+            <div class="bar-row"><span>键鼠/映射</span><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div><b>111</b></div>
+            <div class="bar-row"><span>设备兼容</span><div class="bar-track"><div class="bar-fill" style="width:29%"></div></div><b>106</b></div>
+            <div class="bar-row"><span>手柄异常</span><div class="bar-track"><div class="bar-fill" style="width:28%"></div></div><b>102</b></div>
+          </div>
+          <div class="risk" style="margin-top:18px"><b>立即按事故排查</b><p>启动、存档、Steam 登录在最新批次同时抬升，先检查版本发布、兼容层、Steam 服务和存档服务的共同变更，不等待正常版本排期。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="new-user">
+      <h2>R1 核心方案：让新用户理解三条路径</h2>
+      <p class="section-desc">不做多页教程，不强迫用户先学产品词。直接在现有首页用“我有什么、最终会得到什么”组织第一动作。</p>
+      <div class="path-shell">
+        <div class="path-head"><h3>你想怎么开始？</h3><span>首次完成后不再重复教学</span></div>
+        <div class="grid-3">
+          <article class="path-card"><div class="icon">📁</div><h4>导入游戏</h4><p>手机里已有 PC 游戏文件？选择游戏文件，在本机运行，不需要重新购买。</p><span class="pre">需要：完整游戏文件</span><button type="button">选择游戏文件</button></article>
+          <article class="path-card"><div class="icon">◉</div><h4>连接 Steam 游戏库</h4><p>连接后查看你已经拥有、且经过盖世验证可在本机运行的游戏。</p><span class="pre">需要：Steam 账号与已购游戏</span><button type="button">连接 Steam</button></article>
+          <article class="path-card cloud"><div class="icon">☁</div><h4>直接玩（秒玩）</h4><p>无需下载 PC 文件，通过云端设备开始。进入前展示可用时长和计费规则。</p><span class="pre">需要：稳定网络；资源真实可用</span><button type="button">查看可秒玩的游戏</button></article>
+        </div>
+        <div class="skip">先逛逛，不阻断浏览</div>
+      </div>
+      <ul class="rules">
+        <li>不能只写“导入 / Steam / 秒玩”；入口必须同时说明前置条件和结果。</li>
+        <li>“秒玩”的主名称用“直接玩（云游戏）”，避免误解为无需网络或永久免费。</li>
+        <li>选择后保留当前游戏和任务上下文；失败时解释原因并给下一步，不能把用户丢回首页。</li>
+        <li>线上用 <code>路径选择 → 获取/绑定/排队 → 首帧 → 5 分钟有效体验</code> 分别衡量三条路径。</li>
+      </ul>
+    </section>
+
+    <section class="card" id="roadmap">
+      <h2>版本路线图</h2>
+      <p class="section-desc">T0 是立即执行的事故通道；R1—R4 按验证门槛推进，不绑定具体 App 版本号。</p>
+      <div class="phase-line">
+        <article class="phase t0"><h3><span class="tag p0">T0</span> 线上止血专项</h3><p class="problem">最新一周启动、存档、Steam 登录同时异常抬升。</p><div class="phase-grid"><div class="phase-box"><b>范围</b><ul><li>排查共同版本与服务变更</li><li>启动失败、存档、登录 P0 回归</li><li>真新用户与统一启动事件打底</li></ul></div><div class="phase-box"><b>看什么</b><ul><li>分版本/机型/游戏失败率</li><li>存档与登录错误码</li><li>每千次启动反馈量</li></ul></div><div class="phase-box"><b>停止条件</b><ul><li>数据丢失或错误扣费</li><li>崩溃率继续上升</li></ul></div></div><div class="gate">结束门槛：线上 P0 收敛，事件口径通过数据 QA。</div></article>
+        <article class="phase"><h3><span class="tag p0">R1</span> 新用户看得懂、选得对</h3><p class="problem">不知道导入、Steam、秒玩分别适合谁，第一步容易选错或不敢选。</p><div class="phase-grid"><div class="phase-box"><b>范围</b><ul><li>现有首页任务型入口</li><li>前置条件与结果说明</li><li>最近路径记忆</li><li>分层问卷与新手测试</li></ul></div><div class="phase-box"><b>北极星</b><ul><li>新用户 D0 有效游戏体验率</li><li>三路径理解正确率 ≥80%</li></ul></div><div class="phase-box"><b>护栏</b><ul><li>不阻断“先逛逛”</li><li>D1 不下降</li></ul></div></div><div class="gate">进入 R2：三路径都能追到 5 分钟会话，理解与下一步完成率达标。</div></article>
+        <article class="phase"><h3><span class="tag p0">R2</span> PC 游戏启动确定性</h3><p class="problem">游戏识别成功不等于能玩；失败被静默处理，用户只能反复尝试或换平台。</p><div class="phase-grid"><div class="phase-box"><b>范围</b><ul><li>退出类型与错误分类</li><li>启动阶段可见</li><li>候选配置 A/B/C 自愈</li><li>成功配置记忆</li><li>兼容性标签</li></ul></div><div class="phase-box"><b>北极星</b><ul><li>D0 PC 有效体验率</li><li>有效启动成功率 +20%</li></ul></div><div class="phase-box"><b>护栏</b><ul><li>静默失败 ≤1%</li><li>失败可归因 ≥95%</li></ul></div></div><div class="gate">进入 R3：全量稳定 7 天，Top 20 游戏 × Top 10 机型无新增 P0。</div></article>
+        <article class="phase"><h3><span class="tag p1">R3</span> 账号与游戏资产安全</h3><p class="problem">Steam 登录、存档、下载和权益失败会直接破坏长期资产与信任。</p><div class="phase-grid"><div class="phase-box"><b>范围</b><ul><li>Steam 分步授权与会话续期</li><li>存档双副本和冲突恢复</li><li>下载断点续传</li><li>权益流水可核对</li></ul></div><div class="phase-box"><b>北极星</b><ul><li>Steam 登录成功率 +20%</li><li>存档最终成功 ≥99.5%</li></ul></div><div class="phase-box"><b>护栏</b><ul><li>数据丢失 P0 = 0</li><li>错误扣费 P0 = 0</li></ul></div></div><div class="gate">进入 R4：三类最新周反馈回落到发布前四周中位数以下。</div></article>
+        <article class="phase"><h3><span class="tag p1">R4</span> 云游戏供给与商业化验证</h3><p class="problem">搜不到或结果不准、退出后上下文丢失、规则不透明，商业化没有稳定体验承接。</p><div class="phase-grid"><div class="phase-box"><b>范围</b><ul><li>别名、纠错、真实空结果</li><li>上下架与存档处置</li><li>退出回原上下文</li><li>余额/有效期/计费起点同屏</li></ul></div><div class="phase-box"><b>北极星</b><ul><li>D0 云游有效体验率</li><li>7 日复玩率</li></ul></div><div class="phase-box"><b>护栏</b><ul><li>单位小时贡献毛利</li><li>权益投诉不升高</li></ul></div></div><div class="gate">实验门槛：先证明供给、连接与会话稳定，再测试价格、时长或首充。</div></article>
+      </div>
+    </section>
+
+    <section class="card" id="metrics">
+      <h2>统一指标与数据门禁</h2>
+      <p class="section-desc">历史 3.9%、6.7%、56% 使用了不同事件和分母，不能作为同一“启动成功率”趋势。R1 前先跑 14 日统一基线。</p>
+      <div class="metric-grid">
+        <div class="metric-card"><h3>总北极星</h3><p>真新安装设备在 24 小时内至少一次启动成功，并形成 ≥5 分钟有效游戏会话。</p><div class="formula">D0 有效体验设备 / 真新安装设备</div></div>
+        <div class="metric-card"><h3>PC 主线</h3><p>从意图到导入/绑定、下载、启动、首帧、5 分钟；按游戏、机型、引擎和配置分层。</p><div class="formula">attempt_id 串联全链路</div></div>
+        <div class="metric-card"><h3>云游戏主线</h3><p>曝光、排队、首帧、5 分钟、付费、7 日复玩，同时看单位小时成本与贡献毛利。</p><div class="formula">体验指标 + 商业护栏</div></div>
+      </div>
+      <div class="table-wrap" style="margin-top:16px"><table class="data-table"><thead><tr><th>必须统一</th><th>最低要求</th><th>为什么</th></tr></thead><tbody>
+        <tr><td>真新用户</td><td>首次安装 cohort；排除重装、已有账号回流和测试设备</td><td>Firebase first_open 不能直接当真新用户</td></tr>
+        <tr><td>启动结果</td><td>首帧稳定 ≥5 秒才算 success；失败必须有 fail_reason</td><td>进入容器或标题页不等于可玩</td></tr>
+        <tr><td>有效体验</td><td>play_duration ≥5 分钟</td><td>避免短暂进入后立即崩溃被当作成功</td></tr>
+        <tr><td>一次尝试</td><td>attempt_id 贯穿路径、下载、配置、启动、恢复、退出</td><td>不再跨事件直接相除</td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section class="card" id="priority">
+      <h2>需求优先级与淘汰</h2>
+      <p class="section-desc">RICE/ICE 是代理分，Effort 在研发评审前复估；线上事故可因严重度和价值阻断越级。</p>
+      <div class="table-wrap"><table class="data-table"><thead><tr><th>需求</th><th>RICE</th><th>ICE</th><th>Kano</th><th>决定</th></tr></thead><tbody>
+        <tr><td>存档同步与冲突恢复</td><td class="score">3.60</td><td class="score">540</td><td><span class="tag must">基本型</span></td><td>T0 排查，R3 P0</td></tr>
+        <tr><td>Steam 登录/绑定闭环</td><td class="score">3.60</td><td class="score">486</td><td><span class="tag must">基本型</span></td><td>T0 排查，R3 P0</td></tr>
+        <tr><td>启动错误分类与失败可见</td><td class="score">3.00</td><td class="score">360</td><td><span class="tag must">基本型</span></td><td>T0 排查，R2 P0</td></tr>
+        <tr><td>自动换配置与成功记忆</td><td class="score">2.40</td><td class="score">288</td><td><span class="tag p1">期望型</span></td><td>R2 P0</td></tr>
+        <tr><td>新用户按资产分流</td><td class="score">1.44</td><td class="score">192</td><td><span class="tag p1">期望型</span></td><td>R1 P0</td></tr>
+        <tr><td>云游戏供给与搜索治理</td><td class="score">1.07</td><td class="score">336</td><td><span class="tag p1">期望型</span></td><td>R4 P0</td></tr>
+        <tr><td>GTA V 直接上架</td><td class="score">0.20</td><td class="score">50</td><td><span class="tag p2">兴奋型</span></td><td>仅验证 29 条明确意图，不承诺上架</td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section class="card" id="governance">
+      <h2>主线、插单和复盘规则</h2>
+      <div class="buffer-bar"><div class="seg main">主线 70%</div><div class="seg bug">缺陷/事故 20%</div><div class="seg discovery">探索 10%</div></div>
+      <div class="grid-3">
+        <div class="metric-card"><h3>继续</h3><p>主要指标达到目标，所有护栏通过，进入下一版本。</p></div>
+        <div class="metric-card"><h3>调整</h3><p>改善 5%—目标值之间，按游戏、设备、路径分群，保留有效策略再补一轮。</p></div>
+        <div class="metric-card"><h3>停止/回滚</h3><p>崩溃率明显上升、体验时间恶化 &gt;10%、出现数据丢失或错误扣费 P0。</p></div>
+      </div>
+      <p class="section-desc" style="margin-top:16px;margin-bottom:0">插单必须影响支付/数据资产/账号安全、阻断有效开玩、影响显著用户规模或存在不可移动外部期限；进入后等量移出非主线范围。</p>
+    </section>
+
+    <section class="card" id="risks">
+      <h2>风险与边界</h2>
+      <div class="grid-2">
+        <div class="risk"><b>口径不统一</b><p>先完成事件字典、线上样本 QA 和 14 日基线；不再混用 3.9%、6.7%、56%。</p></div>
+        <div class="risk"><b>最新反馈可能是发布事故</b><p>T0 先排查共同变更，避免路线图被线上故障掩盖。</p></div>
+        <div class="risk"><b>两款游戏不能外推兼容率</b><p>结论下沉到游戏 × 机型 × 引擎 × 配置组合。</p></div>
+        <div class="risk"><b>没有问卷回收结果</b><p>R1 补做分层 5 题问卷和新手任务测试，结果报告样本量与分层。</p></div>
+      </div>
+      <div class="source" style="margin-top:16px"><b>核心来源：</b><br><code>APP核心优化/竞品对比/GUANWANGGAID-32_PC模拟器业务</code><br><code>意见反馈/反馈记录表格（2026-07-22—2026-08-20）</code><br><code>功能验收/验收包/月度运营数据汇报 - 0807.pdf</code><br><code>APP核心优化/数据分析/参数注释表/核心链路埋点补全方案.md</code></div>
+    </section>
+
+    <div class="footer">GUANWANGGAID-37 · v1.0 · 2026-08-21</div>
+  </main>
+
+  <button class="fab" id="openDoc" type="button">评审摘要</button>
+  <div class="overlay" id="overlay"></div>
+  <aside class="panel" id="panel" aria-label="评审摘要">
+    <div class="panel-head"><h3>评审摘要</h3><div class="panel-actions"><button id="copyDoc" type="button">复制</button><button id="closeDoc" type="button">关闭</button></div></div>
+    <pre id="docText"></pre>
+  </aside>
+  <script>
+    const summary = `# GUANWANGGAID-37 版本规划评审摘要
+
+## 结论
+未来四版只保留一条主线：让新用户从看懂导入、Steam、秒玩，到稳定形成 5 分钟有效游戏体验。
+
+## 顺序
+- T0：立即排查启动、存档、Steam 登录最新异常
+- R1：新用户看得懂、选得对
+- R2：PC 游戏启动确定性
+- R3：账号与游戏资产安全
+- R4：云游戏供给与商业化验证
+
+## R1 入口
+- 导入游戏：已有 PC 文件，在本机运行
+- 连接 Steam 游戏库：展示已拥有且经验证可运行的游戏
+- 直接玩（秒玩）：云端运行，进入前说明时长与计费
+- 保留“先逛逛”，不做阻断式教程
+
+## 北极星
+新用户 D0 有效游戏体验率 = 真新安装 cohort 中，24 小时内启动成功且游戏时长 ≥5 分钟的设备 / 真新安装设备。
+
+## 核心证据
+- 7 月新增 277 万，D1 20.1%
+- 近月反馈 12,145 条：启动 365、存档 161、Steam 登录 127
+- GameHub 元数据领先，但 Neon Abyss 两次 returnCode=139；233 同文件可进入可玩场景
+
+## 规则
+70% 主线 / 20% 缺陷事故 / 10% 下一版探索；插单必须等量移出非主线范围。`;
+    const panel=document.getElementById('panel'),overlay=document.getElementById('overlay'),docText=document.getElementById('docText');docText.textContent=summary;
+    const open=()=>{panel.classList.add('open');overlay.classList.add('open')},close=()=>{panel.classList.remove('open');overlay.classList.remove('open')};
+    document.getElementById('openDoc').onclick=open;document.getElementById('closeDoc').onclick=close;overlay.onclick=close;
+    document.getElementById('copyDoc').onclick=async function(){await navigator.clipboard.writeText(summary);this.textContent='已复制';setTimeout(()=>this.textContent='复制',1500)};
+  </script>
+</body>
+</html>
