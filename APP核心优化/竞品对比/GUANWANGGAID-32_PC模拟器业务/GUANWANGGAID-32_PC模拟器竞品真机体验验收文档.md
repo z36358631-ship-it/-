@@ -1,6 +1,6 @@
 # GUANWANGGAID-32｜PC 模拟器竞品真机体验：结论与行动
 
-> **先做什么：** P0 先修 Neon Abyss 默认启动、异常退出识别和失败恢复；不要继续优先打磨详情页或商业化入口。  
+> **先做什么：** P0 先修 Neon Abyss 默认启动、异常退出识别和失败恢复；不要继续优先打磨详情页或商业化入口。<br>
 > **验证范围：** NX729J / Android 15；本地 EXE：Prodeus、Neon Abyss；GameHub、233 乐园、GameNative。
 
 ## 一、核心结论
@@ -44,13 +44,13 @@
 
 ### 3.2 各产品实走路径
 
-- **GameHub：** `首页/游戏库 → 本地导入 → 选择 EXE → 自动识别 → 详情/默认推荐配置 → 环境准备 → 启动 → 侧栏/退出 → 再次启动`  
+- **GameHub：** `首页/游戏库 → 本地导入 → 选择 EXE → 自动识别 → 详情/默认推荐配置 → 环境准备 → 启动 → 侧栏/退出 → 再次启动`<br>
   Prodeus 已走通；Neon Abyss 两次均在默认启动后返回详情。
 
-- **233 乐园：** `PC 游戏页 → 导入 PC 游戏/扫描目录 → 首次选择 EXE → Bionic/Loading → 标题页 → 可玩场景 → 侧栏/Android 返回 → 再次启动`  
+- **233 乐园：** `PC 游戏页 → 导入 PC 游戏/扫描目录 → 首次选择 EXE → Bionic/Loading → 标题页 → 可玩场景 → 侧栏/Android 返回 → 再次启动`<br>
   Prodeus、Neon Abyss 均走通；Neon Abyss 成功后不再选择 EXE。
 
-- **GameNative：** `启动 → 项目介绍/分享提示 → 首页 → 搜索本地游戏 → Unknown → 选择 EXE → 容器/Wine/语言/分辨率/音频 → 启动`  
+- **GameNative：** `启动 → 项目介绍/分享提示 → 首页 → 搜索本地游戏 → Unknown → 选择 EXE → 容器/Wine/语言/分辨率/音频 → 启动`<br>
   仅走到 0.9.0 的搜索、Unknown 和手工配置；1.1.1 遇已有 Steam 会话停止。
 
 ### 3.3 纯新手复测路径
