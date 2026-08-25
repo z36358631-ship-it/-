@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameHub Admin - 机型配置推荐</title>
+    <style>
+        :root {
+            --primary-color: #1677ff;
+            --primary-bg: #e6f4ff;
+            --text-color: #333;
+            --text-secondary: #8c8c8c;
+            --border-color: #f0f0f0;
+            --bg-color: #f5f5f5;
+            --sidebar-width: 240px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text-color);
+            background: var(--bg-color);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #fff;
+            height: 100vh;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .brand {
+            height: 56px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f1f1f;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .brand svg { margin-right: 8px; color: var(--primary-color); }
+        .menu-container { flex: 1; overflow-y: auto; padding: 12px 0; }
+        .menu-group { margin-bottom: 4px; }
+        .menu-header {
+            display: flex;
+            align-items: center;
+            height: 40px;
+            padding: 0 16px 0 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        .menu-header:hover { color: var(--primary-color); }
+        .submenu { list-style: none; }
+        .submenu-item {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding-left: 48px;
+            font-size: 14px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .submenu-item:hover { color: var(--primary-color); }
+        .submenu-item.active {
+            background: var(--primary-bg);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        .submenu-item.active::after {
+            content: '';
+            position: absolute;
+            right: 0; top: 0; bottom: 0;
+            width: 3px;
+            background: var(--primary-color);
+        }
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .header {
+            height: 56px;
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 24px;
+            flex-shrink: 0;
+        }
+        .header-avatar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        .avatar-circle {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: var(--primary-color); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
+        }
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+        .page-section { display: none; }
+        .page-section.active { display: block; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .page-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f1f1f;
+            margin-bottom: 20px;
+        }
+        .filter-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-item { display: flex; align-items: center; gap: 8px; }
+        .filter-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+        .filter-input, .filter-select {
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .filter-input:focus, .filter-select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(22,119,255,0.1); }
+        .btn {
+            padding: 6px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+            color: var(--text-color);
+        }
+        .btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .btn-primary { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+        .btn-primary:hover { background: #4096ff; }
+        .btn-success { background: #52c41a; color: #fff; border-color: #52c41a; }
+        .btn-success:hover { background: #73d13d; }
+        .table-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        .table-card-header {
+            padding: 16px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table.wide-table { min-width: 1320px; }
+        .data-table.has-actions th:last-child,
+        .data-table.has-actions td:last-child {
+            position: sticky;
+            right: 0;
+            background: #fff;
+            box-shadow: -8px 0 12px rgba(0, 0, 0, 0.04);
+            z-index: 1;
+        }
+        .data-table.has-actions th:last-child {
+            background: #fafafa;
+            z-index: 2;
+        }
+        .data-table th, .data-table td {
+            text-align: left;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+        .data-table th {
+            color: var(--text-secondary);
+            font-weight: 500;
+            background: #fafafa;
+        }
+        .data-table tr:hover td { background: #fafafa; }
+        .action-link {
+            color: var(--primary-color);
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .action-link:hover { text-decoration: underline; }
+        .back-btn {
+            background: #fff;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+        .back-btn:hover { color: var(--primary-color); border-color: var(--primary-color); }
+        .load-more {
+            text-align: center;
+            padding: 12px;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 14px;
+            border-top: 1px solid var(--border-color);
+        }
+        .load-more:hover { background: #fafafa; }
+        /* 分页器 */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+            padding: 14px 24px;
+            border-top: 1px solid var(--border-color);
+        }
+        .pagination span {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-right: 12px;
+        }
+        .page-btn {
+            min-width: 32px;
+            height: 32px;
+            padding: 0 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: var(--text-color);
+        }
+        .page-btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .page-btn.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .rate-good { color: #52c41a; font-weight: 500; }
+        .rate-mid { color: #faad14; font-weight: 500; }
+        .rate-bad { color: #ff4d4f; font-weight: 500; }
+        .sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+        .sortable:hover { color: var(--primary-color); }
+        .metric-note {
+            margin-bottom: 16px;
+            padding: 10px 14px;
+            border: 1px solid #91caff;
+            border-radius: 6px;
+            background: #e6f4ff;
+            color: #0958d9;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .source-badge {
+            display: inline-flex;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #f0f5ff;
+            color: #2f54eb;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .source-badge.official { background: #f6ffed; color: #389e0d; }
+        .source-badge.local { background: #fff7e6; color: #d46b08; }
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: #fff;
+            border-radius: 12px;
+            width: 520px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.15);
+        }
+        .modal-header {
+            padding: 20px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-close {
+            width: 28px; height: 28px;
+            border: none; background: transparent;
+            font-size: 18px; cursor: pointer;
+            border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .modal-close:hover { background: #f5f5f5; }
+        .modal-body { padding: 24px; }
+        .modal-meta {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px 20px;
+            margin-bottom: 18px;
+            padding: 14px;
+            background: #fafafa;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .modal-meta strong { color: #1f1f1f; }
+        .modal-tip { margin-top: 14px; color: var(--text-secondary); font-size: 12px; line-height: 1.6; }
+        /* 人群圈选 */
+        .condition-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .condition-label {
+            width: 120px;
+            flex-shrink: 0;
+            font-size: 14px;
+            font-weight: 500;
+            padding-top: 6px;
+        }
+        .tag-input-wrap {
+            flex: 1;
+            position: relative;
+        }
+        .tag-input-box {
+            min-height: 36px;
+            padding: 4px 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-items: center;
+            cursor: pointer;
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+        .tag-input-box:hover { border-color: #4096ff; }
+        .tag-input-box.open { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(22,119,255,0.1); }
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--primary-bg);
+            color: var(--primary-color);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 12px;
+            line-height: 20px;
+        }
+        .tag-close { cursor: pointer; opacity: 0.7; font-size: 14px; }
+        .tag-close:hover { opacity: 1; }
+        .tag-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0; right: 0;
+            background: #fff;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            z-index: 100;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 4px 0;
+        }
+        .tag-dropdown.show { display: block; }
+        .tag-dropdown-search-wrap {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            padding: 8px;
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .tag-dropdown-search {
+            width: 100%;
+            height: 32px;
+            padding: 0 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 5px;
+            outline: none;
+            font-size: 13px;
+        }
+        .tag-dropdown-search:focus { border-color: var(--primary-color); }
+        .tag-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .tag-option:hover { background: #f5f7fa; }
+        .tag-option input { cursor: pointer; accent-color: var(--primary-color); }
+        .result-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .result-count { font-size: 15px; font-weight: 500; }
+        .result-count span { color: var(--primary-color); font-size: 20px; font-weight: 700; }
+        .result-actions { display: flex; gap: 8px; }
+        /* 日期范围选择器 */
+        .date-range-wrap { display: flex; flex-direction: column; gap: 8px; }
+        .date-shortcuts { display: flex; gap: 6px; }
+        .date-shortcut {
+            padding: 3px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+            color: var(--text-color);
+        }
+        .date-shortcut:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .date-shortcut.active { background: var(--primary-bg); border-color: var(--primary-color); color: var(--primary-color); font-weight: 500; }
+        .date-inputs { display: flex; align-items: center; gap: 8px; }
+        .report-tabs {
+            display: flex;
+            gap: 24px;
+            margin: -4px 0 20px;
+            padding: 0 4px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .report-tab {
+            position: relative;
+            padding: 0 4px 12px;
+            border: 0;
+            background: transparent;
+            color: #595959;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .report-tab:hover { color: var(--primary-color); }
+        .report-tab.active { color: var(--primary-color); font-weight: 600; }
+        .report-tab.active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -1px;
+            height: 2px;
+            border-radius: 2px 2px 0 0;
+            background: var(--primary-color);
+        }
+        .report-tab-panel { display: none; }
+        .report-tab-panel.active { display: block; animation: fadeIn 0.2s ease-out; }
+        .report-filter-mode { display: none; }
+        .report-filter-mode.active { display: flex; }
+        .report-multi-select { width: 280px; flex: 0 0 280px; }
+        .report-multi-select .tag-input-box { min-height: 32px; padding: 2px 8px; }
+        .select-arrow { margin-left: auto; color: #8c8c8c; font-size: 12px; }
+        .empty-row { color: var(--text-secondary); text-align: center !important; padding: 32px !important; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="brand">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            GameHub Admin
+        </div>
+        <div class="menu-container">
+            <div class="menu-group">
+                <div class="menu-header">数据报表</div>
+                <ul class="submenu">
+                    <li class="submenu-item active" onclick="switchPage('chip-report', this)">GPU运行数据</li>
+                    <li class="submenu-item" onclick="switchPage('game-report', this)">游戏运行数据</li>
+                </ul>
+            </div>
+            <div class="menu-group">
+                <div class="menu-header">会员管理</div>
+                <ul class="submenu">
+                    <li class="submenu-item" onclick="switchPage('crowd-select', this)">人群圈选与导出</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+        <div class="header">
+            <div class="header-avatar">
+                <div class="avatar-circle">运</div>
+                运营管理员
+            </div>
+        </div>
+        <div class="content-scroll">
+
+            <!-- 模块一：GPU运行数据 -->
+            <div class="page-section active" id="page-chip-report">
+                <div class="page-title">GPU运行数据报表</div>
+                <div class="report-tabs" data-report-group="chip">
+                    <button class="report-tab active" data-tab="gpu" onclick="switchReportTab('chip','gpu')">GPU</button>
+                    <button class="report-tab" data-tab="device" onclick="switchReportTab('chip','device')">设备类型</button>
+                </div>
+                <div class="filter-card">
+                    <div class="filter-item">
+                        <span class="filter-label">日期</span>
+                        <div class="date-range-wrap">
+                            <div class="date-shortcuts">
+                                <span class="date-shortcut active" onclick="setDateRange(this,'yesterday')">昨日</span>
+                                <span class="date-shortcut" onclick="setDateRange(this,'7d')">近7天</span>
+                                <span class="date-shortcut" onclick="setDateRange(this,'30d')">近一个月</span>
+                            </div>
+                            <div class="date-inputs">
+                                <input type="date" class="filter-input" id="chip-date-start" value="2026-08-24">
+                                <span style="color:#999;font-size:13px">至</span>
+                                <input type="date" class="filter-input" id="chip-date-end" value="2026-08-24">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-item">
+                        <span class="filter-label">汇总维度</span>
+                        <select class="filter-select" id="chip-summary-dimension"><option>按日</option><option>按月</option></select>
+                    </div>
+                    <div class="filter-item report-filter-mode active" id="chip-filter-search">
+                        <span class="filter-label">GPU</span>
+                        <input type="text" class="filter-input" id="chip-search" placeholder="搜索GPU名称">
+                    </div>
+                    <div class="filter-item report-filter-mode" id="chip-filter-multi">
+                        <span class="filter-label">GPU</span>
+                        <div class="tag-input-wrap report-multi-select" id="wrap-chipDeviceGpu">
+                            <div class="tag-input-box" onclick="toggleDropdown('chipDeviceGpu')">
+                                <span style="color:#bbb;font-size:13px" id="placeholder-chipDeviceGpu">全部 GPU（可多选）</span>
+                                <span class="select-arrow">⌄</span>
+                            </div>
+                            <div class="tag-dropdown" id="dropdown-chipDeviceGpu">
+                                <div class="tag-dropdown-search-wrap"><input class="tag-dropdown-search" type="text" placeholder="搜索 GPU" oninput="filterTagOptions('chipDeviceGpu', this.value)" onclick="event.stopPropagation()"></div>
+                                <label class="tag-option"><input type="checkbox" value="Adreno 735" onchange="updateTags('chipDeviceGpu')"> Adreno 735</label>
+                                <label class="tag-option"><input type="checkbox" value="Adreno 750" onchange="updateTags('chipDeviceGpu')"> Adreno 750</label>
+                                <label class="tag-option"><input type="checkbox" value="Immortalis-G720" onchange="updateTags('chipDeviceGpu')"> Immortalis-G720</label>
+                                <label class="tag-option"><input type="checkbox" value="Adreno 740" onchange="updateTags('chipDeviceGpu')"> Adreno 740</label>
+                                <label class="tag-option"><input type="checkbox" value="Mali-G715" onchange="updateTags('chipDeviceGpu')"> Mali-G715</label>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="queryReport('chip')">查询</button>
+                    <button class="btn" onclick="resetReportFilters('chip')">重置</button>
+                    <button class="btn" onclick="alert('导出成功')">导出CSV</button>
+                </div>
+                <div class="report-tab-panel active" id="chip-panel-gpu">
+                    <div class="metric-note">按 GPU 聚合；CPU/SoC 不参与本期统计。成功运行指首帧已渲染且帧率持续波动至少 5 秒，平均帧率和平均单次时长用于判断实际运行质量。</div>
+                    <div class="table-card">
+                        <table class="data-table wide-table">
+                            <thead>
+                                <tr><th>统计日期</th><th>GPU</th><th class="sortable" onclick="sortHint(this)">启动设备数 ↓</th><th>成功运行设备数</th><th>上报失败设备数</th><th>未判定设备数</th><th class="sortable" onclick="sortHint(this)">成功运行率 ↕</th><th class="sortable" onclick="sortHint(this)">平均帧率 ↕</th><th class="sortable" onclick="sortHint(this)">平均单次时长 ↕</th></tr>
+                            </thead>
+                            <tbody id="chip-gpu-body"></tbody>
+                        </table>
+                        <div class="pagination"><span>共 86 条，每页 20 条</span><button class="page-btn" disabled>‹</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">4</button><button class="page-btn">5</button><button class="page-btn">›</button></div>
+                    </div>
+                </div>
+                <div class="report-tab-panel" id="chip-panel-device">
+                    <div class="metric-note">设备型号复用兼容性评价设备字典；未映射时展示厂商原始型号并标记“未映射”。同一机型按 GPU 与运行内存分别统计。</div>
+                    <div class="table-card">
+                        <div class="table-card-header"><span>设备型号与运行内存</span><button class="btn" onclick="alert('已按当前筛选条件导出CSV')">导出CSV</button></div>
+                        <table class="data-table wide-table">
+                            <thead>
+                                <tr><th>统计日期</th><th>排序</th><th>GPU</th><th>设备型号</th><th>运行内存</th><th class="sortable" onclick="sortHint(this)">启动设备数 ↓</th><th>成功运行设备数</th><th>上报失败设备数</th><th>未判定设备数</th><th class="sortable" onclick="sortHint(this)">成功运行率 ↕</th><th class="sortable" onclick="sortHint(this)">平均帧率 ↕</th><th class="sortable" onclick="sortHint(this)">平均单次时长 ↕</th></tr>
+                            </thead>
+                            <tbody id="chip-device-body"></tbody>
+                        </table>
+                        <div class="pagination"><span>共 32 条，每页 20 条</span><button class="page-btn" disabled>‹</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">›</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模块二：游戏运行数据 -->
+            <div class="page-section" id="page-game-report">
+                <div class="page-title">游戏运行数据报表</div>
+                <div class="report-tabs" data-report-group="game">
+                    <button class="report-tab active" data-tab="game" onclick="switchReportTab('game','game')">游戏</button>
+                    <button class="report-tab" data-tab="gpu" onclick="switchReportTab('game','gpu')">GPU</button>
+                    <button class="report-tab" data-tab="config" onclick="switchReportTab('game','config')">配置方案</button>
+                </div>
+                <div class="filter-card">
+                    <div class="filter-item">
+                        <span class="filter-label">日期</span>
+                        <div class="date-range-wrap">
+                            <div class="date-shortcuts">
+                                <span class="date-shortcut active" onclick="setDateRange(this,'yesterday')">昨日</span>
+                                <span class="date-shortcut" onclick="setDateRange(this,'7d')">近7天</span>
+                                <span class="date-shortcut" onclick="setDateRange(this,'30d')">近一个月</span>
+                            </div>
+                            <div class="date-inputs">
+                                <input type="date" class="filter-input" id="game-date-start" value="2026-08-24">
+                                <span style="color:#999;font-size:13px">至</span>
+                                <input type="date" class="filter-input" id="game-date-end" value="2026-08-24">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-item">
+                        <span class="filter-label">汇总维度</span>
+                        <select class="filter-select" id="game-summary-dimension"><option>按日</option><option>按月</option></select>
+                    </div>
+                    <div class="filter-item report-filter-mode active" id="game-filter-search">
+                        <span class="filter-label">游戏</span>
+                        <input type="text" class="filter-input" id="game-search" placeholder="搜索游戏名称/编号">
+                    </div>
+                    <div class="filter-item report-filter-mode" id="game-filter-multi">
+                        <span class="filter-label">游戏</span>
+                        <div class="tag-input-wrap report-multi-select" id="wrap-gameReportGame">
+                            <div class="tag-input-box" onclick="toggleDropdown('gameReportGame')">
+                                <span style="color:#bbb;font-size:13px" id="placeholder-gameReportGame">全部游戏（可多选）</span>
+                                <span class="select-arrow">⌄</span>
+                            </div>
+                            <div class="tag-dropdown" id="dropdown-gameReportGame">
+                                <div class="tag-dropdown-search-wrap"><input class="tag-dropdown-search" type="text" placeholder="搜索游戏名称" oninput="filterTagOptions('gameReportGame', this.value)" onclick="event.stopPropagation()"></div>
+                                <label class="tag-option"><input type="checkbox" value="Grand Theft Auto V Legacy" onchange="updateTags('gameReportGame')"> Grand Theft Auto V Legacy</label>
+                                <label class="tag-option"><input type="checkbox" value="Forza Horizon 5" onchange="updateTags('gameReportGame')"> Forza Horizon 5</label>
+                                <label class="tag-option"><input type="checkbox" value="Cyberpunk 2077" onchange="updateTags('gameReportGame')"> Cyberpunk 2077</label>
+                                <label class="tag-option"><input type="checkbox" value="Black Myth: Wukong" onchange="updateTags('gameReportGame')"> Black Myth: Wukong</label>
+                                <label class="tag-option"><input type="checkbox" value="Slay the Spire 2" onchange="updateTags('gameReportGame')"> Slay the Spire 2</label>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="queryReport('game')">查询</button>
+                    <button class="btn" onclick="resetReportFilters('game')">重置</button>
+                    <button class="btn" onclick="alert('导出成功')">导出CSV</button>
+                </div>
+                <div class="report-tab-panel active" id="game-panel-game">
+                    <div class="table-card">
+                        <div class="table-card-header">游戏列表</div>
+                        <table class="data-table wide-table">
+                            <thead>
+                                <tr><th>统计日期</th><th>游戏名称</th><th>游戏编号</th><th class="sortable" onclick="sortHint(this)">启动设备数 ↓</th><th>成功运行设备数</th><th>上报失败设备数</th><th>未判定设备数</th><th class="sortable" onclick="sortHint(this)">成功运行率 ↕</th><th class="sortable" onclick="sortHint(this)">平均帧率 ↕</th><th class="sortable" onclick="sortHint(this)">平均单次时长 ↕</th></tr>
+                            </thead>
+                            <tbody id="game-list-body"></tbody>
+                        </table>
+                        <div class="pagination"><span>共 128 条，每页 20 条</span><button class="page-btn" disabled>‹</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">4</button><button class="page-btn">5</button><button class="page-btn">6</button><button class="page-btn">7</button><button class="page-btn">›</button></div>
+                    </div>
+                </div>
+                <div class="report-tab-panel" id="game-panel-gpu">
+                    <div class="table-card">
+                        <div class="table-card-header"><span>游戏启动设备数 - GPU 分布</span><button class="btn" onclick="alert('已按当前筛选条件导出CSV')">导出CSV</button></div>
+                        <table class="data-table wide-table">
+                            <thead>
+                                <tr><th>统计日期</th><th>排序</th><th>GPU</th><th class="sortable" onclick="sortHint(this)">启动设备数 ↓</th><th>设备占比</th><th>成功运行设备数</th><th>上报失败设备数</th><th>未判定设备数</th><th class="sortable" onclick="sortHint(this)">成功运行率 ↕</th><th class="sortable" onclick="sortHint(this)">平均帧率 ↕</th><th class="sortable" onclick="sortHint(this)">平均单次时长 ↕</th></tr>
+                            </thead>
+                            <tbody id="game-gpu-body"></tbody>
+                        </table>
+                        <div class="pagination"><span>共 45 条，每页 20 条</span><button class="page-btn" disabled>‹</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">›</button></div>
+                    </div>
+                </div>
+                <div class="report-tab-panel" id="game-panel-config">
+                    <div class="table-card">
+                        <div class="table-card-header">成功运行设备数 - 配置方案分布</div>
+                        <table class="data-table wide-table has-actions">
+                            <thead>
+                                <tr><th>统计日期</th><th>排序</th><th>GPU</th><th>配置MD5</th><th>方案来源</th><th class="sortable" onclick="sortHint(this)">配置设备数 ↓</th><th>设备占比</th><th class="sortable" onclick="sortHint(this)">成功运行率 ↕</th><th class="sortable" onclick="sortHint(this)">平均帧率 ↕</th><th class="sortable" onclick="sortHint(this)">平均单次时长 ↕</th><th>操作</th></tr>
+                            </thead>
+                            <tbody id="game-config-body"></tbody>
+                        </table>
+                        <div class="pagination"><span>共 45 条，每页 20 条</span><button class="page-btn" disabled>‹</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">›</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模块三：人群圈选与导出 -->
+            <div class="page-section" id="page-crowd-select">
+                <div class="page-title">人群圈选与导出</div>
+                <div class="table-card" style="padding: 24px;">
+                    <div class="condition-row">
+                        <div class="condition-label">设备GPU</div>
+                        <select class="filter-select">
+                            <option>包含</option>
+                            <option>不包含</option>
+                        </select>
+                        <div class="tag-input-wrap" id="wrap-gpu">
+                            <div class="tag-input-box" onclick="toggleDropdown('gpu')">
+                                <span style="color:#bbb;font-size:13px" id="placeholder-gpu">点击选择GPU</span>
+                            </div>
+                            <div class="tag-dropdown" id="dropdown-gpu">
+                                <div class="tag-dropdown-search-wrap"><input class="tag-dropdown-search" type="text" placeholder="搜索GPU" oninput="filterTagOptions('gpu', this.value)" onclick="event.stopPropagation()"></div>
+                                <label class="tag-option"><input type="checkbox" value="Adreno 735" onchange="updateTags('gpu')"> Adreno 735</label>
+                                <label class="tag-option"><input type="checkbox" value="Adreno 750" onchange="updateTags('gpu')"> Adreno 750</label>
+                                <label class="tag-option"><input type="checkbox" value="Adreno 740" onchange="updateTags('gpu')"> Adreno 740</label>
+                                <label class="tag-option"><input type="checkbox" value="Immortalis-G720" onchange="updateTags('gpu')"> Immortalis-G720</label>
+                                <label class="tag-option"><input type="checkbox" value="Mali-G715" onchange="updateTags('gpu')"> Mali-G715</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="condition-row">
+                        <div class="condition-label">设备厂商</div>
+                        <select class="filter-select">
+                            <option>包含</option>
+                            <option>不包含</option>
+                        </select>
+                        <div class="tag-input-wrap" id="wrap-vendor">
+                            <div class="tag-input-box" onclick="toggleDropdown('vendor')">
+                                <span style="color:#bbb;font-size:13px" id="placeholder-vendor">点击选择厂商</span>
+                            </div>
+                            <div class="tag-dropdown" id="dropdown-vendor">
+                                <div class="tag-dropdown-search-wrap"><input class="tag-dropdown-search" type="text" placeholder="搜索厂商" oninput="filterTagOptions('vendor', this.value)" onclick="event.stopPropagation()"></div>
+                                <label class="tag-option"><input type="checkbox" value="小米" onchange="updateTags('vendor')"> 小米</label>
+                                <label class="tag-option"><input type="checkbox" value="vivo" onchange="updateTags('vendor')"> vivo</label>
+                                <label class="tag-option"><input type="checkbox" value="OPPO" onchange="updateTags('vendor')"> OPPO</label>
+                                <label class="tag-option"><input type="checkbox" value="真我" onchange="updateTags('vendor')"> 真我</label>
+                                <label class="tag-option"><input type="checkbox" value="iQOO" onchange="updateTags('vendor')"> iQOO</label>
+                                <label class="tag-option"><input type="checkbox" value="一加" onchange="updateTags('vendor')"> 一加</label>
+                                <label class="tag-option"><input type="checkbox" value="荣耀" onchange="updateTags('vendor')"> 荣耀</label>
+                                <label class="tag-option"><input type="checkbox" value="华为" onchange="updateTags('vendor')"> 华为</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="condition-row">
+                        <div class="condition-label">最近下载游戏</div>
+                        <select class="filter-select">
+                            <option>包含</option>
+                            <option>不包含</option>
+                        </select>
+                        <div class="tag-input-wrap" id="wrap-game">
+                            <div class="tag-input-box" onclick="toggleDropdown('game')">
+                                <span style="color:#bbb;font-size:13px" id="placeholder-game">点击选择游戏</span>
+                            </div>
+                            <div class="tag-dropdown" id="dropdown-game">
+                                <div class="tag-dropdown-search-wrap"><input class="tag-dropdown-search" type="text" placeholder="搜索游戏" oninput="filterTagOptions('game', this.value)" onclick="event.stopPropagation()"></div>
+                                <label class="tag-option"><input type="checkbox" value="GTA V" onchange="updateTags('game')"> GTA V</label>
+                                <label class="tag-option"><input type="checkbox" value="Forza Horizon 6" onchange="updateTags('game')"> Forza Horizon 6</label>
+                                <label class="tag-option"><input type="checkbox" value="Cyberpunk 2077" onchange="updateTags('game')"> Cyberpunk 2077</label>
+                                <label class="tag-option"><input type="checkbox" value="Black Myth: Wukong" onchange="updateTags('game')"> Black Myth: Wukong</label>
+                                <label class="tag-option"><input type="checkbox" value="Forza Horizon 5" onchange="updateTags('game')"> Forza Horizon 5</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-note" style="margin:0;">最近下载游戏匹配近30天内下载过，或本地导入后已成功关联到对应游戏产品的用户；仅有本地名称且未关联产品的记录不命中。</div>
+                </div>
+                <div class="result-bar">
+                    <div class="result-count">预估人数：<span id="crowd-count">--</span></div>
+                    <div class="result-actions">
+                        <button class="btn btn-primary" onclick="document.getElementById('crowd-count').textContent='12,580'">查询人数</button>
+                        <button class="btn btn-success" onclick="alert('人群包导出成功！')">导出人群包</button>
+                        <button class="btn" onclick="resetCrowd()">重置</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 配置方案详情弹窗 -->
+    <div class="modal-overlay" id="config-modal" onclick="closeConfigModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span id="config-modal-title">配置方案详情</span>
+                <button class="modal-close" onclick="closeConfigModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-meta">
+                    <span><strong>配置MD5：</strong><span id="config-md5">—</span></span>
+                    <span><strong>方案来源：</strong><span id="config-source">—</span></span>
+                    <span><strong>分享作者：</strong><span id="config-author">—</span></span>
+                    <span><strong>配置设备数：</strong><span id="config-count">500</span></span>
+                    <span><strong>成功运行率：</strong><span id="config-rate">86%</span></span>
+                    <span><strong>平均帧率：</strong><span id="config-fps">51.2 FPS</span></span>
+                    <span><strong>平均单次时长：</strong><span id="config-duration">45分30秒</span></span>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr><th>分类</th><th>参数名</th><th>值</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>图形</td><td>DXVK版本</td><td>2.4.1</td></tr>
+                        <tr><td>图形</td><td>VKD3D版本</td><td>2.12</td></tr>
+                        <tr><td>图形</td><td>GPU驱动</td><td>Adreno 735 v744.0</td></tr>
+                        <tr><td>兼容性</td><td>兼容层版本</td><td>Wine 9.0-rc3</td></tr>
+                        <tr><td>兼容性</td><td>CPU转译器</td><td>Box64 v0.3.0</td></tr>
+                        <tr><td>兼容性</td><td>转译参数模式</td><td>性能模式</td></tr>
+                    </tbody>
+                </table>
+                <div class="modal-tip">配置 MD5 只根据实际配置 JSON 内容生成，方案名称不参与；任一配置参数变化均生成新的 MD5。</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const reportAggregation = { chip: 'day', game: 'day' };
+        const reportActiveTab = { chip: 'gpu', game: 'game' };
+
+        const reportData = {
+            chipGpu: {
+                day: [
+                    { date: '2026-08-24', gpu: 'Adreno 735', launch: 2000, success: 1500, fail: 300, pending: 200, rate: 75, fps: 46.8, duration: '32分18秒' },
+                    { date: '2026-08-24', gpu: 'Adreno 750', launch: 1800, success: 1260, fail: 320, pending: 220, rate: 70, fps: 52.4, duration: '38分06秒' },
+                    { date: '2026-08-24', gpu: 'Immortalis-G720', launch: 1500, success: 930, fail: 360, pending: 210, rate: 62, fps: 41.2, duration: '26分42秒' },
+                    { date: '2026-08-24', gpu: 'Adreno 740', launch: 1000, success: 580, fail: 250, pending: 170, rate: 58, fps: 39.6, duration: '24分15秒' },
+                    { date: '2026-08-24', gpu: 'Mali-G715', launch: 500, success: 240, fail: 150, pending: 110, rate: 48, fps: 31.3, duration: '18分40秒' }
+                ],
+                month: [
+                    { date: '2026-08', gpu: 'Adreno 735', launch: 18760, success: 14312, fail: 2658, pending: 1790, rate: 76.3, fps: 47.5, duration: '34分06秒' },
+                    { date: '2026-08', gpu: 'Adreno 750', launch: 16940, success: 12095, fail: 2915, pending: 1930, rate: 71.4, fps: 53.1, duration: '39分22秒' },
+                    { date: '2026-08', gpu: 'Immortalis-G720', launch: 14130, success: 9038, fail: 3202, pending: 1890, rate: 64, fps: 42.3, duration: '28分11秒' },
+                    { date: '2026-08', gpu: 'Adreno 740', launch: 9740, success: 5844, fail: 2341, pending: 1555, rate: 60, fps: 40.4, duration: '25分38秒' },
+                    { date: '2026-08', gpu: 'Mali-G715', launch: 4960, success: 2480, fail: 1420, pending: 1060, rate: 50, fps: 32.6, duration: '20分14秒' }
+                ]
+            },
+            chipDevice: {
+                day: [
+                    { date: '2026-08-24', rank: 1, gpu: 'Adreno 735', device: 'iQOO Z9 Turbo', ram: '12 GB', launch: 600, success: 480, fail: 70, pending: 50, rate: 80, fps: 49.2, duration: '35分12秒' },
+                    { date: '2026-08-24', rank: 2, gpu: 'Adreno 735', device: '真我 GT Neo6', ram: '16 GB', launch: 450, success: 338, fail: 72, pending: 40, rate: 75, fps: 47.6, duration: '31分48秒' },
+                    { date: '2026-08-24', rank: 3, gpu: 'Adreno 750', device: '红魔 9S Pro', ram: '16 GB', launch: 380, success: 266, fail: 68, pending: 46, rate: 70, fps: 54.1, duration: '39分10秒' },
+                    { date: '2026-08-24', rank: 4, gpu: 'Immortalis-G720', device: '小米 14T Pro', ram: '12 GB', launch: 320, success: 205, fail: 66, pending: 49, rate: 64, fps: 42.8, duration: '25分54秒' },
+                    { date: '2026-08-24', rank: 5, gpu: 'Mali-G715', device: 'PHY110（未映射）', ram: '12 GB', launch: 250, success: 138, fail: 62, pending: 50, rate: 55, fps: 35.7, duration: '19分38秒' }
+                ],
+                month: [
+                    { date: '2026-08', rank: 1, gpu: 'Adreno 735', device: 'iQOO Z9 Turbo', ram: '12 GB', launch: 5680, success: 4658, fail: 594, pending: 428, rate: 82, fps: 50.1, duration: '36分40秒' },
+                    { date: '2026-08', rank: 2, gpu: 'Adreno 735', device: '真我 GT Neo6', ram: '16 GB', launch: 4230, success: 3257, fail: 611, pending: 362, rate: 77, fps: 48.4, duration: '33分16秒' },
+                    { date: '2026-08', rank: 3, gpu: 'Adreno 750', device: '红魔 9S Pro', ram: '16 GB', launch: 3620, success: 2679, fail: 548, pending: 393, rate: 74, fps: 55.3, duration: '41分02秒' },
+                    { date: '2026-08', rank: 4, gpu: 'Immortalis-G720', device: '小米 14T Pro', ram: '12 GB', launch: 3010, success: 1987, fail: 608, pending: 415, rate: 66, fps: 43.7, duration: '27分31秒' },
+                    { date: '2026-08', rank: 5, gpu: 'Mali-G715', device: 'PHY110（未映射）', ram: '12 GB', launch: 2380, success: 1380, fail: 561, pending: 439, rate: 58, fps: 36.9, duration: '21分07秒' }
+                ]
+            },
+            gameList: {
+                day: [
+                    { date: '2026-08-24', game: 'Grand Theft Auto V Legacy', id: '2551', launch: 2000, success: 1420, fail: 350, pending: 230, rate: 71, fps: 45.6, duration: '36分20秒' },
+                    { date: '2026-08-24', game: 'Forza Horizon 5', id: '95703', launch: 1800, success: 1170, fail: 390, pending: 240, rate: 65, fps: 41.8, duration: '31分42秒' },
+                    { date: '2026-08-24', game: 'Cyberpunk 2077', id: '10510', launch: 1500, success: 840, fail: 420, pending: 240, rate: 56, fps: 34.7, duration: '24分06秒' },
+                    { date: '2026-08-24', game: 'Black Myth: Wukong', id: '8153', launch: 1000, success: 480, fail: 350, pending: 170, rate: 48, fps: 30.2, duration: '19分55秒' },
+                    { date: '2026-08-24', game: 'Slay the Spire 2', id: '2380000', launch: 500, success: 385, fail: 65, pending: 50, rate: 77, fps: 58.4, duration: '43分08秒' }
+                ],
+                month: [
+                    { date: '2026-08', game: 'Grand Theft Auto V Legacy', id: '2551', launch: 19180, success: 13810, fail: 3250, pending: 2120, rate: 72, fps: 46.9, duration: '38分12秒' },
+                    { date: '2026-08', game: 'Forza Horizon 5', id: '95703', launch: 17240, success: 11551, fail: 3509, pending: 2180, rate: 67, fps: 43.2, duration: '33分25秒' },
+                    { date: '2026-08', game: 'Cyberpunk 2077', id: '10510', launch: 14580, success: 8456, fail: 3884, pending: 2240, rate: 58, fps: 36.1, duration: '25分49秒' },
+                    { date: '2026-08', game: 'Black Myth: Wukong', id: '8153', launch: 9860, success: 4930, fail: 3310, pending: 1620, rate: 50, fps: 31.8, duration: '21分33秒' },
+                    { date: '2026-08', game: 'Slay the Spire 2', id: '2380000', launch: 4820, success: 3808, fail: 572, pending: 440, rate: 79, fps: 59.1, duration: '45分02秒' }
+                ]
+            },
+            gameGpu: {
+                day: [
+                    { date: '2026-08-24', rank: 1, gpu: 'Adreno 735', launch: 1000, share: '50%', success: 780, fail: 120, pending: 100, rate: 78, fps: 48.6, duration: '38分12秒' },
+                    { date: '2026-08-24', rank: 2, gpu: 'Adreno 750', launch: 500, share: '25%', success: 360, fail: 80, pending: 60, rate: 72, fps: 53.4, duration: '42分08秒' },
+                    { date: '2026-08-24', rank: 3, gpu: 'Immortalis-G720', launch: 200, share: '10%', success: 120, fail: 52, pending: 28, rate: 60, fps: 39.8, duration: '27分45秒' },
+                    { date: '2026-08-24', rank: 4, gpu: 'Adreno 740', launch: 200, share: '10%', success: 96, fail: 70, pending: 34, rate: 48, fps: 34.2, duration: '20分16秒' },
+                    { date: '2026-08-24', rank: 5, gpu: 'Mali-G715', launch: 50, share: '2.5%', success: 18, fail: 20, pending: 12, rate: 36, fps: 28.7, duration: '15分03秒' }
+                ],
+                month: [
+                    { date: '2026-08', rank: 1, gpu: 'Adreno 735', launch: 9460, share: '49.3%', success: 7568, fail: 1051, pending: 841, rate: 80, fps: 49.7, duration: '40分06秒' },
+                    { date: '2026-08', rank: 2, gpu: 'Adreno 750', launch: 4910, share: '25.6%', success: 3633, fail: 724, pending: 553, rate: 74, fps: 54.5, duration: '43分55秒' },
+                    { date: '2026-08', rank: 3, gpu: 'Immortalis-G720', launch: 2050, share: '10.7%', success: 1271, fail: 512, pending: 267, rate: 62, fps: 41.2, duration: '29分24秒' },
+                    { date: '2026-08', rank: 4, gpu: 'Adreno 740', launch: 1880, share: '9.8%', success: 940, fail: 621, pending: 319, rate: 50, fps: 35.6, duration: '22分01秒' },
+                    { date: '2026-08', rank: 5, gpu: 'Mali-G715', launch: 590, share: '3.1%', success: 230, fail: 216, pending: 144, rate: 39, fps: 30.1, duration: '16分42秒' }
+                ]
+            },
+            gameConfig: {
+                day: [
+                    { date: '2026-08-24', rank: 1, gpu: 'Adreno 735', md5: '8f14e45fceea167a5a36dedd4bea2543', source: '云分享', author: '盖世玩家A', count: 500, share: '35%', rate: 86, fps: 51.2, duration: '45分30秒' },
+                    { date: '2026-08-24', rank: '', gpu: '', md5: 'c9f0f895fb98ab9159f51fd0297e236d', source: '系统配置', author: '—', count: 250, share: '18%', rate: 82, fps: 49.8, duration: '41分06秒' },
+                    { date: '2026-08-24', rank: 2, gpu: 'Adreno 750', md5: '45c48cce2e2d7fbdea1afc51c7c6ad26', source: '用户本地', author: '—', count: 100, share: '7%', rate: 79, fps: 54.6, duration: '39分44秒' },
+                    { date: '2026-08-24', rank: 3, gpu: 'Immortalis-G720', md5: 'd3d9446802a44259755d38e6d163e820', source: '系统兜底', author: '—', count: 50, share: '4%', rate: 64, fps: 40.1, duration: '28分19秒' }
+                ],
+                month: [
+                    { date: '2026-08', rank: 1, gpu: 'Adreno 735', md5: '8f14e45fceea167a5a36dedd4bea2543', source: '云分享', author: '盖世玩家A', count: 4870, share: '35.3%', rate: 88, fps: 52.4, duration: '47分16秒' },
+                    { date: '2026-08', rank: '', gpu: '', md5: 'c9f0f895fb98ab9159f51fd0297e236d', source: '系统配置', author: '—', count: 2520, share: '18.2%', rate: 84, fps: 50.9, duration: '42分48秒' },
+                    { date: '2026-08', rank: 2, gpu: 'Adreno 750', md5: '45c48cce2e2d7fbdea1afc51c7c6ad26', source: '用户本地', author: '—', count: 1120, share: '8.1%', rate: 81, fps: 55.8, duration: '41分20秒' },
+                    { date: '2026-08', rank: 3, gpu: 'Immortalis-G720', md5: 'd3d9446802a44259755d38e6d163e820', source: '系统兜底', author: '—', count: 610, share: '4.4%', rate: 67, fps: 41.5, duration: '30分04秒' }
+                ]
+            }
+        };
+
+        const gameProfileScale = {
+            'Grand Theft Auto V Legacy': 1,
+            'Forza Horizon 5': 0.9,
+            'Cyberpunk 2077': 0.75,
+            'Black Myth: Wukong': 0.5,
+            'Slay the Spire 2': 0.25
+        };
+
+        function formatNumber(value) {
+            return Number(value).toLocaleString('en-US');
+        }
+
+        function rateClass(rate) {
+            if (rate >= 70) return 'rate-good';
+            if (rate >= 50) return 'rate-mid';
+            return 'rate-bad';
+        }
+
+        function emptyRow(colspan) {
+            return '<tr><td class="empty-row" colspan="' + colspan + '">暂无符合条件的数据</td></tr>';
+        }
+
+        function switchReportTab(group, tab) {
+            closeTagDropdowns();
+            reportActiveTab[group] = tab;
+            document.querySelectorAll('[data-report-group="' + group + '"] .report-tab').forEach(button => {
+                button.classList.toggle('active', button.dataset.tab === tab);
+            });
+            document.querySelectorAll('#page-' + group + '-report .report-tab-panel').forEach(panel => panel.classList.remove('active'));
+            document.getElementById(group + '-panel-' + tab).classList.add('active');
+            const useMultiFilter = group === 'chip' ? tab === 'device' : tab !== 'game';
+            document.getElementById(group + '-filter-search').classList.toggle('active', !useMultiFilter);
+            document.getElementById(group + '-filter-multi').classList.toggle('active', useMultiFilter);
+            resetContentScroll();
+        }
+
+        function queryReport(type) {
+            closeTagDropdowns();
+            const dimension = document.getElementById(type + '-summary-dimension').value;
+            reportAggregation[type] = dimension === '按月' ? 'month' : 'day';
+            if (type === 'chip') renderChipTables(reportAggregation.chip);
+            else renderGameTables(reportAggregation.game);
+        }
+
+        function renderChipTables(mode) {
+            const keyword = document.getElementById('chip-search').value.trim().toLowerCase();
+            const gpuRows = reportData.chipGpu[mode].filter(row => row.gpu.toLowerCase().includes(keyword));
+            document.getElementById('chip-gpu-body').innerHTML = gpuRows.length ? gpuRows.map(row =>
+                '<tr><td>' + row.date + '</td><td>' + row.gpu + '</td><td>' + formatNumber(row.launch) + '</td><td>' + formatNumber(row.success) + '</td><td>' + formatNumber(row.fail) + '</td><td>' + formatNumber(row.pending) + '</td><td class="' + rateClass(row.rate) + '">' + row.rate + '%</td><td>' + row.fps + ' FPS</td><td>' + row.duration + '</td></tr>'
+            ).join('') : emptyRow(9);
+
+            const selectedGpus = selectedValues('chipDeviceGpu');
+            const deviceRows = reportData.chipDevice[mode].filter(row => !selectedGpus.length || selectedGpus.includes(row.gpu));
+            document.getElementById('chip-device-body').innerHTML = deviceRows.length ? deviceRows.map(row =>
+                '<tr><td>' + row.date + '</td><td>' + row.rank + '</td><td>' + row.gpu + '</td><td>' + row.device + '</td><td>' + row.ram + '</td><td>' + formatNumber(row.launch) + '</td><td>' + formatNumber(row.success) + '</td><td>' + formatNumber(row.fail) + '</td><td>' + formatNumber(row.pending) + '</td><td class="' + rateClass(row.rate) + '">' + row.rate + '%</td><td>' + row.fps + ' FPS</td><td>' + row.duration + '</td></tr>'
+            ).join('') : emptyRow(12);
+        }
+
+        function scaledGameRows(rows, gameNames, field) {
+            const activeGames = gameNames.length ? gameNames : Object.keys(gameProfileScale);
+            const scale = activeGames.reduce((sum, gameName) => sum + (gameProfileScale[gameName] || 0), 0) || 1;
+            return rows.map(row => {
+                const next = Object.assign({}, row);
+                if (field === 'gpu') {
+                    next.launch = Math.round(row.launch * scale);
+                    next.success = Math.round(row.success * scale);
+                    next.fail = Math.round(row.fail * scale);
+                    next.pending = next.launch - next.success - next.fail;
+                } else {
+                    next.count = Math.round(row.count * scale);
+                }
+                return next;
+            });
+        }
+
+        function sourceBadgeClass(source) {
+            if (source === '用户本地') return 'source-badge local';
+            if (source.indexOf('系统') === 0) return 'source-badge official';
+            return 'source-badge';
+        }
+
+        function renderGameTables(mode) {
+            const keyword = document.getElementById('game-search').value.trim().toLowerCase();
+            const gameRows = reportData.gameList[mode].filter(row => row.game.toLowerCase().includes(keyword) || row.id.includes(keyword));
+            document.getElementById('game-list-body').innerHTML = gameRows.length ? gameRows.map(row =>
+                '<tr><td>' + row.date + '</td><td>' + row.game + '</td><td>' + row.id + '</td><td>' + formatNumber(row.launch) + '</td><td>' + formatNumber(row.success) + '</td><td>' + formatNumber(row.fail) + '</td><td>' + formatNumber(row.pending) + '</td><td class="' + rateClass(row.rate) + '">' + row.rate + '%</td><td>' + row.fps + ' FPS</td><td>' + row.duration + '</td></tr>'
+            ).join('') : emptyRow(10);
+
+            const selectedGames = selectedValues('gameReportGame');
+            const gpuRows = scaledGameRows(reportData.gameGpu[mode], selectedGames, 'gpu');
+            document.getElementById('game-gpu-body').innerHTML = gpuRows.map(row =>
+                '<tr><td>' + row.date + '</td><td>' + row.rank + '</td><td>' + row.gpu + '</td><td>' + formatNumber(row.launch) + '</td><td>' + row.share + '</td><td>' + formatNumber(row.success) + '</td><td>' + formatNumber(row.fail) + '</td><td>' + formatNumber(row.pending) + '</td><td class="' + rateClass(row.rate) + '">' + row.rate + '%</td><td>' + row.fps + ' FPS</td><td>' + row.duration + '</td></tr>'
+            ).join('');
+
+            const configRows = scaledGameRows(reportData.gameConfig[mode], selectedGames, 'config');
+            document.getElementById('game-config-body').innerHTML = configRows.map(row => {
+                const shortMd5 = row.md5.slice(0, 8) + '…' + row.md5.slice(-4);
+                return '<tr><td>' + row.date + '</td><td>' + row.rank + '</td><td>' + row.gpu + '</td><td title="' + row.md5 + '">' + shortMd5 + '</td><td><span class="' + sourceBadgeClass(row.source) + '">' + row.source + '</span></td><td>' + formatNumber(row.count) + '</td><td>' + row.share + '</td><td class="' + rateClass(row.rate) + '">' + row.rate + '%</td><td>' + row.fps + ' FPS</td><td>' + row.duration + '</td><td><a class="action-link" onclick="showConfigModal(\'' + row.md5 + '\',\'' + row.source + '\',\'' + row.author + '\',' + row.count + ',' + row.rate + ',' + row.fps + ',\'' + row.duration + '\')">查看配置</a></td></tr>';
+            }).join('');
+        }
+
+        // 日期快捷选择
+        function setDateRange(el, type) {
+            el.parentElement.querySelectorAll('.date-shortcut').forEach(s => s.classList.remove('active'));
+            el.classList.add('active');
+            const wrap = el.closest('.filter-card');
+            const startInput = wrap.querySelector('.date-inputs input:first-child');
+            const endInput = wrap.querySelector('.date-inputs input:last-of-type');
+            const today = new Date('2026-08-25');
+            let start, end;
+            if (type === 'yesterday') {
+                start = end = new Date('2026-08-24');
+            } else if (type === '7d') {
+                end = new Date('2026-08-24');
+                start = new Date('2026-08-18');
+            } else if (type === '30d') {
+                end = new Date('2026-08-24');
+                start = new Date('2026-07-26');
+            }
+            startInput.value = start.toISOString().split('T')[0];
+            endInput.value = end.toISOString().split('T')[0];
+        }
+
+        function resetReportFilters(type) {
+            const page = document.getElementById(type === 'chip' ? 'page-chip-report' : 'page-game-report');
+            page.querySelectorAll('.date-shortcut').forEach(item => item.classList.toggle('active', item.textContent.trim() === '昨日'));
+            document.getElementById(type + '-date-start').value = '2026-08-24';
+            document.getElementById(type + '-date-end').value = '2026-08-24';
+            document.getElementById(type + '-summary-dimension').value = '按日';
+            document.getElementById(type + '-search').value = '';
+            reportAggregation[type] = 'day';
+            if (type === 'chip') {
+                resetTagSelect('chipDeviceGpu');
+                switchReportTab('chip', 'gpu');
+                renderChipTables('day');
+            } else {
+                resetTagSelect('gameReportGame');
+                switchReportTab('game', 'game');
+                renderGameTables('day');
+            }
+            resetSortIndicators(page);
+        }
+
+        // 页面切换
+        function switchPage(page, menuItem) {
+            closeTagDropdowns();
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
+
+            const pageMap = {
+                'chip-report': 'page-chip-report',
+                'game-report': 'page-game-report',
+                'crowd-select': 'page-crowd-select'
+            };
+            document.getElementById(pageMap[page]).classList.add('active');
+            if (menuItem) menuItem.classList.add('active');
+            resetContentScroll();
+        }
+
+        function resetContentScroll() {
+            const scroller = document.querySelector('.content-scroll');
+            if (scroller) scroller.scrollTo({ top: 0, left: 0 });
+        }
+
+        // 配置方案弹窗
+        function showConfigModal(md5, source, author, count, rate, fps, duration) {
+            document.getElementById('config-modal-title').textContent = '配置方案详情';
+            document.getElementById('config-md5').textContent = md5;
+            document.getElementById('config-source').textContent = source;
+            document.getElementById('config-author').textContent = author;
+            document.getElementById('config-count').textContent = formatNumber(count);
+            document.getElementById('config-rate').textContent = rate + '%';
+            document.getElementById('config-fps').textContent = fps + ' FPS';
+            document.getElementById('config-duration').textContent = duration;
+            document.getElementById('config-modal').classList.add('show');
+        }
+        function closeConfigModal(e) {
+            if (!e || e.target === document.getElementById('config-modal')) {
+                document.getElementById('config-modal').classList.remove('show');
+            }
+        }
+
+        // 人群圈选 - 多选标签
+        let openDropdown = null;
+        function closeTagDropdowns() {
+            document.querySelectorAll('.tag-dropdown').forEach(item => item.classList.remove('show'));
+            document.querySelectorAll('.tag-input-box').forEach(item => item.classList.remove('open'));
+            openDropdown = null;
+        }
+
+        function toggleDropdown(type) {
+            const dropdown = document.getElementById('dropdown-' + type);
+            const box = dropdown.previousElementSibling;
+            if (openDropdown && openDropdown !== dropdown) {
+                openDropdown.classList.remove('show');
+                openDropdown.previousElementSibling.classList.remove('open');
+            }
+            dropdown.classList.toggle('show');
+            box.classList.toggle('open');
+            openDropdown = dropdown.classList.contains('show') ? dropdown : null;
+        }
+
+        function updateTags(type) {
+            const wrap = document.getElementById('wrap-' + type);
+            const box = wrap.querySelector('.tag-input-box');
+            const checkboxes = wrap.querySelectorAll('input[type=checkbox]');
+            const placeholder = document.getElementById('placeholder-' + type);
+
+            // 清除旧tags
+            box.querySelectorAll('.tag').forEach(t => t.remove());
+
+            let hasChecked = false;
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    hasChecked = true;
+                    const tag = document.createElement('span');
+                    tag.className = 'tag';
+                    tag.innerHTML = cb.value + ' <span class="tag-close" onclick="removeTag(event,\'' + type + '\',\'' + cb.value + '\')">×</span>';
+                    box.insertBefore(tag, placeholder);
+                }
+            });
+            placeholder.style.display = hasChecked ? 'none' : '';
+        }
+
+        function selectedValues(type) {
+            return Array.from(document.querySelectorAll('#wrap-' + type + ' input[type=checkbox]:checked')).map(item => item.value);
+        }
+
+        function resetTagSelect(type) {
+            const wrap = document.getElementById('wrap-' + type);
+            if (!wrap) return;
+            wrap.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+            const search = wrap.querySelector('.tag-dropdown-search');
+            if (search) search.value = '';
+            filterTagOptions(type, '');
+            updateTags(type);
+        }
+
+        function filterTagOptions(type, keyword) {
+            const normalized = keyword.trim().toLowerCase();
+            document.querySelectorAll('#dropdown-' + type + ' .tag-option').forEach(option => {
+                option.style.display = option.textContent.toLowerCase().includes(normalized) ? 'flex' : 'none';
+            });
+        }
+
+        function removeTag(e, type, value) {
+            e.stopPropagation();
+            const wrap = document.getElementById('wrap-' + type);
+            const cb = wrap.querySelector('input[value="' + value + '"]');
+            if (cb) cb.checked = false;
+            updateTags(type);
+        }
+
+        function resetCrowd() {
+            ['gpu', 'vendor', 'game'].forEach(type => {
+                resetTagSelect(type);
+            });
+            document.getElementById('crowd-count').textContent = '--';
+            closeTagDropdowns();
+        }
+
+        // 排序列交互示意：同一时间仅保留一个排序方向
+        function sortHint(el) {
+            el.closest('table').querySelectorAll('.sortable').forEach(item => {
+                if (item !== el) item.textContent = item.textContent.replace(/[↓↑↕]\s*$/, '↕');
+            });
+            if (/↓\s*$/.test(el.textContent)) {
+                el.textContent = el.textContent.replace(/↓\s*$/, '↑');
+            } else {
+                el.textContent = el.textContent.replace(/[↑↕]\s*$/, '↓');
+            }
+        }
+
+        function resetSortIndicators(page) {
+            page.querySelectorAll('.sortable').forEach(item => {
+                const label = item.textContent.replace(/[↓↑↕]\s*$/, '').trim();
+                const isDefault = label === '启动设备数' || label === '配置设备数';
+                item.textContent = label + (isDefault ? ' ↓' : ' ↕');
+            });
+        }
+
+        // 点击外部关闭下拉
+        document.addEventListener('click', function(e) {
+            if (openDropdown && !e.target.closest('.tag-input-wrap')) {
+                openDropdown.classList.remove('show');
+                openDropdown.previousElementSibling.classList.remove('open');
+                openDropdown = null;
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderChipTables('day');
+            renderGameTables('day');
+        });
+    </script>
+</body>
+</html>
