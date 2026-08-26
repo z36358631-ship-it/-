@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "runId": "be67ffde-965a-4db3-91e2-e883f6259cce",
   "requirementId": "GUANWANGGAID-38",
-  "revision": 76,
-  "status": "in_progress",
+  "revision": 80,
+  "status": "passed",
   "createdAt": "2026-08-25T09:17:02.4877339Z",
-  "updatedAt": "2026-08-26T12:53:17.4699190Z",
+  "updatedAt": "2026-08-26T13:01:35.6827475Z",
   "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-38-game-blind-box.md",
-  "cardHash": "3CB6283A7156A6C9D14E5018E4868602E99B614426620CDD40361628F4723303",
+  "cardHash": "587DE22B3B49710B2B276A0A16121EE0D09484EA08070F0D36D565BDDC01C974",
   "contract": {
     "outOfScope": [
       "后台配置",
@@ -266,8 +266,8 @@
         "S6",
         "S7"
       ],
-      "status": "running",
-      "attempt": 7,
+      "status": "passed",
+      "attempt": 8,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\ai生成\\【Prd】《盖世游戏》游戏盲盒需求.md",
@@ -275,12 +275,24 @@
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-38-game-blind-box.md",
-          "sha256": "24A337762DBA9FC34C097F4669082C62CBDCA3B3C5554CE6C244F3280CFA7456"
+          "sha256": "587DE22B3B49710B2B276A0A16121EE0D09484EA08070F0D36D565BDDC01C974"
         }
       ],
-      "outputs": [],
-      "evidence": [],
-      "validation": null,
+      "outputs": [
+        "源文件：V1.7 PRD与状态卡已同步，Demo、截图和测试无需修改",
+        "机器验证：PRD 0 error/0 warning，六章、2张六要素表和埋点参数一致性通过",
+        "专业判断：V1.7与D-001至D-024、V1.4 Demo和4张截图业务口径一致",
+        "Git：分支codex/guanwanggaid-38-game-blind-box-v1-5已推送，V1.7提交b629709b210b2cd0bc9e8386f50481d58c0498ef",
+        "公开预览：本轮仅更新PRD，未新建或验证HTML预览",
+        "远程资源：4张固定SHA图片均为HTTP 200和image/png"
+      ],
+      "evidence": [
+        "validate-prd-quality.ps1: Pass",
+        "validate-prd-images.ps1 -VerifyRemote: 4/4 PASS",
+        "git push fa64a058..b629709b succeeded",
+        "git rev-parse HEAD与origin目标分支均为b629709b210b2cd0bc9e8386f50481d58c0498ef"
+      ],
+      "validation": "passed_with_public_preview_not_applicable",
       "error": null,
       "reviewer": null
     }
