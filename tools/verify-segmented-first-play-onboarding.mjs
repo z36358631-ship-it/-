@@ -253,6 +253,145 @@ async function assertInsidePhone(selector, label) {
   assert.equal(geometry.inside, true, `${label} 超出 Shell`);
 }
 
+async function assertHomeContinue(title, pathName, stageName) {
+  assert.equal(await page.locator('#pageHome.active').count(), 1, '刷新或浏览后必须先进入首页');
+  assert.equal(await page.locator('[data-action="home-continue"]').count(), 1, '首页必须且只能有一个 Continue');
+  assert.equal(await page.locator('#homeContinueTitle').innerText(), title);
+  const views = (await eventSnapshot()).filter(event => event.name === 'first_play_home_continue_view');
+  assert.equal(views.length, 1, '同一 Continue 首次曝光必须幂等');
+  assert.deepEqual(
+    Object.fromEntries(['path', 'stage', 'market'].map(key => [key, views[0][key]])),
+    { path: pathName, stage: stageName, market: pathName === 'free_download' ? 'overseas' : 'domestic' },
+  );
+  await page.evaluate(() => { renderHomeFeed(); renderHomeFeed(); });
+  assert.equal((await eventSnapshot()).filter(event => event.name === 'first_play_home_continue_view').length, 1, '重复 render 不得重复曝光 Continue');
+}
+
+// Task4：首页必须使用 screen-08 / screen-36 的 DOM Feed，并承接未完成首玩路径
+await resetJourney();
+await page.locator('[data-action="browse-home"]').click();
+assert.equal((await savedFirstPlay()).firstPlayPath, null, '无真实路径时浏览首页不得伪造 firstPlayPath');
+assert.equal((await savedFirstPlay()).firstPlayCompleted, false, '浏览首页不得伪完成首玩');
+assert.notEqual((await savedFirstPlay()).state, 'completed', '浏览首页不得使用 completed 状态');
+assert.equal(await page.locator('#pageHome[data-visual-source="screen-08,screen-36"]').count(), 1);
+for (const selector of ['.home-search-continue', '.home-daily-hero', '.home-recommend-track', '.home-news-section', '.home-game-section', '.home-rank-section', '.home-bottom-nav']) {
+  assert.equal(await page.locator(selector).count(), 1, `竖屏首页缺少 ${selector}`);
+}
+assert.equal(
+  await page.locator('#pageHome img').evaluateAll(nodes => nodes.every(node => !/original\.(?:png|webp)$/i.test(node.getAttribute('src') || ''))),
+  true,
+  '首页不得使用整页截图',
+);
+assert.equal((await eventSnapshot()).some(event => event.name === 'onboarding_start_method_select' && event.path === 'browse'), true, '浏览入口必须保留 path=browse 选择事件');
+await assertHomeContinue('免费秒玩15分钟', 'instant_play', 'selected');
+await capturePhone('home-default-portrait.png');
+await page.locator('[data-action="home-continue"]').click();
+assert.equal(await page.locator('#pageInstantPlay.active').count(), 1, '国内默认 Continue 必须进入秒玩频道');
+let continueEvents = await eventSnapshot();
+assert.equal(continueEvents.filter(event => event.name === 'first_play_home_continue_click' && event.path === 'instant_play').length, 1);
+assert.equal(continueEvents.filter(event => event.name === 'first_play_path_view' && event.path === 'instant_play' && event.resume_source === 'home_continue').length, 1);
+
+await resetJourney('portrait', 'overseas');
+await page.locator('[data-action="browse-home"]').click();
+await assertHomeContinue('Find a free game', 'free_download', 'selected');
+await page.locator('[data-action="home-continue"]').click();
+assert.equal(await page.locator('#pageFreeDownload.active').count(), 1, '海外默认 Continue 必须进入免费游戏下载页');
+
+// Steam 未登录刷新：首页续接 Sheet；库可用刷新：首页续接 Steam 库
+await resetJourney();
+await page.locator('[data-first-play-path="steam"]').click();
+const steamSelectedBeforeRotate = await savedFirstPlay();
+await page.locator('[data-set-orientation="landscape"]').click();
+assert.equal(await page.locator('#pageSteamLogin.active').count(), 1, '横竖屏切换不得强制跳首页');
+await page.locator('[data-set-orientation="portrait"]').click();
+assert.equal((await savedFirstPlay()).firstPlayStage, steamSelectedBeforeRotate.firstPlayStage, '横竖屏切换不得重置首玩状态');
+await page.reload();
+await assertHomeContinue('继续登录Steam', 'steam', 'selected');
+await capturePhone('home-steam-continue-portrait.png');
+await page.locator('[data-action="home-continue"]').click();
+assert.equal(await page.locator('#pageSteamLogin.active').count(), 1);
+assert.equal((await eventSnapshot()).filter(event => event.name === 'first_play_home_continue_click' && event.path === 'steam').length, 1);
+assert.equal((await eventSnapshot()).filter(event => event.name === 'first_play_path_view' && event.resume_source === 'home_continue').length, 1);
+
+await resetJourney();
+await page.locator('[data-first-play-path="steam"]').click();
+await page.locator('#steamUsername').fill('gamehub_player');
+await page.locator('#steamPassword').fill('demo-password');
+await page.locator('[data-action="steam-bind-success"]').click();
+await page.reload();
+await assertHomeContinue('继续从Steam游戏库开始', 'steam', 'content_ready');
+await page.locator('[data-action="home-continue"]').click();
+assert.equal(await page.locator('#pageSteamLibrary.active').count(), 1);
+await page.locator('[data-steam-game]').first().click();
+const pendingLaunchSessionId = (await savedFirstPlay()).launchSessionId;
+await page.reload();
+await assertHomeContinue('继续启动Steam游戏', 'steam', 'launch_requested');
+assert.equal((await savedFirstPlay()).launchSessionId, pendingLaunchSessionId, '刷新不得替换待启动 launch session');
+await page.locator('[data-action="home-continue"]').click();
+assert.equal(await page.locator('#pageGameLaunch.active').count(), 1);
+assert.equal((await savedFirstPlay()).launchSessionId, pendingLaunchSessionId);
+assert.equal((await eventSnapshot()).some(event => event.name === 'game_launch_request'), false, '刷新续接待启动页不得制造新的启动请求');
+
+// 本地扫描、已导入、秒玩和海外下载均从首页恢复细粒度位置
+await resetJourney();
+await page.locator('[data-first-play-path="local_file"]').click();
+await page.locator('[data-import-source="local"]').click();
+await page.locator('[data-action="grant-scan-permission"]').click();
+assert.equal((await savedFirstPlay()).firstPlayStage, 'scanning');
+await page.reload();
+await assertHomeContinue('继续导入游戏', 'local_file', 'scanning');
+await page.locator('[data-action="home-continue"]').click();
+assert.equal(await page.locator('#pageLocalScan.active').count(), 1);
+assert.equal((await savedFirstPlay()).firstPlayStage, 'scanning', '恢复扫描过程不得重置为权限页');
+await page.waitForSelector('#localScanResult:not([hidden])');
+assert.equal((await savedFirstPlay()).firstPlayStage, 'scan_result');
+assert.equal(await page.locator('#localScanResult:not([hidden])').count(), 1);
+await page.locator('[data-action="select-scanned-exe"]').click();
+await page.locator('[data-action="import-selected-game"]').click();
+await page.reload();
+await assertHomeContinue('继续启动已导入游戏', 'local_file', 'content_ready');
+await page.locator('[data-action="home-continue"]').click();
+assert.equal(await page.locator('#pagePcLibrary.active [data-local-game]').count(), 1);
+
+await resetJourney();
+await page.locator('[data-first-play-path="no_asset"]').click();
+await page.reload();
+await assertHomeContinue('继续免费秒玩', 'instant_play', 'content_ready');
+await page.locator('[data-action="home-continue"]').click();
+assert.equal(await page.locator('#pageInstantPlay.active').count(), 1);
+
+await resetJourney('portrait', 'overseas');
+await page.locator('[data-first-play-path="no_asset"]').click();
+await page.locator('[data-free-download-game]').first().click();
+await page.locator('[data-action="start-free-download"]').click();
+await page.reload();
+await assertHomeContinue('Continue downloading', 'free_download', 'downloading');
+assert.equal((await savedFirstPlay()).downloadSessionId, null, '刷新后旧下载 session 必须失效');
+await page.locator('[data-action="home-continue"]').click();
+assert.equal(await page.locator('#pageFreeDownload.active').count(), 1);
+assert.equal((await savedFirstPlay()).firstPlayStage, 'downloading');
+assert.equal(typeof (await savedFirstPlay()).downloadSessionId, 'string', '继续后必须创建新的下载 session');
+await page.waitForFunction(() => onboardingFlow.firstPlayStage === 'installed');
+
+// 用户改选路径后首页只保留最新路径的唯一 Continue
+await resetJourney();
+await page.locator('[data-first-play-path="steam"]').click();
+await page.locator('#steamLoginSheet .steam-sheet-close[data-action="return-to-paths"]').click();
+await page.locator('[data-first-play-path="local_file"]').click();
+await page.reload();
+await assertHomeContinue('继续导入游戏', 'local_file', 'selected');
+assert.equal(await page.locator('[data-action="home-continue"]').count(), 1);
+
+// 已有真实路径时浏览首页只记录 browse 入口，不覆盖路径与进度
+await resetJourney();
+await page.locator('[data-first-play-path="steam"]').click();
+await page.locator('#steamLoginSheet .steam-sheet-close[data-action="return-to-paths"]').click();
+const pathBeforeBrowse = await savedFirstPlay();
+await page.locator('[data-action="browse-home"]').click();
+assert.equal((await savedFirstPlay()).firstPlayPath, 'steam');
+assert.equal((await savedFirstPlay()).firstPlayStage, pathBeforeBrowse.firstPlayStage);
+await assertHomeContinue('继续登录Steam', 'steam', 'selected');
+
 const eventSnapshots = {};
 
 // Steam：Sheet -> 内容库 -> 启动请求 -> 可玩场景
@@ -308,7 +447,8 @@ assert.equal((await savedFirstPlay()).launchSessionId, steamLaunchSessionId, '�
 assert.equal((await eventSnapshot()).filter(event => event.name === 'game_launch_request' && event.path === 'steam').length, 1);
 assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false, '点击 Steam 游戏不得提前记可玩');
 await page.locator('[data-action="enter-playable-scene"]').click();
-assert.equal(await page.locator('#pagePlayableScene.active [data-playable-input]').count(), 1);
+assert.equal(await page.locator('#pagePlayableScene.active [data-playable-input]').count(), 1, '首次 playable 后必须停留在可接收输入场景');
+assert.equal((await savedFirstPlay()).firstPlayCompleted, true);
 eventSnapshots.steam = await eventSnapshot();
 assert.equal(eventSnapshots.steam.filter(event => event.name === 'playable_ready' && event.path === 'steam').length, 1);
 await page.evaluate(() => markPlayable('steam', onboardingFlow.firstPlayGameId));
@@ -316,6 +456,16 @@ assert.equal((await eventSnapshot()).filter(event => event.name === 'playable_re
 eventSnapshots.steam = await eventSnapshot();
 assertStageResults(eventSnapshots.steam, 'steam', ['login', 'library', 'game_select', 'launch']);
 assertLaunchSession(eventSnapshots.steam, 'steam');
+await page.locator('[data-action="enter-home-after-playable"]').click();
+await assertHomeContinue('继续最近游戏', 'steam', 'playable');
+await capturePhone('home-recent-game-portrait.png');
+const recentGameId = (await savedFirstPlay()).firstPlayGameId;
+await page.locator('[data-action="home-continue"]').click();
+assert.equal(await page.locator('#pageGameLaunch.active').count(), 1, '成功后 Continue 必须恢复最近游戏');
+assert.equal((await savedFirstPlay()).firstPlayGameId, recentGameId);
+assert.equal((await savedFirstPlay()).firstPlayCompleted, true, '后续再次启动不得回退首次成功标记');
+await page.evaluate(() => showFirstPlayError('instant_launch_failed'));
+assert.equal((await savedFirstPlay()).firstPlayCompleted, true, '首次成功后续失败不得回退完成标记');
 
 // 本地文件：添加游戏弹窗 -> 扫描结果 -> 选文件 -> 导入库 -> 启动 -> 可玩
 await resetJourney();
@@ -490,6 +640,27 @@ await page.locator('#steamLoginError [data-action="return-to-paths"]').click();
 assert.equal(await page.locator('#pageStartMethod.active').count(), 1);
 
 // 横屏关键页几何与截图
+await resetJourney('landscape');
+await page.locator('[data-action="browse-home"]').click();
+await assertHomeContinue('免费秒玩15分钟', 'instant_play', 'selected');
+assert.equal(await page.locator('.home-landscape-heroes .home-landscape-hero').count(), 2, '横屏首页必须保留双 Hero');
+for (const [selector, label] of [
+  ['.home-landscape-topbar', '横屏首页顶栏'],
+  ['[data-action="home-continue"]', '横屏首页 Continue'],
+  ['.home-landscape-hero:first-child', '横屏首页首个 Hero'],
+  ['.home-landscape-hero:nth-child(2)', '横屏首页第二个 Hero'],
+  ['.home-landscape-recommend-strip', '横屏首页推荐轨道'],
+  ['.home-controller-hints', '横屏首页手柄提示'],
+]) await assertInsidePhone(selector, label);
+await capturePhone('home-default-landscape.png');
+
+await resetJourney('landscape');
+await page.locator('[data-first-play-path="steam"]').click();
+await page.reload();
+await assertHomeContinue('继续登录Steam', 'steam', 'selected');
+await assertInsidePhone('[data-action="home-continue"]', '横屏 Steam 续接 Continue');
+await capturePhone('home-steam-continue-landscape.png');
+
 await resetJourney('landscape');
 await page.locator('[data-first-play-path="steam"]').click();
 await assertInsidePhone('#steamLoginSheet', '横屏 Steam Sheet');

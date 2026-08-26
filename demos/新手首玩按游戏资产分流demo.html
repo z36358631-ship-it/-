@@ -483,17 +483,31 @@ body[data-demo-orientation="landscape"] .demo-view-switch{right:12px;width:200px
 }
 .done-btn:active{transform:scale(.97)}
 
-/* 首页结果 */
-.home-result{height:100%;padding:64px 20px 24px;background:linear-gradient(180deg,#111827 0,#050505 38%)}
-.home-result__eyebrow{font-size:12px;color:var(--gold);margin-bottom:8px}
-.home-result__title{font-size:28px;font-weight:520;line-height:38px}
-.home-result__sub{margin-top:6px;color:var(--muted);font-size:13px;line-height:20px}
-.home-hero{height:190px;margin-top:26px;border-radius:var(--r-xl);padding:20px;display:flex;flex-direction:column;justify-content:flex-end;background:radial-gradient(circle at 75% 20%,rgba(255,204,67,.38),transparent 34%),linear-gradient(135deg,#243b55,#141e30);box-shadow:var(--shadow-card)}
-.home-hero strong{font-size:20px}.home-hero span{margin-top:5px;color:#d7dce4;font-size:12px}
-.home-tabs{display:flex;gap:18px;margin-top:24px;color:var(--muted);font-size:14px}.home-tabs .is-active{color:#fff;font-weight:520}
-.home-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
-.home-card{height:126px;border-radius:var(--r-lg);padding:14px;display:flex;align-items:flex-end;font-size:13px;font-weight:520;background:linear-gradient(145deg,#3d1a0e,#151515)}
-.home-card:nth-child(2){background:linear-gradient(145deg,#163322,#151515)}
+/* 首页 Feed：R-05 screen-08 / R-20 screen-36，Continue 复用顶部搜索位 */
+#pageHome{isolation:isolate;background:#0b0b0c}
+.home-shell{position:relative;width:100%;height:100%;overflow:hidden;background:radial-gradient(circle at 78% 4%,rgba(124,76,42,.27),transparent 30%),#0a0a0b}
+.home-search-continue{position:absolute;z-index:8;top:47px;left:18px;right:18px;height:46px;padding:0 15px;border:1px solid rgba(255,255,255,.13);border-radius:25px;background:rgba(54,46,43,.9);color:#fff;font-family:var(--font);display:flex;align-items:center;gap:11px;text-align:left;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.22)}
+.home-search-continue::before{content:'';width:15px;height:15px;border:2px solid #b4b0ae;border-radius:50%;flex:0 0 auto}
+.home-search-continue::after{content:'';position:absolute;left:29px;top:29px;width:7px;height:2px;border-radius:2px;background:#b4b0ae;transform:rotate(45deg)}
+.home-continue-copy{min-width:0;display:flex;align-items:baseline;gap:8px}.home-continue-copy strong{font-size:13px;line-height:18px;font-weight:650;white-space:nowrap}.home-continue-copy span{color:#a7a3a1;font-size:10px;line-height:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-continue-arrow{margin-left:auto;color:#d3cfcc;font-size:18px;line-height:1}
+.home-portrait-feed{height:100%;padding:108px 0 70px;overflow-y:auto;scrollbar-width:none}.home-portrait-feed::-webkit-scrollbar{display:none}
+.home-section{padding:0 18px;margin-top:19px}.home-section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.home-section-title h3{font-size:16px;line-height:23px;font-weight:650}.home-section-title span{color:#8d8d90;font-size:11px}
+.home-daily-hero{position:relative;margin:0 10px;height:242px;border:1px solid rgba(172,111,65,.62);border-radius:22px;overflow:hidden;background:#050505;box-shadow:0 14px 40px rgba(75,45,25,.25)}
+.home-daily-hero img{width:100%;height:184px;display:block;object-fit:cover}.home-daily-label{position:absolute;z-index:2;left:14px;top:12px;display:flex;gap:7px;align-items:center;font-size:15px;font-weight:700}.home-daily-label b{padding:3px 7px;border-radius:6px;background:#f5f5f5;color:#171717;font-size:10px}.home-daily-meta{height:58px;padding:9px 14px;background:linear-gradient(90deg,#70492f,#8a5a39);display:flex;align-items:center;justify-content:space-between}.home-daily-meta strong{font-size:17px}.home-daily-score{text-align:right;font-family:var(--font-num)}.home-daily-score b{display:block;font-size:25px;line-height:24px}.home-daily-score small{color:#d9c3b4;font-size:9px}
+.home-recommend-track{height:76px;border-radius:18px;overflow:hidden;background:#24221e}.home-recommend-track img{width:auto;min-width:100%;height:100%;display:block;object-fit:cover;object-position:left center}
+.home-news-track,.home-game-track{display:grid;grid-auto-flow:column;grid-auto-columns:76%;gap:10px;overflow-x:auto;scrollbar-width:none}.home-news-track::-webkit-scrollbar,.home-game-track::-webkit-scrollbar{display:none}.home-news-card,.home-game-card{min-width:0;color:#fff;text-decoration:none}.home-news-card img{width:100%;height:98px;border-radius:13px;display:block;object-fit:cover}.home-news-card strong{display:block;margin-top:7px;font-size:12px;line-height:18px;font-weight:500}.home-game-track{grid-auto-columns:47%}.home-game-card{padding-bottom:10px;border:1px solid #2f2f31;border-radius:15px;overflow:hidden;background:#18181a}.home-game-card img{width:100%;height:88px;display:block;object-fit:cover}.home-game-card strong,.home-game-card span{display:block;padding:0 10px}.home-game-card strong{margin-top:7px;font-size:12px;line-height:18px}.home-game-card span{color:#828287;font-size:10px;line-height:15px}.home-game-card b{float:right;margin:7px 9px 0;padding:4px 10px;border-radius:12px;background:#383638;font-size:10px;font-weight:500}
+.home-rank-list{display:grid;gap:9px}.home-rank-row{display:grid;grid-template-columns:48px minmax(0,1fr) 28px;align-items:center;gap:10px}.home-rank-row img{width:48px;height:48px;border-radius:10px;object-fit:cover}.home-rank-copy strong,.home-rank-copy span{display:block}.home-rank-copy strong{font-size:12px;line-height:18px}.home-rank-copy span{color:#87878c;font-size:10px;line-height:15px}.home-rank-row b{color:#ff8d31;font:700 13px var(--font-num)}
+.home-bottom-nav{position:absolute;z-index:7;left:0;right:0;bottom:0;height:62px;border-top:1px solid rgba(255,255,255,.08);background:rgba(14,14,15,.96);backdrop-filter:blur(16px);display:grid;grid-template-columns:repeat(5,1fr)}.home-bottom-nav span{display:grid;place-items:center;color:#99999e;font-size:10px}.home-bottom-nav span:first-child{color:#fff;font-weight:650}.home-bottom-nav span::before{content:'';width:18px;height:13px;margin-top:7px;border:2px solid currentColor;border-radius:5px}.home-bottom-nav span:first-child::before{border-radius:9px 9px 4px 4px;background:currentColor}
+.home-landscape-shell{display:none}
+.phone[data-orientation="landscape"] .home-search-continue{top:11px;left:auto;right:166px;width:238px;height:36px;padding:0 11px;border-color:rgba(255,255,255,.1);background:rgba(35,27,28,.88)}
+.phone[data-orientation="landscape"][data-active-page="pageHome"] .sbar{display:none}
+.phone[data-orientation="landscape"] .home-search-continue::before{width:12px;height:12px}.phone[data-orientation="landscape"] .home-search-continue::after{left:22px;top:23px;width:6px}.phone[data-orientation="landscape"] .home-continue-copy strong{font-size:11px}.phone[data-orientation="landscape"] .home-continue-copy span{font-size:9px}.phone[data-orientation="landscape"] .home-continue-arrow{font-size:15px}
+.phone[data-orientation="landscape"] .home-portrait-feed,.phone[data-orientation="landscape"] .home-bottom-nav{display:none}
+.phone[data-orientation="landscape"] .home-landscape-shell{display:block;height:100%;padding:58px 28px 14px;background:radial-gradient(circle at 20% -30%,rgba(125,31,46,.42),transparent 48%),linear-gradient(120deg,#160c0f,#1b1212 60%,#271c17)}
+.home-landscape-topbar{position:absolute;z-index:3;top:0;left:28px;right:24px;height:54px;display:flex;align-items:center;gap:19px}.home-landscape-topbar span{color:#71676a;font-size:11px}.home-landscape-topbar .is-active{color:#fff;font-size:14px;font-weight:700}.home-landscape-status{margin-left:auto;display:flex;align-items:center;gap:10px;color:#e5e2e2;font:600 11px var(--font-num)}
+.home-landscape-heroes{display:grid;grid-template-columns:1fr 1fr;gap:12px}.home-landscape-hero{position:relative;height:254px;border:1px solid rgba(255,255,255,.12);border-radius:17px;overflow:hidden;background:#1c1515}.home-landscape-hero img{width:100%;height:186px;display:block;object-fit:cover}.home-landscape-hero-copy{position:absolute;left:0;right:0;bottom:0;height:72px;padding:10px 12px;background:linear-gradient(180deg,rgba(40,29,28,.93),#241a19);display:flex;justify-content:space-between}.home-landscape-hero-copy strong,.home-landscape-hero-copy span{display:block}.home-landscape-hero-copy strong{font-size:13px;line-height:19px}.home-landscape-hero-copy span{color:#8f8584;font-size:10px;line-height:15px}.home-landscape-hero-copy b{font:700 25px/30px var(--font-num)}
+.home-landscape-recommend{position:relative;margin-top:12px}.home-landscape-recommend h3{margin-bottom:8px;font-size:13px}.home-landscape-recommend-strip{width:78%;height:76px;border-radius:16px;overflow:hidden;background:#20191a}.home-landscape-recommend-strip img{width:auto;min-width:100%;height:100%;object-fit:cover;object-position:left top}.home-controller-hints{position:absolute;right:28px;bottom:13px;display:flex;gap:18px;color:#e9e7e7;font-size:10px}.home-controller-hints span::before{display:inline-grid;place-items:center;width:19px;height:19px;margin-right:6px;border-radius:50%;background:#f5f5f5;color:#111;font-weight:800}.home-controller-hints span:first-child::before{content:'X'}.home-controller-hints span:last-child::before{content:'Y'}
 
 /* 首玩三路径：Steam Sheet、平台库、本地导入、秒玩频道与可玩收口 */
 .flow-topbar{min-height:50px;display:flex;align-items:center;gap:12px;padding:0 20px;flex-shrink:0}
@@ -543,7 +557,7 @@ body[data-demo-orientation="landscape"] .demo-view-switch{right:12px;width:200px
 .free-download-page{height:100%;padding:48px 18px 18px;background:radial-gradient(circle at 70% 0,#21364c,#090a0c 52%);display:flex;flex-direction:column;overflow:hidden}.free-download-header{display:flex;align-items:center;gap:12px}.free-download-heading h2{font-size:20px;line-height:26px}.free-download-heading p{margin-top:3px;color:#9aa4af;font-size:10px}.free-download-speed{margin-left:auto;padding:7px 10px;border:1px solid rgba(132,190,239,.18);border-radius:12px;background:rgba(48,88,122,.2);color:#bad9f3;font-size:9px;white-space:nowrap}.free-download-grid{min-height:0;margin-top:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;overflow:auto}.free-download-card{position:relative;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#17191c;color:#fff;text-align:left;overflow:hidden;cursor:pointer}.free-download-card[aria-pressed="true"]{border-color:#2bc3df;box-shadow:0 0 0 1px rgba(43,195,223,.25)}.free-download-card img{width:100%;aspect-ratio:1.45;object-fit:cover;display:block}.free-download-info{padding:10px}.free-download-info strong{display:block;font-size:12px}.free-download-meta{display:grid;gap:4px;margin-top:7px;color:#979da6;font-size:9px}.free-download-state{margin-top:auto;padding-top:14px}.free-download-progress{height:5px;border-radius:5px;background:rgba(255,255,255,.09);overflow:hidden}.free-download-progress span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#2bc3df,#0577bb);transition:width .28s}.free-download-status{min-height:18px;margin-top:7px;color:#a9b4bf;font-size:10px}.free-download-primary{width:100%;height:44px;border:1px solid #2bc3df;border-radius:14px;background:linear-gradient(180deg,#0aa2d0,#0273b7);color:#fff;font:650 13px var(--font);cursor:pointer}.free-download-primary:disabled{border-color:#363a3f;background:#25282c;color:#6f747b}.free-download-secondary{width:100%;margin-top:8px;border:0;background:none;color:#9299a3;font:500 10px var(--font);cursor:pointer}
 
 /* 启动请求与可玩场景 */
-.launch-page,.playable-page{height:100%;padding:58px 24px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 22%,#24384c,#08090b 58%);text-align:center}.launch-cover{width:130px;height:176px;border-radius:18px;object-fit:cover;box-shadow:0 18px 42px rgba(0,0,0,.5)}.launch-spinner{width:30px;height:30px;margin-top:20px;border:3px solid rgba(255,255,255,.13);border-top-color:#2bc3df;border-radius:50%;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.launch-page h2{margin-top:13px;font-size:20px}.launch-page p{margin-top:6px;color:#9ba4ae;font-size:11px}.launch-enter{width:220px;height:44px;margin-top:18px;border:1px solid #2bc3df;border-radius:14px;background:linear-gradient(180deg,#0aa2d0,#0273b7);color:#fff;font:650 13px var(--font)}.launch-cancel{margin-top:10px;border:0;background:none;color:#8e949c;font:500 11px var(--font)}.playable-stage{width:100%;max-width:330px;aspect-ratio:1.55;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:linear-gradient(145deg,#214260,#101923);display:grid;place-items:center;box-shadow:inset 0 0 50px rgba(47,155,205,.13)}.playable-stage:focus{outline:2px solid #2bc3df;outline-offset:4px}.playable-stage strong{font-size:18px}.playable-page p{margin-top:16px;color:#a9b3be;font-size:11px}
+.launch-page,.playable-page{height:100%;padding:58px 24px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 22%,#24384c,#08090b 58%);text-align:center}.launch-cover{width:130px;height:176px;border-radius:18px;object-fit:cover;box-shadow:0 18px 42px rgba(0,0,0,.5)}.launch-spinner{width:30px;height:30px;margin-top:20px;border:3px solid rgba(255,255,255,.13);border-top-color:#2bc3df;border-radius:50%;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.launch-page h2{margin-top:13px;font-size:20px}.launch-page p{margin-top:6px;color:#9ba4ae;font-size:11px}.launch-enter{width:220px;height:44px;margin-top:18px;border:1px solid #2bc3df;border-radius:14px;background:linear-gradient(180deg,#0aa2d0,#0273b7);color:#fff;font:650 13px var(--font)}.launch-cancel{margin-top:10px;border:0;background:none;color:#8e949c;font:500 11px var(--font)}.playable-stage{width:100%;max-width:330px;aspect-ratio:1.55;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:linear-gradient(145deg,#214260,#101923);display:grid;place-items:center;box-shadow:inset 0 0 50px rgba(47,155,205,.13)}.playable-stage:focus{outline:2px solid #2bc3df;outline-offset:4px}.playable-stage strong{font-size:18px}.playable-copy p{margin-top:16px;color:#a9b3be;font-size:11px}.playable-home{margin-top:16px;padding:9px 18px;border:1px solid rgba(255,255,255,.16);border-radius:100px;background:rgba(255,255,255,.07);color:#fff;font:550 11px var(--font);cursor:pointer}
 
 /* 三条路径的独立横屏布局 */
 .phone[data-orientation="landscape"] .steam-login-sheet{width:472px;height:100%;max-height:none;margin-left:auto;padding:16px 22px;border-radius:22px 0 0 22px}.phone[data-orientation="landscape"] .steam-login-title{margin-bottom:7px}.phone[data-orientation="landscape"] .steam-login-grid{grid-template-columns:142px 1fr;align-items:start;gap:14px}.phone[data-orientation="landscape"] .steam-qr{width:88px;height:88px}.phone[data-orientation="landscape"] .steam-login-fields{gap:6px}.phone[data-orientation="landscape"] .steam-field input{height:34px}.phone[data-orientation="landscape"] .steam-bind{height:38px;margin-top:6px}.phone[data-orientation="landscape"] .steam-privacy{margin-top:4px}.phone[data-orientation="landscape"] .steam-login-background{width:56%;padding:42px 28px}
@@ -552,7 +566,7 @@ body[data-demo-orientation="landscape"] .demo-view-switch{right:12px;width:200px
 .phone[data-orientation="landscape"] .local-scan-page{display:grid;grid-template-columns:1fr 1.1fr;gap:22px;padding:42px 34px 18px}.phone[data-orientation="landscape"] .local-scan-page .flow-topbar{position:absolute;top:34px;left:8px}.phone[data-orientation="landscape"] .local-scan-hero{align-self:center}.phone[data-orientation="landscape"] .local-scan-workspace{align-self:center;max-height:340px;overflow:auto}
 .phone[data-orientation="landscape"] .instant-page{padding:38px 0 0}.phone[data-orientation="landscape"] .instant-header{display:grid;grid-template-columns:280px 1fr;align-items:center;gap:18px;padding:0 26px}.phone[data-orientation="landscape"] .instant-channel-tabs{margin:0}.phone[data-orientation="landscape"] .instant-scroll{height:calc(100% - 55px);display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:12px 26px 18px}.phone[data-orientation="landscape"] .instant-overview,.phone[data-orientation="landscape"] .instant-secondary{min-height:0;overflow:auto}.phone[data-orientation="landscape"] .instant-bottom-nav{display:none}.phone[data-orientation="landscape"] .instant-hot-grid{grid-template-columns:repeat(3,1fr)}
 .phone[data-orientation="landscape"] .free-download-page{display:grid;grid-template-columns:1fr 260px;grid-template-rows:auto 1fr;gap:12px 20px;padding:38px 28px 16px}.phone[data-orientation="landscape"] .free-download-header{grid-column:1/-1}.phone[data-orientation="landscape"] .free-download-grid{grid-column:1;grid-row:2;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:164px;align-content:start;margin-top:0}.phone[data-orientation="landscape"] .free-download-card{height:164px}.phone[data-orientation="landscape"] .free-download-card img{height:96px;aspect-ratio:auto}.phone[data-orientation="landscape"] .free-download-info{padding:8px 10px}.phone[data-orientation="landscape"] .free-download-state{grid-column:2;grid-row:2;align-self:center;padding:18px;border:1px solid rgba(255,255,255,.09);border-radius:18px;background:rgba(25,28,32,.76)}
-.phone[data-orientation="landscape"] .launch-page,.phone[data-orientation="landscape"] .playable-page{padding:36px 40px;flex-direction:row;gap:28px;text-align:left}.phone[data-orientation="landscape"] .launch-cover{width:150px;height:204px}.phone[data-orientation="landscape"] .launch-copy{width:320px}.phone[data-orientation="landscape"] .playable-stage{width:480px}.phone[data-orientation="landscape"] .playable-page p{width:250px;margin:0}
+.phone[data-orientation="landscape"] .launch-page,.phone[data-orientation="landscape"] .playable-page{padding:36px 40px;flex-direction:row;gap:28px;text-align:left}.phone[data-orientation="landscape"] .launch-cover{width:150px;height:204px}.phone[data-orientation="landscape"] .launch-copy{width:320px}.phone[data-orientation="landscape"] .playable-stage{width:480px}.phone[data-orientation="landscape"] .playable-copy{width:250px}.phone[data-orientation="landscape"] .playable-copy p{margin:0}
 
 /* Demo顶层视图 */
 [hidden]{display:none!important}
@@ -851,7 +865,7 @@ body[data-demo-orientation="landscape"] .demo-view-switch{right:12px;width:200px
 
 <!-- 首次成功唯一终点：可聚焦并接收输入的游戏场景 -->
 <div class="page" id="pagePlayableScene">
-  <div class="playable-page"><div class="playable-stage" data-playable-input tabindex="0"><strong id="playableTitle">游戏已可操作</strong></div><p id="playableDesc">已进入可接收键盘、触控或手柄输入的游戏场景，首次首玩在此收口。</p></div>
+  <div class="playable-page"><div class="playable-stage" data-playable-input tabindex="0"><strong id="playableTitle">游戏已可操作</strong></div><div class="playable-copy"><p id="playableDesc">已进入可接收键盘、触控或手柄输入的游戏场景，首次首玩在此收口。</p><button type="button" class="playable-home" data-action="enter-home-after-playable">返回首页</button></div></div>
 </div>
 
 <!-- 第3步：有游戏想玩 - 选择方式 -->
@@ -1031,21 +1045,58 @@ body[data-demo-orientation="landscape"] .demo-view-switch{right:12px;width:200px
   </div>
 </div>
 
-<!-- 首页结果态：供后续弱入口与首玩完成续接 -->
-<div class="page" id="pageHome">
-  <div class="home-result" data-result="later">
-    <p class="home-result__eyebrow">GAMEHUB · EXPLORE</p>
-    <h2 class="home-result__title">发现你的下一款游戏</h2>
-    <p class="home-result__sub">已进入盖世游戏首页，你可以稍后从游戏库继续导入或绑定 Steam。</p>
-    <div class="home-hero">
-      <strong>本周热门 PC 游戏</strong>
-      <span>云游戏可立即体验，无需等待下载</span>
-    </div>
-    <div class="home-tabs"><span class="is-active">推荐</span><span>云游戏</span><span>免费游戏</span></div>
-    <div class="home-cards">
-      <div class="home-card">黑神话：悟空</div>
-      <div class="home-card">艾尔登法环</div>
-    </div>
+<!-- 当前产品首页：R-05 screen-08 / R-20 screen-36；Continue 复用顶部搜索位 -->
+<div class="page" id="pageHome" data-visual-source="screen-08,screen-36">
+  <div class="home-shell" data-result="later">
+    <button type="button" class="home-search-continue" data-action="home-continue">
+      <span class="home-continue-copy"><strong id="homeContinueTitle">免费秒玩15分钟</strong><span id="homeContinueSubtitle">无需下载，选择游戏立即开玩</span></span>
+      <span class="home-continue-arrow" aria-hidden="true">›</span>
+    </button>
+
+    <main class="home-portrait-feed" aria-label="首页推荐 Feed">
+      <section class="home-daily-hero" aria-label="每日推荐">
+        <div class="home-daily-label">今日推荐 <b>08/05</b></div>
+        <img src="../.agents/skills/gamehub-app-ui/assets/visual-sources/home-portrait--hero.webp" alt="侠盗猎车手5每日推荐">
+        <div class="home-daily-meta"><strong>侠盗猎车手5</strong><span class="home-daily-score"><b>8.3</b><small>玩家评价</small></span></div>
+      </section>
+      <section class="home-section" aria-labelledby="homeRecommendTitle">
+        <div class="home-section-title"><h3 id="homeRecommendTitle">为你推荐</h3></div>
+        <div class="home-recommend-track"><img src="../.agents/skills/gamehub-app-ui/assets/visual-sources/home-portrait--recommend-strip.webp" alt="为你推荐游戏封面"></div>
+      </section>
+      <section class="home-section home-news-section" aria-labelledby="homeNewsTitle">
+        <div class="home-section-title"><h3 id="homeNewsTitle">最新资讯</h3><span>更多</span></div>
+        <div class="home-news-track">
+          <a class="home-news-card" href="javascript:void(0)"><img src="../.agents/skills/gamehub-app-ui/assets/visual-sources/home-portrait--news-a.webp" alt="兼容游戏推荐与配置方案更新"><strong>《盖世游戏》兼容游戏推荐与配置方案更新</strong></a>
+          <a class="home-news-card" href="javascript:void(0)"><img src="../.agents/skills/gamehub-app-ui/assets/visual-sources/home-portrait--news-b.webp" alt="黑神话悟空平台折扣资讯"><strong>《黑神话：悟空》全平台限时折扣资讯</strong></a>
+        </div>
+      </section>
+      <section class="home-section home-game-section" aria-labelledby="homeGameTitle">
+        <div class="home-section-title"><h3 id="homeGameTitle">端游大作 · 秒玩上新</h3></div>
+        <div class="home-game-track">
+          <article class="home-game-card"><img src="../.agents/skills/gamehub-app-ui/assets/visual-sources/home-portrait--game-a.webp" alt="车辆模拟器"><strong>车辆模拟器</strong><span>让想象驱动未来</span><b>秒玩</b></article>
+          <article class="home-game-card"><img src="../.agents/skills/gamehub-app-ui/assets/visual-sources/home-portrait--game-b.webp" alt="生化危机4重制版"><strong>生化危机4重制版</strong><span>生死交织：生存之战</span><b>秒玩</b></article>
+          <article class="home-game-card"><img src="../.agents/skills/gamehub-app-ui/assets/visual-sources/home-portrait--game-c.webp" alt="实况足球2021"><strong>实况足球2021</strong><span>真实球场体验</span><b>秒玩</b></article>
+        </div>
+      </section>
+      <section class="home-section home-rank-section" aria-labelledby="homeRankTitle">
+        <div class="home-section-title"><h3 id="homeRankTitle">热玩榜单</h3><span>更多 ›</span></div>
+        <div class="home-rank-list">
+          <article class="home-rank-row"><img src="../.agents/skills/gamehub-app-ui/assets/visual-sources/home-portrait--rank-a.webp" alt="古剑奇谭三"><span class="home-rank-copy"><strong>古剑奇谭三</strong><span>角色扮演</span></span><b>8.3</b></article>
+          <article class="home-rank-row"><img src="../.agents/skills/gamehub-app-ui/assets/visual-sources/home-portrait--rank-b.webp" alt="植物大战僵尸重植版"><span class="home-rank-copy"><strong>植物大战僵尸：重植版</strong><span>策略游戏</span></span><b>6.3</b></article>
+        </div>
+      </section>
+    </main>
+    <nav class="home-bottom-nav" aria-label="主导航"><span>首页</span><span>玩游戏</span><span>排行榜</span><span>游戏库</span><span>我的</span></nav>
+
+    <main class="home-landscape-shell" aria-label="掌机首页">
+      <nav class="home-landscape-topbar"><span>游戏库</span><span>玩游戏</span><span class="is-active">首页</span><span>排行榜</span><span>我的</span><span class="home-landscape-status">18:21　Wi-Fi　87%</span></nav>
+      <section class="home-landscape-heroes" aria-label="编辑精选">
+        <article class="home-landscape-hero"><img src="../.agents/skills/gamehub-app-ui/assets/visual-sources/home-landscape--hero-a.webp" alt="极限竞速地平线6"><div class="home-landscape-hero-copy"><span><strong>极限竞速：地平线 6</strong><span>模拟 体育 竞速</span></span><b>8.6</b></div></article>
+        <article class="home-landscape-hero"><img src="../.agents/skills/gamehub-app-ui/assets/visual-sources/home-landscape--hero-b.webp" alt="荒野大镖客2"><div class="home-landscape-hero-copy"><span><strong>荒野大镖客2</strong><span>动作 冒险游戏</span></span><b>9.1</b></div></article>
+      </section>
+      <section class="home-landscape-recommend"><h3>为你推荐</h3><div class="home-landscape-recommend-strip"><img src="../.agents/skills/gamehub-app-ui/assets/visual-sources/home-landscape--recommend-strip.webp" alt="掌机模式推荐游戏"></div></section>
+      <div class="home-controller-hints" aria-label="手柄快捷操作"><span>刷新</span><span>搜索</span></div>
+    </main>
   </div>
 </div>
 </div>
@@ -1203,6 +1254,7 @@ var ONBOARDING_FLOW_STATES={
   WELCOME:'welcome_pending',
   SOURCE:'source_pending',
   START_METHOD:'start_method_pending',
+  HOME:'home_browsing',
   DESTINATION:'destination_in_progress',
   COMPLETED:'completed'
 };
@@ -1323,9 +1375,11 @@ var instantListExpanded=false;
 var localFileSelected=false;
 var stageResultKeys=new Set();
 var completedLaunchSessions=new Set();
+var homeContinueViewKeys=new Set();
 var launchSessionSequence=0;
 var steamLibraryView={query:'',sort:'recent',recentOnly:false};
 var freeDownloadTask={version:0,timer:null};
+var localScanTask={version:0,timer:null};
 var FREE_DOWNLOAD_SPEED_MBPS=20;
 var FREE_DOWNLOAD_GAMES=[
   {gameId:'game_3',name:'Hades',sizeGb:15},
@@ -1378,12 +1432,103 @@ function cancelFreeDownloadTask(){
   onboardingFlow.downloadSessionId=null;
 }
 
+function cancelLocalScanTask(){
+  localScanTask.version+=1;
+  if(localScanTask.timer) clearTimeout(localScanTask.timer);
+  localScanTask.timer=null;
+}
+
 function setFirstPlayStage(stage,gameId){
   onboardingFlow.firstPlayStage=stage;
   if(gameId!==undefined) onboardingFlow.firstPlayGameId=gameId;
   onboardingFlow.updatedAt=new Date().toISOString();
   saveOnboardingFlow();
   renderFirstPlayOptions();
+}
+
+function currentFirstPlayGameName(){
+  var gameId=onboardingFlow.firstPlayGameId;
+  var index=Math.max(0,Number(String(gameId||'game_0').replace('game_',''))||0);
+  var freeItem=FREE_DOWNLOAD_GAMES.find(function(item){return item.gameId===gameId});
+  return freeItem?freeItem.name:((games[index]||games[0]).name);
+}
+
+function getHomeContinueConfig(){
+  var market=currentFirstPlayMarket();
+  var defaultPath=market==='overseas'?'free_download':'instant_play';
+  var path=onboardingFlow.firstPlayPath||defaultPath;
+  var stage=onboardingFlow.firstPlayStage||'selected';
+  if(onboardingFlow.firstPlayCompleted){
+    return {
+      path:path,
+      stage:'playable',
+      title:market==='overseas'?'Continue recent game':'继续最近游戏',
+      subtitle:currentFirstPlayGameName()
+    };
+  }
+  if(!onboardingFlow.firstPlayPath){
+    return market==='overseas'?{
+      path:defaultPath,stage:'selected',title:'Find a free game',subtitle:'Choose a free game, download it, and start playing'
+    }:{
+      path:defaultPath,stage:'selected',title:'免费秒玩15分钟',subtitle:'无需下载，选择游戏立即开玩'
+    };
+  }
+  if(path==='steam'){
+    if(stage==='content_ready') return {path:path,stage:stage,title:'继续从Steam游戏库开始',subtitle:'选择一款已拥有的游戏'};
+    if(stage==='launch_requested') return {path:path,stage:stage,title:'继续启动Steam游戏',subtitle:currentFirstPlayGameName()};
+    return {path:path,stage:stage,title:'继续登录Steam',subtitle:'登录后查看并启动已购买的游戏'};
+  }
+  if(path==='local_file'){
+    if(['content_ready','game_selected','launch_requested'].includes(stage)) return {path:path,stage:stage,title:'继续启动已导入游戏',subtitle:currentFirstPlayGameName()};
+    return {path:path,stage:stage,title:'继续导入游戏',subtitle:'扫描或选择本地游戏主程序'};
+  }
+  if(path==='instant_play'){
+    return {path:path,stage:stage,title:'继续免费秒玩',subtitle:'使用赠送的15分钟选择游戏立即开玩'};
+  }
+  if(path==='free_download'){
+    if(stage==='installed'||stage==='launch_requested') return {path:path,stage:stage,title:'Launch downloaded game',subtitle:currentFirstPlayGameName()};
+    return {path:path,stage:stage,title:'Continue downloading',subtitle:stage==='downloading'?currentFirstPlayGameName():'Choose a free game to download'};
+  }
+  return {path:defaultPath,stage:'selected',title:'免费秒玩15分钟',subtitle:'无需下载，选择游戏立即开玩'};
+}
+
+function renderHomeFeed(reason){
+  var config=getHomeContinueConfig();
+  var shell=document.querySelector('#pageHome .home-shell');
+  if(reason) shell.dataset.result=reason;
+  document.getElementById('homeContinueTitle').textContent=config.title;
+  document.getElementById('homeContinueSubtitle').textContent=config.subtitle;
+  var button=document.querySelector('[data-action="home-continue"]');
+  button.dataset.path=config.path;
+  button.dataset.stage=config.stage;
+  button.setAttribute('aria-label',config.title+'，'+config.subtitle);
+  var key=[config.market||currentFirstPlayMarket(),config.path,config.stage,onboardingFlow.firstPlayCompleted?'completed':'pending'].join('|');
+  if(!homeContinueViewKeys.has(key)){
+    homeContinueViewKeys.add(key);
+    emitDemoEvent('first_play_home_continue_view',{path:config.path,stage:config.stage,market:currentFirstPlayMarket()});
+  }
+  return config;
+}
+
+function initializeDefaultHomePath(path){
+  onboardingFlow.firstPlayPath=path;
+  onboardingFlow.state=ONBOARDING_FLOW_STATES.DESTINATION;
+  onboardingFlow.firstPlayGameId=null;
+  setFirstPlayStage('content_ready',null);
+  recordStageResult('library','success',{path:path,gameId:null});
+}
+
+function continueFirstPlayFromHome(){
+  var config=getHomeContinueConfig();
+  emitDemoEvent('first_play_home_continue_click',{path:config.path,stage:config.stage,market:currentFirstPlayMarket()});
+  emitDemoEvent('first_play_path_view',{market:currentFirstPlayMarket(),path:config.path,resume_source:'home_continue'});
+  if(onboardingFlow.firstPlayCompleted){
+    return requestGameLaunch(config.path,onboardingFlow.firstPlayGameId||'game_0');
+  }
+  if(!onboardingFlow.firstPlayPath) initializeDefaultHomePath(config.path);
+  onboardingFlow.state=ONBOARDING_FLOW_STATES.DESTINATION;
+  saveOnboardingFlow();
+  return resumeFirstPlayPath();
 }
 
 function renderSteamLibrary(){
@@ -1530,31 +1675,64 @@ function openPcLibrary(showAddDialog){
   document.getElementById('addGameDialog').hidden=!showAddDialog;
 }
 
+function renderLocalScanState(){
+  var stage=onboardingFlow.firstPlayStage||'permission_pending';
+  var result=document.getElementById('localScanResult');
+  var picker=document.getElementById('manualFilePicker');
+  var selectButton=document.querySelector('[data-action="select-scanned-exe"]');
+  var importButton=document.querySelector('[data-action="import-selected-game"]');
+  result.hidden=true;
+  picker.hidden=true;
+  localFileSelected=['file_selected','import_failed'].includes(stage);
+  selectButton.setAttribute('aria-pressed',String(localFileSelected));
+  importButton.disabled=!localFileSelected;
+  if(stage==='scanning'){
+    document.getElementById('localScanTitle').textContent='正在扫描游戏目录';
+    document.getElementById('localScanDesc').textContent='检查 Games、SteamLibrary 等常见目录';
+  }else if(['scan_result','file_selected','import_failed'].includes(stage)){
+    document.getElementById('localScanTitle').textContent='发现 1 个可导入游戏';
+    document.getElementById('localScanDesc').textContent='选择有效的 .exe 主程序后再执行导入';
+    result.hidden=false;
+  }else{
+    document.getElementById('localScanTitle').textContent='扫描设备中的游戏';
+    document.getElementById('localScanDesc').textContent='授权后扫描常见游戏目录，或手动选择 .exe 文件与游戏目录';
+    if(['file_picker','file_unsupported','scan_empty','permission_denied'].includes(stage)) picker.hidden=false;
+  }
+  switchPage('pageLocalScan');
+}
+
+function scheduleLocalScanCompletion(){
+  cancelLocalScanTask();
+  var token=++localScanTask.version;
+  localScanTask.timer=setTimeout(function(){
+    if(localScanTask.version!==token||onboardingFlow.firstPlayPath!=='local_file'||onboardingFlow.firstPlayStage!=='scanning') return;
+    localScanTask.timer=null;
+    completeLocalScan();
+  },180);
+}
+
 function openLocalScan(){
+  cancelLocalScanTask();
   localFileSelected=false;
   setFirstPlayStage('permission_pending',null);
-  document.getElementById('localScanResult').hidden=true;
-  document.getElementById('manualFilePicker').hidden=true;
-  document.querySelector('[data-action="import-selected-game"]').disabled=true;
-  document.querySelector('[data-action="select-scanned-exe"]').setAttribute('aria-pressed','false');
-  document.getElementById('localScanTitle').textContent='扫描设备中的游戏';
-  document.getElementById('localScanDesc').textContent='授权后扫描常见游戏目录，或手动选择 .exe 文件与游戏目录';
-  switchPage('pageLocalScan');
+  renderLocalScanState();
+}
+
+function resumeLocalScan(){
+  renderLocalScanState();
+  if(onboardingFlow.firstPlayStage==='scanning') scheduleLocalScanCompletion();
 }
 
 function startLocalScan(){
   setFirstPlayStage('scanning',null);
-  document.getElementById('localScanTitle').textContent='正在扫描游戏目录';
-  document.getElementById('localScanDesc').textContent='检查 Games、SteamLibrary 等常见目录';
-  setTimeout(completeLocalScan,180);
+  renderLocalScanState();
+  scheduleLocalScanCompletion();
 }
 
 function completeLocalScan(){
   setFirstPlayStage('scan_result',null);
   recordStageResult('scan','success',{path:'local_file',gameId:null});
-  document.getElementById('localScanTitle').textContent='发现 1 个可导入游戏';
-  document.getElementById('localScanDesc').textContent='选择有效的 .exe 主程序后再执行导入';
-  document.getElementById('localScanResult').hidden=false;
+  renderLocalScanState();
 }
 
 function selectLocalExecutable(source){
@@ -1571,7 +1749,7 @@ function selectLocalExecutable(source){
 
 function openManualFilePicker(){
   setFirstPlayStage('file_picker',null);
-  document.getElementById('manualFilePicker').hidden=false;
+  renderLocalScanState();
 }
 
 function importSelectedGame(){
@@ -1590,20 +1768,27 @@ function resolveFirstPlayPath(path,market){
 
 function chooseFirstPlayPath(path){
   if(!['steam','local_file','no_asset','browse'].includes(path)) return;
-  cancelFreeDownloadTask();
   var market=isOverseas?'overseas':'domestic';
+  if(path==='browse'){
+    onboardingFlow.market=market;
+    onboardingFlow.state=ONBOARDING_FLOW_STATES.HOME;
+    onboardingFlow.updatedAt=new Date().toISOString();
+    saveOnboardingFlow();
+    emitDemoEvent('onboarding_start_method_select',{market:market,path:'browse'});
+    return showHomeResult('browse');
+  }
+  cancelFreeDownloadTask();
+  cancelLocalScanTask();
   var resolvedPath=resolveFirstPlayPath(path,market);
   onboardingFlow.market=market;
   onboardingFlow.firstPlayPath=resolvedPath;
   onboardingFlow.firstPlayGameId=null;
-  onboardingFlow.firstPlayCompleted=false;
   onboardingFlow.launchSessionId=null;
   onboardingFlow.launchStartedAt=null;
   onboardingFlow.launchSource=null;
-  onboardingFlow.state=path==='browse'?ONBOARDING_FLOW_STATES.COMPLETED:ONBOARDING_FLOW_STATES.DESTINATION;
+  onboardingFlow.state=ONBOARDING_FLOW_STATES.DESTINATION;
   setFirstPlayStage('selected',null);
   emitDemoEvent('onboarding_start_method_select',{market:market,path:resolvedPath});
-  if(path==='browse') return showHomeResult('browse');
   emitDemoEvent('first_play_path_view',{market:market,path:resolvedPath,resume_source:'onboarding'});
   if(resolvedPath==='steam') return openSteamLogin();
   if(resolvedPath==='local_file') return openPcLibrary(true);
@@ -1697,6 +1882,7 @@ function markPlayable(path,gameId){
   var overseas=currentFirstPlayMarket()==='overseas';
   document.getElementById('playableTitle').textContent=overseas?'Game ready':'游戏已可操作';
   document.getElementById('playableDesc').textContent=overseas?'The game scene now accepts touch, keyboard, or controller input.':'已进入可接收键盘、触控或手柄输入的游戏场景，首次首玩在此收口。';
+  document.querySelector('[data-action="enter-home-after-playable"]').textContent=overseas?'Back to Home':'返回首页';
   switchPage('pagePlayableScene');
   setTimeout(function(){document.querySelector('[data-playable-input]').focus()},0);
   return true;
@@ -1744,12 +1930,8 @@ function recoverLocalError(button){
 
 function returnToFirstPlayPaths(){
   cancelFreeDownloadTask();
+  cancelLocalScanTask();
   onboardingFlow.state=ONBOARDING_FLOW_STATES.START_METHOD;
-  onboardingFlow.firstPlayStage=null;
-  onboardingFlow.firstPlayGameId=null;
-  onboardingFlow.launchSessionId=null;
-  onboardingFlow.launchStartedAt=null;
-  onboardingFlow.launchSource=null;
   onboardingFlow.updatedAt=new Date().toISOString();
   saveOnboardingFlow();
   renderFirstPlayOptions();
@@ -1765,14 +1947,17 @@ function resumeFirstPlayPath(){
   }
   if(path==='local_file'){
     if(onboardingFlow.firstPlayStage==='content_ready') return openPcLibrary(false);
-    if(['permission_pending','scanning','scan_result','file_picker','file_selected'].includes(onboardingFlow.firstPlayStage)) return openLocalScan();
+    if(['permission_pending','scanning','scan_result','file_picker','file_selected','file_unsupported','import_failed','scan_empty','permission_denied'].includes(onboardingFlow.firstPlayStage)) return resumeLocalScan();
     return openPcLibrary(true);
   }
   if(path==='instant_play'){
     renderInstantChannel();
     return switchPage('pageInstantPlay');
   }
-  if(path==='free_download') return openFreeDownloadPage();
+  if(path==='free_download'){
+    if(onboardingFlow.firstPlayStage==='downloading'&&!onboardingFlow.downloadSessionId) startFreeDownload();
+    return openFreeDownloadPage();
+  }
   return returnToFirstPlayPaths();
 }
 
@@ -2384,6 +2569,18 @@ function loadOnboardingFlow(){
   }
   Object.assign(onboardingFlow,saved);
   onboardingFlow.installId=onboardingFlow.installId||getOrCreateInstallId();
+  var normalizedRuntimeSession=false;
+  if(onboardingFlow.firstPlayStage==='downloading'){
+    onboardingFlow.downloadSessionId=null;
+    normalizedRuntimeSession=true;
+  }
+  if(!['launch_requested','playable'].includes(onboardingFlow.firstPlayStage)){
+    onboardingFlow.launchSessionId=null;
+    onboardingFlow.launchStartedAt=null;
+    onboardingFlow.launchSource=null;
+    normalizedRuntimeSession=true;
+  }
+  if(normalizedRuntimeSession) saveOnboardingFlow();
   return true;
 }
 
@@ -2444,8 +2641,7 @@ function submitOnboardingSource(){
 }
 
 function showHomeResult(reason){
-  var result=document.querySelector('#pageHome [data-result]');
-  result.dataset.result=reason;
+  renderHomeFeed(reason);
   switchPage('pageHome');
 }
 
@@ -2471,12 +2667,12 @@ function restoreOnboardingFlow(){
     switchPage('pageStartMethod');
     return true;
   }
-  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.DESTINATION){
-    resumeFirstPlayPath();
+  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.HOME||onboardingFlow.state===ONBOARDING_FLOW_STATES.DESTINATION){
+    showHomeResult('resume');
     return true;
   }
   if(onboardingFlow.state===ONBOARDING_FLOW_STATES.COMPLETED&&onboardingFlow.firstPlayCompleted){
-    switchPage('pagePlayableScene');
+    showHomeResult('playable');
     return true;
   }
   return false;
@@ -2485,6 +2681,7 @@ function restoreOnboardingFlow(){
 function switchPage(id){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
   document.getElementById(id).classList.add('active');
+  document.querySelector('.phone').dataset.activePage=id;
 }
 function goStep1Direct(){switchPage('page1')}
 function goStep2(){switchPage('page2')}
@@ -2634,11 +2831,11 @@ document.addEventListener('click',function(event){
   var firstPlayCard=event.target.closest('[data-first-play-path]');
   if(firstPlayCard) chooseFirstPlayPath(firstPlayCard.dataset.firstPlayPath);
   if(event.target.closest('[data-action="browse-home"]')) chooseFirstPlayPath('browse');
+  if(event.target.closest('[data-action="home-continue"]')) continueFirstPlayFromHome();
   if(event.target.closest('[data-action="return-to-paths"]')) returnToFirstPlayPaths();
   if(event.target.closest('[data-action="steam-bind-success"]')) completeSteamBinding();
   if(event.target.closest('[data-action="steam-switch-account"]')){
     onboardingFlow.firstPlayPath='steam';
-    onboardingFlow.firstPlayCompleted=false;
     setFirstPlayStage('selected',null);
     openSteamLogin();
   }
@@ -2691,6 +2888,7 @@ document.addEventListener('click',function(event){
   if(event.target.closest('[data-action="start-free-download"]')) startFreeDownload();
   if(event.target.closest('[data-action="launch-downloaded-game"]')) requestGameLaunch('free_download',onboardingFlow.firstPlayGameId);
   if(event.target.closest('[data-action="enter-playable-scene"]')) markPlayable(onboardingFlow.firstPlayPath,onboardingFlow.firstPlayGameId);
+  if(event.target.closest('[data-action="enter-home-after-playable"]')) showHomeResult('playable');
   if(event.target.closest('[data-action="cancel-launch"]')){
     recordStageResult('launch','cancel',{failureReason:'user_cancelled',gameId:onboardingFlow.firstPlayGameId});
     onboardingFlow.launchSessionId=null;
@@ -2724,8 +2922,10 @@ function resetAll(){
   localStorage.removeItem(ONBOARDING_SOURCE_KEY);
   localStorage.removeItem(EXISTING_FLOW_KEY);
   cancelFreeDownloadTask();
+  cancelLocalScanTask();
   stageResultKeys.clear();
   completedLaunchSessions.clear();
+  homeContinueViewKeys.clear();
   steamLibraryView={query:'',sort:'recent',recentOnly:false};
   onboardingFlow=createDefaultOnboardingFlow();
   onboardingFlow.market=isOverseas?'overseas':'domestic';
