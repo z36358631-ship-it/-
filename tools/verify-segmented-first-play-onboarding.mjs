@@ -297,6 +297,192 @@ async function assertHomeContinue(title, pathName, stageName) {
   assert.equal((await eventSnapshot()).filter(event => event.name === 'first_play_home_continue_view').length, 1, '重复 render 不得重复曝光 Continue');
 }
 
+// Task5：评审入口必须可枚举，并且每个入口走真实业务路由函数
+const expectedFirstPlayPreviews = [
+  ['start', '资产分流', 'pageStartMethod', 'domestic', null, null],
+  ['steam_login', 'Steam 登录', 'pageSteamLogin', 'domestic', 'steam', 'selected'],
+  ['steam_library', 'Steam 游戏库', 'pageSteamLibrary', 'domestic', 'steam', 'content_ready'],
+  ['local_import', '本地导入', 'pageLocalScan', 'domestic', 'local_file', 'permission_pending'],
+  ['instant_play', '国内秒玩', 'pageInstantPlay', 'domestic', 'instant_play', 'content_ready'],
+  ['home_continue', '首页续接', 'pageHome', 'domestic', null, null],
+  ['overseas_free', '海外免费游戏', 'pageFreeDownload', 'overseas', 'free_download', 'content_ready'],
+];
+assert.equal(await page.locator('[data-first-play-preview-group]').innerText(), '首玩页面预览');
+assert.deepEqual(
+  await page.locator('[data-first-play-preview]').evaluateAll(nodes => nodes.map(node => [node.dataset.firstPlayPreview, node.innerText.trim()])),
+  expectedFirstPlayPreviews.map(item => item.slice(0, 2)),
+  '首玩页面预览按钮必须按评审顺序稳定枚举',
+);
+await page.evaluate(() => {
+  window.__firstPlayPreviewRouteCalls = [];
+  window.__firstPlayPreviewOriginalRoutes = {};
+  for (const name of ['previewStartMethod', 'chooseFirstPlayPath', 'resumeFirstPlayPath', 'showHomeResult']) {
+    const original = window[name];
+    window.__firstPlayPreviewOriginalRoutes[name] = original;
+    window[name] = function (...args) {
+      window.__firstPlayPreviewRouteCalls.push({ name, args });
+      return original.apply(this, args);
+    };
+  }
+});
+const expectedRouteByPreview = {
+  start: ['previewStartMethod', null],
+  steam_login: ['chooseFirstPlayPath', 'steam'],
+  steam_library: ['resumeFirstPlayPath', null],
+  local_import: ['resumeFirstPlayPath', null],
+  instant_play: ['chooseFirstPlayPath', 'no_asset'],
+  home_continue: ['showHomeResult', 'preview'],
+  overseas_free: ['chooseFirstPlayPath', 'no_asset'],
+};
+for (const [scenario, , pageId, market, pathName, stageName] of expectedFirstPlayPreviews) {
+  await page.locator(`[data-first-play-preview="${scenario}"]`).click();
+  assert.equal(await page.locator(`#${pageId}.active`).count(), 1, `${scenario} 预览页错误`);
+  const previewState = await savedFirstPlay();
+  assert.deepEqual(
+    Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayCompleted', 'launchSessionId', 'downloadSessionId'].map(key => [key, previewState[key]])),
+    { market, firstPlayPath: pathName, firstPlayStage: stageName, firstPlayCompleted: false, launchSessionId: null, downloadSessionId: null },
+    `${scenario} 预览状态不一致`,
+  );
+  const routeCall = await page.evaluate(() => window.__firstPlayPreviewRouteCalls.at(-1));
+  assert.equal(routeCall?.name, expectedRouteByPreview[scenario][0], `${scenario} 未调用真实业务路由`);
+  if (expectedRouteByPreview[scenario][1] !== null) assert.equal(routeCall?.args?.[0], expectedRouteByPreview[scenario][1]);
+}
+await page.evaluate(() => {
+  for (const [name, original] of Object.entries(window.__firstPlayPreviewOriginalRoutes)) window[name] = original;
+  delete window.__firstPlayPreviewOriginalRoutes;
+});
+
+// 快速切换预览必须取消旧下载和启动会话，不能被旧回调污染
+await page.locator('[data-first-play-preview="overseas_free"]').click();
+await page.locator('[data-free-download-game]').first().click();
+await page.locator('[data-action="start-free-download"]').click();
+const previewDownloadSessionId = (await savedFirstPlay()).downloadSessionId;
+assert.equal(typeof previewDownloadSessionId, 'string');
+await page.locator('[data-first-play-preview="steam_login"]').click();
+await page.waitForTimeout(420);
+const stateAfterPreviewRace = await savedFirstPlay();
+assert.deepEqual(
+  Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayGameId', 'downloadSessionId', 'launchSessionId'].map(key => [key, stateAfterPreviewRace[key]])),
+  { market: 'domestic', firstPlayPath: 'steam', firstPlayStage: 'selected', firstPlayGameId: null, downloadSessionId: null, launchSessionId: null },
+);
+assert.equal((await eventSnapshot()).some(event => event.name === 'first_play_stage_result' && ['download', 'install'].includes(event.stage) && event.result === 'success'), false, '旧下载回调不得污染后续预览');
+await page.locator('[data-first-play-preview="instant_play"]').click();
+await page.locator('[data-instant-game]').first().click();
+assert.equal(typeof (await savedFirstPlay()).launchSessionId, 'string');
+await page.locator('[data-first-play-preview="start"]').click();
+const clearedLaunchState = await savedFirstPlay();
+assert.deepEqual(
+  Object.fromEntries(['firstPlayPath', 'firstPlayStage', 'firstPlayGameId', 'launchSessionId', 'launchStartedAt', 'launchSource', 'launchIsFirstPlay'].map(key => [key, clearedLaunchState[key]])),
+  { firstPlayPath: null, firstPlayStage: null, firstPlayGameId: null, launchSessionId: null, launchStartedAt: null, launchSource: null, launchIsFirstPlay: null },
+  '切换预览必须清理旧启动会话',
+);
+
+// 四类关键页面切换方向时必须保留页面、业务状态、语义焦点与可滚动位置
+const focusSnapshot = () => page.evaluate(() => {
+  const active = document.activeElement;
+  return {
+    action: active?.dataset?.action || null,
+    path: active?.dataset?.firstPlayPath || null,
+    gameId: active?.dataset?.gameId || null,
+    className: typeof active?.className === 'string' ? active.className : '',
+  };
+});
+
+await page.locator('[data-set-orientation="portrait"]').click();
+await page.locator('[data-first-play-preview="start"]').click();
+assert.deepEqual(
+  await page.locator('#pageStartMethod button').evaluateAll(nodes => nodes
+    .filter(node => node.matches('[data-first-play-path],[data-action="browse-home"]'))
+    .map(node => node.dataset.firstPlayPath || 'browse')),
+  ['steam', 'local_file', 'no_asset', 'browse'],
+  '资产首屏焦点 DOM 顺序必须为 Steam→本地→暂无→先逛',
+);
+await page.locator('[data-first-play-path="local_file"]').focus();
+await page.locator('[data-set-orientation="landscape"]').click();
+assert.equal(await page.locator('#pageStartMethod.active').count(), 1);
+assert.equal((await focusSnapshot()).path, 'local_file', '资产首屏横屏后必须保持当前选项焦点');
+const startStateAfterLandscape = await savedFirstPlay();
+assert.deepEqual(
+  Object.fromEntries(['firstPlayPath', 'firstPlayStage', 'firstPlayCompleted'].map(key => [key, startStateAfterLandscape[key]])),
+  { firstPlayPath: null, firstPlayStage: null, firstPlayCompleted: false },
+);
+await page.locator('[data-set-orientation="portrait"]').click();
+assert.equal((await focusSnapshot()).path, 'local_file', '资产首屏回竖屏后必须保持当前选项焦点');
+
+await page.locator('[data-first-play-preview="steam_library"]').click();
+const steamOrientationState = await savedFirstPlay();
+const steamScrollBefore = await page.locator('#steamGameGrid').evaluate(container => {
+  container.scrollTop = container.scrollHeight - container.clientHeight;
+  container.querySelector('[data-steam-game]:last-child').focus({ preventScroll: true });
+  return container.scrollTop;
+});
+const focusedSteamGameId = (await focusSnapshot()).gameId;
+assert.equal(typeof focusedSteamGameId, 'string');
+await page.locator('[data-set-orientation="landscape"]').click();
+assert.equal(await page.locator('#pageSteamLibrary.active').count(), 1);
+assert.equal((await focusSnapshot()).gameId, focusedSteamGameId, 'Steam 库横屏后必须保持游戏卡焦点');
+const steamStateAfterLandscape = await savedFirstPlay();
+assert.deepEqual(
+  Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayCompleted'].map(key => [key, steamStateAfterLandscape[key]])),
+  Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayCompleted'].map(key => [key, steamOrientationState[key]])),
+  'Steam 库方向切换不得改业务状态',
+);
+await page.locator('[data-set-orientation="portrait"]').click();
+assert.equal((await focusSnapshot()).gameId, focusedSteamGameId, 'Steam 库回竖屏后必须保持游戏卡焦点');
+assert.equal(await page.locator('#steamGameGrid').evaluate(container => container.scrollTop), steamScrollBefore, 'Steam 库回竖屏后必须恢复列表滚动位置');
+
+await page.locator('[data-first-play-preview="home_continue"]').click();
+const homeScrollBefore = await page.locator('.home-portrait-feed').evaluate(container => {
+  container.scrollTop = Math.min(180, container.scrollHeight - container.clientHeight);
+  return container.scrollTop;
+});
+assert(homeScrollBefore > 0, '竖屏首页必须存在可验证的滚动距离');
+await page.locator('.home-search-entry').focus();
+await page.locator('[data-set-orientation="landscape"]').click();
+assert.equal(await page.locator('#pageHome.active').count(), 1);
+assert.equal(await page.locator('.home-search-entry').isVisible(), false, '横屏首页应隐藏竖屏搜索入口');
+assert.equal((await focusSnapshot()).action, 'home-continue', '搜索入口横屏隐藏后焦点必须回退到唯一 Continue');
+const homeStateAfterLandscape = await savedFirstPlay();
+assert.deepEqual(
+  Object.fromEntries(['firstPlayPath', 'firstPlayStage', 'firstPlayCompleted'].map(key => [key, homeStateAfterLandscape[key]])),
+  { firstPlayPath: null, firstPlayStage: null, firstPlayCompleted: false },
+);
+await page.locator('[data-set-orientation="portrait"]').click();
+assert.equal(await page.locator('.home-portrait-feed').evaluate(container => container.scrollTop), homeScrollBefore, '首页回竖屏后必须恢复 Feed 滚动位置');
+
+await page.locator('[data-first-play-preview="overseas_free"]').click();
+await page.locator('[data-free-download-game]').last().click();
+const overseasOrientationState = await savedFirstPlay();
+const freeScrollBefore = await page.locator('#freeDownloadGrid').evaluate(container => {
+  container.scrollTop = container.scrollHeight - container.clientHeight;
+  container.querySelector('[data-free-download-game][aria-pressed="true"]').focus({ preventScroll: true });
+  return container.scrollTop;
+});
+const focusedFreeGameId = (await focusSnapshot()).gameId;
+await page.locator('[data-set-orientation="landscape"]').click();
+assert.equal(await page.locator('#pageFreeDownload.active').count(), 1);
+assert.equal((await focusSnapshot()).gameId, focusedFreeGameId, '海外下载页横屏后必须保持选中卡焦点');
+const overseasStateAfterLandscape = await savedFirstPlay();
+assert.deepEqual(
+  Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayGameId', 'firstPlayCompleted'].map(key => [key, overseasStateAfterLandscape[key]])),
+  Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayGameId', 'firstPlayCompleted'].map(key => [key, overseasOrientationState[key]])),
+  '海外下载页方向切换不得改市场、路径、阶段或游戏',
+);
+await page.locator('[data-set-orientation="portrait"]').click();
+assert.equal((await focusSnapshot()).gameId, focusedFreeGameId, '海外下载页回竖屏后必须保持选中卡焦点');
+assert.equal(await page.locator('#freeDownloadGrid').evaluate(container => container.scrollTop), freeScrollBefore, '海外下载页回竖屏后必须恢复列表滚动位置');
+await page.locator('[data-set-orientation="landscape"]').click();
+await page.reload();
+assert.equal((await page.locator('.phone').getAttribute('data-orientation')), 'landscape', '刷新必须恢复横屏方向');
+assert.equal(await page.locator('#pageHome.active').count(), 1, '横屏刷新仍需按首页续接规则恢复');
+assert.equal(await page.locator('#homeContinueTitle').innerText(), 'Continue downloading');
+const overseasStateAfterReload = await savedFirstPlay();
+assert.deepEqual(
+  Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayGameId', 'firstPlayCompleted'].map(key => [key, overseasStateAfterReload[key]])),
+  Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayGameId', 'firstPlayCompleted'].map(key => [key, overseasOrientationState[key]])),
+  '横屏刷新不得丢失海外下载续接状态',
+);
+
 // Task4：首页必须使用 screen-08 / screen-36 的 DOM Feed，并承接未完成首玩路径
 await resetJourney();
 await page.locator('[data-action="browse-home"]').click();
