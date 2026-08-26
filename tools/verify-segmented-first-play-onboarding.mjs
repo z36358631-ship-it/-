@@ -35,6 +35,10 @@ assert.equal(/我是新手|有游戏想玩|选择身份/.test(demoHtml), false, 
 assert.equal(demoHtml.includes('function makeCover('), false, '不得使用文字 SVG 生成临时游戏封面');
 assert.equal(demoHtml.includes('GAMEHUB</text>'), false, '不得在封面中保留 GAMEHUB 文字占位');
 assert.equal(demoHtml.includes('free_download'), true, '海外无资产路径必须接入免费下载');
+assert.equal(demoHtml.includes("FIRST_PLAY_EXPERIMENT_ID='segmented_first_play_asset_v1'"), true, '缺少稳定实验 ID');
+assert.equal(demoHtml.includes('Counter-Strike 2'), true, '海外免费游戏缺少 Counter-Strike 2');
+assert.equal(demoHtml.includes('Dota 2'), true, '海外免费游戏缺少 Dota 2');
+assert.equal((demoHtml.match(/assetSource:'external-official'/g) || []).length, 2, '两款海外免费游戏必须登记官方外部资产来源');
 assert.equal(/\.agents[\\/].*home-.*\.webp/i.test(demoHtml), false, '首页媒体不得依赖仓库相对路径');
 const staticMediaSources = [...demoHtml.matchAll(/<(?:img|source|video|audio)\b[^>]*\bsrc="([^"]+)"/gi)]
   .map(match => match[1])
@@ -119,6 +123,18 @@ await page.locator('[data-onboarding-source-code="friend_referral"]').click();
 await page.locator('[data-action="submit-onboarding-source"]').click();
 await page.waitForTimeout(450);
 
+const initialStartMethodViews = (await page.evaluate(() => window.demoEvents)).filter(event => event.name === 'onboarding_start_method_view');
+assert.equal(initialStartMethodViews.length, 1, '资产分流页一次真实曝光只能上报一次 view');
+assert.deepEqual(
+  Object.fromEntries(['market', 'orientation', 'entry', 'experiment_id'].map(key => [key, initialStartMethodViews[0][key]])),
+  { market: 'domestic', orientation: 'portrait', entry: 'new_user_onboarding', experiment_id: 'segmented_first_play_asset_v1' },
+  '资产分流曝光合同不完整',
+);
+assert.equal(typeof initialStartMethodViews[0].first_play_session_id, 'string');
+await page.evaluate(() => { renderFirstPlayOptions(); switchPage('pageStartMethod'); switchPage('pageStartMethod'); });
+assert.equal((await page.evaluate(() => window.demoEvents)).filter(event => event.name === 'onboarding_start_method_view').length, 1, '重复渲染同一资产分流曝光必须幂等');
+await assertPageIsolation('pageStartMethod');
+
 assert.equal(await page.locator('#startMethodTitle').innerText(), '你现在有哪种游戏？');
 assert.equal(await page.locator('#startMethodDesc').innerText(), '选择最符合你的情况，我们带你直接开始玩');
 assert.deepEqual(
@@ -153,6 +169,8 @@ assert.deepEqual(
   Object.fromEntries(['firstPlayPath', 'firstPlayStage', 'firstPlayGameId', 'firstPlayCompleted', 'updatedAt'].map(key => [key, initialFirstPlayState[key]])),
   { firstPlayPath: null, firstPlayStage: null, firstPlayGameId: null, firstPlayCompleted: false, updatedAt: null },
 );
+assert.equal(typeof initialFirstPlayState.firstPlaySessionId, 'string', '默认状态缺少持久首玩会话 ID');
+assert.equal(initialFirstPlayState.firstPlayStartedAt, null, '未选择路径前不得开始首玩计时');
 assert.deepEqual(
   await page.evaluate(() => ({
     title: FIRST_PLAY_COPY.overseas.title,
@@ -186,9 +204,58 @@ assert.equal(
 );
 
 const phone = page.locator('.phone');
+const evidenceComponentSelectors = {
+  '01-start-method-domestic-portrait.png': ['.first-play-options'],
+  '02-steam-library-portrait.png': ['.steam-account-summary', '.steam-library-toolbar'],
+  '03-local-import-portrait.png': ['#addGameDialog .add-game-dialog'],
+  '04-instant-play-portrait.png': ['.instant-time-card', '.instant-hot'],
+  '05-home-continue-portrait.png': ['.home-daily-hero', '[data-action="home-continue"]'],
+  '06-start-method-domestic-landscape.png': ['.start-method-body'],
+  '07-home-continue-landscape.png': ['.home-landscape-heroes', '[data-action="home-continue"]'],
+  '08-free-download-overseas-landscape.png': ['.free-download-page'],
+};
+const domGeometrySnapshots = {};
 async function capturePhone(name) {
   if (!capture || !primaryEvidenceSet.has(name)) return;
   await page.waitForTimeout(450);
+  domGeometrySnapshots[name] = await page.evaluate(selectors => {
+    const shell = document.querySelector('.phone');
+    const shellRect = shell.getBoundingClientRect();
+    const toRelativeRect = node => {
+      const rect = node.getBoundingClientRect();
+      return {
+        x: rect.left - shellRect.left,
+        y: rect.top - shellRect.top,
+        width: rect.width,
+        height: rect.height,
+        right: rect.right - shellRect.left,
+        bottom: rect.bottom - shellRect.top,
+      };
+    };
+    const selectorRects = selectors.map(selector => {
+      const node = document.querySelector(selector);
+      if (!node) throw new Error(`证据组件不存在: ${selector}`);
+      return { selector, rect: toRelativeRect(node) };
+    });
+    const component = selectorRects.reduce((bounds, item) => ({
+      x: Math.min(bounds.x, item.rect.x),
+      y: Math.min(bounds.y, item.rect.y),
+      right: Math.max(bounds.right, item.rect.right),
+      bottom: Math.max(bounds.bottom, item.rect.bottom),
+    }), { x: Infinity, y: Infinity, right: -Infinity, bottom: -Infinity });
+    return {
+      orientation: shell.dataset.orientation,
+      sourceCanvas: shell.dataset.sourceCanvas,
+      shell: { width: shellRect.width, height: shellRect.height },
+      selectors: selectorRects,
+      implementationComponent: {
+        x: component.x,
+        y: component.y,
+        width: component.right - component.x,
+        height: component.bottom - component.y,
+      },
+    };
+  }, evidenceComponentSelectors[name]);
   await phone.screenshot({ path: path.join(evidenceDir, name) });
 }
 
@@ -253,6 +320,56 @@ async function savedFirstPlay() {
   return page.evaluate(() => JSON.parse(localStorage.getItem('gamehub_first_play_onboarding_v1')));
 }
 
+async function assertStartMethodSelection(selectedPath, resolvedPath, position) {
+  const events = await eventSnapshot();
+  const selections = events.filter(event => event.name === 'onboarding_start_method_select');
+  assert.equal(selections.length, 1, `${selectedPath} 选择事件必须且只能上报一次`);
+  const [selection] = selections;
+  assert.deepEqual(
+    Object.fromEntries(['selected_path', 'path', 'position', 'experiment_id', 'market', 'orientation', 'entry'].map(key => [key, selection[key]])),
+    {
+      selected_path: selectedPath,
+      path: resolvedPath,
+      position,
+      experiment_id: 'segmented_first_play_asset_v1',
+      market: resolvedPath === 'free_download' ? 'overseas' : 'domestic',
+      orientation: 'portrait',
+      entry: 'new_user_onboarding',
+    },
+  );
+  assert.equal(typeof selection.first_play_session_id, 'string');
+}
+
+async function assertPageIsolation(activePageId) {
+  const snapshot = await page.evaluate(expectedId => {
+    const pages = [...document.querySelectorAll('.phone .page')];
+    const hiddenFocusables = pages.filter(item => item.id !== expectedId).flatMap(item => [...item.querySelectorAll('button,input,[href],[tabindex]')]);
+    let hiddenAcceptedFocus = false;
+    for (const target of hiddenFocusables) {
+      target.focus();
+      if (document.activeElement === target) hiddenAcceptedFocus = true;
+    }
+    return {
+      pages: pages.map(item => ({ id: item.id, active: item.classList.contains('active'), inert: item.inert, ariaHidden: item.getAttribute('aria-hidden') })),
+      hiddenAcceptedFocus,
+      activePageId: document.querySelector('.phone .page.active')?.id || null,
+    };
+  }, activePageId);
+  assert.equal(snapshot.activePageId, activePageId);
+  assert.equal(snapshot.hiddenAcceptedFocus, false, '隐藏页面中的控件不得接受程序化焦点');
+  for (const item of snapshot.pages) {
+    if (item.id === activePageId) {
+      assert.equal(item.active, true);
+      assert.equal(item.inert, false);
+      assert.equal(item.ariaHidden, null);
+    } else {
+      assert.equal(item.active, false);
+      assert.equal(item.inert, true, `${item.id} 隐藏时必须 inert`);
+      assert.equal(item.ariaHidden, 'true', `${item.id} 隐藏时必须 aria-hidden`);
+    }
+  }
+}
+
 async function assertNoOverseasForbiddenCopy(label) {
   const activeText = await page.locator('.page.active').innerText();
   assert.equal(/秒玩|云游戏|充值|15\s*分钟|15\s*min|instant\s*play|cloud\s*gaming/i.test(activeText), false, `${label} 出现海外禁词`);
@@ -271,11 +388,14 @@ function assertStageResults(events, pathName, expectedStages) {
     assert.equal(typeof event.path, 'string', `${event.path}/${event.stage} 缺少 path`);
     assert.equal(Object.hasOwn(event, 'failure_reason'), true, `${event.path}/${event.stage} 缺少 failure_reason`);
     assert.equal(Object.hasOwn(event, 'game_id'), true, `${event.path}/${event.stage} 缺少 game_id`);
+    assert.equal(event.experiment_id, 'segmented_first_play_asset_v1', `${event.path}/${event.stage} experiment_id 不稳定`);
+    assert.equal(typeof event.first_play_session_id, 'string', `${event.path}/${event.stage} 缺少首玩会话 ID`);
+    assert.equal(typeof event.elapsed_ms, 'number', `${event.path}/${event.stage} 缺少 elapsed_ms`);
     if (event.result === 'success') assert.equal(event.failure_reason, null, `${event.path}/${event.stage} success 的 failure_reason 必须为 null`);
   }
   const stageEvents = allStageEvents.filter(event => event.result === 'success' && event.path === pathName);
   assert.deepEqual(stageEvents.map(event => event.stage), expectedStages, `${pathName} canonical 成功阶段顺序不正确`);
-  const keys = allStageEvents.map(event => `${event.path}|${event.stage}|${event.result}|${event.failure_reason ?? ''}|${event.game_id ?? ''}`);
+  const keys = allStageEvents.map(event => `${event.path}|${event.stage}|${event.result}|${event.failure_reason ?? ''}|${event.game_id ?? ''}|${event.stage === 'launch' ? event.launch_session_id ?? '' : ''}`);
   assert.equal(new Set(keys).size, keys.length, 'stage_result 必须按完整合同幂等');
   assert.equal(stageEvents.some(event => ['permission_pending', 'scanning', 'downloading'].includes(event.stage)), false, '细粒度 UI 状态不得上报 success stage_result');
 }
@@ -298,6 +418,9 @@ function assertLaunchSession(events, pathName) {
   assert.equal(typeof requests[0].elapsed_ms, 'number');
   assert.equal(typeof ready[0].elapsed_ms, 'number');
   assert(ready[0].elapsed_ms >= requests[0].elapsed_ms);
+  assert.equal(requests[0].experiment_id, 'segmented_first_play_asset_v1');
+  assert.equal(ready[0].experiment_id, 'segmented_first_play_asset_v1');
+  assert.equal(requests[0].first_play_session_id, ready[0].first_play_session_id);
 }
 
 function assertFailureResult(events, pathName, stage, reason) {
@@ -370,6 +493,7 @@ await page.evaluate(() => {
     };
   }
 });
+const previewEventCountBefore = (await eventSnapshot()).length;
 const expectedRouteByPreview = {
   start: ['previewStartMethod', null],
   steam_login: ['chooseFirstPlayPath', 'steam'],
@@ -392,6 +516,7 @@ for (const [scenario, , pageId, market, pathName, stageName] of expectedFirstPla
   assert.equal(routeCall?.name, expectedRouteByPreview[scenario][0], `${scenario} 未调用真实业务路由`);
   if (expectedRouteByPreview[scenario][1] !== null) assert.equal(routeCall?.args?.[0], expectedRouteByPreview[scenario][1]);
 }
+assert.equal((await eventSnapshot()).length, previewEventCountBefore, '外部预览控制不得污染用户事件流');
 await page.evaluate(() => {
   for (const [name, original] of Object.entries(window.__firstPlayPreviewOriginalRoutes)) window[name] = original;
   delete window.__firstPlayPreviewOriginalRoutes;
@@ -618,7 +743,9 @@ assert.deepEqual(
 
 // Task4：首页必须使用 screen-08 / screen-36 的 DOM Feed，并承接未完成首玩路径
 await resetJourney();
+assert.equal((await savedFirstPlay()).firstPlayStartedAt, null, '仅到资产分流页时首玩计时不得开始');
 await page.locator('[data-action="browse-home"]').click();
+await assertStartMethodSelection('browse', 'browse', 4);
 assert.equal((await savedFirstPlay()).firstPlayPath, null, '无真实路径时浏览首页不得伪造 firstPlayPath');
 assert.equal((await savedFirstPlay()).firstPlayCompleted, false, '浏览首页不得伪完成首玩');
 assert.notEqual((await savedFirstPlay()).state, 'completed', '浏览首页不得使用 completed 状态');
@@ -650,6 +777,7 @@ await assertHomeContinue('免费秒玩15分钟', 'instant_play', 'selected');
 await capturePhone('05-home-continue-portrait.png');
 await page.locator('[data-action="home-continue"]').click();
 assert.equal(await page.locator('#pageInstantPlay.active').count(), 1, '国内默认 Continue 必须进入秒玩频道');
+assert.equal(typeof (await savedFirstPlay()).firstPlayStartedAt, 'number', 'browse 后点击默认 Continue 才开始首玩计时');
 let continueEvents = await eventSnapshot();
 assert.equal(continueEvents.filter(event => event.name === 'first_play_home_continue_click' && event.path === 'instant_play').length, 1);
 assert.equal(continueEvents.filter(event => event.name === 'first_play_path_view' && event.path === 'instant_play' && event.resume_source === 'home_continue').length, 1);
@@ -698,6 +826,7 @@ assert.equal((await eventSnapshot()).some(event => event.name === 'game_launch_r
 // 本地扫描、已导入、秒玩和海外下载均从首页恢复细粒度位置
 await resetJourney();
 await page.locator('[data-first-play-path="local_file"]').click();
+await assertStartMethodSelection('local_file', 'local_file', 2);
 await page.locator('[data-import-source="local"]').click();
 await page.locator('[data-action="grant-scan-permission"]').click();
 assert.equal((await savedFirstPlay()).firstPlayStage, 'scanning');
@@ -714,10 +843,13 @@ await page.locator('[data-action="import-selected-game"]').click();
 await page.reload();
 await assertHomeContinue('继续启动已导入游戏', 'local_file', 'content_ready');
 await page.locator('[data-action="home-continue"]').click();
-assert.equal(await page.locator('#pagePcLibrary.active [data-local-game]').count(), 1);
+assert.equal(await page.locator('#pagePcLibrary.active [data-local-game]').count(), 2, '已导入库必须保留 Silksong 基线卡并新增导入卡');
+assert.equal(await page.locator('#pagePcLibrary.active [data-game-id="silksong_local"]').count(), 1);
+assert.equal(await page.locator('#pagePcLibrary.active [data-game-id="game_2"]').count(), 1);
 
 await resetJourney();
 await page.locator('[data-first-play-path="no_asset"]').click();
+await assertStartMethodSelection('no_asset', 'instant_play', 3);
 await page.reload();
 await assertHomeContinue('继续免费秒玩', 'instant_play', 'content_ready');
 await page.locator('[data-action="home-continue"]').click();
@@ -739,8 +871,18 @@ await page.waitForFunction(() => onboardingFlow.firstPlayStage === 'installed');
 // 用户改选路径后首页只保留最新路径的唯一 Continue
 await resetJourney();
 await page.locator('[data-first-play-path="steam"]').click();
-await page.locator('#steamLoginSheet .steam-sheet-close[data-action="return-to-paths"]').click();
+await page.locator('#steamLoginSheet .steam-sheet-close[data-action="cancel-steam-login"]').click();
+const steamCancelEvents = await eventSnapshot();
+const steamCancels = steamCancelEvents.filter(event => event.name === 'first_play_stage_result' && event.path === 'steam' && event.stage === 'login' && event.result === 'cancel');
+assert.equal(steamCancels.length, 1, '关闭 Steam 登录必须上报一次 canonical login/cancel');
+assert.equal(steamCancels[0].failure_reason, 'steam_login_cancelled');
 await page.locator('[data-first-play-path="local_file"]').click();
+const switchEvents = (await eventSnapshot()).filter(event => event.name === 'first_play_path_switch');
+assert.equal(switchEvents.length, 1, '从 Steam 返回后改选本地必须上报一次路径切换');
+assert.deepEqual(
+  Object.fromEntries(['from_path', 'from_stage', 'to_path', 'reason'].map(key => [key, switchEvents[0][key]])),
+  { from_path: 'steam', from_stage: 'selected', to_path: 'local_file', reason: 'steam_login_cancelled' },
+);
 await page.reload();
 await assertHomeContinue('继续导入游戏', 'local_file', 'selected');
 assert.equal(await page.locator('[data-action="home-continue"]').count(), 1);
@@ -748,7 +890,7 @@ assert.equal(await page.locator('[data-action="home-continue"]').count(), 1);
 // 已有真实路径时浏览首页只记录 browse 入口，不覆盖路径与进度
 await resetJourney();
 await page.locator('[data-first-play-path="steam"]').click();
-await page.locator('#steamLoginSheet .steam-sheet-close[data-action="return-to-paths"]').click();
+await page.locator('#steamLoginSheet .steam-sheet-close[data-action="cancel-steam-login"]').click();
 const pathBeforeBrowse = await savedFirstPlay();
 await page.locator('[data-action="browse-home"]').click();
 assert.equal((await savedFirstPlay()).firstPlayPath, 'steam');
@@ -775,6 +917,9 @@ async function sealCompletedJourney(pathName) {
 // Steam：Sheet -> 内容库 -> 启动请求 -> 可玩场景
 await resetJourney();
 await page.locator('[data-first-play-path="steam"]').click();
+await assertStartMethodSelection('steam', 'steam', 1);
+const steamFirstPlayStartedAt = (await savedFirstPlay()).firstPlayStartedAt;
+assert.equal(typeof steamFirstPlayStartedAt, 'number');
 assert.equal(await page.locator('#pageSteamLogin.active').count(), 1);
 assert.equal(await page.locator('#steamLoginSheet[role="dialog"]').count(), 1);
 assert.equal(await page.locator('#steamLoginSheet [data-steam-asset]').evaluateAll(nodes => nodes.length === 2 && nodes.every(node => node.src.startsWith('data:image/svg+xml;base64,'))), true);
@@ -819,6 +964,7 @@ assert.equal(await page.locator('#pageGameLaunch.active').count(), 1);
 assert.equal((await savedFirstPlay()).firstPlayStage, 'launch_requested');
 const steamLaunchSessionId = (await savedFirstPlay()).launchSessionId;
 assert.equal(typeof steamLaunchSessionId, 'string');
+assert.equal((await savedFirstPlay()).firstPlayStartedAt, steamFirstPlayStartedAt, 'requestGameLaunch 不得重置首玩起点');
 assert.equal((await eventSnapshot()).filter(event => event.name === 'game_launch_request' && event.path === 'steam').length, 1);
 await page.evaluate(() => requestGameLaunch('steam', onboardingFlow.firstPlayGameId));
 assert.equal((await savedFirstPlay()).launchSessionId, steamLaunchSessionId, '同一待启动动作不得创建新 session');
@@ -869,6 +1015,23 @@ await page.locator('[data-first-play-path="local_file"]').click();
 assert.equal(await page.locator('#pagePcLibrary.active').count(), 1);
 assert.equal(await page.locator('#addGameDialog:not([hidden])').count(), 1);
 assert.deepEqual(await page.locator('#addGameDialog [data-import-source]').evaluateAll(nodes => nodes.map(node => node.dataset.importSource)), ['local', 'steam']);
+assert.equal(await page.locator('#pcLibraryGrid [data-game-id="silksong_local"]').count(), 1, '导入前 PC 库必须显示 Silksong 基线卡');
+assert.equal(await page.locator('#pcLibraryGrid [data-game-id="silksong_local"] img').evaluate(node => node.src.startsWith('data:image/webp;base64,') && node.naturalWidth > 0), true);
+assert.equal(await page.locator('[data-pc-device]').count(), 1, 'PC 游戏库缺少设备动作');
+assert.equal(await page.locator('[data-pc-filter]').count(), 1, 'PC 游戏库缺少筛选动作');
+assert.equal(await page.locator('.pc-bottom-nav').count(), 1, 'PC 游戏库竖屏缺少五栏底部导航');
+await assertPageIsolation('pagePcLibrary');
+assert.equal(await page.locator('#pagePcLibrary .pc-library-page').evaluate(node => node.inert && node.getAttribute('aria-hidden') === 'true'), true, 'Dialog 打开时背景库必须 inert');
+await page.waitForFunction(() => document.activeElement?.dataset?.action === 'close-add-game');
+await page.keyboard.press('Shift+Tab');
+assert.equal(await page.evaluate(() => document.activeElement?.dataset?.importSource), 'steam', 'Shift+Tab 必须在 Dialog 内回环');
+await page.keyboard.press('Tab');
+assert.equal(await page.evaluate(() => document.activeElement?.dataset?.action), 'close-add-game', 'Tab 必须在 Dialog 内回环');
+await page.keyboard.press('Escape');
+assert.equal(await page.locator('#addGameDialog').isHidden(), true, 'Escape 必须关闭添加游戏 Dialog');
+assert.equal(await page.evaluate(() => document.activeElement?.dataset?.action), 'open-add-game', '路径卡已隐藏时焦点必须回退到“添加游戏”');
+await page.locator('[data-action="open-add-game"]').click();
+await page.waitForFunction(() => document.activeElement?.dataset?.action === 'close-add-game');
 await capturePhone('03-local-import-portrait.png');
 await page.locator('[data-import-source="local"]').click();
 assert.equal(await page.locator('#pageLocalScan.active').count(), 1);
@@ -884,11 +1047,12 @@ assert.equal((await eventSnapshot()).some(event => event.name === 'playable_read
 await page.locator('[data-action="import-selected-game"]').click();
 assert.equal(await page.locator('#pagePcLibrary.active').count(), 1);
 assert.equal(await page.locator('#addGameDialog').isHidden(), true);
-assert.equal(await page.locator('[data-local-game]').count(), 1);
+assert.equal(await page.locator('[data-local-game]').count(), 2, '导入成功后必须显示 Silksong 与本地导入游戏两张卡');
+assert.equal(await page.locator('[data-local-game][data-game-id="game_2"]').count(), 1);
 assert.equal((await savedFirstPlay()).firstPlayStage, 'content_ready');
 assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false, '完成导入不得提前记可玩');
 await capturePhone('local-library-portrait.png');
-await page.locator('[data-local-game]').click();
+await page.locator('[data-local-game][data-game-id="game_2"]').click();
 assert.equal((await savedFirstPlay()).firstPlayStage, 'launch_requested');
 assert.equal((await eventSnapshot()).filter(event => event.name === 'game_launch_request' && event.path === 'local_file').length, 1);
 assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
@@ -951,7 +1115,10 @@ assert.equal(await page.locator('#pageInstantPlay.active').count(), 1);
 for (const selector of ['.instant-search', '.instant-channel-tabs', '.instant-time-card', '.instant-hot', '.instant-rooms', '.instant-all', '.instant-bottom-nav']) {
   assert.equal(await page.locator(selector).count(), 1, `秒玩频道缺少 ${selector}`);
 }
-assert((await page.locator('.instant-time-card').innerText()).includes('15 分钟'));
+assert((await page.locator('.instant-time-card').innerText()).includes('赠送15分钟'));
+assert((await page.locator('.instant-time-card').innerText()).includes('立即充值'));
+assert((await page.locator('.instant-time-card').innerText()).includes('购买秒玩时长可享受'));
+assert.equal(await page.locator('#instantAvatar').evaluate(node => node.src.startsWith('data:image/webp;base64,') && node.naturalWidth > 0), true, '秒玩账号卡必须使用来源化头像');
 await capturePhone('04-instant-play-portrait.png');
 const beforeMore = await page.locator('[data-instant-list-game]').count();
 await page.locator('[data-action="instant-more"]').click();
@@ -993,6 +1160,7 @@ assert.equal(await page.locator('[data-first-play-path="no_asset"] .opt-title').
 assert((await page.locator('[data-first-play-path="no_asset"] .opt-desc').innerText()).includes('download'));
 await page.locator('[data-first-play-path="no_asset"]').click();
 assert.equal(await page.locator('#pageFreeDownload.active').count(), 1);
+await assertStartMethodSelection('no_asset', 'free_download', 3);
 assert.equal((await savedFirstPlay()).firstPlayPath, 'free_download');
 assert.equal((await savedFirstPlay()).market, 'overseas');
 const freeDownloadText = await page.locator('#pageFreeDownload').innerText();
@@ -1002,6 +1170,20 @@ assert.equal(
   await page.locator('[data-free-download-game]').evaluateAll(nodes => nodes.every(node => Number(node.dataset.downloadSizeGb) > 0 && Number(node.dataset.estimatedSeconds) > 0)),
   true,
   '免费游戏卡必须包含下载大小与估算耗时',
+);
+assert.deepEqual(
+  await page.locator('[data-free-download-game]').evaluateAll(nodes => nodes.map(node => ({
+    name: node.querySelector('strong')?.textContent,
+    appId: Number(node.dataset.appId),
+    source: node.dataset.assetSource,
+    officialUrl: node.dataset.officialUrl,
+    coverIsEmbedded: node.querySelector('img')?.src.startsWith('data:image/webp;base64,') || false,
+  }))),
+  [
+    { name: 'Counter-Strike 2', appId: 730, source: 'external-official', officialUrl: 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/730/header.jpg', coverIsEmbedded: true },
+    { name: 'Dota 2', appId: 570, source: 'external-official', officialUrl: 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/570/header.jpg', coverIsEmbedded: true },
+  ],
+  '海外免费游戏必须使用两款真实 Steam 免费游戏并登记官方资产来源',
 );
 assert.equal(await page.locator('#pageFreeDownload [data-speed-mbps="20"]').count(), 1, '免费页必须说明当前演示网速');
 await capturePhone('free-download-portrait.png');
@@ -1078,15 +1260,45 @@ for (const [failureCode, expectedStage] of [['permission_denied', 'permission_de
 await resetJourney();
 await page.locator('[data-first-play-path="no_asset"]').click();
 await page.locator('[data-demo-error="instant_launch_failed"]').click();
-assert.equal(await page.locator('#instantPlayError:not([hidden])').count(), 1);
+assert.equal(await page.locator('#pageInstantPlay.active').count(), 1, '尚未创建启动会话时不得伪造启动失败');
+assert.equal((await eventSnapshot()).some(event => event.name === 'first_play_stage_result' && event.failure_reason === 'instant_launch_failed'), false);
+await page.locator('[data-instant-game]').first().click();
+assert.equal(await page.locator('#pageGameLaunch.active').count(), 1, '秒玩必须先进入真实启动页');
+const failedInstantSession = (await savedFirstPlay()).launchSessionId;
+assert.equal(typeof failedInstantSession, 'string');
+await page.locator('[data-demo-error="instant_launch_failed"]').click();
+assert.equal(await page.locator('#pageGameLaunch.active #launchError:not([hidden])').count(), 1, '启动失败必须留在启动页展示恢复动作');
+assert.deepEqual(
+  await page.locator('#launchError [data-action]').evaluateAll(nodes => nodes.map(node => node.dataset.action)),
+  ['retry-launch', 'choose-another-instant-game', 'return-to-paths'],
+  '启动失败必须提供重试、换游戏、其他方式三个恢复动作',
+);
 assertFailureResult(await eventSnapshot(), 'instant_play', 'launch', 'instant_launch_failed');
 assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
-await page.locator('#instantPlayError [data-action="retry-first-play"]').click();
+const failedInstantState = await savedFirstPlay();
+assert.equal(failedInstantState.firstPlayStage, 'launch_failed');
+assert.equal(failedInstantState.launchSessionId, null, '失败后必须清理旧 launch session');
+assert.equal(await page.evaluate(() => launchTask.timer === null && launchTask.sessionId === null), true, '失败后必须清理旧异步 token');
+await page.waitForTimeout(460);
+assert.equal((await savedFirstPlay()).firstPlayStage, 'launch_failed', '旧启动回调不得污染失败状态');
+await page.locator('#launchError [data-action="retry-launch"]').click();
+const retriedInstantSession = (await savedFirstPlay()).launchSessionId;
+assert.equal((await savedFirstPlay()).firstPlayStage, 'launch_requested', '重试必须重新进入启动中');
+assert.notEqual(retriedInstantSession, failedInstantSession, '重试必须创建新的 launch session');
+assert.equal(await page.locator('#launchError').isHidden(), true);
+assert.equal((await eventSnapshot()).filter(event => event.name === 'game_launch_request' && event.path === 'instant_play').length, 2, '失败重试必须形成两个独立启动请求');
+await page.locator('[data-action="enter-playable-scene"]').click();
+assert.equal(await page.locator('#pagePlayableScene.active').count(), 1, '重试后必须可到达 playable');
+assert.equal((await eventSnapshot()).filter(event => event.name === 'playable_ready' && event.launch_session_id === retriedInstantSession).length, 1);
+
+await resetJourney();
+await page.locator('[data-first-play-path="no_asset"]').click();
 await page.locator('[data-instant-game]').first().click();
-assert.equal((await savedFirstPlay()).firstPlayStage, 'launch_requested', '秒玩启动失败后必须可重新发起启动');
-await page.locator('[data-action="cancel-launch"]').click();
-assert.equal(await page.locator('#pageInstantPlay.active').count(), 1);
-assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
+await page.locator('[data-demo-error="instant_launch_failed"]').click();
+await page.locator('#launchError [data-action="choose-another-instant-game"]').click();
+assert.equal(await page.locator('#pageInstantPlay.active').count(), 1, '换一款游戏必须返回秒玩频道');
+assert.equal((await savedFirstPlay()).firstPlayStage, 'content_ready');
+assert.equal((await savedFirstPlay()).launchSessionId, null);
 
 await resetJourney('portrait', 'overseas');
 await page.locator('[data-first-play-path="no_asset"]').click();
@@ -1196,7 +1408,7 @@ await page.locator('[data-action="grant-scan-permission"]').click();
 await page.waitForSelector('#localScanResult:not([hidden])');
 await page.locator('[data-action="select-scanned-exe"]').click();
 await page.locator('[data-action="import-selected-game"]').click();
-await assertInsidePhone('[data-local-game]', '横屏本地游戏卡');
+await assertInsidePhone('[data-local-game][data-game-id="game_2"]', '横屏本地导入游戏卡');
 await capturePhone('local-library-landscape.png');
 
 await resetJourney('landscape');
@@ -1214,6 +1426,12 @@ await capturePhone('08-free-download-overseas-landscape.png');
 assert.deepEqual(pageErrors, []);
 
 if (capture) {
+  assert.deepEqual(Object.keys(domGeometrySnapshots).sort(), [...primaryEvidenceNames].sort(), '8 张主证据必须全部包含 DOM 几何快照');
+  fs.writeFileSync(
+    path.join(evidenceDir, 'dom-geometry.json'),
+    `${JSON.stringify({ schemaVersion: 1, generatedAt: new Date().toISOString(), screenshots: domGeometrySnapshots }, null, 2)}\n`,
+    'utf8',
+  );
   fs.writeFileSync(
     path.join(evidenceDir, 'event-snapshots.json'),
     `${JSON.stringify({ schemaVersion: 1, generatedAt: new Date().toISOString(), paths: Object.fromEntries(Object.keys(eventSnapshots).map(pathName => [pathName, { state: completedPathStates[pathName], events: eventSnapshots[pathName] }])) }, null, 2)}\n`,
