@@ -1,0 +1,285 @@
+{
+  "schemaVersion": 1,
+  "runId": "be67ffde-965a-4db3-91e2-e883f6259cce",
+  "requirementId": "GUANWANGGAID-38",
+  "revision": 59,
+  "status": "passed",
+  "createdAt": "2026-08-25T09:17:02.4877339Z",
+  "updatedAt": "2026-08-26T05:47:01.1984897Z",
+  "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-38-game-blind-box.md",
+  "cardHash": "8B88313A6A8D2B2B33DA69E3AD10AF4FBD45E3DCCBBB2B0BD15CB14362BB1BE7",
+  "contract": {
+    "outOfScope": [
+      "后台配置",
+      "任务奖励",
+      "Steam登录引导",
+      "Git推送",
+      "公开发布"
+    ],
+    "deliverables": [
+      "离线单文件Demo",
+      "横竖屏截图",
+      "标准PRD",
+      "验证记录"
+    ],
+    "goal": "生成横竖屏游戏盲盒可操作Demo与同源PRD",
+    "inputs": [
+      "已确认产品设计",
+      "用户本轮新版竖屏游戏库截图",
+      "用户本轮新版横屏游戏库截图"
+    ],
+    "changes": [
+      "旧版游戏库 Shell 替换为当前版本",
+      "独立盲盒页替换为当前游戏库上的居中浮层",
+      "旋转方块替换为容器内候选媒体与内容轮换",
+      "结果操作统一为查看详情和再抽一次",
+      "入口从来源快捷区移至游戏库内容操作区",
+      "浮层动态字段限定为封面、名称、评分和类型标签",
+      "竖屏标题、数量与四个工具合并为同一行",
+      "盲盒功能卡改为四款真实游戏封面聚合背景",
+      "随机动画提速至约100ms每款并增加局部切换与命中收束",
+      "PRD按标准九章模板重组，不改变V1.4业务与交互规则"
+    ],
+    "inScope": [
+      "Android竖屏游戏库入口",
+      "Android横屏游戏库入口",
+      "游戏库上的居中盲盒浮层",
+      "推荐池与加权规则",
+      "多语言",
+      "埋点与验收"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "type": "requirement-resolution",
+      "required": true,
+      "dependsOn": [],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [],
+      "outputs": [
+        "GUANWANGGAID-38"
+      ],
+      "evidence": [
+        "taskctl issue get GUANWANGGAID-38 --json"
+      ],
+      "validation": "passed",
+      "error": null,
+      "reviewer": "Codex"
+    },
+    {
+      "id": "S2",
+      "type": "fact-recovery",
+      "required": true,
+      "dependsOn": [
+        "S1"
+      ],
+      "status": "passed",
+      "attempt": 4,
+      "inputHashes": [],
+      "outputs": [
+        "D-001至D-024"
+      ],
+      "evidence": [
+        "用户本轮标题单行、动画提速与聚合背景反馈",
+        "状态卡"
+      ],
+      "validation": "passed",
+      "error": null,
+      "reviewer": "Codex"
+    },
+    {
+      "id": "S3",
+      "type": "change-compilation",
+      "required": true,
+      "dependsOn": [
+        "S2"
+      ],
+      "status": "passed",
+      "attempt": 5,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-38-game-blind-box.md",
+          "sha256": "8B88313A6A8D2B2B33DA69E3AD10AF4FBD45E3DCCBBB2B0BD15CB14362BB1BE7"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\ai生成\\【Prd】《盖世游戏》游戏盲盒需求.md",
+          "sha256": "F98DE9C6552290B51850D7A9A628013F5008FC327941A3875A1873AD609097DB"
+        }
+      ],
+      "outputs": [
+        "本轮仅重组PRD结构",
+        "Demo与截图无需修改",
+        "V1.4业务与交互规则保持不变"
+      ],
+      "evidence": [
+        "用户输入/to-prd",
+        "状态卡D-001至D-024",
+        "当前V1.4 Demo与4张截图"
+      ],
+      "validation": "passed",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S4",
+      "type": "page-baseline",
+      "required": true,
+      "dependsOn": [
+        "S3"
+      ],
+      "status": "passed",
+      "attempt": 5,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\docs\\superpowers\\specs\\2026-08-25-gamehub-game-blind-box-design.md",
+          "sha256": "CE152CBCAA370C596B385C3A0CCC7226DA9B483E93B8B5EBF187B976D28B8C34"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\game-blind-box\\01-library-entry-portrait.png",
+          "sha256": "2DDD7E8E506F7FA54AADFE466E8B2317AA38C591B954EEAA2CB70D9467A3427E"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\game-blind-box\\03-library-entry-landscape.png",
+          "sha256": "A0C2F8FD1CDD1A2EC3541D8A841A258FF5D08C8A7C2AA961ABC8ABC24E0A3CFD"
+        }
+      ],
+      "outputs": [
+        "当前横竖屏游戏库基线无需修改"
+      ],
+      "evidence": [
+        "用户本轮新版横竖屏实机图仍为有效基线",
+        "当前4张Demo截图与V1.4规则一致"
+      ],
+      "validation": "passed_no_ui_change",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S5",
+      "type": "artifact-execution",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S4"
+      ],
+      "status": "passed",
+      "attempt": 5,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\ai生成\\【Prd】《盖世游戏》游戏盲盒需求.md",
+          "sha256": "F98DE9C6552290B51850D7A9A628013F5008FC327941A3875A1873AD609097DB"
+        }
+      ],
+      "outputs": [
+        "V1.5标准九章PRD"
+      ],
+      "evidence": [
+        "补齐模块设计、非功能、运营、上线后更新、验收与待确认项",
+        "仅C端，无空B端章节"
+      ],
+      "validation": "passed",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S6",
+      "type": "machine-validation",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "passed",
+      "attempt": 5,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\ai生成\\【Prd】《盖世游戏》游戏盲盒需求.md",
+          "sha256": "F98DE9C6552290B51850D7A9A628013F5008FC327941A3875A1873AD609097DB"
+        }
+      ],
+      "outputs": [
+        "PRD质量0 error/0 warning",
+        "章节结构检查通过"
+      ],
+      "evidence": [
+        "validate-prd-quality.ps1: Pass",
+        "九章标题与C端详细设计表存在",
+        "无本地图片地址冒充远程地址"
+      ],
+      "validation": "passed",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S7",
+      "type": "professional-review",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "passed",
+      "attempt": 5,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\ai生成\\【Prd】《盖世游戏》游戏盲盒需求.md",
+          "sha256": "F98DE9C6552290B51850D7A9A628013F5008FC327941A3875A1873AD609097DB"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\首页与探索\\游戏盲盒demo.html",
+          "sha256": "67C9580EBD181892F62B62E2949CDA0A1D5D38C281C20D6D44EBD1E5724299C3"
+        }
+      ],
+      "outputs": [
+        "产品逻辑、文档语义、Demo一致性评审通过"
+      ],
+      "evidence": [
+        "V1.4业务规则未改变",
+        "入口、随机、结果、异常、横竖屏、五语言与埋点口径前后一致",
+        "未新增后台、奖励、入口或启动路径"
+      ],
+      "validation": "passed",
+      "error": null,
+      "reviewer": "Codex产品评审"
+    },
+    {
+      "id": "S8",
+      "type": "consistency-delivery",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S5",
+        "S6",
+        "S7"
+      ],
+      "status": "passed",
+      "attempt": 5,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-38-game-blind-box.md",
+          "sha256": "8B88313A6A8D2B2B33DA69E3AD10AF4FBD45E3DCCBBB2B0BD15CB14362BB1BE7"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\ai生成\\【Prd】《盖世游戏》游戏盲盒需求.md",
+          "sha256": "F98DE9C6552290B51850D7A9A628013F5008FC327941A3875A1873AD609097DB"
+        }
+      ],
+      "outputs": [
+        "源文件：V1.5 PRD与状态卡已同步",
+        "机器验证：PRD质量0 error/0 warning",
+        "专业判断：产品逻辑与Demo一致性通过",
+        "Git：未执行",
+        "公开预览：未执行",
+        "远程资源：未执行，4张图待Git发布授权"
+      ],
+      "evidence": [
+        "Demo与截图无需修改",
+        "PRD图片未使用本地或可变分支地址冒充公开资源",
+        "当前工作流必需步骤全部通过"
+      ],
+      "validation": "passed_with_remote_images_pending_authorization",
+      "error": null,
+      "reviewer": null
+    }
+  ]
+}

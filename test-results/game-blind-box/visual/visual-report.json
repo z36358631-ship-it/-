@@ -1,0 +1,40 @@
+{
+  "policy": "Exact source-size comparison without blur or downsampling for RGB/edge/SSIM. Color P95 is CIE76 diagnostic only; strict CIEDE2000 gate remains unverified.",
+  "thresholds": {
+    "rgb": 0.95,
+    "edge": 0.95,
+    "ssim": 0.95,
+    "deltaE2000P95": 3.0
+  },
+  "pages": [
+    {
+      "id": "portrait",
+      "canvas": [
+        526,
+        928
+      ],
+      "rgbScore": 0.863722,
+      "edgeScore": 0.874924,
+      "globalSsimDiagnostic": 0.044951,
+      "deltaE76P95Diagnostic": 83.2484,
+      "strictPassed": false,
+      "manualReview": "pending",
+      "reason": "Current-version shell is compared with the user-provided screenshot; the required blind-box shortcut, different demo library data, strict CIEDE2000 and component geometry gates remain expected differences or unverified."
+    },
+    {
+      "id": "landscape",
+      "canvas": [
+        943,
+        530
+      ],
+      "rgbScore": 0.866501,
+      "edgeScore": 0.892921,
+      "globalSsimDiagnostic": 0.230591,
+      "deltaE76P95Diagnostic": 61.8308,
+      "strictPassed": false,
+      "manualReview": "pending",
+      "reason": "Current-version shell is compared with the user-provided screenshot; the required blind-box shortcut, different demo library data, strict CIEDE2000 and component geometry gates remain expected differences or unverified."
+    }
+  ],
+  "strictPassed": false
+}
