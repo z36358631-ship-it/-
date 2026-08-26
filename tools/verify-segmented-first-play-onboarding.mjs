@@ -377,18 +377,91 @@ assert.deepEqual(
   '切换预览必须清理旧启动会话',
 );
 
-// 四类关键页面切换方向时必须保留页面、业务状态、语义焦点与可滚动位置
+// Steam 延迟焦点必须可取消，不能在预览切走后聚焦隐藏输入框
+await page.locator('[data-set-orientation="portrait"]').click();
+await page.locator('[data-first-play-preview="steam_login"]').click();
+await page.locator('[data-first-play-preview="start"]').click();
+await page.waitForTimeout(340);
+const steamFocusRace = await page.evaluate(() => {
+  const activePage = document.querySelector('.page.active');
+  const active = document.activeElement;
+  const steamInput = document.getElementById('steamUsername');
+  return {
+    activePageId: activePage?.id || null,
+    activeBelongsToPage: Boolean(activePage?.contains(active)),
+    activeId: active?.id || null,
+    activePath: active?.dataset?.firstPlayPath || null,
+    activeIsSteamInput: active === steamInput,
+    steamPageActive: steamInput.closest('.page')?.classList.contains('active') || false,
+    focusTimerCleared: steamLoginFocusTask.timer === null,
+  };
+});
+assert.deepEqual(
+  steamFocusRace,
+  { activePageId: 'pageStartMethod', activeBelongsToPage: true, activeId: null, activePath: 'steam', activeIsSteamInput: false, steamPageActive: false, focusTimerCleared: true },
+  'Steam 登录延迟焦点不得穿透到已隐藏页面',
+);
+
+// 四类关键页面切换方向时必须迁移最新滚动位置，并保留页面、状态与语义焦点
 const focusSnapshot = () => page.evaluate(() => {
   const active = document.activeElement;
   return {
     action: active?.dataset?.action || null,
     path: active?.dataset?.firstPlayPath || null,
     gameId: active?.dataset?.gameId || null,
-    className: typeof active?.className === 'string' ? active.className : '',
   };
 });
 
-await page.locator('[data-set-orientation="portrait"]').click();
+async function appendScrollFixtures(containerSelector, itemSelector, count) {
+  await page.locator(containerSelector).evaluate((container, options) => {
+    const seed = container.querySelector(options.itemSelector);
+    if (!seed) throw new Error(`缺少滚动夹具种子 ${options.itemSelector}`);
+    container.dataset.orientationScrollOriginalStyle = container.getAttribute('style') || '';
+    container.style.height = '180px';
+    container.style.maxHeight = '180px';
+    container.style.overflowY = 'auto';
+    container.style.gridAutoRows = '120px';
+    for (let index = 0; index < options.count; index += 1) {
+      const clone = seed.cloneNode(true);
+      clone.dataset.orientationScrollFixture = String(index);
+      clone.tabIndex = -1;
+      clone.setAttribute('aria-hidden', 'true');
+      container.appendChild(clone);
+    }
+  }, { itemSelector, count });
+}
+
+async function removeScrollFixtures(containerSelector) {
+  await page.locator(containerSelector).evaluate(container => {
+    container.querySelectorAll('[data-orientation-scroll-fixture]').forEach(node => node.remove());
+    container.scrollTop = 0;
+    const originalStyle = container.dataset.orientationScrollOriginalStyle;
+    if (originalStyle) container.setAttribute('style', originalStyle);
+    else container.removeAttribute('style');
+    delete container.dataset.orientationScrollOriginalStyle;
+  });
+}
+
+async function scrollMetrics(containerSelector, setTop) {
+  return page.locator(containerSelector).evaluate((container, nextTop) => {
+    if (nextTop !== null) container.scrollTop = nextTop;
+    return {
+      top: container.scrollTop,
+      max: container.scrollHeight - container.clientHeight,
+      overflowY: getComputedStyle(container).overflowY,
+    };
+  }, setTop ?? null);
+}
+
+async function seedStaleTargetScroll(key, orientation, value) {
+  await page.evaluate(({ key: scrollKey, orientation: targetOrientation, value: staleValue }) => {
+    delete orientationScrollState.latest[scrollKey];
+    delete orientationScrollState.portrait[scrollKey];
+    delete orientationScrollState.landscape[scrollKey];
+    orientationScrollState[targetOrientation][scrollKey] = staleValue;
+  }, { key, orientation, value });
+}
+
 await page.locator('[data-first-play-preview="start"]').click();
 assert.deepEqual(
   await page.locator('#pageStartMethod button').evaluateAll(nodes => nodes
@@ -399,78 +472,93 @@ assert.deepEqual(
 );
 await page.locator('[data-first-play-path="local_file"]').focus();
 await page.locator('[data-set-orientation="landscape"]').click();
-assert.equal(await page.locator('#pageStartMethod.active').count(), 1);
 assert.equal((await focusSnapshot()).path, 'local_file', '资产首屏横屏后必须保持当前选项焦点');
-const startStateAfterLandscape = await savedFirstPlay();
-assert.deepEqual(
-  Object.fromEntries(['firstPlayPath', 'firstPlayStage', 'firstPlayCompleted'].map(key => [key, startStateAfterLandscape[key]])),
-  { firstPlayPath: null, firstPlayStage: null, firstPlayCompleted: false },
-);
 await page.locator('[data-set-orientation="portrait"]').click();
 assert.equal((await focusSnapshot()).path, 'local_file', '资产首屏回竖屏后必须保持当前选项焦点');
+await page.locator('.start-method-body').evaluate(container => {
+  const spacer = document.createElement('div');
+  spacer.dataset.orientationScrollFixture = 'spacer';
+  spacer.style.cssText = 'height:520px;min-height:520px;grid-column:1/-1;pointer-events:none';
+  container.appendChild(spacer);
+});
+await seedStaleTargetScroll('start-method', 'landscape', 17);
+const startPortraitScroll = await scrollMetrics('.start-method-body', 150);
+assert(startPortraitScroll.max > 150 && startPortraitScroll.top === 150, '资产首屏竖屏滚动夹具必须真实可滚');
+await page.locator('[data-set-orientation="landscape"]').click();
+const startLandscapeScroll = await scrollMetrics('.start-method-body');
+assert.equal(startLandscapeScroll.overflowY, 'hidden', '资产首屏横屏应为不可滚布局');
+assert.equal(await page.evaluate(() => orientationScrollState.latest['start-method']), 150, '不可滚横屏不得用 0 覆盖资产首屏最新位置');
+await page.locator('[data-set-orientation="portrait"]').click();
+assert.equal((await scrollMetrics('.start-method-body')).top, 150, '资产首屏回竖屏必须恢复源方向最新位置');
+await removeScrollFixtures('.start-method-body');
 
 await page.locator('[data-first-play-preview="steam_library"]').click();
 const steamOrientationState = await savedFirstPlay();
-const steamScrollBefore = await page.locator('#steamGameGrid').evaluate(container => {
-  container.scrollTop = container.scrollHeight - container.clientHeight;
-  container.querySelector('[data-steam-game]:last-child').focus({ preventScroll: true });
-  return container.scrollTop;
-});
+await page.locator('[data-steam-game]').first().focus();
 const focusedSteamGameId = (await focusSnapshot()).gameId;
-assert.equal(typeof focusedSteamGameId, 'string');
 await page.locator('[data-set-orientation="landscape"]').click();
-assert.equal(await page.locator('#pageSteamLibrary.active').count(), 1);
 assert.equal((await focusSnapshot()).gameId, focusedSteamGameId, 'Steam 库横屏后必须保持游戏卡焦点');
-const steamStateAfterLandscape = await savedFirstPlay();
-assert.deepEqual(
-  Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayCompleted'].map(key => [key, steamStateAfterLandscape[key]])),
-  Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayCompleted'].map(key => [key, steamOrientationState[key]])),
-  'Steam 库方向切换不得改业务状态',
-);
 await page.locator('[data-set-orientation="portrait"]').click();
 assert.equal((await focusSnapshot()).gameId, focusedSteamGameId, 'Steam 库回竖屏后必须保持游戏卡焦点');
-assert.equal(await page.locator('#steamGameGrid').evaluate(container => container.scrollTop), steamScrollBefore, 'Steam 库回竖屏后必须恢复列表滚动位置');
+await appendScrollFixtures('#steamGameGrid', '[data-steam-game]', 30);
+await seedStaleTargetScroll('steam-library', 'landscape', 25);
+const steamPortrait150 = await scrollMetrics('#steamGameGrid', 150);
+assert(steamPortrait150.max > 300 && steamPortrait150.top === 150, `Steam 竖屏列表必须形成真实滚动：${JSON.stringify(steamPortrait150)}`);
+await page.locator('[data-set-orientation="landscape"]').click();
+const steamLandscape150 = await scrollMetrics('#steamGameGrid');
+assert(steamLandscape150.max > 300 && steamLandscape150.top === 150, 'Steam 横屏必须迁移 portrait 最新 150，而非旧历史 25');
+assert.equal((await scrollMetrics('#steamGameGrid', 240)).top, 240, 'Steam 横屏必须可滚至 240');
+await page.locator('[data-set-orientation="portrait"]').click();
+const steamPortrait240 = await scrollMetrics('#steamGameGrid');
+assert(steamPortrait240.max > 300 && steamPortrait240.top === 240, 'Steam 回竖屏必须迁移 landscape 最新 240，而非旧 150');
+const steamStateAfterScroll = await savedFirstPlay();
+assert.deepEqual(
+  Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayCompleted'].map(key => [key, steamStateAfterScroll[key]])),
+  Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayCompleted'].map(key => [key, steamOrientationState[key]])),
+  'Steam 库方向滚动不得改业务状态',
+);
+await removeScrollFixtures('#steamGameGrid');
 
 await page.locator('[data-first-play-preview="home_continue"]').click();
-const homeScrollBefore = await page.locator('.home-portrait-feed').evaluate(container => {
-  container.scrollTop = Math.min(180, container.scrollHeight - container.clientHeight);
-  return container.scrollTop;
-});
-assert(homeScrollBefore > 0, '竖屏首页必须存在可验证的滚动距离');
+await seedStaleTargetScroll('home-feed', 'landscape', 23);
+const homePortrait150 = await scrollMetrics('.home-portrait-feed', 150);
+assert(homePortrait150.max > 300 && homePortrait150.top === 150, '竖屏首页 Feed 必须真实可滚');
 await page.locator('.home-search-entry').focus();
 await page.locator('[data-set-orientation="landscape"]').click();
-assert.equal(await page.locator('#pageHome.active').count(), 1);
 assert.equal(await page.locator('.home-search-entry').isVisible(), false, '横屏首页应隐藏竖屏搜索入口');
-assert.equal((await focusSnapshot()).action, 'home-continue', '搜索入口横屏隐藏后焦点必须回退到唯一 Continue');
-const homeStateAfterLandscape = await savedFirstPlay();
-assert.deepEqual(
-  Object.fromEntries(['firstPlayPath', 'firstPlayStage', 'firstPlayCompleted'].map(key => [key, homeStateAfterLandscape[key]])),
-  { firstPlayPath: null, firstPlayStage: null, firstPlayCompleted: false },
-);
+assert.equal((await focusSnapshot()).action, 'home-continue', '搜索入口隐藏后焦点必须回退到唯一 Continue');
+assert.equal((await scrollMetrics('.home-portrait-feed')).overflowY, 'visible', '横屏首页 Feed 应为不可滚布局');
+assert.equal(await page.evaluate(() => orientationScrollState.latest['home-feed']), 150, '不可滚横屏不得用 0 覆盖首页最新位置');
 await page.locator('[data-set-orientation="portrait"]').click();
-assert.equal(await page.locator('.home-portrait-feed').evaluate(container => container.scrollTop), homeScrollBefore, '首页回竖屏后必须恢复 Feed 滚动位置');
+assert.equal((await scrollMetrics('.home-portrait-feed')).top, 150, '首页回竖屏必须恢复最新 150');
 
 await page.locator('[data-first-play-preview="overseas_free"]').click();
 await page.locator('[data-free-download-game]').last().click();
 const overseasOrientationState = await savedFirstPlay();
-const freeScrollBefore = await page.locator('#freeDownloadGrid').evaluate(container => {
-  container.scrollTop = container.scrollHeight - container.clientHeight;
-  container.querySelector('[data-free-download-game][aria-pressed="true"]').focus({ preventScroll: true });
-  return container.scrollTop;
-});
+await page.locator('[data-free-download-game][aria-pressed="true"]').focus();
 const focusedFreeGameId = (await focusSnapshot()).gameId;
 await page.locator('[data-set-orientation="landscape"]').click();
-assert.equal(await page.locator('#pageFreeDownload.active').count(), 1);
 assert.equal((await focusSnapshot()).gameId, focusedFreeGameId, '海外下载页横屏后必须保持选中卡焦点');
-const overseasStateAfterLandscape = await savedFirstPlay();
-assert.deepEqual(
-  Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayGameId', 'firstPlayCompleted'].map(key => [key, overseasStateAfterLandscape[key]])),
-  Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayGameId', 'firstPlayCompleted'].map(key => [key, overseasOrientationState[key]])),
-  '海外下载页方向切换不得改市场、路径、阶段或游戏',
-);
 await page.locator('[data-set-orientation="portrait"]').click();
 assert.equal((await focusSnapshot()).gameId, focusedFreeGameId, '海外下载页回竖屏后必须保持选中卡焦点');
-assert.equal(await page.locator('#freeDownloadGrid').evaluate(container => container.scrollTop), freeScrollBefore, '海外下载页回竖屏后必须恢复列表滚动位置');
+await appendScrollFixtures('#freeDownloadGrid', '[data-free-download-game]', 20);
+await seedStaleTargetScroll('free-download', 'landscape', 25);
+const freePortrait150 = await scrollMetrics('#freeDownloadGrid', 150);
+assert(freePortrait150.max > 300 && freePortrait150.top === 150, `海外竖屏列表必须形成真实滚动：${JSON.stringify(freePortrait150)}`);
+await page.locator('[data-set-orientation="landscape"]').click();
+const freeLandscape150 = await scrollMetrics('#freeDownloadGrid');
+assert(freeLandscape150.max > 300 && freeLandscape150.top === 150, '海外横屏必须迁移 portrait 最新 150，而非旧历史 25');
+assert.equal((await scrollMetrics('#freeDownloadGrid', 240)).top, 240, '海外横屏必须可滚至 240');
+await page.locator('[data-set-orientation="portrait"]').click();
+const freePortrait240 = await scrollMetrics('#freeDownloadGrid');
+assert(freePortrait240.max > 300 && freePortrait240.top === 240, '海外回竖屏必须迁移 landscape 最新 240，而非旧 150');
+await removeScrollFixtures('#freeDownloadGrid');
+const overseasStateAfterScroll = await savedFirstPlay();
+assert.deepEqual(
+  Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayGameId', 'firstPlayCompleted'].map(key => [key, overseasStateAfterScroll[key]])),
+  Object.fromEntries(['market', 'firstPlayPath', 'firstPlayStage', 'firstPlayGameId', 'firstPlayCompleted'].map(key => [key, overseasOrientationState[key]])),
+  '海外下载方向滚动不得改市场、路径、阶段或游戏',
+);
 await page.locator('[data-set-orientation="landscape"]').click();
 await page.reload();
 assert.equal((await page.locator('.phone').getAttribute('data-orientation')), 'landscape', '刷新必须恢复横屏方向');

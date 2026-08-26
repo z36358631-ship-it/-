@@ -1415,7 +1415,12 @@ var launchSessionSequence=0;
 var steamLibraryView={query:'',sort:'recent',recentOnly:false};
 var freeDownloadTask={version:0,timer:null};
 var localScanTask={version:0,timer:null};
-var orientationScrollState={portrait:Object.create(null),landscape:Object.create(null)};
+var steamLoginFocusTask={version:0,timer:null};
+var orientationScrollState={
+  latest:Object.create(null),
+  portrait:Object.create(null),
+  landscape:Object.create(null)
+};
 var lastPhoneFocus=null;
 var FREE_DOWNLOAD_SPEED_MBPS=20;
 var FREE_DOWNLOAD_GAMES=[
@@ -1473,6 +1478,27 @@ function cancelLocalScanTask(){
   localScanTask.version+=1;
   if(localScanTask.timer) clearTimeout(localScanTask.timer);
   localScanTask.timer=null;
+}
+
+function cancelSteamLoginFocus(){
+  steamLoginFocusTask.version+=1;
+  if(steamLoginFocusTask.timer) clearTimeout(steamLoginFocusTask.timer);
+  steamLoginFocusTask.timer=null;
+}
+
+function scheduleSteamLoginFocus(){
+  cancelSteamLoginFocus();
+  var token=steamLoginFocusTask.version;
+  steamLoginFocusTask.timer=setTimeout(function(){
+    if(steamLoginFocusTask.version!==token) return;
+    steamLoginFocusTask.timer=null;
+    var page=document.getElementById('pageSteamLogin');
+    var input=document.getElementById('steamUsername');
+    if(!page.classList.contains('active')||!page.contains(input)||input.disabled||input.hidden||input.getClientRects().length===0) return;
+    var style=getComputedStyle(input);
+    if(style.display==='none'||style.visibility==='hidden') return;
+    input.focus({preventScroll:true});
+  },220);
 }
 
 function setFirstPlayStage(stage,gameId){
@@ -1710,7 +1736,7 @@ function renderInstantChannel(){
 
 function openSteamLogin(){
   switchPage('pageSteamLogin');
-  setTimeout(function(){document.getElementById('steamUsername').focus()},220);
+  scheduleSteamLoginFocus();
 }
 
 function openPcLibrary(showAddDialog){
@@ -1982,6 +2008,7 @@ function recoverLocalError(button){
 function returnToFirstPlayPaths(){
   cancelFreeDownloadTask();
   cancelLocalScanTask();
+  cancelSteamLoginFocus();
   onboardingFlow.state=ONBOARDING_FLOW_STATES.START_METHOD;
   onboardingFlow.updatedAt=new Date().toISOString();
   saveOnboardingFlow();
@@ -2554,14 +2581,21 @@ function activePhonePage(){
   return document.querySelector('.phone .page.active');
 }
 
+function isOrientationScrollable(container){
+  var overflowY=getComputedStyle(container).overflowY;
+  return (overflowY==='auto'||overflowY==='scroll')&&container.scrollHeight>container.clientHeight+1;
+}
+
 function captureOrientationViewState(){
   var page=activePhonePage();
   if(!page) return lastPhoneFocus;
   var orientation=document.querySelector('.phone').dataset.orientation||'portrait';
   var scrollState=orientationScrollState[orientation];
   page.querySelectorAll('[data-orientation-scroll]').forEach(function(container){
-    if(container.scrollHeight>container.clientHeight+1){
-      scrollState[container.dataset.orientationScroll]=container.scrollTop;
+    if(isOrientationScrollable(container)){
+      var key=container.dataset.orientationScroll;
+      scrollState[key]=container.scrollTop;
+      orientationScrollState.latest[key]=container.scrollTop;
     }
   });
   var active=document.activeElement;
@@ -2591,13 +2625,13 @@ function restoreOrientationViewState(focusCandidate){
   var page=activePhonePage();
   if(!page) return;
   var orientation=document.querySelector('.phone').dataset.orientation||'portrait';
-  var otherOrientation=orientation==='portrait'?'landscape':'portrait';
   page.querySelectorAll('[data-orientation-scroll]').forEach(function(container){
     var key=container.dataset.orientationScroll;
-    var saved=orientationScrollState[orientation][key];
-    if(saved===undefined) saved=orientationScrollState[otherOrientation][key];
-    if(saved!==undefined&&container.scrollHeight>container.clientHeight+1){
+    var saved=orientationScrollState.latest[key];
+    if(saved!==undefined&&isOrientationScrollable(container)){
       container.scrollTop=Math.min(saved,Math.max(0,container.scrollHeight-container.clientHeight));
+      orientationScrollState[orientation][key]=container.scrollTop;
+      orientationScrollState.latest[key]=container.scrollTop;
     }
   });
   var target=isVisibleOrientationFocus(focusCandidate,page)?focusCandidate:orientationFocusFallback(page);
@@ -2790,6 +2824,7 @@ function restoreOnboardingFlow(){
 }
 
 function switchPage(id){
+  cancelSteamLoginFocus();
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
   document.getElementById(id).classList.add('active');
   document.querySelector('.phone').dataset.activePage=id;
@@ -2822,6 +2857,7 @@ function previewStartMethod(){
 function prepareFirstPlayPreview(market,path,stage,state){
   cancelFreeDownloadTask();
   cancelLocalScanTask();
+  cancelSteamLoginFocus();
   document.querySelectorAll('.first-play-error').forEach(function(error){error.hidden=true});
   document.getElementById('addGameDialog').hidden=true;
   document.getElementById('giftOverlay').classList.remove('show');
@@ -2846,34 +2882,44 @@ function prepareFirstPlayPreview(market,path,stage,state){
   saveOnboardingFlow();
 }
 
+function finishFirstPlayPreview(result){
+  var page=activePhonePage();
+  var target=orientationFocusFallback(page);
+  if(target&&isVisibleOrientationFocus(target,page)){
+    target.focus({preventScroll:true});
+    lastPhoneFocus=target;
+  }
+  return result;
+}
+
 function previewFirstPlayScenario(scenario){
   if(scenario==='start'){
     prepareFirstPlayPreview('domestic',null,null,ONBOARDING_FLOW_STATES.START_METHOD);
-    return previewStartMethod();
+    return finishFirstPlayPreview(previewStartMethod());
   }
   if(scenario==='steam_login'){
     prepareFirstPlayPreview('domestic',null,null,ONBOARDING_FLOW_STATES.DESTINATION);
-    return chooseFirstPlayPath('steam');
+    return finishFirstPlayPreview(chooseFirstPlayPath('steam'));
   }
   if(scenario==='steam_library'){
     prepareFirstPlayPreview('domestic','steam','content_ready',ONBOARDING_FLOW_STATES.DESTINATION);
-    return resumeFirstPlayPath();
+    return finishFirstPlayPreview(resumeFirstPlayPath());
   }
   if(scenario==='local_import'){
     prepareFirstPlayPreview('domestic','local_file','permission_pending',ONBOARDING_FLOW_STATES.DESTINATION);
-    return resumeFirstPlayPath();
+    return finishFirstPlayPreview(resumeFirstPlayPath());
   }
   if(scenario==='instant_play'){
     prepareFirstPlayPreview('domestic',null,null,ONBOARDING_FLOW_STATES.DESTINATION);
-    return chooseFirstPlayPath('no_asset');
+    return finishFirstPlayPreview(chooseFirstPlayPath('no_asset'));
   }
   if(scenario==='home_continue'){
     prepareFirstPlayPreview('domestic',null,null,ONBOARDING_FLOW_STATES.HOME);
-    return showHomeResult('preview');
+    return finishFirstPlayPreview(showHomeResult('preview'));
   }
   if(scenario==='overseas_free'){
     prepareFirstPlayPreview('overseas',null,null,ONBOARDING_FLOW_STATES.DESTINATION);
-    return chooseFirstPlayPath('no_asset');
+    return finishFirstPlayPreview(chooseFirstPlayPath('no_asset'));
   }
 }
 
@@ -3100,6 +3146,7 @@ function resetAll(){
   localStorage.removeItem(EXISTING_FLOW_KEY);
   cancelFreeDownloadTask();
   cancelLocalScanTask();
+  cancelSteamLoginFocus();
   stageResultKeys.clear();
   completedLaunchSessions.clear();
   homeContinueViewKeys.clear();
