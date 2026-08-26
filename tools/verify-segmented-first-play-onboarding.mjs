@@ -32,6 +32,7 @@ assert.equal(/&#x(?:1f[0-9a-f]{3}|26a1|2705);/iu.test(demoHtml), false, 'Demo �
 assert.equal(/[\u{1F300}-\u{1FAFF}]/u.test(demoHtml), false, 'Demo 不得保留 Emoji 字符');
 assert.equal(demoHtml.includes('function makeCover('), false, '不得使用文字 SVG 生成临时游戏封面');
 assert.equal(demoHtml.includes('GAMEHUB</text>'), false, '不得在封面中保留 GAMEHUB 文字占位');
+assert.equal(demoHtml.includes('free_download'), true, '海外无资产路径必须接入免费下载');
 
 const capture = process.argv.includes('--capture');
 const evidenceDir = path.join(os.tmpdir(), 'gamehub-segmented-first-play-review');
@@ -44,6 +45,7 @@ page.on('pageerror', error => pageErrors.push(error.message));
 
 await page.goto(pathToFileURL(demoPath).href);
 assert.equal(await page.title(), '盖世游戏按游戏资产分流首玩 Demo');
+assert.equal((await page.locator('.phone').innerText()).includes('模拟失败'), false, '用户页面不得出现“模拟失败”文案');
 const legacySentinel = 'legacy-demo-sentinel';
 const preservedLegacyValues = await page.evaluate(({ keys, sentinel }) => {
   for (const key of keys) localStorage.setItem(key, sentinel);
@@ -108,7 +110,15 @@ assert.deepEqual(
     noAsset: "I don't have a game yet",
     browse: 'Browse Home first',
   },
-  '海外文案表必须存在，但 Task 2 不接路径',
+  '海外资产入口文案必须明确免费下载路径',
+);
+assert.deepEqual(
+  await page.evaluate(() => ({
+    domestic: resolveFirstPlayPath('no_asset', 'domestic'),
+    overseas: resolveFirstPlayPath('no_asset', 'overseas'),
+  })),
+  { domestic: 'instant_play', overseas: 'free_download' },
+  'no_asset 必须按市场路由，海外不得复用秒玩',
 );
 assert.equal(
   await page.evaluate(() => games.length >= 6 && games.every(game => /^data:image\/jpeg;base64,/.test(game.cover))),
@@ -165,9 +175,10 @@ assert(landscapeGeometry.browse.top >= landscapeGeometry.shell.top && landscapeG
 assert(landscapeGeometry.browse.width > 0 && landscapeGeometry.browse.height > 0, '横屏弱入口不可见');
 await capturePhone('asset-entry-landscape.png');
 
-async function resetJourney(orientation = 'portrait') {
+async function resetJourney(orientation = 'portrait', market = 'domestic') {
   await page.evaluate(() => localStorage.clear());
   await page.reload();
+  if (market === 'overseas') await page.locator('#regionBtn').click();
   if (orientation === 'landscape') await page.locator('[data-set-orientation="landscape"]').click();
   await page.locator('[data-action="start-new-user"]').click();
   await page.locator('[data-onboarding-source-code="friend_referral"]').click();
@@ -181,6 +192,28 @@ async function eventSnapshot() {
 
 async function savedFirstPlay() {
   return page.evaluate(() => JSON.parse(localStorage.getItem('gamehub_first_play_onboarding_v1')));
+}
+
+function assertStageResults(events, pathName, expectedStages) {
+  const stageEvents = events.filter(event => event.name === 'first_play_stage_result' && event.result === 'success' && event.path === pathName);
+  assert.deepEqual(stageEvents.map(event => event.stage), expectedStages, `${pathName} 成功阶段顺序不正确`);
+  const keys = stageEvents.map(event => `${event.path}|${event.stage}|${event.game_id ?? ''}`);
+  assert.equal(new Set(keys).size, keys.length, `${pathName} 成功阶段不得重复上报`);
+  for (const event of stageEvents) {
+    assert.equal(typeof event.market, 'string', `${pathName}/${event.stage} 缺少 market`);
+    assert.equal(typeof event.path, 'string', `${pathName}/${event.stage} 缺少 path`);
+    assert.equal(typeof event.stage, 'string', `${pathName}/${event.stage} 缺少 stage`);
+    assert.equal(Object.hasOwn(event, 'game_id'), true, `${pathName}/${event.stage} 缺少 game_id`);
+    assert.equal(typeof event.updatedAt, 'string', `${pathName}/${event.stage} 缺少 updatedAt`);
+  }
+}
+
+function assertFailureResult(events, pathName, stage, reason) {
+  const event = events.find(item => item.name === 'first_play_stage_result' && item.result === 'failure' && item.path === pathName && item.stage === stage && item.failure_reason === reason);
+  assert(event, `${pathName}/${stage} 缺少失败阶段事件`);
+  assert.equal(typeof event.market, 'string');
+  assert.equal(Object.hasOwn(event, 'game_id'), true);
+  assert.equal(typeof event.updatedAt, 'string');
 }
 
 async function assertInsidePhone(selector, label) {
@@ -211,10 +244,34 @@ await page.locator('#steamPassword').fill('demo-password');
 await page.locator('[data-action="steam-bind-success"]').click();
 assert.equal(await page.locator('#pageSteamLibrary.active').count(), 1);
 assert.equal(await page.locator('.steam-account-summary').count(), 1);
+assert.equal(await page.locator('.steam-level-badge').count(), 1, 'Steam 资料缺少等级徽章');
+assert((await page.locator('.steam-id').innerText()).includes('Steam ID'));
+assert.equal(await page.locator('[data-action="steam-switch-account"][aria-label="切换 Steam 账号"]').count(), 1);
 assert((await page.locator('[data-steam-game]').count()) >= 4);
 assert.equal(await page.locator('[data-steam-game] [data-action="steam-launch"]').count(), 0, 'Steam 卡内不得新增启动按钮');
 assert.equal((await savedFirstPlay()).firstPlayStage, 'content_ready');
 assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
+const steamInitialOrder = await page.locator('[data-steam-game]').evaluateAll(nodes => nodes.map(node => node.dataset.gameId));
+await page.locator('#steamLibrarySearch').fill('艾尔登');
+assert.deepEqual(await page.locator('[data-steam-game]').evaluateAll(nodes => nodes.map(node => node.dataset.gameId)), ['game_2']);
+await page.locator('#steamLibrarySearch').fill('不存在的游戏');
+assert.equal(await page.locator('#steamLibraryEmpty:not([hidden])').count(), 1, 'Steam 搜索无结果必须展示空态');
+await page.locator('#steamLibrarySearch').fill('');
+await page.locator('[data-action="steam-sort"]').click();
+const steamSortedOrder = await page.locator('[data-steam-game]').evaluateAll(nodes => nodes.map(node => node.dataset.gameId));
+assert.notDeepEqual(steamSortedOrder, steamInitialOrder, 'Steam 排序必须实际改变卡片顺序');
+assert((await page.locator('[data-action="steam-sort"]').getAttribute('aria-label')).includes('游戏名称'));
+assert.equal(await page.locator('[data-action="steam-sort"]').getAttribute('aria-pressed'), 'true');
+const steamBeforeFilter = await page.locator('[data-steam-game]').count();
+await page.locator('[data-action="steam-filter"]').click();
+assert.equal(await page.locator('[data-action="steam-filter"]').getAttribute('aria-pressed'), 'true');
+assert((await page.locator('[data-steam-game]').count()) < steamBeforeFilter, 'Steam 筛选必须改变结果集');
+await page.locator('[data-action="steam-filter"]').click();
+assert.equal(await page.locator('[data-action="steam-filter"]').getAttribute('aria-pressed'), 'false');
+const steamControlEvents = await eventSnapshot();
+for (const eventName of ['steam_library_search', 'steam_library_sort_change', 'steam_library_filter_change']) {
+  assert.equal(steamControlEvents.some(event => event.name === eventName), true, `Steam 控件缺少 ${eventName} 事件`);
+}
 await capturePhone('steam-library-portrait.png');
 await page.locator('[data-steam-game]').first().click();
 assert.equal(await page.locator('#pageGameLaunch.active').count(), 1);
@@ -227,6 +284,8 @@ eventSnapshots.steam = await eventSnapshot();
 assert.equal(eventSnapshots.steam.filter(event => event.name === 'playable_ready' && event.path === 'steam').length, 1);
 await page.evaluate(() => markPlayable('steam', onboardingFlow.firstPlayGameId));
 assert.equal((await eventSnapshot()).filter(event => event.name === 'playable_ready' && event.path === 'steam').length, 1, 'Steam playable_ready 必须幂等');
+eventSnapshots.steam = await eventSnapshot();
+assertStageResults(eventSnapshots.steam, 'steam', ['selected', 'login_success', 'content_ready', 'game_selected', 'launch_requested', 'playable']);
 
 // 本地文件：添加游戏弹窗 -> 扫描结果 -> 选文件 -> 导入库 -> 启动 -> 可玩
 await resetJourney();
@@ -260,6 +319,7 @@ assert.equal((await eventSnapshot()).some(event => event.name === 'playable_read
 await page.locator('[data-action="enter-playable-scene"]').click();
 eventSnapshots.local_file = await eventSnapshot();
 assert.equal(eventSnapshots.local_file.filter(event => event.name === 'playable_ready' && event.path === 'local_file').length, 1);
+assertStageResults(eventSnapshots.local_file, 'local_file', ['selected', 'permission_pending', 'scanning', 'scan_result', 'file_selected', 'import_success', 'content_ready', 'game_selected', 'launch_requested', 'playable']);
 
 // 手动选择只是文件选择阶段，不等于导入成功
 await resetJourney();
@@ -267,6 +327,43 @@ await page.locator('[data-first-play-path="local_file"]').click();
 await page.locator('[data-import-source="local"]').click();
 await page.locator('[data-action="open-manual-file-picker"]').click();
 assert.equal((await savedFirstPlay()).firstPlayStage, 'file_picker');
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
+
+// 本地异常：不支持的文件可重新选择，也可返回换路
+await page.locator('[data-demo-error="file_unsupported"]').click();
+assert.equal((await savedFirstPlay()).firstPlayStage, 'file_unsupported');
+assert((await page.locator('#localImportError').innerText()).includes('.exe'));
+assert.equal(await page.locator('#localImportError [data-action="retry-local-error"]').innerText(), '重新选择');
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
+assertFailureResult(await eventSnapshot(), 'local_file', 'file_unsupported', 'file_unsupported');
+await page.locator('#localImportError').scrollIntoViewIfNeeded();
+await assertInsidePhone('#localImportError', '不支持文件错误态');
+await capturePhone('local-file-unsupported-portrait.png');
+await page.locator('#localImportError [data-action="retry-local-error"]').click();
+assert.equal((await savedFirstPlay()).firstPlayStage, 'file_picker');
+assert.equal(await page.locator('#manualFilePicker:not([hidden])').count(), 1);
+await page.locator('[data-demo-error="file_unsupported"]').click();
+await page.locator('#localImportError [data-action="return-to-paths"]').click();
+assert.equal(await page.locator('#pageStartMethod.active').count(), 1);
+
+// 本地异常：导入失败可重试导入，恢复后仍不能提前记成功
+await resetJourney();
+await page.locator('[data-first-play-path="local_file"]').click();
+await page.locator('[data-import-source="local"]').click();
+await page.locator('[data-action="grant-scan-permission"]').click();
+await page.waitForSelector('#localScanResult:not([hidden])');
+await page.locator('[data-action="select-scanned-exe"]').click();
+await page.locator('[data-demo-error="import_failed"]').click();
+assert.equal((await savedFirstPlay()).firstPlayStage, 'import_failed');
+assert.equal(await page.locator('#localImportError [data-action="retry-local-error"]').innerText(), '重试导入');
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
+assertFailureResult(await eventSnapshot(), 'local_file', 'import_failed', 'import_failed');
+await page.locator('#localImportError').scrollIntoViewIfNeeded();
+await assertInsidePhone('#localImportError', '导入失败错误态');
+await capturePhone('local-import-failed-portrait.png');
+await page.locator('#localImportError [data-action="retry-local-error"]').click();
+assert.equal(await page.locator('#pagePcLibrary.active').count(), 1);
+assert.equal((await savedFirstPlay()).firstPlayStage, 'content_ready');
 assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
 
 // 国内秒玩：完整频道 -> 查看更多 -> 启动请求 -> 可玩
@@ -289,6 +386,45 @@ assert.equal((await eventSnapshot()).some(event => event.name === 'playable_read
 await page.locator('[data-action="enter-playable-scene"]').click();
 eventSnapshots.instant_play = await eventSnapshot();
 assert.equal(eventSnapshots.instant_play.filter(event => event.name === 'playable_ready' && event.path === 'instant_play').length, 1);
+assertStageResults(eventSnapshots.instant_play, 'instant_play', ['selected', 'content_ready', 'game_selected', 'launch_requested', 'playable']);
+
+// 海外无资产：独立免费游戏下载，不得映射国内秒玩
+await resetJourney('portrait', 'overseas');
+assert.equal(await page.locator('[data-first-play-path="no_asset"] .opt-title').innerText(), "I don't have a game yet");
+assert((await page.locator('[data-first-play-path="no_asset"] .opt-desc').innerText()).includes('download'));
+await page.locator('[data-first-play-path="no_asset"]').click();
+assert.equal(await page.locator('#pageFreeDownload.active').count(), 1);
+assert.equal((await savedFirstPlay()).firstPlayPath, 'free_download');
+assert.equal((await savedFirstPlay()).market, 'overseas');
+const freeDownloadText = await page.locator('#pageFreeDownload').innerText();
+assert.equal(/秒玩|云游戏|15\s*分钟|充值|instant\s*play|cloud\s*gaming/i.test(freeDownloadText), false, '海外免费页不得出现国内秒玩或计费语义');
+assert((await page.locator('[data-free-download-game]').count()) >= 2);
+assert.equal(
+  await page.locator('[data-free-download-game]').evaluateAll(nodes => nodes.every(node => Number(node.dataset.downloadSizeGb) > 0 && Number(node.dataset.estimatedSeconds) > 0)),
+  true,
+  '免费游戏卡必须包含下载大小与估算耗时',
+);
+assert.equal(await page.locator('#pageFreeDownload [data-speed-mbps="20"]').count(), 1, '免费页必须说明当前演示网速');
+await capturePhone('free-download-portrait.png');
+await page.locator('[data-free-download-game]').first().click();
+assert.equal((await savedFirstPlay()).firstPlayStage, 'download_selected');
+assert.equal(await page.locator('[data-action="start-free-download"]').isDisabled(), false);
+await page.locator('[data-action="start-free-download"]').click();
+assert.equal((await savedFirstPlay()).firstPlayStage, 'downloading');
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false, '开始下载不得提前成功');
+await page.waitForFunction(() => onboardingFlow.firstPlayStage === 'downloaded');
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false, '下载完成不得提前成功');
+await page.locator('[data-action="launch-downloaded-game"]').click();
+assert.equal(await page.locator('#pageGameLaunch.active').count(), 1, '下载后启动必须先进入独立加载页');
+assert((await page.locator('#launchGameTitle').innerText()).startsWith('Preparing'));
+assert.equal(await page.locator('[data-action="enter-playable-scene"]').innerText(), 'Enter game');
+assert.equal((await savedFirstPlay()).firstPlayStage, 'launch_requested');
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false, '点击启动不得提前成功');
+await page.locator('[data-action="enter-playable-scene"]').click();
+assert.equal(await page.locator('#playableTitle').innerText(), 'Game ready');
+eventSnapshots.free_download = await eventSnapshot();
+assert.equal(eventSnapshots.free_download.filter(event => event.name === 'playable_ready' && event.path === 'free_download').length, 1);
+assertStageResults(eventSnapshots.free_download, 'free_download', ['selected', 'content_ready', 'download_selected', 'downloading', 'downloaded', 'game_selected', 'launch_requested', 'playable']);
 
 // 失败状态由外部控制面板触发，用户可回到资产分流换路
 await resetJourney();
@@ -329,6 +465,12 @@ await page.locator('[data-first-play-path="no_asset"]').click();
 await assertInsidePhone('.instant-time-card', '横屏秒玩时长卡');
 await assertInsidePhone('#instantHotGrid [data-instant-game]:first-child', '横屏热门秒玩卡');
 await capturePhone('instant-channel-landscape.png');
+
+await resetJourney('landscape', 'overseas');
+await page.locator('[data-first-play-path="no_asset"]').click();
+await assertInsidePhone('.free-download-header', '横屏海外免费页头部');
+await assertInsidePhone('[data-free-download-game]:first-child', '横屏海外免费游戏卡');
+await capturePhone('free-download-landscape.png');
 assert.deepEqual(pageErrors, []);
 
 await browser.close();
