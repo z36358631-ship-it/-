@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "runId": "be67ffde-965a-4db3-91e2-e883f6259cce",
   "requirementId": "GUANWANGGAID-38",
-  "revision": 68,
-  "status": "passed",
+  "revision": 76,
+  "status": "in_progress",
   "createdAt": "2026-08-25T09:17:02.4877339Z",
-  "updatedAt": "2026-08-26T06:12:54.6354972Z",
+  "updatedAt": "2026-08-26T12:53:17.4699190Z",
   "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-38-game-blind-box.md",
   "cardHash": "3CB6283A7156A6C9D14E5018E4868602E99B614426620CDD40361628F4723303",
   "contract": {
@@ -166,28 +166,32 @@
         "S4"
       ],
       "status": "passed",
-      "attempt": 6,
+      "attempt": 7,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\ai生成\\【Prd】《盖世游戏》游戏盲盒需求.md",
-          "sha256": "EDD550606A9DAC910CDC3B94E5788A78E660DFF563190B50C1FC458FCE0AA511"
+          "sha256": "738C1FA0BCEDDD345C9EA769C8065736FA2090514948A5202A70E199EBC949DA"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-38-game-blind-box.md",
-          "sha256": "3CB6283A7156A6C9D14E5018E4868602E99B614426620CDD40361628F4723303"
+          "sha256": "24A337762DBA9FC34C097F4669082C62CBDCA3B3C5554CE6C244F3280CFA7456"
+        },
+        {
+          "path": "C:\\Users\\z3635\\Documents\\Codex\\2026-08-26\\manage-taskboard-c-users-z3635-codex\\outputs\\盖世游戏升级版PRD模板-vNext.md",
+          "sha256": "478182A052AED4485394D9B9053BDCDF9F4F7DDCE04F8C422310E141F197AA10"
         }
       ],
       "outputs": [
-        "V1.6 PRD",
-        "4张固定SHA图片",
-        "Git发布状态已同步"
+        "V1.7 PRD（vNext六章结构）",
+        "2个C端页面六要素表",
+        "Demo与4张截图无需修改"
       ],
       "evidence": [
-        "图片提交8f454a5569aeac91c35b47b7f54b4311422aef12",
-        "PRD提交b3e0a414fc79c0b3e096ad655b2c54ab5edaee90",
-        "分支codex/guanwanggaid-38-game-blind-box-v1-5"
+        "用户提供《盖世游戏升级版PRD模板-vNext》",
+        "状态卡D-001至D-024",
+        "V1.4 Demo与4张固定SHA截图"
       ],
-      "validation": "passed",
+      "validation": "passed_vnext_structure_no_business_change",
       "error": null,
       "reviewer": null
     },
@@ -199,38 +203,22 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 6,
+      "attempt": 7,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\ai生成\\【Prd】《盖世游戏》游戏盲盒需求.md",
-          "sha256": "EDD550606A9DAC910CDC3B94E5788A78E660DFF563190B50C1FC458FCE0AA511"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\game-blind-box\\01-library-entry-portrait.png",
-          "sha256": "2DDD7E8E506F7FA54AADFE466E8B2317AA38C591B954EEAA2CB70D9467A3427E"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\game-blind-box\\02-result-portrait.png",
-          "sha256": "C07732EAD3C2C0107A6914AB6B36720B0773A0E011E5E29F048860F00E41A4EA"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\game-blind-box\\03-library-entry-landscape.png",
-          "sha256": "A0C2F8FD1CDD1A2EC3541D8A841A258FF5D08C8A7C2AA961ABC8ABC24E0A3CFD"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\game-blind-box\\04-result-landscape.png",
-          "sha256": "EB7D52F67C2BB306997F21E0C9A2B139EDE5950CEE04E793D20355B6DCD63676"
+          "sha256": "738C1FA0BCEDDD345C9EA769C8065736FA2090514948A5202A70E199EBC949DA"
         }
       ],
       "outputs": [
         "PRD质量0 error/0 warning",
-        "4/4固定图片HTTP 200且image/png",
-        "浏览器测试5/5 PASS"
+        "vNext六章、2张六要素表、4张固定SHA图片结构通过",
+        "4/4图片HTTP 200且image/png"
       ],
       "evidence": [
         "validate-prd-quality.ps1: Pass",
-        "jsDelivr x-jsd-version为8f454a5569aeac91c35b47b7f54b4311422aef12",
-        "图片Markdown数4、固定SHA地址数4、远程通过数4"
+        "validate-prd-images.ps1 -VerifyRemote: PASS",
+        "自定义口径断言全部true"
       ],
       "validation": "passed",
       "error": null,
@@ -244,11 +232,11 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 6,
+      "attempt": 7,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\ai生成\\【Prd】《盖世游戏》游戏盲盒需求.md",
-          "sha256": "EDD550606A9DAC910CDC3B94E5788A78E660DFF563190B50C1FC458FCE0AA511"
+          "sha256": "738C1FA0BCEDDD345C9EA769C8065736FA2090514948A5202A70E199EBC949DA"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\demos\\首页与探索\\游戏盲盒demo.html",
@@ -256,16 +244,17 @@
         }
       ],
       "outputs": [
-        "PRD、Demo、截图和发布状态一致性评审通过"
+        "V1.7 PRD语义与Demo/状态卡一致",
+        "不新增B端、直接启动、Steam登录引导、奖励或后台配置"
       ],
       "evidence": [
-        "4张图均位于C端详细设计图示列",
-        "固定提交地址无本地路径、可变分支或旧SHA残留",
-        "严格视觉像素门禁未通过事实仍保留"
+        "候选池≥2、统一game_id去重、30天权重、未下载概率封顶30%、同轮不重复均保留",
+        "首位4封面聚合卡、固定弹窗实例、100ms局部轮换、固定查看详情/再抽一次均保留",
+        "Android横竖屏、五语言、24小时启动与5分钟有效游玩归因均保留"
       ],
       "validation": "passed",
       "error": null,
-      "reviewer": "Codex产品评审"
+      "reviewer": "Codex产品文档评审"
     },
     {
       "id": "S8",
@@ -277,32 +266,21 @@
         "S6",
         "S7"
       ],
-      "status": "passed",
-      "attempt": 6,
+      "status": "running",
+      "attempt": 7,
       "inputHashes": [
         {
-          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-38-game-blind-box.md",
-          "sha256": "3CB6283A7156A6C9D14E5018E4868602E99B614426620CDD40361628F4723303"
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\ai生成\\【Prd】《盖世游戏》游戏盲盒需求.md",
+          "sha256": "738C1FA0BCEDDD345C9EA769C8065736FA2090514948A5202A70E199EBC949DA"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\prd\\ai生成\\【Prd】《盖世游戏》游戏盲盒需求.md",
-          "sha256": "EDD550606A9DAC910CDC3B94E5788A78E660DFF563190B50C1FC458FCE0AA511"
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-38-game-blind-box.md",
+          "sha256": "24A337762DBA9FC34C097F4669082C62CBDCA3B3C5554CE6C244F3280CFA7456"
         }
       ],
-      "outputs": [
-        "源文件：V1.4 Demo、V1.6 PRD、设计、测试与状态卡已同步",
-        "机器验证：浏览器5/5、PRD 0/0、远程图片4/4通过",
-        "专业判断：PRD、Demo、截图与发布状态一致",
-        "Git：分支已推送，源图SHA 8f454a55，PRD SHA b3e0a414",
-        "公开预览：未验证，raw.githack连接失败且jsDelivr返回text/plain",
-        "远程资源：4张图片固定SHA地址均为HTTP 200和image/png"
-      ],
-      "evidence": [
-        "仅推送GUANWANGGAID-38的23个文件",
-        "GitHub远端分支已创建并更新",
-        "状态卡与发布结果对账完成"
-      ],
-      "validation": "passed_with_public_preview_unavailable",
+      "outputs": [],
+      "evidence": [],
+      "validation": null,
       "error": null,
       "reviewer": null
     }
