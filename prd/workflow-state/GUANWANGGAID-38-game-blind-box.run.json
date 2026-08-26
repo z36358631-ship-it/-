@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "runId": "be67ffde-965a-4db3-91e2-e883f6259cce",
   "requirementId": "GUANWANGGAID-38",
-  "revision": 59,
+  "revision": 68,
   "status": "passed",
   "createdAt": "2026-08-25T09:17:02.4877339Z",
-  "updatedAt": "2026-08-26T05:47:01.1984897Z",
+  "updatedAt": "2026-08-26T06:12:54.6354972Z",
   "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-38-game-blind-box.md",
-  "cardHash": "8B88313A6A8D2B2B33DA69E3AD10AF4FBD45E3DCCBBB2B0BD15CB14362BB1BE7",
+  "cardHash": "3CB6283A7156A6C9D14E5018E4868602E99B614426620CDD40361628F4723303",
   "contract": {
     "outOfScope": [
       "后台配置",
@@ -38,7 +38,8 @@
       "竖屏标题、数量与四个工具合并为同一行",
       "盲盒功能卡改为四款真实游戏封面聚合背景",
       "随机动画提速至约100ms每款并增加局部切换与命中收束",
-      "PRD按标准九章模板重组，不改变V1.4业务与交互规则"
+      "PRD按标准九章模板重组，不改变V1.4业务与交互规则",
+      "Git分支发布并将4张PRD截图替换为固定提交SHA地址"
     ],
     "inScope": [
       "Android竖屏游戏库入口",
@@ -165,19 +166,26 @@
         "S4"
       ],
       "status": "passed",
-      "attempt": 5,
+      "attempt": 6,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\ai生成\\【Prd】《盖世游戏》游戏盲盒需求.md",
-          "sha256": "F98DE9C6552290B51850D7A9A628013F5008FC327941A3875A1873AD609097DB"
+          "sha256": "EDD550606A9DAC910CDC3B94E5788A78E660DFF563190B50C1FC458FCE0AA511"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-38-game-blind-box.md",
+          "sha256": "3CB6283A7156A6C9D14E5018E4868602E99B614426620CDD40361628F4723303"
         }
       ],
       "outputs": [
-        "V1.5标准九章PRD"
+        "V1.6 PRD",
+        "4张固定SHA图片",
+        "Git发布状态已同步"
       ],
       "evidence": [
-        "补齐模块设计、非功能、运营、上线后更新、验收与待确认项",
-        "仅C端，无空B端章节"
+        "图片提交8f454a5569aeac91c35b47b7f54b4311422aef12",
+        "PRD提交b3e0a414fc79c0b3e096ad655b2c54ab5edaee90",
+        "分支codex/guanwanggaid-38-game-blind-box-v1-5"
       ],
       "validation": "passed",
       "error": null,
@@ -191,21 +199,38 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 5,
+      "attempt": 6,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\ai生成\\【Prd】《盖世游戏》游戏盲盒需求.md",
-          "sha256": "F98DE9C6552290B51850D7A9A628013F5008FC327941A3875A1873AD609097DB"
+          "sha256": "EDD550606A9DAC910CDC3B94E5788A78E660DFF563190B50C1FC458FCE0AA511"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\game-blind-box\\01-library-entry-portrait.png",
+          "sha256": "2DDD7E8E506F7FA54AADFE466E8B2317AA38C591B954EEAA2CB70D9467A3427E"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\game-blind-box\\02-result-portrait.png",
+          "sha256": "C07732EAD3C2C0107A6914AB6B36720B0773A0E011E5E29F048860F00E41A4EA"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\game-blind-box\\03-library-entry-landscape.png",
+          "sha256": "A0C2F8FD1CDD1A2EC3541D8A841A258FF5D08C8A7C2AA961ABC8ABC24E0A3CFD"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\game-blind-box\\04-result-landscape.png",
+          "sha256": "EB7D52F67C2BB306997F21E0C9A2B139EDE5950CEE04E793D20355B6DCD63676"
         }
       ],
       "outputs": [
         "PRD质量0 error/0 warning",
-        "章节结构检查通过"
+        "4/4固定图片HTTP 200且image/png",
+        "浏览器测试5/5 PASS"
       ],
       "evidence": [
         "validate-prd-quality.ps1: Pass",
-        "九章标题与C端详细设计表存在",
-        "无本地图片地址冒充远程地址"
+        "jsDelivr x-jsd-version为8f454a5569aeac91c35b47b7f54b4311422aef12",
+        "图片Markdown数4、固定SHA地址数4、远程通过数4"
       ],
       "validation": "passed",
       "error": null,
@@ -219,11 +244,11 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 5,
+      "attempt": 6,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\ai生成\\【Prd】《盖世游戏》游戏盲盒需求.md",
-          "sha256": "F98DE9C6552290B51850D7A9A628013F5008FC327941A3875A1873AD609097DB"
+          "sha256": "EDD550606A9DAC910CDC3B94E5788A78E660DFF563190B50C1FC458FCE0AA511"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\demos\\首页与探索\\游戏盲盒demo.html",
@@ -231,12 +256,12 @@
         }
       ],
       "outputs": [
-        "产品逻辑、文档语义、Demo一致性评审通过"
+        "PRD、Demo、截图和发布状态一致性评审通过"
       ],
       "evidence": [
-        "V1.4业务规则未改变",
-        "入口、随机、结果、异常、横竖屏、五语言与埋点口径前后一致",
-        "未新增后台、奖励、入口或启动路径"
+        "4张图均位于C端详细设计图示列",
+        "固定提交地址无本地路径、可变分支或旧SHA残留",
+        "严格视觉像素门禁未通过事实仍保留"
       ],
       "validation": "passed",
       "error": null,
@@ -253,31 +278,31 @@
         "S7"
       ],
       "status": "passed",
-      "attempt": 5,
+      "attempt": 6,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-38-game-blind-box.md",
-          "sha256": "8B88313A6A8D2B2B33DA69E3AD10AF4FBD45E3DCCBBB2B0BD15CB14362BB1BE7"
+          "sha256": "3CB6283A7156A6C9D14E5018E4868602E99B614426620CDD40361628F4723303"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\ai生成\\【Prd】《盖世游戏》游戏盲盒需求.md",
-          "sha256": "F98DE9C6552290B51850D7A9A628013F5008FC327941A3875A1873AD609097DB"
+          "sha256": "EDD550606A9DAC910CDC3B94E5788A78E660DFF563190B50C1FC458FCE0AA511"
         }
       ],
       "outputs": [
-        "源文件：V1.5 PRD与状态卡已同步",
-        "机器验证：PRD质量0 error/0 warning",
-        "专业判断：产品逻辑与Demo一致性通过",
-        "Git：未执行",
-        "公开预览：未执行",
-        "远程资源：未执行，4张图待Git发布授权"
+        "源文件：V1.4 Demo、V1.6 PRD、设计、测试与状态卡已同步",
+        "机器验证：浏览器5/5、PRD 0/0、远程图片4/4通过",
+        "专业判断：PRD、Demo、截图与发布状态一致",
+        "Git：分支已推送，源图SHA 8f454a55，PRD SHA b3e0a414",
+        "公开预览：未验证，raw.githack连接失败且jsDelivr返回text/plain",
+        "远程资源：4张图片固定SHA地址均为HTTP 200和image/png"
       ],
       "evidence": [
-        "Demo与截图无需修改",
-        "PRD图片未使用本地或可变分支地址冒充公开资源",
-        "当前工作流必需步骤全部通过"
+        "仅推送GUANWANGGAID-38的23个文件",
+        "GitHub远端分支已创建并更新",
+        "状态卡与发布结果对账完成"
       ],
-      "validation": "passed_with_remote_images_pending_authorization",
+      "validation": "passed_with_public_preview_unavailable",
       "error": null,
       "reviewer": null
     }
