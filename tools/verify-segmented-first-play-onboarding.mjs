@@ -194,18 +194,42 @@ async function savedFirstPlay() {
   return page.evaluate(() => JSON.parse(localStorage.getItem('gamehub_first_play_onboarding_v1')));
 }
 
+const canonicalStages = new Set(['login', 'library', 'scan', 'file_select', 'import', 'game_select', 'download', 'install', 'launch']);
+const canonicalResults = new Set(['success', 'failure', 'cancel']);
+
 function assertStageResults(events, pathName, expectedStages) {
-  const stageEvents = events.filter(event => event.name === 'first_play_stage_result' && event.result === 'success' && event.path === pathName);
-  assert.deepEqual(stageEvents.map(event => event.stage), expectedStages, `${pathName} 成功阶段顺序不正确`);
-  const keys = stageEvents.map(event => `${event.path}|${event.stage}|${event.game_id ?? ''}`);
-  assert.equal(new Set(keys).size, keys.length, `${pathName} 成功阶段不得重复上报`);
-  for (const event of stageEvents) {
-    assert.equal(typeof event.market, 'string', `${pathName}/${event.stage} 缺少 market`);
-    assert.equal(typeof event.path, 'string', `${pathName}/${event.stage} 缺少 path`);
-    assert.equal(typeof event.stage, 'string', `${pathName}/${event.stage} 缺少 stage`);
-    assert.equal(Object.hasOwn(event, 'game_id'), true, `${pathName}/${event.stage} 缺少 game_id`);
-    assert.equal(typeof event.updatedAt, 'string', `${pathName}/${event.stage} 缺少 updatedAt`);
+  const allStageEvents = events.filter(event => event.name === 'first_play_stage_result');
+  for (const event of allStageEvents) {
+    assert.equal(canonicalStages.has(event.stage), true, `出现非 canonical 阶段: ${event.stage}`);
+    assert.equal(canonicalResults.has(event.result), true, `出现非法 result: ${event.result}`);
+    assert.equal(typeof event.market, 'string', `${event.path}/${event.stage} 缺少 market`);
+    assert.equal(typeof event.path, 'string', `${event.path}/${event.stage} 缺少 path`);
+    assert.equal(Object.hasOwn(event, 'failure_reason'), true, `${event.path}/${event.stage} 缺少 failure_reason`);
+    assert.equal(Object.hasOwn(event, 'game_id'), true, `${event.path}/${event.stage} 缺少 game_id`);
+    if (event.result === 'success') assert.equal(event.failure_reason, null, `${event.path}/${event.stage} success 的 failure_reason 必须为 null`);
   }
+  const stageEvents = allStageEvents.filter(event => event.result === 'success' && event.path === pathName);
+  assert.deepEqual(stageEvents.map(event => event.stage), expectedStages, `${pathName} canonical 成功阶段顺序不正确`);
+  const keys = allStageEvents.map(event => `${event.path}|${event.stage}|${event.result}|${event.failure_reason ?? ''}|${event.game_id ?? ''}`);
+  assert.equal(new Set(keys).size, keys.length, 'stage_result 必须按完整合同幂等');
+  assert.equal(stageEvents.some(event => ['permission_pending', 'scanning', 'downloading'].includes(event.stage)), false, '细粒度 UI 状态不得上报 success stage_result');
+}
+
+function assertLaunchSession(events, pathName) {
+  const requests = events.filter(event => event.name === 'game_launch_request' && event.path === pathName);
+  const ready = events.filter(event => event.name === 'playable_ready' && event.path === pathName);
+  assert.equal(requests.length, 1, `${pathName} 必须且只能创建一个启动请求`);
+  assert.equal(ready.length, 1, `${pathName} 必须且只能完成一个 playable_ready`);
+  assert.equal(typeof requests[0].launch_session_id, 'string');
+  assert(requests[0].launch_session_id.length > 8, `${pathName} launch_session_id 不可为空`);
+  assert.equal(ready[0].launch_session_id, requests[0].launch_session_id, `${pathName} 请求和可玩事件必须属于同一启动会话`);
+  assert.equal(typeof requests[0].launch_source, 'string');
+  assert.equal(typeof ready[0].launch_source, 'string');
+  assert.equal(typeof requests[0].market, 'string');
+  assert.equal(typeof ready[0].market, 'string');
+  assert.equal(typeof requests[0].elapsed_ms, 'number');
+  assert.equal(typeof ready[0].elapsed_ms, 'number');
+  assert(ready[0].elapsed_ms >= requests[0].elapsed_ms);
 }
 
 function assertFailureResult(events, pathName, stage, reason) {
@@ -276,6 +300,11 @@ await capturePhone('steam-library-portrait.png');
 await page.locator('[data-steam-game]').first().click();
 assert.equal(await page.locator('#pageGameLaunch.active').count(), 1);
 assert.equal((await savedFirstPlay()).firstPlayStage, 'launch_requested');
+const steamLaunchSessionId = (await savedFirstPlay()).launchSessionId;
+assert.equal(typeof steamLaunchSessionId, 'string');
+assert.equal((await eventSnapshot()).filter(event => event.name === 'game_launch_request' && event.path === 'steam').length, 1);
+await page.evaluate(() => requestGameLaunch('steam', onboardingFlow.firstPlayGameId));
+assert.equal((await savedFirstPlay()).launchSessionId, steamLaunchSessionId, '同一待启动动作不得创建新 session');
 assert.equal((await eventSnapshot()).filter(event => event.name === 'game_launch_request' && event.path === 'steam').length, 1);
 assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false, '点击 Steam 游戏不得提前记可玩');
 await page.locator('[data-action="enter-playable-scene"]').click();
@@ -285,7 +314,8 @@ assert.equal(eventSnapshots.steam.filter(event => event.name === 'playable_ready
 await page.evaluate(() => markPlayable('steam', onboardingFlow.firstPlayGameId));
 assert.equal((await eventSnapshot()).filter(event => event.name === 'playable_ready' && event.path === 'steam').length, 1, 'Steam playable_ready 必须幂等');
 eventSnapshots.steam = await eventSnapshot();
-assertStageResults(eventSnapshots.steam, 'steam', ['selected', 'login_success', 'content_ready', 'game_selected', 'launch_requested', 'playable']);
+assertStageResults(eventSnapshots.steam, 'steam', ['login', 'library', 'game_select', 'launch']);
+assertLaunchSession(eventSnapshots.steam, 'steam');
 
 // 本地文件：添加游戏弹窗 -> 扫描结果 -> 选文件 -> 导入库 -> 启动 -> 可玩
 await resetJourney();
@@ -319,7 +349,8 @@ assert.equal((await eventSnapshot()).some(event => event.name === 'playable_read
 await page.locator('[data-action="enter-playable-scene"]').click();
 eventSnapshots.local_file = await eventSnapshot();
 assert.equal(eventSnapshots.local_file.filter(event => event.name === 'playable_ready' && event.path === 'local_file').length, 1);
-assertStageResults(eventSnapshots.local_file, 'local_file', ['selected', 'permission_pending', 'scanning', 'scan_result', 'file_selected', 'import_success', 'content_ready', 'game_selected', 'launch_requested', 'playable']);
+assertStageResults(eventSnapshots.local_file, 'local_file', ['scan', 'file_select', 'import', 'library', 'game_select', 'launch']);
+assertLaunchSession(eventSnapshots.local_file, 'local_file');
 
 // 手动选择只是文件选择阶段，不等于导入成功
 await resetJourney();
@@ -335,7 +366,7 @@ assert.equal((await savedFirstPlay()).firstPlayStage, 'file_unsupported');
 assert((await page.locator('#localImportError').innerText()).includes('.exe'));
 assert.equal(await page.locator('#localImportError [data-action="retry-local-error"]').innerText(), '重新选择');
 assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
-assertFailureResult(await eventSnapshot(), 'local_file', 'file_unsupported', 'file_unsupported');
+assertFailureResult(await eventSnapshot(), 'local_file', 'file_select', 'file_unsupported');
 await page.locator('#localImportError').scrollIntoViewIfNeeded();
 await assertInsidePhone('#localImportError', '不支持文件错误态');
 await capturePhone('local-file-unsupported-portrait.png');
@@ -357,7 +388,7 @@ await page.locator('[data-demo-error="import_failed"]').click();
 assert.equal((await savedFirstPlay()).firstPlayStage, 'import_failed');
 assert.equal(await page.locator('#localImportError [data-action="retry-local-error"]').innerText(), '重试导入');
 assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
-assertFailureResult(await eventSnapshot(), 'local_file', 'import_failed', 'import_failed');
+assertFailureResult(await eventSnapshot(), 'local_file', 'import', 'import_failed');
 await page.locator('#localImportError').scrollIntoViewIfNeeded();
 await assertInsidePhone('#localImportError', '导入失败错误态');
 await capturePhone('local-import-failed-portrait.png');
@@ -386,7 +417,27 @@ assert.equal((await eventSnapshot()).some(event => event.name === 'playable_read
 await page.locator('[data-action="enter-playable-scene"]').click();
 eventSnapshots.instant_play = await eventSnapshot();
 assert.equal(eventSnapshots.instant_play.filter(event => event.name === 'playable_ready' && event.path === 'instant_play').length, 1);
-assertStageResults(eventSnapshots.instant_play, 'instant_play', ['selected', 'content_ready', 'game_selected', 'launch_requested', 'playable']);
+assertStageResults(eventSnapshots.instant_play, 'instant_play', ['library', 'game_select', 'launch']);
+assertLaunchSession(eventSnapshots.instant_play, 'instant_play');
+
+// 海外下载竞态：旧任务切路后必须失效，不能覆盖 Steam 状态或上报下载成功
+await resetJourney('portrait', 'overseas');
+await page.locator('[data-first-play-path="no_asset"]').click();
+await page.locator('[data-free-download-game]').first().click();
+await page.locator('[data-action="start-free-download"]').click();
+const staleDownloadSessionId = (await savedFirstPlay()).downloadSessionId;
+assert.equal(typeof staleDownloadSessionId, 'string');
+await page.locator('.free-download-secondary[data-action="return-to-paths"]').click();
+await page.locator('[data-first-play-path="steam"]').click();
+await page.waitForTimeout(420);
+const afterStaleDownload = await savedFirstPlay();
+assert.equal(afterStaleDownload.firstPlayPath, 'steam');
+assert.equal(afterStaleDownload.firstPlayStage, 'selected');
+assert.equal(afterStaleDownload.firstPlayGameId, null);
+assert.equal(afterStaleDownload.downloadSessionId, null);
+const staleEvents = await eventSnapshot();
+assert.equal(staleEvents.some(event => event.name === 'first_play_stage_result' && event.stage === 'download' && event.result === 'success'), false, '失效下载不得上报 download success');
+assert.equal(staleEvents.some(event => event.name === 'first_play_stage_result' && event.path === 'steam' && ['download', 'install'].includes(event.stage)), false, '旧任务不得污染 Steam 事件');
 
 // 海外无资产：独立免费游戏下载，不得映射国内秒玩
 await resetJourney('portrait', 'overseas');
@@ -411,8 +462,9 @@ assert.equal((await savedFirstPlay()).firstPlayStage, 'download_selected');
 assert.equal(await page.locator('[data-action="start-free-download"]').isDisabled(), false);
 await page.locator('[data-action="start-free-download"]').click();
 assert.equal((await savedFirstPlay()).firstPlayStage, 'downloading');
+assert.equal(typeof (await savedFirstPlay()).downloadSessionId, 'string');
 assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false, '开始下载不得提前成功');
-await page.waitForFunction(() => onboardingFlow.firstPlayStage === 'downloaded');
+await page.waitForFunction(() => onboardingFlow.firstPlayStage === 'installed');
 assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false, '下载完成不得提前成功');
 await page.locator('[data-action="launch-downloaded-game"]').click();
 assert.equal(await page.locator('#pageGameLaunch.active').count(), 1, '下载后启动必须先进入独立加载页');
@@ -424,7 +476,8 @@ await page.locator('[data-action="enter-playable-scene"]').click();
 assert.equal(await page.locator('#playableTitle').innerText(), 'Game ready');
 eventSnapshots.free_download = await eventSnapshot();
 assert.equal(eventSnapshots.free_download.filter(event => event.name === 'playable_ready' && event.path === 'free_download').length, 1);
-assertStageResults(eventSnapshots.free_download, 'free_download', ['selected', 'content_ready', 'download_selected', 'downloading', 'downloaded', 'game_selected', 'launch_requested', 'playable']);
+assertStageResults(eventSnapshots.free_download, 'free_download', ['library', 'game_select', 'download', 'install', 'launch']);
+assertLaunchSession(eventSnapshots.free_download, 'free_download');
 
 // 失败状态由外部控制面板触发，用户可回到资产分流换路
 await resetJourney();
@@ -432,6 +485,7 @@ await page.locator('[data-first-play-path="steam"]').click();
 await page.locator('[data-demo-error="steam_login_failed"]').click();
 assert.equal(await page.locator('#steamLoginError:not([hidden])').count(), 1);
 assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
+assertFailureResult(await eventSnapshot(), 'steam', 'login', 'steam_login_failed');
 await page.locator('#steamLoginError [data-action="return-to-paths"]').click();
 assert.equal(await page.locator('#pageStartMethod.active').count(), 1);
 

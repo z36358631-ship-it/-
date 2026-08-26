@@ -1297,6 +1297,10 @@ function createDefaultOnboardingFlow(){
     firstPlayStage:null,
     firstPlayGameId:null,
     firstPlayCompleted:false,
+    launchSessionId:null,
+    launchStartedAt:null,
+    launchSource:null,
+    downloadSessionId:null,
     updatedAt:null,
     entryGroup:'new_user_onboarding',
     installId:getOrCreateInstallId(),
@@ -1317,9 +1321,11 @@ var existingFlow={
 window.demoEvents=[];
 var instantListExpanded=false;
 var localFileSelected=false;
-var firstPlaySuccessKeys=new Set();
+var stageResultKeys=new Set();
+var completedLaunchSessions=new Set();
+var launchSessionSequence=0;
 var steamLibraryView={query:'',sort:'recent',recentOnly:false};
-var freeDownloadTimer=null;
+var freeDownloadTask={version:0,timer:null};
 var FREE_DOWNLOAD_SPEED_MBPS=20;
 var FREE_DOWNLOAD_GAMES=[
   {gameId:'game_3',name:'Hades',sizeGb:15},
@@ -1334,21 +1340,42 @@ function currentFirstPlayMarket(){
   return onboardingFlow.market||(isOverseas?'overseas':'domestic');
 }
 
-function recordFirstPlayStageResult(stage,result,gameId,extra){
-  var normalizedGameId=gameId===undefined?(onboardingFlow.firstPlayGameId||null):(gameId||null);
-  var path=onboardingFlow.firstPlayPath;
-  var key=[path,stage,normalizedGameId||''].join('|');
-  if(result==='success'&&firstPlaySuccessKeys.has(key)) return false;
-  if(result==='success') firstPlaySuccessKeys.add(key);
-  emitDemoEvent('first_play_stage_result',Object.assign({
-    market:currentFirstPlayMarket(),
+var FIRST_PLAY_CANONICAL_STAGES=['login','library','scan','file_select','import','game_select','download','install','launch'];
+var FIRST_PLAY_CANONICAL_RESULTS=['success','failure','cancel'];
+
+function recordStageResult(stage,result,options){
+  if(!FIRST_PLAY_CANONICAL_STAGES.includes(stage)||!FIRST_PLAY_CANONICAL_RESULTS.includes(result)) return false;
+  options=options||{};
+  var normalizedGameId=Object.prototype.hasOwnProperty.call(options,'gameId')?(options.gameId||null):(onboardingFlow.firstPlayGameId||null);
+  var failureReason=result==='success'?null:(options.failureReason||null);
+  var path=options.path||onboardingFlow.firstPlayPath;
+  var key=[path,stage,result,failureReason||'',normalizedGameId||''].join('|');
+  if(stageResultKeys.has(key)) return false;
+  stageResultKeys.add(key);
+  emitDemoEvent('first_play_stage_result',{
+    market:options.market||currentFirstPlayMarket(),
     path:path,
     stage:stage,
     result:result,
+    failure_reason:failureReason,
     game_id:normalizedGameId,
+    launch_session_id:options.launchSessionId||onboardingFlow.launchSessionId||null,
     updatedAt:onboardingFlow.updatedAt||new Date().toISOString()
-  },extra||{}));
+  });
   return true;
+}
+
+function createSessionId(prefix){
+  launchSessionSequence+=1;
+  var uuid=window.crypto&&window.crypto.randomUUID?window.crypto.randomUUID():String(Date.now())+'_'+Math.random().toString(16).slice(2);
+  return prefix+'_'+uuid+'_'+launchSessionSequence;
+}
+
+function cancelFreeDownloadTask(){
+  freeDownloadTask.version+=1;
+  if(freeDownloadTask.timer) clearTimeout(freeDownloadTask.timer);
+  freeDownloadTask.timer=null;
+  onboardingFlow.downloadSessionId=null;
 }
 
 function setFirstPlayStage(stage,gameId){
@@ -1357,7 +1384,6 @@ function setFirstPlayStage(stage,gameId){
   onboardingFlow.updatedAt=new Date().toISOString();
   saveOnboardingFlow();
   renderFirstPlayOptions();
-  recordFirstPlayStageResult(stage,'success',gameId);
 }
 
 function renderSteamLibrary(){
@@ -1409,9 +1435,9 @@ function renderFreeDownloadPage(){
     status.textContent='Downloading the selected game…';
     primary.dataset.action='start-free-download';
     primary.textContent='Downloading…';
-  }else if(stage==='downloaded'){
+  }else if(stage==='downloaded'||stage==='installed'){
     progress.style.width='100%';
-    status.textContent='Download complete. The game is ready to launch.';
+    status.textContent=stage==='installed'?'Installation complete. The game is ready to launch.':'Download complete. Installing the game…';
     primary.dataset.action='launch-downloaded-game';
     primary.textContent='Launch game';
     primary.disabled=false;
@@ -1435,19 +1461,35 @@ function openFreeDownloadPage(){
 
 function selectFreeDownloadGame(gameId){
   if(!FREE_DOWNLOAD_GAMES.some(function(item){return item.gameId===gameId})) return;
+  cancelFreeDownloadTask();
   setFirstPlayStage('download_selected',gameId);
+  recordStageResult('game_select','success',{path:'free_download',gameId:gameId});
   renderFreeDownloadPage();
 }
 
 function startFreeDownload(){
   var gameId=onboardingFlow.firstPlayGameId;
   if(!gameId||onboardingFlow.firstPlayPath!=='free_download') return;
-  if(freeDownloadTimer) clearTimeout(freeDownloadTimer);
+  cancelFreeDownloadTask();
+  var token=++freeDownloadTask.version;
+  var sessionId=createSessionId('download');
+  var path='free_download';
+  var market=currentFirstPlayMarket();
+  onboardingFlow.downloadSessionId=sessionId;
   setFirstPlayStage('downloading',gameId);
   renderFreeDownloadPage();
-  freeDownloadTimer=setTimeout(function(){
-    freeDownloadTimer=null;
+  freeDownloadTask.timer=setTimeout(function(){
+    if(freeDownloadTask.version!==token||
+      onboardingFlow.downloadSessionId!==sessionId||
+      onboardingFlow.firstPlayPath!==path||
+      currentFirstPlayMarket()!==market||
+      onboardingFlow.firstPlayGameId!==gameId) return;
+    freeDownloadTask.timer=null;
+    onboardingFlow.downloadSessionId=null;
     setFirstPlayStage('downloaded',gameId);
+    recordStageResult('download','success',{path:path,market:market,gameId:gameId});
+    setFirstPlayStage('installed',gameId);
+    recordStageResult('install','success',{path:path,market:market,gameId:gameId});
     renderFreeDownloadPage();
   },280);
 }
@@ -1509,6 +1551,7 @@ function startLocalScan(){
 
 function completeLocalScan(){
   setFirstPlayStage('scan_result',null);
+  recordStageResult('scan','success',{path:'local_file',gameId:null});
   document.getElementById('localScanTitle').textContent='发现 1 个可导入游戏';
   document.getElementById('localScanDesc').textContent='选择有效的 .exe 主程序后再执行导入';
   document.getElementById('localScanResult').hidden=false;
@@ -1517,6 +1560,7 @@ function completeLocalScan(){
 function selectLocalExecutable(source){
   localFileSelected=true;
   setFirstPlayStage('file_selected','game_2');
+  recordStageResult('file_select','success',{path:'local_file',gameId:'game_2'});
   document.querySelector('[data-action="select-scanned-exe"]').setAttribute('aria-pressed','true');
   document.querySelector('[data-action="import-selected-game"]').disabled=false;
   if(source==='manual'){
@@ -1533,7 +1577,9 @@ function openManualFilePicker(){
 function importSelectedGame(){
   if(!localFileSelected) return;
   setFirstPlayStage('import_success','game_2');
+  recordStageResult('import','success',{path:'local_file',gameId:'game_2'});
   setFirstPlayStage('content_ready','game_2');
+  recordStageResult('library','success',{path:'local_file',gameId:'game_2'});
   openPcLibrary(false);
 }
 
@@ -1544,12 +1590,16 @@ function resolveFirstPlayPath(path,market){
 
 function chooseFirstPlayPath(path){
   if(!['steam','local_file','no_asset','browse'].includes(path)) return;
+  cancelFreeDownloadTask();
   var market=isOverseas?'overseas':'domestic';
   var resolvedPath=resolveFirstPlayPath(path,market);
   onboardingFlow.market=market;
   onboardingFlow.firstPlayPath=resolvedPath;
   onboardingFlow.firstPlayGameId=null;
   onboardingFlow.firstPlayCompleted=false;
+  onboardingFlow.launchSessionId=null;
+  onboardingFlow.launchStartedAt=null;
+  onboardingFlow.launchSource=null;
   onboardingFlow.state=path==='browse'?ONBOARDING_FLOW_STATES.COMPLETED:ONBOARDING_FLOW_STATES.DESTINATION;
   setFirstPlayStage('selected',null);
   emitDemoEvent('onboarding_start_method_select',{market:market,path:resolvedPath});
@@ -1558,6 +1608,7 @@ function chooseFirstPlayPath(path){
   if(resolvedPath==='steam') return openSteamLogin();
   if(resolvedPath==='local_file') return openPcLibrary(true);
   setFirstPlayStage('content_ready',null);
+  recordStageResult('library','success',{path:resolvedPath,market:market,gameId:null});
   if(resolvedPath==='free_download') return openFreeDownloadPage();
   instantListExpanded=false;
   renderInstantChannel();
@@ -1572,7 +1623,9 @@ function completeSteamBinding(){
     return;
   }
   setFirstPlayStage('login_success',null);
+  recordStageResult('login','success',{path:'steam',gameId:null});
   setFirstPlayStage('content_ready',null);
+  recordStageResult('library','success',{path:'steam',gameId:null});
   steamLibraryView={query:'',sort:'recent',recentOnly:false};
   document.getElementById('steamLibrarySearch').value='';
   document.querySelector('[data-action="steam-filter"]').setAttribute('aria-pressed','false');
@@ -1584,11 +1637,24 @@ function completeSteamBinding(){
 }
 
 function requestGameLaunch(path,gameId){
-  if(onboardingFlow.firstPlayStage==='launch_requested'&&onboardingFlow.firstPlayGameId===gameId) return;
+  if(onboardingFlow.firstPlayStage==='launch_requested'&&onboardingFlow.firstPlayGameId===gameId&&onboardingFlow.launchSessionId) return;
+  var sourceByPath={steam:'steam_library',local_file:'pc_library',instant_play:'instant_channel',free_download:'free_download'};
   onboardingFlow.firstPlayPath=path;
   setFirstPlayStage('game_selected',gameId);
+  recordStageResult('game_select','success',{path:path,gameId:gameId});
+  onboardingFlow.launchSessionId=createSessionId('launch');
+  onboardingFlow.launchStartedAt=Date.now();
+  onboardingFlow.launchSource=sourceByPath[path]||path;
   setFirstPlayStage('launch_requested',gameId);
-  emitDemoEvent('game_launch_request',{market:currentFirstPlayMarket(),path:path,game_id:gameId,updatedAt:onboardingFlow.updatedAt});
+  emitDemoEvent('game_launch_request',{
+    market:currentFirstPlayMarket(),
+    path:path,
+    game_id:gameId,
+    launch_session_id:onboardingFlow.launchSessionId,
+    launch_source:onboardingFlow.launchSource,
+    elapsed_ms:0,
+    updatedAt:onboardingFlow.updatedAt
+  });
   showLaunchPage(gameId);
 }
 
@@ -1607,8 +1673,10 @@ function showLaunchPage(gameId){
 }
 
 function markPlayable(path,gameId){
-  if(onboardingFlow.firstPlayCompleted&&onboardingFlow.firstPlayStage==='playable') return false;
+  var launchSessionId=onboardingFlow.launchSessionId;
+  if(!launchSessionId||completedLaunchSessions.has(launchSessionId)) return false;
   if(onboardingFlow.firstPlayStage!=='launch_requested') return false;
+  completedLaunchSessions.add(launchSessionId);
   onboardingFlow.firstPlayPath=path;
   onboardingFlow.firstPlayStage='playable';
   onboardingFlow.firstPlayGameId=gameId||null;
@@ -1616,8 +1684,16 @@ function markPlayable(path,gameId){
   onboardingFlow.state=ONBOARDING_FLOW_STATES.COMPLETED;
   onboardingFlow.updatedAt=new Date().toISOString();
   saveOnboardingFlow();
-  recordFirstPlayStageResult('playable','success',gameId||null);
-  emitDemoEvent('playable_ready',{path:path,game_id:gameId||null});
+  recordStageResult('launch','success',{path:path,gameId:gameId||null,launchSessionId:launchSessionId});
+  emitDemoEvent('playable_ready',{
+    market:currentFirstPlayMarket(),
+    path:path,
+    game_id:gameId||null,
+    launch_session_id:launchSessionId,
+    launch_source:onboardingFlow.launchSource,
+    elapsed_ms:Math.max(0,Date.now()-(onboardingFlow.launchStartedAt||Date.now())),
+    updatedAt:onboardingFlow.updatedAt
+  });
   var overseas=currentFirstPlayMarket()==='overseas';
   document.getElementById('playableTitle').textContent=overseas?'Game ready':'游戏已可操作';
   document.getElementById('playableDesc').textContent=overseas?'The game scene now accepts touch, keyboard, or controller input.':'已进入可接收键盘、触控或手柄输入的游戏场景，首次首玩在此收口。';
@@ -1627,13 +1703,13 @@ function markPlayable(path,gameId){
 }
 
 var FIRST_PLAY_ERRORS={
-  steam_login_failed:{elementId:'steamLoginError',message:'Steam 登录失败，请检查账号信息后重试',stage:'login_failed'},
-  steam_library_empty:{elementId:'steamLibraryError',message:'该账号暂未同步到可玩的 Steam 游戏',stage:'library_empty'},
-  permission_denied:{elementId:'localImportError',message:'未获得扫描权限，你仍可手动选择 .exe 文件或目录',stage:'permission_denied',retryLabel:'手动选择',recovery:'reselect'},
-  scan_empty:{elementId:'localImportError',message:'没有扫描到可导入的游戏程序，请重新选择 .exe 文件或目录',stage:'scan_empty',retryLabel:'重新选择',recovery:'reselect'},
-  file_unsupported:{elementId:'localImportError',message:'该文件不是可运行的游戏主程序，请重新选择 .exe 文件或包含主程序的目录',stage:'file_unsupported',retryLabel:'重新选择',recovery:'reselect'},
-  import_failed:{elementId:'localImportError',message:'导入失败，所选文件可能已移动或当前不可读取',stage:'import_failed',retryLabel:'重试导入',recovery:'retry_import'},
-  instant_launch_failed:{elementId:'instantPlayError',message:'启动失败，请重试或换一款游戏',stage:'launch_failed'}
+  steam_login_failed:{elementId:'steamLoginError',message:'Steam 登录失败，请检查账号信息后重试',stage:'login_failed',canonicalStage:'login'},
+  steam_library_empty:{elementId:'steamLibraryError',message:'该账号暂未同步到可玩的 Steam 游戏',stage:'library_empty',canonicalStage:'library'},
+  permission_denied:{elementId:'localImportError',message:'未获得扫描权限，你仍可手动选择 .exe 文件或目录',stage:'permission_denied',canonicalStage:'scan',retryLabel:'手动选择',recovery:'reselect'},
+  scan_empty:{elementId:'localImportError',message:'没有扫描到可导入的游戏程序，请重新选择 .exe 文件或目录',stage:'scan_empty',canonicalStage:'scan',retryLabel:'重新选择',recovery:'reselect'},
+  file_unsupported:{elementId:'localImportError',message:'该文件不是可运行的游戏主程序，请重新选择 .exe 文件或包含主程序的目录',stage:'file_unsupported',canonicalStage:'file_select',retryLabel:'重新选择',recovery:'reselect'},
+  import_failed:{elementId:'localImportError',message:'导入失败，所选文件可能已移动或当前不可读取',stage:'import_failed',canonicalStage:'import',retryLabel:'重试导入',recovery:'retry_import'},
+  instant_launch_failed:{elementId:'instantPlayError',message:'启动失败，请重试或换一款游戏',stage:'launch_failed',canonicalStage:'launch'}
 };
 
 function showFirstPlayError(code){
@@ -1652,7 +1728,7 @@ function showFirstPlayError(code){
     localRetry.dataset.recovery=error.recovery||'reselect';
   }
   element.hidden=false;
-  recordFirstPlayStageResult(error.stage,'failure',onboardingFlow.firstPlayGameId,{failure_reason:code});
+  recordStageResult(error.canonicalStage,'failure',{failureReason:code,gameId:onboardingFlow.firstPlayGameId});
 }
 
 function recoverLocalError(button){
@@ -1667,9 +1743,13 @@ function recoverLocalError(button){
 }
 
 function returnToFirstPlayPaths(){
+  cancelFreeDownloadTask();
   onboardingFlow.state=ONBOARDING_FLOW_STATES.START_METHOD;
   onboardingFlow.firstPlayStage=null;
   onboardingFlow.firstPlayGameId=null;
+  onboardingFlow.launchSessionId=null;
+  onboardingFlow.launchStartedAt=null;
+  onboardingFlow.launchSource=null;
   onboardingFlow.updatedAt=new Date().toISOString();
   saveOnboardingFlow();
   renderFirstPlayOptions();
@@ -2612,7 +2692,11 @@ document.addEventListener('click',function(event){
   if(event.target.closest('[data-action="launch-downloaded-game"]')) requestGameLaunch('free_download',onboardingFlow.firstPlayGameId);
   if(event.target.closest('[data-action="enter-playable-scene"]')) markPlayable(onboardingFlow.firstPlayPath,onboardingFlow.firstPlayGameId);
   if(event.target.closest('[data-action="cancel-launch"]')){
-    setFirstPlayStage(onboardingFlow.firstPlayPath==='free_download'?'downloaded':'content_ready',onboardingFlow.firstPlayGameId);
+    recordStageResult('launch','cancel',{failureReason:'user_cancelled',gameId:onboardingFlow.firstPlayGameId});
+    onboardingFlow.launchSessionId=null;
+    onboardingFlow.launchStartedAt=null;
+    onboardingFlow.launchSource=null;
+    setFirstPlayStage(onboardingFlow.firstPlayPath==='free_download'?'installed':'content_ready',onboardingFlow.firstPlayGameId);
     resumeFirstPlayPath();
   }
   var retry=event.target.closest('[data-action="retry-first-play"]');
@@ -2639,9 +2723,9 @@ window.addEventListener('online',function(){
 function resetAll(){
   localStorage.removeItem(ONBOARDING_SOURCE_KEY);
   localStorage.removeItem(EXISTING_FLOW_KEY);
-  if(freeDownloadTimer) clearTimeout(freeDownloadTimer);
-  freeDownloadTimer=null;
-  firstPlaySuccessKeys.clear();
+  cancelFreeDownloadTask();
+  stageResultKeys.clear();
+  completedLaunchSessions.clear();
   steamLibraryView={query:'',sort:'recent',recentOnly:false};
   onboardingFlow=createDefaultOnboardingFlow();
   onboardingFlow.market=isOverseas?'overseas':'domestic';
