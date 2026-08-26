@@ -117,6 +117,12 @@ assert.equal(
 );
 
 const phone = page.locator('.phone');
+async function capturePhone(name) {
+  if (!capture) return;
+  await page.waitForTimeout(450);
+  await phone.screenshot({ path: path.join(evidenceDir, name) });
+}
+
 const portraitGeometry = await phone.evaluate(node => {
   const rect = node.getBoundingClientRect();
   return { width: rect.width, height: rect.height, orientation: node.dataset.orientation };
@@ -124,7 +130,7 @@ const portraitGeometry = await phone.evaluate(node => {
 assert.equal(portraitGeometry.orientation, 'portrait');
 assert.equal(portraitGeometry.width, 390);
 assert.equal(portraitGeometry.height, 844);
-if (capture) await phone.screenshot({ path: path.join(evidenceDir, 'asset-entry-portrait.png') });
+await capturePhone('asset-entry-portrait.png');
 
 assert.equal(await page.locator('[data-set-orientation="landscape"]').count(), 1, '缺少横屏预览控制');
 await page.locator('[data-set-orientation="landscape"]').click();
@@ -157,7 +163,172 @@ for (const [index, rect] of landscapeGeometry.cards.entries()) {
 }
 assert(landscapeGeometry.browse.top >= landscapeGeometry.shell.top && landscapeGeometry.browse.bottom <= landscapeGeometry.shell.bottom, '横屏弱入口垂直越界');
 assert(landscapeGeometry.browse.width > 0 && landscapeGeometry.browse.height > 0, '横屏弱入口不可见');
-if (capture) await phone.screenshot({ path: path.join(evidenceDir, 'asset-entry-landscape.png') });
+await capturePhone('asset-entry-landscape.png');
+
+async function resetJourney(orientation = 'portrait') {
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  if (orientation === 'landscape') await page.locator('[data-set-orientation="landscape"]').click();
+  await page.locator('[data-action="start-new-user"]').click();
+  await page.locator('[data-onboarding-source-code="friend_referral"]').click();
+  await page.locator('[data-action="submit-onboarding-source"]').click();
+  await page.waitForTimeout(450);
+}
+
+async function eventSnapshot() {
+  return page.evaluate(() => window.demoEvents.map(event => ({ ...event })));
+}
+
+async function savedFirstPlay() {
+  return page.evaluate(() => JSON.parse(localStorage.getItem('gamehub_first_play_onboarding_v1')));
+}
+
+async function assertInsidePhone(selector, label) {
+  const geometry = await page.locator(selector).evaluate((node, shell) => {
+    const rect = node.getBoundingClientRect();
+    const shellRect = shell.getBoundingClientRect();
+    return {
+      visible: rect.width > 0 && rect.height > 0,
+      inside: rect.left >= shellRect.left && rect.right <= shellRect.right && rect.top >= shellRect.top && rect.bottom <= shellRect.bottom,
+    };
+  }, await phone.elementHandle());
+  assert.equal(geometry.visible, true, `${label} 不可见`);
+  assert.equal(geometry.inside, true, `${label} 超出 Shell`);
+}
+
+const eventSnapshots = {};
+
+// Steam：Sheet -> 内容库 -> 启动请求 -> 可玩场景
+await resetJourney();
+await page.locator('[data-first-play-path="steam"]').click();
+assert.equal(await page.locator('#pageSteamLogin.active').count(), 1);
+assert.equal(await page.locator('#steamLoginSheet[role="dialog"]').count(), 1);
+assert.equal(await page.locator('#steamLoginSheet [data-steam-asset]').evaluateAll(nodes => nodes.length === 2 && nodes.every(node => node.src.startsWith('data:image/svg+xml;base64,'))), true);
+assert.equal(await page.locator('#steamLoginSheet [data-action="simulate-steam-failure"]').count(), 0, '用户 Sheet 不得出现模拟失败');
+await capturePhone('steam-sheet-portrait.png');
+await page.locator('#steamUsername').fill('gamehub_player');
+await page.locator('#steamPassword').fill('demo-password');
+await page.locator('[data-action="steam-bind-success"]').click();
+assert.equal(await page.locator('#pageSteamLibrary.active').count(), 1);
+assert.equal(await page.locator('.steam-account-summary').count(), 1);
+assert((await page.locator('[data-steam-game]').count()) >= 4);
+assert.equal(await page.locator('[data-steam-game] [data-action="steam-launch"]').count(), 0, 'Steam 卡内不得新增启动按钮');
+assert.equal((await savedFirstPlay()).firstPlayStage, 'content_ready');
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
+await capturePhone('steam-library-portrait.png');
+await page.locator('[data-steam-game]').first().click();
+assert.equal(await page.locator('#pageGameLaunch.active').count(), 1);
+assert.equal((await savedFirstPlay()).firstPlayStage, 'launch_requested');
+assert.equal((await eventSnapshot()).filter(event => event.name === 'game_launch_request' && event.path === 'steam').length, 1);
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false, '点击 Steam 游戏不得提前记可玩');
+await page.locator('[data-action="enter-playable-scene"]').click();
+assert.equal(await page.locator('#pagePlayableScene.active [data-playable-input]').count(), 1);
+eventSnapshots.steam = await eventSnapshot();
+assert.equal(eventSnapshots.steam.filter(event => event.name === 'playable_ready' && event.path === 'steam').length, 1);
+await page.evaluate(() => markPlayable('steam', onboardingFlow.firstPlayGameId));
+assert.equal((await eventSnapshot()).filter(event => event.name === 'playable_ready' && event.path === 'steam').length, 1, 'Steam playable_ready 必须幂等');
+
+// 本地文件：添加游戏弹窗 -> 扫描结果 -> 选文件 -> 导入库 -> 启动 -> 可玩
+await resetJourney();
+await page.locator('[data-first-play-path="local_file"]').click();
+assert.equal(await page.locator('#pagePcLibrary.active').count(), 1);
+assert.equal(await page.locator('#addGameDialog:not([hidden])').count(), 1);
+assert.deepEqual(await page.locator('#addGameDialog [data-import-source]').evaluateAll(nodes => nodes.map(node => node.dataset.importSource)), ['local', 'steam']);
+await capturePhone('local-add-dialog-portrait.png');
+await page.locator('[data-import-source="local"]').click();
+assert.equal(await page.locator('#pageLocalScan.active').count(), 1);
+assert.equal((await savedFirstPlay()).firstPlayStage, 'permission_pending');
+await page.locator('[data-action="grant-scan-permission"]').click();
+await page.waitForSelector('#localScanResult:not([hidden])');
+assert.equal((await savedFirstPlay()).firstPlayStage, 'scan_result');
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
+assert((await page.locator('#localScanResult').innerText()).includes('.exe'));
+await page.locator('[data-action="select-scanned-exe"]').click();
+assert.equal((await savedFirstPlay()).firstPlayStage, 'file_selected');
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
+await page.locator('[data-action="import-selected-game"]').click();
+assert.equal(await page.locator('#pagePcLibrary.active').count(), 1);
+assert.equal(await page.locator('#addGameDialog').isHidden(), true);
+assert.equal(await page.locator('[data-local-game]').count(), 1);
+assert.equal((await savedFirstPlay()).firstPlayStage, 'content_ready');
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false, '完成导入不得提前记可玩');
+await capturePhone('local-library-portrait.png');
+await page.locator('[data-local-game]').click();
+assert.equal((await savedFirstPlay()).firstPlayStage, 'launch_requested');
+assert.equal((await eventSnapshot()).filter(event => event.name === 'game_launch_request' && event.path === 'local_file').length, 1);
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
+await page.locator('[data-action="enter-playable-scene"]').click();
+eventSnapshots.local_file = await eventSnapshot();
+assert.equal(eventSnapshots.local_file.filter(event => event.name === 'playable_ready' && event.path === 'local_file').length, 1);
+
+// 手动选择只是文件选择阶段，不等于导入成功
+await resetJourney();
+await page.locator('[data-first-play-path="local_file"]').click();
+await page.locator('[data-import-source="local"]').click();
+await page.locator('[data-action="open-manual-file-picker"]').click();
+assert.equal((await savedFirstPlay()).firstPlayStage, 'file_picker');
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
+
+// 国内秒玩：完整频道 -> 查看更多 -> 启动请求 -> 可玩
+await resetJourney();
+await page.locator('[data-first-play-path="no_asset"]').click();
+assert.equal(await page.locator('#pageInstantPlay.active').count(), 1);
+for (const selector of ['.instant-search', '.instant-channel-tabs', '.instant-time-card', '.instant-hot', '.instant-rooms', '.instant-all', '.instant-bottom-nav']) {
+  assert.equal(await page.locator(selector).count(), 1, `秒玩频道缺少 ${selector}`);
+}
+assert((await page.locator('.instant-time-card').innerText()).includes('15 分钟'));
+await capturePhone('instant-channel-portrait.png');
+const beforeMore = await page.locator('[data-instant-list-game]').count();
+await page.locator('[data-action="instant-more"]').click();
+assert((await page.locator('[data-instant-list-game]').count()) > beforeMore);
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false, '查看更多不得记完成');
+await page.locator('[data-instant-game]').first().click();
+assert.equal((await savedFirstPlay()).firstPlayStage, 'launch_requested');
+assert.equal((await eventSnapshot()).filter(event => event.name === 'game_launch_request' && event.path === 'instant_play').length, 1);
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false, '点击秒玩不得提前记可玩');
+await page.locator('[data-action="enter-playable-scene"]').click();
+eventSnapshots.instant_play = await eventSnapshot();
+assert.equal(eventSnapshots.instant_play.filter(event => event.name === 'playable_ready' && event.path === 'instant_play').length, 1);
+
+// 失败状态由外部控制面板触发，用户可回到资产分流换路
+await resetJourney();
+await page.locator('[data-first-play-path="steam"]').click();
+await page.locator('[data-demo-error="steam_login_failed"]').click();
+assert.equal(await page.locator('#steamLoginError:not([hidden])').count(), 1);
+assert.equal((await eventSnapshot()).some(event => event.name === 'playable_ready'), false);
+await page.locator('#steamLoginError [data-action="return-to-paths"]').click();
+assert.equal(await page.locator('#pageStartMethod.active').count(), 1);
+
+// 横屏关键页几何与截图
+await resetJourney('landscape');
+await page.locator('[data-first-play-path="steam"]').click();
+await assertInsidePhone('#steamLoginSheet', '横屏 Steam Sheet');
+await assertInsidePhone('[data-action="steam-bind-success"]', '横屏 Steam 绑定按钮');
+await capturePhone('steam-sheet-landscape.png');
+await page.locator('#steamUsername').fill('gamehub_player');
+await page.locator('#steamPassword').fill('demo-password');
+await page.locator('[data-action="steam-bind-success"]').click();
+await assertInsidePhone('.steam-library-toolbar', '横屏 Steam 库工具栏');
+await assertInsidePhone('[data-steam-game]:first-child', '横屏 Steam 游戏卡');
+await capturePhone('steam-library-landscape.png');
+
+await resetJourney('landscape');
+await page.locator('[data-first-play-path="local_file"]').click();
+await assertInsidePhone('#addGameDialog', '横屏添加游戏弹窗');
+await capturePhone('local-add-dialog-landscape.png');
+await page.locator('[data-import-source="local"]').click();
+await page.locator('[data-action="grant-scan-permission"]').click();
+await page.waitForSelector('#localScanResult:not([hidden])');
+await page.locator('[data-action="select-scanned-exe"]').click();
+await page.locator('[data-action="import-selected-game"]').click();
+await assertInsidePhone('[data-local-game]', '横屏本地游戏卡');
+await capturePhone('local-library-landscape.png');
+
+await resetJourney('landscape');
+await page.locator('[data-first-play-path="no_asset"]').click();
+await assertInsidePhone('.instant-time-card', '横屏秒玩时长卡');
+await assertInsidePhone('#instantHotGrid [data-instant-game]:first-child', '横屏热门秒玩卡');
+await capturePhone('instant-channel-landscape.png');
 assert.deepEqual(pageErrors, []);
 
 await browser.close();

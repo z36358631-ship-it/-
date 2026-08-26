@@ -495,6 +495,59 @@ body[data-demo-orientation="landscape"] .demo-view-switch{right:12px;width:200px
 .home-card{height:126px;border-radius:var(--r-lg);padding:14px;display:flex;align-items:flex-end;font-size:13px;font-weight:520;background:linear-gradient(145deg,#3d1a0e,#151515)}
 .home-card:nth-child(2){background:linear-gradient(145deg,#163322,#151515)}
 
+/* 首玩三路径：Steam Sheet、平台库、本地导入、秒玩频道与可玩收口 */
+.flow-topbar{min-height:50px;display:flex;align-items:center;gap:12px;padding:0 20px;flex-shrink:0}
+.flow-back,.flow-close{width:34px;height:34px;border:0;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.07);color:#f4f6fa;font:500 20px/1 var(--font);cursor:pointer}
+.flow-topbar h2{font-size:20px;line-height:28px;font-weight:650}.flow-topbar__spacer{flex:1}
+.flow-text-action{border:0;background:transparent;color:#79bffc;font:500 12px/18px var(--font);cursor:pointer}
+.first-play-error{margin-top:10px;padding:10px 12px;border:1px solid rgba(255,92,100,.34);border-radius:12px;background:rgba(255,92,100,.09);color:#ffb8bd;font-size:11px;line-height:17px}
+.first-play-error__actions{display:flex;gap:12px;margin-top:7px}.first-play-error button{border:0;background:none;color:#fff;font:600 11px/16px var(--font);cursor:pointer}
+
+/* Steam 登录：screen-06 C-SHEET */
+.steam-login-background{position:absolute;inset:0;padding:64px 24px;background:radial-gradient(circle at 50% 22%,#303033,#0c0c0e 56%);color:rgba(255,255,255,.26)}
+.steam-login-background__avatar{width:54px;height:54px;margin:40px auto 12px;border-radius:50%;background:#3c2b30}
+.steam-login-background__name{text-align:center;font-size:16px}.steam-login-background__card{height:144px;margin-top:34px;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:rgba(255,255,255,.03)}
+.steam-sheet-mask{position:absolute;z-index:4;inset:0;display:flex;align-items:flex-end;background:rgba(0,0,0,.54);backdrop-filter:blur(2px)}
+.steam-login-sheet{position:relative;width:100%;max-height:73%;padding:18px 20px 16px;border:1px solid rgba(255,255,255,.11);border-radius:24px 24px 0 0;background:linear-gradient(145deg,#272729,#171719);box-shadow:0 -18px 60px rgba(0,0,0,.52);overflow:auto}
+.steam-sheet-close{position:absolute;z-index:2;top:14px;right:15px;width:32px;height:32px;border:0;background:none;color:#9da0a7;font-size:26px;cursor:pointer}
+.steam-login-title{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;font-size:18px;font-weight:700}.steam-login-title img{width:34px;height:34px}
+.steam-login-grid{display:grid;gap:10px}.steam-qr-area{text-align:center}.steam-qr{width:102px;height:102px;padding:5px;border-radius:12px;background:#eee}.steam-qr-area p{margin-top:7px;color:#d6d7db;font-size:11px}.steam-account-toggle{margin-top:7px;border:0;background:none;color:#44a9ff;font:500 12px/18px var(--font)}
+.steam-login-fields{display:grid;gap:8px}.steam-field label{display:block;margin-bottom:4px;color:#b7b9c0;font-size:11px}.steam-field input{width:100%;height:38px;padding:0 12px;border:1px solid rgba(255,255,255,.09);border-radius:9px;background:#3a3a3d;color:#fff;font:400 12px var(--font);outline:none}.steam-field input:focus{border-color:#2bc3df}
+.steam-remember{display:flex;align-items:center;gap:7px;color:#b7b9c0;font-size:11px}.steam-remember input{accent-color:#269acb}
+.steam-bind{width:100%;height:44px;margin-top:9px;border:1px solid #2bc3df;border-radius:14px;background:linear-gradient(180deg,#0aa2d0,#0273b7);box-shadow:inset 0 -2px 0 rgba(113,223,255,.3),0 0 16px rgba(21,164,215,.2);color:#fff;font:650 14px var(--font);cursor:pointer}
+.steam-privacy{margin-top:7px;color:#858991;font-size:9px;line-height:14px;text-align:center}
+
+/* Steam 个人库内容态 */
+.steam-library-page,.pc-library-page{height:100%;padding:48px 18px 16px;background:linear-gradient(180deg,#292929,#111 46%,#090909);overflow:hidden}
+.steam-library-header{display:flex;align-items:center;gap:10px}.steam-library-header h2{font-size:23px}.steam-library-header__actions{margin-left:auto;display:flex;gap:8px}.library-icon-btn{width:34px;height:34px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:#303033;color:#dfe3e8;font:600 12px var(--font)}
+.steam-profile-tabs{display:flex;gap:22px;margin:18px 0 14px;color:#919397;font-size:13px}.steam-profile-tabs strong{position:relative;color:#fff}.steam-profile-tabs strong::after{content:'';position:absolute;left:50%;bottom:-7px;width:20px;height:3px;border-radius:3px;background:#eee;transform:translateX(-50%)}
+.steam-account-summary{display:grid;grid-template-columns:48px 1fr;gap:12px;padding:13px;border-radius:17px;background:rgba(255,255,255,.065)}
+.steam-account-avatar{width:48px;height:48px;border:1px solid rgba(255,255,255,.15);border-radius:50%;display:grid;place-items:center;color:#fff;font-size:24px}.steam-account-main strong{display:block;font-size:16px}.steam-account-state{display:inline-flex;margin-top:5px;padding:3px 8px;border-radius:8px;background:rgba(0,199,119,.13);color:#58dfa9;font-size:10px}
+.steam-account-stats{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);padding-top:10px;border-top:1px solid rgba(255,255,255,.08)}.steam-account-stats span{text-align:center;color:#93969c;font-size:9px}.steam-account-stats b{display:block;margin-top:3px;color:#f5f6f8;font-size:15px}
+.steam-library-content{min-height:0;display:flex;flex-direction:column}.steam-library-toolbar{display:flex;align-items:center;gap:7px;margin:14px 0 10px}.steam-library-toolbar strong{font-size:16px;white-space:nowrap}.steam-library-toolbar span{color:#96989e;font-size:11px}.steam-library-search{margin-left:auto;width:33px;height:33px;border:0;border-radius:10px;background:#303033;color:#fff}.steam-library-sort{height:33px;max-width:115px;padding:0 10px;border:0;border-radius:10px;background:#303033;color:#d4d6db;font:500 10px var(--font);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.steam-game-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;overflow:auto;padding-bottom:18px}.steam-game-card,.local-library-card{border:1px solid rgba(255,255,255,.09);border-radius:15px;background:#1b1b1d;color:#fff;text-align:left;overflow:hidden;cursor:pointer}.steam-game-card img{width:100%;aspect-ratio:1.6;object-fit:cover;display:block}.steam-game-card__info{padding:9px}.steam-game-card__info strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}.steam-game-card__info span{display:block;margin-top:5px;color:#92959b;font-size:10px}
+
+/* PC 游戏库 + screen-22 添加游戏 */
+.pc-library-page{background:#050506}.pc-platform-tabs{display:flex;gap:19px;color:#85878d;font-size:13px;font-weight:600;white-space:nowrap}.pc-platform-tabs strong{color:#fff}.pc-library-tools{display:flex;gap:8px;margin-top:16px}.pc-library-search{height:38px;flex:1;padding:0 13px;border:1px solid #29292c;border-radius:18px;background:#111113;color:#fff}.pc-add-game{width:100%;height:42px;margin-top:10px;border:1px solid #29292c;border-radius:11px;background:#111113;color:#d8dadd;font:600 12px var(--font);cursor:pointer}.pc-library-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.local-library-card img{width:100%;aspect-ratio:1.55;object-fit:cover;display:block}.local-library-card div{padding:10px}.local-library-card strong{display:block;font-size:12px}.local-library-card span{display:block;margin-top:4px;color:#8e9197;font-size:10px}.pc-library-empty{grid-column:1/-1;padding:56px 10px;color:#696b70;font-size:12px;text-align:center}
+.dialog-layer{position:absolute;z-index:6;inset:0;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.64)}.add-game-dialog{position:relative;width:330px;padding:17px;border:1px solid rgba(255,255,255,.12);border-radius:22px;background:linear-gradient(145deg,#292b2d,#1a1b1d);box-shadow:0 24px 60px rgba(0,0,0,.58)}.add-game-dialog h3{margin-bottom:15px;font-size:18px}.dialog-close{position:absolute;top:10px;right:11px;width:30px;height:30px;border:0;background:none;color:#aaa;font-size:24px}.import-source-list{display:grid;gap:10px}.import-source-card{min-height:86px;padding:13px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:linear-gradient(135deg,#3b3d40,#292a2c);color:#fff;display:flex;align-items:center;gap:13px;text-align:left;cursor:pointer}.import-source-icon{width:48px;height:48px;border-radius:13px;background:rgba(255,255,255,.09);display:grid;place-items:center;flex:0 0 48px}.import-source-icon img{width:34px;height:34px}.import-source-card strong{display:block;font-size:14px}.import-source-card span{display:block;margin-top:5px;color:#b0b3b9;font-size:11px;line-height:16px}
+
+/* 本地扫描与导入 */
+.local-scan-page{height:100%;padding:48px 18px 18px;background:radial-gradient(circle at 50% 24%,#193047,#090a0c 55%);overflow:auto}.local-scan-hero{text-align:center;padding:26px 8px 18px}.local-scan-art{width:74px;height:74px;margin:0 auto 15px;border-radius:22px;background:rgba(123,173,222,.12);display:grid;place-items:center}.local-scan-art .asset-folder-glyph{transform:scale(1.25)}.local-scan-hero h2{font-size:20px}.local-scan-hero p{margin-top:7px;color:#9aa1ab;font-size:11px}.local-scan-actions{display:grid;gap:9px}.local-primary,.local-secondary{height:43px;border-radius:14px;font:600 12px var(--font);cursor:pointer}.local-primary{border:1px solid #2bc3df;background:linear-gradient(180deg,#099ccc,#026da8);color:#fff}.local-secondary{border:1px solid rgba(255,255,255,.1);background:#24262a;color:#e0e3e7}.local-scan-result,.manual-picker{margin-top:14px;padding:13px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(25,27,31,.88)}.local-file-row{width:100%;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid transparent;border-radius:12px;background:#303238;color:#fff;text-align:left}.local-file-row[aria-pressed="true"]{border-color:#2bc3df;background:#263a43}.local-file-badge{width:39px;height:39px;border-radius:10px;background:#45719c;display:grid;place-items:center;font:700 10px var(--font)}.local-file-row strong{display:block;font-size:12px}.local-file-row span{display:block;max-width:220px;margin-top:3px;color:#a7abb2;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.local-import-submit{width:100%;height:41px;margin-top:10px;border:0;border-radius:13px;background:var(--gold);color:#111;font:700 12px var(--font)}.local-import-submit:disabled{background:#3b3c3f;color:#777}
+
+/* screen-11 国内秒玩频道 */
+.instant-page{height:100%;padding:48px 0 58px;background:radial-gradient(circle at 50% 0,#4a182d,#0b090a 52%);overflow:hidden}.instant-header{padding:0 14px}.instant-search{height:40px;padding:0 14px;border:1px solid rgba(255,255,255,.14);border-radius:20px;background:rgba(255,255,255,.06);color:#bfc0c5;display:flex;align-items:center;font-size:11px}.instant-channel-tabs{display:flex;gap:20px;margin-top:14px;color:#9a8b92;font-size:13px}.instant-channel-tabs strong{position:relative;color:#fff}.instant-channel-tabs strong::after{content:'';position:absolute;left:50%;bottom:-8px;width:20px;height:3px;background:#fff;border-radius:3px;transform:translateX(-50%)}.instant-scroll{height:calc(100% - 78px);padding:17px 14px 30px;overflow:auto}.instant-time-card{display:grid;grid-template-columns:1fr auto;gap:8px;padding:13px;border:1px solid rgba(255,255,255,.12);border-radius:17px;background:linear-gradient(145deg,rgba(105,38,70,.86),rgba(73,29,48,.78))}.instant-time-card strong{font-size:14px}.instant-time-card p{margin-top:5px;color:#d7bdc8;font-size:10px}.instant-time-value{align-self:center;padding:7px 10px;border-radius:13px;background:rgba(255,255,255,.09);color:#fff;font-size:12px}.instant-section{margin-top:15px}.instant-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}.instant-section-head h3{font-size:15px}.instant-section-head button{border:0;background:none;color:#dca7bd;font:500 11px var(--font)}.instant-hot-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.instant-game-card{border:1px solid rgba(255,255,255,.1);border-radius:14px;background:#291a20;color:#fff;text-align:left;overflow:hidden;cursor:pointer}.instant-game-card img{width:100%;aspect-ratio:1.45;object-fit:cover;display:block}.instant-game-card strong{display:block;padding:8px 8px 3px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.instant-game-card span{display:block;padding:0 8px 8px;color:#d4aabc;font-size:9px}.instant-room-card{display:grid;grid-template-columns:84px 1fr;gap:10px;padding:9px;border:1px solid rgba(255,255,255,.09);border-radius:14px;background:#25191e}.instant-room-card img{width:84px;height:62px;border-radius:10px;object-fit:cover}.instant-room-card strong{font-size:12px}.instant-room-card p{margin-top:5px;color:#a9959e;font-size:9px}.instant-list{display:grid;gap:8px}.instant-list-row{display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:9px;border:0;background:transparent;color:#fff;text-align:left}.instant-list-row img{width:46px;height:55px;border-radius:9px;object-fit:cover}.instant-list-row strong{display:block;font-size:11px}.instant-list-row span{display:block;margin-top:4px;color:#9d9096;font-size:9px}.instant-list-row b{padding:6px 10px;border-radius:13px;background:#3b3035;font-size:9px}.instant-bottom-nav{position:absolute;z-index:3;left:0;right:0;bottom:0;height:56px;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;border-top:1px solid rgba(255,255,255,.08);background:rgba(14,13,14,.96);color:#8e8b8d;font-size:9px;text-align:center}.instant-bottom-nav strong{color:#fff}.instant-bottom-nav span{display:block;margin-top:3px}
+
+/* 启动请求与可玩场景 */
+.launch-page,.playable-page{height:100%;padding:58px 24px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 22%,#24384c,#08090b 58%);text-align:center}.launch-cover{width:130px;height:176px;border-radius:18px;object-fit:cover;box-shadow:0 18px 42px rgba(0,0,0,.5)}.launch-spinner{width:30px;height:30px;margin-top:20px;border:3px solid rgba(255,255,255,.13);border-top-color:#2bc3df;border-radius:50%;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.launch-page h2{margin-top:13px;font-size:20px}.launch-page p{margin-top:6px;color:#9ba4ae;font-size:11px}.launch-enter{width:220px;height:44px;margin-top:18px;border:1px solid #2bc3df;border-radius:14px;background:linear-gradient(180deg,#0aa2d0,#0273b7);color:#fff;font:650 13px var(--font)}.launch-cancel{margin-top:10px;border:0;background:none;color:#8e949c;font:500 11px var(--font)}.playable-stage{width:100%;max-width:330px;aspect-ratio:1.55;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:linear-gradient(145deg,#214260,#101923);display:grid;place-items:center;box-shadow:inset 0 0 50px rgba(47,155,205,.13)}.playable-stage:focus{outline:2px solid #2bc3df;outline-offset:4px}.playable-stage strong{font-size:18px}.playable-page p{margin-top:16px;color:#a9b3be;font-size:11px}
+
+/* 三条路径的独立横屏布局 */
+.phone[data-orientation="landscape"] .steam-login-sheet{width:472px;height:100%;max-height:none;margin-left:auto;padding:16px 22px;border-radius:22px 0 0 22px}.phone[data-orientation="landscape"] .steam-login-title{margin-bottom:7px}.phone[data-orientation="landscape"] .steam-login-grid{grid-template-columns:142px 1fr;align-items:start;gap:14px}.phone[data-orientation="landscape"] .steam-qr{width:88px;height:88px}.phone[data-orientation="landscape"] .steam-login-fields{gap:6px}.phone[data-orientation="landscape"] .steam-field input{height:34px}.phone[data-orientation="landscape"] .steam-bind{height:38px;margin-top:6px}.phone[data-orientation="landscape"] .steam-privacy{margin-top:4px}.phone[data-orientation="landscape"] .steam-login-background{width:56%;padding:42px 28px}
+.phone[data-orientation="landscape"] .steam-library-page{display:grid;grid-template-columns:238px minmax(0,1fr);grid-template-rows:auto auto 1fr;gap:0 18px;padding:38px 26px 16px}.phone[data-orientation="landscape"] .steam-library-header,.phone[data-orientation="landscape"] .steam-profile-tabs{grid-column:1/-1}.phone[data-orientation="landscape"] .steam-profile-tabs{margin:4px 0 10px}.phone[data-orientation="landscape"] .steam-account-summary{grid-column:1;grid-row:3;align-self:start}.phone[data-orientation="landscape"] .steam-library-content{grid-column:2;grid-row:3}.phone[data-orientation="landscape"] .steam-library-toolbar{margin:0 0 8px}.phone[data-orientation="landscape"] .steam-game-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.phone[data-orientation="landscape"] .steam-game-card img{aspect-ratio:1.7}.phone[data-orientation="landscape"] .steam-game-card__info{padding:7px}
+.phone[data-orientation="landscape"] .pc-library-page{padding:42px 28px 14px}.phone[data-orientation="landscape"] .pc-library-tools{width:58%;margin-top:10px}.phone[data-orientation="landscape"] .pc-add-game{width:58%;margin-top:8px}.phone[data-orientation="landscape"] .pc-library-grid{grid-template-columns:repeat(4,minmax(0,1fr));width:70%;margin-top:9px}.phone[data-orientation="landscape"] .add-game-dialog{width:560px}.phone[data-orientation="landscape"] .import-source-list{grid-template-columns:repeat(2,1fr)}
+.phone[data-orientation="landscape"] .local-scan-page{display:grid;grid-template-columns:1fr 1.1fr;gap:22px;padding:42px 34px 18px}.phone[data-orientation="landscape"] .local-scan-page .flow-topbar{position:absolute;top:34px;left:8px}.phone[data-orientation="landscape"] .local-scan-hero{align-self:center}.phone[data-orientation="landscape"] .local-scan-workspace{align-self:center;max-height:340px;overflow:auto}
+.phone[data-orientation="landscape"] .instant-page{padding:38px 0 0}.phone[data-orientation="landscape"] .instant-header{display:grid;grid-template-columns:280px 1fr;align-items:center;gap:18px;padding:0 26px}.phone[data-orientation="landscape"] .instant-channel-tabs{margin:0}.phone[data-orientation="landscape"] .instant-scroll{height:calc(100% - 55px);display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:12px 26px 18px}.phone[data-orientation="landscape"] .instant-overview,.phone[data-orientation="landscape"] .instant-secondary{min-height:0;overflow:auto}.phone[data-orientation="landscape"] .instant-bottom-nav{display:none}.phone[data-orientation="landscape"] .instant-hot-grid{grid-template-columns:repeat(3,1fr)}
+.phone[data-orientation="landscape"] .launch-page,.phone[data-orientation="landscape"] .playable-page{padding:36px 40px;flex-direction:row;gap:28px;text-align:left}.phone[data-orientation="landscape"] .launch-cover{width:150px;height:204px}.phone[data-orientation="landscape"] .launch-copy{width:320px}.phone[data-orientation="landscape"] .playable-stage{width:480px}.phone[data-orientation="landscape"] .playable-page p{width:250px;margin:0}
+
 /* Demo顶层视图 */
 [hidden]{display:none!important}
 .client-demo-shell{width:100%;min-height:calc(100vh - 88px);display:flex;align-items:center;justify-content:center}
@@ -670,6 +723,118 @@ body[data-demo-orientation="landscape"] .demo-view-switch{right:12px;width:200px
     </div>
     <button type="button" class="first-play-browse" data-action="browse-home">先逛逛首页</button>
   </div>
+</div>
+
+<!-- Steam：screen-06 背景页 + 底部登录 Sheet -->
+<div class="page" id="pageSteamLogin" data-visual-source="screen-06">
+  <div class="steam-login-background" aria-hidden="true">
+    <div class="steam-login-background__avatar"></div>
+    <div class="steam-login-background__name">盖世游戏玩家</div>
+    <div class="steam-login-background__card"></div>
+  </div>
+  <div class="steam-sheet-mask">
+    <section class="steam-login-sheet" id="steamLoginSheet" role="dialog" aria-modal="true" aria-labelledby="steamLoginTitle">
+      <button type="button" class="steam-sheet-close" data-action="return-to-paths" aria-label="关闭">×</button>
+      <h2 class="steam-login-title" id="steamLoginTitle"><img data-steam-asset="logo" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNi4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iMzU1LjY2NnB4IiBoZWlnaHQ9Ijg5LjMzM3B4IiB2aWV3Qm94PSIwIDAgMzU1LjY2NiA4OS4zMzMiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDM1NS42NjYgODkuMzMzIg0KCSB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxnPg0KCTxwYXRoIGZpbGw9IiNDNUMzQzAiIGQ9Ik00NC4yMzgsMC42MDFDMjEsMC42MDEsMS45NjMsMTguNTE5LDAuMTU0LDQxLjI5bDIzLjcxLDkuODAzYzIuMDA5LTEuMzc0LDQuNDM2LTIuMTc5LDcuMDQ3LTIuMTc5DQoJCWMwLjIzNCwwLDAuNDY3LDAuMDA4LDAuNjk4LDAuMDIxbDEwLjU0NC0xNS4yODNjMC0wLjA3My0wLjAwMS0wLjE0NC0wLjAwMS0wLjIxNmMwLTkuMTk5LDcuNDgzLTE2LjY4MywxNi42ODMtMTYuNjgzDQoJCWM5LjE5OSwwLDE2LjY4Miw3LjQ4NCwxNi42ODIsMTYuNjgzYzAsOS4xOTktNy40ODMsMTYuNjg0LTE2LjY4MiwxNi42ODRjLTAuMTI3LDAtMC4yNTMtMC4wMDMtMC4zNzktMC4wMDZsLTE1LjAzOCwxMC43Mw0KCQljMC4wMDgsMC4xOTUsMC4wMTUsMC4zOTQsMC4wMTUsMC41OTJjMCw2LjkwNi01LjYxNywxMi41MjItMTIuNTIyLDEyLjUyMmMtNi4wNjEsMC0xMS4xMjktNC4zMjYtMTIuMjc3LTEwLjA1NUwxLjY3OCw1Ni44OTMNCgkJYzUuMjUsMTguNTY4LDIyLjMwOSwzMi4xODEsNDIuNTYsMzIuMTgxYzI0LjQzMiwwLDQ0LjIzNy0xOS44MDYsNDQuMjM3LTQ0LjIzNUM4OC40NzUsMjAuNDA2LDY4LjY2OSwwLjYwMSw0NC4yMzgsMC42MDEiLz4NCgk8cGF0aCBmaWxsPSIjQzVDM0MwIiBkPSJNMjcuODc1LDY3LjcyM2wtNS40MzQtMi4yNDVjMC45NjMsMi4wMDUsMi42MjksMy42ODQsNC44NDEsNC42MDZjNC43ODIsMS45OTIsMTAuMjk1LTAuMjc3LDEyLjI4OC01LjA2Mw0KCQljMC45NjUtMi4zMTQsMC45NzEtNC44NjksMC4wMTQtNy4xODljLTAuOTU1LTIuMzIxLTIuNzU3LTQuMTMxLTUuMDc0LTUuMDk3Yy0yLjI5OS0wLjk1Ny00Ljc2Mi0wLjkyMi02LjkyNi0wLjEwNWw1LjYxMywyLjMyMQ0KCQljMy41MjcsMS40Nyw1LjE5NSw1LjUyLDMuNzI1LDkuMDQ3QzM1LjQ1NSw2Ny41MjYsMzEuNDAyLDY5LjE5NCwyNy44NzUsNjcuNzIzIi8+DQoJPHBhdGggZmlsbD0iI0M1QzNDMCIgZD0iTTY5Ljk1LDMzLjQzNmMwLTYuMTI5LTQuOTg2LTExLjExNi0xMS4xMTYtMTEuMTE2Yy02LjEyOSwwLTExLjExNiw0Ljk4Ny0xMS4xMTYsMTEuMTE2DQoJCWMwLDYuMTMsNC45ODcsMTEuMTE1LDExLjExNiwxMS4xMTVDNjQuOTY0LDQ0LjU1LDY5Ljk1LDM5LjU2NSw2OS45NSwzMy40MzYgTTUwLjUwMiwzMy40MTdjMC00LjYxMiwzLjczOS04LjM1LDguMzUxLTguMzUNCgkJYzQuNjEyLDAsOC4zNTEsMy43MzgsOC4zNTEsOC4zNXMtMy43MzksOC4zNS04LjM1MSw4LjM1QzU0LjI0MSw0MS43NjcsNTAuNTAyLDM4LjAyOCw1MC41MDIsMzMuNDE3Ii8+DQoJPHBhdGggZmlsbD0iI0M1QzNDMCIgZD0iTTEzNS43MTgsMzAuODY4bC0yLjk2NCw1LjIxYy0yLjI4My0xLjU5NS01LjM3Ny0yLjU1NS04LjA3OC0yLjU1NWMtMy4wODcsMC00Ljk5NywxLjI3OC00Ljk5NywzLjU2Nw0KCQljMCwyLjc4MSwzLjM5MywzLjQyOCw4LjQzNiw1LjIzOGM1LjQyMSwxLjkxNyw4LjUzNyw0LjE3LDguNTM3LDkuMTM1YzAsNi43OTMtNS4zNDIsMTAuNjA4LTEzLjAyLDEwLjYwOA0KCQljLTMuNzQyLDAtOC4yNTYtMC45NjYtMTEuNzI2LTMuMDc3bDIuMTYyLTUuNzc2YzIuODE5LDEuNDg5LDYuMTkxLDIuMzcyLDkuMTk3LDIuMzcyYzQuMDUyLDAsNS45NzgtMS40OTUsNS45NzgtMy43MDUNCgkJYzAtMi41MjktMi45MzctMy4yODktNy42NzgtNC44NTljLTUuNDAzLTEuODA0LTkuMTQ3LTQuMTcxLTkuMTQ3LTkuNjY2YzAtNi4xOTcsNC45NjMtOS43NTYsMTIuMTA0LTkuNzU2DQoJCUMxMjkuNDk5LDI3LjYwNCwxMzMuNDk5LDI5LjE4MSwxMzUuNzE4LDMwLjg2OCIvPg0KCTxwb2x5Z29uIGZpbGw9IiNDNUMzQzAiIHBvaW50cz0iMTU4Ljg4OCwzNC4xNjEgMTU4Ljg4OCw2MS41IDE1MS45MDksNjEuNSAxNTEuOTA5LDM0LjE2MSAxNDEuNzc5LDM0LjE2MSAxNDEuNzc5LDI4LjE3NSANCgkJMTY4Ljk4OCwyOC4xNzUgMTY4Ljk4OCwzNC4xNjEgCSIvPg0KCTxwb2x5Z29uIGZpbGw9IiNDNUMzQzAiIHBvaW50cz0iMTgzLjcsMzQuMTQzIDE4My43LDQxLjY1MiAxOTcuMDU2LDQxLjY1MiAxOTcuMDU2LDQ3LjYzOCAxODMuNyw0Ny42MzggMTgzLjcsNTUuNDU5IA0KCQkxOTkuMTk2LDU1LjQ1OSAxOTkuMTk2LDYxLjUgMTc2LjcyMyw2MS41IDE3Ni43MjMsMjguMTc1IDE5OS4xOTYsMjguMTc1IDE5OS4xOTYsMzQuMTQzIAkiLz4NCgk8cGF0aCBmaWxsPSIjQzVDM0MwIiBkPSJNMjE0Ljc3Myw1NS4wM2wtMi4yMDYsNi40NzFoLTcuMzE2bDEyLjQ5NS0zMy4zMjVoNy4wMjVMMjM3LjYxOSw2MS41aC03LjU2M2wtMi4yNTQtNi40NzFIMjE0Ljc3M3oNCgkJIE0yMjEuMjE5LDM2LjEyNWwtNC41NTEsMTMuMzQzaDkuMTk2TDIyMS4yMTksMzYuMTI1eiIvPg0KCTxwb2x5Z29uIGZpbGw9IiNDNUMzQzAiIHBvaW50cz0iMjczLjQzNiw0MS4wNTYgMjY0LjMxNiw2MC41MjkgMjYwLjM3OCw2MC41MjkgMjUxLjQwNiw0MS4yMyAyNTEuNDA2LDYxLjUgMjQ0LjcyMyw2MS41IA0KCQkyNDQuNzIzLDI4LjE3NSAyNTEuMzkxLDI4LjE3NSAyNjIuNTkxLDUyLjIzMSAyNzMuMzkzLDI4LjE3NSAyODAuMTE5LDI4LjE3NSAyODAuMTE5LDYxLjUgMjczLjQzNyw2MS41IAkiLz4NCgk8cGF0aCBmaWxsPSIjQzVDM0MwIiBkPSJNMjkzLjYxMSwzMi4zNzljMCwyLjg2NC0yLjE0Niw0LjY0OS00LjYwOSw0LjY0OWMtMi40NzIsMC00LjYyMy0xLjc4NS00LjYyMy00LjY0OQ0KCQljMC0yLjg2MywyLjE1MS00LjYzNiw0LjYyMy00LjYzNkMyOTEuNDY2LDI3Ljc0MywyOTMuNjExLDI5LjUxNiwyOTMuNjExLDMyLjM3OSBNMjg1LjE1NCwzMi4zNzljMCwyLjM5NiwxLjcyNiwzLjkwMSwzLjg0OCwzLjkwMQ0KCQljMi4xMTQsMCwzLjgzMy0xLjUwNSwzLjgzMy0zLjkwMWMwLTIuNDAzLTEuNzE5LTMuODg1LTMuODMzLTMuODg1QzI4Ni44ODYsMjguNDk0LDI4NS4xNTQsMjkuOTk0LDI4NS4xNTQsMzIuMzc5IE0yODkuMDY2LDMwLjAxDQoJCWMxLjE5NSwwLDEuNTk3LDAuNjMyLDEuNTk3LDEuMzE1YzAsMC42MjYtMC4zNzEsMS4wNDYtMC44MjMsMS4yNmwxLjA3MSwyLjAwN2gtMC44NzdsLTAuOTAzLTEuNzc5SDI4OC4ydjEuNzc5aC0wLjczVjMwLjAxDQoJCUgyODkuMDY2eiBNMjg4LjIwNywzMi4xNDJoMC44MTRjMC41MjcsMCwwLjgzOC0wLjMzMSwwLjgzOC0wLjc0N2MwLTAuNDItMC4yMjMtMC42OS0wLjg0LTAuNjloLTAuODEzVjMyLjE0MnoiLz4NCjwvZz4NCjwvc3ZnPg0K" alt=""><span>STEAM 登录</span></h2>
+      <div class="steam-login-grid">
+        <div class="steam-qr-area">
+          <img class="steam-qr" data-steam-asset="qr" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJTdGVhbSDmiYvmnLrlupTnlKjnmbvlvZXkuoznu7TnoIEiPgogIDx0aXRsZT5TdGVhbSBsb2dpbiBRUiBjb2RlPC90aXRsZT4KICA8ZGVzYz5odHRwczovL2dhaXNoaS1nYW1laHViLW1hYy52ZXJjZWwuYXBwL2JpZ3NjcmVlbi5odG1sPC9kZXNjPgogIDxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMjgiIGZpbGw9IiNmZmZmZmYiLz4KICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0NiA0Nikgc2NhbGUoMC44NTE5MjY5Nzc2ODc2MjY4KSI+CiAgICA8ZyBpZD0iZWxlbWVudHMiPgogICAgCQk8cGF0aCBzdHlsZT0iZmlsbDpyZ2IoMCwgMCwgMCkiIGQ9Ik0gMCwwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNywwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNCwwIGwgMTcsMCAwLDE3IC0xNywwIHogTSA1MSwwIGwgMTcsMCAwLDE3IC0xNywwIHogTSA2OCwwIGwgMTcsMCAwLDE3IC0xNywwIHogTSA4NSwwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMDIsMCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTg3LDAgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDIzOCwwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNzIsMCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMjg5LDAgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDMwNiwwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzMjMsMCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzc0LDAgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM5MSwwIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MDgsMCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNDI1LDAgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQ0MiwwIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NTksMCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNDc2LDAgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDAsMTcgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDEwMiwxNyBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTM2LDE3IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNTMsMTcgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE3MCwxNyBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMjA0LDE3IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNTUsMTcgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM3NCwxNyBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNDc2LDE3IGwgMTcsMCAwLDE3IC0xNywwIHogTSAwLDM0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNCwzNCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNTEsMzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDY4LDM0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMDIsMzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE1MywzNCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTcwLDM0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNTUsMzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDMyMywzNCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzc0LDM0IGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MDgsMzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQyNSwzNCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNDQyLDM0IGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NzYsMzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDAsNTEgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM0LDUxIGwgMTcsMCAwLDE3IC0xNywwIHogTSA1MSw1MSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNjgsNTEgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDEwMiw1MSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTM2LDUxIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNzAsNTEgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDIyMSw1MSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMjU1LDUxIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNzIsNTEgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI4OSw1MSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzc0LDUxIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MDgsNTEgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQyNSw1MSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNDQyLDUxIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NzYsNTEgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDAsNjggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM0LDY4IGwgMTcsMCAwLDE3IC0xNywwIHogTSA1MSw2OCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNjgsNjggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDEwMiw2OCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTg3LDY4IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMjEsNjggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI3Miw2OCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMjg5LDY4IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzMDYsNjggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDMyMyw2OCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzQwLDY4IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNzQsNjggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQwOCw2OCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNDI1LDY4IGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NDIsNjggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQ3Niw2OCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMCw4NSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTAyLDg1IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMzYsODUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE1Myw4NSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTcwLDg1IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMDQsODUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDIyMSw4NSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMjM4LDg1IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNTUsODUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI3Miw4NSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzQwLDg1IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNzQsODUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQ3Niw4NSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMCwxMDIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE3LDEwMiBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzQsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSA1MSwxMDIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDY4LDEwMiBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gODUsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMDIsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMzYsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNzAsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMDQsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMzgsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNzIsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzMDYsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNDAsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNzQsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzOTEsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MDgsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MjUsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NDIsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NTksMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NzYsMTAyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNTMsMTE5IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMDQsMTE5IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMzgsMTE5IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNTUsMTE5IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNDAsMTE5IGwgMTcsMCAwLDE3IC0xNywwIHogTSAwLDEzNiBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTcsMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNCwxMzYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDUxLDEzNiBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNjgsMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMDIsMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMTksMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMzYsMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNTMsMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxODcsMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMDQsMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMjEsMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMzgsMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNTUsMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyODksMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNDAsMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNTcsMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzOTEsMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MjUsMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NTksMTM2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNCwxNTMgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDUxLDE1MyBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNjgsMTUzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMTksMTUzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMzYsMTUzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxODcsMTUzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNzIsMTUzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzMDYsMTUzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzMjMsMTUzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNDAsMTUzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNTcsMTUzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNzQsMTUzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzOTEsMTUzIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MDgsMTUzIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NzYsMTUzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAwLDE3MCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTcsMTcwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMDIsMTcwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMTksMTcwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMzYsMTcwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNzAsMTcwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMDQsMTcwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMjEsMTcwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNTUsMTcwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzMDYsMTcwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNTcsMTcwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNzQsMTcwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzOTEsMTcwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAwLDE4NyBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTcsMTg3IGwgMTcsMCAwLDE3IC0xNywwIHogTSA2OCwxODcgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDg1LDE4NyBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTE5LDE4NyBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTg3LDE4NyBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMjcyLDE4NyBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzU3LDE4NyBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNDA4LDE4NyBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNDI1LDE4NyBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNDU5LDE4NyBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMCwyMDQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE3LDIwNCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gODUsMjA0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMDIsMjA0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMzYsMjA0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNTMsMjA0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNzAsMjA0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxODcsMjA0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMDQsMjA0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMjEsMjA0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMzgsMjA0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyODksMjA0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzMjMsMjA0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzOTEsMjA0IGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MjUsMjA0IGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NDIsMjA0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNywyMjEgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDY4LDIyMSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTE5LDIyMSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTM2LDIyMSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTg3LDIyMSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMjA0LDIyMSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMjIxLDIyMSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzA2LDIyMSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzIzLDIyMSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzQwLDIyMSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzU3LDIyMSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzc0LDIyMSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzkxLDIyMSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNDA4LDIyMSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNDc2LDIyMSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMCwyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE3LDIzOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzQsMjM4IGwgMTcsMCAwLDE3IC0xNywwIHogTSA4NSwyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDEwMiwyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDExOSwyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE1MywyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE3MCwyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDIwNCwyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI1NSwyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI4OSwyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDMwNiwyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM0MCwyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM1NywyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM3NCwyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM5MSwyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQwOCwyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQyNSwyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQ0MiwyMzggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE3LDI1NSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzQsMjU1IGwgMTcsMCAwLDE3IC0xNywwIHogTSA1MSwyNTUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDExOSwyNTUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDEzNiwyNTUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE1MywyNTUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE3MCwyNTUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE4NywyNTUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDIzOCwyNTUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI1NSwyNTUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI3MiwyNTUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM0MCwyNTUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQ1OSwyNTUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDAsMjcyIGwgMTcsMCAwLDE3IC0xNywwIHogTSA2OCwyNzIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDEwMiwyNzIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDEzNiwyNzIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE3MCwyNzIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE4NywyNzIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDIwNCwyNzIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDIyMSwyNzIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDIzOCwyNzIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI4OSwyNzIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDMwNiwyNzIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM1NywyNzIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQyNSwyNzIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQ0MiwyNzIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDAsMjg5IGwgMTcsMCAwLDE3IC0xNywwIHogTSA1MSwyODkgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE4NywyODkgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI3MiwyODkgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI4OSwyODkgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDMwNiwyODkgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDMyMywyODkgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM0MCwyODkgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM1NywyODkgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM3NCwyODkgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM5MSwyODkgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQwOCwyODkgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQ0MiwyODkgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQ3NiwyODkgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDAsMzA2IGwgMTcsMCAwLDE3IC0xNywwIHogTSA1MSwzMDYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDEwMiwzMDYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDExOSwzMDYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDIyMSwzMDYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDIzOCwzMDYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI1NSwzMDYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI3MiwzMDYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI4OSwzMDYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM0MCwzMDYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM3NCwzMDYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM5MSwzMDYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQwOCwzMDYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQ0MiwzMDYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDAsMzIzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNCwzMjMgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDY4LDMyMyBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gODUsMzIzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMTksMzIzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMzYsMzIzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNzAsMzIzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMzgsMzIzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNTUsMzIzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNzIsMzIzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzMDYsMzIzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNDAsMzIzIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MDgsMzIzIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NTksMzIzIGwgMTcsMCAwLDE3IC0xNywwIHogTSAwLDM0MCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNTEsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMDIsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMzYsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNTMsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNzAsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMDQsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMjEsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMzgsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNTUsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyODksMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzMjMsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNDAsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNTcsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNzQsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzOTEsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MDgsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NDIsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NTksMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NzYsMzQwIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMzYsMzU3IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxODcsMzU3IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMzgsMzU3IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNzIsMzU3IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNDAsMzU3IGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MDgsMzU3IGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MjUsMzU3IGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NDIsMzU3IGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NTksMzU3IGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NzYsMzU3IGwgMTcsMCAwLDE3IC0xNywwIHogTSAwLDM3NCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTcsMzc0IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNCwzNzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDUxLDM3NCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNjgsMzc0IGwgMTcsMCAwLDE3IC0xNywwIHogTSA4NSwzNzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDEwMiwzNzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDEzNiwzNzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDIyMSwzNzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI1NSwzNzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI3MiwzNzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI4OSwzNzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDMyMywzNzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM0MCwzNzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM3NCwzNzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQwOCwzNzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQyNSwzNzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQ0MiwzNzQgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDAsMzkxIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMDIsMzkxIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNzAsMzkxIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMzgsMzkxIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzMDYsMzkxIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzMjMsMzkxIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNDAsMzkxIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MDgsMzkxIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NTksMzkxIGwgMTcsMCAwLDE3IC0xNywwIHogTSAwLDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzQsNDA4IGwgMTcsMCAwLDE3IC0xNywwIHogTSA1MSw0MDggbCAxNywwIDAsMTcgLTE3LDAgeiBNIDY4LDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTAyLDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTM2LDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTUzLDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMjA0LDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMjIxLDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMjM4LDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMjU1LDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMjg5LDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzQwLDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzU3LDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzc0LDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzkxLDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNDA4LDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNDQyLDQwOCBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMCw0MjUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDM0LDQyNSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNTEsNDI1IGwgMTcsMCAwLDE3IC0xNywwIHogTSA2OCw0MjUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDEwMiw0MjUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDEzNiw0MjUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE1Myw0MjUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE3MCw0MjUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE4Nyw0MjUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDI3Miw0MjUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDMwNiw0MjUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDMyMyw0MjUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQyNSw0MjUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQ0Miw0MjUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDQ3Niw0MjUgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDAsNDQyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNCw0NDIgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDUxLDQ0MiBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNjgsNDQyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMDIsNDQyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMzYsNDQyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNTMsNDQyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMDQsNDQyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMjEsNDQyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNTUsNDQyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNTcsNDQyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNzQsNDQyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAzOTEsNDQyIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MDgsNDQyIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MjUsNDQyIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NDIsNDQyIGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NTksNDQyIGwgMTcsMCAwLDE3IC0xNywwIHogTSAwLDQ1OSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTAyLDQ1OSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTM2LDQ1OSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTUzLDQ1OSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMTg3LDQ1OSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMjA0LDQ1OSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMjM4LDQ1OSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzQwLDQ1OSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzkxLDQ1OSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNDI1LDQ1OSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gNDU5LDQ1OSBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMCw0NzYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDE3LDQ3NiBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gMzQsNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogTSA1MSw0NzYgbCAxNywwIDAsMTcgLTE3LDAgeiBNIDY4LDQ3NiBsIDE3LDAgMCwxNyAtMTcsMCB6IE0gODUsNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMDIsNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxMzYsNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNTMsNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAxNzAsNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMjEsNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyMzgsNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNTUsNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyNzIsNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAyODksNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzMjMsNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzNzQsNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogTSAzOTEsNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogTSA0MDgsNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogTSA0NDIsNDc2IGwgMTcsMCAwLDE3IC0xNywwIHogIiAvPgogICAgCTwvZz4KICA8L2c+Cjwvc3ZnPgo=" alt="Steam 登录二维码">
+          <p>通过二维码使用 Steam 手机应用登录</p>
+          <button type="button" class="steam-account-toggle">或使用账号密码登录</button>
+        </div>
+        <div class="steam-login-fields">
+          <div class="steam-field"><label for="steamUsername">用户名</label><input id="steamUsername" autocomplete="username" placeholder="请输入用户名"></div>
+          <div class="steam-field"><label for="steamPassword">密码</label><input id="steamPassword" type="password" autocomplete="current-password" placeholder="请输入密码"></div>
+          <label class="steam-remember"><input type="checkbox" checked>记住我</label>
+          <div class="first-play-error" id="steamLoginError" hidden><span data-error-message></span><div class="first-play-error__actions"><button type="button" data-action="retry-first-play">重试</button><button type="button" data-action="return-to-paths">选择其他方式</button></div></div>
+          <button type="button" class="steam-bind" data-action="steam-bind-success">绑定</button>
+          <p class="steam-privacy">登录仅用于验证用户身份，不会收集和使用个人信息</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Steam 个人库内容态：账号摘要 + 工具栏 + 两列整卡选择 -->
+<div class="page" id="pageSteamLibrary" data-visual-source="steam-regression-portrait">
+  <div class="steam-library-page">
+    <header class="steam-library-header"><button type="button" class="flow-back" data-action="return-to-paths" aria-label="返回">‹</button><h2>Steam</h2><div class="steam-library-header__actions"><button class="library-icon-btn" type="button">好友</button><button class="library-icon-btn" type="button">退出</button></div></header>
+    <nav class="steam-profile-tabs" aria-label="Steam 资料栏目"><strong>资料</strong><span>成就</span><span>创意工坊</span><span>MOD</span></nav>
+    <section class="steam-account-summary" aria-label="Steam 账号摘要">
+      <div class="steam-account-avatar" aria-hidden="true">?</div>
+      <div class="steam-account-main"><strong>lotuszym0525</strong><span class="steam-account-state">在线</span></div>
+      <div class="steam-account-stats"><span>游戏<b>25</b></span><span>总时长<b>129.4h</b></span><span>近两周<b>15.8h</b></span><span>成就<b>8</b></span></div>
+    </section>
+    <section class="steam-library-content">
+      <div class="steam-library-toolbar"><strong>游戏库</strong><span>25 款</span><button class="steam-library-search" type="button" aria-label="搜索">⌕</button><button class="steam-library-sort" type="button">最近游玩</button><button class="steam-library-search" type="button" aria-label="筛选">≡</button></div>
+      <div class="steam-game-grid" id="steamGameGrid"></div>
+      <div class="first-play-error" id="steamLibraryError" hidden><span data-error-message></span><div class="first-play-error__actions"><button type="button" data-action="retry-first-play">重试</button><button type="button" data-action="return-to-paths">选择其他方式</button></div></div>
+    </section>
+  </div>
+</div>
+
+<!-- PC 游戏库 + screen-22 添加游戏弹窗 -->
+<div class="page" id="pagePcLibrary" data-visual-source="screen-22">
+  <div class="pc-library-page">
+    <nav class="pc-platform-tabs"><strong>PC游戏</strong><span>Steam游戏</span><span>Epic游戏</span><span>复古游戏</span></nav>
+    <div class="pc-library-tools"><input class="pc-library-search" placeholder="搜索游戏名" aria-label="搜索游戏名"><button class="library-icon-btn" type="button" aria-label="筛选">≡</button></div>
+    <button type="button" class="pc-add-game" data-action="open-add-game">＋ 添加游戏</button>
+    <div class="pc-library-grid" id="pcLibraryGrid"></div>
+    <div class="first-play-error" id="localLibraryError" hidden><span data-error-message></span><div class="first-play-error__actions"><button type="button" data-action="retry-first-play">重试</button><button type="button" data-action="return-to-paths">选择其他方式</button></div></div>
+  </div>
+  <div class="dialog-layer" id="addGameDialog" hidden>
+    <section class="add-game-dialog" role="dialog" aria-modal="true" aria-labelledby="addGameTitle">
+      <button type="button" class="dialog-close" data-action="close-add-game" aria-label="关闭">×</button>
+      <h3 id="addGameTitle">添加游戏</h3>
+      <div class="import-source-list">
+        <button type="button" class="import-source-card" data-import-source="local"><span class="import-source-icon" aria-hidden="true"><span class="asset-folder-glyph"></span></span><span><strong>本地游戏</strong><span>选择本地游戏程序</span></span></button>
+        <button type="button" class="import-source-card" data-import-source="steam"><span class="import-source-icon"><img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNi4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iMzU1LjY2NnB4IiBoZWlnaHQ9Ijg5LjMzM3B4IiB2aWV3Qm94PSIwIDAgMzU1LjY2NiA4OS4zMzMiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDM1NS42NjYgODkuMzMzIg0KCSB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxnPg0KCTxwYXRoIGZpbGw9IiNDNUMzQzAiIGQ9Ik00NC4yMzgsMC42MDFDMjEsMC42MDEsMS45NjMsMTguNTE5LDAuMTU0LDQxLjI5bDIzLjcxLDkuODAzYzIuMDA5LTEuMzc0LDQuNDM2LTIuMTc5LDcuMDQ3LTIuMTc5DQoJCWMwLjIzNCwwLDAuNDY3LDAuMDA4LDAuNjk4LDAuMDIxbDEwLjU0NC0xNS4yODNjMC0wLjA3My0wLjAwMS0wLjE0NC0wLjAwMS0wLjIxNmMwLTkuMTk5LDcuNDgzLTE2LjY4MywxNi42ODMtMTYuNjgzDQoJCWM5LjE5OSwwLDE2LjY4Miw3LjQ4NCwxNi42ODIsMTYuNjgzYzAsOS4xOTktNy40ODMsMTYuNjg0LTE2LjY4MiwxNi42ODRjLTAuMTI3LDAtMC4yNTMtMC4wMDMtMC4zNzktMC4wMDZsLTE1LjAzOCwxMC43Mw0KCQljMC4wMDgsMC4xOTUsMC4wMTUsMC4zOTQsMC4wMTUsMC41OTJjMCw2LjkwNi01LjYxNywxMi41MjItMTIuNTIyLDEyLjUyMmMtNi4wNjEsMC0xMS4xMjktNC4zMjYtMTIuMjc3LTEwLjA1NUwxLjY3OCw1Ni44OTMNCgkJYzUuMjUsMTguNTY4LDIyLjMwOSwzMi4xODEsNDIuNTYsMzIuMTgxYzI0LjQzMiwwLDQ0LjIzNy0xOS44MDYsNDQuMjM3LTQ0LjIzNUM4OC40NzUsMjAuNDA2LDY4LjY2OSwwLjYwMSw0NC4yMzgsMC42MDEiLz4NCgk8cGF0aCBmaWxsPSIjQzVDM0MwIiBkPSJNMjcuODc1LDY3LjcyM2wtNS40MzQtMi4yNDVjMC45NjMsMi4wMDUsMi42MjksMy42ODQsNC44NDEsNC42MDZjNC43ODIsMS45OTIsMTAuMjk1LTAuMjc3LDEyLjI4OC01LjA2Mw0KCQljMC45NjUtMi4zMTQsMC45NzEtNC44NjksMC4wMTQtNy4xODljLTAuOTU1LTIuMzIxLTIuNzU3LTQuMTMxLTUuMDc0LTUuMDk3Yy0yLjI5OS0wLjk1Ny00Ljc2Mi0wLjkyMi02LjkyNi0wLjEwNWw1LjYxMywyLjMyMQ0KCQljMy41MjcsMS40Nyw1LjE5NSw1LjUyLDMuNzI1LDkuMDQ3QzM1LjQ1NSw2Ny41MjYsMzEuNDAyLDY5LjE5NCwyNy44NzUsNjcuNzIzIi8+DQoJPHBhdGggZmlsbD0iI0M1QzNDMCIgZD0iTTY5Ljk1LDMzLjQzNmMwLTYuMTI5LTQuOTg2LTExLjExNi0xMS4xMTYtMTEuMTE2Yy02LjEyOSwwLTExLjExNiw0Ljk4Ny0xMS4xMTYsMTEuMTE2DQoJCWMwLDYuMTMsNC45ODcsMTEuMTE1LDExLjExNiwxMS4xMTVDNjQuOTY0LDQ0LjU1LDY5Ljk1LDM5LjU2NSw2OS45NSwzMy40MzYgTTUwLjUwMiwzMy40MTdjMC00LjYxMiwzLjczOS04LjM1LDguMzUxLTguMzUNCgkJYzQuNjEyLDAsOC4zNTEsMy43MzgsOC4zNTEsOC4zNXMtMy43MzksOC4zNS04LjM1MSw4LjM1QzU0LjI0MSw0MS43NjcsNTAuNTAyLDM4LjAyOCw1MC41MDIsMzMuNDE3Ii8+DQoJPHBhdGggZmlsbD0iI0M1QzNDMCIgZD0iTTEzNS43MTgsMzAuODY4bC0yLjk2NCw1LjIxYy0yLjI4My0xLjU5NS01LjM3Ny0yLjU1NS04LjA3OC0yLjU1NWMtMy4wODcsMC00Ljk5NywxLjI3OC00Ljk5NywzLjU2Nw0KCQljMCwyLjc4MSwzLjM5MywzLjQyOCw4LjQzNiw1LjIzOGM1LjQyMSwxLjkxNyw4LjUzNyw0LjE3LDguNTM3LDkuMTM1YzAsNi43OTMtNS4zNDIsMTAuNjA4LTEzLjAyLDEwLjYwOA0KCQljLTMuNzQyLDAtOC4yNTYtMC45NjYtMTEuNzI2LTMuMDc3bDIuMTYyLTUuNzc2YzIuODE5LDEuNDg5LDYuMTkxLDIuMzcyLDkuMTk3LDIuMzcyYzQuMDUyLDAsNS45NzgtMS40OTUsNS45NzgtMy43MDUNCgkJYzAtMi41MjktMi45MzctMy4yODktNy42NzgtNC44NTljLTUuNDAzLTEuODA0LTkuMTQ3LTQuMTcxLTkuMTQ3LTkuNjY2YzAtNi4xOTcsNC45NjMtOS43NTYsMTIuMTA0LTkuNzU2DQoJCUMxMjkuNDk5LDI3LjYwNCwxMzMuNDk5LDI5LjE4MSwxMzUuNzE4LDMwLjg2OCIvPg0KCTxwb2x5Z29uIGZpbGw9IiNDNUMzQzAiIHBvaW50cz0iMTU4Ljg4OCwzNC4xNjEgMTU4Ljg4OCw2MS41IDE1MS45MDksNjEuNSAxNTEuOTA5LDM0LjE2MSAxNDEuNzc5LDM0LjE2MSAxNDEuNzc5LDI4LjE3NSANCgkJMTY4Ljk4OCwyOC4xNzUgMTY4Ljk4OCwzNC4xNjEgCSIvPg0KCTxwb2x5Z29uIGZpbGw9IiNDNUMzQzAiIHBvaW50cz0iMTgzLjcsMzQuMTQzIDE4My43LDQxLjY1MiAxOTcuMDU2LDQxLjY1MiAxOTcuMDU2LDQ3LjYzOCAxODMuNyw0Ny42MzggMTgzLjcsNTUuNDU5IA0KCQkxOTkuMTk2LDU1LjQ1OSAxOTkuMTk2LDYxLjUgMTc2LjcyMyw2MS41IDE3Ni43MjMsMjguMTc1IDE5OS4xOTYsMjguMTc1IDE5OS4xOTYsMzQuMTQzIAkiLz4NCgk8cGF0aCBmaWxsPSIjQzVDM0MwIiBkPSJNMjE0Ljc3Myw1NS4wM2wtMi4yMDYsNi40NzFoLTcuMzE2bDEyLjQ5NS0zMy4zMjVoNy4wMjVMMjM3LjYxOSw2MS41aC03LjU2M2wtMi4yNTQtNi40NzFIMjE0Ljc3M3oNCgkJIE0yMjEuMjE5LDM2LjEyNWwtNC41NTEsMTMuMzQzaDkuMTk2TDIyMS4yMTksMzYuMTI1eiIvPg0KCTxwb2x5Z29uIGZpbGw9IiNDNUMzQzAiIHBvaW50cz0iMjczLjQzNiw0MS4wNTYgMjY0LjMxNiw2MC41MjkgMjYwLjM3OCw2MC41MjkgMjUxLjQwNiw0MS4yMyAyNTEuNDA2LDYxLjUgMjQ0LjcyMyw2MS41IA0KCQkyNDQuNzIzLDI4LjE3NSAyNTEuMzkxLDI4LjE3NSAyNjIuNTkxLDUyLjIzMSAyNzMuMzkzLDI4LjE3NSAyODAuMTE5LDI4LjE3NSAyODAuMTE5LDYxLjUgMjczLjQzNyw2MS41IAkiLz4NCgk8cGF0aCBmaWxsPSIjQzVDM0MwIiBkPSJNMjkzLjYxMSwzMi4zNzljMCwyLjg2NC0yLjE0Niw0LjY0OS00LjYwOSw0LjY0OWMtMi40NzIsMC00LjYyMy0xLjc4NS00LjYyMy00LjY0OQ0KCQljMC0yLjg2MywyLjE1MS00LjYzNiw0LjYyMy00LjYzNkMyOTEuNDY2LDI3Ljc0MywyOTMuNjExLDI5LjUxNiwyOTMuNjExLDMyLjM3OSBNMjg1LjE1NCwzMi4zNzljMCwyLjM5NiwxLjcyNiwzLjkwMSwzLjg0OCwzLjkwMQ0KCQljMi4xMTQsMCwzLjgzMy0xLjUwNSwzLjgzMy0zLjkwMWMwLTIuNDAzLTEuNzE5LTMuODg1LTMuODMzLTMuODg1QzI4Ni44ODYsMjguNDk0LDI4NS4xNTQsMjkuOTk0LDI4NS4xNTQsMzIuMzc5IE0yODkuMDY2LDMwLjAxDQoJCWMxLjE5NSwwLDEuNTk3LDAuNjMyLDEuNTk3LDEuMzE1YzAsMC42MjYtMC4zNzEsMS4wNDYtMC44MjMsMS4yNmwxLjA3MSwyLjAwN2gtMC44NzdsLTAuOTAzLTEuNzc5SDI4OC4ydjEuNzc5aC0wLjczVjMwLjAxDQoJCUgyODkuMDY2eiBNMjg4LjIwNywzMi4xNDJoMC44MTRjMC41MjcsMCwwLjgzOC0wLjMzMSwwLjgzOC0wLjc0N2MwLTAuNDItMC4yMjMtMC42OS0wLjg0LTAuNjloLTAuODEzVjMyLjE0MnoiLz4NCjwvZz4NCjwvc3ZnPg0K" alt=""></span><span><strong>Steam游戏库</strong><span>选择 Steam 库目录并扫描已安装游戏</span></span></button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- 本地扫描、手动选择与导入过程 -->
+<div class="page" id="pageLocalScan">
+  <div class="local-scan-page">
+    <header class="flow-topbar"><button type="button" class="flow-back" data-action="back-to-add-game" aria-label="返回">‹</button><h2>导入本地游戏</h2></header>
+    <section class="local-scan-hero"><div class="local-scan-art" aria-hidden="true"><span class="asset-folder-glyph"></span></div><h2 id="localScanTitle">扫描设备中的游戏</h2><p id="localScanDesc">授权后扫描常见游戏目录，或手动选择 .exe 文件与游戏目录</p></section>
+    <div class="local-scan-workspace">
+      <div class="local-scan-actions" id="localScanActions"><button type="button" class="local-primary" data-action="grant-scan-permission">授权并开始扫描</button><button type="button" class="local-secondary" data-action="open-manual-file-picker">手动选择文件或目录</button></div>
+      <section class="local-scan-result" id="localScanResult" hidden><button type="button" class="local-file-row" data-action="select-scanned-exe" aria-pressed="false"><span class="local-file-badge">EXE</span><span><strong>艾尔登法环</strong><span>Games/EldenRing/eldenring.exe</span></span></button><button type="button" class="local-import-submit" data-action="import-selected-game" disabled>导入到 PC 游戏库</button></section>
+      <section class="manual-picker" id="manualFilePicker" hidden><p>请选择有效的 .exe 文件或包含游戏主程序的目录</p><button type="button" class="local-secondary" data-action="manual-select-valid">选择 Games/Sekiro/sekiro.exe</button></section>
+      <div class="first-play-error" id="localImportError" hidden><span data-error-message></span><div class="first-play-error__actions"><button type="button" data-action="retry-first-play">重试</button><button type="button" data-action="return-to-paths">选择其他方式</button></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 国内秒玩频道：screen-11 -->
+<div class="page" id="pageInstantPlay" data-visual-source="screen-11">
+  <div class="instant-page">
+    <header class="instant-header"><div class="instant-search">搜索秒玩游戏</div><nav class="instant-channel-tabs"><strong>云游戏</strong><span>PC游戏</span><span>云游组队</span><span>复古游戏</span></nav></header>
+    <div class="instant-scroll">
+      <div class="instant-overview">
+        <section class="instant-time-card"><div><strong>新手秒玩时长</strong><p>无需下载，进入游戏后开始计时</p></div><div class="instant-time-value">赠送 15 分钟</div></section>
+        <section class="instant-section instant-hot"><div class="instant-section-head"><h3>热门秒玩</h3><button type="button" data-action="instant-more">查看更多</button></div><div class="instant-hot-grid" id="instantHotGrid"></div></section>
+      </div>
+      <div class="instant-secondary">
+        <section class="instant-section instant-rooms"><div class="instant-section-head"><h3>组队云游戏</h3></div><article class="instant-room-card"><img id="instantRoomCover" alt=""><div><strong>双人合作房间</strong><p>邀请好友，一起玩游戏</p></div></article></section>
+        <section class="instant-section instant-all"><div class="instant-section-head"><h3>全部秒玩</h3></div><div class="instant-list" id="instantGameList"></div></section>
+        <div class="first-play-error" id="instantPlayError" hidden><span data-error-message></span><div class="first-play-error__actions"><button type="button" data-action="retry-first-play">重试</button><button type="button" data-action="return-to-paths">选择其他方式</button></div></div>
+      </div>
+    </div>
+    <nav class="instant-bottom-nav" aria-label="主导航"><span>首页</span><strong>玩游戏</strong><span>排行榜</span><span>游戏库</span><span>我的</span></nav>
+  </div>
+</div>
+
+<!-- 点击启动后的独立状态；此页尚未产生 playable_ready -->
+<div class="page" id="pageGameLaunch">
+  <div class="launch-page"><img class="launch-cover" id="launchGameCover" alt=""><div class="launch-copy"><div class="launch-spinner" aria-hidden="true"></div><h2 id="launchGameTitle">正在启动游戏</h2><p>正在准备运行环境，完成后进入可接收输入的游戏场景</p><button type="button" class="launch-enter" data-action="enter-playable-scene">进入游戏</button><button type="button" class="launch-cancel" data-action="cancel-launch">取消并返回</button></div></div>
+</div>
+
+<!-- 首次成功唯一终点：可聚焦并接收输入的游戏场景 -->
+<div class="page" id="pagePlayableScene">
+  <div class="playable-page"><div class="playable-stage" data-playable-input tabindex="0"><strong>游戏已可操作</strong></div><p>已进入可接收键盘、触控或手柄输入的游戏场景，首次首玩在此收口。</p></div>
 </div>
 
 <!-- 第3步：有游戏想玩 - 选择方式 -->
@@ -884,6 +1049,12 @@ body[data-demo-orientation="landscape"] .demo-view-switch{right:12px;width:200px
 <button class="cp-btn" data-demo-scenario="existing_completed">非新用户 · 已完成</button>
 <button class="cp-btn" onclick="showScan()">导入扫描</button>
 <button class="cp-btn" onclick="showDone('play')">完成页</button>
+<h4 style="margin-top:12px">异常预览</h4>
+<button class="cp-btn" type="button" data-demo-error="steam_login_failed">Steam 登录失败</button>
+<button class="cp-btn" type="button" data-demo-error="steam_library_empty">Steam 空库</button>
+<button class="cp-btn" type="button" data-demo-error="permission_denied">扫描权限拒绝</button>
+<button class="cp-btn" type="button" data-demo-error="scan_empty">扫描无结果</button>
+<button class="cp-btn" type="button" data-demo-error="instant_launch_failed">秒玩启动失败</button>
 </div>
 </section>
 
@@ -1124,6 +1295,223 @@ var existingFlow={
   sourceCode:null,
   entryGroup:'existing_user_recall'
 };
+window.demoEvents=[];
+var instantListExpanded=false;
+var localFileSelected=false;
+
+function emitDemoEvent(name,detail){
+  window.demoEvents.push(Object.assign({name:name,at:new Date().toISOString()},detail||{}));
+}
+
+function setFirstPlayStage(stage,gameId){
+  onboardingFlow.firstPlayStage=stage;
+  if(gameId!==undefined) onboardingFlow.firstPlayGameId=gameId;
+  onboardingFlow.updatedAt=new Date().toISOString();
+  saveOnboardingFlow();
+  renderFirstPlayOptions();
+}
+
+function renderSteamLibrary(){
+  var hours=['19.8 h','2.8 h','5.9 h','0.3 h','1.4 h','3.8 h'];
+  document.getElementById('steamGameGrid').innerHTML=games.map(function(game,index){
+    return '<button type="button" class="steam-game-card" data-steam-game data-game-id="game_'+index+'">'+
+      '<img src="'+game.cover+'" alt=""><span class="steam-game-card__info"><strong>'+game.name+'</strong><span>Steam · '+hours[index%hours.length]+'</span></span></button>';
+  }).join('');
+}
+
+function renderPcLibrary(){
+  var grid=document.getElementById('pcLibraryGrid');
+  var imported=onboardingFlow.firstPlayPath==='local_file'&&onboardingFlow.firstPlayStage==='content_ready';
+  if(!imported){
+    grid.innerHTML='<p class="pc-library-empty">导入游戏后将在这里显示</p>';
+    return;
+  }
+  var game=games[2];
+  grid.innerHTML='<button type="button" class="local-library-card" data-local-game data-game-id="game_2"><img src="'+game.cover+'" alt=""><div><strong>'+game.name+'</strong><span>本地游戏 · eldenring.exe</span></div></button>';
+}
+
+function renderInstantChannel(){
+  document.getElementById('instantHotGrid').innerHTML=games.slice(0,3).map(function(game,index){
+    return '<button type="button" class="instant-game-card" data-instant-game data-game-id="game_'+index+'"><img src="'+game.cover+'" alt=""><strong>'+game.name+'</strong><span>秒玩</span></button>';
+  }).join('');
+  var count=instantListExpanded?games.length:3;
+  document.getElementById('instantGameList').innerHTML=games.slice(0,count).map(function(game,index){
+    return '<button type="button" class="instant-list-row" data-instant-game data-instant-list-game data-game-id="game_'+index+'"><img src="'+game.cover+'" alt=""><span><strong>'+game.name+'</strong><span>'+game.tag+'</span></span><b>秒玩</b></button>';
+  }).join('');
+  document.getElementById('instantRoomCover').src=games[1].cover;
+  var more=document.querySelector('[data-action="instant-more"]');
+  more.textContent=instantListExpanded?'已展开全部':'查看更多';
+  more.disabled=instantListExpanded;
+}
+
+function openSteamLogin(){
+  switchPage('pageSteamLogin');
+  setTimeout(function(){document.getElementById('steamUsername').focus()},220);
+}
+
+function openPcLibrary(showAddDialog){
+  renderPcLibrary();
+  switchPage('pagePcLibrary');
+  document.getElementById('addGameDialog').hidden=!showAddDialog;
+}
+
+function openLocalScan(){
+  localFileSelected=false;
+  setFirstPlayStage('permission_pending',null);
+  document.getElementById('localScanResult').hidden=true;
+  document.getElementById('manualFilePicker').hidden=true;
+  document.querySelector('[data-action="import-selected-game"]').disabled=true;
+  document.querySelector('[data-action="select-scanned-exe"]').setAttribute('aria-pressed','false');
+  document.getElementById('localScanTitle').textContent='扫描设备中的游戏';
+  document.getElementById('localScanDesc').textContent='授权后扫描常见游戏目录，或手动选择 .exe 文件与游戏目录';
+  switchPage('pageLocalScan');
+}
+
+function startLocalScan(){
+  setFirstPlayStage('scanning',null);
+  document.getElementById('localScanTitle').textContent='正在扫描游戏目录';
+  document.getElementById('localScanDesc').textContent='检查 Games、SteamLibrary 等常见目录';
+  setTimeout(completeLocalScan,180);
+}
+
+function completeLocalScan(){
+  setFirstPlayStage('scan_result',null);
+  document.getElementById('localScanTitle').textContent='发现 1 个可导入游戏';
+  document.getElementById('localScanDesc').textContent='选择有效的 .exe 主程序后再执行导入';
+  document.getElementById('localScanResult').hidden=false;
+}
+
+function selectLocalExecutable(source){
+  localFileSelected=true;
+  setFirstPlayStage('file_selected','game_2');
+  document.querySelector('[data-action="select-scanned-exe"]').setAttribute('aria-pressed','true');
+  document.querySelector('[data-action="import-selected-game"]').disabled=false;
+  if(source==='manual'){
+    document.getElementById('manualFilePicker').hidden=true;
+    document.getElementById('localScanResult').hidden=false;
+  }
+}
+
+function openManualFilePicker(){
+  setFirstPlayStage('file_picker',null);
+  document.getElementById('manualFilePicker').hidden=false;
+}
+
+function importSelectedGame(){
+  if(!localFileSelected) return;
+  setFirstPlayStage('content_ready','game_2');
+  openPcLibrary(false);
+}
+
+function chooseFirstPlayPath(path){
+  if(!['steam','local_file','no_asset','browse'].includes(path)) return;
+  var resolvedPath=path==='no_asset'?'instant_play':path;
+  onboardingFlow.firstPlayPath=resolvedPath;
+  onboardingFlow.firstPlayStage='selected';
+  onboardingFlow.firstPlayGameId=null;
+  onboardingFlow.firstPlayCompleted=false;
+  onboardingFlow.state=path==='browse'?ONBOARDING_FLOW_STATES.COMPLETED:ONBOARDING_FLOW_STATES.DESTINATION;
+  onboardingFlow.updatedAt=new Date().toISOString();
+  saveOnboardingFlow();
+  emitDemoEvent('onboarding_start_method_select',{market:isOverseas?'overseas':'domestic',path:resolvedPath});
+  if(path==='browse') return showHomeResult('browse');
+  emitDemoEvent('first_play_path_view',{market:isOverseas?'overseas':'domestic',path:resolvedPath,resume_source:'onboarding'});
+  if(path==='steam') return openSteamLogin();
+  if(path==='local_file') return openPcLibrary(true);
+  instantListExpanded=false;
+  renderInstantChannel();
+  return switchPage('pageInstantPlay');
+}
+
+function completeSteamBinding(){
+  var username=document.getElementById('steamUsername').value.trim();
+  var password=document.getElementById('steamPassword').value;
+  if(!username||!password){
+    showFirstPlayError('steam_login_failed');
+    return;
+  }
+  setFirstPlayStage('content_ready',null);
+  renderSteamLibrary();
+  switchPage('pageSteamLibrary');
+}
+
+function requestGameLaunch(path,gameId){
+  if(onboardingFlow.firstPlayStage==='launch_requested'&&onboardingFlow.firstPlayGameId===gameId) return;
+  onboardingFlow.firstPlayPath=path;
+  setFirstPlayStage('launch_requested',gameId);
+  emitDemoEvent('game_launch_request',{path:path,game_id:gameId});
+  showLaunchPage(gameId);
+}
+
+function showLaunchPage(gameId){
+  var index=Math.max(0,Number(String(gameId).replace('game_',''))||0);
+  var game=games[index]||games[0];
+  document.getElementById('launchGameCover').src=game.cover;
+  document.getElementById('launchGameTitle').textContent='正在启动 '+game.name;
+  switchPage('pageGameLaunch');
+}
+
+function markPlayable(path,gameId){
+  if(onboardingFlow.firstPlayCompleted&&onboardingFlow.firstPlayStage==='playable') return false;
+  if(onboardingFlow.firstPlayStage!=='launch_requested') return false;
+  onboardingFlow.firstPlayPath=path;
+  onboardingFlow.firstPlayStage='playable';
+  onboardingFlow.firstPlayGameId=gameId||null;
+  onboardingFlow.firstPlayCompleted=true;
+  onboardingFlow.state=ONBOARDING_FLOW_STATES.COMPLETED;
+  onboardingFlow.updatedAt=new Date().toISOString();
+  saveOnboardingFlow();
+  emitDemoEvent('playable_ready',{path:path,game_id:gameId||null});
+  switchPage('pagePlayableScene');
+  setTimeout(function(){document.querySelector('[data-playable-input]').focus()},0);
+  return true;
+}
+
+var FIRST_PLAY_ERRORS={
+  steam_login_failed:['steamLoginError','Steam 登录失败，请检查账号信息后重试'],
+  steam_library_empty:['steamLibraryError','该账号暂未同步到可玩的 Steam 游戏'],
+  permission_denied:['localImportError','未获得扫描权限，你仍可手动选择 .exe 文件或目录'],
+  scan_empty:['localImportError','没有扫描到可导入的游戏程序'],
+  instant_launch_failed:['instantPlayError','启动失败，请重试或换一款游戏']
+};
+
+function showFirstPlayError(code){
+  var error=FIRST_PLAY_ERRORS[code];
+  if(!error) return;
+  var element=document.getElementById(error[0]);
+  element.querySelector('[data-error-message]').textContent=error[1];
+  element.hidden=false;
+  emitDemoEvent('first_play_stage_result',{path:onboardingFlow.firstPlayPath,stage:onboardingFlow.firstPlayStage||'selected',result:'failure',failure_reason:code});
+}
+
+function returnToFirstPlayPaths(){
+  onboardingFlow.state=ONBOARDING_FLOW_STATES.START_METHOD;
+  onboardingFlow.firstPlayStage=null;
+  onboardingFlow.firstPlayGameId=null;
+  onboardingFlow.updatedAt=new Date().toISOString();
+  saveOnboardingFlow();
+  renderFirstPlayOptions();
+  switchPage('pageStartMethod');
+}
+
+function resumeFirstPlayPath(){
+  var path=onboardingFlow.firstPlayPath;
+  if(onboardingFlow.firstPlayStage==='launch_requested') return showLaunchPage(onboardingFlow.firstPlayGameId);
+  if(path==='steam'){
+    if(onboardingFlow.firstPlayStage==='content_ready'){renderSteamLibrary();return switchPage('pageSteamLibrary')}
+    return openSteamLogin();
+  }
+  if(path==='local_file'){
+    if(onboardingFlow.firstPlayStage==='content_ready') return openPcLibrary(false);
+    if(['permission_pending','scanning','scan_result','file_picker','file_selected'].includes(onboardingFlow.firstPlayStage)) return openLocalScan();
+    return openPcLibrary(true);
+  }
+  if(path==='instant_play'){
+    renderInstantChannel();
+    return switchPage('pageInstantPlay');
+  }
+  return returnToFirstPlayPaths();
+}
 
 function saveExistingFlow(){
   localStorage.setItem(EXISTING_FLOW_KEY,JSON.stringify(existingFlow));
@@ -1820,12 +2208,12 @@ function restoreOnboardingFlow(){
     switchPage('pageStartMethod');
     return true;
   }
-  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.DESTINATION||onboardingFlow.state===ONBOARDING_FLOW_STATES.COMPLETED){
-    onboardingFlow.state=ONBOARDING_FLOW_STATES.START_METHOD;
-    onboardingFlow.firstPlayStage=null;
-    saveOnboardingFlow();
-    renderFirstPlayOptions();
-    switchPage('pageStartMethod');
+  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.DESTINATION){
+    resumeFirstPlayPath();
+    return true;
+  }
+  if(onboardingFlow.state===ONBOARDING_FLOW_STATES.COMPLETED&&onboardingFlow.firstPlayCompleted){
+    switchPage('pagePlayableScene');
     return true;
   }
   return false;
@@ -1980,6 +2368,46 @@ document.addEventListener('click',function(event){
     renderOnboardingSource();
     switchPage('pageSource');
   }
+  var firstPlayCard=event.target.closest('[data-first-play-path]');
+  if(firstPlayCard) chooseFirstPlayPath(firstPlayCard.dataset.firstPlayPath);
+  if(event.target.closest('[data-action="browse-home"]')) chooseFirstPlayPath('browse');
+  if(event.target.closest('[data-action="return-to-paths"]')) returnToFirstPlayPaths();
+  if(event.target.closest('[data-action="steam-bind-success"]')) completeSteamBinding();
+  var steamGame=event.target.closest('[data-steam-game]');
+  if(steamGame) requestGameLaunch('steam',steamGame.dataset.gameId);
+  if(event.target.closest('[data-action="open-add-game"]')) document.getElementById('addGameDialog').hidden=false;
+  if(event.target.closest('[data-action="close-add-game"]')) document.getElementById('addGameDialog').hidden=true;
+  var importSource=event.target.closest('[data-import-source]');
+  if(importSource&&importSource.dataset.importSource==='local') openLocalScan();
+  if(importSource&&importSource.dataset.importSource==='steam'){
+    onboardingFlow.firstPlayPath='steam';
+    setFirstPlayStage('selected',null);
+    openSteamLogin();
+  }
+  if(event.target.closest('[data-action="back-to-add-game"]')) openPcLibrary(true);
+  if(event.target.closest('[data-action="grant-scan-permission"]')) startLocalScan();
+  if(event.target.closest('[data-action="open-manual-file-picker"]')) openManualFilePicker();
+  if(event.target.closest('[data-action="select-scanned-exe"]')) selectLocalExecutable('scan');
+  if(event.target.closest('[data-action="manual-select-valid"]')) selectLocalExecutable('manual');
+  if(event.target.closest('[data-action="import-selected-game"]')) importSelectedGame();
+  var localGame=event.target.closest('[data-local-game]');
+  if(localGame) requestGameLaunch('local_file',localGame.dataset.gameId);
+  if(event.target.closest('[data-action="instant-more"]')){
+    instantListExpanded=true;
+    renderInstantChannel();
+    emitDemoEvent('instant_more_click',{path:'instant_play'});
+  }
+  var instantGame=event.target.closest('[data-instant-game]');
+  if(instantGame) requestGameLaunch('instant_play',instantGame.dataset.gameId);
+  if(event.target.closest('[data-action="enter-playable-scene"]')) markPlayable(onboardingFlow.firstPlayPath,onboardingFlow.firstPlayGameId);
+  if(event.target.closest('[data-action="cancel-launch"]')){
+    setFirstPlayStage('content_ready',onboardingFlow.firstPlayGameId);
+    resumeFirstPlayPath();
+  }
+  var retry=event.target.closest('[data-action="retry-first-play"]');
+  if(retry) retry.closest('.first-play-error').hidden=true;
+  var demoError=event.target.closest('[data-demo-error]');
+  if(demoError) showFirstPlayError(demoError.dataset.demoError);
 });
 document.addEventListener('change',function(event){
   var key=event.target.dataset.analyticsFilter;
