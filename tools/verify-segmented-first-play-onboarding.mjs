@@ -33,12 +33,42 @@ assert.equal(/[\u{1F300}-\u{1FAFF}]/u.test(demoHtml), false, 'Demo 不得保留 
 assert.equal(demoHtml.includes('function makeCover('), false, '不得使用文字 SVG 生成临时游戏封面');
 assert.equal(demoHtml.includes('GAMEHUB</text>'), false, '不得在封面中保留 GAMEHUB 文字占位');
 assert.equal(demoHtml.includes('free_download'), true, '海外无资产路径必须接入免费下载');
+assert.equal(/\.agents[\\/].*home-.*\.webp/i.test(demoHtml), false, '首页媒体不得依赖仓库相对路径');
+const staticMediaSources = [...demoHtml.matchAll(/<(?:img|source|video|audio)\b[^>]*\bsrc="([^"]+)"/gi)]
+  .map(match => match[1])
+  .filter(source => !source.includes("'+"));
+assert.equal(staticMediaSources.every(source => source.startsWith('data:')), true, '静态页面媒体只允许 data URI');
 
 const capture = process.argv.includes('--capture');
 const evidenceDir = path.join(os.tmpdir(), 'gamehub-segmented-first-play-review');
 if (capture) fs.mkdirSync(evidenceDir, { recursive: true });
 
 const browser = await chromium.launch({ executablePath, headless: true });
+
+// 真单文件离线：拷贝到无仓库资产的隔离目录后，首页媒体仍须完整加载且不得产生额外请求
+const isolatedDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gamehub-first-play-isolated-'));
+const isolatedDemoPath = path.join(isolatedDir, 'demo.html');
+fs.copyFileSync(demoPath, isolatedDemoPath);
+const isolatedPage = await browser.newPage({ viewport: { width: 1180, height: 940 } });
+const isolatedUrl = pathToFileURL(isolatedDemoPath).href;
+const isolatedRequests = [];
+isolatedPage.on('request', request => isolatedRequests.push(request.url()));
+await isolatedPage.goto(isolatedUrl);
+await isolatedPage.evaluate(() => { switchPage('pageHome'); renderHomeFeed('isolated'); });
+await isolatedPage.waitForTimeout(350);
+const isolatedMedia = await isolatedPage.locator('#pageHome img').evaluateAll(nodes => nodes.map(node => ({
+  src: node.getAttribute('src') || '',
+  naturalWidth: node.naturalWidth,
+  naturalHeight: node.naturalHeight,
+})));
+const isolatedPageMedia = await isolatedPage.locator('img[src],source[src],video[src],audio[src]').evaluateAll(nodes => nodes.map(node => node.getAttribute('src') || ''));
+await isolatedPage.close();
+fs.rmSync(isolatedDir, { recursive: true, force: true });
+assert.equal(isolatedMedia.length, 12, '首页必须保留 12 张来源化媒体');
+assert.equal(isolatedMedia.every(item => item.src.startsWith('data:image/webp;base64,') && item.naturalWidth > 0 && item.naturalHeight > 0), true, '隔离目录中的首页 12 张图片必须由内嵌 WebP 成功解码');
+assert.deepEqual(isolatedRequests, [isolatedUrl], '真单文件打开不得请求网络或额外文件');
+assert.equal(isolatedPageMedia.every(source => source.startsWith('data:')), true, '运行时所有已声明媒体只允许 data URI');
+
 const page = await browser.newPage({ viewport: { width: 1180, height: 940 } });
 const pageErrors = [];
 page.on('pageerror', error => pageErrors.push(error.message));
@@ -277,6 +307,20 @@ assert.equal(await page.locator('#pageHome[data-visual-source="screen-08,screen-
 for (const selector of ['.home-search-continue', '.home-daily-hero', '.home-recommend-track', '.home-news-section', '.home-game-section', '.home-rank-section', '.home-bottom-nav']) {
   assert.equal(await page.locator(selector).count(), 1, `竖屏首页缺少 ${selector}`);
 }
+assert.equal(await page.locator('.home-search-entry').isVisible(), true, '竖屏首页必须恢复搜索入口');
+assert.equal(await page.locator('.home-device-action').isVisible(), true, '竖屏首页必须恢复独立设备入口');
+assert.equal(await page.evaluate(() => {
+  const hero = document.querySelector('.home-daily-hero');
+  const continuation = document.querySelector('[data-action="home-continue"]');
+  const recommend = document.querySelector('.home-recommend-track');
+  return Boolean(hero.compareDocumentPosition(continuation) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+    Boolean(continuation.compareDocumentPosition(recommend) & Node.DOCUMENT_POSITION_FOLLOWING);
+}), true, 'Continue DOM 必须位于主 Hero 之后、推荐轨道之前');
+assert.equal(
+  await page.locator('.home-bottom-nav [data-nav-icon]').evaluateAll(nodes => nodes.length === 5 && new Set(nodes.map(node => node.dataset.navIcon)).size === 5),
+  true,
+  '竖屏底栏五个导航图标必须各不相同',
+);
 assert.equal(
   await page.locator('#pageHome img').evaluateAll(nodes => nodes.every(node => !/original\.(?:png|webp)$/i.test(node.getAttribute('src') || ''))),
   true,
@@ -456,16 +500,33 @@ assert.equal((await eventSnapshot()).filter(event => event.name === 'playable_re
 eventSnapshots.steam = await eventSnapshot();
 assertStageResults(eventSnapshots.steam, 'steam', ['login', 'library', 'game_select', 'launch']);
 assertLaunchSession(eventSnapshots.steam, 'steam');
+const firstPlayFunnelNames = new Set(['first_play_home_continue_view', 'first_play_home_continue_click', 'first_play_path_view', 'first_play_stage_result']);
+const firstPlayFunnelCountBeforeHome = eventSnapshots.steam.filter(event => firstPlayFunnelNames.has(event.name)).length;
 await page.locator('[data-action="enter-home-after-playable"]').click();
-await assertHomeContinue('继续最近游戏', 'steam', 'playable');
+assert.equal(await page.locator('#pageHome.active').count(), 1);
+assert.equal(await page.locator('#homeContinueTitle').innerText(), '继续最近游戏');
+await page.evaluate(() => { renderHomeFeed(); renderHomeFeed(); });
+assert.equal((await eventSnapshot()).filter(event => firstPlayFunnelNames.has(event.name)).length, firstPlayFunnelCountBeforeHome, '完成态渲染首页不得新增首玩漏斗事件');
+assert.equal((await eventSnapshot()).filter(event => event.name === 'recent_game_continue_view').length, 1, '最近游戏 Continue 曝光必须使用非首玩事件且幂等');
 await capturePhone('home-recent-game-portrait.png');
 const recentGameId = (await savedFirstPlay()).firstPlayGameId;
+await page.reload();
+assert.equal(await page.locator('#pageHome.active').count(), 1);
+assert.equal(await page.locator('#homeContinueTitle').innerText(), '继续最近游戏');
+assert.equal((await eventSnapshot()).filter(event => firstPlayFunnelNames.has(event.name)).length, 0, '完成态刷新不得上报任何首玩漏斗事件');
 await page.locator('[data-action="home-continue"]').click();
 assert.equal(await page.locator('#pageGameLaunch.active').count(), 1, '成功后 Continue 必须恢复最近游戏');
 assert.equal((await savedFirstPlay()).firstPlayGameId, recentGameId);
 assert.equal((await savedFirstPlay()).firstPlayCompleted, true, '后续再次启动不得回退首次成功标记');
+assert.equal((await eventSnapshot()).filter(event => firstPlayFunnelNames.has(event.name)).length, 0, '完成态点击不得上报首玩 Continue、路径或阶段事件');
+assert.equal((await eventSnapshot()).filter(event => event.name === 'recent_game_continue_click').length, 1);
+await page.locator('[data-action="enter-playable-scene"]').click();
+assert.equal(await page.locator('#pagePlayableScene.active').count(), 1, '最近游戏仍需进入可接收输入场景');
+assert.equal((await savedFirstPlay()).firstPlayCompleted, true);
+assert.equal((await eventSnapshot()).filter(event => firstPlayFunnelNames.has(event.name)).length, 0, '最近游戏再次可玩不得重记首玩 canonical 结果');
 await page.evaluate(() => showFirstPlayError('instant_launch_failed'));
 assert.equal((await savedFirstPlay()).firstPlayCompleted, true, '首次成功后续失败不得回退完成标记');
+assert.equal((await eventSnapshot()).filter(event => firstPlayFunnelNames.has(event.name)).length, 0, '完成后失败不得污染首玩阶段结果');
 
 // 本地文件：添加游戏弹窗 -> 扫描结果 -> 选文件 -> 导入库 -> 启动 -> 可玩
 await resetJourney();
@@ -644,6 +705,14 @@ await resetJourney('landscape');
 await page.locator('[data-action="browse-home"]').click();
 await assertHomeContinue('免费秒玩15分钟', 'instant_play', 'selected');
 assert.equal(await page.locator('.home-landscape-heroes .home-landscape-hero').count(), 2, '横屏首页必须保留双 Hero');
+assert.equal(await page.locator('.home-landscape-topbar [data-home-search]').isVisible(), true, '横屏顶栏缺少搜索入口');
+assert.equal(await page.locator('.home-landscape-topbar [data-home-device]').isVisible(), true, '横屏顶栏缺少设备入口');
+assert.equal(await page.locator('.home-landscape-topbar [data-home-controller]').isVisible(), true, '横屏顶栏缺少手柄状态');
+assert.equal(
+  await page.locator('.home-landscape-topbar [data-landscape-icon]').evaluateAll(nodes => nodes.length >= 8 && new Set(nodes.map(node => node.dataset.landscapeIcon)).size === nodes.length),
+  true,
+  '横屏顶栏图标必须语义独立且不重复',
+);
 for (const [selector, label] of [
   ['.home-landscape-topbar', '横屏首页顶栏'],
   ['[data-action="home-continue"]', '横屏首页 Continue'],
