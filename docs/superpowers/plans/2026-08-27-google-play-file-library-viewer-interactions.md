@@ -751,12 +751,140 @@ Expected: staged list contains only `prd/workflow-state/GUANWANGGAID-21-google-p
 
 ---
 
+### Task 8: Center dialog headings and use four mutually exclusive sort fields
+
+**Files:**
+
+- Modify: `C:\Users\z3635\官网改动\scripts\validate-google-play-file-library-demo.ps1`
+- Modify: `C:\Users\z3635\Documents\Codex\2026-08-26\new-chat\outputs\google-play-file-home-ab-demo.html`
+- Modify: `C:\Users\z3635\官网改动\prd\workflow-state\GUANWANGGAID-21-google-play-review.md`
+
+- [ ] **Step 1: Add the failing static contract**
+
+Replace the old dual filter/sort requirements with:
+
+```powershell
+Require-Text 'data-sort="name"' 'Name sort button is missing'
+Require-Text 'data-sort="modified"' 'Modified-date sort button is missing'
+Require-Text 'data-sort="type"' 'Type sort button is missing'
+Require-Text 'data-sort="size"' 'Size sort button is missing'
+Require-Text "sortBy:'name'" 'Default sort is not name'
+Require-Text "sortOrder:'asc'" 'Default name sort is not ascending'
+Require-Text 'function sortTypeRank' 'Type sort ranking is missing'
+Require-Text 'function renderSortControls' 'Single-select sort control rendering is missing'
+Require-Text '.extract-modal h3{text-align:center}' 'Extract dialog title is not centered'
+Require-Text 'grid-template-columns:34px minmax(0,1fr) 34px' 'More menu title is not geometrically centered'
+Forbid-Pattern 'data-filter=' 'Legacy type filter button is still present'
+Forbid-Pattern 'typeFilter:' 'Legacy type filter state is still present'
+```
+
+Run both validators. Expected: FAIL for the new sort/title requirements before the Demo change.
+
+- [ ] **Step 2: Center the two confirmed titles**
+
+Change the Sheet heading CSS to a three-column grid so the center column remains geometrically centered despite the right close button:
+
+```css
+.sheet-head{height:34px;display:grid;grid-template-columns:34px minmax(0,1fr) 34px;align-items:center;margin:0 0 8px}
+.sheet-head h3{grid-column:2;min-width:0;margin:0;text-align:center;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sheet-close{grid-column:3}
+.extract-modal h3{text-align:center}
+```
+
+Add `extract-modal` to the ZIP dialog section:
+
+```html
+<section class="modal extract-modal" data-component-id="C-DIALOG" role="alertdialog" aria-modal="true" aria-labelledby="extractTitle">
+```
+
+- [ ] **Step 3: Replace the shortcut row with four sort buttons**
+
+Use exactly one default active button:
+
+```html
+<div class="quick-row" aria-label="文件排序">
+  <button class="quick active" data-sort="name" data-label="名称">名称↑</button>
+  <button class="quick" data-sort="modified" data-label="修改日期">修改日期</button>
+  <button class="quick" data-sort="type" data-label="类型">类型</button>
+  <button class="quick" data-sort="size" data-label="大小">大小</button>
+</div>
+```
+
+Remove all `data-filter` buttons and bindings.
+
+- [ ] **Step 4: Replace the dual-state sort implementation**
+
+Use a stable type rank and one active `sortBy` field:
+
+```javascript
+function sortTypeRank(item){
+  const order={folder:0,image:1,video:2,text:3,html:4,pdf:5,archive:6,game:7};
+  return Object.prototype.hasOwnProperty.call(order,item.type)?order[item.type]:8;
+}
+
+function compareNames(a,b){
+  return a.name.localeCompare(b.name,'zh-CN',{numeric:true,sensitivity:'base'});
+}
+
+function sortDirectoryItems(items,state){
+  const direction=state.sortOrder==='asc'?1:-1;
+  return items.map((item,index)=>({item,index})).sort((left,right)=>{
+    const a=left.item,b=right.item;
+    if(state.sortBy==='name')return compareNames(a,b)*direction||left.index-right.index;
+    if(state.sortBy==='type'){
+      const rankDelta=(sortTypeRank(a)-sortTypeRank(b))*direction;
+      return rankDelta||compareNames(a,b)||left.index-right.index;
+    }
+    const av=sortMetric(a,state.sortBy),bv=sortMetric(b,state.sortBy);
+    if(av===null&&bv!==null)return 1;
+    if(av!==null&&bv===null)return -1;
+    if(av!==null&&bv!==null&&av!==bv)return (av-bv)*direction;
+    return compareNames(a,b)||left.index-right.index;
+  }).map(entry=>entry.item);
+}
+
+function renderSortControls(state){
+  state.host.querySelectorAll('[data-sort]').forEach(btn=>{
+    const selected=btn.dataset.sort===state.sortBy;
+    btn.classList.toggle('active',selected);
+    btn.textContent=`${btn.dataset.label}${selected?(state.sortOrder==='desc'?'↓':'↑'):''}`;
+  });
+}
+```
+
+Initialize the state with:
+
+```javascript
+sortBy:'name',sortOrder:'asc'
+```
+
+Apply search then sorting, call `renderSortControls(state)`, and bind the four buttons:
+
+```javascript
+state.sortOrder=state.sortBy===next
+  ?(state.sortOrder==='desc'?'asc':'desc')
+  :(next==='modified'||next==='size'?'desc':'asc');
+state.sortBy=next;
+```
+
+- [ ] **Step 5: Run integrated checks**
+
+Run Windows PowerShell, `pwsh`, Node inline syntax, and the offline dependency scan. Expected: all PASS and no `data-filter` or `typeFilter` marker.
+
+Run a DOM/source assertion that the quick row has four buttons and exactly one static `active` class. Confirm the default label is `名称↑`.
+
+- [ ] **Step 6: Update evidence and commit exact files**
+
+Update D-011 and the current implementation result in the workflow state card to record the four mutually exclusive sort fields and centered titles. Commit the validator/spec/plan/state-card files precisely; the outside-repository Demo remains uncommitted.
+
+---
+
 ## Plan self-review
 
 ### Spec coverage
 
 - Stable fixed more menu, X, text-only actions and divider rules: Task 2.
-- Default modified-time sort, size toggle and independent type filtering: Task 3.
+- Historical modified-time sort and independent type filtering: Task 3; superseded by the confirmed four-field single-select sort in Task 8.
 - Root-level sample folder and six directly nested files: Task 3.
 - Unified read-only viewer for image, TXT, HTML, PDF and video: Task 4.
 - Real offline sample image and playable video: Task 5.
@@ -765,7 +893,7 @@ Expected: staged list contains only `prd/workflow-state/GUANWANGGAID-21-google-p
 
 ### Type consistency
 
-- State consistently uses `typeFilter`, `sortBy`, `sortOrder`, `viewingFile`, `pendingAction`, `actionTarget` and `draftName`.
+- Final state consistently uses `sortBy`, `sortOrder`, `viewingFile`, `pendingAction`, `actionTarget` and `draftName`; Task 8 removes the obsolete `typeFilter`.
 - Demo items consistently use `type`, `sizeBytes`, `modifiedAt`, optional `children`, optional `extractChildren` and optional `textContent`.
 - All supported file rows route through `openFileViewer`; ZIP routes through `openExtractConfirm`; list `…` remains the only Copy/Rename/Delete entry.
 
