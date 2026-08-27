@@ -52,7 +52,7 @@
 
 ### 2.2 产品流程
 
-![兼容性查询使用流程](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2dba514845fcba85610f9d98173e39ee3a1852e5/public/prd/compatibility-query-share-code/07-product-flow-android.png)
+![兼容性查询使用流程](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4343699473ba18f524a7e49583bbbb69959fd82b/public/prd/compatibility-query-share-code/07-product-flow-android.png)
 
 ## 三、功能需求
 
