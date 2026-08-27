@@ -14,22 +14,32 @@ function Forbid-Pattern([string]$pattern, [string]$message) {
 }
 
 $fixedNavigation = [regex]::Unescape('\u9996\u9875\uff5c\u73a9\u6e38\u620f\uff5c\u6392\u884c\u699c\uff5c\u6587\u4ef6\u5e93\uff5c\u6211\u7684')
-$pcGameMetadata = [regex]::Unescape('PC \u6e38\u620f')
-$retroGame = [regex]::Unescape('\u590d\u53e4\u6e38\u620f')
 
 Require-Text $fixedNavigation 'Missing fixed five-tab navigation semantics'
 Require-Text 'data-library-tab="files"' 'Missing Files tab'
 Require-Text 'data-library-tab="pc"' 'Missing PC Games tab'
 Require-Text 'data-library-tab="retro"' 'Missing Retro Games tab'
-Require-Text "type:'game'" 'Game file data was removed'
-Require-Text $pcGameMetadata 'PC game file metadata was removed'
-Require-Text $retroGame 'Retro game semantics were removed'
-Require-Text 'add-game' 'Add-game capability was removed'
-Require-Text "permission:'granted'" 'Manager is missing persistent permission state'
+Require-Text 'data-component-id="C-CAPACITY"' 'Missing internal storage capacity card'
+Require-Text 'data-permission-state="denied"' 'Missing denied permission state'
+Require-Text 'data-system-settings-sim' 'Missing Android system settings simulation'
+Require-Text 'data-file-action="copy"' 'Missing Copy action'
+Require-Text 'data-file-action="rename"' 'Missing Rename action'
+Require-Text 'data-file-action="delete"' 'Missing Delete action'
+Require-Text 'id="nameActionDialog"' 'Missing copy/rename naming dialog'
+Require-Text 'id="deleteConfirmDialog"' 'Missing delete confirmation dialog'
+Require-Text "permission:'unknown'" 'Initial permission is not unknown'
+Require-Text 'pathStack:[]' 'Missing directory stack'
+Require-Text 'function enterFolder' 'Missing folder navigation'
+Require-Text 'function confirmCopy' 'Missing copy implementation'
+Require-Text 'function confirmRename' 'Missing rename implementation'
+Require-Text 'function confirmDelete' 'Missing delete implementation'
+Require-Text 'isMobileLandscape' 'Missing portrait-only orientation rule'
 
-Forbid-Pattern 'data-option=|function\s+setOption|location\.hash|\u65b9\u6848\s*[AB]|\u53cc\u65b9\u6848' 'A/B or hash mode is still present'
-Forbid-Pattern 'data-filter="game"' 'Game Files filter is still present'
-Forbid-Pattern '\u5ba1\u6838\u6a21\u5f0f|\u6b63\u5f0f\u6a21\u5f0f|\u901a\u8fc7\u540e\u9690\u85cf|\u8fdc\u7a0b\u5f00\u5173' 'Review-only behavior text is still present'
+Forbid-Pattern 'data-storage="sd"|data-storage="usb"' 'SD or USB storage is still present'
+Forbid-Pattern 'count-label|\d+\s*\u9879' 'File count copy is still present'
+Forbid-Pattern 'action-bar|data-file-action="move"|add-game' 'Removed file actions are still present'
+Forbid-Pattern 'GAMEHUB LOCAL|permission-chip' 'Legacy file header is still present'
+Forbid-Pattern 'data-option=|function\s+setOption|location\.hash' 'A/B or hash mode is still present'
 Forbid-Pattern 'https?://|<iframe\b|<canvas\b|<script\b[^>]*\bsrc=|<link\b[^>]*\brel=' 'Demo is not a fully offline single file'
 
 if ($failures.Count -gt 0) {
