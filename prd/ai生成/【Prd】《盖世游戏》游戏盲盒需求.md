@@ -204,5 +204,5 @@
 | 文档名称 | 文档链接／位置 | 说明 |
 |---|---|---|
 | 盖世游戏升级版 PRD 模板（vNext） | 用户提供的本地模板 | V1.8 文档结构依据 |
-| 游戏盲盒 Demo | [打开在线 Demo](https://raw.githack.com/z36358631-ship-it/-/cb7dec7fc7e83f5fb06c9d0a369c2cf29ee15a6a/demos/%E9%A6%96%E9%A1%B5%E4%B8%8E%E6%8E%A2%E7%B4%A2/%E6%B8%B8%E6%88%8F%E7%9B%B2%E7%9B%92demo.html) | 固定提交版本；覆盖横竖屏、弹窗、结果、失败和五语言交互 |
-| PRD 图示 | [查看 Git 图示目录](https://github.com/z36358631-ship-it/-/tree/3df9fcf2ecb1f76260a532cf50d8c17ae86093d7/public/prd/game-blind-box) | 6 张图均已发布；正文图片固定到实际包含文件的提交 |
+| 游戏盲盒 Demo | [一键打开 Demo](https://raw.githack.com/z36358631-ship-it/-/2f3ac091cfeecdcc50139220171a5157db544e5d/demos/%E9%A6%96%E9%A1%B5%E4%B8%8E%E6%8E%A2%E7%B4%A2/%E6%B8%B8%E6%88%8F%E7%9B%B2%E7%9B%92demo.html) | 直接进入可操作 Demo，无中转页；覆盖横竖屏、弹窗、结果、失败和五语言交互 |
+| PRD 图示 | [一键打开 Git 图示目录](https://github.com/z36358631-ship-it/-/tree/2f3ac091cfeecdcc50139220171a5157db544e5d/public/prd/game-blind-box) | 6 张图均已发布；正文图片固定到实际包含文件的提交 |
