@@ -72,11 +72,11 @@
 | 状态卡 | 本文件 | 已创建 | 文件存在 |
 | 产品设计 | `docs/superpowers/specs/2026-08-25-gamehub-game-blind-box-design.md` | 已同步 | 已确认规则已写入 |
 | 实施计划 | `docs/superpowers/plans/2026-08-27-game-blind-box-prd-v1-8.md` | 已同步 | 已按 vNext 页面六要素结构修正；提交 `b8e68630f801a14edd3684a91a50a03e3c1f0e02` |
-| Demo | [在线预览](https://raw.githack.com/z36358631-ship-it/-/d8095015518bc14bbe64e14249eb7f2d0c4376be/demos/%E9%A6%96%E9%A1%B5%E4%B8%8E%E6%8E%A2%E7%B4%A2/%E6%B8%B8%E6%88%8F%E7%9B%B2%E7%9B%92demo.html) | 已发布 V1.4 | HTTP 200、`text/html`；浏览器测试 5/5 PASS |
-| PRD | `prd/ai生成/【Prd】《盖世游戏》游戏盲盒需求.md` | 已发布 V1.9 | 严格保留 vNext 六章和 2 张页面六要素表；补齐数据结论、详情页图示和枚举定义；质量校验 0 error、0 warning；提交 `d8095015518bc14bbe64e14249eb7f2d0c4376be` |
+| Demo | [一键打开 Demo](https://raw.githack.com/z36358631-ship-it/-/2f3ac091cfeecdcc50139220171a5157db544e5d/demos/%E9%A6%96%E9%A1%B5%E4%B8%8E%E6%8E%A2%E7%B4%A2/%E6%B8%B8%E6%88%8F%E7%9B%B2%E7%9B%92demo.html) | 已发布 V1.4 | 直接进入可操作 Demo；HTTP 200、`text/html`；浏览器测试 5/5 PASS |
+| PRD | `prd/ai生成/【Prd】《盖世游戏》游戏盲盒需求.md` | 已发布 V1.9 | 严格保留 vNext 六章和 2 张页面六要素表；附录已改为一键打开 Demo 和 Git 图示目录；质量校验 0 error、0 warning；内容提交 `fb2203dfcd8ecfd745b5484d32f041b4b238cdf0` |
 | PRD 截图 | `public/prd/game-blind-box/` | 6 张已发布 | 入口／结果图固定到 `8f454a5569aeac91c35b47b7f54b4311422aef12`；产品流程图固定到 `f8325b47129e1cfd1f9186e217979e22729e438d`；详情图固定到 `3df9fcf2ecb1f76260a532cf50d8c17ae86093d7`；6/6 远程返回 HTTP 200、`image/png` |
 | 视觉证据 | `test-results/game-blind-box/visual/` | 已完成，有保留项 | 新版基线人工审图通过；严格整页像素门禁未通过并保留报告 |
-| Git 发布 | `codex/guanwanggaid-38-game-blind-box-v1-5` | 已推送 | 远端已更新至 `d8095015518bc14bbe64e14249eb7f2d0c4376be`；包含 Demo、6 张 PRD 图示和 V1.9 PRD |
+| Git 发布 | `codex/guanwanggaid-38-game-blind-box-v1-5` | 已推送 | Demo、6 张图示和 V1.9 PRD 均已发布；一键链接内容提交 `fb2203dfcd8ecfd745b5484d32f041b4b238cdf0` |
 
 ## 修改与验证
 
@@ -93,6 +93,7 @@
 | 2026-08-26 | 参照《盖世游戏升级版 PRD 模板（vNext）》更新 PRD | 追加 V1.7；将九章收口为修订记录和六章；游戏库与现有游戏详情各使用一张页面六要素表；入口卡、抽取弹窗、命中结果和失败态收入游戏库子功能表；待确认集中到第五章 | PRD、状态卡、工作流记录；Demo、截图和测试无需修改 | PRD 质量 0 error/0 warning；六章、2 张六要素表、4 张固定 SHA 图片和埋点参数一致性通过；4/4 图片 HTTP 200、`image/png`；业务口径审查通过；分支已推送，V1.7 提交 `b629709b210b2cd0bc9e8386f50481d58c0498ef` |
 | 2026-08-27 | 按 vNext 模板精简 PRD 并补产品流程图 | 追加 V1.8；严格保留六章、2 个页面六要素表、页面状态、横竖屏差异和子功能表；删套话并收敛重复核心规则；用 5 个当前 Demo 状态合成横向流程图，流程止于现有游戏详情 | PRD、流程图、截图工具、设计、计划、状态卡、工作流记录；Demo 无需修改 | 结构检查：六章、2 张六要素表、2 个页面、1 张子功能表、0 张功能汇总大表；PRD 质量 0 error/0 warning；本地图片 5/5；浏览器测试 5/5 PASS；Demo 无差异；本轮 Git 未推送，远程图未验 |
 | 2026-08-27 | 发布图示并更新 Git Demo 地址 | 推送产品流程图、详情页图和 vNext PRD；PRD 附录改为在线 Demo 与 Git 图示目录；补齐新版质量门禁发现的 4 项文档定义 | PRD、图示、状态卡、工作流记录；Demo 交互无需修改 | PRD 质量 0 error/0 warning；图片 6/6 远程通过；Demo HTTP 200、`text/html`；浏览器测试 5/5 PASS；远端提交 `d8095015518bc14bbe64e14249eb7f2d0c4376be` |
+| 2026-08-27 | Demo 链接改为一键直达 | PRD 附录与状态卡统一使用 raw.githack 固定提交 HTML 地址；移除中转页心智 | PRD、状态卡、工作流记录；Demo、图示与业务规则无需修改 | 点击直接进入可操作 Demo；HTTP 200、`text/html`；PRD 质量 0 error/0 warning；内容提交 `fb2203dfcd8ecfd745b5484d32f041b4b238cdf0` |
 
 ## 待确认与风险
 
