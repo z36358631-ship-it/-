@@ -29,7 +29,7 @@
 - 最新实施计划：`docs/superpowers/plans/2026-08-27-google-play-file-library-viewer-interactions.md`
 - 规格提交：`f1c82bcf`、`1ed44c99`、`322db1e3`
 - 计划提交：`c59e5a46`、`c42b2f07`
-- 验证脚本提交：`92f99f74`、`1830195d`、`4b80578c`
+- 验证脚本提交：`92f99f74`、`1830195d`、`4b80578c`、`3bdc0662`、`28a6bbb1`
 - 离线媒体嵌入脚本提交：`d8884d8c`
 
 ## Demo 与验证证据
