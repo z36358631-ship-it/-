@@ -24,12 +24,12 @@
 
 ## 基线与规格
 
-- 视觉与交互来源：用户提供的 PC游戏布局、内部存储容量卡、复制和重命名弹窗截图；盖世游戏 V6.1.1 `screen-18`、`screen-27`；现有 GameHub 组件。
+- 视觉与交互来源：用户提供的 PC游戏布局、内部存储容量卡、复制和重命名弹窗截图，以及本轮“解压标题未居中”“更多菜单标题未居中”“排序双高亮”实测截图；盖世游戏 V6.1.1 `screen-18`、`screen-27`；现有 GameHub 组件。
 - 最新规格：`docs/superpowers/specs/2026-08-27-google-play-file-library-portrait-mvp-design.md`
 - 最新实施计划：`docs/superpowers/plans/2026-08-27-google-play-file-library-viewer-interactions.md`
-- 规格提交：`f1c82bcf`、`1ed44c99`、`322db1e3`
-- 计划提交：`c59e5a46`、`c42b2f07`
-- 验证脚本提交：`92f99f74`、`1830195d`、`4b80578c`、`3bdc0662`、`28a6bbb1`
+- 规格提交：`f1c82bcf`、`1ed44c99`、`322db1e3`、`59fc8385`
+- 计划提交：`c59e5a46`、`c42b2f07`、`59fc8385`
+- 验证脚本提交：`92f99f74`、`1830195d`、`4b80578c`、`3bdc0662`、`28a6bbb1`、`0c4470b2`
 - 离线媒体嵌入脚本提交：`d8884d8c`
 
 ## Demo 与验证证据
