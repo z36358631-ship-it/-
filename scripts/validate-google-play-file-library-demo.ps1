@@ -43,13 +43,20 @@ Require-Text 'data-sort="size"' 'Size sort button is missing'
 Require-Text "typeFilter:'all'" 'Default type filter is not all'
 Require-Text "sortBy:'modified'" 'Default sort is not modified time'
 Require-Text "sortOrder:'desc'" 'Default sort order is not descending'
-Require-Text "name:'示例文件'" 'Root-level sample folder is missing'
-Require-Text "name:'示例图片.jpg'" 'Sample image is missing'
-Require-Text "name:'示例文本.txt'" 'Sample text is missing'
-Require-Text "name:'示例网页.html'" 'Sample HTML is missing'
-Require-Text "name:'示例文档.pdf'" 'Sample PDF is missing'
-Require-Text "name:'示例视频.mp4'" 'Sample video is missing'
-Require-Text "name:'示例压缩包.zip'" 'Sample ZIP is missing'
+$sampleFolder = [regex]::Unescape('\u793a\u4f8b\u6587\u4ef6')
+$sampleImage = [regex]::Unescape('\u793a\u4f8b\u56fe\u7247.jpg')
+$sampleText = [regex]::Unescape('\u793a\u4f8b\u6587\u672c.txt')
+$sampleHtml = [regex]::Unescape('\u793a\u4f8b\u7f51\u9875.html')
+$samplePdf = [regex]::Unescape('\u793a\u4f8b\u6587\u6863.pdf')
+$sampleVideo = [regex]::Unescape('\u793a\u4f8b\u89c6\u9891.mp4')
+$sampleZip = [regex]::Unescape('\u793a\u4f8b\u538b\u7f29\u5305.zip')
+Require-Text "name:'$sampleFolder'" 'Root-level sample folder is missing'
+Require-Text "name:'$sampleImage'" 'Sample image is missing'
+Require-Text "name:'$sampleText'" 'Sample text is missing'
+Require-Text "name:'$sampleHtml'" 'Sample HTML is missing'
+Require-Text "name:'$samplePdf'" 'Sample PDF is missing'
+Require-Text "name:'$sampleVideo'" 'Sample video is missing'
+Require-Text "name:'$sampleZip'" 'Sample ZIP is missing'
 Require-Text 'id="fileViewer"' 'Unified file viewer is missing'
 Require-Text 'id="viewerClose"' 'Viewer close control is missing'
 Require-Text 'function openFileViewer' 'Viewer open behavior is missing'
@@ -77,7 +84,7 @@ Forbid-Pattern 'state\.filter\s*===\s*[''"]recent[''"]\s*\?\s*item\.type\s*!==\s
 Forbid-Pattern 'document\.getElementById\([''"]sheetTitle[''"]\)\.textContent' 'More menu title is still dynamic'
 Forbid-Pattern '(?is)data-file-action="(?:copy|rename|delete)"[^>]*>\s*<svg\b' 'More menu actions still contain icons'
 Forbid-Pattern 'requestAnimationFrame\(\(\)=>sheet\.querySelector' 'More menu still autofocuses the first action'
-Forbid-Pattern "filter:'(?:all|recent|archive|folder)'" 'Legacy single filter state is still present'
+Forbid-Pattern "(?-i)(?<![A-Za-z])filter:'(?:all|recent|archive|folder)'" 'Legacy single filter state is still present'
 Forbid-Pattern 'data-filter="recent"' 'Recent modified is still implemented as a filter'
 Forbid-Pattern '\.recent\b|recent:' 'Legacy recent boolean state is still present'
 Forbid-Pattern '<iframe\b|<canvas\b' 'Viewer uses a forbidden iframe or canvas'
