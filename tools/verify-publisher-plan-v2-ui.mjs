@@ -175,6 +175,7 @@ try {
     '兑换确认弹窗'
   );
 
+  await page.evaluate(() => { Date.now = () => 202608310001; });
   await page.locator('#confirm-card-redeem').click();
   assert.equal(await page.getByText('发放成功').count(), 1);
   assert.equal(await page.locator('#redeemable-balance').innerText(), '650');
@@ -267,6 +268,8 @@ try {
   await adminPage.locator('#card-alert-webhooks').fill(`${demoWebhook}\n${demoWebhook}`);
   await adminPage.locator('#save-card-alert-settings').click();
   assert.equal(await adminPage.evaluate(() => cardAlertSettings.maskedWebhooks.length), 1);
+  assert.equal(await adminPage.evaluate(() => cardAlertSettings.maskedWebhooks[0].includes('demo-inventory-')), false);
+  assert.match(await adminPage.evaluate(() => cardAlertSettings.maskedWebhooks[0]), /\/\*+lert$/);
   assert.deepEqual(await adminPage.evaluate(() => lastCardAlertSimulation.lowProductIds), ['JD100']);
   assert.deepEqual(await adminPage.evaluate(() => lastCardAlertSimulation.notifyProductIds), ['JD100']);
 

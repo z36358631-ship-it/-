@@ -207,8 +207,10 @@ function isFeishuWebhook(value){
 }
 
 function maskWebhook(value){
-  const prefix=value.slice(0,Math.max(0,value.length-8));
-  return `${prefix}****${value.slice(-4)}`;
+  const url=new URL(value);
+  const token=url.pathname.split('/').pop()||'';
+  const maskedToken=token.length<=4?'*'.repeat(token.length):`${'*'.repeat(token.length-4)}${token.slice(-4)}`;
+  return `${url.origin}/open-apis/bot/v2/hook/${maskedToken}`;
 }
 
 function buildCardAlertPreview(threshold=cardAlertSettings.threshold){
