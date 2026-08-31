@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "runId": "5b5fe1f2-9cff-43a0-8f69-29ef1ed5ade0",
+  "requirementId": "GUANWANGGAID-41",
+  "revision": 17,
+  "status": "passed",
+  "createdAt": "2026-08-31T03:22:01.3837637Z",
+  "updatedAt": "2026-08-31T03:55:32.8885958Z",
+  "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-41-publisher-plan-v2.md",
+  "cardHash": "FAC5A31359508A1B969EC05461F496B57DACDF5050FE19D47E814DE96D4D4724",
+  "contract": {
+    "deliverables": [
+      "可操作C/B Demo",
+      "V2 PRD",
+      "流程图与页面图",
+      "机器与人工验证证据"
+    ],
+    "changes": [
+      "充值盖世币不进入兑换余额",
+      "兑换页不显示充值部分",
+      "规则说明新增来源限制",
+      "电子卡密自动发放"
+    ],
+    "goal": "取消现金提现，改为符合兑换资格的盖世币自主兑换京东电子卡并自动发卡密",
+    "inScope": [
+      "发行人计划C端Demo",
+      "发行人计划B端Demo",
+      "发行人计划V2 PRD",
+      "页面截图与横向流程图"
+    ],
+    "outOfScope": [
+      "实体京东卡",
+      "收货地址与物流",
+      "其他礼品卡",
+      "线上发布",
+      "真实卡密与真实资金"
+    ],
+    "inputs": [
+      "GUANWANGGAID-41",
+      "已确认设计稿",
+      "V1 C/B Demo",
+      "V1 PRD",
+      "任务中心兑换商城Demo"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "type": "requirement-resolution",
+      "required": true,
+      "dependsOn": [],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [],
+      "outputs": [
+        "唯一需求：GUANWANGGAID-41 发行人计划v2版"
+      ],
+      "evidence": [
+        "taskctl issue get GUANWANGGAID-41：status=in_progress，version=5"
+      ],
+      "validation": "已定位唯一任务、状态卡、Demo、PRD及验证证据",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S2",
+      "type": "fact-recovery",
+      "required": true,
+      "dependsOn": [
+        "S1"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [],
+      "outputs": [
+        "恢复方案A及用户已确认来源规则、电子卡履约边界"
+      ],
+      "evidence": [
+        "用户确认：充值盖世币不可兑换；兑换页不显示充值部分；规则说明同步",
+        "设计提交 ef854a7a；实施计划提交 5181b988"
+      ],
+      "validation": "当前有效事实与旧版范围已恢复",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S3",
+      "type": "change-compilation",
+      "required": true,
+      "dependsOn": [
+        "S2"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [],
+      "outputs": [
+        "修改项：充值来源隔离、兑换页隐藏充值部分、规则说明、电子卡密自动发放"
+      ],
+      "evidence": [
+        "影响产物：C/B Demo、PRD、截图、静态合同、状态卡",
+        "明确不改：实体卡、物流、真实卡密、线上发布、现有看板指标"
+      ],
+      "validation": "变化已编译为本轮合同，S4-S7 均为必需步骤",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S4",
+      "type": "page-baseline",
+      "required": true,
+      "dependsOn": [
+        "S3"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [],
+      "outputs": [
+        "V1 C/B Demo 与原发行人计划页面结构作为基线"
+      ],
+      "evidence": [
+        "设计方案 ef854a7a 记录基线、保留项与最小改动",
+        "钱包顶部栏视觉回归 1.0；人工原尺寸审图通过"
+      ],
+      "validation": "原页面结构、视觉与交互基线已核对",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S5",
+      "type": "artifact-execution",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S4"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [],
+      "outputs": [
+        "demos/Mod与发行人/发行人计划demo.html",
+        "demos/Mod与发行人/发行人计划-后台demo.html",
+        "prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md",
+        "public/prd/publisher-plan-v2/00-product-flow.png 至 22-card-orders.png"
+      ],
+      "evidence": [
+        "C端提交 b5ddddb4；B端提交 3097743c；截图证据提交 5223f07c"
+      ],
+      "validation": "C/B Demo、V2 PRD、23张页面及流程图已生成",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S6",
+      "type": "machine-validation",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [],
+      "outputs": [
+        "tools/verify-publisher-plan-v2.mjs：PASS",
+        "validate-prd-quality.ps1：0 errors / 0 warnings",
+        "validate-prd-images.ps1：23 images / 23 unique / RemoteVerified=0",
+        "固定 SHA、占位符、禁用 AI 用语扫描：PASS",
+        "docs/evidence/publisher-plan-v2/verification.json：PASS"
+      ],
+      "evidence": [
+        "静态合同通过；充值来源隔离与电子卡履约断言通过",
+        "PRD 图片 23/23 均使用 5223f07cd73f9b66285897700dca9807b0e0eed9",
+        "离线浏览器 externalRequests=0、pageErrors=0、consoleErrors=0"
+      ],
+      "validation": "约定机器验证全部通过；未执行公网及飞书转存验证",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S7",
+      "type": "professional-review",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [],
+      "outputs": [
+        "产品规则语义复核通过",
+        "C/B 端与截图一致性复核通过",
+        "23 张原尺寸 UI 审图通过"
+      ],
+      "evidence": [
+        "兑换页只展示可兑换余额，不展示总余额或充值来源；充值余额不补差",
+        "任务取消、审核驳回、结算退回均继承冻结来源；充值来源仍不可兑换",
+        "京东电子卡自动发卡密；无收货地址、物流、实体卡状态",
+        "9 个 C 端页面 + 9 个 B 端页面 = 18 张六要素表；7 个事件与 9 个参数一致",
+        "verification.json manualReview.status=pass；钱包顶部栏严格视觉回归=1.0"
+      ],
+      "validation": "产品逻辑、范围、文档语义与视觉融合均通过；保留上线前业务待确认项",
+      "error": null,
+      "reviewer": "Codex 产品、文档与视觉复核"
+    },
+    {
+      "id": "S8",
+      "type": "consistency-delivery",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S5",
+        "S6",
+        "S7"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [],
+      "outputs": [
+        "源文件｜通过：C/B Demo、PRD、23 张图片、验证脚本与状态卡均已落盘",
+        "机器验证｜通过：静态合同、PRD 质量、图片结构、固定 SHA、离线运行证据均通过",
+        "专业判断｜通过：产品规则、C/B 口径、范围与原尺寸视觉复核通过",
+        "Git｜通过：本地产物提交 b5ddddb4、3097743c、5223f07c、abfeec88；未推送",
+        "公开预览｜未执行：未获发布授权",
+        "远程资源｜未执行：未推送，未做公网图片与飞书转存验证",
+        "任务板｜GUANWANGGAID-41 已添加完成评论并移到 in_review，version=6"
+      ],
+      "evidence": [
+        "所有受影响产物均为已同步；数据看板指标与创作者冻结/解封明确无需修改",
+        "状态卡登记 D-001 至 D-006、产物证据、业务待确认项与外部风险",
+        "公开预览、远程图片、飞书导入和 Git 推送均如实保留为未执行"
+      ],
+      "validation": "多产物一致性对账完成；本地交付通过，外部发布与远程验证未执行",
+      "error": null,
+      "reviewer": null
+    }
+  ]
+}
