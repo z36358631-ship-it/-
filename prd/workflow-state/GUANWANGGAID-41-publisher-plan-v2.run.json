@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "runId": "5b5fe1f2-9cff-43a0-8f69-29ef1ed5ade0",
   "requirementId": "GUANWANGGAID-41",
-  "revision": 17,
-  "status": "passed",
+  "revision": 20,
+  "status": "in_progress",
   "createdAt": "2026-08-31T03:22:01.3837637Z",
-  "updatedAt": "2026-08-31T03:55:32.8885958Z",
+  "updatedAt": "2026-08-31T06:06:46.0845281Z",
   "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-41-publisher-plan-v2.md",
   "cardHash": "FAC5A31359508A1B969EC05461F496B57DACDF5050FE19D47E814DE96D4D4724",
   "contract": {
@@ -91,16 +91,20 @@
         "S2"
       ],
       "status": "passed",
-      "attempt": 1,
+      "attempt": 2,
       "inputHashes": [],
       "outputs": [
-        "修改项：充值来源隔离、兑换页隐藏充值部分、规则说明、电子卡密自动发放"
+        "D-007：C 端统一命名“兑换商城”",
+        "D-008：已上架京东卡 SKU 共用全局阈值并按 SKU 独立判断",
+        "D-009：全局阈值、飞书 Webhook、重复提醒间隔和消息预览"
       ],
       "evidence": [
-        "影响产物：C/B Demo、PRD、截图、静态合同、状态卡",
-        "明确不改：实体卡、物流、真实卡密、线上发布、现有看板指标"
+        "用户选择并确认告警方案 B",
+        "XGP 参考：demos/充值与商城/XGP赠品后台.html 与 CD123—CD128",
+        "增量设计：docs/superpowers/specs/2026-08-31-publisher-plan-v2-design.md",
+        "受影响产物：C/B Demo、PRD、截图、静态合同、视觉与交互证据"
       ],
-      "validation": "变化已编译为本轮合同，S4-S7 均为必需步骤",
+      "validation": "增量变化已编译；S4-S8 保持 stale，待实施计划通过后重跑",
       "error": null,
       "reviewer": null
     },
@@ -111,7 +115,7 @@
       "dependsOn": [
         "S3"
       ],
-      "status": "passed",
+      "status": "stale",
       "attempt": 1,
       "inputHashes": [],
       "outputs": [
@@ -133,7 +137,7 @@
         "S3",
         "S4"
       ],
-      "status": "passed",
+      "status": "stale",
       "attempt": 1,
       "inputHashes": [],
       "outputs": [
@@ -156,7 +160,7 @@
       "dependsOn": [
         "S5"
       ],
-      "status": "passed",
+      "status": "stale",
       "attempt": 1,
       "inputHashes": [],
       "outputs": [
@@ -182,7 +186,7 @@
       "dependsOn": [
         "S5"
       ],
-      "status": "passed",
+      "status": "stale",
       "attempt": 1,
       "inputHashes": [],
       "outputs": [
@@ -211,7 +215,7 @@
         "S6",
         "S7"
       ],
-      "status": "passed",
+      "status": "stale",
       "attempt": 1,
       "inputHashes": [],
       "outputs": [
