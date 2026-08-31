@@ -101,13 +101,19 @@ $contentWithoutFences = [regex]::Replace($content, '(?s)```.*?```', '')
 $lines = @($content -split "`r?`n")
 $tables = @(Get-MarkdownTables -Lines $lines)
 
+foreach ($table in $tables) {
+    if ($table.headers.Count -gt 4) {
+        Add-Issue -List $errors -Code 'TABLE_TOO_WIDE' -Message "Table at line $($table.line) has more than four columns."
+    }
+}
+
 $patterns = @{
     RevisionHeader = '^\u4FEE\u8BA2\u65E5\u671F\|\u4FEE\u8BA2\u5185\u5BB9\|\u7248\u672C\|\u4FEE\u8BA2\u4EBA$'
     RevisionNote = '(?m)\*{0,2}\u5907\u6CE8\*{0,2}\s*[:\uFF1A].*(\u65E0|\u641C\d{4}\.\d{1,2}\.\d{1,2}\u4FEE\u6539)'
     PageHeader = '^\u8981\u7D20\|\u5185\u5BB9\u8BF4\u660E$'
     SubFeatureHeader = '^\u7C7B\u578B\|\u56FE\u793A\|\u5185\u5BB9\|\u8BF4\u660E$'
-    EventHeader = '^\u4E8B\u4EF6\u540D\u79F0\|\u7C7B\u578B\|\u5BF9\u5E94\u9875\u9762\|\u89E6\u53D1\u65F6\u673A\u4E0E\u6210\u529F\u5224\u5B9A\|\u53C2\u6570$'
-    ParameterHeader = '^\u53C2\u6570\u540D\|\u7C7B\u578B\|\u5FC5\u586B\|\u8BF4\u660E\|\u679A\u4E3E/\u793A\u4F8B$'
+    EventHeader = '^\u4E8B\u4EF6\|\u9875\u9762/\u7C7B\u578B\|\u89E6\u53D1\u4E0E\u6210\u529F\|\u53C2\u6570$'
+    ParameterHeader = '^\u53C2\u6570\|\u7C7B\u578B/\u5FC5\u586B\|\u8BF4\u660E\|\u679A\u4E3E/\u793A\u4F8B$'
     Placeholder = 'TBD|TODO|XXX|YYYY/M/D|\u5F85\u8865\u5145|\u5F85\u5B9A|\[\u9875\u9762\u540D\u79F0\]|\[\u586B\u5199\]'
     CurrentAlternative = '\u5F53\u524D\u65B9\u5F0F|\u5F53\u524D\u89E3\u51B3|\u73B0\u72B6'
     SuccessMeasure = '\u6307\u6807\u53E3\u5F84|\u6210\u529F\u6307\u6807|\u6570\u636E\u7ED3\u8BBA'
@@ -178,6 +184,34 @@ foreach ($rule in $forbidden) {
     }
 }
 
+$aiStyleSuspectPattern = '\u901A\u8FC7.{0,40}\u5B9E\u73B0|\u4ECE\u800C|\u8FDB\u4E00\u6B65(?:\u63D0\u5347|\u4F18\u5316|\u589E\u5F3A)|(?:\u5168\u9762|\u6709\u6548)(?:\u63D0\u5347|\u4F18\u5316|\u589E\u5F3A)|\u5168\u65B9\u4F4D|\u672C\u529F\u80FD\u5C06|\u7CFB\u7EDF\u5C06\u4F1A'
+$aiStyleSuspects = @([regex]::Matches($contentWithoutFences, $aiStyleSuspectPattern) | ForEach-Object { $_.Value } | Sort-Object -Unique)
+if ($aiStyleSuspects.Count -gt 0) {
+    Add-Issue -List $warnings -Code 'AI_STYLE_SUSPECT' -Message "Possible filler wording should be reviewed: $($aiStyleSuspects -join ', ')"
+}
+
+$verboseScaffoldPattern = '\u73B0\u6709|\u4FDD\u7559|\u7528\u6237\u70B9\u51FB|\u5F53\u524D\u9875\u9762'
+$verboseScaffoldCount = [regex]::Matches($contentWithoutFences, $verboseScaffoldPattern).Count
+if ($verboseScaffoldCount -gt 30) {
+    Add-Issue -List $warnings -Code 'VERBOSE_SCAFFOLDING' -Message "The PRD repeats existing/retained/page-click scaffolding $verboseScaffoldCount times; group unchanged regions and keep only changed rules."
+}
+
+foreach ($table in $tables) {
+    $hasTextWall = $false
+    foreach ($row in $table.rows) {
+        foreach ($cell in $row) {
+            if ($cell.Length -gt 240 -and $cell -notmatch '<br\s*/?>') {
+                $hasTextWall = $true
+                break
+            }
+        }
+        if ($hasTextWall) { break }
+    }
+    if ($hasTextWall) {
+        Add-Issue -List $warnings -Code 'TABLE_CELL_TEXT_WALL' -Message "Table at line $($table.line) contains a long cell without <br> grouping."
+    }
+}
+
 $pageTables = @($tables | Where-Object { $_.headerKey -match $patterns.PageHeader })
 if ($pageTables.Count -eq 0) {
     Add-Issue -List $errors -Code 'PAGE_REQUIREMENT_TABLE_MISSING' -Message 'At least one page-level six-element requirement table is required.'
@@ -207,6 +241,15 @@ foreach ($table in $pageTables) {
         }
     }
 
+    $displayListPattern = '\*\*\s*\u5C55\u793A\u8BF4\u660E\s*[:\uFF1A]\s*\*\*\s*<br\s*/?>\s*1\.'
+    $interactionListPattern = '\*\*\s*\u4EA4\u4E92\u8BF4\u660E\s*[:\uFF1A]\s*\*\*\s*<br\s*/?>\s*1\.'
+    if ($detail -notmatch $displayListPattern) {
+        Add-Issue -List $errors -Code 'DISPLAY_LIST_FORMAT_REQUIRED' -Message "Page description at line $($table.line) must place display instructions on numbered <br> lines starting at 1."
+    }
+    if ($detail -notmatch $interactionListPattern) {
+        Add-Issue -List $errors -Code 'INTERACTION_LIST_FORMAT_REQUIRED' -Message "Page description at line $($table.line) must place interaction instructions on numbered <br> lines starting at 1."
+    }
+
     $pageImageCount = [regex]::Matches($detail, $patterns.Image).Count
     if ($pageImageCount -lt 1 -or $pageImageCount -gt 3) {
         Add-Issue -List $errors -Code 'PAGE_IMAGE_COUNT_INVALID' -Message "Page table at line $($table.line) must contain one to three page images; found $pageImageCount."
@@ -231,10 +274,27 @@ foreach ($table in $subFeatureTables) {
     if ($table.rows.Count -eq 0) {
         Add-Issue -List $errors -Code 'EMPTY_SUBFEATURE_TABLE' -Message "The subfeature table at line $($table.line) is empty."
     }
+    foreach ($row in $table.rows) {
+        if ($row.Count -lt 4) {
+            continue
+        }
+        $description = [string]$row[3]
+        if ($description -notmatch '\*\*\s*\u5C55\u793A\u8BF4\u660E\s*[:\uFF1A]\s*\*\*\s*<br\s*/?>\s*1\.') {
+            Add-Issue -List $errors -Code 'SUBFEATURE_DISPLAY_LIST_FORMAT_REQUIRED' -Message "Subfeature row in table at line $($table.line) must number display instructions from 1 on <br> lines."
+        }
+        if ($description -notmatch '\*\*\s*\u4EA4\u4E92\u8BF4\u660E\s*[:\uFF1A]\s*\*\*\s*<br\s*/?>\s*1\.') {
+            Add-Issue -List $errors -Code 'SUBFEATURE_INTERACTION_LIST_FORMAT_REQUIRED' -Message "Subfeature row in table at line $($table.line) must number interaction instructions from 1 on <br> lines."
+        }
+    }
 }
 
 $flowMatch = [regex]::Match($content, '(?ms)^#{2,4}\s*(?:2\.2\s*)?\u4EA7\u54C1\u6D41\u7A0B[^\r\n]*\r?\n(.*?)(?=^#{2,3}\s|\z)')
-if ($flowMatch.Success) {
+$flowComplexityPattern = '\u65B0\u589E\u9875\u9762|\u65B0\u589E\u5165\u53E3|\u65B0\u589E\u5217\u8868|\u65B0\u589E\u5F39\u7A97|\u540E\u53F0\u914D\u7F6E|\u8BA1\u8D39|\u6743\u9650|\u8DE8\u7AEF|\u8DE8\u7CFB\u7EDF|\u7070\u5EA6|\u8FC1\u79FB|\u9000\u6B3E|\u5E76\u53D1|\u591A\u89D2\u8272|\u6570\u636E\u53E3\u5F84'
+$requiresProductFlow = ($pageTables.Count -gt 1 -or $subFeatureTables.Count -gt 0 -or ($cSection.Success -and $bSection.Success) -or $contentWithoutFences -match $flowComplexityPattern)
+if ($requiresProductFlow -and -not $flowMatch.Success) {
+    Add-Issue -List $errors -Code 'PRODUCT_FLOW_REQUIRED' -Message 'Standard and complex PRDs must include section 2.2 with one combined horizontal product-flow image.'
+}
+elseif ($flowMatch.Success) {
     $flowImageCount = [regex]::Matches($flowMatch.Groups[1].Value, $patterns.Image).Count
     if ($flowImageCount -ne 1) {
         Add-Issue -List $errors -Code 'PRODUCT_FLOW_IMAGE_COUNT_INVALID' -Message "The product flow section must contain exactly one combined horizontal image; found $flowImageCount."
@@ -256,7 +316,7 @@ elseif ($dataConclusionMatch.Success) {
         Add-Issue -List $errors -Code 'TRACKING_EVENT_TABLE_MISSING' -Message 'A tracking event table is required for new, changed, or reused tracking.'
     }
     if ($parameterTables.Count -eq 0) {
-        Add-Issue -List $errors -Code 'TRACKING_PARAMETER_TABLE_MISSING' -Message 'The fixed five-column tracking parameter table is required.'
+        Add-Issue -List $errors -Code 'TRACKING_PARAMETER_TABLE_MISSING' -Message 'The fixed four-column tracking parameter table is required.'
     }
 }
 
@@ -264,8 +324,8 @@ if ($eventTables.Count -gt 0 -and $parameterTables.Count -gt 0) {
     $eventParameters = New-Object System.Collections.Generic.HashSet[string]([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($table in $eventTables) {
         foreach ($row in $table.rows) {
-            if ($row.Count -lt 5) { continue }
-            $raw = $row[4] -replace '<br\s*/?>', ',' -replace '`', ''
+            if ($row.Count -lt 4) { continue }
+            $raw = $row[3] -replace '<br\s*/?>', ',' -replace '`', ''
             foreach ($name in ($raw -split '[,;\uFF0C\uFF1B\u3001\s]+')) {
                 $clean = $name.Trim()
                 if ($clean -and $clean -notmatch '^(-|N/A|none|\u65E0)$') {
@@ -278,13 +338,13 @@ if ($eventTables.Count -gt 0 -and $parameterTables.Count -gt 0) {
     $definedParameters = New-Object System.Collections.Generic.HashSet[string]([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($table in $parameterTables) {
         foreach ($row in $table.rows) {
-            if ($row.Count -lt 5) { continue }
+            if ($row.Count -lt 4) { continue }
             $name = ($row[0] -replace '`', '').Trim()
             if (-not $name) { continue }
             [void]$definedParameters.Add($name)
 
             $type = $row[1]
-            $enumValue = $row[4]
+            $enumValue = $row[3]
             if ($type -match 'enum|\u679A\u4E3E') {
                 $segments = @($enumValue -split '(?:<br\s*/?>|[;\uFF1B])' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
                 if ($segments.Count -eq 0) {
@@ -322,10 +382,16 @@ foreach ($match in $imageMatches) {
     }
 }
 
-$plainLines = @($contentWithoutFences -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object {
-    $_.Length -ge 20 -and $_ -notmatch '^[#|>!\-`]' -and $_ -notmatch '^\d+[.\u3001]'
-})
-$duplicateGroups = @($plainLines | Group-Object | Where-Object { $_.Count -gt 1 })
+$proseSegments = New-Object System.Collections.Generic.List[string]
+$contentForDuplicateScan = [regex]::Replace($contentWithoutFences, '!\[[^\]]*\]\([^)]+\)', '')
+foreach ($segment in ($contentForDuplicateScan -split '(?:<br\s*/?>|\r?\n|\||[\u3002\uFF01\uFF1F])')) {
+    $normalized = $segment -replace '^\s*(?:[-*]|\d+[.\u3001])\s*', '' -replace '[`*_#>]', '' -replace '\s+', ' '
+    $normalized = $normalized.Trim(' ', ':', [char]0xFF1A, ';', [char]0xFF1B, '-', '.')
+    if ($normalized.Length -ge 15 -and $normalized -notmatch '^:?-{3,}:?$') {
+        $proseSegments.Add($normalized)
+    }
+}
+$duplicateGroups = @($proseSegments | Group-Object | Where-Object { $_.Count -gt 1 })
 foreach ($group in $duplicateGroups) {
     Add-Issue -List $warnings -Code 'DUPLICATE_PROSE' -Message "Repeated prose should be reviewed: $($group.Name)"
 }
