@@ -6,7 +6,7 @@
 > 当前范围：社区页面，包括社区首页、分区管理与详情、帖子图片查看器、帖子内容展示、评论、发布动态、话题搜索与我的页客态
 > 记录边界：本表独立维护，不合并到 AI 自动验收问题表。静态截图用于证明页面和操作场景，交互行为以手工复现结果为准。
 > 图片规则：每条问题必须在表格中附上对应证据图；同一张截图可支撑多个问题，但每个问题行都必须保留可点击的图片链接。
-> 公开图片固定提交：基础图片 `262d5f8c15d6fbcd5c214299e1eb54a72c4e3387`；问题17图片 `e31f77d7c5d91373b4cc602749aade18441fc20d`。表格使用飞书可识别的 HTTPS PNG 内嵌图片语法。
+> 公开图片固定提交：基础图片 `262d5f8c15d6fbcd5c214299e1eb54a72c4e3387`；问题17图片 `e31f77d7c5d91373b4cc602749aade18441fc20d`；问题18图片 `a59214133fbced8ed197b9c8b815538aa4c5bab5`。表格使用飞书可识别的 HTTPS PNG 内嵌图片语法。
 > 暂记环境：GameHub 6.2.0（125）/ 测试环境 / Official / Android 真机 / 竖屏；后续复测时再核对实际设备与版本。
 
 | 模块 | 问题描述 | 期望表现 | 截图 | 提交人 | 优先级 | 指派给 | 状态 | 环境/机型 |
@@ -28,3 +28,4 @@
 | 问题15｜社区-发布动态-话题删除 | 编辑已插入的话题时，按删除键会逐个字符删除“#话题名”，需要连续多次操作才能移除完整话题。 | 话题作为完整标签单元处理；光标位于话题后方时，按一次删除键直接删除整个“#话题名”，且不影响相邻普通文字。 | ![图13](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@262d5f8c15d6fbcd5c214299e1eb54a72c4e3387/public/acceptance/guanwanggaid-17-manual-issues-20260828/images/13-topic-delete-by-character.png) | 郑群超（手工复现） | P2 | 客户端 | 待处理 | GameHub 6.2.0（125）/ 测试环境 / Official / Android 真机 / 横屏 |
 | 问题16｜社区-帖子列表-评论入口 | 在社区帖子列表点击评论图标或评论数后，进入对应详情页时没有直接定位到评论区，用户仍需手动查找评论位置。 | 点击列表评论入口后，进入对应内容详情页并自动滚动定位至评论区，直接展示评论内容区域。 | ![图14](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@262d5f8c15d6fbcd5c214299e1eb54a72c4e3387/public/acceptance/guanwanggaid-17-manual-issues-20260828/images/14-feed-comment-no-anchor.png) | 郑群超（手工复现） | P1 | 客户端 | 待处理 | GameHub 6.2.0（125）/ 测试环境 / Official / Android 真机 / 竖屏 |
 | 问题17｜社区-帖子列表-返回位置 | 从帖子列表进入帖子详情，再返回列表后，列表自动向下偏移到下一条帖子所在高度，没有回到进入详情前的浏览位置。 | 返回列表时保持进入详情前的当前Tab、列表数据与精确滚动位置，原帖子在屏幕中的相对位置不变；不得自动定位到下一条帖子。 | ![图16](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@e31f77d7c5d91373b4cc602749aade18441fc20d/public/acceptance/guanwanggaid-17-manual-issues-20260828/images/16-list-return-scroll-position.png) | 郑群超（手工复现） | P1 | 客户端 | 待处理 | GameHub 6.2.0（125）/ 测试环境 / Official / Android 真机 / 竖屏 |
+| 问题18｜社区-分区管理-首次置顶抖动 | 在分区管理页首次将任一分区加入“首页展示”置顶区时，顶部置顶区插入首个专区卡片后会异常抖动一下。 | 首次置顶成功后，顶部“首页展示”区域应平稳更新，专区卡片直接稳定显示在正确位置；不得出现抖动、跳变或回弹。 | ![图17](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a59214133fbced8ed197b9c8b815538aa4c5bab5/public/acceptance/guanwanggaid-17-manual-issues-20260828/images/17-first-pinned-section-area-jitters.png) | 郑群超（手工复现） | P2 | 客户端 | 待处理 | GameHub 6.2.0（125）/ 测试环境 / Official / Android 真机 / 竖屏 |
