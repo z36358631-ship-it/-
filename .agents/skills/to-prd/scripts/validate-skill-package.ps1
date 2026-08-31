@@ -115,4 +115,3 @@ if ($errors.Count -gt 0) {
     installedPath = if ($InstalledPath) { (Get-NormalizedRoot -Path $InstalledPath) } else { $null }
     requiredFiles = $requiredFiles.Count
 } | ConvertTo-Json -Compress
-
