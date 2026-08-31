@@ -65,7 +65,11 @@ mustContain(prd, [
   '![产品流程]',
   '## 五、待确认项'
 ], 'PRD');
-mustNotContain(prd, ['__IMAGE_COMMIT_SHA__', '<IMAGE_COMMIT_SHA>', '收货地址', '物流单号'], 'PRD');
+mustNotContain(prd, ['__IMAGE_COMMIT_SHA__', '<IMAGE_COMMIT_SHA>'], 'PRD');
+assert(
+  !/(?:填写|输入|提交|采集|新增|保存)收货地址|(?:上传|填写|录入|绑定)物流单号|物流发货|实物发货/.test(prd),
+  'PRD still defines physical-card delivery capabilities'
+);
 
 const eventNames = [...prd.matchAll(/\| `([a-z][a-z0-9_]+)` \|/g)].map(match => match[1]);
 assert.equal(new Set(eventNames).size, eventNames.length, 'PRD contains duplicate event names');
