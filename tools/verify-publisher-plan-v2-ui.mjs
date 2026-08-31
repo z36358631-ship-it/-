@@ -136,6 +136,7 @@ try {
 
   await page.evaluate(() => showView('earnings'));
   assert.equal(await page.locator('#wallet-total').innerText(), '3,650');
+  assert.equal(await page.locator('#view-earnings .redeem-card-entry strong').innerText(), '兑换商城');
   await captureC(page, '07-wallet', '我的钱包');
   await capture(
     page.locator('#view-earnings .header'),
@@ -157,10 +158,11 @@ try {
   assert.equal(await page.getByText('充值所得仅可用于发布任务，不计入兑换余额', { exact: false }).count() > 0, true);
 
   await page.evaluate(() => showView('card-store'));
+  assert.equal(await page.locator('#view-card-store .header .title').innerText(), '兑换商城');
   assert.equal(await page.locator('#redeemable-balance').innerText(), '2,650');
   assert.equal(await page.locator('[data-card-id="JD50"]').isDisabled(), true, '售罄卡必须禁用');
   assert.equal(await page.locator('[data-card-id="JD100"]').isDisabled(), true, '余额不足卡必须禁用');
-  await captureC(page, '09-card-store', '京东卡兑换');
+  await captureC(page, '09-card-store', '兑换商城');
 
   await page.getByRole('button', { name: /京东E卡 20元/ }).click();
   assert.equal(await page.getByText('当前可兑换').count(), 1);
@@ -217,6 +219,10 @@ try {
 
   await adminPage.evaluate(() => switchPage('jd-cards'));
   assert.equal(await adminPage.getByText('京东电子卡商品').count(), 1);
+  assert.equal(await adminPage.locator('th').filter({ hasText: /^预警$/ }).count(), 0);
+  await adminPage.evaluate(() => openCardProductModal('JD10'));
+  assert.equal(await adminPage.getByText('库存预警阈值', { exact: true }).count(), 0);
+  await adminPage.evaluate(() => closeModal());
   await captureB(adminPage, '20-card-products', '京东卡商品配置');
   await capture(
     adminPage.locator('.page-tabs'),
@@ -231,6 +237,63 @@ try {
   }
   await captureB(adminPage, '21-card-inventory', '卡密库存');
 
+  await adminPage.getByRole('button', { name: '库存告警设置' }).click();
+  assert.equal(await adminPage.locator('#card-alert-threshold').inputValue(), '3');
+  assert.equal(await adminPage.locator('#card-alert-repeat-hours').inputValue(), '24');
+  assert.match(await adminPage.locator('#card-alert-webhooks').inputValue(), /\*{4}/);
+  assert.match(await adminPage.locator('#card-alert-preview').innerText(), /京东E卡 100元/);
+  await capture(
+    adminPage.locator('#modal'),
+    path.join(outputDir, '23-card-alert-settings.png'),
+    screenshots,
+    '23-card-alert-settings',
+    '库存告警设置'
+  );
+
+  await adminPage.locator('#card-alert-threshold').fill('0');
+  await adminPage.locator('#save-card-alert-settings').click();
+  assert.equal(await adminPage.getByText('全局库存预警阈值必须为大于 0 的整数', { exact: true }).count(), 1);
+  await adminPage.locator('#card-alert-threshold').fill('3');
+  await adminPage.locator('#card-alert-repeat-hours').fill('0');
+  await adminPage.locator('#save-card-alert-settings').click();
+  assert.equal(await adminPage.getByText('重复提醒间隔必须为大于 0 的整数小时', { exact: true }).count(), 1);
+  await adminPage.locator('#card-alert-repeat-hours').fill('24');
+  await adminPage.locator('#card-alert-webhooks').fill('http://example.com/hook');
+  await adminPage.locator('#save-card-alert-settings').click();
+  assert.equal(await adminPage.locator('#modal').evaluate(element => element.classList.contains('show')), true);
+  assert.equal(await adminPage.getByText('Webhook 必须是有效的 HTTPS 飞书机器人地址', { exact: true }).count(), 1);
+
+  const demoWebhook = 'https://open.feishu.cn/open-apis/bot/v2/hook/demo-inventory-alert';
+  await adminPage.locator('#card-alert-webhooks').fill(`${demoWebhook}\n${demoWebhook}`);
+  await adminPage.locator('#save-card-alert-settings').click();
+  assert.equal(await adminPage.evaluate(() => cardAlertSettings.maskedWebhooks.length), 1);
+  assert.deepEqual(await adminPage.evaluate(() => lastCardAlertSimulation.lowProductIds), ['JD100']);
+  assert.deepEqual(await adminPage.evaluate(() => lastCardAlertSimulation.notifyProductIds), ['JD100']);
+
+  await adminPage.evaluate(() => openCardAlertSettings());
+  await adminPage.locator('#card-alert-webhooks').fill('');
+  await adminPage.locator('#save-card-alert-settings').click();
+  assert.equal(await adminPage.evaluate(() => cardAlertSettings.maskedWebhooks.length), 0);
+
+  const alertSequence = await adminPage.evaluate(() => {
+    cardAlertState.clear();
+    const first = simulateCardInventoryAlerts(0, '首次跌破');
+    const repeated = simulateCardInventoryAlerts(60 * 60 * 1000, '持续低库存');
+    const afterInterval = simulateCardInventoryAlerts(24 * 60 * 60 * 1000, '达到重复间隔');
+    const jd100 = jdCardProducts.find(item => item.id === 'JD100');
+    jd100.stock = 4;
+    const recovered = simulateCardInventoryAlerts(25 * 60 * 60 * 1000, '补货恢复');
+    jd100.stock = 2;
+    const droppedAgain = simulateCardInventoryAlerts(26 * 60 * 60 * 1000, '恢复后再次跌破');
+    return { first, repeated, afterInterval, recovered, droppedAgain };
+  });
+  assert.deepEqual(alertSequence.first.notifyProductIds, ['JD100']);
+  assert.deepEqual(alertSequence.repeated.notifyProductIds, []);
+  assert.deepEqual(alertSequence.afterInterval.notifyProductIds, ['JD100']);
+  assert.deepEqual(alertSequence.recovered.lowProductIds, []);
+  assert.deepEqual(alertSequence.droppedAgain.notifyProductIds, ['JD100']);
+  assert.equal(alertSequence.first.lowProductIds.includes('JD50'), false, '已下架 SKU 不得触发告警');
+
   await adminPage.evaluate(() => switchPage('card-orders'));
   assert.equal(await adminPage.getByText('京东卡兑换订单').count(), 1);
   for (const status of ['待发放', '已发放', '发放失败', '已退回', '待核对']) {
@@ -238,6 +301,7 @@ try {
   }
   assert.equal(await adminPage.getByText('禁止自动退款或补发', { exact: false }).count() > 0, true);
   assert.equal(await adminPage.getByText('物流', { exact: false }).count(), 0);
+  await adminPage.waitForFunction(() => !document.getElementById('toast').classList.contains('show'));
   await captureB(adminPage, '22-card-orders', '京东卡兑换订单');
 
   const cOld = await openTracked(cBaseline, { width: 520, height: 980 });
@@ -293,7 +357,7 @@ try {
   );
 
   screenshots.sort((left, right) => left.name.localeCompare(right.name));
-  assert.equal(screenshots.length, 23, 'Expected exactly 23 PRD screenshots');
+  assert.equal(screenshots.length, 24, 'Expected exactly 24 PRD screenshots');
   for (const item of screenshots) {
     assert(item.width > 300 && item.height > 300, `${item.name} dimensions are too small`);
   }
@@ -313,7 +377,12 @@ try {
       totalAfterJd20: 1650,
       redeemableAfterJd20: 650,
       rechargeAfterJd20: 1000,
-      physicalCardOrLogistics: false
+      physicalCardOrLogistics: false,
+      mallTitle: '兑换商城',
+      globalAlertThreshold: 3,
+      alertScope: 'per-sku',
+      repeatHours: 24,
+      webhookRequestsSent: 0
     },
     sources: {
       pageRecipe: 'X-03',
@@ -355,7 +424,7 @@ try {
     }
   };
   fs.writeFileSync(evidencePath, `${JSON.stringify(verification, null, 2)}\n`, 'utf8');
-  console.log('PASS: publisher plan V2 UI, 23 screenshots captured');
+  console.log('PASS: publisher plan V2 UI, 24 screenshots captured');
 } finally {
   for (const context of pagesToClose) await context.close().catch(() => {});
   await browser.close();

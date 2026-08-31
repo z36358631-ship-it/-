@@ -1,6 +1,6 @@
 {
   "status": "pass",
-  "checkedAt": "2026-08-31T03:35:57.622Z",
+  "checkedAt": "2026-08-31T07:15:52.867Z",
   "contract": {
     "totalBefore": 3650,
     "redeemableBefore": 2650,
@@ -8,7 +8,12 @@
     "totalAfterJd20": 1650,
     "redeemableAfterJd20": 650,
     "rechargeAfterJd20": 1000,
-    "physicalCardOrLogistics": false
+    "physicalCardOrLogistics": false,
+    "mallTitle": "兑换商城",
+    "globalAlertThreshold": 3,
+    "alertScope": "per-sku",
+    "repeatHours": 24,
+    "webhookRequestsSent": 0
   },
   "sources": {
     "pageRecipe": "X-03",
@@ -62,10 +67,10 @@
       "name": "00-product-flow",
       "title": "产品流程",
       "path": "public/prd/publisher-plan-v2/00-product-flow.png",
-      "bytes": 262718,
+      "bytes": 262297,
       "width": 2180,
       "height": 800,
-      "sha256": "66e9597665525d422590529bf6dd4313992fb05bc3091f6c4ecadd9aa79df4af"
+      "sha256": "caeabf1ed49393be8d502a78707119d6f06142264a7ef2680b765a105cde347f"
     },
     {
       "name": "01-task-plaza",
@@ -125,10 +130,10 @@
       "name": "07-wallet",
       "title": "我的钱包",
       "path": "public/prd/publisher-plan-v2/07-wallet.png",
-      "bytes": 39134,
+      "bytes": 39243,
       "width": 376,
       "height": 812,
-      "sha256": "dca957be43d11573db4f2947e93ba7043ee84ff9b4da6008770f23c4a608990e"
+      "sha256": "63b238609ff60067a21c97f29d9bebff6469c97d9b592e8629f9c5b66fa92cfa"
     },
     {
       "name": "08-recharge",
@@ -141,39 +146,39 @@
     },
     {
       "name": "09-card-store",
-      "title": "京东卡兑换",
+      "title": "兑换商城",
       "path": "public/prd/publisher-plan-v2/09-card-store.png",
-      "bytes": 43906,
+      "bytes": 43827,
       "width": 376,
       "height": 812,
-      "sha256": "7a570a69fcd86f0d5fcdb55ce3bdf9e15e877966f9cd4fe595be3482d46baf2d"
+      "sha256": "805152ab893da177320bbe818c7b64070fa463466cb2d8e3bb3d5677964320fd"
     },
     {
       "name": "10-card-confirm",
       "title": "确认兑换",
       "path": "public/prd/publisher-plan-v2/10-card-confirm.png",
-      "bytes": 38184,
+      "bytes": 38133,
       "width": 376,
       "height": 812,
-      "sha256": "35f2e88f86e0dd52d0c2ee909b5eeed891ada0772c93ee8c68a374a0b5c9acb1"
+      "sha256": "4cf65332f7ef57754b37e488fa1f1a25b0e99b38e2afe752220fb02f6315b7bf"
     },
     {
       "name": "11-card-success",
       "title": "自动发卡密",
       "path": "public/prd/publisher-plan-v2/11-card-success.png",
-      "bytes": 35387,
+      "bytes": 35336,
       "width": 376,
       "height": 812,
-      "sha256": "9b0bc0ecc3ce91c459ed91b229c36b98134e594aae6689247d64d1adf1ff827c"
+      "sha256": "5844e57f0a31cf368556b158794c89d44310ee72caa905e04c0f8297f8164dd2"
     },
     {
       "name": "12-card-history",
       "title": "兑换记录",
       "path": "public/prd/publisher-plan-v2/12-card-history.png",
-      "bytes": 35101,
+      "bytes": 35004,
       "width": 376,
       "height": 812,
-      "sha256": "73a57a8728ee5cef8f4dda91081e1c1492ded728f80b52ffedc22b9cc5965da1"
+      "sha256": "13a4c41593e6e7747287c8ea2e7fb419fd119f33ac5561845e7d896c49604337"
     },
     {
       "name": "13-dashboard",
@@ -242,19 +247,19 @@
       "name": "20-card-products",
       "title": "京东卡商品配置",
       "path": "public/prd/publisher-plan-v2/20-card-products.png",
-      "bytes": 52450,
+      "bytes": 56566,
       "width": 1440,
       "height": 900,
-      "sha256": "4942512ef7c91296621e70d6f528bda19eafb9caaa82e974e9fcea947d377c81"
+      "sha256": "7dce7ee7f71d25a4b42791712d92d870c142cce3ba3266e6a69f8eebc136b4cb"
     },
     {
       "name": "21-card-inventory",
       "title": "卡密库存",
       "path": "public/prd/publisher-plan-v2/21-card-inventory.png",
-      "bytes": 66043,
+      "bytes": 74116,
       "width": 1440,
       "height": 900,
-      "sha256": "e7a6a4781bf385ee187520457477049953e8e4adc9ce55cf3a4c05bdd5aa244a"
+      "sha256": "71f902d4c0f4c94d96c812e8c6e326682844ca6b4a859d99cdf0f09a68fdcf1f"
     },
     {
       "name": "22-card-orders",
@@ -264,6 +269,15 @@
       "width": 1440,
       "height": 900,
       "sha256": "d2e26b35def031b4608babd9253107123f35ea275a16c7f151d270a5e0823ea7"
+    },
+    {
+      "name": "23-card-alert-settings",
+      "title": "库存告警设置",
+      "path": "public/prd/publisher-plan-v2/23-card-alert-settings.png",
+      "bytes": 82064,
+      "width": 1440,
+      "height": 900,
+      "sha256": "c24af2ab7845e7adba75a512faac7915395d6f4ef0a8bc894593543bbb90190a"
     }
   ],
   "componentEvidence": [
@@ -315,22 +329,14 @@
   ],
   "visualComparison": {
     "status": "pass",
-    "checkedAt": "2026-08-31T03:35:57.622Z",
+    "checkedAt": "2026-08-31T07:15:52.867Z",
     "method": "full-resolution RGB MAE similarity, Canny edge XOR, uniform-window SSIM, CIEDE2000 P95 and component geometry",
     "noResize": true,
     "geometryThresholdPx": 2,
     "strictComponentPassed": true,
     "manualReview": {
-      "status": "pass",
-      "reviewer": "Codex 产品与视觉复核",
-      "checkedAt": "2026-08-31T03:37:50.8310431Z",
-      "checks": [
-        "23 张原尺寸图片无文字溢出或关键按钮遮挡",
-        "兑换页只显示 2,650 可兑换盖世币，未显示 1,000 充值来源余额",
-        "卡密默认脱敏，确认、成功和历史记录状态完整",
-        "后台表格完整展示，无实体卡、收货地址或物流状态",
-        "旧 C/B 页面主要布局未因本轮增量样式出现回归"
-      ]
+      "status": "pending",
+      "reviewer": null
     },
     "pairs": [
       {
@@ -342,9 +348,9 @@
           "height": 812
         },
         "metrics": {
-          "rgbSimilarity": 0.961133,
-          "edgeSimilarity": 0.924972,
-          "ssim": 0.761608,
+          "rgbSimilarity": 0.961207,
+          "edgeSimilarity": 0.925165,
+          "ssim": 0.762271,
           "deltaE2000P95": 25.744558
         },
         "thresholds": {
