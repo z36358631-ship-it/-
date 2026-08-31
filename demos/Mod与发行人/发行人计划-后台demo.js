@@ -27,10 +27,10 @@ const settlements=[
 ];
 
 const jdCardProducts=[
-{id:'JD10',name:'京东E卡 10元',faceValue:10,cost:1000,stock:8,warning:3,limit:2,status:'已上架',image:'已配置',instructions:'兑换成功后自动发放电子卡密，请在京东账户内绑定使用。'},
-{id:'JD20',name:'京东E卡 20元',faceValue:20,cost:2000,stock:5,warning:3,limit:1,status:'已上架',image:'已配置',instructions:'兑换成功后自动发放电子卡密，请在京东账户内绑定使用。'},
-{id:'JD50',name:'京东E卡 50元',faceValue:50,cost:5000,stock:0,warning:5,limit:1,status:'已下架',image:'已配置',instructions:'兑换成功后自动发放电子卡密，请在京东账户内绑定使用。'},
-{id:'JD100',name:'京东E卡 100元',faceValue:100,cost:10000,stock:2,warning:3,limit:1,status:'已上架',image:'已配置',instructions:'兑换成功后自动发放电子卡密，请在京东账户内绑定使用。'},
+{id:'JD10',name:'京东E卡 10元',faceValue:10,cost:1000,stock:8,limit:2,status:'已上架',image:'已配置',instructions:'兑换成功后自动发放电子卡密，请在京东账户内绑定使用。'},
+{id:'JD20',name:'京东E卡 20元',faceValue:20,cost:2000,stock:5,limit:1,status:'已上架',image:'已配置',instructions:'兑换成功后自动发放电子卡密，请在京东账户内绑定使用。'},
+{id:'JD50',name:'京东E卡 50元',faceValue:50,cost:5000,stock:0,limit:1,status:'已下架',image:'已配置',instructions:'兑换成功后自动发放电子卡密，请在京东账户内绑定使用。'},
+{id:'JD100',name:'京东E卡 100元',faceValue:100,cost:10000,stock:2,limit:1,status:'已上架',image:'已配置',instructions:'兑换成功后自动发放电子卡密，请在京东账户内绑定使用。'},
 ];
 
 const cardInventory=[
@@ -48,6 +48,14 @@ const cardExchangeOrders=[
 {id:'EX20260829006',uid:'u30055',productId:'JD10',card:'京东E卡 10元',cost:1000,time:'2026-08-29 12:10',status:'已退回',codeId:'—'},
 {id:'EX20260828004',uid:'u30301',productId:'JD100',card:'京东E卡 100元',cost:10000,time:'2026-08-28 16:05',status:'发放失败',codeId:'—'},
 ];
+
+const cardAlertSettings={
+  threshold:3,
+  repeatHours:24,
+  maskedWebhooks:['https://open.feishu.cn/open-apis/bot/v2/hook/****lert'],
+};
+const cardAlertState=new Map();
+let lastCardAlertSimulation={lowProductIds:[],notifyProductIds:[],reason:'尚未检查'};
 
 let currentCardAdminTab='products';
 let cardInventoryFilter={productId:'',status:''};
@@ -165,6 +173,52 @@ function productName(productId){
   return product?product.name:productId;
 }
 
+function getLowStockProducts(threshold=cardAlertSettings.threshold){
+  return jdCardProducts.filter(item=>item.status==='已上架'&&item.stock<=threshold);
+}
+
+function simulateCardInventoryAlerts(nowMs=Date.now(),reason='库存变化'){
+  const lowProducts=getLowStockProducts();
+  const lowIds=new Set(lowProducts.map(item=>item.id));
+  const notifyProductIds=[];
+  for(const product of jdCardProducts){
+    const previous=cardAlertState.get(product.id);
+    if(!lowIds.has(product.id)){
+      cardAlertState.set(product.id,{low:false,lastNotifiedAt:null});
+      continue;
+    }
+    const repeatMs=cardAlertSettings.repeatHours*60*60*1000;
+    const shouldNotify=!previous||!previous.low||previous.lastNotifiedAt===null||nowMs-previous.lastNotifiedAt>=repeatMs;
+    if(shouldNotify)notifyProductIds.push(product.id);
+    cardAlertState.set(product.id,{low:true,lastNotifiedAt:shouldNotify?nowMs:previous.lastNotifiedAt});
+  }
+  lastCardAlertSimulation={reason,lowProductIds:[...lowIds],notifyProductIds};
+  return lastCardAlertSimulation;
+}
+
+function isFeishuWebhook(value){
+  if(cardAlertSettings.maskedWebhooks.includes(value))return true;
+  try{
+    const url=new URL(value);
+    return url.protocol==='https:'&&['open.feishu.cn','open.larksuite.com'].includes(url.hostname)&&/^\/open-apis\/bot\/v2\/hook\/[^/]+$/.test(url.pathname);
+  }catch{
+    return false;
+  }
+}
+
+function maskWebhook(value){
+  const prefix=value.slice(0,Math.max(0,value.length-8));
+  return `${prefix}****${value.slice(-4)}`;
+}
+
+function buildCardAlertPreview(threshold=cardAlertSettings.threshold){
+  const products=[...jdCardProducts].filter(item=>item.status==='已上架').sort((a,b)=>a.stock-b.stock);
+  const product=products.find(item=>item.stock<=threshold)||products[0];
+  if(!product)return '暂无已上架的京东卡 SKU，当前不会触发库存告警。';
+  const status=product.stock<=threshold?'已达到':'尚未达到';
+  return `<strong>【京东卡库存告警】</strong><br>${product.name} 当前可用卡密剩余 <strong>${product.stock}</strong> 张，${status}全局预警阈值 <strong>${threshold}</strong> 张。触发后请及时补充库存。<br><span style="color:#1677ff">[进入后台]</span>`;
+}
+
 function renderJdCards(){
   const productsActive=currentCardAdminTab==='products';
   return `<div class="page-tabs" role="tablist" aria-label="京东卡管理">
@@ -179,8 +233,9 @@ function renderJdCards(){
 function renderCardProducts(){
   return `<div class="card">
     <div class="card-title-row"><div class="card-title">京东电子卡商品</div><button class="btn btn-primary" onclick="openCardProductModal()">+ 新增商品</button></div>
-    <div class="table-wrap"><table><thead><tr><th>商品ID</th><th>名称</th><th>面额</th><th>兑换价格</th><th>库存</th><th>预警</th><th>单人限兑</th><th>状态</th><th>操作</th></tr></thead><tbody>
-    ${jdCardProducts.map(item=>`<tr><td>${item.id}</td><td>${item.name}</td><td>¥${item.faceValue}</td><td>${item.cost.toLocaleString()} 盖世币</td><td style="color:${item.stock<=item.warning?'#ff4d4f':'inherit'}">${item.stock}</td><td>${item.warning}</td><td>${item.limit}次</td><td><span class="tag ${item.status==='已上架'?'tag-green':'tag-gray'}">${item.status}</span></td><td><button class="btn btn-sm" onclick="openCardProductModal('${item.id}')">编辑</button></td></tr>`).join('')}
+    <div class="status-note info">库存高亮使用卡密库存页的全局阈值，并按每个已上架 SKU 的可用库存分别判断。</div>
+    <div class="table-wrap"><table><thead><tr><th>商品ID</th><th>名称</th><th>面额</th><th>兑换价格</th><th>可用库存</th><th>单人限兑</th><th>状态</th><th>操作</th></tr></thead><tbody>
+    ${jdCardProducts.map(item=>`<tr><td>${item.id}</td><td>${item.name}</td><td>¥${item.faceValue}</td><td>${item.cost.toLocaleString()} 盖世币</td><td style="color:${item.status==='已上架'&&item.stock<=cardAlertSettings.threshold?'#ff4d4f':'inherit'}">${item.stock}</td><td>${item.limit}次</td><td><span class="tag ${item.status==='已上架'?'tag-green':'tag-gray'}">${item.status}</span></td><td><button class="btn btn-sm" onclick="openCardProductModal('${item.id}')">编辑</button></td></tr>`).join('')}
     </tbody></table></div>
   </div>`;
 }
@@ -188,8 +243,9 @@ function renderCardProducts(){
 function renderCardInventory(){
   const rows=cardInventory.filter(item=>(!cardInventoryFilter.productId||item.productId===cardInventoryFilter.productId)&&(!cardInventoryFilter.status||item.status===cardInventoryFilter.status));
   return `<div class="card">
-    <div class="card-title-row"><div class="card-title">卡密库存</div><button class="btn btn-primary" onclick="openCardImportModal()">批量导入卡密</button></div>
+    <div class="card-title-row"><div class="card-title">卡密库存</div><div class="setting-actions"><button id="card-alert-settings" class="btn" onclick="openCardAlertSettings()">库存告警设置</button><button class="btn btn-primary" onclick="openCardImportModal()">批量导入卡密</button></div></div>
     <div class="status-note">卡密加密存储，列表、普通日志和导出文件只展示脱敏值。同一卡密只能关联一个成功或待核对订单。</div>
+    <div class="status-note info">全局阈值作用于所有已上架京东卡 SKU，但分别判断每个 SKU 的可用库存，不汇总不同面额。可用库存仅包含未使用且未预占、未发放、未作废的卡密。</div>
     <div class="filter-bar">
       <select id="inventory-product-filter"><option value="">全部商品</option>${jdCardProducts.map(item=>`<option value="${item.id}" ${cardInventoryFilter.productId===item.id?'selected':''}>${item.name}</option>`).join('')}</select>
       <select id="inventory-status-filter"><option value="">全部状态</option>${['未使用','已预占','已发放','待核对','作废'].map(status=>`<option ${cardInventoryFilter.status===status?'selected':''}>${status}</option>`).join('')}</select>
@@ -259,6 +315,63 @@ function resetCardOrderFilter(){
   renderPage('card-orders');
 }
 
+function openCardAlertSettings(){
+  document.getElementById('modal-box').innerHTML=`
+    <div class="modal-header"><span>库存告警设置</span><span class="modal-close" onclick="closeModal()">×</span></div>
+    <div class="form-row"><label>全局库存预警阈值</label><input id="card-alert-threshold" type="number" min="1" step="1" value="${cardAlertSettings.threshold}" oninput="refreshCardAlertPreview()"><div class="form-help">所有已上架京东卡 SKU 共用，库存小于或等于该值时按 SKU 独立告警。</div></div>
+    <div class="form-row"><label>飞书机器人 Webhook</label><textarea id="card-alert-webhooks" rows="4" placeholder="每行一个 HTTPS 飞书机器人地址"></textarea><div class="form-help">保存时去重并脱敏展示；全部清空并保存后停止外部告警。Demo 不会真实请求飞书。</div></div>
+    <div class="form-row"><label>重复提醒间隔</label><input id="card-alert-repeat-hours" type="number" min="1" step="1" value="${cardAlertSettings.repeatHours}"><div class="form-help">单位：小时。同一 SKU 持续低库存时按该间隔去重，默认 24 小时。</div></div>
+    <div class="form-row"><label>消息预览</label><div id="card-alert-preview" class="alert-preview" aria-live="polite"></div></div>
+    <div id="card-alert-error" class="form-error" role="alert"></div>
+    <div class="form-actions"><button class="btn" onclick="closeModal()">取消</button><button id="save-card-alert-settings" class="btn btn-primary" onclick="saveCardAlertSettings()">保存设置</button></div>`;
+  document.getElementById('card-alert-webhooks').value=cardAlertSettings.maskedWebhooks.join('\n');
+  document.getElementById('modal').classList.add('show');
+  refreshCardAlertPreview();
+}
+
+function refreshCardAlertPreview(){
+  const input=document.getElementById('card-alert-threshold');
+  const preview=document.getElementById('card-alert-preview');
+  if(preview)preview.innerHTML=buildCardAlertPreview(Number(input&&input.value)||cardAlertSettings.threshold);
+}
+
+function showCardAlertError(message){
+  const error=document.getElementById('card-alert-error');
+  error.textContent=message;
+  error.classList.add('show');
+}
+
+function saveCardAlertSettings(){
+  const error=document.getElementById('card-alert-error');
+  error.textContent='';
+  error.classList.remove('show');
+  const threshold=Number(document.getElementById('card-alert-threshold').value);
+  const repeatHours=Number(document.getElementById('card-alert-repeat-hours').value);
+  const webhooks=[...new Set(document.getElementById('card-alert-webhooks').value.split(/\r?\n/).map(value=>value.trim()).filter(Boolean))];
+  if(!Number.isInteger(threshold)||threshold<1){
+    showCardAlertError('全局库存预警阈值必须为大于 0 的整数');
+    return;
+  }
+  if(!Number.isInteger(repeatHours)||repeatHours<1){
+    showCardAlertError('重复提醒间隔必须为大于 0 的整数小时');
+    return;
+  }
+  const invalidWebhook=webhooks.find(value=>!isFeishuWebhook(value));
+  if(invalidWebhook){
+    showCardAlertError('Webhook 必须是有效的 HTTPS 飞书机器人地址');
+    return;
+  }
+  cardAlertSettings.threshold=threshold;
+  cardAlertSettings.repeatHours=repeatHours;
+  cardAlertSettings.maskedWebhooks=[...new Set(webhooks.map(value=>cardAlertSettings.maskedWebhooks.includes(value)?value:maskWebhook(value)))];
+  const result=simulateCardInventoryAlerts(Date.now(),'保存设置后立即检查');
+  closeModal();
+  currentCardAdminTab='inventory';
+  renderPage('jd-cards');
+  const suffix=cardAlertSettings.maskedWebhooks.length?`检测到 ${result.lowProductIds.length} 个低库存 SKU，Demo 未发送飞书消息`:'外部告警已停用';
+  showToast(`库存告警设置已保存；${suffix}`);
+}
+
 function openCardProductModal(productId){
   const product=jdCardProducts.find(item=>item.id===productId);
   document.getElementById('modal-box').innerHTML=`
@@ -268,7 +381,6 @@ function openCardProductModal(productId){
     <div class="form-row"><label>卡面额（元）</label><input type="number" min="1" value="${product?product.faceValue:''}"></div>
     <div class="form-row"><label>兑换所需盖世币</label><input type="number" min="1" value="${product?product.cost:''}"></div>
     <div class="form-row"><label>单用户限兑次数</label><input type="number" min="1" value="${product?product.limit:1}"></div>
-    <div class="form-row"><label>库存预警阈值</label><input type="number" min="0" value="${product?product.warning:3}"></div>
     <div class="form-row"><label>上下架状态</label><select><option ${!product||product.status==='已上架'?'selected':''}>已上架</option><option ${product&&product.status==='已下架'?'selected':''}>已下架</option></select></div>
     <div class="form-row"><label>使用说明</label><textarea>${product?product.instructions:''}</textarea></div>
     <div class="form-actions"><button class="btn" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="closeModal();showToast('商品配置已保存')">保存</button></div>`;
