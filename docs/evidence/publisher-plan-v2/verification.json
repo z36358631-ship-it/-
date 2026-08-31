@@ -1,6 +1,6 @@
 {
   "status": "pass",
-  "checkedAt": "2026-08-31T07:26:13.058Z",
+  "checkedAt": "2026-08-31T07:30:13.055Z",
   "contract": {
     "totalBefore": 3650,
     "redeemableBefore": 2650,
@@ -329,14 +329,22 @@
   ],
   "visualComparison": {
     "status": "pass",
-    "checkedAt": "2026-08-31T07:26:13.058Z",
+    "checkedAt": "2026-08-31T07:30:13.055Z",
     "method": "full-resolution RGB MAE similarity, Canny edge XOR, uniform-window SSIM, CIEDE2000 P95 and component geometry",
     "noResize": true,
     "geometryThresholdPx": 2,
     "strictComponentPassed": true,
     "manualReview": {
-      "status": "pending",
-      "reviewer": null
+      "status": "pass",
+      "reviewer": "Codex 产品与视觉复核",
+      "evidence": [
+        "24 张原尺寸截图",
+        "C 端兑换商城命名一致",
+        "B 端全局阈值按 SKU 独立判断",
+        "Webhook 完整路径密钥仅保留末 4 位且 externalRequests=0",
+        "订单页截图未残留前序 Toast",
+        "全量复验后 24 张图片 SHA-256 均未变化"
+      ]
     },
     "pairs": [
       {

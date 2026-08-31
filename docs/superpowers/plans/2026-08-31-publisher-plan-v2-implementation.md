@@ -146,6 +146,8 @@ Expected: 提交只包含 `tools/verify-publisher-plan-v2.mjs`，不暂存工作
 $runPath = 'prd\workflow-state\GUANWANGGAID-41-publisher-plan-v2.run.json'
 & 'C:\Users\z3635\.codex\skills\gamehub-product-workflow\scripts\workflow-run.ps1' -Action rerun -RunPath $runPath -StepId S4
 $revision = (Get-Content -Raw $runPath | ConvertFrom-Json).revision
+& 'C:\Users\z3635\.codex\skills\gamehub-product-workflow\scripts\workflow-run.ps1' -Action start-step -RunPath $runPath -StepId S4 -ExpectedRevision $revision
+$revision = (Get-Content -Raw $runPath | ConvertFrom-Json).revision
 & 'C:\Users\z3635\.codex\skills\gamehub-product-workflow\scripts\workflow-run.ps1' `
   -Action pass -RunPath $runPath -StepId S4 -ExpectedRevision $revision `
   -Outputs '确认钱包、兑换页、京东卡商品和卡密库存现有结构' `
@@ -699,9 +701,15 @@ Expected: 两个 Node 脚本、视觉脚本和两个 PRD 脚本均通过；`git 
 ```powershell
 $runPath = 'prd\workflow-state\GUANWANGGAID-41-publisher-plan-v2.run.json'
 $revision = (Get-Content -Raw $runPath | ConvertFrom-Json).revision
+& 'C:\Users\z3635\.codex\skills\gamehub-product-workflow\scripts\workflow-run.ps1' -Action start-step -RunPath $runPath -StepId S5 -ExpectedRevision $revision
+$revision = (Get-Content -Raw $runPath | ConvertFrom-Json).revision
 & 'C:\Users\z3635\.codex\skills\gamehub-product-workflow\scripts\workflow-run.ps1' -Action pass -RunPath $runPath -StepId S5 -ExpectedRevision $revision -Outputs 'C/B Demo、V2.1 PRD、24 张页面图已同步' -Evidence '本轮 C/B/截图/PRD 提交记录' -Message 'D-007 至 D-009 已实施'
 $revision = (Get-Content -Raw $runPath | ConvertFrom-Json).revision
+& 'C:\Users\z3635\.codex\skills\gamehub-product-workflow\scripts\workflow-run.ps1' -Action start-step -RunPath $runPath -StepId S6 -ExpectedRevision $revision
+$revision = (Get-Content -Raw $runPath | ConvertFrom-Json).revision
 & 'C:\Users\z3635\.codex\skills\gamehub-product-workflow\scripts\workflow-run.ps1' -Action pass -RunPath $runPath -StepId S6 -ExpectedRevision $revision -Outputs '静态合同、UI、视觉、PRD 质量与图片结构验证通过' -Evidence 'tools/verify-publisher-plan-v2.mjs','tools/verify-publisher-plan-v2-ui.mjs','docs/evidence/publisher-plan-v2/verification.json' -Message '24 张截图；externalRequests/pageErrors/consoleErrors 均为 0'
+$revision = (Get-Content -Raw $runPath | ConvertFrom-Json).revision
+& 'C:\Users\z3635\.codex\skills\gamehub-product-workflow\scripts\workflow-run.ps1' -Action start-step -RunPath $runPath -StepId S7 -ExpectedRevision $revision
 $revision = (Get-Content -Raw $runPath | ConvertFrom-Json).revision
 & 'C:\Users\z3635\.codex\skills\gamehub-product-workflow\scripts\workflow-run.ps1' -Action pass -RunPath $runPath -StepId S7 -ExpectedRevision $revision -Outputs '产品规则、文档语义和 24 张原尺寸图片复核通过' -Evidence 'docs/evidence/publisher-plan-v2/verification.json','public/prd/publisher-plan-v2/23-card-alert-settings.png' -Reviewer 'Codex 产品与视觉复核' -Message '全局阈值、按 SKU 判断、频控和 Webhook 安全口径一致'
 ```
@@ -735,6 +743,8 @@ Expected: 评论成功，任务状态为 `in_review`；未经用户验收不得�
 
 ```powershell
 $runPath = 'prd\workflow-state\GUANWANGGAID-41-publisher-plan-v2.run.json'
+$revision = (Get-Content -Raw $runPath | ConvertFrom-Json).revision
+& 'C:\Users\z3635\.codex\skills\gamehub-product-workflow\scripts\workflow-run.ps1' -Action start-step -RunPath $runPath -StepId S8 -ExpectedRevision $revision
 $revision = (Get-Content -Raw $runPath | ConvertFrom-Json).revision
 & 'C:\Users\z3635\.codex\skills\gamehub-product-workflow\scripts\workflow-run.ps1' -Action pass -RunPath $runPath -StepId S8 -ExpectedRevision $revision -Outputs 'C/B Demo、V2.1 PRD、24 张图片、验证证据和任务板已对账' -Evidence 'GUANWANGGAID-41=in_review','本地提交记录','docs/evidence/publisher-plan-v2/verification.json' -Message '本地交付通过；推送、发布、真实飞书和远程图片验证未执行'
 git add -- 'docs/evidence/publisher-plan-v2/verification.json' 'prd/workflow-state/GUANWANGGAID-41-publisher-plan-v2.md' 'prd/workflow-state/GUANWANGGAID-41-publisher-plan-v2.run.json'
