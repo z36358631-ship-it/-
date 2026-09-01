@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CDKEY 供给管理页面结构</title>
+  <link rel="stylesheet" href="cdkey-supply-screens.css">
+</head>
+<body>
+<div id="app" class="screen"></div>
+<script>
+const developerNav = ["工作台","厂商资料","游戏管理","CDKEY 供给","包体版本","投放需求","发行数据"];
+const opsNav = ["发行总览","合作方账号","厂商资料审核","游戏资料审核","游戏商品","供应关联","供给异常","操作记录"];
+
+function shell({role,title,subtitle,active,content}){
+  const isDeveloper = role === "developer";
+  const nav = isDeveloper ? developerNav : opsNav;
+  return `<div class="admin-shell">
+    <div class="lowfi-strip">产品低保真结构 · 非现网页面 · 仅表达已确认字段、状态与动作</div>
+    <aside class="admin-aside">
+      <div class="admin-brand"><i class="brand-mark"></i>${isDeveloper ? "开发者平台" : "发行运营后台"}</div>
+      <div class="nav-list">${nav.map(item=>`<div class="nav-item ${item===active?"active":""}"><i class="nav-dot"></i>${item}</div>`).join("")}</div>
+      <div class="aside-bottom">${isDeveloper ? "一期范围：受邀合作方，仅见本厂商供给状态" : "一期范围：签约项目，配置与处置操作完整留痕"}</div>
+    </aside>
+    <main class="admin-main">
+      <header class="admin-top"><div><h1>${title}</h1><div class="sub">${subtitle}</div></div><div class="account">${isDeveloper?"示例厂商":"平台发行运营"}<i class="avatar">${isDeveloper?"厂":"运"}</i></div></header>
+      <div class="admin-content">${content}</div>
+    </main>
+  </div>`;
+}
+
+const pages = {
+  "developer-supply-status": () => shell({role:"developer",active:"CDKEY 供给",title:"游戏商品与供给状态",subtitle:"只读查看本厂商商品、SKU 与可售状态，不展示明文 Key 或供应商敏感信息",content:`
+    <section class="card summary-head">
+      <div><h2>首款签约游戏</h2><p>发行方式：第三方平台激活 · 资料已通过</p><div class="summary-tags"><span class="badge blue">本厂商数据</span><span class="badge gray">只读</span><span class="badge amber">示例状态</span></div></div>
+      <div class="actions"><button class="btn">刷新状态</button></div>
+    </section>
+    <div class="stats">
+      <section class="card stat"><div class="label">商品</div><div class="value">1</div><div class="hint">关联首款签约游戏</div></section>
+      <section class="card stat"><div class="label">SKU</div><div class="value">2</div><div class="hint">按平台与地区区分</div></section>
+      <section class="card stat"><div class="label">供应来源类型</div><div class="value">供应商 API</div><div class="hint">仅展示类型，不展示敏感信息</div></section>
+      <section class="card stat"><div class="label">当前可售状态</div><div class="value" style="color:#b34b43">部分停售</div><div class="hint">异常 SKU 已停止新售</div></section>
+    </div>
+    <section class="card section-card">
+      <div class="section-title"><div><h2>商品与 SKU 状态</h2><p>数据范围固定为当前账号绑定厂商；列表为产品结构示例</p></div><span class="badge gray">无明文 Key</span></div>
+      <table class="table"><thead><tr><th>商品／SKU</th><th>激活平台</th><th>销售地区</th><th>供应来源类型</th><th>库存状态</th><th>供给状态</th><th>资料／发布</th><th>最近同步</th><th>操作</th></tr></thead><tbody>
+        <tr><td><div class="object"><i class="thumb">封面</i><div><b>首款签约游戏</b><br><span class="muted">标准版 SKU</span></div></div></td><td>Steam</td><td>中国大陆</td><td>供应商 API</td><td><span class="badge red">库存不足</span></td><td><span class="badge red">停止新售</span></td><td><span class="badge green">资料已通过</span></td><td>等待下次同步</td><td><span class="link">查看异常</span></td></tr>
+        <tr><td><div class="object"><i class="thumb">封面</i><div><b>首款签约游戏</b><br><span class="muted">豪华版 SKU</span></div></div></td><td>Steam</td><td>中国大陆</td><td>供应商 API</td><td><span class="badge green">可售</span></td><td><span class="badge green">正常</span></td><td><span class="badge green">已发布</span></td><td>状态已同步</td><td><span class="link">查看状态</span></td></tr>
+      </tbody></table>
+      <div class="pagination"><button class="page-btn active">1</button></div>
+    </section>`}),
+
+  "supply-error-detail": () => shell({role:"developer",active:"CDKEY 供给",title:"供给异常详情",subtitle:"开发者只读查看本厂商异常原因、停止新售结果与恢复状态",content:`
+    <div class="notice red"><strong>该 SKU 已停止新的可售曝光</strong>平台检测到供应异常后已停止新售；既有订单、退款与 Key 处理继续按原 CDKEY 规则执行。</div>
+    <div class="error-layout">
+      <div class="stack">
+        <section class="card error-main">
+          <div class="error-title"><div><h2>标准版 SKU · 供应异常</h2><p>首款签约游戏 · Steam · 中国大陆</p></div><span class="badge red">停止新售</span></div>
+          <div class="impact"><b>异常原因</b><p>供应商接口暂不可用，平台无法确认当前可售库存。开发者无需提供或上传明文 Key。</p></div>
+          <div class="info-grid" style="margin-top:18px">
+            <div class="info-item"><div class="k">供应来源类型</div><div class="v">供应商 API（已关联）</div></div>
+            <div class="info-item"><div class="k">库存状态</div><div class="v">未知，不以 0 替代</div></div>
+            <div class="info-item"><div class="k">最近同步</div><div class="v">同步失败</div></div>
+            <div class="info-item"><div class="k">可售状态</div><div class="v">停止新售</div></div>
+            <div class="info-item"><div class="k">平台处置</div><div class="v">等待供应恢复后确认</div></div>
+            <div class="info-item"><div class="k">开发者权限</div><div class="v">只读查看</div></div>
+          </div>
+        </section>
+        <section class="card timeline"><div class="section-title"><div><h2>处理进度</h2><p>仅展示本厂商对象的状态回流</p></div></div>
+          <div class="timeline-item"><span class="step">同步检查</span><span class="desc">平台读取供应商价格、库存与接口状态</span><span class="badge gray">已执行</span></div>
+          <div class="timeline-item"><span class="step">发现异常</span><span class="desc">库存不可确认，记录异常原因与受影响 SKU</span><span class="badge red">异常</span></div>
+          <div class="timeline-item"><span class="step">停止新售</span><span class="desc">停止新的可售曝光，不反向改写既有订单</span><span class="badge red">已处理</span></div>
+          <div class="timeline-item"><span class="step">恢复确认</span><span class="desc">供应恢复后由平台运营确认，再重新计算可售状态</span><span class="badge amber">等待中</span></div>
+        </section>
+      </div>
+      <aside class="stack">
+        <section class="card error-side"><div class="section-title"><div><h2>影响范围</h2><p>本异常只作用于当前 SKU</p></div></div>
+          <div class="check-list"><div class="check-row"><b>新的商品曝光</b><span class="badge red">已停止</span></div><div class="check-row"><b>新用户购买入口</b><span class="badge red">不可用</span></div><div class="check-row"><b>既有订单</b><span class="badge blue">原规则处理</span></div><div class="check-row"><b>其他厂商数据</b><span class="badge gray">不可见</span></div></div>
+        </section>
+        <section class="card side-note"><h3>信息安全边界</h3><ul><li>不展示明文 Key 与供应商接口凭据</li><li>不展示供应商内部商品 ID</li><li>不展示其他厂商商品或异常</li><li>开发者不能执行恢复、停售或发布</li></ul><div class="form-actions"><button class="btn">返回列表</button><button class="btn primary">刷新状态</button></div></section>
+      </aside>
+    </div>`}),
+
+  "ops-product-list": () => shell({role:"ops",active:"游戏商品",title:"游戏商品列表",subtitle:"平台关联厂商、游戏、商品／SKU、激活平台、地区与供应状态",content:`
+    <div class="stats">
+      <section class="card stat"><div class="label">签约范围商品</div><div class="value">1</div><div class="hint">仅展示有权限对象</div></section>
+      <section class="card stat"><div class="label">SKU</div><div class="value">2</div><div class="hint">一个商品可含多个 SKU</div></section>
+      <section class="card stat"><div class="label">可售 SKU</div><div class="value">1</div><div class="hint">供应状态正常</div></section>
+      <section class="card stat"><div class="label">异常／停售</div><div class="value" style="color:#b34b43">1</div><div class="hint">停止新的可售曝光</div></section>
+    </div>
+    <section class="card section-card">
+      <div class="toolbar"><div class="toolbar-left"><input class="input" value="游戏／厂商／商品名称"><div class="select">资料状态：全部</div><div class="select">可售状态：全部</div><div class="select">供应状态：全部</div></div><div class="toolbar-right"><button class="btn primary">创建商品</button></div></div>
+      <table class="table"><thead><tr><th>厂商／游戏</th><th>商品／交付方式</th><th>SKU</th><th>激活平台</th><th>销售地区</th><th>供应来源</th><th>库存／供给</th><th>资料／发布</th><th>操作</th></tr></thead><tbody>
+        <tr><td><b>示例厂商</b><br><span class="muted">首款签约游戏</span></td><td><b>首款签约游戏商品</b><br><span class="badge blue">第三方平台激活</span></td><td>2 个</td><td>Steam</td><td>中国大陆</td><td>供应商 API</td><td><span class="badge amber">部分异常</span></td><td><span class="badge green">资料已通过</span><br><span class="muted">商业前置待校验</span></td><td><span class="link">配置 SKU</span><br><span class="link">查看供给</span></td></tr>
+      </tbody></table>
+      <div class="pagination"><button class="page-btn active">1</button></div>
+    </section>
+    <div class="notice blue" style="margin-top:18px"><strong>列表规则</strong>数据来自签约范围内的厂商、游戏、商品和供应关联；默认按异常待处理优先、同状态按更新时间倒序。查询失败时保留筛选条件并提供重试；所有配置、停售与恢复操作留痕。</div>`}),
+
+  "ops-sku-editor": () => shell({role:"ops",active:"游戏商品",title:"商品／SKU 配置",subtitle:"资料审核与商业发布前置分别校验；本页不维护本地价格或明文 Key",content:`
+    <div class="form-layout">
+      <section class="card form-card">
+        <div class="form-section"><h2>商品关系</h2><div class="field-grid">
+          <div class="field"><label>厂商</label><div class="readonly-field">示例厂商 · 已签约范围</div></div><div class="field"><label>游戏项目</label><div class="readonly-field">首款签约游戏 · 资料已通过</div></div>
+          <div class="field"><label>商品名称</label><div class="readonly-field">首款签约游戏商品</div></div><div class="field"><label>交付方式</label><div class="readonly-field">第三方平台激活</div></div>
+        </div></div>
+        <div class="form-section"><h2>SKU 与交易范围</h2><div class="field-grid">
+          <div class="field"><label>SKU 名称</label><div class="input">标准版</div></div><div class="field"><label>激活平台</label><div class="select">Steam</div></div>
+          <div class="field"><label>销售地区</label><div class="select">中国大陆</div></div><div class="field"><label>供应来源</label><div class="select">供应商 API（默认）</div></div>
+          <div class="field"><label>供应商商品映射</label><div class="readonly-field mono">已关联 · 敏感标识不对开发者展示</div></div><div class="field"><label>本地定价</label><div class="readonly-field">不提供 · 价格以供应商接口为准</div></div>
+        </div></div>
+        <div class="form-section"><h2>供应同步摘要（只读）</h2><div class="info-grid">
+          <div class="info-item"><div class="k">当前价格</div><div class="v">供应商同步值</div></div><div class="info-item"><div class="k">活动价</div><div class="v">按接口有效期展示</div></div><div class="info-item"><div class="k">库存状态</div><div class="v">供应商同步状态</div></div>
+        </div><div class="security-strip" style="margin-top:13px">不提供本地批量导码、明文 Key 查看、本地库存删除或本地库存预警。</div></div>
+        <div class="form-actions"><button class="btn">返回</button><button class="btn primary">保存配置</button></div>
+      </section>
+      <aside>
+        <section class="card side-note"><h3>资料审核（独立门禁）</h3><div class="check-list"><div class="check-row"><b>游戏资料审核</b><span class="badge green">已通过</span></div><div class="check-row"><b>发行方式</b><span class="badge blue">第三方激活</span></div></div><p class="muted" style="font-size:13px;line-height:1.6">资料通过只允许进入商品准备，不等于商品可正式发布。</p></section>
+        <section class="card side-note"><h3>商业发布前置</h3><div class="check-list"><div class="check-row"><b>发行授权与期限</b><span class="badge amber">发布前确认</span></div><div class="check-row"><b>销售地区在授权范围</b><span class="badge amber">发布前确认</span></div><div class="check-row"><b>价格或领取条件</b><span class="badge amber">发布前确认</span></div><div class="check-row"><b>分成与结算责任</b><span class="badge amber">发布前确认</span></div></div><p class="muted" style="font-size:13px;line-height:1.6">任一未满足时阻塞正式发布，不改写资料审核结果。</p></section>
+      </aside>
+    </div>`}),
+
+  "ops-supply-link": () => shell({role:"ops",active:"供应关联",title:"供应来源关联",subtitle:"平台运营关联 SKU 与供应来源；当前实际供给方式仍需业务确认",content:`
+    <div class="source-banner"><div><h2>默认方案／待业务确认</h2><p>当前默认复用供应商 API。实际合作方供给方式未确认前，本页只能作为产品结构评审依据，不代表供应模式已最终定稿。</p></div><span class="flag">不伪装已确认</span></div>
+    <div class="form-layout">
+      <section class="card form-card">
+        <div class="form-section"><h2>关联对象</h2><div class="field-grid">
+          <div class="field"><label>厂商／游戏</label><div class="readonly-field">示例厂商 · 首款签约游戏</div></div><div class="field"><label>商品／SKU</label><div class="readonly-field">首款签约游戏商品 · 标准版</div></div>
+          <div class="field"><label>激活平台</label><div class="readonly-field">Steam</div></div><div class="field"><label>销售地区</label><div class="readonly-field">中国大陆</div></div>
+        </div></div>
+        <div class="form-section"><h2>供应类型</h2><div class="choice-row">
+          <div class="choice selected"><b>供应商 API <span class="badge blue" style="float:right">默认方案</span></b><span>关联平台已接入供应商及供应商商品 ID；价格、活动价、库存、取码和激活能力以接口为准。</span></div>
+          <div class="choice disabled"><b>直接供 Key <span class="badge gray" style="float:right">受控类型</span></b><span>仅保留为受控供给类型，不提供开发者批量明文上传入口；启用条件与接收方式需业务另行确认。</span></div>
+        </div></div>
+        <div class="form-section"><h2>供应商 API 关联字段</h2><div class="field-grid">
+          <div class="field"><label>供应商</label><div class="select">选择平台已接入供应商</div><div class="help">仅平台有权限运营可见与配置</div></div><div class="field"><label>供应商商品 ID</label><div class="input mono">受限敏感字段</div><div class="help">开发者侧不展示</div></div>
+          <div class="field full"><label>能力校验</label><div class="readonly-field">价格查询 · 库存查询 · 取码 · 激活（以最终接口能力为准）</div></div>
+        </div></div>
+        <div class="form-actions"><button class="btn">返回</button><button class="btn primary">保存关联</button></div>
+      </section>
+      <aside>
+        <section class="card side-note"><h3>当前确定边界</h3><ul><li>不恢复本地独立定价</li><li>不恢复本地批量导码</li><li>不恢复本地库存预警</li><li>开发者不查看明文 Key</li><li>其他厂商与供应商敏感信息不可见</li></ul></section>
+        <section class="card side-note"><h3>正式发布仍需满足</h3><div class="check-list"><div class="check-row"><b>资料审核</b><span class="badge gray">独立结果</span></div><div class="check-row"><b>发行授权／地区</b><span class="badge amber">需校验</span></div><div class="check-row"><b>价格／领取条件</b><span class="badge amber">需校验</span></div><div class="check-row"><b>分成／结算责任</b><span class="badge amber">需校验</span></div><div class="check-row"><b>供给状态</b><span class="badge amber">需校验</span></div></div></section>
+      </aside>
+    </div>`}),
+
+  "ops-stock-error": () => shell({role:"ops",active:"供给异常",title:"库存与供给异常",subtitle:"按供应商同步状态处置缺货、接口异常、停售与恢复，并保留操作记录",content:`
+    <div class="stats">
+      <section class="card stat"><div class="label">异常 SKU</div><div class="value" style="color:#b34b43">2</div><div class="hint">同一签约游戏示例</div></section>
+      <section class="card stat"><div class="label">停止新售</div><div class="value" style="color:#b34b43">2</div><div class="hint">异常时自动保护用户入口</div></section>
+      <section class="card stat"><div class="label">待恢复确认</div><div class="value" style="color:#a86a00">1</div><div class="hint">供应恢复后由运营确认</div></section>
+      <section class="card stat"><div class="label">本地库存预警</div><div class="value">不提供</div><div class="hint">以供应商同步状态为准</div></section>
+    </div>
+    <section class="card section-card">
+      <div class="toolbar"><div class="toolbar-left"><input class="input" value="游戏／商品／SKU"><div class="select">异常类型：全部</div><div class="select">处置状态：全部</div><div class="select">可售状态：全部</div></div><div class="toolbar-right"><button class="btn">刷新供应状态</button></div></div>
+      <table class="table"><thead><tr><th>厂商／游戏</th><th>商品／SKU</th><th>平台／地区</th><th>异常类型</th><th>供应状态</th><th>可售处理</th><th>最近同步</th><th>恢复状态</th><th>操作</th></tr></thead><tbody>
+        <tr><td><b>示例厂商</b><br><span class="muted">首款签约游戏</span></td><td>标准版 SKU</td><td>Steam<br>中国大陆</td><td><span class="badge red">库存不足</span></td><td>供应商返回缺货</td><td><span class="badge red">停止新售</span></td><td>状态已同步</td><td><span class="badge gray">未恢复</span></td><td><span class="link">查看原因</span></td></tr>
+        <tr><td><b>示例厂商</b><br><span class="muted">首款签约游戏</span></td><td>豪华版 SKU</td><td>Steam<br>中国大陆</td><td><span class="badge amber">接口异常</span></td><td>库存暂不可确认</td><td><span class="badge red">停止新售</span></td><td>同步失败</td><td><span class="badge amber">待确认</span></td><td><span class="link">确认恢复</span></td></tr>
+      </tbody></table>
+      <div class="pagination"><button class="page-btn active">1</button></div>
+    </section>
+    <div class="grid-equal" style="margin-top:18px">
+      <section class="card section-card"><div class="section-title"><div><h2>异常处置规则</h2><p>缺货或接口异常不允许继续新售</p></div></div><div class="check-list"><div class="check-row"><b>停止新的可售曝光</b><span class="badge red">立即生效</span></div><div class="check-row"><b>既有订单与退款</b><span class="badge blue">沿用原 PRD</span></div><div class="check-row"><b>开发者状态回流</b><span class="badge gray">本厂商只读</span></div></div></section>
+      <section class="card section-card"><div class="section-title"><div><h2>恢复与日志</h2><p>供应恢复不直接抹除历史异常</p></div></div><div class="audit-row"><b>供应状态恢复</b><span>重新检查价格、库存和接口可用性</span><span class="badge amber">待确认</span></div><div class="audit-row"><b>运营确认恢复</b><span>确认前后状态与影响范围并留痕</span><span class="badge gray">受控操作</span></div><div class="audit-row"><b>恢复可售</b><span>重新满足商业发布前置后更新用户入口</span><span class="badge green">最终结果</span></div></section>
+    </div>`})
+};
+
+const key = new URLSearchParams(location.search).get("page") || "developer-supply-status";
+document.getElementById("app").innerHTML = (pages[key] || pages["developer-supply-status"])();
+</script>
+</body>
+</html>

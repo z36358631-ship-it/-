@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CDKEY 商品与供给管理流程</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;color:#172033;background:#f4f6fa}
+    body{width:2400px;height:900px;overflow:hidden;padding-top:42px}.lowfi{position:absolute;left:0;right:0;top:0;height:42px;display:flex;align-items:center;justify-content:center;background:#272d37;color:#fff;font-size:16px;letter-spacing:2px}
+    .head{height:122px;padding:25px 48px 18px;display:flex;align-items:flex-end;justify-content:space-between}.head h1{margin:0;font-size:34px;line-height:1.2}.head p{margin:10px 0 0;color:#64748b;font-size:18px}.legend{display:flex;gap:18px;color:#475569;font-size:16px}.legend span{display:flex;align-items:center;gap:8px}.dot{width:13px;height:13px;border-radius:4px}.blue{background:#3b82f6}.gray{background:#94a3b8}.amber{background:#d79a1e}.green{background:#16a36a}.red{background:#c65f55}
+    .board{position:relative;height:700px;margin:0 48px 36px;border:1px solid #dce3ee;border-radius:24px;background:#fff;box-shadow:0 18px 45px rgba(24,32,51,.08);overflow:hidden}
+    .main-flow{position:absolute;left:36px;right:36px;top:46px;height:235px;display:grid;grid-template-columns:215px 52px 215px 52px 215px 52px 225px 52px 275px 52px 240px;align-items:center}
+    .node{height:150px;border:2px solid #94a3b8;border-radius:18px;background:#f8fafc;padding:17px 15px;display:flex;flex-direction:column;justify-content:center;text-align:center;box-shadow:0 8px 20px rgba(15,23,42,.06)}.node b{font-size:22px;line-height:1.35}.node small{font-size:15px;line-height:1.55;color:#64748b;margin-top:8px}.node.profile{border-color:#3b82f6;background:#eef4ff}.node.gate{border-color:#d79a1e;background:#fff8e8}.node.success{border-color:#16a36a;background:#ecfdf3}.node.danger{border-color:#c65f55;background:#fff0ee}.node.readonly{border-color:#64748b;background:#f1f5f9}
+    .arrow{height:3px;background:#7d8da7;position:relative}.arrow:after{content:"";position:absolute;right:-1px;top:-6px;border-left:11px solid #7d8da7;border-top:7px solid transparent;border-bottom:7px solid transparent}.arrow em{position:absolute;left:50%;top:-29px;transform:translateX(-50%);font-style:normal;font-size:14px;color:#64748b;white-space:nowrap}
+    .phase{position:absolute;top:280px;padding-top:12px;border-top:1px solid #e4e9f1;text-align:center;color:#64748b;font-size:15px}.p1{left:48px;width:535px}.p2{left:620px;width:795px}.p3{left:1452px;width:850px}
+    .branch{position:absolute;left:1380px;right:4px;top:360px;height:250px}.branch-line{position:absolute;left:0;top:73px;width:95px;height:3px;background:#7d8da7}.branch-line:after{content:"";position:absolute;right:-1px;top:-6px;border-left:11px solid #7d8da7;border-top:7px solid transparent;border-bottom:7px solid transparent}.branch .available{position:absolute;left:0;top:0;width:250px}.branch .incident{position:absolute;left:315px;top:0;width:270px}.branch .developer{position:absolute;left:650px;top:0;width:270px}.branch .a1{position:absolute;left:250px;top:73px;width:65px}.branch .a2{position:absolute;left:585px;top:73px;width:65px}
+    .down-from-check{position:absolute;left:1518px;top:281px;width:3px;height:152px;background:#7d8da7}.down-from-check:after{content:"";position:absolute;bottom:-1px;left:-6px;border-top:11px solid #7d8da7;border-left:7px solid transparent;border-right:7px solid transparent}
+    .recovery-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.recovery-callout{position:absolute;left:870px;top:445px;width:330px;padding:13px 16px;border:2px dashed #b78119;border-radius:12px;background:#fffaf0;color:#805600;font-size:14px;line-height:1.55;text-align:center}
+    .scope{position:absolute;left:56px;bottom:44px;width:1240px;display:grid;grid-template-columns:1fr 1fr;gap:18px}.note{padding:18px 20px;border-radius:15px;background:#f8fafc;border:1px solid #dce3ee;color:#516075;font-size:15px;line-height:1.65}.note b{display:block;color:#172033;margin-bottom:4px;font-size:16px}.note.warn{background:#fff8e8;border-color:#ecd391}.note.warn b{color:#7b5200}
+  </style>
+</head>
+<body>
+  <div class="lowfi">产品低保真结构 · 非现网页面 · 仅表达已确认供给流程、状态与权限</div>
+  <div class="head">
+    <div><h1>CDKEY 商品与供给管理流程</h1><p>一期只覆盖供给侧：平台运营完成关系配置与异常处置，开发者只读查看本厂商结果</p></div>
+    <div class="legend"><span><i class="dot blue"></i>资料前置</span><span><i class="dot gray"></i>运营配置</span><span><i class="dot amber"></i>发布门禁</span><span><i class="dot green"></i>可售结果</span><span><i class="dot red"></i>异常／停售</span></div>
+  </div>
+  <section class="board">
+    <div class="main-flow">
+      <div class="node profile"><b>01 资料审核已通过</b><small>游戏已选择<br>“第三方平台激活”</small></div><div class="arrow"></div>
+      <div class="node"><b>02 建立商品与 SKU</b><small>商品关联游戏项目<br>一个商品可含多个 SKU</small></div><div class="arrow"></div>
+      <div class="node"><b>03 绑定交易范围</b><small>激活平台<br>销售地区</small></div><div class="arrow"></div>
+      <div class="node"><b>04 关联供应来源</b><small>默认供应商 API<br>直接供 Key 仅作受控类型</small></div><div class="arrow"></div>
+      <div class="node gate"><b>05 商业发布前置</b><small>发行授权与期限 · 授权地区<br>价格或领取条件 · 分成与结算责任</small></div><div class="arrow"></div>
+      <div class="node gate"><b>06 检查供给状态</b><small>价格 · 库存 · 接口<br>最近同步时间</small></div>
+    </div>
+    <div class="phase p1">01 资料通过与商品建立</div><div class="phase p2">02 交易范围、供应来源与商业门禁</div><div class="phase p3">03 可售、异常处置与状态回流</div>
+    <div class="down-from-check"></div>
+    <div class="branch">
+      <div class="node success available"><b>07 校验通过：<br>可售发布</b><small>用户侧统一标识<br>“第三方平台激活”</small></div>
+      <div class="arrow a1"></div>
+      <div class="node danger incident"><b>08 缺货／供应异常：<br>停止新售或停售</b><small>停止新的可售曝光<br>既有订单沿用原 CDKEY 规则</small></div>
+      <div class="arrow a2"></div>
+      <div class="node readonly developer"><b>09 开发者只读查看</b><small>仅本厂商 SKU、平台、地区<br>来源类型、状态与异常原因</small></div>
+    </div>
+    <svg class="recovery-svg" viewBox="0 0 2304 700" preserveAspectRatio="none" aria-hidden="true">
+      <defs><marker id="recovery-arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#b78119"/></marker></defs>
+      <path d="M1830 510 L1830 515 L1180 515 L1180 315 L1450 315 L1450 245" fill="none" stroke="#b78119" stroke-width="3" stroke-dasharray="8 7" marker-end="url(#recovery-arrow)"/>
+    </svg>
+    <div class="recovery-callout">供应恢复且运营确认后返回 06 供给状态检查<br>不自动覆盖既有异常记录</div>
+    <div class="scope">
+      <div class="note"><b>角色与敏感信息边界</b>开发者不可查看明文 Key、其他厂商对象或供应商敏感信息；关联、停售、恢复和发布均由平台发行运营执行并留痕。</div>
+      <div class="note warn"><b>供应来源仍待业务确认</b>当前默认复用供应商 API；不得恢复本地批量导码、本地独立定价或本地库存预警。</div>
+    </div>
+  </section>
+</body>
+</html>
