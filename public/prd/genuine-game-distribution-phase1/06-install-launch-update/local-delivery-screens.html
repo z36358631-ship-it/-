@@ -76,7 +76,63 @@ function repair(){return shell({title:'修复游戏文件',boundary:'本期新�
 
 function uninstall(){const base=shell({title:'游戏库详情',boundary:'复用当前游戏管理入口 · 卸载确认与结果为本期新页面',body:`<div class="library-hero"></div><div class="library-name"><div><h1>空洞骑士：丝之歌</h1><p>盖世直接下载 · 已安装 v1.1.0</p></div><div class="score">9.3<span>玩家评价</span></div></div>`});return base.replace('</div>',`</div><div class="overlay"></div><section class="dialog" style="top:360px"><div style="display:flex;justify-content:space-between;align-items:center"><h1>确认卸载游戏？</h1>${tag('本机操作','red')}</div><p>将移除当前版本的托管游戏文件和本地安装记录。卸载不会撤销已获得的盖世权益。</p><div class="section" style="padding:20px"><div class="line"><span class="k">当前完整本地版本</span><span class="v">v1.1.0</span></div><div class="line"><span class="k">安装位置</span><span class="v">D:\\GameHub\\Games\\...</span></div><div class="line"><span class="k">预计移除空间</span><span class="v">24.1 GB</span></div><div class="line"><span class="k">权益结果</span><span class="v green">保留，可重新下载</span></div></div><div class="notice green" style="margin-top:18px"><b>保留内容：</b>订单／领取记录、盖世权益以及未列入版本清单的用户文件、存档和配置不主动删除。本期不提供“同时删除存档”。</div><div class="notice amber" style="margin-top:14px"><b>执行前检查：</b>游戏运行中或存在下载、更新、修复任务时不可卸载。失败时不把游戏误标为未安装，保留重试入口。</div><div class="buttons"><button class="btn">取消</button><button class="btn red">确认卸载</button></div></section>`)}
 
-const pages={'install-path':installPath,'download-task':downloadTask,'download-manager':downloadManager,'install-result':installResult,'library-launch-state':libraryLaunch,'required-update':requiredUpdate,'update-task':updateTask,'launch-recovery':launchRecovery,'game-management':gameManagement,'repair':repair,'uninstall':uninstall};
+function downloadManagerV2(){return shell({title:'下载管理',boundary:'沿用现有下载管理骨架 · 补齐暂停、失败、取消与任务替代终态',body:`
+  <div class="group-title">正在处理 <span>1 个任务</span></div>
+  <section class="task-card compact"><div class="game"><div class="cover"></div><div><h3>空洞骑士：丝之歌</h3><p>新版本任务 · v1.1.0</p><p class="state">下载中 · 46%</p></div><button class="btn small">暂停</button></div>${progress(46)}<div class="progress-meta"><span>8.6 / 18.6 GB</span><span>18.4 MB/s</span></div></section>
+  <div class="group-title">需要处理 <span>2 个任务</span></div>
+  <div class="task-list"><section class="task-card compact"><div class="game"><div class="cover" style="filter:hue-rotate(65deg)"></div><div><h3>山海旅人</h3><p>更新 · task_id U-1024</p><p class="state pause">已暂停 · 进度已保存</p></div><button class="btn small">继续</button></div><div class="inline-actions"><button class="mini-btn red">取消任务</button></div></section>
+  <section class="task-card compact"><div class="game"><div class="cover" style="filter:hue-rotate(150deg)"></div><div><h3>霓虹深渊</h3><p>修复 · task_id R-0872</p><p class="state fail">失败 · 网络中断</p></div><span class="tag red">待处理</span></div><div class="inline-actions"><button class="mini-btn primary">重试</button><button class="mini-btn red">取消任务</button></div><div class="notice red" style="margin-top:12px">保留已完成数据，不影响权益和当前完整版本。</div></section></div>
+  <div class="group-title">已结束 <span>1 个任务</span></div>
+  <section class="task-card compact terminal"><div class="game"><div class="cover" style="filter:hue-rotate(215deg)"></div><div><h3>空洞骑士：丝之歌</h3><p>旧 task_id D-0316 已结束</p><p class="state superseded">已替代 / superseded</p></div><span class="tag">终态</span></div><div class="persist" style="margin-top:12px"><b>新 task_id D-0317 已创建</b><span>旧终态不再阻塞同游戏新任务</span></div></section>
+  <div class="notice"><b>列表范围：</b>仅显示本机当前账号的盖世包体任务；暂停、失败可恢复，已替代任务仅保留可追溯结果。</div>`})}
+
+function installResultV2(){return shell({title:'安装进度与结果',boundary:'本期新页面 · 失败动作只作用于当前 task_id，不影响权益与既有完整版本',sticky:sticky('重试','取消任务'),body:`
+  <section class="section">${game('目标 v1.1.0 · 下载已完成')}</section>
+  <section class="task-hero"><div class="task-head"><div><h2>安装失败</h2><p>当前 task_id I-2048 · 写入目标版本失败</p></div><div class="state fail">待处理</div></div><div class="lock-banner" style="margin-top:20px"><b>未写入新版本。</b>下载数据和校验结果保留，可重试或取消当前任务。</div></section>
+  <section class="section"><div class="section-title">失败状态与动作 <small>同一页面复用</small></div><div class="state-grid">
+    <div class="state-card warn"><div class="state-top"><b>校验失败</b><span class="tag amber">文件异常</span></div><p>保留可复用数据；重新校验失败文件。</p><div class="inline-actions"><button class="mini-btn primary">重试</button><button class="mini-btn red">取消任务</button></div></div>
+    <div class="state-card fail"><div class="state-top"><b>安装失败</b><span class="tag red">当前状态</span></div><p>不写入目标版本，已有完整版本保持不变。</p><div class="inline-actions"><button class="mini-btn primary">重试</button><button class="mini-btn red">取消任务</button></div></div>
+  </div></section>
+  <div class="scope-strip"><div class="scope-item"><div class="k">取消范围</div><div class="v">仅当前 task_id</div></div><div class="scope-item"><div class="k">清理范围</div><div class="v">该任务暂存文件</div></div><div class="scope-item"><div class="k">继续保留</div><div class="v green">权益与完整版本</div></div></div>
+  <div class="notice amber"><b>取消任务：</b>终止当前 task_id 的后续写入并清理该任务暂存文件；不撤销权益，不删除已有完整版本和未托管文件。</div>
+  <div class="notice green"><b>成功判定：</b>完整性校验通过、安装成功并写入本地安装记录后，任务才进入“已安装”。</div>`})}
+
+function updateTaskV2(){return shell({title:'更新任务',boundary:'本期新页面 · 展示真实更新任务、阶段动作与旧版本保护',sticky:sticky('暂停更新','取消任务'),body:`
+  <section class="section">${game('盖世直接下载 · v1.0.0 → v1.1.0',tag('必须更新','amber'))}</section>
+  <section class="task-hero"><div class="task-head"><div><h2>正在下载更新</h2><p>task_id U-1025 · 目标 v1.1.0</p></div><div class="state">下载中 · 46%</div></div>${progress(46)}<div class="progress-meta"><span><b>2.2 GB</b> / 4.8 GB</span><span>18.4 MB/s · 预计 3 分钟</span></div></section>
+  <section class="section"><div class="section-title">更新阶段与可用动作</div><div class="state-grid">
+    <div class="state-card active"><div class="state-top"><b>下载中</b><span class="tag blue">当前</span></div><p>网络阶段可保存进度。</p><div class="inline-actions"><button class="mini-btn primary">暂停更新</button><button class="mini-btn red">取消任务</button></div></div>
+    <div class="state-card warn"><div class="state-top"><b>已暂停</b><span class="tag amber">可恢复</span></div><p>继续使用同一 task_id。</p><div class="inline-actions"><button class="mini-btn primary">继续更新</button><button class="mini-btn red">取消任务</button></div></div>
+    <div class="state-card locked"><div class="state-top"><b>校验中／安装中</b><span class="tag">锁定</span></div><p>文件写入阶段不可暂停或取消。</p><div class="inline-actions"><button class="mini-btn disabled">不可暂停或取消</button></div></div>
+    <div class="state-card fail"><div class="state-top"><b>更新失败</b><span class="tag red">待处理</span></div><p>保留已完成数据与旧版本。</p><div class="inline-actions"><button class="mini-btn primary">重试更新</button><button class="mini-btn red">取消任务</button></div></div>
+  </div></section>
+  <section class="section"><div class="section-title">旧版本保护 ${tag('v1.0.0 可恢复','green')}</div><div class="line"><span class="k">更新成功前</span><span class="v green">v1.0.0 完整文件保持不变</span></div><div class="line"><span class="k">目标版本变化</span><span class="v">旧任务进入已替代，再创建新 task_id</span></div></section>
+  <div class="notice amber"><b>启动边界：</b>当前为必须更新，完成 v1.1.0 前继续拦截启动；失败或取消不破坏 v1.0.0。</div>`})}
+
+function repairV2(){return shell({title:'修复游戏文件',boundary:'本期新页面 · 只修复版本清单内托管文件，动作随任务阶段变化',sticky:sticky('暂停','取消任务'),body:`
+  <section class="section">${game('当前完整本地版本 v1.1.0')}</section>
+  <section class="task-hero"><div class="task-head"><div><h2>正在下载异常文件</h2><p>task_id R-0873 · 仅版本清单内托管文件</p></div><div class="state">网络下载中 · 38%</div></div>${progress(38,'green')}<div class="progress-meta"><span><b>1.2 GB</b> / 3.1 GB</span><span>12.8 MB/s</span></div></section>
+  <section class="section"><div class="section-title">修复阶段与可用动作</div><div class="state-grid">
+    <div class="state-card active"><div class="state-top"><b>网络下载中</b><span class="tag blue">当前</span></div><p>保存已完成数据。</p><div class="inline-actions"><button class="mini-btn primary">暂停</button><button class="mini-btn red">取消任务</button></div></div>
+    <div class="state-card warn"><div class="state-top"><b>网络已暂停</b><span class="tag amber">可恢复</span></div><p>继续使用同一修复任务。</p><div class="inline-actions"><button class="mini-btn primary">继续</button><button class="mini-btn red">取消任务</button></div></div>
+    <div class="state-card locked"><div class="state-top"><b>校验／安装中</b><span class="tag">锁定</span></div><p>文件写入阶段不可暂停或取消。</p><div class="inline-actions"><button class="mini-btn disabled">不可暂停或取消</button></div></div>
+    <div class="state-card fail"><div class="state-top"><b>修复失败</b><span class="tag red">待处理</span></div><p>保留当前完整版本。</p><div class="inline-actions"><button class="mini-btn primary">重试</button><button class="mini-btn red">取消任务</button></div></div>
+  </div></section>
+  <div class="scope-strip"><div class="scope-item"><div class="k">处理范围</div><div class="v">版本清单内托管文件</div></div><div class="scope-item"><div class="k">始终保留</div><div class="v green">权益与完整版本</div></div><div class="scope-item"><div class="k">不主动删除</div><div class="v green">未托管文件／存档／配置</div></div></div>
+  <div class="notice green"><b>修复边界：</b>只补下载缺失或损坏的托管文件；未托管文件、存档和配置不进入删除范围。</div>`})}
+
+function uninstallV2(){return shell({title:'卸载任务',boundary:'本期新页面 · 按实际安装版本清单卸载，并展示中断后的可恢复结果',sticky:sticky('重试卸载','返回游戏库',true),body:`
+  <section class="section">${game('盖世直接下载 · 实际安装版本 v1.1.0',tag('完整性异常','red'))}</section>
+  <section class="task-hero"><div class="task-head"><div><h2>卸载中断</h2><p>唯一 action_id UN-20261108-001</p></div><div class="state fail">禁止启动</div></div><div class="persist" style="margin-top:20px"><b>上次状态“卸载中”已持久化</b><span>本次继续使用同一 action_id</span></div></section>
+  <section class="section"><div class="section-title">执行依据与当前结果</div><div class="line"><span class="k">删除依据</span><span class="v">v1.1.0 实际安装版本清单</span></div><div class="line"><span class="k">安装记录</span><span class="v amber">保留，未误标为已卸载</span></div><div class="line"><span class="k">本地完整性</span><span class="v red">完整性异常</span></div><div class="line"><span class="k">主动作</span><span class="v red">禁止启动 · 重试卸载</span></div></section>
+  <div class="lock-banner"><b>中断／失败保护：</b>保留安装记录并标记完整性异常；权益有效时可“修复”，恢复完整版本后再启动。</div>
+  <section class="section"><div class="section-title">结果分支</div><div class="state-grid">
+    <div class="state-card fail"><div class="state-top"><b>中断／失败</b><span class="tag red">当前</span></div><p>保留记录、禁止启动。</p><div class="inline-actions"><button class="mini-btn red">重试卸载</button><button class="mini-btn primary">修复</button></div></div>
+    <div class="state-card"><div class="state-top"><b>卸载成功</b><span class="tag green">终态</span></div><p>只有成功后才移除本地安装记录。</p><div class="inline-actions"><button class="mini-btn">返回游戏库</button></div></div>
+  </div></section>
+  <div class="notice amber"><b>权益边界：</b>权益失效仍允许卸载；但不允许修复或重新下载。未托管文件、存档和配置不主动删除。</div>`})}
+
+const pages={'install-path':installPath,'download-task':downloadTask,'download-manager':downloadManagerV2,'install-result':installResultV2,'library-launch-state':libraryLaunch,'required-update':requiredUpdate,'update-task':updateTaskV2,'launch-recovery':launchRecovery,'game-management':gameManagement,'repair':repairV2,'uninstall':uninstallV2};
 if(!pages[key])throw new Error(`Unknown page: ${key}`);app.innerHTML=pages[key]();
 </script>
 </body>

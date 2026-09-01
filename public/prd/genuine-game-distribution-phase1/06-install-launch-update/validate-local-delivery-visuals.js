@@ -22,7 +22,7 @@ function assert(ok,msg){if(!ok)throw new Error(msg)}
       await page.goto(`file:///${html}?page=${name}`,{waitUntil:'load'});
       const result=await page.evaluate(()=>{
         const text=document.body.innerText;
-        const clipped=[...document.querySelectorAll('.evidence,.title,.tag,.btn,.info,.line,.notice,.task-card,.stage,.menu,.dialog,.sheet,.input,.check,.timeitem')].filter(el=>el.scrollWidth>el.clientWidth+1||el.scrollHeight>el.clientHeight+1).map(el=>`${el.tagName}.${el.className}:${el.textContent.trim().slice(0,48)}`);
+        const clipped=[...document.querySelectorAll('.evidence,.title,.tag,.btn,.info,.line,.notice,.task-card,.stage,.menu,.dialog,.sheet,.input,.check,.timeitem,.state-card,.inline-actions,.scope-item,.persist,.lock-banner')].filter(el=>el.scrollWidth>el.clientWidth+1||el.scrollHeight>el.clientHeight+1).map(el=>`${el.tagName}.${el.className}:${el.textContent.trim().slice(0,48)}`);
         const disabledButtons=[...document.querySelectorAll('button:disabled')].map(el=>el.textContent.trim());
         return {w:document.documentElement.scrollWidth,h:document.documentElement.scrollHeight,text,clipped,disabledButtons};
       });
@@ -32,22 +32,29 @@ function assert(ok,msg){if(!ok)throw new Error(msg)}
       assert(result.text.includes('盖世直接下载')||name==='download-manager'||name==='install-result',`${name} missing direct delivery context`);
       assert(!/CDKEY.*下载|第三方平台激活.*下载/.test(result.text),`${name} mixes CDKEY into direct delivery`);
       assert(!/预载|P2P|多正式分支|自助回滚|云存档/.test(result.text)||name==='game-management',`${name} contains excluded capability as a feature`);
+      if(name==='download-manager'){
+        for(const required of ['重试','取消任务','已替代','superseded','不再阻塞'])assert(result.text.includes(required),`download-manager missing ${required}`);
+      }
+      if(name==='install-result'){
+        for(const required of ['校验失败','安装失败','重试','取消任务','当前 task_id','暂存文件'])assert(result.text.includes(required),`install-result missing ${required}`);
+      }
       if(name==='required-update'){
         assert(result.text.includes('开始更新')&&result.text.includes('返回游戏库'),'required-update missing corrected actions');
         assert(!/更新并启动|稍后处理/.test(result.text),'required-update contains rejected actions');
       }
       if(name==='update-task'){
-        assert(result.text.includes('检测到游戏运行，请退出后重新检测'),'update-task missing running precheck message');
-        assert(result.text.includes('未创建更新任务')&&result.text.includes('返回游戏库')&&result.text.includes('重新检测'),'update-task missing blocked precheck state');
-        assert(!/更新已暂停|已下载数据保留|下载更新|\d+%/.test(result.text),'update-task implies an existing download task');
+        for(const required of ['更新任务','正在下载更新','暂停更新','继续更新','校验中／安装中','不可暂停或取消','重试更新','取消任务','旧版本保护','v1.0.0'])assert(result.text.includes(required),`update-task missing ${required}`);
+        assert(!result.text.includes('更新前校验')&&!result.text.includes('未创建更新任务'),'update-task still shows blocked precheck state');
       }
       if(name==='launch-recovery'){
         assert(result.text.includes('修复游戏文件')&&result.text.includes('返回游戏库'),'launch-recovery missing corrected actions');
         assert(!result.text.includes('再次启动'),'launch-recovery contains rejected retry action');
       }
       if(name==='repair'){
-        for(const required of ['目标版本','v1.1.0','预计所需空间','可用空间','空间不足'])assert(result.text.includes(required),`repair missing ${required}`);
-        assert(result.disabledButtons.includes('开始修复'),'repair start action must be disabled when space is insufficient');
+        for(const required of ['版本清单内托管文件','暂停','继续','取消任务','重试','校验／安装中','不可暂停或取消','未托管文件'])assert(result.text.includes(required),`repair missing ${required}`);
+      }
+      if(name==='uninstall'){
+        for(const required of ['卸载中','action_id','实际安装版本清单','完整性异常','禁止启动','重试卸载','权益有效时可','成功后才移除'])assert(result.text.includes(required),`uninstall missing ${required}`);
       }
       await page.close();console.log(`${name}: boundary, scope, text and overflow PASS`);
     }
