@@ -1,0 +1,38 @@
+%%{init: {"theme":"base","flowchart":{"curve":"basis","nodeSpacing":28,"rankSpacing":54},"themeVariables":{"fontFamily":"Microsoft YaHei, PingFang SC, Arial","fontSize":"18px","primaryColor":"#F2F7FF","primaryTextColor":"#1D2A3A","primaryBorderColor":"#4B7BEC","lineColor":"#718096","secondaryColor":"#EEF9F4","tertiaryColor":"#FFF8E7","clusterBkg":"#FFFFFF","clusterBorder":"#D9E1EC"}}}%%
+flowchart LR
+  A["1 游戏库<br/>点击下载"] --> B["2 安装位置<br/>路径与空间校验"]
+  B --> C{"3 下载任务"}
+  C -->|暂停 / 继续| C
+  C -->|网络中断 / 退出客户端| CR["保留进度<br/>重试或手动继续"]
+  CR --> C
+  C -->|取消| CA["已取消<br/>返回游戏库"]
+  C -->|下载完成| D["4 完整性校验"]
+  D -->|失败| DR["保留数据<br/>重试校验 / 补文件"]
+  DR --> D
+  D --> E["5 安装"]
+  E -->|失败| ER["不写入新完整版本<br/>重试安装"]
+  ER --> E
+  E --> F["6 启动前校验<br/>权益 · 版本 · 运行开关"]
+  F -->|通过| G["7 启动游戏"]
+  F -->|必须更新| H["8 更新任务<br/>旧完整版本受保护"]
+  H -->|失败| HR["保留当前完整版本<br/>展示重试入口"]
+  HR --> H
+  H -->|成功| I["9 更新后启动"]
+  F -->|启动失败| FR["恢复页<br/>重试 / 修复"]
+  FR --> F
+  G --> M["游戏管理"]
+  M --> R["修复<br/>校验托管文件"]
+  R --> F
+  M --> U["卸载<br/>仅移除托管文件"]
+  U --> A
+
+  classDef primary fill:#EEF4FF,stroke:#4B7BEC,color:#23447D,stroke-width:2px;
+  classDef direct fill:#EEF9F4,stroke:#21A56B,color:#165E44,stroke-width:2px;
+  classDef warning fill:#FFF8E7,stroke:#D59A24,color:#714D00,stroke-width:2px;
+  classDef danger fill:#FFF0F0,stroke:#D95A65,color:#842E36,stroke-width:2px;
+  classDef manage fill:#F4F0FF,stroke:#7657D9,color:#493298,stroke-width:2px;
+  class A,B,C,D,E,F,G,H,I primary;
+  class CR,DR,ER,FR,HR warning;
+  class CA,U danger;
+  class M,R manage;
+

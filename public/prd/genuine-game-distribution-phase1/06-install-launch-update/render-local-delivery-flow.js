@@ -1,0 +1,4 @@
+const path=require('path');
+const {chromium}=require('C:/Users/z3635/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+(async()=>{const browser=await chromium.launch({headless:true});try{const page=await browser.newPage({viewport:{width:3200,height:1000},deviceScaleFactor:1});const html=path.resolve(__dirname,'06-local-delivery-flow.html').replaceAll('\\','/');await page.goto(`file:///${html}`,{waitUntil:'load'});const dims=await page.evaluate(()=>({w:document.documentElement.scrollWidth,h:document.documentElement.scrollHeight,bw:document.body.scrollWidth,bh:document.body.scrollHeight}));if(dims.w!==3200||dims.h!==1000||dims.bw!==3200||dims.bh!==1000)throw new Error(`flow overflow ${JSON.stringify(dims)}`);await page.screenshot({path:path.resolve(__dirname,'06-local-delivery-flow.png'),fullPage:false});console.log('local-delivery-flow: 3200x1000 PASS')}finally{await browser.close()}})();
+

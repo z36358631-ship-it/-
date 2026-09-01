@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>盖世直接下载本地交付流程</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;background:transparent;color:#203046}body{overflow:hidden}
+    .canvas{width:3200px;height:1000px;padding:42px 56px 38px;background:linear-gradient(180deg,#f8fafc,#f1f5f9);position:relative;overflow:hidden}
+    .boundary{height:34px;border-radius:17px;background:#27313f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;letter-spacing:1.2px;margin:0 auto 18px;width:760px}
+    h1{margin:0;text-align:center;font-size:36px;color:#17283d}h1 span{font-size:20px;color:#6c7888;font-weight:500;margin-left:18px}
+    .main{margin-top:30px;height:390px;display:grid;grid-template-columns:repeat(9,1fr);gap:34px;align-items:center}
+    .node{height:142px;border-radius:22px;border:2px solid #4b7bec;background:#eef4ff;color:#23447d;padding:19px 15px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;box-shadow:0 7px 18px rgba(42,70,105,.08)}
+    .node b{font-size:25px}.node span{font-size:17px;line-height:1.45;margin-top:8px}.node:not(:last-child):after{content:"";position:absolute;right:-35px;top:69px;width:34px;height:4px;background:#8695a8}.node:not(:last-child):before{content:"";position:absolute;right:-38px;top:62px;border-left:12px solid #8695a8;border-top:8px solid transparent;border-bottom:8px solid transparent;z-index:2}
+    .node.check{background:#eef9f4;border-color:#21a56b;color:#165e44}.node.update{background:#f4f0ff;border-color:#7657d9;color:#493298}
+    .recovery-title{font-size:21px;font-weight:800;color:#324153;margin:0 0 14px}.recoveries{display:grid;grid-template-columns:1.16fr 1.12fr 1.12fr 1.12fr 1.48fr;gap:15px}.rec{min-height:143px;border:1px solid #d8e0ea;border-radius:18px;background:#fff;padding:17px 18px}.rec h3{font-size:19px;margin:0 0 9px;color:#2e4055}.rec p{font-size:15px;line-height:1.52;color:#627184;margin:0}.rec b{color:#aa6c00}.rec.protect{border-color:#b8c9f7;background:#f5f8ff}.rec.protect h3{color:#3655a8}.rec.branch{border-color:#c9bdf1;background:#faf8ff}.rec.branch h3{color:#5f44bb}
+    .guard{position:absolute;left:56px;right:56px;bottom:34px;height:74px;border-radius:18px;background:#18283c;color:#fff;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;gap:24px;padding:0 26px;font-size:16px}.guard span{border-right:1px solid rgba(255,255,255,.18);padding-right:20px}.guard span:last-child{border-right:0}.guard b{color:#72d8e9}
+  </style>
+</head>
+<body>
+<div class="canvas">
+  <div class="boundary">产品流程图 · 已确认一期范围 · 仅限有效“盖世直接下载”权益的 Windows 用户</div>
+  <h1>游戏下载、安装、启动与更新 <span>单一正式版本 · 任务可恢复 · 当前完整本地版本受保护</span></h1>
+  <div class="main">
+    <div class="node"><b>1 游戏库下载</b><span>校验有效权益<br>读取下载开关</span></div>
+    <div class="node"><b>2 安装位置</b><span>校验路径、权限<br>与所需空间</span></div>
+    <div class="node"><b>3 下载任务</b><span>暂停 / 继续<br>取消 / 重试</span></div>
+    <div class="node check"><b>4 完整性校验</b><span>下载完成后<br>核对版本清单</span></div>
+    <div class="node check"><b>5 安装</b><span>安装成功才写入<br>完整本地版本</span></div>
+    <div class="node check"><b>6 启动前校验</b><span>权益 · 版本<br>下载 / 启动开关</span></div>
+    <div class="node"><b>7 启动游戏</b><span>启动成功后<br>记录首次启动</span></div>
+    <div class="node update"><b>8 必须更新</b><span>旧完整版本受保护<br>完成前不可启动</span></div>
+    <div class="node update"><b>9 更新后启动</b><span>新版本校验安装<br>再执行启动</span></div>
+  </div>
+  <div class="recovery-title">异常恢复与管理支线</div>
+  <div class="recoveries">
+    <section class="rec"><h3>下载暂停 / 网络中断 / 退出客户端</h3><p><b>保留已完成进度。</b>网络恢复或重开客户端后，由用户手动继续；取消后回游戏库重新创建任务。</p></section>
+    <section class="rec"><h3>校验或安装失败</h3><p><b>保留可复用数据。</b>重试校验、补下载或安装；失败版本不写成当前完整本地版本。</p></section>
+    <section class="rec"><h3>游戏运行中更新冲突</h3><p><b>不创建冲突任务。</b>提示先退出游戏，结束进程后重新校验并由用户继续更新。</p></section>
+    <section class="rec protect"><h3>更新失败保护</h3><p><b>保留当前完整本地版本和重试入口。</b>必须更新仍有效时，完成前继续拦截启动。</p></section>
+    <section class="rec branch"><h3>游戏管理</h3><p><b>修复：</b>校验并恢复托管文件，不删除权益和未托管文件。<br><b>卸载：</b>移除托管文件与安装记录，权益保留，游戏库回到“下载”。</p></section>
+  </div>
+  <div class="guard"><span><b>范围：</b>只处理盖世直接下载</span><span><b>版本：</b>唯一当前线上正式版</span><span><b>冲突：</b>同游戏最多一条有效任务</span><span><b>不包含：</b>预载、P2P、多分支、回滚、云存档</span></div>
+</div>
+</body>
+</html>
+
