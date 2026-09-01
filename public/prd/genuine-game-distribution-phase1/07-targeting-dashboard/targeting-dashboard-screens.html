@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>精准化投放与发行数据看板证据图</title>
+  <link rel="stylesheet" href="targeting-dashboard.css">
+</head>
+<body>
+<div id="app" class="screen"></div>
+<script>
+const pageKey=new URLSearchParams(location.search).get('page')||'resource-slot';
+const app=document.getElementById('app');
+const badge=(text,kind='gray')=>`<span class="badge ${kind}">${text}</span>`;
+const btn=(text,kind='')=>`<button class="btn ${kind}">${text}</button>`;
+
+function statusbar(){return `<div class="statusbar"><span>4:17</span><div class="status-right"><span>120Hz</span><span>⌁</span><span class="battery">82</span></div></div>`}
+function evidence(text){return `<div class="evidence-strip">证据边界｜${text}</div>`}
+function nav(){return `<nav class="bottom-nav"><div class="nav-cell active"><i class="nav-icon"></i>首页</div><div class="nav-cell"><i class="nav-icon"></i>玩游戏</div><div class="nav-cell"><i class="nav-icon"></i>排行榜</div><div class="nav-cell"><i class="nav-icon"></i>游戏库</div><div class="nav-cell"><i class="nav-icon"></i>我的</div></nav>`}
+
+function resourceSlot(){return `<div class="mobile-shell">
+  ${statusbar()}${evidence('基准 screen-08；具体可复用资源位仍待现网盘点，图中不声明新增入口')}
+  <header class="home-top"><div class="search-box"><i class="search-icon"></i>搜索游戏</div><i class="device-icon"></i></header>
+  <main class="home-scroll">
+    <section class="recommend-hero">
+      <div class="hero-head"><b>今日推荐</b><span class="date-chip">09/01</span></div>
+      <div class="hero-copy"><p>探索未知世界，体验完整正版内容。</p><div class="hero-title-row"><h1>首款签约游戏</h1><div class="score">8.6<span>玩家评价</span></div></div><div class="dots"><i></i><i></i><i></i><i></i></div></div>
+    </section>
+    <section class="feed-section"><div class="feed-title"><h2>为你推荐</h2></div><div class="game-strip"><i class="mini-game"></i><i class="mini-game"></i><i class="mini-game"></i><i class="mini-game"></i><i class="mini-game"></i></div></section>
+    <section class="feed-section"><div class="feed-title"><h2>最新资讯</h2><span>更多 ›</span></div><div class="news-grid"><div class="news-card">正版游戏专题与配置指南</div><div class="news-card alt">发行内容与活动信息</div></div></section>
+    <section class="feed-section"><div class="feed-title"><h2>端游大作 · 秒玩上新</h2><span>横向浏览</span></div><div class="news-grid"><div class="news-card alt">冒险与动作</div><div class="news-card">策略与角色扮演</div></div></section>
+  </main>${nav()}
+</div>`}
+
+function landingState(){return `<div class="mobile-shell">
+  ${statusbar()}${evidence('基准 screen-10；投放只传递来源，不改变商品、权益、地区、系统与运行门禁')}
+  <header class="detail-top"><div class="back">‹</div><div class="detail-title">游戏详情</div></header>
+  <main class="detail-content"><div class="detail-hero"><div class="hero-tabs"><b>视频</b><span>图集</span></div></div>
+    <section class="detail-head"><div><h1>首款签约游戏</h1><p>探索陌生世界，迎战强敌，揭开失落秘密。</p><div class="chips"><span class="chip">动作</span><span class="chip">冒险游戏</span><span class="chip">Windows</span></div></div><div class="score">8.6<span>玩家评价</span></div></section>
+    <section class="mobile-section delivery-card"><div class="delivery-label"><i></i>盖世直接下载</div><div class="kv-grid"><div class="kv"><div class="k">获取方式</div><div class="v">付费购买</div></div><div class="kv"><div class="k">支持系统</div><div class="v">Windows 10 / 11</div></div><div class="kv"><div class="k">下载大小</div><div class="v">18.6 GB</div></div><div class="kv"><div class="k">更新要求</div><div class="v">启动前保持正版最新</div></div></div><div class="mobile-note">购买／领取时再次校验地区、系统、商品和游戏状态；投放不绕过任何门禁。</div></section>
+    <section class="mobile-section"><h2>系统要求</h2><div class="kv-grid"><div class="kv"><div class="k">操作系统</div><div class="v">Windows 10 64 位</div></div><div class="kv"><div class="k">存储空间</div><div class="v">需 24 GB 可用空间</div></div></div></section>
+    <section class="mobile-section"><h2>游戏介绍</h2><p>完整展示已批准的游戏资料、开发者信息与内容说明。地区或系统不满足时，页面显示真实不可用原因，不保留投放专属获取入口。</p><div class="mobile-note neutral">另一交付分支沿用同一区块，文案固定为“第三方平台激活”，并完整展示激活平台、适用地区与退款边界。</div></section>
+  </main><footer class="sticky-action"><div class="price"><small>正版价格</small><b>¥ 98</b></div><button class="main-btn">购买</button></footer>
+</div>`}
+
+const developerNav=['工作台','厂商资料','游戏管理','包体版本','投放需求','发行数据','操作记录'];
+const opsNav=['发行总览','合作方管理','游戏审核','投放计划','素材审核','人群规则','资源位排期','投放监控','操作记录'];
+function adminShell({role,title,subtitle,active,content}){const developer=role==='developer';const navs=developer?developerNav:opsNav;return `<div class="admin-shell"><div class="admin-evidence">产品低保真结构 · 本期新页面 · 严格采用方案 A：开发者提交诉求，运营配置与执行，开发者只读看数据</div><aside class="admin-aside"><div class="admin-brand"><i class="brand-mark"></i>${developer?'开发者平台':'发行运营后台'}</div><div class="admin-nav">${navs.map(x=>`<div class="${x===active?'active':''}">${x}</div>`).join('')}</div><div class="admin-foot">${developer?'受邀合作方｜仅见本厂商对象与聚合数据':'平台发行运营｜使用已有合法规则和现有资源位'}<br>所有配置、审核与状态动作留痕</div></aside><main class="admin-main"><header class="admin-top"><div><h1>${title}</h1><p>${subtitle}</p></div><div class="admin-account">${developer?'示例厂商':'平台发行运营'}<i class="avatar">${developer?'厂':'运'}</i></div></header><div class="admin-content">${content}</div></main></div>`}
+
+function developerCampaignList(){return adminShell({role:'developer',active:'投放需求',title:'投放需求',subtitle:'草稿不属于计划状态；已提交计划只读，开发者不能启动、暂停或结束',content:`
+  <div class="stats"><section class="card stat"><div class="label">草稿</div><div class="value">1</div><div class="hint">未生成 campaign_id</div></section><section class="card stat"><div class="label">平台处理中</div><div class="value">2</div><div class="hint">已提交／配置中／已排期</div></section><section class="card stat"><div class="label">投放中</div><div class="value">1</div><div class="hint">运营控制状态</div></section><section class="card stat"><div class="label">已驳回</div><div class="value">1</div><div class="hint">可修改后重新提交</div></section></div>
+  <section class="card section"><div class="toolbar"><div class="toolbar-left"><div class="input">计划编号／游戏关键词</div><div class="select">游戏：全部</div><div class="select">状态：全部</div><div class="select">更新时间</div></div><div class="toolbar-right">${btn('新建投放需求','primary')}</div></div>
+  <table class="table"><thead><tr><th style="width:15%">草稿／计划</th><th style="width:13%">游戏</th><th style="width:12%">推广目标</th><th style="width:11%">当前状态</th><th style="width:14%">期望时间</th><th style="width:14%">运营排期摘要</th><th style="width:11%">最近更新</th><th style="width:10%">操作</th></tr></thead><tbody>
+    <tr><td><b>未提交草稿</b><br><span class="muted">素材：横幅 1 份</span></td><td>首款签约游戏</td><td>首次启动</td><td>${badge('草稿','gray')}</td><td>09/10—09/24</td><td class="muted">未生成计划</td><td>09/01 10:20</td><td><span class="link">继续编辑</span></td></tr>
+    <tr><td><b class="mono">CAM-20260901-01</b></td><td>首款签约游戏</td><td>购买／领取</td><td>${badge('投放中','green')}</td><td>09/01—09/14</td><td>首页现有推荐位<br>09/01—09/14</td><td>09/01 09:30</td><td><span class="link">查看详情</span><br><span class="link">查看数据</span></td></tr>
+    <tr><td><b class="mono">CAM-20260828-02</b><br><span class="kpi-down">素材信息不完整</span></td><td>首款签约游戏</td><td>详情访问</td><td>${badge('已驳回','red')}</td><td>09/03—09/10</td><td class="muted">--</td><td>08/30 18:05</td><td><span class="link">修改后重新提交</span></td></tr>
+    <tr><td><b class="mono">CAM-20260825-01</b></td><td>首款签约游戏</td><td>成功交付</td><td>${badge('已排期','blue')}</td><td>09/15—09/21</td><td>排期已确认</td><td>08/31 16:42</td><td><span class="link">查看详情</span><br><span class="link">查看数据</span></td></tr>
+  </tbody></table><div class="pagination"><button class="page active">1</button><button class="page">2</button><button class="page">›</button></div></section>
+  <div class="notice" style="margin-top:14px"><strong>状态与权限</strong>状态筛选固定为开发者已提交、平台配置中、已排期、投放中、已暂停、已结束、已驳回；加载、空结果、读取失败和无权限分别使用独立状态组件。</div>`})}
+
+function campaignEditor(){return adminShell({role:'developer',active:'投放需求',title:'创建投放需求',subtitle:'只表达推广诉求；最终人群、资源位、排期、频次与优先顺序由平台配置',content:`
+  <div class="form-layout"><section class="card form-card">
+    <div class="form-section"><h2>目标游戏</h2><div class="field-grid"><div class="field"><label>游戏</label><div class="field-box">首款签约游戏 · 已发布</div></div><div class="field"><label>交付方式</label><div class="field-box">盖世直接下载</div></div><div class="field"><label>销售／发行地区</label><div class="field-box">中国大陆</div></div><div class="field"><label>支持系统</label><div class="field-box">Windows 10 / 11</div></div><div class="field full"><label>已审核标签</label><div class="field-box">动作 · 冒险 · 单人 · 手柄适配</div></div></div></div>
+    <div class="form-section"><h2>推广目标</h2><div class="choice-row"><div class="choice"><b>详情访问</b><span>观察有效落地访问</span></div><div class="choice"><b>购买／领取</b><span>观察交易或领取成功</span></div><div class="choice"><b>成功交付</b><span>按实际交付分支统计</span></div><div class="choice selected"><b>首次启动</b><span>仅盖世包体可观测</span></div></div></div>
+    <div class="form-section"><h2>素材</h2><div class="field-grid"><div class="field"><label>图片素材</label><div class="field-box">首页横幅_v3.png · 校验通过</div></div><div class="field"><label>素材文案</label><div class="field-box">探索未知世界，体验完整正版内容</div></div></div><div class="help">仅使用平台现有素材规范允许的图片／文字字段；规范缺失时禁止提交。</div></div>
+    <div class="form-section"><h2>期望人群与期望时间</h2><div class="field-grid"><div class="field full"><label>期望人群</label><div class="field-box area">地区：中国大陆；语言：简体中文；设备／系统：Windows 10 / 11；平台内行为：浏览过动作冒险游戏详情；不含用户 ID、Steam 导入、问卷或第三方画像。</div></div><div class="field"><label>期望开始时间</label><div class="field-box">2026/09/10 00:00</div></div><div class="field"><label>期望结束时间</label><div class="field-box">2026/09/24 23:59</div></div></div></div>
+    <div class="form-actions">${btn('保存草稿')}${btn('提交平台审核','primary')}</div>
+  </section><aside class="stack"><section class="card side-card"><h3>素材预览</h3><div class="material-preview"></div><p>预览只显示开发者原素材；运营审核后才可绑定计划。</p></section><section class="card side-card"><h3>提交说明</h3><ul><li>游戏需已发布，素材与时间有效</li><li>成功提交后生成 campaign_id 与需求修订</li><li>重复提交返回同一结果</li><li>驳回重提保留计划编号并递增修订</li></ul></section><div class="notice amber"><strong>平台配置声明</strong>开发者端不出现预算、出价、预计消耗、资源位、频次、优先级或启动动作。</div></aside></div>`})}
+
+function campaignDetail(){return adminShell({role:'developer',active:'投放需求',title:'投放需求详情',subtitle:'需求快照、平台配置摘要、状态历史与效果入口只读',content:`
+  <section class="card summary-head"><div><h2>CAM-20260901-01 · 首款签约游戏</h2><p>需求修订 R3 · 最近更新 2026/09/01 09:30</p><div class="summary-tags">${badge('已排期','blue')}${badge('本厂商可见','gray')}${badge('只读','gray')}</div></div><div class="actions">${btn('查看发行数据','primary')}</div></section>
+  <div class="grid-2"><div class="stack"><section class="card section"><div class="card-title"><div><h2>开发者需求</h2><p>当前修订与历史修订编号均可追溯</p></div><span class="link">历史修订 R1—R3</span></div><div class="info-grid"><div class="info-item"><div class="k">推广目标</div><div class="v">首次启动</div></div><div class="info-item"><div class="k">素材版本</div><div class="v">MAT-v3 · 已通过</div></div><div class="info-item"><div class="k">提交时间</div><div class="v">09/01 08:42</div></div><div class="info-item full"><div class="k">期望人群</div><div class="v">中国大陆 · 简体中文 · Windows 10 / 11 · 动作冒险详情浏览</div></div><div class="info-item full"><div class="k">期望时间</div><div class="v">2026/09/10 00:00 — 2026/09/24 23:59</div></div></div></section>
+  <section class="card section"><div class="card-title"><div><h2>平台配置摘要</h2><p>仅披露本计划可理解摘要，不展示用户明细或资源竞争详情</p></div></div><div class="info-grid"><div class="info-item"><div class="k">资源位</div><div class="v">现有推荐位 · 已确认</div></div><div class="info-item"><div class="k">预估人数</div><div class="v">23,480</div></div><div class="info-item"><div class="k">排期</div><div class="v">09/10—09/24</div></div><div class="info-item"><div class="k">频次</div><div class="v">单访客每日 2 次</div></div><div class="info-item"><div class="k">优先顺序</div><div class="v">80</div></div><div class="info-item"><div class="k">排除摘要</div><div class="v">不可售地区／系统不满足</div></div><div class="info-item full"><div class="k">人群条件摘要</div><div class="v">中国大陆 且 简体中文 且 Windows 10 / 11 且 命中平台内动作冒险兴趣；硬性排除优先。</div></div></div></section></div>
+  <aside class="stack"><section class="card timeline"><div class="card-title"><div><h2>状态记录</h2><p>按时间倒序</p></div></div><div class="timeline-row"><span class="time">09/01 09:30</span><span class="desc">资源位与排期门禁通过</span>${badge('已排期','blue')}</div><div class="timeline-row"><span class="time">09/01 09:08</span><span class="desc">规则人群预估通过 · 23,480</span>${badge('配置中','amber')}</div><div class="timeline-row"><span class="time">09/01 08:55</span><span class="desc">素材与落地页审核通过</span>${badge('配置中','amber')}</div><div class="timeline-row"><span class="time">09/01 08:42</span><span class="desc">开发者提交需求修订 R3</span>${badge('已提交','gray')}</div></section><section class="notice"><strong>页面权限</strong>本页没有运营配置编辑、用户明细、启动、暂停或结束动作。只有已驳回状态显示“修改后重新提交”。</section><section class="notice amber"><strong>数据入口始终可进入</strong>无已完成 T+1 数据时展示“--”、最近成功更新时间与异常状态，不伪造 0。</section></aside></div>`})}
+
+function developerDashboard(){return adminShell({role:'developer',active:'发行数据',title:'发行数据看板',subtitle:'按 campaign_id + game_id 聚合；默认最近 7 个已完成自然日，数据 T+1',content:`
+  <div class="toolbar"><div class="toolbar-left"><div class="select">游戏：首款签约游戏</div><div class="select">计划：CAM-20260901-01</div><div class="select">09/01—09/07</div></div><div class="toolbar-right">${badge('T+1 正常','green')}<span class="muted" style="font-size:12px">最近成功更新：09/08 06:20</span></div></div>
+  <div class="metric-grid"><section class="card metric"><div class="label">曝光人数</div><div class="value">18,420</div><div class="sub">曝光次数 41,286</div></section><section class="card metric"><div class="label">点击人数</div><div class="value">2,315</div><div class="sub">点击次数 2,946</div></section><section class="card metric"><div class="label">详情访问人数</div><div class="value">2,108</div><div class="sub">按有效落地访问</div></section><section class="card metric"><div class="label">购买／领取人数</div><div class="value">386</div><div class="sub">成功业务终态</div></section><section class="card metric"><div class="label">包体下载成功人数</div><div class="value">342</div><div class="sub">盖世直接下载</div></section><section class="card metric"><div class="label">首次启动成功人数</div><div class="value">297</div><div class="sub">不含启动点击</div></section></div>
+  <div class="grid-2"><section class="card chart"><div class="card-title"><div><h2>日趋势</h2><p>曝光人数、点击人数、购买／领取人数</p></div><div>${badge('曝光','blue')} ${badge('点击','green')}</div></div><div class="chart-grid"></div><div class="chart-line"></div><div class="chart-labels"><span>09/01</span><span>09/02</span><span>09/03</span><span>09/04</span><span>09/05</span><span>09/06</span><span>09/07</span></div></section><aside class="card section"><div class="card-title"><div><h2>口径与数据状态</h2><p>点击趋势点只查看日期与口径，不展开用户明细</p></div></div><div class="check-list"><div class="check-row"><b>真实零值</b><span class="right">显示 0</span></div><div class="check-row"><b>数据延迟／缺失</b><span class="right">显示 --</span></div><div class="check-row"><b>第三方激活</b><span class="right">无数据不展示</span></div></div></aside></div>
+  <section class="card section" style="margin-top:12px"><div class="card-title"><div><h2>转化漏斗</h2><p>每步展示人数及相邻步骤转化率；购买／领取后按实际交付方式分叉</p></div></div><div class="funnel"><div class="funnel-step"><b>曝光</b><span>18,420 人</span></div><i class="arrow"></i><div class="funnel-step"><b>点击</b><span>2,315 人 · 12.6%</span></div><i class="arrow"></i><div class="funnel-step"><b>详情访问</b><span>2,108 人 · 91.1%</span></div><i class="arrow"></i><div class="funnel-step"><b>购买／领取</b><span>386 人 · 18.3%</span></div></div><div class="branch"><div class="branch-card"><b>第三方平台激活</b><span>CDKEY 成功交付人数；站外激活数据默认不可用，激活指标不出现。</span></div><div class="branch-card"><b>盖世直接下载</b><span>下载成功 342 人 → 首次启动成功 297 人 · 86.8%</span></div></div></section>
+  <div class="notice" style="margin-top:12px"><strong>数据范围</strong>仅显示本厂商聚合结果；不提供用户明细、圈选导出、预算消耗或跨厂商对比。已结束计划仍可在归因窗口内由后续 T+1 批次补齐。</div>`})}
+
+function opsPlanList(){return adminShell({role:'ops',active:'投放计划',title:'投放计划',subtitle:'签约范围内计划领取、筛选、固定状态与处理入口',content:`
+  <div class="stats"><section class="card stat"><div class="label">待处理</div><div class="value">3</div><div class="hint">开发者已提交</div></section><section class="card stat"><div class="label">平台配置中</div><div class="value">5</div><div class="hint">审核／圈选／排期</div></section><section class="card stat"><div class="label">已排期</div><div class="value">2</div><div class="hint">等待启动重校</div></section><section class="card stat"><div class="label">投放中／已暂停</div><div class="value">4 / 1</div><div class="hint">进入监控处理</div></section></div>
+  <section class="card section"><div class="toolbar"><div class="toolbar-left"><div class="input">计划编号／游戏关键词</div><div class="select">厂商：全部</div><div class="select">游戏：全部</div><div class="select">状态：全部</div><div class="select">目标：全部</div><div class="select">交付方式</div><div class="select">负责人</div><div class="select">时间范围</div></div></div>
+  <table class="table"><thead><tr><th style="width:14%">计划</th><th style="width:11%">厂商／游戏</th><th style="width:10%">目标</th><th style="width:10%">交付方式</th><th style="width:10%">状态</th><th style="width:13%">期望／实际时间</th><th style="width:10%">负责人</th><th style="width:12%">阻塞原因</th><th style="width:10%">操作</th></tr></thead><tbody>
+    <tr><td class="mono">CAM-20260901-03</td><td>示例厂商<br>首款签约游戏</td><td>首次启动</td><td>盖世直接下载</td><td>${badge('开发者已提交','amber')}</td><td>期望 09/10—09/24</td><td class="muted">未领取</td><td class="muted">待开始配置</td><td><span class="link">开始配置</span></td></tr>
+    <tr><td class="mono">CAM-20260901-01</td><td>示例厂商<br>首款签约游戏</td><td>购买／领取</td><td>盖世直接下载</td><td>${badge('平台配置中','blue')}</td><td>期望 09/01—09/14</td><td>运营 A</td><td>待完成人群预估</td><td><span class="link">配置人群</span></td></tr>
+    <tr><td class="mono">CAM-20260830-02</td><td>示例厂商<br>首款签约游戏</td><td>成功交付</td><td>第三方平台激活</td><td>${badge('已排期','cyan')}</td><td>实际 09/05—09/12</td><td>运营 B</td><td class="muted">无</td><td><span class="link">查看排期</span></td></tr>
+    <tr><td class="mono">CAM-20260825-01</td><td>示例厂商<br>首款签约游戏</td><td>详情访问</td><td>盖世直接下载</td><td>${badge('已暂停','red')}</td><td>实际 08/28—09/08</td><td>运营 A</td><td class="kpi-down">人工暂停：素材复核</td><td><span class="link">进入监控</span></td></tr>
+  </tbody></table><div class="pagination"><button class="page active">1</button><button class="page">2</button><button class="page">›</button></div></section>
+  <div class="notice" style="margin-top:14px"><strong>处理规则</strong>默认待处理优先、最近提交时间倒序；开始配置并发领取仅首个成功。列表不能直接把计划从“开发者已提交”改为“投放中”，也不能跳过任何门禁。</div>`})}
+
+function materialReview(){return adminShell({role:'ops',active:'素材审核',title:'素材与落地页审核',subtitle:'素材合规与落地页可发布性必须同时通过',content:`
+  <section class="card summary-head"><div><h2>CAM-20260901-03 · 首款签约游戏</h2><p>示例厂商 · 需求修订 R2 · 素材版本 MAT-v3</p><div class="summary-tags">${badge('平台配置中','blue')}${badge('不可变快照','gray')}</div></div><div class="review-actions">${btn('驳回','danger')}${btn('审核通过','primary')}</div></section>
+  <div class="grid-2"><div class="stack"><section class="card section"><div class="card-title"><div><h2>素材预览与原字段</h2><p>运营不能直接替开发者修改原素材</p></div>${badge('规范校验通过','green')}</div><div class="grid-2"><div class="material-preview"></div><div class="info-grid"><div class="info-item"><div class="k">推广目标</div><div class="v">首次启动</div></div><div class="info-item"><div class="k">期望人群</div><div class="v">中国大陆 · Windows</div></div><div class="info-item"><div class="k">图片／文字</div><div class="v">原文件与文本只读</div></div><div class="info-item full"><div class="k">素材文案</div><div class="v">探索未知世界，体验完整正版内容。</div></div></div></div></section>
+  <section class="card section"><div class="card-title"><div><h2>详情落地预览</h2><p>读取当前已批准快照，不以旧预览通过审核</p></div>${badge('落地页可用','green')}</div><div class="info-grid"><div class="info-item"><div class="k">发布状态</div><div class="v">已发布</div></div><div class="info-item"><div class="k">交付方式</div><div class="v">盖世直接下载</div></div><div class="info-item"><div class="k">商品／领取</div><div class="v">购买动作可用</div></div><div class="info-item"><div class="k">地区</div><div class="v">中国大陆</div></div><div class="info-item"><div class="k">系统要求</div><div class="v">Windows 10 / 11</div></div><div class="info-item"><div class="k">下载限制</div><div class="v">18.6 GB · 需更新</div></div></div></section></div>
+  <aside class="stack"><section class="card side-card"><h3>门禁清单</h3><div class="check-list"><div class="check-row"><b>素材合规</b>${badge('通过','green')}</div><div class="check-row"><b>素材与游戏一致</b>${badge('通过','green')}</div><div class="check-row"><b>目标游戏已发布</b>${badge('通过','green')}</div><div class="check-row"><b>详情限制信息完整</b>${badge('通过','green')}</div><div class="check-row"><b>目标动作可用</b>${badge('通过','green')}</div></div></section><div class="notice amber"><strong>驳回要求</strong>必须选择原因分类并填写可执行说明；通过时记录素材版本和落地页快照。</div><div class="notice red"><strong>快照变化保护</strong>页面停留期间游戏下架、素材变化或详情快照变化时阻止提交并要求刷新。</div><section class="card side-card"><h3>下一步</h3><p>审核通过后计划仍保持“平台配置中”，只开放人群规则配置；不等于已排期或已投放。</p></section></aside></div>`})}
+
+function audienceEditor(){return adminShell({role:'ops',active:'人群规则',title:'人群规则配置',subtitle:'已有合法规则组合；排除优先，地区／系统硬排除不可删除',content:`
+  <section class="card summary-head"><div><h2>CAM-20260901-03 · 首款签约游戏</h2><p>开发者期望：中国大陆 · 简体中文 · Windows 10 / 11 · 动作冒险详情浏览</p><div class="summary-tags">${badge('平台配置中','blue')}${badge('素材与落地页已通过','green')}</div></div><div class="actions">${btn('预估人群')}${btn('保存并继续','disabled')}</div></section>
+  <div class="grid-2"><div class="stack"><section class="card section"><div class="card-title"><div><h2>游戏已审核标签</h2><p>未审核、审核中或被移除值不可选</p></div>${badge('只读','gray')}</div><div class="rule-row"><span class="rule-token">类型：动作</span><span class="rule-token">题材：冒险</span><span class="rule-token">玩法：单人</span><span class="rule-token">设备：手柄适配</span><span class="rule-token">系统：Windows 10 / 11</span></div></section>
+  <section class="card section"><div class="grid-equal"><div class="rule-box"><h3>包含条件</h3><div class="rule-row"><span class="rule-token">地区： 中国大陆</span><span class="rule-token">语言： 简体中文</span><span class="rule-token">系统： Windows 10 / 11</span><span class="rule-token">详情浏览： 动作冒险</span></div><p class="muted" style="font-size:10px">同字段多值取或，不同字段取且。</p></div><div class="rule-box"><h3>排除条件</h3><div class="rule-row"><span class="rule-token">已获得本游戏</span><span class="rule-token">近 7 日已首次启动</span></div><p class="muted" style="font-size:10px">任一排除条件命中即排除。</p></div></div></section>
+  <section class="card section hard-rule"><div class="card-title"><div><h2>硬性排除</h2><p>始终优先，运营不能删除或降级</p></div>${badge('固定门禁','red')}</div><div class="rule-row"><span class="rule-token">游戏未授权／不可售地区</span><span class="rule-token">设备或系统不满足游戏要求</span></div></section></div>
+  <aside class="stack"><section class="estimate"><div class="card-title"><div><h2>人群预估</h2><p>规则版本 SEG-R7 · 计算时间 09/01 10:16</p></div>${badge('空人群','red')}</div><div class="value">0 人</div><p>目标人群为空，请调整条件。禁止进入资源位排期。</p></section><section class="card side-card"><h3>预估状态</h3><div class="check-list"><div class="check-row"><b>正常</b><span class="right">展示人数</span></div><div class="check-row"><b>空人群</b><span class="right">显示 0 并阻断</span></div><div class="check-row"><b>数据异常</b><span class="right">显示 -- 并重试</span></div></div></section><div class="notice"><strong>允许字段边界</strong>地区、语言、设备／系统、本平台内已获得、详情浏览、购买／领取、下载、启动和已有合法兴趣标签；不提供用户 ID、Steam、问卷或第三方画像。</div><div class="notice amber"><strong>并发与版本</strong>修改后规则进入未预估；保存生成不可变 user_segment_id 与规则版本，并发修改不覆盖先保存版本。</div></aside></div>`})}
+
+function placementSchedule(){return adminShell({role:'ops',active:'资源位排期',title:'资源位与排期',subtitle:'只从已确认可复用的现有资源位中选择；资源位盘点未完成前不冻结名称与素材尺寸',content:`
+  <section class="card summary-head"><div><h2>CAM-20260901-03 · 首款签约游戏</h2><p>规则人群 SEG-R8 · 预估 23,480 人 · 硬性排除已应用</p><div class="summary-tags">${badge('平台配置中','blue')}${badge('人群非空','green')}</div></div><div class="actions">${btn('确认排期','disabled')}</div></section>
+  <div class="grid-2"><div class="stack"><section class="card section"><div class="card-title"><div><h2>现有资源位选择</h2><p>展示名称、所属现有页面、支持素材类型、启停与可排期状态</p></div>${badge('盘点阻塞','amber')}</div><div class="notice amber"><strong>现网资源位盘点尚未完成</strong>当前证据只能证明推荐展示外壳，不能把历史广告后台示例位或自拟名称当作真实资源位。完成盘点前不可选择、不可排期。</div></section>
+  <section class="card section"><div class="card-title"><div><h2>时间、频次与优先顺序</h2><p>选择有效资源位后开放服务端校验</p></div></div><div class="field-grid"><div class="field"><label>开始时间</label><div class="field-box">2026/09/10 00:00</div></div><div class="field"><label>结束时间</label><div class="field-box">2026/09/24 23:59</div></div><div class="field"><label>单访客频次</label><div class="field-box">每日上限 2 次</div><div class="help">须在所选资源位既有允许范围内</div></div><div class="field"><label>优先顺序</label><div class="field-box">80</div><div class="help">整数，数值越大顺位越高</div></div></div></section>
+  <section class="card section"><div class="card-title"><div><h2>同资源位排期冲突</h2><p>不展示其他厂商商业数据</p></div></div><table class="table"><thead><tr><th>资源位</th><th>计划状态</th><th>重叠时间</th><th>优先顺序</th><th>当前顺位</th></tr></thead><tbody><tr><td class="muted">待资源位盘点</td><td>--</td><td>--</td><td>--</td><td>--</td></tr></tbody></table></section></div>
+  <aside class="stack"><section class="card side-card"><h3>门禁摘要</h3><div class="check-list"><div class="check-row"><b>游戏／素材</b>${badge('通过','green')}</div><div class="check-row"><b>落地页</b>${badge('通过','green')}</div><div class="check-row"><b>人群</b>${badge('23,480','green')}</div><div class="check-row"><b>资源位</b>${badge('未完成','red')}</div><div class="check-row"><b>时间</b>${badge('待校验','amber')}</div><div class="check-row"><b>频次</b>${badge('待校验','amber')}</div></div></section><div class="notice"><strong>冲突顺位</strong>同优先顺序按进入已排期时间先后，再按 campaign_id 升序。频控或资格不满足时继续检查下一计划。</div><div class="notice red"><strong>排期不等于曝光</strong>开始时间或人工启动时仍需重校全部门禁；资源位关闭、素材失效或人群为空均不能启动。</div></aside></div>`})}
+
+function campaignMonitor(){return adminShell({role:'ops',active:'投放监控',title:'投放监控',subtitle:'状态动作实时，效果数据 T+1；数据延迟不等于无曝光，也不自动暂停计划',content:`
+  <section class="card summary-head"><div><h2>CAM-20260901-01 · 首款签约游戏</h2><p>排期 2026/09/01 00:00 — 09/14 23:59 · 资源位：已确认现有推荐位</p><div class="summary-tags">${badge('投放中','green')}${badge('T+1 延迟','amber')}</div></div><div class="actions">${btn('暂停','warn')}${btn('结束','danger')}</div></section>
+  <div class="grid-2"><div class="stack"><section class="card section"><div class="card-title"><div><h2>实时门禁</h2><p>启动、恢复及投放中持续读取服务端最新结果</p></div>${badge('当前通过','green')}</div><div class="grid-3"><div class="check-row"><b>游戏发布</b>${badge('通过','green')}</div><div class="check-row"><b>素材</b>${badge('有效','green')}</div><div class="check-row"><b>落地页</b>${badge('可用','green')}</div><div class="check-row"><b>规则人群</b>${badge('非空','green')}</div><div class="check-row"><b>地区／系统</b>${badge('硬排除已应用','green')}</div><div class="check-row"><b>资源位／时间</b>${badge('有效','green')}</div></div></section>
+  <section class="card section"><div class="card-title"><div><h2>T+1 指标摘要</h2><p>最近成功更新 09/01 06:20；当前批次延迟，不把未知写为 0</p></div>${badge('延迟','amber')}</div><div class="info-grid"><div class="info-item"><div class="k">曝光人数／次数</div><div class="v">-- / --</div></div><div class="info-item"><div class="k">点击人数／次数</div><div class="v">-- / --</div></div><div class="info-item"><div class="k">详情访问人数</div><div class="v">--</div></div><div class="info-item"><div class="k">购买／领取人数</div><div class="v">--</div></div><div class="info-item"><div class="k">下载成功人数</div><div class="v">--</div></div><div class="info-item"><div class="k">首次启动成功人数</div><div class="v">--</div></div></div><div class="form-actions">${btn('重试刷新')}</div></section></div>
+  <aside class="stack"><div class="notice red"><strong>自动停止</strong>投放中若人群为空、游戏下架、素材失效、落地页不可用或资源位关闭，立即停止新曝光并进入“已结束”；后续恢复不自动重启。</div><section class="card audit-log"><div class="card-title"><div><h2>操作记录</h2><p>动作、前后状态、原因、角色、来源、结果和时间</p></div></div><div class="audit-row"><b>启动</b><span class="desc">已排期 → 投放中<br>全部门禁通过</span><span class="meta">运营<br>人工</span><span>${badge('成功','green')}<br>09/01 09:30</span></div><div class="audit-row"><b>刷新数据</b><span class="desc">状态不变<br>T+1 批次延迟</span><span class="meta">系统<br>自动</span><span>${badge('已记录','amber')}<br>09/01 10:00</span></div><div class="audit-row"><b>配置保存</b><span class="desc">平台配置中 → 已排期<br>排期版本 S3</span><span class="meta">运营<br>人工</span><span>${badge('成功','green')}<br>08/31 18:10</span></div></section><div class="notice"><strong>动作边界</strong>已排期可启动；投放中可暂停／结束；已暂停可恢复／结束；已结束只读且不可恢复。所有重复动作返回原结果。</div></aside></div>`})}
+
+function targetingFlow(){return `<div class="flow-shell"><header class="flow-head"><div><h1>精准化投放与发行数据闭环</h1><p>方案 A｜开发者提交素材与期望人群，运营使用已有合法规则与现有资源位配置，开发者只读查看 T+1 聚合效果</p></div><div class="flow-legend">${badge('开发者','blue')}${badge('发行运营','green')}${badge('C 端','amber')}${badge('数据回流','gray')}</div></header><main class="flow-board">
+  <div class="flow-main-row">
+    <div class="main-node dev"><span class="role">开发者</span><b>提交投放需求</b><span>游戏、素材、推广目标、期望人群与期望时间；生成 campaign_id</span></div><i class="main-arrow"></i>
+    <div class="main-node ops"><span class="role">发行运营</span><b>领取并审核</b><span>素材与落地页同时通过，记录不可变审核快照</span></div><i class="main-arrow"></i>
+    <div class="main-node ops"><span class="role">发行运营</span><b>配置规则人群</b><span>已有合法字段组合；地区／系统硬性排除始终优先</span></div><i class="main-arrow"></i>
+    <div class="main-node ops"><span class="role">发行运营</span><b>资源位与排期</b><span>仅选择已确认现有资源位；配置时间、频次与优先顺序</span></div><i class="main-arrow"></i>
+    <div class="main-node ops"><span class="role">发行运营</span><b>启动重校</b><span>游戏、素材、落地页、人群、资源位与时间全门禁通过</span></div><i class="main-arrow"></i>
+    <div class="main-node client"><span class="role">C 端</span><b>现有推荐位曝光</b><span>资格、频控与顺位通过，完成可见渲染才计曝光</span></div><i class="main-arrow"></i>
+    <div class="main-node client"><span class="role">C 端</span><b>进入游戏详情</b><span>携带有效投放上下文；不展示人群或被圈选原因</span></div><i class="main-arrow"></i>
+    <div class="main-node client"><span class="role">C 端</span><b>购买／领取</b><span>再次校验商品、地区、系统与游戏状态，固化来源快照</span></div><i class="main-arrow"></i>
+    <div class="main-node data"><span class="role">数据</span><b>T+1 数据回流</b><span>campaign_id + game_id + delivery_type 贯通可观测终态</span></div>
+  </div>
+  <div class="branch-zone">
+    <section class="branch-panel stop"><i class="branch-connect"></i><h3>硬阻断与自动停止</h3><p>预估为 0 的空人群禁止进入资源位排期；启动或投放中遇到游戏下架、素材／落地页失效、人群为空或资源位关闭，停止新曝光并进入“已结束”，后续恢复不自动重启。</p></section>
+    <section class="branch-panel delivery"><i class="branch-connect"></i><h3>购买／领取后的交付分支</h3><div class="delivery-grid"><div class="delivery-cell"><b>第三方平台激活</b><span>统计 CDKEY 成功交付；站外激活默认不可观测。</span></div><div class="delivery-cell"><b>盖世直接下载</b><span>统计包体下载成功与首次启动成功。</span></div></div></section>
+    <div class="result-label"><b>闭环结果</b>状态动作实时更新；效果数据默认 T+1。未知值显示“--”，只有数据完整且真实为零时显示 0。</div>
+    <div class="result-row"><div class="result-card dev"><b>开发者只读看板</b><span>只看本厂商聚合指标、趋势与漏斗；无用户明细、预算消耗或跨厂商对比。</span></div><div class="result-card ops"><b>运营监控与日志</b><span>查看门禁、计划状态、延迟／缺失，并追溯人工与系统动作。</span></div><div class="result-card note"><b>归因快照不回写</b><span>后续商品、计划、素材或游戏状态变化不改写已发生的有效点击来源与已归集结果。</span></div></div>
+    <div class="metric-chain-flow"><b>统一可观测指标链</b><span>曝光人数／次数 → 点击人数／次数 → 详情访问人数 → 购买／领取人数 → CDKEY 成功交付人数 ｜ 包体下载成功人数 → 首次启动成功人数</span></div>
+  </div>
+  </main></div>`}
+
+const pages={
+  'targeting-flow':targetingFlow,
+  'resource-slot':resourceSlot,
+  'landing-state':landingState,
+  'developer-campaign-list':developerCampaignList,
+  'campaign-editor':campaignEditor,
+  'campaign-detail':campaignDetail,
+  'developer-dashboard':developerDashboard,
+  'ops-plan-list':opsPlanList,
+  'material-review':materialReview,
+  'audience-editor':audienceEditor,
+  'placement-schedule':placementSchedule,
+  'campaign-monitor':campaignMonitor
+};
+app.innerHTML=(pages[pageKey]||pages['resource-slot'])();
+</script>
+</body>
+</html>
