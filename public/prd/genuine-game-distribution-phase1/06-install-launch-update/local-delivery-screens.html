@@ -83,7 +83,7 @@ function downloadManagerV2(){return shell({title:'下载管理',boundary:'沿用
   <div class="task-list"><section class="task-card compact"><div class="game"><div class="cover" style="filter:hue-rotate(65deg)"></div><div><h3>山海旅人</h3><p>更新 · task_id U-1024</p><p class="state pause">已暂停 · 进度已保存</p></div><button class="btn small">继续</button></div><div class="inline-actions"><button class="mini-btn red">取消任务</button></div></section>
   <section class="task-card compact"><div class="game"><div class="cover" style="filter:hue-rotate(150deg)"></div><div><h3>霓虹深渊</h3><p>修复 · task_id R-0872</p><p class="state fail">失败 · 网络中断</p></div><span class="tag red">待处理</span></div><div class="inline-actions"><button class="mini-btn primary">重试</button><button class="mini-btn red">取消任务</button></div><div class="notice red" style="margin-top:12px">保留已完成数据，不影响权益和当前完整版本。</div></section></div>
   <div class="group-title">已结束 <span>1 个任务</span></div>
-  <section class="task-card compact terminal"><div class="game"><div class="cover" style="filter:hue-rotate(215deg)"></div><div><h3>空洞骑士：丝之歌</h3><p>旧 task_id D-0316 已结束</p><p class="state superseded">已替代 / superseded</p></div><span class="tag">终态</span></div><div class="persist" style="margin-top:12px"><b>新 task_id D-0317 已创建</b><span>旧终态不再阻塞同游戏新任务</span></div></section>
+  <section class="task-card compact terminal"><div class="game"><div class="cover" style="filter:hue-rotate(215deg)"></div><div><h3>空洞骑士：丝之歌</h3><p>旧 task_id D-0316 已结束</p><p class="state superseded">已替代 / superseded</p></div><span class="tag">终态</span></div><div class="persist" style="margin-top:12px"><div><b>新 task_id D-0317 已创建</b><br><span>旧终态不再阻塞同游戏新任务</span></div><button class="btn small">查看新任务</button></div></section>
   <div class="notice"><b>列表范围：</b>仅显示本机当前账号的盖世包体任务；暂停、失败可恢复，已替代任务仅保留可追溯结果。</div>`})}
 
 function installResultV2(){return shell({title:'安装进度与结果',boundary:'本期新页面 · 失败动作只作用于当前 task_id，不影响权益与既有完整版本',sticky:sticky('重试','取消任务'),body:`
@@ -106,7 +106,7 @@ function updateTaskV2(){return shell({title:'更新任务',boundary:'本期新�
     <div class="state-card locked"><div class="state-top"><b>校验中／安装中</b><span class="tag">锁定</span></div><p>文件写入阶段不可暂停或取消。</p><div class="inline-actions"><button class="mini-btn disabled">不可暂停或取消</button></div></div>
     <div class="state-card fail"><div class="state-top"><b>更新失败</b><span class="tag red">待处理</span></div><p>保留已完成数据与旧版本。</p><div class="inline-actions"><button class="mini-btn primary">重试更新</button><button class="mini-btn red">取消任务</button></div></div>
   </div></section>
-  <section class="section"><div class="section-title">旧版本保护 ${tag('v1.0.0 可恢复','green')}</div><div class="line"><span class="k">更新成功前</span><span class="v green">v1.0.0 完整文件保持不变</span></div><div class="line"><span class="k">目标版本变化</span><span class="v">旧任务进入已替代，再创建新 task_id</span></div></section>
+  <section class="section"><div class="section-title">旧版本保护 ${tag('v1.0.0 可恢复','green')}</div><div class="line"><span class="k">更新成功前</span><span class="v green">v1.0.0 完整文件保持不变</span></div><div class="line"><span class="k">目标版本变化</span><span class="v">先创建新 task_id；原子提交后旧任务才进入已替代</span></div></section>
   <div class="notice amber"><b>启动边界：</b>当前为必须更新，完成 v1.1.0 前继续拦截启动；失败或取消不破坏 v1.0.0。</div>`})}
 
 function repairV2(){return shell({title:'修复游戏文件',boundary:'本期新页面 · 只修复版本清单内托管文件，动作随任务阶段变化',sticky:sticky('暂停','取消任务'),body:`

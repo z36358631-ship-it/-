@@ -33,7 +33,7 @@ function assert(ok,msg){if(!ok)throw new Error(msg)}
       assert(!/CDKEY.*下载|第三方平台激活.*下载/.test(result.text),`${name} mixes CDKEY into direct delivery`);
       assert(!/预载|P2P|多正式分支|自助回滚|云存档/.test(result.text)||name==='game-management',`${name} contains excluded capability as a feature`);
       if(name==='download-manager'){
-        for(const required of ['重试','取消任务','已替代','superseded','不再阻塞'])assert(result.text.includes(required),`download-manager missing ${required}`);
+        for(const required of ['重试','取消任务','已替代','superseded','不再阻塞','查看新任务'])assert(result.text.includes(required),`download-manager missing ${required}`);
       }
       if(name==='install-result'){
         for(const required of ['校验失败','安装失败','重试','取消任务','当前 task_id','暂存文件'])assert(result.text.includes(required),`install-result missing ${required}`);
@@ -43,7 +43,8 @@ function assert(ok,msg){if(!ok)throw new Error(msg)}
         assert(!/更新并启动|稍后处理/.test(result.text),'required-update contains rejected actions');
       }
       if(name==='update-task'){
-        for(const required of ['更新任务','正在下载更新','暂停更新','继续更新','校验中／安装中','不可暂停或取消','重试更新','取消任务','旧版本保护','v1.0.0'])assert(result.text.includes(required),`update-task missing ${required}`);
+        for(const required of ['更新任务','正在下载更新','暂停更新','继续更新','校验中／安装中','不可暂停或取消','重试更新','取消任务','旧版本保护','v1.0.0','先创建新 task_id','原子提交后旧任务才进入已替代'])assert(result.text.includes(required),`update-task missing ${required}`);
+        assert(!result.text.includes('旧任务进入已替代，再创建新 task_id'),'update-task reverses atomic replacement order');
         assert(!result.text.includes('更新前校验')&&!result.text.includes('未创建更新任务'),'update-task still shows blocked precheck state');
       }
       if(name==='launch-recovery'){
