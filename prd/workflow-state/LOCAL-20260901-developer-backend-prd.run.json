@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 1,
+  "runId": "86832e96-4742-4bcf-ae88-4207cc91dbed",
+  "requirementId": "LOCAL-20260901",
+  "revision": 9,
+  "status": "in_progress",
+  "createdAt": "2026-09-01T16:40:47.2465243Z",
+  "updatedAt": "2026-09-01T16:40:47.5007097Z",
+  "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md",
+  "cardHash": "FA36501C3FDC83CEFF4DB3B2A7B807CA52F40AFBE2E0E88DC8F4AF3EE6D75A22",
+  "contract": {
+    "goal": "按已确认规格交付开发者后台一期 5 份 Demo、37 个路由及 37 个可编辑 Figma Frame",
+    "inScope": [
+      "统一后台壳",
+      "4 个业务模块 Demo",
+      "37 个页面路由",
+      "1440×900 与 1280 宽度验收",
+      "官网既有入口切换",
+      "新建 Figma 文件"
+    ],
+    "outOfScope": [
+      "公众注册",
+      "在线合同与财税银行",
+      "自动结算",
+      "Mac/Linux 包体",
+      "多正式分支",
+      "开发者自助发布或回滚",
+      "竞价与算法推荐"
+    ],
+    "inputs": [
+      "4 份开发者后台 PRD",
+      "已确认 Demo/Figma 设计规格",
+      "官网与开发者低保真基线",
+      "Steamworks 与 WeGame 调研结论"
+    ],
+    "deliverables": [
+      "实施计划",
+      "1 个评审总览",
+      "4 个自包含 HTML Demo",
+      "浏览器验收证据",
+      "1 个 Figma 文件与 37 个可编辑 Frame"
+    ],
+    "changes": [
+      "用户确认书面设计规格并批准进入实施计划"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "type": "requirement-resolution",
+      "required": true,
+      "dependsOn": [],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md",
+          "sha256": "FA36501C3FDC83CEFF4DB3B2A7B807CA52F40AFBE2E0E88DC8F4AF3EE6D75A22"
+        }
+      ],
+      "outputs": [
+        "prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md"
+      ],
+      "evidence": [
+        "状态卡唯一匹配 LOCAL-20260901 开发者后台需求"
+      ],
+      "validation": "已定位唯一活动需求",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S2",
+      "type": "fact-recovery",
+      "required": true,
+      "dependsOn": [
+        "S1"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md",
+          "sha256": "FA36501C3FDC83CEFF4DB3B2A7B807CA52F40AFBE2E0E88DC8F4AF3EE6D75A22"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\docs\\superpowers\\specs\\2026-09-02-developer-backend-demo-figma-design.md",
+          "sha256": "1C784D832C51C77B85317C5B21678A872FAF5C0499D7093946EC9D5B664D3841"
+        }
+      ],
+      "outputs": [
+        "prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md"
+      ],
+      "evidence": [
+        "恢复 D-001 至 D-010、4 份 PRD、37 路由与非本期范围"
+      ],
+      "validation": "已恢复当前有效事实",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S3",
+      "type": "change-compilation",
+      "required": true,
+      "dependsOn": [
+        "S2"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\docs\\superpowers\\specs\\2026-09-02-developer-backend-demo-figma-design.md",
+          "sha256": "1C784D832C51C77B85317C5B21678A872FAF5C0499D7093946EC9D5B664D3841"
+        }
+      ],
+      "outputs": [
+        "docs\\superpowers\\plans\\2026-09-02-developer-backend-demo-figma.md"
+      ],
+      "evidence": [
+        "用户确认规格；计划映射 37 个唯一页面 ID，模块为 9/6/13/9"
+      ],
+      "validation": "已编译为 Demo、浏览器验收、官网入口与 Figma 实施任务",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S4",
+      "type": "page-baseline",
+      "required": true,
+      "dependsOn": [
+        "S3"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\index.html",
+          "sha256": "FC465E57A38F79D29D245D05888AA5ADB55CD38B4E919B4444403368CE5FA078"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\官网改动\\index.html",
+          "sha256": "6E9721AC9DFDDAEF75C848717A34C54DDC12B0CDD6F04B6797AD6043F1C2AC33"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\genuine-game-distribution-phase1\\02-developer\\developer-screens.html",
+          "sha256": "E81A1C3C4E922741D400DA8F23572110E3F808F0AC3D0EE48BBB0B90535B3D3B"
+        }
+      ],
+      "outputs": [
+        "public\\prd\\genuine-game-distribution-phase1\\02-developer"
+      ],
+      "evidence": [
+        "官网既有开发者入口与同版本开发者低保真页面、PNG 基线均存在；设计规格已记录视觉取舍"
+      ],
+      "validation": "已恢复现有官网结构与开发者页面基线",
+      "error": null,
+      "reviewer": "Codex 产品与界面基线复核"
+    },
+    {
+      "id": "S5",
+      "type": "artifact-execution",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S4"
+      ],
+      "status": "pending",
+      "attempt": 0,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [],
+      "validation": null,
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S6",
+      "type": "machine-validation",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "pending",
+      "attempt": 0,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [],
+      "validation": null,
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S7",
+      "type": "professional-review",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "pending",
+      "attempt": 0,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [],
+      "validation": null,
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S8",
+      "type": "consistency-delivery",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S5",
+        "S6",
+        "S7"
+      ],
+      "status": "pending",
+      "attempt": 0,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [],
+      "validation": null,
+      "error": null,
+      "reviewer": null
+    }
+  ]
+}
