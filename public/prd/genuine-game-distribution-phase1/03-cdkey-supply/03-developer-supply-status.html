@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>开发者供给状态</title>
+  <link rel="stylesheet" href="cdkey-supply-screens.css">
+  <style>
+    .admin-content{padding-top:24px}
+    .summary-head{padding:18px 24px;margin-bottom:14px}
+    .summary-head h2{margin-bottom:6px}
+    .summary-tags{margin-top:10px}
+    .stats{margin-bottom:14px}
+    .stat{padding:16px 19px}
+    .stat .value{font-size:25px;margin-top:7px}
+    .stat .hint{margin-top:5px}
+    .status-guide{display:grid;grid-template-columns:1.55fr 1fr;gap:22px;padding:16px 20px;margin-bottom:14px}
+    .status-group{min-width:0}
+    .status-group-title{display:flex;align-items:baseline;gap:9px;margin-bottom:10px}
+    .status-group-title h2{font-size:16px;margin:0}
+    .status-group-title span{font-size:12px;color:var(--muted)}
+    .status-items{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .status-items .badge{min-height:26px;padding:4px 10px;font-size:13px}
+    .section-card{padding:18px 20px}
+    .section-title{margin-bottom:13px}
+    .table{table-layout:fixed}
+    .table th{height:43px;padding:0 10px;font-size:13px;white-space:nowrap}
+    .table td{height:60px;padding:0 10px;font-size:13px}
+    .table .badge{min-height:27px;padding:4px 9px;font-size:13px}
+    .table .product-col{width:205px}
+    .table .platform-col{width:78px}
+    .table .region-col{width:95px}
+    .table .source-col{width:112px}
+    .table .price-col{width:88px}
+    .table .promo-col{width:112px}
+    .table .supply-col{width:102px}
+    .table .sale-col{width:82px}
+    .table .sync-col{width:116px}
+    .table .action-col{width:78px}
+    .price{font-weight:750;color:#263247;white-space:nowrap}
+    .price.promo{color:#b34b43}
+    .price-note{display:block;margin-top:2px;font-size:11px;color:var(--muted);white-space:nowrap}
+    .sync-time{font-size:12px;color:#5f6b7d;line-height:1.35}
+    .pagination{margin-top:12px}
+  </style>
+</head>
+<body>
+<div class="screen">
+  <div class="admin-shell">
+    <div class="lowfi-strip">产品低保真结构 · 非现网页面 · 仅表达已确认字段、状态与动作</div>
+    <aside class="admin-aside">
+      <div class="admin-brand"><i class="brand-mark"></i>开发者平台</div>
+      <div class="nav-list">
+        <div class="nav-item"><i class="nav-dot"></i>工作台</div>
+        <div class="nav-item"><i class="nav-dot"></i>厂商资料</div>
+        <div class="nav-item"><i class="nav-dot"></i>游戏管理</div>
+        <div class="nav-item active"><i class="nav-dot"></i>CDKEY 供给</div>
+        <div class="nav-item"><i class="nav-dot"></i>包体版本</div>
+        <div class="nav-item"><i class="nav-dot"></i>投放需求</div>
+        <div class="nav-item"><i class="nav-dot"></i>发行数据</div>
+      </div>
+      <div class="aside-bottom">一期范围：受邀合作方，仅见本厂商供给状态</div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-top">
+        <div>
+          <h1>游戏商品与供给状态</h1>
+          <div class="sub">只读查看本厂商商品、SKU 与可售状态，不展示明文 Key 或供应商敏感信息</div>
+        </div>
+        <div class="account">示例厂商<i class="avatar">厂</i></div>
+      </header>
+
+      <div class="admin-content">
+        <section class="card summary-head">
+          <div>
+            <h2>首款签约游戏</h2>
+            <p>发行方式：第三方平台激活 · 资料已通过 · 最近更新 15:10</p>
+            <div class="summary-tags">
+              <span class="badge blue">本厂商数据</span>
+              <span class="badge gray">只读</span>
+              <span class="badge green">商品已发布</span>
+              <span class="badge amber">1 个供给异常</span>
+            </div>
+          </div>
+          <div class="actions"><button class="btn">刷新状态</button></div>
+        </section>
+
+        <div class="stats">
+          <section class="card stat">
+            <div class="label">商品</div><div class="value">1</div><div class="hint">关联首款签约游戏</div>
+          </section>
+          <section class="card stat">
+            <div class="label">SKU</div><div class="value">2</div><div class="hint">按平台与地区区分</div>
+          </section>
+          <section class="card stat">
+            <div class="label">供应来源类型</div><div class="value">供应商 API</div><div class="hint">仅展示类型，不展示敏感信息</div>
+          </section>
+          <section class="card stat">
+            <div class="label">可售 SKU</div><div class="value" style="color:#b34b43">1 / 2</div><div class="hint">另 1 个 SKU 状态为停售</div>
+          </section>
+        </div>
+
+        <section class="card status-guide" aria-label="状态口径">
+          <div class="status-group">
+            <div class="status-group-title"><h2>供给状态</h2><span>仅使用以下 6 种归一状态</span></div>
+            <div class="status-items">
+              <span class="badge gray">待关联</span>
+              <span class="badge green">可供货</span>
+              <span class="badge amber">库存不足</span>
+              <span class="badge red">售罄</span>
+              <span class="badge red">异常</span>
+              <span class="badge gray">未知</span>
+            </div>
+          </div>
+          <div class="status-group">
+            <div class="status-group-title"><h2>可售状态</h2><span>面向新订单的 3 种状态</span></div>
+            <div class="status-items">
+              <span class="badge gray">不可售</span>
+              <span class="badge green">可售</span>
+              <span class="badge red">停售</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card section-card">
+          <div class="section-title">
+            <div><h2>商品与 SKU 状态</h2><p>价格与供给来自平台保存的最新有效结果；未知值显示“—”</p></div>
+            <span class="badge gray">无明文 Key</span>
+          </div>
+          <table class="table">
+            <colgroup>
+              <col class="product-col"><col class="platform-col"><col class="region-col"><col class="source-col">
+              <col class="price-col"><col class="promo-col"><col class="supply-col"><col class="sale-col">
+              <col class="sync-col"><col class="action-col">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>商品／SKU</th><th>激活平台</th><th>销售地区</th><th>供应来源类型</th>
+                <th>当前价格</th><th>活动价</th><th>供给状态</th><th>可售状态</th><th>最近同步</th><th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="object"><i class="thumb">封面</i><div><b>首款签约游戏</b><br><span class="muted">标准版 SKU</span></div></div></td>
+                <td>Steam</td><td>中国大陆</td><td>供应商 API</td>
+                <td><span class="price">¥ 88</span></td>
+                <td><span class="price promo">¥ 68</span><span class="price-note">有效中</span></td>
+                <td><span class="badge amber">库存不足</span></td><td><span class="badge red">停售</span></td>
+                <td><span class="sync-time">失败 · 15:10<br>上次成功 14:35</span></td><td><span class="link">查看原因</span></td>
+              </tr>
+              <tr>
+                <td><div class="object"><i class="thumb">封面</i><div><b>首款签约游戏</b><br><span class="muted">豪华版 SKU</span></div></div></td>
+                <td>Steam</td><td>中国大陆</td><td>供应商 API</td>
+                <td><span class="price">¥ 128</span></td>
+                <td><span class="price">—</span><span class="price-note">无有效活动价</span></td>
+                <td><span class="badge green">可供货</span></td><td><span class="badge green">可售</span></td>
+                <td><span class="sync-time">成功 · 15:08</span></td><td><span class="link">查看状态</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination"><button class="page-btn active">1</button></div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+</body>
+</html>
