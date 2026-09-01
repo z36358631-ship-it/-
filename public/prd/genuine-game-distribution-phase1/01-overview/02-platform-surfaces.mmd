@@ -1,0 +1,24 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Microsoft YaHei, Arial, sans-serif","primaryTextColor":"#172033","lineColor":"#A3AEC0","clusterBkg":"#F7F9FC","clusterBorder":"#C8D1E1"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":42}}}%%
+flowchart TB
+    subgraph CEND["C 端入口｜复用盖世现状页面外壳"]
+      direction LR
+      C1["<b>游戏详情交付方式入口</b><br/><br/>现状外壳：媒体区 · 游戏信息 · 内容区<br/>新增全局识别：厂商入口 · 价格/领取条件<br/><b>第三方平台激活</b> 或 <b>盖世直接下载</b><br/>对应行动入口仅保留一种"]
+      C2["<b>游戏库交付入口</b><br/><br/>现状外壳：PC 游戏库 Tab · 搜索 · 游戏卡片<br/>新增全局识别：交付方式 · 权益状态<br/><b>第三方激活/指引</b> 或 <b>下载/启动/更新</b><br/>同一游戏不得出现冲突入口"]
+      C1 ~~~ C2
+    end
+
+    subgraph BEND["B 端入口｜本期产品低保真结构"]
+      direction LR
+      B1["<b>开发者工作台首页</b><br/><br/>本厂商资料与游戏项目<br/>CDKEY 供给状态 · 包体版本状态<br/>投放需求状态 · 发行数据入口<br/><b>受邀账号｜本厂商数据隔离</b>"]
+      B2["<b>平台发行运营总览</b><br/><br/>资料审核 · 商品与供给异常<br/>版本发布 · 权益异常处理<br/>现有资源位与规则圈选投放<br/><b>全平台对象｜操作留痕</b>"]
+      B3["<b>测试任务总览</b><br/><br/>分配给本人的待测版本<br/>游戏 · 版本 · 测试轮次 · 当前状态<br/>获取包体与说明 · 提交通过/不通过<br/><b>仅包体发行分支</b>"]
+      B1 ~~~ B2 ~~~ B3
+    end
+
+    CEND ~~~ BEND
+
+    classDef current fill:#EAF2FF,stroke:#4C76C9,color:#172033,stroke-width:2px;
+    classDef lowfi fill:#F4F6F9,stroke:#65748B,color:#172033,stroke-width:2px,stroke-dasharray:5 3;
+    class C1,C2 current;
+    class B1,B2,B3 lowfi;
+

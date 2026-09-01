@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>正版发行平台一期入口总览</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 2400px; height: 1060px; overflow: hidden; }
+    body { font-family: "Microsoft YaHei", "Segoe UI", sans-serif; color: #172033; background: #f4f7fb; padding: 34px 38px; }
+    h1 { margin: 0; text-align: center; font-size: 42px; }
+    .subtitle { margin: 8px 0 24px; text-align: center; font-size: 26px; color: #65748b; }
+    .group { border: 2px solid #c8d1e1; border-radius: 22px; background: rgba(255,255,255,.82); padding: 20px 22px 22px; margin: 16px 0; }
+    .group h2 { margin: 0 0 16px; font-size: 32px; }
+    .group h2 span { font-size: 24px; font-weight: 500; color: #65748b; }
+    .cards { display: grid; gap: 18px; }
+    .cards.two { grid-template-columns: repeat(2, 1fr); }
+    .cards.three { grid-template-columns: repeat(3, 1fr); }
+    .card { min-height: 264px; border: 3px solid #4c76c9; border-radius: 18px; background: #eef3ff; padding: 20px 24px; box-shadow: 0 10px 24px rgba(43,61,89,.08); }
+    .card.lowfi { border-color: #65748b; border-style: dashed; background: #f7f9fc; }
+    .tag { display: inline-block; padding: 5px 12px; border-radius: 999px; background: #dce8ff; color: #315eae; font-size: 21px; font-weight: 700; }
+    .lowfi .tag { background: #e6eaf0; color: #536176; }
+    .card h3 { margin: 12px 0 10px; font-size: 32px; }
+    .card ul { margin: 0; padding-left: 24px; }
+    .card li { margin: 5px 0; font-size: 24px; line-height: 1.4; color: #435069; }
+    .rule { margin-top: 11px; padding-top: 10px; border-top: 1px solid #cfd7e4; font-size: 24px; font-weight: 700; color: #172033; }
+    .footer { text-align: center; font-size: 23px; color: #5f6d82; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>正版发行平台一期：五个入口页面的职责边界</h1>
+  <div class="subtitle">蓝色实线＝复用盖世现状页面外壳｜灰色虚线＝本期产品低保真结构</div>
+
+  <section class="group">
+    <h2>C 端入口 <span>复用现状页面外壳，仅自然加入正版发行信息</span></h2>
+    <div class="cards two">
+      <article class="card">
+        <div class="tag">现状外壳复用</div>
+        <h3>游戏详情交付方式入口</h3>
+        <ul><li>保留媒体区、游戏信息和内容区</li><li>新增厂商主页入口、价格或领取条件</li><li>显示“第三方平台激活”或“盖世直接下载”</li><li>完整显示地区、系统、激活或更新限制</li></ul>
+        <div class="rule">同一页面只保留一种交付行动入口</div>
+      </article>
+      <article class="card">
+        <div class="tag">现状外壳复用</div>
+        <h3>游戏库交付入口</h3>
+        <ul><li>保留 PC 游戏库 Tab、搜索和游戏卡片</li><li>新增交付方式、订单／权益状态</li><li>第三方激活进入 Key／激活指引</li><li>盖世包体进入下载、启动或更新</li></ul>
+        <div class="rule">同一游戏不得出现冲突入口</div>
+      </article>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>B 端入口 <span>只表达已确认对象、状态和动作，不定义视觉参数</span></h2>
+    <div class="cards three">
+      <article class="card lowfi">
+        <div class="tag">产品低保真结构</div>
+        <h3>开发者工作台首页</h3>
+        <ul><li>本厂商资料和游戏项目</li><li>CDKEY 供给或包体版本状态</li><li>投放需求状态和发行数据入口</li><li>受邀账号，只访问本厂商数据</li></ul>
+        <div class="rule">开发者提交，平台审核与发布</div>
+      </article>
+      <article class="card lowfi">
+        <div class="tag">产品低保真结构</div>
+        <h3>平台发行运营总览</h3>
+        <ul><li>资料审核、商品与供给异常</li><li>测试通过版本的发布和下架</li><li>权益异常处理</li><li>现有资源位和规则人群配置</li></ul>
+        <div class="rule">全平台对象，关键操作留痕</div>
+      </article>
+      <article class="card lowfi">
+        <div class="tag">产品低保真结构</div>
+        <h3>测试任务总览</h3>
+        <ul><li>仅展示分配给本人的待测版本</li><li>游戏、版本、轮次和当前状态</li><li>获取包体与说明</li><li>提交通过或不通过及问题说明</li></ul>
+        <div class="rule">仅服务盖世包体发行分支</div>
+      </article>
+    </div>
+  </section>
+  <div class="footer">总纲只定义入口和共享规则；字段、表单、审核、任务与数据细节由后续六份 PRD 就地定义。</div>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>正版发行平台一期全链路</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 3000px; height: 900px; overflow: hidden; }
+    body {
+      font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+      color: #172033;
+      background: linear-gradient(180deg, #f7f9fc 0%, #eef3f9 100%);
+      padding: 38px 36px;
+    }
+    h1 { margin: 0 0 8px; text-align: center; font-size: 40px; }
+    .subtitle { text-align: center; font-size: 25px; color: #5f6d82; margin-bottom: 30px; }
+    .flow { display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .arrow { flex: 0 0 26px; color: #75839a; font-size: 38px; font-weight: 700; text-align: center; }
+    .fork-arrow { flex: 0 0 42px; min-height: 270px; display: flex; flex-direction: column; justify-content: space-around; align-items: center; color: #75839a; font-size: 42px; font-weight: 800; }
+    .stage {
+      flex: 0 0 185px;
+      min-height: 250px;
+      border: 3px solid #4c76c9;
+      border-radius: 22px;
+      background: #eef3ff;
+      padding: 22px 16px;
+      box-shadow: 0 12px 28px rgba(43, 61, 89, .10);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+    }
+    .stage.wide { flex-basis: 215px; }
+    .stage.decision { flex-basis: 145px; min-height: 210px; border-color: #c47a2c; background: #fff7ec; }
+    .stage.branch { flex-basis: 235px; min-height: 430px; padding: 14px; border-color: #c47a2c; background: #fff7ec; }
+    .stage.platform { border-color: #7756b3; background: #f4eeff; }
+    .stage.user { border-color: #367f91; background: #eaf7fa; }
+    .stage.data { border-color: #65748b; background: #f7f9fc; }
+    .num { display: inline-flex; align-items: center; justify-content: center; align-self: center; width: 46px; height: 46px; border-radius: 50%; background: #172033; color: #fff; font-size: 25px; font-weight: 800; margin-bottom: 14px; }
+    .title { font-size: 28px; line-height: 1.28; font-weight: 800; margin-bottom: 12px; }
+    .desc { font-size: 23px; line-height: 1.55; color: #435069; }
+    .branch-title { font-size: 25px; font-weight: 800; color: #8a5118; margin-bottom: 10px; }
+    .branch-card { border-radius: 14px; padding: 16px 14px; text-align: left; margin: 8px 0; background: #fff; border: 2px solid #3d8a63; }
+    .branch-card.user-path { border-color: #367f91; }
+    .branch-card strong { display: block; font-size: 25px; margin-bottom: 6px; }
+    .branch-card span { font-size: 21px; line-height: 1.45; color: #435069; }
+    .legend { margin-top: 26px; text-align: center; font-size: 23px; color: #59677d; }
+    .legend b { color: #172033; }
+  </style>
+</head>
+<body>
+  <h1>正版发行平台一期：从合作方接入到发行效果回流</h1>
+  <div class="subtitle">2026 年 11 月 MVP｜CDKEY 分销与盖世包体发行并存</div>
+  <main class="flow">
+    <section class="stage"><div class="num">1</div><div class="title">合作方账号</div><div class="desc">平台创建受邀账号<br>仅访问本厂商数据</div></section>
+    <div class="arrow">→</div>
+    <section class="stage wide"><div class="num">2</div><div class="title">厂商与游戏资料</div><div class="desc">固定模板厂商资料<br>Windows 游戏项目</div></section>
+    <div class="arrow">→</div>
+    <section class="stage decision"><div class="num">3</div><div class="title">选择发行方式</div><div class="desc">CDKEY<br>或盖世包体</div></section>
+    <div class="fork-arrow"><span>↗</span><span>↘</span></div>
+    <section class="stage branch">
+      <div class="branch-title">4｜准备内容</div>
+      <div class="branch-card"><strong>4A CDKEY 供给</strong><span>商品、SKU、激活平台、地区和供应状态</span></div>
+      <div class="branch-card"><strong>4B 盖世包体</strong><span>单一正式版本；上传并通过测试</span></div>
+    </section>
+    <div class="fork-arrow"><span>↘</span><span>↗</span></div>
+    <section class="stage platform"><div class="num">5</div><div class="title">平台审核并发布</div><div class="desc">校验签约、地区与商品条件<br>控制发布、停售或下架</div></section>
+    <div class="arrow">→</div>
+    <section class="stage platform wide"><div class="num">6</div><div class="title">规则式精准投放</div><div class="desc">开发者提素材和期望人群<br>运营圈选并配现有资源位</div></section>
+    <div class="arrow">→</div>
+    <section class="stage user wide"><div class="num">7</div><div class="title">用户进入游戏详情</div><div class="desc">明确唯一交付方式<br>完整展示地区与系统限制</div></section>
+    <div class="arrow">→</div>
+    <section class="stage decision user"><div class="num">8</div><div class="title">交付分流</div><div class="desc">按详情页标签<br>进入唯一链路</div></section>
+    <div class="fork-arrow"><span>↗</span><span>↘</span></div>
+    <section class="stage branch user">
+      <div class="branch-title">9｜获得内容</div>
+      <div class="branch-card user-path"><strong>9A 第三方激活</strong><span>购买并获得 Key；前往指定平台激活</span></div>
+      <div class="branch-card user-path"><strong>9B 盖世下载</strong><span>购买或领取权益；下载、安装、启动、更新</span></div>
+    </section>
+    <div class="fork-arrow"><span>↘</span><span>↗</span></div>
+    <section class="stage data wide"><div class="num">10</div><div class="title">数据回流</div><div class="desc">Key 交付、权益、下载、启动及投放数据按游戏归集</div></section>
+    <div class="arrow">→</div>
+    <section class="stage data"><div class="num">11</div><div class="title">开发者查看效果</div><div class="desc">只看本厂商数据<br>运营看全局状态</div></section>
+  </main>
+  <div class="legend"><b>一期边界：</b>1 个受邀签约厂商、1 款 Windows 游戏、单一正式发布分支；不含开放注册、算法竞价、多游戏并行和多正式版本。</div>
+</body>
+</html>

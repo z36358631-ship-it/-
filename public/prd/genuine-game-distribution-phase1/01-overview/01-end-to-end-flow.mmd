@@ -1,0 +1,52 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Microsoft YaHei, Arial, sans-serif","primaryColor":"#EAF2FF","primaryTextColor":"#172033","primaryBorderColor":"#4C76C9","lineColor":"#72809A","secondaryColor":"#EDF8F2","tertiaryColor":"#FFF4E8","clusterBkg":"#F7F9FC","clusterBorder":"#C8D1E1"},"flowchart":{"curve":"basis","htmlLabels":true,"nodeSpacing":28,"rankSpacing":42}}}%%
+flowchart LR
+    A["<b>1 合作方账号</b><br/>平台创建受邀账号<br/>仅访问本厂商数据"]
+    B["<b>2 厂商与游戏资料</b><br/>维护固定模板厂商资料<br/>创建 Windows 游戏项目"]
+    C{"<b>3 选择发行方式</b><br/>CDKEY 分销<br/>或盖世包体发行"}
+
+    subgraph S1["供给与版本准备"]
+      direction TB
+      D1["<b>4A CDKEY 供给关联</b><br/>关联商品、SKU、激活平台<br/>地区、供应来源与库存状态"]
+      D2["<b>4B 包体上传与测试</b><br/>提交单一正式版本<br/>测试通过后进入待发布"]
+    end
+
+    E["<b>5 平台审核并发布</b><br/>校验签约、地区与商品条件<br/>控制发布、停售或下架"]
+    F["<b>6 规则式精准投放</b><br/>开发者提交素材与期望人群<br/>平台运营圈选并配置现有资源位"]
+    G["<b>7 用户进入游戏详情</b><br/>始终明确展示唯一交付方式<br/>地区、系统与激活限制不弱化"]
+    H{"<b>8 用户交付分流</b><br/>按详情页交付方式进入对应链路"}
+
+    subgraph S2["用户获得内容"]
+      direction TB
+      I1["<b>9A 第三方平台激活</b><br/>购买并获得 CDKEY<br/>前往指定第三方平台激活游玩"]
+      I2["<b>9B 盖世直接下载</b><br/>购买或领取并获得盖世权益<br/>下载、安装、启动与更新"]
+    end
+
+    J["<b>10 数据回流</b><br/>订单、Key 交付、权益、下载、启动<br/>及投放曝光点击按游戏归集"]
+    K["<b>11 开发者查看效果</b><br/>仅查看本厂商游戏与投放数据<br/>平台运营查看全局状态"]
+
+    A --> B --> C
+    C -->|CDKEY 分销| D1
+    C -->|盖世包体发行| D2
+    D1 --> E
+    D2 --> E
+    E --> F --> G --> H
+    H -->|第三方平台激活| I1
+    H -->|盖世直接下载| I2
+    I1 --> J
+    I2 --> J
+    J --> K
+
+    classDef account fill:#EEF3FF,stroke:#4C76C9,color:#172033,stroke-width:2px;
+    classDef branch fill:#FFF4E8,stroke:#C47A2C,color:#172033,stroke-width:2px;
+    classDef supply fill:#EDF8F2,stroke:#3D8A63,color:#172033,stroke-width:2px;
+    classDef platform fill:#F4EEFF,stroke:#7756B3,color:#172033,stroke-width:2px;
+    classDef user fill:#EAF7FA,stroke:#367F91,color:#172033,stroke-width:2px;
+    classDef data fill:#F7F9FC,stroke:#65748B,color:#172033,stroke-width:2px;
+
+    class A,B account;
+    class C,H branch;
+    class D1,D2 supply;
+    class E,F platform;
+    class G,I1,I2 user;
+    class J,K data;
+
