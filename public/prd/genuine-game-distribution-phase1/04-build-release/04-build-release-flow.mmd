@@ -1,0 +1,33 @@
+flowchart LR
+  A[01 创建正式版本<br/>已审核游戏] --> B[02 填写版本资料<br/>版本号·更新说明·启动与运行说明]
+  B --> C[03 上传 Windows 包体<br/>完整正式版本包体]
+  C --> D[04 提交测试<br/>重复提交拦截]
+  D --> E[05 测试人员取包<br/>获取包体与当前轮次说明]
+  E --> F{06 提交测试结果<br/>通过／不通过}
+  F -- 测试通过 --> G[07 平台设为待发布<br/>签约归属与测试前置通过]
+  G --> H[08 立即或定时发布<br/>仅平台发行运营]
+  H --> I[09 发布成功<br/>成为唯一当前线上版本]
+  I --> J[10 用户获得新版本<br/>新获取与正式更新]
+  J -- 发生重大问题 --> K[11 平台线上处置<br/>下架·暂停下载或启动]
+
+  C -. 上传中断 .-> C1[保留草稿与已填资料<br/>继续或重新上传]
+  C1 -. 完成上传并校验 .-> D
+  F -- 测试不通过 --> F1[开发者查看问题说明]
+  F1 --> F2[修改资料并继续或重传包体]
+  F2 --> F3[重新提交并生成新测试轮次]
+  F3 -. 返回测试 .-> D
+  H -. 发布失败 .-> H1[保持待发布<br/>用户继续使用原线上版本]
+  H1 -. 平台重试 .-> H
+
+  classDef developer fill:#eef4ff,stroke:#3b82f6,color:#172033,stroke-width:2px;
+  classDef tester fill:#f0edff,stroke:#7a61cc,color:#2f235f,stroke-width:2px;
+  classDef ops fill:#fff8e8,stroke:#d79a1e,color:#5b3b00,stroke-width:2px;
+  classDef success fill:#ecfdf3,stroke:#16a36a,color:#0f5132,stroke-width:2px;
+  classDef danger fill:#fff0ee,stroke:#c65f55,color:#7b2d27,stroke-width:2px;
+  classDef user fill:#f1f5f9,stroke:#64748b,color:#334155,stroke-width:2px;
+  class A,B,C,D,C1,F1,F2,F3 developer;
+  class E,F tester;
+  class G,H,H1 ops;
+  class I success;
+  class J user;
+  class K danger;
