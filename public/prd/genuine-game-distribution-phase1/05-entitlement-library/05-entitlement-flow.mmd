@@ -1,0 +1,37 @@
+%%{init: {"theme":"base","flowchart":{"curve":"basis","nodeSpacing":32,"rankSpacing":58},"themeVariables":{"fontFamily":"Microsoft YaHei, PingFang SC, Arial","fontSize":"20px","primaryColor":"#F4F8FF","primaryTextColor":"#1D2A3A","primaryBorderColor":"#4B7BEC","lineColor":"#708198","secondaryColor":"#F4F0FF","tertiaryColor":"#F7F9FC","clusterBkg":"#FFFFFF","clusterBorder":"#D9E1EC"}}}%%
+flowchart LR
+  D["1 游戏详情<br/>展示唯一交付方式"] --> Q{"2 按交付方式分流"}
+
+  subgraph A["第三方平台激活 · 复用既有 CDKEY 链路"]
+    direction LR
+    A1["3 确认限制<br/>平台 · 地区 · 退款边界"] --> A2["4 既有购买与支付"]
+    A2 --> A3["5 订单与 Key 状态"]
+    A3 --> A4["6 第三方平台激活"]
+  end
+
+  subgraph B["盖世直接下载 · 新增权益闭环"]
+    direction LR
+    B1["3 购买或零价领取"] --> B2["4 保存来源记录"]
+    B2 --> B3{"5 生成盖世权益"}
+    B3 -->|有效| B4["6 加入游戏库"]
+    B3 -->|失败| B5["查看状态<br/>按原记录重试"]
+    B5 --> B3
+  end
+
+  Q -->|第三方平台激活| A1
+  Q -->|盖世直接下载| B1
+  A4 --> L["7 游戏库<br/>每个游戏仅一种主交付方式"]
+  B4 --> L
+  L --> LA["查看订单 / Key / 激活<br/>不展示盖世下载"]
+  L --> LB["盖世直接下载<br/>不展示 Key 激活"]
+
+  classDef start fill:#17283D,stroke:#17283D,color:#FFFFFF,stroke-width:2px;
+  classDef decision fill:#FFF7DE,stroke:#D59A24,color:#714D00,stroke-width:2px;
+  classDef third fill:#EEF4FF,stroke:#4B7BEC,color:#23447D,stroke-width:2px;
+  classDef direct fill:#EEF9F4,stroke:#21A56B,color:#165E44,stroke-width:2px;
+  classDef library fill:#F4F0FF,stroke:#7657D9,color:#493298,stroke-width:2px;
+  class D start;
+  class Q,B3 decision;
+  class A1,A2,A3,A4,LA third;
+  class B1,B2,B4,B5,LB direct;
+  class L library;

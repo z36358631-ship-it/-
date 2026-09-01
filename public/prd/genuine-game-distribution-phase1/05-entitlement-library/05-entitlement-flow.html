@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>用户购买、权益与游戏库流程</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;background:transparent;color:#203046}body{overflow:hidden}
+    .canvas{width:2800px;height:900px;padding:55px 64px;background:linear-gradient(180deg,#f8fafc,#f2f5f9);position:relative;overflow:hidden}
+    h1{margin:0;text-align:center;font-size:38px;color:#17283d}h1 span{font-size:22px;color:#6c7888;font-weight:500;margin-left:20px}.flow{margin-top:42px;display:grid;grid-template-columns:290px 92px 1fr;gap:0;align-items:center}.start,.node,.library{border-radius:22px;padding:24px 22px;text-align:center;font-weight:760;line-height:1.35;border:2px solid}.start{background:#17283d;color:#fff;border-color:#17283d;font-size:25px}.decision{width:92px;height:92px;background:#fff7de;border:2px solid #d59a24;transform:rotate(45deg);display:grid;place-items:center;margin-left:-7px}.decision span{transform:rotate(-45deg);font-size:16px;color:#714d00;font-weight:800}.lanes{display:flex;flex-direction:column;gap:28px;margin-left:18px}.lane{height:267px;border:2px solid #d8e1ec;border-radius:28px;background:#fff;padding:18px 20px 20px}.lane-title{font-size:21px;font-weight:820;margin-bottom:14px}.lane.third .lane-title{color:#2859ad}.lane.direct .lane-title{color:#16714d}.steps{display:grid;grid-template-columns:1fr 52px 1fr 52px 1fr 52px 1fr 70px 1.2fr;align-items:center}.node{font-size:20px;min-height:112px;display:grid;place-items:center;background:#eef4ff;border-color:#4b7bec;color:#23447d}.direct .node{background:#eef9f4;border-color:#21a56b;color:#165e44}.arrow{height:4px;background:#8998aa;position:relative;margin:0 9px}.arrow:after{content:"";position:absolute;right:-2px;top:-7px;border-left:13px solid #8998aa;border-top:8px solid transparent;border-bottom:8px solid transparent}.library{font-size:21px;background:#f4f0ff;border-color:#7657d9;color:#493298;min-height:112px;display:grid;place-items:center}.tail{font-size:17px;line-height:1.45;border-left:3px solid #ccd4df;padding-left:15px;color:#4f5f72}.tail b{display:block;margin-bottom:5px}.tail.third b{color:#2859ad}.tail.direct b{color:#16714d}.guard{position:absolute;left:64px;right:64px;bottom:38px;border-radius:18px;background:#fff;border:1px solid #d8e0ea;padding:17px 26px;display:flex;justify-content:center;gap:45px;color:#59687a;font-size:19px}.guard b{color:#28384b}
+  </style>
+</head>
+<body>
+<div class="canvas">
+  <h1>用户购买、权益与游戏库流程 <span>一个游戏只保留一种交付方式和一组下一步动作</span></h1>
+  <div class="flow">
+    <div class="start">1 游戏详情<br>展示唯一交付方式</div>
+    <div class="decision"><span>2<br>分流</span></div>
+    <div class="lanes">
+      <section class="lane third"><div class="lane-title">第三方平台激活 · 复用既有 CDKEY 购买、订单、Key 与退款链路</div><div class="steps"><div class="node">3 确认限制<br>平台 · 地区 · 退款边界</div><div class="arrow"></div><div class="node">4 既有购买<br>与支付</div><div class="arrow"></div><div class="node">5 订单与<br>Key 状态</div><div class="arrow"></div><div class="node">6 第三方平台<br>激活</div><div class="arrow"></div><div class="tail third"><b>7 回到游戏库</b>查看订单 / Key / 激活<br>不展示盖世下载</div></div></section>
+      <section class="lane direct"><div class="lane-title">盖世直接下载 · 新增来源记录、权益生成与游戏库闭环</div><div class="steps"><div class="node">3 购买或<br>零价领取</div><div class="arrow"></div><div class="node">4 保存来源记录<br>防重复扣款</div><div class="arrow"></div><div class="node">5 生成盖世权益<br>失败按原记录重试</div><div class="arrow"></div><div class="node">6 权益有效<br>加入游戏库</div><div class="arrow"></div><div class="tail direct"><b>7 回到游戏库</b>盖世直接下载<br>不展示 Key 激活</div></div></section>
+    </div>
+  </div>
+  <div class="guard"><span><b>商品下架：</b>停止新购 / 新领取，不删除有效权益</span><span><b>权益异常：</b>显示处理中 / 失败 / 撤销原因，不允许重复支付</span><span><b>冲突处置：</b>不同时展示两组动作，转运营核对来源</span></div>
+</div>
+</body>
+</html>

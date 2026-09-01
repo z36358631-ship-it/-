@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>用户购买、权益与游戏库页面结构</title>
+  <link rel="stylesheet" href="entitlement-screens.css">
+</head>
+<body>
+<div id="app" class="screen"></div>
+<script>
+const pageKey=new URLSearchParams(location.search).get('page')||'game-detail';
+const app=document.getElementById('app');
+const badge=(text,kind='gray')=>`<span class="badge ${kind}">${text}</span>`;
+
+function statusbar(){return `<div class="statusbar"><span>4:17</span><div class="status-icons"><span>120Hz</span><span>⌁</span><span class="status-pill">82</span></div></div>`}
+function evidence(text){return `<div class="evidence-strip">证据边界｜${text}</div>`}
+function topbar(title,extra=''){return `<div class="app-topbar"><div class="back">‹</div><div class="app-title">${title}</div><div class="top-spacer"></div>${extra}</div>`}
+function nav(){return `<nav class="bottom-nav"><div class="nav-cell"><i></i>首页</div><div class="nav-cell"><i></i>玩游戏</div><div class="nav-cell"><i></i>排行榜</div><div class="nav-cell active"><i></i>游戏库</div><div class="nav-cell"><i></i>我的</div></nav>`}
+function shell({title,content,boundary,noNav=false,action='',topExtra='',hideTop=false}){
+  return `<div class="mobile-shell">${statusbar()}${evidence(boundary)}${hideTop?'':topbar(title,topExtra)}<main class="mobile-content ${noNav?'no-nav':''} ${hideTop?'without-top':''}"><div class="mobile-scroll">${content}</div></main>${noNav?'':nav()}${action}</div>`;
+}
+function gameSummary(name='空洞骑士：丝之歌',sub='标准版 · Windows'){
+  return `<div class="game-summary"><div class="cover"></div><div class="summary-main"><h2>${name}</h2><p>${sub}</p><p>Team Cherry</p></div></div>`;
+}
+
+function gameDetail(){
+  const action=`<div class="sticky-action"><div class="sticky-price"><div class="k">正版价格</div><div class="v">¥ 98</div></div><button class="main-btn green">购买</button></div>`;
+  return shell({title:'游戏详情',noNav:true,boundary:'当前截图仅证明详情外壳；正版信息区与动作状态为本期目标结构',action,content:`
+    <div class="hero"><div class="hero-tabs"><span class="selected">视频</span><span>图集</span></div></div>
+    <section class="detail-head"><div><div class="game-name">空洞骑士：丝之歌</div><div class="game-sub">探索陌生王国，迎战强敌，揭开失落秘密。</div><div class="chips"><span class="chip">动作</span><span class="chip">冒险游戏</span><span class="chip">Windows</span></div></div><div class="score">9.2<span>玩家评价</span></div></section>
+    <section class="section delivery-card"><div class="delivery-label direct"><i></i>盖世直接下载</div><div class="kv-grid"><div class="kv"><div class="k">获取方式</div><div class="v">付费购买</div></div><div class="kv"><div class="k">支持系统</div><div class="v">Windows 10 / 11</div></div><div class="kv"><div class="k">下载大小</div><div class="v">18.6 GB</div></div><div class="kv"><div class="k">更新要求</div><div class="v">启动前需保持正式版最新</div></div></div><div class="notice green">购买成功后生成盖世权益并加入游戏库。商品后续下架不自动删除已获得的有效权益。</div></section>
+    <section class="section"><div class="section-title">系统要求 <small>查看全部</small></div><div class="kv-grid"><div class="kv"><div class="k">操作系统</div><div class="v">Windows 10 64 位</div></div><div class="kv"><div class="k">存储空间</div><div class="v">需 24 GB 可用空间</div></div></div></section>
+    <section class="section"><div class="section-title">游戏介绍</div><p>进入由丝与歌统治的辽阔王国。攀登至王国顶峰，在险恶世界中探索、战斗并揭开自己的身世。</p></section>`});
+}
+
+function purchaseConfirm(){
+  const action=`<div class="sticky-action"><div class="sticky-price"><div class="k">需支付</div><div class="v">¥ 128.00</div></div><button class="main-btn">确认支付</button></div>`;
+  return shell({title:'确认订单',noNav:true,boundary:'本期目标结构；CDKEY 支付、取 Key 与退款规则全部复用既有链路',action,content:`
+    <section class="section" style="margin-top:0">${gameSummary('赛博朋克 2077','终极版 · Steam')}</section>
+    <section class="section delivery-card"><div class="delivery-label"><i></i>第三方平台激活</div><div class="line-row"><span class="k">商品 / SKU</span><span class="v">终极版 · Steam 国区</span></div><div class="line-row"><span class="k">适用范围</span><span class="v">中国大陆 · Steam</span></div><div class="line-row"><span class="k">退款边界</span><span class="v">发货后按既有规则处理</span></div><div class="notice">付款前请确认激活平台、适用地区与 Steam 账号条件。交付完成后请前往第三方平台使用。</div></section>
+    <section class="section"><div class="section-title">发货方式</div><div class="radio-row"><div class="choice selected"><b>直接激活</b><small>付款后将 Key 激活至选择的 Steam 账号</small></div><div class="choice"><b>仅 CDKEY</b><small>付款后在订单中查看并自行激活</small></div></div></section>
+    <section class="section"><div class="section-title">收货账号 <small>管理账号</small></div><div class="account-card"><div class="account-logo">S</div><div class="meta"><b>Steam · ga***er</b><span>账号地区：中国大陆</span></div><span class="ok">可用</span></div></section>
+    <section class="section"><div class="section-title">支付方式</div><div class="radio-row"><div class="choice selected"><b>支付宝</b><small>当前已选择</small></div><div class="choice"><b>微信支付</b><small>使用微信完成付款</small></div></div></section>
+    <section class="section"><div class="price-row"><span style="font-size:22px;color:#9a9da5">商品金额</span><span class="price"><small>实付</small>¥128.00</span></div></section>`});
+}
+
+function transactionResult(){
+  const action=`<div class="sticky-action"><button class="main-btn secondary">返回游戏库</button><button class="main-btn">一键激活</button></div>`;
+  return shell({title:'订单结果',noNav:true,boundary:'本期只补交付标签；Key 状态、复制、一键激活与退款复用既有订单规则',action,content:`
+    <div class="result-state"><div class="state-icon">✓</div><h1>Key 已交付</h1><p>订单已完成，可复制 Key 或继续一键激活</p></div>
+    <section class="section">${gameSummary('赛博朋克 2077','终极版 · Steam')}<div class="line-row"><span class="k">订单号</span><span class="v">GH202609010001</span></div><div class="line-row"><span class="k">交付方式</span><span class="v" style="color:#79dded">第三方平台激活</span></div><div class="line-row"><span class="k">订单状态</span><span class="v" style="color:#70dfb0">已完成</span></div><div class="line-row"><span class="k">实付金额</span><span class="v">¥128.00</span></div><div class="line-row"><span class="k">更新时间</span><span class="v">2026-09-01 14:28</span></div></section>
+    <section class="section"><div class="section-title">激活 Key</div><div class="key-box"><span class="key-code">ABCD-EFGH-IJKL</span><button class="small-btn">复制</button></div><div class="notice blue">请在 Steam 激活本 Key。若暂不激活，可稍后在订单中心继续操作。</div></section>
+    <section class="section"><div class="section-title">当前可执行操作</div><div class="kv-grid"><div class="kv"><div class="k">查看</div><div class="v">订单详情 / Key</div></div><div class="kv"><div class="k">继续</div><div class="v">一键激活</div></div></div><div class="notice red">本交付方式不提供盖世下载入口。</div></section>`});
+}
+
+function libraryList(){
+  return shell({title:'',boundary:'当前截图证明 PC 游戏库外壳；交付方式、状态与互斥动作是本期新增',hideTop:true,content:`
+    <div class="library-head"><div class="library-tabs"><b>PC游戏</b><span>Steam游戏</span><span>Epic游戏</span><span>复古游戏</span></div><div class="icon-btn"></div></div>
+    <div class="search-row"><div class="search-box">⌕&nbsp;&nbsp;搜索游戏名</div><div class="filter-btn"></div></div><div class="import-row">＋ 导入游戏</div>
+    <div class="library-list">
+      <article class="library-card"><div class="wide-cover"></div><div><h3>空洞骑士：丝之歌</h3><p style="color:#6ddfb0">盖世直接下载</p><p>权益有效 · 未下载</p></div><div class="card-action"><button style="background:#0f6c4d;border-color:#27c987">下载</button><span>已购 · 2026-09-01</span></div></article>
+      <article class="library-card"><div class="wide-cover" style="background:linear-gradient(145deg,#2f1b48,#662247 48%,#d58a4c)"></div><div><h3>赛博朋克 2077</h3><p style="color:#77d9ed">第三方平台激活</p><p>Key 已交付 · 待激活</p></div><div class="card-action"><button>查看 Key</button><span>Steam · 国区</span></div></article>
+      <article class="library-card"><div class="wide-cover" style="background:linear-gradient(145deg,#223d4a,#214f4e 48%,#76723e)"></div><div><h3>山海旅人</h3><p style="color:#6ddfb0">盖世直接下载</p><p>权益处理中</p></div><div class="card-action"><button style="border-color:#555;background:#2a2c31;color:#8b8f98">查看状态</button><span>请勿重复领取</span></div></article>
+      <article class="library-card"><div class="wide-cover" style="background:linear-gradient(145deg,#3e2328,#6f2d39 48%,#944b36)"></div><div><h3>霓虹深渊</h3><p style="color:#ff9aa1">权益状态异常</p><p>交付记录待平台核对</p></div><div class="card-action"><button style="border-color:#8b4c54;background:#3a2025">查看原因</button><span>未展示冲突动作</span></div></article>
+    </div>`});
+}
+
+function libraryDetail(){
+  const action=`<div class="sticky-action with-nav"><button class="main-btn green">下载</button></div>`;
+  return shell({title:'游戏库详情',boundary:'当前截图仅证明 PC 游戏详情外壳；交付快照、权益状态与主动作是本期新增',action,content:`
+    <div class="detail-poster"></div>
+    <section class="section delivery-card"><div class="delivery-label direct"><i></i>盖世直接下载</div><div class="kv-grid"><div class="kv"><div class="k">获取方式</div><div class="v">付费购买</div></div><div class="kv"><div class="k">权益状态</div><div class="v" style="color:#6ddfb0">有效</div></div><div class="kv"><div class="k">来源记录</div><div class="v">订单 GH2026***17</div></div><div class="kv"><div class="k">获取时间</div><div class="v">2026-09-01 14:32</div></div></div><div class="notice green">商品已下架，但不影响已获得的有效权益。你仍可下载并使用当前可用版本。</div></section>
+    <section class="section"><div class="section-title">当前状态</div><div class="line-row"><span class="k">本地状态</span><span class="v">未下载</span></div><div class="line-row"><span class="k">线上正式版本</span><span class="v">v1.0.0</span></div><div class="line-row"><span class="k">下载入口</span><span class="v" style="color:#6ddfb0">可用</span></div><div class="line-row"><span class="k">启动入口</span><span class="v">安装完成后可用</span></div></section>
+    <section class="section"><div class="section-title">游戏信息</div><p>Windows · 18.6 GB · 正式版本。下载前将再次校验当前用户权益及平台运行开关。</p></section>`});
+}
+
+function entitlementError(){
+  return shell({title:'权益状态',noNav:true,boundary:'本期新页面 · 结构已确认；不存在可冒充现状的页面截图',content:`
+    <div class="result-state"><div class="state-icon error">!</div><h1>权益发放失败</h1><p>购买记录已保存，请勿重复支付</p></div>
+    <section class="section">${gameSummary()}<div class="line-row"><span class="k">交付方式</span><span class="v" style="color:#6ddfb0">盖世直接下载</span></div><div class="line-row"><span class="k">来源记录</span><span class="v">订单 GH202609010017</span></div><div class="line-row"><span class="k">当前状态</span><span class="v" style="color:#ff9aa1">权益发放失败</span></div><div class="line-row"><span class="k">最近处理</span><span class="v">2026-09-01 14:33</span></div></section>
+    <section class="section"><div class="reason-box"><h3>未能完成权益写入</h3><p>平台已保留本次购买记录。你可以基于原记录重新获取权益，不会再次扣款。</p></div><div class="notice blue">若状态仍未恢复，平台运营可根据原订单重试或补发；不会创建第二笔订单。</div></section>
+    <section class="section"><div class="section-title">处理方式</div><div class="action-stack"><button class="main-btn green">重试获取权益</button><button class="main-btn secondary">刷新状态</button><button class="main-btn secondary">查看订单记录</button><button class="main-btn secondary">返回游戏库</button></div></section>
+    <section class="section"><div class="section-title">其他不可用结果</div><div class="chips"><span class="chip red">已退款，权益不可用</span><span class="chip red">发行授权变化</span><span class="chip red">账号或订单违规</span><span class="chip">权益状态异常</span></div><p style="margin-top:16px">撤销与交付冲突不提供用户自助恢复，也不展示 Key 或下载动作。</p></section>`});
+}
+
+const navItems=['发行总览','商品与供给','版本发布','用户权益','精准投放','发行数据','操作记录'];
+function adminShell({title,subtitle,content}){
+  return `<div class="admin-shell"><div class="admin-evidence">产品低保真结构 · 本期新页面 · 复用现有运营后台列表、详情、状态与日志组件</div><aside class="admin-aside"><div class="admin-brand"><i class="brand-mark"></i>发行运营后台</div><div class="admin-nav">${navItems.map(x=>`<div class="${x==='用户权益'?'active':''}">${x}</div>`).join('')}</div><div class="admin-foot">平台发行运营权限<br>只见授权发行范围；用户级查询与处置完整留痕</div></aside><main class="admin-main"><header class="admin-top"><div><h1>${title}</h1><p>${subtitle}</p></div><div class="admin-account">平台发行运营<i class="avatar">运</i></div></header><div class="admin-content">${content}</div></main></div>`;
+}
+
+function opsSearch(){
+  return adminShell({title:'用户权益查询',subtitle:'按用户、来源记录、游戏和权益状态定位一条交付关系',content:`
+    <section class="acard admin-toolbar"><div class="filter-grid"><div class="ainput">用户 ID / 游戏名称</div><div class="ainput">订单 / 领取记录编号</div><div class="ainput">权益编号</div><div class="aselect">交付方式：全部</div><div class="aselect">权益状态：全部</div><button class="abtn primary">查询</button><button class="abtn">重置</button></div></section>
+    <div class="stats"><section class="acard stat"><div class="label">授权记录</div><div class="value">3</div><div class="hint">仅当前授权发行范围</div></section><section class="acard stat"><div class="label">生成失败</div><div class="value">1</div><div class="hint">可进入权益处置</div></section><section class="acard stat"><div class="label">有效权益</div><div class="value">1</div><div class="hint">普通下架仍保留</div></section><section class="acard stat"><div class="label">CDKEY 记录</div><div class="value">1</div><div class="hint">只读，回原订单模块</div></section></div>
+    <section class="acard admin-section"><div class="admin-section-title"><div><h2>交付记录</h2><p>最近更新时间倒序；不提供批量处置、导出或 Key 明文</p></div>${badge('用户 ID 已脱敏','blue')}</div><table class="atable"><colgroup><col style="width:12%"><col style="width:14%"><col style="width:15%"><col style="width:10%"><col style="width:16%"><col style="width:14%"><col style="width:11%"><col style="width:8%"></colgroup><thead><tr><th>用户摘要</th><th>游戏</th><th>交付方式</th><th>获取方式</th><th>来源记录</th><th>权益编号 / 状态</th><th>更新时间</th><th>操作</th></tr></thead><tbody>
+      <tr><td><b>user_10***17</b></td><td><b>空洞骑士：丝之歌</b><br><span class="muted">game_10001</span></td><td>${badge('盖世直接下载','green')}</td><td>付费购买</td><td>订单<br>GH202609010017<br>${badge('支付成功','green')}</td><td>ENT-202609-017<br>${badge('生成失败','red')}</td><td>09-01 14:33</td><td><span class="alink">处理权益</span></td></tr>
+      <tr><td><b>user_10***62</b></td><td><b>山海旅人</b><br><span class="muted">game_10002</span></td><td>${badge('盖世直接下载','green')}</td><td>零价领取</td><td>领取记录<br>CLM-202609-062<br>${badge('领取成功','green')}</td><td>ENT-202609-062<br>${badge('有效','green')}</td><td>09-01 13:40</td><td><span class="alink">查看详情</span></td></tr>
+      <tr><td><b>user_10***88</b></td><td><b>赛博朋克 2077</b><br><span class="muted">game_20001</span></td><td>${badge('第三方平台激活','blue')}</td><td>付费购买</td><td>订单<br>GH202609010088<br>${badge('Key 已交付','blue')}</td><td>—<br>${badge('无盖世权益','gray')}</td><td>09-01 12:05</td><td><span class="alink">查看订单</span></td></tr>
+    </tbody></table><div class="pagination"><button class="page active">1</button></div></section>
+    <div class="permission-note"><b>权限与敏感信息：</b>开发者、测试人员和无权限运营不可访问用户级记录；越权请求不返回对象是否存在。列表不展示 Key 明文、支付凭据、实名信息、合同全文或违规证据原文。</div>`});
+}
+
+function opsHandle(){
+  return adminShell({title:'权益异常处理',subtitle:'基于成功来源记录执行重试、补发或有依据的撤销',content:`
+    <section class="acard summary"><div style="display:flex;justify-content:space-between"><div><h2>空洞骑士：丝之歌 · user_10***17</h2><p>订单 GH202609010017 · 付费购买 · 2026-09-01 14:32</p></div>${badge('权益生成失败','red')}</div><div class="summary-tags">${badge('盖世直接下载','green')}${badge('来源支付成功','green')}${badge('授权范围内','blue')}${badge('Key / 支付凭据不展示','gray')}</div><div class="info-grid"><div class="info-item"><div class="k">权益编号</div><div class="v">ENT-202609-017</div></div><div class="info-item"><div class="k">游戏 / 商品 / SKU</div><div class="v">game_10001 / product_01 / sku_win_std</div></div><div class="info-item"><div class="k">用户侧表现</div><div class="v">权益发放失败 · 不可重复支付</div></div></div></section>
+    <div class="admin-grid" style="margin-top:16px"><div class="admin-stack"><section class="acard admin-section"><div class="admin-section-title"><div><h2>来源与交付快照</h2><p>所有处置都基于原来源记录，不允许手工改归属或硬删除</p></div>${badge('来源有效','green')}</div><div class="info-grid"><div class="info-item"><div class="k">来源结果</div><div class="v">订单支付成功</div></div><div class="info-item"><div class="k">交付快照</div><div class="v">盖世直接下载 · Windows</div></div><div class="info-item"><div class="k">当前权益</div><div class="v" style="color:#b34b43">生成失败</div></div></div></section>
+      <section class="acard timeline"><div class="admin-section-title"><div><h2>权益时间线</h2><p>动作、状态、原因、操作人、结果和时间完整留痕</p></div></div><div class="timeline-item"><span class="time">14:33:06</span><span class="desc">系统写入权益失败<br><span class="muted">来源关系校验未完成 · 已归一化</span></span>${badge('生成失败','red')}</div><div class="timeline-item"><span class="time">14:32:51</span><span class="desc">支付回调触发权益生成<br><span class="muted">action_id: act_80001</span></span>${badge('已触发','blue')}</div><div class="timeline-item"><span class="time">14:32:49</span><span class="desc">订单支付成功并保存交付快照</span>${badge('成功','green')}</div></section>
+      <section class="acard audit"><div class="admin-section-title"><div><h2>操作日志</h2><p>成功与失败尝试均记录；重复动作返回首次结果</p></div></div><div class="audit-row"><b>2026-09-01 14:33</b><span>system · 生成权益 · 无→生成失败 · 来源关系校验未完成</span>${badge('失败','red')}</div><div class="audit-row"><b>2026-09-01 14:32</b><span>system · 保存交付快照 · 订单 GH202609010017</span>${badge('成功','green')}</div></section></div>
+      <aside class="admin-stack"><section class="acard handle-card"><h3>处置动作</h3><div class="handle-row"><div class="handle-choice selected"><b>重试生成</b><span>基于原来源重新校验并生成</span></div><div class="handle-choice"><b>补发权益</b><span>仅确认无有效权益时允许</span></div><div class="handle-choice"><b>退款撤销</b><span>退款成功后才能执行</span></div><div class="handle-choice"><b>合同 / 违规撤销</b><span>必须提供授权依据</span></div></div><div class="field"><label>处置原因</label><div class="field-box area">基于支付成功订单重试权益生成</div></div><div class="field"><label>依据编号</label><div class="field-box">来源记录自动带入；撤销时必填</div></div><div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px"><button class="abtn">取消</button><button class="abtn primary">提交重试生成</button></div></section>
+      <section class="acard handle-card"><h3>用户侧结果与边界</h3><div class="info-item"><div class="k">当前结果页 / 游戏库</div><div class="v">权益发放失败 · 查看权益状态</div></div><div class="permission-note" style="margin-top:12px">重试成功后进入“权益生成中 / 有效”；失败保持原状态，不创建订单、不再次扣款。</div><div class="permission-note red" style="margin-top:10px"><b>不可执行：</b>恢复已撤销权益、修改用户 / 游戏归属、硬删除历史；CDKEY 对象只返回既有订单模块。</div></section></aside></div>`});
+}
+
+const pages={
+  'game-detail':gameDetail,
+  'purchase-confirm':purchaseConfirm,
+  'transaction-result':transactionResult,
+  'library-list':libraryList,
+  'library-detail':libraryDetail,
+  'entitlement-error':entitlementError,
+  'ops-entitlement-search':opsSearch,
+  'ops-entitlement-handle':opsHandle
+};
+app.innerHTML=(pages[pageKey]||gameDetail)();
+</script>
+</body>
+</html>
