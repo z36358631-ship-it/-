@@ -35,6 +35,7 @@ const escapeXml = value => String(value ?? '')
 const safeId = value => String(value).replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'layer';
 const retryWait = new Int32Array(new SharedArrayBuffer(4));
 const writeTextFile = (file, content) => {
+  if (fs.existsSync(file) && fs.readFileSync(file, 'utf8') === content) return;
   let lastError;
   for (let attempt = 0; attempt < 20; attempt += 1) {
     try {
@@ -89,14 +90,12 @@ function renderRect(item, prefix, index) {
 function renderText(item, prefix, index) {
   const fill = svgColor(item.fill, '#111827');
   const extractedFamily = String(item.fontFamily || 'Microsoft YaHei').split(',')[0].replace(/["']/g, '').trim();
-  // Figma imports the SVG text as editable layers, but does not have the
-  // Demo-only MiSans / D-DIN web fonts. Use fonts available in the Windows
-  // design environment so Chinese text remains visible after cloud import.
-  const family = /^(MiSans(?: VF)?|PingFang SC)$/i.test(extractedFamily)
-    ? 'Microsoft YaHei'
-    : /^D-DIN-PRO$/i.test(extractedFamily)
-      ? 'Arial'
-      : extractedFamily;
+  // Figma Web normalizes unrecognized local families to Inter, which has no
+  // CJK glyphs in imported SVG text. Noto Sans SC is available in Figma's
+  // cloud font catalog and keeps Chinese text editable and visible.
+  const family = /^(D-DIN-PRO|Arial)$/i.test(extractedFamily)
+    ? 'Arial'
+    : 'Noto Sans SC';
   // Figma uses a text node's SVG id as its layer name. On large imported
   // SVGs this causes CJK glyphs to disappear while Latin glyphs remain.
   // Let Figma derive the layer name from the visible text instead; stable
@@ -147,12 +146,12 @@ function horizontalPageLayout(frames) {
 }
 
 function text(x, y, value, size = 24, fill = '#0F172A', weight = 400, id = '') {
-  return `<text x="${x}" y="${y}" font-family="Microsoft YaHei, Arial, sans-serif" font-size="${size}" font-weight="${weight}" fill="${fill}">${escapeXml(value)}</text>`;
+  return `<text x="${x}" y="${y}" font-family="Noto Sans SC" font-size="${size}" font-weight="${weight}" fill="${fill}">${escapeXml(value)}</text>`;
 }
 
 function titleBar(name, frameCount, width) {
   const countLabel = frameCount > 0 ? `${frameCount} 个业务页` : 'Figma 文件导航';
-  return `<g id="page-title-${safeId(name)}"><rect x="80" y="80" width="${width - 160}" height="96" rx="16" fill="#2FD7EF"/><text x="120" y="140" font-family="Microsoft YaHei, Arial, sans-serif" font-size="32" font-weight="800" fill="#101828">${escapeXml(name)}</text><text x="${width - 300}" y="140" font-family="Microsoft YaHei, Arial, sans-serif" font-size="20" font-weight="600" fill="#0B6271">${countLabel}</text></g>`;
+  return `<g id="page-title-${safeId(name)}"><rect x="80" y="80" width="${width - 160}" height="96" rx="16" fill="#2FD7EF"/><text x="120" y="140" font-family="Noto Sans SC" font-size="32" font-weight="800" fill="#101828">${escapeXml(name)}</text><text x="${width - 300}" y="140" font-family="Noto Sans SC" font-size="20" font-weight="600" fill="#0B6271">${countLabel}</text></g>`;
 }
 
 function designSystemSection() {

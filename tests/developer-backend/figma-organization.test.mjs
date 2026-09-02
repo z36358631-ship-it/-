@@ -25,6 +25,7 @@ test('Figma 按已确认的 6 个正式 Page 组织，37 个业务 Frame 仍完�
 test('生成源具有中文标题条、业务页横向排列和逐页可编辑 ID', () => {
   execFileSync(process.execPath, ['Figma/开发者后台一期/build-figma-source.mjs'], { stdio: 'pipe' });
   const manifest = readJson('Figma/开发者后台一期/source/source-manifest.json');
+  const frameMap = readJson('Figma/开发者后台一期/frame-map.json');
   assert.equal(manifest.frameCount, 37);
   assert.deepEqual(manifest.figmaPages.map(page => page.name), [
     '00 全局流程索引', '01 开发者平台与资料', '02 CDKEY 商品与供给',
@@ -38,6 +39,30 @@ test('生成源具有中文标题条、业务页横向排列和逐页可编辑 I
   }
   const releaseSvg = fs.readFileSync(path.join(sourceDir, 'figma-pages/03-包体测试与发布.svg'), 'utf8');
   assert.ok(releaseSvg.indexOf('id="P03-01"') < releaseSvg.indexOf('id="P03-13"'));
+
+  for (const source of [
+    'figma-pages/01-开发者平台与资料.svg',
+    'figma-pages/02-CDKEY 商品与供给.svg',
+    'figma-pages/03-包体测试与发布.svg',
+    'figma-pages/04-精准投放与数据.svg',
+    'figma-pages/组件母版.svg',
+  ]) {
+    const svg = fs.readFileSync(path.join(sourceDir, source), 'utf8');
+    assert.doesNotMatch(svg, /font-family="Microsoft YaHei(?:,|\")/, `${source} 不应保留会被 Figma 降级为 Inter 的本地中文字体`);
+    assert.match(svg, /font-family="Noto Sans SC"/, `${source} 应使用 Figma 云端可用的中文字体`);
+  }
+
+  for (const moduleId of ['03', '04']) {
+    const section = frameMap.sections.find(item => item.id === moduleId);
+    for (const frame of section.frames) {
+      const svg = fs.readFileSync(path.join(sourceDir, `pages/${frame.id}.svg`), 'utf8');
+      assert.match(
+        svg,
+        new RegExp(`id="node-${frame.id}-shape-1"[^>]+fill="#0b1220"`, 'i'),
+        `${frame.id} 应保留深色顶部栏，避免白底白字`,
+      );
+    }
+  }
 });
 
 test('P01-01 与 P02-01 Figma 源包含本轮确认内容', () => {
