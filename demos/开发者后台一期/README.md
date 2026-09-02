@@ -2,6 +2,13 @@
 
 本目录是受邀开发者、平台发行运营和平台测试人员使用的离线评审 Demo。它用统一后台壳串联单一签约厂商、单款 Windows 游戏从资料、CDKEY 供给、包体测试发布到规则式精准投放与发行数据查看的 MVP；所有操作仅改变当前页面内存中的演示状态。
 
+## Figma 终稿基线
+
+- 当前视觉基线：[盖世游戏｜开发者后台一期](https://www.figma.com/design/arz12KT0WQ7UsHHglFtReN/)。
+- Figma 的 6 个正式 Page 包含 1 个全局流程索引、4 个业务模块和 1 个组件母版；Demo 对应 4 个业务模块的 37 个页面，数量保持 `9／6／13／9`。
+- `build.mjs` 会在生成 HTML 前核对 `figma-page-map.json`、`frame-map.json` 与交付证据中的 5 份正式 SVG SHA-256，确保 Frame ID、模块、标题、角色、模板、`1440×900` 尺寸和已确认设计源与 Demo 一致；不一致时停止构建。
+- Figma 与 Demo 共用当前业务 Fixture、路由和交互规则。Figma 决定页面骨架与视觉，Demo 提供可操作状态；两者均不连接真实账号、接口、Key、Secret、发布或投放服务。
+
 ## 五个入口
 
 | 入口文件 | 用途 | 默认路由 |

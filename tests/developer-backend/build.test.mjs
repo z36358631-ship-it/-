@@ -13,6 +13,17 @@ const outputs = [
   '04-精准投放与数据demo.html',
 ];
 
+test('构建前验证 Demo 与 Figma 的页面契约一致', () => {
+  const output = execFileSync(process.execPath, [path.join(demoDir, 'build.mjs')], {
+    stdio: 'pipe',
+    encoding: 'utf8',
+  });
+  assert.match(
+    output,
+    /Figma contract verified: 6 pages, 37 frames \(9\/6\/13\/9\), 5 source hashes\./,
+  );
+});
+
 test('构建 5 个完全自包含 HTML 且结果可重复', () => {
   execFileSync(process.execPath, [path.join(demoDir, 'build.mjs')], { stdio: 'pipe' });
   const first = new Map();

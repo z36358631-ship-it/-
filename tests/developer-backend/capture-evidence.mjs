@@ -78,7 +78,7 @@ try {
     await page.close();
   }
 
-  for (const routeId of ['P01-01', 'P02-01']) {
+  for (const routeId of ['P01-01', 'P01-02', 'P02-01', 'P02-03', 'P03-12', 'P04-04']) {
     const route = routes.find(item => item.id === routeId);
     const { page } = await preparePage(browser, route, { width: 1280, height: 800 });
     await screenshot(page, `1280x800-${routeId}.png`);
