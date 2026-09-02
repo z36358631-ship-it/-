@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "runId": "86832e96-4742-4bcf-ae88-4207cc91dbed",
   "requirementId": "LOCAL-20260901",
-  "revision": 14,
-  "status": "in_progress",
+  "revision": 18,
+  "status": "blocked",
   "createdAt": "2026-09-01T16:40:47.2465243Z",
-  "updatedAt": "2026-09-02T09:06:42.2449338Z",
+  "updatedAt": "2026-09-02T10:39:44.8820022Z",
   "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md",
   "cardHash": "BA363A7F1E2F1D1745B724FD2706379D2602140371C39D9E9FB73EE3B46CACEF",
   "contract": {
@@ -143,31 +143,41 @@
       "dependsOn": [
         "S3"
       ],
-      "status": "stale",
-      "attempt": 1,
+      "status": "passed",
+      "attempt": 2,
       "inputHashes": [
         {
-          "path": "C:\\Users\\z3635\\官网改动\\index.html",
-          "sha256": "FC465E57A38F79D29D245D05888AA5ADB55CD38B4E919B4444403368CE5FA078"
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\01-开发者平台与资料demo.html",
+          "sha256": "A4DC1554DA8389AFFB9C3D68FDEBAAC364DF073391D32277ACC88F179550BE09"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\官网改动\\index.html",
-          "sha256": "6E9721AC9DFDDAEF75C848717A34C54DDC12B0CDD6F04B6797AD6043F1C2AC33"
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\02-CDKEY商品与供给demo.html",
+          "sha256": "1FAEF915FE10737272B845761594C1AC0959540CEB4FB1E84A83F4F6B2EC5C4B"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\genuine-game-distribution-phase1\\02-developer\\developer-screens.html",
-          "sha256": "E81A1C3C4E922741D400DA8F23572110E3F808F0AC3D0EE48BBB0B90535B3D3B"
+          "path": "C:\\Users\\z3635\\官网改动\\Figma\\开发者后台一期\\evidence\\figma-page-01-platform.png",
+          "sha256": "C4319F7BB28396CC0DE34877EACD5F0E93D39D6A9F514268D922F53B4BF5DBE7"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\Figma\\开发者后台一期\\evidence\\figma-canvas-final-pages.png",
+          "sha256": "944EDDE5C5F40E018C810BA72BE6FD1DFC475434DD6DB3169B57F194831619AB"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\test-results\\developer-backend\\screenshots\\1440x900-P02-01.png",
+          "sha256": "38B1B7BEBB9088FD69E60E61DB7949AC75F703893A5B9701D1908B8C1DDDBAD5"
         }
       ],
       "outputs": [
-        "public\\prd\\genuine-game-distribution-phase1\\02-developer"
+        "Figma/开发者后台一期/evidence/figma-page-01-platform.png",
+        "test-results/developer-backend/screenshots/1440x900-P02-01.png"
       ],
       "evidence": [
-        "官网既有开发者入口与同版本开发者低保真页面、PNG 基线均存在；设计规格已记录视觉取舍"
+        "修改前 P01 Demo/Figma Page 证据与 P02 Demo/全局 Figma Page 组织已核对",
+        "37 个业务路由双尺寸基线测试通过"
       ],
-      "validation": "已恢复现有官网结构与开发者页面基线",
+      "validation": "现有深色侧栏、浅色工作区、顶栏、P01-01 登录和 P02-01 只读供给基线已恢复",
       "error": null,
-      "reviewer": "Codex 产品与界面基线复核"
+      "reviewer": "Codex 页面基线复核"
     },
     {
       "id": "S5",
@@ -177,38 +187,22 @@
         "S3",
         "S4"
       ],
-      "status": "stale",
-      "attempt": 1,
+      "status": "blocked",
+      "attempt": 2,
       "inputHashes": [
         {
-          "path": "C:\\Users\\z3635\\官网改动\\docs\\superpowers\\specs\\2026-09-02-developer-backend-demo-figma-design.md",
-          "sha256": "1C784D832C51C77B85317C5B21678A872FAF5C0499D7093946EC9D5B664D3841"
+          "path": "C:\\Users\\z3635\\官网改动\\docs\\superpowers\\specs\\2026-09-02-developer-backend-cdkey-self-service-help-demo-design.md",
+          "sha256": "ADDF60F5BA2C825A7780AF09C298D629C0A7F8C2A13E7AFB014E431F48988689"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\docs\\superpowers\\plans\\2026-09-02-developer-backend-demo-figma.md",
-          "sha256": "35C0E5D9E236EFB13E6E6265404A6DCDFAD8B546EFCD0B66571F688D9148356C"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\01-开发者平台、厂商与游戏资料PRD.md",
-          "sha256": "8474331C5E3A5DCE38E2EBAB24796C07BA98FEDFB69D7388F96A6FA67B209B9C"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\02-游戏商品与CDKEY供给管理PRD.md",
-          "sha256": "FE23580F65D721A99E74A856D9A6C8688485B00D9A598E4CE817DF77B7E720A6"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\03-游戏包体、测试审核与版本发布PRD.md",
-          "sha256": "7FC0057653FBE5824A46C9116C75D9C7251E3DCCE2B0294B47882B86ED5B703A"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\04-精准化投放与发行数据看板PRD.md",
-          "sha256": "0378A02718B82AE9E185466F6278D7C9230DA700257321783902842925F2E9A2"
+          "path": "C:\\Users\\z3635\\官网改动\\docs\\superpowers\\plans\\2026-09-02-developer-backend-cdkey-self-service-help.md",
+          "sha256": "9C71D04235B1EF826BDAB817E5E5B7661367B7E1E2D3F5B7416A67A9C2FDCF5C"
         }
       ],
       "outputs": [],
       "evidence": [],
-      "validation": null,
-      "error": null,
+      "validation": "blocked",
+      "error": "本地 PRD、Demo 与 Figma 导入源已完成并通过 43/43 回归；目标 Figma 在应用内浏览器中未登录，无法同步 P01、P02 与组件母版。登录后恢复 S5。",
       "reviewer": null
     },
     {

@@ -6,7 +6,7 @@
 |---|---|
 | 任务编号 | LOCAL-20260901 |
 | 需求名称 | 正版发行平台一期开发者后台 PRD |
-| 当前阶段 | CDKEY 自助发行增补设计与实施计划已确认；待选择执行方式并同步 PRD、Demo 与 Figma |
+| 当前阶段 | PRD、Demo 与本地 Figma 导入源已同步并通过回归；云端 Figma 因当前浏览器未登录待继续 |
 | 最后更新时间 | 2026-09-02 |
 
 ## 问题与证据
@@ -64,7 +64,7 @@
 | 官网 Demo | `index.html`、`官网改动/index.html` | 已完成 | 桌面／390px 截图审查；中英文与两份跳转路径通过；控制台无错误 |
 | Demo 与 Figma 设计规格 | `docs/superpowers/specs/2026-09-02-developer-backend-demo-figma-design.md` | 已确认并提交 | 37 个 Frame ID 唯一；模块数量 9／6／13／9；提交 `0bfad910` |
 | Demo 与 Figma 实施计划 | `docs/superpowers/plans/2026-09-02-developer-backend-demo-figma.md` | 已完成，待执行方式确认 | 14 个实施任务；37 个唯一页面 ID；模块数量 9／6／13／9；占位符扫描与 `git diff --check` 通过 |
-| Figma 文件组织交付 | [盖世游戏｜开发者后台一期](https://www.figma.com/design/arz12KT0WQ7UsHHglFtReN/) | 已完成 | 6 个正式 Page、37 页仍为 9／6／13／9；最新截图与哈希见 `Figma/开发者后台一期/evidence/` |
+| Figma 文件组织交付 | [盖世游戏｜开发者后台一期](https://www.figma.com/design/arz12KT0WQ7UsHHglFtReN/) | 本地新版已完成，云端待同步 | 6 个正式 Page、37 页仍为 9／6／13／9；P01、P02 与组件母版导入源校验通过；云端当前仍是上一版 |
 | CDKEY 自助发行增补规格 | `docs/superpowers/specs/2026-09-02-developer-backend-cdkey-self-service-help-demo-design.md` | 已确认并提交 | D-011／D-012；提交 `1286eb75`；发行方自助、四 Tab、入驻介绍、帮助中心与视觉修复 |
 | CDKEY 自助发行增补实施计划 | `docs/superpowers/plans/2026-09-02-developer-backend-cdkey-self-service-help.md` | 已完成，待执行方式确认 | 10 个实施任务；先 PRD、再 Demo、后 Figma；含两尺寸、一次展示、权限与敏感信息验收 |
 
@@ -84,9 +84,11 @@
 | 2026-09-02 | 用户补充发行方自助 Key、渠道 API、接口说明、首次介绍、帮助中心和截图可读性问题 | 确认不新增业务路由；新增 D-011／D-012，并将 PRD 1/2、P01/P02 Figma、Demo、测试和截图标记为待同步 | 增补设计规格、状态卡及下游产物 | 三视角评审通过；书面规格已生成，尚未开始实现与机器复验 |
 | 2026-09-02 | 用户确认 CDKEY 自助发行增补书面规格 | 锁定 D-011／D-012 及验收条件，进入实施计划编写 | 增补设计规格、实施计划、工作流运行状态 | 书面规格已确认；PRD、Demo、Figma 与证据仍待同步 |
 | 2026-09-02 | 用户确认继续推进 | 使用 `writing-plans` 将增补规格拆为页面基线、PRD、Fixture、组件、P01-01、P02-01、回归、PRD 截图、Figma 和交付共 10 个任务 | 增补实施计划、状态卡、工作流运行状态 | 规格覆盖、禁止词、类型一致性和 `git diff --check` 自检通过；尚未开始产物实施 |
+| 2026-09-02 | 用户选择先完成本地交付收尾 | 更新 P01、P02 与组件母版可编辑 SVG，修复 P01-01 深色背景，补齐组件母版尺寸记录并精确提交 | Figma 本地源、组织测试、交付记录 | 完整回归 43/43；三份 SVG 结构校验 PASS；提交 `ac22dc63`；应用内 Figma 未登录，云端尚未替换 |
 
 ## 待确认与风险
 
 - 必须确认：实际 CDKEY 供应商／供给方式及接口能力；一期可复用资源位；可直接使用的用户标签；点击归因窗口。
 - 默认建议：CDKEY 先按现有供应商 API 设计；资源位优先盘点首页和已有游戏推荐位；标签先开放地区、语言、设备／系统和本平台行为；点击归因采用同游戏最近有效点击 7×24 小时。
 - 已知风险：41 张 PRD 图片的固定 SHA 与语法通过，但当前环境访问 jsDelivr 全部失败，尚不能证明公网 HTTP 可用或飞书已成功转存；正式交付前须补远程校验及至少一张飞书导入冒烟。
+- 云端阻塞：应用内 Figma 当前显示 `Sign up / Continue with Google`，尚未登录；需登录后导入 P01、P02 与组件母版。替换或删除旧根图层前仍需再次确认。
