@@ -1,0 +1,1695 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="demo-hash-example" content="#/P01-02?role=developer&state=default"><title>开发者后台一期评审总览</title><style>:root {
+  --brand-cyan: #38E8FF;
+  --brand-blue: #6A7CFF;
+  --brand-deep: #101827;
+  --brand-night: #0B1220;
+  --success: #1E9B66;
+  --warning: #C88918;
+  --danger: #D95656;
+  --info: #3976D9;
+  --text-primary: #172033;
+  --text-secondary: #5B657A;
+  --text-tertiary: #8B94A6;
+  --line: #E6E9F0;
+  --line-strong: #D5DAE5;
+  --surface: #FFFFFF;
+  --surface-soft: #F7F8FB;
+  --surface-muted: #F0F2F7;
+  --nav-text: #AEB8CD;
+  --nav-active: #FFFFFF;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --shadow-card: 0 6px 20px rgba(25, 38, 66, 0.06);
+  --focus-ring: 0 0 0 3px rgba(56, 232, 255, 0.22);
+  --font-sans: "MiSans VF", MiSans, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-number: "D-DIN-PRO", "DIN Alternate", var(--font-sans);
+}
+
+* { box-sizing: border-box; }
+
+html, body { min-width: 1280px; min-height: 100%; margin: 0; }
+
+body {
+  color: var(--text-primary);
+  background: #E9EDF4;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea { font: inherit; }
+button, a, select { -webkit-tap-highlight-color: transparent; }
+a { color: inherit; text-decoration: none; }
+svg { display: block; }
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.number { font-family: var(--font-number); font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+#app { min-width: 1280px; min-height: 100vh; }
+
+.demo-stage { position: relative; min-width: 1280px; min-height: 100vh; background: #E9EDF4; }
+
+.product-frame {
+  position: relative;
+  width: 100%;
+  min-width: 1280px;
+  height: 100vh;
+  min-height: 720px;
+  background: var(--surface-soft);
+  overflow: hidden;
+}
+
+.top-bar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 4;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  color: #FFFFFF;
+  background: linear-gradient(98deg, #0B1220 0%, #15213A 72%, #13243A 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-block {
+  width: 232px;
+  height: 56px;
+  padding: 0 var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: var(--brand-cyan);
+  border: 1px solid rgba(56, 232, 255, 0.44);
+  border-radius: 9px;
+  background: linear-gradient(145deg, rgba(56, 232, 255, 0.18), rgba(106, 124, 255, 0.18));
+}
+
+.brand-copy { min-width: 0; }
+.brand-title { color: #FFFFFF; font-size: 15px; font-weight: 650; letter-spacing: .02em; }
+.brand-subtitle { color: #B7C2D6; font-size: 11px; }
+
+.top-context { min-width: 0; padding: 0 var(--space-6); display: flex; align-items: center; gap: var(--space-3); }
+.top-context strong { overflow: hidden; color: #FFFFFF; text-overflow: ellipsis; white-space: nowrap; }
+.environment-badge { padding: 3px 8px; color: #D9FBFF; font-size: 11px; border: 1px solid rgba(56,232,255,.52); border-radius: 999px; background: rgba(56,232,255,.14); }
+.top-account { margin-left: auto; padding: 0 var(--space-6); display: flex; align-items: center; gap: var(--space-3); color: #DCE3F0; }
+.account-avatar { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; color: #142039; font-weight: 700; background: linear-gradient(135deg, var(--brand-cyan), #B7C1FF); }
+.account-copy span { display: block; color: #B7C2D6; font-size: 11px; }
+.top-help-button { margin-left: auto; min-height: 36px; padding: 0 12px; display: inline-flex; align-items: center; gap: 7px; color: #EAF0FA; border: 1px solid rgba(255,255,255,.16); border-radius: 8px; background: rgba(255,255,255,.06); cursor: pointer; }
+.top-help-button:hover { color: #FFFFFF; border-color: rgba(56,232,255,.44); background: rgba(56,232,255,.08); }
+.top-help-button svg { width: 16px; height: 16px; color: var(--brand-cyan); }
+.top-help-button + .top-account { margin-left: 0; }
+
+.side-nav {
+  position: absolute;
+  inset: 56px auto 0 0;
+  z-index: 3;
+  width: 232px;
+  min-height: 0;
+  padding: var(--space-5) var(--space-3);
+  color: var(--nav-text);
+  background: var(--brand-deep);
+  border-right: 1px solid rgba(255,255,255,.05);
+}
+
+.nav-label { padding: 0 10px var(--space-2); color: #64728D; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.nav-list { display: grid; gap: var(--space-1); }
+.nav-item { position: relative; min-height: 42px; padding: 9px 10px; display: flex; align-items: center; gap: 10px; color: #AAB7CA; border-radius: var(--radius-sm); transition: color .15s, background .15s; }
+.nav-item:hover { color: #EDF2FA; background: rgba(255,255,255,.05); }
+.nav-item.is-active { color: #FFFFFF; background: linear-gradient(90deg, rgba(56,232,255,.20), rgba(106,124,255,.14)); }
+.nav-item.is-active::before { content: ""; position: absolute; top: 8px; bottom: 8px; left: 0; width: 3px; border-radius: 0 3px 3px 0; background: var(--brand-cyan); }
+.nav-item svg { width: 18px; height: 18px; flex: 0 0 auto; }
+.nav-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-footer { position: absolute; right: 16px; bottom: 18px; left: 16px; padding-top: var(--space-4); color: #64728D; font-size: 11px; border-top: 1px solid rgba(255,255,255,.07); }
+
+.workspace { position: absolute; inset: 56px 0 0 232px; min-width: 1048px; min-height: 0; overflow: auto; background: var(--surface-soft); }
+.product-frame.is-login .workspace { left: 0; }
+.context-bar { height: 48px; padding: 0 var(--space-6); display: flex; align-items: center; gap: var(--space-2); color: var(--text-secondary); border-bottom: 1px solid var(--line); background: rgba(255,255,255,.88); }
+.context-bar svg { width: 15px; height: 15px; color: var(--text-tertiary); }
+.context-divider { color: var(--line-strong); }
+.context-value { color: var(--text-primary); font-weight: 600; }
+
+.page-wrap { min-width: 0; padding: var(--space-6) var(--space-8) 48px; }
+.page-header { min-height: 66px; margin-bottom: var(--space-5); display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-6); }
+.page-eyebrow { margin-bottom: 4px; color: var(--brand-blue); font-family: var(--font-number); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+.page-title { margin: 0; font-size: 24px; line-height: 1.3; letter-spacing: -.02em; }
+.page-summary { max-width: 720px; margin: 7px 0 0; color: var(--text-secondary); }
+.page-actions { padding-top: 2px; display: flex; align-items: center; gap: var(--space-2); }
+
+.help-center { padding: var(--space-6) var(--space-8) 48px; }
+.help-center__header { margin-bottom: 20px; display: flex; gap: 16px; align-items: center; }
+.help-center__header .text-back { margin: 0; }
+.help-center__header h1 { margin: 0; font-size: 24px; }
+.help-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; }
+.faq-item button { width: 100%; min-height: 46px; padding: 12px 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; color: var(--text-primary); text-align: left; border: 0; border-bottom: 1px solid var(--line); background: transparent; cursor: pointer; }
+.faq-item button:hover { color: var(--brand-blue); }
+.faq-item p { margin: 0; padding: 12px 0 18px; color: var(--text-secondary); line-height: 1.65; }
+.contact-card { min-height: 240px; padding: 20px; display: grid; gap: 10px; align-content: start; border: 1px solid var(--line); border-radius: var(--radius-md); background: #FFFFFF; box-shadow: var(--shadow-card); }
+.contact-card h2 { margin: 0 0 8px; font-size: 17px; }
+.contact-card span { color: var(--text-secondary); }
+.contact-card p { margin: 8px 0 0; padding: 12px; color: #0B6271; border-radius: var(--radius-sm); background: #EFFCFE; }
+
+.review-tools {
+  position: fixed;
+  z-index: 20;
+  left: 18px;
+  bottom: 18px;
+  width: 104px;
+  height: 40px;
+  padding: 10px 12px;
+  overflow: hidden;
+  color: #EAF0FA;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: var(--radius-md);
+  background: rgba(11,18,32,.94);
+  box-shadow: 0 12px 36px rgba(5,10,20,.24);
+  backdrop-filter: blur(12px);
+  transition: width .16s ease, height .16s ease, padding .16s ease;
+}
+.review-tools:hover,
+.review-tools:focus-within {
+  width: 316px;
+  height: auto;
+  padding: 12px;
+  overflow: visible;
+}
+.review-tools__title { margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.review-tools__title span { color: #8F9DB7; font-size: 10px; font-weight: 500; }
+.review-tools__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; opacity: 0; pointer-events: none; }
+.review-tools label { display: grid; gap: 4px; color: #91A0BA; font-size: 10px; }
+.review-tools select { width: 100%; height: 30px; padding: 0 26px 0 8px; color: #EAF0FA; font-size: 11px; border: 1px solid rgba(255,255,255,.14); border-radius: 6px; background: #172238; }
+.review-tools__actions { margin-top: 8px; display: flex; justify-content: flex-end; gap: 8px; opacity: 0; pointer-events: none; }
+.review-scenarios { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; opacity: 0; pointer-events: none; }
+.review-scenarios > span { width: 100%; color: #91A0BA; font-size: 10px; }
+.review-scenarios button { min-height: 28px; padding: 5px 8px; color: #C9D4E4; font-size: 10px; border: 1px solid rgba(255,255,255,.14); border-radius: 6px; background: #172238; cursor: pointer; }
+.review-scenarios button:hover,
+.review-scenarios button:focus-visible { color: #FFFFFF; border-color: rgba(56,232,255,.44); outline: 2px solid rgba(56,232,255,.26); outline-offset: 1px; }
+.review-tools:hover .review-tools__grid,
+.review-tools:hover .review-tools__actions,
+.review-tools:hover .review-scenarios,
+.review-tools:focus-within .review-tools__grid,
+.review-tools:focus-within .review-tools__actions,
+.review-tools:focus-within .review-scenarios { opacity: 1; pointer-events: auto; }
+
+.overview-page { min-height: 100vh; padding: 42px 56px 72px; color: #E9EFF9; background: radial-gradient(circle at 74% 10%, rgba(56,232,255,.12), transparent 30%), linear-gradient(145deg, #0B1220, #121D32 68%, #182340); }
+.overview-hero { max-width: 1180px; margin: 0 auto 28px; }
+.overview-kicker { color: var(--brand-cyan); font-family: var(--font-number); font-size: 12px; font-weight: 700; letter-spacing: .14em; }
+.overview-title { max-width: 820px; margin: 12px 0 8px; font-size: 38px; line-height: 1.2; }
+.overview-copy { max-width: 840px; margin: 0; color: #9EABC0; font-size: 15px; }
+.overview-note { margin-top: 20px; padding: 10px 14px; display: inline-flex; align-items: center; gap: 9px; color: #BCD0E8; border: 1px solid rgba(255,255,255,.10); border-radius: 999px; background: rgba(255,255,255,.04); }
+.overview-note svg { width: 16px; height: 16px; color: var(--warning); }
+.overview-grid { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); }
+.overview-card { min-width: 0; padding: var(--space-5); color: #EAF0FA; border: 1px solid rgba(255,255,255,.09); border-radius: 14px; background: rgba(255,255,255,.05); box-shadow: 0 10px 36px rgba(0,0,0,.12); }
+.overview-card:hover { border-color: rgba(56,232,255,.30); background: rgba(255,255,255,.07); }
+.overview-card__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.overview-card__id { color: var(--brand-cyan); font-family: var(--font-number); font-weight: 700; }
+.overview-card h2 { margin: 12px 0 4px; font-size: 17px; }
+.overview-card p { min-height: 42px; margin: 0 0 16px; color: #93A2B9; font-size: 12px; }
+.overview-link { display: inline-flex; align-items: center; gap: 7px; color: #FFFFFF; font-size: 13px; font-weight: 650; }
+.overview-link svg { width: 15px; height: 15px; color: var(--brand-cyan); }
+.overview-section { max-width: 1180px; margin: 28px auto 0; }
+.overview-section__header { margin-bottom: 12px; display: flex; align-items: flex-end; justify-content: space-between; }
+.overview-section h2 { margin: 0; font-size: 18px; }
+.overview-section__header span { color: #7F8DA5; font-size: 12px; }
+.role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+.role-card { padding: 16px; border: 1px solid rgba(255,255,255,.08); border-radius: var(--radius-md); background: rgba(255,255,255,.035); }
+.role-card strong { display: block; margin-bottom: 5px; }
+.role-card span { color: #8F9DB7; font-size: 12px; }
+.route-index { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.route-group { padding: 14px; border: 1px solid rgba(255,255,255,.07); border-radius: var(--radius-md); background: rgba(255,255,255,.03); }
+.route-group h3 { margin: 0 0 10px; color: #C9D4E4; font-size: 13px; }
+.route-group a { min-height: 30px; padding: 5px 0; display: flex; align-items: center; gap: 8px; color: #94A3B9; font-size: 11px; border-top: 1px solid rgba(255,255,255,.045); }
+.route-group a:hover { color: #FFFFFF; }
+.route-group code { color: var(--brand-cyan); font-family: var(--font-number); }
+
+@media (max-width: 1360px) {
+  .page-wrap { padding-right: 24px; padding-left: 24px; }
+  .help-center { padding-right: 24px; padding-left: 24px; }
+  .help-grid { grid-template-columns: minmax(0, 1fr) 280px; }
+  .review-tools:hover, .review-tools:focus-within { width: 280px; }
+  .overview-page { padding-right: 40px; padding-left: 40px; }
+}
+
+.gh-icon { width: 18px; height: 18px; flex: 0 0 auto; }
+
+.gh-button {
+  min-height: 36px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--text-primary);
+  font-weight: 650;
+  line-height: 1;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+}
+.gh-button:hover { border-color: #B8C1D4; background: #FAFBFD; }
+.gh-button[data-variant="primary"] { color: #071522; border-color: var(--brand-cyan); background: linear-gradient(135deg, var(--brand-cyan), #8BEFFF); }
+.gh-button[data-variant="primary"]:hover { filter: brightness(.98); }
+.gh-button[data-variant="danger"] { color: var(--danger); border-color: rgba(217,86,86,.35); background: #FFF8F8; }
+.gh-button[data-variant="ghost"] { color: #C7D1E1; border-color: rgba(255,255,255,.14); background: rgba(255,255,255,.04); }
+.gh-button[data-variant="text"] { min-height: 30px; padding: 0 6px; color: var(--info); border-color: transparent; background: transparent; }
+.gh-button[data-size="small"] { min-height: 28px; padding: 0 9px; font-size: 11px; }
+.gh-button:disabled, .gh-button[aria-disabled="true"] { color: var(--text-tertiary); border-color: var(--line); background: var(--surface-muted); cursor: not-allowed; opacity: .68; }
+.page-button:disabled, .page-button[aria-disabled="true"] { color: var(--text-tertiary); cursor: not-allowed; opacity: .45; }
+.gh-button svg { width: 16px; height: 16px; }
+
+.field { display: grid; gap: 7px; min-width: 0; }
+.field-label { display: flex; align-items: center; justify-content: space-between; color: var(--text-secondary); font-size: 12px; font-weight: 600; }
+.field-required { margin-left: 3px; color: var(--danger); }
+.field-hint { color: var(--text-tertiary); font-size: 11px; font-weight: 400; }
+.gh-input, .gh-select, .gh-textarea { width: 100%; color: var(--text-primary); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); transition: border .15s, box-shadow .15s; }
+.gh-input, .gh-select { height: 38px; padding: 0 11px; }
+.gh-textarea { min-height: 96px; padding: 10px 11px; resize: vertical; }
+.gh-input:hover, .gh-select:hover, .gh-textarea:hover { border-color: #ABB5C9; }
+.gh-input[aria-invalid="true"], .gh-textarea[aria-invalid="true"] { border-color: var(--danger); background: #FFF9F9; }
+.field-error { color: var(--danger); font-size: 11px; }
+
+.status-tag { min-height: 24px; padding: 3px 9px; display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 11px; font-weight: 650; border-radius: 999px; background: var(--surface-muted); white-space: nowrap; }
+.status-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.status-tag[data-variant="success"] { color: var(--success); background: rgba(30,155,102,.10); }
+.status-tag[data-variant="warning"] { color: var(--warning); background: rgba(200,137,24,.11); }
+.status-tag[data-variant="danger"] { color: var(--danger); background: rgba(217,86,86,.10); }
+.status-tag[data-variant="info"] { color: var(--info); background: rgba(57,118,217,.10); }
+
+.panel { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); box-shadow: var(--shadow-card); }
+.panel-header { min-height: 54px; padding: 0 var(--space-5); display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); border-bottom: 1px solid var(--line); }
+.panel-title { margin: 0; font-size: 15px; }
+.panel-description { color: var(--text-tertiary); font-size: 11px; }
+.panel-body { padding: var(--space-5); }
+
+.filter-bar { margin-bottom: var(--space-4); padding: 12px; display: grid; grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(150px, .8fr)) auto; gap: 10px; align-items: end; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.search-field { position: relative; }
+.search-field svg { position: absolute; top: 10px; left: 11px; width: 17px; height: 17px; color: var(--text-tertiary); pointer-events: none; }
+.search-field input { padding-left: 36px; }
+
+.table-wrap { max-width: 100%; overflow: auto; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.data-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.data-table th { height: 42px; padding: 0 14px; color: var(--text-secondary); font-size: 11px; text-align: left; background: var(--surface-muted); border-bottom: 1px solid var(--line); }
+.data-table td { height: 54px; padding: 9px 14px; color: var(--text-primary); border-bottom: 1px solid var(--line); vertical-align: middle; overflow-wrap: anywhere; }
+.data-table tbody tr:last-child td { border-bottom: 0; }
+.data-table tbody tr:hover { background: #FAFBFD; }
+.table-primary { font-weight: 650; }
+.table-secondary { margin-top: 2px; color: var(--text-tertiary); font-size: 11px; }
+
+.pagination { margin-top: var(--space-4); display: flex; align-items: center; justify-content: space-between; color: var(--text-tertiary); font-size: 12px; }
+.pagination__buttons { display: flex; gap: 6px; }
+.page-button { width: 30px; height: 30px; display: grid; place-items: center; color: var(--text-secondary); border: 1px solid var(--line); border-radius: 6px; background: var(--surface); cursor: pointer; }
+.page-button.is-active { color: #091521; border-color: var(--brand-cyan); background: rgba(56,232,255,.24); }
+
+.tabs { margin-bottom: var(--space-4); display: flex; gap: var(--space-5); border-bottom: 1px solid var(--line); }
+.tab { position: relative; padding: 0 2px 11px; color: var(--text-secondary); border: 0; background: transparent; cursor: pointer; }
+.tab.is-active { color: var(--text-primary); font-weight: 650; }
+.tab.is-active::after { content: ""; position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: var(--brand-blue); }
+.tabs[data-variant="task"] { gap: 8px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-muted); }
+.tabs[data-variant="task"] .tab { min-height: 36px; padding: 8px 16px; border: 1px solid transparent; border-radius: 7px; }
+.tabs[data-variant="task"] .tab.is-active { color: var(--text-primary); border-color: var(--line-strong); background: #FFFFFF; box-shadow: 0 2px 8px rgba(24,38,66,.08); }
+.tabs[data-variant="task"] .tab.is-active::after { display: none; }
+.tab:focus-visible, .nav-item:focus-visible, .top-help-button:focus-visible { outline: 2px solid var(--brand-cyan); outline-offset: 2px; }
+.authorization-summary { position: sticky; top: 0; z-index: 2; margin-bottom: 16px; padding: 14px 16px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; border: 1px solid var(--line); border-radius: var(--radius-md); background: rgba(255,255,255,.96); }
+.authorization-summary > div { min-width: 0; display: grid; gap: 5px; }
+.authorization-summary span { color: var(--text-secondary); font-size: 11px; }
+.code-block { overflow: hidden; border: 1px solid #24344F; border-radius: var(--radius-md); background: #101827; }
+.code-block header { padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; color: #EAF0FA; border-bottom: 1px solid rgba(255,255,255,.08); }
+.code-block header .gh-button[data-variant="text"] { color: #C8F7FF; }
+.code-block pre { margin: 0; padding: 16px; overflow: auto; color: #C8F7FF; font: 12px/1.7 var(--font-number); }
+
+.stepper { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+.stepper-item { position: relative; display: grid; justify-items: center; gap: 7px; color: var(--text-tertiary); font-size: 11px; text-align: center; }
+.stepper-item::before { content: ""; position: absolute; top: 10px; right: 50%; left: -50%; height: 1px; background: var(--line-strong); }
+.stepper-item:first-child::before { display: none; }
+.stepper-dot { position: relative; z-index: 1; width: 20px; height: 20px; display: grid; place-items: center; border: 2px solid var(--line-strong); border-radius: 50%; background: var(--surface); }
+.stepper-item.is-done, .stepper-item.is-active { color: var(--text-primary); }
+.stepper-item.is-done .stepper-dot { color: #FFFFFF; border-color: var(--success); background: var(--success); }
+.stepper-item.is-active .stepper-dot { border-color: var(--brand-blue); box-shadow: 0 0 0 4px rgba(106,124,255,.12); }
+
+.result-strip { margin-bottom: var(--space-4); padding: 11px 13px; display: flex; align-items: flex-start; gap: 9px; color: var(--info); border: 1px solid rgba(57,118,217,.18); border-radius: var(--radius-sm); background: rgba(57,118,217,.07); }
+.result-strip[data-variant="success"] { color: var(--success); border-color: rgba(30,155,102,.20); background: rgba(30,155,102,.07); }
+.result-strip[data-variant="warning"] { color: var(--warning); border-color: rgba(200,137,24,.22); background: rgba(200,137,24,.08); }
+.result-strip[data-variant="danger"] { color: var(--danger); border-color: rgba(217,86,86,.22); background: rgba(217,86,86,.07); }
+.result-strip svg { width: 17px; height: 17px; margin-top: 1px; }
+.result-strip strong { display: block; font-size: 12px; }
+.result-strip span { display: block; margin-top: 1px; color: var(--text-secondary); font-size: 11px; }
+
+.review-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--line); }
+.review-column { padding: var(--space-5); background: var(--surface); }
+.review-column h3 { margin: 0 0 var(--space-3); font-size: 14px; }
+.review-list { margin: 0; padding: 0; list-style: none; }
+.review-list li { min-height: 38px; padding: 8px 0; display: flex; justify-content: space-between; gap: var(--space-4); color: var(--text-secondary); border-bottom: 1px solid var(--line); }
+.review-list li:last-child { border-bottom: 0; }
+.review-list strong { color: var(--text-primary); text-align: right; }
+
+.timeline { position: relative; margin: 0; padding: 0; list-style: none; }
+.timeline-item { position: relative; padding: 0 0 20px 26px; }
+.timeline-item::before { content: ""; position: absolute; top: 5px; left: 5px; width: 8px; height: 8px; border: 2px solid var(--surface); border-radius: 50%; background: var(--brand-blue); box-shadow: 0 0 0 1px var(--brand-blue); }
+.timeline-item::after { content: ""; position: absolute; top: 17px; bottom: 0; left: 9px; width: 1px; background: var(--line-strong); }
+.timeline-item:last-child::after { display: none; }
+.timeline-title { font-weight: 650; }
+.timeline-meta { margin-top: 2px; color: var(--text-tertiary); font-size: 11px; }
+
+.metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
+.metric-card { padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.metric-label { color: var(--text-secondary); font-size: 12px; }
+.metric-value { margin-top: 6px; font-family: var(--font-number); font-size: 26px; font-weight: 700; letter-spacing: -.02em; }
+.metric-trend { margin-top: 3px; color: var(--success); font-family: var(--font-number); font-size: 11px; }
+
+.chart { height: 236px; padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: linear-gradient(180deg, #FFFFFF, #FBFCFE); }
+.chart svg { width: 100%; height: 100%; overflow: visible; }
+.chart-grid { stroke: #E8EBF2; stroke-width: 1; }
+.chart-area { fill: url(#chartGradient); opacity: .72; }
+.chart-line { fill: none; stroke: var(--brand-blue); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.chart-dot { fill: #FFFFFF; stroke: var(--brand-blue); stroke-width: 2; }
+
+.state-panel { min-height: 520px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.state-content { max-width: 430px; padding: 42px; text-align: center; }
+.state-visual { width: 58px; height: 58px; margin: 0 auto 16px; display: grid; place-items: center; color: var(--brand-blue); border-radius: 18px; background: rgba(106,124,255,.10); }
+.state-visual svg { width: 28px; height: 28px; }
+.state-content h2 { margin: 0 0 8px; font-size: 18px; }
+.state-content p { margin: 0 0 20px; color: var(--text-secondary); }
+.skeleton-stack { width: 680px; display: grid; gap: 12px; }
+.skeleton { height: 16px; border-radius: 5px; background: linear-gradient(90deg, #EEF1F6 25%, #F8F9FB 38%, #EEF1F6 64%); background-size: 400% 100%; animation: skeleton 1.5s ease infinite; }
+.skeleton:nth-child(1) { width: 44%; height: 26px; }
+.skeleton:nth-child(2) { width: 72%; }
+.skeleton:nth-child(3) { width: 100%; height: 92px; }
+.skeleton:nth-child(4) { width: 100%; height: 180px; }
+@keyframes skeleton { from { background-position: 100% 50%; } to { background-position: 0 50%; } }
+
+.page-template { min-width: 0; }
+.content-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--space-4); }
+.span-12 { grid-column: span 12; }
+.span-8 { grid-column: span 8; }
+.span-7 { grid-column: span 7; }
+.span-6 { grid-column: span 6; }
+.span-5 { grid-column: span 5; }
+.span-4 { grid-column: span 4; }
+.span-3 { grid-column: span 3; }
+
+.login-shell { min-height: 720px; display: grid; grid-template-columns: minmax(420px, 1.15fr) minmax(440px, .85fr); overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: 0 18px 48px rgba(24,38,66,.10); }
+.login-aside { position: relative; padding: 56px; color: #EAF0FA; background: radial-gradient(circle at 22% 18%, rgba(56,232,255,.18), transparent 28%), linear-gradient(145deg, #0B1220, #16243E); }
+.login-aside::after { content: ""; position: absolute; right: 44px; bottom: 44px; width: 180px; height: 180px; border: 1px solid rgba(56,232,255,.20); border-radius: 40px; transform: rotate(18deg); }
+.login-aside h2 { max-width: 460px; margin: 86px 0 16px; font-size: 36px; line-height: 1.25; }
+.login-aside p { max-width: 480px; color: #97A6BD; }
+.login-rule { margin-top: 42px; padding: 14px; display: flex; gap: 10px; color: #BED0E5; border: 1px solid rgba(255,255,255,.09); border-radius: var(--radius-md); background: rgba(255,255,255,.04); }
+.login-rule svg { width: 18px; height: 18px; flex: 0 0 auto; color: var(--brand-cyan); }
+.login-form { padding: 74px 64px; display: flex; flex-direction: column; justify-content: center; }
+.login-form h3 { margin: 0 0 7px; font-size: 24px; }
+.login-form > p { margin: 0 0 28px; color: var(--text-secondary); }
+.login-form__fields { display: grid; gap: 17px; }
+.login-form__action { margin-top: 24px; }
+.login-form__action .gh-button { width: 100%; }
+.login-help { margin-top: 18px; color: var(--text-tertiary); font-size: 11px; text-align: center; }
+
+.onboarding-shell { min-height: 720px; display: grid; grid-template-columns: minmax(0, 1fr); overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: #FFFFFF; box-shadow: 0 18px 48px rgba(24,38,66,.10); }
+.onboarding-shell > [hidden] { display: none !important; }
+.onboarding-intro { padding: 38px 56px 42px; color: #FFFFFF; background: radial-gradient(circle at 18% 10%, rgba(56,232,255,.13), transparent 28%), linear-gradient(145deg, #0B1220, #17243D); }
+.onboarding-brand { margin-bottom: 32px; display: flex; align-items: center; gap: 12px; }
+.onboarding-audience { padding: 5px 10px; color: #C8F7FF; font-size: 11px; border: 1px solid rgba(56,232,255,.28); border-radius: 999px; background: rgba(56,232,255,.09); }
+.onboarding-intro .page-eyebrow { color: #91EFFF; }
+.onboarding-intro .page-title { margin-bottom: 8px; color: #EAF0FA; font-size: 14px; letter-spacing: .02em; }
+.onboarding-intro h2 { max-width: 760px; margin: 0 0 12px; font-size: 32px; line-height: 1.22; }
+.onboarding-intro > p { max-width: 820px; margin: 0; color: #B7C2D6; }
+.onboarding-steps { margin: 26px 0 22px; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; list-style: none; }
+.onboarding-steps li { min-height: 104px; padding: 16px; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; background: rgba(255,255,255,.05); }
+.onboarding-steps li span { display: block; margin-bottom: 16px; color: var(--brand-cyan); font-family: var(--font-number); font-weight: 700; }
+.onboarding-steps li strong { display: block; color: #F6F9FD; line-height: 1.5; }
+.onboarding-preparations { margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 8px; }
+.onboarding-preparations strong { width: 100%; color: #EAF0FA; }
+.onboarding-preparations span { padding: 7px 10px; color: #C6D1E1; font-size: 12px; border: 1px solid rgba(255,255,255,.08); border-radius: 999px; background: rgba(255,255,255,.07); }
+.onboarding-shell > .login-form { max-width: 620px; width: 100%; min-height: 720px; margin: 0 auto; }
+.login-form h2 { margin: 0 0 7px; font-size: 24px; }
+.text-back { width: fit-content; min-height: 34px; margin-bottom: 28px; padding: 0; color: var(--brand-blue); border: 0; background: transparent; cursor: pointer; }
+.text-back:hover { text-decoration: underline; }
+
+.dashboard-hero { padding: var(--space-6); color: #FFFFFF; border-radius: 14px; background: linear-gradient(110deg, #17243D, #253762 76%, #30476C); box-shadow: var(--shadow-card); }
+.dashboard-hero__top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-5); }
+.dashboard-hero h2 { margin: 0 0 7px; font-size: 22px; }
+.dashboard-hero p { margin: 0; color: #AEBBD0; }
+.dashboard-hero .status-tag { color: #AEF5FF; background: rgba(56,232,255,.12); }
+.dashboard-steps { margin-top: 24px; padding: 16px; border: 1px solid rgba(255,255,255,.10); border-radius: var(--radius-md); background: rgba(255,255,255,.045); }
+.dashboard-steps .stepper-item { color: #8090AA; }
+.dashboard-steps .stepper-item.is-done, .dashboard-steps .stepper-item.is-active { color: #EAF0FA; }
+.dashboard-steps .stepper-dot { background: #1C2B48; }
+
+.section-list { display: grid; gap: 10px; }
+.section-item { min-height: 42px; padding: 10px 12px; display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); color: var(--text-secondary); border: 1px solid var(--line); border-radius: var(--radius-sm); background: #FAFBFD; }
+.section-item strong { color: var(--text-primary); }
+.section-item__index { flex: 0 0 auto; color: var(--brand-blue); font-family: var(--font-number); font-size: 11px; font-weight: 700; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 20px; }
+.form-grid .field.is-wide { grid-column: 1 / -1; }
+.stacked-fields { display: grid; gap: 16px; }
+.readonly-field { min-width: 0; }
+.readonly-value { min-height: 40px; padding: 10px 12px; color: var(--text-primary); line-height: 18px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-muted); }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; }
+.summary-grid .is-wide { grid-column: 1 / -1; }
+.form-footer { margin-top: var(--space-5); padding-top: var(--space-4); display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); border-top: 1px solid var(--line); }
+.save-state { color: var(--text-tertiary); font-size: 11px; }
+.form-actions { display: flex; gap: 8px; }
+
+.form-section { margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--line); }
+.form-section__title { margin-bottom: 14px; display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); }
+.form-section__title strong { font-size: 13px; }
+.form-section__title span { color: var(--text-tertiary); font-size: 11px; text-align: right; }
+.platform-lock { margin-bottom: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; color: var(--text-primary); border: 1px solid rgba(30,155,102,.24); border-radius: var(--radius-sm); background: rgba(30,155,102,.05); }
+.platform-lock svg { width: 18px; height: 18px; color: var(--success); }
+.platform-lock strong, .platform-lock span { display: block; }
+.platform-lock span { margin-top: 2px; color: var(--text-tertiary); font-size: 11px; }
+.release-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.release-choice .choice-card { align-items: flex-start; }
+.release-choice strong, .release-choice small { display: block; }
+.release-choice small { margin-top: 4px; color: var(--text-tertiary); line-height: 1.45; }
+.game-editor .panel-body { padding-top: 14px; padding-bottom: 14px; }
+.game-editor .field-label { margin-bottom: 4px; }
+.game-editor .gh-input, .game-editor .gh-select, .game-editor .readonly-value { min-height: 34px; height: 34px; padding-top: 7px; padding-bottom: 7px; }
+.game-form-grid { gap: 7px 14px; }
+.game-form-grid .gh-textarea { min-height: 52px; height: 52px; }
+.game-config-section { margin-top: 8px; padding-top: 8px; display: grid; gap: 6px; border-top: 1px solid var(--line); }
+.game-compact-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.requirements-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.candidate-tags { padding: 6px 10px; display: grid; grid-template-columns: 78px 1fr; align-items: center; gap: 3px 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-soft); }
+.candidate-tags .field-label { margin: 0; }
+.candidate-tags .rule-chip { padding: 5px 8px; font-size: 10px; }
+.candidate-tags small { grid-column: 2; color: var(--text-tertiary); font-size: 10px; }
+.compact-release-choice .choice-card { min-height: 56px; padding: 7px 10px; }
+.compact-release-choice small { font-size: 10px; }
+.game-editor .form-footer { margin-top: 9px; padding-top: 9px; }
+
+.asset-upload { margin-top: 18px; padding: 14px; display: flex; align-items: center; gap: 14px; border: 1px dashed var(--line-strong); border-radius: var(--radius-md); background: var(--surface-soft); }
+.asset-upload p { margin: 4px 0 10px; color: var(--text-tertiary); font-size: 11px; }
+.asset-preview { flex: 0 0 auto; display: grid; place-items: center; color: var(--brand-blue); font-family: var(--font-number); font-weight: 750; border: 1px solid rgba(106,124,255,.20); background: rgba(106,124,255,.08); }
+.asset-preview--logo { width: 72px; height: 72px; border-radius: 18px; }
+.asset-grid { margin-bottom: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.asset-card { min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-soft); }
+.asset-card strong, .asset-card span { display: block; }
+.asset-card strong { margin-top: 8px; font-size: 12px; }
+.asset-card span { margin-top: 2px; color: var(--text-tertiary); font-size: 10px; }
+.asset-placeholder { display: grid; place-items: center; min-height: 62px; color: var(--text-tertiary); font-family: var(--font-number); font-size: 11px; border-radius: 5px; background: linear-gradient(135deg, #E7EBF4, #F4F6FA); }
+.asset-placeholder--portrait { width: 58%; min-height: 78px; }
+.asset-placeholder--icon { width: 62px; }
+.compact-assets .asset-card { padding: 8px; }
+.compact-assets .asset-placeholder { min-height: 52px; }
+.compact-assets .asset-placeholder--portrait { min-height: 62px; }
+
+.gate-list { display: grid; gap: 10px; }
+.gate-item { min-height: 54px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-soft); }
+.gate-item > span { min-width: 0; }
+.gate-item strong, .gate-item small { display: block; }
+.gate-item strong { color: var(--text-primary); font-size: 12px; }
+.gate-item small { margin-top: 3px; color: var(--text-tertiary); line-height: 1.4; }
+.gate-item .status-tag { flex: 0 0 auto; }
+.disposition-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.disposition-form { align-items: end; }
+.disposition-form .gh-textarea { min-height: 72px; }
+.schedule-field { max-width: 420px; margin-top: 16px; }
+.schedule-field.is-disabled { opacity: .68; }
+.review-reject-reason { max-width: 720px; margin-top: 16px; }
+.review-reject-reason .gh-textarea { min-height: 72px; }
+.test-result-form { margin-top: 16px; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(220px, .5fr); align-items: start; gap: 16px; }
+.test-result-form .gh-textarea { min-height: 116px; }
+.issue-result-note { margin-top: 14px; padding: 13px 14px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-soft); }
+.issue-result-note strong, .issue-result-note p, .issue-result-note span { display: block; }
+.issue-result-note p { margin: 5px 0; color: var(--text-secondary); font-size: 12px; line-height: 1.55; }
+.issue-result-note span { color: var(--text-tertiary); font-size: 10px; }
+.receipt-note { margin-top: 14px; padding: 13px; border-left: 3px solid var(--brand-blue); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: rgba(106,124,255,.06); }
+.receipt-note p { margin: 5px 0; color: var(--text-secondary); font-size: 12px; line-height: 1.55; }
+.receipt-note span { color: var(--text-tertiary); font-size: 10px; }
+.conflict-summary { margin-top: 18px; padding: 14px; display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; border: 1px solid rgba(217,151,49,.25); border-radius: var(--radius-md); background: rgba(217,151,49,.06); }
+.conflict-summary span, .conflict-summary strong, .conflict-summary p { display: block; }
+.conflict-summary span { color: var(--text-tertiary); font-size: 10px; }
+.conflict-summary strong { margin-top: 3px; }
+.conflict-summary p { margin: 5px 0 0; color: var(--text-secondary); font-size: 11px; }
+
+.exception-hero { padding: var(--space-6); display: flex; align-items: flex-start; gap: var(--space-4); border: 1px solid rgba(217,86,86,.18); border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(217,86,86,.08), #FFFFFF); }
+.exception-hero > .status-tag { margin-left: auto; flex: 0 0 auto; }
+.exception-icon { width: 44px; height: 44px; display: grid; place-items: center; color: var(--danger); border-radius: 12px; background: rgba(217,86,86,.10); }
+.exception-icon svg { width: 22px; height: 22px; }
+.exception-hero h2 { margin: 0 0 5px; font-size: 18px; }
+.exception-hero p { margin: 0; color: var(--text-secondary); }
+
+.upload-zone { min-height: 240px; padding: 32px; display: grid; place-items: center; text-align: center; border: 1px dashed #ABB7CA; border-radius: var(--radius-md); background: #FAFBFD; }
+.upload-zone__icon { width: 52px; height: 52px; margin: 0 auto 12px; display: grid; place-items: center; color: var(--brand-blue); border-radius: 16px; background: rgba(106,124,255,.10); }
+.upload-zone__icon svg { width: 25px; height: 25px; }
+.upload-zone h3 { margin: 0 0 5px; }
+.upload-zone p { margin: 0 0 17px; color: var(--text-secondary); font-size: 12px; }
+.upload-progress { margin-top: var(--space-4); }
+.progress-track { height: 8px; overflow: hidden; border-radius: 999px; background: var(--surface-muted); }
+.progress-bar { width: 68%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--brand-blue), var(--brand-cyan)); transition: width .25s; }
+.progress-meta { margin-top: 7px; display: flex; justify-content: space-between; color: var(--text-tertiary); font-size: 11px; }
+
+.task-summary { padding: var(--space-5); display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.task-summary div { min-width: 0; }
+.task-summary span { display: block; color: var(--text-tertiary); font-size: 11px; }
+.task-summary strong { display: block; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.test-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.choice-card { padding: var(--space-4); display: flex; align-items: center; gap: 10px; color: var(--text-secondary); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); cursor: pointer; }
+.choice-card.is-selected { color: var(--success); border-color: rgba(30,155,102,.42); background: rgba(30,155,102,.05); }
+.choice-card input { accent-color: var(--success); }
+
+.publish-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.publish-option { padding: var(--space-5); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); cursor: pointer; }
+.publish-option.is-active { border-color: var(--brand-blue); box-shadow: 0 0 0 3px rgba(106,124,255,.10); }
+.publish-option strong { display: block; }
+.publish-option span { display: block; margin-top: 4px; color: var(--text-secondary); font-size: 12px; }
+
+.targeting-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.rule-builder { min-height: 236px; padding: var(--space-5); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.rule-builder h3 { margin: 0 0 12px; font-size: 14px; }
+.rule-builder__header { margin-bottom: 16px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.rule-builder__header h3 { margin-bottom: 4px; }
+.rule-builder__header p { margin: 0; color: var(--text-tertiary); font-size: 10px; }
+.rule-row { padding: 10px 0; display: grid; grid-template-columns: 92px 1fr; gap: 10px; border-top: 1px solid var(--line); }
+.rule-row__label { padding-top: 7px; color: var(--text-secondary); font-size: 11px; font-weight: 650; }
+.rule-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.rule-chip { padding: 7px 10px; color: var(--text-secondary); border: 1px solid var(--line); border-radius: 999px; background: var(--surface-soft); cursor: pointer; }
+.rule-chip.is-active { color: #162040; border-color: rgba(106,124,255,.35); background: rgba(106,124,255,.12); }
+.rule-chip.is-excluded { color: var(--danger); border-color: rgba(217,86,86,.28); background: rgba(217,86,86,.08); }
+.audience-estimate span, .audience-estimate strong, .audience-estimate p { display: block; }
+.audience-estimate > span { color: var(--text-tertiary); font-size: 10px; }
+.audience-estimate > strong { margin: 4px 0; font-family: var(--font-number); font-size: 30px; }
+.audience-estimate p { margin: 0 0 14px; color: var(--text-secondary); font-size: 11px; line-height: 1.5; }
+
+.dashboard-toolbar { margin-bottom: var(--space-4); display: flex; justify-content: space-between; gap: var(--space-4); }
+.dashboard-toolbar__group { display: flex; gap: 8px; }
+.chart-legend { margin-top: 10px; display: flex; justify-content: flex-end; gap: 16px; color: var(--text-tertiary); font-size: 11px; }
+.legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand-blue); }
+
+.cdkey-workspace { min-width: 0; }
+[data-cdkey-panel][hidden] { display: none !important; }
+.cdkey-panel-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: var(--space-4); align-items: start; }
+.cdkey-panel-grid > .panel { min-width: 0; }
+.cdkey-panel-grid .data-table th,
+.cdkey-panel-grid .data-table td { padding-right: 10px; padding-left: 10px; font-size: 11px; }
+.source-boundary { margin-top: 12px; padding: 10px 12px; display: grid; gap: 3px; color: var(--text-secondary); border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-muted); }
+.source-boundary strong { color: var(--text-primary); font-size: 12px; }
+.source-boundary span { font-size: 11px; line-height: 1.6; }
+.one-time-result { margin-top: 14px; padding: 14px; display: grid; gap: 8px; color: #0B6271; border: 1px solid rgba(47,215,239,.44); border-radius: var(--radius-sm); background: #EFFCFE; }
+.one-time-result code { padding: 9px 10px; color: #FFFFFF; border-radius: 6px; background: #101827; font-family: var(--font-number); overflow-wrap: anywhere; }
+.one-time-result .form-actions { flex-wrap: wrap; }
+.cdkey-table-actions { margin-top: 14px; justify-content: flex-end; }
+.api-docs-layout { align-items: start; }
+.api-docs-nav { margin-bottom: 16px; display: grid; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-md); background: #FFFFFF; }
+.api-docs-nav button { min-height: 40px; padding: 9px 12px; color: var(--text-secondary); text-align: left; border: 0; border-bottom: 1px solid var(--line); background: transparent; cursor: pointer; }
+.api-docs-nav button:last-child { border-bottom: 0; }
+.api-docs-nav button:hover,
+.api-docs-nav button:focus-visible { color: var(--text-primary); background: var(--surface-muted); outline: none; }
+.api-docs-content { display: grid; gap: var(--space-4); }
+.api-docs-content > section { scroll-margin-top: 16px; }
+.api-docs-content .panel-body > p { margin: 0; color: var(--text-secondary); line-height: 1.65; }
+.api-docs-content .panel-body > p + p { margin-top: 8px; }
+.error-chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.error-chip-list button { min-height: 32px; padding: 6px 10px; color: var(--text-secondary); border: 1px solid var(--line); border-radius: 999px; background: #FFFFFF; cursor: pointer; }
+.error-chip-list button:hover,
+.error-chip-list button:focus-visible { color: var(--brand-blue); border-color: var(--brand-blue); outline: none; }
+[data-restriction-reason] { margin-bottom: 16px; align-items: center; justify-content: space-between; }
+[data-restriction-help] { flex: 0 0 auto; min-height: 32px; padding: 6px 10px; color: currentColor; border: 1px solid currentColor; border-radius: 6px; background: transparent; cursor: pointer; }
+
+@media (max-width: 1360px) {
+  .metric-grid { gap: 9px; }
+  .metric-card { padding: 13px; }
+  .metric-value { font-size: 22px; }
+  .login-aside { padding: 42px; }
+  .login-form { padding-right: 48px; padding-left: 48px; }
+  .form-grid, .summary-grid { gap: 14px; }
+  .rule-row { grid-template-columns: 78px 1fr; }
+  .cdkey-panel-grid { grid-template-columns: minmax(0, 1fr); }
+}</style></head><body>
+<div id="app" data-overview="true"></div>
+<script id="demo-module" type="application/json">{"id":"overview","name":"开发者后台一期评审总览","defaultRoute":"P01-01"}</script>
+<script id="demo-modules" type="application/json">[{"id":"01","name":"开发者平台与资料","output":"01-开发者平台与资料demo.html","defaultRoute":"P01-01"},{"id":"02","name":"CDKEY 商品与供给","output":"02-CDKEY商品与供给demo.html","defaultRoute":"P02-01"},{"id":"03","name":"包体测试与发布","output":"03-包体测试与发布demo.html","defaultRoute":"P03-01"},{"id":"04","name":"精准投放与数据","output":"04-精准投放与数据demo.html","defaultRoute":"P04-01"}]</script>
+<script id="demo-routes" type="application/json">[{"id":"P01-01","moduleId":"01","templateId":"T01","role":"developer","title":"受邀账号登录页"},{"id":"P01-02","moduleId":"01","templateId":"T02","role":"developer","title":"开发者工作台首页"},{"id":"P01-03","moduleId":"01","templateId":"T04","role":"developer","title":"厂商资料页"},{"id":"P01-04","moduleId":"01","templateId":"T03","role":"developer","title":"游戏列表页"},{"id":"P01-05","moduleId":"01","templateId":"T05","role":"developer","title":"创建／编辑游戏页"},{"id":"P01-06","moduleId":"01","templateId":"T06","role":"developer","title":"资料审核结果页"},{"id":"P01-07","moduleId":"01","templateId":"T03","role":"operations","title":"合作方账号配置页"},{"id":"P01-08","moduleId":"01","templateId":"T07","role":"operations","title":"厂商资料审核页"},{"id":"P01-09","moduleId":"01","templateId":"T07","role":"operations","title":"游戏资料审核页"},{"id":"P02-01","moduleId":"02","templateId":"T03","role":"developer","title":"游戏商品与供给状态页"},{"id":"P02-02","moduleId":"02","templateId":"T09","role":"developer","title":"供给异常详情页"},{"id":"P02-03","moduleId":"02","templateId":"T03","role":"operations","title":"游戏商品列表页"},{"id":"P02-04","moduleId":"02","templateId":"T08","role":"operations","title":"商品／SKU 配置页"},{"id":"P02-05","moduleId":"02","templateId":"T08","role":"operations","title":"供应来源关联页"},{"id":"P02-06","moduleId":"02","templateId":"T03","role":"operations","title":"库存与供给异常页"},{"id":"P03-01","moduleId":"03","templateId":"T03","role":"developer","title":"版本列表页"},{"id":"P03-02","moduleId":"03","templateId":"T08","role":"developer","title":"创建／编辑版本页"},{"id":"P03-03","moduleId":"03","templateId":"T10","role":"developer","title":"包体上传页"},{"id":"P03-04","moduleId":"03","templateId":"T08","role":"developer","title":"提交测试确认页"},{"id":"P03-05","moduleId":"03","templateId":"T06","role":"developer","title":"测试驳回详情页"},{"id":"P03-06","moduleId":"03","templateId":"T03","role":"tester","title":"待测任务列表页"},{"id":"P03-07","moduleId":"03","templateId":"T11","role":"tester","title":"测试任务详情页"},{"id":"P03-08","moduleId":"03","templateId":"T11","role":"tester","title":"测试结果提交页"},{"id":"P03-09","moduleId":"03","templateId":"T03","role":"operations","title":"版本审核列表页"},{"id":"P03-10","moduleId":"03","templateId":"T07","role":"operations","title":"版本审核详情页"},{"id":"P03-11","moduleId":"03","templateId":"T03","role":"operations","title":"待发布列表页"},{"id":"P03-12","moduleId":"03","templateId":"T12","role":"operations","title":"发布配置页"},{"id":"P03-13","moduleId":"03","templateId":"T12","role":"operations","title":"线上版本处置页"},{"id":"P04-01","moduleId":"04","templateId":"T03","role":"developer","title":"开发者投放需求列表页"},{"id":"P04-02","moduleId":"04","templateId":"T13","role":"developer","title":"创建／编辑投放需求页"},{"id":"P04-03","moduleId":"04","templateId":"T13","role":"developer","title":"投放需求详情页"},{"id":"P04-04","moduleId":"04","templateId":"T15","role":"developer","title":"发行数据看板页"},{"id":"P04-05","moduleId":"04","templateId":"T03","role":"operations","title":"运营投放计划列表页"},{"id":"P04-06","moduleId":"04","templateId":"T07","role":"operations","title":"素材与落地页审核页"},{"id":"P04-07","moduleId":"04","templateId":"T14","role":"operations","title":"人群规则配置页"},{"id":"P04-08","moduleId":"04","templateId":"T14","role":"operations","title":"资源位与排期页"},{"id":"P04-09","moduleId":"04","templateId":"T15","role":"operations","title":"投放监控页"}]</script>
+<script id="demo-fixture" type="application/json">{"context":{"vendorId":"vendor_demo_001","vendorName":"示例厂商","gameId":"game_demo_001","gameName":"首款签约游戏","versionId":"version_demo_100","versionName":"1.0.0","campaignId":"campaign_demo_001","environment":"正式环境"},"accounts":{"developer":{"name":"王明","roleName":"受邀开发者","scope":"仅示例厂商与首款签约游戏"},"operations":{"name":"李然","roleName":"平台发行运营","scope":"签约厂商与游戏"},"tester":{"name":"陈宇","roleName":"平台测试人员","scope":"仅本人待测任务"}},"rules":{"developerCanRelease":false,"developerCanStartCampaign":false,"autoSave":false,"outOfScope":{"publicRegistration":false,"bankAccount":false,"automaticSettlement":false,"macBuild":false,"linuxBuild":false,"bidding":false,"algorithmicRecommendation":false},"additionalOutOfScope":["在线合同","财税","多正式分支","开发者自助回滚"],"cdkeySourceLabel":"供应商 API／受控来源","cdkeyUsesExistingFulfillment":true,"cdkeySupplyMethodStatus":"待业务确认","campaignMode":"方案 A","campaignExecution":"开发者提交需求，运营配置并执行，开发者只读结果","refreshBehavior":"刷新恢复初始演示数据"},"objects":{"vendor":{"id":"vendor_demo_001","name":"示例厂商","accountBinding":"唯一绑定厂商","profileStatus":"已通过"},"game":{"id":"game_demo_001","name":"首款签约游戏","platforms":["Windows"],"deliveryModeRule":"每个场景只启用一种发行方式","deliveryModeVariants":[{"moduleId":"02","value":"第三方平台激活"},{"moduleId":"03","value":"盖世直接下载"}]},"product":{"id":"product_demo_001","skuId":"sku_demo_001","sourceRelationId":"source_demo_001","sourceLabel":"供应商 API／受控来源"},"version":{"id":"version_demo_100","name":"1.0.0","buildRevision":"build_rev_003","formalBranches":["正式分支"],"platform":"Windows"},"testTask":{"testRoundId":"test_round_demo_002","taskId":"test_task_demo_002","assignee":"陈宇"},"campaign":{"id":"campaign_demo_001","requestDraftId":"campaign_draft_demo_001","userSegmentId":"segment_demo_001","mode":"方案 A"}},"states":["default","loading","empty","error","permission"],"helpCenter":{"title":"帮助中心","faq":[{"question":"如何创建 Key 批次？","answer":"先确认游戏、SKU、渠道、额度和有效期均在平台授权范围内，再在 Key 批次 Tab 提交。"},{"question":"额度不足怎么办？","answer":"当前批次不会生成，请联系对接的盖世发行运营调整授权额度。"},{"question":"渠道未开通怎么办？","answer":"发行方不能自行扩大白名单，请联系对接的盖世发行运营。"},{"question":"Secret 丢失怎么办？","answer":"Secret 不支持再次查看，请轮换凭据并更新第三方渠道配置。"},{"question":"重复请求如何处理？","answer":"同一 request_id 幂等返回原结果；订单内容冲突时返回重复订单冲突。"},{"question":"凭据暂停后会怎样？","answer":"新请求立即拒绝，历史审计和已交付记录继续保留。"},{"question":"Key 作废范围是什么？","answer":"只作废尚未分配的 Key，已分配记录继续保留。"},{"question":"盖世平台 Key 和外部平台 Key 有什么区别？","answer":"盖世平台 Key 由盖世兑换服务校验；Steam、Epic、GOG 等 Key 必须由对应平台或供应商提供。"}],"contact":{"supportName":"发行支持","serviceHours":"以合作对接安排为准","channel":"当前未配置公开联系方式","fallback":"请联系对接的盖世发行运营"}},"pages":{"P01-01":{"audience":"developer","summary":"受邀合作方先了解发行合作范围与准备事项，再进入平台代建账号登录。","status":"受邀账号已启用","primaryAction":"开始入驻","onboarding":{"title":"从首款签约游戏开始，完成发行闭环","description":"盖世游戏为已签约且获得发行授权的合作方提供资料、供给、测试发布、精准投放和发行数据能力。","audience":"一期仅面向受邀合作方","steps":["完成厂商与游戏资料","配置商品及 CDKEY","上传包体并通过测试发布","提交精准投放并查看发行数据"],"preparations":["受邀账号","公司与游戏授权资料","首款签约游戏资料","拟合作渠道和技术联系人"],"primaryAction":"开始入驻"},"sections":[{"title":"合作说明","items":["已签约合作方先查看发行闭环、四步流程和开始前准备事项。","开始入驻只切换到受邀账号登录；页面明确无公众注册、无开放入驻申请。"]},{"title":"登录内容","items":["展示开发者平台、受邀账号、密码、密码可见切换和登录按钮。","账号由盖世游戏发行运营创建并绑定唯一厂商。"]},{"title":"交互与动作","items":["开始入驻后在同一路由显示登录；返回合作说明保留输入，刷新恢复介绍首屏。","账号和密码非空后允许登录；提交中禁止重复点击；成功进入 P01-02。"]},{"title":"异常与权限","items":["账号停用、绑定失效或越权时不建立会话且不返回厂商数据。","密码重置由发行运营在 P01-07 处理，本页不提供自助找回。"]}],"states":["default","loading","empty","error","permission","credential-error","account-disabled"]},"P01-02":{"audience":"developer","summary":"唯一绑定厂商的资料、首款游戏、待办和后续发行入口总览。","status":"资料已通过／版本待处理","primaryAction":"维护厂商资料","sections":[{"title":"厂商与游戏","items":["展示示例厂商、首款签约游戏、唯一发行方式、资料状态和发布状态。","CDKEY 场景只显示供给摘要；直接下载场景只显示版本状态，不同时展示两套操作。"]},{"title":"待办","items":["聚合资料驳回、重新提交和平台处理中事项，并提供审核结果入口。","无游戏时显示尚未创建游戏和创建游戏。"]},{"title":"模块入口","items":["展示资料状态、版本状态、投放需求和发行数据的状态入口。","入口前校验归属和资料前置，不在首页承载供给、上传、发布或投放配置。"]},{"title":"权限与恢复","items":["开发者不能直接发布、停售、下架或启动投放。","失败保留导航和重试；数据未知显示数据暂不可用及更新时间，不用 0 代替。"]}],"states":["default","loading","empty","error","permission","profile-rejected","data-delayed"]},"P01-03":{"audience":"developer","summary":"本厂商公开资料与协作联系资料的显式保存和提交审核页。","status":"草稿","primaryAction":"提交审核","actions":[{"id":"save-draft","label":"保存草稿"}],"sections":[{"title":"公开资料","items":["厂商名称、Logo、厂商简介和完整 HTTPS 官网用于审核后的固定主页。","Logo 支持 JPG、PNG、WEBP，上传失败保留其他输入。"]},{"title":"联系资料","items":["联系人必填，手机或邮箱至少一项有效，只供平台协作不在 C 端展示。","所有修改都随资料版本提交审核。"]},{"title":"保存与提交","items":["提供保存草稿和提交审核；显式保存更新最近保存时间，不启用自动保存。","提交生成不可覆盖审核版本并进入审核中；重复提交不生成新版本。"]},{"title":"状态与恢复","items":["草稿、审核中、已驳回、已通过状态明确；审核中只读。","已通过后新建修改稿时线上版本保持不变；并发版本变化要求刷新后继续。"]}],"states":["default","loading","empty","error","permission","unsaved","reviewing","rejected","approved"]},"P01-04":{"audience":"developer","summary":"本厂商单款游戏的发行方式、资料状态和跨流程状态列表。","status":"正常","primaryAction":"创建游戏","sections":[{"title":"筛选与列表","items":["按游戏名称、发行方式、资料状态和发布状态筛选；默认更新时间倒序。","列包含游戏名称、发行方式、资料状态、供给／版本、发布、投放、更新时间和操作。"]},{"title":"页面动作","items":["创建游戏进入 P01-05；游戏名称进入编辑或只读页；查看审核结果进入 P01-06。","资料通过后按互斥发行方式进入 CDKEY 供给或包体版本。"]},{"title":"分页与状态","items":["每页 20 条并可切换 20、50、100；筛选变化回到第 1 页。","空列表、筛选无结果、加载失败和无权限分别提供创建、清空或重试。"]},{"title":"产品边界","items":["只返回唯一绑定厂商数据，不支持批量、删除游戏或跨厂商搜索。","开发者不能在列表直接发布、下架或切换已发布游戏的发行方式。"]}],"states":["default","loading","empty","error","permission","filtered-empty"]},"P01-05":{"audience":"developer","summary":"首款 Windows 游戏资料、素材、地区、标签和互斥发行方式的建档页。","status":"草稿","primaryAction":"保存草稿","sections":[{"title":"基本资料","items":["包含游戏名称、短简介、游戏介绍、开发商和发行日期；归属示例厂商只读。","游戏内名称重复时禁止提交并保留输入。"]},{"title":"素材与发行范围","items":["素材包含图标、横版／竖版封面和 3—10 张截图，展示上传、预览、替换和单项重试。","支持语言、销售地区和 Windows 最低／推荐系统要求；不增加 Mac、Linux 或主机配置。"]},{"title":"标签与发行方式","items":["开发者从平台标签库提交候选标签，待运营审核后生效。","发行方式只允许第三方平台激活或盖世直接下载二选一，已发布线上方式不可由开发者直接切换。"]},{"title":"保存与审核","items":["提供保存草稿和提交审核；保存失败保留字段与成功素材，未保存离开需提示。","审核中只读；驳回后基于原输入修订；已发布修改稿审核前线上快照不变。"]}],"states":["default","loading","empty","error","permission","unsaved","reviewing","rejected","approved"]},"P01-06":{"audience":"developer","summary":"厂商或游戏资料审核结果、驳回原因和历史处理记录的只读页面。","status":"已驳回","primaryAction":"继续修改","sections":[{"title":"审核结果","items":["展示对象、审核版本、提交时间、处理时间及审核中／已通过／已驳回。","游戏标签修正展示开发者提交值、平台生效值和修正原因。"]},{"title":"驳回与生效","items":["已驳回展示完整驳回原因和问题字段；继续修改恢复被驳回版本输入。","已通过展示生效快照和发布前置；审核通过不等于正式发布。"]},{"title":"处理记录","items":["时间线保留每次独立审核版本，历史记录只读且不能恢复为当前版本。","重新提交生成新审核版本，不覆盖旧原因。"]},{"title":"权限与异常","items":["目标版本必须归属唯一绑定厂商；越权显示无权查看且不返回详情。","结果回写失败显示结果同步中，不回退已完成审核结论。"]}],"states":["default","loading","empty","error","permission","reviewing","approved","rejected","syncing"]},"P01-07":{"audience":"operations","summary":"平台为线下已签约合作方创建账号、绑定唯一厂商并维护合作元数据。","status":"账号已启用","primaryAction":"创建合作方账号","sections":[{"title":"账号列表","items":["展示账号、绑定厂商、联系人、合同状态、账号状态、最近登录、更新时间和操作。","支持账号／厂商搜索、状态筛选和每页 20 条，不提供批量启停或重置。"]},{"title":"账号配置","items":["登录账号全平台唯一，初始凭据至少 12 位并加密存储，一个账号只绑定一个厂商。","创建成功进入已启用；凭据只线下交付，不在列表或日志明文展示。"]},{"title":"合作元数据","items":["合同编号、授权起止、地区、合作范围和状态只记录线下签约结果。","不提供在线签署、合同正文编辑、财税、结算账户、提款或自动分账。"]},{"title":"启停与恢复","items":["停用必须填写原因并使会话失效，但不删除厂商、游戏、审核和权益数据。","启用前重校绑定和合作状态；重置后旧凭据失效，所有动作完整留痕。"]}],"states":["default","loading","empty","error","permission","enabled","disabled","filtered-empty"]},"P01-08":{"audience":"operations","summary":"签约范围内厂商资料审核队列、版本差异和通过／驳回处理。","status":"审核中","primaryAction":"通过","actions":[{"id":"approve","label":"通过"},{"id":"reject","label":"驳回"}],"sections":[{"title":"队列与差异","items":["按厂商名称和审核状态筛选，审核中优先、同状态按提交时间升序。","展示本次厂商资料、上一已批准快照和字段差异。"]},{"title":"审核内容","items":["核对厂商名称、Logo、简介、官网、联系人、绑定主体和合同状态摘要。","运营不得直接改写开发者提交内容。"]},{"title":"审核动作","items":["通过时重校版本、厂商绑定和公开资料；成功形成已批准快照。","驳回原因必填 1—500 字；成功保留原输入并回写开发者。"]},{"title":"异常与权限","items":["并发以首个成功结果为准；失败保持审核中并允许重试。","开发者直接访问显示 permission，且不返回厂商资料、差异或审核对象是否存在。"]}],"states":["default","loading","empty","error","permission","reviewing","approved","rejected","filtered-empty"]},"P01-09":{"audience":"operations","summary":"签约游戏资料、素材、标签、发行方式及正式发布前置审核。","status":"审核中／发布前置待确认","primaryAction":"通过","sections":[{"title":"游戏资料与差异","items":["展示游戏资料、宣传素材、语言、销售地区、Windows 要求、唯一发行方式和上一快照差异。","开发者候选标签与平台生效标签分组展示。"]},{"title":"标签与门禁","items":["运营可从既有标签库移除或替换候选标签，填写修正原因，不可创建新标签。","发行授权、期限、地区和合同范围是发布硬前置；商品商业摘要只读。"]},{"title":"审核动作","items":["通过时校验资料、素材、发行方式、地区和标签；成功生成已批准快照。","销售地区超授权范围必须驳回；驳回原因必填并保留开发者输入。"]},{"title":"结果边界","items":["资料通过但前置未满足时明确阻塞正式发布，开发者不能直接发布。","本页不创建 SKU、不上传包体、不执行发布；并发不覆盖先完成结果。"]}],"states":["default","loading","empty","error","permission","reviewing","approved-gated","approved-ready","rejected"]},"P02-01":{"audience":"developer","summary":"发行方查看商品状态，并在平台预授权范围内自助准备盖世平台 Key 批次和渠道 API。","status":"供给异常","primaryAction":"查看异常","cdkeySelfService":{"tabs":["商品与供给","Key 批次","渠道 API","接口说明"],"authorization":{"status":"授权正常","remainingQuota":8000,"channels":["渠道 A","渠道 B"],"pausedReason":"—","scope":"示例厂商 × 首款签约游戏 × SKU-DEMO-001"},"keySources":[{"id":"gamehub_generated","label":"盖世平台 Key","rule":"由盖世兑换服务校验并授予已配置权益"},{"id":"external_imported","label":"外部平台 Key","rule":"仅受控导入或供应商 API 同步，盖世不生成"}],"keyBatches":[{"batchId":"KEY-20260902-001","name":"渠道 A 首发批次","source":"盖世平台 Key","quantity":2000,"allocated":640,"remaining":1360,"channel":"渠道 A","status":"可用","download":"明文已下载"}],"credentials":[{"name":"渠道 A 正式凭据","clientId":"gh_demo_channel_a","secretMask":"••••••••9K7Q","secretHint":"末四位 9K7Q","scope":"首款签约游戏 / SKU-DEMO-001","expiresAt":"2026-12-31 23:59","status":"正常","lastCalledAt":"2026-09-02 10:18"}],"apiDocs":{"auth":"client_id + HMAC-SHA256；时间戳、随机数和签名放入请求头，Secret 不进入 URL。","idempotency":"同一 request_id 返回同一分配结果，不重复扣减库存。","endpoints":[{"method":"POST","path":"/openapi/v1/cdkeys/allocate","purpose":"按渠道订单分配一个 Key"},{"method":"GET","path":"/openapi/v1/cdkeys/allocations/{request_id}","purpose":"查询分配状态与掩码信息"},{"method":"POST","path":"/openapi/v1/cdkeys/allocations/{request_id}/confirm","purpose":"确认已向用户交付"}],"errors":["无权限","签名失败","时间戳过期","渠道暂停","游戏未授权","配额不足","无可用 Key","重复订单冲突","服务异常"]}},"sections":[{"title":"商品与供给","items":["展示首款签约游戏、商品状态、SKU、可售门禁、供给状态和异常入口。","开发者不能创建商品、编辑 SKU 或执行销售状态操作。"]},{"title":"Key 批次","items":["在签约主体、游戏、SKU、渠道、配额、有效期和启停状态授权内创建盖世平台 Key 批次。","Key 明文仅一次性下载；外部平台 Key 仅受控导入或供应商 API 同步，演示不生成真实 CDKEY。"]},{"title":"渠道 API","items":["创建、轮换、暂停和撤销本主体渠道凭据，Secret 仅本次展示，后续只显示末四位。","服务端每次请求重新校验授权，使用 request_id 幂等分配并复用既有 CDKEY 订单履约。"]},{"title":"接口说明","items":["展示 HMAC-SHA256 鉴权、申请、查询、确认接口、字段和错误码。","供应方式待业务确认；演示请求不连接真实渠道、生产地址或真实凭据。"]}],"states":["default","loading","empty","error","permission","syncing","supply-error","filtered-empty"]},"P02-02":{"audience":"developer","summary":"开发者查看脱敏后的供给异常类型、影响范围、恢复条件和处理进度。","status":"异常生效中","primaryAction":"刷新状态","sections":[{"title":"异常摘要","items":["展示异常编号、游戏、商品、SKU、异常类型、首次发现、最近更新时间和停止新增销售结论。","同一 SKU 多异常时可售状态取最严格结果。"]},{"title":"影响与安全","items":["展示可理解原因、影响范围、影响地区、开发者建议动作和恢复条件。","不显示接口地址、凭据、原始报文、供应商内部响应或 Key 明文。"]},{"title":"处理时间线","items":["处理时间线覆盖异常生效中、待平台确认恢复和已恢复，历史原因不因恢复删除。","来源恢复仍需平台确认，确认前不重新新增销售。"]},{"title":"开发者边界","items":["开发者只有刷新和返回，无确认恢复、停售、改来源或关闭异常权限。","既有订单、自动退款和 Key 处理复用既有 CDKEY 订单履约，不在本页处理。"]}],"states":["default","loading","empty","error","permission","active","pending-recovery","recovered","merged"]},"P02-03":{"audience":"operations","summary":"运营按商品管理 SKU、商业门禁、供给状态和发布／停售入口。","status":"异常待处理","primaryAction":"创建商品","sections":[{"title":"商品列表","items":["展示商品、SKU 数、发行方式、可售 SKU、资料、商业门禁、供给状态、发布和可售状态。","异常生效中优先、门禁未齐其次，其余按更新时间倒序。"]},{"title":"检索与分页","items":["按游戏／厂商、发布、可售、门禁、供给和异常状态组合筛选。","默认每页 20 条，可切换 20、50、100，不提供批量发布、停售或恢复。"]},{"title":"状态动作","items":["行内按状态提供配置商品／SKU、关联来源、发布可售、停售、确认恢复和查看异常。","发布前重校资料、授权、地区、商业、SKU 和供给门禁；停售必须填写原因。"]},{"title":"订单保护","items":["停售只停止新售，不取消待支付订单、不修改已付款订单和已交付 Key。","并发状态变化不覆盖先完成结果，刷新显示最终操作人和时间。"]}],"states":["default","loading","empty","error","permission","filtered-empty","gate-blocked","stopped"]},"P02-04":{"audience":"operations","summary":"运营配置平台商品与 SKU 结构、销售地区和生效状态，价格与库存读取来源快照。","status":"配置完成／不可售","primaryAction":"保存配置","sections":[{"title":"商品关系","items":["商品名称、游戏、厂商、第三方平台激活发行方式和资料状态只读。","每个游戏最多一个当前商品对象。"]},{"title":"SKU 配置","items":["展示 SKU 名称、版本、激活平台、地区、发货能力、来源状态、价格、币种、供给和可售状态。","运营只配置销售地区和平台生效状态，不改写来源商品定义或本地独立价格。"]},{"title":"保存与校验","items":["保存校验地区交集、重复关联和版本冲突；失败保留输入且不写部分字段。","校验可售只表示门禁通过，不自动发布；发布在商品列表执行。"]},{"title":"生命周期","items":["状态包括待关联、配置完成／不可售、可售、停售和已失效。","曾生效或有关联订单的 SKU 不删除；新配置只影响生效后的新订单。"]}],"states":["default","loading","empty","error","permission","unlinked","configured","saleable","stopped","invalidated"]},"P02-05":{"audience":"operations","summary":"SKU 与生效供应来源的受控关联页，供应方式待业务确认。","status":"默认方案／待业务确认","primaryAction":"校验来源","sections":[{"title":"关联对象","items":["展示游戏、商品、SKU、当前可售和关联状态；可售 SKU 的来源编辑只读，需先停售。","同一 SKU 同时只允许一个生效来源。"]},{"title":"供应商 API／受控来源","items":["默认建议供应商 API；展示商品 ID／名称、版本、平台、地区、币种、价格状态、库存状态、发货能力和同步时间。","受控直接供 Key 在机制未批准前不可选择；实际供应方式待业务确认。"]},{"title":"关联与校验","items":["搜索来源商品后校验价格、地区、能力和连接；成功才可保存关联。","变更来源须先停售；解除只允许不可售且无处理中履约冲突的 SKU。"]},{"title":"安全与历史","items":["不展示接口地址、鉴权、签名、完整报文或 Key 明文，不提供上传、粘贴、复制、导出。","失败不产生半生效关系；旧订单继续使用原来源和价格快照，来源变更完整留痕。"]}],"states":["default","loading","empty","error","permission","unlinked","validating","linked","link-error","invalidated"]},"P02-06":{"audience":"operations","summary":"运营监控库存与供给异常，执行同步重试、停售和门禁恢复确认。","status":"异常生效中","primaryAction":"同步重试","sections":[{"title":"异常列表","items":["展示异常编号、商品／SKU、来源类型、库存／价格／来源／商业供给异常、影响订单摘要和处理状态。","异常生效中优先、待恢复确认其次、已恢复最后。"]},{"title":"异常判定","items":["库存不足或售罄只在供应来源明确返回时产生，不使用本地库存阈值。","无可靠当前价格或来源状态时停止新售，不沿用过期值冒充实时结果。"]},{"title":"处置与恢复","items":["同步重试成功且全部阻塞消除后进入待恢复确认，不自动开售。","确认恢复重新校验资料、授权、地区、商业、SKU、价格和供给；失败保持停售。"]},{"title":"履约保护","items":["复用既有 CDKEY 订单履约，不生成真实 CDKEY、不调用供应商接口。","停售和恢复不改写待支付、已付款、已交付、退款中或已退款订单及原履约证据。"]}],"states":["default","loading","empty","error","permission","active","pending-recovery","recovered","filtered-empty"]},"P03-01":{"audience":"developer","summary":"开发者跟踪单一正式分支的版本号、包体修订、测试状态和发布状态。","status":"测试不通过","primaryAction":"创建版本","sections":[{"title":"线上与候选","items":["展示首款签约游戏、Windows、当前线上版本、下载／启动开关和候选版本。","无线上版本时显示尚未发布正式版本。"]},{"title":"版本列表","items":["列包含版本号、修订、测试轮次、测试状态、发布状态、时间、撤回原因和操作。","主状态只用草稿、上传中、待提交、测试中、测试不通过、测试通过、待发布、已发布、已撤回。"]},{"title":"页面动作","items":["创建、编辑、上传、提交测试和查看驳回详情按状态开放。","已撤回版本不可恢复；再次发行需新建不同版本号并重走流程。"]},{"title":"权限与边界","items":["仅一个 Windows 包和单一正式分支，不提供多分支、批量或删除。","开发者不可发布、撤回、下架、暂停、恢复或回滚。"]}],"states":["default","loading","empty","error","permission","draft","uploading","testing","test-failed","pending-release","published","withdrawn"]},"P03-02":{"audience":"developer","summary":"版本 1.0.0 的更新说明、启动信息和运行说明显式保存页。","status":"草稿","primaryAction":"保存草稿","sections":[{"title":"版本关系","items":["游戏、厂商、Windows 和单一正式分支只读；版本号 1.0.0 在游戏内唯一。","已发布版本号永久占用。"]},{"title":"版本资料","items":["更新说明必填；启动文件、启动参数和运行说明形成测试与发布快照。","启动文件在包体上传后校验存在，敏感参数不进入日志。"]},{"title":"保存与上传","items":["保存草稿校验版本号并记录最近保存时间；不启用自动保存。","前往上传前先保存，失败则保留本页输入并不跳转。"]},{"title":"状态与冲突","items":["草稿、待提交、测试不通过可编辑，测试中和测试通过后只读。","并发版本变化不覆盖服务端结果；不提供回滚操作。"]}],"states":["default","loading","empty","error","permission","unsaved","draft","read-only","conflict"]},"P03-03":{"audience":"developer","summary":"Windows 包体分片上传、中断恢复、重传和基础校验页。","status":"已中断","primaryAction":"继续上传","actions":[{"id":"start-upload","label":"开始上传"},{"id":"interrupt-upload","label":"中断上传"},{"id":"retry-upload","label":"继续上传"}],"sections":[{"title":"上传任务","items":["展示版本 1.0.0、build_rev_003、文件、分片上传进度、开始和最近活动时间。","上传任务与版本草稿分离，重复开始不创建第二个并发任务。"]},{"title":"中断与恢复","items":["演示上传中→网络中断→保留已完成分片→继续上传。","恢复条件失效时可重新上传；取消仅丢弃未完成进度并返回草稿。"]},{"title":"基础校验","items":["校验上传完整、包体可读、启动文件存在、游戏关系和完全重复。","校验通过生成不可变修订并进入待提交；失败不进入测试。"]},{"title":"产品边界","items":["只上传单个 Windows 包体，不提供预载、P2P、增量包、多平台包或多正式分支。","上传凭据和长期包体地址不展示或记录。"]}],"states":["default","loading","empty","error","permission","not-started","uploading","interrupted","validating","validation-failed","completed"]},"P03-04":{"audience":"developer","summary":"核对版本、包体摘要、启动信息和检查清单后提交唯一测试轮次。","status":"待提交","primaryAction":"提交测试","sections":[{"title":"版本与包体摘要","items":["展示游戏、版本 1.0.0、包体修订、文件摘要、更新说明和基础校验。","启动文件、参数和运行说明只读核对。"]},{"title":"测试轮次","items":["首次提交为第 1 轮；测试不通过后重新提交产生下一轮且保留上一轮摘要。","每轮锁定资料和包体修订，测试结束前不可替换。"]},{"title":"检查清单","items":["归属、版本状态、修订、启动文件和运行说明全部满足才可提交。","缺失项逐项展示，提交按钮不可执行。"]},{"title":"提交与失败","items":["提交成功产生唯一轮次和待分配任务，版本进入测试中。","相同 action_id 不重复建轮；失败保持待提交并允许重试。"]}],"states":["default","loading","empty","error","permission","ready","submitting","gate-blocked","state-conflict"]},"P03-05":{"audience":"developer","summary":"查看测试驳回、问题项、包体修订和重新提交路径的只读结果页。","status":"测试不通过","primaryAction":"修改版本资料","sections":[{"title":"测试驳回","items":["展示版本、build_rev_003、测试轮次、时间、测试不通过结论和完整问题描述。","问题项包含现象、复现条件、影响范围和附件摘要。"]},{"title":"修订判断","items":["区分需改资料／启动信息与需替换包体，两类修改都需重新测试。","新包体成功后修订递增，旧轮次保持只读。"]},{"title":"重新提交","items":["修改版本资料或重新上传后，从 P03-04 重新提交新测试轮次。","不得直接把旧轮次改为通过，测试结果历史不可覆盖。"]},{"title":"权限与恢复","items":["越权访问不返回附件、包体或测试人员身份。","测试不通过不删除版本草稿、包体修订或已填写信息。"]}],"states":["default","loading","empty","error","permission","test-failed","revision-ready"]},"P03-06":{"audience":"tester","summary":"测试人员查看仅分配给本人的 Windows 包体待测任务。","status":"待测试","primaryAction":"领取／开始测试","sections":[{"title":"待测任务","items":["展示任务、首款签约游戏、包体版本 1.0.0、修订、轮次、分配时间和状态。","列表只包含当前测试人员陈宇的任务。"]},{"title":"筛选与排序","items":["按游戏／版本、任务状态和分配时间筛选；待测试和测试中优先。","每页 20 条，不支持全选、批量通过或批量驳回。"]},{"title":"领取与接续","items":["进入待测试任务并开始测试后状态变为测试中；重复开始不生成新任务。","任务终止后旧 task_id 已失效，同轮新 task_id 待分配且最多一条有效任务。"]},{"title":"权限边界","items":["测试人员只见本人任务，不看他人、未分配任务、合同、商品、结算或发行数据。","越权不返回任务是否存在、包体地址或运行信息。"]}],"states":["default","loading","empty","error","permission","assigned","testing","passed","failed","invalidated"]},"P03-07":{"audience":"tester","summary":"测试人员核对任务、测试范围、环境和包体说明并开始本轮测试。","status":"待测试","primaryAction":"开始测试","sections":[{"title":"任务与测试范围","items":["展示任务 test_task_demo_002、版本、修订、测试轮次、分配人、环境正式环境和当前状态。","只读取提交轮次锁定的资料，不跟随开发者未提交修改。"]},{"title":"包体说明","items":["展示更新说明、启动文件、参数、运行说明、基础校验和受保护的获取包体动作。","获取失败可重试且不自动记为测试不通过。"]},{"title":"任务动作","items":["首次确认后进入测试中；重复进入继续同一任务。","提交测试结果携带当前任务、修订和轮次，状态失效时阻止进入。"]},{"title":"安全与历史","items":["不记录可复用长期包体地址，测试人员不能修改版本或替换包体。","已失效或已结束任务只读，结果入口不可执行。"]}],"states":["default","loading","empty","error","permission","assigned","testing","download-error","invalidated"]},"P03-08":{"audience":"tester","summary":"测试人员为当前有效任务提交唯一通过或不通过终态。","status":"测试中","primaryAction":"提交结果","actions":[{"id":"test-pass","label":"测试通过"},{"id":"submit-test-result","label":"提交结果"}],"sections":[{"title":"任务摘要","items":["游戏、版本、修订、测试轮次和任务编号只读。","每轮首个成功终态生效，后续重复请求不覆盖。"]},{"title":"结果选择","items":["可选测试通过或测试不通过；不通过时问题描述必填。","问题描述提示填写现象、复现条件和影响范围；附件上传状态明确。"]},{"title":"提交结果","items":["通过后版本进入测试通过；不通过后进入测试不通过并回写开发者。","提交失败保持测试中、保留输入并允许重试。"]},{"title":"不可变历史","items":["已提交结果展示操作人和时间，测试人员不能撤销或修改。","任务已失效时不提交；纠错需要新测试轮次。"]}],"states":["default","loading","empty","error","permission","testing","submitting","passed","failed","invalidated"]},"P03-09":{"audience":"operations","summary":"运营查看版本审核队列、分配测试并进入测试通过后的发布门禁。","status":"待分配","primaryAction":"分配测试","sections":[{"title":"版本审核列表","items":["展示厂商／游戏、版本、修订、版本状态、轮次、有效任务、测试结果、审核状态和发布门禁。","待分配、测试通过待确认和异常优先。"]},{"title":"任务分配","items":["待分配选择一名测试人员；成功后任务进入待测试并同步本人列表。","未开始可改派；测试中终止需原子失效旧任务并创建同轮新待分配任务。"]},{"title":"审核入口","items":["测试通过进入版本审核详情；测试不通过只读等待开发者修订。","运营不能修改测试结果或用资料审核替代测试通过。"]},{"title":"并发与权限","items":["同轮最多一条有效任务；并发仅首个成功，失败不改变旧有效任务。","不提供全选或批量处理；越权不返回包体获取信息。"]}],"states":["default","loading","empty","error","permission","unassigned","assigned","testing","test-passed","test-failed","gate-blocked"]},"P03-10":{"audience":"operations","summary":"运营核对版本差异、测试通过结果和全部发布门禁后确认待发布。","status":"测试通过／门禁待确认","primaryAction":"确认待发布","sections":[{"title":"版本差异","items":["展示授权、版本 1.0.0、build_rev_003、更新说明、启动信息和当前线上版本差异。","测试区展示轮次、任务、测试人员、测试通过结果和修订一致性。"]},{"title":"发布门禁","items":["门禁包含项目授权、资料、包体、测试、商品／领取条件、分成、结算责任、权益和线上状态。","未满足项阻塞发布，不提供忽略并通过。"]},{"title":"确认动作","items":["确认待发布时重校全部门禁；成功进入待发布，失败保持测试通过。","门禁失败不是驳回版本，也不改写测试结论；补齐商业资料可重新校验。"]},{"title":"权限边界","items":["运营不重做测试，不修改开发者包体。","本页没有直接发布、开发者自助发布或多版本回滚。"]}],"states":["default","loading","empty","error","permission","test-passed","gate-blocked","ready"]},"P03-11":{"audience":"operations","summary":"运营查看待发布候选、当前线上版本、门禁状态、排期和最近发布结果。","status":"待发布","primaryAction":"发布配置","sections":[{"title":"待发布列表","items":["展示版本、修订、门禁状态、当前线上版本、发布方式／时间、最近结果和操作。","计划临近和失败待处理优先，发布失败仍保持待发布主状态。"]},{"title":"发布入口","items":["待配置进入发布配置；已排期展示时间；失败可重试发布。","不支持批量发布或批量撤回。"]},{"title":"撤回未发布","items":["撤回必须填写原因并取消定时任务，写入未发布撤回类型。","已撤回不可恢复；再次发行需不同版本号并重走测试和门禁。"]},{"title":"失败保护","items":["重试发布前重新校验门禁，失败保持待发布且当前线上版本不变。","定时任务已执行时不并发撤回，以最终结果刷新。"]}],"states":["default","loading","empty","error","permission","unconfigured","scheduled","release-failed","withdrawing"]},"P03-12":{"audience":"operations","summary":"运营互斥配置立即发布或定时发布，并在最终校验后切换唯一线上版本。","status":"待配置","primaryAction":"立即发布","actions":[{"id":"schedule-release","label":"定时发布"},{"id":"release-now","label":"立即发布"}],"sections":[{"title":"候选与线上","items":["展示候选版本、修订、测试轮次、门禁、更新说明和当前线上版本。","新版本成功后成为唯一当前线上版本，旧版进入已撤回（历史线上版）。"]},{"title":"发布方式","items":["立即发布与定时发布互斥；定时发布填写统一时区未来时间。","发布中禁止修改资料、包体或排期并禁止重复操作。"]},{"title":"成功与失败","items":["成功原子写入新版本首次发布时间和旧线上版本替代撤回信息。","失败时候选保持待发布并保持原线上版本及其全部字段不变。"]},{"title":"恢复边界","items":["状态不确定时查询同一 action_id 结果，不重复发起。","一期不提供回滚、开发者自助发布或多正式分支。"]}],"states":["default","loading","empty","error","permission","unconfigured","scheduled","releasing","released","release-failed"]},"P03-13":{"audience":"operations","summary":"运营处置当前线上版本的下载、启动和游戏发布能力并保留证据。","status":"已发布／下载暂停","primaryAction":"恢复下载","sections":[{"title":"线上版本","items":["展示版本 1.0.0、发布时间、修订、下载开关、启动开关、游戏发布状态和最近处置。","处置不删除版本文件、测试或发布历史。"]},{"title":"处置动作","items":["提供暂停下载、暂停启动、恢复下载、恢复启动和下架游戏；原因与影响范围必填。","商品停售不等于游戏下架，两者按各自业务链路处理。"]},{"title":"继承与恢复","items":["修复版发布后继承现有暂停开关且不自动恢复。","恢复前重校问题、当前线上版本和发布门禁；失败保持暂停。"]},{"title":"权限与记录","items":["开发者只读原因、时间和恢复状态，开发者不可发布或处置。","处置记录包含前后开关、影响、原因、操作人、结果和 system 联动来源。"]}],"states":["default","loading","empty","error","permission","published","download-paused","launch-paused","unpublished"]},"P04-01":{"audience":"developer","summary":"开发者查看本厂商投放草稿、需求状态、期望时间和只读效果入口。","status":"开发者已提交","primaryAction":"创建需求","sections":[{"title":"投放需求列表","items":["草稿展示游戏、素材摘要、目标、期望时间和最近保存；已提交展示 campaign_demo_001 和需求状态。","计划状态只用开发者已提交、平台配置中、已排期、投放中、已暂停、已结束和已驳回。"]},{"title":"检索与分页","items":["按关键词、游戏、状态和时间筛选，默认最近更新时间倒序。","筛选变化回到第 1 页，返回列表保留筛选与分页。"]},{"title":"页面动作","items":["创建需求、继续编辑草稿、修改已驳回需求、查看详情和查看数据。","开发者不能在列表启动、暂停、结束计划或编辑运营配置。"]},{"title":"状态与权限","items":["加载、空结果、失败和无权限分别展示；跨厂商不返回对象是否存在。","已结束不可恢复，再次推广需创建新投放需求。"]}],"states":["default","loading","empty","error","permission","draft","submitted","configuring","scheduled","delivering","paused","ended","rejected"]},"P04-02":{"audience":"developer","summary":"方案 A 下开发者只提交投放目标、示例素材、期望人群和时间范围。","status":"草稿","primaryAction":"提交平台审核","sections":[{"title":"目标与素材","items":["目标游戏限本厂商已审核对象；投放目标可选详情访问、购买／领取、成功交付或首次启动。","示例素材只按平台现有规范填写和预览；素材规范未确认时禁止提交。"]},{"title":"期望人群","items":["期望人群只含地区、语言、设备／系统、已获得游戏及本平台浏览、购买／领取、下载和启动行为。","不提供用户 ID、Steam 导入、问卷、名单或第三方画像。"]},{"title":"时间范围与职责","items":["填写期望开始和结束时间；最终人群、硬排除、资源位、频次、优先级和排期由运营配置并执行。","不展示预算、出价、消耗或算法推荐。"]},{"title":"保存与提交","items":["保存草稿允许必填未齐，失败保留输入；不启用自动保存或自动投放。","提交成功生成 campaign_id 和修订并进入开发者已提交；驳回后重提保留计划编号、修订递增。"]}],"states":["default","loading","empty","error","permission","unsaved","draft","submitting","rejected"]},"P04-03":{"audience":"developer","summary":"开发者只读查看需求快照、运营回执、配置摘要、固定状态和结果入口。","status":"平台配置中","primaryAction":"查看发行数据","sections":[{"title":"开发者需求","items":["展示当前修订的素材、推广目标、期望人群、期望时间和历史修订。","开发者只读，不提供启动、暂停、结束或运营配置编辑。"]},{"title":"运营回执与配置摘要","items":["运营回执展示资源位、人群、预估人数、排除、排期、频次和优先级摘要。","配置未完成显示平台配置中，不填默认值，不披露精确用户条件或其他计划竞争。"]},{"title":"状态与结果","items":["展示驳回、暂停、结束原因及前后状态、操作角色和时间。","已驳回可修改后重新提交；其他状态只读查看结果。"]},{"title":"数据入口","items":["无已完成 T+1 数据仍可进入看板，未知值显示 -- 和更新时间。","权限失效后不展示缓存详情，计划结束后保留最终配置和补齐中的数据入口。"]}],"states":["default","loading","empty","error","permission","submitted","configuring","scheduled","delivering","paused","ended","rejected"]},"P04-04":{"audience":"developer","summary":"本厂商 campaign_id + game_id 的曝光、点击、访问、转化和分交付方式 T+1 看板。","status":"T+1 数据正常","primaryAction":"切换时间范围","actions":[{"id":"dashboard-range","label":"切换时间范围"}],"sections":[{"title":"指标与趋势","items":["默认最近 7 个已完成自然日；展示曝光人数／次数、点击人数／次数、详情访问和购买／领取。","切换游戏、计划和日期同步刷新指标、日趋势和漏斗。"]},{"title":"交付分支","items":["CDKEY 分支止于既有 Key 成功交付，不把查看 Key 或站外激活当成功。","直接下载分支展示下载成功和历史首次启动成功，不把任务创建、安装完成或启动点击代替终态。"]},{"title":"转化口径","items":["漏斗为曝光→点击→有效详情→购买／领取，再分叉到 CDKEY 交付或下载→首次启动。","相邻步骤转化率分母未知或为 0 时显示 --。"]},{"title":"数据边界","items":["数据延迟或缺失显示 --、最近成功时间和异常；真实完整零值才显示 0。","开发者只看聚合数据，不展示用户明细、导出、预算消耗或跨厂商对比。"]}],"states":["default","loading","empty","error","permission","delayed","missing","zero","activation-unavailable"]},"P04-05":{"audience":"operations","summary":"运营领取签约范围投放计划并进入素材、人群、资源位、排期和监控流程。","status":"开发者已提交","primaryAction":"开始配置","sections":[{"title":"投放计划列表","items":["展示投放计划、厂商、游戏、目标、资源位、期望／实际排期、负责人和计划状态。","状态固定为开发者已提交、平台配置中、已排期、投放中、已暂停、已结束和已驳回。"]},{"title":"筛选与排序","items":["按计划／游戏、厂商、状态、目标、交付方式、负责人和时间筛选。","待处理优先、最近提交倒序，筛选变化回到第 1 页。"]},{"title":"领取与入口","items":["开发者已提交计划开始配置后进入平台配置中；并发领取只允许首个成功。","按状态进入素材审核、人群、资源位排期、监控或只读历史，不能跳过门禁。"]},{"title":"方案边界","items":["严格执行方案 A：开发者提交需求，运营配置并执行。","列表不提供预算、竞价、消耗或算法推荐；已结束不可恢复。"]}],"states":["default","loading","empty","error","permission","submitted","claimed","scheduled","delivering","paused","ended","rejected"]},"P04-06":{"audience":"operations","summary":"运营同时审核素材、目标游戏和落地页可发布性。","status":"平台配置中／待审核","primaryAction":"审核通过","sections":[{"title":"素材审核","items":["展示需求修订、素材预览、规范校验、推广目标和期望人群。","运营不能直接替开发者修改原素材。"]},{"title":"落地页审核","items":["核对游戏已批准资料、发布状态、交付方式、商品／领取、地区、系统和交付限制。","素材与落地页必须同时通过，任一失败不能进入排期。"]},{"title":"审核动作","items":["审核通过时重校全部门禁并记录素材版本和落地页快照。","驳回原因和可执行说明必填；成功进入已驳回且保留需求与素材。"]},{"title":"并发与失效","items":["游戏下架、素材变化或落地页快照变化时阻止用旧预览通过。","审核通过不等于可排期，仍需人群、资源位和时间门禁。"]}],"states":["default","loading","empty","error","permission","reviewing","approved","rejected","snapshot-changed"]},"P04-07":{"audience":"operations","summary":"运营用合法地区、语言、设备／系统和平台行为配置包含、排除与硬性排除。","status":"未预估","primaryAction":"预估人群","actions":[{"id":"add-target-rule","label":"添加定向条件"},{"id":"exclude-rule","label":"添加排除条件"}],"sections":[{"title":"规则字段","items":["仅开放地区、语言、设备／系统、已获得游戏和本平台行为：详情、购买／领取、下载、启动。","兴趣标签仅在既有合法且完成盘点时加入；当前标签范围待业务确认。"]},{"title":"包含与排除","items":["同字段多值为或、不同字段为且，排除命中即排除。","地区未授权／不可售和设备或系统不满足固定为硬性排除，运营不能删除。"]},{"title":"预估与保存","items":["条件变化进入未预估；预估成功写入 segment_demo_001 和规则版本。","人数为 0 显示目标人群为空并阻止排期；未知显示 --，不填 0。"]},{"title":"隐私边界","items":["不出现用户 ID、Steam、问卷、第三方画像、名单导入、导出或反查。","保存并继续前重校硬性排除和非空人群；并发不覆盖先保存版本。"]}],"states":["default","loading","empty","error","permission","unestimated","estimating","audience-empty","data-error","estimated"]},"P04-08":{"audience":"operations","summary":"运营从已确认现有资源位中配置时间、频次、优先级和排期冲突。","status":"资源位待业务确认","primaryAction":"确认排期","primaryActionDisabled":true,"sections":[{"title":"资源位","items":["资源位待业务确认；只允许进入盘点后的现有资源位，展示所属页面、素材类型、启停和可排期。","不把历史广告后台示例位当真实资源位。"]},{"title":"排期配置","items":["配置开始时间、结束时间、按 visitor_id 每自然日频次和整数优先级。","同资源位可时间重叠，实际曝光按优先级、进入已排期时间和计划编号选择。"]},{"title":"排期冲突与门禁","items":["展示人群、素材、落地页、资源位、时间、频次和排期冲突摘要。","任一门禁失败时确认排期不可用，失败保持平台配置中并定位问题。"]},{"title":"版本与边界","items":["成功保存排期快照并进入已排期；调整生成新版本，失败沿用原排期。","投放中不可在此覆盖配置；排期不等于曝光，启动时再次校验门禁。"]}],"states":["default","loading","empty","error","permission","placement-pending","conflict","gate-blocked","scheduled"]},"P04-09":{"audience":"operations","summary":"运营控制计划启动、取消排期、暂停、恢复、结束和自动停止，并查看 T+1 效果。","status":"已排期","primaryAction":"启动","sections":[{"title":"计划与动作","items":["已排期提供启动和取消排期；投放中提供暂停、结束；已暂停提供恢复、结束；已结束只读。","取消排期填写原因后进入已结束并复用 status_action=end。"]},{"title":"实时门禁","items":["启动和恢复重校游戏、素材、落地页、人群、地区／系统、资源位和时间。","人群为空、游戏下架、素材／落地页失效或资源位关闭时停止新曝光并进入已结束。"]},{"title":"T+1 监控","items":["展示曝光、点击率、访问、转化、最近成功更新时间和正常／延迟／缺失。","数据延迟不改变计划状态；未知为 --，重试刷新不伪造 0。"]},{"title":"停止与日志","items":["暂停立即停止新曝光；恢复失败保持暂停；已结束不可恢复，需新建计划。","所有停止和状态动作记录前后状态、原因、操作角色、来源、结果和时间；系统自动停止标记 system。"]}],"states":["default","loading","empty","error","permission","scheduled","delivering","paused","ended","auto-stopped","data-delayed"]}}}</script>
+<script>window.GameHubDemo = window.GameHubDemo || {};
+
+(function registerIcons(namespace) {
+  const paths = {
+    logo: '<path d="M5 7.5 12 3l7 4.5v9L12 21l-7-4.5z"/><path d="m8.2 10 3.8-2.2 3.8 2.2v4L12 16.2 8.2 14z"/>',
+    home: '<path d="m3 11 9-8 9 8"/><path d="M5.5 9.5V21h13V9.5M9 21v-7h6v7"/>',
+    build: '<path d="M4 4h16v5H4zM4 15h16v5H4z"/><path d="M8 9v6m8-6v6"/>',
+    key: '<circle cx="8" cy="15" r="4"/><path d="m11 12 8-8m-3 3 3 3m-6 0 2 2"/>',
+    target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>',
+    chart: '<path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/>',
+    game: '<path d="M7 8h10a5 5 0 0 1 4.6 7l-1 2.4a2.5 2.5 0 0 1-4.1.8L15 16h-6l-1.5 2.2a2.5 2.5 0 0 1-4.1-.8L2.4 15A5 5 0 0 1 7 8Z"/><path d="M7 11v4m-2-2h4m7-1h.01m2 3h.01"/>',
+    vendor: '<path d="M4 21V7l8-4 8 4v14M8 10h2m4 0h2M8 14h2m4 0h2M9 21v-3h6v3"/>',
+    review: '<path d="M5 3h14v18H5z"/><path d="M8 8h8m-8 4h5m-5 4h4"/>',
+    test: '<path d="M9 3h6m-5 0v5l-5.5 9a2.5 2.5 0 0 0 2.1 4h10.8a2.5 2.5 0 0 0 2.1-4L14 8V3"/><path d="M7.5 16h9"/>',
+    publish: '<path d="M12 16V3m0 0 5 5m-5-5L7 8"/><path d="M5 13v8h14v-8"/>',
+    warning: '<path d="M12 3 2.8 20h18.4z"/><path d="M12 9v5m0 3h.01"/>',
+    chevron: '<path d="m9 18 6-6-6-6"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+    refresh: '<path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 8A7 7 0 0 1 19 12m-1.1 4A7 7 0 0 1 5 12"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+    upload: '<path d="M12 16V4m0 0 5 5m-5-5L7 9"/><path d="M4 15v5h16v-5"/>',
+    check: '<path d="m5 12 4 4L19 6"/>',
+    lock: '<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+    file: '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5M9 13h6m-6 4h6"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10h.01"/>',
+  };
+
+  namespace.icons = {
+    has(name) { return Object.prototype.hasOwnProperty.call(paths, name); },
+    render(name, className = 'gh-icon') {
+      const body = paths[name] || paths.info;
+      return `<svg class="${className}" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+    },
+  };
+})(window.GameHubDemo);
+
+window.GameHubDemo = window.GameHubDemo || {};
+
+(function registerComponents(namespace) {
+  const icon = (name, className) => namespace.icons.render(name, className);
+  const escapeHtml = value => String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+  const attrs = values => Object.entries(values)
+    .filter(([, value]) => value !== undefined && value !== null && value !== false)
+    .map(([key, value]) => value === true ? key : `${key}="${escapeHtml(value)}"`)
+    .join(' ');
+
+  const button = ({ label, variant = 'secondary', iconName, action, primary = false, disabled = false, size, extra = '' }) => {
+    const attributeText = attrs({
+      type: 'button',
+      class: 'gh-button',
+      'data-component': 'Button',
+      'data-variant': variant,
+      'data-size': size,
+      'data-demo-action': action,
+      'data-primary-action': primary || undefined,
+      disabled: disabled || undefined,
+      'aria-disabled': disabled ? 'true' : undefined,
+    });
+    return `<button ${attributeText}${extra ? ` ${extra}` : ''}>${iconName ? icon(iconName) : ''}<span>${escapeHtml(label)}</span></button>`;
+  };
+
+  const input = ({ label, value = '', placeholder = '', name = '', required = false, hint = '', invalid = false, error = '', type = 'text', disabled = false }) => `
+    <label class="field">
+      <span class="field-label"><span>${escapeHtml(label)}${required ? '<span class="field-required">*</span>' : ''}</span>${hint ? `<span class="field-hint">${escapeHtml(hint)}</span>` : ''}</span>
+      <input class="gh-input" data-component="Input" data-variant="${invalid ? 'error' : 'default'}" type="${escapeHtml(type)}" name="${escapeHtml(name)}" value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" ${invalid ? 'aria-invalid="true"' : ''} ${disabled ? 'disabled aria-disabled="true"' : ''}>
+      ${error ? `<span class="field-error">${escapeHtml(error)}</span>` : ''}
+    </label>`;
+
+  const textarea = ({ label, value = '', placeholder = '', required = false, hint = '' }) => `
+    <label class="field is-wide">
+      <span class="field-label"><span>${escapeHtml(label)}${required ? '<span class="field-required">*</span>' : ''}</span>${hint ? `<span class="field-hint">${escapeHtml(hint)}</span>` : ''}</span>
+      <textarea class="gh-textarea" data-component="Input" data-variant="multiline" placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea>
+    </label>`;
+
+  const select = ({ label, options = [], value, name = '' }) => `
+    <label class="field">
+      <span class="field-label">${escapeHtml(label)}</span>
+      <select class="gh-select" data-component="Select" data-variant="default" name="${escapeHtml(name)}">
+        ${options.map(option => {
+          const entry = typeof option === 'string' ? { label: option, value: option } : option;
+          return `<option value="${escapeHtml(entry.value)}"${entry.value === value ? ' selected' : ''}>${escapeHtml(entry.label)}</option>`;
+        }).join('')}
+      </select>
+    </label>`;
+
+  const statusVariant = status => {
+    const text = String(status || '');
+    if (/通过|正常|已发布|进行中|已完成|可售|成功|在线|可用/.test(text)) return 'success';
+    if (/异常|失败|驳回|中断|停售|下架|不通过|已作废|已撤销/.test(text)) return 'danger';
+    if (/待|草稿|审核中|排期|测试中|处理中|暂停|生成中/.test(text)) return 'warning';
+    return 'info';
+  };
+
+  const statusTag = (status, variant = statusVariant(status)) => `<span class="status-tag" data-component="StatusTag" data-variant="${escapeHtml(variant)}">${escapeHtml(status || '未知状态')}</span>`;
+
+  const normalizeRows = rows => rows.length ? rows : [['暂无数据', '等待业务确认', '未开始', '查看']];
+  const table = ({ headers = ['对象', '说明', '状态', '操作'], rows = [] }) => {
+    const safeRows = normalizeRows(rows);
+    return `<div class="table-wrap"><table class="data-table" data-component="Table" data-variant="default">
+      <thead><tr>${headers.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead>
+      <tbody>${safeRows.map((row, rowIndex) => `<tr>${row.map((cell, cellIndex) => {
+        const value = typeof cell === 'object' ? cell : { text: cell };
+        if (value.status) return `<td>${statusTag(value.status)}</td>`;
+        if (value.action) return `<td>${button({ label: value.action, variant: 'text', size: 'small', action: value.demoAction || 'row-detail' })}</td>`;
+        return `<td><div class="${cellIndex === 0 ? 'table-primary' : ''}">${escapeHtml(value.text)}</div>${value.subtext ? `<div class="table-secondary">${escapeHtml(value.subtext)}</div>` : ''}</td>`;
+      }).join('')}</tr>`).join('')}</tbody>
+    </table></div>`;
+  };
+
+  const pagination = ({ total = 1, page = 1, pageSize = 20 }) => {
+    const totalPages = Math.max(1, Math.ceil(Number(total) / Math.max(1, Number(pageSize))));
+    const currentPage = Math.min(Math.max(1, Number(page)), totalPages);
+    const pageButtons = Array.from({ length: totalPages }, (_, index) => index + 1)
+      .map(item => `<button class="page-button${item === currentPage ? ' is-active' : ''} number" data-demo-action="page-${item}"${item === currentPage ? ' aria-current="page"' : ''}>${escapeHtml(item)}</button>`)
+      .join('');
+    return `<div class="pagination" data-component="Pagination" data-variant="default">
+      <span>共 <strong class="number">${escapeHtml(total)}</strong> 条记录</span>
+      <div class="pagination__buttons">
+        <button class="page-button" data-demo-action="page-prev" aria-label="上一页"${currentPage === 1 ? ' disabled aria-disabled="true"' : ''}>${icon('chevron', 'gh-icon')}</button>
+        ${pageButtons}
+        <button class="page-button" data-demo-action="page-next" aria-label="下一页"${currentPage === totalPages ? ' disabled aria-disabled="true"' : ''}>${icon('chevron', 'gh-icon')}</button>
+      </div>
+    </div>`;
+  };
+
+  const tabs = ({ items = [], active = 0, variant = 'line', action = 'tab', idPrefix = 'tab', indexAttribute = 'data-tab-index' }) =>
+    `<div class="tabs" role="tablist" data-component="Tabs" data-variant="${escapeHtml(variant)}">${items.map((item, index) => {
+      const id = `${idPrefix}-${index}`;
+      return `<button id="${escapeHtml(id)}" class="tab${index === active ? ' is-active' : ''}" role="tab" aria-selected="${index === active}" aria-controls="${escapeHtml(id)}-panel" tabindex="${index === active ? '0' : '-1'}" data-demo-action="${escapeHtml(action)}" ${escapeHtml(indexAttribute)}="${index}">${escapeHtml(item)}</button>`;
+    }).join('')}</div>`;
+
+  const authorizationSummary = authorization => `<section class="authorization-summary" data-cdkey-authorization>
+    <div data-authorization-status><span>授权状态</span>${statusTag(authorization.status, 'success')}</div>
+    <div data-authorization-quota><span>剩余 Key 配额</span><strong class="number">${escapeHtml(authorization.remainingQuota)}</strong></div>
+    <div data-authorization-channels><span>可用渠道</span><strong>${escapeHtml(authorization.channels.join('、'))}</strong></div>
+    <div data-authorization-paused><span>暂停原因</span><strong>${escapeHtml(authorization.pausedReason)}</strong></div>
+  </section>`;
+
+  const codeBlock = ({ title, code, action = 'copy-api-example' }) => `<section class="code-block">
+    <header><strong>${escapeHtml(title)}</strong>${button({ label: '复制示例', variant: 'text', action, size: 'small' })}</header>
+    <pre><code>${escapeHtml(code)}</code></pre>
+  </section>`;
+
+  const stepper = ({ items = [], active = 0 }) => `<div class="stepper" data-component="Stepper" data-variant="horizontal">${items.map((item, index) => `<div class="stepper-item${index < active ? ' is-done' : ''}${index === active ? ' is-active' : ''}"><span class="stepper-dot">${index < active ? icon('check', 'gh-icon') : ''}</span><span>${escapeHtml(item)}</span></div>`).join('')}</div>`;
+
+  const reviewPanel = ({ leftTitle = '提交内容', rightTitle = '平台校验', items = [] }) => `<div class="review-panel" data-component="ReviewPanel" data-variant="comparison"><section class="review-column"><h3>${escapeHtml(leftTitle)}</h3><ul class="review-list">${items.map((item, index) => `<li><span>${escapeHtml(`字段 ${String(index + 1).padStart(2, '0')}`)}</span><strong>${escapeHtml(item)}</strong></li>`).join('')}</ul></section><section class="review-column"><h3>${escapeHtml(rightTitle)}</h3><ul class="review-list">${items.map(item => `<li><span>${escapeHtml(item)}</span>${statusTag('待审核')}</li>`).join('')}</ul></section></div>`;
+
+  const timeline = ({ items = [] }) => `<ol class="timeline" data-component="Timeline" data-variant="vertical">${items.map((item, index) => `<li class="timeline-item"><div class="timeline-title">${escapeHtml(item)}</div><div class="timeline-meta number">${index === 0 ? '当前节点' : `记录 ${String(index + 1).padStart(2, '0')}`}</div></li>`).join('')}</ol>`;
+
+  const metricCard = ({ label, value, trend = 'T+1 汇总口径' }) => `<article class="metric-card" data-component="MetricCard" data-variant="default"><div class="metric-label">${escapeHtml(label)}</div><div class="metric-value number">${escapeHtml(value)}</div><div class="metric-trend">${escapeHtml(trend)}</div></article>`;
+
+  const chart = ({ label = '趋势示例' } = {}) => `<div class="chart" data-component="Chart" data-variant="line" role="img" aria-label="${escapeHtml(label)}">
+    <svg viewBox="0 0 760 210" preserveAspectRatio="none"><defs><linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6A7CFF" stop-opacity=".30"/><stop offset="1" stop-color="#6A7CFF" stop-opacity="0"/></linearGradient></defs>
+      <path class="chart-grid" d="M20 25H740M20 75H740M20 125H740M20 175H740"/>
+      <path class="chart-area" d="M20 172L20 152L120 138L220 145L320 105L420 114L520 72L620 86L740 42L740 172Z"/>
+      <path class="chart-line" d="M20 152L120 138L220 145L320 105L420 114L520 72L620 86L740 42"/>
+      <g>${[[20,152],[120,138],[220,145],[320,105],[420,114],[520,72],[620,86],[740,42]].map(([x,y]) => `<circle class="chart-dot" cx="${x}" cy="${y}" r="4"/>`).join('')}</g>
+    </svg></div>`;
+
+  const statePanel = ({ state, primaryAction = '返回', onRetry = false }) => {
+    if (state === 'loading') return `<section class="state-panel" data-component="StatePanel" data-variant="loading" data-page-state="loading"><div class="skeleton-stack" aria-label="页面加载中"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div></section>`;
+    const config = {
+      empty: { iconName: 'file', title: '暂无数据', copy: '当前条件下没有可展示的内容。', action: primaryAction },
+      error: { iconName: 'warning', title: '页面加载失败', copy: '演示数据未能正常读取，请在页面内重试。', action: '重试' },
+      permission: { iconName: 'lock', title: '暂无访问权限', copy: '当前账号未获授权访问此页面，如需处理请联系平台管理员。', action: '返回可访问页面' },
+    }[state] || { iconName: 'info', title: '状态未知', copy: '请返回默认状态。', action: '返回' };
+    return `<section class="state-panel" data-component="StatePanel" data-variant="${escapeHtml(state)}" data-page-state="${escapeHtml(state)}"><div class="state-content"><div class="state-visual">${icon(config.iconName)}</div><h2>${escapeHtml(config.title)}</h2><p>${escapeHtml(config.copy)}</p>${button({ label: config.action, variant: 'primary', action: onRetry || state === 'error' ? 'retry-state' : 'default-state', primary: true })}</div></section>`;
+  };
+
+  const resultStrip = ({ title, detail = '', variant = 'info' }) => `<div class="result-strip" data-component="ResultStrip" data-variant="${escapeHtml(variant)}" role="status">${icon(variant === 'danger' || variant === 'warning' ? 'warning' : 'info')}<div><strong>${escapeHtml(title)}</strong>${detail ? `<span>${escapeHtml(detail)}</span>` : ''}</div></div>`;
+
+  namespace.components = { escapeHtml, button, input, textarea, select, statusTag, table, pagination, tabs, authorizationSummary, codeBlock, stepper, reviewPanel, timeline, metricCard, chart, statePanel, resultStrip };
+})(window.GameHubDemo);
+
+window.GameHubDemo = window.GameHubDemo || {};
+
+(function registerTemplates(namespace) {
+  const c = namespace.components;
+  const e = c.escapeHtml;
+  const icon = name => namespace.icons.render(name);
+
+  const sectionsOf = page => Array.isArray(page?.sections) ? page.sections : [];
+  const itemsOf = section => Array.isArray(section?.items) ? section.items : [];
+  const flattenItems = page => sectionsOf(page).flatMap(itemsOf).filter(Boolean);
+  const actionOf = (page, fallbackId, fallbackLabel) => {
+    const actions = Array.isArray(page?.actions) ? page.actions : [];
+    const exact = actions.find(action => action.id === fallbackId);
+    return exact || { id: fallbackId, label: fallbackLabel };
+  };
+  const renderActionButtons = (page, excluded = []) => {
+    const actions = Array.isArray(page?.actions) ? page.actions : [];
+    const visible = actions.filter(action => action?.id && !excluded.includes(action.id));
+    return visible.length ? `<div class="form-actions">${visible.map(action => c.button({ label: action.label || action.id, variant: /reject|interrupt|stop|remove/.test(action.id) ? 'danger' : 'secondary', action: action.id })).join('')}</div>` : '';
+  };
+  const sectionList = items => `<div class="section-list">${(items.length ? items : ['待补充业务内容']).map((item, index) => `<div class="section-item"><span>${e(item)}</span><span class="section-item__index">${String(index + 1).padStart(2, '0')}</span></div>`).join('')}</div>`;
+  const panel = ({ title, body, description = '' }) => `<section class="panel"><header class="panel-header"><div><h2 class="panel-title">${e(title)}</h2>${description ? `<div class="panel-description">${e(description)}</div>` : ''}</div></header><div class="panel-body">${body}</div></section>`;
+  const readonlyField = ({ label, value, hint = '', wide = false }) => `<div class="field readonly-field${wide ? ' is-wide' : ''}"><span class="field-label"><span>${e(label)}</span>${hint ? `<span class="field-hint">${e(hint)}</span>` : ''}</span><div class="readonly-value">${e(value)}</div></div>`;
+  const gateList = items => `<div class="gate-list">${items.map(item => `<div class="gate-item"><span><strong>${e(item.label)}</strong>${item.detail ? `<small>${e(item.detail)}</small>` : ''}</span>${c.statusTag(item.status)}</div>`).join('')}</div>`;
+  const listViews = {
+    'P01-04': {
+      tabs: ['全部游戏', '待处理', '已发布'],
+      placeholder: '输入游戏名称',
+      filters: [{ label: '发行方式', options: ['全部方式', '第三方平台激活', '盖世直接下载'] }, { label: '资料状态', options: ['全部状态', '草稿', '审核中', '已通过', '已驳回'] }],
+      headers: ['游戏名称', '发行方式', '资料状态', '供给／版本', '发布状态', '投放', '更新时间', '操作'],
+      rows: [[{ text: '首款签约游戏', subtext: 'game_demo_001 · Windows' }, '盖世直接下载', { status: '已通过' }, '版本 1.0.0 · 测试不通过', { status: '尚未发布' }, '暂无投放', '2026-09-01 18:24', { action: '查看资料', demoAction: 'row-detail' }]],
+    },
+    'P01-07': {
+      tabs: ['全部账号', '正常', '已停用'],
+      placeholder: '输入账号或厂商名称',
+      filters: [{ label: '账号状态', options: ['全部状态', '正常', '已停用'] }, { label: '绑定范围', options: ['全部厂商', '已绑定厂商'] }],
+      headers: ['登录账号', '绑定厂商', '账号状态', '最近登录', '创建时间', '操作'],
+      rows: [[{ text: 'developer@example.com', subtext: '受邀开发者账号' }, '示例厂商', { status: '正常' }, '2026-09-01 16:42', '2026-08-18 10:20', { action: '配置账号', demoAction: 'row-detail' }]],
+    },
+    'P02-01': {
+      tabs: ['全部商品', '供给异常', '可供货'],
+      placeholder: '输入游戏名称或 SKU',
+      filters: [{ label: '供给状态', options: ['全部状态', '可供货', '库存不足', '售罄', '异常', '未知'] }, { label: '可售门禁', options: ['全部门禁', '已通过', '有阻塞项'] }],
+      headers: ['游戏／商品', 'SKU', '发行方式', '商品状态', '供给状态', '可售门禁', '更新时间', '操作'],
+      rows: [[{ text: '首款签约游戏', subtext: '标准版商品' }, 'SKU-DEMO-001', '第三方平台激活', { status: '停售' }, { status: '供给异常' }, '价格与来源待恢复', '2026-09-01 17:50', { action: '查看异常', demoAction: 'row-detail' }]],
+    },
+    'P02-03': {
+      tabs: ['全部商品', '异常待处理', '门禁未齐'],
+      placeholder: '输入游戏、厂商或 SKU',
+      filters: [{ label: '发布与可售', options: ['全部状态', '待发布', '可售', '停售'] }, { label: '供给状态', options: ['全部供给', '可供货', '异常'] }],
+      headers: ['商品', 'SKU 数', '发行方式', '商业门禁', '供给状态', '发布／可售', '更新时间', '操作'],
+      rows: [[{ text: '首款签约游戏', subtext: '示例厂商' }, '1 个', '第三方平台激活', { status: '已通过' }, { status: '异常待处理' }, { status: '停售' }, '2026-09-01 17:50', { action: '配置商品', demoAction: 'row-detail' }]],
+    },
+    'P02-06': {
+      tabs: ['异常生效中', '待恢复确认', '已恢复'],
+      placeholder: '输入异常编号、商品或 SKU',
+      filters: [{ label: '异常类型', options: ['全部类型', '库存', '价格', '来源', '商业供给'] }, { label: '处理状态', options: ['全部状态', '异常生效中', '待恢复确认', '已恢复'] }],
+      headers: ['异常编号', '商品／SKU', '来源类型', '异常类型', '影响订单', '处理状态', '更新时间', '操作'],
+      rows: [[{ text: 'SUP-20260901-001', subtext: '首次发现 16:20' }, '首款签约游戏 · SKU-DEMO-001', '供应商 API', '当前价格不可用', '新增销售已停止；既有订单不变', { status: '异常生效中' }, '2026-09-01 17:50', { action: '处理异常', demoAction: 'row-detail' }]],
+    },
+    'P03-01': {
+      tabs: ['全部版本', '测试中', '待发布', '已发布'],
+      placeholder: '输入版本号或修订号',
+      filters: [{ label: '测试状态', options: ['全部状态', '待提交', '测试中', '测试不通过', '测试通过'] }, { label: '发布状态', options: ['全部状态', '尚未发布', '待发布', '已发布', '已撤回'] }],
+      headers: ['版本号', '包体修订', '测试轮次', '测试状态', '发布状态', '更新时间', '操作'],
+      rows: [[{ text: '1.0.0', subtext: 'Windows · 正式分支' }, 'build_rev_003', '第 1 轮', { status: '测试不通过' }, { status: '尚未发布' }, '2026-09-01 15:36', { action: '查看结果', demoAction: 'row-detail' }]],
+    },
+    'P03-06': {
+      tabs: ['待测试', '测试中', '已完成'],
+      placeholder: '输入任务、游戏或版本',
+      filters: [{ label: '任务状态', options: ['全部状态', '待测试', '测试中', '已完成', '已失效'] }, { label: '分配时间', options: ['全部时间', '今天', '近 7 天'] }],
+      headers: ['待测任务', '游戏／版本', '包体修订', '测试轮次', '测试人员', '分配时间', '任务状态', '操作'],
+      rows: [[{ text: 'test_task_demo_002', subtext: '正式环境验收' }, '首款签约游戏 · 1.0.0', 'build_rev_003', '第 1 轮', '陈宇（本人）', '2026-09-01 13:10', { status: '待测试' }, { action: '领取并查看', demoAction: 'row-detail' }]],
+    },
+    'P03-09': {
+      tabs: ['待分配', '测试中', '测试通过待确认', '异常'],
+      placeholder: '输入厂商、游戏或版本',
+      filters: [{ label: '测试结果', options: ['全部结果', '未提交', '测试通过', '测试不通过'] }, { label: '审核状态', options: ['全部状态', '待分配', '待确认', '已确认'] }],
+      headers: ['厂商／游戏', '版本／修订', '轮次', '有效任务', '测试结果', '审核状态', '发布门禁', '操作'],
+      rows: [[{ text: '示例厂商', subtext: '首款签约游戏' }, '1.0.0 · build_rev_003', '第 1 轮', '尚未分配', '未提交', { status: '待分配' }, '测试结果待完成', { action: '分配测试', demoAction: 'row-detail' }]],
+    },
+    'P03-11': {
+      tabs: ['待配置', '已排期', '发布失败'],
+      placeholder: '输入游戏、版本或修订',
+      filters: [{ label: '门禁状态', options: ['全部门禁', '已通过', '有阻塞项'] }, { label: '发布方式', options: ['全部方式', '未配置', '立即发布', '定时发布'] }],
+      headers: ['候选版本', '门禁状态', '当前线上版本', '发布方式／时间', '最近结果', '状态', '操作'],
+      rows: [[{ text: '1.0.0', subtext: 'build_rev_003 · 首款签约游戏' }, { status: '已通过' }, '尚未发布正式版本', '未配置', '暂无发布记录', { status: '待发布' }, { action: '发布配置', demoAction: 'row-detail' }]],
+    },
+    'P04-01': {
+      tabs: ['全部需求', '草稿', '平台处理中', '已结束'],
+      placeholder: '输入投放需求或游戏',
+      filters: [{ label: '需求状态', options: ['全部状态', '草稿', '开发者已提交', '平台配置中', '已排期', '已驳回'] }, { label: '期望时间', options: ['全部时间', '近 7 天', '近 30 天'] }],
+      headers: ['投放需求', '游戏', '投放目标', '期望时间', '需求状态', '更新时间', '操作'],
+      rows: [[{ text: 'campaign_demo_001', subtext: '素材修订 01' }, '首款签约游戏', '详情访问', '2026-09-10 — 2026-09-20', { status: '开发者已提交' }, '2026-09-01 18:05', { action: '查看详情', demoAction: 'row-detail' }]],
+    },
+    'P04-05': {
+      tabs: ['待处理', '平台配置中', '已排期', '投放中', '已结束'],
+      placeholder: '输入计划、游戏或厂商',
+      filters: [{ label: '计划状态', options: ['全部状态', '开发者已提交', '平台配置中', '已排期', '投放中', '已暂停', '已结束'] }, { label: '负责人', options: ['全部负责人', '待领取', '我负责的'] }],
+      headers: ['投放计划', '厂商／游戏', '目标', '资源位', '期望／实际排期', '负责人', '计划状态', '操作'],
+      rows: [[{ text: 'campaign_demo_001', subtext: '2026-09-01 提交' }, '示例厂商 · 首款签约游戏', '详情访问', '待配置', '期望 09-10 — 09-20／实际待定', '待领取', { status: '开发者已提交' }, { action: '开始配置', demoAction: 'row-detail' }]],
+    },
+  };
+  const defaultFooter = (page, options = {}) => {
+    const save = actionOf(page, 'save-draft', '保存草稿');
+    return `<footer class="form-footer"><span class="save-state" data-save-state>最近保存：未保存，刷新后恢复初始演示数据</span><div class="form-actions">${options.noSave ? '' : c.button({ label: save.label, action: save.id })}${renderActionButtons(page, [save.id])}</div></footer>`;
+  };
+
+  const renderT01 = ({ page, route }) => {
+    const onboarding = page.onboarding;
+    return `<div class="onboarding-shell" data-onboarding>
+      <section class="onboarding-intro" data-onboarding-intro>
+        <div class="onboarding-brand"><div class="brand-mark">${icon('logo')}</div><span class="onboarding-audience">${e(onboarding.audience)}</span></div>
+        <div class="page-eyebrow">${e(route.id)} / ${e(route.templateId)}</div>
+        <h1 class="page-title" data-page-title>${e(route.title)}</h1>
+        <h2>${e(onboarding.title)}</h2><p>${e(onboarding.description)}</p>
+        <ol class="onboarding-steps">${onboarding.steps.map((step, index) => `<li><span>${index + 1}</span><strong>${e(step)}</strong></li>`).join('')}</ol>
+        <div class="onboarding-preparations"><strong>开始前请准备</strong>${onboarding.preparations.map(item => `<span>${e(item)}</span>`).join('')}</div>
+        ${c.button({ label: onboarding.primaryAction, variant: 'primary', action: 'start-onboarding', primary: true, iconName: 'chevron' })}
+      </section>
+      <section class="login-form" data-login-panel hidden>
+        <button class="text-back" type="button" data-demo-action="back-onboarding">返回合作说明</button>
+        <div class="page-eyebrow">${e(route.id)} / ${e(route.templateId)}</div>
+        <h2>${e(route.title)}</h2><p>使用已获授权的受邀账号继续</p>
+        <div class="login-form__fields">${c.input({ label: '账号', value: 'developer@example.com', required: true })}${c.input({ label: '密码', value: 'demo-password', type: 'password', required: true })}</div>
+        <div class="login-form__action">${c.button({ label: '登录', variant: 'primary', action: actionOf(page, 'login', '登录').id, iconName: 'chevron' })}</div>
+        <div class="login-help">账号由盖世游戏发行运营创建；本页不发起真实认证。</div>
+      </section>
+    </div>`;
+  };
+
+  const renderT02 = ({ page }) => {
+    return `<div class="content-grid"><section class="dashboard-hero span-12"><div class="dashboard-hero__top"><div><h2>首款签约游戏</h2><p>${e(page.summary)}</p></div>${c.statusTag(page.status)}</div><div class="dashboard-steps">${c.stepper({ items: ['资料建档', '发行方式', '平台处理', '上线发行'], active: 2 })}</div></section>
+      <div class="span-12 metric-grid">${c.metricCard({ label: '待办', value: '2', trend: '需要开发者处理' })}${c.metricCard({ label: '资料状态', value: '已通过', trend: '下游可读取已批准快照' })}${c.metricCard({ label: '版本状态', value: '测试不通过', trend: 'build_rev_003 待修订' })}${c.metricCard({ label: '投放状态', value: '平台配置中', trend: 'campaign_demo_001' })}</div>
+      <div class="span-7">${panel({ title: '当前待办', body: gateList([{ label: '修订 Windows 版本', detail: '1.0.0 · build_rev_003 第 1 轮测试不通过', status: '待开发者处理' }, { label: '查看投放运营回执', detail: 'campaign_demo_001 正由平台配置', status: '平台配置中' }, { label: '确认已批准资料快照', detail: '厂商与游戏资料已通过，下游可读取', status: '已通过' }]) })}</div><div class="span-5">${panel({ title: '发行进度', body: c.timeline({ items: ['投放需求已由平台领取 · 2026-09-01 18:20', 'build_rev_003 测试不通过 · 2026-09-01 15:36', '选择盖世直接下载发行方式 · 2026-08-22', '厂商与游戏资料审核通过 · 2026-08-20'] }) })}</div></div>`;
+  };
+
+  const renderListView = (config, tabOptions = {}) => {
+    const filters = config.filters.map(filter => c.select(filter)).join('');
+    return `<div>${c.tabs({ items: config.tabs, active: 0, ...tabOptions })}<div class="filter-bar"><label class="field"><span class="field-label">关键词</span><span class="search-field">${icon('search')}<input class="gh-input" data-component="Input" data-variant="search" placeholder="${e(config.placeholder)}"></span></label>${filters}${c.button({ label: '查询', action: 'filter-list', iconName: 'search' })}</div>${c.table({ headers: config.headers, rows: config.rows })}${c.pagination({ total: config.rows.length, page: 1 })}</div>`;
+  };
+
+  const renderSupplyList = () => renderListView(listViews['P02-01'], { idPrefix: 'supply-filter-tab', indexAttribute: 'data-supply-tab-index' });
+
+  const renderKeyBatchPanel = data => `<div class="cdkey-panel-grid">
+    ${panel({ title: '创建 Key 批次', description: '只允许在当前授权游戏、SKU、渠道、配额和有效期内创建', body: `<div class="form-grid">
+      ${c.input({ label: '批次名称', value: '渠道 A 首发批次', required: true })}
+      ${c.select({ label: 'Key 来源', options: [{ label: data.keySources[0].label, value: data.keySources[0].id }], value: 'gamehub_generated' })}
+      ${c.select({ label: '游戏 / SKU', options: ['首款签约游戏 / SKU-DEMO-001'], value: '首款签约游戏 / SKU-DEMO-001' })}
+      ${c.input({ label: '用途', value: '渠道 A 首发销售', required: true })}
+      ${c.select({ label: '渠道', options: data.authorization.channels, value: data.authorization.channels[0] })}
+      ${c.input({ label: '数量', value: '2000', type: 'number', required: true })}
+      ${c.input({ label: '有效期', value: '2026-12-31T23:59', type: 'datetime-local', required: true })}
+    </div><div class="source-boundary"><strong>${e(data.keySources[1].label)}</strong><span>${e(data.keySources[1].rule)}</span></div><div data-key-batch-result></div><footer class="form-footer"><span class="save-state">Key 明文仅在有效窗口内下载一次</span>${c.button({ label: '创建批次', variant: 'primary', action: 'create-key-batch' })}</footer>` })}
+    ${panel({ title: 'Key 批次', description: '已分配记录始终保留，作废只影响未分配库存', body: `${c.table({ headers: ['批次', '来源', '数量 / 剩余', '渠道', '状态', '操作'], rows: data.keyBatches.map(batch => [{ text: batch.name, subtext: batch.batchId }, batch.source, `${batch.quantity} / ${batch.remaining}`, batch.channel, { status: batch.status }, { action: '暂停', demoAction: 'pause-key-batch' }]) })}<div class="form-actions cdkey-table-actions">${c.button({ label: '作废未分配库存', variant: 'danger', action: 'void-key-batch' })}</div>` })}
+  </div>`;
+
+  const renderCredentialPanel = data => `<div class="cdkey-panel-grid">
+    ${panel({ title: '创建渠道凭据', description: 'Secret 仅在创建或轮换成功时展示一次', body: `<div class="form-grid">
+      ${c.input({ label: '凭据名称', value: '渠道 A 正式凭据', required: true })}
+      ${c.select({ label: '白名单渠道', options: data.authorization.channels, value: data.authorization.channels[0] })}
+      ${c.select({ label: '授权游戏 / SKU', options: ['首款签约游戏 / SKU-DEMO-001'], value: '首款签约游戏 / SKU-DEMO-001' })}
+      ${c.input({ label: '凭据配额', value: '5000', type: 'number', required: true })}
+      ${c.input({ label: '有效期', value: '2026-12-31T23:59', type: 'datetime-local', required: true })}
+    </div><div data-credential-result></div><footer class="form-footer"><span class="save-state">凭据不能扩大平台预授权范围</span>${c.button({ label: '创建凭据', variant: 'primary', action: 'create-api-credential' })}</footer>` })}
+    ${panel({ title: '已创建凭据', description: 'Secret 后续只显示末四位；遗失时必须轮换', body: `${c.table({ headers: ['凭据 / client_id', 'Secret', '授权范围', '有效期', '状态', '最近调用'], rows: data.credentials.map(item => [{ text: item.name, subtext: item.clientId }, item.secretHint, item.scope, item.expiresAt, { status: item.status }, item.lastCalledAt]) })}<div class="form-actions cdkey-table-actions">${c.button({ label: '轮换', action: 'rotate-api-credential' })}${c.button({ label: '暂停', action: 'pause-api-credential' })}${c.button({ label: '撤销', variant: 'danger', action: 'revoke-api-credential' })}</div>` })}
+  </div>`;
+
+  const renderApiDocs = (docs, apiExample) => `<div class="content-grid api-docs-layout">
+    <div class="span-4"><nav class="api-docs-nav" aria-label="接口说明目录">${[['auth', '鉴权与幂等'], ['endpoints', '接口目录'], ['fields', '字段说明'], ['example', '请求示例'], ['errors', '错误码']].map(([id, label]) => `<button type="button" data-demo-action="api-doc-section" data-api-target="api-doc-${id}">${e(label)}</button>`).join('')}</nav>${panel({ title: '接入步骤', body: sectionList(['创建渠道凭据', '按 HMAC-SHA256 生成签名', '使用 request_id 发起幂等申请', '查询结果并确认已交付']) })}</div>
+    <div class="span-8 api-docs-content"><section id="api-doc-auth">${panel({ title: '鉴权与幂等', body: `<p>${e(docs.auth)}</p><p>${e(docs.idempotency)}</p>` })}</section><section id="api-doc-endpoints">${panel({ title: '接口目录', body: c.table({ headers: ['方法', '路径', '用途'], rows: docs.endpoints.map(item => [item.method, item.path, item.purpose]) }) })}</section><section id="api-doc-fields">${panel({ title: '字段说明', body: c.table({ headers: ['字段', '必填', '说明'], rows: [['request_id', '是', '渠道侧幂等请求号'], ['channel_order_id', '是', '渠道订单号'], ['game_id', '是', '已授权游戏'], ['sku_id', '是', '已授权 SKU'], ['status', '响应', '分配处理状态']] }) })}</section><section id="api-doc-example">${c.codeBlock({ title: '申请一个 Key · 演示请求', code: apiExample })}</section><section id="api-doc-errors">${panel({ title: '错误码', body: `<div class="error-chip-list">${docs.errors.map(item => `<button type="button" data-demo-action="filter-api-error">${e(item)}</button>`).join('')}</div>` })}</section></div>
+  </div>`;
+
+  const renderCdkeyWorkspace = page => {
+    const data = page.cdkeySelfService;
+    const apiExample = `POST /openapi/v1/cdkeys/allocate\nX-Client-Id: gh_demo_channel_a\nX-Timestamp: 1788336000\nX-Nonce: demo_nonce\nX-Signature: demo_hmac_signature\n\n{\n  "request_id": "req_demo_001",\n  "channel_order_id": "channel_order_demo_001",\n  "game_id": "game_demo_001",\n  "sku_id": "SKU-DEMO-001"\n}`;
+    return `<div class="cdkey-workspace" data-cdkey-workspace>
+      ${c.authorizationSummary(data.authorization)}
+      ${c.tabs({ items: data.tabs, active: 0, variant: 'task', action: 'cdkey-tab', idPrefix: 'cdkey-tab' })}
+      <section role="tabpanel" aria-labelledby="cdkey-tab-0" id="cdkey-tab-0-panel" data-cdkey-panel="supply">${renderSupplyList()}</section>
+      <section role="tabpanel" aria-labelledby="cdkey-tab-1" id="cdkey-tab-1-panel" data-cdkey-panel="batches" hidden>${renderKeyBatchPanel(data)}</section>
+      <section role="tabpanel" aria-labelledby="cdkey-tab-2" id="cdkey-tab-2-panel" data-cdkey-panel="credentials" hidden>${renderCredentialPanel(data)}</section>
+      <section role="tabpanel" aria-labelledby="cdkey-tab-3" id="cdkey-tab-3-panel" data-cdkey-panel="api-docs" hidden>${renderApiDocs(data.apiDocs, apiExample)}</section>
+    </div>`;
+  };
+
+  const renderT03 = ({ route, page }) => {
+    if (route.id === 'P02-01') return renderCdkeyWorkspace(page);
+    const view = listViews[route.id];
+    const fallback = { tabs: ['全部', '待处理', '已完成'], placeholder: '输入名称或 ID', filters: [{ label: '业务状态', options: ['全部状态', '待处理', '处理中', '已完成'] }], headers: ['对象', '状态', '更新时间', '操作'], rows: [] };
+    const config = view || fallback;
+    return renderListView(config);
+  };
+
+  const renderT04 = ({ page }) => `<div class="content-grid"><div class="span-8">${panel({ title: '厂商公开资料', description: '审核通过后用于固定厂商主页', body: `<div class="form-grid">${c.input({ label: '厂商名称', value: '示例厂商', required: true })}${c.input({ label: 'HTTPS 官网', value: 'https://developer.example.com', required: true, hint: '仅接受完整 HTTPS 地址' })}${c.textarea({ label: '厂商简介', value: '专注于 Windows 单机游戏研发与发行。', required: true, hint: '审核通过后对外展示' })}</div><div class="asset-upload asset-upload--logo"><div class="asset-preview asset-preview--logo">LOGO</div><div><strong>厂商 Logo</strong><p>支持 JPG、PNG、WEBP；上传失败不影响其他字段。</p>${c.button({ label: '替换 Logo', action: 'replace-vendor-logo' })}</div></div>${defaultFooter(page)}` })}</div><div class="span-4">${panel({ title: '协作联系资料', description: '仅供平台协作，不在 C 端展示', body: `<div class="stacked-fields">${c.input({ label: '联系人', value: '林晨', required: true })}${c.input({ label: '手机', value: '138 0000 1234', hint: '手机或邮箱至少填写一项' })}${c.input({ label: '邮箱', value: 'linchen@example.com', type: 'email', hint: '手机或邮箱至少填写一项' })}</div>` })}</div></div>`;
+
+  const renderT05 = ({ page }) => `<div class="game-editor">${c.tabs({ items: ['基本资料', '平台与发行', '素材检查'], active: 0 })}<div class="content-grid"><div class="span-8">${panel({ title: '游戏基本资料', body: `<div class="form-grid game-form-grid">${c.input({ label: '游戏名称', value: '首款签约游戏', required: true })}${c.input({ label: '开发商', value: '示例厂商', required: true })}${c.input({ label: '短简介', value: '面向 Windows 玩家的一次完整冒险。', required: true })}${readonlyField({ label: '归属厂商', value: '示例厂商', hint: '单厂商一期只读' })}${c.textarea({ label: '游戏介绍', value: '玩家将探索未知区域、完成挑战并逐步解锁新的能力与内容。', required: true })}</div><div class="game-config-section"><div class="game-compact-grid">${c.select({ label: '支持语言', options: ['简体中文', '繁体中文', '英语'], value: '简体中文' })}${c.select({ label: '销售地区', options: ['中国大陆', '全球（授权地区）'], value: '中国大陆' })}${readonlyField({ label: '支持平台', value: 'Windows', hint: '一期固定' })}</div><div class="requirements-grid">${c.input({ label: 'Windows 最低系统要求', value: 'Windows 10 64 位 · i5 · 8 GB', required: true })}${c.input({ label: 'Windows 推荐系统要求', value: 'Windows 11 64 位 · i7 · 16 GB', required: true })}</div><div class="candidate-tags"><span class="field-label">候选标签</span><div class="rule-chips"><button class="rule-chip is-active" data-demo-action="candidate-tag">动作</button><button class="rule-chip is-active" data-demo-action="candidate-tag">冒险</button><button class="rule-chip is-active" data-demo-action="candidate-tag">单人</button><button class="rule-chip" data-demo-action="candidate-tag">角色扮演</button></div><small>从平台标签库选择，运营审核后生效</small></div><div class="release-choice compact-release-choice"><label class="choice-card is-selected"><input type="radio" name="release-method" checked data-demo-action="release-direct-download"><span><strong>盖世直接下载</strong><small>提交 Windows 包体，由平台测试与发布</small></span></label><label class="choice-card"><input type="radio" name="release-method" data-demo-action="release-third-party"><span><strong>第三方平台激活</strong><small>由平台运营配置商品、SKU 与供给</small></span></label></div></div><footer class="form-footer"><span class="save-state" data-save-state>最近保存：未保存，刷新后恢复初始演示数据</span><div class="form-actions">${c.button({ label: '保存草稿', action: 'save-draft' })}${c.button({ label: '提交审核', variant: 'primary', action: 'submit-game-review' })}</div></footer>` })}</div><div class="span-4">${panel({ title: '游戏素材', description: '单项失败可重试，不清空其他素材', body: `<div class="asset-grid compact-assets"><div class="asset-card"><div class="asset-placeholder asset-placeholder--icon">1:1</div><strong>游戏图标</strong><span>1024 × 1024</span></div><div class="asset-card"><div class="asset-placeholder asset-placeholder--landscape">16:9</div><strong>横版封面</strong><span>1920 × 1080</span></div><div class="asset-card"><div class="asset-placeholder asset-placeholder--portrait">3:4</div><strong>竖版封面</strong><span>900 × 1200</span></div><div class="asset-card"><div class="asset-placeholder asset-placeholder--screens">3 / 10</div><strong>游戏截图</strong><span>已上传 3 张</span></div></div>${c.button({ label: '上传／替换素材', action: 'manage-game-assets' })}` })}</div></div></div>`;
+
+  const renderT06 = ({ page, route }) => {
+    if (route.id === 'P03-05') {
+      return `<div><div class="task-summary"><div><span>版本</span><strong>1.0.0</strong></div><div><span>包体修订</span><strong>build_rev_003</strong></div><div><span>测试轮次</span><strong>第 1 轮</strong></div><div><span>测试时间</span><strong>2026-09-01 15:36</strong></div></div><div class="content-grid" style="margin-top:16px"><div class="span-8">${c.resultStrip({ title: '测试不通过', detail: '启动后主窗口持续白屏，当前包体修订不可进入发布门禁', variant: 'danger' })}${panel({ title: '具体问题项', body: c.table({ headers: ['问题项', '问题现象', '复现条件', '影响范围'], rows: [['启动与首屏', 'Game.exe 启动后主窗口持续白屏', 'Windows 11 64 位；首次安装后直接启动', '阻塞玩家进入游戏'], ['退出与重启', '结束进程后再次启动仍复现', '同一安装目录连续启动 2 次', '影响全部当前修订测试']] }) })}<div class="issue-result-note"><strong>修订判断</strong><p>需替换包体并生成新修订；旧测试轮次和问题记录保持只读，不可直接改为通过。</p><span>附件摘要：启动白屏截图 1 张 · 测试日志摘要 1 份</span></div></div><div class="span-4">${panel({ title: '测试处理时间线', body: c.timeline({ items: ['测试结果提交 · 不通过 · 陈宇 · 15:36', '问题复现并记录附件 · 15:28', '任务开始测试 · 14:50', '第 1 轮任务分配完成 · 13:10'] }) })}</div></div></div>`;
+    }
+    return `<div><div class="task-summary"><div><span>审核对象</span><strong>首款签约游戏 · 游戏资料</strong></div><div><span>审核版本</span><strong>资料修订 02</strong></div><div><span>提交时间</span><strong>2026-09-01 10:42</strong></div><div><span>处理时间</span><strong>2026-09-01 11:20</strong></div></div><div class="content-grid" style="margin-top:16px"><div class="span-8">${c.resultStrip({ title: page.status || '已驳回', detail: '素材与候选标签存在 2 个问题，修改后需生成新审核版本', variant: 'danger' })}${panel({ title: '审核问题与驳回原因', body: c.table({ headers: ['问题项', '开发者提交值', '平台结果／驳回原因', '处理建议'], rows: [['竖版封面', '900 × 1200 · 素材修订 02', '标题文字进入裁切安全区', '调整文字位置后替换该素材'], ['候选标签', '动作、冒险、角色扮演', '“角色扮演”与当前可见玩法不一致', '保留动作、冒险并补充标签依据']] }) })}<div class="issue-result-note"><strong>生效说明</strong><p>继续修改将恢复资料修订 02 的原输入；重新提交生成新审核版本，不覆盖本次原因。</p></div></div><div class="span-4">${panel({ title: '审核处理时间线', body: c.timeline({ items: ['资料修订 02 已驳回 · 运营李佳 · 11:20', '素材与标签检查完成 · 11:12', '资料修订 02 提交审核 · 10:42', '资料修订 01 已通过 · 2026-08-20'] }) })}</div></div></div>`;
+  };
+
+  const renderT07 = ({ page, route }) => {
+    const approve = actionOf(page, 'approve', '通过');
+    const reject = actionOf(page, 'reject', '驳回');
+    const reviews = {
+      'P01-08': [
+        ['厂商名称', '示例厂商', '与签约主体及授权范围一致', { status: '待审核' }],
+        ['Logo', 'PNG · 1024 × 1024', '格式、清晰度与品牌归属符合要求', { status: '待审核' }],
+        ['厂商简介', '专注于 Windows 单机游戏研发与发行', '不含未经授权的承诺或外部导流', { status: '待审核' }],
+        ['HTTPS 官网', 'https://developer.example.com', '完整 HTTPS 地址且可验证归属', { status: '待审核' }],
+        ['协作联系人', '林晨 · 手机／邮箱已填写', '手机或邮箱至少一项有效，仅平台可见', { status: '待审核' }],
+      ],
+      'P01-09': [
+        ['游戏名称', '首款签约游戏', '与项目授权和厂商归属一致', { status: '待审核' }],
+        ['发行方式', '盖世直接下载', '与第三方平台激活互斥', { status: '待审核' }],
+        ['平台与系统', 'Windows · 最低／推荐配置已填写', '一期不接受 Mac、Linux 或主机配置', { status: '待审核' }],
+        ['语言与销售地区', '简体中文 · 中国大陆', '不得超出授权和可售范围', { status: '待审核' }],
+        ['素材与候选标签', '图标、封面、3 张截图 · 动作／冒险／单人', '素材规格完整；标签审核后生效', { status: '待审核' }],
+      ],
+      'P03-10': [
+        ['候选版本', '1.0.0 · build_rev_003', '与第 1 轮测试锁定修订一致', { status: '已通过' }],
+        ['测试结果', '陈宇 · 第 1 轮测试通过', '首个成功终态有效且不可覆盖', { status: '已通过' }],
+        ['当前线上版本', '尚未发布正式版本', '发布成功后保持唯一当前线上版本', { status: '已通过' }],
+        ['资料与包体门禁', '授权、资料、包体均有效', '任一失效即阻塞确认待发布', { status: '已通过' }],
+        ['商品／领取及商业门禁', '当前发行方式门禁已满足', '不允许忽略未满足项继续', { status: '待确认' }],
+      ],
+      'P04-06': [
+        ['需求与素材修订', 'campaign_demo_001 · 素材修订 01', '必须与开发者当前提交快照一致', { status: '待审核' }],
+        ['目标游戏', '首款签约游戏 · 已批准资料', '发布状态、地区与系统当前有效', { status: '待审核' }],
+        ['落地页', '游戏详情页 · 详情访问', '交付方式和领取条件与推广目标一致', { status: '待审核' }],
+        ['期望人群', '中国大陆 · 简体中文 · Windows', '仅作需求输入，最终规则由运营配置', { status: '待审核' }],
+        ['快照一致性', '素材与落地页未变化', '变化后旧预览不可继续审核', { status: '已通过' }],
+      ],
+    };
+    const rows = reviews[route.id] || reviews['P01-08'];
+    return `<div>${c.resultStrip({ title: '请核对提交快照与平台规则', detail: '审核结果仅改变当前页面演示状态', variant: 'warning' })}${c.table({ headers: ['检查项', '提交内容／当前值', '平台规则／差异', '结果'], rows })}<div class="review-reject-reason">${c.textarea({ label: '驳回原因', placeholder: '驳回时必填，请说明问题项和可执行修改要求', required: true })}</div><footer class="form-footer"><span class="save-state">通过前重新校验快照；驳回不覆盖开发者提交内容</span><div class="form-actions">${c.button({ label: reject.label, variant: 'danger', action: reject.id })}${c.button({ label: approve.label, variant: 'primary', action: approve.id })}</div></footer></div>`;
+  };
+
+  const renderT08 = ({ page, route }) => {
+    const views = {
+      'P02-04': {
+        title: '商品与 SKU 配置', description: '价格和库存读取生效来源快照，运营不维护本地独立价格',
+        body: `<div class="form-grid">${readonlyField({ label: '商品名称', value: '首款签约游戏 · 标准版' })}${readonlyField({ label: '发行方式', value: '第三方平台激活' })}${c.input({ label: 'SKU 名称', value: '标准版 CDKEY', required: true })}${c.input({ label: '版本', value: '标准版', required: true })}${c.select({ label: '激活平台', options: ['Steam', 'Epic'], value: 'Steam' })}${c.select({ label: '销售地区', options: ['中国大陆', '全球（授权地区）'], value: '中国大陆' })}${readonlyField({ label: '当前价格', value: '¥ 68.00 CNY', hint: '来源快照 · 17:42' })}${c.select({ label: '平台生效状态', options: ['配置完成／不可售', '可售', '停售'], value: '配置完成／不可售' })}</div>`,
+        gates: [{ label: '资料与项目授权', detail: '资料审核已通过', status: '已通过' }, { label: 'SKU 来源关联', detail: '等待有效供应来源', status: '待关联' }, { label: '地区与价格快照', detail: '保存时重新校验', status: '待校验' }], save: true,
+      },
+      'P02-05': {
+        title: '供应来源关联', description: '一期默认展示供应商 API；受控直接供 Key 机制待业务确认',
+        body: `<div class="form-grid">${readonlyField({ label: 'SKU', value: 'SKU-DEMO-001 · 标准版 CDKEY' })}${readonlyField({ label: '当前关联状态', value: '待关联' })}${c.select({ label: '供应来源类型', options: ['供应商 API', '受控来源（待业务确认）'], value: '供应商 API' })}${c.input({ label: '来源商品 ID', value: 'supplier_item_demo_01', required: true })}${readonlyField({ label: '来源商品名称', value: '首款签约游戏 标准版' })}${readonlyField({ label: '版本／平台', value: '标准版 · Steam' })}${readonlyField({ label: '地区／币种', value: '中国大陆 · CNY' })}${readonlyField({ label: '同步状态', value: '价格正常 · 库存状态未知', hint: '最近同步 17:42' })}</div>`,
+        gates: [{ label: '来源连接', detail: '不展示接口与凭据', status: '已通过' }, { label: '价格与地区', detail: '与 SKU 配置一致', status: '已通过' }, { label: '发货能力', detail: '待供应来源确认', status: '待确认' }], save: true,
+      },
+      'P03-02': {
+        title: '版本资料', description: '单一 Windows 正式分支；测试中及测试通过后只读',
+        body: `<div class="form-grid">${readonlyField({ label: '游戏／厂商', value: '首款签约游戏 · 示例厂商' })}${readonlyField({ label: '平台／分支', value: 'Windows · 正式分支' })}${c.input({ label: '版本号', value: '1.0.0', required: true })}${readonlyField({ label: '包体修订', value: 'build_rev_003', hint: '上传校验后生成' })}${c.textarea({ label: '更新说明', value: '首个正式版本，包含基础关卡与完整启动流程。', required: true })}${c.input({ label: '启动文件', value: 'Game.exe', required: true })}${c.input({ label: '启动参数', value: '-language=zh-CN' })}${c.textarea({ label: '运行说明', value: '首次启动会进行资源校验，请保持安装目录可写。' })}</div>`,
+        gates: [{ label: '版本号唯一性', detail: '已发布版本号永久占用', status: '已通过' }, { label: '启动文件存在', detail: '随包体修订重新校验', status: '待校验' }, { label: '编辑权限', detail: '当前为草稿，可编辑', status: '可编辑' }], save: true,
+      },
+      'P03-04': {
+        title: '提交测试确认', description: '提交后锁定本轮资料与包体修订，测试结束前不可替换',
+        body: `<div class="summary-grid">${readonlyField({ label: '游戏／版本', value: '首款签约游戏 · 1.0.0' })}${readonlyField({ label: '平台／分支', value: 'Windows · 正式分支' })}${readonlyField({ label: '包体摘要', value: 'build_rev_003 · 10.0 GB' })}${readonlyField({ label: '测试轮次', value: '第 1 轮' })}${readonlyField({ label: '启动信息', value: 'Game.exe · 正式环境', wide: true })}${readonlyField({ label: '更新说明', value: '首个正式版本，包含基础关卡与完整启动流程。', wide: true })}</div>`,
+        gates: [{ label: '项目归属与授权', detail: '示例厂商 · 首款签约游戏', status: '已通过' }, { label: '包体基础校验', detail: '完整性、可读性与启动文件', status: '已通过' }, { label: '资料与修订一致', detail: '当前为 build_rev_003', status: '已通过' }], save: false,
+      },
+    };
+    const view = views[route.id] || views['P03-02'];
+    const footer = view.save ? defaultFooter(page) : `<footer class="form-footer"><span class="save-state">全部检查通过后，可从页首提交唯一测试轮次</span></footer>`;
+    return `<div class="content-grid"><div class="span-8">${panel({ title: view.title, description: view.description, body: `${view.body}${footer}` })}</div><div class="span-4">${panel({ title: route.id === 'P03-04' ? '只读提交门禁' : '只读校验门禁', body: gateList(view.gates) })}</div></div>`;
+  };
+
+  const renderT09 = ({ page }) => `<div><div class="task-summary"><div><span>异常编号</span><strong>SUP-20260901-001</strong></div><div><span>游戏／商品</span><strong>首款签约游戏 · 标准版</strong></div><div><span>SKU</span><strong>SKU-DEMO-001</strong></div><div><span>首次发现</span><strong>2026-09-01 16:20</strong></div></div><div class="content-grid" style="margin-top:16px"><section class="exception-hero span-12"><div class="exception-icon">${icon('warning')}</div><div><h2>停止新增销售</h2><p>当前价格不可可靠读取，SKU 按最严格结果进入停售；既有订单及其履约证据保持不变。</p></div>${c.statusTag(page.status)}</section><div class="span-7">${panel({ title: '异常影响与恢复条件', body: `<div class="summary-grid">${readonlyField({ label: '异常类型', value: '当前价格不可用' })}${readonlyField({ label: '最近更新时间', value: '2026-09-01 17:50' })}${readonlyField({ label: '影响范围', value: 'SKU-DEMO-001 新增销售', wide: true })}${readonlyField({ label: '影响地区', value: '中国大陆' })}${readonlyField({ label: '开发者建议', value: '等待平台确认恢复；无需处理既有订单' })}</div><div class="form-section"><div class="form-section__title"><strong>恢复条件</strong><span>来源恢复不自动开售</span></div>${gateList([{ label: '来源价格恢复', detail: '取得可靠当前价格快照', status: '待恢复' }, { label: '供给与地区重校', detail: '来源、SKU、授权地区一致', status: '待校验' }, { label: '平台确认恢复', detail: '全部阻塞消除后由运营确认', status: '待确认' }])}</div>` })}</div><div class="span-5">${panel({ title: '处理时间线', body: c.timeline({ items: ['同步重试仍未取得可靠价格 · 17:50', 'SKU 停止新增销售 · 16:22', '检测到当前价格不可用 · 16:20', '最近一次正常同步 · 15:55'] }) })}</div></div></div></div>`;
+
+  const renderT10 = ({ page }) => {
+    const retry = actionOf(page, 'retry-upload', '继续上传');
+    return `<div class="content-grid"><div class="span-8">${panel({ title: '包体分片上传', body: `<div class="upload-zone"><div><div class="upload-zone__icon">${icon('upload')}</div><h3>Windows 包体已选择</h3><p>网络中断，已完成分片保留，可从 68% 继续上传</p>${c.statusTag('已中断')}</div></div><div class="upload-progress"><div class="progress-track"><div class="progress-bar" data-upload-progress></div></div><div class="progress-meta"><span data-upload-label>已上传 68%，已完成分片将保留</span><span class="number">6.8 GB / 10.0 GB</span></div></div><footer class="form-footer"><span class="save-state">不会上传真实文件；继续后先校验已完成分片</span><div class="form-actions">${c.button({ label: retry.label, variant: 'primary', action: retry.id })}</div></footer>` })}</div><div class="span-4">${panel({ title: '校验与提交规则', body: sectionList(flattenItems(page)) })}</div></div>`;
+  };
+
+  const renderT11 = ({ page, route }) => {
+    if (route.id === 'P03-07') {
+      return `<div><div class="task-summary"><div><span>测试任务</span><strong>test_task_demo_002</strong></div><div><span>版本／修订</span><strong>1.0.0 · build_rev_003</strong></div><div><span>测试轮次</span><strong>第 1 轮</strong></div><div><span>任务状态</span>${c.statusTag(page.status)}</div></div><div class="content-grid" style="margin-top:16px"><div class="span-8">${panel({ title: '测试任务详情', description: '只读使用本轮锁定的资料与包体修订', body: `<div class="summary-grid">${readonlyField({ label: '游戏／平台', value: '首款签约游戏 · Windows' })}${readonlyField({ label: '测试环境', value: '正式环境验收' })}${readonlyField({ label: '启动文件', value: 'Game.exe' })}${readonlyField({ label: '启动参数', value: '-language=zh-CN' })}${readonlyField({ label: '运行说明', value: '首次启动进行资源校验，安装目录需可写', wide: true })}</div><div class="form-section"><div class="form-section__title"><strong>测试范围</strong><span>获取失败可重试，不自动记为不通过</span></div>${gateList([{ label: '安装与启动', detail: '完成安装、首启与基础运行检查', status: '待测试' }, { label: '核心流程', detail: '验证基础关卡与退出流程', status: '待测试' }, { label: '包体基础校验', detail: '完整性与启动文件已通过', status: '已通过' }])}</div>` })}</div><div class="span-4">${panel({ title: '领取与开始记录', body: c.timeline({ items: ['任务已分配给陈宇 · 2026-09-01 13:10', '包体获取权限已生成', '等待测试人员开始本轮测试'] }) })}</div></div></div>`;
+    }
+    const pass = actionOf(page, 'test-pass', '测试通过');
+    const submit = actionOf(page, 'submit-test-result', '提交测试结果');
+    return `<div><div class="task-summary"><div><span>测试任务</span><strong>test_task_demo_002</strong></div><div><span>版本／修订</span><strong>1.0.0 · build_rev_003</strong></div><div><span>测试轮次</span><strong>第 1 轮</strong></div><div><span>任务状态</span>${c.statusTag(page.status)}</div></div><div class="content-grid" style="margin-top:16px"><div class="span-7">${panel({ title: '提交测试结果', description: '每轮首个成功终态生效，提交后不可修改', body: `<div class="test-choice"><label class="choice-card is-selected"><input type="radio" name="test-result" checked data-demo-action="${e(pass.id)}"><strong>${e(pass.label)}</strong></label><label class="choice-card"><input type="radio" name="test-result" data-demo-action="test-fail"><strong>测试不通过</strong></label></div><div class="test-result-form">${c.textarea({ label: '问题描述', placeholder: '不通过时必填；填写现象、复现条件和影响范围' })}${readonlyField({ label: '附件状态', value: '未添加附件', hint: '仅展示当前任务附件状态' })}</div><footer class="form-footer"><span class="save-state">提交失败保持测试中并保留输入；历史结果不可覆盖</span>${c.button({ label: submit.label, variant: 'primary', action: submit.id })}</footer>` })}</div><div class="span-5">${panel({ title: '提交门禁与记录', body: `${gateList([{ label: '任务有效性', detail: 'test_task_demo_002 为当前有效任务', status: '已通过' }, { label: '修订一致性', detail: 'build_rev_003 · 第 1 轮', status: '已通过' }, { label: '结果完整性', detail: '不通过时问题描述必填', status: '待提交' }])}<div style="margin-top:14px">${c.timeline({ items: ['任务开始测试 · 陈宇', '包体获取成功', '任务分配完成'] })}</div>` })}</div></div></div>`;
+  };
+
+  const renderT12 = ({ page, route }) => {
+    if (route.id === 'P03-13') {
+      const dispositionActions = `<div class="disposition-actions">${c.button({ label: '恢复下载', variant: 'primary', action: 'resume-download' })}${c.button({ label: '暂停启动', action: 'pause-launch' })}${c.button({ label: '下架游戏', variant: 'danger', action: 'unpublish-game' })}</div>`;
+      return `<div><div class="task-summary"><div><span>当前线上版本</span><strong>1.0.0 · build_rev_003</strong></div><div><span>发布时间</span><strong>2026-08-28 14:30</strong></div><div><span>下载开关</span>${c.statusTag('下载暂停')}</div><div><span>启动开关</span>${c.statusTag('允许启动')}</div></div><div class="content-grid" style="margin-top:16px"><div class="span-8">${panel({ title: '线上版本处置', description: '处置只影响当前线上版本能力，不删除文件、测试或发布历史', body: `${gateList([{ label: '下载能力', detail: '平台问题处理中，暂停新增下载', status: '下载暂停' }, { label: '启动能力', detail: '已安装玩家仍可启动', status: '允许启动' }, { label: '游戏发布状态', detail: '商品停售不等于游戏下架', status: '已发布' }])}<div class="form-section"><div class="form-section__title"><strong>处置信息</strong><span>执行前在页面内填写，不新增弹窗</span></div><div class="form-grid disposition-form">${c.textarea({ label: '处置原因', placeholder: '请填写问题现象、处置依据和恢复条件', required: true })}${c.select({ label: '影响范围', options: ['仅新增下载', '仅启动能力', '下载与启动', '整款游戏发布状态'], value: '仅新增下载' })}</div></div><div class="form-section"><div class="form-section__title"><strong>可执行处置</strong><span>恢复前重新校验问题、当前版本与发布门禁</span></div>${dispositionActions}</div><footer class="form-footer"><span class="save-state">所有处置记录前后开关、原因、影响范围、操作人和结果</span></footer>` })}</div><div class="span-4">${panel({ title: '处置记录', body: c.timeline({ items: ['下载暂停 · 平台问题处理中 · 运营李佳', '版本 1.0.0 发布成功', '发布门禁校验通过'] }) })}</div></div></div>`;
+    }
+    const schedule = actionOf(page, 'schedule-release', '定时发布');
+    const now = actionOf(page, 'release-now', '立即发布');
+    return `<div><div class="task-summary"><div><span>候选版本</span><strong>1.0.0</strong></div><div><span>包体修订</span><strong>build_rev_003</strong></div><div><span>测试轮次</span><strong>第 1 轮 · 测试通过</strong></div><div><span>当前线上版本</span><strong>尚未发布正式版本</strong></div></div><div class="content-grid" style="margin-top:16px"><div class="span-8">${panel({ title: '发布配置', description: '立即发布与定时发布互斥，发布时重新校验全部门禁', body: `<div class="publish-options"><button class="publish-option is-active" data-demo-action="${e(now.id)}"><strong>${e(now.label)}</strong><span>门禁通过后立即切换线上版本</span></button><button class="publish-option" data-demo-action="${e(schedule.id)}"><strong>${e(schedule.label)}</strong><span>按统一时区设置未来发布时间</span></button></div><div class="schedule-field is-disabled" data-schedule-field>${c.input({ label: '定时发布时间', value: '', placeholder: '选择定时发布后填写', type: 'datetime-local', hint: '仅在选择定时发布时填写', disabled: true })}</div><footer class="form-footer"><span class="save-state">发布失败保持候选待发布，原线上版本及其字段不变</span><div class="form-actions">${c.button({ label: '保持原线上版本', action: 'keep-online-version' })}${c.button({ label: page.primaryAction || now.label, variant: 'primary', action: now.id, extra: 'data-release-submit' })}</div></footer>` })}</div><div class="span-4">${panel({ title: '发布门禁', body: gateList([{ label: '项目授权与资料', detail: '已批准资料快照可读取', status: '已通过' }, { label: '包体与测试', detail: 'build_rev_003 · 第 1 轮测试通过', status: '已通过' }, { label: '商品／领取与供给', detail: '当前发行方式门禁已满足', status: '已通过' }, { label: '分成、结算责任与权益', detail: '平台发行门禁已确认', status: '已通过' }]) })}</div></div></div>`;
+  };
+
+  const renderT13 = ({ page, route }) => {
+    if (route.id === 'P04-03') {
+      return `<div>${c.resultStrip({ title: '平台配置中', detail: '开发者只读查看当前需求快照与运营回执，不可编辑或执行计划', variant: 'info' })}<div class="content-grid"><div class="span-8">${panel({ title: '开发者需求快照', description: 'campaign_demo_001 · 修订 01', body: `<div class="summary-grid">${readonlyField({ label: '目标游戏', value: '首款签约游戏' })}${readonlyField({ label: '投放目标', value: '详情访问' })}${readonlyField({ label: '期望人群', value: '中国大陆 · 简体中文 · Windows' })}${readonlyField({ label: '期望时间', value: '2026-09-10 — 2026-09-20' })}${readonlyField({ label: '示例素材', value: '示例素材 · 素材修订 01', wide: true })}</div><footer class="form-footer"><span class="save-state">开发者只读；不提供启动、暂停、结束或运营配置编辑</span></footer>` })}</div><div class="span-4">${panel({ title: '运营回执与配置摘要', body: `${gateList([{ label: '素材与落地页', detail: '等待运营审核', status: '待审核' }, { label: '人群与预估人数', detail: '配置完成后回填摘要', status: '待配置' }, { label: '资源位与排期', detail: '正式资源位待业务确认', status: '待配置' }, { label: '结果入口', detail: 'T+1 数据完成后可查看', status: '--' }])}<div class="receipt-note"><strong>最近回执</strong><p>运营已领取需求，正在核对素材与落地页；未完成项不填默认值。</p><span>2026-09-01 18:20 · 平台发行运营</span></div>` })}</div></div></div>`;
+    }
+    return `<div>${c.resultStrip({ title: '精准投放采用方案 A', detail: '开发者提交需求，运营配置并执行', variant: 'info' })}<div class="content-grid"><div class="span-8">${panel({ title: '投放需求', body: `<div class="form-grid">${c.select({ label: '目标游戏', options: ['首款签约游戏'], value: '首款签约游戏' })}${c.select({ label: '投放目标', options: ['详情访问', '购买／领取', '成功交付', '首次启动'], value: '详情访问' })}${c.input({ label: '期望开始时间', value: '2026-09-10', type: 'date', required: true })}${c.input({ label: '期望结束时间', value: '2026-09-20', type: 'date', required: true })}${c.textarea({ label: '期望人群', value: '中国大陆、简体中文、Windows 用户', hint: '最终人群与硬性排除由运营配置' })}</div><div class="upload-zone" style="min-height:150px;margin-top:18px"><div><div class="upload-zone__icon">${icon('file')}</div><h3>示例素材</h3><p>素材规范待确认时禁止提交，不伪造实际投放素材</p>${c.button({ label: '选择示例素材', action: 'select-campaign-asset' })}</div></div>${defaultFooter(page)}` })}</div><div class="span-4">${panel({ title: '方案职责边界', body: gateList([{ label: '开发者', detail: '提交目标、素材、期望人群与时间', status: '可编辑' }, { label: '平台运营', detail: '配置人群、资源位、频次与排期', status: '后续处理' }, { label: '预算与竞价', detail: '一期不展示', status: '不在范围' }]) })}</div></div></div>`;
+  };
+
+  const renderT14 = ({ page, route }) => {
+    const add = actionOf(page, 'add-target-rule', '添加包含规则');
+    const exclude = actionOf(page, 'exclude-rule', '添加排除规则');
+    if (route.id === 'P04-08') {
+      return `<div class="content-grid"><div class="span-8">${panel({ title: '资源位与排期', description: '正式资源位清单待业务确认，不把历史广告位当真实资源位', body: `<div class="form-grid">${readonlyField({ label: '资源位', value: '资源位待业务确认', hint: '仅可选择盘点后的现有资源位' })}${readonlyField({ label: '素材类型', value: '--', hint: '随正式资源位回填' })}${c.input({ label: '开始时间', value: '2026-09-10T10:00', type: 'datetime-local', required: true })}${c.input({ label: '结束时间', value: '2026-09-20T22:00', type: 'datetime-local', required: true })}${c.select({ label: '频次', options: ['每位访客每天 1 次', '每位访客每天 2 次', '每位访客每天 3 次'], value: '每位访客每天 1 次' })}${c.input({ label: '优先级', value: '50', type: 'number', required: true, hint: '仅允许整数' })}</div><div class="conflict-summary"><div><span>排期冲突</span><strong>暂不可检测</strong><p>资源位确认后，按优先级、进入已排期时间和计划编号展示冲突摘要。</p></div>${c.statusTag('门禁阻塞')}</div>${defaultFooter(page, { noSave: true })}` })}</div><div class="span-4">${panel({ title: '排期门禁摘要', body: gateList([{ label: '人群规则', detail: 'segment_demo_001 · 规则版本 01', status: '已通过' }, { label: '素材与落地页', detail: '审核快照一致', status: '已通过' }, { label: '资源位', detail: '正式清单待业务确认', status: '待确认' }, { label: '时间、频次与优先级', detail: '资源位确认后重校', status: '待校验' }]) })}</div></div>`;
+    }
+    const includeGroups = [{ label: '地区', values: ['中国大陆'] }, { label: '语言', values: ['简体中文'] }, { label: '设备／系统', values: ['Windows'] }, { label: '平台行为', values: ['近 30 天访问详情'] }];
+    const excludeGroups = [{ label: '已获得游戏', values: ['首款签约游戏'] }, { label: '平台行为', values: ['近 7 天已成功交付'] }];
+    const groupRows = (groups, action, className) => groups.map(group => `<div class="rule-row"><span class="rule-row__label">${e(group.label)}</span><div class="rule-chips">${group.values.map(value => `<button class="rule-chip ${className}" data-demo-action="${e(action)}">${e(value)}</button>`).join('')}</div></div>`).join('');
+    return `<div><div class="targeting-grid"><section class="rule-builder"><div class="rule-builder__header"><div><h3>包含人群</h3><p>同字段多值为“或”，不同字段为“且”</p></div>${c.button({ label: add.label, action: add.id, size: 'small' })}</div>${groupRows(includeGroups, add.id, 'is-active')}</section><section class="rule-builder"><div class="rule-builder__header"><div><h3>排除人群</h3><p>命中任一排除规则即不进入目标人群</p></div>${c.button({ label: exclude.label, action: exclude.id, size: 'small' })}</div>${groupRows(excludeGroups, exclude.id, 'is-excluded')}</section></div><div class="content-grid" style="margin-top:16px"><div class="span-8">${panel({ title: '硬性排除', description: '固定门禁，运营不可删除', body: gateList([{ label: '地区未授权／不可售', detail: '按游戏当前销售地区校验', status: '固定排除' }, { label: '设备或系统不满足', detail: '一期仅支持 Windows', status: '固定排除' }]) })}</div><div class="span-4">${panel({ title: '预估人数', body: `<div class="audience-estimate"><span>当前状态</span><strong>--</strong><p>规则有变更，需重新预估；未知不以 0 代替。</p>${c.statusTag(page.status)}</div>` })}</div></div></div>`;
+  };
+
+  const renderT15 = ({ page, route }) => {
+    if (route.id === 'P04-09') {
+      return `<div><div class="task-summary"><div><span>投放计划</span><strong>campaign_demo_001</strong></div><div><span>计划状态</span>${c.statusTag(page.status)}</div><div><span>实际排期</span><strong>2026-09-10 — 09-20</strong></div><div><span>数据状态</span>${c.statusTag('待生成')}</div></div><div class="metric-grid" style="margin-top:16px">${c.metricCard({ label: '曝光', value: '--', trend: '计划尚未启动' })}${c.metricCard({ label: '点击率', value: '--', trend: '计划尚未启动' })}${c.metricCard({ label: '有效访问', value: '--', trend: '等待 T+1 数据' })}${c.metricCard({ label: '转化', value: '--', trend: '等待 T+1 数据' })}</div><div class="content-grid" style="margin-top:16px"><div class="span-8">${panel({ title: '计划监控与实时门禁', body: `${gateList([{ label: '游戏与落地页', detail: '当前发布状态正常', status: '已通过' }, { label: '素材与人群', detail: '审核快照与规则版本有效', status: '已通过' }, { label: '资源位与时间', detail: '启动时再次校验', status: '待启动校验' }])}<div class="form-section"><div class="form-section__title"><strong>取消排期</strong><span>取消后计划进入已结束且不可恢复</span></div>${c.textarea({ label: '取消排期原因', placeholder: '取消排期时必填；说明原因与影响范围', required: true })}</div><div class="form-section"><div class="form-section__title"><strong>计划动作</strong><span>当前为已排期，只可启动或取消排期</span></div><div class="disposition-actions">${c.button({ label: '启动', variant: 'primary', action: 'start-campaign' })}${c.button({ label: '取消排期', action: 'cancel-schedule' })}</div></div>` })}</div><div class="span-4">${panel({ title: '状态与停止记录', body: c.timeline({ items: ['已排期 · 运营李佳 · 2026-09-01 19:10', '排期门禁校验通过', '开发者需求已领取'] }) })}</div></div></div>`;
+    }
+    const range = actionOf(page, 'dashboard-range', '近 7 天');
+    return `<div><div class="dashboard-toolbar"><div class="dashboard-toolbar__group">${c.button({ label: range.label, action: range.id, extra: 'data-dashboard-range' })}${c.button({ label: '近 30 天', action: range.id })}</div><span class="save-state">数据更新：T+1 聚合口径，不展示单用户数据</span></div><div class="metric-grid">${c.metricCard({ label: '曝光', value: '128,640', trend: '+12.6%' })}${c.metricCard({ label: '点击', value: '8,920', trend: '点击率 6.93%' })}${c.metricCard({ label: '访问', value: '6,274', trend: '有效访问口径' })}${c.metricCard({ label: '转化', value: '1,086', trend: '归因窗口待确认' })}</div><div class="content-grid" style="margin-top:16px"><div class="span-8">${panel({ title: '发行趋势', body: `${c.chart({ label: '曝光、点击、访问与转化趋势' })}<div class="chart-legend"><span class="legend-item"><span class="legend-dot"></span>投放结果趋势</span></div>` })}</div><div class="span-4">${panel({ title: '数据口径说明', body: sectionList(flattenItems(page).slice(0, 7)) })}</div></div></div>`;
+  };
+
+  const registry = {
+    T01: renderT01,
+    T02: renderT02,
+    T03: renderT03,
+    T04: renderT04,
+    T05: renderT05,
+    T06: renderT06,
+    T07: renderT07,
+    T08: renderT08,
+    T09: renderT09,
+    T10: renderT10,
+    T11: renderT11,
+    T12: renderT12,
+    T13: renderT13,
+    T14: renderT14,
+    T15: renderT15,
+  };
+
+  namespace.templates = {
+    registry,
+    render({ route, page, state = 'default' }) {
+      if (state !== 'default') return c.statePanel({ state, primaryAction: page?.primaryAction, onRetry: state === 'error' });
+      const renderer = registry[route.templateId] || registry.T03;
+      return `<section class="page-template template-${route.templateId.toLowerCase()}" data-template-id="${e(route.templateId)}" data-page-state="default">${renderer({ route, page })}</section>`;
+    },
+  };
+})(window.GameHubDemo);
+
+window.GameHubDemo = window.GameHubDemo || {};
+
+(function registerShell(namespace) {
+  const c = namespace.components;
+  const e = c.escapeHtml;
+  const icon = name => namespace.icons.render(name);
+  const roleMeta = {
+    developer: { label: '开发者', roleName: '受邀开发者', description: '维护资料、提交包体与投放需求，并在授权内自助准备 CDKEY。' },
+    operations: { label: '发行运营', roleName: '平台发行运营', description: '负责资料审核、供给关联、版本发布与投放执行。' },
+    tester: { label: '测试人员', roleName: '平台测试人员', description: '仅处理分配给本人的待测任务，历史结果不可覆盖。' },
+  };
+  const moduleIcon = { '01': 'vendor', '02': 'key', '03': 'build', '04': 'target' };
+  const routeIcon = route => {
+    if (route.templateId === 'T15') return 'chart';
+    if (route.role === 'tester') return 'test';
+    if (route.role === 'operations') return 'review';
+    return moduleIcon[route.moduleId] || 'home';
+  };
+  const hashFor = (route, role = route.role, state = 'default') => `#/${route.id}?role=${role}&state=${state}`;
+  const primaryAction = (page, route) => {
+    const actions = Array.isArray(page?.actions) ? page.actions : [];
+    const byLabel = actions.find(action => action.label === page.primaryAction);
+    if (byLabel) return byLabel.id;
+    const preferred = actions.find(action => !/reject|interrupt|exclude|stop/.test(action.id || ''));
+    return preferred?.id || `primary-${route.id}`;
+  };
+
+  const renderTopBar = ({ module, fixture, role, redacted }) => {
+    const roleInfo = roleMeta[role] || roleMeta.developer;
+    const account = redacted ? null : fixture.accounts?.[role];
+    const context = redacted ? null : fixture.context;
+    const help = redacted ? '' : `<button class="top-help-button" type="button" data-help-open data-demo-action="open-help">${icon('info')}<span>帮助中心</span></button>`;
+    return `<header class="top-bar"><div class="brand-block"><div class="brand-mark">${icon('logo')}</div><div class="brand-copy"><div class="brand-title">盖世游戏</div><div class="brand-subtitle">开发者后台一期</div></div></div><div class="top-context"><strong>${e(module?.name || '开发者后台')}</strong><span class="environment-badge">${e(context?.environment || '演示环境')}</span></div>${help}<div class="top-account"><div class="account-avatar">${e((account?.name || roleInfo.label).slice(0, 1))}</div><div class="account-copy"><strong>${e(account?.name || roleInfo.label)}</strong><span>${e(account?.roleName || roleInfo.roleName)}</span></div></div></header>`;
+  };
+
+  const renderSideNav = ({ routes, route, role }) => {
+    const allowed = routes.filter(item => item.role === role);
+    return `<aside class="side-nav" data-side-nav data-component="SideNav" data-variant="dark"><div class="nav-label">${e(roleMeta[role]?.label || '当前角色')}导航</div><nav class="nav-list" aria-label="业务页导航">${allowed.map(item => `<a class="nav-item${item.id === route.id ? ' is-active' : ''}" data-component="NavItem" data-variant="${item.id === route.id ? 'active' : 'default'}" href="${e(hashFor(item, role))}"${item.id === route.id ? ' aria-current="page"' : ''}>${icon(routeIcon(item))}<span>${e(item.title.replace(/页$/, ''))}</span></a>`).join('')}</nav><div class="nav-footer">仅展示当前角色在本模块可访问的页面</div></aside>`;
+  };
+
+  const renderContext = ({ fixture, redacted }) => {
+    if (redacted) return '';
+    const context = fixture.context || {};
+    return `<div class="context-bar">${icon('vendor')}<span class="context-value">${e(context.vendorName || '示例厂商')}</span><span class="context-divider">/</span>${icon('game')}<span class="context-value">${e(context.gameName || '首款签约游戏')}</span><span class="context-divider">/</span><span>${e(context.versionName || '1.0.0')}</span></div>`;
+  };
+
+  const renderPageHeader = ({ route, page, state, redacted }) => {
+    if (route.id === 'P01-01') return '';
+    const safeSummary = redacted ? '当前账号无法访问此页面，页面内容已隐藏。' : (page.summary || '一期业务页面演示');
+    const actionLabel = redacted ? '返回可访问页面' : (page.primaryAction || '继续');
+    const action = redacted ? 'default-state' : primaryAction(page, route);
+    return `<header class="page-header"><div><div class="page-eyebrow">${e(route.id)} / ${e(route.templateId)}</div><h1 class="page-title">${e(route.title)}</h1><p class="page-summary">${e(safeSummary)}</p></div><div class="page-actions">${!redacted && state === 'default' ? c.statusTag(page.status || '待处理') : ''}${c.button({ label: actionLabel, variant: 'primary', action, primary: true, disabled: !redacted && Boolean(page.primaryActionDisabled) })}</div></header>`;
+  };
+
+  const renderReviewTools = ({ routes, route, role, state }) => {
+    const cdkeyScenarios = route.id === 'P02-01'
+      ? `<div class="review-scenarios"><span>CDKEY 场景</span>${[
+        ['quota-exceeded', '额度不足'],
+        ['channel-denied', '渠道未授权'],
+        ['publishing-paused', '发行暂停'],
+        ['generation-failed', '生成失败'],
+      ].map(([id, label]) => `<button type="button" data-review-scenario="${id}" data-demo-action="review-${id}">${label}</button>`).join('')}</div>`
+      : '';
+    return `<aside class="review-tools" data-review-only="true"><div class="review-tools__title">评审工具<span>不属于正式后台功能</span></div><div class="review-tools__grid"><label>页面<select data-review-route>${routes.map(item => `<option value="${e(item.id)}"${item.id === route.id ? ' selected' : ''}>${e(item.id)} ${e(item.title)}</option>`).join('')}</select></label><label>角色<select data-review-role>${Object.entries(roleMeta).map(([id, meta]) => `<option value="${id}"${id === role ? ' selected' : ''}>${e(meta.label)}</option>`).join('')}</select></label><label>页面状态<select data-review-state>${['default', 'loading', 'empty', 'error', 'permission'].map(item => `<option value="${item}"${item === state ? ' selected' : ''}>${item}</option>`).join('')}</select></label><label>刷新规则<select disabled><option>恢复 Fixture</option></select></label></div>${cdkeyScenarios}<div class="review-tools__actions">${c.button({ label: '恢复初始演示', variant: 'ghost', size: 'small', action: 'reset-demo', iconName: 'refresh' })}</div></aside>`;
+  };
+
+  const renderHelpCenter = help => `<section class="help-center" data-help-center hidden>
+    <header class="help-center__header"><button class="text-back" type="button" data-help-back data-demo-action="close-help">返回</button><div><div class="page-eyebrow">GLOBAL HELP</div><h1>${e(help.title)}</h1></div></header>
+    <div class="help-grid"><section class="panel"><header class="panel-header"><h2 class="panel-title">常见问题</h2></header><div class="panel-body"><div class="faq-list">${help.faq.map((item, index) => `<article class="faq-item"><button type="button" aria-expanded="false" data-demo-action="toggle-faq" data-faq-index="${index}"><span>${e(item.question)}</span><span aria-hidden="true">＋</span></button><p hidden>${e(item.answer)}</p></article>`).join('')}</div></div></section>
+    <aside class="contact-card"><div class="page-eyebrow">CONTACT</div><h2>联系我们</h2><strong>${e(help.contact.supportName)}</strong><span>${e(help.contact.serviceHours)}</span><span>${e(help.contact.channel)}</span><p>${e(help.contact.fallback)}</p></aside></div>
+  </section>`;
+
+  const renderBusiness = ({ module, routes, route, page, fixture, role, state, content }) => {
+    const redacted = state === 'permission';
+    const isLogin = route.id === 'P01-01' && !redacted;
+    return `<div class="demo-stage"><main class="product-frame${isLogin ? ' is-login' : ''}" data-frame-id="${e(route.id)}" data-role="${e(role)}" data-template-id="${e(route.templateId)}" data-page-state="${e(state)}">${renderTopBar({ module, fixture, role, redacted })}${isLogin ? '' : renderSideNav({ routes, route, role })}<section class="workspace">${isLogin ? '' : renderContext({ fixture, redacted })}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(fixture.helpCenter)}</section></main>${renderReviewTools({ routes, route, role, state })}</div>`;
+  };
+
+  const renderOverview = ({ modules, routes }) => `<main class="overview-page"><section class="overview-hero"><div class="overview-kicker">GAMEHUB DEVELOPER BACKEND / MVP</div><h1 class="overview-title">开发者后台一期评审总览</h1><p class="overview-copy">围绕单厂商、单游戏、Windows 单包体的乙方发行闭环，共 4 个模块、37 个业务页，包含已有 CDKEY 商品与供给能力，以及精准投放方案 A。</p><div class="overview-note">${icon('info')}<span>仅供评审，不属于正式后台功能；不发起真实接口请求。</span></div></section><section class="overview-grid">${modules.map(module => {
+    const moduleRoutes = routes.filter(route => route.moduleId === module.id);
+    const first = moduleRoutes[0];
+    return `<article class="overview-card"><div class="overview-card__head"><span class="overview-card__id">MODULE ${e(module.id)}</span>${c.statusTag(`${moduleRoutes.length} 页`, 'info')}</div><h2>${e(module.name)}</h2><p>${e(module.id === '02' ? '平台已有 CDKEY 供给能力，一期补齐开发者与运营管理视图。' : module.id === '04' ? '开发者提需求，运营配规则并执行，开发者只读 T+1 聚合结果。' : '一期业务闭环中的必要管理与处理页面。')}</p><a class="overview-link" href="${e(module.output + hashFor(first))}">进入模块${icon('chevron')}</a></article>`;
+  }).join('')}</section><section class="overview-section"><div class="overview-section__header"><h2>三类业务角色</h2><span>非本角色页面进入通用无权限态</span></div><div class="role-grid">${Object.entries(roleMeta).map(([id, meta]) => `<article class="role-card"><strong>${e(meta.label)} <span class="number">${e(id)}</span></strong><span>${e(meta.description)}</span></article>`).join('')}</div></section><section class="overview-section"><div class="overview-section__header"><h2>37 个业务页索引</h2><span>Frame ID 与 Hash 路由唯一对应</span></div><div class="route-index">${modules.map(module => `<section class="route-group"><h3>${e(module.name)}</h3>${routes.filter(route => route.moduleId === module.id).map(route => `<a href="${e(module.output + hashFor(route))}"><code>${e(route.id)}</code><span>${e(route.title)}</span></a>`).join('')}</section>`).join('')}</div></section></main>`;
+
+  namespace.shell = { roleMeta, hashFor, renderBusiness, renderOverview };
+})(window.GameHubDemo);
+
+window.GameHubDemo = window.GameHubDemo || {};
+
+(function startApplication(namespace) {
+  const c = namespace.components;
+  const validRoles = new Set(['developer', 'operations', 'tester']);
+  const validStates = new Set(['default', 'loading', 'empty', 'error', 'permission']);
+  const memory = {
+    page: Object.create(null),
+    result: Object.create(null),
+    upload: Object.create(null),
+    business: Object.create(null),
+    shell: { helpOpen: false, scrollTop: 0 },
+  };
+  const root = document.getElementById('app');
+  const parseJson = id => JSON.parse(document.getElementById(id).textContent);
+  const moduleConfig = parseJson('demo-module');
+  const routes = parseJson('demo-routes');
+  const fixture = parseJson('demo-fixture');
+  const modules = parseJson('demo-modules');
+  const isOverview = root.dataset.overview === 'true';
+
+  if (isOverview) {
+    root.innerHTML = namespace.shell.renderOverview({ modules, routes });
+    return;
+  }
+
+  const fallbackPage = route => ({
+    summary: `${route.title}的业务内容正在准备中。`,
+    status: '待完善',
+    primaryAction: '继续',
+    sections: [{ title: '页面说明', items: ['一期范围', '页面内存状态', '刷新后恢复初始演示数据'] }],
+    states: ['default', 'loading', 'empty', 'error', 'permission'],
+  });
+  const parseLocation = () => {
+    const raw = location.hash.replace(/^#\/?/, '');
+    const [routePart, queryPart = ''] = raw.split('?');
+    const requested = routes.find(item => item.id === routePart);
+    const route = requested || routes.find(item => item.id === moduleConfig.defaultRoute) || routes[0];
+    const query = new URLSearchParams(queryPart);
+    const requestedRole = query.get('role');
+    const role = validRoles.has(requestedRole) ? requestedRole : route.role;
+    const requestedState = query.get('state');
+    let state = validStates.has(requestedState) ? requestedState : 'default';
+    if (role !== route.role) state = 'permission';
+    return { route, role, state };
+  };
+  const navigate = ({ routeId, role, state }) => {
+    const current = parseLocation();
+    const nextRoute = routes.find(route => route.id === routeId) || current.route;
+    location.hash = namespace.shell.hashFor(nextRoute, role || current.role, state || 'default');
+  };
+  const resultMessage = (routeId, title, detail, variant = 'success') => {
+    memory.result[routeId] = { title, detail, variant };
+    const target = root.querySelector('[data-runtime-result]');
+    if (target) target.innerHTML = c.resultStrip(memory.result[routeId]);
+  };
+  const primaryDestination = routeId => ({
+    'P01-01': 'P01-02', 'P01-04': 'P01-05', 'P01-06': 'P01-05',
+    'P02-01': 'P02-02', 'P02-03': 'P02-04',
+    'P03-01': 'P03-02', 'P03-02': 'P03-03', 'P03-03': 'P03-04',
+    'P03-06': 'P03-07', 'P03-07': 'P03-08', 'P03-09': 'P03-10', 'P03-11': 'P03-12',
+    'P04-01': 'P04-02', 'P04-02': 'P04-03', 'P04-03': 'P04-04', 'P04-05': 'P04-06',
+  }[routeId]);
+  const primaryBusinessAction = routeId => ({
+    'P03-13': 'resume-download',
+    'P04-09': 'start-campaign',
+  }[routeId]);
+  const variantForStatus = status => {
+    if (/已下架|已结束|失败|已作废|已撤销/.test(status)) return 'danger';
+    if (/暂停|待|排期/.test(status)) return 'warning';
+    return 'success';
+  };
+  const setStatusTag = (tag, status) => {
+    if (!tag) return;
+    tag.textContent = status;
+    tag.dataset.variant = variantForStatus(status);
+  };
+  const setSummaryStatus = (label, status) => {
+    const item = Array.from(root.querySelectorAll('.task-summary > div')).find(node => node.querySelector(':scope > span')?.textContent.trim() === label);
+    setStatusTag(item?.querySelector('.status-tag'), status);
+  };
+  const setGateStatus = (label, status) => {
+    const item = Array.from(root.querySelectorAll('.gate-item')).find(node => node.querySelector('strong')?.textContent.trim() === label);
+    setStatusTag(item?.querySelector('.status-tag'), status);
+  };
+  const setActionDisabled = (action, disabled) => {
+    root.querySelectorAll(`[data-demo-action="${action}"]`).forEach(control => {
+      control.disabled = disabled;
+      control.setAttribute('aria-disabled', String(disabled));
+    });
+  };
+  const toggleHelp = open => {
+    const workspace = root.querySelector('.workspace');
+    const pageWrap = root.querySelector('.page-wrap');
+    const help = root.querySelector('[data-help-center]');
+    if (!workspace || !pageWrap || !help) return;
+    if (open) memory.shell.scrollTop = workspace.scrollTop || 0;
+    memory.shell.helpOpen = open;
+    pageWrap.hidden = open;
+    help.hidden = !open;
+    if (!open) workspace.scrollTop = memory.shell.scrollTop;
+  };
+  const setCdkeyTab = (routeId, index, remember = true) => {
+    const nextIndex = Number.isFinite(Number(index)) ? Number(index) : 0;
+    if (remember) memory.page[routeId] = { ...(memory.page[routeId] || {}), cdkeyTab: nextIndex };
+    root.querySelectorAll('[data-cdkey-panel]').forEach((panel, panelIndex) => { panel.hidden = panelIndex !== nextIndex; });
+    root.querySelectorAll('[data-component="Tabs"][data-variant="task"] [role="tab"]').forEach((tab, tabIndex) => {
+      const active = tabIndex === nextIndex;
+      tab.classList.toggle('is-active', active);
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+    });
+  };
+  const demoSecret = () => {
+    const bytes = new Uint8Array(8);
+    crypto.getRandomValues(bytes);
+    return `demo_${Array.from(bytes, value => value.toString(16).padStart(2, '0')).join('')}`;
+  };
+  const renderMemoryRecords = records => {
+    const timeline = root.querySelector('.timeline');
+    if (!timeline) return;
+    timeline.querySelectorAll('[data-memory-record]').forEach(node => node.remove());
+    records.slice().reverse().forEach(record => {
+      timeline.insertAdjacentHTML('afterbegin', `<li class="timeline-item" data-memory-record><div class="timeline-title">${c.escapeHtml(record)}</div><div class="timeline-meta number">当前页面内存记录</div></li>`);
+    });
+  };
+  const applyBusinessState = routeId => {
+    const state = memory.business[routeId];
+    if (!state) return;
+    if (routeId === 'P03-13') {
+      if (state.download) { setSummaryStatus('下载开关', state.download); setGateStatus('下载能力', state.download); }
+      if (state.launch) { setSummaryStatus('启动开关', state.launch); setGateStatus('启动能力', state.launch); }
+      if (state.game) setGateStatus('游戏发布状态', state.game);
+      if (state.download === '允许下载') {
+        setActionDisabled('resume-download', true);
+        root.querySelectorAll('[data-primary-action]').forEach(control => { control.disabled = true; control.setAttribute('aria-disabled', 'true'); });
+      }
+      if (state.game === '已下架') setActionDisabled('unpublish-game', true);
+    }
+    if (routeId === 'P04-09') {
+      if (state.plan) setSummaryStatus('计划状态', state.plan);
+      if (state.plan === '投放中') setGateStatus('资源位与时间', '已通过');
+      if (state.plan === '投放中' || state.plan === '已结束') {
+        setActionDisabled('start-campaign', true);
+        setActionDisabled('cancel-schedule', true);
+        root.querySelectorAll('[data-primary-action]').forEach(control => { control.disabled = true; control.setAttribute('aria-disabled', 'true'); });
+      }
+    }
+    renderMemoryRecords(state.records || []);
+  };
+  const updateBusinessState = (routeId, patch, record) => {
+    const previous = memory.business[routeId] || { records: [] };
+    memory.business[routeId] = { ...previous, ...patch, records: [...(previous.records || []), record] };
+    applyBusinessState(routeId);
+  };
+  const handleBusinessAction = (routeId, action) => {
+    const requireReason = (selector, label) => {
+      const field = root.querySelector(selector);
+      if (field?.value.trim()) {
+        field.removeAttribute('aria-invalid');
+        return true;
+      }
+      field?.setAttribute('aria-invalid', 'true');
+      field?.focus();
+      resultMessage(routeId, `请先填写${label}`, '说明问题现象、处置依据和影响范围后再执行。', 'warning');
+      return false;
+    };
+    if (routeId === 'P03-13' && action === 'resume-download') {
+      if (!requireReason('.disposition-form textarea', '处置原因')) return true;
+      updateBusinessState(routeId, { download: '允许下载' }, '恢复下载 · 门禁校验通过');
+      resultMessage(routeId, '下载已恢复', '当前线上版本已允许新增下载；刷新后恢复 Fixture。');
+      return true;
+    }
+    if (routeId === 'P03-13' && action === 'pause-launch') {
+      if (!requireReason('.disposition-form textarea', '处置原因')) return true;
+      updateBusinessState(routeId, { launch: '启动暂停' }, '暂停启动 · 影响已安装玩家');
+      resultMessage(routeId, '启动已暂停', '新的启动请求已停止，处置记录已写入当前页面内存。', 'warning');
+      return true;
+    }
+    if (routeId === 'P03-13' && action === 'unpublish-game') {
+      if (!requireReason('.disposition-form textarea', '处置原因')) return true;
+      updateBusinessState(routeId, { game: '已下架' }, '下架游戏 · 保留版本与历史记录');
+      resultMessage(routeId, '游戏已下架', '版本文件、测试和发布历史未删除。', 'danger');
+      return true;
+    }
+    if (routeId === 'P04-09' && action === 'start-campaign') {
+      updateBusinessState(routeId, { plan: '投放中' }, '启动投放 · 实时门禁校验通过');
+      resultMessage(routeId, '投放已启动', '计划已从已排期进入投放中，刷新后恢复 Fixture。');
+      return true;
+    }
+    if (routeId === 'P04-09' && action === 'cancel-schedule') {
+      if (!requireReason('.form-section textarea', '取消排期原因')) return true;
+      updateBusinessState(routeId, { plan: '已结束' }, '取消排期 · 按 status_action=end 记录');
+      resultMessage(routeId, '排期已取消', '计划已进入已结束，不产生新曝光。', 'warning');
+      return true;
+    }
+    return false;
+  };
+
+  const bindInteractions = ({ route, role, state }) => {
+    const routeSelect = root.querySelector('[data-review-route]');
+    const roleSelect = root.querySelector('[data-review-role]');
+    const stateSelect = root.querySelector('[data-review-state]');
+    routeSelect?.addEventListener('change', event => navigate({ routeId: event.target.value, role, state: 'default' }));
+    roleSelect?.addEventListener('change', event => navigate({ routeId: route.id, role: event.target.value, state: 'default' }));
+    stateSelect?.addEventListener('change', event => navigate({ routeId: route.id, role, state: event.target.value }));
+
+    root.querySelectorAll('[data-demo-action]').forEach(control => control.addEventListener('click', event => {
+      const action = event.currentTarget.dataset.demoAction;
+      if (!action || event.currentTarget.disabled) return;
+      if (action === 'reset-demo') { location.reload(); return; }
+      if (action === 'start-onboarding' || action === 'back-onboarding') {
+        const showLogin = action === 'start-onboarding';
+        const intro = root.querySelector('[data-onboarding-intro]');
+        const login = root.querySelector('[data-login-panel]');
+        if (intro) intro.hidden = showLogin;
+        if (login) login.hidden = !showLogin;
+        (showLogin ? login?.querySelector('input') : intro?.querySelector('[data-demo-action="start-onboarding"]'))?.focus();
+        return;
+      }
+      if (action === 'open-help') { toggleHelp(true); return; }
+      if (action === 'close-help') { toggleHelp(false); return; }
+      if (action === 'toggle-faq') {
+        const answer = event.currentTarget.nextElementSibling;
+        const expanded = event.currentTarget.getAttribute('aria-expanded') === 'true';
+        event.currentTarget.setAttribute('aria-expanded', String(!expanded));
+        const mark = event.currentTarget.querySelector('[aria-hidden="true"]');
+        if (mark) mark.textContent = expanded ? '＋' : '−';
+        if (answer) answer.hidden = expanded;
+        return;
+      }
+      if (action === 'cdkey-tab') {
+        setCdkeyTab(route.id, Number(event.currentTarget.dataset.tabIndex));
+        return;
+      }
+      const cdkeyRestriction = {
+        'review-quota-exceeded': { reason: '剩余配额不足，当前申请需要 2000 个 Key。', quota: '0', disabled: true, scenario: 'quota-exceeded', status: '授权正常', pausedReason: '—' },
+        'review-channel-denied': { reason: '渠道 A 不在当前游戏白名单内。', quota: '8000', disabled: true, scenario: 'channel-denied', status: '授权正常', pausedReason: '—' },
+        'review-publishing-paused': { reason: '平台已暂停当前游戏的发行授权。', quota: '8000', disabled: true, scenario: 'publishing-paused', status: '发行暂停', pausedReason: '授权风控复核中' },
+        'review-generation-failed': { reason: '下一次创建将展示生成失败且不扣减配额。', quota: '8000', disabled: false, scenario: 'generation-failed', status: '授权正常', pausedReason: '—' },
+      }[action];
+      if (cdkeyRestriction) {
+        const frame = root.querySelector('.product-frame');
+        if (frame) frame.dataset.cdkeyScenario = cdkeyRestriction.scenario;
+        const quota = root.querySelector('[data-authorization-quota] .number');
+        const authStatus = root.querySelector('[data-authorization-status] .status-tag');
+        const pausedReason = root.querySelector('[data-authorization-paused] strong');
+        if (quota) quota.textContent = cdkeyRestriction.quota;
+        setStatusTag(authStatus, cdkeyRestriction.status);
+        if (pausedReason) pausedReason.textContent = cdkeyRestriction.pausedReason;
+        root.querySelector('[data-restriction-reason]')?.remove();
+        root.querySelector('[data-cdkey-authorization]')?.insertAdjacentHTML('afterend', `<div class="result-strip" data-restriction-reason data-variant="warning"><div><strong>${c.escapeHtml(cdkeyRestriction.reason)}</strong><span>这是评审场景，不修改真实授权。</span></div><button type="button" data-restriction-help>查看帮助</button></div>`);
+        root.querySelector('[data-restriction-help]')?.addEventListener('click', () => toggleHelp(true));
+        setActionDisabled('create-key-batch', cdkeyRestriction.disabled);
+        return;
+      }
+      if (action === 'create-key-batch') {
+        const target = root.querySelector('[data-key-batch-result]');
+        if (!target) return;
+        target.innerHTML = '<div class="one-time-result" data-key-batch-generating><strong>生成中</strong><span>正在按当前授权范围校验配额并生成盖世平台 Key。</span></div>';
+        setActionDisabled('create-key-batch', true);
+        setTimeout(() => {
+          if (root.querySelector('.product-frame')?.dataset.cdkeyScenario === 'generation-failed') {
+            target.innerHTML = '<div class="result-strip" data-variant="danger"><div><strong>生成失败</strong><span>演示服务异常，未生成半批次且未扣减配额。</span></div></div>';
+            setActionDisabled('create-key-batch', false);
+            return;
+          }
+          target.innerHTML = `<div class="one-time-result" data-one-time-key-download><strong>批次生成成功</strong><span>演示下载文件：KEY-20260902-NEW.csv；有效窗口内下载失败可重试，成功后不能再次查看明文。</span><div class="form-actions">${c.button({ label: '模拟下载失败', action: 'simulate-key-download-failure' })}${c.button({ label: '模拟一次性下载成功', variant: 'primary', action: 'acknowledge-key-download' })}</div></div>`;
+          target.querySelector('[data-demo-action="simulate-key-download-failure"]')?.addEventListener('click', () => {
+            resultMessage(route.id, '下载失败', '一次性有效窗口仍未关闭，可在当前页面重试。', 'warning');
+          });
+          target.querySelector('[data-demo-action="acknowledge-key-download"]')?.addEventListener('click', clickEvent => {
+            clickEvent.currentTarget.closest('[data-one-time-key-download]')?.remove();
+            resultMessage(route.id, '一次性下载窗口已关闭', '再次进入只显示批次号、数量、状态和审计记录。', 'warning');
+          });
+          resultMessage(route.id, 'Key 批次已创建', '2000 个盖世平台 Key 已进入一次性下载窗口。');
+        }, 300);
+        return;
+      }
+      if (action === 'create-api-credential' || action === 'rotate-api-credential') {
+        const target = root.querySelector('[data-credential-result]');
+        if (!target) return;
+        target.innerHTML = `<div class="one-time-result" data-one-time-secret><strong>client_secret 仅显示一次</strong><code>${c.escapeHtml(demoSecret())}</code>${c.button({ label: '我已保存', variant: 'primary', action: 'acknowledge-secret' })}</div>`;
+        target.querySelector('[data-demo-action="acknowledge-secret"]')?.addEventListener('click', clickEvent => {
+          clickEvent.currentTarget.closest('[data-one-time-secret]')?.remove();
+          resultMessage(route.id, 'Secret 已隐藏', '后续只显示末四位；遗失时必须轮换。', 'warning');
+        });
+        resultMessage(route.id, action === 'create-api-credential' ? '渠道凭据已创建' : '渠道凭据已轮换', action === 'create-api-credential' ? '本次关闭后只显示末四位。' : '旧 Secret 已失效；本次关闭后只显示末四位。');
+        return;
+      }
+      if (['pause-api-credential', 'revoke-api-credential', 'pause-key-batch', 'void-key-batch'].includes(action)) {
+        updateBusinessState(route.id, { lastCdkeyAction: action }, `${action} · 仅写入当前页面内存审计`);
+        const keyStatus = root.querySelector('[data-cdkey-panel="batches"] .status-tag');
+        const credentialStatus = root.querySelector('[data-cdkey-panel="credentials"] .status-tag');
+        if (action === 'pause-key-batch') setStatusTag(keyStatus, '已暂停');
+        if (action === 'void-key-batch') setStatusTag(keyStatus, '已作废');
+        if (action === 'pause-api-credential') setStatusTag(credentialStatus, '已暂停');
+        if (action === 'revoke-api-credential') setStatusTag(credentialStatus, '已撤销');
+        resultMessage(route.id, '状态已更新', '历史审计和已交付记录继续保留。', action.includes('revoke') || action.includes('void') ? 'danger' : 'warning');
+        return;
+      }
+      if (action === 'api-doc-section') {
+        root.querySelector(`#${event.currentTarget.dataset.apiTarget}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      if (action === 'filter-api-error') {
+        resultMessage(route.id, `错误码：${event.currentTarget.textContent.trim()}`, '已定位对应错误说明；不发起真实请求。', 'info');
+        return;
+      }
+      if (action === 'copy-api-example') {
+        const example = root.querySelector('.code-block code')?.textContent || '';
+        if (!navigator.clipboard?.writeText) {
+          resultMessage(route.id, '复制失败', '当前浏览器未授予剪贴板权限，请手动选择示例文本。', 'warning');
+          return;
+        }
+        navigator.clipboard.writeText(example)
+          .then(() => resultMessage(route.id, '示例已复制', '仅写入当前浏览器剪贴板。'))
+          .catch(() => resultMessage(route.id, '复制失败', '当前浏览器未授予剪贴板权限，请手动选择示例文本。', 'warning'));
+        return;
+      }
+      if (action === 'retry-state' || action === 'default-state') {
+        const allowed = routes.find(item => item.role === role) || routes.find(item => item.id === moduleConfig.defaultRoute) || routes[0];
+        navigate({ routeId: state === 'permission' ? allowed.id : route.id, role, state: 'default' });
+        return;
+      }
+      if (action === 'login') { navigate({ routeId: 'P01-02', role: 'developer', state: 'default' }); return; }
+      if (action.startsWith('primary-')) {
+        const businessAction = primaryBusinessAction(route.id);
+        if (businessAction && handleBusinessAction(route.id, businessAction)) return;
+        const destination = primaryDestination(route.id);
+        if (destination) navigate({ routeId: destination, role, state: 'default' });
+        else resultMessage(route.id, '操作已记录', '当前页面的演示状态已更新，刷新后恢复初始数据。');
+        return;
+      }
+      if (handleBusinessAction(route.id, action)) return;
+      if (action === 'save-draft') {
+        const now = new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date());
+        memory.page[route.id] = { savedAt: now };
+        root.querySelectorAll('[data-save-state]').forEach(node => { node.textContent = `最近保存：${now}（仅当前页面内存）`; });
+        resultMessage(route.id, '草稿已保存', '不会自动保存；刷新页面后恢复 Fixture。');
+        return;
+      }
+      if (action === 'approve') { resultMessage(route.id, '审核已通过', '结果仅用于本次演示，刷新后恢复。'); return; }
+      if (action === 'reject') { resultMessage(route.id, '已驳回并记录原因', '请开发者修改后重新提交。', 'danger'); return; }
+      if (action === 'start-upload') {
+        memory.upload[route.id] = 'uploading';
+        const bar = root.querySelector('[data-upload-progress]');
+        const label = root.querySelector('[data-upload-label]');
+        if (bar) bar.style.width = '82%';
+        if (label) label.textContent = '上传中 82%，已完成分片正在校验';
+        resultMessage(route.id, '分片上传已开始', '不会读取或上传真实文件。', 'info');
+        return;
+      }
+      if (action === 'interrupt-upload') {
+        memory.upload[route.id] = 'interrupted';
+        const label = root.querySelector('[data-upload-label]');
+        if (label) label.textContent = '网络中断，已完成分片保留，可继续上传';
+        resultMessage(route.id, '上传已中断', '已完成分片已保留，请在页面内继续。', 'warning');
+        return;
+      }
+      if (action === 'retry-upload') {
+        memory.upload[route.id] = 'verified';
+        const bar = root.querySelector('[data-upload-progress]');
+        const label = root.querySelector('[data-upload-label]');
+        if (bar) bar.style.width = '100%';
+        if (label) label.textContent = '分片已全部上传，完整性校验通过';
+        resultMessage(route.id, '继续上传完成', '包体完整性校验通过。');
+        return;
+      }
+      if (action === 'test-pass') {
+        root.querySelectorAll('.choice-card').forEach(node => node.classList.remove('is-selected'));
+        event.currentTarget.closest('.choice-card')?.classList.add('is-selected');
+        resultMessage(route.id, '已选择测试通过', '提交后将生成不可覆盖的历史记录。', 'info');
+        return;
+      }
+      if (action === 'submit-test-result') { resultMessage(route.id, '测试结果已提交', '历史结果不可覆盖，开发者可查看处理记录。'); return; }
+      if (action === 'schedule-release' || action === 'release-now') {
+        const scheduled = action === 'schedule-release';
+        root.querySelectorAll('.publish-option').forEach(node => node.classList.toggle('is-active', node.dataset.demoAction === action));
+        const scheduleField = root.querySelector('[data-schedule-field]');
+        const scheduleInput = scheduleField?.querySelector('input');
+        scheduleField?.classList.toggle('is-disabled', !scheduled);
+        if (scheduleInput) {
+          scheduleInput.disabled = !scheduled;
+          scheduleInput.setAttribute('aria-disabled', String(!scheduled));
+          if (!scheduled) scheduleInput.value = '';
+        }
+        root.querySelectorAll('[data-release-submit], [data-primary-action]').forEach(control => {
+          control.dataset.demoAction = action;
+          const label = control.querySelector('span');
+          if (label) label.textContent = scheduled ? '定时发布' : '立即发布';
+        });
+        resultMessage(route.id, action === 'schedule-release' ? '已选择定时发布' : '已选择立即发布', '运营发布前仍需通过全部门禁；失败时保持原线上版本。', 'warning');
+        return;
+      }
+      if (action === 'add-target-rule') { event.currentTarget.classList.toggle('is-active'); resultMessage(route.id, '包含规则已更新', '仅使用已确认的地区、语言、设备／系统和平台行为标签。', 'info'); return; }
+      if (action === 'exclude-rule') { event.currentTarget.classList.toggle('is-excluded'); resultMessage(route.id, '排除规则已更新', '规则未保存到服务端，刷新后恢复。', 'info'); return; }
+      if (action === 'dashboard-range') {
+        event.currentTarget.parentElement?.querySelectorAll('.gh-button').forEach(node => node.dataset.variant = node === event.currentTarget ? 'primary' : 'secondary');
+        resultMessage(route.id, '时间范围已切换', '图表仍使用 T+1 聚合演示数据。', 'info');
+        return;
+      }
+      if (action === 'tab') {
+        event.currentTarget.parentElement.querySelectorAll('.tab').forEach(node => { node.classList.toggle('is-active', node === event.currentTarget); node.setAttribute('aria-selected', String(node === event.currentTarget)); });
+        return;
+      }
+      if (action.startsWith('page-')) { resultMessage(route.id, '列表位置已记住', '页码、筛选和滚动位置只在当前页面内存中保留。', 'info'); return; }
+      const destination = primaryDestination(route.id);
+      if (event.currentTarget.hasAttribute('data-primary-action') && destination) { navigate({ routeId: destination, role, state: 'default' }); return; }
+      resultMessage(route.id, '演示操作已完成', '此操作仅修改当前页面内存，刷新后恢复。');
+    }));
+  };
+
+  const render = () => {
+    const { route, role, state } = parseLocation();
+    const page = fixture.pages?.[route.id] || fallbackPage(route);
+    const content = namespace.templates.render({ route, page, state });
+    root.innerHTML = namespace.shell.renderBusiness({ module: moduleConfig, routes, route, page, fixture, role, state, content });
+    if (memory.result[route.id] && state === 'default') {
+      const target = root.querySelector('[data-runtime-result]');
+      if (target) target.innerHTML = c.resultStrip(memory.result[route.id]);
+    }
+    if (memory.page[route.id]?.savedAt) root.querySelectorAll('[data-save-state]').forEach(node => { node.textContent = `最近保存：${memory.page[route.id].savedAt}（仅当前页面内存）`; });
+    applyBusinessState(route.id);
+    bindInteractions({ route, role, state });
+    if (route.id === 'P02-01' && state === 'default') setCdkeyTab(route.id, memory.page[route.id]?.cdkeyTab || 0, false);
+  };
+
+  addEventListener('hashchange', render);
+  render();
+})(window.GameHubDemo);</script></body></html>
