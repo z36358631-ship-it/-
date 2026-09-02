@@ -33,6 +33,20 @@ const escapeXml = value => String(value ?? '')
   .replaceAll('"', '&quot;');
 
 const safeId = value => String(value).replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'layer';
+const retryWait = new Int32Array(new SharedArrayBuffer(4));
+const writeTextFile = (file, content) => {
+  let lastError;
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    try {
+      fs.writeFileSync(file, content, 'utf8');
+      return;
+    } catch (error) {
+      lastError = error;
+      Atomics.wait(retryWait, 0, 0, 50 + attempt * 10);
+    }
+  }
+  throw lastError;
+};
 
 function routeUrl(route) {
   const module = modules.find(item => item.id === route.moduleId);
@@ -177,6 +191,7 @@ function componentMasterSection() {
     ['输入与操作', ['按钮', '输入框', '下拉选择', '上传', '分页', '标签页']],
     ['数据与流程', ['表格', '步骤条', '审核面板', '时间线', '指标卡', '图表']],
     ['状态', ['状态标签', '空状态', '异常状态', '无权限状态']],
+    ['CDKEY 自助发行', ['任务 Tabs（4 态）', '授权摘要', 'Key 批次表单', '渠道 API 凭据', '接口说明', '帮助中心 FAQ']],
   ];
   const cards = groups.flatMap(([group, labels], groupIndex) => labels.map((label, labelIndex) => {
     const index = groups.slice(0, groupIndex).reduce((sum, item) => sum + item[1].length, 0) + labelIndex;
@@ -185,6 +200,29 @@ function componentMasterSection() {
     return `${text(x, y - 28, group, 16, '#667085', 650)}<g id="component-${safeId(label)}"><rect x="${x}" y="${y}" width="640" height="138" rx="20" fill="#FFFFFF" stroke="#D9E0EA" stroke-width="2"/>${text(x + 30, y + 50, label, 24, '#101828', 700)}${text(x + 30, y + 92, '跨业务页复用的可编辑组件 / 状态变体', 17, '#667085', 400)}<rect x="${x + 500}" y="${y + 36}" width="110" height="54" rx="12" fill="#DFF8FC" stroke="#2FD7EF" stroke-width="2"/>${text(x + 555, y + 70, '示例', 17, '#0B6271', 650)}</g>`;
   })).join('');
   return `<g id="components-master"><rect x="80" y="220" width="${4 * 720 - 80}" height="${Math.ceil(groups.reduce((sum, item) => sum + item[1].length, 0) / 4) * 190 + 80}" rx="32" fill="#F3F6FA" stroke="#CBD5E1" stroke-width="2"/>${cards}</g>`;
+}
+
+function componentStateGallery(variants) {
+  const columns = 4;
+  const gapX = 120;
+  const gapY = 150;
+  const left = 120;
+  const top = 1840;
+  const rows = Math.ceil(variants.length / columns);
+  const defs = variants.map((item, index) => `<clipPath id="clip-component-state-${index}"><rect width="1440" height="900"/></clipPath>`).join('');
+  const frames = variants.map((item, index) => {
+    const col = index % columns;
+    const row = Math.floor(index / columns);
+    const x = left + col * (viewport.width + gapX);
+    const y = top + row * (viewport.height + gapY);
+    const prefix = `component-state-${safeId(item.componentSet)}-${safeId(item.variant)}`;
+    const shapes = item.extracted.rects.map((shape, shapeIndex) => renderRect(shape, prefix, shapeIndex)).join('');
+    const texts = item.extracted.texts.map((label, textIndex) => renderText(label, prefix, textIndex)).join('');
+    return `${text(x, y - 54, item.componentSet, 22, '#344054', 700)}${text(x, y - 22, item.variant, 17, '#667085', 600)}<g id="${prefix}" data-component-set="${escapeXml(item.componentSet)}" data-variant="${escapeXml(item.variant)}" transform="translate(${x} ${y})" clip-path="url(#clip-component-state-${index})"><rect id="${prefix}-background" width="1440" height="900" fill="#FFFFFF"/>${shapes}${texts}</g>`;
+  }).join('');
+  const width = left * 2 + columns * viewport.width + (columns - 1) * gapX;
+  const height = top + rows * viewport.height + Math.max(0, rows - 1) * gapY + 120;
+  return { defs, frames, width, height };
 }
 
 function renderBusinessFigmaPage(pageDefinition, section, extractedById) {
@@ -215,17 +253,21 @@ function renderGlobalIndexFigmaPage(pageDefinition) {
   return `<svg xmlns="http://www.w3.org/2000/svg" id="figma-page-${pageDefinition.id}" width="${width}" height="1160" viewBox="0 0 ${width} 1160"><rect id="canvas-background-${pageDefinition.id}" width="${width}" height="1160" fill="#E7EBF1"/>${titleBar(pageDefinition.name, 0, width)}${text(160, 230, '受邀开发者资料 → CDKEY 商品供给 → 包体测试发布 → 精准投放与发行数据', 22, '#344054', 600)}${moduleCards}</svg>`;
 }
 
-function renderComponentMasterFigmaPage(pageDefinition) {
-  const width = 3040;
-  const height = 1520;
-  return `<svg xmlns="http://www.w3.org/2000/svg" id="figma-page-${pageDefinition.id}" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect id="canvas-background-${pageDefinition.id}" width="${width}" height="${height}" fill="#E7EBF1"/>${titleBar(pageDefinition.name, 0, width)}${componentMasterSection()}</svg>`;
+function renderComponentMasterFigmaPage(pageDefinition, variants) {
+  const gallery = componentStateGallery(variants);
+  return `<svg xmlns="http://www.w3.org/2000/svg" id="figma-page-${pageDefinition.id}" width="${gallery.width}" height="${gallery.height}" viewBox="0 0 ${gallery.width} ${gallery.height}"><defs>${gallery.defs}</defs><rect id="canvas-background-${pageDefinition.id}" width="${gallery.width}" height="${gallery.height}" fill="#E7EBF1"/>${titleBar(pageDefinition.name, 0, gallery.width)}${componentMasterSection()}${text(120, 1768, '业务状态组件集', 30, '#101828', 800)}${gallery.frames}</svg>`;
 }
 
-async function extractRoute(page, route) {
-  await page.goto(routeUrl(route), { waitUntil: 'load' });
+async function extractRoute(page, route, beforeExtract) {
+  const targetUrl = routeUrl(route);
+  if (page.url() === targetUrl) await page.reload({ waitUntil: 'load' });
+  else await page.goto(targetUrl, { waitUntil: 'load' });
   const frame = page.locator('.product-frame[data-frame-id]').first();
   await frame.waitFor({ state: 'visible' });
   await page.addStyleTag({ content: '[data-review-only="true"] { display: none !important; } * { animation: none !important; transition: none !important; }' });
+  if (route.id === 'P01-01') await page.locator('[data-onboarding-intro]').waitFor({ state: 'visible' });
+  if (route.id === 'P02-01') await page.locator('[data-cdkey-panel="supply"]').waitFor({ state: 'visible' });
+  if (beforeExtract) await beforeExtract(page);
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   return frame.evaluate(rootElement => {
     const rootRect = rootElement.getBoundingClientRect();
@@ -254,13 +296,18 @@ async function extractRoute(page, route) {
       const match = color.match(/^rgba\([^,]+,[^,]+,[^,]+,\s*([\d.]+)\)$/i);
       return match ? Number.parseFloat(match[1]) : 1;
     };
+    const backgroundFill = style => {
+      const image = style.backgroundImage || '';
+      const linearStart = image.match(/linear-gradient\([^,]+,\s*(rgba?\([^)]*\)|#[0-9a-f]{3,8})/i);
+      return linearStart?.[1] || style.backgroundColor;
+    };
     for (const element of [rootElement, ...rootElement.querySelectorAll('*')]) {
       if (element.closest('[data-review-only="true"]')) continue;
       if (element.matches('script,style,svg,svg *')) continue;
       const style = getComputedStyle(element);
       const rect = element.getBoundingClientRect();
       if (!visible(element, style, rect)) continue;
-      const background = style.backgroundColor;
+      const background = backgroundFill(style);
       const borderWidth = Number.parseFloat(style.borderTopWidth || '0');
       const borderColor = style.borderTopColor;
       const hasFill = rgbaAlpha(background) > 0.01;
@@ -364,6 +411,7 @@ async function main() {
   const browser = await chromium.launch({ headless: true, executablePath, args: ['--allow-file-access-from-files', '--disable-background-networking'] });
   const page = await browser.newPage({ viewport });
   const extractedById = new Map();
+  let componentVariants = [];
   try {
     for (const route of routes) {
       const extracted = await extractRoute(page, route);
@@ -371,8 +419,34 @@ async function main() {
         throw new Error(`${route.id}: extracted ${extracted.width}x${extracted.height}`);
       }
       extractedById.set(route.id, extracted);
-      fs.writeFileSync(path.join(pageDir, `${route.id}.svg`), `${renderPageSvg(route, extracted)}\n`, 'utf8');
+      writeTextFile(path.join(pageDir, `${route.id}.svg`), `${renderPageSvg(route, extracted)}\n`);
     }
+    const p01 = routes.find(route => route.id === 'P01-01');
+    const p02 = routes.find(route => route.id === 'P02-01');
+    const cdkeyVariants = [];
+    for (const [index, variant] of ['Tab=Supply', 'Tab=KeyBatches', 'Tab=ChannelAPI', 'Tab=APIDocs'].entries()) {
+      const extracted = index === 0
+        ? extractedById.get('P02-01')
+        : await extractRoute(page, p02, async currentPage => {
+          await currentPage.locator(`[data-tab-index="${index}"]`).click();
+          await currentPage.locator(`[data-cdkey-panel="${['supply', 'batches', 'credentials', 'api-docs'][index]}"]`).waitFor({ state: 'visible' });
+        });
+      cdkeyVariants.push({ componentSet: 'P02-01 / Task State', variant, extracted });
+    }
+    const login = await extractRoute(page, p01, async currentPage => {
+      await currentPage.locator('[data-demo-action="start-onboarding"]').click();
+      await currentPage.locator('[data-login-panel]').waitFor({ state: 'visible' });
+    });
+    const help = await extractRoute(page, p02, async currentPage => {
+      await currentPage.locator('[data-help-open]').click();
+      await currentPage.locator('[data-help-center]').waitFor({ state: 'visible' });
+    });
+    componentVariants = [
+      ...cdkeyVariants,
+      { componentSet: 'P01-01 / Onboarding', variant: 'Step=Intro', extracted: extractedById.get('P01-01') },
+      { componentSet: 'P01-01 / Onboarding', variant: 'Step=Login', extracted: login },
+      { componentSet: 'Global Help', variant: 'Global Help', extracted: help },
+    ];
   } finally {
     await page.close();
     await browser.close();
@@ -404,11 +478,11 @@ async function main() {
   }).join('');
   const combined = `<svg xmlns="http://www.w3.org/2000/svg" id="gamehub-developer-backend-phase1" width="${canvasWidth}" height="${canvasHeight}" viewBox="0 0 ${canvasWidth} ${canvasHeight}"><defs>${defs}</defs><rect id="canvas-background" width="${canvasWidth}" height="${canvasHeight}" fill="#E7EBF1"/>${designSystemSection()}${sectionSvg}</svg>`;
   const combinedPath = path.join(sourceDir, 'gamehub-developer-backend-phase1.svg');
-  fs.writeFileSync(combinedPath, `${combined}\n`, 'utf8');
+  writeTextFile(combinedPath, `${combined}\n`);
 
   const designSystemPath = path.join(sectionDir, '00-design-system-architecture.svg');
   const designSystem = `<svg xmlns="http://www.w3.org/2000/svg" id="section-00" width="4820" height="1660" viewBox="0 0 4820 1660"><rect id="canvas-background-00" width="4820" height="1660" fill="#E7EBF1"/>${designSystemSection()}</svg>`;
-  fs.writeFileSync(designSystemPath, `${designSystem}\n`, 'utf8');
+  writeTextFile(designSystemPath, `${designSystem}\n`);
 
   const sectionSources = [];
   for (const section of frameMap.sections.filter(item => item.kind === 'business')) {
@@ -431,7 +505,7 @@ async function main() {
     const sectionSvg = `<svg xmlns="http://www.w3.org/2000/svg" id="section-${layout.id}" width="${sectionWidth}" height="${sectionHeight}" viewBox="0 0 ${sectionWidth} ${sectionHeight}"><defs>${sectionDefs}</defs><rect id="canvas-background-${layout.id}" width="${sectionWidth}" height="${sectionHeight}" fill="#E7EBF1"/><g id="section-${layout.id}-content"><rect x="${layout.x}" y="${layout.y}" width="${layout.width}" height="${layout.height}" rx="32" fill="#EEF2F7" stroke="#CBD5E1" stroke-width="2"/>${text(layout.x + 70, layout.y + 78, layout.name, 34, '#101828', 800)}${text(layout.x + 70, layout.y + 116, `${layout.frames.length} 个业务 Frame · 1440 × 900`, 19, '#667085', 400)}${pages}</g></svg>`;
     const sectionFile = `${layout.id}-${safeId(layout.name)}.svg`;
     const sectionPath = path.join(sectionDir, sectionFile);
-    fs.writeFileSync(sectionPath, `${sectionSvg}\n`, 'utf8');
+    writeTextFile(sectionPath, `${sectionSvg}\n`);
     sectionSources.push({ id: layout.id, name: layout.name, frameCount: layout.frames.length, svg: `sections/${sectionFile}` });
   }
   const figmaPages = [];
@@ -446,13 +520,13 @@ async function main() {
       frameIds = section.frames.map(frame => frame.id);
       svg = renderBusinessFigmaPage(pageDefinition, section, extractedById);
     } else if (pageDefinition.kind === 'components') {
-      svg = renderComponentMasterFigmaPage(pageDefinition);
+      svg = renderComponentMasterFigmaPage(pageDefinition, componentVariants);
     } else {
       throw new Error(`unsupported Figma page kind: ${pageDefinition.kind}`);
     }
     const outputPath = path.join(sourceDir, pageDefinition.source);
     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-    fs.writeFileSync(outputPath, `${svg}\n`, 'utf8');
+    writeTextFile(outputPath, `${svg}\n`);
     figmaPages.push({
       id: pageDefinition.id,
       name: pageDefinition.name,
@@ -477,7 +551,7 @@ async function main() {
     ],
     pages: routes.map(route => ({ id: route.id, title: route.title, role: route.role, templateId: route.templateId, svg: `pages/${route.id}.svg` })),
   };
-  fs.writeFileSync(path.join(sourceDir, 'source-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  writeTextFile(path.join(sourceDir, 'source-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   process.stdout.write(`${JSON.stringify({ combinedPath, ...manifest }, null, 2)}\n`);
 }
 

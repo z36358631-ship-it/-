@@ -39,3 +39,28 @@ test('生成源具有中文标题条、业务页横向排列和逐页可编辑 I
   const releaseSvg = fs.readFileSync(path.join(sourceDir, 'figma-pages/03-包体测试与发布.svg'), 'utf8');
   assert.ok(releaseSvg.indexOf('id="P03-01"') < releaseSvg.indexOf('id="P03-13"'));
 });
+
+test('P01-01 与 P02-01 Figma 源包含本轮确认内容', () => {
+  const p01 = fs.readFileSync(path.join(sourceDir, 'pages/P01-01.svg'), 'utf8');
+  const p02 = fs.readFileSync(path.join(sourceDir, 'pages/P02-01.svg'), 'utf8');
+  for (const token of ['开始入驻', '完成厂商与游戏资料', '提交精准投放并查看发行数据']) assert.ok(p01.includes(token), token);
+  for (const token of ['商品与供给', 'Key 批次', '渠道 API', '接口说明', '剩余 Key 配额']) assert.ok(p02.includes(token), token);
+  assert.match(p01, /fill="#0b1220"/i, '首次入驻深色渐变背景应保留为可编辑深色填充');
+});
+
+test('帮助内容态不增加业务 Frame 或正式 Page', () => {
+  const frameMap = readJson('Figma/开发者后台一期/frame-map.json');
+  const pageMap = readJson('Figma/开发者后台一期/figma-page-map.json');
+  assert.equal(frameMap.totals.businessFrames, 37);
+  assert.equal(pageMap.pages.length, 6);
+});
+
+test('组件母版登记 CDKEY 与帮助状态组件', () => {
+  const components = fs.readFileSync(path.join(sourceDir, 'figma-pages/组件母版.svg'), 'utf8');
+  for (const token of ['任务 Tabs（4 态）', '授权摘要', 'Key 批次表单', '渠道 API 凭据', '接口说明', '帮助中心 FAQ']) {
+    assert.ok(components.includes(token), token);
+  }
+  for (const variant of ['Tab=Supply', 'Tab=KeyBatches', 'Tab=ChannelAPI', 'Tab=APIDocs', 'Step=Intro', 'Step=Login', 'Global Help']) {
+    assert.ok(components.includes(variant), variant);
+  }
+});
