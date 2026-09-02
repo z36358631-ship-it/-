@@ -6,7 +6,7 @@
 |---|---|
 | 任务编号 | LOCAL-20260901 |
 | 需求名称 | 正版发行平台一期开发者后台 PRD |
-| 当前阶段 | CDKEY 自助发行、首次介绍与帮助中心设计已确认；PRD、Figma 与 Demo 待同步 |
+| 当前阶段 | CDKEY 自助发行增补设计与实施计划已确认；待选择执行方式并同步 PRD、Demo 与 Figma |
 | 最后更新时间 | 2026-09-02 |
 
 ## 问题与证据
@@ -65,7 +65,8 @@
 | Demo 与 Figma 设计规格 | `docs/superpowers/specs/2026-09-02-developer-backend-demo-figma-design.md` | 已确认并提交 | 37 个 Frame ID 唯一；模块数量 9／6／13／9；提交 `0bfad910` |
 | Demo 与 Figma 实施计划 | `docs/superpowers/plans/2026-09-02-developer-backend-demo-figma.md` | 已完成，待执行方式确认 | 14 个实施任务；37 个唯一页面 ID；模块数量 9／6／13／9；占位符扫描与 `git diff --check` 通过 |
 | Figma 文件组织交付 | [盖世游戏｜开发者后台一期](https://www.figma.com/design/arz12KT0WQ7UsHHglFtReN/) | 已完成 | 6 个正式 Page、37 页仍为 9／6／13／9；最新截图与哈希见 `Figma/开发者后台一期/evidence/` |
-| CDKEY 自助发行增补规格 | `docs/superpowers/specs/2026-09-02-developer-backend-cdkey-self-service-help-demo-design.md` | 已确认，待实施计划 | D-011／D-012；发行方自助、四 Tab、入驻介绍、帮助中心与视觉修复 |
+| CDKEY 自助发行增补规格 | `docs/superpowers/specs/2026-09-02-developer-backend-cdkey-self-service-help-demo-design.md` | 已确认并提交 | D-011／D-012；提交 `1286eb75`；发行方自助、四 Tab、入驻介绍、帮助中心与视觉修复 |
+| CDKEY 自助发行增补实施计划 | `docs/superpowers/plans/2026-09-02-developer-backend-cdkey-self-service-help.md` | 已完成，待执行方式确认 | 10 个实施任务；先 PRD、再 Demo、后 Figma；含两尺寸、一次展示、权限与敏感信息验收 |
 
 ## 修改与验证
 
@@ -82,6 +83,7 @@
 | 2026-09-02 | 用户要求参照人工 Figma 的格式重整文件 | 将 37 个页面按全局索引、四个业务域与组件母版拆入 6 个正式 Page；旧根稿移入历史且未删除 | 云端 Figma、导入 SVG、交付记录与证据 | 6 个根图层各 1 个；四业务模块仍为 9／6／13／9；关键 Page 截图与 SHA-256 已更新 |
 | 2026-09-02 | 用户补充发行方自助 Key、渠道 API、接口说明、首次介绍、帮助中心和截图可读性问题 | 确认不新增业务路由；新增 D-011／D-012，并将 PRD 1/2、P01/P02 Figma、Demo、测试和截图标记为待同步 | 增补设计规格、状态卡及下游产物 | 三视角评审通过；书面规格已生成，尚未开始实现与机器复验 |
 | 2026-09-02 | 用户确认 CDKEY 自助发行增补书面规格 | 锁定 D-011／D-012 及验收条件，进入实施计划编写 | 增补设计规格、实施计划、工作流运行状态 | 书面规格已确认；PRD、Demo、Figma 与证据仍待同步 |
+| 2026-09-02 | 用户确认继续推进 | 使用 `writing-plans` 将增补规格拆为页面基线、PRD、Fixture、组件、P01-01、P02-01、回归、PRD 截图、Figma 和交付共 10 个任务 | 增补实施计划、状态卡、工作流运行状态 | 规格覆盖、禁止词、类型一致性和 `git diff --check` 自检通过；尚未开始产物实施 |
 
 ## 待确认与风险
 

@@ -2,21 +2,24 @@
   "schemaVersion": 1,
   "runId": "86832e96-4742-4bcf-ae88-4207cc91dbed",
   "requirementId": "LOCAL-20260901",
-  "revision": 9,
+  "revision": 14,
   "status": "in_progress",
   "createdAt": "2026-09-01T16:40:47.2465243Z",
-  "updatedAt": "2026-09-01T16:40:47.5007097Z",
+  "updatedAt": "2026-09-02T09:06:42.2449338Z",
   "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md",
-  "cardHash": "FA36501C3FDC83CEFF4DB3B2A7B807CA52F40AFBE2E0E88DC8F4AF3EE6D75A22",
+  "cardHash": "BA363A7F1E2F1D1745B724FD2706379D2602140371C39D9E9FB73EE3B46CACEF",
   "contract": {
-    "goal": "按已确认规格交付开发者后台一期 5 份 Demo、37 个路由及 37 个可编辑 Figma Frame",
+    "goal": "按已确认增补规格同步开发者后台 PRD、5 份 Demo 和既有 Figma 文件，补齐 CDKEY 自助发行、渠道 API、首次入驻介绍与帮助中心",
     "inScope": [
       "统一后台壳",
-      "4 个业务模块 Demo",
-      "37 个页面路由",
+      "P01-01 首次入驻介绍与受邀登录",
+      "P02-01 商品与供给、Key 批次、渠道 API、接口说明四个任务 Tab",
+      "发行方在平台预授权范围内自助创建盖世平台 Key 批次与渠道 API 凭据",
+      "全局帮助中心 FAQ 与联系我们",
+      "顶栏、侧栏和 Tab 可读性修复",
+      "4 个业务模块 Demo 与 37 个原页面路由",
       "1440×900 与 1280 宽度验收",
-      "官网既有入口切换",
-      "新建 Figma 文件"
+      "同步既有 Figma 文件的 P01、P02 与组件母版"
     ],
     "outOfScope": [
       "公众注册",
@@ -25,23 +28,29 @@
       "Mac/Linux 包体",
       "多正式分支",
       "开发者自助发布或回滚",
-      "竞价与算法推荐"
+      "竞价与算法推荐",
+      "新增业务路由或页面编号",
+      "生成 Steam、Epic、GOG 等外部平台 Key",
+      "真实渠道联调或生产凭据"
     ],
     "inputs": [
       "4 份开发者后台 PRD",
       "已确认 Demo/Figma 设计规格",
+      "已确认 CDKEY 自助发行增补规格 D-011/D-012",
       "官网与开发者低保真基线",
-      "Steamworks 与 WeGame 调研结论"
+      "当前 5 份 HTML Demo 与既有 Figma 文件"
     ],
     "deliverables": [
-      "实施计划",
-      "1 个评审总览",
-      "4 个自包含 HTML Demo",
-      "浏览器验收证据",
-      "1 个 Figma 文件与 37 个可编辑 Frame"
+      "CDKEY 自助发行增补实施计划",
+      "同步后的 PRD 1 与 PRD 2",
+      "同步后的 1 个评审总览与 4 个自包含 HTML Demo",
+      "37 路由、两尺寸、业务状态与敏感信息验收证据",
+      "既有 Figma 文件的 P01、P02 与组件母版更新"
     ],
     "changes": [
-      "用户确认书面设计规格并批准进入实施计划"
+      "发行方可在平台预授权范围内自助生成盖世平台 Key 批次和渠道 API 凭据",
+      "P01-01 合并首次介绍，P02-01 合并四个任务 Tab，帮助中心由全局后台壳承载",
+      "用户确认增补书面规格并批准进入实施计划"
     ]
   },
   "steps": [
@@ -55,7 +64,7 @@
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md",
-          "sha256": "FA36501C3FDC83CEFF4DB3B2A7B807CA52F40AFBE2E0E88DC8F4AF3EE6D75A22"
+          "sha256": "BA363A7F1E2F1D1745B724FD2706379D2602140371C39D9E9FB73EE3B46CACEF"
         }
       ],
       "outputs": [
@@ -80,7 +89,7 @@
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md",
-          "sha256": "FA36501C3FDC83CEFF4DB3B2A7B807CA52F40AFBE2E0E88DC8F4AF3EE6D75A22"
+          "sha256": "BA363A7F1E2F1D1745B724FD2706379D2602140371C39D9E9FB73EE3B46CACEF"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\docs\\superpowers\\specs\\2026-09-02-developer-backend-demo-figma-design.md",
@@ -105,20 +114,25 @@
         "S2"
       ],
       "status": "passed",
-      "attempt": 1,
+      "attempt": 2,
       "inputHashes": [
         {
-          "path": "C:\\Users\\z3635\\官网改动\\docs\\superpowers\\specs\\2026-09-02-developer-backend-demo-figma-design.md",
-          "sha256": "1C784D832C51C77B85317C5B21678A872FAF5C0499D7093946EC9D5B664D3841"
+          "path": "C:\\Users\\z3635\\官网改动\\docs\\superpowers\\specs\\2026-09-02-developer-backend-cdkey-self-service-help-demo-design.md",
+          "sha256": "ADDF60F5BA2C825A7780AF09C298D629C0A7F8C2A13E7AFB014E431F48988689"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md",
+          "sha256": "BA363A7F1E2F1D1745B724FD2706379D2602140371C39D9E9FB73EE3B46CACEF"
         }
       ],
       "outputs": [
-        "docs\\superpowers\\plans\\2026-09-02-developer-backend-demo-figma.md"
+        "docs/superpowers/plans/2026-09-02-developer-backend-cdkey-self-service-help.md"
       ],
       "evidence": [
-        "用户确认规格；计划映射 37 个唯一页面 ID，模块为 9/6/13/9"
+        "10 个实施任务覆盖 D-011/D-012、37 路由保持 9/6/13/9",
+        "规格覆盖、禁止词、代码围栏、类型与 git diff 检查通过"
       ],
-      "validation": "已编译为 Demo、浏览器验收、官网入口与 Figma 实施任务",
+      "validation": "已编译为 PRD、Demo、Figma 与验收的可执行计划",
       "error": null,
       "reviewer": null
     },
@@ -129,7 +143,7 @@
       "dependsOn": [
         "S3"
       ],
-      "status": "passed",
+      "status": "stale",
       "attempt": 1,
       "inputHashes": [
         {
@@ -163,9 +177,34 @@
         "S3",
         "S4"
       ],
-      "status": "pending",
-      "attempt": 0,
-      "inputHashes": [],
+      "status": "stale",
+      "attempt": 1,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\docs\\superpowers\\specs\\2026-09-02-developer-backend-demo-figma-design.md",
+          "sha256": "1C784D832C51C77B85317C5B21678A872FAF5C0499D7093946EC9D5B664D3841"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\docs\\superpowers\\plans\\2026-09-02-developer-backend-demo-figma.md",
+          "sha256": "35C0E5D9E236EFB13E6E6265404A6DCDFAD8B546EFCD0B66571F688D9148356C"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\01-开发者平台、厂商与游戏资料PRD.md",
+          "sha256": "8474331C5E3A5DCE38E2EBAB24796C07BA98FEDFB69D7388F96A6FA67B209B9C"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\02-游戏商品与CDKEY供给管理PRD.md",
+          "sha256": "FE23580F65D721A99E74A856D9A6C8688485B00D9A598E4CE817DF77B7E720A6"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\03-游戏包体、测试审核与版本发布PRD.md",
+          "sha256": "7FC0057653FBE5824A46C9116C75D9C7251E3DCCE2B0294B47882B86ED5B703A"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\04-精准化投放与发行数据看板PRD.md",
+          "sha256": "0378A02718B82AE9E185466F6278D7C9230DA700257321783902842925F2E9A2"
+        }
+      ],
       "outputs": [],
       "evidence": [],
       "validation": null,
