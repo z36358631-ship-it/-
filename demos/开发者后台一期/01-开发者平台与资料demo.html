@@ -1,0 +1,1722 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>开发者平台与资料｜盖世游戏开发者平台</title><style>:root {
+  --brand-cyan: #38E8FF;
+  --brand-blue: #6A7CFF;
+  --brand-deep: #101827;
+  --brand-night: #0B1220;
+  --success: #1E9B66;
+  --warning: #C88918;
+  --danger: #D95656;
+  --info: #3976D9;
+  --text-primary: #172033;
+  --text-secondary: #5B657A;
+  --text-tertiary: #8B94A6;
+  --line: #E6E9F0;
+  --line-strong: #D5DAE5;
+  --surface: #FFFFFF;
+  --surface-soft: #F7F8FB;
+  --surface-muted: #F0F2F7;
+  --nav-text: #AEB8CD;
+  --nav-active: #FFFFFF;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --shadow-card: 0 6px 20px rgba(25, 38, 66, 0.06);
+  --focus-ring: 0 0 0 3px rgba(56, 232, 255, 0.22);
+  --font-sans: "MiSans VF", MiSans, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-number: "D-DIN-PRO", "DIN Alternate", var(--font-sans);
+}
+
+* { box-sizing: border-box; }
+
+html, body { min-width: 0; min-height: 100%; margin: 0; }
+
+body {
+  color: var(--text-primary);
+  background: #E9EDF4;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea { font: inherit; }
+button, a, select { -webkit-tap-highlight-color: transparent; }
+a { color: inherit; text-decoration: none; }
+svg { display: block; }
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.number { font-family: var(--font-number); font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+#app { min-width: 0; min-height: 100vh; }
+
+.portal-stage { position: relative; min-width: 0; min-height: 100vh; background: #E9EDF4; }
+
+.product-frame {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: 100vh;
+  min-height: 0;
+  background: var(--surface-soft);
+  overflow: hidden;
+}
+
+.top-bar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 4;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  color: #FFFFFF;
+  background: linear-gradient(98deg, #0B1220 0%, #15213A 72%, #13243A 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-block {
+  width: 232px;
+  height: 56px;
+  padding: 0 var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: var(--brand-cyan);
+  border: 1px solid rgba(56, 232, 255, 0.44);
+  border-radius: 9px;
+  background: linear-gradient(145deg, rgba(56, 232, 255, 0.18), rgba(106, 124, 255, 0.18));
+}
+
+.brand-copy { min-width: 0; }
+.brand-title { color: #FFFFFF; font-size: 15px; font-weight: 650; letter-spacing: .02em; }
+.brand-subtitle { color: #B7C2D6; font-size: 11px; }
+
+.top-context { min-width: 0; padding: 0 var(--space-6); display: flex; align-items: center; gap: var(--space-3); }
+.top-context strong { overflow: hidden; color: #FFFFFF; text-overflow: ellipsis; white-space: nowrap; }
+.top-account { margin-left: auto; padding: 0 var(--space-6); display: flex; align-items: center; gap: var(--space-3); color: #DCE3F0; }
+.account-avatar { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; color: #142039; font-weight: 700; background: linear-gradient(135deg, var(--brand-cyan), #B7C1FF); }
+.account-copy span { display: block; color: #B7C2D6; font-size: 11px; }
+.top-help-button { margin-left: auto; min-height: 36px; padding: 0 12px; display: inline-flex; align-items: center; gap: 7px; color: #EAF0FA; border: 1px solid rgba(255,255,255,.16); border-radius: 8px; background: rgba(255,255,255,.06); cursor: pointer; }
+.top-help-button:hover { color: #FFFFFF; border-color: rgba(56,232,255,.44); background: rgba(56,232,255,.08); }
+.top-help-button svg { width: 16px; height: 16px; color: var(--brand-cyan); }
+.top-help-button + .top-account { margin-left: 0; }
+
+.side-nav {
+  position: absolute;
+  inset: 56px auto 0 0;
+  z-index: 3;
+  width: 232px;
+  min-height: 0;
+  padding: var(--space-5) var(--space-3);
+  overflow-y: auto;
+  color: var(--nav-text);
+  background: var(--brand-deep);
+  border-right: 1px solid rgba(255,255,255,.05);
+}
+
+.nav-label { padding: 0 10px var(--space-2); color: #64728D; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.nav-list { display: grid; gap: var(--space-1); }
+.nav-item { position: relative; min-height: 42px; padding: 9px 10px; display: flex; align-items: center; gap: 10px; color: #AAB7CA; border-radius: var(--radius-sm); transition: color .15s, background .15s; }
+.nav-item:hover { color: #EDF2FA; background: rgba(255,255,255,.05); }
+.nav-item.is-active { color: #FFFFFF; background: linear-gradient(90deg, rgba(56,232,255,.20), rgba(106,124,255,.14)); }
+.nav-item.is-active::before { content: ""; position: absolute; top: 8px; bottom: 8px; left: 0; width: 3px; border-radius: 0 3px 3px 0; background: var(--brand-cyan); }
+.nav-item svg { width: 18px; height: 18px; flex: 0 0 auto; }
+.nav-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.workspace { position: absolute; inset: 56px 0 0 232px; min-width: 0; min-height: 0; overflow: auto; background: var(--surface-soft); }
+.product-frame.is-login .workspace { left: 0; }
+.product-frame.is-onboarding .workspace { left: 0; }
+.product-frame.is-login .page-wrap { padding-top: 16px; padding-bottom: 16px; }
+.context-bar { height: 48px; padding: 0 var(--space-6); display: flex; align-items: center; gap: var(--space-2); color: var(--text-secondary); border-bottom: 1px solid var(--line); background: rgba(255,255,255,.88); }
+.context-bar svg { width: 15px; height: 15px; color: var(--text-tertiary); }
+.context-divider { color: var(--line-strong); }
+.context-value { color: var(--text-primary); font-weight: 600; }
+
+.page-wrap { min-width: 0; padding: var(--space-6) var(--space-8) 48px; }
+.page-header { min-height: 66px; margin-bottom: var(--space-5); display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-6); }
+.page-header > :first-child { min-width: 0; flex: 1 1 auto; }
+.page-eyebrow { margin-bottom: 4px; color: var(--brand-blue); font-family: var(--font-number); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+.page-title { margin: 0; font-size: 24px; line-height: 1.3; letter-spacing: -.02em; }
+.page-summary { max-width: 720px; margin: 7px 0 0; color: var(--text-secondary); }
+.page-actions { padding-top: 2px; display: flex; flex: 0 0 auto; align-items: center; gap: var(--space-2); }
+
+.help-center { padding: var(--space-6) var(--space-8) 48px; }
+.help-center__header { margin-bottom: 20px; display: flex; gap: 16px; align-items: center; }
+.help-center__header .text-back { margin: 0; }
+.help-center__header h1 { margin: 0; font-size: 24px; }
+.help-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; }
+.faq-item button { width: 100%; min-height: 46px; padding: 12px 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; color: var(--text-primary); text-align: left; border: 0; border-bottom: 1px solid var(--line); background: transparent; cursor: pointer; }
+.faq-item button:hover { color: var(--brand-blue); }
+.faq-item p { margin: 0; padding: 12px 0 18px; color: var(--text-secondary); line-height: 1.65; }
+.contact-card { min-height: 240px; padding: 20px; display: grid; gap: 10px; align-content: start; border: 1px solid var(--line); border-radius: var(--radius-md); background: #FFFFFF; box-shadow: var(--shadow-card); }
+.contact-card h2 { margin: 0 0 8px; font-size: 17px; }
+.contact-card span { color: var(--text-secondary); }
+.contact-card a { width: fit-content; color: var(--info); font-weight: 650; text-decoration: none; }
+.contact-card a:hover, .contact-card a:focus-visible { text-decoration: underline; outline: none; }
+.contact-card p { margin: 8px 0 0; padding: 12px; color: #0B6271; border-radius: var(--radius-sm); background: #EFFCFE; }
+
+@media (max-width: 1360px) {
+  .page-wrap { padding-right: 24px; padding-left: 24px; }
+  .help-center { padding-right: 24px; padding-left: 24px; }
+  .help-grid { grid-template-columns: minmax(0, 1fr) 280px; }
+}
+
+@media (max-width: 1180px) {
+  .brand-block, .side-nav { width: 212px; }
+  .workspace { left: 212px; }
+  .product-frame.is-login .workspace { left: 0; }
+  .product-frame.is-onboarding .workspace { left: 0; }
+  .top-context { padding-right: 16px; padding-left: 16px; }
+  .top-account { padding-right: 16px; padding-left: 12px; }
+  .page-wrap, .help-center { padding-right: 20px; padding-left: 20px; }
+  .page-header { gap: 16px; }
+  .page-title, .help-center__header h1 { font-size: 22px; }
+  .help-grid { grid-template-columns: minmax(0, 1fr) 250px; gap: 16px; }
+}
+
+.gh-icon { width: 18px; height: 18px; flex: 0 0 auto; }
+
+.gh-button {
+  min-height: 36px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--text-primary);
+  font-weight: 650;
+  line-height: 1;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.gh-button:hover { border-color: #B8C1D4; background: #FAFBFD; }
+.gh-button[data-variant="primary"] { color: #071522; border-color: var(--brand-cyan); background: linear-gradient(135deg, var(--brand-cyan), #8BEFFF); }
+.gh-button[data-variant="primary"]:hover { filter: brightness(.98); }
+.gh-button[data-variant="danger"] { color: var(--danger); border-color: rgba(217,86,86,.35); background: #FFF8F8; }
+.gh-button[data-variant="ghost"] { color: #C7D1E1; border-color: rgba(255,255,255,.14); background: rgba(255,255,255,.04); }
+.gh-button[data-variant="text"] { min-height: 30px; padding: 0 6px; color: var(--info); border-color: transparent; background: transparent; }
+.gh-button[data-size="small"] { min-height: 28px; padding: 0 9px; font-size: 11px; }
+.gh-button:disabled, .gh-button[aria-disabled="true"] { color: var(--text-tertiary); border-color: var(--line); background: var(--surface-muted); cursor: not-allowed; opacity: .68; }
+.page-button:disabled, .page-button[aria-disabled="true"] { color: var(--text-tertiary); cursor: not-allowed; opacity: .45; }
+.gh-button svg { width: 16px; height: 16px; }
+
+.field { display: grid; gap: 7px; min-width: 0; }
+.field-label { display: flex; align-items: center; justify-content: space-between; color: var(--text-secondary); font-size: 12px; font-weight: 600; }
+.field-required { margin-left: 3px; color: var(--danger); }
+.field-hint { color: var(--text-tertiary); font-size: 11px; font-weight: 400; }
+.gh-input, .gh-select, .gh-textarea { width: 100%; color: var(--text-primary); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); transition: border .15s, box-shadow .15s; }
+.gh-input, .gh-select { height: 38px; padding: 0 11px; }
+.gh-textarea { min-height: 96px; padding: 10px 11px; resize: vertical; }
+.gh-input:hover, .gh-select:hover, .gh-textarea:hover { border-color: #ABB5C9; }
+.gh-input[aria-invalid="true"], .gh-textarea[aria-invalid="true"] { border-color: var(--danger); background: #FFF9F9; }
+.field-error { color: var(--danger); font-size: 11px; }
+
+.status-tag { min-height: 24px; padding: 3px 9px; display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 11px; font-weight: 650; border-radius: 999px; background: var(--surface-muted); white-space: nowrap; }
+.status-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.status-tag[data-variant="success"] { color: var(--success); background: rgba(30,155,102,.10); }
+.status-tag[data-variant="warning"] { color: var(--warning); background: rgba(200,137,24,.11); }
+.status-tag[data-variant="danger"] { color: var(--danger); background: rgba(217,86,86,.10); }
+.status-tag[data-variant="info"] { color: var(--info); background: rgba(57,118,217,.10); }
+
+.panel { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); box-shadow: var(--shadow-card); }
+.panel-header { min-height: 54px; padding: 0 var(--space-5); display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); border-bottom: 1px solid var(--line); }
+.panel-title { margin: 0; font-size: 15px; }
+.panel-description { color: var(--text-tertiary); font-size: 11px; }
+.panel-body { padding: var(--space-5); }
+
+.filter-bar { margin-bottom: var(--space-4); padding: 12px; display: grid; grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(150px, .8fr)) auto; gap: 10px; align-items: end; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.search-field { position: relative; }
+.search-field svg { position: absolute; top: 10px; left: 11px; width: 17px; height: 17px; color: var(--text-tertiary); pointer-events: none; }
+.search-field input { padding-left: 36px; }
+
+.table-wrap { max-width: 100%; overflow: auto; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.data-table { width: 100%; min-width: 680px; border-collapse: collapse; table-layout: fixed; }
+.data-table[data-columns="7"], .data-table[data-columns="8"] { min-width: 920px; }
+.data-table[data-columns="6"] { min-width: 820px; }
+.data-table[data-columns="5"] { min-width: 740px; }
+.data-table th { height: 42px; padding: 0 14px; color: var(--text-secondary); font-size: 11px; text-align: left; background: var(--surface-muted); border-bottom: 1px solid var(--line); }
+.data-table td { height: 54px; padding: 9px 14px; color: var(--text-primary); border-bottom: 1px solid var(--line); vertical-align: middle; overflow-wrap: normal; word-break: normal; }
+.data-table tbody tr:last-child td { border-bottom: 0; }
+.data-table tbody tr:hover { background: #FAFBFD; }
+.table-primary { font-weight: 650; }
+.table-secondary { margin-top: 2px; color: var(--text-tertiary); font-size: 11px; white-space: nowrap; }
+.table-identifier { white-space: nowrap; }
+
+.pagination { margin-top: var(--space-4); display: flex; align-items: center; justify-content: space-between; color: var(--text-tertiary); font-size: 12px; }
+.pagination__buttons { display: flex; gap: 6px; }
+.page-button { width: 30px; height: 30px; display: grid; place-items: center; color: var(--text-secondary); border: 1px solid var(--line); border-radius: 6px; background: var(--surface); cursor: pointer; }
+.page-button.is-active { color: #091521; border-color: var(--brand-cyan); background: rgba(56,232,255,.24); }
+
+.tabs { margin-bottom: var(--space-4); display: flex; gap: var(--space-5); border-bottom: 1px solid var(--line); }
+.tab { position: relative; padding: 0 2px 11px; color: var(--text-secondary); border: 0; background: transparent; cursor: pointer; }
+.tab.is-active { color: var(--text-primary); font-weight: 650; }
+.tab.is-active::after { content: ""; position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: var(--brand-blue); }
+.tabs[data-variant="task"] { gap: 8px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-muted); }
+.tabs[data-variant="task"] .tab { min-height: 36px; padding: 8px 16px; border: 1px solid transparent; border-radius: 7px; }
+.tabs[data-variant="task"] .tab.is-active { color: var(--text-primary); border-color: var(--line-strong); background: #FFFFFF; box-shadow: 0 2px 8px rgba(24,38,66,.08); }
+.tabs[data-variant="task"] .tab.is-active::after { display: none; }
+.tab:focus-visible, .nav-item:focus-visible, .top-help-button:focus-visible { outline: 2px solid var(--brand-cyan); outline-offset: 2px; }
+.authorization-summary { position: sticky; top: 0; z-index: 2; margin-bottom: 16px; padding: 14px 16px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; border: 1px solid var(--line); border-radius: var(--radius-md); background: rgba(255,255,255,.96); }
+.authorization-summary > div { min-width: 0; display: grid; gap: 5px; }
+.authorization-summary span { color: var(--text-secondary); font-size: 11px; }
+.code-block { overflow: hidden; border: 1px solid #24344F; border-radius: var(--radius-md); background: #101827; }
+.code-block header { padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; color: #EAF0FA; border-bottom: 1px solid rgba(255,255,255,.08); }
+.code-block header .gh-button[data-variant="text"] { color: #C8F7FF; }
+.code-block pre { margin: 0; padding: 16px; overflow: auto; color: #C8F7FF; font: 12px/1.7 var(--font-number); }
+
+.stepper { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+.stepper-item { position: relative; display: grid; justify-items: center; gap: 7px; color: var(--text-tertiary); font-size: 11px; text-align: center; }
+.stepper-item::before { content: ""; position: absolute; top: 10px; right: 50%; left: -50%; height: 1px; background: var(--line-strong); }
+.stepper-item:first-child::before { display: none; }
+.stepper-dot { position: relative; z-index: 1; width: 20px; height: 20px; display: grid; place-items: center; border: 2px solid var(--line-strong); border-radius: 50%; background: var(--surface); }
+.stepper-item.is-done, .stepper-item.is-active { color: var(--text-primary); }
+.stepper-item.is-done .stepper-dot { color: #FFFFFF; border-color: var(--success); background: var(--success); }
+.stepper-item.is-active .stepper-dot { border-color: var(--brand-blue); box-shadow: 0 0 0 4px rgba(106,124,255,.12); }
+
+.result-strip { margin-bottom: var(--space-4); padding: 11px 13px; display: flex; align-items: flex-start; gap: 9px; color: var(--info); border: 1px solid rgba(57,118,217,.18); border-radius: var(--radius-sm); background: rgba(57,118,217,.07); }
+.result-strip[data-variant="success"] { color: var(--success); border-color: rgba(30,155,102,.20); background: rgba(30,155,102,.07); }
+.result-strip[data-variant="warning"] { color: var(--warning); border-color: rgba(200,137,24,.22); background: rgba(200,137,24,.08); }
+.result-strip[data-variant="danger"] { color: var(--danger); border-color: rgba(217,86,86,.22); background: rgba(217,86,86,.07); }
+.result-strip svg { width: 17px; height: 17px; margin-top: 1px; }
+.result-strip strong { display: block; font-size: 12px; }
+.result-strip span { display: block; margin-top: 1px; color: var(--text-secondary); font-size: 11px; }
+
+.timeline { position: relative; margin: 0; padding: 0; list-style: none; }
+.timeline-item { position: relative; padding: 0 0 20px 26px; }
+.timeline-item::before { content: ""; position: absolute; top: 5px; left: 5px; width: 8px; height: 8px; border: 2px solid var(--surface); border-radius: 50%; background: var(--brand-blue); box-shadow: 0 0 0 1px var(--brand-blue); }
+.timeline-item::after { content: ""; position: absolute; top: 17px; bottom: 0; left: 9px; width: 1px; background: var(--line-strong); }
+.timeline-item:last-child::after { display: none; }
+.timeline-title { font-weight: 650; }
+.timeline-meta { margin-top: 2px; color: var(--text-tertiary); font-size: 11px; }
+
+.metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
+.metric-card { padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.metric-label { color: var(--text-secondary); font-size: 12px; }
+.metric-value { margin-top: 6px; font-family: var(--font-number); font-size: 26px; font-weight: 700; letter-spacing: -.02em; }
+.metric-trend { margin-top: 3px; color: var(--success); font-family: var(--font-number); font-size: 11px; }
+
+.chart { height: 256px; padding: 12px 14px 8px; border: 1px solid var(--line); border-radius: var(--radius-md); background: linear-gradient(180deg, #FFFFFF, #FBFCFE); }
+.chart-heading { height: 24px; display: flex; align-items: center; justify-content: space-between; color: var(--text-tertiary); font-size: 10px; }
+.chart-heading .legend-item { color: var(--text-secondary); }
+.chart svg { width: 100%; height: calc(100% - 24px); overflow: visible; }
+.chart-grid { stroke: #E8EBF2; stroke-width: 1; }
+.chart-area { fill: url(#chartGradient); opacity: .72; }
+.chart-line { fill: none; stroke: var(--brand-blue); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.chart-dot { fill: #FFFFFF; stroke: var(--brand-blue); stroke-width: 2; }
+.chart-axis { fill: #7E899B; font-family: var(--font-number); font-size: 10px; text-anchor: end; }
+
+.state-panel { min-height: 520px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.state-content { max-width: 430px; padding: 42px; text-align: center; }
+.state-visual { width: 58px; height: 58px; margin: 0 auto 16px; display: grid; place-items: center; color: var(--brand-blue); border-radius: 18px; background: rgba(106,124,255,.10); }
+.state-visual svg { width: 28px; height: 28px; }
+.state-content h2 { margin: 0 0 8px; font-size: 18px; }
+.state-content p { margin: 0 0 20px; color: var(--text-secondary); }
+.skeleton-stack { width: 680px; display: grid; gap: 12px; }
+.skeleton { height: 16px; border-radius: 5px; background: linear-gradient(90deg, #EEF1F6 25%, #F8F9FB 38%, #EEF1F6 64%); background-size: 400% 100%; animation: skeleton 1.5s ease infinite; }
+.skeleton:nth-child(1) { width: 44%; height: 26px; }
+.skeleton:nth-child(2) { width: 72%; }
+.skeleton:nth-child(3) { width: 100%; height: 92px; }
+.skeleton:nth-child(4) { width: 100%; height: 180px; }
+@keyframes skeleton { from { background-position: 100% 50%; } to { background-position: 0 50%; } }
+
+.page-template { min-width: 0; }
+.content-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--space-4); }
+.span-12 { grid-column: span 12; }
+.span-8 { grid-column: span 8; }
+.span-7 { grid-column: span 7; }
+.span-6 { grid-column: span 6; }
+.span-5 { grid-column: span 5; }
+.span-4 { grid-column: span 4; }
+.span-3 { grid-column: span 3; }
+
+.login-shell { min-height: calc(100vh - 88px); display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(360px, .95fr); overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: 0 18px 48px rgba(24,38,66,.10); }
+.login-aside { position: relative; padding: 56px; color: #EAF0FA; background: radial-gradient(circle at 22% 18%, rgba(56,232,255,.18), transparent 28%), linear-gradient(145deg, #0B1220, #16243E); }
+.login-aside::after { content: ""; position: absolute; right: 44px; bottom: 44px; width: 180px; height: 180px; border: 1px solid rgba(56,232,255,.20); border-radius: 40px; transform: rotate(18deg); }
+.login-aside h1 { max-width: 480px; margin: 86px 0 16px; color: #F7FAFF; font-size: 36px; line-height: 1.25; }
+.login-aside p { max-width: 480px; color: #97A6BD; }
+.login-rule { margin-top: 42px; padding: 14px; display: flex; gap: 10px; color: #BED0E5; border: 1px solid rgba(255,255,255,.09); border-radius: var(--radius-md); background: rgba(255,255,255,.04); }
+.login-rule svg { width: 18px; height: 18px; flex: 0 0 auto; color: var(--brand-cyan); }
+.login-form { padding: 74px 64px; display: flex; flex-direction: column; justify-content: center; }
+.login-form h3 { margin: 0 0 7px; font-size: 24px; }
+.login-form > p { margin: 0 0 28px; color: var(--text-secondary); }
+.login-form__fields { display: grid; gap: 17px; }
+.login-form__action { margin-top: 24px; }
+.login-form__action .gh-button { width: 100%; }
+.login-help { margin-top: 18px; color: var(--text-tertiary); font-size: 11px; text-align: center; }
+.developer-login .login-aside h2 { margin-top: 72px; }
+.developer-login .login-form > div { width: 100%; }
+.developer-login .login-form > div > .gh-button { width: 100%; }
+.login-forgot { min-height: 32px; margin-top: 8px; padding: 0; color: var(--brand-blue); border: 0; background: transparent; cursor: pointer; }
+.login-forgot:hover, .login-forgot:focus-visible { text-decoration: underline; outline: none; }
+.login-divider { margin: 20px 0; display: flex; align-items: center; gap: 12px; color: var(--text-tertiary); font-size: 11px; }
+.login-divider::before, .login-divider::after { content: ""; height: 1px; flex: 1; background: var(--line); }
+.qr-login-card[hidden], [data-password-login][hidden] { display: none !important; }
+.login-qr { width: 196px; height: 196px; margin: 22px auto 12px; padding: 14px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 14px; background: repeating-conic-gradient(#111827 0 25%, #FFFFFF 0 50%) 50% / 22px 22px; box-shadow: inset 0 0 0 14px #FFFFFF; }
+.login-qr span { width: 54px; height: 54px; display: block; border: 10px solid #FFFFFF; border-radius: 12px; background: var(--brand-blue); box-shadow: 0 0 0 1px rgba(0,0,0,.08); }
+.qr-countdown { color: var(--text-secondary); text-align: center; }
+.qr-countdown strong { color: var(--brand-blue); font-family: var(--font-number); }
+.registration-intro { padding-top: 18px; padding-bottom: 18px; }
+
+.onboarding-shell { min-height: 720px; display: grid; grid-template-columns: minmax(0, 1fr); overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: #FFFFFF; box-shadow: 0 18px 48px rgba(24,38,66,.10); }
+.onboarding-shell > [hidden] { display: none !important; }
+.onboarding-intro { padding: 38px 56px 42px; color: #FFFFFF; background: radial-gradient(circle at 18% 10%, rgba(56,232,255,.13), transparent 28%), linear-gradient(145deg, #0B1220, #17243D); }
+.onboarding-brand { margin-bottom: 32px; display: flex; align-items: center; gap: 12px; }
+.onboarding-audience { padding: 5px 10px; color: #C8F7FF; font-size: 11px; border: 1px solid rgba(56,232,255,.28); border-radius: 999px; background: rgba(56,232,255,.09); }
+.onboarding-intro .page-eyebrow { color: #91EFFF; }
+.onboarding-intro .page-title { margin-bottom: 8px; color: #EAF0FA; font-size: 14px; letter-spacing: .02em; }
+.onboarding-intro h2 { max-width: 760px; margin: 0 0 12px; font-size: 32px; line-height: 1.22; }
+.onboarding-intro > p { max-width: 820px; margin: 0; color: #B7C2D6; }
+.onboarding-steps { margin: 26px 0 22px; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; list-style: none; }
+.onboarding-steps li { min-height: 104px; padding: 16px; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; background: rgba(255,255,255,.05); }
+.onboarding-steps li span { display: block; margin-bottom: 16px; color: var(--brand-cyan); font-family: var(--font-number); font-weight: 700; }
+.onboarding-steps li strong { display: block; color: #F6F9FD; line-height: 1.5; }
+.onboarding-preparations { margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 8px; }
+.onboarding-preparations strong { width: 100%; color: #EAF0FA; }
+.onboarding-preparations span { padding: 7px 10px; color: #C6D1E1; font-size: 12px; border: 1px solid rgba(255,255,255,.08); border-radius: 999px; background: rgba(255,255,255,.07); }
+.onboarding-shell > .login-form { max-width: 620px; width: 100%; min-height: 720px; margin: 0 auto; }
+.login-form h2 { margin: 0 0 7px; font-size: 24px; }
+.text-back { width: fit-content; min-height: 34px; margin-bottom: 28px; padding: 0; color: var(--brand-blue); border: 0; background: transparent; cursor: pointer; }
+.text-back:hover { text-decoration: underline; }
+
+.dashboard-hero { padding: var(--space-6); color: #FFFFFF; border-radius: 14px; background: linear-gradient(110deg, #17243D, #253762 76%, #30476C); box-shadow: var(--shadow-card); }
+.dashboard-hero__top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-5); }
+.dashboard-hero h2 { margin: 0 0 7px; font-size: 22px; }
+.dashboard-hero p { margin: 0; color: #AEBBD0; }
+.dashboard-hero .status-tag { color: #AEF5FF; background: rgba(56,232,255,.12); }
+.dashboard-steps { margin-top: 24px; padding: 16px; border: 1px solid rgba(255,255,255,.10); border-radius: var(--radius-md); background: rgba(255,255,255,.045); }
+.dashboard-steps .stepper-item { color: #8090AA; }
+.dashboard-steps .stepper-item.is-done, .dashboard-steps .stepper-item.is-active { color: #EAF0FA; }
+.dashboard-steps .stepper-dot { background: #1C2B48; }
+
+.section-list { display: grid; gap: 10px; }
+.section-item { min-height: 42px; padding: 10px 12px; display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); color: var(--text-secondary); border: 1px solid var(--line); border-radius: var(--radius-sm); background: #FAFBFD; }
+.section-item strong { color: var(--text-primary); }
+.section-item__index { flex: 0 0 auto; color: var(--brand-blue); font-family: var(--font-number); font-size: 11px; font-weight: 700; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 20px; }
+.form-grid .field.is-wide { grid-column: 1 / -1; }
+.stacked-fields { display: grid; gap: 16px; }
+.readonly-field { min-width: 0; }
+.readonly-value { min-height: 40px; padding: 10px 12px; color: var(--text-primary); line-height: 18px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-muted); }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; }
+.summary-grid .is-wide { grid-column: 1 / -1; }
+.form-footer { margin-top: var(--space-5); padding-top: var(--space-4); display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); border-top: 1px solid var(--line); }
+.save-state { color: var(--text-tertiary); font-size: 11px; }
+.form-actions { display: flex; gap: 8px; }
+
+.form-section { margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--line); }
+.form-section__title { margin-bottom: 14px; display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); }
+.form-section__title strong { font-size: 13px; }
+.form-section__title span { color: var(--text-tertiary); font-size: 11px; text-align: right; }
+.platform-lock { margin-bottom: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; color: var(--text-primary); border: 1px solid rgba(30,155,102,.24); border-radius: var(--radius-sm); background: rgba(30,155,102,.05); }
+.platform-lock svg { width: 18px; height: 18px; color: var(--success); }
+.platform-lock strong, .platform-lock span { display: block; }
+.platform-lock span { margin-top: 2px; color: var(--text-tertiary); font-size: 11px; }
+.release-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.release-choice .choice-card { align-items: flex-start; }
+.release-choice strong, .release-choice small { display: block; }
+.release-choice small { margin-top: 4px; color: var(--text-tertiary); line-height: 1.45; }
+.game-editor .panel-body { padding-top: 14px; padding-bottom: 14px; }
+.game-editor .field-label { margin-bottom: 4px; }
+.game-editor .gh-input, .game-editor .gh-select, .game-editor .readonly-value { min-height: 34px; height: 34px; padding-top: 7px; padding-bottom: 7px; }
+.game-form-grid { gap: 7px 14px; }
+.game-form-grid .gh-textarea { min-height: 52px; height: 52px; }
+.game-config-section { margin-top: 8px; padding-top: 8px; display: grid; gap: 6px; border-top: 1px solid var(--line); }
+.game-compact-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.requirements-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.candidate-tags { padding: 6px 10px; display: grid; grid-template-columns: 78px 1fr; align-items: center; gap: 3px 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-soft); }
+.candidate-tags .field-label { margin: 0; }
+.candidate-tags .rule-chip { padding: 5px 8px; font-size: 10px; }
+.candidate-tags small { grid-column: 2; color: var(--text-tertiary); font-size: 10px; }
+.compact-release-choice .choice-card { min-height: 56px; padding: 7px 10px; }
+.compact-release-choice small { font-size: 10px; }
+.game-editor .form-footer { margin-top: 9px; padding-top: 9px; }
+
+.asset-upload { margin-top: 18px; padding: 14px; display: flex; align-items: center; gap: 14px; border: 1px dashed var(--line-strong); border-radius: var(--radius-md); background: var(--surface-soft); }
+.asset-upload p { margin: 4px 0 10px; color: var(--text-tertiary); font-size: 11px; }
+.asset-preview { flex: 0 0 auto; display: grid; place-items: center; color: var(--brand-blue); font-family: var(--font-number); font-weight: 750; border: 1px solid rgba(106,124,255,.20); background: rgba(106,124,255,.08); }
+.asset-preview--logo { width: 72px; height: 72px; border-radius: 18px; }
+.asset-grid { margin-bottom: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.asset-card { min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-soft); }
+.asset-card strong, .asset-card span { display: block; }
+.asset-card strong { margin-top: 8px; font-size: 12px; }
+.asset-card span { margin-top: 2px; color: var(--text-tertiary); font-size: 10px; }
+.asset-placeholder { display: grid; place-items: center; min-height: 62px; color: var(--text-tertiary); font-family: var(--font-number); font-size: 11px; border-radius: 5px; background: linear-gradient(135deg, #E7EBF4, #F4F6FA); }
+.asset-placeholder--portrait { width: 58%; min-height: 78px; }
+.asset-placeholder--icon { width: 62px; }
+.compact-assets .asset-card { padding: 8px; }
+.compact-assets .asset-placeholder { min-height: 52px; }
+.compact-assets .asset-placeholder--portrait { min-height: 62px; }
+
+.gate-list { display: grid; gap: 10px; }
+.gate-item { min-height: 54px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-soft); }
+.gate-item > span { min-width: 0; }
+.gate-item strong, .gate-item small { display: block; }
+.gate-item strong { color: var(--text-primary); font-size: 12px; }
+.gate-item small { margin-top: 3px; color: var(--text-tertiary); line-height: 1.4; }
+.gate-item .status-tag { flex: 0 0 auto; }
+.disposition-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.disposition-form { align-items: end; }
+.disposition-form .gh-textarea { min-height: 72px; }
+.schedule-field { max-width: 420px; margin-top: 16px; }
+.schedule-field.is-disabled { opacity: .68; }
+.review-reject-reason { max-width: 720px; margin-top: 16px; }
+.review-reject-reason .gh-textarea { min-height: 72px; }
+.test-result-form { margin-top: 16px; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(220px, .5fr); align-items: start; gap: 16px; }
+.test-result-form .gh-textarea { min-height: 116px; }
+.issue-result-note { margin-top: 14px; padding: 13px 14px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-soft); }
+.issue-result-note strong, .issue-result-note p, .issue-result-note span { display: block; }
+.issue-result-note p { margin: 5px 0; color: var(--text-secondary); font-size: 12px; line-height: 1.55; }
+.issue-result-note span { color: var(--text-tertiary); font-size: 10px; }
+.receipt-note { margin-top: 14px; padding: 13px; border-left: 3px solid var(--brand-blue); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: rgba(106,124,255,.06); }
+.receipt-note p { margin: 5px 0; color: var(--text-secondary); font-size: 12px; line-height: 1.55; }
+.receipt-note span { color: var(--text-tertiary); font-size: 10px; }
+.conflict-summary { margin-top: 18px; padding: 14px; display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; border: 1px solid rgba(217,151,49,.25); border-radius: var(--radius-md); background: rgba(217,151,49,.06); }
+.conflict-summary span, .conflict-summary strong, .conflict-summary p { display: block; }
+.conflict-summary span { color: var(--text-tertiary); font-size: 10px; }
+.conflict-summary strong { margin-top: 3px; }
+.conflict-summary p { margin: 5px 0 0; color: var(--text-secondary); font-size: 11px; }
+
+.exception-hero { padding: var(--space-6); display: flex; align-items: flex-start; gap: var(--space-4); border: 1px solid rgba(217,86,86,.18); border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(217,86,86,.08), #FFFFFF); }
+.exception-hero > .status-tag { margin-left: auto; flex: 0 0 auto; }
+.exception-icon { width: 44px; height: 44px; display: grid; place-items: center; color: var(--danger); border-radius: 12px; background: rgba(217,86,86,.10); }
+.exception-icon svg { width: 22px; height: 22px; }
+.exception-hero h2 { margin: 0 0 5px; font-size: 18px; }
+.exception-hero p { margin: 0; color: var(--text-secondary); }
+
+.upload-zone { min-height: 240px; padding: 32px; display: grid; place-items: center; text-align: center; border: 1px dashed #ABB7CA; border-radius: var(--radius-md); background: #FAFBFD; }
+.upload-zone__icon { width: 52px; height: 52px; margin: 0 auto 12px; display: grid; place-items: center; color: var(--brand-blue); border-radius: 16px; background: rgba(106,124,255,.10); }
+.upload-zone__icon svg { width: 25px; height: 25px; }
+.upload-zone h3 { margin: 0 0 5px; }
+.upload-zone p { margin: 0 0 17px; color: var(--text-secondary); font-size: 12px; }
+.upload-progress { margin-top: var(--space-4); }
+.progress-track { height: 8px; overflow: hidden; border-radius: 999px; background: var(--surface-muted); }
+.progress-bar { width: 68%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--brand-blue), var(--brand-cyan)); transition: width .25s; }
+.progress-meta { margin-top: 7px; display: flex; justify-content: space-between; color: var(--text-tertiary); font-size: 11px; }
+
+.task-summary { padding: var(--space-5); display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.task-summary div { min-width: 0; }
+.task-summary span { display: block; color: var(--text-tertiary); font-size: 11px; }
+.task-summary strong { display: block; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.test-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.choice-card { padding: var(--space-4); display: flex; align-items: center; gap: 10px; color: var(--text-secondary); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); cursor: pointer; }
+.choice-card.is-selected { color: var(--success); border-color: rgba(30,155,102,.42); background: rgba(30,155,102,.05); }
+.choice-card input { accent-color: var(--success); }
+
+.publish-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.publish-option { padding: var(--space-5); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); cursor: pointer; }
+.publish-option.is-active { border-color: var(--brand-blue); box-shadow: 0 0 0 3px rgba(106,124,255,.10); }
+.publish-option strong { display: block; }
+.publish-option span { display: block; margin-top: 4px; color: var(--text-secondary); font-size: 12px; }
+
+.targeting-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.rule-builder { min-height: 236px; padding: var(--space-5); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.rule-builder h3 { margin: 0 0 12px; font-size: 14px; }
+.rule-builder__header { margin-bottom: 16px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.rule-builder__header h3 { margin-bottom: 4px; }
+.rule-builder__header p { margin: 0; color: var(--text-tertiary); font-size: 10px; }
+.rule-row { padding: 10px 0; display: grid; grid-template-columns: 92px 1fr; gap: 10px; border-top: 1px solid var(--line); }
+.rule-row__label { padding-top: 7px; color: var(--text-secondary); font-size: 11px; font-weight: 650; }
+.rule-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.rule-chip { padding: 7px 10px; color: var(--text-secondary); border: 1px solid var(--line); border-radius: 999px; background: var(--surface-soft); cursor: pointer; }
+.rule-chip.is-active { color: #162040; border-color: rgba(106,124,255,.35); background: rgba(106,124,255,.12); }
+.rule-chip.is-excluded { color: var(--danger); border-color: rgba(217,86,86,.28); background: rgba(217,86,86,.08); }
+.audience-estimate span, .audience-estimate strong, .audience-estimate p { display: block; }
+.audience-estimate > span { color: var(--text-tertiary); font-size: 10px; }
+.audience-estimate > strong { margin: 4px 0; font-family: var(--font-number); font-size: 30px; }
+.audience-estimate p { margin: 0 0 14px; color: var(--text-secondary); font-size: 11px; line-height: 1.5; }
+
+.dashboard-toolbar { margin-bottom: var(--space-4); display: flex; justify-content: space-between; gap: var(--space-4); }
+.dashboard-toolbar__group { display: flex; gap: 8px; }
+.chart-legend { margin-top: 10px; display: flex; justify-content: flex-end; gap: 16px; color: var(--text-tertiary); font-size: 11px; }
+.legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand-blue); }
+
+.cdkey-workspace { min-width: 0; }
+[data-cdkey-panel][hidden] { display: none !important; }
+.cdkey-panel-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: var(--space-4); align-items: start; }
+.cdkey-panel-grid > .panel { min-width: 0; }
+.cdkey-panel-grid .data-table th,
+.cdkey-panel-grid .data-table td { padding-right: 10px; padding-left: 10px; font-size: 11px; }
+.source-boundary { margin-top: 12px; padding: 10px 12px; display: grid; gap: 3px; color: var(--text-secondary); border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-muted); }
+.source-boundary strong { color: var(--text-primary); font-size: 12px; }
+.source-boundary span { font-size: 11px; line-height: 1.6; }
+.one-time-result { margin-top: 14px; padding: 14px; display: grid; gap: 8px; color: #0B6271; border: 1px solid rgba(47,215,239,.44); border-radius: var(--radius-sm); background: #EFFCFE; }
+.one-time-result code { padding: 9px 10px; color: #FFFFFF; border-radius: 6px; background: #101827; font-family: var(--font-number); overflow-wrap: anywhere; }
+.one-time-result .form-actions { flex-wrap: wrap; }
+.cdkey-table-actions { margin-top: 14px; justify-content: flex-end; }
+.api-docs-layout { align-items: start; }
+.api-docs-nav { margin-bottom: 16px; display: grid; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-md); background: #FFFFFF; }
+.api-docs-nav button { min-height: 40px; padding: 9px 12px; color: var(--text-secondary); text-align: left; border: 0; border-bottom: 1px solid var(--line); background: transparent; cursor: pointer; }
+.api-docs-nav button:last-child { border-bottom: 0; }
+.api-docs-nav button:hover,
+.api-docs-nav button:focus-visible { color: var(--text-primary); background: var(--surface-muted); outline: none; }
+.api-docs-content { display: grid; gap: var(--space-4); }
+.api-docs-content > section { scroll-margin-top: 16px; }
+.api-docs-content .panel-body > p { margin: 0; color: var(--text-secondary); line-height: 1.65; }
+.api-docs-content .panel-body > p + p { margin-top: 8px; }
+.error-chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.error-chip-list button { min-height: 32px; padding: 6px 10px; color: var(--text-secondary); border: 1px solid var(--line); border-radius: 999px; background: #FFFFFF; cursor: pointer; }
+.error-chip-list button:hover,
+.error-chip-list button:focus-visible { color: var(--brand-blue); border-color: var(--brand-blue); outline: none; }
+@media (max-width: 1360px) {
+  .metric-grid { gap: 9px; }
+  .metric-card { padding: 13px; }
+  .metric-value { font-size: 22px; }
+  .login-aside { padding: 42px; }
+  .login-form { padding-right: 48px; padding-left: 48px; }
+  .form-grid, .summary-grid { gap: 14px; }
+  .rule-row { grid-template-columns: 78px 1fr; }
+  .cdkey-panel-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 1180px) {
+  .login-aside { padding: 34px 38px; }
+  .login-aside h1 { margin-top: 56px; font-size: 30px; }
+  .login-aside::after { right: 28px; bottom: 28px; width: 136px; height: 136px; }
+  .login-rule { margin-top: 28px; }
+  .login-form { padding: 38px 40px; }
+  .content-grid { gap: 12px; }
+  .dashboard-hero { padding: 18px; }
+  .metric-card { padding: 12px; }
+  .metric-value { font-size: 20px; }
+  .panel-header { padding-right: 16px; padding-left: 16px; }
+  .panel-body { padding: 16px; }
+  .form-grid, .summary-grid { gap: 12px; }
+  .task-summary { padding: 16px; gap: 12px; }
+  .dashboard-toolbar { align-items: flex-start; }
+  .dashboard-toolbar__group { flex-wrap: wrap; }
+}</style></head><body>
+<div id="app"></div>
+<script id="portal-module" type="application/json">{"id":"01","name":"开发者平台与资料","description":"双登录、开发者注册、Game／APPID、三系统 SDK 与线下结果闭环。","output":"01-开发者平台与资料demo.html","defaultRoute":"P01-01"}</script>
+<script id="portal-modules" type="application/json">[{"id":"01","name":"开发者平台与资料","description":"双登录、开发者注册、Game／APPID、三系统 SDK 与线下结果闭环。","output":"01-开发者平台与资料demo.html","defaultRoute":"P01-01"},{"id":"02","name":"CDKEY 商品与供给","description":"外部 Key 入站与盖世 Key 生成、批次、渠道 API、接口说明及双账本对账。","output":"02-CDKEY商品与供给demo.html","defaultRoute":"P02-01"},{"id":"03","name":"包体测试与版本发布","description":"Windows、macOS、Linux 的 Build／Manifest、测试、Release Pointer 发布与历史 Build 回滚。","output":"03-包体测试与发布demo.html","defaultRoute":"P03-01"},{"id":"04","name":"精准化投放与发行数据","description":"经营看板、Campaign／UTM、人工资源执行、渠道归因及聚合导出。","output":"04-精准投放与数据demo.html","defaultRoute":"P04-01"}]</script>
+<script id="portal-routes" type="application/json">[{"id":"P01-01","moduleId":"01","templateId":"T01","role":"developer","title":"独立账号与盖世第三方登录页"},{"id":"P01-02","moduleId":"01","templateId":"T02","role":"developer","title":"开发者工作台首页"},{"id":"P01-03","moduleId":"01","templateId":"T04","role":"developer","title":"开发者注册与厂商资料页"},{"id":"P01-04","moduleId":"01","templateId":"T03","role":"developer","title":"游戏列表页"},{"id":"P01-05","moduleId":"01","templateId":"T05","role":"developer","title":"创建／编辑游戏页"},{"id":"P01-06","moduleId":"01","templateId":"T08","role":"developer","title":"APPID 与 SDK 接入页"},{"id":"P01-07","moduleId":"01","templateId":"T06","role":"developer","title":"资料线下结果页"},{"id":"P01-08","moduleId":"01","templateId":"T03","role":"operations","title":"开发者账号与盖世身份映射管理页"},{"id":"P01-09","moduleId":"01","templateId":"T07","role":"operations","title":"厂商线下资质结果录入页"},{"id":"P01-10","moduleId":"01","templateId":"T07","role":"operations","title":"游戏资料与上架线下结果录入页"}]</script>
+<script id="portal-data" type="application/json">{"accounts":{"developer":{"name":"王明","roleName":"已确认开发者"},"operations":{"name":"李然","roleName":"平台发行运营"},"tester":{"name":"陈宇","roleName":"平台测试人员"}},"context":{"vendorId":"VEN-202609-001","vendorName":"星海互动","gameId":"GAME-48291","gameName":"星海远征","versionId":"VER-100","versionName":"1.0.0","appId":"APP-7F3A9C","campaignId":"CMP-202609-001","querySnapshotId":"QRY-20260903-001"},"helpCenter":{"title":"帮助中心","faq":[{"question":"如何完成开发者认证？","answer":"填写主体、品牌和联系人资料并提交，平台录入线下确认结果后即可取得开发者资格。"},{"question":"如何创建游戏并获取 APPID？","answer":"完成开发者认证后创建游戏并提交资料；项目确认后系统会生成唯一 APPID。"},{"question":"在哪里下载 SDK 和查看接入文档？","answer":"进入 APPID 与 SDK 接入页，可按系统下载 SDK、核对校验值并打开接入文档。"},{"question":"如何创建 Key 批次？","answer":"确认游戏、SKU、渠道、额度和有效期均在授权范围内后，在 Key 批次中提交创建。"},{"question":"Secret 丢失怎么办？","answer":"Secret 不支持再次查看，请轮换凭据并更新第三方渠道配置。"},{"question":"包体上传中断后需要重新上传吗？","answer":"已完成的分片会保留；重新进入 Build 详情后可从中断位置继续上传。"},{"question":"测试通过后如何发布版本？","answer":"平台完成上架结论并确认发布条件后，由发行运营配置立即发布或定时发布。"},{"question":"经营数据多久更新一次？","answer":"交易与 Key 数据按小时更新，客户端下载、更新与首次启动数据次日更新。"},{"question":"盖世平台 Key 和外部平台 Key 有什么区别？","answer":"盖世平台 Key 由盖世兑换服务校验；Steam、Epic、GOG 等 Key 必须由对应平台或供应商提供。"}],"contact":{"supportName":"盖世游戏开发者支持","serviceHours":"服务时间以合作对接安排为准","channel":"合作群／项目对接人","email":"gamehub@gamesir.com","fallback":"紧急问题请联系当前项目对接人"}},"pages":{"P01-01":{"summary":"在新发行平台独立品牌页面完成已有账号密码登录，或通过盖世游戏平台第三方授权自动建号／登录，再进入开发者注册状态分流。","status":"未登录","primaryAction":"登录／注册","primaryActionDisabled":false,"actions":[{"id":"gamehub-login","label":"使用盖世游戏账号登录"},{"id":"forgot-password","label":"忘记密码"}]},"P01-02":{"summary":"已确认开发者的厂商资料、Game、APPID、SDK 接入及后续发行入口总览。","status":"开发者资格已确认","primaryAction":"进入游戏管理","primaryActionDisabled":false,"actions":[]},"P01-03":{"summary":"首次开发者注册、厂商资料提交，以及已确认后的厂商资料修改。","status":"草稿","primaryAction":"提交注册","primaryActionDisabled":false,"actions":[{"id":"save-draft","label":"保存草稿"}]},"P01-04":{"summary":"本厂商 Game、APPID、支持系统、发行方式及跨流程状态列表。","status":"已确认","primaryAction":"创建游戏","primaryActionDisabled":false,"actions":[]},"P01-05":{"summary":"Game 基本资料、宣传素材、发行范围、Windows／Mac／Linux 要求、Steam 全量标签和发行方式的建档与提交。","status":"草稿","primaryAction":"提交资料","primaryActionDisabled":false,"actions":[{"id":"save-draft","label":"保存草稿"}]},"P01-06":{"summary":"为一个 Game 创建唯一 APPID，并提供 Windows／Mac／Linux SDK 下载和 Google Docs 开发文档入口。","status":"APPID 已创建","primaryAction":"下载 SDK","primaryActionDisabled":false,"actions":[]},"P01-07":{"summary":"厂商或 Game 资料版本、线下结果、原因摘要及重新提交入口。","status":"需修改","primaryAction":"按意见修改","primaryActionDisabled":false,"actions":[]},"P01-08":{"summary":"管理独立平台账号、开发者注册状态、唯一厂商关系及盖世第三方身份映射异常。","status":"账号已启用","primaryAction":"发送密码设置","primaryActionDisabled":false,"actions":[{"id":"approve","label":"通过"},{"id":"reject","label":"驳回"}]},"P01-09":{"summary":"查看厂商资料版本与差异，录入线下完成的合同／主体资质结果及依据摘要。","status":"待线下结果","primaryAction":"保存线下结果","primaryActionDisabled":false,"actions":[{"id":"record-offline-result","label":"保存线下结果"}]},"P01-10":{"summary":"查看 Game 资料、三系统要求与 Steam 标签，录入线下完成的资料／上架结论及发布前置摘要。","status":"待线下结果","primaryAction":"保存线下结果","primaryActionDisabled":false,"actions":[{"id":"record-offline-result","label":"保存线下结果"}]}}}</script>
+<script>window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
+
+(function registerIcons(namespace) {
+  const paths = {
+    logo: '<path d="M5 7.5 12 3l7 4.5v9L12 21l-7-4.5z"/><path d="m8.2 10 3.8-2.2 3.8 2.2v4L12 16.2 8.2 14z"/>',
+    home: '<path d="m3 11 9-8 9 8"/><path d="M5.5 9.5V21h13V9.5M9 21v-7h6v7"/>',
+    build: '<path d="M4 4h16v5H4zM4 15h16v5H4z"/><path d="M8 9v6m8-6v6"/>',
+    key: '<circle cx="8" cy="15" r="4"/><path d="m11 12 8-8m-3 3 3 3m-6 0 2 2"/>',
+    target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>',
+    chart: '<path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/>',
+    game: '<path d="M7 8h10a5 5 0 0 1 4.6 7l-1 2.4a2.5 2.5 0 0 1-4.1.8L15 16h-6l-1.5 2.2a2.5 2.5 0 0 1-4.1-.8L2.4 15A5 5 0 0 1 7 8Z"/><path d="M7 11v4m-2-2h4m7-1h.01m2 3h.01"/>',
+    vendor: '<path d="M4 21V7l8-4 8 4v14M8 10h2m4 0h2M8 14h2m4 0h2M9 21v-3h6v3"/>',
+    review: '<path d="M5 3h14v18H5z"/><path d="M8 8h8m-8 4h5m-5 4h4"/>',
+    test: '<path d="M9 3h6m-5 0v5l-5.5 9a2.5 2.5 0 0 0 2.1 4h10.8a2.5 2.5 0 0 0 2.1-4L14 8V3"/><path d="M7.5 16h9"/>',
+    publish: '<path d="M12 16V3m0 0 5 5m-5-5L7 8"/><path d="M5 13v8h14v-8"/>',
+    warning: '<path d="M12 3 2.8 20h18.4z"/><path d="M12 9v5m0 3h.01"/>',
+    chevron: '<path d="m9 18 6-6-6-6"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+    refresh: '<path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 8A7 7 0 0 1 19 12m-1.1 4A7 7 0 0 1 5 12"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+    upload: '<path d="M12 16V4m0 0 5 5m-5-5L7 9"/><path d="M4 15v5h16v-5"/>',
+    check: '<path d="m5 12 4 4L19 6"/>',
+    lock: '<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+    file: '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5M9 13h6m-6 4h6"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10h.01"/>',
+  };
+
+  namespace.icons = {
+    has(name) { return Object.prototype.hasOwnProperty.call(paths, name); },
+    render(name, className = 'gh-icon') {
+      const body = paths[name] || paths.info;
+      return `<svg class="${className}" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+    },
+  };
+})(window.GameHubDeveloperPortal);
+
+window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
+
+(function registerComponents(namespace) {
+  const icon = (name, className) => namespace.icons.render(name, className);
+  const escapeHtml = value => String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+  const attrs = values => Object.entries(values)
+    .filter(([, value]) => value !== undefined && value !== null && value !== false)
+    .map(([key, value]) => value === true ? key : `${key}="${escapeHtml(value)}"`)
+    .join(' ');
+
+  const button = ({ label, variant = 'secondary', iconName, action, primary = false, disabled = false, size, extra = '' }) => {
+    const attributeText = attrs({
+      type: 'button',
+      class: 'gh-button',
+      'data-component': 'Button',
+      'data-variant': variant,
+      'data-size': size,
+      'data-portal-action': action,
+      'data-primary-action': primary || undefined,
+      disabled: disabled || undefined,
+      'aria-disabled': disabled ? 'true' : undefined,
+    });
+    return `<button ${attributeText}${extra ? ` ${extra}` : ''}>${iconName ? icon(iconName) : ''}<span>${escapeHtml(label)}</span></button>`;
+  };
+
+  const input = ({ label, value = '', placeholder = '', name = '', required = false, hint = '', invalid = false, error = '', type = 'text', disabled = false }) => `
+    <label class="field">
+      <span class="field-label"><span>${escapeHtml(label)}${required ? '<span class="field-required">*</span>' : ''}</span>${hint ? `<span class="field-hint">${escapeHtml(hint)}</span>` : ''}</span>
+      <input class="gh-input" data-component="Input" data-variant="${invalid ? 'error' : 'default'}" type="${escapeHtml(type)}" name="${escapeHtml(name)}" value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" ${invalid ? 'aria-invalid="true"' : ''} ${disabled ? 'disabled aria-disabled="true"' : ''}>
+      ${error ? `<span class="field-error">${escapeHtml(error)}</span>` : ''}
+    </label>`;
+
+  const textarea = ({ label, value = '', placeholder = '', required = false, hint = '' }) => `
+    <label class="field is-wide">
+      <span class="field-label"><span>${escapeHtml(label)}${required ? '<span class="field-required">*</span>' : ''}</span>${hint ? `<span class="field-hint">${escapeHtml(hint)}</span>` : ''}</span>
+      <textarea class="gh-textarea" data-component="Input" data-variant="multiline" placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea>
+    </label>`;
+
+  const select = ({ label, options = [], value, name = '' }) => `
+    <label class="field">
+      <span class="field-label">${escapeHtml(label)}</span>
+      <select class="gh-select" data-component="Select" data-variant="default" name="${escapeHtml(name)}">
+        ${options.map(option => {
+          const entry = typeof option === 'string' ? { label: option, value: option } : option;
+          return `<option value="${escapeHtml(entry.value)}"${entry.value === value ? ' selected' : ''}>${escapeHtml(entry.label)}</option>`;
+        }).join('')}
+      </select>
+    </label>`;
+
+  const statusVariant = status => {
+    const text = String(status || '');
+    if (/通过|正常|已发布|进行中|已完成|可售|成功|在线|可用/.test(text)) return 'success';
+    if (/异常|失败|驳回|中断|停售|下架|不通过|已作废|已撤销/.test(text)) return 'danger';
+    if (/待|草稿|审核中|排期|测试中|处理中|暂停|生成中/.test(text)) return 'warning';
+    return 'info';
+  };
+
+  const statusTag = (status, variant = statusVariant(status)) => `<span class="status-tag" data-component="StatusTag" data-variant="${escapeHtml(variant)}">${escapeHtml(status || '未知状态')}</span>`;
+
+  const normalizeRows = rows => rows.length ? rows : [['暂无数据', '等待业务确认', '未开始', '查看']];
+  const table = ({ headers = ['对象', '说明', '状态', '操作'], rows = [] }) => {
+    const safeRows = normalizeRows(rows);
+    return `<div class="table-wrap"><table class="data-table" data-component="Table" data-variant="default" data-columns="${headers.length}">
+      <thead><tr>${headers.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead>
+      <tbody>${safeRows.map((row, rowIndex) => `<tr>${row.map((cell, cellIndex) => {
+        const value = typeof cell === 'object' ? cell : { text: cell };
+        if (value.status) return `<td>${statusTag(value.status)}</td>`;
+        if (value.action) return `<td>${button({ label: value.action, variant: 'text', size: 'small', action: value.portalAction || 'row-detail' })}</td>`;
+        const text = String(value.text ?? '');
+        const isIdentifier = /(?:\b(?:APP|SKU|BUILD|MANIFEST|KEY|TEST|CMP|REQ|EXP|QRY|REL|VEN|SUP|ACC)-[A-Z0-9-]+\b|\bcli_[a-z0-9_]+\b|^\d{4}[-/]\d{2}[-/]\d{2})/i.test(text);
+        const classes = [cellIndex === 0 ? 'table-primary' : '', isIdentifier ? 'table-identifier' : ''].filter(Boolean).join(' ');
+        return `<td><div class="${classes}">${escapeHtml(text)}</div>${value.subtext ? `<div class="table-secondary">${escapeHtml(value.subtext)}</div>` : ''}</td>`;
+      }).join('')}</tr>`).join('')}</tbody>
+    </table></div>`;
+  };
+
+  const pagination = ({ total = 1, page = 1, pageSize = 20 }) => {
+    const totalPages = Math.max(1, Math.ceil(Number(total) / Math.max(1, Number(pageSize))));
+    const currentPage = Math.min(Math.max(1, Number(page)), totalPages);
+    const pageButtons = Array.from({ length: totalPages }, (_, index) => index + 1)
+      .map(item => `<button class="page-button${item === currentPage ? ' is-active' : ''} number" data-portal-action="page-${item}"${item === currentPage ? ' aria-current="page"' : ''}>${escapeHtml(item)}</button>`)
+      .join('');
+    return `<div class="pagination" data-component="Pagination" data-variant="default">
+      <span>共 <strong class="number">${escapeHtml(total)}</strong> 条记录</span>
+      <div class="pagination__buttons">
+        <button class="page-button" data-portal-action="page-prev" aria-label="上一页"${currentPage === 1 ? ' disabled aria-disabled="true"' : ''}>${icon('chevron', 'gh-icon')}</button>
+        ${pageButtons}
+        <button class="page-button" data-portal-action="page-next" aria-label="下一页"${currentPage === totalPages ? ' disabled aria-disabled="true"' : ''}>${icon('chevron', 'gh-icon')}</button>
+      </div>
+    </div>`;
+  };
+
+  const tabs = ({ items = [], active = 0, variant = 'line', action = 'tab', idPrefix = 'tab', indexAttribute = 'data-tab-index' }) =>
+    `<div class="tabs" role="tablist" data-component="Tabs" data-variant="${escapeHtml(variant)}">${items.map((item, index) => {
+      const id = `${idPrefix}-${index}`;
+      return `<button id="${escapeHtml(id)}" class="tab${index === active ? ' is-active' : ''}" role="tab" aria-selected="${index === active}" aria-controls="${escapeHtml(id)}-panel" tabindex="${index === active ? '0' : '-1'}" data-portal-action="${escapeHtml(action)}" ${escapeHtml(indexAttribute)}="${index}">${escapeHtml(item)}</button>`;
+    }).join('')}</div>`;
+
+  const authorizationSummary = authorization => `<section class="authorization-summary" data-cdkey-authorization>
+    <div data-authorization-status><span>授权状态</span>${statusTag(authorization.status, 'success')}</div>
+    <div data-authorization-quota><span>剩余 Key 配额</span><strong class="number">${escapeHtml(authorization.remainingQuota)}</strong></div>
+    <div data-authorization-channels><span>可用渠道</span><strong>${escapeHtml(authorization.channels.join('、'))}</strong></div>
+    <div data-authorization-paused><span>暂停原因</span><strong>${escapeHtml(authorization.pausedReason)}</strong></div>
+  </section>`;
+
+  const codeBlock = ({ title, code, action = 'copy-api-example' }) => `<section class="code-block">
+    <header><strong>${escapeHtml(title)}</strong>${button({ label: '复制示例', variant: 'text', action, size: 'small' })}</header>
+    <pre><code>${escapeHtml(code)}</code></pre>
+  </section>`;
+
+  const stepper = ({ items = [], active = 0 }) => `<div class="stepper" data-component="Stepper" data-variant="horizontal">${items.map((item, index) => `<div class="stepper-item${index < active ? ' is-done' : ''}${index === active ? ' is-active' : ''}"><span class="stepper-dot">${index < active ? icon('check', 'gh-icon') : ''}</span><span>${escapeHtml(item)}</span></div>`).join('')}</div>`;
+
+  const timeline = ({ items = [] }) => `<ol class="timeline" data-component="Timeline" data-variant="vertical">${items.map((item, index) => `<li class="timeline-item"><div class="timeline-title">${escapeHtml(item)}</div><div class="timeline-meta number">${index === 0 ? '刚刚' : '历史记录'}</div></li>`).join('')}</ol>`;
+
+  const metricCard = ({ label, value, trend = 'T+1 汇总口径' }) => `<article class="metric-card" data-component="MetricCard" data-variant="default"><div class="metric-label">${escapeHtml(label)}</div><div class="metric-value number">${escapeHtml(value)}</div><div class="metric-trend">${escapeHtml(trend)}</div></article>`;
+
+  const chart = ({ label = '趋势', unit = '数量（次）', legend = '当前指标' } = {}) => `<div class="chart" data-component="Chart" data-variant="line" role="img" aria-label="${escapeHtml(label)}">
+    <div class="chart-heading"><span>${escapeHtml(unit)}</span><span class="legend-item"><i class="legend-dot"></i>${escapeHtml(legend)}</span></div>
+    <svg viewBox="0 0 760 220" preserveAspectRatio="none"><defs><linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6A7CFF" stop-opacity=".30"/><stop offset="1" stop-color="#6A7CFF" stop-opacity="0"/></linearGradient></defs>
+      <path class="chart-grid" d="M58 24H740M58 72H740M58 120H740M58 168H740"/>
+      <g class="chart-axis"><text x="48" y="28">3,000</text><text x="48" y="76">2,000</text><text x="48" y="124">1,000</text><text x="48" y="172">0</text><text x="58" y="207">08-28</text><text x="276" y="207">08-30</text><text x="498" y="207">09-01</text><text x="704" y="207">09-03</text></g>
+      <path class="chart-area" d="M58 168L58 148L154 135L252 141L350 102L448 111L546 70L644 84L740 40L740 168Z"/>
+      <path class="chart-line" d="M58 148L154 135L252 141L350 102L448 111L546 70L644 84L740 40"/>
+      <g>${[[58,148],[154,135],[252,141],[350,102],[448,111],[546,70],[644,84],[740,40]].map(([x,y]) => `<circle class="chart-dot" cx="${x}" cy="${y}" r="4"/>`).join('')}</g>
+    </svg></div>`;
+
+  const statePanel = ({ state, primaryAction = '返回', onRetry = false }) => {
+    if (state === 'loading') return `<section class="state-panel" data-component="StatePanel" data-variant="loading" data-page-state="loading"><div class="skeleton-stack" aria-label="页面加载中"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div></section>`;
+    const config = {
+      empty: { iconName: 'file', title: '暂无数据', copy: '当前条件下没有可展示的内容。', action: primaryAction },
+      error: { iconName: 'warning', title: '页面加载失败', copy: '页面数据加载失败，请重试。', action: '重试' },
+      permission: { iconName: 'lock', title: '暂无访问权限', copy: '当前账号未获授权访问此页面，如需处理请联系平台管理员。', action: '返回可访问页面' },
+    }[state] || { iconName: 'info', title: '状态未知', copy: '请返回默认状态。', action: '返回' };
+    return `<section class="state-panel" data-component="StatePanel" data-variant="${escapeHtml(state)}" data-page-state="${escapeHtml(state)}"><div class="state-content"><div class="state-visual">${icon(config.iconName)}</div><h2>${escapeHtml(config.title)}</h2><p>${escapeHtml(config.copy)}</p>${button({ label: config.action, variant: 'primary', action: onRetry || state === 'error' ? 'retry-state' : 'default-state', primary: true })}</div></section>`;
+  };
+
+  const resultStrip = ({ title, detail = '', variant = 'info' }) => `<div class="result-strip" data-component="ResultStrip" data-variant="${escapeHtml(variant)}" role="status">${icon(variant === 'danger' || variant === 'warning' ? 'warning' : 'info')}<div><strong>${escapeHtml(title)}</strong>${detail ? `<span>${escapeHtml(detail)}</span>` : ''}</div></div>`;
+
+  namespace.components = { escapeHtml, button, input, textarea, select, statusTag, table, pagination, tabs, authorizationSummary, codeBlock, stepper, timeline, metricCard, chart, statePanel, resultStrip };
+})(window.GameHubDeveloperPortal);
+
+window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
+
+(function registerTemplates(namespace) {
+  const c = namespace.components;
+  const e = c.escapeHtml;
+  const icon = name => namespace.icons.render(name);
+
+  const actionOf = (page, fallbackId, fallbackLabel) => {
+    const actions = Array.isArray(page?.actions) ? page.actions : [];
+    const exact = actions.find(action => action.id === fallbackId);
+    return exact || { id: fallbackId, label: fallbackLabel };
+  };
+  const renderActionButtons = (page, excluded = []) => {
+    const actions = Array.isArray(page?.actions) ? page.actions : [];
+    const visible = actions.filter(action => action?.id && !excluded.includes(action.id));
+    return visible.length ? `<div class="form-actions">${visible.map(action => c.button({ label: action.label || action.id, variant: /reject|interrupt|stop|remove/.test(action.id) ? 'danger' : 'secondary', action: action.id })).join('')}</div>` : '';
+  };
+  const sectionList = items => `<div class="section-list">${(items.length ? items : ['待补充业务内容']).map((item, index) => `<div class="section-item"><span>${e(item)}</span><span class="section-item__index">${String(index + 1).padStart(2, '0')}</span></div>`).join('')}</div>`;
+  const panel = ({ title, body, description = '' }) => `<section class="panel"><header class="panel-header"><div><h2 class="panel-title">${e(title)}</h2>${description ? `<div class="panel-description">${e(description)}</div>` : ''}</div></header><div class="panel-body">${body}</div></section>`;
+  const readonlyField = ({ label, value, hint = '', wide = false }) => `<div class="field readonly-field${wide ? ' is-wide' : ''}"><span class="field-label"><span>${e(label)}</span>${hint ? `<span class="field-hint">${e(hint)}</span>` : ''}</span><div class="readonly-value">${e(value)}</div></div>`;
+  const gateList = items => `<div class="gate-list">${items.map(item => `<div class="gate-item"><span><strong>${e(item.label)}</strong>${item.detail ? `<small>${e(item.detail)}</small>` : ''}</span>${c.statusTag(item.status)}</div>`).join('')}</div>`;
+  const listViews = {
+    'P01-04': {
+      tabs: ['全部游戏', '待处理', '已发布'],
+      placeholder: '输入游戏名称',
+      filters: [{ label: '发行方式', options: ['全部方式', '第三方平台激活', '盖世直接下载'] }, { label: '资料状态', options: ['全部状态', '草稿', '审核中', '已通过', '已驳回'] }],
+      headers: ['游戏名称', '发行方式', '资料状态', '供给／版本', '发布状态', '投放', '更新时间', '操作'],
+      rows: [[{ text: '星海远征', subtext: 'GAME-48291 · Windows' }, '盖世直接下载', { status: '已通过' }, '版本 1.0.0 · 测试不通过', { status: '尚未发布' }, '暂无投放', '2026-09-01 18:24', { action: '查看资料', portalAction: 'row-detail' }]],
+    },
+    'P01-08': {
+      tabs: ['全部账号', '正常', '异常映射', '已停用'],
+      placeholder: '输入 account_id、邮箱或厂商名称',
+      filters: [{ label: '账号状态', options: ['全部状态', '正常', '待设置密码', '已停用'] }, { label: '盖世映射', options: ['全部映射', '已映射', '未映射', '冲突待处理'] }],
+      headers: ['独立平台账号', '登录凭据', '开发者资格／厂商', '盖世身份映射', '账号状态', '最近登录', '操作'],
+      rows: [[{ text: 'ACC-202609-001', subtext: 'wang***@xinghai.games' }, '密码已设置／盖世登录', '已确认 · 星海互动', { status: '已映射' }, { status: '正常' }, '2026-09-03 09:42', { action: '查看映射', portalAction: 'row-detail' }]],
+    },
+    'P02-01': {
+      tabs: ['全部商品', '供给异常', '可供货'],
+      placeholder: '输入游戏名称或 SKU',
+      filters: [{ label: '供给状态', options: ['全部状态', '可供货', '库存不足', '售罄', '异常', '未知'] }, { label: '可售条件', options: ['全部条件', '已通过', '有阻塞项'] }],
+      headers: ['游戏／商品', 'SKU', '发行方式', '商品状态', '供给状态', '可售条件', '更新时间', '操作'],
+      rows: [[{ text: '星海远征', subtext: '标准版商品' }, 'SKU-CN-001', '第三方平台激活', { status: '停售' }, { status: '供给异常' }, '价格与来源待恢复', '2026-09-01 17:50', { action: '查看异常', portalAction: 'row-detail' }]],
+    },
+    'P02-03': {
+      tabs: ['全部商品', '异常待处理', '条件未齐'],
+      placeholder: '输入游戏、厂商或 SKU',
+      filters: [{ label: '发布与可售', options: ['全部状态', '待发布', '可售', '停售'] }, { label: '供给状态', options: ['全部供给', '可供货', '异常'] }],
+      headers: ['商品', 'SKU 数', '发行方式', '商业条件', '供给状态', '发布／可售', '更新时间', '操作'],
+      rows: [[{ text: '星海远征', subtext: '星海互动' }, '1 个', '第三方平台激活', { status: '已通过' }, { status: '异常待处理' }, { status: '停售' }, '2026-09-01 17:50', { action: '配置商品', portalAction: 'row-detail' }]],
+    },
+    'P02-06': {
+      tabs: ['异常生效中', '待恢复确认', '已恢复'],
+      placeholder: '输入异常编号、商品或 SKU',
+      filters: [{ label: '异常类型', options: ['全部类型', '库存', '价格', '来源', '商业供给'] }, { label: '处理状态', options: ['全部状态', '异常生效中', '待恢复确认', '已恢复'] }],
+      headers: ['异常编号', '商品／SKU', '来源类型', '异常类型', '影响订单', '处理状态', '更新时间', '操作'],
+      rows: [[{ text: 'SUP-20260901-001', subtext: '首次发现 16:20' }, '星海远征 · SKU-CN-001', '供应商 API', '当前价格不可用', '新增销售已停止；既有订单不变', { status: '异常生效中' }, '2026-09-01 17:50', { action: '处理异常', portalAction: 'row-detail' }]],
+    },
+    'P03-01': {
+      tabs: ['全部版本', '测试中', '待发布', '已发布'],
+      placeholder: '输入版本号或修订号',
+      filters: [{ label: '测试状态', options: ['全部状态', '待提交', '测试中', '测试不通过', '测试通过'] }, { label: '发布状态', options: ['全部状态', '尚未发布', '待发布', '已发布', '已撤回'] }],
+      headers: ['版本号', '包体修订', '测试轮次', '测试状态', '发布状态', '更新时间', '操作'],
+      rows: [[{ text: '1.0.0', subtext: 'Windows／macOS／Linux' }, '3 个 Build · Manifest 永久保留', '第 1 轮', { status: '测试不通过' }, { status: '尚未发布' }, '2026-09-03 09:36', { action: '查看结果', portalAction: 'row-detail' }]],
+    },
+    'P03-06': {
+      tabs: ['待测试', '测试中', '已完成'],
+      placeholder: '输入任务、游戏或版本',
+      filters: [{ label: '任务状态', options: ['全部状态', '待测试', '测试中', '已完成', '已失效'] }, { label: '分配时间', options: ['全部时间', '今天', '近 7 天'] }],
+      headers: ['待测任务', '游戏／版本', '包体修订', '测试轮次', '测试人员', '分配时间', '任务状态', '操作'],
+      rows: [[{ text: 'TEST-202609-002', subtext: '正式环境验收' }, '星海远征 · 1.0.0', 'BUILD-WIN-003', '第 1 轮', '陈宇（本人）', '2026-09-01 13:10', { status: '待测试' }, { action: '领取并查看', portalAction: 'row-detail' }]],
+    },
+    'P03-09': {
+      tabs: ['待分配', '测试中', '测试通过待确认', '异常'],
+      placeholder: '输入厂商、游戏或版本',
+      filters: [{ label: '测试结果', options: ['全部结果', '未提交', '测试通过', '测试不通过'] }, { label: '审核状态', options: ['全部状态', '待分配', '待确认', '已确认'] }],
+      headers: ['厂商／游戏', '版本／修订', '轮次', '有效任务', '测试结果', '审核状态', '发布条件', '操作'],
+      rows: [[{ text: '星海互动', subtext: '星海远征' }, '1.0.0 · BUILD-WIN-003', '第 1 轮', '尚未分配', '未提交', { status: '待分配' }, '测试结果待完成', { action: '分配测试', portalAction: 'row-detail' }]],
+    },
+    'P03-11': {
+      tabs: ['待配置', '已排期', '发布失败'],
+      placeholder: '输入游戏、版本或修订',
+      filters: [{ label: '发布条件', options: ['全部条件', '已通过', '有阻塞项'] }, { label: '发布方式', options: ['全部方式', '未配置', '立即发布', '定时发布'] }],
+      headers: ['候选版本', '发布条件', '当前线上版本', '发布方式／时间', '最近结果', '状态', '操作'],
+      rows: [[{ text: '1.0.0', subtext: 'BUILD-REV-003 · 星海远征' }, { status: '已通过' }, '0.9.0', '未配置', '暂无发布记录', { status: '待发布' }, { action: '发布配置', portalAction: 'row-detail' }]],
+    },
+    'P04-01': {
+      tabs: ['全部需求', '草稿', '平台处理中', '已结束'],
+      placeholder: '输入投放需求或游戏',
+      filters: [{ label: '需求状态', options: ['全部状态', '草稿', '开发者已提交', '平台配置中', '已排期', '已驳回'] }, { label: '期望时间', options: ['全部时间', '近 7 天', '近 30 天'] }],
+      headers: ['投放需求', '游戏', '投放目标', '期望时间', '需求状态', '更新时间', '操作'],
+      rows: [[{ text: 'CMP-202609-001', subtext: '素材修订 01' }, '星海远征', '详情访问', '2026-09-10 — 2026-09-20', { status: '开发者已提交' }, '2026-09-01 18:05', { action: '查看详情', portalAction: 'row-detail' }]],
+    },
+    'P04-05': {
+      tabs: ['待处理', '平台配置中', '已排期', '投放中', '已结束'],
+      placeholder: '输入计划、游戏或厂商',
+      filters: [{ label: '计划状态', options: ['全部状态', '开发者已提交', '平台配置中', '已排期', '投放中', '已暂停', '已结束'] }, { label: '负责人', options: ['全部负责人', '待领取', '我负责的'] }],
+      headers: ['投放计划', '厂商／游戏', '目标', '资源位', '期望／实际排期', '负责人', '计划状态', '操作'],
+      rows: [[{ text: 'CMP-202609-001', subtext: '2026-09-01 提交' }, '星海互动 · 星海远征', '详情访问', '待配置', '期望 09-10 — 09-20／实际待定', '待领取', { status: '开发者已提交' }, { action: '开始配置', portalAction: 'row-detail' }]],
+    },
+  };
+  const defaultFooter = (page, options = {}) => {
+    const save = actionOf(page, 'save-draft', '保存草稿');
+    return `<footer class="form-footer"><span class="save-state" data-save-state>尚未保存</span><div class="form-actions">${options.noSave ? '' : c.button({ label: save.label, action: save.id })}${renderActionButtons(page, [save.id])}</div></footer>`;
+  };
+
+  const renderT01 = ({ page }) => `<div class="login-shell developer-login" data-developer-login>
+    <section class="login-aside">
+      <div class="onboarding-brand"><div class="brand-mark">${icon('logo')}</div><span class="onboarding-audience">PC 游戏发行与运营服务</span></div>
+      <h1>让每一款游戏，从接入到发行都有清晰记录</h1>
+      <p>统一管理游戏资料、版本包体、CDKEY、发行进度与经营数据。</p>
+      <div class="login-rule">${icon('info')}<span>登录后，如尚未完成开发者认证，请按指引提交主体与厂商资料。</span></div>
+    </section>
+    <section class="login-form">
+      <div data-password-login>
+        <div class="page-eyebrow">DEVELOPER SIGN IN</div><h2 data-page-title>开发者账号登录</h2><p>使用平台账号登录；账号未注册时自动创建</p>
+        <div class="login-form__fields">${c.input({ label: '账号／邮箱', placeholder: '请输入账号或邮箱', required: true })}${c.input({ label: '密码', placeholder: '请输入密码', type: 'password', required: true })}</div>
+        <button class="login-forgot" type="button" data-portal-action="forgot-password">忘记密码</button>
+        <div class="login-form__action">${c.button({ label: page.primaryAction || '登录／注册', variant: 'primary', action: 'login', primary: true, iconName: 'chevron' })}</div>
+        <div class="login-divider"><span>或</span></div>
+        ${c.button({ label: '使用盖世游戏账号登录', action: 'gamehub-login', iconName: 'logo' })}
+        <div class="login-help">未注册的账号将在登录时自动注册。</div>
+      </div>
+      <div class="qr-login-card" data-gamehub-qr hidden>
+        <button class="text-back" type="button" data-portal-action="password-login">返回账号登录</button>
+        <div class="page-eyebrow">GAMEHUB SIGN-IN</div><h2>使用盖世游戏 App 扫码</h2><p data-qr-status>二维码有效期 02:00，请在盖世游戏中确认授权</p>
+        <div class="login-qr" aria-label="登录二维码"><span></span></div>
+        <div class="qr-countdown">剩余 <strong data-qr-countdown>02:00</strong></div>
+        <button class="login-forgot" type="button" data-portal-action="refresh-qr">二维码已失效？点击刷新</button>
+        <div class="login-help">请在盖世游戏 App 内确认授权，完成后将自动登录。</div>
+      </div>
+    </section>
+  </div>`;
+
+  const renderT02 = ({ page }) => `<div class="content-grid"><section class="dashboard-hero span-12"><div class="dashboard-hero__top"><div><h2>欢迎回来，王明</h2><p>${e(page.summary)}</p></div>${c.statusTag(page.status)}</div><div class="dashboard-steps">${c.stepper({ items: ['开发者资格', 'Game 建档', 'APPID／SDK', '包体与发行'], active: 2 })}</div></section>
+    <div class="span-12 metric-grid">${c.metricCard({ label: '开发者账号', value: '正常', trend: 'ACC-202609-001 · 密码已设置' })}${c.metricCard({ label: '开发者资格', value: '已确认', trend: '唯一绑定：星海互动' })}${c.metricCard({ label: 'APPID', value: 'APP-7F3A9C', trend: '星海远征' })}${c.metricCard({ label: '三系统 SDK', value: '可下载', trend: 'Windows／macOS／Linux' })}</div>
+    <div class="span-7">${panel({ title: '当前待办', body: gateList([{ label: '继续 Linux Build', detail: '版本 1.0.0 的 Linux x64 上传中断，可从 68% 继续', status: '待处理' }, { label: '修订 Windows Build', detail: 'BUILD-WIN-003 第 1 轮测试不通过', status: '待处理' }, { label: '创建 Campaign', detail: '可生成渠道 UTM 追踪链接', status: '可创建' }]) })}</div><div class="span-5">${panel({ title: '接入信息', body: c.timeline({ items: ['APPID APP-7F3A9C 已创建', 'Windows／macOS／Linux SDK 可下载', '厂商线下资质结果已确认', '开发者账号与盖世身份已映射'] }) })}</div></div>`;
+
+  const renderListView = (config, tabOptions = {}) => {
+    const filters = config.filters.map(filter => c.select(filter)).join('');
+    return `<div>${c.tabs({ items: config.tabs, active: 0, ...tabOptions })}<div class="filter-bar"><label class="field"><span class="field-label">关键词</span><span class="search-field">${icon('search')}<input class="gh-input" data-component="Input" data-variant="search" placeholder="${e(config.placeholder)}"></span></label>${filters}${c.button({ label: '查询', action: 'filter-list', iconName: 'search' })}</div>${c.table({ headers: config.headers, rows: config.rows })}${c.pagination({ total: config.rows.length, page: 1 })}</div>`;
+  };
+
+  const renderSupplyList = () => renderListView(listViews['P02-01'], { idPrefix: 'supply-filter-tab', indexAttribute: 'data-supply-tab-index' });
+
+  const renderKeyBatchPanel = data => `<div class="cdkey-panel-grid">
+    ${panel({ title: '创建 Key 批次', description: '只允许在当前授权游戏、SKU、渠道、配额和有效期内创建', body: `<div class="form-grid">
+      ${c.input({ label: '批次名称', value: '星云商城首发批次', required: true })}
+      ${c.select({ label: 'Key 来源', options: [{ label: data.keySources[0].label, value: data.keySources[0].id }], value: 'gamehub_generated' })}
+      ${c.select({ label: '游戏 / SKU', options: ['星海远征 / SKU-CN-001'], value: '星海远征 / SKU-CN-001' })}
+      ${c.input({ label: '用途', value: '星云商城首发销售', required: true })}
+      ${c.select({ label: '渠道', options: data.authorization.channels, value: data.authorization.channels[0] })}
+      ${c.input({ label: '数量', value: '2000', type: 'number', required: true })}
+      ${c.input({ label: '有效期', value: '2026-12-31T23:59', type: 'datetime-local', required: true })}
+    </div><div class="source-boundary"><strong>${e(data.keySources[1].label)}</strong><span>${e(data.keySources[1].rule)}</span></div><div data-key-batch-result></div><footer class="form-footer"><span class="save-state">Key 明文仅在有效窗口内下载一次</span>${c.button({ label: '创建批次', variant: 'primary', action: 'create-key-batch' })}</footer>` })}
+    ${panel({ title: 'Key 批次', description: '已分配记录始终保留，作废只影响未分配库存', body: `${c.table({ headers: ['批次', '来源', '数量 / 剩余', '渠道', '状态', '操作'], rows: data.keyBatches.map(batch => [{ text: batch.name, subtext: batch.batchId }, batch.source, `${batch.quantity} / ${batch.remaining}`, batch.channel, { status: batch.status }, { action: '暂停', portalAction: 'pause-key-batch' }]) })}<div class="form-actions cdkey-table-actions">${c.button({ label: '作废未分配库存', variant: 'danger', action: 'void-key-batch' })}</div>` })}
+  </div>`;
+
+  const renderCredentialPanel = data => `<div class="cdkey-panel-grid">
+    ${panel({ title: '创建渠道凭据', description: 'Secret 仅在创建或轮换成功时展示一次', body: `<div class="form-grid">
+      ${c.input({ label: '凭据名称', value: '星云商城正式凭据', required: true })}
+      ${c.select({ label: '白名单渠道', options: data.authorization.channels, value: data.authorization.channels[0] })}
+      ${c.select({ label: '授权游戏 / SKU', options: ['星海远征 / SKU-CN-001'], value: '星海远征 / SKU-CN-001' })}
+      ${c.input({ label: '凭据配额', value: '5000', type: 'number', required: true })}
+      ${c.input({ label: '有效期', value: '2026-12-31T23:59', type: 'datetime-local', required: true })}
+    </div><div data-credential-result></div><footer class="form-footer"><span class="save-state">凭据不能扩大平台预授权范围</span>${c.button({ label: '创建凭据', variant: 'primary', action: 'create-api-credential' })}</footer>` })}
+    ${panel({ title: '已创建凭据', description: 'Secret 后续只显示末四位；遗失时必须轮换', body: `${c.table({ headers: ['凭据 / client_id', 'Secret', '授权范围', '有效期', '状态', '最近调用'], rows: data.credentials.map(item => [{ text: item.name, subtext: item.clientId }, item.secretHint, item.scope, item.expiresAt, { status: item.status }, item.lastCalledAt]) })}<div class="form-actions cdkey-table-actions">${c.button({ label: '轮换', action: 'rotate-api-credential' })}${c.button({ label: '暂停', action: 'pause-api-credential' })}${c.button({ label: '撤销', variant: 'danger', action: 'revoke-api-credential' })}</div>` })}
+  </div>`;
+
+  const renderApiDocs = (docs, apiExample) => `<div class="content-grid api-docs-layout">
+    <div class="span-4"><nav class="api-docs-nav" aria-label="接口说明目录">${[['auth', '鉴权与幂等'], ['endpoints', '接口目录'], ['fields', '字段说明'], ['example', '请求示例'], ['errors', '错误码']].map(([id, label]) => `<button type="button" data-portal-action="api-doc-section" data-api-target="api-doc-${id}">${e(label)}</button>`).join('')}</nav>${panel({ title: '接入步骤', body: sectionList(['创建渠道凭据', '按 HMAC-SHA256 生成签名', '使用 request_id 发起幂等申请', '查询结果并确认已交付']) })}</div>
+    <div class="span-8 api-docs-content"><section id="api-doc-auth">${panel({ title: '鉴权与幂等', body: `<p>${e(docs.auth)}</p><p>${e(docs.idempotency)}</p>` })}</section><section id="api-doc-endpoints">${panel({ title: '接口目录', body: c.table({ headers: ['方法', '路径', '用途'], rows: docs.endpoints.map(item => [item.method, item.path, item.purpose]) }) })}</section><section id="api-doc-fields">${panel({ title: '字段说明', body: c.table({ headers: ['字段', '必填', '说明'], rows: [['request_id', '是', '渠道侧幂等请求号'], ['channel_order_id', '是', '渠道订单号'], ['game_id', '是', '已授权游戏'], ['sku_id', '是', '已授权 SKU'], ['status', '响应', '分配处理状态']] }) })}</section><section id="api-doc-example">${c.codeBlock({ title: '申请一个 Key · 请求示例', code: apiExample })}</section><section id="api-doc-errors">${panel({ title: '错误码', body: `<div class="error-chip-list">${docs.errors.map(item => `<button type="button" data-portal-action="filter-api-error">${e(item)}</button>`).join('')}</div>` })}</section></div>
+  </div>`;
+
+  const renderCdkeyWorkspace = page => {
+    const data = page.cdkeySelfService;
+    const apiExample = `POST /openapi/v1/cdkeys/allocate\nX-Client-Id: cli_xh_20260901\nX-Timestamp: 1788336000\nX-Nonce: 4f8a9c2e7b13\nX-Signature: a71ef0284c8bd902\n\n{\n  "request_id": "REQ-ALLOC-20260903-001",\n  "channel_order_id": "ORDER-CHANNEL-20260903-001",\n  "game_id": "GAME-48291",\n  "sku_id": "SKU-CN-001"\n}`;
+    return `<div class="cdkey-workspace" data-cdkey-workspace>
+      ${c.authorizationSummary(data.authorization)}
+      ${c.tabs({ items: data.tabs, active: 0, variant: 'task', action: 'cdkey-tab', idPrefix: 'cdkey-tab' })}
+      <section role="tabpanel" aria-labelledby="cdkey-tab-0" id="cdkey-tab-0-panel" data-cdkey-panel="supply">${renderSupplyList()}</section>
+      <section role="tabpanel" aria-labelledby="cdkey-tab-1" id="cdkey-tab-1-panel" data-cdkey-panel="batches" hidden>${renderKeyBatchPanel(data)}</section>
+      <section role="tabpanel" aria-labelledby="cdkey-tab-2" id="cdkey-tab-2-panel" data-cdkey-panel="credentials" hidden>${renderCredentialPanel(data)}</section>
+      <section role="tabpanel" aria-labelledby="cdkey-tab-3" id="cdkey-tab-3-panel" data-cdkey-panel="api-docs" hidden>${renderApiDocs(data.apiDocs, apiExample)}</section>
+    </div>`;
+  };
+
+  const renderT03 = ({ route, page }) => {
+    if (route.id === 'P02-01') return renderCdkeyWorkspace(page);
+    const view = listViews[route.id];
+    const fallback = { tabs: ['全部', '待处理', '已完成'], placeholder: '输入名称或 ID', filters: [{ label: '业务状态', options: ['全部状态', '待处理', '处理中', '已完成'] }], headers: ['对象', '状态', '更新时间', '操作'], rows: [] };
+    const config = view || fallback;
+    return renderListView(config);
+  };
+
+  const renderT04 = ({ page }) => `<div class="content-grid"><section class="dashboard-hero span-12 registration-intro"><div class="dashboard-hero__top"><div><div class="page-eyebrow">第一步 · 开发者认证</div><h2>先完成开发者认证，再创建游戏</h2><p>提交主体、品牌和联系资料；平台录入线下确认结果后，账号将取得开发者资格并绑定唯一厂商。</p></div>${c.statusTag(page.status)}</div></section><div class="span-8">${panel({ title: '主体与厂商资料', description: '首次确认后形成厂商资料快照', body: `<div class="form-grid">${c.select({ label: '主体类型', options: ['公司／企业', '个人开发者'], value: '公司／企业' })}${c.select({ label: '注册地区', options: ['中国大陆', '中国香港', '其他国家或地区'], value: '中国大陆' })}${c.input({ label: '法定名称', value: '深圳星海互动科技有限公司', required: true })}${c.input({ label: '登记编号', value: '9144XXXXXXXXXXXXXX', required: true })}${c.input({ label: '厂商品牌名称', value: '星海互动', required: true })}${c.input({ label: 'HTTPS 官网', value: 'https://www.xinghai-interactive.com', required: true, hint: '仅接受完整 HTTPS 地址' })}${c.textarea({ label: '厂商简介', value: '专注于 PC 游戏研发与发行。', required: true, hint: '确认后形成对外展示快照' })}</div><div class="asset-upload asset-upload--logo"><div class="asset-preview asset-preview--logo">LOGO</div><div><strong>厂商 Logo</strong><p>支持 JPG、PNG、WEBP；上传失败不影响其他字段。</p>${c.button({ label: '替换 Logo', action: 'replace-vendor-logo' })}</div></div>${defaultFooter(page)}` })}</div><div class="span-4">${panel({ title: '联系人与提交流程', description: '联系资料仅供平台协作', body: `<div class="stacked-fields">${c.input({ label: '联系人', value: '林晨', required: true })}${c.input({ label: '手机', value: '138 0000 1234', hint: '手机或邮箱至少填写一项' })}${c.input({ label: '邮箱', value: 'contact@xinghai-interactive.com', type: 'email', hint: '手机或邮箱至少填写一项' })}</div><div class="form-section">${gateList([{ label: '保存草稿', detail: '可继续修改，尚未提交线下确认', status: '当前' }, { label: '待线下结果', detail: '商务／法务线下核验，页面只读等待', status: '下一步' }, { label: '取得开发者资格', detail: '绑定唯一 vendor_id 后进入工作台', status: '结果' }])}</div>` })}</div></div>`;
+
+  const renderT05 = ({ page }) => `<div class="game-editor">${c.tabs({ items: ['基本资料', '系统与发行', '素材检查'], active: 0 })}<div class="content-grid"><div class="span-8">${panel({ title: '游戏基本资料', body: `<div class="form-grid game-form-grid">${c.input({ label: '游戏名称', value: '星海远征', required: true })}${c.input({ label: '开发商', value: '星海互动', required: true })}${c.input({ label: '短简介', value: '面向 PC 玩家的完整冒险。', required: true })}${readonlyField({ label: '归属厂商', value: '星海互动', hint: '当前账号唯一绑定' })}${c.textarea({ label: '游戏介绍', value: '玩家将探索未知区域、完成挑战并逐步解锁新的能力与内容。', required: true })}</div><div class="game-config-section"><div class="game-compact-grid">${c.select({ label: '支持语言', options: ['简体中文', '繁体中文', '英语'], value: '简体中文' })}${c.select({ label: '销售地区', options: ['中国大陆', '全球（授权地区）'], value: '中国大陆' })}${readonlyField({ label: '支持系统', value: 'Windows／macOS／Linux', hint: '按 Game 配置' })}</div><div class="requirements-grid">${c.input({ label: 'Windows 要求', value: 'Windows 10 64 位 · x64', required: true })}${c.input({ label: 'macOS 要求', value: 'macOS 13 · Apple Silicon／Intel', required: true })}${c.input({ label: 'Linux 要求', value: 'Ubuntu 22.04 · x64', required: true })}</div><div class="candidate-tags"><span class="field-label">Steam 标签</span><div class="rule-chips"><button class="rule-chip is-active" data-portal-action="candidate-tag">动作</button><button class="rule-chip is-active" data-portal-action="candidate-tag">冒险</button><button class="rule-chip is-active" data-portal-action="candidate-tag">单人</button><button class="rule-chip" data-portal-action="candidate-tag">角色扮演</button></div><small>复用 Steam 全量标签字典；线下确认后生效</small></div><div class="release-choice compact-release-choice"><label class="choice-card is-selected"><input type="radio" name="release-method" checked data-portal-action="release-direct-download"><span><strong>盖世直接下载</strong><small>提交三系统 Build，由平台测试与发布</small></span></label><label class="choice-card"><input type="radio" name="release-method" data-portal-action="release-third-party"><span><strong>第三方平台激活</strong><small>由平台配置商品、SKU 与外部 Key 供给</small></span></label></div></div><footer class="form-footer"><span class="save-state" data-save-state>尚未保存</span><div class="form-actions">${c.button({ label: '保存草稿', action: 'save-draft' })}${c.button({ label: '提交资料', variant: 'primary', action: 'submit-game-review' })}</div></footer>` })}</div><div class="span-4">${panel({ title: '游戏素材', description: '单项失败可重试，不清空其他素材', body: `<div class="asset-grid compact-assets"><div class="asset-card"><div class="asset-placeholder asset-placeholder--icon">1:1</div><strong>游戏图标</strong><span>1024 × 1024</span></div><div class="asset-card"><div class="asset-placeholder asset-placeholder--landscape">16:9</div><strong>横版封面</strong><span>1920 × 1080</span></div><div class="asset-card"><div class="asset-placeholder asset-placeholder--portrait">3:4</div><strong>竖版封面</strong><span>900 × 1200</span></div><div class="asset-card"><div class="asset-placeholder asset-placeholder--screens">3 / 10</div><strong>游戏截图</strong><span>已上传 3 张</span></div></div>${c.button({ label: '上传／替换素材', action: 'manage-game-assets' })}` })}</div></div></div>`;
+
+  const renderT06 = ({ page, route }) => {
+    if (route.id === 'P03-05') {
+      return `<div><div class="task-summary"><div><span>版本</span><strong>1.0.0</strong></div><div><span>包体修订</span><strong>BUILD-REV-003</strong></div><div><span>测试轮次</span><strong>第 1 轮</strong></div><div><span>测试时间</span><strong>2026-09-01 15:36</strong></div></div><div class="content-grid" style="margin-top:16px"><div class="span-8">${c.resultStrip({ title: '测试不通过', detail: '启动后主窗口持续白屏，当前包体修订不满足发布条件', variant: 'danger' })}${panel({ title: '具体问题项', body: c.table({ headers: ['问题项', '问题现象', '复现条件', '影响范围'], rows: [['启动与首屏', 'Game.exe 启动后主窗口持续白屏', 'Windows 11 64 位；首次安装后直接启动', '阻塞玩家进入游戏'], ['退出与重启', '结束进程后再次启动仍复现', '同一安装目录连续启动 2 次', '影响全部当前修订测试']] }) })}<div class="issue-result-note"><strong>修订判断</strong><p>需替换包体并生成新修订；旧测试轮次和问题记录保持只读，不可直接改为通过。</p><span>附件摘要：启动白屏截图 1 张 · 测试日志摘要 1 份</span></div></div><div class="span-4">${panel({ title: '测试处理时间线', body: c.timeline({ items: ['测试结果提交 · 不通过 · 陈宇 · 15:36', '问题复现并记录附件 · 15:28', '任务开始测试 · 14:50', '第 1 轮任务分配完成 · 13:10'] }) })}</div></div></div>`;
+    }
+    return `<div><div class="task-summary"><div><span>资料对象</span><strong>开发者注册 · 厂商资料</strong></div><div><span>资料修订</span><strong>VEN-REV-002</strong></div><div><span>线下结果</span>${c.statusTag(page.status || '需修改')}</div><div><span>录入时间</span><strong>2026-09-03 11:20</strong></div></div><div class="content-grid" style="margin-top:16px"><div class="span-8">${c.resultStrip({ title: '线下结果：需修改', detail: '平台已录入商务／法务的既有线下结论；请按意见修订后重新提交。', variant: 'warning' })}${panel({ title: '结果摘要与修改意见', body: c.table({ headers: ['资料项', '本次提交', '线下结论摘要', '处理建议'], rows: [['主体登记编号', '9144XXXXXXXXXXXXXX', '登记编号与证明材料需保持一致', '核对后重新填写'], ['厂商 Logo', 'PNG · 1024 × 1024', '品牌归属证明待补充', '联系发行运营补充线下材料']] }) })}<div class="issue-result-note"><strong>生效说明</strong><p>待线下结果期间继续使用上一已确认快照；当前修改稿不会进入 Game、商品、包体或数据链路。</p></div></div><div class="span-4">${panel({ title: '处理记录', body: c.timeline({ items: ['线下结果录入 · 需修改 · 运营李佳 · 11:20', '商务／法务线下结论完成 · 10:55', '资料修订 02 提交 · 09:42', '资料修订 01 已确认 · 2026-08-20'] }) })}</div></div></div>`;
+  };
+
+  const renderT07 = ({ page, route }) => {
+    const isVendor = route.id === 'P01-09';
+    const isGame = route.id === 'P01-10';
+    const rows = isVendor ? [
+      ['主体类型／地区', '公司／企业 · 中国大陆', '线下结论材料中的主体一致'], ['法定名称／登记编号', '深圳星海互动科技有限公司 · 9144…', '按既有商务／法务结论录入'], ['合作授权', '合同 GH-2026-001', '授权地区及有效期已在线下确认'],
+    ] : isGame ? [
+      ['Game／APPID', '星海远征 · APP-7F3A9C', '项目归属和唯一 APPID 一致'], ['系统与发行方式', 'Windows／macOS／Linux · 盖世直接下载', '线下上架范围已确认'], ['Steam 标签／素材', '动作、冒险、单人 · 素材修订 03', '最终生效项来自既有线下结论'],
+    ] : [
+      ['候选版本', '1.0.0 · 三系统 Build', '与测试锁定 Manifest 一致'], ['测试结果', '第 1 轮通过', '历史测试终态不可覆盖'], ['上架结论', '允许进入待发布', '由线下既有结论录入，不在线审批'],
+    ];
+    return `<div>${c.resultStrip({ title: '录入既有线下结果', detail: '本页不执行在线审核，仅将商务、法务或发行团队已完成的线下结论写入平台。', variant: 'info' })}<div class="content-grid"><div class="span-8">${panel({ title: isVendor ? '厂商资质结果' : isGame ? '游戏资料与上架结果' : '版本上架结论', body: `${c.table({ headers: ['结果对象', '当前提交快照', '线下核验依据'], rows })}<div class="form-section"><div class="form-grid">${c.select({ label: '线下结果', options: ['已确认', '需修改', '不予上架'], value: '已确认' })}${c.input({ label: '线下审核人', value: '李佳', required: true })}${c.input({ label: '线下审核时间', value: '2026-09-03T11:20', type: 'datetime-local', required: true })}${c.input({ label: '结论依据编号', value: isVendor ? 'LEGAL-20260903-01' : 'BIZ-20260903-02', required: true })}${c.textarea({ label: '结果原因摘要', value: '线下审核已完成，确认当前提交快照可进入下一业务环节。', required: true })}</div></div><footer class="form-footer"><span class="save-state">保存后保留结果、原因、审核人、时间和资料快照；不覆盖历史修订。</span>${c.button({ label: page.primaryAction || '保存线下结果', variant: 'primary', action: 'record-offline-result' })}</footer>` })}</div><div class="span-4">${panel({ title: '保存说明', body: gateList([{ label: '仅录入既有事实', detail: '不得在本页替代线下合同或资质审核', status: '不可修改' }, { label: '生效资料快照', detail: '保存成功后下游读取最新已确认快照', status: '待保存' }, { label: '历史可追溯', detail: '旧结果、资料修订和操作审计永久保留', status: '不可修改' }]) })}</div></div></div>`;
+  };
+
+  const renderT08 = ({ page, route }) => {
+    const views = {
+      'P01-06': {
+        title: 'APPID 与三系统 SDK', description: '一个 Game 创建一个公开 APPID；APPID 不是密钥',
+        body: `<div class="summary-grid">${readonlyField({ label: 'Game', value: '星海远征 · GAME-48291' })}${readonlyField({ label: 'APPID', value: 'APP-7F3A9C', hint: '全平台唯一，只读' })}${readonlyField({ label: 'SDK 授权规则', value: '首次在线授权成功后允许离线运行', wide: true })}${readonlyField({ label: '数据边界', value: '不做持续心跳、并发限制或即时踢线', wide: true })}</div><div class="form-section"><div class="form-section__title"><strong>SDK 下载</strong><span>三系统能力一致，版本与校验值可追溯</span></div>${c.table({ headers: ['系统', '架构', 'SDK 版本', '校验值', '操作'], rows: [['Windows', 'x64／arm64', '1.0.0', 'SHA-256 · 8f0a…', { action: '下载', portalAction: 'download-sdk' }], ['macOS', 'Intel／Apple Silicon', '1.0.0', 'SHA-256 · 2d4c…', { action: '下载', portalAction: 'download-sdk' }], ['Linux', 'x64／arm64', '1.0.0', 'SHA-256 · 7b19…', { action: '下载', portalAction: 'download-sdk' }]] })}<div class="form-actions" style="margin-top:14px">${c.button({ label: '打开 Google Docs 接入文档', action: 'open-sdk-docs' })}</div></div>`,
+        gates: [{ label: 'APPID 唯一', detail: '一个 Game 只创建一个 APPID', status: '已创建' }, { label: '三系统一致', detail: '授权、日志与错误码口径一致', status: '已通过' }, { label: '接入文档', detail: '仅限已授权账号访问', status: '可打开' }], save: false,
+      },
+      'P02-04': {
+        title: '外部 Key 入站供给配置', description: '外部平台 Key 只能受控导入或通过供应商 API 同步，平台不生成外部 Key',
+        body: `<div class="form-grid">${readonlyField({ label: '游戏／SKU', value: '星海远征 · SKU-CN-001' })}${c.select({ label: '入站方式', options: ['供应商 API', '受控文件导入'], value: '供应商 API' })}${c.select({ label: '外部激活平台', options: ['Steam', 'Epic'], value: 'Steam' })}${c.input({ label: '来源商品 ID', value: 'SUPPLIER-ITEM-7821', required: true })}${c.select({ label: '授权地区', options: ['中国大陆', '全球（授权地区）'], value: '中国大陆' })}${readonlyField({ label: '最后一次正常库存快照', value: '1,248 · 2026-09-01 15:55' })}${readonlyField({ label: '最后一次正常价格快照', value: '¥ 68.00 CNY · 2026-09-01 15:55' })}${c.select({ label: '异常策略', options: ['停止新增销售', '标记未知并人工确认'], value: '停止新增销售' })}</div>`,
+        gates: [{ label: '来源授权', detail: '来源、SKU、地区必须一致', status: '已通过' }, { label: '去重与加密', detail: 'Key 入站去重且明文受控', status: '已通过' }, { label: '价格／库存', detail: '异常时不得沿用旧值', status: '待保存' }], save: true,
+      },
+      'P02-05': {
+        title: '盖世 Key 计划、批次与渠道 API', description: '盖世只生成由自身兑换服务校验的 Key，并在预授权范围内供三方渠道履约',
+        body: `<div class="summary-grid">${readonlyField({ label: 'Key 计划', value: 'KEYPLAN-001 · 已启用' })}${readonlyField({ label: '授权游戏／SKU', value: '星海远征 · SKU-CN-001' })}${readonlyField({ label: '生成总额度', value: '10,000' })}${readonlyField({ label: '剩余额度', value: '8,000' })}</div><div class="form-section">${c.table({ headers: ['批次／凭据', '渠道', '配额／剩余', '有效期', '状态'], rows: [['KEY-20260902-001', '星云商城', '2,000／1,360', '2026-12-31', { status: '可用' }], ['cli_xh_20260901', '星云商城', '5,000／4,680', '2026-12-31', { status: '正常' }]] })}<div class="form-actions" style="margin-top:14px">${c.button({ label: '创建 Key 批次', action: 'create-key-batch' })}${c.button({ label: '创建渠道 API 凭据', action: 'create-api-credential' })}${c.button({ label: '查看接口说明', action: 'api-doc-section' })}</div></div>`,
+        gates: [{ label: '一次性明文', detail: 'Key 文件和 client_secret 仅在创建结果中展示一次', status: '不可修改' }, { label: '渠道白名单', detail: '凭据不得扩大游戏、SKU、渠道和配额', status: '已通过' }, { label: '幂等与审计', detail: 'request_id 与分配确认完整留痕', status: '已通过' }], save: false,
+      },
+      'P03-02': {
+        title: '版本资料与三系统矩阵', description: '同一发行版本可关联多个 OS／CPU 架构 Build；每个 Build 生成独立 Manifest',
+        body: `<div class="form-grid">${readonlyField({ label: '游戏／厂商', value: '星海远征 · 星海互动' })}${c.input({ label: '发行版本号', value: '1.0.0', required: true })}${c.textarea({ label: '更新说明', value: '首个三系统正式版本，包含基础关卡与完整启动流程。', required: true })}</div><div class="form-section">${c.table({ headers: ['OS', 'CPU 架构', 'Build', 'Manifest', '启动配置'], rows: [['Windows', 'x64', 'BUILD-WIN-003', 'MANIFEST-WIN-003', 'Game.exe'], ['macOS', 'Apple Silicon', 'BUILD-MAC-002', 'MANIFEST-MAC-002', 'Game.app'], ['Linux', 'x64', '上传中断', '--', './game']] })}</div>`,
+        gates: [{ label: '版本号唯一性', detail: '已发布版本号永久占用', status: '已通过' }, { label: 'OS／架构唯一', detail: '同一版本每组 OS＋架构只关联一个候选 Build', status: '已通过' }, { label: '编辑权限', detail: '当前为草稿，可编辑', status: '可编辑' }], save: true,
+      },
+      'P03-04': {
+        title: '提交测试确认', description: '提交后锁定本轮版本资料、三系统 Build 和 Manifest 快照',
+        body: `<div class="summary-grid">${readonlyField({ label: '游戏／发行版本', value: '星海远征 · 1.0.0' })}${readonlyField({ label: '测试轮次', value: '第 1 轮' })}${readonlyField({ label: 'Build 数量', value: '3 个 OS／架构组合' })}${readonlyField({ label: 'Manifest 状态', value: '3 个均已生成并永久保留' })}</div><div class="form-section">${c.table({ headers: ['OS／架构', '锁定 Build', 'Manifest', '基础校验'], rows: [['Windows／x64', 'BUILD-WIN-003', 'MANIFEST-WIN-003', { status: '已通过' }], ['macOS／Apple Silicon', 'BUILD-MAC-002', 'MANIFEST-MAC-002', { status: '已通过' }], ['Linux／x64', 'BUILD-LINUX-001', 'MANIFEST-LINUX-001', { status: '已通过' }]] })}</div>`,
+        gates: [{ label: '项目归属与授权', detail: '星海互动 · 星海远征', status: '已通过' }, { label: '三系统 Build', detail: '完整性、可读性与启动配置', status: '已通过' }, { label: '快照锁定', detail: '测试中不得替换本轮 Build／Manifest', status: '待提交' }], save: false,
+      },
+      'P04-08': {
+        title: '聚合导出确认', description: '导出严格复用当前页面 query_snapshot_id，只包含开发者可见的聚合行',
+        body: `<div class="summary-grid">${readonlyField({ label: '查询快照', value: 'QRY-20260903-001' })}${readonlyField({ label: '数据更新至', value: '2026-09-02 23:59（T+1）' })}${readonlyField({ label: '筛选', value: '星海远征 · 近 30 天 · 全部渠道', wide: true })}${readonlyField({ label: '维度', value: '日期、游戏、渠道、Campaign、OS／架构', wide: true })}${readonlyField({ label: '指标', value: '交易、退款、Key、下载、首次启动' })}${readonlyField({ label: '预计行数／格式', value: '120 行 · CSV／XLSX' })}${readonlyField({ label: '币种', value: 'CNY；不做无汇率版本的跨币种合计' })}${readonlyField({ label: '脱敏', value: '不含用户、订单、设备、Key 明文' })}</div><div data-export-result></div>`,
+        gates: [{ label: '数据公式', detail: '页面与导出使用同一口径版本', status: '已通过' }, { label: '权限与隐私阈值', detail: '只输出当前厂商可见的聚合结果', status: '已通过' }, { label: '短期下载地址', detail: '成功后限时有效；失败不生成空文件', status: '待生成' }], save: false,
+      },
+    };
+    const view = views[route.id] || views['P03-02'];
+    const footerNotes = {
+      'P01-06': 'SDK 版本与校验值由平台统一维护。',
+      'P02-05': '批次、凭据和接口操作均保留审计记录。',
+      'P03-04': '提交后将锁定本轮三系统 Build 与 Manifest 快照。',
+      'P04-08': '导出任务异步生成；失败可按同一查询快照重试。',
+    };
+    const footer = view.save ? defaultFooter(page) : `<footer class="form-footer"><span class="save-state">${footerNotes[route.id] || '当前信息为只读内容。'}</span>${route.id === 'P04-08' ? c.button({ label: page.primaryAction, variant: 'primary', action: 'generate-export' }) : ''}</footer>`;
+    const sideTitle = route.id === 'P04-08' ? '导出说明' : route.id === 'P01-06' ? '接入状态' : route.id === 'P02-05' ? '安全规则' : '提交检查';
+    return `<div class="content-grid"><div class="span-8">${panel({ title: view.title, description: view.description, body: `${view.body}${footer}` })}</div><div class="span-4">${panel({ title: sideTitle, body: gateList(view.gates) })}</div></div>`;
+  };
+
+  const renderT09 = ({ page }) => `<div><div class="task-summary"><div><span>异常编号</span><strong>SUP-20260901-001</strong></div><div><span>游戏／商品</span><strong>星海远征 · 标准版</strong></div><div><span>SKU</span><strong>SKU-CN-001</strong></div><div><span>首次发现</span><strong>2026-09-01 16:20</strong></div></div><div class="content-grid" style="margin-top:16px"><section class="exception-hero span-12"><div class="exception-icon">${icon('warning')}</div><div><h2>停止新增销售</h2><p>当前价格不可可靠读取，SKU 按最严格结果进入停售；既有订单及其履约证据保持不变。</p></div>${c.statusTag(page.status)}</section><div class="span-7">${panel({ title: '异常影响与恢复条件', body: `<div class="summary-grid">${readonlyField({ label: '异常类型', value: '当前价格不可用' })}${readonlyField({ label: '最近更新时间', value: '2026-09-01 17:50' })}${readonlyField({ label: '影响范围', value: 'SKU-CN-001 新增销售', wide: true })}${readonlyField({ label: '影响地区', value: '中国大陆' })}${readonlyField({ label: '开发者建议', value: '等待平台确认恢复；无需处理既有订单' })}</div><div class="form-section"><div class="form-section__title"><strong>恢复条件</strong><span>来源恢复不自动开售</span></div>${gateList([{ label: '来源价格恢复', detail: '取得可靠当前价格快照', status: '待恢复' }, { label: '供给与地区重校', detail: '来源、SKU、授权地区一致', status: '待校验' }, { label: '平台确认恢复', detail: '全部阻塞消除后由运营确认', status: '待确认' }])}</div>` })}</div><div class="span-5">${panel({ title: '处理时间线', body: c.timeline({ items: ['同步重试仍未取得可靠价格 · 17:50', 'SKU 停止新增销售 · 16:22', '检测到当前价格不可用 · 16:20', '最近一次正常同步 · 15:55'] }) })}</div></div></div></div>`;
+
+  const renderT10 = ({ page }) => {
+    const retry = actionOf(page, 'retry-upload', '继续上传');
+    return `<div class="content-grid"><div class="span-8">${panel({ title: '包体上传与 Build 详情', description: '每个 OS／CPU 架构独立生成 Build、Manifest 和 Chunk 记录', body: `${c.table({ headers: ['OS／架构', 'Build', 'Manifest', 'Chunk', '状态'], rows: [['Windows／x64', 'BUILD-WIN-003', 'MANIFEST-WIN-003', '246 个', { status: '已完成' }], ['macOS／Apple Silicon', 'BUILD-MAC-002', 'MANIFEST-MAC-002', '218 个', { status: '已完成' }], ['Linux／x64', 'BUILD-LINUX-001', '生成中', '142／210', { status: '已中断' }]] })}<div class="upload-zone" style="min-height:170px;margin-top:16px"><div><div class="upload-zone__icon">${icon('upload')}</div><h3>Linux x64 Build 上传已中断</h3><p>已完成 Chunk 永久保留，可从 68% 继续；重新上传不会覆盖旧 Build／Manifest。</p>${c.statusTag('已中断')}</div></div><div class="upload-progress"><div class="progress-track"><div class="progress-bar" data-upload-progress></div></div><div class="progress-meta"><span data-upload-label>已上传 68%，142 个 Chunk 已保留</span><span class="number">6.8 GB / 10.0 GB</span></div></div><footer class="form-footer"><span class="save-state">完成后将生成新的 Manifest</span><div class="form-actions">${c.button({ label: retry.label, variant: 'primary', action: retry.id })}</div></footer>` })}</div><div class="span-4">${panel({ title: '存储说明', body: gateList([{ label: 'Build 永久保留', detail: '新上传生成新 Build ID，不覆盖历史', status: '不可修改' }, { label: 'Manifest 永久保留', detail: '文件清单、哈希和 Chunk 关系不可改写', status: '不可修改' }, { label: 'Release Pointer', detail: '发布时按 app_id＋OS＋CPU 架构切换指向', status: '发布时更新' }]) })}</div></div>`;
+  };
+
+  const renderT11 = ({ page, route }) => {
+    if (route.id === 'P03-07') {
+      return `<div><div class="task-summary"><div><span>测试任务</span><strong>TEST-202609-002</strong></div><div><span>版本／修订</span><strong>1.0.0 · BUILD-REV-003</strong></div><div><span>测试轮次</span><strong>第 1 轮</strong></div><div><span>任务状态</span>${c.statusTag(page.status)}</div></div><div class="content-grid" style="margin-top:16px"><div class="span-8">${panel({ title: '测试任务详情', description: '只读使用本轮锁定的资料与包体修订', body: `<div class="summary-grid">${readonlyField({ label: '游戏／平台', value: '星海远征 · Windows' })}${readonlyField({ label: '测试环境', value: '正式环境验收' })}${readonlyField({ label: '启动文件', value: 'Game.exe' })}${readonlyField({ label: '启动参数', value: '-language=zh-CN' })}${readonlyField({ label: '运行说明', value: '首次启动进行资源校验，安装目录需可写', wide: true })}</div><div class="form-section"><div class="form-section__title"><strong>测试范围</strong><span>获取失败可重试，不自动记为不通过</span></div>${gateList([{ label: '安装与启动', detail: '完成安装、首启与基础运行检查', status: '待测试' }, { label: '核心流程', detail: '验证基础关卡与退出流程', status: '待测试' }, { label: '包体基础校验', detail: '完整性与启动文件已通过', status: '已通过' }])}</div>` })}</div><div class="span-4">${panel({ title: '领取与开始记录', body: c.timeline({ items: ['任务已分配给陈宇 · 2026-09-01 13:10', '包体获取权限已生成', '等待测试人员开始本轮测试'] }) })}</div></div></div>`;
+    }
+    const pass = actionOf(page, 'test-pass', '测试通过');
+    const submit = actionOf(page, 'submit-test-result', '提交测试结果');
+    return `<div><div class="task-summary"><div><span>测试任务</span><strong>TEST-202609-002</strong></div><div><span>版本／修订</span><strong>1.0.0 · BUILD-REV-003</strong></div><div><span>测试轮次</span><strong>第 1 轮</strong></div><div><span>任务状态</span>${c.statusTag(page.status)}</div></div><div class="content-grid" style="margin-top:16px"><div class="span-7">${panel({ title: '提交测试结果', description: '每轮首个成功终态生效，提交后不可修改', body: `<div class="test-choice"><label class="choice-card is-selected"><input type="radio" name="test-result" checked data-portal-action="${e(pass.id)}"><strong>${e(pass.label)}</strong></label><label class="choice-card"><input type="radio" name="test-result" data-portal-action="test-fail"><strong>测试不通过</strong></label></div><div class="test-result-form">${c.textarea({ label: '问题描述', placeholder: '不通过时必填；填写现象、复现条件和影响范围' })}${readonlyField({ label: '附件状态', value: '未添加附件', hint: '仅展示当前任务附件状态' })}</div><footer class="form-footer"><span class="save-state">提交失败保持测试中并保留输入；历史结果不可覆盖</span>${c.button({ label: submit.label, variant: 'primary', action: submit.id })}</footer>` })}</div><div class="span-5">${panel({ title: '提交检查与记录', body: `${gateList([{ label: '任务有效性', detail: 'TEST-202609-002 为当前有效任务', status: '已通过' }, { label: '修订一致性', detail: 'BUILD-REV-003 · 第 1 轮', status: '已通过' }, { label: '结果完整性', detail: '不通过时问题描述必填', status: '待提交' }])}<div style="margin-top:14px">${c.timeline({ items: ['任务开始测试 · 陈宇', '包体获取成功', '任务分配完成'] })}</div>` })}</div></div></div>`;
+  };
+
+  const renderT12 = ({ page, route }) => {
+    if (route.id === 'P03-13') {
+      const dispositionActions = `<div class="disposition-actions">${c.button({ label: '恢复下载', variant: 'primary', action: 'resume-download' })}${c.button({ label: '暂停启动', action: 'pause-launch' })}${c.button({ label: '下架游戏', variant: 'danger', action: 'unpublish-game' })}</div>`;
+      return `<div><div class="task-summary"><div><span>当前线上版本</span><strong>0.9.0 · BUILD-REV-090</strong></div><div><span>发布时间</span><strong>2026-08-15 14:30</strong></div><div><span>下载开关</span>${c.statusTag('下载暂停')}</div><div><span>启动开关</span>${c.statusTag('允许启动')}</div></div><div class="content-grid" style="margin-top:16px"><div class="span-8">${panel({ title: '线上版本处置', description: '处置只影响当前线上版本能力，不删除文件、测试或发布历史', body: `${gateList([{ label: '下载能力', detail: '平台问题处理中，暂停新增下载', status: '下载暂停' }, { label: '启动能力', detail: '已安装玩家仍可启动', status: '允许启动' }, { label: '游戏发布状态', detail: '商品停售不等于游戏下架', status: '已发布' }])}<div class="form-section"><div class="form-section__title"><strong>处置信息</strong><span>请填写处置原因与影响范围后执行</span></div><div class="form-grid disposition-form">${c.textarea({ label: '处置原因', placeholder: '请填写问题现象、处置依据和恢复条件', required: true })}${c.select({ label: '影响范围', options: ['仅新增下载', '仅启动能力', '下载与启动', '整款游戏发布状态'], value: '仅新增下载' })}</div></div><div class="form-section"><div class="form-section__title"><strong>可执行处置</strong><span>恢复前重新校验问题、当前版本与发布条件</span></div>${dispositionActions}</div><footer class="form-footer"><span class="save-state">所有处置记录前后开关、原因、影响范围、操作人和结果</span></footer>` })}</div><div class="span-4">${panel({ title: '处置记录', body: c.timeline({ items: ['下载暂停 · 平台问题处理中 · 运营李佳', '版本 0.9.0 发布成功', '发布条件校验通过'] }) })}</div></div></div>`;
+    }
+    const schedule = actionOf(page, 'schedule-release', '定时发布');
+    const now = actionOf(page, 'release-now', '立即发布');
+    return `<div><div class="task-summary"><div><span>候选发行版本</span><strong>1.0.0</strong></div><div><span>Release Pointer</span><strong>3 个 OS／架构组合</strong></div><div><span>测试轮次</span><strong>第 2 轮 · 测试通过</strong></div><div><span>当前线上版本</span><strong>0.9.0</strong></div></div><div class="content-grid" style="margin-top:16px"><div class="span-8">${panel({ title: '发布与 Release Pointer 配置', description: '按 app_id＋OS＋CPU 架构切换 Pointer；Build、Manifest、Chunk 均不删除', body: `<div class="publish-options"><button class="publish-option is-active" data-portal-action="${e(now.id)}"><strong>${e(now.label)}</strong><span>发布条件通过后切换三组线上 Pointer</span></button><button class="publish-option" data-portal-action="${e(schedule.id)}"><strong>${e(schedule.label)}</strong><span>按统一时区设置未来发布时间</span></button></div><div class="schedule-field is-disabled" data-schedule-field>${c.input({ label: '定时发布时间', value: '', placeholder: '选择定时发布后填写', type: 'datetime-local', hint: '仅在选择定时发布时填写', disabled: true })}</div><div class="form-section">${c.table({ headers: ['Pointer Key', '当前线上 Build', '候选 Build', '状态'], rows: [['APP-7F3A9C／Windows／x64', 'BUILD-WIN-002', 'BUILD-WIN-004', { status: '待切换' }], ['APP-7F3A9C／macOS／arm64', 'BUILD-MAC-001', 'BUILD-MAC-002', { status: '待切换' }], ['APP-7F3A9C／Linux／x64', 'BUILD-LINUX-000', 'BUILD-LINUX-001', { status: '待切换' }]] })}</div><div class="form-section"><div class="form-section__title"><strong>回滚历史 Build</strong><span>回滚会生成一条新的 Pointer 切换记录，并保留原因和操作者</span></div><div class="form-grid">${c.select({ label: '目标历史发布', options: ['0.9.0 · REL-090', '0.8.2 · REL-082'], value: '0.9.0 · REL-090' })}${c.textarea({ label: '回滚原因', value: '线上异常，恢复到上一稳定发布。', required: true })}</div><div class="form-actions" style="margin-top:12px">${c.button({ label: '回滚历史 Build', variant: 'danger', action: 'rollback-release' })}</div></div><footer class="form-footer"><span class="save-state">发布或回滚失败时保持全部原线上 Pointer 不变</span><div class="form-actions">${c.button({ label: '保持原线上版本', action: 'keep-online-version' })}${c.button({ label: page.primaryAction || now.label, variant: 'primary', action: now.id, extra: 'data-release-submit' })}</div></footer>` })}</div><div class="span-4">${panel({ title: '发布条件与历史', body: `${gateList([{ label: '项目授权与资料', detail: '已确认快照可读取', status: '已通过' }, { label: '三系统 Build／Manifest', detail: '候选组合完整且测试通过', status: '已通过' }, { label: '商品／权益与供给', detail: '当前发行方式条件已满足', status: '已通过' }, { label: '一致性切换', detail: '任一 Pointer 失败则全部保持原值', status: '不可修改' }])}<div style="margin-top:14px">${c.timeline({ items: ['0.9.0 发布成功 · REL-090', '0.8.2 回滚完成 · 保留全部历史 Build', '0.8.0 首次发布'] })}</div>` })}</div></div></div>`;
+  };
+
+  const renderT13 = ({ page, route }) => {
+    if (route.id === 'P04-06') return `<div>${c.resultStrip({ title: '人工资源协作', detail: '已提交不代表资源承诺；只有运营回填实际时间和证据后才记为已执行。', variant: 'info' })}<div class="content-grid"><div class="span-8">${panel({ title: '提交资源需求', body: `<div class="form-grid">${c.select({ label: '游戏／Campaign', options: ['星海远征 · CMP-202609-001'], value: '星海远征 · CMP-202609-001' })}${c.select({ label: '资源类型', options: ['首页推荐', '专题页', '站外合作'], value: '首页推荐' })}${c.select({ label: '推广目标', options: ['购买／领取', '成功交付', '首次启动'], value: '购买／领取' })}${c.input({ label: '期望开始时间', value: '2026-09-10', type: 'date', required: true })}${c.input({ label: '期望结束时间', value: '2026-09-20', type: 'date', required: true })}${c.input({ label: '素材引用', value: 'ASSET-REV-003', required: true })}${c.textarea({ label: '需求说明', value: '希望配合首发期进行首页推荐；最终资源与时间以运营实际执行为准。', required: true })}</div><footer class="form-footer"><span class="save-state">提交、修改或取消均新增修订并保留历史</span>${c.button({ label: page.primaryAction, variant: 'primary', action: 'submit-resource-request' })}</footer>` })}</div><div class="span-4">${panel({ title: '平台执行结果', body: `${gateList([{ label: '需求状态', detail: 'REQ-202609-001 · 修订 02', status: '处理中' }, { label: '实际资源位／渠道', detail: '等待运营线下协调后回填', status: '--' }, { label: '实际起止时间', detail: '已执行时必填', status: '--' }, { label: '原因与证据', detail: '未执行填原因；已执行填证据引用', status: '待回填' }])}<div class="receipt-note"><strong>最近处理记录</strong><p>运营已领取需求，正在协调首页资源；当前不构成资源承诺。</p><span>2026-09-03 10:20 · 平台发行运营</span></div>` })}</div></div></div>`;
+    return `<div>${c.resultStrip({ title: 'Campaign／UTM', detail: '用于渠道来源标识与归因有效期，不承担竞价、频控或自动排期。', variant: 'info' })}<div class="content-grid"><div class="span-8">${panel({ title: 'Campaign 配置', body: `<div class="form-grid">${c.input({ label: '活动名称', value: '秋季首发合作', required: true })}${c.select({ label: '游戏', options: ['星海远征'], value: '星海远征' })}${c.select({ label: 'SKU（可选）', options: ['全部 SKU', 'SKU-CN-001'], value: 'SKU-CN-001' })}${c.select({ label: '渠道', options: ['Bilibili 达人', 'Steam 社区', '自有媒体'], value: 'Bilibili 达人' })}${c.input({ label: 'utm_source', value: 'bilibili', required: true })}${c.input({ label: 'utm_medium', value: 'creator', required: true })}${c.input({ label: 'utm_campaign', value: 'autumn_launch', required: true })}${c.input({ label: '归因开始日期（可选）', value: '2026-09-10', type: 'date' })}${c.input({ label: '归因结束日期（可选）', value: '2026-09-20', type: 'date' })}${c.textarea({ label: '备注', value: '达人首发视频与动态使用同一 Campaign。' })}</div><div class="form-section">${readonlyField({ label: '生成后追踪链接', value: 'https://gamehub.com/game/APP-7F3A9C?campaign_id=CMP-202609-001&utm_source=bilibili&utm_medium=creator&utm_campaign=autumn_launch', wide: true })}</div>${defaultFooter(page)}` })}</div><div class="span-4">${panel({ title: 'Campaign 状态', body: gateList([{ label: 'campaign_id', detail: '保存成功后唯一生成', status: 'CMP-202609-001' }, { label: '活动状态', detail: '草稿／有效／已停用', status: page.status }, { label: '重复 UTM 组合', detail: '提示风险但允许不同 Campaign', status: '已检查' }, { label: '停用影响', detail: '停止建立新归因，历史来源快照不变', status: '不可修改' }]) })}</div></div></div>`;
+  };
+
+  const renderT15 = ({ page, route }) => {
+    const range = actionOf(page, 'dashboard-range', '近 7 天');
+    const configs = {
+      'P04-01': {
+        metrics: [['支付订单', '3,284', '成功支付终态'], ['成功退款', '126', '退款率 3.84%'], ['盖世／外部 Key', '8,920', '可供给与已分配'], ['首次成功启动', '2,408', 'uid＋app_id 去重']],
+        chart: '交易、Key、下载与首次启动整体经营趋势', title: '经营漏斗', unit: '数量（次）', legend: '成功支付／领取',
+        rows: [['成功支付／领取', '3,284', '交易与权益终态', '2026-09-02 23:59'], ['成功交付', '3,108', 'Key／直接权益终态', '2026-09-02 23:59'], ['成功下载', '2,774', '客户端成功终态', '2026-09-02 23:59'], ['首次成功启动', '2,408', 'uid＋app_id 历史首个成功终态', '2026-09-02 23:59']],
+        definitions: ['支付订单：订单达到支付成功终态后计入。', '成功交付：外部 Key 或盖世权益完成交付后计入。', '首次成功启动：同一 uid＋app_id 仅记录历史首次成功。', '交易与 Key 数据小时级更新；客户端数据次日更新。'],
+        filters: ['全部游戏'],
+      },
+      'P04-02': {
+        metrics: [['实付金额', '¥ 226,548', 'CNY 分币种汇总'], ['成功退款金额', '¥ 8,694', '仅成功退款'], ['预估净收入', '¥ 181,320', '非最终结算'], ['锁定月结算', '¥ 176,804', '2026-08 已锁定']],
+        chart: '支付、退款与预估净收入按日趋势', title: '结算与退款明细聚合', unit: '金额（CNY）', legend: '实付金额',
+        rows: [['2026-08', '¥ 214,980', '¥ 8,176', '¥ 176,804（已锁定）'], ['2026-09（截至 02 日）', '¥ 11,568', '¥ 518', '--（未锁定）']],
+        headers: ['结算月', '实付金额', '成功退款', '最终结算'],
+        definitions: ['实付金额：仅统计支付成功订单，按币种分别汇总。', '成功退款：仅统计退款成功终态，不包含处理中申请。', '预估净收入用于经营参考，最终金额以锁定月结算为准。', '-- 表示当前结算月尚未锁定，不代表金额为 0。'],
+        filters: ['全部游戏'],
+      },
+      'P04-03': {
+        metrics: [['外部 Key 可供库存', '1,248', 'Steam／Epic 聚合'], ['盖世 Key 剩余额度', '8,000', '计划 KEYPLAN-001'], ['渠道分配成功', '4,682', '不含测试行为'], ['盖世 Key 已兑换', '3,916', '兑换成功终态']],
+        chart: '外部 Key 交付与盖世 Key 分配／兑换趋势', title: '双类 Key 账本', unit: 'Key 数量（个）', legend: '渠道分配成功',
+        rows: [['外部 Key', 'SKU-CN-001', '1,248', '876 次交付'], ['盖世 Key', 'KEYPLAN-001', '8,000', '3,916 次兑换']],
+        headers: ['Key 类型', 'SKU／计划', '可用库存／额度', '成功结果'],
+        definitions: ['外部 Key 库存按可用且未预留状态统计。', '盖世 Key 剩余额度为计划总额度扣除已生成数量。', '渠道分配按 request_id 去重，不重复扣减库存。', '测试订单和测试兑换全部排除。'],
+        filters: ['全部游戏', '全部渠道'],
+      },
+      'P04-04': {
+        metrics: [['成功下载', '2,774', '三系统聚合'], ['成功更新', '1,986', '成功终态'], ['首次成功启动', '2,408', 'uid＋app_id 去重'], ['主要失败', '网络中断', '仅聚合分类']],
+        chart: 'Windows、macOS、Linux 下载／更新／首次启动趋势', title: 'OS／架构交付表现', unit: '设备数（台）', legend: '首次成功启动',
+        rows: [['Windows／x64', '1,842', '1,354', '1,621'], ['macOS／Apple Silicon', '612', '428', '506'], ['Linux／x64', '320', '204', '281']],
+        headers: ['OS／架构', '成功下载', '成功更新', '首次启动'],
+        definitions: ['成功下载和更新以客户端完成校验的终态为准。', '首次成功启动按 uid＋app_id 去重，与设备数量无关。', '失败原因仅展示聚合分类，不提供用户或设备明细。', '客户端结果次日更新；-- 表示数据尚未完成聚合。'],
+        filters: ['全部游戏', '全部系统'],
+      },
+      'P04-07': {
+        metrics: [['Campaign 点击', '8,920', '点击可用渠道'], ['渠道订单', '1,482', '固化来源快照'], ['成功交付', '1,366', '权益／Key 终态'], ['首次成功启动', '1,104', '归因窗口内']],
+        chart: 'Campaign／UTM 渠道转化漏斗', title: '渠道与 Campaign 对比', unit: '转化数量（次）', legend: '成功交付',
+        rows: [['CMP-202609-001／Bilibili', '5,420', '982', '874', '706'], ['CMP-202608-014／Steam 社区', '--', '318', '306', '251'], ['自然流量', '--', '182', '186', '147']],
+        headers: ['Campaign／渠道', '点击', '订单／领取', '成功交付', '首次启动'],
+        definitions: ['订单创建时固化 Campaign／UTM 来源快照，后续不改写。', '首次成功启动只统计归因有效期内完成的用户。', '同一请求与订单按 request_id、channel_order_id 去重。', '-- 表示该渠道不提供对应指标，不按 0 处理。'],
+        filters: ['全部游戏', '全部渠道'],
+      },
+    };
+    const config = configs[route.id] || configs['P04-01'];
+    const headers = config.headers || ['经营阶段', '聚合结果', '权威来源／口径', '数据更新至'];
+    return `<div><div class="dashboard-toolbar"><div class="dashboard-toolbar__group">${c.button({ label: range.label, variant: 'primary', action: 'dashboard-range', extra: 'data-dashboard-range' })}${c.button({ label: '近 90 天', action: 'dashboard-range', extra: 'data-dashboard-range' })}${config.filters.map((label, index) => c.button({ label, variant: index === 0 ? 'primary' : 'secondary', action: 'dashboard-filter', extra: 'data-dashboard-filter' })).join('')}</div><span class="save-state">数据更新：交易／Key 小时级，客户端 T+1；测试行为全部排除</span></div><div class="metric-grid">${config.metrics.map(([label, value, trend]) => c.metricCard({ label, value, trend })).join('')}</div><div class="content-grid" style="margin-top:16px"><div class="span-8">${panel({ title: config.title, body: `${c.chart({ label: config.chart, unit: config.unit, legend: config.legend })}<div class="form-section">${c.table({ headers, rows: config.rows })}</div>` })}</div><div class="span-4">${panel({ title: '数据口径', body: sectionList(config.definitions) })}</div></div></div>`;
+  };
+
+  const registry = {
+    T01: renderT01,
+    T02: renderT02,
+    T03: renderT03,
+    T04: renderT04,
+    T05: renderT05,
+    T06: renderT06,
+    T07: renderT07,
+    T08: renderT08,
+    T09: renderT09,
+    T10: renderT10,
+    T11: renderT11,
+    T12: renderT12,
+    T13: renderT13,
+    T15: renderT15,
+  };
+
+  namespace.templates = {
+    registry,
+    render({ route, page, state = 'default' }) {
+      if (state !== 'default') return c.statePanel({ state, primaryAction: page?.primaryAction, onRetry: state === 'error' });
+      const renderer = registry[route.templateId] || registry.T03;
+      return `<section class="page-template template-${route.templateId.toLowerCase()}" data-page-state="default">${renderer({ route, page })}</section>`;
+    },
+  };
+})(window.GameHubDeveloperPortal);
+
+window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
+
+(function registerShell(namespace) {
+  const c = namespace.components;
+  const e = c.escapeHtml;
+  const icon = name => namespace.icons.render(name);
+  const roleMeta = {
+    developer: { label: '开发者', roleName: '已认证开发者', description: '维护资料、接入三系统 SDK、提交 Build，并管理 CDKEY、Campaign 与聚合数据。' },
+    operations: { label: '发行运营', roleName: '平台发行运营', description: '维护账号映射、录入线下结果、配置供给并执行版本发布。' },
+    tester: { label: '测试人员', roleName: '平台测试人员', description: '仅处理分配给本人的待测任务，历史结果不可覆盖。' },
+  };
+  const moduleIcon = { '01': 'vendor', '02': 'key', '03': 'build', '04': 'target' };
+  const routeIcon = route => {
+    if (route.templateId === 'T15') return 'chart';
+    if (route.role === 'tester') return 'test';
+    if (route.role === 'operations') return 'review';
+    return moduleIcon[route.moduleId] || 'home';
+  };
+  const publicTitles = {
+    'P01-01': '开发者账号登录',
+    'P01-02': '工作台',
+    'P01-03': '开发者认证',
+    'P01-04': '游戏管理',
+    'P01-05': '创建／编辑游戏',
+    'P01-06': 'APPID 与 SDK 接入',
+    'P01-07': '资料审核结果',
+    'P01-08': '开发者账号管理',
+    'P01-09': '厂商资质结果',
+    'P01-10': '游戏资料与上架结果',
+    'P02-01': 'CDKEY 商品与供给',
+    'P02-02': '外部 Key 异常详情',
+    'P02-03': '商品与 SKU 管理',
+    'P02-04': '外部 Key 供给配置',
+    'P02-05': '盖世 Key 与渠道 API',
+    'P02-06': '供给异常与对账',
+    'P03-01': '版本管理',
+    'P03-02': '创建／编辑版本',
+    'P03-03': '包体上传与 Build 详情',
+    'P03-04': '提交测试',
+    'P03-05': '测试不通过详情',
+    'P03-06': '待测任务',
+    'P03-07': '测试任务详情',
+    'P03-08': '提交测试结果',
+    'P03-09': '版本审核',
+    'P03-10': '上架结论',
+    'P03-11': '待发布版本',
+    'P03-12': '发布与回滚',
+    'P03-13': '线上版本管理',
+    'P04-01': '整体经营看板',
+    'P04-02': '交易、退款与结算',
+    'P04-03': 'Key 供给与兑换',
+    'P04-04': '下载、更新与首次启动',
+    'P04-05': 'Campaign／UTM 管理',
+    'P04-06': '发行资源需求',
+    'P04-07': '渠道归因分析',
+    'P04-08': '数据导出与说明',
+  };
+  const publicTitle = route => publicTitles[route.id] || route.title.replace(/页$/, '');
+  const publicCopy = value => String(value || '')
+    .replaceAll('门禁', '检查项');
+  const hashFor = route => `#/${route.id}`;
+  const primaryAction = (page, route) => {
+    const actions = Array.isArray(page?.actions) ? page.actions : [];
+    const byLabel = actions.find(action => action.label === page.primaryAction);
+    if (byLabel) return byLabel.id;
+    const preferred = actions.find(action => !/reject|interrupt|exclude|stop/.test(action.id || ''));
+    return preferred?.id || `primary-${route.id}`;
+  };
+
+  const renderTopBar = ({ module, portalData, role, redacted, isLogin, isOnboarding }) => {
+    const roleInfo = roleMeta[role] || roleMeta.developer;
+    const account = redacted || isLogin ? null : portalData.accounts?.[role];
+    const help = redacted ? '' : `<button class="top-help-button" type="button" data-help-open data-portal-action="open-help">${icon('info')}<span>帮助中心</span></button>`;
+    const context = isLogin ? '' : `<div class="top-context"><strong>${e(module?.name || '开发者平台')}</strong></div>`;
+    const accountRole = isOnboarding ? '待完成开发者认证' : (account?.roleName || roleInfo.roleName);
+    const accountBlock = account ? `<div class="top-account"><div class="account-avatar">${e(account.name.slice(0, 1))}</div><div class="account-copy"><strong>${e(account.name)}</strong><span>${e(accountRole)}</span></div></div>` : '';
+    return `<header class="top-bar"><div class="brand-block"><div class="brand-mark">${icon('logo')}</div><div class="brand-copy"><div class="brand-title">盖世游戏</div><div class="brand-subtitle">开发者平台</div></div></div>${context}${help}${accountBlock}</header>`;
+  };
+
+  const renderSideNav = ({ routes, route, role }) => {
+    const allowed = routes.filter(item => item.role === role && item.id !== 'P01-01');
+    return `<aside class="side-nav" data-side-nav data-component="SideNav" data-variant="dark"><div class="nav-label">功能导航</div><nav class="nav-list" aria-label="业务导航">${allowed.map(item => `<a class="nav-item${item.id === route.id ? ' is-active' : ''}" data-component="NavItem" data-variant="${item.id === route.id ? 'active' : 'default'}" href="${e(hashFor(item, role))}"${item.id === route.id ? ' aria-current="page"' : ''}>${icon(routeIcon(item))}<span>${e(publicTitle(item))}</span></a>`).join('')}</nav></aside>`;
+  };
+
+  const renderContext = ({ portalData, redacted }) => {
+    if (redacted) return '';
+    const context = portalData.context || {};
+    return `<div class="context-bar">${icon('vendor')}<span class="context-value">${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span>${icon('game')}<span class="context-value">${e(context.gameName || '未选择游戏')}</span><span class="context-divider">/</span><span>${e(context.versionName || '未选择版本')}</span></div>`;
+  };
+
+  const renderPageHeader = ({ route, page, state, redacted }) => {
+    if (route.id === 'P01-01') return '';
+    const safeSummary = redacted ? '当前账号无法访问此页面，页面内容已隐藏。' : publicCopy(page.summary || '查看并处理当前业务信息。');
+    const actionLabel = redacted ? '返回可访问页面' : (page.primaryAction || '继续');
+    const action = redacted ? 'default-state' : primaryAction(page, route);
+    return `<header class="page-header"><div><h1 class="page-title" data-page-title>${e(publicTitle(route))}</h1><p class="page-summary">${e(safeSummary)}</p></div><div class="page-actions">${!redacted && state === 'default' ? c.statusTag(page.status || '待处理') : ''}${c.button({ label: actionLabel, variant: 'primary', action, primary: true, disabled: !redacted && Boolean(page.primaryActionDisabled) })}</div></header>`;
+  };
+
+  const renderHelpCenter = help => `<section class="help-center" data-help-center hidden>
+    <header class="help-center__header"><button class="text-back" type="button" data-help-back data-portal-action="close-help">返回</button><div><div class="page-eyebrow">帮助与支持</div><h1>${e(help.title)}</h1></div></header>
+    <div class="help-grid"><section class="panel"><header class="panel-header"><h2 class="panel-title">常见问题</h2></header><div class="panel-body"><div class="faq-list">${help.faq.map((item, index) => `<article class="faq-item"><button type="button" aria-expanded="false" data-portal-action="toggle-faq" data-faq-index="${index}"><span>${e(item.question)}</span><span aria-hidden="true">＋</span></button><p hidden>${e(item.answer)}</p></article>`).join('')}</div></div></section>
+    <aside class="contact-card"><div class="page-eyebrow">服务支持</div><h2>联系我们</h2><strong>${e(help.contact.supportName)}</strong><span>${e(help.contact.serviceHours)}</span><span>${e(help.contact.channel)}</span><a href="mailto:${e(help.contact.email)}">${e(help.contact.email)}</a><p>${e(help.contact.fallback)}</p></aside></div>
+  </section>`;
+
+  const renderBusiness = ({ module, routes, route, page, portalData, role, state, content }) => {
+    const redacted = state === 'permission';
+    const isLogin = route.id === 'P01-01' && !redacted;
+    const isOnboarding = route.id === 'P01-03' && page.status === '草稿';
+    const frameClass = `${isLogin ? ' is-login' : ''}${isOnboarding ? ' is-onboarding' : ''}`;
+    return `<div class="portal-stage"><main class="product-frame${frameClass}" data-role="${e(role)}" data-page-state="${e(state)}">${renderTopBar({ module, portalData, role, redacted, isLogin, isOnboarding })}${isLogin || isOnboarding ? '' : renderSideNav({ routes, route, role })}<section class="workspace">${isLogin || isOnboarding ? '' : renderContext({ portalData, redacted })}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(portalData.helpCenter)}</section></main></div>`;
+  };
+  namespace.shell = { roleMeta, publicTitle, hashFor, renderBusiness };
+})(window.GameHubDeveloperPortal);
+
+window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
+
+(function startApplication(namespace) {
+  const c = namespace.components;
+  const memory = {
+    page: Object.create(null),
+    result: Object.create(null),
+    upload: Object.create(null),
+    business: Object.create(null),
+    shell: { helpOpen: false, scrollTop: 0 },
+  };
+  const root = document.getElementById('app');
+  const parseJson = id => JSON.parse(document.getElementById(id).textContent);
+  const moduleConfig = parseJson('portal-module');
+  const routes = parseJson('portal-routes');
+  const portalData = parseJson('portal-data');
+  const modules = parseJson('portal-modules');
+  const fallbackPage = route => ({
+    summary: `${namespace.shell.publicTitle(route)}暂时无法加载，请稍后重试。`,
+    status: '加载失败',
+    primaryAction: '重试',
+  });
+  const parseLocation = () => {
+    const raw = location.hash.replace(/^#\/?/, '');
+    const [routePart, queryPart = ''] = raw.split('?');
+    const requested = routes.find(item => item.id === routePart);
+    const route = requested || routes.find(item => item.id === moduleConfig.defaultRoute) || routes[0];
+    const query = new URLSearchParams(queryPart);
+    const role = route.role;
+    const state = 'default';
+    const requestedTab = Number(query.get('tab'));
+    const cdkeyTab = Number.isInteger(requestedTab) && requestedTab >= 0 && requestedTab <= 3 ? requestedTab : null;
+    return { route, role, state, cdkeyTab };
+  };
+  const navigate = ({ routeId, state }) => {
+    const current = parseLocation();
+    const nextRoute = routes.find(route => route.id === routeId) || current.route;
+    location.hash = namespace.shell.hashFor(nextRoute, nextRoute.role, state || 'default');
+  };
+  const resultMessage = (routeId, title, detail, variant = 'success') => {
+    memory.result[routeId] = { title, detail, variant };
+    const target = root.querySelector('[data-runtime-result]');
+    if (target) target.innerHTML = c.resultStrip(memory.result[routeId]);
+  };
+  const primaryDestination = routeId => ({
+    'P01-02': 'P01-04', 'P01-04': 'P01-05', 'P01-05': 'P01-06', 'P01-07': 'P01-03',
+    'P01-08': 'P01-09', 'P01-09': 'P01-10',
+    'P02-03': 'P02-04',
+    'P03-01': 'P03-02', 'P03-02': 'P03-03', 'P03-03': 'P03-04',
+    'P03-06': 'P03-07', 'P03-07': 'P03-08', 'P03-09': 'P03-10', 'P03-11': 'P03-12',
+    'P04-01': 'P04-02', 'P04-02': 'P04-03', 'P04-04': 'P04-05', 'P04-05': 'P04-06', 'P04-06': 'P04-07', 'P04-07': 'P04-08',
+  }[routeId]);
+  const primaryBusinessAction = routeId => ({
+    'P01-06': 'download-sdk',
+    'P01-08': 'send-password-setup',
+    'P03-13': 'resume-download',
+  }[routeId]);
+  const variantForStatus = status => {
+    if (/已下架|已结束|失败|已作废|已撤销/.test(status)) return 'danger';
+    if (/暂停|待|排期/.test(status)) return 'warning';
+    return 'success';
+  };
+  const setStatusTag = (tag, status) => {
+    if (!tag) return;
+    tag.textContent = status;
+    tag.dataset.variant = variantForStatus(status);
+  };
+  const setSummaryStatus = (label, status) => {
+    const item = Array.from(root.querySelectorAll('.task-summary > div')).find(node => node.querySelector(':scope > span')?.textContent.trim() === label);
+    setStatusTag(item?.querySelector('.status-tag'), status);
+  };
+  const setGateStatus = (label, status) => {
+    const item = Array.from(root.querySelectorAll('.gate-item')).find(node => node.querySelector('strong')?.textContent.trim() === label);
+    setStatusTag(item?.querySelector('.status-tag'), status);
+  };
+  const setActionDisabled = (action, disabled) => {
+    root.querySelectorAll(`[data-portal-action="${action}"]`).forEach(control => {
+      control.disabled = disabled;
+      control.setAttribute('aria-disabled', String(disabled));
+    });
+  };
+  const toggleHelp = open => {
+    const workspace = root.querySelector('.workspace');
+    const pageWrap = root.querySelector('.page-wrap');
+    const help = root.querySelector('[data-help-center]');
+    if (!workspace || !pageWrap || !help) return;
+    if (open) memory.shell.scrollTop = workspace.scrollTop || 0;
+    memory.shell.helpOpen = open;
+    pageWrap.hidden = open;
+    help.hidden = !open;
+    if (!open) workspace.scrollTop = memory.shell.scrollTop;
+  };
+  const setCdkeyTab = (routeId, index, remember = true) => {
+    const nextIndex = Number.isFinite(Number(index)) ? Number(index) : 0;
+    if (remember) memory.page[routeId] = { ...(memory.page[routeId] || {}), cdkeyTab: nextIndex };
+    root.querySelectorAll('[data-cdkey-panel]').forEach((panel, panelIndex) => { panel.hidden = panelIndex !== nextIndex; });
+    root.querySelectorAll('[data-component="Tabs"][data-variant="task"] [role="tab"]').forEach((tab, tabIndex) => {
+      const active = tabIndex === nextIndex;
+      tab.classList.toggle('is-active', active);
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+    });
+  };
+  const createSecret = () => {
+    const bytes = new Uint8Array(8);
+    crypto.getRandomValues(bytes);
+    return `sec_${Array.from(bytes, value => value.toString(16).padStart(2, '0')).join('')}`;
+  };
+  const downloadTextFile = (fileName, content, type = 'text/plain;charset=utf-8') => {
+    const url = URL.createObjectURL(new Blob([content], { type }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  };
+  const openCdkeyTab = index => {
+    const targetModule = modules.find(item => item.id === '02');
+    if (!targetModule) return;
+    location.href = `${targetModule.output}#/P02-01?tab=${index}`;
+  };
+  const renderMemoryRecords = records => {
+    const timeline = root.querySelector('.timeline');
+    if (!timeline) return;
+    timeline.querySelectorAll('[data-memory-record]').forEach(node => node.remove());
+    records.slice().reverse().forEach(record => {
+      timeline.insertAdjacentHTML('afterbegin', `<li class="timeline-item" data-memory-record><div class="timeline-title">${c.escapeHtml(record)}</div><div class="timeline-meta number">刚刚</div></li>`);
+    });
+  };
+  const applyBusinessState = routeId => {
+    const state = memory.business[routeId];
+    if (!state) return;
+    if (routeId === 'P03-13') {
+      if (state.download) { setSummaryStatus('下载开关', state.download); setGateStatus('下载能力', state.download); }
+      if (state.launch) { setSummaryStatus('启动开关', state.launch); setGateStatus('启动能力', state.launch); }
+      if (state.game) setGateStatus('游戏发布状态', state.game);
+      if (state.download === '允许下载') {
+        setActionDisabled('resume-download', true);
+        root.querySelectorAll('[data-primary-action]').forEach(control => { control.disabled = true; control.setAttribute('aria-disabled', 'true'); });
+      }
+      if (state.game === '已下架') setActionDisabled('unpublish-game', true);
+    }
+    renderMemoryRecords(state.records || []);
+  };
+  const updateBusinessState = (routeId, patch, record) => {
+    const previous = memory.business[routeId] || { records: [] };
+    memory.business[routeId] = { ...previous, ...patch, records: [...(previous.records || []), record] };
+    applyBusinessState(routeId);
+  };
+  const handleBusinessAction = (routeId, action) => {
+    const requireReason = (selector, label) => {
+      const field = root.querySelector(selector);
+      if (field?.value.trim()) {
+        field.removeAttribute('aria-invalid');
+        return true;
+      }
+      field?.setAttribute('aria-invalid', 'true');
+      field?.focus();
+      resultMessage(routeId, `请先填写${label}`, '说明问题现象、处置依据和影响范围后再执行。', 'warning');
+      return false;
+    };
+    if (routeId === 'P03-13' && action === 'resume-download') {
+      if (!requireReason('.disposition-form textarea', '处置原因')) return true;
+      updateBusinessState(routeId, { download: '允许下载' }, '恢复下载 · 门禁校验通过');
+      resultMessage(routeId, '下载已恢复', '当前线上版本已允许新增下载，处置记录已保存。');
+      return true;
+    }
+    if (routeId === 'P03-13' && action === 'pause-launch') {
+      if (!requireReason('.disposition-form textarea', '处置原因')) return true;
+      updateBusinessState(routeId, { launch: '启动暂停' }, '暂停启动 · 影响已安装玩家');
+      resultMessage(routeId, '启动已暂停', '新的启动请求已停止，处置记录已保存。', 'warning');
+      return true;
+    }
+    if (routeId === 'P03-13' && action === 'unpublish-game') {
+      if (!requireReason('.disposition-form textarea', '处置原因')) return true;
+      updateBusinessState(routeId, { game: '已下架' }, '下架游戏 · 保留版本与历史记录');
+      resultMessage(routeId, '游戏已下架', '版本文件、测试和发布历史未删除。', 'danger');
+      return true;
+    }
+    return false;
+  };
+
+  const bindInteractions = ({ route, role, state }) => {
+    root.querySelectorAll('[data-portal-action]').forEach(control => control.addEventListener('click', event => {
+      const action = event.currentTarget.dataset.portalAction;
+      if (!action || event.currentTarget.disabled) return;
+      if (action === 'gamehub-login' || action === 'password-login') {
+        const showQr = action === 'gamehub-login';
+        const password = root.querySelector('[data-password-login]');
+        const qr = root.querySelector('[data-gamehub-qr]');
+        if (password) password.hidden = showQr;
+        if (qr) qr.hidden = !showQr;
+        (showQr ? qr?.querySelector('[data-portal-action="refresh-qr"]') : password?.querySelector('input'))?.focus();
+        return;
+      }
+      if (action === 'refresh-qr') {
+        const status = root.querySelector('[data-qr-status]');
+        const countdown = root.querySelector('[data-qr-countdown]');
+        if (status) status.textContent = '二维码已刷新，请在盖世游戏中确认授权';
+        if (countdown) countdown.textContent = '02:00';
+        resultMessage(route.id, '二维码已刷新', '旧授权请求立即失效，新请求仍绑定当前浏览器会话。', 'info');
+        return;
+      }
+      if (action === 'forgot-password') { resultMessage(route.id, '已提交密码找回', '无论账号是否存在均返回相同结果；请检查已验证邮箱。', 'info'); return; }
+      if (action === 'open-help') { toggleHelp(true); return; }
+      if (action === 'close-help') { toggleHelp(false); return; }
+      if (action === 'toggle-faq') {
+        const answer = event.currentTarget.nextElementSibling;
+        const expanded = event.currentTarget.getAttribute('aria-expanded') === 'true';
+        event.currentTarget.setAttribute('aria-expanded', String(!expanded));
+        const mark = event.currentTarget.querySelector('[aria-hidden="true"]');
+        if (mark) mark.textContent = expanded ? '＋' : '−';
+        if (answer) answer.hidden = expanded;
+        return;
+      }
+      if (action === 'cdkey-tab') {
+        setCdkeyTab(route.id, Number(event.currentTarget.dataset.tabIndex));
+        return;
+      }
+      if (route.id === 'P02-05') {
+        const targetTab = { 'create-key-batch': 1, 'create-api-credential': 2, 'api-doc-section': 3 }[action];
+        if (Number.isInteger(targetTab)) { openCdkeyTab(targetTab); return; }
+      }
+      if (action === 'create-key-batch') {
+        const target = root.querySelector('[data-key-batch-result]');
+        if (!target) { openCdkeyTab(1); return; }
+        target.innerHTML = '<div class="one-time-result" data-key-batch-generating><strong>生成中</strong><span>正在按当前授权范围校验配额并生成盖世平台 Key。</span></div>';
+        setActionDisabled('create-key-batch', true);
+        setTimeout(() => {
+          const fileName = 'KEY-20260903-002.csv';
+          target.innerHTML = `<div class="one-time-result" data-one-time-key-download><strong>批次生成成功</strong><span>${fileName}；请在当前有效窗口内完成一次性下载，成功后不能再次查看 Key 明文。</span><div class="form-actions">${c.button({ label: '下载 CSV', variant: 'primary', action: 'download-key-csv' })}</div></div>`;
+          target.querySelector('[data-portal-action="download-key-csv"]')?.addEventListener('click', clickEvent => {
+            downloadTextFile(fileName, 'key,batch_id,game_id,sku_id\nGH-7Q4M-9K2P-X8LW,KEY-20260903-002,GAME-48291,SKU-CN-001\n', 'text/csv;charset=utf-8');
+            clickEvent.currentTarget.closest('[data-one-time-key-download]')?.remove();
+            resultMessage(route.id, 'CSV 已下载', '一次性下载窗口已关闭，后续仅保留批次信息和审计记录。');
+          });
+          resultMessage(route.id, 'Key 批次已创建', '2000 个盖世平台 Key 已进入一次性下载窗口。');
+        }, 300);
+        return;
+      }
+      if (action === 'create-api-credential' || action === 'rotate-api-credential') {
+        const target = root.querySelector('[data-credential-result]');
+        if (!target) { openCdkeyTab(2); return; }
+        target.innerHTML = `<div class="one-time-result" data-one-time-secret><strong>client_secret 仅显示一次</strong><code>${c.escapeHtml(createSecret())}</code>${c.button({ label: '我已保存', variant: 'primary', action: 'acknowledge-secret' })}</div>`;
+        target.querySelector('[data-portal-action="acknowledge-secret"]')?.addEventListener('click', clickEvent => {
+          clickEvent.currentTarget.closest('[data-one-time-secret]')?.remove();
+          resultMessage(route.id, 'Secret 已隐藏', '后续只显示末四位；遗失时必须轮换。', 'warning');
+        });
+        resultMessage(route.id, action === 'create-api-credential' ? '渠道凭据已创建' : '渠道凭据已轮换', action === 'create-api-credential' ? '本次关闭后只显示末四位。' : '旧 Secret 已失效；本次关闭后只显示末四位。');
+        return;
+      }
+      if (['pause-api-credential', 'revoke-api-credential', 'pause-key-batch', 'void-key-batch'].includes(action)) {
+        const recordLabel = {
+          'pause-api-credential': '暂停渠道凭据',
+          'revoke-api-credential': '撤销渠道凭据',
+          'pause-key-batch': '暂停 Key 批次',
+          'void-key-batch': '作废未分配库存',
+        }[action];
+        updateBusinessState(route.id, { lastCdkeyAction: action }, `${recordLabel} · 状态更新成功`);
+        const keyStatus = root.querySelector('[data-cdkey-panel="batches"] .status-tag');
+        const credentialStatus = root.querySelector('[data-cdkey-panel="credentials"] .status-tag');
+        if (action === 'pause-key-batch') setStatusTag(keyStatus, '已暂停');
+        if (action === 'void-key-batch') setStatusTag(keyStatus, '已作废');
+        if (action === 'pause-api-credential') setStatusTag(credentialStatus, '已暂停');
+        if (action === 'revoke-api-credential') setStatusTag(credentialStatus, '已撤销');
+        resultMessage(route.id, '状态已更新', '历史审计和已交付记录继续保留。', action.includes('revoke') || action.includes('void') ? 'danger' : 'warning');
+        return;
+      }
+      if (action === 'api-doc-section') {
+        const apiTarget = event.currentTarget.dataset.apiTarget;
+        if (apiTarget) root.querySelector(`#${apiTarget}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        else resultMessage(route.id, '接口说明入口已打开', '渠道 API 使用 HMAC-SHA256、request_id 幂等与分配确认机制。', 'info');
+        return;
+      }
+      if (action === 'filter-api-error') {
+        resultMessage(route.id, `错误码：${event.currentTarget.textContent.trim()}`, '已定位对应错误说明。', 'info');
+        return;
+      }
+      if (action === 'copy-api-example') {
+        const example = root.querySelector('.code-block code')?.textContent || '';
+        if (!navigator.clipboard?.writeText) {
+          resultMessage(route.id, '复制失败', '当前浏览器未授予剪贴板权限，请手动选择示例文本。', 'warning');
+          return;
+        }
+        navigator.clipboard.writeText(example)
+          .then(() => resultMessage(route.id, '示例已复制', '仅写入当前浏览器剪贴板。'))
+          .catch(() => resultMessage(route.id, '复制失败', '当前浏览器未授予剪贴板权限，请手动选择示例文本。', 'warning'));
+        return;
+      }
+      if (action === 'retry-state' || action === 'default-state') {
+        const allowed = routes.find(item => item.role === role) || routes.find(item => item.id === moduleConfig.defaultRoute) || routes[0];
+        navigate({ routeId: state === 'permission' ? allowed.id : route.id, state: 'default' });
+        return;
+      }
+      if (action === 'login') {
+        const fields = [...root.querySelectorAll('[data-password-login] input')];
+        const missing = fields.find(field => !field.value.trim());
+        if (missing) {
+          missing.focus();
+          resultMessage(route.id, '请完成登录信息', '请输入账号和密码后继续。', 'warning');
+          return;
+        }
+        navigate({ routeId: 'P01-02', state: 'default' });
+        return;
+      }
+      if (action.startsWith('primary-')) {
+        if (route.id === 'P02-01') { setCdkeyTab(route.id, 1); return; }
+        if (route.id === 'P04-03') {
+          const cdkeyModule = modules.find(item => item.id === '02');
+          if (cdkeyModule) location.href = `${cdkeyModule.output}#/P02-01`;
+          return;
+        }
+        const businessAction = primaryBusinessAction(route.id);
+        if (businessAction && handleBusinessAction(route.id, businessAction)) return;
+        const destination = primaryDestination(route.id);
+        if (destination) navigate({ routeId: destination, state: 'default' });
+        else resultMessage(route.id, '操作已完成', '最新状态已保存。');
+        return;
+      }
+      if (handleBusinessAction(route.id, action)) return;
+      if (action === 'record-offline-result') { resultMessage(route.id, '线下结果已保存', '结果、原因、审核人、时间和提交快照已写入审计记录。'); return; }
+      if (action === 'rollback-release') {
+        updateBusinessState(route.id, { pointer: '0.9.0' }, '回滚历史 Build · 三组 Release Pointer 原子切换');
+        resultMessage(route.id, '回滚配置已提交', '三组 OS／架构 Pointer 已切换到 0.9.0；历史 Build、Manifest 与 Chunk 均保留。', 'warning');
+        return;
+      }
+      if (action === 'create-campaign') { resultMessage(route.id, 'Campaign 已创建', '已生成唯一 campaign_id 与 UTM 追踪链接；不触发自动广告投放。'); return; }
+      if (action === 'submit-resource-request') { resultMessage(route.id, '资源需求已提交', '已生成新修订并进入处理中；该状态不代表资源承诺。', 'info'); return; }
+      if (action === 'generate-export') {
+        const target = root.querySelector('[data-export-result]');
+        if (target) target.innerHTML = '<div class="one-time-result"><strong>聚合文件生成成功</strong><span>EXP-20260903-001 · 120 行 · XLSX／CSV；下载地址短期有效。</span></div>';
+        resultMessage(route.id, '聚合文件已生成', '文件复用 QRY-20260903-001，未包含用户、订单、设备或 Key 明文。');
+        return;
+      }
+      if (action === 'download-sdk') { resultMessage(route.id, 'SDK 下载已开始', '请在下载完成后核对版本与 SHA-256 校验值。', 'info'); return; }
+      if (action === 'open-sdk-docs') { resultMessage(route.id, '接入文档已打开', '仅已授权的开发者账号可以访问接入文档。', 'info'); return; }
+      if (action === 'send-password-setup') { resultMessage(route.id, '密码设置邮件已发送', '仅向已验证邮箱发送；不会创建第二个 account_id。', 'info'); return; }
+      if (action === 'save-draft') {
+        const now = new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date());
+        memory.page[route.id] = { savedAt: now };
+        root.querySelectorAll('[data-save-state]').forEach(node => { node.textContent = `最近保存：${now}`; });
+        resultMessage(route.id, '草稿已保存', '提交审核前可继续修改。');
+        return;
+      }
+      if (action === 'approve') { resultMessage(route.id, '审核已通过', '审核结果已保存并写入处理记录。'); return; }
+      if (action === 'reject') { resultMessage(route.id, '已驳回并记录原因', '请开发者修改后重新提交。', 'danger'); return; }
+      if (action === 'start-upload') {
+        memory.upload[route.id] = 'uploading';
+        const bar = root.querySelector('[data-upload-progress]');
+        const label = root.querySelector('[data-upload-label]');
+        if (bar) bar.style.width = '82%';
+        if (label) label.textContent = '上传中 82%，已完成分片正在校验';
+        resultMessage(route.id, '分片上传已开始', '已创建本次上传任务，可在当前页面查看进度。', 'info');
+        return;
+      }
+      if (action === 'interrupt-upload') {
+        memory.upload[route.id] = 'interrupted';
+        const label = root.querySelector('[data-upload-label]');
+        if (label) label.textContent = '网络中断，已完成分片保留，可继续上传';
+        resultMessage(route.id, '上传已中断', '已完成分片已保留，请在页面内继续。', 'warning');
+        return;
+      }
+      if (action === 'retry-upload') {
+        memory.upload[route.id] = 'verified';
+        const bar = root.querySelector('[data-upload-progress]');
+        const label = root.querySelector('[data-upload-label]');
+        if (bar) bar.style.width = '100%';
+        if (label) label.textContent = '分片已全部上传，完整性校验通过';
+        resultMessage(route.id, '继续上传完成', '包体完整性校验通过。');
+        return;
+      }
+      if (action === 'test-pass') {
+        root.querySelectorAll('.choice-card').forEach(node => node.classList.remove('is-selected'));
+        event.currentTarget.closest('.choice-card')?.classList.add('is-selected');
+        resultMessage(route.id, '已选择测试通过', '提交后将生成不可覆盖的历史记录。', 'info');
+        return;
+      }
+      if (action === 'submit-test-result') { resultMessage(route.id, '测试结果已提交', '历史结果不可覆盖，开发者可查看处理记录。'); return; }
+      if (action === 'schedule-release' || action === 'release-now') {
+        const scheduled = action === 'schedule-release';
+        root.querySelectorAll('.publish-option').forEach(node => node.classList.toggle('is-active', node.dataset.portalAction === action));
+        const scheduleField = root.querySelector('[data-schedule-field]');
+        const scheduleInput = scheduleField?.querySelector('input');
+        scheduleField?.classList.toggle('is-disabled', !scheduled);
+        if (scheduleInput) {
+          scheduleInput.disabled = !scheduled;
+          scheduleInput.setAttribute('aria-disabled', String(!scheduled));
+          if (!scheduled) scheduleInput.value = '';
+        }
+        root.querySelectorAll('[data-release-submit], [data-primary-action]').forEach(control => {
+          control.dataset.portalAction = action;
+          const label = control.querySelector('span');
+          if (label) label.textContent = scheduled ? '定时发布' : '立即发布';
+        });
+        resultMessage(route.id, action === 'schedule-release' ? '已选择定时发布' : '已选择立即发布', '运营发布前仍需通过全部门禁；失败时保持原线上版本。', 'warning');
+        return;
+      }
+      if (action === 'add-target-rule') { event.currentTarget.classList.toggle('is-active'); resultMessage(route.id, '包含规则已更新', '仅使用已确认的地区、语言、设备／系统和平台行为标签。', 'info'); return; }
+      if (action === 'exclude-rule') { event.currentTarget.classList.toggle('is-excluded'); resultMessage(route.id, '排除规则已更新', '请保存配置后继续预估人群。', 'info'); return; }
+      if (action === 'dashboard-range') {
+        event.currentTarget.parentElement?.querySelectorAll('[data-dashboard-range]').forEach(node => node.dataset.variant = node === event.currentTarget ? 'primary' : 'secondary');
+        resultMessage(route.id, '时间范围已切换', '指标、趋势和明细已按所选范围更新。', 'info');
+        return;
+      }
+      if (action === 'dashboard-filter') {
+        event.currentTarget.parentElement?.querySelectorAll('[data-dashboard-filter]').forEach(node => node.dataset.variant = node === event.currentTarget ? 'primary' : 'secondary');
+        resultMessage(route.id, '筛选条件已更新', '指标、趋势和明细已同步刷新。', 'info');
+        return;
+      }
+      if (action === 'tab') {
+        event.currentTarget.parentElement.querySelectorAll('.tab').forEach(node => { node.classList.toggle('is-active', node === event.currentTarget); node.setAttribute('aria-selected', String(node === event.currentTarget)); });
+        return;
+      }
+      if (action.startsWith('page-')) { resultMessage(route.id, '列表已更新', '筛选条件和页码保持不变。', 'info'); return; }
+      const destination = primaryDestination(route.id);
+      if (event.currentTarget.hasAttribute('data-primary-action') && destination) { navigate({ routeId: destination, state: 'default' }); return; }
+      resultMessage(route.id, '操作已完成', '最新状态已保存。');
+    }));
+  };
+
+  const render = () => {
+    const { route, role, state, cdkeyTab } = parseLocation();
+    const page = portalData.pages?.[route.id] || fallbackPage(route);
+    const content = namespace.templates.render({ route, page, state });
+    root.innerHTML = namespace.shell.renderBusiness({ module: moduleConfig, routes, route, page, portalData, role, state, content });
+    if (memory.result[route.id] && state === 'default') {
+      const target = root.querySelector('[data-runtime-result]');
+      if (target) target.innerHTML = c.resultStrip(memory.result[route.id]);
+    }
+    if (memory.page[route.id]?.savedAt) root.querySelectorAll('[data-save-state]').forEach(node => { node.textContent = `最近保存：${memory.page[route.id].savedAt}`; });
+    applyBusinessState(route.id);
+    bindInteractions({ route, role, state });
+    if (route.id === 'P02-01' && state === 'default') setCdkeyTab(route.id, cdkeyTab ?? memory.page[route.id]?.cdkeyTab ?? 0, false);
+  };
+
+  addEventListener('hashchange', render);
+  render();
+})(window.GameHubDeveloperPortal);</script></body></html>

@@ -1,0 +1,636 @@
+{
+  "context": {
+    "vendorId": "VEN-202609-001",
+    "vendorName": "星海互动",
+    "gameId": "GAME-48291",
+    "gameName": "星海远征",
+    "versionId": "VER-100",
+    "versionName": "1.0.0",
+    "campaignId": "CMP-202609-001",
+    "environment": "正式环境"
+  },
+  "accounts": {
+    "developer": {"name": "王明", "roleName": "受邀开发者", "scope": "仅星海互动与星海远征"},
+    "operations": {"name": "李然", "roleName": "平台发行运营", "scope": "签约厂商与游戏"},
+    "tester": {"name": "陈宇", "roleName": "平台测试人员", "scope": "仅本人待测任务"}
+  },
+  "rules": {
+    "developerCanRelease": false,
+    "developerCanStartCampaign": false,
+    "autoSave": false,
+    "outOfScope": {
+      "publicRegistration": false,
+      "bankAccount": false,
+      "automaticSettlement": false,
+      "macBuild": false,
+      "linuxBuild": false,
+      "bidding": false,
+      "algorithmicRecommendation": false
+    },
+    "additionalOutOfScope": ["在线合同", "财税", "多正式分支", "开发者自助回滚"],
+    "cdkeySourceLabel": "供应商 API／受控来源",
+    "cdkeyUsesExistingFulfillment": true,
+    "cdkeySupplyMethodStatus": "待业务确认",
+    "campaignMode": "方案 A",
+    "campaignExecution": "开发者提交需求，运营配置并执行，开发者只读结果",
+    "refreshBehavior": "刷新恢复初始演示数据"
+  },
+  "objects": {
+    "vendor": {"id": "vendor_demo_001", "name": "示例厂商", "accountBinding": "唯一绑定厂商", "profileStatus": "已通过"},
+    "game": {
+      "id": "game_demo_001",
+      "name": "首款签约游戏",
+      "platforms": ["Windows"],
+      "deliveryModeRule": "每个场景只启用一种发行方式",
+      "deliveryModeVariants": [
+        {"moduleId": "02", "value": "第三方平台激活"},
+        {"moduleId": "03", "value": "盖世直接下载"}
+      ]
+    },
+    "product": {"id": "product_demo_001", "skuId": "sku_demo_001", "sourceRelationId": "source_demo_001", "sourceLabel": "供应商 API／受控来源"},
+    "version": {"id": "version_demo_100", "name": "1.0.0", "buildRevision": "build_rev_003", "formalBranches": ["正式分支"], "platform": "Windows"},
+    "testTask": {"testRoundId": "test_round_demo_002", "taskId": "test_task_demo_002", "assignee": "陈宇"},
+    "campaign": {"id": "campaign_demo_001", "requestDraftId": "campaign_draft_demo_001", "userSegmentId": "segment_demo_001", "mode": "方案 A"}
+  },
+  "states": ["default", "loading", "empty", "error", "permission"],
+  "helpCenter": {
+    "title": "帮助中心",
+    "faq": [
+      {"question": "如何完成开发者认证？", "answer": "填写主体、品牌和联系人资料并提交，平台录入线下确认结果后即可取得开发者资格。"},
+      {"question": "如何创建游戏并获取 APPID？", "answer": "完成开发者认证后创建游戏并提交资料；项目确认后系统会生成唯一 APPID。"},
+      {"question": "在哪里下载 SDK 和查看接入文档？", "answer": "进入 APPID 与 SDK 接入页，可按系统下载 SDK、核对校验值并打开接入文档。"},
+      {"question": "如何创建 Key 批次？", "answer": "确认游戏、SKU、渠道、额度和有效期均在授权范围内后，在 Key 批次中提交创建。"},
+      {"question": "Secret 丢失怎么办？", "answer": "Secret 不支持再次查看，请轮换凭据并更新第三方渠道配置。"},
+      {"question": "包体上传中断后需要重新上传吗？", "answer": "已完成的分片会保留；重新进入 Build 详情后可从中断位置继续上传。"},
+      {"question": "测试通过后如何发布版本？", "answer": "平台完成上架结论并确认发布条件后，由发行运营配置立即发布或定时发布。"},
+      {"question": "经营数据多久更新一次？", "answer": "交易与 Key 数据按小时更新，客户端下载、更新与首次启动数据次日更新。"},
+      {"question": "盖世平台 Key 和外部平台 Key 有什么区别？", "answer": "盖世平台 Key 由盖世兑换服务校验；Steam、Epic、GOG 等 Key 必须由对应平台或供应商提供。"}
+    ],
+    "contact": {
+      "supportName": "盖世游戏开发者支持",
+      "serviceHours": "服务时间以合作对接安排为准",
+      "channel": "合作群／项目对接人",
+      "email": "gamehub@gamesir.com",
+      "fallback": "紧急问题请联系当前项目对接人"
+    }
+  },
+  "pages": {
+    "P01-01": {
+      "audience": "developer",
+      "summary": "使用平台账号密码或盖世游戏账号完成登录；未注册账号自动创建后进入开发者认证。",
+      "status": "未登录",
+      "primaryAction": "登录／注册",
+      "onboarding": {
+        "title": "从首款签约游戏开始，完成发行闭环",
+        "description": "盖世游戏为已签约且获得发行授权的合作方提供资料、供给、测试发布、精准投放和发行数据能力。",
+        "audience": "一期仅面向受邀合作方",
+        "steps": [
+          "完成厂商与游戏资料",
+          "配置商品及 CDKEY",
+          "上传包体并通过测试发布",
+          "提交精准投放并查看发行数据"
+        ],
+        "preparations": [
+          "受邀账号",
+          "公司与游戏授权资料",
+          "首款签约游戏资料",
+          "拟合作渠道和技术联系人"
+        ],
+        "primaryAction": "开始入驻"
+      },
+      "sections": [
+        {"title": "合作说明", "items": ["已签约合作方先查看发行闭环、四步流程和开始前准备事项。", "开始入驻只切换到受邀账号登录；页面明确无公众注册、无开放入驻申请。"]},
+        {"title": "登录内容", "items": ["展示开发者平台、受邀账号、密码、密码可见切换和登录按钮。", "账号由盖世游戏发行运营创建并绑定唯一厂商。"]},
+        {"title": "交互与动作", "items": ["开始入驻后在同一路由显示登录；返回合作说明保留输入，刷新恢复介绍首屏。", "账号和密码非空后允许登录；提交中禁止重复点击；成功进入 P01-02。"]},
+        {"title": "异常与权限", "items": ["账号停用、绑定失效或越权时不建立会话且不返回厂商数据。", "密码重置由发行运营在 P01-07 处理，本页不提供自助找回。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "credential-error", "account-disabled"]
+    },
+    "P01-02": {
+      "audience": "developer",
+      "summary": "唯一绑定厂商的资料、首款游戏、待办和后续发行入口总览。",
+      "status": "资料已通过／版本待处理",
+      "primaryAction": "维护厂商资料",
+      "sections": [
+        {"title": "厂商与游戏", "items": ["展示示例厂商、首款签约游戏、唯一发行方式、资料状态和发布状态。", "CDKEY 场景只显示供给摘要；直接下载场景只显示版本状态，不同时展示两套操作。"]},
+        {"title": "待办", "items": ["聚合资料驳回、重新提交和平台处理中事项，并提供审核结果入口。", "无游戏时显示尚未创建游戏和创建游戏。"]},
+        {"title": "模块入口", "items": ["展示资料状态、版本状态、投放需求和发行数据的状态入口。", "入口前校验归属和资料前置，不在首页承载供给、上传、发布或投放配置。"]},
+        {"title": "权限与恢复", "items": ["开发者不能直接发布、停售、下架或启动投放。", "失败保留导航和重试；数据未知显示数据暂不可用及更新时间，不用 0 代替。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "profile-rejected", "data-delayed"]
+    },
+    "P01-03": {
+      "audience": "developer",
+      "summary": "本厂商公开资料与协作联系资料的显式保存和提交审核页。",
+      "status": "草稿",
+      "primaryAction": "提交审核",
+      "actions": [
+        {"id": "save-draft", "label": "保存草稿"}
+      ],
+      "sections": [
+        {"title": "公开资料", "items": ["厂商名称、Logo、厂商简介和完整 HTTPS 官网用于审核后的固定主页。", "Logo 支持 JPG、PNG、WEBP，上传失败保留其他输入。"]},
+        {"title": "联系资料", "items": ["联系人必填，手机或邮箱至少一项有效，只供平台协作不在 C 端展示。", "所有修改都随资料版本提交审核。"]},
+        {"title": "保存与提交", "items": ["提供保存草稿和提交审核；显式保存更新最近保存时间，不启用自动保存。", "提交生成不可覆盖审核版本并进入审核中；重复提交不生成新版本。"]},
+        {"title": "状态与恢复", "items": ["草稿、审核中、已驳回、已通过状态明确；审核中只读。", "已通过后新建修改稿时线上版本保持不变；并发版本变化要求刷新后继续。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "unsaved", "reviewing", "rejected", "approved"]
+    },
+    "P01-04": {
+      "audience": "developer",
+      "summary": "本厂商单款游戏的发行方式、资料状态和跨流程状态列表。",
+      "status": "正常",
+      "primaryAction": "创建游戏",
+      "sections": [
+        {"title": "筛选与列表", "items": ["按游戏名称、发行方式、资料状态和发布状态筛选；默认更新时间倒序。", "列包含游戏名称、发行方式、资料状态、供给／版本、发布、投放、更新时间和操作。"]},
+        {"title": "页面动作", "items": ["创建游戏进入 P01-05；游戏名称进入编辑或只读页；查看审核结果进入 P01-06。", "资料通过后按互斥发行方式进入 CDKEY 供给或包体版本。"]},
+        {"title": "分页与状态", "items": ["每页 20 条并可切换 20、50、100；筛选变化回到第 1 页。", "空列表、筛选无结果、加载失败和无权限分别提供创建、清空或重试。"]},
+        {"title": "产品边界", "items": ["只返回唯一绑定厂商数据，不支持批量、删除游戏或跨厂商搜索。", "开发者不能在列表直接发布、下架或切换已发布游戏的发行方式。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "filtered-empty"]
+    },
+    "P01-05": {
+      "audience": "developer",
+      "summary": "首款 Windows 游戏资料、素材、地区、标签和互斥发行方式的建档页。",
+      "status": "草稿",
+      "primaryAction": "保存草稿",
+      "sections": [
+        {"title": "基本资料", "items": ["包含游戏名称、短简介、游戏介绍、开发商和发行日期；归属示例厂商只读。", "游戏内名称重复时禁止提交并保留输入。"]},
+        {"title": "素材与发行范围", "items": ["素材包含图标、横版／竖版封面和 3—10 张截图，展示上传、预览、替换和单项重试。", "支持语言、销售地区和 Windows 最低／推荐系统要求；不增加 Mac、Linux 或主机配置。"]},
+        {"title": "标签与发行方式", "items": ["开发者从平台标签库提交候选标签，待运营审核后生效。", "发行方式只允许第三方平台激活或盖世直接下载二选一，已发布线上方式不可由开发者直接切换。"]},
+        {"title": "保存与审核", "items": ["提供保存草稿和提交审核；保存失败保留字段与成功素材，未保存离开需提示。", "审核中只读；驳回后基于原输入修订；已发布修改稿审核前线上快照不变。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "unsaved", "reviewing", "rejected", "approved"]
+    },
+    "P01-06": {
+      "audience": "developer",
+      "summary": "厂商或游戏资料审核结果、驳回原因和历史处理记录的只读页面。",
+      "status": "已驳回",
+      "primaryAction": "继续修改",
+      "sections": [
+        {"title": "审核结果", "items": ["展示对象、审核版本、提交时间、处理时间及审核中／已通过／已驳回。", "游戏标签修正展示开发者提交值、平台生效值和修正原因。"]},
+        {"title": "驳回与生效", "items": ["已驳回展示完整驳回原因和问题字段；继续修改恢复被驳回版本输入。", "已通过展示生效快照和发布前置；审核通过不等于正式发布。"]},
+        {"title": "处理记录", "items": ["时间线保留每次独立审核版本，历史记录只读且不能恢复为当前版本。", "重新提交生成新审核版本，不覆盖旧原因。"]},
+        {"title": "权限与异常", "items": ["目标版本必须归属唯一绑定厂商；越权显示无权查看且不返回详情。", "结果回写失败显示结果同步中，不回退已完成审核结论。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "reviewing", "approved", "rejected", "syncing"]
+    },
+    "P01-07": {
+      "audience": "operations",
+      "summary": "平台为线下已签约合作方创建账号、绑定唯一厂商并维护合作元数据。",
+      "status": "账号已启用",
+      "primaryAction": "创建合作方账号",
+      "sections": [
+        {"title": "账号列表", "items": ["展示账号、绑定厂商、联系人、合同状态、账号状态、最近登录、更新时间和操作。", "支持账号／厂商搜索、状态筛选和每页 20 条，不提供批量启停或重置。"]},
+        {"title": "账号配置", "items": ["登录账号全平台唯一，初始凭据至少 12 位并加密存储，一个账号只绑定一个厂商。", "创建成功进入已启用；凭据只线下交付，不在列表或日志明文展示。"]},
+        {"title": "合作元数据", "items": ["合同编号、授权起止、地区、合作范围和状态只记录线下签约结果。", "不提供在线签署、合同正文编辑、财税、结算账户、提款或自动分账。"]},
+        {"title": "启停与恢复", "items": ["停用必须填写原因并使会话失效，但不删除厂商、游戏、审核和权益数据。", "启用前重校绑定和合作状态；重置后旧凭据失效，所有动作完整留痕。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "enabled", "disabled", "filtered-empty"]
+    },
+    "P01-08": {
+      "audience": "operations",
+      "summary": "签约范围内厂商资料审核队列、版本差异和通过／驳回处理。",
+      "status": "审核中",
+      "primaryAction": "通过",
+      "actions": [
+        {"id": "approve", "label": "通过"},
+        {"id": "reject", "label": "驳回"}
+      ],
+      "sections": [
+        {"title": "队列与差异", "items": ["按厂商名称和审核状态筛选，审核中优先、同状态按提交时间升序。", "展示本次厂商资料、上一已批准快照和字段差异。"]},
+        {"title": "审核内容", "items": ["核对厂商名称、Logo、简介、官网、联系人、绑定主体和合同状态摘要。", "运营不得直接改写开发者提交内容。"]},
+        {"title": "审核动作", "items": ["通过时重校版本、厂商绑定和公开资料；成功形成已批准快照。", "驳回原因必填 1—500 字；成功保留原输入并回写开发者。"]},
+        {"title": "异常与权限", "items": ["并发以首个成功结果为准；失败保持审核中并允许重试。", "开发者直接访问显示 permission，且不返回厂商资料、差异或审核对象是否存在。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "reviewing", "approved", "rejected", "filtered-empty"]
+    },
+    "P01-09": {
+      "audience": "operations",
+      "summary": "签约游戏资料、素材、标签、发行方式及正式发布前置审核。",
+      "status": "审核中／发布前置待确认",
+      "primaryAction": "通过",
+      "sections": [
+        {"title": "游戏资料与差异", "items": ["展示游戏资料、宣传素材、语言、销售地区、Windows 要求、唯一发行方式和上一快照差异。", "开发者候选标签与平台生效标签分组展示。"]},
+        {"title": "标签与门禁", "items": ["运营可从既有标签库移除或替换候选标签，填写修正原因，不可创建新标签。", "发行授权、期限、地区和合同范围是发布硬前置；商品商业摘要只读。"]},
+        {"title": "审核动作", "items": ["通过时校验资料、素材、发行方式、地区和标签；成功生成已批准快照。", "销售地区超授权范围必须驳回；驳回原因必填并保留开发者输入。"]},
+        {"title": "结果边界", "items": ["资料通过但前置未满足时明确阻塞正式发布，开发者不能直接发布。", "本页不创建 SKU、不上传包体、不执行发布；并发不覆盖先完成结果。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "reviewing", "approved-gated", "approved-ready", "rejected"]
+    },
+    "P02-01": {
+      "audience": "developer",
+      "summary": "发行方查看商品状态，并在平台预授权范围内自助准备盖世平台 Key 批次和渠道 API。",
+      "status": "供给异常",
+      "primaryAction": "查看异常",
+      "cdkeySelfService": {
+        "tabs": ["商品与供给", "Key 批次", "渠道 API", "接口说明"],
+        "authorization": {
+          "status": "授权正常",
+          "remainingQuota": 8000,
+          "channels": ["星云商城", "远航游戏"],
+          "pausedReason": "—",
+          "scope": "星海互动 × 星海远征 × SKU-CN-001"
+        },
+        "keySources": [
+          {"id": "gamehub_generated", "label": "盖世平台 Key", "rule": "由盖世兑换服务校验并授予已配置权益"},
+          {"id": "external_imported", "label": "外部平台 Key", "rule": "仅受控导入或供应商 API 同步，盖世不生成"}
+        ],
+        "keyBatches": [
+          {"batchId": "KEY-20260902-001", "name": "星云商城首发批次", "source": "盖世平台 Key", "quantity": 2000, "allocated": 640, "remaining": 1360, "channel": "星云商城", "status": "可用", "download": "明文已下载"}
+        ],
+        "credentials": [
+          {"name": "星云商城正式凭据", "clientId": "cli_xh_20260901", "secretMask": "••••••••9K7Q", "secretHint": "末四位 9K7Q", "scope": "星海远征 / SKU-CN-001", "expiresAt": "2026-12-31 23:59", "status": "正常", "lastCalledAt": "2026-09-02 10:18"}
+        ],
+        "apiDocs": {
+          "auth": "client_id + HMAC-SHA256；时间戳、随机数和签名放入请求头，Secret 不进入 URL。",
+          "idempotency": "同一 request_id 返回同一分配结果，不重复扣减库存。",
+          "endpoints": [
+            {"method": "POST", "path": "/openapi/v1/cdkeys/allocate", "purpose": "按渠道订单分配一个 Key"},
+            {"method": "GET", "path": "/openapi/v1/cdkeys/allocations/{request_id}", "purpose": "查询分配状态与掩码信息"},
+            {"method": "POST", "path": "/openapi/v1/cdkeys/allocations/{request_id}/confirm", "purpose": "确认已向用户交付"}
+          ],
+          "errors": ["无权限", "签名失败", "时间戳过期", "渠道暂停", "游戏未授权", "配额不足", "无可用 Key", "重复订单冲突", "服务异常"]
+        }
+      },
+      "sections": [
+        {"title": "商品与供给", "items": ["展示首款签约游戏、商品状态、SKU、可售门禁、供给状态和异常入口。", "开发者不能创建商品、编辑 SKU 或执行销售状态操作。"]},
+        {"title": "Key 批次", "items": ["在签约主体、游戏、SKU、渠道、配额、有效期和启停状态授权内创建盖世平台 Key 批次。", "Key 明文仅一次性下载；外部平台 Key 仅受控导入或供应商 API 同步，演示不生成真实 CDKEY。"]},
+        {"title": "渠道 API", "items": ["创建、轮换、暂停和撤销本主体渠道凭据，Secret 仅本次展示，后续只显示末四位。", "服务端每次请求重新校验授权，使用 request_id 幂等分配并复用既有 CDKEY 订单履约。"]},
+        {"title": "接口说明", "items": ["展示 HMAC-SHA256 鉴权、申请、查询、确认接口、字段和错误码。", "供应方式待业务确认；演示请求不连接真实渠道、生产地址或真实凭据。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "syncing", "supply-error", "filtered-empty"]
+    },
+    "P02-02": {
+      "audience": "developer",
+      "summary": "开发者查看脱敏后的供给异常类型、影响范围、恢复条件和处理进度。",
+      "status": "异常生效中",
+      "primaryAction": "刷新状态",
+      "sections": [
+        {"title": "异常摘要", "items": ["展示异常编号、游戏、商品、SKU、异常类型、首次发现、最近更新时间和停止新增销售结论。", "同一 SKU 多异常时可售状态取最严格结果。"]},
+        {"title": "影响与安全", "items": ["展示可理解原因、影响范围、影响地区、开发者建议动作和恢复条件。", "不显示接口地址、凭据、原始报文、供应商内部响应或 Key 明文。"]},
+        {"title": "处理时间线", "items": ["处理时间线覆盖异常生效中、待平台确认恢复和已恢复，历史原因不因恢复删除。", "来源恢复仍需平台确认，确认前不重新新增销售。"]},
+        {"title": "开发者边界", "items": ["开发者只有刷新和返回，无确认恢复、停售、改来源或关闭异常权限。", "既有订单、自动退款和 Key 处理复用既有 CDKEY 订单履约，不在本页处理。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "active", "pending-recovery", "recovered", "merged"]
+    },
+    "P02-03": {
+      "audience": "operations",
+      "summary": "运营按商品管理 SKU、商业门禁、供给状态和发布／停售入口。",
+      "status": "异常待处理",
+      "primaryAction": "创建商品",
+      "sections": [
+        {"title": "商品列表", "items": ["展示商品、SKU 数、发行方式、可售 SKU、资料、商业门禁、供给状态、发布和可售状态。", "异常生效中优先、门禁未齐其次，其余按更新时间倒序。"]},
+        {"title": "检索与分页", "items": ["按游戏／厂商、发布、可售、门禁、供给和异常状态组合筛选。", "默认每页 20 条，可切换 20、50、100，不提供批量发布、停售或恢复。"]},
+        {"title": "状态动作", "items": ["行内按状态提供配置商品／SKU、关联来源、发布可售、停售、确认恢复和查看异常。", "发布前重校资料、授权、地区、商业、SKU 和供给门禁；停售必须填写原因。"]},
+        {"title": "订单保护", "items": ["停售只停止新售，不取消待支付订单、不修改已付款订单和已交付 Key。", "并发状态变化不覆盖先完成结果，刷新显示最终操作人和时间。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "filtered-empty", "gate-blocked", "stopped"]
+    },
+    "P02-04": {
+      "audience": "operations",
+      "summary": "运营配置平台商品与 SKU 结构、销售地区和生效状态，价格与库存读取来源快照。",
+      "status": "配置完成／不可售",
+      "primaryAction": "保存配置",
+      "sections": [
+        {"title": "商品关系", "items": ["商品名称、游戏、厂商、第三方平台激活发行方式和资料状态只读。", "每个游戏最多一个当前商品对象。"]},
+        {"title": "SKU 配置", "items": ["展示 SKU 名称、版本、激活平台、地区、发货能力、来源状态、价格、币种、供给和可售状态。", "运营只配置销售地区和平台生效状态，不改写来源商品定义或本地独立价格。"]},
+        {"title": "保存与校验", "items": ["保存校验地区交集、重复关联和版本冲突；失败保留输入且不写部分字段。", "校验可售只表示门禁通过，不自动发布；发布在商品列表执行。"]},
+        {"title": "生命周期", "items": ["状态包括待关联、配置完成／不可售、可售、停售和已失效。", "曾生效或有关联订单的 SKU 不删除；新配置只影响生效后的新订单。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "unlinked", "configured", "saleable", "stopped", "invalidated"]
+    },
+    "P02-05": {
+      "audience": "operations",
+      "summary": "SKU 与生效供应来源的受控关联页，供应方式待业务确认。",
+      "status": "默认方案／待业务确认",
+      "primaryAction": "校验来源",
+      "sections": [
+        {"title": "关联对象", "items": ["展示游戏、商品、SKU、当前可售和关联状态；可售 SKU 的来源编辑只读，需先停售。", "同一 SKU 同时只允许一个生效来源。"]},
+        {"title": "供应商 API／受控来源", "items": ["默认建议供应商 API；展示商品 ID／名称、版本、平台、地区、币种、价格状态、库存状态、发货能力和同步时间。", "受控直接供 Key 在机制未批准前不可选择；实际供应方式待业务确认。"]},
+        {"title": "关联与校验", "items": ["搜索来源商品后校验价格、地区、能力和连接；成功才可保存关联。", "变更来源须先停售；解除只允许不可售且无处理中履约冲突的 SKU。"]},
+        {"title": "安全与历史", "items": ["不展示接口地址、鉴权、签名、完整报文或 Key 明文，不提供上传、粘贴、复制、导出。", "失败不产生半生效关系；旧订单继续使用原来源和价格快照，来源变更完整留痕。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "unlinked", "validating", "linked", "link-error", "invalidated"]
+    },
+    "P02-06": {
+      "audience": "operations",
+      "summary": "运营监控库存与供给异常，执行同步重试、停售和门禁恢复确认。",
+      "status": "异常生效中",
+      "primaryAction": "同步重试",
+      "sections": [
+        {"title": "异常列表", "items": ["展示异常编号、商品／SKU、来源类型、库存／价格／来源／商业供给异常、影响订单摘要和处理状态。", "异常生效中优先、待恢复确认其次、已恢复最后。"]},
+        {"title": "异常判定", "items": ["库存不足或售罄只在供应来源明确返回时产生，不使用本地库存阈值。", "无可靠当前价格或来源状态时停止新售，不沿用过期值冒充实时结果。"]},
+        {"title": "处置与恢复", "items": ["同步重试成功且全部阻塞消除后进入待恢复确认，不自动开售。", "确认恢复重新校验资料、授权、地区、商业、SKU、价格和供给；失败保持停售。"]},
+        {"title": "履约保护", "items": ["复用既有 CDKEY 订单履约，不生成真实 CDKEY、不调用供应商接口。", "停售和恢复不改写待支付、已付款、已交付、退款中或已退款订单及原履约证据。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "active", "pending-recovery", "recovered", "filtered-empty"]
+    },
+    "P03-01": {
+      "audience": "developer",
+      "summary": "开发者跟踪单一正式分支的版本号、包体修订、测试状态和发布状态。",
+      "status": "测试不通过",
+      "primaryAction": "创建版本",
+      "sections": [
+        {"title": "线上与候选", "items": ["展示首款签约游戏、Windows、当前线上版本、下载／启动开关和候选版本。", "无线上版本时显示尚未发布正式版本。"]},
+        {"title": "版本列表", "items": ["列包含版本号、修订、测试轮次、测试状态、发布状态、时间、撤回原因和操作。", "主状态只用草稿、上传中、待提交、测试中、测试不通过、测试通过、待发布、已发布、已撤回。"]},
+        {"title": "页面动作", "items": ["创建、编辑、上传、提交测试和查看驳回详情按状态开放。", "已撤回版本不可恢复；再次发行需新建不同版本号并重走流程。"]},
+        {"title": "权限与边界", "items": ["仅一个 Windows 包和单一正式分支，不提供多分支、批量或删除。", "开发者不可发布、撤回、下架、暂停、恢复或回滚。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "draft", "uploading", "testing", "test-failed", "pending-release", "published", "withdrawn"]
+    },
+    "P03-02": {
+      "audience": "developer",
+      "summary": "版本 1.0.0 的更新说明、启动信息和运行说明显式保存页。",
+      "status": "草稿",
+      "primaryAction": "保存草稿",
+      "sections": [
+        {"title": "版本关系", "items": ["游戏、厂商、Windows 和单一正式分支只读；版本号 1.0.0 在游戏内唯一。", "已发布版本号永久占用。"]},
+        {"title": "版本资料", "items": ["更新说明必填；启动文件、启动参数和运行说明形成测试与发布快照。", "启动文件在包体上传后校验存在，敏感参数不进入日志。"]},
+        {"title": "保存与上传", "items": ["保存草稿校验版本号并记录最近保存时间；不启用自动保存。", "前往上传前先保存，失败则保留本页输入并不跳转。"]},
+        {"title": "状态与冲突", "items": ["草稿、待提交、测试不通过可编辑，测试中和测试通过后只读。", "并发版本变化不覆盖服务端结果；不提供回滚操作。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "unsaved", "draft", "read-only", "conflict"]
+    },
+    "P03-03": {
+      "audience": "developer",
+      "summary": "Windows 包体分片上传、中断恢复、重传和基础校验页。",
+      "status": "已中断",
+      "primaryAction": "继续上传",
+      "actions": [
+        {"id": "start-upload", "label": "开始上传"},
+        {"id": "interrupt-upload", "label": "中断上传"},
+        {"id": "retry-upload", "label": "继续上传"}
+      ],
+      "sections": [
+        {"title": "上传任务", "items": ["展示版本 1.0.0、build_rev_003、文件、分片上传进度、开始和最近活动时间。", "上传任务与版本草稿分离，重复开始不创建第二个并发任务。"]},
+        {"title": "中断与恢复", "items": ["演示上传中→网络中断→保留已完成分片→继续上传。", "恢复条件失效时可重新上传；取消仅丢弃未完成进度并返回草稿。"]},
+        {"title": "基础校验", "items": ["校验上传完整、包体可读、启动文件存在、游戏关系和完全重复。", "校验通过生成不可变修订并进入待提交；失败不进入测试。"]},
+        {"title": "产品边界", "items": ["只上传单个 Windows 包体，不提供预载、P2P、增量包、多平台包或多正式分支。", "上传凭据和长期包体地址不展示或记录。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "not-started", "uploading", "interrupted", "validating", "validation-failed", "completed"]
+    },
+    "P03-04": {
+      "audience": "developer",
+      "summary": "核对版本、包体摘要、启动信息和检查清单后提交唯一测试轮次。",
+      "status": "待提交",
+      "primaryAction": "提交测试",
+      "sections": [
+        {"title": "版本与包体摘要", "items": ["展示游戏、版本 1.0.0、包体修订、文件摘要、更新说明和基础校验。", "启动文件、参数和运行说明只读核对。"]},
+        {"title": "测试轮次", "items": ["首次提交为第 1 轮；测试不通过后重新提交产生下一轮且保留上一轮摘要。", "每轮锁定资料和包体修订，测试结束前不可替换。"]},
+        {"title": "检查清单", "items": ["归属、版本状态、修订、启动文件和运行说明全部满足才可提交。", "缺失项逐项展示，提交按钮不可执行。"]},
+        {"title": "提交与失败", "items": ["提交成功产生唯一轮次和待分配任务，版本进入测试中。", "相同 action_id 不重复建轮；失败保持待提交并允许重试。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "ready", "submitting", "gate-blocked", "state-conflict"]
+    },
+    "P03-05": {
+      "audience": "developer",
+      "summary": "查看测试驳回、问题项、包体修订和重新提交路径的只读结果页。",
+      "status": "测试不通过",
+      "primaryAction": "修改版本资料",
+      "sections": [
+        {"title": "测试驳回", "items": ["展示版本、build_rev_003、测试轮次、时间、测试不通过结论和完整问题描述。", "问题项包含现象、复现条件、影响范围和附件摘要。"]},
+        {"title": "修订判断", "items": ["区分需改资料／启动信息与需替换包体，两类修改都需重新测试。", "新包体成功后修订递增，旧轮次保持只读。"]},
+        {"title": "重新提交", "items": ["修改版本资料或重新上传后，从 P03-04 重新提交新测试轮次。", "不得直接把旧轮次改为通过，测试结果历史不可覆盖。"]},
+        {"title": "权限与恢复", "items": ["越权访问不返回附件、包体或测试人员身份。", "测试不通过不删除版本草稿、包体修订或已填写信息。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "test-failed", "revision-ready"]
+    },
+    "P03-06": {
+      "audience": "tester",
+      "summary": "测试人员查看仅分配给本人的 Windows 包体待测任务。",
+      "status": "待测试",
+      "primaryAction": "领取／开始测试",
+      "sections": [
+        {"title": "待测任务", "items": ["展示任务、首款签约游戏、包体版本 1.0.0、修订、轮次、分配时间和状态。", "列表只包含当前测试人员陈宇的任务。"]},
+        {"title": "筛选与排序", "items": ["按游戏／版本、任务状态和分配时间筛选；待测试和测试中优先。", "每页 20 条，不支持全选、批量通过或批量驳回。"]},
+        {"title": "领取与接续", "items": ["进入待测试任务并开始测试后状态变为测试中；重复开始不生成新任务。", "任务终止后旧 task_id 已失效，同轮新 task_id 待分配且最多一条有效任务。"]},
+        {"title": "权限边界", "items": ["测试人员只见本人任务，不看他人、未分配任务、合同、商品、结算或发行数据。", "越权不返回任务是否存在、包体地址或运行信息。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "assigned", "testing", "passed", "failed", "invalidated"]
+    },
+    "P03-07": {
+      "audience": "tester",
+      "summary": "测试人员核对任务、测试范围、环境和包体说明并开始本轮测试。",
+      "status": "待测试",
+      "primaryAction": "开始测试",
+      "sections": [
+        {"title": "任务与测试范围", "items": ["展示任务 test_task_demo_002、版本、修订、测试轮次、分配人、环境正式环境和当前状态。", "只读取提交轮次锁定的资料，不跟随开发者未提交修改。"]},
+        {"title": "包体说明", "items": ["展示更新说明、启动文件、参数、运行说明、基础校验和受保护的获取包体动作。", "获取失败可重试且不自动记为测试不通过。"]},
+        {"title": "任务动作", "items": ["首次确认后进入测试中；重复进入继续同一任务。", "提交测试结果携带当前任务、修订和轮次，状态失效时阻止进入。"]},
+        {"title": "安全与历史", "items": ["不记录可复用长期包体地址，测试人员不能修改版本或替换包体。", "已失效或已结束任务只读，结果入口不可执行。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "assigned", "testing", "download-error", "invalidated"]
+    },
+    "P03-08": {
+      "audience": "tester",
+      "summary": "测试人员为当前有效任务提交唯一通过或不通过终态。",
+      "status": "测试中",
+      "primaryAction": "提交结果",
+      "actions": [
+        {"id": "test-pass", "label": "测试通过"},
+        {"id": "submit-test-result", "label": "提交结果"}
+      ],
+      "sections": [
+        {"title": "任务摘要", "items": ["游戏、版本、修订、测试轮次和任务编号只读。", "每轮首个成功终态生效，后续重复请求不覆盖。"]},
+        {"title": "结果选择", "items": ["可选测试通过或测试不通过；不通过时问题描述必填。", "问题描述提示填写现象、复现条件和影响范围；附件上传状态明确。"]},
+        {"title": "提交结果", "items": ["通过后版本进入测试通过；不通过后进入测试不通过并回写开发者。", "提交失败保持测试中、保留输入并允许重试。"]},
+        {"title": "不可变历史", "items": ["已提交结果展示操作人和时间，测试人员不能撤销或修改。", "任务已失效时不提交；纠错需要新测试轮次。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "testing", "submitting", "passed", "failed", "invalidated"]
+    },
+    "P03-09": {
+      "audience": "operations",
+      "summary": "运营查看版本审核队列、分配测试并进入测试通过后的发布门禁。",
+      "status": "待分配",
+      "primaryAction": "分配测试",
+      "sections": [
+        {"title": "版本审核列表", "items": ["展示厂商／游戏、版本、修订、版本状态、轮次、有效任务、测试结果、审核状态和发布门禁。", "待分配、测试通过待确认和异常优先。"]},
+        {"title": "任务分配", "items": ["待分配选择一名测试人员；成功后任务进入待测试并同步本人列表。", "未开始可改派；测试中终止需原子失效旧任务并创建同轮新待分配任务。"]},
+        {"title": "审核入口", "items": ["测试通过进入版本审核详情；测试不通过只读等待开发者修订。", "运营不能修改测试结果或用资料审核替代测试通过。"]},
+        {"title": "并发与权限", "items": ["同轮最多一条有效任务；并发仅首个成功，失败不改变旧有效任务。", "不提供全选或批量处理；越权不返回包体获取信息。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "unassigned", "assigned", "testing", "test-passed", "test-failed", "gate-blocked"]
+    },
+    "P03-10": {
+      "audience": "operations",
+      "summary": "运营核对版本差异、测试通过结果和全部发布门禁后确认待发布。",
+      "status": "测试通过／门禁待确认",
+      "primaryAction": "确认待发布",
+      "sections": [
+        {"title": "版本差异", "items": ["展示授权、版本 1.0.0、build_rev_003、更新说明、启动信息和当前线上版本差异。", "测试区展示轮次、任务、测试人员、测试通过结果和修订一致性。"]},
+        {"title": "发布门禁", "items": ["门禁包含项目授权、资料、包体、测试、商品／领取条件、分成、结算责任、权益和线上状态。", "未满足项阻塞发布，不提供忽略并通过。"]},
+        {"title": "确认动作", "items": ["确认待发布时重校全部门禁；成功进入待发布，失败保持测试通过。", "门禁失败不是驳回版本，也不改写测试结论；补齐商业资料可重新校验。"]},
+        {"title": "权限边界", "items": ["运营不重做测试，不修改开发者包体。", "本页没有直接发布、开发者自助发布或多版本回滚。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "test-passed", "gate-blocked", "ready"]
+    },
+    "P03-11": {
+      "audience": "operations",
+      "summary": "运营查看待发布候选、当前线上版本、门禁状态、排期和最近发布结果。",
+      "status": "待发布",
+      "primaryAction": "发布配置",
+      "sections": [
+        {"title": "待发布列表", "items": ["展示版本、修订、门禁状态、当前线上版本、发布方式／时间、最近结果和操作。", "计划临近和失败待处理优先，发布失败仍保持待发布主状态。"]},
+        {"title": "发布入口", "items": ["待配置进入发布配置；已排期展示时间；失败可重试发布。", "不支持批量发布或批量撤回。"]},
+        {"title": "撤回未发布", "items": ["撤回必须填写原因并取消定时任务，写入未发布撤回类型。", "已撤回不可恢复；再次发行需不同版本号并重走测试和门禁。"]},
+        {"title": "失败保护", "items": ["重试发布前重新校验门禁，失败保持待发布且当前线上版本不变。", "定时任务已执行时不并发撤回，以最终结果刷新。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "unconfigured", "scheduled", "release-failed", "withdrawing"]
+    },
+    "P03-12": {
+      "audience": "operations",
+      "summary": "运营互斥配置立即发布或定时发布，并在最终校验后切换唯一线上版本。",
+      "status": "待配置",
+      "primaryAction": "立即发布",
+      "actions": [
+        {"id": "schedule-release", "label": "定时发布"},
+        {"id": "release-now", "label": "立即发布"}
+      ],
+      "sections": [
+        {"title": "候选与线上", "items": ["展示候选版本、修订、测试轮次、门禁、更新说明和当前线上版本。", "新版本成功后成为唯一当前线上版本，旧版进入已撤回（历史线上版）。"]},
+        {"title": "发布方式", "items": ["立即发布与定时发布互斥；定时发布填写统一时区未来时间。", "发布中禁止修改资料、包体或排期并禁止重复操作。"]},
+        {"title": "成功与失败", "items": ["成功原子写入新版本首次发布时间和旧线上版本替代撤回信息。", "失败时候选保持待发布并保持原线上版本及其全部字段不变。"]},
+        {"title": "恢复边界", "items": ["状态不确定时查询同一 action_id 结果，不重复发起。", "一期不提供回滚、开发者自助发布或多正式分支。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "unconfigured", "scheduled", "releasing", "released", "release-failed"]
+    },
+    "P03-13": {
+      "audience": "operations",
+      "summary": "运营处置当前线上版本的下载、启动和游戏发布能力并保留证据。",
+      "status": "已发布／下载暂停",
+      "primaryAction": "恢复下载",
+      "sections": [
+        {"title": "线上版本", "items": ["展示版本 1.0.0、发布时间、修订、下载开关、启动开关、游戏发布状态和最近处置。", "处置不删除版本文件、测试或发布历史。"]},
+        {"title": "处置动作", "items": ["提供暂停下载、暂停启动、恢复下载、恢复启动和下架游戏；原因与影响范围必填。", "商品停售不等于游戏下架，两者按各自业务链路处理。"]},
+        {"title": "继承与恢复", "items": ["修复版发布后继承现有暂停开关且不自动恢复。", "恢复前重校问题、当前线上版本和发布门禁；失败保持暂停。"]},
+        {"title": "权限与记录", "items": ["开发者只读原因、时间和恢复状态，开发者不可发布或处置。", "处置记录包含前后开关、影响、原因、操作人、结果和 system 联动来源。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "published", "download-paused", "launch-paused", "unpublished"]
+    },
+    "P04-01": {
+      "audience": "developer",
+      "summary": "开发者查看本厂商投放草稿、需求状态、期望时间和只读效果入口。",
+      "status": "开发者已提交",
+      "primaryAction": "创建需求",
+      "sections": [
+        {"title": "投放需求列表", "items": ["草稿展示游戏、素材摘要、目标、期望时间和最近保存；已提交展示 campaign_demo_001 和需求状态。", "计划状态只用开发者已提交、平台配置中、已排期、投放中、已暂停、已结束和已驳回。"]},
+        {"title": "检索与分页", "items": ["按关键词、游戏、状态和时间筛选，默认最近更新时间倒序。", "筛选变化回到第 1 页，返回列表保留筛选与分页。"]},
+        {"title": "页面动作", "items": ["创建需求、继续编辑草稿、修改已驳回需求、查看详情和查看数据。", "开发者不能在列表启动、暂停、结束计划或编辑运营配置。"]},
+        {"title": "状态与权限", "items": ["加载、空结果、失败和无权限分别展示；跨厂商不返回对象是否存在。", "已结束不可恢复，再次推广需创建新投放需求。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "draft", "submitted", "configuring", "scheduled", "delivering", "paused", "ended", "rejected"]
+    },
+    "P04-02": {
+      "audience": "developer",
+      "summary": "方案 A 下开发者只提交投放目标、示例素材、期望人群和时间范围。",
+      "status": "草稿",
+      "primaryAction": "提交平台审核",
+      "sections": [
+        {"title": "目标与素材", "items": ["目标游戏限本厂商已审核对象；投放目标可选详情访问、购买／领取、成功交付或首次启动。", "示例素材只按平台现有规范填写和预览；素材规范未确认时禁止提交。"]},
+        {"title": "期望人群", "items": ["期望人群只含地区、语言、设备／系统、已获得游戏及本平台浏览、购买／领取、下载和启动行为。", "不提供用户 ID、Steam 导入、问卷、名单或第三方画像。"]},
+        {"title": "时间范围与职责", "items": ["填写期望开始和结束时间；最终人群、硬排除、资源位、频次、优先级和排期由运营配置并执行。", "不展示预算、出价、消耗或算法推荐。"]},
+        {"title": "保存与提交", "items": ["保存草稿允许必填未齐，失败保留输入；不启用自动保存或自动投放。", "提交成功生成 campaign_id 和修订并进入开发者已提交；驳回后重提保留计划编号、修订递增。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "unsaved", "draft", "submitting", "rejected"]
+    },
+    "P04-03": {
+      "audience": "developer",
+      "summary": "开发者只读查看需求快照、运营回执、配置摘要、固定状态和结果入口。",
+      "status": "平台配置中",
+      "primaryAction": "查看发行数据",
+      "sections": [
+        {"title": "开发者需求", "items": ["展示当前修订的素材、推广目标、期望人群、期望时间和历史修订。", "开发者只读，不提供启动、暂停、结束或运营配置编辑。"]},
+        {"title": "运营回执与配置摘要", "items": ["运营回执展示资源位、人群、预估人数、排除、排期、频次和优先级摘要。", "配置未完成显示平台配置中，不填默认值，不披露精确用户条件或其他计划竞争。"]},
+        {"title": "状态与结果", "items": ["展示驳回、暂停、结束原因及前后状态、操作角色和时间。", "已驳回可修改后重新提交；其他状态只读查看结果。"]},
+        {"title": "数据入口", "items": ["无已完成 T+1 数据仍可进入看板，未知值显示 -- 和更新时间。", "权限失效后不展示缓存详情，计划结束后保留最终配置和补齐中的数据入口。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "submitted", "configuring", "scheduled", "delivering", "paused", "ended", "rejected"]
+    },
+    "P04-04": {
+      "audience": "developer",
+      "summary": "本厂商 campaign_id + game_id 的曝光、点击、访问、转化和分交付方式 T+1 看板。",
+      "status": "T+1 数据正常",
+      "primaryAction": "切换时间范围",
+      "actions": [
+        {"id": "dashboard-range", "label": "切换时间范围"}
+      ],
+      "sections": [
+        {"title": "指标与趋势", "items": ["默认最近 7 个已完成自然日；展示曝光人数／次数、点击人数／次数、详情访问和购买／领取。", "切换游戏、计划和日期同步刷新指标、日趋势和漏斗。"]},
+        {"title": "交付分支", "items": ["CDKEY 分支止于既有 Key 成功交付，不把查看 Key 或站外激活当成功。", "直接下载分支展示下载成功和历史首次启动成功，不把任务创建、安装完成或启动点击代替终态。"]},
+        {"title": "转化口径", "items": ["漏斗为曝光→点击→有效详情→购买／领取，再分叉到 CDKEY 交付或下载→首次启动。", "相邻步骤转化率分母未知或为 0 时显示 --。"]},
+        {"title": "数据边界", "items": ["数据延迟或缺失显示 --、最近成功时间和异常；真实完整零值才显示 0。", "开发者只看聚合数据，不展示用户明细、导出、预算消耗或跨厂商对比。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "delayed", "missing", "zero", "activation-unavailable"]
+    },
+    "P04-05": {
+      "audience": "operations",
+      "summary": "运营领取签约范围投放计划并进入素材、人群、资源位、排期和监控流程。",
+      "status": "开发者已提交",
+      "primaryAction": "开始配置",
+      "sections": [
+        {"title": "投放计划列表", "items": ["展示投放计划、厂商、游戏、目标、资源位、期望／实际排期、负责人和计划状态。", "状态固定为开发者已提交、平台配置中、已排期、投放中、已暂停、已结束和已驳回。"]},
+        {"title": "筛选与排序", "items": ["按计划／游戏、厂商、状态、目标、交付方式、负责人和时间筛选。", "待处理优先、最近提交倒序，筛选变化回到第 1 页。"]},
+        {"title": "领取与入口", "items": ["开发者已提交计划开始配置后进入平台配置中；并发领取只允许首个成功。", "按状态进入素材审核、人群、资源位排期、监控或只读历史，不能跳过门禁。"]},
+        {"title": "方案边界", "items": ["严格执行方案 A：开发者提交需求，运营配置并执行。", "列表不提供预算、竞价、消耗或算法推荐；已结束不可恢复。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "submitted", "claimed", "scheduled", "delivering", "paused", "ended", "rejected"]
+    },
+    "P04-06": {
+      "audience": "operations",
+      "summary": "运营同时审核素材、目标游戏和落地页可发布性。",
+      "status": "平台配置中／待审核",
+      "primaryAction": "审核通过",
+      "sections": [
+        {"title": "素材审核", "items": ["展示需求修订、素材预览、规范校验、推广目标和期望人群。", "运营不能直接替开发者修改原素材。"]},
+        {"title": "落地页审核", "items": ["核对游戏已批准资料、发布状态、交付方式、商品／领取、地区、系统和交付限制。", "素材与落地页必须同时通过，任一失败不能进入排期。"]},
+        {"title": "审核动作", "items": ["审核通过时重校全部门禁并记录素材版本和落地页快照。", "驳回原因和可执行说明必填；成功进入已驳回且保留需求与素材。"]},
+        {"title": "并发与失效", "items": ["游戏下架、素材变化或落地页快照变化时阻止用旧预览通过。", "审核通过不等于可排期，仍需人群、资源位和时间门禁。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "reviewing", "approved", "rejected", "snapshot-changed"]
+    },
+    "P04-07": {
+      "audience": "operations",
+      "summary": "运营用合法地区、语言、设备／系统和平台行为配置包含、排除与硬性排除。",
+      "status": "未预估",
+      "primaryAction": "预估人群",
+      "actions": [
+        {"id": "add-target-rule", "label": "添加定向条件"},
+        {"id": "exclude-rule", "label": "添加排除条件"}
+      ],
+      "sections": [
+        {"title": "规则字段", "items": ["仅开放地区、语言、设备／系统、已获得游戏和本平台行为：详情、购买／领取、下载、启动。", "兴趣标签仅在既有合法且完成盘点时加入；当前标签范围待业务确认。"]},
+        {"title": "包含与排除", "items": ["同字段多值为或、不同字段为且，排除命中即排除。", "地区未授权／不可售和设备或系统不满足固定为硬性排除，运营不能删除。"]},
+        {"title": "预估与保存", "items": ["条件变化进入未预估；预估成功写入 segment_demo_001 和规则版本。", "人数为 0 显示目标人群为空并阻止排期；未知显示 --，不填 0。"]},
+        {"title": "隐私边界", "items": ["不出现用户 ID、Steam、问卷、第三方画像、名单导入、导出或反查。", "保存并继续前重校硬性排除和非空人群；并发不覆盖先保存版本。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "unestimated", "estimating", "audience-empty", "data-error", "estimated"]
+    },
+    "P04-08": {
+      "audience": "operations",
+      "summary": "运营从已确认现有资源位中配置时间、频次、优先级和排期冲突。",
+      "status": "资源位待业务确认",
+      "primaryAction": "确认排期",
+      "primaryActionDisabled": true,
+      "sections": [
+        {"title": "资源位", "items": ["资源位待业务确认；只允许进入盘点后的现有资源位，展示所属页面、素材类型、启停和可排期。", "不把历史广告后台示例位当真实资源位。"]},
+        {"title": "排期配置", "items": ["配置开始时间、结束时间、按 visitor_id 每自然日频次和整数优先级。", "同资源位可时间重叠，实际曝光按优先级、进入已排期时间和计划编号选择。"]},
+        {"title": "排期冲突与门禁", "items": ["展示人群、素材、落地页、资源位、时间、频次和排期冲突摘要。", "任一门禁失败时确认排期不可用，失败保持平台配置中并定位问题。"]},
+        {"title": "版本与边界", "items": ["成功保存排期快照并进入已排期；调整生成新版本，失败沿用原排期。", "投放中不可在此覆盖配置；排期不等于曝光，启动时再次校验门禁。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "placement-pending", "conflict", "gate-blocked", "scheduled"]
+    },
+    "P04-09": {
+      "audience": "operations",
+      "summary": "运营控制计划启动、取消排期、暂停、恢复、结束和自动停止，并查看 T+1 效果。",
+      "status": "已排期",
+      "primaryAction": "启动",
+      "sections": [
+        {"title": "计划与动作", "items": ["已排期提供启动和取消排期；投放中提供暂停、结束；已暂停提供恢复、结束；已结束只读。", "取消排期填写原因后进入已结束并复用 status_action=end。"]},
+        {"title": "实时门禁", "items": ["启动和恢复重校游戏、素材、落地页、人群、地区／系统、资源位和时间。", "人群为空、游戏下架、素材／落地页失效或资源位关闭时停止新曝光并进入已结束。"]},
+        {"title": "T+1 监控", "items": ["展示曝光、点击率、访问、转化、最近成功更新时间和正常／延迟／缺失。", "数据延迟不改变计划状态；未知为 --，重试刷新不伪造 0。"]},
+        {"title": "停止与日志", "items": ["暂停立即停止新曝光；恢复失败保持暂停；已结束不可恢复，需新建计划。", "所有停止和状态动作记录前后状态、原因、操作角色、来源、结果和时间；系统自动停止标记 system。"]}
+      ],
+      "states": ["default", "loading", "empty", "error", "permission", "scheduled", "delivering", "paused", "ended", "auto-stopped", "data-delayed"]
+    }
+  }
+}

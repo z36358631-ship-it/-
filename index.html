@@ -98,7 +98,13 @@
         .nav-right {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 0;
+            padding: 4px 8px;
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 16px;
+            background: rgba(20,20,20,0.72);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
         }
 
         /* 导航尝鲜版按钮 */
@@ -133,42 +139,52 @@
 
         /* 主页文字链接 */
         .nav-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
             font-size: 15px;
             color: var(--txt2);
-            padding: 10px 16px;
-            border-radius: var(--pill);
+            padding: 10px 14px;
+            border-radius: 10px;
             white-space: nowrap;
             transition: color 0.2s, background 0.2s;
         }
         .nav-link:hover { color: #fff; background: rgba(255,255,255,0.07); }
+        .nav-link:active, .lang-btn:active { background: rgba(255,255,255,0.12); }
+        .nav-link:focus-visible, .lang-btn:focus-visible {
+            outline: 2px solid rgba(255,255,255,0.82);
+            outline-offset: 2px;
+        }
+        .nav-developer { color: #fff; font-weight: 600; }
+        .nav-divider {
+            width: 1px;
+            height: 20px;
+            background: rgba(255,255,255,0.16);
+            margin: 0 4px;
+            flex: 0 0 auto;
+        }
 
         /* 语言切换 */
         .lang-btn {
-            background: rgba(43, 55, 80, 0.10);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            background: transparent;
             color: var(--txt2);
             border: none;
-            padding: 10px 22px;
-            border-radius: var(--pill);
+            padding: 10px 14px;
+            border-radius: 10px;
             font-size: 15px;
             font-weight: 500;
             cursor: pointer;
             white-space: nowrap;
-            box-shadow:
-                inset 0 0 0 1px rgba(170,202,255,0.18),
-                inset 0 0 14px 0 rgba(170,202,255,0.07),
-                0 1px 3px 0 rgba(0,0,0,0.45),
-                0 3px 10px 0 rgba(0,0,0,0.35);
-            transition: color 0.2s, box-shadow 0.3s;
+            transition: color 0.2s, background 0.2s;
         }
         .lang-btn:hover {
             color: #fff;
-            box-shadow:
-                inset 0 0 0 1px rgba(170,202,255,0.32),
-                inset 0 0 18px 0 rgba(170,202,255,0.12),
-                0 1px 3px 0 rgba(0,0,0,0.50),
-                0 4px 14px 0 rgba(0,0,0,0.42);
+            background: rgba(255,255,255,0.07);
         }
 
         /* ===== 首屏 ===== */
@@ -497,6 +513,12 @@
         @media (max-width: 420px) {
             .nav-beta { display: none; }
             .nav-logo-text { font-size: 18px; }
+            .nav-official, .divider-official { display: none; }
+        }
+        @media (max-width: 360px) {
+            .nav-logo-text { display: none; }
+            .nav-right { padding: 2px 6px; }
+            .nav-link, .lang-btn { font-size: 12px; padding: 8px 10px; }
         }
     </style>
 </head>
@@ -514,7 +536,10 @@
         </a>
 
         <div class="nav-right">
-            <a href="https://www.xiaoji.com/" class="nav-link" data-i18n="nav_home">主页</a>
+            <a href="demos/开发者后台一期/01-开发者平台与资料demo.html#/P01-01" class="nav-link nav-developer" data-i18n="nav_developer">开发者平台</a>
+            <span class="nav-divider"></span>
+            <a href="https://www.xiaoji.com/" class="nav-link nav-official" data-i18n="nav_home">盖世小鸡官网</a>
+            <span class="nav-divider divider-official"></span>
             <button class="lang-btn" onclick="toggleLang()" data-i18n="lang_btn">EN</button>
         </div>
     </div>
@@ -674,7 +699,8 @@ const dict = {
         logo:       '盖世游戏',
         lang_btn:   'EN',
         nav_beta:   '安卓下载',
-        nav_home:   '主页',
+        nav_developer:'开发者平台',
+        nav_home:   '盖世小鸡官网',
         hero_h1:    '<span class="grad-text">在安卓</span>运行 3A 游戏',
         hero_sub:   '突破硬件限制，你的移动 Steam 游戏库。',
         btn_android:'安卓下载（5.3.5）',
@@ -716,7 +742,8 @@ const dict = {
         logo:       'GameHub',
         lang_btn:   '中文',
         nav_beta:   'Android Download',
-        nav_home:   'Home',
+        nav_developer:'Developer Portal',
+        nav_home:   'GameSir Official',
         hero_h1:    '<span class="grad-text">Play PC Games</span> on Android',
         hero_sub:   'Your mobile Steam library, optimized for 3A titles.',
         btn_android:'Android Download (5.3.5)',
