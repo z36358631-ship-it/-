@@ -172,8 +172,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
 
   const renderHelpLine = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '')) ? `<a href="mailto:${e(value)}">${e(value)}</a>` : e(value);
+  const unsafeScriptPattern = new RegExp('<' + 'script\\b[^>]*>[\\s\\S]*?<\\/' + 'script>', 'gi');
   const renderManagedHtml = value => String(value || '')
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(unsafeScriptPattern, '')
     .replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*')/gi, '')
     .replace(/javascript:/gi, '');
   const renderHelpArticle = (article, index, language) => `<article class="help-article" data-help-article="${e(article.id)}"${index === 0 ? '' : ' hidden'}>

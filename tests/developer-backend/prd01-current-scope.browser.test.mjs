@@ -48,6 +48,11 @@ test('第一份 Demo 只暴露本期四个业务路由', async () => {
   }
 });
 
+test('单文件脚本兼容 GitHub HTML Preview 的脚本提取方式', () => {
+  const html = fs.readFileSync(demoFile, 'utf8');
+  assert.equal((html.match(/<script/gi) || []).length, 1);
+});
+
 test('平台控制台使用横向 Tab，游戏与接入资料仅作后续占位', async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
