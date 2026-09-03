@@ -262,8 +262,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const source = String(value || '').trim();
     if (!source) return '';
     if (!/<(?:p|h[1-6]|ul|ol|li|blockquote|img|div|strong|em|a|br)\b/i.test(source)) return e(source).replaceAll('\n', '<br>');
+    const unsafeScriptPattern = new RegExp('<' + 'script\\b[^>]*>[\\s\\S]*?<\\/' + 'script>', 'gi');
     return source
-      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(unsafeScriptPattern, '')
       .replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*')/gi, '')
       .replace(/javascript:/gi, '');
   };
