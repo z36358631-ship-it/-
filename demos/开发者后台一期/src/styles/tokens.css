@@ -1,0 +1,59 @@
+:root {
+  --brand-cyan: #38E8FF;
+  --brand-blue: #6A7CFF;
+  --brand-deep: #101827;
+  --brand-night: #0B1220;
+  --success: #1E9B66;
+  --warning: #C88918;
+  --danger: #D95656;
+  --info: #3976D9;
+  --text-primary: #172033;
+  --text-secondary: #5B657A;
+  --text-tertiary: #8B94A6;
+  --line: #E6E9F0;
+  --line-strong: #D5DAE5;
+  --surface: #FFFFFF;
+  --surface-soft: #F7F8FB;
+  --surface-muted: #F0F2F7;
+  --nav-text: #AEB8CD;
+  --nav-active: #FFFFFF;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --shadow-card: 0 6px 20px rgba(25, 38, 66, 0.06);
+  --focus-ring: 0 0 0 3px rgba(56, 232, 255, 0.22);
+  --font-sans: "MiSans VF", MiSans, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-number: "D-DIN-PRO", "DIN Alternate", var(--font-sans);
+}
+
+* { box-sizing: border-box; }
+
+html, body { min-width: 0; min-height: 100%; margin: 0; }
+
+body {
+  color: var(--text-primary);
+  background: #E9EDF4;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea { font: inherit; }
+button, a, select { -webkit-tap-highlight-color: transparent; }
+a { color: inherit; text-decoration: none; }
+svg { display: block; }
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.number { font-family: var(--font-number); font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
