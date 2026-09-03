@@ -1,0 +1,335 @@
+{
+  "schemaVersion": 1,
+  "runId": "86832e96-4742-4bcf-ae88-4207cc91dbed",
+  "requirementId": "LOCAL-20260901",
+  "revision": 55,
+  "status": "passed",
+  "createdAt": "2026-09-01T16:40:47.2465243Z",
+  "updatedAt": "2026-09-03T17:47:44.0967927Z",
+  "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md",
+  "cardHash": "5000DF561ADE4E0D56895F3959D1A974AEE980FF67FDE0EED116DB2000E7ABD9",
+  "contract": {
+    "goal": "完成第一份开发者平台与企业认证 Demo、PRD、截图和 Git 公网交付闭环",
+    "inScope": [
+      "P01-01 开发者宣传首页、双语登录、自动注册与帮助中心",
+      "P01-03 平台开发者选择、横向控制台、企业认证介绍、单页正式提交和结果状态",
+      "P01-08 运营审核列表、独立详情、附件受控预览、通过、拒绝与下架",
+      "P01-09 认证介绍、协议、帮助中心和联系我们的中文与 English 内容配置",
+      "宽屏、1280px、320px 与 390px 响应式",
+      "第一份 PRD、17 张唯一图片、固定 Git SHA 和一键预览"
+    ],
+    "outOfScope": [
+      "继续修改 Figma",
+      "CDKEY、包体测试发布与精准化投放的本轮实现",
+      "实际游戏创建、商店、SDK 和开发者服务业务",
+      "保存草稿、自动结算和广告接入",
+      "飞书真实图片转存"
+    ],
+    "inputs": [
+      "用户本轮逐项反馈与确认",
+      "第一份最新 PRD",
+      "Steam 与 TapTap 本地竞品截图",
+      "南京运营后台样式参考",
+      "当前第一份 HTML Demo 与盖世游戏 Logo"
+    ],
+    "deliverables": [
+      "4 路由单文件开发者平台 Demo",
+      "更新后的第一份 PRD",
+      "17 张唯一 PRD 图片",
+      "7 项聚焦浏览器验收",
+      "Git 固定提交、一键预览和远程资源验证"
+    ],
+    "changes": [
+      "第一份文档收敛为登录、帮助中心、平台注册、企业认证和运营管理闭环",
+      "企业认证改为介绍加单页正式提交，不保存草稿，审核时限统一为 5 个工作日",
+      "控制台改为横向 Tab，游戏与接入能力仅占位",
+      "补齐运营附件受控预览、双语富文本配置和手机端适配",
+      "修复 GitHub HTML Preview 对内联脚本的解析兼容"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "type": "requirement-resolution",
+      "required": true,
+      "dependsOn": [],
+      "status": "passed",
+      "attempt": 2,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md",
+          "sha256": "5000DF561ADE4E0D56895F3959D1A974AEE980FF67FDE0EED116DB2000E7ABD9"
+        }
+      ],
+      "outputs": [
+        "prd/workflow-state/LOCAL-20260901-developer-backend-prd.md"
+      ],
+      "evidence": [
+        "状态卡唯一匹配 LOCAL-20260901 开发者后台需求"
+      ],
+      "validation": "已定位并续接第一份开发者平台与企业认证交付",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S2",
+      "type": "fact-recovery",
+      "required": true,
+      "dependsOn": [
+        "S1"
+      ],
+      "status": "passed",
+      "attempt": 2,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md",
+          "sha256": "5000DF561ADE4E0D56895F3959D1A974AEE980FF67FDE0EED116DB2000E7ABD9"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\01-开发者平台、厂商与游戏资料PRD.md",
+          "sha256": "CCE5FD220709A6A68494342F80DDA49D85187F058B2E182D23989B31E35812B4"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\01-开发者平台与资料demo.html",
+          "sha256": "C79509C0EDCDE747BE190AA84CDFC0A582473C7F99B3259AD12376F6C8029330"
+        }
+      ],
+      "outputs": [
+        "prd/workflow-state/LOCAL-20260901-developer-backend-prd.md"
+      ],
+      "evidence": [
+        "恢复 D-021 至 D-025、第一份四路由范围与 Figma 冻结边界"
+      ],
+      "validation": "当前有效事实、范围与替代关系已恢复",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S3",
+      "type": "change-compilation",
+      "required": true,
+      "dependsOn": [
+        "S2"
+      ],
+      "status": "passed",
+      "attempt": 4,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md",
+          "sha256": "5000DF561ADE4E0D56895F3959D1A974AEE980FF67FDE0EED116DB2000E7ABD9"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\01-开发者平台、厂商与游戏资料PRD.md",
+          "sha256": "CCE5FD220709A6A68494342F80DDA49D85187F058B2E182D23989B31E35812B4"
+        }
+      ],
+      "outputs": [
+        "prd/workflow-state/LOCAL-20260901-developer-backend-prd.md"
+      ],
+      "evidence": [
+        "变化编译为 Demo、PRD、图片、测试、Git 和公网验证"
+      ],
+      "validation": "本轮修改项、验收条件和明确不改范围已编译",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S4",
+      "type": "page-baseline",
+      "required": true,
+      "dependsOn": [
+        "S3"
+      ],
+      "status": "passed",
+      "attempt": 4,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\01-开发者平台与资料demo.html",
+          "sha256": "C79509C0EDCDE747BE190AA84CDFC0A582473C7F99B3259AD12376F6C8029330"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\genuine-game-distribution-phase1\\developer-backend-final\\01\\flow.png",
+          "sha256": "BF314FE5FFDB6C267F0ED614F3252F7B9620FC44496DA025D98424F9A364CD32"
+        }
+      ],
+      "outputs": [
+        "public/prd/genuine-game-distribution-phase1/developer-backend-final/01/flow.png"
+      ],
+      "evidence": [
+        "当前 Demo、用户截图与流程图共同作为原页面基线"
+      ],
+      "validation": "原结构、视觉、横向控制台与移动端基线已核对",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S5",
+      "type": "artifact-execution",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S4"
+      ],
+      "status": "passed",
+      "attempt": 5,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\01-开发者平台、厂商与游戏资料PRD.md",
+          "sha256": "CCE5FD220709A6A68494342F80DDA49D85187F058B2E182D23989B31E35812B4"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\src\\runtime\\app.js",
+          "sha256": "2BC84F6D01C40A3EF26EE261B0B0F57F7BC39FCCD97D1AEF9EA209F563FC4F83"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\src\\runtime\\templates.js",
+          "sha256": "A21E3D1B150F73366EE8ABB0E70ACF11C9E1923F4ACE08A9AB2F61B759322C79"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\src\\runtime\\shell.js",
+          "sha256": "9AF68CE06C17A66A54A5E86D8DA9091C238CE6A3320F2E5357CF63AE5CEC953D"
+        }
+      ],
+      "outputs": [
+        "demos/开发者后台一期/01-开发者平台与资料demo.html",
+        "prd/发行平台专项/开发者后台PRD/01-开发者平台、厂商与游戏资料PRD.md",
+        "public/prd/genuine-game-distribution-phase1/developer-backend-final/01"
+      ],
+      "evidence": [
+        "第一份 Demo 4 路由、PRD 9 页面单元、17 张唯一图片已同步"
+      ],
+      "validation": "授权范围内产物已完成",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S6",
+      "type": "machine-validation",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "passed",
+      "attempt": 4,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\01-开发者平台与资料demo.html",
+          "sha256": "C79509C0EDCDE747BE190AA84CDFC0A582473C7F99B3259AD12376F6C8029330"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\01-开发者平台、厂商与游戏资料PRD.md",
+          "sha256": "CCE5FD220709A6A68494342F80DDA49D85187F058B2E182D23989B31E35812B4"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\tests\\developer-backend\\prd01-current-scope.browser.test.mjs",
+          "sha256": "14C83CD61BCDF09BFFB8B9809F0E7B1C71BAC24CE3CAEA8BC8D643346509B79C"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\tests\\developer-backend\\qualification-attachment.browser.test.mjs",
+          "sha256": "857D1B616BA50795E1D8F23BF8DFFB03C17B5711B05C52EF8F13B343A51B77D0"
+        }
+      ],
+      "outputs": [
+        "tests/developer-backend/prd01-current-scope.browser.test.mjs",
+        "tests/developer-backend/qualification-attachment.browser.test.mjs"
+      ],
+      "evidence": [
+        "构建契约通过",
+        "7/7 聚焦浏览器用例通过",
+        "PRD 质量门禁 0 error / 0 warning",
+        "17 张唯一图片 HTTP 与 MIME 通过",
+        "在线 Demo HTTP 200 且控制台错误 0"
+      ],
+      "validation": "机器验证通过",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S7",
+      "type": "professional-review",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "passed",
+      "attempt": 3,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\01-开发者平台与资料demo.html",
+          "sha256": "C79509C0EDCDE747BE190AA84CDFC0A582473C7F99B3259AD12376F6C8029330"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\01-开发者平台、厂商与游戏资料PRD.md",
+          "sha256": "CCE5FD220709A6A68494342F80DDA49D85187F058B2E182D23989B31E35812B4"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\genuine-game-distribution-phase1\\developer-backend-final\\01\\P01-03-console.png",
+          "sha256": "4DEA9FD5C17687E1BAE415B7BB382407603636D477919F19859A1784B5046686"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\genuine-game-distribution-phase1\\developer-backend-final\\01\\flow.png",
+          "sha256": "BF314FE5FFDB6C267F0ED614F3252F7B9620FC44496DA025D98424F9A364CD32"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\public\\prd\\genuine-game-distribution-phase1\\developer-backend-final\\01\\P01-08-attachment.png",
+          "sha256": "B3545F1D2665CEA852A92AC046B4363A87EAC45BE9CAE395C37E7A3D40159D98"
+        }
+      ],
+      "outputs": [],
+      "evidence": [
+        "控制台、流程图和附件预览按原尺寸复核",
+        "PRD 与 Demo 的登录、认证、审核、内容配置和占位边界一致"
+      ],
+      "validation": "产品逻辑、UI 融合与文档语义复核通过",
+      "error": null,
+      "reviewer": "Codex 产品、UI 与文档复核"
+    },
+    {
+      "id": "S8",
+      "type": "consistency-delivery",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S5",
+        "S6",
+        "S7"
+      ],
+      "status": "passed",
+      "attempt": 4,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md",
+          "sha256": "5000DF561ADE4E0D56895F3959D1A974AEE980FF67FDE0EED116DB2000E7ABD9"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\01-开发者平台与资料demo.html",
+          "sha256": "C79509C0EDCDE747BE190AA84CDFC0A582473C7F99B3259AD12376F6C8029330"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\01-开发者平台、厂商与游戏资料PRD.md",
+          "sha256": "CCE5FD220709A6A68494342F80DDA49D85187F058B2E182D23989B31E35812B4"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\tests\\developer-backend\\prd01-current-scope.browser.test.mjs",
+          "sha256": "14C83CD61BCDF09BFFB8B9809F0E7B1C71BAC24CE3CAEA8BC8D643346509B79C"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\tests\\developer-backend\\qualification-attachment.browser.test.mjs",
+          "sha256": "857D1B616BA50795E1D8F23BF8DFFB03C17B5711B05C52EF8F13B343A51B77D0"
+        }
+      ],
+      "outputs": [
+        "prd/workflow-state/LOCAL-20260901-developer-backend-prd.md",
+        "prd/workflow-state/LOCAL-20260901-developer-backend-prd.run.json"
+      ],
+      "evidence": [
+        "远端 Demo 与图片提交 6e3e00afe3b2e8f470f6d5581eb9009dcb70a949",
+        "远端 PRD 提交 f035eccb165b7e25d81282c9e0542766257b9555",
+        "飞书真实转存未执行"
+      ],
+      "validation": "受影响产物已对账，第一份交付闭环完成",
+      "error": null,
+      "reviewer": null
+    }
+  ]
+}
