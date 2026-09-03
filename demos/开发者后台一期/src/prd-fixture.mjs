@@ -66,11 +66,22 @@ function parsePageSections(section) {
 }
 
 function extractPages(markdown, module) {
+  if (module.headingStyle === 'all-decimal') {
+    const expression = /^#### 3\.([12])\.(\d+)\s+(.+)$/gm;
+    const matches = [...markdown.matchAll(expression)];
+    return matches.map((match, index) => ({
+      key: `3.${match[1]}.${match[2]}`,
+      order: Number(match[2]),
+      title: match[3].trim(),
+      section: markdown.slice(match.index, matches[index + 1]?.index ?? markdown.length),
+    }));
+  }
   const expression = module.headingStyle === 'decimal'
     ? /^#### 3\.2\.(\d+)\s+(.+)$/gm
     : new RegExp(`^#### P${module.id}-(\\d+)\\s+(.+)$`, 'gm');
   const matches = [...markdown.matchAll(expression)];
   return matches.map((match, index) => ({
+    key: module.headingStyle === 'decimal' ? `3.2.${match[1]}` : `P${module.id}-${String(match[1]).padStart(2, '0')}`,
     order: Number(match[1]),
     title: match[2].trim(),
     section: markdown.slice(match.index, matches[index + 1]?.index ?? markdown.length),
@@ -93,6 +104,7 @@ export function loadLatestPrdFixture({ repoRoot, demoDir }) {
 
   const pages = {};
   const counts = {};
+  const documentCounts = {};
   const sourceFiles = [];
   for (const module of map.modules) {
     const sourcePath = path.join(repoRoot, ...module.file.split('/'));
@@ -101,13 +113,18 @@ export function loadLatestPrdFixture({ repoRoot, demoDir }) {
     const parsed = extractPages(markdown, module);
     const moduleRoutes = routes.filter(route => route.moduleId === module.id);
     counts[module.id] = parsed.length;
+    documentCounts[module.id] = parsed.length;
     sourceFiles.push(module.file);
-    assertEqual(parsed.length, map.expectedCounts[module.id], `${module.id} page count`);
+    assertEqual(parsed.length, map.expectedDocumentCounts?.[module.id] ?? map.expectedCounts[module.id], `${module.id} document page count`);
     assertEqual(moduleRoutes.length, map.expectedCounts[module.id], `${module.id} route count`);
-    assertEqual(parsed.map(page => page.order), Array.from({ length: parsed.length }, (_, index) => index + 1), `${module.id} page order`);
-    assertEqual(parsed.map(page => page.title), moduleRoutes.map(route => route.title), `${module.id} page titles`);
+    if (module.expectedPageKeys) assertEqual(parsed.map(page => page.key), module.expectedPageKeys, `${module.id} document page keys`);
+    if (!module.routePageMap) {
+      assertEqual(parsed.map(page => page.order), Array.from({ length: parsed.length }, (_, index) => index + 1), `${module.id} page order`);
+      assertEqual(parsed.map(page => page.title), moduleRoutes.map(route => route.title), `${module.id} page titles`);
+    }
 
     for (let index = 0; index < parsed.length; index += 1) {
+      if (module.routePageMap) break;
       const route = moduleRoutes[index];
       const current = base.pages?.[route.id] || {};
       pages[route.id] = {
@@ -122,6 +139,25 @@ export function loadLatestPrdFixture({ repoRoot, demoDir }) {
         prdHeading: parsed[index].title,
       };
     }
+    if (module.routePageMap) {
+      for (const route of moduleRoutes) {
+        const pageKey = module.routePageMap[route.id];
+        const sourcePage = parsed.find(page => page.key === pageKey);
+        if (!sourcePage) throw new Error(`PRD contract mismatch: ${module.id} route ${route.id} maps to missing page ${pageKey}`);
+        const current = base.pages?.[route.id] || {};
+        pages[route.id] = {
+          ...current,
+          ...parsePageSections(sourcePage.section),
+          ...map.pageMeta[route.id],
+          states: Array.isArray(current.states) && current.states.length >= 5
+            ? current.states
+            : ['default', 'loading', 'empty', 'error', 'permission'],
+          audience: route.role,
+          prdSource: module.file,
+          prdHeading: sourcePage.title,
+        };
+      }
+    }
   }
 
   assertEqual(Object.keys(pages), routes.map(route => route.id), 'page and route order');
@@ -132,13 +168,13 @@ export function loadLatestPrdFixture({ repoRoot, demoDir }) {
       developer: {
         ...base.accounts?.developer,
         roleName: '已确认开发者',
-        scope: '唯一绑定示例厂商，可管理其 Game 与发行数据',
+        scope: '唯一绑定星海互动，可管理其 Game 与发行数据',
       },
     },
     context: {
       ...base.context,
-      appId: 'app_demo_001',
-      querySnapshotId: 'query_snapshot_demo_20260903',
+      appId: 'APP-7F3A9C',
+      querySnapshotId: 'QRY-20260903-001',
       environment: '全球正式环境',
     },
     rules: {
@@ -149,7 +185,7 @@ export function loadLatestPrdFixture({ repoRoot, demoDir }) {
       buildRule: 'Build、Manifest 与 Chunk 永久保留；Release Pointer 按 app_id + OS + CPU 架构切换并可回滚',
       campaignMode: '轻量 Campaign／UTM、人工资源需求与渠道归因',
       campaignExecution: '开发者管理 Campaign 与人工资源需求；平台运营回填实际执行结果',
-      additionalOutOfScope: ['在线合同', '财税银行卡在线收集', '自动结算', '广告竞价', '算法推荐', '用户级画像与多触点归因'],
+      additionalOutOfScope: ['自动结算', '广告竞价', '算法推荐', '用户级画像与多触点归因'],
     },
     objects: {
       ...base.objects,
@@ -160,14 +196,14 @@ export function loadLatestPrdFixture({ repoRoot, demoDir }) {
       version: {
         ...base.objects.version,
         platform: 'Windows／macOS／Linux',
-        releaseVersionId: 'release_demo_100',
-        manifestId: 'manifest_demo_003',
-        pointerKey: 'app_demo_001 + OS + CPU 架构',
+        releaseVersionId: 'REL-100',
+        manifestId: 'MANIFEST-003',
+        pointerKey: 'APP-7F3A9C + OS + CPU 架构',
       },
       campaign: {
         ...base.objects.campaign,
         mode: '轻量 Campaign／UTM',
-        querySnapshotId: 'query_snapshot_demo_20260903',
+        querySnapshotId: 'QRY-20260903-001',
       },
     },
     pages,
@@ -179,7 +215,9 @@ export function loadLatestPrdFixture({ repoRoot, demoDir }) {
     contract: {
       version: map.version,
       counts,
-      countText: map.modules.map(module => counts[module.id]).join('/'),
+      documentCounts,
+      countText: map.modules.map(module => documentCounts[module.id]).join('/'),
+      routeCountText: map.modules.map(module => routes.filter(route => route.moduleId === module.id).length).join('/'),
       sourceFiles,
     },
   };

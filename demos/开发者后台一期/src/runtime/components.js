@@ -1,4 +1,4 @@
-window.GameHubDemo = window.GameHubDemo || {};
+window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
 
 (function registerComponents(namespace) {
   const icon = (name, className) => namespace.icons.render(name, className);
@@ -20,7 +20,7 @@ window.GameHubDemo = window.GameHubDemo || {};
       'data-component': 'Button',
       'data-variant': variant,
       'data-size': size,
-      'data-demo-action': action,
+      'data-portal-action': action,
       'data-primary-action': primary || undefined,
       disabled: disabled || undefined,
       'aria-disabled': disabled ? 'true' : undefined,
@@ -28,17 +28,17 @@ window.GameHubDemo = window.GameHubDemo || {};
     return `<button ${attributeText}${extra ? ` ${extra}` : ''}>${iconName ? icon(iconName) : ''}<span>${escapeHtml(label)}</span></button>`;
   };
 
-  const input = ({ label, value = '', placeholder = '', name = '', required = false, hint = '', invalid = false, error = '', type = 'text', disabled = false }) => `
+  const input = ({ label, value = '', placeholder = '', name = '', required = false, hint = '', invalid = false, error = '', type = 'text', disabled = false, extra = '' }) => `
     <label class="field">
       <span class="field-label"><span>${escapeHtml(label)}${required ? '<span class="field-required">*</span>' : ''}</span>${hint ? `<span class="field-hint">${escapeHtml(hint)}</span>` : ''}</span>
-      <input class="gh-input" data-component="Input" data-variant="${invalid ? 'error' : 'default'}" type="${escapeHtml(type)}" name="${escapeHtml(name)}" value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" ${invalid ? 'aria-invalid="true"' : ''} ${disabled ? 'disabled aria-disabled="true"' : ''}>
+      <input class="gh-input" data-component="Input" data-variant="${invalid ? 'error' : 'default'}" type="${escapeHtml(type)}" name="${escapeHtml(name)}" value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" ${required ? 'required' : ''} ${invalid ? 'aria-invalid="true"' : ''} ${disabled ? 'disabled aria-disabled="true"' : ''}${extra ? ` ${extra}` : ''}>
       ${error ? `<span class="field-error">${escapeHtml(error)}</span>` : ''}
     </label>`;
 
-  const textarea = ({ label, value = '', placeholder = '', required = false, hint = '' }) => `
+  const textarea = ({ label, value = '', placeholder = '', required = false, hint = '', name = '', disabled = false, extra = '' }) => `
     <label class="field is-wide">
       <span class="field-label"><span>${escapeHtml(label)}${required ? '<span class="field-required">*</span>' : ''}</span>${hint ? `<span class="field-hint">${escapeHtml(hint)}</span>` : ''}</span>
-      <textarea class="gh-textarea" data-component="Input" data-variant="multiline" placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea>
+      <textarea class="gh-textarea" data-component="Input" data-variant="multiline" name="${escapeHtml(name)}" placeholder="${escapeHtml(placeholder)}" ${required ? 'required' : ''} ${disabled ? 'disabled aria-disabled="true"' : ''}${extra ? ` ${extra}` : ''}>${escapeHtml(value)}</textarea>
     </label>`;
 
   const select = ({ label, options = [], value, name = '' }) => `
@@ -65,13 +65,16 @@ window.GameHubDemo = window.GameHubDemo || {};
   const normalizeRows = rows => rows.length ? rows : [['暂无数据', '等待业务确认', '未开始', '查看']];
   const table = ({ headers = ['对象', '说明', '状态', '操作'], rows = [] }) => {
     const safeRows = normalizeRows(rows);
-    return `<div class="table-wrap"><table class="data-table" data-component="Table" data-variant="default">
+    return `<div class="table-wrap"><table class="data-table" data-component="Table" data-variant="default" data-columns="${headers.length}">
       <thead><tr>${headers.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead>
       <tbody>${safeRows.map((row, rowIndex) => `<tr>${row.map((cell, cellIndex) => {
         const value = typeof cell === 'object' ? cell : { text: cell };
         if (value.status) return `<td>${statusTag(value.status)}</td>`;
-        if (value.action) return `<td>${button({ label: value.action, variant: 'text', size: 'small', action: value.demoAction || 'row-detail' })}</td>`;
-        return `<td><div class="${cellIndex === 0 ? 'table-primary' : ''}">${escapeHtml(value.text)}</div>${value.subtext ? `<div class="table-secondary">${escapeHtml(value.subtext)}</div>` : ''}</td>`;
+        if (value.action) return `<td>${button({ label: value.action, variant: 'text', size: 'small', action: value.portalAction || 'row-detail' })}</td>`;
+        const text = String(value.text ?? '');
+        const isIdentifier = /(?:\b(?:APP|SKU|BUILD|MANIFEST|KEY|TEST|CMP|REQ|EXP|QRY|REL|VEN|SUP|ACC)-[A-Z0-9-]+\b|\bcli_[a-z0-9_]+\b|^\d{4}[-/]\d{2}[-/]\d{2})/i.test(text);
+        const classes = [cellIndex === 0 ? 'table-primary' : '', isIdentifier ? 'table-identifier' : ''].filter(Boolean).join(' ');
+        return `<td><div class="${classes}">${escapeHtml(text)}</div>${value.subtext ? `<div class="table-secondary">${escapeHtml(value.subtext)}</div>` : ''}</td>`;
       }).join('')}</tr>`).join('')}</tbody>
     </table></div>`;
   };
@@ -80,14 +83,14 @@ window.GameHubDemo = window.GameHubDemo || {};
     const totalPages = Math.max(1, Math.ceil(Number(total) / Math.max(1, Number(pageSize))));
     const currentPage = Math.min(Math.max(1, Number(page)), totalPages);
     const pageButtons = Array.from({ length: totalPages }, (_, index) => index + 1)
-      .map(item => `<button class="page-button${item === currentPage ? ' is-active' : ''} number" data-demo-action="page-${item}"${item === currentPage ? ' aria-current="page"' : ''}>${escapeHtml(item)}</button>`)
+      .map(item => `<button class="page-button${item === currentPage ? ' is-active' : ''} number" data-portal-action="page-${item}"${item === currentPage ? ' aria-current="page"' : ''}>${escapeHtml(item)}</button>`)
       .join('');
     return `<div class="pagination" data-component="Pagination" data-variant="default">
       <span>共 <strong class="number">${escapeHtml(total)}</strong> 条记录</span>
       <div class="pagination__buttons">
-        <button class="page-button" data-demo-action="page-prev" aria-label="上一页"${currentPage === 1 ? ' disabled aria-disabled="true"' : ''}>${icon('chevron', 'gh-icon')}</button>
+        <button class="page-button" data-portal-action="page-prev" aria-label="上一页"${currentPage === 1 ? ' disabled aria-disabled="true"' : ''}>${icon('chevron', 'gh-icon')}</button>
         ${pageButtons}
-        <button class="page-button" data-demo-action="page-next" aria-label="下一页"${currentPage === totalPages ? ' disabled aria-disabled="true"' : ''}>${icon('chevron', 'gh-icon')}</button>
+        <button class="page-button" data-portal-action="page-next" aria-label="下一页"${currentPage === totalPages ? ' disabled aria-disabled="true"' : ''}>${icon('chevron', 'gh-icon')}</button>
       </div>
     </div>`;
   };
@@ -95,7 +98,7 @@ window.GameHubDemo = window.GameHubDemo || {};
   const tabs = ({ items = [], active = 0, variant = 'line', action = 'tab', idPrefix = 'tab', indexAttribute = 'data-tab-index' }) =>
     `<div class="tabs" role="tablist" data-component="Tabs" data-variant="${escapeHtml(variant)}">${items.map((item, index) => {
       const id = `${idPrefix}-${index}`;
-      return `<button id="${escapeHtml(id)}" class="tab${index === active ? ' is-active' : ''}" role="tab" aria-selected="${index === active}" aria-controls="${escapeHtml(id)}-panel" tabindex="${index === active ? '0' : '-1'}" data-demo-action="${escapeHtml(action)}" ${escapeHtml(indexAttribute)}="${index}">${escapeHtml(item)}</button>`;
+      return `<button id="${escapeHtml(id)}" class="tab${index === active ? ' is-active' : ''}" role="tab" aria-selected="${index === active}" aria-controls="${escapeHtml(id)}-panel" tabindex="${index === active ? '0' : '-1'}" data-portal-action="${escapeHtml(action)}" ${escapeHtml(indexAttribute)}="${index}">${escapeHtml(item)}</button>`;
     }).join('')}</div>`;
 
   const authorizationSummary = authorization => `<section class="authorization-summary" data-cdkey-authorization>
@@ -112,25 +115,25 @@ window.GameHubDemo = window.GameHubDemo || {};
 
   const stepper = ({ items = [], active = 0 }) => `<div class="stepper" data-component="Stepper" data-variant="horizontal">${items.map((item, index) => `<div class="stepper-item${index < active ? ' is-done' : ''}${index === active ? ' is-active' : ''}"><span class="stepper-dot">${index < active ? icon('check', 'gh-icon') : ''}</span><span>${escapeHtml(item)}</span></div>`).join('')}</div>`;
 
-  const reviewPanel = ({ leftTitle = '提交内容', rightTitle = '平台校验', items = [] }) => `<div class="review-panel" data-component="ReviewPanel" data-variant="comparison"><section class="review-column"><h3>${escapeHtml(leftTitle)}</h3><ul class="review-list">${items.map((item, index) => `<li><span>${escapeHtml(`字段 ${String(index + 1).padStart(2, '0')}`)}</span><strong>${escapeHtml(item)}</strong></li>`).join('')}</ul></section><section class="review-column"><h3>${escapeHtml(rightTitle)}</h3><ul class="review-list">${items.map(item => `<li><span>${escapeHtml(item)}</span>${statusTag('待审核')}</li>`).join('')}</ul></section></div>`;
-
-  const timeline = ({ items = [] }) => `<ol class="timeline" data-component="Timeline" data-variant="vertical">${items.map((item, index) => `<li class="timeline-item"><div class="timeline-title">${escapeHtml(item)}</div><div class="timeline-meta number">${index === 0 ? '当前节点' : `记录 ${String(index + 1).padStart(2, '0')}`}</div></li>`).join('')}</ol>`;
+  const timeline = ({ items = [] }) => `<ol class="timeline" data-component="Timeline" data-variant="vertical">${items.map((item, index) => `<li class="timeline-item"><div class="timeline-title">${escapeHtml(item)}</div><div class="timeline-meta number">${index === 0 ? '刚刚' : '历史记录'}</div></li>`).join('')}</ol>`;
 
   const metricCard = ({ label, value, trend = 'T+1 汇总口径' }) => `<article class="metric-card" data-component="MetricCard" data-variant="default"><div class="metric-label">${escapeHtml(label)}</div><div class="metric-value number">${escapeHtml(value)}</div><div class="metric-trend">${escapeHtml(trend)}</div></article>`;
 
-  const chart = ({ label = '趋势示例' } = {}) => `<div class="chart" data-component="Chart" data-variant="line" role="img" aria-label="${escapeHtml(label)}">
-    <svg viewBox="0 0 760 210" preserveAspectRatio="none"><defs><linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6A7CFF" stop-opacity=".30"/><stop offset="1" stop-color="#6A7CFF" stop-opacity="0"/></linearGradient></defs>
-      <path class="chart-grid" d="M20 25H740M20 75H740M20 125H740M20 175H740"/>
-      <path class="chart-area" d="M20 172L20 152L120 138L220 145L320 105L420 114L520 72L620 86L740 42L740 172Z"/>
-      <path class="chart-line" d="M20 152L120 138L220 145L320 105L420 114L520 72L620 86L740 42"/>
-      <g>${[[20,152],[120,138],[220,145],[320,105],[420,114],[520,72],[620,86],[740,42]].map(([x,y]) => `<circle class="chart-dot" cx="${x}" cy="${y}" r="4"/>`).join('')}</g>
+  const chart = ({ label = '趋势', unit = '数量（次）', legend = '当前指标' } = {}) => `<div class="chart" data-component="Chart" data-variant="line" role="img" aria-label="${escapeHtml(label)}">
+    <div class="chart-heading"><span>${escapeHtml(unit)}</span><span class="legend-item"><i class="legend-dot"></i>${escapeHtml(legend)}</span></div>
+    <svg viewBox="0 0 760 220" preserveAspectRatio="none"><defs><linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6A7CFF" stop-opacity=".30"/><stop offset="1" stop-color="#6A7CFF" stop-opacity="0"/></linearGradient></defs>
+      <path class="chart-grid" d="M58 24H740M58 72H740M58 120H740M58 168H740"/>
+      <g class="chart-axis"><text x="48" y="28">3,000</text><text x="48" y="76">2,000</text><text x="48" y="124">1,000</text><text x="48" y="172">0</text><text x="58" y="207">08-28</text><text x="276" y="207">08-30</text><text x="498" y="207">09-01</text><text x="704" y="207">09-03</text></g>
+      <path class="chart-area" d="M58 168L58 148L154 135L252 141L350 102L448 111L546 70L644 84L740 40L740 168Z"/>
+      <path class="chart-line" d="M58 148L154 135L252 141L350 102L448 111L546 70L644 84L740 40"/>
+      <g>${[[58,148],[154,135],[252,141],[350,102],[448,111],[546,70],[644,84],[740,40]].map(([x,y]) => `<circle class="chart-dot" cx="${x}" cy="${y}" r="4"/>`).join('')}</g>
     </svg></div>`;
 
   const statePanel = ({ state, primaryAction = '返回', onRetry = false }) => {
     if (state === 'loading') return `<section class="state-panel" data-component="StatePanel" data-variant="loading" data-page-state="loading"><div class="skeleton-stack" aria-label="页面加载中"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div></section>`;
     const config = {
       empty: { iconName: 'file', title: '暂无数据', copy: '当前条件下没有可展示的内容。', action: primaryAction },
-      error: { iconName: 'warning', title: '页面加载失败', copy: '演示数据未能正常读取，请在页面内重试。', action: '重试' },
+      error: { iconName: 'warning', title: '页面加载失败', copy: '页面数据加载失败，请重试。', action: '重试' },
       permission: { iconName: 'lock', title: '暂无访问权限', copy: '当前账号未获授权访问此页面，如需处理请联系平台管理员。', action: '返回可访问页面' },
     }[state] || { iconName: 'info', title: '状态未知', copy: '请返回默认状态。', action: '返回' };
     return `<section class="state-panel" data-component="StatePanel" data-variant="${escapeHtml(state)}" data-page-state="${escapeHtml(state)}"><div class="state-content"><div class="state-visual">${icon(config.iconName)}</div><h2>${escapeHtml(config.title)}</h2><p>${escapeHtml(config.copy)}</p>${button({ label: config.action, variant: 'primary', action: onRetry || state === 'error' ? 'retry-state' : 'default-state', primary: true })}</div></section>`;
@@ -138,5 +141,5 @@ window.GameHubDemo = window.GameHubDemo || {};
 
   const resultStrip = ({ title, detail = '', variant = 'info' }) => `<div class="result-strip" data-component="ResultStrip" data-variant="${escapeHtml(variant)}" role="status">${icon(variant === 'danger' || variant === 'warning' ? 'warning' : 'info')}<div><strong>${escapeHtml(title)}</strong>${detail ? `<span>${escapeHtml(detail)}</span>` : ''}</div></div>`;
 
-  namespace.components = { escapeHtml, button, input, textarea, select, statusTag, table, pagination, tabs, authorizationSummary, codeBlock, stepper, reviewPanel, timeline, metricCard, chart, statePanel, resultStrip };
-})(window.GameHubDemo);
+  namespace.components = { escapeHtml, button, input, textarea, select, statusTag, table, pagination, tabs, authorizationSummary, codeBlock, stepper, timeline, metricCard, chart, statePanel, resultStrip };
+})(window.GameHubDeveloperPortal);

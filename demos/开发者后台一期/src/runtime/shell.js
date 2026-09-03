@@ -1,4 +1,4 @@
-window.GameHubDemo = window.GameHubDemo || {};
+window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
 
 (function registerShell(namespace) {
   const c = namespace.components;
@@ -12,11 +12,63 @@ window.GameHubDemo = window.GameHubDemo || {};
   const moduleIcon = { '01': 'vendor', '02': 'key', '03': 'build', '04': 'target' };
   const routeIcon = route => {
     if (route.templateId === 'T15') return 'chart';
+    if (route.id === 'P01-04') return 'chart';
+    if (route.id === 'P01-05') return 'game';
+    if (route.id === 'P01-06') return 'build';
+    if (route.id === 'P01-07') return 'publish';
     if (route.role === 'tester') return 'test';
     if (route.role === 'operations') return 'review';
     return moduleIcon[route.moduleId] || 'home';
   };
-  const hashFor = (route, role = route.role, state = 'default') => `#/${route.id}?role=${role}&state=${state}`;
+  const publicTitles = {
+    'P01-01': '开发者平台',
+    'P01-02': '工作台',
+    'P01-03': '开发者认证',
+    'P01-04': '数据总览',
+    'P01-05': '游戏资料',
+    'P01-06': 'APPID 与 SDK',
+    'P01-07': '测试与发布',
+    'P01-08': '企业认证审核',
+    'P01-09': '认证内容配置',
+    'P01-10': '游戏资料与上架结果',
+    'P02-01': 'CDKEY 商品与供给',
+    'P02-02': '外部 Key 异常详情',
+    'P02-03': '商品与 SKU 管理',
+    'P02-04': '外部 Key 供给配置',
+    'P02-05': '盖世 Key 与渠道 API',
+    'P02-06': '供给异常与对账',
+    'P03-01': '版本管理',
+    'P03-02': '创建／编辑版本',
+    'P03-03': '包体上传与 Build 详情',
+    'P03-04': '提交测试',
+    'P03-05': '测试不通过详情',
+    'P03-06': '待测任务',
+    'P03-07': '测试任务详情',
+    'P03-08': '提交测试结果',
+    'P03-09': '版本审核',
+    'P03-10': '上架结论',
+    'P03-11': '待发布版本',
+    'P03-12': '发布与回滚',
+    'P03-13': '线上版本管理',
+    'P04-01': '整体经营看板',
+    'P04-02': '交易、退款与结算',
+    'P04-03': 'Key 供给与兑换',
+    'P04-04': '下载、更新与首次启动',
+    'P04-05': 'Campaign／UTM 管理',
+    'P04-06': '发行资源需求',
+    'P04-07': '渠道归因分析',
+    'P04-08': '数据导出与说明',
+  };
+  const pageMeta = {
+    'P01-04': { summary: '查看当前游戏的发行准备、阶段结果与核心数据。', status: '预发布需修改', primaryAction: '编辑游戏资料', action: 'edit-game-profile' },
+    'P01-05': { summary: '维护当前游戏的基础资料、发行信息、系统要求与宣传素材。', status: '资料已确认' },
+    'P01-06': { summary: '查看当前游戏的唯一 APPID，下载三系统 SDK 并打开接入文档。', status: 'APPID 已创建' },
+    'P01-07': { summary: '按当前游戏查看先锋测试、预发布、正式上线申请与结果记录。', status: '预发布需修改', primaryAction: '查看修改要求', action: 'view-release-issue' },
+  };
+  const publicTitle = route => publicTitles[route.id] || route.title.replace(/页$/, '');
+  const publicCopy = value => String(value || '')
+    .replaceAll('门禁', '检查项');
+  const hashFor = route => `#/${route.id}`;
   const primaryAction = (page, route) => {
     const actions = Array.isArray(page?.actions) ? page.actions : [];
     const byLabel = actions.find(action => action.label === page.primaryAction);
@@ -25,62 +77,156 @@ window.GameHubDemo = window.GameHubDemo || {};
     return preferred?.id || `primary-${route.id}`;
   };
 
-  const renderTopBar = ({ module, fixture, role, redacted }) => {
+  const renderTopBar = ({ module, portalData, role, redacted, isLogin, isOnboarding, qualification, language, registration }) => {
     const roleInfo = roleMeta[role] || roleMeta.developer;
-    const account = redacted ? null : fixture.accounts?.[role];
-    const context = redacted ? null : fixture.context;
-    const help = redacted ? '' : `<button class="top-help-button" type="button" data-help-open data-demo-action="open-help">${icon('info')}<span>帮助中心</span></button>`;
-    return `<header class="top-bar"><div class="brand-block"><div class="brand-mark">${icon('logo')}</div><div class="brand-copy"><div class="brand-title">盖世游戏</div><div class="brand-subtitle">开发者后台一期</div></div></div><div class="top-context"><strong>${e(module?.name || '开发者后台')}</strong><span class="environment-badge">${e(context?.environment || '演示环境')}</span></div>${help}<div class="top-account"><div class="account-avatar">${e((account?.name || roleInfo.label).slice(0, 1))}</div><div class="account-copy"><strong>${e(account?.name || roleInfo.label)}</strong><span>${e(account?.roleName || roleInfo.roleName)}</span></div></div></header>`;
-  };
-
-  const renderSideNav = ({ routes, route, role }) => {
-    const allowed = routes.filter(item => item.role === role);
-    return `<aside class="side-nav" data-side-nav data-component="SideNav" data-variant="dark"><div class="nav-label">${e(roleMeta[role]?.label || '当前角色')}导航</div><nav class="nav-list" aria-label="业务页导航">${allowed.map(item => `<a class="nav-item${item.id === route.id ? ' is-active' : ''}" data-component="NavItem" data-variant="${item.id === route.id ? 'active' : 'default'}" href="${e(hashFor(item, role))}"${item.id === route.id ? ' aria-current="page"' : ''}>${icon(routeIcon(item))}<span>${e(item.title.replace(/页$/, ''))}</span></a>`).join('')}</nav><div class="nav-footer">仅展示当前角色在本模块可访问的页面</div></aside>`;
-  };
-
-  const renderContext = ({ fixture, redacted }) => {
-    if (redacted) return '';
-    const context = fixture.context || {};
-    return `<div class="context-bar">${icon('vendor')}<span class="context-value">${e(context.vendorName || '示例厂商')}</span><span class="context-divider">/</span>${icon('game')}<span class="context-value">${e(context.gameName || '首款签约游戏')}</span><span class="context-divider">/</span><span>${e(context.versionName || '1.0.0')}</span></div>`;
-  };
-
-  const renderPageHeader = ({ route, page, state, redacted }) => {
-    if (route.id === 'P01-01') return '';
-    const safeSummary = redacted ? '当前账号无法访问此页面，页面内容已隐藏。' : (page.summary || '一期业务页面演示');
-    const actionLabel = redacted ? '返回可访问页面' : (page.primaryAction || '继续');
-    const action = redacted ? 'default-state' : primaryAction(page, route);
-    return `<header class="page-header"><div><div class="page-eyebrow">${e(route.id)} / ${e(route.templateId)}</div><h1 class="page-title">${e(route.title)}</h1><p class="page-summary">${e(safeSummary)}</p></div><div class="page-actions">${!redacted && state === 'default' ? c.statusTag(page.status || '待处理') : ''}${c.button({ label: actionLabel, variant: 'primary', action, primary: true, disabled: !redacted && Boolean(page.primaryActionDisabled) })}</div></header>`;
-  };
-
-  const renderReviewTools = ({ routes, route, role, state }) => {
-    const cdkeyScenarios = route.id === 'P02-01'
-      ? `<div class="review-scenarios"><span>CDKEY 场景</span>${[
-        ['quota-exceeded', '额度不足'],
-        ['channel-denied', '渠道未授权'],
-        ['publishing-paused', '发行暂停'],
-        ['generation-failed', '生成失败'],
-      ].map(([id, label]) => `<button type="button" data-review-scenario="${id}" data-demo-action="review-${id}">${label}</button>`).join('')}</div>`
+    const account = redacted || isLogin ? null : portalData.accounts?.[role];
+    const isEnglish = language === 'en';
+    const help = redacted ? '' : `<button class="top-help-button" type="button" data-help-open data-portal-action="open-help">${icon('info')}<span>${isEnglish && role === 'developer' ? 'Help Center' : '帮助中心'}</span></button>`;
+    const languageSwitch = !redacted && role === 'developer' ? `<button class="top-language-button" type="button" data-portal-action="toggle-interface-language" aria-label="${isEnglish ? 'Switch to Chinese' : '切换英语'}">${isEnglish ? 'Switch to Chinese' : '切换英语'}</button>` : '';
+    const login = isLogin ? `<button class="top-login-button" type="button" data-login-open data-portal-action="open-login">${icon('user')}<span>${isEnglish ? 'Sign in' : '登录'}</span></button>` : '';
+    const context = role === 'operations' ? '<div class="top-context"><strong>发行平台后台</strong><span>企业认证与内容运营</span></div>' : '';
+    const accountTier = registration?.accountTier || 'unselected';
+    const qualificationRole = accountTier === 'unselected'
+      ? (isEnglish ? 'Choose onboarding option' : '待选择入驻方式')
+      : accountTier === 'registered'
+        ? (isEnglish ? 'Platform developer' : '平台开发者')
+        : ({ unsubmitted: isEnglish ? 'Company verification incomplete' : '待完成企业认证', pending: isEnglish ? 'Company verification pending' : '企业认证审核中', approved: isEnglish ? 'Company verified' : '企业认证已通过', rejected: isEnglish ? 'Verification needs changes' : '企业认证待修改' }[qualification?.status]);
+    const accountRole = role === 'developer' ? (qualificationRole || roleInfo.roleName) : (account?.roleName || roleInfo.roleName);
+    const accountBlock = account && role === 'developer'
+      ? `<div class="top-account-menu" data-account-menu><button class="top-account" type="button" data-portal-action="toggle-account-menu" aria-haspopup="menu" aria-expanded="false"><div class="account-avatar">${e(account.name.slice(0, 1))}</div><div class="account-copy"><strong>${e(account.name)}</strong><span>${e(accountRole)}</span></div>${icon('chevron')}</button><div class="top-account-dropdown" role="menu"><button type="button" role="menuitem" data-portal-action="logout">${isEnglish ? 'Sign out' : '退出登录'}</button></div></div>`
+      : account ? `<div class="top-account"><div class="account-avatar">${e(account.name.slice(0, 1))}</div><div class="account-copy"><strong>${e(account.name)}</strong><span>${e(accountRole)}</span></div></div>` : '';
+    const consoleLink = account && role === 'developer'
+      ? `<button class="top-console-button" type="button" data-portal-action="go-console" hidden>${icon('chart')}<span>${isEnglish ? 'Console' : '控制台'}</span></button>`
       : '';
-    return `<aside class="review-tools" data-review-only="true"><div class="review-tools__title">评审工具<span>不属于正式后台功能</span></div><div class="review-tools__grid"><label>页面<select data-review-route>${routes.map(item => `<option value="${e(item.id)}"${item.id === route.id ? ' selected' : ''}>${e(item.id)} ${e(item.title)}</option>`).join('')}</select></label><label>角色<select data-review-role>${Object.entries(roleMeta).map(([id, meta]) => `<option value="${id}"${id === role ? ' selected' : ''}>${e(meta.label)}</option>`).join('')}</select></label><label>页面状态<select data-review-state>${['default', 'loading', 'empty', 'error', 'permission'].map(item => `<option value="${item}"${item === state ? ' selected' : ''}>${item}</option>`).join('')}</select></label><label>刷新规则<select disabled><option>恢复 Fixture</option></select></label></div>${cdkeyScenarios}<div class="review-tools__actions">${c.button({ label: '恢复初始演示', variant: 'ghost', size: 'small', action: 'reset-demo', iconName: 'refresh' })}</div></aside>`;
+    const developerTools = `${consoleLink}${help}${languageSwitch}${accountBlock}${login}`;
+    const operationsTools = `${accountBlock}${help}`;
+    return `<header class="top-bar"><button class="brand-block" type="button" data-portal-action="home" aria-label="${role === 'operations' ? '返回发行平台后台首页' : (isEnglish ? 'Back to developer home' : '返回开发者首页')}"><div class="brand-mark">${icon('logo')}</div><div class="brand-copy"><div class="brand-title">${role === 'operations' ? 'gamesir-dashboard' : '盖世游戏'}</div><div class="brand-subtitle">${role === 'operations' ? '运营管理后台' : (isEnglish && role === 'developer' ? 'Developer Platform' : '开发者平台')}</div></div></button>${context}${role === 'developer' ? developerTools : operationsTools}</header>`;
   };
 
-  const renderHelpCenter = help => `<section class="help-center" data-help-center hidden>
-    <header class="help-center__header"><button class="text-back" type="button" data-help-back data-demo-action="close-help">返回</button><div><div class="page-eyebrow">GLOBAL HELP</div><h1>${e(help.title)}</h1></div></header>
-    <div class="help-grid"><section class="panel"><header class="panel-header"><h2 class="panel-title">常见问题</h2></header><div class="panel-body"><div class="faq-list">${help.faq.map((item, index) => `<article class="faq-item"><button type="button" aria-expanded="false" data-demo-action="toggle-faq" data-faq-index="${index}"><span>${e(item.question)}</span><span aria-hidden="true">＋</span></button><p hidden>${e(item.answer)}</p></article>`).join('')}</div></div></section>
-    <aside class="contact-card"><div class="page-eyebrow">CONTACT</div><h2>联系我们</h2><strong>${e(help.contact.supportName)}</strong><span>${e(help.contact.serviceHours)}</span><span>${e(help.contact.channel)}</span><p>${e(help.contact.fallback)}</p></aside></div>
-  </section>`;
+  const renderSideNav = ({ routes, route, role, editorMode = 'edit', registration, qualification, language = 'zh' }) => {
+    const allowed = routes.filter(item => item.role === role && item.id !== 'P01-01');
+    const consoleRouteIds = ['P01-04', 'P01-05', 'P01-06', 'P01-07'];
+    if (role === 'operations' && route.moduleId === '01') {
+      const items = [
+        ['P01-08', 'vendor', '企业认证审核'],
+        ['P01-09', 'file', '认证内容配置'],
+      ];
+      return `<aside class="side-nav side-nav--operations" data-side-nav data-component="SideNav" data-variant="light"><div class="nav-label">发行平台后台</div><nav class="nav-list" aria-label="发行平台后台">${items.map(([id, iconName, label]) => `<a class="nav-item${route.id === id ? ' is-active' : ''}" href="#/${id}"${route.id === id ? ' aria-current="page"' : ''}>${icon(iconName)}<span>${label}</span></a>`).join('')}<div class="nav-group-label">后续能力</div><span class="nav-item is-disabled">${icon('game')}<span>游戏资料审核</span></span><span class="nav-item is-disabled">${icon('chart')}<span>发行数据管理</span></span></nav></aside>`;
+    }
+    if (role === 'developer' && route.id === 'P02-01') {
+      const developerModule = '01-开发者平台与资料demo.html';
+      return `<aside class="side-nav side-nav--game" data-side-nav data-component="SideNav" data-variant="dark"><a class="game-nav-back" href="${developerModule}#/P01-02">${icon('chevron')}<span>返回全部游戏</span></a><div class="game-nav-current"><div>${icon('game')}</div><span><strong>星海远征</strong><small>GAME-48291</small></span></div><div class="nav-label">控制台</div><nav class="nav-list" aria-label="单游戏控制台"><a class="nav-item" href="${developerModule}#/P01-04">${icon('chart')}<span>数据总览</span></a><div class="nav-group-label">游戏管理</div><a class="nav-item" href="${developerModule}#/P01-05">${icon('game')}<span>游戏资料</span></a><a class="nav-item" href="${developerModule}#/P01-06">${icon('build')}<span>APPID 与 SDK</span></a><a class="nav-item" href="${developerModule}#/P01-07">${icon('publish')}<span>测试与发布</span></a><div class="nav-group-label">发行与供给</div><a class="nav-item is-active" href="#/P02-01" aria-current="page">${icon('key')}<span>商品与 CDKEY</span></a></nav></aside>`;
+    }
+    if (role === 'developer' && route.id === 'P01-03') {
+      const isEnglish = language === 'en';
+      const activeTab = registration?.consoleTab || (qualification?.status === 'unsubmitted' ? 'overview' : 'qualification');
+      const items = [
+        ['overview', 'chart', isEnglish ? 'Overview' : '数据总览'],
+        ['games', 'game', isEnglish ? 'Game management' : '游戏管理'],
+        ['resources', 'build', isEnglish ? 'Integration resources' : '接入资料'],
+        ['qualification', 'vendor', isEnglish ? 'Become a developer' : '成为开发者'],
+      ];
+      const navTitle = isEnglish ? 'Platform developer console' : '平台开发者控制台';
+      return `<nav class="platform-tab-bar" data-platform-tab-bar aria-label="${navTitle}"><div class="platform-tab-list" role="tablist">${items.map(([value, iconName, label]) => {
+        const startsVerification = value === 'qualification' && qualification?.status === 'unsubmitted';
+        const action = startsVerification ? 'start-company-verification' : 'platform-console-tab';
+        const isActive = activeTab === value;
+        return `<button class="platform-tab${isActive ? ' is-active' : ''}" type="button" role="tab" aria-selected="${isActive}" tabindex="${isActive ? '0' : '-1'}" data-portal-action="${action}"${startsVerification ? '' : ` data-platform-console-tab="${value}"`}>${label}</button>`;
+      }).join('')}</div></nav>`;
+    }
+    if (role === 'developer' && route.moduleId === '01' && route.id === 'P01-02') {
+      return `<aside class="side-nav" data-side-nav data-component="SideNav" data-variant="dark"><div class="nav-label">厂商工作台</div><nav class="nav-list" aria-label="厂商导航"><a class="nav-item is-active" href="${e(hashFor(route))}" aria-current="page">${icon('game')}<span>游戏管理</span></a></nav></aside>`;
+    }
+    if (role === 'developer' && route.id === 'P01-05' && editorMode === 'create') {
+      return `<aside class="side-nav side-nav--game" data-side-nav data-component="SideNav" data-variant="dark"><a class="game-nav-back" href="#/P01-02" data-demo-action="back-to-games">${icon('chevron')}<span>返回全部游戏</span></a><div class="game-nav-current"><div>${icon('game')}</div><span><strong>创建游戏</strong><small>尚未生成 Game ID</small></span></div><div class="nav-label">新建项目</div><nav class="nav-list" aria-label="创建游戏"><a class="nav-item is-active" href="#/P01-05" aria-current="page">${icon('game')}<span>基础资料</span></a></nav></aside>`;
+    }
+    if (role === 'developer' && consoleRouteIds.includes(route.id)) {
+      const consoleRoutes = allowed.filter(item => consoleRouteIds.includes(item.id));
+      return `<aside class="side-nav side-nav--game" data-side-nav data-component="SideNav" data-variant="dark"><a class="game-nav-back" href="#/P01-02" data-demo-action="back-to-games">${icon('chevron')}<span>返回全部游戏</span></a><div class="game-nav-current"><div>${icon('game')}</div><span><strong>星海远征</strong><small>GAME-48291</small></span></div><div class="nav-label">控制台</div><nav class="nav-list" aria-label="单游戏控制台">${consoleRoutes.map((item, index) => `${index === 1 ? '<div class="nav-group-label">游戏管理</div>' : ''}<a class="nav-item${item.id === route.id ? ' is-active' : ''}" href="${e(hashFor(item))}"${item.id === 'P01-05' ? ' data-demo-action="edit-game-profile"' : ''}${item.id === route.id ? ' aria-current="page"' : ''}>${icon(routeIcon(item))}<span>${e(publicTitle(item))}</span></a>`).join('')}<div class="nav-group-label">发行与供给</div><a class="nav-item" href="02-CDKEY商品与供给demo.html#/P02-01" data-demo-action="open-cdkey-console">${icon('key')}<span>商品与 CDKEY</span></a></nav></aside>`;
+    }
+    return `<aside class="side-nav" data-side-nav data-component="SideNav" data-variant="dark"><div class="nav-label">功能导航</div><nav class="nav-list" aria-label="业务导航">${allowed.map(item => `<a class="nav-item${item.id === route.id ? ' is-active' : ''}" data-component="NavItem" data-variant="${item.id === route.id ? 'active' : 'default'}" href="${e(hashFor(item, role))}"${item.id === route.id ? ' aria-current="page"' : ''}>${icon(routeIcon(item))}<span>${e(publicTitle(item))}</span></a>`).join('')}</nav></aside>`;
+  };
 
-  const renderBusiness = ({ module, routes, route, page, fixture, role, state, content }) => {
+  const renderContext = ({ portalData, redacted, route, editorMode = 'edit' }) => {
+    if (redacted) return '';
+    const context = portalData.context || {};
+    if (route.id === 'P01-02') return `<div class="context-bar">${icon('vendor')}<span class="context-value">${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span><span>厂商工作台</span></div>`;
+    if (route.id === 'P01-05' && editorMode === 'create') return `<div class="context-bar">${icon('vendor')}<span class="context-value">${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span>${icon('game')}<span>创建游戏</span></div>`;
+    if (route.id === 'P02-01') return `<div class="context-bar">${icon('vendor')}<span>${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span>${icon('game')}<span class="context-value">${e(context.gameName || '未选择游戏')}</span><span class="context-divider">/</span><span>商品与 CDKEY</span></div>`;
+    if (['P01-04', 'P01-05', 'P01-06', 'P01-07'].includes(route.id)) return `<div class="context-bar">${icon('vendor')}<span>${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span>${icon('game')}<span class="context-value">${e(context.gameName || '未选择游戏')}</span><span class="context-divider">/</span><span>${e(publicTitle(route))}</span></div>`;
+    return `<div class="context-bar">${icon('vendor')}<span class="context-value">${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span>${icon('game')}<span class="context-value">${e(context.gameName || '未选择游戏')}</span><span class="context-divider">/</span><span>${e(context.versionName || '未选择版本')}</span></div>`;
+  };
+
+  const renderPageHeader = ({ route, page, state, redacted, editorMode = 'edit' }) => {
+    if (['P01-01', 'P01-02', 'P01-03', 'P01-08', 'P01-09'].includes(route.id)) return '';
+    const meta = pageMeta[route.id] || {};
+    const safeSummary = redacted
+      ? '当前账号无法访问此页面，页面内容已隐藏。'
+      : (route.id === 'P01-05' && editorMode === 'create'
+        ? '填写新游戏的基础资料、发行范围与素材；创建前不存在 Game ID 或 APPID。'
+        : publicCopy(meta.summary || page.summary || '查看并处理当前业务信息。'));
+    const actionLabel = redacted ? '返回可访问页面' : (meta.primaryAction || page.primaryAction || '继续');
+    const action = redacted ? 'default-state' : (meta.action || primaryAction(page, route));
+    const title = route.id === 'P01-05' && editorMode === 'create' ? '创建游戏' : publicTitle(route);
+    return `<header class="page-header"><div><h1 class="page-title" data-page-title>${e(title)}</h1><p class="page-summary">${e(safeSummary)}</p></div><div class="page-actions">${!redacted && state === 'default' ? c.statusTag(route.id === 'P01-05' && editorMode === 'create' ? '待创建' : (meta.status || page.status || '待处理')) : ''}${c.button({ label: actionLabel, variant: 'primary', action, primary: true, disabled: !redacted && Boolean(page.primaryActionDisabled) })}</div></header>`;
+  };
+
+  const renderHelpLine = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '')) ? `<a href="mailto:${e(value)}">${e(value)}</a>` : e(value);
+  const renderManagedHtml = value => String(value || '')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*')/gi, '')
+    .replace(/javascript:/gi, '');
+  const renderHelpArticle = (article, index, language) => `<article class="help-article" data-help-article="${e(article.id)}"${index === 0 ? '' : ' hidden'}>
+    <div class="help-breadcrumb">${language === 'en' ? 'Help Center' : '帮助中心'}<span>/</span>${e(article.category)}${article.section ? `<span>/</span>${e(article.section)}` : ''}</div>
+    <h1>${e(article.question)}</h1>
+    ${article.bodyHtml ? `<div class="help-article__rich managed-rich-content">${renderManagedHtml(article.bodyHtml)}</div>` : `<p class="help-article__lead">${e(article.answer)}</p>${article.steps?.length ? `<section><h2>${e(article.sectionTitle || (language === 'en' ? 'Steps' : '操作步骤'))}</h2><ol>${article.steps.map(step => `<li>${renderHelpLine(step)}</li>`).join('')}</ol></section>` : ''}${article.details?.length ? `<section><h2>${e(article.detailTitle || (language === 'en' ? 'Details' : '处理说明'))}</h2><ul>${article.details.map(detail => `<li>${renderHelpLine(detail)}</li>`).join('')}</ul></section>` : ''}`}
+    ${article.note ? `<div class="help-note">${icon('info')}<div><strong>${language === 'en' ? 'Note' : '请注意'}</strong><p>${e(article.note)}</p></div></div>` : ''}
+  </article>`;
+
+  const renderHelpCenter = (help, language = 'zh') => {
+    const isEnglish = language === 'en';
+    const articles = [...help.faq, {
+      id: 'contact', category: isEnglish ? 'Contact us' : '联系我们', question: isEnglish ? 'Contact developer support' : '联系开发者支持',
+      answer: isEnglish ? 'If the Help Center does not resolve the issue, contact developer support through the partnership group, project representative or email.' : '如帮助文档无法解决问题，可通过合作群、项目对接人或邮件联系开发者支持。',
+      sectionTitle: isEnglish ? 'Contact options' : '联系方式',
+      steps: [help.contact.supportName, help.contact.serviceHours, help.contact.channel, help.contact.email],
+      details: [help.contact.fallback], detailTitle: isEnglish ? 'Urgent issues' : '紧急问题',
+    }];
+    const categories = [...new Set(articles.map(article => article.category))];
+    const renderHelpCategory = category => {
+      let currentSection = '';
+      return articles.map((article, index) => {
+        if (article.category !== category) return '';
+        const articleSection = String(article.section || '');
+        const sectionHeading = articleSection && articleSection !== currentSection
+          ? `<h3 class="help-nav-subgroup-title">${e(articleSection)}</h3>`
+          : '';
+        currentSection = articleSection;
+        return `${sectionHeading}<button type="button" data-portal-action="help-topic" data-help-topic="${e(article.id)}" class="help-nav-item${index === 0 ? ' is-active' : ''}"${index === 0 ? ' aria-current="page"' : ''}>${icon('file')}<span>${e(article.question)}</span></button>`;
+      }).join('');
+    };
+    return `<section class="help-center" data-help-center hidden>
+      <header class="help-center__header"><div class="help-center__heading"><h1>${e(help.title)}</h1></div><div class="help-search" role="search"><label class="sr-only" for="help-search-input">${isEnglish ? 'Search help articles' : '搜索帮助文章'}</label><input id="help-search-input" type="search" placeholder="${isEnglish ? 'Search help articles' : '搜索帮助文章'}" autocomplete="off" data-help-search-input><button type="button" data-portal-action="search-help" aria-label="${isEnglish ? 'Search' : '搜索'}">${icon('search')}<span>${isEnglish ? 'Search' : '搜索'}</span></button></div></header>
+      <div class="help-library">
+        <aside class="help-library__nav"><div class="help-library__nav-title">${isEnglish ? 'Documentation' : '文档目录'}</div><nav aria-label="${isEnglish ? 'Help documentation' : '帮助文档目录'}">${categories.map(category => `<section class="help-nav-group"><h2>${e(category)}</h2>${renderHelpCategory(category)}</section>`).join('')}</nav></aside>
+        <main class="help-library__content"><section class="help-search-results" data-help-search-results hidden></section>${articles.map((article, index) => renderHelpArticle(article, index, language)).join('')}</main>
+      </div>
+    </section>`;
+  };
+
+  const renderBusiness = ({ module, routes, route, page, portalData, role, state, editorMode = 'edit', content, qualification, language, managedContent, registration }) => {
     const redacted = state === 'permission';
     const isLogin = route.id === 'P01-01' && !redacted;
-    return `<div class="demo-stage"><main class="product-frame${isLogin ? ' is-login' : ''}" data-frame-id="${e(route.id)}" data-role="${e(role)}" data-template-id="${e(route.templateId)}" data-page-state="${e(state)}">${renderTopBar({ module, fixture, role, redacted })}${isLogin ? '' : renderSideNav({ routes, route, role })}<section class="workspace">${isLogin ? '' : renderContext({ fixture, redacted })}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(fixture.helpCenter)}</section></main>${renderReviewTools({ routes, route, role, state })}</div>`;
+    const accountTier = registration?.accountTier || 'unselected';
+    const showPlatformConsole = route.id === 'P01-03' && (accountTier === 'registered' || (['pending', 'approved', 'rejected'].includes(qualification?.status) && !qualification?.editing));
+    const isOnboarding = route.id === 'P01-03' && !showPlatformConsole;
+    const isEntryChoice = isOnboarding && accountTier === 'unselected' && qualification?.status === 'unsubmitted';
+    const isConfiguration = route.id === 'P01-09';
+    const helpLanguage = role === 'developer' ? language : 'zh';
+    const helpContent = managedContent?.[helpLanguage]?.help || portalData.helpCenter;
+    const frameClass = `${isLogin ? ' is-login' : ''}${isOnboarding ? ' is-onboarding' : ''}${isEntryChoice ? ' is-entry-choice' : ''}${showPlatformConsole ? ' is-platform-console' : ''}`;
+    const showContext = !isLogin && !isOnboarding && !isConfiguration && !showPlatformConsole && route.id !== 'P01-08';
+    return `<div class="portal-stage"><main class="product-frame${frameClass}" data-role="${e(role)}" data-page-state="${e(state)}" data-qualification-status="${e(qualification?.status || 'not-applicable')}">${renderTopBar({ module, portalData, role, redacted, isLogin, isOnboarding, qualification, language, registration })}${isLogin || isOnboarding ? '' : renderSideNav({ routes, route, role, editorMode, registration, qualification, language })}<section class="workspace">${showContext ? renderContext({ portalData, redacted, route, editorMode }) : ''}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted, editorMode })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(helpContent, helpLanguage)}</section></main></div>`;
   };
-
-  const renderOverview = ({ modules, routes }) => `<main class="overview-page"><section class="overview-hero"><div class="overview-kicker">GAMEHUB DEVELOPER BACKEND / MVP</div><h1 class="overview-title">开发者后台一期评审总览</h1><p class="overview-copy">以 4 份最新 PRD 为唯一业务基线，共 4 个模块、37 个业务页（10／6／13／8），覆盖独立平台双登录、三系统发行、双链 CDKEY 供给、经营数据与轻量渠道归因。</p><div class="overview-note">${icon('info')}<span>仅供评审，不属于正式后台功能；不发起真实接口请求。</span></div></section><section class="overview-grid">${modules.map(module => {
-    const moduleRoutes = routes.filter(route => route.moduleId === module.id);
-    const first = moduleRoutes[0];
-    return `<article class="overview-card"><div class="overview-card__head"><span class="overview-card__id">MODULE ${e(module.id)}</span>${c.statusTag(`${moduleRoutes.length} 页`, 'info')}</div><h2>${e(module.name)}</h2><p>${e(module.description || '一期业务闭环中的必要管理与处理页面。')}</p><a class="overview-link" href="${e(module.output + hashFor(first))}">进入模块${icon('chevron')}</a></article>`;
-  }).join('')}</section><section class="overview-section"><div class="overview-section__header"><h2>三类业务角色</h2><span>非本角色页面进入通用无权限态</span></div><div class="role-grid">${Object.entries(roleMeta).map(([id, meta]) => `<article class="role-card"><strong>${e(meta.label)} <span class="number">${e(id)}</span></strong><span>${e(meta.description)}</span></article>`).join('')}</div></section><section class="overview-section"><div class="overview-section__header"><h2>37 个业务页索引</h2><span>Frame ID 与 Hash 路由唯一对应</span></div><div class="route-index">${modules.map(module => `<section class="route-group"><h3>${e(module.name)}</h3>${routes.filter(route => route.moduleId === module.id).map(route => `<a href="${e(module.output + hashFor(route))}"><code>${e(route.id)}</code><span>${e(route.title)}</span></a>`).join('')}</section>`).join('')}</div></section></main>`;
-
-  namespace.shell = { roleMeta, hashFor, renderBusiness, renderOverview };
-})(window.GameHubDemo);
+  namespace.shell = { roleMeta, publicTitle, hashFor, renderBusiness };
+})(window.GameHubDeveloperPortal);
