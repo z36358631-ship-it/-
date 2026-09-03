@@ -16,7 +16,9 @@ const css = cssFiles.map(file => read('styles', file).trim()).join('\n\n');
 const runtime = runtimeFiles.map(file => read('runtime', file).trim()).join('\n\n')
   .replaceAll('data-demo-action', 'data-portal-action')
   .replaceAll('demoAction', 'portalAction');
-const escapeJson = value => JSON.stringify(value).replaceAll('<', '\\u003c');
+const escapeJson = value => JSON.stringify(value)
+  .replaceAll('&', '\\u0026')
+  .replaceAll('<', '\\u003c');
 const publicCopy = value => String(value || '')
   .replaceAll('为一个 Game 创建一期唯一 APPID', '为一个 Game 创建唯一 APPID')
   .replaceAll('一期', '当前版本')
@@ -54,10 +56,10 @@ const publicFixtureFor = pageRoutes => ({
 const documentHtml = ({ title, module, pageRoutes }) => `<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>${css}</style></head><body>
 <div id="app"></div>
-<script id="portal-module" type="application/json">${escapeJson(module)}</script>
-<script id="portal-modules" type="application/json">${escapeJson(modules)}</script>
-<script id="portal-routes" type="application/json">${escapeJson(pageRoutes)}</script>
-<script id="portal-data" type="application/json">${escapeJson(publicFixtureFor(pageRoutes))}</script>
+<textarea id="portal-module" hidden aria-hidden="true">${escapeJson(module)}</textarea>
+<textarea id="portal-modules" hidden aria-hidden="true">${escapeJson(modules)}</textarea>
+<textarea id="portal-routes" hidden aria-hidden="true">${escapeJson(pageRoutes)}</textarea>
+<textarea id="portal-data" hidden aria-hidden="true">${escapeJson(publicFixtureFor(pageRoutes))}</textarea>
 <script>${runtime}</script></body></html>
 `;
 

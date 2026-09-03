@@ -55,7 +55,7 @@ test('正式页面保留业务路由、共享组件与对外功能内容', () =>
   for (const component of ['Button', 'Input', 'StatusTag', 'NavItem']) {
     assert.match(p01, new RegExp(`data-component=["']${component}["']|["']data-component["']:\\s*["']${component}["']`), component);
   }
-  for (const token of ['账号密码登录', '使用盖世游戏账号登录', '未注册的账号将在登录时自动注册。', '帮助中心']) assert.ok(p01.includes(token), token);
+  for (const token of ['登录／注册', '使用盖世游戏账号登录', '未注册的账号将在登录时自动注册。', '帮助中心']) assert.ok(p01.includes(token), token);
   for (const token of ['Key 批次', '渠道 API', '接口说明', 'HMAC-SHA256', '下载 CSV']) assert.ok(p02.includes(token), token);
   for (const token of ['精准化投放与发行数据', 'Campaign／UTM 管理', '数据口径']) assert.ok(p04.includes(token), token);
 });
