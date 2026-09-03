@@ -55,15 +55,17 @@ window.GameHubDemo = window.GameHubDemo || {};
     if (target) target.innerHTML = c.resultStrip(memory.result[routeId]);
   };
   const primaryDestination = routeId => ({
-    'P01-01': 'P01-02', 'P01-04': 'P01-05', 'P01-06': 'P01-05',
+    'P01-02': 'P01-04', 'P01-04': 'P01-05', 'P01-05': 'P01-06', 'P01-07': 'P01-03',
+    'P01-08': 'P01-09', 'P01-09': 'P01-10',
     'P02-01': 'P02-02', 'P02-03': 'P02-04',
     'P03-01': 'P03-02', 'P03-02': 'P03-03', 'P03-03': 'P03-04',
     'P03-06': 'P03-07', 'P03-07': 'P03-08', 'P03-09': 'P03-10', 'P03-11': 'P03-12',
-    'P04-01': 'P04-02', 'P04-02': 'P04-03', 'P04-03': 'P04-04', 'P04-05': 'P04-06',
+    'P04-01': 'P04-02', 'P04-02': 'P04-03', 'P04-04': 'P04-05', 'P04-05': 'P04-06', 'P04-06': 'P04-07', 'P04-07': 'P04-08',
   }[routeId]);
   const primaryBusinessAction = routeId => ({
+    'P01-06': 'download-sdk',
+    'P01-08': 'send-password-setup',
     'P03-13': 'resume-download',
-    'P04-09': 'start-campaign',
   }[routeId]);
   const variantForStatus = status => {
     if (/已下架|已结束|失败|已作废|已撤销/.test(status)) return 'danger';
@@ -137,15 +139,6 @@ window.GameHubDemo = window.GameHubDemo || {};
       }
       if (state.game === '已下架') setActionDisabled('unpublish-game', true);
     }
-    if (routeId === 'P04-09') {
-      if (state.plan) setSummaryStatus('计划状态', state.plan);
-      if (state.plan === '投放中') setGateStatus('资源位与时间', '已通过');
-      if (state.plan === '投放中' || state.plan === '已结束') {
-        setActionDisabled('start-campaign', true);
-        setActionDisabled('cancel-schedule', true);
-        root.querySelectorAll('[data-primary-action]').forEach(control => { control.disabled = true; control.setAttribute('aria-disabled', 'true'); });
-      }
-    }
     renderMemoryRecords(state.records || []);
   };
   const updateBusinessState = (routeId, patch, record) => {
@@ -183,17 +176,6 @@ window.GameHubDemo = window.GameHubDemo || {};
       resultMessage(routeId, '游戏已下架', '版本文件、测试和发布历史未删除。', 'danger');
       return true;
     }
-    if (routeId === 'P04-09' && action === 'start-campaign') {
-      updateBusinessState(routeId, { plan: '投放中' }, '启动投放 · 实时门禁校验通过');
-      resultMessage(routeId, '投放已启动', '计划已从已排期进入投放中，刷新后恢复 Fixture。');
-      return true;
-    }
-    if (routeId === 'P04-09' && action === 'cancel-schedule') {
-      if (!requireReason('.form-section textarea', '取消排期原因')) return true;
-      updateBusinessState(routeId, { plan: '已结束' }, '取消排期 · 按 status_action=end 记录');
-      resultMessage(routeId, '排期已取消', '计划已进入已结束，不产生新曝光。', 'warning');
-      return true;
-    }
     return false;
   };
 
@@ -209,15 +191,31 @@ window.GameHubDemo = window.GameHubDemo || {};
       const action = event.currentTarget.dataset.demoAction;
       if (!action || event.currentTarget.disabled) return;
       if (action === 'reset-demo') { location.reload(); return; }
-      if (action === 'start-onboarding' || action === 'back-onboarding') {
-        const showLogin = action === 'start-onboarding';
-        const intro = root.querySelector('[data-onboarding-intro]');
-        const login = root.querySelector('[data-login-panel]');
-        if (intro) intro.hidden = showLogin;
-        if (login) login.hidden = !showLogin;
-        (showLogin ? login?.querySelector('input') : intro?.querySelector('[data-demo-action="start-onboarding"]'))?.focus();
+      if (action === 'gamehub-login' || action === 'password-login') {
+        const showQr = action === 'gamehub-login';
+        const password = root.querySelector('[data-password-login]');
+        const qr = root.querySelector('[data-gamehub-qr]');
+        if (password) password.hidden = showQr;
+        if (qr) qr.hidden = !showQr;
+        (showQr ? qr?.querySelector('[data-demo-action="confirm-gamehub-login"]') : password?.querySelector('input'))?.focus();
         return;
       }
+      if (action === 'refresh-qr') {
+        const status = root.querySelector('[data-qr-status]');
+        const countdown = root.querySelector('[data-qr-countdown]');
+        if (status) status.textContent = '二维码已刷新，请在盖世游戏中确认授权';
+        if (countdown) countdown.textContent = '02:00';
+        resultMessage(route.id, '二维码已刷新', '旧授权请求立即失效，新请求仍绑定当前浏览器会话。', 'info');
+        return;
+      }
+      if (action === 'confirm-gamehub-login') {
+        const status = root.querySelector('[data-qr-status]');
+        if (status) status.textContent = '已扫码并授权成功，正在创建独立平台账号';
+        resultMessage(route.id, '盖世授权成功', '首次授权已原子创建独立 account_id；下一步提交开发者注册资料。');
+        setTimeout(() => navigate({ routeId: 'P01-03', role: 'developer', state: 'default' }), 180);
+        return;
+      }
+      if (action === 'forgot-password') { resultMessage(route.id, '已提交密码找回', '无论账号是否存在均返回相同结果；请检查已验证邮箱。', 'info'); return; }
       if (action === 'open-help') { toggleHelp(true); return; }
       if (action === 'close-help') { toggleHelp(false); return; }
       if (action === 'toggle-faq') {
@@ -256,7 +254,7 @@ window.GameHubDemo = window.GameHubDemo || {};
       }
       if (action === 'create-key-batch') {
         const target = root.querySelector('[data-key-batch-result]');
-        if (!target) return;
+        if (!target) { resultMessage(route.id, '创建 Key 批次入口已打开', '正式流程将校验计划、渠道和额度，并仅提供一次性明文下载。', 'info'); return; }
         target.innerHTML = '<div class="one-time-result" data-key-batch-generating><strong>生成中</strong><span>正在按当前授权范围校验配额并生成盖世平台 Key。</span></div>';
         setActionDisabled('create-key-batch', true);
         setTimeout(() => {
@@ -279,7 +277,7 @@ window.GameHubDemo = window.GameHubDemo || {};
       }
       if (action === 'create-api-credential' || action === 'rotate-api-credential') {
         const target = root.querySelector('[data-credential-result]');
-        if (!target) return;
+        if (!target) { resultMessage(route.id, '创建渠道凭据入口已打开', 'Secret 仅在创建结果中展示一次，凭据不得扩大预授权范围。', 'info'); return; }
         target.innerHTML = `<div class="one-time-result" data-one-time-secret><strong>client_secret 仅显示一次</strong><code>${c.escapeHtml(demoSecret())}</code>${c.button({ label: '我已保存', variant: 'primary', action: 'acknowledge-secret' })}</div>`;
         target.querySelector('[data-demo-action="acknowledge-secret"]')?.addEventListener('click', clickEvent => {
           clickEvent.currentTarget.closest('[data-one-time-secret]')?.remove();
@@ -300,7 +298,9 @@ window.GameHubDemo = window.GameHubDemo || {};
         return;
       }
       if (action === 'api-doc-section') {
-        root.querySelector(`#${event.currentTarget.dataset.apiTarget}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const apiTarget = event.currentTarget.dataset.apiTarget;
+        if (apiTarget) root.querySelector(`#${apiTarget}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        else resultMessage(route.id, '接口说明入口已打开', '渠道 API 使用 HMAC-SHA256、request_id 幂等与分配确认机制。', 'info');
         return;
       }
       if (action === 'filter-api-error') {
@@ -325,6 +325,11 @@ window.GameHubDemo = window.GameHubDemo || {};
       }
       if (action === 'login') { navigate({ routeId: 'P01-02', role: 'developer', state: 'default' }); return; }
       if (action.startsWith('primary-')) {
+        if (route.id === 'P04-03') {
+          const cdkeyModule = modules.find(item => item.id === '02');
+          if (cdkeyModule) location.href = `${cdkeyModule.output}#/P02-01?role=developer&state=default`;
+          return;
+        }
         const businessAction = primaryBusinessAction(route.id);
         if (businessAction && handleBusinessAction(route.id, businessAction)) return;
         const destination = primaryDestination(route.id);
@@ -333,6 +338,23 @@ window.GameHubDemo = window.GameHubDemo || {};
         return;
       }
       if (handleBusinessAction(route.id, action)) return;
+      if (action === 'record-offline-result') { resultMessage(route.id, '线下结果已保存', '结果、原因、审核人、时间和提交快照已写入当前页面内存审计。'); return; }
+      if (action === 'rollback-release') {
+        updateBusinessState(route.id, { pointer: '0.9.0' }, '回滚历史 Build · 三组 Release Pointer 原子切换');
+        resultMessage(route.id, '回滚配置已提交', '三组 OS／架构 Pointer 已切换到 0.9.0；历史 Build、Manifest 与 Chunk 均保留。', 'warning');
+        return;
+      }
+      if (action === 'create-campaign') { resultMessage(route.id, 'Campaign 已创建', '已生成唯一 campaign_id 与 UTM 追踪链接；不触发自动广告投放。'); return; }
+      if (action === 'submit-resource-request') { resultMessage(route.id, '资源需求已提交', '已生成新修订并进入处理中；该状态不代表资源承诺。', 'info'); return; }
+      if (action === 'generate-export') {
+        const target = root.querySelector('[data-export-result]');
+        if (target) target.innerHTML = '<div class="one-time-result"><strong>聚合文件生成成功</strong><span>export_demo_001 · 120 行 · XLSX／CSV；下载地址短期有效。</span></div>';
+        resultMessage(route.id, '聚合文件已生成', '文件复用 query_snapshot_demo_20260903，未包含用户、订单、设备或 Key 明文。');
+        return;
+      }
+      if (action === 'download-sdk') { resultMessage(route.id, 'SDK 下载已准备', '演示不下载真实文件；三系统 SDK 版本和 SHA-256 校验值保持可追溯。', 'info'); return; }
+      if (action === 'open-sdk-docs') { resultMessage(route.id, '接入文档入口已检查', '正式环境将打开受控 Google Docs；离线 Demo 不发起远程请求。', 'info'); return; }
+      if (action === 'send-password-setup') { resultMessage(route.id, '密码设置邮件已发送', '仅向已验证邮箱发送；不会创建第二个 account_id。', 'info'); return; }
       if (action === 'save-draft') {
         const now = new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date());
         memory.page[route.id] = { savedAt: now };

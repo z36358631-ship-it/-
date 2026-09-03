@@ -13,14 +13,14 @@ const outputs = [
   '04-精准投放与数据demo.html',
 ];
 
-test('构建前验证 Demo 与 Figma 的页面契约一致', () => {
+test('构建前验证 Demo 与 4 份最新 PRD 的页面契约一致', () => {
   const output = execFileSync(process.execPath, [path.join(demoDir, 'build.mjs')], {
     stdio: 'pipe',
     encoding: 'utf8',
   });
   assert.match(
     output,
-    /Figma contract verified: 6 pages, 37 frames \(9\/6\/13\/9\), 5 source hashes\./,
+    /Latest PRD contract verified: 4 documents, 37 pages \(10\/6\/13\/8\), version 2026-09-03\./,
   );
 });
 
@@ -60,7 +60,7 @@ test('构建产物包含总览索引、Hash 路由和共享组件契约', () => 
 test('CDKEY 自助与帮助内容进入离线构建产物且没有远程依赖', () => {
   const p01 = fs.readFileSync(path.join(demoDir, '01-开发者平台与资料demo.html'), 'utf8');
   const p02 = fs.readFileSync(path.join(demoDir, '02-CDKEY商品与供给demo.html'), 'utf8');
-  for (const token of ['开始入驻', '帮助中心']) assert.ok(p01.includes(token), token);
+  for (const token of ['账号密码登录', '使用盖世游戏账号登录', '二维码已失效', '帮助中心']) assert.ok(p01.includes(token), token);
   for (const token of ['Key 批次', '渠道 API', '接口说明', 'HMAC-SHA256']) assert.ok(p02.includes(token), token);
   for (const html of [p01, p02]) {
     assert.doesNotMatch(html, /<script[^>]+src=/i);

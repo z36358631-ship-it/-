@@ -78,7 +78,7 @@ try {
     await page.close();
   }
 
-  for (const routeId of ['P01-01', 'P01-02', 'P02-01', 'P02-03', 'P03-12', 'P04-04']) {
+  for (const routeId of ['P01-01', 'P01-03', 'P01-06', 'P02-01', 'P03-03', 'P03-12', 'P04-01', 'P04-05', 'P04-08']) {
     const route = routes.find(item => item.id === routeId);
     const { page } = await preparePage(browser, route, { width: 1280, height: 800 });
     await screenshot(page, `1280x800-${routeId}.png`);
@@ -86,10 +86,10 @@ try {
   }
 
   const p01 = routes.find(item => item.id === 'P01-01');
-  const onboarding = await preparePage(browser, p01, { width: 1440, height: 900 });
-  await onboarding.page.locator('[data-demo-action="start-onboarding"]').click();
-  await screenshot(onboarding.page, '1440x900-P01-01-login-step.png');
-  await onboarding.page.close();
+  const login = await preparePage(browser, p01, { width: 1440, height: 900 });
+  await login.page.locator('[data-demo-action="gamehub-login"]').click();
+  await screenshot(login.page, '1440x900-P01-01-gamehub-qr.png');
+  await login.page.close();
 
   const p02 = routes.find(item => item.id === 'P02-01');
   const cdkey = await preparePage(browser, p02, { width: 1440, height: 900 });

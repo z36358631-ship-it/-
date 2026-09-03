@@ -5,8 +5,8 @@ window.GameHubDemo = window.GameHubDemo || {};
   const e = c.escapeHtml;
   const icon = name => namespace.icons.render(name);
   const roleMeta = {
-    developer: { label: '开发者', roleName: '受邀开发者', description: '维护资料、提交包体与投放需求，并在授权内自助准备 CDKEY。' },
-    operations: { label: '发行运营', roleName: '平台发行运营', description: '负责资料审核、供给关联、版本发布与投放执行。' },
+    developer: { label: '开发者', roleName: '已认证开发者', description: '维护资料、接入三系统 SDK、提交 Build，并管理 CDKEY、Campaign 与聚合数据。' },
+    operations: { label: '发行运营', roleName: '平台发行运营', description: '维护账号映射、录入线下结果、配置供给并执行版本发布。' },
     tester: { label: '测试人员', roleName: '平台测试人员', description: '仅处理分配给本人的待测任务，历史结果不可覆盖。' },
   };
   const moduleIcon = { '01': 'vendor', '02': 'key', '03': 'build', '04': 'target' };
@@ -76,10 +76,10 @@ window.GameHubDemo = window.GameHubDemo || {};
     return `<div class="demo-stage"><main class="product-frame${isLogin ? ' is-login' : ''}" data-frame-id="${e(route.id)}" data-role="${e(role)}" data-template-id="${e(route.templateId)}" data-page-state="${e(state)}">${renderTopBar({ module, fixture, role, redacted })}${isLogin ? '' : renderSideNav({ routes, route, role })}<section class="workspace">${isLogin ? '' : renderContext({ fixture, redacted })}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(fixture.helpCenter)}</section></main>${renderReviewTools({ routes, route, role, state })}</div>`;
   };
 
-  const renderOverview = ({ modules, routes }) => `<main class="overview-page"><section class="overview-hero"><div class="overview-kicker">GAMEHUB DEVELOPER BACKEND / MVP</div><h1 class="overview-title">开发者后台一期评审总览</h1><p class="overview-copy">围绕单厂商、单游戏、Windows 单包体的乙方发行闭环，共 4 个模块、37 个业务页，包含已有 CDKEY 商品与供给能力，以及精准投放方案 A。</p><div class="overview-note">${icon('info')}<span>仅供评审，不属于正式后台功能；不发起真实接口请求。</span></div></section><section class="overview-grid">${modules.map(module => {
+  const renderOverview = ({ modules, routes }) => `<main class="overview-page"><section class="overview-hero"><div class="overview-kicker">GAMEHUB DEVELOPER BACKEND / MVP</div><h1 class="overview-title">开发者后台一期评审总览</h1><p class="overview-copy">以 4 份最新 PRD 为唯一业务基线，共 4 个模块、37 个业务页（10／6／13／8），覆盖独立平台双登录、三系统发行、双链 CDKEY 供给、经营数据与轻量渠道归因。</p><div class="overview-note">${icon('info')}<span>仅供评审，不属于正式后台功能；不发起真实接口请求。</span></div></section><section class="overview-grid">${modules.map(module => {
     const moduleRoutes = routes.filter(route => route.moduleId === module.id);
     const first = moduleRoutes[0];
-    return `<article class="overview-card"><div class="overview-card__head"><span class="overview-card__id">MODULE ${e(module.id)}</span>${c.statusTag(`${moduleRoutes.length} 页`, 'info')}</div><h2>${e(module.name)}</h2><p>${e(module.id === '02' ? '平台已有 CDKEY 供给能力，一期补齐开发者与运营管理视图。' : module.id === '04' ? '开发者提需求，运营配规则并执行，开发者只读 T+1 聚合结果。' : '一期业务闭环中的必要管理与处理页面。')}</p><a class="overview-link" href="${e(module.output + hashFor(first))}">进入模块${icon('chevron')}</a></article>`;
+    return `<article class="overview-card"><div class="overview-card__head"><span class="overview-card__id">MODULE ${e(module.id)}</span>${c.statusTag(`${moduleRoutes.length} 页`, 'info')}</div><h2>${e(module.name)}</h2><p>${e(module.description || '一期业务闭环中的必要管理与处理页面。')}</p><a class="overview-link" href="${e(module.output + hashFor(first))}">进入模块${icon('chevron')}</a></article>`;
   }).join('')}</section><section class="overview-section"><div class="overview-section__header"><h2>三类业务角色</h2><span>非本角色页面进入通用无权限态</span></div><div class="role-grid">${Object.entries(roleMeta).map(([id, meta]) => `<article class="role-card"><strong>${e(meta.label)} <span class="number">${e(id)}</span></strong><span>${e(meta.description)}</span></article>`).join('')}</div></section><section class="overview-section"><div class="overview-section__header"><h2>37 个业务页索引</h2><span>Frame ID 与 Hash 路由唯一对应</span></div><div class="route-index">${modules.map(module => `<section class="route-group"><h3>${e(module.name)}</h3>${routes.filter(route => route.moduleId === module.id).map(route => `<a href="${e(module.output + hashFor(route))}"><code>${e(route.id)}</code><span>${e(route.title)}</span></a>`).join('')}</section>`).join('')}</div></section></main>`;
 
   namespace.shell = { roleMeta, hashFor, renderBusiness, renderOverview };

@@ -6,7 +6,7 @@ import path from 'node:path';
 const root = process.cwd();
 const readJson = relative => JSON.parse(fs.readFileSync(path.join(root, relative), 'utf8'));
 
-test('37 个 Frame ID 唯一且模块数量为 9/6/13/9', () => {
+test('37 个 PRD 页面路由唯一且模块数量为 10/6/13/8', () => {
   const routes = readJson('demos/开发者后台一期/src/routes.json');
   assert.equal(routes.length, 37);
   assert.equal(new Set(routes.map(item => item.id)).size, 37);
@@ -15,7 +15,7 @@ test('37 个 Frame ID 唯一且模块数量为 9/6/13/9', () => {
       moduleId,
       routes.filter(item => item.moduleId === moduleId).length,
     ])),
-    { '01': 9, '02': 6, '03': 13, '04': 9 },
+    { '01': 10, '02': 6, '03': 13, '04': 8 },
   );
 });
 
@@ -35,9 +35,9 @@ test('模板和角色只能使用已确认枚举', () => {
 
 test('帮助中心和 P02-01 四个任务态不增加业务路由', () => {
   const routes = readJson('demos/开发者后台一期/src/routes.json');
-  const fixture = readJson('demos/开发者后台一期/src/fixtures.json');
   assert.equal(routes.length, 37);
   assert.equal(routes.filter(item => item.id === 'P02-01').length, 1);
-  assert.deepEqual(fixture.pages['P02-01'].cdkeySelfService.tabs, ['商品与供给', 'Key 批次', '渠道 API', '接口说明']);
-  assert.equal(fixture.helpCenter.faq.length, 8);
+  assert.equal(routes.some(item => /帮助中心/.test(item.title)), false);
+  assert.equal(routes.some(item => item.id === 'P04-09'), false);
+  assert.equal(routes.some(item => item.id === 'P01-10'), true);
 });
