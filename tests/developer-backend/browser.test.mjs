@@ -119,6 +119,7 @@ test('P01-01 支持账号密码登录与当前卡片盖世扫码登录，不展�
     assert.equal(await runtime.page.locator('[data-password-login]').isVisible(), true);
     assert.equal(await runtime.page.locator('[data-gamehub-qr]').isHidden(), true);
     assert.equal(await runtime.page.getByText('注册账号', { exact: true }).count(), 0);
+    assert.equal(await runtime.page.getByText('未注册的账号将在登录时自动注册。', { exact: true }).isVisible(), true);
     await runtime.page.locator('[data-demo-action="forgot-password"]').click();
     assert.match(await runtime.page.locator('[data-runtime-result]').innerText(), /密码找回/);
     await runtime.page.locator('[data-demo-action="gamehub-login"]').click();
