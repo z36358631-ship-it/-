@@ -29,8 +29,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     'P01-06': 'APPID 与 SDK',
     'P01-07': '测试与发布',
     'P01-08': '企业认证审核',
-    'P01-09': '认证内容配置',
-    'P01-10': '游戏资料与上架结果',
+    'P01-09': '企业认证内容配置',
+    'P01-10': '帮助中心',
     'P02-01': 'CDKEY 商品与供给',
     'P02-02': '外部 Key 异常详情',
     'P02-03': '商品与 SKU 管理',
@@ -100,7 +100,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       : '';
     const developerTools = `${consoleLink}${help}${languageSwitch}${accountBlock}${login}`;
     const operationsTools = `${accountBlock}${help}`;
-    return `<header class="top-bar"><button class="brand-block" type="button" data-portal-action="home" aria-label="${role === 'operations' ? '返回发行平台后台首页' : (isEnglish ? 'Back to developer home' : '返回开发者首页')}"><div class="brand-mark">${icon('logo')}</div><div class="brand-copy"><div class="brand-title">${role === 'operations' ? 'gamesir-dashboard' : '盖世游戏'}</div><div class="brand-subtitle">${role === 'operations' ? '运营管理后台' : (isEnglish && role === 'developer' ? 'Developer Platform' : '开发者平台')}</div></div></button>${context}${role === 'developer' ? developerTools : operationsTools}</header>`;
+    const isPublisherWorkspace = module?.id === '02' && role === 'developer';
+    const brandTitle = role === 'operations' ? 'gamesir-dashboard' : isPublisherWorkspace ? 'PC 发行平台' : '盖世游戏';
+    const brandSubtitle = role === 'operations' ? '运营管理后台' : isPublisherWorkspace ? '开发者中心' : (isEnglish && role === 'developer' ? 'Developer Platform' : '开发者平台');
+    return `<header class="top-bar"><button class="brand-block" type="button" data-portal-action="home" aria-label="${role === 'operations' ? '返回发行平台后台首页' : (isEnglish ? 'Back to developer home' : '返回开发者首页')}"><div class="brand-mark">${icon('logo')}</div><div class="brand-copy"><div class="brand-title">${brandTitle}</div><div class="brand-subtitle">${brandSubtitle}</div></div></button>${context}${role === 'developer' ? developerTools : operationsTools}</header>`;
   };
 
   const renderSideNav = ({ routes, route, role, editorMode = 'edit', registration, qualification, language = 'zh' }) => {
@@ -109,22 +112,21 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (role === 'operations' && route.moduleId === '01') {
       const items = [
         ['P01-08', 'vendor', '企业认证审核'],
-        ['P01-09', 'file', '认证内容配置'],
+        ['P01-09', 'file', '企业认证内容配置'],
+        ['P01-10', 'info', '帮助中心'],
       ];
       return `<aside class="side-nav side-nav--operations" data-side-nav data-component="SideNav" data-variant="light"><div class="nav-label">发行平台后台</div><nav class="nav-list" aria-label="发行平台后台">${items.map(([id, iconName, label]) => `<a class="nav-item${route.id === id ? ' is-active' : ''}" href="#/${id}"${route.id === id ? ' aria-current="page"' : ''}>${icon(iconName)}<span>${label}</span></a>`).join('')}<div class="nav-group-label">后续能力</div><span class="nav-item is-disabled">${icon('game')}<span>游戏资料审核</span></span><span class="nav-item is-disabled">${icon('chart')}<span>发行数据管理</span></span></nav></aside>`;
     }
     if (role === 'developer' && route.id === 'P02-01') {
-      const developerModule = '01-开发者平台与资料demo.html';
-      return `<aside class="side-nav side-nav--game" data-side-nav data-component="SideNav" data-variant="dark"><a class="game-nav-back" href="${developerModule}#/P01-02">${icon('chevron')}<span>返回全部游戏</span></a><div class="game-nav-current"><div>${icon('game')}</div><span><strong>星海远征</strong><small>GAME-48291</small></span></div><div class="nav-label">控制台</div><nav class="nav-list" aria-label="单游戏控制台"><a class="nav-item" href="${developerModule}#/P01-04">${icon('chart')}<span>数据总览</span></a><div class="nav-group-label">游戏管理</div><a class="nav-item" href="${developerModule}#/P01-05">${icon('game')}<span>游戏资料</span></a><a class="nav-item" href="${developerModule}#/P01-06">${icon('build')}<span>APPID 与 SDK</span></a><a class="nav-item" href="${developerModule}#/P01-07">${icon('publish')}<span>测试与发布</span></a><div class="nav-group-label">发行与供给</div><a class="nav-item is-active" href="#/P02-01" aria-current="page">${icon('key')}<span>商品与 CDKEY</span></a></nav></aside>`;
+      return '';
     }
     if (role === 'developer' && route.id === 'P01-03') {
       const isEnglish = language === 'en';
-      const activeTab = registration?.consoleTab || (qualification?.status === 'unsubmitted' ? 'overview' : 'qualification');
+      const consoleView = registration?.consoleTab || 'games';
+      const activeTab = consoleView === 'overview' ? 'overview' : 'games';
       const items = [
-        ['overview', 'chart', isEnglish ? 'Overview' : '数据总览'],
         ['games', 'game', isEnglish ? 'Game management' : '游戏管理'],
-        ['resources', 'build', isEnglish ? 'Integration resources' : '接入资料'],
-        ['qualification', 'vendor', isEnglish ? 'Become a developer' : '成为开发者'],
+        ['overview', 'chart', isEnglish ? 'Data overview' : '数据总览'],
       ];
       const navTitle = isEnglish ? 'Platform developer console' : '平台开发者控制台';
       return `<nav class="platform-tab-bar" data-platform-tab-bar aria-label="${navTitle}"><div class="platform-tab-list" role="tablist">${items.map(([value, iconName, label]) => {
@@ -152,13 +154,13 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const context = portalData.context || {};
     if (route.id === 'P01-02') return `<div class="context-bar">${icon('vendor')}<span class="context-value">${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span><span>厂商工作台</span></div>`;
     if (route.id === 'P01-05' && editorMode === 'create') return `<div class="context-bar">${icon('vendor')}<span class="context-value">${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span>${icon('game')}<span>创建游戏</span></div>`;
-    if (route.id === 'P02-01') return `<div class="context-bar">${icon('vendor')}<span>${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span>${icon('game')}<span class="context-value">${e(context.gameName || '未选择游戏')}</span><span class="context-divider">/</span><span>商品与 CDKEY</span></div>`;
+    if (route.id === 'P02-01') return '';
     if (['P01-04', 'P01-05', 'P01-06', 'P01-07'].includes(route.id)) return `<div class="context-bar">${icon('vendor')}<span>${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span>${icon('game')}<span class="context-value">${e(context.gameName || '未选择游戏')}</span><span class="context-divider">/</span><span>${e(publicTitle(route))}</span></div>`;
     return `<div class="context-bar">${icon('vendor')}<span class="context-value">${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span>${icon('game')}<span class="context-value">${e(context.gameName || '未选择游戏')}</span><span class="context-divider">/</span><span>${e(context.versionName || '未选择版本')}</span></div>`;
   };
 
   const renderPageHeader = ({ route, page, state, redacted, editorMode = 'edit' }) => {
-    if (['P01-01', 'P01-02', 'P01-03', 'P01-08', 'P01-09'].includes(route.id)) return '';
+    if (['P01-01', 'P01-02', 'P01-03', 'P01-08', 'P01-09', 'P01-10', 'P02-01'].includes(route.id)) return '';
     const meta = pageMeta[route.id] || {};
     const safeSummary = redacted
       ? '当前账号无法访问此页面，页面内容已隐藏。'
@@ -177,8 +179,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     .replace(unsafeScriptPattern, '')
     .replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*')/gi, '')
     .replace(/javascript:/gi, '');
-  const renderHelpArticle = (article, index, language) => `<article class="help-article" data-help-article="${e(article.id)}"${index === 0 ? '' : ' hidden'}>
-    <div class="help-breadcrumb">${language === 'en' ? 'Help Center' : '帮助中心'}<span>/</span>${e(article.category)}${article.section ? `<span>/</span>${e(article.section)}` : ''}</div>
+  const renderHelpArticle = (article, index, language, parentArticle) => `<article class="help-article" data-help-article="${e(article.id)}"${index === 0 ? '' : ' hidden'}>
+    <div class="help-breadcrumb">${language === 'en' ? 'Help Center' : '帮助中心'}<span>/</span>${e(article.category)}${parentArticle ? `<span>/</span>${e(parentArticle.question)}` : ''}</div>
     <h1>${e(article.question)}</h1>
     ${article.bodyHtml ? `<div class="help-article__rich managed-rich-content">${renderManagedHtml(article.bodyHtml)}</div>` : `<p class="help-article__lead">${e(article.answer)}</p>${article.steps?.length ? `<section><h2>${e(article.sectionTitle || (language === 'en' ? 'Steps' : '操作步骤'))}</h2><ol>${article.steps.map(step => `<li>${renderHelpLine(step)}</li>`).join('')}</ol></section>` : ''}${article.details?.length ? `<section><h2>${e(article.detailTitle || (language === 'en' ? 'Details' : '处理说明'))}</h2><ul>${article.details.map(detail => `<li>${renderHelpLine(detail)}</li>`).join('')}</ul></section>` : ''}`}
     ${article.note ? `<div class="help-note">${icon('info')}<div><strong>${language === 'en' ? 'Note' : '请注意'}</strong><p>${e(article.note)}</p></div></div>` : ''}
@@ -193,24 +195,37 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       steps: [help.contact.supportName, help.contact.serviceHours, help.contact.channel, help.contact.email],
       details: [help.contact.fallback], detailTitle: isEnglish ? 'Urgent issues' : '紧急问题',
     }];
-    const categories = [...new Set(articles.map(article => article.category))];
+    const articleById = new Map(articles.map(article => [article.id, article]));
+    const childArticles = new Map();
+    articles.forEach(article => {
+      const parentId = articleById.has(article.parentId) ? article.parentId : '';
+      if (!childArticles.has(parentId)) childArticles.set(parentId, []);
+      childArticles.get(parentId).push(article);
+    });
+    const visited = new Set();
+    const orderedArticles = [];
+    const appendChildren = (parentId = '', depth = 0) => (childArticles.get(parentId) || []).forEach(article => {
+      if (visited.has(article.id)) return;
+      visited.add(article.id);
+      orderedArticles.push({ article, depth, parentArticle: articleById.get(article.parentId) });
+      appendChildren(article.id, depth + 1);
+    });
+    appendChildren();
+    articles.forEach(article => {
+      if (!visited.has(article.id)) orderedArticles.push({ article, depth: 0, parentArticle: null });
+    });
+    const categories = [...new Set(orderedArticles.map(item => item.article.category))];
     const renderHelpCategory = category => {
-      let currentSection = '';
-      return articles.map((article, index) => {
+      return orderedArticles.map(({ article, depth }, index) => {
         if (article.category !== category) return '';
-        const articleSection = String(article.section || '');
-        const sectionHeading = articleSection && articleSection !== currentSection
-          ? `<h3 class="help-nav-subgroup-title">${e(articleSection)}</h3>`
-          : '';
-        currentSection = articleSection;
-        return `${sectionHeading}<button type="button" data-portal-action="help-topic" data-help-topic="${e(article.id)}" class="help-nav-item${index === 0 ? ' is-active' : ''}"${index === 0 ? ' aria-current="page"' : ''}>${icon('file')}<span>${e(article.question)}</span></button>`;
+        return `<button type="button" data-portal-action="help-topic" data-help-topic="${e(article.id)}" class="help-nav-item${depth > 0 ? ' is-child' : ''}${index === 0 ? ' is-active' : ''}" style="--help-document-depth:${Math.min(depth, 4)}"${index === 0 ? ' aria-current="page"' : ''}>${icon('file')}<span>${e(article.question)}</span></button>`;
       }).join('');
     };
     return `<section class="help-center" data-help-center hidden>
       <header class="help-center__header"><div class="help-center__heading"><h1>${e(help.title)}</h1></div><div class="help-search" role="search"><label class="sr-only" for="help-search-input">${isEnglish ? 'Search help articles' : '搜索帮助文章'}</label><input id="help-search-input" type="search" placeholder="${isEnglish ? 'Search help articles' : '搜索帮助文章'}" autocomplete="off" data-help-search-input><button type="button" data-portal-action="search-help" aria-label="${isEnglish ? 'Search' : '搜索'}">${icon('search')}<span>${isEnglish ? 'Search' : '搜索'}</span></button></div></header>
       <div class="help-library">
         <aside class="help-library__nav"><div class="help-library__nav-title">${isEnglish ? 'Documentation' : '文档目录'}</div><nav aria-label="${isEnglish ? 'Help documentation' : '帮助文档目录'}">${categories.map(category => `<section class="help-nav-group"><h2>${e(category)}</h2>${renderHelpCategory(category)}</section>`).join('')}</nav></aside>
-        <main class="help-library__content"><section class="help-search-results" data-help-search-results hidden></section>${articles.map((article, index) => renderHelpArticle(article, index, language)).join('')}</main>
+        <main class="help-library__content"><section class="help-search-results" data-help-search-results hidden></section>${orderedArticles.map(({ article, parentArticle }, index) => renderHelpArticle(article, index, language, parentArticle)).join('')}</main>
       </div>
     </section>`;
   };
@@ -219,14 +234,17 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const redacted = state === 'permission';
     const isLogin = route.id === 'P01-01' && !redacted;
     const accountTier = registration?.accountTier || 'unselected';
-    const showPlatformConsole = route.id === 'P01-03' && (accountTier === 'registered' || (['pending', 'approved', 'rejected'].includes(qualification?.status) && !qualification?.editing));
+    const showPlatformConsole = route.id === 'P01-03'
+      && !qualification?.readOnly
+      && (accountTier === 'registered' || (['pending', 'approved', 'rejected', 'delisted'].includes(qualification?.status) && !qualification?.editing));
     const isOnboarding = route.id === 'P01-03' && !showPlatformConsole;
     const isEntryChoice = isOnboarding && accountTier === 'unselected' && qualification?.status === 'unsubmitted';
-    const isConfiguration = route.id === 'P01-09';
+    const isConfiguration = ['P01-09', 'P01-10'].includes(route.id);
+    const isPublisherWorkspace = route.id === 'P02-01';
     const helpLanguage = role === 'developer' ? language : 'zh';
     const helpContent = managedContent?.[helpLanguage]?.help || portalData.helpCenter;
-    const frameClass = `${isLogin ? ' is-login' : ''}${isOnboarding ? ' is-onboarding' : ''}${isEntryChoice ? ' is-entry-choice' : ''}${showPlatformConsole ? ' is-platform-console' : ''}`;
-    const showContext = !isLogin && !isOnboarding && !isConfiguration && !showPlatformConsole && route.id !== 'P01-08';
+    const frameClass = `${isLogin ? ' is-login' : ''}${isOnboarding ? ' is-onboarding' : ''}${isEntryChoice ? ' is-entry-choice' : ''}${showPlatformConsole ? ' is-platform-console' : ''}${isPublisherWorkspace ? ' is-publisher-workspace' : ''}`;
+    const showContext = !isLogin && !isOnboarding && !isConfiguration && !showPlatformConsole && !isPublisherWorkspace && route.id !== 'P01-08';
     return `<div class="portal-stage"><main class="product-frame${frameClass}" data-role="${e(role)}" data-page-state="${e(state)}" data-qualification-status="${e(qualification?.status || 'not-applicable')}">${renderTopBar({ module, portalData, role, redacted, isLogin, isOnboarding, qualification, language, registration })}${isLogin || isOnboarding ? '' : renderSideNav({ routes, route, role, editorMode, registration, qualification, language })}<section class="workspace">${showContext ? renderContext({ portalData, redacted, route, editorMode }) : ''}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted, editorMode })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(helpContent, helpLanguage)}</section></main></div>`;
   };
   namespace.shell = { roleMeta, publicTitle, hashFor, renderBusiness };

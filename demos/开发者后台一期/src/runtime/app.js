@@ -23,8 +23,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const qualificationStorageKey = 'gamehub-company-verification-v3';
   const registrationStorageKey = 'gamehub-developer-registration-v1';
   const sessionStorageKey = 'gamehub-developer-session-v1';
+  const accountStatesStorageKey = 'gamehub-developer-account-states-v1';
   const languageStorageKey = 'gamehub-developer-language-v1';
   const managedContentStorageKey = 'gamehub-developer-content-published-v1';
+  const publisherFixtureGameKeys = new Set(['draft', 'reviewing', 'existing', 'pioneer', 'prerelease', 'live', 'delisted']);
   const createQualification = (prefill = true) => ({
     applicationId: 'ENT-20260903-001',
     status: 'unsubmitted',
@@ -52,7 +54,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       signatoryName: '林晨', signatoryTitle: '业务负责人', agreementAccepted: true,
     } : { subjectType: '公司／企业', region: '中国大陆', agreementAccepted: false },
   });
-  const storedQualification = readStorage(localStorage, qualificationStorageKey, null);
+  const storedSession = readStorage(sessionStorage, sessionStorageKey, null);
+  const storedAccountKey = storedSession && typeof storedSession === 'object' ? String(storedSession.accountKey || '') : '';
+  const storedAccountStates = readStorage(localStorage, accountStatesStorageKey, {});
+  const activeStoredAccount = storedAccountKey && storedAccountStates && typeof storedAccountStates === 'object' ? storedAccountStates[storedAccountKey] : null;
+  const storedQualification = activeStoredAccount?.qualification || (storedAccountKey ? null : readStorage(localStorage, qualificationStorageKey, null));
   const defaultQualification = createQualification(false);
   const restoredQualification = storedQualification ? {
     ...defaultQualification,
@@ -68,11 +74,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   delete restoredQualification.form.ndaAccepted;
   delete restoredQualification.form.distributionAccepted;
   delete restoredQualification.form.website;
-  const storedRegistration = readStorage(localStorage, registrationStorageKey, null);
+  const storedRegistration = activeStoredAccount?.registration || (storedAccountKey ? null : readStorage(localStorage, registrationStorageKey, null));
   const hasCompanyVerificationProgress = restoredQualification.status !== 'unsubmitted' || Number(restoredQualification.step) > 0 || Number(restoredQualification.revision) > 0;
   const restoredRegistration = hasCompanyVerificationProgress
-    ? { accountTier: restoredQualification.status === 'delisted' ? 'registered' : 'enterprise', registeredAt: storedRegistration?.registeredAt || restoredQualification.submittedAt || '', consoleTab: storedRegistration?.consoleTab || (restoredQualification.status === 'unsubmitted' ? 'overview' : 'qualification') }
-    : { accountTier: storedRegistration?.accountTier || 'unselected', registeredAt: storedRegistration?.registeredAt || '', consoleTab: storedRegistration?.consoleTab || 'overview' };
+    ? { accountTier: restoredQualification.status === 'delisted' ? 'registered' : 'enterprise', registeredAt: storedRegistration?.registeredAt || restoredQualification.submittedAt || '', consoleTab: storedRegistration?.consoleTab || 'games' }
+    : { accountTier: storedRegistration?.accountTier || 'unselected', registeredAt: storedRegistration?.registeredAt || '', consoleTab: storedRegistration?.consoleTab || 'games' };
   if (!restoredQualification.currentSubmission && Number(restoredQualification.revision) > 0) {
     restoredQualification.currentSubmission = {
       applicationId: restoredQualification.applicationId,
@@ -95,20 +101,109 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   }
   const defaultManagedContent = cloneJson(portalData.managedContent || {});
   const storedManagedContent = readStorage(localStorage, managedContentStorageKey, null);
-  const managedContent = storedManagedContent?.zh && storedManagedContent?.en ? storedManagedContent : defaultManagedContent;
+  const legacyHelpBody = article => {
+    if (String(article?.bodyHtml || '').trim()) return article.bodyHtml;
+    const answer = String(article?.answer || '').trim();
+    const steps = Array.isArray(article?.steps) ? article.steps : [];
+    const details = Array.isArray(article?.details) ? article.details : [];
+    return `${answer ? `<p>${c.escapeHtml(answer)}</p>` : '<p><br></p>'}${steps.length ? `<h2>操作步骤</h2><ol>${steps.map(item => `<li>${c.escapeHtml(item)}</li>`).join('')}</ol>` : ''}${details.length ? `<h2>处理说明</h2><ul>${details.map(item => `<li>${c.escapeHtml(item)}</li>`).join('')}</ul>` : ''}`;
+  };
+  const normalizeManagedContent = source => {
+    const content = cloneJson(source || {});
+    content.zh = content.zh || {};
+    content.en = content.en || {};
+    if (!Array.isArray(content.certificationArticles)) {
+      const articleSources = [
+        ['intro', '认证介绍', 'Introduction', 'introTitle', 'introDescription'],
+        ['nda', '保密协议', 'Confidentiality Agreement', 'ndaTitle', 'ndaBody'],
+        ['cooperation', '合作协议', 'Cooperation Agreement', 'distributionTitle', 'distributionBody'],
+      ];
+      content.certificationArticles = articleSources.map(([position, zhPosition, enPosition, titleKey, bodyKey], index) => ({
+        id: `CERT-ARTICLE-${String(index + 1).padStart(3, '0')}`,
+        position,
+        positionLabel: { zh: zhPosition, en: enPosition },
+        updatedAt: content.publishedAt || '2026-09-03 10:00',
+        zh: { title: content.zh[titleKey] || '', bodyHtml: content.zh[bodyKey] || '' },
+        en: { title: content.en[titleKey] || '', bodyHtml: content.en[bodyKey] || '' },
+      }));
+    }
+    const zhFaq = Array.isArray(content.zh.help?.faq) ? content.zh.help.faq : [];
+    const enFaq = Array.isArray(content.en.help?.faq) ? content.en.help.faq : [];
+    if (!Array.isArray(content.helpNavigations)) {
+      const enById = new Map(enFaq.map(article => [article.id, article]));
+      const categories = [];
+      zhFaq.forEach(article => {
+        const zhTitle = String(article.category || '').trim() || '未分类';
+        if (categories.some(item => item.zh === zhTitle)) return;
+        categories.push({ zh: zhTitle, en: String(enById.get(article.id)?.category || zhTitle).trim() || zhTitle });
+      });
+      enFaq.forEach(article => {
+        const enTitle = String(article.category || '').trim() || 'Uncategorized';
+        if (categories.some(item => item.en === enTitle)) return;
+        categories.push({ zh: enTitle, en: enTitle });
+      });
+      content.helpNavigations = categories.map((category, index) => ({
+        id: `HC-NAV-${String(index + 1).padStart(3, '0')}`,
+        sortOrder: index + 1,
+        updatedAt: content.publishedAt || '2026-09-03 10:00',
+        zh: { title: category.zh },
+        en: { title: category.en },
+      }));
+    }
+    if (!Array.isArray(content.helpDocuments)) {
+      const enById = new Map(enFaq.map(article => [article.id, article]));
+      const zhById = new Map(zhFaq.map(article => [article.id, article]));
+      const ids = [...new Set([...zhFaq.map(article => article.id), ...enFaq.map(article => article.id)])];
+      const counts = new Map();
+      content.helpDocuments = ids.map((id, index) => {
+        const zhArticle = zhById.get(id) || {};
+        const enArticle = enById.get(id) || {};
+        const navigation = content.helpNavigations.find(item => item.zh?.title === zhArticle.category || item.en?.title === enArticle.category) || content.helpNavigations[0];
+        const navigationId = navigation?.id || '';
+        const nextOrder = (counts.get(navigationId) || 0) + 1;
+        counts.set(navigationId, nextOrder);
+        return {
+          id: /^HC-DOC-/i.test(String(id || '')) ? id : `HC-DOC-${String(index + 1).padStart(3, '0')}`,
+          legacyId: id,
+          navigationId,
+          sortOrder: nextOrder,
+          updatedAt: content.publishedAt || '2026-09-03 10:00',
+          zh: { title: zhArticle.question || '', bodyHtml: legacyHelpBody(zhArticle) },
+          en: { title: enArticle.question || '', bodyHtml: legacyHelpBody(enArticle) },
+        };
+      });
+    }
+    return content;
+  };
+  const managedContent = normalizeManagedContent(storedManagedContent?.zh && storedManagedContent?.en ? storedManagedContent : defaultManagedContent);
   const memory = {
     page: Object.create(null),
     result: Object.create(null),
     upload: Object.create(null),
     business: Object.create(null),
     shell: { helpOpen: false, scrollTop: 0, language: readStorage(localStorage, languageStorageKey, 'zh') },
-    session: { authenticated: readStorage(sessionStorage, sessionStorageKey, false) },
+    session: { authenticated: Boolean(storedAccountKey && storedSession?.authenticated), accountKey: storedAccountKey },
     registration: restoredRegistration,
     qualification: restoredQualification,
     qualificationPreview: null,
     managedContent,
     operationsReview: { view: 'list', actionMode: '', attachmentMode: '', selectedApplicationId: '' },
-    contentEditor: { language: 'zh', section: 'intro', view: 'list', selectedArticleIndex: 0, draft: cloneJson(managedContent) },
+    contentEditor: {
+      language: 'zh',
+      view: 'list',
+      entity: '',
+      helpTab: 'navigation',
+      selectedId: '',
+      search: '',
+      navigationFilter: '',
+      deleteTarget: null,
+      issuedIds: new Set([
+        ...(managedContent.certificationArticles || []).map(item => item.id),
+        ...(managedContent.helpNavigations || []).map(item => item.id),
+        ...(managedContent.helpDocuments || []).map(item => item.id),
+      ]),
+      draft: cloneJson(managedContent),
+    },
   };
   try {
     const handoff = JSON.parse(window.name || 'null');
@@ -118,6 +213,24 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       memory.qualification = { ...memory.qualification, status: 'approved', editing: false };
     }
   } catch { /* window.name 不是本平台交接数据时忽略 */ }
+  if (moduleConfig.id === '02') {
+    memory.session.authenticated = true;
+    memory.registration = { ...memory.registration, accountTier: 'enterprise', consoleTab: 'games' };
+    memory.qualification = { ...memory.qualification, status: 'approved', editing: false };
+    memory.page['P02-01'] = {
+      workspaceView: 'games',
+      gameTab: 'overview',
+      gameSection: 'release-overview',
+      selectedGame: 'existing',
+      addGameOpen: false,
+      cdkeyTab: 0,
+      gameSearch: '',
+      gameStatusFilter: 'all',
+      gameMenuOpen: '',
+      deleteGameKey: '',
+      deletedGameKeys: [],
+    };
+  }
   const fallbackPage = route => ({
     summary: `${namespace.shell.publicTitle(route)}暂时无法加载，请稍后重试。`,
     status: '加载失败',
@@ -129,22 +242,59 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const query = new URLSearchParams(queryPart);
     const requested = routes.find(item => item.id === routePart);
     let route = requested || routes.find(item => item.id === moduleConfig.defaultRoute) || routes[0];
-    const previewApproved = moduleConfig.id === '01' && query.get('preview') === 'approved';
-    if (previewApproved) {
+    const previewStatus = moduleConfig.id === '01' && ['pending', 'approved', 'rejected', 'delisted'].includes(query.get('preview')) ? query.get('preview') : '';
+    if (previewStatus) {
+      const previewSubmittedAt = '2026-09-02 10:30';
+      const previewForm = { ...createQualification(true).form, ...(memory.qualification.form || {}) };
+      const previewApplicationId = memory.qualification.applicationId || 'ENT-20260903-001';
+      const previewSubmission = memory.qualification.currentSubmission || {
+        applicationId: previewApplicationId,
+        revision: 1,
+        submittedAt: previewSubmittedAt,
+        acceptedContentRevision: Number(memory.managedContent.revision) || 1,
+        agreementAcceptedAt: previewSubmittedAt,
+        agreementAcceptedBy: '企业用户 王明',
+        form: cloneJson(previewForm),
+      };
       memory.session.authenticated = true;
-      memory.registration = { ...memory.registration, accountTier: 'enterprise' };
-      memory.qualification = { ...memory.qualification, status: 'approved', editing: false };
+      memory.registration = { ...memory.registration, accountTier: 'enterprise', registeredAt: memory.registration.registeredAt || previewSubmittedAt, consoleTab: memory.registration.consoleTab || 'games' };
+      memory.qualification = {
+        ...memory.qualification,
+        applicationId: previewApplicationId,
+        status: previewStatus,
+        editing: false,
+        repairReason: '',
+        revision: Math.max(1, Number(memory.qualification.revision) || 0),
+        submittedAt: previewSubmittedAt,
+        rejectReason: previewStatus === 'rejected'
+          ? (memory.qualification.rejectReason || '工商执照证明图片不清晰，请上传完整、无遮挡的彩色扫描件。')
+          : '',
+        delistReason: previewStatus === 'delisted'
+          ? (memory.qualification.delistReason || '发现企业主体信息发生变更，请联系开发者支持确认恢复条件。')
+          : '',
+        form: previewForm,
+        currentSubmission: previewSubmission,
+        submissions: memory.qualification.submissions?.length ? memory.qualification.submissions : [cloneJson(previewSubmission)],
+        history: memory.qualification.history?.length ? memory.qualification.history : [{ action: '提交企业认证申请 REV-01', actor: '企业用户 王明', time: previewSubmittedAt }],
+      };
+      if (previewStatus !== 'pending') {
+        memory.qualification.notification = buildReviewNotification({
+          status: previewStatus,
+          vendorName: previewForm.vendorName,
+          email: previewForm.email,
+          mobile: previewForm.mobile,
+          sentAt: memory.qualification.reviewedAt || '2026-09-04 10:30',
+          mode: 'preview',
+        });
+      } else {
+        memory.qualification.notification = null;
+      }
     }
     if (moduleConfig.id === '01' && route?.role === 'developer') {
       if (requested?.id === 'P01-01') route = requested;
       else if (!memory.session.authenticated) route = routes.find(item => item.id === 'P01-01') || route;
       else if (memory.qualification.status !== 'approved') route = routes.find(item => item.id === 'P01-03') || route;
       else if (!requested) route = routes.find(item => item.id === 'P01-02') || route;
-    }
-    if (moduleConfig.id === '02' && route?.role === 'developer' && (!memory.session.authenticated || memory.qualification.status !== 'approved')) {
-      const developerModule = modules.find(item => item.id === '01');
-      const destination = memory.session.authenticated ? 'P01-03' : 'P01-01';
-      if (developerModule) location.replace(`${developerModule.output}#/${destination}`);
     }
     const role = route.role;
     const state = 'default';
@@ -159,8 +309,58 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (location.hash === nextHash) render();
     else location.hash = nextHash;
   };
-  const persistQualification = () => writeStorage(localStorage, qualificationStorageKey, memory.qualification);
-  const persistRegistration = () => writeStorage(localStorage, registrationStorageKey, memory.registration);
+  const clearPreviewQuery = () => {
+    const raw = location.hash.replace(/^#\/?/, '');
+    const [routePart] = raw.split('?');
+    if (!routePart || !raw.includes('?')) return;
+    history.replaceState(null, '', `${location.href.split('#')[0]}#/${routePart}`);
+  };
+  const persistAccountState = () => {
+    const accountKey = String(memory.session.accountKey || '');
+    if (!accountKey) return false;
+    const accountStates = readStorage(localStorage, accountStatesStorageKey, {});
+    const nextAccountStates = accountStates && typeof accountStates === 'object' ? accountStates : {};
+    nextAccountStates[accountKey] = {
+      registration: cloneJson(memory.registration),
+      qualification: cloneJson(memory.qualification),
+    };
+    writeStorage(localStorage, accountStatesStorageKey, nextAccountStates);
+    return true;
+  };
+  const persistQualification = () => {
+    if (!persistAccountState()) writeStorage(localStorage, qualificationStorageKey, memory.qualification);
+  };
+  const persistRegistration = () => {
+    if (!persistAccountState()) writeStorage(localStorage, registrationStorageKey, memory.registration);
+  };
+  const switchDeveloperAccount = accountKey => {
+    const normalizedAccountKey = String(accountKey || '').trim();
+    if (!normalizedAccountKey) return;
+    const accountStates = readStorage(localStorage, accountStatesStorageKey, {});
+    const storedAccount = accountStates && typeof accountStates === 'object' ? accountStates[normalizedAccountKey] : null;
+    const accountQualification = storedAccount?.qualification;
+    const accountRegistration = storedAccount?.registration;
+    const blankQualification = createQualification(false);
+    const storedQualificationForm = accountQualification?.form && typeof accountQualification.form === 'object' ? cloneJson(accountQualification.form) : {};
+    memory.session = { authenticated: true, accountKey: normalizedAccountKey };
+    memory.registration = accountRegistration
+      ? { accountTier: accountRegistration.accountTier || 'unselected', registeredAt: accountRegistration.registeredAt || '', consoleTab: accountRegistration.consoleTab || 'games' }
+      : { accountTier: 'unselected', registeredAt: '', consoleTab: 'games' };
+    memory.qualification = accountQualification
+      ? {
+        ...blankQualification,
+        ...cloneJson(accountQualification),
+        editing: false,
+        form: { ...blankQualification.form, ...storedQualificationForm },
+        history: cloneJson(accountQualification.history || []),
+        submissions: cloneJson(accountQualification.submissions || []),
+      }
+      : blankQualification;
+    memory.qualificationPreview = null;
+    delete memory.result['P01-03'];
+    writeStorage(sessionStorage, sessionStorageKey, memory.session);
+    persistAccountState();
+  };
   const nowText = () => new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
   const sanitizeManagedHtml = value => {
     const template = document.createElement('template');
@@ -188,37 +388,95 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     cursor[keys.at(-1)] = value;
   };
   const collectManagedContentForm = () => {
-    const locale = memory.contentEditor.draft?.[memory.contentEditor.language];
-    if (!locale) return;
+    const draft = memory.contentEditor.draft;
+    if (!draft) return;
     root.querySelectorAll('[data-content-editor-form] [data-content-path]').forEach(field => {
       const value = field.hasAttribute('data-rich-editor-body')
         ? sanitizeManagedHtml(field.innerHTML)
         : String(field.value || '').trim();
-      setNestedValue(locale, field.dataset.contentPath, value);
+      setNestedValue(draft, field.dataset.contentPath, value);
     });
   };
+  const managedText = value => String(value || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ').trim();
   const validateManagedContent = content => {
-    const labels = {
-      zh: { introTitle: '中文认证介绍标题', introDescription: '中文认证介绍正文', ndaTitle: '中文保密协议标题', ndaBody: '中文保密协议正文', distributionTitle: '中文发行协议标题', distributionBody: '中文发行协议正文' },
-      en: { introTitle: 'English introduction title', introDescription: 'English introduction content', ndaTitle: 'English NDA title', ndaBody: 'English NDA content', distributionTitle: 'English Distribution Agreement title', distributionBody: 'English Distribution Agreement content' },
-    };
+    const positions = ['intro', 'nda', 'cooperation'];
+    const articles = Array.isArray(content?.certificationArticles) ? content.certificationArticles : [];
+    for (const position of positions) {
+      const matches = articles.filter(article => article.position === position);
+      if (matches.length !== 1) return { language: 'zh', entity: 'certification', routeId: 'P01-09', label: `${position === 'intro' ? '认证介绍' : position === 'nda' ? '保密协议' : '合作协议'}文章` };
+    }
     for (const language of ['zh', 'en']) {
-      const locale = content?.[language] || {};
-      for (const path of Object.keys(labels[language])) {
-        if (!String(locale[path] || '').trim()) return { language, section: path.startsWith('intro') ? 'intro' : path.startsWith('nda') ? 'nda' : 'distribution', label: labels[language][path] };
-      }
-      if (!String(locale.help?.title || '').trim()) return { language, section: 'help', label: language === 'zh' ? '中文帮助中心标题' : 'English Help Center title' };
-      if (!Array.isArray(locale.help?.faq) || locale.help.faq.length < 4) return { language, section: 'help', label: language === 'zh' ? '中文帮助文章' : 'English help articles' };
-      for (const article of locale.help.faq) {
-        if (!String(article.category || '').trim() || !String(article.question || '').trim() || !String(article.bodyHtml || article.answer || '').replace(/<[^>]+>/g, '').trim()) {
-          return { language, section: 'help', label: language === 'zh' ? '中文帮助文章分类、标题和正文' : 'English help article category, title and content' };
+      for (const article of articles) {
+        if (!String(article?.[language]?.title || '').trim() || !managedText(article?.[language]?.bodyHtml)) {
+          return { language, entity: 'certification', selectedId: article.id, routeId: 'P01-09', label: language === 'zh' ? '中文认证文章标题和正文' : 'English certification article title and content' };
         }
       }
+      for (const navigation of content.helpNavigations || []) {
+        if (!String(navigation?.[language]?.title || '').trim()) {
+          return { language, entity: 'navigation', selectedId: navigation.id, routeId: 'P01-10', label: language === 'zh' ? '中文导航名称' : 'English navigation title' };
+        }
+      }
+      const navigationIds = new Set((content.helpNavigations || []).map(item => item.id));
+      for (const document of content.helpDocuments || []) {
+        if (!navigationIds.has(document.navigationId) || !String(document?.[language]?.title || '').trim() || !managedText(document?.[language]?.bodyHtml)) {
+          return { language, entity: 'document', selectedId: document.id, routeId: 'P01-10', label: language === 'zh' ? '中文子文档导航、标题和正文' : 'English document navigation, title and content' };
+        }
+      }
+      const locale = content?.[language] || {};
       for (const field of ['supportName', 'serviceHours', 'channel', 'fallback']) {
-        if (!String(locale.help?.contact?.[field] || '').trim()) return { language, section: 'help', label: language === 'zh' ? '中文联系支持文案' : 'English support contact copy' };
+        if (!String(locale.help?.contact?.[field] || '').trim()) return { language, entity: 'help', routeId: 'P01-10', label: language === 'zh' ? '中文联系支持文案' : 'English support contact copy' };
       }
     }
     return null;
+  };
+  const syncManagedContentPublicFields = content => {
+    const result = cloneJson(content);
+    const byPosition = new Map((result.certificationArticles || []).map(article => [article.position, article]));
+    const fieldMap = {
+      intro: ['introTitle', 'introDescription'],
+      nda: ['ndaTitle', 'ndaBody'],
+      cooperation: ['distributionTitle', 'distributionBody'],
+    };
+    const navigations = [...(result.helpNavigations || [])].sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder));
+    const navigationById = new Map(navigations.map(item => [item.id, item]));
+    const documents = [...(result.helpDocuments || [])].sort((a, b) => {
+      const navDifference = Number(navigationById.get(a.navigationId)?.sortOrder || 0) - Number(navigationById.get(b.navigationId)?.sortOrder || 0);
+      return navDifference || Number(a.sortOrder) - Number(b.sortOrder);
+    });
+    for (const language of ['zh', 'en']) {
+      result[language] = result[language] || {};
+      for (const [position, fields] of Object.entries(fieldMap)) {
+        const article = byPosition.get(position);
+        result[language][fields[0]] = article?.[language]?.title || '';
+        result[language][fields[1]] = article?.[language]?.bodyHtml || '';
+      }
+      result[language].help = result[language].help || { title: language === 'zh' ? '帮助中心' : 'Help Center', contact: {} };
+      result[language].help.faq = documents.map(document => ({
+        id: document.id,
+        navigationId: document.navigationId,
+        category: navigationById.get(document.navigationId)?.[language]?.title || '',
+        question: document?.[language]?.title || '',
+        bodyHtml: document?.[language]?.bodyHtml || '',
+      }));
+    }
+    return result;
+  };
+  const contentCollection = entity => ({
+    certification: 'certificationArticles',
+    navigation: 'helpNavigations',
+    document: 'helpDocuments',
+  }[entity] || '');
+  const nextContentId = entity => {
+    const prefix = { certification: 'CERT-ARTICLE', navigation: 'HC-NAV', document: 'HC-DOC' }[entity] || 'CONTENT';
+    let sequence = 1;
+    let id = `${prefix}-${String(sequence).padStart(3, '0')}`;
+    while (memory.contentEditor.issuedIds.has(id)) id = `${prefix}-${String(++sequence).padStart(3, '0')}`;
+    memory.contentEditor.issuedIds.add(id);
+    return id;
+  };
+  const resequenceContent = (items, filter = () => true) => {
+    let order = 1;
+    items.filter(filter).sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0)).forEach(item => { item.sortOrder = order++; });
   };
   const collectQualificationForm = () => {
     const form = { ...(memory.qualification.form || {}) };
@@ -310,6 +568,27 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const target = root.querySelector('[data-developer-login]:not([hidden]) [data-login-result]') || root.querySelector('[data-runtime-result]');
     if (target) target.innerHTML = c.resultStrip(memory.result[routeId]);
   };
+  const developerPortalUrl = 'https://developer.xiaoji.com';
+  const buildReviewNotification = ({ status, vendorName, email, mobile, sentAt = '', mode = 'sent' }) => {
+    const name = vendorName || '星海互动';
+    const statusCopy = status === 'approved'
+      ? `您申请的开发者“${name}”已通过审核，详情可前往开发者后台查看：${developerPortalUrl}`
+      : status === 'delisted'
+        ? `您的开发者“${name}”发行资格已被下架，具体原因可前往开发者后台查看：${developerPortalUrl}`
+        : `您申请的开发者“${name}”审核未通过，具体原因可前往开发者后台查看：${developerPortalUrl}`;
+    return {
+      status: mode === 'preview' ? '已发送（Demo）' : mode === 'sent' ? '已发送' : mode,
+      sentAt,
+      reasonVisibility: status === 'approved' ? 'none' : 'platform-only',
+      developerPortalUrl,
+      sms: { recipient: mobile || '未填写', content: `【盖世游戏】${statusCopy}` },
+      email: {
+        recipient: email || '未填写',
+        subject: '盖世游戏开发者认证审核结果通知',
+        content: `您好，${statusCopy}。\n\n如需进一步协助，请联系 dev@xiaoji.com。`,
+      },
+    };
+  };
   const applyQualificationReview = (routeId, nextStatus, reason = '') => {
     const currentStatus = memory.qualification.status;
     const allowed = (nextStatus === 'approved' || nextStatus === 'rejected') ? currentStatus === 'pending' : nextStatus === 'delisted' && currentStatus === 'approved';
@@ -320,6 +599,15 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     }
     const reviewedAt = nowText();
     const actor = '平台运营 李然';
+    const submittedForm = memory.qualification.currentSubmission?.form || memory.qualification.form || {};
+    const notification = buildReviewNotification({
+      status: nextStatus,
+      vendorName: submittedForm.vendorName,
+      email: submittedForm.email,
+      mobile: submittedForm.mobile,
+      sentAt: reviewedAt,
+      mode: 'sent',
+    });
     const actionText = nextStatus === 'approved'
       ? '企业认证审核通过'
       : nextStatus === 'rejected'
@@ -334,12 +622,13 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       delistedAt: nextStatus === 'delisted' ? reviewedAt : '',
       delistedBy: nextStatus === 'delisted' ? actor : '',
       delistReason: nextStatus === 'delisted' ? reason : '',
+      notification,
       history: [...(memory.qualification.history || []), { action: actionText, actor, time: reviewedAt }],
     };
     memory.registration = {
       ...memory.registration,
       accountTier: nextStatus === 'approved' ? 'enterprise' : nextStatus === 'delisted' ? 'registered' : memory.registration.accountTier,
-      consoleTab: 'qualification',
+      consoleTab: 'games',
     };
     memory.qualificationPreview = null;
     memory.operationsReview.actionMode = '';
@@ -347,10 +636,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     persistQualification();
     delete memory.result['P01-03'];
     memory.result[routeId] = nextStatus === 'approved'
-      ? { title: '企业认证已通过', detail: '发行合作权限已开通，处理结果已同步至企业用户。', variant: 'success' }
+      ? { title: '企业认证已通过', detail: '发行合作权限已开通，短信和邮件已生成固定通知任务。', variant: 'success' }
       : nextStatus === 'rejected'
-        ? { title: '企业认证已拒绝', detail: '拒绝原因已同步至企业用户，原提交快照和处理记录继续保留。', variant: 'danger' }
-        : { title: '发行资格已下架', detail: '发行合作权限已收回；企业仍可登录查看原因和历史记录。', variant: 'danger' };
+        ? { title: '企业认证已拒绝', detail: '拒绝原因仅在开发者后台展示；短信和邮件已生成固定通知任务。', variant: 'danger' }
+        : { title: '发行资格已下架', detail: '下架原因仅在开发者后台展示；短信和邮件已生成固定通知任务。', variant: 'danger' };
+    // 运营审核会改变真实业务状态；清除 Demo 预览参数，避免下一次渲染又被 ?preview=pending 覆盖。
+    clearPreviewQuery();
     render();
     return true;
   };
@@ -495,6 +786,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       tab.tabIndex = active ? 0 : -1;
     });
   };
+  const updatePublisherWorkspace = patch => {
+    const routeId = 'P02-01';
+    memory.page[routeId] = { ...(memory.page[routeId] || {}), ...patch };
+    render();
+  };
   const createSecret = () => {
     const bytes = new Uint8Array(8);
     crypto.getRandomValues(bytes);
@@ -577,11 +873,23 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
 
   const bindInteractions = ({ route, role, state }) => {
+    root.querySelectorAll('a[href^="#/"]:not([data-demo-action])').forEach(link => link.addEventListener('click', event => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      const nextHash = event.currentTarget.getAttribute('href');
+      if (!nextHash) return;
+      if (location.hash === nextHash) render();
+      else location.hash = nextHash;
+    }));
     root.querySelectorAll('[data-portal-action]').forEach(control => control.addEventListener('click', event => {
       const action = event.currentTarget.dataset.portalAction;
       if (!action || event.currentTarget.disabled) return;
       if (action === 'home') {
         memory.shell.helpOpen = false;
+        if (moduleConfig.id === '02') {
+          updatePublisherWorkspace({ workspaceView: 'games', addGameOpen: false, gameMenuOpen: '' });
+          return;
+        }
         navigate({ routeId: role === 'operations' ? 'P01-08' : 'P01-01', state: 'default' });
         return;
       }
@@ -597,9 +905,151 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         event.currentTarget.setAttribute('aria-expanded', String(open));
         return;
       }
+      if (route.id === 'P02-01' && action === 'publisher-tab') {
+        const requested = event.currentTarget.dataset.publisherTab;
+        updatePublisherWorkspace({ workspaceView: requested === 'data' ? 'data' : 'games', addGameOpen: false });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'publisher-game-search') {
+        updatePublisherWorkspace({
+          workspaceView: 'games',
+          gameSearch: root.querySelector('[data-publisher-game-search]')?.value.trim() || '',
+          gameStatusFilter: root.querySelector('[data-publisher-game-status]')?.value || 'all',
+          gameMenuOpen: '',
+          addGameOpen: false,
+        });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'publisher-game-menu') {
+        const gameKey = event.currentTarget.dataset.publisherGame || '';
+        updatePublisherWorkspace({ gameMenuOpen: memory.page[route.id]?.gameMenuOpen === gameKey ? '' : gameKey });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'publisher-request-delete-game') {
+        const gameKey = event.currentTarget.dataset.publisherGame || '';
+        if (!['draft', 'created'].includes(gameKey)) return;
+        if (gameKey === 'draft' && (memory.page[route.id]?.deletedGameKeys || []).includes('draft')) return;
+        if (gameKey === 'created' && !memory.page[route.id]?.createdGame) return;
+        updatePublisherWorkspace({ deleteGameKey: gameKey, gameMenuOpen: '', addGameOpen: false });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'publisher-cancel-delete-game') {
+        updatePublisherWorkspace({ deleteGameKey: '', gameMenuOpen: '' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'publisher-confirm-delete-game') {
+        const gameKey = event.currentTarget.dataset.publisherGame || memory.page[route.id]?.deleteGameKey || '';
+        if (gameKey === 'draft') {
+          const deletedGameKeys = [...new Set([...(memory.page[route.id]?.deletedGameKeys || []), 'draft'])];
+          updatePublisherWorkspace({ deletedGameKeys, deleteGameKey: '', gameMenuOpen: '', selectedGame: 'existing', workspaceView: 'games' });
+          return;
+        }
+        if (gameKey === 'created') {
+          updatePublisherWorkspace({ createdGame: null, deleteGameKey: '', gameMenuOpen: '', selectedGame: '', workspaceView: 'games' });
+        }
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'publisher-copy-game-id') {
+        const gameId = event.currentTarget.dataset.gameId || '';
+        updatePublisherWorkspace({ gameMenuOpen: '' });
+        resultMessage(route.id, 'Game ID 已准备复制', `${gameId} 可用于后台查询与接口配置。`, 'info');
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'open-add-game') {
+        updatePublisherWorkspace({ workspaceView: 'games', addGameOpen: true, gameMenuOpen: '' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'close-add-game') {
+        updatePublisherWorkspace({ addGameOpen: false });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'create-publisher-game') {
+        const nameField = root.querySelector('input[name="publisherGameName"]');
+        const developerField = root.querySelector('input[name="publisherDeveloperName"]');
+        const systemsField = root.querySelector('select[name="publisherSystems"]');
+        const releaseMethodField = root.querySelector('select[name="publisherReleaseMethod"]');
+        const name = String(nameField?.value || '').trim();
+        if (!name) {
+          nameField?.setAttribute('aria-invalid', 'true');
+          nameField?.focus();
+          resultMessage(route.id, '请填写游戏名称', '创建项目前需先填写游戏名称。', 'warning');
+          return;
+        }
+        memory.page[route.id] = {
+          ...(memory.page[route.id] || {}),
+          workspaceView: 'games',
+          addGameOpen: false,
+          gameMenuOpen: '',
+          createdGame: {
+            name,
+            developer: String(developerField?.value || '星海互动').trim(),
+            systems: String(systemsField?.value || 'Windows'),
+            releaseMethod: String(releaseMethodField?.value || '盖世直接下载'),
+            gameId: 'GAME-58302',
+          },
+        };
+        resultMessage(route.id, '游戏项目已创建', `已生成 Game ID GAME-58302；${name}当前为草稿，不代表通过发行审核。`);
+        render();
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'enter-publisher-game') {
+        const requestedGame = event.currentTarget.dataset.publisherGame || 'existing';
+        if (!publisherFixtureGameKeys.has(requestedGame) && requestedGame !== 'created') return;
+        if ((memory.page[route.id]?.deletedGameKeys || []).includes(requestedGame)) return;
+        if (requestedGame === 'created' && !memory.page[route.id]?.createdGame) return;
+        updatePublisherWorkspace({ workspaceView: 'game', selectedGame: requestedGame, gameTab: 'overview', gameSection: 'release-overview', addGameOpen: false, gameMenuOpen: '' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'back-publisher-games') {
+        updatePublisherWorkspace({ workspaceView: 'games', addGameOpen: false, gameMenuOpen: '' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'enter-publisher-review') {
+        const requestedGame = event.currentTarget.dataset.publisherGame || 'existing';
+        if (!publisherFixtureGameKeys.has(requestedGame) && requestedGame !== 'created') return;
+        if ((memory.page[route.id]?.deletedGameKeys || []).includes(requestedGame)) return;
+        if (requestedGame === 'created' && !memory.page[route.id]?.createdGame) return;
+        updatePublisherWorkspace({ workspaceView: 'game', selectedGame: requestedGame, gameTab: 'overview', gameSection: 'review-records', addGameOpen: false, gameMenuOpen: '' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'publisher-open-cdkey') {
+        updatePublisherWorkspace({ workspaceView: 'game', selectedGame: 'existing', gameTab: 'store', gameSection: 'cdkey', cdkeyTab: 0, addGameOpen: false, gameMenuOpen: '' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'game-console-tab') {
+        const requested = event.currentTarget.dataset.gameTab || 'overview';
+        const defaults = { overview: 'release-overview', store: 'store-profile', operations: 'announcements', services: 'appid-sdk', analytics: 'core-metrics' };
+        const requestedSection = event.currentTarget.dataset.gameSection;
+        updatePublisherWorkspace({ gameTab: defaults[requested] ? requested : 'overview', gameSection: requestedSection || defaults[requested] || defaults.overview });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'game-console-section') {
+        updatePublisherWorkspace({ gameSection: event.currentTarget.dataset.gameSection || 'release-overview' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'publisher-upload-build') {
+        resultMessage(route.id, '已打开 PC 包体上传任务', '支持分片上传与断点续传；完成后再进行文件完整性校验。', 'info');
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'publisher-demo-feedback') {
+        event.currentTarget.blur();
+        return;
+      }
       if (action === 'create-game') {
+        if (route.id === 'P01-03') {
+          memory.registration = { ...memory.registration, consoleTab: 'game-create', verificationNoticeOpen: false };
+          persistRegistration();
+          render();
+          return;
+        }
         memory.page['P01-05'] = { ...(memory.page['P01-05'] || {}), editorMode: 'create' };
         navigate({ routeId: 'P01-05', state: 'default' });
+        return;
+      }
+      if (action === 'back-to-game-management') {
+        memory.registration = { ...memory.registration, consoleTab: 'games' };
+        persistRegistration();
+        render();
         return;
       }
       if (action === 'enter-game-console') {
@@ -645,12 +1095,18 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (action === 'create-game-project') {
+        if (route.id === 'P01-03') {
+          memory.registration = { ...memory.registration, consoleTab: 'games', createdGame: true };
+          persistRegistration();
+          resultMessage(route.id, '游戏项目已创建', '已生成 Game ID；游戏资料、商店与服务接入由后续 PRD 继续定义。');
+          render();
+          return;
+        }
         resultMessage(route.id, '游戏项目已创建', '系统将为新项目生成独立 Game ID，并在建档完成后生成唯一 APPID。');
         return;
       }
       if (action === 'gamehub-login') {
-        memory.session.authenticated = true;
-        writeStorage(sessionStorage, sessionStorageKey, true);
+        switchDeveloperAccount('gamehub:demo-user');
         navigate({ routeId: 'P01-03', state: 'default' });
         return;
       }
@@ -680,13 +1136,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (action === 'register-platform-developer') {
-        memory.registration = { accountTier: 'registered', registeredAt: nowText(), consoleTab: 'overview' };
+        memory.registration = { accountTier: 'registered', registeredAt: nowText(), consoleTab: 'games' };
         persistRegistration();
         render();
         return;
       }
       if (action === 'platform-console-tab') {
-        memory.registration = { ...memory.registration, consoleTab: event.currentTarget.dataset.platformConsoleTab || 'overview' };
+        const requestedTab = event.currentTarget.dataset.platformConsoleTab || 'games';
+        memory.registration = { ...memory.registration, consoleTab: ['games', 'overview'].includes(requestedTab) ? requestedTab : 'games', verificationNoticeOpen: false };
         persistRegistration();
         render();
         return;
@@ -710,10 +1167,82 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (action === 'start-company-verification') {
-        memory.registration = { ...memory.registration, accountTier: 'enterprise', consoleTab: 'qualification' };
+        if (memory.qualification.status === 'pending') {
+          memory.registration = { ...memory.registration, accountTier: 'enterprise', consoleTab: 'games', verificationNoticeOpen: true, verificationNoticeSource: event.currentTarget.closest('[data-account-menu]') ? 'account-menu' : 'game-notice' };
+          persistRegistration();
+          render();
+          requestAnimationFrame(() => root.querySelector('[data-existing-application-modal] [data-demo-action="qualification-existing-close"]')?.focus());
+          return;
+        }
+        memory.registration = { ...memory.registration, accountTier: 'enterprise', consoleTab: 'games', verificationNoticeOpen: false };
         memory.qualification = { ...memory.qualification, step: 1, view: memory.qualification.status === 'rejected' ? 'form' : 'intro', editing: memory.qualification.status === 'rejected' };
         persistRegistration();
         render();
+        return;
+      }
+      if (action === 'qualification-existing-open') {
+        memory.registration = { ...memory.registration, accountTier: 'enterprise', registeredAt: memory.registration.registeredAt || memory.qualification.submittedAt || '2026-09-02 10:30', consoleTab: 'games', verificationNoticeOpen: false, verificationNoticeSource: '' };
+        memory.qualification = { ...memory.qualification, view: 'form', readOnly: true, editing: false };
+        persistRegistration();
+        render();
+        requestAnimationFrame(() => root.querySelector('[data-qualification-form-page]')?.focus());
+        return;
+      }
+      if (action === 'qualification-withdraw') {
+        const withdrawnAt = nowText();
+        memory.qualificationPreview = null;
+        memory.qualification = {
+          ...memory.qualification,
+          status: 'unsubmitted',
+          step: 1,
+          view: 'form',
+          readOnly: false,
+          editing: false,
+          repairReason: '',
+          rejectReason: '',
+          delistReason: '',
+          reviewedAt: '',
+          reviewer: '',
+          notification: null,
+          form: cloneJson(memory.qualification.currentSubmission?.form || memory.qualification.form || createQualification(false).form),
+          history: [...(memory.qualification.history || []), { action: '企业用户撤回认证申请', actor: '企业用户 王明', time: withdrawnAt }],
+        };
+        memory.registration = { ...memory.registration, accountTier: 'enterprise', consoleTab: 'games', verificationNoticeOpen: false };
+        delete memory.result[route.id];
+        persistRegistration();
+        persistQualification();
+        clearPreviewQuery();
+        render();
+        requestAnimationFrame(() => root.querySelector('[data-qualification-form-page]')?.focus());
+        return;
+      }
+      if (action === 'qualification-resubmit-delisted') {
+        const repairReason = memory.qualificationPreview?.delistReason || memory.qualification.delistReason || '';
+        memory.qualificationPreview = null;
+        memory.qualification = {
+          ...memory.qualification,
+          step: 1,
+          view: 'form',
+          readOnly: false,
+          editing: true,
+          repairReason,
+          form: cloneJson(memory.qualification.currentSubmission?.form || memory.qualification.form || createQualification(false).form),
+        };
+        memory.registration = { ...memory.registration, accountTier: 'enterprise', consoleTab: 'games', verificationNoticeOpen: false };
+        delete memory.result[route.id];
+        clearPreviewQuery();
+        render();
+        requestAnimationFrame(() => root.querySelector('[data-qualification-form-page]')?.focus());
+        return;
+      }
+      if (action === 'qualification-existing-close') {
+        const restoreSelector = memory.registration.verificationNoticeSource === 'account-menu'
+          ? '[data-portal-action="toggle-account-menu"]'
+          : '[data-demo-action="qualification-existing-open"]';
+        memory.registration = { ...memory.registration, verificationNoticeOpen: false, verificationNoticeSource: '' };
+        persistRegistration();
+        render();
+        requestAnimationFrame(() => root.querySelector(restoreSelector)?.focus());
         return;
       }
       if (action === 'qualification-view') {
@@ -723,8 +1252,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (action === 'back-to-platform-console') {
-        memory.registration = { ...memory.registration, accountTier: 'registered', consoleTab: 'qualification' };
-        memory.qualification = { ...memory.qualification, view: 'intro', editing: false };
+        memory.registration = { ...memory.registration, accountTier: 'registered', consoleTab: 'games', verificationNoticeOpen: false };
+        memory.qualification = { ...memory.qualification, view: 'intro', readOnly: false, editing: false };
         persistRegistration();
         render();
         return;
@@ -826,16 +1355,21 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           submittedAt,
           reviewedAt: '',
           reviewer: '',
+          repairReason: '',
           rejectReason: '',
+          delistReason: '',
+          notification: null,
           form,
           currentSubmission: submission,
           submissions: [...(memory.qualification.submissions || []), cloneJson(submission)],
           history: [...(memory.qualification.history || []), { action: `提交企业认证申请 REV-${String(revision).padStart(2, '0')}`, actor: '企业用户 王明', time: submittedAt }],
         };
-        memory.registration = { ...memory.registration, accountTier: 'enterprise', registeredAt: memory.registration.registeredAt || submittedAt, consoleTab: 'qualification' };
+        memory.registration = { ...memory.registration, accountTier: 'enterprise', registeredAt: memory.registration.registeredAt || submittedAt, consoleTab: 'games', verificationNoticeOpen: false };
         persistRegistration();
         persistQualification();
-        memory.result[route.id] = { title: '企业认证资料已提交', detail: '当前状态为待审核，提交成功不等于认证通过。', variant: 'success' };
+        // 提交后的待审核状态统一由控制台顶部提示条承载，避免旧的结果条与审核中提示重复展示。
+        delete memory.result[route.id];
+        clearPreviewQuery();
         render();
         return;
       }
@@ -843,12 +1377,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const repairReason = memory.qualificationPreview?.rejectReason || memory.qualification.rejectReason || '';
         memory.qualificationPreview = null;
         memory.qualification.editing = true;
+        memory.qualification.readOnly = false;
         memory.qualification.step = 1;
         memory.qualification.view = 'form';
         memory.qualification.repairReason = repairReason;
         memory.qualification.form = cloneJson(memory.qualification.currentSubmission?.form || memory.qualification.form || createQualification(false).form);
-        memory.registration = { ...memory.registration, accountTier: 'enterprise', consoleTab: 'qualification' };
+        memory.registration = { ...memory.registration, accountTier: 'enterprise', consoleTab: 'games', verificationNoticeOpen: false };
         delete memory.result[route.id];
+        clearPreviewQuery();
         render();
         requestAnimationFrame(() => root.querySelector('[data-qualification-section="subject"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
         return;
@@ -914,7 +1450,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         root.querySelector('[data-portal-action="qualification-review-filter"]')?.click();
         return;
       }
-      if (['qualification-preview-pending', 'qualification-preview-approved', 'qualification-preview-rejected'].includes(action)) {
+      if (['qualification-preview-pending', 'qualification-preview-approved', 'qualification-preview-rejected', 'qualification-preview-delisted'].includes(action)) {
         const nextStatus = action.replace('qualification-preview-', '');
         const reviewedAt = nextStatus === 'pending' ? '' : nowText();
         const isEnglish = memory.shell.language === 'en';
@@ -923,18 +1459,33 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const previewHistory = cloneJson(lastSubmissionIndex >= 0 ? sourceHistory.slice(0, lastSubmissionIndex + 1) : sourceHistory.filter(item => !item.previewStatus));
         if (nextStatus === 'approved') previewHistory.push({ action: isEnglish ? 'Company verification approved' : '企业认证审核通过', actor: isEnglish ? 'Platform operations' : '平台运营 李然', time: reviewedAt, previewStatus: true });
         if (nextStatus === 'rejected') previewHistory.push({ action: isEnglish ? 'Company verification rejected: The business license image is unclear.' : '企业认证审核拒绝：工商执照证明图片不清晰，请上传完整、无遮挡的彩色扫描件。', actor: isEnglish ? 'Platform operations' : '平台运营 李然', time: reviewedAt, previewStatus: true });
+        if (nextStatus === 'delisted') previewHistory.push({ action: isEnglish ? 'Publishing access delisted: Contact developer support.' : '企业发行合作资格已下架：请联系开发者支持。', actor: isEnglish ? 'Platform operations' : '平台运营 李然', time: reviewedAt, previewStatus: true });
+        const previewForm = { ...createQualification(true).form, ...(memory.qualification.form || {}) };
         memory.qualificationPreview = {
           ...memory.qualification,
           status: nextStatus,
           editing: false,
+          repairReason: '',
           reviewedAt,
           reviewer: nextStatus === 'pending' ? '' : (isEnglish ? 'Platform operations' : '平台运营 李然'),
           rejectReason: nextStatus === 'rejected'
             ? (isEnglish ? 'The business license image is unclear. Upload a complete, unobstructed color scan.' : '工商执照证明图片不清晰，请上传完整、无遮挡的彩色扫描件。')
             : '',
+          delistReason: nextStatus === 'delisted'
+            ? (isEnglish ? 'Company publishing access was delisted. Contact developer support to confirm recovery conditions.' : '发现企业主体信息发生变更，请联系开发者支持确认恢复条件。')
+            : '',
+          notification: nextStatus === 'pending' ? null : buildReviewNotification({
+            status: nextStatus,
+            vendorName: previewForm.vendorName,
+            email: previewForm.email,
+            mobile: previewForm.mobile,
+            sentAt: reviewedAt,
+            mode: 'preview',
+          }),
           history: previewHistory,
         };
         delete memory.result[route.id];
+        clearPreviewQuery();
         render();
         return;
       }
@@ -948,27 +1499,137 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         render();
         return;
       }
-      if (action === 'content-section') {
+      if (action === 'content-help-tab') {
         collectManagedContentForm();
-        const nextSection = event.currentTarget.dataset.contentSection;
-        if (['intro', 'nda', 'distribution', 'help'].includes(nextSection)) {
-          memory.contentEditor.section = nextSection;
-          memory.contentEditor.view = 'list';
-        }
-        render();
-        return;
-      }
-      if (action === 'content-help-edit') {
-        collectManagedContentForm();
-        memory.contentEditor.section = 'help';
-        memory.contentEditor.view = 'article';
-        memory.contentEditor.selectedArticleIndex = Number(event.currentTarget.dataset.articleIndex) || 0;
-        render();
-        return;
-      }
-      if (action === 'content-help-back') {
-        collectManagedContentForm();
+        memory.contentEditor.helpTab = event.currentTarget.dataset.contentHelpTab === 'document' ? 'document' : 'navigation';
         memory.contentEditor.view = 'list';
+        memory.contentEditor.entity = '';
+        memory.contentEditor.selectedId = '';
+        memory.contentEditor.search = '';
+        render();
+        return;
+      }
+      if (action === 'content-create') {
+        collectManagedContentForm();
+        const entity = event.currentTarget.dataset.contentEntity;
+        const collectionName = contentCollection(entity);
+        const collection = memory.contentEditor.draft?.[collectionName];
+        if (!collectionName || !Array.isArray(collection)) return;
+        let item;
+        if (entity === 'certification') {
+          const positions = ['intro', 'nda', 'cooperation'];
+          const nextPosition = positions.find(position => !collection.some(article => article.position === position));
+          if (!nextPosition) {
+            resultMessage(route.id, '暂无可创建的文章位置', '认证介绍、保密协议和合作协议均已配置；删除对应文章后可重新创建。', 'warning');
+            return;
+          }
+          item = { id: nextContentId(entity), position: nextPosition, updatedAt: nowText(), zh: { title: '', bodyHtml: '<p><br></p>' }, en: { title: '', bodyHtml: '<p><br></p>' } };
+        } else if (entity === 'navigation') {
+          item = { id: nextContentId(entity), sortOrder: collection.length + 1, updatedAt: nowText(), zh: { title: '未命名导航' }, en: { title: 'Untitled navigation' } };
+          memory.contentEditor.helpTab = 'navigation';
+        } else if (entity === 'document') {
+          const navigation = [...(memory.contentEditor.draft.helpNavigations || [])].sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder))[0];
+          if (!navigation) {
+            resultMessage(route.id, '请先创建导航', '目录子文档必须归属于一个已存在的导航。', 'warning');
+            return;
+          }
+          const order = (collection.filter(document => document.navigationId === navigation.id).length || 0) + 1;
+          item = { id: nextContentId(entity), navigationId: navigation.id, sortOrder: order, updatedAt: nowText(), zh: { title: '未命名子文档', bodyHtml: '<p><br></p>' }, en: { title: 'Untitled document', bodyHtml: '<p><br></p>' } };
+          memory.contentEditor.helpTab = 'document';
+        } else {
+          return;
+        }
+        collection.push(item);
+        memory.contentEditor.entity = entity;
+        memory.contentEditor.selectedId = item.id;
+        memory.contentEditor.view = 'editor';
+        delete memory.result[route.id];
+        render();
+        return;
+      }
+      if (action === 'content-edit') {
+        collectManagedContentForm();
+        memory.contentEditor.entity = event.currentTarget.dataset.contentEntity || '';
+        memory.contentEditor.selectedId = event.currentTarget.dataset.contentId || '';
+        memory.contentEditor.view = 'editor';
+        delete memory.result[route.id];
+        render();
+        return;
+      }
+      if (action === 'content-back') {
+        collectManagedContentForm();
+        const collection = memory.contentEditor.draft?.[contentCollection(memory.contentEditor.entity)] || [];
+        const selected = collection.find(item => item.id === memory.contentEditor.selectedId);
+        if (selected) selected.updatedAt = nowText();
+        memory.contentEditor.view = 'list';
+        memory.contentEditor.entity = '';
+        memory.contentEditor.selectedId = '';
+        resultMessage(route.id, '内容已保存到当前编辑版本', '点击“保存并生效”后同步到开发者端。', 'success');
+        render();
+        return;
+      }
+      if (action === 'content-delete-open') {
+        memory.contentEditor.deleteTarget = { entity: event.currentTarget.dataset.contentEntity || '', id: event.currentTarget.dataset.contentId || '' };
+        render();
+        return;
+      }
+      if (action === 'content-delete-close') {
+        memory.contentEditor.deleteTarget = null;
+        render();
+        return;
+      }
+      if (action === 'content-delete-confirm') {
+        const target = memory.contentEditor.deleteTarget || {};
+        const collectionName = contentCollection(target.entity);
+        const collection = memory.contentEditor.draft?.[collectionName] || [];
+        const index = collection.findIndex(item => item.id === target.id);
+        if (target.entity === 'navigation' && (memory.contentEditor.draft.helpDocuments || []).some(document => document.navigationId === target.id)) {
+          memory.contentEditor.deleteTarget = null;
+          resultMessage(route.id, '该导航仍有子文档，无法删除', '请先迁移或删除该导航下的目录子文档。', 'warning');
+          render();
+          return;
+        }
+        if (index >= 0) {
+          const [removed] = collection.splice(index, 1);
+          if (target.entity === 'navigation') resequenceContent(collection);
+          if (target.entity === 'document') resequenceContent(collection, item => item.navigationId === removed.navigationId);
+          memory.contentEditor.deleteTarget = null;
+          memory.contentEditor.view = 'list';
+          resultMessage(route.id, '删除成功', `${removed.id} 已从当前编辑版本移除，保存并生效后同步到开发者端。`, 'success');
+          render();
+          return;
+        }
+        memory.contentEditor.deleteTarget = null;
+        render();
+        return;
+      }
+      if (action === 'content-sort') {
+        collectManagedContentForm();
+        const entity = event.currentTarget.dataset.contentEntity || '';
+        const id = event.currentTarget.dataset.contentId || '';
+        const direction = event.currentTarget.dataset.contentDirection === 'down' ? 1 : -1;
+        const collection = memory.contentEditor.draft?.[contentCollection(entity)] || [];
+        const current = collection.find(item => item.id === id);
+        if (!current || entity === 'certification') return;
+        const group = collection.filter(item => entity !== 'document' || item.navigationId === current.navigationId).sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder));
+        const index = group.findIndex(item => item.id === id);
+        const target = group[index + direction];
+        if (!target) return;
+        const currentOrder = current.sortOrder;
+        current.sortOrder = target.sortOrder;
+        target.sortOrder = currentOrder;
+        current.updatedAt = nowText();
+        render();
+        return;
+      }
+      if (action === 'content-search') {
+        memory.contentEditor.search = root.querySelector('[data-content-search]')?.value.trim() || '';
+        render();
+        return;
+      }
+      if (action === 'content-search-reset') {
+        memory.contentEditor.search = '';
+        memory.contentEditor.navigationFilter = '';
         render();
         return;
       }
@@ -998,26 +1659,27 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const issue = validateManagedContent(memory.contentEditor.draft);
         if (issue) {
           memory.contentEditor.language = issue.language;
-          memory.contentEditor.section = issue.section;
-          memory.result[route.id] = { title: `请完善${issue.label}`, detail: '中文和 English 的四类内容均完整后才会生成新的生效版本；当前已发布内容不受影响。', variant: 'warning' };
+          memory.contentEditor.entity = issue.entity || '';
+          memory.contentEditor.selectedId = issue.selectedId || '';
+          memory.contentEditor.view = issue.selectedId ? 'editor' : 'list';
+          memory.result[route.id] = { title: `请完善${issue.label}`, detail: '中文和 English 内容、文章位置及导航关系全部有效后才会生成新版本；当前已发布内容不受影响。', variant: 'warning' };
           render();
           return;
         }
         const publishedAt = nowText();
         const nextRevision = (Number(memory.managedContent.revision) || 0) + 1;
-        const published = {
+        const published = syncManagedContentPublicFields({
+          ...cloneJson(memory.contentEditor.draft),
           revision: nextRevision,
           publishedAt,
           publishedBy: '平台运营 李然',
-          zh: cloneJson(memory.contentEditor.draft.zh),
-          en: cloneJson(memory.contentEditor.draft.en),
-        };
+        });
         published.zh.help.contact.email = 'dev@xiaoji.com';
         published.en.help.contact.email = 'dev@xiaoji.com';
         memory.managedContent = published;
         memory.contentEditor.draft = cloneJson(published);
         writeStorage(localStorage, managedContentStorageKey, published);
-        memory.result[route.id] = { title: `内容 V${nextRevision} 已保存并生效`, detail: '认证介绍、两份协议和帮助中心的中英文内容已原子发布，开发者端将读取此版本。', variant: 'success' };
+        memory.result[route.id] = { title: `内容 V${nextRevision} 已保存并生效`, detail: '企业认证文章、帮助导航和目录子文档的中文与 English 内容已原子发布。', variant: 'success' };
         render();
         return;
       }
@@ -1115,6 +1777,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (action === 'view-supply-exception') {
+        if (route.id === 'P02-01') {
+          resultMessage(route.id, '外部 Key 库存低于阈值', '该类 Key 只能由供应商或运营受控入库，平台不生成、不替换。', 'warning');
+          return;
+        }
         const target = routes.find(item => item.id === 'P02-02');
         if (target) navigate({ routeId: target.id, state: 'default' });
         return;
@@ -1246,8 +1912,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         setLoginFieldMessage(activePanel, 'code');
         memory.shell.language = language;
         writeStorage(localStorage, languageStorageKey, language);
-        memory.session.authenticated = true;
-        writeStorage(sessionStorage, sessionStorageKey, true);
+        const accountValue = account.value.trim();
+        const accountKey = language === 'zh' ? `phone:${accountValue}` : `email:${accountValue.toLowerCase()}`;
+        switchDeveloperAccount(accountKey);
         navigate({ routeId: 'P01-03', state: 'default' });
         return;
       }
@@ -1374,6 +2041,45 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       event.preventDefault();
       root.querySelector('[data-portal-action="qualification-review-filter"]')?.click();
     });
+    root.querySelector('[data-content-search]')?.addEventListener('keydown', event => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      root.querySelector('[data-portal-action="content-search"]')?.click();
+    });
+    root.querySelector('[data-publisher-game-search]')?.addEventListener('keydown', event => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      root.querySelector('[data-portal-action="publisher-game-search"]')?.click();
+    });
+    root.querySelector('[data-content-navigation-filter]')?.addEventListener('change', event => {
+      memory.contentEditor.navigationFilter = event.currentTarget.value || '';
+      render();
+    });
+    root.querySelector('[data-content-navigation-select]')?.addEventListener('change', event => {
+      const documents = memory.contentEditor.draft?.helpDocuments || [];
+      const selected = documents.find(item => item.id === memory.contentEditor.selectedId);
+      if (!selected) return;
+      const previousNavigationId = selected.navigationId;
+      collectManagedContentForm();
+      if (selected.navigationId !== previousNavigationId) {
+        resequenceContent(documents, item => item.navigationId === previousNavigationId);
+        const targetItems = documents.filter(item => item.id !== selected.id && item.navigationId === selected.navigationId);
+        selected.sortOrder = targetItems.length + 1;
+        selected.updatedAt = nowText();
+      }
+    });
+    root.querySelectorAll('[data-platform-tab-bar] [role="tab"]').forEach((tab, index, tabs) => tab.addEventListener('keydown', event => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const targetIndex = event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? tabs.length - 1
+          : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      const targetValue = tabs[targetIndex].dataset.platformConsoleTab;
+      tabs[targetIndex].click();
+      requestAnimationFrame(() => root.querySelector(`[data-platform-console-tab="${targetValue}"]`)?.focus());
+    }));
     root.querySelectorAll('[data-qualification-file]').forEach(input => input.addEventListener('change', event => {
       const file = event.currentTarget.files?.[0];
       const nameField = event.currentTarget.dataset.qualificationFile;
@@ -1443,8 +2149,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       ? memory.qualificationPreview
       : memory.qualification;
     document.documentElement.lang = memory.shell.language === 'en' && role === 'developer' ? 'en' : 'zh-CN';
-    const content = namespace.templates.render({ route, page, state, editorMode, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, contentEditor: memory.contentEditor, operationsReview: memory.operationsReview, registration: memory.registration, authenticated: memory.session.authenticated });
+    const content = namespace.templates.render({ route, page, state, editorMode, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, contentEditor: memory.contentEditor, operationsReview: memory.operationsReview, registration: memory.registration, authenticated: memory.session.authenticated, workspaceState: memory.page[route.id] || {} });
     root.innerHTML = namespace.shell.renderBusiness({ module: moduleConfig, routes, route, page, portalData, role, state, editorMode, content, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, registration: memory.registration });
+    if (role === 'developer' && route.id === 'P01-03' && qualificationForView.readOnly && qualificationForView.status === 'pending') {
+      root.querySelector('.qualification-pending-note')?.insertAdjacentHTML('beforeend', c.button({ label: memory.shell.language === 'en' ? 'Withdraw application' : '撤回申请', variant: 'danger', action: 'qualification-withdraw', size: 'small' }));
+    }
     if (memory.result[route.id] && state === 'default') {
       const target = root.querySelector('[data-runtime-result]');
       if (target) target.innerHTML = c.resultStrip(memory.result[route.id]);
@@ -1466,7 +2175,29 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
 
   addEventListener('hashchange', render);
   addEventListener('keydown', event => {
+    const existingApplicationModal = root.querySelector('[data-existing-application-modal]');
+    if (event.key === 'Tab' && existingApplicationModal) {
+      const focusable = [...existingApplicationModal.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+        .filter(node => !node.hidden && node.getClientRects().length > 0);
+      if (focusable.length) {
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+      return;
+    }
     if (event.key !== 'Escape') return;
+    if (existingApplicationModal) {
+      const restoreSelector = memory.registration.verificationNoticeSource === 'account-menu'
+        ? '[data-portal-action="toggle-account-menu"]'
+        : '[data-demo-action="qualification-existing-open"]';
+      memory.registration = { ...memory.registration, verificationNoticeOpen: false, verificationNoticeSource: '' };
+      persistRegistration();
+      render();
+      requestAnimationFrame(() => root.querySelector(restoreSelector)?.focus());
+      return;
+    }
     root.querySelectorAll('[data-qualification-example-modal]:not([hidden])').forEach(modal => modal.setAttribute('hidden', ''));
   });
   addEventListener('storage', event => {
