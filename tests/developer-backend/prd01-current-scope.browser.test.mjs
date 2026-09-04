@@ -336,6 +336,20 @@ test('运营后台侧栏在 HTMLPreview Base 环境下仍使用站内路由', as
   }
 });
 
+test('运营后台三个页面只保留一个页面名', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  try {
+    for (const [routeId, title] of [['P01-08', '企业认证审核'], ['P01-09', '企业认证内容配置'], ['P01-10', '帮助中心']]) {
+      await page.goto(demoUrl(`/${routeId}?role=operations`), { waitUntil: 'load' });
+      assert.equal(await page.locator('.operations-page-heading h1').innerText(), title);
+      assert.equal(await page.locator('.operations-page-heading').locator('p, .page-eyebrow, .gh-status-tag').count(), 0);
+    }
+  } finally {
+    await context.close();
+  }
+});
+
 test('审核中申请可撤回并保留资料重新提交', async () => {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
@@ -450,11 +464,13 @@ test('企业认证内容配置使用独立文章列表且不提供排序', async
       await page.screenshot({ path: path.join(assetDir, 'P01-09-editor.png'), animations: 'disabled' });
     }
     await page.getByRole('button', { name: 'English', exact: true }).click();
-    assert.equal(await page.getByLabel('Article title').isVisible(), true);
-    await page.getByRole('button', { name: 'Back to list', exact: true }).click();
+    assert.equal(await page.getByLabel('文章标题').isVisible(), true);
+    assert.match(await page.getByLabel('文章标题').inputValue(), /GameHub|Developer|Agreement/i);
+    assert.equal(await page.getByRole('button', { name: 'Back to list', exact: true }).count(), 0);
+    await page.getByRole('button', { name: '返回列表', exact: true }).click();
     const editedArticleRow = page.locator('[data-content-list="certification"] tbody tr').first();
-    assert.equal(await editedArticleRow.getByText('Draft', { exact: true }).isVisible(), true);
-    await editedArticleRow.getByRole('button', { name: 'Publish', exact: true }).click();
+    assert.equal(await editedArticleRow.getByText('草稿', { exact: true }).isVisible(), true);
+    await editedArticleRow.getByRole('button', { name: '发布', exact: true }).click();
     assert.match(await page.locator('[data-runtime-result]').innerText(), /已发布/);
     await page.getByRole('button', { name: '中文', exact: true }).click();
     await page.getByPlaceholder('输入文章标题或唯一编号').fill('CERT-ARTICLE-002');
@@ -495,13 +511,14 @@ test('帮助中心独立页面支持导航目录和目录子文档双语 CRUD �
     await page.getByLabel('排序权重').fill('880');
     await page.getByLabel('导航名称').fill('新手指南');
     await page.getByRole('button', { name: 'English', exact: true }).click();
-    await page.getByLabel('Navigation title').fill('Getting started');
-    await page.getByRole('button', { name: 'Back to list', exact: true }).click();
+    await page.getByLabel('导航名称').fill('Getting started');
+    assert.equal(await page.getByRole('button', { name: 'Back to list', exact: true }).count(), 0);
+    await page.getByRole('button', { name: '返回列表', exact: true }).click();
     assert.equal(await page.getByText('Getting started', { exact: true }).isVisible(), true);
     const newNavigationRow = page.locator('[data-content-list="navigation"] tbody tr').filter({ hasText: navigationId });
-    assert.equal(await newNavigationRow.getByText('Draft', { exact: true }).isVisible(), true);
-    await newNavigationRow.getByRole('button', { name: 'Publish', exact: true }).click();
-    assert.equal(await newNavigationRow.getByText('Published', { exact: true }).isVisible(), true);
+    assert.equal(await newNavigationRow.getByText('草稿', { exact: true }).isVisible(), true);
+    await newNavigationRow.getByRole('button', { name: '发布', exact: true }).click();
+    assert.equal(await newNavigationRow.getByText('已发布', { exact: true }).isVisible(), true);
 
     await page.getByRole('tab', { name: '目录子文档', exact: true }).click();
     assert.deepEqual(await page.locator('.content-article-list thead th').allTextContents(), ['文档标题／唯一编号', '所属导航', '排序权重', '多语言', '发布状态', '更新时间', '操作']);
@@ -514,14 +531,14 @@ test('帮助中心独立页面支持导航目录和目录子文档双语 CRUD �
     assert.match(documentId, /^HC-DOC-\d{3}$/);
     assert.notEqual(documentId, navigationId);
     assert.equal(await page.locator('[data-content-navigation-select]').isVisible(), true);
-    assert.equal(await page.getByLabel('Sort weight').getAttribute('min'), '0');
-    assert.equal(await page.getByLabel('Sort weight').getAttribute('max'), '9999');
+    assert.equal(await page.getByLabel('排序权重').getAttribute('min'), '0');
+    assert.equal(await page.getByLabel('排序权重').getAttribute('max'), '9999');
     assert.equal(await page.locator('[data-rich-editor-body]').isVisible(), true);
     if (process.env.CAPTURE_PRD_ASSET === '1') await page.screenshot({ path: path.join(assetDir, 'P01-10-help-editor.png'), animations: 'disabled' });
-    await page.getByRole('button', { name: 'Back to list', exact: true }).click();
+    await page.getByRole('button', { name: '返回列表', exact: true }).click();
     const newDocumentRow = page.locator('[data-content-list="document"] tbody tr').filter({ hasText: documentId });
-    assert.equal(await newDocumentRow.getByText('Draft', { exact: true }).isVisible(), true);
-    assert.equal(await newDocumentRow.getByRole('button', { name: 'Publish', exact: true }).isVisible(), true);
+    assert.equal(await newDocumentRow.getByText('草稿', { exact: true }).isVisible(), true);
+    assert.equal(await newDocumentRow.getByRole('button', { name: '发布', exact: true }).isVisible(), true);
     assert.equal(await hasHorizontalOverflow(page), false);
   } finally {
     await context.close();
