@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>开发者平台一期 · 企业认证与资料维护闭环</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 2200px; height: 1180px; margin: 0; overflow: hidden; }
+    body { font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif; color: #17243a; background: #f4f7fb; }
+    .canvas {
+      width: 2200px;
+      height: 1180px;
+      padding: 42px 54px 36px;
+      background:
+        radial-gradient(circle at 7% 0%, rgba(0, 194, 203, .11), transparent 25%),
+        radial-gradient(circle at 94% 0%, rgba(39, 120, 255, .10), transparent 25%),
+        #f4f7fb;
+    }
+    .header { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; margin-bottom: 28px; }
+    .header h1 { margin: 0; color: #112039; font-size: 42px; line-height: 1.25; letter-spacing: .2px; }
+    .header p { margin: 10px 0 0; color: #66758c; font-size: 20px; line-height: 1.6; }
+    .legend { display: flex; flex: 0 0 auto; gap: 10px; padding-bottom: 4px; }
+    .legend span { display: flex; align-items: center; gap: 8px; padding: 10px 16px; color: #55657c; font-size: 17px; border: 1px solid #dde5ef; border-radius: 999px; background: rgba(255, 255, 255, .86); }
+    .legend i { width: 10px; height: 10px; border-radius: 50%; background: #08b8bf; }
+    .legend span:last-child i { background: #397ce8; }
+    .flow-board { padding: 22px; border: 1px solid #dce5ef; border-radius: 20px; background: rgba(255, 255, 255, .78); box-shadow: 0 16px 44px rgba(37, 61, 94, .09); }
+    .lane { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 22px; align-items: stretch; }
+    .lane + .lane { margin-top: 18px; padding-top: 18px; border-top: 1px dashed #d8e1ec; }
+    .lane-title { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100%; color: #087f86; border-radius: 14px; background: #eaf9f9; }
+    .lane-title.ops { color: #235fb9; background: #edf4ff; }
+    .lane-title.result { color: #384860; background: #eef2f7; }
+    .lane-title.maintenance { color: #6b4aa2; background: #f3effa; }
+    .lane-title strong { margin-top: 9px; font-size: 21px; }
+    .lane-title span { font-size: 16px; opacity: .78; }
+    .lane-title svg { width: 30px; height: 30px; }
+    .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
+    .steps.ops { grid-template-columns: 1.2fr .8fr; }
+    .steps.results { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .steps.maintenance { grid-template-columns: 1fr 1fr 1fr; }
+    .card { position: relative; min-width: 0; padding: 18px 19px; border: 1px solid #dce5ef; border-radius: 15px; background: #fff; box-shadow: 0 8px 22px rgba(34, 58, 92, .07); }
+    .card.with-arrow::after { content: "→"; position: absolute; z-index: 2; right: -19px; top: 50%; width: 16px; margin-top: -16px; color: #7d91aa; font-size: 29px; font-weight: 700; line-height: 32px; text-align: center; }
+    .card-head { display: flex; align-items: center; gap: 11px; margin-bottom: 11px; }
+    .number { display: grid; flex: 0 0 auto; place-items: center; width: 34px; height: 34px; color: #fff; font-size: 16px; font-weight: 800; border-radius: 10px; background: linear-gradient(135deg, #08c3c2, #158ac5); }
+    .ops .number { background: linear-gradient(135deg, #509cff, #2965d5); }
+    .card h2 { margin: 0; color: #17243a; font-size: 24px; line-height: 1.35; }
+    .card p { margin: 0; color: #5e6e84; font-size: 18px; line-height: 1.58; }
+    .card ul { margin: 10px 0 0; padding: 0; list-style: none; }
+    .card li { position: relative; margin-top: 7px; padding-left: 16px; color: #5d6d83; font-size: 17px; line-height: 1.45; }
+    .card li::before { content: ""; position: absolute; left: 1px; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: #10aeb5; }
+    .ops .card li::before { background: #397ce8; }
+    .rule { display: inline-flex; align-items: center; margin-top: 12px; padding: 6px 10px; color: #087f86; font-size: 16px; font-weight: 700; border-radius: 8px; background: #eaf9f9; }
+    .ops .rule { color: #235fb9; background: #edf4ff; }
+    .notification { display: grid; align-content: center; background: #f8fbff; }
+    .notification .card-head { margin-bottom: 9px; }
+    .notification .number { color: #235fb9; background: #dceaff; }
+    .result-card { padding: 16px 17px; border-top-width: 4px; }
+    .result-card h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 8px; font-size: 20px; }
+    .result-card h3 i { width: 11px; height: 11px; border-radius: 50%; }
+    .result-card p { font-size: 17px; line-height: 1.58; }
+    .approved { border-top-color: #20a66c; }
+    .approved h3 i { background: #20a66c; }
+    .rejected { border-top-color: #e49a24; }
+    .rejected h3 i { background: #e49a24; }
+    .delisted { border-top-color: #d95454; }
+    .delisted h3 i { background: #d95454; }
+    .support { display: grid; grid-template-columns: 190px 1fr auto; gap: 18px; align-items: center; margin-top: 20px; padding: 16px 20px; color: #fff; border-radius: 15px; background: #102139; }
+    .support strong { font-size: 18px; }
+    .support p { margin: 0; color: #c8d3e2; font-size: 15px; line-height: 1.5; }
+    .support-items { display: flex; gap: 8px; }
+    .support-items span { padding: 7px 10px; color: #eaf1fa; font-size: 13px; white-space: nowrap; border-radius: 8px; background: rgba(255, 255, 255, .09); }
+  </style>
+</head>
+<body>
+  <main class="canvas">
+    <header class="header">
+      <div>
+        <h1>开发者平台一期 · 企业认证与资料维护闭环</h1>
+        <p>覆盖平台注册、认证提交／撤回、运营审核、结果回传和认证后资料修改</p>
+      </div>
+      <div class="legend"><span><i></i>企业开发者端</span><span><i></i>平台运营端</span></div>
+    </header>
+
+    <section class="flow-board">
+      <div class="lane">
+        <aside class="lane-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg>
+          <strong>企业开发者</strong><span>注册与提交</span>
+        </aside>
+        <div class="steps">
+          <article class="card with-arrow">
+            <div class="card-head"><b class="number">01</b><h2>登录与平台注册</h2></div>
+            <p>在开发者平台官网拉起登录弹窗，登录成功后选择入驻方式。</p>
+            <ul><li>中文：手机号／盖世扫码</li><li>英文：邮箱／盖世扫码</li></ul>
+            <span class="rule">未注册账号自动注册</span>
+          </article>
+          <article class="card with-arrow">
+            <div class="card-head"><b class="number">02</b><h2>企业认证资料提交</h2></div>
+            <p>先阅读认证介绍，再在同一页填写企业登记、银行、厂商和联系人资料。</p>
+            <ul><li>大陆含省／市／区；支持港澳、美、新等地区</li><li>上传登记证明、银行证明并确认两份协议</li></ul>
+            <span class="rule">无草稿；正式提交前可重填</span>
+          </article>
+          <article class="card">
+            <div class="card-head"><b class="number">03</b><h2>审核中与只读查看</h2></div>
+            <p>提交后回到厂商设置，顶部显示当前审核进度。</p>
+            <ul><li>2026-09-02 提交</li><li>预计 2026-09-09 前完成（5 个工作日）</li></ul>
+            <span class="rule">可查看只读详情；撤回前二次确认</span>
+          </article>
+        </div>
+      </div>
+
+      <div class="lane">
+        <aside class="lane-title ops">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v14H4z"></path><path d="M8 9h8M8 13h5"></path></svg>
+          <strong>平台运营</strong><span>审核与通知</span>
+        </aside>
+        <div class="steps ops">
+          <article class="card with-arrow">
+            <div class="card-head"><b class="number">04</b><h2>查询申请并完成审核</h2></div>
+            <p>运营按申请类型、状态、日期筛选，进入独立详情核对快照或资料修改前后值。</p>
+            <ul><li>申请类型：认证／资料修改</li><li>待审核可通过／拒绝；认证通过后可下架资格</li></ul>
+          </article>
+          <article class="card notification">
+            <div class="card-head"><b class="number">信</b><h2>固定短信／邮件通知</h2></div>
+            <p>审核结果落库后生成固定通知，均附开发者后台链接；通知失败不回滚审核结果。</p>
+            <span class="rule">拒绝／下架具体原因不写入短信或邮件</span>
+          </article>
+        </div>
+      </div>
+
+      <div class="lane">
+        <aside class="lane-title result">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12l4 4L19 6"></path><path d="M20 12a8 8 0 1 1-4-6.9"></path></svg>
+          <strong>05 结果回传</strong><span>平台内状态</span>
+        </aside>
+        <div class="steps results">
+          <article class="card result-card approved"><h3><i></i>审核通过</h3><p>开通企业发行资格；厂商设置回显生效资料，不展示正常状态条。</p></article>
+          <article class="card result-card rejected"><h3><i></i>审核拒绝</h3><p>厂商设置和资料页展示具体原因；企业可修改原资料并重新提交。</p></article>
+          <article class="card result-card delisted"><h3><i></i>资格下架</h3><p>暂停发行资格并展示原因；可重提认证或联系 dev@xiaoji.com。</p></article>
+        </div>
+      </div>
+
+      <div class="lane">
+        <aside class="lane-title maintenance">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h16"></path><circle cx="8" cy="6" r="2"></circle><circle cx="15" cy="12" r="2"></circle><circle cx="10" cy="18" r="2"></circle></svg>
+          <strong>06 认证后维护</strong><span>厂商资料修改</span>
+        </aside>
+        <div class="steps maintenance">
+          <article class="card with-arrow"><div class="card-head"><b class="number">A</b><h2>分栏修改</h2></div><p>企业主体信息、厂商资料、财务信息独立编辑和提交。</p><span class="rule">仅认证通过企业可提交</span></article>
+          <article class="card with-arrow"><div class="card-head"><b class="number">B</b><h2>人工审核</h2></div><p>每次只审核当前分类的变更项；详情并列修改前／修改后。</p><span class="rule">审核期间继续使用原生效资料</span></article>
+          <article class="card"><div class="card-head"><b class="number">C</b><h2>结果生效</h2></div><p>通过后替换对应分类；拒绝后保留原值并在平台内展示原因。</p><span class="rule">不同分类可各有 1 条待审申请</span></article>
+        </div>
+      </div>
+    </section>
+
+    <aside class="support">
+      <strong>运营内容配置支撑</strong>
+      <p>新建或修改内容先存草稿，再逐条发布；企业认证文章不排序，帮助导航与子文档使用 0—9999 权重，数值越大越靠前。</p>
+      <div class="support-items"><span>认证介绍</span><span>两份协议</span><span>帮助导航</span><span>子文档</span></div>
+    </aside>
+  </main>
+</body>
+</html>
