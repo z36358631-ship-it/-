@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>消息通知中心｜盖世游戏开发者平台</title>
+  <style>* { box-sizing: border-box; }
+:root {
+  --brand: #f3b71b;
+  --brand-strong: #d89200;
+  --brand-soft: #fff8df;
+  --ink: #172033;
+  --muted: #667085;
+  --line: #e4e7ec;
+  --line-strong: #d0d5dd;
+  --page: #f5f7fa;
+  --surface: #ffffff;
+  --soft: #f8fafc;
+  --success: #14804a;
+  --success-soft: #ecfdf3;
+  --warning: #b54708;
+  --warning-soft: #fffaeb;
+  --danger: #b42318;
+  --danger-soft: #fef3f2;
+  --info: #175cd3;
+  --info-soft: #eff8ff;
+  --radius: 10px;
+  --shadow: 0 10px 30px rgba(21, 31, 51, .08);
+  --font: "Microsoft YaHei UI", "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+html, body { margin: 0; min-height: 100%; background: var(--page); color: var(--ink); font-family: var(--font); font-size: 14px; }
+button, input, select, textarea { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { color: inherit; }
+a { color: var(--info); text-decoration: none; }
+.gh-app { min-height: 100vh; }
+.gh-topbar { height: 64px; padding: 0 28px; background: #111827; color: #fff; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 30; }
+.gh-brand { display: flex; align-items: center; gap: 12px; font-weight: 700; letter-spacing: .02em; }
+.gh-brand svg { width: 34px; height: 34px; }
+.gh-brand small { display: block; margin-top: 2px; color: #98a2b3; font-size: 11px; font-weight: 500; }
+.gh-top-actions { display: flex; align-items: center; gap: 10px; }
+.gh-top-link { border: 0; background: transparent; color: #d0d5dd; cursor: pointer; padding: 8px 10px; border-radius: 7px; }
+.gh-top-link:hover { background: rgba(255,255,255,.08); color: #fff; }
+.gh-user { display: flex; align-items: center; gap: 10px; padding-left: 12px; border-left: 1px solid rgba(255,255,255,.14); }
+.gh-avatar { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(135deg, var(--brand), #ffdd75); color: #523600; font-weight: 800; }
+.gh-user-copy strong, .gh-user-copy small { display: block; }
+.gh-user-copy small { margin-top: 2px; color: #98a2b3; font-size: 11px; }
+.gh-layout { min-height: calc(100vh - 64px); display: grid; grid-template-columns: 232px minmax(0, 1fr); }
+.gh-sidebar { background: var(--surface); border-right: 1px solid var(--line); padding: 22px 14px; }
+.gh-sidebar-label { padding: 0 12px 10px; color: #98a2b3; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.gh-nav { display: grid; gap: 4px; }
+.gh-nav button { width: 100%; border: 0; border-radius: 8px; background: transparent; display: flex; align-items: center; gap: 11px; padding: 11px 12px; color: #475467; cursor: pointer; text-align: left; }
+.gh-nav button:hover { background: #f9fafb; color: var(--ink); }
+.gh-nav button.is-active { background: var(--brand-soft); color: #9a6700; font-weight: 700; }
+.gh-nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid #d9dde5; border-radius: 6px; font-size: 11px; font-weight: 800; }
+.gh-nav button.is-active .gh-nav-icon { border-color: #efc85e; background: #fff6cf; }
+.gh-main { min-width: 0; padding: 30px 34px 56px; }
+.gh-content { width: min(1180px, 100%); margin: 0 auto; }
+.gh-breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: #98a2b3; font-size: 13px; margin-bottom: 18px; }
+.gh-breadcrumb button { border: 0; background: none; color: var(--info); padding: 0; cursor: pointer; }
+.gh-page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+.gh-page-head h1 { margin: 0; font-size: 28px; line-height: 1.3; letter-spacing: -.02em; }
+.gh-page-head p { margin: 7px 0 0; color: var(--muted); line-height: 1.7; }
+.gh-head-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.gh-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 1px 2px rgba(16,24,40,.02); overflow: hidden; }
+.gh-card + .gh-card { margin-top: 18px; }
+.gh-card-head { min-height: 62px; padding: 17px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.gh-card-head h2 { margin: 0; font-size: 16px; }
+.gh-card-head p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.gh-card-body { padding: 20px; }
+.gh-grid-2, .gh-grid-3, .gh-grid-4 { display: grid; gap: 16px; }
+.gh-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.gh-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.gh-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.gh-metric { padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.gh-metric span { color: var(--muted); font-size: 12px; }
+.gh-metric strong { display: block; margin: 12px 0 6px; font-size: 24px; font-variant-numeric: tabular-nums; }
+.gh-metric small { color: #98a2b3; }
+.gh-button { min-height: 38px; border: 1px solid var(--line-strong); border-radius: 8px; background: #fff; padding: 8px 15px; font-weight: 650; cursor: pointer; transition: .16s ease; }
+.gh-button:hover { border-color: #98a2b3; background: #f9fafb; }
+.gh-button.primary { border-color: var(--brand); background: var(--brand); color: #332300; }
+.gh-button.primary:hover { border-color: var(--brand-strong); background: #e9aa0a; }
+.gh-button.danger { border-color: #fda29b; color: var(--danger); background: #fff; }
+.gh-button.link { border-color: transparent; background: transparent; color: var(--info); padding-inline: 6px; }
+.gh-button:disabled { border-color: var(--line); background: #f2f4f7; color: #98a2b3; cursor: not-allowed; }
+.gh-tag { display: inline-flex; align-items: center; gap: 5px; min-height: 24px; border-radius: 999px; padding: 3px 9px; background: #f2f4f7; color: #475467; font-size: 12px; white-space: nowrap; }
+.gh-tag.success { background: var(--success-soft); color: var(--success); }
+.gh-tag.warning { background: var(--warning-soft); color: var(--warning); }
+.gh-tag.danger { background: var(--danger-soft); color: var(--danger); }
+.gh-tag.info { background: var(--info-soft); color: var(--info); }
+.gh-notice { margin-bottom: 18px; padding: 14px 16px; border: 1px solid #b2ddff; background: var(--info-soft); border-radius: 9px; display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; color: #1849a9; }
+.gh-notice.warning { border-color: #fedf89; background: var(--warning-soft); color: #93370d; }
+.gh-notice.danger { border-color: #fecdca; background: var(--danger-soft); color: #912018; }
+.gh-notice strong { display: block; margin-bottom: 4px; }
+.gh-notice p { margin: 0; line-height: 1.65; }
+.gh-tabs { display: flex; align-items: center; gap: 26px; border-bottom: 1px solid var(--line); margin-bottom: 20px; overflow-x: auto; }
+.gh-tabs button { border: 0; border-bottom: 2px solid transparent; background: transparent; padding: 12px 1px 11px; color: var(--muted); white-space: nowrap; cursor: pointer; }
+.gh-tabs button.is-active { color: var(--ink); border-bottom-color: var(--brand); font-weight: 700; }
+.gh-field { min-width: 0; }
+.gh-field.wide { grid-column: 1 / -1; }
+.gh-field label, .gh-label { display: block; margin-bottom: 8px; color: #344054; font-weight: 650; }
+.gh-required::after { content: " *"; color: var(--danger); }
+.gh-input, .gh-select, .gh-textarea { width: 100%; min-height: 40px; border: 1px solid var(--line-strong); border-radius: 8px; background: #fff; padding: 9px 11px; color: var(--ink); outline: none; }
+.gh-input:focus, .gh-select:focus, .gh-textarea:focus { border-color: #d9a50e; box-shadow: 0 0 0 3px rgba(243,183,27,.15); }
+.gh-textarea { min-height: 112px; resize: vertical; line-height: 1.7; }
+.gh-hint { display: block; margin-top: 6px; color: #98a2b3; font-size: 12px; line-height: 1.5; }
+.gh-error { min-height: 18px; margin-top: 5px; color: var(--danger); font-size: 12px; }
+.gh-checks { display: flex; flex-wrap: wrap; gap: 10px 18px; }
+.gh-checks label { display: flex; align-items: center; gap: 7px; color: #475467; font-weight: 500; }
+.gh-upload { position: relative; min-height: 104px; border: 1px dashed #b8c0cc; border-radius: 8px; background: #fbfcfd; display: grid; place-items: center; padding: 16px; color: var(--muted); text-align: center; cursor: pointer; }
+.gh-upload:hover { border-color: #d9a50e; background: #fffdf6; }
+.gh-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.gh-form-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 20px; margin-top: 20px; border-top: 1px solid var(--line); }
+.gh-table-wrap { overflow-x: auto; }
+.gh-table { width: 100%; border-collapse: collapse; min-width: 760px; }
+.gh-table th { height: 44px; padding: 10px 14px; background: #f9fafb; color: #667085; font-size: 12px; text-align: left; font-weight: 700; border-bottom: 1px solid var(--line); }
+.gh-table td { padding: 14px; border-bottom: 1px solid #eef0f3; color: #344054; vertical-align: middle; }
+.gh-table tbody tr:last-child td { border-bottom: 0; }
+.gh-table tbody tr:hover { background: #fcfcfd; }
+.gh-table strong, .gh-table small { display: block; }
+.gh-table small { margin-top: 4px; color: #98a2b3; }
+.gh-row-actions { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.gh-empty { padding: 62px 20px; text-align: center; color: var(--muted); }
+.gh-empty-mark { width: 54px; height: 54px; margin: 0 auto 14px; border-radius: 16px; background: var(--soft); border: 1px solid var(--line); display: grid; place-items: center; font-size: 20px; }
+.gh-readonly { padding: 13px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); }
+.gh-readonly span, .gh-readonly strong, .gh-readonly small { display: block; }
+.gh-readonly span { color: var(--muted); font-size: 12px; }
+.gh-readonly strong { margin: 8px 0 4px; color: #344054; word-break: break-word; }
+.gh-readonly small { color: #98a2b3; line-height: 1.5; }
+.gh-code { border-radius: 8px; background: #101828; color: #d1fadf; padding: 14px; font-family: Consolas, monospace; font-size: 12px; line-height: 1.7; overflow-x: auto; }
+.gh-filter { display: flex; flex-wrap: wrap; gap: 10px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+.gh-filter .gh-input { width: min(300px, 100%); }
+.gh-filter .gh-select { width: 160px; }
+.gh-pagination { display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+.gh-dialog-layer { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 20px; background: rgba(16,24,40,.48); backdrop-filter: blur(2px); }
+.gh-dialog { width: min(560px, 100%); max-height: calc(100vh - 40px); display: flex; flex-direction: column; background: #fff; border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+.gh-dialog.wide { width: min(820px, 100%); }
+.gh-dialog-head { padding: 20px 22px 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 18px; }
+.gh-dialog-head h2 { margin: 0; font-size: 19px; }
+.gh-dialog-head p { margin: 6px 0 0; color: var(--muted); line-height: 1.6; }
+.gh-dialog-close { width: 32px; height: 32px; border: 0; border-radius: 7px; background: #f2f4f7; cursor: pointer; font-size: 21px; color: var(--muted); }
+.gh-dialog-body { padding: 20px 22px; overflow-y: auto; }
+.gh-dialog-foot { padding: 14px 22px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 10px; }
+.gh-toast { position: fixed; top: 82px; left: 50%; z-index: 100; transform: translateX(-50%); max-width: min(480px, calc(100vw - 28px)); padding: 11px 16px; border-radius: 8px; background: #101828; color: #fff; box-shadow: var(--shadow); }
+.gh-toast.error { background: #7a271a; }
+.gh-kv { display: grid; grid-template-columns: 160px minmax(0,1fr); border-bottom: 1px solid #eef0f3; }
+.gh-kv:last-child { border-bottom: 0; }
+.gh-kv > span { padding: 13px 14px; background: #f9fafb; color: var(--muted); }
+.gh-kv > strong, .gh-kv > div { padding: 13px 16px; font-weight: 500; min-width: 0; }
+.gh-split { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+.gh-status-dot { width: 8px; height: 8px; border-radius: 50%; background: #98a2b3; display: inline-block; }
+.gh-status-dot.unread { background: #f0b21b; box-shadow: 0 0 0 4px #fff6d6; }
+.gh-link-card { width: 100%; border: 1px solid var(--line); border-radius: 9px; background: #fff; padding: 16px; text-align: left; cursor: pointer; }
+.gh-link-card:hover { border-color: #e5bc49; box-shadow: 0 4px 14px rgba(21,31,51,.06); }
+.gh-link-card strong, .gh-link-card small { display: block; }
+.gh-link-card small { margin-top: 7px; color: var(--muted); line-height: 1.55; }
+.gh-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.gh-banner { border-radius: 12px; padding: 24px; background: linear-gradient(120deg, #111827, #344054); color: #fff; overflow: hidden; position: relative; }
+.gh-banner::after { content: ""; position: absolute; width: 260px; height: 260px; right: -50px; top: -130px; border-radius: 50%; background: radial-gradient(circle, rgba(255,211,82,.36), rgba(255,211,82,0)); }
+.gh-banner h2 { margin: 0 0 8px; font-size: 23px; }
+.gh-banner p { margin: 0; color: #d0d5dd; line-height: 1.7; max-width: 720px; }
+.gh-rich-toolbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 1px solid var(--line-strong); border-bottom: 0; border-radius: 8px 8px 0 0; background: #f9fafb; }
+.gh-rich-toolbar button { min-width: 32px; height: 30px; border: 1px solid var(--line); border-radius: 6px; background: #fff; cursor: pointer; }
+.gh-rich-editor { min-height: 190px; border: 1px solid var(--line-strong); border-radius: 0 0 8px 8px; padding: 13px; line-height: 1.75; outline: none; }
+
+@media (max-width: 960px) {
+  .gh-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gh-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gh-split { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .gh-topbar { height: 58px; padding: 0 14px; }
+  .gh-brand span { font-size: 13px; }
+  .gh-brand small, .gh-user-copy, .gh-top-link.optional { display: none; }
+  .gh-layout { min-height: calc(100vh - 58px); display: block; }
+  .gh-sidebar { position: sticky; top: 58px; z-index: 24; padding: 0 12px; border-right: 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .gh-sidebar-label { display: none; }
+  .gh-nav { display: flex; width: max-content; }
+  .gh-nav button { width: auto; padding: 11px 10px; border-radius: 0; white-space: nowrap; }
+  .gh-nav button.is-active { background: transparent; box-shadow: inset 0 -2px var(--brand); }
+  .gh-nav-icon { display: none; }
+  .gh-main { padding: 20px 14px 38px; }
+  .gh-page-head { display: block; }
+  .gh-page-head h1 { font-size: 23px; }
+  .gh-head-actions { justify-content: flex-start; margin-top: 14px; }
+  .gh-grid-2, .gh-grid-3, .gh-grid-4 { grid-template-columns: 1fr; }
+  .gh-card-head { align-items: flex-start; padding: 15px 16px; }
+  .gh-card-body { padding: 16px; }
+  .gh-filter { padding: 14px 16px; }
+  .gh-filter .gh-input, .gh-filter .gh-select { width: 100%; }
+  .gh-tabs { gap: 20px; }
+  .gh-dialog-layer { padding: 12px; }
+  .gh-dialog { max-height: calc(100vh - 24px); border-radius: 12px; }
+  .gh-dialog-head, .gh-dialog-body, .gh-dialog-foot { padding-left: 16px; padding-right: 16px; }
+  .gh-kv { grid-template-columns: 112px minmax(0,1fr); }
+}
+@media (max-width: 360px) {
+  .gh-brand svg { width: 30px; height: 30px; }
+  .gh-top-actions { gap: 2px; }
+  .gh-main { padding-left: 10px; padding-right: 10px; }
+  .gh-page-head h1 { font-size: 21px; }
+  .gh-button { padding-inline: 11px; }
+  .gh-kv { grid-template-columns: 1fr; }
+  .gh-kv > span { padding-bottom: 5px; }
+  .gh-kv > strong, .gh-kv > div { padding-top: 5px; }
+}
+
+.d8-inbox { display: grid; grid-template-columns: 210px minmax(0,1fr); min-height: 580px; }
+.d8-categories { border-right: 1px solid var(--line); padding: 14px 10px; }
+.d8-categories button { width: 100%; border: 0; border-radius: 7px; background: transparent; padding: 10px 11px; display: flex; justify-content: space-between; align-items: center; color: #475467; cursor: pointer; text-align: left; }
+.d8-categories button:hover { background: #f9fafb; }
+.d8-categories button.is-active { background: var(--brand-soft); color: #9a6700; font-weight: 700; }
+.d8-message-pane { min-width: 0; }
+.d8-message-tools { padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; gap: 10px; justify-content: space-between; }
+.d8-message-tools .gh-input { max-width: 340px; }
+.d8-message-list { display: grid; }
+.d8-message { width: 100%; border: 0; border-bottom: 1px solid #eef0f3; background: #fff; display: grid; grid-template-columns: 22px minmax(0,1fr) auto; gap: 12px; padding: 16px; cursor: pointer; text-align: left; }
+.d8-message:hover { background: #fcfcfd; }
+.d8-message.is-unread { background: #fffdf7; }
+.d8-message-copy { min-width: 0; }
+.d8-message-copy strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.d8-message-copy p { margin: 7px 0 0; color: var(--muted); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.d8-message-meta { min-width: 140px; text-align: right; }
+.d8-message-meta time { display: block; margin-top: 7px; color: #98a2b3; font-size: 12px; }
+.d8-detail-body { line-height: 1.8; color: #344054; }
+.d8-detail-body p { margin: 0 0 14px; }
+.d8-reason { border-left: 3px solid #f97066; padding: 12px 14px; background: var(--danger-soft); color: #912018; border-radius: 0 8px 8px 0; margin: 16px 0; }
+.d8-announcement-title { max-width: 330px; }
+.d8-locale-panels [data-locale-panel] { display: none; }
+.d8-locale-panels [data-locale-panel].is-active { display: block; }
+.d8-preview { border: 1px solid var(--line); border-radius: 9px; padding: 18px; min-height: 220px; background: #fbfcfd; }
+.d8-preview h3 { margin: 0 0 12px; }
+.d8-preview p { color: var(--muted); line-height: 1.75; }
+@media (max-width: 800px) { .d8-inbox { grid-template-columns: 1fr; } .d8-categories { border-right:0; border-bottom:1px solid var(--line); display:flex; overflow-x:auto; padding:8px; } .d8-categories button { width:auto; flex:0 0 auto; gap:8px; white-space:nowrap; } }
+@media (max-width: 560px) { .d8-message-tools { align-items:stretch; flex-direction:column; } .d8-message-tools .gh-input { max-width:none; } .d8-message { grid-template-columns:18px minmax(0,1fr); } .d8-message-meta { grid-column:2; text-align:left; display:flex; align-items:center; gap:10px; } .d8-message-meta time { margin:0; } }</style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>(function exposeNextDemoContext(global) {
+  const STORAGE_KEY = 'gamehub.developer.next.v1';
+  const seed = {
+    schema_version: 1,
+    vendor_id: 'VENDOR-202609-001',
+    vendor_name: '星海互动科技有限公司',
+    game_id: 'GAME-48291',
+    app_id: 'APP-7F3A9C',
+    game_name_zh: '星海远征',
+    game_name_en: 'Ocean Expedition',
+    first_build_uploaded: true,
+    build_id: 'BUILD-20260904.3',
+    qualification_status: 'unsubmitted',
+    qualification_version: null,
+    profile_status: 'draft',
+    profile_version: 'PROFILE-001',
+    release_scope_status: 'draft',
+    release_scope_version: 'SCOPE-001',
+    contract_status: 'effective',
+    contract_version: 'CONTRACT-20260901-001',
+    contract_valid_to: '2027-08-31',
+    credential_status: 'active',
+    messages: [],
+    announcements: [],
+    resources: [],
+  };
+
+  const clone = value => JSON.parse(JSON.stringify(value));
+  const read = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      return { ...clone(seed), ...saved };
+    } catch {
+      return clone(seed);
+    }
+  };
+  const write = next => {
+    const value = { ...read(), ...clone(next) };
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(value)); } catch {}
+    return value;
+  };
+  const emitEvent = event => {
+    const current = read();
+    const messages = [{
+      event_id: event.event_id || `EVENT-${Date.now()}`,
+      event_source: event.event_source,
+      entity_id: event.entity_id,
+      event_type: event.event_type,
+      event_status: event.event_status,
+      event_time: event.event_time || new Date().toISOString(),
+      deep_link: event.deep_link || '',
+      title_zh: event.title_zh,
+      title_en: event.title_en,
+      body_zh: event.body_zh || '',
+      body_en: event.body_en || '',
+      reason: event.reason || '',
+      read: false,
+    }, ...(current.messages || [])];
+    return write({ messages });
+  };
+  const reset = () => {
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    return read();
+  };
+
+  global.GHNextDemoContext = { STORAGE_KEY, seed: clone(seed), read, write, emitEvent, reset };
+})(window);
+
+(function notificationCenterDemo(){
+  const app=document.querySelector('#app');
+  const ctx=window.GHNextDemoContext;
+  const search=new URLSearchParams(location.search);
+  const requestedLang=search.get('lang')==='en'?'en':'zh';
+  const routes={
+    'P08-01':{role:'developer',page:'inbox',zh:'消息通知中心',en:'Notifications'},
+    'P08-02':{role:'developer',page:'detail',zh:'消息详情',en:'Message details'},
+    'P08-03':{role:'operations',page:'announcements',zh:'系统公告',en:'Announcements'},
+    'P08-04':{role:'operations',page:'editor',zh:'新建公告',en:'New announcement'},
+  };
+  const routeId=()=> (location.hash.match(/P08-\d{2}/)||['P08-01'])[0];
+  const hashParams=()=>new URLSearchParams(location.hash.split('?')[1]||'');
+  const route=()=>routes[routeId()]||routes['P08-01'];
+  const lang=()=>route().role==='operations'?'zh':requestedLang;
+  const tx=(zh,en)=>lang()==='en'?en:zh;
+  const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const strip=value=>String(value||'').replace(/<[^>]*>/g,'').trim();
+  const go=(id,params='')=>{location.hash=`/${id}${params?`?${params}`:''}`;};
+  const tag=(label,tone='')=>`<span class="gh-tag ${tone}">${esc(label)}</span>`;
+  const button=(label,action,tone='',attrs='')=>`<button type="button" class="gh-button ${tone}" data-action="${action}" ${attrs}>${esc(label)}</button>`;
+  const logo=()=>`<svg viewBox="0 0 36 36" aria-hidden="true"><defs><linearGradient id="d8g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffd86a"/><stop offset="1" stop-color="#e49a00"/></linearGradient></defs><rect width="36" height="36" rx="10" fill="url(#d8g)"/><path d="M10 18.3c0-5.3 3.7-9.1 8.9-9.1 2.6 0 4.8.9 6.4 2.4l-3.1 3.1a4.7 4.7 0 0 0-3.3-1.3c-2.8 0-4.7 2-4.7 4.9 0 2.8 1.9 4.9 4.8 4.9 2 0 3.3-.8 4-2.1h-4.6v-3.8h8.7c.1.6.1 1.2.1 1.8 0 5.1-3.4 8.8-8.3 8.8-5.2 0-8.9-4-8.9-9.6Z" fill="#422d00"/></svg>`;
+  const seedMessages=[
+    {event_id:'EVENT-001',event_source:'qualification',entity_id:'GAME-48291',event_type:'review_result',event_status:'supplement',event_time:'2026-09-05T09:20:00+08:00',deep_link:'06-游戏创建与发行资料demo.html#/P06-05',title_zh:'游戏资质需补充材料',title_en:'Additional qualification materials required',body_zh:'星海远征的游戏资质未通过本轮审核，请根据审核意见补充后再次提交。',body_en:'The qualification review for Ocean Expedition requires additional materials.',reason:'授权证明中未明确覆盖中国大陆地区，请补充有效的授权页。',read:false},
+    {event_id:'EVENT-002',event_source:'build',entity_id:'BUILD-20260904.3',event_type:'build_ready',event_status:'success',event_time:'2026-09-04T18:30:00+08:00',deep_link:'03-包体测试与发布demo.html#/P03-03',title_zh:'首个包体已上传',title_en:'First build uploaded',body_zh:'BUILD-20260904.3 已完成上传和基础检查，可继续联调和测试。',body_en:'BUILD-20260904.3 passed the initial upload checks.',read:false},
+    {event_id:'EVENT-003',event_source:'profile',entity_id:'GAME-48291',event_type:'review_result',event_status:'approved',event_time:'2026-09-04T15:16:00+08:00',deep_link:'06-游戏创建与发行资料demo.html#/P06-04',title_zh:'商店展示资料已通过',title_en:'Store profile approved',body_zh:'星海远征的商店展示资料已通过审核。',body_en:'The store profile for Ocean Expedition has been approved.',read:true},
+    {event_id:'EVENT-004',event_source:'system',entity_id:'NOTICE-202609-01',event_type:'announcement',event_status:'published',event_time:'2026-09-03T10:00:00+08:00',deep_link:'08-消息通知中心demo.html#/P08-02?id=EVENT-004',title_zh:'开发者平台维护公告',title_en:'Developer platform maintenance',body_zh:'平台将于 2026-09-08 02:00‒04:00 进行例行维护。维护期间控制台部分页面可能短暂不可用。',body_en:'Scheduled maintenance will run from 02:00 to 04:00 on Sep 8, 2026.',read:true},
+    {event_id:'EVENT-005',event_source:'settlement',entity_id:'SETTLE-202608',event_type:'statement_ready',event_status:'success',event_time:'2026-09-02T11:42:00+08:00',deep_link:'04-精准投放与数据demo.html#/P04-05',title_zh:'8 月结算单已生成',title_en:'August statement is ready',body_zh:'2026 年 8 月结算单已生成，请在财务中心查看。',body_en:'Your August 2026 statement is ready.',read:true},
+  ];
+  const defaultAnnouncements=[
+    {id:'NOTICE-202609-01',title_zh:'开发者平台维护公告',title_en:'Developer platform maintenance',body_zh:'平台将于 2026-09-08 02:00‒04:00 进行例行维护。',body_en:'Scheduled maintenance will run from 02:00 to 04:00 on Sep 8, 2026.',status:'published',updated:'2026-09-03 10:00',operator:'李瑜'},
+    {id:'NOTICE-202609-02',title_zh:'SDK 4.2.1 更新预告',title_en:'SDK 4.2.1 release preview',body_zh:'SDK 4.2.1 将修复启动校验日志上报问题。',body_en:'SDK 4.2.1 will improve launch validation logs.',status:'draft',updated:'2026-09-05 09:36',operator:'李瑜'},
+    {id:'NOTICE-202608-06',title_zh:'旧版 SDK 停止支持通知',title_en:'Legacy SDK end-of-support notice',body_zh:'SDK 3.x 已停止支持。',body_en:'SDK 3.x has reached end of support.',status:'offline',updated:'2026-08-31 18:00',operator:'周芙'},
+  ];
+  const current=ctx.read();
+  if(!current.messages.length)ctx.write({messages:seedMessages});
+  const state={tab:'all',category:'all',keyword:'',toast:'',toastError:false,announcements:current.announcements.length?current.announcements:defaultAnnouncements,dialog:'',activeId:'',locale:'zh'};
+  const categories={all:['全部消息','All'],qualification:['游戏资质','Qualifications'],profile:['游戏资料','Game profile'],build:['构建','Builds'],release:['发布','Releases'],settlement:['结算','Settlement'],system:['系统公告','System']};
+  const showToast=(message,error=false)=>{state.toast=message;state.toastError=error;render();clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>{state.toast='';render();},2200);};
+  const topbar=role=>`<header class="gh-topbar"><div class="gh-brand">${logo()}<span>${role==='operations'?'发行平台运营后台':tx('盖世游戏开发者平台','GameHub Developer')}<small>${role==='operations'?'内部管理':tx('游戏发行与服务','Publishing & services')}</small></span></div><div class="gh-top-actions"><button class="gh-top-link optional" data-action="open-games">${tx('游戏管理','Games')}</button><button class="gh-top-link optional" data-action="open-resources">${tx('开发资源','Resources')}</button><div class="gh-user"><span class="gh-avatar">${role==='operations'?'运':'王'}</span><span class="gh-user-copy"><strong>${role==='operations'?'李瑜':'王明'}</strong><small>${role==='operations'?'发行运营':tx('企业开发者','Enterprise')}</small></span></div></div></header>`;
+  const devNav=[['P08-01','消息通知中心','Notifications','01'],['P06-01','游戏管理','Games','02'],['P07-01','开发接入','Integration','03']];
+  const opsNav=[['P06-08','游戏资料审核','Reviews','01'],['P06-10','合同状态维护','Contracts','02'],['P07-06','SDK 资源管理','Resources','03'],['P08-03','系统公告','Announcements','04']];
+  const sidebar=role=>`<aside class="gh-sidebar"><div class="gh-sidebar-label">${role==='operations'?'发行平台后台':tx('开发者服务','Developer services')}</div><nav class="gh-nav">${(role==='operations'?opsNav:devNav).map(([id,zh,en,num])=>`<button type="button" class="${routeId()===id||(id==='P08-03'&&routeId()==='P08-04')?'is-active':''}" data-route="${id}"><span class="gh-nav-icon" aria-hidden="true">${num}</span><span>${role==='operations'?zh:tx(zh,en)}</span></button>`).join('')}</nav></aside>`;
+  const pageHead=(title,description,actions='')=>`<section class="gh-page-head"><div><h1>${esc(title)}</h1>${description?`<p>${esc(description)}</p>`:''}</div>${actions?`<div class="gh-head-actions">${actions}</div>`:''}</section>`;
+  const allMessages=()=>ctx.read().messages||[];
+  const filteredMessages=()=>allMessages().filter(item=>{const tab=state.tab==='all'||(state.tab==='unread'&&!item.read);const category=state.category==='all'||item.event_source===state.category;const k=state.keyword.trim().toLowerCase();const keyword=!k||`${item.title_zh}${item.title_en}${item.entity_id}${item.body_zh}${item.body_en}`.toLowerCase().includes(k);return tab&&category&&keyword;}).sort((a,b)=>b.event_time.localeCompare(a.event_time)||b.event_id.localeCompare(a.event_id));
+  const unreadCount=()=>allMessages().filter(item=>!item.read).length;
+  const sourceLabel=source=>({qualification:tx('游戏资质','Qualifications'),profile:tx('游戏资料','Game profile'),build:tx('构建','Builds'),release:tx('发布','Releases'),settlement:tx('结算','Settlement'),system:tx('系统公告','System'),credential:'API',resource:tx('下载','Downloads'),game:tx('游戏','Game')}[source]||source);
+  function inbox(){const rows=filteredMessages();return `${pageHead(tx('消息通知中心','Notifications'),tx('查看认证、资料、构建、发布、结算和系统公告。','Review qualification, profile, build, release, settlement and system messages.'),unreadCount()?button(tx('全部标为已读','Mark all as read'),'mark-all'):tag(tx('已全部读取','All read'),'success'))}<section class="gh-tabs"><button class="${state.tab==='all'?'is-active':''}" data-action="message-tab" data-tab="all">${tx('全部消息','All messages')}</button><button class="${state.tab==='unread'?'is-active':''}" data-action="message-tab" data-tab="unread">${tx('未读消息','Unread')} <span data-unread-count>${unreadCount()}</span></button></section><section class="gh-card d8-inbox"><aside class="d8-categories">${Object.entries(categories).map(([key,label])=>`<button class="${state.category===key?'is-active':''}" data-action="category" data-category="${key}"><span>${tx(label[0],label[1])}</span><small>${key==='all'?allMessages().length:allMessages().filter(i=>i.event_source===key).length}</small></button>`).join('')}</aside><div class="d8-message-pane"><div class="d8-message-tools"><input class="gh-input" data-action="message-search" value="${esc(state.keyword)}" placeholder="${tx('搜索标题、业务对象或正文','Search title, entity or content')}"><span class="gh-tag">${tx('按时间倒序','Newest first')}</span></div><div class="d8-message-list">${rows.length?rows.map(item=>`<button class="d8-message ${item.read?'':'is-unread'}" data-action="open-message" data-id="${item.event_id}"><span class="gh-status-dot ${item.read?'':'unread'}"></span><span class="d8-message-copy"><strong>${esc(lang()==='en'?item.title_en:item.title_zh)}</strong><p>${esc(lang()==='en'?(item.body_en||item.body_zh):(item.body_zh||item.body_en))}</p></span><span class="d8-message-meta">${tag(sourceLabel(item.event_source),item.event_status==='supplement'||item.event_status==='rejected'?'danger':item.event_status==='approved'||item.event_status==='success'?'success':'info')}<time>${item.event_time.slice(0,16).replace('T',' ')}</time></span></button>`).join(''):`<div class="gh-empty"><div class="gh-empty-mark">—</div><strong>${tx('未找到匹配消息','No matching messages')}</strong></div>`}</div></div></section>`;}
+  const activeMessage=()=>allMessages().find(item=>item.event_id===hashParams().get('id'))||allMessages()[0];
+  const safeLink=value=>/^(0[134678]-[^?#]+demo\.html)#\/P0[134678]-\d{2}(?:\?.*)?$/.test(String(value||''))?value:'';
+  function detail(){const item=activeMessage();if(!item)return pageHead(tx('消息已失效','Message unavailable'),'');const link=safeLink(item.deep_link);return `<nav class="gh-breadcrumb"><button data-action="back-inbox">${tx('消息通知中心','Notifications')}</button><span>/</span><span>${tx('消息详情','Message details')}</span></nav>${pageHead(tx('消息详情','Message details'),`${item.event_id} · ${item.event_time.slice(0,16).replace('T',' ')}`,button(tx('返回列表','Back'),'back-inbox'))}<section class="gh-card"><header class="gh-card-head"><div><h2>${esc(lang()==='en'?item.title_en:item.title_zh)}</h2><p>${esc(sourceLabel(item.event_source))} · ${esc(item.entity_id)}</p></div>${tag(item.event_status,item.event_status==='supplement'||item.event_status==='rejected'?'danger':item.event_status==='approved'||item.event_status==='success'?'success':'info')}</header><div class="gh-card-body d8-detail-body"><p>${esc(lang()==='en'?(item.body_en||item.body_zh):(item.body_zh||item.body_en))}</p>${item.reason?`<div class="d8-reason"><strong>${tx('处理原因','Reason')}</strong><p>${esc(item.reason)}</p></div>`:''}<div class="gh-grid-2">${readonly(tx('业务对象','Entity'),item.entity_id)}${readonly(tx('消息时间','Time'),item.event_time.slice(0,19).replace('T',' '))}</div>${link?`<div class="gh-form-actions">${button(tx('查看详情','View details'),'open-deep-link','primary',`data-link="${esc(link)}"`)}</div>`:`<div class="gh-notice warning" style="margin-top:18px"><div><strong>${tx('目标已失效','Target unavailable')}</strong><p>${tx('原业务页面不可用，消息正文仍保留。','The source page is unavailable; message content remains visible.')}</p></div></div>`}</div></section>`;}
+  function readonly(label,value,hint=''){return `<div class="gh-readonly"><span>${esc(label)}</span><strong>${esc(value)}</strong>${hint?`<small>${esc(hint)}</small>`:''}</div>`;}
+  const announcementStatus=value=>value==='draft'?'草稿':value==='published'?'已发布':'已下线';
+  function announcements(){return `${pageHead('系统公告','创建、发布和下线开发者系统公告。',button('新建公告','new-announcement','primary'))}<section class="gh-card"><div class="gh-table-wrap"><table class="gh-table"><thead><tr><th>编号／中文标题</th><th>English 标题</th><th>状态</th><th>更新时间</th><th>发布人</th><th>操作</th></tr></thead><tbody>${state.announcements.map(item=>`<tr><td class="d8-announcement-title"><strong>${item.title_zh}</strong><small>${item.id}</small></td><td class="d8-announcement-title">${item.title_en}</td><td>${tag(announcementStatus(item.status),item.status==='published'?'success':item.status==='draft'?'warning':'')}</td><td>${item.updated}</td><td>${item.operator}</td><td><div class="gh-row-actions">${button('编辑','edit-announcement','link',`data-id="${item.id}"`)}${item.status==='draft'?button('发布','publish-announcement','link',`data-id="${item.id}"`):item.status==='published'?button('下线','offline-announcement','link',`data-id="${item.id}"`):''}</div></td></tr>`).join('')}</tbody></table></div><div class="gh-pagination">共 ${state.announcements.length} 条</div></section>`;}
+  function editor(){const id=hashParams().get('id');const item=state.announcements.find(a=>a.id===id)||{id:`NOTICE-${Date.now()}`,title_zh:'',title_en:'',body_zh:'',body_en:'',status:'draft',updated:'',operator:'李瑜'};return `${pageHead(id?'编辑公告':'新建公告','界面固定为中文，中文／English 用于配置对外内容。',button('返回列表','back-announcements'))}<form class="gh-card" id="announcementForm"><input type="hidden" name="id" value="${item.id}"><header class="gh-card-head"><div><h2>公告内容</h2><p>保存后为草稿，请返回列表发布。</p></div>${tag(announcementStatus(item.status),item.status==='published'?'success':'warning')}</header><div class="gh-card-body"><div class="gh-tabs"><button type="button" class="${state.locale==='zh'?'is-active':''}" data-action="locale" data-locale="zh">中文</button><button type="button" class="${state.locale==='en'?'is-active':''}" data-action="locale" data-locale="en">English</button></div><div class="d8-locale-panels"><div data-locale-panel="zh" class="${state.locale==='zh'?'is-active':''}"><div class="gh-field"><label class="gh-required" for="title_zh">中文标题</label><input class="gh-input" id="title_zh" name="title_zh" value="${esc(item.title_zh)}"></div><div class="gh-field" style="margin-top:16px"><label class="gh-required">中文正文</label>${richEditor('body_zh',item.body_zh||'<p>请输入公告正文。</p>')}</div></div><div data-locale-panel="en" class="${state.locale==='en'?'is-active':''}"><div class="gh-field"><label class="gh-required" for="title_en">English title</label><input class="gh-input" id="title_en" name="title_en" value="${esc(item.title_en)}"></div><div class="gh-field" style="margin-top:16px"><label class="gh-required">English body</label>${richEditor('body_en',item.body_en||'<p>Enter announcement content.</p>')}</div></div></div><div class="gh-form-actions">${button('取消','back-announcements')}${button('保存草稿','save-announcement','primary')}</div></div></form>`;}
+  function richEditor(name,value){return `<div class="gh-rich-toolbar"><button type="button" data-command="bold" title="粗体"><b>B</b></button><button type="button" data-command="italic" title="斜体"><i>I</i></button><button type="button" data-command="insertUnorderedList" title="无序列表">•</button><button type="button" data-command="formatBlock" data-value="h3" title="标题">H3</button><button type="button" data-action="insert-image" data-target="${name}" title="插入图片">图</button></div><div class="gh-rich-editor" contenteditable="true" data-rich-name="${name}">${value}</div>`;}
+  function dialog(){if(!state.dialog)return'';const item=state.announcements.find(a=>a.id===state.activeId);if(state.dialog==='offline')return `<div class="gh-dialog-layer"><section class="gh-dialog" role="dialog" aria-modal="true"><header class="gh-dialog-head"><div><h2>下线公告</h2><p>下线后公告不再对外展示，历史内容保留。</p></div><button class="gh-dialog-close" data-action="close-dialog">×</button></header><footer class="gh-dialog-foot">${button('取消','close-dialog')}${button('确认下线','confirm-offline','danger')}</footer></section></div>`;if(state.dialog==='image')return `<div class="gh-dialog-layer"><section class="gh-dialog" role="dialog" aria-modal="true"><header class="gh-dialog-head"><div><h2>插入图片</h2><p>图片上传后插入当前正文位置。</p></div><button class="gh-dialog-close" data-action="close-dialog">×</button></header><div class="gh-dialog-body"><label class="gh-upload"><strong data-upload-label="announcement-image">选择图片</strong><small>PNG / JPG，不超过 10 MB</small><input type="file" data-upload="announcement-image" accept="image/png,image/jpeg"></label></div><footer class="gh-dialog-foot">${button('取消','close-dialog')}${button('插入','confirm-image','primary')}</footer></section></div>`;if(state.dialog==='publish')return `<div class="gh-dialog-layer"><section class="gh-dialog" role="dialog" aria-modal="true"><header class="gh-dialog-head"><div><h2>发布公告</h2><p>发布后中英文公告将同步到开发者消息中心。</p></div><button class="gh-dialog-close" data-action="close-dialog">×</button></header><div class="gh-dialog-body">${item?`<strong>${item.title_zh}</strong><p class="gh-hint">${item.title_en}</p>`:''}</div><footer class="gh-dialog-foot">${button('取消','close-dialog')}${button('确认发布','confirm-publish','primary')}</footer></section></div>`;return'';}
+  function render(){const r=route();document.documentElement.lang=lang()==='en'?'en':'zh-CN';const pages={inbox,detail,announcements,editor};app.innerHTML=`<div class="gh-app">${topbar(r.role)}<div class="gh-layout">${sidebar(r.role)}<main class="gh-main"><div class="gh-content">${pages[r.page]()}</div></main></div>${dialog()}${state.toast?`<div class="gh-toast ${state.toastError?'error':''}" role="status">${esc(state.toast)}</div>`:''}</div>`;}
+  document.addEventListener('input',event=>{if(event.target.matches('[data-action="message-search"]')){state.keyword=event.target.value;render();requestAnimationFrame(()=>{const input=document.querySelector('[data-action="message-search"]');input?.focus();input?.setSelectionRange(input.value.length,input.value.length);});}});
+  document.addEventListener('change',event=>{if(event.target.matches('[data-upload]')){const label=document.querySelector(`[data-upload-label="${event.target.dataset.upload}"]`);if(label)label.textContent=event.target.files[0]?.name||'选择图片';}});
+  document.addEventListener('click',event=>{const routeButton=event.target.closest('[data-route]');if(routeButton){const id=routeButton.dataset.route;if(routes[id])go(id);else if(id.startsWith('P06'))location.href=`06-游戏创建与发行资料demo.html#/${id}`;else location.href=`07-开发接入与资源中心demo.html#/${id}`;return;}const command=event.target.closest('[data-command]');if(command){event.preventDefault();document.execCommand(command.dataset.command,false,command.dataset.value||null);return;}const c=event.target.closest('[data-action]');if(!c)return;const a=c.dataset.action;if(a==='open-games'){location.href='06-游戏创建与发行资料demo.html#/P06-01';return;}if(a==='open-resources'){location.href='07-开发接入与资源中心demo.html#/P07-01';return;}if(a==='message-tab'){state.tab=c.dataset.tab;return render();}if(a==='category'){state.category=c.dataset.category;return render();}if(a==='mark-all'){const current=ctx.read();ctx.write({messages:(current.messages||[]).map(i=>({...i,read:true}))});return render();}if(a==='open-message'){const id=c.dataset.id;const current=ctx.read();ctx.write({messages:(current.messages||[]).map(i=>i.event_id===id?{...i,read:true}:i)});return go('P08-02',`id=${encodeURIComponent(id)}`);}if(a==='back-inbox')return go('P08-01');if(a==='open-deep-link'){location.href=c.dataset.link;return;}if(a==='new-announcement')return go('P08-04');if(a==='back-announcements')return go('P08-03');if(a==='edit-announcement')return go('P08-04',`id=${c.dataset.id}`);if(a==='locale'){state.locale=c.dataset.locale;return render();}if(a==='insert-image'){state.activeId=c.dataset.target;state.dialog='image';return render();}if(a==='close-dialog'){state.dialog='';return render();}if(a==='confirm-image'){state.dialog='';return showToast('图片已插入正文');}if(a==='save-announcement'){const form=document.querySelector('#announcementForm');const id=form.elements.id.value;const zh=form.elements.title_zh.value.trim();const en=form.elements.title_en.value.trim();const bodyZh=document.querySelector('[data-rich-name="body_zh"]').innerHTML;const bodyEn=document.querySelector('[data-rich-name="body_en"]').innerHTML;if(!zh||!en||!strip(bodyZh)||!strip(bodyEn))return showToast('请补全中英文标题和正文',true);const item={id,title_zh:zh,title_en:en,body_zh:bodyZh,body_en:bodyEn,status:'draft',updated:'2026-09-05 16:55',operator:'李瑜'};const index=state.announcements.findIndex(i=>i.id===id);if(index>=0)state.announcements[index]=item;else state.announcements.unshift(item);ctx.write({announcements:state.announcements});return go('P08-03');}if(a==='publish-announcement'){state.activeId=c.dataset.id;state.dialog='publish';return render();}if(a==='confirm-publish'){if(search.get('scenario')==='publish-failed'){state.dialog='';return showToast('发布失败，草稿已保留',true);}const item=state.announcements.find(i=>i.id===state.activeId);if(item){item.status='published';item.updated='2026-09-05 16:58';const eventId=`EVENT-${item.id}`;ctx.emitEvent({event_id:eventId,event_source:'system',entity_id:item.id,event_type:'announcement',event_status:'published',deep_link:`08-消息通知中心demo.html#/P08-02?id=${eventId}`,title_zh:item.title_zh,title_en:item.title_en,body_zh:strip(item.body_zh),body_en:strip(item.body_en)});ctx.write({announcements:state.announcements});}state.dialog='';return showToast('公告已发布');}if(a==='offline-announcement'){state.activeId=c.dataset.id;state.dialog='offline';return render();}if(a==='confirm-offline'){const item=state.announcements.find(i=>i.id===state.activeId);if(item)item.status='offline';ctx.write({announcements:state.announcements});state.dialog='';return showToast('公告已下线');}});
+  window.addEventListener('hashchange',render);
+  if(!location.hash)go('P08-01');else render();
+})();</script>
+</body>
+</html>
