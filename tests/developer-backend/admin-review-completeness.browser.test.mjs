@@ -91,7 +91,7 @@ test('仅保留三个审核导航，默认进入企业认证审核，区域与�
   assert.match(html, /企业认证审核/);
   assert.match(html, /游戏发布审核/);
   assert.match(html, /资质变更审核/);
-  assert.doesNotMatch(html, /data-nav=["']dashboard["']|游戏资质审核/);
+  assert.doesNotMatch(html, /审核工作台|data-nav=["']dashboard["']|游戏资质审核/);
 
   const { page, errors } = await makePage();
   try {
@@ -104,6 +104,8 @@ test('仅保留三个审核导航，默认进入企业认证审核，区域与�
       ['企企业认证审核', '游游戏发布审核', '证资质变更审核']);
     assert.equal(await page.evaluate(() => window.AdminReviewDemo.state.page), 'list');
     assert.match(await page.locator('#breadcrumb').innerText(), /审核管理\s*\/\s*企业认证审核/);
+    assert.equal(await page.locator('#mainView > .detail-tabs, #mainView > [role="tablist"]').count(), 0, '三类审核不得再做顶部同级 Tab');
+    assert.equal((await page.locator('.page-header h1').allTextContents()).join(''), '企业认证审核');
 
     assert.equal(await page.locator('.topbar [data-global-region]').count(), 0, '区域切换不得继续留在顶栏');
     const region = page.locator('.page-header [data-global-region]');
@@ -164,6 +166,17 @@ test('三类审核在国内与海外队列中覆盖全部业务状态和终态�
         assert.match(await drawer.innerText(), terminalAction, `${type} 终态必须保留实际处理记录`);
         await drawer.locator('header [data-modal-close]').click();
       }
+    }
+    for (const type of Object.keys(matrix)) {
+      await page.goto(url(`/${type}`), { waitUntil: 'load' });
+      await page.getByLabel('审核状态').selectOption('withdrawn');
+      await page.locator('[data-filter-submit]').click();
+      await page.locator('[data-open]').first().click();
+      const drawer = page.locator('#modalRoot .drawer');
+      assert.equal(await drawer.locator('[data-action]').count(), 0, `${type} 已撤销申请应只读，后台不得提供无确认的撤销或恢复入口`);
+      await openDrawerTab(drawer, /审核记录|操作记录/);
+      assert.match(await drawer.innerText(), /撤销申请[\s\S]*申请方/, `${type} 撤销来源应明确记录为申请方`);
+      await drawer.locator('header [data-modal-close]').click();
     }
     assert.deepEqual(errors, []);
   } finally {
@@ -230,9 +243,54 @@ test('单包测试支持开始、失败原因必填、本地附件增删与失�
     assert.ok(ids.includes(packageId));
 
     let card = packageCard(page, packageId);
+    assert.equal(await card.getByRole('button', { name: '开始测试', exact: true }).count(), 1);
+    assert.equal(await card.getByRole('button', { name: '标记通过', exact: true }).count(), 0, '待测试不得直接判定通过');
+    assert.equal(await card.getByRole('button', { name: '标记不通过', exact: true }).count(), 0, '待测试不得直接判定不通过');
+
+    const transitionGuard = await page.evaluate(({ recordId, pendingId }) => {
+      const record = window.AdminReviewDemo.getRecord(recordId);
+      const pending = record.packages.find(item => item.id === pendingId);
+      const passed = record.packages.find(item => item.current && item.testStatus === 'passed');
+      const testing = record.packages.find(item => item.current && item.testStatus === 'testing');
+      const pendingHistory = pending.history.length;
+      const passedHistory = passed.history.length;
+      const testingHistory = testing.history.length;
+      return {
+        pendingResult: window.AdminReviewDemo.updatePackageStatus(recordId, pending.id, 'passed'),
+        pendingStatus: pending.testStatus,
+        pendingHistoryBefore: pendingHistory,
+        pendingHistoryAfter: pending.history.length,
+        passedResult: window.AdminReviewDemo.updatePackageStatus(recordId, passed.id, 'testing'),
+        passedStatus: passed.testStatus,
+        passedHistoryBefore: passedHistory,
+        passedHistoryAfter: passed.history.length,
+        emptyFailureResult: window.AdminReviewDemo.updatePackageStatus(recordId, testing.id, 'failed'),
+        testingStatus: testing.testStatus,
+        testingHistoryBefore: testingHistory,
+        testingHistoryAfter: testing.history.length
+      };
+    }, { recordId: await page.evaluate(() => window.AdminReviewDemo.state.recordId), pendingId: packageId });
+    assert.deepEqual(transitionGuard, {
+      pendingResult: false,
+      pendingStatus: 'pending',
+      pendingHistoryBefore: 0,
+      pendingHistoryAfter: 0,
+      passedResult: false,
+      passedStatus: 'passed',
+      passedHistoryBefore: 1,
+      passedHistoryAfter: 1,
+      emptyFailureResult: false,
+      testingStatus: 'testing',
+      testingHistoryBefore: 1,
+      testingHistoryAfter: 1
+    }, '待测试不可跳过测试中，已通过终态不可覆盖，失败原因不可为空');
+
     await card.getByRole('button', { name: '开始测试', exact: true }).click();
     card = packageCard(page, packageId);
     assert.match(await card.innerText(), /测试中/);
+    assert.equal(await card.getByRole('button', { name: '开始测试', exact: true }).count(), 0);
+    assert.equal(await card.getByRole('button', { name: '标记通过', exact: true }).count(), 1);
+    assert.equal(await card.getByRole('button', { name: '标记不通过', exact: true }).count(), 1);
     await card.getByRole('button', { name: '标记不通过', exact: true }).click();
 
     const failDialog = page.locator('#modalRoot .modal:not(.drawer)');
@@ -266,10 +324,14 @@ test('单包测试支持开始、失败原因必填、本地附件增删与失�
     assert.match(await card.innerText(), /启动后停留在黑屏/);
     assert.match(await card.innerText(), /crash-log\.txt|error-screen\.png/);
     assert.match(await page.locator('#modalRoot .drawer').innerText(), /测试记录/);
-
+    assert.match(await page.locator('#modalRoot .drawer').innerText(), /当前状态：待补充/);
+    assert.equal(await page.locator('#modalRoot .drawer [data-package-action]').count(), 0, '失败后申请进入待补充，当前修订不得继续测试或覆盖结果');
     await card.scrollIntoViewIfNeeded();
     await page.waitForTimeout(250);
     await page.screenshot({ path: path.join(evidence, 'package-test-failed-with-attachments-1440x900.png') });
+    await openDrawerTab(page.locator('#modalRoot .drawer'), /审核记录/);
+    assert.match(await page.locator('#modalRoot .drawer').innerText(), /发布申请转待补充/);
+    assert.match(await page.locator('#modalRoot .drawer').innerText(), /需开发者补传新包体并重新提交/);
     assert.deepEqual(errors, []);
   } finally {
     await page.close();
@@ -456,7 +518,11 @@ test('终态恢复、下架恢复、资质失效与失败重试均要求正确�
       await page.locator('[data-filter-submit]').click();
       await page.locator('[data-open]').first().click();
       let drawer = page.locator('#modalRoot .drawer');
+      const recordId = await page.evaluate(() => window.AdminReviewDemo.state.recordId);
+      const statusBeforeAction = await page.evaluate(id => window.AdminReviewDemo.getRecord(id).status, recordId);
       await drawer.getByRole('button', { name: item.action, exact: true }).click();
+      assert.equal(await page.locator('#modalRoot .modal:not(.drawer)').count(), 1, `${item.action} 必须先进入二次确认弹窗`);
+      assert.equal(await page.evaluate(id => window.AdminReviewDemo.getRecord(id).status, recordId), statusBeforeAction, `${item.action} 打开确认弹窗时不得直接改变状态`);
       await page.locator('[data-action-confirm]').click();
       assert.match(await page.locator('[data-modal-error]').innerText(), /请填写恢复依据/);
       await page.locator('[data-action-reason]').fill(item.reason);

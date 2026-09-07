@@ -193,8 +193,9 @@ test('发行状态和主体关系为平铺单选，海外资质只保留多附�
     await page.locator('[data-profile-field-wrap="releaseStatus"]').screenshot({ path: path.join(evidence, 'flat-release-status.png') });
 
     await section(page, 'qualifications');
-    assert.deepEqual(await page.locator('[data-qualification-scope]').evaluateAll(elements => elements.map(element => element.textContent.trim())), ['全球（不含中国大陆）', '中国大陆']);
-    await page.locator('[data-qualification-card-action="rights"]').click();
+    assert.deepEqual(await page.locator('[data-qualification-region-card]').evaluateAll(elements => elements.map(element => element.dataset.qualificationRegionCard)), ['global', 'domestic']);
+    assert.equal(await page.locator('.pgp-qualification-state').count(), 0, '资质列表不展示跨整页的审核状态条');
+    await page.locator('[data-qualification-region-open="global"]').click();
     assert.equal(await page.locator('select[data-qualification-field="rightsRelationship"]').count(), 0);
     assert.equal(await page.locator('input[type="radio"][data-qualification-field="rightsRelationship"]').count(), 0);
     assert.equal(await page.locator('[data-qualification-ownership]').count(), 1);
@@ -212,9 +213,21 @@ test('发行状态和主体关系为平铺单选，海外资质只保留多附�
     await page.getByText('ownership.png', { exact: true }).waitFor();
     assert.equal(await page.locator('[data-qualification-error="authorization.files"]').isHidden(), true);
     await page.locator('[data-qualification-submit]').click();
-    await page.locator('[data-qualification-pending="reviewing"]').waitFor();
+    await page.locator('[data-qualification-region-card="global"][data-qualification-region-status="reviewing"]').waitFor();
+    assert.equal(await page.locator('[data-qualification-region-card="domestic"][data-qualification-region-status="notSubmitted"]').count(), 1, '两类区域分别展示审核状态');
+    assert.equal(await page.locator('[data-qualification-region-withdraw="global"]').count(), 1, '审核中的区域可撤销');
+    await page.locator('[data-qualification-region-grid]').screenshot({ path: path.join(evidence, 'qualification-regions-independent-review.png') });
     const saved = await page.evaluate(async key => (await window.PublisherProfileStore.loadAll()).find(item => item.gameKey === key)?.draft, gameKey);
     assert.equal(saved.qualifications.pendingApplication.snapshot.authorization.files.length, 1);
+    await page.locator('[data-qualification-region-withdraw="global"]').click();
+    await page.locator('[data-profile-withdraw-confirm]').waitFor();
+    assert.equal(await page.locator('[data-qualification-region-card="global"][data-qualification-region-status="reviewing"]').count(), 1, '二次确认前不得撤销资质审核');
+    await page.locator('[data-profile-withdraw-confirm] .pgp-confirm__dialog').screenshot({ path: path.join(evidence, 'qualification-withdraw-confirm.png') });
+    await page.locator('[data-withdraw-confirm-cancel]').last().click();
+    assert.equal(await page.locator('[data-profile-withdraw-confirm]').count(), 0);
+    await page.locator('[data-qualification-region-withdraw="global"]').click();
+    await page.locator('[data-withdraw-confirm-submit]').click();
+    await page.locator('[data-qualification-region-card="global"][data-qualification-region-status="notSubmitted"]').waitFor();
   } finally { await page.close(); }
 });
 
@@ -260,7 +273,7 @@ test('PC 包体支持包体库占位、整包上传和基于整包的增量上�
     await page.locator('[data-build-upload-field="baseBuildId"]').selectOption(fullId);
     await page.locator('[data-build-upload-file]').setInputFiles({ name: 'patch-1.0.1.zip', mimeType: 'application/zip', buffer: Buffer.from('patch') });
     await page.locator('[data-build-upload-field="executable"]').fill('Game.exe');
-    await page.locator('[data-build-upload-field="launchArgs"]').fill('-release');
+    assert.equal(await page.locator('[data-build-upload-field="launchArgs"]').isVisible(), false, '不展示游戏启动参数');
     await page.locator('[data-build-upload-field="version"]').fill('1.0.1');
     await page.locator('[data-build-upload-field="changelog"]').fill('增量更新：修复启动问题');
     await page.getByRole('button', { name: '保存包体', exact: true }).click();
@@ -324,8 +337,7 @@ test('选国内服后界面回中文、资料定位中文、价格切 CNY 并显
     await section(page, 'catalog');
     assert.match(await page.locator('[data-profile-catalog]').innerText(), /CNY/);
     await section(page, 'qualifications');
-    await page.locator('[data-qualification-scope="domestic"]').click();
-    await page.locator('[data-qualification-card-action="rights"]').click();
+    await page.locator('[data-qualification-region-open="domestic"]').click();
     assert.equal(await page.locator('[data-qualification-field="domestic.licenseNumber"]').count(), 1);
     assert.equal(await page.locator('[data-qualification-field*="apk" i], [data-qualification-field*="sdk" i], [data-qualification-field*="mobile" i]').count(), 0);
   } finally { await page.close(); }
@@ -340,7 +352,7 @@ test('版本发布页内定位器只滚动长页并同步选中态', async () =>
     await page.waitForFunction(value => document.querySelector('.workspace')?.scrollTop > value + 200, before);
     const afterCatalog = await page.locator('.workspace').evaluate(element => element.scrollTop);
     assert.ok(afterCatalog > before + 200, `商品与 SKU 定位应向下滚动，实际 scrollTop=${afterCatalog}`);
-    assert.equal(await page.locator('[data-release-locator]').first().evaluate(element => getComputedStyle(element.parentElement).position), 'sticky');
+    assert.equal(await page.locator('.pgp-release-toolbar').evaluate(element => getComputedStyle(element).position), 'sticky');
     assert.equal(await page.locator('[data-publisher-profile]').getAttribute('data-profile-module'), 'release-workspace');
     assert.equal(await page.locator('[data-release-locator="catalog"]').getAttribute('aria-current'), 'location');
     await page.locator('[data-profile-back-top]').waitFor({ state: 'visible' });
@@ -362,6 +374,9 @@ test('版本记录展示撤销状态并可打开不可变提审快照', async ()
     const submission = (await page.evaluate(key => window.PublisherProfileStore.loadSubmissions(key), gameKey))[0];
     assert.equal(submission.draft.buildPackages[0].testStatus, 'pending', '提审快照中的未测试包体应进入待测试');
     await page.locator('[data-profile-withdraw]').click();
+    await page.locator('[data-profile-withdraw-confirm]').waitFor();
+    assert.equal(await page.locator('[data-profile-status]').filter({ hasText: '审核中' }).count(), 1, '二次确认前不得撤销版本审核');
+    await page.locator('[data-withdraw-confirm-submit]').click();
     await page.locator('[data-profile-status]').filter({ hasText: '待提交' }).waitFor();
     await section(page, 'versions');
     const row = page.locator(`[data-version-record="${submission.id}"]`);

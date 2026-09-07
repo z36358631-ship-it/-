@@ -356,6 +356,29 @@
 .pgp-qualification-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; margin-top:24px; padding-top:20px; border-top:1px solid #e1e9ee; }
 .publisher-game-profile .pgp-button--danger { color:#ac5d5d; border-color:#e1bcbc; background:#fff8f8; }
 [data-qualification-readonly="true"] .pgp-field > :is(input,textarea,select) { color:#758696; border-color:#e1e7ec; background:#f5f7f9; }
+.pgp-qualification-region-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.pgp-qualification-region-card { min-width:0; overflow:hidden; display:grid; grid-template-columns:92px minmax(0,1fr); border:1px solid #dce6ec; border-radius:10px; background:#fff; }
+.pgp-qualification-region-card__mark { display:grid; place-items:center; min-height:172px; color:#62a8b1; background:linear-gradient(145deg,#f3fafb,#eaf4f6); font-size:28px; }
+.pgp-qualification-region-card__body { min-width:0; padding:18px 18px 14px; }
+.pgp-qualification-region-card__heading { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.pgp-qualification-region-card__heading strong { color:#405a70; font-size:14px; font-weight:600; line-height:1.55; }
+.pgp-qualification-region-card__heading span { flex:0 0 auto; padding:3px 8px; color:#62788a; border-radius:999px; background:#f0f4f6; font-size:11px; line-height:1.4; }
+.pgp-qualification-region-card[data-qualification-region-status="reviewing"] .pgp-qualification-region-card__heading span { color:#8b6b2e; background:#fff5df; }
+.pgp-qualification-region-card[data-qualification-region-status="active"] .pgp-qualification-region-card__heading span { color:#2f7968; background:#edf8f5; }
+.pgp-qualification-region-card[data-qualification-region-status="supplement_required"] .pgp-qualification-region-card__heading span { color:#a45757; background:#fff0f0; }
+.pgp-qualification-region-card__body p { margin:10px 0 0; color:#7c8f9f; font-size:12px; line-height:1.75; }
+.pgp-qualification-region-card__body small { display:block; margin-top:10px; color:#9aa7b2; font-size:11px; }
+.pgp-qualification-region-card__actions { grid-column:1/-1; min-height:46px; display:flex; align-items:center; justify-content:flex-end; gap:8px; padding:8px 12px; border-top:1px solid #e7edf1; }
+.pgp-qualification-region-card__actions .pgp-button { min-width:88px; }
+.pgp-qualification-editor__status { flex:0 0 auto; padding:5px 10px; color:#8b6b2e; border-radius:999px; background:#fff5df; font-size:11px; }
+.pgp-confirm { position:fixed; inset:0; z-index:1200; display:grid; place-items:center; padding:24px; }
+.pgp-confirm__backdrop { position:absolute; inset:0; width:100%; height:100%; padding:0; border:0; background:rgba(29,43,54,.34); cursor:default; }
+.pgp-confirm__dialog { position:relative; width:min(420px,calc(100vw - 48px)); padding:22px; border:1px solid #dfe7ec; border-radius:12px; background:#fff; box-shadow:0 18px 48px rgba(35,52,66,.2); }
+.pgp-confirm__dialog header { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.pgp-confirm__dialog h3 { margin:0; color:#31495e; font-size:18px; }
+.pgp-confirm__dialog header button { width:30px; height:30px; padding:0; color:#7d8d9a; border:0; border-radius:6px; background:#f4f6f8; font-size:20px; cursor:pointer; }
+.pgp-confirm__dialog > p { margin:16px 0 0; color:#6f8292; font-size:13px; line-height:1.75; }
+.pgp-confirm__dialog footer { display:flex; justify-content:flex-end; gap:10px; margin-top:22px; }
 @media (max-width:1100px) { .pgp-qualification-files { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (max-width:760px) {
   .pgp-qualification-editor { padding:19px; }
@@ -364,5 +387,19 @@
   .pgp-qualification-files { grid-template-columns:minmax(0,1fr); }
   .pgp-qualification-actions { display:grid; grid-template-columns:minmax(0,1fr); }
   .pgp-qualification-actions .pgp-button { width:100%; }
+  .pgp-qualification-region-grid { grid-template-columns:minmax(0,1fr); }
+  .pgp-qualification-region-card { grid-template-columns:76px minmax(0,1fr); }
+  .pgp-qualification-region-card__mark { min-height:158px; }
   .pgp-choice-tiles { grid-template-columns:minmax(0,1fr); }
+}
+
+/* 版本发布：页内定位、保存状态与提交动作合并为固定操作栏。 */
+.pgp-release-toolbar { position: sticky; top: 0; z-index: 24; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 24px; margin: 0 0 22px; padding: 10px 0 0; border-bottom: 1px solid #dfe5eb; background: #f4f7fa; box-shadow: 0 8px 14px -15px rgba(36,57,76,.65); }
+.pgp-release-toolbar .pgp-release-locator { position: static; z-index: auto; margin: 0; padding: 0; border-bottom: 0; background: transparent; box-shadow: none; }
+.pgp-release-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-bottom: 9px; white-space: nowrap; }
+.pgp-release-actions [data-profile-save-state] { color: #8998a7; font-size: 12px; }
+.pgp-release-workspace .pgp-release-block { scroll-margin-top: 72px; }
+@media (max-width: 760px) {
+  .pgp-release-toolbar { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .pgp-release-actions { justify-content: flex-start; overflow-x: auto; }
 }
