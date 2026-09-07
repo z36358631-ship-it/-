@@ -94,19 +94,21 @@ function assertEqual(actual, expected, label) {
   }
 }
 
-export function loadLatestPrdFixture({ repoRoot, demoDir }) {
+export function loadLatestPrdFixture({ repoRoot, demoDir, moduleId }) {
   const srcDir = path.join(demoDir, 'src');
-  const routes = readJson(path.join(srcDir, 'routes.json'));
+  const allRoutes = readJson(path.join(srcDir, 'routes.json'));
+  const routes = moduleId ? allRoutes.filter(route => route.moduleId === moduleId) : allRoutes;
   const map = readJson(path.join(srcDir, 'prd-page-map.json'));
   const base = readJson(path.join(srcDir, 'fixtures.json'));
   assertEqual(map.sourceOfTruth, 'latest-prd', 'source of truth');
-  assertEqual(routes.length, 37, 'route count');
+  assertEqual(allRoutes.length, 37, 'route count');
 
   const pages = {};
   const counts = {};
   const documentCounts = {};
   const sourceFiles = [];
   for (const module of map.modules) {
+    if (moduleId && module.id !== moduleId) continue;
     const sourcePath = path.join(repoRoot, ...module.file.split('/'));
     if (!fs.existsSync(sourcePath)) throw new Error(`PRD contract mismatch: missing ${module.file}`);
     const markdown = fs.readFileSync(sourcePath, 'utf8');
@@ -216,8 +218,8 @@ export function loadLatestPrdFixture({ repoRoot, demoDir }) {
       version: map.version,
       counts,
       documentCounts,
-      countText: map.modules.map(module => documentCounts[module.id]).join('/'),
-      routeCountText: map.modules.map(module => routes.filter(route => route.moduleId === module.id).length).join('/'),
+      countText: map.modules.filter(module => !moduleId || module.id === moduleId).map(module => documentCounts[module.id]).join('/'),
+      routeCountText: map.modules.filter(module => !moduleId || module.id === moduleId).map(module => routes.filter(route => route.moduleId === module.id).length).join('/'),
       sourceFiles,
     },
   };

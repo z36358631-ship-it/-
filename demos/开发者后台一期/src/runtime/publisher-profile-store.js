@@ -22,6 +22,8 @@
     if (saved.ui) Object.assign(saved.ui, { showMissing: false, publicationOpen: false, reviewPreparing: false });
     const identity = structuredClone(game);
     delete identity.profileDraft;
+    const projectName = String(identity.projectName || '').trim();
+    if (projectName) Object.assign(identity, { projectName, name: projectName });
     const record = { gameKey: draft.gameKey, draft: saved, game: identity, qualifications: structuredClone(saved.qualifications) };
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(['profiles', 'submissions'], 'readwrite');
@@ -33,11 +35,11 @@
         record.draft.reviewRecords = structuredClone(record.reviewRecords);
         record.draft.releaseSubmissions = structuredClone(existing.result?.draft?.releaseSubmissions || saved.releaseSubmissions || []);
         if (existing.result?.draft?.reviewStatus === 'reviewing') {
-          if (submitting) { result = existing.result; return; }
           transaction.abort();
           return;
         }
         if (submitting) {
+          saved.buildPackages = window.PublisherGameBuilds.prepareForSubmission(saved.buildPackages);
           saved.reviewResult = null;
           saved.legacyReview = false;
           saved.submittedAt = savedAt;
@@ -67,10 +69,11 @@
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(['profiles', 'submissions'], 'readwrite');
       const profiles = transaction.objectStore('profiles');
+      const submissions = transaction.objectStore('submissions');
       let result;
       let failure;
       const abort = code => { failure = new Error(code); transaction.abort(); };
-      const snapshot = transaction.objectStore('submissions').get(submissionId);
+      const snapshot = submissions.get(submissionId);
       snapshot.onsuccess = () => {
         if (!snapshot.result || snapshot.result.gameKey !== gameKey) { abort('submission-missing'); return; }
         const request = profiles.get(gameKey);
@@ -84,6 +87,7 @@
           if (record.draft.ui) Object.assign(record.draft.ui, { showMissing: false, reviewPreparing: false });
           result = record;
           profiles.put(record);
+          submissions.put({ ...snapshot.result, status: 'withdrawn', reviewedAt });
         };
       };
       transaction.oncomplete = () => {

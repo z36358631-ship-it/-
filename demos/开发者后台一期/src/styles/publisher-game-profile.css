@@ -1,0 +1,368 @@
+/* 02 版本资料：沿用 PC 控制台外壳，独立管理内容与审核版本。 */
+.publisher-game-profile { --pgp-accent: #00b9bd; color: #27384a; max-width: 1260px; width: 100%; margin: 0 auto; }
+.publisher-game-profile * { box-sizing: border-box; }
+.publisher-game-profile button, .publisher-game-profile input, .publisher-game-profile textarea, .publisher-game-profile select { font: inherit; }
+.publisher-game-profile button { cursor: pointer; }
+.publisher-game-profile :is(button, input, select, textarea):focus-visible { outline: 2px solid #1abcc3; outline-offset: 3px; box-shadow: none; }
+.publisher-game-profile :disabled { cursor: default; }
+.publisher-game-profile button:disabled { opacity: .5; }
+.pgp-title { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 4px 0 24px; }
+.pgp-title h2 { margin: 0; color: #26394b; font-size: 27px; font-weight: 650; }
+.pgp-title > div { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 12px; }
+.pgp-title [data-profile-save-state] { margin-right: 4px; color: #8998a7; font-size: 12px; }
+.publisher-game-profile .pgp-button { position: relative; min-height: 36px; display: inline-flex; align-items: center; justify-content: center; padding: 7px 16px; color: #50667b; border: 1px solid #d4dce5; border-radius: 6px; background: #fff; font-size: 13px; cursor: pointer; }
+.publisher-game-profile .pgp-button--primary { color: #fff; border-color: var(--pgp-accent); background: var(--pgp-accent); }
+.pgp-release-locator { position: sticky; top: 0; z-index: 12; min-width: 0; display: flex; gap: 28px; margin: -2px 0 22px; padding-top: 14px; overflow-x: auto; border-bottom: 1px solid #dfe5eb; background: #f4f7fa; box-shadow: 0 7px 12px -13px rgba(36,57,76,.55); scrollbar-width: none; }
+.pgp-release-locator::-webkit-scrollbar { display: none; }
+.pgp-release-locator button { position: relative; min-width: max-content; padding: 0 1px 13px; color: #647689; border: 0; background: transparent; font-size: 14px; }
+.pgp-release-locator button::after { content: ''; position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: transparent; }
+.pgp-release-locator button:hover { color: #138b99; }
+.pgp-release-locator button.is-active { color: #00a9ad; font-weight: 600; }
+.pgp-release-locator button.is-active::after { background: #00b9bd; }
+.pgp-version-bar { padding: 22px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 20px 30px; border: 1px solid #dfe5eb; border-radius: 14px; background: #fff; box-shadow: 0 4px 12px rgba(35, 57, 77, .025); }
+.pgp-version-bar > div { display: flex; align-items: center; gap: 10px; }
+.pgp-version-bar > div > span { color: #8d9ba9; font-size: 11px; }
+.pgp-version-bar strong, .pgp-version-bar button { padding: 5px 10px; color: #4f6277; border: 1px solid #e5e9ef; border-radius: 18px; background: #fff; font-size: 11px; font-weight: 500; }
+.pgp-version-bar button { display: inline-flex; align-items: center; gap: 9px; }
+.pgp-version-bar button small { color: #a5802a; font-size: 10px; }
+.pgp-version-bar button i { font-style: normal; }
+.pgp-editable { min-width: 0; margin: 0; padding: 0; border: 0; }
+.pgp-release-workspace { min-width: 0; }
+.pgp-release-block { min-width: 0; scroll-margin-top: 68px; }
+.pgp-release-block + .pgp-release-block { margin-top: 44px; padding-top: 34px; border-top: 1px solid #dfe5eb; }
+.pgp-qualification-scopes { display: flex; gap: 4px; width: max-content; max-width: 100%; margin-bottom: 18px; padding: 4px; overflow-x: auto; border-radius: 10px; background: #e9eef3; }
+.pgp-qualification-scopes button { min-width: max-content; padding: 9px 14px; border: 0; border-radius: 7px; background: transparent; color: #657487; font-size: 13px; cursor: pointer; }
+.pgp-qualification-scopes button.is-active { background: #fff; color: #168c98; font-weight: 600; box-shadow: 0 1px 5px rgba(28,48,68,.1); }
+.pgp-qualification-joint-note { margin-top: 18px; padding: 12px 14px; border: 1px solid #cce8ea; border-radius: 8px; background: #f2fbfb; color: #34757a; font-size: 13px; line-height: 1.6; }
+.pgp-card { margin-top: 28px; scroll-margin-top: 100px; outline: none; }
+.pgp-card > header { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin: 0 0 14px; }
+.pgp-card h3 { margin: 0; color: #293f54; font-size: 17px; font-weight: 600; }
+.pgp-card header p { margin: 6px 0 0; color: #95a0ad; font-size: 12px; line-height: 1.7; }
+.pgp-status { flex: 0 0 auto; color: #b58b35; background: #fff8e9; border-radius: 16px; padding: 4px 9px; font-size: 11px; }
+.pgp-status.is-complete { color: #3aa58b; background: #eef9f5; }
+.pgp-card-body { min-width: 0; padding: 24px; border: 1px solid #dfe5eb; border-radius: 14px; background: #fff; }
+.pgp-form-grid { min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.pgp-wide { grid-column: 1 / -1; }
+.pgp-release-field { margin-bottom: 25px; }
+.pgp-release-field h4 { margin: 0 0 12px; color: #4e657a; font-size: 13px; font-weight: 500; }
+.pgp-language-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.pgp-language-tabs button { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; max-width: 100%; padding: 9px 12px; border: 1px solid #d4dce5; border-radius: 6px; color: #63788b; background: white; font-size: 13px; }
+.pgp-language-tabs button.is-active { border-color: #7cdde0; color: #009fa6; background: #effafb; }
+.pgp-language-tabs small { color: #91a0ae; font-size: 10px; }
+.pgp-language-hint { margin-bottom: 22px; line-height: 1.8; }
+.pgp-legacy-content { color: #987532; background: #fff9ea; padding: 10px 12px; border-radius: 5px; font-size: 12px; }
+.pgp-license { max-width: 660px; margin-bottom: 24px; }
+.pgp-review-result { margin-top: 18px; padding: 18px 20px; border: 1px solid #b8dfd3; border-radius: 10px; background: #eff9f5; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
+.pgp-review-result.is-rejected { border-color: #ead5b0; background: #fff9ef; }
+.pgp-review-result p { margin: 8px 0; white-space: pre-wrap; }
+.pgp-review-result > div { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 8px; color: #8596a6; font-size: 12px; }
+.pgp-field { min-width: 0; position: relative; }
+.pgp-field > label, .pgp-check-group legend, .pgp-choice-group > legend { display: block; margin: 0 0 9px; color: #4e657a; font-size: 13px; }
+.pgp-field > :is(input, textarea, select) { min-width: 0; width: 100%; min-height: 38px; padding: 9px 11px; color: #53697d; border: 1px solid #d4dce4; border-radius: 5px; background: #fff; font-size: 13px; }
+.pgp-field > textarea { display: block; resize: vertical; line-height: 1.8; }
+.pgp-field > :is(input, textarea, select):focus { border-color: var(--pgp-accent); }
+.pgp-field > :is(input, textarea)[readonly] { color: #82919f; border-color: #e2e8ed; background: #f7f9fb; }
+.pgp-field > [aria-invalid="true"] { border-color: #d77878; }
+.pgp-required { margin-left: 3px; color: #e96767; font-size: 13px; }
+.pgp-count { margin: 5px 0 0; text-align: right; color: #97a3b0; font-size: 10px; }
+.pgp-hint { margin: 6px 0 12px; color: #93a0ad; font-size: 11px; line-height: 1.7; }
+.pgp-error { margin: 7px 0; color: #cd6262; font-size: 12px; line-height: 1.65; }
+.pgp-error[hidden] { display: none; }
+.pgp-check-group { margin: 0; padding: 0; min-width: 0; border: 0; }
+.pgp-checks { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 25px; }
+.pgp-checks > label { display: inline-flex; align-items: center; gap: 8px; color: #637589; font-size: 13px; cursor: pointer; }
+.pgp-checks input { width: 16px; height: 16px; margin: 0; accent-color: var(--pgp-accent); }
+.pgp-choice-group { min-width: 0; margin: 0; padding: 0; border: 0; }
+.pgp-choice-tiles { min-width: 0; display: grid; grid-template-columns: repeat(var(--pgp-choice-columns, 4), minmax(0, 1fr)); gap: 10px; }
+.pgp-choice-tiles[data-choice-count="3"] { --pgp-choice-columns: 3; }
+.pgp-choice-tile { min-width: 0; min-height: 46px; display: flex; align-items: center; gap: 9px; padding: 11px 13px; color: #5b7083; border: 1px solid #d7e0e7; border-radius: 6px; background: #fff; font-size: 12px; line-height: 1.5; cursor: pointer; }
+.pgp-choice-tile:hover { border-color: #9fd9dc; }
+.pgp-choice-tile.is-selected, .pgp-choice-tile:has(input:checked) { color: #087f87; border-color: #62cdd1; background: #f0fbfb; box-shadow: inset 0 0 0 1px rgba(0,185,189,.08); }
+.pgp-choice-tile:has(input:focus-visible) { outline: 2px solid #1abcc3; outline-offset: 3px; }
+.pgp-choice-tile:has(input:disabled) { cursor: default; opacity: .7; }
+.pgp-choice-tile input { flex: 0 0 auto; width: 15px; height: 15px; margin: 0; accent-color: var(--pgp-accent); }
+.pgp-choice-tile span { min-width: 0; overflow-wrap: anywhere; }
+.pgp-card-body > .pgp-check-group { margin-bottom: 24px; }
+.pgp-basic-grid { min-width: 0; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 26px; align-items: start; }
+.pgp-single-upload { min-width: 0; }
+.pgp-single-upload h4 { margin: 0 0 6px; color: #486077; font-size: 13px; font-weight: 500; }
+.pgp-upload-empty { width: 146px; min-height: 142px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 9px; position: relative; overflow: hidden; border: 1px dashed #d9e0e7; border-radius: 6px; background: #fafbfd; cursor: pointer; }
+.pgp-upload-empty > span { color: #b5c1cb; font-size: 30px; font-weight: 200; }
+.pgp-upload-empty > strong { color: #a0adba; font-size: 12px; font-weight: 400; }
+.pgp-upload-empty input, .pgp-text-action input, .pgp-button > input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.pgp-upload-empty:focus-within, .pgp-text-action:focus-within, .pgp-button:focus-within { outline: 2px solid #1abcc3; outline-offset: 3px; }
+.pgp-asset-tabs { display: flex; gap: 22px; border-bottom: 1px solid #e5e9ee; margin-bottom: 22px; }
+.pgp-asset-tabs button { padding: 0 1px 12px; display: flex; align-items: center; gap: 7px; color: #687a8d; border: 0; border-bottom: 2px solid transparent; background: none; font-size: 13px; }
+.pgp-asset-tabs button.is-active { color: #263f56; border-bottom-color: #405d72; }
+.pgp-asset-tabs button > span { color: #a3adba; font-size: 11px; }
+.pgp-image-categories { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 15px; }
+.pgp-image-categories button { padding: 7px 12px; color: #728496; border: 1px solid #e1e7ed; border-radius: 5px; background: #fff; font-size: 12px; }
+.pgp-image-categories button.is-active { color: #139ba5; border-color: #a1dcdf; background: #f2fbfb; }
+.pgp-image-categories small { margin-left: 7px; font-size: 10px; opacity: .7; }
+.pgp-drop-zone { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; padding: 24px 16px; min-height: 144px; text-align: center; border: 1px dashed #dfe5eb; border-radius: 7px; background: #fafbfd; }
+.pgp-drop-zone.is-drag-over { border-color: var(--pgp-accent); background: #ecfafa; }
+.pgp-drop-zone > p, .pgp-drop-zone > small { margin: 0; color: #94a2b0; font-size: 12px; line-height: 1.6; }
+.pgp-drop-zone > small { font-size: 11px; }
+.pgp-asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 14px; margin-top: 17px; }
+.pgp-asset { min-width: 0; border: 1px solid #e1e7ed; border-radius: 6px; overflow: hidden; background: #fff; }
+.pgp-asset > img, .pgp-asset > video { display: block; width: 100%; height: 126px; object-fit: contain; background: #f4f7fa; }
+.pgp-asset > video { height: auto; min-height: 0; aspect-ratio: 16 / 9; background: #13232f; }
+.pgp-basic-grid > .pgp-single-upload .pgp-asset > img { height: 174px; }
+.pgp-asset-info { padding: 10px 11px; }
+.pgp-asset-info strong { display: block; overflow: hidden; color: #62768b; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; }
+.pgp-asset-info small { display: block; margin-top: 4px; color: #9ba7b4; font-size: 10px; }
+.pgp-asset-actions { display: flex; align-items: center; justify-content: flex-end; gap: 15px; padding: 7px 11px; border-top: 1px solid #edf0f4; }
+.pgp-text-action, .pgp-asset-actions button { position: relative; padding: 0; color: #3aa2b1; background: none; border: 0; font-size: 11px; overflow: hidden; cursor: pointer; }
+.pgp-asset-actions button { color: #8998a8; }
+.pgp-asset-placeholder { min-height: 92px; display: grid; place-items: center; color: #b5bfca; background: #f7f9fb; font-size: 32px; }
+.pgp-asset.is-unavailable .pgp-asset-info small { color: #bf9253; }
+.pgp-video-grid, .pgp-qualification-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.pgp-qualification-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.pgp-qualification-note { margin: 0 0 20px; color: #7c8da0; font-size: 12px; line-height: 1.8; }
+.pgp-document { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 112px; padding: 15px; gap: 9px; color: #8094a6; background: #f8fafc; }
+.pgp-document > span { padding: 4px 8px; color: #8aa0b2; border: 1px solid #cfdce6; border-radius: 3px; font-size: 10px; }
+.pgp-document > strong { max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 11px; }
+.pgp-empty-assets { color: #a7b2bd; font-size: 12px; }
+.pgp-publication { padding: 22px 24px; margin-top: 16px; border: 1px solid #d8e7ed; border-radius: 10px; background: #f8fcfd; scroll-margin-top: 100px; }
+.pgp-publication[hidden] { display: none; }
+.pgp-publication h3 { margin: 0 0 17px; font-size: 15px; }
+.pgp-publication > .pgp-field { max-width: 420px; margin-top: 20px; }
+.pgp-publication > p, .pgp-package-note, .pgp-review-note { margin: 17px 0 0; color: #8497a9; font-size: 12px; line-height: 1.8; }
+.pgp-package-note { padding: 13px 17px; border-left: 3px solid #b6d9df; background: #f0f8fa; }
+.pgp-review-note { margin-bottom: 24px; }
+.pgp-missing { padding: 20px 23px; margin-top: 20px; border: 1px solid #ecd8ac; border-radius: 10px; background: #fffdf7; }
+.pgp-missing h3 { margin: 0; color: #8c713c; font-size: 15px; }
+.pgp-missing > p { color: #a69779; font-size: 12px; }
+.pgp-missing ul { list-style: none; padding: 0; margin: 15px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 20px; }
+.pgp-missing button { min-width: 0; width: 100%; padding: 8px 0; display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 10px; text-align: left; border: 0; background: transparent; color: #967b45; }
+.pgp-missing button strong { font-size: 12px; font-weight: 500; }
+.pgp-missing button span { grid-column: 1; margin-top: 4px; color: #b1a387; font-size: 11px; }
+.pgp-missing button i { grid-column: 2; grid-row: 1 / 3; font-style: normal; }
+.pgp-locked, .pgp-upload-status { margin: 16px 0; padding: 13px 16px; color: #4e8b9a; border: 1px solid #cfe4e9; border-radius: 7px; background: #f0f9fb; font-size: 12px; line-height: 1.8; }
+.pgp-locked > p { margin: 0; }
+.pgp-submission { display: flex; flex-wrap: wrap; gap: 12px 28px; margin: 12px 0 0; }
+.pgp-submission > div { display: flex; flex-wrap: wrap; gap: 6px 10px; }
+.pgp-submission dt { color: #8aa1ac; font-size: 11px; }
+.pgp-submission dd { margin: 0; overflow-wrap: anywhere; color: #527a8c; font-size: 11px; }
+.pgp-editable[data-profile-locked] .pgp-card-body { background: #fcfdfe; }
+@media (max-width: 1100px) { .pgp-title { align-items: flex-start; }.pgp-title > div { gap: 9px; }.pgp-title [data-profile-save-state] { flex-basis: 100%; text-align: right; }.pgp-basic-grid { grid-template-columns: 170px minmax(0, 1fr); gap: 20px; }.pgp-version-bar { gap: 15px 23px; }.pgp-qualification-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .pgp-title { flex-direction: column; gap: 14px; }.pgp-title h2 { font-size: 24px; }.pgp-title > div { justify-content: flex-start; }.pgp-title [data-profile-save-state] { text-align: left; }.pgp-card-body { padding: 20px; }.pgp-basic-grid, .pgp-form-grid { grid-template-columns: minmax(0, 1fr); }.pgp-basic-grid > .pgp-single-upload { max-width: 220px; }.pgp-video-grid, .pgp-qualification-grid, .pgp-missing ul { grid-template-columns: minmax(0, 1fr); }.pgp-version-bar { padding: 18px; }.pgp-version-bar > div { flex-wrap: wrap; }.pgp-card > header { gap: 12px; }.pgp-asset-tabs { gap: 14px; }.pgp-asset-tabs button { font-size: 12px; }.pgp-checks { gap: 13px 18px; }.pgp-missing, .pgp-publication { padding: 19px; } }
+
+/* 发行设置按地区、发行状态、生效时间依次展示。 */
+.pgp-release-field { margin-top: 24px; }
+.pgp-release-timing { margin-top: 24px; padding-top: 20px; border-top: 1px solid #e5edf2; }
+.pgp-release-timing > h4 { margin: 0 0 14px; font-size: 14px; }
+
+/* 收费设置：模式与所选发行范围对应的单次买断价格。 */
+.pgp-pricing-model { min-width: 0; padding: 0; margin: 0; border: 0; }
+.pgp-pricing-model > legend { margin: 0 0 14px; color: #506479; font-size: 13px; }
+.pgp-pricing-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.pgp-pricing-option { min-width: 0; min-height: 88px; padding: 16px; display: flex; align-items: flex-start; gap: 11px; border: 1px solid #dae4ed; border-radius: 7px; background: #fff; cursor: pointer; }
+.pgp-pricing-option.is-selected { border-color: #00aeb5; background: #f1fbfb; }
+.pgp-pricing-option:has(input:focus-visible) { outline: 2px solid #2bbfc3; outline-offset: 3px; }
+.pgp-pricing-option:has(input:disabled) { cursor: default; }
+.pgp-pricing-option input { width: 16px; height: 16px; margin: 2px 0 0; accent-color: #00aeb5; flex: 0 0 auto; }
+.pgp-pricing-option span { min-width: 0; display: grid; gap: 8px; }
+.pgp-pricing-option strong { color: #3c5368; font-size: 13px; font-weight: 500; }
+.pgp-pricing-option small { color: #8497a8; font-size: 12px; line-height: 1.65; }
+.pgp-pricing-prices { margin-top: 23px; }
+.pgp-pricing-prices > .pgp-field { min-width: 0; }
+.pgp-pricing-region-hint { margin-top: 18px; }
+.pgp-pricing-legacy { margin: 0 0 18px; color: #8192a3; font-size: 12px; line-height: 1.8; }
+.pgp-status.is-historical { color: #8192a3; background: #f1f4f7; }
+@media (max-width: 760px) { .pgp-pricing-options { grid-template-columns: minmax(0, 1fr); }.pgp-pricing-option { min-height: 78px; } }
+
+/* 资质分组沿用资料卡，按发行范围和联网方式展示适用信息。 */
+.pgp-qualification-group { min-width: 0; }
+.pgp-qualification-group + .pgp-qualification-group { margin-top: 26px; padding-top: 23px; border-top: 1px solid #e6ecf1; }
+.pgp-qualification-group > h4 { margin: 0 0 15px; color: #425c70; font-size: 14px; font-weight: 500; }
+.pgp-qualification-group > .pgp-form-grid + .pgp-qualification-grid { margin-top: 22px; }
+.pgp-compliance-ack > label { display: flex; align-items: flex-start; gap: 9px; line-height: 1.7; }
+.pgp-compliance-ack input { flex: 0 0 auto; margin: 3px 0 0; width: 16px; height: 16px; accent-color: var(--pgp-accent); }
+.pgp-compliance-ack > a { display: inline-block; margin-left: 25px; color: #209eab; font-size: 12px; line-height: 1.7; }
+.pgp-compliance-ack [aria-invalid="true"] { outline: 1px solid #d77878; outline-offset: 2px; }
+
+/* 商品与版本记录 */
+.pgp-module-intro { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin:0 0 18px; }
+.pgp-module-intro h3 { margin:0; color:#334f65; font-size:18px; }
+.pgp-module-intro p { margin:7px 0 0; color:#8294a5; font-size:12px; line-height:1.7; }
+.pgp-sku-list { display:grid; gap:16px; }
+.pgp-sku-card { padding:22px; border:1px solid #e0e7ed; border-radius:10px; background:#fff; }
+.pgp-sku-card > header { display:flex; justify-content:space-between; gap:16px; margin-bottom:20px; }
+.pgp-sku-card > header div { display:grid; grid-template-columns:auto 1fr; align-items:center; gap:5px 10px; }
+.pgp-sku-card > header small { color:#17a6ad; font-size:10px; letter-spacing:.08em; }
+.pgp-sku-card > header h4 { grid-column:1 / -1; margin:0; color:#344f64; font-size:16px; }
+.pgp-sku-card > header span { grid-column:1 / -1; color:#9aa7b3; font-size:11px; }
+.pgp-link-danger { align-self:flex-start; padding:0; color:#b26d6d; border:0; background:none; font-size:12px; }
+.pgp-sku-free-note { margin:0; padding:13px 15px; color:#71889a; border-radius:6px; background:#f5f8fa; font-size:12px; }
+.pgp-current-version { margin-bottom: 38px; padding: 22px; border: 1px solid #dfe5eb; border-radius: 14px; background: #fff; box-shadow: 0 4px 12px rgba(35,57,77,.025); }
+.pgp-current-version > header h3 { margin: 0; color: #2d4358; font-size: 15px; }
+.pgp-current-version > header p { margin: 7px 0 20px; color: #8c9aa8; font-size: 12px; line-height: 1.7; }
+.pgp-current-version > div { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 30px; padding: 17px 18px; border-radius: 9px; background: #f6f7f8; }
+.pgp-current-version > div > span { display: inline-flex; align-items: center; gap: 11px; color: #8a98a6; font-size: 11px; }
+.pgp-current-version strong { color: #344d62; font-size: 12px; }
+.pgp-current-version b, .pgp-version-record__row > b { padding: 4px 9px; color: #19866f; border-radius: 999px; background: #edf9f4; font-size: 11px; font-weight: 500; }
+.pgp-version-record__row > b { justify-self: start; }
+.pgp-current-version [data-version-status="draft"], .pgp-version-record__row > [data-version-status="draft"] { color: #667687; background: #f0f2f4; }
+.pgp-current-version [data-version-status="reviewing"], .pgp-version-record__row > [data-version-status="reviewing"] { color: #347c9c; background: #edf6fa; }
+.pgp-current-version [data-version-status="rejected"], .pgp-version-record__row > [data-version-status="rejected"] { color: #a6762b; background: #fff7e7; }
+.pgp-current-version [data-version-status="withdrawn"], .pgp-current-version [data-version-status="expired"], .pgp-current-version [data-version-status="delisted"], .pgp-version-record__row > :is([data-version-status="withdrawn"],[data-version-status="expired"],[data-version-status="delisted"]) { color: #7e8994; background: #f0f2f4; }
+.pgp-version-list-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+.pgp-version-list-head h3 { margin: 0; color: #2f455a; font-size: 16px; }
+.pgp-version-list-head h3 small { margin-left: 6px; color: #96a2ae; font-size: 11px; font-weight: 400; }
+.pgp-version-list-head p { margin: 6px 0 0; color: #8193a3; font-size: 12px; line-height: 1.7; }
+.pgp-version-list-head > div:last-child { display: flex; align-items: center; gap: 10px; }
+.pgp-version-list-head button { width: 30px; height: 30px; padding: 0; color: #536b7d; border: 1px solid #d4dde5; border-radius: 6px; background: #fff; font-size: 17px; }
+.pgp-version-refreshed { min-width: max-content; color: #7f909f; font-size: 11px; }
+.pgp-version-table-scroll { min-width: 0; max-width: 100%; overflow-x: auto; border-bottom: 1px solid #e7ecf0; scrollbar-width: thin; }
+.pgp-version-table-head, .pgp-version-record__row { min-width: 850px; display: grid; grid-template-columns: minmax(220px,1.3fr) 150px 180px 120px 150px; align-items: center; gap: 16px; }
+.pgp-version-table-head { padding: 13px 20px; color: #77899a; background: #f8fafb; font-size: 11px; }
+.pgp-version-list { min-width: 0; }
+.pgp-version-record { min-width: 0; border-bottom: 1px solid #e7ecf0; background: transparent; }
+.pgp-version-record__row { padding: 15px 20px; }
+.pgp-version-record__row > time, .pgp-version-record__row > span { color: #5f7487; font-size: 11px; }
+.pgp-version-record__name { min-width: 0; display: flex; align-items: center; gap: 11px; }
+.pgp-version-record__name > span { flex: 0 0 auto; width: 34px; height: 34px; display: grid; place-items: center; color: #5f7181; border-radius: 8px; background: #f3f5f6; font-size: 16px; }
+.pgp-version-record__name > div { min-width: 0; display: grid; gap: 5px; }
+.pgp-version-record__name strong { overflow: hidden; color: #344c61; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.pgp-version-record__name button { width: max-content; padding: 0; color: #168eaa; border: 0; background: transparent; font-size: 11px; }
+.pgp-version-record__toggle { justify-self: end; padding: 5px 0; color: #7b8996; border: 0; background: transparent; font-size: 11px; }
+.pgp-version-record__toggle i { display: inline-block; margin-left: 7px; font-style: normal; transition: transform .16s ease; }
+.pgp-version-record.is-expanded .pgp-version-record__toggle i { transform: rotate(180deg); }
+.pgp-version-operations { margin: 0 16px 14px; padding: 16px 18px 8px; overflow-x: auto; border: 1px solid #dfe5ea; border-radius: 12px; background: #fff; }
+.pgp-version-operations[hidden] { display: none; }
+.pgp-version-reminder { min-width: 760px; margin-bottom: 10px; padding: 14px 16px; color: #55687a; border-radius: 8px; background: #f6f7f8; }
+.pgp-version-reminder strong { display: block; color: #3e5265; font-size: 12px; }
+.pgp-version-reminder p { margin: 6px 0 0; white-space: pre-wrap; color: #66798a; font-size: 11px; line-height: 1.75; }
+.pgp-version-operation-head, .pgp-version-operation-row { min-width: 760px; display: grid; grid-template-columns: 145px minmax(280px,1fr) 120px 120px; gap: 16px; padding: 10px 12px; }
+.pgp-version-operation-head { color: #94a0ac; border-bottom: 1px solid #e8edf1; font-size: 10px; }
+.pgp-version-operation-row { align-items: start; color: #65798b; border-bottom: 1px solid #edf1f4; font-size: 11px; }
+.pgp-version-operation-row:last-child { border-bottom: 0; }
+.pgp-version-operation-row time, .pgp-version-operation-row p, .pgp-version-operation-row span { margin: 0; color: inherit; font-size: inherit; line-height: 1.7; }
+.pgp-version-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 22px; color: #788998; font-size: 11px; }
+.pgp-version-pagination button, .pgp-version-pagination b { width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 1px solid #d8e0e7; border-radius: 6px; background: #fff; font-size: 12px; font-weight: 400; }
+.pgp-version-pagination button:disabled { opacity: .35; }
+.pgp-version-pagination b { color: #1b788e; border-color: #9bcbd4; }
+.pgp-empty-state { padding:48px 20px; text-align:center; color:#8193a4; border:1px dashed #d9e2e9; border-radius:10px; background:#fafcfd; }
+.pgp-empty-state strong { display:block; color:#526b7f; font-size:14px; }
+.pgp-empty-state p { margin:8px 0 0; font-size:12px; }
+.pgp-version-snapshot { min-width:0; }
+.pgp-version-back { display:inline-flex; align-items:center; gap:8px; padding:0; margin:0 0 17px; color:#5f788c; border:0; background:none; font-size:12px; cursor:pointer; }
+.pgp-version-back > span { font-size:16px; }
+.pgp-version-snapshot__header { min-width:0; display:flex; align-items:flex-start; justify-content:space-between; gap:18px; padding:22px 24px; border:1px solid #dce8ec; border-radius:10px; background:linear-gradient(145deg,#f8fcfd,#f1f8f9); }
+.pgp-version-snapshot__header > div { min-width:0; }
+.pgp-version-snapshot__header span { color:#159ca5; font-size:11px; letter-spacing:.08em; }
+.pgp-version-snapshot__header h3 { margin:6px 0 0; color:#344f64; font-size:20px; overflow-wrap:anywhere; }
+.pgp-version-snapshot__header p { margin:8px 0 0; color:#7e92a2; font-size:12px; line-height:1.7; }
+.pgp-version-snapshot__header > strong { flex:0 0 auto; padding:6px 10px; color:#258d88; border:1px solid #bfe0db; border-radius:999px; background:#f2fbf8; font-size:11px; font-weight:500; }
+.pgp-version-summary,.pgp-version-section > dl,.pgp-version-sku-card dl,.pgp-version-skus article dl { min-width:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0; margin:0; }
+.pgp-version-summary { margin-top:14px; border:1px solid #e2e9ee; border-radius:9px; background:#fff; overflow:hidden; }
+.pgp-version-fact { min-width:0; padding:14px 16px; border-bottom:1px solid #edf1f4; }
+.pgp-version-fact:nth-last-child(-n+2) { border-bottom:0; }
+.pgp-version-fact.is-wide { grid-column:1 / -1; }
+.pgp-version-fact dt { color:#8b9aa8; font-size:10px; }
+.pgp-version-fact dd { margin:5px 0 0; color:#455f73; font-size:12px; line-height:1.65; overflow-wrap:anywhere; }
+.pgp-version-section { min-width:0; margin-top:16px; padding:21px 22px; border:1px solid #e1e8ed; border-radius:10px; background:#fff; }
+.pgp-version-section > header { min-width:0; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:17px; }
+.pgp-version-section > header h4 { margin:0; color:#3f596d; font-size:15px; }
+.pgp-version-section > header span { max-width:65%; color:#70889a; font-size:11px; text-align:right; overflow-wrap:anywhere; }
+.pgp-version-section > dl { border:1px solid #edf1f4; border-radius:7px; overflow:hidden; }
+.pgp-version-territories { display:flex; flex-wrap:wrap; gap:8px; margin-top:15px; }
+.pgp-version-territories > span { min-width:0; display:inline-flex; align-items:center; gap:7px; padding:7px 10px; color:#526b7e; border:1px solid #dce7ec; border-radius:5px; background:#f8fbfc; }
+.pgp-version-territories b { font-size:11px; font-weight:500; }
+.pgp-version-territories small { color:#9aa8b4; font-size:9px; }
+.pgp-version-territories p { margin:0; color:#8b9ba9; font-size:12px; }
+.pgp-version-locales,.pgp-version-skus { min-width:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); gap:12px; }
+.pgp-version-locales article,.pgp-version-skus article { min-width:0; padding:16px; border:1px solid #e5eaef; border-radius:8px; background:#fafcfd; }
+.pgp-version-locales article > header,.pgp-version-skus article > header { min-width:0; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.pgp-version-locales article > header strong,.pgp-version-skus article > header strong { color:#425d71; font-size:12px; overflow-wrap:anywhere; }
+.pgp-version-locales article > header span,.pgp-version-skus article > header span,.pgp-version-skus article > header small { color:#168f97; font-size:10px; }
+.pgp-version-locales article > p { margin:12px 0; color:#536b7e; font-size:12px; line-height:1.65; overflow-wrap:anywhere; }
+.pgp-version-locales ul { display:flex; flex-wrap:wrap; gap:7px; padding:0; margin:0; list-style:none; }
+.pgp-version-locales li { padding:4px 7px; border-radius:4px; font-size:10px; }
+.pgp-version-locales li.is-complete { color:#288270; background:#eaf7f3; }
+.pgp-version-locales li.is-missing { color:#9b7644; background:#fbf4e9; }
+.pgp-version-skus article > header { margin-bottom:13px; }
+.pgp-version-skus article > header > div { min-width:0; display:grid; gap:5px; }
+.pgp-version-skus article > header small { color:#8d9daa; overflow-wrap:anywhere; }
+.pgp-version-skus article dl { grid-template-columns:minmax(0,1fr); border-top:1px solid #e8edf1; }
+.pgp-version-skus .pgp-version-fact { padding:10px 0; }
+.pgp-version-skus .pgp-version-fact:last-child { border-bottom:0; }
+.pgp-version-empty-inline { min-width:0; padding:24px; color:#8496a5; border:1px dashed #dbe3e9; border-radius:7px; background:#fafcfd; font-size:12px; text-align:center; }
+.pgp-version-snapshot--state { min-height:360px; }
+.pgp-version-load-state { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:9px; min-height:280px; padding:32px; text-align:center; border:1px dashed #d9e3e9; border-radius:10px; background:#fafcfd; }
+.pgp-version-load-state > span { display:grid; place-items:center; width:40px; height:40px; color:#4b9ca3; border:1px solid #c9e0e3; border-radius:50%; font-size:18px; }
+.pgp-version-load-state strong { color:#4a6275; font-size:14px; }
+.pgp-version-load-state p { max-width:470px; margin:0; color:#8999a7; font-size:12px; line-height:1.7; }
+.pgp-back-top { position: fixed; right: 30px; bottom: 28px; z-index: 30; width: 42px; height: 42px; display: grid; place-items: center; padding: 0; color: #fff; border: 0; border-radius: 50%; background: #00aeb3; box-shadow: 0 8px 22px rgba(16,65,82,.2); font-size: 20px; }
+.pgp-back-top:hover { background: #009ba1; }
+.pgp-back-top[hidden] { display: none; }
+@media (max-width:760px) { .pgp-module-intro{flex-direction:column}.pgp-sku-card{padding:18px}.pgp-version-list article{grid-template-columns:minmax(0,1fr) auto}.pgp-version-list article>button{grid-column:1/-1}.pgp-version-list article>div:nth-child(2){text-align:left} }
+@media (max-width:760px) { .pgp-version-snapshot__header{padding:19px;flex-direction:column}.pgp-version-snapshot__header>strong{align-self:flex-start}.pgp-version-summary,.pgp-version-section>dl{grid-template-columns:minmax(0,1fr)}.pgp-version-fact,.pgp-version-fact:nth-last-child(-n+2){border-bottom:1px solid #edf1f4}.pgp-version-fact:last-child{border-bottom:0}.pgp-version-section{padding:18px}.pgp-version-section>header{flex-direction:column;gap:7px}.pgp-version-section>header span{max-width:100%;text-align:left}.pgp-version-load-state{min-height:240px;padding:24px 18px} }
+@media (max-width:760px) { .pgp-back-top { right: 16px; bottom: 18px; } }
+
+/* 资质认证：资质卡用于概览，编辑器承载独立提交与审核状态。 */
+.pgp-qualification-workspace { min-width:0; }
+.pgp-qualification-state { display:flex; flex-wrap:wrap; align-items:center; gap:7px 16px; margin:0 0 18px; padding:13px 16px; color:#7b632c; border:1px solid #ead9b6; border-radius:8px; background:#fffaf0; font-size:12px; line-height:1.7; }
+.pgp-qualification-state strong { color:#775f2a; font-size:12px; font-weight:600; }
+.pgp-qualification-state p { flex-basis:100%; margin:0; white-space:pre-wrap; overflow-wrap:anywhere; }
+.pgp-qualification-state small { color:#998660; font-size:11px; }
+.pgp-qualification-state.is-active { color:#347f6e; border-color:#bfe0d7; background:#f1faf7; }
+.pgp-qualification-state.is-active strong { color:#2f7968; }
+.pgp-qualification-state.is-active small { color:#6b9188; }
+.pgp-qualification-state--rejected { color:#a45757; border-color:#ecd0d0; background:#fff6f6; }
+.pgp-qualification-state--rejected strong { color:#964d4d; }
+.pgp-qualification-card { min-height:232px; display:flex; flex-direction:column; }
+.pgp-qualification-card > .pgp-asset-placeholder { min-height:92px; color:#69a7ae; background:linear-gradient(145deg,#f3fafb,#edf5f7); font-size:30px; }
+.pgp-qualification-card > .pgp-asset-info { flex:1; }
+.pgp-qualification-card .pgp-asset-info strong { color:#4a6176; font-size:13px; font-weight:500; }
+.pgp-qualification-card .pgp-asset-info small { color:#77909f; }
+.pgp-qualification-card .pgp-asset-info .pgp-hint { margin:8px 0 0; }
+.pgp-qualification-card .pgp-asset-actions { min-height:38px; }
+.pgp-qualification-card .pgp-asset-actions button { color:#1699a2; }
+.pgp-qualification-editor { min-width:0; margin-top:24px; padding:24px; border:1px solid #dce7eb; border-radius:10px; background:#fbfdfe; }
+.pgp-qualification-editor > header { display:flex; justify-content:space-between; gap:18px; margin-bottom:22px; }
+.pgp-qualification-editor > header h4 { margin:0; color:#3e596e; font-size:16px; font-weight:600; }
+.pgp-qualification-editor > header p { margin:7px 0 0; color:#8296a7; font-size:12px; line-height:1.75; }
+.pgp-qualification-form-section { min-width:0; margin-top:24px; padding-top:23px; border-top:1px solid #e2eaf0; }
+.pgp-qualification-form-section > h4 { margin:0; color:#425d72; font-size:14px; font-weight:600; }
+.pgp-qualification-form-section > p { margin:7px 0 18px; color:#8396a7; font-size:12px; line-height:1.75; }
+.pgp-qualification-form-section > .pgp-form-grid + .pgp-qualification-upload,
+.pgp-qualification-form-section > .pgp-qualification-upload + .pgp-form-grid,
+.pgp-qualification-form-section > .pgp-form-grid + .pgp-form-grid { margin-top:20px; }
+.pgp-qualification-upload { min-width:0; margin-top:20px; padding:18px; border:1px solid #e0e8ee; border-radius:8px; background:#fff; }
+.pgp-qualification-upload > header { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; }
+.pgp-qualification-upload > header h5 { margin:0; color:#4a6176; font-size:13px; font-weight:500; }
+.pgp-qualification-upload > header p { margin:6px 0 0; color:#8a9aa8; font-size:11px; line-height:1.7; }
+.pgp-qualification-upload > header .pgp-button { flex:0 0 auto; overflow:hidden; }
+.pgp-qualification-files { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:15px; }
+.pgp-qualification-files article { min-width:0; display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:9px; padding:11px 12px; border:1px solid #e5ebf0; border-radius:6px; background:#fafcfd; }
+.pgp-qualification-files article > span { display:grid; place-items:center; width:24px; height:28px; color:#65a6ae; border:1px solid #cbe0e4; border-radius:4px; background:#f0f8f9; font-size:14px; }
+.pgp-qualification-files article > div { min-width:0; }
+.pgp-qualification-files strong,.pgp-qualification-files small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pgp-qualification-files strong { color:#536a7e; font-size:11px; font-weight:500; }
+.pgp-qualification-files small { margin-top:3px; color:#98a5b1; font-size:10px; }
+.pgp-qualification-files button { padding:0; color:#9a7777; border:0; background:none; font-size:11px; }
+.pgp-qualification-upload > .pgp-empty-assets { margin:14px 0 0; padding:14px; border-radius:6px; background:#f7f9fb; }
+.pgp-qualification-upload-trigger { position:relative; width:152px; min-height:118px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:7px; margin-top:15px; padding:14px; color:#788d9e; border:1px dashed #ccd8e2; border-radius:7px; background:#fbfcfd; text-align:center; cursor:pointer; }
+.pgp-qualification-upload-trigger:hover { color:#168e98; border-color:#83cdd2; background:#f3fbfb; }
+.pgp-qualification-upload-trigger:focus-within { outline:2px solid #1abcc3; outline-offset:3px; }
+.pgp-qualification-upload-trigger > span { color:#7b8d9c; font-size:25px; line-height:1; }
+.pgp-qualification-upload-trigger > strong { color:inherit; font-size:12px; font-weight:500; }
+.pgp-qualification-upload-trigger > small { color:#9aa8b4; font-size:10px; line-height:1.5; }
+.pgp-qualification-online { min-width:0; margin-top:20px; padding:18px; border:1px solid #d8e7eb; border-radius:8px; background:#f6fbfc; }
+.pgp-qualification-online > h5 { margin:0; color:#456275; font-size:13px; font-weight:600; }
+.pgp-qualification-online > p { margin:7px 0 17px; color:#7e94a4; font-size:12px; line-height:1.75; }
+.pgp-qualification-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; margin-top:24px; padding-top:20px; border-top:1px solid #e1e9ee; }
+.publisher-game-profile .pgp-button--danger { color:#ac5d5d; border-color:#e1bcbc; background:#fff8f8; }
+[data-qualification-readonly="true"] .pgp-field > :is(input,textarea,select) { color:#758696; border-color:#e1e7ec; background:#f5f7f9; }
+@media (max-width:1100px) { .pgp-qualification-files { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:760px) {
+  .pgp-qualification-editor { padding:19px; }
+  .pgp-qualification-upload > header { flex-direction:column; }
+  .pgp-qualification-upload > header .pgp-button { width:100%; }
+  .pgp-qualification-files { grid-template-columns:minmax(0,1fr); }
+  .pgp-qualification-actions { display:grid; grid-template-columns:minmax(0,1fr); }
+  .pgp-qualification-actions .pgp-button { width:100%; }
+  .pgp-choice-tiles { grid-template-columns:minmax(0,1fr); }
+}

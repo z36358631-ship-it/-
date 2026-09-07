@@ -255,28 +255,58 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     </div>`;
   };
 
-  const publisherPlatformTabs = [
-    ['games', '游戏管理'],
-    ['data', '数据总览'],
+  const publisherGameConsoleSections = [
+    ['release-workspace', '版本发布', 'publish', '游戏资料 商品与 SKU 发行设置'],
+    ['versions', '发布记录', 'chart', '版本记录 审核记录 提交记录 版本快照'],
+    ['qualifications', '资质认证', 'file', '权属证明 发行授权 国内发行资质'],
   ];
-  const publisherGameTabs = [
-    ['overview', '概览'],
-    ['store', '商店'],
-    ['operations', '游戏运营'],
-    ['services', '游戏服务'],
-    ['analytics', '数据分析'],
-  ];
-  const publisherGameSections = {
-    overview: [['release-overview', '发行概览'], ['review-records', '审核记录']],
-    store: [['store-profile', '商店资料'], ['versions', '版本管理'], ['pc-builds', 'PC 包体管理'], ['release', '测试与发布'], ['cdkey', 'CDKEY 与渠道']],
-    operations: [['announcements', '公告与版本说明'], ['campaigns', '活动配置'], ['comments', '评论管理']],
-    services: [['appid-sdk', 'APPID 与 SDK'], ['entitlements', '登录、权益与启动'], ['logs', '错误码与日志']],
-    analytics: [['core-metrics', '核心数据'], ['transactions', '交易与退款'], ['attribution', '渠道归因'], ['cdkey-data', 'CDKEY 数据']],
+  const publisherProfileRelationshipLabels = { developer: '开发商', publisher: '发行商', developer_publisher: '开发商和发行商' };
+  const publisherProfileReleasePlanLabels = { reservation: '游戏还没好，先开放预约', test: '先开一次测试', launch: '已有游戏，准备上线' };
+  const publisherProfileGenres = ['角色扮演', '休闲', '动作', '策略', '模拟', '益智', '街机', '冒险'];
+  const publisherProfilePlatforms = ['Windows', 'macOS', 'Linux'];
+  const publisherProfileDefaultRequirement = platform => platform === 'Windows' ? 'Windows 10 64 位 · x64' : platform === 'macOS' ? 'macOS 13 · Intel／Apple Silicon' : 'Ubuntu 22.04 · x64';
+  const resolvePublisherProfile = game => {
+    const stored = game.profileDraft && typeof game.profileDraft === 'object' ? game.profileDraft : {};
+    const createData = game.createData || {};
+    // A newly created project has no public store copy yet. Its projectName is
+    // an internal identifier and must never seed localized store content.
+    const projectOnly = Boolean(game.projectName || createData.projectName);
+    const mature = game.detailVariant !== 'draft' && !projectOnly;
+    const relationship = stored.relationship || game.relationship || createData.relationship || 'developer_publisher';
+    const platforms = Array.isArray(stored.platforms) ? stored.platforms : String(game.systems || 'Windows').split('／').filter(Boolean);
+    const fallbackGenres = Array.isArray(game.genres) && game.genres.length ? game.genres : Array.isArray(createData.genres) && createData.genres.length ? createData.genres : ['动作', '冒险'];
+    const defaultAssets = mature ? { icon: 'game-icon.png', landscape: 'landscape-cover.jpg', portrait: 'portrait-cover.jpg', screenshots: ['screenshot-01.jpg', 'screenshot-02.jpg', 'screenshot-03.jpg'], video: '' } : { icon: '', landscape: '', portrait: '', screenshots: [], video: '' };
+    const defaultQualifications = mature ? { rights: 'rights-proof.pdf', copyright: '', mainland: '', authorization: relationship === 'publisher' ? 'distribution-authorization.pdf' : '' } : { rights: '', copyright: '', mainland: '', authorization: '' };
+    return {
+      gameNameEn: stored.gameNameEn ?? createData.gameNameEn ?? (projectOnly ? '' : game.name ?? ''),
+      gameNameZh: stored.gameNameZh ?? createData.gameNameZh ?? '',
+      ...(Array.isArray(stored.releaseRegions ?? createData.releaseRegions ?? game.releaseRegions) ? { releaseRegions: [...(stored.releaseRegions ?? createData.releaseRegions ?? game.releaseRegions)] } : {}),
+      tagline: stored.tagline ?? (mature ? '踏入未知星域，探索失落文明。' : ''),
+      description: stored.description ?? (mature ? '探索未知星域，完成挑战并解锁新的能力与区域。' : ''),
+      genres: Array.isArray(stored.genres) ? stored.genres : fallbackGenres,
+      relationship,
+      developerName: stored.developerName ?? game.developerName ?? createData.developerName ?? (relationship === 'publisher' ? '' : '星海互动'),
+      platforms,
+      releasePlan: stored.releasePlan || game.releasePlan || createData.releasePlan || 'launch',
+      languages: Array.isArray(stored.languages) ? stored.languages : ['简体中文', 'English'],
+      requirements: { ...Object.fromEntries(platforms.map(platform => [platform, publisherProfileDefaultRequirement(platform)])), ...(stored.requirements || {}) },
+      assets: { ...defaultAssets, ...(stored.assets || {}), screenshots: Array.isArray(stored.assets?.screenshots) ? stored.assets.screenshots : defaultAssets.screenshots },
+      qualifications: { ...defaultQualifications, ...(stored.qualifications || {}) },
+      savedAt: stored.savedAt || '',
+    };
   };
+  const publisherProfileCompletion = profile => ({
+    classification: profile.genres.length > 0 && Boolean(profile.relationship) && profile.platforms.length > 0 && Boolean(profile.releasePlan),
+    basic: Boolean(profile.gameNameEn.trim() && profile.tagline.trim() && profile.description.trim() && profile.assets.icon),
+    developer: profile.relationship !== 'publisher' || Boolean(profile.developerName.trim()),
+    assets: Boolean(profile.assets.landscape && profile.assets.portrait && profile.assets.screenshots.length >= 3),
+    settings: profile.languages.length > 0 && profile.platforms.every(platform => String(profile.requirements[platform] || '').trim()),
+    qualification: profile.relationship === 'publisher' ? Boolean(profile.developerName.trim() && profile.qualifications.authorization) : Boolean(profile.qualifications.rights),
+  });
 
   const publisherGameFixtures = [
-    { gameKey: 'draft', name: '暮光边境', gameId: 'GAME-58302', appId: '待生成', systems: 'Windows', statusKey: 'draft', status: '草稿', statusTone: 'info', reviewStatus: '草稿', stage: '未开始', version: '尚未发布', updatedAt: '09-04 11:20 更新', builds: 0, detailVariant: 'draft', isDraft: true, deletable: true },
-    { gameKey: 'reviewing', name: '机械余烬', gameId: 'GAME-57116', appId: '待生成', systems: 'Windows／Linux', statusKey: 'reviewing', status: '审核中', statusTone: 'info', reviewStatus: '审核中', stage: '资料审核', version: '尚未发布', updatedAt: '09-04 10:56 更新', builds: 0, detailVariant: 'reviewing', deletable: false },
+    { gameKey: 'draft', name: '暮光边境', gameId: 'GAME-58302', appId: 'APP-6C21D8', systems: 'Windows', statusKey: 'draft', status: '草稿', statusTone: 'info', reviewStatus: '草稿', stage: '开放预约准备', version: '尚未发布', updatedAt: '09-04 11:20 更新', builds: 0, detailVariant: 'draft', isDraft: true, deletable: true },
+    { gameKey: 'reviewing', name: '机械余烬', gameId: 'GAME-57116', appId: 'APP-91B4E7', systems: 'Windows／Linux', statusKey: 'reviewing', status: '审核中', statusTone: 'info', reviewStatus: '审核中', stage: '资料审核', version: '尚未发布', updatedAt: '09-04 10:56 更新', builds: 0, detailVariant: 'reviewing', deletable: false },
     { gameKey: 'existing', name: '星海远征', gameId: 'GAME-48291', appId: 'APP-7F3A9C', systems: 'Windows／macOS／Linux', statusKey: 'changes', status: '需修改', statusTone: 'warning', reviewStatus: '需修改', stage: '预发布', version: '1.0.0', updatedAt: '09-04 10:30 更新', builds: 3, detailVariant: 'actionRequired', isDraft: false, deletable: false },
     { gameKey: 'pioneer', name: '深空前哨', gameId: 'GAME-46972', appId: 'APP-8D4C21', systems: 'Windows', statusKey: 'pioneer', status: '先锋测试', statusTone: 'info', reviewStatus: '已通过', stage: '先锋测试', version: '0.8.0', updatedAt: '09-03 18:40 更新', builds: 1, detailVariant: 'ready', isDraft: false, deletable: false },
     { gameKey: 'prerelease', name: '雾境协议', gameId: 'GAME-45108', appId: 'APP-3A9E62', systems: 'Windows／macOS', statusKey: 'prerelease', status: '预发布', statusTone: 'info', reviewStatus: '已通过', stage: '预发布', version: '0.9.5', updatedAt: '09-03 16:18 更新', builds: 2, detailVariant: 'ready', isDraft: false, deletable: false },
@@ -284,14 +314,24 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     { gameKey: 'delisted', name: '余烬边界', gameId: 'GAME-32847', appId: 'APP-19D6B4', systems: 'Windows', statusKey: 'delisted', status: '已下架', statusTone: 'danger', reviewStatus: '已通过', stage: '已下架', version: '1.4.2', updatedAt: '09-02 17:30 更新', builds: 4, detailVariant: 'delisted', isDraft: false, deletable: false },
   ];
   const publisherStatusFilters = [
-    ['draft', '草稿'], ['reviewing', '审核中'], ['changes', '需修改'], ['pioneer', '先锋测试'], ['prerelease', '预发布'], ['live', '已上线'], ['delisted', '已下架'],
+    ['draft', '草稿'], ['reviewing', '审核中'], ['approved', '审核通过'], ['changes', '需修改'], ['pioneer', '先锋测试'], ['prerelease', '预发布'], ['live', '已上线'], ['delisted', '已下架'],
   ];
   const getPublisherGames = state => {
     const deletedGameKeys = new Set(Array.isArray(state.deletedGameKeys) ? state.deletedGameKeys : []);
-    const created = state.createdGame;
+    const createdGames = state.createdGames || (state.createdGame ? [{ ...state.createdGame, gameKey: 'created' }] : []);
+    const withProfile = game => {
+      const profileDraft = state.publicationDrafts?.[game.gameKey] || state.profileDrafts?.[game.gameKey] || game.profileDraft || null;
+      const projectName = String(game.projectName || '').trim();
+      return { ...game, profileDraft,
+        ...(projectName ? { projectName, name: projectName } : profileDraft && window.PublisherGameProfile?.displayName(profileDraft) ? { name: window.PublisherGameProfile.displayName(profileDraft) } : {}),
+        ...(profileDraft?.reviewStatus === 'reviewing' && profileDraft?.submissionId ? { statusKey: 'reviewing', status: '审核中', reviewStatus: '审核中', statusTone: 'info', stage: '资料审核', detailVariant: 'reviewing', isDraft: false, deletable: false } : {}),
+        ...(profileDraft?.reviewStatus === 'approved' && profileDraft?.submissionId ? { statusKey: 'approved', status: '审核通过', reviewStatus: '已通过', statusTone: 'success', stage: '待发布', detailVariant: 'approved', isDraft: false, deletable: false } : {}),
+        ...(profileDraft?.reviewStatus === 'rejected' && profileDraft?.submissionId ? { statusKey: 'changes', status: '需修改', reviewStatus: '需修改', statusTone: 'warning', stage: '资料待修改', detailVariant: 'rejected', isDraft: false, deletable: false } : {}),
+      };
+    };
     return [
-      ...publisherGameFixtures.filter(game => !deletedGameKeys.has(game.gameKey)),
-      ...(created ? [{ gameKey: 'created', name: created.name || '新游戏', gameId: created.gameId || 'GAME-NEW', appId: '待生成', systems: created.systems || 'Windows', statusKey: 'draft', status: '草稿', statusTone: 'info', reviewStatus: '草稿', stage: '未开始', version: '尚未发布', updatedAt: '刚刚创建', builds: 0, detailVariant: 'draft', isDraft: true, deletable: true }] : []),
+      ...publisherGameFixtures.filter(game => !deletedGameKeys.has(game.gameKey)).map(withProfile),
+      ...createdGames.filter(game => !deletedGameKeys.has(game.gameKey)).map(created => withProfile({ ...created, name: created.name || 'New Game', appId: created.appId || 'APP-UNKNOWN', systems: created.systems || 'Windows', statusKey: 'draft', status: '草稿', statusTone: 'info', reviewStatus: '草稿', stage: created.stage || '开放预约准备', version: '尚未发布', updatedAt: '刚刚创建', builds: 0, detailVariant: 'draft', isDraft: true, deletable: true })),
     ];
   };
   const getPublisherGame = (state, gameKey) => getPublisherGames(state).find(game => game.gameKey === gameKey);
@@ -302,17 +342,31 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const variants = {
       draft: {
         profile: ['资料待完善', '草稿', 'info'],
-        appid: ['提交资料后生成 APPID', '未开始', 'info'],
+        appid: ['APPID 已生成，等待接入 SDK', '待接入', 'info'],
         builds: ['尚未上传 Build', '未开始', 'info'],
         release: ['先完善基础资料', '未提交', 'info'],
         notice: ['empty', '项目已创建，暂无提交记录', '请先完善游戏资料，再配置 PC 包体和发布申请。'],
       },
       reviewing: {
         profile: ['基础资料已提交平台审核', '审核中', 'info'],
-        appid: ['资料通过后生成 APPID', '等待中', 'info'],
+        appid: ['APPID 已生成，等待接入 SDK', '待接入', 'info'],
         builds: ['审核通过后开放上传', '未开始', 'info'],
         release: ['等待游戏资料审核结果', '审核中', 'info'],
         notice: ['info', '游戏资料正在审核', '平台审核完成后将通过通知中心告知结果。'],
+      },
+      approved: {
+        profile: ['游戏资料审核通过', '已通过', 'success'],
+        appid: ['APPID 已生成，按接入情况继续准备 SDK', '待接入', 'info'],
+        builds: [builds ? `${builds} 个 Build` : '尚未上传 Build', builds ? '已准备' : '未开始', 'info'],
+        release: ['资料审核通过，等待后续发布', '待发布', 'info'],
+        notice: ['success', '游戏资料审核通过', '本次资料审核结果已保存，游戏尚未公开发布。'],
+      },
+      rejected: {
+        profile: ['按审核意见修改游戏资料', '需修改', 'warning'],
+        appid: ['APPID 保持不变', '已生成', 'info'],
+        builds: [builds ? `${builds} 个 Build` : '尚未上传 Build', builds ? '已准备' : '未开始', 'info'],
+        release: ['修改资料后重新提交审核', '需修改', 'warning'],
+        notice: ['warning', '游戏资料需修改', game.profileDraft?.reviewResult?.reason || '请查看审核意见后修改并重新提交。'],
       },
       actionRequired: {
         profile: ['资料修订 03 已确认', '已完成', 'success'],
@@ -354,6 +408,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
 
   const publisherReviewRecords = game => {
+    if (game.profileDraft?.submissionId) {
+      const draft = game.profileDraft;
+      const result = draft.reviewResult;
+      return [...(result ? [[result.decision === 'approved' ? 'success' : 'warning', '游戏资料审核结果', result.submissionId, result.decision === 'approved' ? '已通过' : '需修改', result.decision === 'approved' ? '游戏资料审核通过，等待后续发布流程；尚未公开发布。' : result.reason, new Date(result.reviewedAt).toLocaleString('zh-CN')]] : []), ['info', '游戏资料提交', draft.submissionId, result ? '已处理' : '审核中', '游戏资料与宣发素材已保存为本次提交快照。', new Date(draft.submittedAt || draft.savedAt).toLocaleString('zh-CN')]];
+    }
     const records = {
       reviewing: [
         ['info', '游戏资料提交', 'PROFILE-20260904-01', '审核中', '基础信息与主体关联资料已提交，等待平台审核。', '提交 09-04 10:56'],
@@ -383,7 +442,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return records[game.gameKey] || records[game.detailVariant] || [];
   };
 
-  const renderPublisherPlatformTabs = active => `<nav class="publisher-platform-tabs" role="tablist" aria-label="开发者工作台">${publisherPlatformTabs.map(([id, label]) => `<button type="button" role="tab" aria-selected="${active === id}" class="${active === id ? 'is-active' : ''}" data-portal-action="publisher-tab" data-publisher-tab="${id}">${e(label)}</button>`).join('')}</nav>`;
+  const renderPublisherConsoleSidebar = (active, language = 'zh') => `<aside class="publisher-console-sidebar"><strong>${language === 'en' ? 'Developer Console' : '开发者控制台'}</strong><section><span>${language === 'en' ? 'Games' : '游戏'}</span><button type="button" class="${active === 'games' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="games">${icon('game')}<b>${language === 'en' ? 'Game management' : '游戏管理'}</b>${icon('chevron')}</button></section><section><span>${language === 'en' ? 'Company' : '厂商管理'}</span><button type="button" class="${active === 'vendor' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="vendor">${icon('vendor')}<b>${language === 'en' ? 'Company settings' : '厂商设置'}</b>${icon('chevron')}</button></section></aside>`;
 
   const renderPublisherGameCard = ({ name, gameId, appId, systems, stage, status, updatedAt, gameKey }) => `<button class="publisher-game-card" type="button" data-portal-action="enter-publisher-game" data-publisher-game="${e(gameKey)}" aria-label="进入${e(name)}控制台">
     <span class="publisher-game-card__cover"><i>${icon('game')}</i><em>${e(stage)}</em></span>
@@ -395,18 +454,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const query = String(state.gameSearch || '').trim().toLowerCase();
     const statusFilter = state.gameStatusFilter || 'all';
     const visibleGames = games.filter(game => (!query || [game.name, game.gameId, game.appId, game.status, game.reviewStatus, game.stage].some(value => String(value).toLowerCase().includes(query))) && (statusFilter === 'all' || game.statusKey === statusFilter));
-    const gameRows = visibleGames.map(game => `<article class="publisher-game-item${state.gameMenuOpen === game.gameKey ? ' is-menu-open' : ''}"><button type="button" class="publisher-game-item__click" aria-label="进入${e(game.name)}控制台" data-portal-action="enter-publisher-game" data-publisher-game="${e(game.gameKey)}"></button><div class="publisher-game-item__cover publisher-game-item__cover--${e(game.statusKey)}"><span>PC GAME</span>${icon('game')}</div><div class="publisher-game-item__body"><header><div><h3>${e(game.name)}</h3><span class="publisher-game-item__platform">PC · ${e(game.systems)} · ${e(game.updatedAt)}</span></div>${c.statusTag(game.status, game.statusTone)}</header><div class="publisher-game-item__ids"><span><small>Game ID</small><code>${e(game.gameId)}</code></span><span><small>APPID</small><code>${e(game.appId)}</code></span></div><div class="publisher-game-item__meta"><span><small>版本信息</small><strong>${e(game.version)}</strong></span><span><small>审核结果</small><strong>${e(game.reviewStatus)}</strong></span><span><small>发行阶段</small><strong>${e(game.stage)}</strong></span></div></div><div class="publisher-game-item__actions"><button type="button" class="publisher-game-item__more" aria-label="${e(game.name)}更多操作" aria-expanded="${state.gameMenuOpen === game.gameKey}" data-portal-action="publisher-game-menu" data-publisher-game="${e(game.gameKey)}">⋮</button>${state.gameMenuOpen === game.gameKey ? `<div class="publisher-game-item__menu" role="menu"><button type="button" role="menuitem" data-portal-action="enter-publisher-game" data-publisher-game="${e(game.gameKey)}">进入控制台</button>${game.reviewStatus !== '草稿' ? `<button type="button" role="menuitem" data-portal-action="enter-publisher-review" data-publisher-game="${e(game.gameKey)}">查看审核记录</button>` : ''}<button type="button" role="menuitem" data-portal-action="publisher-copy-game-id" data-game-id="${e(game.gameId)}">复制 Game ID</button>${game.deletable ? `<button type="button" class="is-danger" role="menuitem" data-portal-action="publisher-request-delete-game" data-publisher-game="${e(game.gameKey)}">删除游戏</button>` : '<button type="button" class="is-danger" role="menuitem" disabled aria-disabled="true" title="仅未提交草稿可删除">删除游戏</button>'}</div>` : ''}</div></article>`).join('');
+    const gameRows = visibleGames.map(game => `<article class="publisher-game-item${state.gameMenuOpen === game.gameKey ? ' is-menu-open' : ''}"><button type="button" class="publisher-game-item__click" aria-label="进入${e(game.name)}控制台" data-portal-action="enter-publisher-game" data-publisher-game="${e(game.gameKey)}"></button><div class="publisher-game-item__cover publisher-game-item__cover--${e(game.statusKey)}">${game.createData?.icon ? `<img src="${e(game.createData.icon.dataUrl)}" alt="${e(game.name)}图标" style="width:100%;height:100%;object-fit:contain">` : `<span>PC GAME</span>${icon('game')}`}</div><div class="publisher-game-item__body"><header><div><h3>${e(game.name)}</h3><span class="publisher-game-item__platform">PC · ${e(game.systems)} · ${e(game.updatedAt)}</span></div>${c.statusTag(game.status, game.statusTone)}</header><div class="publisher-game-item__ids"><span><small>Game ID</small><code>${e(game.gameId)}</code></span><span><small>APPID</small><code>${e(game.appId)}</code></span></div><div class="publisher-game-item__meta"><span><small>版本信息</small><strong>${e(game.version)}</strong></span><span><small>审核结果</small><strong>${e(game.reviewStatus)}</strong></span><span><small>发行阶段</small><strong>${e(game.stage)}</strong></span></div></div><div class="publisher-game-item__actions"><button type="button" class="publisher-game-item__more" aria-label="${e(game.name)}更多操作" aria-expanded="${state.gameMenuOpen === game.gameKey}" data-portal-action="publisher-game-menu" data-publisher-game="${e(game.gameKey)}">⋮</button>${state.gameMenuOpen === game.gameKey ? `<div class="publisher-game-item__menu" role="menu"><button type="button" role="menuitem" data-portal-action="edit-publisher-game" data-publisher-game="${e(game.gameKey)}">编辑</button>${game.deletable ? `<button type="button" class="is-danger" role="menuitem" data-portal-action="publisher-request-delete-game" data-publisher-game="${e(game.gameKey)}">删除游戏</button>` : '<button type="button" class="is-danger" role="menuitem" disabled aria-disabled="true" title="仅未提交草稿可删除">删除游戏</button>'}</div>` : ''}</div></article>`).join('');
     const emptyRow = games.length
       ? `<div class="publisher-game-list-empty">${icon('search')}<strong>未找到匹配的游戏</strong><small>请尝试搜索游戏名称、Game ID 或 APPID。</small></div>`
       : `<div class="publisher-game-list-empty">${icon('game')}<strong>暂无游戏</strong><small>点击“添加游戏”创建第一个游戏项目。</small></div>`;
     const resultCopy = query || statusFilter !== 'all' ? `筛选出 ${visibleGames.length} 款游戏` : `共 ${games.length} 款·按最近更新时间排序`;
-    const hasExistingGame = games.some(game => game.gameKey === 'existing');
-    const followup = hasExistingGame ? `<section class="publisher-followup"><div>${icon('warning')}<span><strong>待处理：星海远征预发布资料需修改</strong><small>开始时间与测试服务器说明未通过确认。</small></span></div><button type="button" data-portal-action="enter-publisher-review" data-publisher-game="existing">查看审核记录 ${icon('chevron')}</button></section>` : '';
     const accessAlert = state.publisherAccessDisabled ? `<section class="publisher-access-alert" role="alert">${icon('warning')}<span><strong>企业认证状态异常，当前发行权限已暂停</strong><small>暂无法新建游戏或提交发行申请。如有疑问，请通过邮箱 <a href="mailto:dev@xiaoji.com">dev@xiaoji.com</a> 提交问题反馈。</small></span><em>需要处理</em></section>` : '';
     return `<section class="publisher-platform-page" data-publisher-page="games">
-      <header class="publisher-page-heading"><div><span>GAME MANAGEMENT</span><h1>游戏管理</h1><p>创建游戏项目，并按每款游戏继续管理商店、PC 包体、服务和发行数据。</p></div></header>
       ${accessAlert}
-      ${followup}
       <div class="publisher-game-toolbar"><div class="publisher-game-filter"><label class="publisher-search">${icon('search')}<input type="search" value="${e(state.gameSearch || '')}" placeholder="搜索游戏名称" data-publisher-game-search></label><label class="publisher-status-filter"><select aria-label="游戏状态" data-publisher-game-status><option value="all" ${statusFilter === 'all' ? 'selected' : ''}>全部状态</option>${publisherStatusFilters.map(([value, label]) => `<option value="${e(value)}" ${statusFilter === value ? 'selected' : ''}>${e(label)}</option>`).join('')}</select></label><button type="button" data-portal-action="publisher-game-search">查询 ${icon('search')}</button></div>${c.button({ label: '添加游戏', variant: 'primary', action: 'open-add-game', iconName: 'plus' })}</div>
       <section class="publisher-game-library"><header><div><h2>全部游戏</h2><p>${resultCopy}</p></div></header><div class="publisher-game-list">${gameRows || emptyRow}</div></section>
     </section>`;
@@ -421,7 +476,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const projectContent = projectRows || '<div class="publisher-progress-empty">暂无游戏项目，请先前往游戏管理添加游戏。</div>';
     const latestReviewGame = games.find(game => game.reviewStatus === '需修改') || games.find(game => game.reviewStatus === '审核中');
     return `<section class="publisher-platform-page" data-publisher-page="data">
-      <header class="publisher-page-heading"><div><span>DATA OVERVIEW</span><h1>数据总览</h1><p>优先查看全部游戏的接入进度、待处理审核与发行供给状态。</p></div><span class="publisher-data-updated">数据更新至 2026-09-03 23:59</span></header>
+      <div class="publisher-data-meta"><span class="publisher-data-updated">数据更新至 2026-09-03 23:59</span></div>
       <div class="publisher-overview-metrics">${c.metricCard({ label: '游戏数量', value: String(games.length), trend: '覆盖完整生命周期状态' })}${c.metricCard({ label: '待处理审核', value: String(pendingGames.length), trend: pendingGames.length ? '含审核中与需修改' : '暂无待处理审核' })}${c.metricCard({ label: 'PC 包体', value: String(totalBuilds), trend: '全部游戏 Build 合计' })}${c.metricCard({ label: '盖世 Key 可分配', value: hasExistingGame ? '1,360' : '0', trend: hasExistingGame ? '外部 Key 不计入' : '暂无可分配批次' })}</div>
       <div class="publisher-overview-grid"><section class="publisher-overview-card publisher-overview-card--wide"><header><div><span>游戏接入</span><h2>项目进度</h2></div>${c.statusTag(pendingGames.length ? `${pendingGames.length} 项待处理` : '暂无待处理', pendingGames.length ? 'warning' : 'success')}</header><div class="publisher-progress-table"><div class="is-head"><span>游戏</span><span>审核结果</span><span>SDK</span><span>PC 包体</span><span>发行阶段</span></div>${projectContent}</div></section>
         <section class="publisher-overview-card"><header><div><span>发行供给</span><h2>CDKEY 与渠道</h2></div></header><dl class="publisher-supply-summary"><div><dt>外部 Key 可用</dt><dd>${hasExistingGame ? '214' : '0'}</dd></div><div><dt>盖世 Key 未分配</dt><dd>${hasExistingGame ? '1,360' : '0'}</dd></div><div><dt>渠道 API 凭据</dt><dd>${hasExistingGame ? '1 个正常' : '0 个'}</dd></div></dl>${hasExistingGame ? `<button type="button" data-portal-action="publisher-open-cdkey">进入 CDKEY 与渠道 ${icon('chevron')}</button>` : '<p class="publisher-overview-empty-copy">添加游戏并完成供给配置后展示。</p>'}</section>
@@ -430,7 +485,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     </section>`;
   };
 
-  const renderPublisherAddGameModal = state => state.addGameOpen ? `<section class="publisher-modal" data-publisher-add-game-modal><button class="publisher-modal__backdrop" type="button" data-portal-action="close-add-game" aria-label="关闭添加游戏弹窗"></button><div class="publisher-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="publisher-add-game-title"><header><div><span>CREATE GAME</span><h2 id="publisher-add-game-title">添加游戏</h2><p>先建立项目，创建后在单游戏控制台补充商店、包体和发布资料。</p></div><button type="button" data-portal-action="close-add-game" aria-label="关闭">×</button></header><div class="publisher-modal__body"><div class="form-grid">${c.input({ label: '游戏名称', name: 'publisherGameName', placeholder: '例：暮光边境', required: true })}${c.input({ label: '开发商', name: 'publisherDeveloperName', value: '星海互动', required: true })}${c.select({ label: 'PC 支持系统', name: 'publisherSystems', options: ['Windows', 'Windows／macOS', 'Windows／macOS／Linux'], value: 'Windows／macOS／Linux' })}${c.select({ label: '发行方式', name: 'publisherReleaseMethod', options: ['盖世直接下载', '第三方平台激活', '两种方式并行'], value: '盖世直接下载' })}</div><div class="publisher-modal-note">${icon('info')}<span>添加游戏只创建草稿项目，不代表已通过游戏资料或上线审核。</span></div></div><footer>${c.button({ label: '取消', action: 'close-add-game' })}${c.button({ label: '创建游戏项目', variant: 'primary', action: 'create-publisher-game' })}</footer></div></section>` : '';
+  const renderPublisherVendorSettings = () => `<section class="publisher-vendor-settings" data-publisher-page="vendor"><header class="publisher-content-title"><div><span>VENDOR SETTINGS</span><h2>厂商设置</h2></div></header><div class="publisher-empty-state publisher-vendor-placeholder">${icon('file')}<strong>厂商设置功能占位</strong><p>具体功能、字段与交互见《开发者平台与资料》PRD。</p></div></section>`;
 
   const renderPublisherDeleteGameModal = state => {
     if (!state.deleteGameKey) return '';
@@ -440,15 +495,47 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return `<section class="publisher-modal publisher-modal--danger" data-publisher-delete-game-modal><button class="publisher-modal__backdrop" type="button" data-portal-action="publisher-cancel-delete-game" aria-label="取消删除游戏"></button><div class="publisher-modal__dialog" role="alertdialog" aria-modal="true" aria-labelledby="publisher-delete-game-title" aria-describedby="publisher-delete-game-description"><header><div><span>DELETE GAME</span><h2 id="publisher-delete-game-title">删除游戏</h2><p>这是不可恢复的操作，请确认当前游戏不再需要。</p></div><button type="button" data-portal-action="publisher-cancel-delete-game" aria-label="关闭">×</button></header><div class="publisher-modal__body"><div class="publisher-delete-warning">${icon('warning')}<div><strong>确定删除“${e(gameName)}”吗？</strong><p id="publisher-delete-game-description">删除后，游戏资料、商店配置、PC 包体和未交付的 Key 配置将一并移除，且无法恢复。</p></div></div><p class="publisher-delete-rule">仅未正式上线且未产生订单或 Key 交付的游戏可删除；其他游戏应使用下架或停止发行。</p></div><footer>${c.button({ label: '取消', action: 'publisher-cancel-delete-game' })}${c.button({ label: '删除游戏', variant: 'danger', action: 'publisher-confirm-delete-game', extra: `data-publisher-game="${e(state.deleteGameKey)}"` })}</footer></div></section>`;
   };
 
-  const renderPublisherOverviewSection = (section, game) => {
+  const renderPublisherOverviewSection = (_section, game) => {
     const progress = publisherGameProgress(game);
-    if (section === 'review-records') {
-      const records = publisherReviewRecords(game);
-      const timeline = records.map(([tone, title, id, status, copy, time]) => `<article class="is-${e(tone)}"><i></i><div><header><span><strong>${e(title)}</strong><small>${e(id)}</small></span>${c.statusTag(status, tone === 'danger' ? 'danger' : tone)}</header><p>${e(copy)}</p><footer>${e(time)}</footer></div></article>`).join('');
-      return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>REVIEW RECORDS</span><h2>审核记录</h2><p>查看${e(game.name)}的游戏资料、先锋测试、预发布与正式上线提交结果。</p></div>${c.statusTag(game.reviewStatus, publisherReviewTone(game.reviewStatus))}</header>${timeline ? `<div class="publisher-review-timeline">${timeline}</div>` : `<div class="publisher-empty-state">${icon('file')}<strong>暂无审核记录</strong><p>保存草稿不会产生审核记录，首次提交后可在此查看结果。</p></div>`}</section>`;
-    }
-    const action = game.detailVariant === 'actionRequired' ? `<button type="button" data-portal-action="game-console-section" data-game-section="review-records">查看审核记录 ${icon('chevron')}</button>` : '';
-    return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>GAME OVERVIEW</span><h2>${e(game.name)}发行概览</h2><p>集中查看当前发行阶段、审核结果和后续处理事项。</p></div>${c.statusTag(game.status, game.statusTone)}</header><div class="publisher-game-hero"><div class="publisher-game-hero__art publisher-game-item__cover--${e(game.statusKey)}">${icon('game')}</div><div><span>当前游戏</span><h2>${e(game.name)}</h2><p>${e(game.gameId)} · ${e(game.appId)}</p></div><dl><div><dt>审核结果</dt><dd>${e(game.reviewStatus)}</dd></div><div><dt>发行阶段</dt><dd>${e(game.stage)}</dd></div></dl></div><div class="publisher-readiness"><article><span>01</span><strong>游戏资料</strong><small>${e(progress.profile[0])}</small>${c.statusTag(progress.profile[1], progress.profile[2])}</article><article><span>02</span><strong>APPID 与 SDK</strong><small>${e(progress.appid[0])}</small>${c.statusTag(progress.appid[1], progress.appid[2])}</article><article><span>03</span><strong>PC 包体</strong><small>${e(progress.builds[0])}</small>${c.statusTag(progress.builds[1], progress.builds[2])}</article><article><span>04</span><strong>发行阶段</strong><small>${e(progress.release[0])}</small>${c.statusTag(progress.release[1], progress.release[2])}</article></div>${renderPublisherNotice(progress.notice, action)}</section>`;
+    const records = publisherReviewRecords(game);
+    const timeline = records.map(([tone, title, id, status, copy, time]) => `<article class="is-${e(tone)}"><i></i><div><header><span><strong>${e(title)}</strong><small>${e(id)}</small></span>${c.statusTag(status, tone === 'danger' ? 'danger' : tone)}</header><p>${e(copy)}</p><footer>${e(time)}</footer></div></article>`).join('');
+    const reviewHistory = timeline ? `<section class="publisher-overview-card publisher-overview-review-card"><header><div><span>审核记录</span><h2>提交与审核记录</h2></div>${c.statusTag(game.reviewStatus, publisherReviewTone(game.reviewStatus))}</header><div class="publisher-review-timeline">${timeline}</div></section>` : '';
+    return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>GAME OVERVIEW</span><h2>${e(game.name)}发行概览</h2><p>集中查看当前发行阶段、审核结果和后续处理事项。</p></div>${c.statusTag(game.status, game.statusTone)}</header><div class="publisher-game-hero"><div class="publisher-game-hero__art publisher-game-item__cover--${e(game.statusKey)}">${icon('game')}</div><div><span>当前游戏</span><h2>${e(game.name)}</h2><p>${e(game.gameId)} · ${e(game.appId)}</p></div><dl><div><dt>审核结果</dt><dd>${e(game.reviewStatus)}</dd></div><div><dt>发行阶段</dt><dd>${e(game.stage)}</dd></div></dl></div><div class="publisher-readiness"><article><span>01</span><strong>游戏资料</strong><small>${e(progress.profile[0])}</small>${c.statusTag(progress.profile[1], progress.profile[2])}</article><article><span>02</span><strong>APPID 与 SDK</strong><small>${e(progress.appid[0])}</small>${c.statusTag(progress.appid[1], progress.appid[2])}</article><article><span>03</span><strong>PC 包体</strong><small>${e(progress.builds[0])}</small>${c.statusTag(progress.builds[1], progress.builds[2])}</article><article><span>04</span><strong>发行阶段</strong><small>${e(progress.release[0])}</small>${c.statusTag(progress.release[1], progress.release[2])}</article></div>${renderPublisherNotice(progress.notice)}${reviewHistory}</section>`;
+  };
+
+  const renderPublisherReleaseProfile = game => {
+    const profile = resolvePublisherProfile(game);
+    const completion = publisherProfileCompletion(profile);
+    const status = section => c.statusTag(completion[section] ? '已完善' : section === 'qualification' ? '待提交' : '待完善', completion[section] ? 'success' : section === 'assets' ? 'info' : 'warning');
+    const field = ({ key, label, value = '', placeholder = '', wide = false, readonly = false }) => `<label class="publisher-profile-field${wide ? ' is-wide' : ''}"><span>${e(label)}</span><input type="text" value="${e(value)}" placeholder="${e(placeholder)}"${readonly ? ' readonly' : ` data-profile-field="${e(key)}"`}></label>`;
+    const textArea = ({ key, label, value = '', placeholder = '' }) => `<label class="publisher-profile-field is-wide"><span>${e(label)}</span><textarea rows="4" placeholder="${e(placeholder)}" data-profile-field="${e(key)}">${e(value)}</textarea></label>`;
+    const check = ({ collection, value, label = value, checked = false }) => `<label class="publisher-profile-check"><input type="checkbox" value="${e(value)}" data-profile-array="${e(collection)}"${checked ? ' checked' : ''}><span>${e(label)}</span></label>`;
+    const upload = ({ key, title, copy, accept = '', multiple = false, fileNames = [] }) => {
+      const names = Array.isArray(fileNames) ? fileNames : fileNames ? [fileNames] : [];
+      return `<label class="publisher-profile-upload${names.length ? ' is-uploaded' : ''}"><input type="file" data-profile-file="${e(key)}" data-profile-existing="${e(names.join('|'))}"${accept ? ` accept="${e(accept)}"` : ''}${multiple ? ' multiple' : ''}><span>${icon(names.length ? 'check' : 'upload')}</span><strong>${e(title)}</strong><small>${e(names.length ? (multiple ? `已选择 ${names.length} 个文件` : names[0]) : copy)}</small></label>`;
+    };
+    const relationshipOptions = Object.entries(publisherProfileRelationshipLabels).map(([value, label]) => `<option value="${value}"${profile.relationship === value ? ' selected' : ''}>${e(label)}</option>`).join('');
+    const planOptions = Object.entries(publisherProfileReleasePlanLabels).map(([value, label]) => `<option value="${value}"${profile.releasePlan === value ? ' selected' : ''}>${e(label)}</option>`).join('');
+    const genreOptions = publisherProfileGenres.map(genre => check({ collection: 'genres', value: genre, checked: profile.genres.includes(genre) })).join('');
+    const platformOptions = publisherProfilePlatforms.map(platform => check({ collection: 'platforms', value: platform, checked: profile.platforms.includes(platform) })).join('');
+    const languageOptions = ['简体中文', 'English', '繁体中文', '日语'].map(language => check({ collection: 'languages', value: language, checked: profile.languages.includes(language) })).join('');
+    const systemRows = profile.platforms.map(platform => `<label class="publisher-profile-system"><strong>${e(platform)}</strong><input type="text" value="${e(profile.requirements[platform] || '')}" placeholder="填写最低运行要求" data-profile-requirement="${e(platform)}"><em>${String(profile.requirements[platform] || '').trim() ? '已填写' : '待完善'}</em></label>`).join('');
+    const qualificationTitle = profile.relationship === 'publisher' ? '游戏发行授权链' : '自研权属证明';
+    const qualificationCopy = profile.relationship === 'publisher'
+      ? `${profile.developerName ? `开发商：${profile.developerName}` : '开发商名称待补充'}；提交资质前需补齐权利方、授权地区、PC 平台、渠道和有效期。`
+      : '提交自研及完整权利声明或适用的权属证明；软件著作权可作为证明之一，但不是海外发行统一必填项。';
+    const qualificationPrimaryKey = profile.relationship === 'publisher' ? 'authorization' : 'rights';
+    const qualificationPrimaryFiles = profile.qualifications[qualificationPrimaryKey] ? [profile.qualifications[qualificationPrimaryKey]] : [];
+    return `<section class="publisher-detail-section publisher-profile-page" data-publisher-profile data-profile-game="${e(game.gameKey)}">
+      <header class="publisher-content-title publisher-profile-title"><div><h2>游戏资料</h2></div></header>
+      <section class="publisher-profile-card" data-profile-section="classification"><header><div><h3>游戏类型与分发</h3><p>维护游戏分类、主体关系、发布平台和当前发布计划。</p></div>${status('classification')}</header><div class="publisher-profile-card__body"><div class="publisher-profile-form-grid"><fieldset class="publisher-profile-choice-group is-wide"><legend>游戏类型</legend><div class="publisher-profile-checks">${genreOptions}</div></fieldset><label class="publisher-profile-field"><span>当前主体与该游戏的关系</span><select data-profile-field="relationship" data-profile-rerender>${relationshipOptions}</select></label><label class="publisher-profile-field"><span>当前发布计划</span><select data-profile-field="releasePlan">${planOptions}</select></label><fieldset class="publisher-profile-choice-group is-wide"><legend>发布平台</legend><div class="publisher-profile-checks">${platformOptions}</div></fieldset></div></div></section>
+      <section class="publisher-profile-card" data-profile-section="basic"><header><div><h3>基础信息</h3><p>补充商店展示所需的名称与介绍，创建项目时无需一次填完。</p></div>${status('basic')}</header><div class="publisher-profile-card__body"><div class="publisher-profile-basic">${upload({ key: 'icon', title: '上传游戏图标', copy: '方图 · JPG／PNG', accept: 'image/png,image/jpeg', fileNames: profile.assets.icon })}<div class="publisher-profile-form-grid">${field({ key: 'gameNameEn', label: '游戏名称（英文）', value: profile.gameNameEn })}${field({ key: 'gameNameZh', label: '游戏名称（中文）', value: profile.gameNameZh, placeholder: '选填中文名称' })}${field({ key: 'tagline', label: '一句话介绍', value: profile.tagline, placeholder: '简要介绍核心玩法', wide: true })}${textArea({ key: 'description', label: '完整介绍', value: profile.description, placeholder: '填写玩法、世界观与特色内容' })}</div></div></div></section>
+      <section class="publisher-profile-card" data-profile-section="developer"><header><div><h3>开发者信息</h3><p>认证主体来自厂商资料；发行商需在提交资质前补齐实际开发商。</p></div>${status('developer')}</header><div class="publisher-profile-card__body"><div class="publisher-profile-form-grid">${field({ label: '当前认证主体', value: '星海互动', readonly: true })}${field({ label: '主体关系', value: publisherProfileRelationshipLabels[profile.relationship], readonly: true })}${profile.relationship === 'publisher' ? field({ key: 'developerName', label: '开发商名称', value: profile.developerName, placeholder: '资质提交前必须补齐', wide: true }) : ''}</div></div></section>
+      <section class="publisher-profile-card" data-profile-section="assets"><header><div><h3>游戏素材</h3><p>准备商店展示素材；各素材独立上传，失败不会清空其他内容。</p></div>${status('assets')}</header><div class="publisher-profile-card__body"><div class="publisher-profile-assets">${upload({ key: 'landscape', title: '横版封面', copy: '16:9 · JPG／PNG', accept: 'image/png,image/jpeg', fileNames: profile.assets.landscape })}${upload({ key: 'portrait', title: '竖版封面', copy: '3:4 · JPG／PNG', accept: 'image/png,image/jpeg', fileNames: profile.assets.portrait })}${upload({ key: 'screenshots', title: '游戏截图', copy: '至少 3 张', accept: 'image/png,image/jpeg', multiple: true, fileNames: profile.assets.screenshots })}${upload({ key: 'video', title: '宣传视频', copy: 'MP4 · 选填', accept: 'video/mp4', fileNames: profile.assets.video })}</div></div></section>
+      <section class="publisher-profile-card" data-profile-section="settings"><header><div><h3>其他设置</h3><p>维护支持语言和已选择平台的最低运行要求。</p></div>${status('settings')}</header><div class="publisher-profile-card__body"><fieldset class="publisher-profile-choice-group"><legend>支持语言</legend><div class="publisher-profile-checks">${languageOptions}</div></fieldset><div class="publisher-profile-systems">${systemRows}</div></div></section>
+      <section class="publisher-profile-card" data-profile-section="qualification"><header><div><h3>资质认证</h3><p>材料要求随主体关系和实际发行国家／地区变化。</p></div>${status('qualification')}</header><div class="publisher-profile-card__body"><div class="publisher-profile-qualification"><article><span>${icon('file')}</span><div><strong>${qualificationTitle}</strong><p>${e(qualificationCopy)}</p>${upload({ key: `qualification.${qualificationPrimaryKey}`, title: profile.relationship === 'publisher' ? '上传发行授权链' : '上传权属证明', copy: 'PDF／JPG／PNG', accept: '.pdf,image/png,image/jpeg', fileNames: qualificationPrimaryFiles })}</div></article><article><span>${icon('file')}</span><div><strong>补充证明与中国大陆审批</strong><p>软件著作权为可选权属证明；仅当发行范围包含中国大陆时，需补充相应版号及审批资料。</p><div class="publisher-profile-qualification-uploads">${upload({ key: 'qualification.copyright', title: '软件著作权', copy: '选填', accept: '.pdf,image/png,image/jpeg', fileNames: profile.qualifications.copyright })}${upload({ key: 'qualification.mainland', title: '中国大陆审批资料', copy: '发行中国大陆时必填', accept: '.pdf,image/png,image/jpeg', fileNames: profile.qualifications.mainland })}</div></div></article></div></div></section>
+      <footer class="publisher-profile-footer"><span data-profile-save-state>${profile.savedAt ? `最近保存：${e(profile.savedAt)}` : '尚未保存'}</span>${c.button({ label: '保存草稿', variant: 'primary', action: 'publisher-save-profile' })}</footer>
+    </section>`;
   };
 
   const renderPublisherStoreSection = (section, page, game) => {
@@ -478,7 +565,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       };
       const releaseStates = stateMap[game.detailVariant] || stateMap.draft;
       const stageCards = [['先锋测试', '小规模验证启动、权益与基础发行链路。'], ['预发布', '确认发行范围、测试服务器与计划开始时间。'], ['正式上线', '提交商店、PC 包体、发行范围和上线计划。']].map(([title, copy], index) => `<article class="${releaseStates[index][2]}"><span>0${index + 1}</span><strong>${title}</strong><p>${copy}</p>${c.statusTag(releaseStates[index][0], releaseStates[index][1])}</article>`).join('');
-      const reviewAction = game.reviewStatus === '草稿' ? '' : `<section class="publisher-release-review"><div>${icon(game.reviewStatus === '需修改' ? 'warning' : 'info')}<span><strong>当前审核结果：${e(game.reviewStatus)}</strong><small>审核结果与历史提交记录统一在“审核记录”中查看。</small></span></div><button type="button" data-portal-action="game-console-tab" data-game-tab="overview" data-game-section="review-records">查看完整记录 ${icon('chevron')}</button></section>`;
+      const reviewAction = game.reviewStatus === '草稿' ? '' : `<section class="publisher-release-review"><div>${icon(game.reviewStatus === '需修改' ? 'warning' : 'info')}<span><strong>当前审核结果：${e(game.reviewStatus)}</strong><small>审核结果与历史提交记录统一在“概览”中查看。</small></span></div><button type="button" data-portal-action="game-console-tab" data-game-tab="overview" data-game-section="release-overview">在概览查看记录 ${icon('chevron')}</button></section>`;
       return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>TEST & RELEASE</span><h2>测试与发布</h2><p>通过测试白名单完成测试订单和权益验证，再按阶段提交发布申请。</p></div>${c.statusTag(game.stage, publisherStageTone(game.stage))}</header><div class="publisher-release-stages">${stageCards}</div>${reviewAction}</section>`;
     }
     const storeState = game.detailVariant === 'draft'
@@ -493,22 +580,66 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       return `<div>${icon(done ? 'check' : 'info')}<span><strong>${title}</strong><small>${copy}</small></span>${c.statusTag(done ? '已完成' : '待完善', done ? 'success' : 'info')}</div>`;
     }).join('');
     const skuRows = Number(game.builds || 0) ? [[`SKU-${game.gameId.slice(-5)}-01`, '标准版', '全球', 'US$ 19.99', game.gameKey === 'existing' ? '直接下载／CDKEY' : '直接下载', { status: game.stage }]] : [];
-    return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>STORE PROFILE</span><h2>商店资料</h2><p>统一维护游戏展示信息、销售版本、地区和上架准备状态。</p></div>${c.button({ label: '编辑商店资料', variant: 'primary', action: 'publisher-demo-feedback' })}</header><div class="publisher-store-grid"><section class="publisher-store-preview"><div class="publisher-store-preview__cover publisher-game-item__cover--${e(game.statusKey)}">${icon('game')}<span>PC GAME</span></div><div><span>商店预览</span><h2>${e(game.name)}</h2><p>踏入未知星域，完成挑战并解锁新的能力与区域。</p><div><em>动作</em><em>冒险</em><em>单人</em></div></div></section><section class="publisher-readiness-list"><header><h3>上架准备</h3><span>${storeState.count}</span></header>${readinessItems}<div class="${storeState.finalTone === 'warning' ? 'is-warning' : ''}">${icon(storeState.finalTone === 'warning' ? 'warning' : storeState.finalTone === 'success' ? 'check' : 'info')}<span><strong>${e(storeState.finalLabel)}</strong><small>${e(storeState.finalCopy)}</small></span>${c.statusTag(storeState.finalStatus, storeState.finalTone)}</div></section></div>${skuRows.length ? c.table({ headers: ['SKU', '版本', '销售地区', '定价', '供给方式', '状态'], rows: skuRows }) : `<div class="publisher-empty-state">${icon('file')}<strong>暂无销售版本</strong><p>完成上架资料并创建版本后，可配置 SKU、销售地区和定价。</p></div>`}</section>`;
+    return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><h2>商品与商店</h2><p>维护销售版本、地区、定价结果和商店上架准备状态。</p></div></header><div class="publisher-store-grid"><section class="publisher-store-preview"><div class="publisher-store-preview__cover publisher-game-item__cover--${e(game.statusKey)}">${icon('game')}<span>PC GAME</span></div><div><span>商店预览</span><h2>${e(game.name)}</h2><p>踏入未知星域，完成挑战并解锁新的能力与区域。</p><div><em>动作</em><em>冒险</em><em>单人</em></div></div></section><section class="publisher-readiness-list"><header><h3>上架准备</h3><span>${storeState.count}</span></header>${readinessItems}<div class="${storeState.finalTone === 'warning' ? 'is-warning' : ''}">${icon(storeState.finalTone === 'warning' ? 'warning' : storeState.finalTone === 'success' ? 'check' : 'info')}<span><strong>${e(storeState.finalLabel)}</strong><small>${e(storeState.finalCopy)}</small></span>${c.statusTag(storeState.finalStatus, storeState.finalTone)}</div></section></div>${skuRows.length ? c.table({ headers: ['SKU', '版本', '销售地区', '定价', '供给方式', '状态'], rows: skuRows }) : `<div class="publisher-empty-state">${icon('file')}<strong>暂无销售版本</strong><p>完成游戏资料后，可继续配置 SKU、销售地区和定价。</p></div>`}</section>`;
   };
 
   const renderPublisherOperationsSection = (section, game) => {
     if (['draft', 'reviewing'].includes(game.detailVariant)) return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>GAME OPERATIONS</span><h2>游戏运营</h2><p>管理${e(game.name)}的公告、活动和评论。</p></div></header><div class="publisher-empty-state">${icon('file')}<strong>当前阶段暂未开放游戏运营</strong><p>游戏资料通过审核并进入测试或发行阶段后，可配置对应运营内容。</p></div></section>`;
-    if (section === 'campaigns') return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>CAMPAIGNS</span><h2>活动配置</h2><p>为已确定的发行节点维护活动信息，实际资源与时间以运营回填为准。</p></div>${c.button({ label: '创建活动', variant: 'primary', action: 'publisher-demo-feedback' })}</header>${c.table({ headers: ['活动名称', '关联版本', '计划时间', '需求状态', '操作'], rows: [['秋季预发布体验', '1.0.0', '2026-09-10 — 09-20', { status: '平台处理中' }, { action: '查看详情', demoAction: 'publisher-demo-feedback' }]] })}<div class="publisher-boundary-note">${icon('info')}<span>提交活动需求不代表资源承诺；只有运营回填实际时间与证据后才记为已执行。</span></div></section>`;
-    if (section === 'comments') return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>COMMUNITY</span><h2>评论管理</h2><p>查看商店评论概况；违规与恶意评论由运营复用社区后台处理。</p></div></header><div class="publisher-comment-metrics">${c.metricCard({ label: '评论总数', value: '326', trend: '测试用户与预发布用户' })}${c.metricCard({ label: '好评率', value: '92%', trend: '全部可见评论' })}${c.metricCard({ label: '待运营处理', value: '2', trend: '已提交社区后台' })}</div>${c.table({ headers: ['评论摘要', '发布时间', '当前状态', '处理说明'], rows: [['游戏体验流畅，期待正式版更多内容。', '09-03 21:16', { status: '正常' }, '无需处理'], ['疑似恶意刷屏，内容已折叠。', '09-03 18:42', { status: '待处理' }, '已提交社区运营']] })}</section>`;
-    return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>ANNOUNCEMENTS</span><h2>公告与版本说明</h2><p>维护玩家可见的公告和版本更新说明，并保留发布状态。</p></div>${c.button({ label: '新建公告', variant: 'primary', action: 'publisher-demo-feedback' })}</header>${c.table({ headers: ['标题', '类型', '关联版本', '发布状态', '最后更新', '操作'], rows: [['1.0.0 预发布版更新说明', '版本说明', '1.0.0', { status: '草稿' }, '2026-09-03 16:20', { action: '编辑', demoAction: 'publisher-demo-feedback' }], ['先锋测试结束公告', '运营公告', '0.9.0', { status: '已发布' }, '2026-08-21 10:00', { action: '查看', demoAction: 'publisher-demo-feedback' }]] })}</section>`;
+    const isDelisted = game.detailVariant === 'delisted';
+    const operationFixtures = game.detailVariant === 'actionRequired'
+      ? {
+          announcements: [[`${game.version} 预发布版更新说明`, '版本说明', game.version, { status: '草稿' }, '2026-09-03 16:20'], ['先锋测试结束公告', '运营公告', '0.9.0', { status: '已发布' }, '2026-08-21 10:00']],
+          campaigns: [['秋季预发布体验', game.version, '2026-09-10 — 09-20', { status: '资料需补充' }]],
+          comments: ['326', '92.0%', '2', [['游戏体验流畅，期待正式版更多内容。', '09-03 21:16', { status: '正常' }, '无需处理'], ['疑似恶意刷屏，内容已折叠。', '09-03 18:42', { status: '待处理' }, '已提交社区运营']]],
+        }
+      : game.detailVariant === 'online'
+        ? {
+            announcements: [[`${game.version} 正式版更新说明`, '版本说明', game.version, { status: '已发布' }, '2026-09-03 14:05'], ['服务器例行维护公告', '运营公告', game.version, { status: '已发布' }, '2026-09-01 18:30']],
+            campaigns: [[`${game.version} 版本更新活动`, game.version, '2026-09-03 — 09-17', { status: '进行中' }]],
+            comments: ['12,846', '94.1%', '18', [['新版本的操作体验更顺畅了。', '09-03 22:18', { status: '正常' }, '无需处理'], ['内容包含人身攻击，已折叠。', '09-03 20:42', { status: '待处理' }, '已提交社区运营']]],
+          }
+        : game.detailVariant === 'delisted'
+          ? {
+              announcements: [['停止销售与服务调整说明', '运营公告', game.version, { status: '已发布' }, '2026-09-02 17:30'], [`${game.version} 最终版本说明`, '版本说明', game.version, { status: '已发布' }, '2026-08-12 11:00']],
+              campaigns: [['周年发行活动', game.version, '2026-07-01 — 07-15', { status: '已结束' }]],
+              comments: ['7,310', '89.6%', '0', [['感谢一路陪伴，希望未来还能再见。', '09-02 19:08', { status: '正常' }, '历史评论保留'], ['游戏已停止新增销售，原有权益仍可使用。', '09-02 18:26', { status: '正常' }, '官方说明已置顶']]],
+            }
+          : game.stage === '先锋测试'
+            ? {
+                announcements: [[`${game.version} 先锋测试开启公告`, '运营公告', game.version, { status: '已发布' }, '2026-09-03 18:40'], [`${game.version} 测试版说明`, '版本说明', game.version, { status: '已发布' }, '2026-09-02 15:10']],
+                campaigns: [['先锋测试体验招募', game.version, '2026-09-04 — 09-18', { status: '进行中' }]],
+                comments: ['184', '90.8%', '1', [['战斗节奏很有潜力，希望优化加载时间。', '09-03 20:36', { status: '正常' }, '已记录体验反馈'], ['重复发布无意义内容，已折叠。', '09-03 18:58', { status: '待处理' }, '已提交社区运营']]],
+              }
+            : {
+                announcements: [[`${game.version} 预发布体验公告`, '运营公告', game.version, { status: '已发布' }, '2026-09-03 16:18'], [`${game.version} 版本说明`, '版本说明', game.version, { status: '已发布' }, '2026-09-02 13:42']],
+                campaigns: [['预发布限量体验', game.version, '2026-09-06 — 09-16', { status: '已排期' }]],
+                comments: ['268', '91.4%', '2', [['画面氛围很好，期待正式上线。', '09-03 19:46', { status: '正常' }, '无需处理'], ['评论包含无关推广信息，已折叠。', '09-03 17:30', { status: '待处理' }, '已提交社区运营']]],
+              };
+    const context = isDelisted ? c.statusTag('历史只读', 'info') : `<span class="publisher-context-chip">${e(game.name)} · ${e(game.stage)}</span>`;
+    if (section === 'campaigns') {
+      const campaignRows = operationFixtures.campaigns.map(row => [...row, { action: '查看详情', demoAction: 'publisher-demo-feedback' }]);
+      const action = isDelisted ? context : c.button({ label: '创建活动', variant: 'primary', action: 'publisher-demo-feedback' });
+      return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>CAMPAIGNS</span><h2>活动配置</h2><p>${isDelisted ? '查看下架前保留的历史活动与执行状态。' : `为${e(game.name)}已确定的发行节点维护活动信息，实际资源与时间以运营回填为准。`}</p></div>${action}</header>${c.table({ headers: ['活动名称', '关联版本', '计划时间', '需求状态', '操作'], rows: campaignRows })}<div class="publisher-boundary-note">${icon('info')}<span>${isDelisted ? '游戏下架后不再创建新活动，历史活动与执行证据继续保留。' : '提交活动需求不代表资源承诺；只有运营回填实际时间与证据后才记为已执行。'}</span></div></section>`;
+    }
+    if (section === 'comments') return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>COMMUNITY</span><h2>评论管理</h2><p>${isDelisted ? '查看下架前保留的历史评论；不再产生新的商店评论。' : `查看${e(game.name)}的商店评论概况；违规与恶意评论由运营复用社区后台处理。`}</p></div>${context}</header><div class="publisher-comment-metrics">${c.metricCard({ label: '评论总数', value: operationFixtures.comments[0], trend: isDelisted ? '下架前历史累计' : `${game.stage}可见评论` })}${c.metricCard({ label: '好评率', value: operationFixtures.comments[1], trend: '全部可见评论' })}${c.metricCard({ label: '待运营处理', value: operationFixtures.comments[2], trend: isDelisted ? '当前无待处理' : '已提交社区后台' })}</div>${c.table({ headers: ['评论摘要', '发布时间', '当前状态', '处理说明'], rows: operationFixtures.comments[3] })}</section>`;
+    const announcementRows = operationFixtures.announcements.map(row => [...row, { action: isDelisted ? '查看' : row[3].status === '草稿' ? '编辑' : '查看', demoAction: 'publisher-demo-feedback' }]);
+    const announcementAction = isDelisted ? context : c.button({ label: '新建公告', variant: 'primary', action: 'publisher-demo-feedback' });
+    return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>ANNOUNCEMENTS</span><h2>公告与版本说明</h2><p>${isDelisted ? '查看下架前已发布的公告和版本说明，历史内容不可修改。' : `维护${e(game.name)}玩家可见的公告和版本更新说明，并保留发布状态。`}</p></div>${announcementAction}</header>${c.table({ headers: ['标题', '类型', '关联版本', '发布状态', '最后更新', '操作'], rows: announcementRows })}</section>`;
   };
 
   const renderPublisherServicesSection = (section, game) => {
     if (game.appId === '待生成') return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>GAME SERVICES</span><h2>${section === 'appid-sdk' ? 'APPID 与 SDK' : section === 'entitlements' ? '登录、权益与启动' : '错误码与日志'}</h2><p>当前游戏资料尚未通过审核，平台服务暂未开放。</p></div></header><div class="publisher-empty-state">${icon('key')}<strong>APPID 尚未生成</strong><p>${e(game.name)}通过游戏资料审核后，将生成全平台唯一 APPID 并开放 SDK 与服务配置。</p></div></section>`;
-    if (section === 'entitlements') return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>AUTHORIZATION</span><h2>登录、权益与启动</h2><p>一期仅提供基础登录状态、账户权益和首次启动授权校验。</p></div></header><div class="publisher-service-flow"><article><span>01</span>${icon('user')}<strong>登录状态校验</strong><p>确认当前用户已登录 PC 客户端。</p></article><i></i><article><span>02</span>${icon('key')}<strong>账户权益校验</strong><p>确认账户拥有当前 APPID 的有效权益。</p></article><i></i><article><span>03</span>${icon('publish')}<strong>启动授权</strong><p>首次启动在线验权成功后，断网仍可运行。</p></article></div><div class="publisher-boundary-note">${icon('info')}<span>一期不实现会话心跳续约、多账号实例管控、实时封禁踢下线与挂机识别。</span></div></section>`;
-    if (section === 'logs') return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>ERRORS & LOGS</span><h2>错误码与日志</h2><p>查看平台约定的错误码、处理建议和最近上报日志摘要。</p></div>${c.button({ label: '下载最近日志', action: 'publisher-demo-feedback' })}</header>${c.table({ headers: ['错误码', '场景', '处理建议', '最近上报'], rows: [['GH-AUTH-001', '客户端未登录', '引导用户完成登录后重试', '09-03 20:18 · 12 次'], ['GH-RIGHT-003', '账户无当前游戏权益', '请求服务端重新查询权益', '09-03 18:22 · 3 次'], ['GH-NET-008', '首次启动无法连接验权服务', '保留错误信息并允许重试', '09-03 16:54 · 1 次']] })}</section>`;
+    const isDelisted = game.detailVariant === 'delisted';
+    const serviceContext = `<span class="publisher-context-chip">${e(game.appId)} · ${e(game.gameId)}</span>`;
+    if (section === 'entitlements') return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>AUTHORIZATION</span><h2>登录、权益与启动</h2><p>${isDelisted ? '停止新增发行授权，已购用户的历史权益与启动能力继续保留。' : `一期为${e(game.name)}提供基础登录状态、账户权益和首次启动授权校验。`}</p></div>${serviceContext}</header><div class="publisher-service-flow"><article><span>01</span>${icon('user')}<strong>登录状态校验</strong><p>确认当前用户已登录 PC 客户端。</p></article><i></i><article><span>02</span>${icon('key')}<strong>${isDelisted ? '历史权益校验' : '账户权益校验'}</strong><p>${isDelisted ? '仅确认用户是否拥有下架前已获得的有效权益。' : '确认账户拥有当前 APPID 的有效权益。'}</p></article><i></i><article><span>03</span>${icon('publish')}<strong>启动授权</strong><p>首次启动在线验权成功后，断网仍可运行。</p></article></div><div class="publisher-boundary-note">${icon('info')}<span>${isDelisted ? '下架只停止新增销售与授权，不移除历史用户已获得的游戏权益。' : '一期不实现会话心跳续约、多账号实例管控、实时封禁踢下线与挂机识别。'}</span></div></section>`;
+    if (section === 'logs') {
+      const volume = game.detailVariant === 'online' ? ['86 次', '21 次', '4 次'] : game.detailVariant === 'delisted' ? ['历史 142 次', '历史 37 次', '历史 9 次'] : game.stage === '先锋测试' ? ['18 次', '6 次', '3 次'] : ['12 次', '3 次', '1 次'];
+      const logRows = [['GH-AUTH-001', '客户端未登录', '引导用户完成登录后重试', `09-03 20:18 · ${volume[0]}`], ['GH-RIGHT-003', `账户无${game.name}权益`, '请求服务端重新查询权益', `09-03 18:22 · ${volume[1]}`], ['GH-NET-008', '首次启动无法连接验权服务', '保留错误信息并允许重试', `09-03 16:54 · ${volume[2]}`]];
+      return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>ERRORS & LOGS</span><h2>错误码与日志</h2><p>${isDelisted ? `查看${e(game.name)}下架前保留的错误码与日志快照。` : `查看${e(game.name)}的平台错误码、处理建议和最近上报日志摘要。`}</p></div><div class="publisher-content-actions">${serviceContext}${c.button({ label: isDelisted ? '导出历史日志' : '下载最近日志', action: 'publisher-demo-feedback' })}</div></header>${c.table({ headers: ['错误码', '场景', '处理建议', '最近上报'], rows: logRows })}</section>`;
+    }
     const sdkRows = String(game.systems).split('／').map((system, index) => [system, system === 'macOS' ? 'Intel／Apple Silicon' : 'x64／arm64', '1.0.0', `${['8f0a', '2d4c', '7b19'][index] || '41ce'}…`, { status: '最新' }, { action: '下载', demoAction: 'publisher-demo-feedback' }]);
-    return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>APPID & SDK</span><h2>APPID 与 SDK</h2><p>一款游戏使用一个全平台唯一 APPID，各 PC 系统使用一致的核心能力。</p></div>${c.statusTag('已接入', 'success')}</header><section class="publisher-appid-card"><div><span>当前 APPID</span><strong>${e(game.appId)}</strong><small>Game ID：${e(game.gameId)} · 全平台唯一、只读</small></div><button type="button" data-portal-action="publisher-demo-feedback">复制 APPID</button></section>${c.table({ headers: ['系统', '架构', 'SDK 版本', 'SHA-256', '状态', '操作'], rows: sdkRows })}</section>`;
+    const resolvedSdkRows = sdkRows.map(row => isDelisted ? [...row.slice(0, 4), { status: '历史版本' }, { action: '下载', demoAction: 'publisher-demo-feedback' }] : row);
+    return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>APPID & SDK</span><h2>APPID 与 SDK</h2><p>${isDelisted ? 'APPID 已停止新增发行授权，SDK 与历史接入资料继续保留。' : '一款游戏使用一个全平台唯一 APPID，各 PC 系统使用一致的核心能力。'}</p></div>${c.statusTag(isDelisted ? '已停用' : '已接入', isDelisted ? 'info' : 'success')}</header><section class="publisher-appid-card"><div><span>${isDelisted ? '历史 APPID' : '当前 APPID'}</span><strong>${e(game.appId)}</strong><small>Game ID：${e(game.gameId)} · 全平台唯一、只读</small></div><button type="button" data-portal-action="publisher-demo-feedback">复制 APPID</button></section>${c.table({ headers: ['系统', '架构', 'SDK 版本', 'SHA-256', '状态', '操作'], rows: resolvedSdkRows })}</section>`;
   };
 
   const renderPublisherAnalyticsSection = (section, game) => {
@@ -518,39 +649,69 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       if (!['online', 'delisted'].includes(game.detailVariant)) return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>TRANSACTIONS</span><h2>交易与退款</h2><p>正式上线后展示成功支付、退款与预估净收入。</p></div></header><div class="publisher-empty-state">${icon('chart')}<strong>暂无正式交易与退款数据</strong><p>${e(game.name)}当前处于${e(game.stage)}阶段，正式上线后开始统计；测试订单全部排除。</p></div></section>`;
       return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>TRANSACTIONS</span><h2>交易与退款</h2><p>${game.detailVariant === 'delisted' ? '游戏已下架，以下为历史交易快照。' : '统计成功支付、符合规则的退款与预估净收入。'}</p></div><span class="publisher-context-chip">${game.detailVariant === 'delisted' ? '历史累计' : '近 30 天'}</span></header><div class="publisher-analytics-metrics">${c.metricCard({ label: '成功支付', value: game.detailVariant === 'online' ? '3,286' : '8,642', trend: '测试订单已排除' })}${c.metricCard({ label: '退款订单', value: game.detailVariant === 'online' ? '74' : '216', trend: '14 天／2 小时规则' })}${c.metricCard({ label: '退款率', value: game.detailVariant === 'online' ? '2.25%' : '2.50%', trend: '退款订单 ÷ 成功支付' })}${c.metricCard({ label: '预估净收入', value: game.detailVariant === 'online' ? 'US$ 51,840' : 'US$ 126,540', trend: '以最终结算单为准' })}</div></section>`;
     }
-    if (section === 'attribution') return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>ATTRIBUTION</span><h2>渠道归因</h2><p>按 Campaign／UTM 查看浏览、订单或领取、成功交付与首次启动。</p></div></header>${c.table({ headers: ['Campaign／渠道', '浏览／点击', '订单／领取', '成功交付', '首次启动'], rows: [['CMP-202609-001／Bilibili', '5,420', '982', '874', '706'], ['Steam 社区', '—', '318', '306', '251'], ['自然流量', '—', '182', '186', '147']] })}<div class="publisher-boundary-note">${icon('info')}<span>— 表示渠道不提供该指标，不按 0 计算；订单创建时固化来源快照。</span></div></section>`;
+    if (section === 'attribution') {
+      const attributionRows = game.detailVariant === 'online'
+        ? [['CMP-202609-031／Bilibili', '25,420', '3,982', '3,874', '3,106'], ['盖世商店推荐', '18,640', '2,318', '2,206', '1,851'], ['自然流量', '—', '1,182', '1,086', '947']]
+        : game.detailVariant === 'delisted'
+          ? [['历史商店推荐', '42,680', '6,240', '5,976', '4,508'], ['历史外部渠道', '—', '2,418', '2,304', '1,782'], ['自然流量', '—', '1,126', '1,047', '822']]
+          : game.stage === '先锋测试'
+            ? [['PIONEER-INVITE／定向邀请', '2,460', '1,108', '1,026', '934'], ['开发者社区招募', '1,280', '486', '442', '376'], ['自然访问', '—', '214', '198', '166']]
+            : game.detailVariant === 'actionRequired'
+              ? [['CMP-202609-001／Bilibili', '5,420', '982', '874', '706'], ['预发布邀请链接', '1,860', '318', '306', '251'], ['自然流量', '—', '182', '176', '147']]
+              : [['PREVIEW-LANDING／预发布页', '8,420', '1,486', '1,372', '1,108'], ['合作媒体试玩', '2,160', '642', '604', '516'], ['自然访问', '—', '286', '264', '218']];
+      return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>ATTRIBUTION</span><h2>渠道归因</h2><p>${game.detailVariant === 'delisted' ? `查看${e(game.name)}下架前固化的历史渠道归因快照。` : `按 Campaign／UTM 查看${e(game.name)}的浏览、订单或领取、成功交付与首次启动。`}</p></div><span class="publisher-context-chip">${e(game.stage)} · ${game.detailVariant === 'delisted' ? '历史累计' : '近 30 天'}</span></header>${c.table({ headers: ['Campaign／渠道', '浏览／点击', '订单／领取', '成功交付', '首次启动'], rows: attributionRows })}<div class="publisher-boundary-note">${icon('info')}<span>— 表示渠道不提供该指标，不按 0 计算；订单或领取创建时固化来源快照。</span></div></section>`;
+    }
     if (section === 'cdkey-data') {
       if (game.gameKey !== 'existing') return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>CDKEY ANALYTICS</span><h2>CDKEY 数据</h2><p>独立展示外部 Key 交付与盖世 Key 分配／兑换。</p></div></header><div class="publisher-empty-state">${icon('key')}<strong>暂无 CDKEY 数据</strong><p>${e(game.name)}尚未配置 Key 供给或渠道 API。</p></div></section>`;
       return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>CDKEY ANALYTICS</span><h2>CDKEY 数据</h2><p>独立展示外部 Key 交付与盖世 Key 分配／兑换，两类 Key 不合并库存。</p></div></header><div class="publisher-comment-metrics">${c.metricCard({ label: '外部 Key 可用', value: '214', trend: '低于安全库存 300' })}${c.metricCard({ label: '盖世 Key 已分配', value: '640', trend: '按 request_id 去重' })}${c.metricCard({ label: '盖世 Key 已兑换', value: '518', trend: '兑换成功终态' })}</div>${c.table({ headers: ['Key 类型', '批次／来源', '已交付／分配', '已兑换', '更新时间'], rows: [['外部 Key', 'EXT-STEAM-202608-07', '4,786', '—', '2026-09-03 09:18'], ['盖世 Key', 'KEY-20260902-001', '640', '518', '2026-09-03 10:18']] })}</section>`;
     }
     const isLive = game.detailVariant === 'online';
     const isDelisted = game.detailVariant === 'delisted';
-    const metrics = isLive ? ['86,420', '24,680', '18,936', '28.6%'] : isDelisted ? ['42,160', '9,842', '7,315', '23.3%'] : ['12,860', '3,420', '2,408', '26.6%'];
+    const metrics = isLive
+      ? ['86,420', '24,680', '18,936', '28.6%']
+      : isDelisted
+        ? ['164,280', '42,160', '31,842', '25.7%']
+        : game.stage === '先锋测试'
+          ? ['4,820', '1,106', '934', '22.9%']
+          : game.detailVariant === 'actionRequired'
+            ? ['12,860', '3,420', '2,408', '26.6%']
+            : ['18,640', '5,286', '4,118', '28.4%'];
     return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>CORE METRICS</span><h2>核心数据</h2><p>${isLive ? '展示正式发行阶段' : isDelisted ? '展示下架前保留的历史' : '当前为测试或预发布阶段，展示已产生的'}浏览、下载与启动数据。</p></div><span class="publisher-context-chip">${isDelisted ? '历史累计' : '近 30 天'}</span></header><div class="publisher-analytics-metrics">${c.metricCard({ label: '浏览量', value: metrics[0], trend: '商店详情页' })}${c.metricCard({ label: '成功下载', value: metrics[1], trend: '支持系统聚合' })}${c.metricCard({ label: '首次启动', value: metrics[2], trend: 'uid＋app_id 去重' })}${c.metricCard({ label: '下载转化', value: metrics[3], trend: '浏览至成功下载' })}</div><div class="publisher-chart"><header><span><strong>浏览、下载与首次启动趋势</strong><small>客户端数据 T+1 更新</small></span><em>成功下载</em></header><div class="publisher-chart__plot"><i style="height:38%"></i><i style="height:52%"></i><i style="height:45%"></i><i style="height:68%"></i><i style="height:62%"></i><i style="height:79%"></i><i style="height:72%"></i><span></span></div></div></section>`;
   };
 
-  const renderPublisherGameConsole = (page, state) => {
+  const renderPublisherGameConsole = (page, state, language = 'zh') => {
     const selectedKey = state.selectedGame || 'existing';
     const game = getPublisherGame(state, selectedKey) || getPublisherGame(state, 'existing') || getPublisherGames(state)[0];
     if (!game) return '';
-    const gameTab = publisherGameTabs.some(([id]) => id === state.gameTab) ? state.gameTab : 'overview';
-    const sections = publisherGameSections[gameTab];
-    const defaultSection = sections[0][0];
-    const gameSection = sections.some(([id]) => id === state.gameSection) ? state.gameSection : defaultSection;
-    let detail = '';
-    if (gameTab === 'overview') detail = renderPublisherOverviewSection(gameSection, game);
-    if (gameTab === 'store') detail = renderPublisherStoreSection(gameSection, page, game);
-    if (gameTab === 'operations') detail = renderPublisherOperationsSection(gameSection, game);
-    if (gameTab === 'services') detail = renderPublisherServicesSection(gameSection, game);
-    if (gameTab === 'analytics') detail = renderPublisherAnalyticsSection(gameSection, game);
-    const currentSectionLabel = sections.find(([id]) => id === gameSection)?.[1] || '';
-    return `<section class="publisher-game-console" data-publisher-game-console data-game-tab="${gameTab}" data-selected-game="${e(game.gameKey)}"><nav class="publisher-game-tabs" role="tablist" aria-label="单游戏控制台">${publisherGameTabs.map(([id, label]) => `<button type="button" role="tab" aria-selected="${gameTab === id}" class="${gameTab === id ? 'is-active' : ''}" data-portal-action="game-console-tab" data-game-tab="${id}">${e(label)}</button>`).join('')}</nav><div class="publisher-game-layout"><aside class="publisher-game-sidebar"><strong>${e(publisherGameTabs.find(([id]) => id === gameTab)?.[1] || '概览')}</strong><nav>${sections.map(([id, label]) => `<button type="button" class="${gameSection === id ? 'is-active' : ''}" data-portal-action="game-console-section" data-game-section="${id}">${gameSection === id ? '<i></i>' : ''}<span>${e(label)}</span>${icon('chevron')}</button>`).join('')}</nav></aside><main class="publisher-game-main"><nav class="publisher-game-context" aria-label="当前位置"><button type="button" data-portal-action="back-publisher-games">${icon('arrow-left')}<span>游戏管理</span></button><i>/</i><span class="publisher-game-context__game">${icon('game')}<strong>${e(game.name)}</strong></span>${c.statusTag(game.status, game.statusTone)}<i>/</i><span>${e(currentSectionLabel)}</span></nav>${detail}</main></div></section>`;
+    const label = value => language === 'en' ? ({ '版本发布': 'Version release', '发布记录': 'Version records', '游戏资料': 'Game details', '商品与 SKU': 'Products & SKU', '发行设置': 'Release settings', '资质认证': 'Qualifications', '游戏管理': 'Game management', '草稿': 'Draft', '审核中': 'In review', '需修改': 'Changes required', '已上线': 'Live', '已下架': 'Delisted', '先锋测试': 'Early testing', '预发布': 'Pre-release' }[value] || value) : value;
+    const profileComponent = window.PublisherGameProfile;
+    let publicationDraft;
+    if (profileComponent) {
+      state.publicationDrafts = state.publicationDrafts || {};
+      publicationDraft = state.publicationDrafts[game.gameKey] || (state.publicationDrafts[game.gameKey] = profileComponent.createDraft(game, game.profileDraft || resolvePublisherProfile(game)));
+    }
+    const allowed = publisherGameConsoleSections.map(([id]) => id);
+    const gameSection = allowed.includes(state.gameSection) ? state.gameSection : 'release-workspace';
+    const detail = profileComponent ? profileComponent.render(publicationDraft, language, { section: gameSection, game }) : renderPublisherReleaseProfile(game);
+    const currentSectionLabel = publisherGameConsoleSections.find(([id]) => id === gameSection)?.[1] || '版本发布';
+    const functionSearch = state.gameFunctionSearch || '';
+    const normalizedSearch = String(functionSearch).trim().toLocaleLowerCase();
+    const visibleSections = publisherGameConsoleSections.filter(([, title, , searchText]) => !normalizedSearch || `${title} ${label(title)} ${searchText}`.toLocaleLowerCase().includes(normalizedSearch));
+    const gameNavigation = `<label class="publisher-game-nav__search">${icon('search')}<input type="search" value="${e(functionSearch)}" placeholder="${language === 'en' ? 'Search functions' : '搜索功能'}" aria-label="${language === 'en' ? 'Search functions' : '搜索功能'}" data-publisher-function-search></label>${visibleSections.map(([id, title, itemIcon, searchText]) => `<button type="button" class="publisher-game-nav__tab${gameSection === id ? ' is-active' : ''}" data-portal-action="game-console-section" data-game-section="${id}" data-function-search="${e(searchText)}">${icon(itemIcon)}<span>${e(label(title))}</span></button>`).join('')}<p class="publisher-game-nav__empty"${visibleSections.length ? ' hidden' : ''}>${language === 'en' ? 'No matching function' : '未找到匹配功能'}</p>`;
+    return `<section class="publisher-game-console" data-publisher-game-console data-game-tab="${gameSection}" data-game-section="${gameSection}" data-selected-game="${e(game.gameKey)}"><div class="publisher-game-layout"><aside class="publisher-game-sidebar"><nav class="publisher-game-nav" aria-label="${language === 'en' ? 'Game console' : '单游戏控制台'}">${gameNavigation}</nav></aside><main class="publisher-game-main"><nav class="publisher-game-context" aria-label="${language === 'en' ? 'Current location' : '当前位置'}"><button type="button" data-portal-action="back-publisher-games">${icon('arrow-left')}<span>${label('游戏管理')}</span></button><i>/</i><span class="publisher-game-context__game"><strong>${e(game.projectName || game.name)}</strong></span><i>/</i><span>${e(label(currentSectionLabel))}</span></nav>${detail}</main></div></section>`;
   };
 
-  const renderPublisherWorkspace = ({ page, workspaceState = {} }) => {
-    const view = ['games', 'data', 'game'].includes(workspaceState.workspaceView) ? workspaceState.workspaceView : 'games';
-    const content = view === 'game' ? renderPublisherGameConsole(page, workspaceState) : `${renderPublisherPlatformTabs(view)}<div class="publisher-platform-content">${view === 'data' ? renderPublisherData(workspaceState) : renderPublisherGames(workspaceState)}</div>`;
-    return `<div class="publisher-workspace-v2" data-publisher-workspace data-workspace-view="${view}">${content}${renderPublisherAddGameModal(workspaceState)}${renderPublisherDeleteGameModal(workspaceState)}</div>`;
+  const renderPublisherWorkspace = ({ page, workspaceState = {}, language = 'zh' }) => {
+    const storageNotice = workspaceState.publicationLoadError ? c.resultStrip({ title: language === 'en' ? 'Saved game details could not be loaded' : '暂时无法读取已保存的游戏资料', detail: language === 'en' ? 'Reload this page before saving or submitting game details.' : '请刷新重试后再保存或提交游戏资料。', variant: 'warning' }) : '';
+    if (workspaceState.addGameOpen && window.PublisherGameCreate) {
+      return `<div class="publisher-workspace-v2" data-publisher-workspace data-workspace-view="create"><div class="publisher-console-shell">${renderPublisherConsoleSidebar('games', language)}<main class="publisher-console-main"><div class="publisher-platform-content">${window.PublisherGameCreate.render(workspaceState.createDraft, language)}</div></main></div></div>`;
+    }
+    const view = ['games', 'vendor', 'game'].includes(workspaceState.workspaceView) ? workspaceState.workspaceView : 'games';
+    const activeSidebar = view === 'vendor' ? 'vendor' : 'games';
+    const content = view === 'game'
+      ? renderPublisherGameConsole(page, workspaceState, language)
+      : `<div class="publisher-console-shell">${renderPublisherConsoleSidebar(activeSidebar)}<main class="publisher-console-main"><div class="publisher-platform-content">${view === 'vendor' ? renderPublisherVendorSettings() : renderPublisherGames(workspaceState)}</div></main></div>`;
+    return `${storageNotice}<div class="publisher-workspace-v2" data-publisher-workspace data-workspace-view="${view}">${content}${renderPublisherDeleteGameModal(workspaceState)}</div>`;
   };
 
   const qualificationValue = (qualification, key, fallback = '') => qualification?.form?.[key] ?? fallback;
@@ -879,7 +1040,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       const enReady = Boolean(String(item?.en?.title || '').trim());
       return `<div class="content-language-status"><span class="${zhReady ? 'is-ready' : ''}">中文${zhReady ? '已配置' : '待完善'}</span><span class="${enReady ? 'is-ready' : ''}">English ${enReady ? 'ready' : 'missing'}</span></div>`;
     };
-    const toolbar = (title, description) => `<section class="managed-content__toolbar"><div class="content-config-heading"><strong>${e(title)}</strong><span>${e(description)}</span></div><div class="managed-content__meta"><span>当前生效 V${e(managedContent?.revision || 1)} · ${e(managedContent?.publishedAt || '—')}</span><div class="content-language-tabs" role="group" aria-label="编辑语言"><button type="button" data-portal-action="content-language" data-content-language="zh" class="${language === 'zh' ? 'is-active' : ''}">中文</button><button type="button" data-portal-action="content-language" data-content-language="en" class="${language === 'en' ? 'is-active' : ''}">English</button></div>${c.button({ label: isEnglish ? 'Save & publish' : '保存并生效', variant: 'primary', action: 'content-publish', size: 'small' })}</div></section>`;
+    const publicationState = item => c.statusTag(item?.status === 'draft' ? (isEnglish ? 'Draft' : '草稿') : (isEnglish ? 'Published' : '已发布'), item?.status === 'draft' ? 'warning' : 'success');
+    const publishAction = (entity, item) => item?.status === 'draft' ? c.button({ label: isEnglish ? 'Publish' : '发布', variant: 'primary', action: 'content-publish-item', size: 'small', extra: `data-content-entity="${e(entity)}" data-content-id="${e(item.id)}"` }) : '';
+    const toolbar = (title, description) => `<section class="managed-content__toolbar"><div class="content-config-heading"><strong>${e(title)}</strong><span>${e(description)}</span></div><div class="managed-content__meta"><span>当前线上版本 V${e(managedContent?.revision || 1)} · ${e(managedContent?.publishedAt || '—')}</span><div class="content-language-tabs" role="group" aria-label="编辑语言"><button type="button" data-portal-action="content-language" data-content-language="zh" class="${language === 'zh' ? 'is-active' : ''}">中文</button><button type="button" data-portal-action="content-language" data-content-language="en" class="${language === 'en' ? 'is-active' : ''}">English</button></div></div></section>`;
     const listFilters = (placeholder, navigationOptions = '') => `<div class="content-list-filters"><label><span class="sr-only">${e(placeholder)}</span><div>${icon('search')}<input type="search" value="${e(editor.search || '')}" placeholder="${e(placeholder)}" data-content-search></div></label>${navigationOptions}<div class="content-list-filter-actions">${c.button({ label: '重置', action: 'content-search-reset', size: 'small' })}${c.button({ label: '查询', variant: 'primary', action: 'content-search', size: 'small', iconName: 'search' })}</div></div>`;
     const emptyRow = (columns, label) => `<tr class="content-empty-row"><td colspan="${columns}">${icon('file')}<strong>${e(label)}</strong><span>请调整查询条件或创建新内容。</span></td></tr>`;
     const deleteModal = (() => {
@@ -888,7 +1051,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       const collection = { certification: draft.certificationArticles, navigation: draft.helpNavigations, document: draft.helpDocuments }[target.entity] || [];
       const item = collection.find(entry => entry.id === target.id);
       const label = item?.[language]?.title || item?.id || '当前内容';
-      return `<section class="review-action-modal content-delete-modal" data-content-delete-modal><button class="review-action-modal__backdrop" type="button" data-portal-action="content-delete-close" aria-label="取消删除"></button><div class="review-action-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="content-delete-title"><header><div><h2 id="content-delete-title">确认删除？</h2><p>删除“${e(label)}”后，只有保存并生效才会同步到开发者端。</p></div><button type="button" data-portal-action="content-delete-close" aria-label="取消删除">×</button></header><footer>${c.button({ label: '取消', action: 'content-delete-close' })}${c.button({ label: '确认删除', variant: 'danger', action: 'content-delete-confirm' })}</footer></div></section>`;
+      const deleteCopy = item?.status === 'draft' ? '删除后该草稿将直接移除。' : '删除后该内容会同步从开发者端移除。';
+      return `<section class="review-action-modal content-delete-modal" data-content-delete-modal><button class="review-action-modal__backdrop" type="button" data-portal-action="content-delete-close" aria-label="取消删除"></button><div class="review-action-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="content-delete-title"><header><div><h2 id="content-delete-title">确认删除？</h2><p>${e(deleteCopy)}</p></div><button type="button" data-portal-action="content-delete-close" aria-label="取消删除">×</button></header><footer>${c.button({ label: '取消', action: 'content-delete-close' })}${c.button({ label: '确认删除', variant: 'danger', action: 'content-delete-confirm' })}</footer></div></section>`;
     })();
     const editorHeader = (eyebrow, title, id) => `<header><button type="button" data-portal-action="content-back">${icon('arrow-left')}${isEnglish ? 'Back to list' : '返回列表'}</button><div><span>${e(eyebrow)}</span><h2>${e(title)}</h2><p>${e(id)}</p></div></header>`;
     const positionLabels = { intro: '认证介绍', nda: '保密协议', cooperation: '合作协议' };
@@ -904,8 +1068,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       const keyword = String(editor.search || '').toLowerCase();
       const visible = articles.filter(article => !keyword || `${article.id} ${article.zh?.title || ''} ${article.en?.title || ''}`.toLowerCase().includes(keyword));
-      const rows = visible.map(article => `<tr><td><div class="content-document-cell"><strong class="content-document-title">${e(article?.[language]?.title || (isEnglish ? 'Untitled article' : '未命名文章'))}</strong><small>${e(article.id)}</small></div></td><td>${e(positionLabels[article.position] || article.position)}</td><td>${languageState(article)}</td><td>${e(article.updatedAt || '—')}</td><td><div class="content-document-actions">${c.button({ label: '编辑', variant: 'text', action: 'content-edit', size: 'small', extra: `data-content-entity="certification" data-content-id="${e(article.id)}"` })}${c.button({ label: '删除', variant: 'text', action: 'content-delete-open', size: 'small', extra: `data-content-entity="certification" data-content-id="${e(article.id)}"` })}</div></td></tr>`).join('');
-      const list = `<section class="content-article-list" data-content-list="certification"><header><div><h2>文章列表</h2><p>维护企业认证页的认证介绍、保密协议和合作协议；每个位置只保留一篇当前文章。</p></div>${c.button({ label: '新建文章', variant: 'primary', action: 'content-create', iconName: 'plus', extra: 'data-content-entity="certification"' })}</header>${listFilters('输入文章标题或唯一编号')}<div class="operations-table-wrap"><table><thead><tr><th>文章标题／唯一编号</th><th>文章位置</th><th>多语言</th><th>更新时间</th><th>操作</th></tr></thead><tbody>${rows || emptyRow(5, '没有匹配的认证文章')}</tbody></table></div><footer>共 <strong>${visible.length}</strong> 篇文章</footer></section>`;
+      const rows = visible.map(article => `<tr><td><div class="content-document-cell"><strong class="content-document-title">${e(article?.[language]?.title || (isEnglish ? 'Untitled article' : '未命名文章'))}</strong><small>${e(article.id)}</small></div></td><td>${e(positionLabels[article.position] || article.position)}</td><td>${languageState(article)}</td><td>${publicationState(article)}</td><td>${e(article.updatedAt || '—')}</td><td><div class="content-document-actions">${publishAction('certification', article)}${c.button({ label: '编辑', variant: 'text', action: 'content-edit', size: 'small', extra: `data-content-entity="certification" data-content-id="${e(article.id)}"` })}${c.button({ label: '删除', variant: 'text', action: 'content-delete-open', size: 'small', extra: `data-content-entity="certification" data-content-id="${e(article.id)}"` })}</div></td></tr>`).join('');
+      const list = `<section class="content-article-list" data-content-list="certification"><header><div><h2>文章列表</h2><p>新建内容默认保存为草稿；草稿需在列表中手动发布后才会同步到开发者端。</p></div>${c.button({ label: '新建文章', variant: 'primary', action: 'content-create', iconName: 'plus', extra: 'data-content-entity="certification"' })}</header>${listFilters('输入文章标题或唯一编号')}<div class="operations-table-wrap"><table><thead><tr><th>文章标题／唯一编号</th><th>文章位置</th><th>多语言</th><th>发布状态</th><th>更新时间</th><th>操作</th></tr></thead><tbody>${rows || emptyRow(6, '没有匹配的认证文章')}</tbody></table></div><footer>共 <strong>${visible.length}</strong> 篇文章</footer></section>`;
       return `<div class="managed-content" data-managed-content data-content-kind="certification">${toolbar('企业认证内容配置', '认证文章按固定位置发布，不支持排序。')}<section class="managed-content__body">${list}</section>${deleteModal}</div>`;
     }
 
@@ -944,14 +1108,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       const rows = visible.map(document => {
         const group = documents.filter(item => item.navigationId === document.navigationId);
         const groupIndex = group.findIndex(item => item.id === document.id);
-        return `<tr><td><div class="content-document-cell"><strong class="content-document-title">${e(document?.[language]?.title || (isEnglish ? 'Untitled document' : '未命名子文档'))}</strong><small>${e(document.id)}</small></div></td><td><strong>${e(navigationById.get(document.navigationId)?.[language]?.title || '未关联')}</strong><small>${e(document.navigationId)}</small></td><td>${languageState(document)}</td><td>${e(document.updatedAt || '—')}</td><td><div class="content-document-actions">${c.button({ label: '上移', variant: 'text', action: 'content-sort', size: 'small', disabled: groupIndex <= 0, extra: `data-content-entity="document" data-content-id="${e(document.id)}" data-content-direction="up"` })}${c.button({ label: '下移', variant: 'text', action: 'content-sort', size: 'small', disabled: groupIndex >= group.length - 1, extra: `data-content-entity="document" data-content-id="${e(document.id)}" data-content-direction="down"` })}${c.button({ label: '编辑', variant: 'text', action: 'content-edit', size: 'small', extra: `data-content-entity="document" data-content-id="${e(document.id)}"` })}${c.button({ label: '删除', variant: 'text', action: 'content-delete-open', size: 'small', extra: `data-content-entity="document" data-content-id="${e(document.id)}"` })}</div></td></tr>`;
+        return `<tr><td><div class="content-document-cell"><strong class="content-document-title">${e(document?.[language]?.title || (isEnglish ? 'Untitled document' : '未命名子文档'))}</strong><small>${e(document.id)}</small></div></td><td><strong>${e(navigationById.get(document.navigationId)?.[language]?.title || '未关联')}</strong><small>${e(document.navigationId)}</small></td><td>${languageState(document)}</td><td>${publicationState(document)}</td><td>${e(document.updatedAt || '—')}</td><td><div class="content-document-actions">${publishAction('document', document)}${c.button({ label: '上移', variant: 'text', action: 'content-sort', size: 'small', disabled: groupIndex <= 0, extra: `data-content-entity="document" data-content-id="${e(document.id)}" data-content-direction="up"` })}${c.button({ label: '下移', variant: 'text', action: 'content-sort', size: 'small', disabled: groupIndex >= group.length - 1, extra: `data-content-entity="document" data-content-id="${e(document.id)}" data-content-direction="down"` })}${c.button({ label: '编辑', variant: 'text', action: 'content-edit', size: 'small', extra: `data-content-entity="document" data-content-id="${e(document.id)}"` })}${c.button({ label: '删除', variant: 'text', action: 'content-delete-open', size: 'small', extra: `data-content-entity="document" data-content-id="${e(document.id)}"` })}</div></td></tr>`;
       }).join('');
-      const list = `<section class="content-article-list" data-content-list="document"><header><div><h2>目录子文档</h2><p>子文档必须归属一个导航，排序只在同一导航内生效。</p></div>${c.button({ label: '新建子文档', variant: 'primary', action: 'content-create', iconName: 'plus', extra: 'data-content-entity="document"' })}</header>${listFilters('输入文档标题或唯一编号', navigationOptions)}<div class="operations-table-wrap"><table><thead><tr><th>文档标题／唯一编号</th><th>所属导航</th><th>多语言</th><th>更新时间</th><th>操作</th></tr></thead><tbody>${rows || emptyRow(5, '没有匹配的目录子文档')}</tbody></table></div><footer>共 <strong>${visible.length}</strong> 篇子文档</footer></section>`;
+      const list = `<section class="content-article-list" data-content-list="document"><header><div><h2>目录子文档</h2><p>新建子文档默认为草稿；所属导航发布后，子文档才能单独发布。</p></div>${c.button({ label: '新建子文档', variant: 'primary', action: 'content-create', iconName: 'plus', extra: 'data-content-entity="document"' })}</header>${listFilters('输入文档标题或唯一编号', navigationOptions)}<div class="operations-table-wrap"><table><thead><tr><th>文档标题／唯一编号</th><th>所属导航</th><th>多语言</th><th>发布状态</th><th>更新时间</th><th>操作</th></tr></thead><tbody>${rows || emptyRow(6, '没有匹配的目录子文档')}</tbody></table></div><footer>共 <strong>${visible.length}</strong> 篇子文档</footer></section>`;
       return `<div class="managed-content" data-managed-content data-content-kind="help">${toolbar('帮助中心', '分别维护导航目录和目录子文档。')}${helpTabs}<section class="managed-content__body">${list}</section>${deleteModal}</div>`;
     }
     const visible = navigations.filter(item => !keyword || `${item.id} ${item.zh?.title || ''} ${item.en?.title || ''}`.toLowerCase().includes(keyword));
-    const rows = visible.map((navigation, index) => `<tr><td><div class="content-document-cell"><strong class="content-document-title">${e(navigation?.[language]?.title || (isEnglish ? 'Untitled navigation' : '未命名导航'))}</strong><small>${e(navigation.id)}</small></div></td><td>${languageState(navigation)}</td><td><strong>${documents.filter(document => document.navigationId === navigation.id).length}</strong> 篇</td><td>${e(navigation.updatedAt || '—')}</td><td><div class="content-document-actions">${c.button({ label: '上移', variant: 'text', action: 'content-sort', size: 'small', disabled: index <= 0, extra: `data-content-entity="navigation" data-content-id="${e(navigation.id)}" data-content-direction="up"` })}${c.button({ label: '下移', variant: 'text', action: 'content-sort', size: 'small', disabled: index >= navigations.length - 1, extra: `data-content-entity="navigation" data-content-id="${e(navigation.id)}" data-content-direction="down"` })}${c.button({ label: '编辑', variant: 'text', action: 'content-edit', size: 'small', extra: `data-content-entity="navigation" data-content-id="${e(navigation.id)}"` })}${c.button({ label: '删除', variant: 'text', action: 'content-delete-open', size: 'small', extra: `data-content-entity="navigation" data-content-id="${e(navigation.id)}"` })}</div></td></tr>`).join('');
-    const list = `<section class="content-article-list" data-content-list="navigation"><header><div><h2>导航目录</h2><p>管理开发者端帮助中心的一级导航及展示顺序。</p></div>${c.button({ label: '新建导航', variant: 'primary', action: 'content-create', iconName: 'plus', extra: 'data-content-entity="navigation"' })}</header>${listFilters('输入导航名称或唯一编号')}<div class="operations-table-wrap"><table><thead><tr><th>导航名称／唯一编号</th><th>多语言</th><th>子文档</th><th>更新时间</th><th>操作</th></tr></thead><tbody>${rows || emptyRow(5, '没有匹配的导航')}</tbody></table></div><footer>共 <strong>${visible.length}</strong> 个导航</footer></section>`;
+    const rows = visible.map((navigation, index) => `<tr><td><div class="content-document-cell"><strong class="content-document-title">${e(navigation?.[language]?.title || (isEnglish ? 'Untitled navigation' : '未命名导航'))}</strong><small>${e(navigation.id)}</small></div></td><td>${languageState(navigation)}</td><td><strong>${documents.filter(document => document.navigationId === navigation.id).length}</strong> 篇</td><td>${publicationState(navigation)}</td><td>${e(navigation.updatedAt || '—')}</td><td><div class="content-document-actions">${publishAction('navigation', navigation)}${c.button({ label: '上移', variant: 'text', action: 'content-sort', size: 'small', disabled: index <= 0, extra: `data-content-entity="navigation" data-content-id="${e(navigation.id)}" data-content-direction="up"` })}${c.button({ label: '下移', variant: 'text', action: 'content-sort', size: 'small', disabled: index >= navigations.length - 1, extra: `data-content-entity="navigation" data-content-id="${e(navigation.id)}" data-content-direction="down"` })}${c.button({ label: '编辑', variant: 'text', action: 'content-edit', size: 'small', extra: `data-content-entity="navigation" data-content-id="${e(navigation.id)}"` })}${c.button({ label: '删除', variant: 'text', action: 'content-delete-open', size: 'small', extra: `data-content-entity="navigation" data-content-id="${e(navigation.id)}"` })}</div></td></tr>`).join('');
+    const list = `<section class="content-article-list" data-content-list="navigation"><header><div><h2>导航目录</h2><p>新建导航默认为草稿；确认中英文内容后，可在列表中单独发布。</p></div>${c.button({ label: '新建导航', variant: 'primary', action: 'content-create', iconName: 'plus', extra: 'data-content-entity="navigation"' })}</header>${listFilters('输入导航名称或唯一编号')}<div class="operations-table-wrap"><table><thead><tr><th>导航名称／唯一编号</th><th>多语言</th><th>子文档</th><th>发布状态</th><th>更新时间</th><th>操作</th></tr></thead><tbody>${rows || emptyRow(6, '没有匹配的导航')}</tbody></table></div><footer>共 <strong>${visible.length}</strong> 个导航</footer></section>`;
     return `<div class="managed-content" data-managed-content data-content-kind="help">${toolbar('帮助中心', '分别维护导航目录和目录子文档。')}${helpTabs}<section class="managed-content__body">${list}</section>${deleteModal}</div>`;
   };
 
@@ -963,9 +1127,13 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       <div class="span-12">${panel({ title: '发行数据', description: '正式上线后展示交易、退款与收入趋势', body: `<div class="data-placeholder"><div class="data-placeholder__chart"><i></i><i></i><i></i><i></i><i></i><i></i></div><div><strong>暂无正式发行数据</strong><p>当前游戏仍处于预发布阶段，正式上线后开始统计。</p></div></div>` })}</div></div>
   </div>`;
 
-  const renderT03 = ({ route, page, qualification, operationsReview, workspaceState }) => {
-    if (route.id === 'P01-08') return renderQualificationOperations({ qualification, operationsReview });
-    if (route.id === 'P02-01') return renderPublisherWorkspace({ page, workspaceState });
+  const renderT03 = ({ route, page, qualification, operationsReview, workspaceState, language }) => {
+    if (route.id === 'P01-08') {
+      const tab = ['games', 'qualifications'].includes(operationsReview?.tab) ? operationsReview.tab : 'company';
+      const body = tab === 'games' ? '<div data-game-release-review-host></div>' : tab === 'qualifications' ? '<div data-game-qualification-review-host></div>' : renderQualificationOperations({ qualification, operationsReview });
+      return `<nav class="operations-audit-tabs" role="tablist" aria-label="审核类型"><button type="button" role="tab" aria-selected="${tab === 'company'}" data-game-review-tab="company" class="${tab === 'company' ? 'is-active' : ''}">企业认证审核</button><button type="button" role="tab" aria-selected="${tab === 'games'}" data-game-review-tab="games" class="${tab === 'games' ? 'is-active' : ''}">游戏发布审核</button><button type="button" role="tab" aria-selected="${tab === 'qualifications'}" data-game-review-tab="qualifications" class="${tab === 'qualifications' ? 'is-active' : ''}">游戏资质审核</button></nav>${body}`;
+    }
+    if (route.id === 'P02-01') return renderPublisherWorkspace({ page, workspaceState, language });
     if (route.id === 'P01-04') return renderGameDashboard();
     const view = listViews[route.id];
     const fallback = { tabs: ['全部', '待处理', '已完成'], placeholder: '输入名称或 ID', filters: [{ label: '业务状态', options: ['全部状态', '待处理', '处理中', '已完成'] }], headers: ['对象', '状态', '更新时间', '操作'], rows: [] };
@@ -1194,6 +1362,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
 
   namespace.templates = {
+    publisherGame: getPublisherGame,
     registry,
     render({ route, page, state = 'default', editorMode = 'edit', qualification, language = 'zh', managedContent, contentEditor, operationsReview, registration, authenticated = false, workspaceState }) {
       if (state !== 'default') return c.statePanel({ state, primaryAction: page?.primaryAction, onRetry: state === 'error' });

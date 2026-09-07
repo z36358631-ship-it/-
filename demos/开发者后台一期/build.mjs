@@ -9,7 +9,8 @@ const repoRoot = path.resolve(demoDir, '..', '..');
 const read = (...parts) => fs.readFileSync(path.join(srcDir, ...parts), 'utf8');
 const readJson = file => JSON.parse(read(file));
 const modules = readJson('modules.json');
-const { routes, fixture, contract: prdContract } = loadLatestPrdFixture({ repoRoot, demoDir });
+const requestedModuleId = process.argv.find(argument => argument.startsWith('--module='))?.split('=')[1];
+const { routes, fixture, contract: prdContract } = loadLatestPrdFixture({ repoRoot, demoDir, moduleId: requestedModuleId });
 const cssFiles = ['tokens.css', 'shell.css', 'components.css', 'templates.css'];
 const runtimeFiles = ['icons.js', 'components.js', 'templates.js', 'shell.js', 'app.js'];
 const css = cssFiles.map(file => read('styles', file).trim()).join('\n\n');
@@ -55,16 +56,15 @@ const publicFixtureFor = pageRoutes => ({
   })),
 });
 const documentHtml = ({ title, module, pageRoutes }) => `<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>${css}</style></head><body>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>${css}${module.id === '02' ? read('styles', 'publisher-release-regions.css') + '\n' + read('styles', 'publisher-game-names.css') + '\n' + read('styles', 'publisher-game-create.css') + '\n' + read('styles', 'publisher-game-profile.css') + '\n' + read('styles', 'publisher-game-builds.css') : ''}${module.id === '01' ? read('styles', 'publisher-game-review.css') : ''}</style></head><body>
 <div id="app"></div>
 <textarea id="portal-module" hidden aria-hidden="true">${escapeJson(module)}</textarea>
 <textarea id="portal-modules" hidden aria-hidden="true">${escapeJson(modules)}</textarea>
 <textarea id="portal-routes" hidden aria-hidden="true">${escapeJson(pageRoutes)}</textarea>
 <textarea id="portal-data" hidden aria-hidden="true">${escapeJson(publicFixtureFor(pageRoutes))}</textarea>
-<script>${runtime}</script></body></html>
+<script>${module.id === '02' ? ['publisher-storage-schema.js', 'publisher-release-regions.js', 'publisher-game-names.js', 'publisher-game-create.js', 'publisher-game-qualifications.js', 'publisher-game-builds.js', 'publisher-game-profile.js', 'publisher-profile-store.js', 'publisher-qualification-review-store.js'].map(file => read('runtime', file)).join('\n') : ''}${module.id === '01' ? ['publisher-storage-schema.js', 'publisher-release-regions.js', 'publisher-game-qualifications.js', 'publisher-qualification-review-store.js', 'publisher-qualification-review.js', 'publisher-game-review-store.js', 'publisher-game-review.js'].map(file => read('runtime', file)).join('\n') : ''}\n${runtime}</script></body></html>
 `;
 
-const requestedModuleId = process.argv.find(argument => argument.startsWith('--module='))?.split('=')[1];
 const targetModules = requestedModuleId ? modules.filter(module => module.id === requestedModuleId) : modules;
 if (requestedModuleId && !targetModules.length) throw new Error(`Unknown module: ${requestedModuleId}`);
 const routesForModule = module => routes.filter(route => route.moduleId === module.id && (!module.routeIds || module.routeIds.includes(route.id)));

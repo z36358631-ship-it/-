@@ -26,6 +26,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const accountStatesStorageKey = 'gamehub-developer-account-states-v1';
   const languageStorageKey = 'gamehub-developer-language-v1';
   const managedContentStorageKey = 'gamehub-developer-content-published-v1';
+  const managedContentDraftStorageKey = 'gamehub-developer-content-drafts-v1';
+  const publisherWorkspaceStorageKey = 'gamehub-developer-publisher-workspace-v1';
   const publisherFixtureGameKeys = new Set(['draft', 'reviewing', 'existing', 'pioneer', 'prerelease', 'live', 'delisted']);
   const createQualification = (prefill = true) => ({
     applicationId: 'ENT-20260903-001',
@@ -101,6 +103,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   }
   const defaultManagedContent = cloneJson(portalData.managedContent || {});
   const storedManagedContent = readStorage(localStorage, managedContentStorageKey, null);
+  const storedManagedContentDraft = readStorage(localStorage, managedContentDraftStorageKey, null);
   const legacyHelpBody = article => {
     if (String(article?.bodyHtml || '').trim()) return article.bodyHtml;
     const answer = String(article?.answer || '').trim();
@@ -173,9 +176,16 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         };
       });
     }
+    ['certificationArticles', 'helpNavigations', 'helpDocuments'].forEach(collectionName => {
+      content[collectionName] = (content[collectionName] || []).map(item => ({
+        ...item,
+        status: item?.status === 'draft' ? 'draft' : 'published',
+      }));
+    });
     return content;
   };
   const managedContent = normalizeManagedContent(storedManagedContent?.zh && storedManagedContent?.en ? storedManagedContent : defaultManagedContent);
+  const managedContentDraft = normalizeManagedContent(storedManagedContentDraft?.zh && storedManagedContentDraft?.en ? storedManagedContentDraft : managedContent);
   const memory = {
     page: Object.create(null),
     result: Object.create(null),
@@ -198,11 +208,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       navigationFilter: '',
       deleteTarget: null,
       issuedIds: new Set([
-        ...(managedContent.certificationArticles || []).map(item => item.id),
-        ...(managedContent.helpNavigations || []).map(item => item.id),
-        ...(managedContent.helpDocuments || []).map(item => item.id),
+        ...(managedContentDraft.certificationArticles || []).map(item => item.id),
+        ...(managedContentDraft.helpNavigations || []).map(item => item.id),
+        ...(managedContentDraft.helpDocuments || []).map(item => item.id),
       ]),
-      draft: cloneJson(managedContent),
+      draft: cloneJson(managedContentDraft),
     },
   };
   try {
@@ -214,21 +224,28 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     }
   } catch { /* window.name 不是本平台交接数据时忽略 */ }
   if (moduleConfig.id === '02') {
+    const storedPublisherWorkspace = readStorage(localStorage, publisherWorkspaceStorageKey, null);
+    const restoredPublisherWorkspace = storedPublisherWorkspace && typeof storedPublisherWorkspace === 'object' ? storedPublisherWorkspace : {};
     memory.session.authenticated = true;
     memory.registration = { ...memory.registration, accountTier: 'enterprise', consoleTab: 'games' };
     memory.qualification = { ...memory.qualification, status: 'approved', editing: false };
     memory.page['P02-01'] = {
+      ...restoredPublisherWorkspace,
       workspaceView: 'games',
-      gameTab: 'overview',
-      gameSection: 'release-overview',
-      selectedGame: 'existing',
+      gameTab: 'release',
+      gameSection: 'release-workspace',
+      selectedGame: String(restoredPublisherWorkspace.selectedGame || 'existing'),
       addGameOpen: false,
-      cdkeyTab: 0,
-      gameSearch: '',
-      gameStatusFilter: 'all',
+      cdkeyTab: Number(restoredPublisherWorkspace.cdkeyTab || 0),
+      gameSearch: String(restoredPublisherWorkspace.gameSearch || ''),
+      gameStatusFilter: String(restoredPublisherWorkspace.gameStatusFilter || 'all'),
       gameMenuOpen: '',
       deleteGameKey: '',
-      deletedGameKeys: [],
+      deletedGameKeys: Array.isArray(restoredPublisherWorkspace.deletedGameKeys) ? restoredPublisherWorkspace.deletedGameKeys : [],
+      createdGames: Array.isArray(restoredPublisherWorkspace.createdGames) ? restoredPublisherWorkspace.createdGames : [],
+      profileDrafts: restoredPublisherWorkspace.profileDrafts && typeof restoredPublisherWorkspace.profileDrafts === 'object' ? restoredPublisherWorkspace.profileDrafts : {},
+      publicationDrafts: {},
+      createDraft: null,
     };
   }
   const fallbackPage = route => ({
@@ -387,15 +404,28 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     });
     cursor[keys.at(-1)] = value;
   };
+  const getNestedValue = (target, path) => String(path || '').split('.').filter(Boolean).reduce((value, key) => value?.[key], target);
+  const persistManagedContentDraft = () => writeStorage(localStorage, managedContentDraftStorageKey, memory.contentEditor.draft);
   const collectManagedContentForm = () => {
     const draft = memory.contentEditor.draft;
     if (!draft) return;
+    let changed = false;
     root.querySelectorAll('[data-content-editor-form] [data-content-path]').forEach(field => {
       const value = field.hasAttribute('data-rich-editor-body')
         ? sanitizeManagedHtml(field.innerHTML)
         : String(field.value || '').trim();
+      if (String(getNestedValue(draft, field.dataset.contentPath) || '') !== String(value || '')) changed = true;
       setNestedValue(draft, field.dataset.contentPath, value);
     });
+    if (changed && memory.contentEditor.entity && memory.contentEditor.selectedId) {
+      const collection = draft[contentCollection(memory.contentEditor.entity)] || [];
+      const selected = collection.find(item => item.id === memory.contentEditor.selectedId);
+      if (selected) {
+        selected.status = 'draft';
+        selected.updatedAt = nowText();
+      }
+      persistManagedContentDraft();
+    }
   };
   const managedText = value => String(value || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ').trim();
   const validateManagedContent = content => {
@@ -426,6 +456,26 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       for (const field of ['supportName', 'serviceHours', 'channel', 'fallback']) {
         if (!String(locale.help?.contact?.[field] || '').trim()) return { language, entity: 'help', routeId: 'P01-10', label: language === 'zh' ? '中文联系支持文案' : 'English support contact copy' };
       }
+    }
+    return null;
+  };
+  const validateManagedContentItem = (entity, item, content) => {
+    if (!item) return { language: 'zh', label: '待发布内容' };
+    for (const language of ['zh', 'en']) {
+      const locale = item?.[language] || {};
+      if (!String(locale.title || '').trim()) {
+        return { language, label: language === 'zh' ? '中文标题' : 'English title' };
+      }
+      if (entity !== 'navigation' && !managedText(locale.bodyHtml)) {
+        return { language, label: language === 'zh' ? '中文正文' : 'English content' };
+      }
+    }
+    if (entity === 'certification' && !['intro', 'nda', 'cooperation'].includes(item.position)) {
+      return { language: 'zh', label: '文章位置' };
+    }
+    if (entity === 'document') {
+      const publishedNavigation = (memory.managedContent.helpNavigations || []).find(navigation => navigation.id === item.navigationId);
+      if (!publishedNavigation) return { language: 'zh', label: '已发布的所属导航', parentMissing: true };
     }
     return null;
   };
@@ -786,10 +836,176 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       tab.tabIndex = active ? 0 : -1;
     });
   };
-  const updatePublisherWorkspace = patch => {
+  const persistPublisherWorkspace = () => {
+    const { publicationDrafts, ...workspace } = memory.page['P02-01'] || {};
+    writeStorage(localStorage, publisherWorkspaceStorageKey, workspace);
+  };
+  const restoreActiveHorizontalItem = (selector, previousLeft = 0) => {
+    const scroller = root.querySelector(selector);
+    if (!scroller) return;
+    scroller.scrollLeft = previousLeft;
+    const active = scroller.querySelector('.is-active');
+    if (!active || scroller.scrollWidth <= scroller.clientWidth) return;
+    const scrollerBox = scroller.getBoundingClientRect();
+    const activeBox = active.getBoundingClientRect();
+    if (activeBox.left < scrollerBox.left) scroller.scrollLeft -= scrollerBox.left - activeBox.left;
+    else if (activeBox.right > scrollerBox.right) scroller.scrollLeft += activeBox.right - scrollerBox.right;
+  };
+  const updatePublisherWorkspace = (patch, { preserveScroll = false } = {}) => {
     const routeId = 'P02-01';
+    const currentWorkspace = preserveScroll ? root.querySelector('.workspace') : null;
+    const position = currentWorkspace ? { top: currentWorkspace.scrollTop, left: currentWorkspace.scrollLeft } : null;
+    const currentGameNavigation = preserveScroll ? root.querySelector('.publisher-game-nav') : null;
+    const gameNavigationLeft = currentGameNavigation?.scrollLeft || 0;
     memory.page[routeId] = { ...(memory.page[routeId] || {}), ...patch };
+    persistPublisherWorkspace();
     render();
+    if (position) root.querySelector('.workspace')?.scrollTo({ ...position, behavior: 'instant' });
+    if (currentGameNavigation) restoreActiveHorizontalItem('.publisher-game-nav', gameNavigationLeft);
+  };
+  const savePublisherPublication = async (draft, submit = false) => {
+    const workspace = memory.page['P02-01'];
+    if (workspace.publicationLoadError) throw new Error('profile-load-failed');
+    if (workspace.publicationDrafts?.[draft.gameKey] !== draft) throw new Error('profile-changed');
+    if (submit && Object.keys(window.PublisherGameProfile.validate(draft)).length) throw new Error('profile-incomplete');
+    const game = namespace.templates.publisherGame(workspace, draft.gameKey);
+    if (!game) throw new Error('game-missing');
+    const record = await window.PublisherProfileStore[submit ? 'submit' : 'save'](draft, game);
+    Object.assign(draft, record.draft);
+    workspace.createdGames = (workspace.createdGames || []).map(item => item.gameKey === draft.gameKey ? {
+      ...item, name: item.projectName || window.PublisherGameProfile.displayName(draft), systems: draft.platforms.join('／'), releaseRegions: [...draft.releaseRegions],
+      genres: [...draft.genres], relationship: draft.relationship, developerName: draft.developerName, releasePlan: draft.releasePlan,
+    } : item);
+    persistPublisherWorkspace();
+    return record;
+  };
+  const withdrawPublisherPublication = async draft => {
+    const workspace = memory.page['P02-01'];
+    if (workspace.publicationLoadError || workspace.publicationDrafts?.[draft.gameKey] !== draft) throw new Error('profile-changed');
+    try {
+      const record = await window.PublisherProfileStore.withdraw(draft);
+      Object.assign(draft, window.PublisherGameProfile.createDraft(record.game, record.draft));
+      persistPublisherWorkspace();
+      return record;
+    } catch (error) {
+      // A concurrent reviewer may have resolved this same version first.
+      const record = (await window.PublisherProfileStore.loadAll()).find(item => item.gameKey === draft.gameKey);
+      if (record && record.draft?.submissionId === draft.submissionId && record.draft.reviewStatus !== 'reviewing') Object.assign(draft, window.PublisherGameProfile.createDraft(record.game, record.draft));
+      throw error;
+    }
+  };
+  const loadPublisherReleaseSubmission = async (draft, submissionId) => {
+    const workspace = memory.page['P02-01'];
+    if (workspace.publicationLoadError || workspace.publicationDrafts?.[draft.gameKey] !== draft) throw new Error('profile-changed');
+    const submissions = await window.PublisherProfileStore.loadSubmissions(draft.gameKey);
+    return submissions.find(item => item.id === submissionId) || null;
+  };
+  const refreshPublisherReleaseSubmissions = async draft => {
+    const workspace = memory.page['P02-01'];
+    if (workspace.publicationLoadError || workspace.publicationDrafts?.[draft.gameKey] !== draft) throw new Error('profile-changed');
+    const submissions = await window.PublisherProfileStore.loadSubmissions(draft.gameKey);
+    return submissions.map(item => ({ id: item.id, versionName: item.versionName || item.draft?.versionName || draft.versionName, createdAt: item.createdAt || item.submittedAt, submittedAt: item.submittedAt, reviewedAt: item.reviewedAt || item.reviewResult?.reviewedAt || '', submitter: item.submitter, status: item.status || item.reviewResult?.decision || 'reviewing', qualificationVersionId: item.qualificationVersionId || item.draft?.qualificationVersionId || '', packageSummary: item.packageSummary || '' }));
+  };
+  const ensurePublisherProfileRecord = async draft => {
+    const existing = (await window.PublisherProfileStore.loadAll()).find(record => record.gameKey === draft.gameKey);
+    return existing || savePublisherPublication(draft, false);
+  };
+  const submitPublisherQualification = async (draft, application) => {
+    const workspace = memory.page['P02-01'];
+    if (workspace.publicationLoadError || workspace.publicationDrafts?.[draft.gameKey] !== draft) throw new Error('profile-changed');
+    if (!window.PublisherQualificationReviewStore) throw new Error('qualification-storage-unavailable');
+    await ensurePublisherProfileRecord(draft);
+    return window.PublisherQualificationReviewStore.submit({ ...application, gameKey: draft.gameKey, applicant: '当前开发者' });
+  };
+  const withdrawPublisherQualification = async (draft, application) => {
+    const workspace = memory.page['P02-01'];
+    if (workspace.publicationLoadError || workspace.publicationDrafts?.[draft.gameKey] !== draft) throw new Error('profile-changed');
+    if (!window.PublisherQualificationReviewStore) throw new Error('qualification-storage-unavailable');
+    return window.PublisherQualificationReviewStore.withdraw({ ...application, gameKey: draft.gameKey, actor: '当前开发者' });
+  };
+  const publisherCreatedGame = gameKey => (memory.page['P02-01']?.createdGames || []).find(game => game.gameKey === gameKey);
+  const collectPublisherProfileDraft = gameKey => {
+    const profileRoot = root.querySelector(`[data-publisher-profile][data-profile-game="${CSS.escape(gameKey)}"]`);
+    const previous = memory.page['P02-01']?.profileDrafts?.[gameKey] || {};
+    if (!profileRoot) return previous;
+    const value = key => profileRoot.querySelector(`[data-profile-field="${key}"]`)?.value ?? previous[key] ?? '';
+    const values = collection => Array.from(profileRoot.querySelectorAll(`[data-profile-array="${collection}"]:checked`), control => control.value);
+    const files = {};
+    profileRoot.querySelectorAll('[data-profile-file]').forEach(control => {
+      const selected = Array.from(control.files || [], file => file.name);
+      files[control.dataset.profileFile] = selected.length ? selected : String(control.dataset.profileExisting || '').split('|').filter(Boolean);
+    });
+    const requirements = {};
+    profileRoot.querySelectorAll('[data-profile-requirement]').forEach(control => { requirements[control.dataset.profileRequirement] = control.value; });
+    const asset = key => files[key]?.length > 1 ? files[key] : files[key]?.[0] || '';
+    return {
+      ...previous,
+      gameNameEn: value('gameNameEn'),
+      gameNameZh: value('gameNameZh'),
+      tagline: value('tagline'),
+      description: value('description'),
+      relationship: value('relationship'),
+      developerName: value('developerName') || previous.developerName || '',
+      releasePlan: value('releasePlan'),
+      genres: values('genres'),
+      platforms: values('platforms'),
+      languages: values('languages'),
+      requirements,
+      assets: { icon: asset('icon'), landscape: asset('landscape'), portrait: asset('portrait'), screenshots: files.screenshots || [], video: asset('video') },
+      qualifications: { rights: asset('qualification.rights'), authorization: asset('qualification.authorization'), copyright: asset('qualification.copyright'), mainland: asset('qualification.mainland') },
+    };
+  };
+  const stageByReleasePlan = { reservation: '开放预约准备', test: '先锋测试准备', launch: '正式上线准备' };
+  const updatePublisherProfileDraft = (gameKey, { rerender = false, savedAt = '' } = {}) => {
+    const workspace = memory.page['P02-01'] || {};
+    const nextProfile = { ...collectPublisherProfileDraft(gameKey), ...(savedAt ? { savedAt } : {}) };
+    const profileDrafts = { ...(workspace.profileDrafts || {}), [gameKey]: nextProfile };
+    const createdGames = (workspace.createdGames || []).map(game => game.gameKey === gameKey ? {
+      ...game,
+      name: game.projectName || game.name,
+      systems: nextProfile.platforms?.join('／') || game.systems,
+      genres: [...(nextProfile.genres || [])],
+      relationship: nextProfile.relationship || game.relationship,
+      developerName: nextProfile.developerName || '',
+      developer: nextProfile.relationship === 'publisher' ? (nextProfile.developerName || '待补充') : '星海互动',
+      releasePlan: nextProfile.releasePlan || game.releasePlan,
+      stage: stageByReleasePlan[nextProfile.releasePlan] || game.stage,
+    } : game);
+    memory.page['P02-01'] = { ...workspace, profileDrafts, createdGames };
+    if (savedAt) persistPublisherWorkspace();
+    if (rerender) render();
+    return nextProfile;
+  };
+  const submitPublisherGame = async draft => {
+    const workspace = memory.page['P02-01'];
+    if (workspace.createDraft !== draft || !workspace.addGameOpen) return;
+    if (workspace.publisherAccessDisabled) throw new Error('当前无法创建游戏');
+    const fixedGameIds = ['GAME-58302', 'GAME-57116', 'GAME-48291', 'GAME-46972', 'GAME-45108', 'GAME-39654', 'GAME-32847'];
+    const fixedAppIds = ['APP-6C21D8', 'APP-91B4E7', 'APP-7F3A9C', 'APP-8D4C21', 'APP-3A9E62', 'APP-52B7F0', 'APP-19D6B4'];
+    const usedGameIds = new Set([...fixedGameIds, ...(workspace.createdGames || []).map(game => game.gameId)]);
+    const usedAppIds = new Set([...fixedAppIds, ...(workspace.createdGames || []).map(game => game.appId)]);
+    let gameId = '';
+    let appId = '';
+    do { gameId = 'GAME-' + crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase(); } while (usedGameIds.has(gameId));
+    do { appId = 'APP-' + crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase(); } while (usedAppIds.has(appId));
+    const gameKey = 'created-' + gameId;
+    const projectName = String(draft.projectName || '').trim();
+    const game = {
+      name: projectName,
+      projectName,
+      gameId,
+      appId,
+      gameKey,
+      systems: draft.platforms.join('／'),
+      genres: [...draft.genres],
+      relationship: draft.relationship,
+      developerName: draft.relationship === 'publisher' ? String(draft.developerName || '').trim() : '',
+      releasePlan: draft.releasePlan,
+      stage: stageByReleasePlan[draft.releasePlan] || '开放预约准备',
+      developer: draft.relationship === 'publisher' ? (String(draft.developerName || '').trim() || '待补充') : '星海互动',
+      createData: JSON.parse(JSON.stringify({ ...draft, genreOpen: false, errors: {}, submitting: false })),
+    };
+    updatePublisherWorkspace({ createdGames: [...(workspace.createdGames || []), game], createDraft: null, addGameOpen: false, workspaceView: 'game', selectedGame: gameKey, gameTab: 'release', gameSection: 'release-workspace', gameMenuOpen: '', gameSearch: '', gameStatusFilter: 'all' });
   };
   const createSecret = () => {
     const bytes = new Uint8Array(8);
@@ -881,6 +1097,18 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       if (location.hash === nextHash) render();
       else location.hash = nextHash;
     }));
+    if (route.id === 'P02-01' && !window.PublisherGameProfile) {
+      const profileRoot = root.querySelector('[data-publisher-profile][data-profile-game]');
+      const profileGameKey = profileRoot?.dataset.profileGame || '';
+      profileRoot?.querySelectorAll('[data-profile-field]').forEach(control => control.addEventListener(control.matches('select') ? 'change' : 'input', () => {
+        updatePublisherProfileDraft(profileGameKey, { rerender: control.hasAttribute('data-profile-rerender') });
+      }));
+      profileRoot?.querySelectorAll('[data-profile-array]').forEach(control => control.addEventListener('change', () => {
+        updatePublisherProfileDraft(profileGameKey, { rerender: control.dataset.profileArray === 'platforms' });
+      }));
+      profileRoot?.querySelectorAll('[data-profile-requirement]').forEach(control => control.addEventListener('input', () => updatePublisherProfileDraft(profileGameKey)));
+      profileRoot?.querySelectorAll('[data-profile-file]').forEach(control => control.addEventListener('change', () => updatePublisherProfileDraft(profileGameKey, { rerender: true })));
+    }
     root.querySelectorAll('[data-portal-action]').forEach(control => control.addEventListener('click', event => {
       const action = event.currentTarget.dataset.portalAction;
       if (!action || event.currentTarget.disabled) return;
@@ -905,9 +1133,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         event.currentTarget.setAttribute('aria-expanded', String(open));
         return;
       }
-      if (route.id === 'P02-01' && action === 'publisher-tab') {
-        const requested = event.currentTarget.dataset.publisherTab;
-        updatePublisherWorkspace({ workspaceView: requested === 'data' ? 'data' : 'games', addGameOpen: false });
+      if (route.id === 'P02-01' && action === 'publisher-sidebar-view') {
+        const requested = event.currentTarget.dataset.publisherView;
+        updatePublisherWorkspace({ workspaceView: requested === 'vendor' ? 'vendor' : 'games', addGameOpen: false, gameMenuOpen: '' });
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-game-search') {
@@ -927,9 +1155,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       if (route.id === 'P02-01' && action === 'publisher-request-delete-game') {
         const gameKey = event.currentTarget.dataset.publisherGame || '';
-        if (!['draft', 'created'].includes(gameKey)) return;
+        if (gameKey !== 'draft' && !publisherCreatedGame(gameKey)) return;
         if (gameKey === 'draft' && (memory.page[route.id]?.deletedGameKeys || []).includes('draft')) return;
-        if (gameKey === 'created' && !memory.page[route.id]?.createdGame) return;
+        if (gameKey !== 'draft' && !publisherCreatedGame(gameKey)) return;
         updatePublisherWorkspace({ deleteGameKey: gameKey, gameMenuOpen: '', addGameOpen: false });
         return;
       }
@@ -938,14 +1166,19 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-confirm-delete-game') {
+        const deletingKey = memory.page[route.id]?.deleteGameKey;
+        if (['reviewing', 'approved', 'rejected'].includes(memory.page[route.id]?.publicationDrafts?.[deletingKey]?.reviewStatus)) return;
         const gameKey = event.currentTarget.dataset.publisherGame || memory.page[route.id]?.deleteGameKey || '';
         if (gameKey === 'draft') {
           const deletedGameKeys = [...new Set([...(memory.page[route.id]?.deletedGameKeys || []), 'draft'])];
           updatePublisherWorkspace({ deletedGameKeys, deleteGameKey: '', gameMenuOpen: '', selectedGame: 'existing', workspaceView: 'games' });
           return;
         }
-        if (gameKey === 'created') {
-          updatePublisherWorkspace({ createdGame: null, deleteGameKey: '', gameMenuOpen: '', selectedGame: '', workspaceView: 'games' });
+        if (publisherCreatedGame(gameKey)) {
+          const profileDrafts = { ...(memory.page[route.id]?.profileDrafts || {}) };
+          delete profileDrafts[gameKey];
+          const deletedGameKeys = [...new Set([...(memory.page[route.id]?.deletedGameKeys || []), gameKey])];
+          updatePublisherWorkspace({ createdGames: memory.page[route.id].createdGames.filter(game => game.gameKey !== gameKey), profileDrafts, deletedGameKeys, deleteGameKey: '', gameMenuOpen: '', selectedGame: '', workspaceView: 'games' });
         }
         return;
       }
@@ -956,48 +1189,26 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (route.id === 'P02-01' && action === 'open-add-game') {
-        updatePublisherWorkspace({ workspaceView: 'games', addGameOpen: true, gameMenuOpen: '' });
+        if (memory.page[route.id]?.publisherAccessDisabled) return;
+        updatePublisherWorkspace({ workspaceView: 'games', addGameOpen: true, createDraft: memory.page[route.id]?.createDraft || window.PublisherGameCreate.createDraft(), gameMenuOpen: '' });
         return;
       }
       if (route.id === 'P02-01' && action === 'close-add-game') {
         updatePublisherWorkspace({ addGameOpen: false });
         return;
       }
-      if (route.id === 'P02-01' && action === 'create-publisher-game') {
-        const nameField = root.querySelector('input[name="publisherGameName"]');
-        const developerField = root.querySelector('input[name="publisherDeveloperName"]');
-        const systemsField = root.querySelector('select[name="publisherSystems"]');
-        const releaseMethodField = root.querySelector('select[name="publisherReleaseMethod"]');
-        const name = String(nameField?.value || '').trim();
-        if (!name) {
-          nameField?.setAttribute('aria-invalid', 'true');
-          nameField?.focus();
-          resultMessage(route.id, '请填写游戏名称', '创建项目前需先填写游戏名称。', 'warning');
-          return;
-        }
-        memory.page[route.id] = {
-          ...(memory.page[route.id] || {}),
-          workspaceView: 'games',
-          addGameOpen: false,
-          gameMenuOpen: '',
-          createdGame: {
-            name,
-            developer: String(developerField?.value || '星海互动').trim(),
-            systems: String(systemsField?.value || 'Windows'),
-            releaseMethod: String(releaseMethodField?.value || '盖世直接下载'),
-            gameId: 'GAME-58302',
-          },
-        };
-        resultMessage(route.id, '游戏项目已创建', `已生成 Game ID GAME-58302；${name}当前为草稿，不代表通过发行审核。`);
-        render();
-        return;
-      }
       if (route.id === 'P02-01' && action === 'enter-publisher-game') {
         const requestedGame = event.currentTarget.dataset.publisherGame || 'existing';
-        if (!publisherFixtureGameKeys.has(requestedGame) && requestedGame !== 'created') return;
+        if (!publisherFixtureGameKeys.has(requestedGame) && !publisherCreatedGame(requestedGame)) return;
         if ((memory.page[route.id]?.deletedGameKeys || []).includes(requestedGame)) return;
-        if (requestedGame === 'created' && !memory.page[route.id]?.createdGame) return;
-        updatePublisherWorkspace({ workspaceView: 'game', selectedGame: requestedGame, gameTab: 'overview', gameSection: 'release-overview', addGameOpen: false, gameMenuOpen: '' });
+        updatePublisherWorkspace({ workspaceView: 'game', selectedGame: requestedGame, gameTab: 'release', gameSection: 'release-workspace', addGameOpen: false, gameMenuOpen: '' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'edit-publisher-game') {
+        const requestedGame = event.currentTarget.dataset.publisherGame || 'existing';
+        if (!publisherFixtureGameKeys.has(requestedGame) && !publisherCreatedGame(requestedGame)) return;
+        if ((memory.page[route.id]?.deletedGameKeys || []).includes(requestedGame)) return;
+        updatePublisherWorkspace({ workspaceView: 'game', selectedGame: requestedGame, gameTab: 'release', gameSection: 'release-workspace', addGameOpen: false, gameMenuOpen: '' });
         return;
       }
       if (route.id === 'P02-01' && action === 'back-publisher-games') {
@@ -1006,10 +1217,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       if (route.id === 'P02-01' && action === 'enter-publisher-review') {
         const requestedGame = event.currentTarget.dataset.publisherGame || 'existing';
-        if (!publisherFixtureGameKeys.has(requestedGame) && requestedGame !== 'created') return;
+        if (!publisherFixtureGameKeys.has(requestedGame) && !publisherCreatedGame(requestedGame)) return;
         if ((memory.page[route.id]?.deletedGameKeys || []).includes(requestedGame)) return;
-        if (requestedGame === 'created' && !memory.page[route.id]?.createdGame) return;
-        updatePublisherWorkspace({ workspaceView: 'game', selectedGame: requestedGame, gameTab: 'overview', gameSection: 'review-records', addGameOpen: false, gameMenuOpen: '' });
+        updatePublisherWorkspace({ workspaceView: 'game', selectedGame: requestedGame, gameTab: 'release', gameSection: 'versions', addGameOpen: false, gameMenuOpen: '' });
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-open-cdkey') {
@@ -1017,14 +1227,33 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (route.id === 'P02-01' && action === 'game-console-tab') {
-        const requested = event.currentTarget.dataset.gameTab || 'overview';
-        const defaults = { overview: 'release-overview', store: 'store-profile', operations: 'announcements', services: 'appid-sdk', analytics: 'core-metrics' };
+        const requested = event.currentTarget.dataset.gameTab || 'release';
+        const defaults = { release: 'release-workspace', versions: 'versions', qualifications: 'qualifications' };
         const requestedSection = event.currentTarget.dataset.gameSection;
-        updatePublisherWorkspace({ gameTab: defaults[requested] ? requested : 'overview', gameSection: requestedSection || defaults[requested] || defaults.overview });
+        updatePublisherWorkspace({ gameTab: 'release', gameSection: requestedSection || defaults[requested] || defaults.release, ...(requested === 'release' ? { profileAnchor: memory.page[route.id]?.profileAnchor || 'basic' } : {}) });
         return;
       }
       if (route.id === 'P02-01' && action === 'game-console-section') {
-        updatePublisherWorkspace({ gameSection: event.currentTarget.dataset.gameSection || 'release-overview' });
+        const requested = event.currentTarget.dataset.gameSection || 'release-workspace';
+        const allowed = ['release-workspace', 'versions', 'qualifications'];
+        if (!allowed.includes(requested)) return;
+        updatePublisherWorkspace({ gameTab: 'release', gameSection: requested }, { preserveScroll: true });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'publisher-profile-anchor') {
+        const requestedAnchor = event.currentTarget.dataset.profileAnchor || '';
+        const allowedAnchors = ['basic', 'classification', 'developer', 'assets', 'publication', 'pricing', 'qualification', 'settings'];
+        if (!allowedAnchors.includes(requestedAnchor)) return;
+        memory.page[route.id] = { ...(memory.page[route.id] || {}), profileAnchor: requestedAnchor };
+        root.querySelectorAll('[data-profile-anchor]').forEach(button => button.classList.toggle('is-active', button.dataset.profileAnchor === requestedAnchor));
+        root.querySelector(`[data-profile-section="${requestedAnchor}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'publisher-save-profile') {
+        const gameKey = root.querySelector('[data-publisher-profile]')?.dataset.profileGame || '';
+        if (!gameKey) return;
+        const now = new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date());
+        updatePublisherProfileDraft(gameKey, { savedAt: now, rerender: true });
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-upload-build') {
@@ -1523,9 +1752,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
             resultMessage(route.id, '暂无可创建的文章位置', '认证介绍、保密协议和合作协议均已配置；删除对应文章后可重新创建。', 'warning');
             return;
           }
-          item = { id: nextContentId(entity), position: nextPosition, updatedAt: nowText(), zh: { title: '', bodyHtml: '<p><br></p>' }, en: { title: '', bodyHtml: '<p><br></p>' } };
+          item = { id: nextContentId(entity), position: nextPosition, status: 'draft', updatedAt: nowText(), zh: { title: '', bodyHtml: '<p><br></p>' }, en: { title: '', bodyHtml: '<p><br></p>' } };
         } else if (entity === 'navigation') {
-          item = { id: nextContentId(entity), sortOrder: collection.length + 1, updatedAt: nowText(), zh: { title: '未命名导航' }, en: { title: 'Untitled navigation' } };
+          item = { id: nextContentId(entity), sortOrder: collection.length + 1, status: 'draft', updatedAt: nowText(), zh: { title: '未命名导航' }, en: { title: 'Untitled navigation' } };
           memory.contentEditor.helpTab = 'navigation';
         } else if (entity === 'document') {
           const navigation = [...(memory.contentEditor.draft.helpNavigations || [])].sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder))[0];
@@ -1534,7 +1763,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
             return;
           }
           const order = (collection.filter(document => document.navigationId === navigation.id).length || 0) + 1;
-          item = { id: nextContentId(entity), navigationId: navigation.id, sortOrder: order, updatedAt: nowText(), zh: { title: '未命名子文档', bodyHtml: '<p><br></p>' }, en: { title: 'Untitled document', bodyHtml: '<p><br></p>' } };
+          item = { id: nextContentId(entity), navigationId: navigation.id, sortOrder: order, status: 'draft', updatedAt: nowText(), zh: { title: '未命名子文档', bodyHtml: '<p><br></p>' }, en: { title: 'Untitled document', bodyHtml: '<p><br></p>' } };
           memory.contentEditor.helpTab = 'document';
         } else {
           return;
@@ -1543,6 +1772,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         memory.contentEditor.entity = entity;
         memory.contentEditor.selectedId = item.id;
         memory.contentEditor.view = 'editor';
+        persistManagedContentDraft();
         delete memory.result[route.id];
         render();
         return;
@@ -1560,11 +1790,15 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         collectManagedContentForm();
         const collection = memory.contentEditor.draft?.[contentCollection(memory.contentEditor.entity)] || [];
         const selected = collection.find(item => item.id === memory.contentEditor.selectedId);
-        if (selected) selected.updatedAt = nowText();
+        if (selected) {
+          selected.status = 'draft';
+          selected.updatedAt = nowText();
+        }
+        persistManagedContentDraft();
         memory.contentEditor.view = 'list';
         memory.contentEditor.entity = '';
         memory.contentEditor.selectedId = '';
-        resultMessage(route.id, '内容已保存到当前编辑版本', '点击“保存并生效”后同步到开发者端。', 'success');
+        resultMessage(route.id, '内容已保存为草稿', '草稿不会影响开发者端；请在列表中点击“发布”后生效。', 'success');
         render();
         return;
       }
@@ -1593,9 +1827,24 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           const [removed] = collection.splice(index, 1);
           if (target.entity === 'navigation') resequenceContent(collection);
           if (target.entity === 'document') resequenceContent(collection, item => item.navigationId === removed.navigationId);
+          const publishedCollection = memory.managedContent?.[collectionName] || [];
+          const publishedIndex = publishedCollection.findIndex(item => item.id === target.id);
+          if (publishedIndex >= 0) {
+            publishedCollection.splice(publishedIndex, 1);
+            const publishedAt = nowText();
+            const nextRevision = (Number(memory.managedContent.revision) || 0) + 1;
+            memory.managedContent = syncManagedContentPublicFields({
+              ...memory.managedContent,
+              revision: nextRevision,
+              publishedAt,
+              publishedBy: '平台运营 李然',
+            });
+            writeStorage(localStorage, managedContentStorageKey, memory.managedContent);
+          }
+          persistManagedContentDraft();
           memory.contentEditor.deleteTarget = null;
           memory.contentEditor.view = 'list';
-          resultMessage(route.id, '删除成功', `${removed.id} 已从当前编辑版本移除，保存并生效后同步到开发者端。`, 'success');
+          resultMessage(route.id, '删除成功', publishedIndex >= 0 ? `${removed.id} 已删除，并同步从开发者端移除。` : `${removed.id} 草稿已删除。`, 'success');
           render();
           return;
         }
@@ -1618,7 +1867,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const currentOrder = current.sortOrder;
         current.sortOrder = target.sortOrder;
         target.sortOrder = currentOrder;
+        current.status = 'draft';
+        target.status = 'draft';
         current.updatedAt = nowText();
+        target.updatedAt = nowText();
+        persistManagedContentDraft();
         render();
         return;
       }
@@ -1654,22 +1907,37 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         document.getElementById(event.currentTarget.dataset.richImageTarget || '')?.click();
         return;
       }
-      if (action === 'content-publish') {
+      if (action === 'content-publish-item') {
         collectManagedContentForm();
-        const issue = validateManagedContent(memory.contentEditor.draft);
+        const entity = event.currentTarget.dataset.contentEntity || '';
+        const id = event.currentTarget.dataset.contentId || '';
+        const collectionName = contentCollection(entity);
+        const draftCollection = memory.contentEditor.draft?.[collectionName] || [];
+        const item = draftCollection.find(entry => entry.id === id);
+        const issue = validateManagedContentItem(entity, item, memory.contentEditor.draft);
         if (issue) {
           memory.contentEditor.language = issue.language;
-          memory.contentEditor.entity = issue.entity || '';
-          memory.contentEditor.selectedId = issue.selectedId || '';
-          memory.contentEditor.view = issue.selectedId ? 'editor' : 'list';
-          memory.result[route.id] = { title: `请完善${issue.label}`, detail: '中文和 English 内容、文章位置及导航关系全部有效后才会生成新版本；当前已发布内容不受影响。', variant: 'warning' };
+          memory.contentEditor.entity = entity;
+          memory.contentEditor.selectedId = id;
+          memory.contentEditor.view = issue.parentMissing ? 'list' : 'editor';
+          memory.result[route.id] = {
+            title: `请完善${issue.label}`,
+            detail: issue.parentMissing ? '目录子文档只能发布到已发布的导航下，请先发布所属导航。' : '中文与 English 内容完整后才能发布；当前线上内容不受影响。',
+            variant: 'warning',
+          };
           render();
           return;
         }
         const publishedAt = nowText();
         const nextRevision = (Number(memory.managedContent.revision) || 0) + 1;
+        const publishedSource = cloneJson(memory.managedContent);
+        const publishedCollection = publishedSource[collectionName] || (publishedSource[collectionName] = []);
+        const publishedIndex = publishedCollection.findIndex(entry => entry.id === id);
+        const publishedItem = { ...cloneJson(item), status: 'published', updatedAt: publishedAt, publishedAt };
+        if (publishedIndex >= 0) publishedCollection[publishedIndex] = publishedItem;
+        else publishedCollection.push(publishedItem);
         const published = syncManagedContentPublicFields({
-          ...cloneJson(memory.contentEditor.draft),
+          ...publishedSource,
           revision: nextRevision,
           publishedAt,
           publishedBy: '平台运营 李然',
@@ -1677,9 +1945,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         published.zh.help.contact.email = 'dev@xiaoji.com';
         published.en.help.contact.email = 'dev@xiaoji.com';
         memory.managedContent = published;
-        memory.contentEditor.draft = cloneJson(published);
+        item.status = 'published';
+        item.updatedAt = publishedAt;
+        item.publishedAt = publishedAt;
+        memory.contentEditor.draft.revision = nextRevision;
+        memory.contentEditor.draft.publishedAt = publishedAt;
         writeStorage(localStorage, managedContentStorageKey, published);
-        memory.result[route.id] = { title: `内容 V${nextRevision} 已保存并生效`, detail: '企业认证文章、帮助导航和目录子文档的中文与 English 内容已原子发布。', variant: 'success' };
+        persistManagedContentDraft();
+        memory.result[route.id] = { title: `${item?.[memory.contentEditor.language]?.title || id} 已发布`, detail: `已生成线上版本 V${nextRevision}，开发者端立即读取本条最新内容。`, variant: 'success' };
         render();
         return;
       }
@@ -2051,6 +2324,15 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       event.preventDefault();
       root.querySelector('[data-portal-action="publisher-game-search"]')?.click();
     });
+    root.querySelector('[data-publisher-function-search]')?.addEventListener('input', event => {
+      const keyword = event.currentTarget.value.trim().toLocaleLowerCase();
+      memory.page['P02-01'] = { ...(memory.page['P02-01'] || {}), gameFunctionSearch: event.currentTarget.value };
+      persistPublisherWorkspace();
+      const buttons = Array.from(root.querySelectorAll('.publisher-game-nav__tab[data-game-section]'));
+      buttons.forEach(button => { button.hidden = Boolean(keyword) && !`${button.textContent} ${button.dataset.functionSearch || ''}`.toLocaleLowerCase().includes(keyword); });
+      const empty = root.querySelector('.publisher-game-nav__empty');
+      if (empty) empty.hidden = buttons.some(button => !button.hidden);
+    });
     root.querySelector('[data-content-navigation-filter]')?.addEventListener('change', event => {
       memory.contentEditor.navigationFilter = event.currentTarget.value || '';
       render();
@@ -2114,7 +2396,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         image.alt = file.name;
         editorBody.append(image);
         editorBody.focus();
-        resultMessage(route.id, '图片已插入正文', '图片已在当前富文本中预览，保存并生效后进入发布版本。', 'success');
+        resultMessage(route.id, '图片已插入正文', '图片已写入当前草稿；返回列表并发布本条内容后，开发者端才会更新。', 'success');
       });
       reader.addEventListener('error', () => resultMessage(route.id, '图片读取失败', '请重新选择图片后再试。', 'danger'));
       reader.readAsDataURL(file);
@@ -2149,7 +2431,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       ? memory.qualificationPreview
       : memory.qualification;
     document.documentElement.lang = memory.shell.language === 'en' && role === 'developer' ? 'en' : 'zh-CN';
-    const content = namespace.templates.render({ route, page, state, editorMode, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, contentEditor: memory.contentEditor, operationsReview: memory.operationsReview, registration: memory.registration, authenticated: memory.session.authenticated, workspaceState: memory.page[route.id] || {} });
+      const content = namespace.templates.render({ route, page, state, editorMode, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, contentEditor: memory.contentEditor, operationsReview: memory.operationsReview, registration: memory.registration, authenticated: memory.session.authenticated, workspaceState: memory.page[route.id] || {} });
+    memory.qualificationReviewController?.destroy?.();
+    memory.qualificationReviewController = null;
     root.innerHTML = namespace.shell.renderBusiness({ module: moduleConfig, routes, route, page, portalData, role, state, editorMode, content, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, registration: memory.registration });
     if (role === 'developer' && route.id === 'P01-03' && qualificationForView.readOnly && qualificationForView.status === 'pending') {
       root.querySelector('.qualification-pending-note')?.insertAdjacentHTML('beforeend', c.button({ label: memory.shell.language === 'en' ? 'Withdraw application' : '撤回申请', variant: 'danger', action: 'qualification-withdraw', size: 'small' }));
@@ -2161,6 +2445,51 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (memory.page[route.id]?.savedAt) root.querySelectorAll('[data-save-state]').forEach(node => { node.textContent = `最近保存：${memory.page[route.id].savedAt}`; });
     applyBusinessState(route.id);
     bindInteractions({ route, role, state });
+    window.PublisherGameReview?.dispose();
+    if (route.id === 'P01-08') {
+      root.querySelectorAll('[data-game-review-tab]').forEach(button => button.addEventListener('click', () => {
+        memory.operationsReview.tab = button.dataset.gameReviewTab;
+        render();
+      }));
+      const reviewHost = root.querySelector('[data-game-release-review-host]');
+      if (reviewHost && window.PublisherGameReview) {
+        memory.gameReleaseReview = memory.gameReleaseReview || {};
+        window.PublisherGameReview.mount(reviewHost, memory.gameReleaseReview, { reviewer: `${portalData.accounts?.operations?.name || '运营审核员'}（本地演示）` });
+      }
+      const qualificationReviewHost = root.querySelector('[data-game-qualification-review-host]');
+      if (qualificationReviewHost && window.PublisherQualificationReview) {
+        memory.gameQualificationReview = memory.gameQualificationReview || {};
+        Promise.resolve(window.PublisherQualificationReview.mount(qualificationReviewHost, memory.gameQualificationReview, { reviewer: `${portalData.accounts?.operations?.name || '运营审核员'}（本地演示）` })).then(controller => {
+          if (qualificationReviewHost.isConnected) memory.qualificationReviewController = controller;
+          else controller?.destroy?.();
+        });
+      }
+    }
+    if (route.id === 'P02-01' && memory.page[route.id]?.addGameOpen && window.PublisherGameCreate) {
+      const draft = memory.page[route.id].createDraft;
+      window.PublisherGameCreate.bind(root, { draft, language: memory.shell.language,
+        onInterfaceLanguage: next => { memory.shell.language = next; writeStorage(localStorage, languageStorageKey, next); },
+        onChange: () => { if (memory.page[route.id]?.createDraft === draft && memory.page[route.id]?.addGameOpen) render(); },
+        onSubmit: submitPublisherGame,
+        onClose: () => updatePublisherWorkspace({ addGameOpen: false, workspaceView: 'games' }),
+      });
+    }
+    if (route.id === 'P02-01' && window.PublisherGameProfile) {
+      const profile = root.querySelector('[data-publisher-profile][data-profile-game]');
+      const draft = profile && memory.page[route.id]?.publicationDrafts?.[profile.dataset.profileGame];
+      if (draft) window.PublisherGameProfile.bind(root, { draft, language: memory.shell.language,
+        onInterfaceLanguage: next => { memory.shell.language = next; writeStorage(localStorage, languageStorageKey, next); },
+        onSectionChange: next => updatePublisherWorkspace({ gameTab: 'release', gameSection: next === 'qualifications' || next === 'versions' ? next : 'release-workspace' }, { preserveScroll: true }),
+        onChange: () => { if (memory.page[route.id]?.selectedGame === draft.gameKey && memory.page[route.id]?.workspaceView === 'game' && memory.page[route.id]?.gameTab === 'release') render(); },
+        onSave: value => savePublisherPublication(value),
+        onSubmit: value => savePublisherPublication(value, true),
+        onWithdraw: value => withdrawPublisherPublication(value),
+        onQualificationSubmit: application => submitPublisherQualification(draft, application),
+        onQualificationWithdraw: application => withdrawPublisherQualification(draft, application),
+        onVersionOpen: submissionId => loadPublisherReleaseSubmission(draft, submissionId),
+        onVersionRefresh: () => refreshPublisherReleaseSubmissions(draft),
+      });
+    }
     if (route.id === 'P01-07' && state === 'default' && memory.page[route.id]?.releaseTab === 'audit') {
       root.querySelector('[data-release-tab="audit"]')?.click();
       if (memory.page[route.id]?.focusReview) {
@@ -2210,5 +2539,77 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       render();
     } catch { /* 忽略其他页面写入的无效内容 */ }
   });
-  render();
+  const initializePublisherProfiles = async () => {
+    if (moduleConfig.id === '02' && window.PublisherProfileStore) {
+      try {
+        const records = await window.PublisherProfileStore.loadAll();
+        const workspace = memory.page['P02-01'];
+        for (const record of records) {
+          if ((workspace.deletedGameKeys || []).includes(record.gameKey)) continue;
+          workspace.publicationDrafts[record.gameKey] = window.PublisherGameProfile.createDraft(record.game, record.draft);
+          if (record.gameKey.startsWith('created-') && !workspace.createdGames.some(game => game.gameKey === record.gameKey)) workspace.createdGames.push(record.game);
+        }
+      } catch { memory.page['P02-01'].publicationLoadError = true; }
+    }
+    const currentWorkspace = root.querySelector('.workspace');
+    const currentActive = document.activeElement;
+    const focusAttribute = currentActive && root.contains(currentActive)
+      ? ['data-create-release-plan', 'data-create-genre-option', 'data-create-project-name', 'data-create-genre-toggle', 'data-create-relationship', 'data-create-submit'].find(name => currentActive.hasAttribute?.(name))
+      : '';
+    const focusValue = focusAttribute ? currentActive.getAttribute(focusAttribute) : '';
+    const viewState = currentWorkspace ? { top: currentWorkspace.scrollTop, left: currentWorkspace.scrollLeft, focusAttribute, focusValue } : null;
+    render();
+    if (viewState) {
+      const nextWorkspace = root.querySelector('.workspace');
+      nextWorkspace?.scrollTo({ top: viewState.top, left: viewState.left, behavior: 'instant' });
+      if (viewState.focusAttribute) {
+        const suffix = viewState.focusValue ? `="${CSS.escape(viewState.focusValue)}"` : '';
+        root.querySelector(`[${viewState.focusAttribute}${suffix}]`)?.focus({ preventScroll: true });
+      }
+    }
+  };
+  let syncingReviewResults = false;
+  const syncPublisherReviewResults = async () => {
+    if (moduleConfig.id !== '02' || !window.PublisherProfileStore || syncingReviewResults) return;
+    syncingReviewResults = true;
+    try {
+      const records = await window.PublisherProfileStore.loadAll();
+      const workspace = memory.page['P02-01'];
+      let changed = false;
+      for (const record of records) {
+        const current = workspace.publicationDrafts?.[record.gameKey];
+        if (!current || !['reviewing', 'approved'].includes(current.reviewStatus) || current.dirty || current.saving || current.submitting || current.withdrawing || current.submissionId !== record.draft?.submissionId) continue;
+        if (current.reviewStatus === record.draft.reviewStatus && current.reviewResult?.reviewedAt === record.draft.reviewResult?.reviewedAt) continue;
+        workspace.publicationDrafts[record.gameKey] = window.PublisherGameProfile.createDraft(record.game, record.draft);
+        changed = true;
+      }
+      if (changed) render();
+    } catch { /* 保留当前输入，刷新页面可再次读取。 */ }
+    finally { syncingReviewResults = false; }
+  };
+  let syncingQualificationResults = false;
+  const qualificationStateSignature = value => [value?.activeVersion?.id || '', value?.pendingApplication?.applicationId || '', value?.pendingApplication?.status || '', value?.pendingApplication?.updatedAt || '', value?.pendingApplication?.reason || ''].join('|');
+  const syncPublisherQualificationResults = async () => {
+    if (moduleConfig.id !== '02' || !window.PublisherQualificationReviewStore || syncingQualificationResults) return;
+    const workspace = memory.page['P02-01'];
+    const current = workspace?.publicationDrafts?.[workspace.selectedGame];
+    if (!current) return;
+    syncingQualificationResults = true;
+    try {
+      const loaded = await window.PublisherQualificationReviewStore.loadByGame(current.gameKey);
+      if (!loaded.qualifications || qualificationStateSignature(loaded.qualifications) === qualificationStateSignature(current.qualifications)) return;
+      current.qualifications = window.PublisherGameQualifications.createQualificationState(loaded.qualifications);
+      if (workspace.workspaceView === 'game' && workspace.gameSection === 'qualifications') render();
+    } catch { /* 保留当前表单，刷新或重新聚焦时再次同步。 */ }
+    finally { syncingQualificationResults = false; }
+  };
+  if (moduleConfig.id === '02') {
+    window.addEventListener('focus', syncPublisherReviewResults);
+    window.addEventListener('focus', syncPublisherQualificationResults);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) syncPublisherReviewResults(); });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) syncPublisherQualificationResults(); });
+    try { const channel = new BroadcastChannel('gamehub-publisher-review'); channel.onmessage = syncPublisherReviewResults; } catch { /* 不支持广播时使用聚焦刷新。 */ }
+    try { const qualificationChannel = new BroadcastChannel('gamehub-publisher-qualification-review'); qualificationChannel.onmessage = syncPublisherQualificationResults; } catch { /* 不支持广播时使用聚焦刷新。 */ }
+  }
+  initializePublisherProfiles();
 })(window.GameHubDeveloperPortal);

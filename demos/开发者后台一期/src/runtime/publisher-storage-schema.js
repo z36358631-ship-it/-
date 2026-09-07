@@ -93,7 +93,7 @@
     }
     const attachments = Object.entries(current).filter(([, value]) => fileExists(value)).map(([kind, value]) => ({ kind, file: clone(value) }));
     return {
-      rightsRelationship: source.relationship === 'publisher' ? 'agency' : 'self_owned',
+      rightsRelationship: source.relationship === 'publisher' ? 'agent' : 'self_owned',
       rightsDeclarationAccepted: false,
       activeVersion: null,
       pendingApplication: null,

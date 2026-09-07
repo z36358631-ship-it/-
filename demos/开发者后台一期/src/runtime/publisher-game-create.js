@@ -244,6 +244,20 @@
       clearError('releasePlan');
       root.querySelectorAll('.pgc-plan-card').forEach(card => card.classList.toggle('is-selected', card.querySelector('[data-create-release-plan]').value === draft.releasePlan));
     }));
+    root.querySelectorAll('.pgc-plan-card').forEach(card => {
+      const input = card.querySelector('[data-create-release-plan]');
+      let pointerPosition = null;
+      card.addEventListener('mousedown', event => {
+        if (event.button !== 0) return;
+        pointerPosition = capturePosition(`[data-create-release-plan="${input.dataset.createReleasePlan}"]`);
+      });
+      card.addEventListener('click', event => {
+        if (event.button !== 0 || !pointerPosition) return;
+        const position = pointerPosition;
+        pointerPosition = null;
+        restorePosition(position, `[data-create-release-plan="${input.dataset.createReleasePlan}"]`);
+      });
+    });
 
     root.querySelector('[data-create-form]').addEventListener('submit', async event => {
       event.preventDefault();
