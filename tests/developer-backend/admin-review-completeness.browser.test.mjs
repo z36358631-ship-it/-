@@ -192,6 +192,12 @@ test('游戏发布 Drawer 可访问完整资料、SKU、发行、资质、包体
     await page.locator('tbody tr').first().locator('[data-open]').click();
     const drawer = page.locator('#modalRoot .drawer');
     await drawer.waitFor();
+    const footer = drawer.locator(':scope > .modal-footer');
+    const footerBox = await footer.boundingBox();
+    const actionBox = await footer.locator('.drawer-footer-actions').boundingBox();
+    assert.equal(await footer.evaluate(element => getComputedStyle(element).justifyContent), 'flex-end');
+    assert.ok(footerBox && actionBox && Math.abs((footerBox.x + footerBox.width) - (actionBox.x + actionBox.width) - 22) < 3, '审核按钮组应贴近底部右侧内边距');
+    assert.equal(await footer.locator('[data-drawer-top], [data-modal-close]').count(), 0, '底部不显示返回顶部或关闭按钮');
     const text = await drawerTextAcrossViews(page);
     for (const required of [
       /游戏资料/,
@@ -400,7 +406,7 @@ test('发布通过门禁同时约束 Drawer 与列表快捷操作，全部必测
   }
 });
 
-test('Drawer 头尾固定、内容独立滚动、返回顶部可用，关闭后保留筛选区域和分页', async () => {
+test('Drawer 头尾固定、内容独立滚动、底部审核按钮右对齐且关闭后保留筛选区域和分页', async () => {
   const { page, errors } = await makePage();
   try {
     await page.goto(url('/release'), { waitUntil: 'load' });
@@ -433,14 +439,9 @@ test('Drawer 头尾固定、内容独立滚动、返回顶部可用，关闭后�
     const after = { header: await header.boundingBox(), footer: await footer.boundingBox() };
     assert.ok(initial.header && after.header && Math.abs(initial.header.y - after.header.y) < 1, '滚动内容时头部位置不应变化');
     assert.ok(initial.footer && after.footer && Math.abs(initial.footer.y - after.footer.y) < 1, '滚动内容时底部操作区位置不应变化');
-
-    const backToTop = drawer.locator('[data-drawer-top]');
-    assert.equal(await backToTop.count(), 1);
-    await backToTop.click();
-    await page.waitForFunction(() => {
-      const element = document.querySelector('#modalRoot .drawer > .modal-body');
-      return element && element.scrollTop <= 1;
-    });
+    assert.equal(await footer.evaluate(element => getComputedStyle(element).justifyContent), 'flex-end');
+    assert.equal(await footer.locator('[data-drawer-top]').count(), 0, '底部不显示返回顶部按钮');
+    assert.equal(await footer.locator('[data-modal-close]').count(), 0, '底部不显示关闭按钮');
     await page.screenshot({ path: path.join(evidence, 'drawer-fixed-state-preserved-1440x900.png') });
 
     await drawer.locator('header [data-modal-close]').click();
