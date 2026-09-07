@@ -269,7 +269,7 @@ The builder writes a complete UTF-8 HTML document with a relative stylesheet and
 
 - [ ] **Step 3: Encode the five core page layouts**
 
-- Slide 1: three role cards, ten-stage value flow, support layer and status legend; one developer-home visual anchor only.
+- Slide 1: four horizontal lanes (`开发者端`、`平台运营端`、`平台系统`、`用户端`) across six columns (`准入`、`建档`、`接入测试`、`审核上线`、`交易经营`、`结算迭代`); solid arrows show the core flow, dashed arrows show review/data/settlement feedback; keep one small developer-home visual anchor only.
 - Slide 2: developer home/login, enterprise state, game creation and store/release evidence.
 - Slide 3: APPID/environment, test accounts, Build upload, release/rollback.
 - Slide 4: double-Key supply, channel API, business dashboard, settlement dashboard.

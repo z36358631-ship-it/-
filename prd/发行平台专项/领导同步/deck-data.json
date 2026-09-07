@@ -1,0 +1,670 @@
+{
+  "version": "2026-09-07",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "deckTitle": "盖世游戏 PC 发行平台",
+  "deckNote": "本材料展示目标产品形态与当前 Demo 证据，不代表全部能力已上线。",
+  "statusLegend": [
+    {
+      "id": "ready",
+      "label": "已有 PRD＋Demo",
+      "shortLabel": "PRD＋Demo"
+    },
+    {
+      "id": "prototype",
+      "label": "已有 Demo，待 PRD",
+      "shortLabel": "Demo 待 PRD"
+    },
+    {
+      "id": "dependency",
+      "label": "依赖专项／外部确认",
+      "shortLabel": "外部依赖"
+    },
+    {
+      "id": "later",
+      "label": "后续能力",
+      "shortLabel": "后续"
+    }
+  ],
+  "flowLegend": [
+    {
+      "id": "core",
+      "label": "核心业务流",
+      "description": "从准入到玩家游玩的正向交付"
+    },
+    {
+      "id": "feedback",
+      "label": "结果／数据回流",
+      "description": "交易、履约、使用与结算结果返回开发者和运营"
+    }
+  ],
+  "slides": [
+    {
+      "id": "01-product-landscape",
+      "type": "swimlane",
+      "title": "从开发者接入到玩家游玩，六阶段形成发行闭环",
+      "subtitle": "盖世游戏 PC 发行平台｜产品功能全景",
+      "conclusion": "开发者交付游戏供给，平台运营完成门禁与处置，平台系统承接交易履约，最终让玩家完成购买、下载、启动与游玩。",
+      "stages": [
+        {
+          "id": "admission",
+          "number": "01",
+          "label": "准入"
+        },
+        {
+          "id": "profile",
+          "number": "02",
+          "label": "建档"
+        },
+        {
+          "id": "integration",
+          "number": "03",
+          "label": "接入测试"
+        },
+        {
+          "id": "release",
+          "number": "04",
+          "label": "审核上线"
+        },
+        {
+          "id": "commerce",
+          "number": "05",
+          "label": "交易经营"
+        },
+        {
+          "id": "iteration",
+          "number": "06",
+          "label": "结算迭代"
+        }
+      ],
+      "lanes": [
+        {
+          "id": "developer",
+          "label": "开发者端",
+          "role": "提供游戏与发行资料",
+          "cells": [
+            [
+              {
+                "text": "了解平台／登录",
+                "status": "ready",
+                "flow": "core"
+              },
+              {
+                "text": "企业认证",
+                "status": "ready",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+                "text": "创建游戏与 APPID",
+                "status": "ready",
+                "flow": "core"
+              },
+              {
+                "text": "资料／资质／SKU／地区价格",
+                "status": "ready",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+                "text": "下载 SDK／配测试账号",
+                "status": "prototype",
+                "flow": "core"
+              },
+              {
+                "text": "传包提测",
+                "status": "ready",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+                "text": "补资料／查看结果",
+                "status": "ready",
+                "flow": "feedback"
+              }
+            ],
+            [
+              {
+                "text": "看订单／退款／Key",
+                "status": "ready",
+                "flow": "feedback"
+              },
+              {
+                "text": "看下载／启动数据",
+                "status": "ready",
+                "flow": "feedback"
+              }
+            ],
+            [
+              {
+                "text": "看月结结果",
+                "status": "dependency",
+                "flow": "feedback"
+              },
+              {
+                "text": "更新版本",
+                "status": "ready",
+                "flow": "feedback"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "operations",
+          "label": "平台运营端",
+          "role": "审核、门禁与异常处置",
+          "cells": [
+            [
+              {
+                "text": "审主体／合作资格",
+                "status": "ready",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+                "text": "审游戏资料／资质",
+                "status": "ready",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+                "text": "分配测试／录入结果",
+                "status": "ready",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+                "text": "发行门禁",
+                "status": "ready",
+                "flow": "core"
+              },
+              {
+                "text": "发布／回滚／下架",
+                "status": "ready",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+                "text": "处理供给异常",
+                "status": "ready",
+                "flow": "feedback"
+              },
+              {
+                "text": "人工发行资源协作",
+                "status": "ready",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+                "text": "月结确认／异常处置",
+                "status": "dependency",
+                "flow": "feedback"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "platform",
+          "label": "平台系统",
+          "role": "贯通标识、内容、交易与权益",
+          "cells": [
+            [
+              {
+                "text": "账号／主体档案",
+                "status": "ready",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+                "text": "Game ID／APPID",
+                "status": "ready",
+                "flow": "core"
+              },
+              {
+                "text": "贯通 SKU／Build／Release",
+                "status": "prototype",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+                "text": "登录／权益／首启鉴权",
+                "status": "prototype",
+                "flow": "core"
+              },
+              {
+                "text": "Build／Manifest／Chunk",
+                "status": "ready",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+                "text": "生成商品权益",
+                "status": "dependency",
+                "flow": "core"
+              },
+              {
+                "text": "切换 Release Pointer",
+                "status": "ready",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+                "text": "订单／支付／退款",
+                "status": "dependency",
+                "flow": "core"
+              },
+              {
+                "text": "Key／经营数据归集",
+                "status": "ready",
+                "flow": "feedback"
+              }
+            ],
+            [
+              {
+                "text": "结算结果",
+                "status": "dependency",
+                "flow": "feedback"
+              },
+              {
+                "text": "版本历史",
+                "status": "ready",
+                "flow": "feedback"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "player",
+          "label": "用户端",
+          "role": "发现、获取并使用游戏",
+          "cells": [
+            [
+              {
+                "text": "等待供给",
+                "status": "dependency",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+                "text": "浏览前不可见",
+                "status": "dependency",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+                "text": "等待上线",
+                "status": "dependency",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+            "text": "盖世游戏 APP & Mac 可见\n（搜索、列表、游戏详情）",
+            "compact": true,
+                "status": "dependency",
+                "flow": "core"
+              }
+            ],
+            [
+              {
+                "text": "购买／领取／兑换",
+                "status": "dependency",
+                "flow": "core"
+              },
+              {
+                "text": "下载安装／首启／游玩／退款",
+                "status": "dependency",
+                "flow": "feedback"
+              }
+            ],
+            [
+              {
+                "text": "更新或失去权益",
+                "status": "dependency",
+                "flow": "feedback"
+              }
+            ]
+          ]
+        }
+      ],
+      "returnTrack": "交易、退款、Key 交付、下载、启动、游玩与结算结果回流开发者与平台运营",
+      "laterCapabilities": [
+        "自动化测试",
+        "复杂灰度",
+        "完整广告投放",
+        "消息通知",
+        "跨厂商分析"
+      ]
+    },
+    {
+      "id": "02-onboarding-and-game",
+      "type": "evidence",
+      "title": "厂商准入与游戏建档",
+      "subtitle": "从发行主体到可审核的游戏档案",
+      "conclusion": "开发者完成入驻后创建游戏，获得贯穿商品、构建与数据的 Game ID／APPID，再补齐发行资料。",
+      "screens": [
+        {
+          "number": "01",
+          "title": "开发者入口",
+          "status": "ready",
+          "image": "developer-home.png",
+          "route": "01-开发者平台与资料demo.html／P01-01",
+          "caption": "独立账号登录；手机号未注册时自动创建账号。"
+        },
+        {
+          "number": "02",
+          "title": "认证申请与审核状态",
+          "status": "ready",
+          "image": "enterprise-pending.png",
+          "route": "01-开发者平台与资料demo.html／P01-03",
+          "caption": "提交主体与联系人资料，查看审核进度与结果。"
+        },
+        {
+          "number": "03",
+          "title": "创建游戏",
+          "status": "ready",
+          "image": "create-game.png",
+          "route": "06-游戏创建与发行资料demo.html／P06-02",
+          "caption": "创建项目并生成唯一标识，承接后续商品与版本。"
+        },
+        {
+          "number": "04",
+          "title": "发行范围",
+          "status": "ready",
+          "image": "release-scope.png",
+          "route": "06-游戏创建与发行资料demo.html／P06-06",
+          "caption": "设置发布平台、发行国家／地区与发行时间。"
+        }
+      ],
+      "footnote": "资质校验应随权属链、发行地区和游戏类型动态审核。"
+    },
+    {
+      "id": "03-integration-test-release",
+      "type": "evidence",
+      "title": "开发接入、测试与发布",
+      "subtitle": "围绕 APPID 建立可测、可发、可回滚的版本链路",
+      "conclusion": "开发者获取接入资源与测试环境，上传多系统 Build，经人工测试和发布门禁后上线。",
+      "screens": [
+        {
+          "number": "01",
+          "title": "APPID 与环境",
+          "status": "prototype",
+          "image": "appid-environment.png",
+          "route": "07-开发接入与资源中心demo.html／P07-02",
+          "caption": "查看应用标识、环境和接入信息。"
+        },
+        {
+          "number": "02",
+          "title": "测试账号",
+          "status": "prototype",
+          "image": "test-accounts.png",
+          "route": "07-开发接入与资源中心demo.html／P07-03",
+          "caption": "配置联调账号、测试权益和白名单。"
+        },
+        {
+          "number": "03",
+          "title": "包体上传与 Build",
+          "status": "ready",
+          "image": "build-upload.png",
+          "route": "03-包体测试与发布demo.html／P03-03",
+          "caption": "承接 Windows、macOS 与 Linux 构建及处理记录。"
+        },
+        {
+          "number": "04",
+          "title": "发布与回滚",
+          "status": "ready",
+          "image": "release-rollback.png",
+          "route": "03-包体测试与发布demo.html／P03-12",
+          "caption": "通过门禁后发布，并可切回完整的历史版本。"
+        }
+      ],
+      "callouts": [
+        {
+          "status": "prototype",
+          "text": "一期 SDK 目标：初始化、登录状态、账户权益、首次启动鉴权、错误码与日志。"
+        },
+        {
+          "status": "dependency",
+          "text": "包体存储、海外 CDN 节点与带宽方案待专项确认。"
+        }
+      ]
+    },
+    {
+      "id": "04-commerce-and-operation",
+      "type": "evidence",
+      "title": "商品交易与发行经营",
+      "subtitle": "同时承接外部 Key 和盖世直发两类供给",
+      "conclusion": "平台将商品、Key、交易履约和经营数据连成一条链路，让发行方看到从销售到使用的实际结果。",
+      "screens": [
+        {
+          "number": "01",
+          "title": "商品与双 Key 供给",
+          "status": "ready",
+          "image": "cdkey-overview.png",
+          "route": "02-CDKEY商品与供给demo.html／P02-01",
+          "caption": "Product／SKU 共用标识，外部 Key 与盖世 Key 分账本管理。"
+        },
+        {
+          "number": "02",
+          "title": "盖世 Key 与渠道 API",
+          "status": "ready",
+          "image": "key-channel-api.png",
+          "route": "02-CDKEY商品与供给demo.html／P02-05",
+          "caption": "发行方自助生成 Key，通过受控 API 向渠道交付权益。"
+        },
+        {
+          "number": "03",
+          "title": "整体经营看板",
+          "status": "ready",
+          "image": "operation-dashboard.png",
+          "route": "04-精准投放与数据demo.html／P04-01",
+          "caption": "归集购买／领取、交付、下载与首次启动数据。"
+        },
+        {
+          "number": "04",
+          "title": "交易、退款与结算",
+          "status": "ready",
+          "image": "settlement-dashboard.png",
+          "route": "04-精准投放与数据demo.html／P04-02",
+          "caption": "展示实付、退款、净收入与月结结果口径。"
+        }
+      ],
+      "callouts": [
+        {
+          "status": "dependency",
+          "text": "玩家商城、支付、游戏库、启动器与退款页由用户端专项承接。"
+        },
+        {
+          "status": "dependency",
+          "text": "月结页为目标产品形态；支付、法务与财务口径仍待确认。"
+        }
+      ]
+    },
+    {
+      "id": "05-operations-and-scope",
+      "type": "scope",
+      "title": "平台运营与交付边界",
+      "subtitle": "一个后台控制主体、游戏、商品、版本与上线门禁",
+      "conclusion": "运营端负责审核和处置，开发者端负责提交与查看；每个能力都明确当前交付状态。",
+      "screens": [
+        {
+          "number": "01",
+          "title": "企业认证审核",
+          "status": "ready",
+          "image": "enterprise-review.png",
+          "route": "01-开发者平台与资料demo.html／P01-08",
+          "caption": "核对主体资料并记录处理结果。"
+        },
+        {
+          "number": "02",
+          "title": "游戏资料审核",
+          "status": "ready",
+          "image": "game-review-detail.png",
+          "route": "06-游戏创建与发行资料demo.html／P06-09",
+          "caption": "按资料、资质、地区和价格进行审核。"
+        },
+        {
+          "number": "03",
+          "title": "版本审核与发布",
+          "status": "ready",
+          "image": "version-review.png",
+          "route": "03-包体测试与发布demo.html／P03-09",
+          "caption": "保留测试结果、发布条件和线上处置记录。"
+        },
+        {
+          "number": "04",
+          "title": "双 Key 异常与对账",
+          "status": "ready",
+          "image": "key-reconciliation.png",
+          "route": "02-CDKEY商品与供给demo.html／P02-06",
+          "caption": "区分两类库存、交付、异常和对账记录。"
+        }
+      ],
+      "scopeGroups": [
+        {
+          "status": "ready",
+          "items": [
+            "登录与企业认证",
+            "游戏创建与发行资料",
+            "商品与双 Key",
+            "包体测试与发布",
+            "经营数据"
+          ]
+        },
+        {
+          "status": "prototype",
+          "items": [
+            "APPID 与环境",
+            "测试账号",
+            "SDK／工具资源中心"
+          ]
+        },
+        {
+          "status": "dependency",
+          "items": [
+            "玩家商城与启动器",
+            "支付",
+            "合同法务",
+            "财务结算",
+            "CDN 方案"
+          ]
+        },
+        {
+          "status": "later",
+          "items": [
+            "消息通知",
+            "完整广告投放",
+            "自动化测试",
+            "复杂灰度",
+            "跨厂商分析"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "06-enterprise-certification",
+      "type": "certification",
+      "title": "企业认证详细流程",
+      "subtitle": "附页｜从官网入口到提交后审核中",
+      "conclusion": "认证将访问者转为可识别的发行主体；通过后进入厂商设置与游戏建档。",
+      "successNote": "提交后返回厂商设置，认证通过后可创建游戏",
+      "steps": [
+        {
+          "number": "01",
+          "label": "官网进入",
+          "action": "了解平台"
+        },
+        {
+          "number": "02",
+          "label": "登录／注册",
+          "action": "点击登录"
+        },
+        {
+          "number": "03",
+          "label": "选择企业认证",
+          "action": "登录成功"
+        },
+        {
+          "number": "04",
+          "label": "阅读认证介绍",
+          "action": "申请企业认证"
+        },
+        {
+          "number": "05",
+          "label": "填写资料",
+          "action": "开始填写"
+        },
+        {
+          "number": "06",
+          "label": "提交后审核中",
+          "action": "提交审核"
+        }
+      ],
+      "screens": [
+        {
+          "number": "01",
+          "title": "官网入口",
+          "status": "ready",
+          "image": "developer-home.png",
+          "caption": "进入开发者平台并开始登录。"
+        },
+        {
+          "number": "02",
+          "title": "登录／自动注册",
+          "status": "ready",
+          "image": "cert-login.png",
+          "caption": "使用手机号验证，未注册账号自动创建。"
+        },
+        {
+          "number": "03",
+          "title": "选择企业认证",
+          "status": "ready",
+          "image": "cert-entry.png",
+          "caption": "登录后选择企业认证，进入发行主体准入流程。"
+        },
+        {
+          "number": "04",
+          "title": "阅读认证介绍",
+          "status": "ready",
+          "image": "cert-intro.png",
+          "caption": "确认资料要求、流程与注意事项后开始填写。"
+        },
+        {
+          "number": "05",
+          "title": "填写认证资料",
+          "status": "ready",
+          "image": "cert-form.png",
+          "caption": "填写企业、联系人与资质材料，完成后提交。"
+        },
+        {
+          "number": "06",
+          "title": "提交后审核中",
+          "status": "ready",
+          "image": "cert-pending.png",
+          "caption": "默认页显示认证申请和审核状态，异常时查看原因。"
+        }
+      ],
+      "exceptions": [
+        "资料修改后需再次提交审核",
+        "拒绝原因仅在平台内展示",
+        "异常状态联系 dev@xiaoji.com"
+      ]
+    }
+  ]
+}
