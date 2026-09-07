@@ -85,13 +85,15 @@ function packageCard(page, packageId) {
   return page.locator(`#modalRoot .drawer .package-item[data-package-id="${packageId}"]`);
 }
 
-test('仅保留三个审核导航，默认进入企业认证审核，区域与无提示刷新位置正确', async () => {
+test('保留三类审核与独立审核记录导航，默认进入企业认证审核，区域与无提示刷新位置正确', async () => {
   const html = fs.readFileSync(demo, 'utf8');
   assert.doesNotMatch(html, /<iframe|https?:\/\//i, 'Demo 必须保持离线自包含');
   assert.match(html, /企业认证审核/);
   assert.match(html, /游戏发布审核/);
   assert.match(html, /资质变更审核/);
+  assert.match(html, /审核记录/);
   assert.doesNotMatch(html, /审核工作台|data-nav=["']dashboard["']|游戏资质审核/);
+  assert.doesNotMatch(html, /领取并开始审核|开始审核/);
 
   const { page, errors } = await makePage();
   try {
@@ -99,9 +101,9 @@ test('仅保留三个审核导航，默认进入企业认证审核，区域与�
     await page.waitForURL(/#\/enterprise$/);
 
     const nav = page.locator('.side-nav > [data-nav]');
-    assert.equal(await nav.count(), 3);
+    assert.equal(await nav.count(), 4);
     assert.deepEqual((await nav.allTextContents()).map(text => text.replace(/\s+/g, '')),
-      ['企企业认证审核', '游游戏发布审核', '证资质变更审核']);
+      ['企企业认证审核', '游游戏发布审核', '证资质变更审核', '录审核记录']);
     assert.equal(await page.evaluate(() => window.AdminReviewDemo.state.page), 'list');
     assert.match(await page.locator('#breadcrumb').innerText(), /审核管理\s*\/\s*企业认证审核/);
     assert.equal(await page.locator('#mainView > .detail-tabs, #mainView > [role="tablist"]').count(), 0, '三类审核不得再做顶部同级 Tab');
@@ -123,6 +125,50 @@ test('仅保留三个审核导航，默认进入企业认证审核，区域与�
     assert.doesNotMatch(await page.locator('#mainView').innerText(), /审核队列已刷新|刷新成功/);
 
     await page.screenshot({ path: path.join(evidence, 'enterprise-filter-region-refresh-1440x900.png'), fullPage: true });
+    assert.deepEqual(errors, []);
+  } finally {
+    await page.close();
+  }
+});
+
+test('审核记录统一查询三类审核的逐步操作，并支持类型、区域、操作人、审核时间和详情回溯', async () => {
+  const { page, errors } = await makePage();
+  try {
+    await page.goto(url('/records'), { waitUntil: 'load' });
+    await page.waitForURL(/#\/records$/);
+    assert.match(await page.locator('#breadcrumb').innerText(), /审核管理\s*\/\s*审核记录/);
+    assert.equal((await page.locator('.page-header h1').allTextContents()).join(''), '审核记录');
+
+    const headers = await page.locator('.audit-table th').allTextContents();
+    assert.deepEqual(headers, ['审核类型', '申请对象／编号', '操作', '结果／状态变化', '操作人', '审核时间', '操作']);
+    const pageText = await page.locator('#mainView').innerText();
+    for (const type of ['企业认证审核', '游戏发布审核', '资质变更审核']) assert.match(pageText, new RegExp(type));
+
+    await page.getByLabel('审核类型').selectOption('release');
+    await page.getByLabel('发行区域').selectOption('domestic');
+    await page.getByLabel('操作人').fill('测试员 陈桥');
+    await page.locator('[data-range-trigger]').click();
+    await page.getByRole('button', { name: '近 7 天', exact: true }).click();
+    await page.getByRole('button', { name: '应用', exact: true }).click();
+    await page.locator('[data-filter-submit]').click();
+
+    const filteredRows = page.locator('.audit-table tbody tr');
+    assert.ok(await filteredRows.count() > 0, '筛选后应保留游戏发布的测试操作记录');
+    for (const row of await filteredRows.all()) {
+      assert.match(await row.locator('td').nth(0).innerText(), /游戏发布审核/);
+      assert.match(await row.locator('td').nth(4).innerText(), /测试员 陈桥/);
+    }
+    await page.screenshot({ path: path.join(evidence, 'audit-records-filter-1440x900.png'), fullPage: true });
+
+    const first = filteredRows.first();
+    const recordId = await first.locator('.cell-main small').innerText();
+    await first.getByRole('button', { name: '查看申请', exact: true }).click();
+    await page.waitForURL(/#\/release$/);
+    const drawer = page.locator('#modalRoot .drawer');
+    await drawer.waitFor();
+    assert.match(await drawer.innerText(), new RegExp(recordId));
+
+    await drawer.locator('header [data-modal-close]').click();
     assert.deepEqual(errors, []);
   } finally {
     await page.close();
@@ -344,7 +390,7 @@ test('单包测试支持开始、失败原因必填、本地附件增删与失�
   }
 });
 
-test('发布通过门禁同时约束 Drawer 与列表快捷操作，全部必测包通过后立即放行', async () => {
+test('发布审核先完成单包测试，再提交整次包体测试结论，最后解锁上架审核', async () => {
   const { page, errors } = await makePage();
   try {
     await page.goto(url('/release'), { waitUntil: 'load' });
@@ -356,13 +402,15 @@ test('发布通过门禁同时约束 Drawer 与列表快捷操作，全部必测
     await row.locator('[data-open]').click();
     let drawer = page.locator('#modalRoot .drawer');
     await drawer.waitFor();
-    let drawerApprove = drawer.locator('[data-action="approve"]');
-    assert.equal(await drawerApprove.isDisabled(), true, '包体未全部通过时 Drawer 发布通过必须禁用');
+    let packageReviewPass = drawer.locator('[data-package-review-pass]');
+    assert.equal(await packageReviewPass.count(), 1, '测试结论未提交时底部应展示包体测试通过');
+    assert.equal(await packageReviewPass.isDisabled(), true, '单包未全部通过时包体测试通过必须禁用');
+    assert.equal(await drawer.locator('[data-action="approve"]').count(), 0, '包体测试结论提交前不得展示上架审核通过');
     assert.ok(await drawer.getByRole('button', { name: /拒绝/ }).isEnabled());
     assert.ok(await drawer.getByRole('button', { name: /要求补充/ }).isEnabled());
     const initialBlocked = Number(await drawer.locator('[data-release-gate]').getAttribute('data-blocked-count'));
     assert.ok(initialBlocked > 0 && initialBlocked <= 6, '至少一个当前必测包未通过时才应触发发布门禁');
-    assert.match(await drawer.innerText(), new RegExp(`发布通过受限[^\\n]*${initialBlocked}\\s*个必测包体尚未通过`));
+    assert.match(await drawer.innerText(), new RegExp(`上架审核受限[^\\n]*${initialBlocked}\\s*个必测包体尚未通过`));
 
     await openDrawerTab(drawer, /PC\s*包体测试|包体测试/);
     const ids = await currentRequiredPackageIds(page);
@@ -380,11 +428,23 @@ test('发布通过门禁同时约束 Drawer 与列表快捷操作，全部必测
     }
 
     drawer = page.locator('#modalRoot .drawer');
-    drawerApprove = drawer.locator('[data-action="approve"]');
-    assert.equal(await drawerApprove.isEnabled(), true, '全部必测包通过后发布通过应立即启用');
-    assert.match(await drawer.innerText(), /全部必测包体已通过|(?:PC\s*包体)?门禁已通过/);
+    packageReviewPass = drawer.locator('[data-package-review-pass]');
+    assert.equal(await packageReviewPass.isEnabled(), true, '全部必测包通过后应允许测试人员提交整次测试结论');
+    assert.equal(await drawer.locator('[data-action="approve"]').count(), 0, '未提交整次测试结论时仍不得上架审核通过');
+    assert.match(await drawer.innerText(), /全部必测包已通过\s*·\s*待提交包体测试结论/);
     await page.waitForTimeout(250);
-    await page.screenshot({ path: path.join(evidence, 'release-gate-passed-1440x900.png') });
+    await page.screenshot({ path: path.join(evidence, 'package-tests-passed-awaiting-conclusion-1440x900.png') });
+
+    await packageReviewPass.click();
+    const packageReviewDialog = page.locator('#modalRoot .modal:not(.drawer)');
+    assert.match(await packageReviewDialog.innerText(), /确认包体测试通过/);
+    await packageReviewDialog.locator('[data-package-review-confirm]').click();
+    drawer = page.locator('#modalRoot .drawer');
+    await drawer.waitFor();
+    const drawerApprove = drawer.locator('[data-action="approve"]');
+    assert.equal(await drawerApprove.isEnabled(), true, '测试结论提交后才应解锁上架审核通过');
+    assert.match(await drawer.innerText(), /包体测试已通过\s*·\s*可进行上架审核/);
+    await page.screenshot({ path: path.join(evidence, 'package-review-passed-release-unlocked-1440x900.png') });
 
     await drawer.locator('header [data-modal-close]').click();
     row = page.locator('tbody tr').first();
@@ -398,6 +458,7 @@ test('发布通过门禁同时约束 Drawer 与列表快捷操作，全部必测
     await page.waitForTimeout(500);
     drawer = page.locator('#modalRoot .drawer');
     assert.match(await drawer.innerText(), /已通过/);
+    await page.screenshot({ path: path.join(evidence, 'release-review-approved-1440x900.png') });
     await drawer.locator('header [data-modal-close]').click();
     assert.match(await page.locator('tbody tr').first().innerText(), /已通过/);
     assert.deepEqual(errors, []);
@@ -506,12 +567,11 @@ test('提交时间范围、资质附件预览和操作原因校验保持完整',
   }
 });
 
-test('终态恢复、下架恢复、资质失效与失败重试均要求正确依据且幂等', async () => {
+test('企业资格恢复、资质失效与失败重试均要求正确依据且幂等，发布终态只读', async () => {
   const { page, errors } = await makePage();
   try {
     const cases = [
-      { type: 'enterprise', status: 'disabled', action: '恢复发行资格', result: '已通过', reason: '工商异常已解除，线下复核通过。' },
-      { type: 'release', status: 'offline', action: '恢复上架', result: '已通过', reason: '权利投诉已撤回，法务复核通过。' }
+      { type: 'enterprise', status: 'disabled', action: '恢复发行资格', result: '已通过', reason: '工商异常已解除，线下复核通过。' }
     ];
     for (const item of cases) {
       await page.goto(url(`/${item.type}`), { waitUntil: 'load' });
@@ -533,6 +593,14 @@ test('终态恢复、下架恢复、资质失效与失败重试均要求正确�
       assert.match(await drawer.innerText(), new RegExp(item.result));
       await drawer.locator('header [data-modal-close]').click();
     }
+
+    await page.goto(url('/release'), { waitUntil: 'load' });
+    await page.getByLabel('审核状态').selectOption('offline');
+    await page.locator('[data-filter-submit]').click();
+    await page.locator('[data-open]').first().click();
+    const offlineDrawer = page.locator('#modalRoot .drawer');
+    assert.equal(await offlineDrawer.getByRole('button', { name: /恢复上架|下架游戏/ }).count(), 0, '发布终态仅供追溯，上下架操作属于运营模块');
+    await offlineDrawer.locator('header [data-modal-close]').click();
 
     await page.goto(url('/qualification'), { waitUntil: 'load' });
     await page.getByLabel('审核状态').selectOption('approved');
