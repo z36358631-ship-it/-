@@ -72,6 +72,12 @@
 .pgp-checks { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 25px; }
 .pgp-checks > label { display: inline-flex; align-items: center; gap: 8px; color: #637589; font-size: 13px; cursor: pointer; }
 .pgp-checks input { width: 16px; height: 16px; margin: 0; accent-color: var(--pgp-accent); }
+.pgp-target-interests .pgp-checks { gap: 8px; }
+.pgp-target-interests .pgp-checks > label { position: relative; min-height: 34px; padding: 7px 12px; color: #617688; border: 1px solid #d9e2e8; border-radius: 999px; background: #fff; font-size: 12px; }
+.pgp-target-interests .pgp-checks input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.pgp-target-interests .pgp-checks > label:has(input:checked) { color: #0d7f8a; border-color: #75c5cc; background: #effafb; }
+.pgp-target-interests .pgp-checks > label:has(input:focus-visible) { outline: 2px solid #1abcc3; outline-offset: 2px; }
+.pgp-target-interests .pgp-checks > label:has(input:disabled) { cursor: default; opacity: .7; }
 .pgp-choice-group { min-width: 0; margin: 0; padding: 0; border: 0; }
 .pgp-choice-tiles { min-width: 0; display: grid; grid-template-columns: repeat(var(--pgp-choice-columns, 4), minmax(0, 1fr)); gap: 10px; }
 .pgp-choice-tiles[data-choice-count="3"] { --pgp-choice-columns: 3; }
@@ -201,12 +207,13 @@
 .pgp-current-version > div { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 30px; padding: 17px 18px; border-radius: 9px; background: #f6f7f8; }
 .pgp-current-version > div > span { display: inline-flex; align-items: center; gap: 11px; color: #8a98a6; font-size: 11px; }
 .pgp-current-version strong { color: #344d62; font-size: 12px; }
-.pgp-current-version b, .pgp-version-record__row > b { padding: 4px 9px; color: #19866f; border-radius: 999px; background: #edf9f4; font-size: 11px; font-weight: 500; }
-.pgp-version-record__row > b { justify-self: start; }
-.pgp-current-version [data-version-status="draft"], .pgp-version-record__row > [data-version-status="draft"] { color: #667687; background: #f0f2f4; }
-.pgp-current-version [data-version-status="reviewing"], .pgp-version-record__row > [data-version-status="reviewing"] { color: #347c9c; background: #edf6fa; }
-.pgp-current-version [data-version-status="rejected"], .pgp-version-record__row > [data-version-status="rejected"] { color: #a6762b; background: #fff7e7; }
-.pgp-current-version [data-version-status="withdrawn"], .pgp-current-version [data-version-status="expired"], .pgp-current-version [data-version-status="delisted"], .pgp-version-record__row > :is([data-version-status="withdrawn"],[data-version-status="expired"],[data-version-status="delisted"]) { color: #7e8994; background: #f0f2f4; }
+.pgp-version-status-group { min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; justify-self: start; }
+.pgp-version-status-group b { display: inline-flex; align-items: center; min-height: 24px; padding: 4px 9px; color: #19866f; border-radius: 999px; background: #edf9f4; font-size: 11px; font-weight: 500; white-space: nowrap; }
+.pgp-version-status-group [data-version-review-status="draft"], .pgp-version-status-group [data-version-publication-status="offline"] { color: #667687; background: #f0f2f4; }
+.pgp-version-status-group [data-version-review-status="reviewing"] { color: #347c9c; background: #edf6fa; }
+.pgp-version-status-group [data-version-review-status="rejected"] { color: #a05b48; background: #fff1ed; }
+.pgp-version-status-group [data-version-review-status="withdrawn"], .pgp-version-status-group [data-version-publication-status="delisted"] { color: #7e8994; background: #f0f2f4; }
+.pgp-version-status-group [data-version-publication-status="live"] { color: #19866f; background: #edf9f4; }
 .pgp-version-list-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
 .pgp-version-list-head h3 { margin: 0; color: #2f455a; font-size: 16px; }
 .pgp-version-list-head h3 small { margin-left: 6px; color: #96a2ae; font-size: 11px; font-weight: 400; }
@@ -215,7 +222,7 @@
 .pgp-version-list-head button { width: 30px; height: 30px; padding: 0; color: #536b7d; border: 1px solid #d4dde5; border-radius: 6px; background: #fff; font-size: 17px; }
 .pgp-version-refreshed { min-width: max-content; color: #7f909f; font-size: 11px; }
 .pgp-version-table-scroll { min-width: 0; max-width: 100%; overflow-x: auto; border-bottom: 1px solid #e7ecf0; scrollbar-width: thin; }
-.pgp-version-table-head, .pgp-version-record__row { min-width: 850px; display: grid; grid-template-columns: minmax(220px,1.3fr) 150px 180px 120px 150px; align-items: center; gap: 16px; }
+.pgp-version-table-head, .pgp-version-record__row { min-width: 880px; display: grid; grid-template-columns: minmax(220px,1.3fr) 150px 210px 120px 150px; align-items: center; gap: 16px; }
 .pgp-version-table-head { padding: 13px 20px; color: #77899a; background: #f8fafb; font-size: 11px; }
 .pgp-version-list { min-width: 0; }
 .pgp-version-record { min-width: 0; border-bottom: 1px solid #e7ecf0; background: transparent; }
@@ -240,9 +247,37 @@
 .pgp-version-operation-row:last-child { border-bottom: 0; }
 .pgp-version-operation-row time, .pgp-version-operation-row p, .pgp-version-operation-row span { margin: 0; color: inherit; font-size: inherit; line-height: 1.7; }
 .pgp-version-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 22px; color: #788998; font-size: 11px; }
-.pgp-version-pagination button, .pgp-version-pagination b { width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 1px solid #d8e0e7; border-radius: 6px; background: #fff; font-size: 12px; font-weight: 400; }
+.pgp-version-pagination button, .pgp-version-pagination b { min-width: 28px; height: 28px; display: grid; place-items: center; padding: 0 8px; border: 1px solid #d8e0e7; border-radius: 6px; background: #fff; font-size: 12px; font-weight: 400; }
 .pgp-version-pagination button:disabled { opacity: .35; }
 .pgp-version-pagination b { color: #1b788e; border-color: #9bcbd4; }
+.pgp-demo-state-fab { position: fixed; right: 30px; bottom: 28px; z-index: 65; display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 16px; color: #fff; border: 0; border-radius: 999px; background: #168eaa; box-shadow: 0 10px 24px rgba(28,76,94,.24); font-size: 12px; cursor: pointer; }
+.pgp-demo-state-fab:hover { background: #117f98; }
+.pgp-demo-state-fab > span { font-size: 15px; }
+.pgp-demo-state-panel { position: fixed; right: 30px; bottom: 82px; z-index: 64; width: min(380px, calc(100vw - 32px)); max-height: min(620px, calc(100vh - 112px)); padding: 18px; overflow-y: auto; color: #4d6376; border: 1px solid #dce5eb; border-radius: 14px; background: #fff; box-shadow: 0 16px 48px rgba(29,53,73,.2); }
+.pgp-demo-state-panel > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.pgp-demo-state-panel > header > div { display: grid; gap: 4px; }
+.pgp-demo-state-panel > header strong { color: #304b60; font-size: 14px; }
+.pgp-demo-state-panel > header small { color: #91a0ad; font-size: 10px; }
+.pgp-demo-state-panel > header button { width: 26px; height: 26px; padding: 0; color: #788b9a; border: 0; border-radius: 50%; background: #f2f5f7; font-size: 17px; cursor: pointer; }
+.pgp-demo-state-options { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+.pgp-demo-state-options button { min-width: 0; min-height: 34px; padding: 7px 8px; color: #607687; border: 1px solid #dce5eb; border-radius: 7px; background: #fff; font-size: 11px; cursor: pointer; }
+.pgp-demo-state-options button:hover { border-color: #9bcbd4; }
+.pgp-demo-state-options button.is-active { color: #147d92; border-color: #78bec9; background: #eff9fa; font-weight: 600; }
+.pgp-demo-notification { margin-top: 14px; padding: 14px; border: 1px solid #dfe7ed; border-radius: 9px; background: #f8fafb; }
+.pgp-demo-notification > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pgp-demo-notification > header strong { color: #40596d; font-size: 12px; }
+.pgp-demo-notification > header span { padding: 3px 7px; color: #2d7f8e; border-radius: 999px; background: #eaf7f8; font-size: 10px; }
+.pgp-demo-notification > small { display: block; margin-top: 9px; color: #8495a3; font-size: 10px; }
+.pgp-demo-notification > p { margin: 10px 0 0; white-space: pre-wrap; color: #546b7d; font-size: 11px; line-height: 1.75; }
+.pgp-demo-notification dl { display: grid; gap: 7px; margin: 10px 0 0; }
+.pgp-demo-notification dl > div { display: grid; grid-template-columns: 52px minmax(0,1fr); gap: 8px; font-size: 10px; line-height: 1.6; }
+.pgp-demo-notification dt { color: #93a0ab; }
+.pgp-demo-notification dd { margin: 0; color: #566c7e; overflow-wrap: anywhere; }
+.pgp-demo-notification footer { margin-top: 10px; }
+.pgp-demo-notification footer a { color: #168eaa; font-size: 11px; text-decoration: none; }
+.pgp-demo-notification.is-empty { color: #748594; background: #f5f7f8; }
+.pgp-demo-notification.is-empty strong { color: #536b7d; font-size: 12px; }
+.pgp-demo-notification.is-empty p { margin-bottom: 0; }
 .pgp-empty-state { padding:48px 20px; text-align:center; color:#8193a4; border:1px dashed #d9e2e9; border-radius:10px; background:#fafcfd; }
 .pgp-empty-state strong { display:block; color:#526b7f; font-size:14px; }
 .pgp-empty-state p { margin:8px 0 0; font-size:12px; }
@@ -402,4 +437,7 @@
 @media (max-width: 760px) {
   .pgp-release-toolbar { grid-template-columns: minmax(0, 1fr); gap: 6px; }
   .pgp-release-actions { justify-content: flex-start; overflow-x: auto; }
+  .pgp-demo-state-fab { right: 16px; bottom: 18px; }
+  .pgp-demo-state-panel { right: 16px; bottom: 72px; }
+  .pgp-demo-state-options { grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
