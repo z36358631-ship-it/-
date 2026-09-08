@@ -14,11 +14,13 @@
 .publisher-game-profile .pgp-button--primary { color: #fff; border-color: var(--pgp-accent); background: var(--pgp-accent); }
 .pgp-release-locator { position: sticky; top: 0; z-index: 12; min-width: 0; display: flex; gap: 28px; margin: -2px 0 22px; padding-top: 14px; overflow-x: auto; border-bottom: 1px solid #dfe5eb; background: #f4f7fa; box-shadow: 0 7px 12px -13px rgba(36,57,76,.55); scrollbar-width: none; }
 .pgp-release-locator::-webkit-scrollbar { display: none; }
-.pgp-release-locator button { position: relative; min-width: max-content; padding: 0 1px 13px; color: #647689; border: 0; background: transparent; font-size: 14px; }
+.pgp-release-locator button { position: relative; min-width: max-content; display: inline-flex; align-items: center; padding: 0 1px 13px; color: #647689; border: 0; background: transparent; font-size: 14px; }
 .pgp-release-locator button::after { content: ''; position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: transparent; }
 .pgp-release-locator button:hover { color: #138b99; }
 .pgp-release-locator button.is-active { color: #00a9ad; font-weight: 600; }
 .pgp-release-locator button.is-active::after { background: #00b9bd; }
+.pgp-release-locator__count { min-width: 16px; height: 16px; margin-left: 6px; display: inline-grid; place-items: center; padding: 0 4px; border-radius: 999px; background: #e5484d; color: #fff; font-size: 10px; font-weight: 600; line-height: 1; }
+.pgp-release-locator__count[hidden] { display: none; }
 .pgp-version-bar { padding: 22px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 20px 30px; border: 1px solid #dfe5eb; border-radius: 14px; background: #fff; box-shadow: 0 4px 12px rgba(35, 57, 77, .025); }
 .pgp-version-bar > div { display: flex; align-items: center; gap: 10px; }
 .pgp-version-bar > div > span { color: #8d9ba9; font-size: 11px; }

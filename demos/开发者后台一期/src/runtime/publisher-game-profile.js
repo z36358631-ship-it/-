@@ -61,6 +61,13 @@
   const id = key => `profile-${key.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
   const sectionOf = key => key.startsWith('buildPackages') ? 'builds' : key.startsWith('catalog.') || key.startsWith('pricing.') ? 'pricing' : key.startsWith('releaseConfig.') || key.startsWith('publication.') || ['releaseRegions', 'releaseTerritories', 'releaseStatus', 'targetUserInterests'].includes(key) ? 'publication' : key.startsWith('assets.') || key.startsWith('localizedAssets.') ? (key.endsWith('.icon') ? 'basic' : 'assets') : key.startsWith('qualificationFiles.') || key.startsWith('qualifications.') || key.startsWith('compliance.') || key === 'licenseNumber' ? 'qualification' : key.startsWith('requirements.') || ['website', 'playerGroupName', 'playerGroupNumber'].includes(key) ? 'settings' : ['genres', 'platforms'].includes(key) ? 'classification' : ['relationship', 'developerName', 'developerWords', 'developerWordsZh'].includes(key) || key.endsWith('.developerWords') ? 'developer' : 'basic';
   const moduleOf = key => ({ builds: 'builds', pricing: 'catalog', publication: 'release', qualification: 'qualification' }[sectionOf(key)] || 'profile');
+  const releaseModules = ['profile', 'builds', 'catalog', 'release', 'qualification'];
+  const releaseModuleOf = key => {
+    const section = sectionOf(key);
+    if (['basic', 'classification', 'developer', 'assets', 'settings'].includes(section)) return 'profile';
+    return { builds: 'builds', pricing: 'catalog', publication: 'release', qualification: 'qualification' }[section] || 'profile';
+  };
+  const releaseMissingCounts = done => Object.fromEntries(releaseModules.map(module => [module, done.missing.filter(item => releaseModuleOf(item.key) === module).length]));
   const labelFor = (lang, key) => key === 'buildPackages.readyFull' ? t(lang, 'readyFull') : key === 'pricing.model' ? t(lang, 'pricingModel') : key === 'qualifications.mainland' ? t(lang, 'mainlandScan') : key.startsWith('gameNames.') ? `${lang === 'en' ? 'Game name' : '游戏名称'} · ${window.PublisherGameNames.label(key.split('.')[1], lang)}` : key.startsWith('requirements.') ? `${key.slice(13)} · ${t(lang, 'requirements')}` : t(lang, key.split('.').pop() === 'scheduledAt' ? 'scheduleTime' : key.split('.').pop());
   const lock = draft => draft.reviewStatus === 'reviewing' || draft.saving || draft.submitting || draft.withdrawing;
   const contentRequired = (draft, language) => draft.legacyReview ? language === 'en' : language === (draft.releaseConfig?.mode === 'domestic' ? 'zh' : 'en');
@@ -374,7 +381,8 @@
   }
   function missingHTML(draft, lang) {
     if (!draft.ui.showMissing) return '';
-    const missing = Object.entries(draft.errors).filter(([key]) => !['save', 'submit', 'withdraw', 'upload'].includes(key));
+    const hiddenMissingKeys = new Set(['qualifications.activeVersion']);
+    const missing = Object.entries(draft.errors).filter(([key]) => !['save', 'submit', 'withdraw', 'upload'].includes(key) && !hiddenMissingKeys.has(key));
     if (!missing.length) return '';
     return `<section class="pgp-missing" data-profile-missing aria-labelledby="profile-missing-title"><h3 id="profile-missing-title">${esc(t(lang, 'missingTitle'))}</h3><p>${esc(t(lang, 'missingHint'))}</p><ul>${missing.map(([key, code]) => `<li><button type="button" data-profile-focus="${esc(key)}"><strong>${esc(labelFor(lang, key))}</strong><span>${esc(t(lang, code))}</span><i aria-hidden="true">→</i></button></li>`).join('')}</ul></section>`;
   }
@@ -605,6 +613,7 @@
     const activeModule = ['release-workspace', 'profile', 'catalog', 'release', 'qualifications', 'versions'].includes(options.section) ? options.section : 'release-workspace';
     const releaseWorkspace = activeModule === 'release-workspace';
     const done = completion(draft);
+    const missingCounts = releaseMissingCounts(done);
     const busy = stateFor(draft).uploads.size > 0;
     const readonly = lock(draft);
     const contentLanguage = draft.currentNameLanguage || 'en';
@@ -628,7 +637,12 @@
     const reviewHTML = reviewResult ? `<aside class="pgp-review-result${draft.reviewStatus === 'rejected' ? ' is-rejected' : ''}" data-profile-review-result><strong>${esc(t(lang, draft.reviewStatus === 'rejected' ? 'rejectedNotice' : 'approved'))}</strong>${draft.reviewStatus === 'rejected' ? `<p><b>${esc(t(lang, 'reviewReason'))}：</b><span data-profile-review-reason>${esc(reviewResult.reason)}</span></p>` : ''}<div><span>${esc(t(lang, 'reviewer'))}：${esc(reviewResult.reviewer || '—')}</span><span>${esc(t(lang, 'reviewedAt'))}：${esc(reviewResult.reviewedAt ? new Date(reviewResult.reviewedAt).toLocaleString(lang === 'en' ? 'en-GB' : 'zh-CN', { hour12: false }) : '—')}</span></div></aside>` : '';
     const profileBody = `${card(draft, lang, 'basic', basic)}${card(draft, lang, 'classification', classification)}${card(draft, lang, 'developer', developer)}${card(draft, lang, 'assets', window.PublisherGameNames.render(draft, lang, { readonly, hideInput: true, idPrefix: 'profile-assets', title: lang === 'en' ? 'Store detail languages' : '商店资料语言' }) + `<p class="pgp-hint">${esc(t(lang, 'assetLocaleHint'))}</p>` + renderAssets(draft, lang))}${card(draft, lang, 'settings', settings)}`;
     const releaseAnchor = ['profile', 'builds', 'catalog', 'release', 'qualification'].includes(draft.ui.releaseAnchor) ? draft.ui.releaseAnchor : 'profile';
-    let releaseLocator = releaseWorkspace ? `<nav class="pgp-release-locator" aria-label="${lang === 'en' ? 'Version release sections' : '版本发布页内定位'}">${[['profile', '游戏资料', 'Game details'], ['builds', 'PC 包体', 'PC builds'], ['catalog', '商品与 SKU', 'Products & SKU'], ['release', '发行设置', 'Release settings'], ['qualification', '资质认证', 'Qualifications']].map(([id, zh, en]) => `<button type="button" class="${releaseAnchor === id ? 'is-active' : ''}" data-release-locator="${id}" aria-current="${releaseAnchor === id ? 'location' : 'false'}">${esc(lang === 'en' ? en : zh)}</button>`).join('')}</nav>` : '';
+    let releaseLocator = releaseWorkspace ? `<nav class="pgp-release-locator" aria-label="${lang === 'en' ? 'Version release sections' : '版本发布页内定位'}">${[['profile', '游戏资料', 'Game details'], ['builds', 'PC 包体', 'PC builds'], ['catalog', '商品与 SKU', 'Products & SKU'], ['release', '发行设置', 'Release settings'], ['qualification', '资质认证', 'Qualifications']].map(([id, zh, en]) => {
+      const label = lang === 'en' ? en : zh;
+      const count = missingCounts[id] || 0;
+      const accessibilityLabel = count ? (lang === 'en' ? `${label}, ${count} missing` : `${label}，缺失 ${count} 项`) : label;
+      return `<button type="button" class="${releaseAnchor === id ? 'is-active' : ''}" data-release-locator="${id}" data-release-label="${esc(label)}" aria-label="${esc(accessibilityLabel)}" aria-current="${releaseAnchor === id ? 'location' : 'false'}"><span>${esc(label)}</span><b class="pgp-release-locator__count" data-release-missing-count${count ? '' : ' hidden'}>${count || ''}</b></button>`;
+    }).join('')}</nav>` : '';
     const releaseWorkspaceBody = `<div class="pgp-release-workspace"><section class="pgp-release-block" data-release-anchor="profile">${profileBody}</section><section class="pgp-release-block" data-release-anchor="builds">${builds}</section><section class="pgp-release-block" data-release-anchor="catalog">${renderPricing(draft, lang)}</section><section class="pgp-release-block" data-release-anchor="release">${card(draft, lang, 'publication', publication)}</section><section class="pgp-release-block" data-release-anchor="qualification">${qualificationEmbedded}</section></div>`;
     const moduleBody = releaseWorkspace ? releaseWorkspaceBody : activeModule === 'profile' ? profileBody : activeModule === 'catalog' ? renderPricing(draft, lang) : activeModule === 'release' ? card(draft, lang, 'publication', publication) : activeModule === 'qualifications' ? `<section class="pgp-qualification-workspace">${qualification}</section>` : renderVersions(draft, lang, options.game || {});
     const moduleTitle = lang === 'en' ? ({ 'release-workspace': 'Version release', profile: 'Game details', catalog: 'Products & SKU', release: 'Release settings', qualifications: 'Qualifications', versions: 'Version records' }[activeModule]) : ({ 'release-workspace': '版本发布', profile: '游戏资料', catalog: '商品与 SKU', release: '发行设置', qualifications: '资质认证', versions: '发布记录' }[activeModule]);
@@ -637,7 +651,7 @@
       : `<div class="pgp-release-actions"><span data-profile-save-state>${esc(savedText)}</span><button type="button" class="pgp-button" data-profile-save${readonly || busy ? ' disabled' : ''}>${esc(t(lang, draft.saving ? 'saving' : 'save'))}</button><button type="button" class="pgp-button pgp-button--primary" data-profile-submit${readonly || busy ? ' disabled' : ''}>${esc(t(lang, draft.submitting ? 'submitting' : draft.reviewStatus === 'rejected' ? 'resubmit' : 'submit'))}</button></div>` : '';
     const releaseToolbar = releaseWorkspace ? `<div class="pgp-release-toolbar">${releaseLocator}${releaseActions}</div>` : '';
     if (releaseWorkspace) releaseLocator = '';
-    const releaseState = releaseWorkspace ? `${releaseLocator}<div class="pgp-version-bar"><div><span>${esc(t(lang, 'currentVersion'))}</span><strong>${esc(draft.versionName)}</strong></div><div><span>${esc(t(lang, 'reviewStatus'))}</span><strong class="pgp-version-status" data-profile-status>${esc(t(lang, draft.reviewStatus))}</strong></div><div><span>${esc(t(lang, 'completion'))}</span><button type="button" data-profile-show-missing><b data-profile-completion>${done.complete} / ${done.total}</b><small>${esc(t(lang, done.missing.length ? 'remaining' : 'completeAll', { count: done.missing.length }))}</small></button></div><div><span>${esc(t(lang, 'publication'))}</span><button type="button" data-profile-publication-toggle>${esc(t(lang, draft.publication.mode === 'scheduled' ? 'scheduled' : 'immediate'))}<i aria-hidden="true">⌄</i></button></div></div>${['reviewing', 'approved'].includes(draft.reviewStatus) ? `<div class="pgp-locked" role="status"><p>${esc(t(lang, draft.reviewStatus === 'approved' ? 'approvedNotice' : 'locked'))}</p><dl class="pgp-submission"><div><dt>${esc(t(lang, 'submissionId'))}</dt><dd data-profile-submission-id>${esc(draft.submissionId)}</dd></div><div><dt>${esc(t(lang, 'submittedAt'))}</dt><dd><time datetime="${esc(submissionTime)}" data-profile-submitted-at>${esc(submissionTime ? new Date(submissionTime).toLocaleString(lang === 'en' ? 'en-GB' : 'zh-CN', { hour12: false }) : '—')}</time></dd></div></dl></div>` : ''}${reviewHTML}${busy ? `<p class="pgp-upload-status" role="status">${esc(t(lang, 'uploading'))}</p>` : ''}${errorHTML(draft, lang, 'save')}${errorHTML(draft, lang, 'submit')}${errorHTML(draft, lang, 'withdraw')}${errorHTML(draft, lang, 'upload')}${missingHTML(draft, lang)}` : '';
+    const releaseState = releaseWorkspace ? `${releaseLocator}<div class="pgp-version-bar"><div><span>${esc(t(lang, 'currentVersion'))}</span><strong>${esc(draft.versionName)}</strong></div><div><span>${esc(t(lang, 'reviewStatus'))}</span><strong class="pgp-version-status" data-profile-status>${esc(t(lang, draft.reviewStatus))}</strong></div><div><span>${esc(t(lang, 'completion'))}</span><button type="button" data-profile-show-missing><b data-profile-completion>${done.complete} / ${done.total}</b><small>${esc(t(lang, done.missing.length ? 'remaining' : 'completeAll', { count: done.missing.length }))}</small></button></div><div><span>${esc(t(lang, 'publication'))}</span><button type="button" data-profile-publication-toggle>${esc(t(lang, draft.publication.mode === 'scheduled' ? 'scheduled' : 'immediate'))}<i aria-hidden="true">⌄</i></button></div></div>${['reviewing', 'approved'].includes(draft.reviewStatus) ? `<div class="pgp-locked" role="status"><p>${esc(t(lang, draft.reviewStatus === 'approved' ? 'approvedNotice' : 'locked'))}</p><dl class="pgp-submission"><div><dt>${esc(t(lang, 'submissionId'))}</dt><dd data-profile-submission-id>${esc(draft.submissionId)}</dd></div><div><dt>${esc(t(lang, 'submittedAt'))}</dt><dd><time datetime="${esc(submissionTime)}" data-profile-submitted-at>${esc(submissionTime ? new Date(submissionTime).toLocaleString(lang === 'en' ? 'en-GB' : 'zh-CN', { hour12: false }) : '—')}</time></dd></div></dl></div>` : ''}${reviewHTML}${busy ? `<p class="pgp-upload-status" role="status">${esc(t(lang, 'uploading'))}</p>` : ''}${errorHTML(draft, lang, 'save')}${errorHTML(draft, lang, 'submit')}${errorHTML(draft, lang, 'withdraw')}${errorHTML(draft, lang, 'upload')}<div data-profile-missing-slot>${missingHTML(draft, lang)}</div>` : '';
     const backTop = releaseWorkspace ? `<button type="button" class="pgp-back-top" data-profile-back-top aria-label="${lang === 'en' ? 'Back to top' : '返回顶部'}" title="${lang === 'en' ? 'Back to top' : '返回顶部'}" hidden><span aria-hidden="true">↑</span></button>` : '';
     const withdrawKind = draft.ui.withdrawConfirm;
     const withdrawConfirmation = withdrawKind ? `<div class="pgp-confirm" data-profile-withdraw-confirm role="presentation"><button type="button" class="pgp-confirm__backdrop" data-withdraw-confirm-cancel aria-label="${lang === 'en' ? 'Cancel withdrawal' : '取消撤销'}"></button><section class="pgp-confirm__dialog" role="alertdialog" aria-modal="true" aria-labelledby="pgp-withdraw-title" aria-describedby="pgp-withdraw-description"><header><h3 id="pgp-withdraw-title">${lang === 'en' ? 'Withdraw this review?' : withdrawKind === 'release' ? '撤销版本审核？' : '撤销资质审核？'}</h3><button type="button" data-withdraw-confirm-cancel aria-label="${lang === 'en' ? 'Close' : '关闭'}">×</button></header><p id="pgp-withdraw-description">${lang === 'en' ? 'The current review will stop and the submitted content will become editable again.' : withdrawKind === 'release' ? '撤销后，本次版本审核终止，内容恢复可编辑。' : '撤销后，本次资质审核终止，资料恢复可编辑。'}</p><footer><button type="button" class="pgp-button" data-withdraw-confirm-cancel>${lang === 'en' ? 'Cancel' : '取消'}</button><button type="button" class="pgp-button pgp-button--danger" data-withdraw-confirm-submit>${lang === 'en' ? 'Confirm withdrawal' : '确认撤销'}</button></footer></section></div>` : '';
@@ -828,10 +842,18 @@
     }));
     function updateSummary() {
       const done = completion(draft);
+      const counts = releaseMissingCounts(done);
       const completionValue = root.querySelector('[data-profile-completion]');
       if (completionValue) completionValue.textContent = `${done.complete} / ${done.total}`;
       const missingValue = root.querySelector('[data-profile-show-missing] small');
       if (missingValue) missingValue.textContent = t(lang, done.missing.length ? 'remaining' : 'completeAll', { count: done.missing.length });
+      root.querySelectorAll('[data-release-locator]').forEach(button => {
+        const count = counts[button.dataset.releaseLocator] || 0;
+        const badge = button.querySelector('[data-release-missing-count]');
+        if (badge) { badge.hidden = count === 0; badge.textContent = count ? String(count) : ''; }
+        const label = button.dataset.releaseLabel || button.textContent.trim();
+        button.setAttribute('aria-label', count ? (lang === 'en' ? `${label}, ${count} missing` : `${label}，缺失 ${count} 项`) : label);
+      });
       const saveState = root.querySelector('[data-profile-save-state]');
       if (saveState) saveState.textContent = t(lang, 'unsaved');
       sections.forEach(section => {
@@ -843,6 +865,12 @@
         if (navDot) { navDot.classList.toggle('is-ready', done.sections[section]); navDot.classList.toggle('is-warning', !done.sections[section]); }
       });
     }
+    function updateMissingPanel() {
+      if (!draft.ui.showMissing) return;
+      draft.errors = { ...validate(draft), ...(draft.errors.upload ? { upload: draft.errors.upload } : {}) };
+      const slot = root.querySelector('[data-profile-missing-slot]');
+      if (slot) slot.innerHTML = missingHTML(draft, lang);
+    }
     function changed(key) {
       draft.dirty = true;
       draft.storeLocales = { enabled: draft.nameLanguages, default: draft.defaultNameLanguage, current: draft.currentNameLanguage };
@@ -853,11 +881,7 @@
       const control = root.querySelector(`[data-profile-field="${key}"]`);
       if (control) control.setAttribute('aria-invalid', 'false');
       updateSummary();
-      if (draft.ui.showMissing) {
-        draft.errors = { ...validate(draft), ...(draft.errors.upload ? { upload: draft.errors.upload } : {}) };
-        const panel = root.querySelector('[data-profile-missing]');
-        if (panel) panel.outerHTML = missingHTML(draft, lang);
-      }
+      updateMissingPanel();
       if (key === 'compliance.copyrightNumber') {
         const requiredKeys = new Set(window.PublisherGameQualifications.requiredFields(draft).map(([fieldKey]) => fieldKey));
         const requirements = [
@@ -889,11 +913,16 @@
         else if (category === 'screenshots') draft.ui.assetTab = 'screenshots';
         else if (['landscape', 'portrait'].includes(category)) { draft.ui.assetTab = 'images'; draft.ui.imageCategory = category; }
       }
+      if (key === 'qualifications.activeVersion') {
+        const qualificationErrors = window.PublisherGameQualifications.validateApplication(draft.qualifications?.draft || {}, window.PublisherGameQualifications.contextFor(draft));
+        draft.qualificationErrors = qualificationErrors;
+        const first = Object.keys(qualificationErrors)[0];
+        draft.ui.qualificationFocus = ({ 'authorization.parties': 'authorization.grantor', 'authorization.term': 'authorization.startsAt', 'authorization.coverage': 'authorization.startsAt' })[first] || first || '';
+      }
       const targetModule = moduleOf(key);
       if (root.dataset.profileModule === 'release-workspace' && ['profile', 'builds', 'catalog', 'release', 'qualification'].includes(targetModule)) {
         draft.ui.releaseAnchor = targetModule;
-        state.focus = key;
-        repaint();
+        repaint(key);
         return;
       }
       if (root.dataset.profileModule !== targetModule) {
@@ -986,6 +1015,8 @@
       clearQualificationError(key);
       const control = root.querySelector(`[data-qualification-field="${key}"]`);
       control?.setAttribute('aria-invalid', 'false');
+      updateSummary();
+      updateMissingPanel();
     };
     const performQualificationWithdraw = async () => {
       const applicationId = draft.qualifications.pendingApplication?.applicationId;
@@ -1256,14 +1287,23 @@
     root.querySelector('[data-profile-save]')?.addEventListener('click', () => action('save'));
     root.querySelector('[data-profile-submit]')?.addEventListener('click', () => action('submit'));
     if (lock(draft)) root.querySelectorAll('[data-profile-field], [data-profile-array], [data-profile-upload], [data-profile-remove], [data-profile-listed], [data-profile-publication], [data-profile-pricing-model], [data-profile-compliance-ack]').forEach(control => { control.disabled = true; });
+    const qualificationTargetFor = key => {
+      if (!key) return null;
+      if (key === 'rightsDeclarationAccepted') return root.querySelector('[data-qualification-declaration]');
+      if (key === 'domestic.antiAddictionAcknowledged') return root.querySelector('[data-qualification-anti-ack]');
+      const control = root.querySelector(`[data-qualification-field="${key}"], [data-qualification-file="${key}"]`);
+      return control?.matches('input[type="file"][hidden]') ? control.closest('[data-qualification-upload-card]') : control;
+    };
+    const focusTarget = target => {
+      if (!target) return;
+      if (!target.matches('a, button, input, select, textarea, [tabindex]')) target.setAttribute('tabindex', '-1');
+      target.focus({ preventScroll: true });
+      (target.closest('[data-profile-field-wrap], [data-qualification-field-wrap], [data-qualification-upload-card]') || target).scrollIntoView({ block: 'center' });
+    };
     const qualificationFocus = draft.ui.qualificationFocus;
     draft.ui.qualificationFocus = '';
     if (qualificationFocus) {
-      const target = qualificationFocus === 'rightsDeclarationAccepted' ? root.querySelector('[data-qualification-declaration]')
-        : qualificationFocus === 'domestic.antiAddictionAcknowledged' ? root.querySelector('[data-qualification-anti-ack]')
-          : root.querySelector(`[data-qualification-field="${qualificationFocus}"], [data-qualification-file="${qualificationFocus}"]`);
-      const wrapper = target?.closest('[data-qualification-field-wrap], [data-qualification-upload-card]');
-      if (target) { target.focus({ preventScroll: true }); (wrapper || target).scrollIntoView({ block: 'center' }); }
+      focusTarget(qualificationTargetFor(qualificationFocus));
     }
     if (draft.ui.profileFocus && (moduleOf(draft.ui.profileFocus) === root.dataset.profileModule || (root.dataset.profileModule === 'release-workspace' && ['profile', 'builds', 'catalog', 'release', 'qualification'].includes(moduleOf(draft.ui.profileFocus))))) {
       state.focus = draft.ui.profileFocus;
@@ -1274,8 +1314,8 @@
     if (focus) {
       const nameCode = focus === 'gameNameEn' ? 'en' : focus === 'gameNameZh' ? 'zh' : focus.startsWith('gameNames.') ? focus.split('.')[1] : '';
       const discountKey = focus.endsWith('.discount') ? focus.replace(/\.discount$/, '.discountPrice') : '';
-      const target = (nameCode && root.querySelector(`[data-profile-section="basic"] [data-game-name-input="${nameCode}"]`)) || (focus === 'pricing.model' && root.querySelector('[data-profile-pricing-model]')) || (focus === 'qualifications.activeVersion' && root.querySelector('[data-qualification-editor], [data-qualification-cards]')) || (focus === 'buildPackages.readyFull' && root.querySelector('[data-profile-builds]')) || (focus === 'compliance.antiAddictionAcknowledged' && root.querySelector('[data-profile-compliance-ack]')) || (discountKey && root.querySelector(`[data-profile-field="${discountKey}"]`)) || root.querySelector(`[data-profile-field="${focus}"], [data-profile-upload="${focus}"], [data-profile-array="${focus}"]`) || root.querySelector(`[data-profile-section="${sectionOf(focus)}"]`);
-      if (target) { target.focus({ preventScroll: true }); target.closest('[data-profile-field-wrap]')?.scrollIntoView({ block: 'center' }); if (!target.closest('[data-profile-field-wrap]')) target.scrollIntoView({ block: 'center' }); }
+      const target = (nameCode && root.querySelector(`[data-profile-section="basic"] [data-game-name-input="${nameCode}"]`)) || (focus === 'pricing.model' && root.querySelector('[data-profile-pricing-model]')) || (focus === 'qualifications.activeVersion' && (qualificationTargetFor(qualificationFocus) || root.querySelector('[data-qualification-editor], [data-qualification-cards]'))) || (focus === 'buildPackages.readyFull' && root.querySelector('[data-build-local-open]')) || (focus === 'compliance.antiAddictionAcknowledged' && root.querySelector('[data-profile-compliance-ack]')) || (discountKey && root.querySelector(`[data-profile-field="${discountKey}"]`)) || root.querySelector(`[data-profile-field="${focus}"], [data-profile-upload="${focus}"], [data-profile-array="${focus}"]`) || root.querySelector(`[data-profile-section="${sectionOf(focus)}"]`);
+      focusTarget(target);
     } else if (scrollSnapshot) restoreScroll(scrollSnapshot);
   }
   window.PublisherGameProfile = { createDraft, render, bind, validate, completion, displayName };

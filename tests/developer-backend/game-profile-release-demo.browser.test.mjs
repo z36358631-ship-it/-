@@ -94,7 +94,8 @@ async function seedReady(page, gameKey) {
     const buildFile = { name: 'ocean-1.0.0.zip', type: 'application/zip', size: 4, blob: new Blob(['test'], { type: 'application/zip' }) };
     draft.buildPackages = [{ id: 'BUILD-VERSION-001', source: 'local', platform: 'Windows', type: 'full', baseBuildId: '', file: buildFile, executable: 'Ocean.exe', launchArgs: '', version: '1.0.0', changelog: 'First release', status: 'parsed', testStatus: 'not_submitted', testReason: '', createdAt: new Date().toISOString() }];
     draft.catalog = { baseGame: { skuId: 'BASE-VERSION', type: 'base_game', title: 'Snapshot Base Product', installContentRef: 'BUILD-VERSION-001', pricingModel: 'paid', listPrice: '19.99', discountPrice: '', discountStartAt: '', discountEndAt: '' }, dlcs: [] };
-    draft.releaseConfig = { ...draft.releaseConfig, mode: 'global', globalTerritoryCodes: ['US', 'JP'], releaseStatus: 'pre_registration' };
+    draft.targetUserInterests = ['adventure'];
+    draft.releaseConfig = { ...draft.releaseConfig, mode: 'global', globalTerritoryCodes: ['US', 'JP'], releaseStatus: 'pre_registration', targetUserInterests: [...draft.targetUserInterests] };
     draft.releaseRegions = ['global'];
     draft.releaseStatus = 'pre_registration';
     const qualification = window.PublisherGameQualifications.createApplicationDraft({ rightsRelationship: 'self_owned', rightsDeclarationAccepted: true });
@@ -149,7 +150,7 @@ test('创建后左侧只有三个一级入口，版本发布内五个横向项�
     const nav = page.locator('.publisher-game-nav__tab[data-game-section]');
     assert.deepEqual(await nav.evaluateAll(elements => elements.map(element => [element.dataset.gameSection, element.textContent.trim()])), primaryNavigation);
     assert.equal(await page.locator('[data-game-section="overview"], [data-game-section="profile"], [data-game-section="catalog"], [data-game-section="release"], [data-game-section="cdkey"]').count(), 0);
-    assert.deepEqual(await page.locator('[data-release-locator]').evaluateAll(elements => elements.map(element => [element.dataset.releaseLocator, element.textContent.trim()])), releaseLocators);
+    assert.deepEqual(await page.locator('[data-release-locator]').evaluateAll(elements => elements.map(element => [element.dataset.releaseLocator, element.querySelector(':scope > span')?.textContent.trim()])), releaseLocators);
     assert.equal(await page.getByRole('heading', { name: '版本发布', exact: true }).isVisible(), true);
     assert.equal(await page.locator('[data-profile-save]').count(), 1);
     assert.equal(await page.locator('[data-profile-submit]').count(), 1);
@@ -361,6 +362,94 @@ test('版本发布页内定位器只滚动长页并同步选中态', async () =>
     await page.waitForFunction(() => document.querySelector('.workspace')?.scrollTop < 20);
     assert.equal(await page.locator('[data-profile-back-top]').isHidden(), true);
     assert.equal(await page.locator('[data-publisher-profile]').getAttribute('data-profile-module'), 'release-workspace');
+  } finally { await page.close(); }
+});
+
+test('版本发布按模块显示缺失数并在提交失败后定位首个问题', async () => {
+  const page = await open(1440, 900);
+  try {
+    await createGame(page, 'Validation Navigation QA');
+    const locatorCounts = async () => page.locator('[data-release-locator]').evaluateAll(buttons => Object.fromEntries(buttons.map(button => [
+      button.dataset.releaseLocator,
+      Number(button.querySelector('[data-release-missing-count]')?.textContent || 0),
+    ])));
+    const before = await locatorCounts();
+    const remainingText = await page.locator('[data-profile-show-missing] small').textContent();
+    const remaining = Number(remainingText.match(/\d+/)?.[0] || 0);
+    assert.ok(before.profile > 0, '游戏资料应显示缺失数');
+    assert.equal(Object.values(before).reduce((sum, count) => sum + count, 0), remaining, '模块角标总数应与还差项数一致');
+
+    await page.locator('[data-profile-field="tagline"]').fill('探索失落大陆，重建远征据点。');
+    await page.locator('[data-profile-field="tagline"]').blur();
+    await page.waitForFunction(expected => Number(document.querySelector('[data-release-locator="profile"] [data-release-missing-count]')?.textContent || 0) === expected, before.profile - 1);
+    assert.equal((await locatorCounts()).profile, before.profile - 1, '填写字段后模块角标应实时减少');
+
+    await page.locator('[data-profile-submit]').click();
+    await page.locator('[data-profile-missing]').waitFor({ state: 'visible' });
+    assert.doesNotMatch(await page.locator('[data-profile-missing]').innerText(), /activeVersion/, '不得向开发者展示内部资质字段名');
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-game-name-input')), 'en', '提交失败后应聚焦首个错误字段');
+    assert.equal(await page.locator('[data-release-locator="qualification"] [data-release-missing-count]').textContent(), '1', '隐藏内部字段后资质缺失仍应计入模块角标');
+    assert.match(await page.locator('[data-release-locator="qualification"]').getAttribute('aria-label'), /缺失 1 项/);
+    await page.locator('[data-portal-action="toggle-interface-language"]').click();
+    assert.match(await page.locator('[data-release-locator="qualification"]').getAttribute('aria-label'), /1 missing/);
+  } finally { await page.close(); }
+});
+
+test('包体与资质为首错时可定位，隐藏错误后缺失清单仍可恢复', async () => {
+  const page = await open(1440, 900);
+  try {
+    const gameKey = await createGame(page, 'Validation Edge QA');
+    await seedReady(page, gameKey);
+    await page.evaluate(async key => {
+      const record = (await window.PublisherProfileStore.loadAll()).find(item => item.gameKey === key);
+      const draft = window.PublisherGameProfile.createDraft(record.game, record.draft);
+      draft.buildPackages = [];
+      await window.PublisherProfileStore.save(draft, record.game);
+    }, gameKey);
+    await page.reload();
+    await page.waitForFunction(key => Boolean(document.querySelector(`[data-publisher-game-console][data-selected-game="${CSS.escape(key)}"]`) || document.querySelector(`[data-portal-action="enter-publisher-game"][data-publisher-game="${CSS.escape(key)}"]`)), gameKey);
+    if (!await page.locator(`[data-publisher-game-console][data-selected-game="${gameKey}"]`).count()) {
+      await page.locator(`[data-portal-action="enter-publisher-game"][data-publisher-game="${gameKey}"]`).first().click();
+    }
+    await page.locator(`[data-publisher-game-console][data-selected-game="${gameKey}"]`).waitFor();
+    await page.locator('[data-profile-submit]').click();
+    assert.equal(await page.evaluate(() => document.activeElement?.hasAttribute('data-build-local-open')), true, '包体为首错时应聚焦本地上传入口');
+
+    await seedReady(page, gameKey);
+    await page.evaluate(async key => {
+      const record = (await window.PublisherProfileStore.loadAll()).find(item => item.gameKey === key);
+      const draft = window.PublisherGameProfile.createDraft(record.game, record.draft);
+      draft.qualifications.activeVersion = null;
+      draft.qualifications.draft.authorization.files = [];
+      await window.PublisherProfileStore.save(draft, record.game);
+    }, gameKey);
+    await page.reload();
+    await page.waitForFunction(key => Boolean(document.querySelector(`[data-publisher-game-console][data-selected-game="${CSS.escape(key)}"]`) || document.querySelector(`[data-portal-action="enter-publisher-game"][data-publisher-game="${CSS.escape(key)}"]`)), gameKey);
+    if (!await page.locator(`[data-publisher-game-console][data-selected-game="${gameKey}"]`).count()) {
+      await page.locator(`[data-portal-action="enter-publisher-game"][data-publisher-game="${gameKey}"]`).first().click();
+    }
+    await page.locator(`[data-publisher-game-console][data-selected-game="${gameKey}"]`).waitFor();
+    assert.equal(await page.locator('[data-release-locator="qualification"] [data-release-missing-count]').textContent(), '1');
+    await page.locator('[data-profile-show-missing]').click();
+    assert.equal(await page.locator('[data-profile-missing]').count(), 0, '仅剩内部资质字段时不展示缺失明细');
+    await page.locator('[data-profile-field="tagline"]').fill('');
+    await page.locator('[data-profile-field="tagline"]').blur();
+    await page.locator('[data-profile-missing]').waitFor({ state: 'visible' });
+    assert.match(await page.locator('[data-profile-missing]').innerText(), /一句话介绍/);
+    await page.locator('[data-profile-field="tagline"]').fill('A release-ready ocean adventure.');
+    await page.locator('[data-profile-field="tagline"]').blur();
+    assert.equal(await page.locator('[data-profile-missing]').count(), 0);
+
+    await page.locator('[data-profile-submit]').click();
+    assert.equal(await page.evaluate(() => document.activeElement?.hasAttribute('data-qualification-upload-card')), true, '资质为首错时应聚焦可处理的附件区');
+    assert.match(await page.locator('[data-qualification-error="authorization.files"]').innerText(), /请上传/);
+    await page.locator('[data-qualification-file="authorization.files"]').setInputFiles({
+      name: 'ownership.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64'),
+    });
+    await page.waitForFunction(() => document.querySelector('[data-release-locator="qualification"] [data-release-missing-count]')?.hidden === true);
+    assert.equal(await page.locator('[data-release-locator="qualification"]').getAttribute('aria-label'), '资质认证');
   } finally { await page.close(); }
 });
 
