@@ -9,8 +9,10 @@
 | 2026/9/8 | 增加包体测试门禁、审核记录与投放兴趣 | V1.8 | 郑群超 |
 | 2026/9/8 | 合并游戏管理至完整发行链路；统一采用 02 开发者端和 09 审核后台 Demo | V1.9 | 郑群超 |
 | 2026/9/8 | 更新飞书专用配图；发行流程改为每行 4 步、共 3 行 | V2.0 | 郑群超 |
+| 2026/9/9 | 商品 SKU 增加统一价、基准价与地区例外价；同步发布审核快照 | V2.1 | 郑群超 |
+| 2026/9/9 | 补齐国内外定价、例外价校验、快照和埋点口径 | V2.2 | 郑群超 |
 
-**备注：** 搜2026.9.8修改
+**备注：** 搜2026.9.9修改
 
 ## 一、文档概述
 
@@ -95,9 +97,22 @@
 | 功能简介 | 在一个长页完成游戏资料、PC 包体、商品与 SKU、发行设置和资质准备。 |
 | 场景描述 | 开发者首次发布、更新版本或按审核意见补资料后重提。 |
 | 输入／前置条件 | 已进入有编辑权限的游戏；当前申请未处于审核中。 |
-| 需求描述 | **图示（3张）：**<br><br>![版本发布](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@19486a479b287ec1a1073eeb949afdda734d1391/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v20-dev-version-release-feishu.png)<br><br>*图 3.1.3-1：版本发布长页。*<br><br>![PC包体与商品](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@19486a479b287ec1a1073eeb949afdda734d1391/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v20-dev-builds-and-sku-feishu.png)<br><br>*图 3.1.3-2：PC 包体、商品与 SKU。*<br><br>![发行设置与资质](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@19486a479b287ec1a1073eeb949afdda734d1391/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v20-dev-release-and-qualification-feishu.png)<br><br>*图 3.1.3-3：发行设置与资质。*<br><br>**详细说明：**<br>**展示说明：**<br>1. 单游戏一级导航只有“版本发布、发布记录、资质认证”。版本发布内五项仅作页内定位，点击后滚动至对应模块。<br>2. 游戏资料包含商店资料语言、游戏名称、短介绍、完整介绍、分类标签、开发商／发行商、官网、玩家群、图标、封面和截图；文本与素材按商店资料语言保存，默认语言必填。<br>3. 商品与 SKU 包含商品名称、免费／买断、售价、币种、折扣和关联 PC 包体；支持基础游戏与 DLC。每个可售 SKU 必须关联有效包体，CDKEY 不在本 PRD。<br>4. 发行设置包含中国大陆／全球服、国家和地区、发行状态、生效时间、目标用户游戏兴趣。全球服可选香港、澳门及其他国家和地区；兴趣至少选一项，可多选。说明文案为“用于精准分发，匹配近期体验或下载过相似游戏的用户。”<br>5. 五个定位项显示本模块缺失数，数量为 0 时隐藏；合计与“还差 N 项”一致。页面只保留一组“保存草稿／提交上架审核”。<br>**交互说明：**<br>1. 点击定位项只滚动当前长页；随滚动同步高亮，不切换页面。<br>2. 点击“提交上架审核”校验全页；失败时展开可处理缺失项，切换定位项，滚动并聚焦首个错误。PC 包体错误定位“从本地上传”。<br>3. 编辑、上传或删除后实时重算缺失数；内部校验项不展示名称，但仍计入对应模块并阻断提交。<br>4. 校验通过后生成唯一提交编号及不可变快照，页面改为只读并仅显示“撤销审核”。撤销须二次确认；确认后恢复编辑，取消不改变状态。 |
+| 需求描述 | **图示（3张）：**<br><br>![版本发布](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@19486a479b287ec1a1073eeb949afdda734d1391/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v20-dev-version-release-feishu.png)<br><br>*图 3.1.3-1：版本发布长页。*<br><br>![商品与SKU定价](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@d730f4b09cf2d29964b383e30be55c4adb35df78/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v22-dev-sku-pricing-feishu.png)<br><br>*图 3.1.3-2：商品与 SKU 分区定价。*<br><br>![发行设置与资质](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@19486a479b287ec1a1073eeb949afdda734d1391/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v20-dev-release-and-qualification-feishu.png)<br><br>*图 3.1.3-3：发行设置与资质。*<br><br>**详细说明：**<br>**展示说明：**<br>1. 单游戏一级导航只有“版本发布、发布记录、资质认证”。版本发布内五项仅作页内定位，点击后滚动至对应模块。<br>2. 游戏资料包含商店资料语言、游戏名称、短介绍、完整介绍、分类标签、开发商／发行商、官网、玩家群、图标、封面和截图；文本与素材按语言保存。英语默认勾选且必填，其他语言确认添加后显示对应资料表单。<br>3. 商品与 SKU 包含商品名称、免费／买断、售价、币种、折扣和关联 PC 包体；支持基础游戏与 DLC。每个可售 SKU 必须关联有效包体，CDKEY 不在本 PRD。<br>4. 发行设置包含中国大陆／全球服、国家和地区、发行状态、生效时间、目标用户游戏兴趣。全球服可选香港、澳门及其他国家和地区；兴趣至少选一项，可多选。说明文案为“用于精准分发，匹配近期体验或下载过相似游戏的用户。”<br>5. 五个定位项显示本模块缺失数，数量为 0 时隐藏；合计与“还差 N 项”一致。页面只保留一组“保存草稿／提交上架审核”。<br>**交互说明：**<br>1. 点击定位项只滚动当前长页；随滚动同步高亮，不切换页面。<br>2. 点击“提交上架审核”校验全页；失败时展开可处理缺失项，切换定位项，滚动并聚焦首个错误。PC 包体错误定位“从本地上传”。<br>3. 编辑、上传或删除后实时重算缺失数；内部校验项不展示名称，但仍计入对应模块并阻断提交。<br>4. 校验通过后生成唯一提交编号及不可变快照，页面改为只读并仅显示“撤销审核”。撤销须二次确认；确认后恢复编辑，取消不改变状态。 |
 | 输出／后置条件 | 保存更新草稿；提审生成 submissionId、revisionId 和只读提交快照，进入运营审核队列。 |
 | 补充说明 | 目标用户游戏兴趣本期不配置权重、不展示预估人群、不承诺流量。提交失败时保留全部输入并恢复按钮。 |
+
+##### 商品与 SKU 定价规则
+
+| 场景 | 配置与展示 | 提交结果 | 异常与历史 |
+|---|---|---|---|
+| 免费 | 不展示售价、折扣和定价方式 | 清空售价、折扣、期限和地区例外价；不做价格校验 | 切回收费后重新填写 |
+| 中国大陆 | 固定 CNY 统一价，不展示定价方式和地区例外价 | 价格只覆盖中国大陆 | 国内外切换后须重新填写 |
+| 全球统一价 | 默认 USD，可设置售价、折扣价和期限 | 同一价格只覆盖发行设置已选地区，不扩大范围；不提交隐藏例外价 | 未选择发行地区时不能提审 |
+| 分区定价 | 默认 USD 基准价；可从已选发行地区搜索、多选少数例外地区，使用当地币种 | 快照记录收费与定价方式、币种、售价、折扣、期限、发行地区数、继承地区数和有效例外价 | 同一 SKU＋地区仅一条例外价；售价须大于 0，未填完整时阻断提审 |
+| 例外折扣 | 例外折扣价选填 | 已填写时随例外价进入快照 | 留空时继承基准折扣率和期限；无基准折扣则不打折 |
+| 收费校验 | 校验基准售价、有效例外售价、折扣价和期限 | 售价须大于 0；折扣价须低于对应售价 | 折扣开始时间须早于结束时间；未填完整时阻断提审 |
+| 发行地区联动 | 新增地区继承基准价；移除地区后隐藏其例外价，重新选回时恢复草稿；删除例外价后恢复继承 | 仅提交仍在发行范围内的例外地区 | 国内／海外模式切换时清空定价方式、售价、折扣、期限和例外价，须重新确认 |
+| 历史数据 | 旧币种分区数据展开为地区例外价 | 不自动推断基准价，开发者确认后方可提审 | 历史提交快照不随当前地区或价格修改 |
 
 #### 3.1.4 PC 包体上传
 
@@ -128,9 +143,16 @@
 | 功能简介 | 查询发布申请、结果和只读提交快照。 |
 | 场景描述 | 开发者查看进度、失败原因或历史版本。 |
 | 输入／前置条件 | 当前游戏至少提交过一次发布审核。 |
-| 需求描述 | **图示（2张）：**<br><br>![发布记录](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@19486a479b287ec1a1073eeb949afdda734d1391/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v20-dev-version-records-feishu.png)<br><br>*图 3.1.6-1：发布记录。*<br><br>![提交快照](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@19486a479b287ec1a1073eeb949afdda734d1391/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v20-dev-version-snapshot-feishu.png)<br><br>*图 3.1.6-2：只读提交快照。*<br><br>**详细说明：**<br>**展示说明：**<br>1. 列表每页 20 条，分列展示审核状态和发行状态。审核通过显示“审核通过／未上线”，不能显示“已上线”。<br>2. 快照展示游戏资料、PC 包体、商品与 SKU、发行设置、兴趣标签、资质引用、测试结果、审核意见、操作人和时间。<br>3. 每次重提生成新记录，旧快照不被当前草稿或新结果覆盖。<br>4. 国内发行审核结果通过盖世游戏短信通知；海外发行通过邮件通知。通过只通知审核通过，失败或需补资料引导登录开发者中心查看原因。<br>**交互说明：**<br>1. 点击记录打开只读快照；返回后保留页码和滚动位置。<br>2. 审核中、已撤销、已取消不发结果通知，只在页面展示。<br>3. 加载失败保留筛选和页码，点击重试后重新查询。 |
+| 需求描述 | **图示（2张）：**<br><br>![发布记录](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@19486a479b287ec1a1073eeb949afdda734d1391/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v20-dev-version-records-feishu.png)<br><br>*图 3.1.6-1：发布记录。*<br><br>![定价提交快照](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@d730f4b09cf2d29964b383e30be55c4adb35df78/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v22-dev-pricing-snapshot-feishu.png)<br><br>*图 3.1.6-2：发布记录中的定价提交快照。*<br><br>**详细说明：**<br>**展示说明：**<br>1. 列表每页 20 条，分列展示审核状态和发行状态。审核通过显示“审核通过／未上线”，不能显示“已上线”。<br>2. 快照展示游戏资料、PC 包体、商品与 SKU、发行设置、兴趣标签、资质引用、测试结果、审核意见、操作人和时间。<br>3. 每次重提生成新记录，旧快照不被当前草稿或新结果覆盖。<br>4. 国内发行审核结果通过盖世游戏短信通知；海外发行通过邮件通知。通过只通知审核通过，失败或需补资料引导登录开发者中心查看原因。<br>**交互说明：**<br>1. 点击记录打开只读快照；返回后保留页码和滚动位置。<br>2. 审核中、已撤销、已取消不发结果通知，只在页面展示。<br>3. 加载失败保留筛选和页码，点击重试后重新查询。 |
 | 输出／后置条件 | 开发者可追溯每次提交、包体测试和审核结果。 |
 | 补充说明 | 通知失败不回滚审核结果；服务端记录失败并按通知策略重试。 |
+
+##### 发布记录定价快照
+
+| 定价方式 | 快照内容 | 后续修改 | 异常 |
+|---|---|---|---|
+| 统一价 | 收费方式、定价方式、币种、售价、折扣价和折扣期限；中国大陆为 CNY，全球服默认 USD | 不覆盖旧快照 | 快照缺字段时显示“历史未记录”，不补造价格 |
+| 分区定价 | 基准价、基准折扣价、折扣期限、发行地区数、继承地区数及有效例外价 | 不覆盖旧快照 | 不展示已移除地区或免费／统一价下的隐藏例外配置 |
 
 ### 3.2 B 端功能需求
 
@@ -152,9 +174,17 @@
 | 功能简介 | 查看提交快照、完成包体测试并给出发布审核结论。 |
 | 场景描述 | 测试人员验证包体，发行运营核对本次发布。 |
 | 输入／前置条件 | 申请为待审核、审核中或需补资料，且当前用户有对应权限。 |
-| 需求描述 | **图示（3张）：**<br><br>![审核详情](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@19486a479b287ec1a1073eeb949afdda734d1391/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v20-admin-release-drawer-feishu.png)<br><br>*图 3.2.2-1：右侧半屏审核详情。*<br><br>![待确认测试结论](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@19486a479b287ec1a1073eeb949afdda734d1391/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v20-admin-package-ready-feishu.png)<br><br>*图 3.2.2-2：全部必测包通过，等待提交整次结论。*<br><br>![发布审核解锁](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@19486a479b287ec1a1073eeb949afdda734d1391/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v20-admin-package-passed-feishu.png)<br><br>*图 3.2.2-3：包体测试通过后解锁发布审核。*<br><br>**详细说明：**<br>**展示说明：**<br>1. 抽屉头部和底部固定，正文独立滚动；正文展示提交快照、PC 包体测试和本申请审核记录。<br>2. 单包状态为待测试、测试中、测试通过、测试不通过；整次结论为待确认、通过、失效。旧修订标记“不参与门禁”。<br>3. 各包体卡片内显示“开始测试／标记通过／标记不通过”；门禁区依次显示未完成包体、等待提交整次结论、可进行上架审核。<br>4. 底部只承载整次“包体测试通过”、要求补资料、拒绝申请或“上架审核通过”。<br>**交互说明：**<br>1. 测试人员在包体卡片点击“开始测试”后可标记单包通过或不通过；不通过须填写原因，可上传多份测试附件。<br>2. 当前修订全部必测包解析成功且单包通过后，底部“包体测试通过”启用；点击后二次确认并生成绑定当前 revisionId 的整次结论。<br>3. 整次结论通过后，发行运营才能点击“上架审核通过”；服务端再次校验包体、资料、SKU、发行设置和有效资质，不满足时不改变状态。<br>4. 要求补资料或拒绝须填写原因；补资料可由运营取消，取消须二次确认并记录原因。<br>5. 审核通过只进入发布执行模块，不直接改变发行状态。 |
+| 需求描述 | **图示（3张）：**<br><br>![审核定价快照](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@d730f4b09cf2d29964b383e30be55c4adb35df78/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v22-admin-pricing-snapshot-feishu.png)<br><br>*图 3.2.2-1：右侧半屏审核详情中的定价快照。*<br><br>![待确认测试结论](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@19486a479b287ec1a1073eeb949afdda734d1391/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v20-admin-package-ready-feishu.png)<br><br>*图 3.2.2-2：全部必测包通过，等待提交整次结论。*<br><br>![发布审核解锁](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@19486a479b287ec1a1073eeb949afdda734d1391/public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v20-admin-package-passed-feishu.png)<br><br>*图 3.2.2-3：包体测试通过后解锁发布审核。*<br><br>**详细说明：**<br>**展示说明：**<br>1. 抽屉头部和底部固定，正文独立滚动；正文展示提交快照、PC 包体测试和本申请审核记录。<br>2. 单包状态为待测试、测试中、测试通过、测试不通过；整次结论为待确认、通过、失效。旧修订标记“不参与门禁”。<br>3. 各包体卡片内显示“开始测试／标记通过／标记不通过”；门禁区依次显示未完成包体、等待提交整次结论、可进行上架审核。<br>4. 底部只承载整次“包体测试通过”、要求补资料、拒绝申请或“上架审核通过”。<br>**交互说明：**<br>1. 测试人员在包体卡片点击“开始测试”后可标记单包通过或不通过；不通过须填写原因，可上传多份测试附件。<br>2. 当前修订全部必测包解析成功且单包通过后，底部“包体测试通过”启用；点击后二次确认并生成绑定当前 revisionId 的整次结论。<br>3. 整次结论通过后，发行运营才能点击“上架审核通过”；服务端再次校验包体、资料、SKU、发行设置和有效资质，不满足时不改变状态。<br>4. 要求补资料或拒绝须填写原因；补资料可由运营取消，取消须二次确认并记录原因。<br>5. 审核通过只进入发布执行模块，不直接改变发行状态。 |
 | 输出／后置条件 | 测试和审核记录写入；通过申请进入发布执行模块，退回申请回到开发者端修改。 |
 | 补充说明 | 新增、替换包体或生成新修订后，旧整次测试结论失效。并发操作以首个成功终态为准，其他请求返回最新状态。 |
+
+##### 审核定价快照
+
+| 场景 | 审核运营所见 | 数据范围 | 交互与异常 |
+|---|---|---|---|
+| 统一价 | 收费方式、定价方式、币种、售价、折扣价和期限；中国大陆显示“统一价”，全球服显示“全球统一价” | 本次提交快照 | 只读；不显示例外地区价明细 |
+| 分区定价 | 基准价、基准折扣价、发行地区数、继承地区数；例外区显示地区名、地区码、当地币种售价和折扣价 | 仅显示提交时仍在发行范围内的有效例外价 | 例外折扣价为空且基准折扣生效时显示“继承基准折扣比例” |
+| 免费或旧快照 | 免费不显示价格；旧快照缺字段时显示“历史未记录” | 不读取当前草稿补值 | 审核结果不修改定价快照 |
 
 #### 3.2.3 资质认证审核
 
@@ -191,7 +221,7 @@
 | publisher_game_create_result | C 端／添加游戏 | 创建请求返回时上报；result=success 表示 Game ID 和 APPID 已生成 | event_time, user_id, session_id, game_id, page_name, platforms, result, failure_code |
 | publisher_release_page_view | C 端／版本发布 | 页面数据加载完成后上报一次 | event_time, user_id, session_id, game_id, page_name, revision_id |
 | publisher_build_upload_result | C 端／PC 包体 | 单个包体上传任务结束时上报；以服务端任务结果为准 | event_time, user_id, session_id, game_id, page_name, revision_id, build_platform, build_type, result, failure_code |
-| publisher_release_submit_result | C 端／版本发布 | 发布提审请求返回时上报；success 表示发布申请及关联资质申请均已创建 | event_time, user_id, session_id, game_id, page_name, submission_id, revision_id, release_region, target_user_interests, result, failure_code |
+| publisher_release_submit_result | C 端／版本发布 | 发布提审请求返回时上报；success 表示发布申请及关联资质申请均已创建。成功时四个定价参数必传；失败时已完成计算则传 | event_time, user_id, session_id, game_id, page_name, submission_id, revision_id, release_region, target_user_interests, sku_count, paid_sku_count, pricing_strategies, pricing_override_count, result, failure_code |
 | publisher_review_withdraw_result | C 端／版本发布或资质认证 | 用户确认撤销且请求返回时上报 | event_time, user_id, session_id, game_id, page_name, submission_id, review_type, result, failure_code |
 | publisher_qualification_submit_result | C 端／资质认证 | 独立资质提审请求返回时上报 | event_time, user_id, session_id, game_id, page_name, qualification_submission_id, release_region, qualification_type, result, failure_code |
 | publisher_release_record_view | C 端／发布记录 | 提交快照加载完成后上报 | event_time, user_id, session_id, game_id, page_name, submission_id, review_status, release_status |
@@ -214,6 +244,10 @@
 | revision_id | string／否 | 当前提交修订 ID | REV-01 |
 | release_region | string／否 | 发行区域 | mainland＝中国大陆；global＝全球（不含中国大陆） |
 | target_user_interests | array<string>／否 | 提交时选择的游戏兴趣编码 | role_playing, action, strategy, simulation, casual, shooter, sports_racing, adventure_puzzle |
+| sku_count | integer／成功必填 | 本次快照的 SKU 数 | 3 |
+| paid_sku_count | integer／成功必填 | 本次快照的收费 SKU 数；全免费传 0 | 2 |
+| pricing_strategies | array<string>／成功必填 | 收费 SKU 使用的定价方式，去重后上报；全免费传空数组 | uniform＝统一价；regional＝分区定价 |
+| pricing_override_count | integer／成功必填 | 按“SKU×地区”统计当前发行范围内的有效例外价；全免费传 0 | 4 |
 | build_platform | string／否 | 包体平台 | windows, macos, linux |
 | build_type | string／否 | 包体类型 | full＝整包；incremental＝增量包 |
 | review_type | string／否 | 审核类型 | release＝游戏发布；qualification＝资质认证 |
@@ -230,7 +264,7 @@
 |---|---|
 | 权限 | 开发者仅访问本主体游戏；测试、发行运营和资质审核员按角色及国内／海外范围访问。 |
 | 一致性 | 02 开发者端提交真实快照和包体供 09 审核后台读取；09 的测试与审核结果回写 02 发布记录。 |
-| 数据存储 | 每次提审生成 submissionId 与 revisionId；补件重提生成新编号，历史快照、附件和结论不可覆盖。 |
+| 数据存储 | 每次提审生成 submissionId 与 revisionId；定价快照保存收费方式、定价方式、币种、售价、折扣、期限及当前发行范围内的有效例外价。补件重提生成新编号，历史快照、附件和结论不可覆盖。 |
 | 安全 | 包体、资质和测试附件使用鉴权地址；日志不记录下载凭证。 |
 | 并发 | 重复点击只处理一次；并发审核以首个成功终态为准，其他请求返回最新状态。 |
 
@@ -258,6 +292,7 @@
 | 包体格式、大小、数量与并发上限 | 由存储／CDN方案和压测结果确定，前端读取服务端配置 | 影响上传校验和接口参数 | 阻塞接口冻结，不阻塞流程评审 |
 | 测试附件格式、大小与数量上限 | 复用平台通用附件规则 | 影响附件校验 | 阻塞附件接口冻结 |
 | 包体库选择流程 | 后续独立补充，本期只保留入口提示 | 不影响本地上传 | 不阻塞 |
+| 汇率、换算和尾数规则 | 由支付结算方案统一配置；Demo 只展示基准价和例外价，不计算逐地区最终价 | 影响结算接口和最终展示价 | 阻塞接口冻结，不阻塞流程评审 |
 
 ## 六、附录
 
@@ -273,6 +308,6 @@
 
 | 原型／Demo 名称 | 链接／位置 | 说明 |
 |---|---|---|
-| 开发者端 Demo | 公网预览<br>[打开 02 Demo](https://htmlpreview.github.io/?https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b6bfd4229f077b21807291dc279a1740e1fa645d/demos/%E5%BC%80%E5%8F%91%E8%80%85%E5%90%8E%E5%8F%B0%E4%B8%80%E6%9C%9F/02-CDKEY%E5%95%86%E5%93%81%E4%B8%8E%E4%BE%9B%E7%BB%99demo.html#/P02-01) | 本 PRD 的开发者端唯一有效原型。 |
-| 运营审核 Demo | 公网预览<br>[打开游戏发布审核](https://htmlpreview.github.io/?https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75308c1c9a4aacca85d1eaa4214ef979ba2ad308/demos/%E5%BC%80%E5%8F%91%E8%80%85%E5%90%8E%E5%8F%B0%E4%B8%80%E6%9C%9F/09-%E5%8F%91%E8%A1%8C%E5%AE%A1%E6%A0%B8%E5%90%8E%E5%8F%B0demo.html#/management/release) | 发布审核与包体测试。 |
-| 审核记录 | 公网预览<br>[打开审核记录](https://htmlpreview.github.io/?https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@75308c1c9a4aacca85d1eaa4214ef979ba2ad308/demos/%E5%BC%80%E5%8F%91%E8%80%85%E5%90%8E%E5%8F%B0%E4%B8%80%E6%9C%9F/09-%E5%8F%91%E8%A1%8C%E5%AE%A1%E6%A0%B8%E5%90%8E%E5%8F%B0demo.html#/records) | 三类审核记录。 |
+| 开发者端 Demo | 公网预览<br>[打开 02 Demo](https://htmlpreview.github.io/?https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@d730f4b09cf2d29964b383e30be55c4adb35df78/demos/%E5%BC%80%E5%8F%91%E8%80%85%E5%90%8E%E5%8F%B0%E4%B8%80%E6%9C%9F/02-CDKEY%E5%95%86%E5%93%81%E4%B8%8E%E4%BE%9B%E7%BB%99demo.html#/P02-01) | 本 PRD 的开发者端唯一有效原型。 |
+| 运营审核 Demo | 公网预览<br>[打开游戏发布审核](https://htmlpreview.github.io/?https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@d730f4b09cf2d29964b383e30be55c4adb35df78/demos/%E5%BC%80%E5%8F%91%E8%80%85%E5%90%8E%E5%8F%B0%E4%B8%80%E6%9C%9F/09-%E5%8F%91%E8%A1%8C%E5%AE%A1%E6%A0%B8%E5%90%8E%E5%8F%B0demo.html#/management/release) | 发布审核与包体测试。 |
+| 审核记录 | 公网预览<br>[打开审核记录](https://htmlpreview.github.io/?https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@d730f4b09cf2d29964b383e30be55c4adb35df78/demos/%E5%BC%80%E5%8F%91%E8%80%85%E5%90%8E%E5%8F%B0%E4%B8%80%E6%9C%9F/09-%E5%8F%91%E8%A1%8C%E5%AE%A1%E6%A0%B8%E5%90%8E%E5%8F%B0demo.html#/records) | 三类审核记录。 |
