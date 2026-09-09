@@ -1,0 +1,329 @@
+{
+  "schemaVersion": 1,
+  "runId": "e6fd161e-3968-4617-a0d5-c2cf387b32b8",
+  "requirementId": "LOCAL-20260907-module02-create",
+  "revision": 107,
+  "status": "passed",
+  "createdAt": "2026-09-07T02:29:45.047285Z",
+  "updatedAt": "2026-09-09T08:55:14.0931654Z",
+  "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260907-module02-create.md",
+  "cardHash": "7330C9063447DEA3245581336A5D8FB4465DB418EA80CF41F23382E411DE6B5E",
+  "contract": {
+    "goal": "完成02八模块资料与PC适用资质、免费买断收费，以及01统一提审撤销重提审核闭环",
+    "inScope": [
+      "创建无地区与多语言名称",
+      "基础信息及素材独立多语言",
+      "默认30非CN地区与统一发行状态",
+      "八模块顺序与顶部唯一提审",
+      "免费或单次买断及分服价格",
+      "PC条件资质与非必填材料区分",
+      "01审核撤销和新编号重提历史",
+      "局部PRD与业务流和本地验证证据"
+    ],
+    "outOfScope": [
+      "其余模块",
+      "真实审批或通知",
+      "版号真实性核验",
+      "服务器部署与公开上线",
+      "飞书同步或Git推送"
+    ],
+    "inputs": [
+      "用户连续反馈及TapTap海外与国内截图",
+      "用户指定的TapTap防沉迷通知",
+      "V2.3本地Demo与既有01审核"
+    ],
+    "deliverables": [
+      "01/02本地单文件Demo",
+      "02 V2.4 PRD及01审核补充说明",
+      "六步横向业务流",
+      "45个独立场景验证与宽窄截图"
+    ],
+    "changes": [
+      "D031模块/默认全球/统一状态/唯一提审",
+      "D032审核中撤销",
+      "D033免费或单次买断",
+      "D034区分PC和手游材料适用"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "type": "requirement-resolution",
+      "required": true,
+      "dependsOn": [],
+      "status": "passed",
+      "attempt": 2,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260907-module02-create.md",
+          "sha256": "874EE80E07543444DB61C03B2BDC5D197F666DB6849108F51561D0FD245CAC54"
+        }
+      ],
+      "outputs": [
+        "prd/workflow-state/LOCAL-20260907-module02-create.md"
+      ],
+      "evidence": [
+        "状态卡唯一匹配02游戏创建、发行定价与审核联动需求"
+      ],
+      "validation": "已定位并续接02／09定价收口",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S2",
+      "type": "fact-recovery",
+      "required": true,
+      "dependsOn": [
+        "S1"
+      ],
+      "status": "passed",
+      "attempt": 4,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260907-module02-create.md",
+          "sha256": "874EE80E07543444DB61C03B2BDC5D197F666DB6849108F51561D0FD245CAC54"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\02-CDKEY商品与供给demo.html",
+          "sha256": "C633BC97967C1680D539FC0245A1E395B52B0DC34FDCB1E151AC32AA33F59F2D"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\09-发行审核后台demo.html",
+          "sha256": "25E27812A7F9F8EB48C000B6375D8EB3DCA08811414F9FF9B54BB02D4BFB49AA"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\03-游戏包体、测试审核与版本发布PRD.md",
+          "sha256": "F63469B4909BDCEAD5108B7A997A487F87B9F2F7AA89FD76F2ED386C7F76CFF4"
+        }
+      ],
+      "outputs": [
+        "D-031至D-035当前事实"
+      ],
+      "evidence": [
+        "恢复开发者端、运营审核、PRD V2.2和固定提交d730f4b0"
+      ],
+      "validation": "当前发行、定价、快照和明确不改范围已恢复",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S3",
+      "type": "change-compilation",
+      "required": true,
+      "dependsOn": [
+        "S2"
+      ],
+      "status": "passed",
+      "attempt": 8,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260907-module02-create.md",
+          "sha256": "874EE80E07543444DB61C03B2BDC5D197F666DB6849108F51561D0FD245CAC54"
+        }
+      ],
+      "outputs": [
+        "变更合同：国内固定CNY统一价；全球服USD基准价加少量例外价；同步02、09、PRD03、截图和埋点"
+      ],
+      "evidence": [
+        "用户确认多数地区一个价格、少数地区额外定价，并要求后台和PRD同步"
+      ],
+      "validation": "本轮变化已编译",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S4",
+      "type": "page-baseline",
+      "required": true,
+      "dependsOn": [
+        "S3"
+      ],
+      "status": "passed",
+      "attempt": 8,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\02-CDKEY商品与供给demo.html",
+          "sha256": "C633BC97967C1680D539FC0245A1E395B52B0DC34FDCB1E151AC32AA33F59F2D"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\09-发行审核后台demo.html",
+          "sha256": "25E27812A7F9F8EB48C000B6375D8EB3DCA08811414F9FF9B54BB02D4BFB49AA"
+        }
+      ],
+      "outputs": [
+        "02商品与SKU、发行设置、发布记录；09审核抽屉当前基线"
+      ],
+      "evidence": [
+        "沿用现有页面层级和交互，只改定价、地区联动与快照显示"
+      ],
+      "validation": "当前页面基线已核对",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S5",
+      "type": "artifact-execution",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S4"
+      ],
+      "status": "passed",
+      "attempt": 8,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\02-CDKEY商品与供给demo.html",
+          "sha256": "C633BC97967C1680D539FC0245A1E395B52B0DC34FDCB1E151AC32AA33F59F2D"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\09-发行审核后台demo.html",
+          "sha256": "25E27812A7F9F8EB48C000B6375D8EB3DCA08811414F9FF9B54BB02D4BFB49AA"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\03-游戏包体、测试审核与版本发布PRD.md",
+          "sha256": "F63469B4909BDCEAD5108B7A997A487F87B9F2F7AA89FD76F2ED386C7F76CFF4"
+        }
+      ],
+      "outputs": [
+        "demos/开发者后台一期/02-CDKEY商品与供给demo.html",
+        "demos/开发者后台一期/09-发行审核后台demo.html",
+        "prd/发行平台专项/开发者后台PRD/03-游戏包体、测试审核与版本发布PRD.md",
+        "public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v22-*.png"
+      ],
+      "evidence": [
+        "Demo和三张图片已提交并推送；PRD V2.2已同步"
+      ],
+      "validation": "授权范围内产物已完成",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S6",
+      "type": "machine-validation",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "passed",
+      "attempt": 6,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\tests\\developer-backend\\game-profile-pricing.browser.test.mjs",
+          "sha256": "F418C4DB2A10177D6BCD32983D99E4532D1B0B34EE24F84D4A0D0B8330423F20"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\tests\\developer-backend\\game-release-review-pricing.browser.test.mjs",
+          "sha256": "4B2D5CC62083F99B5786E7F177302C000032B65F1E85EC33E9D98716393D4EB1"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\tests\\developer-backend\\admin-review-completeness.browser.test.mjs",
+          "sha256": "17BBECD0F29D715D6EA92F4AEC880B8124922EF1DF95BB2697F28EF5744195D8"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\03-游戏包体、测试审核与版本发布PRD.md",
+          "sha256": "F63469B4909BDCEAD5108B7A997A487F87B9F2F7AA89FD76F2ED386C7F76CFF4"
+        }
+      ],
+      "outputs": [
+        "3份定价测试",
+        "PRD质量与图片校验"
+      ],
+      "evidence": [
+        "定向测试12/12",
+        "PRD 0 error／1既有warning",
+        "19/19图片公网HTTP与MIME通过"
+      ],
+      "validation": "本轮机器验证通过；8个既有后台失败不在本轮范围",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S7",
+      "type": "professional-review",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "passed",
+      "attempt": 6,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\02-CDKEY商品与供给demo.html",
+          "sha256": "C633BC97967C1680D539FC0245A1E395B52B0DC34FDCB1E151AC32AA33F59F2D"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\09-发行审核后台demo.html",
+          "sha256": "25E27812A7F9F8EB48C000B6375D8EB3DCA08811414F9FF9B54BB02D4BFB49AA"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\03-游戏包体、测试审核与版本发布PRD.md",
+          "sha256": "F63469B4909BDCEAD5108B7A997A487F87B9F2F7AA89FD76F2ED386C7F76CFF4"
+        }
+      ],
+      "outputs": [],
+      "evidence": [
+        "免费SKU清空隐藏价格",
+        "中国大陆固定CNY统一价",
+        "全球服USD基准价加发行范围内例外价",
+        "运营后台币种映射和不可变快照一致",
+        "未扩展汇率换算等待确认规则"
+      ],
+      "validation": "产品逻辑、页面表现和文档口径通过",
+      "error": null,
+      "reviewer": "Codex主审＋定价开发、PRD、UI三视角复核"
+    },
+    {
+      "id": "S8",
+      "type": "consistency-delivery",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S5",
+        "S6",
+        "S7"
+      ],
+      "status": "passed",
+      "attempt": 6,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260907-module02-create.md",
+          "sha256": "65AC6469FC15EBE1C4D7E67D1E17B7615158C6D69988C3E99A0BA597C822B6E9"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20260901-developer-backend-prd.md",
+          "sha256": "7FE69333C3877FDFB907ED9B79E176DA3F55C8C1515CF8FF3A5FDEC9144DC9AB"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\02-CDKEY商品与供给demo.html",
+          "sha256": "C633BC97967C1680D539FC0245A1E395B52B0DC34FDCB1E151AC32AA33F59F2D"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\demos\\开发者后台一期\\09-发行审核后台demo.html",
+          "sha256": "25E27812A7F9F8EB48C000B6375D8EB3DCA08811414F9FF9B54BB02D4BFB49AA"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\prd\\发行平台专项\\开发者后台PRD\\03-游戏包体、测试审核与版本发布PRD.md",
+          "sha256": "F63469B4909BDCEAD5108B7A997A487F87B9F2F7AA89FD76F2ED386C7F76CFF4"
+        }
+      ],
+      "outputs": [
+        "prd/workflow-state/LOCAL-20260907-module02-create.md",
+        "prd/workflow-state/LOCAL-20260901-developer-backend-prd.md",
+        "demos/开发者后台一期/02-CDKEY商品与供给demo.html",
+        "demos/开发者后台一期/09-发行审核后台demo.html",
+        "prd/发行平台专项/开发者后台PRD/03-游戏包体、测试审核与版本发布PRD.md"
+      ],
+      "evidence": [
+        "Demo和图片提交d730f4b0已推送",
+        "PRD提交4f60803c已推送",
+        "19/19图片公网HTTP与MIME通过",
+        "定向测试12/12",
+        "飞书真实转存未执行",
+        "8个既有后台失败不在本轮范围"
+      ],
+      "validation": "02、09、PRD03、截图、测试、Git和远程资源已对账",
+      "error": null,
+      "reviewer": "Codex交付复核"
+    }
+  ]
+}
