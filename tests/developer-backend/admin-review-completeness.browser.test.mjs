@@ -282,6 +282,72 @@ test('游戏发布 Drawer 可访问完整资料、SKU、发行、资质、包体
   }
 });
 
+test('发布审核快照按统一价或基准价加有效地区例外价展示', async () => {
+  const { page, errors } = await makePage();
+  try {
+    await page.goto(url('/release'), { waitUntil: 'load' });
+    await page.locator('[data-global-region]').selectOption('overseas');
+    await page.locator('tbody tr').first().locator('[data-open]').click();
+
+    let drawer = page.locator('#modalRoot .drawer');
+    const regional = drawer.locator('[data-pricing-snapshot]').first();
+    await regional.waitFor();
+    const regionalText = await regional.innerText();
+    assert.match(regionalText, /分区定价/);
+    assert.match(regionalText, /基准售价[\s\S]*USD 19\.99/);
+    assert.match(regionalText, /继承基准价地区[\s\S]*4 个/);
+    assert.equal(await regional.locator('[data-pricing-override]').count(), 2);
+    assert.match(regionalText, /日本（JP）[\s\S]*JPY 2200[\s\S]*JPY 1650/);
+    assert.match(regionalText, /巴西（BR）[\s\S]*BRL 59\.90[\s\S]*继承基准折扣比例/);
+    assert.doesNotMatch(regionalText, /加拿大（CA）/, '已移除发行地区的隐藏例外价不得进入审核快照');
+    assert.equal(await drawer.getByRole('button', { name: /定价快照/ }).count(), 1);
+    assert.equal(await drawer.getByRole('button', { name: /地区例外价明细/ }).count(), 1);
+    assert.equal(await drawer.getByRole('button', { name: /区域定价快照/ }).count(), 0);
+    await regional.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(evidence, 'release-pricing-regional-snapshot-1440x900.png') });
+
+    await drawer.locator('header [data-modal-close]').click();
+    await page.locator('[data-global-region]').selectOption('domestic');
+    await page.locator('tbody tr').first().locator('[data-open]').click();
+    drawer = page.locator('#modalRoot .drawer');
+    const uniform = drawer.locator('[data-pricing-snapshot]').first();
+    const uniformText = await uniform.innerText();
+    assert.match(uniformText, /统一价/);
+    assert.doesNotMatch(uniformText, /全球统一价/);
+    assert.match(uniformText, /售价[\s\S]*CNY 68\.00/);
+    assert.equal(await uniform.locator('[data-pricing-override]').count(), 0);
+    assert.doesNotMatch(uniformText, /例外地区价/);
+    assert.equal(await drawer.getByRole('button', { name: /定价快照/ }).count(), 1);
+    assert.equal(await drawer.getByRole('button', { name: /地区例外价明细|区域定价快照/ }).count(), 0);
+    await uniform.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(evidence, 'release-pricing-uniform-snapshot-1440x900.png') });
+
+    assert.deepEqual(errors, []);
+  } finally {
+    await page.close();
+  }
+});
+
+test('审核定价快照覆盖完整发行地区名称与当地币种', async () => {
+  const { page, errors } = await makePage();
+  try {
+    await page.goto(url('/release'), { waitUntil: 'load' });
+    await page.locator('[data-global-region]').selectOption('overseas');
+    const recordId = await page.evaluate(() => {
+      const record = window.AdminReviewDemo.records.find(item => item.type === 'release' && item.region === 'overseas');
+      const pricing = record.snapshot.find(section => section.title === '商品与 SKU').pricing[0];
+      Object.assign(pricing, { pricingModel: 'paid', pricingStrategy: 'regional', baseCurrency: 'USD', territoryCodes: ['US', 'IN'], regionalPrices: { IN: { listPrice: '1499', discountPrice: '' } } });
+      return record.id;
+    });
+    await page.locator(`[data-open="${recordId}"]`).click();
+    const drawer = page.locator('#modalRoot .drawer');
+    const pricing = drawer.locator('[data-pricing-snapshot]').first();
+    assert.match(await pricing.innerText(), /印度（IN）[\s\S]*INR 1499/);
+    assert.doesNotMatch(await pricing.innerText(), /IN（IN）[\s\S]*USD 1499/);
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+});
+
 test('单包测试支持开始、失败原因必填、本地附件增删与失败记录留痕', async () => {
   const { page, errors } = await makePage();
   try {
