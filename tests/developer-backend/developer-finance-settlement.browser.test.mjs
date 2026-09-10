@@ -303,7 +303,7 @@ test('财务对账每页20条并支持确认、差异和发票', async () => {
 
     await page.locator('[data-statement-id="STMT-2026-08-V1"]').getByRole('button', { name:'查看', exact:true }).click();
     await page.getByRole('button', { name:'提交差异', exact:true }).click();
-    await page.getByLabel('差异类型').selectOption('rate');
+    await page.getByLabel('差异类型').selectOption('fee_tax_fx');
     await page.getByLabel('期望金额').fill('18520.36');
     await page.getByLabel('差异说明').fill('支付商结算文件中的汇率版本不同，请复核。');
     await page.getByRole('button', { name:'提交差异', exact:true }).click();
@@ -318,6 +318,13 @@ test('财务对账每页20条并支持确认、差异和发票', async () => {
       buffer:Buffer.from('demo invoice'),
     });
     await page.getByLabel('发票号').fill('INV-202609-1024');
+    await page.getByLabel('发票金额（USD）').fill('');
+    await page.getByRole('button', { name:'提交发票', exact:true }).click();
+    const invoiceAlert = page.getByRole('alert');
+    assert.equal(await invoiceAlert.getAttribute('aria-live'), 'polite');
+    assert.equal(await page.getByLabel('发票金额（USD）').getAttribute('aria-invalid'), 'true');
+    assert.equal(await page.getByLabel('发票号').getAttribute('aria-invalid'), null);
+    await page.getByLabel('发票金额（USD）').fill('15482.60');
     await page.getByRole('button', { name:'提交发票', exact:true }).click();
     assert.match(await page.getByRole('dialog', { name:'账单详情' }).innerText(), /审核中/);
     assert.match(await page.getByRole('dialog', { name:'账单详情' }).innerText(), /INV-202609-1024/);
@@ -330,6 +337,220 @@ test('财务对账每页20条并支持确认、差异和发票', async () => {
     assert.match(await page.getByRole('dialog', { name:'账单详情' }).innerText(), /已确认/);
     assert.doesNotMatch(await page.getByRole('dialog', { name:'账单详情' }).innerText(), /账单已锁定/);
     assert.deepEqual(errors, []);
+  } finally {
+    await page.close();
+  }
+});
+
+test('三本账可筛选、可按来源核对并导出完整审计字段', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 }, acceptDownloads:true });
+  try {
+    await page.goto(url('/reconciliation'), { waitUntil:'load' });
+    await page.getByRole('button', { name:'对账流水', exact:true }).click();
+
+    const sourceFilter = page.getByLabel('业务来源');
+    assert.equal(await sourceFilter.count(), 1);
+    for (const option of ['平台直销','外部 Key 采购','盖世 Key 渠道']) {
+      assert.equal(await sourceFilter.locator('option', { hasText:option }).count(), 1);
+    }
+    assert.match(await page.locator('thead').innerText(), /业务来源／履约方式/);
+    await sourceFilter.selectOption('direct_sale');
+    const filteredRows = page.locator('tbody tr[data-ledger-source]');
+    assert.ok(await filteredRows.count() > 0);
+    assert.deepEqual(await filteredRows.evaluateAll(rows => [...new Set(rows.map(row => row.dataset.ledgerSource))]), ['direct_sale']);
+
+    await sourceFilter.selectOption('all');
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name:'导出', exact:true }).click();
+    const download = await downloadPromise;
+    const exported = fs.readFileSync(await download.path(), 'utf8');
+    for (const header of ['业务来源','履约方式','交易原币','汇率版本','规则版本','结算对手方']) {
+      assert.match(exported, new RegExp('"' + header + '"'));
+    }
+
+    await page.getByRole('button', { name:'对账单', exact:true }).click();
+    await page.locator('[data-statement-id="STMT-2026-08-V1"]').getByRole('button', { name:'查看', exact:true }).click();
+    const drawer = page.getByRole('dialog', { name:'账单详情' });
+    for (const source of ['direct_sale','external_key','gamehub_key']) {
+      assert.equal(await drawer.locator('[data-source-subtotal="' + source + '"]').count(), 1);
+    }
+
+    const model = await page.evaluate(() => window.__developerFinanceDemo.snapshot());
+    assert.deepEqual(model.statementStatuses.sort(), ['confirmed','disputed','draft','locked','pending','voided']);
+    assert.deepEqual(model.disputeStatuses.sort(), ['accepted','cancelled','processing','rejected','supplement']);
+    assert.deepEqual(model.invoiceStatuses.sort(), ['approved','not_required','pending','rejected','reviewing']);
+    assert.equal(model.invoiceDataComplete, true);
+    assert.equal(model.invoiceAmountsAreIntegers, true);
+
+    assert.equal(await drawer.getByRole('heading', { name:'发票', exact:true }).count(), 0);
+    await drawer.getByRole('button', { name:'关闭', exact:true }).last().click();
+    await page.locator('[data-statement-id="STMT-2026-06-V1"]').getByRole('button', { name:'查看', exact:true }).click();
+    assert.equal(await page.getByRole('dialog', { name:'账单详情' }).getByRole('heading', { name:'发票', exact:true }).count(), 1);
+  } finally {
+    await page.close();
+  }
+});
+
+test('差异支持四种输入模型、不可变提交快照和追加补充时间线', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  try {
+    await page.goto(url('/reconciliation'), { waitUntil:'load' });
+    await page.locator('[data-statement-id="STMT-2026-08-V1"]').getByRole('button', { name:'查看', exact:true }).click();
+    await page.getByRole('button', { name:'提交差异', exact:true }).click();
+    const type = page.getByLabel('差异类型');
+
+    await type.selectOption('missing_transaction');
+    assert.equal(await page.getByLabel('开发者侧订单号').count(), 1);
+    assert.equal(await page.getByLabel('业务参考号').count(), 1);
+    assert.equal(await page.getByLabel('对账流水号（可多选）').count(), 0);
+
+    await type.selectOption('key_quantity');
+    assert.equal(await page.getByLabel('Key 批次').count(), 1);
+    assert.equal(await page.getByLabel('渠道').count(), 1);
+    assert.equal(await page.getByLabel('平台数量').count(), 1);
+    assert.equal(await page.getByLabel('期望数量').count(), 1);
+
+    await type.selectOption('fee_tax_fx');
+    assert.equal(await page.getByLabel('流水或账单项').count(), 1);
+    assert.equal(await page.getByLabel('期望金额').count(), 1);
+
+    await type.selectOption('existing_flow');
+    const flowSelect = page.getByLabel('对账流水号（可多选）');
+    assert.equal(await flowSelect.getAttribute('multiple'), '');
+    const flowIds = await flowSelect.locator('option').evaluateAll(options => options.slice(0,2).map(option => option.value));
+    await flowSelect.selectOption(flowIds);
+    await page.getByLabel('期望金额').fill('18520.36');
+    await page.getByLabel('差异说明').fill('两条流水金额与开发者侧销售明细不一致。');
+    await page.locator('[data-dispute-file]').setInputFiles({ name:'reconciliation-proof.csv', mimeType:'text/csv', buffer:Buffer.from('id,amount') });
+    await page.getByRole('button', { name:'提交差异', exact:true }).click();
+
+    const submitted = await page.evaluate(() => window.__developerFinanceDemo.snapshot());
+    const latest = submitted.disputeRecords.find(item => item.statementId === 'STMT-2026-08-V1' && item.type === 'existing_flow');
+    assert.deepEqual(latest.submissionSnapshot.flowIds, flowIds);
+    assert.equal(latest.submissionSnapshot.reason, '两条流水金额与开发者侧销售明细不一致。');
+    assert.equal(latest.timeline[0].action, 'submitted');
+    assert.equal(submitted.disputeSnapshotsImmutable, true);
+
+    await page.getByRole('button', { name:'关闭', exact:true }).last().click();
+    await page.locator('[data-statement-id="STMT-2026-07-V2"]').getByRole('button', { name:'查看', exact:true }).click();
+    await page.getByRole('button', { name:'差异记录', exact:true }).click();
+    const before = await page.evaluate(() => {
+      const record = window.__developerFinanceDemo.snapshot().disputeRecords.find(item => item.status === 'supplement');
+      return JSON.stringify(record.submissionSnapshot);
+    });
+    await page.getByRole('button', { name:'补充材料', exact:true }).click();
+    await page.getByLabel('补充说明').fill('补充开发者侧订单和销售明细。');
+    await page.locator('[data-dispute-file]').setInputFiles({ name:'supplement.csv', mimeType:'text/csv', buffer:Buffer.from('order,amount') });
+    await page.getByRole('button', { name:'提交补充', exact:true }).click();
+    const supplemented = await page.evaluate(() => {
+      const record = window.__developerFinanceDemo.snapshot().disputeRecords.find(item => item.id === 'DSP-202608-0042');
+      return {
+        snapshot:JSON.stringify(record.submissionSnapshot),
+        supplementCount:record.supplements.length,
+        actions:record.timeline.map(item => item.action),
+      };
+    });
+    assert.equal(supplemented.snapshot, before);
+    assert.equal(supplemented.supplementCount, 1);
+    assert.deepEqual(supplemented.actions.slice(-2), ['supplement_requested','supplemented']);
+  } finally {
+    await page.close();
+  }
+});
+
+test('差异数值不可留空且交易遗漏可仅用业务参考号提交', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  try {
+    await page.goto(url('/reconciliation'), { waitUntil:'load' });
+    await page.locator('[data-statement-id="STMT-2026-08-V1"]').getByRole('button', { name:'查看', exact:true }).click();
+    await page.getByRole('button', { name:'提交差异', exact:true }).click();
+
+    await page.getByLabel('差异说明').fill('已有流水金额为空校验。');
+    await page.getByRole('button', { name:'提交差异', exact:true }).click();
+    const alert = page.getByRole('alert');
+    assert.match(await alert.innerText(), /有效期望金额/);
+    assert.equal(await alert.getAttribute('aria-live'), 'polite');
+    assert.equal(await page.getByLabel('期望金额').getAttribute('aria-invalid'), 'true');
+    assert.equal(await page.getByLabel('期望金额').getAttribute('aria-describedby'), await alert.getAttribute('id'));
+    assert.equal(await page.getByLabel('差异说明').getAttribute('aria-invalid'), null);
+
+    const type = page.getByLabel('差异类型');
+    await type.selectOption('key_quantity');
+    await page.getByLabel('Key 批次').fill('GHK-EMPTY-NUMBER');
+    await page.getByLabel('期望数量').fill('0');
+    await page.getByLabel('差异说明').fill('数量必须为正整数。');
+    await page.getByRole('button', { name:'提交差异', exact:true }).click();
+    assert.match(await page.getByRole('alert').innerText(), /有效期望数量/);
+    assert.equal(await page.getByLabel('期望数量').getAttribute('aria-invalid'), 'true');
+    assert.equal(await page.getByLabel('Key 批次').getAttribute('aria-invalid'), null);
+
+    await page.getByLabel('差异类型').selectOption('fee_tax_fx');
+    await page.getByLabel('差异说明').fill('费用金额为空校验。');
+    await page.getByRole('button', { name:'提交差异', exact:true }).click();
+    assert.equal(await page.getByLabel('期望金额').getAttribute('aria-invalid'), 'true');
+    assert.equal(await page.getByLabel('流水或账单项').getAttribute('aria-invalid'), null);
+
+    await page.getByLabel('差异类型').selectOption('missing_transaction');
+    await page.getByLabel('业务参考号').fill('BIZ-REF-ONLY-202609');
+    await page.getByLabel('期望金额').fill('88.00');
+    await page.getByLabel('差异说明').fill('业务参考号存在，但平台未生成流水。');
+    await page.getByRole('button', { name:'提交差异', exact:true }).click();
+    const model = await page.evaluate(() => window.__developerFinanceDemo.snapshot());
+    const record = model.disputeRecords.find(item => item.submissionSnapshot.businessReference === 'BIZ-REF-ONLY-202609');
+    assert.ok(record);
+    assert.equal(record.submissionSnapshot.developerOrderNo, '');
+    assert.deepEqual(record.submissionSnapshot.flowIds, []);
+    assert.equal(record.submissionSnapshot.expectedMinor, 8800);
+  } finally {
+    await page.close();
+  }
+});
+
+test('费用税费汇率差异切换账单项后平台金额与提交快照一致', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  try {
+    await page.goto(url('/reconciliation'), { waitUntil:'load' });
+    await page.locator('[data-statement-id="STMT-2026-08-V1"]').getByRole('button', { name:'查看', exact:true }).click();
+    await page.getByRole('button', { name:'提交差异', exact:true }).click();
+    await page.getByLabel('差异类型').selectOption('fee_tax_fx');
+    const platformAmount = page.locator('[data-testid="platform-amount"] strong');
+    const taxText = await platformAmount.innerText();
+    await page.getByLabel('流水或账单项').selectOption('statement_fee');
+    const feeText = await platformAmount.innerText();
+    assert.notEqual(feeText, taxText);
+    await page.getByLabel('期望金额').fill('0.00');
+    await page.getByLabel('差异说明').fill('支付费口径需要复核。');
+    await page.getByRole('button', { name:'提交差异', exact:true }).click();
+    const record = await page.evaluate(() => window.__developerFinanceDemo.snapshot().disputeRecords.find(item => item.statementId === 'STMT-2026-08-V1' && item.submissionSnapshot.itemRef === 'statement_fee'));
+    const expectedDisplay = 'USD ' + (record.submissionSnapshot.platformMinor / 100).toLocaleString('zh-CN', { minimumFractionDigits:2, maximumFractionDigits:2 });
+    assert.equal(feeText, expectedDisplay);
+  } finally {
+    await page.close();
+  }
+});
+
+test('三张表关键词输入后页面与直接导出口径一致', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  const assertFilterAndExport = async ({ selector, keyword, group, countKey }) => {
+    const input = page.locator(selector);
+    const beforeRows = await page.locator('tbody tr').count();
+    const total = (await page.evaluate(() => window.__developerFinanceDemo.snapshot())).counts[countKey];
+    await input.fill(keyword);
+    assert.equal(await input.evaluate(node => node === document.activeElement), true);
+    assert.equal(await page.locator('tbody tr').count(), beforeRows);
+    const exported = await page.evaluate(value => window.__developerFinanceDemo.exportCsv(value), group);
+    assert.equal(exported.trim().split('\n').length, total + 1);
+    assert.doesNotMatch(exported, new RegExp(keyword));
+  };
+  try {
+    await page.goto(url('/reconciliation'), { waitUntil:'load' });
+    await assertFilterAndExport({ selector:'#d15-statement-keyword', keyword:'DRAFT-ONLY-STATEMENT', group:'statement', countKey:'statements' });
+
+    await page.getByRole('button', { name:'对账流水', exact:true }).click();
+    await assertFilterAndExport({ selector:'#d15-flow-keyword', keyword:'DRAFT-ONLY-FLOW', group:'flow', countKey:'flows' });
+
+    await page.locator('[data-route="payments"]').click();
+    await assertFilterAndExport({ selector:'#d15-payment-keyword', keyword:'DRAFT-ONLY-PAYMENT', group:'payment', countKey:'payments' });
   } finally {
     await page.close();
   }
